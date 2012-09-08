@@ -1,0 +1,56 @@
+<scxml initial="step2">
+	<state id="start">
+		<onentry>
+			<log expr="'Entered State: start'" />
+		</onentry>
+		<transition target="step1">
+			<log expr="'Transition start -> step1'" />
+		</transition>
+		<onexit>
+			<log expr="'Exited State: start'" />
+		</onexit>
+	</state>
+	<state id="step1">
+		<onentry>
+			<log expr="'Entered State: step1'" />
+		</onentry>
+		<transition target="step2">
+			<log expr="'Transition step1 -> step2'" />
+		</transition>
+		<onexit>
+			<log expr="'Exited State: step1'" />
+		</onexit>
+	</state>
+	<parallel id="step2">
+		<state id="parallel1">
+			<onentry>
+				<log expr="'Entered State: parallel1'" />
+			</onentry>
+			<transition target="step3">
+				<log expr="'Transition parallel1 -> step3'" />
+			</transition>
+			<onexit>
+				<log expr="'Exited State: parallel1'" />
+			</onexit>
+		</state>
+		<state id="parallel2">
+			<onentry>
+				<log expr="'Entered State: parallel2'" />
+			</onentry>
+			<transition target="step3">
+				<log expr="'Transition parallel2 -> step3'" />
+			</transition>
+			<onexit>
+				<log expr="'Exited State: parallel2'" />
+			</onexit>
+		</state>
+	</parallel>
+	<final id="step3">
+		<onentry>
+			<log expr="'Entered Final State: step3'" />
+		</onentry>
+		<onexit>
+			<log expr="'Exited Final State: step3'" />
+		</onexit>
+	</final>
+</scxml>

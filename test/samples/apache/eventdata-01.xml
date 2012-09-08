@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+-->
+<scxml xmlns="http://www.w3.org/2005/07/scxml"
+      version="1.0"
+      datamodel="ecmascript"
+      initialstate="state1">
+     <state id="state1">
+           <transition event="event.foo" cond="_event.data == 2"
+                       target="state2"/>
+           <transition event="event.foo" cond="_event.data == 3"
+                       target="state3"/>
+           <transition event="event.foo">
+				<log expr="'event.name: ' + _event.name" />
+        	</transition>
+     </state>
+     <state id="state2" final="true"/>
+     <state id="state3">
+           <transition event="event.bar" target="state4"
+                       cond="_event.data == 4"/>
+           <transition event="event.bar" target="state5"
+                       cond="_event.data == 5"/>
+           <transition event="event.bar" target="state6"
+                       cond="_event.data == 6"/>
+     </state>
+     <state id="state4" final="true"/>
+     <state id="state5" final="true"/>
+     <state id="state6">
+           <transition event="event.baz" target="state7"
+                       cond="_event.data == 7"/>
+     </state>
+     <state id="state7" final="true"/>
+</scxml>

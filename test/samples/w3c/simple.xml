@@ -1,0 +1,9 @@
+<scxml xmlns="http://www.w3.org/2005/07/scxml"
+       version="1.0"
+       initial="Main"
+       datamodel="ecmascript">
+	<state />
+	<state />
+	<state />
+	<state />
+</scxml>

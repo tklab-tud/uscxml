@@ -1,0 +1,55 @@
+<?xml version="1.0"?>
+<!--
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+-->
+<!-- Bad SCXML document, many elements will be ignored with warnings from parser -->
+<scxml xmlns="http://www.w3.org/2005/07/scxml"
+       xmlns:my="http://my.foo.example/"
+       version="1.0"
+       initialstate="tranbug">
+
+    <datamodel>
+        <data id="foo">
+            <alpha xmlns="">
+                <beta/>
+            </alpha>
+        </data>
+        <misplaced/>
+    </datamodel>
+
+    <state id="tranbug">
+        <onentry>
+            <log expr="'Begin transition bug test ...'" />
+            <foo/>
+            <my:bar/>
+        </onentry>
+        <transition event="show.bug" target="end">
+         <!-- For example, FOLLOWING datamodel IS MISPLACED -->
+         <datamodel>
+ 			<data id="dummy" expr="'somedata'"/>
+         </datamodel>
+         <log expr="dummy" />
+         <log expr="'*****' + dummy" />
+        </transition>
+    </state>
+
+    <my:baz/>
+    
+    <state id="end" final="true" />
+
+</scxml>
+
+

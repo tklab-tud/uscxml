@@ -1,0 +1,67 @@
+<?xml version="1.0"?>
+<!--
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+-->
+<!--
+   This document is an example of using shallow history
+-->
+<scxml xmlns="http://www.w3.org/2005/07/scxml" version="1.0"
+    initialstate="flow">
+
+    <state id="flow">
+        <initial>
+            <transition target="phase1"/>
+        </initial>
+
+        <!-- history defaults to shallow, optionally one can set
+             the type attribute to "shallow" for identical results -->
+
+        <history id="hist">
+
+            <!-- This is the transition to be followed if no
+                 prior history is available -->
+
+            <transition target="phase1"/>
+
+        </history>
+
+        <state id="phase1">
+            <transition event="phase.done" target="phase2"/>
+        </state>
+
+        <state id="phase2">
+            <transition event="phase.done" target="phase3"/>
+        </state>
+
+        <state id="phase3" final="true"/>
+
+        <transition event="flow.pause" target="interrupted"/>
+
+        <transition event="flow.terminate" target="terminated"/>
+
+    </state>
+
+    <state id="interrupted">
+
+        <transition event="flow.resume" target="hist"/>
+
+        <transition event="flow.terminate" target="terminated"/>
+
+    </state>
+
+    <state id="terminated" final="true"/>
+
+</scxml>

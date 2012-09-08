@@ -1,0 +1,90 @@
+<?xml version="1.0"?>
+<!--
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+-->
+<!--
+   This document is an example of specifying default transitions for
+   history states (if the parent state has never been visited before)
+-->
+<scxml xmlns="http://www.w3.org/2005/07/scxml" version="1.0"
+       initialstate="state1">
+
+    <state id="state1">
+        <initial>
+            <transition target="history1"/>
+        </initial>
+
+        <!-- shallow history, explicit default transition -->
+
+        <history id="history1">
+            <transition next="state11"/>
+        </history>
+
+        <state id="state11">
+            <transition event="state.next" target="state2"/>
+        </state>
+
+    </state>
+
+    <state id="state2">
+        <initial>
+            <transition target="history2"/>
+        </initial>
+
+        <!-- deep history, explicit default transition -->
+
+        <history id="history2" type="deep">
+            <transition next="state211"/>
+        </history>
+
+        <state id="state21">
+
+            <initial>
+                <transition target="state212"/>
+            </initial>
+
+            <state id="state211">
+                <transition event="state.next" target="history3"/>
+            </state>
+
+            <state id="state212">
+                <transition event="state.next" target="history3"/>
+            </state>
+
+        </state>
+
+    </state>
+
+    <state id="state3">
+
+        <initial>
+            <transition target="state31"/>
+        </initial>
+
+        <!-- shallow history, no default transition specified,
+             reuse initial as default transition -->
+
+        <history id="history3"/>
+
+        <state id="state31">
+                <transition event="state.next" target="state4"/>
+        </state>
+        
+    </state>
+
+    <state id="state4" final="true"/>
+
+</scxml>

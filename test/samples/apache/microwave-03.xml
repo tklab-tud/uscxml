@@ -1,0 +1,79 @@
+<?xml version="1.0"?>
+<!--
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+-->
+<!--
+   This document uses Commons JEXL as the expressions language.
+   Needs SCXMLParser.
+-->
+<scxml xmlns="http://www.w3.org/2005/07/scxml"
+       xmlns:cs="http://commons.apache.org/scxml"
+       version="1.0"
+       initialstate="off">
+  
+  <!--  trivial microwave oven example -->
+  <state id="off">
+    <!-- off state -->
+    <transition event="turn_on" target="on"/>
+  </state>
+
+  <state id="on">
+    <initial>
+      <transition target="idle"/>
+    </initial>
+
+    <!-- on/pause state -->
+    <onentry>
+      <!-- we assume the cook_time is passed in as a context parameter -->
+      <if cond="empty(cook_time)">
+        <!-- default setting -->
+        <cs:var name="cook_time" expr="5"/>
+      </if>
+      <!-- again, door_closed should be a part of a global context -->
+      <if cond="empty(door_closed)">
+        <!-- default setting -->
+        <cs:var name="door_closed" expr="true"/>
+      </if>
+      <!-- timer variable -->
+      <cs:var name="timer" expr="0"/>
+    </onentry>
+
+    <transition event="turn_off" target="off"/>
+
+    <transition cond="timer ge cook_time" target="off"/>
+
+    <state id="idle">
+      <!-- default immediate transition -->
+      <transition cond="door_closed" target="cooking"/>
+
+      <!-- start cooking -->
+      <transition event="door_close" target="cooking">
+        <assign name="door_closed" expr="true"/>
+      </transition>
+    </state>
+
+    <state id="cooking">
+      <transition event="door_open" target="idle">
+        <assign name="door_closed" expr="false"/>
+      </transition> 
+      <transition event="time" target="cooking">
+        <assign name="timer" expr="timer + 1"/>
+      </transition>
+    </state>
+
+  </state>
+
+</scxml>

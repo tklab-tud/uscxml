@@ -1,0 +1,35 @@
+<scxml datamodel="ecmascript" initial="start" binding="late" name="foo">
+	<state id="start">
+		<datamodel>
+			<data id="foo" expr="'this is the foo data'" />
+			<data id="bar" expr="'this is the bar data'" />
+		</datamodel>
+		<onentry>
+			<log expr="'basichttp listening as ' + _ioprocessors['basichttp']" />
+			<log expr="'Entered step1'" />
+			<log expr="'Sending ourself an event'" />
+			<send targetexpr="_ioprocessors['basichttp']" namelist="foo" type="basichttp" event="transitionToNext">
+				<param name="bar" expr="'b' + 'ar'" />
+				<content>
+<![CDATA[
+This is some content you got there dude!
+]]>
+				</content>
+			</send>
+		</onentry>
+		<transition event="transitionToNext" target="step1" />
+	</state>
+	<state id="step1">
+		<onentry>
+			<log expr="'Entered step1'" />
+			<log expr="'Sending ourself a 2s delayed event'" />
+			<send delay="2s" targetexpr="_ioprocessors['basichttp']" type="basichttp" event="transitionToNext" />
+		</onentry>
+		<transition event="transitionToNext" target="final" />
+	</state>
+	<final id="final">
+		<onentry>
+			<log expr="'Finished!'" />
+		</onentry>
+	</final>
+</scxml>

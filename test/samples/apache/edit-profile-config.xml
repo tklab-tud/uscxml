@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+
+  $Id: edit-profile-config.xml 462838 2006-10-11 16:08:36Z rahul $
+
+-->
+
+<!--
+
+  Dialog definitions for Shale Use Cases Example Web Application
+  written out as SCXML to demonstrate use of Commons SCXML as one
+  of Shale's Dialog Manager implementations.
+
+  Related artifacts from <dialog name="Edit Profile">...</dialog>
+  in original dialogs definition file from Shale nightlies.
+
+-->
+
+<scxml xmlns="http://www.w3.org/2005/01/SCXML" version="1.0"  
+       initialstate="edit">
+
+  <state                id="edit">
+
+    <initial>
+      <transition>
+        <target       next="setup"/>
+      </transition>
+    </initial>
+
+    <!-- global transitions (within state "edit") -->
+
+    <transition      event="faces.outcome"
+                      cond="${outcome eq 'cancel'}">
+      <target         next="cancel"/>
+    </transition>
+
+    <transition      event="faces.outcome"
+                      cond="${outcome eq 'finish'}">
+      <target         next="finish"/>
+    </transition>
+
+    <state              id="setup">
+
+      <onentry>
+        <var          name="setupOutcome"
+                      expr="#{profile$edit.setup}" />
+      </onentry>
+
+      <transition     cond="${setupOutcome eq 'success'}">
+        <target       next="page1"/>
+      </transition>
+
+    </state>
+
+    <state              id="page1">
+
+      <transition    event="faces.outcome"
+                      cond="${outcome eq 'next'}">
+        <target       next="page2"/>
+      </transition>
+
+    </state>
+
+    <state              id="page2">
+
+      <transition    event="faces.outcome"
+                      cond="${outcome eq 'previous'}">
+        <target       next="page1"/>
+      </transition>
+
+      <transition    event="faces.outcome"
+                      cond="${outcome eq 'next'}">
+        <target       next="page3"/>
+      </transition>
+
+    </state>
+
+    <state              id="page3">
+
+      <transition    event="faces.outcome"
+                      cond="${outcome eq 'previous'}">
+        <target       next="page2"/>
+      </transition>
+
+      <transition    event="faces.outcome"
+                      cond="${outcome eq 'next'}">
+        <target       next="editExit"/>
+      </transition>
+
+    </state>
+
+  </state>
+
+  <state                id="cancel">
+
+    <onentry>
+      <var            name="cancelOutcome"
+                      expr="#{profile$edit.cancel}" />
+    </onentry>
+
+    <transition       cond="${cancelOutcome eq 'success'}">
+      <var            name="outcome"
+                      expr="cancel"/>
+      <target         next="editExit"/>
+    </transition>
+
+  </state> 
+
+  <state                id="finish">
+
+    <onentry>
+      <var            name="finishOutcome"
+                      expr="#{profile$edit.finish}" />
+    </onentry>
+
+    <transition       cond="${finishOutcome eq 'username'}">
+      <target         next="page1"/>
+    </transition>
+
+    <transition       cond="${finishOutcome eq 'password'}">
+      <target         next="page1"/>
+    </transition>
+
+    <transition       cond="${finishOutcome eq 'success'}">
+      <var            name="outcome"
+                      expr="success"/>
+      <target         next="editExit"/>
+    </transition>
+
+  </state>
+
+  <state                id="editExit"
+                     final="true" />
+
+</scxml>

@@ -1,0 +1,46 @@
+<?xml version="1.0"?>
+<!--
+   * Licensed to the Apache Software Foundation (ASF) under one or more
+   * contributor license agreements.  See the NOTICE file distributed with
+   * this work for additional information regarding copyright ownership.
+   * The ASF licenses this file to You under the Apache License, Version 2.0
+   * (the "License"); you may not use this file except in compliance with
+   * the License.  You may obtain a copy of the License at
+   *
+   *     http://www.apache.org/licenses/LICENSE-2.0
+   *
+   * Unless required by applicable law or agreed to in writing, software
+   * distributed under the License is distributed on an "AS IS" BASIS,
+   * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   * See the License for the specific language governing permissions and
+   * limitations under the License.
+-->
+<!-- Regress JIRA 89, incomplete child removal -->
+<scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:rad="http://foo/bar" version="1.0" initialstate="assign1">
+   <datamodel>
+       <data name="source">
+           <rad:foo>
+               <rad:a>1</rad:a>
+               <rad:b>2</rad:b>
+           </rad:foo>
+       </data>
+       <data name="destination">
+           <rad:bar>
+               <rad:a>3</rad:a>
+               <rad:b>4</rad:b>
+           </rad:bar>
+       </data>
+   </datamodel>
+   <!-- verify the destination contents -->
+   <state id="assign1" final="true">
+       <transition cond="Data(destination,'rad:bar/rad:a') eq 3 and Data(destination,'rad:bar/rad:b') eq 4" target="assign2" />
+   </state>
+   <!-- copy the new contents and verify -->
+   <state id="assign2">
+       <onentry>
+           <assign location="Data(destination,'rad:bar')" expr="Data(source,'rad:foo')" />
+       </onentry>
+       <transition cond="Data(destination,'rad:bar/rad:a') eq 1 and Data(destination,'rad:bar/rad:b') eq 2" target="assign3" />
+   </state>
+   <state id="assign3" final="true" />
+</scxml>

@@ -1,0 +1,28 @@
+FIND_PATH(V8_INCLUDE_DIR v8.h
+  PATH_SUFFIXES include
+  PATHS
+  /usr/local
+  /usr
+  /sw # Fink
+  /opt/local # DarwinPorts
+  /opt/csw # Blastwave
+  /opt
+  HINTS $ENV{V8_SRC}
+)
+
+FIND_LIBRARY(V8_LIBRARY_BASE
+  NAMES v8_base
+  HINTS $ENV{V8_SRC}/out/native/
+)
+list(APPEND V8_LIBRARY ${V8_LIBRARY_BASE})
+
+FIND_LIBRARY(V8_LIBRARY_SNAPSHOT
+  NAMES v8_snapshot
+  HINTS $ENV{V8_SRC}/out/native/
+
+)
+list(APPEND V8_LIBRARY ${V8_LIBRARY_SNAPSHOT})
+
+INCLUDE(FindPackageHandleStandardArgs)
+FIND_PACKAGE_HANDLE_STANDARD_ARGS(V8 DEFAULT_MSG V8_LIBRARY V8_INCLUDE_DIR)
+MARK_AS_ADVANCED(V8_LIBRARY V8_INCLUDE_DIR)

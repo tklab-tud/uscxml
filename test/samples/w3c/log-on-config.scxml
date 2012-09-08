@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Dialog definitions for Shale Use Cases Example Web Application
+  written out as SCXML to demonstrate use of Commons SCXML as one
+  of Shale's Dialog Manager implementations.
+  For details, see: http://shale.apache.org/shale-dialog-scxml/
+-->
+<scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:my="http://scxml.example.com/"
+       version="1.0" initial="checkCookie" datamodel="el" >
+
+  <state id="checkCookie">
+    <onentry>
+      <my:var name="cookieOutcome" expr="#{profile$logon.check}" />
+    </onentry>
+    <transition cond="${cookieOutcome eq 'authenticated'}" target="exit"/>
+    <transition cond="${cookieOutcome eq 'unauthenticated'}" target="logon"/>
+
+  </state>
+
+  <state id="logon">
+    <transition event="faces.outcome" cond="${outcome eq 'authenticated'}" target="exit"/>
+    <transition event="faces.outcome" cond="${outcome eq 'create'}" target="createProfile"/>
+  </state>
+
+
+  <state id="createProfile" src="edit-profile-config.xml" >
+      <transition event="createProfile.done" cond="${outcome eq 'success' or outcome eq 'cancel'}" target="exit"/>
+  </state>
+
+  <final id="exit"/>
+
+</scxml>

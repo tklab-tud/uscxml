@@ -1,0 +1,107 @@
+<?xml version="1.0"?>
+<!--
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+-->
+<!-- A fictitious state machine used by test cases.
+     Meant to illustrate the usage of SCXML <datamodel> element
+     and the Commons SCXML Data() function -->
+<scxml xmlns="http://www.w3.org/2005/07/scxml"
+       version="1.0"
+       initialstate="main">
+
+    <!-- Root or document datamodel -->
+    <datamodel>
+        <data id="docdata">
+            <root xmlns="">
+                <foo>foo</foo>
+            </root>
+        </data>
+    </datamodel>
+
+    <state id="main">
+
+        <initial>
+            <transition target="ten"/>
+        </initial>
+
+        <!-- datamodel scoped to state "main" -->
+        <datamodel>
+            <data id="mainvar" expr="${0}" />
+            <data id="maindata">
+                <root xmlns="">
+                    <foo>
+                        <bar>bar</bar>
+                    </foo>
+                </root>
+            </data>
+        </datamodel>
+
+        <state id="ten">
+            <onentry>
+                <!-- Assign Usage 1: name is previously defined
+                      <var> or degenerate <data> (as in this case) -->
+                <assign name="mainvar" expr="${10}" />
+            </onentry>
+            <!-- Commons SCXML defines a Data() function to use in conjunction
+                 with the Commons EL expression language. The
+                 first argument is the named XML data tree and the second is
+                 the XPath expression to a node whose value is to be
+                 examined  -->
+            <transition event="ten.done"
+             cond="${mainvar eq 10 and Data(maindata,'root/foo/bar') eq 'bar'}"
+             target="twenty" />
+            <onexit>
+                <!-- Assign Usage 2: location must point to an existing
+                      node  -->
+                <assign location="${Data(maindata,'root/foo/bar')}" expr="baz" />
+            </onexit>
+        </state>
+
+        <state id="twenty">
+            <onentry>
+                <assign name="mainvar" expr="${20}" />
+            </onentry>
+            <transition event="twenty.done"
+             cond="${Data(maindata,'root/foo/bar') eq 'baz' and mainvar eq 20}"
+             target="thirty" />
+            <onexit>
+                <!-- Assign Usage 3: location points to an existing
+                      node, and expr points to an existing node.
+                      In this case, location adopts expr's child nodes.  -->
+                <assign location="${Data(docdata,'root/foo')}"
+                        expr="${Data(maindata,'root/foo')}" />
+                <assign location="${Data(docdata,'root/foo/bar')}"
+                        expr="${10}" />
+            </onexit>
+        </state>
+
+        <state id="thirty">
+            <!-- Arithmetic operations are possible with results from
+                 the Data() function. Note that data "docdata"
+                 did not have a node at 'root/foo/bar' to begin with,
+                 the XML tree was manipulated by the <assign> above -->
+            <transition event="thirty.done"
+             cond="${Data(docdata,'root/foo/bar') gt 5}"
+             target="forty" />
+        </state>
+
+        <state id="forty" final="true" />
+
+    </state>
+
+</scxml>
+
+

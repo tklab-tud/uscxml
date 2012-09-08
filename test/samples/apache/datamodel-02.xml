@@ -1,0 +1,83 @@
+<?xml version="1.0"?>
+<!--
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+-->
+<!-- A fictitious state machine used by test cases. Meant to illustrate
+     prefixed XPath expressions in the Commons SCXML Data() function -->
+<scxml xmlns="http://www.w3.org/2005/07/scxml"
+       version="1.0"
+       initialstate="ten">
+
+    <!-- Start with a prefixless XPath (see transition cond) -->
+    <state id="ten">
+
+        <datamodel>
+            <data id="data10">
+                <root xmlns="">
+                    <foo>10</foo>
+                </root>
+            </data>
+        </datamodel>
+
+        <transition event="ten.done" cond="${Data(data10,'root/foo') eq 10}"
+                    target="twenty" />
+
+    </state>
+
+    <!-- Already defined (and identical) prefixes -->
+    <state id="twenty" xmlns:ns1="http://namespace.test.domain/1"
+                       xmlns:ns2="http://namespace.test.domain/2">
+
+        <datamodel>
+            <!-- Start with a prefixless XPath -->
+            <data id="data20">
+                <ns1:root>
+                    <ns2:foo>20</ns2:foo>
+                </ns1:root>
+            </data>
+        </datamodel>
+
+        <transition event="twenty.done" cond="${Data(data20,'ns1:root/ns2:foo') eq 20}"
+                    target="thirty" />
+
+    </state>
+
+    <!-- Data without prefixes -->
+    <state id="thirty">
+
+        <datamodel>
+            <!-- Start with a prefixless XPath -->
+            <data id="data30">
+                <root xmlns="http://namespace.test.domain/1">
+                    <foo xmlns="http://namespace.test.domain/2">30</foo>
+                </root>
+            </data>
+        </datamodel>
+
+        <transition event="thirty.done"
+         xmlns:ns1="http://namespace.test.domain/1"
+         xmlns:ns2="http://namespace.test.domain/2"
+         xmlns:ns3="http://namespace.test.domain/3"
+         cond="${Data(data30,'ns1:root/ns2:foo') eq 30}"
+         target="forty" />
+
+    </state>
+
+    <state id="forty" final="true" />
+
+</scxml>
+
+
