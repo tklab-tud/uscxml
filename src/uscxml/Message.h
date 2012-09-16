@@ -2,6 +2,7 @@
 #define EVENT_H_XZAQ4HR
 
 #include <map>
+#include <list>
 #include <vector>
 #include <string>
 
@@ -23,6 +24,7 @@ public:
   
   Data() {}
   Data(const std::string& atom_, Type type_ = INTERPRETED) : atom(atom_), type(type_) {}
+  Data(const Arabica::DOM::Node<std::string>& dom);
   virtual ~Data() {}
   
   static Data fromXML(const std::string& xmlString);
@@ -34,7 +36,7 @@ public:
   }
 
   std::map<std::string, Data> compound;
-  std::vector<Data> array;
+  std::list<Data> array;
   std::string atom;
   Type type;
 

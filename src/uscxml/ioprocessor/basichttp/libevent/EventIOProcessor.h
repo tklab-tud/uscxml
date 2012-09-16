@@ -10,8 +10,6 @@
 #include <event2/http_struct.h>
 
 namespace uscxml {
-namespace io {
-namespace libevent {
 
 class EventIOServer;
   
@@ -27,10 +25,8 @@ public:
   virtual IOProcessor* create(uscxml::Interpreter* interpreter);
 
   virtual void send(uscxml::SendRequest& req);
-  virtual void invoke(uscxml::InvokeRequest& req);
-  virtual void cancel(const std::string sendId);
 
-  std::string getURL() { return _url; }
+	Data getDataModelVariables();
   void setURL(const std::string& url) { _url = url; }
   
   void start();
@@ -45,7 +41,7 @@ protected:
   
   std::string _url;
   
-  uscxml::DelayedEventQueue _eventQueue;
+  uscxml::DelayedEventQueue _asyncQueue;
   uscxml::Interpreter* _interpreter;
   std::map<std::string, struct evhttp_connection*> _httpConnections;
   std::map<std::string, struct evhttp_request*> _httpRequests;
@@ -89,8 +85,6 @@ private:
   friend class EventIOProcessor;
 };
 
-}
-}
 }
 
 #endif /* end of include guard: EVENTIOPROCESSOR_H_2CUY93KU */

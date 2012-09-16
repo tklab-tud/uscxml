@@ -21,9 +21,7 @@ public:
   virtual void initialize();
   virtual void setSessionId(const std::string& sessionId);
   virtual void setName(const std::string& name);
-  virtual void setEvent(Event& event);
-  virtual void setData(const std::string& key, Data& event);
-  virtual v8::Handle<v8::Value> getDataAsValue(Data& data);
+  virtual void setEvent(const Event& event);
 
   virtual bool validate(const std::string& location, const std::string& schema);
 
@@ -33,6 +31,7 @@ public:
 
   virtual void eval(const std::string& expr);
   virtual void assign(const std::string& location, const std::string& expr);
+  virtual void assign(const std::string& location, const Data& data);
 
   virtual std::string evalAsString(const std::string& expr);
   virtual bool evalAsBool(const std::string& expr);
@@ -65,6 +64,7 @@ protected:
   v8::Persistent<v8::ObjectTemplate> _eventTemplate;
 
   v8::Handle<v8::Value> evalAsValue(const std::string& expr);
+  virtual v8::Handle<v8::Value> getDataAsValue(const Data& data);
 
 };
 

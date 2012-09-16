@@ -14,26 +14,30 @@ namespace uscxml {
     ExecutableContent() {};
     virtual ExecutableContent* create(Interpreter* interpreter) = 0;
   };
-
+  
   class IOProcessor {
   public:
     IOProcessor() {};
     virtual ~IOProcessor() {};
     virtual IOProcessor* create(Interpreter* interpreter) = 0;
 
-    virtual std::string getURL() = 0;
+    virtual Data getDataModelVariables() = 0;
     virtual void send(SendRequest& req) = 0;
-    virtual void invoke(InvokeRequest& req) = 0;
-    virtual void cancel(const std::string sendId) = 0;
   };
-  
+
+  class Invoker : public IOProcessor {
+  public:
+    virtual void invoke(InvokeRequest& req) = 0;
+    virtual void sendToParent(SendRequest& req) = 0;
+  };
+
   class DataModel {
 	public:
     virtual DataModel* create(Interpreter* interpreter) = 0;
-
+    virtual ~DataModel() {}
+    
     virtual bool validate(const std::string& location, const std::string& schema) = 0;
-    virtual void setEvent(Event& event) = 0;
-    virtual void setData(const std::string& key, Data& event) = 0;
+    virtual void setEvent(const Event& event) = 0;
 
     // foreach
     virtual uint32_t getLength(const std::string& expr) = 0;
@@ -43,7 +47,8 @@ namespace uscxml {
     virtual void eval(const std::string& expr) = 0;
     virtual std::string evalAsString(const std::string& expr) = 0;
     virtual bool evalAsBool(const std::string& expr) = 0;
-    virtual void assign(const std::string& location, const std::string& expr) = 0;    
+    virtual void assign(const std::string& location, const std::string& expr) = 0;
+    virtual void assign(const std::string& location, const Data& data) = 0;
   };
   
   class Factory {
@@ -51,14 +56,18 @@ namespace uscxml {
     static void registerIOProcessor(const std::string type, IOProcessor* ioProcessor);
     static void registerDataModel(const std::string type, DataModel* dataModel);
     static void registerExecutableContent(const std::string tag, ExecutableContent* executableContent);
+    static void registerInvoker(const std::string type, Invoker* invoker);
     
     static DataModel* getDataModel(const std::string type, Interpreter* interpreter);
     static IOProcessor* getIOProcessor(const std::string type, Interpreter* interpreter);
     static ExecutableContent* getExecutableContent(const std::string tag, Interpreter* interpreter);
+    static Invoker* getInvoker(const std::string type, Interpreter* interpreter);
+
     static Factory* getInstance();
 
 		std::map<std::string, DataModel*> _dataModels;
 		std::map<std::string, IOProcessor*> _ioProcessors;
+		std::map<std::string, Invoker*> _invoker;
 		std::map<std::string, ExecutableContent*> _executableContent;
 
   protected:

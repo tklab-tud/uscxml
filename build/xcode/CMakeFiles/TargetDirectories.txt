@@ -1,0 +1,10 @@
+/Users/sradomski/Documents/TK/Code/uscxml/build/xcode/CMakeFiles/ALL_BUILD.dir
+/Users/sradomski/Documents/TK/Code/uscxml/build/xcode/CMakeFiles/ZERO_CHECK.dir
+/Users/sradomski/Documents/TK/Code/uscxml/build/xcode/test/CMakeFiles/test-apache-commons.dir
+/Users/sradomski/Documents/TK/Code/uscxml/build/xcode/test/CMakeFiles/test-communication.dir
+/Users/sradomski/Documents/TK/Code/uscxml/build/xcode/test/CMakeFiles/test-ecmascript-v8.dir
+/Users/sradomski/Documents/TK/Code/uscxml/build/xcode/test/CMakeFiles/test-eventdelay.dir
+/Users/sradomski/Documents/TK/Code/uscxml/build/xcode/test/CMakeFiles/test-execution.dir
+/Users/sradomski/Documents/TK/Code/uscxml/build/xcode/test/CMakeFiles/test-predicates.dir
+/Users/sradomski/Documents/TK/Code/uscxml/build/xcode/CMakeFiles/uscxml.dir
+/Users/sradomski/Documents/TK/Code/uscxml/build/xcode/src/bindings/swig/java/CMakeFiles/uscxmlNativeJava.dir

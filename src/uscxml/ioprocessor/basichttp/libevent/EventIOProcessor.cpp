@@ -14,8 +14,6 @@
 #include <arpa/inet.h>
 
 namespace uscxml {
-namespace io {
-namespace libevent {
 
 // see http://www.w3.org/TR/scxml/#BasicHTTPEventProcessor
 
@@ -23,7 +21,8 @@ EventIOProcessor::EventIOProcessor() {
 }
 
 EventIOProcessor::~EventIOProcessor() {
-  _eventQueue.stop();
+  _asyncQueue.stop();
+  evdns_base_free(_dns, 1);
   EventIOServer* httpServer = EventIOServer::getInstance();
   httpServer->unregisterProcessor(this);
 }
@@ -32,7 +31,7 @@ IOProcessor* EventIOProcessor::create(Interpreter* interpreter) {
   EventIOProcessor* io = new EventIOProcessor();
   io->_interpreter = interpreter;
 
-  io->_dns = evdns_base_new(io->_eventQueue._eventLoop, 1);
+  io->_dns = evdns_base_new(io->_asyncQueue._eventLoop, 1);
   assert(io->_dns);
   assert(evdns_base_count_nameservers(io->_dns) > 0);
   
@@ -45,34 +44,30 @@ IOProcessor* EventIOProcessor::create(Interpreter* interpreter) {
 }
 
 void EventIOProcessor::start() {
-  _eventQueue.start();
+  _asyncQueue.start();
 }
+
+Data EventIOProcessor::getDataModelVariables() {
+	Data data;
+  assert(_url.length() > 0);
+  data.compound["location"] = Data(_url, Data::VERBATIM);
+	return data;
+}
+
 
 void EventIOProcessor::send(SendRequest& req) {
   // I cant figure out how to copy the reference into the struct :(
   _sendData[req.sendid].req = req;
   _sendData[req.sendid].ioProcessor = this;
 
-  if (req.delayMs > 0) {
-    LOG(INFO) << "Enqueing HTTP send request";
-    _eventQueue.addEvent(req.sendid, EventIOProcessor::httpMakeSendReq, req.delayMs, &_sendData[req.sendid]);
-  } else {
-    LOG(INFO) << "Sending HTTP send request";
-    EventIOProcessor::httpMakeSendReq(&_sendData[req.sendid], req.sendid);
-  }
-}
-
-void EventIOProcessor::httpMakeSendReq(void* userdata, std::string eventName) {
-  SendData* sendData = ((SendData*)userdata);
-  EventIOProcessor* THIS = sendData->ioProcessor;
   int err = 0;
   char uriBuf[1024];
   
-  struct evhttp_uri* targetURI = evhttp_uri_parse(sendData->req.target.c_str());
+  struct evhttp_uri* targetURI = evhttp_uri_parse(_sendData[req.sendid].req.target.c_str());
   if (evhttp_uri_get_port(targetURI) == 0)
     evhttp_uri_set_port(targetURI, 80);
   const char* hostName = evhttp_uri_get_host(targetURI);
-
+  
   // use synchronous dns resolving for multicast dns
   if(strlen(hostName) >= strlen(".local")) {
     if(strcmp(hostName + strlen(hostName) - strlen(".local"), ".local") == 0) {
@@ -80,22 +75,22 @@ void EventIOProcessor::httpMakeSendReq(void* userdata, std::string eventName) {
     }
   }
   evhttp_uri_join(targetURI, uriBuf, 1024);
-
+  
   LOG(INFO) << "URI for send request: " << uriBuf << std::endl;
   
   std::stringstream ssEndPoint;
   ssEndPoint << evhttp_uri_get_host(targetURI) << ":" << evhttp_uri_get_port(targetURI);
   std::string endPoint = ssEndPoint.str();
-
+  
   std::stringstream ssLocalURI;
   ssLocalURI << evhttp_uri_get_path(targetURI) << evhttp_uri_get_fragment(targetURI);
   std::string localURI = ssLocalURI.str();
-
-  if (THIS->_httpConnections.find(endPoint) == THIS->_httpConnections.end())
-    THIS->_httpConnections[endPoint] = evhttp_connection_base_new(THIS->_eventQueue._eventLoop, THIS->_dns, evhttp_uri_get_host(targetURI), evhttp_uri_get_port(targetURI));
-
-  struct evhttp_connection* httpConn = THIS->_httpConnections[endPoint];
-  struct evhttp_request* httpReq = evhttp_request_new(EventIOProcessor::httpSendReqDone, userdata);
+  
+  if (_httpConnections.find(endPoint) == _httpConnections.end())
+    _httpConnections[endPoint] = evhttp_connection_base_new(_asyncQueue._eventLoop, _dns, evhttp_uri_get_host(targetURI), evhttp_uri_get_port(targetURI));
+  
+  struct evhttp_connection* httpConn = _httpConnections[endPoint];
+  struct evhttp_request* httpReq = evhttp_request_new(EventIOProcessor::httpSendReqDone, this);
   
 #if 0
   // event name
@@ -129,16 +124,16 @@ void EventIOProcessor::httpMakeSendReq(void* userdata, std::string eventName) {
   if (sendData->req.content.size() > 0)
     evbuffer_add(evhttp_request_get_output_buffer(httpReq), sendData->req.content.c_str(), sendData->req.content.size());
 #endif
-
-  evhttp_add_header(evhttp_request_get_output_headers(httpReq), "_scxmleventstruct", evhttp_encode_uri(sendData->req.toXMLString().c_str()));
-
   
-  THIS->_httpRequests[sendData->req.sendid] = httpReq;
+  evhttp_add_header(evhttp_request_get_output_headers(httpReq), "_scxmleventstruct", evhttp_encode_uri(req.toXMLString().c_str()));
+  
+  
+  _httpRequests[req.sendid] = httpReq;
   err = evhttp_make_request(httpConn,
                             httpReq,
                             EVHTTP_REQ_POST, localURI.c_str());
   if (err) {
-    LOG(ERROR) << "Could not make http request to " << sendData->req.target;
+    LOG(ERROR) << "Could not make http request to " << req.target;
   }
 }
 
@@ -204,13 +199,6 @@ void EventIOProcessor::httpSendReqDone(struct evhttp_request *req, void *cb_arg)
   if (req) {
     LOG(INFO) << "got return code " << evhttp_request_get_response_code(req) << std::endl;
   }
-}
-
-void EventIOProcessor::invoke(InvokeRequest& req) {
-  
-}
-void EventIOProcessor::cancel(const std::string sendId) {
-  
 }
 
 EventIOServer::EventIOServer(unsigned short port) {
@@ -281,7 +269,7 @@ void EventIOServer::registerProcessor(EventIOProcessor* processor) {
 void EventIOServer::unregisterProcessor(EventIOProcessor* processor) {
   EventIOServer* THIS = getInstance();
   tthread::lock_guard<tthread::recursive_mutex> lock(THIS->_mutex);
-  evhttp_del_cb(THIS->_http, processor->getURL().c_str());
+  evhttp_del_cb(THIS->_http, processor->_url.c_str());
 }
   
 void EventIOServer::start() {
@@ -356,6 +344,4 @@ void EventIOServer::determineAddress() {
 #endif
 }
 
-}
-}
 }

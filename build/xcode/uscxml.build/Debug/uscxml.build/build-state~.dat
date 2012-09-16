@@ -1,0 +1,448 @@
+Tuscxml
+v5
+r1
+cCheck dependencies
+cCompileC build/xcode/uscxml.build/Debug/uscxml.build/Objects-normal/x86_64/EventIOProcessor.o /Users/sradomski/Documents/TK/Code/uscxml/src/uscxml/ioprocessor/basichttp/libevent/EventIOProcessor.cpp normal x86_64 c++ com.apple.compilers.llvm.clang.1_0.compiler
+cCompileC build/xcode/uscxml.build/Debug/uscxml.build/Objects-normal/x86_64/DelayedEventQueue.o /Users/sradomski/Documents/TK/Code/uscxml/src/uscxml/concurrency/eventqueue/libevent/DelayedEventQueue.cpp normal x86_64 c++ com.apple.compilers.llvm.clang.1_0.compiler
+cCompileC build/xcode/uscxml.build/Debug/uscxml.build/Objects-normal/x86_64/V8DataModel.o /Users/sradomski/Documents/TK/Code/uscxml/src/uscxml/datamodel/ecmascript/v8/V8DataModel.cpp normal x86_64 c++ com.apple.compilers.llvm.clang.1_0.compiler
+cCompileC build/xcode/uscxml.build/Debug/uscxml.build/Objects-normal/x86_64/tinythread.o /Users/sradomski/Documents/TK/Code/uscxml/src/uscxml/concurrency/tinythread.cpp normal x86_64 c++ com.apple.compilers.llvm.clang.1_0.compiler
+cCompileC build/xcode/uscxml.build/Debug/uscxml.build/Objects-normal/x86_64/Factory.o /Users/sradomski/Documents/TK/Code/uscxml/src/uscxml/Factory.cpp normal x86_64 c++ com.apple.compilers.llvm.clang.1_0.compiler
+cCompileC build/xcode/uscxml.build/Debug/uscxml.build/Objects-normal/x86_64/Interpreter.o /Users/sradomski/Documents/TK/Code/uscxml/src/uscxml/Interpreter.cpp normal x86_64 c++ com.apple.compilers.llvm.clang.1_0.compiler
+
+N/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.7.sdk
+c000000005022B42800000000000000CC
+t1344451624
+s204
+
+N/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.7.sdk/usr/include/arpa/inet.h
+c000000004F58EEB10000000000001533
+t1331228337
+s5427
+
+N/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.7.sdk/usr/include/netdb.h
+c000000004F58EEB2000000000000307F
+t1331228338
+s12415
+
+N/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.7.sdk/usr/include/string.h
+c000000004F58EEB20000000000001A3A
+t1331228338
+s6714
+
+N/Users/sradomski/Documents/TK/Code/glog/src/glog/logging.h
+c000000005041376F000000000000F405
+t1346451311
+s62469
+
+N/Users/sradomski/Documents/TK/Code/libevent/include/event2/buffer.h
+c00000000504B273800000000000092D8
+t1347102520
+s37592
+
+N/Users/sradomski/Documents/TK/Code/libevent/include/event2/dns.h
+c00000000504B27380000000000006061
+t1347102520
+s24673
+
+N/Users/sradomski/Documents/TK/Code/libevent/include/event2/keyvalq_struct.h
+c00000000504B27380000000000000A2B
+t1347102520
+s2603
+
+N/Users/sradomski/Documents/TK/Code/uscxml/build/xcode/Debug/libuscxml.a
+t2
+s0
+
+N/Users/sradomski/Documents/TK/Code/uscxml/build/xcode/uscxml.build/Debug/uscxml.build/Objects-normal/x86_64/DelayedEventQueue.o
+t2
+s0
+
+N/Users/sradomski/Documents/TK/Code/uscxml/build/xcode/uscxml.build/Debug/uscxml.build/Objects-normal/x86_64/EventIOProcessor.o
+t2
+s0
+
+N/Users/sradomski/Documents/TK/Code/uscxml/build/xcode/uscxml.build/Debug/uscxml.build/Objects-normal/x86_64/Factory.o
+t2
+s0
+
+N/Users/sradomski/Documents/TK/Code/uscxml/build/xcode/uscxml.build/Debug/uscxml.build/Objects-normal/x86_64/Interpreter.o
+t2
+s0
+
+N/Users/sradomski/Documents/TK/Code/uscxml/build/xcode/uscxml.build/Debug/uscxml.build/Objects-normal/x86_64/Message.o
+t2
+s0
+
+N/Users/sradomski/Documents/TK/Code/uscxml/build/xcode/uscxml.build/Debug/uscxml.build/Objects-normal/x86_64/V8DataModel.o
+t2
+s0
+
+N/Users/sradomski/Documents/TK/Code/uscxml/build/xcode/uscxml.build/Debug/uscxml.build/Objects-normal/x86_64/tinythread.o
+t2
+s0
+
+N/Users/sradomski/Documents/TK/Code/uscxml/build/xcode/uscxml.build/Debug/uscxml.build/Objects-normal/x86_64/uscxml.LinkFileList
+c0000000050522F050000000000000358
+t1347563269
+s856
+
+N/Users/sradomski/Documents/TK/Code/uscxml/build/xcode/uscxml.build/Debug/uscxml.build/Script-7CB177B081894DB28C863605.sh
+c0000000050522F0500000000000000BB
+t1347563269
+s187
+
+N/Users/sradomski/Documents/TK/Code/uscxml/src/uscxml/Factory.cpp
+c0000000050522BFA000000000000079A
+t1347562490
+s1946
+
+N/Users/sradomski/Documents/TK/Code/uscxml/src/uscxml/Interpreter.cpp
+c00000000504BCE680000000000010210
+t1347145320
+s66064
+
+N/Users/sradomski/Documents/TK/Code/uscxml/src/uscxml/Message.cpp
+c00000000504BD32700000000000017DB
+t1347146535
+s6107
+
+N/Users/sradomski/Documents/TK/Code/uscxml/src/uscxml/Message.h
+c00000000504BCD5A0000000000000AC0
+t1347145050
+s2752
+
+N/Users/sradomski/Documents/TK/Code/uscxml/src/uscxml/concurrency/eventqueue/libevent/DelayedEventQueue.cpp
+c00000000504BD23B0000000000000A62
+t1347146299
+s2658
+
+N/Users/sradomski/Documents/TK/Code/uscxml/src/uscxml/concurrency/tinythread.cpp
+c000000004FA82798000000000000213A
+t1336420248
+s8506
+
+N/Users/sradomski/Documents/TK/Code/uscxml/src/uscxml/datamodel/ecmascript/v8/V8DataModel.cpp
+c00000000504BB39A00000000000029BE
+t1347138458
+s10686
+
+N/Users/sradomski/Documents/TK/Code/uscxml/src/uscxml/ioprocessor/basichttp/libevent/EventIOProcessor.cpp
+c0000000050522F030000000000002D10
+t1347563267
+s11536
+i"uscxml/ioprocessor/basichttp/libevent/EventIOProcessor.h"
+i"uscxml/Message.h"
+i<iostream>
+i<event2/dns.h>
+i<event2/buffer.h>
+i<event2/keyvalq_struct.h>
+i<string.h>
+i<io/uri.hpp>
+i<glog/logging.h>
+i<netdb.h>
+i<arpa/inet.h>
+
+N/Users/sradomski/Documents/TK/Code/uscxml/src/uscxml/ioprocessor/basichttp/libevent/EventIOProcessor.h
+c0000000050522EB90000000000000954
+t1347563193
+s2388
+
+N/usr/local/include/arabica/io/uri.hpp
+c000000005037EEF4000000000000085D
+t1345842932
+s2141
+
+CBuild AST from /Users/sradomski/Documents/TK/Code/uscxml/src/uscxml/Factory.cpp
+r0
+
+CBuild AST from /Users/sradomski/Documents/TK/Code/uscxml/src/uscxml/Interpreter.cpp
+r0
+
+CBuild AST from /Users/sradomski/Documents/TK/Code/uscxml/src/uscxml/Message.cpp
+r0
+
+CBuild AST from /Users/sradomski/Documents/TK/Code/uscxml/src/uscxml/concurrency/eventqueue/libevent/DelayedEventQueue.cpp
+r0
+
+CBuild AST from /Users/sradomski/Documents/TK/Code/uscxml/src/uscxml/concurrency/tinythread.cpp
+r0
+
+CBuild AST from /Users/sradomski/Documents/TK/Code/uscxml/src/uscxml/datamodel/ecmascript/v8/V8DataModel.cpp
+r0
+
+CBuild AST from /Users/sradomski/Documents/TK/Code/uscxml/src/uscxml/ioprocessor/basichttp/libevent/EventIOProcessor.cpp
+r0
+
+CCheck dependencies
+r0
+lSLF05#21%IDEActivityLogSection1@2#32"com.apple.dt.IDE.BuildLogSection18"Check dependenciesf5a024856602b641^753d25856602b641^---0#1#0#--18"Check dependencies36"B2B10816-05DF-4B4C-B399-C8932D02BB63-
+
+CCompileC build/xcode/uscxml.build/Debug/uscxml.build/Objects-normal/x86_64/DelayedEventQueue.o /Users/sradomski/Documents/TK/Code/uscxml/src/uscxml/concurrency/eventqueue/libevent/DelayedEventQueue.cpp normal x86_64 c++ com.apple.compilers.llvm.clang.1_0.compiler
+s369256069.149209
+e369256070.351644
+r1
+xCompileC
+xbuild/xcode/uscxml.build/Debug/uscxml.build/Objects-normal/x86_64/DelayedEventQueue.o
+x/Users/sradomski/Documents/TK/Code/uscxml/src/uscxml/concurrency/eventqueue/libevent/DelayedEventQueue.cpp
+xnormal
+xx86_64
+xc++
+xcom.apple.compilers.llvm.clang.1_0.compiler
+lSLF05#21%IDEActivityLogSection1@2#32"com.apple.dt.IDE.BuildLogSection114"Compile /Users/sradomski/Documents/TK/Code/uscxml/src/uscxml/concurrency/eventqueue/libevent/DelayedEventQueue.cppa85326856602b641^de055a866602b641^---0#0#0#-19%DVTDocumentLocation2@122"file://localhost/Users/sradomski/Documents/TK/Code/uscxml/src/uscxml/concurrency/eventqueue/libevent/DelayedEventQueue.cpp0000000000000000^2404"CompileC build/xcode/uscxml.build/Debug/uscxml.build/Objects-normal/x86_64/DelayedEventQueue.o src/uscxml/concurrency/eventqueue/libevent/DelayedEventQueue.cpp normal x86_64 c++ com.apple.compilers.llvm.clang.1_0.compiler    cd /Users/sradomski/Documents/TK/Code/uscxml    setenv LANG en_US.US-ASCII    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -x c++ -arch x86_64 -fmessage-length=0 -Wno-trigraphs -fpascal-strings -O0 -Wno-missing-field-initializers -Wno-missing-prototypes -Wno-return-type -Wno-non-virtual-dtor -Wno-overloaded-virtual -Wno-exit-time-destructors -Wformat -Wno-missing-braces -Wparentheses -Wswitch -Wno-unused-function -Wno-unused-label -Wno-unused-parameter -Wno-unused-variable -Wunused-value -Wno-uninitialized -Wno-unknown-pragmas -Wno-shadow -Wno-four-char-constants -Wno-conversion -Wno-sign-compare -Wno-shorten-64-to-32 -Wno-newline-eof -Wc++11-extensions "-DCMAKE_INTDIR=\"Debug\"" -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.7.sdk -fasm-blocks -Wdeprecated-declarations -Winvalid-offsetof -mmacosx-version-min=10.7 -g -Wno-sign-conversion -I/Users/sradomski/Documents/TK/Code/uscxml/build/xcode/Debug/include -I/opt/local/include/libxml2 -I/Users/sradomski/Documents/TK/Code/glog/src -I/usr/local/include/arabica -I/opt/local/include -I/Users/sradomski/Documents/TK/Code/libevent/include -I/Users/sradomski/Documents/TK/Code/v8/include -I/Users/sradomski/Documents/TK/Code/uscxml/src -I/Users/sradomski/Documents/TK/Code/uscxml/build/xcode/uscxml.build/Debug/uscxml.build/DerivedSources/x86_64 -I/Users/sradomski/Documents/TK/Code/uscxml/build/xcode/uscxml.build/Debug/uscxml.build/DerivedSources -Wmost -Wno-four-char-constants -Wno-unknown-pragmas -F/Users/sradomski/Documents/TK/Code/uscxml/build/xcode/Debug -MMD -MT dependencies -MF /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/uscxml.build/Debug/uscxml.build/Objects-normal/x86_64/DelayedEventQueue.d --serialize-diagnostics /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/uscxml.build/Debug/uscxml.build/Objects-normal/x86_64/DelayedEventQueue.dia -c /Users/sradomski/Documents/TK/Code/uscxml/src/uscxml/concurrency/eventqueue/libevent/DelayedEventQueue.cpp -o /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/uscxml.build/Debug/uscxml.build/Objects-normal/x86_64/DelayedEventQueue.o36"DF8874C0-DD70-4CF5-9B97-1CCA6729A408-
+
+CCompileC build/xcode/uscxml.build/Debug/uscxml.build/Objects-normal/x86_64/EventIOProcessor.o /Users/sradomski/Documents/TK/Code/uscxml/src/uscxml/ioprocessor/basichttp/libevent/EventIOProcessor.cpp normal x86_64 c++ com.apple.compilers.llvm.clang.1_0.compiler
+s369256069.149001
+e369256074.312157
+r0
+xCompileC
+xbuild/xcode/uscxml.build/Debug/uscxml.build/Objects-normal/x86_64/EventIOProcessor.o
+x/Users/sradomski/Documents/TK/Code/uscxml/src/uscxml/ioprocessor/basichttp/libevent/EventIOProcessor.cpp
+xnormal
+xx86_64
+xc++
+xcom.apple.compilers.llvm.clang.1_0.compiler
+oIn file included from /Users/sradomski/Documents/TK/Code/uscxml/src/uscxml/ioprocessor/basichttp/libevent/EventIOProcessor.cpp:1:
+oIn file included from /Users/sradomski/Documents/TK/Code/uscxml/src/uscxml/ioprocessor/basichttp/libevent/EventIOProcessor.h:5:
+oIn file included from /Users/sradomski/Documents/TK/Code/uscxml/src/uscxml/Interpreter.h:11:
+oIn file included from /usr/local/include/arabica/XPath/XPath.hpp:4:
+oIn file included from /usr/local/include/arabica/XPath/impl/xpath_parser.hpp:19:
+oIn file included from /usr/local/include/arabica/XPath/impl/xpath_object.hpp:7:
+oIn file included from /usr/local/include/arabica/DOM/Node.hpp:9:
+oIn file included from /usr/local/include/arabica/Arabica/StringAdaptor.hpp:7:
+o/usr/local/include/arabica/convert/utf8ucs2codecvt.hpp:58:15: warning: 'Arabica::convert::utf8ucs2codecvt::do_length' hides overloaded virtual function [-Woverloaded-virtual]
+o  virtual int do_length(const std::mbstate_t&,
+o              ^
+o/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.7.sdk/usr/include/c++/4.2.1/bits/codecvt.h:442:11: note: hidden overloaded virtual function 'std::codecvt<wchar_t, char, __mbstate_t>::do_length' declared here
+o      int do_length(state_type&, const extern_type* __from,
+o          ^
+o/Users/sradomski/Documents/TK/Code/uscxml/src/uscxml/ioprocessor/basichttp/libevent/EventIOProcessor.cpp:293:41: error: no member named 'getURL' in 'uscxml::io::libevent::EventIOProcessor'; did you mean 'setURL'?
+o  evhttp_del_cb(THIS->_http, processor->getURL().c_str());
+o                                        ^~~~~~
+o                                        setURL
+o/Users/sradomski/Documents/TK/Code/uscxml/src/uscxml/ioprocessor/basichttp/libevent/EventIOProcessor.h:34:8: note: 'setURL' declared here
+o  void setURL(const std::string& url) { _url = url; }
+o       ^
+o/Users/sradomski/Documents/TK/Code/uscxml/src/uscxml/ioprocessor/basichttp/libevent/EventIOProcessor.cpp:293:48: error: too few arguments to function call, expected 1, have 0
+o  evhttp_del_cb(THIS->_http, processor->getURL().c_str());
+o                             ~~~~~~~~~~~~~~~~~ ^
+o/Users/sradomski/Documents/TK/Code/uscxml/src/uscxml/ioprocessor/basichttp/libevent/EventIOProcessor.h:34:3: note: 'setURL' declared here
+o  void setURL(const std::string& url) { _url = url; }
+o  ^
+o1 warning and 2 errors generated.
+lSLF05#21%IDEActivityLogSection1@2#32"com.apple.dt.IDE.BuildLogSection112"Compile /Users/sradomski/Documents/TK/Code/uscxml/src/uscxml/ioprocessor/basichttp/libevent/EventIOProcessor.cpp3e7726856602b641^c93a508a6602b641^-2366"In file included from /Users/sradomski/Documents/TK/Code/uscxml/src/uscxml/ioprocessor/basichttp/libevent/EventIOProcessor.cpp:1:In file included from /Users/sradomski/Documents/TK/Code/uscxml/src/uscxml/ioprocessor/basichttp/libevent/EventIOProcessor.h:5:In file included from /Users/sradomski/Documents/TK/Code/uscxml/src/uscxml/Interpreter.h:11:In file included from /usr/local/include/arabica/XPath/XPath.hpp:4:In file included from /usr/local/include/arabica/XPath/impl/xpath_parser.hpp:19:In file included from /usr/local/include/arabica/XPath/impl/xpath_object.hpp:7:In file included from /usr/local/include/arabica/DOM/Node.hpp:9:In file included from /usr/local/include/arabica/Arabica/StringAdaptor.hpp:7:/usr/local/include/arabica/convert/utf8ucs2codecvt.hpp:58:15: warning: 'Arabica::convert::utf8ucs2codecvt::do_length' hides overloaded virtual function [-Woverloaded-virtual]  virtual int do_length(const std::mbstate_t&,              ^/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.7.sdk/usr/include/c++/4.2.1/bits/codecvt.h:442:11: note: hidden overloaded virtual function 'std::codecvt<wchar_t, char, __mbstate_t>::do_length' declared here      int do_length(state_type&, const extern_type* __from,          ^/Users/sradomski/Documents/TK/Code/uscxml/src/uscxml/ioprocessor/basichttp/libevent/EventIOProcessor.cpp:293:41: error: no member named 'getURL' in 'uscxml::io::libevent::EventIOProcessor'; did you mean 'setURL'?  evhttp_del_cb(THIS->_http, processor->getURL().c_str());                                        ^~~~~~                                        setURL/Users/sradomski/Documents/TK/Code/uscxml/src/uscxml/ioprocessor/basichttp/libevent/EventIOProcessor.h:34:8: note: 'setURL' declared here  void setURL(const std::string& url) { _url = url; }       ^/Users/sradomski/Documents/TK/Code/uscxml/src/uscxml/ioprocessor/basichttp/libevent/EventIOProcessor.cpp:293:48: error: too few arguments to function call, expected 1, have 0  evhttp_del_cb(THIS->_http, processor->getURL().c_str());                             ~~~~~~~~~~~~~~~~~ ^/Users/sradomski/Documents/TK/Code/uscxml/src/uscxml/ioprocessor/basichttp/libevent/EventIOProcessor.h:34:3: note: 'setURL' declared here  void setURL(const std::string& url) { _url = url; }  ^1 warning and 2 errors generated.3(36%IDEClangDiagnosticActivityLogMessage2@80"'Arabica::convert::utf8ucs2codecvt::do_length' hides overloaded virtual function-369256074#18446744073709551615#0#9(2@129"In file included from /Users/sradomski/Documents/TK/Code/uscxml/src/uscxml/ioprocessor/basichttp/libevent/EventIOProcessor.cpp:1:-369256074#18446744073709551615#0#-0#27"com.apple.dt.IDE.diagnostic23%DVTTextDocumentLocation3@120"file://localhost/Users/sradomski/Documents/TK/Code/uscxml/src/uscxml/ioprocessor/basichttp/libevent/EventIOProcessor.cpp0000000000000000^0#9#0#9#9#0#21"Clang LLVM 1.0 Notice--2@127"In file included from /Users/sradomski/Documents/TK/Code/uscxml/src/uscxml/ioprocessor/basichttp/libevent/EventIOProcessor.h:5:-369256074#18446744073709551615#0#-0#27"com.apple.dt.IDE.diagnostic3@118"file://localhost/Users/sradomski/Documents/TK/Code/uscxml/src/uscxml/ioprocessor/basichttp/libevent/EventIOProcessor.h0000000000000000^4#9#4#9#152#0#21"Clang LLVM 1.0 Notice--2@92"In file included from /Users/sradomski/Documents/TK/Code/uscxml/src/uscxml/Interpreter.h:11:-369256074#18446744073709551615#0#-0#27"com.apple.dt.IDE.diagnostic3@82"file://localhost/Users/sradomski/Documents/TK/Code/uscxml/src/uscxml/Interpreter.h0000000000000000^10#9#10#9#196#0#21"Clang LLVM 1.0 Notice--2@67"In file included from /usr/local/include/arabica/XPath/XPath.hpp:4:-369256074#18446744073709551615#0#-0#27"com.apple.dt.IDE.diagnostic3@58"file://localhost/usr/local/include/arabica/XPath/XPath.hpp0000000000000000^3#9#3#9#78#0#21"Clang LLVM 1.0 Notice--2@80"In file included from /usr/local/include/arabica/XPath/impl/xpath_parser.hpp:19:-369256074#18446744073709551615#0#-0#27"com.apple.dt.IDE.diagnostic3@70"file://localhost/usr/local/include/arabica/XPath/impl/xpath_parser.hpp0000000000000000^18#9#18#9#447#0#21"Clang LLVM 1.0 Notice--2@79"In file included from /usr/local/include/arabica/XPath/impl/xpath_object.hpp:7:-369256074#18446744073709551615#0#-0#27"com.apple.dt.IDE.diagnostic3@70"file://localhost/usr/local/include/arabica/XPath/impl/xpath_object.hpp0000000000000000^6#9#6#9#143#0#21"Clang LLVM 1.0 Notice--2@64"In file included from /usr/local/include/arabica/DOM/Node.hpp:9:-369256074#18446744073709551615#0#-0#27"com.apple.dt.IDE.diagnostic3@55"file://localhost/usr/local/include/arabica/DOM/Node.hpp0000000000000000^8#9#8#9#197#0#21"Clang LLVM 1.0 Notice--2@77"In file included from /usr/local/include/arabica/Arabica/StringAdaptor.hpp:7:-369256074#18446744073709551615#0#-0#27"com.apple.dt.IDE.diagnostic3@68"file://localhost/usr/local/include/arabica/Arabica/StringAdaptor.hpp0000000000000000^6#9#6#9#171#0#21"Clang LLVM 1.0 Notice--2@102"Hidden overloaded virtual function 'std::codecvt<wchar_t, char, __mbstate_t>::do_length' declared here-369256074#18446744073709551615#0#-0#27"com.apple.dt.IDE.diagnostic3@151"file://localhost/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.7.sdk/usr/include/c++/4.2.1/bits/codecvt.h0000000000000000^441#10#441#10#15179#0#14"Semantic Issue--1#27"com.apple.dt.IDE.diagnostic3@70"file://localhost/usr/local/include/arabica/convert/utf8ucs2codecvt.hpp0000000000000000^57#14#57#14#1790#0#14"Semantic Issue--2@92"No member named 'getURL' in 'uscxml::io::libevent::EventIOProcessor'; did you mean 'setURL'?-369256074#18446744073709551615#0#1(2@22"'setURL' declared here-369256074#18446744073709551615#0#-0#27"com.apple.dt.IDE.diagnostic3@118"file://localhost/Users/sradomski/Documents/TK/Code/uscxml/src/uscxml/ioprocessor/basichttp/libevent/EventIOProcessor.h0000000000000000^33#7#33#7#823#0#14"Semantic Issue--2#27"com.apple.dt.IDE.diagnostic3@120"file://localhost/Users/sradomski/Documents/TK/Code/uscxml/src/uscxml/ioprocessor/basichttp/libevent/EventIOProcessor.cpp0000000000000000^292#40#292#40#9614#0#14"Semantic Issue1(3@120"file://localhost/Users/sradomski/Documents/TK/Code/uscxml/src/uscxml/ioprocessor/basichttp/libevent/EventIOProcessor.cpp0000000000000000^292#40#292#46#9614#6#-2@54"Too few arguments to function call, expected 1, have 0-369256074#18446744073709551615#0#1(2@22"'setURL' declared here-369256074#18446744073709551615#0#-0#27"com.apple.dt.IDE.diagnostic3@118"file://localhost/Users/sradomski/Documents/TK/Code/uscxml/src/uscxml/ioprocessor/basichttp/libevent/EventIOProcessor.h0000000000000000^33#2#33#2#818#0#14"Semantic Issue--2#27"com.apple.dt.IDE.diagnostic3@120"file://localhost/Users/sradomski/Documents/TK/Code/uscxml/src/uscxml/ioprocessor/basichttp/libevent/EventIOProcessor.cpp0000000000000000^292#47#292#47#9621#0#14"Semantic Issue1(3@120"file://localhost/Users/sradomski/Documents/TK/Code/uscxml/src/uscxml/ioprocessor/basichttp/libevent/EventIOProcessor.cpp0000000000000000^292#29#292#46#9603#11#-0#0#0#-19%DVTDocumentLocation4@120"file://localhost/Users/sradomski/Documents/TK/Code/uscxml/src/uscxml/ioprocessor/basichttp/libevent/EventIOProcessor.cpp0000000000000000^2396"CompileC build/xcode/uscxml.build/Debug/uscxml.build/Objects-normal/x86_64/EventIOProcessor.o src/uscxml/ioprocessor/basichttp/libevent/EventIOProcessor.cpp normal x86_64 c++ com.apple.compilers.llvm.clang.1_0.compiler    cd /Users/sradomski/Documents/TK/Code/uscxml    setenv LANG en_US.US-ASCII    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -x c++ -arch x86_64 -fmessage-length=0 -Wno-trigraphs -fpascal-strings -O0 -Wno-missing-field-initializers -Wno-missing-prototypes -Wno-return-type -Wno-non-virtual-dtor -Wno-overloaded-virtual -Wno-exit-time-destructors -Wformat -Wno-missing-braces -Wparentheses -Wswitch -Wno-unused-function -Wno-unused-label -Wno-unused-parameter -Wno-unused-variable -Wunused-value -Wno-uninitialized -Wno-unknown-pragmas -Wno-shadow -Wno-four-char-constants -Wno-conversion -Wno-sign-compare -Wno-shorten-64-to-32 -Wno-newline-eof -Wc++11-extensions "-DCMAKE_INTDIR=\"Debug\"" -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.7.sdk -fasm-blocks -Wdeprecated-declarations -Winvalid-offsetof -mmacosx-version-min=10.7 -g -Wno-sign-conversion -I/Users/sradomski/Documents/TK/Code/uscxml/build/xcode/Debug/include -I/opt/local/include/libxml2 -I/Users/sradomski/Documents/TK/Code/glog/src -I/usr/local/include/arabica -I/opt/local/include -I/Users/sradomski/Documents/TK/Code/libevent/include -I/Users/sradomski/Documents/TK/Code/v8/include -I/Users/sradomski/Documents/TK/Code/uscxml/src -I/Users/sradomski/Documents/TK/Code/uscxml/build/xcode/uscxml.build/Debug/uscxml.build/DerivedSources/x86_64 -I/Users/sradomski/Documents/TK/Code/uscxml/build/xcode/uscxml.build/Debug/uscxml.build/DerivedSources -Wmost -Wno-four-char-constants -Wno-unknown-pragmas -F/Users/sradomski/Documents/TK/Code/uscxml/build/xcode/Debug -MMD -MT dependencies -MF /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/uscxml.build/Debug/uscxml.build/Objects-normal/x86_64/EventIOProcessor.d --serialize-diagnostics /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/uscxml.build/Debug/uscxml.build/Objects-normal/x86_64/EventIOProcessor.dia -c /Users/sradomski/Documents/TK/Code/uscxml/src/uscxml/ioprocessor/basichttp/libevent/EventIOProcessor.cpp -o /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/uscxml.build/Debug/uscxml.build/Objects-normal/x86_64/EventIOProcessor.o36"96846EA7-1654-4216-B732-C8D8F5DCB083-
+
+CCompileC build/xcode/uscxml.build/Debug/uscxml.build/Objects-normal/x86_64/Factory.o /Users/sradomski/Documents/TK/Code/uscxml/src/uscxml/Factory.cpp normal x86_64 c++ com.apple.compilers.llvm.clang.1_0.compiler
+s369256070.225820
+e369256075.625062
+r1
+xCompileC
+xbuild/xcode/uscxml.build/Debug/uscxml.build/Objects-normal/x86_64/Factory.o
+x/Users/sradomski/Documents/TK/Code/uscxml/src/uscxml/Factory.cpp
+xnormal
+xx86_64
+xc++
+xcom.apple.compilers.llvm.clang.1_0.compiler
+oIn file included from /Users/sradomski/Documents/TK/Code/uscxml/src/uscxml/Factory.cpp:1:
+oIn file included from /Users/sradomski/Documents/TK/Code/uscxml/src/uscxml/Factory.h:4:
+oIn file included from /Users/sradomski/Documents/TK/Code/uscxml/src/uscxml/Message.h:8:
+oIn file included from /usr/local/include/arabica/DOM/Document.hpp:10:
+oIn file included from /usr/local/include/arabica/DOM/Node.hpp:9:
+oIn file included from /usr/local/include/arabica/Arabica/StringAdaptor.hpp:7:
+o/usr/local/include/arabica/convert/utf8ucs2codecvt.hpp:58:15: warning: 'Arabica::convert::utf8ucs2codecvt::do_length' hides overloaded virtual function [-Woverloaded-virtual]
+o  virtual int do_length(const std::mbstate_t&,
+o              ^
+o/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.7.sdk/usr/include/c++/4.2.1/bits/codecvt.h:442:11: note: hidden overloaded virtual function 'std::codecvt<wchar_t, char, __mbstate_t>::do_length' declared here
+o      int do_length(state_type&, const extern_type* __from,
+o          ^
+o1 warning generated.
+lSLF05#21%IDEActivityLogSection1@2#32"com.apple.dt.IDE.BuildLogSection72"Compile /Users/sradomski/Documents/TK/Code/uscxml/src/uscxml/Factory.cppcff539866602b641^0f27a08b6602b641^-1063"In file included from /Users/sradomski/Documents/TK/Code/uscxml/src/uscxml/Factory.cpp:1:In file included from /Users/sradomski/Documents/TK/Code/uscxml/src/uscxml/Factory.h:4:In file included from /Users/sradomski/Documents/TK/Code/uscxml/src/uscxml/Message.h:8:In file included from /usr/local/include/arabica/DOM/Document.hpp:10:In file included from /usr/local/include/arabica/DOM/Node.hpp:9:In file included from /usr/local/include/arabica/Arabica/StringAdaptor.hpp:7:/usr/local/include/arabica/convert/utf8ucs2codecvt.hpp:58:15: warning: 'Arabica::convert::utf8ucs2codecvt::do_length' hides overloaded virtual function [-Woverloaded-virtual]  virtual int do_length(const std::mbstate_t&,              ^/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.7.sdk/usr/include/c++/4.2.1/bits/codecvt.h:442:11: note: hidden overloaded virtual function 'std::codecvt<wchar_t, char, __mbstate_t>::do_length' declared here      int do_length(state_type&, const extern_type* __from,          ^1 warning generated.-0#0#0#-19%DVTDocumentLocation2@80"file://localhost/Users/sradomski/Documents/TK/Code/uscxml/src/uscxml/Factory.cpp0000000000000000^2280"CompileC build/xcode/uscxml.build/Debug/uscxml.build/Objects-normal/x86_64/Factory.o src/uscxml/Factory.cpp normal x86_64 c++ com.apple.compilers.llvm.clang.1_0.compiler    cd /Users/sradomski/Documents/TK/Code/uscxml    setenv LANG en_US.US-ASCII    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -x c++ -arch x86_64 -fmessage-length=0 -Wno-trigraphs -fpascal-strings -O0 -Wno-missing-field-initializers -Wno-missing-prototypes -Wno-return-type -Wno-non-virtual-dtor -Wno-overloaded-virtual -Wno-exit-time-destructors -Wformat -Wno-missing-braces -Wparentheses -Wswitch -Wno-unused-function -Wno-unused-label -Wno-unused-parameter -Wno-unused-variable -Wunused-value -Wno-uninitialized -Wno-unknown-pragmas -Wno-shadow -Wno-four-char-constants -Wno-conversion -Wno-sign-compare -Wno-shorten-64-to-32 -Wno-newline-eof -Wc++11-extensions "-DCMAKE_INTDIR=\"Debug\"" -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.7.sdk -fasm-blocks -Wdeprecated-declarations -Winvalid-offsetof -mmacosx-version-min=10.7 -g -Wno-sign-conversion -I/Users/sradomski/Documents/TK/Code/uscxml/build/xcode/Debug/include -I/opt/local/include/libxml2 -I/Users/sradomski/Documents/TK/Code/glog/src -I/usr/local/include/arabica -I/opt/local/include -I/Users/sradomski/Documents/TK/Code/libevent/include -I/Users/sradomski/Documents/TK/Code/v8/include -I/Users/sradomski/Documents/TK/Code/uscxml/src -I/Users/sradomski/Documents/TK/Code/uscxml/build/xcode/uscxml.build/Debug/uscxml.build/DerivedSources/x86_64 -I/Users/sradomski/Documents/TK/Code/uscxml/build/xcode/uscxml.build/Debug/uscxml.build/DerivedSources -Wmost -Wno-four-char-constants -Wno-unknown-pragmas -F/Users/sradomski/Documents/TK/Code/uscxml/build/xcode/Debug -MMD -MT dependencies -MF /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/uscxml.build/Debug/uscxml.build/Objects-normal/x86_64/Factory.d --serialize-diagnostics /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/uscxml.build/Debug/uscxml.build/Objects-normal/x86_64/Factory.dia -c /Users/sradomski/Documents/TK/Code/uscxml/src/uscxml/Factory.cpp -o /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/uscxml.build/Debug/uscxml.build/Objects-normal/x86_64/Factory.o36"83A1CEF9-750F-49E1-A83C-4E95C6B61A06-
+
+CCompileC build/xcode/uscxml.build/Debug/uscxml.build/Objects-normal/x86_64/Interpreter.o /Users/sradomski/Documents/TK/Code/uscxml/src/uscxml/Interpreter.cpp normal x86_64 c++ com.apple.compilers.llvm.clang.1_0.compiler
+s369256070.352974
+e369256076.531156
+r0
+xCompileC
+xbuild/xcode/uscxml.build/Debug/uscxml.build/Objects-normal/x86_64/Interpreter.o
+x/Users/sradomski/Documents/TK/Code/uscxml/src/uscxml/Interpreter.cpp
+xnormal
+xx86_64
+xc++
+xcom.apple.compilers.llvm.clang.1_0.compiler
+oIn file included from /Users/sradomski/Documents/TK/Code/uscxml/src/uscxml/Interpreter.cpp:1:
+oIn file included from /Users/sradomski/Documents/TK/Code/uscxml/src/uscxml/Interpreter.h:11:
+oIn file included from /usr/local/include/arabica/XPath/XPath.hpp:4:
+oIn file included from /usr/local/include/arabica/XPath/impl/xpath_parser.hpp:19:
+oIn file included from /usr/local/include/arabica/XPath/impl/xpath_object.hpp:7:
+oIn file included from /usr/local/include/arabica/DOM/Node.hpp:9:
+oIn file included from /usr/local/include/arabica/Arabica/StringAdaptor.hpp:7:
+o/usr/local/include/arabica/convert/utf8ucs2codecvt.hpp:58:15: warning: 'Arabica::convert::utf8ucs2codecvt::do_length' hides overloaded virtual function [-Woverloaded-virtual]
+o  virtual int do_length(const std::mbstate_t&,
+o              ^
+o/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.7.sdk/usr/include/c++/4.2.1/bits/codecvt.h:442:11: note: hidden overloaded virtual function 'std::codecvt<wchar_t, char, __mbstate_t>::do_length' declared here
+o      int do_length(state_type&, const extern_type* __from,
+o          ^
+o/Users/sradomski/Documents/TK/Code/uscxml/src/uscxml/Interpreter.cpp:1453:114: error: no member named 'getURL' in 'uscxml::IOProcessor'
+o        _dataModel->assign("_ioprocessors['" + ioProcIter->first + "']", "'" + _ioProcessors[ioProcIter->first]->getURL() + "'");
+o                                                                               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  ^
+oIn file included from /Users/sradomski/Documents/TK/Code/uscxml/src/uscxml/Interpreter.cpp:1:
+oIn file included from /Users/sradomski/Documents/TK/Code/uscxml/src/uscxml/Interpreter.h:11:
+oIn file included from /usr/local/include/arabica/XPath/XPath.hpp:4:
+oIn file included from /usr/local/include/arabica/XPath/impl/xpath_parser.hpp:19:
+oIn file included from /usr/local/include/arabica/XPath/impl/xpath_object.hpp:17:
+oIn file included from /usr/local/include/arabica/XPath/impl/xpath_axis_enumerator.hpp:7:
+oIn file included from /usr/local/include/arabica/XPath/impl/xpath_namespace_node.hpp:8:
+o/usr/local/include/arabica/DOM/Simple/DocumentImpl.hpp:397:25: warning: equality comparison with extraneous parentheses [-Wparentheses-equality]
+o      if((documentType_ == oldChild))
+o          ~~~~~~~~~~~~~~^~~~~~~~~~~
+o/usr/local/include/arabica/DOM/Simple/NamedNodeMapImpl.hpp:88:20: note: in instantiation of member function 'Arabica::SimpleDOM::DocumentImpl<std::basic_string<char>, Arabica::default_string_adaptor<std::string> >::removeChild' requested here
+o        ownerDoc_->addRef();
+o                   ^
+o/usr/local/include/arabica/DOM/Simple/DocumentTypeImpl.hpp:34:7: note: in instantiation of member function 'Arabica::SimpleDOM::NamedNodeMapImpl<std::basic_string<char>, Arabica::default_string_adaptor<std::string> >::addRef' requested here
+o      entities_(0),
+o      ^
+o/usr/local/include/arabica/DOM/Simple/DOMImplementation.hpp:61:60: note: in instantiation of member function 'Arabica::SimpleDOM::DocumentTypeImpl<std::basic_string<char>, Arabica::default_string_adaptor<std::string> >::DocumentTypeImpl' requested here
+o      DocumentTypeImpl<stringT, string_adaptorT>* di = new DocumentTypeImpl<stringT, string_adaptorT>(qualifiedName, publicId, systemId);
+o                                                           ^
+o/usr/local/include/arabica/DOM/Simple/DOMImplementation.hpp:23:62: note: in instantiation of member function 'Arabica::SimpleDOM::DOMImplementationImpl<std::basic_string<char>, Arabica::default_string_adaptor<std::string> >::createDocumentType' requested here
+o      static DOMImplementationImpl<stringT, string_adaptorT> domImpl;
+o                                                             ^
+o/usr/local/include/arabica/DOM/SAX2DOM/SAX2DOM.hpp:102:126: note: in instantiation of member function 'Arabica::SimpleDOM::DOMImplementation<std::basic_string<char>, Arabica::default_string_adaptor<std::string> >::getDOMImplementation' requested here
+o      DOM::DOMImplementation<stringT, string_adaptorT> di = Arabica::SimpleDOM::DOMImplementation<stringT, string_adaptorT>::getDOMImplementation();
+o                                                                                                                             ^
+o/Users/sradomski/Documents/TK/Code/uscxml/src/uscxml/Interpreter.cpp:36:17: note: in instantiation of member function 'Arabica::SAX2DOM::Parser<std::basic_string<char>, Arabica::nil_t, Arabica::nil_t>::parse' requested here
+o  if(!domParser.parse(inputSource) || !domParser.getDocument().hasChildNodes()) {
+o                ^
+o/usr/local/include/arabica/DOM/Simple/DocumentImpl.hpp:397:25: note: remove extraneous parentheses around the comparison to silence this warning
+o      if((documentType_ == oldChild))
+o         ~              ^          ~
+o/usr/local/include/arabica/DOM/Simple/DocumentImpl.hpp:397:25: note: use '=' to turn this equality comparison into an assignment
+o      if((documentType_ == oldChild))
+o                        ^~
+o                        =
+oIn file included from /Users/sradomski/Documents/TK/Code/uscxml/src/uscxml/Interpreter.cpp:1:
+oIn file included from /Users/sradomski/Documents/TK/Code/uscxml/src/uscxml/Interpreter.h:11:
+oIn file included from /usr/local/include/arabica/XPath/XPath.hpp:4:
+oIn file included from /usr/local/include/arabica/XPath/impl/xpath_parser.hpp:27:
+oIn file included from /usr/local/include/arabica/XPath/impl/xpath_match.hpp:6:
+o/usr/local/include/arabica/XPath/impl/xpath_value.hpp:32:16: warning: 'Arabica::XPath::Value_base<std::basic_string<char>, Arabica::default_string_adaptor<std::string> >::evaluateAsBool' hides overloaded virtual function [-Woverloaded-virtual]
+o  virtual bool evaluateAsBool(const DOM::Node<string_type, string_adaptor>& /* context */) { return asBool(); }
+o               ^
+o/usr/local/include/arabica/XPath/impl/xpath_value.hpp:157:29: note: in instantiation of template class 'Arabica::XPath::Value_base<std::basic_string<char>, Arabica::default_string_adaptor<std::string>>' requested here
+oclass NodeSetValue : public Value_base<string_type, string_adaptor>
+o                            ^
+o/usr/local/include/arabica/XPath/impl/xpath_step.hpp:188:56: note: in instantiation of template class 'Arabica::XPath::NodeSetValue<std::basic_string<char>, Arabica::default_string_adaptor<std::string>>' requested here
+o    return XPathValue<string_type, string_adaptor>(new NodeSetValue<string_type, string_adaptor>(baseT::applyPredicates(ns, executionContext)));
+o                                                       ^
+o/usr/local/include/arabica/XPath/impl/xpath_step.hpp:242:16: note: in instantiation of member function 'Arabica::XPath::impl::ExprStepExpression<std::basic_string<char>, Arabica::default_string_adaptor<std::string> >::evaluate' requested here
+o    return new ExprStepExpression<string_type, string_adaptor>(step, preds);
+o               ^
+o/usr/local/include/arabica/XPath/impl/xpath_parser.hpp:755:73: note: in instantiation of member function 'Arabica::XPath::impl::StepFactory<std::basic_string<char>, Arabica::default_string_adaptor<std::string> >::createFilter' requested here
+o        steps.push_back(impl::StepFactory<string_type, string_adaptor>::createFilter(c, context));
+o                                                                        ^
+o/usr/local/include/arabica/XPath/impl/xpath_parser.hpp:548:70: note: in instantiation of member function 'Arabica::XPath::XPath<std::basic_string<char>, Arabica::default_string_adaptor<std::string> >::createStepList' requested here
+o  return new impl::AbsoluteLocationPath<string_type, string_adaptor>(createStepList(i->children.begin(), i->children.end(), context));
+o                                                                     ^
+o/usr/local/include/arabica/XPath/impl/xpath_parser.hpp:311:46: note: in instantiation of member function 'Arabica::XPath::XPath<std::basic_string<char>, Arabica::default_string_adaptor<std::string> >::createAbsoluteLocationPath' requested here
+o    factory[impl::AbsoluteLocationPath_id] = createAbsoluteLocationPath;
+o                                             ^
+o/usr/local/include/arabica/XPath/impl/xpath_parser.hpp:285:41: note: in instantiation of member function 'Arabica::XPath::XPath<std::basic_string<char>, Arabica::default_string_adaptor<std::string> >::init_createFunctions' requested here
+o    static std::map<int, compileFn> f = init_createFunctions();
+o                                        ^
+o/usr/local/include/arabica/XPath/impl/xpath_parser.hpp:81:51: note: in instantiation of member function 'Arabica::XPath::XPath<std::basic_string<char>, Arabica::default_string_adaptor<std::string> >::expression_factory' requested here
+o    return do_compile(xpath, &XPath::parse_xpath, expression_factory());
+o                                                  ^
+o/usr/local/include/arabica/XPath/impl/xpath_parser.hpp:104:12: note: in instantiation of member function 'Arabica::XPath::XPath<std::basic_string<char>, Arabica::default_string_adaptor<std::string> >::compile' requested here
+o    return compile(xpath).evaluate(context, executionContext);
+o           ^
+o/Users/sradomski/Documents/TK/Code/uscxml/src/uscxml/Interpreter.cpp:116:51: note: in instantiation of member function 'Arabica::XPath::XPath<std::basic_string<char>, Arabica::default_string_adaptor<std::string> >::evaluate' requested here
+o  NodeSet<std::string> globalScriptElems = _xpath.evaluate("/" + _nsPrefix + "scxml/" + _nsPrefix + "script", _doc).asNodeSet();
+o                                                  ^
+o/usr/local/include/arabica/XPath/impl/xpath_expression.hpp:53:16: note: hidden overloaded virtual function 'Arabica::XPath::XPathExpression_impl<std::basic_string<char>, Arabica::default_string_adaptor<std::string> >::evaluateAsBool' declared here
+o  virtual bool evaluateAsBool(const DOM::Node<string_type, string_adaptor>& context) const 
+o               ^
+oIn file included from /Users/sradomski/Documents/TK/Code/uscxml/src/uscxml/Interpreter.cpp:1:
+oIn file included from /Users/sradomski/Documents/TK/Code/uscxml/src/uscxml/Interpreter.h:11:
+oIn file included from /usr/local/include/arabica/XPath/XPath.hpp:4:
+oIn file included from /usr/local/include/arabica/XPath/impl/xpath_parser.hpp:27:
+oIn file included from /usr/local/include/arabica/XPath/impl/xpath_match.hpp:6:
+o/usr/local/include/arabica/XPath/impl/xpath_value.hpp:33:18: warning: 'Arabica::XPath::Value_base<std::basic_string<char>, Arabica::default_string_adaptor<std::string> >::evaluateAsNumber' hides overloaded virtual function [-Woverloaded-virtual]
+o  virtual double evaluateAsNumber(const DOM::Node<string_type, string_adaptor>& /* context */) { return asNumber(); }
+o                 ^
+o/usr/local/include/arabica/XPath/impl/xpath_expression.hpp:57:18: note: hidden overloaded virtual function 'Arabica::XPath::XPathExpression_impl<std::basic_string<char>, Arabica::default_string_adaptor<std::string> >::evaluateAsNumber' declared here
+o  virtual double evaluateAsNumber(const DOM::Node<string_type, string_adaptor>& context) const 
+o                 ^
+oIn file included from /Users/sradomski/Documents/TK/Code/uscxml/src/uscxml/Interpreter.cpp:1:
+oIn file included from /Users/sradomski/Documents/TK/Code/uscxml/src/uscxml/Interpreter.h:11:
+oIn file included from /usr/local/include/arabica/XPath/XPath.hpp:4:
+oIn file included from /usr/local/include/arabica/XPath/impl/xpath_parser.hpp:27:
+oIn file included from /usr/local/include/arabica/XPath/impl/xpath_match.hpp:6:
+o/usr/local/include/arabica/XPath/impl/xpath_value.hpp:34:23: warning: 'Arabica::XPath::Value_base<std::basic_string<char>, Arabica::default_string_adaptor<std::string> >::evaluateAsString' hides overloaded virtual function [-Woverloaded-virtual]
+o  virtual string_type evaluateAsString(const DOM::Node<string_type, string_adaptor>& /* context */) { return asString(); }
+o                      ^
+o/usr/local/include/arabica/XPath/impl/xpath_expression.hpp:61:23: note: hidden overloaded virtual function 'Arabica::XPath::XPathExpression_impl<std::basic_string<char>, Arabica::default_string_adaptor<std::string> >::evaluateAsString' declared here
+o  virtual string_type evaluateAsString(const DOM::Node<string_type, string_adaptor>& context) const 
+o                      ^
+oIn file included from /Users/sradomski/Documents/TK/Code/uscxml/src/uscxml/Interpreter.cpp:1:
+oIn file included from /Users/sradomski/Documents/TK/Code/uscxml/src/uscxml/Interpreter.h:11:
+oIn file included from /usr/local/include/arabica/XPath/XPath.hpp:4:
+oIn file included from /usr/local/include/arabica/XPath/impl/xpath_parser.hpp:27:
+oIn file included from /usr/local/include/arabica/XPath/impl/xpath_match.hpp:6:
+o/usr/local/include/arabica/XPath/impl/xpath_value.hpp:35:48: warning: 'Arabica::XPath::Value_base<std::basic_string<char>, Arabica::default_string_adaptor<std::string> >::evaluateAsNodeSet' hides overloaded virtual function [-Woverloaded-virtual]
+o  virtual NodeSet<string_type, string_adaptor> evaluateAsNodeSet(const DOM::Node<string_type, string_adaptor>& /* context */) { return asNodeSet(); }
+o                                               ^
+o/usr/local/include/arabica/XPath/impl/xpath_expression.hpp:65:48: note: hidden overloaded virtual function 'Arabica::XPath::XPathExpression_impl<std::basic_string<char>, Arabica::default_string_adaptor<std::string> >::evaluateAsNodeSet' declared here
+o  virtual NodeSet<string_type, string_adaptor> evaluateAsNodeSet(const DOM::Node<string_type, string_adaptor>& context) const 
+o                                               ^
+o6 warnings and 1 error generated.
+lSLF05#21%IDEActivityLogSection1@2#32"com.apple.dt.IDE.BuildLogSection76"Compile /Users/sradomski/Documents/TK/Code/uscxml/src/uscxml/Interpreter.cpp57945a866602b641^16fb878c6602b641^-13544"In file included from /Users/sradomski/Documents/TK/Code/uscxml/src/uscxml/Interpreter.cpp:1:In file included from /Users/sradomski/Documents/TK/Code/uscxml/src/uscxml/Interpreter.h:11:In file included from /usr/local/include/arabica/XPath/XPath.hpp:4:In file included from /usr/local/include/arabica/XPath/impl/xpath_parser.hpp:19:In file included from /usr/local/include/arabica/XPath/impl/xpath_object.hpp:7:In file included from /usr/local/include/arabica/DOM/Node.hpp:9:In file included from /usr/local/include/arabica/Arabica/StringAdaptor.hpp:7:/usr/local/include/arabica/convert/utf8ucs2codecvt.hpp:58:15: warning: 'Arabica::convert::utf8ucs2codecvt::do_length' hides overloaded virtual function [-Woverloaded-virtual]  virtual int do_length(const std::mbstate_t&,              ^/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.7.sdk/usr/include/c++/4.2.1/bits/codecvt.h:442:11: note: hidden overloaded virtual function 'std::codecvt<wchar_t, char, __mbstate_t>::do_length' declared here      int do_length(state_type&, const extern_type* __from,          ^/Users/sradomski/Documents/TK/Code/uscxml/src/uscxml/Interpreter.cpp:1453:114: error: no member named 'getURL' in 'uscxml::IOProcessor'        _dataModel->assign("_ioprocessors['" + ioProcIter->first + "']", "'" + _ioProcessors[ioProcIter->first]->getURL() + "'");                                                                               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  ^In file included from /Users/sradomski/Documents/TK/Code/uscxml/src/uscxml/Interpreter.cpp:1:In file included from /Users/sradomski/Documents/TK/Code/uscxml/src/uscxml/Interpreter.h:11:In file included from /usr/local/include/arabica/XPath/XPath.hpp:4:In file included from /usr/local/include/arabica/XPath/impl/xpath_parser.hpp:19:In file included from /usr/local/include/arabica/XPath/impl/xpath_object.hpp:17:In file included from /usr/local/include/arabica/XPath/impl/xpath_axis_enumerator.hpp:7:In file included from /usr/local/include/arabica/XPath/impl/xpath_namespace_node.hpp:8:/usr/local/include/arabica/DOM/Simple/DocumentImpl.hpp:397:25: warning: equality comparison with extraneous parentheses [-Wparentheses-equality]      if((documentType_ == oldChild))          ~~~~~~~~~~~~~~^~~~~~~~~~~/usr/local/include/arabica/DOM/Simple/NamedNodeMapImpl.hpp:88:20: note: in instantiation of member function 'Arabica::SimpleDOM::DocumentImpl<std::basic_string<char>, Arabica::default_string_adaptor<std::string> >::removeChild' requested here        ownerDoc_->addRef();                   ^/usr/local/include/arabica/DOM/Simple/DocumentTypeImpl.hpp:34:7: note: in instantiation of member function 'Arabica::SimpleDOM::NamedNodeMapImpl<std::basic_string<char>, Arabica::default_string_adaptor<std::string> >::addRef' requested here      entities_(0),      ^/usr/local/include/arabica/DOM/Simple/DOMImplementation.hpp:61:60: note: in instantiation of member function 'Arabica::SimpleDOM::DocumentTypeImpl<std::basic_string<char>, Arabica::default_string_adaptor<std::string> >::DocumentTypeImpl' requested here      DocumentTypeImpl<stringT, string_adaptorT>* di = new DocumentTypeImpl<stringT, string_adaptorT>(qualifiedName, publicId, systemId);                                                           ^/usr/local/include/arabica/DOM/Simple/DOMImplementation.hpp:23:62: note: in instantiation of member function 'Arabica::SimpleDOM::DOMImplementationImpl<std::basic_string<char>, Arabica::default_string_adaptor<std::string> >::createDocumentType' requested here      static DOMImplementationImpl<stringT, string_adaptorT> domImpl;                                                             ^/usr/local/include/arabica/DOM/SAX2DOM/SAX2DOM.hpp:102:126: note: in instantiation of member function 'Arabica::SimpleDOM::DOMImplementation<std::basic_string<char>, Arabica::default_string_adaptor<std::string> >::getDOMImplementation' requested here      DOM::DOMImplementation<stringT, string_adaptorT> di = Arabica::SimpleDOM::DOMImplementation<stringT, string_adaptorT>::getDOMImplementation();                                                                                                                             ^/Users/sradomski/Documents/TK/Code/uscxml/src/uscxml/Interpreter.cpp:36:17: note: in instantiation of member function 'Arabica::SAX2DOM::Parser<std::basic_string<char>, Arabica::nil_t, Arabica::nil_t>::parse' requested here  if(!domParser.parse(inputSource) || !domParser.getDocument().hasChildNodes()) {                ^/usr/local/include/arabica/DOM/Simple/DocumentImpl.hpp:397:25: note: remove extraneous parentheses around the comparison to silence this warning      if((documentType_ == oldChild))         ~              ^          ~/usr/local/include/arabica/DOM/Simple/DocumentImpl.hpp:397:25: note: use '=' to turn this equality comparison into an assignment      if((documentType_ == oldChild))                        ^~                        =In file included from /Users/sradomski/Documents/TK/Code/uscxml/src/uscxml/Interpreter.cpp:1:In file included from /Users/sradomski/Documents/TK/Code/uscxml/src/uscxml/Interpreter.h:11:In file included from /usr/local/include/arabica/XPath/XPath.hpp:4:In file included from /usr/local/include/arabica/XPath/impl/xpath_parser.hpp:27:In file included from /usr/local/include/arabica/XPath/impl/xpath_match.hpp:6:/usr/local/include/arabica/XPath/impl/xpath_value.hpp:32:16: warning: 'Arabica::XPath::Value_base<std::basic_string<char>, Arabica::default_string_adaptor<std::string> >::evaluateAsBool' hides overloaded virtual function [-Woverloaded-virtual]  virtual bool evaluateAsBool(const DOM::Node<string_type, string_adaptor>& /* context */) { return asBool(); }               ^/usr/local/include/arabica/XPath/impl/xpath_value.hpp:157:29: note: in instantiation of template class 'Arabica::XPath::Value_base<std::basic_string<char>, Arabica::default_string_adaptor<std::string>>' requested hereclass NodeSetValue : public Value_base<string_type, string_adaptor>                            ^/usr/local/include/arabica/XPath/impl/xpath_step.hpp:188:56: note: in instantiation of template class 'Arabica::XPath::NodeSetValue<std::basic_string<char>, Arabica::default_string_adaptor<std::string>>' requested here    return XPathValue<string_type, string_adaptor>(new NodeSetValue<string_type, string_adaptor>(baseT::applyPredicates(ns, executionContext)));                                                       ^/usr/local/include/arabica/XPath/impl/xpath_step.hpp:242:16: note: in instantiation of member function 'Arabica::XPath::impl::ExprStepExpression<std::basic_string<char>, Arabica::default_string_adaptor<std::string> >::evaluate' requested here    return new ExprStepExpression<string_type, string_adaptor>(step, preds);               ^/usr/local/include/arabica/XPath/impl/xpath_parser.hpp:755:73: note: in instantiation of member function 'Arabica::XPath::impl::StepFactory<std::basic_string<char>, Arabica::default_string_adaptor<std::string> >::createFilter' requested here        steps.push_back(impl::StepFactory<string_type, string_adaptor>::createFilter(c, context));                                                                        ^/usr/local/include/arabica/XPath/impl/xpath_parser.hpp:548:70: note: in instantiation of member function 'Arabica::XPath::XPath<std::basic_string<char>, Arabica::default_string_adaptor<std::string> >::createStepList' requested here  return new impl::AbsoluteLocationPath<string_type, string_adaptor>(createStepList(i->children.begin(), i->children.end(), context));                                                                     ^/usr/local/include/arabica/XPath/impl/xpath_parser.hpp:311:46: note: in instantiation of member function 'Arabica::XPath::XPath<std::basic_string<char>, Arabica::default_string_adaptor<std::string> >::createAbsoluteLocationPath' requested here    factory[impl::AbsoluteLocationPath_id] = createAbsoluteLocationPath;                                             ^/usr/local/include/arabica/XPath/impl/xpath_parser.hpp:285:41: note: in instantiation of member function 'Arabica::XPath::XPath<std::basic_string<char>, Arabica::default_string_adaptor<std::string> >::init_createFunctions' requested here    static std::map<int, compileFn> f = init_createFunctions();                                        ^/usr/local/include/arabica/XPath/impl/xpath_parser.hpp:81:51: note: in instantiation of member function 'Arabica::XPath::XPath<std::basic_string<char>, Arabica::default_string_adaptor<std::string> >::expression_factory' requested here    return do_compile(xpath, &XPath::parse_xpath, expression_factory());                                                  ^/usr/local/include/arabica/XPath/impl/xpath_parser.hpp:104:12: note: in instantiation of member function 'Arabica::XPath::XPath<std::basic_string<char>, Arabica::default_string_adaptor<std::string> >::compile' requested here    return compile(xpath).evaluate(context, executionContext);           ^/Users/sradomski/Documents/TK/Code/uscxml/src/uscxml/Interpreter.cpp:116:51: note: in instantiation of member function 'Arabica::XPath::XPath<std::basic_string<char>, Arabica::default_string_adaptor<std::string> >::evaluate' requested here  NodeSet<std::string> globalScriptElems = _xpath.evaluate("/" + _nsPrefix + "scxml/" + _nsPrefix + "script", _doc).asNodeSet();                                                  ^/usr/local/include/arabica/XPath/impl/xpath_expression.hpp:53:16: note: hidden overloaded virtual function 'Arabica::XPath::XPathExpression_impl<std::basic_string<char>, Arabica::default_string_adaptor<std::string> >::evaluateAsBool' declared here  virtual bool evaluateAsBool(const DOM::Node<string_type, string_adaptor>& context) const                ^In file included from /Users/sradomski/Documents/TK/Code/uscxml/src/uscxml/Interpreter.cpp:1:In file included from /Users/sradomski/Documents/TK/Code/uscxml/src/uscxml/Interpreter.h:11:In file included from /usr/local/include/arabica/XPath/XPath.hpp:4:In file included from /usr/local/include/arabica/XPath/impl/xpath_parser.hpp:27:In file included from /usr/local/include/arabica/XPath/impl/xpath_match.hpp:6:/usr/local/include/arabica/XPath/impl/xpath_value.hpp:33:18: warning: 'Arabica::XPath::Value_base<std::basic_string<char>, Arabica::default_string_adaptor<std::string> >::evaluateAsNumber' hides overloaded virtual function [-Woverloaded-virtual]  virtual double evaluateAsNumber(const DOM::Node<string_type, string_adaptor>& /* context */) { return asNumber(); }                 ^/usr/local/include/arabica/XPath/impl/xpath_expression.hpp:57:18: note: hidden overloaded virtual function 'Arabica::XPath::XPathExpression_impl<std::basic_string<char>, Arabica::default_string_adaptor<std::string> >::evaluateAsNumber' declared here  virtual double evaluateAsNumber(const DOM::Node<string_type, string_adaptor>& context) const                  ^In file included from /Users/sradomski/Documents/TK/Code/uscxml/src/uscxml/Interpreter.cpp:1:In file included from /Users/sradomski/Documents/TK/Code/uscxml/src/uscxml/Interpreter.h:11:In file included from /usr/local/include/arabica/XPath/XPath.hpp:4:In file included from /usr/local/include/arabica/XPath/impl/xpath_parser.hpp:27:In file included from /usr/local/include/arabica/XPath/impl/xpath_match.hpp:6:/usr/local/include/arabica/XPath/impl/xpath_value.hpp:34:23: warning: 'Arabica::XPath::Value_base<std::basic_string<char>, Arabica::default_string_adaptor<std::string> >::evaluateAsString' hides overloaded virtual function [-Woverloaded-virtual]  virtual string_type evaluateAsString(const DOM::Node<string_type, string_adaptor>& /* context */) { return asString(); }                      ^/usr/local/include/arabica/XPath/impl/xpath_expression.hpp:61:23: note: hidden overloaded virtual function 'Arabica::XPath::XPathExpression_impl<std::basic_string<char>, Arabica::default_string_adaptor<std::string> >::evaluateAsString' declared here  virtual string_type evaluateAsString(const DOM::Node<string_type, string_adaptor>& context) const                       ^In file included from /Users/sradomski/Documents/TK/Code/uscxml/src/uscxml/Interpreter.cpp:1:In file included from /Users/sradomski/Documents/TK/Code/uscxml/src/uscxml/Interpreter.h:11:In file included from /usr/local/include/arabica/XPath/XPath.hpp:4:In file included from /usr/local/include/arabica/XPath/impl/xpath_parser.hpp:27:In file included from /usr/local/include/arabica/XPath/impl/xpath_match.hpp:6:/usr/local/include/arabica/XPath/impl/xpath_value.hpp:35:48: warning: 'Arabica::XPath::Value_base<std::basic_string<char>, Arabica::default_string_adaptor<std::string> >::evaluateAsNodeSet' hides overloaded virtual function [-Woverloaded-virtual]  virtual NodeSet<string_type, string_adaptor> evaluateAsNodeSet(const DOM::Node<string_type, string_adaptor>& /* context */) { return asNodeSet(); }                                               ^/usr/local/include/arabica/XPath/impl/xpath_expression.hpp:65:48: note: hidden overloaded virtual function 'Arabica::XPath::XPathExpression_impl<std::basic_string<char>, Arabica::default_string_adaptor<std::string> >::evaluateAsNodeSet' declared here  virtual NodeSet<string_type, string_adaptor> evaluateAsNodeSet(const DOM::Node<string_type, string_adaptor>& context) const                                                ^6 warnings and 1 error generated.-0#0#0#-19%DVTDocumentLocation2@84"file://localhost/Users/sradomski/Documents/TK/Code/uscxml/src/uscxml/Interpreter.cpp0000000000000000^2304"CompileC build/xcode/uscxml.build/Debug/uscxml.build/Objects-normal/x86_64/Interpreter.o src/uscxml/Interpreter.cpp normal x86_64 c++ com.apple.compilers.llvm.clang.1_0.compiler    cd /Users/sradomski/Documents/TK/Code/uscxml    setenv LANG en_US.US-ASCII    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -x c++ -arch x86_64 -fmessage-length=0 -Wno-trigraphs -fpascal-strings -O0 -Wno-missing-field-initializers -Wno-missing-prototypes -Wno-return-type -Wno-non-virtual-dtor -Wno-overloaded-virtual -Wno-exit-time-destructors -Wformat -Wno-missing-braces -Wparentheses -Wswitch -Wno-unused-function -Wno-unused-label -Wno-unused-parameter -Wno-unused-variable -Wunused-value -Wno-uninitialized -Wno-unknown-pragmas -Wno-shadow -Wno-four-char-constants -Wno-conversion -Wno-sign-compare -Wno-shorten-64-to-32 -Wno-newline-eof -Wc++11-extensions "-DCMAKE_INTDIR=\"Debug\"" -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.7.sdk -fasm-blocks -Wdeprecated-declarations -Winvalid-offsetof -mmacosx-version-min=10.7 -g -Wno-sign-conversion -I/Users/sradomski/Documents/TK/Code/uscxml/build/xcode/Debug/include -I/opt/local/include/libxml2 -I/Users/sradomski/Documents/TK/Code/glog/src -I/usr/local/include/arabica -I/opt/local/include -I/Users/sradomski/Documents/TK/Code/libevent/include -I/Users/sradomski/Documents/TK/Code/v8/include -I/Users/sradomski/Documents/TK/Code/uscxml/src -I/Users/sradomski/Documents/TK/Code/uscxml/build/xcode/uscxml.build/Debug/uscxml.build/DerivedSources/x86_64 -I/Users/sradomski/Documents/TK/Code/uscxml/build/xcode/uscxml.build/Debug/uscxml.build/DerivedSources -Wmost -Wno-four-char-constants -Wno-unknown-pragmas -F/Users/sradomski/Documents/TK/Code/uscxml/build/xcode/Debug -MMD -MT dependencies -MF /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/uscxml.build/Debug/uscxml.build/Objects-normal/x86_64/Interpreter.d --serialize-diagnostics /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/uscxml.build/Debug/uscxml.build/Objects-normal/x86_64/Interpreter.dia -c /Users/sradomski/Documents/TK/Code/uscxml/src/uscxml/Interpreter.cpp -o /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/uscxml.build/Debug/uscxml.build/Objects-normal/x86_64/Interpreter.o36"01B0BF24-2733-44ED-A18D-0C147E9A2431-
+
+CCompileC build/xcode/uscxml.build/Debug/uscxml.build/Objects-normal/x86_64/Message.o /Users/sradomski/Documents/TK/Code/uscxml/src/uscxml/Message.cpp normal x86_64 c++ com.apple.compilers.llvm.clang.1_0.compiler
+r0
+
+CCompileC build/xcode/uscxml.build/Debug/uscxml.build/Objects-normal/x86_64/V8DataModel.o /Users/sradomski/Documents/TK/Code/uscxml/src/uscxml/datamodel/ecmascript/v8/V8DataModel.cpp normal x86_64 c++ com.apple.compilers.llvm.clang.1_0.compiler
+s369256069.149423
+e369256075.322110
+r1
+xCompileC
+xbuild/xcode/uscxml.build/Debug/uscxml.build/Objects-normal/x86_64/V8DataModel.o
+x/Users/sradomski/Documents/TK/Code/uscxml/src/uscxml/datamodel/ecmascript/v8/V8DataModel.cpp
+xnormal
+xx86_64
+xc++
+xcom.apple.compilers.llvm.clang.1_0.compiler
+oIn file included from /Users/sradomski/Documents/TK/Code/uscxml/src/uscxml/datamodel/ecmascript/v8/V8DataModel.cpp:1:
+oIn file included from /Users/sradomski/Documents/TK/Code/uscxml/src/uscxml/datamodel/ecmascript/v8/V8DataModel.h:4:
+oIn file included from /Users/sradomski/Documents/TK/Code/uscxml/src/uscxml/Interpreter.h:11:
+oIn file included from /usr/local/include/arabica/XPath/XPath.hpp:4:
+oIn file included from /usr/local/include/arabica/XPath/impl/xpath_parser.hpp:19:
+oIn file included from /usr/local/include/arabica/XPath/impl/xpath_object.hpp:7:
+oIn file included from /usr/local/include/arabica/DOM/Node.hpp:9:
+oIn file included from /usr/local/include/arabica/Arabica/StringAdaptor.hpp:7:
+o/usr/local/include/arabica/convert/utf8ucs2codecvt.hpp:58:15: warning: 'Arabica::convert::utf8ucs2codecvt::do_length' hides overloaded virtual function [-Woverloaded-virtual]
+o  virtual int do_length(const std::mbstate_t&,
+o              ^
+o/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.7.sdk/usr/include/c++/4.2.1/bits/codecvt.h:442:11: note: hidden overloaded virtual function 'std::codecvt<wchar_t, char, __mbstate_t>::do_length' declared here
+o      int do_length(state_type&, const extern_type* __from,
+o          ^
+o1 warning generated.
+lSLF05#21%IDEActivityLogSection1@2#32"com.apple.dt.IDE.BuildLogSection100"Compile /Users/sradomski/Documents/TK/Code/uscxml/src/uscxml/datamodel/ecmascript/v8/V8DataModel.cpp356226856602b641^2aa7698b6602b641^-1283"In file included from /Users/sradomski/Documents/TK/Code/uscxml/src/uscxml/datamodel/ecmascript/v8/V8DataModel.cpp:1:In file included from /Users/sradomski/Documents/TK/Code/uscxml/src/uscxml/datamodel/ecmascript/v8/V8DataModel.h:4:In file included from /Users/sradomski/Documents/TK/Code/uscxml/src/uscxml/Interpreter.h:11:In file included from /usr/local/include/arabica/XPath/XPath.hpp:4:In file included from /usr/local/include/arabica/XPath/impl/xpath_parser.hpp:19:In file included from /usr/local/include/arabica/XPath/impl/xpath_object.hpp:7:In file included from /usr/local/include/arabica/DOM/Node.hpp:9:In file included from /usr/local/include/arabica/Arabica/StringAdaptor.hpp:7:/usr/local/include/arabica/convert/utf8ucs2codecvt.hpp:58:15: warning: 'Arabica::convert::utf8ucs2codecvt::do_length' hides overloaded virtual function [-Woverloaded-virtual]  virtual int do_length(const std::mbstate_t&,              ^/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.7.sdk/usr/include/c++/4.2.1/bits/codecvt.h:442:11: note: hidden overloaded virtual function 'std::codecvt<wchar_t, char, __mbstate_t>::do_length' declared here      int do_length(state_type&, const extern_type* __from,          ^1 warning generated.-0#0#0#-19%DVTDocumentLocation2@108"file://localhost/Users/sradomski/Documents/TK/Code/uscxml/src/uscxml/datamodel/ecmascript/v8/V8DataModel.cpp0000000000000000^2352"CompileC build/xcode/uscxml.build/Debug/uscxml.build/Objects-normal/x86_64/V8DataModel.o src/uscxml/datamodel/ecmascript/v8/V8DataModel.cpp normal x86_64 c++ com.apple.compilers.llvm.clang.1_0.compiler    cd /Users/sradomski/Documents/TK/Code/uscxml    setenv LANG en_US.US-ASCII    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -x c++ -arch x86_64 -fmessage-length=0 -Wno-trigraphs -fpascal-strings -O0 -Wno-missing-field-initializers -Wno-missing-prototypes -Wno-return-type -Wno-non-virtual-dtor -Wno-overloaded-virtual -Wno-exit-time-destructors -Wformat -Wno-missing-braces -Wparentheses -Wswitch -Wno-unused-function -Wno-unused-label -Wno-unused-parameter -Wno-unused-variable -Wunused-value -Wno-uninitialized -Wno-unknown-pragmas -Wno-shadow -Wno-four-char-constants -Wno-conversion -Wno-sign-compare -Wno-shorten-64-to-32 -Wno-newline-eof -Wc++11-extensions "-DCMAKE_INTDIR=\"Debug\"" -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.7.sdk -fasm-blocks -Wdeprecated-declarations -Winvalid-offsetof -mmacosx-version-min=10.7 -g -Wno-sign-conversion -I/Users/sradomski/Documents/TK/Code/uscxml/build/xcode/Debug/include -I/opt/local/include/libxml2 -I/Users/sradomski/Documents/TK/Code/glog/src -I/usr/local/include/arabica -I/opt/local/include -I/Users/sradomski/Documents/TK/Code/libevent/include -I/Users/sradomski/Documents/TK/Code/v8/include -I/Users/sradomski/Documents/TK/Code/uscxml/src -I/Users/sradomski/Documents/TK/Code/uscxml/build/xcode/uscxml.build/Debug/uscxml.build/DerivedSources/x86_64 -I/Users/sradomski/Documents/TK/Code/uscxml/build/xcode/uscxml.build/Debug/uscxml.build/DerivedSources -Wmost -Wno-four-char-constants -Wno-unknown-pragmas -F/Users/sradomski/Documents/TK/Code/uscxml/build/xcode/Debug -MMD -MT dependencies -MF /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/uscxml.build/Debug/uscxml.build/Objects-normal/x86_64/V8DataModel.d --serialize-diagnostics /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/uscxml.build/Debug/uscxml.build/Objects-normal/x86_64/V8DataModel.dia -c /Users/sradomski/Documents/TK/Code/uscxml/src/uscxml/datamodel/ecmascript/v8/V8DataModel.cpp -o /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/uscxml.build/Debug/uscxml.build/Objects-normal/x86_64/V8DataModel.o36"65704878-F225-4667-A751-6665B412992D-
+
+CCompileC build/xcode/uscxml.build/Debug/uscxml.build/Objects-normal/x86_64/tinythread.o /Users/sradomski/Documents/TK/Code/uscxml/src/uscxml/concurrency/tinythread.cpp normal x86_64 c++ com.apple.compilers.llvm.clang.1_0.compiler
+s369256069.150128
+e369256070.222805
+r1
+xCompileC
+xbuild/xcode/uscxml.build/Debug/uscxml.build/Objects-normal/x86_64/tinythread.o
+x/Users/sradomski/Documents/TK/Code/uscxml/src/uscxml/concurrency/tinythread.cpp
+xnormal
+xx86_64
+xc++
+xcom.apple.compilers.llvm.clang.1_0.compiler
+lSLF05#21%IDEActivityLogSection1@2#32"com.apple.dt.IDE.BuildLogSection87"Compile /Users/sradomski/Documents/TK/Code/uscxml/src/uscxml/concurrency/tinythread.cpp219526856602b641^ad1539866602b641^---0#0#0#-19%DVTDocumentLocation2@95"file://localhost/Users/sradomski/Documents/TK/Code/uscxml/src/uscxml/concurrency/tinythread.cpp0000000000000000^2322"CompileC build/xcode/uscxml.build/Debug/uscxml.build/Objects-normal/x86_64/tinythread.o src/uscxml/concurrency/tinythread.cpp normal x86_64 c++ com.apple.compilers.llvm.clang.1_0.compiler    cd /Users/sradomski/Documents/TK/Code/uscxml    setenv LANG en_US.US-ASCII    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -x c++ -arch x86_64 -fmessage-length=0 -Wno-trigraphs -fpascal-strings -O0 -Wno-missing-field-initializers -Wno-missing-prototypes -Wno-return-type -Wno-non-virtual-dtor -Wno-overloaded-virtual -Wno-exit-time-destructors -Wformat -Wno-missing-braces -Wparentheses -Wswitch -Wno-unused-function -Wno-unused-label -Wno-unused-parameter -Wno-unused-variable -Wunused-value -Wno-uninitialized -Wno-unknown-pragmas -Wno-shadow -Wno-four-char-constants -Wno-conversion -Wno-sign-compare -Wno-shorten-64-to-32 -Wno-newline-eof -Wc++11-extensions "-DCMAKE_INTDIR=\"Debug\"" -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.7.sdk -fasm-blocks -Wdeprecated-declarations -Winvalid-offsetof -mmacosx-version-min=10.7 -g -Wno-sign-conversion -I/Users/sradomski/Documents/TK/Code/uscxml/build/xcode/Debug/include -I/opt/local/include/libxml2 -I/Users/sradomski/Documents/TK/Code/glog/src -I/usr/local/include/arabica -I/opt/local/include -I/Users/sradomski/Documents/TK/Code/libevent/include -I/Users/sradomski/Documents/TK/Code/v8/include -I/Users/sradomski/Documents/TK/Code/uscxml/src -I/Users/sradomski/Documents/TK/Code/uscxml/build/xcode/uscxml.build/Debug/uscxml.build/DerivedSources/x86_64 -I/Users/sradomski/Documents/TK/Code/uscxml/build/xcode/uscxml.build/Debug/uscxml.build/DerivedSources -Wmost -Wno-four-char-constants -Wno-unknown-pragmas -F/Users/sradomski/Documents/TK/Code/uscxml/build/xcode/Debug -MMD -MT dependencies -MF /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/uscxml.build/Debug/uscxml.build/Objects-normal/x86_64/tinythread.d --serialize-diagnostics /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/uscxml.build/Debug/uscxml.build/Objects-normal/x86_64/tinythread.dia -c /Users/sradomski/Documents/TK/Code/uscxml/src/uscxml/concurrency/tinythread.cpp -o /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/uscxml.build/Debug/uscxml.build/Objects-normal/x86_64/tinythread.o36"E41AA2AE-FCC3-4E89-AD9E-16B7E0C20563-
+
+CLibtool /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/Debug/libuscxml.a normal x86_64
+r0
+
+CPhaseScriptExecution "CMake PostBuild Rules" /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/uscxml.build/Debug/uscxml.build/Script-7CB177B081894DB28C863605.sh
+r0
+

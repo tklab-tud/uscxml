@@ -10,11 +10,13 @@
 
 #include <XPath/XPath.hpp>
 #include <DOM/Document.hpp>
+#include <io/uri.hpp>
 
 #include <DOM/SAX2DOM/SAX2DOM.hpp>
 #include <SAX/helpers/CatchErrorHandler.hpp>
 
 #include "uscxml/concurrency/tinythread.h"
+#include "uscxml/concurrency/eventqueue/libevent/DelayedEventQueue.h"
 #include "uscxml/concurrency/BlockingQueue.h"
 #include "uscxml/Message.h"
 #include "uscxml/Factory.h"
@@ -28,15 +30,28 @@ namespace uscxml {
 			LATE = 1
 		};
 
-    Interpreter(const std::string& url);
+    struct SendData {
+      Interpreter* interpreter;
+      uscxml::SendRequest req;
+    };
+
     virtual ~Interpreter();    
 
+    static Interpreter* fromDOM(const Arabica::DOM::Node<std::string>& node);
+    static Interpreter* fromXML(const std::string& xml);
+    static Interpreter* fromURI(const std::string& uri);
+    static Interpreter* fromInputSource(Arabica::SAX::InputSource<std::string>& source);
+    
 		void start();
-		void stop();
 		static void run(void*);
 
     void interpret();
     bool validate();
+    
+    void setBaseURI(std::string baseURI)                     { _baseURI = Arabica::io::URI(baseURI); }
+    DataModel* getDataModel()                                { return _dataModel; }
+    Invoker* getInvoker()                                    { return _invoker; }
+    void setInvoker(Invoker* invoker)                        { _invoker = invoker; }
     
     void waitForStabilization();
     
@@ -54,6 +69,9 @@ namespace uscxml {
     static void dump(const Arabica::DOM::Node<std::string>& node, int lvl = 0);
 
   protected:
+    Interpreter();
+    void init();
+    
     void normalize(const Arabica::DOM::Node<std::string>& node);
     void setupIOProcessors();
     
@@ -64,7 +82,7 @@ namespace uscxml {
     tthread::mutex _mutex;
     tthread::condition_variable _stabilized;
     
-    std::string _url;
+    Arabica::io::URI _baseURI;
     Arabica::DOM::Document<std::string> _doc;
     Arabica::DOM::Element<std::string> _scxml;
     Arabica::XPath::XPath<std::string> _xpath;
@@ -81,6 +99,11 @@ namespace uscxml {
     
     std::list<Event > _internalQueue;
     uscxml::concurrency::BlockingQueue<Event> _externalQueue;
+    DelayedEventQueue* _sendQueue;
+    Invoker* _invoker;
+    
+    static Arabica::io::URI toBaseURI(const Arabica::io::URI& uri);
+    static Arabica::io::URI toAbsoluteURI(const Arabica::io::URI& uri, const Arabica::io::URI& baseURI);
     
     void microstep(const Arabica::XPath::NodeSet<std::string>& enabledTransitions);
     void exitStates(const Arabica::XPath::NodeSet<std::string>& enabledTransitions);
@@ -105,11 +128,11 @@ namespace uscxml {
     static Arabica::XPath::NodeSet<std::string> getProperAncestors(const Arabica::DOM::Node<std::string>& s1, const Arabica::DOM::Node<std::string>& s2);
     
     
-    void send(const std::string invokeId, Event& event);
     void send(const Arabica::DOM::Node<std::string>& element);
     void invoke(const Arabica::DOM::Node<std::string>& element);
-    void cancelInvoke(const Arabica::DOM::Node<std::string>& content);
+    void cancelInvoke(const Arabica::DOM::Node<std::string>& element);
     void returnDoneEvent(const Arabica::DOM::Node<std::string>& state);
+    static void delayedSend(void* userdata, std::string eventName);
     
     static bool nameMatch(const std::string& transitionEvent, const std::string& event);
     Arabica::XPath::NodeSet<std::string> filterPreempted(const Arabica::XPath::NodeSet<std::string>& enabledTransitions);
@@ -139,10 +162,12 @@ namespace uscxml {
     std::string _sessionId;
     
     IOProcessor* getIOProcessor(const std::string& type);
-    IOProcessor* getIOProcessorForId(const std::string& sendId);
+//    IOProcessor* getIOProcessorForId(const std::string& sendId);
     
-    std::map<std::string, IOProcessor*> _ioProcessorsIds;
 		std::map<std::string, IOProcessor*> _ioProcessors;
+    std::map<std::string, std::pair<Interpreter*, SendRequest> > _sendIds;
+    std::map<std::string, Invoker*> _invokerIds;
+		std::map<std::string, Invoker*> _invokers;
 
   };
   

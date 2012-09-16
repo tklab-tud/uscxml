@@ -1,4 +1,5 @@
 #include "uscxml/Message.h"
+//#include "uscxml/Interpreter.h"
 #include <DOM/SAX2DOM/SAX2DOM.hpp>
 #include <SAX/helpers/CatchErrorHandler.hpp>
 
@@ -6,6 +7,65 @@ namespace uscxml {
 
 static int _dataIndentation = 1;
 
+Data::Data(const Arabica::DOM::Node<std::string>& dom) {
+  // we may need to convert some keys to arrays if we have the same name as an element
+  std::map<std::string, std::list<Data> > arrays;
+//  Interpreter::dump(dom);
+
+  if (dom.hasAttributes()) {
+    Arabica::DOM::NamedNodeMap<std::string> attributes = dom.getAttributes();
+    for (int i = 0; i < attributes.getLength(); i++) {
+      Arabica::DOM::Node<std::string> attribute = attributes.item(i);
+//      Interpreter::dump(attribute);
+
+      assert(attribute.getNodeType() == Arabica::DOM::Node_base::ATTRIBUTE_NODE);
+      std::string key = attribute.getLocalName();
+      std::string value = attribute.getNodeValue();
+      compound[key] = Data(value, VERBATIM);
+    }
+  }
+
+  if (dom.hasChildNodes()) {
+    Arabica::DOM::NodeList<std::string> children = dom.getChildNodes();
+    for (int i = 0; i < children.getLength(); i++) {
+      Arabica::DOM::Node<std::string> child = children.item(i);
+//      Interpreter::dump(child);
+      std::string key;
+      switch (child.getNodeType()) {
+        case Arabica::DOM::Node_base::ELEMENT_NODE:
+          key = TAGNAME(child);
+          break;
+        case Arabica::DOM::Node_base::ATTRIBUTE_NODE:
+          key = ((Arabica::DOM::Attr<std::string>)child).getName();
+          break;
+        case Arabica::DOM::Node_base::TEXT_NODE:
+        default:
+          break;
+      }
+      if (key.length() == 0)
+        continue;
+
+      if (compound.find(key) != compound.end()) {
+        // we already have such a key .. make it an array after we processed all children
+        arrays[key].push_back(Data(child));
+      } else {
+        compound[key] = Data(child);
+      }
+    }
+  } else {
+    atom = dom.getNodeValue();
+    type = VERBATIM;
+  }
+  
+  std::map<std::string, std::list<Data> >::iterator arrayIter = arrays.begin();
+  while(arrayIter != arrays.end()) {
+    assert(compound.find(arrayIter->first) != compound.end());
+    Data arrayData;
+    arrays[arrayIter->first].push_front(compound[arrayIter->first]);
+    arrayData.array = arrays[arrayIter->first];
+    compound[arrayIter->first] = arrayData;
+  }  
+}
 
 Arabica::DOM::Document<std::string> Data::toDocument() {
   Arabica::DOM::DOMImplementation<std::string> domFactory = Arabica::SimpleDOM::DOMImplementation<std::string>::getDOMImplementation();
@@ -137,7 +197,7 @@ std::ostream& operator<< (std::ostream& os, const Data& data) {
     os << "{" << std::endl;
     compoundIter = data.compound.begin();
     while(compoundIter != data.compound.end()) {
-      os << indent << "  \"" << compoundIter->first << "\" " << keyPadding.substr(0, longestKey - compoundIter->first.size()) << "= ";
+      os << indent << "  \"" << compoundIter->first << "\" " << keyPadding.substr(0, longestKey - compoundIter->first.size()) << ": ";
       _dataIndentation += 2;
       os << compoundIter->second << "," << std::endl;
       _dataIndentation -= 2;

@@ -2,13 +2,17 @@
 #include "uscxml/datamodel/ecmascript/v8/V8DataModel.h"
 //#include "uscxml/ioprocessor/basichttp/pion/PionIOProcessor.h"
 #include "uscxml/ioprocessor/basichttp/libevent/EventIOProcessor.h"
+#include "uscxml/invoker/scxml/USCXMLInvoker.h"
 
 namespace uscxml {
 
   Factory::Factory() {
     _dataModels["ecmascript"] = new V8DataModel();
 //    _ioProcessors["basichttp"] = new PionIOProcessor();
-    _ioProcessors["basichttp"] = new io::libevent::EventIOProcessor();
+    _ioProcessors["basichttp"] = new EventIOProcessor();
+    _ioProcessors["http://www.w3.org/TR/scxml/#SCXMLEventProcessor"] = new EventIOProcessor();
+    _invoker["scxml"] = new USCXMLInvoker();
+    _invoker["http://www.w3.org/TR/scxml/"] = _invoker["scxml"];
   }
   
   void Factory::registerIOProcessor(const std::string type, IOProcessor* ioProcessor) {
@@ -23,6 +27,17 @@ namespace uscxml {
     getInstance()->_executableContent[tag] = executableContent;
   }
   
+  void Factory::registerInvoker(const std::string type, Invoker* invoker) {
+    getInstance()->_invoker[type] = invoker;
+  }
+
+  Invoker* Factory::getInvoker(const std::string type, Interpreter* interpreter) {
+    if (Factory::getInstance()->_invoker.find(type) != getInstance()->_invoker.end()) {
+      return (Invoker*)getInstance()->_invoker[type]->create(interpreter);
+    }
+    return NULL;
+  }
+
   DataModel* Factory::getDataModel(const std::string type, Interpreter* interpreter) {
     if (Factory::getInstance()->_dataModels.find(type) != getInstance()->_dataModels.end()) {
       return getInstance()->_dataModels[type]->create(interpreter);

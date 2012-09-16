@@ -1,0 +1,28 @@
+TALL_BUILD
+v5
+r1
+cCheck dependencies
+cPhaseScriptExecution "CMake Rules" /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/uscxml.build/Debug/ALL_BUILD.build/Script-648BF5D3B0DA45D58F194456.sh
+
+N/Users/sradomski/Documents/TK/Code/uscxml/build/xcode/uscxml.build/Debug/ALL_BUILD.build/Script-648BF5D3B0DA45D58F194456.sh
+c000000005052305200000000000000C4
+t1347563602
+s196
+
+CCheck dependencies
+r0
+lSLF05#21%IDEActivityLogSection1@2#32"com.apple.dt.IDE.BuildLogSection18"Check dependencies9eb5b7d26702b641^7101b8d26702b641^---0#1#0#--18"Check dependencies36"BBA26A1B-57CA-4037-9B40-2E61FFC9A1DC-
+
+CPhaseScriptExecution "CMake Rules" /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/uscxml.build/Debug/ALL_BUILD.build/Script-648BF5D3B0DA45D58F194456.sh
+s369256402.720344
+e369256402.767243
+r1
+xPhaseScriptExecution
+xCMake Rules
+x/Users/sradomski/Documents/TK/Code/uscxml/build/xcode/uscxml.build/Debug/ALL_BUILD.build/Script-648BF5D3B0DA45D58F194456.sh
+oecho ""
+o
+oecho Build\ all\ projects
+oBuild all projects
+lSLF05#21%IDEActivityLogSection1@2#32"com.apple.dt.IDE.BuildLogSection37"Run custom shell script 'CMake Rules'01dcb8d26702b641^ce8ec4d26702b641^-54"echo ""echo Build\ all\ projectsBuild all projects3(21%IDEActivityLogMessage2@8"echo ""-369256402#0#8#-0#-----2@26"echo Build\ all\ projects-369256402#9#26#-0#-----2@19"Build all projects-369256402#35#19#-0#-----0#0#0#--305"PhaseScriptExecution "CMake Rules" build/xcode/uscxml.build/Debug/ALL_BUILD.build/Script-648BF5D3B0DA45D58F194456.sh    cd /Users/sradomski/Documents/TK/Code/uscxml    /bin/sh -c /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/uscxml.build/Debug/ALL_BUILD.build/Script-648BF5D3B0DA45D58F194456.sh36"55EBF96E-FCCE-4D12-955E-9DC5D4AD52E7-
+

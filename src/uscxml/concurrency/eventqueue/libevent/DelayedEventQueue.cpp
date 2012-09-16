@@ -12,8 +12,7 @@ namespace uscxml {
 
   DelayedEventQueue::~DelayedEventQueue() {
     std::cout << "Deleting DelayedEventQueue" << std::endl;
-    if(_eventLoop)
-      event_base_loopbreak(_eventLoop);
+    stop();
     if (_thread)
       _thread->join();
     if(_eventLoop)
@@ -66,6 +65,7 @@ namespace uscxml {
 	void DelayedEventQueue::stop() {
     if (_isStarted) {
       _isStarted = false;
+      event_base_loopbreak(_eventLoop);
       _thread->join();
       delete _thread;
     }

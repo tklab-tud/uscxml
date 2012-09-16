@@ -1,0 +1,105 @@
+Ttest-ecmascript-v8
+v5
+r1
+cCheck dependencies
+cCompileC build/xcode/test/uscxml.build/Debug/test-ecmascript-v8.build/Objects-normal/x86_64/test-ecmascript-v8.o /Users/sradomski/Documents/TK/Code/uscxml/test/src/test-ecmascript-v8.cpp normal x86_64 c++ com.apple.compilers.llvm.clang.1_0.compiler
+cLd /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/test/Debug/test-ecmascript-v8 normal x86_64
+cPhaseScriptExecution "CMake PostBuild Rules" /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/test/uscxml.build/Debug/test-ecmascript-v8.build/Script-523FFFDB161B4E5295923DC4.sh
+
+N/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.7.sdk
+c000000005022B42800000000000000CC
+t1344451624
+s204
+
+N/Users/sradomski/Documents/TK/Code/uscxml/build/xcode/test/Debug/test-ecmascript-v8
+t2
+s0
+
+N/Users/sradomski/Documents/TK/Code/uscxml/build/xcode/test/uscxml.build/Debug/test-ecmascript-v8.build/Objects-normal/x86_64/test-ecmascript-v8.LinkFileList
+c000000005052304D0000000000000092
+t1347563597
+s146
+
+N/Users/sradomski/Documents/TK/Code/uscxml/build/xcode/test/uscxml.build/Debug/test-ecmascript-v8.build/Objects-normal/x86_64/test-ecmascript-v8.o
+t2
+s0
+
+N/Users/sradomski/Documents/TK/Code/uscxml/build/xcode/test/uscxml.build/Debug/test-ecmascript-v8.build/Script-523FFFDB161B4E5295923DC4.sh
+c000000005052304D00000000000000D1
+t1347563597
+s209
+
+N/Users/sradomski/Documents/TK/Code/uscxml/src/uscxml/Interpreter.h
+c00000000504B595F000000000000348C
+t1347115359
+s13452
+
+N/Users/sradomski/Documents/TK/Code/uscxml/src/uscxml/datamodel/ecmascript/v8/V8DataModel.h
+c0000000050522FDB00000000000009CA
+t1347563483
+s2506
+
+N/Users/sradomski/Documents/TK/Code/uscxml/test/src/test-ecmascript-v8.cpp
+c000000005048AC1000000000000004C3
+t1346939920
+s1219
+i"uscxml/Interpreter.h"
+i"uscxml/datamodel/ecmascript/v8/V8DataModel.h"
+
+CBuild AST from /Users/sradomski/Documents/TK/Code/uscxml/test/src/test-ecmascript-v8.cpp
+r0
+
+CCheck dependencies
+r0
+lSLF05#21%IDEActivityLogSection1@2#32"com.apple.dt.IDE.BuildLogSection18"Check dependencies6e4f28cd6702b641^52102ccd6702b641^---0#1#0#--18"Check dependencies36"E31DB4BA-7D4D-4CFC-B060-E57C2E45F538-
+
+CCompileC build/xcode/test/uscxml.build/Debug/test-ecmascript-v8.build/Objects-normal/x86_64/test-ecmascript-v8.o /Users/sradomski/Documents/TK/Code/uscxml/test/src/test-ecmascript-v8.cpp normal x86_64 c++ com.apple.compilers.llvm.clang.1_0.compiler
+s369256397.179600
+e369256401.209748
+r1
+xCompileC
+xbuild/xcode/test/uscxml.build/Debug/test-ecmascript-v8.build/Objects-normal/x86_64/test-ecmascript-v8.o
+x/Users/sradomski/Documents/TK/Code/uscxml/test/src/test-ecmascript-v8.cpp
+xnormal
+xx86_64
+xc++
+xcom.apple.compilers.llvm.clang.1_0.compiler
+oIn file included from /Users/sradomski/Documents/TK/Code/uscxml/test/src/test-ecmascript-v8.cpp:1:
+oIn file included from /Users/sradomski/Documents/TK/Code/uscxml/src/uscxml/Interpreter.h:11:
+oIn file included from /usr/local/include/arabica/XPath/XPath.hpp:4:
+oIn file included from /usr/local/include/arabica/XPath/impl/xpath_parser.hpp:19:
+oIn file included from /usr/local/include/arabica/XPath/impl/xpath_object.hpp:7:
+oIn file included from /usr/local/include/arabica/DOM/Node.hpp:9:
+oIn file included from /usr/local/include/arabica/Arabica/StringAdaptor.hpp:7:
+o/usr/local/include/arabica/convert/utf8ucs2codecvt.hpp:58:15: warning: 'Arabica::convert::utf8ucs2codecvt::do_length' hides overloaded virtual function [-Woverloaded-virtual]
+o  virtual int do_length(const std::mbstate_t&,
+o              ^
+o/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.7.sdk/usr/include/c++/4.2.1/bits/codecvt.h:442:11: note: hidden overloaded virtual function 'std::codecvt<wchar_t, char, __mbstate_t>::do_length' declared here
+o      int do_length(state_type&, const extern_type* __from,
+o          ^
+o1 warning generated.
+lSLF05#21%IDEActivityLogSection1@2#32"com.apple.dt.IDE.BuildLogSection81"Compile /Users/sradomski/Documents/TK/Code/uscxml/test/src/test-ecmascript-v8.cpp629d2ecd6702b641^60c935d16702b641^-1148"In file included from /Users/sradomski/Documents/TK/Code/uscxml/test/src/test-ecmascript-v8.cpp:1:In file included from /Users/sradomski/Documents/TK/Code/uscxml/src/uscxml/Interpreter.h:11:In file included from /usr/local/include/arabica/XPath/XPath.hpp:4:In file included from /usr/local/include/arabica/XPath/impl/xpath_parser.hpp:19:In file included from /usr/local/include/arabica/XPath/impl/xpath_object.hpp:7:In file included from /usr/local/include/arabica/DOM/Node.hpp:9:In file included from /usr/local/include/arabica/Arabica/StringAdaptor.hpp:7:/usr/local/include/arabica/convert/utf8ucs2codecvt.hpp:58:15: warning: 'Arabica::convert::utf8ucs2codecvt::do_length' hides overloaded virtual function [-Woverloaded-virtual]  virtual int do_length(const std::mbstate_t&,              ^/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.7.sdk/usr/include/c++/4.2.1/bits/codecvt.h:442:11: note: hidden overloaded virtual function 'std::codecvt<wchar_t, char, __mbstate_t>::do_length' declared here      int do_length(state_type&, const extern_type* __from,          ^1 warning generated.1(36%IDEClangDiagnosticActivityLogMessage2@80"'Arabica::convert::utf8ucs2codecvt::do_length' hides overloaded virtual function-369256401#18446744073709551615#0#8(2@98"In file included from /Users/sradomski/Documents/TK/Code/uscxml/test/src/test-ecmascript-v8.cpp:1:-369256401#18446744073709551615#0#-0#27"com.apple.dt.IDE.diagnostic23%DVTTextDocumentLocation3@89"file://localhost/Users/sradomski/Documents/TK/Code/uscxml/test/src/test-ecmascript-v8.cpp0000000000000000^0#9#0#9#9#0#21"Clang LLVM 1.0 Notice--2@92"In file included from /Users/sradomski/Documents/TK/Code/uscxml/src/uscxml/Interpreter.h:11:-369256401#18446744073709551615#0#-0#27"com.apple.dt.IDE.diagnostic3@82"file://localhost/Users/sradomski/Documents/TK/Code/uscxml/src/uscxml/Interpreter.h0000000000000000^10#9#10#9#196#0#21"Clang LLVM 1.0 Notice--2@67"In file included from /usr/local/include/arabica/XPath/XPath.hpp:4:-369256401#18446744073709551615#0#-0#27"com.apple.dt.IDE.diagnostic3@58"file://localhost/usr/local/include/arabica/XPath/XPath.hpp0000000000000000^3#9#3#9#78#0#21"Clang LLVM 1.0 Notice--2@80"In file included from /usr/local/include/arabica/XPath/impl/xpath_parser.hpp:19:-369256401#18446744073709551615#0#-0#27"com.apple.dt.IDE.diagnostic3@70"file://localhost/usr/local/include/arabica/XPath/impl/xpath_parser.hpp0000000000000000^18#9#18#9#447#0#21"Clang LLVM 1.0 Notice--2@79"In file included from /usr/local/include/arabica/XPath/impl/xpath_object.hpp:7:-369256401#18446744073709551615#0#-0#27"com.apple.dt.IDE.diagnostic3@70"file://localhost/usr/local/include/arabica/XPath/impl/xpath_object.hpp0000000000000000^6#9#6#9#143#0#21"Clang LLVM 1.0 Notice--2@64"In file included from /usr/local/include/arabica/DOM/Node.hpp:9:-369256401#18446744073709551615#0#-0#27"com.apple.dt.IDE.diagnostic3@55"file://localhost/usr/local/include/arabica/DOM/Node.hpp0000000000000000^8#9#8#9#197#0#21"Clang LLVM 1.0 Notice--2@77"In file included from /usr/local/include/arabica/Arabica/StringAdaptor.hpp:7:-369256401#18446744073709551615#0#-0#27"com.apple.dt.IDE.diagnostic3@68"file://localhost/usr/local/include/arabica/Arabica/StringAdaptor.hpp0000000000000000^6#9#6#9#171#0#21"Clang LLVM 1.0 Notice--2@102"Hidden overloaded virtual function 'std::codecvt<wchar_t, char, __mbstate_t>::do_length' declared here-369256401#18446744073709551615#0#-0#27"com.apple.dt.IDE.diagnostic3@151"file://localhost/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.7.sdk/usr/include/c++/4.2.1/bits/codecvt.h0000000000000000^441#10#441#10#15179#0#14"Semantic Issue--1#27"com.apple.dt.IDE.diagnostic3@70"file://localhost/usr/local/include/arabica/convert/utf8ucs2codecvt.hpp0000000000000000^57#14#57#14#1790#0#14"Semantic Issue--0#0#0#-19%DVTDocumentLocation4@89"file://localhost/Users/sradomski/Documents/TK/Code/uscxml/test/src/test-ecmascript-v8.cpp0000000000000000^2454"CompileC build/xcode/test/uscxml.build/Debug/test-ecmascript-v8.build/Objects-normal/x86_64/test-ecmascript-v8.o test/src/test-ecmascript-v8.cpp normal x86_64 c++ com.apple.compilers.llvm.clang.1_0.compiler    cd /Users/sradomski/Documents/TK/Code/uscxml    setenv LANG en_US.US-ASCII    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -x c++ -arch x86_64 -fmessage-length=0 -Wno-trigraphs -fpascal-strings -O0 -Wno-missing-field-initializers -Wno-missing-prototypes -Wno-return-type -Wno-non-virtual-dtor -Wno-overloaded-virtual -Wno-exit-time-destructors -Wformat -Wno-missing-braces -Wparentheses -Wswitch -Wno-unused-function -Wno-unused-label -Wno-unused-parameter -Wno-unused-variable -Wunused-value -Wno-uninitialized -Wno-unknown-pragmas -Wno-shadow -Wno-four-char-constants -Wno-conversion -Wno-sign-compare -Wno-shorten-64-to-32 -Wno-newline-eof -Wc++11-extensions "-DCMAKE_INTDIR=\"Debug\"" -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.7.sdk -fasm-blocks -Wdeprecated-declarations -Winvalid-offsetof -mmacosx-version-min=10.7 -g -Wno-sign-conversion -I/Users/sradomski/Documents/TK/Code/uscxml/build/xcode/test/Debug/include -I/opt/local/include/libxml2 -I/Users/sradomski/Documents/TK/Code/glog/src -I/usr/local/include/arabica -I/opt/local/include -I/Users/sradomski/Documents/TK/Code/libevent/include -I/Users/sradomski/Documents/TK/Code/v8/include -I/Users/sradomski/Documents/TK/Code/uscxml/src -I/Users/sradomski/Documents/TK/Code/uscxml/build/xcode/test/uscxml.build/Debug/test-ecmascript-v8.build/DerivedSources/x86_64 -I/Users/sradomski/Documents/TK/Code/uscxml/build/xcode/test/uscxml.build/Debug/test-ecmascript-v8.build/DerivedSources -Wmost -Wno-four-char-constants -Wno-unknown-pragmas -F/Users/sradomski/Documents/TK/Code/uscxml/build/xcode/test/Debug -MMD -MT dependencies -MF /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/test/uscxml.build/Debug/test-ecmascript-v8.build/Objects-normal/x86_64/test-ecmascript-v8.d --serialize-diagnostics /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/test/uscxml.build/Debug/test-ecmascript-v8.build/Objects-normal/x86_64/test-ecmascript-v8.dia -c /Users/sradomski/Documents/TK/Code/uscxml/test/src/test-ecmascript-v8.cpp -o /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/test/uscxml.build/Debug/test-ecmascript-v8.build/Objects-normal/x86_64/test-ecmascript-v8.o36"1DAA0A0C-F80E-4C98-B09F-3D9965E40580-
+
+CLd /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/test/Debug/test-ecmascript-v8 normal x86_64
+s369256401.217692
+e369256402.564005
+r1
+xLd
+x/Users/sradomski/Documents/TK/Code/uscxml/build/xcode/test/Debug/test-ecmascript-v8
+xnormal
+xx86_64
+lSLF05#21%IDEActivityLogSection1@2#32"com.apple.dt.IDE.BuildLogSection88"Link /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/test/Debug/test-ecmascript-v8c7d637d16702b641^547490d26702b641^---0#0#0#--1285"Ld build/xcode/test/Debug/test-ecmascript-v8 normal x86_64    cd /Users/sradomski/Documents/TK/Code/uscxml    setenv MACOSX_DEPLOYMENT_TARGET 10.7    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang++ -arch x86_64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.7.sdk -L/Users/sradomski/Documents/TK/Code/uscxml/build/xcode/test/Debug -F/Users/sradomski/Documents/TK/Code/uscxml/build/xcode/test/Debug -filelist /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/test/uscxml.build/Debug/test-ecmascript-v8.build/Objects-normal/x86_64/test-ecmascript-v8.LinkFileList -mmacosx-version-min=10.7 -Wl,-search_paths_first -Wl,-headerpad_max_install_names /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/Debug/libuscxml.a /opt/local/lib/libxml2.dylib /Users/sradomski/Documents/TK/Code/glog/.libs/libglog.a /usr/local/lib/libarabica.a /Users/sradomski/Documents/TK/Code/libevent/.libs/libevent.a /Users/sradomski/Documents/TK/Code/libevent/.libs/libevent_pthreads.a /Users/sradomski/Documents/TK/Code/v8/out/native/libv8_base.a /Users/sradomski/Documents/TK/Code/v8/out/native/libv8_snapshot.a -o /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/test/Debug/test-ecmascript-v836"57144BBE-D7AF-4F12-BE13-ED571B27F9FD-
+
+CPhaseScriptExecution "CMake PostBuild Rules" /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/test/uscxml.build/Debug/test-ecmascript-v8.build/Script-523FFFDB161B4E5295923DC4.sh
+s369256402.572734
+e369256402.662554
+r1
+xPhaseScriptExecution
+xCMake PostBuild Rules
+x/Users/sradomski/Documents/TK/Code/uscxml/build/xcode/test/uscxml.build/Debug/test-ecmascript-v8.build/Script-523FFFDB161B4E5295923DC4.sh
+oecho "Depend check for xcode"
+oDepend check for xcode
+ocd /Users/sradomski/Documents/TK/Code/uscxml/build/xcode && make -C /Users/sradomski/Documents/TK/Code/uscxml/build/xcode -f /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/CMakeScripts/XCODE_DEPEND_HELPER.make PostBuild.test-ecmascript-v8.Debug
+omake[1]: Nothing to be done for `PostBuild.test-ecmascript-v8.Debug'.
+lSLF05#21%IDEActivityLogSection1@2#32"com.apple.dt.IDE.BuildLogSection47"Run custom shell script 'CMake PostBuild Rules'164d93d26702b641^1f9ea9d26702b641^-375"echo "Depend check for xcode"Depend check for xcodecd /Users/sradomski/Documents/TK/Code/uscxml/build/xcode && make -C /Users/sradomski/Documents/TK/Code/uscxml/build/xcode -f /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/CMakeScripts/XCODE_DEPEND_HELPER.make PostBuild.test-ecmascript-v8.Debugmake[1]: Nothing to be done for `PostBuild.test-ecmascript-v8.Debug'.4(21%IDEActivityLogMessage2@30"echo "Depend check for xcode"-369256402#0#30#-0#-----2@23"Depend check for xcode-369256402#30#23#-0#-----2@252"cd /Users/sradomski/Documents/TK/Code/uscxml/build/xcode && make -C /Users/sradomski/Documents/TK/Code/uscxml/build/xcode -f /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/CMakeScripts/XCODE_DEPEND_HELPER.make PostBuild.test-ecmascript-v8.Debug-369256402#53#252#-0#-----2@70"make[1]: Nothing to be done for `PostBuild.test-ecmascript-v8.Debug'.-369256402#305#70#-0#-----0#0#0#--343"PhaseScriptExecution "CMake PostBuild Rules" build/xcode/test/uscxml.build/Debug/test-ecmascript-v8.build/Script-523FFFDB161B4E5295923DC4.sh    cd /Users/sradomski/Documents/TK/Code/uscxml    /bin/sh -c /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/test/uscxml.build/Debug/test-ecmascript-v8.build/Script-523FFFDB161B4E5295923DC4.sh36"58362D20-A694-465C-A302-E16206B865B9-
+

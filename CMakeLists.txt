@@ -59,6 +59,10 @@ file(GLOB_RECURSE USCXML_DATAMODEL_V8
 list (APPEND USCXML_FILES ${USCXML_DATAMODEL_V8})
 list (APPEND USCXML_LIBS ${V8_LIBRARY})
 
+# the invokers for external services
+file(GLOB_RECURSE USCXML_INVOKER src/uscxml/invoker/*.cpp src/uscxml/invoker/*.h)
+list (APPEND USCXML_FILES ${USCXML_INVOKER})
+
 
 file(GLOB USCXML_CONCURRENCY src/uscxml/concurrency/*.cpp src/uscxml/concurrency/*.h)
 list (APPEND USCXML_FILES ${USCXML_CONCURRENCY})

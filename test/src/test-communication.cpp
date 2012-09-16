@@ -17,10 +17,11 @@ int main(int argc, char** argv) {
 //  std::cout << e.toDocument() << std::endl;
   
   for (int i = 0; i < 1; i++) {
-    _interpreters.push_back(new Interpreter(argv[1]));
+    _interpreters.push_back(Interpreter::fromURI(argv[1]));
     _interpreters.back()->start();
   }
 
-  tthread::this_thread::sleep_for(tthread::chrono::milliseconds(100000));
+  while(true)
+    tthread::this_thread::sleep_for(tthread::chrono::milliseconds(1000000));
 
 }

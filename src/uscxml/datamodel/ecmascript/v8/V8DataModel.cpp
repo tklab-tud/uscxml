@@ -64,7 +64,7 @@ void V8DataModel::popContext() {
 void V8DataModel::initialize() {
 }
 
-void V8DataModel::setEvent(Event& event) {
+void V8DataModel::setEvent(const Event& event) {
   _event = event;
   v8::Locker locker;
   v8::HandleScope handleScope;
@@ -86,24 +86,16 @@ void V8DataModel::setEvent(Event& event) {
   
   assert(_eventTemplate->InternalFieldCount() == 1);
   v8::Handle<v8::Object> eventJS = _eventTemplate->NewInstance();
-  eventJS->SetInternalField(0, v8::External::New(&event));
+  eventJS->SetInternalField(0, v8::External::New(&_event));
 
   eventJS->Set(v8::String::New("data"), getDataAsValue(event)); // set data part of _event
   global->Set(v8::String::New("_event"), eventJS);
 }
 
-void V8DataModel::setData(const std::string& key, Data& data) {
-  v8::Locker locker;
-  v8::HandleScope handleScope;
-  v8::Context::Scope contextScope(_contexts.front());
-  v8::Handle<v8::Object> global = _contexts.front()->Global();
-  global->Set(v8::String::New(key.c_str()), getDataAsValue(data));
-}
-
-v8::Handle<v8::Value> V8DataModel::getDataAsValue(Data& data) {
+v8::Handle<v8::Value> V8DataModel::getDataAsValue(const Data& data) {
   if (data.compound.size() > 0) {
     v8::Handle<v8::Object> value = v8::Array::New();
-    std::map<std::string, Data>::iterator compoundIter = data.compound.begin();
+    std::map<std::string, Data>::const_iterator compoundIter = data.compound.begin();
     while(compoundIter != data.compound.end()) {
       value->Set(v8::String::New(compoundIter->first.c_str()), getDataAsValue(compoundIter->second));
       compoundIter++;
@@ -112,7 +104,7 @@ v8::Handle<v8::Value> V8DataModel::getDataAsValue(Data& data) {
   }
   if (data.array.size() > 0) {
     v8::Handle<v8::Object> value = v8::Array::New();
-    std::vector<Data>::iterator arrayIter = data.array.begin();
+    std::list<Data>::const_iterator arrayIter = data.array.begin();
     uint32_t index = 0;
     while(arrayIter != data.array.end()) {
       value->Set(index++, getDataAsValue(*arrayIter));
@@ -126,7 +118,7 @@ v8::Handle<v8::Value> V8DataModel::getDataAsValue(Data& data) {
     return evalAsValue(data.atom);
   }
 }
-
+  
 v8::Handle<v8::Value> V8DataModel::jsIn(const v8::Arguments& args) {
   V8DataModel* THIS = static_cast<V8DataModel*>(v8::External::Unwrap(args.Data()));
   for (unsigned int i = 0; i < args.Length(); i++) {
@@ -225,6 +217,38 @@ std::string V8DataModel::evalAsString(const std::string& expr) {
   v8::Handle<v8::Value> result = evalAsValue(expr);
   v8::String::AsciiValue data(result->ToString());
   return std::string(*data);
+}
+
+void V8DataModel::assign(const std::string& location, const Data& data) {
+  v8::Locker locker;
+  v8::HandleScope handleScope;
+  v8::Context::Scope contextScope(_contexts.front());
+  
+  std::stringstream ssJSON;
+  ssJSON << data;
+  assign(location, ssJSON.str());
+//  v8::Handle<v8::Object> variable = evalAsValue(location).As<v8::Object>();
+//  assert(!variable.IsEmpty());
+//  if (data.compound.size() > 0) {
+//    std::map<std::string, Data>::const_iterator compoundIter = data.compound.begin();
+//    while(compoundIter != data.compound.end()) {
+//      variable->Set(v8::String::New(compoundIter->first.c_str()), getDataAsValue(compoundIter->second));
+//      compoundIter++;
+//    }
+//    return;
+//  } else if (data.array.size() > 0) {
+//    std::list<Data>::const_iterator arrayIter = data.array.begin();
+//    uint32_t index = 0;
+//    while(arrayIter != data.array.end()) {
+//      variable->Set(index++, getDataAsValue(*arrayIter));
+//      arrayIter++;
+//    }
+//  } else if (data.type == Data::VERBATIM) {
+//    assign(location, "'" + data.atom + "'");
+//  } else {
+//    assign(location, data.atom);
+//  }
+
 }
 
 void V8DataModel::assign(const std::string& location, const std::string& expr) {

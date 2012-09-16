@@ -1,0 +1,86 @@
+Ttest-eventdelay
+v5
+r1
+cCheck dependencies
+cCompileC build/xcode/test/uscxml.build/Debug/test-eventdelay.build/Objects-normal/x86_64/test-eventdelay.o /Users/sradomski/Documents/TK/Code/uscxml/test/src/test-eventdelay.cpp normal x86_64 c++ com.apple.compilers.llvm.clang.1_0.compiler
+cLd /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/test/Debug/test-eventdelay normal x86_64
+cPhaseScriptExecution "CMake PostBuild Rules" /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/test/uscxml.build/Debug/test-eventdelay.build/Script-CB807641B8B24D768F2B04FE.sh
+
+N/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.7.sdk
+c000000005022B42800000000000000CC
+t1344451624
+s204
+
+N/Users/sradomski/Documents/TK/Code/uscxml/build/xcode/test/Debug/test-eventdelay
+t2
+s0
+
+N/Users/sradomski/Documents/TK/Code/uscxml/build/xcode/test/uscxml.build/Debug/test-eventdelay.build/Objects-normal/x86_64/test-eventdelay.LinkFileList
+c000000005052304D000000000000008C
+t1347563597
+s140
+
+N/Users/sradomski/Documents/TK/Code/uscxml/build/xcode/test/uscxml.build/Debug/test-eventdelay.build/Objects-normal/x86_64/test-eventdelay.o
+t2
+s0
+
+N/Users/sradomski/Documents/TK/Code/uscxml/build/xcode/test/uscxml.build/Debug/test-eventdelay.build/Script-CB807641B8B24D768F2B04FE.sh
+c000000005052304D00000000000000CE
+t1347563597
+s206
+
+N/Users/sradomski/Documents/TK/Code/uscxml/src/uscxml/concurrency/eventqueue/libevent/DelayedEventQueue.h
+c00000000504BD270000000000000048C
+t1347146352
+s1164
+
+N/Users/sradomski/Documents/TK/Code/uscxml/test/src/test-eventdelay.cpp
+c00000000504BD2A700000000000004A2
+t1347146407
+s1186
+i"uscxml/concurrency/eventqueue/libevent/DelayedEventQueue.h"
+i<sstream>
+
+CBuild AST from /Users/sradomski/Documents/TK/Code/uscxml/test/src/test-eventdelay.cpp
+r0
+
+CCheck dependencies
+r0
+lSLF05#21%IDEActivityLogSection1@2#32"com.apple.dt.IDE.BuildLogSection18"Check dependenciesbe8991cd6702b641^bc0699cd6702b641^---0#1#0#--18"Check dependencies36"CE3416BC-6F67-4C41-87E4-4FB31E8EE9D3-
+
+CCompileC build/xcode/test/uscxml.build/Debug/test-eventdelay.build/Objects-normal/x86_64/test-eventdelay.o /Users/sradomski/Documents/TK/Code/uscxml/test/src/test-eventdelay.cpp normal x86_64 c++ com.apple.compilers.llvm.clang.1_0.compiler
+s369256397.572434
+e369256398.385437
+r1
+xCompileC
+xbuild/xcode/test/uscxml.build/Debug/test-eventdelay.build/Objects-normal/x86_64/test-eventdelay.o
+x/Users/sradomski/Documents/TK/Code/uscxml/test/src/test-eventdelay.cpp
+xnormal
+xx86_64
+xc++
+xcom.apple.compilers.llvm.clang.1_0.compiler
+lSLF05#21%IDEActivityLogSection1@2#32"com.apple.dt.IDE.BuildLogSection78"Compile /Users/sradomski/Documents/TK/Code/uscxml/test/src/test-eventdelay.cpp53b492cd6702b641^dd0863ce6702b641^---0#0#0#-19%DVTDocumentLocation2@86"file://localhost/Users/sradomski/Documents/TK/Code/uscxml/test/src/test-eventdelay.cpp0000000000000000^2418"CompileC build/xcode/test/uscxml.build/Debug/test-eventdelay.build/Objects-normal/x86_64/test-eventdelay.o test/src/test-eventdelay.cpp normal x86_64 c++ com.apple.compilers.llvm.clang.1_0.compiler    cd /Users/sradomski/Documents/TK/Code/uscxml    setenv LANG en_US.US-ASCII    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -x c++ -arch x86_64 -fmessage-length=0 -Wno-trigraphs -fpascal-strings -O0 -Wno-missing-field-initializers -Wno-missing-prototypes -Wno-return-type -Wno-non-virtual-dtor -Wno-overloaded-virtual -Wno-exit-time-destructors -Wformat -Wno-missing-braces -Wparentheses -Wswitch -Wno-unused-function -Wno-unused-label -Wno-unused-parameter -Wno-unused-variable -Wunused-value -Wno-uninitialized -Wno-unknown-pragmas -Wno-shadow -Wno-four-char-constants -Wno-conversion -Wno-sign-compare -Wno-shorten-64-to-32 -Wno-newline-eof -Wc++11-extensions "-DCMAKE_INTDIR=\"Debug\"" -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.7.sdk -fasm-blocks -Wdeprecated-declarations -Winvalid-offsetof -mmacosx-version-min=10.7 -g -Wno-sign-conversion -I/Users/sradomski/Documents/TK/Code/uscxml/build/xcode/test/Debug/include -I/opt/local/include/libxml2 -I/Users/sradomski/Documents/TK/Code/glog/src -I/usr/local/include/arabica -I/opt/local/include -I/Users/sradomski/Documents/TK/Code/libevent/include -I/Users/sradomski/Documents/TK/Code/v8/include -I/Users/sradomski/Documents/TK/Code/uscxml/src -I/Users/sradomski/Documents/TK/Code/uscxml/build/xcode/test/uscxml.build/Debug/test-eventdelay.build/DerivedSources/x86_64 -I/Users/sradomski/Documents/TK/Code/uscxml/build/xcode/test/uscxml.build/Debug/test-eventdelay.build/DerivedSources -Wmost -Wno-four-char-constants -Wno-unknown-pragmas -F/Users/sradomski/Documents/TK/Code/uscxml/build/xcode/test/Debug -MMD -MT dependencies -MF /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/test/uscxml.build/Debug/test-eventdelay.build/Objects-normal/x86_64/test-eventdelay.d --serialize-diagnostics /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/test/uscxml.build/Debug/test-eventdelay.build/Objects-normal/x86_64/test-eventdelay.dia -c /Users/sradomski/Documents/TK/Code/uscxml/test/src/test-eventdelay.cpp -o /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/test/uscxml.build/Debug/test-eventdelay.build/Objects-normal/x86_64/test-eventdelay.o36"3654E793-E497-4018-A6AF-038EF1B5B6C8-
+
+CLd /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/test/Debug/test-eventdelay normal x86_64
+s369256398.413703
+e369256398.642408
+r1
+xLd
+x/Users/sradomski/Documents/TK/Code/uscxml/build/xcode/test/Debug/test-eventdelay
+xnormal
+xx86_64
+lSLF05#21%IDEActivityLogSection1@2#32"com.apple.dt.IDE.BuildLogSection85"Link /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/test/Debug/test-eventdelay55156ace6702b641^2b89ccce6702b641^---0#0#0#--1273"Ld build/xcode/test/Debug/test-eventdelay normal x86_64    cd /Users/sradomski/Documents/TK/Code/uscxml    setenv MACOSX_DEPLOYMENT_TARGET 10.7    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang++ -arch x86_64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.7.sdk -L/Users/sradomski/Documents/TK/Code/uscxml/build/xcode/test/Debug -F/Users/sradomski/Documents/TK/Code/uscxml/build/xcode/test/Debug -filelist /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/test/uscxml.build/Debug/test-eventdelay.build/Objects-normal/x86_64/test-eventdelay.LinkFileList -mmacosx-version-min=10.7 -Wl,-search_paths_first -Wl,-headerpad_max_install_names /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/Debug/libuscxml.a /opt/local/lib/libxml2.dylib /Users/sradomski/Documents/TK/Code/glog/.libs/libglog.a /usr/local/lib/libarabica.a /Users/sradomski/Documents/TK/Code/libevent/.libs/libevent.a /Users/sradomski/Documents/TK/Code/libevent/.libs/libevent_pthreads.a /Users/sradomski/Documents/TK/Code/v8/out/native/libv8_base.a /Users/sradomski/Documents/TK/Code/v8/out/native/libv8_snapshot.a -o /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/test/Debug/test-eventdelay36"63F0F1EE-23B8-4EB5-8F3A-940128D486A7-
+
+CPhaseScriptExecution "CMake PostBuild Rules" /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/test/uscxml.build/Debug/test-eventdelay.build/Script-CB807641B8B24D768F2B04FE.sh
+s369256398.650356
+e369256398.708168
+r1
+xPhaseScriptExecution
+xCMake PostBuild Rules
+x/Users/sradomski/Documents/TK/Code/uscxml/build/xcode/test/uscxml.build/Debug/test-eventdelay.build/Script-CB807641B8B24D768F2B04FE.sh
+oecho "Depend check for xcode"
+oDepend check for xcode
+ocd /Users/sradomski/Documents/TK/Code/uscxml/build/xcode && make -C /Users/sradomski/Documents/TK/Code/uscxml/build/xcode -f /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/CMakeScripts/XCODE_DEPEND_HELPER.make PostBuild.test-eventdelay.Debug
+omake[1]: Nothing to be done for `PostBuild.test-eventdelay.Debug'.
+lSLF05#21%IDEActivityLogSection1@2#32"com.apple.dt.IDE.BuildLogSection47"Run custom shell script 'CMake PostBuild Rules'2365a7ce6702b641^22aaccce6702b641^-369"echo "Depend check for xcode"Depend check for xcodecd /Users/sradomski/Documents/TK/Code/uscxml/build/xcode && make -C /Users/sradomski/Documents/TK/Code/uscxml/build/xcode -f /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/CMakeScripts/XCODE_DEPEND_HELPER.make PostBuild.test-eventdelay.Debugmake[1]: Nothing to be done for `PostBuild.test-eventdelay.Debug'.4(21%IDEActivityLogMessage2@30"echo "Depend check for xcode"-369256398#0#30#-0#-----2@23"Depend check for xcode-369256398#30#23#-0#-----2@249"cd /Users/sradomski/Documents/TK/Code/uscxml/build/xcode && make -C /Users/sradomski/Documents/TK/Code/uscxml/build/xcode -f /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/CMakeScripts/XCODE_DEPEND_HELPER.make PostBuild.test-eventdelay.Debug-369256398#53#249#-0#-----2@67"make[1]: Nothing to be done for `PostBuild.test-eventdelay.Debug'.-369256398#302#67#-0#-----0#0#0#--337"PhaseScriptExecution "CMake PostBuild Rules" build/xcode/test/uscxml.build/Debug/test-eventdelay.build/Script-CB807641B8B24D768F2B04FE.sh    cd /Users/sradomski/Documents/TK/Code/uscxml    /bin/sh -c /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/test/uscxml.build/Debug/test-eventdelay.build/Script-CB807641B8B24D768F2B04FE.sh36"F47325E8-047F-488D-AFDC-D2EAC048EEF3-
+

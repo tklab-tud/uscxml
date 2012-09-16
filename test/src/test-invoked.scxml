@@ -1,0 +1,8 @@
+<scxml datamodel="ecmascript">
+	<state id="start">
+		<onentry>
+			<log expr="'Message from the invoked scxml interpreter'" />
+			<send target="_parent" event="transitionToNext" />
+		</onentry>
+	</state>
+</scxml>
