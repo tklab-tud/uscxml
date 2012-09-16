@@ -132,6 +132,7 @@ namespace uscxml {
     void invoke(const Arabica::DOM::Node<std::string>& element);
     void cancelInvoke(const Arabica::DOM::Node<std::string>& element);
     void returnDoneEvent(const Arabica::DOM::Node<std::string>& state);
+    void internalDoneSend(const Arabica::DOM::Node<std::string>& state);
     static void delayedSend(void* userdata, std::string eventName);
     
     static bool nameMatch(const std::string& transitionEvent, const std::string& event);

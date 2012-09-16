@@ -27,3 +27,8 @@ add_executable(test-eventdelay src/test-eventdelay.cpp)
 target_link_libraries(test-eventdelay uscxml)
 add_test(test-eventdelay test-eventdelay)
 set_target_properties(test-eventdelay PROPERTIES FOLDER "Tests")
+
+add_executable(test-completion src/test-completion.cpp)
+target_link_libraries(test-completion uscxml)
+add_test(test-completion ${CMAKE_SOURCE_DIR}/test/src/test-donedata.scxml)
+set_target_properties(test-completion PROPERTIES FOLDER "Tests")

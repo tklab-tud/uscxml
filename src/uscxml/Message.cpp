@@ -101,6 +101,7 @@ Arabica::DOM::Document<std::string> Event::toDocument() {
   Arabica::DOM::Document<std::string> document = Data::toDocument();
   Arabica::DOM::Element<std::string> scxmlMsg = document.getDocumentElement();
   
+  
   scxmlMsg.setAttribute("source", origin);
   scxmlMsg.setAttribute("name", name);
   
@@ -111,6 +112,40 @@ Arabica::DOM::Document<std::string> SendRequest::toDocument() {
   Arabica::DOM::DOMImplementation<std::string> domFactory = Arabica::SimpleDOM::DOMImplementation<std::string>::getDOMImplementation();
   Arabica::DOM::Document<std::string> document = Event::toDocument();
   Arabica::DOM::Element<std::string> scxmlMsg = document.getDocumentElement();
+  
+  // add params and namelist
+  if (params.size() > 0 || namelist.size() > 0) {
+    Arabica::DOM::NodeList<std::string> payload = scxmlMsg.getElementsByTagName("scxml:payload");
+    if (payload.getLength() == 0) {
+      Arabica::DOM::Element<std::string> payloadElem = document.createElementNS("http://www.w3.org/2005/07/scxml", "scxml:payload");
+      scxmlMsg.appendChild(payloadElem);
+    }
+    Arabica::DOM::Node<std::string> payloadElem = scxmlMsg.getElementsByTagName("scxml:payload").item(0);
+
+    // add parameters
+    std::map<std::string, std::string>::iterator paramIter = params.begin();
+    while(paramIter != params.end()) {
+      Arabica::DOM::Element<std::string> propertyElem = document.createElementNS("http://www.w3.org/2005/07/scxml", "scxml:property");
+      propertyElem.setAttribute("name", paramIter->first);
+      Arabica::DOM::Text<std::string> textElem = document.createTextNode(paramIter->second);
+      propertyElem.appendChild(textElem);
+      payloadElem.appendChild(propertyElem);
+      paramIter++;
+    }
+    
+    // add namelist elements
+    std::map<std::string, std::string>::iterator namelistIter = namelist.begin();
+    while(namelistIter != namelist.end()) {
+      Arabica::DOM::Element<std::string> propertyElem = document.createElementNS("http://www.w3.org/2005/07/scxml", "scxml:property");
+      propertyElem.setAttribute("name", namelistIter->first);
+      Arabica::DOM::Text<std::string> textElem = document.createTextNode(namelistIter->second);
+      propertyElem.appendChild(textElem);
+      payloadElem.appendChild(propertyElem);
+      namelistIter++;
+    }
+
+  }
+  
   
   scxmlMsg.setAttribute("sendid", sendid);
   
@@ -146,6 +181,31 @@ Event Event::fromXML(const std::string& xmlString) {
       event.name = ATTR(scxmlMsg, "name");
     if (HAS_ATTR(scxmlMsg, "sendid"))
       event.sendid = ATTR(scxmlMsg, "sendid");
+    
+    Arabica::DOM::NodeList<std::string> payloads = scxmlMsg.getElementsByTagName("scxml:payload");
+    if (payloads.getLength() > 0) {
+      Arabica::DOM::Node<std::string> payload = payloads.item(0);
+      if (payload.getNodeType() == Arabica::DOM::Node_base::ELEMENT_NODE) {
+        Arabica::DOM::Element<std::string> payloadElem = (Arabica::DOM::Element<std::string>)payload;
+        Arabica::DOM::NodeList<std::string> properties = payloadElem.getElementsByTagName("scxml:property");
+        if (properties.getLength() > 0) {
+          for (int i = 0; i < properties.getLength(); i++) {
+            if (HAS_ATTR(properties.item(i), "name")) {
+              std::string key = ATTR(properties.item(i), "name");
+              std::string value;
+              Arabica::DOM::NodeList<std::string> childs = properties.item(i).getChildNodes();
+              for (int j = 0; j < childs.getLength(); j++) {
+                if (childs.item(j).getNodeType() == Arabica::DOM::Node_base::TEXT_NODE) {
+                  value = childs.item(j).getNodeValue();
+                  break;
+                }
+              }
+              event.compound[key] = Data(value, VERBATIM);
+            }
+          }
+        }
+      }
+    }
   }
   return event;
 }
@@ -160,7 +220,7 @@ InvokeRequest InvokeRequest::fromXML(const std::string& xmlString) {
 
 #ifndef SWIGJAVA
 std::ostream& operator<< (std::ostream& os, const Event& event) {
-  os << (event.type == Event::EXTERNAL ? "External" : "Internal") << " Event " << (event.dom ? "with DOM attached" : "") << std::endl;
+  os << (event.type == Event::EXTERNAL ? "External" : "Internal") << " Event " /* << (event.dom ? "with DOM attached" : "")*/ << std::endl;
   
   if (event.name.size() > 0)
     os << "  name: " << event.name << std::endl;

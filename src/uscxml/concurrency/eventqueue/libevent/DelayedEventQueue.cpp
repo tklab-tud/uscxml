@@ -11,7 +11,7 @@ namespace uscxml {
   }
 
   DelayedEventQueue::~DelayedEventQueue() {
-    std::cout << "Deleting DelayedEventQueue" << std::endl;
+//    std::cout << "Deleting DelayedEventQueue" << std::endl;
     stop();
     if (_thread)
       _thread->join();

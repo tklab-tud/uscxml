@@ -1,0 +1,37 @@
+<scxml datamodel="ecmascript" initial="start" binding="late" name="test-donedata">
+	<parallel id="start">
+		<onentry>
+			<raise event="e1" />
+			<raise event="e2" />
+			<raise event="e4" />
+			<raise event="e1" />
+		</onentry>
+    <transition event="done.state.start" target="final"/>
+
+    <state id="S1" initial="S11">
+        <state id="S11">
+            <transition event="e4" target="S12"/>
+        </state>
+        <state id="S12">
+            <transition event="e1" target="S1Final"/>
+        </state>
+        <final id="S1Final"/>
+    </state> 
+
+    <state id="S2" initial="S21">
+        <state id="S21">
+            <transition event="e1" target="S22"/>
+        </state>
+        <state id="S22">
+            <transition event="e2" target="S2Final" />
+        </state>
+        <final id="S2Final"/>
+    </state> 
+	</parallel>
+	
+	<state id="final" final="true">
+		<onentry>
+			<log expr="'Finished!'"/>
+		</onentry>
+	</state>
+</scxml>

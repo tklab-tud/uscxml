@@ -10,7 +10,8 @@ namespace uscxml {
     _dataModels["ecmascript"] = new V8DataModel();
 //    _ioProcessors["basichttp"] = new PionIOProcessor();
     _ioProcessors["basichttp"] = new EventIOProcessor();
-    _ioProcessors["http://www.w3.org/TR/scxml/#SCXMLEventProcessor"] = new EventIOProcessor();
+    // use basichttp for transporting to/from scxml sessions as well
+    _ioProcessors["http://www.w3.org/TR/scxml/#SCXMLEventProcessor"] = _ioProcessors["basichttp"];
     _invoker["scxml"] = new USCXMLInvoker();
     _invoker["http://www.w3.org/TR/scxml/"] = _invoker["scxml"];
   }

@@ -159,7 +159,8 @@ void EventIOProcessor::httpRecvReq(struct evhttp_request *req, void *arg) {
 
   Event reqEvent;
   reqEvent.type = Event::EXTERNAL;
-
+  bool scxmlStructFound = false;
+  
   // map headers to event structure
   headers = evhttp_request_get_input_headers(req);
 	for (header = headers->tqh_first; header;
@@ -168,6 +169,7 @@ void EventIOProcessor::httpRecvReq(struct evhttp_request *req, void *arg) {
 //    std::cout << "Value: " << evhttp_decode_uri(header->value) << std::endl;
     if (boost::iequals("_scxmleventstruct", header->key)) {
       reqEvent = Event::fromXML(evhttp_decode_uri(header->value));
+      scxmlStructFound = true;
       break;
     } else if (boost::iequals("_scxmleventname", header->key)) {
       reqEvent.name = evhttp_decode_uri(header->value);
@@ -176,18 +178,20 @@ void EventIOProcessor::httpRecvReq(struct evhttp_request *req, void *arg) {
     }
 	}
 
-  // get content into event
-  std::string content;
-	buf = evhttp_request_get_input_buffer(req);
-	while (evbuffer_get_length(buf)) {
-		int n;
-		char cbuf[128];
-		n = evbuffer_remove(buf, cbuf, sizeof(buf)-1);
-		if (n > 0) {
-      content.append(cbuf, n);
+  if (!scxmlStructFound) {
+    // get content into event
+    std::string content;
+    buf = evhttp_request_get_input_buffer(req);
+    while (evbuffer_get_length(buf)) {
+      int n;
+      char cbuf[128];
+      n = evbuffer_remove(buf, cbuf, sizeof(buf)-1);
+      if (n > 0) {
+        content.append(cbuf, n);
+      }
     }
-	}
-  reqEvent.compound["content"] = Data(content, Data::VERBATIM);
+    reqEvent.compound["content"] = Data(content, Data::VERBATIM);
+  }
   
   EventIOProcessor* THIS = (EventIOProcessor*)arg;
   THIS->_interpreter->receive(reqEvent);

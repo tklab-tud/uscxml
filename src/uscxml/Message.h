@@ -57,12 +57,13 @@ public:
   };
   
   Event() : type(INTERNAL) {}
-  
+  Event(const Arabica::DOM::Node<std::string>& xmlString) : type(INTERNAL) {};
+
   std::string name;
   Type type;
   std::string origin;
   std::string origintype;
-  Arabica::DOM::Node<std::string> dom;
+//  Arabica::DOM::Node<std::string> dom;
   std::string sendid;
   std::string invokeid;
 
@@ -85,7 +86,6 @@ public:
   std::string src;
   std::string namelist;
   bool autoForward;
-  Arabica::DOM::Node<std::string> finalize;
   std::map<std::string, std::string> params;
   std::string content;
 
@@ -113,6 +113,7 @@ public:
   std::string toXMLString() {
     std::stringstream ss;
     ss << toDocument();
+//    std::cout << ss.str() << std::endl;
     return ss.str();
   }
 

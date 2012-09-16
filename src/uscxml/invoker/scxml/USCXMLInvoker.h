@@ -20,6 +20,7 @@ public:
   virtual void sendToParent(SendRequest& req);
 
 protected:
+  std::string _invokeId;
   Interpreter* _invokedInterpreter;
   Interpreter* _parentInterpreter;
 };

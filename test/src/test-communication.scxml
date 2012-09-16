@@ -1,5 +1,8 @@
 <scxml datamodel="ecmascript" initial="start" binding="late" name="foo">
 	<state id="start">
+	
+		<!-- Setup datamodel, print environment and send ourself an event to transition to next state -->
+
 		<datamodel>
 			<data id="invokeconfig">
 				<invoker id="scxml" name="http://www.w3.org/TR/scxml/" location="_runtime" />
@@ -10,7 +13,7 @@
 		<onentry>
 			<log expr="'basichttp listening as ' + _ioprocessors['basichttp'].location" />
 			<log expr="'Entered step1'" />
-			<log expr="'Sending ourself an event'" />
+			<log expr="'Sending ourself an event with data via basichttp'" />
 			<send targetexpr="_ioprocessors['basichttp'].location" namelist="foo" type="basichttp" event="transitionToNext">
 				<param name="bar" expr="'b' + 'ar'" />
 				<content>
@@ -20,7 +23,7 @@ This is some content you got there dude!
 				</content>
 			</send>
 		</onentry>
-		<transition event="transitionToNext" target="step1" />
+		<transition event="transitionToNext" target="step1" cond="_event.data.bar == 'this is the bar data'" />
 	</state>
 	<state id="step1">
 		<onentry>
@@ -35,7 +38,11 @@ This is some content you got there dude!
 			<log expr="'Entered step2'" />
 			<log expr="'Invoking scxml interpreter'" />
 		</onentry>
-		<invoke type="http://www.w3.org/TR/scxml/" src="test-invoked.scxml" />
+		<invoke type="http://www.w3.org/TR/scxml/" src="test-invoked.scxml">
+			<finalize>
+				<log expr="'Calling finalize on returned event'" />
+			</finalize>
+		</invoke>		
 		<transition event="transitionToNext" target="step2" />
 	</state>
 	<final id="final">
