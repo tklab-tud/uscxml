@@ -43,7 +43,7 @@ This is some content you got there dude!
 				<log expr="'Calling finalize on returned event'" />
 			</finalize>
 		</invoke>		
-		<transition event="transitionToNext" target="step2" />
+		<transition event="transitionToNext" target="final" />
 	</state>
 	<final id="final">
 		<onentry>

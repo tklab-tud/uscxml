@@ -18,8 +18,7 @@ int main(int argc, char** argv) {
   Event event1;
   event1.name = "event1";
   scxml->receive(event1);
-  scxml->waitForStabilization();
-  while(true)
-    tthread::this_thread::sleep_for(tthread::chrono::milliseconds(200));
+  scxml->join();
+  tthread::this_thread::sleep_for(tthread::chrono::milliseconds(500));
   
 }

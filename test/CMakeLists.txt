@@ -20,15 +20,15 @@ set_target_properties(test-ecmascript-v8 PROPERTIES FOLDER "Tests")
 
 add_executable(test-communication src/test-communication.cpp)
 target_link_libraries(test-communication uscxml)
-add_test(test-communication test-communication)
+add_test(test-communication ${CURRENT_BINARY_DIR}/test-communication ${CMAKE_SOURCE_DIR}/test/src/test-communication.scxml)
 set_target_properties(test-communication PROPERTIES FOLDER "Tests")
 
 add_executable(test-eventdelay src/test-eventdelay.cpp)
 target_link_libraries(test-eventdelay uscxml)
-add_test(test-eventdelay test-eventdelay)
+add_test(test-eventdelay ${CURRENT_BINARY_DIR}/test-eventdelay)
 set_target_properties(test-eventdelay PROPERTIES FOLDER "Tests")
 
 add_executable(test-completion src/test-completion.cpp)
 target_link_libraries(test-completion uscxml)
-add_test(test-completion ${CMAKE_SOURCE_DIR}/test/src/test-donedata.scxml)
+add_test(test-completion ${CURRENT_BINARY_DIR}/test-completion ${CMAKE_SOURCE_DIR}/test/src/test-donedata.scxml)
 set_target_properties(test-completion PROPERTIES FOLDER "Tests")

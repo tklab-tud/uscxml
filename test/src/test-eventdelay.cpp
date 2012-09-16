@@ -26,7 +26,7 @@ int main(int argc, char** argv) {
 //  eq->addEvent("bar", callback, 300, (void*)"event bar");
 //  eq->addEvent("baz", callback, 400, (void*)"event baz");
 
-  for (unsigned int i = 0; i <= 5000; i += 500) {
+  for (unsigned int i = 0; i <= 2000; i += 200) {
 //    eq->stop();
     std::stringstream ss;
     ss << i;
@@ -34,6 +34,6 @@ int main(int argc, char** argv) {
     std::cout << "Added " << i << std::endl;
 //    eq->start();
   }
-  tthread::this_thread::sleep_for(tthread::chrono::milliseconds(20000));
+  tthread::this_thread::sleep_for(tthread::chrono::milliseconds(2000));
 
 }

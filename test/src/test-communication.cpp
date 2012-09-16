@@ -16,12 +16,16 @@ int main(int argc, char** argv) {
 //  e.compound["foo2"] = Data("bar2", Data::VERBATIM);
 //  std::cout << e.toDocument() << std::endl;
   
-  for (int i = 0; i < 1; i++) {
+  int nrInterpreters = 1;
+  for (int i = 0; i < nrInterpreters; i++) {
     _interpreters.push_back(Interpreter::fromURI(argv[1]));
     _interpreters.back()->start();
   }
 
-  while(true)
-    tthread::this_thread::sleep_for(tthread::chrono::milliseconds(1000000));
+  std::list<Interpreter*>::iterator interIter = _interpreters.begin();
+  while(interIter != _interpreters.end()) {
+    (*interIter)->join();
+    interIter++;
+  }
 
 }

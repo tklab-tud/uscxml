@@ -39,7 +39,8 @@ namespace uscxml {
     
 		void start();
 		static void run(void*);
-
+    void join() { if (_thread != NULL) _thread->join(); };
+    
     void interpret();
     bool validate();
     
