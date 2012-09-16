@@ -1,99 +1,0 @@
-Ttest-execution
-v5
-r1
-cCheck dependencies
-cCompileC build/xcode/test/uscxml.build/Debug/test-execution.build/Objects-normal/x86_64/test-execution.o /Users/sradomski/Documents/TK/Code/uscxml/test/src/test-execution.cpp normal x86_64 c++ com.apple.compilers.llvm.clang.1_0.compiler
-cLd /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/test/Debug/test-execution normal x86_64
-cPhaseScriptExecution "CMake PostBuild Rules" /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/test/uscxml.build/Debug/test-execution.build/Script-3118645FE50243FFBC78EACF.sh
-
-N/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.7.sdk
-c000000005022B42800000000000000CC
-t1344451624
-s204
-
-N/Users/sradomski/Documents/TK/Code/uscxml/build/xcode/test/Debug/test-execution
-t2
-s0
-
-N/Users/sradomski/Documents/TK/Code/uscxml/build/xcode/test/uscxml.build/Debug/test-execution.build/Objects-normal/x86_64/test-execution.LinkFileList
-c0000000050523045000000000000008A
-t1347563589
-s138
-
-N/Users/sradomski/Documents/TK/Code/uscxml/build/xcode/test/uscxml.build/Debug/test-execution.build/Objects-normal/x86_64/test-execution.o
-t2
-s0
-
-N/Users/sradomski/Documents/TK/Code/uscxml/build/xcode/test/uscxml.build/Debug/test-execution.build/Script-3118645FE50243FFBC78EACF.sh
-c000000005052304500000000000000CD
-t1347563589
-s205
-
-N/Users/sradomski/Documents/TK/Code/uscxml/src/uscxml/Interpreter.h
-c00000000504B595F000000000000348C
-t1347115359
-s13452
-
-N/Users/sradomski/Documents/TK/Code/uscxml/test/src/test-execution.cpp
-c00000000504796980000000000000186
-t1346868888
-s390
-i"uscxml/Interpreter.h"
-
-CBuild AST from /Users/sradomski/Documents/TK/Code/uscxml/test/src/test-execution.cpp
-r0
-
-CCheck dependencies
-r0
-lSLF05#21%IDEActivityLogSection1@2#32"com.apple.dt.IDE.BuildLogSection18"Check dependenciesc7621bc56702b641^53231cc56702b641^---0#1#0#--18"Check dependencies36"1170B945-2D10-43C5-9006-F88415008D2C-
-
-CCompileC build/xcode/test/uscxml.build/Debug/test-execution.build/Objects-normal/x86_64/test-execution.o /Users/sradomski/Documents/TK/Code/uscxml/test/src/test-execution.cpp normal x86_64 c++ com.apple.compilers.llvm.clang.1_0.compiler
-s369256389.111866
-e369256393.692467
-r1
-xCompileC
-xbuild/xcode/test/uscxml.build/Debug/test-execution.build/Objects-normal/x86_64/test-execution.o
-x/Users/sradomski/Documents/TK/Code/uscxml/test/src/test-execution.cpp
-xnormal
-xx86_64
-xc++
-xcom.apple.compilers.llvm.clang.1_0.compiler
-oIn file included from /Users/sradomski/Documents/TK/Code/uscxml/test/src/test-execution.cpp:1:
-oIn file included from /Users/sradomski/Documents/TK/Code/uscxml/src/uscxml/Interpreter.h:11:
-oIn file included from /usr/local/include/arabica/XPath/XPath.hpp:4:
-oIn file included from /usr/local/include/arabica/XPath/impl/xpath_parser.hpp:19:
-oIn file included from /usr/local/include/arabica/XPath/impl/xpath_object.hpp:7:
-oIn file included from /usr/local/include/arabica/DOM/Node.hpp:9:
-oIn file included from /usr/local/include/arabica/Arabica/StringAdaptor.hpp:7:
-o/usr/local/include/arabica/convert/utf8ucs2codecvt.hpp:58:15: warning: 'Arabica::convert::utf8ucs2codecvt::do_length' hides overloaded virtual function [-Woverloaded-virtual]
-o  virtual int do_length(const std::mbstate_t&,
-o              ^
-o/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.7.sdk/usr/include/c++/4.2.1/bits/codecvt.h:442:11: note: hidden overloaded virtual function 'std::codecvt<wchar_t, char, __mbstate_t>::do_length' declared here
-o      int do_length(state_type&, const extern_type* __from,
-o          ^
-o1 warning generated.
-lSLF05#21%IDEActivityLogSection1@2#32"com.apple.dt.IDE.BuildLogSection77"Compile /Users/sradomski/Documents/TK/Code/uscxml/test/src/test-execution.cppb7d51cc56702b641^685bb1c96702b641^-1144"In file included from /Users/sradomski/Documents/TK/Code/uscxml/test/src/test-execution.cpp:1:In file included from /Users/sradomski/Documents/TK/Code/uscxml/src/uscxml/Interpreter.h:11:In file included from /usr/local/include/arabica/XPath/XPath.hpp:4:In file included from /usr/local/include/arabica/XPath/impl/xpath_parser.hpp:19:In file included from /usr/local/include/arabica/XPath/impl/xpath_object.hpp:7:In file included from /usr/local/include/arabica/DOM/Node.hpp:9:In file included from /usr/local/include/arabica/Arabica/StringAdaptor.hpp:7:/usr/local/include/arabica/convert/utf8ucs2codecvt.hpp:58:15: warning: 'Arabica::convert::utf8ucs2codecvt::do_length' hides overloaded virtual function [-Woverloaded-virtual]  virtual int do_length(const std::mbstate_t&,              ^/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.7.sdk/usr/include/c++/4.2.1/bits/codecvt.h:442:11: note: hidden overloaded virtual function 'std::codecvt<wchar_t, char, __mbstate_t>::do_length' declared here      int do_length(state_type&, const extern_type* __from,          ^1 warning generated.1(36%IDEClangDiagnosticActivityLogMessage2@80"'Arabica::convert::utf8ucs2codecvt::do_length' hides overloaded virtual function-369256393#18446744073709551615#0#8(2@94"In file included from /Users/sradomski/Documents/TK/Code/uscxml/test/src/test-execution.cpp:1:-369256393#18446744073709551615#0#-0#27"com.apple.dt.IDE.diagnostic23%DVTTextDocumentLocation3@85"file://localhost/Users/sradomski/Documents/TK/Code/uscxml/test/src/test-execution.cpp0000000000000000^0#9#0#9#9#0#21"Clang LLVM 1.0 Notice--2@92"In file included from /Users/sradomski/Documents/TK/Code/uscxml/src/uscxml/Interpreter.h:11:-369256393#18446744073709551615#0#-0#27"com.apple.dt.IDE.diagnostic3@82"file://localhost/Users/sradomski/Documents/TK/Code/uscxml/src/uscxml/Interpreter.h0000000000000000^10#9#10#9#196#0#21"Clang LLVM 1.0 Notice--2@67"In file included from /usr/local/include/arabica/XPath/XPath.hpp:4:-369256393#18446744073709551615#0#-0#27"com.apple.dt.IDE.diagnostic3@58"file://localhost/usr/local/include/arabica/XPath/XPath.hpp0000000000000000^3#9#3#9#78#0#21"Clang LLVM 1.0 Notice--2@80"In file included from /usr/local/include/arabica/XPath/impl/xpath_parser.hpp:19:-369256393#18446744073709551615#0#-0#27"com.apple.dt.IDE.diagnostic3@70"file://localhost/usr/local/include/arabica/XPath/impl/xpath_parser.hpp0000000000000000^18#9#18#9#447#0#21"Clang LLVM 1.0 Notice--2@79"In file included from /usr/local/include/arabica/XPath/impl/xpath_object.hpp:7:-369256393#18446744073709551615#0#-0#27"com.apple.dt.IDE.diagnostic3@70"file://localhost/usr/local/include/arabica/XPath/impl/xpath_object.hpp0000000000000000^6#9#6#9#143#0#21"Clang LLVM 1.0 Notice--2@64"In file included from /usr/local/include/arabica/DOM/Node.hpp:9:-369256393#18446744073709551615#0#-0#27"com.apple.dt.IDE.diagnostic3@55"file://localhost/usr/local/include/arabica/DOM/Node.hpp0000000000000000^8#9#8#9#197#0#21"Clang LLVM 1.0 Notice--2@77"In file included from /usr/local/include/arabica/Arabica/StringAdaptor.hpp:7:-369256393#18446744073709551615#0#-0#27"com.apple.dt.IDE.diagnostic3@68"file://localhost/usr/local/include/arabica/Arabica/StringAdaptor.hpp0000000000000000^6#9#6#9#171#0#21"Clang LLVM 1.0 Notice--2@102"Hidden overloaded virtual function 'std::codecvt<wchar_t, char, __mbstate_t>::do_length' declared here-369256393#18446744073709551615#0#-0#27"com.apple.dt.IDE.diagnostic3@151"file://localhost/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.7.sdk/usr/include/c++/4.2.1/bits/codecvt.h0000000000000000^441#10#441#10#15179#0#14"Semantic Issue--1#27"com.apple.dt.IDE.diagnostic3@70"file://localhost/usr/local/include/arabica/convert/utf8ucs2codecvt.hpp0000000000000000^57#14#57#14#1790#0#14"Semantic Issue--0#0#0#-19%DVTDocumentLocation4@85"file://localhost/Users/sradomski/Documents/TK/Code/uscxml/test/src/test-execution.cpp0000000000000000^2406"CompileC build/xcode/test/uscxml.build/Debug/test-execution.build/Objects-normal/x86_64/test-execution.o test/src/test-execution.cpp normal x86_64 c++ com.apple.compilers.llvm.clang.1_0.compiler    cd /Users/sradomski/Documents/TK/Code/uscxml    setenv LANG en_US.US-ASCII    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -x c++ -arch x86_64 -fmessage-length=0 -Wno-trigraphs -fpascal-strings -O0 -Wno-missing-field-initializers -Wno-missing-prototypes -Wno-return-type -Wno-non-virtual-dtor -Wno-overloaded-virtual -Wno-exit-time-destructors -Wformat -Wno-missing-braces -Wparentheses -Wswitch -Wno-unused-function -Wno-unused-label -Wno-unused-parameter -Wno-unused-variable -Wunused-value -Wno-uninitialized -Wno-unknown-pragmas -Wno-shadow -Wno-four-char-constants -Wno-conversion -Wno-sign-compare -Wno-shorten-64-to-32 -Wno-newline-eof -Wc++11-extensions "-DCMAKE_INTDIR=\"Debug\"" -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.7.sdk -fasm-blocks -Wdeprecated-declarations -Winvalid-offsetof -mmacosx-version-min=10.7 -g -Wno-sign-conversion -I/Users/sradomski/Documents/TK/Code/uscxml/build/xcode/test/Debug/include -I/opt/local/include/libxml2 -I/Users/sradomski/Documents/TK/Code/glog/src -I/usr/local/include/arabica -I/opt/local/include -I/Users/sradomski/Documents/TK/Code/libevent/include -I/Users/sradomski/Documents/TK/Code/v8/include -I/Users/sradomski/Documents/TK/Code/uscxml/src -I/Users/sradomski/Documents/TK/Code/uscxml/build/xcode/test/uscxml.build/Debug/test-execution.build/DerivedSources/x86_64 -I/Users/sradomski/Documents/TK/Code/uscxml/build/xcode/test/uscxml.build/Debug/test-execution.build/DerivedSources -Wmost -Wno-four-char-constants -Wno-unknown-pragmas -F/Users/sradomski/Documents/TK/Code/uscxml/build/xcode/test/Debug -MMD -MT dependencies -MF /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/test/uscxml.build/Debug/test-execution.build/Objects-normal/x86_64/test-execution.d --serialize-diagnostics /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/test/uscxml.build/Debug/test-execution.build/Objects-normal/x86_64/test-execution.dia -c /Users/sradomski/Documents/TK/Code/uscxml/test/src/test-execution.cpp -o /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/test/uscxml.build/Debug/test-execution.build/Objects-normal/x86_64/test-execution.o36"9014B6BC-E471-4706-9EB6-BAA6C0A0CF80-
-
-CLd /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/test/Debug/test-execution normal x86_64
-s369256393.700972
-e369256397.110481
-r1
-xLd
-x/Users/sradomski/Documents/TK/Code/uscxml/build/xcode/test/Debug/test-execution
-xnormal
-xx86_64
-lSLF05#21%IDEActivityLogSection1@2#32"com.apple.dt.IDE.BuildLogSection84"Link /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/test/Debug/test-executionab93b3c96702b641^37541ccd6702b641^---0#0#0#--1269"Ld build/xcode/test/Debug/test-execution normal x86_64    cd /Users/sradomski/Documents/TK/Code/uscxml    setenv MACOSX_DEPLOYMENT_TARGET 10.7    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang++ -arch x86_64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.7.sdk -L/Users/sradomski/Documents/TK/Code/uscxml/build/xcode/test/Debug -F/Users/sradomski/Documents/TK/Code/uscxml/build/xcode/test/Debug -filelist /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/test/uscxml.build/Debug/test-execution.build/Objects-normal/x86_64/test-execution.LinkFileList -mmacosx-version-min=10.7 -Wl,-search_paths_first -Wl,-headerpad_max_install_names /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/Debug/libuscxml.a /opt/local/lib/libxml2.dylib /Users/sradomski/Documents/TK/Code/glog/.libs/libglog.a /usr/local/lib/libarabica.a /Users/sradomski/Documents/TK/Code/libevent/.libs/libevent.a /Users/sradomski/Documents/TK/Code/libevent/.libs/libevent_pthreads.a /Users/sradomski/Documents/TK/Code/v8/out/native/libv8_base.a /Users/sradomski/Documents/TK/Code/v8/out/native/libv8_snapshot.a -o /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/test/Debug/test-execution36"F5C46885-54E6-4786-A029-789951D91AE2-
-
-CPhaseScriptExecution "CMake PostBuild Rules" /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/test/uscxml.build/Debug/test-execution.build/Script-3118645FE50243FFBC78EACF.sh
-s369256397.122691
-e369256397.206678
-r1
-xPhaseScriptExecution
-xCMake PostBuild Rules
-x/Users/sradomski/Documents/TK/Code/uscxml/build/xcode/test/uscxml.build/Debug/test-execution.build/Script-3118645FE50243FFBC78EACF.sh
-oecho "Depend check for xcode"
-oDepend check for xcode
-ocd /Users/sradomski/Documents/TK/Code/uscxml/build/xcode && make -C /Users/sradomski/Documents/TK/Code/uscxml/build/xcode -f /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/CMakeScripts/XCODE_DEPEND_HELPER.make PostBuild.test-execution.Debug
-omake[1]: Nothing to be done for `PostBuild.test-execution.Debug'.
-lSLF05#21%IDEActivityLogSection1@2#32"com.apple.dt.IDE.BuildLogSection47"Run custom shell script 'CMake PostBuild Rules'f32120cd6702b641^962235cd6702b641^-367"echo "Depend check for xcode"Depend check for xcodecd /Users/sradomski/Documents/TK/Code/uscxml/build/xcode && make -C /Users/sradomski/Documents/TK/Code/uscxml/build/xcode -f /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/CMakeScripts/XCODE_DEPEND_HELPER.make PostBuild.test-execution.Debugmake[1]: Nothing to be done for `PostBuild.test-execution.Debug'.4(21%IDEActivityLogMessage2@30"echo "Depend check for xcode"-369256397#0#30#-0#-----2@23"Depend check for xcode-369256397#30#23#-0#-----2@248"cd /Users/sradomski/Documents/TK/Code/uscxml/build/xcode && make -C /Users/sradomski/Documents/TK/Code/uscxml/build/xcode -f /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/CMakeScripts/XCODE_DEPEND_HELPER.make PostBuild.test-execution.Debug-369256397#53#248#-0#-----2@66"make[1]: Nothing to be done for `PostBuild.test-execution.Debug'.-369256397#301#66#-0#-----0#0#0#--335"PhaseScriptExecution "CMake PostBuild Rules" build/xcode/test/uscxml.build/Debug/test-execution.build/Script-3118645FE50243FFBC78EACF.sh    cd /Users/sradomski/Documents/TK/Code/uscxml    /bin/sh -c /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/test/uscxml.build/Debug/test-execution.build/Script-3118645FE50243FFBC78EACF.sh36"D0696ECD-563D-4DE7-AF8B-DB63FD399127-
-

@@ -1,28 +1,0 @@
-TZERO_CHECK
-v5
-r1
-cCheck dependencies
-cPhaseScriptExecution "CMake Rules" /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/uscxml.build/Release/ZERO_CHECK.build/Script-E6289392FF3140B8BEFBFA2B.sh
-
-N/Users/sradomski/Documents/TK/Code/uscxml/build/xcode/uscxml.build/Release/ZERO_CHECK.build/Script-E6289392FF3140B8BEFBFA2B.sh
-c000000005054FE6500000000000000C5
-t1347747429
-s197
-
-CCheck dependencies
-r0
-lSLF05#21%IDEActivityLogSection1@2#32"com.apple.dt.IDE.BuildLogSection18"Check dependencies5112fe7b5005b641^a968007c5005b641^---0#1#0#--18"Check dependencies36"486CD649-623B-420B-82DD-92B06D1728A1-
-
-CPhaseScriptExecution "CMake Rules" /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/uscxml.build/Release/ZERO_CHECK.build/Script-E6289392FF3140B8BEFBFA2B.sh
-s369447036.003429
-e369447036.036957
-r1
-xPhaseScriptExecution
-xCMake Rules
-x/Users/sradomski/Documents/TK/Code/uscxml/build/xcode/uscxml.build/Release/ZERO_CHECK.build/Script-E6289392FF3140B8BEFBFA2B.sh
-oecho ""
-o
-omake -f /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/CMakeScripts/ReRunCMake.make
-omake[1]: `CMakeFiles/cmake.check_cache' is up to date.
-lSLF05#21%IDEActivityLogSection1@2#32"com.apple.dt.IDE.BuildLogSection37"Run custom shell script 'CMake Rules'8a3c017c5005b641^ab76097c5005b641^-155"echo ""make -f /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/CMakeScripts/ReRunCMake.makemake[1]: `CMakeFiles/cmake.check_cache' is up to date.3(21%IDEActivityLogMessage2@8"echo ""-369447036#0#8#-0#-----2@91"make -f /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/CMakeScripts/ReRunCMake.make-369447036#9#91#-0#-----2@55"make[1]: `CMakeFiles/cmake.check_cache' is up to date.-369447036#100#55#-0#-----0#0#0#--311"PhaseScriptExecution "CMake Rules" build/xcode/uscxml.build/Release/ZERO_CHECK.build/Script-E6289392FF3140B8BEFBFA2B.sh    cd /Users/sradomski/Documents/TK/Code/uscxml    /bin/sh -c /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/uscxml.build/Release/ZERO_CHECK.build/Script-E6289392FF3140B8BEFBFA2B.sh36"2333D901-7489-4524-A3FC-14A20CF56E90-
-

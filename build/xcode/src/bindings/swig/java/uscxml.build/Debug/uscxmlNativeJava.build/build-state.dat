@@ -1,110 +1,0 @@
-TuscxmlNativeJava
-v5
-r1
-cCheck dependencies
-cPhaseScriptExecution "CMake Rules" /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/src/bindings/swig/java/uscxml.build/Debug/uscxmlNativeJava.build/Script-480C94726C0043C0BC2C4359.sh
-cCompileC build/xcode/src/bindings/swig/java/uscxml.build/Debug/uscxmlNativeJava.build/Objects-normal/x86_64/uscxmlJAVA_wrap.o /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/src/bindings/swig/java/uscxmlJAVA_wrap.cxx normal x86_64 c++ com.apple.compilers.llvm.clang.1_0.compiler
-cLd /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/src/bindings/swig/java/Debug/libuscxmlNativeJava.jnilib normal x86_64
-cPhaseScriptExecution "CMake PostBuild Rules" /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/src/bindings/swig/java/uscxml.build/Debug/uscxmlNativeJava.build/Script-490D5091BC6E48BABC920A6B.sh
-
-N/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.7.sdk
-c000000005022B42800000000000000CC
-t1344451624
-s204
-
-N/Users/sradomski/Documents/TK/Code/uscxml/build/xcode/src/bindings/swig/java/Debug/libuscxmlNativeJava.jnilib
-t2
-s0
-
-N/Users/sradomski/Documents/TK/Code/uscxml/build/xcode/src/bindings/swig/java/uscxml.build/Debug/uscxmlNativeJava.build/Objects-normal/x86_64/uscxmlJAVA_wrap.o
-t2
-s0
-
-N/Users/sradomski/Documents/TK/Code/uscxml/build/xcode/src/bindings/swig/java/uscxml.build/Debug/uscxmlNativeJava.build/Objects-normal/x86_64/uscxmlNativeJava.LinkFileList
-c0000000050523045000000000000009F
-t1347563589
-s159
-
-N/Users/sradomski/Documents/TK/Code/uscxml/build/xcode/src/bindings/swig/java/uscxml.build/Debug/uscxmlNativeJava.build/Script-480C94726C0043C0BC2C4359.sh
-c000000005052304500000000000000F9
-t1347563589
-s249
-
-N/Users/sradomski/Documents/TK/Code/uscxml/build/xcode/src/bindings/swig/java/uscxml.build/Debug/uscxmlNativeJava.build/Script-490D5091BC6E48BABC920A6B.sh
-c000000005052304500000000000000F3
-t1347563589
-s243
-
-N/Users/sradomski/Documents/TK/Code/uscxml/build/xcode/src/bindings/swig/java/uscxmlJAVA_wrap.cxx
-c00000000000000000000000000000000
-t2
-s0
-
-CBuild AST from /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/src/bindings/swig/java/uscxmlJAVA_wrap.cxx
-r0
-
-CCheck dependencies
-r0
-lSLF05#21%IDEActivityLogSection1@2#32"com.apple.dt.IDE.BuildLogSection18"Check dependencies0a671bc56702b641^795c1cc56702b641^---0#1#0#--18"Check dependencies36"12D7D926-3998-483D-98D7-9DC2B80EF834-
-
-CCompileC build/xcode/src/bindings/swig/java/uscxml.build/Debug/uscxmlNativeJava.build/Objects-normal/x86_64/uscxmlJAVA_wrap.o /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/src/bindings/swig/java/uscxmlJAVA_wrap.cxx normal x86_64 c++ com.apple.compilers.llvm.clang.1_0.compiler
-s369256390.082427
-e369256396.027215
-r1
-xCompileC
-xbuild/xcode/src/bindings/swig/java/uscxml.build/Debug/uscxmlNativeJava.build/Objects-normal/x86_64/uscxmlJAVA_wrap.o
-x/Users/sradomski/Documents/TK/Code/uscxml/build/xcode/src/bindings/swig/java/uscxmlJAVA_wrap.cxx
-xnormal
-xx86_64
-xc++
-xcom.apple.compilers.llvm.clang.1_0.compiler
-oIn file included from /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/src/bindings/swig/java/uscxmlJAVA_wrap.cxx:412:
-oIn file included from /Users/sradomski/Documents/TK/Code/uscxml/src/bindings/swig/java/../../../uscxml/Message.h:8:
-oIn file included from /usr/local/include/arabica/DOM/Document.hpp:10:
-oIn file included from /usr/local/include/arabica/DOM/Node.hpp:9:
-oIn file included from /usr/local/include/arabica/Arabica/StringAdaptor.hpp:7:
-o/usr/local/include/arabica/convert/utf8ucs2codecvt.hpp:58:15: warning: 'Arabica::convert::utf8ucs2codecvt::do_length' hides overloaded virtual function [-Woverloaded-virtual]
-o  virtual int do_length(const std::mbstate_t&,
-o              ^
-o/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.7.sdk/usr/include/c++/4.2.1/bits/codecvt.h:442:11: note: hidden overloaded virtual function 'std::codecvt<wchar_t, char, __mbstate_t>::do_length' declared here
-o      int do_length(state_type&, const extern_type* __from,
-o          ^
-o1 warning generated.
-lSLF05#21%IDEActivityLogSection1@2#32"com.apple.dt.IDE.BuildLogSection104"Compile /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/src/bindings/swig/java/uscxmlJAVA_wrap.cxx4e4615c66702b641^1f4707cc6702b641^-1037"In file included from /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/src/bindings/swig/java/uscxmlJAVA_wrap.cxx:412:In file included from /Users/sradomski/Documents/TK/Code/uscxml/src/bindings/swig/java/../../../uscxml/Message.h:8:In file included from /usr/local/include/arabica/DOM/Document.hpp:10:In file included from /usr/local/include/arabica/DOM/Node.hpp:9:In file included from /usr/local/include/arabica/Arabica/StringAdaptor.hpp:7:/usr/local/include/arabica/convert/utf8ucs2codecvt.hpp:58:15: warning: 'Arabica::convert::utf8ucs2codecvt::do_length' hides overloaded virtual function [-Woverloaded-virtual]  virtual int do_length(const std::mbstate_t&,              ^/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.7.sdk/usr/include/c++/4.2.1/bits/codecvt.h:442:11: note: hidden overloaded virtual function 'std::codecvt<wchar_t, char, __mbstate_t>::do_length' declared here      int do_length(state_type&, const extern_type* __from,          ^1 warning generated.1(36%IDEClangDiagnosticActivityLogMessage2@80"'Arabica::convert::utf8ucs2codecvt::do_length' hides overloaded virtual function-369256396#18446744073709551615#0#6(2@123"In file included from /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/src/bindings/swig/java/uscxmlJAVA_wrap.cxx:412:-369256396#18446744073709551615#0#-0#27"com.apple.dt.IDE.diagnostic23%DVTTextDocumentLocation3@112"file://localhost/Users/sradomski/Documents/TK/Code/uscxml/build/xcode/src/bindings/swig/java/uscxmlJAVA_wrap.cxx0000000000000000^411#9#411#9#12944#0#21"Clang LLVM 1.0 Notice--2@115"In file included from /Users/sradomski/Documents/TK/Code/uscxml/src/bindings/swig/java/../../../uscxml/Message.h:8:-369256396#18446744073709551615#0#-0#27"com.apple.dt.IDE.diagnostic3@78"file://localhost/Users/sradomski/Documents/TK/Code/uscxml/src/uscxml/Message.h0000000000000000^7#9#7#9#110#0#21"Clang LLVM 1.0 Notice--2@69"In file included from /usr/local/include/arabica/DOM/Document.hpp:10:-369256396#18446744073709551615#0#-0#27"com.apple.dt.IDE.diagnostic3@59"file://localhost/usr/local/include/arabica/DOM/Document.hpp0000000000000000^9#9#9#9#160#0#21"Clang LLVM 1.0 Notice--2@64"In file included from /usr/local/include/arabica/DOM/Node.hpp:9:-369256396#18446744073709551615#0#-0#27"com.apple.dt.IDE.diagnostic3@55"file://localhost/usr/local/include/arabica/DOM/Node.hpp0000000000000000^8#9#8#9#197#0#21"Clang LLVM 1.0 Notice--2@77"In file included from /usr/local/include/arabica/Arabica/StringAdaptor.hpp:7:-369256396#18446744073709551615#0#-0#27"com.apple.dt.IDE.diagnostic3@68"file://localhost/usr/local/include/arabica/Arabica/StringAdaptor.hpp0000000000000000^6#9#6#9#171#0#21"Clang LLVM 1.0 Notice--2@102"Hidden overloaded virtual function 'std::codecvt<wchar_t, char, __mbstate_t>::do_length' declared here-369256396#18446744073709551615#0#-0#27"com.apple.dt.IDE.diagnostic3@151"file://localhost/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.7.sdk/usr/include/c++/4.2.1/bits/codecvt.h0000000000000000^441#10#441#10#15179#0#14"Semantic Issue--1#27"com.apple.dt.IDE.diagnostic3@70"file://localhost/usr/local/include/arabica/convert/utf8ucs2codecvt.hpp0000000000000000^57#14#57#14#1790#0#14"Semantic Issue--0#0#0#-19%DVTDocumentLocation4@112"file://localhost/Users/sradomski/Documents/TK/Code/uscxml/build/xcode/src/bindings/swig/java/uscxmlJAVA_wrap.cxx0000000000000000^2872"CompileC build/xcode/src/bindings/swig/java/uscxml.build/Debug/uscxmlNativeJava.build/Objects-normal/x86_64/uscxmlJAVA_wrap.o build/xcode/src/bindings/swig/java/uscxmlJAVA_wrap.cxx normal x86_64 c++ com.apple.compilers.llvm.clang.1_0.compiler    cd /Users/sradomski/Documents/TK/Code/uscxml    setenv LANG en_US.US-ASCII    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -x c++ -arch x86_64 -fmessage-length=0 -Wno-trigraphs -fpascal-strings -O0 -Wno-missing-field-initializers -Wno-missing-prototypes -Wno-return-type -Wno-non-virtual-dtor -Wno-overloaded-virtual -Wno-exit-time-destructors -Wformat -Wno-missing-braces -Wparentheses -Wswitch -Wno-unused-function -Wno-unused-label -Wno-unused-parameter -Wno-unused-variable -Wunused-value -Wno-uninitialized -Wno-unknown-pragmas -Wno-shadow -Wno-four-char-constants -Wno-conversion -Wno-sign-compare -Wno-shorten-64-to-32 -Wno-newline-eof -Wc++11-extensions "-DCMAKE_INTDIR=\"Debug\"" -DuscxmlNativeJava_EXPORTS -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.7.sdk -fasm-blocks -Wdeprecated-declarations -Winvalid-offsetof -mmacosx-version-min=10.7 -g -Wno-sign-conversion -I/Users/sradomski/Documents/TK/Code/uscxml/build/xcode/src/bindings/swig/java/Debug/include -I/opt/local/include/libxml2 -I/Users/sradomski/Documents/TK/Code/glog/src -I/usr/local/include/arabica -I/opt/local/include -I/Users/sradomski/Documents/TK/Code/libevent/include -I/Users/sradomski/Documents/TK/Code/v8/include -I/Users/sradomski/Documents/TK/Code/uscxml/src -I/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.7.sdk/System/Library/Frameworks/JavaVM.framework/Headers -I/Users/sradomski/Documents/TK/Code/uscxml/src/bindings/swig/java -I/Users/sradomski/Documents/TK/Code/uscxml/build/xcode/src/bindings/swig/java/uscxml.build/Debug/uscxmlNativeJava.build/DerivedSources/x86_64 -I/Users/sradomski/Documents/TK/Code/uscxml/build/xcode/src/bindings/swig/java/uscxml.build/Debug/uscxmlNativeJava.build/DerivedSources -Wmost -Wno-four-char-constants -Wno-unknown-pragmas -F/Users/sradomski/Documents/TK/Code/uscxml/build/xcode/src/bindings/swig/java/Debug -fPIC -MMD -MT dependencies -MF /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/src/bindings/swig/java/uscxml.build/Debug/uscxmlNativeJava.build/Objects-normal/x86_64/uscxmlJAVA_wrap.d --serialize-diagnostics /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/src/bindings/swig/java/uscxml.build/Debug/uscxmlNativeJava.build/Objects-normal/x86_64/uscxmlJAVA_wrap.dia -c /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/src/bindings/swig/java/uscxmlJAVA_wrap.cxx -o /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/src/bindings/swig/java/uscxml.build/Debug/uscxmlNativeJava.build/Objects-normal/x86_64/uscxmlJAVA_wrap.o36"C84134CB-FFCC-4BA9-8B3A-5CA9F3467B7D-
-
-CLd /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/src/bindings/swig/java/Debug/libuscxmlNativeJava.jnilib normal x86_64
-s369256396.034917
-e369256398.281097
-r1
-xLd
-x/Users/sradomski/Documents/TK/Code/uscxml/build/xcode/src/bindings/swig/java/Debug/libuscxmlNativeJava.jnilib
-xnormal
-xx86_64
-lSLF05#21%IDEActivityLogSection1@2#32"com.apple.dt.IDE.BuildLogSection114"Link /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/src/bindings/swig/java/Debug/libuscxmlNativeJava.jnilibf90f09cc6702b641^280e48ce6702b641^---0#0#0#--1431"Ld build/xcode/src/bindings/swig/java/Debug/libuscxmlNativeJava.jnilib normal x86_64    cd /Users/sradomski/Documents/TK/Code/uscxml    setenv MACOSX_DEPLOYMENT_TARGET 10.7    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang++ -arch x86_64 -bundle -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.7.sdk -L/Users/sradomski/Documents/TK/Code/uscxml/build/xcode/src/bindings/swig/java/Debug -F/Users/sradomski/Documents/TK/Code/uscxml/build/xcode/src/bindings/swig/java/Debug -filelist /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/src/bindings/swig/java/uscxml.build/Debug/uscxmlNativeJava.build/Objects-normal/x86_64/uscxmlNativeJava.LinkFileList -mmacosx-version-min=10.7 -Wl,-search_paths_first -Wl,-headerpad_max_install_names -framework JavaVM -framework JavaVM /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/Debug/libuscxml.a /opt/local/lib/libxml2.dylib /Users/sradomski/Documents/TK/Code/glog/.libs/libglog.a /usr/local/lib/libarabica.a /Users/sradomski/Documents/TK/Code/libevent/.libs/libevent.a /Users/sradomski/Documents/TK/Code/libevent/.libs/libevent_pthreads.a /Users/sradomski/Documents/TK/Code/v8/out/native/libv8_base.a /Users/sradomski/Documents/TK/Code/v8/out/native/libv8_snapshot.a -o /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/src/bindings/swig/java/Debug/libuscxmlNativeJava.jnilib36"F587F538-E1C5-4E50-9234-00AEAE6D6304-
-
-CPhaseScriptExecution "CMake PostBuild Rules" /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/src/bindings/swig/java/uscxml.build/Debug/uscxmlNativeJava.build/Script-490D5091BC6E48BABC920A6B.sh
-s369256398.290113
-e369256398.349948
-r1
-xPhaseScriptExecution
-xCMake PostBuild Rules
-x/Users/sradomski/Documents/TK/Code/uscxml/build/xcode/src/bindings/swig/java/uscxml.build/Debug/uscxmlNativeJava.build/Script-490D5091BC6E48BABC920A6B.sh
-oecho "Depend check for xcode"
-oDepend check for xcode
-ocd /Users/sradomski/Documents/TK/Code/uscxml/build/xcode && make -C /Users/sradomski/Documents/TK/Code/uscxml/build/xcode -f /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/CMakeScripts/XCODE_DEPEND_HELPER.make PostBuild.uscxmlNativeJava.Debug
-omake[1]: Nothing to be done for `PostBuild.uscxmlNativeJava.Debug'.
-lSLF05#21%IDEActivityLogSection1@2#32"com.apple.dt.IDE.BuildLogSection47"Run custom shell script 'CMake PostBuild Rules'2d0a4bce6702b641^969659ce6702b641^-371"echo "Depend check for xcode"Depend check for xcodecd /Users/sradomski/Documents/TK/Code/uscxml/build/xcode && make -C /Users/sradomski/Documents/TK/Code/uscxml/build/xcode -f /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/CMakeScripts/XCODE_DEPEND_HELPER.make PostBuild.uscxmlNativeJava.Debugmake[1]: Nothing to be done for `PostBuild.uscxmlNativeJava.Debug'.4(21%IDEActivityLogMessage2@30"echo "Depend check for xcode"-369256398#0#30#-0#-----2@23"Depend check for xcode-369256398#30#23#-0#-----2@250"cd /Users/sradomski/Documents/TK/Code/uscxml/build/xcode && make -C /Users/sradomski/Documents/TK/Code/uscxml/build/xcode -f /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/CMakeScripts/XCODE_DEPEND_HELPER.make PostBuild.uscxmlNativeJava.Debug-369256398#53#250#-0#-----2@68"make[1]: Nothing to be done for `PostBuild.uscxmlNativeJava.Debug'.-369256398#303#68#-0#-----0#0#0#--375"PhaseScriptExecution "CMake PostBuild Rules" build/xcode/src/bindings/swig/java/uscxml.build/Debug/uscxmlNativeJava.build/Script-490D5091BC6E48BABC920A6B.sh    cd /Users/sradomski/Documents/TK/Code/uscxml    /bin/sh -c /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/src/bindings/swig/java/uscxml.build/Debug/uscxmlNativeJava.build/Script-490D5091BC6E48BABC920A6B.sh36"F79D2D36-B1AC-4AA6-88B4-32840A9CC140-
-
-CPhaseScriptExecution "CMake Rules" /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/src/bindings/swig/java/uscxml.build/Debug/uscxmlNativeJava.build/Script-480C94726C0043C0BC2C4359.sh
-s369256389.111869
-e369256390.071796
-r1
-xPhaseScriptExecution
-xCMake Rules
-x/Users/sradomski/Documents/TK/Code/uscxml/build/xcode/src/bindings/swig/java/uscxml.build/Debug/uscxmlNativeJava.build/Script-480C94726C0043C0BC2C4359.sh
-oecho "Swig source"
-oSwig source
-o/opt/local/bin/cmake -E make_directory /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/src/bindings/swig/java/org/uscxml
-o/usr/local/bin/swig -java -package org.uscxml -outdir /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/src/bindings/swig/java/org/uscxml -c++ -I/opt/local/include/libxml2 -I/Users/sradomski/Documents/TK/Code/glog/src -I/usr/local/include/arabica -I/opt/local/include -I/Users/sradomski/Documents/TK/Code/libevent/include -I/Users/sradomski/Documents/TK/Code/v8/include -I/Users/sradomski/Documents/TK/Code/uscxml/src -I/System/Library/Frameworks/JavaVM.framework/Headers -I/System/Library/Frameworks/JavaVM.framework/Headers -I/System/Library/Frameworks/JavaVM.framework/Headers -I/Users/sradomski/Documents/TK/Code/uscxml/src/bindings/swig/java -o /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/src/bindings/swig/java/uscxmlJAVA_wrap.cxx /Users/sradomski/Documents/TK/Code/uscxml/src/bindings/swig/java/uscxml.i
-lSLF05#21%IDEActivityLogSection1@2#32"com.apple.dt.IDE.BuildLogSection37"Run custom shell script 'CMake Rules'f14b1dc56702b641^cc6212c66702b641^-983"echo "Swig source"Swig source/opt/local/bin/cmake -E make_directory /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/src/bindings/swig/java/org/uscxml/usr/local/bin/swig -java -package org.uscxml -outdir /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/src/bindings/swig/java/org/uscxml -c++ -I/opt/local/include/libxml2 -I/Users/sradomski/Documents/TK/Code/glog/src -I/usr/local/include/arabica -I/opt/local/include -I/Users/sradomski/Documents/TK/Code/libevent/include -I/Users/sradomski/Documents/TK/Code/v8/include -I/Users/sradomski/Documents/TK/Code/uscxml/src -I/System/Library/Frameworks/JavaVM.framework/Headers -I/System/Library/Frameworks/JavaVM.framework/Headers -I/System/Library/Frameworks/JavaVM.framework/Headers -I/Users/sradomski/Documents/TK/Code/uscxml/src/bindings/swig/java -o /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/src/bindings/swig/java/uscxmlJAVA_wrap.cxx /Users/sradomski/Documents/TK/Code/uscxml/src/bindings/swig/java/uscxml.i4(21%IDEActivityLogMessage2@19"echo "Swig source"-369256389#0#19#-0#-----2@12"Swig source-369256389#19#12#-0#-----2@127"/opt/local/bin/cmake -E make_directory /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/src/bindings/swig/java/org/uscxml-369256389#31#127#-0#-----2@825"/usr/local/bin/swig -java -package org.uscxml -outdir /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/src/bindings/swig/java/org/uscxml -c++ -I/opt/local/include/libxml2 -I/Users/sradomski/Documents/TK/Code/glog/src -I/usr/local/include/arabica -I/opt/local/include -I/Users/sradomski/Documents/TK/Code/libevent/include -I/Users/sradomski/Documents/TK/Code/v8/include -I/Users/sradomski/Documents/TK/Code/uscxml/src -I/System/Library/Frameworks/JavaVM.framework/Headers -I/System/Library/Frameworks/JavaVM.framework/Headers -I/System/Library/Frameworks/JavaVM.framework/Headers -I/Users/sradomski/Documents/TK/Code/uscxml/src/bindings/swig/java -o /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/src/bindings/swig/java/uscxmlJAVA_wrap.cxx /Users/sradomski/Documents/TK/Code/uscxml/src/bindings/swig/java/uscxml.i-369256389#158#825#-0#-----0#0#0#--365"PhaseScriptExecution "CMake Rules" build/xcode/src/bindings/swig/java/uscxml.build/Debug/uscxmlNativeJava.build/Script-480C94726C0043C0BC2C4359.sh    cd /Users/sradomski/Documents/TK/Code/uscxml    /bin/sh -c /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/src/bindings/swig/java/uscxml.build/Debug/uscxmlNativeJava.build/Script-480C94726C0043C0BC2C4359.sh36"2D66DAB3-C338-413C-95B0-F75B576CBF46-
-

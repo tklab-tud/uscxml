@@ -1,8 +1,0 @@
-ffffffffffffffffffffffffffffffff 98e37e0f03cec2c0d8037980bfc13216 ffffffffffffffffffffffffffffffff 0 /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/uscxml.build/Debug/uscxml.build/Objects-normal/x86_64/Interpreter.o
-ffffffffffffffffffffffffffffffff 201bc8131ee16fcfcfe414f84b927449 ffffffffffffffffffffffffffffffff 0 /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/uscxml.build/Debug/uscxml.build/Objects-normal/x86_64/Factory.o
-ffffffffffffffffffffffffffffffff fec6680442336b8956202dec0602b59f ffffffffffffffffffffffffffffffff 0 /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/uscxml.build/Debug/uscxml.build/Objects-normal/x86_64/V8DataModel.o
-000000004f2edcf20000000000001538 45617b6ffb0097c1bf96649126470679 ffffffffffffffffffffffffffffffff 0 /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/uscxml.build/Debug/uscxml.build/Objects-normal/x86_64/EventIOProcessor.o
-00000000504bd23b0000000000000a62 0896e555593ff9e0a25d691555fa58f9 ffffffffffffffffffffffffffffffff 0 /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/uscxml.build/Debug/uscxml.build/Objects-normal/x86_64/DelayedEventQueue.o
-000000004fa82798000000000000213a 23945ac4cb12410785695a6b7b482b47 ffffffffffffffffffffffffffffffff 0 /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/uscxml.build/Debug/uscxml.build/Objects-normal/x86_64/tinythread.o
-ffffffffffffffffffffffffffffffff ffffffffffffffffffffffffffffffff ffffffffffffffffffffffffffffffff 0 /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/Debug/libuscxml.a
-ffffffffffffffffffffffffffffffff ffffffffffffffffffffffffffffffff ffffffffffffffffffffffffffffffff 0 /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/uscxml.build/Debug/uscxml.build/Objects-normal/x86_64/Message.o

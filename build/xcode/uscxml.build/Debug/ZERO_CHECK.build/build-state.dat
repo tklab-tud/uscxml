@@ -1,91 +1,0 @@
-TZERO_CHECK
-v5
-r1
-cCheck dependencies
-cPhaseScriptExecution "CMake Rules" /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/uscxml.build/Debug/ZERO_CHECK.build/Script-E6289392FF3140B8BEFBFA2B.sh
-
-N/Users/sradomski/Documents/TK/Code/uscxml/build/xcode/uscxml.build/Debug/ZERO_CHECK.build/Script-6C21B2C3EC914686A42A3596.sh
-c000000005053ACBF00000000000000C5
-t1347660991
-s197
-
-N/Users/sradomski/Documents/TK/Code/uscxml/build/xcode/uscxml.build/Debug/ZERO_CHECK.build/Script-932BAD5318EB4F04B0D1394A.sh
-c0000000050522F0500000000000000C5
-t1347563269
-s197
-
-N/Users/sradomski/Documents/TK/Code/uscxml/build/xcode/uscxml.build/Debug/ZERO_CHECK.build/Script-E6289392FF3140B8BEFBFA2B.sh
-c000000005053AEB300000000000000C5
-t1347661491
-s197
-
-N/Users/sradomski/Documents/TK/Code/uscxml/build/xcode/uscxml.build/Debug/ZERO_CHECK.build/Script-E92680E8D4784B0EBE5B5421.sh
-c000000005053ACCB00000000000000C5
-t1347661003
-s197
-
-CCheck dependencies
-r0
-lSLF05#21%IDEActivityLogSection1@2#32"com.apple.dt.IDE.BuildLogSection18"Check dependenciescec1af6d5005b641^3e07b26d5005b641^---0#1#0#--18"Check dependencies36"F313A9FB-2696-4DCA-94B3-A72C70E68010-
-
-CPhaseScriptExecution "CMake Rules" /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/uscxml.build/Debug/ZERO_CHECK.build/Script-6C21B2C3EC914686A42A3596.sh
-s369353791.208118
-e369353791.515915
-r1
-xPhaseScriptExecution
-xCMake Rules
-x/Users/sradomski/Documents/TK/Code/uscxml/build/xcode/uscxml.build/Debug/ZERO_CHECK.build/Script-6C21B2C3EC914686A42A3596.sh
-oecho ""
-o
-omake -f /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/CMakeScripts/ReRunCMake.make
-o/opt/local/bin/cmake -H/Users/sradomski/Documents/TK/Code/uscxml -B/Users/sradomski/Documents/TK/Code/uscxml/build/xcode
-o-- Configuring done
-o-- Generating done
-o-- Build files have been written to: /Users/sradomski/Documents/TK/Code/uscxml/build/xcode
-lSLF05#21%IDEActivityLogSection1@2#32"com.apple.dt.IDE.BuildLogSection37"Run custom shell script 'CMake Rules'f1a0353fe403b641^cf12843fe403b641^-351"echo ""make -f /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/CMakeScripts/ReRunCMake.make/opt/local/bin/cmake -H/Users/sradomski/Documents/TK/Code/uscxml -B/Users/sradomski/Documents/TK/Code/uscxml/build/xcode-- Configuring done-- Generating done-- Build files have been written to: /Users/sradomski/Documents/TK/Code/uscxml/build/xcode6(21%IDEActivityLogMessage2@8"echo ""-369353791#0#8#-0#-----2@91"make -f /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/CMakeScripts/ReRunCMake.make-369353791#9#91#-0#-----2@121"/opt/local/bin/cmake -H/Users/sradomski/Documents/TK/Code/uscxml -B/Users/sradomski/Documents/TK/Code/uscxml/build/xcode-369353791#100#121#-0#-----2@20"-- Configuring done-369353791#221#20#-0#-----2@19"-- Generating done-369353791#241#19#-0#-----2@91"-- Build files have been written to: /Users/sradomski/Documents/TK/Code/uscxml/build/xcode-369353791#260#91#-0#-----0#0#0#--307"PhaseScriptExecution "CMake Rules" build/xcode/uscxml.build/Debug/ZERO_CHECK.build/Script-6C21B2C3EC914686A42A3596.sh    cd /Users/sradomski/Documents/TK/Code/uscxml    /bin/sh -c /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/uscxml.build/Debug/ZERO_CHECK.build/Script-6C21B2C3EC914686A42A3596.sh36"4738746A-28E6-4BBC-9D43-E086F19BEA6F-
-
-CPhaseScriptExecution "CMake Rules" /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/uscxml.build/Debug/ZERO_CHECK.build/Script-932BAD5318EB4F04B0D1394A.sh
-s369353749.930195
-e369353750.596571
-r1
-xPhaseScriptExecution
-xCMake Rules
-x/Users/sradomski/Documents/TK/Code/uscxml/build/xcode/uscxml.build/Debug/ZERO_CHECK.build/Script-932BAD5318EB4F04B0D1394A.sh
-oecho ""
-o
-omake -f /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/CMakeScripts/ReRunCMake.make
-o/opt/local/bin/cmake -H/Users/sradomski/Documents/TK/Code/uscxml -B/Users/sradomski/Documents/TK/Code/uscxml/build/xcode
-o-- Configuring done
-o-- Generating done
-o-- Build files have been written to: /Users/sradomski/Documents/TK/Code/uscxml/build/xcode
-lSLF05#21%IDEActivityLogSection1@2#32"com.apple.dt.IDE.BuildLogSection37"Run custom shell script 'CMake Rules'6c7cee15e403b641^13b99816e403b641^-351"echo ""make -f /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/CMakeScripts/ReRunCMake.make/opt/local/bin/cmake -H/Users/sradomski/Documents/TK/Code/uscxml -B/Users/sradomski/Documents/TK/Code/uscxml/build/xcode-- Configuring done-- Generating done-- Build files have been written to: /Users/sradomski/Documents/TK/Code/uscxml/build/xcode6(21%IDEActivityLogMessage2@8"echo ""-369353749#0#8#-0#-----2@91"make -f /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/CMakeScripts/ReRunCMake.make-369353749#9#91#-0#-----2@121"/opt/local/bin/cmake -H/Users/sradomski/Documents/TK/Code/uscxml -B/Users/sradomski/Documents/TK/Code/uscxml/build/xcode-369353749#100#121#-0#-----2@20"-- Configuring done-369353750#221#20#-0#-----2@19"-- Generating done-369353750#241#19#-0#-----2@91"-- Build files have been written to: /Users/sradomski/Documents/TK/Code/uscxml/build/xcode-369353750#260#91#-0#-----0#0#0#--307"PhaseScriptExecution "CMake Rules" build/xcode/uscxml.build/Debug/ZERO_CHECK.build/Script-932BAD5318EB4F04B0D1394A.sh    cd /Users/sradomski/Documents/TK/Code/uscxml    /bin/sh -c /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/uscxml.build/Debug/ZERO_CHECK.build/Script-932BAD5318EB4F04B0D1394A.sh36"5CBDDFE4-E99E-4E36-843C-702AD3880798-
-
-CPhaseScriptExecution "CMake Rules" /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/uscxml.build/Debug/ZERO_CHECK.build/Script-E6289392FF3140B8BEFBFA2B.sh
-s369447021.697104
-e369447021.734864
-r1
-xPhaseScriptExecution
-xCMake Rules
-x/Users/sradomski/Documents/TK/Code/uscxml/build/xcode/uscxml.build/Debug/ZERO_CHECK.build/Script-E6289392FF3140B8BEFBFA2B.sh
-oecho ""
-o
-omake -f /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/CMakeScripts/ReRunCMake.make
-omake[1]: `CMakeFiles/cmake.check_cache' is up to date.
-lSLF05#21%IDEActivityLogSection1@2#32"com.apple.dt.IDE.BuildLogSection37"Run custom shell script 'CMake Rules'39d1b26d5005b641^1d20bc6d5005b641^-155"echo ""make -f /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/CMakeScripts/ReRunCMake.makemake[1]: `CMakeFiles/cmake.check_cache' is up to date.3(21%IDEActivityLogMessage2@8"echo ""-369447021#0#8#-0#-----2@91"make -f /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/CMakeScripts/ReRunCMake.make-369447021#9#91#-0#-----2@55"make[1]: `CMakeFiles/cmake.check_cache' is up to date.-369447021#100#55#-0#-----0#0#0#--307"PhaseScriptExecution "CMake Rules" build/xcode/uscxml.build/Debug/ZERO_CHECK.build/Script-E6289392FF3140B8BEFBFA2B.sh    cd /Users/sradomski/Documents/TK/Code/uscxml    /bin/sh -c /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/uscxml.build/Debug/ZERO_CHECK.build/Script-E6289392FF3140B8BEFBFA2B.sh36"BCE0F29C-B7AF-4E33-9913-8F91D95E92EC-
-
-CPhaseScriptExecution "CMake Rules" /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/uscxml.build/Debug/ZERO_CHECK.build/Script-E92680E8D4784B0EBE5B5421.sh
-s369353822.741694
-e369353822.987022
-r1
-xPhaseScriptExecution
-xCMake Rules
-x/Users/sradomski/Documents/TK/Code/uscxml/build/xcode/uscxml.build/Debug/ZERO_CHECK.build/Script-E92680E8D4784B0EBE5B5421.sh
-oecho ""
-o
-omake -f /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/CMakeScripts/ReRunCMake.make
-o/opt/local/bin/cmake -H/Users/sradomski/Documents/TK/Code/uscxml -B/Users/sradomski/Documents/TK/Code/uscxml/build/xcode
-o-- Configuring done
-o-- Generating done
-o-- Build files have been written to: /Users/sradomski/Documents/TK/Code/uscxml/build/xcode
-lSLF05#21%IDEActivityLogSection1@2#32"com.apple.dt.IDE.BuildLogSection37"Run custom shell script 'CMake Rules'0552be5ee403b641^3bacfc5ee403b641^-351"echo ""make -f /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/CMakeScripts/ReRunCMake.make/opt/local/bin/cmake -H/Users/sradomski/Documents/TK/Code/uscxml -B/Users/sradomski/Documents/TK/Code/uscxml/build/xcode-- Configuring done-- Generating done-- Build files have been written to: /Users/sradomski/Documents/TK/Code/uscxml/build/xcode6(21%IDEActivityLogMessage2@8"echo ""-369353822#0#8#-0#-----2@91"make -f /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/CMakeScripts/ReRunCMake.make-369353822#9#91#-0#-----2@121"/opt/local/bin/cmake -H/Users/sradomski/Documents/TK/Code/uscxml -B/Users/sradomski/Documents/TK/Code/uscxml/build/xcode-369353822#100#121#-0#-----2@20"-- Configuring done-369353822#221#20#-0#-----2@19"-- Generating done-369353822#241#19#-0#-----2@91"-- Build files have been written to: /Users/sradomski/Documents/TK/Code/uscxml/build/xcode-369353822#260#91#-0#-----0#0#0#--307"PhaseScriptExecution "CMake Rules" build/xcode/uscxml.build/Debug/ZERO_CHECK.build/Script-E92680E8D4784B0EBE5B5421.sh    cd /Users/sradomski/Documents/TK/Code/uscxml    /bin/sh -c /Users/sradomski/Documents/TK/Code/uscxml/build/xcode/uscxml.build/Debug/ZERO_CHECK.build/Script-E92680E8D4784B0EBE5B5421.sh36"D60396A5-09F3-4FAC-AD65-E317B9FDF72A-
-
