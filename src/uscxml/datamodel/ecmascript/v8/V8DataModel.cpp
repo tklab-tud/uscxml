@@ -14,10 +14,13 @@ DataModel* V8DataModel::create(Interpreter* interpreter) {
   v8::HandleScope scope;
 
   // see http://stackoverflow.com/questions/3171418/v8-functiontemplate-class-instance
-  dm->_globalTemplate = v8::Persistent<v8::ObjectTemplate>(v8::ObjectTemplate::New());
-  dm->_globalTemplate->Set(v8::String::New("In"), v8::FunctionTemplate::New(jsIn, v8::External::New(reinterpret_cast<void*>(this))));
+//  dm->_globalTemplate = v8::Persistent<v8::ObjectTemplate>(v8::ObjectTemplate::New());
+//  dm->_globalTemplate->Set(v8::String::New("In"), v8::FunctionTemplate::New(jsIn, v8::External::New(reinterpret_cast<void*>(this))));
+
+  v8::Handle<v8::ObjectTemplate> global = v8::ObjectTemplate::New();
+  global->Set(v8::String::New("In"), v8::FunctionTemplate::New(jsIn, v8::External::New(reinterpret_cast<void*>(dm))));
   
-  dm->_contexts.push_back(v8::Context::New(0, _globalTemplate));
+  dm->_contexts.push_back(v8::Context::New(NULL, global));
   dm->setName(interpreter->getName());
   dm->setSessionId(interpreter->getSessionId());
   dm->eval("_ioprocessors = {};");

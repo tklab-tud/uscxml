@@ -30,11 +30,6 @@ namespace uscxml {
 			LATE = 1
 		};
 
-    struct SendData {
-      Interpreter* interpreter;
-      uscxml::SendRequest req;
-    };
-
     virtual ~Interpreter();    
 
     static Interpreter* fromDOM(const Arabica::DOM::Node<std::string>& node);

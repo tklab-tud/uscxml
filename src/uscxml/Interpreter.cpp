@@ -250,9 +250,15 @@ void Interpreter::initializeData(const Arabica::DOM::Node<std::string>& data) {
       _dataModel->assign(ATTR(data, "id"), value);
     } else if (data.hasChildNodes()) {
       // search for the text node with the actual script
-      Data value = Data(data);
+      NodeList<std::string> dataChilds = data.getChildNodes();
+      for (int i = 0; i < dataChilds.getLength(); i++) {
+        if (dataChilds.item(i).getNodeType() == Node_base::TEXT_NODE) {
+          Data value = Data(dataChilds.item(i), Data::INTERPRETED);
+          _dataModel->assign(ATTR(data, "id"), value);
+          break;
+        }
+      }
 //      std::cout << value << std::endl;
-      _dataModel->assign(ATTR(data, "id"), value);
     }
       
   } catch (Event e) {
@@ -1406,6 +1412,7 @@ Arabica::DOM::Node<std::string> Interpreter::findLCCA(const Arabica::XPath::Node
 
 Arabica::DOM::Node<std::string> Interpreter::getState(const std::string& stateId) {
   // first try atomic and compund states
+  std::cout << _nsPrefix << stateId << std::endl;
   NodeSet<std::string> target = _xpath.evaluate("//" + _nsPrefix + "state[@id='" + stateId + "']", _doc).asNodeSet();
   if (target.size() > 0)
     goto FOUND;

@@ -9,7 +9,7 @@ static std::string path;
 
 bool testEvents1() {
   LOG(INFO) << "---- testEvent1 ";
-  Interpreter* interpreter = new Interpreter(path + "/eventdata-01.xml");
+  Interpreter* interpreter = Interpreter::fromURI(path + "/eventdata-01.xml");
 	interpreter->start();
   interpreter->waitForStabilization();
   assert(interpreter->getConfiguration().size() == 1);
@@ -42,7 +42,7 @@ bool testEvents1() {
 
 bool testEvents2() {
   LOG(INFO) << "---- testEvent2 ";
-  Interpreter* interpreter = new Interpreter(path + "/eventdata-02.xml");
+  Interpreter* interpreter = Interpreter::fromURI(path + "/eventdata-02.xml");
 	interpreter->start();
   interpreter->waitForStabilization();
   assert(interpreter->getConfiguration().size() == 1);

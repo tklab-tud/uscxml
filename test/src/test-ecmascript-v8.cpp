@@ -10,25 +10,8 @@ int main(int argc, char** argv) {
   using namespace uscxml;
   using namespace Arabica::DOM;
   using namespace Arabica::XPath;
-  
-//  class SCXMLRunner : public Thread {
-//  public:
-//    SCXMLRunner(Runtime* runtime) : _runtime(runtime) {}
-//    void run() {
-//      _runtime->interpret();
-//    }
-//    
-//    Runtime* _runtime;
-//  };
-  
-//  boost::shared_ptr<V8DataModel> v8 = boost::static_pointer_cast<V8DataModel>(Factory::create("datamodel:ecmascript", Arabica::DOM::Node<std::string>()));
-//  v8->eval("var x = 4;");
-//  assert(v8->evalAsBool("x == 4"));
-//  assert(!v8->evalAsBool("x == 5"));
-  
-  Interpreter* scxml = new Interpreter(argv[1]);
-  scxml->dump();
-//  scxml->interpret();
+
+  Interpreter* scxml = Interpreter::fromURI(argv[1]);
   scxml->start();
   scxml->waitForStabilization();
   
@@ -36,9 +19,7 @@ int main(int argc, char** argv) {
   event1.name = "event1";
   scxml->receive(event1);
   scxml->waitForStabilization();
-  tthread::this_thread::sleep_for(tthread::chrono::milliseconds(200));
-  
-//  SCXMLRunner* scxmlRun = new SCXMLRunner(scxmlRuntime);
-//  scxmlRun->start();
+  while(true)
+    tthread::this_thread::sleep_for(tthread::chrono::milliseconds(200));
   
 }

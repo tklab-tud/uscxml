@@ -7,7 +7,7 @@ namespace uscxml {
 
 static int _dataIndentation = 1;
 
-Data::Data(const Arabica::DOM::Node<std::string>& dom) {
+Data::Data(const Arabica::DOM::Node<std::string>& dom, Type type) {
   // we may need to convert some keys to arrays if we have the same name as an element
   std::map<std::string, std::list<Data> > arrays;
 //  Interpreter::dump(dom);
@@ -54,7 +54,7 @@ Data::Data(const Arabica::DOM::Node<std::string>& dom) {
     }
   } else {
     atom = dom.getNodeValue();
-    type = VERBATIM;
+    this->type = type;
   }
   
   std::map<std::string, std::list<Data> >::iterator arrayIter = arrays.begin();

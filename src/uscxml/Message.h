@@ -24,7 +24,7 @@ public:
   
   Data() {}
   Data(const std::string& atom_, Type type_ = INTERPRETED) : atom(atom_), type(type_) {}
-  Data(const Arabica::DOM::Node<std::string>& dom);
+  Data(const Arabica::DOM::Node<std::string>& dom, Type type = VERBATIM);
   virtual ~Data() {}
   
   static Data fromXML(const std::string& xmlString);
