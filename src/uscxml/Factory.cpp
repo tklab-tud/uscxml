@@ -3,17 +3,24 @@
 //#include "uscxml/ioprocessor/basichttp/pion/PionIOProcessor.h"
 #include "uscxml/ioprocessor/basichttp/libevent/EventIOProcessor.h"
 #include "uscxml/invoker/scxml/USCXMLInvoker.h"
+#include "uscxml/invoker/modality/miles/SpatialAudio.h"
 
 namespace uscxml {
 
   Factory::Factory() {
     _dataModels["ecmascript"] = new V8DataModel();
 //    _ioProcessors["basichttp"] = new PionIOProcessor();
-    _ioProcessors["basichttp"] = new EventIOProcessor();
+
     // use basichttp for transporting to/from scxml sessions as well
+    _ioProcessors["basichttp"] = new EventIOProcessor();
     _ioProcessors["http://www.w3.org/TR/scxml/#SCXMLEventProcessor"] = _ioProcessors["basichttp"];
+
     _invoker["scxml"] = new USCXMLInvoker();
     _invoker["http://www.w3.org/TR/scxml/"] = _invoker["scxml"];
+
+		_invoker["spatial-audio"] = new SpatialAudio();
+		_invoker["http://www.smartvortex.eu/mmi/spatial-audio/"] = _invoker["spatial-audio"];
+
   }
   
   void Factory::registerIOProcessor(const std::string type, IOProcessor* ioProcessor) {

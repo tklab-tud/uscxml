@@ -1,4 +1,5 @@
 #include "uscxml/datamodel/ecmascript/v8/V8DataModel.h"
+#include "dom/V8SCXMLDOM.h"
 #include "uscxml/Message.h"
 
 namespace uscxml {
@@ -19,11 +20,15 @@ DataModel* V8DataModel::create(Interpreter* interpreter) {
 
   v8::Handle<v8::ObjectTemplate> global = v8::ObjectTemplate::New();
   global->Set(v8::String::New("In"), v8::FunctionTemplate::New(jsIn, v8::External::New(reinterpret_cast<void*>(dm))));
+
+  dm->_dom = new V8SCXMLDOM(interpreter);
+  global->Set(v8::String::New("document"), dm->_dom->getDocument());
   
   dm->_contexts.push_back(v8::Context::New(NULL, global));
   dm->setName(interpreter->getName());
   dm->setSessionId(interpreter->getSessionId());
   dm->eval("_ioprocessors = {};");
+  
   return dm;
 }
 

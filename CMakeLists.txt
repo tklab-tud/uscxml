@@ -60,10 +60,34 @@ file(GLOB_RECURSE USCXML_DATAMODEL_V8
 list (APPEND USCXML_FILES ${USCXML_DATAMODEL_V8})
 list (APPEND USCXML_LIBS ${V8_LIBRARY})
 
+# curl
+find_package(CURL REQUIRED)
+include_directories(${CURL_INCLUDE_DIRS})
+list (APPEND USCXML_LIBS ${CURL_LIBRARIES})
+
+# umundo
+find_package(UMUNDO REQUIRED)
+include_directories(${UMUNDO_INCLUDE_DIR})
+list (APPEND USCXML_LIBS ${UMUNDO_LIBRARIES})
+
+# miles
+find_package(MILES COMPONENTS core audio debug REQUIRED)
+include_directories(${MILES_INCLUDE_DIR})
+list (APPEND USCXML_LIBS ${MILES_LIBRARIES})
+
+# openal
+find_package(OpenAL REQUIRED)
+include_directories(${OPENAL_INCLUDE_DIR})
+list(APPEND USCXML_LIBS ${OPENAL_LIBRARY})
+
+
 # the invokers for external services
 file(GLOB_RECURSE USCXML_INVOKER src/uscxml/invoker/*.cpp src/uscxml/invoker/*.h)
 list (APPEND USCXML_FILES ${USCXML_INVOKER})
 
+# debug
+file(GLOB_RECURSE USCXML_DEBUG src/uscxml/debug/*.cpp src/uscxml/debug/*.h)
+list (APPEND USCXML_FILES ${USCXML_DEBUG})
 
 file(GLOB USCXML_CONCURRENCY src/uscxml/concurrency/*.cpp src/uscxml/concurrency/*.h)
 list (APPEND USCXML_FILES ${USCXML_CONCURRENCY})

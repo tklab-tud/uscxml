@@ -69,7 +69,7 @@ void EventIOProcessor::send(SendRequest& req) {
   const char* hostName = evhttp_uri_get_host(targetURI);
   
   // use synchronous dns resolving for multicast dns
-  if(strlen(hostName) >= strlen(".local")) {
+  if(hostName && strlen(hostName) >= strlen(".local")) {
     if(strcmp(hostName + strlen(hostName) - strlen(".local"), ".local") == 0) {
       evhttp_uri_set_host(targetURI, EventIOServer::syncResolve(hostName).c_str());
     }

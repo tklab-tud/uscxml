@@ -6,8 +6,9 @@
 #include <v8.h>
 
 namespace uscxml {
-   class Event;
-   class Data;
+  class Event;
+  class Data;
+  class V8SCXMLDOM;
 }
 
 namespace uscxml {
@@ -58,6 +59,8 @@ protected:
 
 	std::string _sessionId;
 	std::string _name;
+  
+  V8SCXMLDOM* _dom;
   
   Event _event;
   v8::Persistent<v8::ObjectTemplate> _globalTemplate;

@@ -48,6 +48,8 @@ namespace uscxml {
     DataModel* getDataModel()                                { return _dataModel; }
     Invoker* getInvoker()                                    { return _invoker; }
     void setInvoker(Invoker* invoker)                        { _invoker = invoker; }
+    std::string getNSPrefix()                                { return _nsPrefix; }
+    Arabica::XPath::XPath<std::string>& getXPath()           { return _xpath; }
     
     void waitForStabilization();
     
@@ -55,7 +57,8 @@ namespace uscxml {
     void receiveInternal(Event& event)                       { _internalQueue.push_back(event); }
     Arabica::XPath::NodeSet<std::string> getConfiguration()  { return _configuration; }
     Arabica::DOM::Node<std::string> getState(const std::string& stateId);
-
+    Arabica::DOM::Document<std::string>& getDocument()       { return _doc; }
+    
     const std::string& getName()                             { return _name; }
     const std::string& getSessionId()                        { return _sessionId; }
     
@@ -64,11 +67,27 @@ namespace uscxml {
     void dump();
     static void dump(const Arabica::DOM::Node<std::string>& node, int lvl = 0);
 
+    static bool isState(const Arabica::DOM::Node<std::string>& state);
+    static bool isPseudoState(const Arabica::DOM::Node<std::string>& state);
+    static bool isTransitionTarget(const Arabica::DOM::Node<std::string>& elem);
+    static bool isTargetless(const Arabica::DOM::Node<std::string>& transition);
+    static bool isAtomic(const Arabica::DOM::Node<std::string>& state);
+    static bool isFinal(const Arabica::DOM::Node<std::string>& state);
+    static bool isHistory(const Arabica::DOM::Node<std::string>& state);
+    static bool isParallel(const Arabica::DOM::Node<std::string>& state);
+    static bool isCompound(const Arabica::DOM::Node<std::string>& state);
+    static bool isDescendant(const Arabica::DOM::Node<std::string>& s1, const Arabica::DOM::Node<std::string>& s2);
+
+    bool isInitial(const Arabica::DOM::Node<std::string>& state);
+    Arabica::DOM::Node<std::string> getInitialState(Arabica::DOM::Node<std::string> state = Arabica::DOM::Node<std::string>());
+    static Arabica::XPath::NodeSet<std::string> getChildStates(const Arabica::DOM::Node<std::string>& state);
+    Arabica::XPath::NodeSet<std::string> getTargetStates(const Arabica::DOM::Node<std::string>& transition);
+
   protected:
     Interpreter();
     void init();
     
-    void normalize(const Arabica::DOM::Node<std::string>& node);
+    void normalize(const Arabica::DOM::Document<std::string>& node);
     void setupIOProcessors();
     
     void mainEventLoop();
@@ -116,9 +135,6 @@ namespace uscxml {
     
     Arabica::XPath::NodeSet<std::string> selectEventlessTransitions();
     Arabica::XPath::NodeSet<std::string> selectTransitions(const std::string& event);
-    Arabica::XPath::NodeSet<std::string> getTargetStates(const Arabica::DOM::Node<std::string>& transition);
-    Arabica::XPath::NodeSet<std::string> getChildStates(const Arabica::DOM::Node<std::string>& state);
-    Arabica::DOM::Node<std::string> getInitialState(Arabica::DOM::Node<std::string> state = Arabica::DOM::Node<std::string>());
     Arabica::DOM::Node<std::string> getSourceState(const Arabica::DOM::Node<std::string>& transition);
     Arabica::DOM::Node<std::string> findLCCA(const Arabica::XPath::NodeSet<std::string>& states);
     static Arabica::XPath::NodeSet<std::string> getProperAncestors(const Arabica::DOM::Node<std::string>& s1, const Arabica::DOM::Node<std::string>& s2);
@@ -138,18 +154,7 @@ namespace uscxml {
     bool isInFinalState(const Arabica::DOM::Node<std::string>& state);
     bool isWithinSameChild(const Arabica::DOM::Node<std::string>& transition);
     bool parentIsScxmlState(Arabica::DOM::Node<std::string> state);
-    
-    static bool isState(const Arabica::DOM::Node<std::string>& state);
-    static bool isPseudoState(const Arabica::DOM::Node<std::string>& state);
-    static bool isTransitionTarget(const Arabica::DOM::Node<std::string>& elem);
-    static bool isTargetless(const Arabica::DOM::Node<std::string>& transition);
-    static bool isAtomic(const Arabica::DOM::Node<std::string>& state);
-    static bool isFinal(const Arabica::DOM::Node<std::string>& state);
-    static bool isHistory(const Arabica::DOM::Node<std::string>& state);
-    static bool isParallel(const Arabica::DOM::Node<std::string>& state);
-    static bool isCompound(const Arabica::DOM::Node<std::string>& state);
-    static bool isDescendant(const Arabica::DOM::Node<std::string>& s1, const Arabica::DOM::Node<std::string>& s2);
-    
+        
     static std::vector<std::string> tokenizeIdRefs(const std::string& idRefs);
 
     static boost::uuids::random_generator uuidGen;
