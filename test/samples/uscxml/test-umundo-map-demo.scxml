@@ -1,0 +1,71 @@
+<scxml datamodel="ecmascript">
+  <script src="scripts/GreatCircle.js" />
+	<data id="audioSources">
+		{
+		}
+	</data>
+	<script>
+    function dump(thingy) {
+      if (typeof(thingy) == 'object') {
+        for (var key in thingy) {
+          print(key + ": ")
+          dump(thingy[key]);
+        }
+      } else {
+        print(thingy + "\n");
+      }
+    };
+		var listener = { x: 0, y: 0, z: 0 };
+  </script>
+  <state id="start">
+		<!-- start listening for drag events on umundo map channel -->
+		<invoke type="umundo" id="map.drag">
+		  <param name="channel" expr="'map/center'" />
+			<!-- update position of listener for every audio source when map was dragged -->
+			<finalize>
+				<send event="move.listener" target="#_audioSources.id1">
+					<param name="x" expr="_event.data.lon" />
+					<param name="y" expr="40 - (_event.data.zoom * 2)" />
+					<param name="z" expr="_event.data.lat" />
+				</send>
+			</finalize>
+		</invoke>
+		
+		<!-- start two spatial audio invokers -->
+		<invoke type="spatial-audio" src="audio/click.wav" id="audioSources.id1">
+			<param name="x" expr="18.08" />
+			<param name="y" expr="0" />
+			<param name="z" expr="59.32" />
+		</invoke>
+		
+		<invoke type="umundo" id="map.fault">
+		  <param name="channel" expr="'map/tick'" />
+			<finalize>
+				<send target="#_audioSources.id1" event="play">
+					<param name="x" expr="_event.data.lon" />
+					<param name="y" expr="0" />
+					<param name="z" expr="_event.data.lat" />
+				</send>
+			</finalize>
+		</invoke>
+		
+		<!-- this is the state where we wait for events -->
+	  <state id="idle">
+			<!-- onentry>
+				<log expr="'== Idleing ====='" />
+			</onentry -->
+			<transition target="dump" event="*" />
+		</state>
+		
+	  <state id="dump">
+	    <!-- onentry>
+				<log expr="'== Dumping Event ====='" />
+	      <script>
+	        dump(_event);
+	      </script>
+	    </onentry -->
+			<transition target="idle" />
+	  </state>
+
+  </state>
+</scxml>

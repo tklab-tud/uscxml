@@ -1,8 +1,13 @@
+#include "uscxml/Common.h"
 #include "SpatialAudio.h"
 #include "uscxml/Interpreter.h"
+#include "uscxml/URL.h"
 
 #include <glog/logging.h>
 
+#ifdef _WIN32
+#define _USE_MATH_DEFINES
+#endif
 #include <math.h>
 
 namespace uscxml {
@@ -13,6 +18,8 @@ SpatialAudio::SpatialAudio() {
   _audioDevIndex = -1;
   _pos = new float[3];
   _pos[0] = _pos[1] = _pos[2] = 0.0;
+  _listener = new float[3];
+  _listener[0] = _listener[1] = _listener[2] = 0.0;
 }
 
   
@@ -27,28 +34,53 @@ Invoker* SpatialAudio::create(Interpreter* interpreter) {
 
 Data SpatialAudio::getDataModelVariables() {
   Data data;
+//  data.compound["foo"] = Data("32");
   return data;
 }
 
 void SpatialAudio::send(SendRequest& req) {
-  setPosFromParams(req.params);
-  if (boost::iequals(req.name, "play")) {
-    if (!_audioDevOpen) {
-      _audioDev = miles_audio_device_open(_audioDevIndex, 0, 22050, 2, 1, 0);
-    }
+  if (!_audioDevOpen) {
+    _audioDev = miles_audio_device_open(_audioDevIndex, 0, 22050, 2, 1, 0);
     if (_audioDev != NULL) {
       _audioDevOpen = true;
+      float rolloffFactor = 0.2;
+      miles_audio_device_control(_audioDev, MILES_AUDIO_DEVICE_CTRL_SET_ROLLOFF_FACTOR, &rolloffFactor);
+    }
+  }
+    
+  if (boost::iequals(req.name, "play")) {
+    if (_audioDevOpen) {
+      getPosFromParams(req.params, _pos);
+
+//      std::cout << "Source: ";
+//      for (int i = 0; i < 3; i++) {
+//        std::cout << _pos[i] << " ";
+//      }
+//      std::cout << std::endl;
+      
       miles_audio_device_control(_audioDev, MILES_AUDIO_DEVICE_CTRL_SET_POSITION, _pos);
       
       char* buffer = (char*)malloc(_audioDev->chunk_size);
       // skip wav header
-      url_fread(buffer, 44, 1, _urlHandle);
-      int read = 0;
-      while((read = url_fread(buffer, _audioDev->chunk_size, 1, _urlHandle) != 0)) {
+      _dataStream.seekg(44);
+
+      while(_dataStream.readsome(buffer, _audioDev->chunk_size) != 0) {
         miles_audio_device_write(_audioDev, buffer, _audioDev->chunk_size);
       }
-      url_rewind(_urlHandle);
       free(buffer);
+    }
+  } else if (boost::iequals(req.name, "move.listener")) {
+    if (_audioDevOpen) {
+      getPosFromParams(req.params, _listener);
+
+      std::cout << "Listener: ";
+      for (int i = 0; i < 3; i++) {
+        std::cout << _listener[i] << " ";
+      }
+      std::cout << std::endl;
+      
+      miles_audio_device_control(_audioDev, MILES_AUDIO_DEVICE_CTRL_SET_LISTENER_POS, _listener);
+
     }
   }
 }
@@ -66,13 +98,17 @@ void SpatialAudio::invoke(InvokeRequest& req) {
   _invokeId = req.invokeid;
   
   if (req.src.length() > 0) {
-    _urlHandle = url_fopen(req.src.c_str(), "r");
-    if(!_urlHandle) {
-      LOG(ERROR) << "couldn't url_fopen() " << req.src;
+    Arabica::io::URI url(req.src);
+    if (!_interpreter->makeAbsolute(url)) {
+      LOG(ERROR) << "Source attribute for audio invoker has relative URI " << req.src << " with no base URI set for interpreter";
+      return;
     }
+    
+   	URL scriptUrl(url.as_string());
+    _dataStream << scriptUrl;
   }
 
-  setPosFromParams(req.params);
+  getPosFromParams(req.params, _pos);
 
   struct miles_audio_device_description *devices;
   int ndevs;
@@ -88,15 +124,15 @@ void SpatialAudio::invoke(InvokeRequest& req) {
   }
 }
 
-void SpatialAudio::setPosFromParams(std::map<std::string, std::string>& params) {
+  void SpatialAudio::getPosFromParams(std::map<std::string, std::list<std::string> >& params, float* position) {
   // vector explicitly given
   try {
     if (params.find("x") != params.end())
-      _pos[0] = boost::lexical_cast<float>(params["x"]);
+      position[0] = boost::lexical_cast<float>(params["x"].front());
     if (params.find("y") != params.end())
-      _pos[1] = boost::lexical_cast<float>(params["y"]);
+      position[1] = boost::lexical_cast<float>(params["y"].front());
     if (params.find("z") != params.end())
-      _pos[2] = boost::lexical_cast<float>(params["z"]);
+      position[2] = boost::lexical_cast<float>(params["z"].front());
   } catch (boost::bad_lexical_cast& e) {
     LOG(ERROR) << "Cannot interpret x, y or z as float value in params: " << e.what();
   }
@@ -104,13 +140,13 @@ void SpatialAudio::setPosFromParams(std::map<std::string, std::string>& params) 
   try {
     // right is an alias for x
     if (params.find("right") != params.end())
-      _pos[0] = boost::lexical_cast<float>(params["right"]);
+      position[0] = boost::lexical_cast<float>(params["right"].front());
     // height is an alias for y
     if (params.find("height") != params.end())
-      _pos[1] = boost::lexical_cast<float>(params["height"]);
+      position[1] = boost::lexical_cast<float>(params["height"].front());
     // front is an alias for z
     if (params.find("front") != params.end())
-      _pos[2] = boost::lexical_cast<float>(params["front"]);
+      position[2] = boost::lexical_cast<float>(params["front"].front());
   } catch (boost::bad_lexical_cast& e) {
     LOG(ERROR) << "Cannot interpret right, height or front as float value in params: " << e.what();
   }
@@ -118,9 +154,9 @@ void SpatialAudio::setPosFromParams(std::map<std::string, std::string>& params) 
   // do we have a position on a circle?
   try {
     if (params.find("circle") != params.end()) {
-      float rad = posToRadian(params["circle"]);
-      _pos[0] = cosf(rad);
-      _pos[2] = -1 * sinf(rad); // z axis increases to front
+      float rad = posToRadian(params["circle"].front());
+      position[0] = cosf(rad);
+      position[2] = -1 * sinf(rad); // z axis increases to front
     }
   } catch (boost::bad_lexical_cast& e) {
     LOG(ERROR) << "Cannot interpret circle as float value in params: " << e.what();

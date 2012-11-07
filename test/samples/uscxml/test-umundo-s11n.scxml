@@ -1,0 +1,115 @@
+<scxml datamodel="ecmascript">
+  <script>
+	<![CDATA[
+    function dump(arr,level) {
+        if(!level) level = 0;
+
+        var level_padding = "";
+        for(var j=0;j < level+1;j++) level_padding += "    ";
+
+        if(typeof(arr) == 'object') {  
+            for(var item in arr) {
+                var value = arr[item];
+
+                if(typeof(value) == 'object') { 
+                    print(level_padding + "'" + item + "' ...\n");
+                    print(dump(value,level+1));
+                } else {
+                    print(level_padding + "'" + item + "' => \"" + value + "\"\n");
+                }
+            }
+        } else { 
+            print("===> "+arr+" <===("+typeof(arr)+")");
+        }
+    }
+	]]>
+  </script>
+  <state id="start">
+		<invoke type="umundo" id="scxml.umundo">
+		  <param name="types" expr="'proto/Test.proto'" />
+		  <param name="channel" expr="'types'" />
+			<finalize>
+	      <script>
+	        dump(_event);
+	      </script>
+	      <send target="#_scxml.umundo" delay="0s" event="dump.event">
+	        <param name="type" expr="_event.data.type" />
+					<content>_event.data</content>
+				</send>
+			</finalize>
+		</invoke>
+		<onentry-off>
+      <!-- The round brackets are needed to evaluate the JSON object as an expression! -->
+      <send target="#_scxml.umundo" delay="3s" event="dump.event">
+        <param name="type" expr="'AllTypes'" />
+        <content>
+          ({
+            "doubleType": 1.0,
+            "floatType": 2.0,
+            "int32Type": -3,
+            "int64Type": -4,
+            "uint32Type": 5,
+            "uint64Type": 6,
+            "sint32Type": -7,
+            "sint64Type": -8,
+            "fixed32Type": 9,
+            "fixed64Type": 10,
+            "sfixed32Type": -11,
+            "sfixed64Type": -12,
+            "boolType": false,
+            "stringType": 'string',
+            "bytesType": 'bytes',
+          })
+        </content>
+      </send>
+      <send target="#_scxml.umundo" delay="3s" event="dump.event">
+        <param name="type" expr="'RepeatedTypes'" />
+        <content>
+          ({
+            "doubleType": [ 1.0, 2.0 ],
+            "floatType": [ 2.0, 3.0 ],
+            "int32Type": [ -3, -4 ],
+            "int64Type": [ -4, -5 ],
+            "uint32Type": [ 5, 6 ],
+            "uint64Type": [ 6, 7 ],
+            "sint32Type": [ -7, -8 ],
+            "sint64Type": [ -8, -9 ],
+            "fixed32Type": [ 9, 10 ],
+            "fixed64Type": [ 10, 11 ],
+            "sfixed32Type": [ -11, -12 ],
+            "sfixed64Type": [ -12, -13 ],
+            "boolType": [ false, true ],
+            "stringType": [ '1st string', '2nd string' ],
+            "bytesType": [ '1st bytes', '2nd bytes' ],
+            "repeatedMessage": [{
+              "doubleType": [ 1.0, 2.0 ],
+              "floatType": [ 2.0, 3.0 ],
+              "int32Type": [ -3, -4 ],
+              "int64Type": [ -4, -5 ],
+              "uint32Type": [ 5, 6 ],
+              "uint64Type": [ 6, 7 ],
+              "sint32Type": [ -7, -8 ],
+              "sint64Type": [ -8, -9 ],
+              "fixed32Type": [ 9, 10 ],
+              "fixed64Type": [ 10, 11 ],
+              "sfixed32Type": [ -11, -12 ],
+              "sfixed64Type": [ -12, -13 ],
+              "boolType": [ false, true ],
+              "stringType": [ '1st string', '2nd string' ],
+              "bytesType": [ '1st bytes', '2nd bytes' ],
+            }],
+          })
+        </content>
+      </send>
+		</onentry-off>
+		<transition target="dump" event="dump.event" />
+  </state>
+  <state id="dump">
+    <onentry>
+      <script>
+        dump(_event);
+      </script>
+    </onentry>
+		<transition target="dump" event="dump.event" />
+  </state>
+</scxml>

@@ -11,7 +11,7 @@ int main(int argc, char** argv) {
   using namespace uscxml;
 
   Interpreter* interpreter = Interpreter::fromURI(argv[1]);
-  SCXMLDotWriter::toDot("output.dot", interpreter);
+  //SCXMLDotWriter::toDot("output.dot", interpreter);
 
 	interpreter->interpret();
 	

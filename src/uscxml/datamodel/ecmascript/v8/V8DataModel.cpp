@@ -1,6 +1,8 @@
+#include "uscxml/Common.h"
 #include "uscxml/datamodel/ecmascript/v8/V8DataModel.h"
 #include "dom/V8SCXMLDOM.h"
 #include "uscxml/Message.h"
+#include <glog/logging.h>
 
 namespace uscxml {
 
@@ -20,9 +22,8 @@ DataModel* V8DataModel::create(Interpreter* interpreter) {
 
   v8::Handle<v8::ObjectTemplate> global = v8::ObjectTemplate::New();
   global->Set(v8::String::New("In"), v8::FunctionTemplate::New(jsIn, v8::External::New(reinterpret_cast<void*>(dm))));
-
-  dm->_dom = new V8SCXMLDOM(interpreter);
-  global->Set(v8::String::New("document"), dm->_dom->getDocument());
+  global->Set(v8::String::New("print"), v8::FunctionTemplate::New(jsPrint, v8::External::New(reinterpret_cast<void*>(dm))));
+  global->Set(v8::String::New("document"), V8SCXMLDOM::getDocument(interpreter->getDocument()));
   
   dm->_contexts.push_back(v8::Context::New(NULL, global));
   dm->setName(interpreter->getName());
@@ -100,9 +101,76 @@ void V8DataModel::setEvent(const Event& event) {
   global->Set(v8::String::New("_event"), eventJS);
 }
 
+Data V8DataModel::getStringAsData(const std::string& content) {
+  v8::Locker locker;
+  v8::HandleScope handleScope;
+  v8::Context::Scope contextScope(_contexts.front());
+  v8::Handle<v8::Value> result = evalAsValue(content);
+  Data data = getValueAsData(result);
+  return data;
+}
+
+Data V8DataModel::getValueAsData(const v8::Handle<v8::Value>& value) {
+  Data data;
+  if (false) {
+  } else if (value->IsArray()) {
+    v8::Handle<v8::Array> array = v8::Handle<v8::Array>::Cast(value);
+    for (int i = 0; i < array->Length(); i++) {
+      data.array.push_back(getValueAsData(array->Get(i)));
+    }
+  } else if (value->IsBoolean()) {
+    data.atom = (value->ToBoolean()->Value() ? "true" : "false");
+  } else if (value->IsBooleanObject()) {
+    LOG(ERROR) << "IsBooleanObject is unimplemented" << std::endl;
+  } else if (value->IsDate()) {
+    LOG(ERROR) << "IsDate is unimplemented" << std::endl;
+  } else if (value->IsExternal()) {
+    LOG(ERROR) << "IsExternal is unimplemented" << std::endl;
+  } else if (value->IsFalse()) {
+    LOG(ERROR) << "IsFalse is unimplemented" << std::endl;
+  } else if (value->IsFunction()) {
+    LOG(ERROR) << "IsFunction is unimplemented" << std::endl;
+  } else if (value->IsInt32()) {
+    int32_t prop = value->Int32Value();
+    data.atom = toStr(prop);
+  } else if (value->IsNativeError()) {
+    LOG(ERROR) << "IsNativeError is unimplemented" << std::endl;
+  } else if (value->IsNull()) {
+    LOG(ERROR) << "IsNull is unimplemented" << std::endl;
+  } else if (value->IsNumber()) {
+    v8::String::AsciiValue prop(v8::Handle<v8::String>::Cast(v8::Handle<v8::Number>::Cast(value)));
+    data.atom = *prop;
+  } else if (value->IsNumberObject()) {
+    LOG(ERROR) << "IsNumberObject is unimplemented" << std::endl;
+  } else if (value->IsObject()) {
+    v8::Handle<v8::Object> object = v8::Handle<v8::Object>::Cast(value);
+    v8::Local<v8::Array> properties = object->GetPropertyNames();
+    for (int i = 0; i < properties->Length(); i++) {
+      assert(properties->Get(i)->IsString());
+      v8::String::AsciiValue key(v8::Handle<v8::String>::Cast(properties->Get(i)));
+      v8::Local<v8::Value> property = object->Get(properties->Get(i));
+      data.compound[*key] = getValueAsData(property);
+    }
+  } else if (value->IsRegExp()) {
+    LOG(ERROR) << "IsRegExp is unimplemented" << std::endl;
+  } else if(value->IsString()) {
+    v8::String::AsciiValue property(v8::Handle<v8::String>::Cast(value));
+    data.atom = *property;
+  } else if(value->IsStringObject()) {
+    LOG(ERROR) << "IsStringObject is unimplemented" << std::endl;
+  } else if(value->IsTrue()) {
+    LOG(ERROR) << "IsTrue is unimplemented" << std::endl;
+  } else if(value->IsUint32()) {
+    LOG(ERROR) << "IsUint32 is unimplemented" << std::endl;
+  } else if(value->IsUndefined()) {
+    LOG(ERROR) << "IsUndefined is unimplemented" << std::endl;
+  }
+  return data;
+}
+  
 v8::Handle<v8::Value> V8DataModel::getDataAsValue(const Data& data) {
   if (data.compound.size() > 0) {
-    v8::Handle<v8::Object> value = v8::Array::New();
+    v8::Handle<v8::Object> value = v8::Object::New();
     std::map<std::string, Data>::const_iterator compoundIter = data.compound.begin();
     while(compoundIter != data.compound.end()) {
       value->Set(v8::String::New(compoundIter->first.c_str()), getDataAsValue(compoundIter->second));
@@ -126,13 +194,21 @@ v8::Handle<v8::Value> V8DataModel::getDataAsValue(const Data& data) {
     return evalAsValue(data.atom);
   }
 }
+
+v8::Handle<v8::Value> V8DataModel::jsPrint(const v8::Arguments& args) {
+  if (args.Length() > 0) {
+    v8::String::AsciiValue printMsg(args[0]->ToString());
+    std::cout << *printMsg;
+  }
+  return v8::Undefined();
+}
   
 v8::Handle<v8::Value> V8DataModel::jsIn(const v8::Arguments& args) {
-  V8DataModel* THIS = static_cast<V8DataModel*>(v8::External::Unwrap(args.Data()));
+  V8DataModel* INSTANCE = static_cast<V8DataModel*>(v8::External::Unwrap(args.Data()));
   for (unsigned int i = 0; i < args.Length(); i++) {
     if (args[i]->IsString()) {
       std::string stateName(*v8::String::AsciiValue(args[i]->ToString()));
-      if (Interpreter::isMember(THIS->_interpreter->getState(stateName), THIS->_interpreter->getConfiguration())) {
+      if (Interpreter::isMember(INSTANCE->_interpreter->getState(stateName), INSTANCE->_interpreter->getConfiguration())) {
         continue;
       }
     }

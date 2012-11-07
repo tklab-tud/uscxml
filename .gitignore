@@ -3,3 +3,9 @@
 build/*
 build/
 build*/
+contrib/prebuilt/darwin*
+contrib/prebuilt/linux*
+contrib/prebuilt/windows*
+contrib/prebuilt/ios*
+contrib/prebuilt/android*
+

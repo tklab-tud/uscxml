@@ -1,15 +1,23 @@
+#include "uscxml/Common.h"
+#include "uscxml/config.h"
+
 #include "uscxml/Factory.h"
 #include "uscxml/datamodel/ecmascript/v8/V8DataModel.h"
-//#include "uscxml/ioprocessor/basichttp/pion/PionIOProcessor.h"
 #include "uscxml/ioprocessor/basichttp/libevent/EventIOProcessor.h"
 #include "uscxml/invoker/scxml/USCXMLInvoker.h"
+
+#ifdef UMUNDO_FOUND
+#include "uscxml/invoker/umundo/UmundoInvoker.h"
+#endif
+
+#ifdef MILES_FOUND
 #include "uscxml/invoker/modality/miles/SpatialAudio.h"
+#endif
 
 namespace uscxml {
 
   Factory::Factory() {
     _dataModels["ecmascript"] = new V8DataModel();
-//    _ioProcessors["basichttp"] = new PionIOProcessor();
 
     // use basichttp for transporting to/from scxml sessions as well
     _ioProcessors["basichttp"] = new EventIOProcessor();
@@ -18,9 +26,16 @@ namespace uscxml {
     _invoker["scxml"] = new USCXMLInvoker();
     _invoker["http://www.w3.org/TR/scxml/"] = _invoker["scxml"];
 
-		_invoker["spatial-audio"] = new SpatialAudio();
-		_invoker["http://www.smartvortex.eu/mmi/spatial-audio/"] = _invoker["spatial-audio"];
+#ifdef UMUNDO_FOUND
+    _invoker["umundo"] = new UmundoInvoker();
+    _invoker["http://umundo.tk.informatik.tu-darmstadt.de/"] = _invoker["umundo"];
+#endif
 
+#ifdef MILES_FOUND
+		_invoker["spatial-audio"] = new SpatialAudio();
+		_invoker["audio"] = _invoker["spatial-audio"];
+		_invoker["http://www.smartvortex.eu/mmi/spatial-audio/"] = _invoker["spatial-audio"];
+#endif
   }
   
   void Factory::registerIOProcessor(const std::string type, IOProcessor* ioProcessor) {

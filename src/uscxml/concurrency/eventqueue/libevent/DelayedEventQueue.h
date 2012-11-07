@@ -7,6 +7,8 @@
 #include <event2/http.h>
 #include <event2/event.h>
 
+#include <inttypes.h>
+
 #include <map>
 #include <string>
 #include <iostream>

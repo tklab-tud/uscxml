@@ -4,7 +4,9 @@
 #include "uscxml/concurrency/eventqueue/libevent/DelayedEventQueue.h"
 #include "uscxml/Interpreter.h"
 #include "uscxml/Factory.h"
+#ifndef _WIN32
 #include <sys/time.h>
+#endif
 
 #include <event2/http.h>
 #include <event2/http_struct.h>

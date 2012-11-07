@@ -1,6 +1,8 @@
 #ifndef RUNTIME_H_SQ1MBKGN
 #define RUNTIME_H_SQ1MBKGN
 
+#include "uscxml/Common.h"
+
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/algorithm/string.hpp>
 
@@ -36,7 +38,7 @@ namespace uscxml {
     static Interpreter* fromXML(const std::string& xml);
     static Interpreter* fromURI(const std::string& uri);
     static Interpreter* fromInputSource(Arabica::SAX::InputSource<std::string>& source);
-    
+
 		void start();
 		static void run(void*);
     void join() { if (_thread != NULL) _thread->join(); };
@@ -45,6 +47,9 @@ namespace uscxml {
     bool validate();
     
     void setBaseURI(std::string baseURI)                     { _baseURI = Arabica::io::URI(baseURI); }
+    Arabica::io::URI getBaseURI()                            { return _baseURI; }
+    bool makeAbsolute(Arabica::io::URI& uri);
+
     DataModel* getDataModel()                                { return _dataModel; }
     Invoker* getInvoker()                                    { return _invoker; }
     void setInvoker(Invoker* invoker)                        { _invoker = invoker; }
@@ -118,7 +123,6 @@ namespace uscxml {
     Invoker* _invoker;
     
     static Arabica::io::URI toBaseURI(const Arabica::io::URI& uri);
-    static Arabica::io::URI toAbsoluteURI(const Arabica::io::URI& uri, const Arabica::io::URI& baseURI);
     
     void microstep(const Arabica::XPath::NodeSet<std::string>& enabledTransitions);
     void exitStates(const Arabica::XPath::NodeSet<std::string>& enabledTransitions);

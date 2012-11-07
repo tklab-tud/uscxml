@@ -1,0 +1,77 @@
+#!/usr/bin/expect
+
+set timeout 600
+set USCXML_BUILD_HOST $::env(USCXML_BUILD_HOST)
+set USCXML_BUILD_ARCH $::env(USCXML_BUILD_ARCH)
+
+set local_prompt {sradomski$ }
+eval spawn ping -c1 ${USCXML_BUILD_HOST}.local.
+expect "cannot resolve"  { puts "Host ${USCXML_BUILD_HOST}.local. not found"; exit } \
+       -re $local_prompt { }
+
+set initial_remote_prompt "C*>"
+# the default windows prompt is hard to recognize
+set remote_prompt "easy_to_recognize"
+
+eval spawn scp -4 -r ../../package sradomski@epikur-win7.local:uscxml
+expect {
+	"100"              { exp_continue }
+	"The authenticity" { send "yes\n"; exp_continue; }
+	timeout            { puts "Timeout when uploading source code"; exit;  }
+	-re $local_prompt  { }
+}
+
+##############################
+# ssh into remote host
+
+eval spawn ssh -4 sradomski@${USCXML_BUILD_HOST}.local.
+expect {
+	timeout            { puts "Timeout when connecting to windows"; exit;  }
+	"The authenticity" { send "yes\n"; }
+	-re $local_prompt  { puts "Could not connect to remote host"; exit; }
+	-re $initial_remote_prompt { }
+}
+
+send "set prompt=easy_to_recognize \r"
+expect -re $remote_prompt
+
+send "cd build-uscxml\r"
+expect -re $remote_prompt
+
+if { [string compare $USCXML_BUILD_ARCH 32] == 0 } {
+	send "\"c:\\Program Files\\Microsoft Visual Studio 10.0\\VC\\bin\\vcvars32.bat\"\r"
+	expect -re $remote_prompt
+} else {
+	send "\"c:\\Program Files (x86)\\Microsoft Visual Studio 10.0\\VC\\vcvarsall.bat\" x86_amd64\r"
+	expect -re $remote_prompt
+}
+
+##############################
+# package
+
+send "\"cmake.exe\" -G \"NMake Makefiles\" -DCMAKE_BUILD_TYPE=Release -DDIST_PREPARE=ON ..\\uscxml\r"
+expect -re $remote_prompt
+
+send "nmake package\r"
+expect {
+	-re $remote_prompt {}
+	"Built target"  { exp_continue; }
+	"CPack"  { exp_continue; }
+}
+
+##############################
+# exit and copy packages
+
+send "exit\r"
+expect -re $local_prompt
+
+eval cd ~/Documents/TK/Code/
+
+if { [string compare $USCXML_BUILD_ARCH 32] == 0 } {
+	eval spawn "scp -r epikur-win7.local:build-uscxml\\\\uscxml-windows* uscxml/installer/"
+} else {
+	eval spawn "scp -r epikur-win7-64.local:build-uscxml\\\\uscxml-windows* uscxml/installer/"
+}
+expect -re $local_prompt
+
+exit

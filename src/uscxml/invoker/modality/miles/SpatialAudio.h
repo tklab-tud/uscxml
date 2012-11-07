@@ -28,16 +28,17 @@ public:
   virtual void invoke(InvokeRequest& req);
   virtual void sendToParent(SendRequest& req);
 
-  void setPosFromParams(std::map<std::string, std::string>& params);
+  void getPosFromParams(std::map<std::string, std::list<std::string> >& params, float* position);
   static float posToRadian(std::string& position);
 
 protected:
   std::string _invokeId;
   Interpreter* _invokedInterpreter;
   
-  URL_FILE* _urlHandle;
+  std::stringstream _dataStream;
   
   float* _pos;
+  float* _listener;
   bool _audioDevOpen;
   int _audioDevIndex;
   struct miles_audio_device* _audioDev;

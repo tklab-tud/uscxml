@@ -1,3 +1,8 @@
+#ifdef _WIN32
+#include <winsock2.h>
+#include <windows.h>
+#endif
+
 #include "uscxml/ioprocessor/basichttp/libevent/EventIOProcessor.h"
 #include "uscxml/Message.h"
 #include <iostream>
@@ -10,8 +15,10 @@
 #include <io/uri.hpp>
 #include <glog/logging.h>
 
+#ifndef _WIN32
 #include <netdb.h>
 #include <arpa/inet.h>
+#endif
 
 namespace uscxml {
 
@@ -193,8 +200,8 @@ void EventIOProcessor::httpRecvReq(struct evhttp_request *req, void *arg) {
     reqEvent.compound["content"] = Data(content, Data::VERBATIM);
   }
   
-  EventIOProcessor* THIS = (EventIOProcessor*)arg;
-  THIS->_interpreter->receive(reqEvent);
+  EventIOProcessor* INSTANCE = (EventIOProcessor*)arg;
+  INSTANCE->_interpreter->receive(reqEvent);
   
 	evhttp_send_reply(req, 200, "OK", NULL);
 }
@@ -232,8 +239,8 @@ EventIOServer* EventIOServer::getInstance() {
 }
 
 void EventIOServer::registerProcessor(EventIOProcessor* processor) {
-  EventIOServer* THIS = getInstance();
-  tthread::lock_guard<tthread::recursive_mutex> lock(THIS->_mutex);
+  EventIOServer* INSTANCE = getInstance();
+  tthread::lock_guard<tthread::recursive_mutex> lock(INSTANCE->_mutex);
   
   /**
    * Determine path for interpreter.
@@ -253,27 +260,27 @@ void EventIOServer::registerProcessor(EventIOProcessor* processor) {
   
   std::stringstream actualPath(path);
   int i = 1;
-  while(THIS->_processors.find(actualPath.str()) != THIS->_processors.end()) {
+  while(INSTANCE->_processors.find(actualPath.str()) != INSTANCE->_processors.end()) {
     actualPath.str(std::string());
     actualPath.clear();
     actualPath << path << ++i;
   }
   
   std::stringstream processorURL;
-  processorURL << "http://" << THIS->_address << ":" << THIS->_port << "/" << actualPath.str();
+  processorURL << "http://" << INSTANCE->_address << ":" << INSTANCE->_port << "/" << actualPath.str();
   
-  THIS->_processors[actualPath.str()] = processor;
+  INSTANCE->_processors[actualPath.str()] = processor;
   processor->setURL(processorURL.str());
   
-  evhttp_set_cb(THIS->_http, ("/" + actualPath.str()).c_str(), EventIOProcessor::httpRecvReq, processor);
+  evhttp_set_cb(INSTANCE->_http, ("/" + actualPath.str()).c_str(), EventIOProcessor::httpRecvReq, processor);
 //  evhttp_set_cb(THIS->_http, "/", EventIOProcessor::httpRecvReq, processor);
 //  evhttp_set_gencb(THIS->_http, EventIOProcessor::httpRecvReq, NULL);
 }
 
 void EventIOServer::unregisterProcessor(EventIOProcessor* processor) {
-  EventIOServer* THIS = getInstance();
-  tthread::lock_guard<tthread::recursive_mutex> lock(THIS->_mutex);
-  evhttp_del_cb(THIS->_http, processor->_url.c_str());
+  EventIOServer* INSTANCE = getInstance();
+  tthread::lock_guard<tthread::recursive_mutex> lock(INSTANCE->_mutex);
+  evhttp_del_cb(INSTANCE->_http, processor->_url.c_str());
 }
   
 void EventIOServer::start() {
@@ -282,10 +289,10 @@ void EventIOServer::start() {
 }
 
 void EventIOServer::run(void* instance) {
-  EventIOServer* THIS = (EventIOServer*)instance;
-  while(THIS->_isRunning) {
+  EventIOServer* INSTANCE = (EventIOServer*)instance;
+  while(INSTANCE->_isRunning) {
     LOG(INFO) << "Dispatching HTTP Server" << std::endl;
-    event_base_dispatch(THIS->_base);
+    event_base_dispatch(INSTANCE->_base);
   }
   LOG(INFO) << "HTTP Server stopped" << std::endl;
 }

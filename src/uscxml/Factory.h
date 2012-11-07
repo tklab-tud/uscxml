@@ -7,6 +7,19 @@
 
 namespace uscxml {
 
+  template <typename T> std::string toStr(T tmp) {
+    std::ostringstream out;
+    out << tmp;
+    return out.str();
+  }
+  
+  template <typename T> T strTo(std::string tmp) {
+    T output;
+    std::istringstream in(tmp);
+    in >> output;
+    return output;
+  }
+
 	class Interpreter;
 
   class ExecutableContent {
@@ -38,6 +51,7 @@ namespace uscxml {
     
     virtual bool validate(const std::string& location, const std::string& schema) = 0;
     virtual void setEvent(const Event& event) = 0;
+    virtual Data getStringAsData(const std::string& content) = 0;
 
     // foreach
     virtual uint32_t getLength(const std::string& expr) = 0;

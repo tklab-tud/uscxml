@@ -1,0 +1,33 @@
+#!/usr/bin/expect -d
+
+set USCXML_BUILD_HOST $::env(USCXML_BUILD_HOST)
+set timeout 150
+
+set local_prompt {sradomski$ }
+set prompt "sradomski@"
+append prompt ${USCXML_BUILD_HOST}
+append prompt {:[a-zA-Z~\/\-]+\$ }
+
+eval spawn ping -c1 ${USCXML_BUILD_HOST}.local.
+expect "cannot resolve"  { puts "Host ${USCXML_BUILD_HOST}.local. not found"; exit } \
+       -re $local_prompt { }
+
+eval spawn ssh ${USCXML_BUILD_HOST}.local.
+expect -re $prompt { send "cd /tmp/build-uscxml\n" }
+expect -re $prompt { send "cmake -DCMAKE_BUILD_TYPE=Release -DDIST_PREPARE=ON /media/psf/Home/Documents/TK/Code/uscxml\n" }
+
+expect -re $prompt { send "make package\n" }
+
+expect "CPack"        { exp_continue; } \
+       -re $prompt    { send "logout\n" }
+
+##############################
+# exit and copy packages
+
+expect -re $local_prompt
+eval cd ~/Documents/TK/Code/
+
+eval spawn "scp -r ${USCXML_BUILD_HOST}.local:/tmp/build-uscxml/uscxml-linux* uscxml/installer/"
+expect -re $local_prompt
+
+exit

@@ -34,6 +34,9 @@ public:
   virtual void assign(const std::string& location, const std::string& expr);
   virtual void assign(const std::string& location, const Data& data);
 
+  virtual Data getStringAsData(const std::string& content);
+  virtual Data getValueAsData(const v8::Handle<v8::Value>& value);
+  
   virtual std::string evalAsString(const std::string& expr);
   virtual bool evalAsBool(const std::string& expr);
 
@@ -51,6 +54,7 @@ public:
                                                 const v8::AccessorInfo &info);
 
   static v8::Handle<v8::Value> jsIn(const v8::Arguments& args);
+  static v8::Handle<v8::Value> jsPrint(const v8::Arguments& args);
 
 
 protected:
@@ -59,8 +63,6 @@ protected:
 
 	std::string _sessionId;
 	std::string _name;
-  
-  V8SCXMLDOM* _dom;
   
   Event _event;
   v8::Persistent<v8::ObjectTemplate> _globalTemplate;

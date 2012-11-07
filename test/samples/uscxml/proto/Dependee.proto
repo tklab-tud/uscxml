@@ -1,0 +1,3 @@
+message DependeeMsg {
+	required string stringType = 1;
+}

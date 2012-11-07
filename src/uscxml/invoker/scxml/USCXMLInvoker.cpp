@@ -1,3 +1,4 @@
+#include "uscxml/Common.h"
 #include "USCXMLInvoker.h"
 #include "uscxml/Interpreter.h"
 

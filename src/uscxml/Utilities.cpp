@@ -53,6 +53,7 @@
 #include <stdlib.h>
 #include <errno.h>
 
+#include "uscxml/Common.h"
 #include "uscxml/Utilities.h"
 
 /* we use a global one for convenience */ 

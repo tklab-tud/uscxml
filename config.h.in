@@ -1,0 +1,55 @@
+/**
+ * Auto generated - edit config.h.in instead!
+ *
+ * This file is instantiated by cmake as config.h in the binary tree of
+ * the out-of-source build. See cmake docs on CONFIGURE_FILE.
+ *
+ * WARNING: This file may never be included by public headers as we cannot
+ * ship prebuilt packages otherwise!
+ */
+
+#ifndef __CONFIG_H
+#define __CONFIG_H
+
+/** Platform macros */
+#cmakedefine UNIX
+// suppress warnings with already define -DWIN32 macro
+#ifndef WIN32
+#cmakedefine WIN32
+#endif
+#cmakedefine APPLE
+#cmakedefine CYGWIN
+#cmakedefine IOS
+#cmakedefine IOSSIM
+
+// suppress warnings with already define -DANDROID macro
+#ifndef ANDROID
+#cmakedefine ANDROID
+#endif
+
+#cmakedefine PATH_SEPERATOR '@PATH_SEPERATOR@'
+
+/** Loglevels */
+#cmakedefine LOGLEVEL_COMMON @LOGLEVEL_COMMON@
+#cmakedefine LOGLEVEL_DISC @LOGLEVEL_DISC@
+#cmakedefine LOGLEVEL_NET @LOGLEVEL_NET@
+#cmakedefine LOGLEVEL_S11N @LOGLEVEL_S11N@
+
+/** version */
+#cmakedefine USCXML_VERSION_MAJOR "@USCXML_VERSION_MAJOR@"
+#cmakedefine USCXML_VERSION_MINOR "@USCXML_VERSION_MINOR@"
+#cmakedefine USCXML_VERSION_PATCH "@USCXML_VERSION_PATCH@"
+#cmakedefine USCXML_VERSION "@USCXML_VERSION@"
+
+/** build type */
+#cmakedefine CMAKE_BUILD_TYPE "@CMAKE_BUILD_TYPE@"
+
+/** miscellaneous */
+#cmakedefine PROJECT_SOURCE_DIR "@PROJECT_SOURCE_DIR@"
+#cmakedefine DIST_PREPARE
+
+/** Optional libraries we found */
+#cmakedefine UMUNDO_FOUND
+#cmakedefine MILES_FOUND
+
+#endif

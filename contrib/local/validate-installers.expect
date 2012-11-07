@@ -1,0 +1,317 @@
+#!/usr/bin/expect
+
+## way more verbose:
+#!/usr/bin/expect -d
+
+set timeout 2;
+set local_prompt {easy_to_recognize}
+log_user 0
+eval spawn /bin/bash
+expect -re {bash.*$} {}
+send "export PS1=easy_to_recognize\n"
+expect -re $local_prompt
+expect -re $local_prompt
+
+proc checkArchive {listCommand label listOfFiles} {
+	upvar 1 local_prompt local_prompt
+	set reqFiles [lsort $listOfFiles]
+
+	puts "Validating $label installer via $listCommand"
+
+	log_user 0
+	send "$listCommand 1>/dev/null\n"
+	expect {
+		"cannot find"     { puts "  Cannot find archive for $label"; puts "  Not OK"; return; }
+		"Error opening"   { puts "  Cannot find archive for $label"; return; }
+		-re $local_prompt      {  }
+	}
+
+	send "$listCommand |sort\n"
+	foreach {file} $reqFiles {
+		set relist 1;
+		expect {
+			-re $file {  }
+			-re $local_prompt {
+				if {$relist} {
+					send "$listCommand |sort\n";
+					set relist 0;
+					exp_continue;
+				} else {
+					puts "  Cannot find $file in $label installer"; exit;
+				}
+			}
+		}
+	}
+	expect -re $local_prompt
+	puts "  Archive OK"
+}
+
+set reqFilesCSharpProject {
+	"samples/csharp/umundo-pingpong/umundo-pingpong.sln"
+	"samples/csharp/umundo-pingpong/umundo-pingpong.suo"
+	"samples/csharp/umundo-pingpong/umundo-pingpong/Program.cs"
+	"samples/csharp/umundo-pingpong/umundo-pingpong/umundo-pingpong.csproj"
+	"samples/csharp/umundo-pingpong/umundo-pingpong/umundo-pingpong.csproj.user"
+	"samples/csharp/umundo-pingpong/umundo-pingpong/Properties/AssemblyInfo.cs"
+}
+
+set reqFilesXCodeProject {
+	"samples/ios/umundo-pingpong/AppDelegate.h"
+	"samples/ios/umundo-pingpong/AppDelegate.mm"
+	"samples/ios/umundo-pingpong/main.m"
+	"samples/ios/umundo-pingpong/umundo-pingpong-Info.plist"
+	"samples/ios/umundo-pingpong/ViewController.h"
+	"samples/ios/umundo-pingpong/ViewController.m"
+	"samples/ios/umundo-pingpong.xcodeproj/project.pbxproj"
+	"samples/ios/umundo-pingpong.xcodeproj/project.xcworkspace"
+}
+
+set reqFilesAndroidProject {
+	"samples/android/umundo-pingpong/AndroidManifest.xml"
+	"samples/android/umundo-pingpong/project.properties"
+	"samples/android/umundo-pingpong/src/org/umundo/samples/UMundoAndroidActivity.java"
+}
+
+set reqFilesDesktopCommonUnix {
+	"/usr/local/bin/protoc-umundo-cpp-rpc"
+	"/usr/local/bin/protoc-umundo-java-rpc"
+	"/usr/local/bin/umundo-pingpong"
+	"/usr/local/bin/umundo-monitor"
+	"/usr/local/share/umundo/java/umundo.jar"
+}
+
+set reqFilesAndroid {
+	"/share/umundo/android-.*/armv.*/libumundoNativeJava.so"
+	"/share/umundo/android-.*/armv.*/libumundoNativeJava_d.so"
+	"/share/umundo/android-.*/umundo.jar"
+}
+
+set reqFilesJavaSamples {
+  "samples/java/core/chat/build.properties"
+  "samples/java/core/chat/build.xml"
+  "samples/java/core/chat/src/org/umundo/Chat.java"
+  "samples/java/rpc/chat/build.properties"
+  "samples/java/rpc/chat/build.xml"
+  "samples/java/rpc/chat/proto/ChatS11N.proto"
+  "samples/java/rpc/chat/src/org/umundo/Chat.java"
+  "samples/java/s11n/chat/build.properties"
+  "samples/java/s11n/chat/build.xml"
+  "samples/java/s11n/chat/proto/ChatS11N.proto"
+  "samples/java/s11n/chat/src/org/umundo/Chat.java"
+}
+
+set reqFilesCPPSamples {
+  "samples/cpp/core/chat/CMakeLists.txt"
+  "samples/cpp/core/chat/src/Chat.cpp"
+  "samples/cpp/core/chat/src/Chat.h"
+  "samples/cpp/rpc/chat/CMakeLists.txt"
+  "samples/cpp/rpc/chat/proto/ChatS11N.proto"
+  "samples/cpp/rpc/chat/src/Chat.cpp"
+  "samples/cpp/rpc/chat/src/Chat.h"
+  "samples/cpp/s11n/chat/CMakeLists.txt"
+  "samples/cpp/s11n/chat/proto/ChatS11N.proto"
+  "samples/cpp/s11n/chat/src/Chat.cpp"
+  "samples/cpp/s11n/chat/src/Chat.h"
+}
+
+# "/share/umundo/prebuilt/android/arm-linux-androideabi/libmDNSEmbedded.a"
+# "/share/umundo/prebuilt/android/arm-linux-androideabi/libmDNSEmbedded.so"
+# "/share/umundo/prebuilt/android/arm-linux-androideabi/libmDNSEmbedded_d.a"
+# "/share/umundo/prebuilt/android/arm-linux-androideabi/libmDNSEmbedded_d.so"
+# "/share/umundo/prebuilt/android/arm-linux-androideabi/libpcre.a"
+# "/share/umundo/prebuilt/android/arm-linux-androideabi/libpcre_d.a"
+# "/share/umundo/prebuilt/android/arm-linux-androideabi/libpcreposix.a"
+# "/share/umundo/prebuilt/android/arm-linux-androideabi/libpcreposix_d.a"
+# "/share/umundo/prebuilt/android/arm-linux-androideabi/libzmq.a"
+# "/share/umundo/prebuilt/android/arm-linux-androideabi/libzmq_d.a"
+
+
+set reqFilesIOS {
+	"/usr/local/share/umundo/ios-.*/libumundo.ios.a"
+	"/usr/local/share/umundo/ios-.*/libumundo_d.ios.a"
+
+	"/usr/local/share/umundo/deps/ios/.*/libpcreposix.a"
+	"/usr/local/share/umundo/deps/ios/.*/libpcrecpp.a"
+	"/usr/local/share/umundo/deps/ios/.*/libpcre.a"
+	"/usr/local/share/umundo/deps/ios/.*/libprotobuf-lite.a"
+	"/usr/local/share/umundo/deps/ios/.*/libprotobuf.a"
+	"/usr/local/share/umundo/deps/ios/.*/libprotoc.a"
+	"/usr/local/share/umundo/deps/ios/.*/libzmq.a"
+}
+
+# "/usr/local/share/umundo/ios-.*/libumundocore.ios.a"
+# "/usr/local/share/umundo/ios-.*/libumundocore_d.ios.a"
+# "/usr/local/share/umundo/ios-.*/libumundoserial.ios.a"
+# "/usr/local/share/umundo/ios-.*/libumundoserial_d.ios.a"
+# "/usr/local/share/umundo/ios-.*/libumundorpc.ios.a"
+# "/usr/local/share/umundo/ios-.*/libumundorpc_d.ios.a"
+# "/usr/local/share/umundo/ios-.*/libumundoutil.ios.a"
+# "/usr/local/share/umundo/ios-.*/libumundoutil_d.ios.a"
+
+#############################
+# Validate Mac installers
+#############################
+log_user 0
+set reqFilesMac {
+	"/usr/local/include/umundo/s11n.h"
+	"/usr/local/include/umundo/core.h"
+	"/usr/local/include/umundo/rpc.h"
+	"/usr/local/include/umundo/util.h"
+
+	"/usr/local/lib/libumundo64.dylib"
+	"/usr/local/lib/libumundo64_d.dylib"
+	"/usr/local/lib/libumundocore64.dylib"
+	"/usr/local/lib/libumundocore64_d.dylib"
+	"/usr/local/lib/libumundoserial64.dylib"
+	"/usr/local/lib/libumundoserial64_d.dylib"
+	"/usr/local/lib/libumundorpc64.dylib"
+	"/usr/local/lib/libumundorpc64_d.dylib"
+	"/usr/local/lib/libumundoutil64.dylib"
+	"/usr/local/lib/libumundoutil64_d.dylib"
+	"/usr/local/lib/libumundoNativeJava64.jnilib"
+	"/usr/local/lib/libumundoNativeJava64_d.jnilib"
+}
+
+set reqFilesMac [concat $reqFilesMac $reqFilesAndroid $reqFilesIOS $reqFilesDesktopCommonUnix $reqFilesXCodeProject $reqFilesAndroidProject $reqFilesJavaSamples $reqFilesCPPSamples]
+set reqFilesMac [lsort $reqFilesMac]
+checkArchive "tar tzf ../../installer/umundo-darwin-*.tar.gz" Mac $reqFilesMac
+
+#############################
+# Validate Linux32 installers
+#############################
+
+log_user 0
+set reqFilesLinux32 {
+	"/usr/local/bin/protoc-umundo-cpp-rpc"
+	"/usr/local/bin/umundo-pingpong"
+	"/usr/local/bin/umundo-monitor"
+
+	"/usr/local/include/umundo/s11n.h"
+	"/usr/local/include/umundo/core.h"
+	"/usr/local/include/umundo/rpc.h"
+	"/usr/local/include/umundo/util.h"
+
+	"/usr/local/lib/libumundo.so"
+	"/usr/local/lib/libumundo_d.so"
+	"/usr/local/lib/libumundocore.so"
+	"/usr/local/lib/libumundocore_d.so"
+	"/usr/local/lib/libumundoserial.so"
+	"/usr/local/lib/libumundoserial_d.so"
+	"/usr/local/lib/libumundorpc.so"
+	"/usr/local/lib/libumundorpc_d.so"
+	"/usr/local/lib/libumundoutil.so"
+	"/usr/local/lib/libumundoutil_d.so"
+	"/usr/local/lib/libumundoNativeJava.so"
+	"/usr/local/lib/libumundoNativeJava_d.so"
+
+	"/usr/local/share/umundo/java/umundo.jar"
+}
+set reqFilesLinux32 [concat $reqFilesLinux32 $reqFilesDesktopCommonUnix $reqFilesAndroid $reqFilesAndroidProject $reqFilesJavaSamples $reqFilesCPPSamples]
+set reqFilesLinux32 [lsort $reqFilesLinux32]
+checkArchive "tar tzf ../../installer/umundo-linux-i686-*.tar.gz" Linux32 $reqFilesLinux32
+
+#############################
+# Validate Linux64 installers
+#############################
+
+log_user 0
+set reqFilesLinux64 {
+	"/usr/local/bin/protoc-umundo-cpp-rpc"
+	"/usr/local/bin/umundo-pingpong"
+	"/usr/local/bin/umundo-monitor"
+
+	"/usr/local/include/umundo/s11n.h"
+	"/usr/local/include/umundo/core.h"
+	"/usr/local/include/umundo/rpc.h"
+	"/usr/local/include/umundo/util.h"
+
+	"/usr/local/lib/libumundo64.so"
+	"/usr/local/lib/libumundo64_d.so"
+	"/usr/local/lib/libumundocore64.so"
+	"/usr/local/lib/libumundocore64_d.so"
+	"/usr/local/lib/libumundoserial64.so"
+	"/usr/local/lib/libumundoserial64_d.so"
+	"/usr/local/lib/libumundorpc64.so"
+	"/usr/local/lib/libumundorpc64_d.so"
+	"/usr/local/lib/libumundoutil64.so"
+	"/usr/local/lib/libumundoutil64_d.so"
+	"/usr/local/lib/libumundoNativeJava64.so"
+	"/usr/local/lib/libumundoNativeJava64_d.so"
+
+	"/usr/local/share/umundo/java/umundo.jar"
+}
+set reqFilesLinux64 [concat $reqFilesLinux64 $reqFilesDesktopCommonUnix $reqFilesAndroid $reqFilesAndroidProject $reqFilesJavaSamples $reqFilesCPPSamples]
+set reqFilesLinux64 [lsort $reqFilesLinux64]
+checkArchive "tar tzf ../../installer/umundo-linux-x86_64-*.tar.gz" Linux64 $reqFilesLinux64
+
+#############################
+# Validate Win32 installers
+#############################
+
+log_user 0
+set reqFilesWin32 {
+	"/bin/protoc-umundo-cpp-rpc.exe"
+	"/bin/umundo-pingpong.exe"
+	"/bin/umundo-monitor.exe"
+
+	"/include/umundo/s11n.h"
+	"/include/umundo/core.h"
+	"/include/umundo/rpc.h"
+	"/include/umundo/util.h"
+
+	"/lib/umundo.lib"
+	"/lib/umundo_d.lib"
+	"/lib/umundocore.lib"
+	"/lib/umundocore_d.lib"
+	"/lib/umundoserial.lib"
+	"/lib/umundoserial_d.lib"
+	"/lib/umundorpc.lib"
+	"/lib/umundorpc_d.lib"
+	"/lib/umundoutil.lib"
+	"/lib/umundoutil_d.lib"
+	"/lib/umundoNativeCSharp.dll"
+	"/lib/umundoNativeCSharp_d.dll"
+	"/lib/umundoNativeJava.dll"
+	"/lib/umundoNativeJava_d.dll"
+}
+set reqFilesWin32 [concat $reqFilesWin32 $reqFilesAndroid $reqFilesCSharpProject $reqFilesAndroidProject $reqFilesJavaSamples $reqFilesCPPSamples]
+set reqFilesWin32 [lsort $reqFilesWin32]
+checkArchive "unzip -l ../../installer/umundo-windows-x86-*.zip" Win32 $reqFilesWin32
+
+#############################
+# Validate Win64 installers
+#############################
+
+log_user 0
+set reqFilesWin64 {
+	"/bin/protoc-umundo-cpp-rpc.exe"
+	"/bin/umundo-pingpong.exe"
+	"/bin/umundo-monitor.exe"
+
+	"/include/umundo/s11n.h"
+	"/include/umundo/core.h"
+	"/include/umundo/rpc.h"
+	"/include/umundo/util.h"
+
+	"/lib/umundo64.lib"
+	"/lib/umundo64_d.lib"
+	"/lib/umundocore64.lib"
+	"/lib/umundocore64_d.lib"
+	"/lib/umundoserial64.lib"
+	"/lib/umundoserial64_d.lib"
+	"/lib/umundorpc64.lib"
+	"/lib/umundorpc64_d.lib"
+	"/lib/umundoutil64.lib"
+	"/lib/umundoutil64_d.lib"
+	"/lib/umundoNativeCSharp64.dll"
+	"/lib/umundoNativeCSharp64_d.dll"
+	"/lib/umundoNativeJava64.dll"
+	"/lib/umundoNativeJava64_d.dll"
+}
+set reqFilesWin64 [concat $reqFilesWin64 $reqFilesAndroid $reqFilesCSharpProject $reqFilesAndroidProject $reqFilesJavaSamples $reqFilesCPPSamples]
+set reqFilesWin64 [lsort $reqFilesWin64]
+checkArchive "unzip -l ../../installer/umundo-windows-x86_64-*.zip" Win64 $reqFilesWin64
+
+expect $local_prompt
+send "logout\n"
+exit

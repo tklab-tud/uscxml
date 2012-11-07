@@ -1,0 +1,23 @@
+option java_package = "org.umundo.protobuf.tests";
+
+message EchoRequest {
+	required string name = 1;
+	optional bytes buffer = 2;
+}
+message EchoReply {
+	required string name = 1;
+	optional bytes buffer = 2;
+}
+service EchoService {
+ 	rpc echo (EchoRequest) returns (EchoReply);
+}
+
+message PingRequest {
+	required string name = 1;
+}
+message PingReply {
+	required string name = 1;
+}
+service PingService {
+ 	rpc ping (PingRequest) returns (PingReply);
+}

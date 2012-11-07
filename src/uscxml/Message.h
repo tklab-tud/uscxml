@@ -9,6 +9,8 @@
 #include <DOM/Document.hpp>
 #include <DOM/io/Stream.hpp>
 
+#include <inttypes.h>
+
 #define TAGNAME(elem) ((Arabica::DOM::Element<std::string>)elem).getTagName()
 #define ATTR(elem, attr) ((Arabica::DOM::Element<std::string>)elem).getAttribute(attr)
 #define HAS_ATTR(elem, attr) ((Arabica::DOM::Element<std::string>)elem).hasAttribute(attr)
@@ -86,7 +88,7 @@ public:
   std::string src;
   std::string namelist;
   bool autoForward;
-  std::map<std::string, std::string> params;
+  std::map<std::string, std::list<std::string> > params;
   std::string content;
 
   static InvokeRequest fromXML(const std::string& xmlString);
@@ -104,8 +106,8 @@ public:
   std::string target;
   std::string type;
   uint32_t delayMs;
-  std::map<std::string, std::string> params;
   std::map<std::string, std::string> namelist;
+  std::map<std::string, std::list<std::string> > params;
   std::string content;
   
   static SendRequest fromXML(const std::string& xmlString);

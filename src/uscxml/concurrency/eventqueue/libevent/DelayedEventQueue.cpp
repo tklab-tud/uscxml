@@ -5,7 +5,11 @@
 namespace uscxml {
 
   DelayedEventQueue::DelayedEventQueue() {
-    evthread_use_pthreads();
+#ifndef _WIN32
+	  evthread_use_pthreads();
+#else
+	  evthread_use_windows_threads();
+#endif
     _eventLoop = event_base_new();
     _thread = NULL;
   }
@@ -80,8 +84,8 @@ namespace uscxml {
 
     std::string eventId = data->eventId; // copy eventId
     event_free(data->event);
-    data->eventQueue->_callbackData.erase(data->eventId);
     data->callback(data->userData, eventId);
+    data->eventQueue->_callbackData.erase(data->eventId);
   }
 
 }

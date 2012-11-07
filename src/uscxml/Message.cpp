@@ -1,3 +1,4 @@
+#include "uscxml/Common.h"
 #include "uscxml/Message.h"
 //#include "uscxml/Interpreter.h"
 #include <DOM/SAX2DOM/SAX2DOM.hpp>
@@ -123,14 +124,18 @@ Arabica::DOM::Document<std::string> SendRequest::toDocument() {
     Arabica::DOM::Node<std::string> payloadElem = scxmlMsg.getElementsByTagName("scxml:payload").item(0);
 
     // add parameters
-    std::map<std::string, std::string>::iterator paramIter = params.begin();
-    while(paramIter != params.end()) {
-      Arabica::DOM::Element<std::string> propertyElem = document.createElementNS("http://www.w3.org/2005/07/scxml", "scxml:property");
-      propertyElem.setAttribute("name", paramIter->first);
-      Arabica::DOM::Text<std::string> textElem = document.createTextNode(paramIter->second);
-      propertyElem.appendChild(textElem);
-      payloadElem.appendChild(propertyElem);
-      paramIter++;
+    std::map<std::string, std::list<std::string> >::iterator paramsIter = params.begin();
+    while(paramsIter != params.end()) {
+      std::list<std::string>::iterator paramIter = paramsIter->second.begin();
+      while(paramIter != paramsIter->second.end()) {
+        Arabica::DOM::Element<std::string> propertyElem = document.createElementNS("http://www.w3.org/2005/07/scxml", "scxml:property");
+        propertyElem.setAttribute("name", paramsIter->first);
+        Arabica::DOM::Text<std::string> textElem = document.createTextNode(*paramIter);
+        propertyElem.appendChild(textElem);
+        payloadElem.appendChild(propertyElem);
+        paramIter++;
+      }
+      paramsIter++;
     }
     
     // add namelist elements
@@ -163,6 +168,7 @@ Arabica::DOM::Document<std::string> InvokeRequest::toDocument() {
 }
 
 Data Data::fromXML(const std::string& xmlString) {
+	return Data();
 }
   
 Event Event::fromXML(const std::string& xmlString) {
@@ -212,10 +218,12 @@ Event Event::fromXML(const std::string& xmlString) {
 
 SendRequest SendRequest::fromXML(const std::string& xmlString) {
 	Event::fromXML(xmlString);
+	return SendRequest();
 }
 
 InvokeRequest InvokeRequest::fromXML(const std::string& xmlString) {
 	Event::fromXML(xmlString);
+	return InvokeRequest();
 }
 
 #ifndef SWIGJAVA

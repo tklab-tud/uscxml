@@ -25,18 +25,8 @@ set(_UMUNDO_LIB_SEARCHPATH
 	"/usr/local" 
 	"/opt/local" 
 	"C:/Program Files (x86)/uMundo"
+	"C:/Program Files/uMundo"
 )
-
-###################################################
-# get a list of components the user requested
-###################################################
-set(_UMUNDO_COMPONENTS_TO_PROCESS)
-foreach(_UMUNDO_COMPONENT ${UMUNDO_FIND_COMPONENTS})
-	STRING(TOUPPER ${_UMUNDO_COMPONENT} _UMUNDO_COMPONENT_UC)
-	list(APPEND _UMUNDO_COMPONENTS_TO_PROCESS ${_UMUNDO_COMPONENT_UC})
-endforeach()
-list(APPEND _UMUNDO_COMPONENTS_TO_PROCESS "CORE")
-list(REMOVE_DUPLICATES _UMUNDO_COMPONENTS_TO_PROCESS)
 
 ###################################################
 # find the umundo header files
@@ -48,6 +38,25 @@ FIND_PATH(UMUNDO_INCLUDE_DIR umundo/core.h
 )
 
 ###################################################
+# get a list of components the user requested
+###################################################
+set(_UMUNDO_COMPONENTS_TO_PROCESS)
+foreach(_UMUNDO_COMPONENT ${UMUNDO_FIND_COMPONENTS})
+	STRING(TOUPPER ${_UMUNDO_COMPONENT} _UMUNDO_COMPONENT_UC)
+	list(APPEND _UMUNDO_COMPONENTS_TO_PROCESS ${_UMUNDO_COMPONENT_UC})
+endforeach()
+
+# is the convenience library requested?
+list(FIND _UMUNDO_COMPONENTS_TO_PROCESS "CONVENIENCE" FOUND_ITEM)
+if (FOUND_ITEM GREATER -1)
+	set(_UMUNDO_COMPONENTS_TO_PROCESS "CONVENIENCE")
+else()
+	list(APPEND _UMUNDO_COMPONENTS_TO_PROCESS "CORE")
+endif()
+
+list(REMOVE_DUPLICATES _UMUNDO_COMPONENTS_TO_PROCESS)
+
+###################################################
 # iterate components and try to find libraries
 # in debug and release configuration. For release
 # we prefer MinSizeRel, for debug we prefer 
@@ -56,7 +65,12 @@ FIND_PATH(UMUNDO_INCLUDE_DIR umundo/core.h
 SET(UMUNDO_LIBRARIES)
 foreach (_UMUNDO_COMPONENT ${_UMUNDO_COMPONENTS_TO_PROCESS})
 	SET(_CURR_COMPONENT "UMUNDO_${_UMUNDO_COMPONENT}_LIBRARY")
-	STRING(TOLOWER ${_UMUNDO_COMPONENT}${64BIT_LIB_POSTFIX} _UMUNDO_COMPONENT_LC)
+
+	if (_UMUNDO_COMPONENT STREQUAL "CONVENIENCE")
+		STRING(TOLOWER "${64BIT_LIB_POSTFIX}" _UMUNDO_COMPONENT_LC)
+	else()
+		STRING(TOLOWER ${_UMUNDO_COMPONENT}${64BIT_LIB_POSTFIX} _UMUNDO_COMPONENT_LC)
+	endif()
 
 	# prefer MinSizeRel libraries
 	FIND_LIBRARY(${_CURR_COMPONENT} 

@@ -22,7 +22,7 @@ Data MMIComponent::getDataModelVariables() {
 }
 
 void MMIComponent::send(SendRequest& req) {
-  assert(false);
+  
 }
 
 void MMIComponent::cancel(const std::string sendId) {
