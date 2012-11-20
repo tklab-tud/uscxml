@@ -102,11 +102,7 @@ foreach (_MILES_COMPONENT ${_MILES_COMPONENTS_TO_PROCESS})
 		if (${_CURR_COMPONENT}_DEBUG)
 			list(APPEND MILES_LIBRARIES debug ${${_CURR_COMPONENT}_DEBUG})
 		endif()
-	endif()
-	
-	if (NOT ${_CURR_COMPONENT} AND NOT ${_CURR_COMPONENT}_DEBUG)
-		message(FATAL_ERROR "Could not find miles component ${_MILES_COMPONENT}")
-	endif()
+	endif()	
 endforeach()
 
 

@@ -51,19 +51,19 @@
 		
 		<!-- this is the state where we wait for events -->
 	  <state id="idle">
-			<!-- onentry>
+			<onentry>
 				<log expr="'== Idleing ====='" />
-			</onentry -->
+			</onentry>
 			<transition target="dump" event="*" />
 		</state>
 		
 	  <state id="dump">
-	    <!-- onentry>
+	    <onentry>
 				<log expr="'== Dumping Event ====='" />
 	      <script>
 	        dump(_event);
 	      </script>
-	    </onentry -->
+	    </onentry>
 			<transition target="idle" />
 	  </state>
 

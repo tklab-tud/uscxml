@@ -8,4 +8,6 @@ contrib/prebuilt/linux*
 contrib/prebuilt/windows*
 contrib/prebuilt/ios*
 contrib/prebuilt/android*
-
+package/linux*
+package/darwin*
+package/windows*

@@ -116,7 +116,7 @@ foreach (_UMUNDO_COMPONENT ${_UMUNDO_COMPONENTS_TO_PROCESS})
 	endif()
 	
 	if (NOT ${_CURR_COMPONENT} AND NOT ${_CURR_COMPONENT}_DEBUG)
-		message(FATAL_ERROR "Could not find umundo component ${_UMUNDO_COMPONENT}")
+		message(STATUS "Could not find umundo component ${_UMUNDO_COMPONENT}")
 	endif()
 endforeach()
 

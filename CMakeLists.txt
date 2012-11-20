@@ -208,6 +208,8 @@ elseif (${CMAKE_CXX_COMPILER_ID} STREQUAL "MSVC")
 	add_definitions("-DUMUNDO_STATIC")
 	add_definitions("-D_SCL_SECURE_NO_WARNINGS")
 	add_definitions("-D_CRT_SECURE_NO_WARNINGS")
+	add_definitions("/bigobj")
+	
 	# SET(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} /NODEFAULTLIB")
 	# SET(CMAKE_EXE_LINKER_FLAGS_DEBUG "${CMAKE_EXE_LINKER_FLAGS_DEBUG} /NODEFAULTLIB:MSVCRTD.lib")
 elseif (${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
@@ -377,12 +379,13 @@ if (MILES_FOUND)
   file(GLOB_RECURSE MILES_INVOKER src/uscxml/invoker/modality/miles/*.cpp src/uscxml/invoker/modality/miles/*.h)
   list (APPEND USCXML_FILES ${MILES_INVOKER})
   list (APPEND USCXML_LIBS ${MILES_LIBRARIES})
-endif()
 
-# openal
-find_package(OpenAL REQUIRED)
-include_directories(${OPENAL_INCLUDE_DIR})
-list(APPEND USCXML_LIBS ${OPENAL_LIBRARY})
+	# openal is only needed for miles
+	find_package(OpenAL REQUIRED)
+	include_directories(${OPENAL_INCLUDE_DIR})
+	list(APPEND USCXML_LIBS ${OPENAL_LIBRARY})
+
+endif()
 
 # # protobuf
 # find_package(Protobuf REQUIRED)
