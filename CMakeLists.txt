@@ -281,7 +281,7 @@ foreach( OUTPUT_CONFIG ${CMAKE_CONFIGURATION_TYPES} )
 endforeach()
 
 ############################################################
-# Dependandent libraries
+# Dependent libraries
 ############################################################
 
 set(USCXML_LIBS)
@@ -292,10 +292,6 @@ if (NOT WIN32)
 	find_package(LibXml2 REQUIRED)
 	include_directories(${LIBXML2_INCLUDE_DIR})
 	list (APPEND USCXML_LIBS ${LIBXML2_LIBRARIES})
-	if (UNIX AND NOT APPLE)
-		list (APPEND USCXML_LIBS "pthread")
-		list (APPEND USCXML_LIBS "rt")
-	endif()
 elseif(WIN32)
 	list (APPEND USCXML_LIBS "Ws2_32")
 	list (APPEND USCXML_LIBS "Winmm")
@@ -415,6 +411,12 @@ file(GLOB USCXML_INTERPRETER src/uscxml/*.cpp src/uscxml/*.h)
 list (APPEND USCXML_FILES ${USCXML_INTERPRETER})
 
 include_directories(src)
+
+# order of libraries matters with some gcc versions?!
+if (UNIX AND NOT APPLE)
+	list (APPEND USCXML_LIBS "pthread")
+	list (APPEND USCXML_LIBS "rt")
+endif()
 
 ############################################################
 # Binaries and tests
