@@ -1,10 +1,22 @@
 #include "uscxml/Common.h"
-#include "uscxml/datamodel/ecmascript/v8/V8DataModel.h"
+#include "V8DataModel.h"
 #include "dom/V8SCXMLDOM.h"
 #include "uscxml/Message.h"
 #include <glog/logging.h>
 
+#ifdef BUILD_AS_PLUGINS
+#include <Pluma/Connector.hpp>
+#endif
+
 namespace uscxml {
+
+#ifdef BUILD_AS_PLUGINS
+PLUMA_CONNECTOR
+bool connect(pluma::Host& host){
+    host.add( new V8DataModelProvider() );
+    return true;
+}
+#endif
 
 V8DataModel::V8DataModel() {
 //  _contexts.push_back(v8::Context::New());

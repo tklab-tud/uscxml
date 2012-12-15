@@ -1,4 +1,4 @@
-#include "uscxml/concurrency/eventqueue/libevent/DelayedEventQueue.h"
+#include "DelayedEventQueue.h"
 #include <assert.h>
 #include <event2/event.h>
 

@@ -2,8 +2,20 @@
 #include "USCXMLInvoker.h"
 #include "uscxml/Interpreter.h"
 
+#ifdef BUILD_AS_PLUGINS
+#include <Pluma/Connector.hpp>
+#endif
+
 namespace uscxml {
-	
+
+#ifdef BUILD_AS_PLUGINS
+PLUMA_CONNECTOR
+bool connect(pluma::Host& host){
+    host.add( new USCXMLInvokerProvider() );
+    return true;
+}
+#endif
+
 USCXMLInvoker::USCXMLInvoker() {	
 }
 

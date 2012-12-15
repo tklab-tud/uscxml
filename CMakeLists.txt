@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 2.8.4)
 # specify USCXML version
 SET(USCXML_VERSION_MAJOR "0")
 SET(USCXML_VERSION_MINOR "0")
-SET(USCXML_VERSION_PATCH "1")
+SET(USCXML_VERSION_PATCH "2")
 SET(USCXML_VERSION ${USCXML_VERSION_MAJOR}.${USCXML_VERSION_MINOR}.${USCXML_VERSION_PATCH})
 
 # build type has to be set before the project definition
@@ -145,7 +145,7 @@ endif()
 if (CMAKE_CROSSCOMPILING)
 	OPTION(BUILD_TESTS "Build USCXML tests" OFF)
 else()
-	OPTION(BUILD_TESTS "Build USCXML tests" OFF)
+	OPTION(BUILD_TESTS "Build USCXML tests" ON)
 endif()
 
 # a dummy target to depend on the targets needed for tests, see:
@@ -215,10 +215,11 @@ elseif (${CMAKE_CXX_COMPILER_ID} STREQUAL "MSVC")
 elseif (${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
 	add_definitions("-Wno-parentheses-equality")
 	set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} "-fPIC")
-	
 else()
 	message(FATAL_ERROR "Unknown compiler: ${CMAKE_CXX_COMPILER_ID}")
 endif()
+
+set(CMAKE_COMPILER_STRING "${CMAKE_CXX_COMPILER_ID} ${CMAKE_CXX_COMPILER_VERSION}")
 
 ############################################################
 # postfixes for all built targets depending on build type
@@ -284,81 +285,165 @@ endforeach()
 # Dependent libraries
 ############################################################
 
-set(USCXML_LIBS)
+set(USCXML_CORE_LIBS)
+set(USCXML_OPT_LIBS)
 set(USCXML_FILES)
 
 if (NOT WIN32)
 	# libxml2
 	find_package(LibXml2 REQUIRED)
 	include_directories(${LIBXML2_INCLUDE_DIR})
-	list (APPEND USCXML_LIBS ${LIBXML2_LIBRARIES})
+	list (APPEND USCXML_CORE_LIBS ${LIBXML2_LIBRARIES})
+	set(XML_LIBRARIES ${LIBXML2_LIBRARIES})
 elseif(WIN32)
-	list (APPEND USCXML_LIBS "Ws2_32")
-	list (APPEND USCXML_LIBS "Winmm")
-	list (APPEND USCXML_LIBS "Iphlpapi")
-	list (APPEND USCXML_LIBS "Netapi32")
+	list (APPEND XML_LIBRARIES "Ws2_32")
+	list (APPEND XML_LIBRARIES "Winmm")
+	list (APPEND XML_LIBRARIES "Iphlpapi")
+	list (APPEND XML_LIBRARIES "Netapi32")
+	list (APPEND USCXML_CORE_LIBS ${XML_LIBRARIES})
 endif()
 
 # prefer rest as static libraries
 set(CMAKE_FIND_LIBRARY_SUFFIXES .lib .a ${CMAKE_FIND_LIBRARY_SUFFIXES})
 
-#glog
+################################
+# required libraries for core
+
+
+# GLOG
+
 # set(ENV{GLOG_SRC} ${CMAKE_SOURCE_DIR}/../glog)
 find_package(GLOG REQUIRED)
 include_directories(${GLOG_INCLUDE_DIR})
-list (APPEND USCXML_LIBS ${GLOG_LIBRARY})
+list (APPEND USCXML_CORE_LIBS ${GLOG_LIBRARY})
 add_definitions(-DGLOG_NO_ABBREVIATED_SEVERITIES)
 
-# arabica
+
+# ARABICA
+
 find_package(Arabica REQUIRED)
 include_directories(${ARABICA_INCLUDE_DIR})
-list (APPEND USCXML_LIBS ${ARABICA_LIBRARY})
+list (APPEND USCXML_CORE_LIBS ${ARABICA_LIBRARY})
 if (WIN32)
 	add_definitions("-DUSE_MSXML")
 endif()
 
-# boost - header only
+
+# BOOST - header only
+
 FIND_PATH(Boost_INCLUDE_DIR boost/version.hpp)
 include_directories(${Boost_INCLUDE_DIR})
 
-#event
-#set(ENV{EVENT_SRC} ${CMAKE_SOURCE_DIR}/../libevent)
-find_package(EVENT REQUIRED)
-include_directories(${EVENT_INCLUDE_DIR})
-file(GLOB_RECURSE USCXML_IO_PROCESSOR_LIBEVENT
-	src/uscxml/ioprocessor/basichttp/libevent/*.cpp
-	src/uscxml/ioprocessor/basichttp/libevent/*.h
-)
-list (APPEND USCXML_FILES ${USCXML_IO_PROCESSOR_LIBEVENT})
 
-file(GLOB_RECURSE USCXML_EVENTQUEUE_LIBEVENT
-	src/uscxml/concurrency/eventqueue/libevent/*.cpp
-	src/uscxml/concurrency/eventqueue/libevent/*.h
-)
-list (APPEND USCXML_FILES ${USCXML_EVENTQUEUE_LIBEVENT})
+# CURL
 
-list (APPEND USCXML_LIBS ${EVENT_LIBRARY})
-
-# v8
-# set(ENV{V8_SRC} ${CMAKE_SOURCE_DIR}/../v8)
-find_package(V8 REQUIRED)
-include_directories(${V8_INCLUDE_DIR})
-file(GLOB_RECURSE USCXML_DATAMODEL_V8
-	src/uscxml/datamodel/ecmascript/v8/*.cpp
-	src/uscxml/datamodel/ecmascript/v8/*.h
-)
-list (APPEND USCXML_FILES ${USCXML_DATAMODEL_V8})
-list (APPEND USCXML_LIBS ${V8_LIBRARY})
-
-# curl
 find_package(CURL REQUIRED)
 include_directories(${CURL_INCLUDE_DIRS})
-list (APPEND USCXML_LIBS ${CURL_LIBRARIES})
+list (APPEND USCXML_CORE_LIBS ${CURL_LIBRARIES})
 if (WIN32)
 	add_definitions("-DCURL_STATICLIB")
 endif()
 
-# uMundo
+
+# LIBEVENT
+
+#set(ENV{EVENT_SRC} ${CMAKE_SOURCE_DIR}/../libevent)
+find_package(EVENT REQUIRED)
+include_directories(${EVENT_INCLUDE_DIR})
+list (APPEND USCXML_CORE_LIBS ${EVENT_LIBRARY})
+
+############################################################
+# Actual files of core library
+############################################################
+
+file(GLOB_RECURSE USCXML_CONCURRENCY
+	src/uscxml/concurrency/*.cpp
+	src/uscxml/concurrency/*.h
+)
+list (APPEND USCXML_FILES ${USCXML_CONCURRENCY})
+
+file(GLOB_RECURSE USCXML_DEBUG
+	src/uscxml/debug/*.cpp
+	src/uscxml/debug/*.h
+)
+list (APPEND USCXML_FILES ${USCXML_DEBUG})
+
+file(GLOB USCXML_CORE
+	src/uscxml/*.cpp
+	src/uscxml/*.h
+)
+list (APPEND USCXML_FILES ${USCXML_CORE})
+
+include_directories(src)
+
+#################################################
+# optional libraries we can build as plugins
+
+OPTION(BUILD_AS_PLUGINS "Build invokers, ioprocessors and datamodels as plugins" ON)
+if (BUILD_AS_PLUGINS)
+	include_directories(${PROJECT_SOURCE_DIR}/src/uscxml/plugins)
+	file(GLOB PLUMA 
+		src/uscxml/plugins/Pluma/*.cpp 
+		src/uscxml/plugins/Pluma/*.h
+		src/uscxml/plugins/*.cpp 
+		src/uscxml/plugins/*.h
+	)
+	list (APPEND USCXML_FILES ${PLUMA})
+	add_definitions("-DBUILD_AS_PLUGINS")
+endif()
+
+
+# LIBEVENT basichttp ioprocessor - this one is already required above
+
+file(GLOB_RECURSE LIBEVENT_IOPROCESSOR
+	src/uscxml/concurrency/*.cpp
+	src/uscxml/concurrency/*.h
+	src/uscxml/plugins/ioprocessor/basichttp/*.cpp
+	src/uscxml/plugins/ioprocessor/basichttp/*.h
+)
+if (BUILD_AS_PLUGINS)
+	add_library(
+		ioprocessor_basichttp SHARED 
+		${LIBEVENT_IOPROCESSOR}
+		${PLUMA}
+		${USCXML_FILES})
+	target_link_libraries(ioprocessor_basichttp 
+		${USCXML_CORE_LIBS})
+	set_target_properties(ioprocessor_basichttp PROPERTIES FOLDER "Plugin IOProcessor")
+else()
+	list (APPEND USCXML_FILES ${LIBEVENT_IOPROCESSOR})
+endif()
+
+
+# GOOGLE V8 datamodel
+
+# set(ENV{V8_SRC} ${CMAKE_SOURCE_DIR}/../v8)
+find_package(V8)
+if (V8_FOUND)
+	include_directories(${V8_INCLUDE_DIR})
+	file(GLOB_RECURSE V8_DATAMODEL
+		src/uscxml/plugins/datamodel/ecmascript/v8/*.cpp
+		src/uscxml/plugins/datamodel/ecmascript/v8/*.h
+	)
+	if (BUILD_AS_PLUGINS)
+		add_library(
+			datamodel_v8 SHARED 
+			${V8_DATAMODEL}
+			${PLUMA}
+			${USCXML_FILES})
+		target_link_libraries(datamodel_v8 
+			${USCXML_CORE_LIBS}
+			${V8_LIBRARY})
+		set_target_properties(datamodel_v8 PROPERTIES FOLDER "Plugin DataModel")
+	else()
+		list (APPEND USCXML_FILES ${V8_DATAMODEL})
+		list (APPEND USCXML_OPT_LIBS ${V8_LIBRARY})
+	endif()
+endif()
+
+
+# UMUNDO invoker 
+
 if (WIN32)
 	find_package(UMUNDO COMPONENTS convenience)
 else()
@@ -366,56 +451,80 @@ else()
 endif()
 if (UMUNDO_FOUND)
 	include_directories(${UMUNDO_INCLUDE_DIR})
-	file(GLOB_RECURSE UMUNDO_INVOKER src/uscxml/invoker/umundo/*.cpp src/uscxml/invoker/umundo/*.h)
-	list (APPEND USCXML_FILES ${UMUNDO_INVOKER})
-	list (APPEND USCXML_LIBS ${UMUNDO_LIBRARIES})
+	file(GLOB_RECURSE UMUNDO_INVOKER 
+		src/uscxml/plugins/invoker/umundo/*.cpp 
+		src/uscxml/plugins/invoker/umundo/*.h)
+	if (BUILD_AS_PLUGINS)
+		add_library(
+			invoker_umundo SHARED 
+			${UMUNDO_INVOKER}
+			${PLUMA}
+			${USCXML_FILES})
+		target_link_libraries(invoker_umundo 
+			${USCXML_CORE_LIBS}
+			${UMUNDO_LIBRARIES})
+		set_target_properties(invoker_umundo PROPERTIES FOLDER "Plugin Invoker")
+	else()
+		list (APPEND USCXML_FILES ${UMUNDO_INVOKER})
+		list (APPEND USCXML_OPT_LIBS ${UMUNDO_LIBRARIES})
+	endif()
 endif()
 add_definitions("-DUMUNDO_STATIC")
 
-# miles
+
+# USCXML invoker 
+
+file(GLOB_RECURSE USCXML_INVOKER 
+	src/uscxml/plugins/invoker/scxml/*.cpp 
+	src/uscxml/plugins/invoker/scxml/*.h)
+if (BUILD_AS_PLUGINS)
+	add_library(
+		invoker_uscxml SHARED 
+		${USCXML_INVOKER}
+		${PLUMA}
+		${USCXML_FILES})
+	target_link_libraries(invoker_uscxml 
+		${USCXML_CORE_LIBS})
+		set_target_properties(invoker_uscxml PROPERTIES FOLDER "Plugin Invoker")
+else()
+	list (APPEND USCXML_FILES ${USCXML_INVOKER})
+endif()
+
+
+# MILES modality components
+
 find_package(MILES COMPONENTS core audio debug)
 if (MILES_FOUND)
   include_directories(${MILES_INCLUDE_DIR})
-  file(GLOB_RECURSE MILES_INVOKER src/uscxml/invoker/modality/miles/*.cpp src/uscxml/invoker/modality/miles/*.h)
-  list (APPEND USCXML_FILES ${MILES_INVOKER})
-  list (APPEND USCXML_LIBS ${MILES_LIBRARIES})
 
 	# openal is only needed for miles
 	find_package(OpenAL REQUIRED)
 	include_directories(${OPENAL_INCLUDE_DIR})
-	list(APPEND USCXML_LIBS ${OPENAL_LIBRARY})
 
+  file(GLOB_RECURSE MILES_INVOKER src/uscxml/invoker/modality/miles/*.cpp src/uscxml/invoker/modality/miles/*.h)
+	if (BUILD_AS_PLUGINS)
+		add_library(
+			invoker_miles SHARED 
+			${MILES_INVOKER}
+			${PLUMA}
+			${USCXML_FILES})
+		target_link_libraries(invoker_miles 
+			${MILES_LIBRARIES}
+			${OPENAL_LIBRARY}
+			${USCXML_CORE_LIBS})
+		set_target_properties(invoker_miles PROPERTIES FOLDER "Plugin Invoker")
+	else()
+  	list (APPEND USCXML_FILES ${MILES_INVOKER})
+  	list (APPEND USCXML_OPT_LIBS ${MILES_LIBRARIES})
+		list (APPEND USCXML_OPT_LIBS ${OPENAL_LIBRARY})
+	endif()
 endif()
 
-# # protobuf
-# find_package(Protobuf REQUIRED)
-# LIST(APPEND USCXML_LIBS optimized ${PROTOBUF_LIBRARY})
-# LIST(APPEND USCXML_LIBS debug ${PROTOBUF_LIBRARY_DEBUG})
-# include_directories(${PROTOBUF_INCLUDE_DIRS})
-
-# the uscxml invoker
-file(GLOB_RECURSE USCXML_INVOKER src/uscxml/invoker/scxml/*.cpp src/uscxml/invoker/scxml/*.h)
-list (APPEND USCXML_FILES ${USCXML_INVOKER})
-
-# debug
-# file(GLOB_RECURSE USCXML_DEBUG src/uscxml/debug/*.cpp src/uscxml/debug/*.h)
-# list (APPEND USCXML_FILES ${USCXML_DEBUG})
-
-file(GLOB USCXML_CONCURRENCY src/uscxml/concurrency/*.cpp src/uscxml/concurrency/*.h)
-list (APPEND USCXML_FILES ${USCXML_CONCURRENCY})
-
-file(GLOB USCXML_MODALITIES src/uscxml/invoker/modality/*.cpp src/uscxml/invoker/modality/*.h)
-list (APPEND USCXML_FILES ${USCXML_MODALITIES})
-
-file(GLOB USCXML_INTERPRETER src/uscxml/*.cpp src/uscxml/*.h)
-list (APPEND USCXML_FILES ${USCXML_INTERPRETER})
-
-include_directories(src)
 
 # order of libraries matters with some gcc versions?!
 if (UNIX AND NOT APPLE)
-	list (APPEND USCXML_LIBS "pthread")
-	list (APPEND USCXML_LIBS "rt")
+	list (APPEND USCXML_CORE_LIBS "pthread")
+	list (APPEND USCXML_CORE_LIBS "rt")
 endif()
 
 ############################################################
@@ -424,7 +533,7 @@ endif()
 
 # build library
 add_library(uscxml ${USCXML_FILES})
-target_link_libraries(uscxml ${USCXML_LIBS})
+target_link_libraries(uscxml ${USCXML_OPT_LIBS} ${USCXML_CORE_LIBS})
 
 add_executable(mmi-browser apps/mmi-browser.cpp ${PROJECT_SOURCE_DIR}/contrib/snippets/XGetopt.cpp)
 target_link_libraries(mmi-browser uscxml)
@@ -468,37 +577,3 @@ include(contrib/cmake/CPackUSCXML.cmake)
 
 # This must always be last!
 include(CPack)
-
-
-# ---- OLD DEPENDENCIES -------------
-
-#set(Boost_DEBUG 1)
-# find_package(Boost COMPONENTS thread regex system date_time REQUIRED)
-# INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIR})
-
-#openssl - needed for pion
-# find_package(OPENSSL REQUIRED)
-# INCLUDE_DIRECTORIES(${OPENSSL_INCLUDE_DIR})
-
-#zlib - needed for pion
-# find_package(ZLIB REQUIRED)
-# INCLUDE_DIRECTORIES(${ZLIB_INCLUDE_DIRS})
-
-#iconv - needed for pion
-# find_package(ICONV REQUIRED)
-# INCLUDE_DIRECTORIES(${ICONV_INCLUDE_DIR})
-
-#ev - no longer supported
-# set(ENV{EV_SRC} ${CMAKE_SOURCE_DIR}/../libev)
-# find_package(EV REQUIRED)
-# include_directories(${EV_INCLUDE_DIR})
-
-#pion
-# set(ENV{PION_SRC} ${CMAKE_SOURCE_DIR}/../pion)
-# find_package(PION REQUIRED)
-# include_directories(${PION_INCLUDE_DIR})
-# file(GLOB_RECURSE USCXML_IO_PROCESSOR_PION
-# 	src/uscxml/ioprocessor/basichttp/pion/*.cpp
-# 	src/uscxml/ioprocessor/basichttp/pion/*.h
-# )
-

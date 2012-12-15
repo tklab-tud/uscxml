@@ -3,7 +3,6 @@
 
 #include <map>
 
-#include "uscxml/Utilities.h"
 #include "../MMIComponent.h"
 
 extern "C" {
@@ -22,6 +21,15 @@ public:
   virtual ~SpatialAudio();
   virtual Invoker* create(Interpreter* interpreter);
   
+	virtual std::set<std::string> getNames() { 
+		std::set<std::string> names;
+		names.insert("spatial-audio");
+		names.insert("audio");
+		names.insert("http://www.smartvortex.eu/mmi/spatial-audio");
+		names.insert("http://www.smartvortex.eu/mmi/spatial-audio/");
+		return names;
+	}
+
   virtual Data getDataModelVariables();
   virtual void send(SendRequest& req);
   virtual void cancel(const std::string sendId);

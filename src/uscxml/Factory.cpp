@@ -2,61 +2,121 @@
 #include "uscxml/config.h"
 
 #include "uscxml/Factory.h"
-#include "uscxml/datamodel/ecmascript/v8/V8DataModel.h"
-#include "uscxml/ioprocessor/basichttp/libevent/EventIOProcessor.h"
-#include "uscxml/invoker/scxml/USCXMLInvoker.h"
+#include "uscxml/plugins/ioprocessor/basichttp/libevent/EventIOProcessor.h"
+#include "uscxml/plugins/invoker/scxml/USCXMLInvoker.h"
 
 #ifdef UMUNDO_FOUND
-#include "uscxml/invoker/umundo/UmundoInvoker.h"
+#include "uscxml/plugins/invoker/umundo/UmundoInvoker.h"
 #endif
 
 #ifdef MILES_FOUND
-#include "uscxml/invoker/modality/miles/SpatialAudio.h"
+#include "uscxml/plugins/invoker/modality/miles/SpatialAudio.h"
+#endif
+
+#ifdef V8_FOUND
+#include "uscxml/plugins/datamodel/ecmascript/v8/V8DataModel.h"
 #endif
 
 namespace uscxml {
 
   Factory::Factory() {
-    _dataModels["ecmascript"] = new V8DataModel();
+#ifdef BUILD_AS_PLUGINS
+		pluma.acceptProviderType<InvokerProvider>();
+		pluma.acceptProviderType<IOProcessorProvider>();
+		pluma.acceptProviderType<DataModelProvider>();
+		pluma.loadFromFolder("/Users/sradomski/Documents/TK/Code/uscxml/build/xcode/lib");
 
-    // use basichttp for transporting to/from scxml sessions as well
-    _ioProcessors["basichttp"] = new EventIOProcessor();
-    _ioProcessors["http://www.w3.org/TR/scxml/#SCXMLEventProcessor"] = _ioProcessors["basichttp"];
+		std::vector<InvokerProvider*> invokerProviders;
+    pluma.getProviders(invokerProviders);
+    for (std::vector<InvokerProvider*>::iterator it = invokerProviders.begin() ; it != invokerProviders.end() ; ++it) {
+      	Invoker* invoker = (*it)->create();
+				registerInvoker(invoker);
+    }
 
-    _invoker["scxml"] = new USCXMLInvoker();
-    _invoker["http://www.w3.org/TR/scxml/"] = _invoker["scxml"];
+    std::vector<IOProcessorProvider*> ioProcessorProviders;
+    pluma.getProviders(ioProcessorProviders);
+    for (std::vector<IOProcessorProvider*>::iterator it = ioProcessorProviders.begin() ; it != ioProcessorProviders.end() ; ++it) {
+      IOProcessor* ioProcessor = (*it)->create();
+      registerIOProcessor(ioProcessor);
+    }
 
+		std::vector<DataModelProvider*> dataModelProviders;
+    pluma.getProviders(dataModelProviders);
+    for (std::vector<DataModelProvider*>::iterator it = dataModelProviders.begin() ; it != dataModelProviders.end() ; ++it) {
+      DataModel* dataModel = (*it)->create();
+      registerDataModel(dataModel);
+    }
+    
+    pluma.unloadAll();
+
+#else
 #ifdef UMUNDO_FOUND
-    _invoker["umundo"] = new UmundoInvoker();
-    _invoker["http://umundo.tk.informatik.tu-darmstadt.de/"] = _invoker["umundo"];
+		{
+			UmundoInvoker* invoker = new UmundoInvoker();
+			registerInvoker(invoker);
+		}
 #endif
 
 #ifdef MILES_FOUND
-		_invoker["spatial-audio"] = new SpatialAudio();
-		_invoker["audio"] = _invoker["spatial-audio"];
-		_invoker["http://www.smartvortex.eu/mmi/spatial-audio/"] = _invoker["spatial-audio"];
+		{
+			SpatialAudio* invoker = new SpatialAudio();
+			registerInvoker(invoker);
+		}
 #endif
+
+#ifdef V8_FOUND
+		{
+			V8DataModel* dataModel = new V8DataModel();
+			registerDataModel(dataModel);
+		}
+#endif
+
+		// these are always available
+		{
+    	USCXMLInvoker* invoker = new USCXMLInvoker();
+			registerInvoker(invoker);
+		}
+		{
+    	EventIOProcessor* ioProcessor = new EventIOProcessor();
+			registerIOProcessor(ioProcessor);
+		}
+#endif	
   }
   
-  void Factory::registerIOProcessor(const std::string type, IOProcessor* ioProcessor) {
-    getInstance()->_ioProcessors[type] = ioProcessor;
+  void Factory::registerIOProcessor(IOProcessor* ioProcessor) {
+		std::set<std::string> names = ioProcessor->getNames();
+		std::set<std::string>::iterator nameIter = names.begin();
+		while(nameIter != names.end()) {
+			_ioProcessors[*nameIter] = ioProcessor;
+			nameIter++;
+		}
   }
   
-  void Factory::registerDataModel(const std::string type, DataModel* dataModel) {
-    getInstance()->_dataModels[type] = dataModel;
+  void Factory::registerDataModel(DataModel* dataModel) {
+		std::set<std::string> names = dataModel->getNames();
+		std::set<std::string>::iterator nameIter = names.begin();
+		while(nameIter != names.end()) {
+			_dataModels[*nameIter] = dataModel;
+			nameIter++;
+		}
   }
   
-  void Factory::registerExecutableContent(const std::string tag, ExecutableContent* executableContent) {
-    getInstance()->_executableContent[tag] = executableContent;
-  }
-  
-  void Factory::registerInvoker(const std::string type, Invoker* invoker) {
-    getInstance()->_invoker[type] = invoker;
+  void Factory::registerInvoker(Invoker* invoker) {
+		std::set<std::string> names = invoker->getNames();
+		std::set<std::string>::iterator nameIter = names.begin();
+		while(nameIter != names.end()) {
+			_invokers[*nameIter] = invoker;
+			nameIter++;
+		}
   }
 
+  void Factory::registerExecutableContent(const std::string tag, ExecutableContent* executableContent) {
+    _executableContent[tag] = executableContent;
+  }
+  
   Invoker* Factory::getInvoker(const std::string type, Interpreter* interpreter) {
-    if (Factory::getInstance()->_invoker.find(type) != getInstance()->_invoker.end()) {
-      return (Invoker*)getInstance()->_invoker[type]->create(interpreter);
+    if (Factory::getInstance()->_invokers.find(type) != getInstance()->_invokers.end()) {
+      return (Invoker*)getInstance()->_invokers[type]->create(interpreter);
     }
     return NULL;
   }

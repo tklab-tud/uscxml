@@ -11,7 +11,15 @@
 #include <math.h>
 
 namespace uscxml {
-	
+
+#ifdef BUILD_AS_PLUGINS
+PLUMA_CONNECTOR
+bool connect(pluma::Host& host){
+    host.add( new SpatialAudioProvider() );
+    return true;
+}
+#endif
+
 SpatialAudio::SpatialAudio() {
   _audioDevOpen = false;
   _audioDev = NULL;

@@ -1,5 +1,5 @@
 #include "uscxml/Interpreter.h"
-#include "uscxml/datamodel/ecmascript/v8/V8DataModel.h"
+#include "uscxml/plugins/datamodel/ecmascript/v8/V8DataModel.h"
 
 int main(int argc, char** argv) {
   if (argc != 2) {

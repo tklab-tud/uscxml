@@ -43,6 +43,7 @@
 
 /** build type */
 #cmakedefine CMAKE_BUILD_TYPE "@CMAKE_BUILD_TYPE@"
+#cmakedefine CMAKE_COMPILER_STRING "@CMAKE_COMPILER_STRING@"
 
 /** miscellaneous */
 #cmakedefine PROJECT_SOURCE_DIR "@PROJECT_SOURCE_DIR@"
@@ -51,5 +52,6 @@
 /** Optional libraries we found */
 #cmakedefine UMUNDO_FOUND
 #cmakedefine MILES_FOUND
+#cmakedefine V8_FOUND
 
 #endif

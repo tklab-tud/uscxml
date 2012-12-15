@@ -7,7 +7,7 @@
 #endif
 
 void printUsageAndExit() {
-	printf("mmi-browser version " USCXML_VERSION " (" CMAKE_BUILD_TYPE " build)\n");
+	printf("mmi-browser version " USCXML_VERSION " (" CMAKE_BUILD_TYPE " build - " CMAKE_COMPILER_STRING ")\n");
 	printf("Usage\n");
 	printf("\tmmi-browser URL\n");
 	printf("\n");
@@ -17,6 +17,7 @@ void printUsageAndExit() {
 }
 
 int main(int argc, char** argv) {
+	uscxml::Factory::getInstance();
   if (argc < 2) {
 		printUsageAndExit();
   }

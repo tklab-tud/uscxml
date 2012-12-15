@@ -18,7 +18,7 @@
 #include <SAX/helpers/CatchErrorHandler.hpp>
 
 #include "uscxml/concurrency/tinythread.h"
-#include "uscxml/concurrency/eventqueue/libevent/DelayedEventQueue.h"
+#include "uscxml/concurrency/eventqueue/DelayedEventQueue.h"
 #include "uscxml/concurrency/BlockingQueue.h"
 #include "uscxml/Message.h"
 #include "uscxml/Factory.h"

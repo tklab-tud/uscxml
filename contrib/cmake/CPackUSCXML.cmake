@@ -335,7 +335,7 @@ set(CPACK_RESOURCE_FILE_WELCOME "${PROJECT_SOURCE_DIR}/installer/packageMaker/we
 # Configuration for debian packages
 #
 set(CPACK_DEBIAN_PACKAGE_NAME "uscxml")
-set(CPACK_DEBIAN_PACKAGE_DEPENDS "libavahi-client3")
+set(CPACK_DEBIAN_PACKAGE_DEPENDS "libavahi-client3, libxml2")
 set(CPACK_DEBIAN_PACKAGE_RECOMMENDS "swig2.0, protobuf-compiler")
 
 ###

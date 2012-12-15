@@ -3,10 +3,16 @@
 
 #include "uscxml/Message.h"
 
+#ifdef BUILD_AS_PLUGINS
+#include "Pluma/Pluma.hpp"
+#endif
+
 #include <string>
+#include <set>
 
 namespace uscxml {
 
+	// see http://stackoverflow.com/questions/228005/alternative-to-itoa-for-converting-integer-to-string-c
   template <typename T> std::string toStr(T tmp) {
     std::ostringstream out;
     out << tmp;
@@ -33,9 +39,13 @@ namespace uscxml {
     IOProcessor() {};
     virtual ~IOProcessor() {};
     virtual IOProcessor* create(Interpreter* interpreter) = 0;
+		virtual std::set<std::string> getNames() = 0;
 
+		virtual void setInterpreter(Interpreter* interpreter) { _interpreter = interpreter; }
     virtual Data getDataModelVariables() = 0;
     virtual void send(SendRequest& req) = 0;
+	protected:
+		Interpreter* _interpreter;
   };
 
   class Invoker : public IOProcessor {
@@ -46,8 +56,9 @@ namespace uscxml {
 
   class DataModel {
 	public:
-    virtual DataModel* create(Interpreter* interpreter) = 0;
     virtual ~DataModel() {}
+    virtual DataModel* create(Interpreter* interpreter) = 0;
+		virtual std::set<std::string> getNames() = 0;
     
     virtual bool validate(const std::string& location, const std::string& schema) = 0;
     virtual void setEvent(const Event& event) = 0;
@@ -67,10 +78,10 @@ namespace uscxml {
   
   class Factory {
   public:
-    static void registerIOProcessor(const std::string type, IOProcessor* ioProcessor);
-    static void registerDataModel(const std::string type, DataModel* dataModel);
-    static void registerExecutableContent(const std::string tag, ExecutableContent* executableContent);
-    static void registerInvoker(const std::string type, Invoker* invoker);
+    void registerIOProcessor(IOProcessor* ioProcessor);
+    void registerDataModel(DataModel* dataModel);
+    void registerInvoker(Invoker* invoker);
+    void registerExecutableContent(const std::string tag, ExecutableContent* executableContent);
     
     static DataModel* getDataModel(const std::string type, Interpreter* interpreter);
     static IOProcessor* getIOProcessor(const std::string type, Interpreter* interpreter);
@@ -81,10 +92,14 @@ namespace uscxml {
 
 		std::map<std::string, DataModel*> _dataModels;
 		std::map<std::string, IOProcessor*> _ioProcessors;
-		std::map<std::string, Invoker*> _invoker;
+		std::map<std::string, Invoker*> _invokers;
 		std::map<std::string, ExecutableContent*> _executableContent;
 
   protected:
+#ifdef BUILD_AS_PLUGINS
+	  pluma::Pluma pluma;
+#endif
+	
     Factory();
     static Factory* _instance;
 
