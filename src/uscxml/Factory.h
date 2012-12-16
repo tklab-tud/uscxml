@@ -11,7 +11,7 @@
 #include <set>
 
 namespace uscxml {
-
+  
 	// see http://stackoverflow.com/questions/228005/alternative-to-itoa-for-converting-integer-to-string-c
   template <typename T> std::string toStr(T tmp) {
     std::ostringstream out;
@@ -94,6 +94,8 @@ namespace uscxml {
 		std::map<std::string, IOProcessor*> _ioProcessors;
 		std::map<std::string, Invoker*> _invokers;
 		std::map<std::string, ExecutableContent*> _executableContent;
+
+    static std::string pluginPath;
 
   protected:
 #ifdef BUILD_AS_PLUGINS

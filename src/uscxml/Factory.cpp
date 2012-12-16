@@ -18,37 +18,38 @@
 #endif
 
 namespace uscxml {
-
+  
   Factory::Factory() {
 #ifdef BUILD_AS_PLUGINS
-		pluma.acceptProviderType<InvokerProvider>();
-		pluma.acceptProviderType<IOProcessorProvider>();
-		pluma.acceptProviderType<DataModelProvider>();
-		pluma.loadFromFolder("/Users/sradomski/Documents/TK/Code/uscxml/build/xcode/lib");
+    if (pluginPath.length() > 0) {
+      pluma.acceptProviderType<InvokerProvider>();
+      pluma.acceptProviderType<IOProcessorProvider>();
+      pluma.acceptProviderType<DataModelProvider>();
+      pluma.loadFromFolder(pluginPath);
 
-		std::vector<InvokerProvider*> invokerProviders;
-    pluma.getProviders(invokerProviders);
-    for (std::vector<InvokerProvider*>::iterator it = invokerProviders.begin() ; it != invokerProviders.end() ; ++it) {
-      	Invoker* invoker = (*it)->create();
-				registerInvoker(invoker);
+      std::vector<InvokerProvider*> invokerProviders;
+      pluma.getProviders(invokerProviders);
+      for (std::vector<InvokerProvider*>::iterator it = invokerProviders.begin() ; it != invokerProviders.end() ; ++it) {
+          Invoker* invoker = (*it)->create();
+          registerInvoker(invoker);
+      }
+
+      std::vector<IOProcessorProvider*> ioProcessorProviders;
+      pluma.getProviders(ioProcessorProviders);
+      for (std::vector<IOProcessorProvider*>::iterator it = ioProcessorProviders.begin() ; it != ioProcessorProviders.end() ; ++it) {
+        IOProcessor* ioProcessor = (*it)->create();
+        registerIOProcessor(ioProcessor);
+      }
+
+      std::vector<DataModelProvider*> dataModelProviders;
+      pluma.getProviders(dataModelProviders);
+      for (std::vector<DataModelProvider*>::iterator it = dataModelProviders.begin() ; it != dataModelProviders.end() ; ++it) {
+        DataModel* dataModel = (*it)->create();
+        registerDataModel(dataModel);
+      }
+      
+      pluma.unloadAll();
     }
-
-    std::vector<IOProcessorProvider*> ioProcessorProviders;
-    pluma.getProviders(ioProcessorProviders);
-    for (std::vector<IOProcessorProvider*>::iterator it = ioProcessorProviders.begin() ; it != ioProcessorProviders.end() ; ++it) {
-      IOProcessor* ioProcessor = (*it)->create();
-      registerIOProcessor(ioProcessor);
-    }
-
-		std::vector<DataModelProvider*> dataModelProviders;
-    pluma.getProviders(dataModelProviders);
-    for (std::vector<DataModelProvider*>::iterator it = dataModelProviders.begin() ; it != dataModelProviders.end() ; ++it) {
-      DataModel* dataModel = (*it)->create();
-      registerDataModel(dataModel);
-    }
-    
-    pluma.unloadAll();
-
 #else
 #ifdef UMUNDO_FOUND
 		{
@@ -150,5 +151,5 @@ namespace uscxml {
   }
 
   Factory* Factory::_instance = NULL;
-
+  std::string Factory::pluginPath;
 }
