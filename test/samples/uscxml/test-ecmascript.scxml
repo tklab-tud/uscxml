@@ -77,13 +77,7 @@
 				</foreach>
 			</foreach>
 		</onentry>
-		<transition target="externalEvents" />
-	</state>
-	<state id="externalEvents">
-		<onentry>
-			<log expr="'-- External Events'" />
-		</onentry>
-		<transition target="datamodels" event="event1" cond="_event.name == 'event1'" />
+		<transition target="datamodels" />
 	</state>
 	<state id="datamodels">
 		<datamodel>

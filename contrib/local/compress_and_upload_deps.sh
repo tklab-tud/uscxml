@@ -9,7 +9,7 @@ CWD=`pwd`
 cd $DIR
 
 if [ "$UMUNDO_PREBUILT_HOST" == "" ]; then
-	UMUNDO_PREBUILT_HOST="admin@umundo.tk.informatik.tu-darmstadt.de:/var/www/html/uscxml/prebuilt"
+	UMUNDO_PREBUILT_HOST="admin@uscxml.tk.informatik.tu-darmstadt.de:/var/www/html/uscxml/prebuilt"
 fi
 
 if [ "$1" == "" ] || [ "$2" == "" ]; then
@@ -27,6 +27,6 @@ VERSION=$2
 
 cd ../prebuilt
 
-tar cvzf uscxml-prebuilt-${PLATFORM}-${VERSION}.tgz ${PLATFORM}
-scp uscxml-prebuilt-${PLATFORM}-${VERSION}.tgz ${UMUNDO_PREBUILT_HOST}/
-rm uscxml-prebuilt-${PLATFORM}-${VERSION}.tgz
+tar cvzf uscxml-prebuilt-${PLATFORM}.tgz ${PLATFORM}
+scp uscxml-prebuilt-${PLATFORM}.tgz ${UMUNDO_PREBUILT_HOST}/${VERSION}
+rm uscxml-prebuilt-${PLATFORM}.tgz

@@ -53,5 +53,6 @@
 #cmakedefine UMUNDO_FOUND
 #cmakedefine MILES_FOUND
 #cmakedefine V8_FOUND
+#cmakedefine SWI_FOUND
 
 #endif

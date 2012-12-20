@@ -10,76 +10,78 @@
 #endif
 
 namespace uscxml {
-  class Event;
-  class Data;
-  class V8SCXMLDOM;
+class Event;
+class Data;
+class V8SCXMLDOM;
 }
 
 namespace uscxml {
 
 class V8DataModel : public DataModel {
 public:
-  V8DataModel();
-  virtual ~V8DataModel();
-  virtual DataModel* create(Interpreter* interpreter);
-  
-	virtual std::set<std::string> getNames() { 
+	V8DataModel();
+	virtual ~V8DataModel();
+	virtual DataModel* create(Interpreter* interpreter);
+
+	virtual std::set<std::string> getNames() {
 		std::set<std::string> names;
 		names.insert("ecmascript");
 		return names;
 	}
 
-  virtual void initialize();
-  virtual void setSessionId(const std::string& sessionId);
-  virtual void setName(const std::string& name);
-  virtual void setEvent(const Event& event);
+	virtual void initialize();
+	virtual void setSessionId(const std::string& sessionId);
+	virtual void setName(const std::string& name);
+	virtual void setEvent(const Event& event);
 
-  virtual bool validate(const std::string& location, const std::string& schema);
+	virtual void registerIOProcessor(const std::string& name, IOProcessor* ioprocessor);
 
-  virtual uint32_t getLength(const std::string& expr);
-  virtual void pushContext();
-  virtual void popContext();
+	virtual bool validate(const std::string& location, const std::string& schema);
 
-  virtual void eval(const std::string& expr);
-  virtual void assign(const std::string& location, const std::string& expr);
-  virtual void assign(const std::string& location, const Data& data);
+	virtual uint32_t getLength(const std::string& expr);
+	virtual void pushContext();
+	virtual void popContext();
 
-  virtual Data getStringAsData(const std::string& content);
-  virtual Data getValueAsData(const v8::Handle<v8::Value>& value);
-  
-  virtual std::string evalAsString(const std::string& expr);
-  virtual bool evalAsBool(const std::string& expr);
+	virtual void eval(const std::string& expr);
+	virtual void assign(const std::string& location, const std::string& expr);
+	virtual void assign(const std::string& location, const Data& data);
 
-  static v8::Handle<v8::Value> jsGetEventName(v8::Local<v8::String> property,
-                                            const v8::AccessorInfo &info);
-  static v8::Handle<v8::Value> jsGetEventType(v8::Local<v8::String> property,
-                                            const v8::AccessorInfo &info);
-  static v8::Handle<v8::Value> jsGetEventSendId(v8::Local<v8::String> property,
-                                              const v8::AccessorInfo &info);
-  static v8::Handle<v8::Value> jsGetEventOrigin(v8::Local<v8::String> property,
-                                              const v8::AccessorInfo &info);
-  static v8::Handle<v8::Value> jsGetEventOriginType(v8::Local<v8::String> property,
-                                                  const v8::AccessorInfo &info);
-  static v8::Handle<v8::Value> jsGetEventInvokeId(v8::Local<v8::String> property,
-                                                const v8::AccessorInfo &info);
+	virtual Data getStringAsData(const std::string& content);
+	virtual Data getValueAsData(const v8::Handle<v8::Value>& value);
 
-  static v8::Handle<v8::Value> jsIn(const v8::Arguments& args);
-  static v8::Handle<v8::Value> jsPrint(const v8::Arguments& args);
+	virtual std::string evalAsString(const std::string& expr);
+	virtual bool evalAsBool(const std::string& expr);
+
+	static v8::Handle<v8::Value> jsGetEventName(v8::Local<v8::String> property,
+	        const v8::AccessorInfo &info);
+	static v8::Handle<v8::Value> jsGetEventType(v8::Local<v8::String> property,
+	        const v8::AccessorInfo &info);
+	static v8::Handle<v8::Value> jsGetEventSendId(v8::Local<v8::String> property,
+	        const v8::AccessorInfo &info);
+	static v8::Handle<v8::Value> jsGetEventOrigin(v8::Local<v8::String> property,
+	        const v8::AccessorInfo &info);
+	static v8::Handle<v8::Value> jsGetEventOriginType(v8::Local<v8::String> property,
+	        const v8::AccessorInfo &info);
+	static v8::Handle<v8::Value> jsGetEventInvokeId(v8::Local<v8::String> property,
+	        const v8::AccessorInfo &info);
+
+	static v8::Handle<v8::Value> jsIn(const v8::Arguments& args);
+	static v8::Handle<v8::Value> jsPrint(const v8::Arguments& args);
 
 
 protected:
-  std::list<v8::Persistent<v8::Context> > _contexts;
-  Interpreter* _interpreter;
+	std::list<v8::Persistent<v8::Context> > _contexts;
+	Interpreter* _interpreter;
 
 	std::string _sessionId;
 	std::string _name;
-  
-  Event _event;
-  v8::Persistent<v8::ObjectTemplate> _globalTemplate;
-  v8::Persistent<v8::ObjectTemplate> _eventTemplate;
 
-  v8::Handle<v8::Value> evalAsValue(const std::string& expr);
-  virtual v8::Handle<v8::Value> getDataAsValue(const Data& data);
+	Event _event;
+	v8::Persistent<v8::ObjectTemplate> _globalTemplate;
+	v8::Persistent<v8::ObjectTemplate> _eventTemplate;
+
+	v8::Handle<v8::Value> evalAsValue(const std::string& expr);
+	virtual v8::Handle<v8::Value> getDataAsValue(const Data& data);
 
 };
 

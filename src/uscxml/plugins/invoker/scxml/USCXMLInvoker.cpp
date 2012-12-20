@@ -1,6 +1,5 @@
-#include "uscxml/Common.h"
 #include "USCXMLInvoker.h"
-#include "uscxml/Interpreter.h"
+#include <glog/logging.h>
 
 #ifdef BUILD_AS_PLUGINS
 #include <Pluma/Connector.hpp>
@@ -10,53 +9,53 @@ namespace uscxml {
 
 #ifdef BUILD_AS_PLUGINS
 PLUMA_CONNECTOR
-bool connect(pluma::Host& host){
-    host.add( new USCXMLInvokerProvider() );
-    return true;
+bool connect(pluma::Host& host) {
+	host.add( new USCXMLInvokerProvider() );
+	return true;
 }
 #endif
 
-USCXMLInvoker::USCXMLInvoker() {	
+USCXMLInvoker::USCXMLInvoker() {
 }
 
-  
+
 USCXMLInvoker::~USCXMLInvoker() {
-  delete _invokedInterpreter;
+	delete _invokedInterpreter;
 };
-  
+
 Invoker* USCXMLInvoker::create(Interpreter* interpreter) {
-  USCXMLInvoker* invoker = new USCXMLInvoker();
-  invoker->_parentInterpreter = interpreter;
-  return invoker;
+	USCXMLInvoker* invoker = new USCXMLInvoker();
+	invoker->_parentInterpreter = interpreter;
+	return invoker;
 }
 
 Data USCXMLInvoker::getDataModelVariables() {
-  Data data;
-  return data;
+	Data data;
+	return data;
 }
 
 void USCXMLInvoker::send(SendRequest& req) {
-  assert(false);
+	assert(false);
 }
 
 void USCXMLInvoker::cancel(const std::string sendId) {
-  assert(false);  
+	assert(false);
 }
 
 void USCXMLInvoker::sendToParent(SendRequest& req) {
-  req.invokeid = _invokeId;
-  _parentInterpreter->receive(req);
+	req.invokeid = _invokeId;
+	_parentInterpreter->receive(req);
 }
 
 void USCXMLInvoker::invoke(InvokeRequest& req) {
-  _invokeId = req.invokeid;
-  _invokedInterpreter = Interpreter::fromURI(req.src);
-  DataModel* dataModel = _invokedInterpreter->getDataModel();
-  if (dataModel != NULL) {
-    
-  }
-  _invokedInterpreter->setInvoker(this);
-  _invokedInterpreter->start();
+	_invokeId = req.invokeid;
+	_invokedInterpreter = Interpreter::fromURI(req.src);
+	DataModel* dataModel = _invokedInterpreter->getDataModel();
+	if (dataModel != NULL) {
+
+	}
+	_invokedInterpreter->setInvoker(this);
+	_invokedInterpreter->start();
 }
 
 }

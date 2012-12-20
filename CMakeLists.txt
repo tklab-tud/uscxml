@@ -82,17 +82,17 @@ else ()
 	endif()
 endif()
 
-SET(USCXML_LIBRARY_HOST_URL_PREFIX "http://umundo.tk.informatik.tu-darmstadt.de/uscxml/prebuilt" CACHE STRING "The root path of an URL where to look for prebuilt libraries.")
+SET(USCXML_LIBRARY_HOST_URL_PREFIX "http://uscxml.tk.informatik.tu-darmstadt.de/prebuilt" CACHE STRING "The root path of an URL where to look for prebuilt libraries.")
 
 if (WIN32 AND 64BIT_HOST)
-	SET(USCXML_LIBRARY_ARCHIVE_NAME uscxml-prebuilt-${CMAKE_SYSTEM_NAME_LC}-${CMAKE_SYSTEM_PROCESSOR}_64-${USCXML_VERSION}.tgz)
+	SET(USCXML_LIBRARY_ARCHIVE_NAME uscxml-prebuilt-${CMAKE_SYSTEM_NAME_LC}-${CMAKE_SYSTEM_PROCESSOR}_64.tgz)
 else()
-	SET(USCXML_LIBRARY_ARCHIVE_NAME uscxml-prebuilt-${CMAKE_SYSTEM_NAME_LC}-${CMAKE_SYSTEM_PROCESSOR}-${USCXML_VERSION}.tgz)
+	SET(USCXML_LIBRARY_ARCHIVE_NAME uscxml-prebuilt-${CMAKE_SYSTEM_NAME_LC}-${CMAKE_SYSTEM_PROCESSOR}.tgz)
 endif()
 
 if (NOT EXISTS ${USCXML_PREBUILT_LIBRARY_PATH})
-	message(STATUS "Downloading prebuilt libraries: ${USCXML_LIBRARY_HOST_URL_PREFIX}/${USCXML_LIBRARY_ARCHIVE_NAME}")
-	file(DOWNLOAD ${USCXML_LIBRARY_HOST_URL_PREFIX}/${USCXML_LIBRARY_ARCHIVE_NAME}
+	message(STATUS "Downloading prebuilt libraries: ${USCXML_LIBRARY_HOST_URL_PREFIX}/${USCXML_VERSION}/${USCXML_LIBRARY_ARCHIVE_NAME}")
+	file(DOWNLOAD ${USCXML_LIBRARY_HOST_URL_PREFIX}/${USCXML_VERSION}/${USCXML_LIBRARY_ARCHIVE_NAME}
 		${PROJECT_SOURCE_DIR}/contrib/prebuilt/${USCXML_LIBRARY_ARCHIVE_NAME}
 		INACTIVITY_TIMEOUT 60 STATUS DOWNLOAD_STATUS  SHOW_PROGRESS)
 	list(GET DOWNLOAD_STATUS 0 STATUS_CODE)
@@ -215,6 +215,8 @@ elseif (${CMAKE_CXX_COMPILER_ID} STREQUAL "MSVC")
 elseif (${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
 	add_definitions("-Wno-parentheses-equality")
 	set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} "-fPIC")
+	# set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -read_only_relocs suppress")
+	# set(CMAKE_EXE_LINKER_FLAGS_DEBUG "${CMAKE_EXE_LINKER_FLAGS_DEBUG} -read_only_relocs suppress")
 else()
 	message(FATAL_ERROR "Unknown compiler: ${CMAKE_CXX_COMPILER_ID}")
 endif()
@@ -376,10 +378,7 @@ list (APPEND USCXML_FILES ${USCXML_CORE})
 
 include_directories(src)
 
-#################################################
-# optional libraries we can build as plugins
-
-OPTION(BUILD_AS_PLUGINS "Build invokers, ioprocessors and datamodels as plugins" ON)
+OPTION(BUILD_AS_PLUGINS "Build invokers, ioprocessors and datamodels as plugins" OFF)
 if (BUILD_AS_PLUGINS)
 	include_directories(${PROJECT_SOURCE_DIR}/src/uscxml/plugins)
 	file(GLOB PLUMA 
@@ -392,6 +391,12 @@ if (BUILD_AS_PLUGINS)
 	add_definitions("-DBUILD_AS_PLUGINS")
 endif()
 
+if (BUILD_AS_PLUGINS)
+	add_library(uscxml ${USCXML_FILES})
+endif()
+
+#################################################
+# optional libraries we can build as plugins
 
 # LIBEVENT basichttp ioprocessor - this one is already required above
 
@@ -404,11 +409,8 @@ file(GLOB_RECURSE LIBEVENT_IOPROCESSOR
 if (BUILD_AS_PLUGINS)
 	add_library(
 		ioprocessor_basichttp SHARED 
-		${LIBEVENT_IOPROCESSOR}
-		${PLUMA}
-		${USCXML_FILES})
-	target_link_libraries(ioprocessor_basichttp 
-		${USCXML_CORE_LIBS})
+		${LIBEVENT_IOPROCESSOR})
+	target_link_libraries(ioprocessor_basichttp uscxml)
 	set_target_properties(ioprocessor_basichttp PROPERTIES FOLDER "Plugin IOProcessor")
 else()
 	list (APPEND USCXML_FILES ${LIBEVENT_IOPROCESSOR})
@@ -428,16 +430,45 @@ if (V8_FOUND)
 	if (BUILD_AS_PLUGINS)
 		add_library(
 			datamodel_v8 SHARED 
-			${V8_DATAMODEL}
-			${PLUMA}
-			${USCXML_FILES})
+			${V8_DATAMODEL})
 		target_link_libraries(datamodel_v8 
-			${USCXML_CORE_LIBS}
+			uscxml
 			${V8_LIBRARY})
 		set_target_properties(datamodel_v8 PROPERTIES FOLDER "Plugin DataModel")
 	else()
 		list (APPEND USCXML_FILES ${V8_DATAMODEL})
 		list (APPEND USCXML_OPT_LIBS ${V8_LIBRARY})
+	endif()
+endif()
+
+
+# SWI PROLOG datamodel
+
+# set(ENV{V8_SRC} ${CMAKE_SOURCE_DIR}/../v8)
+find_package(SWI)
+#find_package(GMP)
+#find_package(CURSES)
+if (SWI_FOUND)
+	include_directories(${SWI_INCLUDE_DIR})
+#	include_directories(${GMP_INCLUDE_DIR})
+#	include_directories(${CURSES_INCLUDE_DIR})
+	file(GLOB_RECURSE SWI_DATAMODEL
+		src/uscxml/plugins/datamodel/prolog/swi/*.cpp
+		src/uscxml/plugins/datamodel/prolog/swi/*.h
+	)
+	if (BUILD_AS_PLUGINS)
+		add_library(
+			datamodel_swi SHARED 
+			${SWI_DATAMODEL})
+		target_link_libraries(datamodel_swi 
+			uscxml
+#			${GMP_LIBRARY}
+#			${CURSES_LIBRARIES}
+			${SWI_LIBRARY})
+		set_target_properties(datamodel_swi PROPERTIES FOLDER "Plugin DataModel")
+	else()
+		list (APPEND USCXML_FILES ${SWI_DATAMODEL})
+		list (APPEND USCXML_OPT_LIBS ${SWI_LIBRARY}) # ${GMP_LIBRARY} ${CURSES_LIBRARIES})
 	endif()
 endif()
 
@@ -457,11 +488,9 @@ if (UMUNDO_FOUND)
 	if (BUILD_AS_PLUGINS)
 		add_library(
 			invoker_umundo SHARED 
-			${UMUNDO_INVOKER}
-			${PLUMA}
-			${USCXML_FILES})
+			${UMUNDO_INVOKER})
 		target_link_libraries(invoker_umundo 
-			${USCXML_CORE_LIBS}
+			uscxml
 			${UMUNDO_LIBRARIES})
 		set_target_properties(invoker_umundo PROPERTIES FOLDER "Plugin Invoker")
 	else()
@@ -480,11 +509,9 @@ file(GLOB_RECURSE USCXML_INVOKER
 if (BUILD_AS_PLUGINS)
 	add_library(
 		invoker_uscxml SHARED 
-		${USCXML_INVOKER}
-		${PLUMA}
-		${USCXML_FILES})
+		${USCXML_INVOKER})
 	target_link_libraries(invoker_uscxml 
-		${USCXML_CORE_LIBS})
+		uscxml)
 		set_target_properties(invoker_uscxml PROPERTIES FOLDER "Plugin Invoker")
 else()
 	list (APPEND USCXML_FILES ${USCXML_INVOKER})
@@ -493,8 +520,8 @@ endif()
 
 # MILES modality components
 
-find_package(MILES COMPONENTS core audio debug)
-if (MILES_FOUND)
+#find_package(MILES COMPONENTS core audio debug)
+if (MILES_FOUND AND OFF)
   include_directories(${MILES_INCLUDE_DIR})
 
 	# openal is only needed for miles
@@ -505,13 +532,11 @@ if (MILES_FOUND)
 	if (BUILD_AS_PLUGINS)
 		add_library(
 			invoker_miles SHARED 
-			${MILES_INVOKER}
-			${PLUMA}
-			${USCXML_FILES})
+			${MILES_INVOKER})
 		target_link_libraries(invoker_miles 
 			${MILES_LIBRARIES}
 			${OPENAL_LIBRARY}
-			${USCXML_CORE_LIBS})
+			uscxml)
 		set_target_properties(invoker_miles PROPERTIES FOLDER "Plugin Invoker")
 	else()
   	list (APPEND USCXML_FILES ${MILES_INVOKER})
@@ -532,7 +557,9 @@ endif()
 ############################################################
 
 # build library
-add_library(uscxml ${USCXML_FILES})
+if (NOT BUILD_AS_PLUGINS)
+	add_library(uscxml ${USCXML_FILES})
+endif()
 target_link_libraries(uscxml ${USCXML_OPT_LIBS} ${USCXML_CORE_LIBS})
 
 add_executable(mmi-browser apps/mmi-browser.cpp ${PROJECT_SOURCE_DIR}/contrib/snippets/XGetopt.cpp)

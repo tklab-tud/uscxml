@@ -9,7 +9,11 @@
 void printUsageAndExit() {
 	printf("mmi-browser version " USCXML_VERSION " (" CMAKE_BUILD_TYPE " build - " CMAKE_COMPILER_STRING ")\n");
 	printf("Usage\n");
-	printf("\tmmi-browser [-p pluginPath] URL\n");
+	printf("\tmmi-browser");
+#ifdef BUILD_AS_PLUGINS
+	printf(" [-p pluginPath]");
+#endif
+	printf(" URL\n");
 	printf("\n");
 	// printf("Options\n");
 	// printf("\t-l loglevel       : loglevel to use\n");
@@ -17,34 +21,35 @@ void printUsageAndExit() {
 }
 
 int main(int argc, char** argv) {
-  using namespace uscxml;
+	using namespace uscxml;
 
-  if (argc < 2) {
+	if (argc < 2) {
 		printUsageAndExit();
-  }
+	}
 
-	char* loglevel = NULL;
 	int option;
 	while ((option = getopt(argc, argv, "l:p:")) != -1) {
 		switch(option) {
 		case 'l':
-			loglevel = optarg;
+			google::InitGoogleLogging(optarg);
 			break;
-    case 'p':
-      uscxml::Factory::pluginPath = optarg;
-      break;
+		case 'p':
+			uscxml::Factory::pluginPath = optarg;
+			break;
 		default:
 			printUsageAndExit();
 			break;
 		}
 	}
-  
-	Factory::getInstance();
-	google::InitGoogleLogging(argv[0]);
 
-  Interpreter* interpreter = Interpreter::fromURI(argv[1]);
+//  for (int i = 0; i < argc; i++)
+//    std::cout << argv[i] << std::endl;
+
+	Factory::getInstance();
+
+	Interpreter* interpreter = Interpreter::fromURI(argv[argc - 1]);
 	interpreter->interpret();
-	
-  
+
+
 	return EXIT_SUCCESS;
 }

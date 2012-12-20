@@ -1,0 +1,86 @@
+set (SWI_SEARCH_PATHS $ENV{SWI_DIR})
+list (APPEND SWI_SEARCH_PATHS 
+	${CMAKE_FIND_ROOT_PATH}
+	"/usr/lib/swi-prolog/"
+	"/opt/local/"
+	"C:/Program Files (x86)/swipl"
+	"C:/Program Files/swipl"
+)
+
+set(64BIT_HOST OFF)
+if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+	set(64BIT_HOST ON)
+endif()
+
+set (SWI_HOME)
+set (LOOP_DONE 0)
+foreach(SWI_SEARCH_PATH ${SWI_SEARCH_PATHS})
+	if(NOT LOOP_DONE)
+		file(GLOB SWI_VERSIONS ${SWI_SEARCH_PATH}/lib/swipl*)
+		if (SWI_VERSIONS)
+			set(LOOP_DONE 1)
+			list(SORT SWI_VERSIONS)
+			list(REVERSE SWI_VERSIONS)
+			list(GET SWI_VERSIONS 0 SWI_HOME)
+		endif()
+	endif()
+endforeach()
+
+set (SWI_PLATFORM_PATH)
+set (LOOP_DONE 0)
+if (SWI_HOME)
+
+	set(SWI_CPU_SUFFIX ${CMAKE_SYSTEM_PROCESSOR})
+	if (APPLE)
+		if (64BIT_HOST)
+			set(SWI_CPU_SUFFIX "x86_64")
+		endif()
+	endif()
+
+	file(GLOB SWI_PLATFORMS ${SWI_HOME}/lib/*)
+	foreach(SWI_PLATFORM ${SWI_PLATFORMS})
+		STRING(REGEX REPLACE "${SWI_HOME}/lib/" "" REL_SWI_PLATFORM ${SWI_PLATFORM})
+		if(NOT LOOP_DONE)
+			if (REL_SWI_PLATFORM MATCHES ".*${SWI_CPU_SUFFIX}.*")
+				set (SWI_PLATFORM_PATH ${SWI_PLATFORM})
+				set(LOOP_DONE 1)
+			endif()
+		endif()
+	endforeach()
+endif()
+
+#message(STATUS "SWI_PLATFORM_PATH: ${SWI_PLATFORM_PATH}, SWI_HOME: ${SWI_HOME}")
+
+if (SWI_PLATFORM_PATH)
+	FIND_PATH(SWI_INCLUDE_DIR SWI-Prolog.h
+	  PATH_SUFFIXES include
+	  PATHS ${SWI_HOME}
+	)
+	
+	FIND_LIBRARY(SWI_LIBRARY_RELEASE
+	  NAMES libswipl swipl
+		PATHS ${SWI_PLATFORM_PATH}
+	)
+	
+	if (SWI_LIBRARY_RELEASE)
+		list(APPEND SWI_LIBRARY optimized ${SWI_LIBRARY_RELEASE})
+		add_definitions("-DSWI_LIBRARY_PATH=\"${SWI_PLATFORM_PATH}\"")
+	endif()
+
+
+	FIND_LIBRARY(SWI_LIBRARY_DEBUG
+  	NAMES libswipl_d swipl_d
+		PATHS ${SWI_PLATFORM_PATH}
+	)
+	if (SWI_LIBRARY_DEBUG)
+		list(APPEND SWI_LIBRARY debug ${SWI_LIBRARY_DEBUG})
+	elseif(UNIX)
+		list(APPEND SWI_LIBRARY debug ${SWI_LIBRARY_RELEASE})
+	else()
+		message(FATAL_ERROR "Cannot find debug version of SWI")
+	endif()
+endif()
+
+INCLUDE(FindPackageHandleStandardArgs)
+FIND_PACKAGE_HANDLE_STANDARD_ARGS(SWI DEFAULT_MSG SWI_LIBRARY SWI_INCLUDE_DIR)
+MARK_AS_ADVANCED(SWI_LIBRARY SWI_INCLUDE_DIR)

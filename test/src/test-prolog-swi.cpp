@@ -1,9 +1,9 @@
 #include "uscxml/Interpreter.h"
-#include "uscxml/plugins/datamodel/ecmascript/v8/V8DataModel.h"
+#include "uscxml/plugins/datamodel/prolog/swi/SWIDataModel.h"
 
 int main(int argc, char** argv) {
 	if (argc != 2) {
-		std::cerr << "Expected path to test-ecmascript.scxml" << std::endl;
+		std::cerr << "Expected path to test-prolog.scxml" << std::endl;
 		exit(EXIT_FAILURE);
 	}
 
@@ -11,6 +11,7 @@ int main(int argc, char** argv) {
 	using namespace Arabica::DOM;
 	using namespace Arabica::XPath;
 
+	uscxml::Factory::pluginPath = "/Users/sradomski/Documents/TK/Code/uscxml/build/xcode/lib";
 	Interpreter* scxml = Interpreter::fromURI(argv[1]);
 	scxml->start();
 	scxml->waitForStabilization();

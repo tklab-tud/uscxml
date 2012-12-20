@@ -1,0 +1,15 @@
+<scxml datamodel="prolog" initial="start" binding="late">
+	<datamodel>
+		<data id="facts">
+			cat(tom).
+			animal(X):- cat(X).
+		</data>
+	</datamodel>
+	<script>
+		cat(tom).
+		cat(X).
+		animal(X).
+	</script>
+	<state id="start">
+	</state>
+</scxml>

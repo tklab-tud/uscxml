@@ -30,23 +30,23 @@
 #include <Pluma/Host.hpp>
 
 
-namespace pluma{
+namespace pluma {
 
 ////////////////////////////////////////////////////////////
-Provider::~Provider(){
-    // Nothing to do
+Provider::~Provider() {
+	// Nothing to do
 }
 
 
 ////////////////////////////////////////////////////////////
-bool Provider::isCompatible(const Host& host) const{
-    // check compatibility with host
-    const std::string& type = this->plumaGetType();
-    if (!host.knows(type)) return false;
-    unsigned int lowest = host.getLowestVersion(type);
-    unsigned int current = host.getVersion(type);
-    unsigned int myVersion = this->getVersion();
-    return lowest <= myVersion && myVersion <= current;
+bool Provider::isCompatible(const Host& host) const {
+	// check compatibility with host
+	const std::string& type = this->plumaGetType();
+	if (!host.knows(type)) return false;
+	unsigned int lowest = host.getLowestVersion(type);
+	unsigned int current = host.getVersion(type);
+	unsigned int myVersion = this->getVersion();
+	return lowest <= myVersion && myVersion <= current;
 }
 
 }   // namespace pluma

@@ -8,23 +8,22 @@
 namespace uscxml {
 
 enum fcurl_type_e {
-  CFTYPE_NONE=0,
-  CFTYPE_FILE=1,
-  CFTYPE_CURL=2
+    CFTYPE_NONE=0,
+    CFTYPE_FILE=1,
+    CFTYPE_CURL=2
 };
 
-struct fcurl_data
-{
-  enum fcurl_type_e type;     /* type of handle */ 
-  union {
-    CURL *curl;
-    FILE *file;
-  } handle;                   /* handle */ 
+struct fcurl_data {
+	enum fcurl_type_e type;     /* type of handle */
+	union {
+		CURL *curl;
+		FILE *file;
+	} handle;                   /* handle */
 
-  char *buffer;               /* buffer to store cached data*/ 
-  size_t buffer_len;          /* currently allocated buffers length */ 
-  size_t buffer_pos;          /* end of data in buffer*/ 
-  int still_running;          /* Is background url fetch still in progress */ 
+	char *buffer;               /* buffer to store cached data*/
+	size_t buffer_len;          /* currently allocated buffers length */
+	size_t buffer_pos;          /* end of data in buffer*/
+	int still_running;          /* Is background url fetch still in progress */
 };
 
 typedef struct fcurl_data URL_FILE;
@@ -42,7 +41,7 @@ public:
 
 private:
 	std::string _urlString;
-  friend std::ostream & operator<<(std::ostream &stream, const URL& p);
+	friend std::ostream & operator<<(std::ostream &stream, const URL& p);
 };
 
 std::ostream & operator<<(std::ostream &stream, const URL& url);

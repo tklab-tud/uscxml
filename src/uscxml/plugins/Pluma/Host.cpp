@@ -30,149 +30,149 @@
 #include <cstdio>
 
 
-namespace pluma{
+namespace pluma {
 
 ////////////////////////////////////////////////////////////
-Host::Host(){
-    // Nothing to do
+Host::Host() {
+	// Nothing to do
 }
 
 
 ////////////////////////////////////////////////////////////
-bool Host::add(Provider* provider){
-    if (provider == NULL){
-        fprintf(stderr, "Trying to add a null provider.\n");
-        return false;
-    }
-    if (!validateProvider(provider)){
-        delete provider;
-        return false;
-    }
-    addRequests[ provider->plumaGetType() ].push_back(provider);
-    return true;
+bool Host::add(Provider* provider) {
+	if (provider == NULL) {
+		fprintf(stderr, "Trying to add a null provider.\n");
+		return false;
+	}
+	if (!validateProvider(provider)) {
+		delete provider;
+		return false;
+	}
+	addRequests[ provider->plumaGetType() ].push_back(provider);
+	return true;
 }
 
 
 ////////////////////////////////////////////////////////////
-Host::~Host(){
-    clearProviders();
-    // map frees itself
+Host::~Host() {
+	clearProviders();
+	// map frees itself
 }
 
 
 ////////////////////////////////////////////////////////////
-void Host::clearProviders(){
-    ProvidersMap::iterator it;
-    for (it = knownTypes.begin() ; it != knownTypes.end() ; ++it){
-        std::list<Provider*>& providers = it->second.providers;
-        std::list<Provider*>::iterator provIt;
-        for (provIt = providers.begin() ; provIt != providers.end() ; ++provIt){
-            delete *provIt;
-        }
-        std::list<Provider*>().swap(providers);
-    }
+void Host::clearProviders() {
+	ProvidersMap::iterator it;
+	for (it = knownTypes.begin() ; it != knownTypes.end() ; ++it) {
+		std::list<Provider*>& providers = it->second.providers;
+		std::list<Provider*>::iterator provIt;
+		for (provIt = providers.begin() ; provIt != providers.end() ; ++provIt) {
+			delete *provIt;
+		}
+		std::list<Provider*>().swap(providers);
+	}
 }
 
 
 ////////////////////////////////////////////////////////////
-bool Host::knows(const std::string& type) const{
-    return knownTypes.find(type) != knownTypes.end();
+bool Host::knows(const std::string& type) const {
+	return knownTypes.find(type) != knownTypes.end();
 }
 
 
 ////////////////////////////////////////////////////////////
-unsigned int Host::getVersion(const std::string& type) const{
-    ProvidersMap::const_iterator it = knownTypes.find(type);
-    if (it != knownTypes.end())
-        return it->second.version;
-    return 0;
+unsigned int Host::getVersion(const std::string& type) const {
+	ProvidersMap::const_iterator it = knownTypes.find(type);
+	if (it != knownTypes.end())
+		return it->second.version;
+	return 0;
 }
 
 
 ////////////////////////////////////////////////////////////
-unsigned int Host::getLowestVersion(const std::string& type) const{
-    ProvidersMap::const_iterator it = knownTypes.find(type);
-    if (it != knownTypes.end())
-        return it->second.lowestVersion;
-    return 0;
+unsigned int Host::getLowestVersion(const std::string& type) const {
+	ProvidersMap::const_iterator it = knownTypes.find(type);
+	if (it != knownTypes.end())
+		return it->second.lowestVersion;
+	return 0;
 }
 
 
 ////////////////////////////////////////////////////////////
-void Host::registerType(const std::string& type, unsigned int version, unsigned int lowestVersion){
-    if (!knows(type)){
-        ProviderInfo pi;
-        pi.version = version;
-        pi.lowestVersion = lowestVersion;
-        knownTypes[type] = pi;
-    }
+void Host::registerType(const std::string& type, unsigned int version, unsigned int lowestVersion) {
+	if (!knows(type)) {
+		ProviderInfo pi;
+		pi.version = version;
+		pi.lowestVersion = lowestVersion;
+		knownTypes[type] = pi;
+	}
 }
 
 
 ////////////////////////////////////////////////////////////
-const std::list<Provider*>* Host::getProviders(const std::string& type) const{
-    ProvidersMap::const_iterator it = knownTypes.find(type);
-    if (it != knownTypes.end())
-        return &it->second.providers;
-    return NULL;
+const std::list<Provider*>* Host::getProviders(const std::string& type) const {
+	ProvidersMap::const_iterator it = knownTypes.find(type);
+	if (it != knownTypes.end())
+		return &it->second.providers;
+	return NULL;
 }
 
 
 ////////////////////////////////////////////////////////////
-bool Host::validateProvider(Provider* provider) const{
-    const std::string& type = provider->plumaGetType();
-    if ( !knows(type) ){
-        fprintf(stderr, "%s provider type isn't registered.\n", type.c_str());
-        return false;
-    }
-    if (!provider->isCompatible(*this)){
-        fprintf(stderr, "Incompatible %s provider version.\n", type.c_str());
-        return false;
-    }
-    return true;
+bool Host::validateProvider(Provider* provider) const {
+	const std::string& type = provider->plumaGetType();
+	if ( !knows(type) ) {
+		fprintf(stderr, "%s provider type isn't registered.\n", type.c_str());
+		return false;
+	}
+	if (!provider->isCompatible(*this)) {
+		fprintf(stderr, "Incompatible %s provider version.\n", type.c_str());
+		return false;
+	}
+	return true;
 }
 
 
 ////////////////////////////////////////////////////////////
-bool Host::registerProvider(Provider* provider){
-    if (!validateProvider(provider)){
-        delete provider;
-        return false;
-    }
-    knownTypes[ provider->plumaGetType() ].providers.push_back(provider);
-    return true;
+bool Host::registerProvider(Provider* provider) {
+	if (!validateProvider(provider)) {
+		delete provider;
+		return false;
+	}
+	knownTypes[ provider->plumaGetType() ].providers.push_back(provider);
+	return true;
 }
 
 
 ////////////////////////////////////////////////////////////
-void Host::cancelAddictions(){
-    TempProvidersMap::iterator it;
-    for( it = addRequests.begin() ; it != addRequests.end() ; ++it){
-        std::list<Provider*> lst = it->second;
-        std::list<Provider*>::iterator providerIt;
-        for (providerIt = lst.begin() ; providerIt != lst.end() ; ++providerIt){
-            delete *providerIt;
-        }
-    }
-    // clear map
-    TempProvidersMap().swap(addRequests);
+void Host::cancelAddictions() {
+	TempProvidersMap::iterator it;
+	for( it = addRequests.begin() ; it != addRequests.end() ; ++it) {
+		std::list<Provider*> lst = it->second;
+		std::list<Provider*>::iterator providerIt;
+		for (providerIt = lst.begin() ; providerIt != lst.end() ; ++providerIt) {
+			delete *providerIt;
+		}
+	}
+	// clear map
+	TempProvidersMap().swap(addRequests);
 }
 
 
 ////////////////////////////////////////////////////////////
-bool Host::confirmAddictions(){
-    if (addRequests.empty()) return false;
-    TempProvidersMap::iterator it;
-    for( it = addRequests.begin() ; it != addRequests.end() ; ++it){
-        std::list<Provider*> lst = it->second;
-        std::list<Provider*>::iterator providerIt;
-        for (providerIt = lst.begin() ; providerIt != lst.end() ; ++providerIt){
-            knownTypes[it->first].providers.push_back(*providerIt);
-        }
-    }
-    // clear map
-    TempProvidersMap().swap(addRequests);
-    return true;
+bool Host::confirmAddictions() {
+	if (addRequests.empty()) return false;
+	TempProvidersMap::iterator it;
+	for( it = addRequests.begin() ; it != addRequests.end() ; ++it) {
+		std::list<Provider*> lst = it->second;
+		std::list<Provider*>::iterator providerIt;
+		for (providerIt = lst.begin() ; providerIt != lst.end() ; ++providerIt) {
+			knownTypes[it->first].providers.push_back(*providerIt);
+		}
+	}
+	// clear map
+	TempProvidersMap().swap(addRequests);
+	return true;
 }
 
 

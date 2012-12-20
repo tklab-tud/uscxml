@@ -9,27 +9,27 @@ class Interpreter;
 
 class MMIComponent : public Invoker {
 public:
-	
-  enum State {
-		PAUSED,
-		RUNNING,
-		IDLE,
-		TERMINATED
+
+	enum State {
+	    PAUSED,
+	    RUNNING,
+	    IDLE,
+	    TERMINATED
 	};
 
 	MMIComponent();
-  virtual ~MMIComponent();
-  virtual Invoker* create(Interpreter* interpreter);
-  
-  virtual Data getDataModelVariables();
-  virtual void send(SendRequest& req);
-  virtual void cancel(const std::string sendId);
-  virtual void invoke(InvokeRequest& req);
-  virtual void sendToParent(SendRequest& req);
+	virtual ~MMIComponent();
+	virtual Invoker* create(Interpreter* interpreter);
+
+	virtual Data getDataModelVariables();
+	virtual void send(SendRequest& req);
+	virtual void cancel(const std::string sendId);
+	virtual void invoke(InvokeRequest& req);
+	virtual void sendToParent(SendRequest& req);
 
 protected:
-  std::string _invokeId;
-  Interpreter* _interpreter;
+	std::string _invokeId;
+	Interpreter* _interpreter;
 
 	State _state;
 };
@@ -39,31 +39,31 @@ protected:
 
 class MMICoreMessage {
 public:
-  std::string source;
-  std::string target;
-  std::string data;
-  std::string requestId;
+	std::string source;
+	std::string target;
+	std::string data;
+	std::string requestId;
 };
 
 class MMICtxMessage : public MMICoreMessage {
 public:
-  std::string context;
+	std::string context;
 };
 
 class MMIStartMessage : public MMICtxMessage {
 public:
-  std::string content;
-  std::string contentURL;
+	std::string content;
+	std::string contentURL;
 };
 
 class MMISimpleStatusMessage : public MMICtxMessage {
 public:
-  std::string status;
+	std::string status;
 };
 
 class MMIStatusMessage : public MMISimpleStatusMessage {
 public:
-  std::string statusInfo;
+	std::string statusInfo;
 };
 
 /** Concrete MMI messages */
@@ -86,7 +86,7 @@ class MMIPrepareRequest : public MMIStartMessage {};
 /***/
 
 class MMIExtensionNotification : public MMICtxMessage {
-  std::string name;
+	std::string name;
 };
 
 /***/
