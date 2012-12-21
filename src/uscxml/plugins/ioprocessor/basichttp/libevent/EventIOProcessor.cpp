@@ -83,7 +83,7 @@ void EventIOProcessor::send(SendRequest& req) {
 	char uriBuf[1024];
 
 	struct evhttp_uri* targetURI = evhttp_uri_parse(_sendData[req.sendid].req.target.c_str());
-	if (evhttp_uri_get_port(targetURI) == 0)
+	if (evhttp_uri_get_port(targetURI) < 0)
 		evhttp_uri_set_port(targetURI, 80);
 	const char* hostName = evhttp_uri_get_host(targetURI);
 
@@ -135,6 +135,7 @@ void EventIOProcessor::send(SendRequest& req) {
 	if (req.params.size() > 0) {
 		std::multimap<std::string, std::string>::iterator paramIter = req.params.begin();
 		while (paramIter != req.params.end()) {
+//      LOG(INFO) << paramIter->first << " = " << paramIter->second << std::endl;
 			evhttp_add_header(evhttp_request_get_output_headers(httpReq),
 			                  paramIter->first.c_str(),
 			                  evhttp_encode_uri(paramIter->second.c_str()));
