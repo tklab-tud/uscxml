@@ -518,6 +518,29 @@ else()
 endif()
 
 
+# OpenSceneGraph invoker
+
+find_package(OpenSceneGraph)
+if (OPENSCENEGRAPH_FOUND)
+	file(GLOB_RECURSE OPENSCENEGRAPH_INVOKER 
+		src/uscxml/plugins/invoker/graphics/openscenegraph/*.cpp 
+		src/uscxml/plugins/invoker/graphics/openscenegraph/*.h)
+	if (BUILD_AS_PLUGINS)
+		add_library(
+			invoker_openscenegraph SHARED 
+			${OPENSCENEGRAPH_INVOKER})
+		target_link_libraries(invoker_openscenegraph
+			${OPENSCENEGRAPH_LIBRARIES}
+			uscxml)
+			set_target_properties(invoker_openscenegraph PROPERTIES FOLDER "Plugin Invoker")
+	else()
+		list (APPEND USCXML_FILES ${OPENSCENEGRAPH_INVOKER})
+		list (APPEND USCXML_OPT_LIBS ${OPENSCENEGRAPH_LIBRARIES})
+	endif()
+
+endif()
+
+
 # MILES modality components
 
 #find_package(MILES COMPONENTS core audio debug)
