@@ -32,18 +32,18 @@ if [ "$BUILD_LINUX64" == "y" ] || [ "$BUILD_LINUX64" == "Y" ]; then
 fi
 
 # make sure to cross-compile before windows as we will copy all the files into the windows VM
-echo -n "Build uscxml for iOS? [y/N]: "; read BUILD_IOS
-if [ "$BUILD_IOS" == "y" ] || [ "$BUILD_IOS" == "Y" ]; then
-	echo == BUILDING USCXML FOR IOS =========================================================
-	${DIR}/../build-uscxml-ios.sh
-fi
-
-echo -n "Build uscxml for Android? [y/N]: "; read BUILD_ANDROID
-if [ "$BUILD_ANDROID" == "y" ] || [ "$BUILD_ANDROID" == "Y" ]; then
-	echo == BUILDING USCXML FOR Android =========================================================
-	export ANDROID_NDK=~/Developer/SDKs/android-ndk-r8
-	${DIR}/../build-uscxml-android.sh
-fi
+# echo -n "Build uscxml for iOS? [y/N]: "; read BUILD_IOS
+# if [ "$BUILD_IOS" == "y" ] || [ "$BUILD_IOS" == "Y" ]; then
+# 	echo == BUILDING USCXML FOR IOS =========================================================
+# 	${DIR}/../build-uscxml-ios.sh
+# fi
+# 
+# echo -n "Build uscxml for Android? [y/N]: "; read BUILD_ANDROID
+# if [ "$BUILD_ANDROID" == "y" ] || [ "$BUILD_ANDROID" == "Y" ]; then
+# 	echo == BUILDING USCXML FOR Android =========================================================
+# 	export ANDROID_NDK=~/Developer/SDKs/android-ndk-r8
+# 	${DIR}/../build-uscxml-android.sh
+# fi
 
 echo -n "Build uscxml for Windows 32Bit? [y/N]: "; read BUILD_WIN32
 if [ "$BUILD_WIN32" == "y" ] || [ "$BUILD_WIN32" == "Y" ]; then
