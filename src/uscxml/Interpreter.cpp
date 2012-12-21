@@ -56,7 +56,8 @@ Interpreter* Interpreter::fromURI(const std::string& uri) {
 	Interpreter* interpreter = fromInputSource(inputSource);
 
 	// try to establish URI root for relative src attributes in document
-	interpreter->_baseURI = toBaseURI(Arabica::io::URI(uri));
+	if (interpreter)
+		interpreter->_baseURI = toBaseURI(Arabica::io::URI(uri));
 	return interpreter;
 }
 
@@ -118,6 +119,7 @@ Interpreter* Interpreter::fromInputSource(Arabica::SAX::InputSource<std::string>
 				LOG(ERROR) << "no such file";
 			}
 		}
+		return NULL;
 	} else {
 		interpreter->_doc = domParser.getDocument();
 	}
@@ -224,10 +226,21 @@ void Interpreter::interpret() {
 		}
 	}
 
-	// we made sure during normalization that this element exists
+	// initial transition might be implict
 	NodeSet<std::string> initialTransitions = _xpath.evaluate("/" + _nsPrefix + "scxml/" + _nsPrefix + "initial/" + _nsPrefix + "transition", _doc).asNodeSet();
-	assert(initialTransitions.size() > 0);
-	initialTransitions.push_back(initialTransitions[0]);
+	if (initialTransitions.size() == 0) {
+		Arabica::DOM::Element<std::string> initialState = (Arabica::DOM::Element<std::string>)getInitialState();
+		Arabica::DOM::Element<std::string> initialElem = _doc.createElement("initial");
+		initialElem.setAttribute("generated", "on");
+		Arabica::DOM::Element<std::string> transitionElem = _doc.createElement("transition");
+		transitionElem.setAttribute("target", initialState.getAttribute("id"));
+		initialElem.appendChild(transitionElem);
+		_scxml.appendChild(initialElem);
+		initialTransitions.push_back(transitionElem);
+
+	} else {
+		initialTransitions.push_back(initialTransitions[0]);
+	}
 	enterStates(initialTransitions);
 
 	mainEventLoop();
@@ -267,7 +280,7 @@ void Interpreter::initializeData(const Arabica::DOM::Node<std::string>& data) {
 		}
 
 	} catch (Event e) {
-		LOG(ERROR) << "Syntax error in send element:" << std::endl << e << std::endl;
+		LOG(ERROR) << "Syntax error in data element:" << std::endl << e << std::endl;
 	}
 }
 
@@ -320,13 +333,15 @@ void Interpreter::normalize(const Arabica::DOM::Document<std::string>& node) {
 	}
 
 	// create a pseudo initial and transition element
+#if 0
 	Arabica::DOM::Element<std::string> initialState = (Arabica::DOM::Element<std::string>)getInitialState();
 	Arabica::DOM::Element<std::string> initialElem = _doc.createElement("initial");
 	Arabica::DOM::Element<std::string> transitionElem = _doc.createElement("transition");
 	transitionElem.setAttribute("target", initialState.getAttribute("id"));
 	initialElem.appendChild(transitionElem);
 	_scxml.appendChild(initialElem);
-
+	std::cout << _scxml <<std::endl;
+#endif
 }
 
 void Interpreter::mainEventLoop() {
@@ -625,7 +640,7 @@ void Interpreter::delayedSend(void* userdata, std::string eventName) {
 		if (INSTANCE->_invokerIds.find(invokeId) != INSTANCE->_invokerIds.end()) {
 			INSTANCE->_invokerIds[invokeId]->send(sendReq);
 		} else {
-			LOG(ERROR) << "Can not send to invoked component " << invokeId << ", no such invokeId" << std::endl;
+			LOG(ERROR) << "Can not send to invoked component '" << invokeId << "', no such invokeId" << std::endl;
 		}
 	} else if (sendReq.target.length() == 0) {
 		INSTANCE->receive(sendReq);
@@ -1506,9 +1521,9 @@ Arabica::DOM::Node<std::string> Interpreter::getInitialState(Arabica::DOM::Node<
 		return getState(stateElem.getAttribute("initial"));
 	}
 
-	// initial element as child
+	// initial element as child - but not the implicit generated one
 	NodeSet<std::string> initialStates = _xpath.evaluate("" + _nsPrefix + "initial", state).asNodeSet();
-	if(initialStates.size() == 1)
+	if(initialStates.size() == 1 && !boost::iequals(ATTR(initialStates[0], "generated"), "on"))
 		return initialStates[0];
 
 	// first child state
