@@ -4,9 +4,9 @@
 		<!-- Setup datamodel, print environment and send ourself an event to transition to next state -->
 
 		<datamodel>
-			<data id="invokeconfig">
+			<!--data id="invokeconfig">
 				<invoker id="scxml" name="http://www.w3.org/TR/scxml/" location="_runtime" />
-			</data>
+			</data -->
 			<data id="foo" expr="'this is the foo data'" />
 			<data id="bar" expr="'this is the bar data'" />
 		</datamodel>
@@ -15,7 +15,7 @@
 			<log expr="'Entered step1'" />
 			<log expr="'Sending ourself an event with data via basichttp'" />
 			<send targetexpr="_ioprocessors['basichttp'].location" namelist="foo" type="basichttp" event="transitionToNext">
-				<param name="bar" expr="'b' + 'ar'" />
+				<param name="bar" expr="bar" />
 				<content>
 <![CDATA[
 This is some content you got there dude!

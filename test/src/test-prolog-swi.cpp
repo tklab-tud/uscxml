@@ -13,13 +13,8 @@ int main(int argc, char** argv) {
 
 	uscxml::Factory::pluginPath = "/Users/sradomski/Documents/TK/Code/uscxml/build/xcode/lib";
 	Interpreter* scxml = Interpreter::fromURI(argv[1]);
-	scxml->start();
-	scxml->waitForStabilization();
-
-	Event event1;
-	event1.name = "event1";
-	scxml->receive(event1);
-	scxml->join();
-	tthread::this_thread::sleep_for(tthread::chrono::milliseconds(500));
+//	scxml->start();
+//	scxml->join();
+//	tthread::this_thread::sleep_for(tthread::chrono::milliseconds(500));
 
 }
