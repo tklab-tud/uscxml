@@ -188,7 +188,8 @@ protected:
 	bool parentIsScxmlState(Arabica::DOM::Node<std::string> state);
 
 	static std::vector<std::string> tokenizeIdRefs(const std::string& idRefs);
-
+  static Arabica::XPath::NodeSet<std::string> filterChildElements(const std::string& tagname, const Arabica::DOM::Node<std::string>& node);
+  
 	static boost::uuids::random_generator uuidGen;
 	static const std::string getUUID();
 
@@ -203,174 +204,10 @@ protected:
 	std::map<std::string, Invoker*> _invokerIds;
 	std::map<std::string, Invoker*> _invokers;
 
+  /// We need to remember to adapt them when the DOM is operated upon
+  std::map<std::string, Arabica::DOM::Node<std::string> > _cachedStates;
 };
 
-#if 0
-class SCXMLParseHandler :
-	public Arabica::SAX::EntityResolver<std::string>,
-	public Arabica::SAX::DTDHandler<std::string>,
-	public Arabica::SAX::ContentHandler<std::string>,
-	public Arabica::SAX::CatchErrorHandler<std::string>,
-	public Arabica::SAX::LexicalHandler<std::string>,
-	public Arabica::SAX::DeclHandler<std::string> {
-public:
-	SCXMLParseHandler() { }
-	virtual ~SCXMLParseHandler() { }
-
-	// EntityResolver
-	virtual InputSourceT resolveEntity(const std::string& publicId , const std::string& systemId) {
-		return InputSourceT();
-	}
-
-	// DTDHandler
-	virtual void notationDecl(const std::string& name,
-	                          const std::string& publicId,
-	                          const std::string& systemId) {
-		std::cout << "notationDecl" << std::endl;
-		std::cout << "  name:" << name << std::endl;
-		std::cout << "  publicId:" << publicId << std::endl;
-		std::cout << "  systemId:" << systemId << std::endl;
-	}
-	virtual void unparsedEntityDecl(const std::string& name,
-	                                const std::string& publicId,
-	                                const std::string& systemId,
-	                                const std::string& notationName) {
-		std::cout << "unparsedEntityDecl" << std::endl;
-		std::cout << "  name:" << name << std::endl;
-		std::cout << "  publicId:" << publicId << std::endl;
-		std::cout << "  systemId:" << systemId << std::endl;
-		std::cout << "  notationName:" << notationName << std::endl;
-	}
-
-	// ContentHandler
-	virtual void setDocumentLocator(const LocatorT& locator) {
-		std::cout << "setDocumentLocator" << std::endl;
-	}
-	virtual void startDocument() {
-		std::cout << "startDocument" << std::endl;
-	}
-	virtual void endDocument() {
-		std::cout << "endDocument" << std::endl;
-	}
-	virtual void startPrefixMapping(const std::string& prefix, const std::string& uri) {
-		std::cout << "startPrefixMapping" << std::endl;
-		std::cout << "  prefix:" << prefix << std::endl;
-		std::cout << "  uri:" << uri << std::endl;
-	}
-	virtual void endPrefixMapping(const std::string& prefix) {
-		std::cout << "endPrefixMapping" << std::endl;
-		std::cout << "  prefix:" << prefix << std::endl;
-	}
-	virtual void startElement(const std::string& namespaceURI, const std::string& localName,
-	                          const std::string& qName, const AttributesT& atts) {
-		std::cout << "startElement" << std::endl;
-		std::cout << "  namespaceURI:" << namespaceURI << std::endl;
-		std::cout << "  localName:" << localName << std::endl;
-		std::cout << "  qName:" << qName << std::endl;
-		std::cout << "  atts:" << atts.getLength() << std::endl;
-	}
-	virtual void endElement(const std::string& namespaceURI, const std::string& localName,
-	                        const std::string& qName) {
-		std::cout << "endElement" << std::endl;
-		std::cout << "  namespaceURI:" << namespaceURI << std::endl;
-		std::cout << "  localName:" << localName << std::endl;
-		std::cout << "  qName:" << qName << std::endl;
-	}
-	virtual void characters(const std::string& ch) {
-		std::cout << "characters" << std::endl;
-		std::cout << "  ch:" << ch << std::endl;
-	}
-	virtual void ignorableWhitespace(const std::string& ch) {
-		std::cout << "ignorableWhitespace" << std::endl;
-		std::cout << "  ch:" << ch << std::endl;
-	}
-	virtual void processingInstruction(const std::string& target, const std::string& data) {
-		std::cout << "processingInstruction" << std::endl;
-		std::cout << "  target:" << target << std::endl;
-		std::cout << "  data:" << data << std::endl;
-	}
-	virtual void skippedEntity(const std::string& name) {
-		std::cout << "skippedEntity" << std::endl;
-		std::cout << "  name:" << name << std::endl;
-	}
-
-	// ErrorHandler
-	virtual void warning(const SAXParseExceptionT& e) {
-		Arabica::SAX::CatchErrorHandler<std::string>::warning(e);
-	}
-	virtual void error(const SAXParseExceptionT& e) {
-		Arabica::SAX::CatchErrorHandler<std::string>::error(e);
-	}
-	virtual void fatalError(const SAXParseExceptionT& e) {
-		Arabica::SAX::CatchErrorHandler<std::string>::fatalError(e);
-	}
-
-	// LexicalHandler
-	virtual void startDTD(const std::string& name,
-	                      const std::string& publicId,
-	                      const std::string& systemId) {
-		std::cout << "startDTD" << std::endl;
-		std::cout << "  name:" << name << std::endl;
-		std::cout << "  publicId:" << publicId << std::endl;
-		std::cout << "  systemId:" << systemId << std::endl;
-	}
-
-	virtual void endDTD() {
-		std::cout << "endDTD" << std::endl;
-	}
-	virtual void startEntity(const std::string& name) {
-		std::cout << "startEntity" << std::endl;
-		std::cout << "  name:" << name << std::endl;
-	}
-	virtual void endEntity(const std::string& name) {
-		std::cout << "endEntity" << std::endl;
-		std::cout << "  name:" << name << std::endl;
-	}
-	virtual void startCDATA() {
-		std::cout << "startCDATA" << std::endl;
-	}
-	virtual void endCDATA() {
-		std::cout << "endCDATA" << std::endl;
-	}
-	virtual void comment(const std::string& text) {
-		std::cout << "comment" << std::endl;
-		std::cout << "  text:" << text << std::endl;
-	}
-
-	// DeclHandler
-	virtual void elementDecl(const std::string& name, const std::string& model) {
-		std::cout << "elementDecl" << std::endl;
-		std::cout << "  name:" << name << std::endl;
-		std::cout << "  model:" << model << std::endl;
-	}
-	virtual void attributeDecl(const std::string& elementName,
-	                           const std::string& attributeName,
-	                           const std::string& type,
-	                           const std::string& valueDefault,
-	                           const std::string& value) {
-		std::cout << "attributeDecl" << std::endl;
-		std::cout << "  elementName:" << elementName << std::endl;
-		std::cout << "  attributeName:" << attributeName << std::endl;
-		std::cout << "  type:" << type << std::endl;
-		std::cout << "  valueDefault:" << valueDefault << std::endl;
-		std::cout << "  value:" << value << std::endl;
-	}
-	virtual void internalEntityDecl(const std::string& name, const std::string& value) {
-		std::cout << "internalEntityDecl" << std::endl;
-		std::cout << "  name:" << name << std::endl;
-		std::cout << "  value:" << value << std::endl;
-	}
-	virtual void externalEntityDecl(const std::string& name,
-	                                const std::string& publicId,
-	                                const std::string& systemId) {
-		std::cout << "externalEntityDecl" << std::endl;
-		std::cout << "  name:" << name << std::endl;
-		std::cout << "  publicId:" << publicId << std::endl;
-		std::cout << "  systemId:" << systemId << std::endl;
-	}
-
-};
-#endif
 }
 
 #endif

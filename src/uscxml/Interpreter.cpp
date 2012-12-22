@@ -856,6 +856,15 @@ Arabica::XPath::NodeSet<std::string> Interpreter::selectEventlessTransitions() {
 		NodeSet<std::string> ancestors = getProperAncestors(atomicStates[i], Arabica::DOM::Node<std::string>());
 		ancestors.push_back(atomicStates[i]);
 		for (unsigned int j = 0; j < ancestors.size(); j++) {
+      NodeSet<std::string> transitions = filterChildElements("transition", ancestors[j]);
+			for (unsigned int k = 0; k < transitions.size(); k++) {
+				if (!((Arabica::DOM::Element<std::string>)transitions[k]).hasAttribute("event") && hasConditionMatch(transitions[k])) {
+					enabledTransitions.push_back(transitions[k]);
+					goto LOOP;
+				}
+			}
+
+#if 0
 			NodeSet<std::string> transitions = _xpath.evaluate("" + _nsPrefix + "transition", ancestors[j]).asNodeSet();
 			for (unsigned int k = 0; k < transitions.size(); k++) {
 				if (!((Arabica::DOM::Element<std::string>)transitions[k]).hasAttribute("event") && hasConditionMatch(transitions[k])) {
@@ -863,6 +872,7 @@ Arabica::XPath::NodeSet<std::string> Interpreter::selectEventlessTransitions() {
 					goto LOOP;
 				}
 			}
+#endif
 		}
 LOOP:
 		;
@@ -1186,9 +1196,9 @@ void Interpreter::exitStates(const Arabica::XPath::NodeSet<std::string>& enabled
 	statesToExit.reverse();
 
 	for (int i = 0; i < statesToExit.size(); i++) {
-		NodeSet<std::string> historyElems = _xpath.evaluate("" + _nsPrefix + "history", statesToExit[i]).asNodeSet();
-		for (int j = 0; j < historyElems.size(); j++) {
-			Arabica::DOM::Element<std::string> historyElem = (Arabica::DOM::Element<std::string>)historyElems[j];
+    NodeSet<std::string> histories = filterChildElements("history", statesToExit[i]);
+		for (int j = 0; j < histories.size(); j++) {
+			Arabica::DOM::Element<std::string> historyElem = (Arabica::DOM::Element<std::string>)histories[j];
 			std::string historyType = (historyElem.hasAttribute("type") ? historyElem.getAttribute("type") : "shallow");
 			NodeSet<std::string> historyNodes;
 			for (int k = 0; k < _configuration.size(); k++) {
@@ -1205,13 +1215,15 @@ void Interpreter::exitStates(const Arabica::XPath::NodeSet<std::string>& enabled
 	}
 
 	for (int i = 0; i < statesToExit.size(); i++) {
-		Arabica::XPath::NodeSet<std::string> onExitElems = _xpath.evaluate("" + _nsPrefix + "onexit", statesToExit[i]).asNodeSet();
-		for (int j = 0; j < onExitElems.size(); j++) {
-			executeContent(onExitElems[j]);
+    NodeSet<std::string> onExits = filterChildElements("onExit", statesToExit[i]);
+		for (int j = 0; j < onExits.size(); j++) {
+			Arabica::DOM::Element<std::string> onExitElem = (Arabica::DOM::Element<std::string>)onExits[j];
+			executeContent(onExitElem);
 		}
-		Arabica::XPath::NodeSet<std::string> invokeElems = _xpath.evaluate("" + _nsPrefix + "invoke", statesToExit[i]).asNodeSet();
-		for (int j = 0; j < invokeElems.size(); j++) {
-			cancelInvoke(invokeElems[j]);
+    NodeSet<std::string> invokes = filterChildElements("invoke", statesToExit[i]);
+		for (int j = 0; j < invokes.size(); j++) {
+			Arabica::DOM::Element<std::string> invokeElem = (Arabica::DOM::Element<std::string>)invokes[j];
+			cancelInvoke(invokeElem);
 		}
 	}
 
@@ -1299,9 +1311,9 @@ void Interpreter::enterStates(const Arabica::XPath::NodeSet<std::string>& enable
 		_configuration.push_back(stateElem);
 		_statesToInvoke.push_back(stateElem);
 		if (_binding == LATE && stateElem.getAttribute("isFirstEntry").size() > 0) {
-			Arabica::XPath::NodeSet<std::string> dataModelElems = _xpath.evaluate("" + _nsPrefix + "datamodel", stateElem).asNodeSet();
+			NodeSet<std::string> dataModelElems = filterChildElements("datamodel", stateElem);
 			if(dataModelElems.size() > 0 && _dataModel) {
-				Arabica::XPath::NodeSet<std::string> dataElems = _xpath.evaluate("" + _nsPrefix + "data", dataModelElems[0]).asNodeSet();
+				Arabica::XPath::NodeSet<std::string> dataElems = filterChildElements("data", dataModelElems[0]);
 				for (int j = 0; j < dataElems.size(); j++) {
 					initializeData(dataElems[j]);
 				}
@@ -1309,7 +1321,7 @@ void Interpreter::enterStates(const Arabica::XPath::NodeSet<std::string>& enable
 			stateElem.setAttribute("isFirstEntry", "");
 		}
 		// execute onentry executable content
-		Arabica::XPath::NodeSet<std::string> onEntryElems = _xpath.evaluate("" + _nsPrefix + "onentry", stateElem).asNodeSet();
+		NodeSet<std::string> onEntryElems = filterChildElements("onEntry", stateElem);
 		for (int j = 0; j < onEntryElems.size(); j++) {
 			executeContent(onEntryElems[j]);
 		}
@@ -1468,8 +1480,12 @@ NEXT_ANCESTOR:
 }
 
 Arabica::DOM::Node<std::string> Interpreter::getState(const std::string& stateId) {
+
+  if (_cachedStates.find(stateId) != _cachedStates.end()) {
+    return _cachedStates[stateId];
+  }
+  
 	// first try atomic and compund states
-//  std::cout << _nsPrefix << stateId << std::endl;
 	NodeSet<std::string> target = _xpath.evaluate("//" + _nsPrefix + "state[@id='" + stateId + "']", _doc).asNodeSet();
 	if (target.size() > 0)
 		goto FOUND;
@@ -1487,6 +1503,7 @@ Arabica::DOM::Node<std::string> Interpreter::getState(const std::string& stateId
 FOUND:
 	if (target.size() > 0) {
 		assert(target.size() == 1);
+    _cachedStates[stateId] = target[0];
 		return target[0];
 	}
 	// return the empty node
@@ -1573,6 +1590,18 @@ std::vector<std::string> Interpreter::tokenizeIdRefs(const std::string& idRefs) 
 	}
 
 	return ids;
+}
+
+NodeSet<std::string> Interpreter::filterChildElements(const std::string& tagName, const Node<std::string>& node) {
+  NodeSet<std::string> filteredChildElems;
+  NodeList<std::string> childs = node.getChildNodes();
+  for (unsigned int i = 0; i < childs.getLength(); i++) {
+    if (childs.item(i).getNodeType() != Node_base::ELEMENT_NODE ||
+        !boost::iequals(TAGNAME(childs.item(i)), tagName))
+      continue;
+    filteredChildElems.push_back(childs.item(i));
+  }
+  return filteredChildElems;
 }
 
 NodeSet<std::string> Interpreter::getProperAncestors(const Arabica::DOM::Node<std::string>& s1,
