@@ -16,7 +16,7 @@
 						</scenegraph:translation>
 					</scenegraph:viewport>
 					<scenegraph:viewport x="0" y="50%" width="50%" height="50%" id="scene3">
-						<scenegraph:rotation angle="2.0" x="100" y="1" z="1">
+						<scenegraph:rotation pitch="100deg" roll="3.15149rad" yaw="10deg">
 							<scenegraph:node src="http://cs.iupui.edu/~aharris/webDesign/vrml/tree.wrl" />
 						</scenegraph:rotation>
 					</scenegraph:viewport>

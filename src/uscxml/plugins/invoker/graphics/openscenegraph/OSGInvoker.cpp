@@ -147,18 +147,43 @@ void OSGInvoker::processRotation(const Arabica::DOM::Node<std::string>& element)
   assert(_nodes.find(element.getParentNode()) != _nodes.end());
   osg::Node* node = _nodes[element.getParentNode()];
   
-  double x = 0, y = 0, z = 0, angle = 0;
-  if (HAS_ATTR(element, "x"))
-    x = strTo<float>(ATTR(element, "x"));
-  if (HAS_ATTR(element, "y"))
-    y = strTo<float>(ATTR(element, "y"));
-  if (HAS_ATTR(element, "z"))
-    z = strTo<float>(ATTR(element, "z"));
-  if (HAS_ATTR(element, "angle"))
-    z = strTo<float>(ATTR(element, "angle"));
+  double pitch = 0, roll = 0, yaw = 0;
+  if (HAS_ATTR(element, "pitch")) {
+    NumAttr pitchAttr = NumAttr(ATTR(element, "pitch"));
+    if (boost::iequals(pitchAttr.unit, "deg")) {
+      pitch = osg::DegreesToRadians(strTo<float>(pitchAttr.value));
+    } else if (boost::iequals(pitchAttr.unit, "%")) {
+      pitch = osg::DegreesToRadians((strTo<float>(pitchAttr.value) * 360) / 100);
+    } else {
+      pitch = strTo<float>(pitchAttr.value);
+    }
+  }
+  if (HAS_ATTR(element, "roll")) {
+    NumAttr rollAttr = NumAttr(ATTR(element, "roll"));
+    if (boost::iequals(rollAttr.unit, "deg")) {
+      roll = osg::DegreesToRadians(strTo<float>(rollAttr.value));
+    } else if (boost::iequals(rollAttr.unit, "%")) {
+      roll = osg::DegreesToRadians((strTo<float>(rollAttr.value) * 360) / 100);
+    } else {
+      roll = strTo<float>(rollAttr.value);
+    }
+  }
+  if (HAS_ATTR(element, "yaw")) {
+    NumAttr yawAttr = NumAttr(ATTR(element, "yaw"));
+    if (boost::iequals(yawAttr.unit, "deg")) {
+      yaw = osg::DegreesToRadians(strTo<float>(yawAttr.value));
+    } else if (boost::iequals(yawAttr.unit, "%")) {
+      yaw = osg::DegreesToRadians((strTo<float>(yawAttr.value) * 360) / 100);
+    } else {
+      yaw = strTo<float>(yawAttr.value);
+    }
+  }
 
   osg::Matrix rotation;
-  rotation.makeRotate(angle, x, y, z);
+  rotation.makeRotate(roll, osg::Vec3(0,1,0), // roll
+                      pitch, osg::Vec3(1,0,0) , // pitch
+                      yaw, osg::Vec3(0,0,1) ); // heading
+
   
   osg::MatrixTransform* transform = new osg::MatrixTransform();
   transform->setMatrix(rotation);
