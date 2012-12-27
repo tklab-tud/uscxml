@@ -520,8 +520,9 @@ endif()
 
 # OpenSceneGraph invoker
 
-find_package(OpenSceneGraph)
+find_package(OpenSceneGraph COMPONENTS osgDB osgGA osgUtil osgText osgFX osgManipulator osgViewer OpenThreads)
 if (OPENSCENEGRAPH_FOUND)
+	include_directories(${OPENSCENEGRAPH_INCLUDE_DIRS})
 	file(GLOB_RECURSE OPENSCENEGRAPH_INVOKER 
 		src/uscxml/plugins/invoker/graphics/openscenegraph/*.cpp 
 		src/uscxml/plugins/invoker/graphics/openscenegraph/*.h)

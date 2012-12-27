@@ -34,6 +34,22 @@ freely, subject to the following restrictions:
 
 namespace tthread {
 
+uint64_t timeStamp() {
+  uint64_t time = 0;
+#ifdef WIN32
+  FILETIME tv;
+  GetSystemTimeAsFileTime(&tv);
+  time = (((uint64_t) tv.dwHighDateTime) << 32) + tv.dwLowDateTime;
+  time /= 10000;
+#else
+  struct timeval tv;
+  gettimeofday(&tv, NULL);
+  time += tv.tv_sec * 1000;
+  time += tv.tv_usec / 1000;
+#endif
+  return time;
+}
+
 //------------------------------------------------------------------------------
 // condition_variable
 //------------------------------------------------------------------------------

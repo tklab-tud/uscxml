@@ -12,6 +12,7 @@
 #include <inttypes.h>
 
 #define TAGNAME(elem) ((Arabica::DOM::Element<std::string>)elem).getTagName()
+#define LOCALNAME(elem) ((Arabica::DOM::Element<std::string>)elem).getLocalName()
 #define ATTR(elem, attr) ((Arabica::DOM::Element<std::string>)elem).getAttribute(attr)
 #define HAS_ATTR(elem, attr) ((Arabica::DOM::Element<std::string>)elem).hasAttribute(attr)
 
@@ -65,7 +66,7 @@ public:
 	Type type;
 	std::string origin;
 	std::string origintype;
-//  Arabica::DOM::Node<std::string> dom;
+  Arabica::DOM::Node<std::string> dom;
 	std::string sendid;
 	std::string invokeid;
 

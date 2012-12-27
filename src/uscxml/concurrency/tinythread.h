@@ -81,6 +81,7 @@ freely, subject to the following restrictions:
 #include <signal.h>
 #include <sched.h>
 #include <unistd.h>
+#include <sys/time.h>
 #endif
 
 // Generic includes
@@ -150,6 +151,8 @@ freely, subject to the following restrictions:
 /// the std::mutex class.
 namespace tthread {
 
+uint64_t timeStamp();
+  
 /// Mutex class.
 /// This is a mutual exclusion object for synchronizing access to shared
 /// memory areas for several threads. The mutex is non-recursive (i.e. a

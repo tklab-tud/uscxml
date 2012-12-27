@@ -30,6 +30,11 @@ public:
 		return ret;
 	}
 
+  bool isEmpty() {
+    tthread::lock_guard<tthread::mutex> lock(_mutex);
+    return _queue.empty();
+  }
+  
 	tthread::mutex _mutex;
 	tthread::condition_variable _cond;
 	std::list<T> _queue;

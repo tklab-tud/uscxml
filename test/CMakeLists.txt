@@ -27,6 +27,13 @@ if (SWI_FOUND)
 	set_target_properties(test-prolog-swi PROPERTIES FOLDER "Tests")
 endif()
 
+if (OPENSCENEGRAPH_FOUND)
+	add_executable(test-osg src/test-osg.cpp)
+	target_link_libraries(test-osg uscxml)
+	add_test(test-osg ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-prolog-swi)
+	set_target_properties(test-osg PROPERTIES FOLDER "Tests")
+endif()
+
 add_executable(test-communication src/test-communication.cpp)
 target_link_libraries(test-communication uscxml)
 add_test(test-communication ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-communication ${CMAKE_SOURCE_DIR}/test/samples/uscxml/test-communication.scxml)

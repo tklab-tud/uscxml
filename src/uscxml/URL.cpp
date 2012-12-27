@@ -1,5 +1,10 @@
-#include <glog/logging.h>
 #include <algorithm>
+#include <assert.h>
+#include <iostream>
+#include <fstream>
+
+#include <glog/logging.h>
+#include <boost/algorithm/string.hpp>
 
 #include <stdio.h>
 #include <string.h>
@@ -12,11 +17,94 @@
 #include "uscxml/Common.h"
 #include "URL.h"
 
+#include <cstdlib> // mkstemp
+#include <unistd.h>  // mkstemp legacy
+
 namespace uscxml {
 
+URL::~URL() {
+  if (_localFile.length() > 0)
+    remove(_localFile.c_str());
+}
+  
+const bool URL::toAbsolute(const std::string& baseUrl) {
+  if (_uri.is_absolute())
+		return true;
+  
+  Arabica::io::URI baseUri(baseUrl);
+  if (!baseUri.is_absolute())
+		return false;
+
+  std::stringstream ssAbsoluteURI;
+  if (baseUri.scheme().size() > 0)
+    ssAbsoluteURI << baseUri.scheme() << "://";
+  if (baseUri.host().size() > 0) {
+    ssAbsoluteURI << baseUri.host();
+    if (!boost::iequals(baseUri.port(), "0"))
+      ssAbsoluteURI << ":" << baseUri.port();
+  }
+  if (baseUri.path().size() > 0) {
+    ssAbsoluteURI << baseUri.path() << "/" << _uri.path();
+  } else {
+    ssAbsoluteURI << "/" << _uri.path();
+  }
+  _uri = Arabica::io::URI(ssAbsoluteURI.str());
+  assert(_uri.is_absolute());
+  return true;
+}
+
+const std::string URL::asLocalFile(const std::string& suffix, bool reload) {
+  // this is already a local file
+  if (_uri.scheme().compare("file") == 0)
+    return _uri.path();
+  
+  if (_localFile.length() > 0 && !reload)
+    return _localFile;
+  
+  if (_localFile.length() > 0)
+    remove(_localFile.c_str());
+  
+  // try hard to find a temporary directory
+  char* tmpDir = NULL;
+  if (tmpDir == NULL)
+    tmpDir = getenv("TMPDIR");
+  if (tmpDir == NULL)
+    tmpDir = getenv("TMP");
+  if (tmpDir == NULL)
+    tmpDir = getenv("TEMP");
+  if (tmpDir == NULL)
+    tmpDir = getenv("USERPROFILE");
+  
+  char* tmpl = (char*)malloc(strlen(tmpDir) + 11 + suffix.length());
+  char* writePtr = tmpl;
+  memcpy(writePtr, tmpDir, strlen(tmpDir));             writePtr += strlen(tmpDir);
+  memcpy(writePtr, "scxmlXXXXXX", 11);                  writePtr += 11;
+  memcpy(writePtr, suffix.c_str(), suffix.length());    writePtr += suffix.length();
+  tmpl[writePtr - tmpl] = 0;
+  
+  int fd = mkstemps(tmpl, suffix.length());
+  if (fd < 0) {
+    LOG(ERROR) << "mkstemp: " << strerror(errno) << std::endl;
+    return "";
+  }
+  close(fd);
+
+  _localFile = std::string(tmpl);
+
+  std::ofstream file(tmpl, std::ios_base::out);
+  if(file.is_open()) {
+    file << *this;
+    file.close();
+  } else {
+    _localFile = "";
+  }
+  
+  return _localFile;
+}
+  
 std::ostream & operator<<(std::ostream & stream, const URL& url) {
 
-	std::string urlString = url._urlString;
+	std::string urlString = url.asString();
 	std::string fileURL = "file://";
 
 	// strip file:// to support relative filenames
@@ -31,7 +119,7 @@ std::ostream & operator<<(std::ostream & stream, const URL& url) {
 	URL_FILE *handle = url_fopen(urlString.c_str(), "r");
 
 	if(!handle) {
-		LOG(ERROR) << "Cannot open URL " << url._urlString;
+		LOG(ERROR) << "Cannot open URL " << url.asString();
 		return stream;
 	}
 

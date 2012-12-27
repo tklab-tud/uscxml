@@ -128,6 +128,7 @@ Interpreter* Interpreter::fromInputSource(Arabica::SAX::InputSource<std::string>
 }
 
 void Interpreter::init() {
+  _lastRunOnMainThread = 0;
 	_thread = NULL;
 	_dataModel = NULL;
 	_invoker = NULL;
@@ -177,6 +178,35 @@ void Interpreter::run(void* instance) {
 	((Interpreter*)instance)->interpret();
 }
 
+bool Interpreter::runOnMainThread(int fps, bool blocking) {
+  if (fps > 0) {
+    uint64_t nextRun = _lastRunOnMainThread + (1000 / fps);
+    if (blocking) {
+      while(nextRun > tthread::timeStamp()) {
+        tthread::this_thread::sleep_for(tthread::chrono::milliseconds(nextRun - tthread::timeStamp()));
+      }
+    } else {
+      return true;
+    }
+  }
+  
+  _lastRunOnMainThread = tthread::timeStamp();
+  
+  std::map<std::string, IOProcessor*>::iterator ioProcessorIter = _ioProcessors.begin();
+	while(ioProcessorIter != _ioProcessors.end()) {
+		ioProcessorIter->second->runOnMainThread();
+		ioProcessorIter++;
+	}
+
+  std::map<std::string, Invoker*>::iterator invokerIter = _invokers.begin();
+	while(invokerIter != _invokers.end()) {
+		invokerIter->second->runOnMainThread();
+		invokerIter++;
+	}
+  
+  return (_thread != NULL);
+}
+  
 void Interpreter::waitForStabilization() {
 	tthread::lock_guard<tthread::mutex> lock(_mutex);
 	_stabilized.wait(_mutex);
@@ -394,6 +424,11 @@ void Interpreter::mainEventLoop() {
 			_stabilized.notify_all();
 		}
 
+    // whenever we have a stable configuration, run the mainThread hooks with 200fps
+    while(_externalQueue.isEmpty() && _thread == NULL) {
+      runOnMainThread(200);
+    }
+    
 		Event externalEvent = _externalQueue.pop();
 		if (!_running)
 			exitInterpreter();
@@ -637,8 +672,8 @@ void Interpreter::delayedSend(void* userdata, std::string eventName) {
 	} else if (sendReq.target.find_first_of("#_") == 0) {
 		// send to invoker
 		std::string invokeId = sendReq.target.substr(2, sendReq.target.length() - 2);
-		if (INSTANCE->_invokerIds.find(invokeId) != INSTANCE->_invokerIds.end()) {
-			INSTANCE->_invokerIds[invokeId]->send(sendReq);
+		if (INSTANCE->_invokers.find(invokeId) != INSTANCE->_invokers.end()) {
+			INSTANCE->_invokers[invokeId]->send(sendReq);
 		} else {
 			LOG(ERROR) << "Can not send to invoked component '" << invokeId << "', no such invokeId" << std::endl;
 		}
@@ -656,6 +691,8 @@ void Interpreter::delayedSend(void* userdata, std::string eventName) {
 
 void Interpreter::invoke(const Arabica::DOM::Node<std::string>& element) {
 	InvokeRequest invokeReq;
+  invokeReq.dom = element;
+
 	try {
 		// type
 		if (HAS_ATTR(element, "typeexpr") && _dataModel) {
@@ -725,7 +762,6 @@ void Interpreter::invoke(const Arabica::DOM::Node<std::string>& element) {
 				LOG(ERROR) << "param element is missing expr or location or no datamodel is specified";
 				continue;
 			}
-//      invokeReq.params[ATTR(params[i], "name")].push_back(paramValue);
 			invokeReq.params.insert(std::make_pair(ATTR(params[i], "name"), paramValue));
 
 		}
@@ -735,13 +771,14 @@ void Interpreter::invoke(const Arabica::DOM::Node<std::string>& element) {
 		if (contents.size() > 1)
 			LOG(ERROR) << "Only a single content element is allowed for send elements - using first one";
 		if (contents.size() > 0) {
+      //std::cout << contents[0] << std::endl;
 			invokeReq.content = contents[0].getNodeValue();
 		}
 
 		Invoker* invoker = Factory::getInvoker(invokeReq.type, this);
 		if (invoker != NULL) {
-			_invokerIds[invokeReq.invokeid] = invoker;
-			LOG(INFO) << "Added " << invokeReq.type << " at " << invokeReq.invokeid;
+			_invokers[invokeReq.invokeid] = invoker;
+			LOG(INFO) << "Added invoker " << invokeReq.type << " at " << invokeReq.invokeid;
 			invoker->invoke(invokeReq);
 		} else {
 			LOG(ERROR) << "No invoker known for type " << invokeReq.type;
@@ -761,10 +798,10 @@ void Interpreter::cancelInvoke(const Arabica::DOM::Node<std::string>& element) {
 	} else {
 		assert(false);
 	}
-	if (_invokerIds.find(invokeId) != _invokerIds.end()) {
+	if (_invokers.find(invokeId) != _invokers.end()) {
 		LOG(INFO) << "Removed invoker at " << invokeId;
-		delete (_invokerIds[invokeId]);
-		_invokerIds.erase(invokeId);
+		delete (_invokers[invokeId]);
+		_invokers.erase(invokeId);
 	} else {
 		LOG(ERROR) << "Cannot cancel invoke for id " << invokeId << ": no soch invokation";
 	}
@@ -1465,7 +1502,7 @@ Arabica::DOM::Node<std::string> Interpreter::findLCCA(const Arabica::XPath::Node
 	Arabica::DOM::Node<std::string> ancestor;
 	for (int i = 0; i < ancestors.size(); i++) {
 		for (int j = 0; j < states.size(); j++) {
-//      std::cout << "Checking " << TAGNAME(state) << " and " << TAGNAME(ancestors[i]) << std::endl;
+//      std::cout << "Checking " << TAGNAME(states[j]) << " and " << TAGNAME(ancestors[i]) << std::endl;
 			if (!isDescendant(states[j], ancestors[i]) && (states[j] != ancestors[i]))
 				goto NEXT_ANCESTOR;
 		}

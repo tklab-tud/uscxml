@@ -44,8 +44,12 @@ public:
 	virtual void setInterpreter(Interpreter* interpreter) {
 		_interpreter = interpreter;
 	}
+  
 	virtual Data getDataModelVariables() = 0;
 	virtual void send(SendRequest& req) = 0;
+
+  virtual void runOnMainThread() {};
+
 protected:
 	Interpreter* _interpreter;
 };

@@ -48,8 +48,10 @@ int main(int argc, char** argv) {
 	Factory::getInstance();
 
 	Interpreter* interpreter = Interpreter::fromURI(argv[argc - 1]);
-	interpreter->interpret();
-
+  if (interpreter) {
+    interpreter->start();
+    while(interpreter->runOnMainThread(25));
+  }
 
 	return EXIT_SUCCESS;
 }

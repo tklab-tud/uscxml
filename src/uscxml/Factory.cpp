@@ -15,6 +15,10 @@
 #   include "uscxml/plugins/invoker/umundo/UmundoInvoker.h"
 # endif
 
+# ifdef OPENSCENEGRAPH_FOUND
+#   include "uscxml/plugins/invoker/graphics/openscenegraph/OSGInvoker.h"
+# endif
+
 # ifdef MILES_FOUND
 #   include "uscxml/plugins/invoker/modality/miles/SpatialAudio.h"
 # endif
@@ -75,6 +79,13 @@ Factory::Factory() {
 #ifdef MILES_FOUND
 	{
 		SpatialAudio* invoker = new SpatialAudio();
+		registerInvoker(invoker);
+	}
+#endif
+
+#ifdef OPENSCENEGRAPH_FOUND
+	{
+		OSGInvoker* invoker = new OSGInvoker();
 		registerInvoker(invoker);
 	}
 #endif

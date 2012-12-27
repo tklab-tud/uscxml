@@ -25,6 +25,31 @@
 
 namespace uscxml {
 
+class NumAttr {
+public:
+  NumAttr(const std::string& str) {
+    size_t valueStart = str.find_first_of("0123456789.");
+    if (valueStart != std::string::npos) {
+      size_t valueEnd = str.find_last_of("0123456789.");
+      if (valueEnd != std::string::npos) {
+        value = str.substr(valueStart, (valueEnd - valueStart) + 1);
+        size_t unitStart = str.find_first_not_of(" \t", valueEnd + 1);
+        if (unitStart != std::string::npos) {
+          size_t unitEnd = str.find_last_of(" \t");
+          if (unitEnd != std::string::npos && unitEnd > unitStart) {
+            unit = str.substr(unitStart, unitEnd - unitStart);
+          } else {
+            unit = str.substr(unitStart, str.length() - unitStart);
+          }
+        }
+      }
+    }
+  }
+  
+  std::string value;
+  std::string unit;
+};
+  
 class Interpreter {
 public:
 	enum Binding {
@@ -51,8 +76,8 @@ public:
 	void setBaseURI(std::string baseURI)                     {
 		_baseURI = Arabica::io::URI(baseURI);
 	}
-	Arabica::io::URI getBaseURI()                            {
-		return _baseURI;
+  std::string getBaseURI()                                 {
+		return _baseURI.as_string();
 	}
 	bool makeAbsolute(Arabica::io::URI& uri);
 
@@ -95,6 +120,8 @@ public:
 		return _sessionId;
 	}
 
+  bool runOnMainThread(int fps, bool blocking = true);
+  
 	static bool isMember(const Arabica::DOM::Node<std::string>& node, const Arabica::XPath::NodeSet<std::string>& set);
 
 	void dump();
@@ -115,6 +142,9 @@ public:
 	Arabica::DOM::Node<std::string> getInitialState(Arabica::DOM::Node<std::string> state = Arabica::DOM::Node<std::string>());
 	static Arabica::XPath::NodeSet<std::string> getChildStates(const Arabica::DOM::Node<std::string>& state);
 	Arabica::XPath::NodeSet<std::string> getTargetStates(const Arabica::DOM::Node<std::string>& transition);
+
+  static Arabica::XPath::NodeSet<std::string> filterChildElements(const std::string& tagname, const Arabica::DOM::Node<std::string>& node);
+	static const std::string getUUID();
 
 protected:
 	Interpreter();
@@ -188,11 +218,10 @@ protected:
 	bool parentIsScxmlState(Arabica::DOM::Node<std::string> state);
 
 	static std::vector<std::string> tokenizeIdRefs(const std::string& idRefs);
-  static Arabica::XPath::NodeSet<std::string> filterChildElements(const std::string& tagname, const Arabica::DOM::Node<std::string>& node);
   
 	static boost::uuids::random_generator uuidGen;
-	static const std::string getUUID();
 
+  long _lastRunOnMainThread;
 	std::string _name;
 	std::string _sessionId;
 
@@ -201,7 +230,6 @@ protected:
 
 	std::map<std::string, IOProcessor*> _ioProcessors;
 	std::map<std::string, std::pair<Interpreter*, SendRequest> > _sendIds;
-	std::map<std::string, Invoker*> _invokerIds;
 	std::map<std::string, Invoker*> _invokers;
 
   /// We need to remember to adapt them when the DOM is operated upon
