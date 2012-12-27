@@ -306,6 +306,7 @@ elseif(WIN32)
 endif()
 
 # prefer rest as static libraries
+set(CMAKE_FIND_LIBRARY_SUFFIXES_ORIG ${CMAKE_FIND_LIBRARY_SUFFIXES})
 set(CMAKE_FIND_LIBRARY_SUFFIXES .lib .a ${CMAKE_FIND_LIBRARY_SUFFIXES})
 
 ################################
@@ -519,13 +520,17 @@ endif()
 
 
 # OpenSceneGraph invoker
+set(CMAKE_FIND_LIBRARY_SUFFIXES ${CMAKE_FIND_LIBRARY_SUFFIXES_ORIG}) # link dynamically!
 
-find_package(OpenSceneGraph COMPONENTS osgDB osgGA osgUtil osgText osgFX osgManipulator osgViewer OpenThreads)
+find_package(OpenSceneGraph COMPONENTS osgViewer osgGA osgText osgFX osgManipulator osgDB osgUtil OpenThreads)
 if (OPENSCENEGRAPH_FOUND)
+	set(CAN_BUILD_OPENSCENEGRAPH_INVOKER ON)
+	
 	include_directories(${OPENSCENEGRAPH_INCLUDE_DIRS})
 	file(GLOB_RECURSE OPENSCENEGRAPH_INVOKER 
 		src/uscxml/plugins/invoker/graphics/openscenegraph/*.cpp 
 		src/uscxml/plugins/invoker/graphics/openscenegraph/*.h)
+
 	if (BUILD_AS_PLUGINS)
 		add_library(
 			invoker_openscenegraph SHARED 
@@ -538,8 +543,9 @@ if (OPENSCENEGRAPH_FOUND)
 		list (APPEND USCXML_FILES ${OPENSCENEGRAPH_INVOKER})
 		list (APPEND USCXML_OPT_LIBS ${OPENSCENEGRAPH_LIBRARIES})
 	endif()
-
 endif()
+
+set(CMAKE_FIND_LIBRARY_SUFFIXES .lib .a ${CMAKE_FIND_LIBRARY_SUFFIXES})
 
 
 # MILES modality components

@@ -3,6 +3,7 @@
 
 #include "uscxml/concurrency/tinythread.h"
 #include <osgGA/TrackballManipulator>
+#include <osgViewer/Viewer>
 #include <osgViewer/CompositeViewer>
 #include <osgViewer/ViewerEventHandlers>
 #include <osgGA/StateSetManipulator>

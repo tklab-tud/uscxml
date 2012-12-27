@@ -1,4 +1,11 @@
 #include "CompositeDisplay.h"
+#if 0
+#ifdef MACOSX
+USE_GRAPICSWINDOW_IMPLEMENTATION(Cocoa)
+#else
+USE_GRAPHICSWINDOW()
+#endif
+#endif
 
 CompositeDisplay::CompositeDisplay(unsigned int x,
                                    unsigned int y,
@@ -113,5 +120,10 @@ osg::GraphicsContext::WindowingSystemInterface* CompositeDisplay::wsi = NULL;
 void CompositeDisplay::getResolution(unsigned int& width, unsigned int& height, int screenId) {
   if (!wsi)
     wsi = osg::GraphicsContext::getWindowingSystemInterface();
-  wsi->getScreenResolution(osg::GraphicsContext::ScreenIdentifier(screenId), width, height);
+	if (wsi) {
+  	wsi->getScreenResolution(osg::GraphicsContext::ScreenIdentifier(screenId), width, height);
+	} else {
+		width = 800;
+		height = 600;
+	}
 }
