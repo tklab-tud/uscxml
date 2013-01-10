@@ -35,19 +35,20 @@ void DelayedEventQueue::run(void* instance) {
 	}
 }
 
-void DelayedEventQueue::addEvent(std::string eventId, void (*callback)(void*, const std::string eventId), uint32_t delayMs, void* userData) {
+void DelayedEventQueue::addEvent(std::string eventId, void (*callback)(void*, const std::string eventId), uint32_t delayMs, void* userData, bool persist) {
 	if(_callbackData.find(eventId) != _callbackData.end()) {
 		cancelEvent(eventId);
 	}
 
 	struct timeval delay = {delayMs / 1000, (delayMs % 1000) * 1000};
-	struct event* event = event_new(_eventLoop, -1, 0, DelayedEventQueue::timerCallback, &_callbackData[eventId]);
+	struct event* event = event_new(_eventLoop, -1, (persist ? EV_PERSIST : 0), DelayedEventQueue::timerCallback, &_callbackData[eventId]);
 
 	_callbackData[eventId].eventId = eventId;
 	_callbackData[eventId].userData = userData;
 	_callbackData[eventId].eventQueue = this;
 	_callbackData[eventId].callback = callback;
 	_callbackData[eventId].event = event;
+	_callbackData[eventId].persist = persist;
 
 	event_add(event, &delay);
 }
@@ -84,9 +85,11 @@ void DelayedEventQueue::timerCallback(evutil_socket_t fd, short what, void *arg)
 	tthread::lock_guard<tthread::recursive_mutex> lock(data->eventQueue->_mutex);
 
 	std::string eventId = data->eventId; // copy eventId
-	event_free(data->event);
 	data->callback(data->userData, eventId);
-	data->eventQueue->_callbackData.erase(data->eventId);
+  if (!data->persist) {
+    event_free(data->event);
+    data->eventQueue->_callbackData.erase(data->eventId);
+  }
 }
 
 }

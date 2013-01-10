@@ -1,5 +1,6 @@
 #include "UmundoInvoker.h"
 #include <glog/logging.h>
+#include "uscxml/URL.h"
 
 #ifdef BUILD_AS_PLUGINS
 #include <Pluma/Connector.hpp>
@@ -15,12 +16,16 @@ bool connect(pluma::Host& host) {
 }
 #endif
 
-UmundoInvoker::UmundoInvoker() {
+UmundoInvoker::UmundoInvoker() : _node(NULL), _pub(NULL), _sub(NULL) {
 }
 
 UmundoInvoker::~UmundoInvoker() {
-	_node.removeSubscriber(_sub);
-	_node.removePublisher(_pub);
+  if (_node) {
+    if (_sub)
+      _node->removeSubscriber(*_sub);
+    if (_pub)
+      _node->removePublisher(*_pub);
+  }
 };
 
 Invoker* UmundoInvoker::create(Interpreter* interpreter) {
@@ -63,8 +68,8 @@ void UmundoInvoker::send(SendRequest& req) {
 				} else {
 					// add all s11n properties
 					if (!_isService) {
-						_pub.prepareMsg(msg, type, pbMsg);
-						_pub.send(msg);
+						_pub->prepareMsg(msg, type, pbMsg);
+						_pub->send(msg);
 					} else {
 						std::map<umundo::ServiceDescription, umundo::ServiceStub*>::iterator svcIter = _svcs.begin();
 						while(svcIter != _svcs.end()) {
@@ -107,11 +112,12 @@ void UmundoInvoker::sendToParent(SendRequest& req) {
 void UmundoInvoker::invoke(InvokeRequest& req) {
 	_invokeId = req.invokeid;
 
+	std::string domain;
 	std::string channelName;
 	std::string serviceName;
 
 	if (req.params.find("channel") != req.params.end()) {
-		channelName = req.params.find("type")->second;
+		channelName = req.params.find("channel")->second;
 		_isService = false;
 	} else if (req.params.find("service") != req.params.end()) {
 		serviceName = req.params.find("service")->second;
@@ -120,34 +126,50 @@ void UmundoInvoker::invoke(InvokeRequest& req) {
 		LOG(ERROR) << "Invoking umundo needs a service or a channel param";
 		return;
 	}
+	if (req.params.find("domain") != req.params.end()) {
+    domain = req.params.find("domain")->second;
+  }
+	_node = getNode(_interpreter, domain);
 
-	_node = getNode(_interpreter);
-
-	// add types from .proto or .desc files
-	if (req.params.find("types") != req.params.end()) {
+	// add type from .proto or .desc files
+	if (req.params.find("type") != req.params.end()) {
 		std::pair<InvokeRequest::params_t::iterator, InvokeRequest::params_t::iterator> typeRange = req.params.equal_range("types");
 		for (InvokeRequest::params_t::iterator it = typeRange.first; it != typeRange.second; it++) {
-			Arabica::io::URI srcURI(it->first);
-			// if (!_interpreter->makeAbsolute(srcURI)) {
-			//   LOG(ERROR) << "Relative URI for types in umundo invoker " << *typeIter <<  " with no base URI set for interpreter";
-			//   return;
-			// }
-			umundo::PBSerializer::addProto(srcURI.path());
+      URL typeURI(it->second);
+      if (typeURI.toAbsolute(_interpreter->getBaseURI())) {
+        std::string filename = typeURI.asLocalFile(".proto");
+        umundo::PBSerializer::addProto(filename);
+      } else {
+        LOG(ERROR) << "umundo invoker has relative type src but nor baseURI set with interpreter.";
+      }
 		}
 	}
 
+  // add directory with .proto or .desc files
+  if (req.params.find("types") != req.params.end()) {
+		std::pair<InvokeRequest::params_t::iterator, InvokeRequest::params_t::iterator> typeRange = req.params.equal_range("types");
+		for (InvokeRequest::params_t::iterator it = typeRange.first; it != typeRange.second; it++) {
+      URL typeURI(it->second);
+      if (typeURI.toAbsolute(_interpreter->getBaseURI()) && typeURI.scheme().compare("file") == 0) {
+        umundo::PBSerializer::addProto(typeURI.path());
+      } else {
+        LOG(ERROR) << "invoke element has relative src URI with no baseURI set.";
+      }
+		}
+  }
+  
 	if (!_isService) {
 		// use umundo to publish objects on a channel
-		_pub = umundo::TypedPublisher(channelName);
-		_sub = umundo::TypedSubscriber(channelName, this);
+		_pub = new umundo::TypedPublisher(channelName);
+		_sub = new umundo::TypedSubscriber(channelName, this);
 
-		_node.addPublisher(_pub);
-		_node.addSubscriber(_sub);
+		_node->addPublisher(*_pub);
+		_node->addSubscriber(*_sub);
 
 	} else if (serviceName.length() > 0) {
 		// use umundo to access services
 		_svcFilter = umundo::ServiceFilter(serviceName);
-		_node.connect(&_svcMgr);
+		_node->connect(&_svcMgr);
 		_svcMgr.startQuery(_svcFilter, this);
 	}
 }
@@ -233,12 +255,17 @@ void UmundoInvoker::removed(umundo::ServiceDescription desc) {
 void UmundoInvoker::changed(umundo::ServiceDescription desc) {
 }
 
-std::map<std::string, umundo::Node> UmundoInvoker::_nodes;
-umundo::Node UmundoInvoker::getNode(Interpreter* interpreter) {
-	if ((_nodes.find(interpreter->getName()) == _nodes.end())) {
-		_nodes[interpreter->getName()] = umundo::Node();
-	}
-	return _nodes[interpreter->getName()];
+std::multimap<std::string, std::pair<std::string, umundo::Node*> > UmundoInvoker::_nodes;
+umundo::Node* UmundoInvoker::getNode(Interpreter* interpreter, const std::string& domain) {
+  std::pair<_nodes_t::iterator, _nodes_t::iterator> range = _nodes.equal_range(interpreter->getName());
+  for (_nodes_t::iterator it = range.first; it != range.second; it++) {
+    if (it->second.first.compare(domain) == 0)
+      return it->second.second;
+  }
+  umundo::Node* node = new umundo::Node(domain);
+  std::pair<std::string, std::pair<std::string, umundo::Node*> > pair = std::make_pair(interpreter->getName(), std::make_pair(domain, node));
+  _nodes.insert(pair);
+  return node;
 }
 
 bool UmundoInvoker::protobufToData(Data& data, const google::protobuf::Message& msg) {

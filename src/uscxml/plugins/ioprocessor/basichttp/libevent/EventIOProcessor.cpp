@@ -313,6 +313,8 @@ void EventIOServer::registerProcessor(EventIOProcessor* processor) {
 	INSTANCE->_processors[actualPath.str()] = processor;
 	processor->setURL(processorURL.str());
 
+	LOG(INFO) << "SCXML listening at: " << processorURL.str() << std::endl;
+
 	evhttp_set_cb(INSTANCE->_http, ("/" + actualPath.str()).c_str(), EventIOProcessor::httpRecvReq, processor);
 //  evhttp_set_cb(THIS->_http, "/", EventIOProcessor::httpRecvReq, processor);
 //  evhttp_set_gencb(THIS->_http, EventIOProcessor::httpRecvReq, NULL);
@@ -332,7 +334,6 @@ void EventIOServer::start() {
 void EventIOServer::run(void* instance) {
 	EventIOServer* INSTANCE = (EventIOServer*)instance;
 	while(INSTANCE->_isRunning) {
-		LOG(INFO) << "Dispatching HTTP Server" << std::endl;
 		event_base_dispatch(INSTANCE->_base);
 	}
 	LOG(INFO) << "HTTP Server stopped" << std::endl;

@@ -1,0 +1,84 @@
+<scxml 
+	datamodel="ecmascript" 
+	xmlns="http://www.w3.org/2005/07/scxml"
+	xmlns:scenegraph="http://uscxml.tk.informatik.tu-darmstadt.de/scenegraph.xsd">
+	<datamodel>
+		<data id="localCam" />
+		<data id="foo" />
+	</datamodel>
+	<state id="start">
+		<!-- setup all invokers -->
+		
+		<!-- 20ms heartbeat -->
+		<invoke type="heartbeat" id="heartbeat.20ms">
+			<param name="interval" expr="'20ms'" />
+		</invoke>
+
+		<!-- receive files -->
+		<invoke type="umundo" id="umundo.files">
+			<param name="domain" expr="''" />
+			<param name="channel" expr="'umundo.files'" />
+		  <param name="types" expr="'../proto/3DViewer'" />
+		</invoke>
+
+		<!-- publish / subscribe to remote pose -->
+		<invoke type="umundo" id="umundo.pose">
+			<param name="domain" expr="''" />
+			<param name="channel" expr="'umundo.pose'" />
+		  <param name="types" expr="'../proto/3DViewer'" />
+		</invoke>
+		
+		<!-- 3D viewer 
+			This is only a template for nodes inserted per javascript
+		-->
+		<invoke type="scenegraph">
+			<content>
+				<scenegraph:display id="localDisplay" width="50%" height="50%">
+					<scenegraph:viewport>
+						<scenegraph:camera id="localCam">
+						</scenegraph:camera>
+						<scenegraph:translation>
+							<scenegraph:rotation>
+								<scenegraph:scale>
+									<scenegraph:node />
+								</scenegraph:scale>
+							</scenegraph:rotation>
+						</scenegraph:translation>
+					</scenegraph:viewport>
+				</scenegraph:display>
+			</content>
+		</invoke>
+		<state id="sendPose">
+			<transition target="sendPose" event="heartbeat.20ms" />
+			<onentry>
+				<script>
+					localCam = document.evaluate("//scenegraph:display[@id='localDisplay']").asNodeSet();
+					print(localCam[0].getAttribute("pitch"));
+				</script>
+				<send target="#_umundo.pose" event="umundo.pose">
+					<param name="type" expr="'SceneSetup'" />
+					<content>
+({
+	'camPose': {
+		'euler': {
+			'pitch': localCam.getAttribute("pitch"),
+			'roll':  localCam.getAttribute("roll"),
+			'yaw':   localCam.getAttribute("yaw"),
+		}
+	},
+	'modelPose': {
+		'euler': {
+			'pitch': localCam.getAttribute("pitch"),
+			'roll':  localCam.getAttribute("roll"),
+			'yaw':   localCam.getAttribute("yaw"),
+		}
+	},
+	'modelName': "foo",
+	'bandName': "foo"
+})
+					</content>
+				</send>
+			</onentry>
+		</state>
+	</state>
+</scxml>

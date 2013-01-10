@@ -1,0 +1,8 @@
+import "Pose.proto";
+
+message SceneSetup {
+  optional Pose modelPose = 1;
+  optional Pose camPose = 2;
+  required string modelName = 3;
+  required string bandName = 4;
+}

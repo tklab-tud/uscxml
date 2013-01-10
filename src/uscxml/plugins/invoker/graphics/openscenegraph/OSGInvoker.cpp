@@ -45,6 +45,13 @@ void OSGInvoker::sendToParent(SendRequest& req) {
 void OSGInvoker::invoke(InvokeRequest& req) {
   tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
   
+  // register default event handlers
+  Arabica::DOM::Events::EventTarget<std::string> evTarget = Arabica::DOM::Events::EventTarget<std::string>(req.dom);
+  evTarget.addEventListener("DOMSubtreeModified", *this, false);
+  evTarget.addEventListener("DOMNodeInserted", *this, false);
+  evTarget.addEventListener("DOMNodeRemoved", *this, false);
+  evTarget.addEventListener("DOMAttrModified", *this, false);
+  
   Arabica::XPath::NodeSet<std::string> content = Interpreter::filterChildElements("content", req.dom);
 
   std::set<std::string> validChilds;
@@ -62,7 +69,19 @@ void OSGInvoker::runOnMainThread() {
     _mutex.unlock();
   }
 }
-  
+
+void OSGInvoker::handleEvent(Arabica::DOM::Events::Event<std::string>& event) {
+//  std::cout << "Handling Event!" << std::endl;
+  Arabica::DOM::Node<std::string> node(event.getTarget());
+  if (_nodes.find(node) != _nodes.end()) {
+    osg::Node* osgNode = _nodes[node];
+    if (false) {
+    } else if (boost::iequals(LOCALNAME(node), "rotation")) {
+      updateRotation(osgNode, event);
+    }
+  }
+}
+
 void OSGInvoker::processDisplay(const Arabica::DOM::Node<std::string>& element) {
 //  std::cout << element << std::endl;
 
@@ -108,12 +127,16 @@ void OSGInvoker::processViewport(const Arabica::DOM::Node<std::string>& element)
   compDisp->addView(name, viewPort, sceneView);
   
   std::set<std::string> validChilds;
+  validChilds.insert("camera");
   validChilds.insert("translation");
   validChilds.insert("rotation");
   validChilds.insert("scale");
   validChilds.insert("node");
-  processChildren(validChilds, element);
+  processChildren(validChilds, element);  
 }
+
+void OSGInvoker::processCamera(const Arabica::DOM::Node<std::string>& element) {}
+void OSGInvoker::updateCamera(osg::Node* node, Arabica::DOM::Events::Event<std::string>& event) {}
 
 void OSGInvoker::processTranslation(const Arabica::DOM::Node<std::string>& element) {
   assert(_nodes.find(element.getParentNode()) != _nodes.end());
@@ -146,7 +169,31 @@ void OSGInvoker::processTranslation(const Arabica::DOM::Node<std::string>& eleme
 void OSGInvoker::processRotation(const Arabica::DOM::Node<std::string>& element) {
   assert(_nodes.find(element.getParentNode()) != _nodes.end());
   osg::Node* node = _nodes[element.getParentNode()];
-  
+
+  osg::Matrix rotation = rotationFromElement(element);
+  osg::MatrixTransform* transform = new osg::MatrixTransform();
+  transform->setMatrix(rotation);
+  node->asGroup()->addChild(transform);
+  _nodes[element] = transform;
+
+  std::set<std::string> validChilds;
+  validChilds.insert("translation");
+  validChilds.insert("rotation");
+  validChilds.insert("scale");
+  validChilds.insert("node");
+  processChildren(validChilds, element);
+}
+
+void OSGInvoker::updateRotation(osg::Node* node, Arabica::DOM::Events::Event<std::string>& event) {
+  osg::MatrixTransform* transform = static_cast<osg::MatrixTransform*>(node);
+  if (false) {
+  } else if (boost::iequals(event.getType(), "DOMAttrModified")) {
+    osg::Matrix rotation = rotationFromElement(Arabica::DOM::Node<std::string>(event.getTarget()));
+    transform->setMatrix(rotation);
+  }
+}
+
+osg::Matrix OSGInvoker::rotationFromElement(const Arabica::DOM::Node<std::string>& element) {
   double pitch = 0, roll = 0, yaw = 0;
   if (HAS_ATTR(element, "pitch")) {
     NumAttr pitchAttr = NumAttr(ATTR(element, "pitch"));
@@ -178,24 +225,13 @@ void OSGInvoker::processRotation(const Arabica::DOM::Node<std::string>& element)
       yaw = strTo<float>(yawAttr.value);
     }
   }
-
+  
   osg::Matrix rotation;
   rotation.makeRotate(roll, osg::Vec3(0,1,0), // roll
                       pitch, osg::Vec3(1,0,0) , // pitch
                       yaw, osg::Vec3(0,0,1) ); // heading
 
-  
-  osg::MatrixTransform* transform = new osg::MatrixTransform();
-  transform->setMatrix(rotation);
-  node->asGroup()->addChild(transform);
-  _nodes[element] = transform;
-
-  std::set<std::string> validChilds;
-  validChilds.insert("translation");
-  validChilds.insert("rotation");
-  validChilds.insert("scale");
-  validChilds.insert("node");
-  processChildren(validChilds, element);
+  return rotation;
 }
 
 void OSGInvoker::processScale(const Arabica::DOM::Node<std::string>& element) {
@@ -227,6 +263,9 @@ void OSGInvoker::processScale(const Arabica::DOM::Node<std::string>& element) {
 }
 
 void OSGInvoker::processNode(const Arabica::DOM::Node<std::string>& element) {
+  _nodes_t::iterator nodeIter = _nodes.find(element.getParentNode());
+  assert(nodeIter != _nodes.end());
+  
   assert(_nodes.find(element.getParentNode()) != _nodes.end());
   osg::Node* parent = _nodes[element.getParentNode()];
 
@@ -276,6 +315,9 @@ void OSGInvoker::processChildren(const std::set<std::string>& validChildren, con
     } else if (boost::iequals(LOCALNAME(childs.item(i)), "viewport") &&
                validChildren.find("viewport") != validChildren.end()) {
       processViewport(childs.item(i));
+    } else if (boost::iequals(LOCALNAME(childs.item(i)), "camera") &&
+               validChildren.find("camera") != validChildren.end()) {
+      processCamera(childs.item(i));
     } else if (boost::iequals(LOCALNAME(childs.item(i)), "display") &&
                validChildren.find("display") != validChildren.end()) {
       processDisplay(childs.item(i));

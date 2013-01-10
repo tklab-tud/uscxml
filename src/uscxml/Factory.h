@@ -58,6 +58,7 @@ class Invoker : public IOProcessor {
 public:
 	virtual void invoke(InvokeRequest& req) = 0;
 	virtual void sendToParent(SendRequest& req) = 0;
+	virtual Invoker* create(Interpreter* interpreter) = 0;
 };
 
 class DataModel {
@@ -99,8 +100,11 @@ public:
 	static Factory* getInstance();
 
 	std::map<std::string, DataModel*> _dataModels;
+  std::map<std::string, std::string> _dataModelAliases;
 	std::map<std::string, IOProcessor*> _ioProcessors;
+  std::map<std::string, std::string> _ioProcessorAliases;
 	std::map<std::string, Invoker*> _invokers;
+  std::map<std::string, std::string> _invokerAliases;
 	std::map<std::string, ExecutableContent*> _executableContent;
 
 	static std::string pluginPath;

@@ -22,6 +22,7 @@ public:
 		void *userData;
 		void (*callback)(void*, const std::string eventId);
 		std::string eventId;
+		bool persist;
 		struct event *event;
 		DelayedEventQueue* eventQueue;
 	};
@@ -29,7 +30,7 @@ public:
 	DelayedEventQueue();
 	virtual ~DelayedEventQueue();
 
-	void addEvent(std::string eventId, void (*callback)(void*, const std::string eventId), uint32_t delayMs, void* userData);
+	void addEvent(std::string eventId, void (*callback)(void*, const std::string eventId), uint32_t delayMs, void* userData, bool persist = false);
 	void cancelEvent(std::string eventId);
 
 	void start();

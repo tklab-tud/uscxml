@@ -1,0 +1,22 @@
+import "LinearAlgebra.proto";
+
+message EulerAngles {
+	required double pitch = 1 [default = 0];
+	required double roll = 2 [default = 0];
+	required double yaw = 3 [default = 0];
+}
+
+message Heading {
+  required Vector3 direction = 1;
+  optional double timestamp = 2;
+  optional double magneticHeading = 3;
+  optional double trueHeading = 4;
+}
+
+message Pose {
+  optional Matrix3 orientation = 1;
+	optional EulerAngles euler = 2;
+	optional Vector3 position = 3;
+  optional Heading heading = 4;
+  optional double timestamp = 5;
+}

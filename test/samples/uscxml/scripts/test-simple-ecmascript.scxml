@@ -1,0 +1,12 @@
+<scxml datamodel="ecmascript">
+	<state id="start">
+		<onentry>
+			<script>
+				var nodeSet = document.evaluate("//state").asNodeSet();
+				nodeSet[0].setAttribute("foo", "bar");
+			</script>
+			<raise event="redo" />
+		</onentry>
+		<transition target="start" event="redo" />
+	</state>
+</scxml>

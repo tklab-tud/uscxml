@@ -28,7 +28,7 @@ const std::string Interpreter::getUUID() {
 	return boost::lexical_cast<std::string>(uuidGen());
 }
 
-Interpreter::Interpreter() {
+Interpreter::Interpreter() : Arabica::SAX2DOM::Parser<std::string>() {
 #ifdef _WIN32
 	WSADATA wsaData;
 	WSAStartup(MAKEWORD(2, 2), &wsaData);
@@ -38,8 +38,8 @@ Interpreter::Interpreter() {
 Interpreter* Interpreter::fromDOM(const Arabica::DOM::Node<std::string>& node) {
 	Arabica::DOM::DOMImplementation<std::string> domFactory = Arabica::SimpleDOM::DOMImplementation<std::string>::getDOMImplementation();
 	Interpreter* interpreter = new Interpreter();
-	interpreter->_doc = domFactory.createDocument("http://www.w3.org/2005/07/scxml", "scxml", 0);
-	interpreter->_doc.appendChild(node);
+	interpreter->_document = domFactory.createDocument("http://www.w3.org/2005/07/scxml", "scxml", 0);
+	interpreter->_document.appendChild(node);
 	interpreter->init();
 
 	return interpreter;
@@ -103,13 +103,17 @@ bool Interpreter::makeAbsolute(Arabica::io::URI& uri) {
 	return false;
 }
 
+void Interpreter::startPrefixMapping(const std::string& prefix, const std::string& uri) {
+//  std::cout << "starting prefix mapping " << prefix << ": " << uri << std::endl;
+  _nsContext.addNamespaceDeclaration(uri, prefix);
+}
+
 Interpreter* Interpreter::fromInputSource(Arabica::SAX::InputSource<std::string>& source) {
 	Interpreter* interpreter = new Interpreter();
 
-	Arabica::SAX2DOM::Parser<std::string> domParser;
 	Arabica::SAX::CatchErrorHandler<std::string> errorHandler;
-	domParser.setErrorHandler(errorHandler);
-	if(!domParser.parse(source) || !domParser.getDocument().hasChildNodes()) {
+	interpreter->setErrorHandler(errorHandler);
+	if(!interpreter->parse(source) || !interpreter->Arabica::SAX2DOM::Parser<std::string>::getDocument().hasChildNodes()) {
 		LOG(INFO) << "could not parse input:";
 		if(errorHandler.errorsReported()) {
 			LOG(ERROR) << errorHandler.errors() << std::endl;
@@ -121,7 +125,7 @@ Interpreter* Interpreter::fromInputSource(Arabica::SAX::InputSource<std::string>
 		}
 		return NULL;
 	} else {
-		interpreter->_doc = domParser.getDocument();
+		interpreter->_document = interpreter->Arabica::SAX2DOM::Parser<std::string>::getDocument();
 	}
 	interpreter->init();
 	return interpreter;
@@ -135,18 +139,22 @@ void Interpreter::init() {
 	_running = false;
 	_sendQueue = new DelayedEventQueue();
 	_sendQueue->start();
-	if (_doc) {
-		// do we have a xmlns attribute?
-		std::string ns = _doc.getDocumentElement().getNamespaceURI();
-		if(ns.size() > 0) {
-			_nsContext.addNamespaceDeclaration(ns, "sc");
-			_xpath.setNamespaceContext(_nsContext);
-			_nsPrefix = "sc:";
-		}
-		NodeList<std::string> scxmls = _doc.getElementsByTagName("scxml");
+	if (_document) {
+		NodeList<std::string> scxmls = _document.getElementsByTagName("scxml");
 		if (scxmls.getLength() > 0) {
 			_scxml = (Arabica::DOM::Element<std::string>)scxmls.item(0);
-			normalize(_doc);
+      
+      // do we have a xmlns attribute?
+      std::string ns = _document.getDocumentElement().getNamespaceURI();
+      if(ns.size() > 0) {
+        _nsContext.addNamespaceDeclaration(ns, "sc");
+        _nsPrefix = "sc:";
+      }
+      // do we have additional namespaces?
+      
+      _xpath.setNamespaceContext(_nsContext);
+      
+			normalize(_document);
 			_name = (HAS_ATTR(_scxml, "name") ? ATTR(_scxml, "name") : getUUID());
 		} else {
 			LOG(ERROR) << "Cannot find SCXML element" << std::endl;
@@ -231,7 +239,7 @@ void Interpreter::interpret() {
 	setupIOProcessors();
 
 	// executeGlobalScriptElements
-	NodeSet<std::string> globalScriptElems = _xpath.evaluate("/" + _nsPrefix + "scxml/" + _nsPrefix + "script", _doc).asNodeSet();
+	NodeSet<std::string> globalScriptElems = _xpath.evaluate("/" + _nsPrefix + "scxml/" + _nsPrefix + "script", _document).asNodeSet();
 	for (unsigned int i = 0; i < globalScriptElems.size(); i++) {
 //    std::cout << globalScriptElems[i].getFirstChild().getNodeValue() << std::endl;
 		if (_dataModel)
@@ -240,29 +248,29 @@ void Interpreter::interpret() {
 
 	_running = true;
 
-	std::string binding = _xpath.evaluate("/" + _nsPrefix + "scxml/@binding", _doc).asString();
+	std::string binding = _xpath.evaluate("/" + _nsPrefix + "scxml/@binding", _document).asString();
 	_binding = (boost::iequals(binding, "late") ? LATE : EARLY);
 
 	// initialize all data elements
 	if (_dataModel && _binding == EARLY) {
-		NodeSet<std::string> dataElems = _xpath.evaluate("//" + _nsPrefix + "data", _doc).asNodeSet();
+		NodeSet<std::string> dataElems = _xpath.evaluate("//" + _nsPrefix + "data", _document).asNodeSet();
 		for (unsigned int i = 0; i < dataElems.size(); i++) {
 			initializeData(dataElems[i]);
 		}
 	} else if(_dataModel) {
-		NodeSet<std::string> topDataElems = _xpath.evaluate("/" + _nsPrefix + "scxml/" + _nsPrefix + "datamodel/" + _nsPrefix + "data", _doc).asNodeSet();
+		NodeSet<std::string> topDataElems = _xpath.evaluate("/" + _nsPrefix + "scxml/" + _nsPrefix + "datamodel/" + _nsPrefix + "data", _document).asNodeSet();
 		for (unsigned int i = 0; i < topDataElems.size(); i++) {
 			initializeData(topDataElems[i]);
 		}
 	}
 
 	// initial transition might be implict
-	NodeSet<std::string> initialTransitions = _xpath.evaluate("/" + _nsPrefix + "scxml/" + _nsPrefix + "initial/" + _nsPrefix + "transition", _doc).asNodeSet();
+	NodeSet<std::string> initialTransitions = _xpath.evaluate("/" + _nsPrefix + "scxml/" + _nsPrefix + "initial/" + _nsPrefix + "transition", _document).asNodeSet();
 	if (initialTransitions.size() == 0) {
 		Arabica::DOM::Element<std::string> initialState = (Arabica::DOM::Element<std::string>)getInitialState();
-		Arabica::DOM::Element<std::string> initialElem = _doc.createElement("initial");
+		Arabica::DOM::Element<std::string> initialElem = _document.createElement("initial");
 		initialElem.setAttribute("generated", "on");
-		Arabica::DOM::Element<std::string> transitionElem = _doc.createElement("transition");
+		Arabica::DOM::Element<std::string> transitionElem = _document.createElement("transition");
 		transitionElem.setAttribute("target", initialState.getAttribute("id"));
 		initialElem.appendChild(transitionElem);
 		_scxml.appendChild(initialElem);
@@ -316,7 +324,7 @@ void Interpreter::initializeData(const Arabica::DOM::Node<std::string>& data) {
 
 void Interpreter::normalize(const Arabica::DOM::Document<std::string>& node) {
 	// make sure every state has an id and set isFirstEntry to true
-	Arabica::XPath::NodeSet<std::string> states = _xpath.evaluate("//" + _nsPrefix + "state", _doc).asNodeSet();
+	Arabica::XPath::NodeSet<std::string> states = _xpath.evaluate("//" + _nsPrefix + "state", _document).asNodeSet();
 	for (int i = 0; i < states.size(); i++) {
 		Arabica::DOM::Element<std::string> stateElem = Arabica::DOM::Element<std::string>(states[i]);
 		stateElem.setAttribute("isFirstEntry", "true");
@@ -326,7 +334,7 @@ void Interpreter::normalize(const Arabica::DOM::Document<std::string>& node) {
 	}
 
 	// make sure every invoke has an idlocation or id
-	Arabica::XPath::NodeSet<std::string> invokes = _xpath.evaluate("//" + _nsPrefix + "invoke", _doc).asNodeSet();
+	Arabica::XPath::NodeSet<std::string> invokes = _xpath.evaluate("//" + _nsPrefix + "invoke", _document).asNodeSet();
 	for (int i = 0; i < invokes.size(); i++) {
 		Arabica::DOM::Element<std::string> invokeElem = Arabica::DOM::Element<std::string>(invokes[i]);
 		if (!invokeElem.hasAttribute("id") && !invokeElem.hasAttribute("idlocation")) {
@@ -340,7 +348,7 @@ void Interpreter::normalize(const Arabica::DOM::Document<std::string>& node) {
 //    }
 	}
 
-	Arabica::XPath::NodeSet<std::string> finals = _xpath.evaluate("//" + _nsPrefix + "final", _doc).asNodeSet();
+	Arabica::XPath::NodeSet<std::string> finals = _xpath.evaluate("//" + _nsPrefix + "final", _document).asNodeSet();
 	for (int i = 0; i < finals.size(); i++) {
 		Arabica::DOM::Element<std::string> finalElem = Arabica::DOM::Element<std::string>(finals[i]);
 		finalElem.setAttribute("isFirstEntry", "true");
@@ -349,7 +357,7 @@ void Interpreter::normalize(const Arabica::DOM::Document<std::string>& node) {
 		}
 	}
 
-	Arabica::XPath::NodeSet<std::string> histories = _xpath.evaluate("//" + _nsPrefix + "history", _doc).asNodeSet();
+	Arabica::XPath::NodeSet<std::string> histories = _xpath.evaluate("//" + _nsPrefix + "history", _document).asNodeSet();
 	for (int i = 0; i < histories.size(); i++) {
 		Arabica::DOM::Element<std::string> historyElem = Arabica::DOM::Element<std::string>(histories[i]);
 		if (!historyElem.hasAttribute("id")) {
@@ -357,7 +365,7 @@ void Interpreter::normalize(const Arabica::DOM::Document<std::string>& node) {
 		}
 	}
 
-	Arabica::XPath::NodeSet<std::string> scxml = _xpath.evaluate("/" + _nsPrefix + "scxml", _doc).asNodeSet();
+	Arabica::XPath::NodeSet<std::string> scxml = _xpath.evaluate("/" + _nsPrefix + "scxml", _document).asNodeSet();
 	if (!((Arabica::DOM::Element<std::string>)scxml[0]).hasAttribute("id")) {
 		((Arabica::DOM::Element<std::string>)scxml[0]).setAttribute("id", getUUID());
 	}
@@ -365,8 +373,8 @@ void Interpreter::normalize(const Arabica::DOM::Document<std::string>& node) {
 	// create a pseudo initial and transition element
 #if 0
 	Arabica::DOM::Element<std::string> initialState = (Arabica::DOM::Element<std::string>)getInitialState();
-	Arabica::DOM::Element<std::string> initialElem = _doc.createElement("initial");
-	Arabica::DOM::Element<std::string> transitionElem = _doc.createElement("transition");
+	Arabica::DOM::Element<std::string> initialElem = _document.createElement("initial");
+	Arabica::DOM::Element<std::string> transitionElem = _document.createElement("transition");
 	transitionElem.setAttribute("target", initialState.getAttribute("id"));
 	initialElem.appendChild(transitionElem);
 	_scxml.appendChild(initialElem);
@@ -385,7 +393,7 @@ void Interpreter::mainEventLoop() {
 #if 0
 			std::cout << "Configuration: ";
 			for (int i = 0; i < _configuration.size(); i++) {
-				std::cout << ((Arabica::DOM::Element<std::string>)_configuration[i]).getAttribute("id") << ", ";
+				std::cout << ATTR(_configuration[i], "id") << ", ";
 			}
 			std::cout << std::endl;
 #endif
@@ -424,7 +432,7 @@ void Interpreter::mainEventLoop() {
 			_stabilized.notify_all();
 		}
 
-    // whenever we have a stable configuration, run the mainThread hooks with 200fps
+    // whenever we have a stable configuration, run the mainThread hooks with 200fps    
     while(_externalQueue.isEmpty() && _thread == NULL) {
       runOnMainThread(200);
     }
@@ -1343,6 +1351,14 @@ void Interpreter::enterStates(const Arabica::XPath::NodeSet<std::string>& enable
 		}
 	}
 	statesToEnter.to_document_order();
+#if 0
+  std::cout << "Entering states: ";
+  for (int i = 0; i < statesToEnter.size(); i++) {
+    std::cout << ATTR(statesToEnter[i], "id") << ", ";
+  }
+  std::cout << std::endl;
+#endif
+
 	for (int i = 0; i < statesToEnter.size(); i++) {
 		Arabica::DOM::Element<std::string> stateElem = (Arabica::DOM::Element<std::string>)statesToEnter[i];
 		_configuration.push_back(stateElem);
@@ -1523,17 +1539,17 @@ Arabica::DOM::Node<std::string> Interpreter::getState(const std::string& stateId
   }
   
 	// first try atomic and compund states
-	NodeSet<std::string> target = _xpath.evaluate("//" + _nsPrefix + "state[@id='" + stateId + "']", _doc).asNodeSet();
+	NodeSet<std::string> target = _xpath.evaluate("//" + _nsPrefix + "state[@id='" + stateId + "']", _document).asNodeSet();
 	if (target.size() > 0)
 		goto FOUND;
 
 	// now parallel states
-	target = _xpath.evaluate("//" + _nsPrefix + "parallel[@id='" + stateId + "']", _doc).asNodeSet();
+	target = _xpath.evaluate("//" + _nsPrefix + "parallel[@id='" + stateId + "']", _document).asNodeSet();
 	if (target.size() > 0)
 		goto FOUND;
 
 	// now final states
-	target = _xpath.evaluate("//" + _nsPrefix + "final[@id='" + stateId + "']", _doc).asNodeSet();
+	target = _xpath.evaluate("//" + _nsPrefix + "final[@id='" + stateId + "']", _document).asNodeSet();
 	if (target.size() > 0)
 		goto FOUND;
 
@@ -1562,7 +1578,7 @@ Arabica::DOM::Node<std::string> Interpreter::getSourceState(const Arabica::DOM::
  */
 Arabica::DOM::Node<std::string> Interpreter::getInitialState(Arabica::DOM::Node<std::string> state) {
 	if (!state) {
-		state = _doc.getFirstChild();
+		state = _document.getFirstChild();
 		while(!isState(state))
 			state = state.getNextSibling();
 	}
@@ -1825,19 +1841,19 @@ IOProcessor* Interpreter::getIOProcessor(const std::string& type) {
 bool Interpreter::validate() {
 	bool validationErrors = false;
 
-	if (!_doc) {
+	if (!_document) {
 		LOG(ERROR) << "Document " << _baseURI.as_string() << " was not parsed successfully" << std::endl;
 		return false;
 	}
 
 	// semantic issues ------------
-	if ((_xpath.evaluate("/" + _nsPrefix + "scxml/@datamodel", _doc).asNodeSet().size() == 0) &&
-	        _xpath.evaluate("/" + _nsPrefix + "scxml/" + _nsPrefix + "script", _doc).asNodeSet().size() > 0) {
+	if ((_xpath.evaluate("/" + _nsPrefix + "scxml/@datamodel", _document).asNodeSet().size() == 0) &&
+	        _xpath.evaluate("/" + _nsPrefix + "scxml/" + _nsPrefix + "script", _document).asNodeSet().size() > 0) {
 		LOG(ERROR) << "Script elements used, but no datamodel specified" << std::endl;
 	}
 
 	// element issues ------------
-	Arabica::XPath::NodeSet<std::string> scxmlElems = _xpath.evaluate(_nsPrefix + "scxml", _doc).asNodeSet();
+	Arabica::XPath::NodeSet<std::string> scxmlElems = _xpath.evaluate(_nsPrefix + "scxml", _document).asNodeSet();
 	if (scxmlElems.size() > 0)
 		LOG(ERROR) << "More than one scxml element found" << std::endl;
 	for (unsigned int i = 0; i < scxmlElems.size(); i++) {
@@ -1859,7 +1875,7 @@ bool Interpreter::validate() {
 		}
 	}
 
-	Arabica::XPath::NodeSet<std::string> stateElems = _xpath.evaluate(_nsPrefix + "state", _doc).asNodeSet();
+	Arabica::XPath::NodeSet<std::string> stateElems = _xpath.evaluate(_nsPrefix + "state", _document).asNodeSet();
 	for (unsigned int i = 0; i < stateElems.size(); i++) {
 		NodeList<std::string> childs = stateElems[i].getChildNodes();
 		for (unsigned int j = 0; j < childs.getLength(); j++) {
@@ -1880,7 +1896,7 @@ bool Interpreter::validate() {
 		}
 	}
 
-	Arabica::XPath::NodeSet<std::string> parallelElems = _xpath.evaluate(_nsPrefix + "parallel", _doc).asNodeSet();
+	Arabica::XPath::NodeSet<std::string> parallelElems = _xpath.evaluate(_nsPrefix + "parallel", _document).asNodeSet();
 	for (unsigned int i = 0; i < parallelElems.size(); i++) {
 		NodeList<std::string> childs = parallelElems[i].getChildNodes();
 		for (unsigned int j = 0; j < childs.getLength(); j++) {
@@ -1899,7 +1915,7 @@ bool Interpreter::validate() {
 		}
 	}
 
-	Arabica::XPath::NodeSet<std::string> transitionElems = _xpath.evaluate(_nsPrefix + "transition", _doc).asNodeSet();
+	Arabica::XPath::NodeSet<std::string> transitionElems = _xpath.evaluate(_nsPrefix + "transition", _document).asNodeSet();
 	for (unsigned int i = 0; i < transitionElems.size(); i++) {
 		if (HAS_ATTR(transitionElems[i], "cond") &&
 		        !HAS_ATTR(transitionElems[i], "event")) {
@@ -1912,7 +1928,7 @@ bool Interpreter::validate() {
 		}
 	}
 
-	Arabica::XPath::NodeSet<std::string> initialElems = _xpath.evaluate(_nsPrefix + "initial", _doc).asNodeSet();
+	Arabica::XPath::NodeSet<std::string> initialElems = _xpath.evaluate(_nsPrefix + "initial", _document).asNodeSet();
 	for (unsigned int i = 0; i < initialElems.size(); i++) {
 		NodeList<std::string> childs = initialElems[i].getChildNodes();
 		for (unsigned int j = 0; j < childs.getLength(); j++) {
@@ -1924,7 +1940,7 @@ bool Interpreter::validate() {
 		}
 	}
 
-	Arabica::XPath::NodeSet<std::string> finalElems = _xpath.evaluate(_nsPrefix + "final", _doc).asNodeSet();
+	Arabica::XPath::NodeSet<std::string> finalElems = _xpath.evaluate(_nsPrefix + "final", _document).asNodeSet();
 	for (unsigned int i = 0; i < finalElems.size(); i++) {
 		NodeList<std::string> childs = finalElems[i].getChildNodes();
 		for (unsigned int j = 0; j < childs.getLength(); j++) {
@@ -1938,7 +1954,7 @@ bool Interpreter::validate() {
 		}
 	}
 
-	Arabica::XPath::NodeSet<std::string> historyElems = _xpath.evaluate(_nsPrefix + "history", _doc).asNodeSet();
+	Arabica::XPath::NodeSet<std::string> historyElems = _xpath.evaluate(_nsPrefix + "history", _document).asNodeSet();
 	for (unsigned int i = 0; i < historyElems.size(); i++) {
 		NodeList<std::string> childs = historyElems[i].getChildNodes();
 		for (unsigned int j = 0; j < childs.getLength(); j++) {
@@ -1950,7 +1966,7 @@ bool Interpreter::validate() {
 		}
 	}
 
-	Arabica::XPath::NodeSet<std::string> datamodelElems = _xpath.evaluate(_nsPrefix + "datamodel", _doc).asNodeSet();
+	Arabica::XPath::NodeSet<std::string> datamodelElems = _xpath.evaluate(_nsPrefix + "datamodel", _document).asNodeSet();
 	for (unsigned int i = 0; i < datamodelElems.size(); i++) {
 		NodeList<std::string> childs = datamodelElems[i].getChildNodes();
 		for (unsigned int j = 0; j < childs.getLength(); j++) {
@@ -1962,7 +1978,7 @@ bool Interpreter::validate() {
 		}
 	}
 
-	Arabica::XPath::NodeSet<std::string> dataElems = _xpath.evaluate(_nsPrefix + "data", _doc).asNodeSet();
+	Arabica::XPath::NodeSet<std::string> dataElems = _xpath.evaluate(_nsPrefix + "data", _document).asNodeSet();
 	for (unsigned int i = 0; i < dataElems.size(); i++) {
 		if (!HAS_ATTR(dataElems[i], "id"))
 			LOG(ERROR) << "data element has no id attribute" << std::endl;
@@ -1972,9 +1988,9 @@ bool Interpreter::validate() {
 }
 
 void Interpreter::dump() {
-	if (!_doc)
+	if (!_document)
 		return;
-	dump(_doc);
+	dump(_document);
 }
 
 void Interpreter::dump(const Arabica::DOM::Node<std::string>& node, int lvl) {

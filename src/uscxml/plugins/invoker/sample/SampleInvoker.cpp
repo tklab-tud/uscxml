@@ -42,6 +42,7 @@ void SampleInvoker::sendToParent(SendRequest& req) {
 }
 
 void SampleInvoker::invoke(InvokeRequest& req) {
+  _invokeId = req.invokeid;
 }
 
 }

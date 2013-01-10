@@ -1,6 +1,7 @@
 #include "uscxml/Common.h"
 #include "V8DataModel.h"
-#include "dom/V8SCXMLDOM.h"
+#include "dom/V8DOM.h"
+#include "dom/V8Document.h"
 #include "uscxml/Message.h"
 #include <glog/logging.h>
 
@@ -28,16 +29,32 @@ DataModel* V8DataModel::create(Interpreter* interpreter) {
 	v8::Locker locker;
 	v8::HandleScope scope;
 
+  V8DOM* dom = new V8DOM();
+  dom->interpreter = interpreter;
+  dom->xpath = new Arabica::XPath::XPath<std::string>();
+  dom->xpath->setNamespaceContext(interpreter->getNSContext());
+  
 	// see http://stackoverflow.com/questions/3171418/v8-functiontemplate-class-instance
-//  dm->_globalTemplate = v8::Persistent<v8::ObjectTemplate>(v8::ObjectTemplate::New());
-//  dm->_globalTemplate->Set(v8::String::New("In"), v8::FunctionTemplate::New(jsIn, v8::External::New(reinterpret_cast<void*>(this))));
 
+  // some free functions
 	v8::Handle<v8::ObjectTemplate> global = v8::ObjectTemplate::New();
-	global->Set(v8::String::New("In"), v8::FunctionTemplate::New(jsIn, v8::External::New(reinterpret_cast<void*>(dm))));
-	global->Set(v8::String::New("print"), v8::FunctionTemplate::New(jsPrint, v8::External::New(reinterpret_cast<void*>(dm))));
-	global->Set(v8::String::New("document"), V8SCXMLDOM::getDocument(interpreter->getDocument()));
+	global->Set(v8::String::New("In"), v8::FunctionTemplate::New(jsIn, v8::External::New(reinterpret_cast<void*>(dm))), v8::ReadOnly);
+	global->Set(v8::String::New("print"), v8::FunctionTemplate::New(jsPrint, v8::External::New(reinterpret_cast<void*>(dm))), v8::ReadOnly);
 
-	dm->_contexts.push_back(v8::Context::New(NULL, global));
+  v8::Persistent<v8::Context> context = v8::Context::New(0, global);
+  v8::Context::Scope contextScope(context);
+
+  // instantiate the document function
+  v8::Handle<v8::Function> docCtor = V8Document::getTmpl()->GetFunction();
+  v8::Handle<v8::Object> docObj = docCtor->NewInstance();
+  docObj->SetInternalField(0, V8DOM::toExternal(&(interpreter->getDocument())));
+  docObj->SetInternalField(1, V8DOM::toExternal(dom));
+  context->Global()->Set(v8::String::New("document"), docObj);
+  
+	dm->_contexts.push_back(context);
+  
+  // instantiate objects - we have to have a context for that!
+  
 	dm->setName(interpreter->getName());
 	dm->setSessionId(interpreter->getSessionId());
 	dm->eval("_ioprocessors = {};");

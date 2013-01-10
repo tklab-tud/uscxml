@@ -10,6 +10,7 @@
 
 # include "uscxml/plugins/ioprocessor/basichttp/libevent/EventIOProcessor.h"
 # include "uscxml/plugins/invoker/scxml/USCXMLInvoker.h"
+# include "uscxml/plugins/invoker/heartbeat/HeartbeatInvoker.h"
 
 # ifdef UMUNDO_FOUND
 #   include "uscxml/plugins/invoker/umundo/UmundoInvoker.h"
@@ -110,6 +111,10 @@ Factory::Factory() {
 		registerInvoker(invoker);
 	}
 	{
+		HeartbeatInvoker* invoker = new HeartbeatInvoker();
+		registerInvoker(invoker);
+	}
+	{
 		EventIOProcessor* ioProcessor = new EventIOProcessor();
 		registerIOProcessor(ioProcessor);
 	}
@@ -125,28 +130,40 @@ Factory::~Factory() {
 void Factory::registerIOProcessor(IOProcessor* ioProcessor) {
 	std::set<std::string> names = ioProcessor->getNames();
 	std::set<std::string>::iterator nameIter = names.begin();
-	while(nameIter != names.end()) {
-		_ioProcessors[*nameIter] = ioProcessor;
-		nameIter++;
-	}
+  if (nameIter != names.end()) {
+    std::string canonicalName = *nameIter;
+    _ioProcessors[canonicalName] = ioProcessor;
+    while(nameIter != names.end()) {
+      _ioProcessorAliases[*nameIter] = canonicalName;
+      nameIter++;
+    }
+  }
 }
 
 void Factory::registerDataModel(DataModel* dataModel) {
 	std::set<std::string> names = dataModel->getNames();
 	std::set<std::string>::iterator nameIter = names.begin();
-	while(nameIter != names.end()) {
-		_dataModels[*nameIter] = dataModel;
-		nameIter++;
-	}
+  if (nameIter != names.end()) {
+    std::string canonicalName = *nameIter;
+    _dataModels[canonicalName] = dataModel;
+    while(nameIter != names.end()) {
+      _dataModelAliases[*nameIter] = canonicalName;
+      nameIter++;
+    }
+  }
 }
-
+  
 void Factory::registerInvoker(Invoker* invoker) {
 	std::set<std::string> names = invoker->getNames();
 	std::set<std::string>::iterator nameIter = names.begin();
-	while(nameIter != names.end()) {
-		_invokers[*nameIter] = invoker;
-		nameIter++;
-	}
+  if (nameIter != names.end()) {
+    std::string canonicalName = *nameIter;
+    _invokers[canonicalName] = invoker;
+    while(nameIter != names.end()) {
+      _invokerAliases[*nameIter] = canonicalName;
+      nameIter++;
+    }
+  }
 }
 
 void Factory::registerExecutableContent(const std::string tag, ExecutableContent* executableContent) {
@@ -155,28 +172,41 @@ void Factory::registerExecutableContent(const std::string tag, ExecutableContent
 
 Invoker* Factory::getInvoker(const std::string type, Interpreter* interpreter) {
 	Factory* factory = getInstance();
-	if (factory->_invokers.find(type) != factory->_invokers.end()) {
-		return (Invoker*)factory->_invokers[type]->create(interpreter);
-	}
-	return NULL;
+  if (factory->_invokerAliases.find(type) == factory->_invokerAliases.end())
+    return NULL;
+  
+  std::string canonicalName = factory->_invokerAliases[type];
+	if (factory->_invokers.find(canonicalName) == factory->_invokers.end())
+    return NULL;
+  
+  return factory->_invokers[canonicalName]->create(interpreter);
 }
 
 DataModel* Factory::getDataModel(const std::string type, Interpreter* interpreter) {
 	Factory* factory = getInstance();
-	if (factory->_dataModels.find(type) != factory->_dataModels.end()) {
-		return factory->_dataModels[type]->create(interpreter);
-	}
-	return NULL;
+  if (factory->_dataModelAliases.find(type) == factory->_dataModelAliases.end())
+    return NULL;
+  
+  std::string canonicalName = factory->_dataModelAliases[type];
+	if (factory->_dataModels.find(canonicalName) == factory->_dataModels.end())
+    return NULL;
+  
+  return factory->_dataModels[canonicalName]->create(interpreter);
 }
 
 IOProcessor* Factory::getIOProcessor(const std::string type, Interpreter* interpreter) {
 	Factory* factory = getInstance();
-	if (factory->_ioProcessors.find(type) != factory->_ioProcessors.end()) {
-		return factory->_ioProcessors[type]->create(interpreter);
-	}
-	return NULL;
+  if (factory->_ioProcessorAliases.find(type) == factory->_ioProcessorAliases.end())
+    return NULL;
+  
+  std::string canonicalName = factory->_ioProcessorAliases[type];
+	if (factory->_ioProcessors.find(canonicalName) == factory->_ioProcessors.end())
+    return NULL;
+  
+  return factory->_ioProcessors[canonicalName]->create(interpreter);
 }
 
+#if 0
 ExecutableContent* Factory::getExecutableContent(const std::string tag, Interpreter* interpreter) {
 	Factory* factory = getInstance();
 	if (factory->_executableContent.find(tag) != factory->_executableContent.end()) {
@@ -184,7 +214,8 @@ ExecutableContent* Factory::getExecutableContent(const std::string tag, Interpre
 	}
 	return NULL;
 }
-
+#endif
+  
 Factory* Factory::getInstance() {
 	if (_instance == NULL) {
 		_instance = new Factory();

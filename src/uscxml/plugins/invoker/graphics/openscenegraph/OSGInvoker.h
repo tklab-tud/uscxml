@@ -2,6 +2,9 @@
 #define OSGINVOKER_H_H6T4R8HU
 
 #include <uscxml/Interpreter.h>
+#include <DOM/Events/MutationEvent.hpp>
+#include <DOM/Events/EventListener.hpp>
+#include <DOM/Events/Event.hpp>
 #include "CompositeDisplay.h"
 #include <osg/MatrixTransform>
 #include <osgDB/ReadFile>
@@ -13,7 +16,7 @@
 
 namespace uscxml {
 
-class OSGInvoker : public Invoker {
+class OSGInvoker : public Invoker, public Arabica::DOM::Events::EventListener<std::string> {
 public:
 	OSGInvoker();
 	virtual ~OSGInvoker();
@@ -32,16 +35,30 @@ public:
 	virtual void cancel(const std::string sendId);
 	virtual void invoke(InvokeRequest& req);
 	virtual void sendToParent(SendRequest& req);
+  virtual void handleEvent(Arabica::DOM::Events::Event<std::string>& event);
 
   virtual void runOnMainThread();
 
 protected:
   void processDisplay(const Arabica::DOM::Node<std::string>& element);
+  void updateDisplay(osg::Node* node, Arabica::DOM::Events::Event<std::string>& event);
   void processViewport(const Arabica::DOM::Node<std::string>& element);
+  void updateViewport(osg::Node* node, Arabica::DOM::Events::Event<std::string>& event);
+  void processCamera(const Arabica::DOM::Node<std::string>& element);
+  void updateCamera(osg::Node* node, Arabica::DOM::Events::Event<std::string>& event);
+
   void processTranslation(const Arabica::DOM::Node<std::string>& element);
+  void updateTranslation(osg::Node* node, Arabica::DOM::Events::Event<std::string>& event);
+  
   void processRotation(const Arabica::DOM::Node<std::string>& element);
+  void updateRotation(osg::Node* node, Arabica::DOM::Events::Event<std::string>& event);
+  static osg::Matrix rotationFromElement(const Arabica::DOM::Node<std::string>& element);
+  
   void processScale(const Arabica::DOM::Node<std::string>& element);
+  void updateScale(osg::Node* node, Arabica::DOM::Events::Event<std::string>& event);
   void processNode(const Arabica::DOM::Node<std::string>& element);
+  void updateNode(osg::Node* node, Arabica::DOM::Events::Event<std::string>& event);
+
   void processChildren(const std::set<std::string>& validChildren, const Arabica::DOM::Node<std::string>& element);
   
   void getViewport(const Arabica::DOM::Node<std::string>& element,

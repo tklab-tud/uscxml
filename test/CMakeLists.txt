@@ -48,3 +48,8 @@ add_executable(test-completion src/test-completion.cpp)
 target_link_libraries(test-completion uscxml)
 add_test(test-completion ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-completion ${CMAKE_SOURCE_DIR}/test/samples/uscxml/test-donedata.scxml)
 set_target_properties(test-completion PROPERTIES FOLDER "Tests")
+
+add_executable(test-arabica-events src/test-arabica-events.cpp)
+target_link_libraries(test-arabica-events uscxml)
+add_test(test-arabica-events ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-arabica-events ${CMAKE_SOURCE_DIR}/test/samples/arabica/test-arabica-events.xml)
+set_target_properties(test-arabica-events PROPERTIES FOLDER "Tests")

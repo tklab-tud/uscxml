@@ -49,16 +49,17 @@ protected:
 	bool dataToProtobuf(google::protobuf::Message* msg, Data& data);
 	bool protobufToData(Data& data, const google::protobuf::Message& msg);
 
-	umundo::TypedPublisher _pub;
-	umundo::TypedSubscriber _sub;
-	umundo::Node _node;
+	umundo::Node* _node;
+	umundo::TypedPublisher* _pub;
+	umundo::TypedSubscriber* _sub;
 
 	umundo::ServiceFilter _svcFilter;
 	umundo::ServiceManager _svcMgr;
 	std::map<umundo::ServiceDescription, umundo::ServiceStub*> _svcs;
 
-	static std::map<std::string, umundo::Node> _nodes;
-	static umundo::Node getNode(Interpreter* interpreter);
+	static std::multimap<std::string, std::pair<std::string, umundo::Node*> > _nodes;
+  typedef std::multimap<std::string, std::pair<std::string, umundo::Node*> > _nodes_t;
+	static umundo::Node* getNode(Interpreter* interpreter, const std::string& domain);
 };
 
 #ifdef BUILD_AS_PLUGINS

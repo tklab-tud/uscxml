@@ -50,7 +50,7 @@ public:
   std::string unit;
 };
   
-class Interpreter {
+class Interpreter : protected Arabica::SAX2DOM::Parser<std::string> {
 public:
 	enum Binding {
 	    EARLY = 0,
@@ -63,6 +63,8 @@ public:
 	static Interpreter* fromXML(const std::string& xml);
 	static Interpreter* fromURI(const std::string& uri);
 	static Interpreter* fromInputSource(Arabica::SAX::InputSource<std::string>& source);
+
+  virtual void startPrefixMapping(const std::string& /* prefix */, const std::string& /* uri */);
 
 	void start();
 	static void run(void*);
@@ -93,8 +95,8 @@ public:
 	std::string getNSPrefix()                                {
 		return _nsPrefix;
 	}
-	Arabica::XPath::XPath<std::string>& getXPath()           {
-		return _xpath;
+  Arabica::XPath::StandardNamespaceContext<std::string>& getNSContext() {
+		return _nsContext;
 	}
 
 	void waitForStabilization();
@@ -110,7 +112,7 @@ public:
 	}
 	Arabica::DOM::Node<std::string> getState(const std::string& stateId);
 	Arabica::DOM::Document<std::string>& getDocument()       {
-		return _doc;
+		return _document;
 	}
 
 	const std::string& getName()                             {
@@ -161,7 +163,7 @@ protected:
 	tthread::condition_variable _stabilized;
 
 	Arabica::io::URI _baseURI;
-	Arabica::DOM::Document<std::string> _doc;
+	Arabica::DOM::Document<std::string> _document;
 	Arabica::DOM::Element<std::string> _scxml;
 	Arabica::XPath::XPath<std::string> _xpath;
 	Arabica::XPath::StandardNamespaceContext<std::string> _nsContext;

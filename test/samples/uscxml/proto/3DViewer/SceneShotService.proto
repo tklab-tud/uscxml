@@ -1,0 +1,24 @@
+import "SceneSetup.proto";
+
+message SceneShotReply {
+	optional bytes data = 1;
+	optional string base64 = 2;
+	optional string url = 3;
+	required uint32 width = 4;
+	required uint32 height = 5;
+}
+
+message SceneShotRequest {
+	required uint32 width = 1 [default = 640];
+	required uint32 height = 2 [default = 480];
+	optional string format = 3 [default = "png"];
+	optional string filename = 4;
+	optional SceneSetup sceneSetup = 5;
+	optional double pitch = 6;
+	optional double roll = 7;
+	optional double zoom = 8;
+}
+
+service SceneShotService {
+ 	rpc sceneShot (SceneShotRequest) returns (SceneShotReply);
+}

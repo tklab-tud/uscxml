@@ -1,0 +1,9 @@
+import "LinearAlgebra.proto";
+
+message CameraPos {
+  required Vector3 center = 1;
+  required Quaternion rotation = 2;
+  required double distance = 3;
+  required double lastFrameTime = 4;
+  required bool thrown = 5 [default = false];
+}

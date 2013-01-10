@@ -324,6 +324,7 @@ add_definitions(-DGLOG_NO_ABBREVIATED_SEVERITIES)
 
 # ARABICA
 
+# set($ENV{ARABICA_SRC} ${PROJECT_SOURCE_DIR}/../arabica)
 find_package(Arabica REQUIRED)
 include_directories(${ARABICA_INCLUDE_DIR})
 list (APPEND USCXML_CORE_LIBS ${ARABICA_LIBRARY})
@@ -424,20 +425,28 @@ endif()
 find_package(V8)
 if (V8_FOUND)
 	include_directories(${V8_INCLUDE_DIR})
-	file(GLOB_RECURSE V8_DATAMODEL
+	file(GLOB V8_DATAMODEL
 		src/uscxml/plugins/datamodel/ecmascript/v8/*.cpp
 		src/uscxml/plugins/datamodel/ecmascript/v8/*.h
 	)
+	file(GLOB_RECURSE V8_DOM
+		src/uscxml/plugins/datamodel/ecmascript/v8/dom/*.cpp
+		src/uscxml/plugins/datamodel/ecmascript/v8/dom/*.h
+	)
+ source_group("DOM" FILES ${V8_DOM})
+
 	if (BUILD_AS_PLUGINS)
 		add_library(
 			datamodel_v8 SHARED 
-			${V8_DATAMODEL})
+			${V8_DATAMODEL}
+			${V8_DOM})
 		target_link_libraries(datamodel_v8 
 			uscxml
 			${V8_LIBRARY})
 		set_target_properties(datamodel_v8 PROPERTIES FOLDER "Plugin DataModel")
 	else()
 		list (APPEND USCXML_FILES ${V8_DATAMODEL})
+		list (APPEND USCXML_FILES ${V8_DOM})
 		list (APPEND USCXML_OPT_LIBS ${V8_LIBRARY})
 	endif()
 endif()
@@ -519,8 +528,27 @@ else()
 endif()
 
 
+# Heartbeat invoker
+
+file(GLOB_RECURSE HEARTBEAT_INVOKER
+	src/uscxml/plugins/invoker/heartbeat/*.cpp
+	src/uscxml/plugins/invoker/heartbeat/*.h
+)
+if (BUILD_AS_PLUGINS)
+	add_library(
+		invoker_heartbeat SHARED 
+		${HEARTBEAT_INVOKER})
+	target_link_libraries(invoker_heartbeat uscxml)
+	set_target_properties(invoker_heartbeat PROPERTIES FOLDER "Plugin Invoker")
+else()
+	list (APPEND USCXML_FILES ${HEARTBEAT_INVOKER})
+endif()
+
+
 # OpenSceneGraph invoker
-set(CMAKE_FIND_LIBRARY_SUFFIXES ${CMAKE_FIND_LIBRARY_SUFFIXES_ORIG}) # link dynamically!
+if (UNIX)
+	set(CMAKE_FIND_LIBRARY_SUFFIXES ${CMAKE_FIND_LIBRARY_SUFFIXES_ORIG}) # link dynamically!
+endif()
 
 find_package(OpenSceneGraph COMPONENTS osgViewer osgGA osgText osgFX osgManipulator osgDB osgUtil OpenThreads)
 if (OPENSCENEGRAPH_FOUND)
@@ -545,8 +573,9 @@ if (OPENSCENEGRAPH_FOUND)
 	endif()
 endif()
 
-set(CMAKE_FIND_LIBRARY_SUFFIXES .lib .a ${CMAKE_FIND_LIBRARY_SUFFIXES})
-
+if (UNIX)
+	set(CMAKE_FIND_LIBRARY_SUFFIXES .lib .a ${CMAKE_FIND_LIBRARY_SUFFIXES})
+endif()
 
 # MILES modality components
 
