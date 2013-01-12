@@ -152,7 +152,7 @@ freely, subject to the following restrictions:
 /// the std::mutex class.
 namespace tthread {
 
-uint64_t timeStamp();
+unsigned long long int timeStamp();
   
 /// Mutex class.
 /// This is a mutual exclusion object for synchronizing access to shared

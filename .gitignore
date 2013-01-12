@@ -11,3 +11,5 @@ contrib/prebuilt/android*
 package/linux*
 package/darwin*
 package/windows*
+
+*.tgz

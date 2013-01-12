@@ -56,4 +56,7 @@
 #cmakedefine SWI_FOUND
 #cmakedefine OPENSCENEGRAPH_FOUND
 
+/** Header files we found */
+#cmakedefine HAS_UNISTD_H
+
 #endif

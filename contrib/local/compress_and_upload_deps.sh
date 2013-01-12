@@ -22,11 +22,17 @@ if [ ! -d $1 ]; then
 	exit
 fi
 
-PLATFORM=`basename $1`
 VERSION=$2
 
 cd ../prebuilt
 
-tar cvzf uscxml-prebuilt-${PLATFORM}.tgz ${PLATFORM}
-scp uscxml-prebuilt-${PLATFORM}.tgz ${UMUNDO_PREBUILT_HOST}/${VERSION}
-rm uscxml-prebuilt-${PLATFORM}.tgz
+PLATFORMS=`find . -maxdepth 1 -type d -regex ./[^\.].*`
+for FILE in ${PLATFORMS}; do
+  PLATFORM=`basename $FILE`
+  if [ "$PLATFORM" != "include" ]; then
+    echo $FILE
+    tar cvzf uscxml-prebuilt-${PLATFORM}.tgz ${FILE}
+    scp uscxml-prebuilt-${PLATFORM}.tgz ${UMUNDO_PREBUILT_HOST}/${VERSION}
+    rm uscxml-prebuilt-${PLATFORM}.tgz
+  fi
+done

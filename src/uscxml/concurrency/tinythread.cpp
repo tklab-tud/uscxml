@@ -31,15 +31,14 @@ freely, subject to the following restrictions:
 #include <process.h>
 #endif
 
-
 namespace tthread {
 
-uint64_t timeStamp() {
-  uint64_t time = 0;
+unsigned long long int timeStamp() {
+  unsigned long long int time = 0;
 #ifdef WIN32
   FILETIME tv;
   GetSystemTimeAsFileTime(&tv);
-  time = (((uint64_t) tv.dwHighDateTime) << 32) + tv.dwLowDateTime;
+  time = (((unsigned long long int) tv.dwHighDateTime) << 32) + tv.dwLowDateTime;
   time /= 10000;
 #else
   struct timeval tv;

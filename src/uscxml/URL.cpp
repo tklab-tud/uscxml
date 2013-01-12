@@ -17,8 +17,12 @@
 #include "uscxml/Common.h"
 #include "URL.h"
 
+#include "uscxml/config.h"
+
 #include <cstdlib> // mkstemp
+#ifdef HAS_UNISTD_H
 #include <unistd.h>  // mkstemp legacy
+#endif
 
 namespace uscxml {
 
