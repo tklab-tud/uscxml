@@ -23,7 +23,7 @@ V8DataModel::V8DataModel() {
 //  _contexts.push_back(v8::Context::New());
 }
 
-DataModel* V8DataModel::create(Interpreter* interpreter) {
+DataModelImpl* V8DataModel::create(Interpreter* interpreter) {
 	V8DataModel* dm = new V8DataModel();
 	dm->_interpreter = interpreter;
 	v8::Locker locker;
@@ -62,8 +62,8 @@ DataModel* V8DataModel::create(Interpreter* interpreter) {
 	return dm;
 }
 
-void V8DataModel::registerIOProcessor(const std::string& name, IOProcessor* ioprocessor) {
-	assign("_ioprocessors['" + name + "']", ioprocessor->getDataModelVariables());
+void V8DataModel::registerIOProcessor(const std::string& name, const IOProcessor& ioprocessor) {
+	assign("_ioprocessors['" + name + "']", ioprocessor.getDataModelVariables());
 }
 
 void V8DataModel::setSessionId(const std::string& sessionId) {

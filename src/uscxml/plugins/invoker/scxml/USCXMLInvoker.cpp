@@ -23,7 +23,7 @@ USCXMLInvoker::~USCXMLInvoker() {
 	delete _invokedInterpreter;
 };
 
-Invoker* USCXMLInvoker::create(Interpreter* interpreter) {
+InvokerImpl* USCXMLInvoker::create(Interpreter* interpreter) {
 	USCXMLInvoker* invoker = new USCXMLInvoker();
 	invoker->_parentInterpreter = interpreter;
 	return invoker;
@@ -34,7 +34,7 @@ Data USCXMLInvoker::getDataModelVariables() {
 	return data;
 }
 
-void USCXMLInvoker::send(SendRequest& req) {
+void USCXMLInvoker::send(const SendRequest& req) {
 	assert(false);
 }
 
@@ -42,19 +42,20 @@ void USCXMLInvoker::cancel(const std::string sendId) {
 	assert(false);
 }
 
-void USCXMLInvoker::sendToParent(SendRequest& req) {
-	req.invokeid = _invokeId;
-	_parentInterpreter->receive(req);
+void USCXMLInvoker::sendToParent(const SendRequest& req) {
+  SendRequest parentReq = req;
+	parentReq.invokeid = _invokeId;
+	_parentInterpreter->receive(parentReq);
 }
 
-void USCXMLInvoker::invoke(InvokeRequest& req) {
+void USCXMLInvoker::invoke(const InvokeRequest& req) {
 	_invokeId = req.invokeid;
 	_invokedInterpreter = Interpreter::fromURI(req.src);
-	DataModel* dataModel = _invokedInterpreter->getDataModel();
-	if (dataModel != NULL) {
+	DataModel dataModel(_invokedInterpreter->getDataModel());
+	if (dataModel) {
 
 	}
-	_invokedInterpreter->setInvoker(this);
+	_invokedInterpreter->setInvoker(boost::static_pointer_cast<InvokerImpl>(shared_from_this()));
 	_invokedInterpreter->start();
 }
 

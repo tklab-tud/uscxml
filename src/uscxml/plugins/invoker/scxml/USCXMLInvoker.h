@@ -2,6 +2,7 @@
 #define USCXMLINVOKER_H_OQFA21IO
 
 #include <uscxml/Interpreter.h>
+#include <boost//enable_shared_from_this.hpp>
 
 #ifdef BUILD_AS_PLUGINS
 #include "uscxml/plugins/Plugins.h"
@@ -11,11 +12,11 @@ namespace uscxml {
 
 class Interpreter;
 
-class USCXMLInvoker : public Invoker {
+class USCXMLInvoker : public InvokerImpl, public boost::enable_shared_from_this<USCXMLInvoker> {
 public:
 	USCXMLInvoker();
 	virtual ~USCXMLInvoker();
-	virtual Invoker* create(Interpreter* interpreter);
+	virtual InvokerImpl* create(Interpreter* interpreter);
 	virtual std::set<std::string> getNames() {
 		std::set<std::string> names;
 		names.insert("uscxml");
@@ -25,10 +26,10 @@ public:
 	}
 
 	virtual Data getDataModelVariables();
-	virtual void send(SendRequest& req);
+	virtual void send(const SendRequest& req);
 	virtual void cancel(const std::string sendId);
-	virtual void invoke(InvokeRequest& req);
-	virtual void sendToParent(SendRequest& req);
+	virtual void invoke(const InvokeRequest& req);
+	virtual void sendToParent(const SendRequest& req);
 
 protected:
 	std::string _invokeId;

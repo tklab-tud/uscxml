@@ -52,16 +52,23 @@ Interpreter* Interpreter::fromXML(const std::string& xml) {
 }
 
 Interpreter* Interpreter::fromURI(const std::string& uri) {
-	Arabica::SAX::InputSource<std::string> inputSource(uri);
+  URL absUrl(uri);
+  if (!absUrl.isAbsolute()) {
+    if (!absUrl.toAbsoluteCwd()) {
+      LOG(ERROR) << "Given URL is not absolute or does not have file schema";
+      return NULL;
+    }
+  }
+	Arabica::SAX::InputSource<std::string> inputSource(absUrl.asString());
 	Interpreter* interpreter = fromInputSource(inputSource);
 
 	// try to establish URI root for relative src attributes in document
 	if (interpreter)
-		interpreter->_baseURI = toBaseURI(Arabica::io::URI(uri));
+		interpreter->_baseURI = toBaseURI(absUrl);
 	return interpreter;
 }
 
-Arabica::io::URI Interpreter::toBaseURI(const Arabica::io::URI& uri) {
+URL Interpreter::toBaseURI(const URL& uri) {
 	std::stringstream ssBaseURI;
 	if (uri.scheme().size() > 0) {
 		ssBaseURI << uri.scheme() << "://";
@@ -75,30 +82,20 @@ Arabica::io::URI Interpreter::toBaseURI(const Arabica::io::URI& uri) {
 	}
 	if (uri.path().size() > 0) {
 		std::string uriPath = uri.path();
-		uriPath = uriPath.substr(0, uriPath.find_last_of("/\\"));
+		uriPath = uriPath.substr(0, uriPath.find_last_of("/\\") + 1);
 		ssBaseURI << uriPath;
 	}
-	return Arabica::io::URI(ssBaseURI.str());
+	return URL(ssBaseURI.str());
 }
 
-bool Interpreter::makeAbsolute(Arabica::io::URI& uri) {
-	if (uri.is_absolute())
+bool Interpreter::toAbsoluteURI(URL& uri) {
+	if (uri.isAbsolute())
 		return true;
 
-	if (_baseURI.as_string().size() > 0) {
-		std::stringstream ssAbsoluteURI;
-		if (_baseURI.scheme().size() > 0)
-			ssAbsoluteURI << _baseURI.scheme() << "://";
-		if (_baseURI.host().size() > 0) {
-			ssAbsoluteURI << _baseURI.host();
-			if (!boost::iequals(_baseURI.port(), "0"))
-				ssAbsoluteURI << ":" << _baseURI.port();
-		}
-		if (_baseURI.path().size() > 0) {
-			ssAbsoluteURI << _baseURI.path() << "/" << uri.path();
-		}
-		uri = Arabica::io::URI(ssAbsoluteURI.str());
-		return true;
+	if (_baseURI.asString().size() > 0) {
+		if (uri.toAbsolute(_baseURI));
+      return true;
+    return false;
 	}
 	return false;
 }
@@ -114,13 +111,13 @@ Interpreter* Interpreter::fromInputSource(Arabica::SAX::InputSource<std::string>
 	Arabica::SAX::CatchErrorHandler<std::string> errorHandler;
 	interpreter->setErrorHandler(errorHandler);
 	if(!interpreter->parse(source) || !interpreter->Arabica::SAX2DOM::Parser<std::string>::getDocument().hasChildNodes()) {
-		LOG(INFO) << "could not parse input:";
 		if(errorHandler.errorsReported()) {
+      LOG(ERROR) << "could not parse input:";
 			LOG(ERROR) << errorHandler.errors() << std::endl;
 		} else {
 			Arabica::SAX::InputSourceResolver resolver(source, Arabica::default_string_adaptor<std::string>());
 			if (!resolver.resolve()) {
-				LOG(ERROR) << "no such file";
+				LOG(ERROR) << source.getSystemId() << ": no such file";
 			}
 		}
 		return NULL;
@@ -134,8 +131,6 @@ Interpreter* Interpreter::fromInputSource(Arabica::SAX::InputSource<std::string>
 void Interpreter::init() {
   _lastRunOnMainThread = 0;
 	_thread = NULL;
-	_dataModel = NULL;
-	_invoker = NULL;
 	_running = false;
 	_sendQueue = new DelayedEventQueue();
 	_sendQueue->start();
@@ -163,18 +158,12 @@ void Interpreter::init() {
 }
 
 Interpreter::~Interpreter() {
-	std::map<std::string, IOProcessor*>::iterator ioProcessorIter = _ioProcessors.begin();
-	while(ioProcessorIter != _ioProcessors.end()) {
-		delete ioProcessorIter->second;
-		ioProcessorIter++;
-	}
 	if (_thread) {
 		_running = false;
 		_externalQueue.push(Event());
 		_thread->join();
 		delete(_thread);
 	}
-	delete _dataModel;
 	delete _sendQueue;
 }
 
@@ -200,15 +189,15 @@ bool Interpreter::runOnMainThread(int fps, bool blocking) {
   
   _lastRunOnMainThread = tthread::timeStamp();
   
-  std::map<std::string, IOProcessor*>::iterator ioProcessorIter = _ioProcessors.begin();
+  std::map<std::string, IOProcessor>::iterator ioProcessorIter = _ioProcessors.begin();
 	while(ioProcessorIter != _ioProcessors.end()) {
-		ioProcessorIter->second->runOnMainThread();
+		ioProcessorIter->second.runOnMainThread();
 		ioProcessorIter++;
 	}
 
-  std::map<std::string, Invoker*>::iterator invokerIter = _invokers.begin();
+  std::map<std::string, Invoker>::iterator invokerIter = _invokers.begin();
 	while(invokerIter != _invokers.end()) {
-		invokerIter->second->runOnMainThread();
+		invokerIter->second.runOnMainThread();
 		invokerIter++;
 	}
   
@@ -229,8 +218,8 @@ void Interpreter::interpret() {
 	_sessionId = getUUID();
 
 	if(HAS_ATTR(_scxml, "datamodel")) {
-		_dataModel = Factory::getDataModel(ATTR(_scxml, "datamodel"), this);
-		if(_dataModel == NULL) {
+		_dataModel = Factory::createDataModel(ATTR(_scxml, "datamodel"), this);
+		if(!_dataModel) {
 			LOG(ERROR) << "No datamodel for " << ATTR(_scxml, "datamodel") << " registered";
 			return;
 		}
@@ -298,19 +287,19 @@ void Interpreter::initializeData(const Arabica::DOM::Node<std::string>& data) {
 
 		if (HAS_ATTR(data, "expr")) {
 			std::string value = ATTR(data, "expr");
-			_dataModel->assign(ATTR(data, "id"), value);
+			_dataModel.assign(ATTR(data, "id"), value);
 		} else if (HAS_ATTR(data, "src")) {
 			Arabica::SAX::InputSourceResolver resolver(Arabica::SAX::InputSource<std::string>(ATTR(data, "src")),
 			        Arabica::default_string_adaptor<std::string>());
 			std::string value = std::string(std::istreambuf_iterator<char>(*resolver.resolve()), std::istreambuf_iterator<char>());
-			_dataModel->assign(ATTR(data, "id"), value);
+			_dataModel.assign(ATTR(data, "id"), value);
 		} else if (data.hasChildNodes()) {
 			// search for the text node with the actual script
 			NodeList<std::string> dataChilds = data.getChildNodes();
 			for (int i = 0; i < dataChilds.getLength(); i++) {
 				if (dataChilds.item(i).getNodeType() == Node_base::TEXT_NODE) {
 					Data value = Data(dataChilds.item(i).getNodeValue());
-					_dataModel->assign(ATTR(data, "id"), value);
+					_dataModel.assign(ATTR(data, "id"), value);
 					break;
 				}
 			}
@@ -408,7 +397,7 @@ void Interpreter::mainEventLoop() {
 					std::cout << "Received internal event " << internalEvent.name << std::endl;
 #endif
 					if (_dataModel)
-						_dataModel->setEvent(internalEvent);
+						_dataModel.setEvent(internalEvent);
 					enabledTransitions = selectTransitions(internalEvent.name);
 				}
 			}
@@ -446,7 +435,7 @@ void Interpreter::mainEventLoop() {
 
 		if (_dataModel)
 			try {
-				_dataModel->setEvent(externalEvent);
+				_dataModel.setEvent(externalEvent);
 			} catch (Event e) {
 				LOG(ERROR) << "Syntax error while setting external event:" << std::endl << e << std::endl;
 			}
@@ -502,10 +491,10 @@ void Interpreter::internalDoneSend(const Arabica::DOM::Node<std::string>& state)
 				}
 				std::string paramValue;
 				if (HAS_ATTR(doneChilds.item(i), "expr") && _dataModel) {
-					std::string location = _dataModel->evalAsString(ATTR(doneChilds.item(i), "expr"));
-					paramValue = _dataModel->evalAsString(location);
+					std::string location = _dataModel.evalAsString(ATTR(doneChilds.item(i), "expr"));
+					paramValue = _dataModel.evalAsString(location);
 				} else if(HAS_ATTR(doneChilds.item(i), "location") && _dataModel) {
-					paramValue = _dataModel->evalAsString(ATTR(doneChilds.item(i), "location"));
+					paramValue = _dataModel.evalAsString(ATTR(doneChilds.item(i), "location"));
 				} else {
 					LOG(ERROR) << "param element is missing expr or location or no datamodel is specified";
 					continue;
@@ -515,7 +504,7 @@ void Interpreter::internalDoneSend(const Arabica::DOM::Node<std::string>& state)
 			if (boost::iequals(TAGNAME(doneChilds.item(i)), "content")) {
 				if (HAS_ATTR(doneChilds.item(i), "expr")) {
 					if (_dataModel) {
-						event.compound["content"] = Data(_dataModel->evalAsString(ATTR(doneChilds.item(i), "expr")), Data::VERBATIM);
+						event.compound["content"] = Data(_dataModel.evalAsString(ATTR(doneChilds.item(i), "expr")), Data::VERBATIM);
 					} else {
 						LOG(ERROR) << "content element has expr attribute but no datamodel is specified.";
 					}
@@ -539,19 +528,19 @@ void Interpreter::send(const Arabica::DOM::Node<std::string>& element) {
 	try {
 		// event
 		if (HAS_ATTR(element, "eventexpr") && _dataModel) {
-			sendReq.name = _dataModel->evalAsString(ATTR(element, "eventexpr"));
+			sendReq.name = _dataModel.evalAsString(ATTR(element, "eventexpr"));
 		} else if (HAS_ATTR(element, "event")) {
 			sendReq.name = ATTR(element, "event");
 		}
 		// target
 		if (HAS_ATTR(element, "targetexpr") && _dataModel) {
-			sendReq.target = _dataModel->evalAsString(ATTR(element, "targetexpr"));
+			sendReq.target = _dataModel.evalAsString(ATTR(element, "targetexpr"));
 		} else if (HAS_ATTR(element, "target")) {
 			sendReq.target = ATTR(element, "target");
 		}
 		// type
 		if (HAS_ATTR(element, "typeexpr") && _dataModel) {
-			sendReq.type = _dataModel->evalAsString(ATTR(element, "typeexpr"));
+			sendReq.type = _dataModel.evalAsString(ATTR(element, "typeexpr"));
 		} else if (HAS_ATTR(element, "type")) {
 			sendReq.type = ATTR(element, "type");
 		} else {
@@ -559,7 +548,7 @@ void Interpreter::send(const Arabica::DOM::Node<std::string>& element) {
 		}
 		// id
 		if (HAS_ATTR(element, "idlocation") && _dataModel) {
-			sendReq.sendid = _dataModel->evalAsString(ATTR(element, "idlocation"));
+			sendReq.sendid = _dataModel.evalAsString(ATTR(element, "idlocation"));
 		} else if (HAS_ATTR(element, "id")) {
 			sendReq.sendid = ATTR(element, "id");
 		} else {
@@ -588,7 +577,7 @@ void Interpreter::send(const Arabica::DOM::Node<std::string>& element) {
 		std::string delay;
 		sendReq.delayMs = 0;
 		if (HAS_ATTR(element, "delayexpr") && _dataModel) {
-			delay = _dataModel->evalAsString(ATTR(element, "delayexpr"));
+			delay = _dataModel.evalAsString(ATTR(element, "delayexpr"));
 		} else if (HAS_ATTR(element, "delay")) {
 			delay = ATTR(element, "delay");
 		}
@@ -610,7 +599,7 @@ void Interpreter::send(const Arabica::DOM::Node<std::string>& element) {
 		if (HAS_ATTR(element, "namelist")) {
 			std::vector<std::string> names = tokenizeIdRefs(ATTR(element, "namelist"));
 			for (int i = 0; i < names.size(); i++) {
-				sendReq.namelist[names[i]] = _dataModel->evalAsString(names[i]);
+				sendReq.namelist[names[i]] = _dataModel.evalAsString(names[i]);
 			}
 		}
 
@@ -623,9 +612,9 @@ void Interpreter::send(const Arabica::DOM::Node<std::string>& element) {
 			}
 			std::string paramValue;
 			if (HAS_ATTR(params[i], "expr") && _dataModel) {
-				paramValue = _dataModel->evalAsString(ATTR(params[i], "expr"));
+				paramValue = _dataModel.evalAsString(ATTR(params[i], "expr"));
 			} else if(HAS_ATTR(params[i], "location") && _dataModel) {
-				paramValue = _dataModel->evalAsString(ATTR(params[i], "location"));
+				paramValue = _dataModel.evalAsString(ATTR(params[i], "location"));
 			} else {
 				LOG(ERROR) << "param element is missing expr or location or no datamodel is specified";
 				continue;
@@ -640,7 +629,7 @@ void Interpreter::send(const Arabica::DOM::Node<std::string>& element) {
 		if (contents.size() > 0) {
 			if (HAS_ATTR(contents[0], "expr")) {
 				if (_dataModel) {
-					sendReq.content = _dataModel->evalAsString(ATTR(contents[0], "expr"));
+					sendReq.content = _dataModel.evalAsString(ATTR(contents[0], "expr"));
 				} else {
 					LOG(ERROR) << "content element has expr attribute but no datamodel is specified.";
 				}
@@ -672,8 +661,8 @@ void Interpreter::delayedSend(void* userdata, std::string eventName) {
 
 	if (boost::iequals(sendReq.target, "#_parent")) {
 		// send to parent scxml session
-		if (INSTANCE->_invoker != NULL) {
-			INSTANCE->_invoker->sendToParent(sendReq);
+		if (INSTANCE->_invoker) {
+			INSTANCE->_invoker.sendToParent(sendReq);
 		} else {
 			LOG(ERROR) << "Can not send to parent, we were not invoked" << std::endl;
 		}
@@ -681,16 +670,16 @@ void Interpreter::delayedSend(void* userdata, std::string eventName) {
 		// send to invoker
 		std::string invokeId = sendReq.target.substr(2, sendReq.target.length() - 2);
 		if (INSTANCE->_invokers.find(invokeId) != INSTANCE->_invokers.end()) {
-			INSTANCE->_invokers[invokeId]->send(sendReq);
+			INSTANCE->_invokers[invokeId].send(sendReq);
 		} else {
 			LOG(ERROR) << "Can not send to invoked component '" << invokeId << "', no such invokeId" << std::endl;
 		}
 	} else if (sendReq.target.length() == 0) {
 		INSTANCE->receive(sendReq);
 	} else {
-		IOProcessor* ioProc = INSTANCE->getIOProcessor(sendReq.type);
-		if (ioProc != NULL) {
-			ioProc->send(sendReq);
+		IOProcessor ioProc = INSTANCE->getIOProcessor(sendReq.type);
+		if (ioProc) {
+			ioProc.send(sendReq);
 		}
 	}
 	assert(INSTANCE->_sendIds.find(sendReq.sendid) != INSTANCE->_sendIds.end());
@@ -704,7 +693,7 @@ void Interpreter::invoke(const Arabica::DOM::Node<std::string>& element) {
 	try {
 		// type
 		if (HAS_ATTR(element, "typeexpr") && _dataModel) {
-			invokeReq.type = _dataModel->evalAsString(ATTR(element, "typeexpr"));
+			invokeReq.type = _dataModel.evalAsString(ATTR(element, "typeexpr"));
 		} else if (HAS_ATTR(element, "type")) {
 			invokeReq.type = ATTR(element, "type");
 		} else {
@@ -714,22 +703,22 @@ void Interpreter::invoke(const Arabica::DOM::Node<std::string>& element) {
 		// src
 		std::string source;
 		if (HAS_ATTR(element, "srcexpr") && _dataModel) {
-			source = _dataModel->evalAsString(ATTR(element, "srcexpr"));
+			source = _dataModel.evalAsString(ATTR(element, "srcexpr"));
 		} else if (HAS_ATTR(element, "src")) {
 			source = ATTR(element, "src");
 		}
 		if (source.length() > 0) {
-			Arabica::io::URI srcURI(source);
-			if (!makeAbsolute(srcURI)) {
+			URL srcURI(source);
+			if (!toAbsoluteURI(srcURI)) {
 				LOG(ERROR) << "invoke element has relative src URI with no baseURI set.";
 				return;
 			}
-			invokeReq.src = srcURI.as_string();
+			invokeReq.src = srcURI.asString();
 		}
 
 		// id
 		if (HAS_ATTR(element, "idlocation") && _dataModel) {
-			invokeReq.invokeid = _dataModel->evalAsString(ATTR(element, "idlocation"));
+			invokeReq.invokeid = _dataModel.evalAsString(ATTR(element, "idlocation"));
 		} else if (HAS_ATTR(element, "id")) {
 			invokeReq.invokeid = ATTR(element, "id");
 		} else {
@@ -760,12 +749,12 @@ void Interpreter::invoke(const Arabica::DOM::Node<std::string>& element) {
 			std::string paramValue;
 			if (HAS_ATTR(params[i], "expr")) {
 				if (_dataModel) {
-					paramValue = _dataModel->evalAsString(ATTR(params[i], "expr"));
+					paramValue = _dataModel.evalAsString(ATTR(params[i], "expr"));
 				} else {
 					paramValue = ATTR(params[i], "expr");
 				}
 			} else if(HAS_ATTR(params[i], "location") && _dataModel) {
-				paramValue = _dataModel->evalAsString(ATTR(params[i], "location"));
+				paramValue = _dataModel.evalAsString(ATTR(params[i], "location"));
 			} else {
 				LOG(ERROR) << "param element is missing expr or location or no datamodel is specified";
 				continue;
@@ -783,11 +772,11 @@ void Interpreter::invoke(const Arabica::DOM::Node<std::string>& element) {
 			invokeReq.content = contents[0].getNodeValue();
 		}
 
-		Invoker* invoker = Factory::getInvoker(invokeReq.type, this);
-		if (invoker != NULL) {
+		Invoker invoker(Factory::createInvoker(invokeReq.type, this));
+		if (invoker) {
 			_invokers[invokeReq.invokeid] = invoker;
 			LOG(INFO) << "Added invoker " << invokeReq.type << " at " << invokeReq.invokeid;
-			invoker->invoke(invokeReq);
+			invoker.invoke(invokeReq);
 		} else {
 			LOG(ERROR) << "No invoker known for type " << invokeReq.type;
 		}
@@ -800,7 +789,7 @@ void Interpreter::invoke(const Arabica::DOM::Node<std::string>& element) {
 void Interpreter::cancelInvoke(const Arabica::DOM::Node<std::string>& element) {
 	std::string invokeId;
 	if (HAS_ATTR(element, "idlocation") && _dataModel) {
-		invokeId = _dataModel->evalAsString(ATTR(element, "idlocation"));
+		invokeId = _dataModel.evalAsString(ATTR(element, "idlocation"));
 	} else if (HAS_ATTR(element, "id")) {
 		invokeId = ATTR(element, "id");
 	} else {
@@ -808,7 +797,6 @@ void Interpreter::cancelInvoke(const Arabica::DOM::Node<std::string>& element) {
 	}
 	if (_invokers.find(invokeId) != _invokers.end()) {
 		LOG(INFO) << "Removed invoker at " << invokeId;
-		delete (_invokers[invokeId]);
 		_invokers.erase(invokeId);
 	} else {
 		LOG(ERROR) << "Cannot cancel invoke for id " << invokeId << ": no soch invokation";
@@ -930,7 +918,7 @@ LOOP:
 bool Interpreter::hasConditionMatch(const Arabica::DOM::Node<std::string>& conditional) {
 	try {
 		if (_dataModel && HAS_ATTR(conditional, "cond"))
-			return _dataModel->evalAsBool(ATTR(conditional, "cond"));
+			return _dataModel.evalAsBool(ATTR(conditional, "cond"));
 	} catch (Event e) {
 		LOG(ERROR) << "Syntax error in cond attribute of " << TAGNAME(conditional) << " element:" << std::endl << e << std::endl;
 		return false;
@@ -1073,25 +1061,25 @@ ELSIF_ELEM_MATCH:
 				std::string array = ATTR(content, "array");
 				std::string item = ATTR(content, "item");
 				std::string index = (HAS_ATTR(content, "index") ? ATTR(content, "index") : "");
-				uint32_t iterations = _dataModel->getLength(array);
-				_dataModel->pushContext(); // copy old and enter new context
+				uint32_t iterations = _dataModel.getLength(array);
+				_dataModel.pushContext(); // copy old and enter new context
 				for (uint32_t iteration = 0; iteration < iterations; iteration++) {
 					{
 						// assign array element to item
 						std::stringstream ss;
 						ss << array << "[" << iteration << "]";
-						_dataModel->assign(item, ss.str());
+						_dataModel.assign(item, ss.str());
 					}
 					if (index.length() > 0) {
 						// assign iteration element to index
 						std::stringstream ss;
 						ss << iteration;
-						_dataModel->assign(index,ss.str());
+						_dataModel.assign(index,ss.str());
 					}
 					if (content.hasChildNodes())
 						executeContent(content.getChildNodes());
 				}
-				_dataModel->popContext(); // leave stacked context
+				_dataModel.popContext(); // leave stacked context
 			} else {
 				LOG(ERROR) << "Expected array and item attributes with foreach element!" << std::endl;
 			}
@@ -1102,7 +1090,7 @@ ELSIF_ELEM_MATCH:
 		if (logElem.hasAttribute("expr")) {
 			if (_dataModel) {
 				try {
-					std::cout << _dataModel->evalAsString(logElem.getAttribute("expr")) << std::endl;
+					std::cout << _dataModel.evalAsString(logElem.getAttribute("expr")) << std::endl;
 				} catch (Event e) {
 					LOG(ERROR) << "Syntax error in expr attribute of log element:" << std::endl << e << std::endl;
 				}
@@ -1114,7 +1102,7 @@ ELSIF_ELEM_MATCH:
 		// --- ASSIGN --------------------------
 		if (_dataModel && HAS_ATTR(content, "location") && HAS_ATTR(content, "expr")) {
 			try {
-				_dataModel->assign(ATTR(content, "location"), ATTR(content, "expr"));
+				_dataModel.assign(ATTR(content, "location"), ATTR(content, "expr"));
 			} catch (Event e) {
 				LOG(ERROR) << "Syntax error in attributes of assign element:" << std::endl << e << std::endl;
 			}
@@ -1124,24 +1112,23 @@ ELSIF_ELEM_MATCH:
 		if (_dataModel) {
 			std::string location = (HAS_ATTR(content, "location") ? ATTR(content, "location") : "");
 			std::string schema = (HAS_ATTR(content, "schema") ? ATTR(content, "schema") : "");
-			_dataModel->validate(location, schema);
+			_dataModel.validate(location, schema);
 		}
 	} else if (boost::iequals(TAGNAME(content), "script")) {
 		// --- SCRIPT --------------------------
 		if (_dataModel) {
 			if (HAS_ATTR(content, "src")) {
-				Arabica::io::URI url(ATTR(content, "src"));
-				if (!makeAbsolute(url)) {
+				URL scriptUrl(ATTR(content, "src"));
+				if (!toAbsoluteURI(scriptUrl)) {
 					LOG(ERROR) << "script element has relative URI " << ATTR(content, "src") <<  " with no base URI set for interpreter";
 					return;
 				}
 
 				std::stringstream srcContent;
-				URL scriptUrl(url.as_string());
 				srcContent << scriptUrl;
 
 				try {
-					_dataModel->eval(srcContent.str());
+					_dataModel.eval(srcContent.str());
 				} catch (Event e) {
 					LOG(ERROR) << "Syntax error while executing script element from '" << ATTR(content, "src") << "':" << std::endl << e << std::endl;
 				}
@@ -1150,7 +1137,7 @@ ELSIF_ELEM_MATCH:
 					// search for the text node with the actual script
 					if (content.getFirstChild().getNodeType() == Node_base::TEXT_NODE) {
 						try {
-							_dataModel->eval(content.getFirstChild().getNodeValue());
+							_dataModel.eval(content.getFirstChild().getNodeValue());
 						} catch (Event e) {
 							LOG(ERROR) << "Syntax error while executing script element" << std::endl << e << std::endl;
 						}
@@ -1166,7 +1153,7 @@ ELSIF_ELEM_MATCH:
 		std::string sendId;
 		try {
 			if (HAS_ATTR(content, "sendidexpr")) {
-				sendId = _dataModel->evalAsString(ATTR(content, "sendidexpr"));
+				sendId = _dataModel.evalAsString(ATTR(content, "sendidexpr"));
 			} else if(HAS_ATTR(content, "sendid")) {
 				sendId = ATTR(content, "sendid");
 			} else {
@@ -1806,12 +1793,12 @@ bool Interpreter::isCompound(const Arabica::DOM::Node<std::string>& state) {
 }
 
 void Interpreter::setupIOProcessors() {
-	std::map<std::string, IOProcessor*>::iterator ioProcIter = Factory::getInstance()->_ioProcessors.begin();
+	std::map<std::string, IOProcessorImpl*>::iterator ioProcIter = Factory::getInstance()->_ioProcessors.begin();
 	while(ioProcIter != Factory::getInstance()->_ioProcessors.end()) {
-		_ioProcessors[ioProcIter->first] = Factory::getIOProcessor(ioProcIter->first, this);
+		_ioProcessors[ioProcIter->first] = Factory::createIOProcessor(ioProcIter->first, this);
 		if (_dataModel) {
 			try {
-				_dataModel->registerIOProcessor(ioProcIter->first, _ioProcessors[ioProcIter->first]);
+				_dataModel.registerIOProcessor(ioProcIter->first, _ioProcessors[ioProcIter->first]);
 			} catch (Event e) {
 				LOG(ERROR) << "Syntax error when setting _ioprocessors:" << std::endl << e << std::endl;
 			}
@@ -1822,10 +1809,10 @@ void Interpreter::setupIOProcessors() {
 	}
 }
 
-IOProcessor* Interpreter::getIOProcessor(const std::string& type) {
+IOProcessor Interpreter::getIOProcessor(const std::string& type) {
 	if (_ioProcessors.find(type) == _ioProcessors.end()) {
 		LOG(ERROR) << "No ioProcessor known for type " << type;
-		return NULL;
+		return IOProcessor();
 	}
 	return _ioProcessors[type];
 }
@@ -1842,7 +1829,7 @@ bool Interpreter::validate() {
 	bool validationErrors = false;
 
 	if (!_document) {
-		LOG(ERROR) << "Document " << _baseURI.as_string() << " was not parsed successfully" << std::endl;
+		LOG(ERROR) << "Document " << _baseURI.asString() << " was not parsed successfully" << std::endl;
 		return false;
 	}
 

@@ -2,6 +2,7 @@
 #define RUNTIME_H_SQ1MBKGN
 
 #include "uscxml/Common.h"
+#include "uscxml/URL.h"
 
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/algorithm/string.hpp>
@@ -76,20 +77,19 @@ public:
 	bool validate();
 
 	void setBaseURI(std::string baseURI)                     {
-		_baseURI = Arabica::io::URI(baseURI);
+		_baseURI = URL(baseURI);
 	}
-  std::string getBaseURI()                                 {
-		return _baseURI.as_string();
+  URL getBaseURI()                                         {
+		return _baseURI;
 	}
-	bool makeAbsolute(Arabica::io::URI& uri);
 
-	DataModel* getDataModel()                                {
+	DataModel getDataModel()                                {
 		return _dataModel;
 	}
-	Invoker* getInvoker()                                    {
+	Invoker getInvoker()                                    {
 		return _invoker;
 	}
-	void setInvoker(Invoker* invoker)                        {
+	void setInvoker(const Invoker& invoker)                 {
 		_invoker = invoker;
 	}
 	std::string getNSPrefix()                                {
@@ -162,7 +162,7 @@ protected:
 	tthread::mutex _mutex;
 	tthread::condition_variable _stabilized;
 
-	Arabica::io::URI _baseURI;
+  URL _baseURI;
 	Arabica::DOM::Document<std::string> _document;
 	Arabica::DOM::Element<std::string> _scxml;
 	Arabica::XPath::XPath<std::string> _xpath;
@@ -174,15 +174,16 @@ protected:
 	Arabica::XPath::NodeSet<std::string> _configuration;
 	Arabica::XPath::NodeSet<std::string> _statesToInvoke;
 
-	DataModel* _dataModel;
+	DataModel _dataModel;
 	std::map<std::string, Arabica::XPath::NodeSet<std::string> > _historyValue;
 
 	std::list<Event > _internalQueue;
 	uscxml::concurrency::BlockingQueue<Event> _externalQueue;
 	DelayedEventQueue* _sendQueue;
-	Invoker* _invoker;
+	Invoker _invoker;
 
-	static Arabica::io::URI toBaseURI(const Arabica::io::URI& uri);
+	static URL toBaseURI(const URL& url);
+  bool toAbsoluteURI(URL& uri);
 
 	void microstep(const Arabica::XPath::NodeSet<std::string>& enabledTransitions);
 	void exitStates(const Arabica::XPath::NodeSet<std::string>& enabledTransitions);
@@ -227,12 +228,12 @@ protected:
 	std::string _name;
 	std::string _sessionId;
 
-	IOProcessor* getIOProcessor(const std::string& type);
+	IOProcessor getIOProcessor(const std::string& type);
 //    IOProcessor* getIOProcessorForId(const std::string& sendId);
 
-	std::map<std::string, IOProcessor*> _ioProcessors;
+	std::map<std::string, IOProcessor> _ioProcessors;
 	std::map<std::string, std::pair<Interpreter*, SendRequest> > _sendIds;
-	std::map<std::string, Invoker*> _invokers;
+	std::map<std::string, Invoker> _invokers;
 
   /// We need to remember to adapt them when the DOM is operated upon
   std::map<std::string, Arabica::DOM::Node<std::string> > _cachedStates;

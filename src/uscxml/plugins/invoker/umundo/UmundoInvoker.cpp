@@ -28,7 +28,7 @@ UmundoInvoker::~UmundoInvoker() {
   }
 };
 
-Invoker* UmundoInvoker::create(Interpreter* interpreter) {
+InvokerImpl* UmundoInvoker::create(Interpreter* interpreter) {
 	UmundoInvoker* invoker = new UmundoInvoker();
 	invoker->_interpreter = interpreter;
 	return invoker;
@@ -39,7 +39,7 @@ Data UmundoInvoker::getDataModelVariables() {
 	return data;
 }
 
-void UmundoInvoker::send(SendRequest& req) {
+void UmundoInvoker::send(const SendRequest& req) {
 	umundo::Message* msg = new umundo::Message();
 
 	if (req.name.length() > 0) {
@@ -50,9 +50,9 @@ void UmundoInvoker::send(SendRequest& req) {
 
 	if (req.params.find("type") != req.params.end()) {
 		// assume JSON in content to transform to protobuf object
-		if (req.content.length() > 0 && _interpreter->getDataModel() != NULL) {
+		if (req.content.length() > 0 && _interpreter->getDataModel()) {
 			std::string type;
-			std::multimap<std::string, std::string>::iterator typeIter = req.params.find("type");
+			std::multimap<std::string, std::string>::const_iterator typeIter = req.params.find("type");
 			if (typeIter != req.params.end())
 				type = typeIter->second;
 			const google::protobuf::Message* protoMsg = umundo::PBSerializer::getProto(type);
@@ -61,7 +61,7 @@ void UmundoInvoker::send(SendRequest& req) {
 				return;
 			}
 			try {
-				Data data = _interpreter->getDataModel()->getStringAsData(req.content);
+				Data data = _interpreter->getDataModel().getStringAsData(req.content);
 				google::protobuf::Message* pbMsg = protoMsg->New();
 				if (!dataToProtobuf(pbMsg, data)) {
 					LOG(ERROR) << "Cannot create message from JSON - not sending";
@@ -105,11 +105,11 @@ void UmundoInvoker::cancel(const std::string sendId) {
 	assert(false);
 }
 
-void UmundoInvoker::sendToParent(SendRequest& req) {
+void UmundoInvoker::sendToParent(const SendRequest& req) {
 	assert(false);
 }
 
-void UmundoInvoker::invoke(InvokeRequest& req) {
+void UmundoInvoker::invoke(const InvokeRequest& req) {
 	_invokeId = req.invokeid;
 
 	std::string domain;
@@ -133,8 +133,8 @@ void UmundoInvoker::invoke(InvokeRequest& req) {
 
 	// add type from .proto or .desc files
 	if (req.params.find("type") != req.params.end()) {
-		std::pair<InvokeRequest::params_t::iterator, InvokeRequest::params_t::iterator> typeRange = req.params.equal_range("types");
-		for (InvokeRequest::params_t::iterator it = typeRange.first; it != typeRange.second; it++) {
+		std::pair<InvokeRequest::params_t::const_iterator, InvokeRequest::params_t::const_iterator> typeRange = req.params.equal_range("types");
+		for (InvokeRequest::params_t::const_iterator it = typeRange.first; it != typeRange.second; it++) {
       URL typeURI(it->second);
       if (typeURI.toAbsolute(_interpreter->getBaseURI())) {
         std::string filename = typeURI.asLocalFile(".proto");
@@ -147,8 +147,8 @@ void UmundoInvoker::invoke(InvokeRequest& req) {
 
   // add directory with .proto or .desc files
   if (req.params.find("types") != req.params.end()) {
-		std::pair<InvokeRequest::params_t::iterator, InvokeRequest::params_t::iterator> typeRange = req.params.equal_range("types");
-		for (InvokeRequest::params_t::iterator it = typeRange.first; it != typeRange.second; it++) {
+		std::pair<InvokeRequest::params_t::const_iterator, InvokeRequest::params_t::const_iterator> typeRange = req.params.equal_range("types");
+		for (InvokeRequest::params_t::const_iterator it = typeRange.first; it != typeRange.second; it++) {
       URL typeURI(it->second);
       if (typeURI.toAbsolute(_interpreter->getBaseURI()) && typeURI.scheme().compare("file") == 0) {
         umundo::PBSerializer::addProto(typeURI.path());

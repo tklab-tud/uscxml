@@ -557,10 +557,11 @@ elseif(WIN32)
 endif()
 
 find_package(OpenSceneGraph COMPONENTS osgViewer osgGA osgText osgFX osgManipulator osgDB osgUtil OpenThreads)
-if (OPENSCENEGRAPH_FOUND)
-	set(CAN_BUILD_OPENSCENEGRAPH_INVOKER ON)
+find_package(OpenGL)
+if (OPENSCENEGRAPH_FOUND AND OPENGL_FOUND)
 	
 	include_directories(${OPENSCENEGRAPH_INCLUDE_DIRS})
+	include_directories(${OPENGL_INCLUDE_DIR})
 	file(GLOB_RECURSE OPENSCENEGRAPH_INVOKER 
 		src/uscxml/plugins/invoker/graphics/openscenegraph/*.cpp 
 		src/uscxml/plugins/invoker/graphics/openscenegraph/*.h)
@@ -571,11 +572,12 @@ if (OPENSCENEGRAPH_FOUND)
 			${OPENSCENEGRAPH_INVOKER})
 		target_link_libraries(invoker_openscenegraph
 			${OPENSCENEGRAPH_LIBRARIES}
+			${OPENGL_LIBRARIES}
 			uscxml)
 			set_target_properties(invoker_openscenegraph PROPERTIES FOLDER "Plugin Invoker")
 	else()
 		list (APPEND USCXML_FILES ${OPENSCENEGRAPH_INVOKER})
-		list (APPEND USCXML_OPT_LIBS ${OPENSCENEGRAPH_LIBRARIES})
+		list (APPEND USCXML_OPT_LIBS ${OPENSCENEGRAPH_LIBRARIES} ${OPENGL_LIBRARIES})
 	endif()
 endif()
 

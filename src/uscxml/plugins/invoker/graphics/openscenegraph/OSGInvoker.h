@@ -16,11 +16,11 @@
 
 namespace uscxml {
 
-class OSGInvoker : public Invoker, public Arabica::DOM::Events::EventListener<std::string> {
+class OSGInvoker : public InvokerImpl, public Arabica::DOM::Events::EventListener<std::string> {
 public:
 	OSGInvoker();
 	virtual ~OSGInvoker();
-	virtual Invoker* create(Interpreter* interpreter);
+	virtual InvokerImpl* create(Interpreter* interpreter);
 
 	virtual std::set<std::string> getNames() {
 		std::set<std::string> names;
@@ -31,10 +31,10 @@ public:
 	}
 
 	virtual Data getDataModelVariables();
-	virtual void send(SendRequest& req);
+	virtual void send(const SendRequest& req);
 	virtual void cancel(const std::string sendId);
-	virtual void invoke(InvokeRequest& req);
-	virtual void sendToParent(SendRequest& req);
+	virtual void invoke(const InvokeRequest& req);
+	virtual void sendToParent(const SendRequest& req);
   virtual void handleEvent(Arabica::DOM::Events::Event<std::string>& event);
 
   virtual void runOnMainThread();

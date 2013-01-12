@@ -20,7 +20,7 @@ bool connect(pluma::Host& host) {
 SWIDataModel::SWIDataModel() {
 }
 
-DataModel* SWIDataModel::create(Interpreter* interpreter) {
+DataModelImpl* SWIDataModel::create(Interpreter* interpreter) {
 	SWIDataModel* dm = new SWIDataModel();
 	dm->_interpreter = interpreter;
 	const char* swiPath = SWI_LIBRARY_PATH;
@@ -28,7 +28,7 @@ DataModel* SWIDataModel::create(Interpreter* interpreter) {
 	return dm;
 }
 
-void SWIDataModel::registerIOProcessor(const std::string& name, IOProcessor* ioprocessor) {
+void SWIDataModel::registerIOProcessor(const std::string& name, const IOProcessor& ioprocessor) {
 	std::cout << "SWIDataModel::registerIOProcessor" << std::endl;
 }
 

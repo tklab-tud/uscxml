@@ -127,7 +127,7 @@ Factory::~Factory() {
 #endif
 }
 
-void Factory::registerIOProcessor(IOProcessor* ioProcessor) {
+void Factory::registerIOProcessor(IOProcessorImpl* ioProcessor) {
 	std::set<std::string> names = ioProcessor->getNames();
 	std::set<std::string>::iterator nameIter = names.begin();
   if (nameIter != names.end()) {
@@ -140,7 +140,7 @@ void Factory::registerIOProcessor(IOProcessor* ioProcessor) {
   }
 }
 
-void Factory::registerDataModel(DataModel* dataModel) {
+void Factory::registerDataModel(DataModelImpl* dataModel) {
 	std::set<std::string> names = dataModel->getNames();
 	std::set<std::string>::iterator nameIter = names.begin();
   if (nameIter != names.end()) {
@@ -153,7 +153,7 @@ void Factory::registerDataModel(DataModel* dataModel) {
   }
 }
   
-void Factory::registerInvoker(Invoker* invoker) {
+void Factory::registerInvoker(InvokerImpl* invoker) {
 	std::set<std::string> names = invoker->getNames();
 	std::set<std::string>::iterator nameIter = names.begin();
   if (nameIter != names.end()) {
@@ -166,55 +166,42 @@ void Factory::registerInvoker(Invoker* invoker) {
   }
 }
 
-void Factory::registerExecutableContent(const std::string tag, ExecutableContent* executableContent) {
-	_executableContent[tag] = executableContent;
-}
-
-Invoker* Factory::getInvoker(const std::string type, Interpreter* interpreter) {
+boost::shared_ptr<InvokerImpl> Factory::createInvoker(const std::string& type, Interpreter* interpreter) {
 	Factory* factory = getInstance();
   if (factory->_invokerAliases.find(type) == factory->_invokerAliases.end())
-    return NULL;
+    return boost::shared_ptr<InvokerImpl>();
   
   std::string canonicalName = factory->_invokerAliases[type];
 	if (factory->_invokers.find(canonicalName) == factory->_invokers.end())
-    return NULL;
+    return boost::shared_ptr<InvokerImpl>();
   
-  return factory->_invokers[canonicalName]->create(interpreter);
+  return boost::shared_ptr<InvokerImpl>(factory->_invokers[canonicalName]->create(interpreter));
 }
 
-DataModel* Factory::getDataModel(const std::string type, Interpreter* interpreter) {
+boost::shared_ptr<DataModelImpl> Factory::createDataModel(const std::string& type, Interpreter* interpreter) {
 	Factory* factory = getInstance();
   if (factory->_dataModelAliases.find(type) == factory->_dataModelAliases.end())
-    return NULL;
+    return boost::shared_ptr<DataModelImpl>();
   
   std::string canonicalName = factory->_dataModelAliases[type];
 	if (factory->_dataModels.find(canonicalName) == factory->_dataModels.end())
-    return NULL;
+    return boost::shared_ptr<DataModelImpl>();
   
-  return factory->_dataModels[canonicalName]->create(interpreter);
+  return boost::shared_ptr<DataModelImpl>(factory->_dataModels[canonicalName]->create(interpreter));
 }
 
-IOProcessor* Factory::getIOProcessor(const std::string type, Interpreter* interpreter) {
+boost::shared_ptr<IOProcessorImpl> Factory::createIOProcessor(const std::string& type, Interpreter* interpreter) {
 	Factory* factory = getInstance();
   if (factory->_ioProcessorAliases.find(type) == factory->_ioProcessorAliases.end())
-    return NULL;
+    return boost::shared_ptr<IOProcessorImpl>();
   
   std::string canonicalName = factory->_ioProcessorAliases[type];
 	if (factory->_ioProcessors.find(canonicalName) == factory->_ioProcessors.end())
-    return NULL;
+    return boost::shared_ptr<IOProcessorImpl>();
   
-  return factory->_ioProcessors[canonicalName]->create(interpreter);
+  return boost::shared_ptr<IOProcessorImpl>(factory->_ioProcessors[canonicalName]->create(interpreter));
 }
 
-#if 0
-ExecutableContent* Factory::getExecutableContent(const std::string tag, Interpreter* interpreter) {
-	Factory* factory = getInstance();
-	if (factory->_executableContent.find(tag) != factory->_executableContent.end()) {
-		return factory->_executableContent[tag]->create(interpreter);
-	}
-	return NULL;
-}
-#endif
   
 Factory* Factory::getInstance() {
 	if (_instance == NULL) {

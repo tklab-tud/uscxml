@@ -19,6 +19,14 @@
 
 #include "uscxml/config.h"
 
+#include <stdio.h>  /* defines FILENAME_MAX */
+#ifdef WIN32
+#include <direct.h>
+#define getcwd _getcwd
+#else
+#include <unistd.h>
+#endif
+
 #include <cstdlib> // mkstemp
 #ifdef HAS_UNISTD_H
 #include <unistd.h>  // mkstemp legacy
@@ -26,38 +34,30 @@
 
 namespace uscxml {
 
-URL::~URL() {
+URLImpl::~URLImpl() {
   if (_localFile.length() > 0)
     remove(_localFile.c_str());
 }
-  
-const bool URL::toAbsolute(const std::string& baseUrl) {
+
+const bool URLImpl::toAbsoluteCwd() {
+  char currPath[FILENAME_MAX];
+  if (!getcwd(currPath, sizeof(currPath))) {
+    return false;
+  }
+  currPath[sizeof(currPath) - 1] = '\0'; /* not really required */
+  return toAbsolute(std::string("file://" + std::string(currPath) + "/"));
+}
+
+const bool URLImpl::toAbsolute(const std::string& baseUrl) {
   if (_uri.is_absolute())
 		return true;
-  
-  Arabica::io::URI baseUri(baseUrl);
-  if (!baseUri.is_absolute())
+  _uri = Arabica::io::URI(baseUrl, _uri.as_string());
+  if (!_uri.is_absolute())
 		return false;
-
-  std::stringstream ssAbsoluteURI;
-  if (baseUri.scheme().size() > 0)
-    ssAbsoluteURI << baseUri.scheme() << "://";
-  if (baseUri.host().size() > 0) {
-    ssAbsoluteURI << baseUri.host();
-    if (!boost::iequals(baseUri.port(), "0"))
-      ssAbsoluteURI << ":" << baseUri.port();
-  }
-  if (baseUri.path().size() > 0) {
-    ssAbsoluteURI << baseUri.path() << "/" << _uri.path();
-  } else {
-    ssAbsoluteURI << "/" << _uri.path();
-  }
-  _uri = Arabica::io::URI(ssAbsoluteURI.str());
-  assert(_uri.is_absolute());
   return true;
 }
 
-const std::string URL::asLocalFile(const std::string& suffix, bool reload) {
+const std::string URLImpl::asLocalFile(const std::string& suffix, bool reload) {
   // this is already a local file
   if (_uri.scheme().compare("file") == 0)
     return _uri.path();
@@ -69,7 +69,7 @@ const std::string URL::asLocalFile(const std::string& suffix, bool reload) {
     remove(_localFile.c_str());
   
   // try hard to find a temporary directory
-  char* tmpDir = NULL;
+  const char* tmpDir = NULL;
   if (tmpDir == NULL)
     tmpDir = getenv("TMPDIR");
   if (tmpDir == NULL)
@@ -78,6 +78,8 @@ const std::string URL::asLocalFile(const std::string& suffix, bool reload) {
     tmpDir = getenv("TEMP");
   if (tmpDir == NULL)
     tmpDir = getenv("USERPROFILE");
+  if (tmpDir == NULL)
+    tmpDir = "/tmp";
   
   char* tmpl = (char*)malloc(strlen(tmpDir) + 11 + suffix.length());
   char* writePtr = tmpl;
@@ -97,7 +99,7 @@ const std::string URL::asLocalFile(const std::string& suffix, bool reload) {
 
   std::ofstream file(tmpl, std::ios_base::out);
   if(file.is_open()) {
-    file << *this;
+    file << URL(this->shared_from_this());
     file.close();
   } else {
     _localFile = "";

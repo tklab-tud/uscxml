@@ -9,11 +9,11 @@
 
 namespace uscxml {
 
-class HeartbeatInvoker : public Invoker {
+class HeartbeatInvoker : public InvokerImpl {
 public:
 	HeartbeatInvoker();
 	virtual ~HeartbeatInvoker();
-	virtual Invoker* create(Interpreter* interpreter);
+	virtual InvokerImpl* create(Interpreter* interpreter);
 
 	virtual std::set<std::string> getNames() {
 		std::set<std::string> names;
@@ -23,10 +23,10 @@ public:
 	}
 
 	virtual Data getDataModelVariables();
-	virtual void send(SendRequest& req);
+	virtual void send(const SendRequest& req);
 	virtual void cancel(const std::string sendId);
-	virtual void invoke(InvokeRequest& req);
-	virtual void sendToParent(SendRequest& req);
+	virtual void invoke(const InvokeRequest& req);
+	virtual void sendToParent(const SendRequest& req);
 
   static void dispatch(void* instance, std::string name);
   

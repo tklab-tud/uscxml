@@ -17,11 +17,11 @@ class V8SCXMLDOM;
 
 namespace uscxml {
 
-class V8DataModel : public DataModel {
+class V8DataModel : public DataModelImpl {
 public:
 	V8DataModel();
 	virtual ~V8DataModel();
-	virtual DataModel* create(Interpreter* interpreter);
+	virtual DataModelImpl* create(Interpreter* interpreter);
 
 	virtual std::set<std::string> getNames() {
 		std::set<std::string> names;
@@ -34,7 +34,7 @@ public:
 	virtual void setName(const std::string& name);
 	virtual void setEvent(const Event& event);
 
-	virtual void registerIOProcessor(const std::string& name, IOProcessor* ioprocessor);
+	virtual void registerIOProcessor(const std::string& name, const IOProcessor& ioprocessor);
 
 	virtual bool validate(const std::string& location, const std::string& schema);
 

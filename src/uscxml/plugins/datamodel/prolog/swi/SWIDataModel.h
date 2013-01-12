@@ -11,11 +11,11 @@
 
 namespace uscxml {
 
-class SWIDataModel : public DataModel {
+class SWIDataModel : public DataModelImpl {
 public:
 	SWIDataModel();
 	virtual ~SWIDataModel();
-	virtual DataModel* create(Interpreter* interpreter);
+	virtual DataModelImpl* create(Interpreter* interpreter);
 
 	virtual std::set<std::string> getNames() {
 		std::set<std::string> names;
@@ -28,7 +28,7 @@ public:
 	virtual void setName(const std::string& name);
 	virtual void setEvent(const Event& event);
 
-	virtual void registerIOProcessor(const std::string& name, IOProcessor* ioprocessor);
+	virtual void registerIOProcessor(const std::string& name, const IOProcessor& ioprocessor);
 
 	virtual bool validate(const std::string& location, const std::string& schema);
 

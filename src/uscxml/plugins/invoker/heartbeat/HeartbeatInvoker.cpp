@@ -21,7 +21,7 @@ HeartbeatInvoker::HeartbeatInvoker() {
 HeartbeatInvoker::~HeartbeatInvoker() {
 };
 
-Invoker* HeartbeatInvoker::create(Interpreter* interpreter) {
+InvokerImpl* HeartbeatInvoker::create(Interpreter* interpreter) {
 	HeartbeatInvoker* invoker = new HeartbeatInvoker();
 	invoker->_interpreter = interpreter;
 	return invoker;
@@ -32,23 +32,23 @@ Data HeartbeatInvoker::getDataModelVariables() {
 	return data;
 }
 
-void HeartbeatInvoker::send(SendRequest& req) {
+void HeartbeatInvoker::send(const SendRequest& req) {
 }
 
 void HeartbeatInvoker::cancel(const std::string sendId) {
   HeartbeatDispatcher::getInstance()->cancelEvent(toStr(this));
 }
 
-void HeartbeatInvoker::sendToParent(SendRequest& req) {
+void HeartbeatInvoker::sendToParent(const SendRequest& req) {
 }
 
-void HeartbeatInvoker::invoke(InvokeRequest& req) {
+void HeartbeatInvoker::invoke(const InvokeRequest& req) {
   _invokeId = req.invokeid;
   _event.invokeid = _invokeId;
   std::string intervalStr;
   double interval = 0;
   unsigned long intervalMs = 0;
-  InvokeRequest::params_t::iterator paramIter = req.params.begin();
+  InvokeRequest::params_t::const_iterator paramIter = req.params.begin();
   while(paramIter != req.params.end()) {
     if (boost::iequals(paramIter->first, "interval")) {
       intervalStr = paramIter->second;

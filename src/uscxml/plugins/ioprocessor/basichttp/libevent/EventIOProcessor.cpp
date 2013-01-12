@@ -46,7 +46,7 @@ EventIOProcessor::~EventIOProcessor() {
 	httpServer->unregisterProcessor(this);
 }
 
-IOProcessor* EventIOProcessor::create(Interpreter* interpreter) {
+IOProcessorImpl* EventIOProcessor::create(Interpreter* interpreter) {
 	EventIOProcessor* io = new EventIOProcessor();
 	io->_interpreter = interpreter;
 
@@ -74,7 +74,7 @@ Data EventIOProcessor::getDataModelVariables() {
 }
 
 
-void EventIOProcessor::send(SendRequest& req) {
+void EventIOProcessor::send(const SendRequest& req) {
 	// I cant figure out how to copy the reference into the struct :(
 	_sendData[req.sendid].req = req;
 	_sendData[req.sendid].ioProcessor = this;
@@ -122,7 +122,7 @@ void EventIOProcessor::send(SendRequest& req) {
 
 	// event namelist
 	if (req.namelist.size() > 0) {
-		std::map<std::string, std::string>::iterator namelistIter = req.namelist.begin();
+		std::map<std::string, std::string>::const_iterator namelistIter = req.namelist.begin();
 		while (namelistIter != req.namelist.end()) {
 			evhttp_add_header(evhttp_request_get_output_headers(httpReq),
 			                  namelistIter->first.c_str(),
@@ -133,7 +133,7 @@ void EventIOProcessor::send(SendRequest& req) {
 
 	// event params
 	if (req.params.size() > 0) {
-		std::multimap<std::string, std::string>::iterator paramIter = req.params.begin();
+		std::multimap<std::string, std::string>::const_iterator paramIter = req.params.begin();
 		while (paramIter != req.params.end()) {
 //      LOG(INFO) << paramIter->first << " = " << paramIter->second << std::endl;
 			evhttp_add_header(evhttp_request_get_output_headers(httpReq),

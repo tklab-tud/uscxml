@@ -19,7 +19,7 @@ namespace uscxml {
 
 class EventIOServer;
 
-class EventIOProcessor : public uscxml::IOProcessor {
+class EventIOProcessor : public IOProcessorImpl {
 public:
 	struct SendData {
 		EventIOProcessor* ioProcessor;
@@ -28,7 +28,7 @@ public:
 
 	EventIOProcessor();
 	virtual ~EventIOProcessor();
-	virtual IOProcessor* create(uscxml::Interpreter* interpreter);
+	virtual IOProcessorImpl* create(uscxml::Interpreter* interpreter);
 
 	virtual std::set<std::string> getNames() {
 		std::set<std::string> names;
@@ -37,7 +37,7 @@ public:
 		return names;
 	}
 
-	virtual void send(uscxml::SendRequest& req);
+	virtual void send(const SendRequest& req);
 
 	Data getDataModelVariables();
 	void setURL(const std::string& url) {
