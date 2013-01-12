@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 2.8.4)
 # specify USCXML version
 SET(USCXML_VERSION_MAJOR "0")
 SET(USCXML_VERSION_MINOR "0")
-SET(USCXML_VERSION_PATCH "2")
+SET(USCXML_VERSION_PATCH "3")
 SET(USCXML_VERSION ${USCXML_VERSION_MAJOR}.${USCXML_VERSION_MINOR}.${USCXML_VERSION_PATCH})
 
 # build type has to be set before the project definition
@@ -161,6 +161,8 @@ OPTION(DIST_PREPARE "Put libraries into the lib folder of the source tree" OFF)
 # where to find the cmake modules we distribute
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/contrib/cmake)
 include("${CMAKE_MODULE_PATH}/USCXMLMacros.cmake")
+include("${CMAKE_MODULE_PATH}/FunctionExists.cmake")
+include("${CMAKE_MODULE_PATH}/HeaderExists.cmake")
 
 # some compiler flags
 #message("CMAKE_CXX_COMPILER_ID: ${CMAKE_CXX_COMPILER_ID}")
@@ -548,6 +550,10 @@ endif()
 # OpenSceneGraph invoker
 if (UNIX)
 	set(CMAKE_FIND_LIBRARY_SUFFIXES ${CMAKE_FIND_LIBRARY_SUFFIXES_ORIG}) # link dynamically!
+elseif(WIN32)
+	if (ENV{OSG_ROOT} STREQUAL "")
+		set(ENV{OSG_ROOT} "C:/Program Files/OpenSceneGraph-3.0.1")
+	endif()
 endif()
 
 find_package(OpenSceneGraph COMPONENTS osgViewer osgGA osgText osgFX osgManipulator osgDB osgUtil OpenThreads)
