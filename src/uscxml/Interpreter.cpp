@@ -29,6 +29,11 @@ const std::string Interpreter::getUUID() {
 }
 
 Interpreter::Interpreter() : Arabica::SAX2DOM::Parser<std::string>() {
+  _lastRunOnMainThread = 0;
+	_thread = NULL;
+	_sendQueue = NULL;
+	_running = false;
+
 #ifdef _WIN32
 	WSADATA wsaData;
 	WSAStartup(MAKEWORD(2, 2), &wsaData);
@@ -130,9 +135,6 @@ Interpreter* Interpreter::fromInputSource(Arabica::SAX::InputSource<std::string>
 }
 
 void Interpreter::init() {
-  _lastRunOnMainThread = 0;
-	_thread = NULL;
-	_running = false;
 	_sendQueue = new DelayedEventQueue();
 	_sendQueue->start();
 	if (_document) {
@@ -165,7 +167,8 @@ Interpreter::~Interpreter() {
 		_thread->join();
 		delete(_thread);
 	}
-	delete _sendQueue;
+  if (_sendQueue)
+    delete _sendQueue;
 }
 
 void Interpreter::start() {
