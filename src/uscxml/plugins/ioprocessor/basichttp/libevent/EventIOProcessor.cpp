@@ -46,8 +46,8 @@ EventIOProcessor::~EventIOProcessor() {
 	httpServer->unregisterProcessor(this);
 }
 
-IOProcessorImpl* EventIOProcessor::create(Interpreter* interpreter) {
-	EventIOProcessor* io = new EventIOProcessor();
+boost::shared_ptr<IOProcessorImpl> EventIOProcessor::create(Interpreter* interpreter) {
+	boost::shared_ptr<EventIOProcessor> io = boost::shared_ptr<EventIOProcessor>(new EventIOProcessor());
 	io->_interpreter = interpreter;
 
 	io->_dns = evdns_base_new(io->_asyncQueue._eventLoop, 1);
@@ -56,7 +56,7 @@ IOProcessorImpl* EventIOProcessor::create(Interpreter* interpreter) {
 
 	// register at http server
 	EventIOServer* httpServer = EventIOServer::getInstance();
-	httpServer->registerProcessor(io);
+	httpServer->registerProcessor(io.get());
 
 	io->start();
 	return io;

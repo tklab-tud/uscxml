@@ -13,7 +13,7 @@ class HeartbeatInvoker : public InvokerImpl {
 public:
 	HeartbeatInvoker();
 	virtual ~HeartbeatInvoker();
-	virtual InvokerImpl* create(Interpreter* interpreter);
+	virtual boost::shared_ptr<IOProcessorImpl> create(Interpreter* interpreter);
 
 	virtual std::set<std::string> getNames() {
 		std::set<std::string> names;

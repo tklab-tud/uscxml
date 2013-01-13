@@ -28,7 +28,7 @@ public:
 
 	EventIOProcessor();
 	virtual ~EventIOProcessor();
-	virtual IOProcessorImpl* create(uscxml::Interpreter* interpreter);
+	virtual boost::shared_ptr<IOProcessorImpl> create(uscxml::Interpreter* interpreter);
 
 	virtual std::set<std::string> getNames() {
 		std::set<std::string> names;

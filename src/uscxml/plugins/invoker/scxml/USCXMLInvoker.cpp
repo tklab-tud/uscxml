@@ -23,8 +23,8 @@ USCXMLInvoker::~USCXMLInvoker() {
 	delete _invokedInterpreter;
 };
 
-InvokerImpl* USCXMLInvoker::create(Interpreter* interpreter) {
-	USCXMLInvoker* invoker = new USCXMLInvoker();
+boost::shared_ptr<IOProcessorImpl> USCXMLInvoker::create(Interpreter* interpreter) {
+	boost::shared_ptr<USCXMLInvoker> invoker = boost::shared_ptr<USCXMLInvoker>(new USCXMLInvoker());
 	invoker->_parentInterpreter = interpreter;
 	return invoker;
 }
@@ -55,8 +55,10 @@ void USCXMLInvoker::invoke(const InvokeRequest& req) {
 	if (dataModel) {
 
 	}
-	_invokedInterpreter->setInvoker(boost::static_pointer_cast<InvokerImpl>(shared_from_this()));
-	_invokedInterpreter->start();
+  if (_invokedInterpreter) {
+    _invokedInterpreter->setInvoker(boost::static_pointer_cast<InvokerImpl>(shared_from_this()));
+    _invokedInterpreter->start();
+  }
 }
 
 }

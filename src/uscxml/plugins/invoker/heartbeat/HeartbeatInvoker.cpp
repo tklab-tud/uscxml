@@ -21,8 +21,8 @@ HeartbeatInvoker::HeartbeatInvoker() {
 HeartbeatInvoker::~HeartbeatInvoker() {
 };
 
-InvokerImpl* HeartbeatInvoker::create(Interpreter* interpreter) {
-	HeartbeatInvoker* invoker = new HeartbeatInvoker();
+boost::shared_ptr<IOProcessorImpl> HeartbeatInvoker::create(Interpreter* interpreter) {
+	boost::shared_ptr<HeartbeatInvoker> invoker = boost::shared_ptr<HeartbeatInvoker>(new HeartbeatInvoker());
 	invoker->_interpreter = interpreter;
 	return invoker;
 }

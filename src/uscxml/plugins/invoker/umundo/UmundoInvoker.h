@@ -20,7 +20,7 @@ class UmundoInvoker : public InvokerImpl, public umundo::TypedReceiver, public u
 public:
 	UmundoInvoker();
 	virtual ~UmundoInvoker();
-	virtual InvokerImpl* create(Interpreter* interpreter);
+	virtual boost::shared_ptr<IOProcessorImpl> create(Interpreter* interpreter);
 
 	virtual std::set<std::string> getNames() {
 		std::set<std::string> names;

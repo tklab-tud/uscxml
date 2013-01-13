@@ -30,7 +30,6 @@ endif()
 if (OPENSCENEGRAPH_FOUND)
 	add_executable(test-osg src/test-osg.cpp)
 	target_link_libraries(test-osg uscxml)
-	add_test(test-osg ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-prolog-swi)
 	set_target_properties(test-osg PROPERTIES FOLDER "Tests")
 endif()
 
@@ -51,7 +50,7 @@ set_target_properties(test-completion PROPERTIES FOLDER "Tests")
 
 add_executable(test-arabica-events src/test-arabica-events.cpp)
 target_link_libraries(test-arabica-events uscxml)
-add_test(test-arabica-events ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-arabica-events ${CMAKE_SOURCE_DIR}/test/samples/arabica/test-arabica-events.xml)
+add_test(test-arabica-events ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-arabica-events ${CMAKE_SOURCE_DIR}/test/samples/uscxml/arabica/test-arabica-events.xml)
 set_target_properties(test-arabica-events PROPERTIES FOLDER "Tests")
 
 add_executable(test-url src/test-url.cpp)

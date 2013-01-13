@@ -29,17 +29,19 @@ template <typename T> T strTo(std::string tmp) {
 
 class Interpreter;
 
+#if 0
 class ExecutableContent {
 public:
 	ExecutableContent() {};
-	virtual ExecutableContent* create(Interpreter* interpreter) = 0;
+	virtual boost::shared_ptr<ExecutableContentImpl>* create(Interpreter* interpreter) = 0;
 };
-  
+#endif
+
 class IOProcessorImpl {
 public:
 	IOProcessorImpl() {};
 	virtual ~IOProcessorImpl() {};
-	virtual IOProcessorImpl* create(Interpreter* interpreter) = 0;
+	virtual boost::shared_ptr<IOProcessorImpl> create(Interpreter* interpreter) = 0;
 	virtual std::set<std::string> getNames() = 0;
 
 	virtual void setInterpreter(Interpreter* interpreter) {
@@ -80,7 +82,7 @@ class InvokerImpl : public IOProcessorImpl {
 public:
 	virtual void invoke(const InvokeRequest& req) = 0;
 	virtual void sendToParent(const SendRequest& req) = 0;
-	virtual InvokerImpl* create(Interpreter* interpreter) = 0;
+	virtual boost::shared_ptr<IOProcessorImpl> create(Interpreter* interpreter) = 0;
 };
 
 class Invoker : public IOProcessor {
@@ -110,7 +112,7 @@ protected:
 class DataModelImpl {
 public:
 	virtual ~DataModelImpl() {}
-	virtual DataModelImpl* create(Interpreter* interpreter) = 0;
+	virtual boost::shared_ptr<DataModelImpl> create(Interpreter* interpreter) = 0;
 	virtual std::set<std::string> getNames() = 0;
 
 	virtual bool validate(const std::string& location, const std::string& schema) = 0;

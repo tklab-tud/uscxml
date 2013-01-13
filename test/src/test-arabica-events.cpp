@@ -22,6 +22,11 @@ public:
 };
 
 int main(int argc, char** argv) {
+	if (argc != 2) {
+		std::cerr << "Expected path to test-arabica-events.xml" << std::endl;
+		exit(EXIT_FAILURE);
+	}
+  
   Arabica::SAX::InputSource<std::string> inputSource(argv[1]);
 	
 	Arabica::SAX2DOM::Parser<std::string> domParser;

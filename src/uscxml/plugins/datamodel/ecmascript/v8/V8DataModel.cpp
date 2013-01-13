@@ -23,8 +23,8 @@ V8DataModel::V8DataModel() {
 //  _contexts.push_back(v8::Context::New());
 }
 
-DataModelImpl* V8DataModel::create(Interpreter* interpreter) {
-	V8DataModel* dm = new V8DataModel();
+boost::shared_ptr<DataModelImpl> V8DataModel::create(Interpreter* interpreter) {
+	boost::shared_ptr<V8DataModel> dm = boost::shared_ptr<V8DataModel>(new V8DataModel());
 	dm->_interpreter = interpreter;
 	v8::Locker locker;
 	v8::HandleScope scope;
@@ -38,8 +38,8 @@ DataModelImpl* V8DataModel::create(Interpreter* interpreter) {
 
   // some free functions
 	v8::Handle<v8::ObjectTemplate> global = v8::ObjectTemplate::New();
-	global->Set(v8::String::New("In"), v8::FunctionTemplate::New(jsIn, v8::External::New(reinterpret_cast<void*>(dm))), v8::ReadOnly);
-	global->Set(v8::String::New("print"), v8::FunctionTemplate::New(jsPrint, v8::External::New(reinterpret_cast<void*>(dm))), v8::ReadOnly);
+	global->Set(v8::String::New("In"), v8::FunctionTemplate::New(jsIn, v8::External::New(reinterpret_cast<void*>(dm.get()))), v8::ReadOnly);
+	global->Set(v8::String::New("print"), v8::FunctionTemplate::New(jsPrint, v8::External::New(reinterpret_cast<void*>(dm.get()))), v8::ReadOnly);
 
   v8::Persistent<v8::Context> context = v8::Context::New(0, global);
   v8::Context::Scope contextScope(context);

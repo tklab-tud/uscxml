@@ -20,8 +20,8 @@ bool connect(pluma::Host& host) {
 SWIDataModel::SWIDataModel() {
 }
 
-DataModelImpl* SWIDataModel::create(Interpreter* interpreter) {
-	SWIDataModel* dm = new SWIDataModel();
+boost::shared_ptr<DataModelImpl> SWIDataModel::create(Interpreter* interpreter) {
+	boost::shared_ptr<SWIDataModel> dm = boost::shared_ptr<SWIDataModel>(new SWIDataModel());
 	dm->_interpreter = interpreter;
 	const char* swiPath = SWI_LIBRARY_PATH;
 	dm->_plEngine = new PlEngine((char*)swiPath);

@@ -120,6 +120,7 @@ Interpreter* Interpreter::fromInputSource(Arabica::SAX::InputSource<std::string>
 				LOG(ERROR) << source.getSystemId() << ": no such file";
 			}
 		}
+    delete interpreter;
 		return NULL;
 	} else {
 		interpreter->_document = interpreter->Arabica::SAX2DOM::Parser<std::string>::getDocument();

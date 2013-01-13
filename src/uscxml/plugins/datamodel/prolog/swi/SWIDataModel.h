@@ -15,7 +15,7 @@ class SWIDataModel : public DataModelImpl {
 public:
 	SWIDataModel();
 	virtual ~SWIDataModel();
-	virtual DataModelImpl* create(Interpreter* interpreter);
+	virtual boost::shared_ptr<DataModelImpl> create(Interpreter* interpreter);
 
 	virtual std::set<std::string> getNames() {
 		std::set<std::string> names;

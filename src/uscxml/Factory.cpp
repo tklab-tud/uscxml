@@ -175,7 +175,7 @@ boost::shared_ptr<InvokerImpl> Factory::createInvoker(const std::string& type, I
 	if (factory->_invokers.find(canonicalName) == factory->_invokers.end())
     return boost::shared_ptr<InvokerImpl>();
   
-  return boost::shared_ptr<InvokerImpl>(factory->_invokers[canonicalName]->create(interpreter));
+  return boost::static_pointer_cast<InvokerImpl>(factory->_invokers[canonicalName]->create(interpreter));
 }
 
 boost::shared_ptr<DataModelImpl> Factory::createDataModel(const std::string& type, Interpreter* interpreter) {
@@ -187,7 +187,7 @@ boost::shared_ptr<DataModelImpl> Factory::createDataModel(const std::string& typ
 	if (factory->_dataModels.find(canonicalName) == factory->_dataModels.end())
     return boost::shared_ptr<DataModelImpl>();
   
-  return boost::shared_ptr<DataModelImpl>(factory->_dataModels[canonicalName]->create(interpreter));
+  return factory->_dataModels[canonicalName]->create(interpreter);
 }
 
 boost::shared_ptr<IOProcessorImpl> Factory::createIOProcessor(const std::string& type, Interpreter* interpreter) {
@@ -199,7 +199,7 @@ boost::shared_ptr<IOProcessorImpl> Factory::createIOProcessor(const std::string&
 	if (factory->_ioProcessors.find(canonicalName) == factory->_ioProcessors.end())
     return boost::shared_ptr<IOProcessorImpl>();
   
-  return boost::shared_ptr<IOProcessorImpl>(factory->_ioProcessors[canonicalName]->create(interpreter));
+  return factory->_ioProcessors[canonicalName]->create(interpreter);
 }
 
   

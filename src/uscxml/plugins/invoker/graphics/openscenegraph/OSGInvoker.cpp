@@ -22,8 +22,8 @@ OSGInvoker::OSGInvoker() {
 OSGInvoker::~OSGInvoker() {
 };
 
-InvokerImpl* OSGInvoker::create(Interpreter* interpreter) {
-	OSGInvoker* invoker = new OSGInvoker();
+boost::shared_ptr<IOProcessorImpl> OSGInvoker::create(Interpreter* interpreter) {
+	boost::shared_ptr<OSGInvoker> invoker = boost::shared_ptr<OSGInvoker> (new OSGInvoker());
 	invoker->_interpreter = interpreter;
 	return invoker;
 }
