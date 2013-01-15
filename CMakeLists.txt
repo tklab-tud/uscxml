@@ -285,6 +285,9 @@ foreach( OUTPUT_CONFIG ${CMAKE_CONFIGURATION_TYPES} )
     set( CMAKE_ARCHIVE_OUTPUT_DIRECTORY_${OUTPUT_CONFIG} "${OUTPUT_DIR}/lib" )
 endforeach()
 
+# this is where the config.h ends up
+include_directories(${CMAKE_CURRENT_BINARY_DIR})
+
 ############################################################
 # Dependent libraries
 ############################################################
@@ -456,7 +459,8 @@ endif()
 
 # SWI PROLOG datamodel
 
-# set(ENV{V8_SRC} ${CMAKE_SOURCE_DIR}/../v8)
+#set(SWI_INCLUDE_HINT ${CMAKE_SOURCE_DIR}/../pl-devel/include)
+#set(SWI_LIBRARY_HINT ${CMAKE_SOURCE_DIR}/../pl-devel/lib/x86_64-darwin12.2.0)
 find_package(SWI)
 #find_package(GMP)
 #find_package(CURSES)
@@ -641,6 +645,13 @@ endif()
 add_subdirectory(src/bindings)
 
 ############################################################
+# Header Files
+############################################################
+
+file(GLOB_RECURSE USCXML_HEADERS ${PROJECT_SOURCE_DIR}/src/*.h ${CMAKE_BINARY_DIR}/*.h)
+INSTALL_HEADERS(HEADERS ${USCXML_HEADERS} COMPONENT headers)
+
+############################################################
 # Create config.h
 ############################################################
 
@@ -653,14 +664,6 @@ endif()
 
 # enable config.h style compile time options and add as "uscxml/config.h"
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.h.in ${CMAKE_CURRENT_BINARY_DIR}/uscxml/config.h)
-include_directories(${CMAKE_CURRENT_BINARY_DIR})
-
-############################################################
-# Header Files
-############################################################
-
-file(GLOB_RECURSE USCXML_HEADERS ${PROJECT_SOURCE_DIR}/src/*.h ${CMAKE_BINARY_DIR}/*.h)
-INSTALL_HEADERS(HEADERS ${USCXML_HEADERS} COMPONENT headers)
 
 ############################################################
 # Installation / Provide package target

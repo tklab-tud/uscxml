@@ -1,14 +1,19 @@
 <scxml datamodel="prolog" initial="start" binding="late">
 	<datamodel>
-		<data id="facts">
+		<!-- data id="facts">
 			cat(tom).
 			animal(X):- cat(X).
-		</data>
+		</data -->
+		<data id="likes" src="prolog/likes.pl" />
 	</datamodel>
-	<script>
+	<!-- script>
 		cat(tom).
 		cat(X).
 		animal(X).
+	</script -->
+	<script>
+		likes(sam,curry).
+		likes(sam,chips).
 	</script>
 	<state id="start">
 	</state>
