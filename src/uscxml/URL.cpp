@@ -20,7 +20,11 @@
 #include "uscxml/config.h"
 
 #include <stdio.h>  /* defines FILENAME_MAX */
-#ifdef WIN32
+#ifdef _WIN32
+#include <fcntl.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <io.h>
 #include <direct.h>
 #define getcwd _getcwd
 #else
@@ -88,13 +92,21 @@ const std::string URLImpl::asLocalFile(const std::string& suffix, bool reload) {
   memcpy(writePtr, suffix.c_str(), suffix.length());    writePtr += suffix.length();
   tmpl[writePtr - tmpl] = 0;
   
+#ifdef _WIN32
+  _mktemp_s(tmpl, strlen(tmpl) + 1);
+  int fd = _open(tmpl, _O_CREAT, _S_IREAD | _S_IWRITE);
+#else
   int fd = mkstemps(tmpl, suffix.length());
+#endif
   if (fd < 0) {
     LOG(ERROR) << "mkstemp: " << strerror(errno) << std::endl;
     return "";
   }
+#ifdef WIN32
+  _close(fd);
+#else
   close(fd);
-
+#endif
   _localFile = std::string(tmpl);
 
   std::ofstream file(tmpl, std::ios_base::out);

@@ -1,6 +1,7 @@
 #include "uscxml/URL.h"
 #include <assert.h>
 #include <boost/algorithm/string.hpp>
+#include <iostream>
 
 using namespace uscxml;
 using namespace boost;
