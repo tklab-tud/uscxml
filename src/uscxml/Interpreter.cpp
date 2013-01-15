@@ -98,7 +98,7 @@ bool Interpreter::toAbsoluteURI(URL& uri) {
 		return true;
 
 	if (_baseURI.asString().size() > 0) {
-		if (uri.toAbsolute(_baseURI));
+		if (uri.toAbsolute(_baseURI))
       return true;
     return false;
 	}
@@ -183,6 +183,7 @@ bool Interpreter::runOnMainThread(int fps, bool blocking) {
   if (fps > 0) {
     uint64_t nextRun = _lastRunOnMainThread + (1000 / fps);
     if (blocking) {
+      tthread::lock_guard<tthread::mutex> lock(_mutex);
       while(nextRun > tthread::timeStamp()) {
         tthread::this_thread::sleep_for(tthread::chrono::milliseconds(nextRun - tthread::timeStamp()));
       }
@@ -231,30 +232,32 @@ void Interpreter::interpret() {
 
 	setupIOProcessors();
 
-	// executeGlobalScriptElements
-	NodeSet<std::string> globalScriptElems = _xpath.evaluate("/" + _nsPrefix + "scxml/" + _nsPrefix + "script", _document).asNodeSet();
-	for (unsigned int i = 0; i < globalScriptElems.size(); i++) {
-//    std::cout << globalScriptElems[i].getFirstChild().getNodeValue() << std::endl;
-		if (_dataModel)
-			executeContent(globalScriptElems[i]);
-	}
-
 	_running = true;
-
-	std::string binding = _xpath.evaluate("/" + _nsPrefix + "scxml/@binding", _document).asString();
-	_binding = (boost::iequals(binding, "late") ? LATE : EARLY);
-
-	// initialize all data elements
+  _binding = (HAS_ATTR(_scxml, "binding") && boost::iequals(ATTR(_scxml, "binding"), "late") ? LATE : EARLY);
+  
+  // @TODO: Reread http://www.w3.org/TR/scxml/#DataBinding
+  
 	if (_dataModel && _binding == EARLY) {
+    // initialize all data elements
 		NodeSet<std::string> dataElems = _xpath.evaluate("//" + _nsPrefix + "data", _document).asNodeSet();
 		for (unsigned int i = 0; i < dataElems.size(); i++) {
 			initializeData(dataElems[i]);
 		}
 	} else if(_dataModel) {
-		NodeSet<std::string> topDataElems = _xpath.evaluate("/" + _nsPrefix + "scxml/" + _nsPrefix + "datamodel/" + _nsPrefix + "data", _document).asNodeSet();
+    // initialize current data elements
+		NodeSet<std::string> topDataElems = filterChildElements("data", filterChildElements("datamodel", _scxml));
+    //		NodeSet<std::string> topDataElems = _xpath.evaluate("/" + _nsPrefix + "scxml/" + _nsPrefix + "datamodel/" + _nsPrefix + "data", _document).asNodeSet();
 		for (unsigned int i = 0; i < topDataElems.size(); i++) {
 			initializeData(topDataElems[i]);
 		}
+	}
+
+  // executeGlobalScriptElements
+	NodeSet<std::string> globalScriptElems = _xpath.evaluate("/" + _nsPrefix + "scxml/" + _nsPrefix + "script", _document).asNodeSet();
+	for (unsigned int i = 0; i < globalScriptElems.size(); i++) {
+    //    std::cout << globalScriptElems[i].getFirstChild().getNodeValue() << std::endl;
+		if (_dataModel)
+			executeContent(globalScriptElems[i]);
 	}
 
 	// initial transition might be implict
@@ -286,17 +289,23 @@ void Interpreter::initializeData(const Arabica::DOM::Node<std::string>& data) {
 		return;
 	}
 	try {
-		if (!HAS_ATTR(data, "id"))
+		if (!HAS_ATTR(data, "id")) {
+      LOG(ERROR) << "Data element has no id!";
 			return;
+    }
 
 		if (HAS_ATTR(data, "expr")) {
 			std::string value = ATTR(data, "expr");
 			_dataModel.assign(ATTR(data, "id"), value);
 		} else if (HAS_ATTR(data, "src")) {
-			Arabica::SAX::InputSourceResolver resolver(Arabica::SAX::InputSource<std::string>(ATTR(data, "src")),
-			        Arabica::default_string_adaptor<std::string>());
-			std::string value = std::string(std::istreambuf_iterator<char>(*resolver.resolve()), std::istreambuf_iterator<char>());
-			_dataModel.assign(ATTR(data, "id"), value);
+      URL srcURL(ATTR(data, "src"));
+      if (!srcURL.isAbsolute())
+        toAbsoluteURI(srcURL);
+
+      std::stringstream ss;
+      ss << srcURL;
+      _dataModel.assign(ATTR(data, "id"), ss.str());
+
 		} else if (data.hasChildNodes()) {
 			// search for the text node with the actual script
 			NodeList<std::string> dataChilds = data.getChildNodes();
@@ -674,6 +683,7 @@ void Interpreter::delayedSend(void* userdata, std::string eventName) {
 		// send to invoker
 		std::string invokeId = sendReq.target.substr(2, sendReq.target.length() - 2);
 		if (INSTANCE->_invokers.find(invokeId) != INSTANCE->_invokers.end()) {
+      tthread::lock_guard<tthread::mutex> lock(INSTANCE->_mutex);
 			INSTANCE->_invokers[invokeId].send(sendReq);
 		} else {
 			LOG(ERROR) << "Can not send to invoked component '" << invokeId << "', no such invokeId" << std::endl;
@@ -778,6 +788,7 @@ void Interpreter::invoke(const Arabica::DOM::Node<std::string>& element) {
 
 		Invoker invoker(Factory::createInvoker(invokeReq.type, this));
 		if (invoker) {
+      tthread::lock_guard<tthread::mutex> lock(_mutex);
 			_invokers[invokeReq.invokeid] = invoker;
 			LOG(INFO) << "Added invoker " << invokeReq.type << " at " << invokeReq.invokeid;
 			invoker.invoke(invokeReq);
@@ -1636,6 +1647,14 @@ std::vector<std::string> Interpreter::tokenizeIdRefs(const std::string& idRefs) 
 	return ids;
 }
 
+NodeSet<std::string> Interpreter::filterChildElements(const std::string& tagName, const NodeSet<std::string>& nodeSet) {
+  NodeSet<std::string> filteredChildElems;
+  for (unsigned int i = 0; i < nodeSet.size(); i++) {
+    filteredChildElems.push_back(filterChildElements(tagName, nodeSet[i]));
+  }
+  return filteredChildElems;
+}
+
 NodeSet<std::string> Interpreter::filterChildElements(const std::string& tagName, const Node<std::string>& node) {
   NodeSet<std::string> filteredChildElems;
   NodeList<std::string> childs = node.getChildNodes();
@@ -1797,6 +1816,7 @@ bool Interpreter::isCompound(const Arabica::DOM::Node<std::string>& state) {
 }
 
 void Interpreter::setupIOProcessors() {
+  tthread::lock_guard<tthread::mutex> lock(_mutex);
 	std::map<std::string, IOProcessorImpl*>::iterator ioProcIter = Factory::getInstance()->_ioProcessors.begin();
 	while(ioProcIter != Factory::getInstance()->_ioProcessors.end()) {
 		_ioProcessors[ioProcIter->first] = Factory::createIOProcessor(ioProcIter->first, this);
@@ -1814,6 +1834,7 @@ void Interpreter::setupIOProcessors() {
 }
 
 IOProcessor Interpreter::getIOProcessor(const std::string& type) {
+  tthread::lock_guard<tthread::mutex> lock(_mutex);
 	if (_ioProcessors.find(type) == _ioProcessors.end()) {
 		LOG(ERROR) << "No ioProcessor known for type " << type;
 		return IOProcessor();

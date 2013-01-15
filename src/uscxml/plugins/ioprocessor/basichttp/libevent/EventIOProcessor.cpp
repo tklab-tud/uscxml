@@ -90,11 +90,10 @@ void EventIOProcessor::send(const SendRequest& req) {
 	// use synchronous dns resolving for multicast dns
 	if(hostName && strlen(hostName) >= strlen(".local")) {
 		if(strcmp(hostName + strlen(hostName) - strlen(".local"), ".local") == 0) {
-			evhttp_uri_set_host(targetURI, EventIOServer::syncResolve(hostName).c_str());
+			evhttp_uri_set_host(targetURI, EventIOServer::syncResolve(hostName).c_str()) && LOG(ERROR) << "evhttp_uri_set_host: " << strerror(errno);
 		}
 	}
-	evhttp_uri_join(targetURI, uriBuf, 1024);
-
+	evhttp_uri_join(targetURI, uriBuf, 1024) || LOG(ERROR) << "evhttp_uri_join: " << strerror(errno);
 	LOG(INFO) << "URI for send request: " << uriBuf << std::endl;
 
 	int port = evhttp_uri_get_port(targetURI);
@@ -117,7 +116,7 @@ void EventIOProcessor::send(const SendRequest& req) {
 
 	// event name
 	if (req.name.size() > 0) {
-		evhttp_add_header(evhttp_request_get_output_headers(httpReq), "_scxmleventname", evhttp_encode_uri(req.name.c_str()));
+		evhttp_add_header(evhttp_request_get_output_headers(httpReq), "_scxmleventname", evhttp_encode_uri(req.name.c_str())) && LOG(ERROR) << "evhttp_add_header: " << strerror(errno);
 	}
 
 	// event namelist
@@ -126,7 +125,8 @@ void EventIOProcessor::send(const SendRequest& req) {
 		while (namelistIter != req.namelist.end()) {
 			evhttp_add_header(evhttp_request_get_output_headers(httpReq),
 			                  namelistIter->first.c_str(),
-			                  evhttp_encode_uri(namelistIter->second.c_str()));
+			                  evhttp_encode_uri(namelistIter->second.c_str()))
+        && LOG(ERROR) << "evhttp_add_header: " << strerror(errno);
 			namelistIter++;
 		}
 	}
@@ -138,20 +138,21 @@ void EventIOProcessor::send(const SendRequest& req) {
 //      LOG(INFO) << paramIter->first << " = " << paramIter->second << std::endl;
 			evhttp_add_header(evhttp_request_get_output_headers(httpReq),
 			                  paramIter->first.c_str(),
-			                  evhttp_encode_uri(paramIter->second.c_str()));
+			                  evhttp_encode_uri(paramIter->second.c_str()))
+       && LOG(ERROR) << "evhttp_add_header: " << strerror(errno);
 			paramIter++;
 		}
 	}
 
 	// content
 	if (req.content.size() > 0)
-		evbuffer_add(evhttp_request_get_output_buffer(httpReq), req.content.c_str(), req.content.size());
+		evbuffer_add(evhttp_request_get_output_buffer(httpReq), req.content.c_str(), req.content.size()) && LOG(ERROR) << "evbuffer_add: " << strerror(errno);
 
 #if 0
 	evhttp_add_header(evhttp_request_get_output_headers(httpReq), "_scxmleventstruct", evhttp_encode_uri(req.toXMLString().c_str()));
 #endif
 	// required as per http 1.1 RFC2616 section 14.23
-	evhttp_add_header(evhttp_request_get_output_headers(httpReq), "Host", evhttp_uri_get_host(targetURI));
+	evhttp_add_header(evhttp_request_get_output_headers(httpReq), "Host", evhttp_uri_get_host(targetURI)) && LOG(ERROR) << "evhttp_add_header: " << strerror(errno);
 
 	_httpRequests[req.sendid] = httpReq;
 	err = evhttp_make_request(httpConn,

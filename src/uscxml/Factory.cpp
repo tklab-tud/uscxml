@@ -3,6 +3,7 @@
 
 #include "uscxml/Factory.h"
 #include "uscxml/Message.h"
+#include <glog/logging.h>
 
 #ifdef BUILD_AS_PLUGINS
 # include "uscxml/plugins/Plugins.h"
@@ -168,36 +169,48 @@ void Factory::registerInvoker(InvokerImpl* invoker) {
 
 boost::shared_ptr<InvokerImpl> Factory::createInvoker(const std::string& type, Interpreter* interpreter) {
 	Factory* factory = getInstance();
-  if (factory->_invokerAliases.find(type) == factory->_invokerAliases.end())
+  if (factory->_invokerAliases.find(type) == factory->_invokerAliases.end()) {
+    LOG(ERROR) << "No " << type << " Invoker known";
     return boost::shared_ptr<InvokerImpl>();
+  }
   
   std::string canonicalName = factory->_invokerAliases[type];
-	if (factory->_invokers.find(canonicalName) == factory->_invokers.end())
+	if (factory->_invokers.find(canonicalName) == factory->_invokers.end()) {
+    LOG(ERROR) << "Invoker " << type << " known as " << canonicalName << " but not prototype is available in factory";
     return boost::shared_ptr<InvokerImpl>();
+  }
   
   return boost::static_pointer_cast<InvokerImpl>(factory->_invokers[canonicalName]->create(interpreter));
 }
 
 boost::shared_ptr<DataModelImpl> Factory::createDataModel(const std::string& type, Interpreter* interpreter) {
 	Factory* factory = getInstance();
-  if (factory->_dataModelAliases.find(type) == factory->_dataModelAliases.end())
+  if (factory->_dataModelAliases.find(type) == factory->_dataModelAliases.end()) {
+    LOG(ERROR) << "No " << type << " DataModel known";
     return boost::shared_ptr<DataModelImpl>();
+  }
   
   std::string canonicalName = factory->_dataModelAliases[type];
-	if (factory->_dataModels.find(canonicalName) == factory->_dataModels.end())
+	if (factory->_dataModels.find(canonicalName) == factory->_dataModels.end()) {
+    LOG(ERROR) << "DataModel " << type << " known as " << canonicalName << " but not prototype is available in factory";
     return boost::shared_ptr<DataModelImpl>();
+  }
   
   return factory->_dataModels[canonicalName]->create(interpreter);
 }
 
 boost::shared_ptr<IOProcessorImpl> Factory::createIOProcessor(const std::string& type, Interpreter* interpreter) {
 	Factory* factory = getInstance();
-  if (factory->_ioProcessorAliases.find(type) == factory->_ioProcessorAliases.end())
+  if (factory->_ioProcessorAliases.find(type) == factory->_ioProcessorAliases.end()) {
+    LOG(ERROR) << "No " << type << " IOProcessor known";
     return boost::shared_ptr<IOProcessorImpl>();
+  }
   
   std::string canonicalName = factory->_ioProcessorAliases[type];
-	if (factory->_ioProcessors.find(canonicalName) == factory->_ioProcessors.end())
+	if (factory->_ioProcessors.find(canonicalName) == factory->_ioProcessors.end()) {
+    LOG(ERROR) << "IOProcessor " << type << " known as " << canonicalName << " but not prototype is available in factory";
     return boost::shared_ptr<IOProcessorImpl>();
+  }
   
   return factory->_ioProcessors[canonicalName]->create(interpreter);
 }
