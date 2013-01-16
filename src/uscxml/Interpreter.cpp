@@ -33,6 +33,7 @@ Interpreter::Interpreter() : Arabica::SAX2DOM::Parser<std::string>() {
 	_thread = NULL;
 	_sendQueue = NULL;
 	_running = false;
+	_done = false;
 
 #ifdef _WIN32
 	WSADATA wsaData;
@@ -172,6 +173,7 @@ Interpreter::~Interpreter() {
 }
 
 void Interpreter::start() {
+  _done = false;
 	_thread = new tthread::thread(Interpreter::run, this);
 }
 
@@ -180,10 +182,12 @@ void Interpreter::run(void* instance) {
 }
 
 bool Interpreter::runOnMainThread(int fps, bool blocking) {
+  if (_done)
+    return false;
+
   if (fps > 0) {
     uint64_t nextRun = _lastRunOnMainThread + (1000 / fps);
     if (blocking) {
-      tthread::lock_guard<tthread::mutex> lock(_mutex);
       while(nextRun > tthread::timeStamp()) {
         tthread::this_thread::sleep_for(tthread::chrono::milliseconds(nextRun - tthread::timeStamp()));
       }
@@ -194,6 +198,7 @@ bool Interpreter::runOnMainThread(int fps, bool blocking) {
   
   _lastRunOnMainThread = tthread::timeStamp();
   
+  tthread::lock_guard<tthread::mutex> lock(_mutex);
   std::map<std::string, IOProcessor>::iterator ioProcessorIter = _ioProcessors.begin();
 	while(ioProcessorIter != _ioProcessors.end()) {
 		ioProcessorIter->second.runOnMainThread();
@@ -1411,8 +1416,10 @@ void Interpreter::enterStates(const Arabica::XPath::NodeSet<std::string>& enable
 	}
 	for (int i = 0; i < _configuration.size(); i++) {
 		Arabica::DOM::Element<std::string> stateElem = (Arabica::DOM::Element<std::string>)_configuration[i];
-		if (isFinal(stateElem) && parentIsScxmlState(stateElem))
+		if (isFinal(stateElem) && parentIsScxmlState(stateElem)) {
 			_running = false;
+			_done = true;
+    }
 	}
 }
 

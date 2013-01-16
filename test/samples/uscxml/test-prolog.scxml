@@ -1,20 +1,22 @@
 <scxml datamodel="prolog" initial="start" binding="late">
 	<datamodel>
-		<!-- data id="facts">
-			cat(tom).
-			animal(X):- cat(X).
-		</data -->
-		<data id="likes" src="prolog/likes.pl" />
+		<data id="facts">
+% see http://www.swi-prolog.org/FAQ/Multifile.html
+:- multifile animal/1.
+cat(tom).
+animal(X):- cat(X).
+		</data>
 	</datamodel>
-	<!-- script>
-		cat(tom).
-		cat(X).
-		animal(X).
-	</script -->
 	<script>
-		likes(sam,curry).
-		likes(sam,chips).
+mouse(jerry).
+animal(X):- mouse(X).
 	</script>
 	<state id="start">
+		<transition target="end" cond="not(cat(jerry)), cat(tom), mouse(jerry)." />
+	</state>
+	<state id="end" final="true">
+		<onentry>
+			<log expr="animal(X)." />
+		</onentry>
 	</state>
 </scxml>

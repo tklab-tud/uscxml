@@ -159,6 +159,7 @@ public:
 	virtual void eval(const std::string& expr) { return _impl->eval(expr); }
 	virtual std::string evalAsString(const std::string& expr) { return _impl->evalAsString(expr); }
 	virtual bool evalAsBool(const std::string& expr) { return _impl->evalAsBool(expr); }
+
 	virtual void assign(const std::string& location, const std::string& expr) { return _impl->assign(location, expr); }
 	virtual void assign(const std::string& location, const Data& data) { return _impl->assign(location, data); }
 

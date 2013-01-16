@@ -48,6 +48,7 @@
 /** miscellaneous */
 #cmakedefine PROJECT_SOURCE_DIR "@PROJECT_SOURCE_DIR@"
 #cmakedefine DIST_PREPARE
+#cmakedefine SWI_BINARY "@SWI_BINARY@"
 
 /** Optional libraries we found */
 #cmakedefine UMUNDO_FOUND

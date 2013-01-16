@@ -40,4 +40,10 @@ int main(int argc, char** argv) {
     assert(iequals(url.scheme(), "file"));
     std::cout << url.asString() << std::endl;
   }
+  {
+    URL url = URL::toLocalFile("this is quite some content!", "txt");
+    std::cout << url.asLocalFile("txt");
+    assert(url.isAbsolute());
+    assert(iequals(url.scheme(), "file"));
+  }
 }

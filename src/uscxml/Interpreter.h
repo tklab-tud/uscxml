@@ -171,6 +171,7 @@ protected:
 	std::string _nsPrefix;
 
 	bool _running;
+	bool _done;
 	Binding _binding;
 	Arabica::XPath::NodeSet<std::string> _configuration;
 	Arabica::XPath::NodeSet<std::string> _statesToInvoke;

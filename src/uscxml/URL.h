@@ -22,6 +22,8 @@ public:
   const bool toAbsolute(const std::string& baseUrl);
   const std::string asLocalFile(const std::string& suffix, bool reload = false);
 
+  static boost::shared_ptr<URLImpl> toLocalFile(const std::string& content, const std::string& suffix);
+
   const bool isAbsolute() const       { return _uri.is_absolute(); }
   const std::string scheme() const    { return _uri.scheme(); }
   const std::string host() const      { return _uri.host(); }
@@ -30,6 +32,8 @@ public:
   const std::string asString() const  { return _uri.as_string(); }
   
 private:
+  std::string getLocalFilename(const std::string& suffix);
+  
   Arabica::io::URI _uri;
   std::string _localFile;
 };
@@ -41,6 +45,11 @@ public:
   URL(boost::shared_ptr<URLImpl> const impl) : _impl(impl) { }
 	URL(const URL& other) : _impl(other._impl) { }
   virtual ~URL() {};
+
+  static URL toLocalFile(const std::string& content, const std::string& suffix) {
+    boost::shared_ptr<URLImpl> impl = URLImpl::toLocalFile(content, suffix);
+    return URL(impl);
+  }
   
   operator bool()                   const { return _impl;}
 	bool operator< (const URL& other) const { return _impl < other._impl; }

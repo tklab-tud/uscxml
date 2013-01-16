@@ -1,13 +1,17 @@
 #include <iostream>
 #include <SWI-Prolog.h>
 #include <SWI-cpp.h>
+#include "uscxml/config.h"
 
 using namespace std;
 
 int main(void){
+  const char* swibin = getenv("SWI_BINARY");
+  if (swibin == NULL)
+    swibin = SWI_BINARY;
   
   static char * av[] = {
-    "/Users/sradomski/Documents/TK/Code/uscxml/contrib/prebuilt/darwin-i386/clang/lib/swipl-6.3.5/bin/x86_64-darwin12.2.0/swipl",
+    (char*)swibin,
 //    "--quiet",
 //    "-s",
 //    "/Users/sradomski/Documents/TK/Code/pl-devel/demo/likes.pl",
@@ -23,17 +27,44 @@ int main(void){
 
   int rval;
   PlFrame frame;
-  rval = PlCall("system", "load_files", PlTermv("/Users/sradomski/Documents/TK/Code/pl-devel/demo/likes.pl"));
-  PlQuery query("user", "likes", PlTermv("sam", "chips"));
-  if (query.next_solution() > 0) {
-    std::cout << "Yes!" << std::endl;
-  } else {
-    std::cout << "No!" << std::endl;
+  rval = PlCall("user", "load_files", PlTermv("/Users/sradomski/Documents/TK/Code/pl-devel/demo/likes.pl"));
+
+//  PlCompound compound("likes(sam, X)");
+  PlCompound compound("listing");
+  PlTermv termv(compound.arity());
+//  termv[0] = PlTerm();
+  for (int i = 0; i < compound.arity(); i++) {
+    termv[i] = compound[i + 1];
   }
 
-  PlQuery q("call", PlTermv(PlCompound("likes(sam,curry)."))
+  PlQuery q(compound.name(), termv);
+  bool solutionExists = false;
+  while( q.next_solution() ) {
+    solutionExists = true;
+    for (int i = 0; i < compound.arity(); i++) {
+      switch (compound[i + 1].type()) {
+        case PL_VARIABLE:
+          std::cout << (char *)termv[i] << ", ";
+          break;
+        case PL_FLOAT:
+          std::cout << (double)termv[i] << ", ";
+          break;
+        case PL_ATOM:
+          std::cout << (PlAtom)termv[i] << ", ";
+          break;
+        case PL_STRING:
+          std::cout << (char *)termv[i] << ", ";
+          break;
+        case PL_TERM:
+          std::cout << (char *)termv[i] << ", ";
+          break;
+        default: ;
+      }
+    }
+    std::cout << std::endl;
+  }
+
   
-//  PlCompound compound("likes(sam,curry).");
 //  PlQuery query2(compound.name(), PlTermv(compound));
 //  if (query2.next_solution() > 0) {
 //    std::cout << "Yes!" << std::endl;

@@ -52,26 +52,13 @@ const bool URLImpl::toAbsoluteCwd() {
   return toAbsolute(std::string("file://" + std::string(currPath) + "/"));
 }
 
-const bool URLImpl::toAbsolute(const std::string& baseUrl) {
-  if (_uri.is_absolute())
-		return true;
-  _uri = Arabica::io::URI(baseUrl, _uri.as_string());
-  if (!_uri.is_absolute())
-		return false;
-  return true;
-}
-
-const std::string URLImpl::asLocalFile(const std::string& suffix, bool reload) {
-  // this is already a local file
-  if (_uri.scheme().compare("file") == 0)
-    return _uri.path();
-  
-  if (_localFile.length() > 0 && !reload)
+std::string URLImpl::getLocalFilename(const std::string& suffix) {
+  if (_localFile.length() > 0)
     return _localFile;
   
-  if (_localFile.length() > 0)
-    remove(_localFile.c_str());
-  
+  if (_uri.scheme().compare("file") == 0)
+    return _uri.path();
+
   // try hard to find a temporary directory
   const char* tmpDir = NULL;
   if (tmpDir == NULL)
@@ -106,10 +93,49 @@ const std::string URLImpl::asLocalFile(const std::string& suffix, bool reload) {
   _close(fd);
 #else
   close(fd);
-#endif
-  _localFile = std::string(tmpl);
+#endif  
+  return std::string(tmpl);
+}
 
-  std::ofstream file(tmpl, std::ios_base::out);
+boost::shared_ptr<URLImpl> URLImpl::toLocalFile(const std::string& content, const std::string& suffix) {
+  boost::shared_ptr<URLImpl> urlImpl = boost::shared_ptr<URLImpl>(new URLImpl());
+  urlImpl->_localFile = urlImpl->getLocalFilename(suffix);
+  urlImpl->_uri = std::string("file://") + urlImpl->_localFile;
+  
+  std::ofstream file(urlImpl->_localFile.c_str(), std::ios_base::out);
+  if(file.is_open()) {
+    file << content;
+    file.close();
+  } else {
+    return boost::shared_ptr<URLImpl>();
+  }
+  
+  return urlImpl;
+}
+
+const bool URLImpl::toAbsolute(const std::string& baseUrl) {
+  if (_uri.is_absolute())
+		return true;
+  _uri = Arabica::io::URI(baseUrl, _uri.as_string());
+  if (!_uri.is_absolute())
+		return false;
+  return true;
+}
+
+const std::string URLImpl::asLocalFile(const std::string& suffix, bool reload) {
+  // this is already a local file
+  if (_uri.scheme().compare("file") == 0)
+    return _uri.path();
+  
+  if (_localFile.length() > 0 && !reload)
+    return _localFile;
+  
+  if (_localFile.length() > 0)
+    remove(_localFile.c_str());
+  
+  _localFile = getLocalFilename(suffix);
+  
+  std::ofstream file(_localFile.c_str(), std::ios_base::out);
   if(file.is_open()) {
     file << URL(this->shared_from_this());
     file.close();
