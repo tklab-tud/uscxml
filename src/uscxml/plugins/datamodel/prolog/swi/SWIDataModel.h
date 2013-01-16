@@ -58,7 +58,7 @@ protected:
 };
 
 #ifdef BUILD_AS_PLUGINS
-PLUMA_INHERIT_PROVIDER(SWIDataModel, DataModel);
+PLUMA_INHERIT_PROVIDER(SWIDataModel, DataModelImpl);
 #endif
 
 }

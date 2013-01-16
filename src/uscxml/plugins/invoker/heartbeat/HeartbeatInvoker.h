@@ -45,7 +45,7 @@ protected:
 };
   
 #ifdef BUILD_AS_PLUGINS
-PLUMA_INHERIT_PROVIDER(HeartbeatInvoker, Invoker);
+PLUMA_INHERIT_PROVIDER(HeartbeatInvoker, InvokerImpl);
 #endif
 
 }

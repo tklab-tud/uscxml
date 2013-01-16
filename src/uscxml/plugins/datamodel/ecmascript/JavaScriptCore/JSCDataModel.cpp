@@ -61,9 +61,6 @@ void JSCDataModel::setEvent(const Event& event) {
 Data JSCDataModel::getStringAsData(const std::string& content) {
 }
 
-Data JSCDataModel::getValueAsData(const JSC::Handle<JSC::Value>& value) {
-}
-
 bool JSCDataModel::validate(const std::string& location, const std::string& schema) {
 	return true;
 }

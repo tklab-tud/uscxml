@@ -369,18 +369,21 @@ file(GLOB_RECURSE USCXML_CONCURRENCY
 	src/uscxml/concurrency/*.cpp
 	src/uscxml/concurrency/*.h
 )
+source_group("Interpreter" FILES ${USCXML_CONCURRENCY})
 list (APPEND USCXML_FILES ${USCXML_CONCURRENCY})
 
 file(GLOB_RECURSE USCXML_DEBUG
 	src/uscxml/debug/*.cpp
 	src/uscxml/debug/*.h
 )
+source_group("Interpreter" FILES ${USCXML_DEBUG})
 list (APPEND USCXML_FILES ${USCXML_DEBUG})
 
 file(GLOB USCXML_CORE
 	src/uscxml/*.cpp
 	src/uscxml/*.h
 )
+source_group("Interpreter" FILES ${USCXML_CORE})
 list (APPEND USCXML_FILES ${USCXML_CORE})
 
 include_directories(src)
@@ -394,6 +397,7 @@ if (BUILD_AS_PLUGINS)
 		src/uscxml/plugins/*.cpp 
 		src/uscxml/plugins/*.h
 	)
+	source_group("Interpreter" FILES ${PLUMA})
 	list (APPEND USCXML_FILES ${PLUMA})
 	add_definitions("-DBUILD_AS_PLUGINS")
 endif()
@@ -408,11 +412,10 @@ endif()
 # LIBEVENT basichttp ioprocessor - this one is already required above
 
 file(GLOB_RECURSE LIBEVENT_IOPROCESSOR
-	src/uscxml/concurrency/*.cpp
-	src/uscxml/concurrency/*.h
 	src/uscxml/plugins/ioprocessor/basichttp/*.cpp
 	src/uscxml/plugins/ioprocessor/basichttp/*.h
 )
+source_group("IOProcessor" FILES ${LIBEVENT_IOPROCESSOR})
 if (BUILD_AS_PLUGINS)
 	add_library(
 		ioprocessor_basichttp SHARED 
@@ -423,36 +426,68 @@ else()
 	list (APPEND USCXML_FILES ${LIBEVENT_IOPROCESSOR})
 endif()
 
-
-# GOOGLE V8 datamodel
-
-# set(ENV{V8_SRC} ${CMAKE_SOURCE_DIR}/../v8)
-find_package(V8)
-if (V8_FOUND)
-	include_directories(${V8_INCLUDE_DIR})
-	file(GLOB V8_DATAMODEL
-		src/uscxml/plugins/datamodel/ecmascript/v8/*.cpp
-		src/uscxml/plugins/datamodel/ecmascript/v8/*.h
+# JavaScriptCore ecmascript datamodel
+if (APPLE)
+	FIND_LIBRARY(JSC_LIBRARY JavaScriptCore)
+	file(GLOB JSC_DATAMODEL
+		src/uscxml/plugins/datamodel/ecmascript/JavaScriptCore/*.cpp
+		src/uscxml/plugins/datamodel/ecmascript/JavaScriptCore/*.h
 	)
-	file(GLOB_RECURSE V8_DOM
-		src/uscxml/plugins/datamodel/ecmascript/v8/dom/*.cpp
-		src/uscxml/plugins/datamodel/ecmascript/v8/dom/*.h
+	source_group("Datamodel" FILES ${JSC_DATAMODEL})
+	file(GLOB_RECURSE JSC_DOM
+		src/uscxml/plugins/datamodel/ecmascript/JavaScriptCore/dom/*.cpp
+		src/uscxml/plugins/datamodel/ecmascript/JavaScriptCore/dom/*.h
 	)
- source_group("DOM" FILES ${V8_DOM})
-
+	source_group("DOM" FILES ${JSC_DOM})
 	if (BUILD_AS_PLUGINS)
 		add_library(
-			datamodel_v8 SHARED 
-			${V8_DATAMODEL}
-			${V8_DOM})
-		target_link_libraries(datamodel_v8 
+			datamodel_jsc SHARED 
+			${JSC_DATAMODEL}
+			${JSC_DOM})
+		target_link_libraries(datamodel_jsc 
 			uscxml
-			${V8_LIBRARY})
-		set_target_properties(datamodel_v8 PROPERTIES FOLDER "Plugin DataModel")
+			${JSC_LIBRARY})
+		set_target_properties(datamodel_jsc PROPERTIES FOLDER "Plugin DataModel")
 	else()
-		list (APPEND USCXML_FILES ${V8_DATAMODEL})
-		list (APPEND USCXML_FILES ${V8_DOM})
-		list (APPEND USCXML_OPT_LIBS ${V8_LIBRARY})
+		list (APPEND USCXML_FILES ${JSC_DATAMODEL})
+		list (APPEND USCXML_FILES ${JSC_DOM})
+		list (APPEND USCXML_OPT_LIBS ${JSC_LIBRARY})
+	endif()
+
+endif()
+
+# GOOGLE V8 ecmascript datamodel
+
+if (NOT APPLE)
+	# set(ENV{V8_SRC} ${CMAKE_SOURCE_DIR}/../v8)
+	find_package(V8)
+	if (V8_FOUND)
+		include_directories(${V8_INCLUDE_DIR})
+		file(GLOB V8_DATAMODEL
+			src/uscxml/plugins/datamodel/ecmascript/v8/*.cpp
+			src/uscxml/plugins/datamodel/ecmascript/v8/*.h
+		)
+		source_group("Datamodel" FILES ${V8_DATAMODEL})
+		file(GLOB_RECURSE V8_DOM
+			src/uscxml/plugins/datamodel/ecmascript/v8/dom/*.cpp
+			src/uscxml/plugins/datamodel/ecmascript/v8/dom/*.h
+		)
+	 source_group("DOM" FILES ${V8_DOM})
+
+		if (BUILD_AS_PLUGINS)
+			add_library(
+				datamodel_v8 SHARED 
+				${V8_DATAMODEL}
+				${V8_DOM})
+			target_link_libraries(datamodel_v8 
+				uscxml
+				${V8_LIBRARY})
+			set_target_properties(datamodel_v8 PROPERTIES FOLDER "Plugin DataModel")
+		else()
+			list (APPEND USCXML_FILES ${V8_DATAMODEL})
+			list (APPEND USCXML_FILES ${V8_DOM})
+			list (APPEND USCXML_OPT_LIBS ${V8_LIBRARY})
+		endif()
 	endif()
 endif()
 
@@ -472,6 +507,7 @@ if (SWI_FOUND)
 		src/uscxml/plugins/datamodel/prolog/swi/*.cpp
 		src/uscxml/plugins/datamodel/prolog/swi/*.h
 	)
+	source_group("Datamodel" FILES ${SWI_DATAMODEL})
 	if (BUILD_AS_PLUGINS)
 		add_library(
 			datamodel_swi SHARED 
@@ -501,6 +537,7 @@ if (UMUNDO_FOUND)
 	file(GLOB_RECURSE UMUNDO_INVOKER 
 		src/uscxml/plugins/invoker/umundo/*.cpp 
 		src/uscxml/plugins/invoker/umundo/*.h)
+	source_group("Invoker" FILES ${UMUNDO_INVOKER})
 	if (BUILD_AS_PLUGINS)
 		add_library(
 			invoker_umundo SHARED 
@@ -522,6 +559,7 @@ add_definitions("-DUMUNDO_STATIC")
 file(GLOB_RECURSE USCXML_INVOKER 
 	src/uscxml/plugins/invoker/scxml/*.cpp 
 	src/uscxml/plugins/invoker/scxml/*.h)
+source_group("Invoker" FILES ${USCXML_INVOKER})
 if (BUILD_AS_PLUGINS)
 	add_library(
 		invoker_uscxml SHARED 
@@ -540,6 +578,7 @@ file(GLOB_RECURSE HEARTBEAT_INVOKER
 	src/uscxml/plugins/invoker/heartbeat/*.cpp
 	src/uscxml/plugins/invoker/heartbeat/*.h
 )
+source_group("Invoker" FILES ${HEARTBEAT_INVOKER})
 if (BUILD_AS_PLUGINS)
 	add_library(
 		invoker_heartbeat SHARED 
@@ -569,6 +608,7 @@ if (OPENSCENEGRAPH_FOUND AND OPENGL_FOUND)
 	file(GLOB_RECURSE OPENSCENEGRAPH_INVOKER 
 		src/uscxml/plugins/invoker/graphics/openscenegraph/*.cpp 
 		src/uscxml/plugins/invoker/graphics/openscenegraph/*.h)
+	source_group("Invoker" FILES ${OPENSCENEGRAPH_INVOKER})
 
 	if (BUILD_AS_PLUGINS)
 		add_library(
@@ -600,6 +640,8 @@ if (MILES_FOUND AND OFF)
 	include_directories(${OPENAL_INCLUDE_DIR})
 
   file(GLOB_RECURSE MILES_INVOKER src/uscxml/invoker/modality/miles/*.cpp src/uscxml/invoker/modality/miles/*.h)
+	source_group("Invoker" FILES ${MILES_INVOKER})
+
 	if (BUILD_AS_PLUGINS)
 		add_library(
 			invoker_miles SHARED 
@@ -622,6 +664,8 @@ if (UNIX AND NOT APPLE)
 	list (APPEND USCXML_CORE_LIBS "pthread")
 	list (APPEND USCXML_CORE_LIBS "rt")
 endif()
+
+list(SORT USCXML_FILES)
 
 ############################################################
 # Binaries and tests

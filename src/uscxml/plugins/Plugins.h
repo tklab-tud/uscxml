@@ -7,9 +7,9 @@
 namespace uscxml {
 
 #ifdef BUILD_AS_PLUGINS
-PLUMA_PROVIDER_HEADER(IOProcessor);
-PLUMA_PROVIDER_HEADER(Invoker);
-PLUMA_PROVIDER_HEADER(DataModel);
+PLUMA_PROVIDER_HEADER(IOProcessorImpl);
+PLUMA_PROVIDER_HEADER(InvokerImpl);
+PLUMA_PROVIDER_HEADER(DataModelImpl);
 #endif
 
 }

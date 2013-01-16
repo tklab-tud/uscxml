@@ -99,7 +99,7 @@ protected:
 };
 
 #ifdef BUILD_AS_PLUGINS
-PLUMA_INHERIT_PROVIDER(OSGInvoker, Invoker);
+PLUMA_INHERIT_PROVIDER(OSGInvoker, InvokerImpl);
 #endif
 
 }

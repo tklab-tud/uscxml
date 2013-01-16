@@ -46,7 +46,6 @@ public:
 	virtual void assign(const std::string& location, const Data& data);
 
 	virtual Data getStringAsData(const std::string& content);
-	virtual Data getValueAsData(const JSC::Handle<JSC::Value>& value);
 
 	virtual std::string evalAsString(const std::string& expr);
 	virtual bool evalAsBool(const std::string& expr);
@@ -63,7 +62,7 @@ protected:
 };
 
 #ifdef BUILD_AS_PLUGINS
-PLUMA_INHERIT_PROVIDER(JSCDataModel, DataModel);
+PLUMA_INHERIT_PROVIDER(JSCDataModel, DataModelImpl);
 #endif
 
 }

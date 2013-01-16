@@ -101,7 +101,7 @@ private:
 };
 
 #ifdef BUILD_AS_PLUGINS
-PLUMA_INHERIT_PROVIDER(EventIOProcessor, IOProcessor);
+PLUMA_INHERIT_PROVIDER(EventIOProcessor, IOProcessorImpl);
 #endif
 
 }
