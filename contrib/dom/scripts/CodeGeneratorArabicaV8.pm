@@ -314,7 +314,7 @@ sub GenerateImplementationAttributes
 
   v8::Handle<v8::Value> V8${interfaceName}::${attrName}AttrGetter(v8::Local<v8::String> property, const v8::AccessorInfo& info) {
     v8::Local<v8::Object> self = info.Holder();
-    V8${interfaceName}Private* privData = V8DOM::toClassPtr<V8${interfaceName}Private >(self->GetInternalField(0));
+    struct V8${interfaceName}Private* privData = V8DOM::toClassPtr<V8${interfaceName}Private >(self->GetInternalField(0));
 END
       if (IsWrapperType($attrType)) {
         AddToImplIncludes("V8".$attrType.".h");
@@ -324,7 +324,7 @@ END
     v8::Handle<v8::Function> arbaicaRetCtor = V8${attrType}::getTmpl()->GetFunction();
     v8::Persistent<v8::Object> arbaicaRetObj = v8::Persistent<v8::Object>::New(arbaicaRetCtor->NewInstance());
 
-    V8${attrType}::V8${attrType}Private* retPrivData = new V8${attrType}::V8${attrType}Private();
+    struct V8${attrType}::V8${attrType}Private* retPrivData = new V8${attrType}::V8${attrType}Private();
     retPrivData->dom = privData->dom;
     retPrivData->arabicaThis = arbaicaRet;
     
@@ -349,7 +349,7 @@ END
         my $arabicaSetter = IdlToArabicaAttrSetter($attrName);
         push(@implContent, "\n  void V8${interfaceName}::${attrName}AttrSetter(v8::Local<v8::String> property, v8::Local<v8::Value> value, const v8::AccessorInfo& info) {");
         push(@implContent, "\n    v8::Local<v8::Object> self = info.Holder();");
-        push(@implContent, "\n    V8${interfaceName}Private* privData = V8DOM::toClassPtr<V8${interfaceName}Private >(self->GetInternalField(0));");
+        push(@implContent, "\n    struct V8${interfaceName}Private* privData = V8DOM::toClassPtr<V8${interfaceName}Private >(self->GetInternalField(0));");
 
         my ($handle, $deref) = IdlToArgHandle($attribute->signature->type, "local".ucfirst($attribute->signature->name), "value");
 
@@ -393,7 +393,7 @@ END
 
     # get this
     push(@implContent, "\n    v8::Local<v8::Object> self = args.Holder();");
-    push(@implContent, "\n    V8${interfaceName}Private* privData = V8DOM::toClassPtr<V8${interfaceName}Private >(self->GetInternalField(0));");
+    push(@implContent, "\n    struct V8${interfaceName}Private* privData = V8DOM::toClassPtr<V8${interfaceName}Private >(self->GetInternalField(0));");
 
     # arguments to local handles
     my $parameterIndex = 0;

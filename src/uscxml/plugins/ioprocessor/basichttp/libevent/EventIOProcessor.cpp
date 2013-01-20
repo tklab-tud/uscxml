@@ -126,7 +126,7 @@ void EventIOProcessor::send(const SendRequest& req) {
 			evhttp_add_header(evhttp_request_get_output_headers(httpReq),
 			                  namelistIter->first.c_str(),
 			                  evhttp_encode_uri(namelistIter->second.c_str()))
-        && LOG(ERROR) << "evhttp_add_header: " << strerror(errno);
+			&& LOG(ERROR) << "evhttp_add_header: " << strerror(errno);
 			namelistIter++;
 		}
 	}
@@ -139,7 +139,7 @@ void EventIOProcessor::send(const SendRequest& req) {
 			evhttp_add_header(evhttp_request_get_output_headers(httpReq),
 			                  paramIter->first.c_str(),
 			                  evhttp_encode_uri(paramIter->second.c_str()))
-       && LOG(ERROR) << "evhttp_add_header: " << strerror(errno);
+			&& LOG(ERROR) << "evhttp_add_header: " << strerror(errno);
 			paramIter++;
 		}
 	}

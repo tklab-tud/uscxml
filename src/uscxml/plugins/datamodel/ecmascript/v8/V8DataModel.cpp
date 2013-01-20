@@ -29,36 +29,36 @@ boost::shared_ptr<DataModelImpl> V8DataModel::create(Interpreter* interpreter) {
 	v8::Locker locker;
 	v8::HandleScope scope;
 
-  Arabica::DOM::V8DOM* dom = new Arabica::DOM::V8DOM();
+	Arabica::DOM::V8DOM* dom = new Arabica::DOM::V8DOM();
 //  dom->interpreter = interpreter;
-  dom->xpath = new Arabica::XPath::XPath<std::string>();
-  dom->xpath->setNamespaceContext(interpreter->getNSContext());
-  
+	dom->xpath = new Arabica::XPath::XPath<std::string>();
+	dom->xpath->setNamespaceContext(interpreter->getNSContext());
+
 	// see http://stackoverflow.com/questions/3171418/v8-functiontemplate-class-instance
 
-  // some free functions
+	// some free functions
 	v8::Handle<v8::ObjectTemplate> global = v8::ObjectTemplate::New();
 	global->Set(v8::String::New("In"), v8::FunctionTemplate::New(jsIn, v8::External::New(reinterpret_cast<void*>(dm.get()))), v8::ReadOnly);
 	global->Set(v8::String::New("print"), v8::FunctionTemplate::New(jsPrint, v8::External::New(reinterpret_cast<void*>(dm.get()))), v8::ReadOnly);
 
-  v8::Persistent<v8::Context> context = v8::Context::New(0, global);
-  v8::Context::Scope contextScope(context);
+	v8::Persistent<v8::Context> context = v8::Context::New(0, global);
+	v8::Context::Scope contextScope(context);
 
-  // instantiate the document function
-  v8::Handle<v8::Function> docCtor = Arabica::DOM::V8Document::getTmpl()->GetFunction();
-  v8::Handle<v8::Object> docObj = docCtor->NewInstance();
-  
-  Arabica::DOM::V8Document::V8DocumentPrivate* privData = new Arabica::DOM::V8Document::V8DocumentPrivate();
-  privData->arabicaThis = new Arabica::DOM::Document<std::string>(interpreter->getDocument());
-  privData->dom = dom;
-  docObj->SetInternalField(0, Arabica::DOM::V8DOM::toExternal(privData));
-  
-  context->Global()->Set(v8::String::New("document"), docObj);
-  
+	// instantiate the document function
+	v8::Handle<v8::Function> docCtor = Arabica::DOM::V8Document::getTmpl()->GetFunction();
+	v8::Handle<v8::Object> docObj = docCtor->NewInstance();
+
+	Arabica::DOM::V8Document::V8DocumentPrivate* privData = new Arabica::DOM::V8Document::V8DocumentPrivate();
+	privData->arabicaThis = new Arabica::DOM::Document<std::string>(interpreter->getDocument());
+	privData->dom = dom;
+	docObj->SetInternalField(0, Arabica::DOM::V8DOM::toExternal(privData));
+
+	context->Global()->Set(v8::String::New("document"), docObj);
+
 	dm->_contexts.push_back(context);
-  
-  // instantiate objects - we have to have a context for that!
-  
+
+	// instantiate objects - we have to have a context for that!
+
 	dm->setName(interpreter->getName());
 	dm->setSessionId(interpreter->getSessionId());
 	dm->eval("_ioprocessors = {};");

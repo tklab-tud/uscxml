@@ -39,113 +39,116 @@
 namespace uscxml {
 
 URLImpl::~URLImpl() {
-  if (_localFile.length() > 0)
-    remove(_localFile.c_str());
+	if (_localFile.length() > 0)
+		remove(_localFile.c_str());
 }
 
 const bool URLImpl::toAbsoluteCwd() {
-  char currPath[FILENAME_MAX];
-  if (!getcwd(currPath, sizeof(currPath))) {
-    return false;
-  }
-  currPath[sizeof(currPath) - 1] = '\0'; /* not really required */
-  return toAbsolute(std::string("file://" + std::string(currPath) + "/"));
+	char currPath[FILENAME_MAX];
+	if (!getcwd(currPath, sizeof(currPath))) {
+		return false;
+	}
+	currPath[sizeof(currPath) - 1] = '\0'; /* not really required */
+	return toAbsolute(std::string("file://" + std::string(currPath) + "/"));
 }
 
 std::string URLImpl::getLocalFilename(const std::string& suffix) {
-  if (_localFile.length() > 0)
-    return _localFile;
-  
-  if (_uri.scheme().compare("file") == 0)
-    return _uri.path();
+	if (_localFile.length() > 0)
+		return _localFile;
 
-  // try hard to find a temporary directory
-  const char* tmpDir = NULL;
-  if (tmpDir == NULL)
-    tmpDir = getenv("TMPDIR");
-  if (tmpDir == NULL)
-    tmpDir = getenv("TMP");
-  if (tmpDir == NULL)
-    tmpDir = getenv("TEMP");
-  if (tmpDir == NULL)
-    tmpDir = getenv("USERPROFILE");
-  if (tmpDir == NULL)
-    tmpDir = "/tmp";
-  
-  char* tmpl = (char*)malloc(strlen(tmpDir) + 11 + suffix.length());
-  char* writePtr = tmpl;
-  memcpy(writePtr, tmpDir, strlen(tmpDir));             writePtr += strlen(tmpDir);
-  memcpy(writePtr, "scxmlXXXXXX", 11);                  writePtr += 11;
-  memcpy(writePtr, suffix.c_str(), suffix.length());    writePtr += suffix.length();
-  tmpl[writePtr - tmpl] = 0;
-  
+	if (_uri.scheme().compare("file") == 0)
+		return _uri.path();
+
+	// try hard to find a temporary directory
+	const char* tmpDir = NULL;
+	if (tmpDir == NULL)
+		tmpDir = getenv("TMPDIR");
+	if (tmpDir == NULL)
+		tmpDir = getenv("TMP");
+	if (tmpDir == NULL)
+		tmpDir = getenv("TEMP");
+	if (tmpDir == NULL)
+		tmpDir = getenv("USERPROFILE");
+	if (tmpDir == NULL)
+		tmpDir = "/tmp";
+
+	char* tmpl = (char*)malloc(strlen(tmpDir) + 11 + suffix.length());
+	char* writePtr = tmpl;
+	memcpy(writePtr, tmpDir, strlen(tmpDir));
+	writePtr += strlen(tmpDir);
+	memcpy(writePtr, "scxmlXXXXXX", 11);
+	writePtr += 11;
+	memcpy(writePtr, suffix.c_str(), suffix.length());
+	writePtr += suffix.length();
+	tmpl[writePtr - tmpl] = 0;
+
 #ifdef _WIN32
-  _mktemp_s(tmpl, strlen(tmpl) + 1);
-  int fd = _open(tmpl, _O_CREAT, _S_IREAD | _S_IWRITE);
+	_mktemp_s(tmpl, strlen(tmpl) + 1);
+	int fd = _open(tmpl, _O_CREAT, _S_IREAD | _S_IWRITE);
 #else
-  int fd = mkstemps(tmpl, suffix.length());
+	int fd = mkstemps(tmpl, suffix.length());
 #endif
-  if (fd < 0) {
-    LOG(ERROR) << "mkstemp: " << strerror(errno) << std::endl;
-    return "";
-  }
+	if (fd < 0) {
+		LOG(ERROR) << "mkstemp: " << strerror(errno) << std::endl;
+		return "";
+	}
 #ifdef WIN32
-  _close(fd);
+	_close(fd);
 #else
-  close(fd);
-#endif  
-  return std::string(tmpl);
+	close(fd);
+#endif
+	return std::string(tmpl);
 }
 
 boost::shared_ptr<URLImpl> URLImpl::toLocalFile(const std::string& content, const std::string& suffix) {
-  boost::shared_ptr<URLImpl> urlImpl = boost::shared_ptr<URLImpl>(new URLImpl());
-  urlImpl->_localFile = urlImpl->getLocalFilename(suffix);
-  urlImpl->_uri = std::string("file://") + urlImpl->_localFile;
-  
-  std::ofstream file(urlImpl->_localFile.c_str(), std::ios_base::out);
-  if(file.is_open()) {
-    file << content;
-    file.close();
-  } else {
-    return boost::shared_ptr<URLImpl>();
-  }
-  
-  return urlImpl;
+	boost::shared_ptr<URLImpl> urlImpl = boost::shared_ptr<URLImpl>(new URLImpl());
+	urlImpl->_localFile = urlImpl->getLocalFilename(suffix);
+	urlImpl->_uri = std::string("file://") + urlImpl->_localFile;
+
+	std::ofstream file(urlImpl->_localFile.c_str(), std::ios_base::out);
+	if(file.is_open()) {
+		file << content;
+		file.close();
+	} else {
+		return boost::shared_ptr<URLImpl>();
+	}
+
+	return urlImpl;
 }
 
 const bool URLImpl::toAbsolute(const std::string& baseUrl) {
-  if (_uri.is_absolute())
+	if (_uri.is_absolute())
 		return true;
-  _uri = Arabica::io::URI(baseUrl, _uri.as_string());
-  if (!_uri.is_absolute())
+	_uri = Arabica::io::URI(baseUrl, _uri.as_string());
+	if (!_uri.is_absolute())
 		return false;
-  return true;
+	return true;
 }
 
 const std::string URLImpl::asLocalFile(const std::string& suffix, bool reload) {
-  // this is already a local file
-  if (_uri.scheme().compare("file") == 0)
-    return _uri.path();
-  
-  if (_localFile.length() > 0 && !reload)
-    return _localFile;
-  
-  if (_localFile.length() > 0)
-    remove(_localFile.c_str());
-  
-  _localFile = getLocalFilename(suffix);
-  
-  std::ofstream file(_localFile.c_str(), std::ios_base::out);
-  if(file.is_open()) {
-    file << URL(this->shared_from_this());
-    file.close();
-  } else {
-    _localFile = "";
-  }
-  
-  return _localFile;
+	// this is already a local file
+	if (_uri.scheme().compare("file") == 0)
+		return _uri.path();
+
+	if (_localFile.length() > 0 && !reload)
+		return _localFile;
+
+	if (_localFile.length() > 0)
+		remove(_localFile.c_str());
+
+	_localFile = getLocalFilename(suffix);
+
+	std::ofstream file(_localFile.c_str(), std::ios_base::out);
+	if(file.is_open()) {
+		file << URL(this->shared_from_this());
+		file.close();
+	} else {
+		_localFile = "";
+	}
+
+	return _localFile;
 }
-  
+
 std::ostream & operator<<(std::ostream & stream, const URL& url) {
 
 	std::string urlString = url.asString();

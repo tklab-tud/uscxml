@@ -27,10 +27,10 @@ boost::shared_ptr<DataModelImpl> JSCDataModel::create(Interpreter* interpreter) 
 	dm->setName(interpreter->getName());
 	dm->setSessionId(interpreter->getSessionId());
 	dm->eval("_ioprocessors = {};");
-  dm->_ctx = JSGlobalContextCreate(NULL);
+	dm->_ctx = JSGlobalContextCreate(NULL);
 
-  JSObjectRef globalObject = JSContextGetGlobalObject(dm->_ctx);
-  
+	JSObjectRef globalObject = JSContextGetGlobalObject(dm->_ctx);
+
 	return dm;
 }
 

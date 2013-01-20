@@ -17,8 +17,8 @@ public:
 	JSCDOM();
 	virtual ~JSCDOM() { };
 
-  Interpreter* interpreter;
-  Arabica::XPath::XPath<std::string>* xpath;
+	Interpreter* interpreter;
+	Arabica::XPath::XPath<std::string>* xpath;
 };
 
 }

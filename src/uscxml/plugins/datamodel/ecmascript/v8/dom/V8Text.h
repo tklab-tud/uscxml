@@ -31,38 +31,38 @@ namespace DOM {
 
 class V8Text {
 public:
-    struct V8TextPrivate {
-      V8DOM* dom;
-      Arabica::DOM::Text<std::string>* arabicaThis;
-    };
+	struct V8TextPrivate {
+		V8DOM* dom;
+		Arabica::DOM::Text<std::string>* arabicaThis;
+	};
 
-    V8_DESTRUCTOR(V8TextPrivate);
-    static bool hasInstance(v8::Handle<v8::Value>);
+	V8_DESTRUCTOR(V8TextPrivate);
+	static bool hasInstance(v8::Handle<v8::Value>);
 
-    static v8::Handle<v8::Value> splitTextCallback(const v8::Arguments&);
-
-
-    static v8::Persistent<v8::FunctionTemplate> Tmpl;
-    static v8::Handle<v8::FunctionTemplate> getTmpl() {
-        if (Tmpl.IsEmpty()) {
-            v8::Handle<v8::FunctionTemplate> tmpl = v8::FunctionTemplate::New();
-            tmpl->SetClassName(v8::String::New("Text"));
-            tmpl->ReadOnlyPrototype();
-
-            v8::Local<v8::ObjectTemplate> instance = tmpl->InstanceTemplate();
-            v8::Local<v8::ObjectTemplate> prototype = tmpl->PrototypeTemplate();
-            instance->SetInternalFieldCount(1);
+	static v8::Handle<v8::Value> splitTextCallback(const v8::Arguments&);
 
 
-            prototype->Set(v8::String::NewSymbol("splitText"),
-                           v8::FunctionTemplate::New(V8Text::splitTextCallback, v8::Undefined()), static_cast<v8::PropertyAttribute>(v8::DontDelete));
+	static v8::Persistent<v8::FunctionTemplate> Tmpl;
+	static v8::Handle<v8::FunctionTemplate> getTmpl() {
+		if (Tmpl.IsEmpty()) {
+			v8::Handle<v8::FunctionTemplate> tmpl = v8::FunctionTemplate::New();
+			tmpl->SetClassName(v8::String::New("Text"));
+			tmpl->ReadOnlyPrototype();
+
+			v8::Local<v8::ObjectTemplate> instance = tmpl->InstanceTemplate();
+			v8::Local<v8::ObjectTemplate> prototype = tmpl->PrototypeTemplate();
+			instance->SetInternalFieldCount(1);
 
 
-            tmpl->Inherit(V8CharacterData::getTmpl());
-            Tmpl = v8::Persistent<v8::FunctionTemplate>::New(tmpl);
-        }
-        return Tmpl;
-    }
+			prototype->Set(v8::String::NewSymbol("splitText"),
+			               v8::FunctionTemplate::New(V8Text::splitTextCallback, v8::Undefined()), static_cast<v8::PropertyAttribute>(v8::DontDelete));
+
+
+			tmpl->Inherit(V8CharacterData::getTmpl());
+			Tmpl = v8::Persistent<v8::FunctionTemplate>::New(tmpl);
+		}
+		return Tmpl;
+	}
 
 
 };

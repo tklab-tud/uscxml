@@ -58,7 +58,7 @@ protected:
 	std::map<umundo::ServiceDescription, umundo::ServiceStub*> _svcs;
 
 	static std::multimap<std::string, std::pair<std::string, umundo::Node*> > _nodes;
-  typedef std::multimap<std::string, std::pair<std::string, umundo::Node*> > _nodes_t;
+	typedef std::multimap<std::string, std::pair<std::string, umundo::Node*> > _nodes_t;
 	static umundo::Node* getNode(Interpreter* interpreter, const std::string& domain);
 };
 

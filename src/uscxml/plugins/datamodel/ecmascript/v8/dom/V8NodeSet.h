@@ -30,45 +30,45 @@ namespace DOM {
 
 class V8NodeSet {
 public:
-    struct V8NodeSetPrivate {
-      V8DOM* dom;
-      Arabica::XPath::NodeSet<std::string>* arabicaThis;
-    };
+	struct V8NodeSetPrivate {
+		V8DOM* dom;
+		Arabica::XPath::NodeSet<std::string>* arabicaThis;
+	};
 
-    V8_DESTRUCTOR(V8NodeSetPrivate);
-    static bool hasInstance(v8::Handle<v8::Value>);
+	V8_DESTRUCTOR(V8NodeSetPrivate);
+	static bool hasInstance(v8::Handle<v8::Value>);
 
-    static v8::Handle<v8::Value> toDocumentOrderCallback(const v8::Arguments&);
+	static v8::Handle<v8::Value> toDocumentOrderCallback(const v8::Arguments&);
 
-    static v8::Handle<v8::Value> sizeAttrGetter(v8::Local<v8::String> property, const v8::AccessorInfo& info);
-    static v8::Handle<v8::Value> emptyAttrGetter(v8::Local<v8::String> property, const v8::AccessorInfo& info);
-    static v8::Handle<v8::Value> indexedPropertyCustomGetter(uint32_t, const v8::AccessorInfo&);
+	static v8::Handle<v8::Value> sizeAttrGetter(v8::Local<v8::String> property, const v8::AccessorInfo& info);
+	static v8::Handle<v8::Value> emptyAttrGetter(v8::Local<v8::String> property, const v8::AccessorInfo& info);
+	static v8::Handle<v8::Value> indexedPropertyCustomGetter(uint32_t, const v8::AccessorInfo&);
 
-    static v8::Persistent<v8::FunctionTemplate> Tmpl;
-    static v8::Handle<v8::FunctionTemplate> getTmpl() {
-        if (Tmpl.IsEmpty()) {
-            v8::Handle<v8::FunctionTemplate> tmpl = v8::FunctionTemplate::New();
-            tmpl->SetClassName(v8::String::New("NodeSet"));
-            tmpl->ReadOnlyPrototype();
+	static v8::Persistent<v8::FunctionTemplate> Tmpl;
+	static v8::Handle<v8::FunctionTemplate> getTmpl() {
+		if (Tmpl.IsEmpty()) {
+			v8::Handle<v8::FunctionTemplate> tmpl = v8::FunctionTemplate::New();
+			tmpl->SetClassName(v8::String::New("NodeSet"));
+			tmpl->ReadOnlyPrototype();
 
-            v8::Local<v8::ObjectTemplate> instance = tmpl->InstanceTemplate();
-            v8::Local<v8::ObjectTemplate> prototype = tmpl->PrototypeTemplate();
-            instance->SetInternalFieldCount(1);
+			v8::Local<v8::ObjectTemplate> instance = tmpl->InstanceTemplate();
+			v8::Local<v8::ObjectTemplate> prototype = tmpl->PrototypeTemplate();
+			instance->SetInternalFieldCount(1);
 
-            instance->SetAccessor(v8::String::NewSymbol("size"), V8NodeSet::sizeAttrGetter, 0,
-                                  v8::External::New(0), static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None));
-            instance->SetAccessor(v8::String::NewSymbol("empty"), V8NodeSet::emptyAttrGetter, 0,
-                                  v8::External::New(0), static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None));
+			instance->SetAccessor(v8::String::NewSymbol("size"), V8NodeSet::sizeAttrGetter, 0,
+			                      v8::External::New(0), static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None));
+			instance->SetAccessor(v8::String::NewSymbol("empty"), V8NodeSet::emptyAttrGetter, 0,
+			                      v8::External::New(0), static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None));
 
-            instance->SetIndexedPropertyHandler(V8NodeSet::indexedPropertyCustomGetter, 0);
-            prototype->Set(v8::String::NewSymbol("toDocumentOrder"),
-                           v8::FunctionTemplate::New(V8NodeSet::toDocumentOrderCallback, v8::Undefined()), static_cast<v8::PropertyAttribute>(v8::DontDelete));
+			instance->SetIndexedPropertyHandler(V8NodeSet::indexedPropertyCustomGetter, 0);
+			prototype->Set(v8::String::NewSymbol("toDocumentOrder"),
+			               v8::FunctionTemplate::New(V8NodeSet::toDocumentOrderCallback, v8::Undefined()), static_cast<v8::PropertyAttribute>(v8::DontDelete));
 
 
-            Tmpl = v8::Persistent<v8::FunctionTemplate>::New(tmpl);
-        }
-        return Tmpl;
-    }
+			Tmpl = v8::Persistent<v8::FunctionTemplate>::New(tmpl);
+		}
+		return Tmpl;
+	}
 
 
 };

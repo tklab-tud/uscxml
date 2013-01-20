@@ -28,29 +28,29 @@ namespace uscxml {
 
 class NumAttr {
 public:
-  NumAttr(const std::string& str) {
-    size_t valueStart = str.find_first_of("0123456789.");
-    if (valueStart != std::string::npos) {
-      size_t valueEnd = str.find_last_of("0123456789.");
-      if (valueEnd != std::string::npos) {
-        value = str.substr(valueStart, (valueEnd - valueStart) + 1);
-        size_t unitStart = str.find_first_not_of(" \t", valueEnd + 1);
-        if (unitStart != std::string::npos) {
-          size_t unitEnd = str.find_last_of(" \t");
-          if (unitEnd != std::string::npos && unitEnd > unitStart) {
-            unit = str.substr(unitStart, unitEnd - unitStart);
-          } else {
-            unit = str.substr(unitStart, str.length() - unitStart);
-          }
-        }
-      }
-    }
-  }
-  
-  std::string value;
-  std::string unit;
+	NumAttr(const std::string& str) {
+		size_t valueStart = str.find_first_of("0123456789.");
+		if (valueStart != std::string::npos) {
+			size_t valueEnd = str.find_last_of("0123456789.");
+			if (valueEnd != std::string::npos) {
+				value = str.substr(valueStart, (valueEnd - valueStart) + 1);
+				size_t unitStart = str.find_first_not_of(" \t", valueEnd + 1);
+				if (unitStart != std::string::npos) {
+					size_t unitEnd = str.find_last_of(" \t");
+					if (unitEnd != std::string::npos && unitEnd > unitStart) {
+						unit = str.substr(unitStart, unitEnd - unitStart);
+					} else {
+						unit = str.substr(unitStart, str.length() - unitStart);
+					}
+				}
+			}
+		}
+	}
+
+	std::string value;
+	std::string unit;
 };
-  
+
 class Interpreter : protected Arabica::SAX2DOM::Parser<std::string> {
 public:
 	enum Binding {
@@ -65,7 +65,7 @@ public:
 	static Interpreter* fromURI(const std::string& uri);
 	static Interpreter* fromInputSource(Arabica::SAX::InputSource<std::string>& source);
 
-  virtual void startPrefixMapping(const std::string& /* prefix */, const std::string& /* uri */);
+	virtual void startPrefixMapping(const std::string& /* prefix */, const std::string& /* uri */);
 
 	void start();
 	static void run(void*);
@@ -79,7 +79,7 @@ public:
 	void setBaseURI(std::string baseURI)                     {
 		_baseURI = URL(baseURI);
 	}
-  URL getBaseURI()                                         {
+	URL getBaseURI()                                         {
 		return _baseURI;
 	}
 
@@ -95,7 +95,7 @@ public:
 	std::string getNSPrefix()                                {
 		return _nsPrefix;
 	}
-  Arabica::XPath::StandardNamespaceContext<std::string>& getNSContext() {
+	Arabica::XPath::StandardNamespaceContext<std::string>& getNSContext() {
 		return _nsContext;
 	}
 
@@ -122,8 +122,8 @@ public:
 		return _sessionId;
 	}
 
-  bool runOnMainThread(int fps, bool blocking = true);
-  
+	bool runOnMainThread(int fps, bool blocking = true);
+
 	static bool isMember(const Arabica::DOM::Node<std::string>& node, const Arabica::XPath::NodeSet<std::string>& set);
 
 	void dump();
@@ -145,8 +145,8 @@ public:
 	static Arabica::XPath::NodeSet<std::string> getChildStates(const Arabica::DOM::Node<std::string>& state);
 	Arabica::XPath::NodeSet<std::string> getTargetStates(const Arabica::DOM::Node<std::string>& transition);
 
-  static Arabica::XPath::NodeSet<std::string> filterChildElements(const std::string& tagname, const Arabica::DOM::Node<std::string>& node);
-  static Arabica::XPath::NodeSet<std::string> filterChildElements(const std::string& tagName, const Arabica::XPath::NodeSet<std::string>& nodeSet);
+	static Arabica::XPath::NodeSet<std::string> filterChildElements(const std::string& tagname, const Arabica::DOM::Node<std::string>& node);
+	static Arabica::XPath::NodeSet<std::string> filterChildElements(const std::string& tagName, const Arabica::XPath::NodeSet<std::string>& nodeSet);
 	static const std::string getUUID();
 
 protected:
@@ -163,7 +163,7 @@ protected:
 	tthread::mutex _mutex;
 	tthread::condition_variable _stabilized;
 
-  URL _baseURI;
+	URL _baseURI;
 	Arabica::DOM::Document<std::string> _document;
 	Arabica::DOM::Element<std::string> _scxml;
 	Arabica::XPath::XPath<std::string> _xpath;
@@ -185,7 +185,7 @@ protected:
 	Invoker _invoker;
 
 	static URL toBaseURI(const URL& url);
-  bool toAbsoluteURI(URL& uri);
+	bool toAbsoluteURI(URL& uri);
 
 	void microstep(const Arabica::XPath::NodeSet<std::string>& enabledTransitions);
 	void exitStates(const Arabica::XPath::NodeSet<std::string>& enabledTransitions);
@@ -223,10 +223,10 @@ protected:
 	bool parentIsScxmlState(Arabica::DOM::Node<std::string> state);
 
 	static std::vector<std::string> tokenizeIdRefs(const std::string& idRefs);
-  
+
 	static boost::uuids::random_generator uuidGen;
 
-  long _lastRunOnMainThread;
+	long _lastRunOnMainThread;
 	std::string _name;
 	std::string _sessionId;
 
@@ -237,8 +237,8 @@ protected:
 	std::map<std::string, std::pair<Interpreter*, SendRequest> > _sendIds;
 	std::map<std::string, Invoker> _invokers;
 
-  /// We need to remember to adapt them when the DOM is operated upon
-  std::map<std::string, Arabica::DOM::Node<std::string> > _cachedStates;
+	/// We need to remember to adapt them when the DOM is operated upon
+	std::map<std::string, Arabica::DOM::Node<std::string> > _cachedStates;
 };
 
 }

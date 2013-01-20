@@ -20,12 +20,12 @@ UmundoInvoker::UmundoInvoker() : _node(NULL), _pub(NULL), _sub(NULL) {
 }
 
 UmundoInvoker::~UmundoInvoker() {
-  if (_node) {
-    if (_sub)
-      _node->removeSubscriber(*_sub);
-    if (_pub)
-      _node->removePublisher(*_pub);
-  }
+	if (_node) {
+		if (_sub)
+			_node->removeSubscriber(*_sub);
+		if (_pub)
+			_node->removePublisher(*_pub);
+	}
 };
 
 boost::shared_ptr<IOProcessorImpl> UmundoInvoker::create(Interpreter* interpreter) {
@@ -127,37 +127,37 @@ void UmundoInvoker::invoke(const InvokeRequest& req) {
 		return;
 	}
 	if (req.params.find("domain") != req.params.end()) {
-    domain = req.params.find("domain")->second;
-  }
+		domain = req.params.find("domain")->second;
+	}
 	_node = getNode(_interpreter, domain);
 
 	// add type from .proto or .desc files
 	if (req.params.find("type") != req.params.end()) {
 		std::pair<InvokeRequest::params_t::const_iterator, InvokeRequest::params_t::const_iterator> typeRange = req.params.equal_range("types");
 		for (InvokeRequest::params_t::const_iterator it = typeRange.first; it != typeRange.second; it++) {
-      URL typeURI(it->second);
-      if (typeURI.toAbsolute(_interpreter->getBaseURI())) {
-        std::string filename = typeURI.asLocalFile(".proto");
-        umundo::PBSerializer::addProto(filename);
-      } else {
-        LOG(ERROR) << "umundo invoker has relative type src but nor baseURI set with interpreter.";
-      }
+			URL typeURI(it->second);
+			if (typeURI.toAbsolute(_interpreter->getBaseURI())) {
+				std::string filename = typeURI.asLocalFile(".proto");
+				umundo::PBSerializer::addProto(filename);
+			} else {
+				LOG(ERROR) << "umundo invoker has relative type src but nor baseURI set with interpreter.";
+			}
 		}
 	}
 
-  // add directory with .proto or .desc files
-  if (req.params.find("types") != req.params.end()) {
+	// add directory with .proto or .desc files
+	if (req.params.find("types") != req.params.end()) {
 		std::pair<InvokeRequest::params_t::const_iterator, InvokeRequest::params_t::const_iterator> typeRange = req.params.equal_range("types");
 		for (InvokeRequest::params_t::const_iterator it = typeRange.first; it != typeRange.second; it++) {
-      URL typeURI(it->second);
-      if (typeURI.toAbsolute(_interpreter->getBaseURI()) && typeURI.scheme().compare("file") == 0) {
-        umundo::PBSerializer::addProto(typeURI.path());
-      } else {
-        LOG(ERROR) << "invoke element has relative src URI with no baseURI set.";
-      }
+			URL typeURI(it->second);
+			if (typeURI.toAbsolute(_interpreter->getBaseURI()) && typeURI.scheme().compare("file") == 0) {
+				umundo::PBSerializer::addProto(typeURI.path());
+			} else {
+				LOG(ERROR) << "invoke element has relative src URI with no baseURI set.";
+			}
 		}
-  }
-  
+	}
+
 	if (!_isService) {
 		// use umundo to publish objects on a channel
 		_pub = new umundo::TypedPublisher(channelName);
@@ -257,15 +257,15 @@ void UmundoInvoker::changed(umundo::ServiceDescription desc) {
 
 std::multimap<std::string, std::pair<std::string, umundo::Node*> > UmundoInvoker::_nodes;
 umundo::Node* UmundoInvoker::getNode(Interpreter* interpreter, const std::string& domain) {
-  std::pair<_nodes_t::iterator, _nodes_t::iterator> range = _nodes.equal_range(interpreter->getName());
-  for (_nodes_t::iterator it = range.first; it != range.second; it++) {
-    if (it->second.first.compare(domain) == 0)
-      return it->second.second;
-  }
-  umundo::Node* node = new umundo::Node(domain);
-  std::pair<std::string, std::pair<std::string, umundo::Node*> > pair = std::make_pair(interpreter->getName(), std::make_pair(domain, node));
-  _nodes.insert(pair);
-  return node;
+	std::pair<_nodes_t::iterator, _nodes_t::iterator> range = _nodes.equal_range(interpreter->getName());
+	for (_nodes_t::iterator it = range.first; it != range.second; it++) {
+		if (it->second.first.compare(domain) == 0)
+			return it->second.second;
+	}
+	umundo::Node* node = new umundo::Node(domain);
+	std::pair<std::string, std::pair<std::string, umundo::Node*> > pair = std::make_pair(interpreter->getName(), std::make_pair(domain, node));
+	_nodes.insert(pair);
+	return node;
 }
 
 bool UmundoInvoker::protobufToData(Data& data, const google::protobuf::Message& msg) {

@@ -28,22 +28,22 @@ public:
 	virtual void invoke(const InvokeRequest& req);
 	virtual void sendToParent(const SendRequest& req);
 
-  static void dispatch(void* instance, std::string name);
-  
+	static void dispatch(void* instance, std::string name);
+
 protected:
 	std::string _invokeId;
-  Event _event;
-  
+	Event _event;
+
 };
 
 class HeartbeatDispatcher : public DelayedEventQueue {
 public:
-  static HeartbeatDispatcher* getInstance();
+	static HeartbeatDispatcher* getInstance();
 protected:
-  static HeartbeatDispatcher* _instance;
-  HeartbeatDispatcher();
+	static HeartbeatDispatcher* _instance;
+	HeartbeatDispatcher();
 };
-  
+
 #ifdef BUILD_AS_PLUGINS
 PLUMA_INHERIT_PROVIDER(HeartbeatInvoker, InvokerImpl);
 #endif

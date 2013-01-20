@@ -24,53 +24,48 @@ public:
 	V8DOM();
 	virtual ~V8DOM() { };
 
-  template <typename T>
-  static T* toClassPtr(v8::Local<v8::Value> data) {
-    if(data.IsEmpty())
-      return NULL;
-    else if(!data->IsExternal())
-      return NULL;
-    else
-      return static_cast<T *>(v8::External::Unwrap(data));
-    return NULL;
-  }
-  static v8::Local<v8::External> toExternal(void* pointer) {
-	  v8::HandleScope scope;
-	  return scope.Close(v8::External::New(pointer));
+	template <typename T>
+	static T* toClassPtr(v8::Local<v8::Value> data) {
+		if(data.IsEmpty())
+			return NULL;
+		else if(!data->IsExternal())
+			return NULL;
+		else
+			return static_cast<T *>(v8::External::Unwrap(data));
+		return NULL;
+	}
+	static v8::Local<v8::External> toExternal(void* pointer) {
+		v8::HandleScope scope;
+		return scope.Close(v8::External::New(pointer));
 	}
 
-  Arabica::XPath::XPath<std::string>* xpath;
+	Arabica::XPath::XPath<std::string>* xpath;
 };
 
-class V8Exception : public std::runtime_error
-{
+class V8Exception : public std::runtime_error {
 public:
-  
-  V8Exception(const std::string& reason) :
-  std::runtime_error("DOMException")
-  {
-  } // V8Exception
-  
-  V8Exception(const V8Exception& rhs) :
-  std::runtime_error(rhs),
-  reason_(rhs.reason_)
-  {
-  } // DOMException
-  
-  virtual ~V8Exception() throw()
-  {
-  } // DOMBadCast
-      
-  virtual const char* what() const throw()
-  {
-    return reason_.c_str();
-  } // what
-  
+
+	V8Exception(const std::string& reason) :
+		std::runtime_error("DOMException") {
+	} // V8Exception
+
+	V8Exception(const V8Exception& rhs) :
+		std::runtime_error(rhs),
+		reason_(rhs.reason_) {
+	} // DOMException
+
+	virtual ~V8Exception() throw() {
+	} // DOMBadCast
+
+	virtual const char* what() const throw() {
+		return reason_.c_str();
+	} // what
+
 private:
-  DOMBadCast& operator=(const DOMBadCast&);
-  bool operator==(const DOMBadCast&) const;
-  
-  std::string reason_;
+	DOMBadCast& operator=(const DOMBadCast&);
+	bool operator==(const DOMBadCast&) const;
+
+	std::string reason_;
 }; // class DOMException
 
 }

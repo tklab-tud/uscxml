@@ -131,91 +131,91 @@ Factory::~Factory() {
 void Factory::registerIOProcessor(IOProcessorImpl* ioProcessor) {
 	std::set<std::string> names = ioProcessor->getNames();
 	std::set<std::string>::iterator nameIter = names.begin();
-  if (nameIter != names.end()) {
-    std::string canonicalName = *nameIter;
-    _ioProcessors[canonicalName] = ioProcessor;
-    while(nameIter != names.end()) {
-      _ioProcessorAliases[*nameIter] = canonicalName;
-      nameIter++;
-    }
-  }
+	if (nameIter != names.end()) {
+		std::string canonicalName = *nameIter;
+		_ioProcessors[canonicalName] = ioProcessor;
+		while(nameIter != names.end()) {
+			_ioProcessorAliases[*nameIter] = canonicalName;
+			nameIter++;
+		}
+	}
 }
 
 void Factory::registerDataModel(DataModelImpl* dataModel) {
 	std::set<std::string> names = dataModel->getNames();
 	std::set<std::string>::iterator nameIter = names.begin();
-  if (nameIter != names.end()) {
-    std::string canonicalName = *nameIter;
-    _dataModels[canonicalName] = dataModel;
-    while(nameIter != names.end()) {
-      _dataModelAliases[*nameIter] = canonicalName;
-      nameIter++;
-    }
-  }
+	if (nameIter != names.end()) {
+		std::string canonicalName = *nameIter;
+		_dataModels[canonicalName] = dataModel;
+		while(nameIter != names.end()) {
+			_dataModelAliases[*nameIter] = canonicalName;
+			nameIter++;
+		}
+	}
 }
-  
+
 void Factory::registerInvoker(InvokerImpl* invoker) {
 	std::set<std::string> names = invoker->getNames();
 	std::set<std::string>::iterator nameIter = names.begin();
-  if (nameIter != names.end()) {
-    std::string canonicalName = *nameIter;
-    _invokers[canonicalName] = invoker;
-    while(nameIter != names.end()) {
-      _invokerAliases[*nameIter] = canonicalName;
-      nameIter++;
-    }
-  }
+	if (nameIter != names.end()) {
+		std::string canonicalName = *nameIter;
+		_invokers[canonicalName] = invoker;
+		while(nameIter != names.end()) {
+			_invokerAliases[*nameIter] = canonicalName;
+			nameIter++;
+		}
+	}
 }
 
 boost::shared_ptr<InvokerImpl> Factory::createInvoker(const std::string& type, Interpreter* interpreter) {
 	Factory* factory = getInstance();
-  if (factory->_invokerAliases.find(type) == factory->_invokerAliases.end()) {
-    LOG(ERROR) << "No " << type << " Invoker known";
-    return boost::shared_ptr<InvokerImpl>();
-  }
-  
-  std::string canonicalName = factory->_invokerAliases[type];
+	if (factory->_invokerAliases.find(type) == factory->_invokerAliases.end()) {
+		LOG(ERROR) << "No " << type << " Invoker known";
+		return boost::shared_ptr<InvokerImpl>();
+	}
+
+	std::string canonicalName = factory->_invokerAliases[type];
 	if (factory->_invokers.find(canonicalName) == factory->_invokers.end()) {
-    LOG(ERROR) << "Invoker " << type << " known as " << canonicalName << " but not prototype is available in factory";
-    return boost::shared_ptr<InvokerImpl>();
-  }
-  
-  return boost::static_pointer_cast<InvokerImpl>(factory->_invokers[canonicalName]->create(interpreter));
+		LOG(ERROR) << "Invoker " << type << " known as " << canonicalName << " but not prototype is available in factory";
+		return boost::shared_ptr<InvokerImpl>();
+	}
+
+	return boost::static_pointer_cast<InvokerImpl>(factory->_invokers[canonicalName]->create(interpreter));
 }
 
 boost::shared_ptr<DataModelImpl> Factory::createDataModel(const std::string& type, Interpreter* interpreter) {
 	Factory* factory = getInstance();
-  if (factory->_dataModelAliases.find(type) == factory->_dataModelAliases.end()) {
-    LOG(ERROR) << "No " << type << " DataModel known";
-    return boost::shared_ptr<DataModelImpl>();
-  }
-  
-  std::string canonicalName = factory->_dataModelAliases[type];
+	if (factory->_dataModelAliases.find(type) == factory->_dataModelAliases.end()) {
+		LOG(ERROR) << "No " << type << " DataModel known";
+		return boost::shared_ptr<DataModelImpl>();
+	}
+
+	std::string canonicalName = factory->_dataModelAliases[type];
 	if (factory->_dataModels.find(canonicalName) == factory->_dataModels.end()) {
-    LOG(ERROR) << "DataModel " << type << " known as " << canonicalName << " but not prototype is available in factory";
-    return boost::shared_ptr<DataModelImpl>();
-  }
-  
-  return factory->_dataModels[canonicalName]->create(interpreter);
+		LOG(ERROR) << "DataModel " << type << " known as " << canonicalName << " but not prototype is available in factory";
+		return boost::shared_ptr<DataModelImpl>();
+	}
+
+	return factory->_dataModels[canonicalName]->create(interpreter);
 }
 
 boost::shared_ptr<IOProcessorImpl> Factory::createIOProcessor(const std::string& type, Interpreter* interpreter) {
 	Factory* factory = getInstance();
-  if (factory->_ioProcessorAliases.find(type) == factory->_ioProcessorAliases.end()) {
-    LOG(ERROR) << "No " << type << " IOProcessor known";
-    return boost::shared_ptr<IOProcessorImpl>();
-  }
-  
-  std::string canonicalName = factory->_ioProcessorAliases[type];
+	if (factory->_ioProcessorAliases.find(type) == factory->_ioProcessorAliases.end()) {
+		LOG(ERROR) << "No " << type << " IOProcessor known";
+		return boost::shared_ptr<IOProcessorImpl>();
+	}
+
+	std::string canonicalName = factory->_ioProcessorAliases[type];
 	if (factory->_ioProcessors.find(canonicalName) == factory->_ioProcessors.end()) {
-    LOG(ERROR) << "IOProcessor " << type << " known as " << canonicalName << " but not prototype is available in factory";
-    return boost::shared_ptr<IOProcessorImpl>();
-  }
-  
-  return factory->_ioProcessors[canonicalName]->create(interpreter);
+		LOG(ERROR) << "IOProcessor " << type << " known as " << canonicalName << " but not prototype is available in factory";
+		return boost::shared_ptr<IOProcessorImpl>();
+	}
+
+	return factory->_ioProcessors[canonicalName]->create(interpreter);
 }
 
-  
+
 Factory* Factory::getInstance() {
 	if (_instance == NULL) {
 		_instance = new Factory();

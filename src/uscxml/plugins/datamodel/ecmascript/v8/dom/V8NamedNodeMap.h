@@ -30,58 +30,58 @@ namespace DOM {
 
 class V8NamedNodeMap {
 public:
-    struct V8NamedNodeMapPrivate {
-      V8DOM* dom;
-      Arabica::DOM::NamedNodeMap<std::string>* arabicaThis;
-    };
+	struct V8NamedNodeMapPrivate {
+		V8DOM* dom;
+		Arabica::DOM::NamedNodeMap<std::string>* arabicaThis;
+	};
 
-    V8_DESTRUCTOR(V8NamedNodeMapPrivate);
-    static bool hasInstance(v8::Handle<v8::Value>);
+	V8_DESTRUCTOR(V8NamedNodeMapPrivate);
+	static bool hasInstance(v8::Handle<v8::Value>);
 
-    static v8::Handle<v8::Value> getNamedItemCallback(const v8::Arguments&);
-    static v8::Handle<v8::Value> setNamedItemCallback(const v8::Arguments&);
-    static v8::Handle<v8::Value> removeNamedItemCallback(const v8::Arguments&);
-    static v8::Handle<v8::Value> itemCallback(const v8::Arguments&);
-    static v8::Handle<v8::Value> getNamedItemNSCallback(const v8::Arguments&);
-    static v8::Handle<v8::Value> setNamedItemNSCallback(const v8::Arguments&);
-    static v8::Handle<v8::Value> removeNamedItemNSCallback(const v8::Arguments&);
+	static v8::Handle<v8::Value> getNamedItemCallback(const v8::Arguments&);
+	static v8::Handle<v8::Value> setNamedItemCallback(const v8::Arguments&);
+	static v8::Handle<v8::Value> removeNamedItemCallback(const v8::Arguments&);
+	static v8::Handle<v8::Value> itemCallback(const v8::Arguments&);
+	static v8::Handle<v8::Value> getNamedItemNSCallback(const v8::Arguments&);
+	static v8::Handle<v8::Value> setNamedItemNSCallback(const v8::Arguments&);
+	static v8::Handle<v8::Value> removeNamedItemNSCallback(const v8::Arguments&);
 
-    static v8::Handle<v8::Value> lengthAttrGetter(v8::Local<v8::String> property, const v8::AccessorInfo& info);
+	static v8::Handle<v8::Value> lengthAttrGetter(v8::Local<v8::String> property, const v8::AccessorInfo& info);
 
-    static v8::Persistent<v8::FunctionTemplate> Tmpl;
-    static v8::Handle<v8::FunctionTemplate> getTmpl() {
-        if (Tmpl.IsEmpty()) {
-            v8::Handle<v8::FunctionTemplate> tmpl = v8::FunctionTemplate::New();
-            tmpl->SetClassName(v8::String::New("NamedNodeMap"));
-            tmpl->ReadOnlyPrototype();
+	static v8::Persistent<v8::FunctionTemplate> Tmpl;
+	static v8::Handle<v8::FunctionTemplate> getTmpl() {
+		if (Tmpl.IsEmpty()) {
+			v8::Handle<v8::FunctionTemplate> tmpl = v8::FunctionTemplate::New();
+			tmpl->SetClassName(v8::String::New("NamedNodeMap"));
+			tmpl->ReadOnlyPrototype();
 
-            v8::Local<v8::ObjectTemplate> instance = tmpl->InstanceTemplate();
-            v8::Local<v8::ObjectTemplate> prototype = tmpl->PrototypeTemplate();
-            instance->SetInternalFieldCount(1);
+			v8::Local<v8::ObjectTemplate> instance = tmpl->InstanceTemplate();
+			v8::Local<v8::ObjectTemplate> prototype = tmpl->PrototypeTemplate();
+			instance->SetInternalFieldCount(1);
 
-            instance->SetAccessor(v8::String::NewSymbol("length"), V8NamedNodeMap::lengthAttrGetter, 0,
-                                  v8::External::New(0), static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None));
+			instance->SetAccessor(v8::String::NewSymbol("length"), V8NamedNodeMap::lengthAttrGetter, 0,
+			                      v8::External::New(0), static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None));
 
-            prototype->Set(v8::String::NewSymbol("getNamedItem"),
-                           v8::FunctionTemplate::New(V8NamedNodeMap::getNamedItemCallback, v8::Undefined()), static_cast<v8::PropertyAttribute>(v8::DontDelete));
-            prototype->Set(v8::String::NewSymbol("setNamedItem"),
-                           v8::FunctionTemplate::New(V8NamedNodeMap::setNamedItemCallback, v8::Undefined()), static_cast<v8::PropertyAttribute>(v8::DontDelete));
-            prototype->Set(v8::String::NewSymbol("removeNamedItem"),
-                           v8::FunctionTemplate::New(V8NamedNodeMap::removeNamedItemCallback, v8::Undefined()), static_cast<v8::PropertyAttribute>(v8::DontDelete));
-            prototype->Set(v8::String::NewSymbol("item"),
-                           v8::FunctionTemplate::New(V8NamedNodeMap::itemCallback, v8::Undefined()), static_cast<v8::PropertyAttribute>(v8::DontDelete));
-            prototype->Set(v8::String::NewSymbol("getNamedItemNS"),
-                           v8::FunctionTemplate::New(V8NamedNodeMap::getNamedItemNSCallback, v8::Undefined()), static_cast<v8::PropertyAttribute>(v8::DontDelete));
-            prototype->Set(v8::String::NewSymbol("setNamedItemNS"),
-                           v8::FunctionTemplate::New(V8NamedNodeMap::setNamedItemNSCallback, v8::Undefined()), static_cast<v8::PropertyAttribute>(v8::DontDelete));
-            prototype->Set(v8::String::NewSymbol("removeNamedItemNS"),
-                           v8::FunctionTemplate::New(V8NamedNodeMap::removeNamedItemNSCallback, v8::Undefined()), static_cast<v8::PropertyAttribute>(v8::DontDelete));
+			prototype->Set(v8::String::NewSymbol("getNamedItem"),
+			               v8::FunctionTemplate::New(V8NamedNodeMap::getNamedItemCallback, v8::Undefined()), static_cast<v8::PropertyAttribute>(v8::DontDelete));
+			prototype->Set(v8::String::NewSymbol("setNamedItem"),
+			               v8::FunctionTemplate::New(V8NamedNodeMap::setNamedItemCallback, v8::Undefined()), static_cast<v8::PropertyAttribute>(v8::DontDelete));
+			prototype->Set(v8::String::NewSymbol("removeNamedItem"),
+			               v8::FunctionTemplate::New(V8NamedNodeMap::removeNamedItemCallback, v8::Undefined()), static_cast<v8::PropertyAttribute>(v8::DontDelete));
+			prototype->Set(v8::String::NewSymbol("item"),
+			               v8::FunctionTemplate::New(V8NamedNodeMap::itemCallback, v8::Undefined()), static_cast<v8::PropertyAttribute>(v8::DontDelete));
+			prototype->Set(v8::String::NewSymbol("getNamedItemNS"),
+			               v8::FunctionTemplate::New(V8NamedNodeMap::getNamedItemNSCallback, v8::Undefined()), static_cast<v8::PropertyAttribute>(v8::DontDelete));
+			prototype->Set(v8::String::NewSymbol("setNamedItemNS"),
+			               v8::FunctionTemplate::New(V8NamedNodeMap::setNamedItemNSCallback, v8::Undefined()), static_cast<v8::PropertyAttribute>(v8::DontDelete));
+			prototype->Set(v8::String::NewSymbol("removeNamedItemNS"),
+			               v8::FunctionTemplate::New(V8NamedNodeMap::removeNamedItemNSCallback, v8::Undefined()), static_cast<v8::PropertyAttribute>(v8::DontDelete));
 
 
-            Tmpl = v8::Persistent<v8::FunctionTemplate>::New(tmpl);
-        }
-        return Tmpl;
-    }
+			Tmpl = v8::Persistent<v8::FunctionTemplate>::New(tmpl);
+		}
+		return Tmpl;
+	}
 
 
 };

@@ -3,7 +3,7 @@
 namespace uscxml {
 
 JSCDOM::JSCDOM() {
-  
-}  
+
+}
 
 }

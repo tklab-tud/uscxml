@@ -25,22 +25,23 @@ boost::shared_ptr<DataModelImpl> SWIDataModel::create(Interpreter* interpreter) 
 	boost::shared_ptr<SWIDataModel> dm = boost::shared_ptr<SWIDataModel>(new SWIDataModel());
 	dm->_interpreter = interpreter;
 
-  const char* swibin = getenv("SWI_BINARY");
-  if (swibin == NULL)
-    swibin = SWI_BINARY;
-  const char* quiet = "--quiet";
-  
-  static char * av[] = {
-    (char*)swibin,
-    (char*)quiet,
-    //    "-s",
-    //    "/Users/sradomski/Documents/TK/Code/pl-devel/demo/likes.pl",
-    NULL};
-  if(!PL_initialise(2,av)) {
-    LOG(ERROR) << "Error intializing prolog engine";
-    PL_halt(1);
-    return boost::shared_ptr<DataModelImpl>();
-  }
+	const char* swibin = getenv("SWI_BINARY");
+	if (swibin == NULL)
+		swibin = SWI_BINARY;
+	const char* quiet = "--quiet";
+
+	static char * av[] = {
+		(char*)swibin,
+		(char*)quiet,
+		//    "-s",
+		//    "/Users/sradomski/Documents/TK/Code/pl-devel/demo/likes.pl",
+		NULL
+	};
+	if(!PL_initialise(2,av)) {
+		LOG(ERROR) << "Error intializing prolog engine";
+		PL_halt(1);
+		return boost::shared_ptr<DataModelImpl>();
+	}
 
 	return dm;
 }
@@ -96,49 +97,49 @@ uint32_t SWIDataModel::getLength(const std::string& expr) {
 }
 
 void SWIDataModel::eval(const std::string& expr) {
-  URL localPLFile = URL::toLocalFile(expr, ".pl");
-  PlCall("user", "load_files", PlTermv(localPLFile.asLocalFile(".pl").c_str())) || LOG(ERROR) << "Could not execute prolog from file";
+	URL localPLFile = URL::toLocalFile(expr, ".pl");
+	PlCall("user", "load_files", PlTermv(localPLFile.asLocalFile(".pl").c_str())) || LOG(ERROR) << "Could not execute prolog from file";
 }
 
 bool SWIDataModel::evalAsBool(const std::string& expr) {
-  PlCompound compound(expr.c_str());
-  PlTermv termv(compound.arity());
-  for (int i = 0; i < compound.arity(); i++) {
-    termv[i] = compound[i + 1];
-  }
-  PlQuery query(compound.name(), termv);
-  return query.next_solution() > 0;
+	PlCompound compound(expr.c_str());
+	PlTermv termv(compound.arity());
+	for (int i = 0; i < compound.arity(); i++) {
+		termv[i] = compound[i + 1];
+	}
+	PlQuery query(compound.name(), termv);
+	return query.next_solution() > 0;
 }
 
 std::string SWIDataModel::evalAsString(const std::string& expr) {
-  PlCompound compound(expr.c_str());
-  if (strlen(compound.name())) {
-    PlTermv termv(compound.arity());
-    for (int i = 0; i < compound.arity(); i++) {
-      termv[i] = compound[i + 1];
-    }
-    PlQuery query(compound.name(), termv);
+	PlCompound compound(expr.c_str());
+	if (strlen(compound.name())) {
+		PlTermv termv(compound.arity());
+		for (int i = 0; i < compound.arity(); i++) {
+			termv[i] = compound[i + 1];
+		}
+		PlQuery query(compound.name(), termv);
 
-    std::stringstream ss;
-    while (query.next_solution()) {
-      for (int i = 0; i < compound.arity(); i++) {
-        const char* separator = "";
-        ss << separator << (char *)termv[i];
-        separator = ", ";
-      }
-      ss << std::endl;
-    }
-    return ss.str();
-  }
+		std::stringstream ss;
+		while (query.next_solution()) {
+			for (int i = 0; i < compound.arity(); i++) {
+				const char* separator = "";
+				ss << separator << (char *)termv[i];
+				separator = ", ";
+			}
+			ss << std::endl;
+		}
+		return ss.str();
+	}
 	return std::string(compound);
 }
 
 void SWIDataModel::assign(const std::string& location, const Data& data) {
-  eval(data.atom);
+	eval(data.atom);
 }
 
 void SWIDataModel::assign(const std::string& location, const std::string& expr) {
-  eval(expr);
+	eval(expr);
 }
 
 }

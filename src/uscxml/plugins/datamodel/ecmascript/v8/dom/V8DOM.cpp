@@ -4,8 +4,8 @@ namespace Arabica {
 namespace DOM {
 
 V8DOM::V8DOM() {
-  
-}  
+
+}
 
 }
 }

@@ -47,11 +47,11 @@ public:
 	virtual void setInterpreter(Interpreter* interpreter) {
 		_interpreter = interpreter;
 	}
-  
+
 	virtual Data getDataModelVariables() = 0;
 	virtual void send(const SendRequest& req) = 0;
 
-  virtual void runOnMainThread() {};
+	virtual void runOnMainThread() {};
 
 protected:
 	Interpreter* _interpreter;
@@ -59,23 +59,40 @@ protected:
 
 class IOProcessor {
 public:
-  IOProcessor() : _impl() {}
-  IOProcessor(boost::shared_ptr<IOProcessorImpl> const impl) : _impl(impl) { }
-  IOProcessor(const IOProcessor& other) : _impl(other._impl) { }
-  virtual ~IOProcessor() {};
+	IOProcessor() : _impl() {}
+	IOProcessor(boost::shared_ptr<IOProcessorImpl> const impl) : _impl(impl) { }
+	IOProcessor(const IOProcessor& other) : _impl(other._impl) { }
+	virtual ~IOProcessor() {};
 
-  operator bool()                           const     { return _impl;}
-  bool operator< (const IOProcessor& other) const     { return _impl < other._impl; }
-  bool operator==(const IOProcessor& other) const     { return _impl == other._impl; }
-  bool operator!=(const IOProcessor& other) const     { return _impl != other._impl; }
-  IOProcessor& operator= (const IOProcessor& other)   { _impl = other._impl; return *this; }
+	operator bool()                           const     {
+		return _impl;
+	}
+	bool operator< (const IOProcessor& other) const     {
+		return _impl < other._impl;
+	}
+	bool operator==(const IOProcessor& other) const     {
+		return _impl == other._impl;
+	}
+	bool operator!=(const IOProcessor& other) const     {
+		return _impl != other._impl;
+	}
+	IOProcessor& operator= (const IOProcessor& other)   {
+		_impl = other._impl;
+		return *this;
+	}
 
-  virtual Data getDataModelVariables() const { return _impl->getDataModelVariables(); };
-  virtual void send(const SendRequest& req)  { return _impl->send(req); };
-  virtual void runOnMainThread()             { return _impl->runOnMainThread(); }
+	virtual Data getDataModelVariables() const {
+		return _impl->getDataModelVariables();
+	};
+	virtual void send(const SendRequest& req)  {
+		return _impl->send(req);
+	};
+	virtual void runOnMainThread()             {
+		return _impl->runOnMainThread();
+	}
 
 protected:
-  boost::shared_ptr<IOProcessorImpl> _impl;
+	boost::shared_ptr<IOProcessorImpl> _impl;
 };
 
 class InvokerImpl : public IOProcessorImpl {
@@ -87,28 +104,40 @@ public:
 
 class Invoker : public IOProcessor {
 public:
-  Invoker() : _impl() {}
-  Invoker(boost::shared_ptr<InvokerImpl> const impl) : IOProcessor(impl), _impl(impl) { }
-  Invoker(const Invoker& other) : IOProcessor(other._impl), _impl(other._impl) { }
-  virtual ~Invoker() {};
-  
-  operator bool()                       const { return _impl;}
-  bool operator< (const Invoker& other) const { return _impl < other._impl; }
-  bool operator==(const Invoker& other) const { return _impl == other._impl; }
-  bool operator!=(const Invoker& other) const { return _impl != other._impl; }
-  Invoker& operator= (const Invoker& other)   {
-    _impl = other._impl;
-    IOProcessor::_impl = _impl;
-    return *this;
-  }
+	Invoker() : _impl() {}
+	Invoker(boost::shared_ptr<InvokerImpl> const impl) : IOProcessor(impl), _impl(impl) { }
+	Invoker(const Invoker& other) : IOProcessor(other._impl), _impl(other._impl) { }
+	virtual ~Invoker() {};
 
-  virtual void invoke(InvokeRequest& req)     { _impl->invoke(req); }
-	virtual void sendToParent(SendRequest& req) { _impl->sendToParent(req); }
+	operator bool()                       const {
+		return _impl;
+	}
+	bool operator< (const Invoker& other) const {
+		return _impl < other._impl;
+	}
+	bool operator==(const Invoker& other) const {
+		return _impl == other._impl;
+	}
+	bool operator!=(const Invoker& other) const {
+		return _impl != other._impl;
+	}
+	Invoker& operator= (const Invoker& other)   {
+		_impl = other._impl;
+		IOProcessor::_impl = _impl;
+		return *this;
+	}
+
+	virtual void invoke(InvokeRequest& req)     {
+		_impl->invoke(req);
+	}
+	virtual void sendToParent(SendRequest& req) {
+		_impl->sendToParent(req);
+	}
 
 protected:
-  boost::shared_ptr<InvokerImpl> _impl;
+	boost::shared_ptr<InvokerImpl> _impl;
 };
-    
+
 class DataModelImpl {
 public:
 	virtual ~DataModelImpl() {}
@@ -135,36 +164,71 @@ public:
 
 class DataModel {
 public:
-  DataModel() : _impl() {}
-  DataModel(boost::shared_ptr<DataModelImpl> const impl) : _impl(impl) { }
-  DataModel(const DataModel& other) : _impl(other._impl) { }
-  virtual ~DataModel() {};
-  
-  operator bool()                         const     { return _impl;}
-  bool operator< (const DataModel& other) const     { return _impl < other._impl; }
-  bool operator==(const DataModel& other) const     { return _impl == other._impl; }
-  bool operator!=(const DataModel& other) const     { return _impl != other._impl; }
-  DataModel& operator= (const DataModel& other)     { _impl = other._impl; return *this; }
+	DataModel() : _impl() {}
+	DataModel(boost::shared_ptr<DataModelImpl> const impl) : _impl(impl) { }
+	DataModel(const DataModel& other) : _impl(other._impl) { }
+	virtual ~DataModel() {};
 
-  virtual bool validate(const std::string& location, const std::string& schema) { return _impl->validate(location, schema); }
-	virtual void setEvent(const Event& event) { return _impl->setEvent(event); }
-	virtual Data getStringAsData(const std::string& content) { return _impl->getStringAsData(content); }
+	operator bool()                         const     {
+		return _impl;
+	}
+	bool operator< (const DataModel& other) const     {
+		return _impl < other._impl;
+	}
+	bool operator==(const DataModel& other) const     {
+		return _impl == other._impl;
+	}
+	bool operator!=(const DataModel& other) const     {
+		return _impl != other._impl;
+	}
+	DataModel& operator= (const DataModel& other)     {
+		_impl = other._impl;
+		return *this;
+	}
 
-  virtual uint32_t getLength(const std::string& expr) { return _impl->getLength(expr); }
-	virtual void pushContext() { return _impl->pushContext(); }
-	virtual void popContext() { return _impl->popContext(); }
-  
-  virtual void registerIOProcessor(const std::string& name, const IOProcessor& ioprocessor) { _impl->registerIOProcessor(name, ioprocessor); }
+	virtual bool validate(const std::string& location, const std::string& schema) {
+		return _impl->validate(location, schema);
+	}
+	virtual void setEvent(const Event& event) {
+		return _impl->setEvent(event);
+	}
+	virtual Data getStringAsData(const std::string& content) {
+		return _impl->getStringAsData(content);
+	}
 
-	virtual void eval(const std::string& expr) { return _impl->eval(expr); }
-	virtual std::string evalAsString(const std::string& expr) { return _impl->evalAsString(expr); }
-	virtual bool evalAsBool(const std::string& expr) { return _impl->evalAsBool(expr); }
+	virtual uint32_t getLength(const std::string& expr) {
+		return _impl->getLength(expr);
+	}
+	virtual void pushContext() {
+		return _impl->pushContext();
+	}
+	virtual void popContext() {
+		return _impl->popContext();
+	}
 
-	virtual void assign(const std::string& location, const std::string& expr) { return _impl->assign(location, expr); }
-	virtual void assign(const std::string& location, const Data& data) { return _impl->assign(location, data); }
+	virtual void registerIOProcessor(const std::string& name, const IOProcessor& ioprocessor) {
+		_impl->registerIOProcessor(name, ioprocessor);
+	}
+
+	virtual void eval(const std::string& expr) {
+		return _impl->eval(expr);
+	}
+	virtual std::string evalAsString(const std::string& expr) {
+		return _impl->evalAsString(expr);
+	}
+	virtual bool evalAsBool(const std::string& expr) {
+		return _impl->evalAsBool(expr);
+	}
+
+	virtual void assign(const std::string& location, const std::string& expr) {
+		return _impl->assign(location, expr);
+	}
+	virtual void assign(const std::string& location, const Data& data) {
+		return _impl->assign(location, data);
+	}
 
 protected:
-  boost::shared_ptr<DataModelImpl> _impl;
+	boost::shared_ptr<DataModelImpl> _impl;
 };
 
 class Factory {
@@ -180,11 +244,11 @@ public:
 	static Factory* getInstance();
 
 	std::map<std::string, DataModelImpl*> _dataModels;
-  std::map<std::string, std::string> _dataModelAliases;
+	std::map<std::string, std::string> _dataModelAliases;
 	std::map<std::string, IOProcessorImpl*> _ioProcessors;
-  std::map<std::string, std::string> _ioProcessorAliases;
+	std::map<std::string, std::string> _ioProcessorAliases;
 	std::map<std::string, InvokerImpl*> _invokers;
-  std::map<std::string, std::string> _invokerAliases;
+	std::map<std::string, std::string> _invokerAliases;
 
 	static std::string pluginPath;
 

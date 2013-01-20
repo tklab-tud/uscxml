@@ -86,10 +86,10 @@ void DelayedEventQueue::timerCallback(evutil_socket_t fd, short what, void *arg)
 
 	std::string eventId = data->eventId; // copy eventId
 	data->callback(data->userData, eventId);
-  if (!data->persist) {
-    event_free(data->event);
-    data->eventQueue->_callbackData.erase(data->eventId);
-  }
+	if (!data->persist) {
+		event_free(data->event);
+		data->eventQueue->_callbackData.erase(data->eventId);
+	}
 }
 
 }

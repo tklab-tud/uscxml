@@ -29,7 +29,7 @@ const std::string Interpreter::getUUID() {
 }
 
 Interpreter::Interpreter() : Arabica::SAX2DOM::Parser<std::string>() {
-  _lastRunOnMainThread = 0;
+	_lastRunOnMainThread = 0;
 	_thread = NULL;
 	_sendQueue = NULL;
 	_running = false;
@@ -58,13 +58,13 @@ Interpreter* Interpreter::fromXML(const std::string& xml) {
 }
 
 Interpreter* Interpreter::fromURI(const std::string& uri) {
-  URL absUrl(uri);
-  if (!absUrl.isAbsolute()) {
-    if (!absUrl.toAbsoluteCwd()) {
-      LOG(ERROR) << "Given URL is not absolute or does not have file schema";
-      return NULL;
-    }
-  }
+	URL absUrl(uri);
+	if (!absUrl.isAbsolute()) {
+		if (!absUrl.toAbsoluteCwd()) {
+			LOG(ERROR) << "Given URL is not absolute or does not have file schema";
+			return NULL;
+		}
+	}
 	Arabica::SAX::InputSource<std::string> inputSource(absUrl.asString());
 	Interpreter* interpreter = fromInputSource(inputSource);
 
@@ -100,15 +100,15 @@ bool Interpreter::toAbsoluteURI(URL& uri) {
 
 	if (_baseURI.asString().size() > 0) {
 		if (uri.toAbsolute(_baseURI))
-      return true;
-    return false;
+			return true;
+		return false;
 	}
 	return false;
 }
 
 void Interpreter::startPrefixMapping(const std::string& prefix, const std::string& uri) {
 //  std::cout << "starting prefix mapping " << prefix << ": " << uri << std::endl;
-  _nsContext.addNamespaceDeclaration(uri, prefix);
+	_nsContext.addNamespaceDeclaration(uri, prefix);
 }
 
 Interpreter* Interpreter::fromInputSource(Arabica::SAX::InputSource<std::string>& source) {
@@ -118,7 +118,7 @@ Interpreter* Interpreter::fromInputSource(Arabica::SAX::InputSource<std::string>
 	interpreter->setErrorHandler(errorHandler);
 	if(!interpreter->parse(source) || !interpreter->Arabica::SAX2DOM::Parser<std::string>::getDocument().hasChildNodes()) {
 		if(errorHandler.errorsReported()) {
-      LOG(ERROR) << "could not parse input:";
+			LOG(ERROR) << "could not parse input:";
 			LOG(ERROR) << errorHandler.errors() << std::endl;
 		} else {
 			Arabica::SAX::InputSourceResolver resolver(source, Arabica::default_string_adaptor<std::string>());
@@ -126,7 +126,7 @@ Interpreter* Interpreter::fromInputSource(Arabica::SAX::InputSource<std::string>
 				LOG(ERROR) << source.getSystemId() << ": no such file";
 			}
 		}
-    delete interpreter;
+		delete interpreter;
 		return NULL;
 	} else {
 		interpreter->_document = interpreter->Arabica::SAX2DOM::Parser<std::string>::getDocument();
@@ -142,17 +142,17 @@ void Interpreter::init() {
 		NodeList<std::string> scxmls = _document.getElementsByTagName("scxml");
 		if (scxmls.getLength() > 0) {
 			_scxml = (Arabica::DOM::Element<std::string>)scxmls.item(0);
-      
-      // do we have a xmlns attribute?
-      std::string ns = _document.getDocumentElement().getNamespaceURI();
-      if(ns.size() > 0) {
-        _nsContext.addNamespaceDeclaration(ns, "sc");
-        _nsPrefix = "sc:";
-      }
-      // do we have additional namespaces?
-      
-      _xpath.setNamespaceContext(_nsContext);
-      
+
+			// do we have a xmlns attribute?
+			std::string ns = _document.getDocumentElement().getNamespaceURI();
+			if(ns.size() > 0) {
+				_nsContext.addNamespaceDeclaration(ns, "sc");
+				_nsPrefix = "sc:";
+			}
+			// do we have additional namespaces?
+
+			_xpath.setNamespaceContext(_nsContext);
+
 			normalize(_document);
 			_name = (HAS_ATTR(_scxml, "name") ? ATTR(_scxml, "name") : getUUID());
 		} else {
@@ -168,12 +168,12 @@ Interpreter::~Interpreter() {
 		_thread->join();
 		delete(_thread);
 	}
-  if (_sendQueue)
-    delete _sendQueue;
+	if (_sendQueue)
+		delete _sendQueue;
 }
 
 void Interpreter::start() {
-  _done = false;
+	_done = false;
 	_thread = new tthread::thread(Interpreter::run, this);
 }
 
@@ -182,38 +182,38 @@ void Interpreter::run(void* instance) {
 }
 
 bool Interpreter::runOnMainThread(int fps, bool blocking) {
-  if (_done)
-    return false;
+	if (_done)
+		return false;
 
-  if (fps > 0) {
-    uint64_t nextRun = _lastRunOnMainThread + (1000 / fps);
-    if (blocking) {
-      while(nextRun > tthread::timeStamp()) {
-        tthread::this_thread::sleep_for(tthread::chrono::milliseconds(nextRun - tthread::timeStamp()));
-      }
-    } else {
-      return true;
-    }
-  }
-  
-  _lastRunOnMainThread = tthread::timeStamp();
-  
-  tthread::lock_guard<tthread::mutex> lock(_mutex);
-  std::map<std::string, IOProcessor>::iterator ioProcessorIter = _ioProcessors.begin();
+	if (fps > 0) {
+		uint64_t nextRun = _lastRunOnMainThread + (1000 / fps);
+		if (blocking) {
+			while(nextRun > tthread::timeStamp()) {
+				tthread::this_thread::sleep_for(tthread::chrono::milliseconds(nextRun - tthread::timeStamp()));
+			}
+		} else {
+			return true;
+		}
+	}
+
+	_lastRunOnMainThread = tthread::timeStamp();
+
+	tthread::lock_guard<tthread::mutex> lock(_mutex);
+	std::map<std::string, IOProcessor>::iterator ioProcessorIter = _ioProcessors.begin();
 	while(ioProcessorIter != _ioProcessors.end()) {
 		ioProcessorIter->second.runOnMainThread();
 		ioProcessorIter++;
 	}
 
-  std::map<std::string, Invoker>::iterator invokerIter = _invokers.begin();
+	std::map<std::string, Invoker>::iterator invokerIter = _invokers.begin();
 	while(invokerIter != _invokers.end()) {
 		invokerIter->second.runOnMainThread();
 		invokerIter++;
 	}
-  
-  return (_thread != NULL);
+
+	return (_thread != NULL);
 }
-  
+
 void Interpreter::waitForStabilization() {
 	tthread::lock_guard<tthread::mutex> lock(_mutex);
 	_stabilized.wait(_mutex);
@@ -238,29 +238,29 @@ void Interpreter::interpret() {
 	setupIOProcessors();
 
 	_running = true;
-  _binding = (HAS_ATTR(_scxml, "binding") && boost::iequals(ATTR(_scxml, "binding"), "late") ? LATE : EARLY);
-  
-  // @TODO: Reread http://www.w3.org/TR/scxml/#DataBinding
-  
+	_binding = (HAS_ATTR(_scxml, "binding") && boost::iequals(ATTR(_scxml, "binding"), "late") ? LATE : EARLY);
+
+	// @TODO: Reread http://www.w3.org/TR/scxml/#DataBinding
+
 	if (_dataModel && _binding == EARLY) {
-    // initialize all data elements
+		// initialize all data elements
 		NodeSet<std::string> dataElems = _xpath.evaluate("//" + _nsPrefix + "data", _document).asNodeSet();
 		for (unsigned int i = 0; i < dataElems.size(); i++) {
 			initializeData(dataElems[i]);
 		}
 	} else if(_dataModel) {
-    // initialize current data elements
+		// initialize current data elements
 		NodeSet<std::string> topDataElems = filterChildElements("data", filterChildElements("datamodel", _scxml));
-    //		NodeSet<std::string> topDataElems = _xpath.evaluate("/" + _nsPrefix + "scxml/" + _nsPrefix + "datamodel/" + _nsPrefix + "data", _document).asNodeSet();
+		//		NodeSet<std::string> topDataElems = _xpath.evaluate("/" + _nsPrefix + "scxml/" + _nsPrefix + "datamodel/" + _nsPrefix + "data", _document).asNodeSet();
 		for (unsigned int i = 0; i < topDataElems.size(); i++) {
 			initializeData(topDataElems[i]);
 		}
 	}
 
-  // executeGlobalScriptElements
+	// executeGlobalScriptElements
 	NodeSet<std::string> globalScriptElems = _xpath.evaluate("/" + _nsPrefix + "scxml/" + _nsPrefix + "script", _document).asNodeSet();
 	for (unsigned int i = 0; i < globalScriptElems.size(); i++) {
-    //    std::cout << globalScriptElems[i].getFirstChild().getNodeValue() << std::endl;
+		//    std::cout << globalScriptElems[i].getFirstChild().getNodeValue() << std::endl;
 		if (_dataModel)
 			executeContent(globalScriptElems[i]);
 	}
@@ -295,21 +295,21 @@ void Interpreter::initializeData(const Arabica::DOM::Node<std::string>& data) {
 	}
 	try {
 		if (!HAS_ATTR(data, "id")) {
-      LOG(ERROR) << "Data element has no id!";
+			LOG(ERROR) << "Data element has no id!";
 			return;
-    }
+		}
 
 		if (HAS_ATTR(data, "expr")) {
 			std::string value = ATTR(data, "expr");
 			_dataModel.assign(ATTR(data, "id"), value);
 		} else if (HAS_ATTR(data, "src")) {
-      URL srcURL(ATTR(data, "src"));
-      if (!srcURL.isAbsolute())
-        toAbsoluteURI(srcURL);
+			URL srcURL(ATTR(data, "src"));
+			if (!srcURL.isAbsolute())
+				toAbsoluteURI(srcURL);
 
-      std::stringstream ss;
-      ss << srcURL;
-      _dataModel.assign(ATTR(data, "id"), ss.str());
+			std::stringstream ss;
+			ss << srcURL;
+			_dataModel.assign(ATTR(data, "id"), ss.str());
 
 		} else if (data.hasChildNodes()) {
 			// search for the text node with the actual script
@@ -439,11 +439,11 @@ void Interpreter::mainEventLoop() {
 			_stabilized.notify_all();
 		}
 
-    // whenever we have a stable configuration, run the mainThread hooks with 200fps    
-    while(_externalQueue.isEmpty() && _thread == NULL) {
-      runOnMainThread(200);
-    }
-    
+		// whenever we have a stable configuration, run the mainThread hooks with 200fps
+		while(_externalQueue.isEmpty() && _thread == NULL) {
+			runOnMainThread(200);
+		}
+
 		Event externalEvent = _externalQueue.pop();
 		if (!_running)
 			exitInterpreter();
@@ -688,7 +688,7 @@ void Interpreter::delayedSend(void* userdata, std::string eventName) {
 		// send to invoker
 		std::string invokeId = sendReq.target.substr(2, sendReq.target.length() - 2);
 		if (INSTANCE->_invokers.find(invokeId) != INSTANCE->_invokers.end()) {
-      tthread::lock_guard<tthread::mutex> lock(INSTANCE->_mutex);
+			tthread::lock_guard<tthread::mutex> lock(INSTANCE->_mutex);
 			INSTANCE->_invokers[invokeId].send(sendReq);
 		} else {
 			LOG(ERROR) << "Can not send to invoked component '" << invokeId << "', no such invokeId" << std::endl;
@@ -707,7 +707,7 @@ void Interpreter::delayedSend(void* userdata, std::string eventName) {
 
 void Interpreter::invoke(const Arabica::DOM::Node<std::string>& element) {
 	InvokeRequest invokeReq;
-  invokeReq.dom = element;
+	invokeReq.dom = element;
 
 	try {
 		// type
@@ -787,13 +787,13 @@ void Interpreter::invoke(const Arabica::DOM::Node<std::string>& element) {
 		if (contents.size() > 1)
 			LOG(ERROR) << "Only a single content element is allowed for send elements - using first one";
 		if (contents.size() > 0) {
-      //std::cout << contents[0] << std::endl;
+			//std::cout << contents[0] << std::endl;
 			invokeReq.content = contents[0].getNodeValue();
 		}
 
 		Invoker invoker(Factory::createInvoker(invokeReq.type, this));
 		if (invoker) {
-      tthread::lock_guard<tthread::mutex> lock(_mutex);
+			tthread::lock_guard<tthread::mutex> lock(_mutex);
 			_invokers[invokeReq.invokeid] = invoker;
 			LOG(INFO) << "Added invoker " << invokeReq.type << " at " << invokeReq.invokeid;
 			invoker.invoke(invokeReq);
@@ -909,7 +909,7 @@ Arabica::XPath::NodeSet<std::string> Interpreter::selectEventlessTransitions() {
 		NodeSet<std::string> ancestors = getProperAncestors(atomicStates[i], Arabica::DOM::Node<std::string>());
 		ancestors.push_back(atomicStates[i]);
 		for (unsigned int j = 0; j < ancestors.size(); j++) {
-      NodeSet<std::string> transitions = filterChildElements("transition", ancestors[j]);
+			NodeSet<std::string> transitions = filterChildElements("transition", ancestors[j]);
 			for (unsigned int k = 0; k < transitions.size(); k++) {
 				if (!((Arabica::DOM::Element<std::string>)transitions[k]).hasAttribute("event") && hasConditionMatch(transitions[k])) {
 					enabledTransitions.push_back(transitions[k]);
@@ -1248,7 +1248,7 @@ void Interpreter::exitStates(const Arabica::XPath::NodeSet<std::string>& enabled
 	statesToExit.reverse();
 
 	for (int i = 0; i < statesToExit.size(); i++) {
-    NodeSet<std::string> histories = filterChildElements("history", statesToExit[i]);
+		NodeSet<std::string> histories = filterChildElements("history", statesToExit[i]);
 		for (int j = 0; j < histories.size(); j++) {
 			Arabica::DOM::Element<std::string> historyElem = (Arabica::DOM::Element<std::string>)histories[j];
 			std::string historyType = (historyElem.hasAttribute("type") ? historyElem.getAttribute("type") : "shallow");
@@ -1267,12 +1267,12 @@ void Interpreter::exitStates(const Arabica::XPath::NodeSet<std::string>& enabled
 	}
 
 	for (int i = 0; i < statesToExit.size(); i++) {
-    NodeSet<std::string> onExits = filterChildElements("onExit", statesToExit[i]);
+		NodeSet<std::string> onExits = filterChildElements("onExit", statesToExit[i]);
 		for (int j = 0; j < onExits.size(); j++) {
 			Arabica::DOM::Element<std::string> onExitElem = (Arabica::DOM::Element<std::string>)onExits[j];
 			executeContent(onExitElem);
 		}
-    NodeSet<std::string> invokes = filterChildElements("invoke", statesToExit[i]);
+		NodeSet<std::string> invokes = filterChildElements("invoke", statesToExit[i]);
 		for (int j = 0; j < invokes.size(); j++) {
 			Arabica::DOM::Element<std::string> invokeElem = (Arabica::DOM::Element<std::string>)invokes[j];
 			cancelInvoke(invokeElem);
@@ -1359,11 +1359,11 @@ void Interpreter::enterStates(const Arabica::XPath::NodeSet<std::string>& enable
 	}
 	statesToEnter.to_document_order();
 #if 0
-  std::cout << "Entering states: ";
-  for (int i = 0; i < statesToEnter.size(); i++) {
-    std::cout << ATTR(statesToEnter[i], "id") << ", ";
-  }
-  std::cout << std::endl;
+	std::cout << "Entering states: ";
+	for (int i = 0; i < statesToEnter.size(); i++) {
+		std::cout << ATTR(statesToEnter[i], "id") << ", ";
+	}
+	std::cout << std::endl;
 #endif
 
 	for (int i = 0; i < statesToEnter.size(); i++) {
@@ -1419,7 +1419,7 @@ void Interpreter::enterStates(const Arabica::XPath::NodeSet<std::string>& enable
 		if (isFinal(stateElem) && parentIsScxmlState(stateElem)) {
 			_running = false;
 			_done = true;
-    }
+		}
 	}
 }
 
@@ -1543,10 +1543,10 @@ NEXT_ANCESTOR:
 
 Arabica::DOM::Node<std::string> Interpreter::getState(const std::string& stateId) {
 
-  if (_cachedStates.find(stateId) != _cachedStates.end()) {
-    return _cachedStates[stateId];
-  }
-  
+	if (_cachedStates.find(stateId) != _cachedStates.end()) {
+		return _cachedStates[stateId];
+	}
+
 	// first try atomic and compund states
 	NodeSet<std::string> target = _xpath.evaluate("//" + _nsPrefix + "state[@id='" + stateId + "']", _document).asNodeSet();
 	if (target.size() > 0)
@@ -1565,7 +1565,7 @@ Arabica::DOM::Node<std::string> Interpreter::getState(const std::string& stateId
 FOUND:
 	if (target.size() > 0) {
 		assert(target.size() == 1);
-    _cachedStates[stateId] = target[0];
+		_cachedStates[stateId] = target[0];
 		return target[0];
 	}
 	// return the empty node
@@ -1655,23 +1655,23 @@ std::vector<std::string> Interpreter::tokenizeIdRefs(const std::string& idRefs) 
 }
 
 NodeSet<std::string> Interpreter::filterChildElements(const std::string& tagName, const NodeSet<std::string>& nodeSet) {
-  NodeSet<std::string> filteredChildElems;
-  for (unsigned int i = 0; i < nodeSet.size(); i++) {
-    filteredChildElems.push_back(filterChildElements(tagName, nodeSet[i]));
-  }
-  return filteredChildElems;
+	NodeSet<std::string> filteredChildElems;
+	for (unsigned int i = 0; i < nodeSet.size(); i++) {
+		filteredChildElems.push_back(filterChildElements(tagName, nodeSet[i]));
+	}
+	return filteredChildElems;
 }
 
 NodeSet<std::string> Interpreter::filterChildElements(const std::string& tagName, const Node<std::string>& node) {
-  NodeSet<std::string> filteredChildElems;
-  NodeList<std::string> childs = node.getChildNodes();
-  for (unsigned int i = 0; i < childs.getLength(); i++) {
-    if (childs.item(i).getNodeType() != Node_base::ELEMENT_NODE ||
-        !boost::iequals(TAGNAME(childs.item(i)), tagName))
-      continue;
-    filteredChildElems.push_back(childs.item(i));
-  }
-  return filteredChildElems;
+	NodeSet<std::string> filteredChildElems;
+	NodeList<std::string> childs = node.getChildNodes();
+	for (unsigned int i = 0; i < childs.getLength(); i++) {
+		if (childs.item(i).getNodeType() != Node_base::ELEMENT_NODE ||
+		        !boost::iequals(TAGNAME(childs.item(i)), tagName))
+			continue;
+		filteredChildElems.push_back(childs.item(i));
+	}
+	return filteredChildElems;
 }
 
 NodeSet<std::string> Interpreter::getProperAncestors(const Arabica::DOM::Node<std::string>& s1,
@@ -1823,7 +1823,7 @@ bool Interpreter::isCompound(const Arabica::DOM::Node<std::string>& state) {
 }
 
 void Interpreter::setupIOProcessors() {
-  tthread::lock_guard<tthread::mutex> lock(_mutex);
+	tthread::lock_guard<tthread::mutex> lock(_mutex);
 	std::map<std::string, IOProcessorImpl*>::iterator ioProcIter = Factory::getInstance()->_ioProcessors.begin();
 	while(ioProcIter != Factory::getInstance()->_ioProcessors.end()) {
 		_ioProcessors[ioProcIter->first] = Factory::createIOProcessor(ioProcIter->first, this);
@@ -1841,7 +1841,7 @@ void Interpreter::setupIOProcessors() {
 }
 
 IOProcessor Interpreter::getIOProcessor(const std::string& type) {
-  tthread::lock_guard<tthread::mutex> lock(_mutex);
+	tthread::lock_guard<tthread::mutex> lock(_mutex);
 	if (_ioProcessors.find(type) == _ioProcessors.end()) {
 		LOG(ERROR) << "No ioProcessor known for type " << type;
 		return IOProcessor();

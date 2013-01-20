@@ -35,64 +35,64 @@ public:
 	virtual void cancel(const std::string sendId);
 	virtual void invoke(const InvokeRequest& req);
 	virtual void sendToParent(const SendRequest& req);
-  virtual void handleEvent(Arabica::DOM::Events::Event<std::string>& event);
+	virtual void handleEvent(Arabica::DOM::Events::Event<std::string>& event);
 
-  virtual void runOnMainThread();
+	virtual void runOnMainThread();
 
 protected:
-  void processDisplay(const Arabica::DOM::Node<std::string>& element);
-  void updateDisplay(osg::Node* node, Arabica::DOM::Events::Event<std::string>& event);
-  void processViewport(const Arabica::DOM::Node<std::string>& element);
-  void updateViewport(osg::Node* node, Arabica::DOM::Events::Event<std::string>& event);
-  void processCamera(const Arabica::DOM::Node<std::string>& element);
-  void updateCamera(osg::Node* node, Arabica::DOM::Events::Event<std::string>& event);
+	void processDisplay(const Arabica::DOM::Node<std::string>& element);
+	void updateDisplay(osg::Node* node, Arabica::DOM::Events::Event<std::string>& event);
+	void processViewport(const Arabica::DOM::Node<std::string>& element);
+	void updateViewport(osg::Node* node, Arabica::DOM::Events::Event<std::string>& event);
+	void processCamera(const Arabica::DOM::Node<std::string>& element);
+	void updateCamera(osg::Node* node, Arabica::DOM::Events::Event<std::string>& event);
 
-  void processTranslation(const Arabica::DOM::Node<std::string>& element);
-  void updateTranslation(osg::Node* node, Arabica::DOM::Events::Event<std::string>& event);
-  
-  void processRotation(const Arabica::DOM::Node<std::string>& element);
-  void updateRotation(osg::Node* node, Arabica::DOM::Events::Event<std::string>& event);
-  static osg::Matrix rotationFromElement(const Arabica::DOM::Node<std::string>& element);
-  
-  void processScale(const Arabica::DOM::Node<std::string>& element);
-  void updateScale(osg::Node* node, Arabica::DOM::Events::Event<std::string>& event);
-  void processNode(const Arabica::DOM::Node<std::string>& element);
-  void updateNode(osg::Node* node, Arabica::DOM::Events::Event<std::string>& event);
+	void processTranslation(const Arabica::DOM::Node<std::string>& element);
+	void updateTranslation(osg::Node* node, Arabica::DOM::Events::Event<std::string>& event);
 
-  void processChildren(const std::set<std::string>& validChildren, const Arabica::DOM::Node<std::string>& element);
-  
-  void getViewport(const Arabica::DOM::Node<std::string>& element,
-                   unsigned int& x,
-                   unsigned int& y,
-                   unsigned int& width,
-                   unsigned int& height,
-                   int& screenId);
+	void processRotation(const Arabica::DOM::Node<std::string>& element);
+	void updateRotation(osg::Node* node, Arabica::DOM::Events::Event<std::string>& event);
+	static osg::Matrix rotationFromElement(const Arabica::DOM::Node<std::string>& element);
 
-  void getViewport(const Arabica::DOM::Node<std::string>& element,
-                   unsigned int& x,
-                   unsigned int& y,
-                   unsigned int& width,
-                   unsigned int& height,
-                   CompositeDisplay* display);
-  
-  void getViewport(const Arabica::DOM::Node<std::string>& element,
-                   unsigned int& x,
-                   unsigned int& y,
-                   unsigned int& width,
-                   unsigned int& height,
-                   unsigned int fullWidth,
-                   unsigned int fullHeight);
+	void processScale(const Arabica::DOM::Node<std::string>& element);
+	void updateScale(osg::Node* node, Arabica::DOM::Events::Event<std::string>& event);
+	void processNode(const Arabica::DOM::Node<std::string>& element);
+	void updateNode(osg::Node* node, Arabica::DOM::Events::Event<std::string>& event);
 
-  osgViewer::View* getView(const Arabica::DOM::Node<std::string>& element);
+	void processChildren(const std::set<std::string>& validChildren, const Arabica::DOM::Node<std::string>& element);
 
-  std::map<Arabica::DOM::Node<std::string>, CompositeDisplay*> _displays;
-  typedef std::map<Arabica::DOM::Node<std::string>, CompositeDisplay*> _displays_t;
+	void getViewport(const Arabica::DOM::Node<std::string>& element,
+	                 unsigned int& x,
+	                 unsigned int& y,
+	                 unsigned int& width,
+	                 unsigned int& height,
+	                 int& screenId);
 
-  std::map<Arabica::DOM::Node<std::string>, osgViewer::View*> _views;
-  typedef std::map<Arabica::DOM::Node<std::string>, osgViewer::View*> _views_t;
+	void getViewport(const Arabica::DOM::Node<std::string>& element,
+	                 unsigned int& x,
+	                 unsigned int& y,
+	                 unsigned int& width,
+	                 unsigned int& height,
+	                 CompositeDisplay* display);
 
-  std::map<Arabica::DOM::Node<std::string>, osg::Node*> _nodes;
-  typedef std::map<Arabica::DOM::Node<std::string>, osg::Node*> _nodes_t;
+	void getViewport(const Arabica::DOM::Node<std::string>& element,
+	                 unsigned int& x,
+	                 unsigned int& y,
+	                 unsigned int& width,
+	                 unsigned int& height,
+	                 unsigned int fullWidth,
+	                 unsigned int fullHeight);
+
+	osgViewer::View* getView(const Arabica::DOM::Node<std::string>& element);
+
+	std::map<Arabica::DOM::Node<std::string>, CompositeDisplay*> _displays;
+	typedef std::map<Arabica::DOM::Node<std::string>, CompositeDisplay*> _displays_t;
+
+	std::map<Arabica::DOM::Node<std::string>, osgViewer::View*> _views;
+	typedef std::map<Arabica::DOM::Node<std::string>, osgViewer::View*> _views_t;
+
+	std::map<Arabica::DOM::Node<std::string>, osg::Node*> _nodes;
+	typedef std::map<Arabica::DOM::Node<std::string>, osg::Node*> _nodes_t;
 
 	tthread::recursive_mutex _mutex;
 	std::string _invokeId;
