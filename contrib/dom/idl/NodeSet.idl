@@ -1,0 +1,7 @@
+[
+	CustomIndexedGetter
+] interface NodeSet {
+	void               toDocumentOrder();
+  readonly attribute unsigned long    size;
+	readonly attribute boolean empty;
+};

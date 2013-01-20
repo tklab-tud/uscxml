@@ -1,0 +1,49 @@
+interface Document : Node {
+  readonly attribute DocumentType     doctype;
+  readonly attribute DOMImplementation  implementation;
+  readonly attribute Element          documentElement;
+  Element            createElement(in DOMString tagName)
+                                      raises(DOMException);
+  DocumentFragment   createDocumentFragment();
+  Text               createTextNode(in DOMString data);
+  Comment            createComment(in DOMString data);
+  CDATASection       createCDATASection(in DOMString data)
+                                      raises(DOMException);
+  ProcessingInstruction createProcessingInstruction(in DOMString target, 
+                                                    in DOMString data)
+                                      raises(DOMException);
+  Attr               createAttribute(in DOMString name)
+                                      raises(DOMException);
+  EntityReference    createEntityReference(in DOMString name)
+                                      raises(DOMException);
+  NodeList           getElementsByTagName(in DOMString tagname);
+  // Introduced in DOM Level 2:
+  Node               importNode(in Node importedNode, 
+                                in boolean deep)
+                                      raises(DOMException);
+  // Introduced in DOM Level 2:
+  Element            createElementNS(in DOMString namespaceURI, 
+                                     in DOMString qualifiedName)
+                                      raises(DOMException);
+  // Introduced in DOM Level 2:
+  Attr               createAttributeNS(in DOMString namespaceURI, 
+                                       in DOMString qualifiedName)
+                                      raises(DOMException);
+  // Introduced in DOM Level 2:
+  NodeList           getElementsByTagNameNS(in DOMString namespaceURI, 
+                                            in DOMString localName);
+  // Introduced in DOM Level 2:
+  Element            getElementById(in DOMString elementId);
+
+  // DOM Level 3 XPath (XPathEvaluator interface)
+//  XPathExpression createExpression(in DOMString expression,
+//                                   in XPathNSResolver resolver)
+//      raises(DOMException);
+//  XPathNSResolver    createNSResolver(in Node nodeResolver);
+  [Custom] XPathResult evaluate(in DOMString expression,
+                              in Node contextNode)
+//                              in XPathNSResolver resolver,
+//                              in unsigned short type,
+//                              in XPathResult inResult)
+                             raises(DOMException);
+};

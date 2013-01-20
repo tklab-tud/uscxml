@@ -427,7 +427,7 @@ else()
 endif()
 
 # JavaScriptCore ecmascript datamodel
-if (APPLE)
+if (APPLE AND IOS)
 	FIND_LIBRARY(JSC_LIBRARY JavaScriptCore)
 	file(GLOB JSC_DATAMODEL
 		src/uscxml/plugins/datamodel/ecmascript/JavaScriptCore/*.cpp
@@ -458,7 +458,7 @@ endif()
 
 # GOOGLE V8 ecmascript datamodel
 
-if (NOT APPLE)
+#if (NOT APPLE OR IOS)
 	# set(ENV{V8_SRC} ${CMAKE_SOURCE_DIR}/../v8)
 	find_package(V8)
 	if (V8_FOUND)
@@ -469,10 +469,16 @@ if (NOT APPLE)
 		)
 		source_group("Datamodel" FILES ${V8_DATAMODEL})
 		file(GLOB_RECURSE V8_DOM
+#			${PROJECT_SOURCE_DIR}/contrib/dom/scripts/gen/*.cpp
+#			${PROJECT_SOURCE_DIR}/contrib/dom/scripts/gen/*.h
 			src/uscxml/plugins/datamodel/ecmascript/v8/dom/*.cpp
 			src/uscxml/plugins/datamodel/ecmascript/v8/dom/*.h
 		)
-	 source_group("DOM" FILES ${V8_DOM})
+		# include_directories(${PROJECT_SOURCE_DIR}/contrib/dom/scripts/gen/)
+		# list(APPEND V8_DOM "src/uscxml/plugins/datamodel/ecmascript/v8/dom/V8DOM.cpp")
+		# list(APPEND V8_DOM "src/uscxml/plugins/datamodel/ecmascript/v8/dom/V8DOM.h")
+		
+		source_group("DOM" FILES ${V8_DOM})
 
 		if (BUILD_AS_PLUGINS)
 			add_library(
@@ -489,7 +495,7 @@ if (NOT APPLE)
 			list (APPEND USCXML_OPT_LIBS ${V8_LIBRARY})
 		endif()
 	endif()
-endif()
+#endif()
 
 
 # SWI PROLOG datamodel

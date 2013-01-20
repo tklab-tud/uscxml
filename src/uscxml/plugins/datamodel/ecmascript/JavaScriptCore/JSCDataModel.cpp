@@ -27,7 +27,10 @@ boost::shared_ptr<DataModelImpl> JSCDataModel::create(Interpreter* interpreter) 
 	dm->setName(interpreter->getName());
 	dm->setSessionId(interpreter->getSessionId());
 	dm->eval("_ioprocessors = {};");
+  dm->_ctx = JSGlobalContextCreate(NULL);
 
+  JSObjectRef globalObject = JSContextGetGlobalObject(dm->_ctx);
+  
 	return dm;
 }
 
@@ -44,6 +47,7 @@ void JSCDataModel::setName(const std::string& name) {
 }
 
 JSCDataModel::~JSCDataModel() {
+//  JSGlobalContextRelease(_ctx);
 }
 
 void JSCDataModel::pushContext() {

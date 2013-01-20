@@ -58,7 +58,7 @@ protected:
 	std::string _name;
 
 	Event _event;
-
+  JSContextRef _ctx;
 };
 
 #ifdef BUILD_AS_PLUGINS

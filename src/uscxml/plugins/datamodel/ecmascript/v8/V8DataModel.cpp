@@ -29,8 +29,8 @@ boost::shared_ptr<DataModelImpl> V8DataModel::create(Interpreter* interpreter) {
 	v8::Locker locker;
 	v8::HandleScope scope;
 
-  V8DOM* dom = new V8DOM();
-  dom->interpreter = interpreter;
+  Arabica::DOM::V8DOM* dom = new Arabica::DOM::V8DOM();
+//  dom->interpreter = interpreter;
   dom->xpath = new Arabica::XPath::XPath<std::string>();
   dom->xpath->setNamespaceContext(interpreter->getNSContext());
   
@@ -45,10 +45,14 @@ boost::shared_ptr<DataModelImpl> V8DataModel::create(Interpreter* interpreter) {
   v8::Context::Scope contextScope(context);
 
   // instantiate the document function
-  v8::Handle<v8::Function> docCtor = V8Document::getTmpl()->GetFunction();
+  v8::Handle<v8::Function> docCtor = Arabica::DOM::V8Document::getTmpl()->GetFunction();
   v8::Handle<v8::Object> docObj = docCtor->NewInstance();
-  docObj->SetInternalField(0, V8DOM::toExternal(&(interpreter->getDocument())));
-  docObj->SetInternalField(1, V8DOM::toExternal(dom));
+  
+  Arabica::DOM::V8Document::V8DocumentPrivate* privData = new Arabica::DOM::V8Document::V8DocumentPrivate();
+  privData->arabicaThis = new Arabica::DOM::Document<std::string>(interpreter->getDocument());
+  privData->dom = dom;
+  docObj->SetInternalField(0, Arabica::DOM::V8DOM::toExternal(privData));
+  
   context->Global()->Set(v8::String::New("document"), docObj);
   
 	dm->_contexts.push_back(context);

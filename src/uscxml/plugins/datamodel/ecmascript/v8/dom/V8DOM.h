@@ -3,26 +3,21 @@
 
 #include "uscxml/Interpreter.h"
 #include <v8.h>
+#include <XPath/XPath.hpp>
 
 #define V8_DESTRUCTOR(type) \
 static void jsDestructor(v8::Persistent<v8::Value> object, void* data) { \
-v8::HandleScope handleScope; \
-type* thing = static_cast<type*>(v8::Local<v8::External>::Cast(object->ToObject()->GetInternalField(0))->Value()); \
-delete thing; \
-object.Dispose(); \
-object.Clear(); \
+  v8::HandleScope handleScope; \
+  std::cout << "Deleting type" << std::endl; \
+  type* thing = static_cast<type*>(v8::Local<v8::External>::Cast(object->ToObject()->GetInternalField(0))->Value()); \
+  delete thing->arabicaThis; \
+  delete thing; \
+  object.Dispose(); \
+  object.Clear(); \
 }
 
-#define ASSERT_ARGS1(args, type1) \
-assert(args.Length() == 1); \
-assert(args[0]->type1());
-
-#define ASSERT_ARGS2(args, type1, type2) \
-assert(args.Length() == 2); \
-assert(args[0]->type1()); \
-assert(args[1]->type2());
-
-namespace uscxml {
+namespace Arabica {
+namespace DOM {
 
 class V8DOM {
 public:
@@ -44,10 +39,40 @@ public:
 	  return scope.Close(v8::External::New(pointer));
 	}
 
-  Interpreter* interpreter;
   Arabica::XPath::XPath<std::string>* xpath;
 };
 
-}
+class V8Exception : public std::runtime_error
+{
+public:
+  
+  V8Exception(const std::string& reason) :
+  std::runtime_error("DOMException")
+  {
+  } // V8Exception
+  
+  V8Exception(const V8Exception& rhs) :
+  std::runtime_error(rhs),
+  reason_(rhs.reason_)
+  {
+  } // DOMException
+  
+  virtual ~V8Exception() throw()
+  {
+  } // DOMBadCast
+      
+  virtual const char* what() const throw()
+  {
+    return reason_.c_str();
+  } // what
+  
+private:
+  DOMBadCast& operator=(const DOMBadCast&);
+  bool operator==(const DOMBadCast&) const;
+  
+  std::string reason_;
+}; // class DOMException
 
+}
+}
 #endif /* end of include guard: V8DOM_H_LKE1HKJK */

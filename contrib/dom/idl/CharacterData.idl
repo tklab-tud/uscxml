@@ -1,0 +1,22 @@
+interface CharacterData : Node {
+           attribute DOMString        data;
+                                      // raises(DOMException) on setting
+                                      // raises(DOMException) on retrieval
+
+  readonly attribute unsigned long    length;
+  DOMString          substringData(in unsigned long offset, 
+                                   in unsigned long count)
+                                      raises(DOMException);
+  void               appendData(in DOMString arg)
+                                      raises(DOMException);
+  void               insertData(in unsigned long offset, 
+                                in DOMString arg)
+                                      raises(DOMException);
+  void               deleteData(in unsigned long offset, 
+                                in unsigned long count)
+                                      raises(DOMException);
+  void               replaceData(in unsigned long offset, 
+                                 in unsigned long count, 
+                                 in DOMString arg)
+                                      raises(DOMException);
+};

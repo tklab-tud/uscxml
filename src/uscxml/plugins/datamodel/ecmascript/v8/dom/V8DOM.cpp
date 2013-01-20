@@ -1,9 +1,11 @@
 #include "V8DOM.h"
 
-namespace uscxml {
+namespace Arabica {
+namespace DOM {
 
 V8DOM::V8DOM() {
   
 }  
 
+}
 }

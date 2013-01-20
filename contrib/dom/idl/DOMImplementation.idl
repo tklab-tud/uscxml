@@ -1,0 +1,14 @@
+interface DOMImplementation {
+  boolean            hasFeature(in DOMString feature, 
+                                in DOMString version);
+  // Introduced in DOM Level 2:
+  DocumentType       createDocumentType(in DOMString qualifiedName, 
+                                        in DOMString publicId, 
+                                        in DOMString systemId)
+                                      raises(DOMException);
+  // Introduced in DOM Level 2:
+  Document           createDocument(in DOMString namespaceURI, 
+                                    in DOMString qualifiedName, 
+                                    in DocumentType doctype)
+                                      raises(DOMException);
+};

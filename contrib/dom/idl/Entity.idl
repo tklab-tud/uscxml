@@ -1,0 +1,5 @@
+interface Entity : Node {
+  readonly attribute DOMString        publicId;
+  readonly attribute DOMString        systemId;
+  readonly attribute DOMString        notationName;
+};
