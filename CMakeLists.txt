@@ -409,6 +409,23 @@ endif()
 #################################################
 # optional libraries we can build as plugins
 
+# sample invoker - include to make sure it compiles
+file(GLOB_RECURSE SAMPLE_INVOKER
+	src/uscxml/plugins/invoker/sample/*.cpp
+	src/uscxml/plugins/invoker/sample/*.h
+)
+source_group("Invoker" FILES ${SAMPLE_INVOKER})
+if (BUILD_AS_PLUGINS)
+	add_library(
+		invoker_sample SHARED 
+		${SAMPLE_INVOKER})
+	target_link_libraries(invoker_sample uscxml)
+	set_target_properties(invoker_sample PROPERTIES FOLDER "Plugin Invoker")
+else()
+	list (APPEND USCXML_FILES ${SAMPLE_INVOKER})
+endif()
+
+
 # LIBEVENT basichttp ioprocessor - this one is already required above
 
 file(GLOB_RECURSE LIBEVENT_IOPROCESSOR
@@ -426,9 +443,30 @@ else()
 	list (APPEND USCXML_FILES ${LIBEVENT_IOPROCESSOR})
 endif()
 
+
+# DirMon invoker to watch for filesystem changes
+
+file(GLOB_RECURSE DIRMON_INVOKER
+	src/uscxml/plugins/invoker/filesystem/dirmon/*.cpp
+	src/uscxml/plugins/invoker/filesystem/dirmon/*.h
+)
+source_group("Invoker" FILES ${DIRMON_INVOKER})
+include_directories(${PROJECT_SOURCE_DIR}/src/uscxml/plugins/invoker/filesystem/dirmon/)
+if (BUILD_AS_PLUGINS)
+	add_library(
+		invoker_dirmon SHARED 
+		${DIRMON_INVOKER})
+	target_link_libraries(invoker_dirmon uscxml)
+	set_target_properties(invoker_dirmon PROPERTIES FOLDER "Plugin Invoker")
+else()
+	list (APPEND USCXML_FILES ${DIRMON_INVOKER})
+endif()
+
+
 # JavaScriptCore ecmascript datamodel
-if (APPLE AND IOS)
+if (APPLE AND IOS AND OFF)
 	FIND_LIBRARY(JSC_LIBRARY JavaScriptCore)
+	set(JSC_FOUND ON)
 	file(GLOB JSC_DATAMODEL
 		src/uscxml/plugins/datamodel/ecmascript/JavaScriptCore/*.cpp
 		src/uscxml/plugins/datamodel/ecmascript/JavaScriptCore/*.h

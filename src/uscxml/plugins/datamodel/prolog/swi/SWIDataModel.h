@@ -47,11 +47,6 @@ public:
 
 
 protected:
-	Interpreter* _interpreter;
-
-	std::string _sessionId;
-	std::string _name;
-
 	Event _event;
 	PlEngine* _plEngine;
 

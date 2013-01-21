@@ -1,0 +1,18 @@
+[
+	AttributesArePublic,
+	DontDestroyWrapped
+] interface SCXMLEvent {
+
+  // NodeType
+  const unsigned short      INTERNAL                   = 1;
+  const unsigned short      EXTERNAL                   = 2;
+  const unsigned short      PLATFORM                   = 3;
+
+  readonly attribute unsigned short   type;
+  readonly attribute DOMString        name;
+  readonly attribute DOMString        origin;
+  readonly attribute DOMString        origintype;
+  readonly attribute Node             dom;
+  readonly attribute DOMString        sendid;
+  readonly attribute DOMString        invokeid;
+};

@@ -9,10 +9,19 @@
 static void jsDestructor(v8::Persistent<v8::Value> object, void* data) { \
   v8::HandleScope handleScope; \
   type* thing = static_cast<type*>(v8::Local<v8::External>::Cast(object->ToObject()->GetInternalField(0))->Value()); \
-  delete thing->arabicaThis; \
+  delete thing->nativeObj; \
   delete thing; \
   object.Dispose(); \
   object.Clear(); \
+}
+
+#define V8_DESTRUCTOR_KEEP_WRAPPED(type) \
+static void jsDestructor(v8::Persistent<v8::Value> object, void* data) { \
+v8::HandleScope handleScope; \
+type* thing = static_cast<type*>(v8::Local<v8::External>::Cast(object->ToObject()->GetInternalField(0))->Value()); \
+delete thing; \
+object.Dispose(); \
+object.Clear(); \
 }
 
 namespace Arabica {

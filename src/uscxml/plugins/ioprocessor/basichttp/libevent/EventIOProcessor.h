@@ -57,7 +57,6 @@ protected:
 	std::string _url;
 
 	uscxml::DelayedEventQueue _asyncQueue;
-	uscxml::Interpreter* _interpreter;
 	std::map<std::string, struct evhttp_connection*> _httpConnections;
 	std::map<std::string, struct evhttp_request*> _httpRequests;
 	struct evdns_base* _dns;

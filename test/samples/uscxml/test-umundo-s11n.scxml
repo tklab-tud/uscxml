@@ -1,25 +1,25 @@
 <scxml datamodel="ecmascript">
   <script>
 	<![CDATA[
-    function dump(arr,level) {
-        if(!level) level = 0;
+    function dump(object, level) {
+        if (!level) level = 0;
 
-        var level_padding = "";
-        for(var j=0;j < level+1;j++) level_padding += "    ";
+        var padding = "";
+        for (var j=0;j < level+1;j++) padding += "    ";
 
-        if(typeof(arr) == 'object') {  
-            for(var item in arr) {
-                var value = arr[item];
+        if (typeof(obj) == 'object') {  
+            for (var item in obj) {
+                var value = obj[item];
 
                 if(typeof(value) == 'object') { 
-                    print(level_padding + "'" + item + "' ...\n");
-                    print(dump(value,level+1));
+                    print (padding + "'" + item + "' ...\n");
+                    print (dump (value, level+1));
                 } else {
-                    print(level_padding + "'" + item + "' => \"" + value + "\"\n");
+                    print (padding + "'" + item + "' => \"" + value + "\"\n");
                 }
             }
         } else { 
-            print("===> "+arr+" <===("+typeof(arr)+")");
+            print("===> " + object + " <===(" + typeof(object) + ")");
         }
     }
 	]]>

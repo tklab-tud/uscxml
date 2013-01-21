@@ -1,7 +1,8 @@
 #include "uscxml/Common.h"
 #include "V8DataModel.h"
-#include "dom/V8DOM.h"
 #include "dom/V8Document.h"
+#include "dom/V8SCXMLEvent.h"
+
 #include "uscxml/Message.h"
 #include <glog/logging.h>
 
@@ -29,10 +30,10 @@ boost::shared_ptr<DataModelImpl> V8DataModel::create(Interpreter* interpreter) {
 	v8::Locker locker;
 	v8::HandleScope scope;
 
-	Arabica::DOM::V8DOM* dom = new Arabica::DOM::V8DOM();
+	dm->_dom = new Arabica::DOM::V8DOM();
 //  dom->interpreter = interpreter;
-	dom->xpath = new Arabica::XPath::XPath<std::string>();
-	dom->xpath->setNamespaceContext(interpreter->getNSContext());
+	dm->_dom->xpath = new Arabica::XPath::XPath<std::string>();
+	dm->_dom->xpath->setNamespaceContext(interpreter->getNSContext());
 
 	// see http://stackoverflow.com/questions/3171418/v8-functiontemplate-class-instance
 
@@ -49,8 +50,8 @@ boost::shared_ptr<DataModelImpl> V8DataModel::create(Interpreter* interpreter) {
 	v8::Handle<v8::Object> docObj = docCtor->NewInstance();
 
 	Arabica::DOM::V8Document::V8DocumentPrivate* privData = new Arabica::DOM::V8Document::V8DocumentPrivate();
-	privData->arabicaThis = new Arabica::DOM::Document<std::string>(interpreter->getDocument());
-	privData->dom = dom;
+	privData->nativeObj = new Arabica::DOM::Document<std::string>(interpreter->getDocument());
+	privData->dom = dm->_dom;
 	docObj->SetInternalField(0, Arabica::DOM::V8DOM::toExternal(privData));
 
 	context->Global()->Set(v8::String::New("document"), docObj);
@@ -72,21 +73,12 @@ void V8DataModel::registerIOProcessor(const std::string& name, const IOProcessor
 
 void V8DataModel::setSessionId(const std::string& sessionId) {
 	_sessionId = sessionId;
-	v8::Locker locker;
-	v8::HandleScope handleScope;
-	v8::Context::Scope contextScope(_contexts.front());
-	v8::Handle<v8::Object> global = _contexts.front()->Global();
-
-	global->Set(v8::String::New("_sessionid"), v8::String::New(sessionId.c_str()));
+	assign("_sessionId", "'" + sessionId + "'");
 }
 
 void V8DataModel::setName(const std::string& name) {
 	_name = name;
-	v8::HandleScope handleScope;
-	v8::Context::Scope contextScope(_contexts.front());
-	v8::Handle<v8::Object> global = _contexts.front()->Global();
-
-	global->Set(v8::String::New("_name"), v8::String::New(name.c_str()));
+	assign("_name", "'" + name + "'");
 }
 
 V8DataModel::~V8DataModel() {
@@ -117,25 +109,16 @@ void V8DataModel::setEvent(const Event& event) {
 	v8::Context::Scope contextScope(_contexts.front());
 	v8::Handle<v8::Object> global = _contexts.front()->Global();
 
-	// this is unfortunate - can't we store the template in the object?
-	if (_eventTemplate.IsEmpty()) {
-		v8::Handle<v8::ObjectTemplate> localEventTemplate = v8::ObjectTemplate::New();
-		localEventTemplate->SetInternalFieldCount(1); // we only have a single C++ object
-		localEventTemplate->SetAccessor(v8::String::New("name"), V8DataModel::jsGetEventName);
-		localEventTemplate->SetAccessor(v8::String::New("type"), V8DataModel::jsGetEventType);
-		localEventTemplate->SetAccessor(v8::String::New("sendid"), V8DataModel::jsGetEventSendId);
-		localEventTemplate->SetAccessor(v8::String::New("origin"), V8DataModel::jsGetEventOrigin);
-		localEventTemplate->SetAccessor(v8::String::New("origintype"), V8DataModel::jsGetEventOriginType);
-		localEventTemplate->SetAccessor(v8::String::New("invokeid"), V8DataModel::jsGetEventInvokeId);
-		_eventTemplate = v8::Persistent<v8::ObjectTemplate>::New(localEventTemplate);
-	}
+	v8::Handle<v8::Function> eventCtor = Arabica::DOM::V8SCXMLEvent::getTmpl()->GetFunction();
+	v8::Handle<v8::Object> eventObj = eventCtor->NewInstance();
 
-	assert(_eventTemplate->InternalFieldCount() == 1);
-	v8::Handle<v8::Object> eventJS = _eventTemplate->NewInstance();
-	eventJS->SetInternalField(0, v8::External::New(&_event));
+	Arabica::DOM::V8SCXMLEvent::V8SCXMLEventPrivate* privData = new Arabica::DOM::V8SCXMLEvent::V8SCXMLEventPrivate();
+	privData->nativeObj = &_event;
+	privData->dom = _dom;
+	eventObj->SetInternalField(0, Arabica::DOM::V8DOM::toExternal(privData));
 
-	eventJS->Set(v8::String::New("data"), getDataAsValue(event)); // set data part of _event
-	global->Set(v8::String::New("_event"), eventJS);
+	eventObj->Set(v8::String::New("data"), getDataAsValue(event)); // set data part of _event
+	global->Set(v8::String::New("_event"), eventObj);
 }
 
 Data V8DataModel::getStringAsData(const std::string& content) {
@@ -254,56 +237,6 @@ v8::Handle<v8::Value> V8DataModel::jsIn(const v8::Arguments& args) {
 	return v8::Boolean::New(true);
 }
 
-v8::Handle<v8::Value> V8DataModel::jsGetEventName(v8::Local<v8::String> property,
-        const v8::AccessorInfo &info) {
-	Event* event = static_cast<Event*>(v8::Local<v8::External>::Cast(info.Holder()->GetInternalField(0))->Value());
-	return v8::String::New(event->name.c_str());
-}
-
-v8::Handle<v8::Value> V8DataModel::jsGetEventType(v8::Local<v8::String> property,
-        const v8::AccessorInfo &info) {
-	Event* event = static_cast<Event*>(v8::Local<v8::External>::Cast(info.Holder()->GetInternalField(0))->Value());
-	switch (event->type) {
-	case Event::PLATFORM:
-		return v8::String::New("platform");
-		break;
-	case Event::INTERNAL:
-		return v8::String::New("internal");
-		break;
-	case Event::EXTERNAL:
-		return v8::String::New("external");
-		break;
-	default:
-		return v8::String::New("");
-		break;
-	}
-}
-
-v8::Handle<v8::Value> V8DataModel::jsGetEventSendId(v8::Local<v8::String> property,
-        const v8::AccessorInfo &info) {
-	Event* event = static_cast<Event*>(v8::Local<v8::External>::Cast(info.Holder()->GetInternalField(0))->Value());
-	return v8::String::New(event->sendid.c_str());
-
-}
-
-v8::Handle<v8::Value> V8DataModel::jsGetEventOrigin(v8::Local<v8::String> property,
-        const v8::AccessorInfo &info) {
-	Event* event = static_cast<Event*>(v8::Local<v8::External>::Cast(info.Holder()->GetInternalField(0))->Value());
-	return v8::String::New(event->origin.c_str());
-}
-
-v8::Handle<v8::Value> V8DataModel::jsGetEventOriginType(v8::Local<v8::String> property,
-        const v8::AccessorInfo &info) {
-	Event* event = static_cast<Event*>(v8::Local<v8::External>::Cast(info.Holder()->GetInternalField(0))->Value());
-	return v8::String::New(event->origintype.c_str());
-}
-
-v8::Handle<v8::Value> V8DataModel::jsGetEventInvokeId(v8::Local<v8::String> property,
-        const v8::AccessorInfo &info) {
-	Event* event = static_cast<Event*>(v8::Local<v8::External>::Cast(info.Holder()->GetInternalField(0))->Value());
-	return v8::String::New(event->invokeid.c_str());
-}
-
 bool V8DataModel::validate(const std::string& location, const std::string& schema) {
 	return true;
 }
@@ -348,35 +281,13 @@ void V8DataModel::assign(const std::string& location, const Data& data) {
 	std::stringstream ssJSON;
 	ssJSON << data;
 	assign(location, ssJSON.str());
-//  v8::Handle<v8::Object> variable = evalAsValue(location).As<v8::Object>();
-//  assert(!variable.IsEmpty());
-//  if (data.compound.size() > 0) {
-//    std::map<std::string, Data>::const_iterator compoundIter = data.compound.begin();
-//    while(compoundIter != data.compound.end()) {
-//      variable->Set(v8::String::New(compoundIter->first.c_str()), getDataAsValue(compoundIter->second));
-//      compoundIter++;
-//    }
-//    return;
-//  } else if (data.array.size() > 0) {
-//    std::list<Data>::const_iterator arrayIter = data.array.begin();
-//    uint32_t index = 0;
-//    while(arrayIter != data.array.end()) {
-//      variable->Set(index++, getDataAsValue(*arrayIter));
-//      arrayIter++;
-//    }
-//  } else if (data.type == Data::VERBATIM) {
-//    assign(location, "'" + data.atom + "'");
-//  } else {
-//    assign(location, data.atom);
-//  }
-
 }
 
 void V8DataModel::assign(const std::string& location, const std::string& expr) {
 	v8::Locker locker;
 	v8::HandleScope handleScope;
 	v8::Context::Scope contextScope(_contexts.back());
-	evalAsValue((location + " = " + expr).c_str());
+	evalAsValue(location + " = " + expr);
 }
 
 v8::Handle<v8::Value> V8DataModel::evalAsValue(const std::string& expr) {

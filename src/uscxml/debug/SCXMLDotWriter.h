@@ -35,7 +35,6 @@ public:
 	static std::string getPrefix();
 	static std::string dotEscape(const std::string& text);
 
-	Interpreter* _interpreter;
 	std::set<std::string> _knownIds;
 	static int _indentation;
 };

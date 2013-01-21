@@ -243,7 +243,7 @@ void EventIOProcessor::httpRecvReq(struct evhttp_request *req, void *arg) {
 	}
 
 	EventIOProcessor* INSTANCE = (EventIOProcessor*)arg;
-	INSTANCE->_interpreter->receive(reqEvent);
+	INSTANCE->returnEvent(reqEvent);
 
 	evhttp_send_reply(req, 200, "OK", NULL);
 }

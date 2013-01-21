@@ -82,15 +82,13 @@ public:
 	URL getBaseURI()                                         {
 		return _baseURI;
 	}
+	bool toAbsoluteURI(URL& uri);
 
 	DataModel getDataModel()                                {
 		return _dataModel;
 	}
-	Invoker getInvoker()                                    {
-		return _invoker;
-	}
-	void setInvoker(const Invoker& invoker)                 {
-		_invoker = invoker;
+	void setParentQueue(uscxml::concurrency::BlockingQueue<Event>* parentQueue) {
+		_parentQueue = parentQueue;
 	}
 	std::string getNSPrefix()                                {
 		return _nsPrefix;
@@ -181,11 +179,10 @@ protected:
 
 	std::list<Event > _internalQueue;
 	uscxml::concurrency::BlockingQueue<Event> _externalQueue;
+	uscxml::concurrency::BlockingQueue<Event>* _parentQueue;
 	DelayedEventQueue* _sendQueue;
-	Invoker _invoker;
 
 	static URL toBaseURI(const URL& url);
-	bool toAbsoluteURI(URL& uri);
 
 	void microstep(const Arabica::XPath::NodeSet<std::string>& enabledTransitions);
 	void exitStates(const Arabica::XPath::NodeSet<std::string>& enabledTransitions);

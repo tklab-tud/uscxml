@@ -4,6 +4,7 @@
 #include "uscxml/Interpreter.h"
 #include <list>
 #include <v8.h>
+#include "dom/V8DOM.h"
 
 #ifdef BUILD_AS_PLUGINS
 #include "uscxml/plugins/Plugins.h"
@@ -52,33 +53,14 @@ public:
 	virtual std::string evalAsString(const std::string& expr);
 	virtual bool evalAsBool(const std::string& expr);
 
-	static v8::Handle<v8::Value> jsGetEventName(v8::Local<v8::String> property,
-	        const v8::AccessorInfo &info);
-	static v8::Handle<v8::Value> jsGetEventType(v8::Local<v8::String> property,
-	        const v8::AccessorInfo &info);
-	static v8::Handle<v8::Value> jsGetEventSendId(v8::Local<v8::String> property,
-	        const v8::AccessorInfo &info);
-	static v8::Handle<v8::Value> jsGetEventOrigin(v8::Local<v8::String> property,
-	        const v8::AccessorInfo &info);
-	static v8::Handle<v8::Value> jsGetEventOriginType(v8::Local<v8::String> property,
-	        const v8::AccessorInfo &info);
-	static v8::Handle<v8::Value> jsGetEventInvokeId(v8::Local<v8::String> property,
-	        const v8::AccessorInfo &info);
-
 	static v8::Handle<v8::Value> jsIn(const v8::Arguments& args);
 	static v8::Handle<v8::Value> jsPrint(const v8::Arguments& args);
 
-
 protected:
 	std::list<v8::Persistent<v8::Context> > _contexts;
-	Interpreter* _interpreter;
-
-	std::string _sessionId;
-	std::string _name;
 
 	Event _event;
-	v8::Persistent<v8::ObjectTemplate> _globalTemplate;
-	v8::Persistent<v8::ObjectTemplate> _eventTemplate;
+	Arabica::DOM::V8DOM* _dom;
 
 	v8::Handle<v8::Value> evalAsValue(const std::string& expr);
 	virtual v8::Handle<v8::Value> getDataAsValue(const Data& data);

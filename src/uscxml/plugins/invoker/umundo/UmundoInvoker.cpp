@@ -80,12 +80,11 @@ void UmundoInvoker::send(const SendRequest& req) {
 							protobufToData(event, *(const google::protobuf::Message*)rv);
 
 							event.name = _invokeId + ".reply." + req.name;
-							event.invokeid = _invokeId;
 							event.origin = msg->getMeta("um.channel");
 							event.origintype = "umundo";
 							event.type = Event::EXTERNAL;
 
-							_interpreter->receive(event);
+							returnEvent(event);
 							svcIter++;
 						}
 					}
@@ -105,12 +104,7 @@ void UmundoInvoker::cancel(const std::string sendId) {
 	assert(false);
 }
 
-void UmundoInvoker::sendToParent(const SendRequest& req) {
-	assert(false);
-}
-
 void UmundoInvoker::invoke(const InvokeRequest& req) {
-	_invokeId = req.invokeid;
 
 	std::string domain;
 	std::string channelName;
@@ -201,7 +195,7 @@ void UmundoInvoker::receive(void* object, umundo::Message* msg) {
 		metaIter++;
 	}
 
-	_interpreter->receive(event);
+	returnEvent(event);
 }
 
 void UmundoInvoker::added(umundo::ServiceDescription desc) {
@@ -223,7 +217,7 @@ void UmundoInvoker::added(umundo::ServiceDescription desc) {
 		propIter++;
 	}
 
-	_interpreter->receive(addedEvent);
+	returnEvent(addedEvent);
 }
 
 void UmundoInvoker::removed(umundo::ServiceDescription desc) {
@@ -249,7 +243,7 @@ void UmundoInvoker::removed(umundo::ServiceDescription desc) {
 		propIter++;
 	}
 
-	_interpreter->receive(addedEvent);
+	returnEvent(addedEvent);
 }
 
 void UmundoInvoker::changed(umundo::ServiceDescription desc) {

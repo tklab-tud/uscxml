@@ -39,11 +39,7 @@ void HeartbeatInvoker::cancel(const std::string sendId) {
 	HeartbeatDispatcher::getInstance()->cancelEvent(toStr(this));
 }
 
-void HeartbeatInvoker::sendToParent(const SendRequest& req) {
-}
-
 void HeartbeatInvoker::invoke(const InvokeRequest& req) {
-	_invokeId = req.invokeid;
 	_event.invokeid = _invokeId;
 	std::string intervalStr;
 	double interval = 0;
@@ -78,7 +74,7 @@ void HeartbeatInvoker::invoke(const InvokeRequest& req) {
 
 void HeartbeatInvoker::dispatch(void* instance, std::string name) {
 	HeartbeatInvoker* invoker = (HeartbeatInvoker*)instance;
-	invoker->_interpreter->receive(invoker->_event);
+	invoker->returnEvent(invoker->_event);
 }
 
 HeartbeatDispatcher* HeartbeatDispatcher::_instance = NULL;

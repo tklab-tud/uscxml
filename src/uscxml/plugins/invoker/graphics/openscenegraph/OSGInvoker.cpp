@@ -39,9 +39,6 @@ void OSGInvoker::send(const SendRequest& req) {
 void OSGInvoker::cancel(const std::string sendId) {
 }
 
-void OSGInvoker::sendToParent(const SendRequest& req) {
-}
-
 void OSGInvoker::invoke(const InvokeRequest& req) {
 	tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
 

@@ -9,17 +9,17 @@ v8::Handle<v8::Value> V8NodeSet::indexedPropertyCustomGetter(uint32_t index, con
 	v8::Local<v8::Object> self = info.Holder();
 	V8NodeSetPrivate* privData = V8DOM::toClassPtr<V8NodeSetPrivate >(self->GetInternalField(0));
 
-	if (privData->arabicaThis->size() >= index) {
-		switch((*privData->arabicaThis)[index].getNodeType()) {
+	if (privData->nativeObj->size() >= index) {
+		switch((*privData->nativeObj)[index].getNodeType()) {
 		case Node_base::ELEMENT_NODE: {
-			Arabica::DOM::Element<std::string>* retVal = new Arabica::DOM::Element<std::string>((*privData->arabicaThis)[index]);
+			Arabica::DOM::Element<std::string>* retVal = new Arabica::DOM::Element<std::string>((*privData->nativeObj)[index]);
 
 			v8::Handle<v8::Function> retCtor = V8Element::getTmpl()->GetFunction();
 			v8::Persistent<v8::Object> retObj = v8::Persistent<v8::Object>::New(retCtor->NewInstance());
 
 			struct V8Element::V8ElementPrivate* retPrivData = new V8Element::V8ElementPrivate();
 			retPrivData->dom = privData->dom;
-			retPrivData->arabicaThis = retVal;
+			retPrivData->nativeObj = retVal;
 
 			retObj->SetInternalField(0, V8DOM::toExternal(retPrivData));
 
@@ -27,14 +27,14 @@ v8::Handle<v8::Value> V8NodeSet::indexedPropertyCustomGetter(uint32_t index, con
 			return retObj;
 		}
 		default: {
-			Arabica::DOM::Node<std::string>* retVal = new Arabica::DOM::Node<std::string>((*privData->arabicaThis)[index]);
+			Arabica::DOM::Node<std::string>* retVal = new Arabica::DOM::Node<std::string>((*privData->nativeObj)[index]);
 
 			v8::Handle<v8::Function> retCtor = V8Node::getTmpl()->GetFunction();
 			v8::Persistent<v8::Object> retObj = v8::Persistent<v8::Object>::New(retCtor->NewInstance());
 
 			struct V8Node::V8NodePrivate* retPrivData = new V8Node::V8NodePrivate();
 			retPrivData->dom = privData->dom;
-			retPrivData->arabicaThis = retVal;
+			retPrivData->nativeObj = retVal;
 
 			retObj->SetInternalField(0, V8DOM::toExternal(retPrivData));
 

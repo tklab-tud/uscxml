@@ -11,21 +11,21 @@ v8::Handle<v8::Value> V8CharacterData::dataAttrGetter(v8::Local<v8::String> prop
 	v8::Local<v8::Object> self = info.Holder();
 	struct V8CharacterDataPrivate* privData = V8DOM::toClassPtr<V8CharacterDataPrivate >(self->GetInternalField(0));
 
-	return v8::String::New(privData->arabicaThis->getData().c_str());
+	return v8::String::New(privData->nativeObj->getData().c_str());
 }
 
 void V8CharacterData::dataAttrSetter(v8::Local<v8::String> property, v8::Local<v8::Value> value, const v8::AccessorInfo& info) {
 	v8::Local<v8::Object> self = info.Holder();
 	struct V8CharacterDataPrivate* privData = V8DOM::toClassPtr<V8CharacterDataPrivate >(self->GetInternalField(0));
 	v8::String::AsciiValue localData(value);
-	privData->arabicaThis->setData(*localData);
+	privData->nativeObj->setData(*localData);
 }
 
 v8::Handle<v8::Value> V8CharacterData::lengthAttrGetter(v8::Local<v8::String> property, const v8::AccessorInfo& info) {
 	v8::Local<v8::Object> self = info.Holder();
 	struct V8CharacterDataPrivate* privData = V8DOM::toClassPtr<V8CharacterDataPrivate >(self->GetInternalField(0));
 
-	return v8::Integer::New(privData->arabicaThis->getLength());
+	return v8::Integer::New(privData->nativeObj->getLength());
 }
 v8::Handle<v8::Value> V8CharacterData::substringDataCallback(const v8::Arguments& args) {
 	if (args.Length() < 2)
@@ -36,7 +36,7 @@ v8::Handle<v8::Value> V8CharacterData::substringDataCallback(const v8::Arguments
 	unsigned long localOffset = args[0]->ToNumber()->Uint32Value();
 	unsigned long localCount = args[1]->ToNumber()->Uint32Value();
 
-	std::string retVal = privData->arabicaThis->substringData(localOffset, localCount);
+	std::string retVal = privData->nativeObj->substringData(localOffset, localCount);
 
 	return v8::String::New(retVal.c_str());
 }
@@ -49,7 +49,7 @@ v8::Handle<v8::Value> V8CharacterData::appendDataCallback(const v8::Arguments& a
 	struct V8CharacterDataPrivate* privData = V8DOM::toClassPtr<V8CharacterDataPrivate >(self->GetInternalField(0));
 	v8::String::AsciiValue localArg(args[0]);
 
-	privData->arabicaThis->appendData(*localArg);
+	privData->nativeObj->appendData(*localArg);
 
 	return v8::Undefined();
 }
@@ -63,7 +63,7 @@ v8::Handle<v8::Value> V8CharacterData::insertDataCallback(const v8::Arguments& a
 	unsigned long localOffset = args[0]->ToNumber()->Uint32Value();
 	v8::String::AsciiValue localArg(args[1]);
 
-	privData->arabicaThis->insertData(localOffset, *localArg);
+	privData->nativeObj->insertData(localOffset, *localArg);
 
 	return v8::Undefined();
 }
@@ -77,7 +77,7 @@ v8::Handle<v8::Value> V8CharacterData::deleteDataCallback(const v8::Arguments& a
 	unsigned long localOffset = args[0]->ToNumber()->Uint32Value();
 	unsigned long localCount = args[1]->ToNumber()->Uint32Value();
 
-	privData->arabicaThis->deleteData(localOffset, localCount);
+	privData->nativeObj->deleteData(localOffset, localCount);
 
 	return v8::Undefined();
 }
@@ -92,7 +92,7 @@ v8::Handle<v8::Value> V8CharacterData::replaceDataCallback(const v8::Arguments& 
 	unsigned long localCount = args[1]->ToNumber()->Uint32Value();
 	v8::String::AsciiValue localArg(args[2]);
 
-	privData->arabicaThis->replaceData(localOffset, localCount, *localArg);
+	privData->nativeObj->replaceData(localOffset, localCount, *localArg);
 
 	return v8::Undefined();
 }

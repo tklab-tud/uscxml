@@ -1,9 +1,11 @@
 #include "JSCDOM.h"
 
-namespace uscxml {
+namespace Arabica {
+namespace DOM {
 
 JSCDOM::JSCDOM() {
 
 }
 
+}
 }

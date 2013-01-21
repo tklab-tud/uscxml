@@ -18,7 +18,7 @@ public:
 	virtual std::set<std::string> getNames() {
 		std::set<std::string> names;
 		names.insert("heartbeat");
-		names.insert("http://uscxml.tk.informatik.tu-darmstadt.de/#heartbaet");
+		names.insert("http://uscxml.tk.informatik.tu-darmstadt.de/#heartbeat");
 		return names;
 	}
 
@@ -26,12 +26,10 @@ public:
 	virtual void send(const SendRequest& req);
 	virtual void cancel(const std::string sendId);
 	virtual void invoke(const InvokeRequest& req);
-	virtual void sendToParent(const SendRequest& req);
 
 	static void dispatch(void* instance, std::string name);
 
 protected:
-	std::string _invokeId;
 	Event _event;
 
 };

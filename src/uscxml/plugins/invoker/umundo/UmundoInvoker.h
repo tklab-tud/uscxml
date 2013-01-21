@@ -34,7 +34,6 @@ public:
 	virtual void send(const SendRequest& req);
 	virtual void cancel(const std::string sendId);
 	virtual void invoke(const InvokeRequest& req);
-	virtual void sendToParent(const SendRequest& req);
 
 	virtual void receive(void* object, umundo::Message* msg);
 
@@ -43,7 +42,6 @@ public:
 	virtual void changed(umundo::ServiceDescription);
 
 protected:
-	std::string _invokeId;
 	bool _isService;
 
 	bool dataToProtobuf(google::protobuf::Message* msg, Data& data);

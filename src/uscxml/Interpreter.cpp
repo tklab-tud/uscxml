@@ -32,6 +32,7 @@ Interpreter::Interpreter() : Arabica::SAX2DOM::Parser<std::string>() {
 	_lastRunOnMainThread = 0;
 	_thread = NULL;
 	_sendQueue = NULL;
+	_parentQueue = NULL;
 	_running = false;
 	_done = false;
 
@@ -164,7 +165,8 @@ void Interpreter::init() {
 Interpreter::~Interpreter() {
 	if (_thread) {
 		_running = false;
-		_externalQueue.push(Event());
+		Event event;
+		_externalQueue.push(event);
 		_thread->join();
 		delete(_thread);
 	}
@@ -445,6 +447,7 @@ void Interpreter::mainEventLoop() {
 		}
 
 		Event externalEvent = _externalQueue.pop();
+		externalEvent.type = Event::EXTERNAL; // make sure it is set to external
 		if (!_running)
 			exitInterpreter();
 
@@ -679,8 +682,8 @@ void Interpreter::delayedSend(void* userdata, std::string eventName) {
 
 	if (boost::iequals(sendReq.target, "#_parent")) {
 		// send to parent scxml session
-		if (INSTANCE->_invoker) {
-			INSTANCE->_invoker.sendToParent(sendReq);
+		if (INSTANCE->_parentQueue != NULL) {
+			INSTANCE->_parentQueue->push(sendReq);
 		} else {
 			LOG(ERROR) << "Can not send to parent, we were not invoked" << std::endl;
 		}
@@ -794,6 +797,9 @@ void Interpreter::invoke(const Arabica::DOM::Node<std::string>& element) {
 		Invoker invoker(Factory::createInvoker(invokeReq.type, this));
 		if (invoker) {
 			tthread::lock_guard<tthread::mutex> lock(_mutex);
+			invoker.setInvokeId(invokeReq.invokeid);
+			invoker.setType(invokeReq.type);
+			invoker.setInterpreter(this);
 			_invokers[invokeReq.invokeid] = invoker;
 			LOG(INFO) << "Added invoker " << invokeReq.type << " at " << invokeReq.invokeid;
 			invoker.invoke(invokeReq);
@@ -1827,6 +1833,9 @@ void Interpreter::setupIOProcessors() {
 	std::map<std::string, IOProcessorImpl*>::iterator ioProcIter = Factory::getInstance()->_ioProcessors.begin();
 	while(ioProcIter != Factory::getInstance()->_ioProcessors.end()) {
 		_ioProcessors[ioProcIter->first] = Factory::createIOProcessor(ioProcIter->first, this);
+		_ioProcessors[ioProcIter->first].setType(ioProcIter->first);
+		_ioProcessors[ioProcIter->first].setInterpreter(this);
+
 		if (_dataModel) {
 			try {
 				_dataModel.registerIOProcessor(ioProcIter->first, _ioProcessors[ioProcIter->first]);

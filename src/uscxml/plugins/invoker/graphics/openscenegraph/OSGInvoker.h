@@ -34,7 +34,6 @@ public:
 	virtual void send(const SendRequest& req);
 	virtual void cancel(const std::string sendId);
 	virtual void invoke(const InvokeRequest& req);
-	virtual void sendToParent(const SendRequest& req);
 	virtual void handleEvent(Arabica::DOM::Events::Event<std::string>& event);
 
 	virtual void runOnMainThread();
@@ -95,7 +94,6 @@ protected:
 	typedef std::map<Arabica::DOM::Node<std::string>, osg::Node*> _nodes_t;
 
 	tthread::recursive_mutex _mutex;
-	std::string _invokeId;
 };
 
 #ifdef BUILD_AS_PLUGINS

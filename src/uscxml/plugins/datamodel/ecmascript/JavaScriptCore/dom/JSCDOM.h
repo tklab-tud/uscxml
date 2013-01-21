@@ -7,21 +7,22 @@
 #define JSC_DESTRUCTOR(type) \
 static void jsDestructor(JSObjectRef object) { \
 type* thing = static_cast<type*>(JSObjectGetPrivate(object)); \
+delete thing->arabicaThis; \
 delete thing; \
 }
 
-namespace uscxml {
+namespace Arabica {
+namespace DOM {
 
 class JSCDOM {
 public:
 	JSCDOM();
 	virtual ~JSCDOM() { };
 
-	Interpreter* interpreter;
 	Arabica::XPath::XPath<std::string>* xpath;
 };
 
 }
-
+}
 
 #endif /* end of include guard: JSCDOM_H_1RC5LCG8 */

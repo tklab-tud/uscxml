@@ -9,11 +9,11 @@
 
 namespace uscxml {
 
-class SampleInvoker : public Invoker {
+class SampleInvoker : public InvokerImpl {
 public:
 	SampleInvoker();
 	virtual ~SampleInvoker();
-	virtual Invoker* create(Interpreter* interpreter);
+	virtual boost::shared_ptr<IOProcessorImpl> create(Interpreter* interpreter);
 
 	virtual std::set<std::string> getNames() {
 		std::set<std::string> names;
@@ -23,13 +23,11 @@ public:
 	}
 
 	virtual Data getDataModelVariables();
-	virtual void send(SendRequest& req);
+	virtual void send(const SendRequest& req);
 	virtual void cancel(const std::string sendId);
-	virtual void invoke(InvokeRequest& req);
-	virtual void sendToParent(SendRequest& req);
+	virtual void invoke(const InvokeRequest& req);
 
 protected:
-	std::string _invokeId;
 };
 
 #ifdef BUILD_AS_PLUGINS

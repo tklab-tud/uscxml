@@ -11,7 +11,7 @@ v8::Handle<v8::Value> V8NodeList::lengthAttrGetter(v8::Local<v8::String> propert
 	v8::Local<v8::Object> self = info.Holder();
 	struct V8NodeListPrivate* privData = V8DOM::toClassPtr<V8NodeListPrivate >(self->GetInternalField(0));
 
-	return v8::Integer::New(privData->arabicaThis->getLength());
+	return v8::Integer::New(privData->nativeObj->getLength());
 }
 v8::Handle<v8::Value> V8NodeList::itemCallback(const v8::Arguments& args) {
 	if (args.Length() < 1)
@@ -21,13 +21,13 @@ v8::Handle<v8::Value> V8NodeList::itemCallback(const v8::Arguments& args) {
 	struct V8NodeListPrivate* privData = V8DOM::toClassPtr<V8NodeListPrivate >(self->GetInternalField(0));
 	unsigned long localIndex = args[0]->ToNumber()->Uint32Value();
 
-	Arabica::DOM::Node<std::string>* retVal = new Arabica::DOM::Node<std::string>(privData->arabicaThis->item(localIndex));
+	Arabica::DOM::Node<std::string>* retVal = new Arabica::DOM::Node<std::string>(privData->nativeObj->item(localIndex));
 	v8::Handle<v8::Function> retCtor = V8Node::getTmpl()->GetFunction();
 	v8::Persistent<v8::Object> retObj = v8::Persistent<v8::Object>::New(retCtor->NewInstance());
 
 	struct V8Node::V8NodePrivate* retPrivData = new V8Node::V8NodePrivate();
 	retPrivData->dom = privData->dom;
-	retPrivData->arabicaThis = retVal;
+	retPrivData->nativeObj = retVal;
 
 	retObj->SetInternalField(0, V8DOM::toExternal(retPrivData));
 

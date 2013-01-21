@@ -21,8 +21,8 @@ SampleInvoker::SampleInvoker() {
 SampleInvoker::~SampleInvoker() {
 };
 
-Invoker* SampleInvoker::create(Interpreter* interpreter) {
-	SampleInvoker* invoker = new SampleInvoker();
+boost::shared_ptr<IOProcessorImpl> SampleInvoker::create(Interpreter* interpreter) {
+	boost::shared_ptr<SampleInvoker> invoker = boost::shared_ptr<SampleInvoker>(new SampleInvoker());
 	invoker->_interpreter = interpreter;
 	return invoker;
 }
@@ -32,17 +32,13 @@ Data SampleInvoker::getDataModelVariables() {
 	return data;
 }
 
-void SampleInvoker::send(SendRequest& req) {
+void SampleInvoker::send(const SendRequest& req) {
 }
 
 void SampleInvoker::cancel(const std::string sendId) {
 }
 
-void SampleInvoker::sendToParent(SendRequest& req) {
-}
-
-void SampleInvoker::invoke(InvokeRequest& req) {
-	_invokeId = req.invokeid;
+void SampleInvoker::invoke(const InvokeRequest& req) {
 }
 
 }

@@ -54,9 +54,9 @@ protected:
 class Event : public Data {
 public:
 	enum Type {
-	    PLATFORM,
-	    INTERNAL,
-	    EXTERNAL
+	    INTERNAL = 1,
+	    EXTERNAL = 2,
+	    PLATFORM = 3
 	};
 
 	Event() : type(INTERNAL) {}

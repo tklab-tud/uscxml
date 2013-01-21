@@ -12,6 +12,7 @@
 # include "uscxml/plugins/ioprocessor/basichttp/libevent/EventIOProcessor.h"
 # include "uscxml/plugins/invoker/scxml/USCXMLInvoker.h"
 # include "uscxml/plugins/invoker/heartbeat/HeartbeatInvoker.h"
+# include "uscxml/plugins/invoker/filesystem/dirmon/DirMonInvoker.h"
 
 # ifdef UMUNDO_FOUND
 #   include "uscxml/plugins/invoker/umundo/UmundoInvoker.h"
@@ -27,6 +28,10 @@
 
 # ifdef V8_FOUND
 #   include "uscxml/plugins/datamodel/ecmascript/v8/V8DataModel.h"
+# endif
+
+# ifdef JSC_FOUND
+#   include "uscxml/plugins/datamodel/ecmascript/JavaScriptCore/JSCDataModel.h"
 # endif
 
 # ifdef SWI_FOUND
@@ -99,6 +104,13 @@ Factory::Factory() {
 	}
 #endif
 
+#ifdef JSC_FOUND
+	{
+		JSCDataModel* dataModel = new JSCDataModel();
+		registerDataModel(dataModel);
+	}
+#endif
+
 #ifdef SWI_FOUND
 	{
 		SWIDataModel* dataModel = new SWIDataModel();
@@ -116,9 +128,14 @@ Factory::Factory() {
 		registerInvoker(invoker);
 	}
 	{
+		DirMonInvoker* invoker = new DirMonInvoker();
+		registerInvoker(invoker);
+	}
+	{
 		EventIOProcessor* ioProcessor = new EventIOProcessor();
 		registerIOProcessor(ioProcessor);
 	}
+
 #endif
 }
 
@@ -221,6 +238,19 @@ Factory* Factory::getInstance() {
 		_instance = new Factory();
 	}
 	return _instance;
+}
+
+void IOProcessorImpl::returnEvent(Event& event) {
+	if (event.invokeid.length() == 0)
+		event.invokeid = _invokeId;
+	if (event.type == 0)
+		event.type = Event::EXTERNAL;
+	if (event.origin.length() == 0)
+		event.origin = "#_" + _invokeId;
+	if (event.origintype.length() == 0)
+		event.origintype = _type;
+
+	_interpreter->receive(event);
 }
 
 Factory* Factory::_instance = NULL;

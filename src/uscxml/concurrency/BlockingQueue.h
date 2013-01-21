@@ -14,13 +14,13 @@ public:
 	virtual ~BlockingQueue() {
 	}
 
-	void push(T elem) {
+	virtual void push(T& elem) {
 		tthread::lock_guard<tthread::mutex> lock(_mutex);
 		_queue.push_back(elem);
 		_cond.notify_all();
 	}
 
-	T pop() {
+	virtual T pop() {
 		tthread::lock_guard<tthread::mutex> lock(_mutex);
 		while (_queue.empty()) {
 			_cond.wait(_mutex);
@@ -30,7 +30,7 @@ public:
 		return ret;
 	}
 
-	bool isEmpty() {
+	virtual bool isEmpty() {
 		tthread::lock_guard<tthread::mutex> lock(_mutex);
 		return _queue.empty();
 	}

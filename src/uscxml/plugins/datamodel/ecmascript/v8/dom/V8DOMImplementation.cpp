@@ -16,7 +16,7 @@ v8::Handle<v8::Value> V8DOMImplementation::hasFeatureCallback(const v8::Argument
 	v8::String::AsciiValue localFeature(args[0]);
 	v8::String::AsciiValue localVersion(args[1]);
 
-	bool retVal = privData->arabicaThis->hasFeature(*localFeature, *localVersion);
+	bool retVal = privData->nativeObj->hasFeature(*localFeature, *localVersion);
 
 	return v8::Boolean::New(retVal);
 }
@@ -31,13 +31,13 @@ v8::Handle<v8::Value> V8DOMImplementation::createDocumentTypeCallback(const v8::
 	v8::String::AsciiValue localPublicId(args[1]);
 	v8::String::AsciiValue localSystemId(args[2]);
 
-	Arabica::DOM::DocumentType<std::string>* retVal = new Arabica::DOM::DocumentType<std::string>(privData->arabicaThis->createDocumentType(*localQualifiedName, *localPublicId, *localSystemId));
+	Arabica::DOM::DocumentType<std::string>* retVal = new Arabica::DOM::DocumentType<std::string>(privData->nativeObj->createDocumentType(*localQualifiedName, *localPublicId, *localSystemId));
 	v8::Handle<v8::Function> retCtor = V8DocumentType::getTmpl()->GetFunction();
 	v8::Persistent<v8::Object> retObj = v8::Persistent<v8::Object>::New(retCtor->NewInstance());
 
 	struct V8DocumentType::V8DocumentTypePrivate* retPrivData = new V8DocumentType::V8DocumentTypePrivate();
 	retPrivData->dom = privData->dom;
-	retPrivData->arabicaThis = retVal;
+	retPrivData->nativeObj = retVal;
 
 	retObj->SetInternalField(0, V8DOM::toExternal(retPrivData));
 
@@ -56,15 +56,15 @@ v8::Handle<v8::Value> V8DOMImplementation::createDocumentCallback(const v8::Argu
 	struct V8DOMImplementationPrivate* privData = V8DOM::toClassPtr<V8DOMImplementationPrivate >(self->GetInternalField(0));
 	v8::String::AsciiValue localNamespaceURI(args[0]);
 	v8::String::AsciiValue localQualifiedName(args[1]);
-	Arabica::DOM::DocumentType<std::string>* localDoctype = V8DOM::toClassPtr<V8DocumentType::V8DocumentTypePrivate >(args[2]->ToObject()->GetInternalField(0))->arabicaThis;
+	Arabica::DOM::DocumentType<std::string>* localDoctype = V8DOM::toClassPtr<V8DocumentType::V8DocumentTypePrivate >(args[2]->ToObject()->GetInternalField(0))->nativeObj;
 
-	Arabica::DOM::Document<std::string>* retVal = new Arabica::DOM::Document<std::string>(privData->arabicaThis->createDocument(*localNamespaceURI, *localQualifiedName, *localDoctype));
+	Arabica::DOM::Document<std::string>* retVal = new Arabica::DOM::Document<std::string>(privData->nativeObj->createDocument(*localNamespaceURI, *localQualifiedName, *localDoctype));
 	v8::Handle<v8::Function> retCtor = V8Document::getTmpl()->GetFunction();
 	v8::Persistent<v8::Object> retObj = v8::Persistent<v8::Object>::New(retCtor->NewInstance());
 
 	struct V8Document::V8DocumentPrivate* retPrivData = new V8Document::V8DocumentPrivate();
 	retPrivData->dom = privData->dom;
-	retPrivData->arabicaThis = retVal;
+	retPrivData->nativeObj = retVal;
 
 	retObj->SetInternalField(0, V8DOM::toExternal(retPrivData));
 

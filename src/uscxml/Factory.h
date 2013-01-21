@@ -27,6 +27,12 @@ template <typename T> T strTo(std::string tmp) {
 	return output;
 }
 
+inline bool isNumeric( const char* pszInput, int nNumberBase) {
+	std::string base = "0123456789ABCDEF";
+	std::string input = pszInput;
+	return (input.find_first_not_of(base.substr(0, nNumberBase)) == std::string::npos);
+}
+
 class Interpreter;
 
 #if 0
@@ -47,14 +53,24 @@ public:
 	virtual void setInterpreter(Interpreter* interpreter) {
 		_interpreter = interpreter;
 	}
+	void setInvokeId(const std::string& invokeId) {
+		_invokeId = invokeId;
+	}
+	void setType(const std::string& type) {
+		_type = type;
+	}
 
 	virtual Data getDataModelVariables() = 0;
 	virtual void send(const SendRequest& req) = 0;
 
 	virtual void runOnMainThread() {};
 
+	void returnEvent(Event& event);
+
 protected:
 	Interpreter* _interpreter;
+	std::string _invokeId;
+	std::string _type;
 };
 
 class IOProcessor {
@@ -91,6 +107,16 @@ public:
 		return _impl->runOnMainThread();
 	}
 
+	void setInterpreter(Interpreter* interpreter) {
+		_impl->setInterpreter(interpreter);
+	}
+	void setInvokeId(const std::string& invokeId) {
+		_impl->setInvokeId(invokeId);
+	}
+	void setType(const std::string& type) {
+		_impl->setType(type);
+	}
+
 protected:
 	boost::shared_ptr<IOProcessorImpl> _impl;
 };
@@ -98,7 +124,6 @@ protected:
 class InvokerImpl : public IOProcessorImpl {
 public:
 	virtual void invoke(const InvokeRequest& req) = 0;
-	virtual void sendToParent(const SendRequest& req) = 0;
 	virtual boost::shared_ptr<IOProcessorImpl> create(Interpreter* interpreter) = 0;
 };
 
@@ -130,9 +155,6 @@ public:
 	virtual void invoke(InvokeRequest& req)     {
 		_impl->invoke(req);
 	}
-	virtual void sendToParent(SendRequest& req) {
-		_impl->sendToParent(req);
-	}
 
 protected:
 	boost::shared_ptr<InvokerImpl> _impl;
@@ -160,6 +182,12 @@ public:
 	virtual bool evalAsBool(const std::string& expr) = 0;
 	virtual void assign(const std::string& location, const std::string& expr) = 0;
 	virtual void assign(const std::string& location, const Data& data) = 0;
+
+protected:
+	Interpreter* _interpreter;
+	std::string _sessionId;
+	std::string _name;
+
 };
 
 class DataModel {

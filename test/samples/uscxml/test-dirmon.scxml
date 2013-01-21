@@ -1,0 +1,16 @@
+<scxml datamodel="ecmascript">
+	<script src="http://uscxml.tk.informatik.tu-darmstadt.de/scripts/dump.js" />
+	<state id="start">
+		<invoke type="dirmon">
+			<param name="dir" expr="'.'" />
+			<param name="recurse" expr="'true'" />
+			<param name="reportexisting" expr="'true'" />
+			<param name="suffix" expr="'.scxml'" />
+			<finalize>
+				<script>
+					dump(_event);
+				</script>
+			</finalize>
+		</invoke>
+	</state>
+</scxml>

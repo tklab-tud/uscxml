@@ -21,7 +21,7 @@ v8::Handle<v8::Value> V8Document::evaluateCustomCallback(const v8::Arguments& ar
 		Arabica::DOM::Node<std::string>* localContextNode = V8DOM::toClassPtr<Arabica::DOM::Node<std::string> >(args[1]->ToObject()->GetInternalField(0));
 		retVal = new XPath::XPathValue<std::string>(privData->dom->xpath->evaluate(*localExpression, *localContextNode));
 	} else {
-		retVal = new XPath::XPathValue<std::string>(privData->dom->xpath->evaluate(*localExpression, *privData->arabicaThis));
+		retVal = new XPath::XPathValue<std::string>(privData->dom->xpath->evaluate(*localExpression, *privData->nativeObj));
 	}
 
 	v8::Handle<v8::Function> retCtor = V8XPathResult::getTmpl()->GetFunction();
@@ -29,7 +29,7 @@ v8::Handle<v8::Value> V8Document::evaluateCustomCallback(const v8::Arguments& ar
 
 	V8XPathResult::V8XPathResultPrivate* retPrivData = new V8XPathResult::V8XPathResultPrivate();
 	retPrivData->dom = privData->dom;
-	retPrivData->arabicaThis = retVal;
+	retPrivData->nativeObj = retVal;
 
 	retObj->SetInternalField(0, V8DOM::toExternal(retPrivData));
 

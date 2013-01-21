@@ -13,7 +13,7 @@ v8::Handle<v8::Value> V8Element::tagNameAttrGetter(v8::Local<v8::String> propert
 	v8::Local<v8::Object> self = info.Holder();
 	struct V8ElementPrivate* privData = V8DOM::toClassPtr<V8ElementPrivate >(self->GetInternalField(0));
 
-	return v8::String::New(privData->arabicaThis->getTagName().c_str());
+	return v8::String::New(privData->nativeObj->getTagName().c_str());
 }
 v8::Handle<v8::Value> V8Element::getAttributeCallback(const v8::Arguments& args) {
 	if (args.Length() < 1)
@@ -23,7 +23,7 @@ v8::Handle<v8::Value> V8Element::getAttributeCallback(const v8::Arguments& args)
 	struct V8ElementPrivate* privData = V8DOM::toClassPtr<V8ElementPrivate >(self->GetInternalField(0));
 	v8::String::AsciiValue localName(args[0]);
 
-	std::string retVal = privData->arabicaThis->getAttribute(*localName);
+	std::string retVal = privData->nativeObj->getAttribute(*localName);
 
 	return v8::String::New(retVal.c_str());
 }
@@ -37,7 +37,7 @@ v8::Handle<v8::Value> V8Element::setAttributeCallback(const v8::Arguments& args)
 	v8::String::AsciiValue localName(args[0]);
 	v8::String::AsciiValue localValue(args[1]);
 
-	privData->arabicaThis->setAttribute(*localName, *localValue);
+	privData->nativeObj->setAttribute(*localName, *localValue);
 
 	return v8::Undefined();
 }
@@ -50,7 +50,7 @@ v8::Handle<v8::Value> V8Element::removeAttributeCallback(const v8::Arguments& ar
 	struct V8ElementPrivate* privData = V8DOM::toClassPtr<V8ElementPrivate >(self->GetInternalField(0));
 	v8::String::AsciiValue localName(args[0]);
 
-	privData->arabicaThis->removeAttribute(*localName);
+	privData->nativeObj->removeAttribute(*localName);
 
 	return v8::Undefined();
 }
@@ -63,13 +63,13 @@ v8::Handle<v8::Value> V8Element::getAttributeNodeCallback(const v8::Arguments& a
 	struct V8ElementPrivate* privData = V8DOM::toClassPtr<V8ElementPrivate >(self->GetInternalField(0));
 	v8::String::AsciiValue localName(args[0]);
 
-	Arabica::DOM::Attr<std::string>* retVal = new Arabica::DOM::Attr<std::string>(privData->arabicaThis->getAttributeNode(*localName));
+	Arabica::DOM::Attr<std::string>* retVal = new Arabica::DOM::Attr<std::string>(privData->nativeObj->getAttributeNode(*localName));
 	v8::Handle<v8::Function> retCtor = V8Attr::getTmpl()->GetFunction();
 	v8::Persistent<v8::Object> retObj = v8::Persistent<v8::Object>::New(retCtor->NewInstance());
 
 	struct V8Attr::V8AttrPrivate* retPrivData = new V8Attr::V8AttrPrivate();
 	retPrivData->dom = privData->dom;
-	retPrivData->arabicaThis = retVal;
+	retPrivData->nativeObj = retVal;
 
 	retObj->SetInternalField(0, V8DOM::toExternal(retPrivData));
 
@@ -86,15 +86,15 @@ v8::Handle<v8::Value> V8Element::setAttributeNodeCallback(const v8::Arguments& a
 
 	v8::Local<v8::Object> self = args.Holder();
 	struct V8ElementPrivate* privData = V8DOM::toClassPtr<V8ElementPrivate >(self->GetInternalField(0));
-	Arabica::DOM::Attr<std::string>* localNewAttr = V8DOM::toClassPtr<V8Attr::V8AttrPrivate >(args[0]->ToObject()->GetInternalField(0))->arabicaThis;
+	Arabica::DOM::Attr<std::string>* localNewAttr = V8DOM::toClassPtr<V8Attr::V8AttrPrivate >(args[0]->ToObject()->GetInternalField(0))->nativeObj;
 
-	Arabica::DOM::Attr<std::string>* retVal = new Arabica::DOM::Attr<std::string>(privData->arabicaThis->setAttributeNode(*localNewAttr));
+	Arabica::DOM::Attr<std::string>* retVal = new Arabica::DOM::Attr<std::string>(privData->nativeObj->setAttributeNode(*localNewAttr));
 	v8::Handle<v8::Function> retCtor = V8Attr::getTmpl()->GetFunction();
 	v8::Persistent<v8::Object> retObj = v8::Persistent<v8::Object>::New(retCtor->NewInstance());
 
 	struct V8Attr::V8AttrPrivate* retPrivData = new V8Attr::V8AttrPrivate();
 	retPrivData->dom = privData->dom;
-	retPrivData->arabicaThis = retVal;
+	retPrivData->nativeObj = retVal;
 
 	retObj->SetInternalField(0, V8DOM::toExternal(retPrivData));
 
@@ -111,15 +111,15 @@ v8::Handle<v8::Value> V8Element::removeAttributeNodeCallback(const v8::Arguments
 
 	v8::Local<v8::Object> self = args.Holder();
 	struct V8ElementPrivate* privData = V8DOM::toClassPtr<V8ElementPrivate >(self->GetInternalField(0));
-	Arabica::DOM::Attr<std::string>* localOldAttr = V8DOM::toClassPtr<V8Attr::V8AttrPrivate >(args[0]->ToObject()->GetInternalField(0))->arabicaThis;
+	Arabica::DOM::Attr<std::string>* localOldAttr = V8DOM::toClassPtr<V8Attr::V8AttrPrivate >(args[0]->ToObject()->GetInternalField(0))->nativeObj;
 
-	Arabica::DOM::Attr<std::string>* retVal = new Arabica::DOM::Attr<std::string>(privData->arabicaThis->removeAttributeNode(*localOldAttr));
+	Arabica::DOM::Attr<std::string>* retVal = new Arabica::DOM::Attr<std::string>(privData->nativeObj->removeAttributeNode(*localOldAttr));
 	v8::Handle<v8::Function> retCtor = V8Attr::getTmpl()->GetFunction();
 	v8::Persistent<v8::Object> retObj = v8::Persistent<v8::Object>::New(retCtor->NewInstance());
 
 	struct V8Attr::V8AttrPrivate* retPrivData = new V8Attr::V8AttrPrivate();
 	retPrivData->dom = privData->dom;
-	retPrivData->arabicaThis = retVal;
+	retPrivData->nativeObj = retVal;
 
 	retObj->SetInternalField(0, V8DOM::toExternal(retPrivData));
 
@@ -136,13 +136,13 @@ v8::Handle<v8::Value> V8Element::getElementsByTagNameCallback(const v8::Argument
 	struct V8ElementPrivate* privData = V8DOM::toClassPtr<V8ElementPrivate >(self->GetInternalField(0));
 	v8::String::AsciiValue localName(args[0]);
 
-	Arabica::DOM::NodeList<std::string>* retVal = new Arabica::DOM::NodeList<std::string>(privData->arabicaThis->getElementsByTagName(*localName));
+	Arabica::DOM::NodeList<std::string>* retVal = new Arabica::DOM::NodeList<std::string>(privData->nativeObj->getElementsByTagName(*localName));
 	v8::Handle<v8::Function> retCtor = V8NodeList::getTmpl()->GetFunction();
 	v8::Persistent<v8::Object> retObj = v8::Persistent<v8::Object>::New(retCtor->NewInstance());
 
 	struct V8NodeList::V8NodeListPrivate* retPrivData = new V8NodeList::V8NodeListPrivate();
 	retPrivData->dom = privData->dom;
-	retPrivData->arabicaThis = retVal;
+	retPrivData->nativeObj = retVal;
 
 	retObj->SetInternalField(0, V8DOM::toExternal(retPrivData));
 
@@ -160,7 +160,7 @@ v8::Handle<v8::Value> V8Element::getAttributeNSCallback(const v8::Arguments& arg
 	v8::String::AsciiValue localNamespaceURI(args[0]);
 	v8::String::AsciiValue localLocalName(args[1]);
 
-	std::string retVal = privData->arabicaThis->getAttributeNS(*localNamespaceURI, *localLocalName);
+	std::string retVal = privData->nativeObj->getAttributeNS(*localNamespaceURI, *localLocalName);
 
 	return v8::String::New(retVal.c_str());
 }
@@ -175,7 +175,7 @@ v8::Handle<v8::Value> V8Element::setAttributeNSCallback(const v8::Arguments& arg
 	v8::String::AsciiValue localQualifiedName(args[1]);
 	v8::String::AsciiValue localValue(args[2]);
 
-	privData->arabicaThis->setAttributeNS(*localNamespaceURI, *localQualifiedName, *localValue);
+	privData->nativeObj->setAttributeNS(*localNamespaceURI, *localQualifiedName, *localValue);
 
 	return v8::Undefined();
 }
@@ -189,7 +189,7 @@ v8::Handle<v8::Value> V8Element::removeAttributeNSCallback(const v8::Arguments& 
 	v8::String::AsciiValue localNamespaceURI(args[0]);
 	v8::String::AsciiValue localLocalName(args[1]);
 
-	privData->arabicaThis->removeAttributeNS(*localNamespaceURI, *localLocalName);
+	privData->nativeObj->removeAttributeNS(*localNamespaceURI, *localLocalName);
 
 	return v8::Undefined();
 }
@@ -203,13 +203,13 @@ v8::Handle<v8::Value> V8Element::getAttributeNodeNSCallback(const v8::Arguments&
 	v8::String::AsciiValue localNamespaceURI(args[0]);
 	v8::String::AsciiValue localLocalName(args[1]);
 
-	Arabica::DOM::Attr<std::string>* retVal = new Arabica::DOM::Attr<std::string>(privData->arabicaThis->getAttributeNodeNS(*localNamespaceURI, *localLocalName));
+	Arabica::DOM::Attr<std::string>* retVal = new Arabica::DOM::Attr<std::string>(privData->nativeObj->getAttributeNodeNS(*localNamespaceURI, *localLocalName));
 	v8::Handle<v8::Function> retCtor = V8Attr::getTmpl()->GetFunction();
 	v8::Persistent<v8::Object> retObj = v8::Persistent<v8::Object>::New(retCtor->NewInstance());
 
 	struct V8Attr::V8AttrPrivate* retPrivData = new V8Attr::V8AttrPrivate();
 	retPrivData->dom = privData->dom;
-	retPrivData->arabicaThis = retVal;
+	retPrivData->nativeObj = retVal;
 
 	retObj->SetInternalField(0, V8DOM::toExternal(retPrivData));
 
@@ -226,15 +226,15 @@ v8::Handle<v8::Value> V8Element::setAttributeNodeNSCallback(const v8::Arguments&
 
 	v8::Local<v8::Object> self = args.Holder();
 	struct V8ElementPrivate* privData = V8DOM::toClassPtr<V8ElementPrivate >(self->GetInternalField(0));
-	Arabica::DOM::Attr<std::string>* localNewAttr = V8DOM::toClassPtr<V8Attr::V8AttrPrivate >(args[0]->ToObject()->GetInternalField(0))->arabicaThis;
+	Arabica::DOM::Attr<std::string>* localNewAttr = V8DOM::toClassPtr<V8Attr::V8AttrPrivate >(args[0]->ToObject()->GetInternalField(0))->nativeObj;
 
-	Arabica::DOM::Attr<std::string>* retVal = new Arabica::DOM::Attr<std::string>(privData->arabicaThis->setAttributeNodeNS(*localNewAttr));
+	Arabica::DOM::Attr<std::string>* retVal = new Arabica::DOM::Attr<std::string>(privData->nativeObj->setAttributeNodeNS(*localNewAttr));
 	v8::Handle<v8::Function> retCtor = V8Attr::getTmpl()->GetFunction();
 	v8::Persistent<v8::Object> retObj = v8::Persistent<v8::Object>::New(retCtor->NewInstance());
 
 	struct V8Attr::V8AttrPrivate* retPrivData = new V8Attr::V8AttrPrivate();
 	retPrivData->dom = privData->dom;
-	retPrivData->arabicaThis = retVal;
+	retPrivData->nativeObj = retVal;
 
 	retObj->SetInternalField(0, V8DOM::toExternal(retPrivData));
 
@@ -252,13 +252,13 @@ v8::Handle<v8::Value> V8Element::getElementsByTagNameNSCallback(const v8::Argume
 	v8::String::AsciiValue localNamespaceURI(args[0]);
 	v8::String::AsciiValue localLocalName(args[1]);
 
-	Arabica::DOM::NodeList<std::string>* retVal = new Arabica::DOM::NodeList<std::string>(privData->arabicaThis->getElementsByTagNameNS(*localNamespaceURI, *localLocalName));
+	Arabica::DOM::NodeList<std::string>* retVal = new Arabica::DOM::NodeList<std::string>(privData->nativeObj->getElementsByTagNameNS(*localNamespaceURI, *localLocalName));
 	v8::Handle<v8::Function> retCtor = V8NodeList::getTmpl()->GetFunction();
 	v8::Persistent<v8::Object> retObj = v8::Persistent<v8::Object>::New(retCtor->NewInstance());
 
 	struct V8NodeList::V8NodeListPrivate* retPrivData = new V8NodeList::V8NodeListPrivate();
 	retPrivData->dom = privData->dom;
-	retPrivData->arabicaThis = retVal;
+	retPrivData->nativeObj = retVal;
 
 	retObj->SetInternalField(0, V8DOM::toExternal(retPrivData));
 
@@ -275,7 +275,7 @@ v8::Handle<v8::Value> V8Element::hasAttributeCallback(const v8::Arguments& args)
 	struct V8ElementPrivate* privData = V8DOM::toClassPtr<V8ElementPrivate >(self->GetInternalField(0));
 	v8::String::AsciiValue localName(args[0]);
 
-	bool retVal = privData->arabicaThis->hasAttribute(*localName);
+	bool retVal = privData->nativeObj->hasAttribute(*localName);
 
 	return v8::Boolean::New(retVal);
 }
@@ -289,7 +289,7 @@ v8::Handle<v8::Value> V8Element::hasAttributeNSCallback(const v8::Arguments& arg
 	v8::String::AsciiValue localNamespaceURI(args[0]);
 	v8::String::AsciiValue localLocalName(args[1]);
 
-	bool retVal = privData->arabicaThis->hasAttributeNS(*localNamespaceURI, *localLocalName);
+	bool retVal = privData->nativeObj->hasAttributeNS(*localNamespaceURI, *localLocalName);
 
 	return v8::Boolean::New(retVal);
 }

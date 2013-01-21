@@ -2,7 +2,8 @@
 #define USCXMLINVOKER_H_OQFA21IO
 
 #include <uscxml/Interpreter.h>
-#include <boost//enable_shared_from_this.hpp>
+#include <boost/enable_shared_from_this.hpp>
+#include "uscxml/concurrency/BlockingQueue.h"
 
 #ifdef BUILD_AS_PLUGINS
 #include "uscxml/plugins/Plugins.h"
@@ -12,7 +13,10 @@ namespace uscxml {
 
 class Interpreter;
 
-class USCXMLInvoker : public InvokerImpl, public boost::enable_shared_from_this<USCXMLInvoker> {
+class USCXMLInvoker :
+	public InvokerImpl,
+	public uscxml::concurrency::BlockingQueue<Event>,
+	public boost::enable_shared_from_this<USCXMLInvoker> {
 public:
 	USCXMLInvoker();
 	virtual ~USCXMLInvoker();
@@ -29,10 +33,10 @@ public:
 	virtual void send(const SendRequest& req);
 	virtual void cancel(const std::string sendId);
 	virtual void invoke(const InvokeRequest& req);
-	virtual void sendToParent(const SendRequest& req);
+
+	virtual void push(Event& event);
 
 protected:
-	std::string _invokeId;
 	Interpreter* _invokedInterpreter;
 	Interpreter* _parentInterpreter;
 };
