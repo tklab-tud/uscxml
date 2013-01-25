@@ -30,6 +30,7 @@ const std::string Interpreter::getUUID() {
 
 Interpreter::Interpreter() : Arabica::SAX2DOM::Parser<std::string>() {
 	_lastRunOnMainThread = 0;
+  _nsURL = "*";
 	_thread = NULL;
 	_sendQueue = NULL;
 	_parentQueue = NULL;
@@ -75,6 +76,14 @@ Interpreter* Interpreter::fromURI(const std::string& uri) {
 	return interpreter;
 }
 
+void Interpreter::setName(const std::string& name) {
+  if (!_running) {
+    _name = name;
+  } else {
+    LOG(ERROR) << "Cannot change name of running interpreter";
+  }
+}
+
 URL Interpreter::toBaseURI(const URL& uri) {
 	std::stringstream ssBaseURI;
 	if (uri.scheme().size() > 0) {
@@ -108,8 +117,21 @@ bool Interpreter::toAbsoluteURI(URL& uri) {
 }
 
 void Interpreter::startPrefixMapping(const std::string& prefix, const std::string& uri) {
-//  std::cout << "starting prefix mapping " << prefix << ": " << uri << std::endl;
-	_nsContext.addNamespaceDeclaration(uri, prefix);
+  std::cout << "starting prefix mapping " << prefix << ": " << uri << std::endl;
+  if (boost::iequals(uri, "http://www.w3.org/2005/07/scxml")) {
+    _nsURL = uri;
+    if (prefix.size() == 0) {
+      LOG(INFO) << "Mapped default namespace to 'scxml:'";
+      _xpathPrefix = "scxml:";
+      _nsContext.addNamespaceDeclaration(uri, "scxml");
+    } else {
+      _xpathPrefix = prefix + ":";
+      _xmlNSPrefix = _xpathPrefix;
+      _nsContext.addNamespaceDeclaration(uri, prefix);
+    }
+  } else {
+    _nsContext.addNamespaceDeclaration(uri, prefix);
+  }
 }
 
 Interpreter* Interpreter::fromInputSource(Arabica::SAX::InputSource<std::string>& source) {
@@ -140,22 +162,19 @@ void Interpreter::init() {
 	_sendQueue = new DelayedEventQueue();
 	_sendQueue->start();
 	if (_document) {
-		NodeList<std::string> scxmls = _document.getElementsByTagName("scxml");
+		NodeList<std::string> scxmls = _document.getElementsByTagNameNS(_nsURL, "scxml");
 		if (scxmls.getLength() > 0) {
 			_scxml = (Arabica::DOM::Element<std::string>)scxmls.item(0);
 
-			// do we have a xmlns attribute?
-			std::string ns = _document.getDocumentElement().getNamespaceURI();
-			if(ns.size() > 0) {
-				_nsContext.addNamespaceDeclaration(ns, "sc");
-				_nsPrefix = "sc:";
-			}
-			// do we have additional namespaces?
-
+      // setup xpath and check that it works
 			_xpath.setNamespaceContext(_nsContext);
+      Arabica::XPath::NodeSet<std::string> scxmls = _xpath.evaluate("/" + _xpathPrefix + "scxml", _document).asNodeSet();
+      assert(scxmls.size() > 0);
+      assert(scxmls[0] == _scxml);
 
 			normalize(_document);
-			_name = (HAS_ATTR(_scxml, "name") ? ATTR(_scxml, "name") : getUUID());
+      if (_name.length() == 0)
+        _name = (HAS_ATTR(_scxml, "name") ? ATTR(_scxml, "name") : getUUID());
 		} else {
 			LOG(ERROR) << "Cannot find SCXML element" << std::endl;
 		}
@@ -216,11 +235,6 @@ bool Interpreter::runOnMainThread(int fps, bool blocking) {
 	return (_thread != NULL);
 }
 
-void Interpreter::waitForStabilization() {
-	tthread::lock_guard<tthread::mutex> lock(_mutex);
-	_stabilized.wait(_mutex);
-}
-
 // see: http://www.w3.org/TR/scxml/#AlgorithmforSCXMLInterpretation
 void Interpreter::interpret() {
 	if (!_scxml)
@@ -229,13 +243,15 @@ void Interpreter::interpret() {
 
 	_sessionId = getUUID();
 
-	if(HAS_ATTR(_scxml, "datamodel")) {
-		_dataModel = Factory::createDataModel(ATTR(_scxml, "datamodel"), this);
-		if(!_dataModel) {
-			LOG(ERROR) << "No datamodel for " << ATTR(_scxml, "datamodel") << " registered";
-			return;
-		}
-	}
+  std::string datamodelName;
+  if (datamodelName.length() == 0 && HAS_ATTR(_scxml, "datamodel"))
+    datamodelName = ATTR(_scxml, "datamodel");
+  if (datamodelName.length() == 0 && HAS_ATTR(_scxml, "profile")) // SCION SCXML uses profile to specify datamodel
+    datamodelName = ATTR(_scxml, "profile");
+  _dataModel = Factory::createDataModel(datamodelName, this);
+  if(datamodelName.length() > 0  && !_dataModel) {
+    LOG(ERROR) << "No datamodel for " << datamodelName << " registered";
+  }
 
 	setupIOProcessors();
 
@@ -246,21 +262,21 @@ void Interpreter::interpret() {
 
 	if (_dataModel && _binding == EARLY) {
 		// initialize all data elements
-		NodeSet<std::string> dataElems = _xpath.evaluate("//" + _nsPrefix + "data", _document).asNodeSet();
+		NodeSet<std::string> dataElems = _xpath.evaluate("//" + _xpathPrefix + "data", _document).asNodeSet();
 		for (unsigned int i = 0; i < dataElems.size(); i++) {
 			initializeData(dataElems[i]);
 		}
 	} else if(_dataModel) {
 		// initialize current data elements
-		NodeSet<std::string> topDataElems = filterChildElements("data", filterChildElements("datamodel", _scxml));
-		//		NodeSet<std::string> topDataElems = _xpath.evaluate("/" + _nsPrefix + "scxml/" + _nsPrefix + "datamodel/" + _nsPrefix + "data", _document).asNodeSet();
+		NodeSet<std::string> topDataElems = filterChildElements(_xmlNSPrefix + "data", filterChildElements(_xmlNSPrefix + "datamodel", _scxml));
+		//		NodeSet<std::string> topDataElems = _xpath.evaluate("/" + _xpathPrefix + "scxml/" + _xpathPrefix + "datamodel/" + _xpathPrefix + "data", _document).asNodeSet();
 		for (unsigned int i = 0; i < topDataElems.size(); i++) {
 			initializeData(topDataElems[i]);
 		}
 	}
 
 	// executeGlobalScriptElements
-	NodeSet<std::string> globalScriptElems = _xpath.evaluate("/" + _nsPrefix + "scxml/" + _nsPrefix + "script", _document).asNodeSet();
+	NodeSet<std::string> globalScriptElems = _xpath.evaluate("/" + _xpathPrefix + "scxml/" + _xpathPrefix + "script", _document).asNodeSet();
 	for (unsigned int i = 0; i < globalScriptElems.size(); i++) {
 		//    std::cout << globalScriptElems[i].getFirstChild().getNodeValue() << std::endl;
 		if (_dataModel)
@@ -268,12 +284,12 @@ void Interpreter::interpret() {
 	}
 
 	// initial transition might be implict
-	NodeSet<std::string> initialTransitions = _xpath.evaluate("/" + _nsPrefix + "scxml/" + _nsPrefix + "initial/" + _nsPrefix + "transition", _document).asNodeSet();
+	NodeSet<std::string> initialTransitions = _xpath.evaluate("/" + _xpathPrefix + "scxml/" + _xpathPrefix + "initial/" + _xpathPrefix + "transition", _document).asNodeSet();
 	if (initialTransitions.size() == 0) {
 		Arabica::DOM::Element<std::string> initialState = (Arabica::DOM::Element<std::string>)getInitialState();
-		Arabica::DOM::Element<std::string> initialElem = _document.createElement("initial");
-		initialElem.setAttribute("generated", "on");
-		Arabica::DOM::Element<std::string> transitionElem = _document.createElement("transition");
+		Arabica::DOM::Element<std::string> initialElem = _document.createElementNS(_nsURL, "initial");
+		initialElem.setAttribute("generated", "true");
+		Arabica::DOM::Element<std::string> transitionElem = _document.createElementNS(_nsURL, "transition");
 		transitionElem.setAttribute("target", initialState.getAttribute("id"));
 		initialElem.appendChild(transitionElem);
 		_scxml.appendChild(initialElem);
@@ -285,6 +301,11 @@ void Interpreter::interpret() {
 	enterStates(initialTransitions);
 
 	mainEventLoop();
+  
+  // set datamodel to null from this thread
+  if(_dataModel)
+    _dataModel = DataModel();
+
 }
 
 /**
@@ -333,7 +354,7 @@ void Interpreter::initializeData(const Arabica::DOM::Node<std::string>& data) {
 
 void Interpreter::normalize(const Arabica::DOM::Document<std::string>& node) {
 	// make sure every state has an id and set isFirstEntry to true
-	Arabica::XPath::NodeSet<std::string> states = _xpath.evaluate("//" + _nsPrefix + "state", _document).asNodeSet();
+	Arabica::XPath::NodeSet<std::string> states = _xpath.evaluate("//" + _xpathPrefix + "state", _document).asNodeSet();
 	for (int i = 0; i < states.size(); i++) {
 		Arabica::DOM::Element<std::string> stateElem = Arabica::DOM::Element<std::string>(states[i]);
 		stateElem.setAttribute("isFirstEntry", "true");
@@ -343,21 +364,21 @@ void Interpreter::normalize(const Arabica::DOM::Document<std::string>& node) {
 	}
 
 	// make sure every invoke has an idlocation or id
-	Arabica::XPath::NodeSet<std::string> invokes = _xpath.evaluate("//" + _nsPrefix + "invoke", _document).asNodeSet();
+	Arabica::XPath::NodeSet<std::string> invokes = _xpath.evaluate("//" + _xpathPrefix + "invoke", _document).asNodeSet();
 	for (int i = 0; i < invokes.size(); i++) {
 		Arabica::DOM::Element<std::string> invokeElem = Arabica::DOM::Element<std::string>(invokes[i]);
 		if (!invokeElem.hasAttribute("id") && !invokeElem.hasAttribute("idlocation")) {
 			invokeElem.setAttribute("id", getUUID());
 		}
 //    // make sure every finalize element contained has the invoke id as an attribute
-//    Arabica::XPath::NodeSet<std::string> finalizes = _xpath.evaluate("" + _nsPrefix + "finalize", invokeElem).asNodeSet();
+//    Arabica::XPath::NodeSet<std::string> finalizes = _xpath.evaluate("" + _xpathPrefix + "finalize", invokeElem).asNodeSet();
 //    for (int j = 0; j < finalizes.size(); j++) {
 //      Arabica::DOM::Element<std::string> finalizeElem = Arabica::DOM::Element<std::string>(finalizes[j]);
 //      finalizeElem.setAttribute("invokeid", invokeElem.getAttribute("id"));
 //    }
 	}
 
-	Arabica::XPath::NodeSet<std::string> finals = _xpath.evaluate("//" + _nsPrefix + "final", _document).asNodeSet();
+	Arabica::XPath::NodeSet<std::string> finals = _xpath.evaluate("//" + _xpathPrefix + "final", _document).asNodeSet();
 	for (int i = 0; i < finals.size(); i++) {
 		Arabica::DOM::Element<std::string> finalElem = Arabica::DOM::Element<std::string>(finals[i]);
 		finalElem.setAttribute("isFirstEntry", "true");
@@ -366,7 +387,7 @@ void Interpreter::normalize(const Arabica::DOM::Document<std::string>& node) {
 		}
 	}
 
-	Arabica::XPath::NodeSet<std::string> histories = _xpath.evaluate("//" + _nsPrefix + "history", _document).asNodeSet();
+	Arabica::XPath::NodeSet<std::string> histories = _xpath.evaluate("//" + _xpathPrefix + "history", _document).asNodeSet();
 	for (int i = 0; i < histories.size(); i++) {
 		Arabica::DOM::Element<std::string> historyElem = Arabica::DOM::Element<std::string>(histories[i]);
 		if (!historyElem.hasAttribute("id")) {
@@ -374,7 +395,7 @@ void Interpreter::normalize(const Arabica::DOM::Document<std::string>& node) {
 		}
 	}
 
-	Arabica::XPath::NodeSet<std::string> scxml = _xpath.evaluate("/" + _nsPrefix + "scxml", _document).asNodeSet();
+	Arabica::XPath::NodeSet<std::string> scxml = _xpath.evaluate("/" + _xpathPrefix + "scxml", _document).asNodeSet();
 	if (!((Arabica::DOM::Element<std::string>)scxml[0]).hasAttribute("id")) {
 		((Arabica::DOM::Element<std::string>)scxml[0]).setAttribute("id", getUUID());
 	}
@@ -392,6 +413,8 @@ void Interpreter::normalize(const Arabica::DOM::Document<std::string>& node) {
 }
 
 void Interpreter::mainEventLoop() {
+  std::set<InterpreterMonitor*>::iterator monIter;
+
 	while(_running) {
 		NodeSet<std::string> enabledTransitions;
 		_stable = false;
@@ -406,6 +429,12 @@ void Interpreter::mainEventLoop() {
 			}
 			std::cout << std::endl;
 #endif
+      std::set<InterpreterMonitor*>::iterator monIter = _monitors.begin();
+      while(monIter != _monitors.end()) {
+        (*monIter)->beforeMicroStep(this);
+        monIter++;
+      }
+
 			enabledTransitions = selectEventlessTransitions();
 			if (enabledTransitions.size() == 0) {
 				if (_internalQueue.size() == 0) {
@@ -426,7 +455,7 @@ void Interpreter::mainEventLoop() {
 		}
 
 		for (unsigned int i = 0; i < _statesToInvoke.size(); i++) {
-			NodeSet<std::string> invokes = _xpath.evaluate("" + _nsPrefix + "invoke", _statesToInvoke[i]).asNodeSet();
+			NodeSet<std::string> invokes = _xpath.evaluate("" + _xpathPrefix + "invoke", _statesToInvoke[i]).asNodeSet();
 			for (unsigned int j = 0; j < invokes.size(); j++) {
 				invoke(invokes[j]);
 			}
@@ -436,11 +465,12 @@ void Interpreter::mainEventLoop() {
 		if (!_internalQueue.empty())
 			continue;
 
-		{
-			tthread::lock_guard<tthread::mutex> lock(_mutex);
-			_stabilized.notify_all();
-		}
-
+    monIter = _monitors.begin();
+    while(monIter != _monitors.end()) {
+      (*monIter)->onStableConfiguration(this);
+      monIter++;
+    }
+    
 		// whenever we have a stable configuration, run the mainThread hooks with 200fps
 		while(_externalQueue.isEmpty() && _thread == NULL) {
 			runOnMainThread(200);
@@ -461,14 +491,14 @@ void Interpreter::mainEventLoop() {
 				LOG(ERROR) << "Syntax error while setting external event:" << std::endl << e << std::endl;
 			}
 		for (unsigned int i = 0; i < _configuration.size(); i++) {
-			NodeSet<std::string> invokes = _xpath.evaluate("" + _nsPrefix + "invoke", _configuration[i]).asNodeSet();
+			NodeSet<std::string> invokes = _xpath.evaluate("" + _xpathPrefix + "invoke", _configuration[i]).asNodeSet();
 			for (unsigned int j = 0; j < invokes.size(); j++) {
 				Arabica::DOM::Element<std::string> invokeElem = (Arabica::DOM::Element<std::string>)invokes[j];
 				std::string invokeId = invokeElem.getAttribute("id");
 				std::string autoForward = invokeElem.getAttribute("autoforward");
 				if (boost::iequals(invokeId, externalEvent.invokeid)) {
 
-					Arabica::XPath::NodeSet<std::string> finalizes = _xpath.evaluate("" + _nsPrefix + "finalize", invokeElem).asNodeSet();
+					Arabica::XPath::NodeSet<std::string> finalizes = _xpath.evaluate("" + _xpathPrefix + "finalize", invokeElem).asNodeSet();
 					for (int k = 0; k < finalizes.size(); k++) {
 						Arabica::DOM::Element<std::string> finalizeElem = Arabica::DOM::Element<std::string>(finalizes[k]);
 						executeContent(finalizeElem);
@@ -486,7 +516,20 @@ void Interpreter::mainEventLoop() {
 		if (!enabledTransitions.empty())
 			microstep(enabledTransitions);
 	}
+  monIter = _monitors.begin();
+  while(monIter != _monitors.end()) {
+    (*monIter)->beforeCompletion(this);
+    monIter++;
+  }
+
 	exitInterpreter();
+
+  monIter = _monitors.begin();
+  while(monIter != _monitors.end()) {
+    (*monIter)->afterCompletion(this);
+    monIter++;
+  }
+
 }
 
 void Interpreter::internalDoneSend(const Arabica::DOM::Node<std::string>& state) {
@@ -497,7 +540,7 @@ void Interpreter::internalDoneSend(const Arabica::DOM::Node<std::string>& state)
 	Arabica::DOM::Element<std::string> parent = (Arabica::DOM::Element<std::string>)stateElem.getParentNode();
 	Event event;
 
-	Arabica::XPath::NodeSet<std::string> doneDatas = _xpath.evaluate("" + _nsPrefix + "donedata", stateElem).asNodeSet();
+	Arabica::XPath::NodeSet<std::string> doneDatas = _xpath.evaluate("" + _xpathPrefix + "donedata", stateElem).asNodeSet();
 	if (doneDatas.size() > 0) {
 		// only process first donedata element
 		Arabica::DOM::Node<std::string> doneData = doneDatas[0];
@@ -505,7 +548,7 @@ void Interpreter::internalDoneSend(const Arabica::DOM::Node<std::string>& state)
 		for (int i = 0; i < doneChilds.getLength(); i++) {
 			if (!doneChilds.item(i).getNodeType() == Node_base::ELEMENT_NODE)
 				continue;
-			if (boost::iequals(TAGNAME(doneChilds.item(i)), "param")) {
+			if (boost::iequals(TAGNAME(doneChilds.item(i)), _xmlNSPrefix + "param")) {
 				if (!HAS_ATTR(doneChilds.item(i), "name")) {
 					LOG(ERROR) << "param element is missing name attribut";
 					continue;
@@ -522,7 +565,7 @@ void Interpreter::internalDoneSend(const Arabica::DOM::Node<std::string>& state)
 				}
 				event.compound[ATTR(doneChilds.item(i), "name")] = paramValue;
 			}
-			if (boost::iequals(TAGNAME(doneChilds.item(i)), "content")) {
+			if (boost::iequals(TAGNAME(doneChilds.item(i)), _xmlNSPrefix + "content")) {
 				if (HAS_ATTR(doneChilds.item(i), "expr")) {
 					if (_dataModel) {
 						event.compound["content"] = Data(_dataModel.evalAsString(ATTR(doneChilds.item(i), "expr")), Data::VERBATIM);
@@ -625,7 +668,7 @@ void Interpreter::send(const Arabica::DOM::Node<std::string>& element) {
 		}
 
 		// params
-		NodeSet<std::string> params = _xpath.evaluate("" + _nsPrefix + "param", element).asNodeSet();
+		NodeSet<std::string> params = _xpath.evaluate("" + _xpathPrefix + "param", element).asNodeSet();
 		for (int i = 0; i < params.size(); i++) {
 			if (!HAS_ATTR(params[i], "name")) {
 				LOG(ERROR) << "param element is missing name attribut";
@@ -644,7 +687,7 @@ void Interpreter::send(const Arabica::DOM::Node<std::string>& element) {
 		}
 
 		// content
-		NodeSet<std::string> contents = _xpath.evaluate("" + _nsPrefix + "content", element).asNodeSet();
+		NodeSet<std::string> contents = _xpath.evaluate("" + _xpathPrefix + "content", element).asNodeSet();
 		if (contents.size() > 1)
 			LOG(ERROR) << "Only a single content element is allowed for send elements - using first one";
 		if (contents.size() > 0) {
@@ -762,7 +805,7 @@ void Interpreter::invoke(const Arabica::DOM::Node<std::string>& element) {
 		}
 
 		// params
-		NodeSet<std::string> params = _xpath.evaluate("" + _nsPrefix + "param", element).asNodeSet();
+		NodeSet<std::string> params = _xpath.evaluate("" + _xpathPrefix + "param", element).asNodeSet();
 		for (int i = 0; i < params.size(); i++) {
 			if (!HAS_ATTR(params[i], "name")) {
 				LOG(ERROR) << "param element is missing name attribut";
@@ -786,7 +829,7 @@ void Interpreter::invoke(const Arabica::DOM::Node<std::string>& element) {
 		}
 
 		// content
-		NodeSet<std::string> contents = _xpath.evaluate("" + _nsPrefix + "content", element).asNodeSet();
+		NodeSet<std::string> contents = _xpath.evaluate("" + _xpathPrefix + "content", element).asNodeSet();
 		if (contents.size() > 1)
 			LOG(ERROR) << "Only a single content element is allowed for send elements - using first one";
 		if (contents.size() > 0) {
@@ -843,7 +886,7 @@ Arabica::XPath::NodeSet<std::string> Interpreter::selectTransitions(const std::s
 		NodeSet<std::string> ancestors = getProperAncestors(atomicStates[i], Arabica::DOM::Node<std::string>());
 		ancestors.push_back(atomicStates[i]);
 		for (unsigned int j = 0; j < ancestors.size(); j++) {
-			NodeSet<std::string> transitions = _xpath.evaluate("" + _nsPrefix + "transition", ancestors[j]).asNodeSet();
+			NodeSet<std::string> transitions = _xpath.evaluate("" + _xpathPrefix + "transition", ancestors[j]).asNodeSet();
 			for (unsigned int k = 0; k < transitions.size(); k++) {
 				if (((Arabica::DOM::Element<std::string>)transitions[k]).hasAttribute("event") &&
 				        nameMatch(((Arabica::DOM::Element<std::string>)transitions[k]).getAttribute("event"), event) &&
@@ -924,7 +967,7 @@ Arabica::XPath::NodeSet<std::string> Interpreter::selectEventlessTransitions() {
 			}
 
 #if 0
-			NodeSet<std::string> transitions = _xpath.evaluate("" + _nsPrefix + "transition", ancestors[j]).asNodeSet();
+			NodeSet<std::string> transitions = _xpath.evaluate("" + _xpathPrefix + "transition", ancestors[j]).asNodeSet();
 			for (unsigned int k = 0; k < transitions.size(); k++) {
 				if (!((Arabica::DOM::Element<std::string>)transitions[k]).hasAttribute("event") && hasConditionMatch(transitions[k])) {
 					enabledTransitions.push_back(transitions[k]);
@@ -969,6 +1012,8 @@ LOOP:
 }
 
 bool Interpreter::isPreemptingTransition(const Arabica::DOM::Node<std::string>& t1, const Arabica::DOM::Node<std::string>& t2) {
+  assert(t1);
+  assert(t2);
 	if (t1 == t2)
 		return false;
 	if (isWithinSameChild(t1) && (!isTargetless(t2) && !isWithinSameChild(t2)))
@@ -1002,11 +1047,11 @@ void Interpreter::exitInterpreter() {
 	statesToExit.reverse();
 
 	for (int i = 0; i < statesToExit.size(); i++) {
-		Arabica::XPath::NodeSet<std::string> onExitElems = _xpath.evaluate("" + _nsPrefix + "onexit", statesToExit[i]).asNodeSet();
+		Arabica::XPath::NodeSet<std::string> onExitElems = _xpath.evaluate("" + _xpathPrefix + "onexit", statesToExit[i]).asNodeSet();
 		for (int j = 0; j < onExitElems.size(); j++) {
 			executeContent(onExitElems[j]);
 		}
-		Arabica::XPath::NodeSet<std::string> invokeElems = _xpath.evaluate("" + _nsPrefix + "invoke", statesToExit[i]).asNodeSet();
+		Arabica::XPath::NodeSet<std::string> invokeElems = _xpath.evaluate("" + _xpathPrefix + "invoke", statesToExit[i]).asNodeSet();
 		for (int j = 0; j < invokeElems.size(); j++) {
 			cancelInvoke(invokeElems[j]);
 		}
@@ -1036,14 +1081,14 @@ void Interpreter::executeContent(const Arabica::DOM::Node<std::string>& content)
 		return;
 
 	if (false) {
-	} else if (boost::iequals(TAGNAME(content), "raise")) {
+	} else if (boost::iequals(TAGNAME(content), _xmlNSPrefix + "raise")) {
 		// --- RAISE --------------------------
 		if (HAS_ATTR(content, "event")) {
 			Event event;
 			event.name = ATTR(content, "event");
 			_internalQueue.push_back(event);
 		}
-	} else if (boost::iequals(TAGNAME(content), "if")) {
+	} else if (boost::iequals(TAGNAME(content), _xmlNSPrefix + "if")) {
 		// --- IF / ELSEIF / ELSE --------------
 		Arabica::DOM::Element<std::string> ifElem = (Arabica::DOM::Element<std::string>)content;
 		if(hasConditionMatch(ifElem)) {
@@ -1053,8 +1098,8 @@ void Interpreter::executeContent(const Arabica::DOM::Node<std::string>& content)
 				for (unsigned int i = 0; i < childs.getLength(); i++) {
 					if (childs.item(i).getNodeType() != Node_base::ELEMENT_NODE)
 						continue;
-					if (boost::iequals(TAGNAME(childs.item(i)), "elsif") ||
-					        boost::iequals(TAGNAME(childs.item(i)), "else"))
+					if (boost::iequals(TAGNAME(childs.item(i)), _xmlNSPrefix + "elsif") ||
+					        boost::iequals(TAGNAME(childs.item(i)), _xmlNSPrefix + "else"))
 						break;
 					executeContent(childs.item(i));
 				}
@@ -1062,25 +1107,25 @@ void Interpreter::executeContent(const Arabica::DOM::Node<std::string>& content)
 		} else {
 			// condition does not match - do we have an elsif?
 			if (ifElem.hasChildNodes()) {
-				NodeList<std::string> elseifElem = ifElem.getElementsByTagName("elseif");
+				NodeList<std::string> elseifElem = ifElem.getElementsByTagNameNS(_nsURL, "elseif");
 				for (unsigned int i = 0; i < elseifElem.getLength(); i++) {
 					if (hasConditionMatch(elseifElem.item(i))) {
 						executeContent(elseifElem.item(i).getChildNodes());
 						goto ELSIF_ELEM_MATCH;
 					}
 				}
-				NodeList<std::string> elseElem = ifElem.getElementsByTagName("else");
+				NodeList<std::string> elseElem = ifElem.getElementsByTagNameNS(_nsURL, "else");
 				if (elseElem.getLength() > 0)
 					executeContent(elseElem.item(0).getChildNodes());
 			}
 		}
 ELSIF_ELEM_MATCH:
 		;
-	} else if (boost::iequals(TAGNAME(content), "elseif")) {
+	} else if (boost::iequals(TAGNAME(content), _xmlNSPrefix + "elseif")) {
 		std::cerr << "Found single elsif to evaluate!" << std::endl;
-	} else if (boost::iequals(TAGNAME(content), "else")) {
+	} else if (boost::iequals(TAGNAME(content), _xmlNSPrefix + "else")) {
 		std::cerr << "Found single else to evaluate!" << std::endl;
-	} else if (boost::iequals(TAGNAME(content), "foreach")) {
+	} else if (boost::iequals(TAGNAME(content), _xmlNSPrefix + "foreach")) {
 		// --- FOREACH --------------------------
 		if (_dataModel) {
 			if (HAS_ATTR(content, "array") && HAS_ATTR(content, "item")) {
@@ -1110,7 +1155,7 @@ ELSIF_ELEM_MATCH:
 				LOG(ERROR) << "Expected array and item attributes with foreach element!" << std::endl;
 			}
 		}
-	} else if (boost::iequals(TAGNAME(content), "log")) {
+	} else if (boost::iequals(TAGNAME(content), _xmlNSPrefix + "log")) {
 		// --- LOG --------------------------
 		Arabica::DOM::Element<std::string> logElem = (Arabica::DOM::Element<std::string>)content;
 		if (logElem.hasAttribute("expr")) {
@@ -1124,7 +1169,7 @@ ELSIF_ELEM_MATCH:
 				std::cout << logElem.getAttribute("expr") << std::endl;
 			}
 		}
-	} else if (boost::iequals(TAGNAME(content), "assign")) {
+	} else if (boost::iequals(TAGNAME(content), _xmlNSPrefix + "assign")) {
 		// --- ASSIGN --------------------------
 		if (_dataModel && HAS_ATTR(content, "location") && HAS_ATTR(content, "expr")) {
 			try {
@@ -1133,14 +1178,14 @@ ELSIF_ELEM_MATCH:
 				LOG(ERROR) << "Syntax error in attributes of assign element:" << std::endl << e << std::endl;
 			}
 		}
-	} else if (boost::iequals(TAGNAME(content), "validate")) {
+	} else if (boost::iequals(TAGNAME(content), _xmlNSPrefix + "validate")) {
 		// --- VALIDATE --------------------------
 		if (_dataModel) {
 			std::string location = (HAS_ATTR(content, "location") ? ATTR(content, "location") : "");
 			std::string schema = (HAS_ATTR(content, "schema") ? ATTR(content, "schema") : "");
 			_dataModel.validate(location, schema);
 		}
-	} else if (boost::iequals(TAGNAME(content), "script")) {
+	} else if (boost::iequals(TAGNAME(content), _xmlNSPrefix + "script")) {
 		// --- SCRIPT --------------------------
 		if (_dataModel) {
 			if (HAS_ATTR(content, "src")) {
@@ -1171,10 +1216,10 @@ ELSIF_ELEM_MATCH:
 				}
 			}
 		}
-	} else if (boost::iequals(TAGNAME(content), "send")) {
+	} else if (boost::iequals(TAGNAME(content), _xmlNSPrefix + "send")) {
 		// --- SEND --------------------------
 		send(content);
-	} else if (boost::iequals(TAGNAME(content), "cancel")) {
+	} else if (boost::iequals(TAGNAME(content), _xmlNSPrefix + "cancel")) {
 		// --- CANCEL --------------------------
 		std::string sendId;
 		try {
@@ -1192,7 +1237,7 @@ ELSIF_ELEM_MATCH:
 			LOG(ERROR) << "Syntax error while executing cancel element" << std::endl << e << std::endl;
 		}
 
-	} else if (boost::iequals(TAGNAME(content), "invoke")) {
+	} else if (boost::iequals(TAGNAME(content), _xmlNSPrefix + "invoke")) {
 		// --- INVOKE --------------------------
 	} else {
 		NodeList<std::string> executable = content.getChildNodes();
@@ -1393,7 +1438,7 @@ void Interpreter::enterStates(const Arabica::XPath::NodeSet<std::string>& enable
 		}
 		if (isMember(stateElem, statesForDefaultEntry)) {
 			// execute initial transition content for compund states
-			Arabica::XPath::NodeSet<std::string> transitions = _xpath.evaluate("" + _nsPrefix + "initial/" + _nsPrefix + "transition", stateElem).asNodeSet();
+			Arabica::XPath::NodeSet<std::string> transitions = _xpath.evaluate("" + _xpathPrefix + "initial/" + _xpathPrefix + "transition", stateElem).asNodeSet();
 			for (int j = 0; j < transitions.size(); j++) {
 				executeContent(transitions[j]);
 			}
@@ -1432,7 +1477,7 @@ void Interpreter::enterStates(const Arabica::XPath::NodeSet<std::string>& enable
 bool Interpreter::parentIsScxmlState(Arabica::DOM::Node<std::string> state) {
 	Arabica::DOM::Element<std::string> stateElem = (Arabica::DOM::Element<std::string>)state;
 	Arabica::DOM::Element<std::string> parentElem = (Arabica::DOM::Element<std::string>)state.getParentNode();
-	if (boost::iequals(parentElem.getTagName(), "scxml"))
+	if (boost::iequals(TAGNAME(parentElem), _xmlNSPrefix + "scxml"))
 		return true;
 	return false;
 }
@@ -1479,7 +1524,7 @@ void Interpreter::addStatesToEnter(const Arabica::DOM::Node<std::string>& state,
 				}
 			}
 		} else {
-			NodeSet<std::string> transitions = _xpath.evaluate("" + _nsPrefix + "transition", state).asNodeSet();
+			NodeSet<std::string> transitions = _xpath.evaluate("" + _xpathPrefix + "transition", state).asNodeSet();
 			for (int i = 0; i < transitions.size(); i++) {
 				NodeSet<std::string> targets = getTargetStates(transitions[i]);
 				for (int j = 0; j < targets.size(); j++) {
@@ -1524,9 +1569,9 @@ Arabica::XPath::NodeSet<std::string> Interpreter::getChildStates(const Arabica::
 Arabica::DOM::Node<std::string> Interpreter::findLCCA(const Arabica::XPath::NodeSet<std::string>& states) {
 //  std::cout << "findLCCA: ";
 //  for (int i = 0; i < states.size(); i++) {
-//    std::cout << ((Arabica::DOM::Element<std::string>)states[i]).getAttribute("id") << " - " << states[i].getLocalName() << ", ";
+//    std::cout << ATTR(states[i], "id") << " - " << TAGNAME(states[i]) << ", ";
 //  }
-//  std::cout << std::flush;
+//  std::cout << std::endl << std::flush;
 
 	Arabica::XPath::NodeSet<std::string> ancestors = getProperAncestors(states[0], Arabica::DOM::Node<std::string>());
 	ancestors.push_back(states[0]); // state[0] may already be the ancestor - bug in W3C spec?
@@ -1543,7 +1588,7 @@ NEXT_ANCESTOR:
 		;
 	}
 	assert(ancestor);
-//  std::cout << " -> " << ((Arabica::DOM::Element<std::string>)ancestor).getAttribute("id") << " " << ancestor.getLocalName() << std::endl;
+//  std::cout << " -> " << ATTR(ancestor, "id") << " " << ancestor.getLocalName() << std::endl;
 	return ancestor;
 }
 
@@ -1554,17 +1599,17 @@ Arabica::DOM::Node<std::string> Interpreter::getState(const std::string& stateId
 	}
 
 	// first try atomic and compund states
-	NodeSet<std::string> target = _xpath.evaluate("//" + _nsPrefix + "state[@id='" + stateId + "']", _document).asNodeSet();
+	NodeSet<std::string> target = _xpath.evaluate("//" + _xpathPrefix + "state[@id='" + stateId + "']", _document).asNodeSet();
 	if (target.size() > 0)
 		goto FOUND;
 
 	// now parallel states
-	target = _xpath.evaluate("//" + _nsPrefix + "parallel[@id='" + stateId + "']", _document).asNodeSet();
+	target = _xpath.evaluate("//" + _xpathPrefix + "parallel[@id='" + stateId + "']", _document).asNodeSet();
 	if (target.size() > 0)
 		goto FOUND;
 
 	// now final states
-	target = _xpath.evaluate("//" + _nsPrefix + "final[@id='" + stateId + "']", _document).asNodeSet();
+	target = _xpath.evaluate("//" + _xpathPrefix + "final[@id='" + stateId + "']", _document).asNodeSet();
 	if (target.size() > 0)
 		goto FOUND;
 
@@ -1579,7 +1624,7 @@ FOUND:
 }
 
 Arabica::DOM::Node<std::string> Interpreter::getSourceState(const Arabica::DOM::Node<std::string>& transition) {
-	if (boost::iequals(TAGNAME(transition.getParentNode()), "initial"))
+	if (boost::iequals(TAGNAME(transition.getParentNode()), _xmlNSPrefix + "initial"))
 		return transition.getParentNode().getParentNode();
 	return transition.getParentNode();
 }
@@ -1594,7 +1639,7 @@ Arabica::DOM::Node<std::string> Interpreter::getSourceState(const Arabica::DOM::
 Arabica::DOM::Node<std::string> Interpreter::getInitialState(Arabica::DOM::Node<std::string> state) {
 	if (!state) {
 		state = _document.getFirstChild();
-		while(!isState(state))
+		while(state && !isState(state))
 			state = state.getNextSibling();
 	}
 
@@ -1607,8 +1652,8 @@ Arabica::DOM::Node<std::string> Interpreter::getInitialState(Arabica::DOM::Node<
 	}
 
 	// initial element as child - but not the implicit generated one
-	NodeSet<std::string> initialStates = _xpath.evaluate("" + _nsPrefix + "initial", state).asNodeSet();
-	if(initialStates.size() == 1 && !boost::iequals(ATTR(initialStates[0], "generated"), "on"))
+	NodeSet<std::string> initialStates = _xpath.evaluate("" + _xpathPrefix + "initial", state).asNodeSet();
+	if(initialStates.size() == 1 && !boost::iequals(ATTR(initialStates[0], "generated"), "true"))
 		return initialStates[0];
 
 	// first child state
@@ -1628,7 +1673,7 @@ NodeSet<std::string> Interpreter::getTargetStates(const Arabica::DOM::Node<std::
 	if (isState(transition)) {
 		NodeList<std::string> childs = transition.getChildNodes();
 		for (int i = 0; i < childs.getLength(); i++) {
-			if (childs.item(i).getNodeType() == Node_base::ELEMENT_NODE && boost::iequals(TAGNAME(childs.item(i)), "transition")) {
+			if (childs.item(i).getNodeType() == Node_base::ELEMENT_NODE && boost::iequals(TAGNAME(childs.item(i)), _xmlNSPrefix + "transition")) {
 				targetStates.push_back(getTargetStates(childs.item(i)));
 			}
 		}
@@ -1673,7 +1718,7 @@ NodeSet<std::string> Interpreter::filterChildElements(const std::string& tagName
 	NodeList<std::string> childs = node.getChildNodes();
 	for (unsigned int i = 0; i < childs.getLength(); i++) {
 		if (childs.item(i).getNodeType() != Node_base::ELEMENT_NODE ||
-		        !boost::iequals(TAGNAME(childs.item(i)), tagName))
+		        !boost::iequals(LOCALNAME(childs.item(i)), tagName))
 			continue;
 		filteredChildElems.push_back(childs.item(i));
 	}
@@ -1688,7 +1733,7 @@ NodeSet<std::string> Interpreter::getProperAncestors(const Arabica::DOM::Node<st
 		while((node = node.getParentNode())) {
 			if (!isState(node))
 				break;
-			if (!boost::iequals(TAGNAME(node), "parallel") && !boost::iequals(TAGNAME(node), "state") && !boost::iequals(TAGNAME(node), "scxml"))
+			if (!boost::iequals(TAGNAME(node), _xmlNSPrefix + "parallel") && !boost::iequals(TAGNAME(node), _xmlNSPrefix + "state") && !boost::iequals(TAGNAME(node), _xmlNSPrefix + "scxml"))
 				break;
 			if (node == s2)
 				break;
@@ -1720,9 +1765,9 @@ bool Interpreter::isTargetless(const Arabica::DOM::Node<std::string>& transition
 bool Interpreter::isWithinSameChild(const Arabica::DOM::Node<std::string>& transition) {
 	if (!isTargetless(transition)) {
 		std::string target = ((Arabica::DOM::Element<std::string>)transition).getAttribute("target");
-		Arabica::XPath::XPath<std::string> xpath;
+    assert(transition.getParentNode());
 		// @todo: do we need to look at parallel as well?
-		if (xpath.evaluate("" + _nsPrefix + "state[id=\"" + target + "\"]", transition.getParentNode()).asNodeSet().size() > 0)
+		if (_xpath.evaluate("" + _xpathPrefix + "state[id=\"" + target + "\"]", transition.getParentNode()).asNodeSet().size() > 0)
 			return true;
 	}
 	return false;
@@ -1734,7 +1779,7 @@ bool Interpreter::isState(const Arabica::DOM::Node<std::string>& state) {
 	if (state.getNodeType() != Arabica::DOM::Node_base::ELEMENT_NODE)
 		return false;
 
-	std::string tagName = TAGNAME(state);
+	std::string tagName = LOCALNAME(state);
 	if (boost::iequals("state", tagName))
 		return true;
 	if (boost::iequals("scxml", tagName))
@@ -1747,7 +1792,7 @@ bool Interpreter::isState(const Arabica::DOM::Node<std::string>& state) {
 }
 
 bool Interpreter::isFinal(const Arabica::DOM::Node<std::string>& state) {
-	std::string tagName = TAGNAME(state);
+	std::string tagName = LOCALNAME(state);
 	if (boost::iequals("final", tagName))
 		return true;
 	if (HAS_ATTR(state, "final") && boost::iequals("true", ATTR(state, "final")))
@@ -1770,7 +1815,7 @@ bool Interpreter::isInitial(const Arabica::DOM::Node<std::string>& state) {
 }
 
 bool Interpreter::isPseudoState(const Arabica::DOM::Node<std::string>& state) {
-	std::string tagName = TAGNAME(state);
+	std::string tagName = LOCALNAME(state);
 	if (boost::iequals("initial", tagName))
 		return true;
 	if (boost::iequals("history", tagName))
@@ -1779,15 +1824,15 @@ bool Interpreter::isPseudoState(const Arabica::DOM::Node<std::string>& state) {
 }
 
 bool Interpreter::isTransitionTarget(const Arabica::DOM::Node<std::string>& elem) {
-	return (isState(elem) || boost::iequals(TAGNAME(elem), "history"));
+	return (isState(elem) || boost::iequals(LOCALNAME(elem), "history"));
 }
 
 bool Interpreter::isAtomic(const Arabica::DOM::Node<std::string>& state) {
-	if (boost::iequals("final", TAGNAME(state)))
+	if (boost::iequals("final", LOCALNAME(state)))
 		return true;
 
 	// I will assume that parallel states are not meant to be atomic.
-	if (boost::iequals("parallel", TAGNAME(state)))
+	if (boost::iequals("parallel", LOCALNAME(state)))
 		return false;
 
 	Arabica::DOM::NodeList<std::string> childs = state.getChildNodes();
@@ -1799,7 +1844,7 @@ bool Interpreter::isAtomic(const Arabica::DOM::Node<std::string>& state) {
 }
 
 bool Interpreter::isHistory(const Arabica::DOM::Node<std::string>& state) {
-	if (boost::iequals("history", TAGNAME(state)))
+	if (boost::iequals("history", LOCALNAME(state)))
 		return true;
 	return false;
 }
@@ -1807,7 +1852,7 @@ bool Interpreter::isHistory(const Arabica::DOM::Node<std::string>& state) {
 bool Interpreter::isParallel(const Arabica::DOM::Node<std::string>& state) {
 	if (!isState(state))
 		return false;
-	if (boost::iequals("parallel", TAGNAME(state)))
+	if (boost::iequals("parallel", LOCALNAME(state)))
 		return true;
 	return false;
 }
@@ -1817,7 +1862,7 @@ bool Interpreter::isCompound(const Arabica::DOM::Node<std::string>& state) {
 	if (!isState(state))
 		return false;
 
-	if (boost::iequals(TAGNAME(state), "parallel"))
+	if (boost::iequals(LOCALNAME(state), "parallel"))
 		return false;
 
 	Arabica::DOM::NodeList<std::string> childs = state.getChildNodes();
@@ -1858,244 +1903,11 @@ IOProcessor Interpreter::getIOProcessor(const std::string& type) {
 	return _ioProcessors[type];
 }
 
-//IOProcessor* Interpreter::getIOProcessorForId(const std::string& sendId) {
-//  if (_sendQueue.find(sendId) == _sendQueue.end()) {
-//    LOG(ERROR) << "No ioProcessor with pending send id " << sendId << sendId;
-//    return NULL;
-//  }
-//  return _ioProcessorsIds[sendId];
-//}
-
-bool Interpreter::validate() {
-	bool validationErrors = false;
-
-	if (!_document) {
-		LOG(ERROR) << "Document " << _baseURI.asString() << " was not parsed successfully" << std::endl;
-		return false;
-	}
-
-	// semantic issues ------------
-	if ((_xpath.evaluate("/" + _nsPrefix + "scxml/@datamodel", _document).asNodeSet().size() == 0) &&
-	        _xpath.evaluate("/" + _nsPrefix + "scxml/" + _nsPrefix + "script", _document).asNodeSet().size() > 0) {
-		LOG(ERROR) << "Script elements used, but no datamodel specified" << std::endl;
-	}
-
-	// element issues ------------
-	Arabica::XPath::NodeSet<std::string> scxmlElems = _xpath.evaluate(_nsPrefix + "scxml", _document).asNodeSet();
-	if (scxmlElems.size() > 0)
-		LOG(ERROR) << "More than one scxml element found" << std::endl;
-	for (unsigned int i = 0; i < scxmlElems.size(); i++) {
-		if (!HAS_ATTR(scxmlElems[i], "xmlns"))
-			LOG(ERROR) << "scxml element has no xmlns attribute" << std::endl;
-		if (!HAS_ATTR(scxmlElems[i], "version"))
-			LOG(ERROR) << "scxml element has no version attribute" << std::endl;
-		NodeList<std::string> childs = scxmlElems[i].getChildNodes();
-		for (unsigned int j = 0; j < childs.getLength(); j++) {
-			if (childs.item(j).getNodeType() != Node_base::ELEMENT_NODE)
-				continue;
-			if (boost::iequals(TAGNAME(childs.item(j)), "state") ||
-			        boost::iequals(TAGNAME(childs.item(j)), "parallel") ||
-			        boost::iequals(TAGNAME(childs.item(j)), "final") ||
-			        boost::iequals(TAGNAME(childs.item(j)), "datamodel") ||
-			        boost::iequals(TAGNAME(childs.item(j)), "script")) {
-				LOG(ERROR) << "scxml element has unspecified child " << TAGNAME(childs.item(j)) << std::endl;
-			}
-		}
-	}
-
-	Arabica::XPath::NodeSet<std::string> stateElems = _xpath.evaluate(_nsPrefix + "state", _document).asNodeSet();
-	for (unsigned int i = 0; i < stateElems.size(); i++) {
-		NodeList<std::string> childs = stateElems[i].getChildNodes();
-		for (unsigned int j = 0; j < childs.getLength(); j++) {
-			if (childs.item(j).getNodeType() != Node_base::ELEMENT_NODE)
-				continue;
-			if (boost::iequals(TAGNAME(childs.item(j)), "onentry") ||
-			        boost::iequals(TAGNAME(childs.item(j)), "onexit") ||
-			        boost::iequals(TAGNAME(childs.item(j)), "transition") ||
-			        boost::iequals(TAGNAME(childs.item(j)), "initial") ||
-			        boost::iequals(TAGNAME(childs.item(j)), "state") ||
-			        boost::iequals(TAGNAME(childs.item(j)), "parallel") ||
-			        boost::iequals(TAGNAME(childs.item(j)), "final") ||
-			        boost::iequals(TAGNAME(childs.item(j)), "history") ||
-			        boost::iequals(TAGNAME(childs.item(j)), "datamodel") ||
-			        boost::iequals(TAGNAME(childs.item(j)), "invoke")) {
-				LOG(ERROR) << "state element has unspecified child " << TAGNAME(childs.item(j)) << std::endl;
-			}
-		}
-	}
-
-	Arabica::XPath::NodeSet<std::string> parallelElems = _xpath.evaluate(_nsPrefix + "parallel", _document).asNodeSet();
-	for (unsigned int i = 0; i < parallelElems.size(); i++) {
-		NodeList<std::string> childs = parallelElems[i].getChildNodes();
-		for (unsigned int j = 0; j < childs.getLength(); j++) {
-			if (childs.item(j).getNodeType() != Node_base::ELEMENT_NODE)
-				continue;
-			if (boost::iequals(TAGNAME(childs.item(j)), "onentry") ||
-			        boost::iequals(TAGNAME(childs.item(j)), "onexit") ||
-			        boost::iequals(TAGNAME(childs.item(j)), "transition") ||
-			        boost::iequals(TAGNAME(childs.item(j)), "state") ||
-			        boost::iequals(TAGNAME(childs.item(j)), "parallel") ||
-			        boost::iequals(TAGNAME(childs.item(j)), "history") ||
-			        boost::iequals(TAGNAME(childs.item(j)), "datamodel") ||
-			        boost::iequals(TAGNAME(childs.item(j)), "invoke")) {
-				LOG(ERROR) << "parallel element has unspecified child " << TAGNAME(childs.item(j)) << std::endl;
-			}
-		}
-	}
-
-	Arabica::XPath::NodeSet<std::string> transitionElems = _xpath.evaluate(_nsPrefix + "transition", _document).asNodeSet();
-	for (unsigned int i = 0; i < transitionElems.size(); i++) {
-		if (HAS_ATTR(transitionElems[i], "cond") &&
-		        !HAS_ATTR(transitionElems[i], "event")) {
-			LOG(ERROR) << "transition element with cond attribute but without event attribute not allowed" << std::endl;
-		}
-		NodeList<std::string> childs = scxmlElems[i].getChildNodes();
-		for (unsigned int j = 0; j < childs.getLength(); j++) {
-			if (childs.item(j).getNodeType() != Node_base::ELEMENT_NODE)
-				continue;
-		}
-	}
-
-	Arabica::XPath::NodeSet<std::string> initialElems = _xpath.evaluate(_nsPrefix + "initial", _document).asNodeSet();
-	for (unsigned int i = 0; i < initialElems.size(); i++) {
-		NodeList<std::string> childs = initialElems[i].getChildNodes();
-		for (unsigned int j = 0; j < childs.getLength(); j++) {
-			if (childs.item(j).getNodeType() != Node_base::ELEMENT_NODE)
-				continue;
-			if (boost::iequals(TAGNAME(childs.item(j)), "transition")) {
-				LOG(ERROR) << "initial element has unspecified child " << TAGNAME(childs.item(j)) << std::endl;
-			}
-		}
-	}
-
-	Arabica::XPath::NodeSet<std::string> finalElems = _xpath.evaluate(_nsPrefix + "final", _document).asNodeSet();
-	for (unsigned int i = 0; i < finalElems.size(); i++) {
-		NodeList<std::string> childs = finalElems[i].getChildNodes();
-		for (unsigned int j = 0; j < childs.getLength(); j++) {
-			if (childs.item(j).getNodeType() != Node_base::ELEMENT_NODE)
-				continue;
-			if (!boost::iequals(TAGNAME(childs.item(j)), "onentry") ||
-			        !boost::iequals(TAGNAME(childs.item(j)), "onexit") ||
-			        !boost::iequals(TAGNAME(childs.item(j)), "donedata")) {
-				LOG(ERROR) << "parallel element has unspecified child " << TAGNAME(childs.item(j)) << std::endl;
-			}
-		}
-	}
-
-	Arabica::XPath::NodeSet<std::string> historyElems = _xpath.evaluate(_nsPrefix + "history", _document).asNodeSet();
-	for (unsigned int i = 0; i < historyElems.size(); i++) {
-		NodeList<std::string> childs = historyElems[i].getChildNodes();
-		for (unsigned int j = 0; j < childs.getLength(); j++) {
-			if (childs.item(j).getNodeType() != Node_base::ELEMENT_NODE)
-				continue;
-			if (boost::iequals(TAGNAME(childs.item(j)), "transition")) {
-				LOG(ERROR) << "history element has unspecified child " << TAGNAME(childs.item(j)) << std::endl;
-			}
-		}
-	}
-
-	Arabica::XPath::NodeSet<std::string> datamodelElems = _xpath.evaluate(_nsPrefix + "datamodel", _document).asNodeSet();
-	for (unsigned int i = 0; i < datamodelElems.size(); i++) {
-		NodeList<std::string> childs = datamodelElems[i].getChildNodes();
-		for (unsigned int j = 0; j < childs.getLength(); j++) {
-			if (childs.item(j).getNodeType() != Node_base::ELEMENT_NODE)
-				continue;
-			if (!boost::iequals(TAGNAME(childs.item(j)), "data")) {
-				LOG(ERROR) << "datamodel element has unspecified child " << TAGNAME(childs.item(j)) << std::endl;
-			}
-		}
-	}
-
-	Arabica::XPath::NodeSet<std::string> dataElems = _xpath.evaluate(_nsPrefix + "data", _document).asNodeSet();
-	for (unsigned int i = 0; i < dataElems.size(); i++) {
-		if (!HAS_ATTR(dataElems[i], "id"))
-			LOG(ERROR) << "data element has no id attribute" << std::endl;
-	}
-
-	return validationErrors;
-}
-
 void Interpreter::dump() {
 	if (!_document)
 		return;
-	dump(_document);
+  std::cout << _document;
 }
 
-void Interpreter::dump(const Arabica::DOM::Node<std::string>& node, int lvl) {
-	if (!node)
-		return;
-
-	std::string indent = "";
-	for (unsigned int i = 0; i < lvl; i++)
-		indent += "   ";
-
-	std::cout << indent;
-	switch(node.getNodeType()) {
-	case Arabica::DOM::Node_base::ELEMENT_NODE: {
-		std::cout << "ELEMENT_NODE: ";
-		Arabica::DOM::Element<std::string> elem = (Arabica::DOM::Element<std::string>)node;
-		break;
-	}
-	case Arabica::DOM::Node_base::ATTRIBUTE_NODE:
-		std::cout << "ATTRIBUTE_NODE: ";
-		break;
-	case Arabica::DOM::Node_base::TEXT_NODE:
-		std::cout << "TEXT_NODE: ";
-		break;
-	case Arabica::DOM::Node_base::CDATA_SECTION_NODE:
-		std::cout << "CDATA_SECTION_NODE: ";
-		break;
-	case Arabica::DOM::Node_base::ENTITY_REFERENCE_NODE:
-		std::cout << "ENTITY_REFERENCE_NODE: ";
-		break;
-	case Arabica::DOM::Node_base::ENTITY_NODE:
-		std::cout << "ENTITY_NODE: ";
-		break;
-	case Arabica::DOM::Node_base::PROCESSING_INSTRUCTION_NODE:
-		std::cout << "PROCESSING_INSTRUCTION_NODE: ";
-		break;
-	case Arabica::DOM::Node_base::COMMENT_NODE:
-		std::cout << "COMMENT_NODE: ";
-		break;
-	case Arabica::DOM::Node_base::DOCUMENT_NODE:
-		std::cout << "DOCUMENT_NODE: ";
-		break;
-	case Arabica::DOM::Node_base::DOCUMENT_TYPE_NODE:
-		std::cout << "DOCUMENT_TYPE_NODE: ";
-		break;
-	case Arabica::DOM::Node_base::DOCUMENT_FRAGMENT_NODE:
-		std::cout << "DOCUMENT_FRAGMENT_NODE: ";
-		break;
-	case Arabica::DOM::Node_base::NOTATION_NODE:
-		std::cout << "NOTATION_NODE: ";
-		break;
-	case Arabica::DOM::Node_base::MAX_TYPE:
-		std::cout << "MAX_TYPE: ";
-		break;
-	}
-	std::cout << node.getNamespaceURI() << " " << node.getNodeName() << std::endl;
-
-	if (node.getNodeValue().length() > 0 && node.getNodeValue().find_first_not_of(" \t\n") != std::string::npos)
-		std::cout << indent << "Value: '" << node.getNodeValue() << "'" << std::endl;
-
-
-	if (node.hasAttributes()) {
-		Arabica::DOM::NamedNodeMap<std::string> attrs = node.getAttributes();
-		for (unsigned int i = 0; i < attrs.getLength(); i++) {
-			std::cout << indent << "   " << attrs.item(i).getLocalName() << " = " << attrs.item(i).getNodeValue() << " (" << std::endl;
-			std::cout << indent << "     namespace: " << attrs.item(i).getNamespaceURI() << std::endl;
-			std::cout << indent << "     nodeName: " << attrs.item(i).getNodeName() << std::endl;
-			std::cout << indent << "     prefix: " << attrs.item(i).getPrefix() << std::endl;
-			std::cout << indent << "   )" << std::endl;
-		}
-	}
-
-	if (node.hasChildNodes()) {
-		Arabica::DOM::NodeList<std::string> childs = node.getChildNodes();
-		for (unsigned int i = 0; i < childs.getLength(); i++) {
-			dump(childs.item(i), lvl+1);
-		}
-	}
-}
 
 }

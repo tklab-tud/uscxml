@@ -47,9 +47,9 @@ public:
 	void start();
 	static void run(void* instance);
 
-	static void httpMakeSendReq(void* userdata, std::string eventName);
-	static void httpSendReqDone(struct evhttp_request *req, void *cb_arg);
-	static void httpRecvReq(struct evhttp_request *req, void *arg);
+  virtual std::string getPath() { return _interpreter->getName(); }
+	virtual void httpSendReqDone(struct evhttp_request *req);
+	virtual void httpRecvReq(struct evhttp_request *req);
 
 protected:
 	std::map<std::string, SendData> _sendData;
@@ -65,8 +65,13 @@ protected:
 };
 
 class EventIOServer {
+public:
+  static EventIOServer* getInstance();
+
+  static void registerProcessor(EventIOProcessor* processor);
+	static void unregisterProcessor(EventIOProcessor* processor);
+
 private:
-	static EventIOServer* getInstance();
 	EventIOServer(unsigned short port);
 	~EventIOServer();
 
@@ -77,9 +82,13 @@ private:
 	void determineAddress();
 	static std::string syncResolve(const std::string& hostname);
 
-	static void registerProcessor(EventIOProcessor* processor);
-	static void unregisterProcessor(EventIOProcessor* processor);
 
+	static void httpSendReqDoneCallback(struct evhttp_request *req, void *cb_arg) {
+    ((EventIOProcessor*)cb_arg)->httpSendReqDone(req);
+  }
+	static void httpRecvReqCallback(struct evhttp_request *req, void *cb_arg) {
+    ((EventIOProcessor*)cb_arg)->httpRecvReq(req);
+  }
 
 	std::map<std::string, EventIOProcessor*> _processors;
 

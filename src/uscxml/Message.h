@@ -30,6 +30,7 @@ public:
 	Data(const Arabica::DOM::Node<std::string>& dom);
 	virtual ~Data() {}
 
+	static Data fromJSON(const std::string& jsonString);
 	static Data fromXML(const std::string& xmlString);
 	Arabica::DOM::Document<std::string> toDocument();
 	std::string toXMLString() {

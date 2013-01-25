@@ -136,6 +136,7 @@ include_directories(${USCXML_PREBUILT_LIBRARY_PATH}/include)
 if (WIN32)
 	include_directories(${PROJECT_SOURCE_DIR}/contrib/snippets)
 endif()
+include_directories(${PROJECT_SOURCE_DIR}/contrib/src/jsmn/)
 
 ############################################################
 # General setup
@@ -215,8 +216,8 @@ elseif (${CMAKE_CXX_COMPILER_ID} STREQUAL "MSVC")
 	# SET(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} /NODEFAULTLIB")
 	# SET(CMAKE_EXE_LINKER_FLAGS_DEBUG "${CMAKE_EXE_LINKER_FLAGS_DEBUG} /NODEFAULTLIB:MSVCRTD.lib")
 elseif (${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
-	add_definitions("-Wno-parentheses-equality")
-	set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} "-fPIC")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-parentheses-equality")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
 	# set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -read_only_relocs suppress")
 	# set(CMAKE_EXE_LINKER_FLAGS_DEBUG "${CMAKE_EXE_LINKER_FLAGS_DEBUG} -read_only_relocs suppress")
 else()
@@ -380,6 +381,7 @@ source_group("Interpreter" FILES ${USCXML_DEBUG})
 list (APPEND USCXML_FILES ${USCXML_DEBUG})
 
 file(GLOB USCXML_CORE
+	contrib/src/jsmn/jsmn.c
 	src/uscxml/*.cpp
 	src/uscxml/*.h
 )
@@ -721,7 +723,7 @@ if (NOT BUILD_AS_PLUGINS)
 endif()
 target_link_libraries(uscxml ${USCXML_OPT_LIBS} ${USCXML_CORE_LIBS})
 
-add_executable(mmi-browser apps/mmi-browser.cpp ${PROJECT_SOURCE_DIR}/contrib/snippets/XGetopt.cpp)
+add_executable(mmi-browser apps/mmi-browser.cpp ${PROJECT_SOURCE_DIR}/contrib/src/getopt/XGetopt.cpp)
 target_link_libraries(mmi-browser uscxml)
 set_target_properties(mmi-browser PROPERTIES FOLDER "Apps")
 install_executable(TARGETS mmi-browser COMPONENT tools)

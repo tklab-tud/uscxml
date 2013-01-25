@@ -26,6 +26,14 @@
 
 namespace uscxml {
 
+class InterpreterMonitor {
+public:
+  virtual void onStableConfiguration(Interpreter* interpreter) {}
+  virtual void beforeCompletion(Interpreter* interpreter) {}
+  virtual void afterCompletion(Interpreter* interpreter) {}
+  virtual void beforeMicroStep(Interpreter* interpreter) {}
+};
+  
 class NumAttr {
 public:
 	NumAttr(const std::string& str) {
@@ -74,7 +82,14 @@ public:
 	};
 
 	void interpret();
-	bool validate();
+
+  void addMonitor(InterpreterMonitor* monitor)             {
+    _monitors.insert(monitor);
+  }
+
+  void removeMonitor(InterpreterMonitor* monitor)          {
+    _monitors.erase(monitor);
+  }
 
 	void setBaseURI(std::string baseURI)                     {
 		_baseURI = URL(baseURI);
@@ -84,20 +99,21 @@ public:
 	}
 	bool toAbsoluteURI(URL& uri);
 
-	DataModel getDataModel()                                {
+	DataModel getDataModel()                                 {
 		return _dataModel;
 	}
 	void setParentQueue(uscxml::concurrency::BlockingQueue<Event>* parentQueue) {
 		_parentQueue = parentQueue;
 	}
-	std::string getNSPrefix()                                {
-		return _nsPrefix;
+	std::string getXPathPrefix()                                {
+		return _xpathPrefix;
+	}
+	std::string getXMLPrefix()                                {
+		return _xmlNSPrefix;
 	}
 	Arabica::XPath::StandardNamespaceContext<std::string>& getNSContext() {
 		return _nsContext;
 	}
-
-	void waitForStabilization();
 
 	void receive(Event& event)                               {
 		_externalQueue.push(event);
@@ -113,6 +129,7 @@ public:
 		return _document;
 	}
 
+  void setName(const std::string& name);
 	const std::string& getName()                             {
 		return _name;
 	}
@@ -125,7 +142,6 @@ public:
 	static bool isMember(const Arabica::DOM::Node<std::string>& node, const Arabica::XPath::NodeSet<std::string>& set);
 
 	void dump();
-	static void dump(const Arabica::DOM::Node<std::string>& node, int lvl = 0);
 
 	static bool isState(const Arabica::DOM::Node<std::string>& state);
 	static bool isPseudoState(const Arabica::DOM::Node<std::string>& state);
@@ -159,14 +175,15 @@ protected:
 	bool _stable;
 	tthread::thread* _thread;
 	tthread::mutex _mutex;
-	tthread::condition_variable _stabilized;
 
 	URL _baseURI;
 	Arabica::DOM::Document<std::string> _document;
 	Arabica::DOM::Element<std::string> _scxml;
 	Arabica::XPath::XPath<std::string> _xpath;
 	Arabica::XPath::StandardNamespaceContext<std::string> _nsContext;
-	std::string _nsPrefix;
+	std::string _xmlNSPrefix; // the actual prefix for elements in the xml file
+	std::string _xpathPrefix;    // prefix mapped for xpath, "scxml" is _xmlNSPrefix is empty but _nsURL set
+	std::string _nsURL;       // ough to be "http://www.w3.org/2005/07/scxml"
 
 	bool _running;
 	bool _done;
@@ -182,6 +199,8 @@ protected:
 	uscxml::concurrency::BlockingQueue<Event>* _parentQueue;
 	DelayedEventQueue* _sendQueue;
 
+  std::set<InterpreterMonitor*> _monitors;
+  
 	static URL toBaseURI(const URL& url);
 
 	void microstep(const Arabica::XPath::NodeSet<std::string>& enabledTransitions);
@@ -201,7 +220,7 @@ protected:
 	Arabica::XPath::NodeSet<std::string> selectTransitions(const std::string& event);
 	Arabica::DOM::Node<std::string> getSourceState(const Arabica::DOM::Node<std::string>& transition);
 	Arabica::DOM::Node<std::string> findLCCA(const Arabica::XPath::NodeSet<std::string>& states);
-	static Arabica::XPath::NodeSet<std::string> getProperAncestors(const Arabica::DOM::Node<std::string>& s1, const Arabica::DOM::Node<std::string>& s2);
+  Arabica::XPath::NodeSet<std::string> getProperAncestors(const Arabica::DOM::Node<std::string>& s1, const Arabica::DOM::Node<std::string>& s2);
 
 
 	void send(const Arabica::DOM::Node<std::string>& element);

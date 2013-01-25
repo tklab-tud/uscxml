@@ -4,6 +4,10 @@
 #include <DOM/SAX2DOM/SAX2DOM.hpp>
 #include <SAX/helpers/CatchErrorHandler.hpp>
 
+extern "C" {
+#include "jsmn.h" // minimal json parser
+}
+
 namespace uscxml {
 
 static int _dataIndentation = 1;
@@ -167,7 +171,70 @@ Data Data::fromXML(const std::string& xmlString) {
 	return Data();
 }
 
-Event Event::fromXML(const std::string& xmlString) {
+Data Data::fromJSON(const std::string& jsonString) {
+  Data data;
+
+  // unimplemented
+//  assert(false);
+  
+  jsmn_parser p;
+  jsmntok_t t[1024];
+  memset(&t, 0, sizeof(t));
+  jsmn_init(&p);
+  
+  int rv = jsmn_parse(&p, jsonString.c_str(), t, 1024);
+  if (rv != 0) {
+    return data;
+  }
+  
+  std::list<Data*> dataStack;
+  std::list<jsmntok_t> tokenStack;
+  dataStack.push_back(&data);
+  
+  size_t currTok = 0;
+  do {
+    switch (t[currTok].type) {
+      case JSMN_STRING:
+        dataStack.back()->type = Data::VERBATIM;
+      case JSMN_PRIMITIVE:
+        dataStack.back()->atom = jsonString.substr(t[currTok].start, t[currTok].end - t[currTok].start);
+        dataStack.pop_back();
+        currTok++;
+        break;
+      case JSMN_OBJECT:
+      case JSMN_ARRAY:
+        tokenStack.push_back(t[currTok]);
+        currTok++;
+        break;
+    }
+    
+    // there are no more tokens
+    if (t[currTok].end == 0 || tokenStack.empty())
+      break;
+    
+//    std::cout << "Token Stack: [" << tokenStack.back().start << ", " << tokenStack.back().end << "]" << std::endl;
+//    std::cout << "Token Curr:  [" << t[currTok].start << ", " << t[currTok].end << "]" << std::endl;
+    
+    // next token starts after current one => pop
+    if (t[currTok].end > tokenStack.back().end)
+      tokenStack.pop_back();
+    
+    if (tokenStack.back().type == JSMN_OBJECT && (t[currTok].type == JSMN_PRIMITIVE || t[currTok].type == JSMN_STRING)) {
+      // grab key and push new data
+      dataStack.push_back(&(dataStack.back()->compound[jsonString.substr(t[currTok].start, t[currTok].end - t[currTok].start)]));
+      currTok++;
+    }
+    if (tokenStack.back().type == JSMN_ARRAY) {
+      // push new index
+      dataStack.back()->array.push_back(Data());
+      dataStack.push_back(&(dataStack.back()->array.back()));
+    }
+    
+  } while (true);
+  return data;
+}
+
+  Event Event::fromXML(const std::string& xmlString) {
 	Arabica::SAX2DOM::Parser<std::string> eventParser;
 	Arabica::SAX::CatchErrorHandler<std::string> errorHandler;
 	eventParser.setErrorHandler(errorHandler);
@@ -258,31 +325,36 @@ std::ostream& operator<< (std::ostream& os, const Data& data) {
 		for (unsigned int i = 0; i < longestKey; i++)
 			keyPadding += " ";
 
-		os << "{" << std::endl;
+    std::string seperator;
+		os << std::endl << indent << "{";
 		compoundIter = data.compound.begin();
 		while(compoundIter != data.compound.end()) {
-			os << indent << "  \"" << compoundIter->first << "\" " << keyPadding.substr(0, longestKey - compoundIter->first.size()) << ": ";
-			_dataIndentation += 2;
-			os << compoundIter->second << "," << std::endl;
-			_dataIndentation -= 2;
+			os << seperator << std::endl << indent << "  \"" << compoundIter->first << "\": " << keyPadding.substr(0, longestKey - compoundIter->first.size());
+      _dataIndentation += 1;
+      os << compoundIter->second;
+      _dataIndentation -= 1;
+      seperator = ", ";
 			compoundIter++;
 		}
-		os << indent << "}" << std::endl;
+		os << std::endl << indent << "}";
 	} else if (data.array.size() > 0) {
-		os << "[" << std::endl;
-		std::map<std::string, Data>::const_iterator compoundIter = data.compound.begin();
-		while(compoundIter != data.compound.end()) {
-			_dataIndentation += 2;
-			os << indent << "  " << compoundIter->second << "," << std::endl;
-			_dataIndentation -= 2;
-			compoundIter++;
+
+    std::string seperator;
+		os << std::endl << indent << "[";
+		std::list<Data>::const_iterator arrayIter = data.array.begin();
+		while(arrayIter != data.array.end()) {
+      _dataIndentation += 1;
+      os << seperator << *arrayIter;
+      _dataIndentation -= 1;
+      seperator = ", ";
+      arrayIter++;
 		}
-		os << indent << "]" << std::endl;
+		os << std::endl << indent << "]";
 	} else if (data.atom.size() > 0) {
 		if (data.type == Data::VERBATIM) {
-			os << indent << "\"" << data.atom << "\"";
+			os << "\"" << data.atom << "\"";
 		} else {
-			os << indent << data.atom;
+			os << data.atom;
 		}
 	}
 	return os;

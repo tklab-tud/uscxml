@@ -112,7 +112,7 @@ void EventIOProcessor::send(const SendRequest& req) {
 		_httpConnections[endPoint] = evhttp_connection_base_new(_asyncQueue._eventLoop, _dns, evhttp_uri_get_host(targetURI), evhttp_uri_get_port(targetURI));
 
 	struct evhttp_connection* httpConn = _httpConnections[endPoint];
-	struct evhttp_request* httpReq = evhttp_request_new(EventIOProcessor::httpSendReqDone, this);
+	struct evhttp_request* httpReq = evhttp_request_new(EventIOServer::httpSendReqDoneCallback, this);
 
 	// event name
 	if (req.name.size() > 0) {
@@ -163,7 +163,7 @@ void EventIOProcessor::send(const SendRequest& req) {
 	}
 }
 
-void EventIOProcessor::httpRecvReq(struct evhttp_request *req, void *arg) {
+void EventIOProcessor::httpRecvReq(struct evhttp_request *req) {
 
 	const char *cmdtype;
 	struct evkeyvalq *headers;
@@ -242,13 +242,11 @@ void EventIOProcessor::httpRecvReq(struct evhttp_request *req, void *arg) {
 		reqEvent.compound["content"] = Data(content, Data::VERBATIM);
 	}
 
-	EventIOProcessor* INSTANCE = (EventIOProcessor*)arg;
-	INSTANCE->returnEvent(reqEvent);
-
+	returnEvent(reqEvent);
 	evhttp_send_reply(req, 200, "OK", NULL);
 }
 
-void EventIOProcessor::httpSendReqDone(struct evhttp_request *req, void *cb_arg) {
+void EventIOProcessor::httpSendReqDone(struct evhttp_request *req) {
 	if (req) {
 		LOG(INFO) << "got return code " << evhttp_request_get_response_code(req) << std::endl;
 	}
@@ -294,7 +292,7 @@ void EventIOServer::registerProcessor(EventIOProcessor* processor) {
 	 * If the interpreter does not specify a name, take its sessionid.
 	 */
 
-	std::string path = processor->_interpreter->getName();
+	std::string path = processor->getPath();
 	if (path.size() == 0) {
 		path = processor->_interpreter->getSessionId();
 	}
@@ -316,7 +314,8 @@ void EventIOServer::registerProcessor(EventIOProcessor* processor) {
 
 	LOG(INFO) << "SCXML listening at: " << processorURL.str() << std::endl;
 
-	evhttp_set_cb(INSTANCE->_http, ("/" + actualPath.str()).c_str(), EventIOProcessor::httpRecvReq, processor);
+	evhttp_set_cb(INSTANCE->_http, ("/" + actualPath.str()).c_str(), EventIOServer::httpRecvReqCallback, processor);
+  
 //  evhttp_set_cb(THIS->_http, "/", EventIOProcessor::httpRecvReq, processor);
 //  evhttp_set_gencb(THIS->_http, EventIOProcessor::httpRecvReq, NULL);
 }
@@ -334,6 +333,7 @@ void EventIOServer::start() {
 
 void EventIOServer::run(void* instance) {
 	EventIOServer* INSTANCE = (EventIOServer*)instance;
+	LOG(INFO) << "HTTP Server started" << std::endl;
 	while(INSTANCE->_isRunning) {
 		event_base_dispatch(INSTANCE->_base);
 	}

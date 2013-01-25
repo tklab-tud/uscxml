@@ -1,4 +1,5 @@
 #include "uscxml/URL.h"
+#include "uscxml/Message.h"
 #include <assert.h>
 #include <boost/algorithm/string.hpp>
 #include <iostream>
@@ -7,6 +8,24 @@ using namespace uscxml;
 using namespace boost;
 
 int main(int argc, char** argv) {
+
+  {
+    Data data = Data::fromJSON("asdf");
+    std::cout << data << std::endl;
+  }
+  {
+    Data data = Data::fromJSON("[ '1', '2', '3', '4' ]");
+    std::cout << data << std::endl;
+  }
+  {
+    Data data = Data::fromJSON("{'foo1': 'bar2', 'foo3': { 'foo4': 'bar5' }, 'foo6': 'bar7',  'foo8': { 'foo9': 'foo10': { 'foo11': 'bar12' } } }");
+    std::cout << data << std::endl;
+  }
+  {
+    Data data = Data::fromJSON("{\"firstName\": \"John\", \"lastName\": \"Smith\", \"age\": 25, \"address\": { \"streetAddress\": \"21 2nd Street\", \"city\": \"New York\",\"state\": \"NY\",\"postalCode\": 10021},\"phoneNumber\": [{\"type\": \"home\",\"number\": \"212 555-1234\"},{ \"type\": \"fax\",\"number\": \"646 555-4567\"}]}");
+    std::cout << data << std::endl;
+  }
+  
 	{
 		URL url("http://www.heise.de/index.html");
 		std::cout << url.asString() << std::endl;
