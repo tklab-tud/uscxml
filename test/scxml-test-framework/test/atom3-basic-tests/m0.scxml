@@ -1,0 +1,19 @@
+<scxml xmlns="http://www.w3.org/2005/07/scxml" profile="ecmascript" version="1.0" name="root">
+  <state id="A">
+    <onentry>
+      <log expr="&quot;entering A&quot;"/>
+    </onentry>
+    <onexit>
+      <log expr="&quot;exiting A&quot;"/>
+    </onexit>
+    <transition target="B" event="e1">
+      <log expr="&quot;doing A-&gt;B transition&quot;"/>
+    </transition>
+  </state>
+  <initial>
+    <transition target="A"/>
+  </initial>
+  <state id="B">
+    <transition target="A" event="e2"/>
+  </state>
+</scxml>
