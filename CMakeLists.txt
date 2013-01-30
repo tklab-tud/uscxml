@@ -167,13 +167,16 @@ include("${CMAKE_MODULE_PATH}/HeaderExists.cmake")
 
 # some compiler flags
 #message("CMAKE_CXX_COMPILER_ID: ${CMAKE_CXX_COMPILER_ID}")
+
 if(${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
 	execute_process(COMMAND ${CMAKE_C_COMPILER} -dumpversion OUTPUT_VARIABLE GCC_VERSION)
 
 	# best practices from scott meyers
 	#	add_definitions(-Weffc++)
 
-	set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} "-fPIC")
+  # order of arguments of gcc matters again
+#	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
+	add_definitions(-fPIC)
 	
 	# all warnings
 	add_definitions(-Wall)
@@ -217,6 +220,10 @@ elseif (${CMAKE_CXX_COMPILER_ID} STREQUAL "MSVC")
 	# SET(CMAKE_EXE_LINKER_FLAGS_DEBUG "${CMAKE_EXE_LINKER_FLAGS_DEBUG} /NODEFAULTLIB:MSVCRTD.lib")
 elseif (${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-parentheses-equality")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-string-plus-int")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-non-literal-null-conversion")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-null-conversion")
+	
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
 	# set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -read_only_relocs suppress")
 	# set(CMAKE_EXE_LINKER_FLAGS_DEBUG "${CMAKE_EXE_LINKER_FLAGS_DEBUG} -read_only_relocs suppress")

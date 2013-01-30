@@ -1,8 +1,14 @@
+#include "uscxml/config.h"
+
 #include "uscxml/Common.h"
 #include "uscxml/Message.h"
 //#include "uscxml/Interpreter.h"
 #include <DOM/SAX2DOM/SAX2DOM.hpp>
 #include <SAX/helpers/CatchErrorHandler.hpp>
+
+#ifdef HAS_STRING_H
+#include <string.h>
+#endif
 
 extern "C" {
 #include "jsmn.h" // minimal json parser

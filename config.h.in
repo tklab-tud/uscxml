@@ -60,5 +60,6 @@
 
 /** Header files we found */
 #cmakedefine HAS_UNISTD_H
+#cmakedefine HAS_STRING_H
 
 #endif

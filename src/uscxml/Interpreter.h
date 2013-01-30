@@ -28,6 +28,7 @@ namespace uscxml {
 
 class InterpreterMonitor {
 public:
+  virtual ~InterpreterMonitor() {}
   virtual void onStableConfiguration(Interpreter* interpreter) {}
   virtual void beforeCompletion(Interpreter* interpreter) {}
   virtual void afterCompletion(Interpreter* interpreter) {}
