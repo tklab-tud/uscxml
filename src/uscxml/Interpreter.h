@@ -33,6 +33,11 @@ public:
   virtual void beforeCompletion(Interpreter* interpreter) {}
   virtual void afterCompletion(Interpreter* interpreter) {}
   virtual void beforeMicroStep(Interpreter* interpreter) {}
+  virtual void beforeTakingTransitions(Interpreter* interpreter, const Arabica::XPath::NodeSet<std::string>& transitions) {}
+  virtual void beforeEnteringStates(Interpreter* interpreter, const Arabica::XPath::NodeSet<std::string>& statesToEnter) {}
+  virtual void afterEnteringStates(Interpreter* interpreter) {}
+  virtual void beforeExitingStates(Interpreter* interpreter, const Arabica::XPath::NodeSet<std::string>& statesToExit) {}
+  virtual void afterExitingStates(Interpreter* interpreter) {}
 };
   
 class NumAttr {
@@ -100,6 +105,9 @@ public:
 	}
 	bool toAbsoluteURI(URL& uri);
 
+  void setCmdLineOptions(int argc, char** argv);
+  Data getCmdLineOptions() { return _cmdLineOptions; }
+  
 	DataModel getDataModel()                                 {
 		return _dataModel;
 	}
@@ -247,12 +255,15 @@ protected:
 	std::string _name;
 	std::string _sessionId;
 
+  Data _cmdLineOptions;
+
 	IOProcessor getIOProcessor(const std::string& type);
 //    IOProcessor* getIOProcessorForId(const std::string& sendId);
 
 	std::map<std::string, IOProcessor> _ioProcessors;
 	std::map<std::string, std::pair<Interpreter*, SendRequest> > _sendIds;
 	std::map<std::string, Invoker> _invokers;
+	std::map<std::string, Invoker> _autoForwardees;
 
 	/// We need to remember to adapt them when the DOM is operated upon
 	std::map<std::string, Arabica::DOM::Node<std::string> > _cachedStates;

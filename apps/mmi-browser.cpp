@@ -27,6 +27,7 @@ int main(int argc, char** argv) {
 		printUsageAndExit();
 	}
 
+  opterr = 0;
 	int option;
 	while ((option = getopt(argc, argv, "l:p:")) != -1) {
 		switch(option) {
@@ -36,6 +37,8 @@ int main(int argc, char** argv) {
 		case 'p':
 			uscxml::Factory::pluginPath = optarg;
 			break;
+    case '?':
+        break;
 		default:
 			printUsageAndExit();
 			break;
@@ -44,11 +47,12 @@ int main(int argc, char** argv) {
 
 //  for (int i = 0; i < argc; i++)
 //    std::cout << argv[i] << std::endl;
+//  std::cout << optind << std::endl;
+  
 
-	Factory::getInstance();
-
-	Interpreter* interpreter = Interpreter::fromURI(argv[argc - 1]);
+	Interpreter* interpreter = Interpreter::fromURI(argv[optind]);
 	if (interpreter) {
+    interpreter->setCmdLineOptions(argc, argv);
 		interpreter->start();
 		while(interpreter->runOnMainThread(25));
 	}

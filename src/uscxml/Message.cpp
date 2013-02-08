@@ -157,7 +157,6 @@ Arabica::DOM::Document<std::string> SendRequest::toDocument() {
 
 	}
 
-
 	scxmlMsg.setAttribute("sendid", sendid);
 
 	return document;
@@ -217,10 +216,7 @@ Data Data::fromJSON(const std::string& jsonString) {
     // there are no more tokens
     if (t[currTok].end == 0 || tokenStack.empty())
       break;
-    
-//    std::cout << "Token Stack: [" << tokenStack.back().start << ", " << tokenStack.back().end << "]" << std::endl;
-//    std::cout << "Token Curr:  [" << t[currTok].start << ", " << t[currTok].end << "]" << std::endl;
-    
+        
     // next token starts after current one => pop
     if (t[currTok].end > tokenStack.back().end)
       tokenStack.pop_back();
@@ -240,7 +236,7 @@ Data Data::fromJSON(const std::string& jsonString) {
   return data;
 }
 
-  Event Event::fromXML(const std::string& xmlString) {
+Event Event::fromXML(const std::string& xmlString) {
 	Arabica::SAX2DOM::Parser<std::string> eventParser;
 	Arabica::SAX::CatchErrorHandler<std::string> errorHandler;
 	eventParser.setErrorHandler(errorHandler);
@@ -296,17 +292,116 @@ InvokeRequest InvokeRequest::fromXML(const std::string& xmlString) {
 }
 
 #ifndef SWIGJAVA
+std::ostream& operator<< (std::ostream& os, const InvokeRequest& invokeReq) {
+  
+  std::string indent;
+  for (int i = 0; i < _dataIndentation; i++) {
+    indent += "  ";
+  }
+  
+  os << indent << "InvokeReq" << (invokeReq.autoForward ? " with autoforward" : "") << std::endl;
+    
+  if (invokeReq.type.size() > 0)
+    os << indent << "  type: " << invokeReq.type << std::endl;
+  
+  if (invokeReq.src.size() > 0)
+    os<< indent  << "  src: " << invokeReq.src << std::endl;
+  
+  if (invokeReq.namelist.size() > 0) {
+    os << indent << "  namelist: " << std::endl;
+    InvokeRequest::namelist_t::const_iterator namelistIter = invokeReq.namelist.begin();
+    while(namelistIter != invokeReq.namelist.end()) {
+      os << indent << "    " << namelistIter->first << ": " << namelistIter->second << std::endl;
+      namelistIter++;
+    }
+  }
+  
+  if (invokeReq.params.size() > 0) {
+    os << indent << "  params: " << std::endl;
+    SendRequest::params_t::const_iterator paramIter = invokeReq.params.begin();
+    while(paramIter != invokeReq.params.end()) {
+      os << indent << "    " << paramIter->first << ": " << paramIter->second << std::endl;
+      paramIter++;
+    }
+  }
+  
+  if (invokeReq.content.size() > 0)
+    os << indent << "  content: " << invokeReq.content << std::endl;
+  
+  _dataIndentation++;
+  os << (Event)invokeReq;
+  _dataIndentation--;
+  return os;
+  
+}
+#endif
+
+  
+#ifndef SWIGJAVA
+std::ostream& operator<< (std::ostream& os, const SendRequest& sendReq) {
+
+  std::string indent;
+  for (int i = 0; i < _dataIndentation; i++) {
+    indent += "  ";
+  }
+
+  os << indent<< "SendReq" << std::endl;
+
+  if (sendReq.target.size() > 0)
+    os << indent << "  target: " << sendReq.target << std::endl;
+
+  if (sendReq.type.size() > 0)
+    os << indent << "  type: " << sendReq.type << std::endl;
+
+  if (sendReq.delayMs > 0)
+    os<< indent  << "  delay: " << sendReq.delayMs << std::endl;
+
+  if (sendReq.namelist.size() > 0) {
+    os << indent << "  namelist: " << std::endl;
+    SendRequest::namelist_t::const_iterator namelistIter = sendReq.namelist.begin();
+    while(namelistIter != sendReq.namelist.end()) {
+      os << indent << "    " << namelistIter->first << ": " << namelistIter->second << std::endl;
+      namelistIter++;
+    }
+  }
+
+  if (sendReq.params.size() > 0) {
+    os << indent << "  params: " << std::endl;
+    SendRequest::params_t::const_iterator paramIter = sendReq.params.begin();
+    while(paramIter != sendReq.params.end()) {
+      os << indent << "    " << paramIter->first << ": " << paramIter->second << std::endl;
+      paramIter++;
+    }
+  }
+
+  if (sendReq.content.size() > 0)
+    os << indent << "  content: " << sendReq.content << std::endl;
+
+  _dataIndentation++;
+  os << (Event)sendReq;
+  _dataIndentation--;
+  return os;
+
+}
+#endif
+
+#ifndef SWIGJAVA
 std::ostream& operator<< (std::ostream& os, const Event& event) {
-	os << (event.type == Event::EXTERNAL ? "External" : "Internal") << " Event " /* << (event.dom ? "with DOM attached" : "")*/ << std::endl;
+	std::string indent;
+	for (int i = 0; i < _dataIndentation; i++) {
+		indent += "  ";
+	}
+  
+	os << indent << (event.type == Event::EXTERNAL ? "External" : "Internal") << " Event " << (event.dom ? "with DOM attached" : "") << std::endl;
 
 	if (event.name.size() > 0)
-		os << "  name: " << event.name << std::endl;
+		os << indent << "  name: " << event.name << std::endl;
 	if (event.origin.size() > 0)
-		os << "  origin: " << event.origin << std::endl;
+		os << indent << "  origin: " << event.origin << std::endl;
 	if (event.origintype.size() > 0)
-		os << "  origintype: " << event.origintype << std::endl;
+		os << indent << "  origintype: " << event.origintype << std::endl;
 	_dataIndentation++;
-	os << "  data: " << (Data)event << std::endl;
+	os << indent << "  data: " << (Data)event << std::endl;
 	_dataIndentation--;
 	return os;
 }
@@ -362,7 +457,9 @@ std::ostream& operator<< (std::ostream& os, const Data& data) {
 		} else {
 			os << data.atom;
 		}
-	}
+	} else {
+    os << "undefined";
+  }
 	return os;
 }
 #endif

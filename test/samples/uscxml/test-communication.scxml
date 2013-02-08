@@ -43,7 +43,15 @@ This is some content you got there dude!
 				<log expr="'Calling finalize on returned event'" />
 			</finalize>
 		</invoke>		
-		<transition event="transitionToNext" target="final" />
+		<transition event="transitionToNext" target="step3" />
+	</state>
+	<state id="step3">
+		<onentry>
+			<log expr="'Entered step3'" />
+			<log expr="'Sending an invalid request'" />
+			<send target="http://www.sgsdfgsdfgasdf.com" type="basichttp" event="transitionToNext" />
+		</onentry>
+		<transition event="error.communication" target="final" />
 	</state>
 	<final id="final">
 		<onentry>

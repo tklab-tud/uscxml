@@ -19,6 +19,7 @@ HeartbeatInvoker::HeartbeatInvoker() {
 }
 
 HeartbeatInvoker::~HeartbeatInvoker() {
+  cancel("");
 };
 
 boost::shared_ptr<IOProcessorImpl> HeartbeatInvoker::create(Interpreter* interpreter) {

@@ -63,6 +63,8 @@ boost::shared_ptr<DataModelImpl> V8DataModel::create(Interpreter* interpreter) {
 	dm->setName(interpreter->getName());
 	dm->setSessionId(interpreter->getSessionId());
 	dm->eval("_ioprocessors = {};");
+	dm->eval("_invokers = {};");
+	dm->eval("_x = {};");
 
 	return dm;
 }
@@ -183,7 +185,7 @@ Data V8DataModel::getValueAsData(const v8::Handle<v8::Value>& value) {
 	} else if(value->IsUint32()) {
 		LOG(ERROR) << "IsUint32 is unimplemented" << std::endl;
 	} else if(value->IsUndefined()) {
-		LOG(ERROR) << "IsUndefined is unimplemented" << std::endl;
+    data.atom = "undefined";
 	}
 	return data;
 }
@@ -269,6 +271,10 @@ std::string V8DataModel::evalAsString(const std::string& expr) {
 	v8::HandleScope handleScope;
 	v8::Context::Scope contextScope(_contexts.back());
 	v8::Handle<v8::Value> result = evalAsValue(expr);
+  if (result->IsObject()) {
+    Data data = getValueAsData(result);
+    return toStr(data);
+  }
 	v8::String::AsciiValue data(result->ToString());
 	return std::string(*data);
 }

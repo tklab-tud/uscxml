@@ -24,11 +24,11 @@ TESTS=""
 # TESTS="${TESTS} scxml-test-framework/test/actionSend/send1.scxml" # passed
 # TESTS="${TESTS} scxml-test-framework/test/actionSend/send2.scxml" # passed
 # TESTS="${TESTS} scxml-test-framework/test/actionSend/send3.scxml" # passed
-# TESTS="${TESTS} scxml-test-framework/test/actionSend/send4.scxml" # failed
-# TESTS="${TESTS} scxml-test-framework/test/actionSend/send5.scxml" # failed
-# TESTS="${TESTS} scxml-test-framework/test/actionSend/send6.scxml" # failed
-# TESTS="${TESTS} scxml-test-framework/test/actionSend/send7.scxml" # failed
-# TESTS="${TESTS} scxml-test-framework/test/actionSend/send8.scxml" # failed
+# TESTS="${TESTS} scxml-test-framework/test/actionSend/send4.scxml" # won't support
+# TESTS="${TESTS} scxml-test-framework/test/actionSend/send5.scxml" # won't support
+# TESTS="${TESTS} scxml-test-framework/test/actionSend/send6.scxml" # won't support
+# TESTS="${TESTS} scxml-test-framework/test/actionSend/send7.scxml" # won't support
+# TESTS="${TESTS} scxml-test-framework/test/actionSend/send8.scxml" # won't support
 
 # TESTS="${TESTS} scxml-test-framework/test/assign-current-small-step/test0.scxml" # passed
 # TESTS="${TESTS} scxml-test-framework/test/assign-current-small-step/test1.scxml" # passed
@@ -74,7 +74,7 @@ TESTS=""
 # TESTS="${TESTS} scxml-test-framework/test/hierarchy+documentOrder/test0.scxml" # failed
 # TESTS="${TESTS} scxml-test-framework/test/hierarchy+documentOrder/test1.scxml" # failed
 
-# TESTS="${TESTS} scxml-test-framework/test/history/history0.scxml" # segfault
+TESTS="${TESTS} scxml-test-framework/test/history/history0.scxml" # segfault
 # TESTS="${TESTS} scxml-test-framework/test/history/history1.scxml" # segfault
 # TESTS="${TESTS} scxml-test-framework/test/history/history2.scxml" # segfault
 # TESTS="${TESTS} scxml-test-framework/test/history/history3.scxml" # failed
@@ -158,9 +158,9 @@ TESTS=""
 # TESTS="${TESTS} scxml-test-framework/test/targetless-transition/test3.scxml" # failed
 
 
-trap 'killall ${SCXML_TEST_FRAMEWORK_NAME}' 0
-$SCXML_TEST_FRAMEWORK_FULL &
-sleep 1
+#trap 'killall ${SCXML_TEST_FRAMEWORK_NAME}' 0
+#$SCXML_TEST_FRAMEWORK_FULL &
+#sleep 1
 cd $DIR
 
 node scxml-test-framework --test-server-url http://localhost:8080/test $TESTS

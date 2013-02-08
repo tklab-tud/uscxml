@@ -86,9 +86,11 @@ public:
 
 class InvokeRequest : public Event {
 public:
+  InvokeRequest(Event event) : Event(event) {}
+  InvokeRequest() {}
 	std::string type;
 	std::string src;
-	std::string namelist;
+	std::map<std::string, std::string> namelist;
 	typedef std::map<std::string, std::string> namelist_t;
 	bool autoForward;
 	std::multimap<std::string, std::string> params;
@@ -104,10 +106,16 @@ public:
 		return ss.str();
 	}
 
+#ifndef SWIGJAVA
+	friend std::ostream& operator<< (std::ostream& os, const InvokeRequest& sendReq);
+#endif
+
 };
 
 class SendRequest : public Event {
 public:
+  SendRequest() {}
+  SendRequest(Event event) : Event(event) {}
 	std::string target;
 	std::string type;
 	uint32_t delayMs;
@@ -125,6 +133,10 @@ public:
 //    std::cout << ss.str() << std::endl;
 		return ss.str();
 	}
+  
+#ifndef SWIGJAVA
+	friend std::ostream& operator<< (std::ostream& os, const SendRequest& sendReq);
+#endif
 
 };
 

@@ -20,6 +20,7 @@
 
 # ifdef OPENSCENEGRAPH_FOUND
 #   include "uscxml/plugins/invoker/graphics/openscenegraph/OSGInvoker.h"
+#   include "uscxml/plugins/invoker/graphics/openscenegraph/OSGConverter.h"
 # endif
 
 # ifdef MILES_FOUND
@@ -93,6 +94,10 @@ Factory::Factory() {
 #ifdef OPENSCENEGRAPH_FOUND
 	{
 		OSGInvoker* invoker = new OSGInvoker();
+		registerInvoker(invoker);
+	}
+	{
+		OSGConverter* invoker = new OSGConverter();
 		registerInvoker(invoker);
 	}
 #endif
@@ -252,7 +257,7 @@ void IOProcessorImpl::returnEvent(Event& event) {
 
 	_interpreter->receive(event);
 }
-
+  
 Factory* Factory::_instance = NULL;
 std::string Factory::pluginPath;
 }

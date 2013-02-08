@@ -472,6 +472,27 @@ else()
 endif()
 
 
+# SQLite3 SQL Invoker
+
+find_package(Sqlite3)
+if (SQLITE3_FOUND)
+	file(GLOB_RECURSE SQLITE3_INVOKER
+		src/uscxml/plugins/invoker/sqlite3/*.cpp
+		src/uscxml/plugins/invoker/sqlite3/*.h
+	)
+	source_group("Invoker" FILES ${SQLITE3_INVOKER})
+	if (BUILD_AS_PLUGINS)
+		add_library(
+			invoker_sqlite3 SHARED 
+			${SQLITE3_INVOKER})
+		target_link_libraries(invoker_sqlite3 uscxml)
+		set_target_properties(invoker_sqlite3 PROPERTIES FOLDER "Plugin Invoker")
+	else()
+		list (APPEND USCXML_FILES ${SQLITE3_INVOKER})
+	endif()
+endif()
+
+
 # JavaScriptCore ecmascript datamodel
 if (APPLE AND IOS AND OFF)
 	FIND_LIBRARY(JSC_LIBRARY JavaScriptCore)

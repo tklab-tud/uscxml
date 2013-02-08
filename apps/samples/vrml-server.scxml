@@ -1,0 +1,46 @@
+<scxml datamodel="ecmascript" name="vrml-convert">
+	<script src="http://uscxml.tk.informatik.tu-darmstadt.de/scripts/dump.js" />
+	<state id="main">
+		<!-- Stop processing if no vrml-path was given on command line -->
+		<transition target="final" cond="_x['args']['vrml-path'] == undefined || _x['args']['vrml-path'].length == 0">
+			<log expr="'No --vrml-path given'" />
+		</transition>
+		
+		<!-- Stop processing if an error occurred -->
+		<transition target="final" event="error">
+			<log expr="'An error occured:'" />
+			<script>dump(_event);</script>
+		</transition>
+		
+		<!-- Start the osgconvert invoker to transform 3D files -->
+		<invoke type="osgconvert" id="osgvonvert.osgb">
+			<param name="format" expr="'osgb'" />
+			<param name="destDir" expr="_x['args']['vrml-path'] + '/processed'" />
+		</invoke>
+		
+		<!-- Start the directory monitor -->
+		<invoke type="dirmon" id="dirmon.vrml">
+			<param name="dir" expr="_x['args']['vrml-path']" />
+			<param name="recurse" expr="true" />
+			<param name="suffix" expr="'.wrl'" />
+			<param name="reportExisting" expr="true" />
+			<!-- Send every file to the converter -->
+			<finalize>
+				<send target="#_osgvonvert.osgb" event="convert">
+					<param name="file" expr="_event.data.file" />
+					<param name="name" expr="_event.data.file.name" />
+				</send>
+			</finalize>
+		</invoke>
+		
+		<!-- Idle here -->
+		<state id="idle">
+			<onentry>
+				<script>
+					dump(_x['args']);
+				</script>
+			</onentry>
+		</state>
+	</state>
+	<state id="final" final="true" />
+</scxml>

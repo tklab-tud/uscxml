@@ -162,7 +162,7 @@ std::ostream & operator<<(std::ostream & stream, const URL& url) {
 //		std::replace( urlString.begin(), urlString.end(), '/', '\\');
 #endif
 	}
-	LOG(ERROR) << "Trying to open " << urlString;
+//	LOG(ERROR) << "Trying to open " << urlString;
 	URL_FILE *handle = url_fopen(urlString.c_str(), "r");
 
 	if(!handle) {

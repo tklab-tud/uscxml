@@ -75,14 +75,15 @@ Data EventIOProcessor::getDataModelVariables() {
 
 
 void EventIOProcessor::send(const SendRequest& req) {
-	// I cant figure out how to copy the reference into the struct :(
-	_sendData[req.sendid].req = req;
-	_sendData[req.sendid].ioProcessor = this;
+
+	_sendData[req.sendid] = new SendData();
+  _sendData[req.sendid]->scxmlReq = req;
+	_sendData[req.sendid]->ioProcessor = this;
 
 	int err = 0;
 	char uriBuf[1024];
 
-	struct evhttp_uri* targetURI = evhttp_uri_parse(_sendData[req.sendid].req.target.c_str());
+	struct evhttp_uri* targetURI = evhttp_uri_parse(_sendData[req.sendid]->scxmlReq.target.c_str());
 	if (evhttp_uri_get_port(targetURI) < 0)
 		evhttp_uri_set_port(targetURI, 80);
 	const char* hostName = evhttp_uri_get_host(targetURI);
@@ -108,11 +109,14 @@ void EventIOProcessor::send(const SendRequest& req) {
 	ssLocalURI << evhttp_uri_get_path(targetURI) << evhttp_uri_get_fragment(targetURI);
 	std::string localURI = ssLocalURI.str();
 
-	if (_httpConnections.find(endPoint) == _httpConnections.end())
-		_httpConnections[endPoint] = evhttp_connection_base_new(_asyncQueue._eventLoop, _dns, evhttp_uri_get_host(targetURI), evhttp_uri_get_port(targetURI));
+	if (_httpConnections.find(endPoint) == _httpConnections.end()) {
+    struct evhttp_connection* conn = evhttp_connection_base_new(_asyncQueue._eventLoop, _dns, evhttp_uri_get_host(targetURI), evhttp_uri_get_port(targetURI));
+    evhttp_connection_set_retries(conn, 3);
+    _httpConnections[endPoint] = conn;
+  }
 
 	struct evhttp_connection* httpConn = _httpConnections[endPoint];
-	struct evhttp_request* httpReq = evhttp_request_new(EventIOServer::httpSendReqDoneCallback, this);
+	struct evhttp_request* httpReq = evhttp_request_new(EventIOServer::httpSendReqDoneCallback, _sendData[req.sendid]);
 
 	// event name
 	if (req.name.size() > 0) {
@@ -161,6 +165,15 @@ void EventIOProcessor::send(const SendRequest& req) {
 	if (err) {
 		LOG(ERROR) << "Could not make http request to " << req.target;
 	}
+}
+
+void EventIOProcessor::httpSendReqDone(struct SendData* sendData) {
+  if (sendData->httpReq == NULL || evhttp_request_get_response_code(sendData->httpReq) != 200) {
+    Event failureEvent;
+    failureEvent.name = "error.communication";
+    sendData->ioProcessor->returnEvent(failureEvent);
+  }
+  delete _sendData[sendData->scxmlReq.sendid];
 }
 
 void EventIOProcessor::httpRecvReq(struct evhttp_request *req) {
@@ -246,12 +259,6 @@ void EventIOProcessor::httpRecvReq(struct evhttp_request *req) {
 	evhttp_send_reply(req, 200, "OK", NULL);
 }
 
-void EventIOProcessor::httpSendReqDone(struct evhttp_request *req) {
-	if (req) {
-		LOG(INFO) << "got return code " << evhttp_request_get_response_code(req) << std::endl;
-	}
-}
-
 EventIOServer::EventIOServer(unsigned short port) {
 	_port = port;
 	_base = event_base_new();
@@ -333,7 +340,6 @@ void EventIOServer::start() {
 
 void EventIOServer::run(void* instance) {
 	EventIOServer* INSTANCE = (EventIOServer*)instance;
-	LOG(INFO) << "HTTP Server started" << std::endl;
 	while(INSTANCE->_isRunning) {
 		event_base_dispatch(INSTANCE->_base);
 	}

@@ -1,0 +1,21 @@
+<scxml datamodel="ecmascript">
+	<script src="http://uscxml.tk.informatik.tu-darmstadt.de/scripts/dump.js" />
+	<state id="start">
+		<invoke type="heartbeat" id="heartbeat.1s">
+			<param name="interval" expr="'1s'" />
+		</invoke>
+		<!-- invoke type="umundo" id="scxml.umundo">
+		  <param name="channel" expr="'pingpong'" />
+			<finalize>
+	      <script>
+	        dump(_event);
+	      </script>
+			</finalize>
+		</invoke -->
+		<onentry>
+			<log expr="'Entering start'" />
+      <!-- send target="#_scxml.umundo" delay="0s" event="send" / -->
+		</onentry>
+		<transition target="start" event="heartbeat" />
+	</state>
+</scxml>

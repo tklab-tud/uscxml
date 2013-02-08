@@ -23,7 +23,8 @@ class EventIOProcessor : public IOProcessorImpl {
 public:
 	struct SendData {
 		EventIOProcessor* ioProcessor;
-		uscxml::SendRequest req;
+		uscxml::SendRequest scxmlReq;
+		evhttp_request* httpReq;
 	};
 
 	EventIOProcessor();
@@ -48,11 +49,11 @@ public:
 	static void run(void* instance);
 
   virtual std::string getPath() { return _interpreter->getName(); }
-	virtual void httpSendReqDone(struct evhttp_request *req);
+	virtual void httpSendReqDone(struct SendData* sendData);
 	virtual void httpRecvReq(struct evhttp_request *req);
 
 protected:
-	std::map<std::string, SendData> _sendData;
+	std::map<std::string, SendData*> _sendData;
 
 	std::string _url;
 
@@ -82,9 +83,10 @@ private:
 	void determineAddress();
 	static std::string syncResolve(const std::string& hostname);
 
-
 	static void httpSendReqDoneCallback(struct evhttp_request *req, void *cb_arg) {
-    ((EventIOProcessor*)cb_arg)->httpSendReqDone(req);
+    EventIOProcessor::SendData* sendData = (EventIOProcessor::SendData*)cb_arg;
+    sendData->httpReq = req;
+    sendData->ioProcessor->httpSendReqDone(sendData);
   }
 	static void httpRecvReqCallback(struct evhttp_request *req, void *cb_arg) {
     ((EventIOProcessor*)cb_arg)->httpRecvReq(req);

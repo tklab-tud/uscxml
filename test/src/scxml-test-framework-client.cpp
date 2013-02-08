@@ -28,7 +28,7 @@ public:
   static std::map<std::string, std::pair<uscxml::Interpreter*, evhttp_request*> > _interpreters;
 
   TestIOProcessor() {}
-    
+  
   virtual void onStableConfiguration(uscxml::Interpreter* interpreter) {
     Arabica::XPath::NodeSet<std::string> configuration = interpreter->getConfiguration();
 
@@ -39,8 +39,8 @@ public:
       reply.compound["nextConfiguration"].array.push_back(uscxml::Data(ATTR(configuration[i], "id"), uscxml::Data::VERBATIM));
     }
     
-    std::cout << "---- reply:" << std::endl;
-    std::cout << reply << std::endl;
+//    std::cout << "---- reply:" << std::endl;
+//    std::cout << reply << std::endl;
     
     std::stringstream replyString;
     replyString << reply;
@@ -52,13 +52,43 @@ public:
 
   }
 
-  virtual void afterCompletion(uscxml::Interpreter* interpreter) {
-//    evhttp_request_free(_interpreterToRequest[interpreter]);
-  }
+  virtual void beforeCompletion(uscxml::Interpreter* interpreter) {}
+  virtual void afterCompletion(uscxml::Interpreter* interpreter) {}
+  virtual void beforeMicroStep(uscxml::Interpreter* interpreter) {}
+  virtual void beforeTakingTransitions(uscxml::Interpreter* interpreter, const Arabica::XPath::NodeSet<std::string>& transitions) {}
 
+  virtual void beforeEnteringStates(uscxml::Interpreter* interpreter, const Arabica::XPath::NodeSet<std::string>& statesToEnter) {
+    std::cout << "Entering states: ";
+    for (int i = 0; i < statesToEnter.size(); i++) {
+      std::cout << ATTR(statesToEnter[i], "id") << ", ";
+    }
+    std::cout << std::endl;
+  }
+  virtual void afterEnteringStates(uscxml::Interpreter* interpreter) {
+    std::cout << "After entering states: ";
+    for (int i = 0; i < interpreter->getConfiguration().size(); i++) {
+      std::cout << ATTR(interpreter->getConfiguration()[i], "id") << ", ";
+    }
+    std::cout << std::endl;
+  }
+  virtual void beforeExitingStates(uscxml::Interpreter* interpreter, const Arabica::XPath::NodeSet<std::string>& statesToExit) {
+    std::cout << "Exiting states: ";
+    for (int i = 0; i < statesToExit.size(); i++) {
+      std::cout << ATTR(statesToExit[i], "id") << ", ";
+    }
+    std::cout << std::endl;
+  }
+  virtual void afterExitingStates(uscxml::Interpreter* interpreter) {
+    std::cout << "After exiting states: ";
+    for (int i = 0; i < interpreter->getConfiguration().size(); i++) {
+      std::cout << ATTR(interpreter->getConfiguration()[i], "id") << ", ";
+    }
+    std::cout << std::endl;
+  }
+  
   virtual void httpRecvReq(struct evhttp_request *req) {
     
-    std::cout << "---- received:" << std::endl;
+//    std::cout << "---- received:" << std::endl;
 
     if (evhttp_request_get_command(req) != EVHTTP_REQ_POST)
       return;
@@ -71,7 +101,7 @@ public:
     
     for (header = headers->tqh_first; header;
          header = header->next.tqe_next) {
-      std::cout << header->key << ": " << header->value << std::endl;
+//      std::cout << header->key << ": " << header->value << std::endl;
     }
 
     std::string content;
@@ -87,7 +117,7 @@ public:
 		}
     
     uscxml::Data jsonReq = uscxml::Data::fromJSON(content);
-    std::cout << jsonReq << std::endl;
+//    std::cout << jsonReq << std::endl;
     
     
     // is this a load request?
