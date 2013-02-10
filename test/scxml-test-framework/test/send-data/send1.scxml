@@ -27,7 +27,7 @@
 
 	<state id="a">
 		<transition target="b" event="t">
-			<send delayexpr="'10'" eventexpr="'s1'" namelist="foo bar">
+			<send delayexpr="'10ms'" eventexpr="'s1'" namelist="foo bar">
 				<param name="bif" location="bat"/>
 				<param name="belt" expr="4"/> 
 			</send>
@@ -41,7 +41,7 @@
 				_event.data.bif === 3 &amp;&amp;
 				_event.data.belt === 4">
 
-			<send delayexpr="'10'" eventexpr="'s2'">
+			<send delayexpr="'10ms'" eventexpr="'s2'">
 				<content>More content.</content>
 			</send>
 

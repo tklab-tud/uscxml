@@ -37,6 +37,10 @@ public:
 	void stop();
 	static void run(void*);
 
+  bool isEmpty() {
+    return _callbackData.empty();
+  }
+  
 	static void timerCallback(evutil_socket_t fd, short what, void *arg);
 	static void dummyCallback(evutil_socket_t fd, short what, void *arg);
 

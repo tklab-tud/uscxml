@@ -36,11 +36,12 @@ public:
     reply.compound["sessionToken"] = uscxml::Data(interpreter->getName());
     std::string seperator;
     for (size_t i = 0; i < configuration.size(); i++) {
-      reply.compound["nextConfiguration"].array.push_back(uscxml::Data(ATTR(configuration[i], "id"), uscxml::Data::VERBATIM));
+      if (uscxml::Interpreter::isAtomic(configuration[i]))
+        reply.compound["nextConfiguration"].array.push_back(uscxml::Data(ATTR(configuration[i], "id"), uscxml::Data::VERBATIM));
     }
     
-//    std::cout << "---- reply:" << std::endl;
-//    std::cout << reply << std::endl;
+    std::cout << "---- reply:" << std::endl;
+    std::cout << reply << std::endl;
     
     std::stringstream replyString;
     replyString << reply;
@@ -72,6 +73,11 @@ public:
     std::cout << std::endl;
   }
   virtual void beforeExitingStates(uscxml::Interpreter* interpreter, const Arabica::XPath::NodeSet<std::string>& statesToExit) {
+    std::cout << "Configuration: ";
+    for (int i = 0; i < interpreter->getConfiguration().size(); i++) {
+      std::cout << ATTR(interpreter->getConfiguration()[i], "id") << ", ";
+    }
+    std::cout << std::endl;
     std::cout << "Exiting states: ";
     for (int i = 0; i < statesToExit.size(); i++) {
       std::cout << ATTR(statesToExit[i], "id") << ", ";
@@ -88,7 +94,7 @@ public:
   
   virtual void httpRecvReq(struct evhttp_request *req) {
     
-//    std::cout << "---- received:" << std::endl;
+    std::cout << "---- received:" << std::endl;
 
     if (evhttp_request_get_command(req) != EVHTTP_REQ_POST)
       return;
@@ -117,7 +123,7 @@ public:
 		}
     
     uscxml::Data jsonReq = uscxml::Data::fromJSON(content);
-//    std::cout << jsonReq << std::endl;
+    std::cout << jsonReq << std::endl;
     
     
     // is this a load request?

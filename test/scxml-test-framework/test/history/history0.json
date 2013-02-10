@@ -3,11 +3,11 @@
 	"events" : [
 		{
 			"event" : { "name" : "t1" },
-			"nextConfiguration" : ["b", "b2"]
+			"nextConfiguration" : ["b2"]
 		},
 		{
 			"event" : { "name" : "t2" },
-			"nextConfiguration" : ["b", "b3"]
+			"nextConfiguration" : ["b3"]
 		},
 		{
 			"event" : { "name" : "t3" },
@@ -15,7 +15,7 @@
 		},
 		{
 			"event" : { "name" : "t1" },
-			"nextConfiguration" : ["b", "b3"]
+			"nextConfiguration" : ["b3"]
 		}
 	]
 }

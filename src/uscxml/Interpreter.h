@@ -151,7 +151,8 @@ public:
 	static bool isMember(const Arabica::DOM::Node<std::string>& node, const Arabica::XPath::NodeSet<std::string>& set);
 
 	void dump();
-
+  bool hasLegalConfiguration();
+  
 	static bool isState(const Arabica::DOM::Node<std::string>& state);
 	static bool isPseudoState(const Arabica::DOM::Node<std::string>& state);
 	static bool isTransitionTarget(const Arabica::DOM::Node<std::string>& elem);
@@ -246,6 +247,8 @@ protected:
 	bool isInFinalState(const Arabica::DOM::Node<std::string>& state);
 	bool isWithinSameChild(const Arabica::DOM::Node<std::string>& transition);
 	bool parentIsScxmlState(Arabica::DOM::Node<std::string> state);
+
+  Arabica::DOM::Node<std::string> getTransitionSubgraph(const Arabica::DOM::Node<std::string>& transition);
 
 	static std::vector<std::string> tokenizeIdRefs(const std::string& idRefs);
 
