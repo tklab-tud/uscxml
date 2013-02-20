@@ -12,6 +12,7 @@ DelayedEventQueue::DelayedEventQueue() {
 #endif
 	_eventLoop = event_base_new();
 	_thread = NULL;
+  _isStarted = false;
 }
 
 DelayedEventQueue::~DelayedEventQueue() {
@@ -66,7 +67,6 @@ void DelayedEventQueue::cancelEvent(std::string eventId) {
 void DelayedEventQueue::start() {
 	_isStarted = true;
 	_thread = new tthread::thread(DelayedEventQueue::run, this);
-	_isStarted = false;
 }
 
 void DelayedEventQueue::stop() {
