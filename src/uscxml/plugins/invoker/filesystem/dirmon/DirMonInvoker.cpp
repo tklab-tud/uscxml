@@ -116,13 +116,13 @@ void DirMonInvoker::handleFileAction(FW::WatchID watchid, const FW::String& dir,
 		break;
 	}
 
-	event.compound["file"].compound["name"]  = Data(filename, Data::VERBATIM);
-	event.compound["file"].compound["dir"]   = Data(dir, Data::VERBATIM);
+	event.data.compound["file"].compound["name"]  = Data(filename, Data::VERBATIM);
+	event.data.compound["file"].compound["dir"]   = Data(dir, Data::VERBATIM);
 
-	event.compound["file"].compound["mtime"] = toStr(fileStat.st_mtime);
-	event.compound["file"].compound["ctime"] = toStr(fileStat.st_ctime);
-	event.compound["file"].compound["atime"] = toStr(fileStat.st_atime);
-	event.compound["file"].compound["size"]  = toStr(fileStat.st_size);
+	event.data.compound["file"].compound["mtime"] = toStr(fileStat.st_mtime);
+	event.data.compound["file"].compound["ctime"] = toStr(fileStat.st_ctime);
+	event.data.compound["file"].compound["atime"] = toStr(fileStat.st_atime);
+	event.data.compound["file"].compound["size"]  = toStr(fileStat.st_size);
 
 	returnEvent(event);
 }
@@ -158,8 +158,8 @@ void DirMonInvoker::reportExistingIn(const std::string dir, FW::WatchID watchid)
 		if (boost::iequals(dname, ".") || boost::iequals(dname, ".."))
 			continue;
 
-		char* filename;
-		asprintf(&filename, "%s/%s", dir.c_str(), dname.c_str());
+    char* filename = (char*)malloc(dir.size() + dname.size() + 2);
+		sprintf(filename, "%s/%s", dir.c_str(), dname.c_str());
 
 		struct stat fileStat;
 		if (stat(filename, &fileStat) != 0) {

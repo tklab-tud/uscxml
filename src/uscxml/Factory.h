@@ -35,13 +35,63 @@ inline bool isNumeric( const char* pszInput, int nNumberBase) {
 
 class Interpreter;
 
-#if 0
+class ExecutableContentImpl {
+public:
+	ExecutableContentImpl() {};
+	virtual ~ExecutableContentImpl() {};
+	virtual boost::shared_ptr<ExecutableContentImpl> create(Interpreter* interpreter) = 0;
+
+	virtual void setInterpreter(Interpreter* interpreter) {
+		_interpreter = interpreter;
+	}
+
+	virtual std::string getLocalName() = 0; ///< The name of the element.
+	virtual std::string getNamespace() = 0; ///< The namespace of the element.
+	virtual void enterElement(const Arabica::DOM::Node<std::string>& node) = 0; ///< Invoked when entering the element as part of evaluating executable content.
+	virtual void exitElement(const Arabica::DOM::Node<std::string>& node) = 0; ///< Invoked when exiting the element as part of evaluating executable content.
+	virtual bool processChildren() = 0; ///< Whether or not the interpreter should process this elements children.
+
+protected:
+	Interpreter* _interpreter;
+};
+
 class ExecutableContent {
 public:
-	ExecutableContent() {};
-	virtual boost::shared_ptr<ExecutableContentImpl>* create(Interpreter* interpreter) = 0;
-};
-#endif
+	ExecutableContent() : _impl() {}
+	ExecutableContent(boost::shared_ptr<ExecutableContentImpl> const impl) : _impl(impl) { }
+	ExecutableContent(const ExecutableContent& other) : _impl(other._impl) { }
+	virtual ~ExecutableContent() {};
+
+	operator bool() const {
+		return _impl;
+	}
+	bool operator< (const ExecutableContent& other) const     {
+		return _impl < other._impl;
+	}
+	bool operator==(const ExecutableContent& other) const     {
+		return _impl == other._impl;
+	}
+	bool operator!=(const ExecutableContent& other) const     {
+		return _impl != other._impl;
+	}
+	ExecutableContent& operator= (const ExecutableContent& other)   {
+		_impl = other._impl;
+		return *this;
+	}
+
+	void setInterpreter(Interpreter* interpreter) {
+		_impl->setInterpreter(interpreter);
+	}
+
+	std::string getLocalName() { return _impl->getLocalName(); }
+	std::string getNamespace() { return _impl->getNamespace(); }
+	void enterElement(const Arabica::DOM::Node<std::string>& node) { return _impl->enterElement(node); }
+	void exitElement(const Arabica::DOM::Node<std::string>& node) { return _impl->exitElement(node); }
+	bool processChildren() { return _impl->processChildren(); }
+protected:
+	boost::shared_ptr<ExecutableContentImpl> _impl;
+
+    };
 
 class IOProcessorImpl {
 public:
@@ -264,10 +314,12 @@ public:
 	void registerIOProcessor(IOProcessorImpl* ioProcessor);
 	void registerDataModel(DataModelImpl* dataModel);
 	void registerInvoker(InvokerImpl* invoker);
+	void registerExecutableContent(ExecutableContentImpl* executableContent);
 
 	static boost::shared_ptr<DataModelImpl> createDataModel(const std::string& type, Interpreter* interpreter);
 	static boost::shared_ptr<IOProcessorImpl> createIOProcessor(const std::string& type, Interpreter* interpreter);
 	static boost::shared_ptr<InvokerImpl> createInvoker(const std::string& type, Interpreter* interpreter);
+	static boost::shared_ptr<ExecutableContentImpl> createExecutableContent(const std::string& localName, const std::string& nameSpace, Interpreter* interpreter);
 
 	static Factory* getInstance();
 
@@ -277,6 +329,7 @@ public:
 	std::map<std::string, std::string> _ioProcessorAliases;
 	std::map<std::string, InvokerImpl*> _invokers;
 	std::map<std::string, std::string> _invokerAliases;
+	std::map<std::pair<std::string, std::string>, ExecutableContentImpl*> _executableContent;
 
 	static std::string pluginPath;
 

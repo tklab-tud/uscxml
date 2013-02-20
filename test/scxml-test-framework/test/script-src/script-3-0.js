@@ -1,3 +1,3 @@
 function foo(){
-    a = 100;
+    x = 100;
 }

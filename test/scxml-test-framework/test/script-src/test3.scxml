@@ -15,33 +15,32 @@
    limitations under the License.
 -->
 <scxml 
-	xmlns="http://www.w3.org/2005/07/scxml"
-	version="1.0"
-	profile="ecmascript"
-	id="root">
+    datamodel="ecmascript"
+    xmlns="http://www.w3.org/2005/07/scxml"
+    version="1.0">
 
     <script src="script-3-0.js"/>
 
     <datamodel>
-        <data id="a"/>
+        <data id="x"/>
     </datamodel>
 
-	<initial id="intitial1">
-		<transition target="a">
-			<script>
-			    foo();
-			</script>
-		</transition>
-	</initial>
+    <state id="intitial1">
+        <transition target="a">
+            <script>
+                foo();
+            </script>
+        </transition>
+    </state>
 
-	<state id="a">
-		<transition target="b" event="t" cond="getData('a') === 100"/>
-		<transition target="f" event="t" />
-	</state>
+    <state id="a">
+        <transition target="b" event="t" cond="x === 100"/>
+        <transition target="f" event="t" />
+    </state>
 
-	<state id="b"/>
+    <state id="b"/>
 
-	<state id="f"/>
+    <state id="f"/>
 
 
 </scxml>

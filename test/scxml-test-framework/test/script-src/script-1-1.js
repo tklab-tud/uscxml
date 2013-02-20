@@ -1,1 +1,1 @@
-setData('i',getData('i') + 1)
+i = i + 1;

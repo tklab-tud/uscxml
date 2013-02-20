@@ -11,6 +11,7 @@
 
 # include "uscxml/plugins/ioprocessor/basichttp/libevent/EventIOProcessor.h"
 # include "uscxml/plugins/invoker/scxml/USCXMLInvoker.h"
+# include "uscxml/plugins/invoker/http/HTTPServletInvoker.h"
 # include "uscxml/plugins/invoker/heartbeat/HeartbeatInvoker.h"
 # include "uscxml/plugins/invoker/filesystem/dirmon/DirMonInvoker.h"
 
@@ -38,6 +39,10 @@
 # ifdef SWI_FOUND
 #   include "uscxml/plugins/datamodel/prolog/swi/SWIDataModel.h"
 # endif
+
+# include "uscxml/plugins/element/fetch/FetchElement.h"
+# include "uscxml/plugins/element/response/ResponseElement.h"
+
 
 #endif
 
@@ -129,6 +134,10 @@ Factory::Factory() {
 		registerInvoker(invoker);
 	}
 	{
+		HTTPServletInvoker* invoker = new HTTPServletInvoker();
+		registerInvoker(invoker);
+	}
+	{
 		HeartbeatInvoker* invoker = new HeartbeatInvoker();
 		registerInvoker(invoker);
 	}
@@ -139,6 +148,15 @@ Factory::Factory() {
 	{
 		EventIOProcessor* ioProcessor = new EventIOProcessor();
 		registerIOProcessor(ioProcessor);
+	}
+
+  {
+		FetchElement* element = new FetchElement();
+		registerExecutableContent(element);
+	}
+  {
+		ResponseElement* element = new ResponseElement();
+		registerExecutableContent(element);
 	}
 
 #endif
@@ -189,6 +207,13 @@ void Factory::registerInvoker(InvokerImpl* invoker) {
 	}
 }
 
+void Factory::registerExecutableContent(ExecutableContentImpl* executableContent) {
+  std::string localName = executableContent->getLocalName();
+  std::string nameSpace = executableContent->getNamespace();
+  _executableContent[std::make_pair(localName, nameSpace)] = executableContent;
+}
+
+
 boost::shared_ptr<InvokerImpl> Factory::createInvoker(const std::string& type, Interpreter* interpreter) {
 	Factory* factory = getInstance();
 	if (factory->_invokerAliases.find(type) == factory->_invokerAliases.end()) {
@@ -198,7 +223,7 @@ boost::shared_ptr<InvokerImpl> Factory::createInvoker(const std::string& type, I
 
 	std::string canonicalName = factory->_invokerAliases[type];
 	if (factory->_invokers.find(canonicalName) == factory->_invokers.end()) {
-		LOG(ERROR) << "Invoker " << type << " known as " << canonicalName << " but not prototype is available in factory";
+		LOG(ERROR) << "Invoker " << type << " known as " << canonicalName << " but no prototype is available in factory";
 		return boost::shared_ptr<InvokerImpl>();
 	}
 
@@ -214,7 +239,7 @@ boost::shared_ptr<DataModelImpl> Factory::createDataModel(const std::string& typ
 
 	std::string canonicalName = factory->_dataModelAliases[type];
 	if (factory->_dataModels.find(canonicalName) == factory->_dataModels.end()) {
-		LOG(ERROR) << "DataModel " << type << " known as " << canonicalName << " but not prototype is available in factory";
+		LOG(ERROR) << "DataModel " << type << " known as " << canonicalName << " but no prototype is available in factory";
 		return boost::shared_ptr<DataModelImpl>();
 	}
 
@@ -230,11 +255,21 @@ boost::shared_ptr<IOProcessorImpl> Factory::createIOProcessor(const std::string&
 
 	std::string canonicalName = factory->_ioProcessorAliases[type];
 	if (factory->_ioProcessors.find(canonicalName) == factory->_ioProcessors.end()) {
-		LOG(ERROR) << "IOProcessor " << type << " known as " << canonicalName << " but not prototype is available in factory";
+		LOG(ERROR) << "IOProcessor " << type << " known as " << canonicalName << " but no prototype is available in factory";
 		return boost::shared_ptr<IOProcessorImpl>();
 	}
 
 	return factory->_ioProcessors[canonicalName]->create(interpreter);
+}
+
+boost::shared_ptr<ExecutableContentImpl> Factory::createExecutableContent(const std::string& localName, const std::string& nameSpace, Interpreter* interpreter) {
+  Factory* factory = getInstance();
+  std::string actualNameSpace = (nameSpace.length() == 0 ? "http://www.w3.org/2005/07/scxml" : nameSpace);
+	if (factory->_executableContent.find(std::make_pair(localName, actualNameSpace)) == factory->_executableContent.end()) {
+    LOG(ERROR) << "Executable content " << localName << " in " << actualNameSpace << " not available in factory";
+		return boost::shared_ptr<ExecutableContentImpl>();
+  }
+  return factory->_executableContent[std::make_pair(localName, actualNameSpace)]->create(interpreter);
 }
 
 

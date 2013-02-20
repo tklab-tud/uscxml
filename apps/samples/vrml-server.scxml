@@ -1,10 +1,30 @@
-<scxml datamodel="ecmascript" name="vrml-convert">
+<scxml datamodel="ecmascript" name="vrml">
 	<script src="http://uscxml.tk.informatik.tu-darmstadt.de/scripts/dump.js" />
-	<state id="main">
+	<datamodel>
+		<data id="files">
+			{
+				"foo" : "bar"
+			}
+		</data>
+	</datamodel>
+	<parallel id="main">
 		<!-- Stop processing if no vrml-path was given on command line -->
 		<transition target="final" cond="_x['args']['vrml-path'] == undefined || _x['args']['vrml-path'].length == 0">
 			<log expr="'No --vrml-path given'" />
 		</transition>
+		
+		<state id="processHttp">
+			<state id="wait">
+				<transition event="http" target="wait">
+					<script>
+						dump(_event);
+					</script>
+					<response status="200" requestexpr="_event.origin">
+						<content expr="files" />
+					</response>
+				</transition>
+			</state>
+		</state>
 		
 		<!-- Stop processing if an error occurred -->
 		<transition target="final" event="error">
@@ -41,6 +61,6 @@
 				</script>
 			</onentry>
 		</state>
-	</state>
+	</parallel>
 	<state id="final" final="true" />
 </scxml>

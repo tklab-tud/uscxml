@@ -59,7 +59,6 @@ public:
 protected:
 	std::list<v8::Persistent<v8::Context> > _contexts;
 
-	Event _event;
 	Arabica::DOM::V8DOM* _dom;
 
 	v8::Handle<v8::Value> evalAsValue(const std::string& expr);

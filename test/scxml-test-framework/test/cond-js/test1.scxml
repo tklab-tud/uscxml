@@ -15,23 +15,18 @@
    limitations under the License.
 -->
 <scxml 
-	xmlns="http://www.w3.org/2005/07/scxml"
-	version="1.0"
-	profile="ecmascript"
-	id="root">
+    datamodel="ecmascript"
+    xmlns="http://www.w3.org/2005/07/scxml"
+    version="1.0">
 
-	<initial id="intitial1">
-		<transition target="a"/>
-	</initial>
+    <state id="a">
+        <transition target="f" event="t" cond="false"/>
+        <transition target="b" event="t" cond="true"/>
+    </state>
 
-	<state id="a">
-		<transition target="f" event="t" cond="false"/>
-		<transition target="b" event="t" cond="true"/>
-	</state>
+    <state id="b"/>
 
-	<state id="b"/>
-
-	<state id="f"/>
+    <state id="f"/>
 
 </scxml>
 

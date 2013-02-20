@@ -15,57 +15,59 @@
    limitations under the License.
 -->
 <scxml 
-	xmlns="http://www.w3.org/2005/07/scxml"
-	version="1.0"
-	datamodel="ecmascript">
+    datamodel="ecmascript"
+    xmlns="http://www.w3.org/2005/07/scxml"
+    version="1.0">
 
-	<datamodel>
-		<data id="foo" expr="1"/>
-		<data id="bar" expr="2"/>
-		<data id="bat" expr="3"/>
-	</datamodel>
+    <datamodel>
+        <data id="foo" expr="1"/>
+        <data id="bar" expr="2"/>
+        <data id="bat" expr="3"/>
+    </datamodel>
 
-	<state id="a">
-		<transition target="b" event="t">
-			<send delayexpr="'10ms'" eventexpr="'s1'" namelist="foo bar">
-				<param name="bif" location="bat"/>
-				<param name="belt" expr="4"/> 
-			</send>
-		</transition>
-	</state>
+    <state id="a">
+        <transition target="b" event="t">
+            <send delayexpr="'10ms'" eventexpr="'s1'" namelist="foo bar">
+                <param name="bif" location="bat"/>
+                <param name="belt" expr="4"/> 
+            </send>
+        </transition>
+    </state>
 
-	<state id="b">
-		<transition event="s1" target="c" 
-			cond="_event.data.foo === 1 &amp;&amp; 
-				_event.data.bar === 2 &amp;&amp; 
-				_event.data.bif === 3 &amp;&amp;
-				_event.data.belt === 4">
+    <state id="b">
+        <transition event="s1" target="c" 
+            cond="_event.data.foo === 1 &amp;&amp; 
+                _event.data.bar === 2 &amp;&amp; 
+                _event.data.bif === 3 &amp;&amp;
+                _event.data.belt === 4">
 
-			<send delayexpr="'10ms'" eventexpr="'s2'">
-				<content>More content.</content>
-			</send>
+            <send delayexpr="'10ms'" eventexpr="'s2'">
+                <content>More content.</content>
+            </send>
 
         </transition>
         
-		<transition event="s1" target="f"/>
-	</state>
+        <transition event="s1" target="f"/>
+    </state>
 
 
-	<state id="c">
-		<transition event="s2" target="d" 
-			cond="_event.data === 'More content.'"/>
+    <state id="c">
+        <transition event="s2" target="d" 
+            cond="_event.data === 'More content.'"/>
 
-		<transition event="s2" target="f"/>
-	</state>
+        <transition event="s2" target="f">
+            <log label="_event" expr="_event"/>
+        </transition>
+    </state>
 
 
-	<state id="d">
-		<transition event="t2" target="e"/>	
-	</state>
+    <state id="d">
+        <transition event="t2" target="e"/> 
+    </state>
 
     <state id="e"/>
 
-	<state id="f"/> 
+    <state id="f"/> 
 </scxml>
 
 

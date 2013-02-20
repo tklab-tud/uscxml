@@ -1,9 +1,9 @@
 {
-	"initialConfiguration" : ["a"],
-	"events" : [
-		{
-			"event" : { "name" : "t" },
-			"nextConfiguration" : ["d"]
-		}
-	]
+    "initialConfiguration" : ["a"],
+    "events" : [
+        {
+            "event" : { "name" : "t" },
+            "nextConfiguration" : ["d"]
+        }
+    ]
 }

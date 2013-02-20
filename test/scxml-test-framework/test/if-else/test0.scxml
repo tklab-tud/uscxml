@@ -15,93 +15,92 @@
    limitations under the License.
 -->
 <scxml 
-	xmlns="http://www.w3.org/2005/07/scxml"
-	version="1.0"
-	profile="ecmascript"
-	id="root">
+    datamodel="ecmascript"
+    xmlns="http://www.w3.org/2005/07/scxml"
+    version="1.0">
 
-	<datamodel>
-		<data id="a" expr="0"/>
-	</datamodel>
+    <datamodel>
+        <data id="x" expr="0"/>
+    </datamodel>
 
-	<state id="a">
-		<onentry>
-		    <!-- test if -->
-		    <log label="a" expr="a"/>
-		    <if cond="a === 0">
-		        <assign location="a" expr="10"/>
-		        <elseif cond="a === 10"/>
-		        <assign location="a" expr="20"/>
-		        <else/>
-		        <assign location="a" expr="30"/>
-		    </if>
-		    <log label="a" expr="a"/>
-		</onentry>
-
-		<transition  event="t" target="b" cond="a === 10">
-			<assign location="a" expr="a + 1"/>
-		</transition>
-
-		<onexit>
-		    <!-- test else -->
-		    <log label="a" expr="a"/>
-		    <if cond="a !== 10">
-		        <assign location="a" expr="a * 3"/>
-		        <else/>
-		        <assign location="a" expr="a * 2"/>
-		    </if>
-		    <log label="a" expr="a"/>
-		</onexit>
-	</state>
-
-	<state id="b">
-		<onentry>
-		    <!-- test elseif -->
-		    <log label="a" expr="a"/>
-		    <if cond="a === 0">
-		        <assign location="a" expr="100"/>
-		        <elseif cond="a === 21"/>
-		        <assign location="a" expr="a + 2"/>
-		        <assign location="a" expr="a + 3"/>
-		        <else/>
-		        <assign location="a" expr="200"/>
-		    </if>
-
-		    <if cond="a === 26">
-		        <assign location="a" expr="a + 1"/>
-		    </if>
-
-		    <if cond="a === 26">
-                <elseif cond="a === 27"/>
-                <assign location="a" expr="a + 1"/>
+    <state id="a">
+        <onentry>
+            <!-- test if -->
+            <log label="x" expr="x"/>
+            <if cond="x === 0">
+                <assign location="x" expr="10"/>
+                <elseif cond="x === 10"/>
+                <assign location="x" expr="20"/>
                 <else/>
-                <assign location="a" expr="a + 10"/>
-		    </if>
+                <assign location="x" expr="30"/>
+            </if>
+            <log label="x" expr="x"/>
+        </onentry>
 
-		    <if cond="a === 28">
-                <assign location="a" expr="a + 12"/>
-                <if cond="a === 40">
-                    <assign location="a" expr="a + 10"/>
+        <transition  event="t" target="b" cond="x === 10">
+            <assign location="x" expr="x + 1"/>
+        </transition>
+
+        <onexit>
+            <!-- test else -->
+            <log label="x" expr="x"/>
+            <if cond="x !== 10">
+                <assign location="x" expr="x * 3"/>
+                <else/>
+                <assign location="x" expr="x * 2"/>
+            </if>
+            <log label="x" expr="x"/>
+        </onexit>
+    </state>
+
+    <state id="b">
+        <onentry>
+            <!-- test elseif -->
+            <log label="x" expr="x"/>
+            <if cond="x === 0">
+                <assign location="x" expr="100"/>
+                <elseif cond="x === 21"/>
+                <assign location="x" expr="x + 2"/>
+                <assign location="x" expr="x + 3"/>
+                <else/>
+                <assign location="x" expr="200"/>
+            </if>
+
+            <if cond="x === 26">
+                <assign location="x" expr="x + 1"/>
+            </if>
+
+            <if cond="x === 26">
+                <elseif cond="x === 27"/>
+                <assign location="x" expr="x + 1"/>
+                <else/>
+                <assign location="x" expr="x + 10"/>
+            </if>
+
+            <if cond="x === 28">
+                <assign location="x" expr="x + 12"/>
+                <if cond="x === 40">
+                    <assign location="x" expr="x + 10"/>
                 </if>
-		    </if>
+            </if>
 
-		    <if cond="a === 50">
-                <assign location="a" expr="a + 1"/>
-                <if cond="a !== 51">
+            <if cond="x === 50">
+                <assign location="x" expr="x + 1"/>
+                <if cond="x !== 51">
                     <else/>
-                    <assign location="a" expr="a + 20"/>
+                    <assign location="x" expr="x + 20"/>
                 </if>
-		    </if>
+            </if>
 
-		    <log label="a" expr="a"/>
-		</onentry>
+            <log label="x" expr="x"/>
+        </onentry>
 
-		<transition target="c" cond="a === 71"/>
-		<transition target="f"/>
-	</state>
+        <transition target="c" cond="x === 71"/>
+        <transition target="f"/>
+    </state>
 
-	<state id="c"/>
+    <state id="c"/>
 
-	<state id="f"/>
+    <state id="f"/>
 
 </scxml>

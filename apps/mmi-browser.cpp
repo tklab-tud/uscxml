@@ -27,7 +27,9 @@ int main(int argc, char** argv) {
 		printUsageAndExit();
 	}
 
+#ifndef _WIN32
   opterr = 0;
+#endif
 	int option;
 	while ((option = getopt(argc, argv, "l:p:")) != -1) {
 		switch(option) {
@@ -55,6 +57,7 @@ int main(int argc, char** argv) {
     interpreter->setCmdLineOptions(argc, argv);
 		interpreter->start();
 		while(interpreter->runOnMainThread(25));
+    delete interpreter;
 	}
 
 	return EXIT_SUCCESS;

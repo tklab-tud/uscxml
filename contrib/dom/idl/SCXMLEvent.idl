@@ -1,6 +1,5 @@
 [
-	AttributesArePublic,
-	DontDestroyWrapped
+	AttributesArePublic
 ] interface SCXMLEvent {
 
   // NodeType

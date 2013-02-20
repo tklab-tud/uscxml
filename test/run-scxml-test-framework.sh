@@ -100,7 +100,7 @@ TESTS=""
 # TESTS="${TESTS} scxml-test-framework/test/multiple-events-per-transition/test1.scxml" # passed
 
 # TESTS="${TESTS} scxml-test-framework/test/parallel/test0.scxml" # passed
-# TESTS="${TESTS} scxml-test-framework/test/parallel/test1.scxml" # passed
+# TESTS="${TESTS} scxml-test-framework/test/parallel/test1.scxml" # failed
 # TESTS="${TESTS} scxml-test-framework/test/parallel/test2.scxml" # passed
 # TESTS="${TESTS} scxml-test-framework/test/parallel/test3.scxml" # passed
 
@@ -142,7 +142,7 @@ TESTS=""
 # TESTS="${TESTS} scxml-test-framework/test/script/test2.scxml" # getData not defined
 # TESTS="${TESTS} scxml-test-framework/test/script-src/test0.scxml" # getData not defined
 # TESTS="${TESTS} scxml-test-framework/test/script-src/test1.scxml" # getData not defined
-# TESTS="${TESTS} scxml-test-framework/test/script-src/test2.scxml" # getData not defined
+#TESTS="${TESTS} scxml-test-framework/test/script-src/test2.scxml" # getData not defined
 # TESTS="${TESTS} scxml-test-framework/test/script-src/test3.scxml" # getData not defined
 
 # TESTS="${TESTS} scxml-test-framework/test/scxml-prefix-event-name-matching/star0.scxml" # passed
@@ -155,8 +155,9 @@ TESTS=""
 # TESTS="${TESTS} scxml-test-framework/test/targetless-transition/test0.scxml" # passed
 # TESTS="${TESTS} scxml-test-framework/test/targetless-transition/test1.scxml" # passed
 # TESTS="${TESTS} scxml-test-framework/test/targetless-transition/test2.scxml" # passed
-TESTS="${TESTS} scxml-test-framework/test/targetless-transition/test3.scxml" # failed
+# TESTS="${TESTS} scxml-test-framework/test/targetless-transition/test3.scxml" # failed
 
+TESTS="${TESTS} scxml-test-framework/test/*/*.scxml"
 
 #trap 'killall ${SCXML_TEST_FRAMEWORK_NAME}' 0
 #$SCXML_TEST_FRAMEWORK_FULL &

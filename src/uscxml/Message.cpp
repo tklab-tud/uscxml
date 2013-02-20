@@ -5,6 +5,7 @@
 //#include "uscxml/Interpreter.h"
 #include <DOM/SAX2DOM/SAX2DOM.hpp>
 #include <SAX/helpers/CatchErrorHandler.hpp>
+#include <glog/logging.h>
 
 #ifdef HAS_STRING_H
 #include <string.h>
@@ -109,7 +110,7 @@ Arabica::DOM::Document<std::string> Data::toDocument() {
 
 Arabica::DOM::Document<std::string> Event::toDocument() {
 	Arabica::DOM::DOMImplementation<std::string> domFactory = Arabica::SimpleDOM::DOMImplementation<std::string>::getDOMImplementation();
-	Arabica::DOM::Document<std::string> document = Data::toDocument();
+	Arabica::DOM::Document<std::string> document = data.toDocument();
 	Arabica::DOM::Element<std::string> scxmlMsg = document.getDocumentElement();
 
 
@@ -178,17 +179,47 @@ Data Data::fromXML(const std::string& xmlString) {
 
 Data Data::fromJSON(const std::string& jsonString) {
   Data data;
-
-  // unimplemented
-//  assert(false);
-  
   jsmn_parser p;
-  jsmntok_t t[1024];
-  memset(&t, 0, sizeof(t));
-  jsmn_init(&p);
+
+  jsmntok_t* t = NULL;
   
-  int rv = jsmn_parse(&p, jsonString.c_str(), t, 1024);
+  // we do not know the number of tokens beforehand, start with something sensible and increase
+  int rv;
+  int frac = 32; // this will get decreased to 16 to first iteration for 1/16 length/token ratio
+  do {
+    jsmn_init(&p);
+
+    frac /= 2;
+    int nrTokens = jsonString.size() / frac;
+    if (t != NULL) {
+      free(t);
+//      LOG(INFO) << "Increasing JSON length to token ratio to 1/" << frac;
+    }
+    t = (jsmntok_t*)malloc(nrTokens * sizeof(jsmntok_t));
+    if (t == NULL) {
+      LOG(ERROR) << "Cannot parse JSON, ran out of memory!";
+      return data;
+    }
+    memset(t, 0, nrTokens * sizeof(jsmntok_t));
+    
+    rv = jsmn_parse(&p, jsonString.c_str(), t, nrTokens);
+  } while (rv == JSMN_ERROR_NOMEM && frac > 1);
+  
   if (rv != 0) {
+    switch (rv) {
+      case JSMN_ERROR_NOMEM:
+        LOG(ERROR) << "Cannot parse JSON, not enough tokens were provided!";
+        break;
+      case JSMN_ERROR_INVAL:
+        LOG(ERROR) << "Cannot parse JSON, invalid character inside JSON string!";
+        break;
+      case JSMN_ERROR_PART:
+        LOG(ERROR) << "Cannot parse JSON, the string is not a full JSON packet, more bytes expected!";
+        break;
+      default:
+        break;
+    }
+    free(t);
     return data;
   }
   
@@ -216,7 +247,7 @@ Data Data::fromJSON(const std::string& jsonString) {
     // there are no more tokens
     if (t[currTok].end == 0 || tokenStack.empty())
       break;
-        
+
     // next token starts after current one => pop
     if (t[currTok].end > tokenStack.back().end)
       tokenStack.pop_back();
@@ -233,6 +264,8 @@ Data Data::fromJSON(const std::string& jsonString) {
     }
     
   } while (true);
+  
+  free(t);
   return data;
 }
 
@@ -271,7 +304,7 @@ Event Event::fromXML(const std::string& xmlString) {
 									break;
 								}
 							}
-							event.compound[key] = Data(value, VERBATIM);
+							event.data.compound[key] = Data(value, Data::VERBATIM);
 						}
 					}
 				}
@@ -401,7 +434,7 @@ std::ostream& operator<< (std::ostream& os, const Event& event) {
 	if (event.origintype.size() > 0)
 		os << indent << "  origintype: " << event.origintype << std::endl;
 	_dataIndentation++;
-	os << indent << "  data: " << (Data)event << std::endl;
+	os << indent << "  data: " << event.data << std::endl;
 	_dataIndentation--;
 	return os;
 }

@@ -21,8 +21,10 @@
 #ifndef V8CDATASection_h
 #define V8CDATASection_h
 
+#include <string>
 #include "DOM/Node.hpp"
 #include "V8Text.h"
+#include "string"
 #include "uscxml/plugins/datamodel/ecmascript/v8/dom/V8DOM.h"
 #include <v8.h>
 
@@ -31,35 +33,37 @@ namespace DOM {
 
 class V8CDATASection {
 public:
-	struct V8CDATASectionPrivate {
-		V8DOM* dom;
-		Arabica::DOM::CDATASection<std::string>* nativeObj;
-	};
+    struct V8CDATASectionPrivate {
+      V8DOM* dom;
+      Arabica::DOM::CDATASection<std::string>* nativeObj;
+    };
 
-	V8_DESTRUCTOR(V8CDATASectionPrivate);
-	static bool hasInstance(v8::Handle<v8::Value>);
-
-
-
-	static v8::Persistent<v8::FunctionTemplate> Tmpl;
-	static v8::Handle<v8::FunctionTemplate> getTmpl() {
-		if (Tmpl.IsEmpty()) {
-			v8::Handle<v8::FunctionTemplate> tmpl = v8::FunctionTemplate::New();
-			tmpl->SetClassName(v8::String::New("CDATASection"));
-			tmpl->ReadOnlyPrototype();
-
-			v8::Local<v8::ObjectTemplate> instance = tmpl->InstanceTemplate();
-			v8::Local<v8::ObjectTemplate> prototype = tmpl->PrototypeTemplate();
-			instance->SetInternalFieldCount(1);
+    V8_DESTRUCTOR(V8CDATASectionPrivate);
+    static bool hasInstance(v8::Handle<v8::Value>);
 
 
 
+    static v8::Persistent<v8::FunctionTemplate> Tmpl;
+    static v8::Handle<v8::FunctionTemplate> getTmpl() {
+        if (Tmpl.IsEmpty()) {
+            v8::Handle<v8::FunctionTemplate> tmpl = v8::FunctionTemplate::New();
+            tmpl->SetClassName(v8::String::New("CDATASection"));
+            tmpl->ReadOnlyPrototype();
 
-			tmpl->Inherit(V8Text::getTmpl());
-			Tmpl = v8::Persistent<v8::FunctionTemplate>::New(tmpl);
-		}
-		return Tmpl;
-	}
+            v8::Local<v8::ObjectTemplate> instance = tmpl->InstanceTemplate();
+            v8::Local<v8::ObjectTemplate> prototype = tmpl->PrototypeTemplate();
+            (void)prototype; // surpress unused warnings
+            
+            instance->SetInternalFieldCount(1);
+
+
+
+
+            tmpl->Inherit(V8Text::getTmpl());
+            Tmpl = v8::Persistent<v8::FunctionTemplate>::New(tmpl);
+        }
+        return Tmpl;
+    }
 
 
 };

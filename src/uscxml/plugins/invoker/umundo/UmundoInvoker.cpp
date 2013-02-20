@@ -77,7 +77,7 @@ void UmundoInvoker::send(const SendRequest& req) {
 							Event event;
 							void* rv = NULL;
 							stub->callStubMethod(req.name, pbMsg, type, rv, "");
-							protobufToData(event, *(const google::protobuf::Message*)rv);
+							protobufToData(event.data, *(const google::protobuf::Message*)rv);
 
 							event.name = _invokeId + ".reply." + req.name;
 							event.origin = msg->getMeta("um.channel");
@@ -162,9 +162,9 @@ void UmundoInvoker::invoke(const InvokeRequest& req) {
 
 	} else if (serviceName.length() > 0) {
 		// use umundo to access services
-		_svcFilter = umundo::ServiceFilter(serviceName);
-		_node->connect(&_svcMgr);
-		_svcMgr.startQuery(_svcFilter, this);
+		_svcFilter = new umundo::ServiceFilter(serviceName);
+		_node->connect(_svcMgr);
+		_svcMgr->startQuery(*_svcFilter, this);
 	}
 }
 
@@ -185,13 +185,13 @@ void UmundoInvoker::receive(void* object, umundo::Message* msg) {
 //    event.compound["class"] = msg->getMeta("um.s11n.type");
 
 	if (object != NULL)
-		protobufToData(event, *(const google::protobuf::Message*)object);
+		protobufToData(event.data, *(const google::protobuf::Message*)object);
 
 	// get meta fields into event
 	std::map<std::string, std::string>::const_iterator metaIter = msg->getMeta().begin();
 	while(metaIter != msg->getMeta().end()) {
 		if (metaIter->first.substr(0,3).compare("um.") != 0)
-			event.compound[metaIter->first] = Data(metaIter->second, Data::VERBATIM);
+			event.data.compound[metaIter->first] = Data(metaIter->second, Data::VERBATIM);
 		metaIter++;
 	}
 
@@ -213,7 +213,7 @@ void UmundoInvoker::added(umundo::ServiceDescription desc) {
 
 	std::map<std::string, std::string>::const_iterator propIter = desc.getProperties().begin();
 	while(propIter != desc.getProperties().end()) {
-		addedEvent.compound[propIter->first] = Data(propIter->second, Data::VERBATIM);
+		addedEvent.data.compound[propIter->first] = Data(propIter->second, Data::VERBATIM);
 		propIter++;
 	}
 
@@ -239,7 +239,7 @@ void UmundoInvoker::removed(umundo::ServiceDescription desc) {
 
 	std::map<std::string, std::string>::const_iterator propIter = desc.getProperties().begin();
 	while(propIter != desc.getProperties().end()) {
-		addedEvent.compound[propIter->first] = Data(propIter->second, Data::VERBATIM);
+		addedEvent.data.compound[propIter->first] = Data(propIter->second, Data::VERBATIM);
 		propIter++;
 	}
 

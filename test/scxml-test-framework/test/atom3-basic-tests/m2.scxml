@@ -1,4 +1,6 @@
-<ns0:scxml xmlns:ns0="http://www.w3.org/2005/07/scxml" profile="ecmascript" version="1.0"  name="root">
+<ns0:scxml 
+    datamodel="ecmascript"
+    xmlns:ns0="http://www.w3.org/2005/07/scxml" version="1.0"  name="root">
   <ns0:state id="AB">
     <ns0:initial>
       <ns0:transition target="A"/>
@@ -20,7 +22,4 @@
       </ns0:transition>
     </ns0:state>
   </ns0:state>
-  <ns0:initial>
-    <ns0:transition target="AB"/>
-  </ns0:initial>
 </ns0:scxml>

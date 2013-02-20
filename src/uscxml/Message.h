@@ -52,7 +52,7 @@ protected:
 #endif
 };
 
-class Event : public Data {
+class Event {
 public:
 	enum Type {
 	    INTERNAL = 1,
@@ -70,7 +70,8 @@ public:
 	Arabica::DOM::Node<std::string> dom;
 	std::string sendid;
 	std::string invokeid;
-
+  Data data;
+  
 	static Event fromXML(const std::string& xmlString);
 	Arabica::DOM::Document<std::string> toDocument();
 	std::string toXMLString() {

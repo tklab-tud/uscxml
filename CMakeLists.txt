@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 2.8.4)
 # specify USCXML version
 SET(USCXML_VERSION_MAJOR "0")
 SET(USCXML_VERSION_MINOR "0")
-SET(USCXML_VERSION_PATCH "3")
+SET(USCXML_VERSION_PATCH "4")
 SET(USCXML_VERSION ${USCXML_VERSION_MAJOR}.${USCXML_VERSION_MINOR}.${USCXML_VERSION_PATCH})
 
 # build type has to be set before the project definition
@@ -134,9 +134,9 @@ include_directories(${USCXML_PREBUILT_LIBRARY_PATH}/include)
 #message("CMAKE_FIND_ROOT_PATH: ${CMAKE_FIND_ROOT_PATH}")
 
 if (WIN32)
-	include_directories(${PROJECT_SOURCE_DIR}/contrib/snippets)
+	include_directories(${PROJECT_SOURCE_DIR}/contrib/src/getopt)
 endif()
-include_directories(${PROJECT_SOURCE_DIR}/contrib/src/jsmn/)
+include_directories(${PROJECT_SOURCE_DIR}/contrib/src/jsmn)
 
 ############################################################
 # General setup
@@ -373,6 +373,13 @@ list (APPEND USCXML_CORE_LIBS ${EVENT_LIBRARY})
 # Actual files of core library
 ############################################################
 
+file(GLOB_RECURSE USCXML_SERVER
+	src/uscxml/server/*.cpp
+	src/uscxml/server/*.h
+)
+source_group("Interpreter" FILES ${USCXML_SERVER})
+list (APPEND USCXML_FILES ${USCXML_SERVER})
+
 file(GLOB_RECURSE USCXML_CONCURRENCY
 	src/uscxml/concurrency/*.cpp
 	src/uscxml/concurrency/*.h
@@ -416,7 +423,7 @@ if (BUILD_AS_PLUGINS)
 endif()
 
 #################################################
-# optional libraries we can build as plugins
+# optional things we can build as plugins
 
 # sample invoker - include to make sure it compiles
 file(GLOB_RECURSE SAMPLE_INVOKER
@@ -450,6 +457,42 @@ if (BUILD_AS_PLUGINS)
 	set_target_properties(ioprocessor_basichttp PROPERTIES FOLDER "Plugin IOProcessor")
 else()
 	list (APPEND USCXML_FILES ${LIBEVENT_IOPROCESSOR})
+endif()
+
+
+# Fetch element
+
+file(GLOB_RECURSE FETCH_ELEMENT
+	src/uscxml/plugins/element/fetch/*.cpp
+	src/uscxml/plugins/element/fetch/*.h
+)
+source_group("Element" FILES ${FETCH_ELEMENT})
+if (BUILD_AS_PLUGINS)
+	add_library(
+		element_fetch SHARED 
+		${FETCH_ELEMENT})
+	target_link_libraries(element_fetch uscxml)
+	set_target_properties(element_fetch PROPERTIES FOLDER "Plugin Element")
+else()
+	list (APPEND USCXML_FILES ${FETCH_ELEMENT})
+endif()
+
+
+# Response element
+
+file(GLOB_RECURSE RESPONSE_ELEMENT
+	src/uscxml/plugins/element/response/*.cpp
+	src/uscxml/plugins/element/response/*.h
+)
+source_group("Element" FILES ${RESPONSE_ELEMENT})
+if (BUILD_AS_PLUGINS)
+	add_library(
+		element_response SHARED 
+		${RESPONSE_ELEMENT})
+	target_link_libraries(element_response uscxml)
+	set_target_properties(element_response PROPERTIES FOLDER "Plugin Element")
+else()
+	list (APPEND USCXML_FILES ${RESPONSE_ELEMENT})
 endif()
 
 
@@ -646,6 +689,24 @@ else()
 endif()
 
 
+# HTTP server invoker 
+
+file(GLOB_RECURSE HTTPSERVER_INVOKER 
+	src/uscxml/plugins/invoker/http/*.cpp 
+	src/uscxml/plugins/invoker/http/*.h)
+source_group("Invoker" FILES ${HTTPSERVER_INVOKER})
+if (BUILD_AS_PLUGINS)
+	add_library(
+		invoker_httpserver SHARED 
+		${HTTPSERVER_INVOKER})
+	target_link_libraries(invoker_httpserver 
+		uscxml)
+		set_target_properties(invoker_httpserver PROPERTIES FOLDER "Plugin Invoker")
+else()
+	list (APPEND USCXML_FILES ${HTTPSERVER_INVOKER})
+endif()
+
+
 # Heartbeat invoker
 
 file(GLOB_RECURSE HEARTBEAT_INVOKER
@@ -760,7 +821,9 @@ if (BUILD_TESTS)
 	add_subdirectory(test)
 endif()
 
-add_subdirectory(src/bindings)
+if (NOT WIN32)
+	add_subdirectory(src/bindings)
+endif()
 
 ############################################################
 # Header Files

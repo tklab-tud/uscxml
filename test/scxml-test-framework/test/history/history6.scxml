@@ -15,56 +15,55 @@
    limitations under the License.
 -->
 <scxml 
-	xmlns="http://www.w3.org/2005/07/scxml"
-	version="1.0"
-	profile="ecmascript"
-	id="root"
-	initial="a">
+    datamodel="ecmascript"
+    xmlns="http://www.w3.org/2005/07/scxml"
+    version="1.0"
+    initial="a">
 
     <datamodel>
-		<data id="x" expr="2"/>
+        <data id="x" expr="2"/>
     </datamodel>
 
-	<state id="a">
-		<transition target="h" event="t1"/>
-	</state>
+    <state id="a">
+        <transition target="h" event="t1"/>
+    </state>
 
-	<state id="b" initial="b1">
-	    <onentry>
-			<assign location="x" expr="x * 3"/>
-	        <log expr="'b, x:' + x"/>
-	    </onentry>
+    <state id="b" initial="b1">
+        <onentry>
+            <assign location="x" expr="x * 3"/>
+            <log expr="'b, x:' + x"/>
+        </onentry>
 
-		<history id="h">
-			<transition target="b2"/>
-		</history>
+        <history id="h">
+            <transition target="b2"/>
+        </history>
 
-		<state id="b1"/>
+        <state id="b1"/>
 
-		<state id="b2">
+        <state id="b2">
             <onentry>
                 <assign location="x" expr="x * 5"/>
                 <log expr="'b2, x:' + x"/>
             </onentry>
-			<transition event="t2" target="b3"/>
-		</state>
+            <transition event="t2" target="b3"/>
+        </state>
 
-		<state id="b3">
+        <state id="b3">
             <onentry>
                 <assign location="x" expr="x * 7"/>
                 <log expr="'b3, x:' + x"/>
             </onentry>
-			<transition event="t3" target="a"/>
-		</state>
+            <transition event="t3" target="a"/>
+        </state>
 
         <!-- 4410 should be the value of x after the following sequence of enter actions:
              a, b, b2, b3, a, b, b3 -->
-		<transition event="t4" target="success" cond="x === 4410"/>
-		<!-- we make a special 'really-fail' state because of a particular bug in SCION I am trying to illustrate -->
-		<transition event="t4" target="really-fail" cond="x === 1470"/>
-		<!-- for everything else, we just fail -->
-		<transition event="t4" target="fail"/>
-	</state>
+        <transition event="t4" target="success" cond="x === 4410"/>
+        <!-- we make a special 'really-fail' state because of a particular bug in SCION I am trying to illustrate -->
+        <transition event="t4" target="really-fail" cond="x === 1470"/>
+        <!-- for everything else, we just fail -->
+        <transition event="t4" target="fail"/>
+    </state>
 
     <state id="success"/>
 

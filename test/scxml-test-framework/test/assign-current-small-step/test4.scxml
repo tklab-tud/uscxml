@@ -15,28 +15,27 @@
    limitations under the License.
 -->
 <scxml 
-	xmlns="http://www.w3.org/2005/07/scxml"
-	version="1.0"
-	profile="ecmascript"
-	id="root">
+    datamodel="ecmascript"
+    xmlns="http://www.w3.org/2005/07/scxml"
+    version="1.0">
 
-	<datamodel>
-		<data id="x"/>
-	</datamodel>
+    <datamodel>
+        <data id="x"/>
+    </datamodel>
 
-	<state id="a">
-		<onentry>
-			<assign location="x" expr="2"/>
-		</onentry>
+    <state id="a">
+        <onentry>
+            <assign location="x" expr="2"/>
+        </onentry>
 
-		<transition  event="t" target="b1"/>
-	</state>
+        <transition  event="t" target="b1"/>
+    </state>
 
-	<state id="b">
-		<onentry>
-		    <assign location="x" expr="x * 3"/>
-	        <log expr="'b, x:' + x"/>
-		</onentry>
+    <state id="b">
+        <onentry>
+            <assign location="x" expr="x * 3"/>
+            <log expr="'b, x:' + x"/>
+        </onentry>
 
         <state id="b1">
             <onentry>
@@ -52,12 +51,12 @@
             </onentry>
         </state>
 
-		<transition target="c" cond="x === 30"/>
-		<transition target="f"/>
-	</state>
+        <transition target="c" cond="x === 30"/>
+        <transition target="f"/>
+    </state>
 
-	<state id="c"/>
+    <state id="c"/>
 
-	<state id="f"/>
+    <state id="f"/>
 
 </scxml>

@@ -1,0 +1,19 @@
+<scxml datamodel="ecmascript">
+	<script src="http://uscxml.tk.informatik.tu-darmstadt.de/scripts/dump.js" />
+	<state id="start">
+		<onentry>
+			<fetch 
+				target="http://data.wien.gv.at/daten/wfs?service=WFS&amp;request=GetFeature&amp;version=1.1.0&amp;typeName=ogdwien:BAUMOGD&amp;srsName=EPSG:4326&amp;outputFormat=json&amp;maxfeatures=5" 
+				callback="data.wien" 
+				type="json" />
+		</onentry>
+		<state id="wait">
+			<transition event="data.wien" target="final">
+				<script>
+					dump(_event);
+				</script>
+			</transition>
+		</state>
+	</state>
+	<final id="final" />
+</scxml>

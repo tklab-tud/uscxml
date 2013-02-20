@@ -137,6 +137,7 @@ sub GenerateHeader
     # - Add default header template
     push(@headerContent, GenerateHeaderContentHeader($interface));
 
+    $headerIncludes{"string"} = 1;
     $headerIncludes{"uscxml/plugins/datamodel/ecmascript/v8/dom/V8DOM.h"} = 1;
     $headerIncludes{"DOM/Node.hpp"} = 1;
     $headerIncludes{"v8.h"} = 1;
@@ -146,6 +147,7 @@ sub GenerateHeader
         $headerIncludes{"V8${parent}.h"} = 1;
     }
 
+    push(@headerContent, "#include \<string\>\n");
     foreach my $headerInclude (sort keys(%headerIncludes)) {
         if ($headerInclude =~ /wtf|v8\.h/) {
             push(@headerContent, "#include \<${headerInclude}\>\n");
@@ -234,6 +236,8 @@ sub GenerateClassPrototypeHeader
 
             v8::Local<v8::ObjectTemplate> instance = tmpl->InstanceTemplate();
             v8::Local<v8::ObjectTemplate> prototype = tmpl->PrototypeTemplate();
+            (void)prototype; // surpress unused warnings
+            
             instance->SetInternalFieldCount(1);
 END
 

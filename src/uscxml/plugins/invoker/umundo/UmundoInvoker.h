@@ -1,12 +1,12 @@
 #ifndef UMUNDOINVOKER_H_77YXQGU7
 #define UMUNDOINVOKER_H_77YXQGU7
 
+#include <uscxml/Interpreter.h>
+#include <google/protobuf/message.h>
 #include <umundo/core.h>
 #include <umundo/s11n.h>
 #include <umundo/rpc.h>
 #include <umundo/s11n/protobuf/PBSerializer.h>
-#include <uscxml/Interpreter.h>
-#include <google/protobuf/message.h>
 
 #ifdef BUILD_AS_PLUGINS
 #include "uscxml/plugins/Plugins.h"
@@ -51,8 +51,8 @@ protected:
 	umundo::TypedPublisher* _pub;
 	umundo::TypedSubscriber* _sub;
 
-	umundo::ServiceFilter _svcFilter;
-	umundo::ServiceManager _svcMgr;
+	umundo::ServiceFilter* _svcFilter;
+	umundo::ServiceManager* _svcMgr;
 	std::map<umundo::ServiceDescription, umundo::ServiceStub*> _svcs;
 
 	static std::multimap<std::string, std::pair<std::string, umundo::Node*> > _nodes;

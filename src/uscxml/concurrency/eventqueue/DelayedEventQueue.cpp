@@ -17,7 +17,7 @@ DelayedEventQueue::DelayedEventQueue() {
 DelayedEventQueue::~DelayedEventQueue() {
 //    std::cout << "Deleting DelayedEventQueue" << std::endl;
 	stop();
-	if (_thread)
+	if (_thread && _isStarted)
 		_thread->join();
 	if(_eventLoop)
 		event_base_free(_eventLoop);
@@ -66,6 +66,7 @@ void DelayedEventQueue::cancelEvent(std::string eventId) {
 void DelayedEventQueue::start() {
 	_isStarted = true;
 	_thread = new tthread::thread(DelayedEventQueue::run, this);
+	_isStarted = false;
 }
 
 void DelayedEventQueue::stop() {

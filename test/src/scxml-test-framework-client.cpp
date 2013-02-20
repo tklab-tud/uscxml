@@ -1,5 +1,5 @@
 #include "uscxml/Interpreter.h"
-#include "uscxml/plugins/ioprocessor/basichttp/libevent/EventIOProcessor.h"
+#include "uscxml/server/HTTPServer.h"
 #include <sstream>
 
 extern "C" {
@@ -20,18 +20,66 @@ extern "C" {
  {"load":"http://localhost:9999/scxml-test-framework/test/targetless-transition/test3.scxml"}
 */
 
-class TestIOProcessor : public uscxml::EventIOProcessor, public uscxml::InterpreterMonitor {
+class TestIOProcessor : public uscxml::HTTPServlet, public uscxml::InterpreterMonitor {
 public:
 
-
   static int lastToken;
-  static std::map<std::string, std::pair<uscxml::Interpreter*, evhttp_request*> > _interpreters;
+  static bool alreadyAnswered; // we need this for delayed events
+  static std::map<std::string, std::pair<uscxml::Interpreter*, uscxml::HTTPServer::Request> > _interpreters;
 
   TestIOProcessor() {}
   
-  virtual void onStableConfiguration(uscxml::Interpreter* interpreter) {
-    Arabica::XPath::NodeSet<std::string> configuration = interpreter->getConfiguration();
+  virtual void beforeCompletion(uscxml::Interpreter* interpreter) {
+    _interpreters[interpreter->getName()].second.curlReq = NULL;
+  }
 
+  virtual void afterCompletion(uscxml::Interpreter* interpreter) {}
+  virtual void beforeMicroStep(uscxml::Interpreter* interpreter) {}
+  virtual void beforeTakingTransitions(uscxml::Interpreter* interpreter, const Arabica::XPath::NodeSet<std::string>& transitions) {}
+
+  virtual void beforeEnteringStates(uscxml::Interpreter* interpreter, const Arabica::XPath::NodeSet<std::string>& statesToEnter) {
+    std::cout << "Entering states: ";
+    for (int i = 0; i < statesToEnter.size(); i++) {
+      std::cout << ATTR(statesToEnter[i], "id") << ", ";
+    }
+    std::cout << std::endl;
+  }
+  
+  virtual void afterEnteringStates(uscxml::Interpreter* interpreter) {
+    std::cout << "After entering states: ";
+    for (int i = 0; i < interpreter->getConfiguration().size(); i++) {
+      std::cout << ATTR(interpreter->getConfiguration()[i], "id") << ", ";
+    }
+    std::cout << std::endl;
+  }
+  
+  virtual void beforeExitingStates(uscxml::Interpreter* interpreter, const Arabica::XPath::NodeSet<std::string>& statesToExit) {
+    std::cout << "Configuration: ";
+    for (int i = 0; i < interpreter->getConfiguration().size(); i++) {
+      std::cout << ATTR(interpreter->getConfiguration()[i], "id") << ", ";
+    }
+    std::cout << std::endl;
+    std::cout << "Exiting states: ";
+    for (int i = 0; i < statesToExit.size(); i++) {
+      std::cout << ATTR(statesToExit[i], "id") << ", ";
+    }
+    std::cout << std::endl;
+  }
+  
+  virtual void afterExitingStates(uscxml::Interpreter* interpreter) {
+    std::cout << "After exiting states: ";
+    for (int i = 0; i < interpreter->getConfiguration().size(); i++) {
+      std::cout << ATTR(interpreter->getConfiguration()[i], "id") << ", ";
+    }
+    std::cout << std::endl;
+  }
+  
+  virtual void onStableConfiguration(uscxml::Interpreter* interpreter) {
+    if (alreadyAnswered)
+      return;
+    
+    Arabica::XPath::NodeSet<std::string> configuration = interpreter->getConfiguration();
+    
     uscxml::Data reply;
     reply.compound["sessionToken"] = uscxml::Data(interpreter->getName());
     std::string seperator;
@@ -46,83 +94,26 @@ public:
     std::stringstream replyString;
     replyString << reply;
     
-    struct evbuffer *databuf = evbuffer_new();
-    evbuffer_add(databuf, replyString.str().c_str(), replyString.str().length());
-    evhttp_send_reply(_interpreters[interpreter->getName()].second, 200, "OK", databuf);
-    evbuffer_free(databuf);
-
+    alreadyAnswered = true;
+    
+    uscxml::HTTPServer::Request httpRequest = _interpreters[interpreter->getName()].second;
+    uscxml::HTTPServer::Reply httpReply(httpRequest);
+    httpReply.content = replyString.str();
+    uscxml::HTTPServer::reply(httpReply);
+    
   }
 
-  virtual void beforeCompletion(uscxml::Interpreter* interpreter) {}
-  virtual void afterCompletion(uscxml::Interpreter* interpreter) {}
-  virtual void beforeMicroStep(uscxml::Interpreter* interpreter) {}
-  virtual void beforeTakingTransitions(uscxml::Interpreter* interpreter, const Arabica::XPath::NodeSet<std::string>& transitions) {}
-
-  virtual void beforeEnteringStates(uscxml::Interpreter* interpreter, const Arabica::XPath::NodeSet<std::string>& statesToEnter) {
-    std::cout << "Entering states: ";
-    for (int i = 0; i < statesToEnter.size(); i++) {
-      std::cout << ATTR(statesToEnter[i], "id") << ", ";
-    }
-    std::cout << std::endl;
-  }
-  virtual void afterEnteringStates(uscxml::Interpreter* interpreter) {
-    std::cout << "After entering states: ";
-    for (int i = 0; i < interpreter->getConfiguration().size(); i++) {
-      std::cout << ATTR(interpreter->getConfiguration()[i], "id") << ", ";
-    }
-    std::cout << std::endl;
-  }
-  virtual void beforeExitingStates(uscxml::Interpreter* interpreter, const Arabica::XPath::NodeSet<std::string>& statesToExit) {
-    std::cout << "Configuration: ";
-    for (int i = 0; i < interpreter->getConfiguration().size(); i++) {
-      std::cout << ATTR(interpreter->getConfiguration()[i], "id") << ", ";
-    }
-    std::cout << std::endl;
-    std::cout << "Exiting states: ";
-    for (int i = 0; i < statesToExit.size(); i++) {
-      std::cout << ATTR(statesToExit[i], "id") << ", ";
-    }
-    std::cout << std::endl;
-  }
-  virtual void afterExitingStates(uscxml::Interpreter* interpreter) {
-    std::cout << "After exiting states: ";
-    for (int i = 0; i < interpreter->getConfiguration().size(); i++) {
-      std::cout << ATTR(interpreter->getConfiguration()[i], "id") << ", ";
-    }
-    std::cout << std::endl;
-  }
-  
-  virtual void httpRecvReq(struct evhttp_request *req) {
+  void httpRecvRequest(const uscxml::HTTPServer::Request& request) {
+    
+//    uscxml::HTTPServer::Reply httpReply(request);
+//    uscxml::HTTPServer::reply(httpReply);
+//    return;
     
     std::cout << "---- received:" << std::endl;
-
-    if (evhttp_request_get_command(req) != EVHTTP_REQ_POST)
-      return;
+    evhttp_request_own(request.curlReq);
     
-    evhttp_request_own(req);
-
-    struct evkeyval *header;
-    struct evkeyvalq *headers;
-    headers = evhttp_request_get_input_headers(req);
-    
-    for (header = headers->tqh_first; header;
-         header = header->next.tqe_next) {
-//      std::cout << header->key << ": " << header->value << std::endl;
-    }
-
-    std::string content;
-    struct evbuffer *buf;
-		buf = evhttp_request_get_input_buffer(req);
-		while (evbuffer_get_length(buf)) {
-			int n;
-			char cbuf[128];
-			n = evbuffer_remove(buf, cbuf, sizeof(buf)-1);
-			if (n > 0) {
-				content.append(cbuf, n);
-			}
-		}
-    
-    uscxml::Data jsonReq = uscxml::Data::fromJSON(content);
+    std::cout << request.content << std::endl;
+    uscxml::Data jsonReq = uscxml::Data::fromJSON(request.content);
     std::cout << jsonReq << std::endl;
     
     
@@ -130,6 +121,19 @@ public:
     if (jsonReq.compound.find("load") != jsonReq.compound.end()) {
       std::string filename = jsonReq.compound["load"].atom;
       std::cout << "Starting Interpreter with " << filename << std::endl;
+      alreadyAnswered = false;
+      
+      std::map<std::string, std::pair<uscxml::Interpreter*, uscxml::HTTPServer::Request> >::iterator interpreterIter = _interpreters.begin();
+      while(interpreterIter != _interpreters.end()) {
+//        if (interpreterIter->second.second.curlReq == NULL) {
+          delete interpreterIter->second.first;
+          _interpreters.erase(interpreterIter++);
+//        } else {
+//          interpreterIter++;
+//        }
+      }
+
+      
       uscxml::Interpreter* interpreter = uscxml::Interpreter::fromURI(filename);
       if (interpreter) {
         std::string token = uscxml::toStr(lastToken++);
@@ -137,7 +141,7 @@ public:
         interpreter->setName(token);
         interpreter->addMonitor(this);
         interpreter->start();
-        _interpreters[token] = std::make_pair(interpreter, req);
+        _interpreters[token] = std::make_pair(interpreter, request);
       }
       return;
     }
@@ -151,33 +155,27 @@ public:
       event.name = jsonReq.compound["event"].compound["name"].atom;
       std::cout << "Sending event " << event << std::endl;
 //      evhttp_request_free(_interpreters[token].second);
-      _interpreters[token].second = req;
+      alreadyAnswered = false;
+      _interpreters[token].second = request;
       _interpreters[token].first->receive(event);
     }
+   
+  }
     
-  }
-  
-  std::string getPath() {
-    return "test";
-  }
-  
   void setURL(const std::string& url) {
     std::cout << "Listening at " << url << std::endl;
-    _url = url;
   }
 };
 
 int TestIOProcessor::lastToken;
-std::map<std::string, std::pair<uscxml::Interpreter*, evhttp_request*> > TestIOProcessor::_interpreters;
+bool TestIOProcessor::alreadyAnswered;
+std::map<std::string, std::pair<uscxml::Interpreter*, uscxml::HTTPServer::Request> > TestIOProcessor::_interpreters;
 
 int main(int argc, char** argv) {
   TestIOProcessor* testServer = new TestIOProcessor();
-  uscxml::EventIOServer::registerProcessor(testServer);
+  uscxml::HTTPServer::registerServlet("test", testServer);
 
   while(true)
     tthread::this_thread::sleep_for(tthread::chrono::milliseconds(20));
   
-//	uscxml::Interpreter* interpreter = uscxml::Interpreter::fromURI(argv[1]);
-//	interpreter->dump();
-//	interpreter->interpret();
 }

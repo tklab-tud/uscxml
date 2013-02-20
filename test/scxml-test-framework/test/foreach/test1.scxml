@@ -18,34 +18,33 @@
      This test illustrates how possibly infinite loops may be created. Here, without the counter and the cond, the big-step would never complete.
      -->
 <scxml 
-	xmlns="http://www.w3.org/2005/07/scxml"
-	version="1.0"
-	profile="ecmascript"
-	id="root">
+    datamodel="ecmascript"
+    xmlns="http://www.w3.org/2005/07/scxml"
+    version="1.0">
 
-	<datamodel>
-	    <data id="myArray" expr="[1,3,5,7,9]"/>
-		<data id="myItem" expr="0"/>
-		<data id="myIndex" expr="0"/>
-		<data id="sum" expr="0"/>
-		<data id="indexSum" expr="0"/>
-	</datamodel>
+    <datamodel>
+        <data id="myArray" expr="[1,3,5,7,9]"/>
+        <data id="myItem" expr="0"/>
+        <data id="myIndex" expr="0"/>
+        <data id="sum" expr="0"/>
+        <data id="indexSum" expr="0"/>
+    </datamodel>
 
-	<state id="a">
-	    <onentry>
-	        <log label="before" expr="[sum,indexSum]"/>
-	        <foreach array="myArray" item="myItem" index="myIndex">
-	            <assign location="sum" expr="sum + myItem"/>
-	            <assign location="indexSum" expr="indexSum + myIndex"/>
-	        </foreach>
-	        <foreach array="myArray" item="myItem">
-	            <assign location="sum" expr="sum + myItem"/>
-	        </foreach>
-	        <log label="after" expr="[sum,indexSum]"/>
-	    </onentry>
-		<transition target="c" event="t" cond="sum === 50 &amp;&amp; indexSum === 10"/>
-	</state>
+    <state id="a">
+        <onentry>
+            <log label="before" expr="[sum,indexSum]"/>
+            <foreach array="myArray" item="myItem" index="myIndex">
+                <assign location="sum" expr="sum + myItem"/>
+                <assign location="indexSum" expr="indexSum + myIndex"/>
+            </foreach>
+            <foreach array="myArray" item="myItem">
+                <assign location="sum" expr="sum + myItem"/>
+            </foreach>
+            <log label="after" expr="[sum,indexSum]"/>
+        </onentry>
+        <transition target="c" event="t" cond="sum === 50 &amp;&amp; indexSum === 10"/>
+    </state>
 
-	<state id="c"/>
+    <state id="c"/>
 
 </scxml>

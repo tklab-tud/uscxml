@@ -15,53 +15,48 @@
    limitations under the License.
 -->
 <scxml 
-	xmlns="http://www.w3.org/2005/07/scxml"
-	version="1.0"
-	profile="ecmascript"
-	id="root">
+    datamodel="ecmascript"
+    xmlns="http://www.w3.org/2005/07/scxml"
+    version="1.0">
 
     <datamodel>
         <data id="i"/>
     </datamodel>
 
-	<initial id="intitial1">
-		<transition target="a"/>
-	</initial>
+    <state id="a">
+        <transition target="b" event="t">
+            <script src="script-2-0.js"/>
+        </transition>
+    </state>
 
-	<state id="a">
-		<transition target="b" event="t">
-			<script src="script-2-0.js"/>
-		</transition>
-	</state>
+    <state id="A">
 
-	<state id="A">
+        <state id="b">
+            <transition target="c" cond="i &lt; 100">
+                <script src="script-2-1.js"/>
+            </transition>
+        </state>
 
-		<state id="b">
-			<transition target="c" cond="getData('i') &lt; 100">
-				<script src="script-2-1.js"/>
-			</transition>
-		</state>
+        <state id="c">
+            <transition target="b" cond="i &lt; 100">
+                <script src="script-2-2.js"/>
+            </transition>
+        </state>
 
-		<state id="c">
-			<transition target="b" cond="getData('i') &lt; 100">
-				<script src="script-2-2.js"/>
-			</transition>
-		</state>
-
-		<transition target="d" cond="getData('i') === 100">
-			<script src="script-2-3.js"/>
-		</transition>
-	</state>
+        <transition target="d" cond="i === 100">
+            <script src="script-2-3.js"/>
+        </transition>
+    </state>
 
 
-	<state id="d">
-		<transition target="e" cond="getData('i') === 200"/>
-		<transition target="f"/>
-	</state>
+    <state id="d">
+        <transition target="e" cond="i === 200"/>
+        <transition target="f"/>
+    </state>
 
-	<state id="e"/>
+    <state id="e"/>
 
-	<state id="f"/>
+    <state id="f"/>
 
 </scxml>
 

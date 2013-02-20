@@ -1,0 +1,41 @@
+<scxml datamodel="ecmascript">
+	<script src="http://uscxml.tk.informatik.tu-darmstadt.de/scripts/dump.js" />
+	<state id="start">
+		<!-- 
+			I went for explicit invokers instead of a response element in executable content
+			as it provides better control on the path where to serve data.
+			-->
+		<invoke type="httpserver" id="servlet.data">
+			<!-- server path where to listen -->
+			<param name="path" expr="'data'" />
+			<!-- the name of events originating from requests at this url -->
+			<param name="callback" expr="'http.data'" />
+		</invoke>
+		<invoke type="httpserver" id="servlet.exit">
+			<param name="path" expr="'exit'" />
+			<param name="callback" expr="'http.exit'" />
+		</invoke>
+		<state id="loop">
+			<transition event="http.data" target="loop">
+				<script>
+					dump(_event);
+				</script>
+				<!-- Sending a http reply is to send the invoker id a "reply.<requestId>" event -->
+				<send target="#_servlet.data" eventexpr="'reply.' + _event.data.reqId">
+					<!-- This will end up as a header field -->
+					<param name="Foo" expr="_ioprocessors" />
+					<!-- JSON string in the content -->
+					<content expr="_ioprocessors" />
+				</send>
+			</transition>
+			<transition event="http.exit" target="final">
+				<script>
+					dump(_event);
+				</script>
+				<!-- This will never get delivered as we terminate before -->
+				<send target="#_servlet.exit" eventexpr="'reply.' + _event.data.reqId" /> 
+			</transition>
+		</state>
+	</state>
+	<final id="final" />
+</scxml>

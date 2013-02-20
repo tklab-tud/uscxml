@@ -1,19 +1,18 @@
-<scxml xmlns="http://www.w3.org/2005/07/scxml" profile="ecmascript" version="1.0" name="root">
-  <state id="A">
-    <onentry>
-      <log expr="&quot;entering A&quot;"/>
-    </onentry>
-    <onexit>
-      <log expr="&quot;exiting A&quot;"/>
-    </onexit>
-    <transition target="B" event="e1">
-      <log expr="&quot;doing A-&gt;B transition&quot;"/>
-    </transition>
-  </state>
-  <initial>
-    <transition target="A"/>
-  </initial>
-  <state id="B">
-    <transition target="A" event="e2"/>
-  </state>
-</scxml>
+<ns0:scxml 
+    datamodel="ecmascript"
+    xmlns:ns0="http://www.w3.org/2005/07/scxml" version="1.0" name="root">
+  <ns0:state id="A">
+    <ns0:onentry>
+      <ns0:log expr="&quot;entering A&quot;"/>
+    </ns0:onentry>
+    <ns0:onexit>
+      <ns0:log expr="&quot;exiting A&quot;"/>
+    </ns0:onexit>
+    <ns0:transition target="B" event="e1">
+      <ns0:log expr="&quot;doing A-&gt;B transition&quot;"/>
+    </ns0:transition>
+  </ns0:state>
+  <ns0:state id="B">
+    <ns0:transition target="A" event="e2"/>
+  </ns0:state>
+</ns0:scxml>

@@ -24,6 +24,10 @@ FIND_LIBRARY(GLOG_LIBRARY_DEBUG
 )
 if (GLOG_LIBRARY_DEBUG)
 	list(APPEND GLOG_LIBRARY debug ${GLOG_LIBRARY_DEBUG})
+else()
+	if (UNIX)
+		list(APPEND V8_LIBRARY debug ${GLOG_LIBRARY_RELEASE})
+	endif()
 endif()
 
 INCLUDE(FindPackageHandleStandardArgs)

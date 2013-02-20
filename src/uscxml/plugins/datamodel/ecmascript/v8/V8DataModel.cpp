@@ -105,21 +105,21 @@ void V8DataModel::initialize() {
 }
 
 void V8DataModel::setEvent(const Event& event) {
-	_event = event;
 	v8::Locker locker;
 	v8::HandleScope handleScope;
 	v8::Context::Scope contextScope(_contexts.front());
 	v8::Handle<v8::Object> global = _contexts.front()->Global();
 
 	v8::Handle<v8::Function> eventCtor = Arabica::DOM::V8SCXMLEvent::getTmpl()->GetFunction();
-	v8::Handle<v8::Object> eventObj = eventCtor->NewInstance();
+  v8::Persistent<v8::Object> eventObj = v8::Persistent<v8::Object>::New(eventCtor->NewInstance());
 
 	Arabica::DOM::V8SCXMLEvent::V8SCXMLEventPrivate* privData = new Arabica::DOM::V8SCXMLEvent::V8SCXMLEventPrivate();
-	privData->nativeObj = &_event;
+	privData->nativeObj = new Event(event);
 	privData->dom = _dom;
 	eventObj->SetInternalField(0, Arabica::DOM::V8DOM::toExternal(privData));
+  eventObj.MakeWeak(0, Arabica::DOM::V8SCXMLEvent::jsDestructor);
 
-	eventObj->Set(v8::String::New("data"), getDataAsValue(event)); // set data part of _event
+	eventObj->Set(v8::String::New("data"), getDataAsValue(event.data)); // set data part of _event
 	global->Set(v8::String::New("_event"), eventObj);
 }
 
@@ -312,20 +312,20 @@ v8::Handle<v8::Value> V8DataModel::evalAsValue(const std::string& expr) {
 		exceptionEvent.name = "error.execution";
 
 		std::string exceptionString(*v8::String::AsciiValue(tryCatch.Exception()));
-		exceptionEvent.compound["exception"] = Data(exceptionString, Data::VERBATIM);;
+		exceptionEvent.data.compound["exception"] = Data(exceptionString, Data::VERBATIM);;
 
 		v8::Handle<v8::Message> message = tryCatch.Message();
 		if (!message.IsEmpty()) {
 			std::string filename(*v8::String::AsciiValue(message->GetScriptResourceName()));
-			exceptionEvent.compound["filename"] = Data(filename, Data::VERBATIM);
+			exceptionEvent.data.compound["filename"] = Data(filename, Data::VERBATIM);
 
 			std::string sourceLine(*v8::String::AsciiValue(message->GetSourceLine()));
-			exceptionEvent.compound["sourceline"] = Data(sourceLine, Data::VERBATIM);
+			exceptionEvent.data.compound["sourceline"] = Data(sourceLine, Data::VERBATIM);
 
 			std::stringstream ssLineNumber;
 			int lineNumber = message->GetLineNumber();
 			ssLineNumber << lineNumber;
-			exceptionEvent.compound["linenumber"] = Data(ssLineNumber.str());
+			exceptionEvent.data.compound["linenumber"] = Data(ssLineNumber.str());
 
 			int startColumn = message->GetStartColumn();
 			int endColumn = message->GetEndColumn();
@@ -334,10 +334,10 @@ v8::Handle<v8::Value> V8DataModel::evalAsValue(const std::string& expr) {
 				ssUnderline << " ";
 			for (int i = startColumn; i < endColumn; i++)
 				ssUnderline << "^";
-			exceptionEvent.compound["sourcemark"] = Data(ssUnderline.str(), Data::VERBATIM);
+			exceptionEvent.data.compound["sourcemark"] = Data(ssUnderline.str(), Data::VERBATIM);
 
 			std::string stackTrace(*v8::String::AsciiValue(tryCatch.StackTrace()));
-			exceptionEvent.compound["stacktrace"] = Data(stackTrace, Data::VERBATIM);
+			exceptionEvent.data.compound["stacktrace"] = Data(stackTrace, Data::VERBATIM);
 
 		}
 
