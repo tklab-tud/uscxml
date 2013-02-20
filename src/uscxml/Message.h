@@ -70,8 +70,8 @@ public:
 	Arabica::DOM::Node<std::string> dom;
 	std::string sendid;
 	std::string invokeid;
-  Data data;
-  
+	Data data;
+
 	static Event fromXML(const std::string& xmlString);
 	Arabica::DOM::Document<std::string> toDocument();
 	std::string toXMLString() {
@@ -87,8 +87,8 @@ public:
 
 class InvokeRequest : public Event {
 public:
-  InvokeRequest(Event event) : Event(event) {}
-  InvokeRequest() {}
+	InvokeRequest(Event event) : Event(event) {}
+	InvokeRequest() {}
 	std::string type;
 	std::string src;
 	std::map<std::string, std::string> namelist;
@@ -115,8 +115,8 @@ public:
 
 class SendRequest : public Event {
 public:
-  SendRequest() {}
-  SendRequest(Event event) : Event(event) {}
+	SendRequest() {}
+	SendRequest(Event event) : Event(event) {}
 	std::string target;
 	std::string type;
 	uint32_t delayMs;
@@ -134,7 +134,7 @@ public:
 //    std::cout << ss.str() << std::endl;
 		return ss.str();
 	}
-  
+
 #ifndef SWIGJAVA
 	friend std::ostream& operator<< (std::ostream& os, const SendRequest& sendReq);
 #endif

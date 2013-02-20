@@ -28,7 +28,7 @@ int main(int argc, char** argv) {
 	}
 
 #ifndef _WIN32
-  opterr = 0;
+	opterr = 0;
 #endif
 	int option;
 	while ((option = getopt(argc, argv, "l:p:")) != -1) {
@@ -39,8 +39,8 @@ int main(int argc, char** argv) {
 		case 'p':
 			uscxml::Factory::pluginPath = optarg;
 			break;
-    case '?':
-        break;
+		case '?':
+			break;
 		default:
 			printUsageAndExit();
 			break;
@@ -50,14 +50,14 @@ int main(int argc, char** argv) {
 //  for (int i = 0; i < argc; i++)
 //    std::cout << argv[i] << std::endl;
 //  std::cout << optind << std::endl;
-  
+
 
 	Interpreter* interpreter = Interpreter::fromURI(argv[optind]);
 	if (interpreter) {
-    interpreter->setCmdLineOptions(argc, argv);
+		interpreter->setCmdLineOptions(argc, argv);
 		interpreter->start();
 		while(interpreter->runOnMainThread(25));
-    delete interpreter;
+		delete interpreter;
 	}
 
 	return EXIT_SUCCESS;

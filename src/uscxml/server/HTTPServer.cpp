@@ -51,9 +51,9 @@ HTTPServer* HTTPServer::getInstance(int port) {
 	tthread::lock_guard<tthread::recursive_mutex> lock(_instanceMutex);
 	if (_instance == NULL) {
 #ifndef _WIN32
-    evthread_use_pthreads();
+		evthread_use_pthreads();
 #else
-    evthread_use_windows_threads();
+		evthread_use_windows_threads();
 #endif
 		_instance = new HTTPServer(port);
 		_instance->start();
@@ -65,87 +65,87 @@ void HTTPServer::httpRecvReqCallback(struct evhttp_request *req, void *callbackD
 //  std::cout << (uintptr_t)req << ": Replying" << std::endl;
 //  evhttp_send_reply(req, 200, NULL, NULL);
 //  return;
-  
-  Request request;
-  request.curlReq = req;
-  
-  switch (evhttp_request_get_command(req)) {
-    case EVHTTP_REQ_GET:
-      request.type = "GET";
-      break;
-    case EVHTTP_REQ_POST:
-      request.type = "POST";
-      break;
-    case EVHTTP_REQ_HEAD:
-      request.type = "HEAD";
-      break;
-    case EVHTTP_REQ_PUT:
-      request.type = "PUT";
-      break;
-    case EVHTTP_REQ_DELETE:
-      request.type = "DELETE";
-      break;
-    case EVHTTP_REQ_OPTIONS:
-      request.type = "OPTIONS";
-      break;
-    case EVHTTP_REQ_TRACE:
-      request.type = "TRACE";
-      break;
-    case EVHTTP_REQ_CONNECT:
-      request.type = "CONNECT";
-      break;
-    case EVHTTP_REQ_PATCH:
-      request.type = "PATCH";
-      break;
-    default:
-      request.type = "unknown";
-      break;
+
+	Request request;
+	request.curlReq = req;
+
+	switch (evhttp_request_get_command(req)) {
+	case EVHTTP_REQ_GET:
+		request.type = "GET";
+		break;
+	case EVHTTP_REQ_POST:
+		request.type = "POST";
+		break;
+	case EVHTTP_REQ_HEAD:
+		request.type = "HEAD";
+		break;
+	case EVHTTP_REQ_PUT:
+		request.type = "PUT";
+		break;
+	case EVHTTP_REQ_DELETE:
+		request.type = "DELETE";
+		break;
+	case EVHTTP_REQ_OPTIONS:
+		request.type = "OPTIONS";
+		break;
+	case EVHTTP_REQ_TRACE:
+		request.type = "TRACE";
+		break;
+	case EVHTTP_REQ_CONNECT:
+		request.type = "CONNECT";
+		break;
+	case EVHTTP_REQ_PATCH:
+		request.type = "PATCH";
+		break;
+	default:
+		request.type = "unknown";
+		break;
 	}
 
-  struct evkeyvalq *headers;
+	struct evkeyvalq *headers;
 	struct evkeyval *header;
 	struct evbuffer *buf;
 
-  // map headers to event structure
+	// map headers to event structure
 	headers = evhttp_request_get_input_headers(req);
 	for (header = headers->tqh_first; header; header = header->next.tqe_next) {
-    request.headers[header->key] = header->value;
+		request.headers[header->key] = header->value;
 	}
 
-  request.remoteHost = req->remote_host;
-  request.remotePort = req->remote_port;
-  request.httpMajor = req->major;
-  request.httpMinor = req->minor;
-  request.uri = req->uri;
-  
-  // get content
-  buf = evhttp_request_get_input_buffer(req);
-  while (evbuffer_get_length(buf)) {
-    int n;
-    char cbuf[1024];
-    n = evbuffer_remove(buf, cbuf, sizeof(buf)-1);
-    if (n > 0) {
-      request.content.append(cbuf, n);
-    }
-  }
+	request.remoteHost = req->remote_host;
+	request.remotePort = req->remote_port;
+	request.httpMajor = req->major;
+	request.httpMinor = req->minor;
+	request.uri = req->uri;
 
-  ((HTTPServlet*)callbackData)->httpRecvRequest(request);
+	// get content
+	buf = evhttp_request_get_input_buffer(req);
+	while (evbuffer_get_length(buf)) {
+		int n;
+		char cbuf[1024];
+		n = evbuffer_remove(buf, cbuf, sizeof(buf)-1);
+		if (n > 0) {
+			request.content.append(cbuf, n);
+		}
+	}
+
+	((HTTPServlet*)callbackData)->httpRecvRequest(request);
 }
 
 void HTTPServer::reply(const Reply& reply) {
-  struct evbuffer *evb = evbuffer_new();
-  
-  std::map<std::string, std::string>::const_iterator headerIter = reply.headers.begin();
-  while(headerIter != reply.headers.end()) {
-    evhttp_add_header(evhttp_request_get_output_headers(reply.curlReq), headerIter->first.c_str(), headerIter->second.c_str());
-    headerIter++;
-  }
+	struct evbuffer *evb = evbuffer_new();
 
-  if (!boost::iequals(reply.type, "HEAD"))
-    evbuffer_add(evb, reply.content.data(), reply.content.size());
-  
-  evhttp_send_reply(reply.curlReq, reply.status, NULL, evb);
-  evbuffer_free(evb);
+	std::map<std::string, std::string>::const_iterator headerIter = reply.headers.begin();
+	while(headerIter != reply.headers.end()) {
+		evhttp_add_header(evhttp_request_get_output_headers(reply.curlReq), headerIter->first.c_str(), headerIter->second.c_str());
+		headerIter++;
+	}
+
+	if (!boost::iequals(reply.type, "HEAD"))
+		evbuffer_add(evb, reply.content.data(), reply.content.size());
+
+	evhttp_send_reply(reply.curlReq, reply.status, NULL, evb);
+	evbuffer_free(evb);
 //  evhttp_request_free(reply.curlReq);
 
 }
@@ -162,27 +162,27 @@ bool HTTPServer::registerServlet(const std::string& path, HTTPServlet* servlet) 
 	 * until we have an available path.
 	 *
 	 * If the interpreter does not specify a name, take its sessionid.
-   *
-   * Responsibility moved to individual servlets.
+	*
+	* Responsibility moved to individual servlets.
 	 */
 
 	if(INSTANCE->_servlets.find(path) != INSTANCE->_servlets.end()) {
-    return false;
+		return false;
 	}
 
 	std::stringstream servletURL;
 	servletURL << "http://" << INSTANCE->_address << ":" << INSTANCE->_port << "/" << path;
-  servlet->setURL(servletURL.str());
-  
+	servlet->setURL(servletURL.str());
+
 	INSTANCE->_servlets[path] = servlet;
 
 	LOG(INFO) << "HTTP Servlet listening at: " << servletURL.str() << std::endl;
 
-  // register callback
+	// register callback
 	evhttp_set_cb(INSTANCE->_http, ("/" + path).c_str(), HTTPServer::httpRecvReqCallback, servlet);
 
-  return true;
-  // generic callback
+	return true;
+	// generic callback
 //  evhttp_set_cb(THIS->_http, "/", EventIOProcessor::httpRecvReq, processor);
 //  evhttp_set_gencb(THIS->_http, EventIOProcessor::httpRecvReq, NULL);
 }
@@ -190,15 +190,15 @@ bool HTTPServer::registerServlet(const std::string& path, HTTPServlet* servlet) 
 void HTTPServer::unregisterServlet(HTTPServlet* servlet) {
 	HTTPServer* INSTANCE = getInstance();
 	tthread::lock_guard<tthread::recursive_mutex> lock(INSTANCE->_mutex);
-  servlet_iter_t servletIter = INSTANCE->_servlets.begin();
-  while(servletIter != INSTANCE->_servlets.end()) {
-    if (servletIter->second == servlet) {
-      evhttp_del_cb(INSTANCE->_http, std::string("/" + servletIter->first).c_str());
-      INSTANCE->_servlets.erase(servletIter);
-      break;
-    }
-    servletIter++;
-  }
+	servlet_iter_t servletIter = INSTANCE->_servlets.begin();
+	while(servletIter != INSTANCE->_servlets.end()) {
+		if (servletIter->second == servlet) {
+			evhttp_del_cb(INSTANCE->_http, std::string("/" + servletIter->first).c_str());
+			INSTANCE->_servlets.erase(servletIter);
+			break;
+		}
+		servletIter++;
+	}
 }
 
 void HTTPServer::start() {

@@ -8,7 +8,7 @@
 #endif
 
 namespace uscxml {
-	
+
 class ResponseElement : public ExecutableContentImpl {
 public:
 	ResponseElement() {}
@@ -22,16 +22,16 @@ public:
 	std::string getNamespace() {
 		return "http://www.w3.org/2005/07/scxml";
 	}
-	
+
 	bool processChildren() {
 		return false;
 	}
-	
+
 	void enterElement(const Arabica::DOM::Node<std::string>& node);
 	void exitElement(const Arabica::DOM::Node<std::string>& node);
-	
+
 };
-	
+
 #ifdef BUILD_AS_PLUGINS
 PLUMA_INHERIT_PROVIDER(ResponseElement, Element);
 #endif

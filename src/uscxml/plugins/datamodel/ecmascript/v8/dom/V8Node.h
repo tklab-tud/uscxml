@@ -32,131 +32,131 @@ namespace DOM {
 
 class V8Node {
 public:
-    struct V8NodePrivate {
-      V8DOM* dom;
-      Arabica::DOM::Node<std::string>* nativeObj;
-    };
+	struct V8NodePrivate {
+		V8DOM* dom;
+		Arabica::DOM::Node<std::string>* nativeObj;
+	};
 
-    V8_DESTRUCTOR(V8NodePrivate);
-    static bool hasInstance(v8::Handle<v8::Value>);
+	V8_DESTRUCTOR(V8NodePrivate);
+	static bool hasInstance(v8::Handle<v8::Value>);
 
-    static v8::Handle<v8::Value> insertBeforeCallback(const v8::Arguments&);
-    static v8::Handle<v8::Value> replaceChildCallback(const v8::Arguments&);
-    static v8::Handle<v8::Value> removeChildCallback(const v8::Arguments&);
-    static v8::Handle<v8::Value> appendChildCallback(const v8::Arguments&);
-    static v8::Handle<v8::Value> hasChildNodesCallback(const v8::Arguments&);
-    static v8::Handle<v8::Value> cloneNodeCallback(const v8::Arguments&);
-    static v8::Handle<v8::Value> normalizeCallback(const v8::Arguments&);
-    static v8::Handle<v8::Value> isSupportedCallback(const v8::Arguments&);
-    static v8::Handle<v8::Value> hasAttributesCallback(const v8::Arguments&);
+	static v8::Handle<v8::Value> insertBeforeCallback(const v8::Arguments&);
+	static v8::Handle<v8::Value> replaceChildCallback(const v8::Arguments&);
+	static v8::Handle<v8::Value> removeChildCallback(const v8::Arguments&);
+	static v8::Handle<v8::Value> appendChildCallback(const v8::Arguments&);
+	static v8::Handle<v8::Value> hasChildNodesCallback(const v8::Arguments&);
+	static v8::Handle<v8::Value> cloneNodeCallback(const v8::Arguments&);
+	static v8::Handle<v8::Value> normalizeCallback(const v8::Arguments&);
+	static v8::Handle<v8::Value> isSupportedCallback(const v8::Arguments&);
+	static v8::Handle<v8::Value> hasAttributesCallback(const v8::Arguments&);
 
-    static v8::Handle<v8::Value> nodeNameAttrGetter(v8::Local<v8::String> property, const v8::AccessorInfo& info);
-    static v8::Handle<v8::Value> nodeValueAttrGetter(v8::Local<v8::String> property, const v8::AccessorInfo& info);
-    static void nodeValueAttrSetter(v8::Local<v8::String> property, v8::Local<v8::Value> value, const v8::AccessorInfo& info);
-    static v8::Handle<v8::Value> nodeTypeAttrGetter(v8::Local<v8::String> property, const v8::AccessorInfo& info);
-    static v8::Handle<v8::Value> parentNodeAttrGetter(v8::Local<v8::String> property, const v8::AccessorInfo& info);
-    static v8::Handle<v8::Value> childNodesAttrGetter(v8::Local<v8::String> property, const v8::AccessorInfo& info);
-    static v8::Handle<v8::Value> firstChildAttrGetter(v8::Local<v8::String> property, const v8::AccessorInfo& info);
-    static v8::Handle<v8::Value> lastChildAttrGetter(v8::Local<v8::String> property, const v8::AccessorInfo& info);
-    static v8::Handle<v8::Value> previousSiblingAttrGetter(v8::Local<v8::String> property, const v8::AccessorInfo& info);
-    static v8::Handle<v8::Value> nextSiblingAttrGetter(v8::Local<v8::String> property, const v8::AccessorInfo& info);
-    static v8::Handle<v8::Value> attributesAttrGetter(v8::Local<v8::String> property, const v8::AccessorInfo& info);
-    static v8::Handle<v8::Value> ownerDocumentAttrGetter(v8::Local<v8::String> property, const v8::AccessorInfo& info);
-    static v8::Handle<v8::Value> namespaceURIAttrGetter(v8::Local<v8::String> property, const v8::AccessorInfo& info);
-    static v8::Handle<v8::Value> prefixAttrGetter(v8::Local<v8::String> property, const v8::AccessorInfo& info);
-    static void prefixAttrSetter(v8::Local<v8::String> property, v8::Local<v8::Value> value, const v8::AccessorInfo& info);
-    static v8::Handle<v8::Value> localNameAttrGetter(v8::Local<v8::String> property, const v8::AccessorInfo& info);
+	static v8::Handle<v8::Value> nodeNameAttrGetter(v8::Local<v8::String> property, const v8::AccessorInfo& info);
+	static v8::Handle<v8::Value> nodeValueAttrGetter(v8::Local<v8::String> property, const v8::AccessorInfo& info);
+	static void nodeValueAttrSetter(v8::Local<v8::String> property, v8::Local<v8::Value> value, const v8::AccessorInfo& info);
+	static v8::Handle<v8::Value> nodeTypeAttrGetter(v8::Local<v8::String> property, const v8::AccessorInfo& info);
+	static v8::Handle<v8::Value> parentNodeAttrGetter(v8::Local<v8::String> property, const v8::AccessorInfo& info);
+	static v8::Handle<v8::Value> childNodesAttrGetter(v8::Local<v8::String> property, const v8::AccessorInfo& info);
+	static v8::Handle<v8::Value> firstChildAttrGetter(v8::Local<v8::String> property, const v8::AccessorInfo& info);
+	static v8::Handle<v8::Value> lastChildAttrGetter(v8::Local<v8::String> property, const v8::AccessorInfo& info);
+	static v8::Handle<v8::Value> previousSiblingAttrGetter(v8::Local<v8::String> property, const v8::AccessorInfo& info);
+	static v8::Handle<v8::Value> nextSiblingAttrGetter(v8::Local<v8::String> property, const v8::AccessorInfo& info);
+	static v8::Handle<v8::Value> attributesAttrGetter(v8::Local<v8::String> property, const v8::AccessorInfo& info);
+	static v8::Handle<v8::Value> ownerDocumentAttrGetter(v8::Local<v8::String> property, const v8::AccessorInfo& info);
+	static v8::Handle<v8::Value> namespaceURIAttrGetter(v8::Local<v8::String> property, const v8::AccessorInfo& info);
+	static v8::Handle<v8::Value> prefixAttrGetter(v8::Local<v8::String> property, const v8::AccessorInfo& info);
+	static void prefixAttrSetter(v8::Local<v8::String> property, v8::Local<v8::Value> value, const v8::AccessorInfo& info);
+	static v8::Handle<v8::Value> localNameAttrGetter(v8::Local<v8::String> property, const v8::AccessorInfo& info);
 
-    static v8::Persistent<v8::FunctionTemplate> Tmpl;
-    static v8::Handle<v8::FunctionTemplate> getTmpl() {
-        if (Tmpl.IsEmpty()) {
-            v8::Handle<v8::FunctionTemplate> tmpl = v8::FunctionTemplate::New();
-            tmpl->SetClassName(v8::String::New("Node"));
-            tmpl->ReadOnlyPrototype();
+	static v8::Persistent<v8::FunctionTemplate> Tmpl;
+	static v8::Handle<v8::FunctionTemplate> getTmpl() {
+		if (Tmpl.IsEmpty()) {
+			v8::Handle<v8::FunctionTemplate> tmpl = v8::FunctionTemplate::New();
+			tmpl->SetClassName(v8::String::New("Node"));
+			tmpl->ReadOnlyPrototype();
 
-            v8::Local<v8::ObjectTemplate> instance = tmpl->InstanceTemplate();
-            v8::Local<v8::ObjectTemplate> prototype = tmpl->PrototypeTemplate();
-            (void)prototype; // surpress unused warnings
-            
-            instance->SetInternalFieldCount(1);
+			v8::Local<v8::ObjectTemplate> instance = tmpl->InstanceTemplate();
+			v8::Local<v8::ObjectTemplate> prototype = tmpl->PrototypeTemplate();
+			(void)prototype; // surpress unused warnings
 
-            instance->SetAccessor(v8::String::NewSymbol("nodeName"), V8Node::nodeNameAttrGetter, 0,
-                                  v8::External::New(0), static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None));
-            instance->SetAccessor(v8::String::NewSymbol("nodeValue"), V8Node::nodeValueAttrGetter, V8Node::nodeValueAttrSetter,
-                                  v8::External::New(0), static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None));
-            instance->SetAccessor(v8::String::NewSymbol("nodeType"), V8Node::nodeTypeAttrGetter, 0,
-                                  v8::External::New(0), static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None));
-            instance->SetAccessor(v8::String::NewSymbol("parentNode"), V8Node::parentNodeAttrGetter, 0,
-                                  v8::External::New(0), static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None));
-            instance->SetAccessor(v8::String::NewSymbol("childNodes"), V8Node::childNodesAttrGetter, 0,
-                                  v8::External::New(0), static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None));
-            instance->SetAccessor(v8::String::NewSymbol("firstChild"), V8Node::firstChildAttrGetter, 0,
-                                  v8::External::New(0), static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None));
-            instance->SetAccessor(v8::String::NewSymbol("lastChild"), V8Node::lastChildAttrGetter, 0,
-                                  v8::External::New(0), static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None));
-            instance->SetAccessor(v8::String::NewSymbol("previousSibling"), V8Node::previousSiblingAttrGetter, 0,
-                                  v8::External::New(0), static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None));
-            instance->SetAccessor(v8::String::NewSymbol("nextSibling"), V8Node::nextSiblingAttrGetter, 0,
-                                  v8::External::New(0), static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None));
-            instance->SetAccessor(v8::String::NewSymbol("attributes"), V8Node::attributesAttrGetter, 0,
-                                  v8::External::New(0), static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None));
-            instance->SetAccessor(v8::String::NewSymbol("ownerDocument"), V8Node::ownerDocumentAttrGetter, 0,
-                                  v8::External::New(0), static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None));
-            instance->SetAccessor(v8::String::NewSymbol("namespaceURI"), V8Node::namespaceURIAttrGetter, 0,
-                                  v8::External::New(0), static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None));
-            instance->SetAccessor(v8::String::NewSymbol("prefix"), V8Node::prefixAttrGetter, V8Node::prefixAttrSetter,
-                                  v8::External::New(0), static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None));
-            instance->SetAccessor(v8::String::NewSymbol("localName"), V8Node::localNameAttrGetter, 0,
-                                  v8::External::New(0), static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None));
+			instance->SetInternalFieldCount(1);
 
-            prototype->Set(v8::String::NewSymbol("insertBefore"),
-                           v8::FunctionTemplate::New(V8Node::insertBeforeCallback, v8::Undefined()), static_cast<v8::PropertyAttribute>(v8::DontDelete));
-            prototype->Set(v8::String::NewSymbol("replaceChild"),
-                           v8::FunctionTemplate::New(V8Node::replaceChildCallback, v8::Undefined()), static_cast<v8::PropertyAttribute>(v8::DontDelete));
-            prototype->Set(v8::String::NewSymbol("removeChild"),
-                           v8::FunctionTemplate::New(V8Node::removeChildCallback, v8::Undefined()), static_cast<v8::PropertyAttribute>(v8::DontDelete));
-            prototype->Set(v8::String::NewSymbol("appendChild"),
-                           v8::FunctionTemplate::New(V8Node::appendChildCallback, v8::Undefined()), static_cast<v8::PropertyAttribute>(v8::DontDelete));
-            prototype->Set(v8::String::NewSymbol("hasChildNodes"),
-                           v8::FunctionTemplate::New(V8Node::hasChildNodesCallback, v8::Undefined()), static_cast<v8::PropertyAttribute>(v8::DontDelete));
-            prototype->Set(v8::String::NewSymbol("cloneNode"),
-                           v8::FunctionTemplate::New(V8Node::cloneNodeCallback, v8::Undefined()), static_cast<v8::PropertyAttribute>(v8::DontDelete));
-            prototype->Set(v8::String::NewSymbol("normalize"),
-                           v8::FunctionTemplate::New(V8Node::normalizeCallback, v8::Undefined()), static_cast<v8::PropertyAttribute>(v8::DontDelete));
-            prototype->Set(v8::String::NewSymbol("isSupported"),
-                           v8::FunctionTemplate::New(V8Node::isSupportedCallback, v8::Undefined()), static_cast<v8::PropertyAttribute>(v8::DontDelete));
-            prototype->Set(v8::String::NewSymbol("hasAttributes"),
-                           v8::FunctionTemplate::New(V8Node::hasAttributesCallback, v8::Undefined()), static_cast<v8::PropertyAttribute>(v8::DontDelete));
+			instance->SetAccessor(v8::String::NewSymbol("nodeName"), V8Node::nodeNameAttrGetter, 0,
+			                      v8::External::New(0), static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None));
+			instance->SetAccessor(v8::String::NewSymbol("nodeValue"), V8Node::nodeValueAttrGetter, V8Node::nodeValueAttrSetter,
+			                      v8::External::New(0), static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None));
+			instance->SetAccessor(v8::String::NewSymbol("nodeType"), V8Node::nodeTypeAttrGetter, 0,
+			                      v8::External::New(0), static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None));
+			instance->SetAccessor(v8::String::NewSymbol("parentNode"), V8Node::parentNodeAttrGetter, 0,
+			                      v8::External::New(0), static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None));
+			instance->SetAccessor(v8::String::NewSymbol("childNodes"), V8Node::childNodesAttrGetter, 0,
+			                      v8::External::New(0), static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None));
+			instance->SetAccessor(v8::String::NewSymbol("firstChild"), V8Node::firstChildAttrGetter, 0,
+			                      v8::External::New(0), static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None));
+			instance->SetAccessor(v8::String::NewSymbol("lastChild"), V8Node::lastChildAttrGetter, 0,
+			                      v8::External::New(0), static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None));
+			instance->SetAccessor(v8::String::NewSymbol("previousSibling"), V8Node::previousSiblingAttrGetter, 0,
+			                      v8::External::New(0), static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None));
+			instance->SetAccessor(v8::String::NewSymbol("nextSibling"), V8Node::nextSiblingAttrGetter, 0,
+			                      v8::External::New(0), static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None));
+			instance->SetAccessor(v8::String::NewSymbol("attributes"), V8Node::attributesAttrGetter, 0,
+			                      v8::External::New(0), static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None));
+			instance->SetAccessor(v8::String::NewSymbol("ownerDocument"), V8Node::ownerDocumentAttrGetter, 0,
+			                      v8::External::New(0), static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None));
+			instance->SetAccessor(v8::String::NewSymbol("namespaceURI"), V8Node::namespaceURIAttrGetter, 0,
+			                      v8::External::New(0), static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None));
+			instance->SetAccessor(v8::String::NewSymbol("prefix"), V8Node::prefixAttrGetter, V8Node::prefixAttrSetter,
+			                      v8::External::New(0), static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None));
+			instance->SetAccessor(v8::String::NewSymbol("localName"), V8Node::localNameAttrGetter, 0,
+			                      v8::External::New(0), static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None));
 
-            tmpl->Set(v8::String::NewSymbol("ELEMENT_NODE"), v8::Integer::New(1), static_cast<v8::PropertyAttribute>(v8::ReadOnly | v8::DontEnum));
-            prototype->Set(v8::String::NewSymbol("ELEMENT_NODE"), v8::Integer::New(1), static_cast<v8::PropertyAttribute>(v8::ReadOnly | v8::DontEnum));
-            tmpl->Set(v8::String::NewSymbol("ATTRIBUTE_NODE"), v8::Integer::New(2), static_cast<v8::PropertyAttribute>(v8::ReadOnly | v8::DontEnum));
-            prototype->Set(v8::String::NewSymbol("ATTRIBUTE_NODE"), v8::Integer::New(2), static_cast<v8::PropertyAttribute>(v8::ReadOnly | v8::DontEnum));
-            tmpl->Set(v8::String::NewSymbol("TEXT_NODE"), v8::Integer::New(3), static_cast<v8::PropertyAttribute>(v8::ReadOnly | v8::DontEnum));
-            prototype->Set(v8::String::NewSymbol("TEXT_NODE"), v8::Integer::New(3), static_cast<v8::PropertyAttribute>(v8::ReadOnly | v8::DontEnum));
-            tmpl->Set(v8::String::NewSymbol("CDATA_SECTION_NODE"), v8::Integer::New(4), static_cast<v8::PropertyAttribute>(v8::ReadOnly | v8::DontEnum));
-            prototype->Set(v8::String::NewSymbol("CDATA_SECTION_NODE"), v8::Integer::New(4), static_cast<v8::PropertyAttribute>(v8::ReadOnly | v8::DontEnum));
-            tmpl->Set(v8::String::NewSymbol("ENTITY_REFERENCE_NODE"), v8::Integer::New(5), static_cast<v8::PropertyAttribute>(v8::ReadOnly | v8::DontEnum));
-            prototype->Set(v8::String::NewSymbol("ENTITY_REFERENCE_NODE"), v8::Integer::New(5), static_cast<v8::PropertyAttribute>(v8::ReadOnly | v8::DontEnum));
-            tmpl->Set(v8::String::NewSymbol("ENTITY_NODE"), v8::Integer::New(6), static_cast<v8::PropertyAttribute>(v8::ReadOnly | v8::DontEnum));
-            prototype->Set(v8::String::NewSymbol("ENTITY_NODE"), v8::Integer::New(6), static_cast<v8::PropertyAttribute>(v8::ReadOnly | v8::DontEnum));
-            tmpl->Set(v8::String::NewSymbol("PROCESSING_INSTRUCTION_NODE"), v8::Integer::New(7), static_cast<v8::PropertyAttribute>(v8::ReadOnly | v8::DontEnum));
-            prototype->Set(v8::String::NewSymbol("PROCESSING_INSTRUCTION_NODE"), v8::Integer::New(7), static_cast<v8::PropertyAttribute>(v8::ReadOnly | v8::DontEnum));
-            tmpl->Set(v8::String::NewSymbol("COMMENT_NODE"), v8::Integer::New(8), static_cast<v8::PropertyAttribute>(v8::ReadOnly | v8::DontEnum));
-            prototype->Set(v8::String::NewSymbol("COMMENT_NODE"), v8::Integer::New(8), static_cast<v8::PropertyAttribute>(v8::ReadOnly | v8::DontEnum));
-            tmpl->Set(v8::String::NewSymbol("DOCUMENT_NODE"), v8::Integer::New(9), static_cast<v8::PropertyAttribute>(v8::ReadOnly | v8::DontEnum));
-            prototype->Set(v8::String::NewSymbol("DOCUMENT_NODE"), v8::Integer::New(9), static_cast<v8::PropertyAttribute>(v8::ReadOnly | v8::DontEnum));
-            tmpl->Set(v8::String::NewSymbol("DOCUMENT_TYPE_NODE"), v8::Integer::New(10), static_cast<v8::PropertyAttribute>(v8::ReadOnly | v8::DontEnum));
-            prototype->Set(v8::String::NewSymbol("DOCUMENT_TYPE_NODE"), v8::Integer::New(10), static_cast<v8::PropertyAttribute>(v8::ReadOnly | v8::DontEnum));
-            tmpl->Set(v8::String::NewSymbol("DOCUMENT_FRAGMENT_NODE"), v8::Integer::New(11), static_cast<v8::PropertyAttribute>(v8::ReadOnly | v8::DontEnum));
-            prototype->Set(v8::String::NewSymbol("DOCUMENT_FRAGMENT_NODE"), v8::Integer::New(11), static_cast<v8::PropertyAttribute>(v8::ReadOnly | v8::DontEnum));
-            tmpl->Set(v8::String::NewSymbol("NOTATION_NODE"), v8::Integer::New(12), static_cast<v8::PropertyAttribute>(v8::ReadOnly | v8::DontEnum));
-            prototype->Set(v8::String::NewSymbol("NOTATION_NODE"), v8::Integer::New(12), static_cast<v8::PropertyAttribute>(v8::ReadOnly | v8::DontEnum));
+			prototype->Set(v8::String::NewSymbol("insertBefore"),
+			               v8::FunctionTemplate::New(V8Node::insertBeforeCallback, v8::Undefined()), static_cast<v8::PropertyAttribute>(v8::DontDelete));
+			prototype->Set(v8::String::NewSymbol("replaceChild"),
+			               v8::FunctionTemplate::New(V8Node::replaceChildCallback, v8::Undefined()), static_cast<v8::PropertyAttribute>(v8::DontDelete));
+			prototype->Set(v8::String::NewSymbol("removeChild"),
+			               v8::FunctionTemplate::New(V8Node::removeChildCallback, v8::Undefined()), static_cast<v8::PropertyAttribute>(v8::DontDelete));
+			prototype->Set(v8::String::NewSymbol("appendChild"),
+			               v8::FunctionTemplate::New(V8Node::appendChildCallback, v8::Undefined()), static_cast<v8::PropertyAttribute>(v8::DontDelete));
+			prototype->Set(v8::String::NewSymbol("hasChildNodes"),
+			               v8::FunctionTemplate::New(V8Node::hasChildNodesCallback, v8::Undefined()), static_cast<v8::PropertyAttribute>(v8::DontDelete));
+			prototype->Set(v8::String::NewSymbol("cloneNode"),
+			               v8::FunctionTemplate::New(V8Node::cloneNodeCallback, v8::Undefined()), static_cast<v8::PropertyAttribute>(v8::DontDelete));
+			prototype->Set(v8::String::NewSymbol("normalize"),
+			               v8::FunctionTemplate::New(V8Node::normalizeCallback, v8::Undefined()), static_cast<v8::PropertyAttribute>(v8::DontDelete));
+			prototype->Set(v8::String::NewSymbol("isSupported"),
+			               v8::FunctionTemplate::New(V8Node::isSupportedCallback, v8::Undefined()), static_cast<v8::PropertyAttribute>(v8::DontDelete));
+			prototype->Set(v8::String::NewSymbol("hasAttributes"),
+			               v8::FunctionTemplate::New(V8Node::hasAttributesCallback, v8::Undefined()), static_cast<v8::PropertyAttribute>(v8::DontDelete));
 
-            Tmpl = v8::Persistent<v8::FunctionTemplate>::New(tmpl);
-        }
-        return Tmpl;
-    }
+			tmpl->Set(v8::String::NewSymbol("ELEMENT_NODE"), v8::Integer::New(1), static_cast<v8::PropertyAttribute>(v8::ReadOnly | v8::DontEnum));
+			prototype->Set(v8::String::NewSymbol("ELEMENT_NODE"), v8::Integer::New(1), static_cast<v8::PropertyAttribute>(v8::ReadOnly | v8::DontEnum));
+			tmpl->Set(v8::String::NewSymbol("ATTRIBUTE_NODE"), v8::Integer::New(2), static_cast<v8::PropertyAttribute>(v8::ReadOnly | v8::DontEnum));
+			prototype->Set(v8::String::NewSymbol("ATTRIBUTE_NODE"), v8::Integer::New(2), static_cast<v8::PropertyAttribute>(v8::ReadOnly | v8::DontEnum));
+			tmpl->Set(v8::String::NewSymbol("TEXT_NODE"), v8::Integer::New(3), static_cast<v8::PropertyAttribute>(v8::ReadOnly | v8::DontEnum));
+			prototype->Set(v8::String::NewSymbol("TEXT_NODE"), v8::Integer::New(3), static_cast<v8::PropertyAttribute>(v8::ReadOnly | v8::DontEnum));
+			tmpl->Set(v8::String::NewSymbol("CDATA_SECTION_NODE"), v8::Integer::New(4), static_cast<v8::PropertyAttribute>(v8::ReadOnly | v8::DontEnum));
+			prototype->Set(v8::String::NewSymbol("CDATA_SECTION_NODE"), v8::Integer::New(4), static_cast<v8::PropertyAttribute>(v8::ReadOnly | v8::DontEnum));
+			tmpl->Set(v8::String::NewSymbol("ENTITY_REFERENCE_NODE"), v8::Integer::New(5), static_cast<v8::PropertyAttribute>(v8::ReadOnly | v8::DontEnum));
+			prototype->Set(v8::String::NewSymbol("ENTITY_REFERENCE_NODE"), v8::Integer::New(5), static_cast<v8::PropertyAttribute>(v8::ReadOnly | v8::DontEnum));
+			tmpl->Set(v8::String::NewSymbol("ENTITY_NODE"), v8::Integer::New(6), static_cast<v8::PropertyAttribute>(v8::ReadOnly | v8::DontEnum));
+			prototype->Set(v8::String::NewSymbol("ENTITY_NODE"), v8::Integer::New(6), static_cast<v8::PropertyAttribute>(v8::ReadOnly | v8::DontEnum));
+			tmpl->Set(v8::String::NewSymbol("PROCESSING_INSTRUCTION_NODE"), v8::Integer::New(7), static_cast<v8::PropertyAttribute>(v8::ReadOnly | v8::DontEnum));
+			prototype->Set(v8::String::NewSymbol("PROCESSING_INSTRUCTION_NODE"), v8::Integer::New(7), static_cast<v8::PropertyAttribute>(v8::ReadOnly | v8::DontEnum));
+			tmpl->Set(v8::String::NewSymbol("COMMENT_NODE"), v8::Integer::New(8), static_cast<v8::PropertyAttribute>(v8::ReadOnly | v8::DontEnum));
+			prototype->Set(v8::String::NewSymbol("COMMENT_NODE"), v8::Integer::New(8), static_cast<v8::PropertyAttribute>(v8::ReadOnly | v8::DontEnum));
+			tmpl->Set(v8::String::NewSymbol("DOCUMENT_NODE"), v8::Integer::New(9), static_cast<v8::PropertyAttribute>(v8::ReadOnly | v8::DontEnum));
+			prototype->Set(v8::String::NewSymbol("DOCUMENT_NODE"), v8::Integer::New(9), static_cast<v8::PropertyAttribute>(v8::ReadOnly | v8::DontEnum));
+			tmpl->Set(v8::String::NewSymbol("DOCUMENT_TYPE_NODE"), v8::Integer::New(10), static_cast<v8::PropertyAttribute>(v8::ReadOnly | v8::DontEnum));
+			prototype->Set(v8::String::NewSymbol("DOCUMENT_TYPE_NODE"), v8::Integer::New(10), static_cast<v8::PropertyAttribute>(v8::ReadOnly | v8::DontEnum));
+			tmpl->Set(v8::String::NewSymbol("DOCUMENT_FRAGMENT_NODE"), v8::Integer::New(11), static_cast<v8::PropertyAttribute>(v8::ReadOnly | v8::DontEnum));
+			prototype->Set(v8::String::NewSymbol("DOCUMENT_FRAGMENT_NODE"), v8::Integer::New(11), static_cast<v8::PropertyAttribute>(v8::ReadOnly | v8::DontEnum));
+			tmpl->Set(v8::String::NewSymbol("NOTATION_NODE"), v8::Integer::New(12), static_cast<v8::PropertyAttribute>(v8::ReadOnly | v8::DontEnum));
+			prototype->Set(v8::String::NewSymbol("NOTATION_NODE"), v8::Integer::New(12), static_cast<v8::PropertyAttribute>(v8::ReadOnly | v8::DontEnum));
+
+			Tmpl = v8::Persistent<v8::FunctionTemplate>::New(tmpl);
+		}
+		return Tmpl;
+	}
 
 
 };

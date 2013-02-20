@@ -50,11 +50,11 @@ boost::shared_ptr<IOProcessorImpl> EventIOProcessor::create(Interpreter* interpr
 	io->_interpreter = interpreter;
 
 	// register at http server
-  std::string path = interpreter->getName();
-  path += "/basichttp";
-  if (!HTTPServer::registerServlet(path, io.get())) {
-    LOG(ERROR) << "Cannot register basichttp ioprocessor at " << path << ": " << " already taken";
-  }
+	std::string path = interpreter->getName();
+	path += "/basichttp";
+	if (!HTTPServer::registerServlet(path, io.get())) {
+		LOG(ERROR) << "Cannot register basichttp ioprocessor at " << path << ": " << " already taken";
+	}
 
 	return io;
 }
@@ -67,13 +67,13 @@ Data EventIOProcessor::getDataModelVariables() {
 }
 
 void EventIOProcessor::httpRecvRequest(const HTTPServer::Request& req) {
-  Event reqEvent;
+	Event reqEvent;
 	reqEvent.type = Event::EXTERNAL;
 	bool scxmlStructFound = false;
-  
-  std::map<std::string, std::string>::const_iterator headerIter = req.headers.begin();
-  while(headerIter != req.headers.end()) {
-    if (boost::iequals("_scxmleventstruct", headerIter->first)) {
+
+	std::map<std::string, std::string>::const_iterator headerIter = req.headers.begin();
+	while(headerIter != req.headers.end()) {
+		if (boost::iequals("_scxmleventstruct", headerIter->first)) {
 			reqEvent = Event::fromXML(evhttp_decode_uri(headerIter->second.c_str()));
 			scxmlStructFound = true;
 			break;
@@ -81,33 +81,33 @@ void EventIOProcessor::httpRecvRequest(const HTTPServer::Request& req) {
 			reqEvent.name = evhttp_decode_uri(headerIter->second.c_str());
 		} else {
 			reqEvent.data.compound[headerIter->first] = Data(evhttp_decode_uri(headerIter->second.c_str()), Data::VERBATIM);
-    }
-    headerIter++;
-  }
-  
+		}
+		headerIter++;
+	}
+
 	if (reqEvent.name.length() == 0)
 		reqEvent.name = req.type;
-  
+
 	if (!scxmlStructFound) {
 		// get content into event
 		reqEvent.data.compound["content"] = Data(req.content, Data::VERBATIM);
 	}
-  
+
 	returnEvent(reqEvent);
 	evhttp_send_reply(req.curlReq, 200, "OK", NULL);
 }
 
 void EventIOProcessor::send(const SendRequest& req) {
 
-  std::string target = req.target;
-  URL targetURL(target);
+	std::string target = req.target;
+	URL targetURL(target);
 
-  // event name
+	// event name
 	if (req.name.size() > 0) {
-    targetURL.addOutHeader("_scxmleventname", evhttp_encode_uri(req.name.c_str()));
+		targetURL.addOutHeader("_scxmleventname", evhttp_encode_uri(req.name.c_str()));
 	}
 
-  // event namelist
+	// event namelist
 	if (req.namelist.size() > 0) {
 		std::map<std::string, std::string>::const_iterator namelistIter = req.namelist.begin();
 		while (namelistIter != req.namelist.end()) {
@@ -116,7 +116,7 @@ void EventIOProcessor::send(const SendRequest& req) {
 		}
 	}
 
-  // event params
+	// event params
 	if (req.params.size() > 0) {
 		std::multimap<std::string, std::string>::const_iterator paramIter = req.params.begin();
 		while (paramIter != req.params.end()) {
@@ -124,47 +124,47 @@ void EventIOProcessor::send(const SendRequest& req) {
 			paramIter++;
 		}
 	}
-  
+
 	// content
 	if (req.content.size() > 0)
-    targetURL.setOutContent(req.content);
+		targetURL.setOutContent(req.content);
 
-  targetURL.setRequestType("post");
-  targetURL.addMonitor(this);
-  
-  _sendRequests[req.sendid] = std::make_pair(targetURL, req);
-  URLFetcher::fetchURL(targetURL);
+	targetURL.setRequestType("post");
+	targetURL.addMonitor(this);
+
+	_sendRequests[req.sendid] = std::make_pair(targetURL, req);
+	URLFetcher::fetchURL(targetURL);
 }
- 
+
 void EventIOProcessor::downloadStarted(const URL& url) {}
 
 void EventIOProcessor::downloadCompleted(const URL& url) {
-  std::map<std::string, std::pair<URL, SendRequest> >::iterator reqIter = _sendRequests.begin();
-  while(reqIter != _sendRequests.end()) {
-    if (reqIter->second.first == url) {
-      _sendRequests.erase(reqIter);
-      return;
-    }
-    reqIter++;
-  }
-  assert(false);
+	std::map<std::string, std::pair<URL, SendRequest> >::iterator reqIter = _sendRequests.begin();
+	while(reqIter != _sendRequests.end()) {
+		if (reqIter->second.first == url) {
+			_sendRequests.erase(reqIter);
+			return;
+		}
+		reqIter++;
+	}
+	assert(false);
 }
 
 void EventIOProcessor::downloadFailed(const URL& url, int errorCode) {
-  
-  std::map<std::string, std::pair<URL, SendRequest> >::iterator reqIter = _sendRequests.begin();
-  while(reqIter != _sendRequests.end()) {
-    if (reqIter->second.first == url) {
-      Event failEvent;
-      failEvent.name = "error.communication";
-      returnEvent(failEvent);
 
-      _sendRequests.erase(reqIter);
-      return;
-    }
-    reqIter++;
-  }
-  assert(false);
+	std::map<std::string, std::pair<URL, SendRequest> >::iterator reqIter = _sendRequests.begin();
+	while(reqIter != _sendRequests.end()) {
+		if (reqIter->second.first == url) {
+			Event failEvent;
+			failEvent.name = "error.communication";
+			returnEvent(failEvent);
+
+			_sendRequests.erase(reqIter);
+			return;
+		}
+		reqIter++;
+	}
+	assert(false);
 
 }
 

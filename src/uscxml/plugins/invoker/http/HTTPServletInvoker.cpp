@@ -16,24 +16,24 @@ bool connect(pluma::Host& host) {
 #endif
 
 HTTPServletInvoker::HTTPServletInvoker() {
-  _isInterpreterGlobal = false;
+	_isInterpreterGlobal = false;
 }
 
 HTTPServletInvoker::HTTPServletInvoker(Interpreter* interpreter) {
-  _isInterpreterGlobal = true;
-  _interpreter = interpreter;
-  std::stringstream path;
-  path << _interpreter->getName();
-  int i = 2;
-  while(!HTTPServer::registerServlet(path.str(), this)) {
-    path.clear();
-    path.str();
-    path << _interpreter->getName() << toStr(i++);
-  }
+	_isInterpreterGlobal = true;
+	_interpreter = interpreter;
+	std::stringstream path;
+	path << _interpreter->getName();
+	int i = 2;
+	while(!HTTPServer::registerServlet(path.str(), this)) {
+		path.clear();
+		path.str();
+		path << _interpreter->getName() << toStr(i++);
+	}
 }
 
 HTTPServletInvoker::~HTTPServletInvoker() {
-  HTTPServer::unregisterServlet(this);
+	HTTPServer::unregisterServlet(this);
 
 };
 
@@ -51,97 +51,97 @@ Data HTTPServletInvoker::getDataModelVariables() {
 }
 
 void HTTPServletInvoker::send(const SendRequest& req) {
-  assert(!_isInterpreterGlobal);
-  
-  if (req.name.find("reply.", 0, req.name.length())) {
-    // this is a reply
-    const std::string requestId = req.name.substr(6);
-    if (_requests.find(requestId) == _requests.end()) {
-      LOG(ERROR) << "Replying to non existing request " << requestId;
-      return;
-    }
-      
-    HTTPServer::Request httpRequest = _requests[requestId];
-    HTTPServer::Reply httpReply(httpRequest);
-    httpReply.content = req.content;
+	assert(!_isInterpreterGlobal);
 
-    std::map<std::string, std::string>::const_iterator nameListIter = req.namelist.begin();
-    while(nameListIter != req.namelist.end()) {
-      httpReply.headers[nameListIter->first] = nameListIter->second;
-      nameListIter++;
-    }
+	if (req.name.find("reply.", 0, req.name.length())) {
+		// this is a reply
+		const std::string requestId = req.name.substr(6);
+		if (_requests.find(requestId) == _requests.end()) {
+			LOG(ERROR) << "Replying to non existing request " << requestId;
+			return;
+		}
 
-    std::multimap<std::string, std::string>::const_iterator paramIter = req.params.begin();
-    while(paramIter != req.params.end()) {
-      httpReply.headers[paramIter->first] = paramIter->second;
-      paramIter++;
-    }
+		HTTPServer::Request httpRequest = _requests[requestId];
+		HTTPServer::Reply httpReply(httpRequest);
+		httpReply.content = req.content;
 
-    HTTPServer::reply(httpReply);
-    return;
-  }
+		std::map<std::string, std::string>::const_iterator nameListIter = req.namelist.begin();
+		while(nameListIter != req.namelist.end()) {
+			httpReply.headers[nameListIter->first] = nameListIter->second;
+			nameListIter++;
+		}
+
+		std::multimap<std::string, std::string>::const_iterator paramIter = req.params.begin();
+		while(paramIter != req.params.end()) {
+			httpReply.headers[paramIter->first] = paramIter->second;
+			paramIter++;
+		}
+
+		HTTPServer::reply(httpReply);
+		return;
+	}
 }
 
 void HTTPServletInvoker::cancel(const std::string sendId) {
-  assert(!_isInterpreterGlobal);
+	assert(!_isInterpreterGlobal);
 }
 
 void HTTPServletInvoker::invoke(const InvokeRequest& req) {
-  assert(!_isInterpreterGlobal);
+	assert(!_isInterpreterGlobal);
 
-  _invokeId = req.invokeid;
-  if (req.params.find("path") == req.params.end()) {
-    LOG(ERROR) << "Path parameter required with httpserver";
-  }
-  _path = (*req.params.find("path")).second;
-  
-  if (req.params.find("callback") != req.params.end()) {
-    _callback = (*req.params.find("callback")).second;
-  } else {
-    _callback = _path;
-    std::replace(_callback.begin(), _callback.end(), '/', '.');
-  }
+	_invokeId = req.invokeid;
+	if (req.params.find("path") == req.params.end()) {
+		LOG(ERROR) << "Path parameter required with httpserver";
+	}
+	_path = (*req.params.find("path")).second;
 
-  if (!HTTPServer::registerServlet(_path, this)) {
-    LOG(ERROR) << "Cannot register http servlet at " << _path << ": " << " already taken";
-  }
+	if (req.params.find("callback") != req.params.end()) {
+		_callback = (*req.params.find("callback")).second;
+	} else {
+		_callback = _path;
+		std::replace(_callback.begin(), _callback.end(), '/', '.');
+	}
+
+	if (!HTTPServer::registerServlet(_path, this)) {
+		LOG(ERROR) << "Cannot register http servlet at " << _path << ": " << " already taken";
+	}
 }
 
 /**
  * Receive a request and deliver it to the interpreter
  */
 void HTTPServletInvoker::httpRecvRequest(const HTTPServer::Request& req) {
-  tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
-  
+	tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
+
 //  evhttp_request_own(req.curlReq);
 
-  _requests[toStr((uintptr_t)req.curlReq)] = req;
-  
-  Event event;
-  
-  if (_isInterpreterGlobal) {
-    event.name = "http." + req.type;
-    event.origin = toStr((uintptr_t)req.curlReq);
-  } else {
-    event.name = _callback;
-    event.data.compound["reqId"] = Data(toStr((uintptr_t)req.curlReq), Data::VERBATIM);
-  }
-  
-  std::map<std::string, std::string>::const_iterator headerIter = req.headers.begin();
-  while(headerIter != req.headers.end()) {
-    event.data.compound["headers"].compound[headerIter->first] = Data(headerIter->second, Data::VERBATIM);
-    headerIter++;
-  }
+	_requests[toStr((uintptr_t)req.curlReq)] = req;
 
-  event.data.compound["content"] = Data(req.content, Data::VERBATIM);
-  event.data.compound["type"] = Data(req.type, Data::VERBATIM);
-  
-  returnEvent(event);
+	Event event;
+
+	if (_isInterpreterGlobal) {
+		event.name = "http." + req.type;
+		event.origin = toStr((uintptr_t)req.curlReq);
+	} else {
+		event.name = _callback;
+		event.data.compound["reqId"] = Data(toStr((uintptr_t)req.curlReq), Data::VERBATIM);
+	}
+
+	std::map<std::string, std::string>::const_iterator headerIter = req.headers.begin();
+	while(headerIter != req.headers.end()) {
+		event.data.compound["headers"].compound[headerIter->first] = Data(headerIter->second, Data::VERBATIM);
+		headerIter++;
+	}
+
+	event.data.compound["content"] = Data(req.content, Data::VERBATIM);
+	event.data.compound["type"] = Data(req.type, Data::VERBATIM);
+
+	returnEvent(event);
 
 }
-  
+
 std::string HTTPServletInvoker::getPath() {
-  return _path;
+	return _path;
 }
 
 }

@@ -150,11 +150,11 @@ Factory::Factory() {
 		registerIOProcessor(ioProcessor);
 	}
 
-  {
+	{
 		FetchElement* element = new FetchElement();
 		registerExecutableContent(element);
 	}
-  {
+	{
 		ResponseElement* element = new ResponseElement();
 		registerExecutableContent(element);
 	}
@@ -208,9 +208,9 @@ void Factory::registerInvoker(InvokerImpl* invoker) {
 }
 
 void Factory::registerExecutableContent(ExecutableContentImpl* executableContent) {
-  std::string localName = executableContent->getLocalName();
-  std::string nameSpace = executableContent->getNamespace();
-  _executableContent[std::make_pair(localName, nameSpace)] = executableContent;
+	std::string localName = executableContent->getLocalName();
+	std::string nameSpace = executableContent->getNamespace();
+	_executableContent[std::make_pair(localName, nameSpace)] = executableContent;
 }
 
 
@@ -263,13 +263,13 @@ boost::shared_ptr<IOProcessorImpl> Factory::createIOProcessor(const std::string&
 }
 
 boost::shared_ptr<ExecutableContentImpl> Factory::createExecutableContent(const std::string& localName, const std::string& nameSpace, Interpreter* interpreter) {
-  Factory* factory = getInstance();
-  std::string actualNameSpace = (nameSpace.length() == 0 ? "http://www.w3.org/2005/07/scxml" : nameSpace);
+	Factory* factory = getInstance();
+	std::string actualNameSpace = (nameSpace.length() == 0 ? "http://www.w3.org/2005/07/scxml" : nameSpace);
 	if (factory->_executableContent.find(std::make_pair(localName, actualNameSpace)) == factory->_executableContent.end()) {
-    LOG(ERROR) << "Executable content " << localName << " in " << actualNameSpace << " not available in factory";
+		LOG(ERROR) << "Executable content " << localName << " in " << actualNameSpace << " not available in factory";
 		return boost::shared_ptr<ExecutableContentImpl>();
-  }
-  return factory->_executableContent[std::make_pair(localName, actualNameSpace)]->create(interpreter);
+	}
+	return factory->_executableContent[std::make_pair(localName, actualNameSpace)]->create(interpreter);
 }
 
 
@@ -292,7 +292,7 @@ void IOProcessorImpl::returnEvent(Event& event) {
 
 	_interpreter->receive(event);
 }
-  
+
 Factory* Factory::_instance = NULL;
 std::string Factory::pluginPath;
 }

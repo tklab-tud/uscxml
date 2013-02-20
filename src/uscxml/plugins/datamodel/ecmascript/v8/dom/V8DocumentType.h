@@ -33,55 +33,55 @@ namespace DOM {
 
 class V8DocumentType {
 public:
-    struct V8DocumentTypePrivate {
-      V8DOM* dom;
-      Arabica::DOM::DocumentType<std::string>* nativeObj;
-    };
+	struct V8DocumentTypePrivate {
+		V8DOM* dom;
+		Arabica::DOM::DocumentType<std::string>* nativeObj;
+	};
 
-    V8_DESTRUCTOR(V8DocumentTypePrivate);
-    static bool hasInstance(v8::Handle<v8::Value>);
-
-
-    static v8::Handle<v8::Value> nameAttrGetter(v8::Local<v8::String> property, const v8::AccessorInfo& info);
-    static v8::Handle<v8::Value> entitiesAttrGetter(v8::Local<v8::String> property, const v8::AccessorInfo& info);
-    static v8::Handle<v8::Value> notationsAttrGetter(v8::Local<v8::String> property, const v8::AccessorInfo& info);
-    static v8::Handle<v8::Value> publicIdAttrGetter(v8::Local<v8::String> property, const v8::AccessorInfo& info);
-    static v8::Handle<v8::Value> systemIdAttrGetter(v8::Local<v8::String> property, const v8::AccessorInfo& info);
-    static v8::Handle<v8::Value> internalSubsetAttrGetter(v8::Local<v8::String> property, const v8::AccessorInfo& info);
-
-    static v8::Persistent<v8::FunctionTemplate> Tmpl;
-    static v8::Handle<v8::FunctionTemplate> getTmpl() {
-        if (Tmpl.IsEmpty()) {
-            v8::Handle<v8::FunctionTemplate> tmpl = v8::FunctionTemplate::New();
-            tmpl->SetClassName(v8::String::New("DocumentType"));
-            tmpl->ReadOnlyPrototype();
-
-            v8::Local<v8::ObjectTemplate> instance = tmpl->InstanceTemplate();
-            v8::Local<v8::ObjectTemplate> prototype = tmpl->PrototypeTemplate();
-            (void)prototype; // surpress unused warnings
-            
-            instance->SetInternalFieldCount(1);
-
-            instance->SetAccessor(v8::String::NewSymbol("name"), V8DocumentType::nameAttrGetter, 0,
-                                  v8::External::New(0), static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None));
-            instance->SetAccessor(v8::String::NewSymbol("entities"), V8DocumentType::entitiesAttrGetter, 0,
-                                  v8::External::New(0), static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None));
-            instance->SetAccessor(v8::String::NewSymbol("notations"), V8DocumentType::notationsAttrGetter, 0,
-                                  v8::External::New(0), static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None));
-            instance->SetAccessor(v8::String::NewSymbol("publicId"), V8DocumentType::publicIdAttrGetter, 0,
-                                  v8::External::New(0), static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None));
-            instance->SetAccessor(v8::String::NewSymbol("systemId"), V8DocumentType::systemIdAttrGetter, 0,
-                                  v8::External::New(0), static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None));
-            instance->SetAccessor(v8::String::NewSymbol("internalSubset"), V8DocumentType::internalSubsetAttrGetter, 0,
-                                  v8::External::New(0), static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None));
+	V8_DESTRUCTOR(V8DocumentTypePrivate);
+	static bool hasInstance(v8::Handle<v8::Value>);
 
 
+	static v8::Handle<v8::Value> nameAttrGetter(v8::Local<v8::String> property, const v8::AccessorInfo& info);
+	static v8::Handle<v8::Value> entitiesAttrGetter(v8::Local<v8::String> property, const v8::AccessorInfo& info);
+	static v8::Handle<v8::Value> notationsAttrGetter(v8::Local<v8::String> property, const v8::AccessorInfo& info);
+	static v8::Handle<v8::Value> publicIdAttrGetter(v8::Local<v8::String> property, const v8::AccessorInfo& info);
+	static v8::Handle<v8::Value> systemIdAttrGetter(v8::Local<v8::String> property, const v8::AccessorInfo& info);
+	static v8::Handle<v8::Value> internalSubsetAttrGetter(v8::Local<v8::String> property, const v8::AccessorInfo& info);
 
-            tmpl->Inherit(V8Node::getTmpl());
-            Tmpl = v8::Persistent<v8::FunctionTemplate>::New(tmpl);
-        }
-        return Tmpl;
-    }
+	static v8::Persistent<v8::FunctionTemplate> Tmpl;
+	static v8::Handle<v8::FunctionTemplate> getTmpl() {
+		if (Tmpl.IsEmpty()) {
+			v8::Handle<v8::FunctionTemplate> tmpl = v8::FunctionTemplate::New();
+			tmpl->SetClassName(v8::String::New("DocumentType"));
+			tmpl->ReadOnlyPrototype();
+
+			v8::Local<v8::ObjectTemplate> instance = tmpl->InstanceTemplate();
+			v8::Local<v8::ObjectTemplate> prototype = tmpl->PrototypeTemplate();
+			(void)prototype; // surpress unused warnings
+
+			instance->SetInternalFieldCount(1);
+
+			instance->SetAccessor(v8::String::NewSymbol("name"), V8DocumentType::nameAttrGetter, 0,
+			                      v8::External::New(0), static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None));
+			instance->SetAccessor(v8::String::NewSymbol("entities"), V8DocumentType::entitiesAttrGetter, 0,
+			                      v8::External::New(0), static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None));
+			instance->SetAccessor(v8::String::NewSymbol("notations"), V8DocumentType::notationsAttrGetter, 0,
+			                      v8::External::New(0), static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None));
+			instance->SetAccessor(v8::String::NewSymbol("publicId"), V8DocumentType::publicIdAttrGetter, 0,
+			                      v8::External::New(0), static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None));
+			instance->SetAccessor(v8::String::NewSymbol("systemId"), V8DocumentType::systemIdAttrGetter, 0,
+			                      v8::External::New(0), static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None));
+			instance->SetAccessor(v8::String::NewSymbol("internalSubset"), V8DocumentType::internalSubsetAttrGetter, 0,
+			                      v8::External::New(0), static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None));
+
+
+
+			tmpl->Inherit(V8Node::getTmpl());
+			Tmpl = v8::Persistent<v8::FunctionTemplate>::New(tmpl);
+		}
+		return Tmpl;
+	}
 
 
 };

@@ -33,43 +33,43 @@ namespace DOM {
 
 class V8Notation {
 public:
-    struct V8NotationPrivate {
-      V8DOM* dom;
-      Arabica::DOM::Notation<std::string>* nativeObj;
-    };
+	struct V8NotationPrivate {
+		V8DOM* dom;
+		Arabica::DOM::Notation<std::string>* nativeObj;
+	};
 
-    V8_DESTRUCTOR(V8NotationPrivate);
-    static bool hasInstance(v8::Handle<v8::Value>);
-
-
-    static v8::Handle<v8::Value> publicIdAttrGetter(v8::Local<v8::String> property, const v8::AccessorInfo& info);
-    static v8::Handle<v8::Value> systemIdAttrGetter(v8::Local<v8::String> property, const v8::AccessorInfo& info);
-
-    static v8::Persistent<v8::FunctionTemplate> Tmpl;
-    static v8::Handle<v8::FunctionTemplate> getTmpl() {
-        if (Tmpl.IsEmpty()) {
-            v8::Handle<v8::FunctionTemplate> tmpl = v8::FunctionTemplate::New();
-            tmpl->SetClassName(v8::String::New("Notation"));
-            tmpl->ReadOnlyPrototype();
-
-            v8::Local<v8::ObjectTemplate> instance = tmpl->InstanceTemplate();
-            v8::Local<v8::ObjectTemplate> prototype = tmpl->PrototypeTemplate();
-            (void)prototype; // surpress unused warnings
-            
-            instance->SetInternalFieldCount(1);
-
-            instance->SetAccessor(v8::String::NewSymbol("publicId"), V8Notation::publicIdAttrGetter, 0,
-                                  v8::External::New(0), static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None));
-            instance->SetAccessor(v8::String::NewSymbol("systemId"), V8Notation::systemIdAttrGetter, 0,
-                                  v8::External::New(0), static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None));
+	V8_DESTRUCTOR(V8NotationPrivate);
+	static bool hasInstance(v8::Handle<v8::Value>);
 
 
+	static v8::Handle<v8::Value> publicIdAttrGetter(v8::Local<v8::String> property, const v8::AccessorInfo& info);
+	static v8::Handle<v8::Value> systemIdAttrGetter(v8::Local<v8::String> property, const v8::AccessorInfo& info);
 
-            tmpl->Inherit(V8Node::getTmpl());
-            Tmpl = v8::Persistent<v8::FunctionTemplate>::New(tmpl);
-        }
-        return Tmpl;
-    }
+	static v8::Persistent<v8::FunctionTemplate> Tmpl;
+	static v8::Handle<v8::FunctionTemplate> getTmpl() {
+		if (Tmpl.IsEmpty()) {
+			v8::Handle<v8::FunctionTemplate> tmpl = v8::FunctionTemplate::New();
+			tmpl->SetClassName(v8::String::New("Notation"));
+			tmpl->ReadOnlyPrototype();
+
+			v8::Local<v8::ObjectTemplate> instance = tmpl->InstanceTemplate();
+			v8::Local<v8::ObjectTemplate> prototype = tmpl->PrototypeTemplate();
+			(void)prototype; // surpress unused warnings
+
+			instance->SetInternalFieldCount(1);
+
+			instance->SetAccessor(v8::String::NewSymbol("publicId"), V8Notation::publicIdAttrGetter, 0,
+			                      v8::External::New(0), static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None));
+			instance->SetAccessor(v8::String::NewSymbol("systemId"), V8Notation::systemIdAttrGetter, 0,
+			                      v8::External::New(0), static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None));
+
+
+
+			tmpl->Inherit(V8Node::getTmpl());
+			Tmpl = v8::Persistent<v8::FunctionTemplate>::New(tmpl);
+		}
+		return Tmpl;
+	}
 
 
 };

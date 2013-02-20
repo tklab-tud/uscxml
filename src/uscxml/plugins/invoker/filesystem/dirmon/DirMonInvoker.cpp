@@ -158,7 +158,7 @@ void DirMonInvoker::reportExistingIn(const std::string dir, FW::WatchID watchid)
 		if (boost::iequals(dname, ".") || boost::iequals(dname, ".."))
 			continue;
 
-    char* filename = (char*)malloc(dir.size() + dname.size() + 2);
+		char* filename = (char*)malloc(dir.size() + dname.size() + 2);
 		sprintf(filename, "%s/%s", dir.c_str(), dname.c_str());
 
 		struct stat fileStat;

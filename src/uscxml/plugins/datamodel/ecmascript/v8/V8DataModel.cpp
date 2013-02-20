@@ -111,13 +111,13 @@ void V8DataModel::setEvent(const Event& event) {
 	v8::Handle<v8::Object> global = _contexts.front()->Global();
 
 	v8::Handle<v8::Function> eventCtor = Arabica::DOM::V8SCXMLEvent::getTmpl()->GetFunction();
-  v8::Persistent<v8::Object> eventObj = v8::Persistent<v8::Object>::New(eventCtor->NewInstance());
+	v8::Persistent<v8::Object> eventObj = v8::Persistent<v8::Object>::New(eventCtor->NewInstance());
 
 	Arabica::DOM::V8SCXMLEvent::V8SCXMLEventPrivate* privData = new Arabica::DOM::V8SCXMLEvent::V8SCXMLEventPrivate();
 	privData->nativeObj = new Event(event);
 	privData->dom = _dom;
 	eventObj->SetInternalField(0, Arabica::DOM::V8DOM::toExternal(privData));
-  eventObj.MakeWeak(0, Arabica::DOM::V8SCXMLEvent::jsDestructor);
+	eventObj.MakeWeak(0, Arabica::DOM::V8SCXMLEvent::jsDestructor);
 
 	eventObj->Set(v8::String::New("data"), getDataAsValue(event.data)); // set data part of _event
 	global->Set(v8::String::New("_event"), eventObj);
@@ -185,7 +185,7 @@ Data V8DataModel::getValueAsData(const v8::Handle<v8::Value>& value) {
 	} else if(value->IsUint32()) {
 		LOG(ERROR) << "IsUint32 is unimplemented" << std::endl;
 	} else if(value->IsUndefined()) {
-    data.atom = "undefined";
+		data.atom = "undefined";
 	}
 	return data;
 }
@@ -271,10 +271,10 @@ std::string V8DataModel::evalAsString(const std::string& expr) {
 	v8::HandleScope handleScope;
 	v8::Context::Scope contextScope(_contexts.back());
 	v8::Handle<v8::Value> result = evalAsValue(expr);
-  if (result->IsObject()) {
-    Data data = getValueAsData(result);
-    return toStr(data);
-  }
+	if (result->IsObject()) {
+		Data data = getValueAsData(result);
+		return toStr(data);
+	}
 	v8::String::AsciiValue data(result->ToString());
 	return std::string(*data);
 }

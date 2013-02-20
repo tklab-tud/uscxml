@@ -12,7 +12,7 @@ DelayedEventQueue::DelayedEventQueue() {
 #endif
 	_eventLoop = event_base_new();
 	_thread = NULL;
-  _isStarted = false;
+	_isStarted = false;
 }
 
 DelayedEventQueue::~DelayedEventQueue() {

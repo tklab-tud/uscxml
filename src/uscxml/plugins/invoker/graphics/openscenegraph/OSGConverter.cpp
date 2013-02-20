@@ -33,10 +33,10 @@ Data OSGConverter::getDataModelVariables() {
 }
 
 void OSGConverter::send(const SendRequest& req) {
-  std::cout << req << std::endl;
-  Event event;
-  event.name = "error";
-  returnEvent(event);
+	std::cout << req << std::endl;
+	Event event;
+	event.name = "error";
+	returnEvent(event);
 }
 
 void OSGConverter::cancel(const std::string sendId) {

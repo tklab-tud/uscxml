@@ -29,21 +29,21 @@
 namespace uscxml {
 
 class HTTPServletInvoker;
-  
+
 class InterpreterMonitor {
 public:
-  virtual ~InterpreterMonitor() {}
-  virtual void onStableConfiguration(Interpreter* interpreter) {}
-  virtual void beforeCompletion(Interpreter* interpreter) {}
-  virtual void afterCompletion(Interpreter* interpreter) {}
-  virtual void beforeMicroStep(Interpreter* interpreter) {}
-  virtual void beforeTakingTransitions(Interpreter* interpreter, const Arabica::XPath::NodeSet<std::string>& transitions) {}
-  virtual void beforeEnteringStates(Interpreter* interpreter, const Arabica::XPath::NodeSet<std::string>& statesToEnter) {}
-  virtual void afterEnteringStates(Interpreter* interpreter) {}
-  virtual void beforeExitingStates(Interpreter* interpreter, const Arabica::XPath::NodeSet<std::string>& statesToExit) {}
-  virtual void afterExitingStates(Interpreter* interpreter) {}
+	virtual ~InterpreterMonitor() {}
+	virtual void onStableConfiguration(Interpreter* interpreter) {}
+	virtual void beforeCompletion(Interpreter* interpreter) {}
+	virtual void afterCompletion(Interpreter* interpreter) {}
+	virtual void beforeMicroStep(Interpreter* interpreter) {}
+	virtual void beforeTakingTransitions(Interpreter* interpreter, const Arabica::XPath::NodeSet<std::string>& transitions) {}
+	virtual void beforeEnteringStates(Interpreter* interpreter, const Arabica::XPath::NodeSet<std::string>& statesToEnter) {}
+	virtual void afterEnteringStates(Interpreter* interpreter) {}
+	virtual void beforeExitingStates(Interpreter* interpreter, const Arabica::XPath::NodeSet<std::string>& statesToExit) {}
+	virtual void afterExitingStates(Interpreter* interpreter) {}
 };
-  
+
 class NumAttr {
 public:
 	NumAttr(const std::string& str) {
@@ -93,13 +93,13 @@ public:
 
 	void interpret();
 
-  void addMonitor(InterpreterMonitor* monitor)             {
-    _monitors.insert(monitor);
-  }
+	void addMonitor(InterpreterMonitor* monitor)             {
+		_monitors.insert(monitor);
+	}
 
-  void removeMonitor(InterpreterMonitor* monitor)          {
-    _monitors.erase(monitor);
-  }
+	void removeMonitor(InterpreterMonitor* monitor)          {
+		_monitors.erase(monitor);
+	}
 
 	void setBaseURI(std::string baseURI)                     {
 		_baseURI = URL(baseURI);
@@ -109,9 +109,11 @@ public:
 	}
 	bool toAbsoluteURI(URL& uri);
 
-  void setCmdLineOptions(int argc, char** argv);
-  Data getCmdLineOptions() { return _cmdLineOptions; }
-  
+	void setCmdLineOptions(int argc, char** argv);
+	Data getCmdLineOptions() {
+		return _cmdLineOptions;
+	}
+
 	DataModel getDataModel()                                 {
 		return _dataModel;
 	}
@@ -142,7 +144,7 @@ public:
 		return _document;
 	}
 
-  void setName(const std::string& name);
+	void setName(const std::string& name);
 	const std::string& getName()                             {
 		return _name;
 	}
@@ -150,15 +152,17 @@ public:
 		return _sessionId;
 	}
 
-  HTTPServletInvoker* getHTTPServlet() { return _httpServlet; }
-  
+	HTTPServletInvoker* getHTTPServlet() {
+		return _httpServlet;
+	}
+
 	bool runOnMainThread(int fps, bool blocking = true);
 
 	static bool isMember(const Arabica::DOM::Node<std::string>& node, const Arabica::XPath::NodeSet<std::string>& set);
 
 	void dump();
-  bool hasLegalConfiguration();
-  
+	bool hasLegalConfiguration();
+
 	static bool isState(const Arabica::DOM::Node<std::string>& state);
 	static bool isPseudoState(const Arabica::DOM::Node<std::string>& state);
 	static bool isTransitionTarget(const Arabica::DOM::Node<std::string>& elem);
@@ -215,10 +219,10 @@ protected:
 	uscxml::concurrency::BlockingQueue<Event>* _parentQueue;
 	DelayedEventQueue* _sendQueue;
 
-  HTTPServletInvoker* _httpServlet;
-  
-  std::set<InterpreterMonitor*> _monitors;
-  
+	HTTPServletInvoker* _httpServlet;
+
+	std::set<InterpreterMonitor*> _monitors;
+
 	static URL toBaseURI(const URL& url);
 
 	void microstep(const Arabica::XPath::NodeSet<std::string>& enabledTransitions);
@@ -235,20 +239,20 @@ protected:
 	                      Arabica::XPath::NodeSet<std::string>& statesToEnter,
 	                      Arabica::XPath::NodeSet<std::string>& statesForDefaultEntry);
 #endif
-  
+
 #ifdef ENTERSTATES_02_2013
 	void enterStates(const Arabica::XPath::NodeSet<std::string>& enabledTransitions);
-  void computeEntrySet(const Arabica::XPath::NodeSet<std::string>& transitions,
-                       Arabica::XPath::NodeSet<std::string>& statesToEnter,
-                       Arabica::XPath::NodeSet<std::string>& statesForDefaultEntry);
-  void addDescendentStatesToEnter(const Arabica::DOM::Node<std::string>& state,
-                                  Arabica::XPath::NodeSet<std::string>& statesToEnter,
-                                  Arabica::XPath::NodeSet<std::string>& statesForDefaultEntry);
-  void addAncestorStatesToEnter(const Arabica::DOM::Node<std::string>& state,
-                                const Arabica::DOM::Node<std::string>& ancestor,
-                                Arabica::XPath::NodeSet<std::string>& statesToEnter,
-                                Arabica::XPath::NodeSet<std::string>& statesForDefaultEntry);
-  Arabica::DOM::Node<std::string> getTransitionDomain(const Arabica::DOM::Node<std::string>& transition);
+	void computeEntrySet(const Arabica::XPath::NodeSet<std::string>& transitions,
+	                     Arabica::XPath::NodeSet<std::string>& statesToEnter,
+	                     Arabica::XPath::NodeSet<std::string>& statesForDefaultEntry);
+	void addDescendentStatesToEnter(const Arabica::DOM::Node<std::string>& state,
+	                                Arabica::XPath::NodeSet<std::string>& statesToEnter,
+	                                Arabica::XPath::NodeSet<std::string>& statesForDefaultEntry);
+	void addAncestorStatesToEnter(const Arabica::DOM::Node<std::string>& state,
+	                              const Arabica::DOM::Node<std::string>& ancestor,
+	                              Arabica::XPath::NodeSet<std::string>& statesToEnter,
+	                              Arabica::XPath::NodeSet<std::string>& statesForDefaultEntry);
+	Arabica::DOM::Node<std::string> getTransitionDomain(const Arabica::DOM::Node<std::string>& transition);
 
 #endif
 
@@ -258,7 +262,7 @@ protected:
 	Arabica::XPath::NodeSet<std::string> selectTransitions(const std::string& event);
 	Arabica::DOM::Node<std::string> getSourceState(const Arabica::DOM::Node<std::string>& transition);
 	Arabica::DOM::Node<std::string> findLCCA(const Arabica::XPath::NodeSet<std::string>& states);
-  Arabica::XPath::NodeSet<std::string> getProperAncestors(const Arabica::DOM::Node<std::string>& s1, const Arabica::DOM::Node<std::string>& s2);
+	Arabica::XPath::NodeSet<std::string> getProperAncestors(const Arabica::DOM::Node<std::string>& s1, const Arabica::DOM::Node<std::string>& s2);
 
 
 	void send(const Arabica::DOM::Node<std::string>& element);
@@ -286,7 +290,7 @@ protected:
 	std::string _name;
 	std::string _sessionId;
 
-  Data _cmdLineOptions;
+	Data _cmdLineOptions;
 
 	IOProcessor getIOProcessor(const std::string& type);
 //    IOProcessor* getIOProcessorForId(const std::string& sendId);
@@ -299,7 +303,7 @@ protected:
 
 	/// We need to remember to adapt them when the DOM is operated upon
 	std::map<std::string, Arabica::DOM::Node<std::string> > _cachedStates;
-  std::map<std::string, URL> _cachedURLs;
+	std::map<std::string, URL> _cachedURLs;
 };
 
 }

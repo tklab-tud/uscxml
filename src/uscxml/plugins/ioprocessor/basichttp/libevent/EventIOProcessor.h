@@ -37,18 +37,20 @@ public:
 
 	Data getDataModelVariables();
 
-  /// HTTPServlet
+	/// HTTPServlet
 	void httpRecvRequest(const HTTPServer::Request& req);
-	void setURL(const std::string& url) { _url = url; }
+	void setURL(const std::string& url) {
+		_url = url;
+	}
 
-  // URLMonitor
-  void downloadStarted(const URL& url);
-  void downloadCompleted(const URL& url);
-  void downloadFailed(const URL& url, int errorCode);
+	// URLMonitor
+	void downloadStarted(const URL& url);
+	void downloadCompleted(const URL& url);
+	void downloadFailed(const URL& url, int errorCode);
 
 protected:
 	std::string _url;
-  std::map<std::string, std::pair<URL, SendRequest> > _sendRequests;
+	std::map<std::string, std::pair<URL, SendRequest> > _sendRequests;
 };
 
 #ifdef BUILD_AS_PLUGINS

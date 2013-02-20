@@ -178,95 +178,95 @@ Data Data::fromXML(const std::string& xmlString) {
 }
 
 Data Data::fromJSON(const std::string& jsonString) {
-  Data data;
-  jsmn_parser p;
+	Data data;
+	jsmn_parser p;
 
-  jsmntok_t* t = NULL;
-  
-  // we do not know the number of tokens beforehand, start with something sensible and increase
-  int rv;
-  int frac = 32; // this will get decreased to 16 to first iteration for 1/16 length/token ratio
-  do {
-    jsmn_init(&p);
+	jsmntok_t* t = NULL;
 
-    frac /= 2;
-    int nrTokens = jsonString.size() / frac;
-    if (t != NULL) {
-      free(t);
+	// we do not know the number of tokens beforehand, start with something sensible and increase
+	int rv;
+	int frac = 32; // this will get decreased to 16 to first iteration for 1/16 length/token ratio
+	do {
+		jsmn_init(&p);
+
+		frac /= 2;
+		int nrTokens = jsonString.size() / frac;
+		if (t != NULL) {
+			free(t);
 //      LOG(INFO) << "Increasing JSON length to token ratio to 1/" << frac;
-    }
-    t = (jsmntok_t*)malloc(nrTokens * sizeof(jsmntok_t));
-    if (t == NULL) {
-      LOG(ERROR) << "Cannot parse JSON, ran out of memory!";
-      return data;
-    }
-    memset(t, 0, nrTokens * sizeof(jsmntok_t));
-    
-    rv = jsmn_parse(&p, jsonString.c_str(), t, nrTokens);
-  } while (rv == JSMN_ERROR_NOMEM && frac > 1);
-  
-  if (rv != 0) {
-    switch (rv) {
-      case JSMN_ERROR_NOMEM:
-        LOG(ERROR) << "Cannot parse JSON, not enough tokens were provided!";
-        break;
-      case JSMN_ERROR_INVAL:
-        LOG(ERROR) << "Cannot parse JSON, invalid character inside JSON string!";
-        break;
-      case JSMN_ERROR_PART:
-        LOG(ERROR) << "Cannot parse JSON, the string is not a full JSON packet, more bytes expected!";
-        break;
-      default:
-        break;
-    }
-    free(t);
-    return data;
-  }
-  
-  std::list<Data*> dataStack;
-  std::list<jsmntok_t> tokenStack;
-  dataStack.push_back(&data);
-  
-  size_t currTok = 0;
-  do {
-    switch (t[currTok].type) {
-      case JSMN_STRING:
-        dataStack.back()->type = Data::VERBATIM;
-      case JSMN_PRIMITIVE:
-        dataStack.back()->atom = jsonString.substr(t[currTok].start, t[currTok].end - t[currTok].start);
-        dataStack.pop_back();
-        currTok++;
-        break;
-      case JSMN_OBJECT:
-      case JSMN_ARRAY:
-        tokenStack.push_back(t[currTok]);
-        currTok++;
-        break;
-    }
-    
-    // there are no more tokens
-    if (t[currTok].end == 0 || tokenStack.empty())
-      break;
+		}
+		t = (jsmntok_t*)malloc(nrTokens * sizeof(jsmntok_t));
+		if (t == NULL) {
+			LOG(ERROR) << "Cannot parse JSON, ran out of memory!";
+			return data;
+		}
+		memset(t, 0, nrTokens * sizeof(jsmntok_t));
 
-    // next token starts after current one => pop
-    if (t[currTok].end > tokenStack.back().end)
-      tokenStack.pop_back();
-    
-    if (tokenStack.back().type == JSMN_OBJECT && (t[currTok].type == JSMN_PRIMITIVE || t[currTok].type == JSMN_STRING)) {
-      // grab key and push new data
-      dataStack.push_back(&(dataStack.back()->compound[jsonString.substr(t[currTok].start, t[currTok].end - t[currTok].start)]));
-      currTok++;
-    }
-    if (tokenStack.back().type == JSMN_ARRAY) {
-      // push new index
-      dataStack.back()->array.push_back(Data());
-      dataStack.push_back(&(dataStack.back()->array.back()));
-    }
-    
-  } while (true);
-  
-  free(t);
-  return data;
+		rv = jsmn_parse(&p, jsonString.c_str(), t, nrTokens);
+	} while (rv == JSMN_ERROR_NOMEM && frac > 1);
+
+	if (rv != 0) {
+		switch (rv) {
+		case JSMN_ERROR_NOMEM:
+			LOG(ERROR) << "Cannot parse JSON, not enough tokens were provided!";
+			break;
+		case JSMN_ERROR_INVAL:
+			LOG(ERROR) << "Cannot parse JSON, invalid character inside JSON string!";
+			break;
+		case JSMN_ERROR_PART:
+			LOG(ERROR) << "Cannot parse JSON, the string is not a full JSON packet, more bytes expected!";
+			break;
+		default:
+			break;
+		}
+		free(t);
+		return data;
+	}
+
+	std::list<Data*> dataStack;
+	std::list<jsmntok_t> tokenStack;
+	dataStack.push_back(&data);
+
+	size_t currTok = 0;
+	do {
+		switch (t[currTok].type) {
+		case JSMN_STRING:
+			dataStack.back()->type = Data::VERBATIM;
+		case JSMN_PRIMITIVE:
+			dataStack.back()->atom = jsonString.substr(t[currTok].start, t[currTok].end - t[currTok].start);
+			dataStack.pop_back();
+			currTok++;
+			break;
+		case JSMN_OBJECT:
+		case JSMN_ARRAY:
+			tokenStack.push_back(t[currTok]);
+			currTok++;
+			break;
+		}
+
+		// there are no more tokens
+		if (t[currTok].end == 0 || tokenStack.empty())
+			break;
+
+		// next token starts after current one => pop
+		if (t[currTok].end > tokenStack.back().end)
+			tokenStack.pop_back();
+
+		if (tokenStack.back().type == JSMN_OBJECT && (t[currTok].type == JSMN_PRIMITIVE || t[currTok].type == JSMN_STRING)) {
+			// grab key and push new data
+			dataStack.push_back(&(dataStack.back()->compound[jsonString.substr(t[currTok].start, t[currTok].end - t[currTok].start)]));
+			currTok++;
+		}
+		if (tokenStack.back().type == JSMN_ARRAY) {
+			// push new index
+			dataStack.back()->array.push_back(Data());
+			dataStack.push_back(&(dataStack.back()->array.back()));
+		}
+
+	} while (true);
+
+	free(t);
+	return data;
 }
 
 Event Event::fromXML(const std::string& xmlString) {
@@ -326,94 +326,94 @@ InvokeRequest InvokeRequest::fromXML(const std::string& xmlString) {
 
 #ifndef SWIGJAVA
 std::ostream& operator<< (std::ostream& os, const InvokeRequest& invokeReq) {
-  
-  std::string indent;
-  for (int i = 0; i < _dataIndentation; i++) {
-    indent += "  ";
-  }
-  
-  os << indent << "InvokeReq" << (invokeReq.autoForward ? " with autoforward" : "") << std::endl;
-    
-  if (invokeReq.type.size() > 0)
-    os << indent << "  type: " << invokeReq.type << std::endl;
-  
-  if (invokeReq.src.size() > 0)
-    os<< indent  << "  src: " << invokeReq.src << std::endl;
-  
-  if (invokeReq.namelist.size() > 0) {
-    os << indent << "  namelist: " << std::endl;
-    InvokeRequest::namelist_t::const_iterator namelistIter = invokeReq.namelist.begin();
-    while(namelistIter != invokeReq.namelist.end()) {
-      os << indent << "    " << namelistIter->first << ": " << namelistIter->second << std::endl;
-      namelistIter++;
-    }
-  }
-  
-  if (invokeReq.params.size() > 0) {
-    os << indent << "  params: " << std::endl;
-    SendRequest::params_t::const_iterator paramIter = invokeReq.params.begin();
-    while(paramIter != invokeReq.params.end()) {
-      os << indent << "    " << paramIter->first << ": " << paramIter->second << std::endl;
-      paramIter++;
-    }
-  }
-  
-  if (invokeReq.content.size() > 0)
-    os << indent << "  content: " << invokeReq.content << std::endl;
-  
-  _dataIndentation++;
-  os << (Event)invokeReq;
-  _dataIndentation--;
-  return os;
-  
+
+	std::string indent;
+	for (int i = 0; i < _dataIndentation; i++) {
+		indent += "  ";
+	}
+
+	os << indent << "InvokeReq" << (invokeReq.autoForward ? " with autoforward" : "") << std::endl;
+
+	if (invokeReq.type.size() > 0)
+		os << indent << "  type: " << invokeReq.type << std::endl;
+
+	if (invokeReq.src.size() > 0)
+		os<< indent  << "  src: " << invokeReq.src << std::endl;
+
+	if (invokeReq.namelist.size() > 0) {
+		os << indent << "  namelist: " << std::endl;
+		InvokeRequest::namelist_t::const_iterator namelistIter = invokeReq.namelist.begin();
+		while(namelistIter != invokeReq.namelist.end()) {
+			os << indent << "    " << namelistIter->first << ": " << namelistIter->second << std::endl;
+			namelistIter++;
+		}
+	}
+
+	if (invokeReq.params.size() > 0) {
+		os << indent << "  params: " << std::endl;
+		SendRequest::params_t::const_iterator paramIter = invokeReq.params.begin();
+		while(paramIter != invokeReq.params.end()) {
+			os << indent << "    " << paramIter->first << ": " << paramIter->second << std::endl;
+			paramIter++;
+		}
+	}
+
+	if (invokeReq.content.size() > 0)
+		os << indent << "  content: " << invokeReq.content << std::endl;
+
+	_dataIndentation++;
+	os << (Event)invokeReq;
+	_dataIndentation--;
+	return os;
+
 }
 #endif
 
-  
+
 #ifndef SWIGJAVA
 std::ostream& operator<< (std::ostream& os, const SendRequest& sendReq) {
 
-  std::string indent;
-  for (int i = 0; i < _dataIndentation; i++) {
-    indent += "  ";
-  }
+	std::string indent;
+	for (int i = 0; i < _dataIndentation; i++) {
+		indent += "  ";
+	}
 
-  os << indent<< "SendReq" << std::endl;
+	os << indent<< "SendReq" << std::endl;
 
-  if (sendReq.target.size() > 0)
-    os << indent << "  target: " << sendReq.target << std::endl;
+	if (sendReq.target.size() > 0)
+		os << indent << "  target: " << sendReq.target << std::endl;
 
-  if (sendReq.type.size() > 0)
-    os << indent << "  type: " << sendReq.type << std::endl;
+	if (sendReq.type.size() > 0)
+		os << indent << "  type: " << sendReq.type << std::endl;
 
-  if (sendReq.delayMs > 0)
-    os<< indent  << "  delay: " << sendReq.delayMs << std::endl;
+	if (sendReq.delayMs > 0)
+		os<< indent  << "  delay: " << sendReq.delayMs << std::endl;
 
-  if (sendReq.namelist.size() > 0) {
-    os << indent << "  namelist: " << std::endl;
-    SendRequest::namelist_t::const_iterator namelistIter = sendReq.namelist.begin();
-    while(namelistIter != sendReq.namelist.end()) {
-      os << indent << "    " << namelistIter->first << ": " << namelistIter->second << std::endl;
-      namelistIter++;
-    }
-  }
+	if (sendReq.namelist.size() > 0) {
+		os << indent << "  namelist: " << std::endl;
+		SendRequest::namelist_t::const_iterator namelistIter = sendReq.namelist.begin();
+		while(namelistIter != sendReq.namelist.end()) {
+			os << indent << "    " << namelistIter->first << ": " << namelistIter->second << std::endl;
+			namelistIter++;
+		}
+	}
 
-  if (sendReq.params.size() > 0) {
-    os << indent << "  params: " << std::endl;
-    SendRequest::params_t::const_iterator paramIter = sendReq.params.begin();
-    while(paramIter != sendReq.params.end()) {
-      os << indent << "    " << paramIter->first << ": " << paramIter->second << std::endl;
-      paramIter++;
-    }
-  }
+	if (sendReq.params.size() > 0) {
+		os << indent << "  params: " << std::endl;
+		SendRequest::params_t::const_iterator paramIter = sendReq.params.begin();
+		while(paramIter != sendReq.params.end()) {
+			os << indent << "    " << paramIter->first << ": " << paramIter->second << std::endl;
+			paramIter++;
+		}
+	}
 
-  if (sendReq.content.size() > 0)
-    os << indent << "  content: " << sendReq.content << std::endl;
+	if (sendReq.content.size() > 0)
+		os << indent << "  content: " << sendReq.content << std::endl;
 
-  _dataIndentation++;
-  os << (Event)sendReq;
-  _dataIndentation--;
-  return os;
+	_dataIndentation++;
+	os << (Event)sendReq;
+	_dataIndentation--;
+	return os;
 
 }
 #endif
@@ -424,7 +424,7 @@ std::ostream& operator<< (std::ostream& os, const Event& event) {
 	for (int i = 0; i < _dataIndentation; i++) {
 		indent += "  ";
 	}
-  
+
 	os << indent << (event.type == Event::EXTERNAL ? "External" : "Internal") << " Event " << (event.dom ? "with DOM attached" : "") << std::endl;
 
 	if (event.name.size() > 0)
@@ -459,29 +459,29 @@ std::ostream& operator<< (std::ostream& os, const Data& data) {
 		for (unsigned int i = 0; i < longestKey; i++)
 			keyPadding += " ";
 
-    std::string seperator;
+		std::string seperator;
 		os << std::endl << indent << "{";
 		compoundIter = data.compound.begin();
 		while(compoundIter != data.compound.end()) {
 			os << seperator << std::endl << indent << "  \"" << compoundIter->first << "\": " << keyPadding.substr(0, longestKey - compoundIter->first.size());
-      _dataIndentation += 1;
-      os << compoundIter->second;
-      _dataIndentation -= 1;
-      seperator = ", ";
+			_dataIndentation += 1;
+			os << compoundIter->second;
+			_dataIndentation -= 1;
+			seperator = ", ";
 			compoundIter++;
 		}
 		os << std::endl << indent << "}";
 	} else if (data.array.size() > 0) {
 
-    std::string seperator;
+		std::string seperator;
 		os << std::endl << indent << "[";
 		std::list<Data>::const_iterator arrayIter = data.array.begin();
 		while(arrayIter != data.array.end()) {
-      _dataIndentation += 1;
-      os << seperator << *arrayIter;
-      _dataIndentation -= 1;
-      seperator = ", ";
-      arrayIter++;
+			_dataIndentation += 1;
+			os << seperator << *arrayIter;
+			_dataIndentation -= 1;
+			seperator = ", ";
+			arrayIter++;
 		}
 		os << std::endl << indent << "]";
 	} else if (data.atom.size() > 0) {
@@ -491,8 +491,8 @@ std::ostream& operator<< (std::ostream& os, const Data& data) {
 			os << data.atom;
 		}
 	} else {
-    os << "undefined";
-  }
+		os << "undefined";
+	}
 	return os;
 }
 #endif

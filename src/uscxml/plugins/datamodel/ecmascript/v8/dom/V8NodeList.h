@@ -32,42 +32,42 @@ namespace DOM {
 
 class V8NodeList {
 public:
-    struct V8NodeListPrivate {
-      V8DOM* dom;
-      Arabica::DOM::NodeList<std::string>* nativeObj;
-    };
+	struct V8NodeListPrivate {
+		V8DOM* dom;
+		Arabica::DOM::NodeList<std::string>* nativeObj;
+	};
 
-    V8_DESTRUCTOR(V8NodeListPrivate);
-    static bool hasInstance(v8::Handle<v8::Value>);
+	V8_DESTRUCTOR(V8NodeListPrivate);
+	static bool hasInstance(v8::Handle<v8::Value>);
 
-    static v8::Handle<v8::Value> itemCallback(const v8::Arguments&);
+	static v8::Handle<v8::Value> itemCallback(const v8::Arguments&);
 
-    static v8::Handle<v8::Value> lengthAttrGetter(v8::Local<v8::String> property, const v8::AccessorInfo& info);
+	static v8::Handle<v8::Value> lengthAttrGetter(v8::Local<v8::String> property, const v8::AccessorInfo& info);
 
-    static v8::Persistent<v8::FunctionTemplate> Tmpl;
-    static v8::Handle<v8::FunctionTemplate> getTmpl() {
-        if (Tmpl.IsEmpty()) {
-            v8::Handle<v8::FunctionTemplate> tmpl = v8::FunctionTemplate::New();
-            tmpl->SetClassName(v8::String::New("NodeList"));
-            tmpl->ReadOnlyPrototype();
+	static v8::Persistent<v8::FunctionTemplate> Tmpl;
+	static v8::Handle<v8::FunctionTemplate> getTmpl() {
+		if (Tmpl.IsEmpty()) {
+			v8::Handle<v8::FunctionTemplate> tmpl = v8::FunctionTemplate::New();
+			tmpl->SetClassName(v8::String::New("NodeList"));
+			tmpl->ReadOnlyPrototype();
 
-            v8::Local<v8::ObjectTemplate> instance = tmpl->InstanceTemplate();
-            v8::Local<v8::ObjectTemplate> prototype = tmpl->PrototypeTemplate();
-            (void)prototype; // surpress unused warnings
-            
-            instance->SetInternalFieldCount(1);
+			v8::Local<v8::ObjectTemplate> instance = tmpl->InstanceTemplate();
+			v8::Local<v8::ObjectTemplate> prototype = tmpl->PrototypeTemplate();
+			(void)prototype; // surpress unused warnings
 
-            instance->SetAccessor(v8::String::NewSymbol("length"), V8NodeList::lengthAttrGetter, 0,
-                                  v8::External::New(0), static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None));
+			instance->SetInternalFieldCount(1);
 
-            prototype->Set(v8::String::NewSymbol("item"),
-                           v8::FunctionTemplate::New(V8NodeList::itemCallback, v8::Undefined()), static_cast<v8::PropertyAttribute>(v8::DontDelete));
+			instance->SetAccessor(v8::String::NewSymbol("length"), V8NodeList::lengthAttrGetter, 0,
+			                      v8::External::New(0), static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None));
+
+			prototype->Set(v8::String::NewSymbol("item"),
+			               v8::FunctionTemplate::New(V8NodeList::itemCallback, v8::Undefined()), static_cast<v8::PropertyAttribute>(v8::DontDelete));
 
 
-            Tmpl = v8::Persistent<v8::FunctionTemplate>::New(tmpl);
-        }
-        return Tmpl;
-    }
+			Tmpl = v8::Persistent<v8::FunctionTemplate>::New(tmpl);
+		}
+		return Tmpl;
+	}
 
 
 };

@@ -83,15 +83,25 @@ public:
 		_impl->setInterpreter(interpreter);
 	}
 
-	std::string getLocalName() { return _impl->getLocalName(); }
-	std::string getNamespace() { return _impl->getNamespace(); }
-	void enterElement(const Arabica::DOM::Node<std::string>& node) { return _impl->enterElement(node); }
-	void exitElement(const Arabica::DOM::Node<std::string>& node) { return _impl->exitElement(node); }
-	bool processChildren() { return _impl->processChildren(); }
+	std::string getLocalName() {
+		return _impl->getLocalName();
+	}
+	std::string getNamespace() {
+		return _impl->getNamespace();
+	}
+	void enterElement(const Arabica::DOM::Node<std::string>& node) {
+		return _impl->enterElement(node);
+	}
+	void exitElement(const Arabica::DOM::Node<std::string>& node) {
+		return _impl->exitElement(node);
+	}
+	bool processChildren() {
+		return _impl->processChildren();
+	}
 protected:
 	boost::shared_ptr<ExecutableContentImpl> _impl;
 
-    };
+};
 
 class IOProcessorImpl {
 public:
