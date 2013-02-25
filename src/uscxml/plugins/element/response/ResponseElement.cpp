@@ -23,6 +23,7 @@ boost::shared_ptr<ExecutableContentImpl> ResponseElement::create(Interpreter* in
 }
 
 void ResponseElement::enterElement(const Arabica::DOM::Node<std::string>& node) {
+	// try to get the request id
 	if (!HAS_ATTR(node, "request") && !HAS_ATTR(node, "requestexpr")) {
 		LOG(ERROR) << "Response element requires request or requestexpr";
 		return;
@@ -31,12 +32,9 @@ void ResponseElement::enterElement(const Arabica::DOM::Node<std::string>& node) 
 		LOG(ERROR) << "Response element with requestexpr requires datamodel";
 		return;
 	}
-	if (HAS_ATTR(node, "close")) {
-
-	}
-
 	std::string requestId = (HAS_ATTR(node, "request") ? ATTR(node, "request") : _interpreter->getDataModel().evalAsString(ATTR(node, "requestexpr")));
 
+	// try to get the request object
 	HTTPServletInvoker* servlet = _interpreter->getHTTPServlet();
 	tthread::lock_guard<tthread::recursive_mutex> lock(servlet->getMutex());
 
@@ -44,19 +42,39 @@ void ResponseElement::enterElement(const Arabica::DOM::Node<std::string>& node) 
 		LOG(ERROR) << "No matching HTTP request for response element";
 		return;
 	}
+	HTTPServer::Request httpReq = servlet->getRequests()[requestId];
+	HTTPServer::Reply httpReply(httpReq);
 
+	// get the status or default to 200
 	std::string statusStr = (HAS_ATTR(node, "status") ? ATTR(node, "status") : "200");
 	if (!isNumeric(statusStr.c_str(), 10)) {
 		LOG(ERROR) << "Response element with non-numeric status " << statusStr;
 		return;
 	}
-	int status = strTo<int>(statusStr);
+	httpReply.status = strTo<int>(statusStr);;
 
-	HTTPServer::Request httpReq = servlet->getRequests()[requestId];
+	// extract the content
+	Arabica::XPath::NodeSet<std::string> contents = Interpreter::filterChildElements(_interpreter->getXMLPrefixForNS(getNamespace()) + "content", node);
+	if (contents.size() > 0) {
+		if (HAS_ATTR(contents[0], "expr")) {
+			if (_interpreter->getDataModel()) {
+				try {
+					std::string contentValue = _interpreter->getDataModel().evalAsString(ATTR(contents[0], "expr"));
+					httpReply.content = contentValue;
+				} catch (Event e) {
+					LOG(ERROR) << "Syntax error with expr in content child of response element:" << std::endl << e << std::endl;
+				}
+			} else {
+				LOG(ERROR) << "content element has expr attribute but no datamodel is specified.";
+			}
+		} else if (contents[0].hasChildNodes()) {
+			httpReply.content = contents[0].getFirstChild().getNodeValue();
+		} else {
+			LOG(ERROR) << "content element does not specify any content.";
+		}
+	}
 
-	HTTPServer::Reply httpReply(httpReq);
-	httpReply.status = status;
-
+	// send the reply
 	HTTPServer::reply(httpReply);
 	servlet->getRequests().erase(requestId);
 }

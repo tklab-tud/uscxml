@@ -7,6 +7,7 @@
 #include <event2/http.h>
 
 #include "uscxml/concurrency/tinythread.h"
+#include "uscxml/Message.h"
 
 namespace uscxml {
 
@@ -14,23 +15,16 @@ class HTTPServlet;
 
 class HTTPServer {
 public:
-	class Request {
+	class Request : public Event {
 	public:
 		Request() : curlReq(NULL) {}
-		std::string type;
-		std::map<std::string, std::string> headers;
 		std::string content;
-		std::string remoteHost;
-		unsigned short remotePort;
-		std::string httpMajor;
-		std::string httpMinor;
-		std::string uri;
 		struct evhttp_request* curlReq;
 	};
 
 	class Reply {
 	public:
-		Reply(Request req) : status(200), type(req.type), curlReq(req.curlReq) {}
+		Reply(Request req) : status(200), type(req.data.compound["type"].atom), curlReq(req.curlReq) {}
 		int status;
 		std::string type;
 		std::map<std::string, std::string> headers;
@@ -44,6 +38,8 @@ public:
 	};
 
 	static HTTPServer* getInstance(int port = 8080);
+	static std::string getBaseURL();
+
 	static void reply(const Reply& reply);
 
 	static bool registerServlet(const std::string& path, HTTPServlet* servlet); ///< Register a servlet, returns false if path is already taken
@@ -60,6 +56,8 @@ private:
 	void determineAddress();
 
 	static void httpRecvReqCallback(struct evhttp_request *req, void *callbackData);
+	void processByMatchingServlet(const Request& request);
+
 
 	std::map<std::string, HTTPServlet*> _servlets;
 	typedef std::map<std::string, HTTPServlet*>::iterator servlet_iter_t;

@@ -1,6 +1,8 @@
 #include "DirMonInvoker.h"
 #include <glog/logging.h>
 
+#include "uscxml/config.h"
+
 #ifdef BUILD_AS_PLUGINS
 #include <Pluma/Connector.hpp>
 #endif
@@ -111,13 +113,38 @@ void DirMonInvoker::handleFileAction(FW::WatchID watchid, const FW::String& dir,
 	case FW::Actions::Modified:
 		event.name = "file.modified";
 		break;
-
 	default:
 		break;
 	}
 
-	event.data.compound["file"].compound["name"]  = Data(filename, Data::VERBATIM);
-	event.data.compound["file"].compound["dir"]   = Data(dir, Data::VERBATIM);
+	std::string basename;
+	size_t lastSep;
+	if ((lastSep = filename.find_last_of(PATH_SEPERATOR)) != std::string::npos) {
+		lastSep++;
+		basename = filename.substr(lastSep, filename.length() - lastSep);
+	} else {
+		basename = filename;
+	}
+
+	std::string extension;
+	size_t lastDot;
+	if ((lastDot = basename.find_last_of(".")) != std::string::npos) {
+		lastDot++;
+		extension = basename.substr(lastDot, basename.length() - lastDot);
+	}
+
+	std::string relPath;
+	if (boost::algorithm::starts_with(filename, dir)) {
+		relPath = filename.substr(dir.length());
+	} else {
+		relPath = filename;
+	}
+
+	event.data.compound["file"].compound["name"] = Data(basename, Data::VERBATIM);
+	event.data.compound["file"].compound["path"] = Data(filename, Data::VERBATIM);
+	event.data.compound["file"].compound["relPath"] = Data(relPath, Data::VERBATIM);
+	event.data.compound["file"].compound["dir"] = Data(dir, Data::VERBATIM);
+	event.data.compound["file"].compound["extension"] = Data(extension, Data::VERBATIM);
 
 	event.data.compound["file"].compound["mtime"] = toStr(fileStat.st_mtime);
 	event.data.compound["file"].compound["ctime"] = toStr(fileStat.st_ctime);

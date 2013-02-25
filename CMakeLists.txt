@@ -430,7 +430,7 @@ file(GLOB_RECURSE SAMPLE_INVOKER
 	src/uscxml/plugins/invoker/sample/*.cpp
 	src/uscxml/plugins/invoker/sample/*.h
 )
-source_group("Invoker" FILES ${SAMPLE_INVOKER})
+source_group("Invoker\\sample" FILES ${SAMPLE_INVOKER})
 if (BUILD_AS_PLUGINS)
 	add_library(
 		invoker_sample SHARED 
@@ -448,7 +448,7 @@ file(GLOB_RECURSE LIBEVENT_IOPROCESSOR
 	src/uscxml/plugins/ioprocessor/basichttp/*.cpp
 	src/uscxml/plugins/ioprocessor/basichttp/*.h
 )
-source_group("IOProcessor" FILES ${LIBEVENT_IOPROCESSOR})
+source_group("IOProcessor\\basichttp" FILES ${LIBEVENT_IOPROCESSOR})
 if (BUILD_AS_PLUGINS)
 	add_library(
 		ioprocessor_basichttp SHARED 
@@ -466,7 +466,7 @@ file(GLOB_RECURSE FETCH_ELEMENT
 	src/uscxml/plugins/element/fetch/*.cpp
 	src/uscxml/plugins/element/fetch/*.h
 )
-source_group("Element" FILES ${FETCH_ELEMENT})
+source_group("Element\\fetch" FILES ${FETCH_ELEMENT})
 if (BUILD_AS_PLUGINS)
 	add_library(
 		element_fetch SHARED 
@@ -478,13 +478,31 @@ else()
 endif()
 
 
+# Postpone element
+
+file(GLOB_RECURSE POSTPONE_ELEMENT
+	src/uscxml/plugins/element/postpone/*.cpp
+	src/uscxml/plugins/element/postpone/*.h
+)
+source_group("Element\\postpone" FILES ${POSTPONE_ELEMENT})
+if (BUILD_AS_PLUGINS)
+	add_library(
+		element_postpone SHARED 
+		${POSTPONE_ELEMENT})
+	target_link_libraries(element_postpone uscxml)
+	set_target_properties(element_postpone PROPERTIES FOLDER "Plugin Element")
+else()
+	list (APPEND USCXML_FILES ${POSTPONE_ELEMENT})
+endif()
+
+
 # Response element
 
 file(GLOB_RECURSE RESPONSE_ELEMENT
 	src/uscxml/plugins/element/response/*.cpp
 	src/uscxml/plugins/element/response/*.h
 )
-source_group("Element" FILES ${RESPONSE_ELEMENT})
+source_group("Element\\response" FILES ${RESPONSE_ELEMENT})
 if (BUILD_AS_PLUGINS)
 	add_library(
 		element_response SHARED 
@@ -502,7 +520,7 @@ file(GLOB_RECURSE DIRMON_INVOKER
 	src/uscxml/plugins/invoker/filesystem/dirmon/*.cpp
 	src/uscxml/plugins/invoker/filesystem/dirmon/*.h
 )
-source_group("Invoker" FILES ${DIRMON_INVOKER})
+source_group("Invoker\\dirmon" FILES ${DIRMON_INVOKER})
 include_directories(${PROJECT_SOURCE_DIR}/src/uscxml/plugins/invoker/filesystem/dirmon/)
 if (BUILD_AS_PLUGINS)
 	add_library(
@@ -523,7 +541,7 @@ if (SQLITE3_FOUND)
 		src/uscxml/plugins/invoker/sqlite3/*.cpp
 		src/uscxml/plugins/invoker/sqlite3/*.h
 	)
-	source_group("Invoker" FILES ${SQLITE3_INVOKER})
+	source_group("Invoker\\sqlite" FILES ${SQLITE3_INVOKER})
 	if (BUILD_AS_PLUGINS)
 		add_library(
 			invoker_sqlite3 SHARED 
@@ -536,6 +554,28 @@ if (SQLITE3_FOUND)
 endif()
 
 
+# ffmpeg invoker
+
+find_package(FFMPEG)
+if (FFMPEG_FOUND)
+	include_directories(${FFMPEG_INCLUDE_DIR})
+	file(GLOB_RECURSE FFMPEG_INVOKER
+		src/uscxml/plugins/invoker/ffmpeg/*.cpp
+		src/uscxml/plugins/invoker/ffmpeg/*.h
+	)
+	source_group("Invoker\\ffmpeg" FILES ${FFMPEG_INVOKER})
+	if (BUILD_AS_PLUGINS)
+		add_library(
+			invoker_ffmpeg SHARED 
+			${FFMPEG_INVOKER})
+		target_link_libraries(invoker_ffmpeg uscxml)
+		set_target_properties(invoker_ffmpeg PROPERTIES FOLDER "Plugin Invoker")
+	else()
+		list (APPEND USCXML_FILES ${FFMPEG_INVOKER})
+	endif()
+endif()
+
+
 # JavaScriptCore ecmascript datamodel
 if (APPLE AND IOS AND OFF)
 	FIND_LIBRARY(JSC_LIBRARY JavaScriptCore)
@@ -544,12 +584,12 @@ if (APPLE AND IOS AND OFF)
 		src/uscxml/plugins/datamodel/ecmascript/JavaScriptCore/*.cpp
 		src/uscxml/plugins/datamodel/ecmascript/JavaScriptCore/*.h
 	)
-	source_group("Datamodel" FILES ${JSC_DATAMODEL})
+	source_group("Datamodel\\jsc" FILES ${JSC_DATAMODEL})
 	file(GLOB_RECURSE JSC_DOM
 		src/uscxml/plugins/datamodel/ecmascript/JavaScriptCore/dom/*.cpp
 		src/uscxml/plugins/datamodel/ecmascript/JavaScriptCore/dom/*.h
 	)
-	source_group("DOM" FILES ${JSC_DOM})
+	source_group("Datamodel\\DOM" FILES ${JSC_DOM})
 	if (BUILD_AS_PLUGINS)
 		add_library(
 			datamodel_jsc SHARED 
@@ -578,7 +618,7 @@ endif()
 			src/uscxml/plugins/datamodel/ecmascript/v8/*.cpp
 			src/uscxml/plugins/datamodel/ecmascript/v8/*.h
 		)
-		source_group("Datamodel" FILES ${V8_DATAMODEL})
+		source_group("Datamodel\\v8" FILES ${V8_DATAMODEL})
 		file(GLOB_RECURSE V8_DOM
 #			${PROJECT_SOURCE_DIR}/contrib/dom/scripts/gen/*.cpp
 #			${PROJECT_SOURCE_DIR}/contrib/dom/scripts/gen/*.h
@@ -589,7 +629,7 @@ endif()
 		# list(APPEND V8_DOM "src/uscxml/plugins/datamodel/ecmascript/v8/dom/V8DOM.cpp")
 		# list(APPEND V8_DOM "src/uscxml/plugins/datamodel/ecmascript/v8/dom/V8DOM.h")
 		
-		source_group("DOM" FILES ${V8_DOM})
+		source_group("Datamodel\\DOM" FILES ${V8_DOM})
 
 		if (BUILD_AS_PLUGINS)
 			add_library(
@@ -624,7 +664,7 @@ if (SWI_FOUND)
 		src/uscxml/plugins/datamodel/prolog/swi/*.cpp
 		src/uscxml/plugins/datamodel/prolog/swi/*.h
 	)
-	source_group("Datamodel" FILES ${SWI_DATAMODEL})
+	source_group("Datamodel\\swi" FILES ${SWI_DATAMODEL})
 	if (BUILD_AS_PLUGINS)
 		add_library(
 			datamodel_swi SHARED 
@@ -654,7 +694,7 @@ if (UMUNDO_FOUND)
 	file(GLOB_RECURSE UMUNDO_INVOKER 
 		src/uscxml/plugins/invoker/umundo/*.cpp 
 		src/uscxml/plugins/invoker/umundo/*.h)
-	source_group("Invoker" FILES ${UMUNDO_INVOKER})
+	source_group("Invoker\\umundo" FILES ${UMUNDO_INVOKER})
 	if (BUILD_AS_PLUGINS)
 		add_library(
 			invoker_umundo SHARED 
@@ -676,7 +716,7 @@ add_definitions("-DUMUNDO_STATIC")
 file(GLOB_RECURSE USCXML_INVOKER 
 	src/uscxml/plugins/invoker/scxml/*.cpp 
 	src/uscxml/plugins/invoker/scxml/*.h)
-source_group("Invoker" FILES ${USCXML_INVOKER})
+source_group("Invoker\\uscxml" FILES ${USCXML_INVOKER})
 if (BUILD_AS_PLUGINS)
 	add_library(
 		invoker_uscxml SHARED 
@@ -691,19 +731,19 @@ endif()
 
 # HTTP server invoker 
 
-file(GLOB_RECURSE HTTPSERVER_INVOKER 
+file(GLOB_RECURSE HTTPSERVLET_INVOKER 
 	src/uscxml/plugins/invoker/http/*.cpp 
 	src/uscxml/plugins/invoker/http/*.h)
-source_group("Invoker" FILES ${HTTPSERVER_INVOKER})
+source_group("Invoker\\httpservlet" FILES ${HTTPSERVLET_INVOKER})
 if (BUILD_AS_PLUGINS)
 	add_library(
 		invoker_httpserver SHARED 
-		${HTTPSERVER_INVOKER})
+		${HTTPSERVLET_INVOKER})
 	target_link_libraries(invoker_httpserver 
 		uscxml)
 		set_target_properties(invoker_httpserver PROPERTIES FOLDER "Plugin Invoker")
 else()
-	list (APPEND USCXML_FILES ${HTTPSERVER_INVOKER})
+	list (APPEND USCXML_FILES ${HTTPSERVLET_INVOKER})
 endif()
 
 
@@ -713,7 +753,7 @@ file(GLOB_RECURSE HEARTBEAT_INVOKER
 	src/uscxml/plugins/invoker/heartbeat/*.cpp
 	src/uscxml/plugins/invoker/heartbeat/*.h
 )
-source_group("Invoker" FILES ${HEARTBEAT_INVOKER})
+source_group("Invoker\\heartbeat" FILES ${HEARTBEAT_INVOKER})
 if (BUILD_AS_PLUGINS)
 	add_library(
 		invoker_heartbeat SHARED 
@@ -743,7 +783,7 @@ if (OPENSCENEGRAPH_FOUND AND OPENGL_FOUND)
 	file(GLOB_RECURSE OPENSCENEGRAPH_INVOKER 
 		src/uscxml/plugins/invoker/graphics/openscenegraph/*.cpp 
 		src/uscxml/plugins/invoker/graphics/openscenegraph/*.h)
-	source_group("Invoker" FILES ${OPENSCENEGRAPH_INVOKER})
+	source_group("Invoker\\scenegraph" FILES ${OPENSCENEGRAPH_INVOKER})
 
 	if (BUILD_AS_PLUGINS)
 		add_library(
@@ -775,7 +815,7 @@ if (MILES_FOUND AND OFF)
 	include_directories(${OPENAL_INCLUDE_DIR})
 
   file(GLOB_RECURSE MILES_INVOKER src/uscxml/invoker/modality/miles/*.cpp src/uscxml/invoker/modality/miles/*.h)
-	source_group("Invoker" FILES ${MILES_INVOKER})
+	source_group("Invoker\\miles" FILES ${MILES_INVOKER})
 
 	if (BUILD_AS_PLUGINS)
 		add_library(

@@ -14,9 +14,15 @@ public:
 	virtual ~BlockingQueue() {
 	}
 
-	virtual void push(T& elem) {
+	virtual void push(const T& elem) {
 		tthread::lock_guard<tthread::mutex> lock(_mutex);
 		_queue.push_back(elem);
+		_cond.notify_all();
+	}
+
+	virtual void push_front(const T& elem) {
+		tthread::lock_guard<tthread::mutex> lock(_mutex);
+		_queue.push_front(elem);
 		_cond.notify_all();
 	}
 

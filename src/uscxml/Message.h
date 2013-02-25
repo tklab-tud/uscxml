@@ -62,6 +62,9 @@ public:
 
 	Event() : type(INTERNAL) {}
 	Event(const Arabica::DOM::Node<std::string>& xmlString) : type(INTERNAL) {};
+	bool operator< (const Event& other) const     {
+		return this < &other;
+	}
 
 	std::string name;
 	Type type;

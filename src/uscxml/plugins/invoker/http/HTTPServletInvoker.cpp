@@ -117,24 +117,15 @@ void HTTPServletInvoker::httpRecvRequest(const HTTPServer::Request& req) {
 
 	_requests[toStr((uintptr_t)req.curlReq)] = req;
 
-	Event event;
+	Event event = req;
 
 	if (_isInterpreterGlobal) {
-		event.name = "http." + req.type;
+		event.name = "http." + event.data.compound["type"].atom;
 		event.origin = toStr((uintptr_t)req.curlReq);
 	} else {
 		event.name = _callback;
 		event.data.compound["reqId"] = Data(toStr((uintptr_t)req.curlReq), Data::VERBATIM);
 	}
-
-	std::map<std::string, std::string>::const_iterator headerIter = req.headers.begin();
-	while(headerIter != req.headers.end()) {
-		event.data.compound["headers"].compound[headerIter->first] = Data(headerIter->second, Data::VERBATIM);
-		headerIter++;
-	}
-
-	event.data.compound["content"] = Data(req.content, Data::VERBATIM);
-	event.data.compound["type"] = Data(req.type, Data::VERBATIM);
 
 	returnEvent(event);
 

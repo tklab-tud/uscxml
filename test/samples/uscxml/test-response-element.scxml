@@ -3,9 +3,9 @@
 	<state id="start">
 		<state id="loop">
 			<transition event="http" target="loop">
-				<!-- script>
+				<script>
 					dump(_event);
-				</script -->
+				</script>
 				<response status="200" requestexpr="_event.origin" />
 			</transition>
 		</state>

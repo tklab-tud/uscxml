@@ -416,7 +416,6 @@ void URLFetcher::perform() {
 	{
 		tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
 		if (_handlesToURLs.empty()) {
-			std::cout << "Waiting for work" << std::endl;
 			_condVar.wait(_mutex);
 		}
 		curl_multi_perform(_multiHandle, &stillRunning);

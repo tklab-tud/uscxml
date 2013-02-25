@@ -129,13 +129,27 @@ public:
 	Arabica::XPath::StandardNamespaceContext<std::string>& getNSContext() {
 		return _nsContext;
 	}
-
-	void receive(Event& event)                               {
-		_externalQueue.push(event);
+	std::string getXMLPrefixForNS(const std::string& ns)     {
+		if (_nsToPrefix.find(ns) != _nsToPrefix.end())
+			return _nsToPrefix[ns] + ":";
+		return "";
 	}
-	void receiveInternal(Event& event)                       {
+
+	void receive(const Event& event, bool toFront = false)         {
+		if (toFront) {
+			_externalQueue.push_front(event);
+		} else {
+			_externalQueue.push(event);
+		}
+	}
+	void receiveInternal(const Event& event)                       {
 		_internalQueue.push_back(event);
 	}
+
+	Event getCurrentEvent() {
+		return _currEvent;
+	}
+
 	Arabica::XPath::NodeSet<std::string> getConfiguration()  {
 		return _configuration;
 	}
@@ -202,8 +216,9 @@ protected:
 	Arabica::XPath::XPath<std::string> _xpath;
 	Arabica::XPath::StandardNamespaceContext<std::string> _nsContext;
 	std::string _xmlNSPrefix; // the actual prefix for elements in the xml file
-	std::string _xpathPrefix;    // prefix mapped for xpath, "scxml" is _xmlNSPrefix is empty but _nsURL set
+	std::string _xpathPrefix; // prefix mapped for xpath, "scxml" is _xmlNSPrefix is empty but _nsURL set
 	std::string _nsURL;       // ough to be "http://www.w3.org/2005/07/scxml"
+	std::map<std::string, std::string> _nsToPrefix;
 
 	bool _running;
 	bool _done;
@@ -218,6 +233,8 @@ protected:
 	uscxml::concurrency::BlockingQueue<Event> _externalQueue;
 	uscxml::concurrency::BlockingQueue<Event>* _parentQueue;
 	DelayedEventQueue* _sendQueue;
+
+	Event _currEvent;
 
 	HTTPServletInvoker* _httpServlet;
 

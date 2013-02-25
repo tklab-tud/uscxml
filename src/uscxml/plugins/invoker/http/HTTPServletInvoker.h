@@ -19,7 +19,7 @@ public:
 
 	virtual std::set<std::string> getNames() {
 		std::set<std::string> names;
-		names.insert("httpserver");
+		names.insert("httpservlet");
 		names.insert("http://uscxml.tk.informatik.tu-darmstadt.de/#httpserver");
 		return names;
 	}

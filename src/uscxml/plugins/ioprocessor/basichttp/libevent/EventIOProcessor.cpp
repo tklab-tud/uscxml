@@ -67,10 +67,26 @@ Data EventIOProcessor::getDataModelVariables() {
 }
 
 void EventIOProcessor::httpRecvRequest(const HTTPServer::Request& req) {
-	Event reqEvent;
+	Event reqEvent = req;
 	reqEvent.type = Event::EXTERNAL;
 	bool scxmlStructFound = false;
 
+	if (reqEvent.data.compound["header"].compound.find("_scxmleventstruct") != reqEvent.data.compound["header"].compound.end()) {
+		// TODO: this looses all other information
+		reqEvent = Event::fromXML(evhttp_decode_uri(reqEvent.data.compound["header"].compound["_scxmleventstruct"].atom.c_str()));
+		scxmlStructFound = true;
+	}
+	if (reqEvent.data.compound["header"].compound.find("_scxmleventname") != reqEvent.data.compound["header"].compound.end()) {
+		reqEvent.name = evhttp_decode_uri(reqEvent.data.compound["header"].compound["_scxmleventname"].atom.c_str());
+	}
+
+	std::map<std::string, Data>::iterator headerIter = reqEvent.data.compound["header"].compound.begin();
+	while(headerIter != reqEvent.data.compound["header"].compound.end()) {
+		reqEvent.data.compound[headerIter->first] = Data(evhttp_decode_uri(headerIter->second.atom.c_str()), Data::VERBATIM);
+		headerIter++;
+	}
+
+#if 0
 	std::map<std::string, std::string>::const_iterator headerIter = req.headers.begin();
 	while(headerIter != req.headers.end()) {
 		if (boost::iequals("_scxmleventstruct", headerIter->first)) {
@@ -84,6 +100,7 @@ void EventIOProcessor::httpRecvRequest(const HTTPServer::Request& req) {
 		}
 		headerIter++;
 	}
+#endif
 
 	if (reqEvent.name.length() == 0)
 		reqEvent.name = req.type;

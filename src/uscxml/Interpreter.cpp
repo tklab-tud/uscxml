@@ -137,13 +137,16 @@ void Interpreter::startPrefixMapping(const std::string& prefix, const std::strin
 			LOG(INFO) << "Mapped default namespace to 'scxml:'";
 			_xpathPrefix = "scxml:";
 			_nsContext.addNamespaceDeclaration(uri, "scxml");
+			_nsToPrefix[uri] = "scxml";
 		} else {
 			_xpathPrefix = prefix + ":";
 			_xmlNSPrefix = _xpathPrefix;
 			_nsContext.addNamespaceDeclaration(uri, prefix);
+			_nsToPrefix[uri] = prefix;
 		}
 	} else {
 		_nsContext.addNamespaceDeclaration(uri, prefix);
+		_nsToPrefix[uri] = prefix;
 	}
 }
 
@@ -462,14 +465,14 @@ void Interpreter::mainEventLoop() {
 				if (_internalQueue.size() == 0) {
 					_stable = true;
 				} else {
-					Event internalEvent = _internalQueue.front();
+					_currEvent = _internalQueue.front();
 					_internalQueue.pop_front();
 #if VERBOSE
-					std::cout << "Received internal event " << internalEvent.name << std::endl;
+					std::cout << "Received internal event " << _currEvent.name << std::endl;
 #endif
 					if (_dataModel)
-						_dataModel.setEvent(internalEvent);
-					enabledTransitions = selectTransitions(internalEvent.name);
+						_dataModel.setEvent(_currEvent);
+					enabledTransitions = selectTransitions(_currEvent.name);
 				}
 			}
 			if (!enabledTransitions.empty()) {
@@ -509,20 +512,20 @@ void Interpreter::mainEventLoop() {
 			runOnMainThread(200);
 		}
 
-		Event externalEvent = _externalQueue.pop();
+		_currEvent = _externalQueue.pop();
 #if VERBOSE
-		std::cout << "Received externalEvent event " << externalEvent.name << std::endl;
+		std::cout << "Received externalEvent event " << _currEvent.name << std::endl;
 #endif
-		externalEvent.type = Event::EXTERNAL; // make sure it is set to external
+		_currEvent.type = Event::EXTERNAL; // make sure it is set to external
 		if (!_running)
 			exitInterpreter();
 
-		if (_dataModel && boost::iequals(externalEvent.name, "cancel.invoke." + _sessionId))
+		if (_dataModel && boost::iequals(_currEvent.name, "cancel.invoke." + _sessionId))
 			break;
 
 		if (_dataModel)
 			try {
-				_dataModel.setEvent(externalEvent);
+				_dataModel.setEvent(_currEvent);
 			} catch (Event e) {
 				LOG(ERROR) << "Syntax error while setting external event:" << std::endl << e << std::endl;
 			}
@@ -537,7 +540,7 @@ void Interpreter::mainEventLoop() {
 					invokeId = _dataModel.evalAsString(ATTR(invokeElem, "idlocation"));
 
 				std::string autoForward = invokeElem.getAttribute("autoforward");
-				if (boost::iequals(invokeId, externalEvent.invokeid)) {
+				if (boost::iequals(invokeId, _currEvent.invokeid)) {
 
 					Arabica::XPath::NodeSet<std::string> finalizes = filterChildElements(_xmlNSPrefix + "finalize", invokeElem);
 					for (int k = 0; k < finalizes.size(); k++) {
@@ -547,11 +550,15 @@ void Interpreter::mainEventLoop() {
 
 				}
 				if (boost::iequals(autoForward, "true")) {
-					_invokers[invokeId].send(externalEvent);
+					try {
+						_invokers[invokeId].send(_currEvent);
+					} catch(...) {
+						LOG(ERROR) << "Exception caught while sending event to invoker " << invokeId;
+					}
 				}
 			}
 		}
-		enabledTransitions = selectTransitions(externalEvent.name);
+		enabledTransitions = selectTransitions(_currEvent.name);
 		if (!enabledTransitions.empty())
 			microstep(enabledTransitions);
 	}
@@ -790,7 +797,11 @@ void Interpreter::delayedSend(void* userdata, std::string eventName) {
 		std::string invokeId = sendReq.target.substr(2, sendReq.target.length() - 2);
 		if (INSTANCE->_invokers.find(invokeId) != INSTANCE->_invokers.end()) {
 			tthread::lock_guard<tthread::mutex> lock(INSTANCE->_mutex);
-			INSTANCE->_invokers[invokeId].send(sendReq);
+			try {
+				INSTANCE->_invokers[invokeId].send(sendReq);
+			} catch(...) {
+				LOG(ERROR) << "Exception caught while sending event to invoker " << invokeId;
+			}
 		} else {
 			LOG(ERROR) << "Can not send to invoked component '" << invokeId << "', no such invokeId" << std::endl;
 		}
@@ -799,7 +810,11 @@ void Interpreter::delayedSend(void* userdata, std::string eventName) {
 	} else {
 		IOProcessor ioProc = INSTANCE->getIOProcessor(sendReq.type);
 		if (ioProc) {
-			ioProc.send(sendReq);
+			try {
+				ioProc.send(sendReq);
+			} catch(...) {
+				LOG(ERROR) << "Exception caught while sending event to ioprocessor " << sendReq.type;
+			}
 		}
 	}
 	assert(INSTANCE->_sendIds.find(sendReq.sendid) != INSTANCE->_sendIds.end());
@@ -905,9 +920,17 @@ void Interpreter::invoke(const Arabica::DOM::Node<std::string>& element) {
 				invoker.setInterpreter(this);
 				_invokers[invokeReq.invokeid] = invoker;
 				LOG(INFO) << "Added invoker " << invokeReq.type << " at " << invokeReq.invokeid;
-				invoker.invoke(invokeReq);
+				try {
+					invoker.invoke(invokeReq);
+				} catch(...) {
+					LOG(ERROR) << "Exception caught while sending invoke requst to invoker " << invokeReq.invokeid;
+				}
 				if (_dataModel) {
-					_dataModel.assign("_invokers['" + invokeReq.invokeid + "']", invoker.getDataModelVariables());
+					try {
+						_dataModel.assign("_invokers['" + invokeReq.invokeid + "']", invoker.getDataModelVariables());
+					} catch(...) {
+						LOG(ERROR) << "Exception caught while assigning datamodel variables from invoker " << invokeReq.invokeid;
+					}
 				}
 			} catch (...) {
 				LOG(ERROR) << "Invoker " << invokeReq.type << " threw an exception";
@@ -977,7 +1000,6 @@ Arabica::XPath::NodeSet<std::string> Interpreter::selectTransitions(const std::s
 						goto LOOP;
 					}
 				} else {
-					LOG(ERROR) << "Transition has neither event nor eventexpr attribute";
 					goto LOOP;
 				}
 
@@ -1243,6 +1265,7 @@ void Interpreter::executeContent(const Arabica::DOM::Node<std::string>& content)
 	if (false) {
 	} else if (boost::iequals(TAGNAME(content), _xmlNSPrefix + "onentry") ||
 	           boost::iequals(TAGNAME(content), _xmlNSPrefix + "onexit") ||
+	           boost::iequals(TAGNAME(content), _xmlNSPrefix + "finalize") ||
 	           boost::iequals(TAGNAME(content), _xmlNSPrefix + "transition")) {
 		// --- CONVENIENCE LOOP --------------------------
 		NodeList<std::string> executable = content.getChildNodes();

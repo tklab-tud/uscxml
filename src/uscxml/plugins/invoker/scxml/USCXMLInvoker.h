@@ -23,6 +23,7 @@ public:
 	virtual boost::shared_ptr<IOProcessorImpl> create(Interpreter* interpreter);
 	virtual std::set<std::string> getNames() {
 		std::set<std::string> names;
+		names.insert("scxml");
 		names.insert("uscxml");
 		names.insert("http://www.w3.org/TR/scxml");
 		names.insert("http://www.w3.org/TR/scxml/");
@@ -34,7 +35,7 @@ public:
 	virtual void cancel(const std::string sendId);
 	virtual void invoke(const InvokeRequest& req);
 
-	virtual void push(Event& event);
+	virtual void push(const Event& event);
 
 protected:
 	Interpreter* _invokedInterpreter;

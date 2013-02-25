@@ -1,66 +1,89 @@
 <scxml datamodel="ecmascript" name="vrml">
 	<script src="http://uscxml.tk.informatik.tu-darmstadt.de/scripts/dump.js" />
-	<datamodel>
-		<data id="files">
-			{
-				"foo" : "bar"
-			}
-		</data>
-	</datamodel>
-	<parallel id="main">
+	<script>
+		var files = {};
+	</script>
+	<state id="main">
 		<!-- Stop processing if no vrml-path was given on command line -->
 		<transition target="final" cond="_x['args']['vrml-path'] == undefined || _x['args']['vrml-path'].length == 0">
 			<log expr="'No --vrml-path given'" />
 		</transition>
-		
-		<state id="processHttp">
-			<state id="wait">
-				<transition event="http" target="wait">
-					<script>
-						dump(_event);
-					</script>
-					<response status="200" requestexpr="_event.origin">
-						<content expr="files" />
-					</response>
-				</transition>
-			</state>
-		</state>
-		
+				
 		<!-- Stop processing if an error occurred -->
 		<transition target="final" event="error">
 			<log expr="'An error occured:'" />
 			<script>dump(_event);</script>
 		</transition>
-		
-		<!-- Start the osgconvert invoker to transform 3D files -->
-		<invoke type="osgconvert" id="osgvonvert.osgb">
-			<param name="format" expr="'osgb'" />
-			<param name="destDir" expr="_x['args']['vrml-path'] + '/processed'" />
-		</invoke>
-		
+				
 		<!-- Start the directory monitor -->
 		<invoke type="dirmon" id="dirmon.vrml">
 			<param name="dir" expr="_x['args']['vrml-path']" />
 			<param name="recurse" expr="true" />
 			<param name="suffix" expr="'.wrl'" />
 			<param name="reportExisting" expr="true" />
-			<!-- Send every file to the converter -->
+			<!-- Remember every file -->
 			<finalize>
-				<send target="#_osgvonvert.osgb" event="convert">
-					<param name="file" expr="_event.data.file" />
-					<param name="name" expr="_event.data.file.name" />
-				</send>
+				<script>
+					dump(_event);
+					// use filename without directory as the key
+					var key = _event.data.file.name.substr(_event.data.file.dir.length + 1);
+					files[key] = _event.data;
+				</script>
 			</finalize>
+		</invoke>
+		
+		<!-- Start the osgconvert invoker to transform 3D files -->
+		<invoke type="osgconvert" id="osgvonvert.osgb">
+			<param name="threads" expr="2" />
 		</invoke>
 		
 		<!-- Idle here -->
 		<state id="idle">
-			<onentry>
-				<script>
-					dump(_x['args']);
-				</script>
-			</onentry>
+			<!-- request for a specific format -->
+			<transition event="http" target="idle" cond="
+				_event.data.pathComponent.length == 3 &amp;&amp; 
+				_event.data.pathComponent[0] == 'vrml' &amp;&amp; 
+				_event.data.pathComponent[1] in files">
+				<script>dump(_event);</script>
+				<if cond="_event.data.pathComponent[2] in files[_event.data.pathComponent[1]]">
+					<response status="200" requestexpr="_event.origin">
+						<content expr="files[_event.data.pathComponent[1]][_event.data.pathComponent[2]]" />
+					</response>
+					<else>
+						<send target="#_osgvonvert.osgb">
+							<param name="source" expr="files[_event.data.pathComponent[1]].path" />
+							<param name="dest" expr="files[_event.data.pathComponent[1]].path + '.png'" />
+							<param name="format" expr="'png'" />
+						</send>
+						<postpone until="_event.data.pathComponent[2] in files[_event.data.pathComponent[1]]" />
+					</else>
+				</if>
+			</transition>
+			
+			
+			<!-- request for info on a special file -->
+			<transition event="http" target="idle" cond="
+				_event.data.pathComponent.length == 2 &amp;&amp; 
+				_event.data.pathComponent[0] == 'vrml' &amp;&amp; 
+				_event.data.pathComponent[1] in files">
+				<script>dump(_event);</script>
+				<response status="200" requestexpr="_event.origin">
+					<content expr="files[_event.data.pathComponent[1]]" />
+				</response>
+			</transition>
+			
+			<!-- request for topmost list of all files -->
+			<transition event="http" target="idle" cond="
+				_event.data.pathComponent.length == 1 &amp;&amp; 
+				_event.data.pathComponent[0] == 'vrml'
+			">
+				<script>dump(_event);</script>
+				<response status="200" requestexpr="_event.origin">
+					<content expr="files" />
+				</response>
+			</transition>			
+			
 		</state>
-	</parallel>
+	</state>
 	<state id="final" final="true" />
 </scxml>

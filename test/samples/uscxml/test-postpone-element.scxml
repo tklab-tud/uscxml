@@ -1,0 +1,41 @@
+<scxml datamodel="ecmascript" name="postpone">
+	<script src="http://uscxml.tk.informatik.tu-darmstadt.de/scripts/dump.js" />
+	<script>
+		var blocked = true;
+	</script>
+	<state id="idle">
+
+		<!-- request will be postponed until someone unblocks -->
+		<transition event="http" target="idle" cond="_event.data.pathComponent[1] == 'block'">
+			<if cond="blocked">
+				<log expr="'Postponing'" />
+				<postpone until="blocked == false;" />
+				<else>
+					<response status="200" requestexpr="_event.origin">
+						<content expr="blocked" />
+					</response>
+				</else>
+			</if>
+		</transition>
+		
+		<!-- unblock - this triggers all postponed events -->
+		<transition event="http" target="idle" cond="_event.data.pathComponent[1] == 'unblock'">
+			<log expr="'Unblocking'" />
+			<script>blocked = false;</script>
+			<response status="200" requestexpr="_event.origin">
+				<content expr="blocked" />
+			</response>
+		</transition>
+		
+		<!-- default -->
+		<transition event="http" target="idle" cond="
+			_event.data.pathComponent[1] != 'unblock' &amp;&amp; 
+			_event.data.pathComponent[1] != 'block'
+		">
+			<script>dump(_event);</script>
+			<response status="200" requestexpr="_event.origin" />
+		</transition>
+
+	</state>
+	<state id="final" final="true" />
+</scxml>

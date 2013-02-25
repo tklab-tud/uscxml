@@ -646,6 +646,11 @@ typedef duration<__intmax_t, ratio<1, 1000> > milliseconds;      ///< Duration w
 typedef duration<__intmax_t> seconds;                            ///< Duration with the unit seconds.
 typedef duration<__intmax_t, ratio<60> > minutes;                ///< Duration with the unit minutes.
 typedef duration<__intmax_t, ratio<3600> > hours;                ///< Duration with the unit hours.
+
+namespace system_clock {
+uint64_t now();
+}
+
 }
 
 /// The namespace @c this_thread provides methods for dealing with the

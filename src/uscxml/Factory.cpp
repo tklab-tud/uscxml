@@ -28,6 +28,10 @@
 #   include "uscxml/plugins/invoker/modality/miles/SpatialAudio.h"
 # endif
 
+# ifdef FFMPEG_FOUND
+#   include "uscxml/plugins/invoker/ffmpeg/FFMPEGInvoker.h"
+# endif
+
 # ifdef V8_FOUND
 #   include "uscxml/plugins/datamodel/ecmascript/v8/V8DataModel.h"
 # endif
@@ -42,6 +46,7 @@
 
 # include "uscxml/plugins/element/fetch/FetchElement.h"
 # include "uscxml/plugins/element/response/ResponseElement.h"
+# include "uscxml/plugins/element/postpone/PostponeElement.h"
 
 
 #endif
@@ -92,6 +97,13 @@ Factory::Factory() {
 #ifdef MILES_FOUND
 	{
 		SpatialAudio* invoker = new SpatialAudio();
+		registerInvoker(invoker);
+	}
+#endif
+
+#ifdef FFMPEG_FOUND
+	{
+		FFMPEGInvoker* invoker = new FFMPEGInvoker();
 		registerInvoker(invoker);
 	}
 #endif
@@ -156,6 +168,10 @@ Factory::Factory() {
 	}
 	{
 		ResponseElement* element = new ResponseElement();
+		registerExecutableContent(element);
+	}
+	{
+		PostponeElement* element = new PostponeElement();
 		registerExecutableContent(element);
 	}
 

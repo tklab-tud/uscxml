@@ -5,6 +5,7 @@
 
 #include "uscxml/server/HTTPServer.h"
 #include "uscxml/Message.h"
+#include "uscxml/Factory.h"
 #include <iostream>
 #include <event2/dns.h>
 #include <event2/event.h>
@@ -14,7 +15,8 @@
 #include <event2/http_struct.h>
 #include <event2/thread.h>
 
-#include <string.h>
+#include <string>
+#include <iostream>
 
 #include <glog/logging.h>
 #include <boost/algorithm/string.hpp>
@@ -39,6 +41,9 @@ HTTPServer::HTTPServer(unsigned short port) {
 		_port++;
 	}
 	determineAddress();
+
+	// generic callback
+	evhttp_set_gencb(_http, HTTPServer::httpRecvReqCallback, NULL);
 }
 
 HTTPServer::~HTTPServer() {
@@ -71,34 +76,34 @@ void HTTPServer::httpRecvReqCallback(struct evhttp_request *req, void *callbackD
 
 	switch (evhttp_request_get_command(req)) {
 	case EVHTTP_REQ_GET:
-		request.type = "GET";
+		request.data.compound["type"] = Data("get", Data::VERBATIM);
 		break;
 	case EVHTTP_REQ_POST:
-		request.type = "POST";
+		request.data.compound["type"] = Data("post", Data::VERBATIM);
 		break;
 	case EVHTTP_REQ_HEAD:
-		request.type = "HEAD";
+		request.data.compound["type"] = Data("head", Data::VERBATIM);
 		break;
 	case EVHTTP_REQ_PUT:
-		request.type = "PUT";
+		request.data.compound["type"] = Data("put", Data::VERBATIM);
 		break;
 	case EVHTTP_REQ_DELETE:
-		request.type = "DELETE";
+		request.data.compound["type"] = Data("delete", Data::VERBATIM);
 		break;
 	case EVHTTP_REQ_OPTIONS:
-		request.type = "OPTIONS";
+		request.data.compound["type"] = Data("options", Data::VERBATIM);
 		break;
 	case EVHTTP_REQ_TRACE:
-		request.type = "TRACE";
+		request.data.compound["type"] = Data("trace", Data::VERBATIM);
 		break;
 	case EVHTTP_REQ_CONNECT:
-		request.type = "CONNECT";
+		request.data.compound["type"] = Data("connect", Data::VERBATIM);
 		break;
 	case EVHTTP_REQ_PATCH:
-		request.type = "PATCH";
+		request.data.compound["type"] = Data("patch", Data::VERBATIM);
 		break;
 	default:
-		request.type = "unknown";
+		request.data.compound["type"] = Data("unknown", Data::VERBATIM);
 		break;
 	}
 
@@ -106,17 +111,38 @@ void HTTPServer::httpRecvReqCallback(struct evhttp_request *req, void *callbackD
 	struct evkeyval *header;
 	struct evbuffer *buf;
 
-	// map headers to event structure
+	// insert headers to event data
 	headers = evhttp_request_get_input_headers(req);
 	for (header = headers->tqh_first; header; header = header->next.tqe_next) {
-		request.headers[header->key] = header->value;
+		request.data.compound["header"].compound[header->key] = Data(header->value, Data::VERBATIM);
 	}
 
-	request.remoteHost = req->remote_host;
-	request.remotePort = req->remote_port;
-	request.httpMajor = req->major;
-	request.httpMinor = req->minor;
-	request.uri = req->uri;
+	request.data.compound["remoteHost"] = Data(req->remote_host, Data::VERBATIM);
+	request.data.compound["remotePort"] = Data(toStr(req->remote_port), Data::VERBATIM);
+	request.data.compound["httpMajor"] = Data(toStr((unsigned short)req->major), Data::VERBATIM);
+	request.data.compound["httpMinor"] = Data(toStr((unsigned short)req->minor), Data::VERBATIM);
+	request.data.compound["uri"] = Data(HTTPServer::getBaseURL() + req->uri, Data::VERBATIM);
+	request.data.compound["path"] = Data(evhttp_uri_get_path(evhttp_request_get_evhttp_uri(req)), Data::VERBATIM);
+
+	// seperate path into components
+	std::stringstream ss(request.data.compound["path"].atom);
+	std::string item;
+	while(std::getline(ss, item, '/')) {
+		if (item.length() == 0)
+			continue;
+		request.data.compound["pathComponent"].array.push_back(Data(item, Data::VERBATIM));
+	}
+
+	// parse query string
+	struct evkeyvalq params;
+	struct evkeyval *param;
+	const char* query = evhttp_uri_get_query(evhttp_request_get_evhttp_uri(req));
+
+	evhttp_parse_query_str(query, &params);
+	for (param = params.tqh_first; param; param = param->next.tqe_next) {
+		request.data.compound["query"].compound[param->key] = Data(param->value, Data::VERBATIM);
+	}
+	evhttp_clear_headers(&params);
 
 	// get content
 	buf = evhttp_request_get_input_buffer(req);
@@ -129,7 +155,40 @@ void HTTPServer::httpRecvReqCallback(struct evhttp_request *req, void *callbackD
 		}
 	}
 
-	((HTTPServlet*)callbackData)->httpRecvRequest(request);
+	if (callbackData == NULL) {
+		HTTPServer::getInstance()->processByMatchingServlet(request);
+	} else {
+		((HTTPServlet*)callbackData)->httpRecvRequest(request);
+	}
+}
+
+void HTTPServer::processByMatchingServlet(const Request& request) {
+	servlet_iter_t servletIter = _servlets.begin();
+
+	std::string actualPath = request.data.compound.at("path").atom;
+	HTTPServlet* bestMatch = NULL;
+	std::string bestPath;
+
+	while(servletIter != _servlets.end()) {
+		// is the servlet path a prefix of the actual path?
+		std::string servletPath = "/" + servletIter->first;
+		if (boost::iequals(actualPath.substr(0, servletPath.length()), servletPath) && // actual path is a prefix
+		        boost::iequals(actualPath.substr(servletPath.length(), 1), "/")) {         // and next character is a '/'
+			if (bestPath.length() < servletPath.length()) {
+				// this servlet is a better match
+				bestPath = servletPath;
+				bestMatch = servletIter->second;
+			}
+		}
+		servletIter++;
+	}
+
+	if (bestMatch != NULL) {
+		bestMatch->httpRecvRequest(request);
+	} else {
+		LOG(INFO) << "Got an HTTP request at " << actualPath << " but no servlet is registered there or at a prefix";
+		evhttp_send_error(request.curlReq, 404, NULL);
+	}
 }
 
 void HTTPServer::reply(const Reply& reply) {
@@ -154,18 +213,6 @@ bool HTTPServer::registerServlet(const std::string& path, HTTPServlet* servlet) 
 	HTTPServer* INSTANCE = getInstance();
 	tthread::lock_guard<tthread::recursive_mutex> lock(INSTANCE->_mutex);
 
-	/**
-	 * Determine path for interpreter.
-	 *
-	 * If the interpreter has a name and it is not yet taken, choose it as the path
-	 * for requests. If the interpreters name path is already taken, append digits
-	 * until we have an available path.
-	 *
-	 * If the interpreter does not specify a name, take its sessionid.
-	*
-	* Responsibility moved to individual servlets.
-	 */
-
 	if(INSTANCE->_servlets.find(path) != INSTANCE->_servlets.end()) {
 		return false;
 	}
@@ -182,9 +229,13 @@ bool HTTPServer::registerServlet(const std::string& path, HTTPServlet* servlet) 
 	evhttp_set_cb(INSTANCE->_http, ("/" + path).c_str(), HTTPServer::httpRecvReqCallback, servlet);
 
 	return true;
-	// generic callback
-//  evhttp_set_cb(THIS->_http, "/", EventIOProcessor::httpRecvReq, processor);
-//  evhttp_set_gencb(THIS->_http, EventIOProcessor::httpRecvReq, NULL);
+}
+
+std::string HTTPServer::getBaseURL() {
+	HTTPServer* INSTANCE = getInstance();
+	std::stringstream servletURL;
+	servletURL << "http://" << INSTANCE->_address << ":" << INSTANCE->_port;
+	return servletURL.str();
 }
 
 void HTTPServer::unregisterServlet(HTTPServlet* servlet) {
