@@ -1,6 +1,8 @@
 #include "HTTPServletInvoker.h"
 #include <glog/logging.h>
 
+#include "uscxml/config.h"
+
 #ifdef BUILD_AS_PLUGINS
 #include <Pluma/Connector.hpp>
 #endif

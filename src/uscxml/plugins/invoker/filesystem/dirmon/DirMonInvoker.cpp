@@ -24,7 +24,11 @@ bool connect(pluma::Host& host) {
 }
 #endif
 
-DirMonInvoker::DirMonInvoker() : _reportExisting(false), _recurse(false), _thread(NULL) {
+DirMonInvoker::DirMonInvoker() :
+  _reportExisting(true),
+  _reportHidden(false),
+  _recurse(false),
+  _thread(NULL) {
 }
 
 DirMonInvoker::~DirMonInvoker() {
@@ -51,13 +55,31 @@ void DirMonInvoker::cancel(const std::string sendId) {
 }
 
 void DirMonInvoker::invoke(const InvokeRequest& req) {
-	if (req.params.find("dir") != req.params.end() && boost::iequals(req.params.find("reportexisting")->second, "true"))
-		_reportExisting = true;
+	if (req.params.find("dir") != req.params.end() && boost::iequals(req.params.find("reportexisting")->second, "false"))
+		_reportExisting = false;
 	if (req.params.find("recurse") != req.params.end() && boost::iequals(req.params.find("recurse")->second, "true"))
 		_recurse = true;
-	if (req.params.find("suffix") != req.params.end())
-		_suffix = req.params.find("suffix")->second;
+	if (req.params.find("reporthidden") != req.params.end() && boost::iequals(req.params.find("reporthidden")->second, "true"))
+		_reportHidden = true;
+  
+  std::string suffixList;
+  if (req.params.find("suffix") != req.params.end()) {
+    suffixList = req.params.find("suffix")->second;
+  } else if (req.params.find("suffixes") != req.params.end()) {
+    suffixList = req.params.find("suffixes")->second;
+  }
 
+  if (suffixList.size() > 0) {
+  	// seperate path into components
+    std::stringstream ss(suffixList);
+    std::string item;
+    while(std::getline(ss, item, ' ')) {
+      if (item.length() == 0)
+        continue;
+      _suffixes.insert(item);
+    }
+  }
+  
 	std::multimap<std::string, std::string>::const_iterator dirIter = req.params.find("dir");
 	while(dirIter != req.params.upper_bound("dir")) {
 		URL url(dirIter->second);
@@ -89,14 +111,20 @@ void DirMonInvoker::reportExisting() {
 }
 
 void DirMonInvoker::handleFileAction(FW::WatchID watchid, const FW::String& dir, const FW::String& filename, FW::Action action) {
-	if (!boost::algorithm::ends_with(filename, _suffix))
-		return;
-
-	struct stat fileStat;
-	if (stat(filename.c_str(), &fileStat) != 0) {
-		LOG(ERROR) << "Error with stat on directory entry " << filename << ": " << strerror(errno);
-		return;
-	}
+  
+  if (_suffixes.size() > 0) {
+    bool validSuffix = false;
+    std::set<std::string>::iterator suffixIter = _suffixes.begin();
+    while(suffixIter != _suffixes.end()) {
+      if (boost::algorithm::ends_with(filename, *suffixIter)) {
+        validSuffix = true;
+        break;
+      }
+      suffixIter++;
+    }
+    if (!validSuffix)
+      return;
+  }
 
 	Event event;
 	event.invokeid = _invokeId;
@@ -117,39 +145,56 @@ void DirMonInvoker::handleFileAction(FW::WatchID watchid, const FW::String& dir,
 		break;
 	}
 
+  // basename is the filename with suffix
 	std::string basename;
 	size_t lastSep;
 	if ((lastSep = filename.find_last_of(PATH_SEPERATOR)) != std::string::npos) {
 		lastSep++;
 		basename = filename.substr(lastSep, filename.length() - lastSep);
-	} else {
-		basename = filename;
+  	event.data.compound["file"].compound["name"] = Data(basename, Data::VERBATIM);
 	}
+  
+  // return if this is a hidden file
+  if (boost::algorithm::starts_with(basename, ".") && !_reportHidden)
+    return;
 
-	std::string extension;
+  struct stat fileStat;
+	if (action != FW::Actions::Delete) {
+    if (stat(filename.c_str(), &fileStat) != 0) {
+      LOG(ERROR) << "Error with stat on directory entry " << filename << ": " << strerror(errno);
+      return;
+    } else {
+      event.data.compound["file"].compound["mtime"] = toStr(fileStat.st_mtime);
+      event.data.compound["file"].compound["ctime"] = toStr(fileStat.st_ctime);
+      event.data.compound["file"].compound["atime"] = toStr(fileStat.st_atime);
+      event.data.compound["file"].compound["size"]  = toStr(fileStat.st_size);
+    }
+  }
+
+  // extension is the suffix and strippedName the basename without the suffix
 	size_t lastDot;
 	if ((lastDot = basename.find_last_of(".")) != std::string::npos) {
-		lastDot++;
-		extension = basename.substr(lastDot, basename.length() - lastDot);
+		std::string extension = basename.substr(lastDot + 1);
+		event.data.compound["file"].compound["extension"] = Data(extension, Data::VERBATIM);
+  	std::string strippedName = basename.substr(0, lastDot);
+		event.data.compound["file"].compound["strippedName"] = Data(strippedName, Data::VERBATIM);
 	}
 
-	std::string relPath;
+  // relpath is the path to the file relative to the dir
 	if (boost::algorithm::starts_with(filename, dir)) {
-		relPath = filename.substr(dir.length());
-	} else {
-		relPath = filename;
+		std::string relPath = filename.substr(dir.length());
+  	event.data.compound["file"].compound["relPath"] = Data(relPath, Data::VERBATIM);
+
+    // relDir is the relpath without the basename
+    if ((lastSep = relPath.find_last_of(PATH_SEPERATOR)) != std::string::npos) {
+  		lastSep++;
+      std::string relDir = relPath.substr(0, lastSep);
+    	event.data.compound["file"].compound["relDir"] = Data(relDir, Data::VERBATIM);
+  	}
 	}
 
-	event.data.compound["file"].compound["name"] = Data(basename, Data::VERBATIM);
 	event.data.compound["file"].compound["path"] = Data(filename, Data::VERBATIM);
-	event.data.compound["file"].compound["relPath"] = Data(relPath, Data::VERBATIM);
 	event.data.compound["file"].compound["dir"] = Data(dir, Data::VERBATIM);
-	event.data.compound["file"].compound["extension"] = Data(extension, Data::VERBATIM);
-
-	event.data.compound["file"].compound["mtime"] = toStr(fileStat.st_mtime);
-	event.data.compound["file"].compound["ctime"] = toStr(fileStat.st_ctime);
-	event.data.compound["file"].compound["atime"] = toStr(fileStat.st_atime);
-	event.data.compound["file"].compound["size"]  = toStr(fileStat.st_size);
 
 	returnEvent(event);
 }

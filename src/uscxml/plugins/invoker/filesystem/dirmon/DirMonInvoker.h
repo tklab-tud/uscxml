@@ -39,8 +39,9 @@ public:
 
 protected:
 	bool _reportExisting;
+	bool _reportHidden;
 	bool _recurse;
-	std::string _suffix;
+  std::set<std::string> _suffixes;
 
 	bool _isRunning;
 	tthread::thread* _thread;

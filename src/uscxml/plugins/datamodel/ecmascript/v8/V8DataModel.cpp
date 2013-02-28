@@ -320,6 +320,10 @@ v8::Handle<v8::Value> V8DataModel::evalAsValue(const std::string& expr) {
 			exceptionEvent.data.compound["filename"] = Data(filename, Data::VERBATIM);
 
 			std::string sourceLine(*v8::String::AsciiValue(message->GetSourceLine()));
+      size_t startpos = sourceLine.find_first_not_of(" \t");
+      if(std::string::npos != startpos) // removoe leading white space
+        sourceLine = sourceLine.substr(startpos);
+
 			exceptionEvent.data.compound["sourceline"] = Data(sourceLine, Data::VERBATIM);
 
 			std::stringstream ssLineNumber;

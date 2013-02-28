@@ -34,6 +34,7 @@ public:
 	osg::Matrix requestToModelPose(const SendRequest& req);
 	osg::Matrix requestToCamPose(const SendRequest& req);
 
+  static void dumpMatrix(const osg::Matrix& m);
 	static osg::Matrix eulerToMatrix(double pitch, double roll, double yaw);
 	static void matrixToEuler(const osg::Matrix& m, double& pitch, double& roll, double& yaw);
 

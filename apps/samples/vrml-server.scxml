@@ -1,68 +1,201 @@
 <scxml datamodel="ecmascript" name="vrml">
 	<script src="http://uscxml.tk.informatik.tu-darmstadt.de/scripts/dump.js" />
 	<script>
-		var files = {};
+		var models = {};      // information of the osgb files
+		var processed = {};   // information about processed files
+		
+		// this pattern matches the query string we use as part of generated image filenames
+		var numPattern = '([0-9]+\.?[0-9]*)';
+		var formatPattern = new RegExp(
+			'-(' + numPattern +            // pitch
+			'_' + numPattern +             // roll
+			'_' + numPattern +             // yaw
+			'_' + numPattern +             // zoom
+			'_' + numPattern +             // width
+			'_' + numPattern + ')\\..*$'); // height
+		
+		// check whether a given string represents a number	
+		function isNumber(n) {
+		  return !isNaN(parseFloat(n)) &amp;&amp; isFinite(n);
+		}
 	</script>
 	<state id="main">
 		<!-- Stop processing if no vrml-path was given on command line -->
 		<transition target="final" cond="_x['args']['vrml-path'] == undefined || _x['args']['vrml-path'].length == 0">
 			<log expr="'No --vrml-path given'" />
 		</transition>
+
+		<!-- Stop processing if no tmp-path was given on command line -->
+		<transition target="final" cond="_x['args']['tmp-path'] == undefined || _x['args']['tmp-path'].length == 0">
+			<log expr="'No --tmp-path given'" />
+		</transition>
 				
-		<!-- Stop processing if an error occurred -->
+		<!-- Stop processing if any error occurs -->
 		<transition target="final" event="error">
 			<log expr="'An error occured:'" />
 			<script>dump(_event);</script>
 		</transition>
 				
-		<!-- Start the directory monitor -->
-		<invoke type="dirmon" id="dirmon.vrml">
+		<!-- Start the directory monitor for wrl files -->
+		<!--invoke type="dirmon" id="dirmon.vrml">
 			<param name="dir" expr="_x['args']['vrml-path']" />
 			<param name="recurse" expr="true" />
-			<param name="suffix" expr="'.wrl'" />
-			<param name="reportExisting" expr="true" />
-			<!-- Remember every file -->
+			<param name="suffix" expr="'vrml wrl'" />
 			<finalize>
 				<script>
-					dump(_event);
-					// use filename without directory as the key
-					var key = _event.data.file.name.substr(_event.data.file.dir.length + 1);
-					files[key] = _event.data;
+					// use filename relative to the vrml dir as the key
+					var key = _event.data.file.relDir + _event.data.file.strippedName;
+					if (!(key in models)) {
+						models[key] = {};
+					}
+					models[key][_event.data.file.extension] = _event.data.file;
+				</script>
+				<send target="#_osgvonvert.osgb">
+					<param name="source" expr="_event.data.file.path" />
+					<param name="dest" expr="_x['args']['tmp-path'] + _event.data.file.relDir + _event.data.file.strippedName + '.osgb'" />
+				</send>
+			</finalize>
+		</invoke -->
+		
+		<!-- Start the directory monitor for generated files -->
+		<invoke type="dirmon" id="dirmon.processed">
+			<param name="dir" expr="_x['args']['tmp-path']" />
+			<param name="recurse" expr="false" />
+			<param name="reportExisting" expr="true" />
+			<!-- Called for every file we found -->
+			<finalize>
+				<script>
+					var formatMatch = formatPattern.exec(_event.data.file.name);
+					if (formatMatch &amp;&amp; formatMatch.length == 8) {
+						// this is a generated file with an encoded query string
+						var file = _event.data.file.relDir.replace("/","-").substr(1) + 
+							_event.data.file.name.substr(0, _event.data.file.name.length - formatMatch[0].length);
+						var format = formatMatch[1] + '.' + _event.data.file.extension;
+
+						// format: "2_0.1_0_1_640_480.png"
+						// file: "simulation-dir-model"
+						
+						print("Found a new processed file at [" + file + "][" + format + "]\n");
+						
+						
+						if (_event.name === "file.existing" || _event.name === "file.added") {
+							if (!(file in processed)) {
+								processed[file] = {}
+							}
+							processed[file][format] = _event.data.file;
+							processed[file][format].pitch = parseFloat(formatMatch[2]);
+							processed[file][format].roll = parseFloat(formatMatch[3]);
+							processed[file][format].yaw = parseFloat(formatMatch[4]);
+							processed[file][format].zoom = parseFloat(formatMatch[5]);
+							processed[file][format].width = parseFloat(formatMatch[6]);
+							processed[file][format].height = parseFloat(formatMatch[7]);
+						} else {
+							if (file in processed &amp;&amp; key in processed[file]) {
+								delete processed[file][key];
+							}
+						}
+
+					} else if (_event.data.file.extension === "osgb") {
+						// this is a binary 3D file converted from the wrls
+						var key = _event.data.file.relDir.replace("/","-").substr(1) + _event.data.file.strippedName;
+						models[key] = _event.data.file;
+						print("Inserted a new osgb file at " + key + "\n");
+
+					} else {
+						print("Found something unrelated " + _event.data.file.name + "\n");
+					}
 				</script>
 			</finalize>
 		</invoke>
 		
 		<!-- Start the osgconvert invoker to transform 3D files -->
 		<invoke type="osgconvert" id="osgvonvert.osgb">
-			<param name="threads" expr="2" />
+			<param name="threads" expr="4" />
 		</invoke>
 		
 		<!-- Idle here -->
 		<state id="idle">
-			<!-- request for a specific format -->
-			<transition event="http" target="idle" cond="
-				_event.data.pathComponent.length == 3 &amp;&amp; 
-				_event.data.pathComponent[0] == 'vrml' &amp;&amp; 
-				_event.data.pathComponent[1] in files">
-				<script>dump(_event);</script>
-				<if cond="_event.data.pathComponent[2] in files[_event.data.pathComponent[1]]">
-					<response status="200" requestexpr="_event.origin">
-						<content expr="files[_event.data.pathComponent[1]][_event.data.pathComponent[2]]" />
-					</response>
+			<transition event="http" target="idle" cond="_event.data.pathComponent.length > 2">
+				<!-- request for a specific format 
+					http://host/vrml/relative/path/format?query=string -->
+				<script>
+					print("HTTP Request\n");
+					_event["file"] = _event.data.pathComponent.slice(1, _event.data.pathComponent.length - 1).join('-');
+					_event["ext"] = _event.data.pathComponent[_event.data.pathComponent.length - 1];
+
+					// normalize request					
+					if (!('query' in _event.data))  _event.data.query = {};
+					var query = _event.data.query;
+					if (!('pitch' in query)   || !isNumber(query.pitch))   query.pitch  = 0;
+					if (!('roll' in query)    || !isNumber(query.roll))    query.roll   = 0;
+					if (!('yaw' in query)     || !isNumber(query.yaw))     query.yaw    = 0;
+					if (!('zoom' in query)    || !isNumber(query.zoom))    query.zoom   = 1;
+					if (!('width' in query)   || !isNumber(query.width))   query.width  = 640;
+					if (!('height' in query)  || !isNumber(query.height))  query.height = 480;
+
+					_event["format"] = query.pitch + '_' + query.roll + '_' + query.yaw + '_' + query.zoom + '_' + query.width + '_' + query.height + '.' + _event["ext"];
+					_event["dest"] = _x['args']['tmp-path'] + '/' + _event["file"] + '-' + _event["format"];
+					
+					print("Got a request for [" + _event["file"] + "][" + _event['format'] + "]\n");
+					
+//					print("---------------\n");
+//					print("Event:\n");
+//					dump(_event);
+//					print("Models:\n");
+//					dump(models);
+//					print("Processed:\n");
+//					dump(processed);
+//					print("---------------\n");
+					
+				</script>
+				<if cond="_event['file'] in models">
+					<!-- There is such a file available as osgb -->
+					<if cond="_event['file'] in processed &amp;&amp; _event['format'] in processed[_event['file']]">
+						<script>
+							print("Already processed!\n");
+							print("Sending " + processed[_event['file']][_event['format']].path + "\n");
+						</script>
+						<response status="200" requestexpr="_event.origin">
+							<content fileexpr="processed[_event['file']][_event['format']].path" />
+						</response>
+						<else>
+							<script>
+//								print(_event['querySuffix'] + '.' + _event['fileFormat'] + " not in \n");
+//								dump(processed[_event['fileKey']]);
+								print("Processing!\n");
+								print("Outfile " + _event['dest'] + " from model " + _event['file'] + "\n");
+							</script>
+							<send target="#_osgvonvert.osgb">
+								<param name="source" expr="models[_event['file']].path" />
+								<param name="dest" expr="_event['dest']" />
+								<param name="pitch" expr="_event.data.query.pitch" />
+								<param name="roll" expr="_event.data.query.roll" />
+								<param name="yaw" expr="_event.data.query.yaw" />
+								<param name="zoom" expr="_event.data.query.zoom" />
+								<param name="width" expr="_event.data.query.width" />
+								<param name="height" expr="_event.data.query.height" />
+							</send>
+							<!-- 
+								Redeliver the event once the untilexpr is true. The untilexpr has to evaluate 
+								into another valid expression that we will check again on stable configurations.
+							-->
+							<postpone untilexpr="'\'' + _event['file'] + '\' in processed &amp;&amp; \'' + _event['format'] + '\'' + ' in processed[\'' + _event['file'] + '\']'" />
+						</else>
+					</if>
 					<else>
-						<send target="#_osgvonvert.osgb">
-							<param name="source" expr="files[_event.data.pathComponent[1]].path" />
-							<param name="dest" expr="files[_event.data.pathComponent[1]].path + '.png'" />
-							<param name="format" expr="'png'" />
-						</send>
-						<postpone until="_event.data.pathComponent[2] in files[_event.data.pathComponent[1]]" />
+						<script>
+							print("No such file!\n");
+							print("File " + _event['file'] + "\n");
+						</script>
+						<!-- There is no such model -->
+						<response status="404" requestexpr="_event.origin" />
 					</else>
 				</if>
 			</transition>
 			
-			
+
 			<!-- request for info on a special file -->
-			<transition event="http" target="idle" cond="
+			<!--transition event="http" target="idle" cond="
 				_event.data.pathComponent.length == 2 &amp;&amp; 
 				_event.data.pathComponent[0] == 'vrml' &amp;&amp; 
 				_event.data.pathComponent[1] in files">
@@ -70,18 +203,38 @@
 				<response status="200" requestexpr="_event.origin">
 					<content expr="files[_event.data.pathComponent[1]]" />
 				</response>
+			</transition -->
+
+			<!-- request for topmost list of all files -->
+			<transition event="http" target="idle" cond="
+				_event.data.pathComponent.length == 2">
+				<script>dump(_event);</script>
+				<if cond="_event.data.pathComponent[1] === 'models'">
+					<response status="200" requestexpr="_event.origin">
+						<header name="Content-Type" value="application/json" />
+						<content expr="models" />
+					</response>
+					<elseif cond="_event.data.pathComponent[1] === 'processed'">
+						<response status="200" requestexpr="_event.origin">
+							<header name="Content-Type" value="application/json" />
+							<content expr="processed" />
+						</response>
+					</elseif>
+					<else>
+						<response status="404" requestexpr="_event.origin" />
+					</else>
+				</if>
 			</transition>
 			
 			<!-- request for topmost list of all files -->
 			<transition event="http" target="idle" cond="
-				_event.data.pathComponent.length == 1 &amp;&amp; 
-				_event.data.pathComponent[0] == 'vrml'
-			">
+				_event.data.pathComponent.length == 1">
 				<script>dump(_event);</script>
 				<response status="200" requestexpr="_event.origin">
-					<content expr="files" />
+					<header name="Content-Type" value="application/json" />
+					<content expr="models" />
 				</response>
-			</transition>			
+			</transition>
 			
 		</state>
 	</state>

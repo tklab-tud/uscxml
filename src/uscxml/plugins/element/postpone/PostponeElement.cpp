@@ -41,11 +41,22 @@ void PostponeElement::enterElement(const Arabica::DOM::Node<std::string>& node) 
 	}
 
 	// when will we refire the event?
-	if (!HAS_ATTR(node, "until")) {
-		LOG(ERROR) << "Postpone element requires until attribute ";
+  std::string until;
+  try {
+    if (HAS_ATTR(node, "untilexpr")) {
+      until = _interpreter->getDataModel().evalAsString(ATTR(node, "untilexpr"));
+    } else if (HAS_ATTR(node, "until")) {
+      until = ATTR(node, "until");
+    }
+	} catch (Event e) {
+		LOG(ERROR) << "Syntax error in postpone element untilexpr:" << std::endl << e << std::endl;
+    return;
+	}
+
+	if (until.length() == 0) {
+		LOG(ERROR) << "Postpone element requires until or untilexpr attribute ";
 		return;
 	}
-	std::string until = ATTR(node, "until");
 
 	Event currEvent = _interpreter->getCurrentEvent();
 	Resubmitter::postpone(currEvent, until, _interpreter);
@@ -63,13 +74,16 @@ void PostponeElement::Resubmitter::onStableConfiguration(Interpreter* interprete
 	std::list<std::pair<std::string, Event> >::iterator eventIter = _postponedEvents.begin();
 	while(eventIter != _postponedEvents.end()) {
 		try {
+      LOG(INFO) << "Reevaluating: >> " << eventIter->first << " <<";
 			if (interpreter->getDataModel().evalAsBool(eventIter->first)) {
+        LOG(INFO) << "  -> is TRUE";
 				interpreter->receive(eventIter->second, true);
 				_postponedEvents.erase(eventIter);
 				break;
 			}
+      LOG(INFO) << "  -> is FALSE";
 		} catch (Event e) {
-			LOG(ERROR) << "Syntax error in until attribute of postpone element:" << std::endl << e << std::endl;
+			LOG(ERROR) << "Syntax error while evaluating until attribute of postpone element:" << std::endl << e << std::endl;
 			_postponedEvents.erase(eventIter++);
 			continue;
 		}

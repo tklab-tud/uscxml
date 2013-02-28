@@ -41,6 +41,7 @@ void HeartbeatInvoker::cancel(const std::string sendId) {
 }
 
 void HeartbeatInvoker::invoke(const InvokeRequest& req) {
+  _invokeId = req.invokeid;
 	_event.invokeid = _invokeId;
 	std::string intervalStr;
 	double interval = 0;

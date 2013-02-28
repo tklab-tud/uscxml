@@ -456,7 +456,13 @@ void Interpreter::mainEventLoop() {
 #endif
 			monIter = _monitors.begin();
 			while(monIter != _monitors.end()) {
-				(*monIter)->beforeMicroStep(this);
+        try {
+          (*monIter)->beforeMicroStep(this);
+        } catch (Event e) {
+          LOG(ERROR) << "Syntax error when calling beforeMicroStep on monitors: " << std::endl << e << std::endl;
+        } catch (...) {
+          LOG(ERROR) << "An exception occured when calling beforeMicroStep on monitors";
+        }
 				monIter++;
 			}
 
@@ -478,7 +484,13 @@ void Interpreter::mainEventLoop() {
 			if (!enabledTransitions.empty()) {
 				monIter = _monitors.begin();
 				while(monIter != _monitors.end()) {
-					(*monIter)->beforeTakingTransitions(this, enabledTransitions);
+          try {
+            (*monIter)->beforeTakingTransitions(this, enabledTransitions);
+          } catch (Event e) {
+            LOG(ERROR) << "Syntax error when calling beforeTakingTransitions on monitors: " << std::endl << e << std::endl;
+          } catch (...) {
+            LOG(ERROR) << "An exception occured when calling beforeTakingTransitions on monitors";
+          }
 					monIter++;
 				}
 				microstep(enabledTransitions);
@@ -502,7 +514,13 @@ void Interpreter::mainEventLoop() {
 		monIter = _monitors.begin();
 //    if (!_sendQueue || _sendQueue->isEmpty()) {
 		while(monIter != _monitors.end()) {
-			(*monIter)->onStableConfiguration(this);
+      try {
+        (*monIter)->onStableConfiguration(this);
+      } catch (Event e) {
+        LOG(ERROR) << "Syntax error when calling onStableConfiguration on monitors: " << std::endl << e << std::endl;
+      } catch (...) {
+        LOG(ERROR) << "An exception occured when calling onStableConfiguration on monitors";
+      }
 			monIter++;
 		}
 //    }
@@ -564,7 +582,13 @@ void Interpreter::mainEventLoop() {
 	}
 	monIter = _monitors.begin();
 	while(monIter != _monitors.end()) {
-		(*monIter)->beforeCompletion(this);
+    try {
+      (*monIter)->beforeCompletion(this);
+    } catch (Event e) {
+      LOG(ERROR) << "Syntax error when calling beforeCompletion on monitors: " << std::endl << e << std::endl;
+    } catch (...) {
+      LOG(ERROR) << "An exception occured when calling beforeCompletion on monitors";
+    }    
 		monIter++;
 	}
 
@@ -572,7 +596,13 @@ void Interpreter::mainEventLoop() {
 
 	monIter = _monitors.begin();
 	while(monIter != _monitors.end()) {
-		(*monIter)->afterCompletion(this);
+    try {
+      (*monIter)->afterCompletion(this);
+    } catch (Event e) {
+      LOG(ERROR) << "Syntax error when calling afterCompletion on monitors: " << std::endl << e << std::endl;
+    } catch (...) {
+      LOG(ERROR) << "An exception occured when calling afterCompletion on monitors";
+    }
 		monIter++;
 	}
 
@@ -642,12 +672,22 @@ void Interpreter::send(const Arabica::DOM::Node<std::string>& element) {
 		} else if (HAS_ATTR(element, "event")) {
 			sendReq.name = ATTR(element, "event");
 		}
+	} catch (Event e) {
+		LOG(ERROR) << "Syntax error in send element eventexpr:" << std::endl << e << std::endl;
+    return;
+	}
+  try {
 		// target
 		if (HAS_ATTR(element, "targetexpr") && _dataModel) {
 			sendReq.target = _dataModel.evalAsString(ATTR(element, "targetexpr"));
 		} else if (HAS_ATTR(element, "target")) {
 			sendReq.target = ATTR(element, "target");
 		}
+	} catch (Event e) {
+		LOG(ERROR) << "Syntax error in send element targetexpr:" << std::endl << e << std::endl;
+    return;
+	}
+  try {
 		// type
 		if (HAS_ATTR(element, "typeexpr") && _dataModel) {
 			sendReq.type = _dataModel.evalAsString(ATTR(element, "typeexpr"));
@@ -656,6 +696,11 @@ void Interpreter::send(const Arabica::DOM::Node<std::string>& element) {
 		} else {
 			sendReq.type = "http://www.w3.org/TR/scxml/#SCXMLEventProcessor";
 		}
+	} catch (Event e) {
+		LOG(ERROR) << "Syntax error in send element typeexpr:" << std::endl << e << std::endl;
+    return;
+	}
+  try {
 		// id
 		if (HAS_ATTR(element, "idlocation") && _dataModel) {
 			sendReq.sendid = _dataModel.evalAsString(ATTR(element, "idlocation"));
@@ -682,7 +727,12 @@ void Interpreter::send(const Arabica::DOM::Node<std::string>& element) {
 		 * See 3.14 IDs for details.
 		 *
 		 */
+	} catch (Event e) {
+		LOG(ERROR) << "Syntax error in send element idlocation:" << std::endl << e << std::endl;
+    return;
+	}
 
+  try {
 		// delay
 		std::string delay;
 		sendReq.delayMs = 0;
@@ -705,6 +755,12 @@ void Interpreter::send(const Arabica::DOM::Node<std::string>& element) {
 				LOG(ERROR) << "Cannot make sense of delay value " << delay << ": does not end in 's' or 'ms'";
 			}
 		}
+	} catch (Event e) {
+		LOG(ERROR) << "Syntax error in send element delayexpr:" << std::endl << e << std::endl;
+    return;
+	}
+  
+  try {
 		// namelist
 		if (HAS_ATTR(element, "namelist")) {
 			if (_dataModel) {
@@ -718,7 +774,12 @@ void Interpreter::send(const Arabica::DOM::Node<std::string>& element) {
 				LOG(ERROR) << "Namelist attribute at send requires datamodel to be defined";
 			}
 		}
+	} catch (Event e) {
+		LOG(ERROR) << "Syntax error in send element namelist:" << std::endl << e << std::endl;
+    return;
+	}
 
+  try {
 		// params
 		NodeSet<std::string> params = filterChildElements(_xmlNSPrefix + "param", element);
 		for (int i = 0; i < params.size(); i++) {
@@ -740,6 +801,11 @@ void Interpreter::send(const Arabica::DOM::Node<std::string>& element) {
 			sendReq.params.insert(std::make_pair(paramKey, paramValue));
 			sendReq.data.compound[paramKey] = Data(paramValue, Data::VERBATIM);
 		}
+	} catch (Event e) {
+		LOG(ERROR) << "Syntax error in send element param expr:" << std::endl << e << std::endl;
+    return;
+	}
+  try {
 
 		// content
 		NodeSet<std::string> contents = filterChildElements(_xmlNSPrefix + "content", element);
@@ -763,18 +829,18 @@ void Interpreter::send(const Arabica::DOM::Node<std::string>& element) {
 				LOG(ERROR) << "content element does not specify any content.";
 			}
 		}
-
-		assert(_sendIds.find(sendReq.sendid) == _sendIds.end());
-		_sendIds[sendReq.sendid] = std::make_pair(this, sendReq);
-		if (sendReq.delayMs > 0) {
-			_sendQueue->addEvent(sendReq.sendid, Interpreter::delayedSend, sendReq.delayMs, &_sendIds[sendReq.sendid]);
-		} else {
-			delayedSend(&_sendIds[sendReq.sendid], sendReq.name);
-		}
-
 	} catch (Event e) {
-		LOG(ERROR) << "Syntax error in send element:" << std::endl << e << std::endl;
+		LOG(ERROR) << "Syntax error in send element content:" << std::endl << e << std::endl;
+    return;
 	}
+
+  assert(_sendIds.find(sendReq.sendid) == _sendIds.end());
+  _sendIds[sendReq.sendid] = std::make_pair(this, sendReq);
+  if (sendReq.delayMs > 0) {
+    _sendQueue->addEvent(sendReq.sendid, Interpreter::delayedSend, sendReq.delayMs, &_sendIds[sendReq.sendid]);
+  } else {
+    delayedSend(&_sendIds[sendReq.sendid], sendReq.name);
+  }
 }
 
 void Interpreter::delayedSend(void* userdata, std::string eventName) {
@@ -1553,7 +1619,13 @@ void Interpreter::exitStates(const Arabica::XPath::NodeSet<std::string>& enabled
 
 	monIter = _monitors.begin();
 	while(monIter != _monitors.end()) {
-		(*monIter)->beforeExitingStates(this, statesToExit);
+    try {
+      (*monIter)->beforeExitingStates(this, statesToExit);
+    } catch (Event e) {
+      LOG(ERROR) << "Syntax error when calling beforeExitingStates on monitors: " << std::endl << e << std::endl;
+    } catch (...) {
+      LOG(ERROR) << "An exception occured when calling beforeExitingStates on monitors";
+    }
 		monIter++;
 	}
 
@@ -1610,7 +1682,13 @@ void Interpreter::exitStates(const Arabica::XPath::NodeSet<std::string>& enabled
 
 	monIter = _monitors.begin();
 	while(monIter != _monitors.end()) {
-		(*monIter)->afterExitingStates(this);
+    try {
+      (*monIter)->afterExitingStates(this);
+    } catch (Event e) {
+      LOG(ERROR) << "Syntax error when calling afterExitingStates on monitors: " << std::endl << e << std::endl;
+    } catch (...) {
+      LOG(ERROR) << "An exception occured when calling afterExitingStates on monitors";
+    }
 		monIter++;
 	}
 
@@ -1722,7 +1800,13 @@ void Interpreter::enterStates(const Arabica::XPath::NodeSet<std::string>& enable
 
 	monIter = _monitors.begin();
 	while(monIter != _monitors.end()) {
-		(*monIter)->beforeEnteringStates(this, statesToEnter);
+    try {
+      (*monIter)->beforeEnteringStates(this, statesToEnter);
+    } catch (Event e) {
+      LOG(ERROR) << "Syntax error when calling beforeEnteringStates on monitors: " << std::endl << e << std::endl;
+    } catch (...) {
+      LOG(ERROR) << "An exception occured when calling beforeEnteringStates on monitors";
+    }
 		monIter++;
 	}
 
@@ -1783,7 +1867,13 @@ void Interpreter::enterStates(const Arabica::XPath::NodeSet<std::string>& enable
 
 	monIter = _monitors.begin();
 	while(monIter != _monitors.end()) {
-		(*monIter)->afterEnteringStates(this);
+    try {
+      (*monIter)->afterEnteringStates(this);
+    } catch (Event e) {
+      LOG(ERROR) << "Syntax error when calling afterEnteringStates on monitors: " << std::endl << e << std::endl;
+    } catch (...) {
+      LOG(ERROR) << "An exception occured when calling afterEnteringStates on monitors";
+    }
 		monIter++;
 	}
 

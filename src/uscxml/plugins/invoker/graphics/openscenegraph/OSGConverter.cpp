@@ -3,14 +3,30 @@
 #include "uscxml/config.h"
 
 #include <osg/MatrixTransform>
+#include <osg/Node>
+#include <osg/Group>
 #include <osgDB/ReadFile>
 #include <osgDB/WriteFile>
 #include <osgDB/Registry>
 #include <osgGA/TrackballManipulator>
+#include <osg/ShapeDrawable>
+
+#include <boost/lexical_cast.hpp>
 
 #ifdef BUILD_AS_PLUGINS
 #include <Pluma/Connector.hpp>
 #endif
+
+#define EVAL_PARAM_EXPR(param, expr, key) \
+if (param.find(key) == param.end() && param.find(expr) != param.end() && _interpreter->getDataModel()) \
+  param.insert(std::make_pair(key, _interpreter->getDataModel().evalAsString(param.find(expr)->second)));
+
+#define CAST_PARAM(param, var, key, type) \
+if (param.find(key) != param.end()) { \
+  try { var = boost::lexical_cast<type>(param.find(key)->second); } \
+  catch(...) { LOG(ERROR) << "Attribute " key " of sendrequest to osgconverter is of invalid format: " << param.find(key)->second; } \
+}
+
 
 namespace uscxml {
 
@@ -23,6 +39,7 @@ bool connect(pluma::Host& host) {
 #endif
 
 OSGConverter::OSGConverter() : _isRunning(false) {
+//  osg::setNotifyLevel(osg::DEBUG_FP);
 }
 
 OSGConverter::~OSGConverter() {
@@ -94,20 +111,14 @@ void OSGConverter::send(const SendRequest& req) {
 		}
 	}
 
-	if (actualReq.params.find("height") == actualReq.params.end()) {
-		// no explicit height
-		if (actualReq.params.find("heightexpr") != actualReq.params.end() && _interpreter->getDataModel()) {
-			actualReq.params.insert(std::make_pair("height", _interpreter->getDataModel().evalAsString(actualReq.params.find("heightexpr")->second)));
-		}
-	}
+  EVAL_PARAM_EXPR(actualReq.params, "heightexpr", "height");
+  EVAL_PARAM_EXPR(actualReq.params, "widthexpr", "width");
+  EVAL_PARAM_EXPR(actualReq.params, "pitchexpr", "pitch");
+  EVAL_PARAM_EXPR(actualReq.params, "rollexpr", "roll");
+  EVAL_PARAM_EXPR(actualReq.params, "yawexpr", "yaw");
+  EVAL_PARAM_EXPR(actualReq.params, "zoomexpr", "zoom");
 
-	if (actualReq.params.find("width") == actualReq.params.end()) {
-		// no explicit width
-		if (actualReq.params.find("widthexpr") != actualReq.params.end() && _interpreter->getDataModel()) {
-			actualReq.params.insert(std::make_pair("width", _interpreter->getDataModel().evalAsString(actualReq.params.find("widthexpr")->second)));
-		}
-	}
-
+//  process(actualReq);
 	_workQueue.push(actualReq);
 }
 
@@ -139,9 +150,13 @@ void OSGConverter::run(void* instance) {
 }
 
 void OSGConverter::process(const SendRequest& req) {
-
-	int width = (req.params.find("width") != req.params.end() ? strTo<int>(req.params.find("width")->second) : 640);
-	int height = (req.params.find("height") != req.params.end() ? strTo<int>(req.params.find("height")->second) : 480);
+  
+//  std::cout << req;
+  
+  int width = 640;
+	int height = 480;
+  CAST_PARAM(req.params, width, "width", int);
+  CAST_PARAM(req.params, height, "height", int);
 
 	assert(req.params.find("source") != req.params.end());
 	assert(req.params.find("dest") != req.params.end());
@@ -191,10 +206,10 @@ void OSGConverter::process(const SendRequest& req) {
 		viewer.getCamera()->setClearColor(osg::Vec4f(1.0f,1.0f,1.0f,1.0f));
 		viewer.getCamera()->setClearMask(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		((osg::MatrixTransform*)sceneGraph.get())->setMatrix(requestToModelPose(req));
-		viewer.getCamera()->setViewMatrix(requestToCamPose(req));
+//		viewer.getCamera()->setViewMatrix(requestToCamPose(req));
 
-//    viewer.home();
+    viewer.home();
+		((osg::MatrixTransform*)sceneGraph.get())->setMatrix(requestToModelPose(req));
 
 		// perform one viewer iteration
 		viewer.realize();
@@ -202,19 +217,32 @@ void OSGConverter::process(const SendRequest& req) {
 	}
 }
 
-osg::Matrix OSGConverter::requestToModelPose(const SendRequest& req) {
-	double pitch = (req.params.find("pitch") != req.params.end() ? strTo<int>(req.params.find("pitch")->second) : 0);
-	double roll = (req.params.find("roll") != req.params.end() ? strTo<int>(req.params.find("roll")->second) : 0);
-	double yaw = (req.params.find("yaw") != req.params.end() ? strTo<int>(req.params.find("yaw")->second) : 0);
+osg::Matrix OSGConverter::requestToModelPose(const SendRequest& req) {  
+  double pitch = 0;
+  double roll = 0;
+  double yaw = 0;
+  double zoom = 1;
+  CAST_PARAM(req.params, pitch, "pitch", double);
+  CAST_PARAM(req.params, roll, "roll", double);
+  CAST_PARAM(req.params, yaw, "yaw", double);
+  CAST_PARAM(req.params, zoom, "zoom", double);
 
-	return eulerToMatrix(pitch, roll, yaw);
-//  osg::Matrix m;
-//  m.makeIdentity();
-//  return m;
+  osg::Matrix m = osg::Matrix::scale(zoom, zoom, zoom) * eulerToMatrix(pitch, roll, yaw);
+  
+#if 0
+  dumpMatrix(m);
+#endif
+  return m;
 }
 
 osg::Matrix OSGConverter::requestToCamPose(const SendRequest& req) {
-	return eulerToMatrix(0, 0, 0);
+//  double zoom = 1;
+//  CAST_PARAM(req.params, zoom, "zoom", double);
+//  osg::Matrix scale = osg::Matrix::scale(zoom, zoom, zoom);
+//  return scale;
+  osg::Matrix identity;
+  identity.makeIdentity();
+  return identity;
 }
 
 osg::ref_ptr<osg::Node> OSGConverter::setupGraph(const std::string filename) {
@@ -240,7 +268,9 @@ osg::ref_ptr<osg::Node> OSGConverter::setupGraph(const std::string filename) {
 			}
 			_models[filename] = std::make_pair(now, model);
 		}
+    _models[filename].first = now;
 
+#if 1
 		// remove old models from cache
 		std::map<std::string, std::pair<long, osg::ref_ptr<osg::Node> > >::iterator modelIter = _models.begin();
 		while(modelIter != _models.end()) {
@@ -251,12 +281,13 @@ osg::ref_ptr<osg::Node> OSGConverter::setupGraph(const std::string filename) {
 				modelIter++;
 			}
 		}
-	}
 
+#endif
+	}
+  
 	osg::ref_ptr<osg::MatrixTransform> root = new osg::MatrixTransform();
 
 	osg::ref_ptr<osg::Node> model = _models[filename].second;
-	_models[filename].first = now;
 
 	// translation matrix to move model into center
 	osg::ref_ptr<osg::MatrixTransform> modelCenter = new osg::MatrixTransform();
@@ -268,7 +299,7 @@ osg::ref_ptr<osg::Node> OSGConverter::setupGraph(const std::string filename) {
 
 	// add to model pose matrix
 	root->addChild(modelCenter);
-
+    
 	return root;
 }
 
@@ -299,7 +330,7 @@ osg::Matrix OSGConverter::eulerToMatrix(double pitch, double roll, double yaw) {
 
 	m(0,3) = m(1,3) = m(2,3) = m(3,0) = m(3,1) = m(3,2) = 0;
 	m(3,3) = 1;
-
+  
 	return m;
 }
 
@@ -331,6 +362,15 @@ void OSGConverter::matrixToEuler(const osg::Matrix& m, double& pitch, double& ro
 	yaw = fmod( angle_z, 2 * M_PI );
 }
 
+void OSGConverter::dumpMatrix(const osg::Matrix& m) {
+  for (int i = 0; i < 4; i++) {
+    for (int j = 0; j < 4; j++) {
+      std::cout << ", " << m(i, j);
+    }
+    std::cout << std::endl;
+  }
+}
+  
 void OSGConverter::NameRespectingWriteToFile::operator()(const osg::Image& image, const unsigned int context_id) {
 	osgDB::writeImageFile(image, _filename);
 }
