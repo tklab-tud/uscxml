@@ -195,7 +195,14 @@ void OSGConverter::process(const SendRequest& req) {
 		traits->height = height;
 		traits->pbuffer = true;
 		osg::ref_ptr<osg::GraphicsContext> gc = osg::GraphicsContext::createGraphicsContext(traits.get());
-		GLenum pbuffer = gc->getTraits()->doubleBuffer ? GL_BACK : GL_FRONT;
+
+    if (!gc.valid()) {
+      LOG(ERROR) << "Cannot create GraphicsContext!";
+      return;
+    }
+
+    
+    GLenum pbuffer = gc->getTraits()->doubleBuffer ? GL_BACK : GL_FRONT;
 
 		viewer.getCamera()->setGraphicsContext(gc.get());
 		viewer.getCamera()->setViewport(new osg::Viewport(0,0,traits->width,traits->height));

@@ -112,11 +112,18 @@ void DirMonInvoker::reportExisting() {
 
 void DirMonInvoker::handleFileAction(FW::WatchID watchid, const FW::String& dir, const FW::String& filename, FW::Action action) {
   
+  std::string path;
+  if (!boost::algorithm::starts_with(filename, dir)) {
+    path = dir + filename;
+  } else {
+    path = filename;
+  }
+  
   if (_suffixes.size() > 0) {
     bool validSuffix = false;
     std::set<std::string>::iterator suffixIter = _suffixes.begin();
     while(suffixIter != _suffixes.end()) {
-      if (boost::algorithm::ends_with(filename, *suffixIter)) {
+      if (boost::algorithm::ends_with(path, *suffixIter)) {
         validSuffix = true;
         break;
       }
@@ -148,9 +155,9 @@ void DirMonInvoker::handleFileAction(FW::WatchID watchid, const FW::String& dir,
   // basename is the filename with suffix
 	std::string basename;
 	size_t lastSep;
-	if ((lastSep = filename.find_last_of(PATH_SEPERATOR)) != std::string::npos) {
+	if ((lastSep = path.find_last_of(PATH_SEPERATOR)) != std::string::npos) {
 		lastSep++;
-		basename = filename.substr(lastSep, filename.length() - lastSep);
+		basename = path.substr(lastSep, path.length() - lastSep);
   	event.data.compound["file"].compound["name"] = Data(basename, Data::VERBATIM);
 	}
   
@@ -160,8 +167,8 @@ void DirMonInvoker::handleFileAction(FW::WatchID watchid, const FW::String& dir,
 
   struct stat fileStat;
 	if (action != FW::Actions::Delete) {
-    if (stat(filename.c_str(), &fileStat) != 0) {
-      LOG(ERROR) << "Error with stat on directory entry " << filename << ": " << strerror(errno);
+    if (stat(path.c_str(), &fileStat) != 0) {
+      LOG(ERROR) << "Error with stat on directory entry " << path << ": " << strerror(errno);
       return;
     } else {
       event.data.compound["file"].compound["mtime"] = toStr(fileStat.st_mtime);
@@ -193,7 +200,7 @@ void DirMonInvoker::handleFileAction(FW::WatchID watchid, const FW::String& dir,
   	}
 	}
 
-	event.data.compound["file"].compound["path"] = Data(filename, Data::VERBATIM);
+	event.data.compound["file"].compound["path"] = Data(path, Data::VERBATIM);
 	event.data.compound["file"].compound["dir"] = Data(dir, Data::VERBATIM);
 
 	returnEvent(event);
