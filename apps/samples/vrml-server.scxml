@@ -21,7 +21,8 @@
 			'_' + numPattern +             // z
 			'_' + numPattern +             // width
 			'_' + numPattern +             // height
-			'_(off|on)' + ')\\..*$');      // autorotate
+			'_(off|on)' +                  // autorotate
+			')\\.\\w+$');      // end
 		
 		/**
 		 * Transform a file we found into a processed or model struct

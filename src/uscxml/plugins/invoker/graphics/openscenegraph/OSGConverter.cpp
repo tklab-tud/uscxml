@@ -502,9 +502,15 @@ void OSGConverter::dumpMatrix(const osg::Matrix& m) {
 }
 
 void OSGConverter::NameRespectingWriteToFile::operator()(const osg::Image& image, const unsigned int context_id) {
-	bool success = osgDB::writeImageFile(image, _filename);
+
+	bool success = osgDB::writeImageFile(image, _filename + ".tmp");
 	if (success) {
-		_converter->reportSuccess(_req);
+		int err = rename(std::string(_filename + ".tmp").c_str(), _filename.c_str());
+		if (err) {
+			_converter->reportFailure(_req);
+		} else {
+			_converter->reportSuccess(_req);
+		}
 	} else {
 		_converter->reportFailure(_req);
 	}
