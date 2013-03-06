@@ -64,7 +64,7 @@ size_t URLImpl::headerHandler(void *ptr, size_t size, size_t nmemb, void *userda
 }
 
 void URLImpl::downloadStarted() {
-	LOG(INFO) << "Starting download of " << asString() << std::endl;
+//	LOG(INFO) << "Starting download of " << asString() << std::endl;
 	_inContent.str("");
 	_inContent.clear();
 	_inHeader.str("");
@@ -80,7 +80,7 @@ void URLImpl::downloadStarted() {
 void URLImpl::downloadCompleted() {
 	tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
 
-	LOG(INFO) << "Finished downloading " << asString() << " with " << _inContent.str().size() << " bytes";
+//	LOG(INFO) << "Finished downloading " << asString() << " with " << _inContent.str().size() << " bytes";
 
 	_hasFailed = false;
 	_isDownloaded = true;

@@ -31,10 +31,13 @@ public:
 	virtual void cancel(const std::string sendId);
 	virtual void invoke(const InvokeRequest& req);
 
+	void reportSuccess(const SendRequest& req);
+	void reportFailure(const SendRequest& req);
+
 	osg::Matrix requestToModelPose(const SendRequest& req);
 	osg::Matrix requestToCamPose(const SendRequest& req);
 
-  static void dumpMatrix(const osg::Matrix& m);
+	static void dumpMatrix(const osg::Matrix& m);
 	static osg::Matrix eulerToMatrix(double pitch, double roll, double yaw);
 	static void matrixToEuler(const osg::Matrix& m, double& pitch, double& roll, double& yaw);
 
@@ -43,14 +46,20 @@ protected:
 	public:
 		NameRespectingWriteToFile(const std::string& filename,
 		                          const std::string& extension,
-		                          SavePolicy savePolicy) : osgViewer::ScreenCaptureHandler::WriteToFile(filename, extension, savePolicy) {
+		                          SavePolicy savePolicy,
+		                          const SendRequest& req,
+		                          OSGConverter* converter) : osgViewer::ScreenCaptureHandler::WriteToFile(filename, extension, savePolicy),
+			_req(req), _converter(converter) {
 		}
 
 		virtual void operator()(const osg::Image& image, const unsigned int context_id);
+		SendRequest _req;
+		OSGConverter* _converter;
 	};
 
 	uscxml::concurrency::BlockingQueue<SendRequest> _workQueue;
-	osg::ref_ptr<osg::Node> setupGraph(const std::string filename);
+	osg::ref_ptr<osg::Node> setupGraph(const std::string filename, bool autoRotate = false);
+	osg::ref_ptr<osg::Node> getOrigin();
 
 	std::map<std::string, std::pair<long, osg::ref_ptr<osg::Node> > > _models;
 	tthread::recursive_mutex _cacheMutex;

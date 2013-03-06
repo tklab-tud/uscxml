@@ -41,7 +41,7 @@ public:
 	static std::string getBaseURL();
 
 	static void reply(const Reply& reply);
-  static std::string mimeTypeForExtension(const std::string& ext);
+	static std::string mimeTypeForExtension(const std::string& ext);
 	static bool registerServlet(const std::string& path, HTTPServlet* servlet); ///< Register a servlet, returns false if path is already taken
 	static void unregisterServlet(HTTPServlet* servlet);
 
@@ -58,7 +58,7 @@ private:
 	static void httpRecvReqCallback(struct evhttp_request *req, void *callbackData);
 	void processByMatchingServlet(const Request& request);
 
-  static std::map<std::string, std::string> mimeTypes;
+	static std::map<std::string, std::string> mimeTypes;
 	std::map<std::string, HTTPServlet*> _servlets;
 	typedef std::map<std::string, HTTPServlet*>::iterator servlet_iter_t;
 

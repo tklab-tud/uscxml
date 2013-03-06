@@ -33,9 +33,9 @@
 #endif
 
 namespace uscxml {
-  
+
 HTTPServer::HTTPServer(unsigned short port) {
-  _port = port;
+	_port = port;
 	_base = event_base_new();
 	_http = evhttp_new(_base);
 	_handle = NULL;
@@ -58,24 +58,25 @@ std::map<std::string, std::string> HTTPServer::mimeTypes;
 HTTPServer* HTTPServer::getInstance(int port) {
 	tthread::lock_guard<tthread::recursive_mutex> lock(_instanceMutex);
 	if (_instance == NULL) {
-        
-    // this is but a tiny list, supply a content-type <header> yourself
-    mimeTypes["txt"] = "text/plain";
-    mimeTypes["c"] = "text/plain";
-    mimeTypes["h"] = "text/plain";
-    mimeTypes["html"] = "text/html";
-    mimeTypes["htm"] = "text/htm";
-    mimeTypes["css"] = "text/css";
-    mimeTypes["gif"] = "image/gif";
-    mimeTypes["jpg"] = "image/jpeg";
-    mimeTypes["jpeg"] = "image/jpeg";
-    mimeTypes["mpg"] = "video/mpeg";
-    mimeTypes["mov"] = "video/quicktime";
-    mimeTypes["png"] = "image/png";
-    mimeTypes["pdf"] = "application/pdf";
-    mimeTypes["ps"] = "application/postscript";
-    mimeTypes["tif"] = "image/tiff";
-    mimeTypes["tiff"] = "image/tiff";
+
+		// this is but a tiny list, supply a content-type <header> yourself
+		mimeTypes["txt"] = "text/plain";
+		mimeTypes["c"] = "text/plain";
+		mimeTypes["h"] = "text/plain";
+		mimeTypes["html"] = "text/html";
+		mimeTypes["htm"] = "text/htm";
+		mimeTypes["css"] = "text/css";
+		mimeTypes["bmp"] = "image/bmp";
+		mimeTypes["gif"] = "image/gif";
+		mimeTypes["jpg"] = "image/jpeg";
+		mimeTypes["jpeg"] = "image/jpeg";
+		mimeTypes["mpg"] = "video/mpeg";
+		mimeTypes["mov"] = "video/quicktime";
+		mimeTypes["png"] = "image/png";
+		mimeTypes["pdf"] = "application/pdf";
+		mimeTypes["ps"] = "application/postscript";
+		mimeTypes["tif"] = "image/tiff";
+		mimeTypes["tiff"] = "image/tiff";
 
 #ifndef _WIN32
 		evthread_use_pthreads();
@@ -89,9 +90,9 @@ HTTPServer* HTTPServer::getInstance(int port) {
 }
 
 std::string HTTPServer::mimeTypeForExtension(const std::string& ext) {
-  if (mimeTypes.find(ext) != mimeTypes.end())
-    return mimeTypes[ext];
-  return "";
+	if (mimeTypes.find(ext) != mimeTypes.end())
+		return mimeTypes[ext];
+	return "";
 }
 
 void HTTPServer::httpRecvReqCallback(struct evhttp_request *req, void *callbackData) {
@@ -220,17 +221,22 @@ void HTTPServer::processByMatchingServlet(const Request& request) {
 }
 
 void HTTPServer::reply(const Reply& reply) {
-	struct evbuffer *evb = evbuffer_new();
+	if (reply.content.size() > 0 && reply.headers.find("Content-Type") == reply.headers.end()) {
+		LOG(INFO) << "Sending content without Content-Type header";
+	}
 
-  if (reply.content.size() > 0 && reply.headers.find("Content-Type") == reply.headers.end()) {
-    LOG(INFO) << "Sending content without Content-Type header";
-  }
-  
 	std::map<std::string, std::string>::const_iterator headerIter = reply.headers.begin();
 	while(headerIter != reply.headers.end()) {
 		evhttp_add_header(evhttp_request_get_output_headers(reply.curlReq), headerIter->first.c_str(), headerIter->second.c_str());
 		headerIter++;
 	}
+
+	if (reply.status >= 400) {
+		evhttp_send_error(reply.curlReq, reply.status, NULL);
+		return;
+	}
+
+	struct evbuffer *evb = evbuffer_new();
 
 	if (!boost::iequals(reply.type, "HEAD"))
 		evbuffer_add(evb, reply.content.data(), reply.content.size());

@@ -41,16 +41,16 @@ void PostponeElement::enterElement(const Arabica::DOM::Node<std::string>& node) 
 	}
 
 	// when will we refire the event?
-  std::string until;
-  try {
-    if (HAS_ATTR(node, "untilexpr")) {
-      until = _interpreter->getDataModel().evalAsString(ATTR(node, "untilexpr"));
-    } else if (HAS_ATTR(node, "until")) {
-      until = ATTR(node, "until");
-    }
+	std::string until;
+	try {
+		if (HAS_ATTR(node, "untilexpr")) {
+			until = _interpreter->getDataModel().evalAsString(ATTR(node, "untilexpr"));
+		} else if (HAS_ATTR(node, "until")) {
+			until = ATTR(node, "until");
+		}
 	} catch (Event e) {
 		LOG(ERROR) << "Syntax error in postpone element untilexpr:" << std::endl << e << std::endl;
-    return;
+		return;
 	}
 
 	if (until.length() == 0) {
@@ -58,30 +58,65 @@ void PostponeElement::enterElement(const Arabica::DOM::Node<std::string>& node) 
 		return;
 	}
 
+	LOG(INFO) << until;
+
+#if 0
+	std::string timeoutStr = "0s";
+	try {
+		if (HAS_ATTR(node, "timeoutexpr")) {
+			timeoutStr = _interpreter->getDataModel().evalAsString(ATTR(node, "timeoutexpr"));
+		} else if (HAS_ATTR(node, "timeout")) {
+			timeoutStr = ATTR(node, "timeout");
+		}
+	} catch (Event e) {
+		LOG(ERROR) << "Syntax error in postpone element timeoutexpr:" << std::endl << e << std::endl;
+		return;
+	}
+
+	uint64_t timeout = 0;
+	NumAttr timeoutAttr(timeoutStr);
+	if (boost::iequals(timeoutAttr.unit, "s")) {
+		timeout = strTo<int>(timeoutAttr.value) * 1000;
+	} else if (boost::iequals(timeoutAttr.unit, "ms")) {
+		timeout = strTo<int>(timeoutAttr.value);
+	}
+	if (timeout > 0) {
+		timeout += tthread::chrono::system_clock::now();
+	}
+#endif
 	Event currEvent = _interpreter->getCurrentEvent();
-	Resubmitter::postpone(currEvent, until, _interpreter);
+	Resubmitter::postpone(currEvent, until, 0, _interpreter);
 }
 
 void PostponeElement::exitElement(const Arabica::DOM::Node<std::string>& node) {
 }
 
-void PostponeElement::Resubmitter::postpone(const Event& event, std::string until, Interpreter* interpreter) {
+void PostponeElement::Resubmitter::postpone(const Event& event, std::string until, uint64_t timeout, Interpreter* interpreter) {
 	Resubmitter* resubmitter = getInstance(interpreter);
-	resubmitter->_postponedEvents.push_back(std::make_pair(until, event));
+	resubmitter->_postponedEvents.push_back(Postponed(event, until, timeout));
 }
 
 void PostponeElement::Resubmitter::onStableConfiguration(Interpreter* interpreter) {
-	std::list<std::pair<std::string, Event> >::iterator eventIter = _postponedEvents.begin();
+	std::list<Postponed>::iterator eventIter = _postponedEvents.begin();
 	while(eventIter != _postponedEvents.end()) {
 		try {
-      LOG(INFO) << "Reevaluating: >> " << eventIter->first << " <<";
-			if (interpreter->getDataModel().evalAsBool(eventIter->first)) {
-        LOG(INFO) << "  -> is TRUE";
-				interpreter->receive(eventIter->second, true);
+//      LOG(INFO) << "Reevaluating: >> " << eventIter->first << " <<";
+			if (eventIter->timeout > 0 && tthread::chrono::system_clock::now() < eventIter->timeout) {
+				// TODO: We should use an event queue
+//        LOG(INFO) << "  -> Timeout";
+				eventIter->event.name += ".timeout";
+				interpreter->receive(eventIter->event, true);
 				_postponedEvents.erase(eventIter);
 				break;
 			}
-      LOG(INFO) << "  -> is FALSE";
+			if (interpreter->getDataModel().evalAsBool(eventIter->until)) {
+//        LOG(INFO) << "  -> is TRUE";
+				eventIter->event.name += ".postponed";
+				interpreter->receive(eventIter->event, true);
+				_postponedEvents.erase(eventIter);
+				break;
+			}
+//      LOG(INFO) << "  -> is FALSE";
 		} catch (Event e) {
 			LOG(ERROR) << "Syntax error while evaluating until attribute of postpone element:" << std::endl << e << std::endl;
 			_postponedEvents.erase(eventIter++);

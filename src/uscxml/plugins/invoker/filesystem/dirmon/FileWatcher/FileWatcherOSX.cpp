@@ -35,6 +35,7 @@
 #include <stdlib.h>
 #include <dirent.h>
 #include <string.h>
+#include <iostream>
 
 // this is more suited:
 // https://developer.apple.com/library/mac/#documentation/Darwin/Conceptual/FSEvents_ProgGuide/UsingtheFSEventsFramework/UsingtheFSEventsFramework.html
@@ -71,18 +72,20 @@ struct WatchStruct {
 	WatchID mWatchID;
 	String mDirName;
 	FileWatchListener* mListener;
+	FileWatcherOSX* mWatcher;
+	bool mRecursive;
 
 	// index 0 is always the directory
 	KEvent mChangeList[MAX_CHANGE_EVENT_SIZE];
 	size_t mChangeListCount;
 
-	WatchStruct(WatchID watchid, const String& dirname, FileWatchListener* listener)
-		: mWatchID(watchid), mDirName(dirname), mListener(listener) {
+	WatchStruct(WatchID watchid, const String& dirname, FileWatchListener* listener, FileWatcherOSX* watcher, bool recursive = false)
+		: mWatchID(watchid), mDirName(dirname), mListener(listener), mWatcher(watcher), mRecursive(recursive) {
 		mChangeListCount = 0;
 		addAll();
 	}
 
-	void addFile(const String& name, bool imitEvents = true) {
+	void addFile(const String& name, bool emitEvents = true) {
 		//fprintf(stderr, "ADDED: %s\n", name.c_str());
 
 		// create entry
@@ -104,18 +107,18 @@ struct WatchStruct {
 		// set the event data at the end of the list
 		EV_SET(&mChangeList[mChangeListCount], fd, EVFILT_VNODE,
 		       EV_ADD | EV_ENABLE | EV_ONESHOT,
-		       NOTE_DELETE | NOTE_EXTEND | NOTE_WRITE | NOTE_ATTRIB,
+		       NOTE_DELETE | NOTE_EXTEND | NOTE_WRITE | NOTE_ATTRIB | NOTE_RENAME,
 		       0, (void*)entry);
 
 		// qsort
 		qsort(mChangeList + 1, mChangeListCount, sizeof(KEvent), comparator);
 
 		// handle action
-		if(imitEvents)
+		if(emitEvents)
 			handleAction(name, Actions::Add);
 	}
 
-	void removeFile(const String& name, bool imitEvents = true) {
+	void removeFile(const String& name, bool emitEvents = true) {
 		// bsearch
 		KEvent target;
 		EntryStruct tempEntry(name.c_str(), 0);
@@ -140,7 +143,7 @@ struct WatchStruct {
 		qsort(mChangeList + 1, mChangeListCount, sizeof(KEvent), comparator);
 
 		// handle action
-		if(imitEvents)
+		if(emitEvents)
 			handleAction(name, Actions::Delete);
 	}
 
@@ -207,7 +210,7 @@ struct WatchStruct {
 		int fd = open(mDirName.c_str(), O_RDONLY);
 		EV_SET(&mChangeList[0], fd, EVFILT_VNODE,
 		       EV_ADD | EV_ENABLE | EV_ONESHOT,
-		       NOTE_DELETE | NOTE_EXTEND | NOTE_WRITE | NOTE_ATTRIB,
+		       NOTE_DELETE | NOTE_EXTEND | NOTE_WRITE | NOTE_ATTRIB | NOTE_RENAME,
 		       0, 0);
 
 		//fprintf(stderr, "ADDED: %s\n", mDirName.c_str());
@@ -222,11 +225,13 @@ struct WatchStruct {
 		while((entry = readdir(dir)) != NULL) {
 			String fname = (mDirName + "/" + String(entry->d_name));
 			stat(fname.c_str(), &attrib);
-			if(S_ISREG(attrib.st_mode))
+			if(S_ISREG(attrib.st_mode)) {
 				addFile(fname, false);
-			//else
-			//	fprintf(stderr, "NOT ADDED: %s (%d)\n", fname.c_str(), attrib.st_mode);
-
+			} else if(S_IFDIR && mRecursive && entry->d_name[0] != '.') {
+				mWatcher->addWatch(fname, mListener, mRecursive);
+			} else {
+				fprintf(stderr, "NOT ADDED: %s (%d)\n", fname.c_str(), attrib.st_mode);
+			}
 		}//end while
 
 		closedir(dir);
@@ -263,19 +268,33 @@ void FileWatcherOSX::update() {
 			if(nev == -1)
 				perror("kevent");
 			else {
+				if (event.fflags & NOTE_DELETE) {
+					fprintf(stderr, "NOTE_DELETE ");
+				}
+				if (event.fflags & NOTE_EXTEND) {
+					fprintf(stderr, "NOTE_EXTEND ");
+				}
+				if (event.fflags & NOTE_WRITE) {
+					fprintf(stderr, "NOTE_WRITE ");
+				}
+				if (event.fflags & NOTE_ATTRIB) {
+					fprintf(stderr, "NOTE_ATTRIB ");
+				}
+				if (event.fflags & NOTE_RENAME) {
+					fprintf(stderr, "NOTE_RENAME ");
+				}
+
 				EntryStruct* entry = 0;
 				if((entry = (EntryStruct*)event.udata) != 0) {
-					//fprintf(stderr, "File: %s -- ", (char*)entry->mFilename);
+					fprintf(stderr, " to %s -- \n", (char*)entry->mFilename);
 
 					if(event.fflags & NOTE_DELETE) {
-						//fprintf(stderr, "File deleted\n");
 						//watch->handleAction(entry->mFilename, Action::Delete);
 						watch->removeFile(entry->mFilename);
 					}
 					if(event.fflags & NOTE_EXTEND ||
 					        event.fflags & NOTE_WRITE ||
 					        event.fflags & NOTE_ATTRIB) {
-						//fprintf(stderr, "modified\n");
 						//watch->rescan();
 						struct stat attrib;
 						stat(entry->mFilename, &attrib);
@@ -283,7 +302,7 @@ void FileWatcherOSX::update() {
 						watch->handleAction(entry->mFilename, FW::Actions::Modified);
 					}
 				} else {
-					//fprintf(stderr, "Dir: %s -- rescanning\n", watch->mDirName.c_str());
+					fprintf(stderr, " in %s -- rescanning\n", watch->mDirName.c_str());
 					watch->rescan();
 				}
 			}
@@ -295,7 +314,7 @@ void FileWatcherOSX::update() {
 FileWatcherOSX::FileWatcherOSX() {
 	mDescriptor = kqueue();
 	mTimeOut.tv_sec = 0;
-	mTimeOut.tv_nsec = 2000000;
+	mTimeOut.tv_nsec = 20000000;
 }
 
 //--------
@@ -322,9 +341,12 @@ WatchID FileWatcherOSX::addWatch(const String& directory, FileWatchListener* wat
 				   0, (void*)"testing");
 	*/
 
-	WatchStruct* watch = new WatchStruct(++mLastWatchID, directory, watcher);
-	mWatches.insert(std::make_pair(mLastWatchID, watch));
-	return mLastWatchID;
+	std::cout << "Adding watch for " << directory << std::endl;
+
+	WatchID currWatch = ++mLastWatchID;
+	WatchStruct* watch = new WatchStruct(currWatch, directory, watcher, this, recursive);
+	mWatches.insert(std::make_pair(currWatch, watch));
+	return currWatch;
 }
 
 //--------

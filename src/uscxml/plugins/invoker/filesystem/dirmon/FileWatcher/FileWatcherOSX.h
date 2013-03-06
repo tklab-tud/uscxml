@@ -54,7 +54,7 @@ public:
 
 	/// Add a directory watch
 	/// @exception FileNotFoundException Thrown when the requested directory does not exist
-	WatchID addWatch(const String& directory, FileWatchListener* watcher, bool recursive);
+	WatchID addWatch(const String& directory, FileWatchListener* watcher, bool recursive = false);
 
 	/// Remove a directory watch. This is a brute force lazy search O(nlogn).
 	void removeWatch(const String& directory);
@@ -78,6 +78,7 @@ private:
 	/// WatchID allocator
 	int mLastWatchID;
 
+	friend class WatchStruct;
 };//end FileWatcherOSX
 
 };//namespace FW

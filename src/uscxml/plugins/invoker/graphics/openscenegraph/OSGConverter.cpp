@@ -5,10 +5,12 @@
 #include <osg/MatrixTransform>
 #include <osg/Node>
 #include <osg/Group>
+#include <osg/ComputeBoundsVisitor>
 #include <osgDB/ReadFile>
 #include <osgDB/WriteFile>
 #include <osgDB/Registry>
 #include <osgGA/TrackballManipulator>
+#include <osgGA/AnimationPathManipulator>
 #include <osg/ShapeDrawable>
 
 #include <boost/lexical_cast.hpp>
@@ -91,6 +93,20 @@ void OSGConverter::send(const SendRequest& req) {
 		}
 	}
 
+	boost::algorithm::replace_all(actualReq.params.find("dest")->second, "//", "/");
+	boost::algorithm::replace_all(actualReq.params.find("dest")->second, "\\\\", "\\");
+
+	if (actualReq.params.find("autorotate") == actualReq.params.end()) {
+		if (actualReq.params.find("autorotateexpr") != actualReq.params.end()) {
+			if (_interpreter->getDataModel()) {
+				actualReq.params.insert(std::make_pair("autorotate", _interpreter->getDataModel().evalAsString(actualReq.params.find("autorotateexpr")->second)));
+			} else {
+				LOG(ERROR) << "SendRequests for osginvoker ncludes autorotateexpr but no datamodel is specified";
+				return;
+			}
+		}
+	}
+
 	if (actualReq.params.find("format") == actualReq.params.end()) {
 		// no explicit format
 		if (actualReq.params.find("formatexpr") != actualReq.params.end() && _interpreter->getDataModel()) {
@@ -111,12 +127,26 @@ void OSGConverter::send(const SendRequest& req) {
 		}
 	}
 
-  EVAL_PARAM_EXPR(actualReq.params, "heightexpr", "height");
-  EVAL_PARAM_EXPR(actualReq.params, "widthexpr", "width");
-  EVAL_PARAM_EXPR(actualReq.params, "pitchexpr", "pitch");
-  EVAL_PARAM_EXPR(actualReq.params, "rollexpr", "roll");
-  EVAL_PARAM_EXPR(actualReq.params, "yawexpr", "yaw");
-  EVAL_PARAM_EXPR(actualReq.params, "zoomexpr", "zoom");
+//  assert(osgDB::Registry::instance()->getReaderWriterForExtension("png"));
+//  osgDB::Registry::ReaderWriterList formatList = osgDB::Registry::instance()->getReaderWriterList();
+//  for (int i = 0; i < formatList.size(); i++) {
+//    std::map<std::string, std::string> funcDesc = formatList[i]->supportedProtocols();
+//    std::map<std::string, std::string>::iterator funcDescIter = funcDesc.begin();
+//    while(funcDescIter != funcDesc.end()) {
+//      std::cout << funcDescIter->first << ": " << funcDescIter->second << std::endl;
+//      funcDescIter++;
+//    }
+//  }
+
+	EVAL_PARAM_EXPR(actualReq.params, "heightexpr", "height");
+	EVAL_PARAM_EXPR(actualReq.params, "widthexpr", "width");
+	EVAL_PARAM_EXPR(actualReq.params, "pitchexpr", "pitch");
+	EVAL_PARAM_EXPR(actualReq.params, "rollexpr", "roll");
+	EVAL_PARAM_EXPR(actualReq.params, "yawexpr", "yaw");
+	EVAL_PARAM_EXPR(actualReq.params, "zoomexpr", "zoom");
+	EVAL_PARAM_EXPR(actualReq.params, "xexpr", "x");
+	EVAL_PARAM_EXPR(actualReq.params, "yexpr", "y");
+	EVAL_PARAM_EXPR(actualReq.params, "zexpr", "z");
 
 //  process(actualReq);
 	_workQueue.push(actualReq);
@@ -150,13 +180,13 @@ void OSGConverter::run(void* instance) {
 }
 
 void OSGConverter::process(const SendRequest& req) {
-  
+
 //  std::cout << req;
-  
-  int width = 640;
+
+	int width = 640;
 	int height = 480;
-  CAST_PARAM(req.params, width, "width", int);
-  CAST_PARAM(req.params, height, "height", int);
+	CAST_PARAM(req.params, width, "width", int);
+	CAST_PARAM(req.params, height, "height", int);
 
 	assert(req.params.find("source") != req.params.end());
 	assert(req.params.find("dest") != req.params.end());
@@ -166,80 +196,131 @@ void OSGConverter::process(const SendRequest& req) {
 	std::string dest = req.params.find("dest")->second;
 	std::string format = req.params.find("format")->second;
 
-	osg::ref_ptr<osg::Node> sceneGraph = setupGraph(source);
+	bool autoRotate = true;
+	if (req.params.find("autorotate") != req.params.end()) {
+		if (boost::iequals(req.params.find("autorotate")->second, "off") ||
+		        boost::iequals(req.params.find("autorotate")->second, "0") ||
+		        boost::iequals(req.params.find("autorotate")->second, "false")) {
+			autoRotate = false;
+		}
+	}
+
+	osg::ref_ptr<osg::Node> model = setupGraph(source, autoRotate);
+	if (model->asGroup()->getNumChildren() == 0) {
+		reportFailure(req);
+		return;
+	}
+
+	osg::ref_ptr<osg::Group> sceneGraph = new osg::Group();
+	sceneGraph->addChild(model);
 
 	osgDB::ReaderWriter::WriteResult result;
 	if (osgDB::Registry::instance()->getReaderWriterForExtension(format) != NULL) {
 		// write as another 3D file
 		result = osgDB::Registry::instance()->writeNode(*sceneGraph, dest, osgDB::Registry::instance()->getOptions());
+		if (result.success()) {
+			// we can know about success right here
+			reportSuccess(req);
+			return;
+		}
 	}
 
-	if (result.error()) {
-		// make a screenshot
-		osgViewer::ScreenCaptureHandler::CaptureOperation* cOp = new NameRespectingWriteToFile(dest,
-		        format,
-		        osgViewer::ScreenCaptureHandler::WriteToFile::OVERWRITE
-		                                                                                      );
+	/**
+	 * If we failed to interpret the extension as another 3D file, try to make a screenshot.
+	 */
 
-		osgViewer::ScreenCaptureHandler* captureHandler = new osgViewer::ScreenCaptureHandler(cOp, -1);
+	((osg::MatrixTransform*)model.get())->setMatrix(requestToModelPose(req));
+	osg::BoundingSphere bs = model->getBound();
 
-		osgViewer::Viewer viewer;
-		viewer.setSceneData(sceneGraph);
-		viewer.setCameraManipulator(new osgGA::TrackballManipulator());
-		viewer.addEventHandler(captureHandler);
-		captureHandler->startCapture();
+//  osg::ref_ptr<osg::MatrixTransform> scale = new osg::MatrixTransform();
+//  scale->setMatrix(osg::Matrix::scale(bs.radius() / 5, bs.radius() / 5, bs.radius() / 5));
+//  scale->addChild(getOrigin());
+//  sceneGraph->addChild(scale);
 
-		osg::DisplaySettings* ds = osg::DisplaySettings::instance().get();
-		osg::ref_ptr<osg::GraphicsContext::Traits> traits = new osg::GraphicsContext::Traits(ds);
-		traits->width = width;
-		traits->height = height;
-		traits->pbuffer = true;
-		osg::ref_ptr<osg::GraphicsContext> gc = osg::GraphicsContext::createGraphicsContext(traits.get());
+	osgViewer::ScreenCaptureHandler::CaptureOperation* cOp = new NameRespectingWriteToFile(
+	    dest,
+	    format,
+	    osgViewer::ScreenCaptureHandler::WriteToFile::OVERWRITE,
+	    req, this);
 
-    if (!gc.valid()) {
-      LOG(ERROR) << "Cannot create GraphicsContext!";
-      return;
-    }
+	osgViewer::ScreenCaptureHandler* captureHandler = new osgViewer::ScreenCaptureHandler(cOp, -1);
 
-    
-    GLenum pbuffer = gc->getTraits()->doubleBuffer ? GL_BACK : GL_FRONT;
+	osgViewer::Viewer viewer;
+	viewer.setSceneData(sceneGraph);
+	viewer.setCameraManipulator(new osgGA::TrackballManipulator());
+	viewer.addEventHandler(captureHandler);
+	captureHandler->startCapture();
 
-		viewer.getCamera()->setGraphicsContext(gc.get());
-		viewer.getCamera()->setViewport(new osg::Viewport(0,0,traits->width,traits->height));
-		viewer.getCamera()->setDrawBuffer(pbuffer);
-		viewer.getCamera()->setReadBuffer(pbuffer);
+	osg::DisplaySettings* ds = osg::DisplaySettings::instance().get();
+	osg::ref_ptr<osg::GraphicsContext::Traits> traits = new osg::GraphicsContext::Traits(ds);
+	traits->width = width;
+	traits->height = height;
+	traits->pbuffer = true;
+	osg::ref_ptr<osg::GraphicsContext> gc = osg::GraphicsContext::createGraphicsContext(traits.get());
 
-		// set background color
-		viewer.getCamera()->setClearColor(osg::Vec4f(1.0f,1.0f,1.0f,1.0f));
-		viewer.getCamera()->setClearMask(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-//		viewer.getCamera()->setViewMatrix(requestToCamPose(req));
-
-    viewer.home();
-		((osg::MatrixTransform*)sceneGraph.get())->setMatrix(requestToModelPose(req));
-
-		// perform one viewer iteration
-		viewer.realize();
-		viewer.frame();
+	if (!gc.valid()) {
+		LOG(ERROR) << "Cannot create GraphicsContext!";
+		return;
 	}
+
+	GLenum pbuffer = gc->getTraits()->doubleBuffer ? GL_BACK : GL_FRONT;
+
+	viewer.getCamera()->setGraphicsContext(gc.get());
+	viewer.getCamera()->setViewport(new osg::Viewport(0,0,traits->width,traits->height));
+	viewer.getCamera()->setDrawBuffer(pbuffer);
+	viewer.getCamera()->setReadBuffer(pbuffer);
+
+	// set background color
+	viewer.getCamera()->setClearColor(osg::Vec4f(1.0f,1.0f,1.0f,1.0f));
+	viewer.getCamera()->setClearMask(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	viewer.getCameraManipulator()->setByMatrix(osg::Matrix::lookAt(osg::Vec3d(0,0,bs.radius() * -4),  // eye
+	        (osg::Vec3d)bs.center(),           // center
+	        osg::Vec3d(0,1,0)));               // up
+
+//  viewer.home();
+
+	// perform one viewer iteration
+	viewer.realize();
+	viewer.frame();
 }
 
-osg::Matrix OSGConverter::requestToModelPose(const SendRequest& req) {  
-  double pitch = 0;
-  double roll = 0;
-  double yaw = 0;
-  double zoom = 1;
-  CAST_PARAM(req.params, pitch, "pitch", double);
-  CAST_PARAM(req.params, roll, "roll", double);
-  CAST_PARAM(req.params, yaw, "yaw", double);
-  CAST_PARAM(req.params, zoom, "zoom", double);
+void OSGConverter::reportSuccess(const SendRequest& req) {
+	Event event(req);
+	if (event.name.length() == 0)
+		event.name = "convert";
+	event.name += ".success";
+	returnEvent(event);
+}
 
-  osg::Matrix m = osg::Matrix::scale(zoom, zoom, zoom) * eulerToMatrix(pitch, roll, yaw);
-  
+void OSGConverter::reportFailure(const SendRequest& req) {
+	Event event(req);
+	if (event.name.length() == 0)
+		event.name = "convert";
+	event.name += ".failure";
+	returnEvent(event);
+}
+
+osg::Matrix OSGConverter::requestToModelPose(const SendRequest& req) {
+	double pitch = 0;
+	double roll = 0;
+	double yaw = 0;
+	double zoom = 1;
+	double x = 0;
+	double y = 0;
+	double z = 0;
+	CAST_PARAM(req.params, pitch, "pitch", double);
+	CAST_PARAM(req.params, roll, "roll", double);
+	CAST_PARAM(req.params, yaw, "yaw", double);
+	CAST_PARAM(req.params, zoom, "zoom", double);
+	CAST_PARAM(req.params, x, "x", double);
+	CAST_PARAM(req.params, y, "y", double);
+	CAST_PARAM(req.params, z, "z", double);
+
+	osg::Matrix m = osg::Matrix::scale(zoom, zoom, zoom) * eulerToMatrix(pitch, roll, yaw) * osg::Matrix::translate(-1 * x, -1 * y, -1 * z);
 #if 0
-  dumpMatrix(m);
+	dumpMatrix(m);
 #endif
-  return m;
+	return m;
 }
 
 osg::Matrix OSGConverter::requestToCamPose(const SendRequest& req) {
@@ -247,17 +328,18 @@ osg::Matrix OSGConverter::requestToCamPose(const SendRequest& req) {
 //  CAST_PARAM(req.params, zoom, "zoom", double);
 //  osg::Matrix scale = osg::Matrix::scale(zoom, zoom, zoom);
 //  return scale;
-  osg::Matrix identity;
-  identity.makeIdentity();
-  return identity;
+	osg::Matrix identity;
+	identity.makeIdentity();
+	return identity;
 }
 
-osg::ref_ptr<osg::Node> OSGConverter::setupGraph(const std::string filename) {
+osg::ref_ptr<osg::Node> OSGConverter::setupGraph(const std::string filename, bool autoRotate) {
 
 	/**
 	 *  root (model pose)
-	 *    - modelCenter (center model)
-	 *      - model (actual model)
+	 *    - rotate (autoRotate to face largest side)
+	 *      - modelCenter (center model)
+	 *        - model (actual model)
 	 */
 
 	long now = tthread::chrono::system_clock::now();
@@ -275,7 +357,7 @@ osg::ref_ptr<osg::Node> OSGConverter::setupGraph(const std::string filename) {
 			}
 			_models[filename] = std::make_pair(now, model);
 		}
-    _models[filename].first = now;
+		_models[filename].first = now;
 
 #if 1
 		// remove old models from cache
@@ -291,23 +373,64 @@ osg::ref_ptr<osg::Node> OSGConverter::setupGraph(const std::string filename) {
 
 #endif
 	}
-  
-	osg::ref_ptr<osg::MatrixTransform> root = new osg::MatrixTransform();
 
+	osg::ref_ptr<osg::MatrixTransform> root = new osg::MatrixTransform();
+	osg::ref_ptr<osg::MatrixTransform> rotate = new osg::MatrixTransform();
 	osg::ref_ptr<osg::Node> model = _models[filename].second;
 
 	// translation matrix to move model into center
 	osg::ref_ptr<osg::MatrixTransform> modelCenter = new osg::MatrixTransform();
 	modelCenter->addChild(model);
+	rotate->addChild(modelCenter);
 
 	// move bounding sphere center into origin
 	osg::BoundingSphere bs = model->getBound();
 	modelCenter->setMatrix(osg::Matrix::translate(bs.center() *= -1));
 
-	// add to model pose matrix
-	root->addChild(modelCenter);
-    
+	// get bounding box
+	osg::ComputeBoundsVisitor cbv;
+	osg::BoundingBox& bb(cbv.getBoundingBox());
+	modelCenter->accept(cbv);
+
+	if (autoRotate) {
+		double depth = bb.zMax() - bb.zMin();
+		double width = bb.xMax() - bb.xMin();
+		double height = bb.yMax() - bb.yMin();
+
+		double frontArea = width * height;
+		double sideArea = depth * height;
+		double topArea = depth * width;
+
+		// rotate by multiples of 90deg to face largest area
+		if (frontArea < sideArea || frontArea < topArea) {
+			if (sideArea < topArea) {
+				// top needs to come to front -> rotate on x
+				rotate->setMatrix(osg::Matrix::rotate(M_PI_2, osg::Vec3f(1.0,0,0)));
+			} else {
+				// side needs to come to front
+				rotate->setMatrix(osg::Matrix::rotate(M_PI_2, osg::Vec3f(0,1.0,0)));
+			}
+		}
+	}
+
+	// add rotation to root
+	root->addChild(rotate);
 	return root;
+}
+
+osg::ref_ptr<osg::Node> OSGConverter::getOrigin() {
+	osg::Geode* geode = new osg::Geode();
+//  osg::StateSet* stateset = new osg::StateSet();
+//  stateset->setMode(GL_LIGHTING, osg::StateAttribute::ON);
+//  geode->setStateSet(stateset);
+
+	geode->addDrawable(new osg::ShapeDrawable(new osg::Sphere(osg::Vec3(0.0f,0.0f,0.0f),1)));
+	geode->addDrawable(new osg::ShapeDrawable(new osg::Box(osg::Vec3(10.0f,0.0f,0.0f),0.5)));
+	geode->addDrawable(new osg::ShapeDrawable(new osg::Box(osg::Vec3(0.0f,10.0f,0.0f),2)));
+	geode->addDrawable(new osg::ShapeDrawable(new osg::Box(osg::Vec3(0.0f,0.0f,10.0f),4)));
+	//    geode->addDrawable(new osg::ShapeDrawable(new osg::Cone(osg::Vec3(4.0f,0.0f,0.0f),radius,height),hints));
+
+	return geode;
 }
 
 osg::Matrix OSGConverter::eulerToMatrix(double pitch, double roll, double yaw) {
@@ -337,7 +460,7 @@ osg::Matrix OSGConverter::eulerToMatrix(double pitch, double roll, double yaw) {
 
 	m(0,3) = m(1,3) = m(2,3) = m(3,0) = m(3,1) = m(3,2) = 0;
 	m(3,3) = 1;
-  
+
 	return m;
 }
 
@@ -370,16 +493,21 @@ void OSGConverter::matrixToEuler(const osg::Matrix& m, double& pitch, double& ro
 }
 
 void OSGConverter::dumpMatrix(const osg::Matrix& m) {
-  for (int i = 0; i < 4; i++) {
-    for (int j = 0; j < 4; j++) {
-      std::cout << ", " << m(i, j);
-    }
-    std::cout << std::endl;
-  }
+	for (int i = 0; i < 4; i++) {
+		for (int j = 0; j < 4; j++) {
+			std::cout << ", " << m(i, j);
+		}
+		std::cout << std::endl;
+	}
 }
-  
+
 void OSGConverter::NameRespectingWriteToFile::operator()(const osg::Image& image, const unsigned int context_id) {
-	osgDB::writeImageFile(image, _filename);
+	bool success = osgDB::writeImageFile(image, _filename);
+	if (success) {
+		_converter->reportSuccess(_req);
+	} else {
+		_converter->reportFailure(_req);
+	}
 }
 
 }

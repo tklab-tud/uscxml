@@ -52,7 +52,7 @@ void ResponseElement::enterElement(const Arabica::DOM::Node<std::string>& node) 
 		return;
 	}
 	httpReply.status = strTo<int>(statusStr);;
-  
+
 	// extract the content
 	Arabica::XPath::NodeSet<std::string> contents = Interpreter::filterChildElements(_interpreter->getXMLPrefixForNS(getNamespace()) + "content", node);
 	if (contents.size() > 0) {
@@ -63,91 +63,90 @@ void ResponseElement::enterElement(const Arabica::DOM::Node<std::string>& node) 
 					httpReply.content = contentValue;
 				} catch (Event e) {
 					LOG(ERROR) << "Syntax error with expr in content child of response element:" << std::endl << e << std::endl;
-          return;
+					return;
 				}
 			} else {
 				LOG(ERROR) << "content element has expr attribute but no datamodel is specified.";
-        return;
+				return;
 			}
 		} else if (HAS_ATTR(contents[0], "file") || HAS_ATTR(contents[0], "fileexpr")) { // -- content is from file ------
-      URL file;
+			URL file;
 			if (HAS_ATTR(contents[0], "fileexpr")) {
-        if (_interpreter->getDataModel()) {
-          try {
-            file = "file://" + _interpreter->getDataModel().evalAsString(ATTR(contents[0], "fileexpr"));
-          } catch (Event e) {
-            LOG(ERROR) << "Syntax error with fileexpr in content child of response element:" << std::endl << e << std::endl;
-            return;
-          }
+				if (_interpreter->getDataModel()) {
+					try {
+						file = "file://" + _interpreter->getDataModel().evalAsString(ATTR(contents[0], "fileexpr"));
+					} catch (Event e) {
+						LOG(ERROR) << "Syntax error with fileexpr in content child of response element:" << std::endl << e << std::endl;
+						return;
+					}
 				}
 			} else {
-        file = "file://" + ATTR(contents[0], "fileexpr");
+				file = "file://" + ATTR(contents[0], "fileexpr");
 			}
-      if (file) {
-        httpReply.content = file.getInContent();
-        size_t lastDot;
-        if ((lastDot = file.path().find_last_of(".")) != std::string::npos) {
-          std::string extension = file.path().substr(lastDot + 1);
-          std::string mimeType = HTTPServer::mimeTypeForExtension(extension);
-          if (mimeType.length() > 0) {
-            httpReply.headers["Content-Type"] = mimeType;
-          }
-        }
-      }
+			if (file) {
+				httpReply.content = file.getInContent();
+				size_t lastDot;
+				if ((lastDot = file.path().find_last_of(".")) != std::string::npos) {
+					std::string extension = file.path().substr(lastDot + 1);
+					std::string mimeType = HTTPServer::mimeTypeForExtension(extension);
+					if (mimeType.length() > 0) {
+						httpReply.headers["Content-Type"] = mimeType;
+					}
+				}
+			}
 		} else if (contents[0].hasChildNodes()) {  // -- content embedded as child nodes ------
 			httpReply.content = contents[0].getFirstChild().getNodeValue();
 		} else {
 			LOG(ERROR) << "content element does not specify any content.";
-      return;
+			return;
 		}
 	}
 
-  // process headers
+	// process headers
 	Arabica::XPath::NodeSet<std::string> headers = Interpreter::filterChildElements(_interpreter->getXMLPrefixForNS(getNamespace()) + "header", node);
-  for (int i = 0; i < headers.size(); i++) {
-    std::string name;
-    if (HAS_ATTR(headers[i], "name")) {
-      name = ATTR(headers[i], "name");
-    } else if(HAS_ATTR(headers[i], "nameexpr")) {
-      if (_interpreter->getDataModel()) {
-        try {
-          name = _interpreter->getDataModel().evalAsString(ATTR(headers[i], "nameexpr"));
-        } catch (Event e) {
-          LOG(ERROR) << "Syntax error with nameexpr in header child of response element:" << std::endl << e << std::endl;
-          return;
-        }
-      } else {
+	for (int i = 0; i < headers.size(); i++) {
+		std::string name;
+		if (HAS_ATTR(headers[i], "name")) {
+			name = ATTR(headers[i], "name");
+		} else if(HAS_ATTR(headers[i], "nameexpr")) {
+			if (_interpreter->getDataModel()) {
+				try {
+					name = _interpreter->getDataModel().evalAsString(ATTR(headers[i], "nameexpr"));
+				} catch (Event e) {
+					LOG(ERROR) << "Syntax error with nameexpr in header child of response element:" << std::endl << e << std::endl;
+					return;
+				}
+			} else {
 				LOG(ERROR) << "header element has nameexpr attribute but no datamodel is specified.";
-        return;
-      }
-    } else {
-      LOG(ERROR) << "header element has no name or nameexpr attribute.";
-      return;
-    }
+				return;
+			}
+		} else {
+			LOG(ERROR) << "header element has no name or nameexpr attribute.";
+			return;
+		}
 
-    std::string value;
-    if (HAS_ATTR(headers[i], "value")) {
-      value = ATTR(headers[i], "value");
-    } else if(HAS_ATTR(headers[i], "expr")) {
-      if (_interpreter->getDataModel()) {
-        try {
-          value = _interpreter->getDataModel().evalAsString(ATTR(headers[i], "expr"));
-        } catch (Event e) {
-          LOG(ERROR) << "Syntax error with expr in header child of response element:" << std::endl << e << std::endl;
-          return;
-        }
-      } else {
+		std::string value;
+		if (HAS_ATTR(headers[i], "value")) {
+			value = ATTR(headers[i], "value");
+		} else if(HAS_ATTR(headers[i], "expr")) {
+			if (_interpreter->getDataModel()) {
+				try {
+					value = _interpreter->getDataModel().evalAsString(ATTR(headers[i], "expr"));
+				} catch (Event e) {
+					LOG(ERROR) << "Syntax error with expr in header child of response element:" << std::endl << e << std::endl;
+					return;
+				}
+			} else {
 				LOG(ERROR) << "header element has expr attribute but no datamodel is specified.";
-        return;
-      }
-    } else {
-      LOG(ERROR) << "header element has no value or expr attribute.";
-      return;
-    }
+				return;
+			}
+		} else {
+			LOG(ERROR) << "header element has no value or expr attribute.";
+			return;
+		}
 
-    httpReply.headers[name] = value;
-  }
-  
+		httpReply.headers[name] = value;
+	}
 
 	// send the reply
 	HTTPServer::reply(httpReply);

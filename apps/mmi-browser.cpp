@@ -12,7 +12,7 @@
 
 #ifdef HAS_SIGNAL_H
 void handler(int s) {
-  printf("Caught SIGPIPE ############\n");
+	printf("Caught SIGPIPE ############\n");
 }
 #endif
 
@@ -34,24 +34,24 @@ int main(int argc, char** argv) {
 	using namespace uscxml;
 
 #ifdef HAS_SIGNAL_H
-  // disable SIGPIPE
+	// disable SIGPIPE
 //  struct sigaction act;
 //  act.sa_handler=SIG_IGN;
 //  sigemptyset(&act.sa_mask);
 //  act.sa_flags=0;
 //  sigaction(SIGPIPE, &act, NULL);
-  
-  //  signal(SIGPIPE, handler);
-  
-  signal(SIGPIPE, SIG_IGN);
-  
-  //  struct sigaction act;
-  //  int r;
-  //  memset(&act, 0, sizeof(act));
-  //  act.sa_handler = SIG_IGN;
-  //  act.sa_flags = SA_RESTART;
-  //  r = sigaction(SIGPIPE, &act, NULL);
-  
+
+	//  signal(SIGPIPE, handler);
+
+	signal(SIGPIPE, SIG_IGN);
+
+	//  struct sigaction act;
+	//  int r;
+	//  memset(&act, 0, sizeof(act));
+	//  act.sa_handler = SIG_IGN;
+	//  act.sa_flags = SA_RESTART;
+	//  r = sigaction(SIGPIPE, &act, NULL);
+
 #endif
 
 	if (argc < 2) {
@@ -87,7 +87,7 @@ int main(int argc, char** argv) {
 		interpreter->setCmdLineOptions(argc, argv);
 		interpreter->start();
 		while(interpreter->runOnMainThread(25));
-    //		interpreter->interpret();
+		//		interpreter->interpret();
 		delete interpreter;
 	}
 

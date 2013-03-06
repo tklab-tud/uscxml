@@ -12,6 +12,14 @@ namespace uscxml {
 
 class PostponeElement : public ExecutableContentImpl {
 public:
+	struct Postponed {
+		Postponed(const Event& event, const std::string& until, long timeout) :
+			event(event), until(until), timeout(timeout) {}
+		Event event;
+		std::string until;
+		uint64_t timeout;
+	};
+
 	PostponeElement() {}
 	virtual ~PostponeElement() {}
 	boost::shared_ptr<ExecutableContentImpl> create(Interpreter* interpreter);
@@ -40,13 +48,13 @@ protected:
 		}
 
 		static Resubmitter* getInstance(Interpreter* interpreter);
-		static void postpone(const Event& event, std::string until, Interpreter* interpreter);
+		static void postpone(const Event& event, std::string until, uint64_t timeout, Interpreter* interpreter);
 
 		// InterpreterMonitor
 		void onStableConfiguration(Interpreter* interpreter);
 		void afterCompletion(Interpreter* interpreter);
 
-		std::list<std::pair<std::string, Event> > _postponedEvents;
+		std::list<Postponed> _postponedEvents;
 		static std::map<Interpreter*, Resubmitter*> _instances;
 		static tthread::recursive_mutex _accessLock;
 

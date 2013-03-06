@@ -2,8 +2,8 @@
 #define DIRMONINVOKER_H_W09J90F0
 
 #include <uscxml/Interpreter.h>
-#include "FileWatcher/FileWatcher.h"
 #include <map>
+#include <sys/stat.h>
 
 #ifdef BUILD_AS_PLUGINS
 #include "uscxml/plugins/Plugins.h"
@@ -11,7 +11,48 @@
 
 namespace uscxml {
 
-class DirMonInvoker : public InvokerImpl, public FW::FileWatchListener {
+class DirectoryWatchMonitor;
+
+class DirectoryWatch {
+public:
+	enum Action {
+	    ADDED = 1,
+	    MODIFIED = 2,
+	    DELETED = 4,
+	    EXISTING = 8
+	};
+
+	DirectoryWatch(const std::string& dir, bool recurse = false) : _dir(dir), _recurse(recurse), _lastChecked(0) {}
+
+	void addMonitor(DirectoryWatchMonitor* monitor) {
+		_monitors.insert(monitor);
+	}
+	void removeMonitor(DirectoryWatchMonitor* monitor) {
+		_monitors.erase(monitor);
+	}
+	void updateEntries(bool reportAsExisting = false);
+	void reportAsDeleted();
+
+protected:
+	DirectoryWatch(const std::string& dir, const std::string& relDir) : _dir(dir), _relDir(relDir), _recurse(true), _lastChecked(0) {}
+
+	std::string _dir;
+	std::string _relDir;
+
+	bool _recurse;
+	std::map<std::string, struct stat> _knownEntries;
+	std::map<std::string, DirectoryWatch*> _knownDirs;
+	std::set<DirectoryWatchMonitor*> _monitors;
+	typedef std::set<DirectoryWatchMonitor*> _monitors_t;
+	time_t _lastChecked;
+};
+
+class DirectoryWatchMonitor {
+public:
+	virtual void handleChanges(DirectoryWatch::Action action, const std::string dir, const std::string file, struct stat fileStat) = 0;
+};
+
+class DirMonInvoker : public InvokerImpl, public DirectoryWatchMonitor {
 public:
 	DirMonInvoker();
 	virtual ~DirMonInvoker();
@@ -30,10 +71,7 @@ public:
 	virtual void cancel(const std::string sendId);
 	virtual void invoke(const InvokeRequest& req);
 
-	void handleFileAction(FW::WatchID watchid, const FW::String& dir, const FW::String& filename, FW::Action action);
-	void reportExisting();
-	void reportExistingIn(const std::string dir, FW::WatchID watchid);
-	virtual bool filter(const std::string filename);
+	virtual void handleChanges(DirectoryWatch::Action action, const std::string dir, const std::string file, struct stat fileStat);
 
 	static void run(void* instance);
 
@@ -41,12 +79,15 @@ protected:
 	bool _reportExisting;
 	bool _reportHidden;
 	bool _recurse;
-  std::set<std::string> _suffixes;
+
+	std::string _dir;
+	std::set<std::string> _suffixes;
 
 	bool _isRunning;
 	tthread::thread* _thread;
-	FW::FileWatcher _fileWatcher;
-	std::multimap<std::string, FW::WatchID> _watchIds;
+	tthread::recursive_mutex _mutex;
+
+	DirectoryWatch* _watcher;
 };
 
 #ifdef BUILD_AS_PLUGINS

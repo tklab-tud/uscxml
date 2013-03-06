@@ -33,6 +33,11 @@ target_link_libraries(test-eventdelay uscxml)
 add_test(test-eventdelay ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-eventdelay)
 set_target_properties(test-eventdelay PROPERTIES FOLDER "Tests")
 
+add_executable(test-dirmon src/test-dirmon.cpp)
+target_link_libraries(test-dirmon uscxml)
+add_test(test-dirmon ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-dirmon)
+set_target_properties(test-dirmon PROPERTIES FOLDER "Tests")
+
 if (NOT WIN32)
 	add_executable(test-arabica-events src/test-arabica-events.cpp)
 	target_link_libraries(test-arabica-events uscxml)
