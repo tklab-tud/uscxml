@@ -65,4 +65,11 @@ int main(int argc, char** argv) {
 		assert(url.isAbsolute());
 		assert(iequals(url.scheme(), "file"));
 	}
+	{
+		URL url("C:\\Document\\Some Spaces\\index.txt");
+		assert(iequals(url.pathComponents()[0], "C:"));
+		assert(iequals(url.pathComponents()[1], "Document"));
+		assert(iequals(url.pathComponents()[2], "Some Spaces"));
+		assert(iequals(url.pathComponents()[3], "index.txt"));
+	}
 }

@@ -26,15 +26,28 @@
 namespace uscxml {
 
 URLImpl::URLImpl(const std::string& url) : _handle(NULL), _uri(url), _isDownloaded(false), _hasFailed(false) {
-	_handle = curl_easy_init();
-	if (_handle == NULL) {
-		LOG(ERROR) << "curl_easy_init returned NULL, this is bad!";
+	std::stringstream ss(_uri.path());
+	std::string item;
+	while(std::getline(ss, item, '/')) {
+		if (item.length() == 0)
+			continue;
+		_pathComponents.push_back(item);
 	}
+
 }
 
 URLImpl::~URLImpl() {
 	if (_handle != NULL)
 		curl_easy_cleanup(_handle);
+}
+
+CURL* URLImpl::getCurlHandle() {
+	if (_handle == NULL) {
+		_handle = curl_easy_init();
+		if (_handle == NULL)
+			LOG(ERROR) << "curl_easy_init returned NULL, this is bad!";
+	}
+	return _handle;
 }
 
 size_t URLImpl::writeHandler(void *ptr, size_t size, size_t nmemb, void *userdata) {
@@ -304,13 +317,13 @@ void URLFetcher::fetchURL(URL& url) {
 	URLFetcher* instance = getInstance();
 	tthread::lock_guard<tthread::recursive_mutex> lock(instance->_mutex);
 
-	assert(url._impl->_handle != NULL);
-	if (url._impl->_handle == NULL)
+	CURL* handle = url._impl->getCurlHandle();
+	assert(handle != NULL);
+	if (handle == NULL)
 		return;
 
-	if (instance->_handlesToURLs.find(url._impl->_handle) == instance->_handlesToURLs.end()) {
+	if (instance->_handlesToURLs.find(handle) == instance->_handlesToURLs.end()) {
 		CURLcode curlError;
-		CURL* handle = url._impl->_handle;
 
 		(curlError = curl_easy_setopt(handle, CURLOPT_URL, url.asString().c_str())) == CURLE_OK ||
 		LOG(ERROR) << "Cannot set url to " << url.asString() << ": " << curl_easy_strerror(curlError);
@@ -372,7 +385,7 @@ void URLFetcher::fetchURL(URL& url) {
 
 void URLFetcher::breakURL(URL& url) {
 	URLFetcher* instance = getInstance();
-	CURL* handle = url._impl->_handle;
+	CURL* handle = url._impl->getCurlHandle();
 
 	tthread::lock_guard<tthread::recursive_mutex> lock(instance->_mutex);
 	if (instance->_handlesToURLs.find(handle) != instance->_handlesToURLs.end()) {

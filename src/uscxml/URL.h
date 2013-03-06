@@ -6,6 +6,7 @@
 #include <iostream>
 #include <sstream>
 #include <map>
+#include <vector>
 #include <set>
 #include <boost/shared_ptr.hpp>
 #include <boost/enable_shared_from_this.hpp>
@@ -59,6 +60,9 @@ public:
 	const std::string path()     const {
 		return _uri.path();
 	}
+	const std::vector<std::string> pathComponents() const {
+		return _pathComponents;
+	}
 	const std::string asString() const {
 		return _uri.as_string();
 	}
@@ -87,6 +91,8 @@ protected:
 	URLImpl()  : _handle(NULL), _isDownloaded(false), _hasFailed(false) {}
 	std::string getLocalFilename(const std::string& suffix);
 
+	CURL* getCurlHandle();
+
 	std::string _outContent;
 	std::map<std::string, std::string> _outHeader;
 	std::string _requestType;
@@ -96,6 +102,8 @@ protected:
 	std::stringstream _inHeader;
 
 	Arabica::io::URI _uri;
+	std::vector<std::string> _pathComponents;
+
 	bool _isDownloaded;
 	bool _hasFailed;
 
@@ -192,6 +200,9 @@ public:
 	}
 	const std::string path()     const {
 		return _impl->path();
+	}
+	const std::vector<std::string> pathComponents() const {
+		return _impl->pathComponents();
 	}
 	const std::string asString() const {
 		return _impl->asString();
