@@ -58,7 +58,7 @@ void PostponeElement::enterElement(const Arabica::DOM::Node<std::string>& node) 
 		return;
 	}
 
-	LOG(INFO) << until;
+//	LOG(INFO) << until;
 
 #if 0
 	std::string timeoutStr = "0s";
@@ -124,6 +124,8 @@ void PostponeElement::Resubmitter::onStableConfiguration(Interpreter* interprete
 		}
 		eventIter++;
 	}
+//	LOG(ERROR) << _postponedEvents.size() << " Postponess remaining";
+
 }
 
 void PostponeElement::Resubmitter::afterCompletion(Interpreter* interpreter) {

@@ -358,9 +358,10 @@ void DirectoryWatch::updateEntries(bool reportAsExisting) {
 						monIter++;
 					}
 				}
-				_knownEntries.erase(fileIter->first);
+				_knownEntries.erase(fileIter++);
+			} else {
+				fileIter++;
 			}
-			fileIter++;
 		}
 		// remember when we last checked the directory for modifications
 #ifndef WIN32

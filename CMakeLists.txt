@@ -806,16 +806,20 @@ endif()
 
 # MILES modality components
 
-#find_package(MILES COMPONENTS core audio debug)
-if (MILES_FOUND AND OFF)
+find_package(MILES)
+if (MILES_FOUND)
   include_directories(${MILES_INCLUDE_DIR})
 
 	# openal is only needed for miles
 	find_package(OpenAL REQUIRED)
+	find_package(JPEG REQUIRED)
+	list (APPEND MILES_LIBRARIES "iconv")
+	list (APPEND MILES_LIBRARIES ${JPEG_LIBRARIES})
 	include_directories(${OPENAL_INCLUDE_DIR})
 
-  file(GLOB_RECURSE MILES_INVOKER src/uscxml/invoker/modality/miles/*.cpp src/uscxml/invoker/modality/miles/*.h)
+  file(GLOB_RECURSE MILES_INVOKER src/uscxml/plugins/invoker/miles/*.cpp src/uscxml/plugins/invoker/miles/*.h)
 	source_group("Invoker\\miles" FILES ${MILES_INVOKER})
+#	message("MILES_INVOKER ${MILES_INVOKER}")
 
 	if (BUILD_AS_PLUGINS)
 		add_library(

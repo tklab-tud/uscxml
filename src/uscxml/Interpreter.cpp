@@ -37,9 +37,9 @@ Interpreter::Interpreter() : Arabica::SAX2DOM::Parser<std::string>() {
 	_thread = NULL;
 	_sendQueue = NULL;
 	_parentQueue = NULL;
-	_httpServlet = NULL;
 	_running = false;
 	_done = false;
+	_httpServlet = NULL;
 
 #ifdef _WIN32
 	WSADATA wsaData;
@@ -277,7 +277,8 @@ void Interpreter::interpret() {
 
 	if (_dataModel) {
 		_dataModel.assign("_x.args", _cmdLineOptions);
-		_dataModel.assign("_ioprocessors['http']", _httpServlet->getDataModelVariables());
+		if (_httpServlet)
+			_dataModel.assign("_ioprocessors['http']", _httpServlet->getDataModelVariables());
 	}
 
 	setupIOProcessors();

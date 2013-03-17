@@ -270,10 +270,13 @@ void OSGConverter::process(const SendRequest& req) {
 	viewer.getCamera()->setDrawBuffer(pbuffer);
 	viewer.getCamera()->setReadBuffer(pbuffer);
 
+	double zoom = 1;
+	CAST_PARAM(req.params, zoom, "zoom", double);
+
 	// set background color
 	viewer.getCamera()->setClearColor(osg::Vec4f(1.0f,1.0f,1.0f,1.0f));
 	viewer.getCamera()->setClearMask(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	viewer.getCameraManipulator()->setByMatrix(osg::Matrix::lookAt(osg::Vec3d(0,0,bs.radius() * -4),  // eye
+	viewer.getCameraManipulator()->setByMatrix(osg::Matrix::lookAt(osg::Vec3d(0,0,bs.radius() * (-3.4 * zoom)),  // eye
 	        (osg::Vec3d)bs.center(),           // center
 	        osg::Vec3d(0,1,0)));               // up
 
@@ -304,19 +307,17 @@ osg::Matrix OSGConverter::requestToModelPose(const SendRequest& req) {
 	double pitch = 0;
 	double roll = 0;
 	double yaw = 0;
-	double zoom = 1;
 	double x = 0;
 	double y = 0;
 	double z = 0;
 	CAST_PARAM(req.params, pitch, "pitch", double);
 	CAST_PARAM(req.params, roll, "roll", double);
 	CAST_PARAM(req.params, yaw, "yaw", double);
-	CAST_PARAM(req.params, zoom, "zoom", double);
 	CAST_PARAM(req.params, x, "x", double);
 	CAST_PARAM(req.params, y, "y", double);
 	CAST_PARAM(req.params, z, "z", double);
 
-	osg::Matrix m = osg::Matrix::scale(zoom, zoom, zoom) * eulerToMatrix(pitch, roll, yaw) * osg::Matrix::translate(-1 * x, -1 * y, -1 * z);
+	osg::Matrix m = eulerToMatrix(pitch, roll, yaw) * osg::Matrix::translate(-1 * x, -1 * y, -1 * z);
 #if 0
 	dumpMatrix(m);
 #endif
@@ -335,6 +336,9 @@ osg::Matrix OSGConverter::requestToCamPose(const SendRequest& req) {
 
 osg::ref_ptr<osg::Node> OSGConverter::setupGraph(const std::string filename, bool autoRotate) {
 
+	// get some privacy
+	tthread::lock_guard<tthread::recursive_mutex> lock(_cacheMutex);
+
 	/**
 	 *  root (model pose)
 	 *    - rotate (autoRotate to face largest side)
@@ -345,8 +349,6 @@ osg::ref_ptr<osg::Node> OSGConverter::setupGraph(const std::string filename, boo
 	long now = tthread::chrono::system_clock::now();
 
 	{
-		// get some privacy
-		tthread::lock_guard<tthread::recursive_mutex> lock(_cacheMutex);
 
 		// do we have it in the cache?
 		if (_models.find(filename) == _models.end()) {

@@ -1,0 +1,48 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+    <link rel="stylesheet" href="http://ajax.googleapis.com/ajax/libs/dojo/1.8.3/dijit/themes/tundra/tundra.css">
+    <link rel="stylesheet" href="http://ajax.googleapis.com/ajax/libs/dojo/1.8.3/dojox/layout/resources/FloatingPane.css">
+    <link rel="stylesheet" href="http://ajax.googleapis.com/ajax/libs/dojo/1.8.3/dojox/layout/resources/ResizeHandle.css">
+
+		<style type="text/css">
+			.alternateDock {
+				position:absolute; 
+				background-color:#ededed; 
+				right:0px; top:0px; 
+				border-left:1px solid #ccc; 
+				height:100%; 
+
+			}
+			#alternateDock ul.dojoxDockList { display:block; }
+			.testFixedSize {
+				width:300px;
+				height:200px;
+				padding:7px;			
+			}
+		</style>
+
+		<script type="text/javascript">
+		// dojoConfig = {
+		//     async : false,
+		//     isDebug : true,
+		//     debugAtAllCosts : true,
+		// }
+		</script>
+
+		<script src="http://ajax.googleapis.com/ajax/libs/dojo/1.8.3/dojo/dojo.js"></script>
+    <script type="text/javascript" src="viewer.js"></script>
+    
+    <script type="text/javascript">
+			require(["dojo/domReady!", "dojo"], function(dom, dojo) {
+				var viewer = new VRMLViewer(dojo.byId("scene1"), { 'dojo': dojo });
+			});		  
+		</script>
+	</head>
+	<body class="tundra">
+		<div style="width: 600px; height: 400px">
+			<div id="scene1"></div>
+		</div>
+	</body>
+</html>

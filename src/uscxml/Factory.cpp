@@ -3,6 +3,7 @@
 
 #include "uscxml/Factory.h"
 #include "uscxml/Message.h"
+#include "uscxml/Interpreter.h"
 #include <glog/logging.h>
 
 #ifdef BUILD_AS_PLUGINS
@@ -25,7 +26,7 @@
 # endif
 
 # ifdef MILES_FOUND
-#   include "uscxml/plugins/invoker/modality/miles/SpatialAudio.h"
+#   include "uscxml/plugins/invoker/miles/MilesSessionInvoker.h"
 # endif
 
 # ifdef FFMPEG_FOUND
@@ -60,29 +61,29 @@ Factory::Factory() {
 		pluginPath = (getenv("USCXML_PLUGIN_PATH") != NULL ? getenv("USCXML_PLUGIN_PATH") : "");
 	}
 	if (pluginPath.length() > 0) {
-		pluma.acceptProviderType<InvokerProvider>();
-		pluma.acceptProviderType<IOProcessorProvider>();
-		pluma.acceptProviderType<DataModelProvider>();
+		pluma.acceptProviderType<InvokerImplProvider>();
+		pluma.acceptProviderType<IOProcessorImplProvider>();
+		pluma.acceptProviderType<DataModelImplProvider>();
 		pluma.loadFromFolder(pluginPath);
 
-		std::vector<InvokerProvider*> invokerProviders;
+		std::vector<InvokerImplProvider*> invokerProviders;
 		pluma.getProviders(invokerProviders);
-		for (std::vector<InvokerProvider*>::iterator it = invokerProviders.begin() ; it != invokerProviders.end() ; ++it) {
-			Invoker* invoker = (*it)->create();
+		for (std::vector<InvokerImplProvider*>::iterator it = invokerProviders.begin() ; it != invokerProviders.end() ; ++it) {
+			InvokerImpl* invoker = (*it)->create();
 			registerInvoker(invoker);
 		}
 
-		std::vector<IOProcessorProvider*> ioProcessorProviders;
+		std::vector<IOProcessorImplProvider*> ioProcessorProviders;
 		pluma.getProviders(ioProcessorProviders);
-		for (std::vector<IOProcessorProvider*>::iterator it = ioProcessorProviders.begin() ; it != ioProcessorProviders.end() ; ++it) {
-			IOProcessor* ioProcessor = (*it)->create();
+		for (std::vector<IOProcessorImplProvider*>::iterator it = ioProcessorProviders.begin() ; it != ioProcessorProviders.end() ; ++it) {
+			IOProcessorImpl* ioProcessor = (*it)->create();
 			registerIOProcessor(ioProcessor);
 		}
 
-		std::vector<DataModelProvider*> dataModelProviders;
+		std::vector<DataModelImplProvider*> dataModelProviders;
 		pluma.getProviders(dataModelProviders);
-		for (std::vector<DataModelProvider*>::iterator it = dataModelProviders.begin() ; it != dataModelProviders.end() ; ++it) {
-			DataModel* dataModel = (*it)->create();
+		for (std::vector<DataModelImplProvider*>::iterator it = dataModelProviders.begin() ; it != dataModelProviders.end() ; ++it) {
+			DataModelImpl* dataModel = (*it)->create();
 			registerDataModel(dataModel);
 		}
 	}
@@ -96,7 +97,7 @@ Factory::Factory() {
 
 #ifdef MILES_FOUND
 	{
-		SpatialAudio* invoker = new SpatialAudio();
+		MilesSessionInvoker* invoker = new MilesSessionInvoker();
 		registerInvoker(invoker);
 	}
 #endif

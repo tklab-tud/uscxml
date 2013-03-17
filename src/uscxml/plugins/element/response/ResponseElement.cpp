@@ -42,8 +42,12 @@ void ResponseElement::enterElement(const Arabica::DOM::Node<std::string>& node) 
 		LOG(ERROR) << "No matching HTTP request for response element";
 		return;
 	}
+
+	assert(servlet->getRequests().find(requestId) != servlet->getRequests().end());
 	HTTPServer::Request httpReq = servlet->getRequests()[requestId];
+	assert(httpReq.curlReq != NULL);
 	HTTPServer::Reply httpReply(httpReq);
+	servlet->getRequests().erase(requestId);
 
 	// get the status or default to 200
 	std::string statusStr = (HAS_ATTR(node, "status") ? ATTR(node, "status") : "200");

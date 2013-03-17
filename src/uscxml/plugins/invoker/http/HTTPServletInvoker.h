@@ -53,7 +53,7 @@ protected:
 };
 
 #ifdef BUILD_AS_PLUGINS
-PLUMA_INHERIT_PROVIDER(HTTPServletInvoker, Invoker);
+PLUMA_INHERIT_PROVIDER(HTTPServletInvoker, InvokerImpl);
 #endif
 
 }

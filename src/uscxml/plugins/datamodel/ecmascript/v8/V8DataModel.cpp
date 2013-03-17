@@ -178,6 +178,7 @@ Data V8DataModel::getValueAsData(const v8::Handle<v8::Value>& value) {
 	} else if(value->IsString()) {
 		v8::String::AsciiValue property(v8::Handle<v8::String>::Cast(value));
 		data.atom = *property;
+		data.type = Data::VERBATIM;
 	} else if(value->IsStringObject()) {
 		LOG(ERROR) << "IsStringObject is unimplemented" << std::endl;
 	} else if(value->IsTrue()) {

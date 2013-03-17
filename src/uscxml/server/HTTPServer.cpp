@@ -38,12 +38,25 @@ HTTPServer::HTTPServer(unsigned short port) {
 	_port = port;
 	_base = event_base_new();
 	_http = evhttp_new(_base);
+
+	evhttp_set_allowed_methods(_http,
+	                           EVHTTP_REQ_GET |
+	                           EVHTTP_REQ_POST |
+	                           EVHTTP_REQ_HEAD |
+	                           EVHTTP_REQ_PUT |
+	                           EVHTTP_REQ_DELETE |
+	                           EVHTTP_REQ_OPTIONS |
+	                           EVHTTP_REQ_TRACE |
+	                           EVHTTP_REQ_CONNECT |
+	                           EVHTTP_REQ_PATCH); // allow all methods
+
 	_handle = NULL;
 	while((_handle = evhttp_bind_socket_with_handle(_http, INADDR_ANY, _port)) == NULL) {
 		_port++;
 	}
 	determineAddress();
 
+	evhttp_set_timeout(_http, 5);
 	// generic callback
 	evhttp_set_gencb(_http, HTTPServer::httpRecvReqCallback, NULL);
 }
@@ -56,7 +69,7 @@ tthread::recursive_mutex HTTPServer::_instanceMutex;
 std::map<std::string, std::string> HTTPServer::mimeTypes;
 
 HTTPServer* HTTPServer::getInstance(int port) {
-	tthread::lock_guard<tthread::recursive_mutex> lock(_instanceMutex);
+//	tthread::lock_guard<tthread::recursive_mutex> lock(_instanceMutex);
 	if (_instance == NULL) {
 
 		// this is but a tiny list, supply a content-type <header> yourself
@@ -97,9 +110,10 @@ std::string HTTPServer::mimeTypeForExtension(const std::string& ext) {
 
 void HTTPServer::httpRecvReqCallback(struct evhttp_request *req, void *callbackData) {
 //  std::cout << (uintptr_t)req << ": Replying" << std::endl;
-//  evhttp_send_reply(req, 200, NULL, NULL);
+//  evhttp_send_error(req, 404, NULL);
 //  return;
 
+	evhttp_request_own(req);
 	Request request;
 	request.curlReq = req;
 
@@ -153,6 +167,12 @@ void HTTPServer::httpRecvReqCallback(struct evhttp_request *req, void *callbackD
 	request.data.compound["uri"] = Data(HTTPServer::getBaseURL() + req->uri, Data::VERBATIM);
 	request.data.compound["path"] = Data(evhttp_uri_get_path(evhttp_request_get_evhttp_uri(req)), Data::VERBATIM);
 
+	// This was used for debugging
+//	if (boost::ends_with(request.data.compound["path"].atom, ".png")) {
+//		evhttp_send_error(req, 404, NULL);
+//		return;
+//	}
+
 	// seperate path into components
 	std::stringstream ss(request.data.compound["path"].atom);
 	std::string item;
@@ -175,12 +195,26 @@ void HTTPServer::httpRecvReqCallback(struct evhttp_request *req, void *callbackD
 
 	// get content
 	buf = evhttp_request_get_input_buffer(req);
+	if (evbuffer_get_length(buf))
+		request.data.compound["content"] = Data("", Data::VERBATIM);
 	while (evbuffer_get_length(buf)) {
 		int n;
 		char cbuf[1024];
 		n = evbuffer_remove(buf, cbuf, sizeof(buf)-1);
 		if (n > 0) {
-			request.content.append(cbuf, n);
+			request.data.compound["content"].atom.append(cbuf, n);
+		}
+	}
+
+	// decode content
+	if (request.data.compound.find("content") != request.data.compound.end() &&
+	        request.data.compound["header"].compound.find("Content-Type") != request.data.compound["header"].compound.end()) {
+		std::string contentType = request.data.compound["header"].compound["Content-Type"].atom;
+		if (false) {
+		} else if (boost::iequals(contentType, "application/x-www-form-urlencoded")) {
+			request.data.compound["content"].atom = evhttp_decode_uri(request.data.compound["content"].atom.c_str());
+		} else if (boost::iequals(contentType, "application/json")) {
+			request.data.compound["content"] = Data::fromJSON(request.data.compound["content"].atom);
 		}
 	}
 
@@ -221,30 +255,44 @@ void HTTPServer::processByMatchingServlet(const Request& request) {
 }
 
 void HTTPServer::reply(const Reply& reply) {
-	if (reply.content.size() > 0 && reply.headers.find("Content-Type") == reply.headers.end()) {
+	// we need to reply from the thread calling event_base_dispatch, just add to ist base queue!
+	Reply* replyCB = new Reply(reply);
+	HTTPServer* INSTANCE = getInstance();
+	event_base_once(INSTANCE->_base, -1, EV_TIMEOUT, HTTPServer::replyCallback, replyCB, NULL);
+}
+
+void HTTPServer::replyCallback(evutil_socket_t fd, short what, void *arg) {
+
+	Reply* reply = (Reply*)arg;
+
+	if (reply->content.size() > 0 && reply->headers.find("Content-Type") == reply->headers.end()) {
 		LOG(INFO) << "Sending content without Content-Type header";
 	}
 
-	std::map<std::string, std::string>::const_iterator headerIter = reply.headers.begin();
-	while(headerIter != reply.headers.end()) {
-		evhttp_add_header(evhttp_request_get_output_headers(reply.curlReq), headerIter->first.c_str(), headerIter->second.c_str());
+	std::map<std::string, std::string>::const_iterator headerIter = reply->headers.begin();
+	while(headerIter != reply->headers.end()) {
+		evhttp_add_header(evhttp_request_get_output_headers(reply->curlReq), headerIter->first.c_str(), headerIter->second.c_str());
 		headerIter++;
 	}
 
-	if (reply.status >= 400) {
-		evhttp_send_error(reply.curlReq, reply.status, NULL);
+	if (reply->status >= 400) {
+		evhttp_send_error(reply->curlReq, reply->status, NULL);
 		return;
 	}
 
-	struct evbuffer *evb = evbuffer_new();
+	struct evbuffer *evb = NULL;
 
-	if (!boost::iequals(reply.type, "HEAD"))
-		evbuffer_add(evb, reply.content.data(), reply.content.size());
+	if (!boost::iequals(reply->type, "HEAD") && reply->content.size() > 0) {
+		evb = evbuffer_new();
+		evbuffer_add(evb, reply->content.data(), reply->content.size());
+	}
 
-	evhttp_send_reply(reply.curlReq, reply.status, NULL, evb);
-	evbuffer_free(evb);
-//  evhttp_request_free(reply.curlReq);
+	evhttp_send_reply(reply->curlReq, reply->status, NULL, evb);
 
+	if (evb != NULL)
+		evbuffer_free(evb);
+//  evhttp_request_free(reply->curlReq);
+	delete(reply);
 }
 
 bool HTTPServer::registerServlet(const std::string& path, HTTPServlet* servlet) {

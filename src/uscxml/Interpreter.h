@@ -114,6 +114,10 @@ public:
 		return _cmdLineOptions;
 	}
 
+	HTTPServletInvoker* getHTTPServlet() {
+		return _httpServlet;
+	}
+
 	DataModel getDataModel()                                 {
 		return _dataModel;
 	}
@@ -164,10 +168,6 @@ public:
 	}
 	const std::string& getSessionId()                        {
 		return _sessionId;
-	}
-
-	HTTPServletInvoker* getHTTPServlet() {
-		return _httpServlet;
 	}
 
 	bool runOnMainThread(int fps, bool blocking = true);

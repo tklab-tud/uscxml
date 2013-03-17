@@ -1,0 +1,43 @@
+<scxml name="miles" datamodel="ecmascript">
+	<script src="http://uscxml.tk.informatik.tu-darmstadt.de/scripts/dump.js" />
+	<state id="main">
+		<invoke type="miles" id="miles">
+			<param name="foo" expr="'asdf'" />
+			<finalize>
+				<script>
+				</script>
+			</finalize>
+		</invoke>
+		
+		<state id="idle">
+			<transition event="http.post" target="idle">
+				<script>dump(_event);</script>
+				<if cond="_event.data.pathComponent[1] === 'session'">
+					<response status="200" requestexpr="_event.origin" />
+				
+					<elseif cond="_event.data.pathComponent[1] === 'connect'">
+						<send target="#_miles" event="connect">
+							<param name="reflectorIP" expr="_event.data.content.reflectorIP" />
+							<param name="email" expr="_event.data.content.email" />
+							<param name="problemName" expr="_event.data.content.problemName" />
+						</send>
+						<response status="200" requestexpr="_event.origin" />
+					
+					</elseif>
+					<elseif cond="_event.data.pathComponent[1] === 'disconnect'">
+						<send target="#_miles" event="disconnect">
+							<param name="reflectorIP" expr="_event.data.content.reflectorIP" />
+							<param name="problemName" expr="_event.data.content.problemName" />
+						</send>
+						<response status="200" requestexpr="_event.origin" />
+					
+					</elseif>
+					<else>
+						<response status="404" requestexpr="_event.origin" />
+					
+					</else>
+				</if>
+			</transition>
+		</state>
+	</state>
+</scxml>

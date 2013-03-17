@@ -55,6 +55,7 @@ private:
 
 	void determineAddress();
 
+	static void replyCallback(evutil_socket_t fd, short what, void *arg);
 	static void httpRecvReqCallback(struct evhttp_request *req, void *callbackData);
 	void processByMatchingServlet(const Request& request);
 

@@ -117,8 +117,12 @@
 			struct.models = {};
 			for (key in models) {
 				var model = models[key];
-				struct.models[model.relDir + model.strippedName] = {};
-				struct.models[model.relDir + model.strippedName].url = _ioprocessors['http'].location + model.relDir + model.strippedName.replace(pathDelim, '/') + '.png';
+				var group = models[key].group
+				var name = model.strippedName.split(pathDelim).last();
+				var entry = assign(struct, ['models'].concat(group.substr(1).split('/')).concat(name), {});
+				entry.url = 
+					_ioprocessors['http'].location + model.relDir + model.strippedName.split(pathDelim).join('/') + '.png';
+				entry.path = model.relDir + model.strippedName.split(pathDelim).join('/') + '.png';
 			}
 			return struct;
 		}
@@ -126,15 +130,45 @@
 		/**
 		 * Provide an endsWith function for the string prototype
 		 */
-		String.prototype.endsWith = function(suffix) {
-		    return this.indexOf(suffix, this.length - suffix.length) !== -1;
-		};
+		if(!Array.prototype.last) {
+			String.prototype.endsWith = function(suffix) {
+			    return this.indexOf(suffix, this.length - suffix.length) !== -1;
+			}
+		}
+		
+		/**
+		 * Provide last() for arrays
+		 */
+		if(!Array.prototype.last) {
+		    Array.prototype.last = function() {
+		        return this[this.length - 1];
+		    }
+		}
 		
 		// check whether a given string represents a number	
 		function isNumber(n) {
 		  return !isNaN(parseFloat(n)) &amp;&amp; isFinite(n);
 		}
 		
+		// allow to set deep keys in an object
+		function assign(obj, path, value) {
+			if (typeof path === 'string')
+				path = path.split('.');
+			if (!(path instanceof Array))
+				return undefined;
+				
+			lastKeyIndex = path.length-1;
+			for (var i = 0; i &lt; lastKeyIndex; ++ i) {
+				key = path[i];
+				if (key.length == 0)
+				  continue;
+				if (!(key in obj))
+					obj[key] = {}
+				obj = obj[key];
+			}
+			obj[path[lastKeyIndex]] = value;
+			return obj[path[lastKeyIndex]];
+		}
 	</script>
 	<state id="main">
 		<!-- Stop processing if no vrml-path was given on command line -->
@@ -171,6 +205,7 @@
 							print("Removed a vanished osgb file at " + _event.fileStruct.key + "\n");
 						} else {
 							models[_event.fileStruct.key] = _event.data.file;
+							models[_event.fileStruct.key].group = '/' + _event.data.file.name.split(pathDelim).slice(0,-1).join('/');
 							print("Inserted a new osgb file at " + _event.fileStruct.key + "\n");
 						}
 
@@ -236,7 +271,7 @@
 		
 		<!-- Idle here -->
 		<state id="idle">
-			<transition event="http" target="idle" cond="
+			<transition event="http.get" target="idle" cond="
 					_event.data.pathComponent.length >= 2 &amp;&amp;
 					_event.data.pathComponent[_event.data.pathComponent.length - 1].indexOf('.') !== -1">
 				<!-- request for a specific format 
@@ -254,9 +289,11 @@
 							_event['fileStruct'].key in processed &amp;&amp; 
 							_event['fileStruct'].format in processed[_event['fileStruct'].key]">
 						<script>
-							print("Sending " + processed[_event['fileStruct'].key][_event['fileStruct'].format].path + "\n");
+							//print("Sending " + processed[_event['fileStruct'].key][_event['fileStruct'].format].path + "\n");
 						</script>
 						<response status="200" requestexpr="_event.origin">
+							<header name="Connection" value="close" />
+							<header name="Access-Control-Allow-Origin" value="*" />
 							<content fileexpr="processed[_event['fileStruct'].key][_event['fileStruct'].format].path" />
 						</response>
 						<else>
@@ -264,7 +301,9 @@
 								<!--
 									A postponed event we couldn't answer
 								-->
-								<response status="404" requestexpr="_event.origin" />
+								<response status="404" requestexpr="_event.origin">
+									<header name="Connection" value="close" />
+								</response>
 								<else>
 									<script>
 										print("Processing outfile " + _event['dest'] + " from model " + _event['file'] + "\n");
@@ -299,7 +338,9 @@
 					</if>
 					<else>
 						<!-- There is no such model -->
-						<response status="404" requestexpr="_event.origin" />
+						<response status="404" requestexpr="_event.origin">
+							<header name="Connection" value="close" />
+						</response>
 					</else>
 				</if>
 			</transition>
@@ -307,43 +348,61 @@
 			<!-- 
 				process request for JSON datastructures 
 			-->
-			<transition event="http" target="idle" cond="
+			<transition event="http.get" target="idle" cond="
 					_event.data.pathComponent.length == 2 &amp;&amp; 
 					_event.data.pathComponent[1] === 'models'">
 				<script>//dump(_event)</script>
 				<response status="200" requestexpr="_event.origin">
+					<header name="Connection" value="close" />
 					<header name="Content-Type" value="application/json" />
+					<header name="Access-Control-Allow-Origin" value="*" />
 					<content expr="models" />
 				</response>
 			</transition>
 
-			<transition event="http" target="idle" cond="
+			<transition event="http.get" target="idle" cond="
 					_event.data.pathComponent.length == 2 &amp;&amp; 
 					_event.data.pathComponent[1] === 'processed'">
 				<script>//dump(_event)</script>
 				<response status="200" requestexpr="_event.origin">
+					<header name="Connection" value="close" />
 					<header name="Content-Type" value="application/json" />
+					<header name="Access-Control-Allow-Origin" value="*" />
 					<content expr="processed" />
 				</response>
 			</transition>
 
-			<transition event="http" target="idle" cond="
+			<transition event="http.get" target="idle" cond="
 					_event.data.pathComponent.length == 2 &amp;&amp; 
 					_event.data.pathComponent[1] === 'wrls'">
 				<script>//dump(_event)</script>
 				<response status="200" requestexpr="_event.origin">
+					<header name="Connection" value="close" />
 					<header name="Content-Type" value="application/json" />
+					<header name="Access-Control-Allow-Origin" value="*" />
 					<content expr="wrls" />
 				</response>
 			</transition>
 			
 			<!-- request for topmost list of all files -->
-			<transition event="http" target="idle" cond="
+			<transition event="http.get" target="idle" cond="
 				_event.data.pathComponent.length == 1">
 				<script>//dump(_event);</script>
 				<response status="200" requestexpr="_event.origin">
+					<header name="Connection" value="close" />
 					<header name="Content-Type" value="application/json" />
+					<header name="Access-Control-Allow-Origin" value="*" />
 					<content expr="overviewList()" />
+				</response>
+			</transition>
+
+			<!-- XHR CORS preflight response  -->
+			<transition event="http.options" target="idle">
+				<script>dump(_event);</script>
+				<response status="200" requestexpr="_event.origin">
+					<header name="Access-Control-Allow-Origin" value="*" />
+					<header name="Access-Control-Allow-Methods" value="GET, OPTIONS" />
+					<header name="Access-Control-Allow-Headers" value="X-Requested-With" />
 				</response>
 			</transition>
 			
