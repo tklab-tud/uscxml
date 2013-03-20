@@ -8,21 +8,22 @@ else()
 	return()
 endif()
 
+#message(FATAL_ERROR "PHP_LDFLAGS: ${PHP_LDFLAGS}")
+
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+include_directories(${PHP_INCLUDE_DIRS})
 
 SET(CMAKE_SWIG_FLAGS "")
 
 # we need ; to produce a space with the package .. weird
-# SET_SOURCE_FILES_PROPERTIES(uscxml.i PROPERTIES SWIG_FLAGS "-package;${SCXMLPL_JAVA_PACKAGE}")
 SET_SOURCE_FILES_PROPERTIES(uscxml.i PROPERTIES CPLUSPLUS ON)
-SET(CMAKE_SWIG_OUTDIR "${CMAKE_CURRENT_BINARY_DIR}/${SCXMLPL_JAVA_DIR}")
 
-SWIG_ADD_MODULE(uscxmlNativePHP php uscxml.i)
-# foreach(JNI_LIBRARY ${JNI_LIBRARIES})
-# 	if (NOT ${JNI_LIBRARY} MATCHES ".*jawt.*")
-# 		SWIG_LINK_LIBRARIES(uscxmlNativePHP ${JNI_LIBRARY})
-# 	endif()
-# endforeach()
+SWIG_ADD_MODULE(uscxmlNativePHP php5 uscxml.i)
+foreach(PHP_LIBRARY ${PHP_LIBRARIES})
+	SWIG_LINK_LIBRARIES(uscxmlNativePHP ${PHP_LIBRARY})
+endforeach()
+
+#set_target_properties(uscxmlNativePHP PROPERTIES LINK_FLAGS ${PHP_LDFLAGS})
 set_target_properties(uscxmlNativePHP PROPERTIES FOLDER "Bindings")
 
-swig_link_libraries(uscxmlNativePHP uscxml)
+SWIG_LINK_LIBRARIES(uscxmlNativePHP uscxml)

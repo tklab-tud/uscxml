@@ -3,13 +3,13 @@
 // import swig typemaps
 //%include <arrays_java.i>
 //%include <inttypes.i>
-%include <boost_shared_ptr.i>
+//%include <boost_shared_ptr.i>
 
 // disable warning related to unknown base class
 #pragma SWIG nowarn=401
 //%ignore boost::enable_shared_from_this;
 
-%javaconst(1);
+//%javaconst(1);
 
 # %shared_ptr(uscxml::dom::Element);
 # %shared_ptr(uscxml::dom::Executable);
