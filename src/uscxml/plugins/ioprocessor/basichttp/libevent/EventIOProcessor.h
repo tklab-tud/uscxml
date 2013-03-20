@@ -43,6 +43,8 @@ public:
 		_url = url;
 	}
 
+	bool canAdaptPath() { return false; }
+
 	// URLMonitor
 	void downloadStarted(const URL& url);
 	void downloadCompleted(const URL& url);

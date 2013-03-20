@@ -533,6 +533,25 @@ else()
 endif()
 
 
+# System invoker to open a native command
+
+file(GLOB_RECURSE SYSTEM_INVOKER
+	src/uscxml/plugins/invoker/system/*.cpp
+	src/uscxml/plugins/invoker/system/*.h
+)
+source_group("Invoker\\system" FILES ${SYSTEM_INVOKER})
+include_directories(${PROJECT_SOURCE_DIR}/src/uscxml/plugins/invoker/system/)
+if (BUILD_AS_PLUGINS)
+	add_library(
+		invoker_system SHARED 
+		${SYSTEM_INVOKER})
+	target_link_libraries(invoker_system uscxml)
+	set_target_properties(invoker_system PROPERTIES FOLDER "Plugin Invoker")
+else()
+	list (APPEND USCXML_FILES ${SYSTEM_INVOKER})
+endif()
+
+
 # SQLite3 SQL Invoker
 
 find_package(Sqlite3)
@@ -812,7 +831,7 @@ if (MILES_FOUND)
 
 	# openal is only needed for miles
 	find_package(OpenAL REQUIRED)
-	find_package(JPEG REQUIRED)
+#	find_package(JPEG REQUIRED)
 	list (APPEND MILES_LIBRARIES "iconv")
 	list (APPEND MILES_LIBRARIES ${JPEG_LIBRARIES})
 	include_directories(${OPENAL_INCLUDE_DIR})

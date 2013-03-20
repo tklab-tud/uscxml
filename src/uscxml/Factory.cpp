@@ -15,6 +15,7 @@
 # include "uscxml/plugins/invoker/http/HTTPServletInvoker.h"
 # include "uscxml/plugins/invoker/heartbeat/HeartbeatInvoker.h"
 # include "uscxml/plugins/invoker/filesystem/dirmon/DirMonInvoker.h"
+# include "uscxml/plugins/invoker/system/SystemInvoker.h"
 
 # ifdef UMUNDO_FOUND
 #   include "uscxml/plugins/invoker/umundo/UmundoInvoker.h"
@@ -64,6 +65,7 @@ Factory::Factory() {
 		pluma.acceptProviderType<InvokerImplProvider>();
 		pluma.acceptProviderType<IOProcessorImplProvider>();
 		pluma.acceptProviderType<DataModelImplProvider>();
+		pluma.acceptProviderType<ElementImplProvider>();
 		pluma.loadFromFolder(pluginPath);
 
 		std::vector<InvokerImplProvider*> invokerProviders;
@@ -159,10 +161,13 @@ Factory::Factory() {
 		registerInvoker(invoker);
 	}
 	{
+		SystemInvoker* invoker = new SystemInvoker();
+		registerInvoker(invoker);
+	}
+	{
 		EventIOProcessor* ioProcessor = new EventIOProcessor();
 		registerIOProcessor(ioProcessor);
 	}
-
 	{
 		FetchElement* element = new FetchElement();
 		registerExecutableContent(element);

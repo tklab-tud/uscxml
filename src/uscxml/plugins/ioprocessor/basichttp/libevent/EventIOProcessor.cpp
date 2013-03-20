@@ -51,9 +51,11 @@ boost::shared_ptr<IOProcessorImpl> EventIOProcessor::create(Interpreter* interpr
 
 	// register at http server
 	std::string path = interpreter->getName();
-	path += "/basichttp";
-	if (!HTTPServer::registerServlet(path, io.get())) {
-		LOG(ERROR) << "Cannot register basichttp ioprocessor at " << path << ": " << " already taken";
+	int i = 2;
+	while (!HTTPServer::registerServlet(path + "/basichttp", io.get())) {
+		std::stringstream ss;
+		ss << interpreter->getName() << i++;
+		path = ss.str();
 	}
 
 	return io;

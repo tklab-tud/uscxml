@@ -39,7 +39,9 @@ Interpreter::Interpreter() : Arabica::SAX2DOM::Parser<std::string>() {
 	_parentQueue = NULL;
 	_running = false;
 	_done = false;
+	_isInitialized = false;
 	_httpServlet = NULL;
+	_capabilities = CAN_BASIC_HTTP | CAN_GENERIC_HTTP;
 
 #ifdef _WIN32
 	WSADATA wsaData;
@@ -170,7 +172,7 @@ Interpreter* Interpreter::fromInputSource(Arabica::SAX::InputSource<std::string>
 	} else {
 		interpreter->_document = interpreter->Arabica::SAX2DOM::Parser<std::string>::getDocument();
 	}
-	interpreter->init();
+//	interpreter->init();
 	return interpreter;
 }
 
@@ -191,14 +193,17 @@ void Interpreter::init() {
 
 			normalize(_document);
 
+			if (_capabilities & CAN_GENERIC_HTTP)
+				_httpServlet = new HTTPServletInvoker(this);
+
 			_sendQueue = new DelayedEventQueue();
-			_httpServlet = new HTTPServletInvoker(this);
 			_sendQueue->start();
 
 		} else {
 			LOG(ERROR) << "Cannot find SCXML element" << std::endl;
 		}
 	}
+	_isInitialized = true;
 }
 
 Interpreter::~Interpreter() {
@@ -259,10 +264,13 @@ bool Interpreter::runOnMainThread(int fps, bool blocking) {
 
 // see: http://www.w3.org/TR/scxml/#AlgorithmforSCXMLInterpretation
 void Interpreter::interpret() {
+	if (!_isInitialized)
+		init();
+
 	if (!_scxml)
 		return;
 //  dump();
-
+	
 	_sessionId = getUUID();
 
 	std::string datamodelName;
@@ -2520,6 +2528,11 @@ void Interpreter::setupIOProcessors() {
 	tthread::lock_guard<tthread::mutex> lock(_mutex);
 	std::map<std::string, IOProcessorImpl*>::iterator ioProcIter = Factory::getInstance()->_ioProcessors.begin();
 	while(ioProcIter != Factory::getInstance()->_ioProcessors.end()) {
+		if (boost::iequals(ioProcIter->first, "basichttp") && !(_capabilities & CAN_BASIC_HTTP)) {
+			ioProcIter++;
+			continue;
+		}
+		
 		_ioProcessors[ioProcIter->first] = Factory::createIOProcessor(ioProcIter->first, this);
 		_ioProcessors[ioProcIter->first].setType(ioProcIter->first);
 		_ioProcessors[ioProcIter->first].setInterpreter(this);

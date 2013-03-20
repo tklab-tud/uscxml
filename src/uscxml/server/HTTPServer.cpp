@@ -56,7 +56,8 @@ HTTPServer::HTTPServer(unsigned short port) {
 	}
 	determineAddress();
 
-	evhttp_set_timeout(_http, 5);
+//	evhttp_set_timeout(_http, 5);
+
 	// generic callback
 	evhttp_set_gencb(_http, HTTPServer::httpRecvReqCallback, NULL);
 }
@@ -217,7 +218,7 @@ void HTTPServer::httpRecvReqCallback(struct evhttp_request *req, void *callbackD
 			request.data.compound["content"] = Data::fromJSON(request.data.compound["content"].atom);
 		}
 	}
-
+	
 	if (callbackData == NULL) {
 		HTTPServer::getInstance()->processByMatchingServlet(request);
 	} else {
@@ -236,7 +237,7 @@ void HTTPServer::processByMatchingServlet(const Request& request) {
 		// is the servlet path a prefix of the actual path?
 		std::string servletPath = "/" + servletIter->first;
 		if (boost::iequals(actualPath.substr(0, servletPath.length()), servletPath) && // actual path is a prefix
-		        boost::iequals(actualPath.substr(servletPath.length(), 1), "/")) {         // and next character is a '/'
+				boost::iequals(actualPath.substr(servletPath.length(), 1), "/")) {         // and next character is a '/'
 			if (bestPath.length() < servletPath.length()) {
 				// this servlet is a better match
 				bestPath = servletPath;
@@ -299,20 +300,34 @@ bool HTTPServer::registerServlet(const std::string& path, HTTPServlet* servlet) 
 	HTTPServer* INSTANCE = getInstance();
 	tthread::lock_guard<tthread::recursive_mutex> lock(INSTANCE->_mutex);
 
-	if(INSTANCE->_servlets.find(path) != INSTANCE->_servlets.end()) {
-		return false;
+	// remove trailing and leading slash
+	std::string actualPath = path;
+	if (boost::ends_with(actualPath, "/"))
+		actualPath = actualPath.substr(0, actualPath.size() - 1);
+	if (boost::starts_with(actualPath, "/"))
+		actualPath = actualPath.substr(1);
+	std::string suffixedPath = actualPath;
+	
+	// if this servlet allows to adapt the path, do so
+	int i = 2;
+	while(INSTANCE->_servlets.find(suffixedPath) != INSTANCE->_servlets.end()) {
+		if (!servlet->canAdaptPath())
+			return false;
+		std::stringstream ss;
+		ss << actualPath << i++;
+		suffixedPath = ss.str();
 	}
 
 	std::stringstream servletURL;
-	servletURL << "http://" << INSTANCE->_address << ":" << INSTANCE->_port << "/" << path;
+	servletURL << "http://" << INSTANCE->_address << ":" << INSTANCE->_port << "/" << suffixedPath;
 	servlet->setURL(servletURL.str());
 
-	INSTANCE->_servlets[path] = servlet;
+	INSTANCE->_servlets[suffixedPath] = servlet;
 
 	LOG(INFO) << "HTTP Servlet listening at: " << servletURL.str() << std::endl;
 
 	// register callback
-	evhttp_set_cb(INSTANCE->_http, ("/" + path).c_str(), HTTPServer::httpRecvReqCallback, servlet);
+	evhttp_set_cb(INSTANCE->_http, ("/" + suffixedPath).c_str(), HTTPServer::httpRecvReqCallback, servlet);
 
 	return true;
 }

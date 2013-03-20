@@ -8,8 +8,18 @@
 				</script>
 			</finalize>
 		</invoke>
-		
+
 		<state id="idle">
+			<!-- XHR CORS preflight response -->
+			<transition event="http.options" target="idle">
+				<script>dump(_event);</script>
+				<response status="200" requestexpr="_event.origin">
+					<header name="Access-Control-Allow-Origin" value="*" />
+					<header name="Access-Control-Allow-Methods" value="GET, OPTIONS" />
+					<header name="Access-Control-Allow-Headers" value="X-Requested-With" />
+				</response>
+			</transition>
+			
 			<transition event="http.post" target="idle">
 				<script>dump(_event);</script>
 				<if cond="_event.data.pathComponent[1] === 'session'">
@@ -30,11 +40,11 @@
 							<param name="problemName" expr="_event.data.content.problemName" />
 						</send>
 						<response status="200" requestexpr="_event.origin" />
-					
+
 					</elseif>
 					<else>
 						<response status="404" requestexpr="_event.origin" />
-					
+
 					</else>
 				</if>
 			</transition>

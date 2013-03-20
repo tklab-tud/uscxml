@@ -40,6 +40,12 @@ void PostponeElement::enterElement(const Arabica::DOM::Node<std::string>& node) 
 		}
 	}
 
+	// chaining causes the event to fire if the condition was true since postponing
+	bool chained = false;
+	if (HAS_ATTR(node, "chaining")) {
+		chained = boost::iequals(ATTR(node, "chaining"), "true");
+	}
+	
 	// when will we refire the event?
 	std::string until;
 	try {
@@ -85,36 +91,29 @@ void PostponeElement::enterElement(const Arabica::DOM::Node<std::string>& node) 
 	}
 #endif
 	Event currEvent = _interpreter->getCurrentEvent();
-	Resubmitter::postpone(currEvent, until, 0, _interpreter);
+	Resubmitter::postpone(currEvent, until, 0, chained, _interpreter);
 }
 
 void PostponeElement::exitElement(const Arabica::DOM::Node<std::string>& node) {
 }
 
-void PostponeElement::Resubmitter::postpone(const Event& event, std::string until, uint64_t timeout, Interpreter* interpreter) {
+void PostponeElement::Resubmitter::postpone(const Event& event, std::string until, uint64_t timeout, bool chained, Interpreter* interpreter) {
 	Resubmitter* resubmitter = getInstance(interpreter);
-	resubmitter->_postponedEvents.push_back(Postponed(event, until, timeout));
+	resubmitter->_postponedEvents.push_back(Postponed(event, until, timeout, chained));
 }
 
 void PostponeElement::Resubmitter::onStableConfiguration(Interpreter* interpreter) {
 	std::list<Postponed>::iterator eventIter = _postponedEvents.begin();
+	bool dispatched = false;
 	while(eventIter != _postponedEvents.end()) {
 		try {
 //      LOG(INFO) << "Reevaluating: >> " << eventIter->first << " <<";
-			if (eventIter->timeout > 0 && tthread::chrono::system_clock::now() < eventIter->timeout) {
-				// TODO: We should use an event queue
-//        LOG(INFO) << "  -> Timeout";
-				eventIter->event.name += ".timeout";
-				interpreter->receive(eventIter->event, true);
-				_postponedEvents.erase(eventIter);
-				break;
-			}
-			if (interpreter->getDataModel().evalAsBool(eventIter->until)) {
+			if ((!dispatched || eventIter->chaining) && interpreter->getDataModel().evalAsBool(eventIter->until)) {
 //        LOG(INFO) << "  -> is TRUE";
 				eventIter->event.name += ".postponed";
 				interpreter->receive(eventIter->event, true);
 				_postponedEvents.erase(eventIter);
-				break;
+				dispatched = true;
 			}
 //      LOG(INFO) << "  -> is FALSE";
 		} catch (Event e) {

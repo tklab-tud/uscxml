@@ -1,5 +1,7 @@
 <scxml datamodel="ecmascript" name="vrml">
 	<script src="http://uscxml.tk.informatik.tu-darmstadt.de/scripts/dump.js" />
+	<script src="http://uscxml.tk.informatik.tu-darmstadt.de/scripts/string.endsWith.js" />
+	<script src="http://uscxml.tk.informatik.tu-darmstadt.de/scripts/array.last.js" />
 	<script>
 		var wrls = {};        // information of the wrl, vrml files
 		var models = {};      // information of the osgb files
@@ -126,25 +128,7 @@
 			}
 			return struct;
 		}
-		
-		/**
-		 * Provide an endsWith function for the string prototype
-		 */
-		if(!Array.prototype.last) {
-			String.prototype.endsWith = function(suffix) {
-			    return this.indexOf(suffix, this.length - suffix.length) !== -1;
-			}
-		}
-		
-		/**
-		 * Provide last() for arrays
-		 */
-		if(!Array.prototype.last) {
-		    Array.prototype.last = function() {
-		        return this[this.length - 1];
-		    }
-		}
-		
+
 		// check whether a given string represents a number	
 		function isNumber(n) {
 		  return !isNaN(parseFloat(n)) &amp;&amp; isFinite(n);
@@ -396,7 +380,7 @@
 				</response>
 			</transition>
 
-			<!-- XHR CORS preflight response  -->
+			<!-- XHR CORS preflight response -->
 			<transition event="http.options" target="idle">
 				<script>dump(_event);</script>
 				<response status="200" requestexpr="_event.origin">

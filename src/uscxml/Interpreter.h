@@ -76,6 +76,12 @@ public:
 	    LATE = 1
 	};
 
+	enum Capabilities {
+		CAN_NOTHING = 0,
+		CAN_BASIC_HTTP = 1,
+		CAN_GENERIC_HTTP = 2,
+	};
+	
 	virtual ~Interpreter();
 
 	static Interpreter* fromDOM(const Arabica::DOM::Node<std::string>& node);
@@ -162,6 +168,10 @@ public:
 		return _document;
 	}
 
+	void setCapabilities(unsigned int capabilities) {
+		_capabilities = capabilities;
+	}
+	
 	void setName(const std::string& name);
 	const std::string& getName()                             {
 		return _name;
@@ -222,6 +232,7 @@ protected:
 
 	bool _running;
 	bool _done;
+	bool _isInitialized;
 	Binding _binding;
 	Arabica::XPath::NodeSet<std::string> _configuration;
 	Arabica::XPath::NodeSet<std::string> _statesToInvoke;
@@ -306,7 +317,8 @@ protected:
 	long _lastRunOnMainThread;
 	std::string _name;
 	std::string _sessionId;
-
+	unsigned int _capabilities;
+	
 	Data _cmdLineOptions;
 
 	IOProcessor getIOProcessor(const std::string& type);

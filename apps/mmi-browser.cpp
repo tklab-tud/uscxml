@@ -85,6 +85,8 @@ int main(int argc, char** argv) {
 	Interpreter* interpreter = Interpreter::fromURI(argv[optind]);
 	if (interpreter) {
 		interpreter->setCmdLineOptions(argc, argv);
+//		interpreter->setCapabilities(Interpreter::CAN_NOTHING);
+//		interpreter->setCapabilities(Interpreter::CAN_BASIC_HTTP | Interpreter::CAN_GENERIC_HTTP);
 		interpreter->start();
 		while(interpreter->runOnMainThread(25));
 		//		interpreter->interpret();

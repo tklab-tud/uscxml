@@ -1,5 +1,7 @@
 #include "uscxml/URL.h"
 #include "uscxml/Message.h"
+#include "uscxml/server/HTTPServer.h"
+
 #include <assert.h>
 #include <boost/algorithm/string.hpp>
 #include <iostream>
@@ -7,7 +9,52 @@
 using namespace uscxml;
 using namespace boost;
 
+class TestServlet : public HTTPServlet {
+public:
+	TestServlet(bool adaptPath) : _canAdaptPath(adaptPath) {}
+	
+	void httpRecvRequest(const HTTPServer::Request& request) {};
+	bool canAdaptPath() { return _canAdaptPath; }
+	void setURL(const std::string& url) { _actualUrl = url; }
+
+	std::string _actualUrl;
+	bool _canAdaptPath;
+};
+
 int main(int argc, char** argv) {
+
+	{
+		TestServlet* testServlet1 = new TestServlet(false);
+		TestServlet* testServlet2 = new TestServlet(false);
+		
+		assert(HTTPServer::registerServlet("/foo", testServlet1));
+		assert(!HTTPServer::registerServlet("/foo", testServlet2));
+		HTTPServer::unregisterServlet(testServlet1);
+		assert(HTTPServer::registerServlet("/foo", testServlet2));
+		HTTPServer::unregisterServlet(testServlet1);
+		
+		assert(HTTPServer::registerServlet("/foo/bar/", testServlet1));
+		assert(!HTTPServer::registerServlet("/foo/bar/", testServlet2));
+		HTTPServer::unregisterServlet(testServlet1);
+		HTTPServer::unregisterServlet(testServlet2);
+	}
+
+	{
+		TestServlet* testServlet1 = new TestServlet(true);
+		TestServlet* testServlet2 = new TestServlet(true);
+		TestServlet* testServlet3 = new TestServlet(true);
+		
+		assert(HTTPServer::registerServlet("/foo", testServlet1));
+		assert(HTTPServer::registerServlet("/foo", testServlet2));
+		assert(HTTPServer::registerServlet("/foo", testServlet3));
+		assert(boost::ends_with(testServlet1->_actualUrl, "foo"));
+		assert(boost::ends_with(testServlet2->_actualUrl, "foo2"));
+		assert(boost::ends_with(testServlet3->_actualUrl, "foo3"));
+
+		HTTPServer::unregisterServlet(testServlet1);
+		HTTPServer::unregisterServlet(testServlet2);
+		HTTPServer::unregisterServlet(testServlet3);
+	}
 
 	{
 		Data data = Data::fromJSON("asdf");
@@ -72,4 +119,5 @@ int main(int argc, char** argv) {
 		assert(iequals(url.pathComponents()[2], "Some Spaces"));
 		assert(iequals(url.pathComponents()[3], "index.txt"));
 	}
+
 }

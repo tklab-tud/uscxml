@@ -30,7 +30,7 @@ HTTPServletInvoker::HTTPServletInvoker(Interpreter* interpreter) {
 	while(!HTTPServer::registerServlet(path.str(), this)) {
 		path.clear();
 		path.str();
-		path << _interpreter->getName() << toStr(i++);
+		path << _interpreter->getName() << i++;
 	}
 }
 

@@ -35,6 +35,7 @@ public:
 	virtual void setURL(const std::string& url) {
 		_url = url;
 	}
+	bool canAdaptPath() { return false; }
 
 	tthread::recursive_mutex& getMutex() {
 		return _mutex;

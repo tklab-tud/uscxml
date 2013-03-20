@@ -13,11 +13,12 @@ namespace uscxml {
 class PostponeElement : public ExecutableContentImpl {
 public:
 	struct Postponed {
-		Postponed(const Event& event, const std::string& until, long timeout) :
-			event(event), until(until), timeout(timeout) {}
+		Postponed(const Event& event, const std::string& until, long timeout, bool chaining = false) :
+			event(event), until(until), timeout(timeout), chaining(chaining) {}
 		Event event;
 		std::string until;
 		uint64_t timeout;
+		bool chaining;
 	};
 
 	PostponeElement() {}
@@ -48,7 +49,7 @@ protected:
 		}
 
 		static Resubmitter* getInstance(Interpreter* interpreter);
-		static void postpone(const Event& event, std::string until, uint64_t timeout, Interpreter* interpreter);
+		static void postpone(const Event& event, std::string until, uint64_t timeout, bool chained, Interpreter* interpreter);
 
 		// InterpreterMonitor
 		void onStableConfiguration(Interpreter* interpreter);
