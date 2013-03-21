@@ -8,6 +8,46 @@ else()
 	return()
 endif()
 
+# copied from cmake's FindPHP4.cmake and adapted
+if(APPLE)
+	# this is a hack for now
+  set(PHP_MODULE_CXX_FLAGS "${CMAKE_SHARED_MODULE_CREATE_CXX_FLAGS} -Wl,-flat_namespace")
+  foreach(symbol
+		__efree
+		__emalloc
+		__estrdup
+		__object_init
+		__object_init_ex
+		__zend_get_parameters_array_ex
+		__zend_list_find
+		__zval_copy_ctor
+		__zval_copy_ctor_func
+		_add_property_zval_ex
+		_alloc_globals
+		_compiler_globals
+		_convert_to_double
+		_convert_to_long
+		_convert_to_boolean
+		_gc_remove_zval_from_buffer
+		_zend_get_constant
+		_zend_lookup_class
+		_zend_register_long_constant
+		_zval_is_true
+		_zend_error
+		_zend_hash_find
+		__zend_hash_add_or_update
+		_zend_register_internal_class_ex
+		_zend_register_list_destructors_ex
+		_zend_register_resource
+		_zend_rsrc_list_get_rsrc_type
+		_zend_wrong_param_count
+		_zval_used_for_init
+		)
+    set(PHP_MODULE_CXX_FLAGS
+      "${PHP_MODULE_CXX_FLAGS},-U,${symbol}")
+  endforeach()
+endif()
+
 #message(FATAL_ERROR "PHP_LDFLAGS: ${PHP_LDFLAGS}")
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
@@ -23,7 +63,9 @@ foreach(PHP_LIBRARY ${PHP_LIBRARIES})
 	SWIG_LINK_LIBRARIES(uscxmlNativePHP ${PHP_LIBRARY})
 endforeach()
 
+set_target_properties(uscxmlNativePHP PROPERTIES LINK_FLAGS ${PHP_MODULE_CXX_FLAGS})
 #set_target_properties(uscxmlNativePHP PROPERTIES LINK_FLAGS ${PHP_LDFLAGS})
+
 set_target_properties(uscxmlNativePHP PROPERTIES FOLDER "Bindings")
 
 SWIG_LINK_LIBRARIES(uscxmlNativePHP uscxml)

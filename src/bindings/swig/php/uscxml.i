@@ -28,7 +28,7 @@ using namespace uscxml;
 
 %}
 
-%rename(toString) operator<<;
+//%rename(toString) operator<<;
 
 
 //***********************************************
