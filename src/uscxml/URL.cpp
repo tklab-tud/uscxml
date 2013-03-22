@@ -106,10 +106,10 @@ void URLImpl::downloadCompleted() {
 	}
 }
 
-void URLImpl::downloadFailed(int errorCode) {
+void URLImpl::downloadFailed(CURLcode errorCode) {
 	tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
 
-	LOG(ERROR) << "Downloading " << asString() << " failed: " << strerror(errorCode);
+	LOG(ERROR) << "Downloading " << asString() << " failed: " << curl_easy_strerror(errorCode);
 
 	_hasFailed = true;
 	_isDownloaded = false;
@@ -392,7 +392,7 @@ void URLFetcher::breakURL(URL& url) {
 
 	tthread::lock_guard<tthread::recursive_mutex> lock(instance->_mutex);
 	if (instance->_handlesToURLs.find(handle) != instance->_handlesToURLs.end()) {
-		url.downloadFailed(0);
+		url.downloadFailed(CURLE_OK);
 		curl_multi_remove_handle(instance->_multiHandle, handle);
 		instance->_handlesToURLs.erase(handle);
 	}
@@ -496,6 +496,8 @@ void URLFetcher::perform() {
 						curl_multi_remove_handle(_multiHandle, msg->easy_handle);
 						_handlesToURLs.erase(msg->easy_handle);
 						break;
+					default:
+						LOG(ERROR) << "Unhandled curl status";
 					case CURLM_BAD_HANDLE:
 					case CURLM_BAD_EASY_HANDLE:
 					case CURLM_OUT_OF_MEMORY:
@@ -506,8 +508,6 @@ void URLFetcher::perform() {
 						_handlesToURLs[msg->easy_handle].downloadFailed(msg->data.result);
 						curl_multi_remove_handle(_multiHandle, msg->easy_handle);
 						_handlesToURLs.erase(msg->easy_handle);
-					default:
-						LOG(ERROR) << "Unhandled curl status";
 						break;
 					}
 				} else {

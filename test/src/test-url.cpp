@@ -26,6 +26,7 @@ int main(int argc, char** argv) {
 
 	{
 		Interpreter* interpreter = Interpreter::fromURI("https://raw.github.com/tklab-tud/uscxml/master/test/samples/uscxml/test-execution.scxml");
+		assert(interpreter);
 		interpreter->interpret();
 		delete interpreter;
 	}

@@ -87,6 +87,9 @@ Interpreter* Interpreter::fromURI(const std::string& uri) {
 		// use curl for everything else
 		std::stringstream ss;
 		ss << absUrl;
+		if (absUrl.downloadFailed()) {
+			return NULL;
+		}
 		ss.seekg(0);
 		inputSource.setByteStream(ss);
 	}

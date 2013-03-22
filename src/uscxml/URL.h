@@ -83,7 +83,11 @@ public:
 
 	void downloadStarted();
 	void downloadCompleted();
-	void downloadFailed(int errorCode);
+	void downloadFailed(CURLcode errorCode);
+
+	bool downloadFailed() {
+		return _hasFailed;
+	}
 
 	friend class URLFetcher;
 
@@ -186,6 +190,10 @@ public:
 		_impl->removeMonitor(monitor);
 	}
 
+	bool downloadFailed() {
+		return _impl->downloadFailed();
+	}
+
 	const bool isAbsolute()      const {
 		return _impl->isAbsolute();
 	}
@@ -218,7 +226,7 @@ protected:
 	void downloadCompleted() {
 		return _impl->downloadCompleted();
 	}
-	void downloadFailed(int errorCode) {
+	void downloadFailed(CURLcode errorCode) {
 		return _impl->downloadFailed(errorCode);
 	}
 
