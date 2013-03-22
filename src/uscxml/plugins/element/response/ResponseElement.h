@@ -33,7 +33,7 @@ public:
 };
 
 #ifdef BUILD_AS_PLUGINS
-PLUMA_INHERIT_PROVIDER(ResponseElement, Element);
+PLUMA_INHERIT_PROVIDER(ResponseElement, ExecutableContentImpl);
 #endif
 
 }

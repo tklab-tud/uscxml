@@ -806,7 +806,8 @@ if (OPENSCENEGRAPH_FOUND AND OPENGL_FOUND)
 	
 	include_directories(${OPENSCENEGRAPH_INCLUDE_DIRS})
 	include_directories(${OPENGL_INCLUDE_DIR})
-	file(GLOB_RECURSE OPENSCENEGRAPH_INVOKER 
+
+	file(GLOB OPENSCENEGRAPH_INVOKER 
 		src/uscxml/plugins/invoker/graphics/openscenegraph/*.cpp 
 		src/uscxml/plugins/invoker/graphics/openscenegraph/*.h)
 	source_group("Invoker\\scenegraph" FILES ${OPENSCENEGRAPH_INVOKER})
@@ -824,6 +825,26 @@ if (OPENSCENEGRAPH_FOUND AND OPENGL_FOUND)
 		list (APPEND USCXML_FILES ${OPENSCENEGRAPH_INVOKER})
 		list (APPEND USCXML_OPT_LIBS ${OPENSCENEGRAPH_LIBRARIES} ${OPENGL_LIBRARIES})
 	endif()
+
+	file(GLOB OPENSCENEGRAPH_CONVERTER_INVOKER 
+		src/uscxml/plugins/invoker/graphics/openscenegraph/converter/*.cpp 
+		src/uscxml/plugins/invoker/graphics/openscenegraph/converter/*.h)
+	source_group("Invoker\\scenegraph\\convert" FILES ${OPENSCENEGRAPH_CONVERTER_INVOKER})
+
+	if (BUILD_AS_PLUGINS)
+		add_library(
+			invoker_openscenegraph_convert SHARED 
+			${OPENSCENEGRAPH_CONVERTER_INVOKER})
+		target_link_libraries(invoker_openscenegraph_convert
+			${OPENSCENEGRAPH_LIBRARIES}
+			${OPENGL_LIBRARIES}
+			uscxml)
+			set_target_properties(invoker_openscenegraph_convert PROPERTIES FOLDER "Plugin Invoker")
+	else()
+		list (APPEND USCXML_FILES ${OPENSCENEGRAPH_CONVERTER_INVOKER})
+		list (APPEND USCXML_OPT_LIBS ${OPENSCENEGRAPH_LIBRARIES} ${OPENGL_LIBRARIES})
+	endif()
+
 endif()
 
 if (UNIX)

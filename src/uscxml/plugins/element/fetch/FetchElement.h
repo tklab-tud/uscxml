@@ -40,7 +40,7 @@ protected:
 };
 
 #ifdef BUILD_AS_PLUGINS
-PLUMA_INHERIT_PROVIDER(FetchElement, Element);
+PLUMA_INHERIT_PROVIDER(FetchElement, ExecutableContentImpl);
 #endif
 
 }

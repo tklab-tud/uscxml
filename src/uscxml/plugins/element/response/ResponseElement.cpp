@@ -35,7 +35,7 @@ void ResponseElement::enterElement(const Arabica::DOM::Node<std::string>& node) 
 	std::string requestId = (HAS_ATTR(node, "request") ? ATTR(node, "request") : _interpreter->getDataModel().evalAsString(ATTR(node, "requestexpr")));
 
 	// try to get the request object
-	HTTPServletInvoker* servlet = _interpreter->getHTTPServlet();
+	InterpreterServlet* servlet = _interpreter->getHTTPServlet();
 	tthread::lock_guard<tthread::recursive_mutex> lock(servlet->getMutex());
 
 	if (servlet->getRequests().find(requestId) == servlet->getRequests().end()) {

@@ -6,7 +6,7 @@ namespace uscxml {
 PLUMA_PROVIDER_SOURCE(DataModelImpl, 1, 1);
 PLUMA_PROVIDER_SOURCE(IOProcessorImpl, 1, 1);
 PLUMA_PROVIDER_SOURCE(InvokerImpl, 1, 1);
-PLUMA_PROVIDER_SOURCE(ElementImpl, 1, 1);
+PLUMA_PROVIDER_SOURCE(ExecutableContentImpl, 1, 1);
 #endif
 
 }

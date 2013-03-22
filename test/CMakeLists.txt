@@ -22,7 +22,7 @@ if (V8_FOUND)
 	add_test(test-ecmascript ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/mmi-browser ${CMAKE_SOURCE_DIR}/test/samples/uscxml/test-ecmascript.scxml)
 endif()
 
-if (OPENSCENEGRAPH_FOUND)
+if (OPENSCENEGRAPH_FOUND AND OFF)
 	add_executable(test-osg src/test-osg.cpp)
 	target_link_libraries(test-osg uscxml)
 	set_target_properties(test-osg PROPERTIES FOLDER "Tests")

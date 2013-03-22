@@ -73,7 +73,7 @@ protected:
 };
 
 #ifdef BUILD_AS_PLUGINS
-PLUMA_INHERIT_PROVIDER(OSGConverter, Invoker);
+PLUMA_INHERIT_PROVIDER(OSGConverter, InvokerImpl);
 #endif
 
 }

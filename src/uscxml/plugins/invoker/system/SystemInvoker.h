@@ -31,7 +31,7 @@ protected:
 };
 
 #ifdef BUILD_AS_PLUGINS
-PLUMA_INHERIT_PROVIDER(SystemInvoker, Invoker);
+PLUMA_INHERIT_PROVIDER(SystemInvoker, InvokerImpl);
 #endif
 
 }

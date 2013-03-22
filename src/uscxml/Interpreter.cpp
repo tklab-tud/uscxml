@@ -206,7 +206,7 @@ void Interpreter::init() {
 			normalize(_document);
 
 			if (_capabilities & CAN_GENERIC_HTTP)
-				_httpServlet = new HTTPServletInvoker(this);
+				_httpServlet = new InterpreterServlet(this);
 
 			_sendQueue = new DelayedEventQueue();
 			_sendQueue->start();
@@ -297,8 +297,11 @@ void Interpreter::interpret() {
 
 	if (_dataModel) {
 		_dataModel.assign("_x.args", _cmdLineOptions);
-		if (_httpServlet)
-			_dataModel.assign("_ioprocessors['http']", _httpServlet->getDataModelVariables());
+		if (_httpServlet) {
+			Data data;
+			data.compound["location"] = Data(_httpServlet->getURL(), Data::VERBATIM);
+			_dataModel.assign("_ioprocessors['http']", data);
+		}
 	}
 
 	setupIOProcessors();

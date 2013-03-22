@@ -24,6 +24,8 @@
 #include "uscxml/Message.h"
 #include "uscxml/Factory.h"
 
+#include "uscxml/server/InterpreterServlet.h"
+
 #define ORIG_ENTERSTATES
 
 namespace uscxml {
@@ -120,7 +122,7 @@ public:
 		return _cmdLineOptions;
 	}
 
-	HTTPServletInvoker* getHTTPServlet() {
+	InterpreterServlet* getHTTPServlet() {
 		return _httpServlet;
 	}
 
@@ -247,7 +249,7 @@ protected:
 
 	Event _currEvent;
 
-	HTTPServletInvoker* _httpServlet;
+	InterpreterServlet* _httpServlet;
 
 	std::set<InterpreterMonitor*> _monitors;
 

@@ -65,7 +65,7 @@ Factory::Factory() {
 		pluma.acceptProviderType<InvokerImplProvider>();
 		pluma.acceptProviderType<IOProcessorImplProvider>();
 		pluma.acceptProviderType<DataModelImplProvider>();
-		pluma.acceptProviderType<ElementImplProvider>();
+		pluma.acceptProviderType<ExecutableContentImplProvider>();
 		pluma.loadFromFolder(pluginPath);
 
 		std::vector<InvokerImplProvider*> invokerProviders;
