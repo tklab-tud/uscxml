@@ -18,20 +18,6 @@ bool connect(pluma::Host& host) {
 #endif
 
 HTTPServletInvoker::HTTPServletInvoker() {
-	_isInterpreterGlobal = false;
-}
-
-HTTPServletInvoker::HTTPServletInvoker(Interpreter* interpreter) {
-	_isInterpreterGlobal = true;
-	_interpreter = interpreter;
-	std::stringstream path;
-	path << _interpreter->getName();
-	int i = 2;
-	while(!HTTPServer::registerServlet(path.str(), this)) {
-		path.clear();
-		path.str();
-		path << _interpreter->getName() << i++;
-	}
 }
 
 HTTPServletInvoker::~HTTPServletInvoker() {
@@ -53,7 +39,6 @@ Data HTTPServletInvoker::getDataModelVariables() {
 }
 
 void HTTPServletInvoker::send(const SendRequest& req) {
-	assert(!_isInterpreterGlobal);
 
 	if (req.name.find("reply.", 0, req.name.length())) {
 		// this is a reply
@@ -85,11 +70,9 @@ void HTTPServletInvoker::send(const SendRequest& req) {
 }
 
 void HTTPServletInvoker::cancel(const std::string sendId) {
-	assert(!_isInterpreterGlobal);
 }
 
 void HTTPServletInvoker::invoke(const InvokeRequest& req) {
-	assert(!_isInterpreterGlobal);
 
 	_invokeId = req.invokeid;
 	if (req.params.find("path") == req.params.end()) {
@@ -121,13 +104,8 @@ void HTTPServletInvoker::httpRecvRequest(const HTTPServer::Request& req) {
 
 	Event event = req;
 
-	if (_isInterpreterGlobal) {
-		event.name = "http." + event.data.compound["type"].atom;
-		event.origin = toStr((uintptr_t)req.curlReq);
-	} else {
-		event.name = _callback;
-		event.data.compound["reqId"] = Data(toStr((uintptr_t)req.curlReq), Data::VERBATIM);
-	}
+	event.name = _callback;
+	event.data.compound["reqId"] = Data(toStr((uintptr_t)req.curlReq), Data::VERBATIM);
 
 	returnEvent(event);
 

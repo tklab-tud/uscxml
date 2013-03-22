@@ -13,7 +13,6 @@ namespace uscxml {
 class HTTPServletInvoker : public InvokerImpl, public HTTPServlet {
 public:
 	HTTPServletInvoker();
-	HTTPServletInvoker(Interpreter* interpreter);
 	virtual ~HTTPServletInvoker();
 	virtual boost::shared_ptr<IOProcessorImpl> create(Interpreter* interpreter);
 
@@ -37,20 +36,12 @@ public:
 	}
 	bool canAdaptPath() { return false; }
 
-	tthread::recursive_mutex& getMutex() {
-		return _mutex;
-	}
-	std::map<std::string, HTTPServer::Request>& getRequests() {
-		return _requests;
-	}
-
 protected:
 	tthread::recursive_mutex _mutex;
 	std::map<std::string, HTTPServer::Request> _requests;
 	std::string _path;
 	std::string _callback;
 	std::string _url;
-	bool _isInterpreterGlobal;
 };
 
 #ifdef BUILD_AS_PLUGINS

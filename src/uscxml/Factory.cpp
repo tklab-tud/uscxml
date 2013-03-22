@@ -23,7 +23,7 @@
 
 # ifdef OPENSCENEGRAPH_FOUND
 #   include "uscxml/plugins/invoker/graphics/openscenegraph/OSGInvoker.h"
-#   include "uscxml/plugins/invoker/graphics/openscenegraph/OSGConverter.h"
+#   include "uscxml/plugins/invoker/graphics/openscenegraph/converter/OSGConverter.h"
 # endif
 
 # ifdef MILES_FOUND
