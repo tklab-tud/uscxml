@@ -31,6 +31,8 @@ if(APPLE)
 		_convert_to_boolean
 		__convert_to_string
 		_gc_remove_zval_from_buffer
+		_call_user_function
+		_executor_globals
 		_zend_get_constant
 		_zend_lookup_class
 		_zend_register_long_constant

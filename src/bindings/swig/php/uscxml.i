@@ -35,6 +35,7 @@ void*** tsrm_ls;
 
 //%rename(toString) operator<<;
 
+%feature("director") uscxml::InterpreterMonitor;
 
 //***********************************************
 // Parse the header file to generate wrappers
