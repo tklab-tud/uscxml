@@ -29,6 +29,10 @@ using namespace uscxml;
 
 %}
 
+%insert("begin") %{
+void*** tsrm_ls;
+%}
+
 //%rename(toString) operator<<;
 
 
