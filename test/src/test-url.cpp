@@ -1,5 +1,6 @@
 #include "uscxml/URL.h"
 #include "uscxml/Message.h"
+#include "uscxml/Interpreter.h"
 #include "uscxml/server/HTTPServer.h"
 
 #include <assert.h>
@@ -22,6 +23,12 @@ public:
 };
 
 int main(int argc, char** argv) {
+
+	{
+		Interpreter* interpreter = Interpreter::fromURI("https://raw.github.com/tklab-tud/uscxml/master/test/samples/uscxml/test-execution.scxml");
+		interpreter->interpret();
+		delete interpreter;
+	}
 
 	{
 		TestServlet* testServlet1 = new TestServlet(false);
@@ -94,7 +101,7 @@ int main(int argc, char** argv) {
 		std::stringstream content;
 		content << url;
 	}
-
+	
 	{
 		URL url("file:Document/Text.foo");
 		std::cout << url.asString() << std::endl;

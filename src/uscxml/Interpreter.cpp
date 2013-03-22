@@ -78,8 +78,15 @@ Interpreter* Interpreter::fromURI(const std::string& uri) {
 	// this is required for windows filenames and does not harm on unices
 	if (boost::iequals(absUrl.scheme(), "file")) {
 		inputSource.setSystemId(absUrl.path());
-	} else {
+	} else if (boost::iequals(absUrl.scheme(), "http")) {
+		// handle http per arabica
 		inputSource.setSystemId(absUrl.asString());
+	} else {
+		// use curl for everything else
+		std::stringstream ss;
+		ss << absUrl;
+		ss.seekg(0);
+		inputSource.setByteStream(ss);
 	}
 	Interpreter* interpreter = fromInputSource(inputSource);
 
