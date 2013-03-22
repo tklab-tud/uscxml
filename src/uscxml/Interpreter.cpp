@@ -61,7 +61,9 @@ Interpreter* Interpreter::fromDOM(const Arabica::DOM::Node<std::string>& node) {
 
 Interpreter* Interpreter::fromXML(const std::string& xml) {
 	std::istringstream is(xml);
+	is.seekg(0);
 	Arabica::SAX::InputSource<std::string> inputSource;
+	inputSource.setByteStream(is);
 	return fromInputSource(inputSource);
 }
 
