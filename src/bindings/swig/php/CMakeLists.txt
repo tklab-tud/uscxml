@@ -65,7 +65,9 @@ foreach(PHP_LIBRARY ${PHP_LIBRARIES})
 	SWIG_LINK_LIBRARIES(uscxmlNativePHP ${PHP_LIBRARY})
 endforeach()
 
-set_target_properties(uscxmlNativePHP PROPERTIES LINK_FLAGS ${PHP_MODULE_CXX_FLAGS})
+if (APPLE)
+	set_target_properties(uscxmlNativePHP PROPERTIES LINK_FLAGS ${PHP_MODULE_CXX_FLAGS})
+endif()
 #set_target_properties(uscxmlNativePHP PROPERTIES LINK_FLAGS ${PHP_LDFLAGS})
 
 set_target_properties(uscxmlNativePHP PROPERTIES FOLDER "Bindings")

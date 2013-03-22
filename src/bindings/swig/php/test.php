@@ -7,5 +7,6 @@ foreach ($exts as $e)
 }
 
 $interpreter = interpreter_fromuri('/Users/sradomski/Documents/TK/Code/uscxml/test/samples/uscxml/test-ecmascript.scxml');
+interpreter_interpret($interpreter);
 
 ?>
