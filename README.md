@@ -23,6 +23,8 @@ the respective build-process.
    * <b>Communication</b>
        * Features the standard basichttp io-processor
        * Can actually respond to HTTP requests with data via &lt;response>
+   * <b>Language Bindings</b>
+       * PHP module for apache and cli interpreter
 
 ## License 
 
