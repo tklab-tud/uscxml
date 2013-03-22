@@ -195,12 +195,12 @@ Data Data::fromJSON(const std::string& jsonString) {
 			free(t);
 //      LOG(INFO) << "Increasing JSON length to token ratio to 1/" << frac;
 		}
-		t = (jsmntok_t*)malloc(nrTokens * sizeof(jsmntok_t));
+		t = (jsmntok_t*)malloc(nrTokens * sizeof(jsmntok_t) + 1);
 		if (t == NULL) {
 			LOG(ERROR) << "Cannot parse JSON, ran out of memory!";
 			return data;
 		}
-		memset(t, 0, nrTokens * sizeof(jsmntok_t));
+		memset(t, 0, nrTokens * sizeof(jsmntok_t) + 1);
 
 		rv = jsmn_parse(&p, jsonString.c_str(), t, nrTokens);
 	} while (rv == JSMN_ERROR_NOMEM && frac > 1);

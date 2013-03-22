@@ -6,7 +6,7 @@ foreach ($exts as $e)
 	print_r(get_extension_funcs($e));
 }
 
-$interpreter = interpreter_fromuri('/Users/sradomski/Documents/TK/Code/uscxml/test/samples/uscxml/test-ecmascript.scxml');
+$interpreter = interpreter_fromuri('https://raw.github.com/tklab-tud/uscxml/master/test/samples/uscxml/test-ecmascript.scxml');
 interpreter_interpret($interpreter);
 
 ?>

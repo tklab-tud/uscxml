@@ -55,7 +55,7 @@ int main(int argc, char** argv) {
 		HTTPServer::unregisterServlet(testServlet2);
 		HTTPServer::unregisterServlet(testServlet3);
 	}
-
+	
 	{
 		Data data = Data::fromJSON("asdf");
 		std::cout << data << std::endl;
@@ -82,7 +82,19 @@ int main(int argc, char** argv) {
 		assert(iequals(url.port(), "80"));
 		assert(iequals(url.path(), "/index.html"));
 		assert(iequals(url.asString(), "http://www.heise.de/index.html"));
+		std::stringstream content;
+		content << url;
 	}
+	
+	{
+		URL url("https://raw.github.com/tklab-tud/uscxml/master/test/samples/uscxml/test-ecmascript.scxml");
+		std::cout << url.asString() << std::endl;
+		assert(url.isAbsolute());
+		assert(iequals(url.scheme(), "https"));
+		std::stringstream content;
+		content << url;
+	}
+
 	{
 		URL url("file:Document/Text.foo");
 		std::cout << url.asString() << std::endl;

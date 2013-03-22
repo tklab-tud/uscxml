@@ -353,10 +353,16 @@ include_directories(${Boost_INCLUDE_DIR})
 
 
 # CURL
-
 find_package(CURL REQUIRED)
+find_package(OpenSSL REQUIRED)
+find_package(ZLIB REQUIRED)
+
+include_directories(${OPENSSL_INCLUDE_DIR})
+include_directories(${ZLIB_INCLUDE_DIRS})
 include_directories(${CURL_INCLUDE_DIRS})
 list (APPEND USCXML_CORE_LIBS ${CURL_LIBRARIES})
+list (APPEND USCXML_CORE_LIBS ${OPENSSL_LIBRARIES})
+list (APPEND USCXML_CORE_LIBS ${ZLIB_LIBRARIES})
 if (WIN32)
 	add_definitions("-DCURL_STATICLIB")
 endif()

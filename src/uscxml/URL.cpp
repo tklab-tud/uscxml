@@ -340,6 +340,9 @@ void URLFetcher::fetchURL(URL& url) {
 		(curlError = curl_easy_setopt(handle, CURLOPT_HEADERDATA, url._impl.get())) == CURLE_OK ||
 		LOG(ERROR) << "Cannot register this as header userdata: " << curl_easy_strerror(curlError);
 
+		(curlError = curl_easy_setopt(handle, CURLOPT_SSL_VERIFYPEER, false)) == CURLE_OK ||
+		LOG(ERROR) << "Cannot forfeit peer verification: " << curl_easy_strerror(curlError);
+
 
 		if (boost::iequals(url._impl->_requestType, "post")) {
 
@@ -504,6 +507,7 @@ void URLFetcher::perform() {
 						curl_multi_remove_handle(_multiHandle, msg->easy_handle);
 						_handlesToURLs.erase(msg->easy_handle);
 					default:
+						LOG(ERROR) << "Unhandled curl status";
 						break;
 					}
 				} else {
