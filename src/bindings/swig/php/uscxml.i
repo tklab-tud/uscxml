@@ -4,6 +4,7 @@
 //%include <arrays_java.i>
 //%include <inttypes.i>
 //%include <boost_shared_ptr.i>
+%include <std_string.i>
 
 // disable warning related to unknown base class
 #pragma SWIG nowarn=401

@@ -16,6 +16,7 @@ if(APPLE)
 		__efree
 		__emalloc
 		__estrdup
+		__estrndup
 		__object_init
 		__object_init_ex
 		__zend_get_parameters_array_ex
@@ -28,6 +29,7 @@ if(APPLE)
 		_convert_to_double
 		_convert_to_long
 		_convert_to_boolean
+		__convert_to_string
 		_gc_remove_zval_from_buffer
 		_zend_get_constant
 		_zend_lookup_class
