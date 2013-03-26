@@ -45,10 +45,16 @@ $interpreter = Interpreter::fromURI('https://raw.github.com/tklab-tud/uscxml/mas
 $interpreter->addMonitor($monitor);
 $interpreter->interpret();
 
-// $interpreter = Interpreter::fromURI('https://raw.github.com/tklab-tud/uscxml/master/test/samples/uscxml/test-invoked.scxml');
-// $parentQueue = 
-// $interpreter->setParentQueue($parentQueue);
-// $interpreter->addMonitor($monitor);
-// $interpreter->interpret();
+$interpreter = Interpreter::fromURI('https://raw.github.com/tklab-tud/uscxml/master/test/samples/uscxml/test-invoked.scxml');
+$parentQueue = new ParentQueue();
+$interpreter->setParentQueue($parentQueue);
+$interpreter->interpret();
+//$interpreter->start();
+
+#while($interpreter->isRunning()) {
+	$event = $parentQueue->pop();
+	print_r($event);
+	print(Event_name_get($event) . "\n");
+#}
 
 ?>

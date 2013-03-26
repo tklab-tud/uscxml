@@ -98,6 +98,9 @@ public:
 	void join() {
 		if (_thread != NULL) _thread->join();
 	};
+	bool isRunning() {
+		return _running || !_done;
+	}
 
 	void interpret();
 
@@ -199,7 +202,7 @@ public:
 	static bool isParallel(const Arabica::DOM::Node<std::string>& state);
 	static bool isCompound(const Arabica::DOM::Node<std::string>& state);
 	static bool isDescendant(const Arabica::DOM::Node<std::string>& s1, const Arabica::DOM::Node<std::string>& s2);
-
+	
 	bool isInitial(const Arabica::DOM::Node<std::string>& state);
 	Arabica::DOM::Node<std::string> getInitialState(Arabica::DOM::Node<std::string> state = Arabica::DOM::Node<std::string>());
 	static Arabica::XPath::NodeSet<std::string> getChildStates(const Arabica::DOM::Node<std::string>& state);

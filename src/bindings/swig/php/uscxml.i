@@ -16,6 +16,7 @@
 %{
 #include "../../../uscxml/Message.h"
 #include "../../../uscxml/Interpreter.h"
+#include "../../../uscxml/concurrency/BlockingQueue.h"
 
 using namespace uscxml;
 
@@ -29,9 +30,14 @@ void*** tsrm_ls;
 
 %feature("director") uscxml::InterpreterMonitor;
 
+%ignore uscxml::NumAttr;
+
 //***********************************************
 // Parse the header file to generate wrappers
 //***********************************************
 
 %include "../../../uscxml/Message.h"
 %include "../../../uscxml/Interpreter.h"
+%include "../../../uscxml/concurrency/BlockingQueue.h"
+
+%template(ParentQueue) uscxml::concurrency::BlockingQueue<uscxml::Event>;

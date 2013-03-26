@@ -28,6 +28,7 @@ public:
 
 	virtual T pop() {
 		tthread::lock_guard<tthread::mutex> lock(_mutex);
+//		std::cout << "Popping from " << this << std::endl;
 		while (_queue.empty()) {
 			_cond.wait(_mutex);
 		}
@@ -41,6 +42,7 @@ public:
 		return _queue.empty();
 	}
 
+protected:
 	tthread::mutex _mutex;
 	tthread::condition_variable _cond;
 	std::list<T> _queue;

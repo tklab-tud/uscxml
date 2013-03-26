@@ -38,7 +38,7 @@ Interpreter::Interpreter() : Arabica::SAX2DOM::Parser<std::string>() {
 	_sendQueue = NULL;
 	_parentQueue = NULL;
 	_running = false;
-	_done = false;
+	_done = true;
 	_isInitialized = false;
 	_httpServlet = NULL;
 	_capabilities = CAN_BASIC_HTTP | CAN_GENERIC_HTTP;
@@ -884,6 +884,7 @@ void Interpreter::delayedSend(void* userdata, std::string eventName) {
 	if (boost::iequals(sendReq.target, "#_parent")) {
 		// send to parent scxml session
 		if (INSTANCE->_parentQueue != NULL) {
+//		  LOG(ERROR) << "Pushing into parent queue: " << INSTANCE->_parentQueue << std::endl;
 			INSTANCE->_parentQueue->push(sendReq);
 		} else {
 			LOG(ERROR) << "Can not send to parent, we were not invoked" << std::endl;

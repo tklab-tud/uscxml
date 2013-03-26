@@ -26,10 +26,6 @@ if (!extension_loaded('uscxmlNativePHP')) {
 
 
 
-abstract class uscxmlNativePHP {
-	const ZTS = ZTS;
-}
-
 /* PHP Proxy Classes */
 class Data {
 	public $_cPtr=null;
@@ -336,39 +332,6 @@ class InterpreterMonitor {
 	}
 }
 
-class NumAttr {
-	public $_cPtr=null;
-	protected $_pData=array();
-
-	function __set($var,$value) {
-		if ($var === 'value') return NumAttr_value_set($this->_cPtr,$value);
-		if ($var === 'unit') return NumAttr_unit_set($this->_cPtr,$value);
-		if ($var === 'thisown') return swig_uscxmlNativePHP_alter_newobject($this->_cPtr,$value);
-		$this->_pData[$var] = $value;
-	}
-
-	function __isset($var) {
-		if (function_exists('NumAttr_'.$var.'_set')) return true;
-		if ($var === 'thisown') return true;
-		return array_key_exists($var, $this->_pData);
-	}
-
-	function __get($var) {
-		if ($var === 'value') return NumAttr_value_get($this->_cPtr);
-		if ($var === 'unit') return NumAttr_unit_get($this->_cPtr);
-		if ($var === 'thisown') return swig_uscxmlNativePHP_get_newobject($this->_cPtr);
-		return $this->_pData[$var];
-	}
-
-	function __construct($str) {
-		if (is_resource($str) && get_resource_type($str) === '_p_uscxml__NumAttr') {
-			$this->_cPtr=$str;
-			return;
-		}
-		$this->_cPtr=new_NumAttr($str);
-	}
-}
-
 class Interpreter {
 	public $_cPtr=null;
 	protected $_pData=array();
@@ -455,6 +418,10 @@ class Interpreter {
 
 	function join() {
 		Interpreter_join($this->_cPtr);
+	}
+
+	function isRunning() {
+		return Interpreter_isRunning($this->_cPtr);
 	}
 
 	function interpret() {
@@ -651,6 +618,56 @@ class Interpreter {
 
 	static function getUUID() {
 		return Interpreter_getUUID();
+	}
+}
+
+class ParentQueue {
+	public $_cPtr=null;
+	protected $_pData=array();
+
+	function __set($var,$value) {
+		if ($var === 'thisown') return swig_uscxmlNativePHP_alter_newobject($this->_cPtr,$value);
+		$this->_pData[$var] = $value;
+	}
+
+	function __isset($var) {
+		if ($var === 'thisown') return true;
+		return array_key_exists($var, $this->_pData);
+	}
+
+	function __get($var) {
+		if ($var === 'thisown') return swig_uscxmlNativePHP_get_newobject($this->_cPtr);
+		return $this->_pData[$var];
+	}
+
+	function __construct($res=null) {
+		if (is_resource($res) && get_resource_type($res) === '_p_uscxml__concurrency__BlockingQueueT_uscxml__Event_t') {
+			$this->_cPtr=$res;
+			return;
+		}
+		$this->_cPtr=new_ParentQueue();
+	}
+
+	function push($elem) {
+		ParentQueue_push($this->_cPtr,$elem);
+	}
+
+	function push_front($elem) {
+		ParentQueue_push_front($this->_cPtr,$elem);
+	}
+
+	function pop() {
+		$r=ParentQueue_pop($this->_cPtr);
+		if (is_resource($r)) {
+			$c=substr(get_resource_type($r), (strpos(get_resource_type($r), '__') ? strpos(get_resource_type($r), '__') + 2 : 3));
+			if (class_exists($c)) return new $c($r);
+			return new Event($r);
+		}
+		return $r;
+	}
+
+	function isEmpty() {
+		return ParentQueue_isEmpty($this->_cPtr);
 	}
 }
 
