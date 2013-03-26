@@ -218,7 +218,7 @@ void HTTPServer::httpRecvReqCallback(struct evhttp_request *req, void *callbackD
 			request.data.compound["content"] = Data::fromJSON(request.data.compound["content"].atom);
 		}
 	}
-	
+
 	if (callbackData == NULL) {
 		HTTPServer::getInstance()->processByMatchingServlet(request);
 	} else {
@@ -237,7 +237,7 @@ void HTTPServer::processByMatchingServlet(const Request& request) {
 		// is the servlet path a prefix of the actual path?
 		std::string servletPath = "/" + servletIter->first;
 		if (boost::iequals(actualPath.substr(0, servletPath.length()), servletPath) && // actual path is a prefix
-				boost::iequals(actualPath.substr(servletPath.length(), 1), "/")) {         // and next character is a '/'
+		        boost::iequals(actualPath.substr(servletPath.length(), 1), "/")) {         // and next character is a '/'
 			if (bestPath.length() < servletPath.length()) {
 				// this servlet is a better match
 				bestPath = servletPath;
@@ -307,7 +307,7 @@ bool HTTPServer::registerServlet(const std::string& path, HTTPServlet* servlet) 
 	if (boost::starts_with(actualPath, "/"))
 		actualPath = actualPath.substr(1);
 	std::string suffixedPath = actualPath;
-	
+
 	// if this servlet allows to adapt the path, do so
 	int i = 2;
 	while(INSTANCE->_servlets.find(suffixedPath) != INSTANCE->_servlets.end()) {

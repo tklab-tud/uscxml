@@ -64,14 +64,18 @@ SET_SOURCE_FILES_PROPERTIES(uscxml.i PROPERTIES CPLUSPLUS ON)
 
 SWIG_ADD_MODULE(uscxmlNativePHP php5 uscxml.i)
 foreach(PHP_LIBRARY ${PHP_LIBRARIES})
-	SWIG_LINK_LIBRARIES(uscxmlNativePHP ${PHP_LIBRARY})
+#	SWIG_LINK_LIBRARIES(uscxmlNativePHP ${PHP_LIBRARY})
 endforeach()
+SWIG_LINK_LIBRARIES(uscxmlNativePHP uscxml)
 
 if (APPLE)
 	set_target_properties(uscxmlNativePHP PROPERTIES LINK_FLAGS ${PHP_MODULE_CXX_FLAGS})
 endif()
-#set_target_properties(uscxmlNativePHP PROPERTIES LINK_FLAGS ${PHP_LDFLAGS})
+
+if (PHP_ZTS_ENABLED)
+	# we are only building php bindings for unices anyhow
+	set_target_properties(uscxmlNativePHP PROPERTIES COMPILE_FLAGS "-DZTS -DPTHREADS")
+endif()
 
 set_target_properties(uscxmlNativePHP PROPERTIES FOLDER "Bindings")
 
-SWIG_LINK_LIBRARIES(uscxmlNativePHP uscxml)

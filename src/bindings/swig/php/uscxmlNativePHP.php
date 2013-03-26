@@ -26,6 +26,10 @@ if (!extension_loaded('uscxmlNativePHP')) {
 
 
 
+abstract class uscxmlNativePHP {
+	const ZTS = ZTS;
+}
+
 /* PHP Proxy Classes */
 class Data {
 	public $_cPtr=null;

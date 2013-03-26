@@ -60,10 +60,12 @@ Interpreter* Interpreter::fromDOM(const Arabica::DOM::Node<std::string>& node) {
 }
 
 Interpreter* Interpreter::fromXML(const std::string& xml) {
-	std::istringstream is(xml);
-	is.seekg(0);
+	std::stringstream* ss = new std::stringstream();
+	(*ss) << xml;
+	// we need an auto_ptr for arabica to assume ownership
+	std::auto_ptr<std::istream> ssPtr(ss);
 	Arabica::SAX::InputSource<std::string> inputSource;
-	inputSource.setByteStream(is);
+	inputSource.setByteStream(ssPtr);
 	return fromInputSource(inputSource);
 }
 
@@ -75,25 +77,29 @@ Interpreter* Interpreter::fromURI(const std::string& uri) {
 			return NULL;
 		}
 	}
-	Arabica::SAX::InputSource<std::string> inputSource;
+
+	Interpreter* interpreter = NULL;
 
 	// this is required for windows filenames and does not harm on unices
 	if (boost::iequals(absUrl.scheme(), "file")) {
+		Arabica::SAX::InputSource<std::string> inputSource;
 		inputSource.setSystemId(absUrl.path());
+		interpreter = fromInputSource(inputSource);
 	} else if (boost::iequals(absUrl.scheme(), "http")) {
 		// handle http per arabica
+		Arabica::SAX::InputSource<std::string> inputSource;
 		inputSource.setSystemId(absUrl.asString());
+		interpreter = fromInputSource(inputSource);
 	} else {
 		// use curl for everything else
 		std::stringstream ss;
 		ss << absUrl;
 		if (absUrl.downloadFailed()) {
+			LOG(ERROR) << "Downloading SCXML document from " << absUrl << " failed";
 			return NULL;
 		}
-		ss.seekg(0);
-		inputSource.setByteStream(ss);
+		interpreter = fromXML(ss.str());
 	}
-	Interpreter* interpreter = fromInputSource(inputSource);
 
 	// try to establish URI root for relative src attributes in document
 	if (interpreter)
@@ -282,7 +288,7 @@ void Interpreter::interpret() {
 	if (!_scxml)
 		return;
 //  dump();
-	
+
 	_sessionId = getUUID();
 
 	std::string datamodelName;
@@ -2547,7 +2553,7 @@ void Interpreter::setupIOProcessors() {
 			ioProcIter++;
 			continue;
 		}
-		
+
 		_ioProcessors[ioProcIter->first] = Factory::createIOProcessor(ioProcIter->first, this);
 		_ioProcessors[ioProcIter->first].setType(ioProcIter->first);
 		_ioProcessors[ioProcIter->first].setInterpreter(this);

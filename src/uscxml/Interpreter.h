@@ -79,11 +79,11 @@ public:
 	};
 
 	enum Capabilities {
-		CAN_NOTHING = 0,
-		CAN_BASIC_HTTP = 1,
-		CAN_GENERIC_HTTP = 2,
+	    CAN_NOTHING = 0,
+	    CAN_BASIC_HTTP = 1,
+	    CAN_GENERIC_HTTP = 2,
 	};
-	
+
 	virtual ~Interpreter();
 
 	static Interpreter* fromDOM(const Arabica::DOM::Node<std::string>& node);
@@ -173,7 +173,7 @@ public:
 	void setCapabilities(unsigned int capabilities) {
 		_capabilities = capabilities;
 	}
-	
+
 	void setName(const std::string& name);
 	const std::string& getName()                             {
 		return _name;
@@ -320,7 +320,7 @@ protected:
 	std::string _name;
 	std::string _sessionId;
 	unsigned int _capabilities;
-	
+
 	Data _cmdLineOptions;
 
 	IOProcessor getIOProcessor(const std::string& type);

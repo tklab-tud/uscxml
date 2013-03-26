@@ -6,10 +6,11 @@
 namespace uscxml {
 
 class Interpreter;
-	
+
 class InterpreterServlet : public HTTPServlet {
 public:
 	InterpreterServlet(Interpreter* interpreter);
+	virtual ~InterpreterServlet() {}
 	virtual void httpRecvRequest(const HTTPServer::Request& req);
 
 	std::string getPath() {
@@ -21,7 +22,9 @@ public:
 	void setURL(const std::string& url) {
 		_url = url;
 	}
-	bool canAdaptPath() { return false; }
+	bool canAdaptPath() {
+		return false;
+	}
 
 	std::map<std::string, HTTPServer::Request>& getRequests() {
 		return _requests;
@@ -32,14 +35,14 @@ public:
 
 protected:
 	Interpreter* _interpreter;
-	
+
 	tthread::recursive_mutex _mutex;
 	std::map<std::string, HTTPServer::Request> _requests;
 	std::string _path;
 	std::string _url;
 
 };
-	
+
 }
 
 

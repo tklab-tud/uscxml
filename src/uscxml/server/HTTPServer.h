@@ -83,7 +83,9 @@ private:
 class HTTPServlet {
 public:
 	virtual void httpRecvRequest(const HTTPServer::Request& request) = 0;
-	virtual bool canAdaptPath() { return true; }
+	virtual bool canAdaptPath() {
+		return true;
+	}
 	virtual void setURL(const std::string& url) = 0; /// Called by the server with the actual URL
 };
 

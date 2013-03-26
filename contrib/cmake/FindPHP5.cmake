@@ -1,11 +1,13 @@
 if (UNIX)
-	find_program(PHP_CONFIG
-		NAMES php-config
-		PATHS
-			/usr/bin
-			/usr/local/bin
-			/opt/local/bin
-	)
+	if (NOT PHP_CONFIG)
+		find_program(PHP_CONFIG
+			NAMES php-config
+			PATHS
+				/usr/bin
+				/usr/local/bin
+				/opt/local/bin
+		)
+	endif()
 	if (PHP_CONFIG)
 		execute_process(COMMAND ${PHP_CONFIG} --includes
 	    OUTPUT_VARIABLE PHP_INCLUDE_DIRS
@@ -26,7 +28,15 @@ if (UNIX)
 	    OUTPUT_VARIABLE PHP_LDFLAGS
 	    ERROR_VARIABLE PHP_LDFLAGS_errors
 	    RESULT_VARIABLE PHP_LDFLAGS_result)
-		
+
+		set(PHP_ZTS_ENABLED OFF)
+		execute_process(COMMAND ${PHP_CONFIG} --configure-options
+	    OUTPUT_VARIABLE PHP_CONFIGURE_OPTIONS
+	    ERROR_VARIABLE PHP_CONFIGURE_OPTIONS_errors
+	    RESULT_VARIABLE PHP_CONFIGURE_OPTIONS_result)
+		if (PHP_CONFIGURE_OPTIONS MATCHES ".*enable-maintainer-zts.*")
+			set(PHP_ZTS_ENABLED ON)
+		endif()
 	endif()
 else()
 	message(STATUS "Finding PHP5 on Windows is not supported")
@@ -34,4 +44,4 @@ endif()
 
 INCLUDE(FindPackageHandleStandardArgs)
 FIND_PACKAGE_HANDLE_STANDARD_ARGS(PHP5 DEFAULT_MSG PHP_CONFIG PHP_INCLUDE_DIRS PHP_LIBRARIES PHP_LDFLAGS)
-MARK_AS_ADVANCED(PHP_LIBRARIES PHP_INCLUDE_DIRS PHP_LDFLAGS)
+MARK_AS_ADVANCED(PHP_LIBRARIES PHP_INCLUDE_DIRS PHP_LDFLAGS PHP_ZTS_ENABLED)

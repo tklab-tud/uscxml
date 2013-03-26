@@ -13,10 +13,14 @@ using namespace boost;
 class TestServlet : public HTTPServlet {
 public:
 	TestServlet(bool adaptPath) : _canAdaptPath(adaptPath) {}
-	
+
 	void httpRecvRequest(const HTTPServer::Request& request) {};
-	bool canAdaptPath() { return _canAdaptPath; }
-	void setURL(const std::string& url) { _actualUrl = url; }
+	bool canAdaptPath() {
+		return _canAdaptPath;
+	}
+	void setURL(const std::string& url) {
+		_actualUrl = url;
+	}
 
 	std::string _actualUrl;
 	bool _canAdaptPath;
@@ -34,13 +38,13 @@ int main(int argc, char** argv) {
 	{
 		TestServlet* testServlet1 = new TestServlet(false);
 		TestServlet* testServlet2 = new TestServlet(false);
-		
+
 		assert(HTTPServer::registerServlet("/foo", testServlet1));
 		assert(!HTTPServer::registerServlet("/foo", testServlet2));
 		HTTPServer::unregisterServlet(testServlet1);
 		assert(HTTPServer::registerServlet("/foo", testServlet2));
 		HTTPServer::unregisterServlet(testServlet1);
-		
+
 		assert(HTTPServer::registerServlet("/foo/bar/", testServlet1));
 		assert(!HTTPServer::registerServlet("/foo/bar/", testServlet2));
 		HTTPServer::unregisterServlet(testServlet1);
@@ -51,7 +55,7 @@ int main(int argc, char** argv) {
 		TestServlet* testServlet1 = new TestServlet(true);
 		TestServlet* testServlet2 = new TestServlet(true);
 		TestServlet* testServlet3 = new TestServlet(true);
-		
+
 		assert(HTTPServer::registerServlet("/foo", testServlet1));
 		assert(HTTPServer::registerServlet("/foo", testServlet2));
 		assert(HTTPServer::registerServlet("/foo", testServlet3));
@@ -63,7 +67,7 @@ int main(int argc, char** argv) {
 		HTTPServer::unregisterServlet(testServlet2);
 		HTTPServer::unregisterServlet(testServlet3);
 	}
-	
+
 	{
 		Data data = Data::fromJSON("asdf");
 		std::cout << data << std::endl;
@@ -93,7 +97,7 @@ int main(int argc, char** argv) {
 		std::stringstream content;
 		content << url;
 	}
-	
+
 	{
 		URL url("https://raw.github.com/tklab-tud/uscxml/master/test/samples/uscxml/test-ecmascript.scxml");
 		std::cout << url.asString() << std::endl;
@@ -102,7 +106,7 @@ int main(int argc, char** argv) {
 		std::stringstream content;
 		content << url;
 	}
-	
+
 	{
 		URL url("file:Document/Text.foo");
 		std::cout << url.asString() << std::endl;

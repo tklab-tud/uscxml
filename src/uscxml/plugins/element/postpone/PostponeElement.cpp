@@ -45,7 +45,7 @@ void PostponeElement::enterElement(const Arabica::DOM::Node<std::string>& node) 
 	if (HAS_ATTR(node, "chaining")) {
 		chained = boost::iequals(ATTR(node, "chaining"), "true");
 	}
-	
+
 	// when will we refire the event?
 	std::string until;
 	try {
