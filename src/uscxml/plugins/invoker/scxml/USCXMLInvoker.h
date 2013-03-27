@@ -15,7 +15,7 @@ class Interpreter;
 
 class USCXMLInvoker :
 	public InvokerImpl,
-	public uscxml::concurrency::BlockingQueue<Event>,
+	public uscxml::concurrency::BlockingQueue<SendRequest>,
 	public boost::enable_shared_from_this<USCXMLInvoker> {
 public:
 	USCXMLInvoker();
@@ -35,7 +35,7 @@ public:
 	virtual void cancel(const std::string sendId);
 	virtual void invoke(const InvokeRequest& req);
 
-	virtual void push(const Event& event);
+	virtual void push(const SendRequest& event);
 
 protected:
 	Interpreter* _invokedInterpreter;

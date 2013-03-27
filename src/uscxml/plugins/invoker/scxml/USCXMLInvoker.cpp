@@ -54,8 +54,8 @@ void USCXMLInvoker::invoke(const InvokeRequest& req) {
 	}
 }
 
-void USCXMLInvoker::push(const Event& event) {
-	Event copyEvent(event);
+void USCXMLInvoker::push(const SendRequest& event) {
+	SendRequest copyEvent(event);
 	copyEvent.invokeid = _invokeId;
 	_parentInterpreter->receive(copyEvent);
 }

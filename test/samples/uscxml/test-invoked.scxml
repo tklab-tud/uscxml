@@ -2,8 +2,28 @@
 <scxml datamodel="ecmascript">
 	<state id="start">
 		<onentry>
-			<log expr="'Message from the invoked scxml interpreter'" />
-			<send target="#_parent" event="transitionToNext" />
+			<script>
+				foo = {
+					"atom": "urghs",
+					"array": [0,1,2,3,4],
+					"compound": {
+						"key1": "value1",
+						"key2": "value2",
+						"key3": "value3",
+					}
+				};
+				bar = "This is some string";
+			</script>
+			<log expr="'Message from the invoked scxml interpreter'" type="http://www.w3.org/TR/scxml/#Anything" id="thisOne" />
+			<send target="#_parent" event="transitionToNext" namelist="foo">
+				<param name="bar" expr="bar" />
+				<content>
+This is some content!
+				</content>
+			</send>
 		</onentry>
+		
+		<!-- transition target="done" / -->
 	</state>
+	<state id="done" final="true" />
 </scxml>

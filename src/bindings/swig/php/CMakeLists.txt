@@ -45,6 +45,7 @@ if(APPLE)
 		_zend_register_resource
 		_zend_rsrc_list_get_rsrc_type
 		_zend_wrong_param_count
+		_zend_throw_exception
 		_zval_used_for_init
 		)
     set(PHP_MODULE_CXX_FLAGS
@@ -74,7 +75,9 @@ endif()
 
 if (PHP_ZTS_ENABLED)
 	# we are only building php bindings for unices anyhow
-	set_target_properties(uscxmlNativePHP PROPERTIES COMPILE_FLAGS "-DZTS -DPTHREADS")
+	set_target_properties(uscxmlNativePHP PROPERTIES COMPILE_FLAGS "-DZTS -DPTHREADS -DSWIG")
+else()
+	set_target_properties(uscxmlNativePHP PROPERTIES COMPILE_FLAGS "-DSWIG")
 endif()
 
 set_target_properties(uscxmlNativePHP PROPERTIES FOLDER "Bindings")

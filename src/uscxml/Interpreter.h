@@ -132,7 +132,7 @@ public:
 	DataModel getDataModel()                                 {
 		return _dataModel;
 	}
-	void setParentQueue(uscxml::concurrency::BlockingQueue<Event>* parentQueue) {
+	void setParentQueue(uscxml::concurrency::BlockingQueue<SendRequest>* parentQueue) {
 		_parentQueue = parentQueue;
 	}
 	std::string getXPathPrefix()                                {
@@ -247,7 +247,7 @@ protected:
 
 	std::list<Event > _internalQueue;
 	uscxml::concurrency::BlockingQueue<Event> _externalQueue;
-	uscxml::concurrency::BlockingQueue<Event>* _parentQueue;
+	uscxml::concurrency::BlockingQueue<SendRequest>* _parentQueue;
 	DelayedEventQueue* _sendQueue;
 
 	Event _currEvent;

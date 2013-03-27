@@ -94,6 +94,38 @@ class Data {
 	function toXMLString() {
 		return Data_toXMLString($this->_cPtr);
 	}
+
+	function getCompund() {
+		return Data_getCompund($this->_cPtr);
+	}
+
+	function setCompound($compound) {
+		Data_setCompound($this->_cPtr,$compound);
+	}
+
+	function getArray() {
+		return Data_getArray($this->_cPtr);
+	}
+
+	function setArray($array) {
+		Data_setArray($this->_cPtr,$array);
+	}
+
+	function getAtom() {
+		return Data_getAtom($this->_cPtr);
+	}
+
+	function setAtom($atom) {
+		Data_setAtom($this->_cPtr,$atom);
+	}
+
+	function getType() {
+		return Data_getType($this->_cPtr);
+	}
+
+	function setType($type) {
+		Data_setType($this->_cPtr,$type);
+	}
 }
 
 class Event {
@@ -138,6 +170,76 @@ class Event {
 		}
 	}
 
+	function getName() {
+		return Event_getName($this->_cPtr);
+	}
+
+	function setName($name) {
+		Event_setName($this->_cPtr,$name);
+	}
+
+	function getType() {
+		return Event_getType($this->_cPtr);
+	}
+
+	function setType($type) {
+		Event_setType($this->_cPtr,$type);
+	}
+
+	function getOrigin() {
+		return Event_getOrigin($this->_cPtr);
+	}
+
+	function setOrigin($origin) {
+		Event_setOrigin($this->_cPtr,$origin);
+	}
+
+	function getOriginType() {
+		return Event_getOriginType($this->_cPtr);
+	}
+
+	function setOriginType($originType) {
+		Event_setOriginType($this->_cPtr,$originType);
+	}
+
+	function getDOM() {
+		return Event_getDOM($this->_cPtr);
+	}
+
+	function setDOM($dom) {
+		Event_setDOM($this->_cPtr,$dom);
+	}
+
+	function getSendId() {
+		return Event_getSendId($this->_cPtr);
+	}
+
+	function setSendId($sendId) {
+		Event_setSendId($this->_cPtr,$sendId);
+	}
+
+	function getInvokeId() {
+		return Event_getInvokeId($this->_cPtr);
+	}
+
+	function setInvokeId($invokeId) {
+		Event_setInvokeId($this->_cPtr,$invokeId);
+	}
+
+	function getData() {
+		$r=Event_getData($this->_cPtr);
+		if (is_resource($r)) {
+			$c=substr(get_resource_type($r), (strpos(get_resource_type($r), '__') ? strpos(get_resource_type($r), '__') + 2 : 3));
+			if (class_exists($c)) return new $c($r);
+			return new Data($r);
+		}
+		return $r;
+	}
+
+	function setData($invokeId) {
+		Event_setData($this->_cPtr,$invokeId);
+	}
+
 	static function fromXML($xmlString) {
 		$r=Event_fromXML($xmlString);
 		if (is_resource($r)) {
@@ -174,6 +276,7 @@ class InvokeRequest extends Event {
 	}
 
 	function __get($var) {
+		if ($var === 'namelist') return new NameList(InvokeRequest_namelist_get($this->_cPtr));
 		$func = 'InvokeRequest_'.$var.'_get';
 		if (function_exists($func)) return call_user_func($func,$this->_cPtr);
 		if ($var === 'thisown') return swig_uscxmlNativePHP_get_newobject($this->_cPtr);
@@ -189,6 +292,78 @@ class InvokeRequest extends Event {
 		case 0: $this->_cPtr=new_InvokeRequest(); break;
 		default: $this->_cPtr=new_InvokeRequest($event);
 		}
+	}
+
+	function getType() {
+		return InvokeRequest_getType($this->_cPtr);
+	}
+
+	function setType($type) {
+		InvokeRequest_setType($this->_cPtr,$type);
+	}
+
+	function getSource() {
+		return InvokeRequest_getSource($this->_cPtr);
+	}
+
+	function setSource($src) {
+		InvokeRequest_setSource($this->_cPtr,$src);
+	}
+
+	function getContent() {
+		return InvokeRequest_getContent($this->_cPtr);
+	}
+
+	function setContent($content) {
+		InvokeRequest_setContent($this->_cPtr,$content);
+	}
+
+	function isAutoForwarded() {
+		return InvokeRequest_isAutoForwarded($this->_cPtr);
+	}
+
+	function setAutoForwarded($autoForward) {
+		InvokeRequest_setAutoForwarded($this->_cPtr,$autoForward);
+	}
+
+	function getNameList() {
+		$r=InvokeRequest_getNameList($this->_cPtr);
+		if (is_resource($r)) {
+			$c=substr(get_resource_type($r), (strpos(get_resource_type($r), '__') ? strpos(get_resource_type($r), '__') + 2 : 3));
+			if (class_exists($c)) return new $c($r);
+			return new NameList($r);
+		}
+		return $r;
+	}
+
+	function getNameListKeys() {
+		$r=InvokeRequest_getNameListKeys($this->_cPtr);
+		if (is_resource($r)) {
+			$c=substr(get_resource_type($r), (strpos(get_resource_type($r), '__') ? strpos(get_resource_type($r), '__') + 2 : 3));
+			if (class_exists($c)) return new $c($r);
+			return new ParamList($r);
+		}
+		return $r;
+	}
+
+	function getParams() {
+		$r=InvokeRequest_getParams($this->_cPtr);
+		if (is_resource($r)) {
+			$c=substr(get_resource_type($r), (strpos(get_resource_type($r), '__') ? strpos(get_resource_type($r), '__') + 2 : 3));
+			if (class_exists($c)) return new $c($r);
+			return new Params($r);
+		}
+		return $r;
+	}
+
+	function getParamKeys() {
+		$r=InvokeRequest_getParamKeys($this->_cPtr);
+		if (is_resource($r)) {
+			$c=substr(get_resource_type($r), (strpos(get_resource_type($r), '__') ? strpos(get_resource_type($r), '__') + 2 : 3));
+			if (class_exists($c)) return new $c($r);
+			return new ParamList($r);
+		}
+		return $r;
 	}
 
 	static function fromXML($xmlString) {
@@ -227,6 +402,7 @@ class SendRequest extends Event {
 	}
 
 	function __get($var) {
+		if ($var === 'namelist') return new NameList(SendRequest_namelist_get($this->_cPtr));
 		$func = 'SendRequest_'.$var.'_get';
 		if (function_exists($func)) return call_user_func($func,$this->_cPtr);
 		if ($var === 'thisown') return swig_uscxmlNativePHP_get_newobject($this->_cPtr);
@@ -242,6 +418,78 @@ class SendRequest extends Event {
 		case 0: $this->_cPtr=new_SendRequest(); break;
 		default: $this->_cPtr=new_SendRequest($event);
 		}
+	}
+
+	function getTarget() {
+		return SendRequest_getTarget($this->_cPtr);
+	}
+
+	function setTarget($target) {
+		SendRequest_setTarget($this->_cPtr,$target);
+	}
+
+	function getType() {
+		return SendRequest_getType($this->_cPtr);
+	}
+
+	function setType($type) {
+		SendRequest_setType($this->_cPtr,$type);
+	}
+
+	function getDelayMs() {
+		return SendRequest_getDelayMs($this->_cPtr);
+	}
+
+	function setDelayMs($delayMs) {
+		SendRequest_setDelayMs($this->_cPtr,$delayMs);
+	}
+
+	function getContent() {
+		return SendRequest_getContent($this->_cPtr);
+	}
+
+	function setContent($content) {
+		SendRequest_setContent($this->_cPtr,$content);
+	}
+
+	function getNameList() {
+		$r=SendRequest_getNameList($this->_cPtr);
+		if (is_resource($r)) {
+			$c=substr(get_resource_type($r), (strpos(get_resource_type($r), '__') ? strpos(get_resource_type($r), '__') + 2 : 3));
+			if (class_exists($c)) return new $c($r);
+			return new NameList($r);
+		}
+		return $r;
+	}
+
+	function getNameListKeys() {
+		$r=SendRequest_getNameListKeys($this->_cPtr);
+		if (is_resource($r)) {
+			$c=substr(get_resource_type($r), (strpos(get_resource_type($r), '__') ? strpos(get_resource_type($r), '__') + 2 : 3));
+			if (class_exists($c)) return new $c($r);
+			return new ParamList($r);
+		}
+		return $r;
+	}
+
+	function getParams() {
+		$r=SendRequest_getParams($this->_cPtr);
+		if (is_resource($r)) {
+			$c=substr(get_resource_type($r), (strpos(get_resource_type($r), '__') ? strpos(get_resource_type($r), '__') + 2 : 3));
+			if (class_exists($c)) return new $c($r);
+			return new Params($r);
+		}
+		return $r;
+	}
+
+	function getParamKeys() {
+		$r=SendRequest_getParamKeys($this->_cPtr);
+		if (is_resource($r)) {
+			$c=substr(get_resource_type($r), (strpos(get_resource_type($r), '__') ? strpos(get_resource_type($r), '__') + 2 : 3));
+			if (class_exists($c)) return new $c($r);
+			return new ParamList($r);
+		}
+		return $r;
 	}
 
 	static function fromXML($xmlString) {
@@ -641,7 +889,7 @@ class ParentQueue {
 	}
 
 	function __construct($res=null) {
-		if (is_resource($res) && get_resource_type($res) === '_p_uscxml__concurrency__BlockingQueueT_uscxml__Event_t') {
+		if (is_resource($res) && get_resource_type($res) === '_p_uscxml__concurrency__BlockingQueueT_uscxml__SendRequest_t') {
 			$this->_cPtr=$res;
 			return;
 		}
@@ -661,13 +909,204 @@ class ParentQueue {
 		if (is_resource($r)) {
 			$c=substr(get_resource_type($r), (strpos(get_resource_type($r), '__') ? strpos(get_resource_type($r), '__') + 2 : 3));
 			if (class_exists($c)) return new $c($r);
-			return new Event($r);
+			return new SendRequest($r);
 		}
 		return $r;
 	}
 
 	function isEmpty() {
 		return ParentQueue_isEmpty($this->_cPtr);
+	}
+}
+
+class NameList {
+	public $_cPtr=null;
+	protected $_pData=array();
+
+	function __set($var,$value) {
+		if ($var === 'thisown') return swig_uscxmlNativePHP_alter_newobject($this->_cPtr,$value);
+		$this->_pData[$var] = $value;
+	}
+
+	function __isset($var) {
+		if ($var === 'thisown') return true;
+		return array_key_exists($var, $this->_pData);
+	}
+
+	function __get($var) {
+		if ($var === 'thisown') return swig_uscxmlNativePHP_get_newobject($this->_cPtr);
+		return $this->_pData[$var];
+	}
+
+	function __construct($arg1=null) {
+		if (is_resource($arg1) && get_resource_type($arg1) === '_p_std__mapT_std__string_std__string_t') {
+			$this->_cPtr=$arg1;
+			return;
+		}
+		switch (func_num_args()) {
+		case 0: $this->_cPtr=new_NameList(); break;
+		default: $this->_cPtr=new_NameList($arg1);
+		}
+	}
+
+	function size() {
+		return NameList_size($this->_cPtr);
+	}
+
+	function clear() {
+		NameList_clear($this->_cPtr);
+	}
+
+	function get($key) {
+		return NameList_get($this->_cPtr,$key);
+	}
+
+	function set($key,$x) {
+		NameList_set($this->_cPtr,$key,$x);
+	}
+
+	function del($key) {
+		NameList_del($this->_cPtr,$key);
+	}
+
+	function has_key($key) {
+		return NameList_has_key($this->_cPtr,$key);
+	}
+
+	function is_empty() {
+		return NameList_is_empty($this->_cPtr);
+	}
+}
+
+class ParamList {
+	public $_cPtr=null;
+	protected $_pData=array();
+
+	function __set($var,$value) {
+		if ($var === 'thisown') return swig_uscxmlNativePHP_alter_newobject($this->_cPtr,$value);
+		$this->_pData[$var] = $value;
+	}
+
+	function __isset($var) {
+		if ($var === 'thisown') return true;
+		return array_key_exists($var, $this->_pData);
+	}
+
+	function __get($var) {
+		if ($var === 'thisown') return swig_uscxmlNativePHP_get_newobject($this->_cPtr);
+		return $this->_pData[$var];
+	}
+
+	function __construct($n=null) {
+		if (is_resource($n) && get_resource_type($n) === '_p_std__vectorT_std__string_t') {
+			$this->_cPtr=$n;
+			return;
+		}
+		switch (func_num_args()) {
+		case 0: $this->_cPtr=new_ParamList(); break;
+		default: $this->_cPtr=new_ParamList($n);
+		}
+	}
+
+	function size() {
+		return ParamList_size($this->_cPtr);
+	}
+
+	function capacity() {
+		return ParamList_capacity($this->_cPtr);
+	}
+
+	function reserve($n) {
+		ParamList_reserve($this->_cPtr,$n);
+	}
+
+	function clear() {
+		ParamList_clear($this->_cPtr);
+	}
+
+	function push($x) {
+		ParamList_push($this->_cPtr,$x);
+	}
+
+	function is_empty() {
+		return ParamList_is_empty($this->_cPtr);
+	}
+
+	function pop() {
+		return ParamList_pop($this->_cPtr);
+	}
+
+	function get($i) {
+		return ParamList_get($this->_cPtr,$i);
+	}
+
+	function set($i,$val) {
+		ParamList_set($this->_cPtr,$i,$val);
+	}
+}
+
+class Params {
+	public $_cPtr=null;
+	protected $_pData=array();
+
+	function __set($var,$value) {
+		if ($var === 'thisown') return swig_uscxmlNativePHP_alter_newobject($this->_cPtr,$value);
+		$this->_pData[$var] = $value;
+	}
+
+	function __isset($var) {
+		if ($var === 'thisown') return true;
+		return array_key_exists($var, $this->_pData);
+	}
+
+	function __get($var) {
+		if ($var === 'thisown') return swig_uscxmlNativePHP_get_newobject($this->_cPtr);
+		return $this->_pData[$var];
+	}
+
+	function __construct($arg1=null) {
+		if (is_resource($arg1) && get_resource_type($arg1) === '_p_std__mapT_std__string_std__vectorT_std__string_t_t') {
+			$this->_cPtr=$arg1;
+			return;
+		}
+		switch (func_num_args()) {
+		case 0: $this->_cPtr=new_Params(); break;
+		default: $this->_cPtr=new_Params($arg1);
+		}
+	}
+
+	function size() {
+		return Params_size($this->_cPtr);
+	}
+
+	function clear() {
+		Params_clear($this->_cPtr);
+	}
+
+	function get($key) {
+		$r=Params_get($this->_cPtr,$key);
+		if (is_resource($r)) {
+			$c=substr(get_resource_type($r), (strpos(get_resource_type($r), '__') ? strpos(get_resource_type($r), '__') + 2 : 3));
+			if (class_exists($c)) return new $c($r);
+			return new ParamList($r);
+		}
+		return $r;
+	}
+
+	function set($key,$x) {
+		Params_set($this->_cPtr,$key,$x);
+	}
+
+	function del($key) {
+		Params_del($this->_cPtr,$key);
+	}
+
+	function has_key($key) {
+		return Params_has_key($this->_cPtr,$key);
+	}
+
+	function is_empty() {
+		return Params_is_empty($this->_cPtr);
 	}
 }
 

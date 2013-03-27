@@ -27,5 +27,6 @@ foreach(JNI_LIBRARY ${JNI_LIBRARIES})
 	endif()
 endforeach()
 set_target_properties(uscxmlNativeJava PROPERTIES FOLDER "Bindings")
+set_target_properties(uscxmlNativeJava PROPERTIES COMPILE_FLAGS "-DSWIG")
 
 swig_link_libraries(uscxmlNativeJava uscxml)

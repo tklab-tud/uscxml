@@ -41,20 +41,31 @@ class MyMonitor extends InterpreterMonitor {
 
 $monitor = new MyMonitor();
 
-$interpreter = Interpreter::fromURI('https://raw.github.com/tklab-tud/uscxml/master/test/samples/uscxml/test-ecmascript.scxml');
-$interpreter->addMonitor($monitor);
-$interpreter->interpret();
+// $interpreter = Interpreter::fromURI('https://raw.github.com/tklab-tud/uscxml/master/test/samples/uscxml/test-ecmascript.scxml');
+// $interpreter->addMonitor($monitor);
+// $interpreter->interpret();
 
-$interpreter = Interpreter::fromURI('https://raw.github.com/tklab-tud/uscxml/master/test/samples/uscxml/test-invoked.scxml');
+$interpreter = Interpreter::fromURI('/Users/sradomski/Documents/TK/Code/uscxml/test/samples/uscxml/test-invoked.scxml');
 $parentQueue = new ParentQueue();
 $interpreter->setParentQueue($parentQueue);
-$interpreter->interpret();
 //$interpreter->start();
-
-#while($interpreter->isRunning()) {
+$interpreter->interpret();
+exit();
+while($interpreter->isRunning()) {
 	$event = $parentQueue->pop();
-	print_r($event);
-	print(Event_name_get($event) . "\n");
-#}
+	print("Name: " . $event->getName() . "\n");
+	print("Content: " . $event->getContent() . "\n");
+
+	print("Namelist: \n");
+	$namelist = $event->getNameList();
+	print("\tSize: ". $namelist->size() ."\n");
+
+	$keys = $event->getNameListKeys();
+
+	for ($i = 0; $i < $keys->size(); $i++) {
+		print("\t" . $namelist->get($keys->get($i)) . "\n");
+	}
+	
+}
 
 ?>

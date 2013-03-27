@@ -1,7 +1,7 @@
 %module(directors="1", allprotected="1") uscxmlNativePHP
 
 // import swig typemaps
-%include <std_string.i>
+%include "stl.i"
 
 // macros from cmake
 %import "uscxml/config.h"
@@ -40,4 +40,7 @@ void*** tsrm_ls;
 %include "../../../uscxml/Interpreter.h"
 %include "../../../uscxml/concurrency/BlockingQueue.h"
 
-%template(ParentQueue) uscxml::concurrency::BlockingQueue<uscxml::Event>;
+%template(ParentQueue) uscxml::concurrency::BlockingQueue<uscxml::SendRequest>;
+%template(NameList) std::map<std::string, std::string>;
+%template(ParamList) std::vector<std::string>;
+%template(Params) std::map<std::string, std::vector<std::string> >;
