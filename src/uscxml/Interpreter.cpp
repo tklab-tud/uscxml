@@ -355,6 +355,13 @@ void Interpreter::interpret() {
 //  assert(hasLegalConfiguration());
 	mainEventLoop();
 
+	if (_parentQueue) {
+	  // send one final event to unblock eventual listeners
+    Event quit;
+    quit.name = "done.state.scxml";
+    _parentQueue->push(quit);
+	}
+
 	// set datamodel to null from this thread
 	if(_dataModel)
 		_dataModel = DataModel();
