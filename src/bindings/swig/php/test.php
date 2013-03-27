@@ -47,7 +47,7 @@ $interpreter->addMonitor($monitor);
 $interpreter->interpret();
 
 // start interpreter as a thread
-$interpreter = Interpreter::fromURI('/Users/sradomski/Documents/TK/Code/uscxml/test/samples/uscxml/test-invoked.scxml');
+$interpreter = Interpreter::fromURI('https://raw.github.com/tklab-tud/uscxml/master/test/samples/uscxml/test-invoked.scxml');
 $parentQueue = new ParentQueue();
 $interpreter->setParentQueue($parentQueue);
 $interpreter->start();
