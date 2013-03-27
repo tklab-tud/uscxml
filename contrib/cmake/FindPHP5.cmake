@@ -38,6 +38,12 @@ if (UNIX)
 		if (PHP_CONFIGURE_OPTIONS MATCHES ".*enable-maintainer-zts.*")
 			set(PHP_ZTS_ENABLED ON)
 		endif()
+		
+		set(PHP_DEBUG_ENABLED OFF)
+		if (PHP_CONFIGURE_OPTIONS MATCHES ".*enable-debug.*")
+			set(PHP_DEBUG_ENABLED ON)
+		endif()
+		
 	endif()
 else()
 	message(STATUS "Finding PHP5 on Windows is not supported")

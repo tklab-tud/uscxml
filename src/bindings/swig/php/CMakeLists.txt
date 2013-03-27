@@ -73,12 +73,17 @@ if (APPLE)
 	set_target_properties(uscxmlNativePHP PROPERTIES LINK_FLAGS ${PHP_MODULE_CXX_FLAGS})
 endif()
 
+set(PHP_COMPILE_FLAGS "-DSWIG")
+
 if (PHP_ZTS_ENABLED)
 	# we are only building php bindings for unices anyhow
-	set_target_properties(uscxmlNativePHP PROPERTIES COMPILE_FLAGS "-DZTS -DPTHREADS -DSWIG")
-else()
-	set_target_properties(uscxmlNativePHP PROPERTIES COMPILE_FLAGS "-DSWIG")
+	set(PHP_COMPILE_FLAGS "${PHP_COMPILE_FLAGS} -DZTS")
+	set(PHP_COMPILE_FLAGS "${PHP_COMPILE_FLAGS} -DPTHREADS")
+endif()
+if (PHP_DEBUG_ENABLED)
+	set(PHP_COMPILE_FLAGS "${PHP_COMPILE_FLAGS} -DZEND_DEBUG")	
 endif()
 
+set_target_properties(uscxmlNativePHP PROPERTIES COMPILE_FLAGS ${PHP_COMPILE_FLAGS})
 set_target_properties(uscxmlNativePHP PROPERTIES FOLDER "Bindings")
 
