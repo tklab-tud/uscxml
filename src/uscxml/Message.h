@@ -155,7 +155,7 @@ public:
 	/// TODO: Do we want to set namelist and params as well?
 	std::map<std::string, std::string> getNameList() { return namelist; }
 
-	virtual const std::vector<std::string> getNameListKeys() {
+	const std::vector<std::string> getNameListKeys() {
 		std::set<std::string> keys;
 		namelist_t::const_iterator nameListIter = namelist.begin();
 		while (nameListIter != namelist.end()) {
@@ -239,7 +239,7 @@ public:
 	/// TODO: Do we want to set namelist and params as well?
 	std::map<std::string, std::string> getNameList() { return namelist; }
 
-	virtual const std::vector<std::string> getNameListKeys() {
+	const std::vector<std::string> getNameListKeys() {
 		std::set<std::string> keys;
 		namelist_t::const_iterator nameListIter = namelist.begin();
 		while (nameListIter != namelist.end()) {

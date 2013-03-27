@@ -23,7 +23,7 @@ This is some content!
 			</send>
 		</onentry>
 		
-		<!-- transition target="done" / -->
+		<transition target="done" />
 	</state>
 	<state id="done" final="true" />
 </scxml>

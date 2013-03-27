@@ -41,16 +41,17 @@ class MyMonitor extends InterpreterMonitor {
 
 $monitor = new MyMonitor();
 
-// $interpreter = Interpreter::fromURI('https://raw.github.com/tklab-tud/uscxml/master/test/samples/uscxml/test-ecmascript.scxml');
-// $interpreter->addMonitor($monitor);
-// $interpreter->interpret();
+// run interpreter in blocking mode
+$interpreter = Interpreter::fromURI('https://raw.github.com/tklab-tud/uscxml/master/test/samples/uscxml/test-ecmascript.scxml');
+$interpreter->addMonitor($monitor);
+$interpreter->interpret();
 
-$interpreter = Interpreter::fromURI('/Users/sradomski/Documents/TK/Code/uscxml/test/samples/uscxml/test-invoked.scxml');
+// start interpreter as a thread
+$interpreter = Interpreter::fromURI('https://raw.github.com/tklab-tud/uscxml/master/test/samples/uscxml/test-invoked.scxml');
 $parentQueue = new ParentQueue();
 $interpreter->setParentQueue($parentQueue);
-//$interpreter->start();
-$interpreter->interpret();
-exit();
+$interpreter->start();
+
 while($interpreter->isRunning()) {
 	$event = $parentQueue->pop();
 	print("Name: " . $event->getName() . "\n");
@@ -59,11 +60,20 @@ while($interpreter->isRunning()) {
 	print("Namelist: \n");
 	$namelist = $event->getNameList();
 	print("\tSize: ". $namelist->size() ."\n");
-
 	$keys = $event->getNameListKeys();
-
 	for ($i = 0; $i < $keys->size(); $i++) {
 		print("\t" . $namelist->get($keys->get($i)) . "\n");
+	}
+
+	print("Params: \n");
+	$params = $event->getParams();
+	print("\tSize: ". $params->size() ."\n");
+	$keys = $event->getParamKeys();
+	for ($i = 0; $i < $keys->size(); $i++) {
+		$paramList = $params->get($keys->get($i));
+		for ($j = 0; $j < $paramList->size(); $j++) {
+			print("\t" . $paramList->get($i) . "\n");
+		}
 	}
 	
 }
