@@ -30,10 +30,12 @@ public:
 	TestIOProcessor() {}
 
 	virtual void beforeCompletion(uscxml::Interpreter* interpreter) {
-		_interpreters[interpreter->getName()].second.curlReq = NULL;
+		onStableConfiguration(interpreter);
 	}
 
-	virtual void afterCompletion(uscxml::Interpreter* interpreter) {}
+	virtual void afterCompletion(uscxml::Interpreter* interpreter) {
+		_interpreters[interpreter->getName()].second.curlReq = NULL;
+	}
 	virtual void beforeMicroStep(uscxml::Interpreter* interpreter) {}
 	virtual void beforeTakingTransitions(uscxml::Interpreter* interpreter, const Arabica::XPath::NodeSet<std::string>& transitions) {}
 
@@ -112,8 +114,8 @@ public:
 		std::cout << "---- received:" << std::endl;
 		evhttp_request_own(request.curlReq);
 
-		std::cout << request.content << std::endl;
-		uscxml::Data jsonReq = uscxml::Data::fromJSON(request.content);
+		std::cout << request.data.compound.at("content").atom << std::endl;
+		uscxml::Data jsonReq = uscxml::Data::fromJSON(request.data.compound.at("content").atom);
 		std::cout << jsonReq << std::endl;
 
 

@@ -401,6 +401,13 @@ file(GLOB_RECURSE USCXML_DEBUG
 source_group("Interpreter" FILES ${USCXML_DEBUG})
 list (APPEND USCXML_FILES ${USCXML_DEBUG})
 
+file(GLOB_RECURSE USCXML_INTERPRETERS
+	src/uscxml/interpreter/*.cpp
+	src/uscxml/interpreter/*.h
+)
+source_group("Interpreter" FILES ${USCXML_INTERPRETERS})
+list (APPEND USCXML_FILES ${USCXML_INTERPRETERS})
+
 file(GLOB USCXML_CORE
 	contrib/src/jsmn/jsmn.c
 	src/uscxml/*.cpp

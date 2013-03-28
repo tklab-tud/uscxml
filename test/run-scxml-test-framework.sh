@@ -157,7 +157,8 @@ TESTS=""
 # TESTS="${TESTS} scxml-test-framework/test/targetless-transition/test2.scxml" # passed
 # TESTS="${TESTS} scxml-test-framework/test/targetless-transition/test3.scxml" # failed
 
-TESTS="${TESTS} scxml-test-framework/test/*/*.scxml"
+# TESTS="${TESTS} scxml-test-framework/test/*/*.scxml"
+TESTS="${TESTS} scxml-test-framework/test/w3c/*.scxml"
 
 #trap 'killall ${SCXML_TEST_FRAMEWORK_NAME}' 0
 #$SCXML_TEST_FRAMEWORK_FULL &

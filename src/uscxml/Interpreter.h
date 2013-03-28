@@ -26,8 +26,6 @@
 
 #include "uscxml/server/InterpreterServlet.h"
 
-#define ORIG_ENTERSTATES
-
 namespace uscxml {
 
 class HTTPServletInvoker;
@@ -71,7 +69,16 @@ public:
 	std::string unit;
 };
 
-class Interpreter : protected Arabica::SAX2DOM::Parser<std::string> {
+class SCXMLParser : public Arabica::SAX2DOM::Parser<std::string> {
+public:
+	SCXMLParser(Interpreter* interpreter);
+	void startPrefixMapping(const std::string& /* prefix */, const std::string& /* uri */);
+
+	Arabica::SAX::CatchErrorHandler<std::string> _errorHandler;
+	Interpreter* _interpreter;
+};
+	
+class Interpreter {
 public:
 	enum Binding {
 	    EARLY = 0,
@@ -91,8 +98,6 @@ public:
 	static Interpreter* fromURI(const std::string& uri);
 	static Interpreter* fromInputSource(Arabica::SAX::InputSource<std::string>& source);
 
-	virtual void startPrefixMapping(const std::string& /* prefix */, const std::string& /* uri */);
-
 	void start();
 	static void run(void*);
 	void join() {
@@ -102,7 +107,7 @@ public:
 		return _running || !_done;
 	}
 
-	void interpret();
+	virtual void interpret() = 0;
 
 	void addMonitor(InterpreterMonitor* monitor)             {
 		_monitors.insert(monitor);
@@ -168,7 +173,13 @@ public:
 	Arabica::XPath::NodeSet<std::string> getConfiguration()  {
 		return _configuration;
 	}
+	void setConfiguration(const std::vector<std::string>& states) {
+		_userDefinedStartConfiguration = states;
+	}
+	
 	Arabica::DOM::Node<std::string> getState(const std::string& stateId);
+	Arabica::XPath::NodeSet<std::string> getStates(const std::vector<std::string>& stateIds);
+	
 	Arabica::DOM::Document<std::string>& getDocument()       {
 		return _document;
 	}
@@ -203,13 +214,18 @@ public:
 	static bool isCompound(const Arabica::DOM::Node<std::string>& state);
 	static bool isDescendant(const Arabica::DOM::Node<std::string>& s1, const Arabica::DOM::Node<std::string>& s2);
 	
+	static std::vector<std::string> tokenizeIdRefs(const std::string& idRefs);
+
 	bool isInitial(const Arabica::DOM::Node<std::string>& state);
-	Arabica::DOM::Node<std::string> getInitialState(Arabica::DOM::Node<std::string> state = Arabica::DOM::Node<std::string>());
+	Arabica::XPath::NodeSet<std::string> getInitialStates(Arabica::DOM::Node<std::string> state = Arabica::DOM::Node<std::string>());
 	static Arabica::XPath::NodeSet<std::string> getChildStates(const Arabica::DOM::Node<std::string>& state);
 	Arabica::XPath::NodeSet<std::string> getTargetStates(const Arabica::DOM::Node<std::string>& transition);
+	Arabica::DOM::Node<std::string> getSourceState(const Arabica::DOM::Node<std::string>& transition);
 
 	static Arabica::XPath::NodeSet<std::string> filterChildElements(const std::string& tagname, const Arabica::DOM::Node<std::string>& node);
 	static Arabica::XPath::NodeSet<std::string> filterChildElements(const std::string& tagName, const Arabica::XPath::NodeSet<std::string>& nodeSet);
+	Arabica::DOM::Node<std::string> findLCCA(const Arabica::XPath::NodeSet<std::string>& states);
+	Arabica::XPath::NodeSet<std::string> getProperAncestors(const Arabica::DOM::Node<std::string>& s1, const Arabica::DOM::Node<std::string>& s2);
 	static const std::string getUUID();
 
 protected:
@@ -218,8 +234,6 @@ protected:
 
 	void normalize(const Arabica::DOM::Document<std::string>& node);
 	void setupIOProcessors();
-
-	void mainEventLoop();
 
 	bool _stable;
 	tthread::thread* _thread;
@@ -241,7 +255,8 @@ protected:
 	Binding _binding;
 	Arabica::XPath::NodeSet<std::string> _configuration;
 	Arabica::XPath::NodeSet<std::string> _statesToInvoke;
-
+	std::vector<std::string> _userDefinedStartConfiguration;
+	
 	DataModel _dataModel;
 	std::map<std::string, Arabica::XPath::NodeSet<std::string> > _historyValue;
 
@@ -251,52 +266,14 @@ protected:
 	DelayedEventQueue* _sendQueue;
 
 	Event _currEvent;
-
 	InterpreterServlet* _httpServlet;
-
 	std::set<InterpreterMonitor*> _monitors;
 
 	static URL toBaseURI(const URL& url);
 
-	void microstep(const Arabica::XPath::NodeSet<std::string>& enabledTransitions);
-	void executeTransitionContent(const Arabica::XPath::NodeSet<std::string>& enabledTransitions);
 	void executeContent(const Arabica::DOM::Node<std::string>& content);
 	void executeContent(const Arabica::DOM::NodeList<std::string>& content);
 	void executeContent(const Arabica::XPath::NodeSet<std::string>& content);
-	void initializeData(const Arabica::DOM::Node<std::string>& data);
-	void exitInterpreter();
-
-#ifdef ORIG_ENTERSTATES
-	void enterStates(const Arabica::XPath::NodeSet<std::string>& enabledTransitions);
-	void addStatesToEnter(const Arabica::DOM::Node<std::string>& state,
-	                      Arabica::XPath::NodeSet<std::string>& statesToEnter,
-	                      Arabica::XPath::NodeSet<std::string>& statesForDefaultEntry);
-#endif
-
-#ifdef ENTERSTATES_02_2013
-	void enterStates(const Arabica::XPath::NodeSet<std::string>& enabledTransitions);
-	void computeEntrySet(const Arabica::XPath::NodeSet<std::string>& transitions,
-	                     Arabica::XPath::NodeSet<std::string>& statesToEnter,
-	                     Arabica::XPath::NodeSet<std::string>& statesForDefaultEntry);
-	void addDescendentStatesToEnter(const Arabica::DOM::Node<std::string>& state,
-	                                Arabica::XPath::NodeSet<std::string>& statesToEnter,
-	                                Arabica::XPath::NodeSet<std::string>& statesForDefaultEntry);
-	void addAncestorStatesToEnter(const Arabica::DOM::Node<std::string>& state,
-	                              const Arabica::DOM::Node<std::string>& ancestor,
-	                              Arabica::XPath::NodeSet<std::string>& statesToEnter,
-	                              Arabica::XPath::NodeSet<std::string>& statesForDefaultEntry);
-	Arabica::DOM::Node<std::string> getTransitionDomain(const Arabica::DOM::Node<std::string>& transition);
-
-#endif
-
-	void exitStates(const Arabica::XPath::NodeSet<std::string>& enabledTransitions);
-
-	Arabica::XPath::NodeSet<std::string> selectEventlessTransitions();
-	Arabica::XPath::NodeSet<std::string> selectTransitions(const std::string& event);
-	Arabica::DOM::Node<std::string> getSourceState(const Arabica::DOM::Node<std::string>& transition);
-	Arabica::DOM::Node<std::string> findLCCA(const Arabica::XPath::NodeSet<std::string>& states);
-	Arabica::XPath::NodeSet<std::string> getProperAncestors(const Arabica::DOM::Node<std::string>& s1, const Arabica::DOM::Node<std::string>& s2);
-
 
 	void send(const Arabica::DOM::Node<std::string>& element);
 	void invoke(const Arabica::DOM::Node<std::string>& element);
@@ -306,16 +283,11 @@ protected:
 	static void delayedSend(void* userdata, std::string eventName);
 
 	static bool nameMatch(const std::string& transitionEvent, const std::string& event);
-	Arabica::XPath::NodeSet<std::string> filterPreempted(const Arabica::XPath::NodeSet<std::string>& enabledTransitions);
-	bool isPreemptingTransition(const Arabica::DOM::Node<std::string>& t1, const Arabica::DOM::Node<std::string>& t2);
 	bool isWithinSameChild(const Arabica::DOM::Node<std::string>& transition);
 	bool hasConditionMatch(const Arabica::DOM::Node<std::string>& conditional);
 	bool isInFinalState(const Arabica::DOM::Node<std::string>& state);
 	bool parentIsScxmlState(Arabica::DOM::Node<std::string> state);
 
-//  Arabica::DOM::Node<std::string> getTransitionSubgraph(const Arabica::DOM::Node<std::string>& transition);
-
-	static std::vector<std::string> tokenizeIdRefs(const std::string& idRefs);
 
 	static boost::uuids::random_generator uuidGen;
 
@@ -327,7 +299,6 @@ protected:
 	Data _cmdLineOptions;
 
 	IOProcessor getIOProcessor(const std::string& type);
-//    IOProcessor* getIOProcessorForId(const std::string& sendId);
 
 	std::map<std::string, IOProcessor> _ioProcessors;
 	std::map<std::string, std::pair<Interpreter*, SendRequest> > _sendIds;
@@ -335,9 +306,11 @@ protected:
 	std::map<std::string, Invoker> _autoForwardees;
 	std::map<Arabica::DOM::Node<std::string>, ExecutableContent> _executableContent;
 
-	/// We need to remember to adapt them when the DOM is operated upon
+	/// TODO: We need to remember to adapt them when the DOM is operated upon
 	std::map<std::string, Arabica::DOM::Node<std::string> > _cachedStates;
 	std::map<std::string, URL> _cachedURLs;
+	
+	friend class SCXMLParser;
 };
 
 }

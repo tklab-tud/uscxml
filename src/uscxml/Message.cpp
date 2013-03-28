@@ -179,6 +179,10 @@ Data Data::fromXML(const std::string& xmlString) {
 
 Data Data::fromJSON(const std::string& jsonString) {
 	Data data;
+
+	if (jsonString.length() == 0)
+		return data;
+	
 	jsmn_parser p;
 
 	jsmntok_t* t = NULL;
