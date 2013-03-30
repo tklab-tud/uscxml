@@ -580,7 +580,7 @@ class InterpreterMonitor {
 	}
 }
 
-class Interpreter {
+abstract class Interpreter {
 	public $_cPtr=null;
 	protected $_pData=array();
 
@@ -614,46 +614,26 @@ class Interpreter {
 
 	static function fromDOM($node) {
 		$r=Interpreter_fromDOM($node);
-		if (is_resource($r)) {
-			$c=substr(get_resource_type($r), (strpos(get_resource_type($r), '__') ? strpos(get_resource_type($r), '__') + 2 : 3));
-			if (class_exists($c)) return new $c($r);
-			return new Interpreter($r);
-		}
-		return $r;
+		$this->_cPtr = $r;
+		return $this;
 	}
 
 	static function fromXML($xml) {
 		$r=Interpreter_fromXML($xml);
-		if (is_resource($r)) {
-			$c=substr(get_resource_type($r), (strpos(get_resource_type($r), '__') ? strpos(get_resource_type($r), '__') + 2 : 3));
-			if (class_exists($c)) return new $c($r);
-			return new Interpreter($r);
-		}
-		return $r;
+		$this->_cPtr = $r;
+		return $this;
 	}
 
 	static function fromURI($uri) {
 		$r=Interpreter_fromURI($uri);
-		if (is_resource($r)) {
-			$c=substr(get_resource_type($r), (strpos(get_resource_type($r), '__') ? strpos(get_resource_type($r), '__') + 2 : 3));
-			if (class_exists($c)) return new $c($r);
-			return new Interpreter($r);
-		}
-		return $r;
+		$this->_cPtr = $r;
+		return $this;
 	}
 
 	static function fromInputSource($source) {
 		$r=Interpreter_fromInputSource($source);
-		if (is_resource($r)) {
-			$c=substr(get_resource_type($r), (strpos(get_resource_type($r), '__') ? strpos(get_resource_type($r), '__') + 2 : 3));
-			if (class_exists($c)) return new $c($r);
-			return new Interpreter($r);
-		}
-		return $r;
-	}
-
-	function startPrefixMapping($arg1,$arg2) {
-		Interpreter_startPrefixMapping($this->_cPtr,$arg1,$arg2);
+		$this->_cPtr = $r;
+		return $this;
 	}
 
 	function start() {
@@ -760,8 +740,16 @@ class Interpreter {
 		return Interpreter_getConfiguration($this->_cPtr);
 	}
 
+	function setConfiguration($states) {
+		Interpreter_setConfiguration($this->_cPtr,$states);
+	}
+
 	function getState($stateId) {
 		return Interpreter_getState($this->_cPtr,$stateId);
+	}
+
+	function getStates($stateIds) {
+		return Interpreter_getStates($this->_cPtr,$stateIds);
 	}
 
 	function getDocument() {
@@ -840,14 +828,24 @@ class Interpreter {
 		return Interpreter_isDescendant($s1,$s2);
 	}
 
+	static function tokenizeIdRefs($idRefs) {
+		$r=Interpreter_tokenizeIdRefs($idRefs);
+		if (is_resource($r)) {
+			$c=substr(get_resource_type($r), (strpos(get_resource_type($r), '__') ? strpos(get_resource_type($r), '__') + 2 : 3));
+			if (class_exists($c)) return new $c($r);
+			return new ParamList($r);
+		}
+		return $r;
+	}
+
 	function isInitial($state) {
 		return Interpreter_isInitial($this->_cPtr,$state);
 	}
 
-	function getInitialState($state=null) {
+	function getInitialStates($state=null) {
 		switch (func_num_args()) {
-		case 0: $r=Interpreter_getInitialState($this->_cPtr); break;
-		default: $r=Interpreter_getInitialState($this->_cPtr,$state);
+		case 0: $r=Interpreter_getInitialStates($this->_cPtr); break;
+		default: $r=Interpreter_getInitialStates($this->_cPtr,$state);
 		}
 		return $r;
 	}
@@ -860,8 +858,20 @@ class Interpreter {
 		return Interpreter_getTargetStates($this->_cPtr,$transition);
 	}
 
+	function getSourceState($transition) {
+		return Interpreter_getSourceState($this->_cPtr,$transition);
+	}
+
 	static function filterChildElements($tagname_or_tagName,$node_or_nodeSet) {
 		return Interpreter_filterChildElements($tagname_or_tagName,$node_or_nodeSet);
+	}
+
+	function findLCCA($states) {
+		return Interpreter_findLCCA($this->_cPtr,$states);
+	}
+
+	function getProperAncestors($s1,$s2) {
+		return Interpreter_getProperAncestors($this->_cPtr,$s1,$s2);
 	}
 
 	static function getUUID() {
