@@ -253,6 +253,7 @@ function selectEventlessTransitions():
     return enabledTransitions
  */
 Arabica::XPath::NodeSet<std::string> InterpreterDraft7::selectEventlessTransitions() {
+	return Arabica::XPath::NodeSet<std::string>();
 }
 
 /**
@@ -269,6 +270,7 @@ function selectTransitions(event):
     return enabledTransitions
  */
 Arabica::XPath::NodeSet<std::string> InterpreterDraft7::selectTransitions(const std::string& event) {
+	return Arabica::XPath::NodeSet<std::string>();
 }
 
 /**
@@ -335,6 +337,7 @@ function computeExitSet(transitions)
  */
 Arabica::XPath::NodeSet<std::string> InterpreterDraft7::computeExitSet(const Arabica::XPath::NodeSet<std::string>& enabledTransitions,
         const Arabica::XPath::NodeSet<std::string>& statesToExit) {
+	return Arabica::XPath::NodeSet<std::string>();
 }
 
 /**
@@ -351,6 +354,7 @@ Arabica::XPath::NodeSet<std::string> InterpreterDraft7::computeExitSet(const Ara
 Arabica::XPath::NodeSet<std::string> InterpreterDraft7::computeEntrySet(const Arabica::XPath::NodeSet<std::string>& transitions,
         const Arabica::XPath::NodeSet<std::string>& statesToEnter,
         const Arabica::XPath::NodeSet<std::string>& statesForDefaultEntry) {
+	return Arabica::XPath::NodeSet<std::string>();
 }
 
 /**
@@ -375,6 +379,7 @@ function removeConflictingTransitions(enabledTransitions):
     return filteredTransitions
  */
 Arabica::XPath::NodeSet<std::string> InterpreterDraft7::removeConflictingTransitions(const Arabica::XPath::NodeSet<std::string>& enabledTransitions) {
+	return Arabica::XPath::NodeSet<std::string>();
 }
 
 /**
@@ -388,6 +393,7 @@ Arabica::XPath::NodeSet<std::string> InterpreterDraft7::removeConflictingTransit
        return findLCCA([t.source].append(tstates))
  */
 Arabica::DOM::Node<std::string> InterpreterDraft7::getTransitionDomain(const Arabica::DOM::Node<std::string>& transition) {
+	return Arabica::DOM::Node<std::string>();
 }
 
 /**
@@ -418,6 +424,7 @@ Arabica::DOM::Node<std::string> InterpreterDraft7::getTransitionDomain(const Ara
 Arabica::XPath::NodeSet<std::string> InterpreterDraft7::addDescendentStatesToEnter(const Arabica::DOM::Node<std::string>& state,
         const Arabica::XPath::NodeSet<std::string>& statesToEnter,
         const Arabica::XPath::NodeSet<std::string>& statesForDefaultEntry) {
+	return Arabica::XPath::NodeSet<std::string>();
 }
 
 /**
@@ -433,7 +440,7 @@ Arabica::XPath::NodeSet<std::string> InterpreterDraft7::addAncestorsStatesToEnte
         const Arabica::DOM::Node<std::string>& ancestor,
         const Arabica::XPath::NodeSet<std::string>& statesToEnter,
         const Arabica::XPath::NodeSet<std::string>& statesForDefaultEntry) {
+	return Arabica::XPath::NodeSet<std::string>();
 }
-
 
 }

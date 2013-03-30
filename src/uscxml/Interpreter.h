@@ -107,7 +107,7 @@ public:
 		return _running || !_done;
 	}
 
-	virtual void interpret() = 0;
+	virtual void interpret() {};
 
 	void addMonitor(InterpreterMonitor* monitor)             {
 		_monitors.insert(monitor);

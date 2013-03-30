@@ -210,6 +210,14 @@ class Event {
 		Event_setDOM($this->_cPtr,$dom);
 	}
 
+	function getContent() {
+		return Event_getContent($this->_cPtr);
+	}
+
+	function setContent($content) {
+		Event_setContent($this->_cPtr,$content);
+	}
+
 	function getSendId() {
 		return Event_getSendId($this->_cPtr);
 	}
@@ -308,14 +316,6 @@ class InvokeRequest extends Event {
 
 	function setSource($src) {
 		InvokeRequest_setSource($this->_cPtr,$src);
-	}
-
-	function getContent() {
-		return InvokeRequest_getContent($this->_cPtr);
-	}
-
-	function setContent($content) {
-		InvokeRequest_setContent($this->_cPtr,$content);
 	}
 
 	function isAutoForwarded() {
@@ -442,14 +442,6 @@ class SendRequest extends Event {
 
 	function setDelayMs($delayMs) {
 		SendRequest_setDelayMs($this->_cPtr,$delayMs);
-	}
-
-	function getContent() {
-		return SendRequest_getContent($this->_cPtr);
-	}
-
-	function setContent($content) {
-		SendRequest_setContent($this->_cPtr,$content);
 	}
 
 	function getNameList() {
@@ -580,7 +572,7 @@ class InterpreterMonitor {
 	}
 }
 
-abstract class Interpreter {
+class Interpreter {
 	public $_cPtr=null;
 	protected $_pData=array();
 
@@ -614,26 +606,42 @@ abstract class Interpreter {
 
 	static function fromDOM($node) {
 		$r=Interpreter_fromDOM($node);
-		$this->_cPtr = $r;
-		return $this;
+		if (is_resource($r)) {
+			$c=substr(get_resource_type($r), (strpos(get_resource_type($r), '__') ? strpos(get_resource_type($r), '__') + 2 : 3));
+			if (class_exists($c)) return new $c($r);
+			return new Interpreter($r);
+		}
+		return $r;
 	}
 
 	static function fromXML($xml) {
 		$r=Interpreter_fromXML($xml);
-		$this->_cPtr = $r;
-		return $this;
+		if (is_resource($r)) {
+			$c=substr(get_resource_type($r), (strpos(get_resource_type($r), '__') ? strpos(get_resource_type($r), '__') + 2 : 3));
+			if (class_exists($c)) return new $c($r);
+			return new Interpreter($r);
+		}
+		return $r;
 	}
 
 	static function fromURI($uri) {
 		$r=Interpreter_fromURI($uri);
-		$this->_cPtr = $r;
-		return $this;
+		if (is_resource($r)) {
+			$c=substr(get_resource_type($r), (strpos(get_resource_type($r), '__') ? strpos(get_resource_type($r), '__') + 2 : 3));
+			if (class_exists($c)) return new $c($r);
+			return new Interpreter($r);
+		}
+		return $r;
 	}
 
 	static function fromInputSource($source) {
 		$r=Interpreter_fromInputSource($source);
-		$this->_cPtr = $r;
-		return $this;
+		if (is_resource($r)) {
+			$c=substr(get_resource_type($r), (strpos(get_resource_type($r), '__') ? strpos(get_resource_type($r), '__') + 2 : 3));
+			if (class_exists($c)) return new $c($r);
+			return new Interpreter($r);
+		}
+		return $r;
 	}
 
 	function start() {

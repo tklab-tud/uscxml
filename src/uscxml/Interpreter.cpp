@@ -573,15 +573,8 @@ void Interpreter::send(const Arabica::DOM::Node<std::string>& element) {
 					// use the whole dom
 					Arabica::DOM::DOMImplementation<std::string> domFactory = Arabica::SimpleDOM::DOMImplementation<std::string>::getDOMImplementation();
 					sendReq.dom = domFactory.createDocument(contents[0].getNamespaceURI(), "", 0);
-					for (int i = 0; i < contentChilds.getLength(); i++) {
-						try {
-							Node<std::string> newNode = sendReq.dom.importNode(contentChilds.item(i), true);
-							sendReq.dom.appendChild(newNode);
-						} catch (...) {
-
-						}
-					}
-					std::cout << sendReq.dom << std::endl;
+					Node<std::string> newNode = sendReq.dom.importNode(contents[0], true);
+					sendReq.dom.appendChild(newNode);
 				} else {
 					Node<std::string> textChild = contents[0].getFirstChild();
 					while(textChild && textChild.getNodeType() != Node_base::TEXT_NODE) {
