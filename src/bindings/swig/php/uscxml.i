@@ -31,6 +31,7 @@ void*** tsrm_ls;
 %feature("director") uscxml::InterpreterMonitor;
 
 %ignore uscxml::NumAttr;
+%ignore uscxml::SCXMLParser;
 
 //***********************************************
 // Parse the header file to generate wrappers

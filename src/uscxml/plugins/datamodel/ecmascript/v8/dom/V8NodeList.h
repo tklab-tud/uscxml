@@ -43,6 +43,7 @@ public:
 	static v8::Handle<v8::Value> itemCallback(const v8::Arguments&);
 
 	static v8::Handle<v8::Value> lengthAttrGetter(v8::Local<v8::String> property, const v8::AccessorInfo& info);
+	static v8::Handle<v8::Value> indexedPropertyCustomGetter(uint32_t, const v8::AccessorInfo&);
 
 	static v8::Persistent<v8::FunctionTemplate> Tmpl;
 	static v8::Handle<v8::FunctionTemplate> getTmpl() {
@@ -60,6 +61,7 @@ public:
 			instance->SetAccessor(v8::String::NewSymbol("length"), V8NodeList::lengthAttrGetter, 0,
 			                      v8::External::New(0), static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None));
 
+			instance->SetIndexedPropertyHandler(V8NodeList::indexedPropertyCustomGetter, 0);
 			prototype->Set(v8::String::NewSymbol("item"),
 			               v8::FunctionTemplate::New(V8NodeList::itemCallback, v8::Undefined()), static_cast<v8::PropertyAttribute>(v8::DontDelete));
 

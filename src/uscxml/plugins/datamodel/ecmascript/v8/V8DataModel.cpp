@@ -1,6 +1,8 @@
 #include "uscxml/Common.h"
 #include "V8DataModel.h"
+#include "dom/V8DOM.h"
 #include "dom/V8Document.h"
+#include "dom/V8Node.h"
 #include "dom/V8SCXMLEvent.h"
 
 #include "uscxml/Message.h"
@@ -118,8 +120,23 @@ void V8DataModel::setEvent(const Event& event) {
 	privData->dom = _dom;
 	eventObj->SetInternalField(0, Arabica::DOM::V8DOM::toExternal(privData));
 	eventObj.MakeWeak(0, Arabica::DOM::V8SCXMLEvent::jsDestructor);
+	if (event.dom) {
+		v8::Handle<v8::Function> retCtor = Arabica::DOM::V8Document::getTmpl()->GetFunction();
+		v8::Persistent<v8::Object> retObj = v8::Persistent<v8::Object>::New(retCtor->NewInstance());
 
-	eventObj->Set(v8::String::New("data"), getDataAsValue(event.data)); // set data part of _event
+		struct Arabica::DOM::V8Document::V8DocumentPrivate* retPrivData = new Arabica::DOM::V8Document::V8DocumentPrivate();
+		retPrivData->dom = privData->dom;
+		retPrivData->nativeObj = (Arabica::DOM::Document<std::string>*)&event.dom;
+
+		retObj->SetInternalField(0, Arabica::DOM::V8DOM::toExternal(retPrivData));
+		retObj.MakeWeak(0, Arabica::DOM::V8Document::jsDestructor);
+
+		eventObj->Set(v8::String::New("data"), retObj); // set data part of _event
+	} else if (event.content.length() > 0) {
+		eventObj->Set(v8::String::New("data"), v8::String::New(event.content.c_str())); // set data part of _event
+	} else {
+		eventObj->Set(v8::String::New("data"), getDataAsValue(event.data)); // set data part of _event
+	}
 	global->Set(v8::String::New("_event"), eventObj);
 }
 
@@ -247,9 +264,18 @@ bool V8DataModel::validate(const std::string& location, const std::string& schem
 uint32_t V8DataModel::getLength(const std::string& expr) {
 	v8::Locker locker;
 	v8::HandleScope handleScope;
+	v8::TryCatch tryCatch;
 	v8::Context::Scope contextScope(_contexts.back());
-	v8::Handle<v8::Array> result = evalAsValue(expr).As<v8::Array>();
-	return result->Length();
+	v8::Handle<v8::Value> result = evalAsValue(expr);
+	if (!result.IsEmpty() && result->IsArray())
+		return result.As<v8::Array>()->Length();
+
+	Event exceptionEvent;
+	exceptionEvent.name = "error.execution";
+	exceptionEvent.data.compound["exception"] = Data("'" + expr + "' does not evaluate to an array.", Data::VERBATIM);;
+
+	_interpreter->receiveInternal(exceptionEvent);
+	throw(exceptionEvent);
 }
 
 void V8DataModel::eval(const std::string& expr) {
@@ -280,6 +306,17 @@ std::string V8DataModel::evalAsString(const std::string& expr) {
 	return std::string(*data);
 }
 
+double V8DataModel::evalAsNumber(const std::string& expr) {
+	v8::Locker locker;
+	v8::HandleScope handleScope;
+	v8::Context::Scope contextScope(_contexts.back());
+	v8::Handle<v8::Value> result = evalAsValue(expr);
+	if (result->IsNumber()) {
+		return result->ToNumber()->NumberValue();
+	}
+	return 0;
+}
+
 void V8DataModel::assign(const std::string& location, const Data& data) {
 	v8::Locker locker;
 	v8::HandleScope handleScope;
@@ -308,49 +345,54 @@ v8::Handle<v8::Value> V8DataModel::evalAsValue(const std::string& expr) {
 
 	if (script.IsEmpty() || result.IsEmpty()) {
 		// throw an exception
-		assert(tryCatch.HasCaught());
-		Event exceptionEvent;
-		exceptionEvent.name = "error.execution";
-
-		std::string exceptionString(*v8::String::AsciiValue(tryCatch.Exception()));
-		exceptionEvent.data.compound["exception"] = Data(exceptionString, Data::VERBATIM);;
-
-		v8::Handle<v8::Message> message = tryCatch.Message();
-		if (!message.IsEmpty()) {
-			std::string filename(*v8::String::AsciiValue(message->GetScriptResourceName()));
-			exceptionEvent.data.compound["filename"] = Data(filename, Data::VERBATIM);
-
-			std::string sourceLine(*v8::String::AsciiValue(message->GetSourceLine()));
-			size_t startpos = sourceLine.find_first_not_of(" \t");
-			if(std::string::npos != startpos) // removoe leading white space
-				sourceLine = sourceLine.substr(startpos);
-
-			exceptionEvent.data.compound["sourceline"] = Data(sourceLine, Data::VERBATIM);
-
-			std::stringstream ssLineNumber;
-			int lineNumber = message->GetLineNumber();
-			ssLineNumber << lineNumber;
-			exceptionEvent.data.compound["linenumber"] = Data(ssLineNumber.str());
-
-			int startColumn = message->GetStartColumn();
-			int endColumn = message->GetEndColumn();
-			std::stringstream ssUnderline;
-			for (int i = 0; i < startColumn; i++)
-				ssUnderline << " ";
-			for (int i = startColumn; i < endColumn; i++)
-				ssUnderline << "^";
-			exceptionEvent.data.compound["sourcemark"] = Data(ssUnderline.str(), Data::VERBATIM);
-
-			std::string stackTrace(*v8::String::AsciiValue(tryCatch.StackTrace()));
-			exceptionEvent.data.compound["stacktrace"] = Data(stackTrace, Data::VERBATIM);
-
-		}
-
-		_interpreter->receiveInternal(exceptionEvent);
-		throw(exceptionEvent);
+		if (tryCatch.HasCaught())
+			throwExceptionEvent(tryCatch);
 	}
 
 	return result;
+}
+
+void V8DataModel::throwExceptionEvent(const v8::TryCatch& tryCatch) {
+	assert(tryCatch.HasCaught());
+	Event exceptionEvent;
+	exceptionEvent.name = "error.execution";
+
+	std::string exceptionString(*v8::String::AsciiValue(tryCatch.Exception()));
+	exceptionEvent.data.compound["exception"] = Data(exceptionString, Data::VERBATIM);;
+
+	v8::Handle<v8::Message> message = tryCatch.Message();
+	if (!message.IsEmpty()) {
+		std::string filename(*v8::String::AsciiValue(message->GetScriptResourceName()));
+		exceptionEvent.data.compound["filename"] = Data(filename, Data::VERBATIM);
+
+		std::string sourceLine(*v8::String::AsciiValue(message->GetSourceLine()));
+		size_t startpos = sourceLine.find_first_not_of(" \t");
+		if(std::string::npos != startpos) // removoe leading white space
+			sourceLine = sourceLine.substr(startpos);
+
+		exceptionEvent.data.compound["sourceline"] = Data(sourceLine, Data::VERBATIM);
+
+		std::stringstream ssLineNumber;
+		int lineNumber = message->GetLineNumber();
+		ssLineNumber << lineNumber;
+		exceptionEvent.data.compound["linenumber"] = Data(ssLineNumber.str());
+
+		int startColumn = message->GetStartColumn();
+		int endColumn = message->GetEndColumn();
+		std::stringstream ssUnderline;
+		for (int i = 0; i < startColumn; i++)
+			ssUnderline << " ";
+		for (int i = startColumn; i < endColumn; i++)
+			ssUnderline << "^";
+		exceptionEvent.data.compound["sourcemark"] = Data(ssUnderline.str(), Data::VERBATIM);
+
+		std::string stackTrace(*v8::String::AsciiValue(tryCatch.StackTrace()));
+		exceptionEvent.data.compound["stacktrace"] = Data(stackTrace, Data::VERBATIM);
+
+	}
+
+	_interpreter->receiveInternal(exceptionEvent);
+	throw(exceptionEvent);
 }
 
 }

@@ -67,12 +67,12 @@ void InterpreterDraft6::interpret() {
 	}
 
 	NodeSet<std::string> initialTransitions;
-	
+
 	if (_userDefinedStartConfiguration.size() == 0) {
 		// try to get initial transition form initial element
-		initialTransitions = _xpath.evaluate("/" + _xpathPrefix + "scxml/" + _xpathPrefix + "initial/" + _xpathPrefix + "transition", _document).asNodeSet();		
+		initialTransitions = _xpath.evaluate("/" + _xpathPrefix + "scxml/" + _xpathPrefix + "initial/" + _xpathPrefix + "transition", _document).asNodeSet();
 	}
-	
+
 	if (initialTransitions.size() == 0) {
 		Arabica::XPath::NodeSet<std::string> initialStates;
 		if (_userDefinedStartConfiguration.size() > 0) {
@@ -82,7 +82,7 @@ void InterpreterDraft6::interpret() {
 			// or fetch per draft
 			initialStates = getInitialStates();
 		}
-		
+
 		assert(initialStates.size() > 0);
 		for (int i = 0; i < initialStates.size(); i++) {
 			Arabica::DOM::Element<std::string> initialElem = _document.createElementNS(_nsURL, "initial");
@@ -94,18 +94,18 @@ void InterpreterDraft6::interpret() {
 			initialTransitions.push_back(transitionElem);
 		}
 	}
-	
+
 	assert(initialTransitions.size() > 0);
 	enterStates(initialTransitions);
-		
-  assert(hasLegalConfiguration());
+
+//  assert(hasLegalConfiguration());
 	mainEventLoop();
 
 	if (_parentQueue) {
-	  // send one final event to unblock eventual listeners
-    Event quit;
-    quit.name = "done.state.scxml";
-    _parentQueue->push(quit);
+		// send one final event to unblock eventual listeners
+		Event quit;
+		quit.name = "done.state.scxml";
+		_parentQueue->push(quit);
 	}
 
 	// set datamodel to null from this thread
@@ -234,7 +234,7 @@ void InterpreterDraft6::mainEventLoop() {
 			continue;
 
 		// assume that we have a legal configuration as soon as the internal queue is empty
-    assert(hasLegalConfiguration());
+		assert(hasLegalConfiguration());
 
 		monIter = _monitors.begin();
 //    if (!_sendQueue || _sendQueue->isEmpty()) {
@@ -844,8 +844,8 @@ void InterpreterDraft6::enterStates(const Arabica::XPath::NodeSet<std::string>& 
 }
 
 void InterpreterDraft6::addStatesToEnter(const Arabica::DOM::Node<std::string>& state,
-                                   Arabica::XPath::NodeSet<std::string>& statesToEnter,
-                                   Arabica::XPath::NodeSet<std::string>& statesForDefaultEntry) {
+        Arabica::XPath::NodeSet<std::string>& statesToEnter,
+        Arabica::XPath::NodeSet<std::string>& statesForDefaultEntry) {
 	std::string stateId = ((Arabica::DOM::Element<std::string>)state).getAttribute("id");
 
 #if VERBOSE

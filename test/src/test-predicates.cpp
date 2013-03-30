@@ -30,8 +30,8 @@ int main(int argc, char** argv) {
 	assert(Interpreter::isParallel(parallelState));
 	assert(!Interpreter::isCompound(parallelState)); // parallel states are not compound!
 
-	Node<std::string> initialState = interpreter->getInitialState();
-	assert(initialState == atomicState);
+	NodeSet<std::string> initialState = interpreter->getInitialStates();
+	assert(initialState[0] == atomicState);
 
 	NodeSet<std::string> childs = interpreter->getChildStates(compoundState);
 	Node<std::string> compundChild1 = interpreter->getState("compundChild1");

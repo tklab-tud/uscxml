@@ -112,7 +112,7 @@ public:
 //    return;
 
 		std::cout << "---- received:" << std::endl;
-		evhttp_request_own(request.curlReq);
+//		evhttp_request_own(request.curlReq);
 
 		std::cout << request.data.compound.at("content").atom << std::endl;
 		uscxml::Data jsonReq = uscxml::Data::fromJSON(request.data.compound.at("content").atom);
@@ -142,8 +142,8 @@ public:
 				assert(_interpreters.find(token) == _interpreters.end());
 				interpreter->setName(token);
 				interpreter->addMonitor(this);
-				interpreter->start();
 				_interpreters[token] = std::make_pair(interpreter, request);
+				interpreter->start();
 			}
 			return;
 		}

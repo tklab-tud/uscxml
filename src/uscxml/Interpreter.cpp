@@ -108,7 +108,7 @@ Interpreter* Interpreter::fromURI(const std::string& uri) {
 
 Interpreter* Interpreter::fromInputSource(Arabica::SAX::InputSource<std::string>& source) {
 	Interpreter* interpreter = new InterpreterDraft6();
-	
+
 	SCXMLParser* parser = new SCXMLParser(interpreter);
 	if(!parser->parse(source) || !parser->getDocument().hasChildNodes()) {
 		if(parser->_errorHandler.errorsReported()) {
@@ -260,24 +260,24 @@ void Interpreter::init() {
 		NodeList<std::string> scxmls = _document.getElementsByTagNameNS(_nsURL, "scxml");
 		if (scxmls.getLength() > 0) {
 			_scxml = (Arabica::DOM::Element<std::string>)scxmls.item(0);
-			
+
 			// setup xpath and check that it works
 			_xpath.setNamespaceContext(_nsContext);
 			Arabica::XPath::NodeSet<std::string> scxmls = _xpath.evaluate("/" + _xpathPrefix + "scxml", _document).asNodeSet();
 			assert(scxmls.size() > 0);
 			assert(scxmls[0] == _scxml);
-			
+
 			if (_name.length() == 0)
 				_name = (HAS_ATTR(_scxml, "name") ? ATTR(_scxml, "name") : getUUID());
-			
+
 			normalize(_document);
-			
+
 			if (_capabilities & CAN_GENERIC_HTTP)
 				_httpServlet = new InterpreterServlet(this);
-			
+
 			_sendQueue = new DelayedEventQueue();
 			_sendQueue->start();
-			
+
 		} else {
 			LOG(ERROR) << "Cannot find SCXML element" << std::endl;
 		}
@@ -552,6 +552,7 @@ void Interpreter::send(const Arabica::DOM::Node<std::string>& element) {
 		if (contents.size() > 0) {
 			if (HAS_ATTR(contents[0], "expr")) {
 				if (_dataModel) {
+					/// this is out of spec
 					std::string contentValue = _dataModel.evalAsString(ATTR(contents[0], "expr"));
 					sendReq.content = contentValue;
 //          sendReq.data.atom = contentValue;
@@ -560,9 +561,50 @@ void Interpreter::send(const Arabica::DOM::Node<std::string>& element) {
 					LOG(ERROR) << "content element has expr attribute but no datamodel is specified.";
 				}
 			} else if (contents[0].hasChildNodes()) {
-				sendReq.content = contents[0].getFirstChild().getNodeValue();
-//        sendReq.data.atom = sendReq.content;
-//        sendReq.data.type = Data::VERBATIM;
+				bool presentAsDOM = false;
+				NodeList<std::string> contentChilds = contents[0].getChildNodes();
+				for (int i = 0; i < contentChilds.getLength(); i++) {
+					if (contentChilds.item(i).getNodeType() == Node_base::ELEMENT_NODE) {
+						presentAsDOM = true;
+						break;
+					}
+				}
+				if (presentAsDOM) {
+					// use the whole dom
+					Arabica::DOM::DOMImplementation<std::string> domFactory = Arabica::SimpleDOM::DOMImplementation<std::string>::getDOMImplementation();
+					sendReq.dom = domFactory.createDocument(contents[0].getNamespaceURI(), "", 0);
+					for (int i = 0; i < contentChilds.getLength(); i++) {
+						try {
+							Node<std::string> newNode = sendReq.dom.importNode(contentChilds.item(i), true);
+							sendReq.dom.appendChild(newNode);
+						} catch (...) {
+
+						}
+					}
+					std::cout << sendReq.dom << std::endl;
+				} else {
+					Node<std::string> textChild = contents[0].getFirstChild();
+					while(textChild && textChild.getNodeType() != Node_base::TEXT_NODE) {
+						textChild = textChild.getNextSibling();
+					}
+					if (textChild && textChild.getNodeType() == Node_base::TEXT_NODE) {
+						/// create space normalized string
+						std::istringstream iss(contents[0].getFirstChild().getNodeValue());
+						std::stringstream content;
+						std::string seperator;
+						do {
+							std::string token;
+							iss >> token;
+							if (token.length() > 0) {
+								content << seperator << token;
+								seperator = " ";
+							}
+						} while (iss);
+						sendReq.content = content.str();
+					} else {
+						LOG(ERROR) << "content element has neither text nor element children.";
+					}
+				}
 			} else {
 				LOG(ERROR) << "content element does not specify any content.";
 			}
@@ -587,6 +629,7 @@ void Interpreter::delayedSend(void* userdata, std::string eventName) {
 	Interpreter* INSTANCE = data->first;
 	SendRequest sendReq = data->second;
 
+	// see http://www.w3.org/TR/scxml/#SendTargets
 	if (boost::iequals(sendReq.target, "#_parent")) {
 		// send to parent scxml session
 		if (INSTANCE->_parentQueue != NULL) {
@@ -611,7 +654,12 @@ void Interpreter::delayedSend(void* userdata, std::string eventName) {
 			LOG(ERROR) << "Can not send to invoked component '" << invokeId << "', no such invokeId" << std::endl;
 		}
 	} else if (sendReq.target.length() == 0) {
-		INSTANCE->receive(sendReq);
+		/**
+		 * If neither the 'target' nor the 'targetexpr' attribute is specified, the
+		 * SCXML Processor must add the event will be added to the external event
+		 * queue of the sending session.
+		 */
+		INSTANCE->_externalQueue.push(sendReq);
 	} else {
 		IOProcessor ioProc = INSTANCE->getIOProcessor(sendReq.type);
 		if (ioProc) {
@@ -628,7 +676,11 @@ void Interpreter::delayedSend(void* userdata, std::string eventName) {
 
 void Interpreter::invoke(const Arabica::DOM::Node<std::string>& element) {
 	InvokeRequest invokeReq;
-	invokeReq.dom = element;
+
+	Arabica::DOM::DOMImplementation<std::string> domFactory = Arabica::SimpleDOM::DOMImplementation<std::string>::getDOMImplementation();
+	invokeReq.dom = domFactory.createDocument(element.getNamespaceURI(), "", 0);
+	Node<std::string> newNode = invokeReq.dom.importNode(element, true);
+	invokeReq.dom.appendChild(newNode);
 
 	try {
 		// type
@@ -891,7 +943,7 @@ void Interpreter::executeContent(const Arabica::DOM::Node<std::string>& content)
 				if (childs.item(i).getNodeType() != Node_base::ELEMENT_NODE)
 					continue;
 				if (boost::iequals(TAGNAME(childs.item(i)), _xmlNSPrefix + "elseif") ||
-						boost::iequals(TAGNAME(childs.item(i)), _xmlNSPrefix + "else")) {
+				        boost::iequals(TAGNAME(childs.item(i)), _xmlNSPrefix + "else")) {
 					if (blockIsTrue) {
 						// last block was true, break here
 						break;
@@ -917,25 +969,34 @@ void Interpreter::executeContent(const Arabica::DOM::Node<std::string>& content)
 				std::string array = ATTR(content, "array");
 				std::string item = ATTR(content, "item");
 				std::string index = (HAS_ATTR(content, "index") ? ATTR(content, "index") : "");
-				uint32_t iterations = _dataModel.getLength(array);
-				_dataModel.pushContext(); // copy old and enter new context
-				for (uint32_t iteration = 0; iteration < iterations; iteration++) {
-					{
-						// assign array element to item
-						std::stringstream ss;
-						ss << array << "[" << iteration << "]";
-						_dataModel.assign(item, ss.str());
+				uint32_t iterations = 0;
+				try {
+					iterations = _dataModel.getLength(array);
+					try {
+						_dataModel.pushContext(); // copy old and enter new context
+						for (uint32_t iteration = 0; iteration < iterations; iteration++) {
+							{
+								// assign array element to item
+								std::stringstream ss;
+								ss << array << "[" << iteration << "]";
+								_dataModel.assign(item, ss.str());
+							}
+							if (index.length() > 0) {
+								// assign iteration element to index
+								std::stringstream ss;
+								ss << iteration;
+								_dataModel.assign(index,ss.str());
+							}
+							if (content.hasChildNodes())
+								executeContent(content.getChildNodes());
+						}
+						_dataModel.popContext(); // leave stacked context
+					} catch (Event e) {
+						LOG(ERROR) << "Syntax error in foreach element:" << std::endl << e << std::endl;
 					}
-					if (index.length() > 0) {
-						// assign iteration element to index
-						std::stringstream ss;
-						ss << iteration;
-						_dataModel.assign(index,ss.str());
-					}
-					if (content.hasChildNodes())
-						executeContent(content.getChildNodes());
+				} catch (Event e) {
+					LOG(ERROR) << "Syntax error in array attribute of foreach element:" << std::endl << e << std::endl;
 				}
-				_dataModel.popContext(); // leave stacked context
 			} else {
 				LOG(ERROR) << "Expected array and item attributes with foreach element!" << std::endl;
 			}
@@ -1225,7 +1286,7 @@ Arabica::XPath::NodeSet<std::string> Interpreter::getInitialStates(Arabica::DOM:
 	assert(isCompound(state) || isParallel(state));
 
 	Arabica::XPath::NodeSet<std::string> initialStates;
-	
+
 	// initial attribute at element
 	Arabica::DOM::Element<std::string> stateElem = (Arabica::DOM::Element<std::string>)state;
 	if (stateElem.hasAttribute("initial")) {
@@ -1233,7 +1294,7 @@ Arabica::XPath::NodeSet<std::string> Interpreter::getInitialStates(Arabica::DOM:
 	}
 
 	Arabica::XPath::NodeSet<std::string> initStates;
-	
+
 	// initial element as child - but not the implicit generated one
 	NodeSet<std::string> initElems = filterChildElements(_xmlNSPrefix + "initial", state);
 	if(initElems.size() == 1 && !boost::iequals(ATTR(initElems[0], "generated"), "true")) {

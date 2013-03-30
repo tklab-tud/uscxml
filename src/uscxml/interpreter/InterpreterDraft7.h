@@ -19,23 +19,23 @@ class InterpreterDraft7 : public Interpreter {
 	void exitStates(const Arabica::XPath::NodeSet<std::string>& enabledTransitions);
 
 	Arabica::XPath::NodeSet<std::string> computeExitSet(const Arabica::XPath::NodeSet<std::string>& enabledTransitions,
-																											const Arabica::XPath::NodeSet<std::string>& statesToExit);
+	        const Arabica::XPath::NodeSet<std::string>& statesToExit);
 
 	Arabica::XPath::NodeSet<std::string> computeEntrySet(const Arabica::XPath::NodeSet<std::string>& transitions,
-																											 const Arabica::XPath::NodeSet<std::string>& statesToEnter,
-																											 const Arabica::XPath::NodeSet<std::string>& statesForDefaultEntry);
+	        const Arabica::XPath::NodeSet<std::string>& statesToEnter,
+	        const Arabica::XPath::NodeSet<std::string>& statesForDefaultEntry);
 
 	Arabica::XPath::NodeSet<std::string> removeConflictingTransitions(const Arabica::XPath::NodeSet<std::string>& enabledTransitions);
 	Arabica::DOM::Node<std::string> getTransitionDomain(const Arabica::DOM::Node<std::string>& transition);
 
 	Arabica::XPath::NodeSet<std::string> addDescendentStatesToEnter(const Arabica::DOM::Node<std::string>& state,
-																																	const Arabica::XPath::NodeSet<std::string>& statesToEnter,
-																																	const Arabica::XPath::NodeSet<std::string>& statesForDefaultEntry);
+	        const Arabica::XPath::NodeSet<std::string>& statesToEnter,
+	        const Arabica::XPath::NodeSet<std::string>& statesForDefaultEntry);
 
 	Arabica::XPath::NodeSet<std::string> addAncestorsStatesToEnter(const Arabica::DOM::Node<std::string>& state,
-																																 const Arabica::DOM::Node<std::string>& ancestor,
-																																 const Arabica::XPath::NodeSet<std::string>& statesToEnter,
-																																 const Arabica::XPath::NodeSet<std::string>& statesForDefaultEntry);
+	        const Arabica::DOM::Node<std::string>& ancestor,
+	        const Arabica::XPath::NodeSet<std::string>& statesToEnter,
+	        const Arabica::XPath::NodeSet<std::string>& statesForDefaultEntry);
 
 	void initializeData(const Arabica::DOM::Node<std::string>& data);
 

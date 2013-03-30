@@ -57,7 +57,7 @@ int main(int argc, char** argv) {
 	}
 
 	bool verbose = false;
-	
+
 #ifndef _WIN32
 	opterr = 0;
 #endif
@@ -95,7 +95,7 @@ int main(int argc, char** argv) {
 			VerboseMonitor* vm = new VerboseMonitor();
 			interpreter->addMonitor(vm);
 		}
-		
+
 		interpreter->start();
 		while(interpreter->runOnMainThread(25));
 		delete interpreter;

@@ -40,19 +40,35 @@ public:
 		return ss.str();
 	}
 
-	std::map<std::string, Data> getCompund() { return compound; }
-	void setCompound(const std::map<std::string, Data>& compound) { this->compound = compound; }
+	std::map<std::string, Data> getCompund() {
+		return compound;
+	}
+	void setCompound(const std::map<std::string, Data>& compound) {
+		this->compound = compound;
+	}
 
-	std::list<Data> getArray() { return array; }
-	void setArray(const std::list<Data>& array) { this->array = array; }
+	std::list<Data> getArray() {
+		return array;
+	}
+	void setArray(const std::list<Data>& array) {
+		this->array = array;
+	}
 
-	std::string getAtom() { return atom; }
-	void setAtom(const std::string& atom) { this->atom = atom; }
+	std::string getAtom() {
+		return atom;
+	}
+	void setAtom(const std::string& atom) {
+		this->atom = atom;
+	}
 
-	Type getType() { return type; }
-	void setType(const Type type) { this->type = type; }
+	Type getType() {
+		return type;
+	}
+	void setType(const Type type) {
+		this->type = type;
+	}
 
-	
+
 #ifdef SWIGIMPORTED
 protected:
 #endif
@@ -84,29 +100,68 @@ public:
 		return this < &other;
 	}
 
-	std::string getName() { return name; }
-	void setName(const std::string& name) { this->name = name; }
+	std::string getName() {
+		return name;
+	}
+	void setName(const std::string& name) {
+		this->name = name;
+	}
 
-	Type getType() { return type; }
-	void setType(const Type type) { this->type = type; }
+	Type getType() {
+		return type;
+	}
+	void setType(const Type type) {
+		this->type = type;
+	}
 
-	std::string getOrigin() { return origin; }
-	void setOrigin(const std::string& origin) { this->origin = origin; }
+	std::string getOrigin() {
+		return origin;
+	}
+	void setOrigin(const std::string& origin) {
+		this->origin = origin;
+	}
 
-	std::string getOriginType() { return origintype; }
-	void setOriginType(const std::string& originType) { this->origintype = originType; }
+	std::string getOriginType() {
+		return origintype;
+	}
+	void setOriginType(const std::string& originType) {
+		this->origintype = originType;
+	}
 
-	Arabica::DOM::Node<std::string> getDOM() { return dom; }
-	void setDOM(const Arabica::DOM::Node<std::string>& dom) { this->dom = dom; }
+	Arabica::DOM::Document<std::string> getDOM() {
+		return dom;
+	}
+	void setDOM(const Arabica::DOM::Document<std::string>& dom) {
+		this->dom = dom;
+	}
 
-	std::string getSendId() { return sendid; }
-	void setSendId(const std::string& sendId) { this->sendid = sendId; }
+	std::string getContent() {
+		return content;
+	}
+	void setContent(const std::string& content) {
+		this->content = content;
+	}
 
-	std::string getInvokeId() { return invokeid; }
-	void setInvokeId(const std::string& invokeId) { this->invokeid = invokeId; }
+	std::string getSendId() {
+		return sendid;
+	}
+	void setSendId(const std::string& sendId) {
+		this->sendid = sendId;
+	}
 
-	Data getData() { return data; }
-	void setData(const Data& invokeId) { this->data = data; }
+	std::string getInvokeId() {
+		return invokeid;
+	}
+	void setInvokeId(const std::string& invokeId) {
+		this->invokeid = invokeId;
+	}
+
+	Data getData() {
+		return data;
+	}
+	void setData(const Data& invokeId) {
+		this->data = data;
+	}
 
 	static Event fromXML(const std::string& xmlString);
 	Arabica::DOM::Document<std::string> toDocument();
@@ -124,10 +179,11 @@ protected:
 	Type type;
 	std::string origin;
 	std::string origintype;
-	Arabica::DOM::Node<std::string> dom;
+	Arabica::DOM::Document<std::string> dom;
 	std::string sendid;
 	std::string invokeid;
 	Data data;
+	std::string content;
 
 #ifndef SWIG
 	friend std::ostream& operator<< (std::ostream& os, const Event& event);
@@ -138,22 +194,33 @@ class InvokeRequest : public Event {
 public:
 	InvokeRequest(Event event) : Event(event) {}
 	InvokeRequest() {}
-	
-	std::string getType() { return type; }
-	void setType(const std::string& type) { this->type = type; }
 
-	std::string getSource() { return src; }
-	void setSource(const std::string& src) { this->src = src; }
+	std::string getType() {
+		return type;
+	}
+	void setType(const std::string& type) {
+		this->type = type;
+	}
 
-	std::string getContent() { return content; }
-	void setContent(const std::string& content) { this->content = content; }
-	
-	bool isAutoForwarded() { return autoForward; }
-	void setAutoForwarded(bool autoForward) { this->autoForward = autoForward; }
+	std::string getSource() {
+		return src;
+	}
+	void setSource(const std::string& src) {
+		this->src = src;
+	}
+
+	bool isAutoForwarded() {
+		return autoForward;
+	}
+	void setAutoForwarded(bool autoForward) {
+		this->autoForward = autoForward;
+	}
 
 #ifdef SWIG
 	/// TODO: Do we want to set namelist and params as well?
-	std::map<std::string, std::string> getNameList() { return namelist; }
+	std::map<std::string, std::string> getNameList() {
+		return namelist;
+	}
 
 	const std::vector<std::string> getNameListKeys() {
 		std::set<std::string> keys;
@@ -175,7 +242,7 @@ public:
 		}
 		return paramsMap;
 	}
-	
+
 	const std::vector<std::string> getParamKeys() {
 		std::set<std::string> keys;
 		params_t::iterator paramIter = params.begin();
@@ -185,10 +252,14 @@ public:
 		}
 		return std::vector<std::string>(keys.begin(), keys.end());
 	}
-	
+
 #else
-	std::map<std::string, std::string>& getNameList() { return namelist; }
-	std::multimap<std::string, std::string>& getParams() { return params; }
+	std::map<std::string, std::string>& getNameList() {
+		return namelist;
+	}
+	std::multimap<std::string, std::string>& getParams() {
+		return params;
+	}
 #endif
 
 	static InvokeRequest fromXML(const std::string& xmlString);
@@ -204,7 +275,6 @@ protected:
 #endif
 	std::string type;
 	std::string src;
-	std::string content;
 	bool autoForward;
 	std::map<std::string, std::string> namelist;
 	std::multimap<std::string, std::string> params;
@@ -223,21 +293,32 @@ public:
 	SendRequest() {}
 	SendRequest(Event event) : Event(event) {}
 
-	std::string getTarget() { return target; }
-	void setTarget(const std::string& target) { this->target = target; }
+	std::string getTarget() {
+		return target;
+	}
+	void setTarget(const std::string& target) {
+		this->target = target;
+	}
 
-	std::string getType() { return type; }
-	void setType(const std::string& type) { this->type = type; }
+	std::string getType() {
+		return type;
+	}
+	void setType(const std::string& type) {
+		this->type = type;
+	}
 
-	uint32_t getDelayMs() { return delayMs; }
-	void setDelayMs(uint32_t delayMs) { this->delayMs = delayMs; }
-	
-	std::string getContent() { return content; }
-	void setContent(const std::string& content) { this->content = content; }
+	uint32_t getDelayMs() {
+		return delayMs;
+	}
+	void setDelayMs(uint32_t delayMs) {
+		this->delayMs = delayMs;
+	}
 
 #ifdef SWIG
 	/// TODO: Do we want to set namelist and params as well?
-	std::map<std::string, std::string> getNameList() { return namelist; }
+	std::map<std::string, std::string> getNameList() {
+		return namelist;
+	}
 
 	const std::vector<std::string> getNameListKeys() {
 		std::set<std::string> keys;
@@ -259,7 +340,7 @@ public:
 		}
 		return paramsMap;
 	}
-	
+
 	const std::vector<std::string> getParamKeys() {
 		std::set<std::string> keys;
 		params_t::iterator paramIter = params.begin();
@@ -269,10 +350,14 @@ public:
 		}
 		return std::vector<std::string>(keys.begin(), keys.end());
 	}
-	
+
 #else
-	std::map<std::string, std::string>& getNameList() { return namelist; }
-	std::multimap<std::string, std::string>& getParams() { return params; }
+	std::map<std::string, std::string>& getNameList() {
+		return namelist;
+	}
+	std::multimap<std::string, std::string>& getParams() {
+		return params;
+	}
 #endif
 
 	static SendRequest fromXML(const std::string& xmlString);
@@ -290,11 +375,10 @@ protected:
 	std::string target;
 	std::string type;
 	uint32_t delayMs;
-	std::string content;
 
 	std::map<std::string, std::string> namelist;
 	std::multimap<std::string, std::string> params;
-	
+
 	typedef std::map<std::string, std::string> namelist_t;
 	typedef std::multimap<std::string, std::string> params_t;
 

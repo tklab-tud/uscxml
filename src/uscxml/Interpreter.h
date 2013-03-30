@@ -77,7 +77,7 @@ public:
 	Arabica::SAX::CatchErrorHandler<std::string> _errorHandler;
 	Interpreter* _interpreter;
 };
-	
+
 class Interpreter {
 public:
 	enum Binding {
@@ -176,10 +176,10 @@ public:
 	void setConfiguration(const std::vector<std::string>& states) {
 		_userDefinedStartConfiguration = states;
 	}
-	
+
 	Arabica::DOM::Node<std::string> getState(const std::string& stateId);
 	Arabica::XPath::NodeSet<std::string> getStates(const std::vector<std::string>& stateIds);
-	
+
 	Arabica::DOM::Document<std::string>& getDocument()       {
 		return _document;
 	}
@@ -213,7 +213,7 @@ public:
 	static bool isParallel(const Arabica::DOM::Node<std::string>& state);
 	static bool isCompound(const Arabica::DOM::Node<std::string>& state);
 	static bool isDescendant(const Arabica::DOM::Node<std::string>& s1, const Arabica::DOM::Node<std::string>& s2);
-	
+
 	static std::vector<std::string> tokenizeIdRefs(const std::string& idRefs);
 
 	bool isInitial(const Arabica::DOM::Node<std::string>& state);
@@ -256,7 +256,7 @@ protected:
 	Arabica::XPath::NodeSet<std::string> _configuration;
 	Arabica::XPath::NodeSet<std::string> _statesToInvoke;
 	std::vector<std::string> _userDefinedStartConfiguration;
-	
+
 	DataModel _dataModel;
 	std::map<std::string, Arabica::XPath::NodeSet<std::string> > _historyValue;
 
@@ -309,7 +309,7 @@ protected:
 	/// TODO: We need to remember to adapt them when the DOM is operated upon
 	std::map<std::string, Arabica::DOM::Node<std::string> > _cachedStates;
 	std::map<std::string, URL> _cachedURLs;
-	
+
 	friend class SCXMLParser;
 };
 

@@ -14,11 +14,11 @@ fi
 SCXML_TEST_FRAMEWORK_FULL="$( cd "$(dirname "$1")" && pwd)/$(basename $1)"
 SCXML_TEST_FRAMEWORK_NAME=$(basename $1)
 
-if [[ ! -x "${SCXML_TEST_FRAMEWORK_FULL}" ]]; then
-  echo
-  echo "${SCXML_TEST_FRAMEWORK_FULL} not an executable file"
-  echo
-fi
+# if [[ ! -x "${SCXML_TEST_FRAMEWORK_FULL}" ]]; then
+#   echo
+#   echo "${SCXML_TEST_FRAMEWORK_FULL} not an executable file"
+#   echo
+# fi
 
 TESTS=""
 # TESTS="${TESTS} scxml-test-framework/test/actionSend/send1.scxml" # passed
@@ -158,11 +158,11 @@ TESTS=""
 # TESTS="${TESTS} scxml-test-framework/test/targetless-transition/test3.scxml" # failed
 
 # TESTS="${TESTS} scxml-test-framework/test/*/*.scxml"
-TESTS="${TESTS} scxml-test-framework/test/w3c/*.scxml"
+TESTS="${TESTS} scxml-test-framework/test/w3c-ecma/*.scxml"
 
 #trap 'killall ${SCXML_TEST_FRAMEWORK_NAME}' 0
 #$SCXML_TEST_FRAMEWORK_FULL &
 #sleep 1
-cd $DIR
+#cd $DIR
 
 node scxml-test-framework --test-server-url http://localhost:8080/test $TESTS

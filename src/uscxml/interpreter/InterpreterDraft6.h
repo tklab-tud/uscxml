@@ -8,17 +8,17 @@ namespace uscxml {
 class InterpreterDraft6 : public Interpreter {
 	void interpret();
 	void mainEventLoop();
-	
+
 	void initializeData(const Arabica::DOM::Node<std::string>& data);
 	void microstep(const Arabica::XPath::NodeSet<std::string>& enabledTransitions);
 	void enterStates(const Arabica::XPath::NodeSet<std::string>& enabledTransitions);
 	void addStatesToEnter(const Arabica::DOM::Node<std::string>& state,
 	                      Arabica::XPath::NodeSet<std::string>& statesToEnter,
 	                      Arabica::XPath::NodeSet<std::string>& statesForDefaultEntry);
-	
+
 	void exitStates(const Arabica::XPath::NodeSet<std::string>& enabledTransitions);
 	void exitInterpreter();
-	
+
 	Arabica::XPath::NodeSet<std::string> selectEventlessTransitions();
 	Arabica::XPath::NodeSet<std::string> selectTransitions(const std::string& event);
 	Arabica::XPath::NodeSet<std::string> filterPreempted(const Arabica::XPath::NodeSet<std::string>& enabledTransitions);

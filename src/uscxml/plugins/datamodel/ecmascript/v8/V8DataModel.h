@@ -52,6 +52,7 @@ public:
 
 	virtual std::string evalAsString(const std::string& expr);
 	virtual bool evalAsBool(const std::string& expr);
+	virtual double evalAsNumber(const std::string& expr);
 
 	static v8::Handle<v8::Value> jsIn(const v8::Arguments& args);
 	static v8::Handle<v8::Value> jsPrint(const v8::Arguments& args);
@@ -63,6 +64,7 @@ protected:
 
 	v8::Handle<v8::Value> evalAsValue(const std::string& expr);
 	virtual v8::Handle<v8::Value> getDataAsValue(const Data& data);
+	void throwExceptionEvent(const v8::TryCatch& tryCatch);
 
 };
 
