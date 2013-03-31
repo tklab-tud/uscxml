@@ -57,7 +57,9 @@ int main(int argc, char** argv) {
 	}
 
 	bool verbose = false;
-
+	google::InitGoogleLogging(argv[0]);
+	google::LogToStderr();
+	
 #ifndef _WIN32
 	opterr = 0;
 #endif
@@ -85,6 +87,7 @@ int main(int argc, char** argv) {
 //    std::cout << argv[i] << std::endl;
 //  std::cout << optind << std::endl;
 
+	LOG(INFO) << "Processing " << argv[optind];
 	Interpreter* interpreter = Interpreter::fromURI(argv[optind]);
 	if (interpreter) {
 		interpreter->setCmdLineOptions(argc, argv);

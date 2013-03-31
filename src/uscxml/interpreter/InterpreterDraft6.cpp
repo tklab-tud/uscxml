@@ -47,7 +47,7 @@ void InterpreterDraft6::interpret() {
 
 	if (_dataModel && _binding == EARLY) {
 		// initialize all data elements
-		NodeSet<std::string> dataElems = _xpath.evaluate("//" + _xpathPrefix + "data", _document).asNodeSet();
+		NodeSet<std::string> dataElems = _xpath.evaluate("//" + _xpathPrefix + "data", _scxml).asNodeSet();
 		for (unsigned int i = 0; i < dataElems.size(); i++) {
 			initializeData(dataElems[i]);
 		}
@@ -60,7 +60,7 @@ void InterpreterDraft6::interpret() {
 	}
 
 	// executeGlobalScriptElements
-	NodeSet<std::string> globalScriptElems = _xpath.evaluate("/" + _xpathPrefix + "scxml/" + _xpathPrefix + "script", _document).asNodeSet();
+	NodeSet<std::string> globalScriptElems = _xpath.evaluate("/" + _xpathPrefix + "script", _scxml).asNodeSet();
 	for (unsigned int i = 0; i < globalScriptElems.size(); i++) {
 		if (_dataModel)
 			executeContent(globalScriptElems[i]);
@@ -70,7 +70,7 @@ void InterpreterDraft6::interpret() {
 
 	if (_userDefinedStartConfiguration.size() == 0) {
 		// try to get initial transition form initial element
-		initialTransitions = _xpath.evaluate("/" + _xpathPrefix + "scxml/" + _xpathPrefix + "initial/" + _xpathPrefix + "transition", _document).asNodeSet();
+		initialTransitions = _xpath.evaluate("/" + _xpathPrefix + "initial/" + _xpathPrefix + "transition", _scxml).asNodeSet();
 	}
 
 	if (initialTransitions.size() == 0) {
@@ -155,6 +155,8 @@ void InterpreterDraft6::initializeData(const Arabica::DOM::Node<std::string>& da
 					break;
 				}
 			}
+		} else {
+			_dataModel.assign(ATTR(data, "id"), "undefined");
 		}
 
 	} catch (Event e) {
@@ -318,7 +320,14 @@ void InterpreterDraft6::mainEventLoop() {
 	}
 
 	exitInterpreter();
-
+	if (_sendQueue) {
+		std::map<std::string, std::pair<Interpreter*, SendRequest> >::iterator sendIter = _sendIds.begin();
+		while(sendIter != _sendIds.end()) {
+			_sendQueue->cancelEvent(sendIter->first);
+			sendIter++;
+		}
+	}
+	
 	monIter = _monitors.begin();
 	while(monIter != _monitors.end()) {
 		try {

@@ -43,13 +43,29 @@ void USCXMLInvoker::cancel(const std::string sendId) {
 }
 
 void USCXMLInvoker::invoke(const InvokeRequest& req) {
-	_invokedInterpreter = Interpreter::fromURI(req.src);
+	if (req.src.length() > 0) {
+		_invokedInterpreter = Interpreter::fromURI(req.src);
+	} else if (req.dom) {
+		_invokedInterpreter = Interpreter::fromDOM(req.dom);
+	} else {
+		LOG(ERROR) << "Cannot invoke nested SCXML interpreter, neither src attribute nor DOM is given";
+	}
 	DataModel dataModel(_invokedInterpreter->getDataModel());
 	if (dataModel) {
 
 	}
 	if (_invokedInterpreter) {
 		_invokedInterpreter->setParentQueue(this);
+		// transfer namespace prefixes
+		_invokedInterpreter->_nsURL = _parentInterpreter->_nsURL;
+		_invokedInterpreter->_xpathPrefix = _parentInterpreter->_xpathPrefix;
+		_invokedInterpreter->_nsToPrefix = _parentInterpreter->_nsToPrefix;
+		std::map<std::string, std::string>::iterator nsIter =  _parentInterpreter->_nsToPrefix.begin();
+		while(nsIter != _parentInterpreter->_nsToPrefix.end()) {
+			_invokedInterpreter->_nsContext.addNamespaceDeclaration(nsIter->first, nsIter->second);
+			nsIter++;
+		}
+		_invokedInterpreter->_xmlNSPrefix = _parentInterpreter->_xmlNSPrefix;
 		_invokedInterpreter->start();
 	}
 }

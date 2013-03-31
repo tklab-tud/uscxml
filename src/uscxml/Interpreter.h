@@ -93,7 +93,7 @@ public:
 
 	virtual ~Interpreter();
 
-	static Interpreter* fromDOM(const Arabica::DOM::Node<std::string>& node);
+	static Interpreter* fromDOM(const Arabica::DOM::Document<std::string>& dom);
 	static Interpreter* fromXML(const std::string& xml);
 	static Interpreter* fromURI(const std::string& uri);
 	static Interpreter* fromInputSource(Arabica::SAX::InputSource<std::string>& source);
@@ -107,6 +107,7 @@ public:
 		return _running || !_done;
 	}
 
+	/// This one ought to be pure, but SWIG will generate gibberish if it is
 	virtual void interpret() {};
 
 	void addMonitor(InterpreterMonitor* monitor)             {
@@ -140,10 +141,10 @@ public:
 	void setParentQueue(uscxml::concurrency::BlockingQueue<SendRequest>* parentQueue) {
 		_parentQueue = parentQueue;
 	}
-	std::string getXPathPrefix()                                {
+	std::string getXPathPrefix()                             {
 		return _xpathPrefix;
 	}
-	std::string getXMLPrefix()                                {
+	std::string getXMLPrefix()                               {
 		return _xmlNSPrefix;
 	}
 	Arabica::XPath::StandardNamespaceContext<std::string>& getNSContext() {
@@ -155,14 +156,14 @@ public:
 		return "";
 	}
 
-	void receive(const Event& event, bool toFront = false)         {
+	void receive(const Event& event, bool toFront = false)   {
 		if (toFront) {
 			_externalQueue.push_front(event);
 		} else {
 			_externalQueue.push(event);
 		}
 	}
-	void receiveInternal(const Event& event)                       {
+	void receiveInternal(const Event& event)                 {
 		_internalQueue.push_back(event);
 	}
 
@@ -184,7 +185,7 @@ public:
 		return _document;
 	}
 
-	void setCapabilities(unsigned int capabilities) {
+	void setCapabilities(unsigned int capabilities)          {
 		_capabilities = capabilities;
 	}
 
@@ -232,7 +233,7 @@ protected:
 	Interpreter();
 	void init();
 
-	void normalize(const Arabica::DOM::Document<std::string>& node);
+	void normalize(Arabica::DOM::Element<std::string>& scxml);
 	void setupIOProcessors();
 
 	bool _stable;
@@ -271,9 +272,9 @@ protected:
 
 	static URL toBaseURI(const URL& url);
 
-	void executeContent(const Arabica::DOM::Node<std::string>& content);
-	void executeContent(const Arabica::DOM::NodeList<std::string>& content);
-	void executeContent(const Arabica::XPath::NodeSet<std::string>& content);
+	void executeContent(const Arabica::DOM::Node<std::string>& content, bool rethrow = false);
+	void executeContent(const Arabica::DOM::NodeList<std::string>& content, bool rethrow = false);
+	void executeContent(const Arabica::XPath::NodeSet<std::string>& content, bool rethrow = false);
 
 	void send(const Arabica::DOM::Node<std::string>& element);
 	void invoke(const Arabica::DOM::Node<std::string>& element);
@@ -311,6 +312,7 @@ protected:
 	std::map<std::string, URL> _cachedURLs;
 
 	friend class SCXMLParser;
+	friend class USCXMLInvoker;
 };
 
 }
