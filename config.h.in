@@ -63,5 +63,7 @@
 #cmakedefine HAS_UNISTD_H
 #cmakedefine HAS_STRING_H
 #cmakedefine HAS_SIGNAL_H
+#cmakedefine HAS_EXECINFO_H
+#cmakedefine HAS_DLFCN_H
 
 #endif

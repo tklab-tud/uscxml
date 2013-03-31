@@ -29,7 +29,7 @@ public:
 	virtual std::set<std::string> getNames() {
 		std::set<std::string> names;
 		names.insert("basichttp");
-		names.insert("http://www.w3.org/TR/scxml/#SCXMLEventProcessor");
+		names.insert("http://www.w3.org/TR/scxml/#BasicHTTPEventProcessor");
 		return names;
 	}
 

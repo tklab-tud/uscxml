@@ -38,6 +38,7 @@ public:
 	virtual void push(const SendRequest& event);
 
 protected:
+	bool _cancelled;
 	Interpreter* _invokedInterpreter;
 	Interpreter* _parentInterpreter;
 };

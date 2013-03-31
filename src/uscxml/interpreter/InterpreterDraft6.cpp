@@ -9,6 +9,7 @@ using namespace Arabica::DOM;
 
 // see: http://www.w3.org/TR/scxml/#AlgorithmforSCXMLInterpretation
 void InterpreterDraft6::interpret() {
+	_mutex.lock();
 	if (!_isInitialized)
 		init();
 
@@ -16,7 +17,8 @@ void InterpreterDraft6::interpret() {
 		return;
 //  dump();
 
-	_sessionId = getUUID();
+	if (_sessionId.length() == 0)
+		_sessionId = getUUID();
 
 	std::string datamodelName;
 	if (datamodelName.length() == 0 && HAS_ATTR(_scxml, "datamodel"))
@@ -49,7 +51,9 @@ void InterpreterDraft6::interpret() {
 		// initialize all data elements
 		NodeSet<std::string> dataElems = _xpath.evaluate("//" + _xpathPrefix + "data", _scxml).asNodeSet();
 		for (unsigned int i = 0; i < dataElems.size(); i++) {
-			initializeData(dataElems[i]);
+			// do not process data elements of nested documents from invokers
+			if (!hasAncestorElement(dataElems[i], _xmlNSPrefix + "invoke"))
+				initializeData(dataElems[i]);
 		}
 	} else if(_dataModel) {
 		// initialize current data elements
@@ -97,16 +101,17 @@ void InterpreterDraft6::interpret() {
 
 	assert(initialTransitions.size() > 0);
 	enterStates(initialTransitions);
+	_mutex.unlock();
 
 //  assert(hasLegalConfiguration());
 	mainEventLoop();
 
-	if (_parentQueue) {
-		// send one final event to unblock eventual listeners
-		Event quit;
-		quit.name = "done.state.scxml";
-		_parentQueue->push(quit);
-	}
+//	if (_parentQueue) {
+//		// send one final event to unblock eventual listeners
+//		Event quit;
+//		quit.name = "done.state.scxml";
+//		_parentQueue->push(quit);
+//	}
 
 	// set datamodel to null from this thread
 	if(_dataModel)
@@ -122,12 +127,31 @@ void InterpreterDraft6::initializeData(const Arabica::DOM::Node<std::string>& da
 		LOG(ERROR) << "Cannot initialize data when no datamodel is given!";
 		return;
 	}
-	try {
-		if (!HAS_ATTR(data, "id")) {
-			LOG(ERROR) << "Data element has no id!";
-			return;
-		}
+	
+	if (!HAS_ATTR(data, "id")) {
+		LOG(ERROR) << "Data element has no id!";
+		return;
+	}
 
+	/// test 240
+	if (_invokeReq.params.find(ATTR(data, "id")) != _invokeReq.params.end()) {
+		try {
+			_dataModel.assign(ATTR(data, "id"), _invokeReq.params.find(ATTR(data, "id"))->second);
+		} catch (Event e) {
+			LOG(ERROR) << "Syntax error when initializing data from parameters:" << std::endl << e << std::endl;
+		}
+		return;
+	}
+	if (_invokeReq.namelist.find(ATTR(data, "id")) != _invokeReq.namelist.end()) {
+		try {
+			_dataModel.assign(ATTR(data, "id"), _invokeReq.namelist.find(ATTR(data, "id"))->second);
+		} catch (Event e) {
+			LOG(ERROR) << "Syntax error when initializing data from namelist:" << std::endl << e << std::endl;
+		}
+		return;
+	}
+
+	try {
 		if (HAS_ATTR(data, "expr")) {
 			std::string value = ATTR(data, "expr");
 			_dataModel.assign(ATTR(data, "id"), value);
@@ -161,7 +185,7 @@ void InterpreterDraft6::initializeData(const Arabica::DOM::Node<std::string>& da
 
 	} catch (Event e) {
 		LOG(ERROR) << "Syntax error in data element:" << std::endl << e << std::endl;
-	}
+	}	
 }
 
 void InterpreterDraft6::mainEventLoop() {
@@ -263,7 +287,7 @@ void InterpreterDraft6::mainEventLoop() {
 #endif
 		_currEvent.type = Event::EXTERNAL; // make sure it is set to external
 		if (!_running)
-			exitInterpreter();
+			goto EXIT_INTERPRETER;
 
 		if (_dataModel && boost::iequals(_currEvent.name, "cancel.invoke." + _sessionId))
 			break;
@@ -307,6 +331,8 @@ void InterpreterDraft6::mainEventLoop() {
 		if (!enabledTransitions.empty())
 			microstep(enabledTransitions);
 	}
+	
+EXIT_INTERPRETER:
 	monIter = _monitors.begin();
 	while(monIter != _monitors.end()) {
 		try {

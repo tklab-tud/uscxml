@@ -3,6 +3,7 @@
 build/*
 build/
 build*/
+nbproject
 contrib/prebuilt/darwin*
 contrib/prebuilt/linux*
 contrib/prebuilt/windows*

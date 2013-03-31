@@ -15,11 +15,12 @@ bool connect(pluma::Host& host) {
 }
 #endif
 
-USCXMLInvoker::USCXMLInvoker() {
+	USCXMLInvoker::USCXMLInvoker() : _cancelled(false) {
 }
 
 
 USCXMLInvoker::~USCXMLInvoker() {
+	_cancelled = true;
 	delete _invokedInterpreter;
 };
 
@@ -35,7 +36,7 @@ Data USCXMLInvoker::getDataModelVariables() {
 }
 
 void USCXMLInvoker::send(const SendRequest& req) {
-	assert(false);
+	_invokedInterpreter->_externalQueue.push(req);
 }
 
 void USCXMLInvoker::cancel(const std::string sendId) {
@@ -50,11 +51,11 @@ void USCXMLInvoker::invoke(const InvokeRequest& req) {
 	} else {
 		LOG(ERROR) << "Cannot invoke nested SCXML interpreter, neither src attribute nor DOM is given";
 	}
-	DataModel dataModel(_invokedInterpreter->getDataModel());
-	if (dataModel) {
-
-	}
 	if (_invokedInterpreter) {
+		DataModel dataModel(_invokedInterpreter->getDataModel());
+		if (dataModel) {
+			
+		}
 		_invokedInterpreter->setParentQueue(this);
 		// transfer namespace prefixes
 		_invokedInterpreter->_nsURL = _parentInterpreter->_nsURL;
@@ -66,11 +67,19 @@ void USCXMLInvoker::invoke(const InvokeRequest& req) {
 			nsIter++;
 		}
 		_invokedInterpreter->_xmlNSPrefix = _parentInterpreter->_xmlNSPrefix;
+		_invokedInterpreter->_sessionId = req.invokeid;
+		
+		/// test240 assumes that invoke request params will carry over to the datamodel
+		_invokedInterpreter->setInvokeRequest(req);
+		
 		_invokedInterpreter->start();
 	}
 }
 
 void USCXMLInvoker::push(const SendRequest& event) {
+	// test 252
+	if (_cancelled)
+		return;
 	SendRequest copyEvent(event);
 	copyEvent.invokeid = _invokeId;
 	_parentInterpreter->receive(copyEvent);

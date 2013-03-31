@@ -157,6 +157,10 @@ public:
 		return *this;
 	}
 
+	virtual std::set<std::string> getNames()   {
+		return _impl->getNames();
+	}
+
 	virtual Data getDataModelVariables() const {
 		return _impl->getDataModelVariables();
 	};
@@ -242,6 +246,7 @@ public:
 	virtual bool evalAsBool(const std::string& expr) = 0;
 	virtual void assign(const std::string& location, const std::string& expr) = 0;
 	virtual void assign(const std::string& location, const Data& data) = 0;
+	virtual bool isDefined(const std::string& expr) = 0;
 
 protected:
 	Interpreter* _interpreter;
@@ -313,6 +318,10 @@ public:
 	}
 	virtual void assign(const std::string& location, const Data& data) {
 		return _impl->assign(location, data);
+	}
+
+	virtual bool isDefined(const std::string& expr) {
+		return _impl->isDefined(expr);
 	}
 
 protected:

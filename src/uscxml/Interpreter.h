@@ -177,6 +177,9 @@ public:
 	void setConfiguration(const std::vector<std::string>& states) {
 		_userDefinedStartConfiguration = states;
 	}
+	void setInvokeRequest(const InvokeRequest& req) {
+		_invokeReq = req;
+	}
 
 	Arabica::DOM::Node<std::string> getState(const std::string& stateId);
 	Arabica::XPath::NodeSet<std::string> getStates(const std::vector<std::string>& stateIds);
@@ -220,6 +223,8 @@ public:
 	bool isInitial(const Arabica::DOM::Node<std::string>& state);
 	Arabica::XPath::NodeSet<std::string> getInitialStates(Arabica::DOM::Node<std::string> state = Arabica::DOM::Node<std::string>());
 	static Arabica::XPath::NodeSet<std::string> getChildStates(const Arabica::DOM::Node<std::string>& state);
+	static Arabica::DOM::Node<std::string> getParentState(const Arabica::DOM::Node<std::string>& element);
+	static bool hasAncestorElement(const Arabica::DOM::Node<std::string>& node, const std::string tagName);
 	Arabica::XPath::NodeSet<std::string> getTargetStates(const Arabica::DOM::Node<std::string>& transition);
 	Arabica::DOM::Node<std::string> getSourceState(const Arabica::DOM::Node<std::string>& transition);
 
@@ -238,7 +243,7 @@ protected:
 
 	bool _stable;
 	tthread::thread* _thread;
-	tthread::mutex _mutex;
+	tthread::recursive_mutex _mutex;
 
 	URL _baseURI;
 	Arabica::DOM::Document<std::string> _document;
@@ -257,7 +262,8 @@ protected:
 	Arabica::XPath::NodeSet<std::string> _configuration;
 	Arabica::XPath::NodeSet<std::string> _statesToInvoke;
 	std::vector<std::string> _userDefinedStartConfiguration;
-
+	InvokeRequest _invokeReq;
+	
 	DataModel _dataModel;
 	std::map<std::string, Arabica::XPath::NodeSet<std::string> > _historyValue;
 

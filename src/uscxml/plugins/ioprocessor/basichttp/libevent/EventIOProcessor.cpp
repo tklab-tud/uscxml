@@ -118,7 +118,14 @@ void EventIOProcessor::httpRecvRequest(const HTTPServer::Request& req) {
 
 void EventIOProcessor::send(const SendRequest& req) {
 
-	std::string target = req.target;
+	bool isLocal = false;
+	std::string target;
+	if (req.target.length() > 0) {
+		target = req.target;
+	} else {
+		isLocal = true;
+		target = _url;
+	}
 	URL targetURL(target);
 
 	// event name
@@ -152,7 +159,12 @@ void EventIOProcessor::send(const SendRequest& req) {
 	targetURL.addMonitor(this);
 
 	_sendRequests[req.sendid] = std::make_pair(targetURL, req);
-	URLFetcher::fetchURL(targetURL);
+	if (isLocal) {
+		// test201 use a blocking request with local communication
+		targetURL.download(true);
+	} else {
+		URLFetcher::fetchURL(targetURL);
+	}
 }
 
 void EventIOProcessor::downloadStarted(const URL& url) {}

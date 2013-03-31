@@ -198,8 +198,10 @@ bool Interpreter::toAbsoluteURI(URL& uri) {
 }
 
 Interpreter::~Interpreter() {
+	tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
 	if (_thread) {
 		_running = false;
+		// unblock event queue
 		Event event;
 		_externalQueue.push(event);
 		_thread->join();
@@ -237,7 +239,7 @@ bool Interpreter::runOnMainThread(int fps, bool blocking) {
 
 	_lastRunOnMainThread = tthread::timeStamp();
 
-	tthread::lock_guard<tthread::mutex> lock(_mutex);
+	tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
 	std::map<std::string, IOProcessor>::iterator ioProcessorIter = _ioProcessors.begin();
 	while(ioProcessorIter != _ioProcessors.end()) {
 		ioProcessorIter->second.runOnMainThread();
@@ -356,7 +358,7 @@ void Interpreter::internalDoneSend(const Arabica::DOM::Node<std::string>& state)
 		Arabica::DOM::Node<std::string> doneData = doneDatas[0];
 		NodeList<std::string> doneChilds = doneData.getChildNodes();
 		for (int i = 0; i < doneChilds.getLength(); i++) {
-			if (!doneChilds.item(i).getNodeType() == Node_base::ELEMENT_NODE)
+			if (doneChilds.item(i).getNodeType() != Node_base::ELEMENT_NODE)
 				continue;
 			if (boost::iequals(TAGNAME(doneChilds.item(i)), _xmlNSPrefix + "param")) {
 				if (!HAS_ATTR(doneChilds.item(i), "name")) {
@@ -427,8 +429,6 @@ void Interpreter::send(const Arabica::DOM::Node<std::string>& element) {
 			sendReq.type = _dataModel.evalAsString(ATTR(element, "typeexpr"));
 		} else if (HAS_ATTR(element, "type")) {
 			sendReq.type = ATTR(element, "type");
-		} else {
-			sendReq.type = "http://www.w3.org/TR/scxml/#SCXMLEventProcessor";
 		}
 	} catch (Event e) {
 		LOG(ERROR) << "Syntax error in send element typeexpr:" << std::endl << e << std::endl;
@@ -458,7 +458,7 @@ void Interpreter::send(const Arabica::DOM::Node<std::string>& element) {
 			 * See 3.14 IDs for details.
 			 *
 			 */
-			sendReq.sendid = getUUID();
+			sendReq.sendid = ATTR(getParentState(element), "id") + "." + getUUID();
 			if (HAS_ATTR(element, "idlocation") && _dataModel) {
 				_dataModel.assign(ATTR(element, "idlocation"), "'" + sendReq.sendid + "'");
 			}
@@ -622,6 +622,10 @@ void Interpreter::delayedSend(void* userdata, std::string eventName) {
 	Interpreter* INSTANCE = data->first;
 	SendRequest sendReq = data->second;
 
+	// test 253
+	if (sendReq.origintype.length() == 0)
+		sendReq.origintype = "http://www.w3.org/TR/scxml/#SCXMLEventProcessor";
+
 	// see http://www.w3.org/TR/scxml/#SendTargets
 	if (boost::iequals(sendReq.target, "#_parent")) {
 		// send to parent scxml session
@@ -637,7 +641,7 @@ void Interpreter::delayedSend(void* userdata, std::string eventName) {
 		// send to invoker
 		std::string invokeId = sendReq.target.substr(2, sendReq.target.length() - 2);
 		if (INSTANCE->_invokers.find(invokeId) != INSTANCE->_invokers.end()) {
-			tthread::lock_guard<tthread::mutex> lock(INSTANCE->_mutex);
+			tthread::lock_guard<tthread::recursive_mutex> lock(INSTANCE->_mutex);
 			try {
 				INSTANCE->_invokers[invokeId].send(sendReq);
 			} catch(...) {
@@ -646,7 +650,9 @@ void Interpreter::delayedSend(void* userdata, std::string eventName) {
 		} else {
 			LOG(ERROR) << "Can not send to invoked component '" << invokeId << "', no such invokeId" << std::endl;
 		}
-	} else if (sendReq.target.length() == 0) {
+	} else if (sendReq.target.length() == 0 &&
+						 (sendReq.type.length() == 0 ||
+							boost::equals(sendReq.type, "http://www.w3.org/TR/scxml/#SCXMLEventProcessor"))) {
 		/**
 		 * If neither the 'target' nor the 'targetexpr' attribute is specified, the
 		 * SCXML Processor must add the event will be added to the external event
@@ -661,6 +667,8 @@ void Interpreter::delayedSend(void* userdata, std::string eventName) {
 			} catch(...) {
 				LOG(ERROR) << "Exception caught while sending event to ioprocessor " << sendReq.type;
 			}
+		} else {
+			INSTANCE->_internalQueue.push_back(Event("error.execution"));
 		}
 	}
 	assert(INSTANCE->_sendIds.find(sendReq.sendid) != INSTANCE->_sendIds.end());
@@ -697,12 +705,18 @@ void Interpreter::invoke(const Arabica::DOM::Node<std::string>& element) {
 		}
 
 		// id
-		if (HAS_ATTR(element, "idlocation") && _dataModel) {
-			invokeReq.invokeid = _dataModel.evalAsString(ATTR(element, "idlocation"));
-		} else if (HAS_ATTR(element, "id")) {
-			invokeReq.invokeid = ATTR(element, "id");
-		} else {
-			assert(false);
+		try {
+			if (HAS_ATTR(element, "id")) {
+				invokeReq.invokeid = ATTR(element, "id");
+			} else {
+				invokeReq.invokeid = ATTR(getParentState(element), "id") + "." + getUUID();
+				if (HAS_ATTR(element, "idlocation") && _dataModel) {
+					_dataModel.assign(ATTR(element, "idlocation"), "'" + invokeReq.invokeid + "'");
+				}
+			}
+		} catch (Event e) {
+			LOG(ERROR) << "Syntax error in invoke element idlocation:" << std::endl << e << std::endl;
+			return;
 		}
 
 		// namelist
@@ -743,7 +757,7 @@ void Interpreter::invoke(const Arabica::DOM::Node<std::string>& element) {
 				continue;
 			}
 			std::string paramKey = ATTR(params[i], "name");
-			boost::algorithm::to_lower(paramKey);
+			//boost::algorithm::to_lower(paramKey);
 			invokeReq.params.insert(std::make_pair(paramKey, paramValue));
 
 		}
@@ -815,7 +829,7 @@ void Interpreter::invoke(const Arabica::DOM::Node<std::string>& element) {
 
 		Invoker invoker(Factory::createInvoker(invokeReq.type, this));
 		if (invoker) {
-			tthread::lock_guard<tthread::mutex> lock(_mutex);
+			tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
 			try {
 				invoker.setInvokeId(invokeReq.invokeid);
 				invoker.setType(invokeReq.type);
@@ -966,9 +980,7 @@ void Interpreter::executeContent(const Arabica::DOM::Node<std::string>& content,
 	} else if (boost::iequals(TAGNAME(content), _xmlNSPrefix + "raise")) {
 		// --- RAISE --------------------------
 		if (HAS_ATTR(content, "event")) {
-			Event event;
-			event.name = ATTR(content, "event");
-			_internalQueue.push_back(event);
+			_internalQueue.push_back(Event(ATTR(content, "event")));
 		}
 	} else if (boost::iequals(TAGNAME(content), _xmlNSPrefix + "if")) {
 		// --- IF / ELSEIF / ELSE --------------
@@ -1057,6 +1069,8 @@ void Interpreter::executeContent(const Arabica::DOM::Node<std::string>& content,
 		// --- LOG --------------------------
 		Arabica::DOM::Element<std::string> logElem = (Arabica::DOM::Element<std::string>)content;
 		if (logElem.hasAttribute("expr")) {
+			if (logElem.hasAttribute("label"))
+				std::cout << logElem.getAttribute("label") << ": ";
 			if (_dataModel) {
 				try {
 					std::cout << _dataModel.evalAsString(logElem.getAttribute("expr")) << std::endl;
@@ -1066,14 +1080,22 @@ void Interpreter::executeContent(const Arabica::DOM::Node<std::string>& content,
 						throw e;
 				}
 			} else {
-				std::cout << logElem.getAttribute("expr") << std::endl;
+				if (logElem.hasAttribute("label"))
+					std::cout << std::endl;
 			}
 		}
 	} else if (boost::iequals(TAGNAME(content), _xmlNSPrefix + "assign")) {
 		// --- ASSIGN --------------------------
 		if (_dataModel && HAS_ATTR(content, "location") && HAS_ATTR(content, "expr")) {
 			try {
-				_dataModel.assign(ATTR(content, "location"), ATTR(content, "expr"));
+				if (!_dataModel.isDefined(ATTR(content, "location"))) {
+					// test 286
+					LOG(ERROR) << "Assigning to undeclared location '" << ATTR(content, "location") << "' not allowed." << std::endl;
+					_internalQueue.push_back(Event("error.execution"));
+					return;
+				} else {
+					_dataModel.assign(ATTR(content, "location"), ATTR(content, "expr"));
+				}
 			} catch (Event e) {
 				LOG(ERROR) << "Syntax error in attributes of assign element:" << std::endl << e << std::endl;
 				if (rethrow)
@@ -1179,6 +1201,11 @@ void Interpreter::executeContent(const Arabica::DOM::Node<std::string>& content,
 }
 
 void Interpreter::returnDoneEvent(const Arabica::DOM::Node<std::string>& state) {
+	if (_parentQueue != NULL) {
+		Event done;
+		done.name = "done.invoke." + _sessionId;
+		_parentQueue->push(done);
+	}
 }
 
 bool Interpreter::parentIsScxmlState(Arabica::DOM::Node<std::string> state) {
@@ -1225,6 +1252,26 @@ Arabica::XPath::NodeSet<std::string> Interpreter::getChildStates(const Arabica::
 		}
 	}
 	return childs;
+}
+
+Arabica::DOM::Node<std::string> Interpreter::getParentState(const Arabica::DOM::Node<std::string>& element) {
+	Arabica::DOM::Node<std::string> parent = element.getParentNode();
+	while(parent && !isState(parent)) {
+		parent = parent.getParentNode();
+	}
+	return parent;
+}
+
+bool Interpreter::hasAncestorElement(const Arabica::DOM::Node<std::string>& node, const std::string tagName) {
+	Arabica::DOM::Node<std::string> parent = node.getParentNode();
+	while(parent) {
+		if (parent.getNodeType() == Node_base::ELEMENT_NODE &&
+				boost::iequals(TAGNAME(parent), tagName)) {
+			return true;
+		}
+		parent = parent.getParentNode();
+	}
+	return false;
 }
 
 /**
@@ -1591,7 +1638,7 @@ bool Interpreter::isCompound(const Arabica::DOM::Node<std::string>& state) {
 }
 
 void Interpreter::setupIOProcessors() {
-	tthread::lock_guard<tthread::mutex> lock(_mutex);
+	tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
 	std::map<std::string, IOProcessorImpl*>::iterator ioProcIter = Factory::getInstance()->_ioProcessors.begin();
 	while(ioProcIter != Factory::getInstance()->_ioProcessors.end()) {
 		if (boost::iequals(ioProcIter->first, "basichttp") && !(_capabilities & CAN_BASIC_HTTP)) {
@@ -1603,6 +1650,15 @@ void Interpreter::setupIOProcessors() {
 		_ioProcessors[ioProcIter->first].setType(ioProcIter->first);
 		_ioProcessors[ioProcIter->first].setInterpreter(this);
 
+		// register aliases
+		std::set<std::string> names = _ioProcessors[ioProcIter->first].getNames();
+		std::set<std::string>::iterator nameIter = names.begin();
+		while(nameIter != names.end()) {
+			if (!boost::equal(*nameIter, ioProcIter->first))
+				_ioProcessors[*nameIter] = _ioProcessors[ioProcIter->first];
+			nameIter++;
+		}
+		
 		if (_dataModel) {
 			try {
 				_dataModel.registerIOProcessor(ioProcIter->first, _ioProcessors[ioProcIter->first]);
@@ -1617,7 +1673,7 @@ void Interpreter::setupIOProcessors() {
 }
 
 IOProcessor Interpreter::getIOProcessor(const std::string& type) {
-	tthread::lock_guard<tthread::mutex> lock(_mutex);
+	tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
 	if (_ioProcessors.find(type) == _ioProcessors.end()) {
 		LOG(ERROR) << "No ioProcessor known for type " << type;
 		return IOProcessor();

@@ -285,6 +285,14 @@ void V8DataModel::eval(const std::string& expr) {
 	evalAsValue(expr);
 }
 
+bool V8DataModel::isDefined(const std::string& expr) {
+	v8::Locker locker;
+	v8::HandleScope handleScope;
+	v8::Context::Scope contextScope(_contexts.back());
+	v8::Handle<v8::Value> result = evalAsValue(expr);
+	return !result->IsUndefined();
+}
+
 bool V8DataModel::evalAsBool(const std::string& expr) {
 	v8::Locker locker;
 	v8::HandleScope handleScope;

@@ -39,6 +39,7 @@ public:
 	virtual void eval(const std::string& expr);
 	virtual void assign(const std::string& location, const std::string& expr);
 	virtual void assign(const std::string& location, const Data& data);
+	virtual bool isDefined(const std::string& expr);
 
 	virtual Data getStringAsData(const std::string& content);
 

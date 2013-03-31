@@ -38,7 +38,7 @@ public:
 	virtual void registerIOProcessor(const std::string& name, const IOProcessor& ioprocessor);
 
 	virtual bool validate(const std::string& location, const std::string& schema);
-
+	
 	virtual uint32_t getLength(const std::string& expr);
 	virtual void pushContext();
 	virtual void popContext();
@@ -49,7 +49,8 @@ public:
 
 	virtual Data getStringAsData(const std::string& content);
 	virtual Data getValueAsData(const v8::Handle<v8::Value>& value);
-
+	virtual bool isDefined(const std::string& expr);
+	
 	virtual std::string evalAsString(const std::string& expr);
 	virtual bool evalAsBool(const std::string& expr);
 	virtual double evalAsNumber(const std::string& expr);
