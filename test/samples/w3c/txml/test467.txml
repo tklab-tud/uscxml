@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+
+<!-- test that in() is available -->
+
+<scxml initial="s0" version="1.0" datamodel="xpath"  
+    xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance">
+
+  
+<state id="s0">
+ <transition cond="In('s0')" conf:targetpass=""/>
+  <transition  conf:targetfail=""/> 
+  </state>
+  
+   <conf:pass/>
+   <conf:fail/>
+
+</scxml>

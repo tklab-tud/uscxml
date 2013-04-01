@@ -31,8 +31,6 @@ public:
 	}
 
 	virtual void initialize();
-	virtual void setSessionId(const std::string& sessionId);
-	virtual void setName(const std::string& name);
 	virtual void setEvent(const Event& event);
 
 	virtual void registerIOProcessor(const std::string& name, const IOProcessor& ioprocessor);
@@ -49,7 +47,7 @@ public:
 
 	virtual Data getStringAsData(const std::string& content);
 	virtual Data getValueAsData(const v8::Handle<v8::Value>& value);
-	virtual bool isDefined(const std::string& expr);
+	virtual bool isDeclared(const std::string& expr);
 	
 	virtual std::string evalAsString(const std::string& expr);
 	virtual bool evalAsBool(const std::string& expr);

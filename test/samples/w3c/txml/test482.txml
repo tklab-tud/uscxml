@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+ <!-- test that system vars are created and bound to XPath variables -->
+ 
+ <scxml xmlns="http://www.w3.org/2005/07/scxml" name="scxmltest" 
+   xmlns:conf="http://www.w3.org/2005/scxml-conformance" initial="s0" version="1.0" datamodel="xpath">
+ 
+  
+<state id="s0">
+  <onentry>
+  <!-- event isn't bound until an event is raised -->
+   <raise event="someevent"/>
+  </onentry>
+   <transition  event="*" cond="local-name($_event) = 'data'
+    and local-name($_sessionid) = 'data' 
+    and local-name($_name) = 'data'
+     and local-name($_ioprocessors) = 'data'" conf:targetpass=""/>
+   <transition  event="*" conf:targetfail=""/>
+  </state>
+    
+<conf:pass/>
+<conf:fail/>  
+
+</scxml>

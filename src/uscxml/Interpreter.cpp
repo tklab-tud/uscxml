@@ -361,31 +361,43 @@ void Interpreter::internalDoneSend(const Arabica::DOM::Node<std::string>& state)
 			if (doneChilds.item(i).getNodeType() != Node_base::ELEMENT_NODE)
 				continue;
 			if (boost::iequals(TAGNAME(doneChilds.item(i)), _xmlNSPrefix + "param")) {
-				if (!HAS_ATTR(doneChilds.item(i), "name")) {
-					LOG(ERROR) << "param element is missing name attribut";
-					continue;
+				try {
+					if (!HAS_ATTR(doneChilds.item(i), "name")) {
+						LOG(ERROR) << "param element is missing name attribut";
+						continue;
+					}
+					std::string paramValue;
+					if (HAS_ATTR(doneChilds.item(i), "expr") && _dataModel) {
+						std::string expr = _dataModel.evalAsString(ATTR(doneChilds.item(i), "expr"));
+						paramValue = _dataModel.evalAsString(expr);
+					} else if(HAS_ATTR(doneChilds.item(i), "location") && _dataModel) {
+						paramValue = _dataModel.evalAsString(ATTR(doneChilds.item(i), "location"));
+					} else {
+						LOG(ERROR) << "param element is missing expr or location or no datamodel is specified";
+						continue;
+					}
+					/// test 294
+					event.data.compound[ATTR(doneChilds.item(i), "name")] = paramValue;
+				} catch (Event e) {
+					e.name = "error.execution";
+					_internalQueue.push_back(e);
 				}
-				std::string paramValue;
-				if (HAS_ATTR(doneChilds.item(i), "expr") && _dataModel) {
-					std::string location = _dataModel.evalAsString(ATTR(doneChilds.item(i), "expr"));
-					paramValue = _dataModel.evalAsString(location);
-				} else if(HAS_ATTR(doneChilds.item(i), "location") && _dataModel) {
-					paramValue = _dataModel.evalAsString(ATTR(doneChilds.item(i), "location"));
-				} else {
-					LOG(ERROR) << "param element is missing expr or location or no datamodel is specified";
-					continue;
-				}
-				event.data.compound[ATTR(doneChilds.item(i), "name")] = paramValue;
 			}
 			if (boost::iequals(TAGNAME(doneChilds.item(i)), _xmlNSPrefix + "content")) {
 				if (HAS_ATTR(doneChilds.item(i), "expr")) {
-					if (_dataModel) {
-						event.data.compound["content"] = Data(_dataModel.evalAsString(ATTR(doneChilds.item(i), "expr")), Data::VERBATIM);
-					} else {
-						LOG(ERROR) << "content element has expr attribute but no datamodel is specified.";
+					try {
+						if (_dataModel) {
+							/// test 294
+							event.data = Data(_dataModel.evalAsString(ATTR(doneChilds.item(i), "expr")), Data::VERBATIM);
+						} else {
+							LOG(ERROR) << "content element has expr attribute but no datamodel is specified.";
+						}
+					} catch (Event e) {
+						e.name = "error.execution";
+						_internalQueue.push_back(e);
 					}
 				} else if (doneChilds.item(i).hasChildNodes()) {
-					event.data.compound["content"] = Data(doneChilds.item(i).getFirstChild().getNodeValue(), Data::VERBATIM);
+					event.data = Data(doneChilds.item(i).getFirstChild().getNodeValue(), Data::VERBATIM);
 				} else {
 					LOG(ERROR) << "content element does not specify any content.";
 				}
@@ -399,6 +411,60 @@ void Interpreter::internalDoneSend(const Arabica::DOM::Node<std::string>& state)
 
 }
 
+void Interpreter::processContentElement(const Arabica::DOM::Node<std::string>& content, Arabica::DOM::Document<std::string>& dom, std::string& text) {
+	if (HAS_ATTR(content, "expr")) {
+		if (_dataModel) {
+			/// this is out of spec
+			std::string contentValue = _dataModel.evalAsString(ATTR(content, "expr"));
+			text = contentValue;
+			//          sendReq.data.atom = contentValue;
+			//          sendReq.data.type = Data::VERBATIM;
+		} else {
+			LOG(ERROR) << "content element has expr attribute but no datamodel is specified.";
+		}
+	} else if (content.hasChildNodes()) {
+		bool presentAsDOM = false;
+		NodeList<std::string> contentChilds = content.getChildNodes();
+		for (int i = 0; i < contentChilds.getLength(); i++) {
+			if (contentChilds.item(i).getNodeType() == Node_base::ELEMENT_NODE) {
+				presentAsDOM = true;
+				break;
+			}
+		}
+		if (presentAsDOM) {
+			// use the whole dom
+			Arabica::DOM::DOMImplementation<std::string> domFactory = Arabica::SimpleDOM::DOMImplementation<std::string>::getDOMImplementation();
+			dom = domFactory.createDocument(content.getNamespaceURI(), "", 0);
+			Node<std::string> newNode = dom.importNode(content, true);
+			dom.appendChild(newNode);
+		} else {
+			Node<std::string> textChild = content.getFirstChild();
+			while(textChild && textChild.getNodeType() != Node_base::TEXT_NODE) {
+				textChild = textChild.getNextSibling();
+			}
+			if (textChild && textChild.getNodeType() == Node_base::TEXT_NODE) {
+				/// create space normalized string
+				std::istringstream iss(content.getFirstChild().getNodeValue());
+				std::stringstream content;
+				std::string seperator;
+				do {
+					std::string token;
+					iss >> token;
+					if (token.length() > 0) {
+						content << seperator << token;
+						seperator = " ";
+					}
+				} while (iss);
+				text = content.str();
+			} else {
+				LOG(ERROR) << "content element has neither text nor element children.";
+			}
+		}
+	} else {
+		LOG(ERROR) << "content element does not specify any content.";
+	}
+}
+	
 void Interpreter::send(const Arabica::DOM::Node<std::string>& element) {
 	SendRequest sendReq;
 	try {
@@ -544,63 +610,12 @@ void Interpreter::send(const Arabica::DOM::Node<std::string>& element) {
 		return;
 	}
 	try {
-
 		// content
 		NodeSet<std::string> contents = filterChildElements(_xmlNSPrefix + "content", element);
 		if (contents.size() > 1)
 			LOG(ERROR) << "Only a single content element is allowed for send elements - using first one";
 		if (contents.size() > 0) {
-			if (HAS_ATTR(contents[0], "expr")) {
-				if (_dataModel) {
-					/// this is out of spec
-					std::string contentValue = _dataModel.evalAsString(ATTR(contents[0], "expr"));
-					sendReq.content = contentValue;
-//          sendReq.data.atom = contentValue;
-//          sendReq.data.type = Data::VERBATIM;
-				} else {
-					LOG(ERROR) << "content element has expr attribute but no datamodel is specified.";
-				}
-			} else if (contents[0].hasChildNodes()) {
-				bool presentAsDOM = false;
-				NodeList<std::string> contentChilds = contents[0].getChildNodes();
-				for (int i = 0; i < contentChilds.getLength(); i++) {
-					if (contentChilds.item(i).getNodeType() == Node_base::ELEMENT_NODE) {
-						presentAsDOM = true;
-						break;
-					}
-				}
-				if (presentAsDOM) {
-					// use the whole dom
-					Arabica::DOM::DOMImplementation<std::string> domFactory = Arabica::SimpleDOM::DOMImplementation<std::string>::getDOMImplementation();
-					sendReq.dom = domFactory.createDocument(contents[0].getNamespaceURI(), "", 0);
-					Node<std::string> newNode = sendReq.dom.importNode(contents[0], true);
-					sendReq.dom.appendChild(newNode);
-				} else {
-					Node<std::string> textChild = contents[0].getFirstChild();
-					while(textChild && textChild.getNodeType() != Node_base::TEXT_NODE) {
-						textChild = textChild.getNextSibling();
-					}
-					if (textChild && textChild.getNodeType() == Node_base::TEXT_NODE) {
-						/// create space normalized string
-						std::istringstream iss(contents[0].getFirstChild().getNodeValue());
-						std::stringstream content;
-						std::string seperator;
-						do {
-							std::string token;
-							iss >> token;
-							if (token.length() > 0) {
-								content << seperator << token;
-								seperator = " ";
-							}
-						} while (iss);
-						sendReq.content = content.str();
-					} else {
-						LOG(ERROR) << "content element has neither text nor element children.";
-					}
-				}
-			} else {
-				LOG(ERROR) << "content element does not specify any content.";
-			}
+			processContentElement(contents[0], sendReq.dom, sendReq.content);
 		}
 	} catch (Event e) {
 		LOG(ERROR) << "Syntax error in send element content:" << std::endl << e << std::endl;
@@ -764,63 +779,11 @@ void Interpreter::invoke(const Arabica::DOM::Node<std::string>& element) {
 
 		// content
 		try {
-			
-			// content
 			NodeSet<std::string> contents = filterChildElements(_xmlNSPrefix + "content", element);
 			if (contents.size() > 1)
 				LOG(ERROR) << "Only a single content element is allowed for send elements - using first one";
 			if (contents.size() > 0) {
-				if (HAS_ATTR(contents[0], "expr")) {
-					if (_dataModel) {
-						/// this is out of spec
-						std::string contentValue = _dataModel.evalAsString(ATTR(contents[0], "expr"));
-						invokeReq.content = contentValue;
-						//          sendReq.data.atom = contentValue;
-						//          sendReq.data.type = Data::VERBATIM;
-					} else {
-						LOG(ERROR) << "content element has expr attribute but no datamodel is specified.";
-					}
-				} else if (contents[0].hasChildNodes()) {
-					bool presentAsDOM = false;
-					NodeList<std::string> contentChilds = contents[0].getChildNodes();
-					for (int i = 0; i < contentChilds.getLength(); i++) {
-						if (contentChilds.item(i).getNodeType() == Node_base::ELEMENT_NODE) {
-							presentAsDOM = true;
-							break;
-						}
-					}
-					if (presentAsDOM) {
-						// use the whole dom
-						Arabica::DOM::DOMImplementation<std::string> domFactory = Arabica::SimpleDOM::DOMImplementation<std::string>::getDOMImplementation();
-						invokeReq.dom = domFactory.createDocument(contents[0].getNamespaceURI(), "", 0);
-						Node<std::string> newNode = invokeReq.dom.importNode(contents[0], true);
-						invokeReq.dom.appendChild(newNode);
-					} else {
-						Node<std::string> textChild = contents[0].getFirstChild();
-						while(textChild && textChild.getNodeType() != Node_base::TEXT_NODE) {
-							textChild = textChild.getNextSibling();
-						}
-						if (textChild && textChild.getNodeType() == Node_base::TEXT_NODE) {
-							/// create space normalized string
-							std::istringstream iss(contents[0].getFirstChild().getNodeValue());
-							std::stringstream content;
-							std::string seperator;
-							do {
-								std::string token;
-								iss >> token;
-								if (token.length() > 0) {
-									content << seperator << token;
-									seperator = " ";
-								}
-							} while (iss);
-							invokeReq.content = content.str();
-						} else {
-							LOG(ERROR) << "content element has neither text nor element children.";
-						}
-					}
-				} else {
-					LOG(ERROR) << "content element does not specify any content.";
-				}
+				processContentElement(contents[0], invokeReq.dom, invokeReq.content);
 			}
 		} catch (Event e) {
 			LOG(ERROR) << "Syntax error in send element content:" << std::endl << e << std::endl;
@@ -1088,10 +1051,12 @@ void Interpreter::executeContent(const Arabica::DOM::Node<std::string>& content,
 		// --- ASSIGN --------------------------
 		if (_dataModel && HAS_ATTR(content, "location") && HAS_ATTR(content, "expr")) {
 			try {
-				if (!_dataModel.isDefined(ATTR(content, "location"))) {
+				if (!_dataModel.isDeclared(ATTR(content, "location"))) {
 					// test 286
 					LOG(ERROR) << "Assigning to undeclared location '" << ATTR(content, "location") << "' not allowed." << std::endl;
-					_internalQueue.push_back(Event("error.execution"));
+					Event e("error.execution");
+					_internalQueue.push_back(e);
+					throw e;
 					return;
 				} else {
 					_dataModel.assign(ATTR(content, "location"), ATTR(content, "expr"));
@@ -1124,6 +1089,9 @@ void Interpreter::executeContent(const Arabica::DOM::Node<std::string>& content,
 					srcContent << _cachedURLs[scriptUrl.asString()];
 				} else {
 					srcContent << scriptUrl;
+					if (scriptUrl.downloadFailed()) {
+						LOG(ERROR) << "script element source cannot be downloaded";
+					}
 					_cachedURLs[scriptUrl.asString()] = scriptUrl;
 				}
 

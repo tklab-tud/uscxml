@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+ <!-- test that <content> inside <donedata> handles XML and strings,
+ including white space normalization. -->
+ 
+ <scxml xmlns="http://www.w3.org/2005/07/scxml" 
+   xmlns:conf="http://www.w3.org/2005/scxml-conformance" initial="s0" version="1.0" datamodel="xpath">
+ 
+<state id="s0" initial="s01">
+   <transition event="done.state.s0" cond="$_event/data/books/book[1]/@title = 'title1'" target="s1"/>
+     <transition event="done"  conf:targetfail=""/>
+   <final id="s01">
+     <donedata>
+       <content>
+        <books xmlns="">
+          <book title="title1"/>
+          <book title="title2"/>
+        </books>
+       </content>
+     </donedata>
+   </final>
+ </state>
+ 
+<state id="s1" initial="s11">
+   <transition event="done.state.s1" cond="$_event/data = '123 4 5'" conf:targetpass=""/>
+   <transition event="done" conf:targetfail=""/>
+    <final id="s11">
+     <donedata>
+       <content>123
+4 5 
+       </content>
+     </donedata>
+   </final>
+  </state>
+    
+<conf:pass/>
+<conf:fail/>  
+
+</scxml>

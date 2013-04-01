@@ -282,6 +282,8 @@ protected:
 	void executeContent(const Arabica::DOM::NodeList<std::string>& content, bool rethrow = false);
 	void executeContent(const Arabica::XPath::NodeSet<std::string>& content, bool rethrow = false);
 
+	void processContentElement(const Arabica::DOM::Node<std::string>& element, Arabica::DOM::Document<std::string>& dom, std::string& text);
+	
 	void send(const Arabica::DOM::Node<std::string>& element);
 	void invoke(const Arabica::DOM::Node<std::string>& element);
 	void cancelInvoke(const Arabica::DOM::Node<std::string>& element);

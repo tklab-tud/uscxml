@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+ <!-- test that if the child of <data> is a string or if a string is loaded via src=, the processor
+ does white space normalization on it and assigns it as the value of the var -->
+ 
+ <scxml xmlns="http://www.w3.org/2005/07/scxml" 
+   xmlns:conf="http://www.w3.org/2005/scxml-conformance" initial="s0" version="1.0" datamodel="xpath">
+ <datamodel>
+   <data id="var1">123
+4  5  
+</data>
+  <data id="var2" src="file:test540.txt"/>
+  </datamodel>
+  
+<state id="s0">
+  <onentry>
+    <log label="var1 " expr="$var1"/>
+  </onentry>
+   <transition  cond="$var1 = '123 4 5' and $var2 = '123 4 5'" conf:targetpass=""/>
+   <transition  conf:targetfail=""/>
+  </state>
+    
+<conf:pass/>
+<conf:fail/>  
+
+</scxml>

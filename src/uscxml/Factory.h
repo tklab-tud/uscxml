@@ -246,13 +246,10 @@ public:
 	virtual bool evalAsBool(const std::string& expr) = 0;
 	virtual void assign(const std::string& location, const std::string& expr) = 0;
 	virtual void assign(const std::string& location, const Data& data) = 0;
-	virtual bool isDefined(const std::string& expr) = 0;
+	virtual bool isDeclared(const std::string& expr) = 0;
 
 protected:
 	Interpreter* _interpreter;
-	std::string _sessionId;
-	std::string _name;
-
 };
 
 class DataModel {
@@ -320,8 +317,8 @@ public:
 		return _impl->assign(location, data);
 	}
 
-	virtual bool isDefined(const std::string& expr) {
-		return _impl->isDefined(expr);
+	virtual bool isDeclared(const std::string& expr) {
+		return _impl->isDeclared(expr);
 	}
 
 protected:

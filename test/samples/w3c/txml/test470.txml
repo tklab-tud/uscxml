@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+ <!-- test that the processor makes a deep copy of a node set when assigning. -->
+ 
+ <scxml xmlns="http://www.w3.org/2005/07/scxml" 
+   xmlns:conf="http://www.w3.org/2005/scxml-conformance" initial="s0" version="1.0" datamodel="xpath">
+  <datamodel>
+    <data id="var1">
+    <foo xmlns="">
+      <bar>2</bar>
+      </foo>
+      </data>
+   <data id="var2"/>  
+  </datamodel>
+  
+<state id="s0">
+  <onentry>
+    <assign location="$var2" expr="$var1/foo"/>
+    <assign location="$var1/foo/bar" expr="3"/>
+  </onentry>
+   <transition cond="$var2/foo/bar=2" conf:targetpass=""/>
+   <transition conf:targetfail=""/>
+  </state>
+  
+  
+<conf:pass/>
+<conf:fail/>  
+
+</scxml>

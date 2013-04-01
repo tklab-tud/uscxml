@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+
+<!-- test that an unassigned variable creates an empty <data> element -->
+
+<scxml initial="s0" version="1.0" datamodel="xpath"  
+    xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance">
+<datamodel>
+  <data id="foo"/>
+  </datamodel>
+  
+<state id="s0">
+
+ 
+  <transition cond="count($foo) = 1 and count($foo/*) = 0" conf:targetpass=""/>
+  <transition  conf:targetfail=""/> 
+  </state>
+  
+   <conf:pass/>
+   <conf:fail/>
+
+</scxml>

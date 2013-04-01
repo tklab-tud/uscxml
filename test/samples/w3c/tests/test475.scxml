@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?><!-- test that 'lastchild' in <assign> inserts the new value after the other children. --><scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" initial="s0" version="1.0" datamodel="xpath">
+ <datamodel>
+ <data id="cart">
+  <myCart xmlns="">
+    <books>
+      <book>
+        <title>The Zen Mind</title>
+      </book>
+      <book>
+        <title>Freakonomics</title>
+      </book>
+    </books>
+    <cds>
+      <cd name="Something"/>
+    </cds>
+  </myCart>
+</data>
+   </datamodel>
+  
+<state id="s0">
+  <onentry>
+ <assign location="$cart/myCart/books/book[1]" type="lastchild">
+  <bookinfo xmlns="">
+    <isdn>12334455</isdn>
+    <author>some author</author>
+  </bookinfo>
+</assign>
+  </onentry>
+   <transition cond="$cart/myCart/books/book[1]/*[2]/isdn/text() = '12334455'    and $cart/myCart/books/book[1]/*[1]/text() = 'The Zen Mind'" target="pass"/>
+   <transition target="fail"/>
+  </state>
+    
+<final id="pass"><onentry><log label="Outcome" expr="'pass'"/></onentry></final>
+<final id="fail"><onentry><log label="Outcome" expr="'fail'"/></onentry></final>  
+
+</scxml>

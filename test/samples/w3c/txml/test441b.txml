@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<scxml xmlns="http://www.w3.org/2005/07/scxml" datamodel="null"
+xmlns:conf="http://www.w3.org/2005/scxml-conformance" version="1.0" exmode="strict" initial="s01">
+
+<!-- since exmode=strict, the processor should reject this document. Therefore this is a manual test -->
+<datamodel>
+  <data conf:id="1" conf:expr="1"/>
+  </datamodel>
+     
+<state id="s0">
+   <onentry>
+     <assign location="foo" expr="2"/>
+     <script>
+       x = y
+       </script>
+     <foreach array="baz" item="bat">
+       <log expr="this is a mistake"/>
+       </foreach>
+     </onentry>
+    
+      
+   <state id="s01" initial="s01final">
+       <final id="s01final">
+        <donedata>
+       <param  name="result" expr="foo"/>
+       </donedata>
+       </final>   
+   </state>
+   
+   <transition  conf:targetfail=""/>   
+
+ </state>
+
+<state id="s1"> 
+  <onentry>
+   <raise event="noerror"/>
+   </onentry>
+     <transition event="error" conf:targetfail=""/>
+     <transition event="noerror" conf:targetpass=""/>
+ </state>
+    
+<conf:pass/>
+<conf:fail/>
+
+   
+</scxml>

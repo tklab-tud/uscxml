@@ -64,7 +64,7 @@ void InterpreterDraft6::interpret() {
 	}
 
 	// executeGlobalScriptElements
-	NodeSet<std::string> globalScriptElems = _xpath.evaluate("/" + _xpathPrefix + "script", _scxml).asNodeSet();
+	NodeSet<std::string> globalScriptElems = filterChildElements(_xmlNSPrefix + "script", _scxml);
 	for (unsigned int i = 0; i < globalScriptElems.size(); i++) {
 		if (_dataModel)
 			executeContent(globalScriptElems[i]);
@@ -303,11 +303,17 @@ void InterpreterDraft6::mainEventLoop() {
 			for (unsigned int j = 0; j < invokes.size(); j++) {
 				Arabica::DOM::Element<std::string> invokeElem = (Arabica::DOM::Element<std::string>)invokes[j];
 				std::string invokeId;
-				if (HAS_ATTR(invokeElem, "id"))
+				if (HAS_ATTR(invokeElem, "id")) {
 					invokeId = ATTR(invokeElem, "id");
-				if (HAS_ATTR(invokeElem, "idlocation") && _dataModel)
-					invokeId = _dataModel.evalAsString(ATTR(invokeElem, "idlocation"));
-
+				} else {
+					if (HAS_ATTR(invokeElem, "idlocation") && _dataModel) {
+						try {
+							invokeId = _dataModel.evalAsString(ATTR(invokeElem, "idlocation"));
+						} catch(Event e) {
+							LOG(ERROR) << "Syntax error while assigning idlocation from invoke:" << std::endl << e << std::endl;
+						}
+					}
+				}
 				std::string autoForward = invokeElem.getAttribute("autoforward");
 				if (boost::iequals(invokeId, _currEvent.invokeid)) {
 

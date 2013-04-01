@@ -57,14 +57,13 @@ boost::shared_ptr<DataModelImpl> V8DataModel::create(Interpreter* interpreter) {
 	docObj->SetInternalField(0, Arabica::DOM::V8DOM::toExternal(privData));
 
 	context->Global()->Set(v8::String::New("document"), docObj);
+	context->Global()->Set(v8::String::New("_sessionid"), v8::String::New(interpreter->getSessionId().c_str()), v8::ReadOnly);
+	context->Global()->Set(v8::String::New("_name"), v8::String::New(interpreter->getName().c_str()), v8::ReadOnly);
+	context->Global()->Set(v8::String::New("_ioprocessors"), v8::Object::New(), v8::ReadOnly);
 
 	dm->_contexts.push_back(context);
 
 	// instantiate objects - we have to have a context for that!
-
-	dm->setName(interpreter->getName());
-	dm->setSessionId(interpreter->getSessionId());
-	dm->eval("_ioprocessors = {};");
 	dm->eval("_invokers = {};");
 	dm->eval("_x = {};");
 
@@ -72,17 +71,12 @@ boost::shared_ptr<DataModelImpl> V8DataModel::create(Interpreter* interpreter) {
 }
 
 void V8DataModel::registerIOProcessor(const std::string& name, const IOProcessor& ioprocessor) {
-	assign("_ioprocessors['" + name + "']", ioprocessor.getDataModelVariables());
-}
-
-void V8DataModel::setSessionId(const std::string& sessionId) {
-	_sessionId = sessionId;
-	assign("_sessionId", "'" + sessionId + "'");
-}
-
-void V8DataModel::setName(const std::string& name) {
-	_name = name;
-	assign("_name", "'" + name + "'");
+	v8::Locker locker;
+	v8::HandleScope handleScope;
+	v8::Context::Scope contextScope(_contexts.front());
+	v8::Handle<v8::Object> global = _contexts.front()->Global();
+	v8::Handle<v8::Object> ioProcessors = global->Get(v8::String::New("_ioprocessors"))->ToObject();
+	ioProcessors->Set(v8::String::New(name.c_str()),getDataAsValue(ioprocessor.getDataModelVariables()));
 }
 
 V8DataModel::~V8DataModel() {
@@ -285,12 +279,28 @@ void V8DataModel::eval(const std::string& expr) {
 	evalAsValue(expr);
 }
 
-bool V8DataModel::isDefined(const std::string& expr) {
+bool V8DataModel::isDeclared(const std::string& expr) {
+	/**
+	 * Undeclared variables can be checked by trying to access them and catching 
+	 * a reference error.
+	 */
+	
 	v8::Locker locker;
 	v8::HandleScope handleScope;
 	v8::Context::Scope contextScope(_contexts.back());
-	v8::Handle<v8::Value> result = evalAsValue(expr);
-	return !result->IsUndefined();
+
+	v8::TryCatch tryCatch;
+	v8::Handle<v8::String> source = v8::String::New(expr.c_str());
+	v8::Handle<v8::Script> script = v8::Script::Compile(source);
+	
+	v8::Handle<v8::Value> result;
+	if (!script.IsEmpty())
+		result = script->Run();
+	
+	if (result.IsEmpty())
+		return false;
+	
+	return true;
 }
 
 bool V8DataModel::evalAsBool(const std::string& expr) {

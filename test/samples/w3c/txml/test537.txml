@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+
+<!-- test that the root element of the datamodel is <datamodel> and that <data> elements are its
+children-->
+
+<scxml initial="s0" version="1.0" datamodel="xpath"  
+    xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance">
+<datamodel>
+  <data id="foo" expr="2"/>
+  </datamodel>
+  
+<state id="s0">
+
+ 
+  <transition cond="local-name($foo/..)='datamodel'" conf:targetpass=""/>
+  <transition  conf:targetfail=""/> 
+  </state>
+  
+   <conf:pass/>
+   <conf:fail/>
+
+</scxml>
