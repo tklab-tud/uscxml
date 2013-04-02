@@ -169,6 +169,10 @@ Factory::Factory() {
 		registerIOProcessor(ioProcessor);
 	}
 	{
+		InterpreterServlet* ioProcessor = new InterpreterServlet();
+		registerIOProcessor(ioProcessor);
+	}
+	{
 		FetchElement* element = new FetchElement();
 		registerExecutableContent(element);
 	}

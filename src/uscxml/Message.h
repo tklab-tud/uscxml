@@ -95,7 +95,7 @@ public:
 	};
 
 	Event() : type(INTERNAL) {}
-	Event(const std::string& name) : name(name), type(INTERNAL) {}
+	Event(const std::string& name, Type type = INTERNAL) : name(name), type(type) {}
 	Event(const Arabica::DOM::Node<std::string>& xmlString) : type(INTERNAL) {};
 	bool operator< (const Event& other) const     {
 		return this < &other;

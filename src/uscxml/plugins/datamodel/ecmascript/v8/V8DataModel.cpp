@@ -57,9 +57,19 @@ boost::shared_ptr<DataModelImpl> V8DataModel::create(Interpreter* interpreter) {
 	docObj->SetInternalField(0, Arabica::DOM::V8DOM::toExternal(privData));
 
 	context->Global()->Set(v8::String::New("document"), docObj);
-	context->Global()->Set(v8::String::New("_sessionid"), v8::String::New(interpreter->getSessionId().c_str()), v8::ReadOnly);
-	context->Global()->Set(v8::String::New("_name"), v8::String::New(interpreter->getName().c_str()), v8::ReadOnly);
-	context->Global()->Set(v8::String::New("_ioprocessors"), v8::Object::New(), v8::ReadOnly);
+
+	context->Global()->SetAccessor(v8::String::New("_sessionid"),
+	                               V8DataModel::getAttribute,
+	                               V8DataModel::setWithException,
+	                               v8::String::New(interpreter->getSessionId().c_str()));
+	context->Global()->SetAccessor(v8::String::New("_name"),
+	                               V8DataModel::getAttribute,
+	                               V8DataModel::setWithException,
+	                               v8::String::New(interpreter->getName().c_str()));
+	context->Global()->SetAccessor(v8::String::New("_ioprocessors"),
+	                               V8DataModel::getIOProcessors,
+	                               V8DataModel::setWithException,
+	                               v8::External::New(reinterpret_cast<void*>(dm.get())));
 
 	dm->_contexts.push_back(context);
 
@@ -70,13 +80,31 @@ boost::shared_ptr<DataModelImpl> V8DataModel::create(Interpreter* interpreter) {
 	return dm;
 }
 
-void V8DataModel::registerIOProcessor(const std::string& name, const IOProcessor& ioprocessor) {
-	v8::Locker locker;
-	v8::HandleScope handleScope;
-	v8::Context::Scope contextScope(_contexts.front());
-	v8::Handle<v8::Object> global = _contexts.front()->Global();
-	v8::Handle<v8::Object> ioProcessors = global->Get(v8::String::New("_ioprocessors"))->ToObject();
-	ioProcessors->Set(v8::String::New(name.c_str()),getDataAsValue(ioprocessor.getDataModelVariables()));
+v8::Handle<v8::Value> V8DataModel::getAttribute(v8::Local<v8::String> property, const v8::AccessorInfo& info) {
+	return info.Data();
+}
+
+void V8DataModel::setWithException(v8::Local<v8::String> property, v8::Local<v8::Value> value, const v8::AccessorInfo& info) {
+	v8::String::AsciiValue data(property);
+	std::string msg = "Cannot set " + std::string(*data);
+	v8::ThrowException(v8::Exception::ReferenceError(v8::String::New(msg.c_str())));
+}
+
+v8::Handle<v8::Value> V8DataModel::getIOProcessors(v8::Local<v8::String> property, const v8::AccessorInfo& info) {
+	V8DataModel* dataModel = Arabica::DOM::V8DOM::toClassPtr<V8DataModel>(info.Data());
+
+	if (dataModel->_ioProcessors.IsEmpty()) {
+		dataModel->_ioProcessors = v8::Persistent<v8::Object>::New(v8::Object::New());
+		//v8::Handle<v8::Object> ioProcessorObj = v8::Object::New();
+		std::map<std::string, IOProcessor> ioProcessors = dataModel->_interpreter->getIOProcessors();
+		std::map<std::string, IOProcessor>::const_iterator ioProcIter = ioProcessors.begin();
+		while(ioProcIter != ioProcessors.end()) {
+			dataModel->_ioProcessors->Set(v8::String::New(ioProcIter->first.c_str()),
+			                              dataModel->getDataAsValue(ioProcIter->second.getDataModelVariables()));
+			ioProcIter++;
+		}
+	}
+	return dataModel->_ioProcessors;
 }
 
 V8DataModel::~V8DataModel() {
@@ -281,10 +309,10 @@ void V8DataModel::eval(const std::string& expr) {
 
 bool V8DataModel::isDeclared(const std::string& expr) {
 	/**
-	 * Undeclared variables can be checked by trying to access them and catching 
+	 * Undeclared variables can be checked by trying to access them and catching
 	 * a reference error.
 	 */
-	
+
 	v8::Locker locker;
 	v8::HandleScope handleScope;
 	v8::Context::Scope contextScope(_contexts.back());
@@ -292,14 +320,14 @@ bool V8DataModel::isDeclared(const std::string& expr) {
 	v8::TryCatch tryCatch;
 	v8::Handle<v8::String> source = v8::String::New(expr.c_str());
 	v8::Handle<v8::Script> script = v8::Script::Compile(source);
-	
+
 	v8::Handle<v8::Value> result;
 	if (!script.IsEmpty())
 		result = script->Run();
-	
+
 	if (result.IsEmpty())
 		return false;
-	
+
 	return true;
 }
 
@@ -374,6 +402,7 @@ void V8DataModel::throwExceptionEvent(const v8::TryCatch& tryCatch) {
 	assert(tryCatch.HasCaught());
 	Event exceptionEvent;
 	exceptionEvent.name = "error.execution";
+	exceptionEvent.type = Event::PLATFORM;
 
 	std::string exceptionString(*v8::String::AsciiValue(tryCatch.Exception()));
 	exceptionEvent.data.compound["exception"] = Data(exceptionString, Data::VERBATIM);;

@@ -200,6 +200,10 @@ public:
 		return _sessionId;
 	}
 
+	const std::map<std::string, IOProcessor>& getIOProcessors() {
+		return _ioProcessors;
+	}
+
 	bool runOnMainThread(int fps, bool blocking = true);
 
 	static bool isMember(const Arabica::DOM::Node<std::string>& node, const Arabica::XPath::NodeSet<std::string>& set);
@@ -263,7 +267,7 @@ protected:
 	Arabica::XPath::NodeSet<std::string> _statesToInvoke;
 	std::vector<std::string> _userDefinedStartConfiguration;
 	InvokeRequest _invokeReq;
-	
+
 	DataModel _dataModel;
 	std::map<std::string, Arabica::XPath::NodeSet<std::string> > _historyValue;
 
@@ -283,7 +287,7 @@ protected:
 	void executeContent(const Arabica::XPath::NodeSet<std::string>& content, bool rethrow = false);
 
 	void processContentElement(const Arabica::DOM::Node<std::string>& element, Arabica::DOM::Document<std::string>& dom, std::string& text);
-	
+
 	void send(const Arabica::DOM::Node<std::string>& element);
 	void invoke(const Arabica::DOM::Node<std::string>& element);
 	void cancelInvoke(const Arabica::DOM::Node<std::string>& element);

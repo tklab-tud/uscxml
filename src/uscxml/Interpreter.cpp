@@ -209,8 +209,8 @@ Interpreter::~Interpreter() {
 	}
 	if (_sendQueue)
 		delete _sendQueue;
-	if (_httpServlet)
-		delete _httpServlet;
+//	if (_httpServlet)
+//		delete _httpServlet;
 }
 
 void Interpreter::start() {
@@ -269,8 +269,8 @@ void Interpreter::init() {
 
 			normalize(_scxml);
 
-			if (_capabilities & CAN_GENERIC_HTTP)
-				_httpServlet = new InterpreterServlet(this);
+//			if (_capabilities & CAN_GENERIC_HTTP)
+//				_httpServlet = new InterpreterServlet(this);
 
 			_sendQueue = new DelayedEventQueue();
 			_sendQueue->start();
@@ -464,9 +464,11 @@ void Interpreter::processContentElement(const Arabica::DOM::Node<std::string>& c
 		LOG(ERROR) << "content element does not specify any content.";
 	}
 }
-	
+
 void Interpreter::send(const Arabica::DOM::Node<std::string>& element) {
 	SendRequest sendReq;
+	// test 331
+	sendReq.Event::type = Event::EXTERNAL;
 	try {
 		// event
 		if (HAS_ATTR(element, "eventexpr") && _dataModel) {
@@ -516,7 +518,7 @@ void Interpreter::send(const Arabica::DOM::Node<std::string>& element) {
 			 * details. The SCXML processor may generate all other ids in any format,
 			 * as long as they are unique.
 			 */
-			
+
 			/**
 			 *
 			 * If 'idlocation' is present, the SCXML Processor must generate an id when
@@ -666,8 +668,8 @@ void Interpreter::delayedSend(void* userdata, std::string eventName) {
 			LOG(ERROR) << "Can not send to invoked component '" << invokeId << "', no such invokeId" << std::endl;
 		}
 	} else if (sendReq.target.length() == 0 &&
-						 (sendReq.type.length() == 0 ||
-							boost::equals(sendReq.type, "http://www.w3.org/TR/scxml/#SCXMLEventProcessor"))) {
+	           (sendReq.type.length() == 0 ||
+	            boost::equals(sendReq.type, "http://www.w3.org/TR/scxml/#SCXMLEventProcessor"))) {
 		/**
 		 * If neither the 'target' nor the 'targetexpr' attribute is specified, the
 		 * SCXML Processor must add the event will be added to the external event
@@ -675,7 +677,9 @@ void Interpreter::delayedSend(void* userdata, std::string eventName) {
 		 */
 		INSTANCE->_externalQueue.push(sendReq);
 	} else {
-		IOProcessor ioProc = INSTANCE->getIOProcessor(sendReq.type);
+		IOProcessor ioProc;
+		if (sendReq.type.length() > 0)
+			IOProcessor ioProc = INSTANCE->getIOProcessor(sendReq.type);
 		if (ioProc) {
 			try {
 				ioProc.send(sendReq);
@@ -683,7 +687,11 @@ void Interpreter::delayedSend(void* userdata, std::string eventName) {
 				LOG(ERROR) << "Exception caught while sending event to ioprocessor " << sendReq.type;
 			}
 		} else {
-			INSTANCE->_internalQueue.push_back(Event("error.execution"));
+			Event exceptionEvent;
+			exceptionEvent.name = "error.execution";
+			exceptionEvent.type = Event::PLATFORM;
+			exceptionEvent.sendid = sendReq.sendid;
+			INSTANCE->_internalQueue.push_back(exceptionEvent);
 		}
 	}
 	assert(INSTANCE->_sendIds.find(sendReq.sendid) != INSTANCE->_sendIds.end());
@@ -692,7 +700,7 @@ void Interpreter::delayedSend(void* userdata, std::string eventName) {
 
 void Interpreter::invoke(const Arabica::DOM::Node<std::string>& element) {
 	InvokeRequest invokeReq;
-
+	invokeReq.Event::type = Event::EXTERNAL;
 	try {
 		// type
 		if (HAS_ATTR(element, "typeexpr") && _dataModel) {
@@ -1052,9 +1060,9 @@ void Interpreter::executeContent(const Arabica::DOM::Node<std::string>& content,
 		if (_dataModel && HAS_ATTR(content, "location") && HAS_ATTR(content, "expr")) {
 			try {
 				if (!_dataModel.isDeclared(ATTR(content, "location"))) {
-					// test 286
+					// test 286, 331
 					LOG(ERROR) << "Assigning to undeclared location '" << ATTR(content, "location") << "' not allowed." << std::endl;
-					Event e("error.execution");
+					Event e("error.execution", Event::PLATFORM);
 					_internalQueue.push_back(e);
 					throw e;
 					return;
@@ -1234,7 +1242,7 @@ bool Interpreter::hasAncestorElement(const Arabica::DOM::Node<std::string>& node
 	Arabica::DOM::Node<std::string> parent = node.getParentNode();
 	while(parent) {
 		if (parent.getNodeType() == Node_base::ELEMENT_NODE &&
-				boost::iequals(TAGNAME(parent), tagName)) {
+		        boost::iequals(TAGNAME(parent), tagName)) {
 			return true;
 		}
 		parent = parent.getParentNode();
@@ -1556,14 +1564,13 @@ bool Interpreter::isPseudoState(const Arabica::DOM::Node<std::string>& state) {
 }
 
 bool Interpreter::isTransitionTarget(const Arabica::DOM::Node<std::string>& elem) {
-	return (isState(elem) || boost::iequals(LOCALNAME(elem), "history")); // TODO: history is a state
+	return (isState(elem) || boost::iequals(LOCALNAME(elem), "history"));
 }
 
 bool Interpreter::isAtomic(const Arabica::DOM::Node<std::string>& state) {
 	if (boost::iequals("final", LOCALNAME(state)))
 		return true;
 
-	// I will assume that parallel states are not meant to be atomic.
 	if (boost::iequals("parallel", LOCALNAME(state)))
 		return false;
 
@@ -1613,10 +1620,19 @@ void Interpreter::setupIOProcessors() {
 			ioProcIter++;
 			continue;
 		}
+		if (boost::iequals(ioProcIter->first, "http") && !(_capabilities & CAN_GENERIC_HTTP)) {
+			ioProcIter++;
+			continue;
+		}
 
 		_ioProcessors[ioProcIter->first] = Factory::createIOProcessor(ioProcIter->first, this);
 		_ioProcessors[ioProcIter->first].setType(ioProcIter->first);
 		_ioProcessors[ioProcIter->first].setInterpreter(this);
+
+		if (boost::iequals(ioProcIter->first, "http")) {
+			// this is somewhat ugly
+			_httpServlet = static_cast<InterpreterServlet*>(_ioProcessors[ioProcIter->first]._impl.get());
+		}
 
 		// register aliases
 		std::set<std::string> names = _ioProcessors[ioProcIter->first].getNames();
@@ -1626,7 +1642,7 @@ void Interpreter::setupIOProcessors() {
 				_ioProcessors[*nameIter] = _ioProcessors[ioProcIter->first];
 			nameIter++;
 		}
-		
+#if 0
 		if (_dataModel) {
 			try {
 				_dataModel.registerIOProcessor(ioProcIter->first, _ioProcessors[ioProcIter->first]);
@@ -1636,6 +1652,7 @@ void Interpreter::setupIOProcessors() {
 		} else {
 			LOG(INFO) << "Not registering " << ioProcIter->first << " at _ioprocessors in datamodel, no datamodel specified";
 		}
+#endif
 		ioProcIter++;
 	}
 }

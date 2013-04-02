@@ -183,6 +183,7 @@ public:
 
 protected:
 	boost::shared_ptr<IOProcessorImpl> _impl;
+	friend class Interpreter;
 };
 
 class InvokerImpl : public IOProcessorImpl {
@@ -233,8 +234,6 @@ public:
 	virtual bool validate(const std::string& location, const std::string& schema) = 0;
 	virtual void setEvent(const Event& event) = 0;
 	virtual Data getStringAsData(const std::string& content) = 0;
-
-	virtual void registerIOProcessor(const std::string& name, const IOProcessor& ioprocessor) = 0;
 
 	// foreach
 	virtual uint32_t getLength(const std::string& expr) = 0;
@@ -294,10 +293,6 @@ public:
 	}
 	virtual void popContext() {
 		return _impl->popContext();
-	}
-
-	virtual void registerIOProcessor(const std::string& name, const IOProcessor& ioprocessor) {
-		_impl->registerIOProcessor(name, ioprocessor);
 	}
 
 	virtual void eval(const std::string& expr) {

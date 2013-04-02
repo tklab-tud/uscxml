@@ -143,7 +143,7 @@ void SWIDataModel::assign(const std::string& location, const std::string& expr) 
 }
 
 bool SWIDataModel::isDefined(const std::string& expr) {
-	 return true;
+	return true;
 }
 
 }

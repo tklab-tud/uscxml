@@ -33,11 +33,6 @@ void InterpreterDraft6::interpret() {
 
 	if (_dataModel) {
 		_dataModel.assign("_x.args", _cmdLineOptions);
-		if (_httpServlet) {
-			Data data;
-			data.compound["location"] = Data(_httpServlet->getURL(), Data::VERBATIM);
-			_dataModel.assign("_ioprocessors['http']", data);
-		}
 	}
 
 	setupIOProcessors();
@@ -127,7 +122,7 @@ void InterpreterDraft6::initializeData(const Arabica::DOM::Node<std::string>& da
 		LOG(ERROR) << "Cannot initialize data when no datamodel is given!";
 		return;
 	}
-	
+
 	if (!HAS_ATTR(data, "id")) {
 		LOG(ERROR) << "Data element has no id!";
 		return;
@@ -185,7 +180,7 @@ void InterpreterDraft6::initializeData(const Arabica::DOM::Node<std::string>& da
 
 	} catch (Event e) {
 		LOG(ERROR) << "Syntax error in data element:" << std::endl << e << std::endl;
-	}	
+	}
 }
 
 void InterpreterDraft6::mainEventLoop() {
@@ -337,7 +332,7 @@ void InterpreterDraft6::mainEventLoop() {
 		if (!enabledTransitions.empty())
 			microstep(enabledTransitions);
 	}
-	
+
 EXIT_INTERPRETER:
 	monIter = _monitors.begin();
 	while(monIter != _monitors.end()) {
@@ -359,7 +354,7 @@ EXIT_INTERPRETER:
 			sendIter++;
 		}
 	}
-	
+
 	monIter = _monitors.begin();
 	while(monIter != _monitors.end()) {
 		try {

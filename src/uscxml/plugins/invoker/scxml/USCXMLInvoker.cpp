@@ -15,7 +15,7 @@ bool connect(pluma::Host& host) {
 }
 #endif
 
-	USCXMLInvoker::USCXMLInvoker() : _cancelled(false) {
+USCXMLInvoker::USCXMLInvoker() : _cancelled(false) {
 }
 
 
@@ -54,7 +54,7 @@ void USCXMLInvoker::invoke(const InvokeRequest& req) {
 	if (_invokedInterpreter) {
 		DataModel dataModel(_invokedInterpreter->getDataModel());
 		if (dataModel) {
-			
+
 		}
 		_invokedInterpreter->setParentQueue(this);
 		// transfer namespace prefixes
@@ -68,10 +68,10 @@ void USCXMLInvoker::invoke(const InvokeRequest& req) {
 		}
 		_invokedInterpreter->_xmlNSPrefix = _parentInterpreter->_xmlNSPrefix;
 		_invokedInterpreter->_sessionId = req.invokeid;
-		
+
 		/// test240 assumes that invoke request params will carry over to the datamodel
 		_invokedInterpreter->setInvokeRequest(req);
-		
+
 		_invokedInterpreter->start();
 	}
 }

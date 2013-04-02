@@ -62,7 +62,7 @@ extern "C"
 void __cxa_throw (void *thrown_exception, void *pvtinfo, void (*dest)(void *)) {
 	std::cerr << __FUNCTION__ << " will throw exception from " << std::endl;
 	if (orig_cxa_throw == 0)
-	load_orig_throw_code();
+		load_orig_throw_code();
 
 	void *array[50];
 	size_t size = backtrace(array, 50);
@@ -84,16 +84,17 @@ void customTerminate() {
 		} else {
 			tried_throw = false;
 		};
-	}
-	catch (const std::exception &e) {
+	} catch (const std::exception &e) {
 		std::cerr << __FUNCTION__ << " caught unhandled exception. what(): "
-		<< e.what() << std::endl;
-	}
-	catch (...) {
+		          << e.what() << std::endl;
+	} catch (const uscxml::Event &e) {
+		std::cerr << __FUNCTION__ << " caught unhandled exception. Event: "
+		          << e << std::endl;
+	} catch (...) {
 		std::cerr << __FUNCTION__ << " caught unknown/unhandled exception."
-		<< std::endl;
+		          << std::endl;
 	}
-	
+
 #ifdef HAS_EXECINFO_H
 	void * array[50];
 	int size = backtrace(array, 50);
@@ -122,7 +123,7 @@ int main(int argc, char** argv) {
 	using namespace uscxml;
 
 	std::set_terminate(customTerminate);
-	
+
 #ifdef HAS_SIGNAL_H
 	signal(SIGPIPE, SIG_IGN);
 #endif
@@ -134,7 +135,7 @@ int main(int argc, char** argv) {
 	bool verbose = false;
 	google::InitGoogleLogging(argv[0]);
 	google::LogToStderr();
-	
+
 #ifndef _WIN32
 	opterr = 0;
 #endif

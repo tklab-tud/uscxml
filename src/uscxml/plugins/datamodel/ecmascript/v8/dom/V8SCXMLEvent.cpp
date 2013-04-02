@@ -7,13 +7,6 @@ namespace DOM {
 v8::Persistent<v8::FunctionTemplate> V8SCXMLEvent::Tmpl;
 
 
-v8::Handle<v8::Value> V8SCXMLEvent::typeAttrGetter(v8::Local<v8::String> property, const v8::AccessorInfo& info) {
-	v8::Local<v8::Object> self = info.Holder();
-	struct V8SCXMLEventPrivate* privData = V8DOM::toClassPtr<V8SCXMLEventPrivate >(self->GetInternalField(0));
-
-	return v8::Integer::New(privData->nativeObj->type);
-}
-
 v8::Handle<v8::Value> V8SCXMLEvent::nameAttrGetter(v8::Local<v8::String> property, const v8::AccessorInfo& info) {
 	v8::Local<v8::Object> self = info.Holder();
 	struct V8SCXMLEventPrivate* privData = V8DOM::toClassPtr<V8SCXMLEventPrivate >(self->GetInternalField(0));
