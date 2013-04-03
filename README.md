@@ -26,6 +26,11 @@ the respective build-process.
    * <b>Language Bindings</b>
        * PHP module for apache and cli interpreter
 
+## Test Reports
+
+<b>[Results](http://uscxml.tk.informatik.tu-darmstadt.de/cdash/index.php?project=uscxml)</b> for continuous testing of the 
+[W3C IRP tests](http://www.w3.org/Voice/2013/scxml-irp/) for SCXML and some platform tests.
+
 ## License 
 
 uSCXML itself is distributed under the Simplified BSD license as in, do not sue us and do
