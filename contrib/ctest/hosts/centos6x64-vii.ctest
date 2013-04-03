@@ -1,0 +1,7 @@
+set(CTEST_CMAKE_GENERATOR "Unix Makefiles")
+set(CTEST_SITE "centos6x64-vii")
+set(CTEST_BUILD_CONFIGURATION "Debug")
+
+set(CTEST_BUILD_NAME "linux-x86_64 gcc generic")
+include("tests/generic.ctest")
+include("common.ctest.inc")
