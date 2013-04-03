@@ -9,6 +9,6 @@ set(CTEST_PROJECT_NAME "uscxml")
 set(CTEST_NIGHTLY_START_TIME "01:00:00 UTC")
 
 set(CTEST_DROP_METHOD "http")
-set(CTEST_DROP_SITE "uggla.alkit.se")
+set(CTEST_DROP_SITE "umundo.tk.informatik.tu-darmstadt.de")
 set(CTEST_DROP_LOCATION "/cdash/submit.php?project=uscxml")
 set(CTEST_DROP_SITE_CDASH TRUE)
