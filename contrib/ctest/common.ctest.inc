@@ -70,8 +70,10 @@ set(CTEST_CONFIGURE_COMMAND "${CTEST_CONFIGURE_COMMAND} \"${CTEST_SOURCE_DIRECTO
 
 ### Test! ################################################################
 
-# clean build directory
-ctest_empty_binary_directory(${CTEST_BINARY_DIRECTORY})
+# clean build directory for everything but continuous tests
+if (NOT ${CTEST_SUBMIT_TYPE} MATCHES ".*Continuous.*")
+	ctest_empty_binary_directory(${CTEST_BINARY_DIRECTORY})
+endif()
 
 ctest_start(${CTEST_SUBMIT_TYPE}) # start testing
 #
