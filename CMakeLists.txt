@@ -897,6 +897,7 @@ endif()
 if (UNIX AND NOT APPLE)
 	list (APPEND USCXML_CORE_LIBS "pthread")
 	list (APPEND USCXML_CORE_LIBS "rt")
+	list (APPEND USCXML_CORE_LIBS "dl")
 endif()
 
 list(SORT USCXML_FILES)
