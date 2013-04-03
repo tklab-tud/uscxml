@@ -76,4 +76,4 @@ if [ "$CTEST_SUBMIT_TYPE" = "Continuous" ]; then
 fi
 
 cd $TEST_DIR
-nice $CTEST -VV --timeout 200 -S $TESTFILE
+nice $CTEST -VV --timeout 60 -S $TESTFILE
