@@ -63,6 +63,11 @@ set_target_properties(scxml-test-framework-client PROPERTIES FOLDER "Tests")
 # set_target_properties(test-curl-multi-api PROPERTIES FOLDER "Tests")
 
 if (RUN_W3C_TESTS)
+
+	add_executable(test-w3c src/test-w3c.cpp)
+	target_link_libraries(test-w3c uscxml)
+	set_target_properties(test-w3c PROPERTIES FOLDER "Tests")
+
 	file(GLOB_RECURSE W3C_TESTS
 		samples/w3c/tests/*.scxml
 	)
@@ -70,7 +75,7 @@ if (RUN_W3C_TESTS)
 	foreach( W3C_TEST ${W3C_TESTS} )
 		string(REGEX MATCH "[^//]+.scxml" TEST_NAME ${W3C_TEST})
 		if (NOT TEST_NAME MATCHES ".*sub.*")
-			add_test(${TEST_NAME} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/mmi-browser ${W3C_TEST})
+			add_test(${TEST_NAME} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-w3c ${W3C_TEST})
 		endif()
 	endforeach()
 	
