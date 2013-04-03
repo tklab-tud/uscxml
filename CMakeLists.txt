@@ -147,6 +147,7 @@ if (CMAKE_CROSSCOMPILING)
 	OPTION(BUILD_TESTS "Build USCXML tests" OFF)
 else()
 	OPTION(BUILD_TESTS "Build USCXML tests" ON)
+	OPTION(RUN_W3C_TESTS "Run W3C tests" ON)
 endif()
 
 # a dummy target to depend on the targets needed for tests, see:

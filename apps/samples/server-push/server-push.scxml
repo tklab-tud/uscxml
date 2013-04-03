@@ -25,16 +25,14 @@
 			</transition>
 			
 			<transition event="http.post" target="idle">
-				<script>dump(_event);</script>
 				<if cond="_event.name.endsWith('postponed')">
 					<!-- This is an event we postponed before the heartbeat, respond -->
 					<response requestexpr="_event.origin">
 						<content>This is awesome!</content>
 					</response>
-					<else>
-						<!-- Postpone until the heartbeat is emitted and send all events again -->
-						<postpone until="_event.name == 'heartbeat.1s'" chaining="true" />
-					</else>
+					<else />
+					<!-- Postpone until the heartbeat is emitted and send all events again -->
+					<postpone until="_event.name == 'heartbeat.1s'" chaining="true" />
 				</if>
 			</transition>
 			

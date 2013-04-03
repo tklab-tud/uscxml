@@ -1,0 +1,7 @@
+set(CTEST_CMAKE_GENERATOR "Unix Makefiles")
+set(CTEST_SITE "epikur.local")
+set(CTEST_BUILD_CONFIGURATION "Debug")
+
+set(CTEST_BUILD_NAME "darwin-x86_64 llvm generic")
+include("tests/generic.ctest")
+include("common.ctest.inc")

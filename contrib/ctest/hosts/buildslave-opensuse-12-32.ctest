@@ -1,0 +1,7 @@
+set(CTEST_CMAKE_GENERATOR "Unix Makefiles")
+set(CTEST_SITE "buildslave-opensuse-12-32")
+set(CTEST_BUILD_CONFIGURATION "Debug")
+
+set(CTEST_BUILD_NAME "linux-x86 gcc 4.7.2")
+include("tests/generic.ctest")
+include("common.ctest.inc")
