@@ -172,51 +172,6 @@ public:
 		return ss.str();
 	}
 
-#ifdef SWIGIMPORTED
-protected:
-#endif
-
-	std::string name;
-	Type type;
-	std::string origin;
-	std::string origintype;
-	Arabica::DOM::Document<std::string> dom;
-	std::string sendid;
-	std::string invokeid;
-	Data data;
-	std::string content;
-
-#ifndef SWIG
-	friend std::ostream& operator<< (std::ostream& os, const Event& event);
-#endif
-};
-
-class InvokeRequest : public Event {
-public:
-	InvokeRequest(Event event) : Event(event) {}
-	InvokeRequest() {}
-
-	std::string getType() {
-		return type;
-	}
-	void setType(const std::string& type) {
-		this->type = type;
-	}
-
-	std::string getSource() {
-		return src;
-	}
-	void setSource(const std::string& src) {
-		this->src = src;
-	}
-
-	bool isAutoForwarded() {
-		return autoForward;
-	}
-	void setAutoForwarded(bool autoForward) {
-		this->autoForward = autoForward;
-	}
-
 #ifdef SWIG
 	/// TODO: Do we want to set namelist and params as well?
 	std::map<std::string, std::string> getNameList() {
@@ -263,6 +218,57 @@ public:
 	}
 #endif
 
+
+#ifdef SWIGIMPORTED
+protected:
+#endif
+
+	std::string name;
+	Type type;
+	std::string origin;
+	std::string origintype;
+	Arabica::DOM::Document<std::string> dom;
+	std::string sendid;
+	std::string invokeid;
+	Data data;
+	std::string content;
+	std::map<std::string, std::string> namelist;
+	std::multimap<std::string, std::string> params;
+
+	typedef std::multimap<std::string, std::string> params_t;
+	typedef std::map<std::string, std::string> namelist_t;
+
+#ifndef SWIG
+	friend std::ostream& operator<< (std::ostream& os, const Event& event);
+#endif
+};
+
+class InvokeRequest : public Event {
+public:
+	InvokeRequest(Event event) : Event(event) {}
+	InvokeRequest() {}
+
+	std::string getType() {
+		return type;
+	}
+	void setType(const std::string& type) {
+		this->type = type;
+	}
+
+	std::string getSource() {
+		return src;
+	}
+	void setSource(const std::string& src) {
+		this->src = src;
+	}
+
+	bool isAutoForwarded() {
+		return autoForward;
+	}
+	void setAutoForwarded(bool autoForward) {
+		this->autoForward = autoForward;
+	}
+
 	static InvokeRequest fromXML(const std::string& xmlString);
 	Arabica::DOM::Document<std::string> toDocument();
 	std::string toXMLString() {
@@ -277,11 +283,6 @@ protected:
 	std::string type;
 	std::string src;
 	bool autoForward;
-	std::map<std::string, std::string> namelist;
-	std::multimap<std::string, std::string> params;
-
-	typedef std::multimap<std::string, std::string> params_t;
-	typedef std::map<std::string, std::string> namelist_t;
 
 #ifndef SWIG
 	friend std::ostream& operator<< (std::ostream& os, const InvokeRequest& sendReq);
@@ -315,52 +316,6 @@ public:
 		this->delayMs = delayMs;
 	}
 
-#ifdef SWIG
-	/// TODO: Do we want to set namelist and params as well?
-	std::map<std::string, std::string> getNameList() {
-		return namelist;
-	}
-
-	const std::vector<std::string> getNameListKeys() {
-		std::set<std::string> keys;
-		namelist_t::const_iterator nameListIter = namelist.begin();
-		while (nameListIter != namelist.end()) {
-			keys.insert(nameListIter->first);
-			nameListIter++;
-		}
-		return std::vector<std::string>(keys.begin(), keys.end());
-	}
-
-	// substitute multimap by map with vectors for language bindings
-	std::map<std::string, std::vector<std::string> > getParams() {
-		std::map<std::string, std::vector<std::string> > paramsMap;
-		params_t::iterator paramIter = params.begin();
-		while(paramIter != params.end()) {
-			paramsMap[paramIter->first].push_back(paramIter->second);
-			paramIter++;
-		}
-		return paramsMap;
-	}
-
-	const std::vector<std::string> getParamKeys() {
-		std::set<std::string> keys;
-		params_t::iterator paramIter = params.begin();
-		while(paramIter != params.end()) {
-			keys.insert(paramIter->first);
-			paramIter++;
-		}
-		return std::vector<std::string>(keys.begin(), keys.end());
-	}
-
-#else
-	std::map<std::string, std::string>& getNameList() {
-		return namelist;
-	}
-	std::multimap<std::string, std::string>& getParams() {
-		return params;
-	}
-#endif
-
 	static SendRequest fromXML(const std::string& xmlString);
 	Arabica::DOM::Document<std::string> toDocument();
 	std::string toXMLString() {
@@ -376,12 +331,6 @@ protected:
 	std::string target;
 	std::string type;
 	uint32_t delayMs;
-
-	std::map<std::string, std::string> namelist;
-	std::multimap<std::string, std::string> params;
-
-	typedef std::map<std::string, std::string> namelist_t;
-	typedef std::multimap<std::string, std::string> params_t;
 
 #ifndef SWIG
 	friend std::ostream& operator<< (std::ostream& os, const SendRequest& sendReq);

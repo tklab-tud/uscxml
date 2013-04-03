@@ -143,6 +143,7 @@ void V8DataModel::setEvent(const Event& event) {
 	eventObj->SetInternalField(0, Arabica::DOM::V8DOM::toExternal(privData));
 	eventObj.MakeWeak(0, Arabica::DOM::V8SCXMLEvent::jsDestructor);
 	if (event.dom) {
+		// _event.data is a DOM document
 		v8::Handle<v8::Function> retCtor = Arabica::DOM::V8Document::getTmpl()->GetFunction();
 		v8::Persistent<v8::Object> retObj = v8::Persistent<v8::Object>::New(retCtor->NewInstance());
 
@@ -153,11 +154,33 @@ void V8DataModel::setEvent(const Event& event) {
 		retObj->SetInternalField(0, Arabica::DOM::V8DOM::toExternal(retPrivData));
 		retObj.MakeWeak(0, Arabica::DOM::V8Document::jsDestructor);
 
-		eventObj->Set(v8::String::New("data"), retObj); // set data part of _event
+		eventObj->Set(v8::String::New("data"), retObj);
 	} else if (event.content.length() > 0) {
-		eventObj->Set(v8::String::New("data"), v8::String::New(event.content.c_str())); // set data part of _event
+		// _event.data is a string
+		eventObj->Set(v8::String::New("data"), v8::String::New(event.content.c_str()));
 	} else {
-		eventObj->Set(v8::String::New("data"), getDataAsValue(event.data)); // set data part of _event
+		// _event.data is KVP
+		Event eventCopy(event);
+		if (!eventCopy.params.empty()) {
+			Event::params_t::iterator paramIter = eventCopy.params.begin();
+			while(paramIter != eventCopy.params.end()) {
+				eventCopy.data.compound[paramIter->first] = Data(paramIter->second, Data::VERBATIM);
+				paramIter++;
+			}
+		}
+		if (!eventCopy.namelist.empty()) {
+			Event::namelist_t::iterator nameListIter = eventCopy.namelist.begin();
+			while(nameListIter != eventCopy.namelist.end()) {
+				eventCopy.data.compound[nameListIter->first] = Data(nameListIter->second, Data::VERBATIM);
+				nameListIter++;
+			}
+		}
+		if (eventCopy.data.compound.size() > 0) {
+			eventObj->Set(v8::String::New("data"), getDataAsValue(eventCopy.data)); // set data part of _event
+		} else {
+			// test 343
+			eventObj->Set(v8::String::New("data"), v8::Undefined()); // set data part of _event
+		}
 	}
 	global->Set(v8::String::New("_event"), eventObj);
 }
@@ -296,7 +319,6 @@ uint32_t V8DataModel::getLength(const std::string& expr) {
 	exceptionEvent.name = "error.execution";
 	exceptionEvent.data.compound["exception"] = Data("'" + expr + "' does not evaluate to an array.", Data::VERBATIM);;
 
-	_interpreter->receiveInternal(exceptionEvent);
 	throw(exceptionEvent);
 }
 
@@ -438,7 +460,7 @@ void V8DataModel::throwExceptionEvent(const v8::TryCatch& tryCatch) {
 
 	}
 
-	_interpreter->receiveInternal(exceptionEvent);
+//	_interpreter->receiveInternal(exceptionEvent);
 	throw(exceptionEvent);
 }
 

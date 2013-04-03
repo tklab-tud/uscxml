@@ -31,6 +31,39 @@ the respective build-process.
 <b>[Results](http://uscxml.tk.informatik.tu-darmstadt.de/cdash/index.php?project=uscxml)</b> for continuous testing of the 
 [W3C IRP tests](http://www.w3.org/Voice/2013/scxml-irp/) for SCXML and some platform tests.
 
+<table>
+	<tr><th>Test#</th><th>Status</th><th>Comment</th></tr>
+	<tr><td><tt>178</tt></td><td><tt>Failed / Won't&nbsp;fix</tt></td>
+		<td>A manual test that relies on an unspecified _event.raw attribute</td>
+	<tr><td><tt>230</tt></td><td><tt>False report</tt></td>
+		<td>A manual test that is not actually failing but does not end in a state called <tt>pass</tt></td>
+	<tr><td><tt>250</tt></td><td><tt>False report</tt></td>
+		<td>A manual test that is not actually failing but does not end in a state called <tt>pass</tt></td>
+	<tr><td><tt>301</tt></td><td><tt>Failed</tt></td>
+		<td><i>"If the script can not be downloaded within a platform-specific timeout interval, the document 
+			is considered non-conformant, and the platform must reject it"</i> -- USCXML will try to evaluate the 
+			rest of the document nevertheless.</td>
+	</tr>
+	<tr><td><tt>307</tt></td><td><tt>False report</tt></td>
+		<td>A manual test that is not actually failing but does not end in a state called <tt>pass</tt></td>
+	<tr><td><tt>329</tt></td><td><tt>Failed / Won't&nbsp;fix</tt></td>
+		<td>Tests that <tt>_event</tt> cannot be assigned, but I like to add attributes to _event to have a 
+			scope that only lasts for one event. Will raise the issue on the ML.</td>
+	<tr><td><tt>333</tt></td><td><tt>Failed / Won't&nbsp;fix</tt></td>
+		<td><i>"sendid [...] Otherwise it must leave it blank."</i> -- USCXML sets this to the empty string instead of <tt>null</tt>.</td>
+	<tr><td><tt>335</tt></td><td><tt>Failed / Won't&nbsp;fix</tt></td>
+		<td><i>"origin [...] For internal and platform events, the Processor must leave this field blank."</i> -- USCXML sets this to the empty string instead of <tt>null</tt>.</td>
+	<tr><td><tt>337</tt></td><td><tt>Failed / Won't&nbsp;fix</tt></td>
+		<td><i>"origintype [...] For internal and platform events, the Processor must leave this field blank."</i> -- USCXML sets this to the empty string instead of <tt>null</tt>.</td>
+	<tr><td><tt>339</tt></td><td><tt>Failed / Won't&nbsp;fix</tt></td>
+		<td><i>"invokeid [...] Otherwise it must leave it blank."</i> -- USCXML sets this to the empty string instead of <tt>null</tt>.</td>
+	<tr><td><tt>346</tt></td><td><tt>Failed / Won't&nbsp;fix</tt></td>
+		<td><i>"test that any attempt to change the value of a system variable causes error.execution to be raised."</i> -- I like to edit _event.</td>
+
+</table>
+
+
+
 ## License 
 
 uSCXML itself is distributed under the Simplified BSD license as in, do not sue us and do

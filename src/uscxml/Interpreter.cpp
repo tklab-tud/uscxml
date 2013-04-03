@@ -23,6 +23,18 @@
 
 #define VERBOSE 0
 
+#define CATCH_AND_DISTRIBUTE(msg) \
+catch (Event e) {\
+	LOG(ERROR) << msg << std::endl << e << std::endl;\
+	if (rethrow) {\
+		throw(e);\
+	} else {\
+		e.name = "error.execution";\
+		e.type = Event::PLATFORM;\
+		_internalQueue.push_back(e);\
+	}\
+}
+
 namespace uscxml {
 
 using namespace Arabica::XPath;
@@ -356,54 +368,12 @@ void Interpreter::internalDoneSend(const Arabica::DOM::Node<std::string>& state)
 	if (doneDatas.size() > 0) {
 		// only process first donedata element
 		Arabica::DOM::Node<std::string> doneData = doneDatas[0];
-		NodeList<std::string> doneChilds = doneData.getChildNodes();
-		for (int i = 0; i < doneChilds.getLength(); i++) {
-			if (doneChilds.item(i).getNodeType() != Node_base::ELEMENT_NODE)
-				continue;
-			if (boost::iequals(TAGNAME(doneChilds.item(i)), _xmlNSPrefix + "param")) {
-				try {
-					if (!HAS_ATTR(doneChilds.item(i), "name")) {
-						LOG(ERROR) << "param element is missing name attribut";
-						continue;
-					}
-					std::string paramValue;
-					if (HAS_ATTR(doneChilds.item(i), "expr") && _dataModel) {
-						std::string expr = _dataModel.evalAsString(ATTR(doneChilds.item(i), "expr"));
-						paramValue = _dataModel.evalAsString(expr);
-					} else if(HAS_ATTR(doneChilds.item(i), "location") && _dataModel) {
-						paramValue = _dataModel.evalAsString(ATTR(doneChilds.item(i), "location"));
-					} else {
-						LOG(ERROR) << "param element is missing expr or location or no datamodel is specified";
-						continue;
-					}
-					/// test 294
-					event.data.compound[ATTR(doneChilds.item(i), "name")] = paramValue;
-				} catch (Event e) {
-					e.name = "error.execution";
-					_internalQueue.push_back(e);
-				}
-			}
-			if (boost::iequals(TAGNAME(doneChilds.item(i)), _xmlNSPrefix + "content")) {
-				if (HAS_ATTR(doneChilds.item(i), "expr")) {
-					try {
-						if (_dataModel) {
-							/// test 294
-							event.data = Data(_dataModel.evalAsString(ATTR(doneChilds.item(i), "expr")), Data::VERBATIM);
-						} else {
-							LOG(ERROR) << "content element has expr attribute but no datamodel is specified.";
-						}
-					} catch (Event e) {
-						e.name = "error.execution";
-						_internalQueue.push_back(e);
-					}
-				} else if (doneChilds.item(i).hasChildNodes()) {
-					event.data = Data(doneChilds.item(i).getFirstChild().getNodeValue(), Data::VERBATIM);
-				} else {
-					LOG(ERROR) << "content element does not specify any content.";
-				}
-
-			}
-		}
+		processParamChilds(doneData, event.params);
+		Arabica::XPath::NodeSet<std::string> contents = filterChildElements(_xmlNSPrefix + "content", doneDatas[0]);
+		if (contents.size() > 1)
+			LOG(ERROR) << "Only a single content element is allowed for send elements - using first one";
+		if (contents.size() > 0)
+			processContentElement(contents[0], event.dom, event.content);
 	}
 
 	event.name = "done.state." + ATTR(stateElem.getParentNode(), "id"); // parent?!
@@ -462,6 +432,38 @@ void Interpreter::processContentElement(const Arabica::DOM::Node<std::string>& c
 		}
 	} else {
 		LOG(ERROR) << "content element does not specify any content.";
+	}
+}
+
+void Interpreter::processParamChilds(const Arabica::DOM::Node<std::string>& element, std::multimap<std::string, std::string>& params) {
+	NodeSet<std::string> paramElems = filterChildElements(_xmlNSPrefix + "param", element);
+	try {
+		for (int i = 0; i < paramElems.size(); i++) {
+			if (!HAS_ATTR(paramElems[i], "name")) {
+				LOG(ERROR) << "param element is missing name attribute";
+				continue;
+			}
+			std::string paramValue;
+			if (HAS_ATTR(paramElems[i], "expr") && _dataModel) {
+				paramValue = _dataModel.evalAsString(ATTR(paramElems[i], "expr"));
+			} else if(HAS_ATTR(paramElems[i], "location") && _dataModel) {
+				paramValue = _dataModel.evalAsString(ATTR(paramElems[i], "location"));
+			} else {
+				LOG(ERROR) << "param element is missing expr or location or no datamodel is specified";
+				continue;
+			}
+			std::string paramKey = ATTR(paramElems[i], "name");
+			params.insert(std::make_pair(paramKey, paramValue));
+		}
+	} catch(Event e) {
+		LOG(ERROR) << "Syntax error while processing params:" << std::endl << e << std::endl;
+		// test 343
+		std::multimap<std::string, std::string>::iterator paramIter = params.begin();
+		while(paramIter != params.end()) {
+			params.erase(paramIter++);
+		}
+		e.name = "error.execution";
+		_internalQueue.push_back(e);
 	}
 }
 
@@ -585,28 +587,7 @@ void Interpreter::send(const Arabica::DOM::Node<std::string>& element) {
 
 	try {
 		// params
-		NodeSet<std::string> params = filterChildElements(_xmlNSPrefix + "param", element);
-		for (int i = 0; i < params.size(); i++) {
-			if (!HAS_ATTR(params[i], "name")) {
-				LOG(ERROR) << "param element is missing name attribute";
-				continue;
-			}
-			std::string paramValue;
-			if (HAS_ATTR(params[i], "expr") && _dataModel) {
-				paramValue = _dataModel.evalAsString(ATTR(params[i], "expr"));
-			} else if(HAS_ATTR(params[i], "location") && _dataModel) {
-				paramValue = _dataModel.evalAsString(ATTR(params[i], "location"));
-			} else {
-				LOG(ERROR) << "param element is missing expr or location or no datamodel is specified";
-				continue;
-			}
-			std::string paramKey = ATTR(params[i], "name");
-			// use lower case parameter name in params - this is at least something to think about again
-			std::string lcParamKey = paramKey;
-			boost::algorithm::to_lower(lcParamKey);
-			sendReq.params.insert(std::make_pair(lcParamKey, paramValue));
-			sendReq.data.compound[paramKey] = Data(paramValue, Data::VERBATIM);
-		}
+		processParamChilds(element, sendReq.params);
 	} catch (Event e) {
 		LOG(ERROR) << "Syntax error in send element param expr:" << std::endl << e << std::endl;
 		return;
@@ -760,30 +741,7 @@ void Interpreter::invoke(const Arabica::DOM::Node<std::string>& element) {
 		}
 
 		// params
-		NodeSet<std::string> params = filterChildElements(_xmlNSPrefix + "param", element);
-		for (int i = 0; i < params.size(); i++) {
-			if (!HAS_ATTR(params[i], "name")) {
-				LOG(ERROR) << "param element is missing name attribut";
-				continue;
-			}
-			std::string paramValue;
-			if (HAS_ATTR(params[i], "expr")) {
-				if (_dataModel) {
-					paramValue = _dataModel.evalAsString(ATTR(params[i], "expr"));
-				} else {
-					LOG(ERROR) << "Cannot use param expr without a datamodel!";
-				}
-			} else if(HAS_ATTR(params[i], "location") && _dataModel) {
-				paramValue = _dataModel.evalAsString(ATTR(params[i], "location"));
-			} else {
-				LOG(ERROR) << "param element is missing expr or location or no datamodel is specified";
-				continue;
-			}
-			std::string paramKey = ATTR(params[i], "name");
-			//boost::algorithm::to_lower(paramKey);
-			invokeReq.params.insert(std::make_pair(paramKey, paramValue));
-
-		}
+		processParamChilds(element, invokeReq.params);
 
 		// content
 		try {
@@ -911,6 +869,8 @@ bool Interpreter::hasConditionMatch(const Arabica::DOM::Node<std::string>& condi
 			return _dataModel.evalAsBool(ATTR(conditional, "cond"));
 		} catch (Event e) {
 			LOG(ERROR) << "Syntax error in cond attribute of " << TAGNAME(conditional) << " element:" << std::endl << e << std::endl;
+			e.name = "error.execution";
+			_internalQueue.push_back(e);
 			return false;
 		}
 	}
@@ -1000,12 +960,8 @@ void Interpreter::executeContent(const Arabica::DOM::Node<std::string>& content,
 				uint32_t iterations = 0;
 				try {
 					iterations = _dataModel.getLength(array);
-				} catch (Event e) {
-					LOG(ERROR) << "Syntax error in array attribute of foreach element:" << std::endl << e << std::endl;
-					if (rethrow)
-						throw e;
-					return;
 				}
+				CATCH_AND_DISTRIBUTE("Syntax error in array attribute of foreach element:")
 				try {
 					_dataModel.pushContext(); // copy old and enter new context
 					for (uint32_t iteration = 0; iteration < iterations; iteration++) {
@@ -1026,12 +982,8 @@ void Interpreter::executeContent(const Arabica::DOM::Node<std::string>& content,
 							executeContent(content.getChildNodes(), true);
 					}
 					_dataModel.popContext(); // leave stacked context
-				} catch (Event e) {
-					_dataModel.popContext(); // leave stacked context even when exception was thrown
-					LOG(ERROR) << "Syntax error in foreach element:" << std::endl << e << std::endl;
-					if (rethrow)
-						throw e;
 				}
+				CATCH_AND_DISTRIBUTE("Syntax error in foreach element:")
 			} else {
 				LOG(ERROR) << "Expected array and item attributes with foreach element!" << std::endl;
 			}
@@ -1045,11 +997,8 @@ void Interpreter::executeContent(const Arabica::DOM::Node<std::string>& content,
 			if (_dataModel) {
 				try {
 					std::cout << _dataModel.evalAsString(logElem.getAttribute("expr")) << std::endl;
-				} catch (Event e) {
-					LOG(ERROR) << "Syntax error in expr attribute of log element:" << std::endl << e << std::endl;
-					if (rethrow)
-						throw e;
 				}
+				CATCH_AND_DISTRIBUTE("Syntax error in expr attribute of log element:")
 			} else {
 				if (logElem.hasAttribute("label"))
 					std::cout << std::endl;
@@ -1062,18 +1011,12 @@ void Interpreter::executeContent(const Arabica::DOM::Node<std::string>& content,
 				if (!_dataModel.isDeclared(ATTR(content, "location"))) {
 					// test 286, 331
 					LOG(ERROR) << "Assigning to undeclared location '" << ATTR(content, "location") << "' not allowed." << std::endl;
-					Event e("error.execution", Event::PLATFORM);
-					_internalQueue.push_back(e);
-					throw e;
-					return;
+					throw Event("error.execution", Event::PLATFORM);
 				} else {
 					_dataModel.assign(ATTR(content, "location"), ATTR(content, "expr"));
 				}
-			} catch (Event e) {
-				LOG(ERROR) << "Syntax error in attributes of assign element:" << std::endl << e << std::endl;
-				if (rethrow)
-					throw e;
 			}
+			CATCH_AND_DISTRIBUTE("Syntax error in attributes of assign element:")
 		}
 	} else if (boost::iequals(TAGNAME(content), _xmlNSPrefix + "validate")) {
 		// --- VALIDATE --------------------------
@@ -1106,22 +1049,16 @@ void Interpreter::executeContent(const Arabica::DOM::Node<std::string>& content,
 
 				try {
 					_dataModel.eval(srcContent.str());
-				} catch (Event e) {
-					LOG(ERROR) << "Syntax error while executing script element from '" << ATTR(content, "src") << "':" << std::endl << e << std::endl;
-					if (rethrow)
-						throw e;
 				}
+				CATCH_AND_DISTRIBUTE("Syntax error while executing script element from '" << ATTR(content, "src") << "':")
 			} else {
 				if (content.hasChildNodes()) {
 					// search for the text node with the actual script
 					if (content.getFirstChild().getNodeType() == Node_base::TEXT_NODE) {
 						try {
 							_dataModel.eval(content.getFirstChild().getNodeValue());
-						} catch (Event e) {
-							LOG(ERROR) << "Syntax error while executing script element" << std::endl << e << std::endl;
-							if (rethrow)
-								throw e;
 						}
+						CATCH_AND_DISTRIBUTE("Syntax error while executing script element")
 					}
 				}
 			}
@@ -1143,12 +1080,8 @@ void Interpreter::executeContent(const Arabica::DOM::Node<std::string>& content,
 			}
 			_sendQueue->cancelEvent(sendId);
 
-		} catch (Event e) {
-			LOG(ERROR) << "Syntax error while executing cancel element" << std::endl << e << std::endl;
-			if (rethrow)
-				throw e;
 		}
-
+		CATCH_AND_DISTRIBUTE("Syntax error while executing cancel element")
 	} else if (boost::iequals(TAGNAME(content), _xmlNSPrefix + "invoke")) {
 		// --- INVOKE --------------------------
 	} else {
@@ -1368,24 +1301,21 @@ Arabica::XPath::NodeSet<std::string> Interpreter::getInitialStates(Arabica::DOM:
 
 	assert(isCompound(state) || isParallel(state));
 
-	Arabica::XPath::NodeSet<std::string> initialStates;
-
 	// initial attribute at element
 	Arabica::DOM::Element<std::string> stateElem = (Arabica::DOM::Element<std::string>)state;
 	if (stateElem.hasAttribute("initial")) {
 		return getStates(tokenizeIdRefs(stateElem.getAttribute("initial")));
 	}
 
-	Arabica::XPath::NodeSet<std::string> initStates;
-
 	// initial element as child - but not the implicit generated one
 	NodeSet<std::string> initElems = filterChildElements(_xmlNSPrefix + "initial", state);
 	if(initElems.size() == 1 && !boost::iequals(ATTR(initElems[0], "generated"), "true")) {
-		initStates.push_back(initialStates[0]);
-		return initStates;
+		NodeSet<std::string> initTrans = filterChildElements(_xmlNSPrefix + "transition", initElems[0]);
+		return getTargetStates(initTrans[0]);
 	}
 
 	// first child state
+	Arabica::XPath::NodeSet<std::string> initStates;
 	NodeList<std::string> childs = state.getChildNodes();
 	for (int i = 0; i < childs.getLength(); i++) {
 		if (isState(childs.item(i))) {
