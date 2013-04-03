@@ -679,7 +679,7 @@ void Interpreter::delayedSend(void* userdata, std::string eventName) {
 	} else {
 		IOProcessor ioProc;
 		if (sendReq.type.length() > 0)
-			IOProcessor ioProc = INSTANCE->getIOProcessor(sendReq.type);
+			ioProc = INSTANCE->getIOProcessor(sendReq.type);
 		if (ioProc) {
 			try {
 				ioProc.send(sendReq);

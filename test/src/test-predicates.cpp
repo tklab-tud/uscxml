@@ -13,6 +13,7 @@ int main(int argc, char** argv) {
 	using namespace Arabica::XPath;
 
 	Interpreter* interpreter = Interpreter::fromURI(argv[1]);
+	interpreter->init();
 	assert(interpreter);
 
 	Node<std::string> atomicState = interpreter->getState("atomic");
