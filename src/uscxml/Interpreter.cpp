@@ -1171,16 +1171,16 @@ Arabica::DOM::Node<std::string> Interpreter::getParentState(const Arabica::DOM::
 	return parent;
 }
 
-bool Interpreter::hasAncestorElement(const Arabica::DOM::Node<std::string>& node, const std::string tagName) {
+Arabica::DOM::Node<std::string> Interpreter::getAncestorElement(const Arabica::DOM::Node<std::string>& node, const std::string tagName) {
 	Arabica::DOM::Node<std::string> parent = node.getParentNode();
 	while(parent) {
 		if (parent.getNodeType() == Node_base::ELEMENT_NODE &&
 		        boost::iequals(TAGNAME(parent), tagName)) {
-			return true;
+			return parent;
 		}
 		parent = parent.getParentNode();
 	}
-	return false;
+	return Arabica::DOM::Node<std::string>();
 }
 
 /**
@@ -1426,19 +1426,6 @@ bool Interpreter::isTargetless(const Arabica::DOM::Node<std::string>& transition
 			return false;
 	}
 	return true;
-}
-
-bool Interpreter::isWithinSameChild(const Arabica::DOM::Node<std::string>& transition) {
-	if (!isTargetless(transition)) {
-		std::string target = ((Arabica::DOM::Element<std::string>)transition).getAttribute("target");
-		assert(transition.getParentNode());
-		// @todo: do we need to look at parallel as well?
-		if (_xpath.evaluate("" + _xpathPrefix + "state[id=\"" + target + "\"]", transition.getParentNode()).asNodeSet().size() > 0)
-			return true;
-		if (_xpath.evaluate("" + _xpathPrefix + "parallel[id=\"" + target + "\"]", transition.getParentNode()).asNodeSet().size() > 0)
-			return true;
-	}
-	return false;
 }
 
 bool Interpreter::isState(const Arabica::DOM::Node<std::string>& state) {

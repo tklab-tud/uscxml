@@ -47,7 +47,7 @@ void InterpreterDraft6::interpret() {
 		NodeSet<std::string> dataElems = _xpath.evaluate("//" + _xpathPrefix + "data", _scxml).asNodeSet();
 		for (unsigned int i = 0; i < dataElems.size(); i++) {
 			// do not process data elements of nested documents from invokers
-			if (!hasAncestorElement(dataElems[i], _xmlNSPrefix + "invoke"))
+			if (!getAncestorElement(dataElems[i], _xmlNSPrefix + "invoke"))
 				initializeData(dataElems[i]);
 		}
 	} else if(_dataModel) {
@@ -239,6 +239,8 @@ void InterpreterDraft6::mainEventLoop() {
 					}
 					monIter++;
 				}
+				// test 403b
+				enabledTransitions.to_document_order();
 				microstep(enabledTransitions);
 			}
 		}
@@ -329,8 +331,11 @@ void InterpreterDraft6::mainEventLoop() {
 			}
 		}
 		enabledTransitions = selectTransitions(_currEvent.name);
-		if (!enabledTransitions.empty())
+		if (!enabledTransitions.empty()) {
+			// test 403b
+			enabledTransitions.to_document_order();
 			microstep(enabledTransitions);
+		}
 	}
 
 EXIT_INTERPRETER:
@@ -372,62 +377,86 @@ EXIT_INTERPRETER:
 Arabica::XPath::NodeSet<std::string> InterpreterDraft6::selectTransitions(const std::string& event) {
 	Arabica::XPath::NodeSet<std::string> enabledTransitions;
 
-	NodeSet<std::string> atomicStates;
+	NodeSet<std::string> states;
 	for (unsigned int i = 0; i < _configuration.size(); i++) {
 		if (isAtomic(_configuration[i]))
-			atomicStates.push_back(_configuration[i]);
+			states.push_back(_configuration[i]);
 	}
-	atomicStates.to_document_order();
+	states.to_document_order();
 
-	for (unsigned int i = 0; i < atomicStates.size(); i++) {
-		NodeSet<std::string> ancestors = getProperAncestors(atomicStates[i], Arabica::DOM::Node<std::string>());
+#if 0
+	std::cout << "Atomic states: " << std::endl;
+	for (int i = 0; i < states.size(); i++) {
+		std::cout << states[i] << std::endl << "----" << std::endl;
+	}
+	std::cout << std::endl;
+#endif
 
-		NodeSet<std::string> sortedAncestors;
-		sortedAncestors.push_back(atomicStates[i]);
-		sortedAncestors.insert(sortedAncestors.end(), ancestors.begin(), ancestors.end());
-
-		for (unsigned int j = 0; j < sortedAncestors.size(); j++) {
-			NodeSet<std::string> transitions = filterChildElements(_xmlNSPrefix + "transition", sortedAncestors[j]);
-			for (unsigned int k = 0; k < transitions.size(); k++) {
-				std::string eventName;
-				if (HAS_ATTR(transitions[k], "event")) {
-					eventName = ATTR(transitions[k], "event");
-				} else if(HAS_ATTR(transitions[k], "eventexpr")) {
-					if (_dataModel) {
-						eventName = _dataModel.evalAsString(ATTR(transitions[k], "eventexpr"));
-					} else {
-						LOG(ERROR) << "Transition has eventexpr attribute with no datamodel defined";
-						goto LOOP;
-					}
-				} else {
-					goto LOOP;
-				}
-
-				if (eventName.length() > 0 &&
-				        nameMatch(eventName, event) &&
-				        hasConditionMatch(transitions[k])) {
-					enabledTransitions.push_back(transitions[k]);
-					goto LOOP;
-				}
+	unsigned int index = 0;
+	while(states.size() > index) {
+		bool foundTransition = false;
+		NodeSet<std::string> transitions = filterChildElements(_xmlNSPrefix + "transition", states[index]);
+		for (unsigned int k = 0; k < transitions.size(); k++) {
+			if (isEnabledTransition(transitions[k], event)) {
+				enabledTransitions.push_back(transitions[k]);
+				foundTransition = true;
+				goto LOOP;
 			}
 		}
-LOOP:
-		;
+		if (!foundTransition) {
+			Node<std::string> parent = states[index].getParentNode();
+			if (parent) {
+				states.push_back(parent);
+			}
+		}
+	LOOP:
+		index++;
 	}
-
+	
+#if 0
+	std::cout << "Enabled transitions: " << std::endl;
+	for (int i = 0; i < enabledTransitions.size(); i++) {
+		std::cout << enabledTransitions[i] << std::endl << "----" << std::endl;
+	}
+	std::cout << std::endl;
+#endif
+	
 	enabledTransitions = filterPreempted(enabledTransitions);
 	return enabledTransitions;
 }
 
+bool InterpreterDraft6::isEnabledTransition(const Arabica::DOM::Node<std::string>& transition, const std::string& event) {
+	std::string eventName;
+	if (HAS_ATTR(transition, "event")) {
+		eventName = ATTR(transition, "event");
+	} else if(HAS_ATTR(transition, "eventexpr")) {
+		if (_dataModel) {
+			eventName = _dataModel.evalAsString(ATTR(transition, "eventexpr"));
+		} else {
+			LOG(ERROR) << "Transition has eventexpr attribute with no datamodel defined";
+			return false;
+		}
+	} else {
+		return false;
+	}
+	
+	if (eventName.length() > 0 &&
+			nameMatch(eventName, event) &&
+			hasConditionMatch(transition)) {
+		return true;
+	}
+	return false;
+}
+	
 Arabica::XPath::NodeSet<std::string> InterpreterDraft6::selectEventlessTransitions() {
 	Arabica::XPath::NodeSet<std::string> enabledTransitions;
 
-	NodeSet<std::string> atomicStates;
+	NodeSet<std::string> states;
 	for (unsigned int i = 0; i < _configuration.size(); i++) {
 		if (isAtomic(_configuration[i]))
-			atomicStates.push_back(_configuration[i]);
+			states.push_back(_configuration[i]);
 	}
-	atomicStates.to_document_order();
+	states.to_document_order();
 
 #if 0
 	std::cout << "Atomic States: ";
@@ -437,39 +466,34 @@ Arabica::XPath::NodeSet<std::string> InterpreterDraft6::selectEventlessTransitio
 	std::cout << std::endl;
 #endif
 
-	for (unsigned int i = 0; i < atomicStates.size(); i++) {
-		NodeSet<std::string> ancestors = getProperAncestors(atomicStates[i], Arabica::DOM::Node<std::string>());
-		ancestors.push_back(atomicStates[i]);
-#if 0
-		std::cout << "Ancestors: ";
-		for (int i = 0; i < ancestors.size(); i++) {
-			std::cout << ATTR(ancestors[i], "id") << ", ";
-		}
-		std::cout << std::endl;
-#endif
-
-		for (unsigned int j = 0; j < ancestors.size(); j++) {
-			NodeSet<std::string> transitions = filterChildElements(_xmlNSPrefix + "transition", ancestors[j]);
-			for (unsigned int k = 0; k < transitions.size(); k++) {
-				if (!HAS_ATTR(transitions[k], "event") && hasConditionMatch(transitions[k])) {
-					enabledTransitions.push_back(transitions[k]);
-					goto LOOP;
-				}
+	unsigned int index = 0;
+	while(states.size() > index) {
+		bool foundTransition = false;
+		NodeSet<std::string> transitions = filterChildElements(_xmlNSPrefix + "transition", states[index]);
+		for (unsigned int k = 0; k < transitions.size(); k++) {
+			if (!HAS_ATTR(transitions[k], "event") && hasConditionMatch(transitions[k])) {
+				enabledTransitions.push_back(transitions[k]);
+				foundTransition = true;
+				goto LOOP;
 			}
-
-#if 0
-			NodeSet<std::string> transitions = filterChildElements(_xmlNSPrefix + "transition", ancestors[j]);
-			for (unsigned int k = 0; k < transitions.size(); k++) {
-				if (!((Arabica::DOM::Element<std::string>)transitions[k]).hasAttribute("event") && hasConditionMatch(transitions[k])) {
-					enabledTransitions.push_back(transitions[k]);
-					goto LOOP;
-				}
-			}
-#endif
-		LOOP:
-			;
 		}
+		if (!foundTransition) {
+			Node<std::string> parent = states[index].getParentNode();
+			if (parent) {
+				states.push_back(parent);
+			}
+		}
+	LOOP:
+		index++;
 	}
+
+#if 0
+	std::cout << "Enabled eventless transitions: " << std::endl;
+	for (int i = 0; i < enabledTransitions.size(); i++) {
+		std::cout << enabledTransitions[i] << std::endl << "----" << std::endl;
+	}
+	std::cout << std::endl;
+#endif
 
 	enabledTransitions = filterPreempted(enabledTransitions);
 	return enabledTransitions;
@@ -479,22 +503,24 @@ Arabica::XPath::NodeSet<std::string> InterpreterDraft6::filterPreempted(const Ar
 	Arabica::XPath::NodeSet<std::string> filteredTransitions;
 	for (unsigned int i = 0; i < enabledTransitions.size(); i++) {
 		Arabica::DOM::Node<std::string> t = enabledTransitions[i];
+		if (!isTargetless(t)) {
+			for (unsigned int j = 0; j < filteredTransitions.size(); j++) {
+				if (j == i)
+					continue;
+				Arabica::DOM::Node<std::string> t2 = filteredTransitions[j];
+				if (isPreemptingTransition(t2, t)) {
 #if 0
-		std::cout << "Checking: " << std::endl << t << std::endl;
+					std::cout << "#####" << std::endl << "Transition " << std::endl
+					<< t2 << std::endl << " preempts " << std::endl << t << std::endl << "#####" << std::endl;
 #endif
-		
-		for (unsigned int j = i+1; j < enabledTransitions.size(); j++) {
-			Arabica::DOM::Node<std::string> t2 = enabledTransitions[j];
-#if 0
-			std::cout << "\tagainst: " << std::endl << t2 << std::endl;
-#endif
-			if (isPreemptingTransition(t2, t)) {
-#if 0
-				std::cout << "Transition preempted!: " << std::endl << t2 << std::endl << t << std::endl;
-#endif
-				goto LOOP;
+					goto LOOP;
+				}
 			}
 		}
+#if 0
+		std::cout << "----" << "Enabling Transition " << std::endl << t << std::endl;
+#endif
+
 		filteredTransitions.push_back(t);
 LOOP:
 		;
@@ -502,6 +528,9 @@ LOOP:
 	return filteredTransitions;
 }
 
+/**
+ * Is t1 preempting t2?
+ */
 bool InterpreterDraft6::isPreemptingTransition(const Arabica::DOM::Node<std::string>& t1, const Arabica::DOM::Node<std::string>& t2) {
 	assert(t1);
 	assert(t2);
@@ -510,16 +539,57 @@ bool InterpreterDraft6::isPreemptingTransition(const Arabica::DOM::Node<std::str
 	std::cout << "Checking preemption: " << std::endl << t1 << std::endl << t2 << std::endl;
 #endif
 
-#if 1
 	if (t1 == t2)
 		return false;
-	if (isWithinSameChild(t1) && (!isTargetless(t2) && !isWithinSameChild(t2)))
-		return true;
-	if (!isTargetless(t1) && !isWithinSameChild(t1))
+	if (isTargetless(t1))
+		return false; // targetless transitions do not preempt any other transitions
+	if (isWithinParallel(t1) && isCrossingBounds(t2))
+		return true; // transitions within a single child of <parallel> preempt transitions that cross child boundaries
+	if (isCrossingBounds(t1))
+		return true; // transitions that cross child boundaries preempt all other transitions
+
+	return false;
+}
+
+bool InterpreterDraft6::isCrossingBounds(const Arabica::DOM::Node<std::string>& transition) {
+	if (!isTargetless(transition) && !isWithinParallel(transition))
 		return true;
 	return false;
-#endif
+}
 
+bool InterpreterDraft6::isWithinParallel(const Arabica::DOM::Node<std::string>& transition) {
+	if (isTargetless(transition))
+		return false;
+	
+	Node<std::string> source;
+	if (HAS_ATTR(transition, "type") && boost::iequals(ATTR(transition, "type"), "internal")) {
+		source = getSourceState(transition);
+	} else {
+		source = getSourceState(transition).getParentNode();
+	}
+	NodeSet<std::string> targets = getTargetStates(transition);
+	targets.push_back(source);
+	
+	Arabica::DOM::Node<std::string> lcpa = findLCPA(targets);
+	return lcpa;
+}
+
+Arabica::DOM::Node<std::string> InterpreterDraft6::findLCPA(const Arabica::XPath::NodeSet<std::string>& states) {
+	Arabica::XPath::NodeSet<std::string> ancestors = getProperAncestors(states[0], Arabica::DOM::Node<std::string>());
+	Arabica::DOM::Node<std::string> ancestor;
+	for (int i = 0; i < ancestors.size(); i++) {
+		if (!isParallel(ancestors[i]))
+			continue;
+		for (int j = 0; j < states.size(); j++) {
+			if (!isDescendant(states[j], ancestors[i]) && (states[j] != ancestors[i]))
+				goto NEXT_ANCESTOR;
+		}
+		ancestor = ancestors[i];
+		break;
+	NEXT_ANCESTOR:
+		;
+	}
+	return ancestor;
 }
 
 void InterpreterDraft6::microstep(const Arabica::XPath::NodeSet<std::string>& enabledTransitions) {

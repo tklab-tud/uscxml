@@ -228,7 +228,7 @@ public:
 	Arabica::XPath::NodeSet<std::string> getInitialStates(Arabica::DOM::Node<std::string> state = Arabica::DOM::Node<std::string>());
 	static Arabica::XPath::NodeSet<std::string> getChildStates(const Arabica::DOM::Node<std::string>& state);
 	static Arabica::DOM::Node<std::string> getParentState(const Arabica::DOM::Node<std::string>& element);
-	static bool hasAncestorElement(const Arabica::DOM::Node<std::string>& node, const std::string tagName);
+	static Arabica::DOM::Node<std::string> getAncestorElement(const Arabica::DOM::Node<std::string>& node, const std::string tagName);
 	Arabica::XPath::NodeSet<std::string> getTargetStates(const Arabica::DOM::Node<std::string>& transition);
 	Arabica::DOM::Node<std::string> getSourceState(const Arabica::DOM::Node<std::string>& transition);
 
@@ -297,11 +297,9 @@ protected:
 	static void delayedSend(void* userdata, std::string eventName);
 
 	static bool nameMatch(const std::string& transitionEvent, const std::string& event);
-	bool isWithinSameChild(const Arabica::DOM::Node<std::string>& transition);
 	bool hasConditionMatch(const Arabica::DOM::Node<std::string>& conditional);
 	bool isInFinalState(const Arabica::DOM::Node<std::string>& state);
 	bool parentIsScxmlState(Arabica::DOM::Node<std::string> state);
-
 
 	static boost::uuids::random_generator uuidGen;
 
