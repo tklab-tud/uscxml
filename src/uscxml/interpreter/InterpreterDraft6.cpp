@@ -429,9 +429,25 @@ Arabica::XPath::NodeSet<std::string> InterpreterDraft6::selectEventlessTransitio
 	}
 	atomicStates.to_document_order();
 
+#if 0
+	std::cout << "Atomic States: ";
+	for (int i = 0; i < atomicStates.size(); i++) {
+		std::cout << ATTR(atomicStates[i], "id") << ", ";
+	}
+	std::cout << std::endl;
+#endif
+
 	for (unsigned int i = 0; i < atomicStates.size(); i++) {
 		NodeSet<std::string> ancestors = getProperAncestors(atomicStates[i], Arabica::DOM::Node<std::string>());
 		ancestors.push_back(atomicStates[i]);
+#if 0
+		std::cout << "Ancestors: ";
+		for (int i = 0; i < ancestors.size(); i++) {
+			std::cout << ATTR(ancestors[i], "id") << ", ";
+		}
+		std::cout << std::endl;
+#endif
+
 		for (unsigned int j = 0; j < ancestors.size(); j++) {
 			NodeSet<std::string> transitions = filterChildElements(_xmlNSPrefix + "transition", ancestors[j]);
 			for (unsigned int k = 0; k < transitions.size(); k++) {
@@ -450,9 +466,9 @@ Arabica::XPath::NodeSet<std::string> InterpreterDraft6::selectEventlessTransitio
 				}
 			}
 #endif
+		LOOP:
+			;
 		}
-LOOP:
-		;
 	}
 
 	enabledTransitions = filterPreempted(enabledTransitions);
@@ -463,10 +479,17 @@ Arabica::XPath::NodeSet<std::string> InterpreterDraft6::filterPreempted(const Ar
 	Arabica::XPath::NodeSet<std::string> filteredTransitions;
 	for (unsigned int i = 0; i < enabledTransitions.size(); i++) {
 		Arabica::DOM::Node<std::string> t = enabledTransitions[i];
+#if 0
+		std::cout << "Checking: " << std::endl << t << std::endl;
+#endif
+		
 		for (unsigned int j = i+1; j < enabledTransitions.size(); j++) {
 			Arabica::DOM::Node<std::string> t2 = enabledTransitions[j];
+#if 0
+			std::cout << "\tagainst: " << std::endl << t2 << std::endl;
+#endif
 			if (isPreemptingTransition(t2, t)) {
-#if VERBOSE
+#if 0
 				std::cout << "Transition preempted!: " << std::endl << t2 << std::endl << t << std::endl;
 #endif
 				goto LOOP;
@@ -483,7 +506,7 @@ bool InterpreterDraft6::isPreemptingTransition(const Arabica::DOM::Node<std::str
 	assert(t1);
 	assert(t2);
 
-#if VERBOSE
+#if 0
 	std::cout << "Checking preemption: " << std::endl << t1 << std::endl << t2 << std::endl;
 #endif
 
