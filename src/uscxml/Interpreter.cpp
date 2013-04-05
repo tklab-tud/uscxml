@@ -336,7 +336,10 @@ void Interpreter::initializeData(const Node<std::string>& data) {
 			// expression given directly
 			std::string value = ATTR(data, "expr");
 			_dataModel.assign(ATTR(data, "id"), value);
-		} else if (HAS_ATTR(data, "src")) {
+			return;
+		}
+		
+		if (HAS_ATTR(data, "src")) {
 			// fetch us some string and proess below
 			URL srcURL(ATTR(data, "src"));
 			if (!srcURL.isAbsolute())
