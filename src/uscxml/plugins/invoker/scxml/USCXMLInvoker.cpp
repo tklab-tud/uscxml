@@ -48,6 +48,8 @@ void USCXMLInvoker::invoke(const InvokeRequest& req) {
 		_invokedInterpreter = Interpreter::fromURI(req.src);
 	} else if (req.dom) {
 		_invokedInterpreter = Interpreter::fromDOM(req.dom);
+	} else if (req.content.size() > 0) {
+		LOG(ERROR) << "Instantiating nested SCXML interpreter by content not supported yet";
 	} else {
 		LOG(ERROR) << "Cannot invoke nested SCXML interpreter, neither src attribute nor DOM is given";
 	}
@@ -73,6 +75,9 @@ void USCXMLInvoker::invoke(const InvokeRequest& req) {
 		_invokedInterpreter->setInvokeRequest(req);
 
 		_invokedInterpreter->start();
+	} else {
+		/// test 530
+		_parentInterpreter->receive(Event("done.invoke." + _invokeId, Event::PLATFORM));
 	}
 }
 

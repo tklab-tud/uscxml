@@ -10,7 +10,6 @@ protected:
 	void interpret();
 	void mainEventLoop();
 
-	void initializeData(const Arabica::DOM::Node<std::string>& data);
 	void microstep(const Arabica::XPath::NodeSet<std::string>& enabledTransitions);
 	void enterStates(const Arabica::XPath::NodeSet<std::string>& enabledTransitions);
 	void addStatesToEnter(const Arabica::DOM::Node<std::string>& state,

@@ -84,9 +84,9 @@ void InterpreterDraft6::interpret() {
 
 		assert(initialStates.size() > 0);
 		for (int i = 0; i < initialStates.size(); i++) {
-			Arabica::DOM::Element<std::string> initialElem = _document.createElementNS(_nsURL, "initial");
+			Element<std::string> initialElem = _document.createElementNS(_nsURL, "initial");
 			initialElem.setAttribute("generated", "true");
-			Arabica::DOM::Element<std::string> transitionElem = _document.createElementNS(_nsURL, "transition");
+			Element<std::string> transitionElem = _document.createElementNS(_nsURL, "transition");
 			transitionElem.setAttribute("target", ATTR(initialStates[i], "id"));
 			initialElem.appendChild(transitionElem);
 			_scxml.appendChild(initialElem);
@@ -114,74 +114,6 @@ void InterpreterDraft6::interpret() {
 
 }
 
-/**
- * Called with a single data element from the topmost datamodel element.
- */
-void InterpreterDraft6::initializeData(const Arabica::DOM::Node<std::string>& data) {
-	if (!_dataModel) {
-		LOG(ERROR) << "Cannot initialize data when no datamodel is given!";
-		return;
-	}
-
-	if (!HAS_ATTR(data, "id")) {
-		LOG(ERROR) << "Data element has no id!";
-		return;
-	}
-
-	/// test 240
-	if (_invokeReq.params.find(ATTR(data, "id")) != _invokeReq.params.end()) {
-		try {
-			_dataModel.assign(ATTR(data, "id"), _invokeReq.params.find(ATTR(data, "id"))->second);
-		} catch (Event e) {
-			LOG(ERROR) << "Syntax error when initializing data from parameters:" << std::endl << e << std::endl;
-		}
-		return;
-	}
-	if (_invokeReq.namelist.find(ATTR(data, "id")) != _invokeReq.namelist.end()) {
-		try {
-			_dataModel.assign(ATTR(data, "id"), _invokeReq.namelist.find(ATTR(data, "id"))->second);
-		} catch (Event e) {
-			LOG(ERROR) << "Syntax error when initializing data from namelist:" << std::endl << e << std::endl;
-		}
-		return;
-	}
-
-	try {
-		if (HAS_ATTR(data, "expr")) {
-			std::string value = ATTR(data, "expr");
-			_dataModel.assign(ATTR(data, "id"), value);
-		} else if (HAS_ATTR(data, "src")) {
-			URL srcURL(ATTR(data, "src"));
-			if (!srcURL.isAbsolute())
-				toAbsoluteURI(srcURL);
-
-			std::stringstream ss;
-			if (_cachedURLs.find(srcURL.asString()) != _cachedURLs.end()) {
-				ss << _cachedURLs[srcURL.asString()];
-			} else {
-				ss << srcURL;
-				_cachedURLs[srcURL.asString()] = srcURL;
-			}
-			_dataModel.assign(ATTR(data, "id"), ss.str());
-
-		} else if (data.hasChildNodes()) {
-			// search for the text node with the actual script
-			NodeList<std::string> dataChilds = data.getChildNodes();
-			for (int i = 0; i < dataChilds.getLength(); i++) {
-				if (dataChilds.item(i).getNodeType() == Node_base::TEXT_NODE) {
-					Data value = Data(dataChilds.item(i).getNodeValue());
-					_dataModel.assign(ATTR(data, "id"), value);
-					break;
-				}
-			}
-		} else {
-			_dataModel.assign(ATTR(data, "id"), "undefined");
-		}
-
-	} catch (Event e) {
-		LOG(ERROR) << "Syntax error in data element:" << std::endl << e << std::endl;
-	}
-}
 
 void InterpreterDraft6::mainEventLoop() {
 	std::set<InterpreterMonitor*>::iterator monIter;
@@ -298,7 +230,7 @@ void InterpreterDraft6::mainEventLoop() {
 		for (unsigned int i = 0; i < _configuration.size(); i++) {
 			NodeSet<std::string> invokes = filterChildElements(_xmlNSPrefix + "invoke", _configuration[i]);
 			for (unsigned int j = 0; j < invokes.size(); j++) {
-				Arabica::DOM::Element<std::string> invokeElem = (Arabica::DOM::Element<std::string>)invokes[j];
+				Element<std::string> invokeElem = (Element<std::string>)invokes[j];
 				std::string invokeId;
 				if (HAS_ATTR(invokeElem, "id")) {
 					invokeId = ATTR(invokeElem, "id");
@@ -316,7 +248,7 @@ void InterpreterDraft6::mainEventLoop() {
 
 					Arabica::XPath::NodeSet<std::string> finalizes = filterChildElements(_xmlNSPrefix + "finalize", invokeElem);
 					for (int k = 0; k < finalizes.size(); k++) {
-						Arabica::DOM::Element<std::string> finalizeElem = Arabica::DOM::Element<std::string>(finalizes[k]);
+						Element<std::string> finalizeElem = Element<std::string>(finalizes[k]);
 						executeContent(finalizeElem);
 					}
 
@@ -425,7 +357,7 @@ Arabica::XPath::NodeSet<std::string> InterpreterDraft6::selectTransitions(const 
 	return enabledTransitions;
 }
 
-bool InterpreterDraft6::isEnabledTransition(const Arabica::DOM::Node<std::string>& transition, const std::string& event) {
+bool InterpreterDraft6::isEnabledTransition(const Node<std::string>& transition, const std::string& event) {
 	std::string eventName;
 	if (HAS_ATTR(transition, "event")) {
 		eventName = ATTR(transition, "event");
@@ -440,10 +372,16 @@ bool InterpreterDraft6::isEnabledTransition(const Arabica::DOM::Node<std::string
 		return false;
 	}
 	
-	if (eventName.length() > 0 &&
-			nameMatch(eventName, event) &&
-			hasConditionMatch(transition)) {
-		return true;
+	std::vector<std::string> eventNames = tokenizeIdRefs(eventName);
+	
+	if (eventNames.size() > 0 && hasConditionMatch(transition)) {
+		std::vector<std::string>::iterator eventIter = eventNames.begin();
+		while(eventIter != eventNames.end()) {
+			if(nameMatch(*eventIter, event)) {
+				return true;
+			}
+			eventIter++;
+		}
 	}
 	return false;
 }
@@ -502,12 +440,12 @@ Arabica::XPath::NodeSet<std::string> InterpreterDraft6::selectEventlessTransitio
 Arabica::XPath::NodeSet<std::string> InterpreterDraft6::filterPreempted(const Arabica::XPath::NodeSet<std::string>& enabledTransitions) {
 	Arabica::XPath::NodeSet<std::string> filteredTransitions;
 	for (unsigned int i = 0; i < enabledTransitions.size(); i++) {
-		Arabica::DOM::Node<std::string> t = enabledTransitions[i];
+		Node<std::string> t = enabledTransitions[i];
 		if (!isTargetless(t)) {
 			for (unsigned int j = 0; j < filteredTransitions.size(); j++) {
 				if (j == i)
 					continue;
-				Arabica::DOM::Node<std::string> t2 = filteredTransitions[j];
+				Node<std::string> t2 = filteredTransitions[j];
 				if (isPreemptingTransition(t2, t)) {
 #if 0
 					std::cout << "#####" << std::endl << "Transition " << std::endl
@@ -531,7 +469,7 @@ LOOP:
 /**
  * Is t1 preempting t2?
  */
-bool InterpreterDraft6::isPreemptingTransition(const Arabica::DOM::Node<std::string>& t1, const Arabica::DOM::Node<std::string>& t2) {
+bool InterpreterDraft6::isPreemptingTransition(const Node<std::string>& t1, const Node<std::string>& t2) {
 	assert(t1);
 	assert(t2);
 
@@ -551,13 +489,13 @@ bool InterpreterDraft6::isPreemptingTransition(const Arabica::DOM::Node<std::str
 	return false;
 }
 
-bool InterpreterDraft6::isCrossingBounds(const Arabica::DOM::Node<std::string>& transition) {
+bool InterpreterDraft6::isCrossingBounds(const Node<std::string>& transition) {
 	if (!isTargetless(transition) && !isWithinParallel(transition))
 		return true;
 	return false;
 }
 
-bool InterpreterDraft6::isWithinParallel(const Arabica::DOM::Node<std::string>& transition) {
+bool InterpreterDraft6::isWithinParallel(const Node<std::string>& transition) {
 	if (isTargetless(transition))
 		return false;
 	
@@ -570,13 +508,13 @@ bool InterpreterDraft6::isWithinParallel(const Arabica::DOM::Node<std::string>& 
 	NodeSet<std::string> targets = getTargetStates(transition);
 	targets.push_back(source);
 	
-	Arabica::DOM::Node<std::string> lcpa = findLCPA(targets);
+	Node<std::string> lcpa = findLCPA(targets);
 	return lcpa;
 }
 
-Arabica::DOM::Node<std::string> InterpreterDraft6::findLCPA(const Arabica::XPath::NodeSet<std::string>& states) {
-	Arabica::XPath::NodeSet<std::string> ancestors = getProperAncestors(states[0], Arabica::DOM::Node<std::string>());
-	Arabica::DOM::Node<std::string> ancestor;
+Node<std::string> InterpreterDraft6::findLCPA(const Arabica::XPath::NodeSet<std::string>& states) {
+	Arabica::XPath::NodeSet<std::string> ancestors = getProperAncestors(states[0], Node<std::string>());
+	Node<std::string> ancestor;
 	for (int i = 0; i < ancestors.size(); i++) {
 		if (!isParallel(ancestors[i]))
 			continue;
@@ -596,10 +534,10 @@ void InterpreterDraft6::microstep(const Arabica::XPath::NodeSet<std::string>& en
 #if 0
 	std::cout << "Transitions: ";
 	for (int i = 0; i < enabledTransitions.size(); i++) {
-		std::cout << ((Arabica::DOM::Element<std::string>)getSourceState(enabledTransitions[i])).getAttribute("id") << " -> " << std::endl;
+		std::cout << ((Element<std::string>)getSourceState(enabledTransitions[i])).getAttribute("id") << " -> " << std::endl;
 		NodeSet<std::string> targetSet = getTargetStates(enabledTransitions[i]);
 		for (int j = 0; j < targetSet.size(); j++) {
-			std::cout << "    " << ((Arabica::DOM::Element<std::string>)targetSet[j]).getAttribute("id") << std::endl;
+			std::cout << "    " << ((Element<std::string>)targetSet[j]).getAttribute("id") << std::endl;
 		}
 	}
 	std::cout << std::endl;
@@ -612,8 +550,8 @@ void InterpreterDraft6::microstep(const Arabica::XPath::NodeSet<std::string>& en
 
 void InterpreterDraft6::exitInterpreter() {
 	NodeSet<std::string> statesToExit = _configuration;
-	statesToExit.to_document_order();
-	statesToExit.reverse();
+	statesToExit.forward(false);
+	statesToExit.sort();
 
 	for (int i = 0; i < statesToExit.size(); i++) {
 		Arabica::XPath::NodeSet<std::string> onExitElems = filterChildElements(_xmlNSPrefix + "onexit", statesToExit[i]);
@@ -645,13 +583,12 @@ void InterpreterDraft6::exitStates(const Arabica::XPath::NodeSet<std::string>& e
 #endif
 
 	for (int i = 0; i < enabledTransitions.size(); i++) {
-		Arabica::DOM::Element<std::string> transition = ((Arabica::DOM::Element<std::string>)enabledTransitions[i]);
-		if (!isTargetless(transition)) {
-			std::string transitionType = (boost::iequals(transition.getAttribute("type"), "internal") ? "internal" : "external");
-			NodeSet<std::string> tStates = getTargetStates(transition);
-			Arabica::DOM::Node<std::string> ancestor;
-			Arabica::DOM::Node<std::string> source = getSourceState(transition);
-
+		Element<std::string> t = ((Element<std::string>)enabledTransitions[i]);
+		if (!isTargetless(t)) {
+			Node<std::string> ancestor;
+			Node<std::string> source = getSourceState(t);
+			NodeSet<std::string> tStates = getTargetStates(t);
+			bool isInternal = (HAS_ATTR(t, "type") && boost::iequals(ATTR(t, "type"), "internal")); // external is default
 			bool allDescendants = true;
 			for (int j = 0; j < tStates.size(); j++) {
 				if (!isDescendant(tStates[j], source)) {
@@ -659,15 +596,12 @@ void InterpreterDraft6::exitStates(const Arabica::XPath::NodeSet<std::string>& e
 					break;
 				}
 			}
-			if (boost::iequals(transitionType, "internal") &&
-			        isCompound(source) &&
-			        allDescendants) {
+			if (isInternal && allDescendants && isCompound(source)) {
 				ancestor = source;
 			} else {
 				NodeSet<std::string> tmpStates;
 				tmpStates.push_back(source);
 				tmpStates.insert(tmpStates.end(), tStates.begin(), tStates.end());
-
 #if VERBOSE
 				std::cout << "tmpStates: ";
 				for (int i = 0; i < tmpStates.size(); i++) {
@@ -677,29 +611,17 @@ void InterpreterDraft6::exitStates(const Arabica::XPath::NodeSet<std::string>& e
 #endif
 				ancestor = findLCCA(tmpStates);
 			}
-
 #if VERBOSE
 			std::cout << "Ancestor: " << ATTR(ancestor, "id") << std::endl;;
 #endif
-
 			for (int j = 0; j < _configuration.size(); j++) {
 				if (isDescendant(_configuration[j], ancestor))
 					statesToExit.push_back(_configuration[j]);
-			}
+			}	
 		}
 	}
-
-#if VERBOSE
-	std::cout << "States to exit: ";
-	for (int i = 0; i < statesToExit.size(); i++) {
-		std::cout << LOCALNAME(statesToExit[i]) << ":" << ATTR(statesToExit[i], "id") << ", ";
-	}
-	std::cout << std::endl;
-
-#endif
-
 	// remove statesToExit from _statesToInvoke
-	std::list<Arabica::DOM::Node<std::string> > tmp;
+	std::list<Node<std::string> > tmp;
 	for (int i = 0; i < _statesToInvoke.size(); i++) {
 		if (!isMember(_statesToInvoke[i], statesToExit)) {
 			tmp.push_back(_statesToInvoke[i]);
@@ -708,9 +630,17 @@ void InterpreterDraft6::exitStates(const Arabica::XPath::NodeSet<std::string>& e
 	_statesToInvoke = NodeSet<std::string>();
 	_statesToInvoke.insert(_statesToInvoke.end(), tmp.begin(), tmp.end());
 
-	statesToExit.to_document_order();
-	statesToExit.reverse();
+	statesToExit.forward(false);
+	statesToExit.sort();
 
+#if VERBOSE
+	std::cout << "States to exit: ";
+	for (int i = 0; i < statesToExit.size(); i++) {
+		std::cout << LOCALNAME(statesToExit[i]) << ":" << ATTR(statesToExit[i], "id") << ", ";
+	}
+	std::cout << std::endl;
+#endif
+	
 	monIter = _monitors.begin();
 	while(monIter != _monitors.end()) {
 		try {
@@ -726,7 +656,7 @@ void InterpreterDraft6::exitStates(const Arabica::XPath::NodeSet<std::string>& e
 	for (int i = 0; i < statesToExit.size(); i++) {
 		NodeSet<std::string> histories = filterChildElements(_xmlNSPrefix + "history", statesToExit[i]);
 		for (int j = 0; j < histories.size(); j++) {
-			Arabica::DOM::Element<std::string> historyElem = (Arabica::DOM::Element<std::string>)histories[j];
+			Element<std::string> historyElem = (Element<std::string>)histories[j];
 			std::string historyType = (historyElem.hasAttribute("type") ? historyElem.getAttribute("type") : "shallow");
 			NodeSet<std::string> historyNodes;
 			for (int k = 0; k < _configuration.size(); k++) {
@@ -745,7 +675,6 @@ void InterpreterDraft6::exitStates(const Arabica::XPath::NodeSet<std::string>& e
 				std::cout << ATTR(historyNodes[i], "id") << ", ";
 			}
 			std::cout << std::endl;
-
 #endif
 
 		}
@@ -754,25 +683,24 @@ void InterpreterDraft6::exitStates(const Arabica::XPath::NodeSet<std::string>& e
 	for (int i = 0; i < statesToExit.size(); i++) {
 		NodeSet<std::string> onExits = filterChildElements(_xmlNSPrefix + "onExit", statesToExit[i]);
 		for (int j = 0; j < onExits.size(); j++) {
-			Arabica::DOM::Element<std::string> onExitElem = (Arabica::DOM::Element<std::string>)onExits[j];
+			Element<std::string> onExitElem = (Element<std::string>)onExits[j];
 			executeContent(onExitElem);
 		}
 		NodeSet<std::string> invokes = filterChildElements(_xmlNSPrefix + "invoke", statesToExit[i]);
 		for (int j = 0; j < invokes.size(); j++) {
-			Arabica::DOM::Element<std::string> invokeElem = (Arabica::DOM::Element<std::string>)invokes[j];
+			Element<std::string> invokeElem = (Element<std::string>)invokes[j];
 			cancelInvoke(invokeElem);
 		}
-	}
-
-	// remove statesToExit from _configuration
-	tmp.clear();
-	for (int i = 0; i < _configuration.size(); i++) {
-		if (!isMember(_configuration[i], statesToExit)) {
-			tmp.push_back(_configuration[i]);
+		// remove statesToExit[i] from _configuration - test409
+		tmp.clear();
+		for (int j = 0; j < _configuration.size(); j++) {
+			if (_configuration[j] != statesToExit[i]) {
+				tmp.push_back(_configuration[j]);
+			}
 		}
+		_configuration = NodeSet<std::string>();
+		_configuration.insert(_configuration.end(), tmp.begin(), tmp.end());
 	}
-	_configuration = NodeSet<std::string>();
-	_configuration.insert(_configuration.end(), tmp.begin(), tmp.end());
 
 	monIter = _monitors.begin();
 	while(monIter != _monitors.end()) {
@@ -802,7 +730,7 @@ void InterpreterDraft6::enterStates(const Arabica::XPath::NodeSet<std::string>& 
 #endif
 
 	for (int i = 0; i < enabledTransitions.size(); i++) {
-		Arabica::DOM::Element<std::string> transition = ((Arabica::DOM::Element<std::string>)enabledTransitions[i]);
+		Element<std::string> transition = ((Element<std::string>)enabledTransitions[i]);
 		if (!isTargetless(transition)) {
 			std::string transitionType = (boost::iequals(transition.getAttribute("type"), "internal") ? "internal" : "external");
 			NodeSet<std::string> tStates = getTargetStates(transition);
@@ -815,8 +743,8 @@ void InterpreterDraft6::enterStates(const Arabica::XPath::NodeSet<std::string>& 
 			std::cout << std::endl;
 #endif
 
-			Arabica::DOM::Node<std::string> ancestor;
-			Arabica::DOM::Node<std::string> source = getSourceState(transition);
+			Node<std::string> ancestor;
+			Node<std::string> source = getSourceState(transition);
 #if VERBOSE
 			std::cout << "Source States: " << ATTR(source, "id") << std::endl;
 #endif
@@ -904,7 +832,7 @@ void InterpreterDraft6::enterStates(const Arabica::XPath::NodeSet<std::string>& 
 	}
 
 	for (int i = 0; i < statesToEnter.size(); i++) {
-		Arabica::DOM::Element<std::string> stateElem = (Arabica::DOM::Element<std::string>)statesToEnter[i];
+		Element<std::string> stateElem = (Element<std::string>)statesToEnter[i];
 		_configuration.push_back(stateElem);
 		_statesToInvoke.push_back(stateElem);
 		if (_binding == LATE && stateElem.getAttribute("isFirstEntry").size() > 0) {
@@ -931,10 +859,10 @@ void InterpreterDraft6::enterStates(const Arabica::XPath::NodeSet<std::string>& 
 
 		if (isFinal(stateElem)) {
 			internalDoneSend(stateElem);
-			Arabica::DOM::Element<std::string> parent = (Arabica::DOM::Element<std::string>)stateElem.getParentNode();
+			Element<std::string> parent = (Element<std::string>)stateElem.getParentNode();
 
 			if (isParallel(parent.getParentNode())) {
-				Arabica::DOM::Element<std::string> grandParent = (Arabica::DOM::Element<std::string>)parent.getParentNode();
+				Element<std::string> grandParent = (Element<std::string>)parent.getParentNode();
 
 				Arabica::XPath::NodeSet<std::string> childs = getChildStates(grandParent);
 				bool inFinalState = true;
@@ -951,7 +879,7 @@ void InterpreterDraft6::enterStates(const Arabica::XPath::NodeSet<std::string>& 
 		}
 	}
 	for (int i = 0; i < _configuration.size(); i++) {
-		Arabica::DOM::Element<std::string> stateElem = (Arabica::DOM::Element<std::string>)_configuration[i];
+		Element<std::string> stateElem = (Element<std::string>)_configuration[i];
 		if (isFinal(stateElem) && parentIsScxmlState(stateElem)) {
 			_running = false;
 			_done = true;
@@ -972,10 +900,10 @@ void InterpreterDraft6::enterStates(const Arabica::XPath::NodeSet<std::string>& 
 
 }
 
-void InterpreterDraft6::addStatesToEnter(const Arabica::DOM::Node<std::string>& state,
+void InterpreterDraft6::addStatesToEnter(const Node<std::string>& state,
         Arabica::XPath::NodeSet<std::string>& statesToEnter,
         Arabica::XPath::NodeSet<std::string>& statesForDefaultEntry) {
-	std::string stateId = ((Arabica::DOM::Element<std::string>)state).getAttribute("id");
+	std::string stateId = ((Element<std::string>)state).getAttribute("id");
 
 #if VERBOSE
 	std::cout << "Adding state to enter: " << stateId << std::endl;

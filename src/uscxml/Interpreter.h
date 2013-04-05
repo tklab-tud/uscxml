@@ -156,15 +156,13 @@ public:
 		return "";
 	}
 
+	void inline receiveInternal(const Event& event);
 	void receive(const Event& event, bool toFront = false)   {
 		if (toFront) {
 			_externalQueue.push_front(event);
 		} else {
 			_externalQueue.push(event);
 		}
-	}
-	void receiveInternal(const Event& event)                 {
-		_internalQueue.push_back(event);
 	}
 
 	Event getCurrentEvent() {
@@ -243,6 +241,7 @@ protected:
 	void init();
 
 	void normalize(Arabica::DOM::Element<std::string>& scxml);
+	void initializeData(const Arabica::DOM::Node<std::string>& data);
 	void setupIOProcessors();
 
 	bool _stable;

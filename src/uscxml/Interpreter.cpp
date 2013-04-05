@@ -31,7 +31,7 @@ catch (Event e) {\
 	} else {\
 		e.name = "error.execution";\
 		e.type = Event::PLATFORM;\
-		_internalQueue.push_back(e);\
+		receiveInternal(e);\
 	}\
 }
 
@@ -296,6 +296,114 @@ void Interpreter::init() {
 	_isInitialized = true;
 }
 
+/**
+ * Called with a single data element from the topmost datamodel element.
+ */
+void Interpreter::initializeData(const Node<std::string>& data) {
+	if (!_dataModel) {
+		LOG(ERROR) << "Cannot initialize data when no datamodel is given!";
+		return;
+	}
+	
+	if (!HAS_ATTR(data, "id")) {
+		LOG(ERROR) << "Data element has no id!";
+		return;
+	}
+	
+	/// test 240 - initialize from invoke request
+	if (_invokeReq.params.find(ATTR(data, "id")) != _invokeReq.params.end()) {
+		try {
+			_dataModel.assign(ATTR(data, "id"), _invokeReq.params.find(ATTR(data, "id"))->second);
+		} catch (Event e) {
+			LOG(ERROR) << "Syntax error when initializing data from parameters:" << std::endl << e << std::endl;
+			receiveInternal(e);
+		}
+		return;
+	}
+	if (_invokeReq.namelist.find(ATTR(data, "id")) != _invokeReq.namelist.end()) {
+		try {
+			_dataModel.assign(ATTR(data, "id"), _invokeReq.namelist.find(ATTR(data, "id"))->second);
+		} catch (Event e) {
+			LOG(ERROR) << "Syntax error when initializing data from namelist:" << std::endl << e << std::endl;
+			receiveInternal(e);
+		}
+		return;
+	}
+	
+	try {
+		std::string contentToProcess;
+		if (HAS_ATTR(data, "expr")) {
+			// expression given directly
+			std::string value = ATTR(data, "expr");
+			_dataModel.assign(ATTR(data, "id"), value);
+		} else if (HAS_ATTR(data, "src")) {
+			// fetch us some string and proess below
+			URL srcURL(ATTR(data, "src"));
+			if (!srcURL.isAbsolute())
+				toAbsoluteURI(srcURL);
+			
+			std::stringstream ss;
+			if (_cachedURLs.find(srcURL.asString()) != _cachedURLs.end()) {
+				ss << _cachedURLs[srcURL.asString()];
+			} else {
+				ss << srcURL;
+				_cachedURLs[srcURL.asString()] = srcURL;
+			}
+			contentToProcess = ss.str();
+		} else if (data.hasChildNodes()) {
+			bool presentAsDom = false;
+			Node<std::string> contentChild = data.getFirstChild();
+			while(contentChild) {
+				if (contentChild.getNodeType() == Node_base::TEXT_NODE) {
+					break;
+				}
+				if (contentChild.getNodeType() == Node_base::ELEMENT_NODE) {
+					presentAsDom = true;
+					break;
+				}
+				contentChild = contentChild.getNextSibling();
+			}
+			
+			if (contentChild && presentAsDom) {
+				LOG(ERROR) << "Passing DOM in data is TODO.";
+			} else if (contentChild) {
+				// get first child and process below
+				contentToProcess = contentChild.getNodeValue();
+			} else {
+				LOG(ERROR) << "content element has no text or element children.";
+			}
+		}
+		if (contentToProcess.length() > 0) {
+			/// try to interpret as JSON
+			try {
+				_dataModel.assign(ATTR(data, "id"), contentToProcess);
+			} catch(Event e) {
+				/// create space normalized string if that failed
+				/// test 558
+				std::istringstream iss(contentToProcess);
+				std::stringstream spaceNormalized;
+				std::string seperator;
+				do {
+					std::string token;
+					iss >> token;
+					if (token.length() > 0) {
+						spaceNormalized << seperator << token;
+						seperator = " ";
+					}
+				} while (iss);
+				_dataModel.assign(ATTR(data, "id"), Data(spaceNormalized.str(), Data::VERBATIM));
+			}
+		} else {
+			_dataModel.assign(ATTR(data, "id"), "undefined");
+		}
+		
+	} catch (Event e) {
+		LOG(ERROR) << "Syntax error in data element:" << std::endl << e << std::endl;
+		/// test 487
+		receiveInternal(e);
+	}
+}
+
 void Interpreter::normalize(Arabica::DOM::Element<std::string>& scxml) {
 	// make sure every state has an id and set isFirstEntry to true
 	Arabica::XPath::NodeSet<std::string> states = _xpath.evaluate("//" + _xpathPrefix + "state", _scxml).asNodeSet();
@@ -354,6 +462,11 @@ void Interpreter::normalize(Arabica::DOM::Element<std::string>& scxml) {
 	std::cout << _scxml <<std::endl;
 #endif
 }
+	
+void Interpreter::receiveInternal(const Event& event) {
+	std::cout << "receiveInternal: " << event.name << std::endl;
+	_internalQueue.push_back(event);
+}
 
 
 void Interpreter::internalDoneSend(const Arabica::DOM::Node<std::string>& state) {
@@ -377,61 +490,66 @@ void Interpreter::internalDoneSend(const Arabica::DOM::Node<std::string>& state)
 	}
 
 	event.name = "done.state." + ATTR(stateElem.getParentNode(), "id"); // parent?!
-	_internalQueue.push_back(event);
+	receiveInternal(event);
 
 }
 
 void Interpreter::processContentElement(const Arabica::DOM::Node<std::string>& content, Arabica::DOM::Document<std::string>& dom, std::string& text) {
-	if (HAS_ATTR(content, "expr")) {
-		if (_dataModel) {
-			/// this is out of spec
-			std::string contentValue = _dataModel.evalAsString(ATTR(content, "expr"));
-			text = contentValue;
-			//          sendReq.data.atom = contentValue;
-			//          sendReq.data.type = Data::VERBATIM;
-		} else {
-			LOG(ERROR) << "content element has expr attribute but no datamodel is specified.";
-		}
-	} else if (content.hasChildNodes()) {
-		bool presentAsDOM = false;
-		NodeList<std::string> contentChilds = content.getChildNodes();
-		for (int i = 0; i < contentChilds.getLength(); i++) {
-			if (contentChilds.item(i).getNodeType() == Node_base::ELEMENT_NODE) {
-				presentAsDOM = true;
-				break;
-			}
-		}
-		if (presentAsDOM) {
-			// use the whole dom
-			Arabica::DOM::DOMImplementation<std::string> domFactory = Arabica::SimpleDOM::DOMImplementation<std::string>::getDOMImplementation();
-			dom = domFactory.createDocument(content.getNamespaceURI(), "", 0);
-			Node<std::string> newNode = dom.importNode(content, true);
-			dom.appendChild(newNode);
-		} else {
-			Node<std::string> textChild = content.getFirstChild();
-			while(textChild && textChild.getNodeType() != Node_base::TEXT_NODE) {
-				textChild = textChild.getNextSibling();
-			}
-			if (textChild && textChild.getNodeType() == Node_base::TEXT_NODE) {
-				/// create space normalized string
-				std::istringstream iss(content.getFirstChild().getNodeValue());
-				std::stringstream content;
-				std::string seperator;
-				do {
-					std::string token;
-					iss >> token;
-					if (token.length() > 0) {
-						content << seperator << token;
-						seperator = " ";
-					}
-				} while (iss);
-				text = content.str();
+	try {
+		if (HAS_ATTR(content, "expr")) {
+			if (_dataModel) {
+				/// this is out of spec
+				std::string contentValue = _dataModel.evalAsString(ATTR(content, "expr"));
+				text = contentValue;
+				//          sendReq.data.atom = contentValue;
+				//          sendReq.data.type = Data::VERBATIM;
 			} else {
-				LOG(ERROR) << "content element has neither text nor element children.";
+				LOG(ERROR) << "content element has expr attribute but no datamodel is specified.";
 			}
+		} else if (content.hasChildNodes()) {
+			bool presentAsDOM = false;
+			NodeList<std::string> contentChilds = content.getChildNodes();
+			for (int i = 0; i < contentChilds.getLength(); i++) {
+				if (contentChilds.item(i).getNodeType() == Node_base::ELEMENT_NODE) {
+					presentAsDOM = true;
+					break;
+				}
+			}
+			if (presentAsDOM) {
+				// use the whole dom
+				Arabica::DOM::DOMImplementation<std::string> domFactory = Arabica::SimpleDOM::DOMImplementation<std::string>::getDOMImplementation();
+				dom = domFactory.createDocument(content.getNamespaceURI(), "", 0);
+				Node<std::string> newNode = dom.importNode(content, true);
+				dom.appendChild(newNode);
+			} else {
+				Node<std::string> textChild = content.getFirstChild();
+				while(textChild && textChild.getNodeType() != Node_base::TEXT_NODE) {
+					textChild = textChild.getNextSibling();
+				}
+				if (textChild && textChild.getNodeType() == Node_base::TEXT_NODE) {
+					/// create space normalized string
+					std::istringstream iss(content.getFirstChild().getNodeValue());
+					std::stringstream content;
+					std::string seperator;
+					do {
+						std::string token;
+						iss >> token;
+						if (token.length() > 0) {
+							content << seperator << token;
+							seperator = " ";
+						}
+					} while (iss);
+					text = content.str();
+				} else {
+					LOG(ERROR) << "content element has neither text nor element children.";
+				}
+			}
+		} else {
+			LOG(ERROR) << "content element does not specify any content.";
 		}
-	} else {
-		LOG(ERROR) << "content element does not specify any content.";
+	} catch (Event e) {
+		e.name = "error.execution";
+		receiveInternal(e);
 	}
 }
 
@@ -463,7 +581,7 @@ void Interpreter::processParamChilds(const Arabica::DOM::Node<std::string>& elem
 			params.erase(paramIter++);
 		}
 		e.name = "error.execution";
-		_internalQueue.push_back(e);
+		receiveInternal(e);
 	}
 }
 
@@ -634,7 +752,7 @@ void Interpreter::delayedSend(void* userdata, std::string eventName) {
 			LOG(ERROR) << "Can not send to parent, we were not invoked" << std::endl;
 		}
 	} else if (boost::iequals(sendReq.target, "#_internal")) {
-		INSTANCE->_internalQueue.push_back(sendReq);
+		INSTANCE->receiveInternal(sendReq);
 	} else if (sendReq.target.find_first_of("#_") == 0) {
 		// send to invoker
 		std::string invokeId = sendReq.target.substr(2, sendReq.target.length() - 2);
@@ -647,6 +765,8 @@ void Interpreter::delayedSend(void* userdata, std::string eventName) {
 			}
 		} else {
 			LOG(ERROR) << "Can not send to invoked component '" << invokeId << "', no such invokeId" << std::endl;
+			Event e("error.communication", Event::PLATFORM);
+			INSTANCE->receiveInternal(e);
 		}
 	} else if (sendReq.target.length() == 0 &&
 	           (sendReq.type.length() == 0 ||
@@ -672,7 +792,7 @@ void Interpreter::delayedSend(void* userdata, std::string eventName) {
 			exceptionEvent.name = "error.execution";
 			exceptionEvent.type = Event::PLATFORM;
 			exceptionEvent.sendid = sendReq.sendid;
-			INSTANCE->_internalQueue.push_back(exceptionEvent);
+			INSTANCE->receiveInternal(exceptionEvent);
 		}
 	}
 	assert(INSTANCE->_sendIds.find(sendReq.sendid) != INSTANCE->_sendIds.end());
@@ -688,8 +808,6 @@ void Interpreter::invoke(const Arabica::DOM::Node<std::string>& element) {
 			invokeReq.type = _dataModel.evalAsString(ATTR(element, "typeexpr"));
 		} else if (HAS_ATTR(element, "type")) {
 			invokeReq.type = ATTR(element, "type");
-		} else {
-			LOG(ERROR) << "invoke element is missing expr or typeexpr or no datamodel is specified";
 		}
 
 		// src
@@ -756,6 +874,10 @@ void Interpreter::invoke(const Arabica::DOM::Node<std::string>& element) {
 			return;
 		}
 
+		// test 422
+		if (invokeReq.type.size() == 0)
+			invokeReq.type = "http://www.w3.org/TR/scxml/";
+		
 		Invoker invoker(Factory::createInvoker(invokeReq.type, this));
 		if (invoker) {
 			tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
@@ -812,13 +934,14 @@ void Interpreter::cancelInvoke(const Arabica::DOM::Node<std::string>& element) {
 	} else {
 		LOG(ERROR) << "Cannot cancel invoke for id " << invokeId << ": no soch invokation";
 	}
+	//receiveInternal(Event("done.invoke." + invokeId, Event::PLATFORM));
 }
 
 
 // see: http://www.w3.org/TR/scxml/#EventDescriptors
 bool Interpreter::nameMatch(const std::string& transitionEvent, const std::string& event) {
-	assert(transitionEvent.size() > 0);
-	assert(event.size() > 0);
+	if(transitionEvent.length() == 0 || event.length() == 0)
+		return false;
 
 	// naive case of single descriptor and exact match
 	if (boost::equals(transitionEvent, event))
@@ -870,7 +993,7 @@ bool Interpreter::hasConditionMatch(const Arabica::DOM::Node<std::string>& condi
 		} catch (Event e) {
 			LOG(ERROR) << "Syntax error in cond attribute of " << TAGNAME(conditional) << " element:" << std::endl << e << std::endl;
 			e.name = "error.execution";
-			_internalQueue.push_back(e);
+			receiveInternal(e);
 			return false;
 		}
 	}
@@ -911,7 +1034,7 @@ void Interpreter::executeContent(const Arabica::DOM::Node<std::string>& content,
 	} else if (boost::iequals(TAGNAME(content), _xmlNSPrefix + "raise")) {
 		// --- RAISE --------------------------
 		if (HAS_ATTR(content, "event")) {
-			_internalQueue.push_back(Event(ATTR(content, "event")));
+			receiveInternal(Event(ATTR(content, "event")));
 		}
 	} else if (boost::iequals(TAGNAME(content), _xmlNSPrefix + "if")) {
 		// --- IF / ELSEIF / ELSE --------------
