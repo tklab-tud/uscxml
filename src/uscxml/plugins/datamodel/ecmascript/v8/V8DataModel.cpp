@@ -99,6 +99,7 @@ v8::Handle<v8::Value> V8DataModel::getIOProcessors(v8::Local<v8::String> propert
 		std::map<std::string, IOProcessor> ioProcessors = dataModel->_interpreter->getIOProcessors();
 		std::map<std::string, IOProcessor>::const_iterator ioProcIter = ioProcessors.begin();
 		while(ioProcIter != ioProcessors.end()) {
+			std::cout << ioProcIter->first << std::endl;
 			dataModel->_ioProcessors->Set(v8::String::New(ioProcIter->first.c_str()),
 			                              dataModel->getDataAsValue(ioProcIter->second.getDataModelVariables()));
 			ioProcIter++;
@@ -143,18 +144,7 @@ void V8DataModel::setEvent(const Event& event) {
 	eventObj->SetInternalField(0, Arabica::DOM::V8DOM::toExternal(privData));
 	eventObj.MakeWeak(0, Arabica::DOM::V8SCXMLEvent::jsDestructor);
 	if (event.dom) {
-		// _event.data is a DOM document
-		v8::Handle<v8::Function> retCtor = Arabica::DOM::V8Document::getTmpl()->GetFunction();
-		v8::Persistent<v8::Object> retObj = v8::Persistent<v8::Object>::New(retCtor->NewInstance());
-
-		struct Arabica::DOM::V8Document::V8DocumentPrivate* retPrivData = new Arabica::DOM::V8Document::V8DocumentPrivate();
-		retPrivData->dom = privData->dom;
-		retPrivData->nativeObj = (Arabica::DOM::Document<std::string>*)&event.dom;
-
-		retObj->SetInternalField(0, Arabica::DOM::V8DOM::toExternal(retPrivData));
-		retObj.MakeWeak(0, Arabica::DOM::V8Document::jsDestructor);
-
-		eventObj->Set(v8::String::New("data"), retObj);
+		eventObj->Set(v8::String::New("data"), getDocumentAsValue(event.dom));
 	} else if (event.content.length() > 0) {
 		// _event.data is a string
 		eventObj->Set(v8::String::New("data"), v8::String::New(event.content.c_str()));
@@ -253,6 +243,20 @@ Data V8DataModel::getValueAsData(const v8::Handle<v8::Value>& value) {
 	return data;
 }
 
+v8::Handle<v8::Value> V8DataModel::getDocumentAsValue(const Arabica::DOM::Document<std::string>& doc) {
+	v8::Handle<v8::Function> retCtor = Arabica::DOM::V8Document::getTmpl()->GetFunction();
+	v8::Persistent<v8::Object> retObj = v8::Persistent<v8::Object>::New(retCtor->NewInstance());
+	
+	struct Arabica::DOM::V8Document::V8DocumentPrivate* retPrivData = new Arabica::DOM::V8Document::V8DocumentPrivate();
+	retPrivData->dom = _dom;
+	retPrivData->nativeObj = new Arabica::DOM::Document<std::string>(doc);
+	
+	retObj->SetInternalField(0, Arabica::DOM::V8DOM::toExternal(retPrivData));
+	retObj.MakeWeak(0, Arabica::DOM::V8Document::jsDestructor);
+	
+	return retObj;
+}
+	
 v8::Handle<v8::Value> V8DataModel::getDataAsValue(const Data& data) {
 	if (data.compound.size() > 0) {
 		v8::Handle<v8::Object> value = v8::Object::New();
@@ -383,6 +387,16 @@ double V8DataModel::evalAsNumber(const std::string& expr) {
 		return result->ToNumber()->NumberValue();
 	}
 	return 0;
+}
+
+void V8DataModel::assign(const std::string& location, const Arabica::DOM::Document<std::string>& doc) {
+	v8::Locker locker;
+	v8::HandleScope handleScope;
+	v8::Context::Scope contextScope(_contexts.front());
+	v8::Handle<v8::Object> global = _contexts.front()->Global();
+
+	global->Set(v8::String::New(location.c_str()), getDocumentAsValue(doc));
+
 }
 
 void V8DataModel::assign(const std::string& location, const Data& data) {

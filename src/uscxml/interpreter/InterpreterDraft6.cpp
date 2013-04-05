@@ -13,8 +13,10 @@ void InterpreterDraft6::interpret() {
 	if (!_isInitialized)
 		init();
 
-	if (!_scxml)
+	if (!_scxml) {
+		_mutex.unlock();
 		return;
+	}
 //  dump();
 
 	if (_sessionId.length() == 0)

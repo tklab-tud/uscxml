@@ -9,7 +9,7 @@ success.  otherwise it will hang and the timeout in this doc signifies failure. 
     </onentry>
 
  
-   <invoke type="http://www.w3.org/TR/scxml/" src="file:test226sub1.scxml">
+   <invoke type="http://www.w3.org/TR/scxml/" src="file:test226sub1.txml">
       <param name="Var1" expr="1"/>
       </invoke>
 

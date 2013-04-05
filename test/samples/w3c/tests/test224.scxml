@@ -22,9 +22,7 @@
 
 <state id="s1">
   <transition cond="(function(str, starts){if (starts === '') return true;if (str == null || starts == null) return false;str = String(str); starts = String(starts);return str.length &gt;= starts.length &amp;&amp; str.slice(0, starts.length) === starts;})(Var1, Var2)" target="pass"/>
-  <transition target="fail">
-		<log expr="Var1"/>
-	</transition>
+  <transition target="fail"/>
   </state>
 
 <final id="pass"><onentry><log label="Outcome" expr="'pass'"/></onentry></final>

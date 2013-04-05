@@ -28,7 +28,7 @@ public:
 
 	Data() {}
 	Data(const std::string& atom_, Type type_ = INTERPRETED) : atom(atom_), type(type_) {}
-	Data(const Arabica::DOM::Node<std::string>& dom);
+	explicit Data(const Arabica::DOM::Node<std::string>& dom);
 	virtual ~Data() {}
 
 	static Data fromJSON(const std::string& jsonString);

@@ -12,9 +12,7 @@ be assigned to  --><scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="ht
    
  <state id="s1">
    <onentry>
-		<log expr="_sessionid" />
     <assign location="_sessionid" expr="'otherName'"/>
-		<log expr="_sessionid" />
     <raise event="foo"/>
     </onentry>
  
@@ -25,10 +23,7 @@ be assigned to  --><scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="ht
  <state id="s2">
  
    <transition cond="Var1==_sessionid" target="pass"/>
-   <transition target="fail">
-		<log expr="_sessionid" />
-		<log expr="Var1" />
-   </transition>
+   <transition target="fail"/>
    </state>  
    
    

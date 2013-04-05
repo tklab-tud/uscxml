@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?><!-- test that a variable declared by a script can be accessed like any other part of the data model --><scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" datamodel="ecmascript" version="1.0" initial="s0">
+<?xml version="1.0" encoding="UTF-8"?><!-- test that a variable declared by a script can be accessed like any other part of the data model --><scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" version="1.0" initial="s0">
  <script>var Var1 = 1</script>
      
  <state id="s0">

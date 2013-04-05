@@ -6,7 +6,7 @@
 <state id="s0" initial="p0">
   <onentry>
      <raise event="event1"/>
-     <send event="timeout" delay="100s"/>
+     <send event="timeout" delay="1s"/>
     </onentry>
   <transition event="event2" target="fail"/>   
   <transition event="timeout" target="fail"/>

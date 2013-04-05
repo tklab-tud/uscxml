@@ -243,6 +243,7 @@ public:
 	virtual void eval(const std::string& expr) = 0;
 	virtual std::string evalAsString(const std::string& expr) = 0;
 	virtual bool evalAsBool(const std::string& expr) = 0;
+	virtual void assign(const std::string& location, const Arabica::DOM::Document<std::string>& doc) = 0;
 	virtual void assign(const std::string& location, const std::string& expr) = 0;
 	virtual void assign(const std::string& location, const Data& data) = 0;
 	virtual bool isDeclared(const std::string& expr) = 0;
@@ -303,6 +304,10 @@ public:
 	}
 	virtual bool evalAsBool(const std::string& expr) {
 		return _impl->evalAsBool(expr);
+	}
+
+	virtual void assign(const std::string& location, const Arabica::DOM::Document<std::string>& doc) {
+		return _impl->assign(location, doc);
 	}
 
 	virtual void assign(const std::string& location, const std::string& expr) {

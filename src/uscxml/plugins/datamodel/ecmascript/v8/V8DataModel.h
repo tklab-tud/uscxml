@@ -40,11 +40,13 @@ public:
 	virtual void popContext();
 
 	virtual void eval(const std::string& expr);
+	virtual void assign(const std::string& location, const Arabica::DOM::Document<std::string>& doc);
 	virtual void assign(const std::string& location, const std::string& expr);
 	virtual void assign(const std::string& location, const Data& data);
 
 	virtual Data getStringAsData(const std::string& content);
 	virtual Data getValueAsData(const v8::Handle<v8::Value>& value);
+
 	virtual bool isDeclared(const std::string& expr);
 
 	virtual std::string evalAsString(const std::string& expr);
@@ -66,6 +68,7 @@ protected:
 
 	v8::Handle<v8::Value> evalAsValue(const std::string& expr);
 	v8::Handle<v8::Value> getDataAsValue(const Data& data);
+	v8::Handle<v8::Value> getDocumentAsValue(const Arabica::DOM::Document<std::string>& doc);
 	void throwExceptionEvent(const v8::TryCatch& tryCatch);
 
 };

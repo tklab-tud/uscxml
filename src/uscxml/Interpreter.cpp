@@ -289,9 +289,12 @@ void Interpreter::init() {
 
 		} else {
 			LOG(ERROR) << "Cannot find SCXML element" << std::endl;
+			_done = true;
+			return;
 		}
 	} else {
 		LOG(ERROR) << "Interpreter has no DOM at all!" << std::endl;
+		_done = true;
 	}
 	_isInitialized = true;
 }
@@ -353,12 +356,27 @@ void Interpreter::initializeData(const Node<std::string>& data) {
 				_cachedURLs[srcURL.asString()] = srcURL;
 			}
 			contentToProcess = ss.str();
+
+			// try to parse as XML
+			std::stringstream* xmlStr = new std::stringstream();
+			(*xmlStr) << contentToProcess;
+			std::auto_ptr<std::istream> ssPtr(xmlStr);
+			Arabica::SAX::InputSource<std::string> inputSource;
+			inputSource.setByteStream(ssPtr);
+			Arabica::SAX2DOM::Parser<std::string> parser;
+			if(parser.parse(inputSource) && parser.getDocument()) {
+				_dataModel.assign(ATTR(data, "id"), parser.getDocument());
+				return;
+			}
 		} else if (data.hasChildNodes()) {
 			bool presentAsDom = false;
 			Node<std::string> contentChild = data.getFirstChild();
 			while(contentChild) {
 				if (contentChild.getNodeType() == Node_base::TEXT_NODE) {
-					break;
+					std::string trimmed = contentChild.getNodeValue();
+					boost::trim(trimmed);
+					if (trimmed.length() > 0)
+						break;
 				}
 				if (contentChild.getNodeType() == Node_base::ELEMENT_NODE) {
 					presentAsDom = true;
@@ -368,7 +386,12 @@ void Interpreter::initializeData(const Node<std::string>& data) {
 			}
 			
 			if (contentChild && presentAsDom) {
-				LOG(ERROR) << "Passing DOM in data is TODO.";
+				Arabica::DOM::DOMImplementation<std::string> domFactory = Arabica::SimpleDOM::DOMImplementation<std::string>::getDOMImplementation();
+				Document<std::string> dom = domFactory.createDocument(contentChild.getNamespaceURI(), "", 0);
+				Node<std::string> newNode = dom.importNode(contentChild, true);
+				dom.appendChild(newNode);
+				_dataModel.assign(ATTR(data, "id"), dom);
+				return;
 			} else if (contentChild) {
 				// get first child and process below
 				contentToProcess = contentChild.getNodeValue();
