@@ -40,7 +40,7 @@ your own.
 			<td>>=&nbsp;2.1.x</td>
 			<td>Event queues with callbacks and the HTTP server.</td></tr>
 		<tr>
-			<td><a href="http://curl.haxx.se">curl</a><br />pre-compiled</td>
+			<td><a href="http://curl.haxx.se">curl</a><br />required</td>
 			<td>>=&nbsp;7.29.0</td>
 			<td>URL downloads.</td></tr>
 		<tr>

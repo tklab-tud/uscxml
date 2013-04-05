@@ -104,4 +104,4 @@ upon](https://github.com/tklab-tud/uscxml/blob/master/docs/BUILDING.md#build-dep
 ## Download
 
 We do not yet feature installers. Please download the source and have a look at the [build
-instructions](https://github.com/tklab-tud/umundo/blob/master/docs/BUILDING.md).
+instructions](https://github.com/tklab-tud/uscxml/blob/master/docs/BUILDING.md).
