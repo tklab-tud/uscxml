@@ -33,11 +33,11 @@ the respective build-process.
 
 <table>
 	<tr><th>Test#</th><th>Status</th><th>Comment</th></tr>
-	<tr><td><tt>153</tt></td><td><tt>Failed / Fix in test</tt></td>
+	<tr><td><tt>153</tt></td><td><tt>Failed / Fix&nbsp;in&nbsp;test</tt></td>
 		<td>The XSLT transformation leave some gibberish in the file</td>
 	<tr><td><tt>178</tt></td><td><tt>Failed / Fix in draft</tt></td>
 		<td>A manual test that relies on an unspecified _event.raw attribute</td>
-	<tr><td><tt>226</tt></td><td><tt>Failed / Fix in test</tt></td>
+	<tr><td><tt>226</tt></td><td><tt>Failed / Fix&nbsp;in&nbsp;test</tt></td>
 		<td>Requires a file with wrong file extension</td>
 	<tr><td><tt>230</tt></td><td><tt>False report</tt></td>
 		<td>A manual test that is not actually failing but does not end in a state called <tt>pass</tt></td>
@@ -48,19 +48,19 @@ the respective build-process.
 			is considered non-conformant, and the platform must reject it"</i> -- USCXML will try to evaluate the 
 			rest of the document nevertheless.</td>
 	</tr>
-	<tr><td><tt>302</tt></td><td><tt>Failed / Fix in test</tt></td>
+	<tr><td><tt>302</tt></td><td><tt>Failed / Fix&nbsp;in&nbsp;test</tt></td>
 		<td>datamodel attribute is missing from test</td>
-	<tr><td><tt>303</tt></td><td><tt>Failed / Fix in test</tt></td>
+	<tr><td><tt>303</tt></td><td><tt>Failed / Fix&nbsp;in&nbsp;test</tt></td>
 		<td>datamodel attribute is missing from test</td>
-	<tr><td><tt>304</tt></td><td><tt>Failed / Fix in test</tt></td>
+	<tr><td><tt>304</tt></td><td><tt>Failed / Fix&nbsp;in&nbsp;test</tt></td>
 		<td>datamodel attribute is missing from test</td>
 	<tr><td><tt>307</tt></td><td><tt>False report</tt></td>
 		<td>A manual test that is not actually failing but does not end in a state called <tt>pass</tt></td>
-	<tr><td><tt>321</tt></td><td><tt>Failed / Fix in test</tt></td>
+	<tr><td><tt>321</tt></td><td><tt>Failed / Fix&nbsp;in&nbsp;test</tt></td>
 		<td>Gibberish form XSLT transformation still inside <tt>$_sessionid</tt></td>
-	<tr><td><tt>323</tt></td><td><tt>Failed / Fix in test</tt></td>
+	<tr><td><tt>323</tt></td><td><tt>Failed / Fix&nbsp;in&nbsp;test</tt></td>
 		<td>Gibberish form XSLT transformation still inside <tt>$_name</tt></td>
-	<tr><td><tt>329</tt></td><td><tt>Failed / Raise on ML</tt></td>
+	<tr><td><tt>329</tt></td><td><tt>Failed / Raise&nbsp;on&nbsp;ML</tt></td>
 		<td>Tests that <tt>_event</tt> cannot be assigned, but I like to add attributes to _event to have a 
 			scope that only lasts for one event</td>
 	<tr><td><tt>330</tt></td><td><tt>Failed</tt></td>
@@ -79,13 +79,13 @@ the respective build-process.
 		<td>Requires <tt>NULL</tt> datamodel</td>
 	<tr><td><tt>441b</tt></td><td><tt>Failed / Won't&nbsp;fix</tt></td>
 		<td>Requires <tt>NULL</tt> datamodel</td>
-	<tr><td><tt>456</tt></td><td><tt>Failed / Raise on ML</tt></td>
+	<tr><td><tt>456</tt></td><td><tt>Failed / Raise&nbsp;on&nbsp;ML</tt></td>
 		<td>Expects undefined + 1 to be 1</td>
-	<tr><td><tt>463 - 486b</tt></td><td><tt>Failed / Won't&nbsp;fix</tt></td>
+	<tr><td><tt>463&nbsp;-&nbsp;486b</tt></td><td><tt>Failed / Won't&nbsp;fix</tt></td>
 		<td>Requires <tt>xpath</tt> datamodel</td>
-	<tr><td><tt>488</tt></td><td><tt>Failed / Raise on ML</tt></td>
+	<tr><td><tt>488</tt></td><td><tt>Failed / Raise&nbsp;on&nbsp;ML</tt></td>
 		<td>Expects _event.data to be the empty string when we have it as undefined</td>
-	<tr><td><tt>537 - 547</tt></td><td><tt>Failed / Won't&nbsp;fix</tt></td>
+	<tr><td><tt>537&nbsp;-&nbsp;547</tt></td><td><tt>Failed / Won't&nbsp;fix</tt></td>
 		<td>Requires <tt>xpath</tt> datamodel</td>
 	<tr><td><tt>555</tt></td><td><tt>Failed / Won't&nbsp;fix</tt></td>
 		<td>Requires <tt>xpath</tt> datamodel</td>
