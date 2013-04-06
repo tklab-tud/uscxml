@@ -19,12 +19,12 @@
 #endif
 
 class VerboseMonitor : public uscxml::InterpreterMonitor {
-	void onStableConfiguration(uscxml::Interpreter* interpreter) {
-		printConfig(interpreter->getConfiguration());
+	void onStableConfiguration(uscxml::Interpreter interpreter) {
+		printConfig(interpreter.getConfiguration());
 	}
 
-	void beforeCompletion(uscxml::Interpreter* interpreter) {
-		printConfig(interpreter->getConfiguration());
+	void beforeCompletion(uscxml::Interpreter interpreter) {
+		printConfig(interpreter.getConfiguration());
 	}
 
 	void printConfig(const Arabica::XPath::NodeSet<std::string>& config) {
@@ -164,20 +164,19 @@ int main(int argc, char** argv) {
 //  std::cout << optind << std::endl;
 
 	LOG(INFO) << "Processing " << argv[optind];
-	Interpreter* interpreter = Interpreter::fromURI(argv[optind]);
+	Interpreter interpreter = Interpreter::fromURI(argv[optind]);
 	if (interpreter) {
-		interpreter->setCmdLineOptions(argc, argv);
+		interpreter.setCmdLineOptions(argc, argv);
 //		interpreter->setCapabilities(Interpreter::CAN_NOTHING);
 //		interpreter->setCapabilities(Interpreter::CAN_BASIC_HTTP | Interpreter::CAN_GENERIC_HTTP);
 
 		if (verbose) {
 			VerboseMonitor* vm = new VerboseMonitor();
-			interpreter->addMonitor(vm);
+			interpreter.addMonitor(vm);
 		}
 
-		interpreter->start();
-		while(interpreter->runOnMainThread(25));
-		delete interpreter;
+		interpreter.start();
+		while(interpreter.runOnMainThread(25));
 	}
 
 	return EXIT_SUCCESS;

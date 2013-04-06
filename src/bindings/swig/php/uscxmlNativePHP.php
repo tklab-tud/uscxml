@@ -147,6 +147,7 @@ class Event {
 
 	function __get($var) {
 		if ($var === 'data') return new Data(Event_data_get($this->_cPtr));
+		if ($var === 'namelist') return new NameList(Event_namelist_get($this->_cPtr));
 		$func = 'Event_'.$var.'_get';
 		if (function_exists($func)) return call_user_func($func,$this->_cPtr);
 		if ($var === 'thisown') return swig_uscxmlNativePHP_get_newobject($this->_cPtr);
@@ -159,14 +160,15 @@ class Event {
 
 	const PLATFORM = 3;
 
-	function __construct($xmlString=null) {
-		if (is_resource($xmlString) && get_resource_type($xmlString) === '_p_uscxml__Event') {
-			$this->_cPtr=$xmlString;
+	function __construct($name_or_xmlString=null,$type=null) {
+		if (is_resource($name_or_xmlString) && get_resource_type($name_or_xmlString) === '_p_uscxml__Event') {
+			$this->_cPtr=$name_or_xmlString;
 			return;
 		}
 		switch (func_num_args()) {
 		case 0: $this->_cPtr=new_Event(); break;
-		default: $this->_cPtr=new_Event($xmlString);
+		case 1: $this->_cPtr=new_Event($name_or_xmlString); break;
+		default: $this->_cPtr=new_Event($name_or_xmlString,$type);
 		}
 	}
 
@@ -265,6 +267,46 @@ class Event {
 	function toXMLString() {
 		return Event_toXMLString($this->_cPtr);
 	}
+
+	function getNameList() {
+		$r=Event_getNameList($this->_cPtr);
+		if (is_resource($r)) {
+			$c=substr(get_resource_type($r), (strpos(get_resource_type($r), '__') ? strpos(get_resource_type($r), '__') + 2 : 3));
+			if (class_exists($c)) return new $c($r);
+			return new NameList($r);
+		}
+		return $r;
+	}
+
+	function getNameListKeys() {
+		$r=Event_getNameListKeys($this->_cPtr);
+		if (is_resource($r)) {
+			$c=substr(get_resource_type($r), (strpos(get_resource_type($r), '__') ? strpos(get_resource_type($r), '__') + 2 : 3));
+			if (class_exists($c)) return new $c($r);
+			return new ParamList($r);
+		}
+		return $r;
+	}
+
+	function getParams() {
+		$r=Event_getParams($this->_cPtr);
+		if (is_resource($r)) {
+			$c=substr(get_resource_type($r), (strpos(get_resource_type($r), '__') ? strpos(get_resource_type($r), '__') + 2 : 3));
+			if (class_exists($c)) return new $c($r);
+			return new Params($r);
+		}
+		return $r;
+	}
+
+	function getParamKeys() {
+		$r=Event_getParamKeys($this->_cPtr);
+		if (is_resource($r)) {
+			$c=substr(get_resource_type($r), (strpos(get_resource_type($r), '__') ? strpos(get_resource_type($r), '__') + 2 : 3));
+			if (class_exists($c)) return new $c($r);
+			return new ParamList($r);
+		}
+		return $r;
+	}
 }
 
 class InvokeRequest extends Event {
@@ -284,7 +326,6 @@ class InvokeRequest extends Event {
 	}
 
 	function __get($var) {
-		if ($var === 'namelist') return new NameList(InvokeRequest_namelist_get($this->_cPtr));
 		$func = 'InvokeRequest_'.$var.'_get';
 		if (function_exists($func)) return call_user_func($func,$this->_cPtr);
 		if ($var === 'thisown') return swig_uscxmlNativePHP_get_newobject($this->_cPtr);
@@ -326,46 +367,6 @@ class InvokeRequest extends Event {
 		InvokeRequest_setAutoForwarded($this->_cPtr,$autoForward);
 	}
 
-	function getNameList() {
-		$r=InvokeRequest_getNameList($this->_cPtr);
-		if (is_resource($r)) {
-			$c=substr(get_resource_type($r), (strpos(get_resource_type($r), '__') ? strpos(get_resource_type($r), '__') + 2 : 3));
-			if (class_exists($c)) return new $c($r);
-			return new NameList($r);
-		}
-		return $r;
-	}
-
-	function getNameListKeys() {
-		$r=InvokeRequest_getNameListKeys($this->_cPtr);
-		if (is_resource($r)) {
-			$c=substr(get_resource_type($r), (strpos(get_resource_type($r), '__') ? strpos(get_resource_type($r), '__') + 2 : 3));
-			if (class_exists($c)) return new $c($r);
-			return new ParamList($r);
-		}
-		return $r;
-	}
-
-	function getParams() {
-		$r=InvokeRequest_getParams($this->_cPtr);
-		if (is_resource($r)) {
-			$c=substr(get_resource_type($r), (strpos(get_resource_type($r), '__') ? strpos(get_resource_type($r), '__') + 2 : 3));
-			if (class_exists($c)) return new $c($r);
-			return new Params($r);
-		}
-		return $r;
-	}
-
-	function getParamKeys() {
-		$r=InvokeRequest_getParamKeys($this->_cPtr);
-		if (is_resource($r)) {
-			$c=substr(get_resource_type($r), (strpos(get_resource_type($r), '__') ? strpos(get_resource_type($r), '__') + 2 : 3));
-			if (class_exists($c)) return new $c($r);
-			return new ParamList($r);
-		}
-		return $r;
-	}
-
 	static function fromXML($xmlString) {
 		$r=InvokeRequest_fromXML($xmlString);
 		if (is_resource($r)) {
@@ -402,7 +403,6 @@ class SendRequest extends Event {
 	}
 
 	function __get($var) {
-		if ($var === 'namelist') return new NameList(SendRequest_namelist_get($this->_cPtr));
 		$func = 'SendRequest_'.$var.'_get';
 		if (function_exists($func)) return call_user_func($func,$this->_cPtr);
 		if ($var === 'thisown') return swig_uscxmlNativePHP_get_newobject($this->_cPtr);
@@ -444,46 +444,6 @@ class SendRequest extends Event {
 		SendRequest_setDelayMs($this->_cPtr,$delayMs);
 	}
 
-	function getNameList() {
-		$r=SendRequest_getNameList($this->_cPtr);
-		if (is_resource($r)) {
-			$c=substr(get_resource_type($r), (strpos(get_resource_type($r), '__') ? strpos(get_resource_type($r), '__') + 2 : 3));
-			if (class_exists($c)) return new $c($r);
-			return new NameList($r);
-		}
-		return $r;
-	}
-
-	function getNameListKeys() {
-		$r=SendRequest_getNameListKeys($this->_cPtr);
-		if (is_resource($r)) {
-			$c=substr(get_resource_type($r), (strpos(get_resource_type($r), '__') ? strpos(get_resource_type($r), '__') + 2 : 3));
-			if (class_exists($c)) return new $c($r);
-			return new ParamList($r);
-		}
-		return $r;
-	}
-
-	function getParams() {
-		$r=SendRequest_getParams($this->_cPtr);
-		if (is_resource($r)) {
-			$c=substr(get_resource_type($r), (strpos(get_resource_type($r), '__') ? strpos(get_resource_type($r), '__') + 2 : 3));
-			if (class_exists($c)) return new $c($r);
-			return new Params($r);
-		}
-		return $r;
-	}
-
-	function getParamKeys() {
-		$r=SendRequest_getParamKeys($this->_cPtr);
-		if (is_resource($r)) {
-			$c=substr(get_resource_type($r), (strpos(get_resource_type($r), '__') ? strpos(get_resource_type($r), '__') + 2 : 3));
-			if (class_exists($c)) return new $c($r);
-			return new ParamList($r);
-		}
-		return $r;
-	}
-
 	static function fromXML($xmlString) {
 		$r=SendRequest_fromXML($xmlString);
 		if (is_resource($r)) {
@@ -500,75 +460,6 @@ class SendRequest extends Event {
 
 	function toXMLString() {
 		return SendRequest_toXMLString($this->_cPtr);
-	}
-}
-
-class InterpreterMonitor {
-	public $_cPtr=null;
-	protected $_pData=array();
-
-	function __set($var,$value) {
-		if ($var === 'thisown') return swig_uscxmlNativePHP_alter_newobject($this->_cPtr,$value);
-		$this->_pData[$var] = $value;
-	}
-
-	function __isset($var) {
-		if ($var === 'thisown') return true;
-		return array_key_exists($var, $this->_pData);
-	}
-
-	function __get($var) {
-		if ($var === 'thisown') return swig_uscxmlNativePHP_get_newobject($this->_cPtr);
-		return $this->_pData[$var];
-	}
-
-	function onStableConfiguration($interpreter) {
-		InterpreterMonitor_onStableConfiguration($this->_cPtr,$interpreter);
-	}
-
-	function beforeCompletion($interpreter) {
-		InterpreterMonitor_beforeCompletion($this->_cPtr,$interpreter);
-	}
-
-	function afterCompletion($interpreter) {
-		InterpreterMonitor_afterCompletion($this->_cPtr,$interpreter);
-	}
-
-	function beforeMicroStep($interpreter) {
-		InterpreterMonitor_beforeMicroStep($this->_cPtr,$interpreter);
-	}
-
-	function beforeTakingTransitions($interpreter,$transitions) {
-		InterpreterMonitor_beforeTakingTransitions($this->_cPtr,$interpreter,$transitions);
-	}
-
-	function beforeEnteringStates($interpreter,$statesToEnter) {
-		InterpreterMonitor_beforeEnteringStates($this->_cPtr,$interpreter,$statesToEnter);
-	}
-
-	function afterEnteringStates($interpreter) {
-		InterpreterMonitor_afterEnteringStates($this->_cPtr,$interpreter);
-	}
-
-	function beforeExitingStates($interpreter,$statesToExit) {
-		InterpreterMonitor_beforeExitingStates($this->_cPtr,$interpreter,$statesToExit);
-	}
-
-	function afterExitingStates($interpreter) {
-		InterpreterMonitor_afterExitingStates($this->_cPtr,$interpreter);
-	}
-
-	function __construct($res=null) {
-		if (is_resource($res) && get_resource_type($res) === '_p_uscxml__InterpreterMonitor') {
-			$this->_cPtr=$res;
-			return;
-		}
-		if (get_class($this) === 'InterpreterMonitor') {
-			$_this = null;
-		} else {
-			$_this = $this;
-		}
-		$this->_cPtr=new_InterpreterMonitor($_this);
 	}
 }
 
@@ -590,22 +481,9 @@ class Interpreter {
 		if ($var === 'thisown') return swig_uscxmlNativePHP_get_newobject($this->_cPtr);
 		return $this->_pData[$var];
 	}
-	function __construct($h) {
-		$this->_cPtr=$h;
-	}
 
-	const EARLY = 0;
-
-	const LATE = 1;
-
-	const CAN_NOTHING = 0;
-
-	const CAN_BASIC_HTTP = 1;
-
-	const CAN_GENERIC_HTTP = 2;
-
-	static function fromDOM($node) {
-		$r=Interpreter_fromDOM($node);
+	static function fromDOM($dom) {
+		$r=Interpreter_fromDOM($dom);
 		if (is_resource($r)) {
 			$c=substr(get_resource_type($r), (strpos(get_resource_type($r), '__') ? strpos(get_resource_type($r), '__') + 2 : 3));
 			if (class_exists($c)) return new $c($r);
@@ -644,12 +522,27 @@ class Interpreter {
 		return $r;
 	}
 
-	function start() {
-		Interpreter_start($this->_cPtr);
+	function __construct($impl_or_other=null) {
+		if (is_resource($impl_or_other) && get_resource_type($impl_or_other) === '_p_uscxml__Interpreter') {
+			$this->_cPtr=$impl_or_other;
+			return;
+		}
+		switch (func_num_args()) {
+		case 0: $this->_cPtr=new_Interpreter(); break;
+		default: $this->_cPtr=new_Interpreter($impl_or_other);
+		}
 	}
 
-	static function run($arg1) {
-		Interpreter_run($arg1);
+	function isValid() {
+		return Interpreter_isValid($this->_cPtr);
+	}
+
+	function equals($other) {
+		return Interpreter_equals($this->_cPtr,$other);
+	}
+
+	function start() {
+		Interpreter_start($this->_cPtr);
 	}
 
 	function join() {
@@ -726,12 +619,12 @@ class Interpreter {
 		return Interpreter_getXMLPrefixForNS($this->_cPtr,$ns);
 	}
 
-	function receive($event,$toFront=false) {
-		Interpreter_receive($this->_cPtr,$event,$toFront);
-	}
-
 	function receiveInternal($event) {
 		Interpreter_receiveInternal($this->_cPtr,$event);
+	}
+
+	function receive($event,$toFront=false) {
+		Interpreter_receive($this->_cPtr,$event,$toFront);
 	}
 
 	function getCurrentEvent() {
@@ -750,6 +643,10 @@ class Interpreter {
 
 	function setConfiguration($states) {
 		Interpreter_setConfiguration($this->_cPtr,$states);
+	}
+
+	function setInvokeRequest($req) {
+		Interpreter_setInvokeRequest($this->_cPtr,$req);
 	}
 
 	function getState($stateId) {
@@ -778,6 +675,14 @@ class Interpreter {
 
 	function getSessionId() {
 		return Interpreter_getSessionId($this->_cPtr);
+	}
+
+	function getIOProcessors() {
+		return Interpreter_getIOProcessors($this->_cPtr);
+	}
+
+	function getInvokers() {
+		return Interpreter_getInvokers($this->_cPtr);
 	}
 
 	function runOnMainThread($fps,$blocking=true) {
@@ -862,6 +767,14 @@ class Interpreter {
 		return Interpreter_getChildStates($state);
 	}
 
+	static function getParentState($element) {
+		return Interpreter_getParentState($element);
+	}
+
+	static function getAncestorElement($node,$tagName) {
+		return Interpreter_getAncestorElement($node,$tagName);
+	}
+
 	function getTargetStates($transition) {
 		return Interpreter_getTargetStates($this->_cPtr,$transition);
 	}
@@ -884,6 +797,75 @@ class Interpreter {
 
 	static function getUUID() {
 		return Interpreter_getUUID();
+	}
+}
+
+class InterpreterMonitor {
+	public $_cPtr=null;
+	protected $_pData=array();
+
+	function __set($var,$value) {
+		if ($var === 'thisown') return swig_uscxmlNativePHP_alter_newobject($this->_cPtr,$value);
+		$this->_pData[$var] = $value;
+	}
+
+	function __isset($var) {
+		if ($var === 'thisown') return true;
+		return array_key_exists($var, $this->_pData);
+	}
+
+	function __get($var) {
+		if ($var === 'thisown') return swig_uscxmlNativePHP_get_newobject($this->_cPtr);
+		return $this->_pData[$var];
+	}
+
+	function onStableConfiguration($interpreter) {
+		InterpreterMonitor_onStableConfiguration($this->_cPtr,$interpreter);
+	}
+
+	function beforeCompletion($interpreter) {
+		InterpreterMonitor_beforeCompletion($this->_cPtr,$interpreter);
+	}
+
+	function afterCompletion($interpreter) {
+		InterpreterMonitor_afterCompletion($this->_cPtr,$interpreter);
+	}
+
+	function beforeMicroStep($interpreter) {
+		InterpreterMonitor_beforeMicroStep($this->_cPtr,$interpreter);
+	}
+
+	function beforeTakingTransitions($interpreter,$transitions) {
+		InterpreterMonitor_beforeTakingTransitions($this->_cPtr,$interpreter,$transitions);
+	}
+
+	function beforeEnteringStates($interpreter,$statesToEnter) {
+		InterpreterMonitor_beforeEnteringStates($this->_cPtr,$interpreter,$statesToEnter);
+	}
+
+	function afterEnteringStates($interpreter) {
+		InterpreterMonitor_afterEnteringStates($this->_cPtr,$interpreter);
+	}
+
+	function beforeExitingStates($interpreter,$statesToExit) {
+		InterpreterMonitor_beforeExitingStates($this->_cPtr,$interpreter,$statesToExit);
+	}
+
+	function afterExitingStates($interpreter) {
+		InterpreterMonitor_afterExitingStates($this->_cPtr,$interpreter);
+	}
+
+	function __construct($res=null) {
+		if (is_resource($res) && get_resource_type($res) === '_p_uscxml__InterpreterMonitor') {
+			$this->_cPtr=$res;
+			return;
+		}
+		if (get_class($this) === 'InterpreterMonitor') {
+			$_this = null;
+		} else {
+			$_this = $this;
+		}
+		$this->_cPtr=new_InterpreterMonitor($_this);
 	}
 }
 

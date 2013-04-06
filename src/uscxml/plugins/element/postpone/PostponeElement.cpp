@@ -16,7 +16,7 @@ bool connect(pluma::Host& host) {
 }
 #endif
 
-boost::shared_ptr<ExecutableContentImpl> PostponeElement::create(Interpreter* interpreter) {
+boost::shared_ptr<ExecutableContentImpl> PostponeElement::create(InterpreterImpl* interpreter) {
 	boost::shared_ptr<PostponeElement> invoker = boost::shared_ptr<PostponeElement>(new PostponeElement());
 	invoker->_interpreter = interpreter;
 	return invoker;
@@ -97,21 +97,21 @@ void PostponeElement::enterElement(const Arabica::DOM::Node<std::string>& node) 
 void PostponeElement::exitElement(const Arabica::DOM::Node<std::string>& node) {
 }
 
-void PostponeElement::Resubmitter::postpone(const Event& event, std::string until, uint64_t timeout, bool chained, Interpreter* interpreter) {
+void PostponeElement::Resubmitter::postpone(const Event& event, std::string until, uint64_t timeout, bool chained, InterpreterImpl* interpreter) {
 	Resubmitter* resubmitter = getInstance(interpreter);
 	resubmitter->_postponedEvents.push_back(Postponed(event, until, timeout, chained));
 }
 
-void PostponeElement::Resubmitter::onStableConfiguration(Interpreter* interpreter) {
+void PostponeElement::Resubmitter::onStableConfiguration(Interpreter interpreter) {
 	std::list<Postponed>::iterator eventIter = _postponedEvents.begin();
 	bool dispatched = false;
 	while(eventIter != _postponedEvents.end()) {
 		try {
 //      LOG(INFO) << "Reevaluating: >> " << eventIter->first << " <<";
-			if ((!dispatched || eventIter->chaining) && interpreter->getDataModel().evalAsBool(eventIter->until)) {
+			if ((!dispatched || eventIter->chaining) && interpreter.getDataModel().evalAsBool(eventIter->until)) {
 //        LOG(INFO) << "  -> is TRUE";
 				eventIter->event.name += ".postponed";
-				interpreter->receive(eventIter->event, true);
+				interpreter.receive(eventIter->event, true);
 				_postponedEvents.erase(eventIter);
 				dispatched = true;
 			}
@@ -127,21 +127,21 @@ void PostponeElement::Resubmitter::onStableConfiguration(Interpreter* interprete
 
 }
 
-void PostponeElement::Resubmitter::afterCompletion(Interpreter* interpreter) {
+void PostponeElement::Resubmitter::afterCompletion(Interpreter interpreter) {
 	tthread::lock_guard<tthread::recursive_mutex> lock(PostponeElement::Resubmitter::_accessLock);
 	_instances.erase(interpreter);
 	delete this; // committing suicide is ok if we are careful
 }
 
-std::map<Interpreter*, PostponeElement::Resubmitter*> PostponeElement::Resubmitter::_instances;
+std::map<Interpreter, PostponeElement::Resubmitter*> PostponeElement::Resubmitter::_instances;
 tthread::recursive_mutex PostponeElement::Resubmitter::_accessLock;
 
-PostponeElement::Resubmitter* PostponeElement::Resubmitter::getInstance(Interpreter* interpreter) {
+PostponeElement::Resubmitter* PostponeElement::Resubmitter::getInstance(InterpreterImpl* interpreter) {
 	tthread::lock_guard<tthread::recursive_mutex> lock(PostponeElement::Resubmitter::_accessLock);
-	if (_instances.find(interpreter) == _instances.end()) {
-		_instances[interpreter] = new Resubmitter(interpreter);
+	if (_instances.find(interpreter->shared_from_this()) == _instances.end()) {
+		_instances[interpreter->shared_from_this()] = new Resubmitter(interpreter);
 	}
-	return _instances[interpreter];
+	return _instances[interpreter->shared_from_this()];
 }
 
 }

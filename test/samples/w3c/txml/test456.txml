@@ -4,7 +4,7 @@ just run a simple one and check that it can update the data model. -->
 <scxml initial="s0" version="1.0" datamodel="ecmascript"  xmlns="http://www.w3.org/2005/07/scxml" 
 xmlns:conf="http://www.w3.org/2005/scxml-conformance">
 <datamodel>
-  <data conf:id="1"/>
+  <data conf:id="1" conf:expr="0"/>
   </datamodel>
   
  <state id="s0">

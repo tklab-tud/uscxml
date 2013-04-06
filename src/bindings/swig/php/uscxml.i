@@ -9,6 +9,13 @@
 // disable warning related to unknown base class
 #pragma SWIG nowarn=401
 
+%rename(c_array) array;
+%rename(equals) operator==; 
+%rename(isValid) operator bool;
+%ignore operator!=;
+%ignore operator<;
+%ignore operator=;
+
 //**************************************************
 // This ends up in the generated wrapper code
 //**************************************************
@@ -32,6 +39,7 @@ void*** tsrm_ls;
 
 %ignore uscxml::NumAttr;
 %ignore uscxml::SCXMLParser;
+%ignore uscxml::InterpreterImpl;
 
 //***********************************************
 // Parse the header file to generate wrappers

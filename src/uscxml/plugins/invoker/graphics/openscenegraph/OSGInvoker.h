@@ -20,7 +20,7 @@ class OSGInvoker : public InvokerImpl, public Arabica::DOM::Events::EventListene
 public:
 	OSGInvoker();
 	virtual ~OSGInvoker();
-	virtual boost::shared_ptr<IOProcessorImpl> create(Interpreter* interpreter);
+	virtual boost::shared_ptr<IOProcessorImpl> create(InterpreterImpl* interpreter);
 
 	virtual std::set<std::string> getNames() {
 		std::set<std::string> names;

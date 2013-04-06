@@ -29,20 +29,7 @@
 namespace uscxml {
 
 class HTTPServletInvoker;
-
-class InterpreterMonitor {
-public:
-	virtual ~InterpreterMonitor() {}
-	virtual void onStableConfiguration(Interpreter* interpreter) {}
-	virtual void beforeCompletion(Interpreter* interpreter) {}
-	virtual void afterCompletion(Interpreter* interpreter) {}
-	virtual void beforeMicroStep(Interpreter* interpreter) {}
-	virtual void beforeTakingTransitions(Interpreter* interpreter, const Arabica::XPath::NodeSet<std::string>& transitions) {}
-	virtual void beforeEnteringStates(Interpreter* interpreter, const Arabica::XPath::NodeSet<std::string>& statesToEnter) {}
-	virtual void afterEnteringStates(Interpreter* interpreter) {}
-	virtual void beforeExitingStates(Interpreter* interpreter, const Arabica::XPath::NodeSet<std::string>& statesToExit) {}
-	virtual void afterExitingStates(Interpreter* interpreter) {}
-};
+class InterpreterMonitor;
 
 class NumAttr {
 public:
@@ -71,32 +58,28 @@ public:
 
 class SCXMLParser : public Arabica::SAX2DOM::Parser<std::string> {
 public:
-	SCXMLParser(Interpreter* interpreter);
+	SCXMLParser(InterpreterImpl* interpreter);
 	void startPrefixMapping(const std::string& /* prefix */, const std::string& /* uri */);
 
 	Arabica::SAX::CatchErrorHandler<std::string> _errorHandler;
-	Interpreter* _interpreter;
+	InterpreterImpl* _interpreter;
 };
 
-class Interpreter {
+enum Capabilities {
+	CAN_NOTHING = 0,
+	CAN_BASIC_HTTP = 1,
+	CAN_GENERIC_HTTP = 2,
+};
+
+class InterpreterImpl : public boost::enable_shared_from_this<InterpreterImpl> {
 public:
+
 	enum Binding {
 	    EARLY = 0,
 	    LATE = 1
 	};
 
-	enum Capabilities {
-	    CAN_NOTHING = 0,
-	    CAN_BASIC_HTTP = 1,
-	    CAN_GENERIC_HTTP = 2,
-	};
-
-	virtual ~Interpreter();
-
-	static Interpreter* fromDOM(const Arabica::DOM::Document<std::string>& dom);
-	static Interpreter* fromXML(const std::string& xml);
-	static Interpreter* fromURI(const std::string& uri);
-	static Interpreter* fromInputSource(Arabica::SAX::InputSource<std::string>& source);
+	virtual ~InterpreterImpl();
 
 	void start();
 	static void run(void*);
@@ -202,6 +185,10 @@ public:
 		return _ioProcessors;
 	}
 
+	const std::map<std::string, Invoker>& getInvokers() {
+		return _invokers;
+	}
+
 	bool runOnMainThread(int fps, bool blocking = true);
 
 	static bool isMember(const Arabica::DOM::Node<std::string>& node, const Arabica::XPath::NodeSet<std::string>& set);
@@ -237,7 +224,7 @@ public:
 	static const std::string getUUID();
 
 protected:
-	Interpreter();
+	InterpreterImpl();
 	void init();
 
 	void normalize(Arabica::DOM::Element<std::string>& scxml);
@@ -261,7 +248,7 @@ protected:
 	bool _running;
 	bool _done;
 	bool _isInitialized;
-	Binding _binding;
+	InterpreterImpl::Binding _binding;
 	Arabica::XPath::NodeSet<std::string> _configuration;
 	Arabica::XPath::NodeSet<std::string> _statesToInvoke;
 	std::vector<std::string> _userDefinedStartConfiguration;
@@ -298,7 +285,7 @@ protected:
 	static bool nameMatch(const std::string& transitionEvent, const std::string& event);
 	bool hasConditionMatch(const Arabica::DOM::Node<std::string>& conditional);
 	bool isInFinalState(const Arabica::DOM::Node<std::string>& state);
-	bool parentIsScxmlState(Arabica::DOM::Node<std::string> state);
+	bool parentIsScxmlState(const Arabica::DOM::Node<std::string>& state);
 
 	static boost::uuids::random_generator uuidGen;
 
@@ -312,7 +299,7 @@ protected:
 	IOProcessor getIOProcessor(const std::string& type);
 
 	std::map<std::string, IOProcessor> _ioProcessors;
-	std::map<std::string, std::pair<Interpreter*, SendRequest> > _sendIds;
+	std::map<std::string, std::pair<InterpreterImpl*, SendRequest> > _sendIds;
 	std::map<std::string, Invoker> _invokers;
 	std::map<std::string, Invoker> _autoForwardees;
 	std::map<Arabica::DOM::Node<std::string>, ExecutableContent> _executableContent;
@@ -323,6 +310,282 @@ protected:
 
 	friend class SCXMLParser;
 	friend class USCXMLInvoker;
+	friend class SCXMLIOProcessor;
+	friend class Interpreter;
+};
+
+class Interpreter {
+public:
+	static Interpreter fromDOM(const Arabica::DOM::Document<std::string>& dom);
+	static Interpreter fromXML(const std::string& xml);
+	static Interpreter fromURI(const std::string& uri);
+	static Interpreter fromInputSource(Arabica::SAX::InputSource<std::string>& source);
+
+	Interpreter() : _impl() {}
+	Interpreter(boost::shared_ptr<InterpreterImpl> const impl) : _impl(impl) { }
+	Interpreter(const Interpreter& other) : _impl(other._impl) { }
+	virtual ~Interpreter() {};
+
+	operator bool() const {
+		return _impl;
+	}
+	bool operator< (const Interpreter& other) const     {
+		return _impl < other._impl;
+	}
+	bool operator==(const Interpreter& other) const     {
+		return _impl == other._impl;
+	}
+	bool operator!=(const Interpreter& other) const     {
+		return _impl != other._impl;
+	}
+	Interpreter& operator= (const Interpreter& other)   {
+		_impl = other._impl;
+		return *this;
+	}
+
+	void start() {
+		return _impl->start();
+	}
+	void join() {
+		return _impl->join();
+	};
+	bool isRunning() {
+		return _impl->isRunning();
+	}
+
+	void interpret() {
+		_impl->interpret();
+	};
+
+	void addMonitor(InterpreterMonitor* monitor)             {
+		return _impl->addMonitor(monitor);
+	}
+
+	void removeMonitor(InterpreterMonitor* monitor)          {
+		return _impl->removeMonitor(monitor);
+	}
+
+	void setBaseURI(std::string baseURI)                     {
+		return _impl->setBaseURI(baseURI);
+	}
+	URL getBaseURI()                                         {
+		return _impl->getBaseURI();
+	}
+	bool toAbsoluteURI(URL& uri) {
+		return _impl->toAbsoluteURI(uri);
+	}
+
+	void setCmdLineOptions(int argc, char** argv) {
+		return _impl->setCmdLineOptions(argc, argv);
+	}
+	Data getCmdLineOptions() {
+		return _impl->getCmdLineOptions();
+	}
+
+	InterpreterServlet* getHTTPServlet() {
+		return _impl->getHTTPServlet();
+	}
+
+	DataModel getDataModel()                                 {
+		return _impl->getDataModel();
+	}
+	void setParentQueue(uscxml::concurrency::BlockingQueue<SendRequest>* parentQueue) {
+		return _impl->setParentQueue(parentQueue);
+	}
+	std::string getXPathPrefix()                             {
+		return _impl->getXPathPrefix();
+	}
+	std::string getXMLPrefix()                               {
+		return _impl->getXMLPrefix();
+	}
+	Arabica::XPath::StandardNamespaceContext<std::string>& getNSContext() {
+		return _impl->getNSContext();
+	}
+	std::string getXMLPrefixForNS(const std::string& ns)     {
+		return _impl->getXMLPrefixForNS(ns);
+	}
+
+	void inline receiveInternal(const Event& event) {
+		return _impl->receiveInternal(event);
+	}
+	void receive(const Event& event, bool toFront = false)   {
+		return _impl->receive(event, toFront);
+	}
+
+	Event getCurrentEvent() {
+		return _impl->getCurrentEvent();
+	}
+
+	Arabica::XPath::NodeSet<std::string> getConfiguration()  {
+		return _impl->getConfiguration();
+	}
+	void setConfiguration(const std::vector<std::string>& states) {
+		return _impl->setConfiguration(states);
+	}
+	void setInvokeRequest(const InvokeRequest& req) {
+		return _impl->setInvokeRequest(req);
+	}
+
+	Arabica::DOM::Node<std::string> getState(const std::string& stateId) {
+		return _impl->getState(stateId);
+	}
+	Arabica::XPath::NodeSet<std::string> getStates(const std::vector<std::string>& stateIds) {
+		return _impl->getStates(stateIds);
+	}
+
+	Arabica::DOM::Document<std::string>& getDocument()       {
+		return _impl->getDocument();
+	}
+
+	void setCapabilities(unsigned int capabilities)          {
+		return _impl->setCapabilities(capabilities);
+	}
+
+	void setName(const std::string& name) {
+		return _impl->setName(name);
+	}
+
+	const std::string& getName()                             {
+		return _impl->getName();
+	}
+	const std::string& getSessionId()                        {
+		return _impl->getSessionId();
+	}
+
+	const std::map<std::string, IOProcessor>& getIOProcessors() {
+		return _impl->getIOProcessors();
+	}
+
+	const std::map<std::string, Invoker>& getInvokers() {
+		return _impl->getInvokers();
+	}
+
+	bool runOnMainThread(int fps, bool blocking = true) {
+		return _impl->runOnMainThread(fps, blocking);
+	}
+
+	static bool isMember(const Arabica::DOM::Node<std::string>& node, const Arabica::XPath::NodeSet<std::string>& set) {
+		return InterpreterImpl::isMember(node, set);
+	}
+
+	void dump() {
+		return _impl->dump();
+	}
+	bool hasLegalConfiguration() {
+		return _impl->hasLegalConfiguration();
+	}
+
+	static bool isState(const Arabica::DOM::Node<std::string>& state) {
+		return InterpreterImpl::isState(state);
+	}
+	static bool isPseudoState(const Arabica::DOM::Node<std::string>& state) {
+		return InterpreterImpl::isPseudoState(state);
+	}
+	static bool isTransitionTarget(const Arabica::DOM::Node<std::string>& elem) {
+		return InterpreterImpl::isTransitionTarget(elem);
+	}
+	static bool isTargetless(const Arabica::DOM::Node<std::string>& transition) {
+		return InterpreterImpl::isTargetless(transition);
+	}
+	static bool isAtomic(const Arabica::DOM::Node<std::string>& state) {
+		return InterpreterImpl::isAtomic(state);
+	}
+	static bool isFinal(const Arabica::DOM::Node<std::string>& state) {
+		return InterpreterImpl::isFinal(state);
+	}
+	static bool isHistory(const Arabica::DOM::Node<std::string>& state) {
+		return InterpreterImpl::isHistory(state);
+	}
+	static bool isParallel(const Arabica::DOM::Node<std::string>& state) {
+		return InterpreterImpl::isParallel(state);
+	}
+	static bool isCompound(const Arabica::DOM::Node<std::string>& state) {
+		return InterpreterImpl::isCompound(state);
+	}
+	static bool isDescendant(const Arabica::DOM::Node<std::string>& s1, const Arabica::DOM::Node<std::string>& s2) {
+		return InterpreterImpl::isDescendant(s1, s2);
+	}
+
+	static std::vector<std::string> tokenizeIdRefs(const std::string& idRefs) {
+		return InterpreterImpl::tokenizeIdRefs(idRefs);
+	}
+
+	bool isInitial(const Arabica::DOM::Node<std::string>& state) {
+		return _impl->isInitial(state);
+	}
+	Arabica::XPath::NodeSet<std::string> getInitialStates(Arabica::DOM::Node<std::string> state = Arabica::DOM::Node<std::string>()) {
+		return _impl->getInitialStates(state);
+	}
+	static Arabica::XPath::NodeSet<std::string> getChildStates(const Arabica::DOM::Node<std::string>& state) {
+		return InterpreterImpl::getChildStates(state);
+	}
+	static Arabica::DOM::Node<std::string> getParentState(const Arabica::DOM::Node<std::string>& element) {
+		return InterpreterImpl::getParentState(element);
+	}
+	static Arabica::DOM::Node<std::string> getAncestorElement(const Arabica::DOM::Node<std::string>& node, const std::string tagName) {
+		return InterpreterImpl::getAncestorElement(node, tagName);
+	}
+	Arabica::XPath::NodeSet<std::string> getTargetStates(const Arabica::DOM::Node<std::string>& transition) {
+		return _impl->getTargetStates(transition);
+	}
+	Arabica::DOM::Node<std::string> getSourceState(const Arabica::DOM::Node<std::string>& transition) {
+		return _impl->getSourceState(transition);
+	}
+
+	static Arabica::XPath::NodeSet<std::string> filterChildElements(const std::string& tagname, const Arabica::DOM::Node<std::string>& node) {
+		return InterpreterImpl::filterChildElements(tagname, node);
+	}
+	static Arabica::XPath::NodeSet<std::string> filterChildElements(const std::string& tagName, const Arabica::XPath::NodeSet<std::string>& nodeSet) {
+		return InterpreterImpl::filterChildElements(tagName, nodeSet);
+	}
+	Arabica::DOM::Node<std::string> findLCCA(const Arabica::XPath::NodeSet<std::string>& states) {
+		return _impl->findLCCA(states);
+	}
+	Arabica::XPath::NodeSet<std::string> getProperAncestors(const Arabica::DOM::Node<std::string>& s1, const Arabica::DOM::Node<std::string>& s2) {
+		return _impl->getProperAncestors(s1, s2);
+	}
+	static const std::string getUUID() {
+		return InterpreterImpl::getUUID();
+	}
+
+#ifndef SWIG
+	boost::shared_ptr<InterpreterImpl> getImpl() {
+		return _impl;
+	}
+	
+	static std::map<std::string, boost::weak_ptr<InterpreterImpl> > getInstances() {
+		tthread::lock_guard<tthread::recursive_mutex> lock(_instanceMutex);
+		std::map<std::string, boost::weak_ptr<InterpreterImpl> >::iterator instIter = _instances.begin();
+		while(instIter != _instances.end()) {
+			if (!instIter->second.lock()) {
+				_instances.erase(instIter++);
+			} else {
+				instIter++;
+			}
+		}
+		return _instances;
+	}
+		
+#endif
+		
+protected:
+	boost::shared_ptr<InterpreterImpl> _impl;
+	static std::map<std::string, boost::weak_ptr<InterpreterImpl> > _instances;
+	static tthread::recursive_mutex _instanceMutex;
+};
+
+class InterpreterMonitor {
+public:
+	virtual ~InterpreterMonitor() {}
+	virtual void onStableConfiguration(Interpreter interpreter) {}
+	virtual void beforeCompletion(Interpreter interpreter) {}
+	virtual void afterCompletion(Interpreter interpreter) {}
+	virtual void beforeMicroStep(Interpreter interpreter) {}
+	virtual void beforeTakingTransitions(Interpreter interpreter, const Arabica::XPath::NodeSet<std::string>& transitions) {}
+	virtual void beforeEnteringStates(Interpreter interpreter, const Arabica::XPath::NodeSet<std::string>& statesToEnter) {}
+	virtual void afterEnteringStates(Interpreter interpreter) {}
+	virtual void beforeExitingStates(Interpreter interpreter, const Arabica::XPath::NodeSet<std::string>& statesToExit) {}
+	virtual void afterExitingStates(Interpreter interpreter) {}
 };
 
 }

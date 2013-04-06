@@ -26,7 +26,7 @@ V8DataModel::V8DataModel() {
 //  _contexts.push_back(v8::Context::New());
 }
 
-boost::shared_ptr<DataModelImpl> V8DataModel::create(Interpreter* interpreter) {
+boost::shared_ptr<DataModelImpl> V8DataModel::create(InterpreterImpl* interpreter) {
 	boost::shared_ptr<V8DataModel> dm = boost::shared_ptr<V8DataModel>(new V8DataModel());
 	dm->_interpreter = interpreter;
 	v8::Locker locker;
@@ -246,17 +246,17 @@ Data V8DataModel::getValueAsData(const v8::Handle<v8::Value>& value) {
 v8::Handle<v8::Value> V8DataModel::getDocumentAsValue(const Arabica::DOM::Document<std::string>& doc) {
 	v8::Handle<v8::Function> retCtor = Arabica::DOM::V8Document::getTmpl()->GetFunction();
 	v8::Persistent<v8::Object> retObj = v8::Persistent<v8::Object>::New(retCtor->NewInstance());
-	
+
 	struct Arabica::DOM::V8Document::V8DocumentPrivate* retPrivData = new Arabica::DOM::V8Document::V8DocumentPrivate();
 	retPrivData->dom = _dom;
 	retPrivData->nativeObj = new Arabica::DOM::Document<std::string>(doc);
-	
+
 	retObj->SetInternalField(0, Arabica::DOM::V8DOM::toExternal(retPrivData));
 	retObj.MakeWeak(0, Arabica::DOM::V8Document::jsDestructor);
-	
+
 	return retObj;
 }
-	
+
 v8::Handle<v8::Value> V8DataModel::getDataAsValue(const Data& data) {
 	if (data.compound.size() > 0) {
 		v8::Handle<v8::Object> value = v8::Object::New();

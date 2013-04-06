@@ -34,7 +34,7 @@ the respective build-process.
 <table>
 	<tr><th>Test#</th><th>Status</th><th>Comment</th></tr>
 	<tr><td><tt>153</tt></td><td><tt>Failed / Fix&nbsp;in&nbsp;test</tt></td>
-		<td>The XSLT transformation leave some gibberish in the file</td>
+		<td>The XSLT transformation leave some gibberish in the file (Saxon HE XSLT)</td>
 	<tr><td><tt>178</tt></td><td><tt>Failed / Fix in draft</tt></td>
 		<td>A manual test that relies on an unspecified _event.raw attribute</td>
 	<tr><td><tt>226</tt></td><td><tt>Failed / Fix&nbsp;in&nbsp;test</tt></td>

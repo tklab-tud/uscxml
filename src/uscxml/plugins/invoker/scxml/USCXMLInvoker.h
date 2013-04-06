@@ -20,7 +20,7 @@ class USCXMLInvoker :
 public:
 	USCXMLInvoker();
 	virtual ~USCXMLInvoker();
-	virtual boost::shared_ptr<IOProcessorImpl> create(Interpreter* interpreter);
+	virtual boost::shared_ptr<IOProcessorImpl> create(InterpreterImpl* interpreter);
 	virtual std::set<std::string> getNames() {
 		std::set<std::string> names;
 		names.insert("scxml");
@@ -39,8 +39,8 @@ public:
 
 protected:
 	bool _cancelled;
-	Interpreter* _invokedInterpreter;
-	Interpreter* _parentInterpreter;
+	Interpreter _invokedInterpreter;
+	InterpreterImpl* _parentInterpreter;
 };
 
 #ifdef BUILD_AS_PLUGINS

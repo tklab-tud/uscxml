@@ -28,7 +28,7 @@ UmundoInvoker::~UmundoInvoker() {
 	}
 };
 
-boost::shared_ptr<IOProcessorImpl> UmundoInvoker::create(Interpreter* interpreter) {
+boost::shared_ptr<IOProcessorImpl> UmundoInvoker::create(InterpreterImpl* interpreter) {
 	boost::shared_ptr<UmundoInvoker> invoker = boost::shared_ptr<UmundoInvoker>(new UmundoInvoker());
 	invoker->_interpreter = interpreter;
 	return invoker;
@@ -250,7 +250,7 @@ void UmundoInvoker::changed(umundo::ServiceDescription desc) {
 }
 
 std::multimap<std::string, std::pair<std::string, umundo::Node*> > UmundoInvoker::_nodes;
-umundo::Node* UmundoInvoker::getNode(Interpreter* interpreter, const std::string& domain) {
+umundo::Node* UmundoInvoker::getNode(InterpreterImpl* interpreter, const std::string& domain) {
 	std::pair<_nodes_t::iterator, _nodes_t::iterator> range = _nodes.equal_range(interpreter->getName());
 	for (_nodes_t::iterator it = range.first; it != range.second; it++) {
 		if (it->second.first.compare(domain) == 0)

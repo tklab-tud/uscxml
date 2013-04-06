@@ -1,5 +1,5 @@
-#ifndef EVENTIOPROCESSOR_H_2CUY93KU
-#define EVENTIOPROCESSOR_H_2CUY93KU
+#ifndef BASICHTTPIOPROCESSOR_H_2CUY93KU
+#define BASICHTTPIOPROCESSOR_H_2CUY93KU
 
 #include "uscxml/concurrency/eventqueue/DelayedEventQueue.h"
 #include "uscxml/server/HTTPServer.h"
@@ -18,13 +18,11 @@
 
 namespace uscxml {
 
-class EventIOServer;
-
-class EventIOProcessor : public IOProcessorImpl, public HTTPServlet, public URLMonitor {
+class BasicHTTPIOProcessor : public IOProcessorImpl, public HTTPServlet, public URLMonitor {
 public:
-	EventIOProcessor();
-	virtual ~EventIOProcessor();
-	virtual boost::shared_ptr<IOProcessorImpl> create(uscxml::Interpreter* interpreter);
+	BasicHTTPIOProcessor();
+	virtual ~BasicHTTPIOProcessor();
+	virtual boost::shared_ptr<IOProcessorImpl> create(uscxml::InterpreterImpl* interpreter);
 
 	virtual std::set<std::string> getNames() {
 		std::set<std::string> names;
@@ -58,9 +56,9 @@ protected:
 };
 
 #ifdef BUILD_AS_PLUGINS
-PLUMA_INHERIT_PROVIDER(EventIOProcessor, IOProcessorImpl);
+PLUMA_INHERIT_PROVIDER(BasicHTTPIOProcessor, IOProcessorImpl);
 #endif
 
 }
 
-#endif /* end of include guard: EVENTIOPROCESSOR_H_2CUY93KU */
+#endif /* end of include guard: BASICHTTPIOPROCESSOR_H_2CUY93KU */

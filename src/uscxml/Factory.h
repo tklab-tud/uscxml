@@ -33,15 +33,15 @@ inline bool isNumeric( const char* pszInput, int nNumberBase) {
 	return (input.find_first_not_of(base.substr(0, nNumberBase)) == std::string::npos);
 }
 
-class Interpreter;
+class InterpreterImpl;
 
 class ExecutableContentImpl {
 public:
 	ExecutableContentImpl() {};
 	virtual ~ExecutableContentImpl() {};
-	virtual boost::shared_ptr<ExecutableContentImpl> create(Interpreter* interpreter) = 0;
+	virtual boost::shared_ptr<ExecutableContentImpl> create(InterpreterImpl* interpreter) = 0;
 
-	virtual void setInterpreter(Interpreter* interpreter) {
+	virtual void setInterpreter(InterpreterImpl* interpreter) {
 		_interpreter = interpreter;
 	}
 
@@ -52,7 +52,7 @@ public:
 	virtual bool processChildren() = 0; ///< Whether or not the interpreter should process this elements children.
 
 protected:
-	Interpreter* _interpreter;
+	InterpreterImpl* _interpreter;
 };
 
 class ExecutableContent {
@@ -79,7 +79,7 @@ public:
 		return *this;
 	}
 
-	void setInterpreter(Interpreter* interpreter) {
+	void setInterpreter(InterpreterImpl* interpreter) {
 		_impl->setInterpreter(interpreter);
 	}
 
@@ -107,10 +107,10 @@ class IOProcessorImpl {
 public:
 	IOProcessorImpl() {};
 	virtual ~IOProcessorImpl() {};
-	virtual boost::shared_ptr<IOProcessorImpl> create(Interpreter* interpreter) = 0;
+	virtual boost::shared_ptr<IOProcessorImpl> create(InterpreterImpl* interpreter) = 0;
 	virtual std::set<std::string> getNames() = 0;
 
-	virtual void setInterpreter(Interpreter* interpreter) {
+	virtual void setInterpreter(InterpreterImpl* interpreter) {
 		_interpreter = interpreter;
 	}
 	void setInvokeId(const std::string& invokeId) {
@@ -128,7 +128,7 @@ public:
 	void returnEvent(Event& event);
 
 protected:
-	Interpreter* _interpreter;
+	InterpreterImpl* _interpreter;
 	std::string _invokeId;
 	std::string _type;
 };
@@ -171,7 +171,7 @@ public:
 		return _impl->runOnMainThread();
 	}
 
-	void setInterpreter(Interpreter* interpreter) {
+	void setInterpreter(InterpreterImpl* interpreter) {
 		_impl->setInterpreter(interpreter);
 	}
 	void setInvokeId(const std::string& invokeId) {
@@ -183,13 +183,13 @@ public:
 
 protected:
 	boost::shared_ptr<IOProcessorImpl> _impl;
-	friend class Interpreter;
+	friend class InterpreterImpl;
 };
 
 class InvokerImpl : public IOProcessorImpl {
 public:
 	virtual void invoke(const InvokeRequest& req) = 0;
-	virtual boost::shared_ptr<IOProcessorImpl> create(Interpreter* interpreter) = 0;
+	virtual boost::shared_ptr<IOProcessorImpl> create(InterpreterImpl* interpreter) = 0;
 };
 
 class Invoker : public IOProcessor {
@@ -228,7 +228,7 @@ protected:
 class DataModelImpl {
 public:
 	virtual ~DataModelImpl() {}
-	virtual boost::shared_ptr<DataModelImpl> create(Interpreter* interpreter) = 0;
+	virtual boost::shared_ptr<DataModelImpl> create(InterpreterImpl* interpreter) = 0;
 	virtual std::set<std::string> getNames() = 0;
 
 	virtual bool validate(const std::string& location, const std::string& schema) = 0;
@@ -249,7 +249,7 @@ public:
 	virtual bool isDeclared(const std::string& expr) = 0;
 
 protected:
-	Interpreter* _interpreter;
+	InterpreterImpl* _interpreter;
 };
 
 class DataModel {
@@ -332,10 +332,10 @@ public:
 	void registerInvoker(InvokerImpl* invoker);
 	void registerExecutableContent(ExecutableContentImpl* executableContent);
 
-	static boost::shared_ptr<DataModelImpl> createDataModel(const std::string& type, Interpreter* interpreter);
-	static boost::shared_ptr<IOProcessorImpl> createIOProcessor(const std::string& type, Interpreter* interpreter);
-	static boost::shared_ptr<InvokerImpl> createInvoker(const std::string& type, Interpreter* interpreter);
-	static boost::shared_ptr<ExecutableContentImpl> createExecutableContent(const std::string& localName, const std::string& nameSpace, Interpreter* interpreter);
+	static boost::shared_ptr<DataModelImpl> createDataModel(const std::string& type, InterpreterImpl* interpreter);
+	static boost::shared_ptr<IOProcessorImpl> createIOProcessor(const std::string& type, InterpreterImpl* interpreter);
+	static boost::shared_ptr<InvokerImpl> createInvoker(const std::string& type, InterpreterImpl* interpreter);
+	static boost::shared_ptr<ExecutableContentImpl> createExecutableContent(const std::string& localName, const std::string& nameSpace, InterpreterImpl* interpreter);
 
 	static Factory* getInstance();
 

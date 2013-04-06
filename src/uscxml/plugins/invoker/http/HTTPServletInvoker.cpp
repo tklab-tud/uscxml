@@ -25,7 +25,7 @@ HTTPServletInvoker::~HTTPServletInvoker() {
 
 };
 
-boost::shared_ptr<IOProcessorImpl> HTTPServletInvoker::create(Interpreter* interpreter) {
+boost::shared_ptr<IOProcessorImpl> HTTPServletInvoker::create(InterpreterImpl* interpreter) {
 	boost::shared_ptr<HTTPServletInvoker> invoker = boost::shared_ptr<HTTPServletInvoker>(new HTTPServletInvoker());
 	invoker->_interpreter = interpreter;
 	return invoker;

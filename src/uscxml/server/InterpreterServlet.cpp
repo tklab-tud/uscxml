@@ -4,7 +4,7 @@
 
 namespace uscxml {
 
-InterpreterServlet::InterpreterServlet(Interpreter* interpreter) {
+InterpreterServlet::InterpreterServlet(InterpreterImpl* interpreter) {
 	_interpreter = interpreter;
 
 	std::stringstream path;
@@ -18,7 +18,7 @@ InterpreterServlet::InterpreterServlet(Interpreter* interpreter) {
 	_path = path.str();
 }
 
-boost::shared_ptr<IOProcessorImpl> InterpreterServlet::create(Interpreter* interpreter) {
+boost::shared_ptr<IOProcessorImpl> InterpreterServlet::create(InterpreterImpl* interpreter) {
 	// we instantiate directly in Interpreter
 	boost::shared_ptr<IOProcessorImpl> io = boost::shared_ptr<InterpreterServlet>(new InterpreterServlet(interpreter));
 	return io;

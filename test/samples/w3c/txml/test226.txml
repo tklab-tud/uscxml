@@ -13,7 +13,7 @@ success.  otherwise it will hang and the timeout in this doc signifies failure. 
     </onentry>
 
  
-   <invoke type="http://www.w3.org/TR/scxml/" src="file:test226sub1.txml">
+   <invoke type="http://www.w3.org/TR/scxml/" src="file:test226sub1.scxml">
       <param conf:name="1" conf:expr="1"/>
       </invoke>
 

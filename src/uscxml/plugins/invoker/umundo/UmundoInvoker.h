@@ -20,7 +20,7 @@ class UmundoInvoker : public InvokerImpl, public umundo::TypedReceiver, public u
 public:
 	UmundoInvoker();
 	virtual ~UmundoInvoker();
-	virtual boost::shared_ptr<IOProcessorImpl> create(Interpreter* interpreter);
+	virtual boost::shared_ptr<IOProcessorImpl> create(InterpreterImpl* interpreter);
 
 	virtual std::set<std::string> getNames() {
 		std::set<std::string> names;
@@ -57,7 +57,7 @@ protected:
 
 	static std::multimap<std::string, std::pair<std::string, umundo::Node*> > _nodes;
 	typedef std::multimap<std::string, std::pair<std::string, umundo::Node*> > _nodes_t;
-	static umundo::Node* getNode(Interpreter* interpreter, const std::string& domain);
+	static umundo::Node* getNode(InterpreterImpl* interpreter, const std::string& domain);
 };
 
 #ifdef BUILD_AS_PLUGINS

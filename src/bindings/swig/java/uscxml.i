@@ -14,6 +14,11 @@
 # %shared_ptr(uscxml::dom::Element);
 # %shared_ptr(uscxml::dom::Executable);
 
+%rename(equals) operator==; 
+%rename(isValid) operator bool;
+%ignore operator!=;
+%ignore operator<;
+%ignore operator=;
 
 //**************************************************
 // This ends up in the generated wrapper code
@@ -30,6 +35,9 @@ using namespace uscxml;
 
 %rename(toString) operator<<;
 
+%ignore uscxml::NumAttr;
+%ignore uscxml::SCXMLParser;
+%ignore uscxml::InterpreterImpl;
 
 //***********************************************
 // Parse the header file to generate wrappers

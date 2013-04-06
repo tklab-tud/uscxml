@@ -4,7 +4,7 @@
 Var1.  Hence, if script is evaluated at download time, Var1 has a value in the initial state s0.
 This test is valid only for datamodels that support scripting -->
 
-<scxml version="1.0" xmlns="http://www.w3.org/2005/07/scxml" 
+<scxml version="1.0" xmlns="http://www.w3.org/2005/07/scxml" conf:datamodel=""
  xmlns:conf="http://www.w3.org/2005/scxml-conformance" initial="s0">
  <conf:script/>
      

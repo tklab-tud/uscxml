@@ -25,7 +25,7 @@ MilesSessionInvoker::MilesSessionInvoker() {
 MilesSessionInvoker::~MilesSessionInvoker() {
 };
 
-boost::shared_ptr<IOProcessorImpl> MilesSessionInvoker::create(Interpreter* interpreter) {
+boost::shared_ptr<IOProcessorImpl> MilesSessionInvoker::create(InterpreterImpl* interpreter) {
 	boost::shared_ptr<MilesSessionInvoker> invoker = boost::shared_ptr<MilesSessionInvoker>(new MilesSessionInvoker());
 	invoker->_interpreter = interpreter;
 	return invoker;

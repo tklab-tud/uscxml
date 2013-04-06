@@ -5,7 +5,7 @@
 
 namespace uscxml {
 
-class InterpreterDraft6 : public Interpreter {
+class InterpreterDraft6 : public InterpreterImpl {
 protected:
 	void interpret();
 	void mainEventLoop();

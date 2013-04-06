@@ -1,0 +1,141 @@
+#ifdef _WIN32
+#include <winsock2.h>
+#include <windows.h>
+#endif
+
+#include "uscxml/plugins/ioprocessor/scxml/SCXMLIOProcessor.h"
+#include "uscxml/Message.h"
+#include <iostream>
+#include <event2/dns.h>
+#include <event2/buffer.h>
+#include <event2/keyvalq_struct.h>
+
+#include <string.h>
+
+#include <io/uri.hpp>
+#include <glog/logging.h>
+
+#ifndef _WIN32
+#include <netdb.h>
+#include <arpa/inet.h>
+#endif
+
+#ifdef BUILD_AS_PLUGINS
+#include <Pluma/Connector.hpp>
+#endif
+
+namespace uscxml {
+
+#ifdef BUILD_AS_PLUGINS
+PLUMA_CONNECTOR
+bool connect(pluma::Host& host) {
+	host.add( new SCXMLIOProcessorProvider() );
+	return true;
+}
+#endif
+
+// see http://www.w3.org/TR/scxml/#SCXMLEventProcessor
+
+SCXMLIOProcessor::SCXMLIOProcessor() {
+}
+
+SCXMLIOProcessor::~SCXMLIOProcessor() {
+}
+
+
+boost::shared_ptr<IOProcessorImpl> SCXMLIOProcessor::create(InterpreterImpl* interpreter) {
+	boost::shared_ptr<SCXMLIOProcessor> io = boost::shared_ptr<SCXMLIOProcessor>(new SCXMLIOProcessor());
+	io->_interpreter = interpreter;
+
+	// register at http server
+	std::string path = interpreter->getName();
+	int i = 2;
+	while (!HTTPServer::registerServlet(path + "/scxml", io.get())) {
+		std::stringstream ss;
+		ss << interpreter->getName() << i++;
+		path = ss.str();
+	}
+	return io;
+}
+
+Data SCXMLIOProcessor::getDataModelVariables() {
+	Data data;
+	assert(_url.length() > 0);
+	data.compound["location"] = Data(_url, Data::VERBATIM);
+	return data;
+}
+
+
+void SCXMLIOProcessor::send(const SendRequest& req) {
+	// see http://www.w3.org/TR/scxml/#SendTargets
+
+	SendRequest reqCopy(req);
+	// test 253
+	reqCopy.origintype = "scxml";
+	reqCopy.origin = _url;
+
+	if (false) {
+	} else if (boost::iequals(reqCopy.target, "#_internal")) {
+		/**
+		 * #_internal: If the target is the special term '#_internal', the Processor
+		 * must add the event to the internal event queue of the sending session.
+		 */
+		_interpreter->receiveInternal(reqCopy);
+
+	} else if(reqCopy.target.find_first_of("#_scxml_") == 0) {
+		/**
+		 * #_scxml_sessionid: If the target is the special term '#_scxml_sessionid',
+		 * where sessionid is the id of an SCXML session that is accessible to the
+		 * Processor, the Processor must add the event to the external queue of that
+		 * session. The set of SCXML sessions that are accessible to a given SCXML
+		 * Processor is platform-dependent.
+		 */
+		std::string sessionId = reqCopy.target.substr(8, reqCopy.target.length() - 8);
+		std::map<std::string, boost::weak_ptr<InterpreterImpl> > instances = Interpreter::getInstances();
+		if (instances.find(sessionId) != instances.end()) {
+			boost::shared_ptr<InterpreterImpl> other = instances[sessionId].lock();
+			other->receive(reqCopy);
+		} else {
+			LOG(ERROR) << "Can not send to scxml session " << sessionId << " - not known" << std::endl;
+			_interpreter->receiveInternal(Event("error.communication", Event::PLATFORM));
+		}
+
+		
+	} else if (boost::iequals(reqCopy.target, "#_parent")) {
+		/**
+		 * #_parent: If the target is the special term '#_parent', the Processor must
+		 * add the event to the external event queue of the SCXML session that invoked
+		 * the sending session, if there is one.
+		 */
+		if (_interpreter->_parentQueue != NULL) {
+			_interpreter->_parentQueue->push(reqCopy);
+		} else {
+			LOG(ERROR) << "Can not send to parent, we were not invoked" << std::endl;
+			_interpreter->receiveInternal(Event("error.communication", Event::PLATFORM));
+		}
+	} else if (reqCopy.target.find_first_of("#_") == 0) {
+		/**
+		 * #_invokeid: If the target is the special term '#_invokeid', where invokeid
+		 * is the invokeid of an SCXML session that the sending session has created
+		 * by <invoke>, the Processor must add the event to the external queue of that
+		 * session.
+		 */
+		std::string invokeId = reqCopy.target.substr(2, reqCopy.target.length() - 2);
+		if (_interpreter->_invokers.find(invokeId) != _interpreter->_invokers.end()) {
+			tthread::lock_guard<tthread::recursive_mutex> lock(_interpreter->_mutex);
+			try {
+				_interpreter->_invokers[invokeId].send(reqCopy);
+			} catch(...) {
+				LOG(ERROR) << "Exception caught while sending event to invoker " << invokeId;
+			}
+		} else {
+			LOG(ERROR) << "Can not send to invoked component '" << invokeId << "', no such invokeId" << std::endl;
+			_interpreter->receiveInternal(Event("error.communication", Event::PLATFORM));
+		}
+	} else {
+	}
+}
+
+
+
+}

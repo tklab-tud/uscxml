@@ -13,7 +13,7 @@ class ResponseElement : public ExecutableContentImpl {
 public:
 	ResponseElement() {}
 	virtual ~ResponseElement() {}
-	boost::shared_ptr<ExecutableContentImpl> create(Interpreter* interpreter);
+	boost::shared_ptr<ExecutableContentImpl> create(InterpreterImpl* interpreter);
 
 	std::string getLocalName() {
 		return "response";

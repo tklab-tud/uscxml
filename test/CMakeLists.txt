@@ -69,7 +69,7 @@ if (RUN_W3C_TESTS)
 	set_target_properties(test-w3c PROPERTIES FOLDER "Tests")
 
 	file(GLOB_RECURSE W3C_TESTS
-		samples/w3c/tests/*.scxml
+		samples/w3c/ecma/*.scxml
 	)
 	
 	foreach( W3C_TEST ${W3C_TESTS} )

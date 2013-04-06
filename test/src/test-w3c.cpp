@@ -96,7 +96,7 @@ void printUsageAndExit() {
 }
 
 class W3CStatusMonitor : public uscxml::InterpreterMonitor {
-	void beforeCompletion(uscxml::Interpreter* interpreter) {
+	void beforeCompletion(uscxml::InterpreterImpl* interpreter) {
 		Arabica::XPath::NodeSet<std::string> config = interpreter->getConfiguration();
 		if (config.size() == 1 && boost::iequals(ATTR(config[0], "id"), "pass"))
 			exit(EXIT_SUCCESS);
@@ -145,18 +145,17 @@ int main(int argc, char** argv) {
 //  std::cout << optind << std::endl;
 
 	LOG(INFO) << "Processing " << argv[optind];
-	Interpreter* interpreter = Interpreter::fromURI(argv[optind]);
+	Interpreter interpreter = Interpreter::fromURI(argv[optind]);
 	if (interpreter) {
-		interpreter->setCmdLineOptions(argc, argv);
+		interpreter.setCmdLineOptions(argc, argv);
 //		interpreter->setCapabilities(Interpreter::CAN_NOTHING);
 //		interpreter->setCapabilities(Interpreter::CAN_BASIC_HTTP | Interpreter::CAN_GENERIC_HTTP);
 
 		W3CStatusMonitor* vm = new W3CStatusMonitor();
-		interpreter->addMonitor(vm);
+		interpreter.addMonitor(vm);
 
-		interpreter->start();
-		while(interpreter->runOnMainThread(25));
-		delete interpreter;
+		interpreter.start();
+		while(interpreter.runOnMainThread(25));
 	}
 
 	return EXIT_SUCCESS;

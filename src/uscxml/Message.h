@@ -81,7 +81,7 @@ protected:
 protected:
 	Arabica::DOM::Document<std::string> toNode(const Arabica::DOM::Document<std::string>& factory, const Data& data);
 
-#ifndef SWIGJAVA
+#ifndef SWIG
 	friend std::ostream& operator<< (std::ostream& os, const Data& data);
 #endif
 };

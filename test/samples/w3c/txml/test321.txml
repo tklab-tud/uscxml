@@ -4,7 +4,7 @@
 
 <scxml initial="s0" conf:datamodel="" version="1.0" xmlns="http://www.w3.org/2005/07/scxml"  name="machineName" xmlns:conf="http://www.w3.org/2005/scxml-conformance">
 <datamodel>
-  <data conf:id="1" conf:expr="$_sessionid"/>
+  <data conf:id="1" conf:systemVarExpr="_sessionid"/>
   </datamodel>
      
  <state id="s0">

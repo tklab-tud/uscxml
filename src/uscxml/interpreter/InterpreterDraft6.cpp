@@ -19,8 +19,8 @@ void InterpreterDraft6::interpret() {
 	}
 //  dump();
 
-	if (_sessionId.length() == 0)
-		_sessionId = getUUID();
+	// just make sure we have a session id
+	assert(_sessionId.length() > 0);
 
 	std::string datamodelName;
 	if (datamodelName.length() == 0 && HAS_ATTR(_scxml, "datamodel"))
@@ -137,7 +137,7 @@ void InterpreterDraft6::mainEventLoop() {
 			monIter = _monitors.begin();
 			while(monIter != _monitors.end()) {
 				try {
-					(*monIter)->beforeMicroStep(this);
+					(*monIter)->beforeMicroStep(shared_from_this());
 				} catch (Event e) {
 					LOG(ERROR) << "Syntax error when calling beforeMicroStep on monitors: " << std::endl << e << std::endl;
 				} catch (...) {
@@ -165,7 +165,7 @@ void InterpreterDraft6::mainEventLoop() {
 				monIter = _monitors.begin();
 				while(monIter != _monitors.end()) {
 					try {
-						(*monIter)->beforeTakingTransitions(this, enabledTransitions);
+						(*monIter)->beforeTakingTransitions(shared_from_this(), enabledTransitions);
 					} catch (Event e) {
 						LOG(ERROR) << "Syntax error when calling beforeTakingTransitions on monitors: " << std::endl << e << std::endl;
 					} catch (...) {
@@ -197,7 +197,7 @@ void InterpreterDraft6::mainEventLoop() {
 //    if (!_sendQueue || _sendQueue->isEmpty()) {
 		while(monIter != _monitors.end()) {
 			try {
-				(*monIter)->onStableConfiguration(this);
+				(*monIter)->onStableConfiguration(shared_from_this());
 			} catch (Event e) {
 				LOG(ERROR) << "Syntax error when calling onStableConfiguration on monitors: " << std::endl << e << std::endl;
 			} catch (...) {
@@ -276,7 +276,7 @@ EXIT_INTERPRETER:
 	monIter = _monitors.begin();
 	while(monIter != _monitors.end()) {
 		try {
-			(*monIter)->beforeCompletion(this);
+			(*monIter)->beforeCompletion(shared_from_this());
 		} catch (Event e) {
 			LOG(ERROR) << "Syntax error when calling beforeCompletion on monitors: " << std::endl << e << std::endl;
 		} catch (...) {
@@ -287,7 +287,7 @@ EXIT_INTERPRETER:
 
 	exitInterpreter();
 	if (_sendQueue) {
-		std::map<std::string, std::pair<Interpreter*, SendRequest> >::iterator sendIter = _sendIds.begin();
+		std::map<std::string, std::pair<InterpreterImpl*, SendRequest> >::iterator sendIter = _sendIds.begin();
 		while(sendIter != _sendIds.end()) {
 			_sendQueue->cancelEvent(sendIter->first);
 			sendIter++;
@@ -297,7 +297,7 @@ EXIT_INTERPRETER:
 	monIter = _monitors.begin();
 	while(monIter != _monitors.end()) {
 		try {
-			(*monIter)->afterCompletion(this);
+			(*monIter)->afterCompletion(shared_from_this());
 		} catch (Event e) {
 			LOG(ERROR) << "Syntax error when calling afterCompletion on monitors: " << std::endl << e << std::endl;
 		} catch (...) {
@@ -343,10 +343,10 @@ Arabica::XPath::NodeSet<std::string> InterpreterDraft6::selectTransitions(const 
 				states.push_back(parent);
 			}
 		}
-	LOOP:
+LOOP:
 		index++;
 	}
-	
+
 #if 0
 	std::cout << "Enabled transitions: " << std::endl;
 	for (int i = 0; i < enabledTransitions.size(); i++) {
@@ -354,7 +354,7 @@ Arabica::XPath::NodeSet<std::string> InterpreterDraft6::selectTransitions(const 
 	}
 	std::cout << std::endl;
 #endif
-	
+
 	enabledTransitions = filterPreempted(enabledTransitions);
 	return enabledTransitions;
 }
@@ -373,9 +373,9 @@ bool InterpreterDraft6::isEnabledTransition(const Node<std::string>& transition,
 	} else {
 		return false;
 	}
-	
+
 	std::vector<std::string> eventNames = tokenizeIdRefs(eventName);
-	
+
 	if (eventNames.size() > 0 && hasConditionMatch(transition)) {
 		std::vector<std::string>::iterator eventIter = eventNames.begin();
 		while(eventIter != eventNames.end()) {
@@ -387,7 +387,7 @@ bool InterpreterDraft6::isEnabledTransition(const Node<std::string>& transition,
 	}
 	return false;
 }
-	
+
 Arabica::XPath::NodeSet<std::string> InterpreterDraft6::selectEventlessTransitions() {
 	Arabica::XPath::NodeSet<std::string> enabledTransitions;
 
@@ -423,7 +423,7 @@ Arabica::XPath::NodeSet<std::string> InterpreterDraft6::selectEventlessTransitio
 				states.push_back(parent);
 			}
 		}
-	LOOP:
+LOOP:
 		index++;
 	}
 
@@ -451,7 +451,7 @@ Arabica::XPath::NodeSet<std::string> InterpreterDraft6::filterPreempted(const Ar
 				if (isPreemptingTransition(t2, t)) {
 #if 0
 					std::cout << "#####" << std::endl << "Transition " << std::endl
-					<< t2 << std::endl << " preempts " << std::endl << t << std::endl << "#####" << std::endl;
+					          << t2 << std::endl << " preempts " << std::endl << t << std::endl << "#####" << std::endl;
 #endif
 					goto LOOP;
 				}
@@ -500,7 +500,7 @@ bool InterpreterDraft6::isCrossingBounds(const Node<std::string>& transition) {
 bool InterpreterDraft6::isWithinParallel(const Node<std::string>& transition) {
 	if (isTargetless(transition))
 		return false;
-	
+
 	Node<std::string> source;
 	if (HAS_ATTR(transition, "type") && boost::iequals(ATTR(transition, "type"), "internal")) {
 		source = getSourceState(transition);
@@ -509,7 +509,7 @@ bool InterpreterDraft6::isWithinParallel(const Node<std::string>& transition) {
 	}
 	NodeSet<std::string> targets = getTargetStates(transition);
 	targets.push_back(source);
-	
+
 	Node<std::string> lcpa = findLCPA(targets);
 	return lcpa;
 }
@@ -526,7 +526,7 @@ Node<std::string> InterpreterDraft6::findLCPA(const Arabica::XPath::NodeSet<std:
 		}
 		ancestor = ancestors[i];
 		break;
-	NEXT_ANCESTOR:
+NEXT_ANCESTOR:
 		;
 	}
 	return ancestor;
@@ -619,7 +619,7 @@ void InterpreterDraft6::exitStates(const Arabica::XPath::NodeSet<std::string>& e
 			for (int j = 0; j < _configuration.size(); j++) {
 				if (isDescendant(_configuration[j], ancestor))
 					statesToExit.push_back(_configuration[j]);
-			}	
+			}
 		}
 	}
 	// remove statesToExit from _statesToInvoke
@@ -642,11 +642,11 @@ void InterpreterDraft6::exitStates(const Arabica::XPath::NodeSet<std::string>& e
 	}
 	std::cout << std::endl;
 #endif
-	
+
 	monIter = _monitors.begin();
 	while(monIter != _monitors.end()) {
 		try {
-			(*monIter)->beforeExitingStates(this, statesToExit);
+			(*monIter)->beforeExitingStates(shared_from_this(), statesToExit);
 		} catch (Event e) {
 			LOG(ERROR) << "Syntax error when calling beforeExitingStates on monitors: " << std::endl << e << std::endl;
 		} catch (...) {
@@ -707,7 +707,7 @@ void InterpreterDraft6::exitStates(const Arabica::XPath::NodeSet<std::string>& e
 	monIter = _monitors.begin();
 	while(monIter != _monitors.end()) {
 		try {
-			(*monIter)->afterExitingStates(this);
+			(*monIter)->afterExitingStates(shared_from_this());
 		} catch (Event e) {
 			LOG(ERROR) << "Syntax error when calling afterExitingStates on monitors: " << std::endl << e << std::endl;
 		} catch (...) {
@@ -824,7 +824,7 @@ void InterpreterDraft6::enterStates(const Arabica::XPath::NodeSet<std::string>& 
 	monIter = _monitors.begin();
 	while(monIter != _monitors.end()) {
 		try {
-			(*monIter)->beforeEnteringStates(this, statesToEnter);
+			(*monIter)->beforeEnteringStates(shared_from_this(), statesToEnter);
 		} catch (Event e) {
 			LOG(ERROR) << "Syntax error when calling beforeEnteringStates on monitors: " << std::endl << e << std::endl;
 		} catch (...) {
@@ -891,7 +891,7 @@ void InterpreterDraft6::enterStates(const Arabica::XPath::NodeSet<std::string>& 
 	monIter = _monitors.begin();
 	while(monIter != _monitors.end()) {
 		try {
-			(*monIter)->afterEnteringStates(this);
+			(*monIter)->afterEnteringStates(shared_from_this());
 		} catch (Event e) {
 			LOG(ERROR) << "Syntax error when calling afterEnteringStates on monitors: " << std::endl << e << std::endl;
 		} catch (...) {

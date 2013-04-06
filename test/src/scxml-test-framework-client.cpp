@@ -25,21 +25,21 @@ public:
 
 	static int lastToken;
 	static bool alreadyAnswered; // we need this for delayed events
-	static std::map<std::string, std::pair<uscxml::Interpreter*, uscxml::HTTPServer::Request> > _interpreters;
+	static std::map<std::string, std::pair<uscxml::Interpreter, uscxml::HTTPServer::Request> > _interpreters;
 
 	TestIOProcessor() {}
 
-	virtual void beforeCompletion(uscxml::Interpreter* interpreter) {
+	virtual void beforeCompletion(uscxml::Interpreter interpreter) {
 		onStableConfiguration(interpreter);
 	}
 
-	virtual void afterCompletion(uscxml::Interpreter* interpreter) {
-		_interpreters[interpreter->getName()].second.curlReq = NULL;
+	virtual void afterCompletion(uscxml::Interpreter interpreter) {
+		_interpreters[interpreter.getName()].second.curlReq = NULL;
 	}
-	virtual void beforeMicroStep(uscxml::Interpreter* interpreter) {}
-	virtual void beforeTakingTransitions(uscxml::Interpreter* interpreter, const Arabica::XPath::NodeSet<std::string>& transitions) {}
+	virtual void beforeMicroStep(uscxml::Interpreter interpreter) {}
+	virtual void beforeTakingTransitions(uscxml::Interpreter interpreter, const Arabica::XPath::NodeSet<std::string>& transitions) {}
 
-	virtual void beforeEnteringStates(uscxml::Interpreter* interpreter, const Arabica::XPath::NodeSet<std::string>& statesToEnter) {
+	virtual void beforeEnteringStates(uscxml::Interpreter interpreter, const Arabica::XPath::NodeSet<std::string>& statesToEnter) {
 		std::cout << "Entering states: ";
 		for (int i = 0; i < statesToEnter.size(); i++) {
 			std::cout << ATTR(statesToEnter[i], "id") << ", ";
@@ -47,18 +47,18 @@ public:
 		std::cout << std::endl;
 	}
 
-	virtual void afterEnteringStates(uscxml::Interpreter* interpreter) {
+	virtual void afterEnteringStates(uscxml::Interpreter interpreter) {
 		std::cout << "After entering states: ";
-		for (int i = 0; i < interpreter->getConfiguration().size(); i++) {
-			std::cout << ATTR(interpreter->getConfiguration()[i], "id") << ", ";
+		for (int i = 0; i < interpreter.getConfiguration().size(); i++) {
+			std::cout << ATTR(interpreter.getConfiguration()[i], "id") << ", ";
 		}
 		std::cout << std::endl;
 	}
 
-	virtual void beforeExitingStates(uscxml::Interpreter* interpreter, const Arabica::XPath::NodeSet<std::string>& statesToExit) {
+	virtual void beforeExitingStates(uscxml::Interpreter interpreter, const Arabica::XPath::NodeSet<std::string>& statesToExit) {
 		std::cout << "Configuration: ";
-		for (int i = 0; i < interpreter->getConfiguration().size(); i++) {
-			std::cout << ATTR(interpreter->getConfiguration()[i], "id") << ", ";
+		for (int i = 0; i < interpreter.getConfiguration().size(); i++) {
+			std::cout << ATTR(interpreter.getConfiguration()[i], "id") << ", ";
 		}
 		std::cout << std::endl;
 		std::cout << "Exiting states: ";
@@ -68,22 +68,22 @@ public:
 		std::cout << std::endl;
 	}
 
-	virtual void afterExitingStates(uscxml::Interpreter* interpreter) {
+	virtual void afterExitingStates(uscxml::Interpreter interpreter) {
 		std::cout << "After exiting states: ";
-		for (int i = 0; i < interpreter->getConfiguration().size(); i++) {
-			std::cout << ATTR(interpreter->getConfiguration()[i], "id") << ", ";
+		for (int i = 0; i < interpreter.getConfiguration().size(); i++) {
+			std::cout << ATTR(interpreter.getConfiguration()[i], "id") << ", ";
 		}
 		std::cout << std::endl;
 	}
 
-	virtual void onStableConfiguration(uscxml::Interpreter* interpreter) {
+	virtual void onStableConfiguration(uscxml::Interpreter interpreter) {
 		if (alreadyAnswered)
 			return;
 
-		Arabica::XPath::NodeSet<std::string> configuration = interpreter->getConfiguration();
+		Arabica::XPath::NodeSet<std::string> configuration = interpreter.getConfiguration();
 
 		uscxml::Data reply;
-		reply.compound["sessionToken"] = uscxml::Data(interpreter->getName());
+		reply.compound["sessionToken"] = uscxml::Data(interpreter.getName());
 		std::string seperator;
 		for (size_t i = 0; i < configuration.size(); i++) {
 			if (uscxml::Interpreter::isAtomic(configuration[i]))
@@ -98,7 +98,7 @@ public:
 
 		alreadyAnswered = true;
 
-		uscxml::HTTPServer::Request httpRequest = _interpreters[interpreter->getName()].second;
+		uscxml::HTTPServer::Request httpRequest = _interpreters[interpreter.getName()].second;
 		uscxml::HTTPServer::Reply httpReply(httpRequest);
 		httpReply.content = replyString.str();
 		uscxml::HTTPServer::reply(httpReply);
@@ -125,10 +125,9 @@ public:
 			std::cout << "Starting Interpreter with " << filename << std::endl;
 			alreadyAnswered = false;
 
-			std::map<std::string, std::pair<uscxml::Interpreter*, uscxml::HTTPServer::Request> >::iterator interpreterIter = _interpreters.begin();
+			std::map<std::string, std::pair<uscxml::Interpreter, uscxml::HTTPServer::Request> >::iterator interpreterIter = _interpreters.begin();
 			while(interpreterIter != _interpreters.end()) {
 //        if (interpreterIter->second.second.curlReq == NULL) {
-				delete interpreterIter->second.first;
 				_interpreters.erase(interpreterIter++);
 //        } else {
 //          interpreterIter++;
@@ -136,14 +135,14 @@ public:
 			}
 
 
-			uscxml::Interpreter* interpreter = uscxml::Interpreter::fromURI(filename);
+			uscxml::Interpreter interpreter = uscxml::Interpreter::fromURI(filename);
 			if (interpreter) {
 				std::string token = uscxml::toStr(lastToken++);
 				assert(_interpreters.find(token) == _interpreters.end());
-				interpreter->setName(token);
-				interpreter->addMonitor(this);
+				interpreter.setName(token);
+				interpreter.addMonitor(this);
 				_interpreters[token] = std::make_pair(interpreter, request);
-				interpreter->start();
+				interpreter.start();
 			}
 			return;
 		}
@@ -159,7 +158,7 @@ public:
 //      evhttp_request_free(_interpreters[token].second);
 			alreadyAnswered = false;
 			_interpreters[token].second = request;
-			_interpreters[token].first->receive(event);
+			_interpreters[token].first.receive(event);
 		}
 
 	}
@@ -171,7 +170,7 @@ public:
 
 int TestIOProcessor::lastToken;
 bool TestIOProcessor::alreadyAnswered;
-std::map<std::string, std::pair<uscxml::Interpreter*, uscxml::HTTPServer::Request> > TestIOProcessor::_interpreters;
+std::map<std::string, std::pair<uscxml::Interpreter, uscxml::HTTPServer::Request> > TestIOProcessor::_interpreters;
 
 int main(int argc, char** argv) {
 	TestIOProcessor* testServer = new TestIOProcessor();

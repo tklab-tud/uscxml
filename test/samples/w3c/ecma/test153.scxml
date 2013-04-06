@@ -13,7 +13,7 @@ it ever isn't, set Var4 to 0, indicating failure --><scxml xmlns="http://www.w3.
    <state id="s0">
       <onentry>
         <foreach item="Var2" array="Var3">
-         <if cond="Var1/text() &lt;Var2/text() ">
+         <if cond="Var1&lt;Var2 ">
          <assign location="Var1" expr="Var2"/>
          <else/>
          <!-- values are out of order, record failure -->

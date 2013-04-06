@@ -13,7 +13,7 @@ class FetchElement : public ExecutableContentImpl, public URLMonitor {
 public:
 	FetchElement() {}
 	virtual ~FetchElement();
-	boost::shared_ptr<ExecutableContentImpl> create(Interpreter* interpreter);
+	boost::shared_ptr<ExecutableContentImpl> create(InterpreterImpl* interpreter);
 
 	std::string getLocalName() {
 		return "fetch";

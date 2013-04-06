@@ -23,7 +23,7 @@ public:
 
 	PostponeElement() {}
 	virtual ~PostponeElement() {}
-	boost::shared_ptr<ExecutableContentImpl> create(Interpreter* interpreter);
+	boost::shared_ptr<ExecutableContentImpl> create(InterpreterImpl* interpreter);
 
 	std::string getLocalName() {
 		return "postpone";
@@ -44,19 +44,19 @@ protected:
 	// once per interpreter
 	class Resubmitter : public InterpreterMonitor {
 	public:
-		Resubmitter(Interpreter* interpreter) {
+		Resubmitter(InterpreterImpl* interpreter) {
 			interpreter->addMonitor(this);
 		}
 
-		static Resubmitter* getInstance(Interpreter* interpreter);
-		static void postpone(const Event& event, std::string until, uint64_t timeout, bool chained, Interpreter* interpreter);
+		static Resubmitter* getInstance(InterpreterImpl* interpreter);
+		static void postpone(const Event& event, std::string until, uint64_t timeout, bool chained, InterpreterImpl* interpreter);
 
 		// InterpreterMonitor
-		void onStableConfiguration(Interpreter* interpreter);
-		void afterCompletion(Interpreter* interpreter);
+		void onStableConfiguration(Interpreter interpreter);
+		void afterCompletion(Interpreter interpreter);
 
 		std::list<Postponed> _postponedEvents;
-		static std::map<Interpreter*, Resubmitter*> _instances;
+		static std::map<Interpreter, Resubmitter*> _instances;
 		static tthread::recursive_mutex _accessLock;
 
 	};

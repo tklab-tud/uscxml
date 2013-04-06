@@ -18,10 +18,10 @@ public:
 		std::string content;
 	};
 
-	SCXMLDotWriter(Interpreter* interpreter);
+	SCXMLDotWriter(InterpreterImpl* interpreter);
 	~SCXMLDotWriter();
 
-	static void toDot(const std::string& filename, Interpreter* interpreter);
+	static void toDot(const std::string& filename, InterpreterImpl* interpreter);
 	void writeSCXMLElement(std::ostream& os, const Arabica::DOM::Element<std::string>& elem);
 	void writeStateElement(std::ostream& os, const Arabica::DOM::Element<std::string>& elem);
 	void writeTransitionElement(std::ostream& os, const Arabica::DOM::Element<std::string>& elem);

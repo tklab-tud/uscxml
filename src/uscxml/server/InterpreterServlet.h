@@ -11,10 +11,10 @@ class Interpreter;
 class InterpreterServlet : public HTTPServlet, public IOProcessorImpl {
 public:
 	InterpreterServlet() {};
-	InterpreterServlet(Interpreter* interpreter);
+	InterpreterServlet(InterpreterImpl* interpreter);
 	virtual ~InterpreterServlet() {}
 
-	virtual boost::shared_ptr<IOProcessorImpl> create(Interpreter* interpreter);
+	virtual boost::shared_ptr<IOProcessorImpl> create(InterpreterImpl* interpreter);
 
 	virtual std::set<std::string> getNames() {
 		std::set<std::string> names;
@@ -50,7 +50,7 @@ public:
 	}
 
 protected:
-	Interpreter* _interpreter;
+	InterpreterImpl* _interpreter;
 
 	tthread::recursive_mutex _mutex;
 	std::map<std::string, HTTPServer::Request> _requests;

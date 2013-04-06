@@ -84,6 +84,14 @@ if (PHP_DEBUG_ENABLED)
 	set(PHP_COMPILE_FLAGS "${PHP_COMPILE_FLAGS} -DZEND_DEBUG")	
 endif()
 
+ADD_CUSTOM_COMMAND(
+	TARGET uscxmlNativePHP
+	POST_BUILD
+	COMMAND ${CMAKE_COMMAND} -E copy 
+		${CMAKE_CURRENT_BINARY_DIR}/uscxmlNativePHP.php
+		${PROJECT_SOURCE_DIR}/src/bindings/swig/php/uscxmlNativePHP.php
+)
+
 set_target_properties(uscxmlNativePHP PROPERTIES COMPILE_FLAGS ${PHP_COMPILE_FLAGS})
 set_target_properties(uscxmlNativePHP PROPERTIES FOLDER "Bindings")
 

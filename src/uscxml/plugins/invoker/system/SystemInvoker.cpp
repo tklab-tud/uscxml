@@ -21,7 +21,7 @@ SystemInvoker::SystemInvoker() {
 SystemInvoker::~SystemInvoker() {
 };
 
-boost::shared_ptr<IOProcessorImpl> SystemInvoker::create(Interpreter* interpreter) {
+boost::shared_ptr<IOProcessorImpl> SystemInvoker::create(InterpreterImpl* interpreter) {
 	boost::shared_ptr<SystemInvoker> invoker = boost::shared_ptr<SystemInvoker>(new SystemInvoker());
 	invoker->_interpreter = interpreter;
 	return invoker;

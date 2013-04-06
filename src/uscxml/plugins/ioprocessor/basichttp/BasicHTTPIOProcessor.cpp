@@ -3,7 +3,7 @@
 #include <windows.h>
 #endif
 
-#include "uscxml/plugins/ioprocessor/basichttp/libevent/EventIOProcessor.h"
+#include "uscxml/plugins/ioprocessor/basichttp/BasicHTTPIOProcessor.h"
 #include "uscxml/Message.h"
 #include <iostream>
 #include <event2/dns.h>
@@ -29,24 +29,24 @@ namespace uscxml {
 #ifdef BUILD_AS_PLUGINS
 PLUMA_CONNECTOR
 bool connect(pluma::Host& host) {
-	host.add( new EventIOProcessorProvider() );
+	host.add( new BasicHTTPIOProcessorProvider() );
 	return true;
 }
 #endif
 
 // see http://www.w3.org/TR/scxml/#BasicHTTPEventProcessor
 
-EventIOProcessor::EventIOProcessor() {
+BasicHTTPIOProcessor::BasicHTTPIOProcessor() {
 }
 
-EventIOProcessor::~EventIOProcessor() {
+BasicHTTPIOProcessor::~BasicHTTPIOProcessor() {
 	HTTPServer* httpServer = HTTPServer::getInstance();
 	httpServer->unregisterServlet(this);
 }
 
 
-boost::shared_ptr<IOProcessorImpl> EventIOProcessor::create(Interpreter* interpreter) {
-	boost::shared_ptr<EventIOProcessor> io = boost::shared_ptr<EventIOProcessor>(new EventIOProcessor());
+boost::shared_ptr<IOProcessorImpl> BasicHTTPIOProcessor::create(InterpreterImpl* interpreter) {
+	boost::shared_ptr<BasicHTTPIOProcessor> io = boost::shared_ptr<BasicHTTPIOProcessor>(new BasicHTTPIOProcessor());
 	io->_interpreter = interpreter;
 
 	// register at http server
@@ -61,14 +61,14 @@ boost::shared_ptr<IOProcessorImpl> EventIOProcessor::create(Interpreter* interpr
 	return io;
 }
 
-Data EventIOProcessor::getDataModelVariables() {
+Data BasicHTTPIOProcessor::getDataModelVariables() {
 	Data data;
 	assert(_url.length() > 0);
 	data.compound["location"] = Data(_url, Data::VERBATIM);
 	return data;
 }
 
-void EventIOProcessor::httpRecvRequest(const HTTPServer::Request& req) {
+void BasicHTTPIOProcessor::httpRecvRequest(const HTTPServer::Request& req) {
 	Event reqEvent = req;
 	reqEvent.type = Event::EXTERNAL;
 	bool scxmlStructFound = false;
@@ -116,7 +116,7 @@ void EventIOProcessor::httpRecvRequest(const HTTPServer::Request& req) {
 	evhttp_send_reply(req.curlReq, 200, "OK", NULL);
 }
 
-void EventIOProcessor::send(const SendRequest& req) {
+void BasicHTTPIOProcessor::send(const SendRequest& req) {
 
 	bool isLocal = false;
 	std::string target;
@@ -167,9 +167,9 @@ void EventIOProcessor::send(const SendRequest& req) {
 	}
 }
 
-void EventIOProcessor::downloadStarted(const URL& url) {}
+void BasicHTTPIOProcessor::downloadStarted(const URL& url) {}
 
-void EventIOProcessor::downloadCompleted(const URL& url) {
+void BasicHTTPIOProcessor::downloadCompleted(const URL& url) {
 	std::map<std::string, std::pair<URL, SendRequest> >::iterator reqIter = _sendRequests.begin();
 	while(reqIter != _sendRequests.end()) {
 		if (reqIter->second.first == url) {
@@ -181,7 +181,7 @@ void EventIOProcessor::downloadCompleted(const URL& url) {
 	assert(false);
 }
 
-void EventIOProcessor::downloadFailed(const URL& url, int errorCode) {
+void BasicHTTPIOProcessor::downloadFailed(const URL& url, int errorCode) {
 
 	std::map<std::string, std::pair<URL, SendRequest> >::iterator reqIter = _sendRequests.begin();
 	while(reqIter != _sendRequests.end()) {

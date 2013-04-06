@@ -21,10 +21,9 @@ USCXMLInvoker::USCXMLInvoker() : _cancelled(false) {
 
 USCXMLInvoker::~USCXMLInvoker() {
 	_cancelled = true;
-	delete _invokedInterpreter;
 };
 
-boost::shared_ptr<IOProcessorImpl> USCXMLInvoker::create(Interpreter* interpreter) {
+boost::shared_ptr<IOProcessorImpl> USCXMLInvoker::create(InterpreterImpl* interpreter) {
 	boost::shared_ptr<USCXMLInvoker> invoker = boost::shared_ptr<USCXMLInvoker>(new USCXMLInvoker());
 	invoker->_parentInterpreter = interpreter;
 	return invoker;
@@ -36,7 +35,7 @@ Data USCXMLInvoker::getDataModelVariables() {
 }
 
 void USCXMLInvoker::send(const SendRequest& req) {
-	_invokedInterpreter->_externalQueue.push(req);
+	_invokedInterpreter.getImpl()->_externalQueue.push(req);
 }
 
 void USCXMLInvoker::cancel(const std::string sendId) {
@@ -54,27 +53,27 @@ void USCXMLInvoker::invoke(const InvokeRequest& req) {
 		LOG(ERROR) << "Cannot invoke nested SCXML interpreter, neither src attribute nor DOM is given";
 	}
 	if (_invokedInterpreter) {
-		DataModel dataModel(_invokedInterpreter->getDataModel());
+		DataModel dataModel(_invokedInterpreter.getImpl()->getDataModel());
 		if (dataModel) {
 
 		}
-		_invokedInterpreter->setParentQueue(this);
+		_invokedInterpreter.getImpl()->setParentQueue(this);
 		// transfer namespace prefixes
-		_invokedInterpreter->_nsURL = _parentInterpreter->_nsURL;
-		_invokedInterpreter->_xpathPrefix = _parentInterpreter->_xpathPrefix;
-		_invokedInterpreter->_nsToPrefix = _parentInterpreter->_nsToPrefix;
+		_invokedInterpreter.getImpl()->_nsURL = _parentInterpreter->_nsURL;
+		_invokedInterpreter.getImpl()->_xpathPrefix = _parentInterpreter->_xpathPrefix;
+		_invokedInterpreter.getImpl()->_nsToPrefix = _parentInterpreter->_nsToPrefix;
 		std::map<std::string, std::string>::iterator nsIter =  _parentInterpreter->_nsToPrefix.begin();
 		while(nsIter != _parentInterpreter->_nsToPrefix.end()) {
-			_invokedInterpreter->_nsContext.addNamespaceDeclaration(nsIter->first, nsIter->second);
+			_invokedInterpreter.getImpl()->_nsContext.addNamespaceDeclaration(nsIter->first, nsIter->second);
 			nsIter++;
 		}
-		_invokedInterpreter->_xmlNSPrefix = _parentInterpreter->_xmlNSPrefix;
-		_invokedInterpreter->_sessionId = req.invokeid;
+		_invokedInterpreter.getImpl()->_xmlNSPrefix = _parentInterpreter->_xmlNSPrefix;
+		_invokedInterpreter.getImpl()->_sessionId = req.invokeid;
 
 		/// test240 assumes that invoke request params will carry over to the datamodel
-		_invokedInterpreter->setInvokeRequest(req);
+		_invokedInterpreter.getImpl()->setInvokeRequest(req);
 
-		_invokedInterpreter->start();
+		_invokedInterpreter.getImpl()->start();
 	} else {
 		/// test 530
 		_parentInterpreter->receive(Event("done.invoke." + _invokeId, Event::PLATFORM));

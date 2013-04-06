@@ -2,7 +2,8 @@
 
 <!-- test that a variable declared by a script can be accessed like any other part of the data model -->
 
-<scxml xmlns="http://www.w3.org/2005/07/scxml" version="1.0" xmlns:conf="http://www.w3.org/2005/scxml-conformance" initial="s0">
+<scxml xmlns="http://www.w3.org/2005/07/scxml" conf:datamodel="" 
+	version="1.0" xmlns:conf="http://www.w3.org/2005/scxml-conformance" initial="s0">
  <conf:script/>
      
  <state id="s0">

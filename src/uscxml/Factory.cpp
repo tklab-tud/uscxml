@@ -10,7 +10,8 @@
 # include "uscxml/plugins/Plugins.h"
 #else
 
-# include "uscxml/plugins/ioprocessor/basichttp/libevent/EventIOProcessor.h"
+# include "uscxml/plugins/ioprocessor/basichttp/BasicHTTPIOProcessor.h"
+# include "uscxml/plugins/ioprocessor/scxml/SCXMLIOProcessor.h"
 # include "uscxml/plugins/invoker/scxml/USCXMLInvoker.h"
 # include "uscxml/plugins/invoker/http/HTTPServletInvoker.h"
 # include "uscxml/plugins/invoker/heartbeat/HeartbeatInvoker.h"
@@ -165,7 +166,11 @@ Factory::Factory() {
 		registerInvoker(invoker);
 	}
 	{
-		EventIOProcessor* ioProcessor = new EventIOProcessor();
+		BasicHTTPIOProcessor* ioProcessor = new BasicHTTPIOProcessor();
+		registerIOProcessor(ioProcessor);
+	}
+	{
+		SCXMLIOProcessor* ioProcessor = new SCXMLIOProcessor();
 		registerIOProcessor(ioProcessor);
 	}
 	{
@@ -240,7 +245,7 @@ void Factory::registerExecutableContent(ExecutableContentImpl* executableContent
 }
 
 
-boost::shared_ptr<InvokerImpl> Factory::createInvoker(const std::string& type, Interpreter* interpreter) {
+boost::shared_ptr<InvokerImpl> Factory::createInvoker(const std::string& type, InterpreterImpl* interpreter) {
 	Factory* factory = getInstance();
 	if (factory->_invokerAliases.find(type) == factory->_invokerAliases.end()) {
 		LOG(ERROR) << "No " << type << " Invoker known";
@@ -256,7 +261,7 @@ boost::shared_ptr<InvokerImpl> Factory::createInvoker(const std::string& type, I
 	return boost::static_pointer_cast<InvokerImpl>(factory->_invokers[canonicalName]->create(interpreter));
 }
 
-boost::shared_ptr<DataModelImpl> Factory::createDataModel(const std::string& type, Interpreter* interpreter) {
+boost::shared_ptr<DataModelImpl> Factory::createDataModel(const std::string& type, InterpreterImpl* interpreter) {
 	Factory* factory = getInstance();
 	if (factory->_dataModelAliases.find(type) == factory->_dataModelAliases.end()) {
 		LOG(ERROR) << "No " << type << " DataModel known";
@@ -272,7 +277,7 @@ boost::shared_ptr<DataModelImpl> Factory::createDataModel(const std::string& typ
 	return factory->_dataModels[canonicalName]->create(interpreter);
 }
 
-boost::shared_ptr<IOProcessorImpl> Factory::createIOProcessor(const std::string& type, Interpreter* interpreter) {
+boost::shared_ptr<IOProcessorImpl> Factory::createIOProcessor(const std::string& type, InterpreterImpl* interpreter) {
 	Factory* factory = getInstance();
 	if (factory->_ioProcessorAliases.find(type) == factory->_ioProcessorAliases.end()) {
 		LOG(ERROR) << "No " << type << " IOProcessor known";
@@ -288,7 +293,7 @@ boost::shared_ptr<IOProcessorImpl> Factory::createIOProcessor(const std::string&
 	return factory->_ioProcessors[canonicalName]->create(interpreter);
 }
 
-boost::shared_ptr<ExecutableContentImpl> Factory::createExecutableContent(const std::string& localName, const std::string& nameSpace, Interpreter* interpreter) {
+boost::shared_ptr<ExecutableContentImpl> Factory::createExecutableContent(const std::string& localName, const std::string& nameSpace, InterpreterImpl* interpreter) {
 	Factory* factory = getInstance();
 	std::string actualNameSpace = (nameSpace.length() == 0 ? "http://www.w3.org/2005/07/scxml" : nameSpace);
 	if (factory->_executableContent.find(std::make_pair(localName, actualNameSpace)) == factory->_executableContent.end()) {
