@@ -1,8 +1,7 @@
 # uSCXML ReadMe
 
-uSCXML is a SCXML interpreter written in C/C++. It is still in a rather early stage but mostly
-feature-complete as far as the W3C SCXML draft specifies. It runs on most <b>Linux</b>,
-<b>Windows</b> and <b>MacOSX</b>, each 32- as well as 64Bits. 
+uSCXML is a SCXML interpreter written in C/C++. It is [mostly feature-complete](https://github.com/tklab-tud/uscxml#test-reports) 
+as far as the W3C SCXML draft specifies. It runs on <b>Linux</b>, <b>Windows</b> and <b>MacOSX</b>, each 32- as well as 64Bits. 
 
 There is no technical reason for it not to run on iOS and Android as well, but we did not yet setup
 the respective build-process.
@@ -10,87 +9,61 @@ the respective build-process.
    * <b>Datamodels</b>
        * ECMAScript using Google's v8 and JavaScriptCore (JSC is incomplete)
        * Prolog using SWI prolog
+       * No NULL datamodel yet
+       * No XPath datamodel yet
    * <b>Invokers</b>
        * <tt>scxml</tt>: Invoke a nested scxml interpreter
        * <tt>dirmon</tt>: Watches a directory for changes to files
        * <tt>scenegraph</tt>: Simplified 3D scenegraphs with custom markup
        * <tt>heartbeat</tt>: Periodically sends events
-       * <tt>httpservlet</tt>: Sends events for http requests to special paths
        * <tt>umundo</tt>: Subscribe to channels and publish events
    * <b>DOM</b>
        * DOM Core Level 2 + XPath extensions available for ecmascript datamodel
        * Namespace aware to embed custom markup for special invokers
    * <b>Communication</b>
        * Features the standard basichttp io-processor
+       * Features the required SCXML io-processor
+       * No DOM io-processor
        * Can actually respond to HTTP requests with data via &lt;response>
    * <b>Language Bindings</b>
        * PHP module for apache and cli interpreter
 
 ## Test Reports
 
-<b>[Results](http://uscxml.tk.informatik.tu-darmstadt.de/cdash/index.php?project=uscxml)</b> for continuous testing of the 
-[W3C IRP tests](http://www.w3.org/Voice/2013/scxml-irp/) for SCXML and some platform tests.
+We continuously run the [W3C IRP tests](http://www.w3.org/Voice/2013/scxml-irp/) for SCXML. The results the for
+various platforms can be [found here](http://uscxml.tk.informatik.tu-darmstadt.de/cdash/index.php?project=uscxml).
+There are a few [excluded tests](https://github.com/tklab-tud/uscxml/blob/master/contrib/ctest/CTestCustom.ctest.in) 
+regarding the <tt>NULL</tt> and <tt>XPath</tt> datamodel, as well as the manual tests.
+
+uSCXML still fails the following tests:
 
 <table>
-	<tr><th>Test#</th><th>Status</th><th>Comment</th></tr>
-	<tr><td><tt>153</tt></td><td><tt>Failed / Fix&nbsp;in&nbsp;test</tt></td>
-		<td>The XSLT transformation leave some gibberish in the file (Saxon HE XSLT)</td>
-	<tr><td><tt>178</tt></td><td><tt>Failed / Fix in draft</tt></td>
-		<td>A manual test that relies on an unspecified _event.raw attribute</td>
-	<tr><td><tt>226</tt></td><td><tt>Failed / Fix&nbsp;in&nbsp;test</tt></td>
-		<td>Requires a file with wrong file extension</td>
-	<tr><td><tt>230</tt></td><td><tt>False report</tt></td>
-		<td>A manual test that is not actually failing but does not end in a state called <tt>pass</tt></td>
-	<tr><td><tt>250</tt></td><td><tt>False report</tt></td>
-		<td>A manual test that is not actually failing but does not end in a state called <tt>pass</tt></td>
-	<tr><td><tt>301</tt></td><td><tt>Failed</tt></td>
-		<td><i>"If the script can not be downloaded within a platform-specific timeout interval, the document 
-			is considered non-conformant, and the platform must reject it"</i> -- USCXML will try to evaluate the 
-			rest of the document nevertheless.</td>
+	<tr><th>Test#</th><th>Status</th><th>Description</th><th>Comment</th></tr>
+	<tr>
+		<td><tt>301</tt></td>
+		<td><tt>Failed</tt></td>
+		<td>"the processor should  reject this document because it can't download the script"</td>
+		<td>uSCXML continues processing as if there was no <tt>&lt;script></tt> element.</td>
 	</tr>
-	<tr><td><tt>302</tt></td><td><tt>Failed / Fix&nbsp;in&nbsp;test</tt></td>
-		<td>datamodel attribute is missing from test</td>
-	<tr><td><tt>303</tt></td><td><tt>Failed / Fix&nbsp;in&nbsp;test</tt></td>
-		<td>datamodel attribute is missing from test</td>
-	<tr><td><tt>304</tt></td><td><tt>Failed / Fix&nbsp;in&nbsp;test</tt></td>
-		<td>datamodel attribute is missing from test</td>
-	<tr><td><tt>307</tt></td><td><tt>False report</tt></td>
-		<td>A manual test that is not actually failing but does not end in a state called <tt>pass</tt></td>
-	<tr><td><tt>321</tt></td><td><tt>Failed / Fix&nbsp;in&nbsp;test</tt></td>
-		<td>Gibberish form XSLT transformation still inside <tt>$_sessionid</tt></td>
-	<tr><td><tt>323</tt></td><td><tt>Failed / Fix&nbsp;in&nbsp;test</tt></td>
-		<td>Gibberish form XSLT transformation still inside <tt>$_name</tt></td>
-	<tr><td><tt>329</tt></td><td><tt>Failed / Raise&nbsp;on&nbsp;ML</tt></td>
-		<td>Tests that <tt>_event</tt> cannot be assigned, but I like to add attributes to _event to have a 
-			scope that only lasts for one event</td>
-	<tr><td><tt>330</tt></td><td><tt>Failed</tt></td>
-		<td>Namespace issues</td>
-	<tr><td><tt>333</tt></td><td><tt>Failed / Won't&nbsp;fix</tt></td>
-		<td><i>"sendid [...] Otherwise it must leave it blank."</i> -- USCXML sets this to the empty string instead of <tt>null</tt>.</td>
-	<tr><td><tt>335</tt></td><td><tt>Failed / Won't&nbsp;fix</tt></td>
-		<td><i>"origin [...] For internal and platform events, the Processor must leave this field blank."</i> -- USCXML sets this to the empty string instead of <tt>null</tt>.</td>
-	<tr><td><tt>337</tt></td><td><tt>Failed / Won't&nbsp;fix</tt></td>
-		<td><i>"origintype [...] For internal and platform events, the Processor must leave this field blank."</i> -- USCXML sets this to the empty string instead of <tt>null</tt>.</td>
-	<tr><td><tt>339</tt></td><td><tt>Failed / Won't&nbsp;fix</tt></td>
-		<td><i>"invokeid [...] Otherwise it must leave it blank."</i> -- USCXML sets this to the empty string instead of <tt>null</tt>.</td>
-	<tr><td><tt>346</tt></td><td><tt>Failed / Won't&nbsp;fix</tt></td>
-		<td><i>"test that any attempt to change the value of a system variable causes error.execution to be raised."</i> -- I like to edit _event.</td>
-	<tr><td><tt>436</tt></td><td><tt>Failed / Won't&nbsp;fix</tt></td>
-		<td>Requires <tt>NULL</tt> datamodel</td>
-	<tr><td><tt>441b</tt></td><td><tt>Failed / Won't&nbsp;fix</tt></td>
-		<td>Requires <tt>NULL</tt> datamodel</td>
-	<tr><td><tt>456</tt></td><td><tt>Failed / Raise&nbsp;on&nbsp;ML</tt></td>
-		<td>Expects undefined + 1 to be 1</td>
-	<tr><td><tt>463&nbsp;-&nbsp;486b</tt></td><td><tt>Failed / Won't&nbsp;fix</tt></td>
-		<td>Requires <tt>xpath</tt> datamodel</td>
-	<tr><td><tt>488</tt></td><td><tt>Failed / Raise&nbsp;on&nbsp;ML</tt></td>
-		<td>Expects _event.data to be the empty string when we have it as undefined</td>
-	<tr><td><tt>537&nbsp;-&nbsp;547</tt></td><td><tt>Failed / Won't&nbsp;fix</tt></td>
-		<td>Requires <tt>xpath</tt> datamodel</td>
-	<tr><td><tt>555</tt></td><td><tt>Failed / Won't&nbsp;fix</tt></td>
-		<td>Requires <tt>xpath</tt> datamodel</td>
-	<tr><td><tt>569</tt></td><td><tt>Failed</tt></td>
-		<td>SCXML I/O processor is implicit at the moment</td>
+	<tr>
+		<td><tt>329</tt></td>
+		<td><tt>Failed</tt></td>
+		<td>"test that none of the system variables can be modified"</td>
+		<td>uSCXML allows writing to <tt>_event</tt>. This is very useful to have a scope 
+			that vanishes when processing an event is finished.</td>
+	</tr>
+	<tr>
+		<td><tt>346</tt></td>
+		<td><tt>Failed</tt></td>
+		<td>"test that any attempt to change the value of a system variable causes error.execution to be raised"</td>
+		<td>Same issue as above: we allow writing to <tt>_event</tt>.</td>
+	</tr>
+	<tr>
+		<td><tt>488</tt></td>
+		<td><tt>Failed</tt></td>
+		<td>"test that illegal expr in <param> produces error.execution and empty event.data"</td>
+		<td>The actual meaning of <emph>empty</emph> is still ambiguous - in test 343 it is assumed to be <tt>undefined</tt>.</td>
+	</tr>
 </table>
 
 
