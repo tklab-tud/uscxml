@@ -71,10 +71,21 @@ void SCXMLIOProcessor::send(const SendRequest& req) {
 
 	SendRequest reqCopy(req);
 	// test 253
-	reqCopy.origintype = "scxml";
+	reqCopy.origintype = "http://www.w3.org/TR/scxml/#SCXMLEventProcessor";
 	reqCopy.origin = _url;
 
 	if (false) {
+	} else if(reqCopy.target.length() == 0) {
+		/**
+		 * If neither the 'target' nor the 'targetexpr' attribute is specified, the
+		 * SCXML Processor must add the event will be added to the external event
+		 * queue of the sending session.
+		 */
+
+		// test333 vs test351
+//		reqCopy.sendid = "";
+		// test 198
+		_interpreter->receive(reqCopy);
 	} else if (boost::iequals(reqCopy.target, "#_internal")) {
 		/**
 		 * #_internal: If the target is the special term '#_internal', the Processor
@@ -97,10 +108,10 @@ void SCXMLIOProcessor::send(const SendRequest& req) {
 			other->receive(reqCopy);
 		} else {
 			LOG(ERROR) << "Can not send to scxml session " << sessionId << " - not known" << std::endl;
-			_interpreter->receiveInternal(Event("error.communication", Event::PLATFORM));
+			Event error("error.communication", Event::PLATFORM);
+			error.sendid = reqCopy.sendid;
+			_interpreter->receiveInternal(error);
 		}
-
-		
 	} else if (boost::iequals(reqCopy.target, "#_parent")) {
 		/**
 		 * #_parent: If the target is the special term '#_parent', the Processor must
@@ -111,9 +122,11 @@ void SCXMLIOProcessor::send(const SendRequest& req) {
 			_interpreter->_parentQueue->push(reqCopy);
 		} else {
 			LOG(ERROR) << "Can not send to parent, we were not invoked" << std::endl;
-			_interpreter->receiveInternal(Event("error.communication", Event::PLATFORM));
+			Event error("error.communication", Event::PLATFORM);
+			error.sendid = reqCopy.sendid;
+			_interpreter->receiveInternal(error);
 		}
-	} else if (boost::starts_with(reqCopy.target, "#_") == 0) {
+	} else if (boost::starts_with(reqCopy.target, "#_")) {
 		/**
 		 * #_invokeid: If the target is the special term '#_invokeid', where invokeid
 		 * is the invokeid of an SCXML session that the sending session has created
@@ -130,9 +143,20 @@ void SCXMLIOProcessor::send(const SendRequest& req) {
 			}
 		} else {
 			LOG(ERROR) << "Can not send to invoked component '" << invokeId << "', no such invokeId" << std::endl;
-			_interpreter->receiveInternal(Event("error.communication", Event::PLATFORM));
+			Event error("error.communication", Event::PLATFORM);
+			error.sendid = reqCopy.sendid;
+			_interpreter->receiveInternal(error);
 		}
 	} else {
+		URL target(reqCopy.target);
+		if (target.isAbsolute()) {
+			BasicHTTPIOProcessor::send(reqCopy);
+		} else {
+			LOG(ERROR) << "Not sure what to make of the target '" << reqCopy.target << "' - raising error" << std::endl;
+			Event error("error.execution", Event::PLATFORM);
+			error.sendid = reqCopy.sendid;
+			_interpreter->receiveInternal(error);
+		}
 	}
 }
 

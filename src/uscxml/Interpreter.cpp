@@ -349,7 +349,15 @@ void InterpreterImpl::initializeData(const Node<std::string>& data) {
 		if (HAS_ATTR(data, "expr")) {
 			// expression given directly
 			std::string value = ATTR(data, "expr");
-			_dataModel.assign(ATTR(data, "id"), value);
+			try {
+				_dataModel.assign(ATTR(data, "id"), value);
+			} catch (Event e) {
+				LOG(ERROR) << "Syntax error in data element:" << std::endl << e << std::endl;
+				/// test 277
+				/// todo: if the identifier is invalid we'll raise to error events
+				receiveInternal(e);
+				_dataModel.assign(ATTR(data, "id"), "undefined");
+			}
 			return;
 		}
 
@@ -376,7 +384,14 @@ void InterpreterImpl::initializeData(const Node<std::string>& data) {
 			inputSource.setByteStream(ssPtr);
 			Arabica::SAX2DOM::Parser<std::string> parser;
 			if(parser.parse(inputSource) && parser.getDocument()) {
-				_dataModel.assign(ATTR(data, "id"), parser.getDocument());
+				try {
+					_dataModel.assign(ATTR(data, "id"), parser.getDocument());
+					return;
+				} catch (Event e) {
+					LOG(ERROR) << "Syntax error in data element:" << std::endl << e << std::endl;
+					receiveInternal(e);
+					_dataModel.assign(ATTR(data, "id"), "undefined");
+				}
 				return;
 			}
 		} else if (data.hasChildNodes()) {
@@ -443,7 +458,7 @@ void InterpreterImpl::initializeData(const Node<std::string>& data) {
 
 void InterpreterImpl::normalize(Arabica::DOM::Element<std::string>& scxml) {
 	// TODO: Resolve XML includes
-	
+
 	// make sure every state has an id and set isFirstEntry to true
 	Arabica::XPath::NodeSet<std::string> states = _xpath.evaluate("//" + _xpathPrefix + "state", _scxml).asNodeSet();
 	for (int i = 0; i < states.size(); i++) {
@@ -507,6 +522,14 @@ void InterpreterImpl::receiveInternal(const Event& event) {
 	_internalQueue.push_back(event);
 }
 
+void InterpreterImpl::receive(const Event& event, bool toFront)   {
+	std::cout << "receive: " << event.name << std::endl;
+	if (toFront) {
+		_externalQueue.push_front(event);
+	} else {
+		_externalQueue.push(event);
+	}
+}
 
 void InterpreterImpl::internalDoneSend(const Arabica::DOM::Node<std::string>& state) {
 	if (!isState(state))
@@ -688,6 +711,8 @@ void InterpreterImpl::send(const Arabica::DOM::Node<std::string>& element) {
 			sendReq.sendid = ATTR(getParentState(element), "id") + "." + getUUID();
 			if (HAS_ATTR(element, "idlocation") && _dataModel) {
 				_dataModel.assign(ATTR(element, "idlocation"), "'" + sendReq.sendid + "'");
+			} else {
+				sendReq.hideSendId = true;
 			}
 		}
 	} catch (Event e) {
@@ -777,37 +802,30 @@ void InterpreterImpl::delayedSend(void* userdata, std::string eventName) {
 	InterpreterImpl* INSTANCE = data->first;
 	SendRequest sendReq = data->second;
 
-	if (sendReq.target.length() == 0) {
-		/**
-		 * If neither the 'target' nor the 'targetexpr' attribute is specified, the
-		 * SCXML Processor must add the event will be added to the external event
-		 * queue of the sending session.
-		 */
-		INSTANCE->_externalQueue.push(sendReq);
+	/**
+	 * If neither the 'type' nor the 'typeexpr' is defined, the SCXML Processor
+	 * must assume the default value of http://www.w3.org/TR/scxml/#SCXMLEventProcessor
+	 */
+	if (sendReq.type.length() == 0)
+		sendReq.type = "http://www.w3.org/TR/scxml/#SCXMLEventProcessor";
+
+	IOProcessor ioProc = INSTANCE->getIOProcessor(sendReq.type);
+	if (ioProc) {
+		try {
+			ioProc.send(sendReq);
+		} catch(...) {
+			LOG(ERROR) << "Exception caught while sending event to ioprocessor " << sendReq.type;
+		}
 	} else {
 		/**
-		 * If neither the 'type' nor the 'typeexpr' is defined, the SCXML Processor
-		 * must assume the default value of http://www.w3.org/TR/scxml/#SCXMLEventProcessor
+		 * If the SCXML Processor does not support the type that is specified, it
+		 * must place the event error.execution on the internal event queue.
 		 */
-		if (sendReq.type.length() == 0)
-			sendReq.type = "http://www.w3.org/TR/scxml/#SCXMLEventProcessor";
-		IOProcessor ioProc = INSTANCE->getIOProcessor(sendReq.type);
-		if (ioProc) {
-			try {
-				ioProc.send(sendReq);
-			} catch(...) {
-				LOG(ERROR) << "Exception caught while sending event to ioprocessor " << sendReq.type;
-			}
-		} else {
-			/**
-			 * If the SCXML Processor does not support the type that is specified, it
-			 * must place the event error.execution on the internal event queue.
-			 */
-			Event exceptionEvent("error.execution", Event::PLATFORM);
+		Event exceptionEvent("error.execution", Event::PLATFORM);
 //			exceptionEvent.sendid = sendReq.sendid;
-			INSTANCE->receiveInternal(exceptionEvent);
-		}
+		INSTANCE->receiveInternal(exceptionEvent);
 	}
+
 	assert(INSTANCE->_sendIds.find(sendReq.sendid) != INSTANCE->_sendIds.end());
 	INSTANCE->_sendIds.erase(sendReq.sendid);
 }
@@ -1246,6 +1264,7 @@ void InterpreterImpl::executeContent(const Arabica::DOM::Node<std::string>& cont
 }
 
 void InterpreterImpl::returnDoneEvent(const Arabica::DOM::Node<std::string>& state) {
+	std::cout << state << std::endl;
 	if (_parentQueue != NULL) {
 		Event done;
 		done.name = "done.invoke." + _sessionId;

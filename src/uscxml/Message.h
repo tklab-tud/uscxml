@@ -94,9 +94,9 @@ public:
 	    PLATFORM = 3
 	};
 
-	Event() : type(INTERNAL) {}
-	Event(const std::string& name, Type type = INTERNAL) : name(name), type(type) {}
-	Event(const Arabica::DOM::Node<std::string>& xmlString) : type(INTERNAL) {};
+	Event() : type(INTERNAL), hideSendId(false) {}
+	Event(const std::string& name, Type type = INTERNAL) : name(name), type(type), hideSendId(false) {}
+	Event(const Arabica::DOM::Node<std::string>& xmlString) : type(INTERNAL), hideSendId(false) {};
 	bool operator< (const Event& other) const     {
 		return this < &other;
 	}
@@ -229,6 +229,7 @@ protected:
 	std::string origintype;
 	Arabica::DOM::Document<std::string> dom;
 	std::string sendid;
+	bool hideSendId;
 	std::string invokeid;
 	Data data;
 	std::string content;

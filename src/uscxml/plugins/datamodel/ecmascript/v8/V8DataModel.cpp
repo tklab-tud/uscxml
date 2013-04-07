@@ -143,11 +143,13 @@ void V8DataModel::setEvent(const Event& event) {
 	privData->dom = _dom;
 	eventObj->SetInternalField(0, Arabica::DOM::V8DOM::toExternal(privData));
 	eventObj.MakeWeak(0, Arabica::DOM::V8SCXMLEvent::jsDestructor);
+
 	if (event.dom) {
 		eventObj->Set(v8::String::New("data"), getDocumentAsValue(event.dom));
 	} else if (event.content.length() > 0) {
 		// _event.data is a string
 		eventObj->Set(v8::String::New("data"), v8::String::New(event.content.c_str()));
+//		eventObj->Set(v8::String::New("data"), v8::Undefined());
 	} else {
 		// _event.data is KVP
 		Event eventCopy(event);
@@ -168,10 +170,11 @@ void V8DataModel::setEvent(const Event& event) {
 		if (eventCopy.data.compound.size() > 0) {
 			eventObj->Set(v8::String::New("data"), getDataAsValue(eventCopy.data)); // set data part of _event
 		} else {
-			// test 343
+			// test 343 / test 488
 			eventObj->Set(v8::String::New("data"), v8::Undefined()); // set data part of _event
 		}
 	}
+	// we cannot make _event v8::ReadOnly as it will ignore subsequent setEvents
 	global->Set(v8::String::New("_event"), eventObj);
 }
 

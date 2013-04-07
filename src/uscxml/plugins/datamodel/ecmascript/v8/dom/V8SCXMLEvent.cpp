@@ -18,6 +18,8 @@ v8::Handle<v8::Value> V8SCXMLEvent::originAttrGetter(v8::Local<v8::String> prope
 	v8::Local<v8::Object> self = info.Holder();
 	struct V8SCXMLEventPrivate* privData = V8DOM::toClassPtr<V8SCXMLEventPrivate >(self->GetInternalField(0));
 
+	if (privData->nativeObj->origin.length() == 0)
+		return v8::Undefined();
 	return v8::String::New(privData->nativeObj->origin.c_str());
 }
 
@@ -25,6 +27,8 @@ v8::Handle<v8::Value> V8SCXMLEvent::origintypeAttrGetter(v8::Local<v8::String> p
 	v8::Local<v8::Object> self = info.Holder();
 	struct V8SCXMLEventPrivate* privData = V8DOM::toClassPtr<V8SCXMLEventPrivate >(self->GetInternalField(0));
 
+	if (privData->nativeObj->origintype.length() == 0)
+		return v8::Undefined();
 	return v8::String::New(privData->nativeObj->origintype.c_str());
 }
 
@@ -48,17 +52,12 @@ v8::Handle<v8::Value> V8SCXMLEvent::domAttrGetter(v8::Local<v8::String> property
 
 }
 
-v8::Handle<v8::Value> V8SCXMLEvent::sendidAttrGetter(v8::Local<v8::String> property, const v8::AccessorInfo& info) {
-	v8::Local<v8::Object> self = info.Holder();
-	struct V8SCXMLEventPrivate* privData = V8DOM::toClassPtr<V8SCXMLEventPrivate >(self->GetInternalField(0));
-
-	return v8::String::New(privData->nativeObj->sendid.c_str());
-}
-
 v8::Handle<v8::Value> V8SCXMLEvent::invokeidAttrGetter(v8::Local<v8::String> property, const v8::AccessorInfo& info) {
 	v8::Local<v8::Object> self = info.Holder();
 	struct V8SCXMLEventPrivate* privData = V8DOM::toClassPtr<V8SCXMLEventPrivate >(self->GetInternalField(0));
 
+	if (privData->nativeObj->invokeid.length() == 0)
+		return v8::Undefined();
 	return v8::String::New(privData->nativeObj->invokeid.c_str());
 }
 bool V8SCXMLEvent::hasInstance(v8::Handle<v8::Value> value) {

@@ -120,7 +120,7 @@ void BasicHTTPIOProcessor::send(const SendRequest& req) {
 
 	bool isLocal = false;
 	std::string target;
-	if (req.target.length() > 0) {
+	if (req.target.length() > 0 && !boost::equals(req.target, _url)) {
 		target = req.target;
 	} else {
 		isLocal = true;

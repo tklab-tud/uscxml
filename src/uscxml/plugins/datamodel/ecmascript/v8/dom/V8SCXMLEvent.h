@@ -46,7 +46,7 @@ public:
 	static v8::Handle<v8::Value> originAttrGetter(v8::Local<v8::String> property, const v8::AccessorInfo& info);
 	static v8::Handle<v8::Value> origintypeAttrGetter(v8::Local<v8::String> property, const v8::AccessorInfo& info);
 	static v8::Handle<v8::Value> domAttrGetter(v8::Local<v8::String> property, const v8::AccessorInfo& info);
-	static v8::Handle<v8::Value> sendidAttrGetter(v8::Local<v8::String> property, const v8::AccessorInfo& info);
+	static v8::Handle<v8::Value> sendidCustomAttrGetter(v8::Local<v8::String> property, const v8::AccessorInfo& info);
 	static v8::Handle<v8::Value> invokeidAttrGetter(v8::Local<v8::String> property, const v8::AccessorInfo& info);
 
 	static v8::Persistent<v8::FunctionTemplate> Tmpl;
@@ -72,7 +72,7 @@ public:
 			                      v8::External::New(0), static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None));
 			instance->SetAccessor(v8::String::NewSymbol("dom"), V8SCXMLEvent::domAttrGetter, 0,
 			                      v8::External::New(0), static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None));
-			instance->SetAccessor(v8::String::NewSymbol("sendid"), V8SCXMLEvent::sendidAttrGetter, 0,
+			instance->SetAccessor(v8::String::NewSymbol("sendid"), V8SCXMLEvent::sendidCustomAttrGetter, 0,
 			                      v8::External::New(0), static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None));
 			instance->SetAccessor(v8::String::NewSymbol("invokeid"), V8SCXMLEvent::invokeidAttrGetter, 0,
 			                      v8::External::New(0), static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None));

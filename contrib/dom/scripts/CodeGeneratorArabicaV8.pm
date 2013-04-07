@@ -352,6 +352,10 @@ END
       } else {
         my $v8Type = IdlToV8Type($attrType);
         if ($attrType eq "DOMString") {
+          if ($attrExt->{'EmptyAsNull'}) {
+            push(@implContent, "\n    if (privData->nativeObj->${wrapperGetter}.length() == 0)");
+            push(@implContent, "\n      return v8::Undefined();");
+          }
           push(@implContent, "\n    return ${v8Type}::New(privData->nativeObj->${wrapperGetter}.c_str());");
         } else {
           push(@implContent, "\n    return ${v8Type}::New(privData->nativeObj->${wrapperGetter});");

@@ -63,8 +63,9 @@ void InterpreterDraft6::interpret() {
 	// executeGlobalScriptElements
 	NodeSet<std::string> globalScriptElems = filterChildElements(_xmlNSPrefix + "script", _scxml);
 	for (unsigned int i = 0; i < globalScriptElems.size(); i++) {
-		if (_dataModel)
+		if (_dataModel) {
 			executeContent(globalScriptElems[i]);
+		}
 	}
 
 	NodeSet<std::string> initialTransitions;

@@ -7,11 +7,11 @@
   const unsigned short      EXTERNAL                   = 2;
   const unsigned short      PLATFORM                   = 3;
 
-  [CustomGetter] readonly attribute DOMString        type;
+  [CustomGetter, EmptyAsNull] readonly attribute DOMString        type;
   readonly attribute DOMString        name;
-  readonly attribute DOMString        origin;
-  readonly attribute DOMString        origintype;
+  [EmptyAsNull] readonly attribute DOMString        origin;
+  [EmptyAsNull] readonly attribute DOMString        origintype;
   readonly attribute Node             dom;
-  readonly attribute DOMString        sendid;
-  readonly attribute DOMString        invokeid;
+  [CustomGetter] readonly attribute DOMString        sendid;
+  [EmptyAsNull] readonly attribute DOMString        invokeid;
 };

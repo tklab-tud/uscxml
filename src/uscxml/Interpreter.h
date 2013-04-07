@@ -66,9 +66,9 @@ public:
 };
 
 enum Capabilities {
-	CAN_NOTHING = 0,
-	CAN_BASIC_HTTP = 1,
-	CAN_GENERIC_HTTP = 2,
+    CAN_NOTHING = 0,
+    CAN_BASIC_HTTP = 1,
+    CAN_GENERIC_HTTP = 2,
 };
 
 class InterpreterImpl : public boost::enable_shared_from_this<InterpreterImpl> {
@@ -139,14 +139,8 @@ public:
 		return "";
 	}
 
-	void inline receiveInternal(const Event& event);
-	void receive(const Event& event, bool toFront = false)   {
-		if (toFront) {
-			_externalQueue.push_front(event);
-		} else {
-			_externalQueue.push(event);
-		}
-	}
+	void receiveInternal(const Event& event);
+	void receive(const Event& event, bool toFront = false);
 
 	Event getCurrentEvent() {
 		return _currEvent;
@@ -553,7 +547,7 @@ public:
 	boost::shared_ptr<InterpreterImpl> getImpl() {
 		return _impl;
 	}
-	
+
 	static std::map<std::string, boost::weak_ptr<InterpreterImpl> > getInstances() {
 		tthread::lock_guard<tthread::recursive_mutex> lock(_instanceMutex);
 		std::map<std::string, boost::weak_ptr<InterpreterImpl> >::iterator instIter = _instances.begin();
@@ -566,9 +560,9 @@ public:
 		}
 		return _instances;
 	}
-		
+
 #endif
-		
+
 protected:
 	boost::shared_ptr<InterpreterImpl> _impl;
 	static std::map<std::string, boost::weak_ptr<InterpreterImpl> > _instances;
