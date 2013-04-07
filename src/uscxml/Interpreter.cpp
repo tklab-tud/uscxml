@@ -604,9 +604,13 @@ void InterpreterImpl::processContentElement(const Arabica::DOM::Node<std::string
 		}
 		if (contentToProcess.size() > 0) {
 			/// try to interpret as JSON
-			data = Data::fromJSON(contentToProcess);
-			if (data)
-				return;
+			std::string trimmedContent = contentToProcess;
+			boost::trim(trimmedContent);
+			if (trimmedContent.find_first_of("{[") == 0) {
+				data = Data::fromJSON(contentToProcess);
+				if (data)
+					return;
+			}
 			/// create space normalized string
 			std::istringstream iss(contentToProcess);
 			std::stringstream content;
