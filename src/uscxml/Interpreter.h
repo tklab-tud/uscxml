@@ -267,7 +267,10 @@ protected:
 	void executeContent(const Arabica::DOM::NodeList<std::string>& content, bool rethrow = false);
 	void executeContent(const Arabica::XPath::NodeSet<std::string>& content, bool rethrow = false);
 
-	void processContentElement(const Arabica::DOM::Node<std::string>& element, Arabica::DOM::Document<std::string>& dom, std::string& text);
+	void processContentElement(const Arabica::DOM::Node<std::string>& element,
+														 Arabica::DOM::Document<std::string>& dom,
+														 std::string& text,
+														 Data& data);
 	void processParamChilds(const Arabica::DOM::Node<std::string>& element, std::multimap<std::string, std::string>& params);
 
 	void send(const Arabica::DOM::Node<std::string>& element);

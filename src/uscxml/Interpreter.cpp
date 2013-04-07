@@ -548,7 +548,7 @@ void InterpreterImpl::internalDoneSend(const Arabica::DOM::Node<std::string>& st
 		if (contents.size() > 1)
 			LOG(ERROR) << "Only a single content element is allowed for send elements - using first one";
 		if (contents.size() > 0)
-			processContentElement(contents[0], event.dom, event.content);
+			processContentElement(contents[0], event.dom, event.content, event.data);
 	}
 
 	event.name = "done.state." + ATTR(stateElem.getParentNode(), "id"); // parent?!
@@ -556,58 +556,70 @@ void InterpreterImpl::internalDoneSend(const Arabica::DOM::Node<std::string>& st
 
 }
 
-void InterpreterImpl::processContentElement(const Arabica::DOM::Node<std::string>& content, Arabica::DOM::Document<std::string>& dom, std::string& text) {
+void InterpreterImpl::processContentElement(const Arabica::DOM::Node<std::string>& content,
+																						Arabica::DOM::Document<std::string>& dom,
+																						std::string& text,
+																						Data& data) {
 	try {
+		std::string contentToProcess;
 		if (HAS_ATTR(content, "expr")) {
 			if (_dataModel) {
 				/// this is out of spec
-				std::string contentValue = _dataModel.evalAsString(ATTR(content, "expr"));
-				text = contentValue;
+				contentToProcess = _dataModel.evalAsString(ATTR(content, "expr"));
 				//          sendReq.data.atom = contentValue;
 				//          sendReq.data.type = Data::VERBATIM;
 			} else {
 				LOG(ERROR) << "content element has expr attribute but no datamodel is specified.";
 			}
 		} else if (content.hasChildNodes()) {
-			bool presentAsDOM = false;
-			NodeList<std::string> contentChilds = content.getChildNodes();
-			for (int i = 0; i < contentChilds.getLength(); i++) {
-				if (contentChilds.item(i).getNodeType() == Node_base::ELEMENT_NODE) {
-					presentAsDOM = true;
+			bool presentAsDom = false;
+			Node<std::string> contentChild = content.getFirstChild();
+			while(contentChild) {
+				if (contentChild.getNodeType() == Node_base::TEXT_NODE) {
+					std::string trimmed = contentChild.getNodeValue();
+					boost::trim(trimmed);
+					if (trimmed.length() > 0)
+						break;
+				}
+				if (contentChild.getNodeType() == Node_base::ELEMENT_NODE) {
+					presentAsDom = true;
 					break;
 				}
+				contentChild = contentChild.getNextSibling();
 			}
-			if (presentAsDOM) {
+			
+			if (contentChild && presentAsDom) {
 				// use the whole dom
-				Arabica::DOM::DOMImplementation<std::string> domFactory = Arabica::SimpleDOM::DOMImplementation<std::string>::getDOMImplementation();
-				dom = domFactory.createDocument(content.getNamespaceURI(), "", 0);
-				Node<std::string> newNode = dom.importNode(content, true);
+				DOMImplementation<std::string> domFactory = Arabica::SimpleDOM::DOMImplementation<std::string>::getDOMImplementation();
+				dom = domFactory.createDocument(contentChild.getNamespaceURI(), "", 0);
+				Node<std::string> newNode = dom.importNode(contentChild, true);
 				dom.appendChild(newNode);
+			} else if (contentChild) {
+				contentToProcess = contentChild.getNodeValue();
 			} else {
-				Node<std::string> textChild = content.getFirstChild();
-				while(textChild && textChild.getNodeType() != Node_base::TEXT_NODE) {
-					textChild = textChild.getNextSibling();
-				}
-				if (textChild && textChild.getNodeType() == Node_base::TEXT_NODE) {
-					/// create space normalized string
-					std::istringstream iss(content.getFirstChild().getNodeValue());
-					std::stringstream content;
-					std::string seperator;
-					do {
-						std::string token;
-						iss >> token;
-						if (token.length() > 0) {
-							content << seperator << token;
-							seperator = " ";
-						}
-					} while (iss);
-					text = content.str();
-				} else {
-					LOG(ERROR) << "content element has neither text nor element children.";
-				}
+				LOG(ERROR) << "content element has neither text nor element children.";
 			}
 		} else {
 			LOG(ERROR) << "content element does not specify any content.";
+		}
+		if (contentToProcess.size() > 0) {
+			/// try to interpret as JSON
+			data = Data::fromJSON(contentToProcess);
+			if (data)
+				return;
+			/// create space normalized string
+			std::istringstream iss(contentToProcess);
+			std::stringstream content;
+			std::string seperator;
+			do {
+				std::string token;
+				iss >> token;
+				if (token.length() > 0) {
+					content << seperator << token;
+					seperator = " ";
+				}
+			} while (iss);
+			text = content.str();
 		}
 	} catch (Event e) {
 		e.name = "error.execution";
@@ -780,7 +792,7 @@ void InterpreterImpl::send(const Arabica::DOM::Node<std::string>& element) {
 		if (contents.size() > 1)
 			LOG(ERROR) << "Only a single content element is allowed for send elements - using first one";
 		if (contents.size() > 0) {
-			processContentElement(contents[0], sendReq.dom, sendReq.content);
+			processContentElement(contents[0], sendReq.dom, sendReq.content, sendReq.data);
 		}
 	} catch (Event e) {
 		LOG(ERROR) << "Syntax error in send element content:" << std::endl << e << std::endl;
@@ -898,7 +910,7 @@ void InterpreterImpl::invoke(const Arabica::DOM::Node<std::string>& element) {
 			if (contents.size() > 1)
 				LOG(ERROR) << "Only a single content element is allowed for send elements - using first one";
 			if (contents.size() > 0) {
-				processContentElement(contents[0], invokeReq.dom, invokeReq.content);
+				processContentElement(contents[0], invokeReq.dom, invokeReq.content, invokeReq.data);
 			}
 		} catch (Event e) {
 			LOG(ERROR) << "Syntax error in send element content:" << std::endl << e << std::endl;

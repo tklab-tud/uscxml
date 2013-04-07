@@ -31,6 +31,10 @@ public:
 	explicit Data(const Arabica::DOM::Node<std::string>& dom);
 	virtual ~Data() {}
 
+	operator bool() const {
+		return (atom.length() > 0 || !compound.empty() || !array.empty());
+	}
+
 	static Data fromJSON(const std::string& jsonString);
 	static Data fromXML(const std::string& xmlString);
 	Arabica::DOM::Document<std::string> toDocument();
