@@ -23,6 +23,7 @@
 
 #define VERBOSE 0
 
+/// macro to catch exceptions in executeContent
 #define CATCH_AND_DISTRIBUTE(msg) \
 catch (Event e) {\
 	LOG(ERROR) << msg << std::endl << e << std::endl;\
@@ -259,13 +260,14 @@ bool InterpreterImpl::runOnMainThread(int fps, bool blocking) {
 
 	_lastRunOnMainThread = tthread::timeStamp();
 
-	tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
-	std::map<std::string, IOProcessor>::iterator ioProcessorIter = _ioProcessors.begin();
-	while(ioProcessorIter != _ioProcessors.end()) {
-		ioProcessorIter->second.runOnMainThread();
-		ioProcessorIter++;
+	{
+		tthread::lock_guard<tthread::recursive_mutex> lock(_ioProcMutex);
+		std::map<std::string, IOProcessor>::iterator ioProcessorIter = _ioProcessors.begin();
+		while(ioProcessorIter != _ioProcessors.end()) {
+			ioProcessorIter->second.runOnMainThread();
+			ioProcessorIter++;
+		}
 	}
-
 	std::map<std::string, Invoker>::iterator invokerIter = _invokers.begin();
 	while(invokerIter != _invokers.end()) {
 		invokerIter->second.runOnMainThread();
@@ -1664,7 +1666,7 @@ bool InterpreterImpl::isCompound(const Arabica::DOM::Node<std::string>& state) {
 }
 
 void InterpreterImpl::setupIOProcessors() {
-	tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
+	tthread::lock_guard<tthread::recursive_mutex> lock(_ioProcMutex);
 	std::map<std::string, IOProcessorImpl*>::iterator ioProcIter = Factory::getInstance()->_ioProcessors.begin();
 	while(ioProcIter != Factory::getInstance()->_ioProcessors.end()) {
 		if (boost::iequals(ioProcIter->first, "basichttp") && !(_capabilities & CAN_BASIC_HTTP)) {
@@ -1709,7 +1711,7 @@ void InterpreterImpl::setupIOProcessors() {
 }
 
 IOProcessor InterpreterImpl::getIOProcessor(const std::string& type) {
-	tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
+	tthread::lock_guard<tthread::recursive_mutex> lock(_ioProcMutex);
 	if (_ioProcessors.find(type) == _ioProcessors.end()) {
 		LOG(ERROR) << "No ioProcessor known for type " << type;
 		return IOProcessor();

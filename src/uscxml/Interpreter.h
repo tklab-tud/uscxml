@@ -234,6 +234,7 @@ protected:
 	bool _stable;
 	tthread::thread* _thread;
 	tthread::recursive_mutex _mutex;
+	tthread::recursive_mutex _ioProcMutex;
 
 	URL _baseURI;
 	Arabica::DOM::Document<std::string> _document;

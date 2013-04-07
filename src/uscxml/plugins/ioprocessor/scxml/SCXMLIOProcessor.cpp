@@ -82,7 +82,7 @@ void SCXMLIOProcessor::send(const SendRequest& req) {
 		 */
 		_interpreter->receiveInternal(reqCopy);
 
-	} else if(reqCopy.target.find_first_of("#_scxml_") == 0) {
+	} else if(boost::starts_with(reqCopy.target, "#_scxml_")) {
 		/**
 		 * #_scxml_sessionid: If the target is the special term '#_scxml_sessionid',
 		 * where sessionid is the id of an SCXML session that is accessible to the
@@ -113,7 +113,7 @@ void SCXMLIOProcessor::send(const SendRequest& req) {
 			LOG(ERROR) << "Can not send to parent, we were not invoked" << std::endl;
 			_interpreter->receiveInternal(Event("error.communication", Event::PLATFORM));
 		}
-	} else if (reqCopy.target.find_first_of("#_") == 0) {
+	} else if (boost::starts_with(reqCopy.target, "#_") == 0) {
 		/**
 		 * #_invokeid: If the target is the special term '#_invokeid', where invokeid
 		 * is the invokeid of an SCXML session that the sending session has created
