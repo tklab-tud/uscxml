@@ -518,12 +518,12 @@ void InterpreterImpl::normalize(Arabica::DOM::Element<std::string>& scxml) {
 }
 
 void InterpreterImpl::receiveInternal(const Event& event) {
-	std::cout << "receiveInternal: " << event.name << std::endl;
+//	std::cout << "receiveInternal: " << event.name << std::endl;
 	_internalQueue.push_back(event);
 }
 
 void InterpreterImpl::receive(const Event& event, bool toFront)   {
-	std::cout << "receive: " << event.name << std::endl;
+//	std::cout << "receive: " << event.name << std::endl;
 	if (toFront) {
 		_externalQueue.push_front(event);
 	} else {
@@ -557,9 +557,9 @@ void InterpreterImpl::internalDoneSend(const Arabica::DOM::Node<std::string>& st
 }
 
 void InterpreterImpl::processContentElement(const Arabica::DOM::Node<std::string>& content,
-																						Arabica::DOM::Document<std::string>& dom,
-																						std::string& text,
-																						Data& data) {
+        Arabica::DOM::Document<std::string>& dom,
+        std::string& text,
+        Data& data) {
 	try {
 		std::string contentToProcess;
 		if (HAS_ATTR(content, "expr")) {
@@ -587,7 +587,7 @@ void InterpreterImpl::processContentElement(const Arabica::DOM::Node<std::string
 				}
 				contentChild = contentChild.getNextSibling();
 			}
-			
+
 			if (contentChild && presentAsDom) {
 				// use the whole dom
 				DOMImplementation<std::string> domFactory = Arabica::SimpleDOM::DOMImplementation<std::string>::getDOMImplementation();
@@ -1280,7 +1280,7 @@ void InterpreterImpl::executeContent(const Arabica::DOM::Node<std::string>& cont
 }
 
 void InterpreterImpl::returnDoneEvent(const Arabica::DOM::Node<std::string>& state) {
-	std::cout << state << std::endl;
+//	std::cout << state << std::endl;
 	if (_parentQueue != NULL) {
 		Event done;
 		done.name = "done.invoke." + _sessionId;

@@ -37,7 +37,7 @@ Data MilesSessionInvoker::getDataModelVariables() {
 }
 
 void MilesSessionInvoker::send(const SendRequest& req) {
-	std::cout << req;
+//	std::cout << req;
 	if (boost::iequals(req.name, "disconnect")) {
 		std::string reflectorIP = req.params.find("reflectorip")->second;
 		std::string problemName = req.params.find("problemname")->second;

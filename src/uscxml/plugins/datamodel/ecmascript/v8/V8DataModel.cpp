@@ -99,7 +99,7 @@ v8::Handle<v8::Value> V8DataModel::getIOProcessors(v8::Local<v8::String> propert
 		std::map<std::string, IOProcessor> ioProcessors = dataModel->_interpreter->getIOProcessors();
 		std::map<std::string, IOProcessor>::const_iterator ioProcIter = ioProcessors.begin();
 		while(ioProcIter != ioProcessors.end()) {
-			std::cout << ioProcIter->first << std::endl;
+//			std::cout << ioProcIter->first << std::endl;
 			dataModel->_ioProcessors->Set(v8::String::New(ioProcIter->first.c_str()),
 			                              dataModel->getDataAsValue(ioProcIter->second.getDataModelVariables()));
 			ioProcIter++;
