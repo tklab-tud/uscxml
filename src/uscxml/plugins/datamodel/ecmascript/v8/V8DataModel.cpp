@@ -392,7 +392,9 @@ double V8DataModel::evalAsNumber(const std::string& expr) {
 	return 0;
 }
 
-void V8DataModel::assign(const std::string& location, const Arabica::DOM::Document<std::string>& doc) {
+void V8DataModel::assign(const std::string& location,
+												 const Arabica::DOM::Document<std::string>& doc,
+												 const Arabica::DOM::Element<std::string>& dataElem) {
 	v8::Locker locker;
 	v8::HandleScope handleScope;
 	v8::Context::Scope contextScope(_contexts.front());
@@ -402,17 +404,21 @@ void V8DataModel::assign(const std::string& location, const Arabica::DOM::Docume
 
 }
 
-void V8DataModel::assign(const std::string& location, const Data& data) {
+void V8DataModel::assign(const std::string& location,
+												 const Data& data,
+												 const Arabica::DOM::Element<std::string>& dataElem) {
 	v8::Locker locker;
 	v8::HandleScope handleScope;
 	v8::Context::Scope contextScope(_contexts.front());
 
 	std::stringstream ssJSON;
 	ssJSON << data;
-	assign(location, ssJSON.str());
+	assign(location, ssJSON.str(), dataElem);
 }
 
-void V8DataModel::assign(const std::string& location, const std::string& expr) {
+void V8DataModel::assign(const std::string& location,
+												 const std::string& expr,
+												 const Arabica::DOM::Element<std::string>& dataElem) {
 	v8::Locker locker;
 	v8::HandleScope handleScope;
 	v8::Context::Scope contextScope(_contexts.back());

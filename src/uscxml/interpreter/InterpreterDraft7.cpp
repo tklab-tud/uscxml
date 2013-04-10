@@ -45,11 +45,11 @@ void InterpreterDraft7::interpret() {
 	}
 
 	if (_dataModel) {
-		_dataModel.assign("_x.args", _cmdLineOptions);
+		_dataModel.assign("_x.args", _cmdLineOptions, Element<std::string>());
 		if (_httpServlet) {
 			Data data;
 			data.compound["location"] = Data(_httpServlet->getURL(), Data::VERBATIM);
-			_dataModel.assign("_ioprocessors['http']", data);
+			_dataModel.assign("_ioprocessors['http']", data, Element<std::string>());
 		}
 	}
 
@@ -64,13 +64,15 @@ void InterpreterDraft7::interpret() {
 		// initialize all data elements
 		NodeSet<std::string> dataElems = _xpath.evaluate("//" + _xpathPrefix + "data", _document).asNodeSet();
 		for (unsigned int i = 0; i < dataElems.size(); i++) {
-			initializeData(dataElems[i]);
+			if (dataElems[i].getNodeType() == Node_base::ELEMENT_NODE)
+				initializeData(Element<std::string>(dataElems[i]));
 		}
 	} else if(_dataModel) {
 		// initialize current data elements
 		NodeSet<std::string> topDataElems = filterChildElements(_xmlNSPrefix + "data", filterChildElements(_xmlNSPrefix + "datamodel", _scxml));
 		for (unsigned int i = 0; i < topDataElems.size(); i++) {
-			initializeData(topDataElems[i]);
+			if (topDataElems[i].getNodeType() == Node_base::ELEMENT_NODE)
+				initializeData(Element<std::string>(topDataElems[i]));
 		}
 	}
 
@@ -117,7 +119,7 @@ void InterpreterDraft7::interpret() {
 /**
  * Called with a single data element from the topmost datamodel element.
  */
-void InterpreterDraft7::initializeData(const Arabica::DOM::Node<std::string>& data) {
+void InterpreterDraft7::initializeData(const Arabica::DOM::Element<std::string>& data) {
 	if (!_dataModel) {
 		LOG(ERROR) << "Cannot initialize data when no datamodel is given!";
 		return;
@@ -130,7 +132,7 @@ void InterpreterDraft7::initializeData(const Arabica::DOM::Node<std::string>& da
 
 		if (HAS_ATTR(data, "expr")) {
 			std::string value = ATTR(data, "expr");
-			_dataModel.assign(ATTR(data, "id"), value);
+			_dataModel.assign(ATTR(data, "id"), value, data);
 		} else if (HAS_ATTR(data, "src")) {
 			URL srcURL(ATTR(data, "src"));
 			if (!srcURL.isAbsolute())
@@ -143,7 +145,7 @@ void InterpreterDraft7::initializeData(const Arabica::DOM::Node<std::string>& da
 				ss << srcURL;
 				_cachedURLs[srcURL.asString()] = srcURL;
 			}
-			_dataModel.assign(ATTR(data, "id"), ss.str());
+			_dataModel.assign(ATTR(data, "id"), ss.str(), data);
 
 		} else if (data.hasChildNodes()) {
 			// search for the text node with the actual script
@@ -151,7 +153,7 @@ void InterpreterDraft7::initializeData(const Arabica::DOM::Node<std::string>& da
 			for (int i = 0; i < dataChilds.getLength(); i++) {
 				if (dataChilds.item(i).getNodeType() == Node_base::TEXT_NODE) {
 					Data value = Data(dataChilds.item(i).getNodeValue());
-					_dataModel.assign(ATTR(data, "id"), value);
+					_dataModel.assign(ATTR(data, "id"), value, data);
 					break;
 				}
 			}

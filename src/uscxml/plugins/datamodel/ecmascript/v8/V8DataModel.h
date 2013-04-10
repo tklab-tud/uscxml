@@ -39,10 +39,34 @@ public:
 	virtual void pushContext();
 	virtual void popContext();
 
+	virtual bool supportsJSON() { return true; }
+
 	virtual void eval(const std::string& expr);
-	virtual void assign(const std::string& location, const Arabica::DOM::Document<std::string>& doc);
-	virtual void assign(const std::string& location, const std::string& expr);
-	virtual void assign(const std::string& location, const Data& data);
+	virtual void assign(const std::string& location,
+											const Arabica::DOM::Document<std::string>& doc,
+											const Arabica::DOM::Element<std::string>& assignElem);
+	virtual void assign(const std::string& location,
+											const std::string& expr,
+											const Arabica::DOM::Element<std::string>& assignElem);
+	virtual void assign(const std::string& location,
+											const Data& data,
+											const Arabica::DOM::Element<std::string>& assignElem);
+	
+	virtual void init(const std::string& location,
+										const Arabica::DOM::Document<std::string>& doc,
+										const Arabica::DOM::Element<std::string>& dataElem) {
+		assign(location, doc, dataElem);
+	};
+	virtual void init(const std::string& location,
+										const std::string& expr,
+										const Arabica::DOM::Element<std::string>& dataElem) {
+		assign(location, expr, dataElem);
+	}
+	virtual void init(const std::string& location,
+										const Data& data,
+										const Arabica::DOM::Element<std::string>& dataElem) {
+		assign(location, data, dataElem);
+	}
 
 	virtual Data getStringAsData(const std::string& content);
 	virtual Data getValueAsData(const v8::Handle<v8::Value>& value);

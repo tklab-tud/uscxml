@@ -240,13 +240,32 @@ public:
 	virtual void pushContext() = 0;
 	virtual void popContext() = 0;
 
+	virtual bool supportsJSON() { return false; }
+	
 	virtual void eval(const std::string& expr) = 0;
 	virtual std::string evalAsString(const std::string& expr) = 0;
 	virtual bool evalAsBool(const std::string& expr) = 0;
-	virtual void assign(const std::string& location, const Arabica::DOM::Document<std::string>& doc) = 0;
-	virtual void assign(const std::string& location, const std::string& expr) = 0;
-	virtual void assign(const std::string& location, const Data& data) = 0;
 	virtual bool isDeclared(const std::string& expr) = 0;
+
+	virtual void assign(const std::string& location,
+											const Arabica::DOM::Document<std::string>& doc,
+											const Arabica::DOM::Element<std::string>& assignElem) = 0;
+	virtual void assign(const std::string& location,
+											const std::string& expr,
+											const Arabica::DOM::Element<std::string>& assignElem) = 0;
+	virtual void assign(const std::string& location,
+											const Data& data,
+											const Arabica::DOM::Element<std::string>& assignElem) = 0;
+
+	virtual void init(const std::string& location,
+										const Arabica::DOM::Document<std::string>& doc,
+										const Arabica::DOM::Element<std::string>& dataElem) = 0;
+	virtual void init(const std::string& location,
+										const std::string& expr,
+										const Arabica::DOM::Element<std::string>& dataElem) = 0;
+	virtual void init(const std::string& location,
+										const Data& data,
+										const Arabica::DOM::Element<std::string>& dataElem) = 0;
 
 protected:
 	InterpreterImpl* _interpreter;
@@ -295,6 +314,9 @@ public:
 	virtual void popContext() {
 		return _impl->popContext();
 	}
+	virtual bool supportsJSON() {
+		return _impl->supportsJSON();
+	}
 
 	virtual void eval(const std::string& expr) {
 		return _impl->eval(expr);
@@ -306,15 +328,36 @@ public:
 		return _impl->evalAsBool(expr);
 	}
 
-	virtual void assign(const std::string& location, const Arabica::DOM::Document<std::string>& doc) {
-		return _impl->assign(location, doc);
+	virtual void assign(const std::string& location,
+											const Arabica::DOM::Document<std::string>& doc,
+											const Arabica::DOM::Element<std::string>& assignElem) {
+		return _impl->assign(location, doc, assignElem);
+	}
+	virtual void assign(const std::string& location,
+											const std::string& expr,
+											const Arabica::DOM::Element<std::string>& assignElem) {
+		return _impl->assign(location, expr, assignElem);
+	}
+	virtual void assign(const std::string& location,
+											const Data& data,
+											const Arabica::DOM::Element<std::string>& assignElem) {
+		return _impl->assign(location, data, assignElem);
 	}
 
-	virtual void assign(const std::string& location, const std::string& expr) {
-		return _impl->assign(location, expr);
+	virtual void init(const std::string& location,
+										const Arabica::DOM::Document<std::string>& doc,
+										const Arabica::DOM::Element<std::string>& dataElem) {
+		return _impl->init(location, doc, dataElem);
 	}
-	virtual void assign(const std::string& location, const Data& data) {
-		return _impl->assign(location, data);
+	virtual void init(const std::string& location,
+										const std::string& expr,
+										const Arabica::DOM::Element<std::string>& dataElem) {
+		return _impl->init(location, expr, dataElem);
+	}
+	virtual void init(const std::string& location,
+										const Data& data,
+										const Arabica::DOM::Element<std::string>& dataElem) {
+		return _impl->init(location, data, dataElem);
 	}
 
 	virtual bool isDeclared(const std::string& expr) {

@@ -9,8 +9,8 @@ the respective build-process and did not precompile required libraries.
    * <b>Datamodels</b>
        * ECMAScript using Google's v8 and JavaScriptCore (JSC is incomplete)
        * Prolog using SWI prolog
-       * No NULL datamodel yet
-       * No XPath datamodel yet
+       * NULL datamodel with required <tt>In</tt> predicate
+       * <b>No</b> XPath datamodel yet
    * <b>Invokers</b>
        * <tt>scxml</tt>: Invoke a nested scxml interpreter
        * <tt>dirmon</tt>: Watches a directory for changes to files
@@ -23,7 +23,7 @@ the respective build-process and did not precompile required libraries.
    * <b>Communication</b>
        * Features the standard basichttp io-processor
        * Features the required SCXML io-processor
-       * No DOM io-processor
+       * <b>No</b> DOM io-processor yet
        * Can actually respond to HTTP requests with data via &lt;response>
    * <b>Language Bindings</b>
        * PHP module for apache and cli interpreter
@@ -33,7 +33,7 @@ the respective build-process and did not precompile required libraries.
 We continuously run the [W3C IRP tests](http://www.w3.org/Voice/2013/scxml-irp/) for SCXML. The results the for
 various platforms can be [found here](http://uscxml.tk.informatik.tu-darmstadt.de/cdash/index.php?project=uscxml).
 There are a few [excluded tests](https://github.com/tklab-tud/uscxml/blob/master/contrib/ctest/CTestCustom.ctest.in) 
-regarding the <tt>NULL</tt> and <tt>XPath</tt> datamodel, as well as the manual tests.
+regarding the <tt>XPath</tt> datamodel and the manual tests.
 
 uSCXML still fails the following tests:
 

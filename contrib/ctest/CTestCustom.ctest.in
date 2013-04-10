@@ -8,25 +8,6 @@
 # skip xpath datamodel tests
 
 set(CTEST_CUSTOM_TESTS_IGNORE
-	"test463.scxml"
-	"test464.scxml"
-	"test465.scxml"
-	"test466.scxml"
-	"test467.scxml"
-	"test468.scxml"
-	"test469.scxml"
-	"test470.scxml"
-	"test473.scxml"
-	"test474.scxml"
-	"test475.scxml"
-	"test476.scxml"
-	"test477.scxml"
-	"test478.scxml"
-	"test479.scxml"
-	"test480.scxml"
-	"test481.scxml"
-	"test482.scxml"
-	"test537.scxml"
 	"test539.scxml"
 	"test540.scxml"
 	"test542.scxml"
@@ -35,13 +16,13 @@ set(CTEST_CUSTOM_TESTS_IGNORE
 	"test547.scxml"
 	"test555.scxml"
 	"test568.scxml"
+	
 	"test178.scxml"
 	"test230.scxml"
 	"test250.scxml"
 	"test307.scxml"
 	"test313.scxml"
 	"test314.scxml"
-	"test436.scxml"
 )
 
 

@@ -313,7 +313,7 @@ void InterpreterImpl::init() {
 /**
  * Called with a single data element from the topmost datamodel element.
  */
-void InterpreterImpl::initializeData(const Node<std::string>& data) {
+void InterpreterImpl::initializeData(const Element<std::string>& data) {
 	if (!_dataModel) {
 		LOG(ERROR) << "Cannot initialize data when no datamodel is given!";
 		return;
@@ -327,7 +327,7 @@ void InterpreterImpl::initializeData(const Node<std::string>& data) {
 	/// test 240 - initialize from invoke request
 	if (_invokeReq.params.find(ATTR(data, "id")) != _invokeReq.params.end()) {
 		try {
-			_dataModel.assign(ATTR(data, "id"), _invokeReq.params.find(ATTR(data, "id"))->second);
+			_dataModel.init(ATTR(data, "id"), _invokeReq.params.find(ATTR(data, "id"))->second, data);
 		} catch (Event e) {
 			LOG(ERROR) << "Syntax error when initializing data from parameters:" << std::endl << e << std::endl;
 			receiveInternal(e);
@@ -336,7 +336,7 @@ void InterpreterImpl::initializeData(const Node<std::string>& data) {
 	}
 	if (_invokeReq.namelist.find(ATTR(data, "id")) != _invokeReq.namelist.end()) {
 		try {
-			_dataModel.assign(ATTR(data, "id"), _invokeReq.namelist.find(ATTR(data, "id"))->second);
+			_dataModel.init(ATTR(data, "id"), _invokeReq.namelist.find(ATTR(data, "id"))->second, data);
 		} catch (Event e) {
 			LOG(ERROR) << "Syntax error when initializing data from namelist:" << std::endl << e << std::endl;
 			receiveInternal(e);
@@ -350,13 +350,13 @@ void InterpreterImpl::initializeData(const Node<std::string>& data) {
 			// expression given directly
 			std::string value = ATTR(data, "expr");
 			try {
-				_dataModel.assign(ATTR(data, "id"), value);
+				_dataModel.init(ATTR(data, "id"), value, data);
 			} catch (Event e) {
 				LOG(ERROR) << "Syntax error in data element:" << std::endl << e << std::endl;
 				/// test 277
 				/// todo: if the identifier is invalid we'll raise to error events
 				receiveInternal(e);
-				_dataModel.assign(ATTR(data, "id"), "undefined");
+				_dataModel.init(ATTR(data, "id"), "undefined", data);
 			}
 			return;
 		}
@@ -385,12 +385,12 @@ void InterpreterImpl::initializeData(const Node<std::string>& data) {
 			Arabica::SAX2DOM::Parser<std::string> parser;
 			if(parser.parse(inputSource) && parser.getDocument()) {
 				try {
-					_dataModel.assign(ATTR(data, "id"), parser.getDocument());
+					_dataModel.init(ATTR(data, "id"), parser.getDocument(), data);
 					return;
 				} catch (Event e) {
 					LOG(ERROR) << "Syntax error in data element:" << std::endl << e << std::endl;
 					receiveInternal(e);
-					_dataModel.assign(ATTR(data, "id"), "undefined");
+					_dataModel.init(ATTR(data, "id"), "undefined", data);
 				}
 				return;
 			}
@@ -416,7 +416,7 @@ void InterpreterImpl::initializeData(const Node<std::string>& data) {
 				Document<std::string> dom = domFactory.createDocument(contentChild.getNamespaceURI(), "", 0);
 				Node<std::string> newNode = dom.importNode(contentChild, true);
 				dom.appendChild(newNode);
-				_dataModel.assign(ATTR(data, "id"), dom);
+				_dataModel.init(ATTR(data, "id"), dom, data);
 				return;
 			} else if (contentChild) {
 				// get first child and process below
@@ -428,7 +428,7 @@ void InterpreterImpl::initializeData(const Node<std::string>& data) {
 		if (contentToProcess.length() > 0) {
 			/// try to interpret as JSON
 			try {
-				_dataModel.assign(ATTR(data, "id"), contentToProcess);
+				_dataModel.init(ATTR(data, "id"), contentToProcess, data);
 			} catch(Event e) {
 				/// create space normalized string if that failed
 				/// test 558
@@ -443,10 +443,10 @@ void InterpreterImpl::initializeData(const Node<std::string>& data) {
 						seperator = " ";
 					}
 				} while (iss);
-				_dataModel.assign(ATTR(data, "id"), Data(spaceNormalized.str(), Data::VERBATIM));
+				_dataModel.init(ATTR(data, "id"), Data(spaceNormalized.str(), Data::VERBATIM), data);
 			}
 		} else {
-			_dataModel.assign(ATTR(data, "id"), "undefined");
+			_dataModel.init(ATTR(data, "id"), "undefined", data);
 		}
 
 	} catch (Event e) {
@@ -726,7 +726,7 @@ void InterpreterImpl::send(const Arabica::DOM::Node<std::string>& element) {
 			 */
 			sendReq.sendid = ATTR(getParentState(element), "id") + "." + getUUID();
 			if (HAS_ATTR(element, "idlocation") && _dataModel) {
-				_dataModel.assign(ATTR(element, "idlocation"), "'" + sendReq.sendid + "'");
+				_dataModel.assign(ATTR(element, "idlocation"), "'" + sendReq.sendid + "'", Element<std::string>());
 			} else {
 				sendReq.hideSendId = true;
 			}
@@ -880,7 +880,7 @@ void InterpreterImpl::invoke(const Arabica::DOM::Node<std::string>& element) {
 			} else {
 				invokeReq.invokeid = ATTR(getParentState(element), "id") + "." + getUUID();
 				if (HAS_ATTR(element, "idlocation") && _dataModel) {
-					_dataModel.assign(ATTR(element, "idlocation"), "'" + invokeReq.invokeid + "'");
+					_dataModel.assign(ATTR(element, "idlocation"), "'" + invokeReq.invokeid + "'", Element<std::string>());
 				}
 			}
 		} catch (Event e) {
@@ -941,7 +941,7 @@ void InterpreterImpl::invoke(const Arabica::DOM::Node<std::string>& element) {
 				}
 				if (_dataModel) {
 					try {
-						_dataModel.assign("_invokers['" + invokeReq.invokeid + "']", invoker.getDataModelVariables());
+						_dataModel.assign("_invokers['" + invokeReq.invokeid + "']", invoker.getDataModelVariables(), Element<std::string>());
 					} catch(...) {
 						LOG(ERROR) << "Exception caught while assigning datamodel variables from invoker " << invokeReq.invokeid;
 					}
@@ -971,7 +971,7 @@ void InterpreterImpl::cancelInvoke(const Arabica::DOM::Node<std::string>& elemen
 		LOG(INFO) << "Removed invoker at " << invokeId;
 		if (_dataModel) {
 			try {
-				_dataModel.assign("_invokers['" + invokeId + "']", "''");
+				_dataModel.assign("_invokers['" + invokeId + "']", "''", Element<std::string>());
 			} catch (Event e) {
 				LOG(ERROR) << "Syntax when removing invoker:" << std::endl << e << std::endl;
 			}
@@ -1139,13 +1139,13 @@ void InterpreterImpl::executeContent(const Arabica::DOM::Node<std::string>& cont
 							// assign array element to item
 							std::stringstream ss;
 							ss << array << "[" << iteration << "]";
-							_dataModel.assign(item, ss.str());
+							_dataModel.assign(item, ss.str(), Element<std::string>());
 						}
 						if (index.length() > 0) {
 							// assign iteration element to index
 							std::stringstream ss;
 							ss << iteration;
-							_dataModel.assign(index,ss.str());
+							_dataModel.assign(index,ss.str(), Element<std::string>());
 						}
 						if (content.hasChildNodes())
 							// execute content and have exception rethrown to break foreach
@@ -1176,14 +1176,28 @@ void InterpreterImpl::executeContent(const Arabica::DOM::Node<std::string>& cont
 		}
 	} else if (boost::iequals(TAGNAME(content), _xmlNSPrefix + "assign")) {
 		// --- ASSIGN --------------------------
-		if (_dataModel && HAS_ATTR(content, "location") && HAS_ATTR(content, "expr")) {
+		if (_dataModel && HAS_ATTR(content, "location")) {
 			try {
 				if (!_dataModel.isDeclared(ATTR(content, "location"))) {
 					// test 286, 331
 					LOG(ERROR) << "Assigning to undeclared location '" << ATTR(content, "location") << "' not allowed." << std::endl;
 					throw Event("error.execution", Event::PLATFORM);
 				} else {
-					_dataModel.assign(ATTR(content, "location"), ATTR(content, "expr"));
+					Data data;
+					Document<std::string> dom;
+					std::string text;
+					processContentElement(content, dom, text, data);
+
+					if (dom) {
+						_dataModel.assign(ATTR(content, "location"), dom, Element<std::string>(content));
+					} else if(data && _dataModel.supportsJSON()) {
+						_dataModel.assign(ATTR(content, "location"), data, Element<std::string>(content));
+					} else if (text.length() > 0) {
+						_dataModel.assign(ATTR(content, "location"), text, Element<std::string>(content));
+					} else {
+						LOG(ERROR) << "Assign element does not specify any content" << std::endl;
+						throw Event("error.execution", Event::PLATFORM);
+					}
 				}
 			}
 			CATCH_AND_DISTRIBUTE("Syntax error in attributes of assign element:")

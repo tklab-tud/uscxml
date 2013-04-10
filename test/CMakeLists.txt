@@ -45,6 +45,12 @@ if (NOT WIN32)
 	target_link_libraries(test-arabica-events uscxml)
 	add_test(test-arabica-events ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-arabica-events ${CMAKE_SOURCE_DIR}/test/samples/uscxml/arabica/test-arabica-events.xml)
 	set_target_properties(test-arabica-events PROPERTIES FOLDER "Tests")
+
+	add_executable(test-arabica-xpath src/test-arabica-xpath.cpp)
+	target_link_libraries(test-arabica-xpath uscxml)
+	add_test(test-arabica-xpath ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-arabica-xpath)
+	set_target_properties(test-arabica-xpath PROPERTIES FOLDER "Tests")
+
 endif()
 
 add_executable(test-url src/test-url.cpp)

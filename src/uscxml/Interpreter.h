@@ -222,7 +222,7 @@ protected:
 	void init();
 
 	void normalize(Arabica::DOM::Element<std::string>& scxml);
-	void initializeData(const Arabica::DOM::Node<std::string>& data);
+	void initializeData(const Arabica::DOM::Element<std::string>& data);
 	void setupIOProcessors();
 
 	bool _stable;

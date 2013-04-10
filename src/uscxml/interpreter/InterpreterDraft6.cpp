@@ -34,7 +34,7 @@ void InterpreterDraft6::interpret() {
 	}
 
 	if (_dataModel) {
-		_dataModel.assign("_x.args", _cmdLineOptions);
+		_dataModel.assign("_x.args", _cmdLineOptions, Element<std::string>());
 	}
 
 	setupIOProcessors();
@@ -50,13 +50,15 @@ void InterpreterDraft6::interpret() {
 		for (unsigned int i = 0; i < dataElems.size(); i++) {
 			// do not process data elements of nested documents from invokers
 			if (!getAncestorElement(dataElems[i], _xmlNSPrefix + "invoke"))
-				initializeData(dataElems[i]);
+				if (dataElems[i].getNodeType() == Node_base::ELEMENT_NODE)
+					initializeData(Element<std::string>(dataElems[i]));
 		}
 	} else if(_dataModel) {
 		// initialize current data elements
 		NodeSet<std::string> topDataElems = filterChildElements(_xmlNSPrefix + "data", filterChildElements(_xmlNSPrefix + "datamodel", _scxml));
 		for (unsigned int i = 0; i < topDataElems.size(); i++) {
-			initializeData(topDataElems[i]);
+			if (topDataElems[i].getNodeType() == Node_base::ELEMENT_NODE)
+				initializeData(Element<std::string>(topDataElems[i]));
 		}
 	}
 
@@ -843,7 +845,8 @@ void InterpreterDraft6::enterStates(const Arabica::XPath::NodeSet<std::string>& 
 			if(dataModelElems.size() > 0 && _dataModel) {
 				Arabica::XPath::NodeSet<std::string> dataElems = filterChildElements(_xmlNSPrefix + "data", dataModelElems[0]);
 				for (int j = 0; j < dataElems.size(); j++) {
-					initializeData(dataElems[j]);
+					if (dataElems[j].getNodeType() == Node_base::ELEMENT_NODE)
+						initializeData(Element<std::string>(dataElems[j]));
 				}
 			}
 			stateElem.setAttribute("isFirstEntry", "");

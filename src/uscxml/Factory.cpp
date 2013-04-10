@@ -47,6 +47,10 @@
 #   include "uscxml/plugins/datamodel/prolog/swi/SWIDataModel.h"
 # endif
 
+#include "uscxml/plugins/datamodel/null/NULLDataModel.h"
+#include "uscxml/plugins/datamodel/xpath/XPathDataModel.h"
+
+
 # include "uscxml/plugins/element/fetch/FetchElement.h"
 # include "uscxml/plugins/element/response/ResponseElement.h"
 # include "uscxml/plugins/element/postpone/PostponeElement.h"
@@ -145,6 +149,14 @@ Factory::Factory() {
 #endif
 
 	// these are always available
+	{
+		NULLDataModel* dataModel = new NULLDataModel();
+		registerDataModel(dataModel);
+	}
+	{
+		XPathDataModel* dataModel = new XPathDataModel();
+		registerDataModel(dataModel);
+	}
 	{
 		USCXMLInvoker* invoker = new USCXMLInvoker();
 		registerInvoker(invoker);

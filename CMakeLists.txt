@@ -659,6 +659,39 @@ if (APPLE AND IOS AND OFF)
 
 endif()
 
+
+# NULL datamodel
+
+file(GLOB NULL_DATAMODEL
+	src/uscxml/plugins/datamodel/null/*.cpp
+	src/uscxml/plugins/datamodel/null/*.h
+)
+source_group("Datamodel\\null" FILES ${NULL_DATAMODEL})
+if (BUILD_AS_PLUGINS)
+	add_library(datamodel_null SHARED ${NULL_DATAMODEL})
+	target_link_libraries(datamodel_null uscxml)
+	set_target_properties(datamodel_null PROPERTIES FOLDER "Plugin DataModel")
+else()
+	list (APPEND USCXML_FILES ${NULL_DATAMODEL})
+endif()
+
+
+# XPath datamodel
+
+file(GLOB XPATH_DATAMODEL
+	src/uscxml/plugins/datamodel/xpath/*.cpp
+	src/uscxml/plugins/datamodel/xpath/*.h
+)
+source_group("Datamodel\\xpath" FILES ${XPATH_DATAMODEL})
+if (BUILD_AS_PLUGINS)
+	add_library(datamodel_xpath SHARED ${XPATH_DATAMODEL})
+	target_link_libraries(datamodel_xpath uscxml)
+	set_target_properties(datamodel_xpath PROPERTIES FOLDER "Plugin DataModel")
+else()
+	list (APPEND USCXML_FILES ${XPATH_DATAMODEL})
+endif()
+
+
 # GOOGLE V8 ecmascript datamodel
 
 #if (NOT APPLE OR IOS)
@@ -759,8 +792,8 @@ if (UMUNDO_FOUND)
 		list (APPEND USCXML_FILES ${UMUNDO_INVOKER})
 		list (APPEND USCXML_OPT_LIBS ${UMUNDO_LIBRARIES})
 	endif()
+	add_definitions("-DUMUNDO_STATIC")
 endif()
-add_definitions("-DUMUNDO_STATIC")
 
 
 # USCXML invoker 
