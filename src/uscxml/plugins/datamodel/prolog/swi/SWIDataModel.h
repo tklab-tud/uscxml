@@ -15,7 +15,7 @@ class SWIDataModel : public DataModelImpl {
 public:
 	SWIDataModel();
 	virtual ~SWIDataModel();
-	virtual boost::shared_ptr<DataModelImpl> create(Interpreter* interpreter);
+	virtual boost::shared_ptr<DataModelImpl> create(InterpreterImpl* interpreter);
 
 	virtual std::set<std::string> getNames() {
 		std::set<std::string> names;
@@ -37,20 +37,39 @@ public:
 	virtual void popContext();
 
 	virtual void eval(const std::string& expr);
-	virtual void assign(const std::string& location, const std::string& expr);
-	virtual void assign(const std::string& location, const Data& data);
-	virtual bool isDefined(const std::string& expr);
+	virtual bool isDeclared(const std::string& expr);
 
 	virtual Data getStringAsData(const std::string& content);
 
 	virtual std::string evalAsString(const std::string& expr);
 	virtual bool evalAsBool(const std::string& expr);
 
+	virtual void assign(const std::string& location,
+	                    const Arabica::DOM::Document<std::string>& doc,
+	                    const Arabica::DOM::Element<std::string>& assignElem);
+	virtual void assign(const std::string& location,
+	                    const std::string& expr,
+	                    const Arabica::DOM::Element<std::string>& assignElem);
+	virtual void assign(const std::string& location,
+	                    const Data& data,
+	                    const Arabica::DOM::Element<std::string>& assignElem);
+
+	virtual void init(const std::string& location,
+	                  const Arabica::DOM::Document<std::string>& doc,
+	                  const Arabica::DOM::Element<std::string>& dataElem);
+	virtual void init(const std::string& location,
+	                  const std::string& expr,
+	                  const Arabica::DOM::Element<std::string>& dataElem);
+	virtual void init(const std::string& location,
+	                  const Data& data,
+	                  const Arabica::DOM::Element<std::string>& dataElem);
 
 protected:
 	Event _event;
 	PlEngine* _plEngine;
 
+	std::string _name;
+	std::string _sessionId;
 };
 
 #ifdef BUILD_AS_PLUGINS

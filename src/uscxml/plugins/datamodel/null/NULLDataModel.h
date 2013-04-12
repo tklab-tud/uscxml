@@ -36,30 +36,20 @@ public:
 	virtual void pushContext();
 	virtual void popContext();
 
-	virtual void eval(const std::string& expr);
-	virtual void assign(const std::string& location,
-											const Arabica::DOM::Document<std::string>& doc,
-											const Arabica::DOM::Element<std::string>& assignElem) {}
-	virtual void assign(const std::string& location,
-											const std::string& expr,
-											const Arabica::DOM::Element<std::string>& assignElem) {}
-	virtual void assign(const std::string& location,
-											const Data& data,
-											const Arabica::DOM::Element<std::string>& assignElem) {}
-	
-	virtual void init(const std::string& location,
-										const Arabica::DOM::Document<std::string>& doc,
-										const Arabica::DOM::Element<std::string>& dataElem) {};
-	virtual void init(const std::string& location,
-										const std::string& expr,
-										const Arabica::DOM::Element<std::string>& dataElem) {};
-	virtual void init(const std::string& location,
-										const Data& data,
-										const Arabica::DOM::Element<std::string>& dataElem) {};
+	virtual void assign(const Arabica::DOM::Element<std::string>& assignElem,
+	                    const Arabica::DOM::Document<std::string>& doc,
+	                    const std::string& content) {}
+	virtual void assign(const std::string& location, const Data& data) {}
+
+	virtual void init(const Arabica::DOM::Element<std::string>& dataElem,
+	                  const Arabica::DOM::Document<std::string>& doc,
+	                  const std::string& content) {}
+	virtual void init(const std::string& location, const Data& data) {}
 
 	virtual Data getStringAsData(const std::string& content);
 	virtual bool isDeclared(const std::string& expr);
 
+	virtual void eval(const std::string& expr);
 	virtual std::string evalAsString(const std::string& expr);
 	virtual bool evalAsBool(const std::string& expr);
 	virtual double evalAsNumber(const std::string& expr);

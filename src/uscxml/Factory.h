@@ -240,32 +240,21 @@ public:
 	virtual void pushContext() = 0;
 	virtual void popContext() = 0;
 
-	virtual bool supportsJSON() { return false; }
-	
 	virtual void eval(const std::string& expr) = 0;
 	virtual std::string evalAsString(const std::string& expr) = 0;
 	virtual bool evalAsBool(const std::string& expr) = 0;
+
 	virtual bool isDeclared(const std::string& expr) = 0;
 
-	virtual void assign(const std::string& location,
-											const Arabica::DOM::Document<std::string>& doc,
-											const Arabica::DOM::Element<std::string>& assignElem) = 0;
-	virtual void assign(const std::string& location,
-											const std::string& expr,
-											const Arabica::DOM::Element<std::string>& assignElem) = 0;
-	virtual void assign(const std::string& location,
-											const Data& data,
-											const Arabica::DOM::Element<std::string>& assignElem) = 0;
+	virtual void assign(const Arabica::DOM::Element<std::string>& assignElem,
+	                    const Arabica::DOM::Document<std::string>& doc,
+	                    const std::string& content) = 0;
+	virtual void assign(const std::string& location, const Data& data) = 0;
 
-	virtual void init(const std::string& location,
-										const Arabica::DOM::Document<std::string>& doc,
-										const Arabica::DOM::Element<std::string>& dataElem) = 0;
-	virtual void init(const std::string& location,
-										const std::string& expr,
-										const Arabica::DOM::Element<std::string>& dataElem) = 0;
-	virtual void init(const std::string& location,
-										const Data& data,
-										const Arabica::DOM::Element<std::string>& dataElem) = 0;
+	virtual void init(const Arabica::DOM::Element<std::string>& dataElem,
+	                  const Arabica::DOM::Document<std::string>& doc,
+	                  const std::string& content) = 0;
+	virtual void init(const std::string& location, const Data& data) = 0;
 
 protected:
 	InterpreterImpl* _interpreter;
@@ -305,17 +294,11 @@ public:
 		return _impl->getStringAsData(content);
 	}
 
-	virtual uint32_t getLength(const std::string& expr) {
-		return _impl->getLength(expr);
-	}
 	virtual void pushContext() {
 		return _impl->pushContext();
 	}
 	virtual void popContext() {
 		return _impl->popContext();
-	}
-	virtual bool supportsJSON() {
-		return _impl->supportsJSON();
 	}
 
 	virtual void eval(const std::string& expr) {
@@ -327,37 +310,26 @@ public:
 	virtual bool evalAsBool(const std::string& expr) {
 		return _impl->evalAsBool(expr);
 	}
-
-	virtual void assign(const std::string& location,
-											const Arabica::DOM::Document<std::string>& doc,
-											const Arabica::DOM::Element<std::string>& assignElem) {
-		return _impl->assign(location, doc, assignElem);
-	}
-	virtual void assign(const std::string& location,
-											const std::string& expr,
-											const Arabica::DOM::Element<std::string>& assignElem) {
-		return _impl->assign(location, expr, assignElem);
-	}
-	virtual void assign(const std::string& location,
-											const Data& data,
-											const Arabica::DOM::Element<std::string>& assignElem) {
-		return _impl->assign(location, data, assignElem);
+	virtual uint32_t getLength(const std::string& expr) {
+		return _impl->getLength(expr);
 	}
 
-	virtual void init(const std::string& location,
-										const Arabica::DOM::Document<std::string>& doc,
-										const Arabica::DOM::Element<std::string>& dataElem) {
-		return _impl->init(location, doc, dataElem);
+	virtual void assign(const Arabica::DOM::Element<std::string>& assignElem,
+	                    const Arabica::DOM::Document<std::string>& doc,
+	                    const std::string& content) {
+		return _impl->assign(assignElem, doc, content);
 	}
-	virtual void init(const std::string& location,
-										const std::string& expr,
-										const Arabica::DOM::Element<std::string>& dataElem) {
-		return _impl->init(location, expr, dataElem);
+	virtual void assign(const std::string& location, const Data& data) {
+		return _impl->assign(location, data);
 	}
-	virtual void init(const std::string& location,
-										const Data& data,
-										const Arabica::DOM::Element<std::string>& dataElem) {
-		return _impl->init(location, data, dataElem);
+
+	virtual void init(const Arabica::DOM::Element<std::string>& dataElem,
+	                  const Arabica::DOM::Document<std::string>& doc,
+	                  const std::string& content) {
+		return _impl->init(dataElem, doc, content);
+	}
+	virtual void init(const std::string& location, const Data& data) {
+		return _impl->init(location, data);
 	}
 
 	virtual bool isDeclared(const std::string& expr) {

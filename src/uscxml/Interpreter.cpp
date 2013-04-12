@@ -319,15 +319,10 @@ void InterpreterImpl::initializeData(const Element<std::string>& data) {
 		return;
 	}
 
-	if (!HAS_ATTR(data, "id")) {
-		LOG(ERROR) << "Data element has no id!";
-		return;
-	}
-
-	/// test 240 - initialize from invoke request
+	/// test 226/240 - initialize from invoke request
 	if (_invokeReq.params.find(ATTR(data, "id")) != _invokeReq.params.end()) {
 		try {
-			_dataModel.init(ATTR(data, "id"), _invokeReq.params.find(ATTR(data, "id"))->second, data);
+			_dataModel.init(ATTR(data, "id"), _invokeReq.params.find(ATTR(data, "id"))->second);
 		} catch (Event e) {
 			LOG(ERROR) << "Syntax error when initializing data from parameters:" << std::endl << e << std::endl;
 			receiveInternal(e);
@@ -336,7 +331,7 @@ void InterpreterImpl::initializeData(const Element<std::string>& data) {
 	}
 	if (_invokeReq.namelist.find(ATTR(data, "id")) != _invokeReq.namelist.end()) {
 		try {
-			_dataModel.init(ATTR(data, "id"), _invokeReq.namelist.find(ATTR(data, "id"))->second, data);
+			_dataModel.init(ATTR(data, "id"), _invokeReq.namelist.find(ATTR(data, "id"))->second);
 		} catch (Event e) {
 			LOG(ERROR) << "Syntax error when initializing data from namelist:" << std::endl << e << std::endl;
 			receiveInternal(e);
@@ -345,113 +340,12 @@ void InterpreterImpl::initializeData(const Element<std::string>& data) {
 	}
 
 	try {
-		std::string contentToProcess;
-		if (HAS_ATTR(data, "expr")) {
-			// expression given directly
-			std::string value = ATTR(data, "expr");
-			try {
-				_dataModel.init(ATTR(data, "id"), value, data);
-			} catch (Event e) {
-				LOG(ERROR) << "Syntax error in data element:" << std::endl << e << std::endl;
-				/// test 277
-				/// todo: if the identifier is invalid we'll raise to error events
-				receiveInternal(e);
-				_dataModel.init(ATTR(data, "id"), "undefined", data);
-			}
-			return;
-		}
-
-		if (HAS_ATTR(data, "src")) {
-			// fetch us some string and proess below
-			URL srcURL(ATTR(data, "src"));
-			if (!srcURL.isAbsolute())
-				toAbsoluteURI(srcURL);
-
-			std::stringstream ss;
-			if (_cachedURLs.find(srcURL.asString()) != _cachedURLs.end()) {
-				ss << _cachedURLs[srcURL.asString()];
-			} else {
-				ss << srcURL;
-				_cachedURLs[srcURL.asString()] = srcURL;
-			}
-			contentToProcess = ss.str();
-
-			// try to parse as XML
-			std::stringstream* xmlStr = new std::stringstream();
-			(*xmlStr) << contentToProcess;
-			std::auto_ptr<std::istream> ssPtr(xmlStr);
-			Arabica::SAX::InputSource<std::string> inputSource;
-			inputSource.setByteStream(ssPtr);
-			Arabica::SAX2DOM::Parser<std::string> parser;
-			if(parser.parse(inputSource) && parser.getDocument()) {
-				try {
-					_dataModel.init(ATTR(data, "id"), parser.getDocument(), data);
-					return;
-				} catch (Event e) {
-					LOG(ERROR) << "Syntax error in data element:" << std::endl << e << std::endl;
-					receiveInternal(e);
-					_dataModel.init(ATTR(data, "id"), "undefined", data);
-				}
-				return;
-			}
-		} else if (data.hasChildNodes()) {
-			bool presentAsDom = false;
-			Node<std::string> contentChild = data.getFirstChild();
-			while(contentChild) {
-				if (contentChild.getNodeType() == Node_base::TEXT_NODE) {
-					std::string trimmed = contentChild.getNodeValue();
-					boost::trim(trimmed);
-					if (trimmed.length() > 0)
-						break;
-				}
-				if (contentChild.getNodeType() == Node_base::ELEMENT_NODE) {
-					presentAsDom = true;
-					break;
-				}
-				contentChild = contentChild.getNextSibling();
-			}
-
-			if (contentChild && presentAsDom) {
-				Arabica::DOM::DOMImplementation<std::string> domFactory = Arabica::SimpleDOM::DOMImplementation<std::string>::getDOMImplementation();
-				Document<std::string> dom = domFactory.createDocument(contentChild.getNamespaceURI(), "", 0);
-				Node<std::string> newNode = dom.importNode(contentChild, true);
-				dom.appendChild(newNode);
-				_dataModel.init(ATTR(data, "id"), dom, data);
-				return;
-			} else if (contentChild) {
-				// get first child and process below
-				contentToProcess = contentChild.getNodeValue();
-			} else {
-				LOG(ERROR) << "content element has no text or element children.";
-			}
-		}
-		if (contentToProcess.length() > 0) {
-			/// try to interpret as JSON
-			try {
-				_dataModel.init(ATTR(data, "id"), contentToProcess, data);
-			} catch(Event e) {
-				/// create space normalized string if that failed
-				/// test 558
-				std::istringstream iss(contentToProcess);
-				std::stringstream spaceNormalized;
-				std::string seperator;
-				do {
-					std::string token;
-					iss >> token;
-					if (token.length() > 0) {
-						spaceNormalized << seperator << token;
-						seperator = " ";
-					}
-				} while (iss);
-				_dataModel.init(ATTR(data, "id"), Data(spaceNormalized.str(), Data::VERBATIM), data);
-			}
-		} else {
-			_dataModel.init(ATTR(data, "id"), "undefined", data);
-		}
-
+		Arabica::DOM::Document<std::string> dom;
+		std::string text;
+		processDOMorText(data, dom, text);
+		_dataModel.init(data, dom, text);
 	} catch (Event e) {
-		LOG(ERROR) << "Syntax error in data element:" << std::endl << e << std::endl;
-		/// test 487
+		LOG(ERROR) << "Syntax error when initializing data:" << std::endl << e << std::endl;
 		receiveInternal(e);
 	}
 }
@@ -518,12 +412,12 @@ void InterpreterImpl::normalize(Arabica::DOM::Element<std::string>& scxml) {
 }
 
 void InterpreterImpl::receiveInternal(const Event& event) {
-//	std::cout << "receiveInternal: " << event.name << std::endl;
+	std::cout << _name << " receiveInternal: " << event.name << std::endl;
 	_internalQueue.push_back(event);
 }
 
 void InterpreterImpl::receive(const Event& event, bool toFront)   {
-//	std::cout << "receive: " << event.name << std::endl;
+	std::cout << _name << " receive: " << event.name << std::endl;
 	if (toFront) {
 		_externalQueue.push_front(event);
 	} else {
@@ -547,8 +441,18 @@ void InterpreterImpl::internalDoneSend(const Arabica::DOM::Node<std::string>& st
 		Arabica::XPath::NodeSet<std::string> contents = filterChildElements(_xmlNSPrefix + "content", doneDatas[0]);
 		if (contents.size() > 1)
 			LOG(ERROR) << "Only a single content element is allowed for send elements - using first one";
-		if (contents.size() > 0)
-			processContentElement(contents[0], event.dom, event.content, event.data);
+		if (contents.size() > 0) {
+			std::string expr;
+			processContentElement(contents[0], event.dom, event.content, expr);
+			if (expr.length() > 0 && _dataModel) {
+				try {
+					event.content =_dataModel.evalAsString(expr);
+				} catch (Event e) {
+					e.name = "error.execution";
+					receiveInternal(e);
+				}
+			}
+		}
 	}
 
 	event.name = "done.state." + ATTR(stateElem.getParentNode(), "id"); // parent?!
@@ -559,13 +463,22 @@ void InterpreterImpl::internalDoneSend(const Arabica::DOM::Node<std::string>& st
 void InterpreterImpl::processContentElement(const Arabica::DOM::Node<std::string>& content,
         Arabica::DOM::Document<std::string>& dom,
         std::string& text,
-        Data& data) {
+        std::string& expr) {
+	if (HAS_ATTR(content, "expr")) {
+		expr = ATTR(content, "expr");
+	} else if (content.hasChildNodes()) {
+		processDOMorText(content, dom, text);
+	} else {
+		LOG(ERROR) << "content element does not specify any content.";
+	}
+
+#if 0
 	try {
 		std::string contentToProcess;
 		if (HAS_ATTR(content, "expr")) {
 			if (_dataModel) {
 				/// this is out of spec
-				contentToProcess = _dataModel.evalAsString(ATTR(content, "expr"));
+				contentToProcess = ATTR(content, "expr");
 				//          sendReq.data.atom = contentValue;
 				//          sendReq.data.type = Data::VERBATIM;
 			} else {
@@ -628,6 +541,75 @@ void InterpreterImpl::processContentElement(const Arabica::DOM::Node<std::string
 	} catch (Event e) {
 		e.name = "error.execution";
 		receiveInternal(e);
+	}
+#endif
+}
+
+void InterpreterImpl::processDOMorText(const Arabica::DOM::Node<std::string>& node,
+                                       Arabica::DOM::Document<std::string>& dom,
+                                       std::string& text) {
+	// do we need to download?
+	if (HAS_ATTR(node, "src") ||
+	        (HAS_ATTR(node, "srcexpr") && _dataModel)) {
+		std::stringstream srcContent;
+		URL sourceURL(HAS_ATTR(node, "srcexpr") ? _dataModel.evalAsString(ATTR(node, "srcexpr")) : ATTR(node, "src"));
+		if (!toAbsoluteURI(sourceURL)) {
+			LOG(ERROR) << LOCALNAME(node) << " element has relative src or srcexpr URI with no baseURI set.";
+			return;
+		}
+		if (_cachedURLs.find(sourceURL.asString()) != _cachedURLs.end()) {
+			srcContent << _cachedURLs[sourceURL.asString()];
+		} else {
+			srcContent << sourceURL;
+			if (sourceURL.downloadFailed()) {
+				LOG(ERROR) << LOCALNAME(node) << " source cannot be downloaded";
+				return;
+			}
+			_cachedURLs[sourceURL.asString()] = sourceURL;
+		}
+		if (srcContent.str().length() > 0) {
+			// try to parse as XML
+			Arabica::SAX2DOM::Parser<std::string> parser;
+			std::stringstream* ss = new std::stringstream();
+			(*ss) << srcContent.str();
+			std::auto_ptr<std::istream> ssPtr(ss);
+			Arabica::SAX::InputSource<std::string> inputSource;
+			inputSource.setByteStream(ssPtr);
+			if (parser.parse(inputSource) && parser.getDocument()) {
+				dom = parser.getDocument();
+				return;
+			} else {
+				text = srcContent.str();
+				return;
+			}
+		}
+	}
+
+	if (!node.hasChildNodes())
+		return;
+
+	Node<std::string> child = node.getFirstChild();
+	while(child) {
+		if (child.getNodeType() == Node_base::TEXT_NODE) {
+			std::string trimmed = child.getNodeValue();
+			boost::trim(trimmed);
+			if (trimmed.length() > 0)
+				break;
+		}
+		if (child.getNodeType() == Node_base::ELEMENT_NODE) {
+			break;
+		}
+		child = child.getNextSibling();
+	}
+	if (child && child.getNodeType() == Node_base::ELEMENT_NODE) {
+		DOMImplementation<std::string> domFactory = Arabica::SimpleDOM::DOMImplementation<std::string>::getDOMImplementation();
+		dom = domFactory.createDocument(child.getNamespaceURI(), "", 0);
+		Node<std::string> newNode = dom.importNode(child, true);
+		dom.appendChild(newNode);
+	} else if(child && child.getNodeType() == Node_base::TEXT_NODE) {
+		text = child.getNodeValue();
+	} else {
+		LOG(ERROR) << LOCALNAME(node) << " has neither text nor element children.";
 	}
 }
 
@@ -726,7 +708,7 @@ void InterpreterImpl::send(const Arabica::DOM::Node<std::string>& element) {
 			 */
 			sendReq.sendid = ATTR(getParentState(element), "id") + "." + getUUID();
 			if (HAS_ATTR(element, "idlocation") && _dataModel) {
-				_dataModel.assign(ATTR(element, "idlocation"), "'" + sendReq.sendid + "'", Element<std::string>());
+				_dataModel.assign(ATTR(element, "idlocation"), "'" + sendReq.sendid + "'");
 			} else {
 				sendReq.hideSendId = true;
 			}
@@ -796,7 +778,16 @@ void InterpreterImpl::send(const Arabica::DOM::Node<std::string>& element) {
 		if (contents.size() > 1)
 			LOG(ERROR) << "Only a single content element is allowed for send elements - using first one";
 		if (contents.size() > 0) {
-			processContentElement(contents[0], sendReq.dom, sendReq.content, sendReq.data);
+			std::string expr;
+			processContentElement(contents[0], sendReq.dom, sendReq.content, expr);
+			if (expr.length() > 0 && _dataModel) {
+				try {
+					sendReq.content =_dataModel.evalAsString(expr);
+				} catch (Event e) {
+					e.name = "error.execution";
+					receiveInternal(e);
+				}
+			}
 		}
 	} catch (Event e) {
 		LOG(ERROR) << "Syntax error in send element content:" << std::endl << e << std::endl;
@@ -880,7 +871,7 @@ void InterpreterImpl::invoke(const Arabica::DOM::Node<std::string>& element) {
 			} else {
 				invokeReq.invokeid = ATTR(getParentState(element), "id") + "." + getUUID();
 				if (HAS_ATTR(element, "idlocation") && _dataModel) {
-					_dataModel.assign(ATTR(element, "idlocation"), "'" + invokeReq.invokeid + "'", Element<std::string>());
+					_dataModel.assign(ATTR(element, "idlocation"), "'" + invokeReq.invokeid + "'");
 				}
 			}
 		} catch (Event e) {
@@ -914,7 +905,16 @@ void InterpreterImpl::invoke(const Arabica::DOM::Node<std::string>& element) {
 			if (contents.size() > 1)
 				LOG(ERROR) << "Only a single content element is allowed for send elements - using first one";
 			if (contents.size() > 0) {
-				processContentElement(contents[0], invokeReq.dom, invokeReq.content, invokeReq.data);
+				std::string expr;
+				processContentElement(contents[0], invokeReq.dom, invokeReq.content, expr);
+				if (expr.length() > 0 && _dataModel) {
+					try {
+						invokeReq.content =_dataModel.evalAsString(expr);
+					} catch (Event e) {
+						e.name = "error.execution";
+						receiveInternal(e);
+					}
+				}
 			}
 		} catch (Event e) {
 			LOG(ERROR) << "Syntax error in send element content:" << std::endl << e << std::endl;
@@ -941,7 +941,7 @@ void InterpreterImpl::invoke(const Arabica::DOM::Node<std::string>& element) {
 				}
 				if (_dataModel) {
 					try {
-						_dataModel.assign("_invokers['" + invokeReq.invokeid + "']", invoker.getDataModelVariables(), Element<std::string>());
+						_dataModel.assign("_invokers['" + invokeReq.invokeid + "']", invoker.getDataModelVariables());
 					} catch(...) {
 						LOG(ERROR) << "Exception caught while assigning datamodel variables from invoker " << invokeReq.invokeid;
 					}
@@ -971,7 +971,7 @@ void InterpreterImpl::cancelInvoke(const Arabica::DOM::Node<std::string>& elemen
 		LOG(INFO) << "Removed invoker at " << invokeId;
 		if (_dataModel) {
 			try {
-				_dataModel.assign("_invokers['" + invokeId + "']", "''", Element<std::string>());
+				_dataModel.assign("_invokers['" + invokeId + "']", std::string("''"));
 			} catch (Event e) {
 				LOG(ERROR) << "Syntax when removing invoker:" << std::endl << e << std::endl;
 			}
@@ -1139,13 +1139,13 @@ void InterpreterImpl::executeContent(const Arabica::DOM::Node<std::string>& cont
 							// assign array element to item
 							std::stringstream ss;
 							ss << array << "[" << iteration << "]";
-							_dataModel.assign(item, ss.str(), Element<std::string>());
+							_dataModel.assign(item, ss.str());
 						}
 						if (index.length() > 0) {
 							// assign iteration element to index
 							std::stringstream ss;
 							ss << iteration;
-							_dataModel.assign(index,ss.str(), Element<std::string>());
+							_dataModel.assign(index, ss.str());
 						}
 						if (content.hasChildNodes())
 							// execute content and have exception rethrown to break foreach
@@ -1183,21 +1183,10 @@ void InterpreterImpl::executeContent(const Arabica::DOM::Node<std::string>& cont
 					LOG(ERROR) << "Assigning to undeclared location '" << ATTR(content, "location") << "' not allowed." << std::endl;
 					throw Event("error.execution", Event::PLATFORM);
 				} else {
-					Data data;
 					Document<std::string> dom;
 					std::string text;
-					processContentElement(content, dom, text, data);
-
-					if (dom) {
-						_dataModel.assign(ATTR(content, "location"), dom, Element<std::string>(content));
-					} else if(data && _dataModel.supportsJSON()) {
-						_dataModel.assign(ATTR(content, "location"), data, Element<std::string>(content));
-					} else if (text.length() > 0) {
-						_dataModel.assign(ATTR(content, "location"), text, Element<std::string>(content));
-					} else {
-						LOG(ERROR) << "Assign element does not specify any content" << std::endl;
-						throw Event("error.execution", Event::PLATFORM);
-					}
+					processDOMorText(content, dom, text);
+					_dataModel.assign(Element<std::string>(content), dom, text);
 				}
 			}
 			CATCH_AND_DISTRIBUTE("Syntax error in attributes of assign element:")
@@ -1553,6 +1542,22 @@ std::vector<std::string> InterpreterImpl::tokenizeIdRefs(const std::string& idRe
 
 	return ids;
 }
+
+std::string InterpreterImpl::spaceNormalize(const std::string& text) {
+	std::istringstream iss(text);
+	std::stringstream content;
+	std::string seperator;
+	do {
+		std::string token;
+		iss >> token;
+		if (token.length() > 0) {
+			content << seperator << token;
+			seperator = " ";
+		}
+	} while (iss);
+	return content.str();
+}
+
 
 NodeSet<std::string> InterpreterImpl::filterChildElements(const std::string& tagName, const NodeSet<std::string>& nodeSet) {
 	NodeSet<std::string> filteredChildElems;

@@ -45,12 +45,7 @@ void InterpreterDraft7::interpret() {
 	}
 
 	if (_dataModel) {
-		_dataModel.assign("_x.args", _cmdLineOptions, Element<std::string>());
-		if (_httpServlet) {
-			Data data;
-			data.compound["location"] = Data(_httpServlet->getURL(), Data::VERBATIM);
-			_dataModel.assign("_ioprocessors['http']", data, Element<std::string>());
-		}
+		_dataModel.assign("_x.args", _cmdLineOptions);
 	}
 
 	setupIOProcessors();
@@ -114,54 +109,6 @@ void InterpreterDraft7::interpret() {
 	if(_dataModel)
 		_dataModel = DataModel();
 
-}
-
-/**
- * Called with a single data element from the topmost datamodel element.
- */
-void InterpreterDraft7::initializeData(const Arabica::DOM::Element<std::string>& data) {
-	if (!_dataModel) {
-		LOG(ERROR) << "Cannot initialize data when no datamodel is given!";
-		return;
-	}
-	try {
-		if (!HAS_ATTR(data, "id")) {
-			LOG(ERROR) << "Data element has no id!";
-			return;
-		}
-
-		if (HAS_ATTR(data, "expr")) {
-			std::string value = ATTR(data, "expr");
-			_dataModel.assign(ATTR(data, "id"), value, data);
-		} else if (HAS_ATTR(data, "src")) {
-			URL srcURL(ATTR(data, "src"));
-			if (!srcURL.isAbsolute())
-				toAbsoluteURI(srcURL);
-
-			std::stringstream ss;
-			if (_cachedURLs.find(srcURL.asString()) != _cachedURLs.end()) {
-				ss << _cachedURLs[srcURL.asString()];
-			} else {
-				ss << srcURL;
-				_cachedURLs[srcURL.asString()] = srcURL;
-			}
-			_dataModel.assign(ATTR(data, "id"), ss.str(), data);
-
-		} else if (data.hasChildNodes()) {
-			// search for the text node with the actual script
-			NodeList<std::string> dataChilds = data.getChildNodes();
-			for (int i = 0; i < dataChilds.getLength(); i++) {
-				if (dataChilds.item(i).getNodeType() == Node_base::TEXT_NODE) {
-					Data value = Data(dataChilds.item(i).getNodeValue());
-					_dataModel.assign(ATTR(data, "id"), value, data);
-					break;
-				}
-			}
-		}
-
-	} catch (Event e) {
-		LOG(ERROR) << "Syntax error in data element:" << std::endl << e << std::endl;
-	}
 }
 
 /**

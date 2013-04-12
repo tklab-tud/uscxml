@@ -202,6 +202,7 @@ public:
 	static bool isDescendant(const Arabica::DOM::Node<std::string>& s1, const Arabica::DOM::Node<std::string>& s2);
 
 	static std::vector<std::string> tokenizeIdRefs(const std::string& idRefs);
+	static std::string spaceNormalize(const std::string& text);
 
 	bool isInitial(const Arabica::DOM::Node<std::string>& state);
 	Arabica::XPath::NodeSet<std::string> getInitialStates(Arabica::DOM::Node<std::string> state = Arabica::DOM::Node<std::string>());
@@ -270,8 +271,12 @@ protected:
 	void processContentElement(const Arabica::DOM::Node<std::string>& element,
 	                           Arabica::DOM::Document<std::string>& dom,
 	                           std::string& text,
-	                           Data& data);
-	void processParamChilds(const Arabica::DOM::Node<std::string>& element, std::multimap<std::string, std::string>& params);
+	                           std::string& expr);
+	void processParamChilds(const Arabica::DOM::Node<std::string>& element,
+	                        std::multimap<std::string, std::string>& params);
+	void processDOMorText(const Arabica::DOM::Node<std::string>& node,
+	                      Arabica::DOM::Document<std::string>& dom,
+	                      std::string& text);
 
 	void send(const Arabica::DOM::Node<std::string>& element);
 	void invoke(const Arabica::DOM::Node<std::string>& element);
@@ -414,9 +419,22 @@ public:
 		return _impl->getCurrentEvent();
 	}
 
+#ifndef SWIG
 	Arabica::XPath::NodeSet<std::string> getConfiguration()  {
 		return _impl->getConfiguration();
 	}
+#else
+	// simplified access to state names for language bindings
+	std::vector<std::string> getConfiguration()  {
+		std::vector<std::string> stateNames;
+		Arabica::XPath::NodeSet<std::string> nodeSet = _impl->getConfiguration();
+		for (int i = 0; i < nodeSet.size(); i++) {
+			stateNames.push_back(ATTR(nodeSet[i], "id"));
+		}
+		return stateNames;
+	}
+#endif
+
 	void setConfiguration(const std::vector<std::string>& states) {
 		return _impl->setConfiguration(states);
 	}
@@ -506,6 +524,9 @@ public:
 
 	static std::vector<std::string> tokenizeIdRefs(const std::string& idRefs) {
 		return InterpreterImpl::tokenizeIdRefs(idRefs);
+	}
+	static std::string spaceNormalize(const std::string& text) {
+		return InterpreterImpl::spaceNormalize(text);
 	}
 
 	bool isInitial(const Arabica::DOM::Node<std::string>& state) {

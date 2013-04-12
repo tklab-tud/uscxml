@@ -18,42 +18,44 @@ namespace uscxml {
 class XPathFunctionIn : public Arabica::XPath::BooleanXPathFunction<std::string> {
 public:
 	XPathFunctionIn(int minArgs,
-									int maxArgs,
-									const std::vector<Arabica::XPath::XPathExpression<std::string> >& args,
-									InterpreterImpl* interpreter) :
+	                int maxArgs,
+	                const std::vector<Arabica::XPath::XPathExpression<std::string> >& args,
+	                InterpreterImpl* interpreter) :
 		BooleanXPathFunction(minArgs, maxArgs, args),
 		_interpreter(interpreter) {}
 
 protected:
 	bool doEvaluate(const Arabica::DOM::Node<std::string>& context,
-									const Arabica::XPath::ExecutionContext<std::string>& executionContext) const;
+	                const Arabica::XPath::ExecutionContext<std::string>& executionContext) const;
 	InterpreterImpl* _interpreter;
 };
 
 class XPathFunctionResolver : public Arabica::XPath::FunctionResolver<std::string> {
 public:
 	virtual ~XPathFunctionResolver() { }
-	
-  virtual Arabica::XPath::XPathFunction<std::string>*
-		resolveFunction(const std::string& namespace_uri,
-										const std::string& name,
-										const std::vector<Arabica::XPath::XPathExpression<std::string> >& argExprs) const;
-	
-  virtual std::vector<std::pair<std::string, std::string> > validNames() const;
-	void setInterpreter(InterpreterImpl* interpreter) { _interpreter = interpreter; }
+
+	virtual Arabica::XPath::XPathFunction<std::string>*
+	resolveFunction(const std::string& namespace_uri,
+	                const std::string& name,
+	                const std::vector<Arabica::XPath::XPathExpression<std::string> >& argExprs) const;
+
+	virtual std::vector<std::pair<std::string, std::string> > validNames() const;
+	void setInterpreter(InterpreterImpl* interpreter) {
+		_interpreter = interpreter;
+	}
 protected:
 	Arabica::XPath::StandardXPathFunctionResolver<std::string> _xpathFuncRes;
 	InterpreterImpl* _interpreter;
 };
-	
+
 class NodeSetVariableResolver : public Arabica::XPath::VariableResolver<std::string> {
 public:
 	Arabica::XPath::XPathValue<std::string> resolveVariable(const std::string& namepaceUri,
-																													const std::string& name) const;
+	        const std::string& name) const;
 	void setVariable(const std::string& name, const Arabica::XPath::NodeSet<std::string>& value) {
 		_variables[name] = value;
 	}
-	
+
 private:
 	std::map<std::string, Arabica::XPath::NodeSet<std::string> > _variables;
 };
@@ -80,25 +82,15 @@ public:
 	virtual void popContext();
 
 	virtual void eval(const std::string& expr);
-	virtual void assign(const std::string& location,
-											const Arabica::DOM::Document<std::string>& doc,
-											const Arabica::DOM::Element<std::string>& assignElem);
-	virtual void assign(const std::string& location,
-											const std::string& expr,
-											const Arabica::DOM::Element<std::string>& assignElem);
-	virtual void assign(const std::string& location,
-											const Data& data,
-											const Arabica::DOM::Element<std::string>& assignElem);
-	
-	virtual void init(const std::string& location,
-										const Arabica::DOM::Document<std::string>& doc,
-										const Arabica::DOM::Element<std::string>& dataElem);
-	virtual void init(const std::string& location,
-										const std::string& expr,
-										const Arabica::DOM::Element<std::string>& dataElem);
-	virtual void init(const std::string& location,
-										const Data& data,
-										const Arabica::DOM::Element<std::string>& dataElem);
+	virtual void assign(const Arabica::DOM::Element<std::string>& assignElem,
+	                    const Arabica::DOM::Document<std::string>& doc,
+	                    const std::string& content);
+	virtual void assign(const std::string& location, const Data& data);
+
+	virtual void init(const Arabica::DOM::Element<std::string>& dataElem,
+	                  const Arabica::DOM::Document<std::string>& doc,
+	                  const std::string& content);
+	virtual void init(const std::string& location, const Data& data);
 
 	virtual Data getStringAsData(const std::string& content);
 	virtual bool isDeclared(const std::string& expr);
@@ -114,21 +106,21 @@ protected:
 	Arabica::DOM::Document<std::string> _doc;
 
 	void assign(Arabica::XPath::XPathValue<std::string>& key,
-							const Arabica::XPath::XPathValue<std::string>& value,
-							const Arabica::DOM::Element<std::string>& assignElem);
+	            const Arabica::XPath::XPathValue<std::string>& value,
+	            const Arabica::DOM::Element<std::string>& assignElem);
 	void assign(Arabica::XPath::XPathValue<std::string>& key,
-							const std::string& value,
-							const Arabica::DOM::Element<std::string>& assignElem);
+	            const std::string& value,
+	            const Arabica::DOM::Element<std::string>& assignElem);
 	void assign(Arabica::XPath::XPathValue<std::string>& key,
-							const double value,
-							const Arabica::DOM::Element<std::string>& assignElem);
+	            const double value,
+	            const Arabica::DOM::Element<std::string>& assignElem);
 	void assign(Arabica::XPath::XPathValue<std::string>& key,
-							const bool value,
-							const Arabica::DOM::Element<std::string>& assignElem);
+	            const bool value,
+	            const Arabica::DOM::Element<std::string>& assignElem);
 	void assign(Arabica::XPath::XPathValue<std::string>& key,
-							const Arabica::XPath::NodeSet<std::string>& value,
-							const Arabica::DOM::Element<std::string>& assignElem);
-	
+	            const Arabica::XPath::NodeSet<std::string>& value,
+	            const Arabica::DOM::Element<std::string>& assignElem);
+
 	NodeSetVariableResolver _varResolver;
 	XPathFunctionResolver _funcResolver;
 

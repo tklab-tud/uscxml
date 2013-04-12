@@ -7,6 +7,8 @@
 #include <SAX/helpers/CatchErrorHandler.hpp>
 #include <glog/logging.h>
 
+#include <boost/algorithm/string.hpp>
+
 #ifdef HAS_STRING_H
 #include <string.h>
 #endif
@@ -180,7 +182,10 @@ Data Data::fromXML(const std::string& xmlString) {
 Data Data::fromJSON(const std::string& jsonString) {
 	Data data;
 
-	if (jsonString.length() == 0)
+	std::string trimmed = jsonString;
+	boost::trim(trimmed);
+
+	if (trimmed.length() == 0)
 		return data;
 
 	jsmn_parser p;
@@ -194,7 +199,7 @@ Data Data::fromJSON(const std::string& jsonString) {
 		jsmn_init(&p);
 
 		frac /= 2;
-		int nrTokens = jsonString.size() / frac;
+		int nrTokens = trimmed.size() / frac;
 		if (t != NULL) {
 			free(t);
 //      LOG(INFO) << "Increasing JSON length to token ratio to 1/" << frac;
@@ -206,7 +211,7 @@ Data Data::fromJSON(const std::string& jsonString) {
 		}
 		memset(t, 0, nrTokens * sizeof(jsmntok_t) + 1);
 
-		rv = jsmn_parse(&p, jsonString.c_str(), t, nrTokens);
+		rv = jsmn_parse(&p, trimmed.c_str(), t, nrTokens);
 	} while (rv == JSMN_ERROR_NOMEM && frac > 1);
 
 	if (rv != 0) {
@@ -227,6 +232,9 @@ Data Data::fromJSON(const std::string& jsonString) {
 		return data;
 	}
 
+	if (t[0].end != trimmed.length())
+		return data;
+
 	std::list<Data*> dataStack;
 	std::list<jsmntok_t> tokenStack;
 	dataStack.push_back(&data);
@@ -237,7 +245,7 @@ Data Data::fromJSON(const std::string& jsonString) {
 		case JSMN_STRING:
 			dataStack.back()->type = Data::VERBATIM;
 		case JSMN_PRIMITIVE:
-			dataStack.back()->atom = jsonString.substr(t[currTok].start, t[currTok].end - t[currTok].start);
+			dataStack.back()->atom = trimmed.substr(t[currTok].start, t[currTok].end - t[currTok].start);
 			dataStack.pop_back();
 			currTok++;
 			break;
@@ -258,7 +266,7 @@ Data Data::fromJSON(const std::string& jsonString) {
 
 		if (tokenStack.back().type == JSMN_OBJECT && (t[currTok].type == JSMN_PRIMITIVE || t[currTok].type == JSMN_STRING)) {
 			// grab key and push new data
-			dataStack.push_back(&(dataStack.back()->compound[jsonString.substr(t[currTok].start, t[currTok].end - t[currTok].start)]));
+			dataStack.push_back(&(dataStack.back()->compound[trimmed.substr(t[currTok].start, t[currTok].end - t[currTok].start)]));
 			currTok++;
 		}
 		if (tokenStack.back().type == JSMN_ARRAY) {

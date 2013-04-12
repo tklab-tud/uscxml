@@ -39,36 +39,26 @@ public:
 	virtual void pushContext();
 	virtual void popContext();
 
-	virtual bool supportsJSON() { return true; }
+	virtual bool supportsJSON() {
+		return true;
+	}
 
 	virtual void eval(const std::string& expr);
+	virtual void assign(const Arabica::DOM::Element<std::string>& assignElem,
+	                    const Arabica::DOM::Document<std::string>& doc,
+	                    const std::string& content);
 	virtual void assign(const std::string& location,
-											const Arabica::DOM::Document<std::string>& doc,
-											const Arabica::DOM::Element<std::string>& assignElem);
-	virtual void assign(const std::string& location,
-											const std::string& expr,
-											const Arabica::DOM::Element<std::string>& assignElem);
-	virtual void assign(const std::string& location,
-											const Data& data,
-											const Arabica::DOM::Element<std::string>& assignElem);
-	
+	                    const Data& data);
+
+	virtual void init(const Arabica::DOM::Element<std::string>& dataElem,
+	                  const Arabica::DOM::Document<std::string>& doc,
+	                  const std::string& content);
 	virtual void init(const std::string& location,
-										const Arabica::DOM::Document<std::string>& doc,
-										const Arabica::DOM::Element<std::string>& dataElem) {
-		assign(location, doc, dataElem);
-	};
-	virtual void init(const std::string& location,
-										const std::string& expr,
-										const Arabica::DOM::Element<std::string>& dataElem) {
-		assign(location, expr, dataElem);
-	}
-	virtual void init(const std::string& location,
-										const Data& data,
-										const Arabica::DOM::Element<std::string>& dataElem) {
-		assign(location, data, dataElem);
-	}
+	                  const Data& data);
 
 	virtual Data getStringAsData(const std::string& content);
+	virtual Data getValueAsData(const v8::Handle<v8::Value>& value,
+	                            std::set<v8::Value*>& alreadySeen);
 	virtual Data getValueAsData(const v8::Handle<v8::Value>& value);
 
 	virtual bool isDeclared(const std::string& expr);
@@ -90,7 +80,7 @@ protected:
 	static v8::Handle<v8::Value> getAttribute(v8::Local<v8::String> property, const v8::AccessorInfo& info);
 	static void setWithException(v8::Local<v8::String> property, v8::Local<v8::Value> value, const v8::AccessorInfo& info);
 
-	v8::Handle<v8::Value> evalAsValue(const std::string& expr);
+	v8::Handle<v8::Value> evalAsValue(const std::string& expr, bool dontThrow = false);
 	v8::Handle<v8::Value> getDataAsValue(const Data& data);
 	v8::Handle<v8::Value> getDocumentAsValue(const Arabica::DOM::Document<std::string>& doc);
 	void throwExceptionEvent(const v8::TryCatch& tryCatch);

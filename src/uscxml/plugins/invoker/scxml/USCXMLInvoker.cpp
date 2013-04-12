@@ -48,9 +48,9 @@ void USCXMLInvoker::invoke(const InvokeRequest& req) {
 	} else if (req.dom) {
 		_invokedInterpreter = Interpreter::fromDOM(req.dom);
 	} else if (req.content.size() > 0) {
-		LOG(ERROR) << "Instantiating nested SCXML interpreter by content or expr not supported yet";
+		_invokedInterpreter = Interpreter::fromXML(req.content);
 	} else {
-		LOG(ERROR) << "Cannot invoke nested SCXML interpreter, neither src attribute nor DOM is given";
+		LOG(ERROR) << "Cannot invoke nested SCXML interpreter, neither src attribute nor content nor DOM is given";
 	}
 	if (_invokedInterpreter) {
 		DataModel dataModel(_invokedInterpreter.getImpl()->getDataModel());

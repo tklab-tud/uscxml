@@ -32,56 +32,6 @@ abstract class uscxmlNativePHP {
 	const CAN_BASIC_HTTP = 1;
 
 	const CAN_GENERIC_HTTP = 2;
-
-	const ANY = 0;
-
-	const BOOL = BOOL;
-
-	const NUMBER = NUMBER;
-
-	const STRING = STRING;
-
-	const NODE_SET = NODE_SET;
-
-	static function NaN_get() {
-		return NaN_get();
-	}
-
-	static function Zero_get() {
-		return Zero_get();
-	}
-
-	static function Negative_Zero_get() {
-		return Negative_Zero_get();
-	}
-
-	static function Infinity_get() {
-		return Infinity_get();
-	}
-
-	static function Negative_Infinity_get() {
-		return Negative_Infinity_get();
-	}
-
-	static function isNaN($value) {
-		return isNaN($value);
-	}
-
-	static function isInfinity($value) {
-		return isInfinity($value);
-	}
-
-	static function isNegativeInfinity($value) {
-		return isNegativeInfinity($value);
-	}
-
-	static function isInfinite($value) {
-		return isInfinite($value);
-	}
-
-	static function roundNumber($value) {
-		return roundNumber($value);
-	}
 }
 
 /* PHP Proxy Classes */
@@ -700,7 +650,13 @@ class Interpreter {
 	}
 
 	function getConfiguration() {
-		return Interpreter_getConfiguration($this->_cPtr);
+		$r=Interpreter_getConfiguration($this->_cPtr);
+		if (is_resource($r)) {
+			$c=substr(get_resource_type($r), (strpos(get_resource_type($r), '__') ? strpos(get_resource_type($r), '__') + 2 : 3));
+			if (class_exists($c)) return new $c($r);
+			return new ParamList($r);
+		}
+		return $r;
 	}
 
 	function setConfiguration($states) {

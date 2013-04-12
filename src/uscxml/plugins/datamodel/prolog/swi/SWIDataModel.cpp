@@ -21,7 +21,7 @@ bool connect(pluma::Host& host) {
 SWIDataModel::SWIDataModel() {
 }
 
-boost::shared_ptr<DataModelImpl> SWIDataModel::create(Interpreter* interpreter) {
+boost::shared_ptr<DataModelImpl> SWIDataModel::create(InterpreterImpl* interpreter) {
 	boost::shared_ptr<SWIDataModel> dm = boost::shared_ptr<SWIDataModel>(new SWIDataModel());
 	dm->_interpreter = interpreter;
 
@@ -134,15 +134,40 @@ std::string SWIDataModel::evalAsString(const std::string& expr) {
 	return std::string(compound);
 }
 
-void SWIDataModel::assign(const std::string& location, const Data& data) {
+void SWIDataModel::assign(const std::string& location,
+                          const Arabica::DOM::Document<std::string>& doc,
+                          const Arabica::DOM::Element<std::string>& assignElem) {
+
+}
+void SWIDataModel::assign(const std::string& location,
+                          const std::string& expr,
+                          const Arabica::DOM::Element<std::string>& assignElem) {
+
+	eval(expr);
+}
+void SWIDataModel::assign(const std::string& location,
+                          const Data& data,
+                          const Arabica::DOM::Element<std::string>& assignElem) {
 	eval(data.atom);
 }
 
-void SWIDataModel::assign(const std::string& location, const std::string& expr) {
-	eval(expr);
+void SWIDataModel::init(const std::string& location,
+                        const Arabica::DOM::Document<std::string>& doc,
+                        const Arabica::DOM::Element<std::string>& dataElem) {
+
+}
+void SWIDataModel::init(const std::string& location,
+                        const std::string& expr,
+                        const Arabica::DOM::Element<std::string>& dataElem) {
+
+}
+void SWIDataModel::init(const std::string& location,
+                        const Data& data,
+                        const Arabica::DOM::Element<std::string>& dataElem) {
+
 }
 
-bool SWIDataModel::isDefined(const std::string& expr) {
+bool SWIDataModel::isDeclared(const std::string& expr) {
 	return true;
 }
 

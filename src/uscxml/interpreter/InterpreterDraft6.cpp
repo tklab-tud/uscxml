@@ -22,6 +22,8 @@ void InterpreterDraft6::interpret() {
 	// just make sure we have a session id
 	assert(_sessionId.length() > 0);
 
+	setupIOProcessors();
+
 	std::string datamodelName;
 	if (datamodelName.length() == 0 && HAS_ATTR(_scxml, "datamodel"))
 		datamodelName = ATTR(_scxml, "datamodel");
@@ -34,10 +36,8 @@ void InterpreterDraft6::interpret() {
 	}
 
 	if (_dataModel) {
-		_dataModel.assign("_x.args", _cmdLineOptions, Element<std::string>());
+		_dataModel.assign("_x.args", _cmdLineOptions);
 	}
-
-	setupIOProcessors();
 
 	_running = true;
 	_binding = (HAS_ATTR(_scxml, "binding") && boost::iequals(ATTR(_scxml, "binding"), "late") ? LATE : EARLY);

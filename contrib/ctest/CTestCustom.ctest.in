@@ -8,15 +8,6 @@
 # skip xpath datamodel tests
 
 set(CTEST_CUSTOM_TESTS_IGNORE
-	"test539.scxml"
-	"test540.scxml"
-	"test542.scxml"
-	"test544.scxml"
-	"test546.scxml"
-	"test547.scxml"
-	"test555.scxml"
-	"test568.scxml"
-	
 	"test178.scxml"
 	"test230.scxml"
 	"test250.scxml"

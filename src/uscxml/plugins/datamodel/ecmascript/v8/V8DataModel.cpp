@@ -147,9 +147,13 @@ void V8DataModel::setEvent(const Event& event) {
 	if (event.dom) {
 		eventObj->Set(v8::String::New("data"), getDocumentAsValue(event.dom));
 	} else if (event.content.length() > 0) {
-		// _event.data is a string
-		eventObj->Set(v8::String::New("data"), v8::String::New(event.content.c_str()));
-//		eventObj->Set(v8::String::New("data"), v8::Undefined());
+		// _event.data is a string or JSON
+		Data json = Data::fromJSON(event.content);
+		if (json) {
+			eventObj->Set(v8::String::New("data"), getDataAsValue(json));
+		} else {
+			eventObj->Set(v8::String::New("data"), v8::String::New(Interpreter::spaceNormalize(event.content).c_str()));
+		}
 	} else {
 		// _event.data is KVP
 		Event eventCopy(event);
@@ -188,12 +192,23 @@ Data V8DataModel::getStringAsData(const std::string& content) {
 }
 
 Data V8DataModel::getValueAsData(const v8::Handle<v8::Value>& value) {
+	std::set<v8::Value*> foo = std::set<v8::Value*>();
+	return getValueAsData(value, foo);
+}
+
+Data V8DataModel::getValueAsData(const v8::Handle<v8::Value>& value, std::set<v8::Value*>& alreadySeen) {
 	Data data;
+
+	/// TODO: Breaking cycles does not work yet
+	if (alreadySeen.find(*value) != alreadySeen.end())
+		return data;
+	alreadySeen.insert(*value);
+
 	if (false) {
 	} else if (value->IsArray()) {
 		v8::Handle<v8::Array> array = v8::Handle<v8::Array>::Cast(value);
 		for (int i = 0; i < array->Length(); i++) {
-			data.array.push_back(getValueAsData(array->Get(i)));
+			data.array.push_back(getValueAsData(array->Get(i), alreadySeen));
 		}
 	} else if (value->IsBoolean()) {
 		data.atom = (value->ToBoolean()->Value() ? "true" : "false");
@@ -226,7 +241,7 @@ Data V8DataModel::getValueAsData(const v8::Handle<v8::Value>& value) {
 			assert(properties->Get(i)->IsString());
 			v8::String::AsciiValue key(v8::Handle<v8::String>::Cast(properties->Get(i)));
 			v8::Local<v8::Value> property = object->Get(properties->Get(i));
-			data.compound[*key] = getValueAsData(property);
+			data.compound[*key] = getValueAsData(property, alreadySeen);
 		}
 	} else if (value->IsRegExp()) {
 		LOG(ERROR) << "IsRegExp is unimplemented" << std::endl;
@@ -374,8 +389,32 @@ std::string V8DataModel::evalAsString(const std::string& expr) {
 	v8::Context::Scope contextScope(_contexts.back());
 	v8::Handle<v8::Value> result = evalAsValue(expr);
 	if (result->IsObject()) {
+		v8::Local<v8::Object> obj = result->ToObject();
+		v8::Local<v8::Object> proto;
+
+		proto = obj->FindInstanceInPrototypeChain(Arabica::DOM::V8Document::getTmpl());
+		if (!proto.IsEmpty()) {
+			struct Arabica::DOM::V8Document::V8DocumentPrivate* privData =
+			    Arabica::DOM::V8DOM::toClassPtr<Arabica::DOM::V8Document::V8DocumentPrivate >(obj->GetInternalField(0));
+			std::stringstream ss;
+			ss << privData->nativeObj->getDocumentElement();
+			return ss.str();
+		}
+
+		proto = obj->FindInstanceInPrototypeChain(Arabica::DOM::V8Node::getTmpl());
+		if (!proto.IsEmpty()) {
+			struct Arabica::DOM::V8Node::V8NodePrivate* privData =
+			    Arabica::DOM::V8DOM::toClassPtr<Arabica::DOM::V8Node::V8NodePrivate >(obj->GetInternalField(0));
+			std::stringstream ss;
+			ss << privData->nativeObj;
+			return ss.str();
+		}
+
 		Data data = getValueAsData(result);
 		return toStr(data);
+	}
+	if (result->IsNumber()) {
+		return toStr(result->ToNumber()->NumberValue());
 	}
 	v8::String::AsciiValue data(result->ToString());
 	return std::string(*data);
@@ -392,40 +431,89 @@ double V8DataModel::evalAsNumber(const std::string& expr) {
 	return 0;
 }
 
-void V8DataModel::assign(const std::string& location,
-												 const Arabica::DOM::Document<std::string>& doc,
-												 const Arabica::DOM::Element<std::string>& dataElem) {
+void V8DataModel::assign(const Arabica::DOM::Element<std::string>& assignElem,
+                         const Arabica::DOM::Document<std::string>& doc,
+                         const std::string& content) {
 	v8::Locker locker;
 	v8::HandleScope handleScope;
 	v8::Context::Scope contextScope(_contexts.front());
 	v8::Handle<v8::Object> global = _contexts.front()->Global();
 
-	global->Set(v8::String::New(location.c_str()), getDocumentAsValue(doc));
+	std::string key;
+	if (HAS_ATTR(assignElem, "id")) {
+		key = ATTR(assignElem, "id");
+	} else if (HAS_ATTR(assignElem, "location")) {
+		key = ATTR(assignElem, "location");
+	}
+	if (key.length() == 0)
+		throw Event("error.execution", Event::PLATFORM);
 
+	if (HAS_ATTR(assignElem, "expr")) {
+		evalAsValue(key + " = " + ATTR(assignElem, "expr"));
+	} else if (doc) {
+		global->Set(v8::String::New(key.c_str()), getDocumentAsValue(doc));
+	} else if (content.size() > 0) {
+		try {
+			evalAsValue(key + " = " + content);
+		} catch (...) {
+			evalAsValue(key + " = " + "\"" + Interpreter::spaceNormalize(content) + "\"");
+		}
+	} else {
+		global->Set(v8::String::New(key.c_str()), v8::Undefined());
+	}
 }
 
 void V8DataModel::assign(const std::string& location,
-												 const Data& data,
-												 const Arabica::DOM::Element<std::string>& dataElem) {
+                         const Data& data) {
 	v8::Locker locker;
 	v8::HandleScope handleScope;
 	v8::Context::Scope contextScope(_contexts.front());
 
 	std::stringstream ssJSON;
 	ssJSON << data;
-	assign(location, ssJSON.str(), dataElem);
+	evalAsValue(location + " = " + ssJSON.str());
 }
 
-void V8DataModel::assign(const std::string& location,
-												 const std::string& expr,
-												 const Arabica::DOM::Element<std::string>& dataElem) {
-	v8::Locker locker;
-	v8::HandleScope handleScope;
-	v8::Context::Scope contextScope(_contexts.back());
-	evalAsValue(location + " = " + expr);
+void V8DataModel::init(const Arabica::DOM::Element<std::string>& dataElem,
+                       const Arabica::DOM::Document<std::string>& doc,
+                       const std::string& content) {
+	try {
+		assign(dataElem, doc, content);
+	} catch (Event e) {
+		// test 277
+		std::string key;
+		if (HAS_ATTR(dataElem, "id")) {
+			key = ATTR(dataElem, "id");
+		} else if (HAS_ATTR(dataElem, "location")) {
+			key = ATTR(dataElem, "location");
+		}
+		v8::Locker locker;
+		v8::HandleScope handleScope;
+		v8::Context::Scope contextScope(_contexts.front());
+
+		evalAsValue(key + " = undefined", true);
+		throw e;
+	}
+};
+
+void V8DataModel::init(const std::string& location,
+                       const Data& data) {
+	try {
+		assign(location, data);
+	} catch (Event e) {
+		// test 277
+		v8::Locker locker;
+		v8::HandleScope handleScope;
+		v8::Context::Scope contextScope(_contexts.front());
+
+		evalAsValue(location + " = undefined", true);
+		throw e;
+	}
+
 }
 
-v8::Handle<v8::Value> V8DataModel::evalAsValue(const std::string& expr) {
+
+v8::Handle<v8::Value> V8DataModel::evalAsValue(const std::string& expr, bool dontThrow) {
 	v8::TryCatch tryCatch;
 	v8::Handle<v8::String> source = v8::String::New(expr.c_str());
 	v8::Handle<v8::Script> script = v8::Script::Compile(source);
@@ -436,7 +524,7 @@ v8::Handle<v8::Value> V8DataModel::evalAsValue(const std::string& expr) {
 
 	if (script.IsEmpty() || result.IsEmpty()) {
 		// throw an exception
-		if (tryCatch.HasCaught())
+		if (tryCatch.HasCaught() && !dontThrow)
 			throwExceptionEvent(tryCatch);
 	}
 

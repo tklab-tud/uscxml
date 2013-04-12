@@ -52,7 +52,7 @@ bool NULLDataModel::validate(const std::string& location, const std::string& sch
 }
 
 uint32_t NULLDataModel::getLength(const std::string& expr) {
-  return 0;
+	return 0;
 }
 
 void NULLDataModel::eval(const std::string& expr) {
@@ -63,9 +63,9 @@ bool NULLDataModel::isDeclared(const std::string& expr) {
 }
 
 /**
- * The boolean expression language consists of the In predicate only. It has the 
- * form 'In(id)', where id is the id of a state in the enclosing state machine. 
- * The predicate must return 'true' if and only if that state is in the current 
+ * The boolean expression language consists of the In predicate only. It has the
+ * form 'In(id)', where id is the id of a state in the enclosing state machine.
+ * The predicate must return 'true' if and only if that state is in the current
  * state configuration.
  */
 bool NULLDataModel::evalAsBool(const std::string& expr) {
@@ -73,14 +73,14 @@ bool NULLDataModel::evalAsBool(const std::string& expr) {
 	boost::trim(trimmedExpr);
 	if (!boost::istarts_with(trimmedExpr, "in"))
 		return false;
-	
+
 	// find string in between brackets
 	size_t start = trimmedExpr.find_first_of("(");
 	size_t end = trimmedExpr.find_last_of(")");
 	if (start == std::string::npos || end == std::string::npos || start >= end)
 		return false;
 	start++;
-	
+
 	// split at comma
 	std::stringstream ss(trimmedExpr.substr(start, end - start));
 	std::vector<std::string> stateExprs;
@@ -88,7 +88,7 @@ bool NULLDataModel::evalAsBool(const std::string& expr) {
 	while(std::getline(ss, item, ',')) {
 		stateExprs.push_back(item);
 	}
-	
+
 	for (unsigned int i = 0; i < stateExprs.size(); i++) {
 		// remove ticks
 		size_t start = stateExprs[i].find_first_of("'");
@@ -101,7 +101,7 @@ bool NULLDataModel::evalAsBool(const std::string& expr) {
 		} else {
 			stateName = stateExprs[i];
 		}
-		
+
 		if (Interpreter::isMember(_interpreter->getState(stateName), _interpreter->getConfiguration())) {
 			continue;
 		}
