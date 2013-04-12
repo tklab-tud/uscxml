@@ -166,6 +166,11 @@ include("${CMAKE_MODULE_PATH}/USCXMLMacros.cmake")
 include("${CMAKE_MODULE_PATH}/FunctionExists.cmake")
 include("${CMAKE_MODULE_PATH}/HeaderExists.cmake")
 
+# we need USCXML_CORE_LIBS here for -lgcov
+set(USCXML_CORE_LIBS)
+set(USCXML_OPT_LIBS)
+set(USCXML_FILES)
+
 # some compiler flags
 #message("CMAKE_CXX_COMPILER_ID: ${CMAKE_CXX_COMPILER_ID}")
 
@@ -180,9 +185,12 @@ if(${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
 	add_definitions(-fPIC)
 	add_definitions(-Wunreachable-code)
 
-	# coverage information
-	add_definitions(-fprofile-arcs)
-	add_definitions(-ftest-coverage)
+	if (CMAKE_BUILD_TYPE MATCHES ".*Deb.*") # when not building for debug
+		# coverage information
+		add_definitions(-fprofile-arcs)
+		add_definitions(-ftest-coverage)
+		list (APPEND USCXML_CORE_LIBS "gcov")
+	endif()
 
 	# all warnings
 	add_definitions(-Wall)
@@ -305,10 +313,6 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR})
 ############################################################
 # Dependent libraries
 ############################################################
-
-set(USCXML_CORE_LIBS)
-set(USCXML_OPT_LIBS)
-set(USCXML_FILES)
 
 if (NOT WIN32)
 	# libxml2
