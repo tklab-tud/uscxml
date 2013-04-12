@@ -18,9 +18,7 @@ is evaluated at the right time, we should get invoke.done, otherwise an error  -
         </invoke>
         
         <transition event="done.invoke" target="pass"/>
-        <transition event="*" target="fail">
-					<log expr="_event.name" />
-					</transition>
+        <transition event="*" target="fail"/>
     </state>
     
     <final id="pass"><onentry><log label="Outcome" expr="'pass'"/></onentry></final>
