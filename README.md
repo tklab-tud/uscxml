@@ -1,7 +1,9 @@
 # uSCXML ReadMe
 
-uSCXML is a SCXML interpreter written in C/C++. It is [mostly feature-complete](https://github.com/tklab-tud/uscxml#test-reports) 
-as far as the W3C SCXML draft specifies. It runs on <b>Linux</b>, <b>Windows</b> and <b>MacOSX</b>, each 32- as well as 64Bits. 
+uSCXML is a SCXML interpreter written in C/C++. It is mostly feature-complete and
+[standards compliant](https://github.com/tklab-tud/uscxml#test-reports) to a large extend.
+It runs on <b>Linux</b>, <b>Windows</b> and <b>MacOSX</b>, each 32- as well as 64Bits.
+There are still a few rough edges, especially with the plugins and custom extensions.
 
 There is no technical reason for it not to run on iOS and Android as well, but we did not yet setup
 the respective build-process and did not precompile required libraries.
@@ -10,7 +12,7 @@ the respective build-process and did not precompile required libraries.
        * ECMAScript using Google's v8 and JavaScriptCore (JSC is incomplete)
        * Prolog using SWI prolog
        * NULL datamodel with required <tt>In</tt> predicate
-       * <b>No</b> XPath datamodel yet
+       * XPath datamodel as far as the tests require
    * <b>Invokers</b>
        * <tt>scxml</tt>: Invoke a nested scxml interpreter
        * <tt>dirmon</tt>: Watches a directory for changes to files
@@ -30,10 +32,9 @@ the respective build-process and did not precompile required libraries.
 
 ## Test Reports
 
-We continuously run the [W3C IRP tests](http://www.w3.org/Voice/2013/scxml-irp/) for SCXML. The results the for
-various platforms can be [found here](http://uscxml.tk.informatik.tu-darmstadt.de/cdash/index.php?project=uscxml).
-There are a few [excluded tests](https://github.com/tklab-tud/uscxml/blob/master/contrib/ctest/CTestCustom.ctest.in) 
-regarding the <tt>XPath</tt> datamodel and the manual tests.
+ * We continuously run the [W3C IRP tests](http://www.w3.org/Voice/2013/scxml-irp/) for SCXML. 
+ * Have a look at the [result](http://uscxml.tk.informatik.tu-darmstadt.de/cdash/index.php?project=uscxml) for the various platforms.
+ * The manual tests are [excluded](https://github.com/tklab-tud/uscxml/blob/master/contrib/ctest/CTestCustom.ctest.in).
 
 uSCXML still fails the following tests:
 
@@ -50,7 +51,7 @@ uSCXML still fails the following tests:
 		<td><tt>Failed</tt></td>
 		<td>"test that none of the system variables can be modified"</td>
 		<td>uSCXML allows writing to <tt>_event</tt>. This is very useful to have a scope 
-			that vanishes when processing an event is finished.</td>
+			that vanishes when processing an event is finished. I raised the issue on the ML and it might make it into a later draft</td>
 	</tr>
 	<tr>
 		<td><tt><a href="https://github.com/tklab-tud/uscxml/blob/master/test/samples/w3c/ecma/test346.scxml">346</a></tt></td>
@@ -62,7 +63,9 @@ uSCXML still fails the following tests:
 		<td><tt><a hreaf="https://github.com/tklab-tud/uscxml/blob/master/test/samples/w3c/ecma/test488.scxml">488</a></tt></td>
 		<td><tt>Failed</tt></td>
 		<td>"test that illegal expr in &lt;param> produces error.execution and empty event.data"</td>
-		<td>The actual meaning of <emph>empty</emph> is still ambiguous - in test 343 it is assumed to be <tt>undefined</tt>.</td>
+		<td>The actual meaning of <emph>empty</emph> is still ambiguous - in  
+			<a href="https://github.com/tklab-tud/uscxml/blob/master/test/samples/w3c/ecma/test343.scxml">test 343</a> 
+			it is assumed to be <tt>undefined</tt>. This is a bug in the tests and was raised on the ML.</td>
 	</tr>
 </table>
 
