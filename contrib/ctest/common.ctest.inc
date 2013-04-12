@@ -38,7 +38,6 @@
 # CTEST_CUSTOM_POST_MEMCHECK                        Command to execute after any tests are run during MemCheck stage
 # CTEST_CUSTOM_COVERAGE_EXCLUDE                     Regular expression for excluding files from coverage testing 
 
-
 if ("$ENV{CTEST_SUBMIT_TYPE}" STREQUAL "")
 	message(FATAL_ERROR "ENV{CTEST_SUBMIT_TYPE} is emtpy")
 endif()
@@ -61,8 +60,11 @@ if (${CTEST_SUBMIT_TYPE} MATCHES "Nightly")
 	SET(CTEST_CUSTOM_COVERAGE_EXCLUDE
 		"${CTEST_SOURCE_DIRECTORY}/contrib/*"
 	)
-	
 endif()
+
+set(CTEST_CUSTOM_WARNING_EXCEPTION
+	".*will never be executed"
+)
 
 #find_program(CTEST_MEMORYCHECK_COMMAND NAMES valgrind)
 #set(CTEST_MEMORYCHECK_SUPPRESSIONS_FILE ${CTEST_SOURCE_DIRECTORY}/tests/valgrind.supp)
