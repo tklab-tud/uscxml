@@ -21,7 +21,7 @@ public:
 	                int maxArgs,
 	                const std::vector<Arabica::XPath::XPathExpression<std::string> >& args,
 	                InterpreterImpl* interpreter) :
-		BooleanXPathFunction(minArgs, maxArgs, args),
+		Arabica::XPath::BooleanXPathFunction<std::string>(minArgs, maxArgs, args),
 		_interpreter(interpreter) {}
 
 protected:
