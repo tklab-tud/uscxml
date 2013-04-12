@@ -36,10 +36,8 @@ set(CTEST_CUSTOM_MAXIMUM_PASSED_TEST_OUTPUT_SIZE 1048576)
 
 ### Coverage and Memory checks? (untested) ################################
 
-set(WITH_COVERAGE TRUE)
-find_program(CTEST_COVERAGE_COMMAND NAMES gcov)
+#find_program(CTEST_COVERAGE_COMMAND NAMES gcov)
 
-#set(WITH_MEMCHECK TRUE)
 #find_program(CTEST_MEMORYCHECK_COMMAND NAMES valgrind)
 #set(CTEST_MEMORYCHECK_SUPPRESSIONS_FILE ${CTEST_SOURCE_DIRECTORY}/tests/valgrind.supp)
 
@@ -109,7 +107,7 @@ ctest_test()                      # run tests
 if(CTEST_COVERAGE_COMMAND)
   ctest_coverage()
 endif()
-if (WITH_MEMCHECK)
+if (CTEST_MEMORYCHECK_COMMAND)
   ctest_memcheck()
 endif()
 
