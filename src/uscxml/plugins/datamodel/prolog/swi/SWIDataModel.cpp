@@ -134,38 +134,25 @@ std::string SWIDataModel::evalAsString(const std::string& expr) {
 	return std::string(compound);
 }
 
-void SWIDataModel::assign(const std::string& location,
+void SWIDataModel::assign(const Arabica::DOM::Element<std::string>& assignElem,
                           const Arabica::DOM::Document<std::string>& doc,
-                          const Arabica::DOM::Element<std::string>& assignElem) {
-
+                          const std::string& content) {
+	std::string expr = content;
+	if (HAS_ATTR(assignElem, "expr")) {
+		expr = ATTR(assignElem, "expr");
+	}
+	if (expr.length() > 0)
+		eval(expr);
 }
-void SWIDataModel::assign(const std::string& location,
-                          const std::string& expr,
-                          const Arabica::DOM::Element<std::string>& assignElem) {
 
-	eval(expr);
-}
-void SWIDataModel::assign(const std::string& location,
-                          const Data& data,
-                          const Arabica::DOM::Element<std::string>& assignElem) {
+void SWIDataModel::assign(const std::string& location, const Data& data) {
 	eval(data.atom);
 }
 
-void SWIDataModel::init(const std::string& location,
+void SWIDataModel::init(const Arabica::DOM::Element<std::string>& dataElem,
                         const Arabica::DOM::Document<std::string>& doc,
-                        const Arabica::DOM::Element<std::string>& dataElem) {
-
-}
-void SWIDataModel::init(const std::string& location,
-                        const std::string& expr,
-                        const Arabica::DOM::Element<std::string>& dataElem) {
-
-}
-void SWIDataModel::init(const std::string& location,
-                        const Data& data,
-                        const Arabica::DOM::Element<std::string>& dataElem) {
-
-}
+                        const std::string& content) {}
+void SWIDataModel::init(const std::string& location, const Data& data) {}
 
 bool SWIDataModel::isDeclared(const std::string& expr) {
 	return true;

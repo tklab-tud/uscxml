@@ -188,13 +188,16 @@ Data Data::fromJSON(const std::string& jsonString) {
 	if (trimmed.length() == 0)
 		return data;
 
+	if (trimmed.find_first_of("{[") != 0)
+		return data;
+
 	jsmn_parser p;
 
 	jsmntok_t* t = NULL;
 
 	// we do not know the number of tokens beforehand, start with something sensible and increase
 	int rv;
-	int frac = 16; // this will get decreased to 16 to first iteration for 1/16 length/token ratio
+	int frac = 16; // length/token ratio
 	do {
 		jsmn_init(&p);
 

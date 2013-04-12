@@ -187,7 +187,30 @@ bool XPathDataModel::evalAsBool(const std::string& expr) {
 
 std::string XPathDataModel::evalAsString(const std::string& expr) {
 	XPathValue<std::string> result = _xpath.evaluate_expr(expr, _doc);
-	return result.asString();
+	switch (result.type()) {
+	case STRING:
+		return result.asString();
+		break;
+	case BOOL:
+		return (result.asBool() ? "true" : "false");
+		break;
+	case NUMBER:
+		return toStr(result.asNumber());
+		break;
+	case NODE_SET: {
+		NodeSet<std::string> nodeSet = result.asNodeSet();
+		std::stringstream ss;
+		for (int i = 0; i < nodeSet.size(); i++) {
+			ss << nodeSet[i] << std::endl;
+		}
+		return ss.str();
+		break;
+	}
+	case ANY:
+		throw Event("error.execution", Event::PLATFORM);
+		break;
+	}
+	return "undefined";
 }
 
 double XPathDataModel::evalAsNumber(const std::string& expr) {

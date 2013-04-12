@@ -36,8 +36,8 @@ set(CTEST_CUSTOM_MAXIMUM_PASSED_TEST_OUTPUT_SIZE 1048576)
 
 ### Coverage and Memory checks? (untested) ################################
 
-#set(WITH_COVERAGE TRUE)
-#find_program(CTEST_COVERAGE_COMMAND NAMES gcov)
+set(WITH_COVERAGE TRUE)
+find_program(CTEST_COVERAGE_COMMAND NAMES gcov)
 
 #set(WITH_MEMCHECK TRUE)
 #find_program(CTEST_MEMORYCHECK_COMMAND NAMES valgrind)
@@ -71,9 +71,9 @@ set(CTEST_CONFIGURE_COMMAND "${CTEST_CONFIGURE_COMMAND} \"${CTEST_SOURCE_DIRECTO
 ### Test! ################################################################
 
 # clean build directory for everything but continuous tests
-if (NOT ${CTEST_SUBMIT_TYPE} MATCHES ".*Continuous.*")
+#if (NOT ${CTEST_SUBMIT_TYPE} MATCHES ".*Continuous.*")
 	ctest_empty_binary_directory(${CTEST_BINARY_DIRECTORY})
-endif()
+#endif()
 
 ctest_start(${CTEST_SUBMIT_TYPE}) # start testing
 #
@@ -106,11 +106,11 @@ endif()
 ctest_build()                     # build custom target that depends on all the actual tests
 ctest_test()                      # run tests
 
-if (WITH_MEMCHECK AND CTEST_COVERAGE_COMMAND)
+if(CTEST_COVERAGE_COMMAND)
   ctest_coverage()
-endif (WITH_MEMCHECK AND CTEST_COVERAGE_COMMAND)
-if (WITH_MEMCHECK AND CTEST_MEMORYCHECK_COMMAND)
+endif()
+if (WITH_MEMCHECK)
   ctest_memcheck()
-endif (WITH_MEMCHECK AND CTEST_MEMORYCHECK_COMMAND)
+endif()
 
 ctest_submit()                    # submit

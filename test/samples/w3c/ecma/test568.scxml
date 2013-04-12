@@ -5,7 +5,9 @@ send events. --><scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http:
   
 <state id="s0">
   <transition cond="$_ioprocessors/scxml/location/text()" target="pass"/>
-  <transition target="fail"/>
+  <transition target="fail">
+		<log expr="$_ioprocessors/processor[@name='scxml']/location/text()" />
+	</transition>
    
  </state>
   

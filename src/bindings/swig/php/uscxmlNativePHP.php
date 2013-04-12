@@ -769,6 +769,10 @@ class Interpreter {
 		return $r;
 	}
 
+	static function spaceNormalize($text) {
+		return Interpreter_spaceNormalize($text);
+	}
+
 	function isInitial($state) {
 		return Interpreter_isInitial($this->_cPtr,$state);
 	}
