@@ -244,7 +244,7 @@ void XPathDataModel::assign(const Arabica::DOM::Element<std::string>& assignElem
 		LOG(ERROR) << "assign element has no content";
 	}
 
-	std::cout << _datamodel << std::endl;
+//	std::cout << _datamodel << std::endl;
 }
 
 void XPathDataModel::assign(const std::string& location, const Data& data) {
@@ -288,7 +288,7 @@ void XPathDataModel::init(const Arabica::DOM::Element<std::string>& dataElem,
 	nodeSet.push_back(container);
 	_varResolver.setVariable(location, nodeSet);
 
-	std::cout << _datamodel << std::endl;
+//	std::cout << _datamodel << std::endl;
 }
 
 void XPathDataModel::init(const std::string& location, const Data& data) {

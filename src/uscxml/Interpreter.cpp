@@ -412,12 +412,12 @@ void InterpreterImpl::normalize(Arabica::DOM::Element<std::string>& scxml) {
 }
 
 void InterpreterImpl::receiveInternal(const Event& event) {
-	std::cout << _name << " receiveInternal: " << event.name << std::endl;
+//	std::cout << _name << " receiveInternal: " << event.name << std::endl;
 	_internalQueue.push_back(event);
 }
 
 void InterpreterImpl::receive(const Event& event, bool toFront)   {
-	std::cout << _name << " receive: " << event.name << std::endl;
+//	std::cout << _name << " receive: " << event.name << std::endl;
 	if (toFront) {
 		_externalQueue.push_front(event);
 	} else {
