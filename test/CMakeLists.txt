@@ -40,7 +40,7 @@ if (OFF)
 	set_target_properties(test-dirmon PROPERTIES FOLDER "Tests")
 endif()
 
-if (NOT WIN32)
+if (OFF)
 	add_executable(test-arabica-events src/test-arabica-events.cpp)
 	target_link_libraries(test-arabica-events uscxml)
 	add_test(test-arabica-events ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-arabica-events ${CMAKE_SOURCE_DIR}/test/samples/uscxml/arabica/test-arabica-events.xml)
