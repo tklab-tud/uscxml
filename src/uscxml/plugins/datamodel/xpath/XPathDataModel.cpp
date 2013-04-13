@@ -188,16 +188,16 @@ bool XPathDataModel::evalAsBool(const std::string& expr) {
 std::string XPathDataModel::evalAsString(const std::string& expr) {
 	XPathValue<std::string> result = _xpath.evaluate_expr(expr, _doc);
 	switch (result.type()) {
-	case STRING:
+	case Arabica::XPath::STRING:
 		return result.asString();
 		break;
-	case BOOL:
+	case Arabica::XPath::BOOL:
 		return (result.asBool() ? "true" : "false");
 		break;
-	case NUMBER:
+	case Arabica::XPath::NUMBER:
 		return toStr(result.asNumber());
 		break;
-	case NODE_SET: {
+	case Arabica::XPath::NODE_SET: {
 		NodeSet<std::string> nodeSet = result.asNodeSet();
 		std::stringstream ss;
 		for (int i = 0; i < nodeSet.size(); i++) {
@@ -206,7 +206,7 @@ std::string XPathDataModel::evalAsString(const std::string& expr) {
 		return ss.str();
 		break;
 	}
-	case ANY:
+	case Arabica::XPath::ANY:
 		throw Event("error.execution", Event::PLATFORM);
 		break;
 	}
@@ -369,19 +369,19 @@ void XPathDataModel::assign(XPathValue<std::string>& key,
                             const XPathValue<std::string>& value,
                             const Arabica::DOM::Element<std::string>& assignElem) {
 	switch (value.type()) {
-	case STRING:
+	case Arabica::XPath::STRING:
 		assign(key, value.asString(), assignElem);
 		break;
-	case BOOL:
+	case Arabica::XPath::BOOL:
 		assign(key, value.asBool(), assignElem);
 		break;
-	case NUMBER:
+	case Arabica::XPath::NUMBER:
 		assign(key, value.asNumber(), assignElem);
 		break;
-	case NODE_SET:
+	case Arabica::XPath::NODE_SET:
 		assign(key, value.asNodeSet(), assignElem);
 		break;
-	case ANY:
+	case Arabica::XPath::ANY:
 		throw Event("error.execution", Event::PLATFORM);
 	}
 }
@@ -390,7 +390,7 @@ void XPathDataModel::assign(XPathValue<std::string>& key,
                             const std::string& value,
                             const Arabica::DOM::Element<std::string>& assignElem) {
 	switch (key.type()) {
-	case NODE_SET: {
+	case Arabica::XPath::NODE_SET: {
 		if (key.asNodeSet().size() == 0)
 			return;
 		for (int i = 0; i < key.asNodeSet().size(); i++) {
@@ -430,10 +430,10 @@ void XPathDataModel::assign(XPathValue<std::string>& key,
 		}
 		break;
 	}
-	case STRING:
-	case BOOL:
-	case NUMBER:
-	case ANY:
+	case Arabica::XPath::STRING:
+	case Arabica::XPath::BOOL:
+	case Arabica::XPath::NUMBER:
+	case Arabica::XPath::ANY:
 		throw Event("error.execution", Event::PLATFORM);
 		break;
 	default:
@@ -456,7 +456,7 @@ void XPathDataModel::assign(XPathValue<std::string>& key,
                             const NodeSet<std::string>& value,
                             const Arabica::DOM::Element<std::string>& assignElem) {
 	switch (key.type()) {
-	case NODE_SET: {
+	case Arabica::XPath::NODE_SET: {
 		if (key.asNodeSet().size() == 0)
 			return;
 		for (int i = 0; i < key.asNodeSet().size(); i++) {
@@ -535,10 +535,10 @@ void XPathDataModel::assign(XPathValue<std::string>& key,
 		}
 		break;
 	}
-	case STRING:
-	case BOOL:
-	case NUMBER:
-	case ANY:
+	case Arabica::XPath::STRING:
+	case Arabica::XPath::BOOL:
+	case Arabica::XPath::NUMBER:
+	case Arabica::XPath::ANY:
 		throw Event("error.execution", Event::PLATFORM);
 		break;
 	}
@@ -574,7 +574,7 @@ bool XPathFunctionIn::doEvaluate(const Node<std::string>& context,
                                  const ExecutionContext<std::string>& executionContext) const {
 	for (int i = 0; i < argCount(); i++) {
 		XPathValue<std::string> stateName = arg(i, context, executionContext);
-		if (stateName.type() == STRING) {
+		if (stateName.type() == Arabica::XPath::STRING) {
 			if (!Interpreter::isMember(_interpreter->getState(stateName.asString()), _interpreter->getConfiguration())) {
 				return false;
 			}

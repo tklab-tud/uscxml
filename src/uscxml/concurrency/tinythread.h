@@ -59,6 +59,7 @@ freely, subject to the following restrictions:
 #if !defined(_TTHREAD_PLATFORM_DEFINED_)
 #if defined(_WIN32) || defined(__WIN32__) || defined(__WINDOWS__)
 #define _TTHREAD_WIN32_
+#include <boost/cstdint.hpp>
 #else
 #define _TTHREAD_POSIX_
 #endif

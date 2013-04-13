@@ -70,7 +70,7 @@ set_target_properties(scxml-test-framework-client PROPERTIES FOLDER "Tests")
 
 if (RUN_W3C_TESTS)
 
-	add_executable(test-w3c src/test-w3c.cpp)
+	add_executable(test-w3c src/test-w3c.cpp ${PROJECT_SOURCE_DIR}/contrib/src/getopt/XGetopt.cpp)
 	target_link_libraries(test-w3c uscxml)
 	set_target_properties(test-w3c PROPERTIES FOLDER "Tests")
 

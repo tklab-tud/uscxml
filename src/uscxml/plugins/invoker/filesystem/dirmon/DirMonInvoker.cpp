@@ -275,23 +275,21 @@ void DirectoryWatch::updateEntries(bool reportAsExisting) {
 
 		hFind = FindFirstFile(szDir, &ffd);
 		do {
-			string dname = ffd.cFileName;
+			std::string dname = ffd.cFileName;
 #endif
 
 			// see if the file was changed
-			char* filename;
-			asprintf(&filename, "%s/%s", (_dir + _relDir).c_str(), dname.c_str());
+			std::string filename = _dir + _relDir + "/" + dname;
+//			asprintf(&filename, "%s/%s", (_dir + _relDir).c_str(), dname.c_str());
 
 			struct stat fileStat;
-			if (stat(filename, &fileStat) != 0) {
+			if (stat(filename.c_str(), &fileStat) != 0) {
 				LOG(ERROR) << "Error with stat on directory entry: " << filename << ": " << strerror(errno);
-				free(filename);
 				continue;
 			}
 
 			if (fileStat.st_mode & S_IFDIR) {
 				if (boost::equals(dname, ".") || boost::equals(dname, "..")) {
-					free(filename);
 					continue; // do not report . or ..
 				}
 			}
@@ -330,7 +328,6 @@ void DirectoryWatch::updateEntries(bool reportAsExisting) {
 				}
 			}
 
-			free(filename);
 			_knownEntries[dname] = fileStat; // gets copied on insertion
 #ifndef WIN32
 		}

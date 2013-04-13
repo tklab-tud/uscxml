@@ -109,7 +109,7 @@ int main(int argc, char** argv) {
 
 	std::set_terminate(customTerminate);
 
-#ifdef HAS_SIGNAL_H
+#if defined(HAS_SIGNAL_H) && !defined(WIN32)
 	signal(SIGPIPE, SIG_IGN);
 #endif
 
