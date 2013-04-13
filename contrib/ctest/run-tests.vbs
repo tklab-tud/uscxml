@@ -29,6 +29,10 @@ If VCVARSALL = "%VCVARSALL%" Then
 	VCVARSALL = "C:\Program Files\Microsoft Visual Studio 10.0\VC\vcvarsall.bat"
 End If
 if (NOT fso.FileExists(VCVARSALL)) Then
+	VCVARSALL = "C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\vcvarsall.bat"
+End If
+
+if (NOT fso.FileExists(VCVARSALL)) Then
 	MsgBox("Please export %VCVARSALL% as the command to get a build environment for msvc.")
 	WScript.Quit
 End If
@@ -39,15 +43,15 @@ If CTEST_SUBMIT_TYPE = "%CTEST_SUBMIT_TYPE%" Then
 	procEnv("CTEST_SUBMIT_TYPE") = CTEST_SUBMIT_TYPE
 End If
 
-MILES_SOURCE_DIR = shell.ExpandEnvironmentStrings("%MILES_SOURCE_DIR%")
-If MILES_SOURCE_DIR = "%MILES_SOURCE_DIR%" Then
-	MILES_SOURCE_DIR = fso.GetParentFolderName(fso.GetParentFolderName(TEST_DIR))
-	procEnv("MILES_SOURCE_DIR") = MILES_SOURCE_DIR
+USCXML_SOURCE_DIR = shell.ExpandEnvironmentStrings("%USCXML_SOURCE_DIR%")
+If USCXML_SOURCE_DIR = "%USCXML_SOURCE_DIR%" Then
+	USCXML_SOURCE_DIR = fso.GetParentFolderName(fso.GetParentFolderName(TEST_DIR))
+	procEnv("USCXML_SOURCE_DIR") = USCXML_SOURCE_DIR
 End If
 
-MILES_SOURCE_DIR = shell.ExpandEnvironmentStrings("%MILES_SOURCE_DIR%")
-if (NOT fso.FileExists(MILES_SOURCE_DIR + "\CMakeLists.txt")) Then
-	MsgBox "Could not find uMundo Source for " + ME_NAME
+USCXML_SOURCE_DIR = shell.ExpandEnvironmentStrings("%USCXML_SOURCE_DIR%")
+if (NOT fso.FileExists(USCXML_SOURCE_DIR + "\CMakeLists.txt")) Then
+	MsgBox "Could not find uSCXML Source for " + ME_NAME
 	WScript.Quit
 End If
 
@@ -66,7 +70,7 @@ Set buildLock = fso.OpenTextFile(TESTFILE, 8, True)
 
 ' Check github for updates and quit when nothing's new
 if (CTEST_SUBMIT_TYPE = "Continuous") Then
-	shell.CurrentDirectory = MILES_SOURCE_DIR
+	shell.CurrentDirectory = USCXML_SOURCE_DIR
 	Set oExec = shell.Exec("git pull")
 	GIT_SYNC  = oExec.StdOut.ReadLine
 	if (GIT_SYNC = "Already up-to-date.") Then
@@ -81,3 +85,4 @@ Do While exec.Status = 0
     WScript.StdOut.Write(exec.StdOut.ReadLine() & vbCRLF)
 '    WScript.StdErr.Write(exec.StdErr.ReadLine())
 Loop
+WScript.Sleep 1000000
