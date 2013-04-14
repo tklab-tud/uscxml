@@ -1191,7 +1191,7 @@ void InterpreterImpl::executeContent(const Arabica::DOM::Node<std::string>& cont
 		if (_executableContent.find(content) == _executableContent.end()) {
 			execContent = Factory::createExecutableContent(content.getLocalName(), content.getNamespaceURI(), this);
 			if (!execContent) {
-				LOG(ERROR) << "No custom executable content known for '"
+				LOG(ERROR) << "No custom executable content known for element '"
 					<< content.getLocalName() << "' in namespace '" << content.getNamespaceURI() << "'";
 				return;
 			}

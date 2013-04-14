@@ -283,52 +283,49 @@
 							<header name="Access-Control-Allow-Origin" value="*" />
 							<content fileexpr="processed[_event['fileStruct'].key][_event['fileStruct'].format].path" />
 						</respond>
-						<else>
-							<if cond="_event.name.endsWith('postponed')">
-								<!--
-									A postponed event we couldn't answer
-								-->
-								<respond status="404" to="_event.origin">
-									<header name="Connection" value="close" />
-								</respond>
-								<else>
-									<script>
-										print("Processing outfile " + _event['dest'] + " from model " + _event['file'] + "\n");
-									</script>
-									<send target="#_osgvonvert.osgb">
-										<param name="source" expr="models[_event['fileStruct'].key].path" />
-										<param name="dest" expr="_event['dest']" />
-										<param name="pitch" expr="_event.fileStruct.pitch" />
-										<param name="roll" expr="_event.fileStruct.roll" />
-										<param name="yaw" expr="_event.fileStruct.yaw" />
-										<param name="zoom" expr="_event.fileStruct.zoom" />
-										<param name="x" expr="_event.fileStruct.x" />
-										<param name="y" expr="_event.fileStruct.y" />
-										<param name="z" expr="_event.fileStruct.z" />
-										<param name="width" expr="_event.fileStruct.width" />
-										<param name="height" expr="_event.fileStruct.height" />
-										<param name="autorotate" expr="_event.fileStruct.autorotate" />
-									</send>
-									<!-- 
-										Redeliver the event once the untilexpr is true. The untilexpr has to evaluate 
-										into another valid expression that we will check again on stable configurations.
-									-->
-									<postpone
-										untilexpr="
-											'\'' + _event['fileStruct'].key + '\' in processed &amp;&amp; 
-											\'' + _event['fileStruct'].format + '\'' + ' in processed[\'' + _event['fileStruct'].key + '\'] ||
-											_event.name === \'convert.failure\' &amp;&amp; _event.data.dest === \'' + _event['dest'] + '\''
-										"/>
-								</else>
-							</if>
-						</else>
+					<else />
+						<if cond="_event.name.endsWith('postponed')">
+							<!--
+								A postponed event we couldn't answer
+							-->
+							<respond status="404" to="_event.origin">
+								<header name="Connection" value="close" />
+							</respond>
+						<else />
+							<script>
+								print("Processing outfile " + _event['dest'] + " from model " + _event['file'] + "\n");
+							</script>
+							<send target="#_osgvonvert.osgb">
+								<param name="source" expr="models[_event['fileStruct'].key].path" />
+								<param name="dest" expr="_event['dest']" />
+								<param name="pitch" expr="_event.fileStruct.pitch" />
+								<param name="roll" expr="_event.fileStruct.roll" />
+								<param name="yaw" expr="_event.fileStruct.yaw" />
+								<param name="zoom" expr="_event.fileStruct.zoom" />
+								<param name="x" expr="_event.fileStruct.x" />
+								<param name="y" expr="_event.fileStruct.y" />
+								<param name="z" expr="_event.fileStruct.z" />
+								<param name="width" expr="_event.fileStruct.width" />
+								<param name="height" expr="_event.fileStruct.height" />
+								<param name="autorotate" expr="_event.fileStruct.autorotate" />
+							</send>
+							<!-- 
+								Redeliver the event once the untilexpr is true. The untilexpr has to evaluate 
+								into another valid expression that we will check again on stable configurations.
+							-->
+							<postpone
+								untilexpr="
+									'\'' + _event['fileStruct'].key + '\' in processed &amp;&amp; 
+									\'' + _event['fileStruct'].format + '\'' + ' in processed[\'' + _event['fileStruct'].key + '\'] ||
+									_event.name === \'convert.failure\' &amp;&amp; _event.data.dest === \'' + _event['dest'] + '\''
+								"/>
+						</if>
 					</if>
-					<else>
-						<!-- There is no such model -->
-						<respond status="404" to="_event.origin">
-							<header name="Connection" value="close" />
-						</respond>
-					</else>
+				<else />
+					<!-- There is no such model -->
+					<respond status="404" to="_event.origin">
+						<header name="Connection" value="close" />
+					</respond>
 				</if>
 			</transition>
 

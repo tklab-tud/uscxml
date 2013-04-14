@@ -149,6 +149,7 @@ else()
 	OPTION(BUILD_TESTS "Build USCXML tests" ON)
 	OPTION(RUN_W3C_TESTS "Run W3C tests" ON)
 endif()
+OPTION(ENABLE_GCOV "Compile with gcov support" OFF)
 
 # a dummy target to depend on the targets needed for tests, see:
 # http://stackoverflow.com/questions/733475/cmake-ctest-make-test-doesnt-build-tests
@@ -185,7 +186,7 @@ if(${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
 	add_definitions(-fPIC)
 	add_definitions(-Wunreachable-code)
 
-	if (CMAKE_BUILD_TYPE MATCHES ".*Deb.*") # when not building for debug
+	if (CMAKE_BUILD_TYPE MATCHES ".*Deb.*" AND ENABLE_GCOV) # when not building for debug
 		# coverage information
 		add_definitions(-fprofile-arcs)
 		add_definitions(-ftest-coverage)
