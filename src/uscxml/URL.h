@@ -177,6 +177,9 @@ public:
 	const std::string asLocalFile(const std::string& suffix, bool reload = false) {
 		return _impl->asLocalFile(suffix, reload);
 	}
+		
+	static URL asBaseURL(const URL& url);
+	static void toBaseURL(URL& uri);
 
 	static URL toLocalFile(const std::string& content, const std::string& suffix) {
 		boost::shared_ptr<URLImpl> impl = URLImpl::toLocalFile(content, suffix);

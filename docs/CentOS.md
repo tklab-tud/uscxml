@@ -23,7 +23,7 @@ sudo yum remove swig
 $ wget http://sourceforge.net/projects/openvrml/files/latest/download
 $ tar xvjf openvrml*
 $ cd openvrml*
-$ ./configure --disable-render-text-node --disable-script-node-javascript --disable-script-node-java --disable-gl-renderer --disable-xembed --disable-player --disable-examples
+$ ./configure --disable-render-text-node --disable-script-node-javascript --disable-script-node-java --disable-gl-renderer --disable-xembed --disable-player --disable-examples --disable-mozilla-plugin
 $ make install
 
 $ wget http://www.cmake.org/files/v2.8/cmake-2.8.10.2.tar.gz

@@ -107,7 +107,6 @@ public:
 	URL getBaseURI()                                         {
 		return _baseURI;
 	}
-	bool toAbsoluteURI(URL& uri);
 
 	void setCmdLineOptions(int argc, char** argv);
 	Data getCmdLineOptions() {
@@ -262,8 +261,6 @@ protected:
 	InterpreterServlet* _httpServlet;
 	std::set<InterpreterMonitor*> _monitors;
 
-	static URL toBaseURI(const URL& url);
-
 	void executeContent(const Arabica::DOM::Node<std::string>& content, bool rethrow = false);
 	void executeContent(const Arabica::DOM::NodeList<std::string>& content, bool rethrow = false);
 	void executeContent(const Arabica::XPath::NodeSet<std::string>& content, bool rethrow = false);
@@ -373,9 +370,6 @@ public:
 	}
 	URL getBaseURI()                                         {
 		return _impl->getBaseURI();
-	}
-	bool toAbsoluteURI(URL& uri) {
-		return _impl->toAbsoluteURI(uri);
 	}
 
 	void setCmdLineOptions(int argc, char** argv) {

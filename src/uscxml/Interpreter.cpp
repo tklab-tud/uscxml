@@ -100,7 +100,7 @@ Interpreter Interpreter::fromURI(const std::string& uri) {
 
 	if (boost::iequals(absUrl.scheme(), "file")) {
 		Arabica::SAX::InputSource<std::string> inputSource;
-		inputSource.setSystemId(absUrl.path());
+		inputSource.setSystemId(absUrl.asString());
 		interpreter = fromInputSource(inputSource);
 	} else if (boost::iequals(absUrl.scheme(), "http")) {
 		// handle http per arabica
@@ -119,8 +119,11 @@ Interpreter Interpreter::fromURI(const std::string& uri) {
 	}
 
 	// try to establish URI root for relative src attributes in document
-	if (interpreter)
-		interpreter._impl->_baseURI = InterpreterImpl::toBaseURI(absUrl);
+	if (interpreter) {
+		interpreter._impl->_baseURI = URL::asBaseURL(absUrl);
+	} else {
+		LOG(ERROR) << "Cannot create interpreter from URI '" << absUrl.asString() << "'";
+	}
 	return interpreter;
 }
 
@@ -184,38 +187,6 @@ void InterpreterImpl::setName(const std::string& name) {
 	} else {
 		LOG(ERROR) << "Cannot change name of running interpreter";
 	}
-}
-
-URL InterpreterImpl::toBaseURI(const URL& uri) {
-	std::stringstream ssBaseURI;
-	if (uri.scheme().size() > 0) {
-		ssBaseURI << uri.scheme() << "://";
-	} else {
-		ssBaseURI << "file://";
-	}
-	if (uri.host().size() > 0) {
-		ssBaseURI << uri.host();
-		if (!boost::iequals(uri.port(), "0"))
-			ssBaseURI << ":" << uri.port();
-	}
-	if (uri.path().size() > 0) {
-		std::string uriPath = uri.path();
-		uriPath = uriPath.substr(0, uriPath.find_last_of("/\\") + 1);
-		ssBaseURI << uriPath;
-	}
-	return URL(ssBaseURI.str());
-}
-
-bool InterpreterImpl::toAbsoluteURI(URL& uri) {
-	if (uri.isAbsolute())
-		return true;
-
-	if (_baseURI.asString().size() > 0) {
-		if (uri.toAbsolute(_baseURI))
-			return true;
-		return false;
-	}
-	return false;
 }
 
 InterpreterImpl::~InterpreterImpl() {
@@ -481,7 +452,7 @@ void InterpreterImpl::processDOMorText(const Arabica::DOM::Node<std::string>& no
 	        (HAS_ATTR(node, "srcexpr") && _dataModel)) {
 		std::stringstream srcContent;
 		URL sourceURL(HAS_ATTR(node, "srcexpr") ? _dataModel.evalAsString(ATTR(node, "srcexpr")) : ATTR(node, "src"));
-		if (!toAbsoluteURI(sourceURL)) {
+		if (!sourceURL.toAbsolute(_baseURI)) {
 			LOG(ERROR) << LOCALNAME(node) << " element has relative src or srcexpr URI with no baseURI set.";
 			return;
 		}
@@ -785,7 +756,7 @@ void InterpreterImpl::invoke(const Arabica::DOM::Node<std::string>& element) {
 		}
 		if (source.length() > 0) {
 			URL srcURI(source);
-			if (!toAbsoluteURI(srcURI)) {
+			if (!srcURI.toAbsolute(_baseURI)) {
 				LOG(ERROR) << "invoke element has relative src URI with no baseURI set.";
 				return;
 			}
@@ -1131,7 +1102,7 @@ void InterpreterImpl::executeContent(const Arabica::DOM::Node<std::string>& cont
 		if (_dataModel) {
 			if (HAS_ATTR(content, "src")) {
 				URL scriptUrl(ATTR(content, "src"));
-				if (!toAbsoluteURI(scriptUrl)) {
+				if (!scriptUrl.toAbsolute(_baseURI)) {
 					LOG(ERROR) << "script element has relative URI " << ATTR(content, "src") <<  " with no base URI set for interpreter";
 					return;
 				}

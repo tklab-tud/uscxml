@@ -90,7 +90,7 @@ void DirMonInvoker::invoke(const InvokeRequest& req) {
 	std::multimap<std::string, std::string>::const_iterator dirIter = req.params.find("dir");
 	while(dirIter != req.params.upper_bound("dir")) {
 		URL url(dirIter->second);
-		if (!_interpreter->toAbsoluteURI(url) || !boost::iequals(url.scheme(), "file")) {
+		if (!url.toAbsolute(_interpreter->getBaseURI()) || !boost::iequals(url.scheme(), "file")) {
 			LOG(ERROR) << "Given directory '" << dirIter->second << "' cannot be transformed to absolute path";
 		} else {
 			_dir = url.path();

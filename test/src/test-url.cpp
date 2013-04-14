@@ -3,6 +3,8 @@
 #include "uscxml/Interpreter.h"
 #include "uscxml/server/HTTPServer.h"
 
+#include <SAX/helpers/InputSourceResolver.hpp>
+
 #include <assert.h>
 #include <boost/algorithm/string.hpp>
 #include <iostream>
@@ -26,8 +28,34 @@ public:
 	bool _canAdaptPath;
 };
 
+bool canResolve(const std::string& url) {
+	Arabica::SAX::InputSource<std::string> is(url);
+	Arabica::SAX::InputSourceResolver res1(is, Arabica::default_string_adaptor<std::string>());
+	if(res1.resolve()) {
+		std::cout << "good: " << url << std::endl;
+		return true;
+	} else {
+		std::cout << "bad:  " << url << std::endl;
+		return false;
+	}
+}
+
 int main(int argc, char** argv) {
 
+	std::string exeName = argv[0];
+	exeName = exeName.substr(exeName.find_last_of("\\/") + 1);
+	
+	{
+		URL url(argv[0]);
+		assert(canResolve(argv[0]));
+		assert(canResolve(url.asString()));
+		
+		URL baseUrl = URL::asBaseURL(url);
+		URL exeUrl(exeName);
+		exeUrl.toAbsolute(baseUrl);
+		assert(canResolve(exeUrl.asString()));
+	}
+		
 	{
 //		Interpreter interpreter = Interpreter::fromURI("https://raw.github.com/tklab-tud/uscxml/master/test/samples/uscxml/test-execution.scxml");
 //		assert(interpreter);

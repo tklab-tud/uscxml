@@ -196,7 +196,11 @@ const bool URLImpl::toAbsoluteCwd() {
 		return false;
 	}
 	currPath[sizeof(currPath) - 1] = '\0'; /* not really required */
+#ifdef _WIN32
 	return toAbsolute(std::string("file://" + std::string(currPath) + "/"));
+#else
+	return toAbsolute(std::string("file://" + std::string(currPath) + "/"));
+#endif
 }
 
 std::string URLImpl::getLocalFilename(const std::string& suffix) {
@@ -247,10 +251,37 @@ std::string URLImpl::getLocalFilename(const std::string& suffix) {
 	return std::string(tmpl);
 }
 
+void URL::toBaseURL(URL& uri) {
+	uri = asBaseURL(uri);
+}
+
+URL URL::asBaseURL(const URL& uri) {
+	std::string uriStr = uri.asString();
+	std::string baseUriStr = uriStr.substr(0, uriStr.find_last_of("/\\") + 1);
+#ifdef _WIN32
+	if (baseUriStr.find("file://") == 0) {
+		baseUriStr = baseUriStr.substr(7);
+	}
+#endif
+	return URL(baseUriStr);
+}
+
+	
 const bool URLImpl::toAbsolute(const std::string& baseUrl) {
 	if (_uri.is_absolute())
 		return true;
+	
+	std::string uriStr = _uri.as_string();
+#ifdef _WIN32
+	if (baseUrl.find("file://") == 0) {
+		_uri = Arabica::io::URI("file:///" + baseUrl.substr(7), _uri.as_string());
+	} else {
+		_uri = Arabica::io::URI(baseUrl, _uri.as_string());
+	}
+#else
 	_uri = Arabica::io::URI(baseUrl, _uri.as_string());
+#endif
+	
 	if (!_uri.is_absolute())
 		return false;
 	return true;
@@ -259,8 +290,11 @@ const bool URLImpl::toAbsolute(const std::string& baseUrl) {
 boost::shared_ptr<URLImpl> URLImpl::toLocalFile(const std::string& content, const std::string& suffix) {
 	boost::shared_ptr<URLImpl> urlImpl = boost::shared_ptr<URLImpl>(new URLImpl());
 	urlImpl->_localFile = urlImpl->getLocalFilename(suffix);
+#ifdef _WIN32
 	urlImpl->_uri = std::string("file://") + urlImpl->_localFile;
-
+#else
+	urlImpl->_uri = std::string("file://") + urlImpl->_localFile;
+#endif
 	std::ofstream file(urlImpl->_localFile.c_str(), std::ios_base::out);
 	if(file.is_open()) {
 		file << content;
