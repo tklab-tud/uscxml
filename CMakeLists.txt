@@ -538,21 +538,21 @@ else()
 endif()
 
 
-# Response element
+# Respond element
 
-file(GLOB_RECURSE RESPONSE_ELEMENT
-	src/uscxml/plugins/element/response/*.cpp
-	src/uscxml/plugins/element/response/*.h
+file(GLOB_RECURSE RESPOND_ELEMENT
+	src/uscxml/plugins/element/respond/*.cpp
+	src/uscxml/plugins/element/respond/*.h
 )
-source_group("Element\\response" FILES ${RESPONSE_ELEMENT})
+source_group("Element\\respond" FILES ${RESPOND_ELEMENT})
 if (BUILD_AS_PLUGINS)
 	add_library(
-		element_response SHARED 
-		${RESPONSE_ELEMENT})
-	target_link_libraries(element_response uscxml)
-	set_target_properties(element_response PROPERTIES FOLDER "Plugin Element")
+		element_respond SHARED 
+		${RESPOND_ELEMENT})
+	target_link_libraries(element_respond uscxml)
+	set_target_properties(element_respond PROPERTIES FOLDER "Plugin Element")
 else()
-	list (APPEND USCXML_FILES ${RESPONSE_ELEMENT})
+	list (APPEND USCXML_FILES ${RESPOND_ELEMENT})
 endif()
 
 

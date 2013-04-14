@@ -255,6 +255,9 @@
 		
 		<!-- Idle here -->
 		<state id="idle">
+			<!--onentry>
+				<log expr="_event" />
+			</onentry -->
 			<transition event="http.get" target="idle" cond="
 					_event.data.pathComponent.length >= 2 &amp;&amp;
 					_event.data.pathComponent[_event.data.pathComponent.length - 1].indexOf('.') !== -1">
@@ -275,19 +278,19 @@
 						<script>
 							//print("Sending " + processed[_event['fileStruct'].key][_event['fileStruct'].format].path + "\n");
 						</script>
-						<response status="200" requestexpr="_event.origin">
+						<respond status="200" to="_event.origin">
 							<header name="Connection" value="close" />
 							<header name="Access-Control-Allow-Origin" value="*" />
 							<content fileexpr="processed[_event['fileStruct'].key][_event['fileStruct'].format].path" />
-						</response>
+						</respond>
 						<else>
 							<if cond="_event.name.endsWith('postponed')">
 								<!--
 									A postponed event we couldn't answer
 								-->
-								<response status="404" requestexpr="_event.origin">
+								<respond status="404" to="_event.origin">
 									<header name="Connection" value="close" />
-								</response>
+								</respond>
 								<else>
 									<script>
 										print("Processing outfile " + _event['dest'] + " from model " + _event['file'] + "\n");
@@ -322,9 +325,9 @@
 					</if>
 					<else>
 						<!-- There is no such model -->
-						<response status="404" requestexpr="_event.origin">
+						<respond status="404" to="_event.origin">
 							<header name="Connection" value="close" />
-						</response>
+						</respond>
 					</else>
 				</if>
 			</transition>
@@ -336,58 +339,58 @@
 					_event.data.pathComponent.length == 2 &amp;&amp; 
 					_event.data.pathComponent[1] === 'models'">
 				<script>//dump(_event)</script>
-				<response status="200" requestexpr="_event.origin">
+				<respond status="200" to="_event.origin">
 					<header name="Connection" value="close" />
 					<header name="Content-Type" value="application/json" />
 					<header name="Access-Control-Allow-Origin" value="*" />
 					<content expr="models" />
-				</response>
+				</respond>
 			</transition>
 
 			<transition event="http.get" target="idle" cond="
 					_event.data.pathComponent.length == 2 &amp;&amp; 
 					_event.data.pathComponent[1] === 'processed'">
 				<script>//dump(_event)</script>
-				<response status="200" requestexpr="_event.origin">
+				<respond status="200" to="_event.origin">
 					<header name="Connection" value="close" />
 					<header name="Content-Type" value="application/json" />
 					<header name="Access-Control-Allow-Origin" value="*" />
 					<content expr="processed" />
-				</response>
+				</respond>
 			</transition>
 
 			<transition event="http.get" target="idle" cond="
 					_event.data.pathComponent.length == 2 &amp;&amp; 
 					_event.data.pathComponent[1] === 'wrls'">
 				<script>//dump(_event)</script>
-				<response status="200" requestexpr="_event.origin">
+				<respond status="200" to="_event.origin">
 					<header name="Connection" value="close" />
 					<header name="Content-Type" value="application/json" />
 					<header name="Access-Control-Allow-Origin" value="*" />
 					<content expr="wrls" />
-				</response>
+				</respond>
 			</transition>
 			
 			<!-- request for topmost list of all files -->
 			<transition event="http.get" target="idle" cond="
 				_event.data.pathComponent.length == 1">
 				<script>//dump(_event);</script>
-				<response status="200" requestexpr="_event.origin">
+				<respond status="200" to="_event.origin">
 					<header name="Connection" value="close" />
 					<header name="Content-Type" value="application/json" />
 					<header name="Access-Control-Allow-Origin" value="*" />
 					<content expr="overviewList()" />
-				</response>
+				</respond>
 			</transition>
 
 			<!-- XHR CORS preflight response -->
 			<transition event="http.options" target="idle">
 				<script>dump(_event);</script>
-				<response status="200" requestexpr="_event.origin">
+				<respond status="200" to="_event.origin">
 					<header name="Access-Control-Allow-Origin" value="*" />
 					<header name="Access-Control-Allow-Methods" value="GET, OPTIONS" />
 					<header name="Access-Control-Allow-Headers" value="X-Requested-With" />
-				</response>
+				</respond>
 			</transition>
 			
 		</state>

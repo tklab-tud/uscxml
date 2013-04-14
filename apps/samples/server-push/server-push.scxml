@@ -17,27 +17,27 @@
 			<!-- XHR CORS preflight response -->
 			<transition event="http.options" target="idle">
 				<script>dump(_event);</script>
-				<response status="200" requestexpr="_event.origin">
+				<respond status="200" to="_event.origin">
 					<header name="Access-Control-Allow-Origin" value="*" />
 					<header name="Access-Control-Allow-Methods" value="POST, GET, OPTIONS" />
 					<header name="Access-Control-Allow-Headers" value="X-Requested-With, Content-Type" />
-				</response>
+				</respond>
 			</transition>
 			
 			<transition event="http.post" target="idle">
 				<if cond="_event.name.endsWith('postponed')">
 					<!-- This is an event we postponed before the heartbeat, respond -->
-					<response requestexpr="_event.origin">
+					<respond to="_event.origin">
 						<content>This is awesome!</content>
-					</response>
-					<else />
+					</respond>
+				<else />
 					<!-- Postpone until the heartbeat is emitted and send all events again -->
 					<postpone until="_event.name == 'heartbeat.1s'" chaining="true" />
 				</if>
 			</transition>
 			
 			<transition event="http.get">
-				<response requestexpr="_event.origin">
+				<respond to="_event.origin">
 					<content>
 <![CDATA[
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
@@ -74,7 +74,7 @@
 </html>
 ]]>
 					</content>
-				</response>
+				</respond>
 			</transition>
 			
 		</state>		

@@ -379,14 +379,12 @@ bool InterpreterDraft6::isEnabledTransition(const Node<std::string>& transition,
 
 	std::vector<std::string> eventNames = tokenizeIdRefs(eventName);
 
-	if (eventNames.size() > 0 && hasConditionMatch(transition)) {
-		std::vector<std::string>::iterator eventIter = eventNames.begin();
-		while(eventIter != eventNames.end()) {
-			if(nameMatch(*eventIter, event)) {
-				return true;
-			}
-			eventIter++;
+	std::vector<std::string>::iterator eventIter = eventNames.begin();
+	while(eventIter != eventNames.end()) {
+		if(nameMatch(*eventIter, event) && hasConditionMatch(transition)) {
+			return true;
 		}
+		eventIter++;
 	}
 	return false;
 }

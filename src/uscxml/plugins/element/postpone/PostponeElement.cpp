@@ -112,7 +112,7 @@ void PostponeElement::Resubmitter::onStableConfiguration(Interpreter interpreter
 //        LOG(INFO) << "  -> is TRUE";
 				eventIter->event.name += ".postponed";
 				interpreter.receive(eventIter->event, true);
-				_postponedEvents.erase(eventIter);
+				_postponedEvents.erase(eventIter++);
 				dispatched = true;
 			}
 //      LOG(INFO) << "  -> is FALSE";

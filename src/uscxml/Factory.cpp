@@ -52,7 +52,7 @@
 
 
 # include "uscxml/plugins/element/fetch/FetchElement.h"
-# include "uscxml/plugins/element/response/ResponseElement.h"
+# include "uscxml/plugins/element/respond/RespondElement.h"
 # include "uscxml/plugins/element/postpone/PostponeElement.h"
 
 
@@ -194,7 +194,7 @@ Factory::Factory() {
 		registerExecutableContent(element);
 	}
 	{
-		ResponseElement* element = new ResponseElement();
+		RespondElement* element = new RespondElement();
 		registerExecutableContent(element);
 	}
 	{

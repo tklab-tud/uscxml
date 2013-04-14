@@ -79,10 +79,9 @@ if (CTEST_SUBMIT_TYPE = "Continuous") Then
 End If
 
 shell.CurrentDirectory = TEST_DIR
-Set exec = shell.Exec("CMD /S /C ctest -VV --timeout 100 -S " + TESTFILE + " 2>&1")
+Set exec = shell.Exec("CMD /S /K ctest -VV --timeout 100 -S " + TESTFILE + " 2>&1")
 Do While exec.Status = 0
     WScript.Sleep 10
     WScript.StdOut.Write(exec.StdOut.ReadLine() & vbCRLF)
 '    WScript.StdErr.Write(exec.StdErr.ReadLine())
 Loop
-WScript.Sleep 1000000

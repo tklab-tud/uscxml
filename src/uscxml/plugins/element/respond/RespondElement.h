@@ -1,5 +1,5 @@
-#ifndef RESPONSEELEMENT_H_I11KQ39Q
-#define RESPONSEELEMENT_H_I11KQ39Q
+#ifndef RESPONDELEMENT_H_I11KQ39Q
+#define RESPONDELEMENT_H_I11KQ39Q
 
 #include <uscxml/Interpreter.h>
 
@@ -9,14 +9,14 @@
 
 namespace uscxml {
 
-class ResponseElement : public ExecutableContentImpl {
+class RespondElement : public ExecutableContentImpl {
 public:
-	ResponseElement() {}
-	virtual ~ResponseElement() {}
+	RespondElement() {}
+	virtual ~RespondElement() {}
 	boost::shared_ptr<ExecutableContentImpl> create(InterpreterImpl* interpreter);
 
 	std::string getLocalName() {
-		return "response";
+		return "respond";
 	}
 
 	std::string getNamespace() {
@@ -33,10 +33,10 @@ public:
 };
 
 #ifdef BUILD_AS_PLUGINS
-PLUMA_INHERIT_PROVIDER(ResponseElement, ExecutableContentImpl);
+PLUMA_INHERIT_PROVIDER(RespondElement, ExecutableContentImpl);
 #endif
 
 }
 
 
-#endif /* end of include guard: RESPONSEELEMENT_H_I11KQ39Q */
+#endif /* end of include guard: RESPONDELEMENT_H_I11KQ39Q */

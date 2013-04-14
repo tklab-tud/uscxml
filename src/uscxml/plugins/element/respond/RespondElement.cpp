@@ -1,4 +1,4 @@
-#include "ResponseElement.h"
+#include "RespondElement.h"
 #include "uscxml/plugins/invoker/http/HTTPServletInvoker.h"
 #include <glog/logging.h>
 
@@ -11,35 +11,35 @@ namespace uscxml {
 #ifdef BUILD_AS_PLUGINS
 PLUMA_CONNECTOR
 bool connect(pluma::Host& host) {
-	host.add( new ResponseElementProvider() );
+	host.add( new RespondElementProvider() );
 	return true;
 }
 #endif
 
-boost::shared_ptr<ExecutableContentImpl> ResponseElement::create(InterpreterImpl* interpreter) {
-	boost::shared_ptr<ResponseElement> invoker = boost::shared_ptr<ResponseElement>(new ResponseElement());
+boost::shared_ptr<ExecutableContentImpl> RespondElement::create(InterpreterImpl* interpreter) {
+	boost::shared_ptr<RespondElement> invoker = boost::shared_ptr<RespondElement>(new RespondElement());
 	invoker->_interpreter = interpreter;
 	return invoker;
 }
 
-void ResponseElement::enterElement(const Arabica::DOM::Node<std::string>& node) {
+void RespondElement::enterElement(const Arabica::DOM::Node<std::string>& node) {
 	// try to get the request id
-	if (!HAS_ATTR(node, "request") && !HAS_ATTR(node, "requestexpr")) {
-		LOG(ERROR) << "Response element requires request or requestexpr";
+	if (!HAS_ATTR(node, "to")) {
+		LOG(ERROR) << "Respond element requires to attribute";
 		return;
 	}
-	if (HAS_ATTR(node, "requestexpr") && !_interpreter->getDataModel()) {
-		LOG(ERROR) << "Response element with requestexpr requires datamodel";
+	if (HAS_ATTR(node, "to") && !_interpreter->getDataModel()) {
+		LOG(ERROR) << "Respond element with to requires datamodel";
 		return;
 	}
-	std::string requestId = (HAS_ATTR(node, "request") ? ATTR(node, "request") : _interpreter->getDataModel().evalAsString(ATTR(node, "requestexpr")));
+	std::string requestId = _interpreter->getDataModel().evalAsString(ATTR(node, "to"));
 
 	// try to get the request object
 	InterpreterServlet* servlet = _interpreter->getHTTPServlet();
 	tthread::lock_guard<tthread::recursive_mutex> lock(servlet->getMutex());
 
 	if (servlet->getRequests().find(requestId) == servlet->getRequests().end()) {
-		LOG(ERROR) << "No matching HTTP request for response element";
+		LOG(ERROR) << "No matching HTTP request for respond element";
 		return;
 	}
 
@@ -52,7 +52,7 @@ void ResponseElement::enterElement(const Arabica::DOM::Node<std::string>& node) 
 	// get the status or default to 200
 	std::string statusStr = (HAS_ATTR(node, "status") ? ATTR(node, "status") : "200");
 	if (!isNumeric(statusStr.c_str(), 10)) {
-		LOG(ERROR) << "Response element with non-numeric status " << statusStr;
+		LOG(ERROR) << "Respond element with non-numeric status " << statusStr;
 		return;
 	}
 	httpReply.status = strTo<int>(statusStr);;
@@ -66,7 +66,7 @@ void ResponseElement::enterElement(const Arabica::DOM::Node<std::string>& node) 
 					std::string contentValue = _interpreter->getDataModel().evalAsString(ATTR(contents[0], "expr"));
 					httpReply.content = contentValue;
 				} catch (Event e) {
-					LOG(ERROR) << "Syntax error with expr in content child of response element:" << std::endl << e << std::endl;
+					LOG(ERROR) << "Syntax error with expr in content child of Respond element:" << std::endl << e << std::endl;
 					return;
 				}
 			} else {
@@ -80,7 +80,7 @@ void ResponseElement::enterElement(const Arabica::DOM::Node<std::string>& node) 
 					try {
 						file = "file://" + _interpreter->getDataModel().evalAsString(ATTR(contents[0], "fileexpr"));
 					} catch (Event e) {
-						LOG(ERROR) << "Syntax error with fileexpr in content child of response element:" << std::endl << e << std::endl;
+						LOG(ERROR) << "Syntax error with fileexpr in content child of Respond element:" << std::endl << e << std::endl;
 						return;
 					}
 				}
@@ -117,7 +117,7 @@ void ResponseElement::enterElement(const Arabica::DOM::Node<std::string>& node) 
 				try {
 					name = _interpreter->getDataModel().evalAsString(ATTR(headers[i], "nameexpr"));
 				} catch (Event e) {
-					LOG(ERROR) << "Syntax error with nameexpr in header child of response element:" << std::endl << e << std::endl;
+					LOG(ERROR) << "Syntax error with nameexpr in header child of Respond element:" << std::endl << e << std::endl;
 					return;
 				}
 			} else {
@@ -137,7 +137,7 @@ void ResponseElement::enterElement(const Arabica::DOM::Node<std::string>& node) 
 				try {
 					value = _interpreter->getDataModel().evalAsString(ATTR(headers[i], "expr"));
 				} catch (Event e) {
-					LOG(ERROR) << "Syntax error with expr in header child of response element:" << std::endl << e << std::endl;
+					LOG(ERROR) << "Syntax error with expr in header child of Respond element:" << std::endl << e << std::endl;
 					return;
 				}
 			} else {
@@ -157,7 +157,7 @@ void ResponseElement::enterElement(const Arabica::DOM::Node<std::string>& node) 
 	servlet->getRequests().erase(requestId);
 }
 
-void ResponseElement::exitElement(const Arabica::DOM::Node<std::string>& node) {
+void RespondElement::exitElement(const Arabica::DOM::Node<std::string>& node) {
 
 }
 
