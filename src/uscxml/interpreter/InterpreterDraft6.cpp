@@ -101,7 +101,6 @@ void InterpreterDraft6::interpret() {
 
 	assert(initialTransitions.size() > 0);
 	enterStates(initialTransitions);
-	_mutex.unlock();
 
 //  assert(hasLegalConfiguration());
 	mainEventLoop();
@@ -137,6 +136,7 @@ void InterpreterDraft6::mainEventLoop() {
 			}
 			std::cout << std::endl;
 #endif
+			_mutex.unlock();
 			monIter = _monitors.begin();
 			while(monIter != _monitors.end()) {
 				try {
@@ -148,6 +148,7 @@ void InterpreterDraft6::mainEventLoop() {
 				}
 				monIter++;
 			}
+			_mutex.lock();
 
 			enabledTransitions = selectEventlessTransitions();
 			if (enabledTransitions.size() == 0) {
@@ -165,6 +166,7 @@ void InterpreterDraft6::mainEventLoop() {
 				}
 			}
 			if (!enabledTransitions.empty()) {
+				_mutex.unlock();
 				monIter = _monitors.begin();
 				while(monIter != _monitors.end()) {
 					try {
@@ -176,6 +178,8 @@ void InterpreterDraft6::mainEventLoop() {
 					}
 					monIter++;
 				}
+				_mutex.lock();
+
 				// test 403b
 				enabledTransitions.to_document_order();
 				microstep(enabledTransitions);
@@ -195,6 +199,8 @@ void InterpreterDraft6::mainEventLoop() {
 
 		// assume that we have a legal configuration as soon as the internal queue is empty
 		assert(hasLegalConfiguration());
+
+		_mutex.unlock();
 
 		monIter = _monitors.begin();
 //    if (!_sendQueue || _sendQueue->isEmpty()) {
@@ -222,6 +228,8 @@ void InterpreterDraft6::mainEventLoop() {
 		_currEvent.type = Event::EXTERNAL; // make sure it is set to external
 		if (!_running)
 			goto EXIT_INTERPRETER;
+
+		_mutex.lock();
 
 		if (_dataModel && boost::iequals(_currEvent.name, "cancel.invoke." + _sessionId))
 			break;
@@ -644,6 +652,7 @@ void InterpreterDraft6::exitStates(const Arabica::XPath::NodeSet<std::string>& e
 	std::cout << std::endl;
 #endif
 
+	_mutex.unlock();
 	monIter = _monitors.begin();
 	while(monIter != _monitors.end()) {
 		try {
@@ -655,6 +664,7 @@ void InterpreterDraft6::exitStates(const Arabica::XPath::NodeSet<std::string>& e
 		}
 		monIter++;
 	}
+	_mutex.lock();
 
 	for (int i = 0; i < statesToExit.size(); i++) {
 		NodeSet<std::string> histories = filterChildElements(_xmlNSPrefix + "history", statesToExit[i]);
@@ -705,6 +715,7 @@ void InterpreterDraft6::exitStates(const Arabica::XPath::NodeSet<std::string>& e
 		_configuration.insert(_configuration.end(), tmp.begin(), tmp.end());
 	}
 
+	_mutex.unlock();
 	monIter = _monitors.begin();
 	while(monIter != _monitors.end()) {
 		try {
@@ -716,6 +727,7 @@ void InterpreterDraft6::exitStates(const Arabica::XPath::NodeSet<std::string>& e
 		}
 		monIter++;
 	}
+	_mutex.lock();
 
 }
 
@@ -822,6 +834,7 @@ void InterpreterDraft6::enterStates(const Arabica::XPath::NodeSet<std::string>& 
 	}
 	statesToEnter.to_document_order();
 
+	_mutex.unlock();
 	monIter = _monitors.begin();
 	while(monIter != _monitors.end()) {
 		try {
@@ -833,6 +846,7 @@ void InterpreterDraft6::enterStates(const Arabica::XPath::NodeSet<std::string>& 
 		}
 		monIter++;
 	}
+	_mutex.lock();
 
 	for (int i = 0; i < statesToEnter.size(); i++) {
 		Element<std::string> stateElem = (Element<std::string>)statesToEnter[i];
@@ -890,6 +904,7 @@ void InterpreterDraft6::enterStates(const Arabica::XPath::NodeSet<std::string>& 
 		}
 	}
 
+	_mutex.unlock();
 	monIter = _monitors.begin();
 	while(monIter != _monitors.end()) {
 		try {
@@ -901,6 +916,7 @@ void InterpreterDraft6::enterStates(const Arabica::XPath::NodeSet<std::string>& 
 		}
 		monIter++;
 	}
+	_mutex.lock();
 
 }
 

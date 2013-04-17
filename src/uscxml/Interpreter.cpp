@@ -190,7 +190,6 @@ void InterpreterImpl::setName(const std::string& name) {
 }
 
 InterpreterImpl::~InterpreterImpl() {
-	tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
 	if (_thread) {
 		_running = false;
 		// unblock event queue

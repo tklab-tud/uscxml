@@ -142,10 +142,12 @@ public:
 	void receive(const Event& event, bool toFront = false);
 
 	Event getCurrentEvent() {
+		tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
 		return _currEvent;
 	}
 
 	Arabica::XPath::NodeSet<std::string> getConfiguration()  {
+		tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
 		return _configuration;
 	}
 	void setConfiguration(const std::vector<std::string>& states) {
