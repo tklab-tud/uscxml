@@ -8,23 +8,16 @@ $ wget http://sourceforge.net/projects/boost/files/latest/download
 $ tar xvjf boost*
 $ cd boost*
 $ ./bootstrap.sh
-$ ./b2 --layout=tagged install
+$ sudo ./b2 --layout=tagged install
 
-sudo yum install libtool-ltdl-devel
-sudo yum install libxml2-devel
-sudo yum install libpng-devel
-sudo yum install libjpeg-devel
-sudo yum install libtiff-devel
-sudo yum install libcurl-devel
-sudo yum install mesa-libGL-devel
-sudo yum install pcre-devel
+sudo yum install libtool-ltdl-devel libxml2-devel libpng-devel libjpeg-devel libtiff-devel libcurl-devel mesa-libGL-devel pcre-devel
 sudo yum remove swig
 
 $ wget http://sourceforge.net/projects/openvrml/files/latest/download
 $ tar xvjf openvrml*
 $ cd openvrml*
 $ ./configure --disable-render-text-node --disable-script-node-javascript --disable-script-node-java --disable-gl-renderer --disable-xembed --disable-player --disable-examples --disable-mozilla-plugin
-$ make install
+$ sudo make install
 
 $ wget http://www.cmake.org/files/v2.8/cmake-2.8.10.2.tar.gz
 $ tar xvzf cmake-2.8.10.2.tar.gz
@@ -36,10 +29,10 @@ $ svn co http://www.openscenegraph.org/svn/osg/OpenSceneGraph/tags/OpenSceneGrap
 $ cd OpenSceneGraph
 $ mkdir build && cd build
 $ cmake ..
-$ make
-$ make install
+$ make -j4
+$ sudo make install
 
-$ wget http://sourceforge.net/projects/boost/files/latest/download
+$ wget http://sourceforge.net/projects/swig/files/latest/download
 $ tar xvjf swig*
 $ cd swig*
 $ ./configure

@@ -81,7 +81,7 @@ void InterpreterDraft6::interpret() {
 		Arabica::XPath::NodeSet<std::string> initialStates;
 		if (_userDefinedStartConfiguration.size() > 0) {
 			// otherwise use user supplied config
-			initialTransitions = getStates(_userDefinedStartConfiguration);
+			initialStates = getStates(_userDefinedStartConfiguration);
 		} else {
 			// or fetch per draft
 			initialStates = getInitialStates();

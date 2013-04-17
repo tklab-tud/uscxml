@@ -2,8 +2,7 @@
 #define SPATIALAUDIO_H_EH11SAQC
 
 #include <map>
-
-#include "../MMIComponent.h"
+#include <uscxml/Interpreter.h>
 
 extern "C" {
 # include "miles/audio.h"
@@ -13,9 +12,7 @@ extern "C" {
 
 namespace uscxml {
 
-class Interpreter;
-
-class SpatialAudio : public MMIComponent {
+class SpatialAudio : public InvokerImpl {
 public:
 	SpatialAudio();
 	virtual ~SpatialAudio();

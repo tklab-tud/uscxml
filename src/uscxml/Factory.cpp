@@ -104,8 +104,8 @@ Factory::Factory() {
 
 #ifdef MILES_FOUND
 	{
-		MilesSessionInvoker* invoker = new MilesSessionInvoker();
-		registerInvoker(invoker);
+//		MilesSessionInvoker* invoker = new MilesSessionInvoker();
+//		registerInvoker(invoker);
 	}
 #endif
 

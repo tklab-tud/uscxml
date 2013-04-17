@@ -503,6 +503,24 @@ else()
 endif()
 
 
+# mmi ioprocessor
+
+file(GLOB_RECURSE MMI_IOPROCESSOR
+	src/uscxml/plugins/ioprocessor/modality/*.cpp
+	src/uscxml/plugins/ioprocessor/modality/*.h
+)
+source_group("IOProcessor\\modality" FILES ${MMI_IOPROCESSOR})
+if (BUILD_AS_PLUGINS)
+	add_library(
+		ioprocessor_mmi SHARED 
+		${MMI_IOPROCESSOR})
+	target_link_libraries(ioprocessor_mmi uscxml)
+	set_target_properties(ioprocessor_mmi PROPERTIES FOLDER "Plugin IOProcessor")
+else()
+	list (APPEND USCXML_FILES ${MMI_IOPROCESSOR})
+endif()
+
+
 # Fetch element
 
 file(GLOB_RECURSE FETCH_ELEMENT
@@ -923,7 +941,7 @@ endif()
 # MILES modality components
 
 find_package(MILES)
-if (MILES_FOUND)
+if (MILES_FOUND AND OFF)
   include_directories(${MILES_INCLUDE_DIR})
 
 	# openal is only needed for miles

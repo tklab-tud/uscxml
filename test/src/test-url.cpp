@@ -46,6 +46,15 @@ int main(int argc, char** argv) {
 	exeName = exeName.substr(exeName.find_last_of("\\/") + 1);
 	
 	{
+		Interpreter interpreter = Interpreter::fromURI("/Users/sradomski/Desktop/application_small.scxml");
+		assert(interpreter);
+		std::vector<std::string> states;
+		states.push_back("b");
+		interpreter.setConfiguration(states);
+		interpreter.interpret();
+	}
+
+	{
 		URL url(argv[0]);
 		assert(canResolve(argv[0]));
 		assert(canResolve(url.asString()));
@@ -54,12 +63,6 @@ int main(int argc, char** argv) {
 		URL exeUrl(exeName);
 		exeUrl.toAbsolute(baseUrl);
 		assert(canResolve(exeUrl.asString()));
-	}
-		
-	{
-//		Interpreter interpreter = Interpreter::fromURI("https://raw.github.com/tklab-tud/uscxml/master/test/samples/uscxml/test-execution.scxml");
-//		assert(interpreter);
-//		interpreter.interpret();
 	}
 
 	{
