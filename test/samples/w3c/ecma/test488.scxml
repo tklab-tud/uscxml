@@ -24,7 +24,7 @@
  event has empty event.data -->
  
  <state id="s1">
-   <transition event="done.state.s0" cond="_event.data === ''" target="pass"/>
+   <transition event="done.state.s0" cond="_event.data == null" target="pass"/>
    <transition event="*" target="fail"/>
    </state>
 

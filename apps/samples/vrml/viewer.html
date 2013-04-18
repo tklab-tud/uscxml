@@ -33,16 +33,25 @@
 
 		<script src="http://ajax.googleapis.com/ajax/libs/dojo/1.8.3/dojo/dojo.js"></script>
     <script type="text/javascript" src="viewer.js"></script>
+    <script type="text/javascript" src="annotations.js"></script>
     
     <script type="text/javascript">
 			require(["dojo/domReady!", "dojo"], function(dom, dojo) {
 				var viewer = new VRMLViewer("scene1");
-			});		  
+				var annotations = new Annotations("annotations1", { 'viewer': viewer });
+			});
 		</script>
 	</head>
 	<body class="tundra">
-		<div style="width: 600px; height: 400px">
-			<div id="scene1"></div>
-		</div>
+		<table>
+			<tr><td>
+				<div style="width: 600px; height: 600px">
+					<div id="scene1"></div>
+				</div>
+			</td></tr>
+			<tr><td>
+				<div id="annotations1"></div>
+			</td></tr>
+		</table>
 	</body>
 </html>

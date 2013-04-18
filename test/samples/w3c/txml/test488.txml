@@ -27,7 +27,7 @@
  event has empty event.data -->
  
  <state id="s1">
-   <transition event="done.state.s0" conf:eventdataVal="" conf:targetpass=""/>
+   <transition event="done.state.s0" conf:emptyEventData="" conf:targetpass=""/>
    <transition event="*" conf:targetfail=""/>
    </state>
 

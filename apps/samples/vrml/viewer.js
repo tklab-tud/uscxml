@@ -34,16 +34,17 @@ function VRMLViewer(element, params) {
   var instanceId = VRMLViewer.instances++;
   
   // public attributes
-  this.pitch       = 0;
-	this.roll        = 0;
-	this.yaw         = 0;
-	this.zoom        = 1;
-	this.x           = 0;
-	this.y           = 0;
-	this.z           = 0;
-	this.width       = 640;
-	this.height      = 480;
-	this.autorotate  = false;
+  this.pose = {};
+  this.pose.pitch       = 0;
+	this.pose.roll        = 0;
+	this.pose.yaw         = 0;
+	this.pose.zoom        = 1;
+	this.pose.x           = 0;
+	this.pose.y           = 0;
+	this.pose.z           = 0;
+	this.pose.width       = 640;
+	this.pose.height      = 480;
+	this.pose.autorotate  = false;
 
   this.serverURL = "http://88.69.49.213:8080/vrml";
   this.imageURL;
@@ -65,16 +66,16 @@ function VRMLViewer(element, params) {
 	this.updateScene = function() {
 	  if (self.imageURL) {
   	  self.imgElem.src = self.imageURL + 
-  	    '?width=' + self.width + 
-  	    '&height=' + self.height +
-  	    '&pitch=' + self.pitch +
-  	    '&roll=' + self.roll +
-  	    '&yaw=' + self.yaw +
-  	    '&x=' + self.x +
-  	    '&y=' + self.y +
-  	    '&z=' + self.z +
-  	    '&zoom=' + self.zoom +
-  	    '&autorotate=' + (self.autorotate ? '1' : '0');
+  	    '?width=' + self.pose.width + 
+  	    '&height=' + self.pose.height +
+  	    '&pitch=' + self.pose.pitch +
+  	    '&roll=' + self.pose.roll +
+  	    '&yaw=' + self.pose.yaw +
+  	    '&x=' + self.pose.x +
+  	    '&y=' + self.pose.y +
+  	    '&z=' + self.pose.z +
+  	    '&zoom=' + self.pose.zoom +
+  	    '&autorotate=' + (self.pose.autorotate ? '1' : '0');
       }
 	}
 
@@ -113,7 +114,7 @@ function VRMLViewer(element, params) {
 			<tr>\
 				<td valign="top">\
 						<div style="position: relative; padding: 0px">\
-						  <img class="model" style="z-index: -1; min-width: ' + self.width + 'px; min-height: ' + self.height + 'px"></img>\
+						  <img class="model" style="z-index: -1; min-width: ' + self.pose.width + 'px; min-height: ' + self.pose.height + 'px"></img>\
   						<div style="position: absolute; left: 10px; top: 7%; height: 100%">\
   						  <div class="pitchSlide"></div>\
   					  </div>\
@@ -268,7 +269,7 @@ function VRMLViewer(element, params) {
       constraints: { places:0 },
       style: "width:60px",
       onChange: function(value){
-      	self.x = value;
+      	self.pose.x = value;
       	self.updateScene();
       }
     }, self.xSpinnerElem );
@@ -281,7 +282,7 @@ function VRMLViewer(element, params) {
       constraints: { places:0 },
       style: "width:60px",
       onChange: function(value){
-      	self.y = value;
+      	self.pose.y = value;
       	self.updateScene();
       }
     }, self.ySpinnerElem );
@@ -294,7 +295,7 @@ function VRMLViewer(element, params) {
       constraints: { places:0 },
       style: "width:60px",
       onChange: function(value){
-      	self.z = value;
+      	self.pose.z = value;
       	self.updateScene();
       }
     }, self.zSpinnerElem );
@@ -319,7 +320,7 @@ function VRMLViewer(element, params) {
   		intermediateChanges: false,
   		style: "height: 90%",
       onChange: function(value){
-      	self.zoom = Math.ceil(value * 1000) / 1000;
+      	self.pose.zoom = Math.ceil(value * 1000) / 1000;
       	self.updateScene();
       }
   	}, self.zoomSlideElem);
@@ -351,7 +352,7 @@ function VRMLViewer(element, params) {
   		intermediateChanges: false,
   		style: "height: 90%",
       onChange: function(value){
-      	self.pitch = Math.ceil(value * 100) / 100;
+      	self.pose.pitch = Math.ceil(value * 100) / 100;
       	self.updateScene();
       }
   	}, self.pitchSlideElem);
@@ -366,7 +367,7 @@ function VRMLViewer(element, params) {
   		intermediateChanges: false,
   		style: "width: 90%",
   		onChange: function(value){
-  			self.roll = Math.ceil(value * 100) / 100;
+  			self.pose.roll = Math.ceil(value * 100) / 100;
 				self.updateScene();
   		}
   	}, self.rollSlideElem);
@@ -381,7 +382,7 @@ function VRMLViewer(element, params) {
   		intermediateChanges: false,
   		style: "width: 90%",
   		onChange: function(value){
-  			self.yaw = Math.ceil(value * 100) / 100;
+  			self.pose.yaw = Math.ceil(value * 100) / 100;
 				self.updateScene();
   		}
   	}, self.yawSlideElem);

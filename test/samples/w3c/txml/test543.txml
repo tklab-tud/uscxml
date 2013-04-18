@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+ <!-- test that event fields are present as children of _event -->
+ 
+ <scxml xmlns="http://www.w3.org/2005/07/scxml" name="scxmltest" 
+   xmlns:conf="http://www.w3.org/2005/scxml-conformance" initial="s0" version="1.0" datamodel="xpath">
+ 
+  
+<state id="s0">
+  <onentry>
+  <!-- event isn't bound until an event is raised -->
+   <raise event="someevent"/>
+  </onentry>
+  <!-- origintype sendid, invokeid and data will not be bound in this event. name, type, and origin
+  are guaranteed to be there. -->
+   <transition  event="*" cond="$_event/name and $_event/origin and $_event/type" conf:targetpass=""/>
+   <transition  event="*" conf:targetfail=""/>
+  </state>
+    
+<conf:pass/>
+<conf:fail/>  
+
+</scxml>

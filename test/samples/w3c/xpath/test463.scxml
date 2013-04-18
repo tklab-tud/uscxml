@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?><!-- test that the <data> tag creates an element in the XML datamodel with the correct name and id attr
+and binds an XPath variable to it --><scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" initial="s0" version="1.0" datamodel="xpath">
+<datamodel>
+  <data id="foo" expr="2"/>
+  </datamodel>
+  
+<state id="s0">
+
+ 
+  <transition cond="local-name($foo)='data'and $foo/@id ='foo'" target="pass"/>
+  <transition target="fail"/> 
+  </state>
+  
+   <final id="pass"><onentry><log label="Outcome" expr="'pass'"/></onentry></final>
+   <final id="fail"><onentry><log label="Outcome" expr="'fail'"/></onentry></final>
+
+</scxml>

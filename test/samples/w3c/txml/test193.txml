@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<!-- we test that omitting target and targetexpr of <send> when using the
+basichttp event i/o processor puts error.communication on the internal queue.  -->
+
+<scxml initial="s0" version="1.0" conf:datamodel=""  xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance">
+
+  
+<state id="s0">
+  <onentry>
+   <!-- this should put an error in the internal queue -->
+   <send event="event1" type="http://www.w3.org/TR/scxml/#BasicHTTPEventProcessor"/>
+   <send event="fail"/>
+    </onentry>
+  
+  <transition event="error.communication" conf:targetpass=""/>
+  <transition event="*" conf:targetfail=""/>
+ </state>
+
+<conf:pass/>
+<conf:fail/>
+
+</scxml>

@@ -8,7 +8,7 @@ send events. -->
 
   
 <state id="s0">
-  <transition cond="$_ioprocessors/scxml/location/text()" conf:targetpass=""/>
+  <transition cond="$_ioprocessors/[@name='http://www.w3.org/TR/scxml/#SCXMLEventProcessor']/location/text()" conf:targetpass=""/>
   <transition conf:targetfail=""/>
    
  </state>

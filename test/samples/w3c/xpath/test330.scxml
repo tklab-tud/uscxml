@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?><!-- check that the required fields are present in both internal and external events --><scxml xmlns:conf="http://www.w3.org/2005/scxml-conformance" initial="s0" datamodel="xpath" name="machineName">
+     
+ <state id="s0">
+   <onentry>
+     <raise event="foo"/>
+   </onentry>
+   <transition event="foo" cond="$_event/name and $_event/type and $_event/sendid and $_event/origin and $_event/origintype and $_event/invokeid and $_event/data" target="s1"/> 
+      <transition event="*" target="fail"/> 
+   </state>
+   
+ <state id="s1">
+   <onentry>
+     <send event="foo"/>
+   </onentry>
+   <transition event="foo" cond="$_event/name and $_event/type and $_event/sendid and $_event/origin and $_event/origintype and $_event/invokeid and $_event/data" target="pass"/> 
+      <transition event="*" target="fail"/> 
+   </state>
+   
+    
+   <final xmlns="http://www.w3.org/2005/07/scxml" id="pass"><onentry><log label="Outcome" expr="'pass'"/></onentry></final>
+   <final xmlns="http://www.w3.org/2005/07/scxml" id="fail"><onentry><log label="Outcome" expr="'fail'"/></onentry></final>
+     
+</scxml>
