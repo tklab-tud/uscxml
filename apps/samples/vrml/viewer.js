@@ -1,10 +1,14 @@
 function VRMLViewer(element, params) {
-	
+		
 	// private attributes
 	var self = this;
 	var dojo               = require("dojo");
 	var domConst           = dojo.require('dojo/dom-construct');
 	var xhr                = dojo.require("dojo/_base/xhr");
+
+  if (typeof(element) === 'string') {
+    element = dojo.byId(element);
+  }
 
   require(["dojox/storage"], function (storage) {
     self.localStorage = dojox.storage.manager.getProvider();
@@ -45,9 +49,9 @@ function VRMLViewer(element, params) {
   this.imageURL;
 
 	view = "normal";
-	if (params.view == "maximized") {
-		view = "maximized";
-	}
+  // if (params.view == "maximized") {
+  //  view = "maximized";
+  // }
 	
   // if (this.view == "maximized") {
   //     this.width = Math.min(element.clientWidth - 150, 800);
