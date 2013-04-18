@@ -9,12 +9,13 @@ using namespace Arabica::DOM;
 
 // see: http://www.w3.org/TR/scxml/#AlgorithmforSCXMLInterpretation
 void InterpreterDraft6::interpret() {
-	_mutex.lock();
+//	_mutex.lock();
+	tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
 	if (!_isInitialized)
 		init();
 
 	if (!_scxml) {
-		_mutex.unlock();
+//		_mutex.unlock();
 		return;
 	}
 //  dump();
@@ -101,17 +102,10 @@ void InterpreterDraft6::interpret() {
 
 	assert(initialTransitions.size() > 0);
 	enterStates(initialTransitions);
-	_mutex.unlock();
+//	_mutex.unlock();
 
 //  assert(hasLegalConfiguration());
 	mainEventLoop();
-
-//	if (_parentQueue) {
-//		// send one final event to unblock eventual listeners
-//		Event quit;
-//		quit.name = "done.state.scxml";
-//		_parentQueue->push(quit);
-//	}
 
 	// set datamodel to null from this thread
 	if(_dataModel)
@@ -210,6 +204,7 @@ void InterpreterDraft6::mainEventLoop() {
 		}
 //    }
 
+		_mutex.unlock();
 		// whenever we have a stable configuration, run the mainThread hooks with 200fps
 		while(_externalQueue.isEmpty() && _thread == NULL) {
 			runOnMainThread(200);
@@ -222,6 +217,8 @@ void InterpreterDraft6::mainEventLoop() {
 		_currEvent.type = Event::EXTERNAL; // make sure it is set to external
 		if (!_running)
 			goto EXIT_INTERPRETER;
+
+		_mutex.lock();
 
 		if (_dataModel && boost::iequals(_currEvent.name, "cancel.invoke." + _sessionId))
 			break;
