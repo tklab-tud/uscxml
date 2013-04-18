@@ -31,8 +31,8 @@ function Annotations(element, params) {
 	
 	// privileged public methods
 	this.annotate = function(text) {
-    var pose = self.vrmlViewer.pose;
-    var imageURL = self.imageURL;
+    var pose = dojo.clone(self.vrmlViewer.pose);
+    var imageURL = self.vrmlViewer.imageURL;
     var annoLink = document.createElement("a");
     annoLink.setAttribute("href", "#");
     var annoText = document.createTextNode(text + "\n");
