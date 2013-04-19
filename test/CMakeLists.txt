@@ -85,7 +85,7 @@ if (RUN_W3C_TESTS)
 	
 	foreach( W3C_TEST ${W3C_TESTS} )
 		string(REGEX MATCH "[^//]+/[^//]+.scxml" TEST_NAME ${W3C_TEST})
-		message("TEST_NAME: ${TEST_NAME}")
+		#message("TEST_NAME: ${TEST_NAME}")
 		if (NOT TEST_NAME MATCHES ".*sub.*")
 			add_test(${TEST_NAME} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-w3c ${W3C_TEST})
 		endif()

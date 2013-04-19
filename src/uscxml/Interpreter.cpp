@@ -502,7 +502,8 @@ void InterpreterImpl::processDOMorText(const Arabica::DOM::Node<std::string>& no
 	if (child && child.getNodeType() == Node_base::ELEMENT_NODE) {
 		DOMImplementation<std::string> domFactory = Arabica::SimpleDOM::DOMImplementation<std::string>::getDOMImplementation();
 		dom = domFactory.createDocument(child.getNamespaceURI(), "", 0);
-		Node<std::string> newNode = dom.importNode(child, true);
+		// we need to import the parent - to support xpath test150
+		Node<std::string> newNode = dom.importNode(child.getParentNode(), true);
 		dom.appendChild(newNode);
 	} else if(child && child.getNodeType() == Node_base::TEXT_NODE) {
 		text = child.getNodeValue();
@@ -1032,6 +1033,9 @@ void InterpreterImpl::executeContent(const Arabica::DOM::Node<std::string>& cont
 				CATCH_AND_DISTRIBUTE("Syntax error in array attribute of foreach element:")
 				try {
 					_dataModel.pushContext(); // copy old and enter new context
+					if (!_dataModel.isDeclared(item)) {
+						_dataModel.init(item, Data());
+					}
 					for (uint32_t iteration = 0; iteration < iterations; iteration++) {
 						{
 							// assign array element to item

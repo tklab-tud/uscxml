@@ -41,6 +41,7 @@ function VRMLViewer(element, params) {
            "dijit/form/VerticalRuleLabels", 
            "dijit/form/VerticalRule",
            "dijit/form/HorizontalSlider",
+           "dojox/mobile/ProgressIndicator",
            "dojo/ready"], 
     function(domConst, 
              xhr, 
@@ -58,19 +59,23 @@ function VRMLViewer(element, params) {
              VerticalRuleLabels,
              VerticalRule,
              HorizontalSlider,
+             ProgressIndicator,
              ready) {
+
       ready(function() {
         if (typeof(element) === 'string') {
           element = dom.byId(element);
         }
         
+        self.element = element;
         self.xhr = xhr;
+        self.progress = new ProgressIndicator({size:40, center:false});
         self.localStorage = dojox.storage.manager.getProvider();
         self.localStorage.initialize();
         
         // establish our dom
         element.appendChild(domConst.toDom('\
-          <div id="floatPane">\
+          <div class="floatPane">\
             <div style="text-align: right"><div class="server" /></div><button type="button" class="browseButton"></button></div>\
             <div style="height: 100%; overflow: auto" class="fileList"></div>\
           </div>\
@@ -79,6 +84,9 @@ function VRMLViewer(element, params) {
               <td valign="top">\
                   <div style="position: relative; padding: 0px">\
                     <img class="model" style="z-index: -1; min-width: ' + self.pose.width + 'px; min-height: ' + self.pose.height + 'px"></img>\
+                    <div style="z-index: 1; position: absolute; right: 45%; top: 45%">\
+                      <div class="progress"></div>\
+                    </div>\
                     <div style="position: absolute; left: 10px; top: 7%; height: 100%">\
                       <div class="pitchSlide"></div>\
                     </div>\
@@ -127,13 +135,15 @@ function VRMLViewer(element, params) {
         self.rollSlideElem = dojo.query("div.rollSlide", element)[0];
         self.yawSlideElem = dojo.query("div.yawSlide", element)[0];
         self.zoomSlideElem = dojo.query("div.zoomSlide", element)[0];
+        self.progressElem = dojo.query("div.progress", element)[0];
+        self.floatPaneElem = dojo.query("div.floatPane", element)[0];
         
         self.floatPane = new FloatingPane({
            title: "VRML Viewer",
            resizable: true, dockable: false, closable: false,
            style: "position:absolute;top:10;left:10;width:250px;height:300px;z-index: 2",
            id: "floatPane",
-        }, dojo.byId("floatPane"));
+        }, self.floatPaneElem);
         self.floatPane.startup();
         
         // setup fileStore for tree list
@@ -206,7 +216,9 @@ function VRMLViewer(element, params) {
             self.yawSlide.attr('value',0);
             self.zoomSlide.attr('value',1);
 
-            self.floatPane.startup();
+            self.floatPane.domNode.style.top = "10px";
+            self.floatPane.domNode.style.left = "10px";
+//            self.floatPane.startup();
             self.floatPane.show();
           }
         }, self.resetButtonElem);
@@ -344,32 +356,41 @@ function VRMLViewer(element, params) {
   this.refreshServer = function(server) {
     self.serverURL = server;
     self.localStorage.put("vrmlServer", self.serverURL, null);
+    self.progressElem.appendChild(self.progress.domNode);
+    self.progress.start();
     self.xhr.get({
-        // The URL to request
-        url: server,
-        handleAs:"json",
-        headers:{"X-Requested-With":null},
-        load: function(result) {
-            (function fillstore(tree, parentId) {
-              for (key in tree) {
-                if ('url' in tree[key]) {
-                  self.fileStore.add({id:parentId+key, name:key, url:self.serverURL + tree[key].path, parent:parentId});
+      // The URL to request
+      url: server,
+      handleAs:"json",
+      headers:{"X-Requested-With":null},
+      load: function(result) {
+        self.progress.stop();
+        for (id in self.fileStore.query) {
+          self.fileStore.remove(id);
+        }
+        (function fillstore(tree, parentId) {
+          for (key in tree) {
+            if ('url' in tree[key]) {
+              self.fileStore.add({id:parentId+key, name:key, url:self.serverURL + tree[key].path, parent:parentId});
 //                  self.messageBox.innerHTML += '<pre>' + self.serverURL + tree[key].path + '</pre>';
 //                  self.messageBox.innerHTML += '<pre>' + tree[key].url + '?width=200&height=150</pre>' + '<img src="' + tree[key].url + '?width=200&height=150" />';
-                } else {
-                  self.fileStore.add({id:parentId+key, name:key, parent:parentId});
-                  fillstore(tree[key], parentId+key);
-                }
-              }
-            } (result.models, "root", ""));
-        }
+            } else {
+              self.fileStore.add({id:parentId+key, name:key, parent:parentId});
+              fillstore(tree[key], parentId+key);
+            }
+          }
+        } (result.models, "root", ""));
+      }
     });
   }
 
-  this.setPose = function(imageURL, pose) {
+  this.setPose = function(imageURL, pose, serverURL) {
+    if (serverURL && serverURL != self.serverURL) {
+      refreshServer(serverURL);
+    }
     self.imageURL = imageURL;
     self.pose = pose;
-    
+
     self.batchChanges = true;
 //    self.fileList.set('item', imageURL);
     self.xSpinner.set('value',pose.x);

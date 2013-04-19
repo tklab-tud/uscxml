@@ -104,8 +104,9 @@ void BasicHTTPIOProcessor::httpRecvRequest(const HTTPServer::Request& req) {
 	}
 #endif
 
+	/// test532
 	if (reqEvent.name.length() == 0)
-		reqEvent.name = req.type;
+		reqEvent.name = "http." + req.data.compound.at("type").atom;
 
 	if (!scxmlStructFound) {
 		// get content into event
@@ -117,10 +118,15 @@ void BasicHTTPIOProcessor::httpRecvRequest(const HTTPServer::Request& req) {
 }
 
 void BasicHTTPIOProcessor::send(const SendRequest& req) {
-
+	
+	if (req.target.length() == 0) {
+		_interpreter->receiveInternal(Event("error.communication", Event::PLATFORM));
+		return;
+	}
+	
 	bool isLocal = false;
 	std::string target;
-	if (req.target.length() > 0 && !boost::equals(req.target, _url)) {
+	if (!boost::equals(req.target, _url)) {
 		target = req.target;
 	} else {
 		isLocal = true;

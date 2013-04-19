@@ -59,14 +59,6 @@ uSCXML still fails the following tests:
 		<td>"test that any attempt to change the value of a system variable causes error.execution to be raised"</td>
 		<td>Same issue as above: we allow writing to <tt>_event</tt>.</td>
 	</tr>
-	<tr>
-		<td><tt><a hreaf="https://github.com/tklab-tud/uscxml/blob/master/test/samples/w3c/ecma/test488.scxml">488</a></tt></td>
-		<td><tt>Failed</tt></td>
-		<td>"test that illegal expr in &lt;param> produces error.execution and empty event.data"</td>
-		<td>The actual meaning of <emph>empty</emph> is still ambiguous - in  
-			<a href="https://github.com/tklab-tud/uscxml/blob/master/test/samples/w3c/ecma/test343.scxml">test 343</a> 
-			it is assumed to be <tt>undefined</tt>. This is a bug in the tests and was raised on the ML.</td>
-	</tr>
 </table>
 
 ## License 

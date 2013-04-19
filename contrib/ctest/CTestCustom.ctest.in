@@ -8,12 +8,12 @@
 # skip xpath datamodel tests
 
 set(CTEST_CUSTOM_TESTS_IGNORE
-	"test178.scxml"
-	"test230.scxml"
-	"test250.scxml"
-	"test307.scxml"
-	"test313.scxml"
-	"test314.scxml"
+	"ecma/test178.scxml"
+	"ecma/test230.scxml"
+	"ecma/test250.scxml"
+	"ecma/test307.scxml"
+	"ecma/test313.scxml"
+	"ecma/test314.scxml"
 )
 
 

@@ -55,9 +55,13 @@ public:
 	void setVariable(const std::string& name, const Arabica::XPath::NodeSet<std::string>& value) {
 		_variables[name] = value;
 	}
-
+	bool isDeclared(const std::string& name) {
+		return _variables.find(name) != _variables.end();
+	}
+	
 private:
 	std::map<std::string, Arabica::XPath::NodeSet<std::string> > _variables;
+	friend class XPathDataModel;
 };
 
 class XPathDataModel : public DataModelImpl {
@@ -105,19 +109,30 @@ protected:
 	Arabica::DOM::Element<std::string> _datamodel;
 	Arabica::DOM::Document<std::string> _doc;
 
-	void assign(Arabica::XPath::XPathValue<std::string>& key,
+	// resolve value to its type
+	void assign(const Arabica::XPath::XPathValue<std::string>& key,
 	            const Arabica::XPath::XPathValue<std::string>& value,
 	            const Arabica::DOM::Element<std::string>& assignElem);
-	void assign(Arabica::XPath::XPathValue<std::string>& key,
+	void assign(const Arabica::XPath::XPathValue<std::string>& key,
+	            const Arabica::XPath::NodeSet<std::string>& value,
+	            const Arabica::DOM::Element<std::string>& assignElem);
+	
+	// assign value to a nodeset key
+	void assign(const Arabica::XPath::NodeSet<std::string>& key,
 	            const std::string& value,
 	            const Arabica::DOM::Element<std::string>& assignElem);
-	void assign(Arabica::XPath::XPathValue<std::string>& key,
+	void assign(const Arabica::XPath::NodeSet<std::string>& key,
 	            const double value,
 	            const Arabica::DOM::Element<std::string>& assignElem);
-	void assign(Arabica::XPath::XPathValue<std::string>& key,
+	void assign(const Arabica::XPath::NodeSet<std::string>& key,
 	            const bool value,
 	            const Arabica::DOM::Element<std::string>& assignElem);
-	void assign(Arabica::XPath::XPathValue<std::string>& key,
+	void assign(const Arabica::XPath::NodeSet<std::string>& key,
+	            const Arabica::XPath::NodeSet<std::string>& value,
+	            const Arabica::DOM::Element<std::string>& assignElem);
+	
+	// assign value to an element key (from nodeset)
+	void assign(const Arabica::DOM::Element<std::string>& key,
 	            const Arabica::XPath::NodeSet<std::string>& value,
 	            const Arabica::DOM::Element<std::string>& assignElem);
 
