@@ -7,7 +7,8 @@ function VRMLViewer(element, params) {
   if (!VRMLViewer.instances)
     VRMLViewer.instances = 0;
   var instanceId = VRMLViewer.instances++;
-
+  var batchChanges = false;
+  
   // public attributes
   this.pose = {};
   this.pose.pitch       = 0;
@@ -325,7 +326,7 @@ function VRMLViewer(element, params) {
 
   // privileged public methods
   this.updateScene = function() {
-    if (self.imageURL) {
+    if (self.imageURL && !self.batchChanges) {
       self.imgElem.src = self.imageURL + 
       '?width=' + self.pose.width + 
       '&height=' + self.pose.height +
@@ -341,8 +342,8 @@ function VRMLViewer(element, params) {
   }
 
   this.refreshServer = function(server) {
-    serverURL = server;
-    self.localStorage.put("vrmlServer", serverURL, null);
+    self.serverURL = server;
+    self.localStorage.put("vrmlServer", self.serverURL, null);
     self.xhr.get({
         // The URL to request
         url: server,
@@ -363,6 +364,23 @@ function VRMLViewer(element, params) {
             } (result.models, "root", ""));
         }
     });
+  }
+
+  this.setPose = function(imageURL, pose) {
+    self.imageURL = imageURL;
+    self.pose = pose;
+    
+    self.batchChanges = true;
+//    self.fileList.set('item', imageURL);
+    self.xSpinner.set('value',pose.x);
+    self.ySpinner.set('value',pose.y);
+    self.zSpinner.set('value',pose.z);
+    self.pitchSlide.attr('value',pose.pitch);
+    self.rollSlide.attr('value',pose.roll);
+    self.yawSlide.attr('value',pose.yaw);
+    self.zoomSlide.attr('value',pose.zoom);
+    self.batchChanges = false;
+    updateScene();
   }
 
 /*

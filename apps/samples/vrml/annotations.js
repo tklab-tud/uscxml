@@ -34,13 +34,11 @@ function Annotations(element, params) {
     var pose = dojo.clone(self.vrmlViewer.pose);
     var imageURL = self.vrmlViewer.imageURL;
     var annoLink = document.createElement("a");
-    annoLink.setAttribute("href", "#");
     var annoText = document.createTextNode(text + "\n");
+    annoLink.setAttribute("href", "#");
     annoLink.appendChild(annoText);
     annoLink.onclick = function() {
-      self.vrmlViewer.pose = pose;
-      self.vrmlViewer.imageURL = imageURL;
-      self.vrmlViewer.updateScene();
+      self.vrmlViewer.setPose(imageURL, pose);
     }
 	  this.messagesElem.appendChild(annoLink);
 	}
