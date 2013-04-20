@@ -11,6 +11,7 @@
   readonly attribute DOMString        name;
   [EmptyAsNull] readonly attribute DOMString        origin;
   [EmptyAsNull] readonly attribute DOMString        origintype;
+  [EmptyAsNull] readonly attribute DOMString        raw;
   readonly attribute Node             dom;
   [CustomGetter] readonly attribute DOMString        sendid;
   [EmptyAsNull] readonly attribute DOMString        invokeid;

@@ -18,11 +18,11 @@ public:
 	std::string tagName;
 
 	static std::string nameSpace;
-	
+
 protected:
 	MMIMessage() {}
 };
-	
+
 class NewContextRequest : public MMIMessage {
 public:
 	NewContextRequest() {
@@ -56,7 +56,7 @@ public:
 		return ContextualizedRequest::fromXML(doc);
 	}
 };
-class ResumeRequest : public ContextualizedRequest {	
+class ResumeRequest : public ContextualizedRequest {
 public:
 	ResumeRequest() {
 		tagName = "ResumeRequest";
@@ -67,7 +67,7 @@ public:
 	}
 
 };
-class CancelRequest : public ContextualizedRequest {	
+class CancelRequest : public ContextualizedRequest {
 public:
 	CancelRequest() {
 		tagName = "CancelRequest";
@@ -78,7 +78,7 @@ public:
 	}
 
 };
-class ClearContextRequest : public ContextualizedRequest {	
+class ClearContextRequest : public ContextualizedRequest {
 public:
 	ClearContextRequest() {
 		tagName = "ClearContextRequest";
@@ -89,7 +89,7 @@ public:
 	}
 
 };
-class StatusRequest : public ContextualizedRequest {	
+class StatusRequest : public ContextualizedRequest {
 public:
 	StatusRequest() {
 		tagName = "StatusRequest";
@@ -109,7 +109,7 @@ public:
 		std::string maxAge;
 		std::string fetchTimeout;
 	};
-	
+
 	virtual Arabica::DOM::Document<std::string> toXML();
 	static ContentRequest fromXML(const Arabica::DOM::Document<std::string>& doc);
 	std::string content;
@@ -119,7 +119,7 @@ protected:
 	ContentRequest(const ContextualizedRequest& father) : ContextualizedRequest(father) {}
 };
 
-class PrepareRequest : public ContentRequest {	
+class PrepareRequest : public ContentRequest {
 public:
 	PrepareRequest() {
 		tagName = "PrepareRequest";
@@ -130,7 +130,7 @@ public:
 	}
 };
 
-class StartRequest : public ContentRequest {	
+class StartRequest : public ContentRequest {
 public:
 	StartRequest() {
 		tagName = "StartRequest";
@@ -159,10 +159,10 @@ protected:
 class StatusResponse : public ContextualizedRequest {
 public:
 	enum Status {
-		ALIVE = 0,
-		DEAD = 1,
-		SUCCESS = 2,
-		FAILURE = 3
+	    ALIVE = 0,
+	    DEAD = 1,
+	    SUCCESS = 2,
+	    FAILURE = 3
 	};
 
 	StatusResponse() {
@@ -196,7 +196,7 @@ public:
 		return StatusInfoResponse::fromXML(doc);
 	}
 };
-	
+
 class StartResponse : public StatusInfoResponse {
 public:
 	StartResponse() {
@@ -207,7 +207,7 @@ public:
 		return StatusInfoResponse::fromXML(doc);
 	}
 };
-	
+
 class CancelResponse : public StatusInfoResponse {
 public:
 	CancelResponse() {
@@ -218,7 +218,7 @@ public:
 		return StatusInfoResponse::fromXML(doc);
 	}
 };
-	
+
 class PauseResponse : public StatusInfoResponse {
 public:
 	PauseResponse() {
@@ -229,7 +229,7 @@ public:
 		return StatusInfoResponse::fromXML(doc);
 	}
 };
-	
+
 class ResumeResponse : public StatusInfoResponse {
 public:
 	ResumeResponse() {
@@ -240,7 +240,7 @@ public:
 		return StatusInfoResponse::fromXML(doc);
 	}
 };
-	
+
 class ClearContextResponse : public StatusInfoResponse {
 public:
 	ClearContextResponse() {
@@ -251,7 +251,7 @@ public:
 		return StatusInfoResponse::fromXML(doc);
 	}
 };
-	
+
 class NewContextResponse : public StatusInfoResponse {
 public:
 	NewContextResponse() {
@@ -263,7 +263,7 @@ public:
 	}
 
 };
-	
+
 class DoneNotification : public StatusInfoResponse {
 public:
 	DoneNotification() {

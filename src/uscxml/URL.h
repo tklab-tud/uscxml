@@ -177,7 +177,7 @@ public:
 	const std::string asLocalFile(const std::string& suffix, bool reload = false) {
 		return _impl->asLocalFile(suffix, reload);
 	}
-		
+
 	static URL asBaseURL(const URL& url);
 	static void toBaseURL(URL& uri);
 

@@ -237,6 +237,10 @@ public:
 
 	// foreach
 	virtual uint32_t getLength(const std::string& expr) = 0;
+	virtual void setForeach(const std::string& item,
+	                        const std::string& array,
+	                        const std::string& index,
+	                        uint32_t iteration) = 0;
 	virtual void pushContext() = 0;
 	virtual void popContext() = 0;
 
@@ -312,6 +316,12 @@ public:
 	}
 	virtual uint32_t getLength(const std::string& expr) {
 		return _impl->getLength(expr);
+	}
+	virtual void setForeach(const std::string& item,
+	                        const std::string& array,
+	                        const std::string& index,
+	                        uint32_t iteration) {
+		return _impl->setForeach(item, array, index, iteration);
 	}
 
 	virtual void assign(const Arabica::DOM::Element<std::string>& assignElem,

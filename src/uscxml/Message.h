@@ -140,6 +140,13 @@ public:
 		this->dom = dom;
 	}
 
+	std::string getRaw() {
+		return raw;
+	}
+	void setRaw(const std::string& raw) {
+		this->raw = raw;
+	}
+
 	std::string getContent() {
 		return content;
 	}
@@ -227,6 +234,7 @@ public:
 protected:
 #endif
 
+	std::string raw;
 	std::string name;
 	Type type;
 	std::string origin;

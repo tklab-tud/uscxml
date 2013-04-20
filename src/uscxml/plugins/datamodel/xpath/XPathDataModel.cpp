@@ -59,7 +59,11 @@ boost::shared_ptr<DataModelImpl> XPathDataModel::create(InterpreterImpl* interpr
 	dm->_datamodel.appendChild(ioProcElem);
 
 	NodeSet<std::string> ioProcNodeSet;
-	ioProcNodeSet.push_back(ioProcElem);
+	Node<std::string> node = ioProcElem.getFirstChild();
+	while(node) {
+		ioProcNodeSet.push_back(node);
+		node = node.getNextSibling();
+	}
 	dm->_varResolver.setVariable("_ioprocessors", ioProcNodeSet);
 
 	Element<std::string> sessIdElem = dm->_doc.createElement("data");
@@ -69,7 +73,7 @@ boost::shared_ptr<DataModelImpl> XPathDataModel::create(InterpreterImpl* interpr
 	dm->_datamodel.appendChild(sessIdElem);
 
 	NodeSet<std::string> sessIdNodeSet;
-	sessIdNodeSet.push_back(sessIdElem);
+	sessIdNodeSet.push_back(sessIdText);
 	dm->_varResolver.setVariable("_sessionid", sessIdNodeSet);
 
 
@@ -80,7 +84,7 @@ boost::shared_ptr<DataModelImpl> XPathDataModel::create(InterpreterImpl* interpr
 	dm->_datamodel.appendChild(nameElem);
 
 	NodeSet<std::string> nameNodeSet;
-	nameNodeSet.push_back(nameElem);
+	nameNodeSet.push_back(nameText);
 	dm->_varResolver.setVariable("_name", nameNodeSet);
 
 	return dm;
@@ -129,6 +133,13 @@ void XPathDataModel::setEvent(const Event& event) {
 			namelistIter++;
 		}
 	}
+	if (event.raw.size() > 0) {
+		Element<std::string> eventRawElem = _doc.createElement("raw");
+		Text<std::string> textNode = _doc.createTextNode(event.raw.c_str());
+		eventRawElem.appendChild(textNode);
+		eventDataElem.appendChild(eventRawElem);
+	}
+
 	if (event.content.size() > 0) {
 		Text<std::string> textNode = _doc.createTextNode(Interpreter::spaceNormalize(event.content).c_str());
 		eventDataElem.appendChild(textNode);
@@ -139,7 +150,7 @@ void XPathDataModel::setEvent(const Event& event) {
 	}
 
 	eventElem.appendChild(eventDataElem);
-	eventNodeSet.push_back(eventElem);
+	eventNodeSet.push_back(eventDataElem);
 
 	// do we need to replace an existing event?
 	Node<std::string> oldEventElem = _datamodel.getFirstChild();
@@ -169,20 +180,95 @@ bool XPathDataModel::validate(const std::string& location, const std::string& sc
 }
 
 uint32_t XPathDataModel::getLength(const std::string& expr) {
-	std::cout << _datamodel << std::endl;
+//	std::cout << _datamodel << std::endl;
 	XPathValue<std::string> result = _xpath.evaluate_expr(expr, _doc);
 	switch(result.type()) {
-		case NUMBER:
-			return result.asNumber();
-			break;
-		case NODE_SET:
-			return result.asNodeSet().size();
-			break;
-		default:
-			throw Event("error.execution", Event::PLATFORM);
+	case NUMBER:
+		return result.asNumber();
+		break;
+	case NODE_SET:
+		return result.asNodeSet().size();
+		break;
+	default:
+		Event exceptionEvent("error.execution", Event::PLATFORM);
+		exceptionEvent.data.compound["exception"] = Data("'" + expr + "' does not evaluate to an array.", Data::VERBATIM);
+		throw(exceptionEvent);
 	}
 	return 0;
 }
+
+void XPathDataModel::setForeach(const std::string& item,
+                                const std::string& array,
+                                const std::string& index,
+                                uint32_t iteration) {
+
+	XPathValue<std::string> arrayResult = _xpath.evaluate_expr(array, _doc);
+	assert(arrayResult.type() == NODE_SET);
+
+#if 0
+	std::cout << "Array Size: " << arrayResult.asNodeSet().size() << std::endl;
+	for (int i = 0; i < arrayResult.asNodeSet().size(); i++) {
+		std::cout << arrayResult.asNodeSet()[i] << std::endl;
+	}
+#endif
+
+	assert(arrayResult.asNodeSet().size() >= iteration);
+
+
+	NodeSet<std::string> arrayNodeSet;
+	arrayNodeSet.push_back(arrayResult.asNodeSet()[iteration]);
+
+	if (!isDeclared(item)) {
+		if (!isValidIdentifier(item))
+			throw Event("error.execution", Event::PLATFORM);
+		Element<std::string> container = _doc.createElement("data");
+		container.setAttribute("id", item);
+		container.appendChild(arrayResult.asNodeSet()[iteration].cloneNode(true));
+		_datamodel.appendChild(container);
+		_varResolver.setVariable(item, arrayNodeSet);
+	}
+	XPathValue<std::string> itemResult = _varResolver.resolveVariable("", item);
+	assign(itemResult, arrayNodeSet, Element<std::string>());
+
+	if (index.length() > 0) {
+		NodeSet<std::string> indexNodeSet;
+		Text<std::string> indexElem = _doc.createTextNode(toStr(iteration));
+		indexNodeSet.push_back(indexElem);
+
+		if (!isDeclared(index)) {
+			Element<std::string> container = _doc.createElement("data");
+			container.setAttribute("id", index);
+			container.appendChild(indexElem);
+			_datamodel.appendChild(container);
+
+			NodeSet<std::string> indexVarNodeSet;
+			indexVarNodeSet.push_back(container);
+			_varResolver.setVariable(index, indexVarNodeSet);
+		}
+		XPathValue<std::string> indexResult = _varResolver.resolveVariable("", index);
+		assign(indexResult, indexNodeSet, Element<std::string>());
+	}
+
+
+#if 0
+	std::cout << _datamodel << std::endl << std::endl;
+	std::cout << "Index: " << indexResult.asNodeSet().size() << std::endl;
+	for (int i = 0; i < indexResult.asNodeSet().size(); i++) {
+		std::cout << indexResult.asNodeSet()[i] << std::endl;
+	}
+	std::cout << std::endl;
+#endif
+
+
+}
+
+bool XPathDataModel::isValidIdentifier(const std::string& identifier) {
+	if(boost::starts_with(identifier, "."))
+		return false;
+
+	return true;
+}
+
 
 void XPathDataModel::eval(const std::string& expr) {
 	XPathValue<std::string> result = _xpath.evaluate_expr(expr, _doc);
@@ -190,7 +276,7 @@ void XPathDataModel::eval(const std::string& expr) {
 
 bool XPathDataModel::isDeclared(const std::string& expr) {
 	try {
-		return evalAsBool(expr);
+		return _varResolver.isDeclared(expr) || evalAsBool(expr);
 	} catch(...) {
 		return false;
 	}
@@ -247,7 +333,22 @@ void XPathDataModel::assign(const Element<std::string>& assignElem,
 	XPathValue<std::string> key = _xpath.evaluate_expr(location, _doc);
 	NodeSet<std::string> nodeSet;
 	if (doc) {
-		nodeSet.push_back(doc.getDocumentElement());
+		if (doc.getDocumentElement()) {
+			Node<std::string> data = doc.getDocumentElement().getFirstChild();
+			while (data) {
+				// do not add empty text as a node
+				if (data.getNodeType() == Node_base::TEXT_NODE) {
+					std::string trimmed = data.getNodeValue();
+					boost::trim(trimmed);
+					if (trimmed.length() == 0) {
+						data = data.getNextSibling();
+						continue;
+					}
+				}
+				nodeSet.push_back(data);
+				data = data.getNextSibling();
+			}
+		}
 		assign(key, nodeSet, assignElem);
 	} else if (content.length() > 0) {
 		Text<std::string> textNode = _doc.createTextNode(Interpreter::spaceNormalize(content));
@@ -292,11 +393,26 @@ void XPathDataModel::init(const Element<std::string>& dataElem,
 		Text<std::string> textNode = _doc.createTextNode(Interpreter::spaceNormalize(content));
 		container.appendChild(textNode);
 	} else if (HAS_ATTR(dataElem, "expr")) {
-		XPathValue<std::string> expr = _xpath.evaluate_expr(ATTR(dataElem, "expr"), _doc);
-		XPathValue<std::string> key = _xpath.evaluate_expr(location, _doc);
-		assign(key, expr, dataElem);
-		for (int i = 0; expr.asNodeSet().size(); i++)
-			container.appendChild(expr.asNodeSet()[i]);
+		try {
+			XPathValue<std::string> expr = _xpath.evaluate_expr(ATTR(dataElem, "expr"), _doc);
+			switch (expr.type()) {
+			case NODE_SET:
+				for (int i = 0; expr.asNodeSet().size(); i++)
+					container.appendChild(expr.asNodeSet()[i]);
+				break;
+			case STRING:
+				container.appendChild(_doc.createTextNode(expr.asString()));
+				break;
+			case NUMBER:
+				container.appendChild(_doc.createTextNode(toStr(expr.asNumber())));
+				break;
+			case BOOL:
+			case ANY:
+				throw Event("error.execution", Event::PLATFORM);
+			}
+		} catch (SyntaxException e) {
+			throw Event("error.execution", Event::PLATFORM);
+		}
 	} else {
 		LOG(ERROR) << "data element has no content";
 	}
@@ -307,7 +423,7 @@ void XPathDataModel::init(const Element<std::string>& dataElem,
 	nodeSet.push_back(container);
 	_varResolver.setVariable(location, nodeSet);
 
-	std::cout << _datamodel << std::endl;
+//	std::cout << _datamodel << std::endl;
 }
 
 void XPathDataModel::init(const std::string& location, const Data& data) {
@@ -320,46 +436,49 @@ void XPathDataModel::assign(const XPathValue<std::string>& key,
                             const XPathValue<std::string>& value,
                             const Element<std::string>& assignElem) {
 	switch (key.type()) {
-		case NODE_SET: {
-			switch (value.type()) {
-				case STRING:
-					assign(key.asNodeSet(), value.asString(), assignElem);
-					break;
-				case BOOL:
-					assign(key.asNodeSet(), value.asBool(), assignElem);
-					break;
-				case NUMBER:
-					assign(key.asNodeSet(), value.asNumber(), assignElem);
-					break;
-				case NODE_SET:
-					assign(key.asNodeSet(), value.asNodeSet(), assignElem);
-					break;
-				case ANY:
-					throw Event("error.execution", Event::PLATFORM);
-			}
-			break;
+	case NODE_SET: {
+		if (key.asNodeSet().size() == 0) {
+			throw Event("error.execution", Event::PLATFORM);
 		}
+		switch (value.type()) {
 		case STRING:
+			assign(key.asNodeSet(), value.asString(), assignElem);
+			break;
 		case BOOL:
+			assign(key.asNodeSet(), value.asBool(), assignElem);
+			break;
 		case NUMBER:
+			assign(key.asNodeSet(), value.asNumber(), assignElem);
+			break;
+		case NODE_SET:
+			assign(key.asNodeSet(), value.asNodeSet(), assignElem);
+			break;
 		case ANY:
 			throw Event("error.execution", Event::PLATFORM);
+		}
+		break;
+	}
+	case STRING:
+	case BOOL:
+	case NUMBER:
+	case ANY:
+		throw Event("error.execution", Event::PLATFORM);
 	}
 }
 
 void XPathDataModel::assign(const XPathValue<std::string>& key,
-														const NodeSet<std::string>& value,
-														const Element<std::string>& assignElem) {
+                            const NodeSet<std::string>& value,
+                            const Element<std::string>& assignElem) {
 	switch (key.type()) {
-		case NODE_SET: {
-			assign(key.asNodeSet(), value, assignElem);
-			break;
-		}
-		case STRING:
-		case BOOL:
-		case NUMBER:
-		case ANY:
-			throw Event("error.execution", Event::PLATFORM);
+	case NODE_SET: {
+		assign(key.asNodeSet(), value, assignElem);
+		break;
+	}
+	case STRING:
+	case BOOL:
+	case NUMBER:
+	case ANY:
+		throw Event("error.execution", Event::PLATFORM);
 	}
 }
 
@@ -404,7 +523,7 @@ void XPathDataModel::assign(const NodeSet<std::string>& key,
 		}
 	}
 }
-	
+
 void XPathDataModel::assign(const NodeSet<std::string>& key,
                             const double value,
                             const Element<std::string>& assignElem) {
@@ -429,6 +548,7 @@ void XPathDataModel::assign(const NodeSet<std::string>& key,
 			break;
 		}
 		default:
+//			std::cout << key[i].getNodeType() << std::endl;
 			throw Event("error.execution", Event::PLATFORM);
 			break;
 		}
@@ -436,23 +556,23 @@ void XPathDataModel::assign(const NodeSet<std::string>& key,
 }
 
 void XPathDataModel::assign(const Element<std::string>& key,
-														const NodeSet<std::string>& value,
-														const Element<std::string>& assignElem) {
+                            const NodeSet<std::string>& value,
+                            const Element<std::string>& assignElem) {
 	Element<std::string> element(key);
 	if (false) {
-	} else if (HAS_ATTR(assignElem, "type") && boost::iequals(ATTR(assignElem, "type"), "firstchild")) {
+	} else if (assignElem && HAS_ATTR(assignElem, "type") && boost::iequals(ATTR(assignElem, "type"), "firstchild")) {
 		// firstchild: Insert the value specified by 'expr' before all of the children at 'location'.
 		for (int i = value.size(); i; i--) {
 			Node<std::string> importedNode = _doc.importNode(value[i-1], true);
 			element.insertBefore(importedNode, element.getFirstChild());
 		}
-	} else if (HAS_ATTR(assignElem, "type") && boost::iequals(ATTR(assignElem, "type"), "lastchild")) {
+	} else if (assignElem && HAS_ATTR(assignElem, "type") && boost::iequals(ATTR(assignElem, "type"), "lastchild")) {
 		// lastchild: Insert the value specified by 'expr' after all of the children at 'location'.
 		for (int i = 0; i < value.size(); i++) {
 			Node<std::string> importedNode = _doc.importNode(value[i], true);
 			element.appendChild(importedNode);
 		}
-	} else if (HAS_ATTR(assignElem, "type") && boost::iequals(ATTR(assignElem, "type"), "previoussibling")) {
+	} else if (assignElem && HAS_ATTR(assignElem, "type") && boost::iequals(ATTR(assignElem, "type"), "previoussibling")) {
 		// previoussibling: Insert the value specified by 'expr' before the
 		// node specified by 'location', keeping the same parent.
 		Node<std::string> parent = element.getParentNode();
@@ -462,7 +582,7 @@ void XPathDataModel::assign(const Element<std::string>& key,
 			Node<std::string> importedNode = _doc.importNode(value[i], true);
 			parent.insertBefore(importedNode, element);
 		}
-	} else if (HAS_ATTR(assignElem, "type") && boost::iequals(ATTR(assignElem, "type"), "nextsibling")) {
+	} else if (assignElem && HAS_ATTR(assignElem, "type") && boost::iequals(ATTR(assignElem, "type"), "nextsibling")) {
 		// nextsibling: Insert the value specified by 'expr' after the node
 		// specified by 'location', keeping the same parent.
 		Node<std::string> parent = element.getParentNode();
@@ -477,7 +597,7 @@ void XPathDataModel::assign(const Element<std::string>& key,
 				parent.appendChild(importedNode);
 			}
 		}
-	} else if (HAS_ATTR(assignElem, "type") && boost::iequals(ATTR(assignElem, "type"), "replace")) {
+	} else if (assignElem && HAS_ATTR(assignElem, "type") && boost::iequals(ATTR(assignElem, "type"), "replace")) {
 		// replace: Replace the node specified by 'location' by the value specified by 'expr'.
 		Node<std::string> parent = element.getParentNode();
 		if (!parent)
@@ -486,7 +606,7 @@ void XPathDataModel::assign(const Element<std::string>& key,
 			throw Event("error.execution", Event::PLATFORM);
 		Node<std::string> importedNode = _doc.importNode(value[0], true);
 		parent.replaceChild(importedNode, element);
-	} else if (HAS_ATTR(assignElem, "type") && boost::iequals(ATTR(assignElem, "type"), "delete")) {
+	} else if (assignElem && HAS_ATTR(assignElem, "type") && boost::iequals(ATTR(assignElem, "type"), "delete")) {
 		// delete: Delete the node specified by 'location'. ('expr' is ignored.).
 		Node<std::string> parent = element.getParentNode();
 		if (!parent)
@@ -510,6 +630,13 @@ NodeSetVariableResolver::resolveVariable(const std::string& namepaceUri,
 	if(n == _variables.end()) {
 		throw Event("error.execution");
 	}
+#if 0
+	std::cout << std::endl << name << ":" << std::endl;
+	for (int i = 0; i < n->second.size(); i++) {
+		std::cout << n->second[i].getNodeType() << " | " << n->second[i] << std::endl;
+	}
+	std::cout << std::endl;
+#endif
 	return XPathValue<std::string>(new NodeSetValue<std::string>(n->second));
 }
 

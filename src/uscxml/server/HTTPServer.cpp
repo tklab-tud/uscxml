@@ -114,9 +114,13 @@ void HTTPServer::httpRecvReqCallback(struct evhttp_request *req, void *callbackD
 //  evhttp_send_error(req, 404, NULL);
 //  return;
 
+	std::stringstream raw;
+
 	evhttp_request_own(req);
 	Request request;
 	request.curlReq = req;
+
+
 
 	switch (evhttp_request_get_command(req)) {
 	case EVHTTP_REQ_GET:
@@ -150,6 +154,18 @@ void HTTPServer::httpRecvReqCallback(struct evhttp_request *req, void *callbackD
 		request.data.compound["type"] = Data("unknown", Data::VERBATIM);
 		break;
 	}
+	raw << boost::to_upper_copy(request.data.compound["type"].atom);
+
+	request.data.compound["remoteHost"] = Data(req->remote_host, Data::VERBATIM);
+	request.data.compound["remotePort"] = Data(toStr(req->remote_port), Data::VERBATIM);
+	request.data.compound["httpMajor"] = Data(toStr((unsigned short)req->major), Data::VERBATIM);
+	request.data.compound["httpMinor"] = Data(toStr((unsigned short)req->minor), Data::VERBATIM);
+	request.data.compound["uri"] = Data(HTTPServer::getBaseURL() + req->uri, Data::VERBATIM);
+	request.data.compound["path"] = Data(evhttp_uri_get_path(evhttp_request_get_evhttp_uri(req)), Data::VERBATIM);
+
+	raw << " " << request.data.compound["path"].atom;
+	raw << " HTTP/" << request.data.compound["httpMajor"].atom << "." << request.data.compound["httpMinor"].atom;
+	raw << std::endl;
 
 	struct evkeyvalq *headers;
 	struct evkeyval *header;
@@ -159,14 +175,9 @@ void HTTPServer::httpRecvReqCallback(struct evhttp_request *req, void *callbackD
 	headers = evhttp_request_get_input_headers(req);
 	for (header = headers->tqh_first; header; header = header->next.tqe_next) {
 		request.data.compound["header"].compound[header->key] = Data(header->value, Data::VERBATIM);
+		raw << header->key << ": " << header->value << std::endl;
 	}
-
-	request.data.compound["remoteHost"] = Data(req->remote_host, Data::VERBATIM);
-	request.data.compound["remotePort"] = Data(toStr(req->remote_port), Data::VERBATIM);
-	request.data.compound["httpMajor"] = Data(toStr((unsigned short)req->major), Data::VERBATIM);
-	request.data.compound["httpMinor"] = Data(toStr((unsigned short)req->minor), Data::VERBATIM);
-	request.data.compound["uri"] = Data(HTTPServer::getBaseURL() + req->uri, Data::VERBATIM);
-	request.data.compound["path"] = Data(evhttp_uri_get_path(evhttp_request_get_evhttp_uri(req)), Data::VERBATIM);
+	raw << std::endl;
 
 	// This was used for debugging
 //	if (boost::ends_with(request.data.compound["path"].atom, ".png")) {
@@ -207,6 +218,8 @@ void HTTPServer::httpRecvReqCallback(struct evhttp_request *req, void *callbackD
 		}
 	}
 
+	raw << request.data.compound["content"].atom;
+
 	// decode content
 	if (request.data.compound.find("content") != request.data.compound.end() &&
 	        request.data.compound["header"].compound.find("Content-Type") != request.data.compound["header"].compound.end()) {
@@ -218,6 +231,8 @@ void HTTPServer::httpRecvReqCallback(struct evhttp_request *req, void *callbackD
 			request.data.compound["content"] = Data::fromJSON(request.data.compound["content"].atom);
 		}
 	}
+
+	request.raw = raw.str();
 
 	if (callbackData == NULL) {
 		HTTPServer::getInstance()->processByMatchingServlet(request);

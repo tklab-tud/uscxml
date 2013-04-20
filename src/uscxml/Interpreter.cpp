@@ -1033,22 +1033,11 @@ void InterpreterImpl::executeContent(const Arabica::DOM::Node<std::string>& cont
 				CATCH_AND_DISTRIBUTE("Syntax error in array attribute of foreach element:")
 				try {
 					_dataModel.pushContext(); // copy old and enter new context
-					if (!_dataModel.isDeclared(item)) {
-						_dataModel.init(item, Data());
-					}
+//					if (!_dataModel.isDeclared(item)) {
+//						_dataModel.init(item, Data());
+//					}
 					for (uint32_t iteration = 0; iteration < iterations; iteration++) {
-						{
-							// assign array element to item
-							std::stringstream ss;
-							ss << array << "[" << iteration << "]";
-							_dataModel.assign(item, ss.str());
-						}
-						if (index.length() > 0) {
-							// assign iteration element to index
-							std::stringstream ss;
-							ss << iteration;
-							_dataModel.assign(index, ss.str());
-						}
+						_dataModel.setForeach(item, array, index, iteration);
 						if (content.hasChildNodes())
 							// execute content and have exception rethrown to break foreach
 							executeContent(content.getChildNodes(), true);
@@ -1166,7 +1155,7 @@ void InterpreterImpl::executeContent(const Arabica::DOM::Node<std::string>& cont
 			execContent = Factory::createExecutableContent(content.getLocalName(), content.getNamespaceURI(), this);
 			if (!execContent) {
 				LOG(ERROR) << "No custom executable content known for element '"
-					<< content.getLocalName() << "' in namespace '" << content.getNamespaceURI() << "'";
+				           << content.getLocalName() << "' in namespace '" << content.getNamespaceURI() << "'";
 				return;
 			}
 			_executableContent[content] = execContent;

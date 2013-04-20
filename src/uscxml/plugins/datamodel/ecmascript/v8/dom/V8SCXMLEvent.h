@@ -45,6 +45,7 @@ public:
 	static v8::Handle<v8::Value> nameAttrGetter(v8::Local<v8::String> property, const v8::AccessorInfo& info);
 	static v8::Handle<v8::Value> originAttrGetter(v8::Local<v8::String> property, const v8::AccessorInfo& info);
 	static v8::Handle<v8::Value> origintypeAttrGetter(v8::Local<v8::String> property, const v8::AccessorInfo& info);
+	static v8::Handle<v8::Value> rawAttrGetter(v8::Local<v8::String> property, const v8::AccessorInfo& info);
 	static v8::Handle<v8::Value> domAttrGetter(v8::Local<v8::String> property, const v8::AccessorInfo& info);
 	static v8::Handle<v8::Value> sendidCustomAttrGetter(v8::Local<v8::String> property, const v8::AccessorInfo& info);
 	static v8::Handle<v8::Value> invokeidAttrGetter(v8::Local<v8::String> property, const v8::AccessorInfo& info);
@@ -69,6 +70,8 @@ public:
 			instance->SetAccessor(v8::String::NewSymbol("origin"), V8SCXMLEvent::originAttrGetter, 0,
 			                      v8::External::New(0), static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None));
 			instance->SetAccessor(v8::String::NewSymbol("origintype"), V8SCXMLEvent::origintypeAttrGetter, 0,
+			                      v8::External::New(0), static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None));
+			instance->SetAccessor(v8::String::NewSymbol("raw"), V8SCXMLEvent::rawAttrGetter, 0,
 			                      v8::External::New(0), static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None));
 			instance->SetAccessor(v8::String::NewSymbol("dom"), V8SCXMLEvent::domAttrGetter, 0,
 			                      v8::External::New(0), static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None));

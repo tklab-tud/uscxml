@@ -33,6 +33,11 @@ public:
 	virtual bool validate(const std::string& location, const std::string& schema);
 
 	virtual uint32_t getLength(const std::string& expr);
+	virtual void setForeach(const std::string& item,
+	                        const std::string& array,
+	                        const std::string& index,
+	                        uint32_t iteration);
+
 	virtual void pushContext();
 	virtual void popContext();
 

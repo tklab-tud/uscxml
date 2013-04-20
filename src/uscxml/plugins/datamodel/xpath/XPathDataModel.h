@@ -58,7 +58,7 @@ public:
 	bool isDeclared(const std::string& name) {
 		return _variables.find(name) != _variables.end();
 	}
-	
+
 private:
 	std::map<std::string, Arabica::XPath::NodeSet<std::string> > _variables;
 	friend class XPathDataModel;
@@ -82,6 +82,11 @@ public:
 	virtual bool validate(const std::string& location, const std::string& schema);
 
 	virtual uint32_t getLength(const std::string& expr);
+	virtual void setForeach(const std::string& item,
+	                        const std::string& array,
+	                        const std::string& index,
+	                        uint32_t iteration);
+
 	virtual void pushContext();
 	virtual void popContext();
 
@@ -109,6 +114,8 @@ protected:
 	Arabica::DOM::Element<std::string> _datamodel;
 	Arabica::DOM::Document<std::string> _doc;
 
+	bool isValidIdentifier(const std::string& identifier);
+
 	// resolve value to its type
 	void assign(const Arabica::XPath::XPathValue<std::string>& key,
 	            const Arabica::XPath::XPathValue<std::string>& value,
@@ -116,7 +123,7 @@ protected:
 	void assign(const Arabica::XPath::XPathValue<std::string>& key,
 	            const Arabica::XPath::NodeSet<std::string>& value,
 	            const Arabica::DOM::Element<std::string>& assignElem);
-	
+
 	// assign value to a nodeset key
 	void assign(const Arabica::XPath::NodeSet<std::string>& key,
 	            const std::string& value,
@@ -130,11 +137,18 @@ protected:
 	void assign(const Arabica::XPath::NodeSet<std::string>& key,
 	            const Arabica::XPath::NodeSet<std::string>& value,
 	            const Arabica::DOM::Element<std::string>& assignElem);
-	
+
 	// assign value to an element key (from nodeset)
 	void assign(const Arabica::DOM::Element<std::string>& key,
 	            const Arabica::XPath::NodeSet<std::string>& value,
 	            const Arabica::DOM::Element<std::string>& assignElem);
+
+
+	// assign value to a text node key (from nodeset)
+	void assign(const Arabica::DOM::Text<std::string>& key,
+	            const Arabica::XPath::NodeSet<std::string>& value,
+	            const Arabica::DOM::Element<std::string>& assignElem);
+	
 
 	NodeSetVariableResolver _varResolver;
 	XPathFunctionResolver _funcResolver;

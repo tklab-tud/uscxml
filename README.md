@@ -9,10 +9,10 @@ There is no technical reason for it not to run on iOS and Android as well, but w
 the respective build-process and did not precompile required libraries.
 
    * <b>Datamodels</b>
-       * ECMAScript using Google's v8 and JavaScriptCore (JSC is incomplete)
-       * Prolog using SWI prolog
-       * NULL datamodel with required <tt>In</tt> predicate
-       * XPath datamodel as far as the tests require
+       * Full ECMAScript datamodel using Google's v8 and JavaScriptCore (JSC is incomplete)
+       * Full NULL datamodel with required <tt>In</tt> predicate
+       * Early Prolog datamodel using SWI prolog
+       * Rudimentary support for XPath datamodel (Draft and tests are in conflict imho)
    * <b>Invokers</b>
        * <tt>scxml</tt>: Invoke a nested scxml interpreter
        * <tt>dirmon</tt>: Watches a directory for changes to files
@@ -25,7 +25,7 @@ the respective build-process and did not precompile required libraries.
    * <b>Communication</b>
        * Features the standard basichttp io-processor
        * Features the required SCXML io-processor
-       * <b>No</b> DOM io-processor yet
+       * <b>No</b> DOM io-processor
        * Can actually respond to HTTP requests with data via &lt;response>
    * <b>Language Bindings</b>
        * PHP module for apache and cli interpreter
@@ -36,7 +36,7 @@ the respective build-process and did not precompile required libraries.
  * Have a look at the [result](http://uscxml.tk.informatik.tu-darmstadt.de/cdash/index.php?project=uscxml) for the various platforms.
  * The manual tests are [excluded](https://github.com/tklab-tud/uscxml/blob/master/contrib/ctest/CTestCustom.ctest.in).
 
-uSCXML still fails the following tests:
+uSCXML still fails the following ecmascript tests:
 
 <table>
 	<tr><th>Test#</th><th>Status</th><th>Description</th><th>Comment</th></tr>

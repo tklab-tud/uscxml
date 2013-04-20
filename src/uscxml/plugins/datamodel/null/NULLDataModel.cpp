@@ -55,6 +55,12 @@ uint32_t NULLDataModel::getLength(const std::string& expr) {
 	return 0;
 }
 
+void NULLDataModel::setForeach(const std::string& item,
+                               const std::string& array,
+                               const std::string& index,
+                               uint32_t iteration) {
+}
+
 void NULLDataModel::eval(const std::string& expr) {
 }
 

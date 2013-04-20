@@ -266,11 +266,11 @@ URL URL::asBaseURL(const URL& uri) {
 	return URL(baseUriStr);
 }
 
-	
+
 const bool URLImpl::toAbsolute(const std::string& baseUrl) {
 	if (_uri.is_absolute())
 		return true;
-	
+
 	std::string uriStr = _uri.as_string();
 #ifdef _WIN32
 	if (baseUrl.find("file://") == 0) {
@@ -281,7 +281,7 @@ const bool URLImpl::toAbsolute(const std::string& baseUrl) {
 #else
 	_uri = Arabica::io::URI(baseUrl, _uri.as_string());
 #endif
-	
+
 	if (!_uri.is_absolute())
 		return false;
 	return true;

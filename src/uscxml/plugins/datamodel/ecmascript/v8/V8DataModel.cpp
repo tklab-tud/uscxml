@@ -339,9 +339,28 @@ uint32_t V8DataModel::getLength(const std::string& expr) {
 
 	Event exceptionEvent;
 	exceptionEvent.name = "error.execution";
-	exceptionEvent.data.compound["exception"] = Data("'" + expr + "' does not evaluate to an array.", Data::VERBATIM);;
+	exceptionEvent.data.compound["exception"] = Data("'" + expr + "' does not evaluate to an array.", Data::VERBATIM);
 
 	throw(exceptionEvent);
+}
+
+void V8DataModel::setForeach(const std::string& item,
+                             const std::string& array,
+                             const std::string& index,
+                             uint32_t iteration) {
+	if (!isDeclared(item)) {
+		assign(item, Data());
+	}
+	// assign array element to item
+	std::stringstream ss;
+	ss << array << "[" << iteration << "]";
+	assign(item, ss.str());
+	if (index.length() > 0) {
+		// assign iteration element to index
+		std::stringstream ss;
+		ss << iteration;
+		assign(index, ss.str());
+	}
 }
 
 void V8DataModel::eval(const std::string& expr) {

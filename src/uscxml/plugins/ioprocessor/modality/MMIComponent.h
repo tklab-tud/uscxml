@@ -19,7 +19,7 @@ public:
 	virtual std::set<std::string> getNames() {
 		return std::set<std::string>();
 	};
-	
+
 	virtual Data getDataModelVariables();
 	virtual void send(const SendRequest& req);
 
@@ -37,7 +37,7 @@ public:
 	virtual NewContextResponse newContext(const NewContextRequest&);
 	virtual DoneNotification done(const DoneNotification&);
 //	virtual ExtensionNotification extension(const ExtensionNotification&);
-	
+
 
 };
 

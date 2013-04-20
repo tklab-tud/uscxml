@@ -32,6 +32,15 @@ v8::Handle<v8::Value> V8SCXMLEvent::origintypeAttrGetter(v8::Local<v8::String> p
 	return v8::String::New(privData->nativeObj->origintype.c_str());
 }
 
+v8::Handle<v8::Value> V8SCXMLEvent::rawAttrGetter(v8::Local<v8::String> property, const v8::AccessorInfo& info) {
+	v8::Local<v8::Object> self = info.Holder();
+	struct V8SCXMLEventPrivate* privData = V8DOM::toClassPtr<V8SCXMLEventPrivate >(self->GetInternalField(0));
+
+	if (privData->nativeObj->raw.length() == 0)
+		return v8::Undefined();
+	return v8::String::New(privData->nativeObj->raw.c_str());
+}
+
 v8::Handle<v8::Value> V8SCXMLEvent::domAttrGetter(v8::Local<v8::String> property, const v8::AccessorInfo& info) {
 	v8::Local<v8::Object> self = info.Holder();
 	struct V8SCXMLEventPrivate* privData = V8DOM::toClassPtr<V8SCXMLEventPrivate >(self->GetInternalField(0));

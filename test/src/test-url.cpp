@@ -44,7 +44,7 @@ int main(int argc, char** argv) {
 
 	std::string exeName = argv[0];
 	exeName = exeName.substr(exeName.find_last_of("\\/") + 1);
-	
+
 	{
 		Interpreter interpreter = Interpreter::fromURI("/Users/sradomski/Desktop/application_small.scxml");
 		assert(interpreter);
@@ -58,7 +58,7 @@ int main(int argc, char** argv) {
 		URL url(argv[0]);
 		assert(canResolve(argv[0]));
 		assert(canResolve(url.asString()));
-		
+
 		URL baseUrl = URL::asBaseURL(url);
 		URL exeUrl(exeName);
 		exeUrl.toAbsolute(baseUrl);

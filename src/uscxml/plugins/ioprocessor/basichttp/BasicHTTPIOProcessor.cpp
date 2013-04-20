@@ -73,15 +73,32 @@ void BasicHTTPIOProcessor::httpRecvRequest(const HTTPServer::Request& req) {
 	reqEvent.type = Event::EXTERNAL;
 	bool scxmlStructFound = false;
 
-	if (reqEvent.data.compound["header"].compound.find("_scxmleventstruct") != reqEvent.data.compound["header"].compound.end()) {
-		// TODO: this looses all other information
-		reqEvent = Event::fromXML(evhttp_decode_uri(reqEvent.data.compound["header"].compound["_scxmleventstruct"].atom.c_str()));
-		scxmlStructFound = true;
+	if (reqEvent.data.compound["header"].compound.find("Content-Type") != reqEvent.data.compound["header"].compound.end() &&
+	        boost::iequals(reqEvent.data.compound["header"].compound["Content-Type"].atom, "application/x-www-form-urlencoded")) {
+		std::stringstream ss(reqEvent.data.compound["content"].atom);
+		std::string term;
+		while(std::getline(ss, term, '&')) {
+			size_t split = term.find_first_of("=");
+			if (split != std::string::npos) {
+				std::string key = evhttp_decode_uri(term.substr(0, split).c_str());
+				std::string value = evhttp_decode_uri(term.substr(split + 1).c_str());
+				if (boost::iequals(key, "_scxmleventname")) {
+					reqEvent.name = value;
+				} else {
+					reqEvent.data.compound[key] = value;
+				}
+			}
+		}
+	} else {
+		if (reqEvent.data.compound["header"].compound.find("_scxmleventstruct") != reqEvent.data.compound["header"].compound.end()) {
+			// TODO: this looses all other information
+			reqEvent = Event::fromXML(evhttp_decode_uri(reqEvent.data.compound["header"].compound["_scxmleventstruct"].atom.c_str()));
+			scxmlStructFound = true;
+		}
+		if (reqEvent.data.compound["header"].compound.find("_scxmleventname") != reqEvent.data.compound["header"].compound.end()) {
+			reqEvent.name = evhttp_decode_uri(reqEvent.data.compound["header"].compound["_scxmleventname"].atom.c_str());
+		}
 	}
-	if (reqEvent.data.compound["header"].compound.find("_scxmleventname") != reqEvent.data.compound["header"].compound.end()) {
-		reqEvent.name = evhttp_decode_uri(reqEvent.data.compound["header"].compound["_scxmleventname"].atom.c_str());
-	}
-
 	std::map<std::string, Data>::iterator headerIter = reqEvent.data.compound["header"].compound.begin();
 	while(headerIter != reqEvent.data.compound["header"].compound.end()) {
 		reqEvent.data.compound[headerIter->first] = Data(evhttp_decode_uri(headerIter->second.atom.c_str()), Data::VERBATIM);
@@ -118,12 +135,12 @@ void BasicHTTPIOProcessor::httpRecvRequest(const HTTPServer::Request& req) {
 }
 
 void BasicHTTPIOProcessor::send(const SendRequest& req) {
-	
+
 	if (req.target.length() == 0) {
 		_interpreter->receiveInternal(Event("error.communication", Event::PLATFORM));
 		return;
 	}
-	
+
 	bool isLocal = false;
 	std::string target;
 	if (!boost::equals(req.target, _url)) {
@@ -133,17 +150,23 @@ void BasicHTTPIOProcessor::send(const SendRequest& req) {
 		target = _url;
 	}
 	URL targetURL(target);
+	std::stringstream kvps;
+	std::string kvpSeperator;
 
 	// event name
 	if (req.name.size() > 0) {
-		targetURL.addOutHeader("_scxmleventname", evhttp_encode_uri(req.name.c_str()));
+		kvps << kvpSeperator << evhttp_encode_uri("_scxmleventname") << "=" << evhttp_encode_uri(req.name.c_str());
+		kvpSeperator = "&";
+//		targetURL.addOutHeader("_scxmleventname", evhttp_encode_uri(req.name.c_str()));
 	}
 
 	// event namelist
 	if (req.namelist.size() > 0) {
 		std::map<std::string, std::string>::const_iterator namelistIter = req.namelist.begin();
 		while (namelistIter != req.namelist.end()) {
-			targetURL.addOutHeader(namelistIter->first, namelistIter->second);
+			kvps << kvpSeperator << evhttp_encode_uri(namelistIter->first.c_str()) << "=" << evhttp_encode_uri(namelistIter->second.c_str());
+			kvpSeperator = "&";
+//			targetURL.addOutHeader(namelistIter->first, namelistIter->second);
 			namelistIter++;
 		}
 	}
@@ -152,15 +175,19 @@ void BasicHTTPIOProcessor::send(const SendRequest& req) {
 	if (req.params.size() > 0) {
 		std::multimap<std::string, std::string>::const_iterator paramIter = req.params.begin();
 		while (paramIter != req.params.end()) {
-			targetURL.addOutHeader(paramIter->first, paramIter->second);
+			kvps << kvpSeperator << evhttp_encode_uri(paramIter->first.c_str()) << "=" << evhttp_encode_uri(paramIter->second.c_str());
+			kvpSeperator = "&";
+//			targetURL.addOutHeader(paramIter->first, paramIter->second);
 			paramIter++;
 		}
 	}
 
 	// content
-	if (req.content.size() > 0)
+	if (kvps.str().size() > 0) {
+		targetURL.setOutContent(kvps.str());
+	} else if (req.content.size() > 0) {
 		targetURL.setOutContent(req.content);
-
+	}
 	targetURL.setRequestType("post");
 	targetURL.addMonitor(this);
 

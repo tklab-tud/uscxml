@@ -96,6 +96,13 @@ uint32_t SWIDataModel::getLength(const std::string& expr) {
 	return 0;
 }
 
+void SWIDataModel::setForeach(const std::string& item,
+                              const std::string& array,
+                              const std::string& index,
+                              uint32_t iteration) {
+	//	std::cout << "SWIDataModel::setForeach" << std::endl;
+}
+
 void SWIDataModel::eval(const std::string& expr) {
 	URL localPLFile = URL::toLocalFile(expr, ".pl");
 	PlCall("user", "load_files", PlTermv(localPLFile.asLocalFile(".pl").c_str())) || LOG(ERROR) << "Could not execute prolog from file";
