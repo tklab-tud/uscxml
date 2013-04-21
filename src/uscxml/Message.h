@@ -139,6 +139,8 @@ public:
 	void setDOM(const Arabica::DOM::Document<std::string>& dom) {
 		this->dom = dom;
 	}
+	Arabica::DOM::Node<std::string> getFirstDOMElement() const;
+	Arabica::DOM::Document<std::string> getStrippedDOM() const;
 
 	std::string getRaw() {
 		return raw;

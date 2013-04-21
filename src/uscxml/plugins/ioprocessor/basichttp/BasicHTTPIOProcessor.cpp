@@ -86,7 +86,11 @@ void BasicHTTPIOProcessor::httpRecvRequest(const HTTPServer::Request& req) {
 					reqEvent.name = value;
 				} else {
 					reqEvent.data.compound[key] = value;
+					reqEvent.params.insert(std::make_pair(key, value));
 				}
+			} else {
+				// this is most likely wrong
+				reqEvent.content = evhttp_decode_uri(term.c_str());
 			}
 		}
 	} else {

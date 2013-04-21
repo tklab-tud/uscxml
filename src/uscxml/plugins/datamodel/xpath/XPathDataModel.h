@@ -52,12 +52,8 @@ class NodeSetVariableResolver : public Arabica::XPath::VariableResolver<std::str
 public:
 	Arabica::XPath::XPathValue<std::string> resolveVariable(const std::string& namepaceUri,
 	        const std::string& name) const;
-	void setVariable(const std::string& name, const Arabica::XPath::NodeSet<std::string>& value) {
-		_variables[name] = value;
-	}
-	bool isDeclared(const std::string& name) {
-		return _variables.find(name) != _variables.end();
-	}
+	void setVariable(const std::string& name, const Arabica::XPath::NodeSet<std::string>& value);
+	bool isDeclared(const std::string& name);
 
 private:
 	std::map<std::string, Arabica::XPath::NodeSet<std::string> > _variables;
@@ -115,6 +111,7 @@ protected:
 	Arabica::DOM::Document<std::string> _doc;
 
 	bool isValidIdentifier(const std::string& identifier);
+	Arabica::XPath::NodeSet<std::string> dataToNodeSet(const Data& data);
 
 	// resolve value to its type
 	void assign(const Arabica::XPath::XPathValue<std::string>& key,
@@ -148,7 +145,7 @@ protected:
 	void assign(const Arabica::DOM::Text<std::string>& key,
 	            const Arabica::XPath::NodeSet<std::string>& value,
 	            const Arabica::DOM::Element<std::string>& assignElem);
-	
+
 
 	NodeSetVariableResolver _varResolver;
 	XPathFunctionResolver _funcResolver;

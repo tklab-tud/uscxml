@@ -12,7 +12,7 @@ the respective build-process and did not precompile required libraries.
        * Full ECMAScript datamodel using Google's v8 and JavaScriptCore (JSC is incomplete)
        * Full NULL datamodel with required <tt>In</tt> predicate
        * Early Prolog datamodel using SWI prolog
-       * Rudimentary support for XPath datamodel (Draft and tests are in conflict imho)
+       * Rudimentary support for XPath datamodel (W3C tests not yet implementable)
    * <b>Invokers</b>
        * <tt>scxml</tt>: Invoke a nested scxml interpreter
        * <tt>dirmon</tt>: Watches a directory for changes to files

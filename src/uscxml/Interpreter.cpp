@@ -382,12 +382,12 @@ void InterpreterImpl::normalize(Arabica::DOM::Element<std::string>& scxml) {
 }
 
 void InterpreterImpl::receiveInternal(const Event& event) {
-//	std::cout << _name << " receiveInternal: " << event.name << std::endl;
+	std::cout << _name << " receiveInternal: " << event.name << std::endl;
 	_internalQueue.push_back(event);
 }
 
 void InterpreterImpl::receive(const Event& event, bool toFront)   {
-//	std::cout << _name << " receive: " << event.name << std::endl;
+	std::cout << _name << " receive: " << event.name << std::endl;
 	if (toFront) {
 		_externalQueue.push_front(event);
 	} else {
@@ -475,6 +475,12 @@ void InterpreterImpl::processDOMorText(const Arabica::DOM::Node<std::string>& no
 			inputSource.setByteStream(ssPtr);
 			if (parser.parse(inputSource) && parser.getDocument()) {
 				dom = parser.getDocument();
+				Node<std::string> content = dom.getDocumentElement();
+				assert(content.getNodeType() == Node_base::ELEMENT_NODE);
+				Node<std::string> container = dom.createElement("container");
+				dom.replaceChild(container, content);
+				container.appendChild(content);
+				std::cout << dom << std::endl;
 				return;
 			} else {
 				text = srcContent.str();
@@ -890,7 +896,7 @@ bool InterpreterImpl::nameMatch(const std::string& transitionEvent, const std::s
 		return false;
 
 	// naive case of single descriptor and exact match
-	if (boost::equals(transitionEvent, event))
+	if (boost::iequals(transitionEvent, event))
 		return true;
 
 	boost::char_separator<char> sep(" ");
@@ -911,7 +917,7 @@ bool InterpreterImpl::nameMatch(const std::string& transitionEvent, const std::s
 			return true;
 
 		// are they already equal?
-		if (boost::equals(eventDesc, event))
+		if (boost::iequals(eventDesc, event))
 			return true;
 
 		// eventDesc has to be a real prefix of event now and therefore shorter
@@ -919,7 +925,8 @@ bool InterpreterImpl::nameMatch(const std::string& transitionEvent, const std::s
 			continue;
 
 		// it is a prefix of the event name and event continues with .something
-		if (eventDesc.compare(event.substr(0, eventDesc.size())) == 0)
+		if (boost::istarts_with(event, eventDesc))
+//		if (eventDesc.compare(event.substr(0, eventDesc.size())) == 0)
 			if (event.find(".", eventDesc.size()) == eventDesc.size())
 				return true;
 	}
