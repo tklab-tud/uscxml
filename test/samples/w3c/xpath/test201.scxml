@@ -3,7 +3,7 @@ test since platforms are not required to support basic http event i/o --><scxml 
 
 <state id="s0">
   <onentry>
-   <send type="http://www.w3.org/TR/scxml/#BasicHTTPEventProcessor" event="event1"/>
+   <send type="http://www.w3.org/TR/scxml/#BasicHTTPEventProcessor" targetexpr="$_ioprocessors/processor[@name=&#34;http://www.w3.org/TR/scxml/#BasicHTTPEventProcessor&#34;]/location/text()" event="event1"/>
    <send event="timeout"/>
     </onentry>
  

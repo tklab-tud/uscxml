@@ -4,7 +4,7 @@
    <onentry>
      <raise event="foo"/>
    </onentry>
-   <transition event="foo" cond="_event.origin == null" target="pass"/>
+   <transition event="foo" cond="typeof _event.origin === 'undefined' " target="pass"/>
       <transition event="*" target="fail"/> 
    </state>
    

@@ -2,7 +2,7 @@ function VRMLViewer(element, params) {
 
   // private attributes
   var self = this;
-
+  
   // private instanceId
   if (!VRMLViewer.instances)
     VRMLViewer.instances = 0;
@@ -18,8 +18,8 @@ function VRMLViewer(element, params) {
   this.pose.x           = 0;
   this.pose.y           = 0;
   this.pose.z           = 0;
-  this.pose.width       = 640;
-  this.pose.height      = 480;
+  this.pose.width       = 450;
+  this.pose.height      = 350;
   this.pose.autorotate  = false;
 
   this.serverURL = "http://88.69.49.213:8080/vrml";
@@ -63,9 +63,12 @@ function VRMLViewer(element, params) {
              ready) {
 
       ready(function() {
+        
         if (typeof(element) === 'string') {
           element = dom.byId(element);
         }
+        element.style.height = self.pose.height;
+        element.style.width = self.pose.width;
         
         self.element = element;
         self.xhr = xhr;

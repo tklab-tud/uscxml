@@ -18,3 +18,6 @@ do
 	echo "Processing $TXML to $DEST"
 	java -jar /Users/sradomski/Developer/Applications/SaxonHE9-4-0-7J/saxon9he.jar $TXML confXPath.xsl -o:$DEST
 done
+
+cp txml/*.txt ecma/
+cp txml/*.txt xpath/

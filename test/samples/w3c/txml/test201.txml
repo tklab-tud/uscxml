@@ -7,7 +7,9 @@ test since platforms are not required to support basic http event i/o -->
 
 <state id="s0">
   <onentry>
-   <send type="http://www.w3.org/TR/scxml/#BasicHTTPEventProcessor" event="event1"/>
+   <send type="http://www.w3.org/TR/scxml/#BasicHTTPEventProcessor" 
+   	conf:basicHTTPAccessURITarget=""
+   	event="event1"/>
    <send event="timeout"/>
     </onentry>
  

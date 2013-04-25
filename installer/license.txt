@@ -32,5 +32,5 @@ Group.
 
 IMPORTANT!
 
-Please note that the various implementations used in uMundo come with
+Please note that the various implementations used in uSCXML come with
 their own licenses and are only packaged as a matter of convenience.

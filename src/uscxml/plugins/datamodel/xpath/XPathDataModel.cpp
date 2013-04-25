@@ -380,19 +380,23 @@ void XPathDataModel::assign(const Element<std::string>& assignElem,
 
 	// test 326ff
 	XPathValue<std::string> key = _xpath.evaluate_expr(location, _doc);
+#if 0
 	if (key.type() == NODE_SET) {
-		for (int i = 0; i < key.asNodeSet().size(); i++) {
-			Node<std::string> node = key.asNodeSet()[i];
-			if (node == _varResolver.resolveVariable("", "_ioprocessors").asNodeSet()[0])
-				throw Event("error.execution", Event::PLATFORM);
-			if (node == _varResolver.resolveVariable("", "_sessionid").asNodeSet()[0])
-				throw Event("error.execution", Event::PLATFORM);
-			if (node == _varResolver.resolveVariable("", "_name").asNodeSet()[0])
-				throw Event("error.execution", Event::PLATFORM);
-			if (node == _varResolver.resolveVariable("", "_event").asNodeSet()[0])
-				throw Event("error.execution", Event::PLATFORM);
-		}
+		try {
+			for (int i = 0; i < key.asNodeSet().size(); i++) {
+				Node<std::string> node = key.asNodeSet()[i];
+				if (node == _varResolver.resolveVariable("", "_ioprocessors").asNodeSet()[0])
+					throw Event("error.execution", Event::PLATFORM);
+				if (node == _varResolver.resolveVariable("", "_sessionid").asNodeSet()[0])
+					throw Event("error.execution", Event::PLATFORM);
+				if (node == _varResolver.resolveVariable("", "_name").asNodeSet()[0])
+					throw Event("error.execution", Event::PLATFORM);
+				if (node == _varResolver.resolveVariable("", "_event").asNodeSet()[0])
+					throw Event("error.execution", Event::PLATFORM);
+			}
+		} catch (Event e) {}
 	}
+#endif
 	NodeSet<std::string> nodeSet;
 	if (doc) {
 		if (doc.getDocumentElement()) {
@@ -495,7 +499,7 @@ void XPathDataModel::init(const Element<std::string>& dataElem,
 
 	// put data element into nodeset and bind to xpath variable
 	NodeSet<std::string> nodeSet;
-#if 1
+#if 0
 	nodeSet.push_back(container);
 #else
 	Node<std::string> node = container.getFirstChild();

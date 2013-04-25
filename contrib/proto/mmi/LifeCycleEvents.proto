@@ -1,0 +1,217 @@
+option java_package = "@mmi.protoc.package@";
+
+message LifeCycleEvent {
+  required string RequestID = 1;
+  required string Source = 2;
+  required string Target = 3;
+
+  // For type identification of nested types
+  enum LifeCycleEventType {
+    NEW_CONTEXT_REQUEST = 0;
+    NEW_CONTEXT_RESPONSE = 1;
+    PREPARE_REQUEST = 2;
+    PREPARE_RESPONSE = 3;
+    START_REQUEST = 4;
+    START_RESPONSE = 5;
+    DONE_NOTIFICATION = 6;
+    CANCEL_REQUEST = 7;
+    CANCEL_RESPONSE = 8;
+    PAUSE_REQUEST = 9;
+    PAUSE_RESPONSE = 10;
+    RESUME_REQUEST = 11;
+    RESUME_RESPONSE = 12;
+    EXTENSION_NOTIFICATION = 13;
+    CLEAR_CONTEXT_REQUEST = 14;
+    CLEAR_CONTEXT_RESPONSE = 15;
+    STATUS_REQUEST = 16;
+    STATUS_RESPONSE = 17;
+  }
+  required LifeCycleEventType Type = 4;
+  // For the nested extension and for data
+  extensions 5 to max;
+}
+
+message LifeCycleRequest {
+  extend LifeCycleEvent {
+        required LifeCycleRequest Request = 5;
+  }
+
+  required string Context = 1;
+  extensions 2 to max;
+}
+
+message LifeCycleResponse {
+  extend LifeCycleEvent {
+        required LifeCycleResponse Response = 6;
+  }
+
+  enum StatusType {
+    SUCCESS = 0;
+    FAILURE = 1;
+  }
+
+  required string Context = 1;
+  required StatusType Status = 2;
+  optional string StatusInfo = 3;
+  extensions 4 to max;
+}
+
+
+message NewContextRequest {
+  extend LifeCycleEvent {
+        required NewContextRequest Request = 7;
+  }
+  // Extend for custom data
+  extensions 1 to max;
+}
+
+message NewContextResponse {
+  extend LifeCycleResponse {
+        required NewContextResponse Response = 4;
+  }
+  // Extend for custom data
+  extensions 1 to max;
+}
+
+message PrepareRequest {
+  extend LifeCycleRequest {
+        required PrepareRequest Request = 2;
+  }
+
+  optional string ContentURL = 1;
+  optional string Content = 2;
+  // Extend for custom data
+  extensions 3 to max;
+}
+
+message PrepareResponse {
+  extend LifeCycleResponse {
+        required PrepareResponse Response = 5;
+  }
+  // Extend for custom data
+  extensions 1 to max;
+}
+
+message StartRequest {
+  extend LifeCycleRequest {
+        required StartRequest Request = 3;
+  }
+  optional string ContentURL = 1;
+  optional string Content = 2;
+  // Extend for custom data
+  extensions 3 to max;
+}
+
+message StartResponse {
+  extend LifeCycleResponse {
+        required StartResponse Response = 6;
+  }
+  // Extend for custom data
+  extensions 1 to max;
+}
+
+message DoneNotification {
+  extend LifeCycleResponse {
+        required DoneNotification Notification = 9;
+  }
+  // Extend for custom data
+  extensions 1 to max;
+}
+
+message CancelRequest {
+  extend LifeCycleRequest {
+        required CancelRequest Request = 4;
+  }
+  // Extend for custom data
+  extensions 1 to max;
+}
+
+message CancelResponse {
+  extend LifeCycleResponse {
+        required CancelResponse Response = 7;
+  }
+  // Extend for custom data
+  extensions 1 to max;
+}
+
+message PauseRequest {
+  extend LifeCycleRequest {
+        required PauseRequest Request = 5;
+  }
+  // Extend for custom data
+  extensions 1 to max;
+}
+
+message PauseResponse {
+  extend LifeCycleResponse {
+        required PauseResponse Response = 8;
+  }
+  // Extend for custom data
+  extensions 1 to max;
+}
+
+message ResumeRequest {
+  extend LifeCycleRequest {
+        required ResumeRequest Request = 6;
+  }
+  // Extend for custom data
+  extensions 1 to max;
+}
+
+message ResumeResponse {
+  extend LifeCycleResponse {
+        required ResumeResponse Response = 10;
+  }
+  // Extend for custom data
+  extensions 1 to max;
+}
+
+message ExtensionNotification {
+  extend LifeCycleEvent {
+        required ExtensionNotification Notification = 8;
+  }
+  required string Name = 1;
+  required string Context = 2;
+  // Extend for custom data
+  extensions 3 to max;
+}
+
+message ClearContextRequest {
+  extend LifeCycleRequest {
+        required ClearContextRequest Request = 7;
+  }
+  // Extend for custom data
+  extensions 1 to max;
+}
+
+message ClearContextResponse {
+  extend LifeCycleResponse {
+        required ClearContextResponse Response = 11;
+  }
+  // Extend for custom data
+  extensions 1 to max;
+}
+
+message StatusRequest {
+  extend LifeCycleEvent {
+        required StatusRequest Request = 9;
+  }
+  optional string Context = 2;
+  // Extend for custom data
+  extensions 3 to max;
+}
+
+message StatusResponse {
+  extend LifeCycleEvent {
+        required StatusResponse Response = 10;
+  }
+  enum StatusType {
+    ALIVE = 0;
+    DEAD = 1;
+  }
+
+  optional string Context = 1;
+  required StatusType Status = 2;
+  // Extend for custom data
+  extensions 3 to max;
+}

@@ -356,12 +356,12 @@
 		<xsl:attribute name="cond">
 		<xsl:analyze-string select="."
 			regex="([0-9]+)([=&lt;&gt;]=?)([0-9+])">
-					<xsl:matching-substring>Var<xsl:value-of select="regex-group(1)"/><xsl:text>/text() </xsl:text>
+					<xsl:matching-substring>Var<xsl:value-of select="regex-group(1)"/>
 						<xsl:variable name="op"><xsl:value-of select="regex-group(2)"/></xsl:variable>
 						<xsl:choose>
 							<xsl:when test="$op='='">=</xsl:when>
 							<xsl:otherwise><xsl:value-of select="$op"/></xsl:otherwise>
-					 </xsl:choose>Var<xsl:value-of select="regex-group(3)"/><xsl:text>/text() </xsl:text>
+					 </xsl:choose>Var<xsl:value-of select="regex-group(3)"/>
 					</xsl:matching-substring>
 		</xsl:analyze-string>
 	</xsl:attribute>
@@ -416,7 +416,7 @@ is the second argument -->
 </xsl:template>
 
 <xsl:template match="//@conf:emptyEventData">
-	<xsl:attribute name="cond">_event.data == null</xsl:attribute>
+	<xsl:attribute name="cond">typeof _event.data === 'undefined'</xsl:attribute>
 </xsl:template>
 
 <!-- return true if the _name system var has the specified quoted value -->
@@ -494,7 +494,7 @@ is the second argument -->
 
 <!-- returns true if specified field of _event has no value -->
 <xsl:template match="//@conf:eventFieldHasNoValue">
-	<xsl:attribute name="cond">_event.<xsl:value-of select="." /> == null</xsl:attribute>
+	<xsl:attribute name="cond">typeof _event.<xsl:value-of select="." /> === 'undefined' </xsl:attribute>
 </xsl:template>
 
 <!-- true if the language of _event matches the processor's datamodel -->

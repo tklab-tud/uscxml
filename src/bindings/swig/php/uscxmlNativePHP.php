@@ -224,6 +224,22 @@ class Event {
 		Event_setDOM($this->_cPtr,$dom);
 	}
 
+	function getFirstDOMElement() {
+		return Event_getFirstDOMElement($this->_cPtr);
+	}
+
+	function getStrippedDOM() {
+		return Event_getStrippedDOM($this->_cPtr);
+	}
+
+	function getRaw() {
+		return Event_getRaw($this->_cPtr);
+	}
+
+	function setRaw($raw) {
+		Event_setRaw($this->_cPtr,$raw);
+	}
+
 	function getContent() {
 		return Event_getContent($this->_cPtr);
 	}

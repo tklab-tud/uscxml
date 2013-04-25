@@ -14,7 +14,7 @@
 // possible loss of data
 #pragma warning (disable : 4244)
 #pragma warning (disable : 4267)
-// 'this' : used in base member initializer list (TypedSubscriber)
+// 'this' : used in base member initializer list
 #pragma warning (disable : 4355)
 
 // is thrown alot in arabica headers

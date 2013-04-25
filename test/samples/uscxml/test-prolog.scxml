@@ -1,3 +1,4 @@
+<?xml version="1.0"?>
 <scxml datamodel="prolog" initial="start" binding="late">
 	<datamodel>
 		<data id="facts">
@@ -12,11 +13,34 @@ mouse(jerry).
 animal(X):- mouse(X).
 	</script>
 	<state id="start">
-		<transition target="end" cond="not(cat(jerry)), cat(tom), mouse(jerry)." />
+		<onentry>
+			<log label="SessionId" expr="sessionId(X)"/>
+			<log label="Name" expr="name(X)"/>
+			<send event="foo">This is a foo event.</send>
+		</onentry>
+		<transition event="foo" cond="not(cat(jerry)), cat(tom), mouse(jerry)." target="s1"/>
+	</state>
+	<state id="s1">
+		<onentry>
+			<log expr="eventName(X)."/>
+			<send event="bar">
+				<ISBNdb server_time="2009-03-19T02:01:00Z">
+					<BookList total_results="1" page_size="10" page_number="1" shown_results="1">
+						<BookData book_id="the_data_compression_book" isbn="1558514341">
+							<Title>The Data Compression Book</Title>
+							<TitleLong/>
+							<AuthorsText>Mark Nelson, Jean-Loup Gailly, </AuthorsText>
+							<PublisherText publisher_id="m_t_books">M&amp;T Books</PublisherText>
+						</BookData>
+					</BookList>
+				</ISBNdb>
+			</send>
+		</onentry>
+		<transition target="end"/>
 	</state>
 	<state id="end" final="true">
 		<onentry>
-			<log expr="animal(X)." />
+			<log expr="animal(X)."/>
 		</onentry>
 	</state>
 </scxml>

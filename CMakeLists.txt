@@ -171,6 +171,7 @@ include("${CMAKE_MODULE_PATH}/HeaderExists.cmake")
 set(USCXML_CORE_LIBS)
 set(USCXML_OPT_LIBS)
 set(USCXML_FILES)
+set(USCXML_INCLUDE_DIRS)
 
 # some compiler flags
 #message("CMAKE_CXX_COMPILER_ID: ${CMAKE_CXX_COMPILER_ID}")
@@ -308,8 +309,11 @@ foreach( OUTPUT_CONFIG ${CMAKE_CONFIGURATION_TYPES} )
     set( CMAKE_ARCHIVE_OUTPUT_DIRECTORY_${OUTPUT_CONFIG} "${OUTPUT_DIR}/lib" )
 endforeach()
 
+OPTION(BUILD_AS_PLUGINS "Build invokers, ioprocessors and datamodels as plugins" OFF)
+
 # this is where the config.h ends up
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
+include_directories(src)
 
 ############################################################
 # Dependent libraries
@@ -329,42 +333,26 @@ elseif(WIN32)
 	list (APPEND USCXML_CORE_LIBS ${XML_LIBRARIES})
 endif()
 
-
 # CURL
 find_package(CURL REQUIRED)
-# find_package(OpenSSL REQUIRED)
-# find_package(ZLIB REQUIRED)
-
-# include_directories(${OPENSSL_INCLUDE_DIR})
-# include_directories(${ZLIB_INCLUDE_DIRS})
 include_directories(${CURL_INCLUDE_DIRS})
 list (APPEND USCXML_CORE_LIBS ${CURL_LIBRARIES})
-# list (APPEND USCXML_CORE_LIBS ${OPENSSL_LIBRARIES})
-# list (APPEND USCXML_CORE_LIBS ${ZLIB_LIBRARIES})
 if (WIN32)
 	add_definitions("-DCURL_STATICLIB")
 endif()
-
 
 # prefer rest as static libraries
 set(CMAKE_FIND_LIBRARY_SUFFIXES_ORIG ${CMAKE_FIND_LIBRARY_SUFFIXES})
 set(CMAKE_FIND_LIBRARY_SUFFIXES .lib .a ${CMAKE_FIND_LIBRARY_SUFFIXES})
 
-################################
-# required libraries for core
-
-
 # GLOG
-
 # set(ENV{GLOG_SRC} ${CMAKE_SOURCE_DIR}/../glog)
 find_package(GLOG REQUIRED)
 include_directories(${GLOG_INCLUDE_DIR})
 list (APPEND USCXML_CORE_LIBS ${GLOG_LIBRARY})
 add_definitions(-DGLOG_NO_ABBREVIATED_SEVERITIES)
 
-
 # ARABICA
-
 # set($ENV{ARABICA_SRC} ${PROJECT_SOURCE_DIR}/../arabica)
 find_package(Arabica REQUIRED)
 include_directories(${ARABICA_INCLUDE_DIR})
@@ -373,620 +361,35 @@ if (WIN32)
 	add_definitions("-DUSE_MSXML")
 endif()
 
-
 # BOOST - header only
-
 FIND_PATH(Boost_INCLUDE_DIR boost/version.hpp)
 include_directories(${Boost_INCLUDE_DIR})
 
-
 # LIBEVENT
-
 #set(ENV{EVENT_SRC} ${CMAKE_SOURCE_DIR}/../libevent)
 find_package(EVENT REQUIRED)
 include_directories(${EVENT_INCLUDE_DIR})
 list (APPEND USCXML_CORE_LIBS ${EVENT_LIBRARY})
 
-############################################################
-# Actual files of core library
-############################################################
-
-file(GLOB_RECURSE USCXML_SERVER
-	src/uscxml/server/*.cpp
-	src/uscxml/server/*.h
-)
-source_group("Interpreter" FILES ${USCXML_SERVER})
-list (APPEND USCXML_FILES ${USCXML_SERVER})
-
-file(GLOB_RECURSE USCXML_CONCURRENCY
-	src/uscxml/concurrency/*.cpp
-	src/uscxml/concurrency/*.h
-)
-source_group("Interpreter" FILES ${USCXML_CONCURRENCY})
-list (APPEND USCXML_FILES ${USCXML_CONCURRENCY})
-
-file(GLOB_RECURSE USCXML_DEBUG
-	src/uscxml/debug/*.cpp
-	src/uscxml/debug/*.h
-)
-source_group("Interpreter" FILES ${USCXML_DEBUG})
-list (APPEND USCXML_FILES ${USCXML_DEBUG})
-
-file(GLOB_RECURSE USCXML_INTERPRETERS
-	src/uscxml/interpreter/*.cpp
-	src/uscxml/interpreter/*.h
-)
-source_group("Interpreter" FILES ${USCXML_INTERPRETERS})
-list (APPEND USCXML_FILES ${USCXML_INTERPRETERS})
-
-file(GLOB USCXML_CORE
-	contrib/src/jsmn/jsmn.c
-	src/uscxml/*.cpp
-	src/uscxml/*.h
-)
-source_group("Interpreter" FILES ${USCXML_CORE})
-list (APPEND USCXML_FILES ${USCXML_CORE})
-
-include_directories(src)
-
-OPTION(BUILD_AS_PLUGINS "Build invokers, ioprocessors and datamodels as plugins" OFF)
-if (BUILD_AS_PLUGINS)
-	include_directories(${PROJECT_SOURCE_DIR}/src/uscxml/plugins)
-	file(GLOB PLUMA 
-		src/uscxml/plugins/Pluma/*.cpp 
-		src/uscxml/plugins/Pluma/*.h
-		src/uscxml/plugins/*.cpp 
-		src/uscxml/plugins/*.h
-	)
-	source_group("Interpreter" FILES ${PLUMA})
-	list (APPEND USCXML_FILES ${PLUMA})
-	add_definitions("-DBUILD_AS_PLUGINS")
-endif()
-
-if (BUILD_AS_PLUGINS)
-	add_library(uscxml ${USCXML_FILES})
-endif()
 
 #################################################
-# optional things we can build as plugins
+# Gather source files
 
-# sample invoker - include to make sure it compiles
-file(GLOB_RECURSE SAMPLE_INVOKER
-	src/uscxml/plugins/invoker/sample/*.cpp
-	src/uscxml/plugins/invoker/sample/*.h
-)
-source_group("Invoker\\sample" FILES ${SAMPLE_INVOKER})
-if (BUILD_AS_PLUGINS)
-	add_library(
-		invoker_sample SHARED 
-		${SAMPLE_INVOKER})
-	target_link_libraries(invoker_sample uscxml)
-	set_target_properties(invoker_sample PROPERTIES FOLDER "Plugin Invoker")
-else()
-	list (APPEND USCXML_FILES ${SAMPLE_INVOKER})
-endif()
+# we use include instead of add_subdirectory because
+# source groups do not work otherwise.
 
+include(src/uscxml/CMakeLists.txt)
+include_directories(${USCXML_INCLUDE_DIRS})
 
-# LIBEVENT basichttp ioprocessor - this one is already required above
-
-file(GLOB_RECURSE BASICHTTP_IOPROCESSOR
-	src/uscxml/plugins/ioprocessor/basichttp/*.cpp
-	src/uscxml/plugins/ioprocessor/basichttp/*.h
-)
-source_group("IOProcessor\\basichttp" FILES ${BASICHTTP_IOPROCESSOR})
-if (BUILD_AS_PLUGINS)
-	add_library(
-		ioprocessor_basichttp SHARED 
-		${BASICHTTP_IOPROCESSOR})
-	target_link_libraries(ioprocessor_basichttp uscxml)
-	set_target_properties(ioprocessor_basichttp PROPERTIES FOLDER "Plugin IOProcessor")
-else()
-	list (APPEND USCXML_FILES ${BASICHTTP_IOPROCESSOR})
-endif()
-
-
-# scxml ioprocessor - this one is already required above
-
-file(GLOB_RECURSE SCXML_IOPROCESSOR
-	src/uscxml/plugins/ioprocessor/scxml/*.cpp
-	src/uscxml/plugins/ioprocessor/scxml/*.h
-)
-source_group("IOProcessor\\scxml" FILES ${SCXML_IOPROCESSOR})
-if (BUILD_AS_PLUGINS)
-	add_library(
-		ioprocessor_scxml SHARED 
-		${SCXML_IOPROCESSOR})
-	target_link_libraries(ioprocessor_scxml uscxml)
-	set_target_properties(ioprocessor_scxml PROPERTIES FOLDER "Plugin IOProcessor")
-else()
-	list (APPEND USCXML_FILES ${SCXML_IOPROCESSOR})
-endif()
-
-
-# mmi ioprocessor
-
-file(GLOB_RECURSE MMI_IOPROCESSOR
-	src/uscxml/plugins/ioprocessor/modality/*.cpp
-	src/uscxml/plugins/ioprocessor/modality/*.h
-)
-source_group("IOProcessor\\modality" FILES ${MMI_IOPROCESSOR})
-if (BUILD_AS_PLUGINS)
-	add_library(
-		ioprocessor_mmi SHARED 
-		${MMI_IOPROCESSOR})
-	target_link_libraries(ioprocessor_mmi uscxml)
-	set_target_properties(ioprocessor_mmi PROPERTIES FOLDER "Plugin IOProcessor")
-else()
-	list (APPEND USCXML_FILES ${MMI_IOPROCESSOR})
-endif()
-
-
-# Fetch element
-
-file(GLOB_RECURSE FETCH_ELEMENT
-	src/uscxml/plugins/element/fetch/*.cpp
-	src/uscxml/plugins/element/fetch/*.h
-)
-source_group("Element\\fetch" FILES ${FETCH_ELEMENT})
-if (BUILD_AS_PLUGINS)
-	add_library(
-		element_fetch SHARED 
-		${FETCH_ELEMENT})
-	target_link_libraries(element_fetch uscxml)
-	set_target_properties(element_fetch PROPERTIES FOLDER "Plugin Element")
-else()
-	list (APPEND USCXML_FILES ${FETCH_ELEMENT})
-endif()
-
-
-# Postpone element
-
-file(GLOB_RECURSE POSTPONE_ELEMENT
-	src/uscxml/plugins/element/postpone/*.cpp
-	src/uscxml/plugins/element/postpone/*.h
-)
-source_group("Element\\postpone" FILES ${POSTPONE_ELEMENT})
-if (BUILD_AS_PLUGINS)
-	add_library(
-		element_postpone SHARED 
-		${POSTPONE_ELEMENT})
-	target_link_libraries(element_postpone uscxml)
-	set_target_properties(element_postpone PROPERTIES FOLDER "Plugin Element")
-else()
-	list (APPEND USCXML_FILES ${POSTPONE_ELEMENT})
-endif()
-
-
-# Respond element
-
-file(GLOB_RECURSE RESPOND_ELEMENT
-	src/uscxml/plugins/element/respond/*.cpp
-	src/uscxml/plugins/element/respond/*.h
-)
-source_group("Element\\respond" FILES ${RESPOND_ELEMENT})
-if (BUILD_AS_PLUGINS)
-	add_library(
-		element_respond SHARED 
-		${RESPOND_ELEMENT})
-	target_link_libraries(element_respond uscxml)
-	set_target_properties(element_respond PROPERTIES FOLDER "Plugin Element")
-else()
-	list (APPEND USCXML_FILES ${RESPOND_ELEMENT})
-endif()
-
-
-# DirMon invoker to watch for filesystem changes
-
-file(GLOB_RECURSE DIRMON_INVOKER
-	src/uscxml/plugins/invoker/filesystem/dirmon/*.cpp
-	src/uscxml/plugins/invoker/filesystem/dirmon/*.h
-)
-source_group("Invoker\\dirmon" FILES ${DIRMON_INVOKER})
-include_directories(${PROJECT_SOURCE_DIR}/src/uscxml/plugins/invoker/filesystem/dirmon/)
-if (BUILD_AS_PLUGINS)
-	add_library(
-		invoker_dirmon SHARED 
-		${DIRMON_INVOKER})
-	target_link_libraries(invoker_dirmon uscxml)
-	set_target_properties(invoker_dirmon PROPERTIES FOLDER "Plugin Invoker")
-else()
-	list (APPEND USCXML_FILES ${DIRMON_INVOKER})
-endif()
-
-
-# System invoker to open a native command
-
-file(GLOB_RECURSE SYSTEM_INVOKER
-	src/uscxml/plugins/invoker/system/*.cpp
-	src/uscxml/plugins/invoker/system/*.h
-)
-source_group("Invoker\\system" FILES ${SYSTEM_INVOKER})
-include_directories(${PROJECT_SOURCE_DIR}/src/uscxml/plugins/invoker/system/)
-if (BUILD_AS_PLUGINS)
-	add_library(
-		invoker_system SHARED 
-		${SYSTEM_INVOKER})
-	target_link_libraries(invoker_system uscxml)
-	set_target_properties(invoker_system PROPERTIES FOLDER "Plugin Invoker")
-else()
-	list (APPEND USCXML_FILES ${SYSTEM_INVOKER})
-endif()
-
-
-# SQLite3 SQL Invoker
-
-find_package(Sqlite3)
-if (SQLITE3_FOUND)
-	file(GLOB_RECURSE SQLITE3_INVOKER
-		src/uscxml/plugins/invoker/sqlite3/*.cpp
-		src/uscxml/plugins/invoker/sqlite3/*.h
-	)
-	source_group("Invoker\\sqlite" FILES ${SQLITE3_INVOKER})
-	if (BUILD_AS_PLUGINS)
-		add_library(
-			invoker_sqlite3 SHARED 
-			${SQLITE3_INVOKER})
-		target_link_libraries(invoker_sqlite3 uscxml)
-		set_target_properties(invoker_sqlite3 PROPERTIES FOLDER "Plugin Invoker")
-	else()
-		list (APPEND USCXML_FILES ${SQLITE3_INVOKER})
-	endif()
-endif()
-
-
-# ffmpeg invoker
-
-find_package(FFMPEG)
-if (FFMPEG_FOUND)
-	include_directories(${FFMPEG_INCLUDE_DIR})
-	file(GLOB_RECURSE FFMPEG_INVOKER
-		src/uscxml/plugins/invoker/ffmpeg/*.cpp
-		src/uscxml/plugins/invoker/ffmpeg/*.h
-	)
-	source_group("Invoker\\ffmpeg" FILES ${FFMPEG_INVOKER})
-	if (BUILD_AS_PLUGINS)
-		add_library(
-			invoker_ffmpeg SHARED 
-			${FFMPEG_INVOKER})
-		target_link_libraries(invoker_ffmpeg uscxml)
-		set_target_properties(invoker_ffmpeg PROPERTIES FOLDER "Plugin Invoker")
-	else()
-		list (APPEND USCXML_FILES ${FFMPEG_INVOKER})
-	endif()
-endif()
-
-
-# JavaScriptCore ecmascript datamodel
-if (APPLE AND IOS AND OFF)
-	FIND_LIBRARY(JSC_LIBRARY JavaScriptCore)
-	set(JSC_FOUND ON)
-	file(GLOB JSC_DATAMODEL
-		src/uscxml/plugins/datamodel/ecmascript/JavaScriptCore/*.cpp
-		src/uscxml/plugins/datamodel/ecmascript/JavaScriptCore/*.h
-	)
-	source_group("Datamodel\\jsc" FILES ${JSC_DATAMODEL})
-	file(GLOB_RECURSE JSC_DOM
-		src/uscxml/plugins/datamodel/ecmascript/JavaScriptCore/dom/*.cpp
-		src/uscxml/plugins/datamodel/ecmascript/JavaScriptCore/dom/*.h
-	)
-	source_group("Datamodel\\DOM" FILES ${JSC_DOM})
-	if (BUILD_AS_PLUGINS)
-		add_library(
-			datamodel_jsc SHARED 
-			${JSC_DATAMODEL}
-			${JSC_DOM})
-		target_link_libraries(datamodel_jsc 
-			uscxml
-			${JSC_LIBRARY})
-		set_target_properties(datamodel_jsc PROPERTIES FOLDER "Plugin DataModel")
-	else()
-		list (APPEND USCXML_FILES ${JSC_DATAMODEL})
-		list (APPEND USCXML_FILES ${JSC_DOM})
-		list (APPEND USCXML_OPT_LIBS ${JSC_LIBRARY})
-	endif()
-
-endif()
-
-
-# NULL datamodel
-
-file(GLOB NULL_DATAMODEL
-	src/uscxml/plugins/datamodel/null/*.cpp
-	src/uscxml/plugins/datamodel/null/*.h
-)
-source_group("Datamodel\\null" FILES ${NULL_DATAMODEL})
-if (BUILD_AS_PLUGINS)
-	add_library(datamodel_null SHARED ${NULL_DATAMODEL})
-	target_link_libraries(datamodel_null uscxml)
-	set_target_properties(datamodel_null PROPERTIES FOLDER "Plugin DataModel")
-else()
-	list (APPEND USCXML_FILES ${NULL_DATAMODEL})
-endif()
-
-
-# XPath datamodel
-
-file(GLOB XPATH_DATAMODEL
-	src/uscxml/plugins/datamodel/xpath/*.cpp
-	src/uscxml/plugins/datamodel/xpath/*.h
-)
-source_group("Datamodel\\xpath" FILES ${XPATH_DATAMODEL})
-if (BUILD_AS_PLUGINS)
-	add_library(datamodel_xpath SHARED ${XPATH_DATAMODEL})
-	target_link_libraries(datamodel_xpath uscxml)
-	set_target_properties(datamodel_xpath PROPERTIES FOLDER "Plugin DataModel")
-else()
-	list (APPEND USCXML_FILES ${XPATH_DATAMODEL})
-endif()
-
-
-# GOOGLE V8 ecmascript datamodel
-
-#if (NOT APPLE OR IOS)
-	# set(ENV{V8_SRC} ${CMAKE_SOURCE_DIR}/../v8)
-	find_package(V8)
-	if (V8_FOUND)
-		include_directories(${V8_INCLUDE_DIR})
-		file(GLOB V8_DATAMODEL
-			src/uscxml/plugins/datamodel/ecmascript/v8/*.cpp
-			src/uscxml/plugins/datamodel/ecmascript/v8/*.h
-		)
-		source_group("Datamodel\\v8" FILES ${V8_DATAMODEL})
-		file(GLOB_RECURSE V8_DOM
-#			${PROJECT_SOURCE_DIR}/contrib/dom/scripts/gen/*.cpp
-#			${PROJECT_SOURCE_DIR}/contrib/dom/scripts/gen/*.h
-			src/uscxml/plugins/datamodel/ecmascript/v8/dom/*.cpp
-			src/uscxml/plugins/datamodel/ecmascript/v8/dom/*.h
-		)
-		# include_directories(${PROJECT_SOURCE_DIR}/contrib/dom/scripts/gen/)
-		# list(APPEND V8_DOM "src/uscxml/plugins/datamodel/ecmascript/v8/dom/V8DOM.cpp")
-		# list(APPEND V8_DOM "src/uscxml/plugins/datamodel/ecmascript/v8/dom/V8DOM.h")
-		
-		source_group("Datamodel\\DOM" FILES ${V8_DOM})
-
-		if (BUILD_AS_PLUGINS)
-			add_library(
-				datamodel_v8 SHARED 
-				${V8_DATAMODEL}
-				${V8_DOM})
-			target_link_libraries(datamodel_v8 
-				uscxml
-				${V8_LIBRARY})
-			set_target_properties(datamodel_v8 PROPERTIES FOLDER "Plugin DataModel")
-		else()
-			list (APPEND USCXML_FILES ${V8_DATAMODEL})
-			list (APPEND USCXML_FILES ${V8_DOM})
-			list (APPEND USCXML_OPT_LIBS ${V8_LIBRARY})
-		endif()
-	endif()
-#endif()
-
-
-# SWI PROLOG datamodel
-
-#set(SWI_INCLUDE_HINT ${CMAKE_SOURCE_DIR}/../pl-devel/include)
-#set(SWI_LIBRARY_HINT ${CMAKE_SOURCE_DIR}/../pl-devel/lib/x86_64-darwin12.2.0)
-find_package(SWI)
-#find_package(GMP)
-#find_package(CURSES)
-if (SWI_FOUND)
-	include_directories(${SWI_INCLUDE_DIR})
-#	include_directories(${GMP_INCLUDE_DIR})
-#	include_directories(${CURSES_INCLUDE_DIR})
-	file(GLOB_RECURSE SWI_DATAMODEL
-		src/uscxml/plugins/datamodel/prolog/swi/*.cpp
-		src/uscxml/plugins/datamodel/prolog/swi/*.h
-	)
-	source_group("Datamodel\\swi" FILES ${SWI_DATAMODEL})
-	if (BUILD_AS_PLUGINS)
-		add_library(
-			datamodel_swi SHARED 
-			${SWI_DATAMODEL})
-		target_link_libraries(datamodel_swi 
-			uscxml
-#			${GMP_LIBRARY}
-#			${CURSES_LIBRARIES}
-			${SWI_LIBRARY})
-		set_target_properties(datamodel_swi PROPERTIES FOLDER "Plugin DataModel")
-	else()
-		list (APPEND USCXML_FILES ${SWI_DATAMODEL})
-		list (APPEND USCXML_OPT_LIBS ${SWI_LIBRARY}) # ${GMP_LIBRARY} ${CURSES_LIBRARIES})
-	endif()
-endif()
-
-
-# UMUNDO invoker 
-
-if (WIN32)
-	find_package(UMUNDO COMPONENTS convenience)
-else()
-	find_package(UMUNDO COMPONENTS rpc serial core)
-endif()
-if (UMUNDO_FOUND)
-	include_directories(${UMUNDO_INCLUDE_DIR})
-	file(GLOB_RECURSE UMUNDO_INVOKER 
-		src/uscxml/plugins/invoker/umundo/*.cpp 
-		src/uscxml/plugins/invoker/umundo/*.h)
-	source_group("Invoker\\umundo" FILES ${UMUNDO_INVOKER})
-	if (BUILD_AS_PLUGINS)
-		add_library(
-			invoker_umundo SHARED 
-			${UMUNDO_INVOKER})
-		target_link_libraries(invoker_umundo 
-			uscxml
-			${UMUNDO_LIBRARIES})
-		set_target_properties(invoker_umundo PROPERTIES FOLDER "Plugin Invoker")
-	else()
-		list (APPEND USCXML_FILES ${UMUNDO_INVOKER})
-		list (APPEND USCXML_OPT_LIBS ${UMUNDO_LIBRARIES})
-	endif()
-	add_definitions("-DUMUNDO_STATIC")
-endif()
-
-
-# USCXML invoker 
-
-file(GLOB_RECURSE USCXML_INVOKER 
-	src/uscxml/plugins/invoker/scxml/*.cpp 
-	src/uscxml/plugins/invoker/scxml/*.h)
-source_group("Invoker\\uscxml" FILES ${USCXML_INVOKER})
-if (BUILD_AS_PLUGINS)
-	add_library(
-		invoker_uscxml SHARED 
-		${USCXML_INVOKER})
-	target_link_libraries(invoker_uscxml 
-		uscxml)
-		set_target_properties(invoker_uscxml PROPERTIES FOLDER "Plugin Invoker")
-else()
-	list (APPEND USCXML_FILES ${USCXML_INVOKER})
-endif()
-
-
-# HTTP server invoker 
-
-file(GLOB_RECURSE HTTPSERVLET_INVOKER 
-	src/uscxml/plugins/invoker/http/*.cpp 
-	src/uscxml/plugins/invoker/http/*.h)
-source_group("Invoker\\httpservlet" FILES ${HTTPSERVLET_INVOKER})
-if (BUILD_AS_PLUGINS)
-	add_library(
-		invoker_httpserver SHARED 
-		${HTTPSERVLET_INVOKER})
-	target_link_libraries(invoker_httpserver 
-		uscxml)
-		set_target_properties(invoker_httpserver PROPERTIES FOLDER "Plugin Invoker")
-else()
-	list (APPEND USCXML_FILES ${HTTPSERVLET_INVOKER})
-endif()
-
-
-# Heartbeat invoker
-
-file(GLOB_RECURSE HEARTBEAT_INVOKER
-	src/uscxml/plugins/invoker/heartbeat/*.cpp
-	src/uscxml/plugins/invoker/heartbeat/*.h
-)
-source_group("Invoker\\heartbeat" FILES ${HEARTBEAT_INVOKER})
-if (BUILD_AS_PLUGINS)
-	add_library(
-		invoker_heartbeat SHARED 
-		${HEARTBEAT_INVOKER})
-	target_link_libraries(invoker_heartbeat uscxml)
-	set_target_properties(invoker_heartbeat PROPERTIES FOLDER "Plugin Invoker")
-else()
-	list (APPEND USCXML_FILES ${HEARTBEAT_INVOKER})
-endif()
-
-
-# OpenSceneGraph invoker
-if (UNIX)
-	set(CMAKE_FIND_LIBRARY_SUFFIXES ${CMAKE_FIND_LIBRARY_SUFFIXES_ORIG}) # link dynamically!
-elseif(WIN32)
-	if (ENV{OSG_ROOT} STREQUAL "")
-		set(ENV{OSG_ROOT} "C:/Program Files/OpenSceneGraph-3.0.1")
-	endif()
-endif()
-
-find_package(OpenSceneGraph COMPONENTS osgViewer osgGA osgText osgFX osgManipulator osgDB osgUtil OpenThreads)
-find_package(OpenGL)
-if (OPENSCENEGRAPH_FOUND AND OPENGL_FOUND)
-	
-	include_directories(${OPENSCENEGRAPH_INCLUDE_DIRS})
-	include_directories(${OPENGL_INCLUDE_DIR})
-
-	file(GLOB OPENSCENEGRAPH_INVOKER 
-		src/uscxml/plugins/invoker/graphics/openscenegraph/*.cpp 
-		src/uscxml/plugins/invoker/graphics/openscenegraph/*.h)
-	source_group("Invoker\\scenegraph" FILES ${OPENSCENEGRAPH_INVOKER})
-
-	if (BUILD_AS_PLUGINS)
-		add_library(
-			invoker_openscenegraph SHARED 
-			${OPENSCENEGRAPH_INVOKER})
-		target_link_libraries(invoker_openscenegraph
-			${OPENSCENEGRAPH_LIBRARIES}
-			${OPENGL_LIBRARIES}
-			uscxml)
-			set_target_properties(invoker_openscenegraph PROPERTIES FOLDER "Plugin Invoker")
-	else()
-		list (APPEND USCXML_FILES ${OPENSCENEGRAPH_INVOKER})
-		list (APPEND USCXML_OPT_LIBS ${OPENSCENEGRAPH_LIBRARIES} ${OPENGL_LIBRARIES})
-	endif()
-
-	file(GLOB OPENSCENEGRAPH_CONVERTER_INVOKER 
-		src/uscxml/plugins/invoker/graphics/openscenegraph/converter/*.cpp 
-		src/uscxml/plugins/invoker/graphics/openscenegraph/converter/*.h)
-	source_group("Invoker\\scenegraph\\convert" FILES ${OPENSCENEGRAPH_CONVERTER_INVOKER})
-
-	if (BUILD_AS_PLUGINS)
-		add_library(
-			invoker_openscenegraph_convert SHARED 
-			${OPENSCENEGRAPH_CONVERTER_INVOKER})
-		target_link_libraries(invoker_openscenegraph_convert
-			${OPENSCENEGRAPH_LIBRARIES}
-			${OPENGL_LIBRARIES}
-			uscxml)
-			set_target_properties(invoker_openscenegraph_convert PROPERTIES FOLDER "Plugin Invoker")
-	else()
-		list (APPEND USCXML_FILES ${OPENSCENEGRAPH_CONVERTER_INVOKER})
-		list (APPEND USCXML_OPT_LIBS ${OPENSCENEGRAPH_LIBRARIES} ${OPENGL_LIBRARIES})
-	endif()
-
-endif()
-
-if (UNIX)
-	set(CMAKE_FIND_LIBRARY_SUFFIXES .lib .a ${CMAKE_FIND_LIBRARY_SUFFIXES})
-endif()
-
-# MILES modality components
-
-find_package(MILES)
-if (MILES_FOUND AND OFF)
-  include_directories(${MILES_INCLUDE_DIR})
-
-	# openal is only needed for miles
-	find_package(OpenAL REQUIRED)
-#	find_package(JPEG REQUIRED)
-	list (APPEND MILES_LIBRARIES "iconv")
-	list (APPEND MILES_LIBRARIES ${JPEG_LIBRARIES})
-	include_directories(${OPENAL_INCLUDE_DIR})
-
-  file(GLOB_RECURSE MILES_INVOKER src/uscxml/plugins/invoker/miles/*.cpp src/uscxml/plugins/invoker/miles/*.h)
-	source_group("Invoker\\miles" FILES ${MILES_INVOKER})
-#	message("MILES_INVOKER ${MILES_INVOKER}")
-
-	if (BUILD_AS_PLUGINS)
-		add_library(
-			invoker_miles SHARED 
-			${MILES_INVOKER})
-		target_link_libraries(invoker_miles 
-			${MILES_LIBRARIES}
-			${OPENAL_LIBRARY}
-			uscxml)
-		set_target_properties(invoker_miles PROPERTIES FOLDER "Plugin Invoker")
-	else()
-  	list (APPEND USCXML_FILES ${MILES_INVOKER})
-  	list (APPEND USCXML_OPT_LIBS ${MILES_LIBRARIES})
-		list (APPEND USCXML_OPT_LIBS ${OPENAL_LIBRARY})
-	endif()
-endif()
-
-
-# order of libraries matters with some gcc versions?!
-if (UNIX AND NOT APPLE)
-	list (APPEND USCXML_CORE_LIBS "pthread")
-	list (APPEND USCXML_CORE_LIBS "rt")
-	list (APPEND USCXML_CORE_LIBS "dl")
-endif()
-
-list(SORT USCXML_FILES)
 
 ############################################################
 # Binaries and tests
 ############################################################
 
 # build library
-if (NOT BUILD_AS_PLUGINS)
+if (BUILD_AS_PLUGINS)
+	add_library(uscxml ${USCXML_FILES})
+else()
 	add_library(uscxml ${USCXML_FILES})
 endif()
 target_link_libraries(uscxml ${USCXML_OPT_LIBS} ${USCXML_CORE_LIBS})
