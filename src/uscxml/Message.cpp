@@ -308,6 +308,30 @@ Data Data::fromJSON(const std::string& jsonString) {
 	return data;
 }
 
+void Event::initContent(const std::string& content) {
+	// try to parse as JSON
+	Data json = Data::fromJSON(content);
+	if (json) {
+		data = json;
+		return;
+	}
+
+	// try to parse as XML
+	Arabica::SAX2DOM::Parser<std::string> parser;
+	Arabica::SAX::CatchErrorHandler<std::string> errorHandler;
+	parser.setErrorHandler(errorHandler);
+	
+	std::istringstream is(content);
+	Arabica::SAX::InputSource<std::string> inputSource;
+	inputSource.setByteStream(is);
+	if (parser.parse(inputSource)) {
+		dom = parser.getDocument();
+		return;
+	}
+	
+	this->content = content;
+}
+
 Event Event::fromXML(const std::string& xmlString) {
 	Arabica::SAX2DOM::Parser<std::string> eventParser;
 	Arabica::SAX::CatchErrorHandler<std::string> errorHandler;

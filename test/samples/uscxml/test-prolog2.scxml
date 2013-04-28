@@ -1,0 +1,38 @@
+<scxml datamodel="prolog">
+  <data id="father/2">
+    bob, jim.
+    bob, john.
+  </data>
+  <data>
+    mother(martha, jim).
+    mother(martha, john).
+  </data>
+  <state id="s1">
+    <onentry>
+      <foreach array="father(bob, X)"
+               item="child"
+               index="index">
+        <log label="index" expr="index(X)" />
+        <log label="child" expr="child(X)" />
+      </foreach>
+    </onentry>
+    <transition target="s2"
+                cond="mother(martha, X), father(bob, X)"/>
+  </state>
+  <state id="s2">
+    <onentry>
+      <send type="basichttp"
+            targetexpr="ioprocessors(basichttp(location(X)))"
+            event="foo">
+        <content>
+          <p>Snippet of XML</p>
+        </content>
+      </send>
+    </onentry>
+    <transition 
+      target="end"
+      event="foo"
+      cond="member(element('p',_,_), X), event(data(X))" />
+  </state>
+  <state id="end" final="true" />
+</scxml>

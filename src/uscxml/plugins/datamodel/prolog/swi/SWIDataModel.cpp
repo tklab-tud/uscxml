@@ -124,10 +124,10 @@ void SWIDataModel::setEvent(const Event& event) {
 		PlCall("retractall(event(_))");
 		
 		// simple values
-		PlCall("assert", PlCompound("event", PlCompound("name", PlString(event.name.c_str()))));
+		PlCall("assert", PlCompound("event", PlCompound("name", PlTerm(event.name.c_str()))));
 		PlCall("assert", PlCompound("event", PlCompound("origin", PlString(event.origin.c_str()))));
 		PlCall("assert", PlCompound("event", PlCompound("origintype", PlString(event.invokeid.c_str()))));
-		PlCall("assert", PlCompound("event", PlCompound("invokeid", PlString(event.origintype.c_str()))));
+		PlCall("assert", PlCompound("event", PlCompound("invokeid", PlTerm(event.origintype.c_str()))));
 		PlCall("assert", PlCompound("event", PlCompound("raw", PlString(event.raw.c_str()))));
 
 		// event.type
@@ -143,11 +143,11 @@ void SWIDataModel::setEvent(const Event& event) {
 				type = "external";
 				break;
 		}
-		PlCall("assert", PlCompound("event", PlCompound("type", PlString(type.c_str()))));
+		PlCall("assert", PlCompound("event", PlCompound("type", PlTerm(type.c_str()))));
 		
 		// event.sendid
 		if (!event.hideSendId)
-			PlCall("assert", PlCompound("event", PlCompound("sendid", PlString(event.sendid.c_str()))));
+			PlCall("assert", PlCompound("event", PlCompound("sendid", PlTerm(event.sendid.c_str()))));
 		
 		// event.data
 		URL domUrl;
@@ -170,9 +170,9 @@ void SWIDataModel::setEvent(const Event& event) {
 			paramIter = event.params.upper_bound(paramIter->first);
 		}
 		if (uniqueKeys > 0) {
-			std::stringstream paramArray;		
 			paramIter = event.params.begin();
 			for(int i = 0; paramIter != event.params.end(); i++) {
+				std::stringstream paramArray;
 				Event::params_t::const_iterator	lastValueIter = event.params.upper_bound(paramIter->first);
 
 				paramArray << paramIter->first << "([";
@@ -185,7 +185,8 @@ void SWIDataModel::setEvent(const Event& event) {
 				}
 				paramArray << "])";
 				std::stringstream paramExpr;
-				paramExpr << "assert(event(param(" << paramArray << ")))";
+				paramExpr << "assert(event(param(" << paramArray.str() << ")))";
+				//std::cout << paramExpr.str() << std::endl;
 				PlCall(paramExpr.str().c_str());
 				
 				paramIter = lastValueIter;
@@ -208,15 +209,46 @@ bool SWIDataModel::validate(const std::string& location, const std::string& sche
 }
 
 uint32_t SWIDataModel::getLength(const std::string& expr) {
-//	std::cout << "SWIDataModel::getLength" << std::endl;
-	return 0;
+	PlCompound compound(expr.c_str());
+	PlTermv termv(compound.arity());
+	for (int i = 0; i < compound.arity(); i++) {
+		termv[i] = compound[i + 1];
+	}
+	PlQuery query(compound.name(), termv);
+	uint32_t length = 0;
+	while(query.next_solution() > 0)
+		length++;
+	return length;
 }
 
 void SWIDataModel::setForeach(const std::string& item,
                               const std::string& array,
                               const std::string& index,
                               uint32_t iteration) {
-	//	std::cout << "SWIDataModel::setForeach" << std::endl;
+	PlCompound compound(array.c_str());
+	PlCompound orig(array.c_str());
+	PlTermv termv(compound.arity());
+	for (int i = 0; i < compound.arity(); i++) {
+		termv[i] = compound[i + 1];
+	}
+	{
+		int tmp = iteration + 1;
+		PlQuery query(compound.name(), termv);
+		while (tmp) {
+			query.next_solution();
+			tmp--;
+		}
+	}
+	PlCall("retractall", PlCompound(index.c_str(), 1));
+	PlCall("retractall", PlCompound(item.c_str(), 1));
+	PlCall("assert", PlCompound(index.c_str(), PlTerm((long)iteration)));
+	
+	std::map<std::string, PlTerm> vars = resolveAtoms(compound, orig);
+	std::map<std::string, PlTerm>::iterator varIter = vars.begin();
+	while(varIter != vars.end()) {
+		PlCall("assert", PlCompound(item.c_str(), varIter->second));
+		varIter++;
+	}
 }
 
 void SWIDataModel::eval(const std::string& expr) {
@@ -294,11 +326,45 @@ void SWIDataModel::assign(const Arabica::DOM::Element<std::string>& assignElem,
                           const Arabica::DOM::Document<std::string>& doc,
                           const std::string& content) {
 	std::string expr = content;
+	std::string predicate;
 	if (HAS_ATTR(assignElem, "expr")) {
 		expr = ATTR(assignElem, "expr");
 	}
-	if (expr.length() > 0)
+	if (HAS_ATTR(assignElem, "id"))
+		predicate = ATTR(assignElem, "id");
+	if (HAS_ATTR(assignElem, "location"))
+		predicate = ATTR(assignElem, "location");
+
+	if (predicate.size() > 0) {
+		size_t aritySep = predicate.find_first_of("/");
+		if (aritySep != std::string::npos) {
+			std::string functor = predicate.substr(0, aritySep);
+			std::string arity = predicate.substr(aritySep + 1);
+			std::string callAssert = "assert";
+			if (HAS_ATTR(assignElem, "type")) {
+				std::string type = ATTR(assignElem, "type");
+				if (boost::iequals(type, "retract")) {
+					PlCall("retractall", PlCompound(functor.c_str(), strTo<long>(arity)));
+				} else if(boost::iequals(type, "append")) {
+					callAssert = "assertz";
+				} else if(boost::iequals(type, "prepend")) {
+					callAssert = "asserta";
+				}
+			}
+			// treat content as . seperated facts
+			std::stringstream factStream(content);
+			std::string item;
+			while(std::getline(factStream, item, '.')) {
+				std::string fact = boost::trim_copy(item);
+				if (fact.length() == 0)
+					continue;
+				PlCall((callAssert + "(" + functor + "(" + fact + "))").c_str());
+			}
+			
+		}
+	} else if (expr.length() > 0) {
 		eval(expr);
+	}
 }
 
 void SWIDataModel::assign(const std::string& location, const Data& data) {
@@ -308,15 +374,11 @@ void SWIDataModel::assign(const std::string& location, const Data& data) {
 void SWIDataModel::init(const Arabica::DOM::Element<std::string>& dataElem,
                         const Arabica::DOM::Document<std::string>& doc,
                         const std::string& content) {
-	std::string key;
-	if (HAS_ATTR(dataElem, "id")) {
-		key = ATTR(dataElem, "id");
-	} else if (HAS_ATTR(dataElem, "location")) {
-		key = ATTR(dataElem, "location");
-	}
 	assign(dataElem, doc, content);
 }
-void SWIDataModel::init(const std::string& location, const Data& data) {}
+void SWIDataModel::init(const std::string& location, const Data& data) {
+	assign(location, data);
+}
 
 bool SWIDataModel::isDeclared(const std::string& expr) {
 	return true;

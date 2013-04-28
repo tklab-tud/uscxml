@@ -11,6 +11,8 @@
 		
 		<!-- if no id is given, we assume assertion mode -->
 		<data>
+			:- multifile father/2.
+			:- multifile mother/2.
 			father(bob, jim).
 			father(bob, john).
 			father(bob, jack).
@@ -19,13 +21,13 @@
 			mother(martha, jack).
 		</data>
 		<!-- if id is given, we treat it the name of a predicate -->
-		<data id="sibling/2">
+		<!-- data id="sibling/2">
 			jim, john.
 			jim, jack.
 			john, jack.
-		</data>
+		</data -->
 		<!-- if an id is given, json data is transformed into a prolog compound term -->
-		<data id="john">
+		<!-- data id="john">
 			{
 			    "name": "John",
 			    "age": 25,
@@ -44,9 +46,9 @@
 			        }
 			    ]
 			}
-		</data>
+		</data -->
 		<!-- If an id is given, parse XML as nested compund terms -->
-		<data id="jack">
+		<!--data id="jack">
 			<person name="jack" age="27">
 				<address>
 					<street>23 3rd Street</street>
@@ -56,12 +58,13 @@
 					384 234-5534
 				</phone>
 			</person>
-		</data>
+		</data -->
 	</datamodel>
 	<!-- 
 		scripts are executed in assertion mode 
 	-->
 	<script>
+		:- multifile older/2.
 		older(bob, martha).
 		older(bob, john).
 		older(bob, jack).
@@ -78,7 +81,7 @@
 			<send event="foo">This is a foo event.</send>
 		</onentry>
 		<!-- boolean expressions are true if there is a solution-->
-		<transition event="foo" cond="not(father(X, jim)), mother(X, john), older(bob, X)." target="sending"/>
+		<transition event="foo" cond="older(bob, martha)." target="sending"/>
 	</state>
 	<state id="sending">
 		<onentry>
@@ -99,18 +102,26 @@
 				</content>
 			</send>
 		</onentry>
-		<transition event="bar" cond="in('sending')" target="assigning"/>
+		<transition event="bar" cond="event(name(X)), X='bar'." target="assigning"/>
 	</state>
 	<state id="assigning">
 		<onentry>
+		  <log label="Index" expr="listing." />
+			<foreach array="father(bob, X)"
+			  item="child"
+			  index="index">
+			  <log label="child" expr="child(X)" />
+			  <log label="index" expr="index(X)" />
+			</foreach>
+			<raise event="baz" />
 			<!-- assigning with retract attribute -->
-			<assign id="older/2" retract="">
+			<!--assign id="older/2" retract="older/2">
 				older(jim, john).
 				older(jim, jack).
 				older(john, jack).
-			</assign>
+			</assign-->
 		</onentry>
-		<transition event="bar" cond="in('assigning')" target="end"/>
+		<transition event="baz" cond="in('assigning')" target="end"/>
 	</state>
 	<state id="end" final="true">
 		<onentry>

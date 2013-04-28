@@ -84,6 +84,8 @@ void BasicHTTPIOProcessor::httpRecvRequest(const HTTPServer::Request& req) {
 				std::string value = evhttp_decode_uri(term.substr(split + 1).c_str());
 				if (boost::iequals(key, "_scxmleventname")) {
 					reqEvent.name = value;
+				} else if (boost::iequals(key, "content")) {
+					reqEvent.initContent(value);
 				} else {
 					reqEvent.data.compound[key] = value;
 					reqEvent.params.insert(std::make_pair(key, value));
@@ -187,11 +189,19 @@ void BasicHTTPIOProcessor::send(const SendRequest& req) {
 	}
 
 	// content
-	if (kvps.str().size() > 0) {
-		targetURL.setOutContent(kvps.str());
-	} else if (req.content.size() > 0) {
-		targetURL.setOutContent(req.content);
+	
+	if (req.content.size() > 0) {
+		kvps << kvpSeperator << evhttp_encode_uri("content") << "=" << evhttp_encode_uri(req.content.c_str());
+		kvpSeperator = "&";
 	}
+	if (req.dom) {
+		std::stringstream xmlStream;
+		xmlStream << req.dom;
+		kvps << kvpSeperator << evhttp_encode_uri("content") << "=" << evhttp_encode_uri(xmlStream.str().c_str());
+		kvpSeperator = "&";
+	}
+	targetURL.setOutContent(kvps.str());
+
 	targetURL.setRequestType("post");
 	targetURL.addMonitor(this);
 
