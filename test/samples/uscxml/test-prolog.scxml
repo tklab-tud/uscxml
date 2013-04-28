@@ -1,46 +1,120 @@
 <?xml version="1.0"?>
 <scxml datamodel="prolog" initial="start" binding="late">
+	<!--
+	% see http://www.swi-prolog.org/FAQ/Multifile.html
+	:- multifile animal/1.
+	-->
 	<datamodel>
-		<data id="facts">
-% see http://www.swi-prolog.org/FAQ/Multifile.html
-:- multifile animal/1.
-cat(tom).
-animal(X):- cat(X).
+		<!-- 
+			Various possible uses for the data element
+		-->
+		
+		<!-- if no id is given, we assume assertion mode -->
+		<data>
+			father(bob, jim).
+			father(bob, john).
+			father(bob, jack).
+			mother(martha, jim).
+			mother(martha, john).
+			mother(martha, jack).
+		</data>
+		<!-- if id is given, we treat it the name of a predicate -->
+		<data id="sibling/2">
+			jim, john.
+			jim, jack.
+			john, jack.
+		</data>
+		<!-- if an id is given, json data is transformed into a prolog compound term -->
+		<data id="john">
+			{
+			    "name": "John",
+			    "age": 25,
+			    "address": {
+			        "streetAddress": "21 2nd Street",
+			        "city": "New York",
+			    },
+			    "phoneNumbers": [
+			        {
+			            "type": "home",
+			            "number": "212 555-1234"
+			        },
+			        {
+			            "type": "fax",
+			            "number": "646 555-4567"
+			        }
+			    ]
+			}
+		</data>
+		<!-- If an id is given, parse XML as nested compund terms -->
+		<data id="jack">
+			<person name="jack" age="27">
+				<address>
+					<street>23 3rd Street</street>
+					<city>New York</city>
+				</address>
+				<phone type="mobile">
+					384 234-5534
+				</phone>
+			</person>
 		</data>
 	</datamodel>
+	<!-- 
+		scripts are executed in assertion mode 
+	-->
 	<script>
-mouse(jerry).
-animal(X):- mouse(X).
+		older(bob, martha).
+		older(bob, john).
+		older(bob, jack).
+		older(bob, jim).
 	</script>
 	<state id="start">
 		<onentry>
-			<log label="SessionId" expr="sessionId(X)"/>
+			<!-- 
+				Evaluation to string will return a list of valid solutions for the free variables.
+			-->
+			<log label="SessionId" expr="sessionid(X)"/>
 			<log label="Name" expr="name(X)"/>
+			
 			<send event="foo">This is a foo event.</send>
 		</onentry>
-		<transition event="foo" cond="not(cat(jerry)), cat(tom), mouse(jerry)." target="s1"/>
+		<!-- boolean expressions are true if there is a solution-->
+		<transition event="foo" cond="not(father(X, jim)), mother(X, john), older(bob, X)." target="sending"/>
 	</state>
-	<state id="s1">
+	<state id="sending">
 		<onentry>
-			<log expr="eventName(X)."/>
-			<send event="bar">
-				<ISBNdb server_time="2009-03-19T02:01:00Z">
-					<BookList total_results="1" page_size="10" page_number="1" shown_results="1">
-						<BookData book_id="the_data_compression_book" isbn="1558514341">
-							<Title>The Data Compression Book</Title>
-							<TitleLong/>
-							<AuthorsText>Mark Nelson, Jean-Loup Gailly, </AuthorsText>
-							<PublisherText publisher_id="m_t_books">M&amp;T Books</PublisherText>
-						</BookData>
-					</BookList>
-				</ISBNdb>
+			<send event="bar" type="basichttp" targetexpr="ioprocessors(basichttp(location(X)))">
+				<param name="foo" expr="name(X)" />
+				<param name="bar" expr="name(X)" />
+				<param name="bar" expr="sessionid(X)" />
+				<content>
+					<person name="jack" age="27">
+						<address>
+							<street>23 3rd Street</street>
+							<city>New York</city>
+						</address>
+						<phone type="mobile">
+							384 234-5534
+						</phone>
+					</person>
+				</content>
 			</send>
 		</onentry>
-		<transition target="end"/>
+		<transition event="bar" cond="in('sending')" target="assigning"/>
+	</state>
+	<state id="assigning">
+		<onentry>
+			<!-- assigning with retract attribute -->
+			<assign id="older/2" retract="">
+				older(jim, john).
+				older(jim, jack).
+				older(john, jack).
+			</assign>
+		</onentry>
+		<transition event="bar" cond="in('assigning')" target="end"/>
 	</state>
 	<state id="end" final="true">
 		<onentry>
-			<log expr="animal(X)."/>
+			<log label="Listing" expr="listing."/>
 		</onentry>
 	</state>
 </scxml>

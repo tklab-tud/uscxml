@@ -21,10 +21,15 @@ bool connect(pluma::Host& host) {
 SWIDataModel::SWIDataModel() {
 }
 
+// SWI prolog does not support passing user data
+static InterpreterImpl* _swiInterpreterPtr;
+	
 boost::shared_ptr<DataModelImpl> SWIDataModel::create(InterpreterImpl* interpreter) {
 	boost::shared_ptr<SWIDataModel> dm = boost::shared_ptr<SWIDataModel>(new SWIDataModel());
 	dm->_interpreter = interpreter;
 
+	// this is most unfortunate!
+	_swiInterpreterPtr = interpreter;
 	const char* swibin = getenv("SWI_BINARY");
 	if (swibin == NULL)
 		swibin = SWI_BINARY;
@@ -45,13 +50,45 @@ boost::shared_ptr<DataModelImpl> SWIDataModel::create(InterpreterImpl* interpret
 
 	// load SWI XML parser
 	PlCall("use_module", PlCompound("library", PlTerm("sgml")));
-	PlCall("assert", PlCompound("sessionId", PlTerm(PlString(dm->_interpreter->getSessionId().c_str()))));
+
+	// set system variables
+	PlCall("assert", PlCompound("sessionid", PlTerm(PlString(dm->_interpreter->getSessionId().c_str()))));
 	PlCall("assert", PlCompound("name", PlTerm(PlString(dm->_interpreter->getName().c_str()))));
 
-	PlCall("assert(eventName(X) :- event(Y,_), arg(1, Y, X)).");
+	std::map<std::string, IOProcessor>::const_iterator ioProcIter = dm->_interpreter->getIOProcessors().begin();
+	while(ioProcIter != dm->_interpreter->getIOProcessors().end()) {
+		Data ioProcData = ioProcIter->second.getDataModelVariables();
+
+		if (ioProcIter->first.find_first_of(":/'") == std::string::npos) {
+			std::stringstream ioProcShortCall;
+			ioProcShortCall << "assert(ioprocessors(" << ioProcIter->first << "(location('" << ioProcData.compound["location"].atom << "'))))";
+			PlCall(ioProcShortCall.str().c_str());
+		}
+		std::stringstream ioProcCall;
+		ioProcCall << "assert(ioprocessors(name('" << ioProcIter->first << "'), location('" << ioProcData.compound["location"].atom << "')))";
+		PlCall(ioProcCall.str().c_str());
+
+		ioProcIter++;
+	}
+
+	// the in predicate
+	PlRegister("user", "in", 1, SWIDataModel::inPredicate);
 	return dm;
 }
 
+foreign_t SWIDataModel::inPredicate(term_t a0, int arity, void* context) {
+	char *s;
+	if ( PL_get_atom_chars(a0, &s) ) {
+		Arabica::XPath::NodeSet<std::string> config = _swiInterpreterPtr->getConfiguration();
+		for (int i = 0; i < config.size(); i++) {
+			if (HAS_ATTR(config[i], "id") && strcmp(ATTR(config[i], "id").c_str(), s) == 0) {
+				return TRUE;
+			}
+		}
+	}
+	return FALSE;
+}
+	
 void SWIDataModel::registerIOProcessor(const std::string& name, const IOProcessor& ioprocessor) {
 //	std::cout << "SWIDataModel::registerIOProcessor" << std::endl;
 }
@@ -83,54 +120,80 @@ void SWIDataModel::initialize() {
 
 void SWIDataModel::setEvent(const Event& event) {
 	// remove old event
-	PlCall("system", "retractall", PlTermv("event"));
-	
-	PlTermv plEvent(7);
-	plEvent[0] = PlCompound("name", PlTerm(PlString(event.name.c_str())));
-	plEvent[1] = PlCompound("raw", PlTerm(PlString(event.raw.c_str())));
-	plEvent[2] = PlCompound("origin", PlTerm(PlString(event.origin.c_str())));
-	plEvent[3] = PlCompound("origintype", PlTerm(PlString(event.origintype.c_str())));
-	plEvent[4] = PlCompound("data", PlTerm(PlString(event.content.c_str())));
-	
-	Event::params_t::const_iterator paramIter;
-	// count unique keys in params
-	paramIter = event.params.begin();
-	size_t uniqueKeys = 0;
-	while(paramIter != event.params.end()) {
-		uniqueKeys++;
-		paramIter = event.params.upper_bound(paramIter->first);
-	}
-	
-	// create a compund for every unique key
-	PlTermv paramTerm(uniqueKeys);
-	paramIter = event.params.begin();
-	for(int i = 0; paramIter != event.params.end(); i++) {
-		Event::params_t::const_iterator	lastValueIter = event.params.upper_bound(paramIter->first);
-		size_t items = event.params.count(paramIter->first);
-		PlTermv keyTerm(items);
-		for (int j = 0; paramIter != lastValueIter; j++) {
-			keyTerm[j] = PlString(paramIter->second.c_str());
-			paramIter++;
+	try {
+		PlCall("retractall(event(_))");
+		
+		// simple values
+		PlCall("assert", PlCompound("event", PlCompound("name", PlString(event.name.c_str()))));
+		PlCall("assert", PlCompound("event", PlCompound("origin", PlString(event.origin.c_str()))));
+		PlCall("assert", PlCompound("event", PlCompound("origintype", PlString(event.invokeid.c_str()))));
+		PlCall("assert", PlCompound("event", PlCompound("invokeid", PlString(event.origintype.c_str()))));
+		PlCall("assert", PlCompound("event", PlCompound("raw", PlString(event.raw.c_str()))));
+
+		// event.type
+		std::string type;
+		switch (event.type) {
+			case Event::PLATFORM:
+				type = "platform";
+				break;
+			case Event::INTERNAL:
+				type = "internal";
+				break;
+			case Event::EXTERNAL:
+				type = "external";
+				break;
 		}
-		paramTerm[i] = PlCompound(paramIter->first.c_str(), keyTerm);
-		paramIter = lastValueIter;
+		PlCall("assert", PlCompound("event", PlCompound("type", PlString(type.c_str()))));
+		
+		// event.sendid
+		if (!event.hideSendId)
+			PlCall("assert", PlCompound("event", PlCompound("sendid", PlString(event.sendid.c_str()))));
+		
+		// event.data
+		URL domUrl;
+		if (event.dom) {
+			std::stringstream dataInitStr;
+			std::stringstream xmlDoc;
+			xmlDoc << event.getFirstDOMElement();
+			domUrl = URL::toLocalFile(xmlDoc.str(), ".pl");
+			dataInitStr << "load_xml_file('" << domUrl.asLocalFile(".pl") << "', XML), copy_term(XML,DATA), assert(event(data(DATA)))";
+			PlCall(dataInitStr.str().c_str());
+		} else if (event.content.size() > 0) {
+			PlCall("assert", PlCompound("event", PlCompound("data", PlString(Interpreter::spaceNormalize(event.content).c_str()))));
+		}	
+		
+		// event.params
+		size_t uniqueKeys = 0;
+		Event::params_t::const_iterator paramIter = event.params.begin();
+		while(paramIter != event.params.end()) {
+			uniqueKeys++;
+			paramIter = event.params.upper_bound(paramIter->first);
+		}
+		if (uniqueKeys > 0) {
+			std::stringstream paramArray;		
+			paramIter = event.params.begin();
+			for(int i = 0; paramIter != event.params.end(); i++) {
+				Event::params_t::const_iterator	lastValueIter = event.params.upper_bound(paramIter->first);
+
+				paramArray << paramIter->first << "([";
+				std::string termSep = "";
+
+				for (int j = 0; paramIter != lastValueIter; j++) {
+					paramArray << termSep << "'" << paramIter->second << "'";
+					termSep = ", ";
+					paramIter++;
+				}
+				paramArray << "])";
+				std::stringstream paramExpr;
+				paramExpr << "assert(event(param(" << paramArray << ")))";
+				PlCall(paramExpr.str().c_str());
+				
+				paramIter = lastValueIter;
+			}
+		}
+	} catch(PlException e) {
+		LOG(ERROR) << e.operator const char *();
 	}
-	plEvent[5] = PlCompound("params", paramTerm);
-	
-	PlTerm type;
-	switch (event.type) {
-		case Event::PLATFORM:
-			type = "platform";
-			break;
-		case Event::INTERNAL:
-			type = "internal";
-			break;
-		case Event::EXTERNAL:
-			type = "external";
-			break;
-	}
-	plEvent[6] = PlCompound("type", type);
-	PlCall("assert", PlCompound("event", plEvent));
 }
 
 Data SWIDataModel::getStringAsData(const std::string& content) {
@@ -172,6 +235,7 @@ bool SWIDataModel::evalAsBool(const std::string& expr) {
 }
 
 std::string SWIDataModel::evalAsString(const std::string& expr) {
+	PlCompound orig(expr.c_str()); // keep the original to find variables
 	PlCompound compound(expr.c_str());
 	if (strlen(compound.name())) {
 		PlTermv termv(compound.arity());
@@ -183,9 +247,16 @@ std::string SWIDataModel::evalAsString(const std::string& expr) {
 		std::stringstream ss;
 		const char* separator = "";
 		while (query.next_solution()) {
-			for (int i = 0; i < compound.arity(); i++) {
-				ss << separator << (char *)termv[i];
-				separator = ", ";
+			std::map<std::string, PlTerm> vars = resolveAtoms(compound, orig);
+			if (vars.size() == 1) {
+				ss << (char *)vars.begin()->second;
+			} else {
+				std::map<std::string, PlTerm>::const_iterator varIter = vars.begin();
+				while(varIter != vars.end()) {
+					ss << separator << (char *)varIter->second;
+					separator = ", ";
+					varIter++;
+				}
 			}
 		}
 		return ss.str();
@@ -193,6 +264,32 @@ std::string SWIDataModel::evalAsString(const std::string& expr) {
 	return std::string(compound);
 }
 
+// this is similar to http://etalis.googlecode.com/svn/eEtalis/src/term.c
+std::map<std::string, PlTerm> SWIDataModel::resolveAtoms(PlTerm& term, PlTerm& orig) {
+	std::map<std::string, PlTerm> atoms;
+	switch (orig.type()) {
+		case PL_VARIABLE: {
+			atoms[(char *)orig] = term;
+			break;
+		}
+		case PL_ATOM:
+			break;
+		case PL_STRING:
+			break;
+		case PL_INTEGER:
+			break;
+		case PL_TERM:
+			for (int i = 1; i <= orig.arity(); i++) {
+				PlTerm newTerm = term[i];
+				PlTerm newOrig = orig[i];
+				std::map<std::string, PlTerm> result = resolveAtoms(newTerm, newOrig);
+				atoms.insert(result.begin(), result.end());
+			}
+			break;
+	}
+	return atoms;
+}
+	
 void SWIDataModel::assign(const Arabica::DOM::Element<std::string>& assignElem,
                           const Arabica::DOM::Document<std::string>& doc,
                           const std::string& content) {

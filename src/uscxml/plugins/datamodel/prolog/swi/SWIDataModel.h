@@ -59,8 +59,10 @@ public:
 	virtual std::string evalAsString(const std::string& expr);
 	virtual bool evalAsBool(const std::string& expr);
 
-
+	static foreign_t inPredicate(term_t a0, int arity, void* context);
 protected:
+	std::map<std::string, PlTerm> resolveAtoms(PlTerm& term, PlTerm& orig);
+	
 	Event _event;
 	PlEngine* _plEngine;
 
