@@ -327,6 +327,7 @@ if (NOT WIN32)
 	set(XML_LIBRARIES ${LIBXML2_LIBRARIES})
 	if (NOT APPLE)
 		list (APPEND USCXML_CORE_LIBS "rt")
+		list (APPEND USCXML_CORE_LIBS "rt") // yes it's needed twice e.g. on ubuntu
 	endif()
 	list (APPEND USCXML_CORE_LIBS "dl")
 	list (APPEND USCXML_CORE_LIBS "pthread")

@@ -150,6 +150,17 @@ public:
 		tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
 		return _configuration;
 	}
+
+	Arabica::XPath::NodeSet<std::string> getBasicConfiguration()  {
+		tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
+		Arabica::XPath::NodeSet<std::string> basicConfig;
+		for (int i = 0; i < _configuration.size(); i++) {
+			if (isAtomic(_configuration[i]))
+				basicConfig.push_back(_configuration[i]);
+		}
+		return basicConfig;
+	}
+
 	void setConfiguration(const std::vector<std::string>& states) {
 		_userDefinedStartConfiguration = states;
 	}
@@ -415,21 +426,13 @@ public:
 		return _impl->getCurrentEvent();
 	}
 
-#ifndef SWIG
 	Arabica::XPath::NodeSet<std::string> getConfiguration()  {
 		return _impl->getConfiguration();
 	}
-#else
-	// simplified access to state names for language bindings
-	std::vector<std::string> getConfiguration()  {
-		std::vector<std::string> stateNames;
-		Arabica::XPath::NodeSet<std::string> nodeSet = _impl->getConfiguration();
-		for (int i = 0; i < nodeSet.size(); i++) {
-			stateNames.push_back(ATTR(nodeSet[i], "id"));
-		}
-		return stateNames;
+
+	Arabica::XPath::NodeSet<std::string> getBasicConfiguration()  {
+		return _impl->getBasicConfiguration();
 	}
-#endif
 
 	void setConfiguration(const std::vector<std::string>& states) {
 		return _impl->setConfiguration(states);

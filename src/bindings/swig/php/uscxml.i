@@ -16,6 +16,10 @@
 %ignore operator<;
 %ignore operator=;
 
+%template(StringMap) std::map<std::string, std::string>;
+%template(StringVector) std::vector<std::string>;
+%template(Params) std::map<std::string, std::vector<std::string> >;
+
 //**************************************************
 // This ends up in the generated wrapper code
 //**************************************************
@@ -45,13 +49,37 @@ void*** tsrm_ls;
 // Beautify interpreter class
 //***********************************************
 
-%ignore uscxml::Interpreter::isAtomic(Arabica::DOM::Node<std::string>);
+%extend uscxml::Interpreter {
+	std::vector<std::string> getConfiguration() {
+		std::vector<std::string> config;
+		Arabica::XPath::NodeSet<std::string> configNodes = self->getConfiguration();
+		for (int i = 0; i < configNodes.size(); i++) {
+			config.push_back(ATTR(configNodes[i], "id"));
+		}
+		return config;		
+	}
+}
+%ignore uscxml::Interpreter::getConfiguration();
+
+%extend uscxml::Interpreter {
+	std::vector<std::string> getBasicConfiguration() {
+		std::vector<std::string> config;
+		Arabica::XPath::NodeSet<std::string> configNodes = self->getBasicConfiguration();
+		for (int i = 0; i < configNodes.size(); i++) {
+			config.push_back(ATTR(configNodes[i], "id"));
+		}
+		return config;		
+	}
+}
+%ignore uscxml::Interpreter::getBasicConfiguration();
+
 %extend uscxml::Interpreter {
 	bool isAtomic(const std::string stateId) {
 		Arabica::DOM::Node<std::string> state = self->getState(stateId);
 		return self->isAtomic(state);
 	}
 }
+%ignore uscxml::Interpreter::isAtomic(Arabica::DOM::Node<std::string>);
 
 //***********************************************
 // Parse the header file to generate wrappers
@@ -62,6 +90,3 @@ void*** tsrm_ls;
 %include "../../../uscxml/concurrency/BlockingQueue.h"
 
 %template(ParentQueue) uscxml::concurrency::BlockingQueue<uscxml::SendRequest>;
-%template(NameList) std::map<std::string, std::string>;
-%template(ParamList) std::vector<std::string>;
-%template(Params) std::map<std::string, std::vector<std::string> >;
