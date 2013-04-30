@@ -42,6 +42,18 @@ void*** tsrm_ls;
 %ignore uscxml::InterpreterImpl;
 
 //***********************************************
+// Beautify interpreter class
+//***********************************************
+
+%ignore uscxml::Interpreter::isAtomic(Arabica::DOM::Node<std::string>);
+%extend uscxml::Interpreter {
+	bool isAtomic(const std::string stateId) {
+		Arabica::DOM::Node<std::string> state = self->getState(stateId);
+		return self->isAtomic(state);
+	}
+}
+
+//***********************************************
 // Parse the header file to generate wrappers
 //***********************************************
 

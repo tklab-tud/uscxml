@@ -1,12 +1,14 @@
 <scxml datamodel="prolog">
-  <data id="father/2">
-    bob, jim.
-    bob, john.
-  </data>
-  <data>
-    mother(martha, jim).
-    mother(martha, john).
-  </data>
+  <datamodel>
+    <data id="father/2">
+      bob, jim.
+      bob, john.
+    </data>
+    <data>
+      mother(martha, jim).
+      mother(martha, john).
+    </data>
+  </datamodel>
   <state id="s1">
     <onentry>
       <foreach array="father(bob, X)"

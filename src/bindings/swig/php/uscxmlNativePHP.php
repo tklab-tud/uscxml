@@ -274,8 +274,12 @@ class Event {
 		return $r;
 	}
 
-	function setData($invokeId) {
-		Event_setData($this->_cPtr,$invokeId);
+	function setData($data) {
+		Event_setData($this->_cPtr,$data);
+	}
+
+	function initContent($content) {
+		Event_initContent($this->_cPtr,$content);
 	}
 
 	static function fromXML($xmlString) {
@@ -747,10 +751,6 @@ class Interpreter {
 		return Interpreter_isTargetless($transition);
 	}
 
-	static function isAtomic($state) {
-		return Interpreter_isAtomic($state);
-	}
-
 	static function isFinal($state) {
 		return Interpreter_isFinal($state);
 	}
@@ -831,6 +831,14 @@ class Interpreter {
 
 	static function getUUID() {
 		return Interpreter_getUUID();
+	}
+
+	function isAtomic($stateId=null) {
+		switch (func_num_args()) {
+		case 0: $r=Interpreter_isAtomic($this->_cPtr); break;
+		default: $r=Interpreter_isAtomic($this->_cPtr,$stateId);
+		}
+		return $r;
 	}
 }
 
