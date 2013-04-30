@@ -319,26 +319,6 @@ include_directories(src)
 # Dependent libraries
 ############################################################
 
-if (NOT WIN32)
-	# libxml2
-	find_package(LibXml2 REQUIRED)
-	include_directories(${LIBXML2_INCLUDE_DIR})
-	list (APPEND USCXML_CORE_LIBS ${LIBXML2_LIBRARIES})
-	set(XML_LIBRARIES ${LIBXML2_LIBRARIES})
-	if (NOT APPLE)
-		list (APPEND USCXML_CORE_LIBS "rt")
-		list (APPEND USCXML_CORE_LIBS "rt") # yes it's needed twice e.g. on ubuntu
-	endif()
-	list (APPEND USCXML_CORE_LIBS "dl")
-	list (APPEND USCXML_CORE_LIBS "pthread")
-elseif(WIN32)
-	list (APPEND XML_LIBRARIES "Ws2_32")
-	list (APPEND XML_LIBRARIES "Winmm")
-	list (APPEND XML_LIBRARIES "Iphlpapi")
-	list (APPEND XML_LIBRARIES "Netapi32")
-	list (APPEND USCXML_CORE_LIBS ${XML_LIBRARIES})
-endif()
-
 # CURL
 find_package(CURL REQUIRED)
 include_directories(${CURL_INCLUDE_DIRS})
@@ -386,6 +366,25 @@ list (APPEND USCXML_CORE_LIBS ${EVENT_LIBRARY})
 
 include(src/uscxml/CMakeLists.txt)
 include_directories(${USCXML_INCLUDE_DIRS})
+
+if (NOT WIN32)
+	# libxml2
+	find_package(LibXml2 REQUIRED)
+	include_directories(${LIBXML2_INCLUDE_DIR})
+	list (APPEND USCXML_CORE_LIBS ${LIBXML2_LIBRARIES})
+	set(XML_LIBRARIES ${LIBXML2_LIBRARIES})
+	if (NOT APPLE)
+		list (APPEND USCXML_CORE_LIBS "rt")
+	endif()
+	list (APPEND USCXML_CORE_LIBS "dl")
+	list (APPEND USCXML_CORE_LIBS "pthread")
+elseif(WIN32)
+	list (APPEND XML_LIBRARIES "Ws2_32")
+	list (APPEND XML_LIBRARIES "Winmm")
+	list (APPEND XML_LIBRARIES "Iphlpapi")
+	list (APPEND XML_LIBRARIES "Netapi32")
+	list (APPEND USCXML_CORE_LIBS ${XML_LIBRARIES})
+endif()
 
 
 ############################################################
