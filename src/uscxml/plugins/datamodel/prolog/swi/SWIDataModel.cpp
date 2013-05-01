@@ -50,6 +50,13 @@ boost::shared_ptr<DataModelImpl> SWIDataModel::create(InterpreterImpl* interpret
 
 	// load SWI XML parser
 	PlCall("use_module", PlCompound("library", PlTerm("sgml")));
+	
+	// load json parser
+	PlCall("use_module", PlCompound("library", PlTerm("http/json")));
+	PlCall("use_module", PlCompound("library", PlTerm("http/json_convert")));
+
+	// use atoms for double quoted
+	PlCall("set_prolog_flag(double_quotes,atom).");
 
 	// set system variables
 	PlCall("assert", PlCompound("sessionid", PlTerm(PlString(dm->_interpreter->getSessionId().c_str()))));
@@ -336,21 +343,41 @@ void SWIDataModel::assign(const Arabica::DOM::Element<std::string>& assignElem,
 		predicate = ATTR(assignElem, "location");
 
 	if (predicate.size() > 0) {
-		size_t aritySep = predicate.find_first_of("/");
-		if (aritySep != std::string::npos) {
-			std::string functor = predicate.substr(0, aritySep);
-			std::string arity = predicate.substr(aritySep + 1);
-			std::string callAssert = "assert";
-			if (HAS_ATTR(assignElem, "type")) {
-				std::string type = ATTR(assignElem, "type");
-				if (boost::iequals(type, "retract")) {
-					PlCall("retractall", PlCompound(functor.c_str(), strTo<long>(arity)));
-				} else if(boost::iequals(type, "append")) {
-					callAssert = "assertz";
-				} else if(boost::iequals(type, "prepend")) {
-					callAssert = "asserta";
-				}
+		std::string callAssert = "assert";
+		std::string type;
+		if (HAS_ATTR(assignElem, "type")) {
+			type = ATTR(assignElem, "type");
+			if(boost::iequals(type, "append")) {
+				callAssert = "assertz";
+			} else if(boost::iequals(type, "prepend")) {
+				callAssert = "asserta";
 			}
+		}
+		
+		URL domUrl;
+		Data json;
+		if (!doc)
+			json = Data::fromJSON(expr);
+		if (doc) {
+			std::stringstream dataInitStr;
+			std::stringstream xmlDoc;
+			Arabica::DOM::Node<std::string> node = Event::getFirstDOMElement(doc);
+			while(node) {
+				xmlDoc << node;
+				node = node.getNextSibling();
+			}
+			domUrl = URL::toLocalFile(xmlDoc.str(), ".pl");
+			if (boost::iequals(type, "retract"))
+				PlCall("retractall", PlCompound(predicate.c_str(), 1));
+			dataInitStr << "load_xml_file('" << domUrl.asLocalFile(".pl") << "', XML), copy_term(XML,DATA), " << callAssert << "(" << predicate << "(DATA))";
+			PlCall(dataInitStr.str().c_str());
+		} else if (json) {
+			std::stringstream dataInitStr;
+			if (boost::iequals(type, "retract"))
+				PlCall("retractall", PlCompound(predicate.c_str(), 1));
+			dataInitStr << "json_to_prolog(" << expr << ", JSON), assert(" << predicate << "(JSON))";
+			PlCall(dataInitStr.str().c_str());
+		} else {
 			// treat content as . seperated facts
 			std::stringstream factStream(content);
 			std::string item;
@@ -358,12 +385,22 @@ void SWIDataModel::assign(const Arabica::DOM::Element<std::string>& assignElem,
 				std::string fact = boost::trim_copy(item);
 				if (fact.length() == 0)
 					continue;
-				PlCall((callAssert + "(" + functor + "(" + fact + "))").c_str());
+				PlCall((callAssert + "(" + predicate + "(" + fact + "))").c_str());
 			}
-			
 		}
 	} else if (expr.length() > 0) {
-		eval(expr);
+		if (boost::equals(TAGNAME(assignElem), "data")) {
+			eval(expr);
+		} else {
+			std::stringstream exprStream(expr);
+			std::string item;
+			while(std::getline(exprStream, item, '.')) {
+				std::string plExpr = boost::trim_copy(item);
+				if (plExpr.length() == 0)
+					continue;
+				PlCall(plExpr.c_str());
+			}
+		}
 	}
 }
 

@@ -111,6 +111,14 @@ Arabica::DOM::Document<std::string> Data::toDocument() {
 }
 
 Arabica::DOM::Node<std::string> Event::getFirstDOMElement() const {
+	return getFirstDOMElement(dom);
+}
+
+Arabica::DOM::Document<std::string> Event::getStrippedDOM() const {
+	return getStrippedDOM(dom);
+}
+
+Arabica::DOM::Node<std::string> Event::getFirstDOMElement(const Arabica::DOM::Document<std::string> dom) {
 	Arabica::DOM::Node<std::string> data = dom.getDocumentElement().getFirstChild();
 	while (data) {
 		if (data.getNodeType() == Arabica::DOM::Node_base::TEXT_NODE) {
@@ -125,11 +133,11 @@ Arabica::DOM::Node<std::string> Event::getFirstDOMElement() const {
 	return data;
 }
 
-Arabica::DOM::Document<std::string> Event::getStrippedDOM() const {
+Arabica::DOM::Document<std::string> Event::getStrippedDOM(const Arabica::DOM::Document<std::string> dom) {
 	Arabica::DOM::DOMImplementation<std::string> domFactory = Arabica::SimpleDOM::DOMImplementation<std::string>::getDOMImplementation();
 	Arabica::DOM::Document<std::string> document = domFactory.createDocument("", "", 0);
 	if (dom) {
-		document.getDocumentElement().appendChild(document.importNode(getFirstDOMElement(), true));
+		document.getDocumentElement().appendChild(document.importNode(getFirstDOMElement(dom), true));
 	}
 	return document;
 }

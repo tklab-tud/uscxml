@@ -1,131 +1,56 @@
-<?xml version="1.0"?>
-<scxml datamodel="prolog" initial="start" binding="late">
-	<!--
-	% see http://www.swi-prolog.org/FAQ/Multifile.html
-	:- multifile animal/1.
-	-->
-	<datamodel>
-		<!-- 
-			Various possible uses for the data element
-		-->
-		
-		<!-- if no id is given, we assume assertion mode -->
-		<data>
-			:- multifile father/2.
-			:- multifile mother/2.
-			father(bob, jim).
-			father(bob, john).
-			father(bob, jack).
-			mother(martha, jim).
-			mother(martha, john).
-			mother(martha, jack).
-		</data>
-		<!-- if id is given, we treat it the name of a predicate -->
-		<!-- data id="sibling/2">
-			jim, john.
-			jim, jack.
-			john, jack.
-		</data -->
-		<!-- if an id is given, json data is transformed into a prolog compound term -->
-		<!-- data id="john">
-			{
-			    "name": "John",
-			    "age": 25,
-			    "address": {
-			        "streetAddress": "21 2nd Street",
-			        "city": "New York",
-			    },
-			    "phoneNumbers": [
-			        {
-			            "type": "home",
-			            "number": "212 555-1234"
-			        },
-			        {
-			            "type": "fax",
-			            "number": "646 555-4567"
-			        }
-			    ]
-			}
-		</data -->
-		<!-- If an id is given, parse XML as nested compund terms -->
-		<!--data id="jack">
-			<person name="jack" age="27">
-				<address>
-					<street>23 3rd Street</street>
-					<city>New York</city>
-				</address>
-				<phone type="mobile">
-					384 234-5534
-				</phone>
-			</person>
-		</data -->
-	</datamodel>
-	<!-- 
-		scripts are executed in assertion mode 
-	-->
-	<script>
-		:- multifile older/2.
-		older(bob, martha).
-		older(bob, john).
-		older(bob, jack).
-		older(bob, jim).
-	</script>
-	<state id="start">
-		<onentry>
-			<!-- 
-				Evaluation to string will return a list of valid solutions for the free variables.
-			-->
-			<log label="SessionId" expr="sessionid(X)"/>
-			<log label="Name" expr="name(X)"/>
-			
-			<send event="foo">This is a foo event.</send>
-		</onentry>
-		<!-- boolean expressions are true if there is a solution-->
-		<transition event="foo" cond="older(bob, martha)." target="sending"/>
-	</state>
-	<state id="sending">
-		<onentry>
-			<send event="bar" type="basichttp" targetexpr="ioprocessors(basichttp(location(X)))">
-				<param name="foo" expr="name(X)" />
-				<param name="bar" expr="name(X)" />
-				<param name="bar" expr="sessionid(X)" />
-				<content>
-					<person name="jack" age="27">
-						<address>
-							<street>23 3rd Street</street>
-							<city>New York</city>
-						</address>
-						<phone type="mobile">
-							384 234-5534
-						</phone>
-					</person>
-				</content>
-			</send>
-		</onentry>
-		<transition event="bar" cond="event(name(X)), X='bar'." target="assigning"/>
-	</state>
-	<state id="assigning">
-		<onentry>
-		  <log label="Index" expr="listing." />
-			<foreach array="father(bob, X)"
-			  item="child"
-			  index="index">
-			  <log label="child" expr="child(X)" />
-			  <log label="index" expr="index(X)" />
-			</foreach>
-			<raise event="baz" />
-			<!-- assigning with retract attribute -->
-			<!--assign id="older/2" retract="older/2">
-				older(jim, john).
-				older(jim, jack).
-				older(john, jack).
-			</assign-->
-		</onentry>
-		<transition event="baz" cond="in('assigning')" target="end"/>
-	</state>
-	<state id="end" final="true">
-		<onentry>
-			<log label="Listing" expr="listing."/>
-		</onentry>
-	</state>
+<scxml datamodel="prolog">
+  <datamodel>
+    <data id="father">
+      bob, jim.
+      bob, john.
+    </data>
+    <data id="">
+      mother(martha, jim).
+      mother(martha, john).
+    </data>
+    <data id="household">
+      {
+        name: "The Bobsons",
+        members: ['bob', 'martha', 'jim', 'john']
+      }
+    </data>
+    <data id="childs">
+      <child name="jim" father="bob" />
+      <child name="john" father="bob" />
+    </data>
+  </datamodel>
+  <state id="s1">
+    <onentry>
+      <assign location="">
+        retract(father(bob, jim)).
+        assert(father(steve, jim)).
+        assert(father(bob, jack)).
+      </assign>
+      <log label="index" expr="listing." />
+      <foreach array="father(bob, X)"
+               item="child"
+               index="index">
+        <log label="index" expr="index(X)" />
+        <log label="child" expr="child(X)" />
+      </foreach>
+    </onentry>
+    <transition target="s2"
+                cond="mother(martha, X), father(bob, X)"/>
+  </state>
+  <state id="s2">
+    <onentry>
+      <send type="basichttp"
+            targetexpr="ioprocessors(basichttp(location(X)))"
+            event="foo">
+        <content>
+          <p>Snippet of XML</p>
+        </content>
+      </send>
+    </onentry>
+    <transition 
+      target="end"
+      event="foo"
+      cond="member(element('p',_,_), X), event(data(X))" />
+  </state>
+  <state id="end" final="true" />
 </scxml>

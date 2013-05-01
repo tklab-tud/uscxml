@@ -9,10 +9,10 @@ There is no technical reason for it not to run on iOS and Android as well, but w
 the respective build-process and did not precompile required libraries.
 
    * <b>Datamodels</b>
-       * Full ECMAScript datamodel using Google's v8 and JavaScriptCore (JSC is incomplete)
-       * Full NULL datamodel with required <tt>In</tt> predicate
-       * Early Prolog datamodel using SWI prolog
-       * Rudimentary support for XPath datamodel (W3C tests not yet implementable)
+       * Full [ECMAScript datamodel](https://github.com/tklab-tud/uscxml/tree/master/src/uscxml/plugins/datamodel/ecmascript) using Google's v8 and JavaScriptCore (JSC is incomplete)
+       * Full [NULL datamodel](https://github.com/tklab-tud/uscxml/tree/master/src/uscxml/plugins/datamodel/null) with required <tt>In</tt> predicate
+       * Early [Prolog datamodel](https://github.com/tklab-tud/uscxml/tree/master/src/uscxml/plugins/datamodel/prolog/swi) using SWI prolog
+       * Rudimentary support for [XPath datamodel](https://github.com/tklab-tud/uscxml/tree/master/src/uscxml/plugins/datamodel/xpath)
    * <b>Invokers</b>
        * <tt>scxml</tt>: Invoke a nested scxml interpreter
        * <tt>dirmon</tt>: Watches a directory for changes to files

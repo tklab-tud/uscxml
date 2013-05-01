@@ -142,6 +142,9 @@ public:
 	Arabica::DOM::Node<std::string> getFirstDOMElement() const;
 	Arabica::DOM::Document<std::string> getStrippedDOM() const;
 
+	static Arabica::DOM::Node<std::string> getFirstDOMElement(const Arabica::DOM::Document<std::string> dom);
+	static Arabica::DOM::Document<std::string> getStrippedDOM(const Arabica::DOM::Document<std::string> dom);
+
 	std::string getRaw() {
 		return raw;
 	}
