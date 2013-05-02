@@ -81,6 +81,39 @@ void*** tsrm_ls;
 }
 %ignore uscxml::Interpreter::isAtomic(Arabica::DOM::Node<std::string>);
 
+%extend uscxml::Interpreter {
+	bool isInitial(const std::string stateId) {
+		Arabica::DOM::Node<std::string> state = self->getState(stateId);
+		return self->isInitial(state);
+	}
+}
+%ignore uscxml::Interpreter::isInitial(Arabica::DOM::Node<std::string>);
+
+%extend uscxml::Interpreter {
+	bool isFinal(const std::string stateId) {
+		Arabica::DOM::Node<std::string> state = self->getState(stateId);
+		return self->isFinal(state);
+	}
+}
+%ignore uscxml::Interpreter::isFinal(Arabica::DOM::Node<std::string>);
+
+%extend uscxml::Interpreter {
+	bool isCompound(const std::string stateId) {
+		Arabica::DOM::Node<std::string> state = self->getState(stateId);
+		return self->isCompound(state);
+	}
+}
+%ignore uscxml::Interpreter::isCompound(Arabica::DOM::Node<std::string>);
+
+%extend uscxml::Interpreter {
+	bool isParallel(const std::string stateId) {
+		Arabica::DOM::Node<std::string> state = self->getState(stateId);
+		return self->isParallel(state);
+	}
+}
+%ignore uscxml::Interpreter::isParallel(Arabica::DOM::Node<std::string>);
+
+
 //***********************************************
 // Parse the header file to generate wrappers
 //***********************************************
