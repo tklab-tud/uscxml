@@ -171,3 +171,4 @@ void*** tsrm_ls;
 %include "../../../uscxml/concurrency/BlockingQueue.h"
 
 %template(ParentQueue) uscxml::concurrency::BlockingQueue<uscxml::SendRequest>;
+%template(ParamList) std::vector<std::string>;
