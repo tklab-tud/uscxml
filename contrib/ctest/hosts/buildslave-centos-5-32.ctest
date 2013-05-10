@@ -2,6 +2,10 @@ set(CTEST_CMAKE_GENERATOR "Unix Makefiles")
 set(CTEST_SITE "buildslave-centos-5-32")
 set(CTEST_BUILD_CONFIGURATION "Debug")
 
-set(CTEST_BUILD_NAME "linux-x86_64 gcc 4.1.2")
-include("tests/generic.ctest")
+set(CTEST_BUILD_NAME "linux-x86_64 gcc 4.1.2 - ECMA datamodel")
+include("tests/ecma.ctest")
+include("common.ctest.inc")
+
+set(CTEST_BUILD_NAME "linux-x86_64 gcc 4.1.2 - XPath datamodel")
+include("tests/xpath.ctest")
 include("common.ctest.inc")

@@ -73,22 +73,23 @@ set_target_properties(scxml-test-framework-client PROPERTIES FOLDER "Tests")
 # add_test(test-curl-multi-api ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-completion)
 # set_target_properties(test-curl-multi-api PROPERTIES FOLDER "Tests")
 
-if (RUN_W3C_TESTS)
-
 	add_executable(test-w3c src/test-w3c.cpp ${PROJECT_SOURCE_DIR}/contrib/src/getopt/XGetopt.cpp)
 	target_link_libraries(test-w3c uscxml)
 	set_target_properties(test-w3c PROPERTIES FOLDER "Tests")
 
-	file(GLOB_RECURSE W3C_TESTS
-		samples/w3c/*.scxml
-	)
-	
-	foreach( W3C_TEST ${W3C_TESTS} )
-		string(REGEX MATCH "[^//]+/[^//]+.scxml" TEST_NAME ${W3C_TEST})
-		#message("TEST_NAME: ${TEST_NAME}")
-		if (NOT TEST_NAME MATCHES ".*sub.*")
+file(GLOB_RECURSE W3C_TESTS
+	samples/w3c/*.scxml
+)
+
+foreach( W3C_TEST ${W3C_TESTS} )
+	string(REGEX MATCH "[^//]+/[^//]+.scxml" TEST_NAME ${W3C_TEST})
+	#message("TEST_NAME: ${TEST_NAME}")
+	if (NOT TEST_NAME MATCHES ".*sub.*")
+		if (RUN_W3C_ECMA_TESTS AND TEST_NAME MATCHES "^ecma\\/.*")
 			add_test(${TEST_NAME} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-w3c ${W3C_TEST})
 		endif()
-	endforeach()
-	
-endif()
+		if (RUN_W3C_XPATH_TESTS AND TEST_NAME MATCHES "^xpath\\/.*")
+			add_test(${TEST_NAME} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-w3c ${W3C_TEST})
+		endif()
+	endif()
+endforeach()

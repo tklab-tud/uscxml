@@ -3,5 +3,9 @@ set(CTEST_SITE "buildslave-fedora-16-64")
 set(CTEST_BUILD_CONFIGURATION "Debug")
 
 set(CTEST_BUILD_NAME "linux-x86_64 gcc 4.6.3")
-include("tests/generic.ctest")
+include("tests/ecma.ctest")
+include("common.ctest.inc")
+
+set(CTEST_BUILD_NAME "linux-x86_64 gcc 4.6.3")
+include("tests/xpath.ctest")
 include("common.ctest.inc")
