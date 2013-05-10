@@ -2,10 +2,12 @@ set(CTEST_CMAKE_GENERATOR "NMake Makefiles")
 set(CTEST_SITE "epikur-win7-64")
 set(CTEST_BUILD_CONFIGURATION "Debug")
 
+set(RETAIN_BUILD_DIR OFF)
 set(CTEST_BUILD_NAME "win7-x86_64 msvc")
 include("tests/ecma.ctest")
 include("common.ctest.inc")
 
+set(RETAIN_BUILD_DIR ON)
 set(CTEST_BUILD_NAME "win7-x86_64 msvc")
 include("tests/xpath.ctest")
 include("common.ctest.inc")

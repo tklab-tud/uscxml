@@ -2,10 +2,12 @@ set(CTEST_CMAKE_GENERATOR "Unix Makefiles")
 set(CTEST_SITE "buildslave-centos-6-64")
 set(CTEST_BUILD_CONFIGURATION "Debug")
 
+set(RETAIN_BUILD_DIR OFF)
 set(CTEST_BUILD_NAME "linux-x86_64 gcc 4.4.6")
 include("tests/ecma.ctest")
 include("common.ctest.inc")
 
+set(RETAIN_BUILD_DIR ON)
 set(CTEST_BUILD_NAME "linux-x86_64 gcc 4.4.6")
 include("tests/xpath.ctest")
 include("common.ctest.inc")
