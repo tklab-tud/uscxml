@@ -338,7 +338,7 @@ std::string XPathDataModel::evalAsString(const std::string& expr) {
 	case STRING:
 		return result.asString();
 		break;
-	case BOOL:
+	case Arabica::XPath::BOOL: // MSVC croaks with ambiguous symbol without qualified name
 		return (result.asBool() ? "true" : "false");
 		break;
 	case NUMBER:
@@ -482,10 +482,11 @@ void XPathDataModel::init(const Element<std::string>& dataElem,
 			case STRING:
 				container.appendChild(_doc.createTextNode(expr.asString()));
 				break;
-			case NUMBER:
+			case NUMBER: {
 				container.appendChild(_doc.createTextNode(toStr(expr.asNumber())));
 				break;
-			case BOOL:
+			}
+			case Arabica::XPath::BOOL:
 			case ANY:
 				throw Event("error.execution", Event::PLATFORM);
 			}
@@ -531,7 +532,7 @@ void XPathDataModel::assign(const XPathValue<std::string>& key,
 		case STRING:
 			assign(key.asNodeSet(), value.asString(), assignElem);
 			break;
-		case BOOL:
+		case Arabica::XPath::BOOL:
 			assign(key.asNodeSet(), value.asBool(), assignElem);
 			break;
 		case NUMBER:
@@ -546,7 +547,7 @@ void XPathDataModel::assign(const XPathValue<std::string>& key,
 		break;
 	}
 	case STRING:
-	case BOOL:
+	case Arabica::XPath::BOOL:
 	case NUMBER:
 	case ANY:
 		throw Event("error.execution", Event::PLATFORM);
@@ -564,7 +565,7 @@ void XPathDataModel::assign(const XPathValue<std::string>& key,
 		break;
 	}
 	case STRING:
-	case BOOL:
+	case Arabica::XPath::BOOL:
 	case NUMBER:
 	case ANY:
 		throw Event("error.execution", Event::PLATFORM);

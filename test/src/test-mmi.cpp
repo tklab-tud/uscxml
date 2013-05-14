@@ -1,3 +1,6 @@
+#include <iostream>
+#include <string>
+
 #include "uscxml/plugins/ioprocessor/modality/MMIMessages.h"
 
 #include <SAX/helpers/InputSourceResolver.hpp>
@@ -6,7 +9,6 @@
 
 #include <assert.h>
 #include <boost/algorithm/string.hpp>
-#include <iostream>
 
 using namespace uscxml;
 using namespace boost;

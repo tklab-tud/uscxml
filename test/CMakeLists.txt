@@ -58,10 +58,12 @@ target_link_libraries(test-url uscxml)
 add_test(test-url ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-url)
 set_target_properties(test-url PROPERTIES FOLDER "Tests")
 
-add_executable(test-mmi src/test-mmi.cpp)
-target_link_libraries(test-mmi uscxml)
-add_test(test-url ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-mmi)
-set_target_properties(test-mmi PROPERTIES FOLDER "Tests")
+if (NOT WIN32)
+	add_executable(test-mmi src/test-mmi.cpp)
+	target_link_libraries(test-mmi uscxml)
+	add_test(test-url ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-mmi)
+	set_target_properties(test-mmi PROPERTIES FOLDER "Tests")
+endif()
 
 add_executable(scxml-test-framework-client 
 	src/scxml-test-framework-client.cpp)

@@ -1,8 +1,8 @@
 # Fetch element
 
 file(GLOB_RECURSE FETCH_ELEMENT
-	src/uscxml/plugins/element/fetch/*.cpp
-	src/uscxml/plugins/element/fetch/*.h
+	fetch/*.cpp
+	fetch/*.h
 )
 source_group("Element\\fetch" FILES ${FETCH_ELEMENT})
 if (BUILD_AS_PLUGINS)
@@ -19,8 +19,8 @@ endif()
 # Postpone element
 
 file(GLOB_RECURSE POSTPONE_ELEMENT
-	src/uscxml/plugins/element/postpone/*.cpp
-	src/uscxml/plugins/element/postpone/*.h
+	postpone/*.cpp
+	postpone/*.h
 )
 source_group("Element\\postpone" FILES ${POSTPONE_ELEMENT})
 if (BUILD_AS_PLUGINS)
@@ -37,8 +37,8 @@ endif()
 # Respond element
 
 file(GLOB_RECURSE RESPOND_ELEMENT
-	src/uscxml/plugins/element/respond/*.cpp
-	src/uscxml/plugins/element/respond/*.h
+	respond/*.cpp
+	respond/*.h
 )
 source_group("Element\\respond" FILES ${RESPOND_ELEMENT})
 if (BUILD_AS_PLUGINS)
@@ -51,3 +51,5 @@ else()
 	list (APPEND USCXML_FILES ${RESPOND_ELEMENT})
 endif()
 
+set(USCXML_INCLUDE_DIRS ${USCXML_INCLUDE_DIRS} PARENT_SCOPE)
+set(USCXML_FILES ${USCXML_FILES} PARENT_SCOPE)

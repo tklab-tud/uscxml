@@ -22,7 +22,7 @@ endif()
 
 set (SWI_SEARCH_PATHS)
 list (APPEND SWI_SEARCH_PATHS 
-	$ENV{SWI_DIR}
+	$ENV{SWI_HOME}
 	${CMAKE_FIND_ROOT_PATH}
 	"/usr/lib/swi-prolog/"
 	"/opt/local/"
@@ -52,7 +52,7 @@ endforeach()
 # -- find prolog headers
 FIND_PATH(SWI_INCLUDE_DIR SWI-Prolog.h
   PATH_SUFFIXES 
-		include 
+		include
 		lib/swipl-${SWI_VERSION}/include
   PATHS ${SWI_SEARCH_PATHS}
 )

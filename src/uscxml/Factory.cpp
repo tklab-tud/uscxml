@@ -20,6 +20,7 @@
 
 # ifdef UMUNDO_FOUND
 #   include "uscxml/plugins/invoker/umundo/UmundoInvoker.h"
+#   include "uscxml/plugins/invoker/vxml/VoiceXMLInvoker.h"
 # endif
 
 # ifdef OPENSCENEGRAPH_FOUND
@@ -98,6 +99,10 @@ Factory::Factory() {
 #ifdef UMUNDO_FOUND
 	{
 		UmundoInvoker* invoker = new UmundoInvoker();
+		registerInvoker(invoker);
+	}
+	{
+		VoiceXMLInvoker* invoker = new VoiceXMLInvoker();
 		registerInvoker(invoker);
 	}
 #endif

@@ -1,7 +1,7 @@
 # sample invoker - include to make sure it compiles
 file(GLOB_RECURSE SAMPLE_INVOKER
-	src/uscxml/plugins/invoker/sample/*.cpp
-	src/uscxml/plugins/invoker/sample/*.h
+	sample/*.cpp
+	sample/*.h
 )
 source_group("Invoker\\sample" FILES ${SAMPLE_INVOKER})
 if (BUILD_AS_PLUGINS)
@@ -18,8 +18,8 @@ endif()
 # DirMon invoker to watch for filesystem changes
 
 file(GLOB_RECURSE DIRMON_INVOKER
-	src/uscxml/plugins/invoker/filesystem/dirmon/*.cpp
-	src/uscxml/plugins/invoker/filesystem/dirmon/*.h
+	filesystem/dirmon/*.cpp
+	filesystem/dirmon/*.h
 )
 source_group("Invoker\\dirmon" FILES ${DIRMON_INVOKER})
 if (BUILD_AS_PLUGINS)
@@ -36,8 +36,8 @@ endif()
 # System invoker to open a native command
 
 file(GLOB_RECURSE SYSTEM_INVOKER
-	src/uscxml/plugins/invoker/system/*.cpp
-	src/uscxml/plugins/invoker/system/*.h
+	system/*.cpp
+	system/*.h
 )
 source_group("Invoker\\system" FILES ${SYSTEM_INVOKER})
 if (BUILD_AS_PLUGINS)
@@ -53,11 +53,10 @@ endif()
 
 # SQLite3 SQL Invoker
 
-find_package(Sqlite3)
 if (SQLITE3_FOUND)
 	file(GLOB_RECURSE SQLITE3_INVOKER
-		src/uscxml/plugins/invoker/sqlite3/*.cpp
-		src/uscxml/plugins/invoker/sqlite3/*.h
+		sqlite3/*.cpp
+		sqlite3/*.h
 	)
 	source_group("Invoker\\sqlite" FILES ${SQLITE3_INVOKER})
 	if (BUILD_AS_PLUGINS)
@@ -74,12 +73,10 @@ endif()
 
 # ffmpeg invoker
 
-find_package(FFMPEG)
 if (FFMPEG_FOUND)
-	list (APPEND USCXML_INCLUDE_DIRS ${FFMPEG_INCLUDE_DIR})		
 	file(GLOB_RECURSE FFMPEG_INVOKER
-		src/uscxml/plugins/invoker/ffmpeg/*.cpp
-		src/uscxml/plugins/invoker/ffmpeg/*.h
+		ffmpeg/*.cpp
+		ffmpeg/*.h
 	)
 	source_group("Invoker\\ffmpeg" FILES ${FFMPEG_INVOKER})
 	if (BUILD_AS_PLUGINS)
@@ -96,16 +93,10 @@ endif()
 
 # UMUNDO invoker 
 
-if (WIN32)
-	find_package(UMUNDO COMPONENTS convenience)
-else()
-	find_package(UMUNDO COMPONENTS rpc serial core)
-endif()
 if (UMUNDO_FOUND)
-	list (APPEND USCXML_INCLUDE_DIRS ${UMUNDO_INCLUDE_DIR})
 	file(GLOB_RECURSE UMUNDO_INVOKER 
-		src/uscxml/plugins/invoker/umundo/*.cpp 
-		src/uscxml/plugins/invoker/umundo/*.h)
+		umundo/*.cpp 
+		umundo/*.h)
 	source_group("Invoker\\umundo" FILES ${UMUNDO_INVOKER})
 	if (BUILD_AS_PLUGINS)
 		add_library(
@@ -117,17 +108,15 @@ if (UMUNDO_FOUND)
 		set_target_properties(invoker_umundo PROPERTIES FOLDER "Plugin Invoker")
 	else()
 		list (APPEND USCXML_FILES ${UMUNDO_INVOKER})
-		list (APPEND USCXML_OPT_LIBS ${UMUNDO_LIBRARIES})
 	endif()
-	add_definitions("-DUMUNDO_STATIC")
 endif()
 
 
 # USCXML invoker 
 
 file(GLOB_RECURSE USCXML_INVOKER 
-	src/uscxml/plugins/invoker/scxml/*.cpp 
-	src/uscxml/plugins/invoker/scxml/*.h)
+	scxml/*.cpp 
+	scxml/*.h)
 source_group("Invoker\\uscxml" FILES ${USCXML_INVOKER})
 if (BUILD_AS_PLUGINS)
 	add_library(
@@ -144,8 +133,8 @@ endif()
 # HTTP server invoker 
 
 file(GLOB_RECURSE HTTPSERVLET_INVOKER 
-	src/uscxml/plugins/invoker/http/*.cpp 
-	src/uscxml/plugins/invoker/http/*.h)
+	http/*.cpp 
+	http/*.h)
 source_group("Invoker\\httpservlet" FILES ${HTTPSERVLET_INVOKER})
 if (BUILD_AS_PLUGINS)
 	add_library(
@@ -162,8 +151,8 @@ endif()
 # Heartbeat invoker
 
 file(GLOB_RECURSE HEARTBEAT_INVOKER
-	src/uscxml/plugins/invoker/heartbeat/*.cpp
-	src/uscxml/plugins/invoker/heartbeat/*.h
+	heartbeat/*.cpp
+	heartbeat/*.h
 )
 source_group("Invoker\\heartbeat" FILES ${HEARTBEAT_INVOKER})
 if (BUILD_AS_PLUGINS)
@@ -178,22 +167,10 @@ endif()
 
 
 # OpenSceneGraph invoker
-if (UNIX)
-	set(CMAKE_FIND_LIBRARY_SUFFIXES ${CMAKE_FIND_LIBRARY_SUFFIXES_ORIG}) # link dynamically!
-elseif(WIN32)
-	if (ENV{OSG_ROOT} STREQUAL "")
-		set(ENV{OSG_ROOT} "C:/Program Files/OpenSceneGraph-3.0.1")
-	endif()
-endif()
-find_package(OpenSceneGraph COMPONENTS osgViewer osgGA osgText osgFX osgManipulator osgDB osgUtil OpenThreads)
-find_package(OpenGL)
 if (OPENSCENEGRAPH_FOUND AND OPENGL_FOUND)	
-	list (APPEND USCXML_INCLUDE_DIRS ${OPENSCENEGRAPH_INCLUDE_DIRS})
-	list (APPEND USCXML_INCLUDE_DIRS ${OPENGL_INCLUDE_DIR})
-
 	file(GLOB OPENSCENEGRAPH_INVOKER 
-		src/uscxml/plugins/invoker/graphics/openscenegraph/*.cpp 
-		src/uscxml/plugins/invoker/graphics/openscenegraph/*.h)
+		graphics/openscenegraph/*.cpp 
+		graphics/openscenegraph/*.h)
 	source_group("Invoker\\scenegraph" FILES ${OPENSCENEGRAPH_INVOKER})
 
 	if (BUILD_AS_PLUGINS)
@@ -207,12 +184,11 @@ if (OPENSCENEGRAPH_FOUND AND OPENGL_FOUND)
 			set_target_properties(invoker_openscenegraph PROPERTIES FOLDER "Plugin Invoker")
 	else()
 		list (APPEND USCXML_FILES ${OPENSCENEGRAPH_INVOKER})
-		list (APPEND USCXML_OPT_LIBS ${OPENSCENEGRAPH_LIBRARIES} ${OPENGL_LIBRARIES})
 	endif()
 
 	file(GLOB OPENSCENEGRAPH_CONVERTER_INVOKER 
-		src/uscxml/plugins/invoker/graphics/openscenegraph/converter/*.cpp 
-		src/uscxml/plugins/invoker/graphics/openscenegraph/converter/*.h)
+		graphics/openscenegraph/converter/*.cpp 
+		graphics/openscenegraph/converter/*.h)
 	source_group("Invoker\\scenegraph\\convert" FILES ${OPENSCENEGRAPH_CONVERTER_INVOKER})
 
 	if (BUILD_AS_PLUGINS)
@@ -226,21 +202,14 @@ if (OPENSCENEGRAPH_FOUND AND OPENGL_FOUND)
 			set_target_properties(invoker_openscenegraph_convert PROPERTIES FOLDER "Plugin Invoker")
 	else()
 		list (APPEND USCXML_FILES ${OPENSCENEGRAPH_CONVERTER_INVOKER})
-		list (APPEND USCXML_OPT_LIBS ${OPENSCENEGRAPH_LIBRARIES} ${OPENGL_LIBRARIES})
 	endif()
 
-endif()
-if (UNIX)
-	set(CMAKE_FIND_LIBRARY_SUFFIXES .lib .a ${CMAKE_FIND_LIBRARY_SUFFIXES})
 endif()
 
 
 # MILES modality components
 
-find_package(MILES)
 if (MILES_FOUND AND OFF)
-	list (APPEND USCXML_INCLUDE_DIRS ${MILES_INCLUDE_DIR})
-
 	# openal is only needed for miles
 	find_package(OpenAL REQUIRED)
 #	find_package(JPEG REQUIRED)
@@ -249,8 +218,8 @@ if (MILES_FOUND AND OFF)
 	list (APPEND USCXML_INCLUDE_DIRS ${OPENAL_INCLUDE_DIR})
 
   file(GLOB_RECURSE MILES_INVOKER 
-		src/uscxml/plugins/invoker/miles/*.cpp 
-		src/uscxml/plugins/invoker/miles/*.h)
+		miles/*.cpp 
+		miles/*.h)
 	source_group("Invoker\\miles" FILES ${MILES_INVOKER})
 #	message("MILES_INVOKER ${MILES_INVOKER}")
 
@@ -265,8 +234,27 @@ if (MILES_FOUND AND OFF)
 		set_target_properties(invoker_miles PROPERTIES FOLDER "Plugin Invoker")
 	else()
   	list (APPEND USCXML_FILES ${MILES_INVOKER})
-  	list (APPEND USCXML_OPT_LIBS ${MILES_LIBRARIES})
-		list (APPEND USCXML_OPT_LIBS ${OPENAL_LIBRARY})
 	endif()
 endif()
 
+# VoiceXML modality components
+
+if (UMUNDO_FOUND)
+	file(GLOB_RECURSE VXML_INVOKER
+		vxml/*.cpp
+		vxml/*.h
+	)
+	source_group("Invoker\\voicexml" FILES ${VXML_INVOKER})
+	if (BUILD_AS_PLUGINS)
+		add_library(
+			invoker_voicexml SHARED 
+			${VXML_INVOKER})
+		target_link_libraries(invoker_voicexml uscxml)
+		set_target_properties(invoker_voicexml PROPERTIES FOLDER "Plugin Invoker")
+	else()
+		list (APPEND USCXML_FILES ${VXML_INVOKER})
+	endif()
+endif()
+
+set(USCXML_INCLUDE_DIRS ${USCXML_INCLUDE_DIRS} PARENT_SCOPE)
+set(USCXML_FILES ${USCXML_FILES} PARENT_SCOPE)

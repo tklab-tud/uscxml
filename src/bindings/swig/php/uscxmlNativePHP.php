@@ -415,12 +415,12 @@ class Event {
 		Event_setDOM($this->_cPtr,$dom);
 	}
 
-	function getFirstDOMElement() {
-		return Event_getFirstDOMElement($this->_cPtr);
+	static function getFirstDOMElement($self_or_dom) {
+		return Event_getFirstDOMElement($self_or_dom);
 	}
 
-	function getStrippedDOM() {
-		return Event_getStrippedDOM($this->_cPtr);
+	static function getStrippedDOM($self_or_dom) {
+		return Event_getStrippedDOM($self_or_dom);
 	}
 
 	function getRaw() {

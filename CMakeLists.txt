@@ -277,8 +277,11 @@ else()
 endif()
 
 # prefer static libraries for linking
+set(CMAKE_FIND_LIBRARY_SUFFIXES_SHARED ${CMAKE_FIND_LIBRARY_SUFFIXES})
+set(CMAKE_FIND_LIBRARY_SUFFIXES_STATIC .lib .a ${CMAKE_FIND_LIBRARY_SUFFIXES})
+
 if(BUILD_PREFER_STATIC_LIBRARIES)
-    SET(CMAKE_FIND_LIBRARY_SUFFIXES .lib .a ${CMAKE_FIND_LIBRARY_SUFFIXES})
+    SET(CMAKE_FIND_LIBRARY_SUFFIXES ${CMAKE_FIND_LIBRARY_SUFFIXES_STATIC})
 endif()
 
 # where should libraries end up?
@@ -322,6 +325,7 @@ include_directories(src)
 
 if (NOT WIN32)
 	# libxml2
+	set(CMAKE_FIND_FRAMEWORK "LAST")
 	find_package(LibXml2 REQUIRED)
 	include_directories(${LIBXML2_INCLUDE_DIR})
 	list (APPEND USCXML_CORE_LIBS ${LIBXML2_LIBRARIES})
@@ -343,10 +347,6 @@ list (APPEND USCXML_CORE_LIBS ${CURL_LIBRARIES})
 if (WIN32)
 	add_definitions("-DCURL_STATICLIB")
 endif()
-
-# prefer rest as static libraries
-set(CMAKE_FIND_LIBRARY_SUFFIXES_ORIG ${CMAKE_FIND_LIBRARY_SUFFIXES})
-set(CMAKE_FIND_LIBRARY_SUFFIXES .lib .a ${CMAKE_FIND_LIBRARY_SUFFIXES})
 
 # GLOG
 # set(ENV{GLOG_SRC} ${CMAKE_SOURCE_DIR}/../glog)
@@ -375,12 +375,90 @@ include_directories(${EVENT_INCLUDE_DIR})
 list (APPEND USCXML_CORE_LIBS ${EVENT_LIBRARY})
 
 #################################################
+# Optional libraries
+
+find_package(V8)
+if (V8_FOUND)
+	include_directories(${V8_INCLUDE_DIR})
+	list (APPEND USCXML_OPT_LIBS ${V8_LIBRARY})
+endif()
+
+set(CMAKE_FIND_LIBRARY_SUFFIXES ${CMAKE_FIND_LIBRARY_SUFFIXES_SHARED})
+find_package(GMP)
+find_package(SWI)
+find_package(CURSES)
+if (SWI_FOUND AND GMP_FOUND AND CURSES_FOUND)
+	include_directories(${SWI_INCLUDE_DIR})	
+	include_directories(${GMP_INCLUDE_DIR})
+	include_directories(${CURSES_INCLUDE_DIR})
+	list (APPEND USCXML_OPT_LIBS ${SWI_LIBRARY} ${GMP_LIBRARY} ${CURSES_LIBRARIES})
+else()
+	set(SWI_FOUND OFF)
+endif()
+set(CMAKE_FIND_LIBRARY_SUFFIXES ${CMAKE_FIND_LIBRARY_SUFFIXES_STATIC})
+
+find_package(Sqlite3)
+if (SQLITE3_FOUND)
+endif()
+
+find_package(FFMPEG)
+if (FFMPEG_FOUND)
+	include_directories (${FFMPEG_INCLUDE_DIR})		
+endif()
+
+if (WIN32)
+	find_package(UMUNDO COMPONENTS convenience)
+else()
+	find_package(UMUNDO COMPONENTS rpc serial core)
+endif()
+if (UMUNDO_FOUND)
+	include_directories (${UMUNDO_INCLUDE_DIR})
+	list (APPEND USCXML_OPT_LIBS ${UMUNDO_LIBRARIES})
+#	add_definitions("-DUMUNDO_STATIC")
+endif()
+
+if (UNIX)
+	set(CMAKE_FIND_LIBRARY_SUFFIXES ${CMAKE_FIND_LIBRARY_SUFFIXES_SHARED}) # link dynamically!
+elseif(WIN32)
+	if (ENV{OSG_ROOT} STREQUAL "")
+		set(ENV{OSG_ROOT} "C:/Program Files/OpenSceneGraph-3.0.1")
+	endif()
+endif()
+find_package(OpenSceneGraph COMPONENTS osgViewer osgGA osgText osgFX osgManipulator osgDB osgUtil OpenThreads)
+find_package(OpenGL)
+if (OPENSCENEGRAPH_FOUND AND OPENGL_FOUND)	
+	include_directories (${OPENSCENEGRAPH_INCLUDE_DIRS})
+	include_directories (${OPENGL_INCLUDE_DIR})
+	list (APPEND USCXML_OPT_LIBS ${OPENSCENEGRAPH_LIBRARIES} ${OPENGL_LIBRARIES})
+endif()
+if (UNIX)
+	set(CMAKE_FIND_LIBRARY_SUFFIXES ${CMAKE_FIND_LIBRARY_SUFFIXES_STATIC})
+endif()
+
+find_package(MILES)
+if (MILES_FOUND AND OFF)
+	include_directories (${MILES_INCLUDE_DIR})
+	list (APPEND USCXML_OPT_LIBS ${MILES_LIBRARIES})
+	list (APPEND USCXML_OPT_LIBS ${OPENAL_LIBRARY})
+endif()
+
+set(CMAKE_FIND_LIBRARY_SUFFIXES ${CMAKE_FIND_LIBRARY_SUFFIXES_SHARED})
+find_package(Protobuf)
+if (PROTOBUF_FOUND)
+	include_directories(${PROTOBUF_INCLUDE_DIRS})
+	LIST(APPEND USCXML_OPT_LIBS optimized ${PROTOBUF_LIBRARY})
+	LIST(APPEND USCXML_OPT_LIBS debug ${PROTOBUF_LIBRARY_DEBUG})
+endif()
+set(CMAKE_FIND_LIBRARY_SUFFIXES ${CMAKE_FIND_LIBRARY_SUFFIXES_STATIC})
+
+#################################################
 # Gather source files
+#################################################
 
 # we use include instead of add_subdirectory because
 # source groups do not work otherwise.
 
-include(src/uscxml/CMakeLists.txt)
+add_subdirectory(src/uscxml)
 include_directories(${USCXML_INCLUDE_DIRS})
 
 if (UNIX AND NOT APPLE)
@@ -391,13 +469,46 @@ endif()
 # Binaries and tests
 ############################################################
 
+# we cannot use source groups in sub directories!
+foreach( FILE ${USCXML_FILES} )
+	get_filename_component(PATH ${FILE} PATH)
+	
+	if (${PATH} MATCHES ".*datamodel\\/ecmascript.*")
+		STRING(REGEX MATCH "[^\\/]*$" COMP_NAME ${PATH})
+		source_group("Datamodel\\EcmaScript\\${COMP_NAME}" FILES ${FILE})
+	elseif (${PATH} MATCHES ".*datamodel\\/prolog.*")
+		STRING(REGEX MATCH "[^\\/]*$" COMP_NAME ${PATH})
+		source_group("Datamodel\\Prolog\\${COMP_NAME}" FILES ${FILE})
+	elseif (${PATH} MATCHES ".*datamodel\\/xpath.*")
+		source_group("Datamodel\\XPath" FILES ${FILE})
+	elseif (${PATH} MATCHES ".*datamodel\\/null.*")
+		source_group("Datamodel\\NULL" FILES ${FILE})
+	
+	elseif (${PATH} MATCHES ".*\\/invoker\\/.*")
+		STRING(REGEX MATCH "[^\\/]*$" COMP_NAME ${PATH})
+		source_group("Invoker\\${COMP_NAME}" FILES ${FILE})
+
+	elseif (${PATH} MATCHES ".*\\/element\\/.*")
+		STRING(REGEX MATCH "[^\\/]*$" COMP_NAME ${PATH})
+		source_group("Element\\${COMP_NAME}" FILES ${FILE})
+
+		elseif (${PATH} MATCHES ".*\\/ioprocessor\\/.*")
+			STRING(REGEX MATCH "[^\\/]*$" COMP_NAME ${PATH})
+			source_group("IOProcessor\\${COMP_NAME}" FILES ${FILE})
+
+	else ()
+		source_group(Interpreter FILES ${FILE})
+	endif()
+endforeach()
+
 # build library
 if (BUILD_AS_PLUGINS)
 	add_library(uscxml ${USCXML_FILES})
+	target_link_libraries(uscxml ${USCXML_CORE_LIBS})
 else()
 	add_library(uscxml ${USCXML_FILES})
+	target_link_libraries(uscxml ${USCXML_OPT_LIBS} ${USCXML_CORE_LIBS})
 endif()
-target_link_libraries(uscxml ${USCXML_OPT_LIBS} ${USCXML_CORE_LIBS})
 
 add_executable(mmi-browser apps/mmi-browser.cpp ${PROJECT_SOURCE_DIR}/contrib/src/getopt/XGetopt.cpp)
 target_link_libraries(mmi-browser uscxml)

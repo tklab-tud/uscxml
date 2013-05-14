@@ -41,10 +41,15 @@ bool canResolve(const std::string& url) {
 }
 
 int main(int argc, char** argv) {
+#ifdef _WIN32
+	WSADATA wsaData;
+	WSAStartup(MAKEWORD(2, 2), &wsaData);
+#endif
 
 	std::string exeName = argv[0];
 	exeName = exeName.substr(exeName.find_last_of("\\/") + 1);
 
+#if 0
 	{
 		Interpreter interpreter = Interpreter::fromURI("/Users/sradomski/Desktop/application_small.scxml");
 		assert(interpreter);
@@ -53,6 +58,7 @@ int main(int argc, char** argv) {
 		interpreter.setConfiguration(states);
 		interpreter.interpret();
 	}
+#endif
 
 	{
 		URL url(argv[0]);

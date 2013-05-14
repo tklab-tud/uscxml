@@ -239,12 +239,12 @@ Data Data::fromJSON(const std::string& jsonString) {
 			free(t);
 //      LOG(INFO) << "Increasing JSON length to token ratio to 1/" << frac;
 		}
-		t = (jsmntok_t*)malloc(nrTokens * sizeof(jsmntok_t) + 1);
+		t = (jsmntok_t*)malloc((nrTokens + 1) * sizeof(jsmntok_t));
 		if (t == NULL) {
 			LOG(ERROR) << "Cannot parse JSON, ran out of memory!";
 			return data;
 		}
-		memset(t, 0, nrTokens * sizeof(jsmntok_t) + 1);
+		memset(t, 0, (nrTokens + 1) * sizeof(jsmntok_t));
 
 		rv = jsmn_parse(&p, trimmed.c_str(), t, nrTokens);
 	} while (rv == JSMN_ERROR_NOMEM && frac > 1);
@@ -276,6 +276,7 @@ Data Data::fromJSON(const std::string& jsonString) {
 
 	size_t currTok = 0;
 	do {
+		jsmntok_t t2 = t[currTok];
 		switch (t[currTok].type) {
 		case JSMN_STRING:
 			dataStack.back()->type = Data::VERBATIM;
