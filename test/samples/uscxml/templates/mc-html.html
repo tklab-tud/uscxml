@@ -1,0 +1,161 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+	<head>
+		<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+		<script src="http://ajax.googleapis.com/ajax/libs/dojo/1.8.3/dojo/dojo.js"></script>
+
+		<script type="text/javascript">
+		function createUUID() {
+			// http://www.ietf.org/rfc/rfc4122.txt
+			var s = [];
+			var hexDigits = "0123456789abcdef";
+			for (var i = 0; i < 36; i++) {
+				s[i] = hexDigits.substr(Math.floor(Math.random() * 0x10), 1);
+			}
+			s[14] = "4";  // bits 12-15 of the time_hi_and_version field to 0010
+			s[19] = hexDigits.substr((s[19] & 0x3) | 0x8, 1);  // bits 6-7 of the clock_seq_hi_and_reserved to 01
+			s[8] = s[13] = s[18] = s[23] = "-";
+			var uuid = s.join("");
+			return uuid;
+		}
+		</script>
+
+    <script type="text/javascript">
+			require(["dojo/on", "dojo/mouse", "dojo/domReady!", "dojo", "dojox/json/ref"], function(on, mouse, dom, dojo, ref) {
+				
+			var element = dojo.byId("foo");
+			
+			var mmiNS = "http://www.w3.org/2008/04/mmi-arch";
+			var token = createUUID();
+			var contextId;
+			var timeout="30000";
+			var imURL = "${im.url}";
+			
+			var xhr = dojo.require("dojo/_base/xhr");
+			// initial new context request
+			xhr.post({
+				url: imURL + "?token=" + token,
+				postData:
+					'<mmi:mmi xmlns:mmi="' + mmiNS + '" version="1.0">' +
+						'<mmi:NewContextRequest ' +
+							'mmi:Source="HTML" ' +
+							'mmi:Target="' + imURL + '" '+
+							'mmi:RequestID="' + token + '" />' +
+					'</mmi:mmi>',
+				handleAs:"xml",
+				headers:{
+					"X-Requested-With": null,
+					"Content-Type": "application/xml",
+				},
+				load: function(result) {
+					// scxml IM replied with 204 - longpoll via get
+					longpoll();
+				}	      
+			});
+
+			var longpoll = function() {
+				xhr.get({
+					// The URL to request
+					url: imURL + "?token=" + token,
+					handleAs:"xml",
+					headers:{
+						"X-Requested-With": null,
+						"Content-Type": "application/xml",
+					},
+					load: function(result) {
+						// IM had some event to send to us
+						element.innerHTML += (new XMLSerializer()).serializeToString(result).replace(/</gi, "&lt;") + "<br />";
+						var mmiEvent = result.documentElement.firstChild;
+						switch (mmiEvent.localName) {
+							case "NewContextResponse":
+								newContextResponse(mmiEvent);
+								break;
+							case "StartRequest":
+								startRequest(mmiEvent);
+								break;
+						}
+						longpoll();
+					}
+				});
+			}
+			
+			var eventToJSON = function(event) {
+				var seen = [];
+				return JSON.stringify(event, function(key, val) {
+					if (isNode(val)) {
+						return;
+					}
+					if (isWindow(val)) {
+						return;
+					}
+					if (typeof val == "object") {
+						if (seen.indexOf(val) >= 0)
+							return;
+						seen.push(val)
+					}
+					return val
+				});
+			}
+			
+			var isNode = function(o){
+			  return (
+			    typeof Node === "object" ? o instanceof Node : 
+			    o && typeof o === "object" && typeof o.nodeType === "number" && typeof o.nodeName==="string"
+			  );
+			}
+
+			var isWindow = function(o){
+			  return (
+			    typeof Window === "object" ? o instanceof Window : 
+			    o && typeof o === "object" && typeof o.menubar === "object"
+			  );
+			}
+			
+			var newContextResponse = function(event) {
+				contextId = event.getAttribute("Context");
+			}
+			var startRequest = function(event) {
+				var content = event.firstChild;
+				console.log(content);
+				var fromStartRequest = document.importNode(content.firstChild,true);
+				element.appendChild(fromStartRequest);
+			}
+			
+			var sendExtensionNotification = function(event) {
+				console.log(event);
+				var data = eventToJSON(event);
+				console.log(data);
+				xhr.post({
+					url: imURL + "?token=" + token,
+					postData:
+						'<mmi:mmi xmlns:mmi="' + mmiNS + '" version="1.0">' +
+							'<mmi:ExtensionNotification ' +
+								'mmi:Source="HTML" ' +
+								'mmi:Target="' + imURL + '" ' +
+								'mmi:Context="' + contextId + '" ' +
+								'mmi:RequestID="' + token + '">' +
+								'<mmi:Data>' + data + '</mmi:Data>' + 
+							'</mmi:ExtensionNotification>' +
+						'</mmi:mmi>',
+					handleAs:"xml",
+					headers:{
+						"X-Requested-With": null,
+						"Content-Type": "application/xml",
+					},
+					load: function(result) {
+						// scxml IM replied with 204
+					}	      
+				});
+				
+			}
+			
+			on(element, "click", sendExtensionNotification);
+			on(element, mouse.enter, sendExtensionNotification);
+			on(element, mouse.leave, sendExtensionNotification);
+			
+		});		  
+		</script>
+	</head>
+	<body class="tundra">
+		<div id="foo"></div>
+	</body>
+</html>

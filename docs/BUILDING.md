@@ -154,7 +154,7 @@ This would be all distributions based on Debian, like Ubuntu, Linux Mint and the
 	$ sudo apt-get install git cmake cmake-curses-gui make g++
 
 	# uscxml required dependencies
-	$ sudo apt-get install libxml2-dev
+	$ sudo apt-get install libxml2-dev libcurl4-openssl-dev
 
 There may still be packages missing due to the set of dependencies among packages
 in the various distributons. Try to run cmake and resolve dependencies until you

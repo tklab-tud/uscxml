@@ -26,7 +26,7 @@ interface Node {
   readonly attribute Node             lastChild;
   readonly attribute Node             previousSibling;
   readonly attribute Node             nextSibling;
-  readonly attribute NamedNodeMap     attributes;
+  [CustomGetter] readonly attribute NamedNodeMap     attributes;
   // Modified in DOM Level 2:
   readonly attribute Document         ownerDocument;
   Node               insertBefore(in Node newChild, 

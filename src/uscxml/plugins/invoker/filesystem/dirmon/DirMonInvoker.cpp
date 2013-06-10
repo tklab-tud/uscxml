@@ -37,7 +37,7 @@ DirMonInvoker::~DirMonInvoker() {
 		_thread->join();
 };
 
-boost::shared_ptr<IOProcessorImpl> DirMonInvoker::create(InterpreterImpl* interpreter) {
+boost::shared_ptr<InvokerImpl> DirMonInvoker::create(InterpreterImpl* interpreter) {
 	boost::shared_ptr<DirMonInvoker> invoker = boost::shared_ptr<DirMonInvoker>(new DirMonInvoker());
 	invoker->_interpreter = interpreter;
 	return invoker;

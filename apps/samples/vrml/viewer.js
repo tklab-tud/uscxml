@@ -6,10 +6,13 @@ function VRMLViewer(element, params) {
   // private instanceId
   if (!VRMLViewer.instances)
     VRMLViewer.instances = 0;
-  var instanceId = VRMLViewer.instances++;
+  this.instanceId = VRMLViewer.instances++;
   var batchChanges = false;
   
   // public attributes
+  this.width       = 450;
+  this.height      = 350;
+  
   this.pose = {};
   this.pose.pitch       = 0;
   this.pose.roll        = 0;
@@ -18,342 +21,49 @@ function VRMLViewer(element, params) {
   this.pose.x           = 0;
   this.pose.y           = 0;
   this.pose.z           = 0;
-  this.pose.width       = 450;
-  this.pose.height      = 350;
   this.pose.autorotate  = false;
-
-  this.serverURL = "http://88.69.49.213:8080/vrml";
+  this.serverURL;
   this.imageURL;
-
-  require(["dojo/dom-construct", 
-           "dojo/_base/xhr", 
-           "dojo/dom", 
-           "dojox/storage", 
-           "dojox/layout/FloatingPane",
-           "dojo/store/Memory", 
-           "dojo/store/Observable", 
-           "dijit/tree/ObjectStoreModel",
-           "dijit/Tree",
-           "dijit/form/TextBox",
-           "dijit/form/Button",
-           "dijit/form/NumberSpinner",
-           "dijit/form/VerticalSlider",
-           "dijit/form/VerticalRuleLabels", 
-           "dijit/form/VerticalRule",
-           "dijit/form/HorizontalSlider",
-           "dojox/mobile/ProgressIndicator",
-           "dojo/ready"], 
-    function(domConst, 
-             xhr, 
-             dom, 
-             storage, 
-             FloatingPane,
-             Memory,
-             Observable,
-             ObjectStoreModel,
-             Tree,
-             TextBox,
-             Button,
-             NumberSpinner,
-             VerticalSlider,
-             VerticalRuleLabels,
-             VerticalRule,
-             HorizontalSlider,
-             ProgressIndicator,
-             ready) {
-
-      ready(function() {
-        
-        if (typeof(element) === 'string') {
-          element = dom.byId(element);
-        }
-        element.style.height = self.pose.height;
-        element.style.width = self.pose.width;
-        
-        self.element = element;
-        self.xhr = xhr;
-        self.progress = new ProgressIndicator({size:40, center:false});
-        self.localStorage = dojox.storage.manager.getProvider();
-        self.localStorage.initialize();
-        
-        // establish our dom
-        element.appendChild(domConst.toDom('\
-          <div class="floatPane">\
-            <div style="text-align: right"><div class="server" /></div><button type="button" class="browseButton"></button></div>\
-            <div style="height: 100%; overflow: auto" class="fileList"></div>\
-          </div>\
-          <table>\
-            <tr>\
-              <td valign="top">\
-                  <div style="position: relative; padding: 0px">\
-                    <img class="model" style="z-index: -1; min-width: ' + self.pose.width + 'px; min-height: ' + self.pose.height + 'px"></img>\
-                    <div style="z-index: 1; position: absolute; right: 45%; top: 45%">\
-                      <div class="progress"></div>\
-                    </div>\
-                    <div style="position: absolute; left: 10px; top: 7%; height: 100%">\
-                      <div class="pitchSlide"></div>\
-                    </div>\
-                    <div style="position: absolute; right: 10px; top: 15%; height: 50%">\
-                      <div class="zoomSlide"></div>\
-                    </div>\
-                    <div style="position: absolute; left: 7%; top: 10px; width: 100%">\
-                      <div class="rollSlide"></div>\
-                    </div>\
-                    <div style="position: absolute; left: 7%; bottom: 15px;">\
-                      <div class="yawSlide"></div>\
-                    </div>\
-                    <table cellspacing="0" style="position: absolute; right: 5px; bottom: 25px">\
-                      <tr>\
-                        <td align="right">x: <input type="text" class="xSpinner"></input></td>\
-                      </tr>\
-                      <tr>\
-                        <td align="right">y: <input type="text" class="ySpinner"></input></td>\
-                      </tr>\
-                      <tr>\
-                        <td align="right"><button type="button" class="resetButton"></button></td>\
-                      </tr>\
-                    </table>\
-                  </div>\
-              </td>\
-              <td valign="top" height="100%">\
-              </td>\
-            </tr>\
-            <tr>\
-              <td colspan="2"><div class="messages"></div></td>\
-            </tr>\
-          </table>\
-        '));
-        
-        // fetch special dom nodes for content
-        self.messageBox = dojo.query("div.messages", element)[0];
-        self.imgElem = dojo.query("img.model", element)[0];
-        self.serverBoxElem = dojo.query("div.server", element)[0];
-        self.browseButtonElem = dojo.query("button.browseButton", element)[0];
-        self.fileListElem = dojo.query("div.fileList", element)[0];
-
-        self.resetButtonElem = dojo.query("button.resetButton", element)[0];
-        self.xSpinnerElem = dojo.query("input.xSpinner", element)[0];
-        self.ySpinnerElem = dojo.query("input.ySpinner", element)[0];
-        self.pitchSlideElem = dojo.query("div.pitchSlide", element)[0];
-        self.rollSlideElem = dojo.query("div.rollSlide", element)[0];
-        self.yawSlideElem = dojo.query("div.yawSlide", element)[0];
-        self.zoomSlideElem = dojo.query("div.zoomSlide", element)[0];
-        self.progressElem = dojo.query("div.progress", element)[0];
-        self.floatPaneElem = dojo.query("div.floatPane", element)[0];
-        
-        self.floatPane = new FloatingPane({
-           title: "VRML Viewer",
-           resizable: true, dockable: false, closable: false,
-           style: "position:absolute;top:10;left:10;width:250px;height:300px;z-index: 2",
-           id: "floatPane",
-        }, self.floatPaneElem);
-        self.floatPane.startup();
-        
-        // setup fileStore for tree list
-        self.fileStore = new Observable(new Memory({
-          data: [ { id: 'root', name:'3D Models'} ],
-          getChildren: function(object){
-              return this.query({parent: object.id});
-          }
-        }));
-        self.fileTreeModel = new ObjectStoreModel({
-            store: self.fileStore,
-            query: { id: "root" }
-        });
-        
-        // setup actual tree dijit
-        self.fileList = new dijit.Tree({
-            id: "fileList",
-            model: self.fileTreeModel,
-            persist: false,
-            showRoot: false,
-            onClick: function(item){
-  //              self.messageBox.innerHTML = '<pre>' + item.url + '?width=200&height=150</pre>' + '<img src="' + item.url + '?width=200&height=150" />';
-                if ('url' in item) {
-                  self.imageURL = item.url;
-                  self.updateScene();
-                }
-            },
-            getIconClass: function(item, opened) {
-                return (!item || !('url' in item)) ? (opened ? "dijitFolderOpened" : "dijitFolderClosed") : "dijitLeaf"
-            },
-            getIconStyle: function(item, opened){
-              if('url' in item) {
-                return { backgroundImage: "url('" + item.url + "?width=16&height=16')"};
-              }
-            }
-            //return {backgroundImage: "url('" + item.url + "?width=16&height=16')"};
-
-        }).placeAt(self.fileListElem);
-        //tree.dndController.singular = true;
-        
-        var savedServerURL = self.localStorage.get("vrmlServer");
-        if (savedServerURL) {
-          self.serverURL = savedServerURL;
-        }
-        
-        self.serverBox = new TextBox({
-          name: "Server",
-          value: self.serverURL,
-          style: "width: 70%",
-
-          onKeyDown: function(e) {
-            var code = e.keyCode || e.which;
-            if( code === 13 ) {
-              e.preventDefault();
-              self.refreshServer(this.get("value"));
-              return false; 
-            }
-          },
-        }, self.serverBoxElem);
-
-
-        self.resetButton = new Button({
-          label: "Reset",
-          onClick: function(){
-            self.xSpinner.set('value',0);
-            self.ySpinner.set('value',0);
-            self.zSpinner.set('value',0);
-            self.pitchSlide.attr('value',0);
-            self.rollSlide.attr('value',0);
-            self.yawSlide.attr('value',0);
-            self.zoomSlide.attr('value',1);
-
-            self.floatPane.domNode.style.top = "10px";
-            self.floatPane.domNode.style.left = "10px";
-//            self.floatPane.startup();
-            self.floatPane.show();
-          }
-        }, self.resetButtonElem);
-
-        self.xSpinner = new NumberSpinner({
-          value: 0,
-          smallDelta: 1,
-          constraints: { places:0 },
-          style: "width:60px",
-          onChange: function(value){
-            self.pose.x = value;
-            self.updateScene();
-          }
-        }, self.xSpinnerElem );
-
-        self.ySpinner = new NumberSpinner({
-          value: 0,
-          smallDelta: 1,
-          constraints: { places:0 },
-          style: "width:60px",
-          onChange: function(value){
-            self.pose.y = value;
-            self.updateScene();
-          }
-        }, self.ySpinnerElem );
-
-        self.zSpinner = new NumberSpinner({
-          value: 0,
-          smallDelta: 1,
-          constraints: { places:0 },
-          style: "width:60px",
-          onChange: function(value){
-            self.pose.z = value;
-            self.updateScene();
-          }
-        }, self.zSpinnerElem );
-
-        self.browseButton = new Button({
-          label: "Browse",
-          onClick: function(){
-            self.refreshServer(self.serverBox.get("value"));
-          }
-        }, self.browseButtonElem);
-
-        // add zoom slider
-        self.zoomSlide = new VerticalSlider({
-          minimum: 0.001,
-          showButtons: false,
-          maximum: 1,
-          value: 1,
-          intermediateChanges: false,
-          style: "height: 90%",
-          onChange: function(value){
-            self.pose.zoom = Math.ceil(value * 1000) / 1000;
-            self.updateScene();
-          }
-        }, self.zoomSlideElem);
-        
-        // add pitch slider
-        // Create the rules
-        // var rulesNode = dojo.create("div", {}, self.pitchSlideElem, "first");
-        // var sliderRules = new VerticalRule({
-        //   container: "leftDecoration",
-        //   count: 11,
-        //   style: "width: 5px;"}, rulesNode);
-
-        // Create the labels
-        // var labelsNode = dojo.create(
-        //   "div", {}, self.pitchSlideElem, "first");
-        // var sliderLabels = new VerticalRuleLabels({
-        //   labels: ["Pitch", ""],
-        //   container: "rightDecoration",
-        //   labelStyle: "-webkit-transform: rotate(-90deg); -moz-transform: rotate(-90deg); padding-left: -3px; font-size: 0.75em"
-        // }, labelsNode);
-
-        self.pitchSlide = new VerticalSlider({
-          minimum: 0,
-          showButtons: false,
-          maximum: 2 * 3.14159,
-          value: 0,
-          intermediateChanges: false,
-          style: "height: 90%",
-          onChange: function(value){
-            self.pose.pitch = Math.ceil(value * 100) / 100;
-            self.updateScene();
-          }
-        }, self.pitchSlideElem);
-
-        // add roll slider
-        self.rollSlide = new HorizontalSlider({
-          minimum: 0,
-          showButtons: false,
-          maximum: 2 * 3.14159,
-          intermediateChanges: false,
-          style: "width: 90%",
-          onChange: function(value){
-            self.pose.roll = Math.ceil(value * 100) / 100;
-            self.updateScene();
-          }
-        }, self.rollSlideElem);
-
-        // add yaw slider
-        self.yawSlide = new HorizontalSlider({
-          minimum: 0,
-          showButtons: false,
-          maximum: 2 * 3.14159,
-          intermediateChanges: false,
-          style: "width: 90%",
-          onChange: function(value){
-            self.pose.yaw = Math.ceil(value * 100) / 100;
-            self.updateScene();
-          }
-        }, self.yawSlideElem);
-        
-      })
-    });
+  
+  this.pose.width       = this.width;
+  this.pose.height      = this.height;
+  
+  this.params = params;
 
   // privileged public methods
   this.updateScene = function() {
     if (self.imageURL && !self.batchChanges) {
-      self.imgElem.src = self.imageURL + 
-      '?width=' + self.pose.width + 
-      '&height=' + self.pose.height +
-      '&pitch=' + self.pose.pitch +
-      '&roll=' + self.pose.roll +
-      '&yaw=' + self.pose.yaw +
-      '&x=' + self.pose.x +
-      '&y=' + self.pose.y +
-      '&z=' + self.pose.z +
-      '&zoom=' + self.pose.zoom +
-      '&autorotate=' + (self.pose.autorotate ? '1' : '0');
+      self.imgElem.src = self.imageURL + urlSuffixForPose(self.pose);
     }
+  }
+
+  var urlSuffixForPose = function(pose) {
+    var url =
+    '?width=' + pose.width + 
+    '&height=' + pose.height +
+    '&pitch=' + pose.pitch +
+    '&roll=' + pose.roll +
+    '&yaw=' + pose.yaw +
+    '&x=' + pose.x +
+    '&y=' + pose.y +
+    '&z=' + pose.z +
+    '&zoom=' + pose.zoom +
+    '&autorotate=' + (pose.autorotate ? '1' : '0');
+    return url;
+  }
+
+  var moverRelativeTo = function(mover, container) {
+    var containerPos = absolutePosition(container);
+    return {
+      x: mover.x - containerPos.x, 
+      y: mover.y - containerPos.y
+    };
+  }
+
+  // see http://stackoverflow.com/questions/288699/get-the-position-of-a-div-span-tag
+  var absolutePosition = function(el) {
+    for (var lx=0, ly=0; el != null; lx += el.offsetLeft, ly += el.offsetTop, el = el.offsetParent);
+    return {x: lx,y: ly};
   }
 
   this.refreshServer = function(server) {
@@ -375,8 +85,6 @@ function VRMLViewer(element, params) {
           for (key in tree) {
             if ('url' in tree[key]) {
               self.fileStore.add({id:parentId+key, name:key, url:self.serverURL + tree[key].path, parent:parentId});
-//                  self.messageBox.innerHTML += '<pre>' + self.serverURL + tree[key].path + '</pre>';
-//                  self.messageBox.innerHTML += '<pre>' + tree[key].url + '?width=200&height=150</pre>' + '<img src="' + tree[key].url + '?width=200&height=150" />';
             } else {
               self.fileStore.add({id:parentId+key, name:key, parent:parentId});
               fillstore(tree[key], parentId+key);
@@ -389,37 +97,367 @@ function VRMLViewer(element, params) {
 
   this.setPose = function(imageURL, pose, serverURL) {
     if (serverURL && serverURL != self.serverURL) {
-      refreshServer(serverURL);
+      self.refreshServer(serverURL);
     }
     self.imageURL = imageURL;
     self.pose = pose;
 
-    self.batchChanges = true;
-//    self.fileList.set('item', imageURL);
-    self.xSpinner.set('value',pose.x);
-    self.ySpinner.set('value',pose.y);
-    self.zSpinner.set('value',pose.z);
-    self.pitchSlide.attr('value',pose.pitch);
-    self.rollSlide.attr('value',pose.roll);
-    self.yawSlide.attr('value',pose.yaw);
-    self.zoomSlide.attr('value',pose.zoom);
-    self.batchChanges = false;
-    updateScene();
+    var pitch = (pose.pitch % (2 * 3.14159) + 0.5) * 100;
+    var roll = (pose.roll % (2 * 3.14159) + 0.5) * 100;
+    var yaw = (pose.yaw % (2 * 3.14159) + 0.5) * 100;
+        
+    var x = ((pose.x / 100) + 0.5) * 100;
+    var y = ((pose.y / 100) + 0.5) * 100;
+
+    var zoom = (((pose.zoom - 1) / 3) + 0.5) * 100;
+
+    self.pitchRollHandlerElem.parentNode.style.right = pitch + "%";
+    self.pitchRollHandlerElem.parentNode.style.top = roll + "%";
+
+    self.yawZoomHandlerElem.parentNode.style.right = yaw + "%";
+    self.yawZoomHandlerElem.parentNode.style.top = zoom + "%";
+
+    self.xyHandlerElem.parentNode.style.right = x + "%";
+    self.xyHandlerElem.parentNode.style.top = y + "%";
+    
+    self.updateScene();
   }
 
-/*
-  view = "normal";
-  // if (params.view == "maximized") {
-  //  view = "maximized";
-  // }
-  
-  // if (this.view == "maximized") {
-  //     this.width = Math.min(element.clientWidth - 150, 800);
-  //  this.height = (this.width * 3) / 4;
-  // } else {
-  //     this.width = Math.min(element.clientWidth - 50, 800);
-  //  this.height = (this.width * 3) / 4; 
-  // }
-*/
+  require(["dojo/dom-construct", 
+           "dojo/_base/xhr", 
+           "dojo/dom", 
+           "dojo/on",
+           "dojox/storage", 
+           "dojo/store/Memory", 
+           "dojo/store/Observable", 
+           "dijit/tree/ObjectStoreModel",
+           "dijit/Tree",
+           "dijit/form/TextBox",
+           "dijit/form/Button",
+           "dojox/mobile/ProgressIndicator",
+           "dijit/form/DropDownButton",
+           "dijit/TooltipDialog",
+           "dojo/dnd/Moveable",
+           "dojo/ready",
+           "dojo/dnd/Source"], 
+    function(domConst, 
+             xhr, 
+             dom, 
+             on,
+             storage, 
+             Memory,
+             Observable,
+             ObjectStoreModel,
+             Tree,
+             TextBox,
+             Button,
+             ProgressIndicator,
+             DropDownButton,
+             TooltipDialog,
+             Moveable,
+             ready,
+             Source) {
+
+      ready(function() {
+        
+        if (typeof(element) === 'string') {
+          element = dom.byId(element);
+        }
+        element.style.height = self.pose.height;
+        element.style.width = self.pose.width;
+        
+        self.element = element;
+        self.xhr = xhr;
+        self.progress = new ProgressIndicator({size:40, center:false});
+        self.localStorage = dojox.storage.manager.getProvider();
+        self.localStorage.initialize();
+        
+        // establish our dom
+        element.appendChild(domConst.toDom('\
+          <table>\
+            <tr>\
+              <td valign="top">\
+                  <div style="position: relative; padding: 0px">\
+                    <img class="model" src="img/Tutorial.png" style="z-index: -1; width: ' + self.pose.width + 'px; height: ' + self.pose.height + 'px"></img>\
+                    <div style="z-index: 1; position: absolute; right: 45%; top: 45%">\
+                      <div class="progress"></div>\
+                    </div>\
+                    <div style="position: absolute; left: 10px; top: 10px">\
+                      <table></tr>\
+                        <td class="browseDropDown" style="vertical-align: middle"></td>\
+                        <td align="right"><button type="button" class="resetButton"></button></td>\
+                        <td class="dragHandler" style="vertical-align: middle; padding-top: 4px;"></td>\
+                      </tr></table>\
+                    </div>\
+                    <div style="position: absolute; right: 10px; top: 15%; height: 50%">\
+                      <div class="zoomSlide"></div>\
+                    </div>\
+                    <div style="position: absolute; right: 55%; top: 48%">\
+                      <div class="pitchRollHandler" style="font-size: 0.5em; background-color: rgba(255,255,255,0.5); border-radius: 5px; moz-border-radius: 5px;">\
+                        <table>\
+                          <tr>\
+                            <td><img class="pitchRollHandlerImg" src="img/pitchRoll.png" width="20px" style="padding: 2px 0px 0px 4px;" /></td>\
+                            <td><div class="pitchLabel"></div><div class="rollLabel"></div></td>\
+                          </tr>\
+                        </table>\
+                      </div>\
+                    </div>\
+                    <div style="position: absolute; right: 45%; top: 48%">\
+                      <div class="yawZoomHandler" style="font-size: 0.5em; background-color: rgba(255,255,255,0.5); border-radius: 5px; moz-border-radius: 5px;">\
+                        <table>\
+                          <tr>\
+                            <td><img class="yawZoomHandlerImg" src="img/yawZoom.png" width="20px" style="padding: 2px 0px 0px 4px;" /></td>\
+                            <td><div class="yawLabel"></div><div class="zoomLabel"></div></td>\
+                          </tr>\
+                        </table>\
+                      </div>\
+                    </div>\
+                    <div style="position: absolute; right: 50%; top: 58%">\
+                      <div class="xyHandler" style="font-size: 0.5em; background-color: rgba(255,255,255,0.5); border-radius: 5px; moz-border-radius: 5px;">\
+                        <table>\
+                          <tr>\
+                            <td><img class="xyHandlerImg" src="img/xy.png" width="20px" style="padding: 2px 0px 0px 4px;" /></td>\
+                            <td><div class="xLabel"></div><div class="yLabel"></div></td>\
+                          </tr>\
+                        </table>\
+                      </div>\
+                    </div>\
+                  </div>\
+              </td>\
+              <td valign="top" height="100%">\
+              </td>\
+            </tr>\
+            <tr>\
+              <td colspan="2"><div class="messages"></div></td>\
+            </tr>\
+          </table>\
+        '));
+        
+        // fetch special dom nodes for content
+        self.messageBox = dojo.query("div.messages", element)[0];
+        self.imgElem = dojo.query("img.model", element)[0];
+        self.browseDropDownElem = dojo.query("td.browseDropDown", element)[0];
+
+        self.resetButtonElem = dojo.query("button.resetButton", element)[0];
+        self.progressElem = dojo.query("div.progress", element)[0];
+        self.pitchRollHandlerElem = dojo.query(".pitchRollHandler", element)[0];
+        self.yawZoomHandlerElem = dojo.query(".yawZoomHandler", element)[0];
+        self.xyHandlerElem = dojo.query(".xyHandler", element)[0];
+        
+        self.pitchRollHandler = new Moveable(self.pitchRollHandlerElem);
+        self.pitchRollHandler.onMoveStop = function(mover) {
+          var handlerImg = dojo.query("img.pitchRollHandlerImg", mover.node)[0];
+          var pitchLabel = dojo.query("div.pitchLabel", mover.node)[0];
+          var rollLabel = dojo.query("div.rollLabel", mover.node)[0];
+          
+          pitchLabel.innerHTML = '';
+          rollLabel.innerHTML = '';
+          
+          self.updateScene();
+        }
+        self.pitchRollHandler.onMoving = function(mover) {
+          // mover.node.style.backgroundColor = "rgba(255,255,255,0.5)";
+          // mover.node.style.borderRadius = "5px";
+          // mover.node.style.mozBorderRadius = "5px";
+          // mover.node.style.webkitBorderRadius = "5px";
+          var handlerImg = dojo.query(".pitchRollHandlerImg", mover.node)[0];
+          var pitchLabel = dojo.query(".pitchLabel", mover.node)[0];
+          var rollLabel = dojo.query(".rollLabel", mover.node)[0];
+          var offset = moverRelativeTo(handlerImg, self.element);
+          
+          // self.pose.pitch = self.pose.pitch % (2 * 3.14159);
+          // self.pose.roll = self.pose.roll % (2 * 3.14159);
+          self.pose.roll =  offset.x / self.pose.width - 0.5;
+          self.pose.pitch = offset.y / self.pose.height - 0.5;
+          self.pose.roll *= 2 * 3.14159;
+          self.pose.pitch *= 2 * 3.14159;
+          self.pose.roll = Math.ceil((self.pose.roll) * 10) / 10;
+          self.pose.pitch = Math.ceil((self.pose.pitch) * 10) / 10;
+          pitchLabel.innerHTML = 'Pitch:' + self.pose.pitch;
+          rollLabel.innerHTML =   'Roll:' + self.pose.roll;
+        }
+
+        self.yawZoomHandler = new Moveable(self.yawZoomHandlerElem);
+        self.yawZoomHandler.onMoveStop = function(mover) {
+          var handlerImg = dojo.query("img.yawZoomHandlerImg", mover.node)[0];
+          var yawLabel = dojo.query("div.yawLabel", mover.node)[0];
+          var zoomLabel = dojo.query("div.zoomLabel", mover.node)[0];
+          
+          yawLabel.innerHTML = '';
+          zoomLabel.innerHTML = '';
+          
+          self.updateScene();
+        }
+        self.yawZoomHandler.onMoving = function(mover) {
+          var handlerImg = dojo.query("img.yawZoomHandlerImg", mover.node)[0];
+          var yawLabel = dojo.query("div.yawLabel", mover.node)[0];
+          var zoomLabel = dojo.query("div.zoomLabel", mover.node)[0];
+          var offset = moverRelativeTo(handlerImg, self.element);
+
+          // self.pose.pitch = self.pose.pitch % (2 * 3.14159);
+          // self.pose.roll = self.pose.roll % (2 * 3.14159);
+          self.pose.yaw =  (self.pose.width - offset.x) / self.pose.width - 0.5;
+          self.pose.zoom = offset.y / self.pose.height - 0.5;
+          self.pose.yaw *= 2 * 3.14159;
+          self.pose.zoom = self.pose.zoom * 3 + 1;
+          self.pose.zoom = Math.ceil((self.pose.zoom) * 10) / 10;
+          self.pose.yaw = Math.ceil((self.pose.yaw) * 10) / 10;
+          yawLabel.innerHTML = 'Yaw:' + self.pose.yaw;
+          zoomLabel.innerHTML = 'Zoom:' + self.pose.zoom;
+        }
+        
+        self.xyHandler = new Moveable(self.xyHandlerElem);
+        self.xyHandler.onMoveStop = function(mover) {
+          var handlerImg = dojo.query("img.xyHandlerImg", mover.node)[0];
+          var xLabel = dojo.query("div.xLabel", mover.node)[0];
+          var yLabel = dojo.query("div.yLabel", mover.node)[0];
+          
+          xLabel.innerHTML = '';
+          yLabel.innerHTML = '';
+          
+          self.updateScene();
+        }
+        self.xyHandler.onMoving = function(mover) {
+          var handlerImg = dojo.query("img.xyHandlerImg", mover.node)[0];
+          var xLabel = dojo.query("div.xLabel", mover.node)[0];
+          var yLabel = dojo.query("div.yLabel", mover.node)[0];
+          var offset = moverRelativeTo(handlerImg, self.element);
+          
+          self.pose.x = offset.x / self.pose.width - 0.5;
+          self.pose.y = offset.y / self.pose.height - 0.5;
+          self.pose.x *= 100;
+          self.pose.y *= 100;
+          self.pose.y = Math.ceil((self.pose.y) * 10) / 10;
+          self.pose.x = Math.ceil((self.pose.x) * 10) / 10;
+          xLabel.innerHTML = 'X:' + self.pose.x;
+          yLabel.innerHTML = 'Y:' + self.pose.y;
+        }
+        
+        self.createAvatar = function(item, mode) {
+          if (mode == 'avatar') {
+             // create your avatar if you want
+             var avatar = dojo.create( 'div', { innerHTML: item.data });
+             var avatarPose = dojo.clone(self.pose);
+             avatarPose.width=60;
+             avatarPose.height=60;
+             var avatarImgUrl = urlSuffixForPose(avatarPose);
+             avatar.innerHTML = '<img src=' + self.imageURL + avatarImgUrl + ' /> ';
+             item.srcEcc = "VRMLViewer";
+             item.iconPoseUrl = self.imageURL + avatarImgUrl;
+             item.imageURL = self.imageURL;
+             item.serverURL = self.serverURL;
+             item.pose = avatarPose;
+	         return {node: avatar, data: item, type: item.type};
+          }
+          console.log(item, mode);
+          var handler = dojo.create( 'div', { innerHTML: '<img src="img/drag.png" width="20px" />' });
+          return {node: handler, data: item, type: item.type};
+        };
+        
+        self.dragHandler = new Source(dojo.query("td.dragHandler", element)[0], {copyOnly: true, creator: self.createAvatar});
+        self.dragHandler.insertNodes(false, [ { } ]);
+
+        // setup fileStore for tree list
+        self.fileStore = new Observable(new Memory({
+          data: [ { id: 'root', name:'3D Models'} ],
+          getChildren: function(object){
+              return this.query({parent: object.id});
+          }
+        }));
+        self.fileTreeModel = new ObjectStoreModel({
+            store: self.fileStore,
+            query: { id: "root" }
+        });
+        
+        // setup actual tree dijit
+        self.fileList = new dijit.Tree({
+            id: "fileList" + self.instanceId,
+            model: self.fileTreeModel,
+            persist: false,
+            showRoot: false,
+            style: "height: 200px;",
+            onClick: function(item){
+                if ('url' in item) {
+                  self.imageURL = item.url;
+                  self.updateScene();
+                }
+            },
+            getIconClass: function(item, opened) {
+                return (!item || !('url' in item)) ? (opened ? "dijitFolderOpened" : "dijitFolderClosed") : "dijitLeaf"
+            },
+            getIconStyle: function(item, opened){
+              if('url' in item) {
+                return { backgroundImage: "url('" + item.url + "?width=16&height=16')"};
+              }
+            }
+            //return {backgroundImage: "url('" + item.url + "?width=16&height=16')"};
+
+        });
+
+        self.serverBox = new TextBox({
+          name: "Server",
+          value: self.serverURL,
+          style: "width: 70%",
+
+          onKeyDown: function(e) {
+            var code = e.keyCode || e.which;
+            if( code === 13 ) {
+              e.preventDefault();
+              self.refreshServer(this.get("value"));
+              return false; 
+            }
+          },
+        });
+
+        self.browseButton = new Button({
+          label: "Browse",
+          onClick: function(){
+            self.refreshServer(self.serverBox.get("value"));
+          }
+        });
+
+        self.browseDropDownContent = domConst.toDom('<div />');
+        self.browseDropDownContent.appendChild(self.serverBox.domNode);
+        self.browseDropDownContent.appendChild(self.browseButton.domNode);
+        self.browseDropDownContent.appendChild(self.fileList.domNode);
+
+        self.browseToolTip = new TooltipDialog({ content:self.browseDropDownContent, style:"max-height:200px"});
+        self.browseDropDown = new DropDownButton({ label: "Files", dropDown: self.browseToolTip });
+        self.browseDropDownElem.appendChild(self.browseDropDown.domNode);
+
+        self.resetButton = new Button({
+          label: "Reset",
+          onClick: function(){
+            self.pose.x = 0;
+            self.pose.y = 0;
+            self.pose.pitch = 0;
+            self.pose.roll = 0;
+            self.pose.yaw = 0;
+            self.pose.zoom = 1;
+            
+            self.xyHandler.node.style.left = 0;
+            self.xyHandler.node.style.top = 0;
+            self.pitchRollHandler.node.style.left = 0;
+            self.pitchRollHandler.node.style.top = 0;
+            self.yawZoomHandler.node.style.left = 0;
+            self.yawZoomHandler.node.style.top = 0;
+
+            self.updateScene();
+          }
+        }, self.resetButtonElem);
+
+        // do we have parameters for the initial pose?
+        if(self.params)
+          self.setPose(self.params.imageURL, self.params.pose, self.params.serverURL);
+
+        var savedServerURL = self.localStorage.get("vrmlServer");
+        if (savedServerURL && !self.serverURL) {
+          self.serverURL = savedServerURL;
+          self.refreshServer(savedServerURL);
+        }
+
+      })      
+    });
+
 
 }

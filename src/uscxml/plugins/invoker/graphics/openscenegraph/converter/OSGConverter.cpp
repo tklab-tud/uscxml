@@ -52,7 +52,7 @@ OSGConverter::~OSGConverter() {
 	}
 };
 
-boost::shared_ptr<IOProcessorImpl> OSGConverter::create(InterpreterImpl* interpreter) {
+boost::shared_ptr<InvokerImpl> OSGConverter::create(InterpreterImpl* interpreter) {
 	boost::shared_ptr<OSGConverter> invoker = boost::shared_ptr<OSGConverter>(new OSGConverter());
 	invoker->_interpreter = interpreter;
 	return invoker;

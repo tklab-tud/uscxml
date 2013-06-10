@@ -11,6 +11,7 @@
 #else
 
 # include "uscxml/plugins/ioprocessor/basichttp/BasicHTTPIOProcessor.h"
+# include "uscxml/plugins/ioprocessor/modality/MMIHTTPIOProcessor.h"
 # include "uscxml/plugins/ioprocessor/scxml/SCXMLIOProcessor.h"
 # include "uscxml/plugins/invoker/scxml/USCXMLInvoker.h"
 # include "uscxml/plugins/invoker/http/HTTPServletInvoker.h"
@@ -56,12 +57,24 @@
 # include "uscxml/plugins/element/respond/RespondElement.h"
 # include "uscxml/plugins/element/postpone/PostponeElement.h"
 
+# if 0
+#		include "uscxml/plugins/element/mmi/MMIEvents.h"
+# endif
 
 #endif
 
+#define ELEMENT_MMI_REGISTER(class)\
+class##Element* class = new class##Element(); \
+registerExecutableContent(class);
+
+
 namespace uscxml {
 
+Factory::Factory(Factory* parentFactory) : _parentFactory(parentFactory) {
+}
+
 Factory::Factory() {
+	_parentFactory = NULL;
 #ifdef BUILD_AS_PLUGINS
 	if (pluginPath.length() == 0) {
 		// try to read USCXML_PLUGIN_PATH environment variable
@@ -187,6 +200,10 @@ Factory::Factory() {
 		registerIOProcessor(ioProcessor);
 	}
 	{
+		MMIHTTPIOProcessor* ioProcessor = new MMIHTTPIOProcessor();
+		registerIOProcessor(ioProcessor);
+	}
+	{
 		SCXMLIOProcessor* ioProcessor = new SCXMLIOProcessor();
 		registerIOProcessor(ioProcessor);
 	}
@@ -207,6 +224,29 @@ Factory::Factory() {
 		registerExecutableContent(element);
 	}
 
+#if 0
+  {
+    ELEMENT_MMI_REGISTER(PrepareRequest);
+    ELEMENT_MMI_REGISTER(StartRequest);
+    ELEMENT_MMI_REGISTER(PauseRequest);
+    ELEMENT_MMI_REGISTER(ResumeRequest);
+    ELEMENT_MMI_REGISTER(CancelRequest);
+    ELEMENT_MMI_REGISTER(ClearContextRequest);
+    ELEMENT_MMI_REGISTER(StatusRequest);
+    ELEMENT_MMI_REGISTER(NewContextResponse);
+    ELEMENT_MMI_REGISTER(PrepareResponse);
+    ELEMENT_MMI_REGISTER(StartResponse);
+    ELEMENT_MMI_REGISTER(PauseResponse);
+    ELEMENT_MMI_REGISTER(ResumeResponse);
+    ELEMENT_MMI_REGISTER(CancelResponse);
+    ELEMENT_MMI_REGISTER(ClearContextResponse);
+    ELEMENT_MMI_REGISTER(StatusResponse);
+    ELEMENT_MMI_REGISTER(DoneNotification);
+    ELEMENT_MMI_REGISTER(NewContextRequest);
+    ELEMENT_MMI_REGISTER(ExtensionNotification);
+  }
+#endif
+	
 #endif
 }
 
@@ -261,63 +301,96 @@ void Factory::registerExecutableContent(ExecutableContentImpl* executableContent
 	_executableContent[std::make_pair(localName, nameSpace)] = executableContent;
 }
 
+std::map<std::string, IOProcessorImpl*> Factory::getIOProcessors() {
+	std::map<std::string, IOProcessorImpl*> ioProcs;
+	if (_parentFactory) {
+		ioProcs = _parentFactory->getIOProcessors();
+	}
+	
+	std::map<std::string, IOProcessorImpl*>::iterator ioProcIter = _ioProcessors.begin();
+	while(ioProcIter != _ioProcessors.end()) {
+		ioProcs.insert(std::make_pair(ioProcIter->first, ioProcIter->second));
+		ioProcIter++;
+	}
+	
+	return ioProcs;
+}
 
 boost::shared_ptr<InvokerImpl> Factory::createInvoker(const std::string& type, InterpreterImpl* interpreter) {
-	Factory* factory = getInstance();
-	if (factory->_invokerAliases.find(type) == factory->_invokerAliases.end()) {
+	
+	// do we have this type ourself?
+	if (_invokerAliases.find(type) != _invokerAliases.end()) {
+		std::string canonicalName = _invokerAliases[type];
+		if (_invokers.find(canonicalName) != _invokers.end()) {
+			return _invokers[canonicalName]->create(interpreter);
+		}
+	}
+
+	// lookup in parent factory
+	if (_parentFactory) {
+		return _parentFactory->createInvoker(type, interpreter);
+	} else {
 		LOG(ERROR) << "No " << type << " Invoker known";
-		return boost::shared_ptr<InvokerImpl>();
 	}
-
-	std::string canonicalName = factory->_invokerAliases[type];
-	if (factory->_invokers.find(canonicalName) == factory->_invokers.end()) {
-		LOG(ERROR) << "Invoker " << type << " known as " << canonicalName << " but no prototype is available in factory";
-		return boost::shared_ptr<InvokerImpl>();
-	}
-
-	return boost::static_pointer_cast<InvokerImpl>(factory->_invokers[canonicalName]->create(interpreter));
+	
+	return boost::shared_ptr<InvokerImpl>();
 }
 
 boost::shared_ptr<DataModelImpl> Factory::createDataModel(const std::string& type, InterpreterImpl* interpreter) {
-	Factory* factory = getInstance();
-	if (factory->_dataModelAliases.find(type) == factory->_dataModelAliases.end()) {
-		LOG(ERROR) << "No " << type << " DataModel known";
-		return boost::shared_ptr<DataModelImpl>();
+	
+	// do we have this type ourself?
+	if (_dataModelAliases.find(type) != _dataModelAliases.end()) {
+		std::string canonicalName = _dataModelAliases[type];
+		if (_dataModels.find(canonicalName) != _dataModels.end()) {
+			return _dataModels[canonicalName]->create(interpreter);
+		}
 	}
-
-	std::string canonicalName = factory->_dataModelAliases[type];
-	if (factory->_dataModels.find(canonicalName) == factory->_dataModels.end()) {
-		LOG(ERROR) << "DataModel " << type << " known as " << canonicalName << " but no prototype is available in factory";
-		return boost::shared_ptr<DataModelImpl>();
+	
+	// lookup in parent factory
+	if (_parentFactory) {
+		return _parentFactory->createDataModel(type, interpreter);
+	} else {
+		LOG(ERROR) << "No " << type << " Datamodel known";
 	}
-
-	return factory->_dataModels[canonicalName]->create(interpreter);
+	
+	return boost::shared_ptr<DataModelImpl>();
 }
 
 boost::shared_ptr<IOProcessorImpl> Factory::createIOProcessor(const std::string& type, InterpreterImpl* interpreter) {
-	Factory* factory = getInstance();
-	if (factory->_ioProcessorAliases.find(type) == factory->_ioProcessorAliases.end()) {
-		LOG(ERROR) << "No " << type << " IOProcessor known";
-		return boost::shared_ptr<IOProcessorImpl>();
+	// do we have this type ourself?
+	if (_ioProcessorAliases.find(type) != _ioProcessorAliases.end()) {
+		std::string canonicalName = _ioProcessorAliases[type];
+		if (_ioProcessors.find(canonicalName) != _ioProcessors.end()) {
+			return _ioProcessors[canonicalName]->create(interpreter);
+		}
 	}
-
-	std::string canonicalName = factory->_ioProcessorAliases[type];
-	if (factory->_ioProcessors.find(canonicalName) == factory->_ioProcessors.end()) {
-		LOG(ERROR) << "IOProcessor " << type << " known as " << canonicalName << " but no prototype is available in factory";
-		return boost::shared_ptr<IOProcessorImpl>();
+	
+	// lookup in parent factory
+	if (_parentFactory) {
+		return _parentFactory->createIOProcessor(type, interpreter);
+	} else {
+		LOG(ERROR) << "No " << type << " Datamodel known";
 	}
-
-	return factory->_ioProcessors[canonicalName]->create(interpreter);
+	
+	return boost::shared_ptr<IOProcessorImpl>();
 }
 
 boost::shared_ptr<ExecutableContentImpl> Factory::createExecutableContent(const std::string& localName, const std::string& nameSpace, InterpreterImpl* interpreter) {
-	Factory* factory = getInstance();
+	// do we have this type in this factory?
 	std::string actualNameSpace = (nameSpace.length() == 0 ? "http://www.w3.org/2005/07/scxml" : nameSpace);
-	if (factory->_executableContent.find(std::make_pair(localName, actualNameSpace)) == factory->_executableContent.end()) {
-		LOG(ERROR) << "Executable content " << localName << " in " << actualNameSpace << " not available in factory";
-		return boost::shared_ptr<ExecutableContentImpl>();
+	if (_executableContent.find(std::make_pair(localName, actualNameSpace)) != _executableContent.end()) {
+		return _executableContent[std::make_pair(localName, actualNameSpace)]->create(interpreter);
 	}
-	return factory->_executableContent[std::make_pair(localName, actualNameSpace)]->create(interpreter);
+
+	// lookup in parent factory
+	if (_parentFactory) {
+		return _parentFactory->createExecutableContent(localName, nameSpace, interpreter);
+	} else {
+		LOG(ERROR) << "Executable content " << localName << " in " << actualNameSpace << " not available in factory";
+	}
+
+	return boost::shared_ptr<ExecutableContentImpl>();
+
 }
 
 
@@ -328,7 +401,7 @@ Factory* Factory::getInstance() {
 	return _instance;
 }
 
-void IOProcessorImpl::returnEvent(Event& event) {
+void EventHandlerImpl::returnEvent(Event& event) {
 	if (event.invokeid.length() == 0)
 		event.invokeid = _invokeId;
 	if (event.type == 0)

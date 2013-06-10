@@ -33,37 +33,37 @@ namespace DOM {
 
 class V8DocumentFragment {
 public:
-	struct V8DocumentFragmentPrivate {
-		V8DOM* dom;
-		Arabica::DOM::DocumentFragment<std::string>* nativeObj;
-	};
+    struct V8DocumentFragmentPrivate {
+      V8DOM* dom;
+      Arabica::DOM::DocumentFragment<std::string>* nativeObj;
+    };
 
-	V8_DESTRUCTOR(V8DocumentFragmentPrivate);
-	static bool hasInstance(v8::Handle<v8::Value>);
-
-
-
-	static v8::Persistent<v8::FunctionTemplate> Tmpl;
-	static v8::Handle<v8::FunctionTemplate> getTmpl() {
-		if (Tmpl.IsEmpty()) {
-			v8::Handle<v8::FunctionTemplate> tmpl = v8::FunctionTemplate::New();
-			tmpl->SetClassName(v8::String::New("DocumentFragment"));
-			tmpl->ReadOnlyPrototype();
-
-			v8::Local<v8::ObjectTemplate> instance = tmpl->InstanceTemplate();
-			v8::Local<v8::ObjectTemplate> prototype = tmpl->PrototypeTemplate();
-			(void)prototype; // surpress unused warnings
-
-			instance->SetInternalFieldCount(1);
+    V8_DESTRUCTOR(V8DocumentFragmentPrivate);
+    static bool hasInstance(v8::Handle<v8::Value>);
 
 
 
+    static v8::Persistent<v8::FunctionTemplate> Tmpl;
+    static v8::Handle<v8::FunctionTemplate> getTmpl() {
+        if (Tmpl.IsEmpty()) {
+            v8::Handle<v8::FunctionTemplate> tmpl = v8::FunctionTemplate::New();
+            tmpl->SetClassName(v8::String::New("DocumentFragment"));
+            tmpl->ReadOnlyPrototype();
 
-			tmpl->Inherit(V8Node::getTmpl());
-			Tmpl = v8::Persistent<v8::FunctionTemplate>::New(tmpl);
-		}
-		return Tmpl;
-	}
+            v8::Local<v8::ObjectTemplate> instance = tmpl->InstanceTemplate();
+            v8::Local<v8::ObjectTemplate> prototype = tmpl->PrototypeTemplate();
+            (void)prototype; // surpress unused warnings
+            
+            instance->SetInternalFieldCount(1);
+
+
+
+
+            tmpl->Inherit(V8Node::getTmpl());
+            Tmpl = v8::Persistent<v8::FunctionTemplate>::New(tmpl);
+        }
+        return Tmpl;
+    }
 
 
 };

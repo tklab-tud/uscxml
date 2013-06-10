@@ -23,7 +23,7 @@ USCXMLInvoker::~USCXMLInvoker() {
 	_cancelled = true;
 };
 
-boost::shared_ptr<IOProcessorImpl> USCXMLInvoker::create(InterpreterImpl* interpreter) {
+boost::shared_ptr<InvokerImpl> USCXMLInvoker::create(InterpreterImpl* interpreter) {
 	boost::shared_ptr<USCXMLInvoker> invoker = boost::shared_ptr<USCXMLInvoker>(new USCXMLInvoker());
 	invoker->_parentInterpreter = interpreter;
 	return invoker;

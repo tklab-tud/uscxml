@@ -21,7 +21,7 @@ Sqlite3Invoker::Sqlite3Invoker() {
 Sqlite3Invoker::~Sqlite3Invoker() {
 };
 
-boost::shared_ptr<IOProcessorImpl> Sqlite3Invoker::create(InterpreterImpl* interpreter) {
+boost::shared_ptr<InvokerImpl> Sqlite3Invoker::create(InterpreterImpl* interpreter) {
 	boost::shared_ptr<Sqlite3Invoker> invoker = boost::shared_ptr<Sqlite3Invoker>(new Sqlite3Invoker());
 	invoker->_interpreter = interpreter;
 	return invoker;

@@ -1,6 +1,9 @@
 #include "uscxml/config.h"
 #include "uscxml/Interpreter.h"
 #include <glog/logging.h>
+#include "uscxml/concurrency/tinythread.h"
+
+#include "MMISessionManager.h"
 
 #ifdef HAS_SIGNAL_H
 #include <signal.h>
@@ -105,16 +108,17 @@ void customTerminate() {
 }
 
 void printUsageAndExit() {
-	printf("mmi-browser version " USCXML_VERSION " (" CMAKE_BUILD_TYPE " build - " CMAKE_COMPILER_STRING ")\n");
+	printf("uscxml-browser version " USCXML_VERSION " (" CMAKE_BUILD_TYPE " build - " CMAKE_COMPILER_STRING ")\n");
 	printf("Usage\n");
-	printf("\tmmi-browser");
+	printf("\tuscxml-browser");
 #ifdef BUILD_AS_PLUGINS
-	printf(" [-p pluginPath]");
+	printf(" [-d pluginPath]");
 #endif
 	printf(" URL\n");
 	printf("\n");
 	printf("Options\n");
 	printf("\t-v        : be verbose\n");
+	printf("\t-pN       : port for HTTP server\n");
 	printf("\n");
 	exit(1);
 }
@@ -133,6 +137,7 @@ int main(int argc, char** argv) {
 	}
 
 	bool verbose = false;
+	size_t port = 8080;
 	google::InitGoogleLogging(argv[0]);
 	google::LogToStderr();
 
@@ -140,13 +145,16 @@ int main(int argc, char** argv) {
 	opterr = 0;
 #endif
 	int option;
-	while ((option = getopt(argc, argv, "vl:p:")) != -1) {
+	while ((option = getopt(argc, argv, "vl:d:p:")) != -1) {
 		switch(option) {
 		case 'l':
 			google::InitGoogleLogging(optarg);
 			break;
-		case 'p':
+		case 'd':
 			uscxml::Factory::pluginPath = optarg;
+			break;
+		case 'p':
+			port = strTo<size_t>(optarg);
 			break;
 		case 'v':
 			verbose = true;
@@ -159,24 +167,15 @@ int main(int argc, char** argv) {
 		}
 	}
 
-//  for (int i = 0; i < argc; i++)
-//    std::cout << argv[i] << std::endl;
-//  std::cout << optind << std::endl;
-
+	// intialize http server on given port
+	HTTPServer::getInstance(port);
+	
 	LOG(INFO) << "Processing " << argv[optind];
-	Interpreter interpreter = Interpreter::fromURI(argv[optind]);
-	if (interpreter) {
-		interpreter.setCmdLineOptions(argc, argv);
-//		interpreter->setCapabilities(Interpreter::CAN_NOTHING);
-//		interpreter->setCapabilities(Interpreter::CAN_BASIC_HTTP | Interpreter::CAN_GENERIC_HTTP);
-
-		if (verbose) {
-			VerboseMonitor* vm = new VerboseMonitor();
-			interpreter.addMonitor(vm);
-		}
-
-		interpreter.start();
-		while(interpreter.runOnMainThread(25));
+	Interpreter protoInterpreter = Interpreter::fromURI(argv[optind]);
+	if (protoInterpreter) {
+		MMISessionManager mmiSessionManager(protoInterpreter);
+		while(true)
+			tthread::this_thread::sleep_for(tthread::chrono::milliseconds(1000));
 	}
 
 	return EXIT_SUCCESS;

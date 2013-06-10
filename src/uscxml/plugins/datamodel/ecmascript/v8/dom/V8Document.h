@@ -33,91 +33,91 @@ namespace DOM {
 
 class V8Document {
 public:
-	struct V8DocumentPrivate {
-		V8DOM* dom;
-		Arabica::DOM::Document<std::string>* nativeObj;
-	};
+    struct V8DocumentPrivate {
+      V8DOM* dom;
+      Arabica::DOM::Document<std::string>* nativeObj;
+    };
 
-	V8_DESTRUCTOR(V8DocumentPrivate);
-	static bool hasInstance(v8::Handle<v8::Value>);
+    V8_DESTRUCTOR(V8DocumentPrivate);
+    static bool hasInstance(v8::Handle<v8::Value>);
 
-	static v8::Handle<v8::Value> createElementCallback(const v8::Arguments&);
-	static v8::Handle<v8::Value> createDocumentFragmentCallback(const v8::Arguments&);
-	static v8::Handle<v8::Value> createTextNodeCallback(const v8::Arguments&);
-	static v8::Handle<v8::Value> createCommentCallback(const v8::Arguments&);
-	static v8::Handle<v8::Value> createCDATASectionCallback(const v8::Arguments&);
-	static v8::Handle<v8::Value> createProcessingInstructionCallback(const v8::Arguments&);
-	static v8::Handle<v8::Value> createAttributeCallback(const v8::Arguments&);
-	static v8::Handle<v8::Value> createEntityReferenceCallback(const v8::Arguments&);
-	static v8::Handle<v8::Value> getElementsByTagNameCallback(const v8::Arguments&);
-	static v8::Handle<v8::Value> importNodeCallback(const v8::Arguments&);
-	static v8::Handle<v8::Value> createElementNSCallback(const v8::Arguments&);
-	static v8::Handle<v8::Value> createAttributeNSCallback(const v8::Arguments&);
-	static v8::Handle<v8::Value> getElementsByTagNameNSCallback(const v8::Arguments&);
-	static v8::Handle<v8::Value> getElementByIdCallback(const v8::Arguments&);
-	static v8::Handle<v8::Value> evaluateCustomCallback(const v8::Arguments&);
+    static v8::Handle<v8::Value> createElementCallback(const v8::Arguments&);
+    static v8::Handle<v8::Value> createDocumentFragmentCallback(const v8::Arguments&);
+    static v8::Handle<v8::Value> createTextNodeCallback(const v8::Arguments&);
+    static v8::Handle<v8::Value> createCommentCallback(const v8::Arguments&);
+    static v8::Handle<v8::Value> createCDATASectionCallback(const v8::Arguments&);
+    static v8::Handle<v8::Value> createProcessingInstructionCallback(const v8::Arguments&);
+    static v8::Handle<v8::Value> createAttributeCallback(const v8::Arguments&);
+    static v8::Handle<v8::Value> createEntityReferenceCallback(const v8::Arguments&);
+    static v8::Handle<v8::Value> getElementsByTagNameCallback(const v8::Arguments&);
+    static v8::Handle<v8::Value> importNodeCallback(const v8::Arguments&);
+    static v8::Handle<v8::Value> createElementNSCallback(const v8::Arguments&);
+    static v8::Handle<v8::Value> createAttributeNSCallback(const v8::Arguments&);
+    static v8::Handle<v8::Value> getElementsByTagNameNSCallback(const v8::Arguments&);
+    static v8::Handle<v8::Value> getElementByIdCallback(const v8::Arguments&);
+    static v8::Handle<v8::Value> evaluateCustomCallback(const v8::Arguments&);
 
-	static v8::Handle<v8::Value> doctypeAttrGetter(v8::Local<v8::String> property, const v8::AccessorInfo& info);
-	static v8::Handle<v8::Value> implementationAttrGetter(v8::Local<v8::String> property, const v8::AccessorInfo& info);
-	static v8::Handle<v8::Value> documentElementAttrGetter(v8::Local<v8::String> property, const v8::AccessorInfo& info);
+    static v8::Handle<v8::Value> doctypeAttrGetter(v8::Local<v8::String> property, const v8::AccessorInfo& info);
+    static v8::Handle<v8::Value> implementationAttrGetter(v8::Local<v8::String> property, const v8::AccessorInfo& info);
+    static v8::Handle<v8::Value> documentElementAttrGetter(v8::Local<v8::String> property, const v8::AccessorInfo& info);
 
-	static v8::Persistent<v8::FunctionTemplate> Tmpl;
-	static v8::Handle<v8::FunctionTemplate> getTmpl() {
-		if (Tmpl.IsEmpty()) {
-			v8::Handle<v8::FunctionTemplate> tmpl = v8::FunctionTemplate::New();
-			tmpl->SetClassName(v8::String::New("Document"));
-			tmpl->ReadOnlyPrototype();
+    static v8::Persistent<v8::FunctionTemplate> Tmpl;
+    static v8::Handle<v8::FunctionTemplate> getTmpl() {
+        if (Tmpl.IsEmpty()) {
+            v8::Handle<v8::FunctionTemplate> tmpl = v8::FunctionTemplate::New();
+            tmpl->SetClassName(v8::String::New("Document"));
+            tmpl->ReadOnlyPrototype();
 
-			v8::Local<v8::ObjectTemplate> instance = tmpl->InstanceTemplate();
-			v8::Local<v8::ObjectTemplate> prototype = tmpl->PrototypeTemplate();
-			(void)prototype; // surpress unused warnings
+            v8::Local<v8::ObjectTemplate> instance = tmpl->InstanceTemplate();
+            v8::Local<v8::ObjectTemplate> prototype = tmpl->PrototypeTemplate();
+            (void)prototype; // surpress unused warnings
+            
+            instance->SetInternalFieldCount(1);
 
-			instance->SetInternalFieldCount(1);
+            instance->SetAccessor(v8::String::NewSymbol("doctype"), V8Document::doctypeAttrGetter, 0,
+                                  v8::External::New(0), static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None));
+            instance->SetAccessor(v8::String::NewSymbol("implementation"), V8Document::implementationAttrGetter, 0,
+                                  v8::External::New(0), static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None));
+            instance->SetAccessor(v8::String::NewSymbol("documentElement"), V8Document::documentElementAttrGetter, 0,
+                                  v8::External::New(0), static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None));
 
-			instance->SetAccessor(v8::String::NewSymbol("doctype"), V8Document::doctypeAttrGetter, 0,
-			                      v8::External::New(0), static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None));
-			instance->SetAccessor(v8::String::NewSymbol("implementation"), V8Document::implementationAttrGetter, 0,
-			                      v8::External::New(0), static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None));
-			instance->SetAccessor(v8::String::NewSymbol("documentElement"), V8Document::documentElementAttrGetter, 0,
-			                      v8::External::New(0), static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None));
-
-			prototype->Set(v8::String::NewSymbol("createElement"),
-			               v8::FunctionTemplate::New(V8Document::createElementCallback, v8::Undefined()), static_cast<v8::PropertyAttribute>(v8::DontDelete));
-			prototype->Set(v8::String::NewSymbol("createDocumentFragment"),
-			               v8::FunctionTemplate::New(V8Document::createDocumentFragmentCallback, v8::Undefined()), static_cast<v8::PropertyAttribute>(v8::DontDelete));
-			prototype->Set(v8::String::NewSymbol("createTextNode"),
-			               v8::FunctionTemplate::New(V8Document::createTextNodeCallback, v8::Undefined()), static_cast<v8::PropertyAttribute>(v8::DontDelete));
-			prototype->Set(v8::String::NewSymbol("createComment"),
-			               v8::FunctionTemplate::New(V8Document::createCommentCallback, v8::Undefined()), static_cast<v8::PropertyAttribute>(v8::DontDelete));
-			prototype->Set(v8::String::NewSymbol("createCDATASection"),
-			               v8::FunctionTemplate::New(V8Document::createCDATASectionCallback, v8::Undefined()), static_cast<v8::PropertyAttribute>(v8::DontDelete));
-			prototype->Set(v8::String::NewSymbol("createProcessingInstruction"),
-			               v8::FunctionTemplate::New(V8Document::createProcessingInstructionCallback, v8::Undefined()), static_cast<v8::PropertyAttribute>(v8::DontDelete));
-			prototype->Set(v8::String::NewSymbol("createAttribute"),
-			               v8::FunctionTemplate::New(V8Document::createAttributeCallback, v8::Undefined()), static_cast<v8::PropertyAttribute>(v8::DontDelete));
-			prototype->Set(v8::String::NewSymbol("createEntityReference"),
-			               v8::FunctionTemplate::New(V8Document::createEntityReferenceCallback, v8::Undefined()), static_cast<v8::PropertyAttribute>(v8::DontDelete));
-			prototype->Set(v8::String::NewSymbol("getElementsByTagName"),
-			               v8::FunctionTemplate::New(V8Document::getElementsByTagNameCallback, v8::Undefined()), static_cast<v8::PropertyAttribute>(v8::DontDelete));
-			prototype->Set(v8::String::NewSymbol("importNode"),
-			               v8::FunctionTemplate::New(V8Document::importNodeCallback, v8::Undefined()), static_cast<v8::PropertyAttribute>(v8::DontDelete));
-			prototype->Set(v8::String::NewSymbol("createElementNS"),
-			               v8::FunctionTemplate::New(V8Document::createElementNSCallback, v8::Undefined()), static_cast<v8::PropertyAttribute>(v8::DontDelete));
-			prototype->Set(v8::String::NewSymbol("createAttributeNS"),
-			               v8::FunctionTemplate::New(V8Document::createAttributeNSCallback, v8::Undefined()), static_cast<v8::PropertyAttribute>(v8::DontDelete));
-			prototype->Set(v8::String::NewSymbol("getElementsByTagNameNS"),
-			               v8::FunctionTemplate::New(V8Document::getElementsByTagNameNSCallback, v8::Undefined()), static_cast<v8::PropertyAttribute>(v8::DontDelete));
-			prototype->Set(v8::String::NewSymbol("getElementById"),
-			               v8::FunctionTemplate::New(V8Document::getElementByIdCallback, v8::Undefined()), static_cast<v8::PropertyAttribute>(v8::DontDelete));
-			prototype->Set(v8::String::NewSymbol("evaluate"),
-			               v8::FunctionTemplate::New(V8Document::evaluateCustomCallback, v8::Undefined()), static_cast<v8::PropertyAttribute>(v8::DontDelete));
+            prototype->Set(v8::String::NewSymbol("createElement"),
+                           v8::FunctionTemplate::New(V8Document::createElementCallback, v8::Undefined()), static_cast<v8::PropertyAttribute>(v8::DontDelete));
+            prototype->Set(v8::String::NewSymbol("createDocumentFragment"),
+                           v8::FunctionTemplate::New(V8Document::createDocumentFragmentCallback, v8::Undefined()), static_cast<v8::PropertyAttribute>(v8::DontDelete));
+            prototype->Set(v8::String::NewSymbol("createTextNode"),
+                           v8::FunctionTemplate::New(V8Document::createTextNodeCallback, v8::Undefined()), static_cast<v8::PropertyAttribute>(v8::DontDelete));
+            prototype->Set(v8::String::NewSymbol("createComment"),
+                           v8::FunctionTemplate::New(V8Document::createCommentCallback, v8::Undefined()), static_cast<v8::PropertyAttribute>(v8::DontDelete));
+            prototype->Set(v8::String::NewSymbol("createCDATASection"),
+                           v8::FunctionTemplate::New(V8Document::createCDATASectionCallback, v8::Undefined()), static_cast<v8::PropertyAttribute>(v8::DontDelete));
+            prototype->Set(v8::String::NewSymbol("createProcessingInstruction"),
+                           v8::FunctionTemplate::New(V8Document::createProcessingInstructionCallback, v8::Undefined()), static_cast<v8::PropertyAttribute>(v8::DontDelete));
+            prototype->Set(v8::String::NewSymbol("createAttribute"),
+                           v8::FunctionTemplate::New(V8Document::createAttributeCallback, v8::Undefined()), static_cast<v8::PropertyAttribute>(v8::DontDelete));
+            prototype->Set(v8::String::NewSymbol("createEntityReference"),
+                           v8::FunctionTemplate::New(V8Document::createEntityReferenceCallback, v8::Undefined()), static_cast<v8::PropertyAttribute>(v8::DontDelete));
+            prototype->Set(v8::String::NewSymbol("getElementsByTagName"),
+                           v8::FunctionTemplate::New(V8Document::getElementsByTagNameCallback, v8::Undefined()), static_cast<v8::PropertyAttribute>(v8::DontDelete));
+            prototype->Set(v8::String::NewSymbol("importNode"),
+                           v8::FunctionTemplate::New(V8Document::importNodeCallback, v8::Undefined()), static_cast<v8::PropertyAttribute>(v8::DontDelete));
+            prototype->Set(v8::String::NewSymbol("createElementNS"),
+                           v8::FunctionTemplate::New(V8Document::createElementNSCallback, v8::Undefined()), static_cast<v8::PropertyAttribute>(v8::DontDelete));
+            prototype->Set(v8::String::NewSymbol("createAttributeNS"),
+                           v8::FunctionTemplate::New(V8Document::createAttributeNSCallback, v8::Undefined()), static_cast<v8::PropertyAttribute>(v8::DontDelete));
+            prototype->Set(v8::String::NewSymbol("getElementsByTagNameNS"),
+                           v8::FunctionTemplate::New(V8Document::getElementsByTagNameNSCallback, v8::Undefined()), static_cast<v8::PropertyAttribute>(v8::DontDelete));
+            prototype->Set(v8::String::NewSymbol("getElementById"),
+                           v8::FunctionTemplate::New(V8Document::getElementByIdCallback, v8::Undefined()), static_cast<v8::PropertyAttribute>(v8::DontDelete));
+            prototype->Set(v8::String::NewSymbol("evaluate"),
+                           v8::FunctionTemplate::New(V8Document::evaluateCustomCallback, v8::Undefined()), static_cast<v8::PropertyAttribute>(v8::DontDelete));
 
 
-			tmpl->Inherit(V8Node::getTmpl());
-			Tmpl = v8::Persistent<v8::FunctionTemplate>::New(tmpl);
-		}
-		return Tmpl;
-	}
+            tmpl->Inherit(V8Node::getTmpl());
+            Tmpl = v8::Persistent<v8::FunctionTemplate>::New(tmpl);
+        }
+        return Tmpl;
+    }
 
 
 };

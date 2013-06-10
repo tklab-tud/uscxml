@@ -20,7 +20,7 @@ class USCXMLInvoker :
 public:
 	USCXMLInvoker();
 	virtual ~USCXMLInvoker();
-	virtual boost::shared_ptr<IOProcessorImpl> create(InterpreterImpl* interpreter);
+	virtual boost::shared_ptr<InvokerImpl> create(InterpreterImpl* interpreter);
 	virtual std::set<std::string> getNames() {
 		std::set<std::string> names;
 		names.insert("scxml");

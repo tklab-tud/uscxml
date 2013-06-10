@@ -1,0 +1,30 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+    <link rel="stylesheet" href="http://ajax.googleapis.com/ajax/libs/dojo/1.8.3/dijit/themes/tundra/tundra.css">
+    <!-- link rel="stylesheet" href="map.css" -->
+		<script type="text/javascript" src="http://openlayers.org/api/OpenLayers.js"></script>
+		<style type="text/css">
+		</style>
+
+		<script type="text/javascript">
+		</script>
+
+		<script src="http://ajax.googleapis.com/ajax/libs/dojo/1.8.3/dojo/dojo.js"></script>
+    <script type="text/javascript" src="map.js"></script>
+    
+    <script type="text/javascript">
+			require(["dojo/domReady!", "dojo"], function(dom, dojo) {
+				var map = new Map("map");
+			});
+		</script>
+	</head>
+	<body class="tundra">
+		<table>
+			<tr><td>
+				<div id="map" />
+			</td></tr>
+		</table>
+	</body>
+</html>

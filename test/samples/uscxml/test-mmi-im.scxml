@@ -1,0 +1,69 @@
+<scxml datamodel="ecmascript" name="mmi-test"
+	xmlns:mmi="http://www.w3.org/2008/04/mmi-arch" 
+	xmlns:html="http://www.w3.org/1999/xhtml" 
+	xmlns="http://www.w3.org/2005/07/scxml">
+
+	<script>
+<![CDATA[
+
+		function dump(object, level) {
+		    if (!level) level = 0;
+
+		    var padding = "";
+		    for (var j=0;j < level+1;j++) padding += "    ";
+
+		    if (typeof(object) == 'object') {  
+		        for (var item in object) {
+              if (item === "lastChild") continue;
+              if (item === "firstChild") continue;
+              if (item === "ownerDocument") continue;
+		            var value = object[item];
+
+		            if(typeof(value) == 'object') { 
+		                print (padding + "'" + item + "' ...\n");
+		                dump (value, level+1);
+		            } else {
+		                print (padding + "'" + item + "' => \"" + value + "\"\n");
+		            }
+		        }
+		    } else { 
+		        print("===> " + object + " <===(" + typeof(object) + ")");
+		    }
+		}
+]]>
+	</script>
+
+	<state id="startmc">
+		<!-- invoke type="vxml" id="mc.vxml" / -->
+		
+		<!-- Idle here and wait for events -->
+		<state id="idle">
+			
+			<!-- setup session -->
+			<transition event="mmi.newcontextrequest" target="idle">
+
+				<send type="mmi.event">
+					<content>
+						<mmi:NewContextResponse mmi:Status="success" />
+					</content>
+				</send>
+				
+				<send type="mmi.event">
+					<content>
+						<mmi:StartRequest>
+							<mmi:Content>
+								<html:button>Click Me</html:button>
+							</mmi:Content>
+						</mmi:StartRequest>
+					</content>
+				</send>
+			</transition>
+			
+			<transition event="mmi.extensionnotification" target="idle">
+				<script>dump(_event)</script>
+			</transition>
+			
+		</state>
+	</state>
+	<final id="terminate" />
+</scxml>

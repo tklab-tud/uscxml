@@ -56,15 +56,6 @@ public:
 	std::string unit;
 };
 
-class SCXMLParser : public Arabica::SAX2DOM::Parser<std::string> {
-public:
-	SCXMLParser(InterpreterImpl* interpreter);
-	void startPrefixMapping(const std::string& /* prefix */, const std::string& /* uri */);
-
-	Arabica::SAX::CatchErrorHandler<std::string> _errorHandler;
-	InterpreterImpl* _interpreter;
-};
-
 enum Capabilities {
     CAN_NOTHING = 0,
     CAN_BASIC_HTTP = 1,
@@ -123,6 +114,12 @@ public:
 	void setParentQueue(uscxml::concurrency::BlockingQueue<SendRequest>* parentQueue) {
 		_parentQueue = parentQueue;
 	}
+	void setFactory(Factory* factory) {
+		_factory = factory;
+	}
+	Factory* getFactory() {
+		return _factory;
+	}
 	std::string getXPathPrefix()                             {
 		return _xpathPrefix;
 	}
@@ -137,7 +134,9 @@ public:
 			return _nsToPrefix[ns] + ":";
 		return "";
 	}
-
+	void setNameSpaceInfo(const std::map<std::string, std::string> nameSpaceInfo);
+	std::map<std::string, std::string> getNameSpaceInfo() { return _nameSpaceInfo; }
+	
 	void receiveInternal(const Event& event);
 	void receive(const Event& event, bool toFront = false);
 
@@ -252,6 +251,7 @@ protected:
 	std::string _xpathPrefix; // prefix mapped for xpath, "scxml" is _xmlNSPrefix is empty but _nsURL set
 	std::string _nsURL;       // ough to be "http://www.w3.org/2005/07/scxml"
 	std::map<std::string, std::string> _nsToPrefix;
+	std::map<std::string, std::string> _nameSpaceInfo;
 
 	bool _running;
 	bool _done;
@@ -271,6 +271,7 @@ protected:
 	DelayedEventQueue* _sendQueue;
 
 	Event _currEvent;
+	Factory* _factory;
 	InterpreterServlet* _httpServlet;
 	std::set<InterpreterMonitor*> _monitors;
 
@@ -321,7 +322,6 @@ protected:
 	std::map<std::string, Arabica::DOM::Node<std::string> > _cachedStates;
 	std::map<std::string, URL> _cachedURLs;
 
-	friend class SCXMLParser;
 	friend class USCXMLInvoker;
 	friend class SCXMLIOProcessor;
 	friend class Interpreter;
@@ -385,6 +385,13 @@ public:
 		return _impl->getBaseURI();
 	}
 
+	void setNameSpaceInfo(const std::map<std::string, std::string> namespaceInfo) {
+		_impl->setNameSpaceInfo(namespaceInfo);
+	}
+	std::map<std::string, std::string> getNameSpaceInfo() {
+		return _impl->getNameSpaceInfo();
+	}
+		
 	void setCmdLineOptions(int argc, char** argv) {
 		return _impl->setCmdLineOptions(argc, argv);
 	}
@@ -401,6 +408,12 @@ public:
 	}
 	void setParentQueue(uscxml::concurrency::BlockingQueue<SendRequest>* parentQueue) {
 		return _impl->setParentQueue(parentQueue);
+	}
+	void setFactory(Factory* factory) {
+		return _impl->setFactory(factory);
+	}
+	Factory* getFactory() {
+		return _impl->getFactory();
 	}
 	std::string getXPathPrefix()                             {
 		return _impl->getXPathPrefix();
@@ -566,7 +579,6 @@ public:
 		return InterpreterImpl::getUUID();
 	}
 
-#ifndef SWIG
 	boost::shared_ptr<InterpreterImpl> getImpl() {
 		return _impl;
 	}
@@ -583,8 +595,6 @@ public:
 		}
 		return _instances;
 	}
-
-#endif
 
 protected:
 	boost::shared_ptr<InterpreterImpl> _impl;

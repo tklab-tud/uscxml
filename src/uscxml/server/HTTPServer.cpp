@@ -164,6 +164,10 @@ void HTTPServer::httpRecvReqCallback(struct evhttp_request *req, void *callbackD
 	request.data.compound["path"] = Data(evhttp_uri_get_path(evhttp_request_get_evhttp_uri(req)), Data::VERBATIM);
 
 	raw << " " << request.data.compound["path"].atom;
+	const char* query = evhttp_uri_get_query(evhttp_request_get_evhttp_uri(req));
+	if (query)
+		raw << "?" << std::string(query);
+	
 	raw << " HTTP/" << request.data.compound["httpMajor"].atom << "." << request.data.compound["httpMinor"].atom;
 	raw << std::endl;
 
@@ -197,7 +201,6 @@ void HTTPServer::httpRecvReqCallback(struct evhttp_request *req, void *callbackD
 	// parse query string
 	struct evkeyvalq params;
 	struct evkeyval *param;
-	const char* query = evhttp_uri_get_query(evhttp_request_get_evhttp_uri(req));
 
 	evhttp_parse_query_str(query, &params);
 	for (param = params.tqh_first; param; param = param->next.tqe_next) {

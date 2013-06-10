@@ -19,9 +19,9 @@ bool connect(pluma::Host& host) {
 #endif
 
 boost::shared_ptr<ExecutableContentImpl> FetchElement::create(InterpreterImpl* interpreter) {
-	boost::shared_ptr<FetchElement> invoker = boost::shared_ptr<FetchElement>(new FetchElement());
-	invoker->_interpreter = interpreter;
-	return invoker;
+	boost::shared_ptr<FetchElement> element = boost::shared_ptr<FetchElement>(new FetchElement());
+	element->_interpreter = interpreter;
+	return element;
 }
 
 FetchElement::~FetchElement() {

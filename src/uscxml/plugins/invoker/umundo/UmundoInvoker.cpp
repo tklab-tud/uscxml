@@ -28,7 +28,7 @@ UmundoInvoker::~UmundoInvoker() {
 	}
 };
 
-boost::shared_ptr<IOProcessorImpl> UmundoInvoker::create(InterpreterImpl* interpreter) {
+boost::shared_ptr<InvokerImpl> UmundoInvoker::create(InterpreterImpl* interpreter) {
 	boost::shared_ptr<UmundoInvoker> invoker = boost::shared_ptr<UmundoInvoker>(new UmundoInvoker());
 	invoker->_interpreter = interpreter;
 	return invoker;

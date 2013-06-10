@@ -8,8 +8,8 @@ CWD=`pwd`
 
 cd $DIR
 
-if [ "$UMUNDO_PREBUILT_HOST" == "" ]; then
-	UMUNDO_PREBUILT_HOST="admin@uscxml.tk.informatik.tu-darmstadt.de:/var/www/html/uscxml/prebuilt"
+if [ "$USCXML_PREBUILT_HOST" == "" ]; then
+	USCXML_PREBUILT_HOST="admin@uscxml.tk.informatik.tu-darmstadt.de:/var/www/html/uscxml/prebuilt"
 fi
 
 if [ "$1" == "" ] || [ "$2" == "" ]; then
@@ -32,7 +32,7 @@ for FILE in ${PLATFORMS}; do
   if [ "$PLATFORM" != "include" ]; then
     echo $FILE
     tar cvzf uscxml-prebuilt-${PLATFORM}.tgz ${FILE}
-    scp uscxml-prebuilt-${PLATFORM}.tgz ${UMUNDO_PREBUILT_HOST}/${VERSION}
+    scp uscxml-prebuilt-${PLATFORM}.tgz ${USCXML_PREBUILT_HOST}/${VERSION}
     rm uscxml-prebuilt-${PLATFORM}.tgz
   fi
 done

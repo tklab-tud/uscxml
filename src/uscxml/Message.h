@@ -35,6 +35,33 @@ public:
 		return (atom.length() > 0 || !compound.empty() || !array.empty());
 	}
 
+	bool hasKey(const std::string& key) const {
+		return (!compound.empty() && compound.find(key) != compound.end());
+	}
+
+	const Data operator[](const std::string& key) const {
+		return operator[](key.c_str());
+	}
+	
+	const Data operator[](const char* key) const {
+		if (hasKey(key))
+			return compound.at(key);
+		Data data;
+		return data;
+	}
+
+	operator std::string() {
+		return atom;
+	}
+
+	operator std::map<std::string, Data>() {
+		return compound;
+	}
+
+	operator std::list<Data>() {
+		return array;
+	}
+
 	static Data fromJSON(const std::string& jsonString);
 	static Data fromXML(const std::string& xmlString);
 	Arabica::DOM::Document<std::string> toDocument();

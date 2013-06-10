@@ -38,8 +38,11 @@ void InterpreterDraft7::interpret() {
 		datamodelName = ATTR(_scxml, "datamodel");
 	if (datamodelName.length() == 0 && HAS_ATTR(_scxml, "profile")) // SCION SCXML uses profile to specify datamodel
 		datamodelName = ATTR(_scxml, "profile");
-	if(datamodelName.length() > 0)
-		_dataModel = Factory::createDataModel(datamodelName, this);
+	if(datamodelName.length() > 0) {
+		_dataModel = _factory->createDataModel(datamodelName, this);
+	} else {
+		_dataModel = _factory->createDataModel("null", this);
+	}
 	if(datamodelName.length() > 0  && !_dataModel) {
 		LOG(ERROR) << "No datamodel for " << datamodelName << " registered";
 	}

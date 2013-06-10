@@ -20,6 +20,10 @@ public:
 		Request() : curlReq(NULL) {}
 		std::string content;
 		struct evhttp_request* curlReq;
+		
+		operator bool() {
+			return curlReq != NULL;
+		}
 	};
 
 	class Reply {

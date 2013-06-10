@@ -510,10 +510,24 @@ else()
 	target_link_libraries(uscxml ${USCXML_OPT_LIBS} ${USCXML_CORE_LIBS})
 endif()
 
-add_executable(mmi-browser apps/mmi-browser.cpp ${PROJECT_SOURCE_DIR}/contrib/src/getopt/XGetopt.cpp)
-target_link_libraries(mmi-browser uscxml)
-set_target_properties(mmi-browser PROPERTIES FOLDER "Apps")
-install_executable(TARGETS mmi-browser COMPONENT tools)
+add_executable(uscxml-browser apps/uscxml-browser.cpp ${PROJECT_SOURCE_DIR}/contrib/src/getopt/XGetopt.cpp)
+target_link_libraries(uscxml-browser uscxml)
+set_target_properties(uscxml-browser PROPERTIES FOLDER "Apps")
+install_executable(TARGETS uscxml-browser COMPONENT tools)
+
+file(GLOB W3C-MMI-COMMON ${PROJECT_SOURCE_DIR}/apps/w3c-mmi/*.cpp ${PROJECT_SOURCE_DIR}/apps/w3c-mmi/*.h)
+
+file(GLOB_RECURSE W3C-MMI-IM ${PROJECT_SOURCE_DIR}/apps/w3c-mmi/im/*.cpp ${PROJECT_SOURCE_DIR}/apps/w3c-mmi/im/*.h)
+add_executable(uscxml-interaction-manager ${W3C-MMI-IM} ${W3C-MMI-COMMON})
+target_link_libraries(uscxml-interaction-manager uscxml)
+set_target_properties(uscxml-interaction-manager PROPERTIES FOLDER "Apps")
+install_executable(TARGETS uscxml-interaction-manager COMPONENT tools)
+
+file(GLOB_RECURSE W3C-MMI-MC ${PROJECT_SOURCE_DIR}/apps/w3c-mmi/mc/*.cpp ${PROJECT_SOURCE_DIR}/apps/w3c-mmi/mc/*.h)
+add_executable(uscxml-modality-component ${W3C-MMI-MC} ${W3C-MMI-COMMON})
+target_link_libraries(uscxml-modality-component uscxml)
+set_target_properties(uscxml-modality-component PROPERTIES FOLDER "Apps")
+install_executable(TARGETS uscxml-modality-component COMPONENT tools)
 
 if (BUILD_TESTS)
 	add_subdirectory(test)

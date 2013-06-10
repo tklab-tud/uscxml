@@ -103,11 +103,8 @@ protected:
 
 };
 
-class IOProcessorImpl {
+class EventHandlerImpl {
 public:
-	IOProcessorImpl() {};
-	virtual ~IOProcessorImpl() {};
-	virtual boost::shared_ptr<IOProcessorImpl> create(InterpreterImpl* interpreter) = 0;
 	virtual std::set<std::string> getNames() = 0;
 
 	virtual void setInterpreter(InterpreterImpl* interpreter) {
@@ -119,25 +116,68 @@ public:
 	void setType(const std::string& type) {
 		_type = type;
 	}
-
+	
 	virtual Data getDataModelVariables() = 0;
 	virtual void send(const SendRequest& req) = 0;
-
+	
 	virtual void runOnMainThread() {};
-
 	void returnEvent(Event& event);
-
+	
 protected:
 	InterpreterImpl* _interpreter;
 	std::string _invokeId;
 	std::string _type;
+
 };
 
-class IOProcessor {
+class EventHandler {
+public:
+	EventHandler() : _impl() {}
+	EventHandler(boost::shared_ptr<EventHandlerImpl> const impl) : _impl(impl) { }
+	EventHandler(const EventHandler& other) : _impl(other._impl) { }
+	virtual ~EventHandler() {};
+	
+	virtual std::set<std::string> getNames()   {
+		return _impl->getNames();
+	}
+	
+	virtual Data getDataModelVariables() const {
+		return _impl->getDataModelVariables();
+	};
+	virtual void send(const SendRequest& req)  {
+		return _impl->send(req);
+	};
+	virtual void runOnMainThread()             {
+		return _impl->runOnMainThread();
+	}
+	
+	void setInterpreter(InterpreterImpl* interpreter) {
+		_impl->setInterpreter(interpreter);
+	}
+	void setInvokeId(const std::string& invokeId) {
+		_impl->setInvokeId(invokeId);
+	}
+	void setType(const std::string& type) {
+		_impl->setType(type);
+	}
+
+protected:
+	boost::shared_ptr<EventHandlerImpl> _impl;
+	friend class InterpreterImpl;
+};
+
+class IOProcessorImpl : public EventHandlerImpl {
+public:
+	IOProcessorImpl() {};
+	virtual ~IOProcessorImpl() {};
+	virtual boost::shared_ptr<IOProcessorImpl> create(InterpreterImpl* interpreter) = 0;
+};
+
+class IOProcessor : public EventHandler {
 public:
 	IOProcessor() : _impl() {}
-	IOProcessor(boost::shared_ptr<IOProcessorImpl> const impl) : _impl(impl) { }
-	IOProcessor(const IOProcessor& other) : _impl(other._impl) { }
+	IOProcessor(boost::shared_ptr<IOProcessorImpl> const impl) : EventHandler(impl), _impl(impl) { }
+	IOProcessor(const IOProcessor& other) : EventHandler(other._impl), _impl(other._impl) { }
 	virtual ~IOProcessor() {};
 
 	operator bool()                           const     {
@@ -154,31 +194,8 @@ public:
 	}
 	IOProcessor& operator= (const IOProcessor& other)   {
 		_impl = other._impl;
+		EventHandler::_impl = _impl;
 		return *this;
-	}
-
-	virtual std::set<std::string> getNames()   {
-		return _impl->getNames();
-	}
-
-	virtual Data getDataModelVariables() const {
-		return _impl->getDataModelVariables();
-	};
-	virtual void send(const SendRequest& req)  {
-		return _impl->send(req);
-	};
-	virtual void runOnMainThread()             {
-		return _impl->runOnMainThread();
-	}
-
-	void setInterpreter(InterpreterImpl* interpreter) {
-		_impl->setInterpreter(interpreter);
-	}
-	void setInvokeId(const std::string& invokeId) {
-		_impl->setInvokeId(invokeId);
-	}
-	void setType(const std::string& type) {
-		_impl->setType(type);
 	}
 
 protected:
@@ -186,17 +203,17 @@ protected:
 	friend class InterpreterImpl;
 };
 
-class InvokerImpl : public IOProcessorImpl {
+class InvokerImpl : public EventHandlerImpl {
 public:
 	virtual void invoke(const InvokeRequest& req) = 0;
-	virtual boost::shared_ptr<IOProcessorImpl> create(InterpreterImpl* interpreter) = 0;
+	virtual boost::shared_ptr<InvokerImpl> create(InterpreterImpl* interpreter) = 0;
 };
 
-class Invoker : public IOProcessor {
+class Invoker : public EventHandler {
 public:
 	Invoker() : _impl() {}
-	Invoker(boost::shared_ptr<InvokerImpl> const impl) : IOProcessor(impl), _impl(impl) { }
-	Invoker(const Invoker& other) : IOProcessor(other._impl), _impl(other._impl) { }
+	Invoker(boost::shared_ptr<InvokerImpl> const impl) : EventHandler(impl), _impl(impl) { }
+	Invoker(const Invoker& other) : EventHandler(other._impl), _impl(other._impl) { }
 	virtual ~Invoker() {};
 
 	operator bool()                       const {
@@ -213,7 +230,7 @@ public:
 	}
 	Invoker& operator= (const Invoker& other)   {
 		_impl = other._impl;
-		IOProcessor::_impl = _impl;
+		EventHandler::_impl = _impl;
 		return *this;
 	}
 
@@ -352,16 +369,20 @@ protected:
 
 class Factory {
 public:
+	Factory(Factory* parentFactory);
+
 	void registerIOProcessor(IOProcessorImpl* ioProcessor);
 	void registerDataModel(DataModelImpl* dataModel);
 	void registerInvoker(InvokerImpl* invoker);
 	void registerExecutableContent(ExecutableContentImpl* executableContent);
 
-	static boost::shared_ptr<DataModelImpl> createDataModel(const std::string& type, InterpreterImpl* interpreter);
-	static boost::shared_ptr<IOProcessorImpl> createIOProcessor(const std::string& type, InterpreterImpl* interpreter);
-	static boost::shared_ptr<InvokerImpl> createInvoker(const std::string& type, InterpreterImpl* interpreter);
-	static boost::shared_ptr<ExecutableContentImpl> createExecutableContent(const std::string& localName, const std::string& nameSpace, InterpreterImpl* interpreter);
+	boost::shared_ptr<DataModelImpl> createDataModel(const std::string& type, InterpreterImpl* interpreter);
+	boost::shared_ptr<IOProcessorImpl> createIOProcessor(const std::string& type, InterpreterImpl* interpreter);
+	boost::shared_ptr<InvokerImpl> createInvoker(const std::string& type, InterpreterImpl* interpreter);
+	boost::shared_ptr<ExecutableContentImpl> createExecutableContent(const std::string& localName, const std::string& nameSpace, InterpreterImpl* interpreter);
 
+	std::map<std::string, IOProcessorImpl*> getIOProcessors();
+	
 	static Factory* getInstance();
 
 	std::map<std::string, DataModelImpl*> _dataModels;
@@ -381,6 +402,7 @@ protected:
 
 	Factory();
 	~Factory();
+	Factory* _parentFactory;
 	static Factory* _instance;
 
 };

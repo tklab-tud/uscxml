@@ -2,7 +2,7 @@
 #define VOICEXMLINVOKER_H_W09J90F0
 
 #include <uscxml/Interpreter.h>
-#include <uscxml/plugins/ioprocessor/modality/MMIComponent.h>
+#include <uscxml/plugins/ioprocessor/modality/MMIMessages.h>
 #include <uscxml/plugins/ioprocessor/modality/MMIProtoBridge.h>
 
 #include <umundo/core.h>
@@ -18,7 +18,7 @@ class VoiceXMLInvoker : public InvokerImpl, public umundo::TypedReceiver {
 public:
 	VoiceXMLInvoker();
 	virtual ~VoiceXMLInvoker();
-	virtual boost::shared_ptr<IOProcessorImpl> create(InterpreterImpl* interpreter);
+	virtual boost::shared_ptr<InvokerImpl> create(InterpreterImpl* interpreter);
 
 	virtual std::set<std::string> getNames() {
 		std::set<std::string> names;

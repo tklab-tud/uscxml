@@ -24,7 +24,7 @@ FFMPEGInvoker::FFMPEGInvoker() {
 FFMPEGInvoker::~FFMPEGInvoker() {
 };
 
-boost::shared_ptr<IOProcessorImpl> FFMPEGInvoker::create(InterpreterImpl* interpreter) {
+boost::shared_ptr<InvokerImpl> FFMPEGInvoker::create(InterpreterImpl* interpreter) {
 	boost::shared_ptr<FFMPEGInvoker> invoker = boost::shared_ptr<FFMPEGInvoker>(new FFMPEGInvoker());
 	invoker->_interpreter = interpreter;
 	return invoker;

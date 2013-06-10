@@ -1,6 +1,7 @@
 #include "uscxml/Common.h"
 #include "uscxml/Interpreter.h"
 #include "uscxml/URL.h"
+#include "uscxml/NameSpacingParser.h"
 #include "uscxml/debug/SCXMLDotWriter.h"
 
 #include "uscxml/plugins/invoker/http/HTTPServletInvoker.h"
@@ -59,6 +60,7 @@ InterpreterImpl::InterpreterImpl() {
 	_done = true;
 	_isInitialized = false;
 	_httpServlet = NULL;
+	_factory = NULL;
 	_capabilities = CAN_BASIC_HTTP | CAN_GENERIC_HTTP;
 
 #ifdef _WIN32
@@ -131,18 +133,9 @@ Interpreter Interpreter::fromInputSource(Arabica::SAX::InputSource<std::string>&
 	tthread::lock_guard<tthread::recursive_mutex> lock(_instanceMutex);
 	boost::shared_ptr<InterpreterDraft6> interpreterImpl = boost::shared_ptr<InterpreterDraft6>(new InterpreterDraft6);
 	Interpreter interpreter;
-	SCXMLParser* parser = new SCXMLParser(interpreterImpl.get());
-	if(!parser->parse(source) || !parser->getDocument().hasChildNodes()) {
-		if(parser->_errorHandler.errorsReported()) {
-			LOG(ERROR) << "could not parse input:";
-			LOG(ERROR) << parser->_errorHandler.errors() << std::endl;
-		} else {
-			Arabica::SAX::InputSourceResolver resolver(source, Arabica::default_string_adaptor<std::string>());
-			if (!resolver.resolve()) {
-				LOG(ERROR) << source.getSystemId() << ": no such file";
-			}
-		}
-	} else {
+	NameSpacingParser* parser = new NameSpacingParser();
+	if (parser->parse(source) && parser->getDocument() && parser->getDocument().hasChildNodes()) {
+		interpreterImpl->setNameSpaceInfo(parser->nameSpace);
 		interpreterImpl->_document = parser->getDocument();
 		interpreterImpl->init();
 		interpreter = Interpreter(interpreterImpl);
@@ -153,32 +146,32 @@ Interpreter Interpreter::fromInputSource(Arabica::SAX::InputSource<std::string>&
 	return interpreter;
 }
 
-SCXMLParser::SCXMLParser(InterpreterImpl* interpreter) : _interpreter(interpreter) {
-	Arabica::SAX::CatchErrorHandler<std::string> errorHandler;
-	setErrorHandler(errorHandler);
-}
-
-void SCXMLParser::startPrefixMapping(const std::string& prefix, const std::string& uri) {
-#if 0
-	std::cout << "starting prefix mapping " << prefix << ": " << uri << std::endl;
-#endif
-	if (boost::iequals(uri, "http://www.w3.org/2005/07/scxml")) {
-		_interpreter->_nsURL = uri;
-		if (prefix.size() == 0) {
-			LOG(INFO) << "Mapped default namespace to 'scxml:'";
-			_interpreter->_xpathPrefix = "scxml:";
-			_interpreter->_nsContext.addNamespaceDeclaration(uri, "scxml");
-			_interpreter->_nsToPrefix[uri] = "scxml";
+void InterpreterImpl::setNameSpaceInfo(const std::map<std::string, std::string> namespaceInfo) {
+	_nameSpaceInfo = namespaceInfo;
+	std::map<std::string, std::string>::const_iterator nsIter = namespaceInfo.begin();
+	while(nsIter != namespaceInfo.end()) {
+		std::string uri = nsIter->first;
+		std::string prefix = nsIter->second;
+		if (boost::iequals(uri, "http://www.w3.org/2005/07/scxml")) {
+			_nsURL = uri;
+			if (prefix.size() == 0) {
+				LOG(INFO) << "Mapped default namespace to 'scxml:'";
+				_xpathPrefix = "scxml:";
+				_nsContext.addNamespaceDeclaration(uri, "scxml");
+				_nsToPrefix[uri] = "scxml";
+			} else {
+				_xpathPrefix = prefix + ":";
+				_xmlNSPrefix = _xpathPrefix;
+				_nsContext.addNamespaceDeclaration(uri, prefix);
+				_nsToPrefix[uri] = prefix;
+			}
 		} else {
-			_interpreter->_xpathPrefix = prefix + ":";
-			_interpreter->_xmlNSPrefix = _interpreter->_xpathPrefix;
-			_interpreter->_nsContext.addNamespaceDeclaration(uri, prefix);
-			_interpreter->_nsToPrefix[uri] = prefix;
+			_nsContext.addNamespaceDeclaration(uri, prefix);
+			_nsToPrefix[uri] = prefix;
 		}
-	} else {
-		_interpreter->_nsContext.addNamespaceDeclaration(uri, prefix);
-		_interpreter->_nsToPrefix[uri] = prefix;
+		nsIter++;
 	}
+
 }
 
 void InterpreterImpl::setName(const std::string& name) {
@@ -261,9 +254,13 @@ void InterpreterImpl::init() {
 
 			normalize(_scxml);
 
+			// setup event queue for delayed send
 			_sendQueue = new DelayedEventQueue();
 			_sendQueue->start();
 
+			if (_factory == NULL)
+				_factory = Factory::getInstance();
+			
 		} else {
 			LOG(ERROR) << "Cannot find SCXML element" << std::endl;
 			_done = true;
@@ -480,7 +477,7 @@ void InterpreterImpl::processDOMorText(const Arabica::DOM::Node<std::string>& no
 				Node<std::string> container = dom.createElement("container");
 				dom.replaceChild(container, content);
 				container.appendChild(content);
-				std::cout << dom << std::endl;
+//				std::cout << dom << std::endl;
 				return;
 			} else {
 				text = srcContent.str();
@@ -830,7 +827,7 @@ void InterpreterImpl::invoke(const Arabica::DOM::Node<std::string>& element) {
 		if (invokeReq.type.size() == 0)
 			invokeReq.type = "http://www.w3.org/TR/scxml/";
 
-		Invoker invoker(Factory::createInvoker(invokeReq.type, this));
+		Invoker invoker(_factory->createInvoker(invokeReq.type, this));
 		if (invoker) {
 			tthread::lock_guard<tthread::recursive_mutex> lock(_pluginMutex);
 			try {
@@ -1159,7 +1156,7 @@ void InterpreterImpl::executeContent(const Arabica::DOM::Node<std::string>& cont
 		// --- Custom Executable Content
 		ExecutableContent execContent;
 		if (_executableContent.find(content) == _executableContent.end()) {
-			execContent = Factory::createExecutableContent(content.getLocalName(), content.getNamespaceURI(), this);
+			execContent = _factory->createExecutableContent(content.getLocalName(), content.getNamespaceURI(), this);
 			if (!execContent) {
 				LOG(ERROR) << "No custom executable content known for element '"
 				           << content.getLocalName() << "' in namespace '" << content.getNamespaceURI() << "'";
@@ -1620,8 +1617,9 @@ bool InterpreterImpl::isCompound(const Arabica::DOM::Node<std::string>& state) {
 
 void InterpreterImpl::setupIOProcessors() {
 	tthread::lock_guard<tthread::recursive_mutex> lock(_pluginMutex);
-	std::map<std::string, IOProcessorImpl*>::iterator ioProcIter = Factory::getInstance()->_ioProcessors.begin();
-	while(ioProcIter != Factory::getInstance()->_ioProcessors.end()) {
+	std::map<std::string, IOProcessorImpl*> ioProcs = _factory->getIOProcessors();
+	std::map<std::string, IOProcessorImpl*>::iterator ioProcIter = ioProcs.begin();
+	while(ioProcIter != ioProcs.end()) {
 		if (boost::iequals(ioProcIter->first, "basichttp") && !(_capabilities & CAN_BASIC_HTTP)) {
 			ioProcIter++;
 			continue;
@@ -1631,7 +1629,7 @@ void InterpreterImpl::setupIOProcessors() {
 			continue;
 		}
 
-		_ioProcessors[ioProcIter->first] = Factory::createIOProcessor(ioProcIter->first, this);
+		_ioProcessors[ioProcIter->first] = _factory->createIOProcessor(ioProcIter->first, this);
 		_ioProcessors[ioProcIter->first].setType(ioProcIter->first);
 		_ioProcessors[ioProcIter->first].setInterpreter(this);
 

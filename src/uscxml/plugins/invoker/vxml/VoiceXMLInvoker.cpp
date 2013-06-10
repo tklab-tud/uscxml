@@ -21,7 +21,7 @@ VoiceXMLInvoker::VoiceXMLInvoker() {
 VoiceXMLInvoker::~VoiceXMLInvoker() {
 };
 
-boost::shared_ptr<IOProcessorImpl> VoiceXMLInvoker::create(InterpreterImpl* interpreter) {
+boost::shared_ptr<InvokerImpl> VoiceXMLInvoker::create(InterpreterImpl* interpreter) {
 	boost::shared_ptr<VoiceXMLInvoker> invoker = boost::shared_ptr<VoiceXMLInvoker>(new VoiceXMLInvoker());
 	invoker->_interpreter = interpreter;
 	invoker->_pub = umundo::TypedPublisher("mmi:jvoicexml");
