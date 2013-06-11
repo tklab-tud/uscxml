@@ -453,6 +453,7 @@ function VRMLViewer(element, params) {
         var savedServerURL = self.localStorage.get("vrmlServer");
         if (savedServerURL && !self.serverURL) {
           self.serverURL = savedServerURL;
+          self.serverBox.value = savedServerURL;
           self.refreshServer(savedServerURL);
         }
 
