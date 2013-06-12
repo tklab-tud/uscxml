@@ -276,7 +276,6 @@ Data Data::fromJSON(const std::string& jsonString) {
 
 	size_t currTok = 0;
 	do {
-		jsmntok_t t2 = t[currTok];
 		switch (t[currTok].type) {
 		case JSMN_STRING:
 			dataStack.back()->type = Data::VERBATIM;

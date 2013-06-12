@@ -47,6 +47,17 @@ foreach(SWI_SEARCH_PATH ${SWI_SEARCH_PATHS})
 	endif()
 endforeach()
 
+set(SWI_PLATFORMS)
+foreach (SWI_SEARCH_PATH ${SWI_SEARCH_PATHS})
+	file(GLOB CURR_SWI_PLATFORMS ${SWI_SEARCH_PATH}/lib/swipl-${SWI_VERSION}/lib/*)
+	foreach(CURR_SWI_PLATFORM ${CURR_SWI_PLATFORMS})
+  	if(IS_DIRECTORY ${CURR_SWI_PLATFORM})
+			list(APPEND SWI_PLATFORMS ${CURR_SWI_PLATFORM})
+		endif()
+	endforeach()
+endforeach()
+#message(FATAL_ERROR "SWI_PLATFORMS: ${SWI_PLATFORMS}")
+
 #message("SWI_VERSION: ${SWI_VERSION}")
 
 # -- find prolog headers
@@ -80,7 +91,8 @@ FIND_LIBRARY(SWI_LIBRARY_RELEASE
   PATH_SUFFIXES
 		lib/${SWI_PLATFORM_ID}                            # still in source directory
 		lib/swipl-${SWI_VERSION}/lib/${SWI_PLATFORM_ID}   # after make install
-	PATHS ${SWI_SEARCH_PATHS}
+		
+	PATHS ${SWI_SEARCH_PATHS} ${SWI_PLATFORMS}
 )
 
 FIND_LIBRARY(SWI_LIBRARY_DEBUG
@@ -88,7 +100,7 @@ FIND_LIBRARY(SWI_LIBRARY_DEBUG
   PATH_SUFFIXES
 		lib/${SWI_PLATFORM_ID}                     # still in source directory
 		lib/swipl-${SWI_VERSION}/lib/${SWI_PLATFORM_ID}     # after make install
-	PATHS ${SWI_SEARCH_PATHS}
+	PATHS ${SWI_SEARCH_PATHS} ${SWI_PLATFORMS}
 )
 
 if (NOT SWI_LIBRARY_DEBUG) # no explicit debug build, just reuse release

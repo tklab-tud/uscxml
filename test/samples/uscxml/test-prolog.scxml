@@ -1,5 +1,6 @@
 <scxml datamodel="prolog">
   <datamodel>
+		<data src="" />
     <data id="father">
       bob, jim.
       bob, john.
@@ -55,6 +56,10 @@
 
 	<state id="idle">
 		<transition event="http.post" target="idle">
+			<log expr="listing." />
+			<respond status="200" to="event(origin(X))" />
+		</transition>
+		<transition event="http.post" cond="" target="idle">
 			<log expr="listing." />
 			<respond status="200" to="event(origin(X))" />
 		</transition>

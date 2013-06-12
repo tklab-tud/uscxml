@@ -199,10 +199,10 @@ Factory::Factory() {
 		BasicHTTPIOProcessor* ioProcessor = new BasicHTTPIOProcessor();
 		registerIOProcessor(ioProcessor);
 	}
-	{
-		MMIHTTPIOProcessor* ioProcessor = new MMIHTTPIOProcessor();
-		registerIOProcessor(ioProcessor);
-	}
+  {
+   MMIHTTPIOProcessor* ioProcessor = new MMIHTTPIOProcessor();
+   registerIOProcessor(ioProcessor);
+  }
 	{
 		SCXMLIOProcessor* ioProcessor = new SCXMLIOProcessor();
 		registerIOProcessor(ioProcessor);
@@ -223,29 +223,6 @@ Factory::Factory() {
 		PostponeElement* element = new PostponeElement();
 		registerExecutableContent(element);
 	}
-
-#if 0
-  {
-    ELEMENT_MMI_REGISTER(PrepareRequest);
-    ELEMENT_MMI_REGISTER(StartRequest);
-    ELEMENT_MMI_REGISTER(PauseRequest);
-    ELEMENT_MMI_REGISTER(ResumeRequest);
-    ELEMENT_MMI_REGISTER(CancelRequest);
-    ELEMENT_MMI_REGISTER(ClearContextRequest);
-    ELEMENT_MMI_REGISTER(StatusRequest);
-    ELEMENT_MMI_REGISTER(NewContextResponse);
-    ELEMENT_MMI_REGISTER(PrepareResponse);
-    ELEMENT_MMI_REGISTER(StartResponse);
-    ELEMENT_MMI_REGISTER(PauseResponse);
-    ELEMENT_MMI_REGISTER(ResumeResponse);
-    ELEMENT_MMI_REGISTER(CancelResponse);
-    ELEMENT_MMI_REGISTER(ClearContextResponse);
-    ELEMENT_MMI_REGISTER(StatusResponse);
-    ELEMENT_MMI_REGISTER(DoneNotification);
-    ELEMENT_MMI_REGISTER(NewContextRequest);
-    ELEMENT_MMI_REGISTER(ExtensionNotification);
-  }
-#endif
 	
 #endif
 }
