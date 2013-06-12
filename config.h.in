@@ -58,6 +58,7 @@
 #cmakedefine SWI_FOUND
 #cmakedefine FFMPEG_FOUND
 #cmakedefine OPENSCENEGRAPH_FOUND
+#cmakedefine PROTOBUF_FOUND
 
 /** Header files we found */
 #cmakedefine HAS_UNISTD_H

@@ -152,6 +152,10 @@ else()
 endif()
 OPTION(ENABLE_GCOV "Compile with gcov support" OFF)
 
+OPTION(BUILD_DM_ECMA "Build with ECMAScript datamodel" ON)
+OPTION(BUILD_DM_XPATH "Build with XPath datamodel" ON)
+OPTION(BUILD_DM_PROLOG "Build with Prolog datamodel" ON)
+
 # a dummy target to depend on the targets needed for tests, see:
 # http://stackoverflow.com/questions/733475/cmake-ctest-make-test-doesnt-build-tests
 add_custom_target(ALL_TESTS COMMENT "Building all tests when BUILD_TESTS is enabled")
@@ -563,6 +567,90 @@ endif()
 # enable config.h style compile time options and add as "uscxml/config.h"
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.h.in ${CMAKE_CURRENT_BINARY_DIR}/uscxml/config.h)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/contrib/ctest/CTestCustom.ctest.in ${CMAKE_CURRENT_BINARY_DIR}/CTestCustom.ctest @ONCE)
+
+############################################################
+# Some concluding remarks
+############################################################
+
+message(STATUS "Linking against external:")
+set(SKIP_NEXT OFF)
+foreach(LIBRARY ${USCXML_OPT_LIBS})
+	if (LIBRARY MATCHES "debug")
+		if(CMAKE_BUILD_TYPE STREQUAL "Release")
+			set(SKIP_NEXT ON)
+		endif()
+	elseif (LIBRARY MATCHES "optimized")
+		if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+			set(SKIP_NEXT ON)
+		endif()
+	elseif (LIBRARY MATCHES "uscxml.*")
+	elseif (LIBRARY MATCHES "mmi_proto.*")
+	else()
+		if (NOT SKIP_NEXT)
+			message(STATUS "  ${LIBRARY}")
+		else()
+			set(SKIP_NEXT OFF)
+		endif()
+	endif()
+endforeach()
+
+set(AVAILABLE_DATAMODELS "")
+set(ALL_FILES_STRING "${USCXML_FILES}")
+if(ALL_FILES_STRING MATCHES ".*datamodel/ecmascript.*" OR TARGET datamodel_v8)
+	set(AVAILABLE_DATAMODELS "ecmascript ${AVAILABLE_DATAMODELS}")
+endif()
+if(ALL_FILES_STRING MATCHES ".*datamodel/prolog.*" OR TARGET datamodel_swi)
+	set(AVAILABLE_DATAMODELS "prolog ${AVAILABLE_DATAMODELS}")
+endif()
+if(ALL_FILES_STRING MATCHES ".*datamodel/xpath.*" OR TARGET datamodel_xpath)
+	set(AVAILABLE_DATAMODELS "xpath ${AVAILABLE_DATAMODELS}")
+endif()
+
+set(AVAILABLE_LANGUAGE_BINDINGS "")
+if (TARGET uscxmlNativePHP)
+	set(AVAILABLE_LANGUAGE_BINDINGS "php ${AVAILABLE_LANGUAGE_BINDINGS}")
+endif()
+
+message(STATUS "Targets:")
+message(STATUS "  Available datamodels ........... : null ${AVAILABLE_DATAMODELS}")
+message(STATUS "  Available language bindings .... : ${AVAILABLE_LANGUAGE_BINDINGS}")
+if (BUILD_SHARED_LIBS AND BUILD_BINDINGS)
+	message(STATUS "")
+	message(STATUS "    Warning: Building language bindings BUILD_SHARED_LIBS=ON")
+	message(STATUS "             introduces runtime dependency to libumundocore")
+	message(STATUS "")
+endif()
+
+message(STATUS "General information:")
+message(STATUS "  Build type ..................... : ${CMAKE_BUILD_TYPE}")
+if (BUILD_SHARED_LIBS)
+	message(STATUS "  Building library as ............ : SHARED")
+else()
+	message(STATUS "  Building library as ............ : STATIC")
+endif()
+
+if (BUILD_PREFER_STATIC_LIBRARIES)
+	message(STATUS "  Preferring dependent libraries . : STATIC ")
+else()
+	message(STATUS "  Preferring dependent libraries . : SHARED")
+endif()
+
+if (BUILD_PREFER_PREBUILT_LIBS)
+	STRING(REGEX REPLACE "${PROJECT_SOURCE_DIR}/" "" REL_USCXML_PREBUILT_LIBRARY_PATH ${USCXML_PREBUILT_LIBRARY_PATH})
+	message(STATUS "  Preferring dependent libraries . : from ${REL_USCXML_PREBUILT_LIBRARY_PATH}")
+else()
+	message(STATUS "  Preferring dependent libraries . : installed on system")
+endif()
+
+STRING(REGEX REPLACE "${CMAKE_BINARY_DIR}" "BUILD_DIR" REL_CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
+STRING(REGEX REPLACE "${CMAKE_SOURCE_DIR}" "SOURCE_DIR" REL_CMAKE_LIBRARY_OUTPUT_DIRECTORY ${REL_CMAKE_LIBRARY_OUTPUT_DIRECTORY})
+
+STRING(REGEX REPLACE "${CMAKE_BINARY_DIR}" "BUILD_DIR" REL_CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
+STRING(REGEX REPLACE "${CMAKE_SOURCE_DIR}" "SOURCE_DIR" REL_CMAKE_RUNTIME_OUTPUT_DIRECTORY ${REL_CMAKE_RUNTIME_OUTPUT_DIRECTORY})
+
+message(STATUS "  Libraries will end up in ....... : " ${REL_CMAKE_LIBRARY_OUTPUT_DIRECTORY})
+message(STATUS "  Binaries will end up in ........ : " ${REL_CMAKE_RUNTIME_OUTPUT_DIRECTORY})
+
 
 ############################################################
 # Installation / Provide package target

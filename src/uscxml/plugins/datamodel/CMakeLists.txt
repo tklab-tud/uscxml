@@ -48,25 +48,26 @@ endif()
 
 # XPath datamodel
 
-file(GLOB XPATH_DATAMODEL
-	xpath/*.cpp
-	xpath/*.h
-)
-source_group("Datamodel\\xpath" FILES ${XPATH_DATAMODEL})
-if (BUILD_AS_PLUGINS)
-	add_library(datamodel_xpath SHARED ${XPATH_DATAMODEL})
-	target_link_libraries(datamodel_xpath uscxml)
-	set_target_properties(datamodel_xpath PROPERTIES FOLDER "Plugin DataModel")
-else()
-	list (APPEND USCXML_FILES ${XPATH_DATAMODEL})
+if (BUILD_DM_XPATH)
+	file(GLOB XPATH_DATAMODEL
+		xpath/*.cpp
+		xpath/*.h
+	)
+	source_group("Datamodel\\xpath" FILES ${XPATH_DATAMODEL})
+	if (BUILD_AS_PLUGINS)
+		add_library(datamodel_xpath SHARED ${XPATH_DATAMODEL})
+		target_link_libraries(datamodel_xpath uscxml)
+		set_target_properties(datamodel_xpath PROPERTIES FOLDER "Plugin DataModel")
+	else()
+		list (APPEND USCXML_FILES ${XPATH_DATAMODEL})
+	endif()
 endif()
-
 
 # GOOGLE V8 ecmascript datamodel
 
 #if (NOT APPLE OR IOS)
 	# set(ENV{V8_SRC} ${CMAKE_SOURCE_DIR}/../v8)
-	if (V8_FOUND)
+	if (V8_FOUND AND BUILD_DM_ECMA)
 		file(GLOB V8_DATAMODEL
 			ecmascript/v8/*.cpp
 			ecmascript/v8/*.h
@@ -97,7 +98,7 @@ endif()
 
 # SWI PROLOG datamodel
 
-if (SWI_FOUND)
+if (SWI_FOUND AND BUILD_DM_PROLOG)
 #	message(FATAL_ERROR "SWI_INCLUDE_DIR: ${SWI_INCLUDE_DIR}")
 
 	# if(${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")

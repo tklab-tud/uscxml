@@ -270,6 +270,10 @@ class Data {
 		return Data_isValid($this->_cPtr);
 	}
 
+	function hasKey($key) {
+		return Data_hasKey($this->_cPtr,$key);
+	}
+
 	static function fromJSON($jsonString) {
 		$r=Data_fromJSON($jsonString);
 		if (is_resource($r)) {
@@ -796,6 +800,20 @@ class Interpreter {
 		return Interpreter_getBaseURI($this->_cPtr);
 	}
 
+	function setNameSpaceInfo($namespaceInfo) {
+		Interpreter_setNameSpaceInfo($this->_cPtr,$namespaceInfo);
+	}
+
+	function getNameSpaceInfo() {
+		$r=Interpreter_getNameSpaceInfo($this->_cPtr);
+		if (is_resource($r)) {
+			$c=substr(get_resource_type($r), (strpos(get_resource_type($r), '__') ? strpos(get_resource_type($r), '__') + 2 : 3));
+			if (class_exists($c)) return new $c($r);
+			return new StringMap($r);
+		}
+		return $r;
+	}
+
 	function setCmdLineOptions($argc,$argv) {
 		Interpreter_setCmdLineOptions($this->_cPtr,$argc,$argv);
 	}
@@ -820,6 +838,14 @@ class Interpreter {
 
 	function setParentQueue($parentQueue) {
 		Interpreter_setParentQueue($this->_cPtr,$parentQueue);
+	}
+
+	function setFactory($factory) {
+		Interpreter_setFactory($this->_cPtr,$factory);
+	}
+
+	function getFactory() {
+		return Interpreter_getFactory($this->_cPtr);
 	}
 
 	function getXPathPrefix() {
@@ -1012,6 +1038,14 @@ class Interpreter {
 
 	static function getUUID() {
 		return Interpreter_getUUID();
+	}
+
+	function getImpl() {
+		return Interpreter_getImpl($this->_cPtr);
+	}
+
+	static function getInstances() {
+		return Interpreter_getInstances();
 	}
 
 	function getConfiguration() {

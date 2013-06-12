@@ -11,13 +11,16 @@
 #else
 
 # include "uscxml/plugins/ioprocessor/basichttp/BasicHTTPIOProcessor.h"
-# include "uscxml/plugins/ioprocessor/modality/MMIHTTPIOProcessor.h"
 # include "uscxml/plugins/ioprocessor/scxml/SCXMLIOProcessor.h"
 # include "uscxml/plugins/invoker/scxml/USCXMLInvoker.h"
 # include "uscxml/plugins/invoker/http/HTTPServletInvoker.h"
 # include "uscxml/plugins/invoker/heartbeat/HeartbeatInvoker.h"
 # include "uscxml/plugins/invoker/filesystem/dirmon/DirMonInvoker.h"
 # include "uscxml/plugins/invoker/system/SystemInvoker.h"
+
+#ifdef PROTOBUF_FOUND
+# include "uscxml/plugins/ioprocessor/modality/MMIHTTPIOProcessor.h"
+#endif
 
 # ifdef UMUNDO_FOUND
 #   include "uscxml/plugins/invoker/umundo/UmundoInvoker.h"
@@ -166,6 +169,13 @@ Factory::Factory() {
 	}
 #endif
 
+#ifdef PROTOBUF_FOUND
+  {
+   MMIHTTPIOProcessor* ioProcessor = new MMIHTTPIOProcessor();
+   registerIOProcessor(ioProcessor);
+  }
+#endif
+
 	// these are always available
 	{
 		NULLDataModel* dataModel = new NULLDataModel();
@@ -199,10 +209,6 @@ Factory::Factory() {
 		BasicHTTPIOProcessor* ioProcessor = new BasicHTTPIOProcessor();
 		registerIOProcessor(ioProcessor);
 	}
-  {
-   MMIHTTPIOProcessor* ioProcessor = new MMIHTTPIOProcessor();
-   registerIOProcessor(ioProcessor);
-  }
 	{
 		SCXMLIOProcessor* ioProcessor = new SCXMLIOProcessor();
 		registerIOProcessor(ioProcessor);
