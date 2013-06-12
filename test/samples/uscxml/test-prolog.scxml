@@ -48,9 +48,17 @@
       </send>
     </onentry>
     <transition 
-      target="end"
+      target="idle"
       event="foo"
       cond="member(element('p',_,_), X), event(data(X))" />
   </state>
+
+	<state id="idle">
+		<transition event="http.post" target="idle">
+			<log expr="listing." />
+			<respond status="200" to="event(origin(X))" />
+		</transition>
+	</state>
+	
   <state id="end" final="true" />
 </scxml>

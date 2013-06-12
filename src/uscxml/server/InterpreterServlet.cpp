@@ -35,6 +35,7 @@ void InterpreterServlet::httpRecvRequest(const HTTPServer::Request& req) {
 
 	event.name = "http." + event.data.compound["type"].atom;
 	event.origin = toStr((uintptr_t)req.curlReq);
+	event.initContent(event.data.compound["content"].atom);
 	_interpreter->receive(event);
 }
 

@@ -75,12 +75,10 @@ FIND_PROGRAM(SWI_BINARY swipl
   PATHS ${SWI_SEARCH_PATHS}
 )
 
-#message("SWI_BINARY: ${SWI_BINARY}")
-
 FIND_LIBRARY(SWI_LIBRARY_RELEASE
   NAMES libswipl swipl
   PATH_SUFFIXES
-		lib/${SWI_PLATFORM_ID}                   # still in source directory
+		lib/${SWI_PLATFORM_ID}                            # still in source directory
 		lib/swipl-${SWI_VERSION}/lib/${SWI_PLATFORM_ID}   # after make install
 	PATHS ${SWI_SEARCH_PATHS}
 )
@@ -93,7 +91,7 @@ FIND_LIBRARY(SWI_LIBRARY_DEBUG
 	PATHS ${SWI_SEARCH_PATHS}
 )
 
-if (NOT SWI_LIBRARY_DEBUG)# no explicit debug build, just reuse release
+if (NOT SWI_LIBRARY_DEBUG) # no explicit debug build, just reuse release
 	if (UNIX)
 		set(SWI_LIBRARY_DEBUG ${SWI_LIBRARY_RELEASE})
 	endif()

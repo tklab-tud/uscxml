@@ -24,6 +24,7 @@ function VRMLViewer(element, params) {
   this.pose.autorotate  = false;
   this.serverURL;
   this.imageURL;
+  this.resRoot = (params && params.resRoot ? params.resRoot : "");
   
   this.pose.width       = this.width;
   this.pose.height      = this.height;
@@ -35,7 +36,7 @@ function VRMLViewer(element, params) {
     if (self.imageURL && !self.batchChanges) {
       self.imgElem.src = self.imageURL + urlSuffixForPose(self.pose);
     }
-  }
+  };
 
   var urlSuffixForPose = function(pose) {
     var url =
@@ -50,7 +51,7 @@ function VRMLViewer(element, params) {
     '&zoom=' + pose.zoom +
     '&autorotate=' + (pose.autorotate ? '1' : '0');
     return url;
-  }
+  };
 
   var moverRelativeTo = function(mover, container) {
     var containerPos = absolutePosition(container);
@@ -58,13 +59,13 @@ function VRMLViewer(element, params) {
       x: mover.x - containerPos.x, 
       y: mover.y - containerPos.y
     };
-  }
+  };
 
   // see http://stackoverflow.com/questions/288699/get-the-position-of-a-div-span-tag
   var absolutePosition = function(el) {
     for (var lx=0, ly=0; el != null; lx += el.offsetLeft, ly += el.offsetTop, el = el.offsetParent);
     return {x: lx,y: ly};
-  }
+  };
 
   this.refreshServer = function(server) {
     self.serverURL = server;
@@ -93,7 +94,7 @@ function VRMLViewer(element, params) {
         } (result.models, "root", ""));
       }
     });
-  }
+  };
 
   this.setPose = function(imageURL, pose, serverURL) {
     if (serverURL && serverURL != self.serverURL) {
@@ -121,7 +122,7 @@ function VRMLViewer(element, params) {
     self.xyHandlerElem.parentNode.style.top = y + "%";
     
     self.updateScene();
-  }
+  };
 
   require(["dojo/dom-construct", 
            "dojo/_base/xhr", 
@@ -178,7 +179,7 @@ function VRMLViewer(element, params) {
             <tr>\
               <td valign="top">\
                   <div style="position: relative; padding: 0px">\
-                    <img class="model" src="img/Tutorial.png" style="z-index: -1; width: ' + self.pose.width + 'px; height: ' + self.pose.height + 'px"></img>\
+                    <img class="model" src="' + self.resRoot + 'img/Tutorial.png" style="z-index: -1; width: ' + self.pose.width + 'px; height: ' + self.pose.height + 'px"></img>\
                     <div style="z-index: 1; position: absolute; right: 45%; top: 45%">\
                       <div class="progress"></div>\
                     </div>\
@@ -196,7 +197,7 @@ function VRMLViewer(element, params) {
                       <div class="pitchRollHandler" style="font-size: 0.5em; background-color: rgba(255,255,255,0.5); border-radius: 5px; moz-border-radius: 5px;">\
                         <table>\
                           <tr>\
-                            <td><img class="pitchRollHandlerImg" src="img/pitchRoll.png" width="20px" style="padding: 2px 0px 0px 4px;" /></td>\
+                            <td><img class="pitchRollHandlerImg" src="' + self.resRoot + 'img/pitchRoll.png" width="20px" style="padding: 2px 0px 0px 4px;" /></td>\
                             <td><div class="pitchLabel"></div><div class="rollLabel"></div></td>\
                           </tr>\
                         </table>\
@@ -206,7 +207,7 @@ function VRMLViewer(element, params) {
                       <div class="yawZoomHandler" style="font-size: 0.5em; background-color: rgba(255,255,255,0.5); border-radius: 5px; moz-border-radius: 5px;">\
                         <table>\
                           <tr>\
-                            <td><img class="yawZoomHandlerImg" src="img/yawZoom.png" width="20px" style="padding: 2px 0px 0px 4px;" /></td>\
+                            <td><img class="yawZoomHandlerImg" src="' + self.resRoot + 'img/yawZoom.png" width="20px" style="padding: 2px 0px 0px 4px;" /></td>\
                             <td><div class="yawLabel"></div><div class="zoomLabel"></div></td>\
                           </tr>\
                         </table>\
@@ -216,7 +217,7 @@ function VRMLViewer(element, params) {
                       <div class="xyHandler" style="font-size: 0.5em; background-color: rgba(255,255,255,0.5); border-radius: 5px; moz-border-radius: 5px;">\
                         <table>\
                           <tr>\
-                            <td><img class="xyHandlerImg" src="img/xy.png" width="20px" style="padding: 2px 0px 0px 4px;" /></td>\
+                            <td><img class="xyHandlerImg" src="' + self.resRoot + 'img/xy.png" width="20px" style="padding: 2px 0px 0px 4px;" /></td>\
                             <td><div class="xLabel"></div><div class="yLabel"></div></td>\
                           </tr>\
                         </table>\
@@ -254,7 +255,7 @@ function VRMLViewer(element, params) {
           rollLabel.innerHTML = '';
           
           self.updateScene();
-        }
+        };
         self.pitchRollHandler.onMoving = function(mover) {
           // mover.node.style.backgroundColor = "rgba(255,255,255,0.5)";
           // mover.node.style.borderRadius = "5px";
@@ -275,7 +276,7 @@ function VRMLViewer(element, params) {
           self.pose.pitch = Math.ceil((self.pose.pitch) * 10) / 10;
           pitchLabel.innerHTML = 'Pitch:' + self.pose.pitch;
           rollLabel.innerHTML =   'Roll:' + self.pose.roll;
-        }
+        };
 
         self.yawZoomHandler = new Moveable(self.yawZoomHandlerElem);
         self.yawZoomHandler.onMoveStop = function(mover) {
@@ -287,7 +288,7 @@ function VRMLViewer(element, params) {
           zoomLabel.innerHTML = '';
           
           self.updateScene();
-        }
+        };
         self.yawZoomHandler.onMoving = function(mover) {
           var handlerImg = dojo.query("img.yawZoomHandlerImg", mover.node)[0];
           var yawLabel = dojo.query("div.yawLabel", mover.node)[0];
@@ -304,7 +305,7 @@ function VRMLViewer(element, params) {
           self.pose.yaw = Math.ceil((self.pose.yaw) * 10) / 10;
           yawLabel.innerHTML = 'Yaw:' + self.pose.yaw;
           zoomLabel.innerHTML = 'Zoom:' + self.pose.zoom;
-        }
+        };
         
         self.xyHandler = new Moveable(self.xyHandlerElem);
         self.xyHandler.onMoveStop = function(mover) {
@@ -316,7 +317,7 @@ function VRMLViewer(element, params) {
           yLabel.innerHTML = '';
           
           self.updateScene();
-        }
+        };
         self.xyHandler.onMoving = function(mover) {
           var handlerImg = dojo.query("img.xyHandlerImg", mover.node)[0];
           var xLabel = dojo.query("div.xLabel", mover.node)[0];
@@ -331,7 +332,7 @@ function VRMLViewer(element, params) {
           self.pose.x = Math.ceil((self.pose.x) * 10) / 10;
           xLabel.innerHTML = 'X:' + self.pose.x;
           yLabel.innerHTML = 'Y:' + self.pose.y;
-        }
+        };
         
         self.createAvatar = function(item, mode) {
           if (mode == 'avatar') {
@@ -349,8 +350,7 @@ function VRMLViewer(element, params) {
              item.pose = avatarPose;
 	         return {node: avatar, data: item, type: item.type};
           }
-          console.log(item, mode);
-          var handler = dojo.create( 'div', { innerHTML: '<img src="img/drag.png" width="20px" />' });
+          var handler = dojo.create( 'div', { innerHTML: '<img src="' + self.resRoot + 'img/drag.png" width="20px" />' });
           return {node: handler, data: item, type: item.type};
         };
         
@@ -383,7 +383,7 @@ function VRMLViewer(element, params) {
                 }
             },
             getIconClass: function(item, opened) {
-                return (!item || !('url' in item)) ? (opened ? "dijitFolderOpened" : "dijitFolderClosed") : "dijitLeaf"
+                return (!item || !('url' in item)) ? (opened ? "dijitFolderOpened" : "dijitFolderClosed") : "dijitLeaf";
             },
             getIconStyle: function(item, opened){
               if('url' in item) {
@@ -393,6 +393,14 @@ function VRMLViewer(element, params) {
             //return {backgroundImage: "url('" + item.url + "?width=16&height=16')"};
 
         });
+
+        if (self.params && self.params.serverURL)
+        	self.serverURL = self.params.serverURL;
+        var savedServerURL = self.localStorage.get("vrmlServer");
+        if (savedServerURL && !self.serverURL) {
+          self.serverURL = savedServerURL;
+          self.refreshServer(savedServerURL);
+        }
 
         self.serverBox = new TextBox({
           name: "Server",
@@ -447,17 +455,10 @@ function VRMLViewer(element, params) {
         }, self.resetButtonElem);
 
         // do we have parameters for the initial pose?
-        if(self.params)
+        if(self.params && self.params.pose)
           self.setPose(self.params.imageURL, self.params.pose, self.params.serverURL);
 
-        var savedServerURL = self.localStorage.get("vrmlServer");
-        if (savedServerURL && !self.serverURL) {
-          self.serverURL = savedServerURL;
-          self.serverBox.value = savedServerURL;
-          self.refreshServer(savedServerURL);
-        }
-
-      })      
+      });
     });
 
 
