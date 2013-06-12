@@ -148,23 +148,30 @@ Factory::Factory() {
 	}
 #endif
 
-#ifdef V8_FOUND
+#if defined V8_FOUND and defined BUILD_DM_ECMA
 	{
 		V8DataModel* dataModel = new V8DataModel();
 		registerDataModel(dataModel);
 	}
 #endif
 
-#ifdef JSC_FOUND
+#if defined JSC_FOUND and defined BUILD_DM_ECMA
 	{
 		JSCDataModel* dataModel = new JSCDataModel();
 		registerDataModel(dataModel);
 	}
 #endif
 
-#ifdef SWI_FOUND
+#if defined SWI_FOUND and defined BUILD_DM_PROLOG
 	{
 		SWIDataModel* dataModel = new SWIDataModel();
+		registerDataModel(dataModel);
+	}
+#endif
+
+#ifdef BUILD_DM_PROLOG
+	{
+		XPathDataModel* dataModel = new XPathDataModel();
 		registerDataModel(dataModel);
 	}
 #endif
@@ -179,10 +186,6 @@ Factory::Factory() {
 	// these are always available
 	{
 		NULLDataModel* dataModel = new NULLDataModel();
-		registerDataModel(dataModel);
-	}
-	{
-		XPathDataModel* dataModel = new XPathDataModel();
 		registerDataModel(dataModel);
 	}
 	{

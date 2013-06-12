@@ -50,6 +50,11 @@
 #cmakedefine DIST_PREPARE
 #cmakedefine SWI_BINARY "@SWI_BINARY@"
 
+/** whether we want some feature */
+#cmakedefine BUILD_DM_PROLOG
+#cmakedefine BUILD_DM_ECMA
+#cmakedefine BUILD_DM_XPATH
+
 /** Optional libraries we found */
 #cmakedefine UMUNDO_FOUND
 #cmakedefine MILES_FOUND
