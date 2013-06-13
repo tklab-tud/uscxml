@@ -169,7 +169,7 @@ Factory::Factory() {
 	}
 #endif
 
-#ifdef BUILD_DM_PROLOG
+#ifdef BUILD_DM_XPATH
 	{
 		XPathDataModel* dataModel = new XPathDataModel();
 		registerDataModel(dataModel);
