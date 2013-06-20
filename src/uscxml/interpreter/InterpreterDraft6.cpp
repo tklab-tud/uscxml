@@ -15,7 +15,7 @@ void InterpreterDraft6::interpret() {
 		init();
 
 //	std::cout << _scxml << std::endl;
-	
+
 	if (!_scxml) {
 //		_mutex.unlock();
 		return;

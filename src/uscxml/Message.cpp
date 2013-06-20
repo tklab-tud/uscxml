@@ -276,6 +276,8 @@ Data Data::fromJSON(const std::string& jsonString) {
 
 	size_t currTok = 0;
 	do {
+		jsmntok_t t2 = t[currTok];
+		std::string value = trimmed.substr(t[currTok].start, t[currTok].end - t[currTok].start);
 		switch (t[currTok].type) {
 		case JSMN_STRING:
 			dataStack.back()->type = Data::VERBATIM;
@@ -291,13 +293,18 @@ Data Data::fromJSON(const std::string& jsonString) {
 			break;
 		}
 
+		t2 = t[currTok];
+		value = trimmed.substr(t[currTok].start, t[currTok].end - t[currTok].start);
+
 		// there are no more tokens
 		if (t[currTok].end == 0 || tokenStack.empty())
 			break;
 
 		// next token starts after current one => pop
-		if (t[currTok].end > tokenStack.back().end)
+		if (t[currTok].end > tokenStack.back().end) {
 			tokenStack.pop_back();
+			dataStack.pop_back();
+		}
 
 		if (tokenStack.back().type == JSMN_OBJECT && (t[currTok].type == JSMN_PRIMITIVE || t[currTok].type == JSMN_STRING)) {
 			// grab key and push new data
@@ -328,7 +335,7 @@ void Event::initContent(const std::string& content) {
 	Arabica::SAX2DOM::Parser<std::string> parser;
 	Arabica::SAX::CatchErrorHandler<std::string> errorHandler;
 	parser.setErrorHandler(errorHandler);
-	
+
 	std::istringstream is(content);
 	Arabica::SAX::InputSource<std::string> inputSource;
 	inputSource.setByteStream(is);
@@ -336,7 +343,7 @@ void Event::initContent(const std::string& content) {
 		dom = parser.getDocument();
 		return;
 	}
-	
+
 	this->content = content;
 }
 
@@ -513,6 +520,13 @@ std::ostream& operator<< (std::ostream& os, const Event& event) {
 
 #ifndef SWIGJAVA
 std::ostream& operator<< (std::ostream& os, const Data& data) {
+	os << Data::toJSON(data);
+	return os;
+}
+#endif
+
+std::string Data::toJSON(const Data& data) {
+	std::stringstream os;
 	std::string indent;
 	for (int i = 0; i < _dataIndentation; i++) {
 		indent += "  ";
@@ -564,8 +578,7 @@ std::ostream& operator<< (std::ostream& os, const Data& data) {
 	} else {
 		os << "undefined";
 	}
-	return os;
+	return os.str();
 }
-#endif
 
 }

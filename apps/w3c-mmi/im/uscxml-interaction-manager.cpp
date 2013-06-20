@@ -169,7 +169,7 @@ int main(int argc, char** argv) {
 
 	// intialize http server on given port
 	HTTPServer::getInstance(port);
-	
+
 	LOG(INFO) << "Processing " << argv[optind];
 	Interpreter protoInterpreter = Interpreter::fromURI(argv[optind]);
 	if (protoInterpreter) {

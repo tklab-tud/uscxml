@@ -72,4 +72,7 @@
 #cmakedefine HAS_EXECINFO_H
 #cmakedefine HAS_DLFCN_H
 
+/** Binaries we found */
+#cmakedefine HAS_XDG_OPEN
+
 #endif

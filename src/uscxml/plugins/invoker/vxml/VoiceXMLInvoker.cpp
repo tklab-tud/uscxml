@@ -29,7 +29,7 @@ boost::shared_ptr<InvokerImpl> VoiceXMLInvoker::create(InterpreterImpl* interpre
 
 	invoker->_pub.registerType("LifeCycleEvent", new ::LifeCycleEvent());
 
-	
+
 	invoker->_node.addPublisher(invoker->_pub);
 	invoker->_node.addSubscriber(invoker->_sub);
 
@@ -50,7 +50,7 @@ void VoiceXMLInvoker::send(const SendRequest& req) {
 	std::stringstream domSS;
 	domSS << req.getFirstDOMElement();
 	start.content = domSS.str();
-	
+
 	start.contentURL.href = "http://localhost/~sradomski/hello.vxml";
 	start.requestId = "asdf";
 	start.source = "asdf";
@@ -61,7 +61,7 @@ void VoiceXMLInvoker::send(const SendRequest& req) {
 
 void VoiceXMLInvoker::invoke(const InvokeRequest& req) {
 	_pub.waitForSubscribers(1);
-	
+
 }
 
 }

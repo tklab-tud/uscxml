@@ -26,7 +26,7 @@ public:
 	Data getDataModelVariables();
 	virtual void send(const SendRequest& req);
 
-	virtual void httpRecvRequest(const HTTPServer::Request& req);
+	virtual bool httpRecvRequest(const HTTPServer::Request& req);
 
 	std::string getPath() {
 		return _path;

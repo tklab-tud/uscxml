@@ -1,0 +1,33 @@
+<scxml datamodel="ecmascript" name="comet-test"
+	xmlns:html="http://www.w3.org/1999/xhtml" 
+	xmlns="http://www.w3.org/2005/07/scxml">
+
+	<script src="http://uscxml.tk.informatik.tu-darmstadt.de/scripts/dump.js" />
+
+	<state id="start">
+		<invoke type="xhtml" id="xhtml1">
+			<!-- replacechildren (default), firstchild, lastchild, previoussibling, nextsibling, replace, delete, addattribute -->
+			<content type="replacechildren" xpath="/html/body">
+				<html:form onmouseover="scxml.send('onmouseover', arguments[0])">
+					First name1: <html:input type="text" name="firstname" /><html:br />
+					Last name1: <html:input type="text" name="lastname" />
+					<html:input onclick="scxml.send('onclick', arguments[0])" type="button" value="Submit" />
+				</html:form>
+			</content>
+		</invoke>
+		
+		<state id="idle">
+			<transition target="idle" event="onmouseover">
+				<log expr="dump(_event)" />
+			</transition>
+			<transition target="idle" event="onclick" cond="_event.origin=='xhtml1'">
+				<send target="#_xhtml1">
+					<content type="lastchild" xpath="/html/body">
+						<html:p>Thank you!</html:p>
+					</content>
+				</send>
+			</transition>
+		</state>
+		
+	</state>
+</scxml>

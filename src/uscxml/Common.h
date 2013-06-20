@@ -3,6 +3,8 @@
 
 #ifdef _WIN32
 #include <winsock2.h>
+// see http://stackoverflow.com/questions/1372480/c-redefinition-header-files
+#define _WINSOCKAPI_    // stops windows.h including winsock.h
 #include <windows.h>
 #else
 #include <sys/socket.h>

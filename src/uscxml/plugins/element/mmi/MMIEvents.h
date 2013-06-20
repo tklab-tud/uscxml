@@ -47,7 +47,7 @@ ELEMENT_MMI_CLASS(StatusResponse);
 ELEMENT_MMI_CLASS(DoneNotification);
 ELEMENT_MMI_CLASS(NewContextRequest);
 ELEMENT_MMI_CLASS(ExtensionNotification);
-	
+
 #ifdef BUILD_AS_PLUGINS
 PLUMA_INHERIT_PROVIDER(FetchElement, ExecutableContentImpl);
 #endif

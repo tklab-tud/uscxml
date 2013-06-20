@@ -23,7 +23,7 @@ SWIDataModel::SWIDataModel() {
 
 // SWI prolog does not support passing user data
 static InterpreterImpl* _swiInterpreterPtr;
-	
+
 boost::shared_ptr<DataModelImpl> SWIDataModel::create(InterpreterImpl* interpreter) {
 	boost::shared_ptr<SWIDataModel> dm = boost::shared_ptr<SWIDataModel>(new SWIDataModel());
 	dm->_interpreter = interpreter;
@@ -50,7 +50,7 @@ boost::shared_ptr<DataModelImpl> SWIDataModel::create(InterpreterImpl* interpret
 
 	// load SWI XML parser
 	PlCall("use_module", PlCompound("library", PlTerm("sgml")));
-	
+
 	// load json parser
 	PlCall("use_module", PlCompound("library", PlTerm("http/json")));
 	PlCall("use_module", PlCompound("library", PlTerm("http/json_convert")));
@@ -95,7 +95,7 @@ foreign_t SWIDataModel::inPredicate(term_t a0, int arity, void* context) {
 	}
 	return FALSE;
 }
-	
+
 void SWIDataModel::registerIOProcessor(const std::string& name, const IOProcessor& ioprocessor) {
 //	std::cout << "SWIDataModel::registerIOProcessor" << std::endl;
 }
@@ -129,7 +129,7 @@ void SWIDataModel::setEvent(const Event& event) {
 	// remove old event
 	try {
 		PlCall("retractall(event(_))");
-		
+
 		// simple values
 		PlCall("assert", PlCompound("event", PlCompound("name", PlTerm(event.name.c_str()))));
 		PlCall("assert", PlCompound("event", PlCompound("origin", PlString(event.origin.c_str()))));
@@ -140,22 +140,22 @@ void SWIDataModel::setEvent(const Event& event) {
 		// event.type
 		std::string type;
 		switch (event.type) {
-			case Event::PLATFORM:
-				type = "platform";
-				break;
-			case Event::INTERNAL:
-				type = "internal";
-				break;
-			case Event::EXTERNAL:
-				type = "external";
-				break;
+		case Event::PLATFORM:
+			type = "platform";
+			break;
+		case Event::INTERNAL:
+			type = "internal";
+			break;
+		case Event::EXTERNAL:
+			type = "external";
+			break;
 		}
 		PlCall("assert", PlCompound("event", PlCompound("type", PlTerm(type.c_str()))));
-		
+
 		// event.sendid
 		if (!event.hideSendId)
 			PlCall("assert", PlCompound("event", PlCompound("sendid", PlTerm(event.sendid.c_str()))));
-		
+
 		// event.data
 		URL domUrl;
 		if (event.dom) {
@@ -167,8 +167,8 @@ void SWIDataModel::setEvent(const Event& event) {
 			PlCall(dataInitStr.str().c_str());
 		} else if (event.content.size() > 0) {
 			PlCall("assert", PlCompound("event", PlCompound("data", PlString(Interpreter::spaceNormalize(event.content).c_str()))));
-		}	
-		
+		}
+
 		// event.params
 		size_t uniqueKeys = 0;
 		Event::params_t::const_iterator paramIter = event.params.begin();
@@ -195,7 +195,7 @@ void SWIDataModel::setEvent(const Event& event) {
 				paramExpr << "assert(event(param(" << paramArray.str() << ")))";
 				//std::cout << paramExpr.str() << std::endl;
 				PlCall(paramExpr.str().c_str());
-				
+
 				paramIter = lastValueIter;
 			}
 		}
@@ -249,7 +249,7 @@ void SWIDataModel::setForeach(const std::string& item,
 	PlCall("retractall", PlCompound(index.c_str(), 1));
 	PlCall("retractall", PlCompound(item.c_str(), 1));
 	PlCall("assert", PlCompound(index.c_str(), PlTerm((long)iteration)));
-	
+
 	std::map<std::string, PlTerm> vars = resolveAtoms(compound, orig);
 	std::map<std::string, PlTerm>::iterator varIter = vars.begin();
 	while(varIter != vars.end()) {
@@ -307,28 +307,28 @@ std::string SWIDataModel::evalAsString(const std::string& expr) {
 std::map<std::string, PlTerm> SWIDataModel::resolveAtoms(PlTerm& term, PlTerm& orig) {
 	std::map<std::string, PlTerm> atoms;
 	switch (orig.type()) {
-		case PL_VARIABLE: {
-			atoms[(char *)orig] = term;
-			break;
+	case PL_VARIABLE: {
+		atoms[(char *)orig] = term;
+		break;
+	}
+	case PL_ATOM:
+		break;
+	case PL_STRING:
+		break;
+	case PL_INTEGER:
+		break;
+	case PL_TERM:
+		for (int i = 1; i <= orig.arity(); i++) {
+			PlTerm newTerm = term[i];
+			PlTerm newOrig = orig[i];
+			std::map<std::string, PlTerm> result = resolveAtoms(newTerm, newOrig);
+			atoms.insert(result.begin(), result.end());
 		}
-		case PL_ATOM:
-			break;
-		case PL_STRING:
-			break;
-		case PL_INTEGER:
-			break;
-		case PL_TERM:
-			for (int i = 1; i <= orig.arity(); i++) {
-				PlTerm newTerm = term[i];
-				PlTerm newOrig = orig[i];
-				std::map<std::string, PlTerm> result = resolveAtoms(newTerm, newOrig);
-				atoms.insert(result.begin(), result.end());
-			}
-			break;
+		break;
 	}
 	return atoms;
 }
-	
+
 void SWIDataModel::assign(const Arabica::DOM::Element<std::string>& assignElem,
                           const Arabica::DOM::Document<std::string>& doc,
                           const std::string& content) {
@@ -353,7 +353,7 @@ void SWIDataModel::assign(const Arabica::DOM::Element<std::string>& assignElem,
 				callAssert = "asserta";
 			}
 		}
-		
+
 		URL domUrl;
 		Data json;
 		if (!doc)

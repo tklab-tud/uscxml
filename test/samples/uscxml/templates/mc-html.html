@@ -1,159 +1,346 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 	<head>
 		<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
-		<script src="http://ajax.googleapis.com/ajax/libs/dojo/1.8.3/dojo/dojo.js"></script>
-
 		<script type="text/javascript">
-		function createUUID() {
-			// http://www.ietf.org/rfc/rfc4122.txt
-			var s = [];
-			var hexDigits = "0123456789abcdef";
-			for (var i = 0; i < 36; i++) {
-				s[i] = hexDigits.substr(Math.floor(Math.random() * 0x10), 1);
-			}
-			s[14] = "4";  // bits 12-15 of the time_hi_and_version field to 0010
-			s[19] = hexDigits.substr((s[19] & 0x3) | 0x8, 1);  // bits 6-7 of the clock_seq_hi_and_reserved to 01
-			s[8] = s[13] = s[18] = s[23] = "-";
-			var uuid = s.join("");
-			return uuid;
-		}
+			// see http://stackoverflow.com/questions/1206937/javascript-domready
+			var domLoaded = function(callback) {
+				/* Internet Explorer */
+				/*@cc_on
+				@if (@_win32 || @_win64)
+					document.write('<script id="ieScriptLoad" defer src="//:"><\/script>');
+					document.getElementById('ieScriptLoad').onreadystatechange = function() {
+						if (this.readyState == 'complete') {
+							callback();
+						}
+					};
+				@end @*/
+				/* Mozilla, Chrome, Opera */
+				if (document.addEventListener) {
+					document.addEventListener('DOMContentLoaded', callback, false);
+					return;
+				}
+				/* Safari, iCab, Konqueror */
+				if (/KHTML|WebKit|iCab/i.test(navigator.userAgent)) {
+					var DOMLoadTimer = setInterval(function () {
+						if (/loaded|complete/i.test(document.readyState)) {
+							callback();
+							clearInterval(DOMLoadTimer);
+						}
+					}, 10);
+					return;
+				}
+				/* Other web browsers */
+				window.onload = callback;
+			};
+		
 		</script>
-
-    <script type="text/javascript">
-			require(["dojo/on", "dojo/mouse", "dojo/domReady!", "dojo", "dojox/json/ref"], function(on, mouse, dom, dojo, ref) {
+		<script type="text/javascript">
+			
+			function CometSession(options) {
+				/**
+				 * Support for two-channel asynchronous http communication
+				 */
+				for (var key in options) {
+				  if (options.hasOwnProperty(key)) {
+				    this[key] = options[key];
+				  }
+				}
+				var self = this;
 				
-			var element = dojo.byId("foo");
-			
-			var mmiNS = "http://www.w3.org/2008/04/mmi-arch";
-			var token = createUUID();
-			var contextId;
-			var timeout="30000";
-			var imURL = "${im.url}";
-			
-			var xhr = dojo.require("dojo/_base/xhr");
-			// initial new context request
-			xhr.post({
-				url: imURL + "?token=" + token,
-				postData:
-					'<mmi:mmi xmlns:mmi="' + mmiNS + '" version="1.0">' +
-						'<mmi:NewContextRequest ' +
-							'mmi:Source="HTML" ' +
-							'mmi:Target="' + imURL + '" '+
-							'mmi:RequestID="' + token + '" />' +
-					'</mmi:mmi>',
-				handleAs:"xml",
-				headers:{
-					"X-Requested-With": null,
-					"Content-Type": "application/xml",
-				},
-				load: function(result) {
-					// scxml IM replied with 204 - longpoll via get
-					longpoll();
-				}	      
-			});
+				this.xhr       = (window.XMLHttpRequest ? new XMLHttpRequest() : new ActiveXObject("MSXML2.XMLHTTP.3.0"));
+				this.cometPoll = (window.XMLHttpRequest ? new XMLHttpRequest() : new ActiveXObject("MSXML2.XMLHTTP.3.0"));
+				
+				this.createUUID = function() {
+					// http://www.ietf.org/rfc/rfc4122.txt
+					var s = [];
+					var hexDigits = "0123456789abcdef";
+					for (var i = 0; i < 36; i++) {
+						s[i] = hexDigits.substr(Math.floor(Math.random() * 0x10), 1);
+					}
+					s[14] = "4";  // bits 12-15 of the time_hi_and_version field to 0010
+					s[19] = hexDigits.substr((s[19] & 0x3) | 0x8, 1);  // bits 6-7 of the clock_seq_hi_and_reserved to 01
+					s[8] = s[13] = s[18] = s[23] = "-";
+					var uuid = s.join("");
+					return uuid;
+				}
+				
+				this.longpoll = function() {
+					self.cometPoll.onreadystatechange = function() {
+						if (self.cometPoll.readyState === 4) {
+							if (self.cometPoll.status !== 200) {
+								self.longpoll();
+								return;
+							}
+							self.onRcvd(self.cometPoll);
+							self.longpoll();
+						}
+					};
+					// use token until we have a context
+					self.cometPoll.open("GET", self.server + (self.query ? "?" + self.query : ""));
+					self.cometPoll.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+					self.cometPoll.send(null);
+				};
+				
+				this.post = function(data) {
+					self.xhr.open("POST", self.server + (self.query ? "?" + self.query : ""));
+					self.xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+					self.xhr.send(data);
+				}
+			}
+		
+		</script>
+		<script type="text/javascript">
 
-			var longpoll = function() {
-				xhr.get({
-					// The URL to request
-					url: imURL + "?token=" + token,
-					handleAs:"xml",
-					headers:{
-						"X-Requested-With": null,
-						"Content-Type": "application/xml",
-					},
-					load: function(result) {
-						// IM had some event to send to us
-						element.innerHTML += (new XMLSerializer()).serializeToString(result).replace(/</gi, "&lt;") + "<br />";
-						var mmiEvent = result.documentElement.firstChild;
+			function MMISession(element, imURL, params) {
+				// copy all attributes passe as params
+				for (var key in params) {
+				  if (params.hasOwnProperty(key)) {
+				    this[key] = params[key];
+				  }
+				}
+				var self = this;
+				
+				// initialize base class with onData handler
+				this.__proto__ = new CometSession({
+					server: imURL,
+					onRcvd: function(data) {
+						var mmiEvent = data.responseXML.documentElement.firstChild;
+						var handler;
+						var replier;
 						switch (mmiEvent.localName) {
 							case "NewContextResponse":
-								newContextResponse(mmiEvent);
+								self.context = mmiEvent.getAttribute("Context");
+								self.comet.query = "context=" + self.context;
+								break;
+							case "PrepareRequest":
+								handler = self.onPrepare;
+								replier = function(attrs) { sendMMIEvent("DoneNotification", attrs) };
 								break;
 							case "StartRequest":
-								startRequest(mmiEvent);
+								handler = self.onStart;
+								replier = function(attrs) { sendMMIEvent("StartResponse", attrs) };
+								break;
+							case "CancelRequest":
+								handler = self.onCancel;
+								replier = function(attrs) { sendMMIEvent("CancelResponse", attrs) };
+								break;
+							case "PauseRequest":
+								handler = self.onPause;
+								replier = function(attrs) { sendMMIEvent("PauseResponse", attrs) };
+								break;
+							case "ResumeRequest":
+								handler = self.onResume;
+								replier = function(attrs) { sendMMIEvent("ResumeResponse", attrs) };
+								break;
+							case "ClearContextRequest":
+								handler = self.onClearContext;
+								replier = function(attrs) { sendMMIEvent("ClearContextResponse", attrs) };
+								break;
+							case "StatusRequest":
+								handler = self.onStatus;
+								replier = function(attrs) { sendMMIEvent("StatusResponse", attrs) };
+								break;
+							case "ExtensionNotification":
+								handler = self.onExtension;
 								break;
 						}
-						longpoll();
+						if (typeof handler === "function") {
+							var rc = handler(mmiEvent);
+							if (typeof replier === "function") {
+								if (rc === false) {
+									replier({ Status: "Failure"});
+								} else if (typeof rc === "object") {
+									replier(rc);
+								} else {
+									replier({ Status: "Success"});
+								}
+							}
+						}
 					}
 				});
-			}
-			
-			var eventToJSON = function(event) {
-				var seen = [];
-				return JSON.stringify(event, function(key, val) {
-					if (isNode(val)) {
-						return;
-					}
-					if (isWindow(val)) {
-						return;
-					}
-					if (typeof val == "object") {
-						if (seen.indexOf(val) >= 0)
-							return;
-						seen.push(val)
-					}
-					return val
-				});
-			}
-			
-			var isNode = function(o){
-			  return (
-			    typeof Node === "object" ? o instanceof Node : 
-			    o && typeof o === "object" && typeof o.nodeType === "number" && typeof o.nodeName==="string"
-			  );
-			}
+				this.comet = this.__proto__;
 
-			var isWindow = function(o){
-			  return (
-			    typeof Window === "object" ? o instanceof Window : 
-			    o && typeof o === "object" && typeof o.menubar === "object"
-			  );
-			}
-			
-			var newContextResponse = function(event) {
-				contextId = event.getAttribute("Context");
-			}
-			var startRequest = function(event) {
-				var content = event.firstChild;
-				console.log(content);
-				var fromStartRequest = document.importNode(content.firstChild,true);
-				element.appendChild(fromStartRequest);
-			}
-			
-			var sendExtensionNotification = function(event) {
-				console.log(event);
-				var data = eventToJSON(event);
-				console.log(data);
-				xhr.post({
-					url: imURL + "?token=" + token,
-					postData:
-						'<mmi:mmi xmlns:mmi="' + mmiNS + '" version="1.0">' +
-							'<mmi:ExtensionNotification ' +
-								'mmi:Source="HTML" ' +
-								'mmi:Target="' + imURL + '" ' +
-								'mmi:Context="' + contextId + '" ' +
-								'mmi:RequestID="' + token + '">' +
-								'<mmi:Data>' + data + '</mmi:Data>' + 
-							'</mmi:ExtensionNotification>' +
-						'</mmi:mmi>',
-					handleAs:"xml",
-					headers:{
-						"X-Requested-With": null,
-						"Content-Type": "application/xml",
-					},
-					load: function(result) {
-						// scxml IM replied with 204
-					}	      
-				});
+				// get element as an HTML Node
+				if (typeof(element) === 'string') {
+					element = document.getElementById(element);
+				}
 				
-			}
-			
-			on(element, "click", sendExtensionNotification);
-			on(element, mouse.enter, sendExtensionNotification);
-			on(element, mouse.leave, sendExtensionNotification);
-			
-		});		  
+				// assign attributes
+				this.mmiNS        = "http://www.w3.org/2008/04/mmi-arch";
+				this.comet.query  = "token=" + this.createUUID();
+				this.element      = element;
+
+				this.init = function() {
+					sendMMIEvent("NewContextRequest");
+					self.longpoll();
+				}
+				
+				// helper function to determine whether something is a html node
+				var isNode = function(o){
+				  return (
+				    typeof Node === "object" ? o instanceof Node : 
+				    o && typeof o === "object" && typeof o.nodeType === "number" && typeof o.nodeName==="string"
+				  );
+				}
+
+				// helper function to determine whether something is a window
+				var isWindow = function(o){
+				  return (
+				    typeof Window === "object" ? o instanceof Window : 
+				    o && typeof o === "object" && typeof o.menubar === "object"
+				  );
+				}
+				
+				// serialize an object to be send
+				this.send = function(attr) {
+					// see also: https://raw.github.com/douglascrockford/JSON-js/master/cycle.js
+					var data = attr.Data;
+					// dispatch over thingy type here
+					if (typeof data === "object") {
+						var seen = [];
+						data = JSON.stringify(attr.Data, function(key, val) {
+							if (isNode(val)) {
+								// return a selection of attributes
+								return {
+									id: val.id,
+									tagName: val.tagName,
+									localName: val.localName,
+								};
+
+/*
+								// return everything that is atomic - this is a lot with all the HTML inside
+								var nodeAttr = {};
+								for (var key in val) {
+									if (
+										key !== "outerHTML" &&
+										val.hasOwnProperty(key) && 
+										typeof val[key] !== "object" && 
+										typeof val[key] !== "function"
+									) {
+										nodeAttr[key] = val[key];
+									}
+								}
+								return nodeAttr;
+*/
+							}
+							if (isWindow(val)) {
+								return;
+							}
+							if (typeof val === "object") {
+								if (seen.indexOf(val) >= 0)
+									return;
+								seen.push(val)
+							}
+							return val
+						});
+						
+					}
+					attr.Data = data;
+					sendMMIEvent("ExtensionNotification", attr);
+				}
+				
+				// register event handler if not given per constructor
+				if(typeof this.onStart !== "function") {
+					this.onStart = function(mmiEvent) {
+						var content = mmiEvent.firstChild;
+						var fromStartRequest = document.importNode(content.firstChild, true);
+						self.element.appendChild(fromStartRequest);
+					}
+				}
+				if(typeof this.onStatus !== "function") {
+					this.onStatus = function(mmiEvent) {
+						return true;
+					}
+				}
+				if(typeof this.onPrepare !== "function") {
+					this.onPrepare = function(mmiEvent) {
+						return true;
+					}
+				}
+				if(typeof this.onCancel !== "function") {
+					this.onCancel = function(mmiEvent) {
+						return true;
+					}
+				}
+				if(typeof this.onPause !== "function") {
+					this.onPause = function(mmiEvent) {
+						return true;
+					}
+				}
+				if(typeof this.onResume !== "function") {
+					this.onResume = function(mmiEvent) {
+						return true;
+					}
+				}
+				if(typeof this.onExtension !== "function") {
+					this.onExtension = function(mmiEvent) {
+						return true;
+					}
+				}
+				if(typeof this.onClearContext !== "function") {
+					this.onClearContext = function(mmiEvent) {
+						return true;
+					}
+				}
+
+				if(typeof this.onDone !== "function") {
+					this.onDone = function(mmiEvent) {
+						return true;
+					}
+				}
+
+				window.onbeforeunload=function(){
+					this.onDone();
+					sendMMIEvent("DoneNotification", attrs);
+				};
+				
+				var sendMMIEvent = function(type, attrs) {
+					if (!attrs)
+						attrs = {};
+					if (!attrs["Source"]) // default for Source
+						attrs["Source"] = "HTML";
+					if (!attrs["Target"]) // default for Target
+						attrs["Target"] = self.imURL;
+					if (!attrs["RequestID"]) // default for RequestID
+						attrs["RequestID"] = self.createUUID();
+					var mmiDocument = '<mmi:mmi xmlns:mmi="' + self.mmiNS + '" version="1.0">' +
+						'<mmi:' + type + ' ';
+					if (self.context)
+						mmiDocument += 'mmi:Context="' + self.context + '" ';
+					for (attr in attrs) {
+						if (attr === "Data")
+							continue;
+						if (attr === "Content")
+							continue;
+						mmiDocument += 'mmi:' + attr + '="' + attrs[attr] + '" ';
+					}
+					mmiDocument += '>';
+					
+					if (attrs["Data"])
+						mmiDocument += '<mmi:Data>' + "\n<![CDATA[\n" + attrs["Data"] + "\n]]>\n" + '</mmi:Data>';
+					if (attrs["Content"])
+						mmiDocument += '<mmi:Content>' + "\n<![CDATA[\n" + attrs["Content"] + "\n]]>\n" + '</mmi:Content>';
+
+					mmiDocument += '</mmi:' + type +'></mmi:mmi>',
+					self.post(mmiDocument);
+				}
+
+			};
+
 		</script>
+		
+		<script type="text/javascript">
+			var mmiSession;
+			domLoaded(function () {
+				mmiSession = new MMISession("foo", "${im.url}", {
+					onExtension : function(mmiEvent) {
+						console.log(mmiEvent);
+					}
+				});
+				mmiSession.init();
+			});
+		</script>
+
 	</head>
 	<body class="tundra">
 		<div id="foo"></div>

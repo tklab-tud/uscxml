@@ -116,13 +116,13 @@ public:
 	void setType(const std::string& type) {
 		_type = type;
 	}
-	
+
 	virtual Data getDataModelVariables() = 0;
 	virtual void send(const SendRequest& req) = 0;
-	
+
 	virtual void runOnMainThread() {};
 	void returnEvent(Event& event);
-	
+
 protected:
 	InterpreterImpl* _interpreter;
 	std::string _invokeId;
@@ -136,11 +136,11 @@ public:
 	EventHandler(boost::shared_ptr<EventHandlerImpl> const impl) : _impl(impl) { }
 	EventHandler(const EventHandler& other) : _impl(other._impl) { }
 	virtual ~EventHandler() {};
-	
+
 	virtual std::set<std::string> getNames()   {
 		return _impl->getNames();
 	}
-	
+
 	virtual Data getDataModelVariables() const {
 		return _impl->getDataModelVariables();
 	};
@@ -150,7 +150,7 @@ public:
 	virtual void runOnMainThread()             {
 		return _impl->runOnMainThread();
 	}
-	
+
 	void setInterpreter(InterpreterImpl* interpreter) {
 		_impl->setInterpreter(interpreter);
 	}
@@ -382,7 +382,7 @@ public:
 	boost::shared_ptr<ExecutableContentImpl> createExecutableContent(const std::string& localName, const std::string& nameSpace, InterpreterImpl* interpreter);
 
 	std::map<std::string, IOProcessorImpl*> getIOProcessors();
-	
+
 	static Factory* getInstance();
 
 	std::map<std::string, DataModelImpl*> _dataModels;

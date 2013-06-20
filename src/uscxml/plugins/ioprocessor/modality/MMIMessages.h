@@ -10,44 +10,44 @@ namespace uscxml {
 class MMIEvent {
 public:
 	enum Type {
-		NEWCONTEXTREQUEST,
-		NEWCONTEXTRESPONSE,
-		PREPAREREQUEST,
-		PREPARERESPONSE,
-		STARTREQUEST,
-		STARTRESPONSE,
-		DONENOTIFICATION,
-		CANCELREQUEST,
-		CANCELRESPONSE,
-		PAUSEREQUEST,
-		PAUSERESPONSE,
-		RESUMEREQUEST,
-		RESUMERESPONSE,
-		EXTENSIONNOTIFICATION,
-		CLEARCONTEXTREQUEST,
-		CLEARCONTEXTRESPONSE,
-		STATUSREQUEST,
-		STATUSRESPONSE,
-		INVALID
+	    NEWCONTEXTREQUEST,
+	    NEWCONTEXTRESPONSE,
+	    PREPAREREQUEST,
+	    PREPARERESPONSE,
+	    STARTREQUEST,
+	    STARTRESPONSE,
+	    DONENOTIFICATION,
+	    CANCELREQUEST,
+	    CANCELRESPONSE,
+	    PAUSEREQUEST,
+	    PAUSERESPONSE,
+	    RESUMEREQUEST,
+	    RESUMERESPONSE,
+	    EXTENSIONNOTIFICATION,
+	    CLEARCONTEXTREQUEST,
+	    CLEARCONTEXTRESPONSE,
+	    STATUSREQUEST,
+	    STATUSRESPONSE,
+	    INVALID
 	};
-	
+
 	static Type getType(Arabica::DOM::Node<std::string> node);
 	static Arabica::DOM::Node<std::string> getEventNode(Arabica::DOM::Node<std::string> node);
-	
+
 	virtual Arabica::DOM::Document<std::string> toXML() const;
 	static MMIEvent fromXML(Arabica::DOM::Node<std::string> node,
-														InterpreterImpl* interpreter = NULL);
+	                        InterpreterImpl* interpreter = NULL);
 
 	// conversion operator
 	operator Event() const;
-	
+
 	std::string source;
 	std::string target;
 	std::string data;
 	std::string requestId;
 	std::string tagName;
 	Type type;
-	
+
 	static std::string nameSpace;
 
 protected:
@@ -72,7 +72,7 @@ public:
 	}
 	NewContextRequest(const MMIEvent& father) : MMIEvent(father) {}
 	static NewContextRequest fromXML(Arabica::DOM::Node<std::string> node,
-																	 InterpreterImpl* interpreter = NULL) {
+	                                 InterpreterImpl* interpreter = NULL) {
 		MMIEvent event = MMIEvent::fromXML(node, interpreter);
 		event.type = NEWCONTEXTREQUEST;
 		return event;
@@ -90,7 +90,7 @@ class ContextualizedRequest : public MMIEvent {
 public:
 	virtual Arabica::DOM::Document<std::string> toXML() const;
 	static ContextualizedRequest fromXML(Arabica::DOM::Node<std::string> node,
-																			 InterpreterImpl* interpreter = NULL);
+	                                     InterpreterImpl* interpreter = NULL);
 	operator Event() const;
 	std::string context;
 protected:
@@ -106,7 +106,7 @@ public:
 	}
 	PauseRequest(const ContextualizedRequest& father) : ContextualizedRequest(father) {}
 	static PauseRequest fromXML(Arabica::DOM::Node<std::string> node,
-															InterpreterImpl* interpreter = NULL) {
+	                            InterpreterImpl* interpreter = NULL) {
 		PauseRequest event = ContextualizedRequest::fromXML(node, interpreter);
 		event.type = PAUSEREQUEST;
 		return event;
@@ -127,7 +127,7 @@ public:
 	}
 	ResumeRequest(const ContextualizedRequest& father) : ContextualizedRequest(father) {}
 	static ResumeRequest fromXML(Arabica::DOM::Node<std::string> node,
-															 InterpreterImpl* interpreter = NULL) {
+	                             InterpreterImpl* interpreter = NULL) {
 		ResumeRequest event = ContextualizedRequest::fromXML(node, interpreter);
 		event.type = RESUMEREQUEST;
 		return event;
@@ -148,7 +148,7 @@ public:
 	}
 	CancelRequest(const ContextualizedRequest& father) : ContextualizedRequest(father) {}
 	static CancelRequest fromXML(Arabica::DOM::Node<std::string> node,
-															 InterpreterImpl* interpreter = NULL) {
+	                             InterpreterImpl* interpreter = NULL) {
 		CancelRequest event = ContextualizedRequest::fromXML(node, interpreter);
 		event.type = CANCELREQUEST;
 		return event;
@@ -169,7 +169,7 @@ public:
 	}
 	ClearContextRequest(const ContextualizedRequest& father) : ContextualizedRequest(father) {}
 	static ClearContextRequest fromXML(Arabica::DOM::Node<std::string> node,
-																		 InterpreterImpl* interpreter = NULL) {
+	                                   InterpreterImpl* interpreter = NULL) {
 		ClearContextRequest event = ContextualizedRequest::fromXML(node, interpreter);
 		event.type = CLEARCONTEXTREQUEST;
 		return event;
@@ -190,7 +190,7 @@ public:
 	}
 	virtual Arabica::DOM::Document<std::string> toXML() const;
 	static StatusRequest fromXML(Arabica::DOM::Node<std::string> node,
-															 InterpreterImpl* interpreter = NULL);
+	                             InterpreterImpl* interpreter = NULL);
 	operator Event() const;
 	bool automaticUpdate;
 protected:
@@ -207,7 +207,7 @@ public:
 
 	virtual Arabica::DOM::Document<std::string> toXML() const;
 	static ContentRequest fromXML(Arabica::DOM::Node<std::string> node,
-																InterpreterImpl* interpreter = NULL);
+	                              InterpreterImpl* interpreter = NULL);
 	operator Event() const;
 	std::string content;
 	ContentURL contentURL;
@@ -224,7 +224,7 @@ public:
 	}
 	PrepareRequest(const ContentRequest& father) : ContentRequest(father) {}
 	static PrepareRequest fromXML(Arabica::DOM::Node<std::string> node,
-																InterpreterImpl* interpreter = NULL) {
+	                              InterpreterImpl* interpreter = NULL) {
 		PrepareRequest event = ContentRequest::fromXML(node, interpreter);
 		event.type = PREPAREREQUEST;
 		return event;
@@ -245,7 +245,7 @@ public:
 	}
 	StartRequest(const ContentRequest& father) : ContentRequest(father) {}
 	static StartRequest fromXML(Arabica::DOM::Node<std::string> node,
-															InterpreterImpl* interpreter = NULL) {
+	                            InterpreterImpl* interpreter = NULL) {
 		StartRequest event = ContentRequest::fromXML(node, interpreter);
 		event.type = STARTREQUEST;
 		return event;
@@ -267,7 +267,7 @@ public:
 	}
 	virtual Arabica::DOM::Document<std::string> toXML() const;
 	static ExtensionNotification fromXML(Arabica::DOM::Node<std::string> node,
-																			 InterpreterImpl* interpreter = NULL);
+	                                     InterpreterImpl* interpreter = NULL);
 	operator Event() const;
 	std::string name;
 protected:
@@ -290,7 +290,7 @@ public:
 	}
 	virtual Arabica::DOM::Document<std::string> toXML() const;
 	static StatusResponse fromXML(Arabica::DOM::Node<std::string> node,
-																InterpreterImpl* interpreter = NULL);
+	                              InterpreterImpl* interpreter = NULL);
 	Status status;
 protected:
 	StatusResponse(const ContextualizedRequest& father) : ContextualizedRequest(father) {}
@@ -301,7 +301,7 @@ public:
 	virtual Arabica::DOM::Document<std::string> toXML() const;
 	StatusInfoResponse(const StatusResponse& father) : StatusResponse(father) {}
 	static StatusInfoResponse fromXML(Arabica::DOM::Node<std::string> node,
-																		InterpreterImpl* interpreter = NULL);
+	                                  InterpreterImpl* interpreter = NULL);
 	std::string statusInfo;
 protected:
 	StatusInfoResponse() {}
@@ -315,7 +315,7 @@ public:
 	}
 	PrepareResponse(const StatusInfoResponse& father) : StatusInfoResponse(father) {}
 	static PrepareResponse fromXML(Arabica::DOM::Node<std::string> node,
-																 InterpreterImpl* interpreter = NULL) {
+	                               InterpreterImpl* interpreter = NULL) {
 		PrepareResponse event = StatusInfoResponse::fromXML(node, interpreter);
 		event.type = PREPARERESPONSE;
 		return event;
@@ -336,7 +336,7 @@ public:
 	}
 	StartResponse(const StatusInfoResponse& father) : StatusInfoResponse(father) {}
 	static StartResponse fromXML(Arabica::DOM::Node<std::string> node,
-															 InterpreterImpl* interpreter = NULL) {
+	                             InterpreterImpl* interpreter = NULL) {
 		StartResponse event = StatusInfoResponse::fromXML(node, interpreter);
 		event.type = STARTRESPONSE;
 		return event;
@@ -357,7 +357,7 @@ public:
 	}
 	CancelResponse(const StatusInfoResponse& father) : StatusInfoResponse(father) {}
 	static CancelResponse fromXML(Arabica::DOM::Node<std::string> node,
-																InterpreterImpl* interpreter = NULL) {
+	                              InterpreterImpl* interpreter = NULL) {
 		CancelResponse event = StatusInfoResponse::fromXML(node, interpreter);
 		event.type = CANCELRESPONSE;
 		return event;
@@ -378,7 +378,7 @@ public:
 	}
 	PauseResponse(const StatusInfoResponse& father) : StatusInfoResponse(father) {}
 	static PauseResponse fromXML(Arabica::DOM::Node<std::string> node,
-															 InterpreterImpl* interpreter = NULL) {
+	                             InterpreterImpl* interpreter = NULL) {
 		PauseResponse event = StatusInfoResponse::fromXML(node, interpreter);
 		event.type = PAUSERESPONSE;
 		return event;
@@ -399,7 +399,7 @@ public:
 	}
 	ResumeResponse(const StatusInfoResponse& father) : StatusInfoResponse(father) {}
 	static ResumeResponse fromXML(Arabica::DOM::Node<std::string> node,
-																InterpreterImpl* interpreter = NULL) {
+	                              InterpreterImpl* interpreter = NULL) {
 		ResumeResponse event = StatusInfoResponse::fromXML(node, interpreter);
 		event.type = RESUMERESPONSE;
 		return event;
@@ -420,7 +420,7 @@ public:
 	}
 	ClearContextResponse(const StatusInfoResponse& father) : StatusInfoResponse(father) {}
 	static ClearContextResponse fromXML(Arabica::DOM::Node<std::string> node,
-																			InterpreterImpl* interpreter = NULL) {
+	                                    InterpreterImpl* interpreter = NULL) {
 		ClearContextResponse event = StatusInfoResponse::fromXML(node, interpreter);
 		event.type = CLEARCONTEXTRESPONSE;
 		return event;
@@ -441,7 +441,7 @@ public:
 	}
 	NewContextResponse(const StatusInfoResponse& father) : StatusInfoResponse(father) {}
 	static NewContextResponse fromXML(Arabica::DOM::Node<std::string> node,
-																		InterpreterImpl* interpreter = NULL) {
+	                                  InterpreterImpl* interpreter = NULL) {
 		NewContextResponse event = StatusInfoResponse::fromXML(node, interpreter);
 		event.type = NEWCONTEXTRESPONSE;
 		return event;
@@ -463,7 +463,7 @@ public:
 	}
 	DoneNotification(const StatusInfoResponse& father) : StatusInfoResponse(father) {}
 	static DoneNotification fromXML(Arabica::DOM::Node<std::string> node,
-																	InterpreterImpl* interpreter = NULL) {
+	                                InterpreterImpl* interpreter = NULL) {
 		DoneNotification event = StatusInfoResponse::fromXML(node, interpreter);
 		event.type = DONENOTIFICATION;
 		return event;

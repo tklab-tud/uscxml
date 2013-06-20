@@ -24,7 +24,7 @@ boost::shared_ptr<IOProcessorImpl> InterpreterServlet::create(InterpreterImpl* i
 	return io;
 }
 
-void InterpreterServlet::httpRecvRequest(const HTTPServer::Request& req) {
+bool InterpreterServlet::httpRecvRequest(const HTTPServer::Request& req) {
 	tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
 
 	//  evhttp_request_own(req.curlReq);
@@ -37,6 +37,7 @@ void InterpreterServlet::httpRecvRequest(const HTTPServer::Request& req) {
 	event.origin = toStr((uintptr_t)req.curlReq);
 	event.initContent(event.data.compound["content"].atom);
 	_interpreter->receive(event);
+	return true;
 }
 
 Data InterpreterServlet::getDataModelVariables() {

@@ -135,8 +135,10 @@ public:
 		return "";
 	}
 	void setNameSpaceInfo(const std::map<std::string, std::string> nameSpaceInfo);
-	std::map<std::string, std::string> getNameSpaceInfo() { return _nameSpaceInfo; }
-	
+	std::map<std::string, std::string> getNameSpaceInfo() {
+		return _nameSpaceInfo;
+	}
+
 	void receiveInternal(const Event& event);
 	void receive(const Event& event, bool toFront = false);
 
@@ -391,7 +393,7 @@ public:
 	std::map<std::string, std::string> getNameSpaceInfo() {
 		return _impl->getNameSpaceInfo();
 	}
-		
+
 	void setCmdLineOptions(int argc, char** argv) {
 		return _impl->setCmdLineOptions(argc, argv);
 	}

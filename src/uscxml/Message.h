@@ -42,7 +42,7 @@ public:
 	const Data operator[](const std::string& key) const {
 		return operator[](key.c_str());
 	}
-	
+
 	const Data operator[](const char* key) const {
 		if (hasKey(key))
 			return compound.at(key);
@@ -63,6 +63,7 @@ public:
 	}
 
 	static Data fromJSON(const std::string& jsonString);
+	static std::string toJSON(const Data& data);
 	static Data fromXML(const std::string& xmlString);
 	Arabica::DOM::Document<std::string> toDocument();
 	std::string toXMLString() {

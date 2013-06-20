@@ -35,6 +35,7 @@
 
 	<state id="startmc">
 		<!-- invoke type="vxml" id="mc.vxml" / -->
+		<!-- invoke type="xhtml" id="mc.xhtml" / -->
 		
 		<!-- Idle here and wait for events -->
 		<state id="idle">
@@ -52,7 +53,13 @@
 					<content>
 						<mmi:StartRequest>
 							<mmi:Content>
-								<html:button>Click Me</html:button>
+								<html:form onmouseover ="mmiSession.send({ Name: 'onmouseover', Data: arguments[0] })">
+									First name: <html:input type="text" name="firstname" /><html:br />
+									Last name: <html:input type="text" name="lastname" />
+									<html:input 
+										onclick="mmiSession.send({ Name: 'onsubmit', Data: arguments[0] })"
+										type="button" value="Submit" />
+								</html:form>
 							</mmi:Content>
 						</mmi:StartRequest>
 					</content>
@@ -60,7 +67,7 @@
 			</transition>
 			
 			<transition event="mmi.extensionnotification" target="idle">
-				<script>dump(_event)</script>
+				<!--script>dump(_event)</script -->
 			</transition>
 			
 		</state>

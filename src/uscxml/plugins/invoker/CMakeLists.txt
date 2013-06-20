@@ -32,6 +32,23 @@ else()
 	list (APPEND USCXML_FILES ${DIRMON_INVOKER})
 endif()
 
+# System invoker to open a native command
+
+file(GLOB_RECURSE XHTML_INVOKER
+	xhtml/*.cpp
+	xhtml/*.h
+)
+source_group("Invoker\\xhtml" FILES ${XHTML_INVOKER})
+if (BUILD_AS_PLUGINS)
+	add_library(
+		invoker_xhtml SHARED 
+		${XHTML_INVOKER})
+	target_link_libraries(invoker_xhtml uscxml)
+	set_target_properties(invoker_xhtml PROPERTIES FOLDER "Plugin Invoker")
+else()
+	list (APPEND USCXML_FILES ${XHTML_INVOKER})
+endif()
+
 
 # System invoker to open a native command
 

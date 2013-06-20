@@ -133,16 +133,19 @@ Interpreter Interpreter::fromInputSource(Arabica::SAX::InputSource<std::string>&
 	tthread::lock_guard<tthread::recursive_mutex> lock(_instanceMutex);
 	boost::shared_ptr<InterpreterDraft6> interpreterImpl = boost::shared_ptr<InterpreterDraft6>(new InterpreterDraft6);
 	Interpreter interpreter;
-	NameSpacingParser* parser = new NameSpacingParser();
-	if (parser->parse(source) && parser->getDocument() && parser->getDocument().hasChildNodes()) {
-		interpreterImpl->setNameSpaceInfo(parser->nameSpace);
-		interpreterImpl->_document = parser->getDocument();
+	NameSpacingParser parser;
+	if (parser.parse(source) && parser.getDocument() && parser.getDocument().hasChildNodes()) {
+		interpreterImpl->setNameSpaceInfo(parser.nameSpace);
+		interpreterImpl->_document = parser.getDocument();
 		interpreterImpl->init();
 		interpreter = Interpreter(interpreterImpl);
 		_instances[interpreterImpl->getSessionId()] = interpreterImpl;
+	} else {
+		if (parser.errorsReported()) {
+			LOG(ERROR) << parser.errors();
+		}
 	}
 	//	interpreter->init();
-	delete parser;
 	return interpreter;
 }
 
@@ -260,7 +263,7 @@ void InterpreterImpl::init() {
 
 			if (_factory == NULL)
 				_factory = Factory::getInstance();
-			
+
 		} else {
 			LOG(ERROR) << "Cannot find SCXML element" << std::endl;
 			_done = true;

@@ -34,7 +34,7 @@ public:
 	virtual void send(const SendRequest& req);
 	virtual void invoke(const InvokeRequest& req);
 
-	
+
 protected:
 	umundo::Node _node;
 	umundo::TypedPublisher _pub;

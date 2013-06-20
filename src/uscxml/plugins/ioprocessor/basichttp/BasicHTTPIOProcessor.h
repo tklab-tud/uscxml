@@ -36,7 +36,7 @@ public:
 	Data getDataModelVariables();
 
 	/// HTTPServlet
-	void httpRecvRequest(const HTTPServer::Request& req);
+	bool httpRecvRequest(const HTTPServer::Request& req);
 	void setURL(const std::string& url) {
 		_url = url;
 	}

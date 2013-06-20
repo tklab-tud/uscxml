@@ -105,7 +105,7 @@ public:
 
 	}
 
-	void httpRecvRequest(const uscxml::HTTPServer::Request& request) {
+	bool httpRecvRequest(const uscxml::HTTPServer::Request& request) {
 
 //    uscxml::HTTPServer::Reply httpReply(request);
 //    uscxml::HTTPServer::reply(httpReply);
@@ -144,7 +144,7 @@ public:
 				_interpreters[token] = std::make_pair(interpreter, request);
 				interpreter.start();
 			}
-			return;
+			return true;
 		}
 
 		if(jsonReq.compound.find("event") != jsonReq.compound.end()) {
@@ -160,7 +160,7 @@ public:
 			_interpreters[token].second = request;
 			_interpreters[token].first.receive(event);
 		}
-
+		return true;
 	}
 
 	void setURL(const std::string& url) {

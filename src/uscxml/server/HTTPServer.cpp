@@ -72,7 +72,10 @@ std::map<std::string, std::string> HTTPServer::mimeTypes;
 HTTPServer* HTTPServer::getInstance(int port) {
 //	tthread::lock_guard<tthread::recursive_mutex> lock(_instanceMutex);
 	if (_instance == NULL) {
-
+#ifdef _WIN32
+		WSADATA wsaData;
+		WSAStartup(MAKEWORD(2, 2), &wsaData);
+#endif
 		// this is but a tiny list, supply a content-type <header> yourself
 		mimeTypes["txt"] = "text/plain";
 		mimeTypes["c"] = "text/plain";
@@ -109,18 +112,15 @@ std::string HTTPServer::mimeTypeForExtension(const std::string& ext) {
 	return "";
 }
 
+/**
+ * This callback is registered for all HTTP requests
+ */
 void HTTPServer::httpRecvReqCallback(struct evhttp_request *req, void *callbackData) {
-//  std::cout << (uintptr_t)req << ": Replying" << std::endl;
-//  evhttp_send_error(req, 404, NULL);
-//  return;
-
 	std::stringstream raw;
 
 	evhttp_request_own(req);
 	Request request;
 	request.curlReq = req;
-
-
 
 	switch (evhttp_request_get_command(req)) {
 	case EVHTTP_REQ_GET:
@@ -167,7 +167,7 @@ void HTTPServer::httpRecvReqCallback(struct evhttp_request *req, void *callbackD
 	const char* query = evhttp_uri_get_query(evhttp_request_get_evhttp_uri(req));
 	if (query)
 		raw << "?" << std::string(query);
-	
+
 	raw << " HTTP/" << request.data.compound["httpMajor"].atom << "." << request.data.compound["httpMinor"].atom;
 	raw << std::endl;
 
@@ -237,40 +237,45 @@ void HTTPServer::httpRecvReqCallback(struct evhttp_request *req, void *callbackD
 
 	request.raw = raw.str();
 
-	if (callbackData == NULL) {
+	// try with the handler registered for path first
+	bool answered = false;
+	if (callbackData != NULL)
+		answered = ((HTTPServlet*)callbackData)->httpRecvRequest(request);
+
+	if (!answered)
 		HTTPServer::getInstance()->processByMatchingServlet(request);
-	} else {
-		((HTTPServlet*)callbackData)->httpRecvRequest(request);
-	}
 }
 
+
 void HTTPServer::processByMatchingServlet(const Request& request) {
+	tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
+
 	servlet_iter_t servletIter = _servlets.begin();
 
 	std::string actualPath = request.data.compound.at("path").atom;
-	HTTPServlet* bestMatch = NULL;
-	std::string bestPath;
+	std::map<std::string, HTTPServlet*, comp_strsize_less> matches;
 
 	while(servletIter != _servlets.end()) {
 		// is the servlet path a prefix of the actual path?
 		std::string servletPath = "/" + servletIter->first;
 		if (boost::iequals(actualPath.substr(0, servletPath.length()), servletPath) && // actual path is a prefix
-		        boost::iequals(actualPath.substr(servletPath.length(), 1), "/")) {         // and next character is a '/'
-			if (bestPath.length() < servletPath.length()) {
-				// this servlet is a better match
-				bestPath = servletPath;
-				bestMatch = servletIter->second;
-			}
+		        boost::iequals(actualPath.substr(servletPath.length(), 1), "/")) {     // and next character is a '/'
+			matches.insert(std::make_pair(servletPath, servletIter->second));
 		}
 		servletIter++;
 	}
 
-	if (bestMatch != NULL) {
-		bestMatch->httpRecvRequest(request);
-	} else {
-		LOG(INFO) << "Got an HTTP request at " << actualPath << " but no servlet is registered there or at a prefix";
-		evhttp_send_error(request.curlReq, 404, NULL);
+	// process by best matching servlet until someone feels responsible
+	std::map<std::string, HTTPServlet*, comp_strsize_less>::iterator matchesIter = matches.begin();
+	while(matchesIter != matches.end()) {
+		if (matchesIter->second->httpRecvRequest(request)) {
+			return;
+		}
+		matchesIter++;
 	}
+
+	LOG(INFO) << "Got an HTTP request at " << actualPath << " but no servlet is registered there or at a prefix";
+	evhttp_send_error(request.curlReq, 404, NULL);
 }
 
 void HTTPServer::reply(const Reply& reply) {
@@ -281,7 +286,6 @@ void HTTPServer::reply(const Reply& reply) {
 }
 
 void HTTPServer::replyCallback(evutil_socket_t fd, short what, void *arg) {
-
 	Reply* reply = (Reply*)arg;
 
 	if (reply->content.size() > 0 && reply->headers.find("Content-Type") == reply->headers.end()) {

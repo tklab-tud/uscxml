@@ -16,7 +16,9 @@ class TestServlet : public HTTPServlet {
 public:
 	TestServlet(bool adaptPath) : _canAdaptPath(adaptPath) {}
 
-	void httpRecvRequest(const HTTPServer::Request& request) {};
+	bool httpRecvRequest(const HTTPServer::Request& request) {
+		return true;
+	};
 	bool canAdaptPath() {
 		return _canAdaptPath;
 	}
@@ -69,6 +71,9 @@ int main(int argc, char** argv) {
 		URL exeUrl(exeName);
 		exeUrl.toAbsolute(baseUrl);
 		assert(canResolve(exeUrl.asString()));
+		std::cout << exeUrl.asString() << std::endl;
+		exeUrl.download(true);
+		assert(exeUrl.getInContent().length() > 0);
 	}
 
 	{
@@ -102,6 +107,11 @@ int main(int argc, char** argv) {
 		HTTPServer::unregisterServlet(testServlet1);
 		HTTPServer::unregisterServlet(testServlet2);
 		HTTPServer::unregisterServlet(testServlet3);
+	}
+
+	{
+		Data data = Data::fromJSON("{\"shiftKey\":false,\"toElement\":{\"id\":\"\",\"localName\":\"body\"},\"clientY\":38,\"y\":38,\"x\":66,\"ctrlKey\":false,\"relatedTarget\":{\"id\":\"\",\"localName\":\"body\"},\"clientX\":66,\"screenY\":288,\"metaKey\":false,\"offsetX\":58,\"altKey\":false,\"offsetY\":30,\"fromElement\":{\"id\":\"foo\",\"localName\":\"div\"},\"screenX\":-1691,\"dataTransfer\":null,\"button\":0,\"pageY\":38,\"layerY\":38,\"pageX\":66,\"charCode\":0,\"which\":0,\"keyCode\":0,\"detail\":0,\"layerX\":66,\"returnValue\":true,\"timeStamp\":1371223991895,\"eventPhase\":2,\"target\":{\"id\":\"foo\",\"localName\":\"div\"},\"defaultPrevented\":false,\"srcElement\":{\"id\":\"foo\",\"localName\":\"div\"},\"type\":\"mouseout\",\"cancelable\":true,\"currentTarget\":{\"id\":\"foo\",\"localName\":\"div\"},\"bubbles\":true,\"cancelBubble\":false}");
+		std::cout << data << std::endl;
 	}
 
 	{

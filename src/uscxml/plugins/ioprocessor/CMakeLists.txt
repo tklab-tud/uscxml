@@ -1,3 +1,34 @@
+file(GLOB_RECURSE SAMPLE_IOPROCESSOR
+	sample/*.cpp
+	sample/*.h
+)
+source_group("IOProcessor\\sample" FILES ${SAMPLE_IOPROCESSOR})
+if (BUILD_AS_PLUGINS)
+	add_library(
+		ioprocessor_sample SHARED 
+		${SAMPLE_IOPROCESSOR})
+	target_link_libraries(ioprocessor_sample uscxml)
+	set_target_properties(ioprocessor_sample PROPERTIES FOLDER "Plugin IOProcessor")
+else()
+	list (APPEND USCXML_FILES ${SAMPLE_IOPROCESSOR})
+endif()
+
+file(GLOB_RECURSE COMET_IOPROCESSOR
+	comet/*.cpp
+	comet/*.h
+)
+source_group("IOProcessor\\comet" FILES ${COMET_IOPROCESSOR})
+if (BUILD_AS_PLUGINS)
+	add_library(
+		ioprocessor_comet SHARED 
+		${COMET_IOPROCESSOR})
+	target_link_libraries(ioprocessor_comet uscxml)
+	set_target_properties(ioprocessor_comet PROPERTIES FOLDER "Plugin IOProcessor")
+else()
+	list (APPEND USCXML_FILES ${COMET_IOPROCESSOR})
+endif()
+
+
 # LIBEVENT basichttp ioprocessor - this one is already required above
 
 file(GLOB_RECURSE BASICHTTP_IOPROCESSOR

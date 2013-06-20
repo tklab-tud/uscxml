@@ -1,0 +1,1 @@
+find_program(HAS_XDG_OPEN "xdg-open")

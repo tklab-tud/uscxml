@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 2.8.4)
 # specify USCXML version
 SET(USCXML_VERSION_MAJOR "0")
 SET(USCXML_VERSION_MINOR "0")
-SET(USCXML_VERSION_PATCH "4")
+SET(USCXML_VERSION_PATCH "5")
 SET(USCXML_VERSION ${USCXML_VERSION_MAJOR}.${USCXML_VERSION_MINOR}.${USCXML_VERSION_PATCH})
 
 # build type has to be set before the project definition
@@ -15,6 +15,12 @@ ELSE()
 ENDIF()
 
 project(uscxml)
+
+# CMake 2.8.11 reports AMD64 for Windows 64Bit, where earlier versions reported x86
+if (${CMAKE_SYSTEM_PROCESSOR} STREQUAL "AMD64")
+  set(CMAKE_SYSTEM_PROCESSOR "x86")
+endif()
+
 # use folders in the IDEs for the various targets (e.g. Library, Testing, Tools ..)
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
@@ -63,6 +69,7 @@ if(CMAKE_CROSSCOMPILING)
 	if (IOS)
 		SET(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY "ONLY")
 		SET(USCXML_PREBUILT_LIBRARY_PATH "${PROJECT_SOURCE_DIR}/contrib/prebuilt/ios/${CMAKE_SYSTEM_VERSION}")
+		SET(USCXML_PREBUILT_LIBRARY_PATH "${PROJECT_SOURCE_DIR}/contrib/prebuilt/ios/")
 	elseif (ANDROID)
 		SET(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY "ONLY") # we need both to find jni - we don't?
 		SET(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM "BOTH")
@@ -84,17 +91,26 @@ endif()
 
 SET(USCXML_LIBRARY_HOST_URL_PREFIX "http://uscxml.tk.informatik.tu-darmstadt.de/prebuilt" CACHE STRING "The root path of an URL where to look for prebuilt libraries.")
 
-if (WIN32 AND 64BIT_HOST)
-	SET(USCXML_LIBRARY_ARCHIVE_NAME uscxml-prebuilt-${CMAKE_SYSTEM_NAME_LC}-${CMAKE_SYSTEM_PROCESSOR}_64.tgz)
+if (CMAKE_CROSSCOMPILING)
+	if (IOS)
+		SET(USCXML_LIBRARY_ARCHIVE_NAME uscxml-prebuilt-ios.tgz)
+	elseif(ANDROID)
+		SET(USCXML_LIBRARY_ARCHIVE_NAME uscxml-prebuilt-android.tgz)
+	else()
+	endif()
 else()
-	SET(USCXML_LIBRARY_ARCHIVE_NAME uscxml-prebuilt-${CMAKE_SYSTEM_NAME_LC}-${CMAKE_SYSTEM_PROCESSOR}.tgz)
+	if (WIN32 AND 64BIT_HOST)
+		SET(USCXML_LIBRARY_ARCHIVE_NAME uscxml-prebuilt-${CMAKE_SYSTEM_NAME_LC}-${CMAKE_SYSTEM_PROCESSOR}_64.tgz)
+	else()
+		SET(USCXML_LIBRARY_ARCHIVE_NAME uscxml-prebuilt-${CMAKE_SYSTEM_NAME_LC}-${CMAKE_SYSTEM_PROCESSOR}.tgz)
+	endif()
 endif()
 
 if (NOT EXISTS ${USCXML_PREBUILT_LIBRARY_PATH})
 	message(STATUS "Downloading prebuilt libraries: ${USCXML_LIBRARY_HOST_URL_PREFIX}/${USCXML_VERSION}/${USCXML_LIBRARY_ARCHIVE_NAME}")
 	file(DOWNLOAD ${USCXML_LIBRARY_HOST_URL_PREFIX}/${USCXML_VERSION}/${USCXML_LIBRARY_ARCHIVE_NAME}
 		${PROJECT_SOURCE_DIR}/contrib/prebuilt/${USCXML_LIBRARY_ARCHIVE_NAME}
-		INACTIVITY_TIMEOUT 60 STATUS DOWNLOAD_STATUS  SHOW_PROGRESS)
+		INACTIVITY_TIMEOUT 60 STATUS DOWNLOAD_STATUS SHOW_PROGRESS)
 	list(GET DOWNLOAD_STATUS 0 STATUS_CODE)
 	list(GET DOWNLOAD_STATUS 1 STATUS_STRING)
 	if(STATUS_CODE EQUAL 0)
@@ -109,6 +125,12 @@ if (NOT EXISTS ${USCXML_PREBUILT_LIBRARY_PATH})
 	else()
 		message("Downloading prebuilt libraries failed with ${STATUS_STRING} - maybe this platform is not supported?")
 	endif()
+endif()
+
+if (WIN32 OR CMAKE_CROSSCOMPILING)
+	OPTION(BUILD_SHARED_LIBS "Build shared libraries" OFF)
+else()
+	OPTION(BUILD_SHARED_LIBS "Build shared libraries" ON)
 endif()
 
 #
@@ -130,8 +152,6 @@ else()
 	endif()
 endif()
 include_directories(${USCXML_PREBUILT_LIBRARY_PATH}/include)
-
-#message("CMAKE_FIND_ROOT_PATH: ${CMAKE_FIND_ROOT_PATH}")
 
 if (WIN32)
 	include_directories(${PROJECT_SOURCE_DIR}/contrib/src/getopt)
@@ -171,6 +191,7 @@ set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/contrib/cmake)
 include("${CMAKE_MODULE_PATH}/USCXMLMacros.cmake")
 include("${CMAKE_MODULE_PATH}/FunctionExists.cmake")
 include("${CMAKE_MODULE_PATH}/HeaderExists.cmake")
+include("${CMAKE_MODULE_PATH}/BinaryExists.cmake")
 
 # we need USCXML_CORE_LIBS here for -lgcov
 set(USCXML_CORE_LIBS)
@@ -181,7 +202,7 @@ set(USCXML_INCLUDE_DIRS)
 # some compiler flags
 #message("CMAKE_CXX_COMPILER_ID: ${CMAKE_CXX_COMPILER_ID}")
 
-if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+if(${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
 	execute_process(COMMAND ${CMAKE_C_COMPILER} -dumpversion OUTPUT_VARIABLE GCC_VERSION)
 
 	# best practices from scott meyers
@@ -229,7 +250,7 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 	else()
 		add_definitions(-rdynamic)
 	endif()
-elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+elseif (${CMAKE_CXX_COMPILER_ID} STREQUAL "MSVC")
 	add_definitions("-DZMQ_STATIC")
 	add_definitions("-DPCRE_STATIC")
 	add_definitions("-DUMUNDO_STATIC")
@@ -239,7 +260,7 @@ elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
 	
 	# SET(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} /NODEFAULTLIB")
 	# SET(CMAKE_EXE_LINKER_FLAGS_DEBUG "${CMAKE_EXE_LINKER_FLAGS_DEBUG} /NODEFAULTLIB:MSVCRTD.lib")
-elseif (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+elseif (${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-parentheses-equality")
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-string-plus-int")
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-non-literal-null-conversion")
@@ -253,6 +274,24 @@ else()
 endif()
 
 set(CMAKE_COMPILER_STRING "${CMAKE_CXX_COMPILER_ID} ${CMAKE_CXX_COMPILER_VERSION}")
+
+# see http://www.mail-archive.com/cmake@cmake.org/msg23240.html
+if (APPLE)
+#	add_definitions("-D_DARWIN_UNLIMITED_SELECT")
+	set(CMAKE_OSX_ARCHITECTURES "x86_64;i386")
+	# support leopard and above
+	set(CMAKE_OSX_DEPLOYMENT_TARGET 10.6)
+	foreach(FLAGS CMAKE_C_FLAGS CMAKE_CXX_FLAGS CMAKE_EXE_LINKER_FLAGS CMAKE_SHARED_LINKER_FLAGS CMAKE_MODULE_LINKER_FLAGS)
+			set(${FLAGS} "${${FLAGS}} -mmacosx-version-min=${CMAKE_OSX_DEPLOYMENT_TARGET}")
+  endforeach()
+endif()
+
+if (IOS)
+	set(CMAKE_OSX_DEPLOYMENT_TARGET 4.3)
+	foreach(FLAGS CMAKE_C_FLAGS CMAKE_CXX_FLAGS CMAKE_EXE_LINKER_FLAGS CMAKE_SHARED_LINKER_FLAGS CMAKE_MODULE_LINKER_FLAGS)
+			set(${FLAGS} "${${FLAGS}} -miphoneos-version-min=${CMAKE_OSX_DEPLOYMENT_TARGET}")
+  endforeach()
+endif()
 
 ############################################################
 # postfixes for all built targets depending on build type
@@ -280,7 +319,10 @@ else()
 	add_definitions("-DUSCXML_STATIC")
 endif()
 
-# prefer static libraries for linking
+# library suffix order
+if (IOS)
+	LIST(APPEND CMAKE_FIND_LIBRARY_SUFFIXES ".dylib")
+endif()
 set(CMAKE_FIND_LIBRARY_SUFFIXES_SHARED ${CMAKE_FIND_LIBRARY_SUFFIXES})
 set(CMAKE_FIND_LIBRARY_SUFFIXES_STATIC .lib .a ${CMAKE_FIND_LIBRARY_SUFFIXES})
 
@@ -330,12 +372,36 @@ include_directories(src)
 if (NOT WIN32)
 	# libxml2
 	set(CMAKE_FIND_FRAMEWORK "LAST")
+
+	# message("CMAKE_FIND_LIBRARY_SUFFIXES: ${CMAKE_FIND_LIBRARY_SUFFIXES}")
+	# message("CMAKE_SYSTEM_PREFIX_PATH: ${CMAKE_SYSTEM_PREFIX_PATH}")
+	# message("CMAKE_PREFIX_PATH: ${CMAKE_PREFIX_PATH}")
+	# message("CMAKE_SYSTEM_INCLUDE_PATH: ${CMAKE_SYSTEM_INCLUDE_PATH}")
+	# message("CMAKE_SYSTEM_LIBRARY_PATH: ${CMAKE_SYSTEM_LIBRARY_PATH}")
+	# message("CMAKE_SYSTEM_PROGRAM_PATH: ${CMAKE_SYSTEM_PROGRAM_PATH}")
+	# message("CMAKE_FIND_ROOT_PATH: ${CMAKE_FIND_ROOT_PATH}")
+
 	find_package(LibXml2 REQUIRED)
 	include_directories(${LIBXML2_INCLUDE_DIR})
 	list (APPEND USCXML_CORE_LIBS ${LIBXML2_LIBRARIES})
 	set(XML_LIBRARIES ${LIBXML2_LIBRARIES})
 	list (APPEND USCXML_CORE_LIBS "dl")
 	list (APPEND USCXML_CORE_LIBS "pthread")
+	if (APPLE)
+		find_library(APP_SERVICES_LIBRARY ApplicationServices)
+		find_library(COREFOUNDATION_LIBRARY CoreFoundation)
+		message(FATAL_ERROR "COREFOUNDATION_LIBRARY: ${COREFOUNDATION_LIBRARY}")
+		list (APPEND USCXML_CORE_LIBS ${APP_SERVICES_LIBRARY})
+		list (APPEND USCXML_CORE_LIBS ${COREFOUNDATION_LIBRARY})
+	endif()
+	if (IOS)
+		find_library(COREFOUNDATION_LIBRARY CoreFoundation)
+		list (APPEND USCXML_CORE_LIBS ${COREFOUNDATION_LIBRARY}/CoreFoundation)
+		find_library(SECURITY_LIBRARY Security)
+		list (APPEND USCXML_CORE_LIBS ${SECURITY_LIBRARY}/Security)
+		list (APPEND USCXML_CORE_LIBS "z")
+		
+	endif()
 elseif(WIN32)
 	list (APPEND XML_LIBRARIES "Ws2_32")
 	list (APPEND XML_LIBRARIES "Winmm")
@@ -619,7 +685,7 @@ message(STATUS "  Available language bindings .... : ${AVAILABLE_LANGUAGE_BINDIN
 if (BUILD_SHARED_LIBS AND BUILD_BINDINGS)
 	message(STATUS "")
 	message(STATUS "    Warning: Building language bindings BUILD_SHARED_LIBS=ON")
-	message(STATUS "             introduces runtime dependency to libumundocore")
+	message(STATUS "             introduces runtime dependency to libuscxml")
 	message(STATUS "")
 endif()
 

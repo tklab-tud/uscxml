@@ -32,45 +32,45 @@ namespace DOM {
 
 class V8DOMImplementation {
 public:
-    struct V8DOMImplementationPrivate {
-      V8DOM* dom;
-      Arabica::DOM::DOMImplementation<std::string>* nativeObj;
-    };
+	struct V8DOMImplementationPrivate {
+		V8DOM* dom;
+		Arabica::DOM::DOMImplementation<std::string>* nativeObj;
+	};
 
-    V8_DESTRUCTOR(V8DOMImplementationPrivate);
-    static bool hasInstance(v8::Handle<v8::Value>);
+	V8_DESTRUCTOR(V8DOMImplementationPrivate);
+	static bool hasInstance(v8::Handle<v8::Value>);
 
-    static v8::Handle<v8::Value> hasFeatureCallback(const v8::Arguments&);
-    static v8::Handle<v8::Value> createDocumentTypeCallback(const v8::Arguments&);
-    static v8::Handle<v8::Value> createDocumentCallback(const v8::Arguments&);
-
-
-    static v8::Persistent<v8::FunctionTemplate> Tmpl;
-    static v8::Handle<v8::FunctionTemplate> getTmpl() {
-        if (Tmpl.IsEmpty()) {
-            v8::Handle<v8::FunctionTemplate> tmpl = v8::FunctionTemplate::New();
-            tmpl->SetClassName(v8::String::New("DOMImplementation"));
-            tmpl->ReadOnlyPrototype();
-
-            v8::Local<v8::ObjectTemplate> instance = tmpl->InstanceTemplate();
-            v8::Local<v8::ObjectTemplate> prototype = tmpl->PrototypeTemplate();
-            (void)prototype; // surpress unused warnings
-            
-            instance->SetInternalFieldCount(1);
+	static v8::Handle<v8::Value> hasFeatureCallback(const v8::Arguments&);
+	static v8::Handle<v8::Value> createDocumentTypeCallback(const v8::Arguments&);
+	static v8::Handle<v8::Value> createDocumentCallback(const v8::Arguments&);
 
 
-            prototype->Set(v8::String::NewSymbol("hasFeature"),
-                           v8::FunctionTemplate::New(V8DOMImplementation::hasFeatureCallback, v8::Undefined()), static_cast<v8::PropertyAttribute>(v8::DontDelete));
-            prototype->Set(v8::String::NewSymbol("createDocumentType"),
-                           v8::FunctionTemplate::New(V8DOMImplementation::createDocumentTypeCallback, v8::Undefined()), static_cast<v8::PropertyAttribute>(v8::DontDelete));
-            prototype->Set(v8::String::NewSymbol("createDocument"),
-                           v8::FunctionTemplate::New(V8DOMImplementation::createDocumentCallback, v8::Undefined()), static_cast<v8::PropertyAttribute>(v8::DontDelete));
+	static v8::Persistent<v8::FunctionTemplate> Tmpl;
+	static v8::Handle<v8::FunctionTemplate> getTmpl() {
+		if (Tmpl.IsEmpty()) {
+			v8::Handle<v8::FunctionTemplate> tmpl = v8::FunctionTemplate::New();
+			tmpl->SetClassName(v8::String::New("DOMImplementation"));
+			tmpl->ReadOnlyPrototype();
+
+			v8::Local<v8::ObjectTemplate> instance = tmpl->InstanceTemplate();
+			v8::Local<v8::ObjectTemplate> prototype = tmpl->PrototypeTemplate();
+			(void)prototype; // surpress unused warnings
+
+			instance->SetInternalFieldCount(1);
 
 
-            Tmpl = v8::Persistent<v8::FunctionTemplate>::New(tmpl);
-        }
-        return Tmpl;
-    }
+			prototype->Set(v8::String::NewSymbol("hasFeature"),
+			               v8::FunctionTemplate::New(V8DOMImplementation::hasFeatureCallback, v8::Undefined()), static_cast<v8::PropertyAttribute>(v8::DontDelete));
+			prototype->Set(v8::String::NewSymbol("createDocumentType"),
+			               v8::FunctionTemplate::New(V8DOMImplementation::createDocumentTypeCallback, v8::Undefined()), static_cast<v8::PropertyAttribute>(v8::DontDelete));
+			prototype->Set(v8::String::NewSymbol("createDocument"),
+			               v8::FunctionTemplate::New(V8DOMImplementation::createDocumentCallback, v8::Undefined()), static_cast<v8::PropertyAttribute>(v8::DontDelete));
+
+
+			Tmpl = v8::Persistent<v8::FunctionTemplate>::New(tmpl);
+		}
+		return Tmpl;
+	}
 
 
 };

@@ -6,17 +6,21 @@
 #include "uscxml/Interpreter.h"
 #include <glog/logging.h>
 
+// see http://nadeausoftware.com/articles/2012/01/c_c_tip_how_use_compiler_predefined_macros_detect_operating_system
+
 #ifdef BUILD_AS_PLUGINS
 # include "uscxml/plugins/Plugins.h"
 #else
 
 # include "uscxml/plugins/ioprocessor/basichttp/BasicHTTPIOProcessor.h"
+# include "uscxml/plugins/ioprocessor/comet/CometIOProcessor.h"
 # include "uscxml/plugins/ioprocessor/scxml/SCXMLIOProcessor.h"
 # include "uscxml/plugins/invoker/scxml/USCXMLInvoker.h"
 # include "uscxml/plugins/invoker/http/HTTPServletInvoker.h"
 # include "uscxml/plugins/invoker/heartbeat/HeartbeatInvoker.h"
 # include "uscxml/plugins/invoker/filesystem/dirmon/DirMonInvoker.h"
 # include "uscxml/plugins/invoker/system/SystemInvoker.h"
+# include "uscxml/plugins/invoker/xhtml/XHTMLInvoker.h"
 
 #ifdef PROTOBUF_FOUND
 # include "uscxml/plugins/ioprocessor/modality/MMIHTTPIOProcessor.h"
@@ -148,21 +152,21 @@ Factory::Factory() {
 	}
 #endif
 
-#if defined V8_FOUND and defined BUILD_DM_ECMA
+#if (defined V8_FOUND && defined BUILD_DM_ECMA)
 	{
 		V8DataModel* dataModel = new V8DataModel();
 		registerDataModel(dataModel);
 	}
 #endif
 
-#if defined JSC_FOUND and defined BUILD_DM_ECMA
+#if (defined JSC_FOUND && defined BUILD_DM_ECMA)
 	{
 		JSCDataModel* dataModel = new JSCDataModel();
 		registerDataModel(dataModel);
 	}
 #endif
 
-#if defined SWI_FOUND and defined BUILD_DM_PROLOG
+#if (defined SWI_FOUND && defined BUILD_DM_PROLOG)
 	{
 		SWIDataModel* dataModel = new SWIDataModel();
 		registerDataModel(dataModel);
@@ -177,16 +181,20 @@ Factory::Factory() {
 #endif
 
 #ifdef PROTOBUF_FOUND
-  {
-   MMIHTTPIOProcessor* ioProcessor = new MMIHTTPIOProcessor();
-   registerIOProcessor(ioProcessor);
-  }
+	{
+		MMIHTTPIOProcessor* ioProcessor = new MMIHTTPIOProcessor();
+		registerIOProcessor(ioProcessor);
+	}
 #endif
 
 	// these are always available
 	{
 		NULLDataModel* dataModel = new NULLDataModel();
 		registerDataModel(dataModel);
+	}
+	{
+		XHTMLInvoker* invoker = new XHTMLInvoker();
+		registerInvoker(invoker);
 	}
 	{
 		USCXMLInvoker* invoker = new USCXMLInvoker();
@@ -232,7 +240,7 @@ Factory::Factory() {
 		PostponeElement* element = new PostponeElement();
 		registerExecutableContent(element);
 	}
-	
+
 #endif
 }
 
@@ -292,18 +300,18 @@ std::map<std::string, IOProcessorImpl*> Factory::getIOProcessors() {
 	if (_parentFactory) {
 		ioProcs = _parentFactory->getIOProcessors();
 	}
-	
+
 	std::map<std::string, IOProcessorImpl*>::iterator ioProcIter = _ioProcessors.begin();
 	while(ioProcIter != _ioProcessors.end()) {
 		ioProcs.insert(std::make_pair(ioProcIter->first, ioProcIter->second));
 		ioProcIter++;
 	}
-	
+
 	return ioProcs;
 }
 
 boost::shared_ptr<InvokerImpl> Factory::createInvoker(const std::string& type, InterpreterImpl* interpreter) {
-	
+
 	// do we have this type ourself?
 	if (_invokerAliases.find(type) != _invokerAliases.end()) {
 		std::string canonicalName = _invokerAliases[type];
@@ -318,12 +326,12 @@ boost::shared_ptr<InvokerImpl> Factory::createInvoker(const std::string& type, I
 	} else {
 		LOG(ERROR) << "No " << type << " Invoker known";
 	}
-	
+
 	return boost::shared_ptr<InvokerImpl>();
 }
 
 boost::shared_ptr<DataModelImpl> Factory::createDataModel(const std::string& type, InterpreterImpl* interpreter) {
-	
+
 	// do we have this type ourself?
 	if (_dataModelAliases.find(type) != _dataModelAliases.end()) {
 		std::string canonicalName = _dataModelAliases[type];
@@ -331,14 +339,14 @@ boost::shared_ptr<DataModelImpl> Factory::createDataModel(const std::string& typ
 			return _dataModels[canonicalName]->create(interpreter);
 		}
 	}
-	
+
 	// lookup in parent factory
 	if (_parentFactory) {
 		return _parentFactory->createDataModel(type, interpreter);
 	} else {
 		LOG(ERROR) << "No " << type << " Datamodel known";
 	}
-	
+
 	return boost::shared_ptr<DataModelImpl>();
 }
 
@@ -350,14 +358,14 @@ boost::shared_ptr<IOProcessorImpl> Factory::createIOProcessor(const std::string&
 			return _ioProcessors[canonicalName]->create(interpreter);
 		}
 	}
-	
+
 	// lookup in parent factory
 	if (_parentFactory) {
 		return _parentFactory->createIOProcessor(type, interpreter);
 	} else {
 		LOG(ERROR) << "No " << type << " Datamodel known";
 	}
-	
+
 	return boost::shared_ptr<IOProcessorImpl>();
 }
 

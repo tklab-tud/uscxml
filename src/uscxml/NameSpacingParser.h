@@ -5,21 +5,29 @@
 #include <SAX/helpers/CatchErrorHandler.hpp>
 
 namespace uscxml {
-	
-	class NameSpacingParser : public Arabica::SAX2DOM::Parser<std::string> {
-	public:
-		NameSpacingParser();
-		static NameSpacingParser* fromXML(const std::string& xml);
-		static NameSpacingParser* fromInputSource(Arabica::SAX::InputSource<std::string>& source);
 
-		void startPrefixMapping(const std::string& prefix, const std::string& uri);
+class NameSpacingParser : public Arabica::SAX2DOM::Parser<std::string> {
+public:
+	NameSpacingParser();
+	static NameSpacingParser fromXML(const std::string& xml);
+	static NameSpacingParser fromInputSource(Arabica::SAX::InputSource<std::string>& source);
 
-		Arabica::SAX::CatchErrorHandler<std::string> _errorHandler;
-		std::map<std::string, std::string> nameSpace;
+	void startPrefixMapping(const std::string& prefix, const std::string& uri);
 
-	private:
-		NameSpacingParser(const NameSpacingParser& other) {}
-	};
+	std::map<std::string, std::string> nameSpace;
+
+	virtual bool errorsReported() {
+		return _errorHandler.errorsReported();
+	}
+
+	virtual const std::string& errors() {
+		return _errorHandler.errors();
+	}
+
+private:
+	Arabica::SAX::CatchErrorHandler<std::string> _errorHandler;
+	NameSpacingParser(const NameSpacingParser& other) {}
+};
 
 }
 

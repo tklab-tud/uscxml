@@ -11,7 +11,7 @@ namespace uscxml {
 
 ::LifeCycleEvent MMIProtoBridge::toProto(const NewContextRequest& mmiEvent) {
 	INIT_PROTO_LIFE_CYCLE_EVENT(::LifeCycleEvent_LifeCycleEventType_NEW_CONTEXT_REQUEST);
-	return lifeCycleEvent;	
+	return lifeCycleEvent;
 }
 
 ::LifeCycleEvent MMIProtoBridge::toProto(const NewContextResponse& mmiEvent) {
@@ -32,13 +32,13 @@ namespace uscxml {
 ::LifeCycleEvent MMIProtoBridge::toProto(const StartRequest& mmiEvent) {
 	INIT_PROTO_LIFE_CYCLE_EVENT(::LifeCycleEvent_LifeCycleEventType_START_REQUEST);
 
-	::LifeCycleRequest* lifeCycleRequest = lifeCycleEvent.MutableExtension(::LifeCycleRequest::Request);	
+	::LifeCycleRequest* lifeCycleRequest = lifeCycleEvent.MutableExtension(::LifeCycleRequest::Request);
 	lifeCycleRequest->set_context(mmiEvent.context);
-	
+
 	::StartRequest* startRequest = lifeCycleRequest->MutableExtension(::StartRequest::Request);
 	startRequest->set_content(mmiEvent.content);
 	startRequest->set_contenturl(mmiEvent.contentURL.href);
-	
+
 	::StartRequestData* startRequestData = startRequest->MutableExtension(::StartRequestData::Request);
 	startRequestData->set_data(mmiEvent.data);
 

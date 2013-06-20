@@ -68,7 +68,7 @@ Data BasicHTTPIOProcessor::getDataModelVariables() {
 	return data;
 }
 
-void BasicHTTPIOProcessor::httpRecvRequest(const HTTPServer::Request& req) {
+bool BasicHTTPIOProcessor::httpRecvRequest(const HTTPServer::Request& req) {
 	Event reqEvent = req;
 	reqEvent.type = Event::EXTERNAL;
 	bool scxmlStructFound = false;
@@ -138,6 +138,7 @@ void BasicHTTPIOProcessor::httpRecvRequest(const HTTPServer::Request& req) {
 
 	returnEvent(reqEvent);
 	evhttp_send_reply(req.curlReq, 200, "OK", NULL);
+	return true;
 }
 
 void BasicHTTPIOProcessor::send(const SendRequest& req) {
@@ -189,7 +190,7 @@ void BasicHTTPIOProcessor::send(const SendRequest& req) {
 	}
 
 	// content
-	
+
 	if (req.content.size() > 0) {
 		kvps << kvpSeperator << evhttp_encode_uri("content") << "=" << evhttp_encode_uri(req.content.c_str());
 		kvpSeperator = "&";

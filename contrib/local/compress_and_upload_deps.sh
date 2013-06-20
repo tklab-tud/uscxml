@@ -9,8 +9,10 @@ CWD=`pwd`
 cd $DIR
 
 if [ "$USCXML_PREBUILT_HOST" == "" ]; then
-	USCXML_PREBUILT_HOST="admin@uscxml.tk.informatik.tu-darmstadt.de:/var/www/html/uscxml/prebuilt"
+	USCXML_PREBUILT_HOST="admin@uscxml.tk.informatik.tu-darmstadt.de"
 fi
+
+USCXML_PREBUILT_PATH="/var/www/html/uscxml/prebuilt"
 
 if [ "$1" == "" ] || [ "$2" == "" ]; then
 	echo "$ME <prebuilt dir> <version>"
@@ -26,13 +28,15 @@ VERSION=$2
 
 cd ../prebuilt
 
+ssh ${USCXML_PREBUILT_HOST} mkdir -p ${USCXML_PREBUILT_PATH}/${VERSION}
+
 PLATFORMS=`find . -maxdepth 1 -type d -regex ./[^\.].*`
 for FILE in ${PLATFORMS}; do
   PLATFORM=`basename $FILE`
   if [ "$PLATFORM" != "include" ]; then
     echo $FILE
     tar cvzf uscxml-prebuilt-${PLATFORM}.tgz ${FILE}
-    scp uscxml-prebuilt-${PLATFORM}.tgz ${USCXML_PREBUILT_HOST}/${VERSION}
+    scp uscxml-prebuilt-${PLATFORM}.tgz ${USCXML_PREBUILT_HOST}:${USCXML_PREBUILT_PATH}/${VERSION}
     rm uscxml-prebuilt-${PLATFORM}.tgz
   fi
 done

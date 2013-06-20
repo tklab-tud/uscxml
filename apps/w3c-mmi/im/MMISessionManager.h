@@ -21,7 +21,6 @@ namespace uscxml {
 		
 		class CometMMISession : public MMISession {
 		public:
-			HTTPServer::Request _request;
 			std::deque<SendRequest> _outQueue;
 			HTTPServer::Request _longPollingReq;
 			std::string _token;
@@ -51,7 +50,7 @@ namespace uscxml {
 		void send(const std::string& name, const SendRequest& req);
 
 		/// HTTPServlet
-		void httpRecvRequest(const HTTPServer::Request& req);
+		bool httpRecvRequest(const HTTPServer::Request& req);
 		void setURL(const std::string& url) {
 			_url = url;
 		}
@@ -63,8 +62,9 @@ namespace uscxml {
 		
 	protected:
 		void received(const NewContextRequest& mmiEvent, const std::string& token = "");
-		void received(const NewContextResponse& mmiEvent);
+		void received(const NewContextResponse& mmiEvent, const std::string& token = "");
 		void received(const ExtensionNotification& mmiEvent);
+		void received(const DoneNotification& mmiEvent);
 
 		void setupHTMLClient(const HTTPServer::Request& req);
 		

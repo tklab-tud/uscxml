@@ -29,7 +29,7 @@ public:
 	virtual void invoke(const InvokeRequest& req);
 
 	// HTTPServlet
-	virtual void httpRecvRequest(const HTTPServer::Request& req);
+	virtual bool httpRecvRequest(const HTTPServer::Request& req);
 	virtual std::string getPath();
 	virtual void setURL(const std::string& url) {
 		_url = url;

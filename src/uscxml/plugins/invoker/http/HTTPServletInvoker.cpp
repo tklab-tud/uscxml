@@ -95,7 +95,7 @@ void HTTPServletInvoker::invoke(const InvokeRequest& req) {
 /**
  * Receive a request and deliver it to the interpreter
  */
-void HTTPServletInvoker::httpRecvRequest(const HTTPServer::Request& req) {
+bool HTTPServletInvoker::httpRecvRequest(const HTTPServer::Request& req) {
 	tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
 
 //  evhttp_request_own(req.curlReq);
@@ -108,7 +108,7 @@ void HTTPServletInvoker::httpRecvRequest(const HTTPServer::Request& req) {
 	event.data.compound["reqId"] = Data(toStr((uintptr_t)req.curlReq), Data::VERBATIM);
 
 	returnEvent(event);
-
+	return true;
 }
 
 std::string HTTPServletInvoker::getPath() {

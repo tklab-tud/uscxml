@@ -16,37 +16,37 @@
 #endif
 
 namespace uscxml {
-	
-	class MMIHTTPIOProcessor : public BasicHTTPIOProcessor {
-	public:
-		MMIHTTPIOProcessor();
-		virtual ~MMIHTTPIOProcessor();
-		virtual boost::shared_ptr<IOProcessorImpl> create(uscxml::InterpreterImpl* interpreter);
 
-		virtual std::set<std::string> getNames() {
-			std::set<std::string> names;
-			names.insert("mmihttp");
-			names.insert("http://www.w3.org/TR/mmi-arch/#HTTPTransport");
-			return names;
-		}
+class MMIHTTPIOProcessor : public BasicHTTPIOProcessor {
+public:
+	MMIHTTPIOProcessor();
+	virtual ~MMIHTTPIOProcessor();
+	virtual boost::shared_ptr<IOProcessorImpl> create(uscxml::InterpreterImpl* interpreter);
 
-		virtual void send(const SendRequest& req);
+	virtual std::set<std::string> getNames() {
+		std::set<std::string> names;
+		names.insert("mmihttp");
+		names.insert("http://www.w3.org/TR/mmi-arch/#HTTPTransport");
+		return names;
+	}
 
-		/// HTTPServlet
-		void httpRecvRequest(const HTTPServer::Request& req);
+	virtual void send(const SendRequest& req);
 
-		bool canAdaptPath() {
-			return false;
-		}
+	/// HTTPServlet
+	bool httpRecvRequest(const HTTPServer::Request& req);
 
-	protected:
-		std::string _url;
-		std::map<std::string, std::pair<URL, SendRequest> > _sendRequests;
-	};
+	bool canAdaptPath() {
+		return false;
+	}
 
-	#ifdef BUILD_AS_PLUGINS
-	PLUMA_INHERIT_PROVIDER(MMIHTTPIOProcessor, IOProcessorImpl);
-	#endif
+protected:
+	std::string _url;
+	std::map<std::string, std::pair<URL, SendRequest> > _sendRequests;
+};
+
+#ifdef BUILD_AS_PLUGINS
+PLUMA_INHERIT_PROVIDER(MMIHTTPIOProcessor, IOProcessorImpl);
+#endif
 
 }
 

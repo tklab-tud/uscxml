@@ -20,7 +20,7 @@ public:
 		Request() : curlReq(NULL) {}
 		std::string content;
 		struct evhttp_request* curlReq;
-		
+
 		operator bool() {
 			return curlReq != NULL;
 		}
@@ -50,6 +50,15 @@ public:
 	static void unregisterServlet(HTTPServlet* servlet);
 
 private:
+	struct comp_strsize_less {
+		bool operator()(std::string const& l, std::string const& r) const {
+			if (l.size() < r.size())
+				return false;
+
+			return l < r;
+		};
+	};
+
 	HTTPServer(unsigned short port);
 	~HTTPServer();
 
@@ -86,11 +95,11 @@ private:
 
 class HTTPServlet {
 public:
-	virtual void httpRecvRequest(const HTTPServer::Request& request) = 0;
+	virtual bool httpRecvRequest(const HTTPServer::Request& request) = 0;
+	virtual void setURL(const std::string& url) = 0; /// Called by the server with the actual URL
 	virtual bool canAdaptPath() {
 		return true;
 	}
-	virtual void setURL(const std::string& url) = 0; /// Called by the server with the actual URL
 };
 
 }

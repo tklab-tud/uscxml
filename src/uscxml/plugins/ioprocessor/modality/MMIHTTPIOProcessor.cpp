@@ -37,7 +37,7 @@ boost::shared_ptr<IOProcessorImpl> MMIHTTPIOProcessor::create(InterpreterImpl* i
 	return io;
 }
 
-void MMIHTTPIOProcessor::httpRecvRequest(const HTTPServer::Request& req) {
+bool MMIHTTPIOProcessor::httpRecvRequest(const HTTPServer::Request& req) {
 	Event reqEvent = req;
 	reqEvent.type = Event::EXTERNAL;
 	bool scxmlStructFound = false;
@@ -107,6 +107,7 @@ void MMIHTTPIOProcessor::httpRecvRequest(const HTTPServer::Request& req) {
 
 	returnEvent(reqEvent);
 	evhttp_send_reply(req.curlReq, 200, "OK", NULL);
+	return true;
 }
 
 void MMIHTTPIOProcessor::send(const SendRequest& req) {
@@ -158,7 +159,7 @@ void MMIHTTPIOProcessor::send(const SendRequest& req) {
 	}
 
 	// content
-	
+
 	if (req.content.size() > 0) {
 		kvps << kvpSeperator << evhttp_encode_uri("content") << "=" << evhttp_encode_uri(req.content.c_str());
 		kvpSeperator = "&";

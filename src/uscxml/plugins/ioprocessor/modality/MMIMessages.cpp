@@ -22,68 +22,71 @@ using namespace Arabica::DOM;
 
 std::string MMIEvent::nameSpace = "http://www.w3.org/2008/04/mmi-arch";
 
-	MMIEvent::Type MMIEvent::getType(Arabica::DOM::Node<std::string> node) {
-		if (!node)
-			return INVALID;
-		
-		if (boost::iequals(node.getLocalName(), "NEWCONTEXTREQUEST"))
-			return NEWCONTEXTREQUEST;
-		if (boost::iequals(node.getLocalName(), "NEWCONTEXTRESPONSE"))
-			return NEWCONTEXTRESPONSE;
-		if (boost::iequals(node.getLocalName(), "PREPAREREQUEST"))
-			return PREPAREREQUEST;
-		if (boost::iequals(node.getLocalName(), "PREPARERESPONSE"))
-			return PREPARERESPONSE;
-		if (boost::iequals(node.getLocalName(), "STARTREQUEST"))
-			return STARTREQUEST;
-		if (boost::iequals(node.getLocalName(), "STARTRESPONSE"))
-			return STARTRESPONSE;
-		if (boost::iequals(node.getLocalName(), "DONENOTIFICATION"))
-			return DONENOTIFICATION;
-		if (boost::iequals(node.getLocalName(), "CANCELREQUEST"))
-			return CANCELREQUEST;
-		if (boost::iequals(node.getLocalName(), "CANCELRESPONSE"))
-			return CANCELRESPONSE;
-		if (boost::iequals(node.getLocalName(), "PAUSEREQUEST"))
-			return PAUSEREQUEST;
-		if (boost::iequals(node.getLocalName(), "PAUSERESPONSE"))
-			return PAUSERESPONSE;
-		if (boost::iequals(node.getLocalName(), "RESUMEREQUEST"))
-			return RESUMEREQUEST;
-		if (boost::iequals(node.getLocalName(), "RESUMERESPONSE"))
-			return RESUMERESPONSE;
-		if (boost::iequals(node.getLocalName(), "EXTENSIONNOTIFICATION"))
-			return EXTENSIONNOTIFICATION;
-		if (boost::iequals(node.getLocalName(), "CLEARCONTEXTREQUEST"))
-			return CLEARCONTEXTREQUEST;
-		if (boost::iequals(node.getLocalName(), "CLEARCONTEXTRESPONSE"))
-			return CLEARCONTEXTRESPONSE;
-		if (boost::iequals(node.getLocalName(), "STATUSREQUEST"))
-			return STATUSREQUEST;
-		if (boost::iequals(node.getLocalName(), "STATUSRESPONSE"))
-			return STATUSRESPONSE;
+MMIEvent::Type MMIEvent::getType(Arabica::DOM::Node<std::string> node) {
+	if (!node)
 		return INVALID;
+
+	if (boost::iequals(node.getLocalName(), "NEWCONTEXTREQUEST"))
+		return NEWCONTEXTREQUEST;
+	if (boost::iequals(node.getLocalName(), "NEWCONTEXTRESPONSE"))
+		return NEWCONTEXTRESPONSE;
+	if (boost::iequals(node.getLocalName(), "PREPAREREQUEST"))
+		return PREPAREREQUEST;
+	if (boost::iequals(node.getLocalName(), "PREPARERESPONSE"))
+		return PREPARERESPONSE;
+	if (boost::iequals(node.getLocalName(), "STARTREQUEST"))
+		return STARTREQUEST;
+	if (boost::iequals(node.getLocalName(), "STARTRESPONSE"))
+		return STARTRESPONSE;
+	if (boost::iequals(node.getLocalName(), "DONENOTIFICATION"))
+		return DONENOTIFICATION;
+	if (boost::iequals(node.getLocalName(), "CANCELREQUEST"))
+		return CANCELREQUEST;
+	if (boost::iequals(node.getLocalName(), "CANCELRESPONSE"))
+		return CANCELRESPONSE;
+	if (boost::iequals(node.getLocalName(), "PAUSEREQUEST"))
+		return PAUSEREQUEST;
+	if (boost::iequals(node.getLocalName(), "PAUSERESPONSE"))
+		return PAUSERESPONSE;
+	if (boost::iequals(node.getLocalName(), "RESUMEREQUEST"))
+		return RESUMEREQUEST;
+	if (boost::iequals(node.getLocalName(), "RESUMERESPONSE"))
+		return RESUMERESPONSE;
+	if (boost::iequals(node.getLocalName(), "EXTENSIONNOTIFICATION"))
+		return EXTENSIONNOTIFICATION;
+	if (boost::iequals(node.getLocalName(), "CLEARCONTEXTREQUEST"))
+		return CLEARCONTEXTREQUEST;
+	if (boost::iequals(node.getLocalName(), "CLEARCONTEXTRESPONSE"))
+		return CLEARCONTEXTRESPONSE;
+	if (boost::iequals(node.getLocalName(), "STATUSREQUEST"))
+		return STATUSREQUEST;
+	if (boost::iequals(node.getLocalName(), "STATUSRESPONSE"))
+		return STATUSRESPONSE;
+	return INVALID;
+}
+
+Arabica::DOM::Node<std::string> MMIEvent::getEventNode(Arabica::DOM::Node<std::string> node) {
+	if (!node)
+		return node;
+
+	if (node.getNodeType() == Node_base::DOCUMENT_NODE)
+		node = Arabica::DOM::Document<std::string>(node).getDocumentElement();
+
+	// get the first element
+	while (node && node.getNodeType() != Node_base::ELEMENT_NODE) {
+		node = node.getNextSibling();
 	}
-	
-	Arabica::DOM::Node<std::string> MMIEvent::getEventNode(Arabica::DOM::Node<std::string> node) {
-		if (node.getNodeType() == Node_base::DOCUMENT_NODE)
-			node = Arabica::DOM::Document<std::string>(node).getDocumentElement();
-		
-		// get the first element
-		while (node && node.getNodeType() != Node_base::ELEMENT_NODE) {
+	// get the contained message
+	if (node && getType(node) == INVALID) {
+		node = node.getFirstChild();
+		while (node && node.getNodeType() != Node_base::ELEMENT_NODE && getType(node) == INVALID) {
 			node = node.getNextSibling();
 		}
-		// get the contained message
-		if (node && getType(node) == INVALID) {
-			node = node.getFirstChild();
-			while (node && node.getNodeType() != Node_base::ELEMENT_NODE && getType(node) == INVALID) {
-				node = node.getNextSibling();
-			}
-		}
-		return node;
 	}
+	return node;
+}
 
-	
+
 Arabica::DOM::Document<std::string> MMIEvent::toXML() const {
 	Arabica::DOM::DOMImplementation<std::string> domFactory = Arabica::SimpleDOM::DOMImplementation<std::string>::getDOMImplementation();
 	Document<std::string> doc = domFactory.createDocument(nameSpace, "", 0);
@@ -255,7 +258,7 @@ MMIEvent::operator Event() const {
 	}
 	return ev;
 }
-	
+
 ContextualizedRequest ContextualizedRequest::fromXML(Arabica::DOM::Node<std::string> node, InterpreterImpl* interpreter) {
 	ContextualizedRequest msg(MMIEvent::fromXML(node, interpreter));
 	while (node) {
@@ -273,8 +276,8 @@ ContextualizedRequest::operator Event() const {
 	// do we want to represent the context? It's the interpreters name already
 	return ev;
 }
-	
-	
+
+
 ContentRequest ContentRequest::fromXML(Arabica::DOM::Node<std::string> node, InterpreterImpl* interpreter) {
 	ContentRequest msg(ContextualizedRequest::fromXML(node, interpreter));
 	while (node) {
@@ -424,5 +427,5 @@ StatusRequest StatusRequest::fromXML(Arabica::DOM::Node<std::string> node, Inter
 	return msg;
 }
 
-	
+
 }

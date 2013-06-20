@@ -6,7 +6,7 @@
 #include "MMIMessages.h"
 
 namespace uscxml {
-	
+
 class MMIProtoBridge {
 public:
 	static ::LifeCycleEvent toProto(const NewContextRequest&);
