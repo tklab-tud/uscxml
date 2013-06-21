@@ -1,7 +1,5 @@
-# JavaScriptCore ecmascript datamodel
-if (APPLE AND IOS AND OFF)
-	FIND_LIBRARY(JSC_LIBRARY JavaScriptCore)
-	set(JSC_FOUND ON)
+if (APPLE OR IOS)
+	# JavaScriptCore ecmascript datamodel
 	file(GLOB JSC_DATAMODEL
 		ecmascript/JavaScriptCore/*.cpp
 		ecmascript/JavaScriptCore/*.h
@@ -26,7 +24,36 @@ if (APPLE AND IOS AND OFF)
 		list (APPEND USCXML_FILES ${JSC_DOM})
 		list (APPEND USCXML_OPT_LIBS ${JSC_LIBRARY})
 	endif()
+else()
 
+# GOOGLE V8 ecmascript datamodel
+	# set(ENV{V8_SRC} ${CMAKE_SOURCE_DIR}/../v8)
+	if (V8_FOUND AND BUILD_DM_ECMA)
+		file(GLOB V8_DATAMODEL
+			ecmascript/v8/*.cpp
+			ecmascript/v8/*.h
+		)
+		source_group("Datamodel\\v8" FILES ${V8_DATAMODEL})
+		file(GLOB_RECURSE V8_DOM
+			ecmascript/v8/dom/*.cpp
+			ecmascript/v8/dom/*.h
+		)
+		source_group("Datamodel\\v8\\DOM" FILES ${V8_DOM})
+
+		if (BUILD_AS_PLUGINS)
+			add_library(
+				datamodel_v8 SHARED 
+				${V8_DATAMODEL}
+				${V8_DOM})
+			target_link_libraries(datamodel_v8 
+				uscxml
+				${V8_LIBRARY})
+			set_target_properties(datamodel_v8 PROPERTIES FOLDER "Plugin DataModel")
+		else()
+			list (APPEND USCXML_FILES ${V8_DATAMODEL})
+			list (APPEND USCXML_FILES ${V8_DOM})
+		endif()
+	endif()
 endif()
 
 
@@ -62,39 +89,6 @@ if (BUILD_DM_XPATH)
 		list (APPEND USCXML_FILES ${XPATH_DATAMODEL})
 	endif()
 endif()
-
-# GOOGLE V8 ecmascript datamodel
-
-#if (NOT APPLE OR IOS)
-	# set(ENV{V8_SRC} ${CMAKE_SOURCE_DIR}/../v8)
-	if (V8_FOUND AND BUILD_DM_ECMA)
-		file(GLOB V8_DATAMODEL
-			ecmascript/v8/*.cpp
-			ecmascript/v8/*.h
-		)
-		source_group("Datamodel\\v8" FILES ${V8_DATAMODEL})
-		file(GLOB_RECURSE V8_DOM
-			ecmascript/v8/dom/*.cpp
-			ecmascript/v8/dom/*.h
-		)
-		source_group("Datamodel\\v8\\DOM" FILES ${V8_DOM})
-
-		if (BUILD_AS_PLUGINS)
-			add_library(
-				datamodel_v8 SHARED 
-				${V8_DATAMODEL}
-				${V8_DOM})
-			target_link_libraries(datamodel_v8 
-				uscxml
-				${V8_LIBRARY})
-			set_target_properties(datamodel_v8 PROPERTIES FOLDER "Plugin DataModel")
-		else()
-			list (APPEND USCXML_FILES ${V8_DATAMODEL})
-			list (APPEND USCXML_FILES ${V8_DOM})
-		endif()
-	endif()
-#endif()
-
 
 # SWI PROLOG datamodel
 

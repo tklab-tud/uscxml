@@ -16,17 +16,30 @@ JSStaticFunction JSCNodeSet::staticFunctions[] = {
 	{ 0, 0, 0 }
 };
 
-JSValueRef JSCNodeSet::sizeAttrGetter(JSContextRef ctx, JSObjectRef thisObj, JSStringRef propertyName, JSValueRef* exception) {
-	struct JSCNodeSetPrivate* privData = static_cast<JSCNodeSet::JSCNodeSetPrivate* >(JSObjectGetPrivate(thisObj));
+JSValueRef JSCNodeSet::sizeAttrGetter(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef *exception) {
+	struct JSCNodeSetPrivate* privData = (struct JSCNodeSetPrivate*)JSObjectGetPrivate(object);
 
-	return JSValueMakeNumber(ctx, privData->arabicaThis->size());
+	return JSValueMakeNumber(ctx, privData->nativeObj->size());
 }
 
-JSValueRef JSCNodeSet::emptyAttrGetter(JSContextRef ctx, JSObjectRef thisObj, JSStringRef propertyName, JSValueRef* exception) {
-	struct JSCNodeSetPrivate* privData = static_cast<JSCNodeSet::JSCNodeSetPrivate* >(JSObjectGetPrivate(thisObj));
 
-	return JSValueMakeBoolean(ctx, privData->arabicaThis->empty());
+JSValueRef JSCNodeSet::emptyAttrGetter(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef *exception) {
+	struct JSCNodeSetPrivate* privData = (struct JSCNodeSetPrivate*)JSObjectGetPrivate(object);
+
+	return JSValueMakeNumber(ctx, privData->nativeObj->empty());
 }
+
+JSValueRef JSCNodeSet::toDocumentOrderCallback(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObj, size_t argumentCount, const JSValueRef* arguments, JSValueRef* exception) {
+
+	struct JSCNodeSetPrivate* privData = (struct JSCNodeSetPrivate*)JSObjectGetPrivate(thisObj);
+
+
+	privData->nativeObj->to_document_order();
+
+	JSValueRef jscRetVal = JSValueMakeUndefined(ctx);
+	return jscRetVal;
+}
+
 
 }
 }

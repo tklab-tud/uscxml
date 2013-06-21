@@ -16,22 +16,32 @@ JSStaticFunction JSCProcessingInstruction::staticFunctions[] = {
 	{ 0, 0, 0 }
 };
 
-JSValueRef JSCProcessingInstruction::targetAttrGetter(JSContextRef ctx, JSObjectRef thisObj, JSStringRef propertyName, JSValueRef* exception) {
-	struct JSCProcessingInstructionPrivate* privData = static_cast<JSCProcessingInstruction::JSCProcessingInstructionPrivate* >(JSObjectGetPrivate(thisObj));
-	JSStringRef retString = JSStringCreateWithUTF8CString(privData->arabicaThis->getTarget().c_str());
-	JSValueRef retObj = JSValueMakeString(ctx, retString);
-	JSStringRelease(retString);
-	return retObj;
-
+JSValueRef JSCProcessingInstruction::targetAttrGetter(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef *exception) {
+	struct JSCProcessingInstructionPrivate* privData = (struct JSCProcessingInstructionPrivate*)JSObjectGetPrivate(object);
+	JSStringRef stringRef = JSStringCreateWithUTF8CString(privData->nativeObj->getTarget().c_str());
+	return JSValueMakeString(ctx, stringRef);
 }
 
-JSValueRef JSCProcessingInstruction::dataAttrGetter(JSContextRef ctx, JSObjectRef thisObj, JSStringRef propertyName, JSValueRef* exception) {
-	struct JSCProcessingInstructionPrivate* privData = static_cast<JSCProcessingInstruction::JSCProcessingInstructionPrivate* >(JSObjectGetPrivate(thisObj));
-	JSStringRef retString = JSStringCreateWithUTF8CString(privData->arabicaThis->getData().c_str());
-	JSValueRef retObj = JSValueMakeString(ctx, retString);
-	JSStringRelease(retString);
-	return retObj;
 
+JSValueRef JSCProcessingInstruction::dataAttrGetter(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef *exception) {
+	struct JSCProcessingInstructionPrivate* privData = (struct JSCProcessingInstructionPrivate*)JSObjectGetPrivate(object);
+	JSStringRef stringRef = JSStringCreateWithUTF8CString(privData->nativeObj->getData().c_str());
+	return JSValueMakeString(ctx, stringRef);
+}
+
+
+bool JSCProcessingInstruction::dataAttrSetter(JSContextRef ctx, JSObjectRef thisObj, JSStringRef propertyName, JSValueRef value, JSValueRef* exception) {
+	struct JSCProcessingInstructionPrivate* privData = (struct JSCProcessingInstructionPrivate*)JSObjectGetPrivate(thisObj);
+
+	JSStringRef stringReflocalData = JSValueToStringCopy(ctx, value, exception);
+	size_t localDataMaxSize = JSStringGetMaximumUTF8CStringSize(stringReflocalData);
+	char* localDataBuffer = new char[localDataMaxSize];
+	JSStringGetUTF8CString(stringReflocalData, localDataBuffer, sizeof(localDataBuffer));
+	std::string localData(localDataBuffer, localDataMaxSize);
+	free(localDataBuffer);
+
+	privData->nativeObj->setData(localData);
+	return true;
 }
 
 }

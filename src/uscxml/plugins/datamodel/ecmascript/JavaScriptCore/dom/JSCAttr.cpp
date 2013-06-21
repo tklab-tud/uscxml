@@ -19,42 +19,57 @@ JSStaticFunction JSCAttr::staticFunctions[] = {
 	{ 0, 0, 0 }
 };
 
-JSValueRef JSCAttr::nameAttrGetter(JSContextRef ctx, JSObjectRef thisObj, JSStringRef propertyName, JSValueRef* exception) {
-	struct JSCAttrPrivate* privData = static_cast<JSCAttr::JSCAttrPrivate* >(JSObjectGetPrivate(thisObj));
-	JSStringRef retString = JSStringCreateWithUTF8CString(privData->arabicaThis->getName().c_str());
-	JSValueRef retObj = JSValueMakeString(ctx, retString);
-	JSStringRelease(retString);
-	return retObj;
-
+JSValueRef JSCAttr::nameAttrGetter(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef *exception) {
+	struct JSCAttrPrivate* privData = (struct JSCAttrPrivate*)JSObjectGetPrivate(object);
+	JSStringRef stringRef = JSStringCreateWithUTF8CString(privData->nativeObj->getName().c_str());
+	return JSValueMakeString(ctx, stringRef);
 }
 
-JSValueRef JSCAttr::specifiedAttrGetter(JSContextRef ctx, JSObjectRef thisObj, JSStringRef propertyName, JSValueRef* exception) {
-	struct JSCAttrPrivate* privData = static_cast<JSCAttr::JSCAttrPrivate* >(JSObjectGetPrivate(thisObj));
 
-	return JSValueMakeBoolean(ctx, privData->arabicaThis->getSpecified());
+JSValueRef JSCAttr::specifiedAttrGetter(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef *exception) {
+	struct JSCAttrPrivate* privData = (struct JSCAttrPrivate*)JSObjectGetPrivate(object);
+
+	return JSValueMakeNumber(ctx, privData->nativeObj->getSpecified());
 }
 
-JSValueRef JSCAttr::valueAttrGetter(JSContextRef ctx, JSObjectRef thisObj, JSStringRef propertyName, JSValueRef* exception) {
-	struct JSCAttrPrivate* privData = static_cast<JSCAttr::JSCAttrPrivate* >(JSObjectGetPrivate(thisObj));
-	JSStringRef retString = JSStringCreateWithUTF8CString(privData->arabicaThis->getValue().c_str());
-	JSValueRef retObj = JSValueMakeString(ctx, retString);
-	JSStringRelease(retString);
-	return retObj;
 
+JSValueRef JSCAttr::valueAttrGetter(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef *exception) {
+	struct JSCAttrPrivate* privData = (struct JSCAttrPrivate*)JSObjectGetPrivate(object);
+	JSStringRef stringRef = JSStringCreateWithUTF8CString(privData->nativeObj->getValue().c_str());
+	return JSValueMakeString(ctx, stringRef);
 }
 
-JSValueRef JSCAttr::ownerElementAttrGetter(JSContextRef ctx, JSObjectRef thisObj, JSStringRef propertyName, JSValueRef* exception) {
-	struct JSCAttrPrivate* privData = static_cast<JSCAttr::JSCAttrPrivate* >(JSObjectGetPrivate(thisObj));
-	Arabica::DOM::Element<std::string>* arbaicaRet = new Arabica::DOM::Element<std::string>(privData->arabicaThis->getOwnerElement());
+
+bool JSCAttr::valueAttrSetter(JSContextRef ctx, JSObjectRef thisObj, JSStringRef propertyName, JSValueRef value, JSValueRef* exception) {
+	struct JSCAttrPrivate* privData = (struct JSCAttrPrivate*)JSObjectGetPrivate(thisObj);
+
+	JSStringRef stringReflocalValue = JSValueToStringCopy(ctx, value, exception);
+	size_t localValueMaxSize = JSStringGetMaximumUTF8CStringSize(stringReflocalValue);
+	char* localValueBuffer = new char[localValueMaxSize];
+	JSStringGetUTF8CString(stringReflocalValue, localValueBuffer, sizeof(localValueBuffer));
+	std::string localValue(localValueBuffer, localValueMaxSize);
+	free(localValueBuffer);
+
+	privData->nativeObj->setValue(localValue);
+	return true;
+}
+
+JSValueRef JSCAttr::ownerElementAttrGetter(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef *exception) {
+	struct JSCAttrPrivate* privData = (struct JSCAttrPrivate*)JSObjectGetPrivate(object);
+
+	if (!privData->nativeObj->getOwnerElement()) return JSValueMakeUndefined(ctx);
+	Arabica::DOM::Element<std::string>* arabicaRet = new Arabica::DOM::Element<std::string>(privData->nativeObj->getOwnerElement());
+
+	JSClassRef arbaicaRetClass = JSCElement::getTmpl();
 
 	struct JSCElement::JSCElementPrivate* retPrivData = new JSCElement::JSCElementPrivate();
 	retPrivData->dom = privData->dom;
-	retPrivData->arabicaThis = arbaicaRet;
+	retPrivData->nativeObj = arabicaRet;
 
-	JSObjectRef arbaicaRetObj = JSObjectMake(ctx, JSCElement::getTmpl(), retPrivData);
+	JSObjectRef arbaicaRetObj = JSObjectMake(ctx, arbaicaRetClass, arabicaRet);
 	return arbaicaRetObj;
-
 }
+
 
 }
 }

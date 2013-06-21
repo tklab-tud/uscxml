@@ -7,7 +7,7 @@
 #define JSC_DESTRUCTOR(type) \
 static void jsDestructor(JSObjectRef object) { \
 type* thing = static_cast<type*>(JSObjectGetPrivate(object)); \
-delete thing->arabicaThis; \
+delete thing->nativeObj; \
 delete thing; \
 }
 

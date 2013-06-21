@@ -21,67 +21,67 @@ JSStaticFunction JSCDocumentType::staticFunctions[] = {
 	{ 0, 0, 0 }
 };
 
-JSValueRef JSCDocumentType::nameAttrGetter(JSContextRef ctx, JSObjectRef thisObj, JSStringRef propertyName, JSValueRef* exception) {
-	struct JSCDocumentTypePrivate* privData = static_cast<JSCDocumentType::JSCDocumentTypePrivate* >(JSObjectGetPrivate(thisObj));
-	JSStringRef retString = JSStringCreateWithUTF8CString(privData->arabicaThis->getName().c_str());
-	JSValueRef retObj = JSValueMakeString(ctx, retString);
-	JSStringRelease(retString);
-	return retObj;
-
+JSValueRef JSCDocumentType::nameAttrGetter(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef *exception) {
+	struct JSCDocumentTypePrivate* privData = (struct JSCDocumentTypePrivate*)JSObjectGetPrivate(object);
+	JSStringRef stringRef = JSStringCreateWithUTF8CString(privData->nativeObj->getName().c_str());
+	return JSValueMakeString(ctx, stringRef);
 }
 
-JSValueRef JSCDocumentType::entitiesAttrGetter(JSContextRef ctx, JSObjectRef thisObj, JSStringRef propertyName, JSValueRef* exception) {
-	struct JSCDocumentTypePrivate* privData = static_cast<JSCDocumentType::JSCDocumentTypePrivate* >(JSObjectGetPrivate(thisObj));
-	Arabica::DOM::NamedNodeMap<std::string>* arbaicaRet = new Arabica::DOM::NamedNodeMap<std::string>(privData->arabicaThis->getEntities());
+
+JSValueRef JSCDocumentType::entitiesAttrGetter(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef *exception) {
+	struct JSCDocumentTypePrivate* privData = (struct JSCDocumentTypePrivate*)JSObjectGetPrivate(object);
+
+
+	Arabica::DOM::NamedNodeMap<std::string>* arabicaRet = new Arabica::DOM::NamedNodeMap<std::string>(privData->nativeObj->getEntities());
+
+	JSClassRef arbaicaRetClass = JSCNamedNodeMap::getTmpl();
 
 	struct JSCNamedNodeMap::JSCNamedNodeMapPrivate* retPrivData = new JSCNamedNodeMap::JSCNamedNodeMapPrivate();
 	retPrivData->dom = privData->dom;
-	retPrivData->arabicaThis = arbaicaRet;
+	retPrivData->nativeObj = arabicaRet;
 
-	JSObjectRef arbaicaRetObj = JSObjectMake(ctx, JSCNamedNodeMap::getTmpl(), retPrivData);
+	JSObjectRef arbaicaRetObj = JSObjectMake(ctx, arbaicaRetClass, arabicaRet);
 	return arbaicaRetObj;
-
 }
 
-JSValueRef JSCDocumentType::notationsAttrGetter(JSContextRef ctx, JSObjectRef thisObj, JSStringRef propertyName, JSValueRef* exception) {
-	struct JSCDocumentTypePrivate* privData = static_cast<JSCDocumentType::JSCDocumentTypePrivate* >(JSObjectGetPrivate(thisObj));
-	Arabica::DOM::NamedNodeMap<std::string>* arbaicaRet = new Arabica::DOM::NamedNodeMap<std::string>(privData->arabicaThis->getNotations());
+
+JSValueRef JSCDocumentType::notationsAttrGetter(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef *exception) {
+	struct JSCDocumentTypePrivate* privData = (struct JSCDocumentTypePrivate*)JSObjectGetPrivate(object);
+
+
+	Arabica::DOM::NamedNodeMap<std::string>* arabicaRet = new Arabica::DOM::NamedNodeMap<std::string>(privData->nativeObj->getNotations());
+
+	JSClassRef arbaicaRetClass = JSCNamedNodeMap::getTmpl();
 
 	struct JSCNamedNodeMap::JSCNamedNodeMapPrivate* retPrivData = new JSCNamedNodeMap::JSCNamedNodeMapPrivate();
 	retPrivData->dom = privData->dom;
-	retPrivData->arabicaThis = arbaicaRet;
+	retPrivData->nativeObj = arabicaRet;
 
-	JSObjectRef arbaicaRetObj = JSObjectMake(ctx, JSCNamedNodeMap::getTmpl(), retPrivData);
+	JSObjectRef arbaicaRetObj = JSObjectMake(ctx, arbaicaRetClass, arabicaRet);
 	return arbaicaRetObj;
-
 }
 
-JSValueRef JSCDocumentType::publicIdAttrGetter(JSContextRef ctx, JSObjectRef thisObj, JSStringRef propertyName, JSValueRef* exception) {
-	struct JSCDocumentTypePrivate* privData = static_cast<JSCDocumentType::JSCDocumentTypePrivate* >(JSObjectGetPrivate(thisObj));
-	JSStringRef retString = JSStringCreateWithUTF8CString(privData->arabicaThis->getPublicId().c_str());
-	JSValueRef retObj = JSValueMakeString(ctx, retString);
-	JSStringRelease(retString);
-	return retObj;
 
+JSValueRef JSCDocumentType::publicIdAttrGetter(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef *exception) {
+	struct JSCDocumentTypePrivate* privData = (struct JSCDocumentTypePrivate*)JSObjectGetPrivate(object);
+	JSStringRef stringRef = JSStringCreateWithUTF8CString(privData->nativeObj->getPublicId().c_str());
+	return JSValueMakeString(ctx, stringRef);
 }
 
-JSValueRef JSCDocumentType::systemIdAttrGetter(JSContextRef ctx, JSObjectRef thisObj, JSStringRef propertyName, JSValueRef* exception) {
-	struct JSCDocumentTypePrivate* privData = static_cast<JSCDocumentType::JSCDocumentTypePrivate* >(JSObjectGetPrivate(thisObj));
-	JSStringRef retString = JSStringCreateWithUTF8CString(privData->arabicaThis->getSystemId().c_str());
-	JSValueRef retObj = JSValueMakeString(ctx, retString);
-	JSStringRelease(retString);
-	return retObj;
 
+JSValueRef JSCDocumentType::systemIdAttrGetter(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef *exception) {
+	struct JSCDocumentTypePrivate* privData = (struct JSCDocumentTypePrivate*)JSObjectGetPrivate(object);
+	JSStringRef stringRef = JSStringCreateWithUTF8CString(privData->nativeObj->getSystemId().c_str());
+	return JSValueMakeString(ctx, stringRef);
 }
 
-JSValueRef JSCDocumentType::internalSubsetAttrGetter(JSContextRef ctx, JSObjectRef thisObj, JSStringRef propertyName, JSValueRef* exception) {
-	struct JSCDocumentTypePrivate* privData = static_cast<JSCDocumentType::JSCDocumentTypePrivate* >(JSObjectGetPrivate(thisObj));
-	JSStringRef retString = JSStringCreateWithUTF8CString(privData->arabicaThis->getInternalSubset().c_str());
-	JSValueRef retObj = JSValueMakeString(ctx, retString);
-	JSStringRelease(retString);
-	return retObj;
 
+JSValueRef JSCDocumentType::internalSubsetAttrGetter(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef *exception) {
+	struct JSCDocumentTypePrivate* privData = (struct JSCDocumentTypePrivate*)JSObjectGetPrivate(object);
+	JSStringRef stringRef = JSStringCreateWithUTF8CString(privData->nativeObj->getInternalSubset().c_str());
+	return JSValueMakeString(ctx, stringRef);
 }
+
 
 }
 }

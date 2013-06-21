@@ -18,33 +18,38 @@
     Boston, MA 02111-1307, USA.
 */
 
-#ifndef JSCAttr_h
-#define JSCAttr_h
+#ifndef JSCSCXMLEvent_h
+#define JSCSCXMLEvent_h
 
 #include <string>
 #include "DOM/Node.hpp"
-#include "JSCNode.h"
 #include <JavaScriptCore/JavaScriptCore.h>
 #include "uscxml/plugins/datamodel/ecmascript/JavaScriptCore/dom/JSCDOM.h"
 
 namespace Arabica {
 namespace DOM {
 
-class JSCAttr {
+class JSCSCXMLEvent {
 public:
-	struct JSCAttrPrivate {
+	struct JSCSCXMLEventPrivate {
 		JSCDOM* dom;
-		Arabica::DOM::Attr<std::string>* nativeObj;
+		uscxml::Event* nativeObj;
 	};
 
-	JSC_DESTRUCTOR(JSCAttrPrivate);
+	JSC_DESTRUCTOR(JSCSCXMLEventPrivate);
 
 
+	static JSValueRef typeCustomAttrGetter(JSContextRef ctx, JSObjectRef thisObj, JSStringRef propertyName, JSValueRef* exception);
 	static JSValueRef nameAttrGetter(JSContextRef ctx, JSObjectRef thisObj, JSStringRef propertyName, JSValueRef* exception);
-	static JSValueRef specifiedAttrGetter(JSContextRef ctx, JSObjectRef thisObj, JSStringRef propertyName, JSValueRef* exception);
-	static JSValueRef valueAttrGetter(JSContextRef ctx, JSObjectRef thisObj, JSStringRef propertyName, JSValueRef* exception);
-	static bool valueAttrSetter(JSContextRef ctx, JSObjectRef thisObj, JSStringRef propertyName, JSValueRef value, JSValueRef* exception);
-	static JSValueRef ownerElementAttrGetter(JSContextRef ctx, JSObjectRef thisObj, JSStringRef propertyName, JSValueRef* exception);
+	static JSValueRef originAttrGetter(JSContextRef ctx, JSObjectRef thisObj, JSStringRef propertyName, JSValueRef* exception);
+	static JSValueRef origintypeAttrGetter(JSContextRef ctx, JSObjectRef thisObj, JSStringRef propertyName, JSValueRef* exception);
+	static JSValueRef rawAttrGetter(JSContextRef ctx, JSObjectRef thisObj, JSStringRef propertyName, JSValueRef* exception);
+	static JSValueRef domAttrGetter(JSContextRef ctx, JSObjectRef thisObj, JSStringRef propertyName, JSValueRef* exception);
+	static JSValueRef sendidCustomAttrGetter(JSContextRef ctx, JSObjectRef thisObj, JSStringRef propertyName, JSValueRef* exception);
+	static JSValueRef invokeidAttrGetter(JSContextRef ctx, JSObjectRef thisObj, JSStringRef propertyName, JSValueRef* exception);
+	static JSValueRef INTERNALConstGetter(JSContextRef ctx, JSObjectRef thisObj, JSStringRef propertyName, JSValueRef* exception);
+	static JSValueRef EXTERNALConstGetter(JSContextRef ctx, JSObjectRef thisObj, JSStringRef propertyName, JSValueRef* exception);
+	static JSValueRef PLATFORMConstGetter(JSContextRef ctx, JSObjectRef thisObj, JSStringRef propertyName, JSValueRef* exception);
 
 
 	static JSStaticValue staticValues[];
@@ -70,4 +75,4 @@ public:
 }
 }
 
-#endif // JSCAttr_h
+#endif // JSCSCXMLEvent_h

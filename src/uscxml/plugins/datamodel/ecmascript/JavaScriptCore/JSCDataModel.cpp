@@ -23,7 +23,7 @@ bool connect(pluma::Host& host) {
 JSCDataModel::JSCDataModel() {
 }
 
-boost::shared_ptr<DataModelImpl> JSCDataModel::create(Interpreter* interpreter) {
+boost::shared_ptr<DataModelImpl> JSCDataModel::create(InterpreterImpl* interpreter) {
 	boost::shared_ptr<JSCDataModel> dm = boost::shared_ptr<JSCDataModel>(new JSCDataModel());
 
 	dm->_ctx = JSGlobalContextCreate(NULL);
@@ -34,13 +34,10 @@ boost::shared_ptr<DataModelImpl> JSCDataModel::create(Interpreter* interpreter) 
 	dom->xpath = new Arabica::XPath::XPath<std::string>();
 	dom->xpath->setNamespaceContext(interpreter->getNSContext());
 
-
-	dm->setName(interpreter->getName());
-	dm->setSessionId(interpreter->getSessionId());
 	dm->eval("_ioprocessors = {};");
 
 	Arabica::DOM::JSCDocument::JSCDocumentPrivate* privData = new Arabica::DOM::JSCDocument::JSCDocumentPrivate();
-	privData->arabicaThis = new Arabica::DOM::Document<std::string>(interpreter->getDocument());
+	privData->nativeObj = new Arabica::DOM::Document<std::string>(interpreter->getDocument());
 	privData->dom = dom;
 
 	JSObjectRef documentObject = JSObjectMake(dm->_ctx, Arabica::DOM::JSCDocument::getTmpl(), privData);
@@ -48,18 +45,6 @@ boost::shared_ptr<DataModelImpl> JSCDataModel::create(Interpreter* interpreter) 
 	JSObjectSetProperty(dm->_ctx, globalObject, JSStringCreateWithUTF8CString("document"), documentObject, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontDelete, NULL);
 
 	return dm;
-}
-
-void JSCDataModel::registerIOProcessor(const std::string& name, const IOProcessor& ioprocessor) {
-	assign("_ioprocessors['" + name + "']", ioprocessor.getDataModelVariables());
-}
-
-void JSCDataModel::setSessionId(const std::string& sessionId) {
-	_sessionId = sessionId;
-}
-
-void JSCDataModel::setName(const std::string& name) {
-	_name = name;
 }
 
 JSCDataModel::~JSCDataModel() {
@@ -70,9 +55,6 @@ void JSCDataModel::pushContext() {
 }
 
 void JSCDataModel::popContext() {
-}
-
-void JSCDataModel::initialize() {
 }
 
 void JSCDataModel::setEvent(const Event& event) {
@@ -207,14 +189,20 @@ JSValueRef JSCDataModel::evalAsValue(const std::string& expr) {
 	return result;
 }
 
-void JSCDataModel::assign(const std::string& location, const Data& data) {
-	std::stringstream ssJSON;
-	ssJSON << data;
-	assign(location, ssJSON.str());
+void JSCDataModel::assign(const Arabica::DOM::Element<std::string>& assignElem,
+                          const Arabica::DOM::Document<std::string>& doc,
+                          const std::string& content) {
 }
 
-void JSCDataModel::assign(const std::string& location, const std::string& expr) {
-	evalAsValue(location + " = " + expr);
+void JSCDataModel::assign(const std::string& location, const Data& data) {
+}
+
+void JSCDataModel::init(const Arabica::DOM::Element<std::string>& dataElem,
+                        const Arabica::DOM::Document<std::string>& doc,
+                        const std::string& content) {
+}
+
+void JSCDataModel::init(const std::string& location, const Data& data) {
 }
 
 void JSCDataModel::handleException(JSValueRef exception) {

@@ -1,5 +1,4 @@
 #include "JSCDocument.h"
-#include "JSCNamedNodeMap.h"
 #include "JSCNode.h"
 #include "JSCNodeList.h"
 
@@ -17,7 +16,7 @@ JSStaticValue JSCNode::staticValues[] = {
 	{ "lastChild", lastChildAttrGetter, 0, kJSPropertyAttributeDontDelete | kJSPropertyAttributeReadOnly },
 	{ "previousSibling", previousSiblingAttrGetter, 0, kJSPropertyAttributeDontDelete | kJSPropertyAttributeReadOnly },
 	{ "nextSibling", nextSiblingAttrGetter, 0, kJSPropertyAttributeDontDelete | kJSPropertyAttributeReadOnly },
-	{ "attributes", attributesAttrGetter, 0, kJSPropertyAttributeDontDelete | kJSPropertyAttributeReadOnly },
+	{ "attributes", attributesCustomAttrGetter, 0, kJSPropertyAttributeDontDelete | kJSPropertyAttributeReadOnly },
 	{ "ownerDocument", ownerDocumentAttrGetter, 0, kJSPropertyAttributeDontDelete | kJSPropertyAttributeReadOnly },
 	{ "namespaceURI", namespaceURIAttrGetter, 0, kJSPropertyAttributeDontDelete | kJSPropertyAttributeReadOnly },
 	{ "prefix", prefixAttrGetter, prefixAttrSetter, kJSPropertyAttributeDontDelete },
@@ -51,160 +50,397 @@ JSStaticFunction JSCNode::staticFunctions[] = {
 	{ 0, 0, 0 }
 };
 
-JSValueRef JSCNode::nodeNameAttrGetter(JSContextRef ctx, JSObjectRef thisObj, JSStringRef propertyName, JSValueRef* exception) {
-	struct JSCNodePrivate* privData = static_cast<JSCNode::JSCNodePrivate* >(JSObjectGetPrivate(thisObj));
-	JSStringRef retString = JSStringCreateWithUTF8CString(privData->arabicaThis->getNodeName().c_str());
-	JSValueRef retObj = JSValueMakeString(ctx, retString);
-	JSStringRelease(retString);
-	return retObj;
-
+JSValueRef JSCNode::nodeNameAttrGetter(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef *exception) {
+	struct JSCNodePrivate* privData = (struct JSCNodePrivate*)JSObjectGetPrivate(object);
+	JSStringRef stringRef = JSStringCreateWithUTF8CString(privData->nativeObj->getNodeName().c_str());
+	return JSValueMakeString(ctx, stringRef);
 }
 
-JSValueRef JSCNode::nodeValueAttrGetter(JSContextRef ctx, JSObjectRef thisObj, JSStringRef propertyName, JSValueRef* exception) {
-	struct JSCNodePrivate* privData = static_cast<JSCNode::JSCNodePrivate* >(JSObjectGetPrivate(thisObj));
-	JSStringRef retString = JSStringCreateWithUTF8CString(privData->arabicaThis->getNodeValue().c_str());
-	JSValueRef retObj = JSValueMakeString(ctx, retString);
-	JSStringRelease(retString);
-	return retObj;
 
+JSValueRef JSCNode::nodeValueAttrGetter(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef *exception) {
+	struct JSCNodePrivate* privData = (struct JSCNodePrivate*)JSObjectGetPrivate(object);
+	JSStringRef stringRef = JSStringCreateWithUTF8CString(privData->nativeObj->getNodeValue().c_str());
+	return JSValueMakeString(ctx, stringRef);
 }
 
-JSValueRef JSCNode::nodeTypeAttrGetter(JSContextRef ctx, JSObjectRef thisObj, JSStringRef propertyName, JSValueRef* exception) {
-	struct JSCNodePrivate* privData = static_cast<JSCNode::JSCNodePrivate* >(JSObjectGetPrivate(thisObj));
 
-	return JSValueMakeNumber(ctx, privData->arabicaThis->getNodeType());
+bool JSCNode::nodeValueAttrSetter(JSContextRef ctx, JSObjectRef thisObj, JSStringRef propertyName, JSValueRef value, JSValueRef* exception) {
+	struct JSCNodePrivate* privData = (struct JSCNodePrivate*)JSObjectGetPrivate(thisObj);
+
+	JSStringRef stringReflocalNodeValue = JSValueToStringCopy(ctx, value, exception);
+	size_t localNodeValueMaxSize = JSStringGetMaximumUTF8CStringSize(stringReflocalNodeValue);
+	char* localNodeValueBuffer = new char[localNodeValueMaxSize];
+	JSStringGetUTF8CString(stringReflocalNodeValue, localNodeValueBuffer, sizeof(localNodeValueBuffer));
+	std::string localNodeValue(localNodeValueBuffer, localNodeValueMaxSize);
+	free(localNodeValueBuffer);
+
+	privData->nativeObj->setNodeValue(localNodeValue);
+	return true;
 }
 
-JSValueRef JSCNode::parentNodeAttrGetter(JSContextRef ctx, JSObjectRef thisObj, JSStringRef propertyName, JSValueRef* exception) {
-	struct JSCNodePrivate* privData = static_cast<JSCNode::JSCNodePrivate* >(JSObjectGetPrivate(thisObj));
-	Arabica::DOM::Node<std::string>* arbaicaRet = new Arabica::DOM::Node<std::string>(privData->arabicaThis->getParentNode());
+JSValueRef JSCNode::nodeTypeAttrGetter(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef *exception) {
+	struct JSCNodePrivate* privData = (struct JSCNodePrivate*)JSObjectGetPrivate(object);
+
+	return JSValueMakeNumber(ctx, privData->nativeObj->getNodeType());
+}
+
+
+JSValueRef JSCNode::parentNodeAttrGetter(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef *exception) {
+	struct JSCNodePrivate* privData = (struct JSCNodePrivate*)JSObjectGetPrivate(object);
+
+	if (!privData->nativeObj->getParentNode()) return JSValueMakeUndefined(ctx);
+	Arabica::DOM::Node<std::string>* arabicaRet = new Arabica::DOM::Node<std::string>(privData->nativeObj->getParentNode());
+
+	JSClassRef arbaicaRetClass = JSCNode::getTmpl();
 
 	struct JSCNode::JSCNodePrivate* retPrivData = new JSCNode::JSCNodePrivate();
 	retPrivData->dom = privData->dom;
-	retPrivData->arabicaThis = arbaicaRet;
+	retPrivData->nativeObj = arabicaRet;
 
-	JSObjectRef arbaicaRetObj = JSObjectMake(ctx, JSCNode::getTmpl(), retPrivData);
+	JSObjectRef arbaicaRetObj = JSObjectMake(ctx, arbaicaRetClass, arabicaRet);
 	return arbaicaRetObj;
-
 }
 
-JSValueRef JSCNode::childNodesAttrGetter(JSContextRef ctx, JSObjectRef thisObj, JSStringRef propertyName, JSValueRef* exception) {
-	struct JSCNodePrivate* privData = static_cast<JSCNode::JSCNodePrivate* >(JSObjectGetPrivate(thisObj));
-	Arabica::DOM::NodeList<std::string>* arbaicaRet = new Arabica::DOM::NodeList<std::string>(privData->arabicaThis->getChildNodes());
+
+JSValueRef JSCNode::childNodesAttrGetter(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef *exception) {
+	struct JSCNodePrivate* privData = (struct JSCNodePrivate*)JSObjectGetPrivate(object);
+
+
+	Arabica::DOM::NodeList<std::string>* arabicaRet = new Arabica::DOM::NodeList<std::string>(privData->nativeObj->getChildNodes());
+
+	JSClassRef arbaicaRetClass = JSCNodeList::getTmpl();
 
 	struct JSCNodeList::JSCNodeListPrivate* retPrivData = new JSCNodeList::JSCNodeListPrivate();
 	retPrivData->dom = privData->dom;
-	retPrivData->arabicaThis = arbaicaRet;
+	retPrivData->nativeObj = arabicaRet;
 
-	JSObjectRef arbaicaRetObj = JSObjectMake(ctx, JSCNodeList::getTmpl(), retPrivData);
+	JSObjectRef arbaicaRetObj = JSObjectMake(ctx, arbaicaRetClass, arabicaRet);
 	return arbaicaRetObj;
-
 }
 
-JSValueRef JSCNode::firstChildAttrGetter(JSContextRef ctx, JSObjectRef thisObj, JSStringRef propertyName, JSValueRef* exception) {
-	struct JSCNodePrivate* privData = static_cast<JSCNode::JSCNodePrivate* >(JSObjectGetPrivate(thisObj));
-	Arabica::DOM::Node<std::string>* arbaicaRet = new Arabica::DOM::Node<std::string>(privData->arabicaThis->getFirstChild());
+
+JSValueRef JSCNode::firstChildAttrGetter(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef *exception) {
+	struct JSCNodePrivate* privData = (struct JSCNodePrivate*)JSObjectGetPrivate(object);
+
+	if (!privData->nativeObj->getFirstChild()) return JSValueMakeUndefined(ctx);
+	Arabica::DOM::Node<std::string>* arabicaRet = new Arabica::DOM::Node<std::string>(privData->nativeObj->getFirstChild());
+
+	JSClassRef arbaicaRetClass = JSCNode::getTmpl();
 
 	struct JSCNode::JSCNodePrivate* retPrivData = new JSCNode::JSCNodePrivate();
 	retPrivData->dom = privData->dom;
-	retPrivData->arabicaThis = arbaicaRet;
+	retPrivData->nativeObj = arabicaRet;
 
-	JSObjectRef arbaicaRetObj = JSObjectMake(ctx, JSCNode::getTmpl(), retPrivData);
+	JSObjectRef arbaicaRetObj = JSObjectMake(ctx, arbaicaRetClass, arabicaRet);
 	return arbaicaRetObj;
-
 }
 
-JSValueRef JSCNode::lastChildAttrGetter(JSContextRef ctx, JSObjectRef thisObj, JSStringRef propertyName, JSValueRef* exception) {
-	struct JSCNodePrivate* privData = static_cast<JSCNode::JSCNodePrivate* >(JSObjectGetPrivate(thisObj));
-	Arabica::DOM::Node<std::string>* arbaicaRet = new Arabica::DOM::Node<std::string>(privData->arabicaThis->getLastChild());
+
+JSValueRef JSCNode::lastChildAttrGetter(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef *exception) {
+	struct JSCNodePrivate* privData = (struct JSCNodePrivate*)JSObjectGetPrivate(object);
+
+	if (!privData->nativeObj->getLastChild()) return JSValueMakeUndefined(ctx);
+	Arabica::DOM::Node<std::string>* arabicaRet = new Arabica::DOM::Node<std::string>(privData->nativeObj->getLastChild());
+
+	JSClassRef arbaicaRetClass = JSCNode::getTmpl();
 
 	struct JSCNode::JSCNodePrivate* retPrivData = new JSCNode::JSCNodePrivate();
 	retPrivData->dom = privData->dom;
-	retPrivData->arabicaThis = arbaicaRet;
+	retPrivData->nativeObj = arabicaRet;
 
-	JSObjectRef arbaicaRetObj = JSObjectMake(ctx, JSCNode::getTmpl(), retPrivData);
+	JSObjectRef arbaicaRetObj = JSObjectMake(ctx, arbaicaRetClass, arabicaRet);
 	return arbaicaRetObj;
-
 }
 
-JSValueRef JSCNode::previousSiblingAttrGetter(JSContextRef ctx, JSObjectRef thisObj, JSStringRef propertyName, JSValueRef* exception) {
-	struct JSCNodePrivate* privData = static_cast<JSCNode::JSCNodePrivate* >(JSObjectGetPrivate(thisObj));
-	Arabica::DOM::Node<std::string>* arbaicaRet = new Arabica::DOM::Node<std::string>(privData->arabicaThis->getPreviousSibling());
+
+JSValueRef JSCNode::previousSiblingAttrGetter(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef *exception) {
+	struct JSCNodePrivate* privData = (struct JSCNodePrivate*)JSObjectGetPrivate(object);
+
+	if (!privData->nativeObj->getPreviousSibling()) return JSValueMakeUndefined(ctx);
+	Arabica::DOM::Node<std::string>* arabicaRet = new Arabica::DOM::Node<std::string>(privData->nativeObj->getPreviousSibling());
+
+	JSClassRef arbaicaRetClass = JSCNode::getTmpl();
 
 	struct JSCNode::JSCNodePrivate* retPrivData = new JSCNode::JSCNodePrivate();
 	retPrivData->dom = privData->dom;
-	retPrivData->arabicaThis = arbaicaRet;
+	retPrivData->nativeObj = arabicaRet;
 
-	JSObjectRef arbaicaRetObj = JSObjectMake(ctx, JSCNode::getTmpl(), retPrivData);
+	JSObjectRef arbaicaRetObj = JSObjectMake(ctx, arbaicaRetClass, arabicaRet);
 	return arbaicaRetObj;
-
 }
 
-JSValueRef JSCNode::nextSiblingAttrGetter(JSContextRef ctx, JSObjectRef thisObj, JSStringRef propertyName, JSValueRef* exception) {
-	struct JSCNodePrivate* privData = static_cast<JSCNode::JSCNodePrivate* >(JSObjectGetPrivate(thisObj));
-	Arabica::DOM::Node<std::string>* arbaicaRet = new Arabica::DOM::Node<std::string>(privData->arabicaThis->getNextSibling());
+
+JSValueRef JSCNode::nextSiblingAttrGetter(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef *exception) {
+	struct JSCNodePrivate* privData = (struct JSCNodePrivate*)JSObjectGetPrivate(object);
+
+	if (!privData->nativeObj->getNextSibling()) return JSValueMakeUndefined(ctx);
+	Arabica::DOM::Node<std::string>* arabicaRet = new Arabica::DOM::Node<std::string>(privData->nativeObj->getNextSibling());
+
+	JSClassRef arbaicaRetClass = JSCNode::getTmpl();
 
 	struct JSCNode::JSCNodePrivate* retPrivData = new JSCNode::JSCNodePrivate();
 	retPrivData->dom = privData->dom;
-	retPrivData->arabicaThis = arbaicaRet;
+	retPrivData->nativeObj = arabicaRet;
 
-	JSObjectRef arbaicaRetObj = JSObjectMake(ctx, JSCNode::getTmpl(), retPrivData);
+	JSObjectRef arbaicaRetObj = JSObjectMake(ctx, arbaicaRetClass, arabicaRet);
 	return arbaicaRetObj;
-
 }
 
-JSValueRef JSCNode::attributesAttrGetter(JSContextRef ctx, JSObjectRef thisObj, JSStringRef propertyName, JSValueRef* exception) {
-	struct JSCNodePrivate* privData = static_cast<JSCNode::JSCNodePrivate* >(JSObjectGetPrivate(thisObj));
-	Arabica::DOM::NamedNodeMap<std::string>* arbaicaRet = new Arabica::DOM::NamedNodeMap<std::string>(privData->arabicaThis->getAttributes());
 
-	struct JSCNamedNodeMap::JSCNamedNodeMapPrivate* retPrivData = new JSCNamedNodeMap::JSCNamedNodeMapPrivate();
-	retPrivData->dom = privData->dom;
-	retPrivData->arabicaThis = arbaicaRet;
+JSValueRef JSCNode::ownerDocumentAttrGetter(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef *exception) {
+	struct JSCNodePrivate* privData = (struct JSCNodePrivate*)JSObjectGetPrivate(object);
 
-	JSObjectRef arbaicaRetObj = JSObjectMake(ctx, JSCNamedNodeMap::getTmpl(), retPrivData);
-	return arbaicaRetObj;
+	if (!privData->nativeObj->getOwnerDocument()) return JSValueMakeUndefined(ctx);
+	Arabica::DOM::Document<std::string>* arabicaRet = new Arabica::DOM::Document<std::string>(privData->nativeObj->getOwnerDocument());
 
-}
-
-JSValueRef JSCNode::ownerDocumentAttrGetter(JSContextRef ctx, JSObjectRef thisObj, JSStringRef propertyName, JSValueRef* exception) {
-	struct JSCNodePrivate* privData = static_cast<JSCNode::JSCNodePrivate* >(JSObjectGetPrivate(thisObj));
-	Arabica::DOM::Document<std::string>* arbaicaRet = new Arabica::DOM::Document<std::string>(privData->arabicaThis->getOwnerDocument());
+	JSClassRef arbaicaRetClass = JSCDocument::getTmpl();
 
 	struct JSCDocument::JSCDocumentPrivate* retPrivData = new JSCDocument::JSCDocumentPrivate();
 	retPrivData->dom = privData->dom;
-	retPrivData->arabicaThis = arbaicaRet;
+	retPrivData->nativeObj = arabicaRet;
 
-	JSObjectRef arbaicaRetObj = JSObjectMake(ctx, JSCDocument::getTmpl(), retPrivData);
+	JSObjectRef arbaicaRetObj = JSObjectMake(ctx, arbaicaRetClass, arabicaRet);
 	return arbaicaRetObj;
-
 }
 
-JSValueRef JSCNode::namespaceURIAttrGetter(JSContextRef ctx, JSObjectRef thisObj, JSStringRef propertyName, JSValueRef* exception) {
-	struct JSCNodePrivate* privData = static_cast<JSCNode::JSCNodePrivate* >(JSObjectGetPrivate(thisObj));
-	JSStringRef retString = JSStringCreateWithUTF8CString(privData->arabicaThis->getNamespaceURI().c_str());
-	JSValueRef retObj = JSValueMakeString(ctx, retString);
-	JSStringRelease(retString);
+
+JSValueRef JSCNode::namespaceURIAttrGetter(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef *exception) {
+	struct JSCNodePrivate* privData = (struct JSCNodePrivate*)JSObjectGetPrivate(object);
+	JSStringRef stringRef = JSStringCreateWithUTF8CString(privData->nativeObj->getNamespaceURI().c_str());
+	return JSValueMakeString(ctx, stringRef);
+}
+
+
+JSValueRef JSCNode::prefixAttrGetter(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef *exception) {
+	struct JSCNodePrivate* privData = (struct JSCNodePrivate*)JSObjectGetPrivate(object);
+	JSStringRef stringRef = JSStringCreateWithUTF8CString(privData->nativeObj->getPrefix().c_str());
+	return JSValueMakeString(ctx, stringRef);
+}
+
+
+bool JSCNode::prefixAttrSetter(JSContextRef ctx, JSObjectRef thisObj, JSStringRef propertyName, JSValueRef value, JSValueRef* exception) {
+	struct JSCNodePrivate* privData = (struct JSCNodePrivate*)JSObjectGetPrivate(thisObj);
+
+	JSStringRef stringReflocalPrefix = JSValueToStringCopy(ctx, value, exception);
+	size_t localPrefixMaxSize = JSStringGetMaximumUTF8CStringSize(stringReflocalPrefix);
+	char* localPrefixBuffer = new char[localPrefixMaxSize];
+	JSStringGetUTF8CString(stringReflocalPrefix, localPrefixBuffer, sizeof(localPrefixBuffer));
+	std::string localPrefix(localPrefixBuffer, localPrefixMaxSize);
+	free(localPrefixBuffer);
+
+	privData->nativeObj->setPrefix(localPrefix);
+	return true;
+}
+
+JSValueRef JSCNode::localNameAttrGetter(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef *exception) {
+	struct JSCNodePrivate* privData = (struct JSCNodePrivate*)JSObjectGetPrivate(object);
+	JSStringRef stringRef = JSStringCreateWithUTF8CString(privData->nativeObj->getLocalName().c_str());
+	return JSValueMakeString(ctx, stringRef);
+}
+
+JSValueRef JSCNode::insertBeforeCallback(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObj, size_t argumentCount, const JSValueRef* arguments, JSValueRef* exception) {
+	if (argumentCount < 2) {
+		std::string errorMsg = "Wrong number of arguments in insertBefore";
+		JSStringRef string = JSStringCreateWithUTF8CString(errorMsg.c_str());
+		JSValueRef exceptionString =JSValueMakeString(ctx, string);
+		JSStringRelease(string);
+		*exception = JSValueToObject(ctx, exceptionString, NULL);
+		return NULL;
+	}
+
+	struct JSCNodePrivate* privData = (struct JSCNodePrivate*)JSObjectGetPrivate(thisObj);
+
+	Arabica::DOM::Node<std::string>* localNewChild = ((struct JSCNode::JSCNodePrivate*)JSObjectGetPrivate(thisObj))->nativeObj;
+	Arabica::DOM::Node<std::string>* localRefChild = ((struct JSCNode::JSCNodePrivate*)JSObjectGetPrivate(thisObj))->nativeObj;
+
+	Arabica::DOM::Node<std::string>* retVal = new Arabica::DOM::Node<std::string>(privData->nativeObj->insertBefore(*localNewChild, *localRefChild));
+	JSClassRef retClass = JSCNode::getTmpl();
+
+	struct JSCNode::JSCNodePrivate* retPrivData = new JSCNode::JSCNodePrivate();
+	retPrivData->dom = privData->dom;
+	retPrivData->nativeObj = retVal;
+
+	JSObjectRef retObj = JSObjectMake(ctx, retClass, retPrivData);
+
 	return retObj;
 
 }
 
-JSValueRef JSCNode::prefixAttrGetter(JSContextRef ctx, JSObjectRef thisObj, JSStringRef propertyName, JSValueRef* exception) {
-	struct JSCNodePrivate* privData = static_cast<JSCNode::JSCNodePrivate* >(JSObjectGetPrivate(thisObj));
-	JSStringRef retString = JSStringCreateWithUTF8CString(privData->arabicaThis->getPrefix().c_str());
-	JSValueRef retObj = JSValueMakeString(ctx, retString);
-	JSStringRelease(retString);
+JSValueRef JSCNode::replaceChildCallback(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObj, size_t argumentCount, const JSValueRef* arguments, JSValueRef* exception) {
+	if (argumentCount < 2) {
+		std::string errorMsg = "Wrong number of arguments in replaceChild";
+		JSStringRef string = JSStringCreateWithUTF8CString(errorMsg.c_str());
+		JSValueRef exceptionString =JSValueMakeString(ctx, string);
+		JSStringRelease(string);
+		*exception = JSValueToObject(ctx, exceptionString, NULL);
+		return NULL;
+	}
+
+	struct JSCNodePrivate* privData = (struct JSCNodePrivate*)JSObjectGetPrivate(thisObj);
+
+	Arabica::DOM::Node<std::string>* localNewChild = ((struct JSCNode::JSCNodePrivate*)JSObjectGetPrivate(thisObj))->nativeObj;
+	Arabica::DOM::Node<std::string>* localOldChild = ((struct JSCNode::JSCNodePrivate*)JSObjectGetPrivate(thisObj))->nativeObj;
+
+	Arabica::DOM::Node<std::string>* retVal = new Arabica::DOM::Node<std::string>(privData->nativeObj->replaceChild(*localNewChild, *localOldChild));
+	JSClassRef retClass = JSCNode::getTmpl();
+
+	struct JSCNode::JSCNodePrivate* retPrivData = new JSCNode::JSCNodePrivate();
+	retPrivData->dom = privData->dom;
+	retPrivData->nativeObj = retVal;
+
+	JSObjectRef retObj = JSObjectMake(ctx, retClass, retPrivData);
+
 	return retObj;
 
 }
 
-JSValueRef JSCNode::localNameAttrGetter(JSContextRef ctx, JSObjectRef thisObj, JSStringRef propertyName, JSValueRef* exception) {
-	struct JSCNodePrivate* privData = static_cast<JSCNode::JSCNodePrivate* >(JSObjectGetPrivate(thisObj));
-	JSStringRef retString = JSStringCreateWithUTF8CString(privData->arabicaThis->getLocalName().c_str());
-	JSValueRef retObj = JSValueMakeString(ctx, retString);
-	JSStringRelease(retString);
+JSValueRef JSCNode::removeChildCallback(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObj, size_t argumentCount, const JSValueRef* arguments, JSValueRef* exception) {
+	if (argumentCount < 1) {
+		std::string errorMsg = "Wrong number of arguments in removeChild";
+		JSStringRef string = JSStringCreateWithUTF8CString(errorMsg.c_str());
+		JSValueRef exceptionString =JSValueMakeString(ctx, string);
+		JSStringRelease(string);
+		*exception = JSValueToObject(ctx, exceptionString, NULL);
+		return NULL;
+	}
+
+	struct JSCNodePrivate* privData = (struct JSCNodePrivate*)JSObjectGetPrivate(thisObj);
+
+	Arabica::DOM::Node<std::string>* localOldChild = ((struct JSCNode::JSCNodePrivate*)JSObjectGetPrivate(thisObj))->nativeObj;
+
+	Arabica::DOM::Node<std::string>* retVal = new Arabica::DOM::Node<std::string>(privData->nativeObj->removeChild(*localOldChild));
+	JSClassRef retClass = JSCNode::getTmpl();
+
+	struct JSCNode::JSCNodePrivate* retPrivData = new JSCNode::JSCNodePrivate();
+	retPrivData->dom = privData->dom;
+	retPrivData->nativeObj = retVal;
+
+	JSObjectRef retObj = JSObjectMake(ctx, retClass, retPrivData);
+
 	return retObj;
 
 }
+
+JSValueRef JSCNode::appendChildCallback(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObj, size_t argumentCount, const JSValueRef* arguments, JSValueRef* exception) {
+	if (argumentCount < 1) {
+		std::string errorMsg = "Wrong number of arguments in appendChild";
+		JSStringRef string = JSStringCreateWithUTF8CString(errorMsg.c_str());
+		JSValueRef exceptionString =JSValueMakeString(ctx, string);
+		JSStringRelease(string);
+		*exception = JSValueToObject(ctx, exceptionString, NULL);
+		return NULL;
+	}
+
+	struct JSCNodePrivate* privData = (struct JSCNodePrivate*)JSObjectGetPrivate(thisObj);
+
+	Arabica::DOM::Node<std::string>* localNewChild = ((struct JSCNode::JSCNodePrivate*)JSObjectGetPrivate(thisObj))->nativeObj;
+
+	Arabica::DOM::Node<std::string>* retVal = new Arabica::DOM::Node<std::string>(privData->nativeObj->appendChild(*localNewChild));
+	JSClassRef retClass = JSCNode::getTmpl();
+
+	struct JSCNode::JSCNodePrivate* retPrivData = new JSCNode::JSCNodePrivate();
+	retPrivData->dom = privData->dom;
+	retPrivData->nativeObj = retVal;
+
+	JSObjectRef retObj = JSObjectMake(ctx, retClass, retPrivData);
+
+	return retObj;
+
+}
+
+JSValueRef JSCNode::hasChildNodesCallback(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObj, size_t argumentCount, const JSValueRef* arguments, JSValueRef* exception) {
+
+	struct JSCNodePrivate* privData = (struct JSCNodePrivate*)JSObjectGetPrivate(thisObj);
+
+
+	bool retVal = privData->nativeObj->hasChildNodes();
+
+	JSValueRef jscRetVal = JSValueMakeBoolean(ctx, retVal);
+	return jscRetVal;
+}
+
+JSValueRef JSCNode::cloneNodeCallback(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObj, size_t argumentCount, const JSValueRef* arguments, JSValueRef* exception) {
+	if (argumentCount < 1) {
+		std::string errorMsg = "Wrong number of arguments in cloneNode";
+		JSStringRef string = JSStringCreateWithUTF8CString(errorMsg.c_str());
+		JSValueRef exceptionString =JSValueMakeString(ctx, string);
+		JSStringRelease(string);
+		*exception = JSValueToObject(ctx, exceptionString, NULL);
+		return NULL;
+	}
+
+	struct JSCNodePrivate* privData = (struct JSCNodePrivate*)JSObjectGetPrivate(thisObj);
+
+	bool localDeep = JSValueToBoolean(ctx, arguments[0]);
+
+	Arabica::DOM::Node<std::string>* retVal = new Arabica::DOM::Node<std::string>(privData->nativeObj->cloneNode(localDeep));
+	JSClassRef retClass = JSCNode::getTmpl();
+
+	struct JSCNode::JSCNodePrivate* retPrivData = new JSCNode::JSCNodePrivate();
+	retPrivData->dom = privData->dom;
+	retPrivData->nativeObj = retVal;
+
+	JSObjectRef retObj = JSObjectMake(ctx, retClass, retPrivData);
+
+	return retObj;
+
+}
+
+JSValueRef JSCNode::normalizeCallback(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObj, size_t argumentCount, const JSValueRef* arguments, JSValueRef* exception) {
+
+	struct JSCNodePrivate* privData = (struct JSCNodePrivate*)JSObjectGetPrivate(thisObj);
+
+
+	privData->nativeObj->normalize();
+
+	JSValueRef jscRetVal = JSValueMakeUndefined(ctx);
+	return jscRetVal;
+}
+
+JSValueRef JSCNode::isSupportedCallback(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObj, size_t argumentCount, const JSValueRef* arguments, JSValueRef* exception) {
+	if (argumentCount < 2) {
+		std::string errorMsg = "Wrong number of arguments in isSupported";
+		JSStringRef string = JSStringCreateWithUTF8CString(errorMsg.c_str());
+		JSValueRef exceptionString =JSValueMakeString(ctx, string);
+		JSStringRelease(string);
+		*exception = JSValueToObject(ctx, exceptionString, NULL);
+		return NULL;
+	}
+
+	struct JSCNodePrivate* privData = (struct JSCNodePrivate*)JSObjectGetPrivate(thisObj);
+
+	JSStringRef stringReflocalFeature = JSValueToStringCopy(ctx, arguments[0], exception);
+	size_t localFeatureMaxSize = JSStringGetMaximumUTF8CStringSize(stringReflocalFeature);
+	char* localFeatureBuffer = new char[localFeatureMaxSize];
+	JSStringGetUTF8CString(stringReflocalFeature, localFeatureBuffer, sizeof(localFeatureBuffer));
+	std::string localFeature(localFeatureBuffer, localFeatureMaxSize);
+	free(localFeatureBuffer);
+
+	JSStringRef stringReflocalVersion = JSValueToStringCopy(ctx, arguments[1], exception);
+	size_t localVersionMaxSize = JSStringGetMaximumUTF8CStringSize(stringReflocalVersion);
+	char* localVersionBuffer = new char[localVersionMaxSize];
+	JSStringGetUTF8CString(stringReflocalVersion, localVersionBuffer, sizeof(localVersionBuffer));
+	std::string localVersion(localVersionBuffer, localVersionMaxSize);
+	free(localVersionBuffer);
+
+
+	bool retVal = privData->nativeObj->isSupported(localFeature, localVersion);
+
+	JSValueRef jscRetVal = JSValueMakeBoolean(ctx, retVal);
+	return jscRetVal;
+}
+
+JSValueRef JSCNode::hasAttributesCallback(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObj, size_t argumentCount, const JSValueRef* arguments, JSValueRef* exception) {
+
+	struct JSCNodePrivate* privData = (struct JSCNodePrivate*)JSObjectGetPrivate(thisObj);
+
+
+	bool retVal = privData->nativeObj->hasAttributes();
+
+	JSValueRef jscRetVal = JSValueMakeBoolean(ctx, retVal);
+	return jscRetVal;
+}
+
 
 }
 }

@@ -37,8 +37,6 @@ class InterpreterDraft7 : public InterpreterImpl {
 	        const Arabica::XPath::NodeSet<std::string>& statesToEnter,
 	        const Arabica::XPath::NodeSet<std::string>& statesForDefaultEntry);
 
-	void initializeData(const Arabica::DOM::Element<std::string>& data);
-
 };
 
 }

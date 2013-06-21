@@ -20,7 +20,7 @@ class JSCDataModel : public DataModelImpl {
 public:
 	JSCDataModel();
 	virtual ~JSCDataModel();
-	virtual boost::shared_ptr<DataModelImpl> create(Interpreter* interpreter);
+	virtual boost::shared_ptr<DataModelImpl> create(InterpreterImpl* interpreter);
 
 	virtual std::set<std::string> getNames() {
 		std::set<std::string> names;
@@ -28,35 +28,40 @@ public:
 		return names;
 	}
 
-	virtual void initialize();
-	virtual void setSessionId(const std::string& sessionId);
-	virtual void setName(const std::string& name);
-	virtual void setEvent(const Event& event);
-
-	virtual void registerIOProcessor(const std::string& name, const IOProcessor& ioprocessor);
-
 	virtual bool validate(const std::string& location, const std::string& schema);
+	virtual void setEvent(const Event& event);
+	virtual Data getStringAsData(const std::string& content);
 
+	// foreach
 	virtual uint32_t getLength(const std::string& expr);
+	virtual void setForeach(const std::string& item,
+	                        const std::string& array,
+	                        const std::string& index,
+	                        uint32_t iteration);
 	virtual void pushContext();
 	virtual void popContext();
 
 	virtual void eval(const std::string& expr);
-	virtual void assign(const std::string& location, const std::string& expr);
-	virtual void assign(const std::string& location, const Data& data);
-
-	virtual Data getStringAsData(const std::string& content);
-	virtual Data getValueAsData(const JSValueRef value);
-
 	virtual std::string evalAsString(const std::string& expr);
 	virtual bool evalAsBool(const std::string& expr);
-	virtual JSValueRef evalAsValue(const std::string& expr);
 
+	virtual bool isDeclared(const std::string& expr);
+
+	virtual void assign(const Arabica::DOM::Element<std::string>& assignElem,
+	                    const Arabica::DOM::Document<std::string>& doc,
+	                    const std::string& content);
+	virtual void assign(const std::string& location, const Data& data);
+
+	virtual void init(const Arabica::DOM::Element<std::string>& dataElem,
+	                  const Arabica::DOM::Document<std::string>& doc,
+	                  const std::string& content);
+	virtual void init(const std::string& location, const Data& data);
 
 protected:
-	void handleException(JSValueRef exception);
+	Data getValueAsData(const JSValueRef value);
+	JSValueRef evalAsValue(const std::string& expr);
 
-	Interpreter* _interpreter;
+	void handleException(JSValueRef exception);
 
 	std::string _sessionId;
 	std::string _name;

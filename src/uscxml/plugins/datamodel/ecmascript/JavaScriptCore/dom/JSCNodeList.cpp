@@ -1,3 +1,4 @@
+#include "JSCNode.h"
 #include "JSCNodeList.h"
 
 namespace Arabica {
@@ -15,11 +16,39 @@ JSStaticFunction JSCNodeList::staticFunctions[] = {
 	{ 0, 0, 0 }
 };
 
-JSValueRef JSCNodeList::lengthAttrGetter(JSContextRef ctx, JSObjectRef thisObj, JSStringRef propertyName, JSValueRef* exception) {
-	struct JSCNodeListPrivate* privData = static_cast<JSCNodeList::JSCNodeListPrivate* >(JSObjectGetPrivate(thisObj));
+JSValueRef JSCNodeList::lengthAttrGetter(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef *exception) {
+	struct JSCNodeListPrivate* privData = (struct JSCNodeListPrivate*)JSObjectGetPrivate(object);
 
-	return JSValueMakeNumber(ctx, privData->arabicaThis->getLength());
+	return JSValueMakeNumber(ctx, privData->nativeObj->getLength());
 }
+
+JSValueRef JSCNodeList::itemCallback(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObj, size_t argumentCount, const JSValueRef* arguments, JSValueRef* exception) {
+	if (argumentCount < 1) {
+		std::string errorMsg = "Wrong number of arguments in item";
+		JSStringRef string = JSStringCreateWithUTF8CString(errorMsg.c_str());
+		JSValueRef exceptionString =JSValueMakeString(ctx, string);
+		JSStringRelease(string);
+		*exception = JSValueToObject(ctx, exceptionString, NULL);
+		return NULL;
+	}
+
+	struct JSCNodeListPrivate* privData = (struct JSCNodeListPrivate*)JSObjectGetPrivate(thisObj);
+
+	unsigned long localIndex = (unsigned long)JSValueToNumber(ctx, arguments[0], exception);
+
+	Arabica::DOM::Node<std::string>* retVal = new Arabica::DOM::Node<std::string>(privData->nativeObj->item(localIndex));
+	JSClassRef retClass = JSCNode::getTmpl();
+
+	struct JSCNode::JSCNodePrivate* retPrivData = new JSCNode::JSCNodePrivate();
+	retPrivData->dom = privData->dom;
+	retPrivData->nativeObj = retVal;
+
+	JSObjectRef retObj = JSObjectMake(ctx, retClass, retPrivData);
+
+	return retObj;
+
+}
+
 
 }
 }
