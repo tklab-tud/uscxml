@@ -4,6 +4,7 @@
 namespace Arabica {
 namespace DOM {
 
+JSClassRef JSCNamedNodeMap::Tmpl;
 
 JSStaticValue JSCNamedNodeMap::staticValues[] = {
 	{ "length", lengthAttrGetter, 0, kJSPropertyAttributeDontDelete | kJSPropertyAttributeReadOnly },

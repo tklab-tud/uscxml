@@ -5,6 +5,7 @@
 namespace Arabica {
 namespace DOM {
 
+JSClassRef JSCNode::Tmpl;
 
 JSStaticValue JSCNode::staticValues[] = {
 	{ "nodeName", nodeNameAttrGetter, 0, kJSPropertyAttributeDontDelete | kJSPropertyAttributeReadOnly },
@@ -236,6 +237,54 @@ JSValueRef JSCNode::localNameAttrGetter(JSContextRef ctx, JSObjectRef object, JS
 	struct JSCNodePrivate* privData = (struct JSCNodePrivate*)JSObjectGetPrivate(object);
 	JSStringRef stringRef = JSStringCreateWithUTF8CString(privData->nativeObj->getLocalName().c_str());
 	return JSValueMakeString(ctx, stringRef);
+}
+
+JSValueRef JSCNode::ELEMENT_NODEConstGetter(JSContextRef ctx, JSObjectRef thisObj, JSStringRef propertyName, JSValueRef *exception) {
+	return JSValueMakeNumber(ctx, 1);
+}
+
+JSValueRef JSCNode::ATTRIBUTE_NODEConstGetter(JSContextRef ctx, JSObjectRef thisObj, JSStringRef propertyName, JSValueRef *exception) {
+	return JSValueMakeNumber(ctx, 2);
+}
+
+JSValueRef JSCNode::TEXT_NODEConstGetter(JSContextRef ctx, JSObjectRef thisObj, JSStringRef propertyName, JSValueRef *exception) {
+	return JSValueMakeNumber(ctx, 3);
+}
+
+JSValueRef JSCNode::CDATA_SECTION_NODEConstGetter(JSContextRef ctx, JSObjectRef thisObj, JSStringRef propertyName, JSValueRef *exception) {
+	return JSValueMakeNumber(ctx, 4);
+}
+
+JSValueRef JSCNode::ENTITY_REFERENCE_NODEConstGetter(JSContextRef ctx, JSObjectRef thisObj, JSStringRef propertyName, JSValueRef *exception) {
+	return JSValueMakeNumber(ctx, 5);
+}
+
+JSValueRef JSCNode::ENTITY_NODEConstGetter(JSContextRef ctx, JSObjectRef thisObj, JSStringRef propertyName, JSValueRef *exception) {
+	return JSValueMakeNumber(ctx, 6);
+}
+
+JSValueRef JSCNode::PROCESSING_INSTRUCTION_NODEConstGetter(JSContextRef ctx, JSObjectRef thisObj, JSStringRef propertyName, JSValueRef *exception) {
+	return JSValueMakeNumber(ctx, 7);
+}
+
+JSValueRef JSCNode::COMMENT_NODEConstGetter(JSContextRef ctx, JSObjectRef thisObj, JSStringRef propertyName, JSValueRef *exception) {
+	return JSValueMakeNumber(ctx, 8);
+}
+
+JSValueRef JSCNode::DOCUMENT_NODEConstGetter(JSContextRef ctx, JSObjectRef thisObj, JSStringRef propertyName, JSValueRef *exception) {
+	return JSValueMakeNumber(ctx, 9);
+}
+
+JSValueRef JSCNode::DOCUMENT_TYPE_NODEConstGetter(JSContextRef ctx, JSObjectRef thisObj, JSStringRef propertyName, JSValueRef *exception) {
+	return JSValueMakeNumber(ctx, 10);
+}
+
+JSValueRef JSCNode::DOCUMENT_FRAGMENT_NODEConstGetter(JSContextRef ctx, JSObjectRef thisObj, JSStringRef propertyName, JSValueRef *exception) {
+	return JSValueMakeNumber(ctx, 11);
+}
+
+JSValueRef JSCNode::NOTATION_NODEConstGetter(JSContextRef ctx, JSObjectRef thisObj, JSStringRef propertyName, JSValueRef *exception) {
+	return JSValueMakeNumber(ctx, 12);
 }
 
 JSValueRef JSCNode::insertBeforeCallback(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObj, size_t argumentCount, const JSValueRef* arguments, JSValueRef* exception) {

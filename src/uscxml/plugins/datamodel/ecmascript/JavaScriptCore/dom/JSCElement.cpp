@@ -6,6 +6,7 @@
 namespace Arabica {
 namespace DOM {
 
+JSClassRef JSCElement::Tmpl;
 
 JSStaticValue JSCElement::staticValues[] = {
 	{ "tagName", tagNameAttrGetter, 0, kJSPropertyAttributeDontDelete | kJSPropertyAttributeReadOnly },

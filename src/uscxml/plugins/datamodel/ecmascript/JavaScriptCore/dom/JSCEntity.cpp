@@ -4,6 +4,7 @@
 namespace Arabica {
 namespace DOM {
 
+JSClassRef JSCEntity::Tmpl;
 
 JSStaticValue JSCEntity::staticValues[] = {
 	{ "publicId", publicIdAttrGetter, 0, kJSPropertyAttributeDontDelete | kJSPropertyAttributeReadOnly },

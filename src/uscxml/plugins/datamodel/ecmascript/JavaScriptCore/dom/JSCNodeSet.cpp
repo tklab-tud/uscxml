@@ -3,6 +3,7 @@
 namespace Arabica {
 namespace DOM {
 
+JSClassRef JSCNodeSet::Tmpl;
 
 JSStaticValue JSCNodeSet::staticValues[] = {
 	{ "size", sizeAttrGetter, 0, kJSPropertyAttributeDontDelete | kJSPropertyAttributeReadOnly },
@@ -26,7 +27,7 @@ JSValueRef JSCNodeSet::sizeAttrGetter(JSContextRef ctx, JSObjectRef object, JSSt
 JSValueRef JSCNodeSet::emptyAttrGetter(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef *exception) {
 	struct JSCNodeSetPrivate* privData = (struct JSCNodeSetPrivate*)JSObjectGetPrivate(object);
 
-	return JSValueMakeNumber(ctx, privData->nativeObj->empty());
+	return JSValueMakeBoolean(ctx, privData->nativeObj->empty());
 }
 
 JSValueRef JSCNodeSet::toDocumentOrderCallback(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObj, size_t argumentCount, const JSValueRef* arguments, JSValueRef* exception) {

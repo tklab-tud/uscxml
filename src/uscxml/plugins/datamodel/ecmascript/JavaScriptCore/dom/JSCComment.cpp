@@ -4,6 +4,7 @@
 namespace Arabica {
 namespace DOM {
 
+JSClassRef JSCComment::Tmpl;
 
 JSStaticValue JSCComment::staticValues[] = {
 

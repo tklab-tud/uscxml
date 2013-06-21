@@ -4,6 +4,7 @@
 namespace Arabica {
 namespace DOM {
 
+JSClassRef JSCEntityReference::Tmpl;
 
 JSStaticValue JSCEntityReference::staticValues[] = {
 

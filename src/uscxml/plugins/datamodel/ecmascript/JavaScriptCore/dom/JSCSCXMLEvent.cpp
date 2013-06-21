@@ -4,6 +4,7 @@
 namespace Arabica {
 namespace DOM {
 
+JSClassRef JSCSCXMLEvent::Tmpl;
 
 JSStaticValue JSCSCXMLEvent::staticValues[] = {
 	{ "type", typeCustomAttrGetter, 0, kJSPropertyAttributeDontDelete | kJSPropertyAttributeReadOnly },
@@ -86,6 +87,18 @@ JSValueRef JSCSCXMLEvent::invokeidAttrGetter(JSContextRef ctx, JSObjectRef objec
 		return JSValueMakeUndefined(ctx);
 	JSStringRef stringRef = JSStringCreateWithUTF8CString(privData->nativeObj->invokeid.c_str());
 	return JSValueMakeString(ctx, stringRef);
+}
+
+JSValueRef JSCSCXMLEvent::INTERNALConstGetter(JSContextRef ctx, JSObjectRef thisObj, JSStringRef propertyName, JSValueRef *exception) {
+	return JSValueMakeNumber(ctx, 1);
+}
+
+JSValueRef JSCSCXMLEvent::EXTERNALConstGetter(JSContextRef ctx, JSObjectRef thisObj, JSStringRef propertyName, JSValueRef *exception) {
+	return JSValueMakeNumber(ctx, 2);
+}
+
+JSValueRef JSCSCXMLEvent::PLATFORMConstGetter(JSContextRef ctx, JSObjectRef thisObj, JSStringRef propertyName, JSValueRef *exception) {
+	return JSValueMakeNumber(ctx, 3);
 }
 
 

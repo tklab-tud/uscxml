@@ -277,7 +277,7 @@ public:
 	                  const std::string& content) = 0;
 	virtual void init(const std::string& location, const Data& data) = 0;
 
-protected:
+	// we need it public for various static functions
 	InterpreterImpl* _interpreter;
 };
 

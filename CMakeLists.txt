@@ -278,7 +278,7 @@ set(CMAKE_COMPILER_STRING "${CMAKE_CXX_COMPILER_ID} ${CMAKE_CXX_COMPILER_VERSION
 # see http://www.mail-archive.com/cmake@cmake.org/msg23240.html
 if (APPLE)
 #	add_definitions("-D_DARWIN_UNLIMITED_SELECT")
-	set(CMAKE_OSX_ARCHITECTURES "x86_64;i386")
+#	set(CMAKE_OSX_ARCHITECTURES "x86_64;i386")
 	# support leopard and above
 	set(CMAKE_OSX_DEPLOYMENT_TARGET 10.6)
 	foreach(FLAGS CMAKE_C_FLAGS CMAKE_CXX_FLAGS CMAKE_EXE_LINKER_FLAGS CMAKE_SHARED_LINKER_FLAGS CMAKE_MODULE_LINKER_FLAGS)
@@ -454,13 +454,14 @@ if (APPLE OR IOS)
 		list (APPEND USCXML_CORE_LIBS ${JSC_LIBRARY})
 	endif()
 	set(JSC_FOUND ON)
+else()
+	find_package(V8)
+	if (V8_FOUND)
+		include_directories(${V8_INCLUDE_DIR})
+		list (APPEND USCXML_OPT_LIBS ${V8_LIBRARY})
+	endif()
 endif()
 
-find_package(V8)
-if (V8_FOUND)
-	include_directories(${V8_INCLUDE_DIR})
-	list (APPEND USCXML_OPT_LIBS ${V8_LIBRARY})
-endif()
 
 set(CMAKE_FIND_LIBRARY_SUFFIXES ${CMAKE_FIND_LIBRARY_SUFFIXES_SHARED})
 find_package(SWI)

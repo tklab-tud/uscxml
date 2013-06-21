@@ -5,6 +5,7 @@
 namespace Arabica {
 namespace DOM {
 
+JSClassRef JSCDocumentType::Tmpl;
 
 JSStaticValue JSCDocumentType::staticValues[] = {
 	{ "name", nameAttrGetter, 0, kJSPropertyAttributeDontDelete | kJSPropertyAttributeReadOnly },

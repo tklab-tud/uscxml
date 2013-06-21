@@ -4,6 +4,7 @@
 namespace Arabica {
 namespace DOM {
 
+JSClassRef JSCCDATASection::Tmpl;
 
 JSStaticValue JSCCDATASection::staticValues[] = {
 

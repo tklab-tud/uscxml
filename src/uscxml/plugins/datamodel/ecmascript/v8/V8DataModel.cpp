@@ -171,7 +171,7 @@ void V8DataModel::setEvent(const Event& event) {
 				nameListIter++;
 			}
 		}
-		if (eventCopy.data.compound.size() > 0) {
+		if (eventCopy.data > 0) {
 			eventObj->Set(v8::String::New("data"), getDataAsValue(eventCopy.data)); // set data part of _event
 		} else {
 			// test 343 / test 488

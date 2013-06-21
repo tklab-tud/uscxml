@@ -4,6 +4,7 @@
 namespace Arabica {
 namespace DOM {
 
+JSClassRef JSCCharacterData::Tmpl;
 
 JSStaticValue JSCCharacterData::staticValues[] = {
 	{ "data", dataAttrGetter, dataAttrSetter, kJSPropertyAttributeDontDelete },

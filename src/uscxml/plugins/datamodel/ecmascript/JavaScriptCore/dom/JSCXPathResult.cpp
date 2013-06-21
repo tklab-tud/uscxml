@@ -4,6 +4,7 @@
 namespace Arabica {
 namespace DOM {
 
+JSClassRef JSCXPathResult::Tmpl;
 
 JSStaticValue JSCXPathResult::staticValues[] = {
 	{ "numberValue", numberValueAttrGetter, 0, kJSPropertyAttributeDontDelete | kJSPropertyAttributeReadOnly },
@@ -39,7 +40,7 @@ JSValueRef JSCXPathResult::stringValueAttrGetter(JSContextRef ctx, JSObjectRef o
 JSValueRef JSCXPathResult::booleanValueAttrGetter(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef *exception) {
 	struct JSCXPathResultPrivate* privData = (struct JSCXPathResultPrivate*)JSObjectGetPrivate(object);
 
-	return JSValueMakeNumber(ctx, privData->nativeObj->asBool());
+	return JSValueMakeBoolean(ctx, privData->nativeObj->asBool());
 }
 
 JSValueRef JSCXPathResult::asNodeSetCallback(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObj, size_t argumentCount, const JSValueRef* arguments, JSValueRef* exception) {

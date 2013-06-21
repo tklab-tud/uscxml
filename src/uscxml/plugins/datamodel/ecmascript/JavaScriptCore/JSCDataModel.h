@@ -4,6 +4,7 @@
 #include "uscxml/Interpreter.h"
 #include <list>
 #include <JavaScriptCore/JavaScriptCore.h>
+#include "dom/JSCDOM.h"
 
 #ifdef BUILD_AS_PLUGINS
 #include "uscxml/plugins/Plugins.h"
@@ -58,8 +59,17 @@ public:
 	virtual void init(const std::string& location, const Data& data);
 
 protected:
+	Arabica::DOM::JSCDOM* _dom;
+
+	static JSClassDefinition jsInClassDef;
+	static JSValueRef jsIn(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef* exception);
+	static JSClassDefinition jsPrintClassDef;
+	static JSValueRef jsPrint(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef* exception);
+
+	JSValueRef getDocumentAsValue(const Arabica::DOM::Document<std::string>& doc);
+	JSValueRef getDataAsValue(const Data& data);
 	Data getValueAsData(const JSValueRef value);
-	JSValueRef evalAsValue(const std::string& expr);
+	JSValueRef evalAsValue(const std::string& expr, bool dontThrow = false);
 
 	void handleException(JSValueRef exception);
 

@@ -208,12 +208,12 @@ END
       push(@headerContent, "\n  static JSValueRef ${getter}(JSContextRef ctx, JSObjectRef thisObj, JSStringRef propertyName, JSValueRef* exception);");
 	  }
 
-    # if ($extensions->{'CustomIndexedGetter'}) {
-    #   push(@headerContent, "\n    static JSValueRef indexedPropertyCustomGetter(uint32_t, const JSC::AccessorInfo&);");
-    # }
-    # if ($extensions->{'CustomIndexedSetter'}) {
-    #   push(@headerContent, "\n    static JSValueRef indexedPropertyCustomSetter(uint32_t, JSC::Local<JSC::Value>, const JSC::AccessorInfo&);");
-    # }
+    if ($extensions->{'CustomIndexedGetter'}) {
+      push(@headerContent, "\n    static JSValueRef indexedPropertyCustomGetter(uint32_t, const JSC::AccessorInfo&);");
+    }
+    if ($extensions->{'CustomIndexedSetter'}) {
+      push(@headerContent, "\n    static JSValueRef indexedPropertyCustomSetter(uint32_t, JSC::Local<JSC::Value>, const JSC::AccessorInfo&);");
+    }
     push(@headerContent, "\n");
 
     push(@headerContent, <<END);
@@ -355,7 +355,7 @@ END
         } elsif($JSCType eq "Number") {
           push(@implContent, "\n    return JSValueMakeNumber(ctx, privData->nativeObj->${wrapperGetter});\n");
         } elsif($JSCType eq "Boolean") {
-          push(@implContent, "\n    return JSValueMakeNumber(ctx, privData->nativeObj->${wrapperGetter});\n");
+          push(@implContent, "\n    return JSValueMakeBoolean(ctx, privData->nativeObj->${wrapperGetter});\n");
         }
       }
       push(@implContent, "  }\n\n");
@@ -378,6 +378,28 @@ END
       }
     }
   }
+  foreach my $constant (@{$interface->constants}) {
+    my $name = $constant->name;
+    my $value = $constant->value;
+    my $getter = "${name}ConstGetter";
+		push(@implContent, "	JSValueRef JSC${interfaceName}::${getter}(JSContextRef ctx, JSObjectRef thisObj, JSStringRef propertyName, JSValueRef *exception) {");
+		my $JSCType = IdlToJSCType($constant->type);
+		if ($JSCType eq "String") {
+			push(@implContent,
+			"\n		JSStringRef jscString = JSStringCreateWithUTF8CString(" . $constant->value . ");".
+			"\n		return JSValueMakeString(ctx, jscString);\n");
+		} elsif($JSCType eq "Number") {
+			push(@implContent, "\n		return JSValueMakeNumber(ctx, " . $constant->value . ");\n");
+		} elsif($JSCType eq "Boolean") {
+			push(@implContent, "\n		return JSValueMakeBoolean(ctx, " . $constant->value . ");\n");
+		}
+		push(@implContent, <<END);
+	}
+
+END
+
+  }
+
 }
 
 sub GenerateConditionalUndefReturn
@@ -491,6 +513,7 @@ sub GenerateImplementation
     }
     push(@implContent, "namespace Arabica {\n");
     push(@implContent, "namespace DOM {\n\n");
+    push(@implContent, "JSClassRef JSC${interfaceName}::Tmpl;\n");
 
     GenerateClassDefStatics($interface);
     GenerateImplementationAttributes($interface);

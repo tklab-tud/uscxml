@@ -4,6 +4,7 @@
 namespace Arabica {
 namespace DOM {
 
+JSClassRef JSCProcessingInstruction::Tmpl;
 
 JSStaticValue JSCProcessingInstruction::staticValues[] = {
 	{ "target", targetAttrGetter, 0, kJSPropertyAttributeDontDelete | kJSPropertyAttributeReadOnly },

@@ -5,6 +5,7 @@
 namespace Arabica {
 namespace DOM {
 
+JSClassRef JSCAttr::Tmpl;
 
 JSStaticValue JSCAttr::staticValues[] = {
 	{ "name", nameAttrGetter, 0, kJSPropertyAttributeDontDelete | kJSPropertyAttributeReadOnly },
@@ -29,7 +30,7 @@ JSValueRef JSCAttr::nameAttrGetter(JSContextRef ctx, JSObjectRef object, JSStrin
 JSValueRef JSCAttr::specifiedAttrGetter(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef *exception) {
 	struct JSCAttrPrivate* privData = (struct JSCAttrPrivate*)JSObjectGetPrivate(object);
 
-	return JSValueMakeNumber(ctx, privData->nativeObj->getSpecified());
+	return JSValueMakeBoolean(ctx, privData->nativeObj->getSpecified());
 }
 
 
