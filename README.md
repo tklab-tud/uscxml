@@ -5,12 +5,12 @@ uSCXML is a SCXML interpreter written in C/C++. It is mostly feature-complete an
 It runs on <b>Linux</b>, <b>Windows</b> and <b>MacOSX</b>, each 32- as well as 64Bits.
 There are still a few rough edges, especially with the plugins and custom extensions.
 
-The latest release will also compile for <b>iOS</b> using the toolchain files in <tt>contrib/cmake/</tt> but
-does not feature the ecmascript nor the prolog datamodel. I will work on the Android version as soon as 
-I have some time at my hands.
+The latest release will also compile for <b>iOS</b> using the toolchain files in <tt>contrib/cmake/</tt> 
+it features the (still experimental) JavaScriptCore ecmascript datamodel and no prolog datamodel. I will 
+work on the Android version as soon as I have some time at my hands.
 
    * <b>Datamodels</b>
-       * Full [ECMAScript datamodel](https://github.com/tklab-tud/uscxml/tree/master/src/uscxml/plugins/datamodel/ecmascript) using Google's v8 and JavaScriptCore (JSC is incomplete)
+       * Full [ECMAScript datamodel](https://github.com/tklab-tud/uscxml/tree/master/src/uscxml/plugins/datamodel/ecmascript) using Google's v8 and JavaScriptCore (JSC is somewhat experimental)
        * Full [NULL datamodel](https://github.com/tklab-tud/uscxml/tree/master/src/uscxml/plugins/datamodel/null) with required <tt>In</tt> predicate
        * Early [Prolog datamodel](https://github.com/tklab-tud/uscxml/tree/master/src/uscxml/plugins/datamodel/prolog/swi) using SWI prolog
        * Rudimentary support for [XPath datamodel](https://github.com/tklab-tud/uscxml/tree/master/src/uscxml/plugins/datamodel/xpath)
