@@ -84,7 +84,7 @@ void JSCDataModel::setEvent(const Event& event) {
 
 	JSObjectRef eventObj = JSObjectMake(_ctx, Arabica::DOM::JSCSCXMLEvent::getTmpl(), privData);
 	JSObjectRef globalObject = JSContextGetGlobalObject(_ctx);
-
+	
 	JSValueRef exception = NULL;
 
 	if (event.dom) {
@@ -146,7 +146,9 @@ void JSCDataModel::setEvent(const Event& event) {
 		}
 	}
 
-	JSObjectSetProperty(_ctx, globalObject, JSStringCreateWithUTF8CString("_event"), eventObj, kJSPropertyAttributeDontDelete, NULL);
+	JSObjectSetProperty(_ctx, globalObject, JSStringCreateWithUTF8CString("_event"), eventObj, kJSPropertyAttributeDontDelete, &exception);
+	if (exception)
+		handleException(exception);
 
 }
 

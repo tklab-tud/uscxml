@@ -7,18 +7,19 @@ namespace DOM {
 JSClassRef JSCSCXMLEvent::Tmpl;
 
 JSStaticValue JSCSCXMLEvent::staticValues[] = {
-	{ "type", typeCustomAttrGetter, 0, kJSPropertyAttributeDontDelete | kJSPropertyAttributeReadOnly },
 	{ "name", nameAttrGetter, 0, kJSPropertyAttributeDontDelete | kJSPropertyAttributeReadOnly },
 	{ "origin", originAttrGetter, 0, kJSPropertyAttributeDontDelete | kJSPropertyAttributeReadOnly },
-	{ "origintype", origintypeAttrGetter, 0, kJSPropertyAttributeDontDelete | kJSPropertyAttributeReadOnly },
 	{ "raw", rawAttrGetter, 0, kJSPropertyAttributeDontDelete | kJSPropertyAttributeReadOnly },
-	{ "dom", domAttrGetter, 0, kJSPropertyAttributeDontDelete | kJSPropertyAttributeReadOnly },
-	{ "sendid", sendidCustomAttrGetter, 0, kJSPropertyAttributeDontDelete | kJSPropertyAttributeReadOnly },
 	{ "invokeid", invokeidAttrGetter, 0, kJSPropertyAttributeDontDelete | kJSPropertyAttributeReadOnly },
+	{ "dom", domAttrGetter, 0, kJSPropertyAttributeDontDelete | kJSPropertyAttributeReadOnly },
+	{ "origintype", origintypeAttrGetter, 0, kJSPropertyAttributeDontDelete | kJSPropertyAttributeReadOnly },
 
-	{ "INTERNAL", INTERNALConstGetter, 0, kJSPropertyAttributeDontDelete | kJSPropertyAttributeReadOnly },
-	{ "EXTERNAL", EXTERNALConstGetter, 0, kJSPropertyAttributeDontDelete | kJSPropertyAttributeReadOnly },
-	{ "PLATFORM", PLATFORMConstGetter, 0, kJSPropertyAttributeDontDelete | kJSPropertyAttributeReadOnly },
+	{ "type", typeCustomAttrGetter, 0, kJSPropertyAttributeDontDelete | kJSPropertyAttributeReadOnly },
+	{ "sendid", sendidCustomAttrGetter, 0, kJSPropertyAttributeDontDelete | kJSPropertyAttributeReadOnly },
+
+	{ "INTERNAL", INTERNALConstGetter, 0, kJSPropertyAttributeDontDelete | kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum },
+	{ "EXTERNAL", EXTERNALConstGetter, 0, kJSPropertyAttributeDontDelete | kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum  },
+	{ "PLATFORM", PLATFORMConstGetter, 0, kJSPropertyAttributeDontDelete | kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum  },
 	{ 0, 0, 0, 0 }
 };
 

@@ -38,6 +38,7 @@
 
 # ifdef MILES_FOUND
 #   include "uscxml/plugins/invoker/miles/MilesSessionInvoker.h"
+#   include "uscxml/plugins/invoker/miles/SpatialAudio.h"
 # endif
 
 # ifdef FFMPEG_FOUND
@@ -129,8 +130,12 @@ Factory::Factory() {
 
 #ifdef MILES_FOUND
 	{
-//		MilesSessionInvoker* invoker = new MilesSessionInvoker();
-//		registerInvoker(invoker);
+		MilesSessionInvoker* invoker = new MilesSessionInvoker();
+		registerInvoker(invoker);
+	}
+	{
+		SpatialAudio* invoker = new SpatialAudio();
+		registerInvoker(invoker);
 	}
 #endif
 

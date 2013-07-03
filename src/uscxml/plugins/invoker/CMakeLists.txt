@@ -226,14 +226,7 @@ endif()
 
 # MILES modality components
 
-if (MILES_FOUND AND OFF)
-	# openal is only needed for miles
-	find_package(OpenAL REQUIRED)
-#	find_package(JPEG REQUIRED)
-	list (APPEND MILES_LIBRARIES "iconv")
-	list (APPEND MILES_LIBRARIES ${JPEG_LIBRARIES})
-	list (APPEND USCXML_INCLUDE_DIRS ${OPENAL_INCLUDE_DIR})
-
+if (MILES_FOUND)
   file(GLOB_RECURSE MILES_INVOKER 
 		miles/*.cpp 
 		miles/*.h)
@@ -253,6 +246,7 @@ if (MILES_FOUND AND OFF)
   	list (APPEND USCXML_FILES ${MILES_INVOKER})
 	endif()
 endif()
+
 
 # VoiceXML modality components
 

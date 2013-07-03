@@ -28,14 +28,16 @@ SpatialAudio::SpatialAudio() {
 	_pos[0] = _pos[1] = _pos[2] = 0.0;
 	_listener = new float[3];
 	_listener[0] = _listener[1] = _listener[2] = 0.0;
+	miles_init();
+
 }
 
 
 SpatialAudio::~SpatialAudio() {
 };
 
-Invoker* SpatialAudio::create(Interpreter* interpreter) {
-	SpatialAudio* invoker = new SpatialAudio();
+boost::shared_ptr<InvokerImpl> SpatialAudio::create(InterpreterImpl* interpreter) {
+	boost::shared_ptr<SpatialAudio> invoker = boost::shared_ptr<SpatialAudio>(new SpatialAudio());
 	invoker->_interpreter = interpreter;
 	return invoker;
 }
@@ -46,13 +48,13 @@ Data SpatialAudio::getDataModelVariables() {
 	return data;
 }
 
-void SpatialAudio::send(SendRequest& req) {
+void SpatialAudio::send(const SendRequest& req) {
 	if (!_audioDevOpen) {
-		_audioDev = miles_audio_device_open(_audioDevIndex, 0, 22050, 2, 1, 0);
+		_audioDev = miles_audio_device_open(MILES_AUDIO_IO_OPENAL, _audioDevIndex, 0, 22050, 2, 1, 1024, false);
 		if (_audioDev != NULL) {
 			_audioDevOpen = true;
 			float rolloffFactor = 0.2;
-			miles_audio_device_control(_audioDev, MILES_AUDIO_DEVICE_CTRL_SET_ROLLOFF_FACTOR, &rolloffFactor);
+			miles_audio_device_control(MILES_AUDIO_IO_OPENAL, _audioDev, MILES_AUDIO_DEVICE_CTRL_SET_ROLLOFF_FACTOR, &rolloffFactor);
 		}
 	}
 
@@ -66,14 +68,14 @@ void SpatialAudio::send(SendRequest& req) {
 //      }
 //      std::cout << std::endl;
 
-			miles_audio_device_control(_audioDev, MILES_AUDIO_DEVICE_CTRL_SET_POSITION, _pos);
+			miles_audio_device_control(MILES_AUDIO_IO_OPENAL, _audioDev, MILES_AUDIO_DEVICE_CTRL_SET_POSITION, _pos);
 
 			char* buffer = (char*)malloc(_audioDev->chunk_size);
 			// skip wav header
 			_dataStream.seekg(44);
 
 			while(_dataStream.readsome(buffer, _audioDev->chunk_size) != 0) {
-				miles_audio_device_write(_audioDev, buffer, _audioDev->chunk_size);
+				miles_audio_device_write(MILES_AUDIO_IO_OPENAL, _audioDev, buffer, _audioDev->chunk_size);
 			}
 			free(buffer);
 		}
@@ -87,7 +89,7 @@ void SpatialAudio::send(SendRequest& req) {
 			}
 			std::cout << std::endl;
 
-			miles_audio_device_control(_audioDev, MILES_AUDIO_DEVICE_CTRL_SET_LISTENER_POS, _listener);
+			miles_audio_device_control(MILES_AUDIO_IO_OPENAL, _audioDev, MILES_AUDIO_DEVICE_CTRL_SET_LISTENER_POS, _listener);
 
 		}
 	}
@@ -102,17 +104,16 @@ void SpatialAudio::sendToParent(SendRequest& req) {
 	assert(false);
 }
 
-void SpatialAudio::invoke(InvokeRequest& req) {
+void SpatialAudio::invoke(const InvokeRequest& req) {
 	_invokeId = req.invokeid;
 
 	if (req.src.length() > 0) {
-		Arabica::io::URI url(req.src);
-		if (!_interpreter->makeAbsolute(url)) {
+		URL scriptUrl(req.src);
+		if (!scriptUrl.toAbsolute(_interpreter->getBaseURI())) {
 			LOG(ERROR) << "Source attribute for audio invoker has relative URI " << req.src << " with no base URI set for interpreter";
 			return;
 		}
 
-		URL scriptUrl(url.as_string());
 		_dataStream << scriptUrl;
 	}
 
@@ -121,7 +122,7 @@ void SpatialAudio::invoke(InvokeRequest& req) {
 	struct miles_audio_device_description *devices;
 	int ndevs;
 
-	ndevs = miles_audio_device_get_supported_devices(&devices);
+	ndevs = miles_audio_device_get_supported_devices(MILES_AUDIO_IO_OPENAL, &devices);
 
 	for (int i = 0; i < ndevs; i++) {
 		if ((devices[i].capabilities & MILES_AUDIO_DEVICE_CAPABILITY_SPATIAL) &&
@@ -132,15 +133,15 @@ void SpatialAudio::invoke(InvokeRequest& req) {
 	}
 }
 
-void SpatialAudio::getPosFromParams(std::map<std::string, std::list<std::string> >& params, float* position) {
+void SpatialAudio::getPosFromParams(const std::multimap<std::string, std::string>& params, float* position) {
 	// vector explicitly given
 	try {
 		if (params.find("x") != params.end())
-			position[0] = boost::lexical_cast<float>(params["x"].front());
+			position[0] = boost::lexical_cast<float>(params.find("x")->second);
 		if (params.find("y") != params.end())
-			position[1] = boost::lexical_cast<float>(params["y"].front());
+			position[1] = boost::lexical_cast<float>(params.find("y")->second);
 		if (params.find("z") != params.end())
-			position[2] = boost::lexical_cast<float>(params["z"].front());
+			position[2] = boost::lexical_cast<float>(params.find("z")->second);
 	} catch (boost::bad_lexical_cast& e) {
 		LOG(ERROR) << "Cannot interpret x, y or z as float value in params: " << e.what();
 	}
@@ -148,13 +149,13 @@ void SpatialAudio::getPosFromParams(std::map<std::string, std::list<std::string>
 	try {
 		// right is an alias for x
 		if (params.find("right") != params.end())
-			position[0] = boost::lexical_cast<float>(params["right"].front());
+			position[0] = boost::lexical_cast<float>(params.find("right")->second);
 		// height is an alias for y
 		if (params.find("height") != params.end())
-			position[1] = boost::lexical_cast<float>(params["height"].front());
+			position[1] = boost::lexical_cast<float>(params.find("height")->second);
 		// front is an alias for z
 		if (params.find("front") != params.end())
-			position[2] = boost::lexical_cast<float>(params["front"].front());
+			position[2] = boost::lexical_cast<float>(params.find("front")->second);
 	} catch (boost::bad_lexical_cast& e) {
 		LOG(ERROR) << "Cannot interpret right, height or front as float value in params: " << e.what();
 	}
@@ -162,7 +163,7 @@ void SpatialAudio::getPosFromParams(std::map<std::string, std::list<std::string>
 	// do we have a position on a circle?
 	try {
 		if (params.find("circle") != params.end()) {
-			float rad = posToRadian(params["circle"].front());
+			float rad = posToRadian(params.find("circle")->second);
 			position[0] = cosf(rad);
 			position[2] = -1 * sinf(rad); // z axis increases to front
 		}
@@ -173,23 +174,24 @@ void SpatialAudio::getPosFromParams(std::map<std::string, std::list<std::string>
 
 }
 
-float SpatialAudio::posToRadian(std::string& position) {
-	boost::trim(position);
+float SpatialAudio::posToRadian(const std::string& pos) {
+
+	std::string trimmedPos = boost::trim_copy(pos);
 	float rad = 0;
 
-	if (position.size() > 3 && boost::iequals("deg", position.substr(position.length() - 3, 3))) {
-		rad = boost::lexical_cast<float>(position.substr(0, position.size() - 3));
+	if (trimmedPos.size() > 3 && boost::iequals("deg", trimmedPos.substr(trimmedPos.length() - 3, 3))) {
+		rad = boost::lexical_cast<float>(trimmedPos.substr(0, trimmedPos.size() - 3));
 		rad = fmodf(rad, 360); // into range [0-360]
 		rad /= 180; // into range [0-2]
 		rad *= M_PI; // into range [0-2PI]
 		rad -= M_PI_2; // 0 to top;
 		rad *= -1; // make clockwise
 		rad += 2 * M_PI; // make positive
-	} else if (position.size() > 3 && boost::iequals("rad", position.substr(position.length() - 3, 3))) {
-		rad = boost::lexical_cast<float>(position.substr(0, position.size() - 3));
+	} else if (trimmedPos.size() > 3 && boost::iequals("rad", trimmedPos.substr(trimmedPos.length() - 3, 3))) {
+		rad = boost::lexical_cast<float>(trimmedPos.substr(0, trimmedPos.size() - 3));
 		rad = fmodf(rad, M_PI * 2); // into range [0-2*PI]
 	} else {
-		LOG(ERROR) << "Cannot make sense of position value " << position << ": does not end in 'deg', 'rad'";
+		LOG(ERROR) << "Cannot make sense of position value " << trimmedPos << ": does not end in 'deg', 'rad'";
 	}
 	return rad;
 }

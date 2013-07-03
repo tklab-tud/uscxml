@@ -5,9 +5,10 @@
 #include <uscxml/Interpreter.h>
 
 extern "C" {
-# include "miles/audio.h"
-# include "miles/audio_codec.h"
-# include "miles/audio_device.h"
+#include "miles/audio_device.h"
+#include "miles/audio_codec.h"
+#include "miles/audio_io.h"
+#include "miles/miles.h"
 }
 
 namespace uscxml {
@@ -16,7 +17,7 @@ class SpatialAudio : public InvokerImpl {
 public:
 	SpatialAudio();
 	virtual ~SpatialAudio();
-	virtual Invoker* create(Interpreter* interpreter);
+	virtual boost::shared_ptr<InvokerImpl> create(InterpreterImpl* interpreter);
 
 	virtual std::set<std::string> getNames() {
 		std::set<std::string> names;
@@ -28,13 +29,13 @@ public:
 	}
 
 	virtual Data getDataModelVariables();
-	virtual void send(SendRequest& req);
+	virtual void send(const SendRequest& req);
 	virtual void cancel(const std::string sendId);
-	virtual void invoke(InvokeRequest& req);
+	virtual void invoke(const InvokeRequest& req);
 	virtual void sendToParent(SendRequest& req);
 
-	void getPosFromParams(std::map<std::string, std::list<std::string> >& params, float* position);
-	static float posToRadian(std::string& position);
+	void getPosFromParams(const std::multimap<std::string, std::string>& params, float* position);
+	static float posToRadian(const std::string& position);
 
 protected:
 	std::string _invokeId;

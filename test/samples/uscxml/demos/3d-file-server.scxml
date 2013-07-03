@@ -1,7 +1,0 @@
-<scxml datamodel="ecmascript">
-	<state id="start">
-		<invoker type="DirectoryMonitor">
-			
-		</invoker>
-	</start>
-</scxml>

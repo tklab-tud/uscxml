@@ -4,36 +4,37 @@ namespace Arabica {
 namespace DOM {
 
 JSValueRef JSCSCXMLEvent::typeCustomAttrGetter(JSContextRef ctx, JSObjectRef thisObj, JSStringRef propertyName, JSValueRef* exception) {
-#if 0
-	v8::Local<v8::Object> self = info.Holder();
-	V8SCXMLEventPrivate* privData = V8DOM::toClassPtr<V8SCXMLEventPrivate >(self->GetInternalField(0));
+	struct JSCSCXMLEventPrivate* privData = (struct JSCSCXMLEventPrivate*)JSObjectGetPrivate(thisObj);
+	JSStringRef stringRef;
 
 	switch (privData->nativeObj->type) {
 	case uscxml::Event::INTERNAL:
-		return v8::String::New("internal");
+		stringRef = JSStringCreateWithUTF8CString("internal");
 		break;
 	case uscxml::Event::EXTERNAL:
-		return v8::String::New("external");
+		stringRef = JSStringCreateWithUTF8CString("external");
 		break;
 	case uscxml::Event::PLATFORM:
-		return v8::String::New("platform");
+		stringRef = JSStringCreateWithUTF8CString("platform");
 		break;
 	default:
+		stringRef = JSStringCreateWithUTF8CString("undefined");
 		break;
 	}
-	return v8::String::New("unknown");
-#endif
+	
+	return JSValueMakeString(ctx, stringRef);
 }
 
 JSValueRef JSCSCXMLEvent::sendidCustomAttrGetter(JSContextRef ctx, JSObjectRef thisObj, JSStringRef propertyName, JSValueRef* exception) {
-#if 0
-	v8::Local<v8::Object> self = info.Holder();
-	V8SCXMLEventPrivate* privData = V8DOM::toClassPtr<V8SCXMLEventPrivate >(self->GetInternalField(0));
+	struct JSCSCXMLEventPrivate* privData = (struct JSCSCXMLEventPrivate*)JSObjectGetPrivate(thisObj);
+	JSStringRef stringRef;
 
-	if (privData->nativeObj->sendid.length() == 0 || privData->nativeObj->hideSendId)
-		return v8::Undefined();
-	return v8::String::New(privData->nativeObj->sendid.c_str());
-#endif
+	if (privData->nativeObj->sendid.length() == 0 || privData->nativeObj->hideSendId) {
+		return JSValueMakeUndefined(ctx);
+	} else {
+		stringRef = JSStringCreateWithUTF8CString(privData->nativeObj->sendid.c_str());
+		return JSValueMakeString(ctx, stringRef);
+	}
 }
 
 }

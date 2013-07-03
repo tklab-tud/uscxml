@@ -25,7 +25,7 @@ MilesSessionInvoker::MilesSessionInvoker() {
 MilesSessionInvoker::~MilesSessionInvoker() {
 };
 
-boost::shared_ptr<IOProcessorImpl> MilesSessionInvoker::create(InterpreterImpl* interpreter) {
+boost::shared_ptr<InvokerImpl> MilesSessionInvoker::create(InterpreterImpl* interpreter) {
 	boost::shared_ptr<MilesSessionInvoker> invoker = boost::shared_ptr<MilesSessionInvoker>(new MilesSessionInvoker());
 	invoker->_interpreter = interpreter;
 	return invoker;
@@ -123,14 +123,14 @@ void MilesSessionInvoker::send(const SendRequest& req) {
 
 
 		/* Set up audio grabber */
-		int n = miles_audio_device_get_supported_devices(&supported_audio_devices);
+		int n = miles_audio_device_get_supported_devices(MILES_AUDIO_DEVICE_OPENAL, &supported_audio_devices);
 		if(n<=0) {
 			/* No audio device available */
 			exit(-1);
 		}
 		/* Use first device that supports capture */
 		for(int i=0; i<n; i++) {
-			audio_dev = miles_audio_device_open(supported_audio_devices[i].id, MILES_AUDIO_FORMAT_PCM, 16000, 2, 1, 640, 1);
+			audio_dev = miles_audio_device_open(MILES_AUDIO_DEVICE_OPENAL, supported_audio_devices[i].id, MILES_AUDIO_FORMAT_PCM, 16000, 2, 1, 640, 1);
 			if(audio_dev)
 				break;
 		}
@@ -139,7 +139,7 @@ void MilesSessionInvoker::send(const SendRequest& req) {
 
 		/* Find first audio device that supports playback */
 		for(int i=0; i<n; i++) {
-			audio_dev_playback = miles_audio_device_open(supported_audio_devices[i].id, MILES_AUDIO_FORMAT_PCM, 16000, 2, 1, 640, 0);
+			audio_dev_playback = miles_audio_device_open(MILES_AUDIO_DEVICE_OPENAL, supported_audio_devices[i].id, MILES_AUDIO_FORMAT_PCM, 16000, 2, 1, 640, 0);
 			if(audio_dev_playback) {
 				audio_dev_playback_id = supported_audio_devices[i].id;
 				break;
@@ -231,14 +231,14 @@ void MilesSessionInvoker::playback_audio(u_int32_t ssrc, char *buf, int sample_r
 	if(audio_dev_playback == NULL || audio_dev_playback->chunk_size != size || audio_dev_playback->sample_rate != sample_rate ||
 	        audio_dev_playback->format != audio_format ||	audio_dev_playback->bytes_per_sample != bps) {
 		if(audio_dev_playback)
-			miles_audio_device_close(audio_dev_playback, 0);
-		audio_dev_playback = miles_audio_device_open(audio_dev_playback_id, audio_format, sample_rate, bps, 1, size, 0);
+			miles_audio_device_close(MILES_AUDIO_DEVICE_OPENAL, audio_dev_playback, 0);
+		audio_dev_playback = miles_audio_device_open(MILES_AUDIO_DEVICE_OPENAL, audio_dev_playback_id, audio_format, sample_rate, bps, 1, size, 0);
 		if(audio_dev_playback == NULL)
 			return;
 	}
 
 	/* play audio */
-	n = miles_audio_device_write(audio_dev_playback, buf, size);
+	n = miles_audio_device_write(MILES_AUDIO_DEVICE_OPENAL, audio_dev_playback, buf, size);
 }
 
 /**
@@ -391,7 +391,7 @@ int MilesSessionInvoker::audio_transmitter(struct miles_audio_device *dev, struc
 	/* Send RTCP packets, if due */
 	miles_rtp_send_rtcp(out_rtcp_audio_stream);
 
-	n = miles_audio_device_read(dev, audio_read_buf, codec_ctx->chunk_size);
+	n = miles_audio_device_read(MILES_AUDIO_DEVICE_OPENAL, dev, audio_read_buf, codec_ctx->chunk_size);
 	if(n <= 0)
 		return 0;
 	if(dev->format != codec_ctx->input_format) {
