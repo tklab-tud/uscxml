@@ -1,0 +1,6 @@
+message JSONProto {
+	repeated JSONProto compound = 1;
+	optional string key = 2;
+	optional string atom = 3;
+	optional bool verbatim = 4;
+}

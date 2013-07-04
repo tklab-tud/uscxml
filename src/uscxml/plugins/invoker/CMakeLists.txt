@@ -113,6 +113,7 @@ endif()
 if (UMUNDO_FOUND)
 	file(GLOB_RECURSE UMUNDO_INVOKER 
 		umundo/*.cpp 
+		umundo/*.cc 
 		umundo/*.h)
 	source_group("Invoker\\umundo" FILES ${UMUNDO_INVOKER})
 	if (BUILD_AS_PLUGINS)

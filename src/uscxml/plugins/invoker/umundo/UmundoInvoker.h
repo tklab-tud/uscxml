@@ -8,6 +8,8 @@
 #include <umundo/rpc.h>
 #include <umundo/s11n/protobuf/PBSerializer.h>
 
+#include "JSON.pb.h"
+
 #ifdef BUILD_AS_PLUGINS
 #include "uscxml/plugins/Plugins.h"
 #endif
@@ -16,7 +18,7 @@ namespace uscxml {
 
 class Interpreter;
 
-class UmundoInvoker : public InvokerImpl, public umundo::TypedReceiver, public umundo::ResultSet<umundo::ServiceDescription> {
+	class UmundoInvoker : public InvokerImpl, public umundo::TypedReceiver, public umundo::ResultSet<umundo::ServiceDescription>, public umundo::TypedGreeter {
 public:
 	UmundoInvoker();
 	virtual ~UmundoInvoker();
@@ -41,13 +43,19 @@ public:
 	virtual void removed(umundo::ServiceDescription);
 	virtual void changed(umundo::ServiceDescription);
 
+	virtual void welcome(umundo::TypedPublisher, const std::string& nodeId, const std::string& subId);
+	virtual void farewell(umundo::TypedPublisher, const std::string& nodeId, const std::string& subId);
+
 protected:
 	bool _isService;
 
+	bool dataToJSONbuf(JSONProto* msg, Data& data);
 	bool dataToProtobuf(google::protobuf::Message* msg, Data& data);
+
+	bool jsonbufToData(Data& data, const JSONProto& json);
 	bool protobufToData(Data& data, const google::protobuf::Message& msg);
 
-	umundo::Node* _node;
+	boost::shared_ptr<umundo::Node> _node;
 	umundo::TypedPublisher* _pub;
 	umundo::TypedSubscriber* _sub;
 
@@ -55,9 +63,9 @@ protected:
 	umundo::ServiceManager* _svcMgr;
 	std::map<umundo::ServiceDescription, umundo::ServiceStub*> _svcs;
 
-	static std::multimap<std::string, std::pair<std::string, umundo::Node*> > _nodes;
-	typedef std::multimap<std::string, std::pair<std::string, umundo::Node*> > _nodes_t;
-	static umundo::Node* getNode(InterpreterImpl* interpreter, const std::string& domain);
+	static std::multimap<std::string, std::pair<std::string, boost::weak_ptr<umundo::Node> > > _nodes;
+	typedef std::multimap<std::string, std::pair<std::string, boost::weak_ptr<umundo::Node> > > _nodes_t;
+	static boost::shared_ptr<umundo::Node> getNode(InterpreterImpl* interpreter, const std::string& domain);
 };
 
 #ifdef BUILD_AS_PLUGINS

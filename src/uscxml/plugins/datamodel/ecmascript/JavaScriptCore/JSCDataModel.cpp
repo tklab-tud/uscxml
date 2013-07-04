@@ -220,9 +220,12 @@ Data JSCDataModel::getValueAsData(const JSValueRef value) {
 		if (exception)
 			handleException(exception);
 
-		char* buf = (char*)malloc(JSStringGetMaximumUTF8CStringSize(stringValue));
-		JSStringGetUTF8CString(stringValue, buf, sizeof(buf));
+		size_t maxSize = JSStringGetMaximumUTF8CStringSize(stringValue);
+		char* buf = new char[maxSize];
+		JSStringGetUTF8CString(stringValue, buf, maxSize);
+
 		data.atom = std::string(buf);
+		JSStringRelease(stringValue);
 		free(buf);
 		break;
 	}
@@ -236,12 +239,14 @@ Data JSCDataModel::getValueAsData(const JSValueRef value) {
 		bool isArray = true;
 		for (size_t i = 0; i < paramCount; i++) {
 			JSStringRef stringValue = JSPropertyNameArrayGetNameAtIndex(properties, i);
-			char* buf = (char*)malloc(JSStringGetMaximumUTF8CStringSize(stringValue));
-			JSStringGetUTF8CString(stringValue, buf, sizeof(buf));
+			size_t maxSize = JSStringGetMaximumUTF8CStringSize(stringValue);
+			char* buf = new char[maxSize];
+			JSStringGetUTF8CString(stringValue, buf, maxSize);
 			std::string property(buf);
 			if (!isNumeric(property.c_str(), 10))
 				isArray = false;
 			propertySet.insert(property);
+			JSStringRelease(stringValue);
 			free(buf);
 		}
 		std::set<std::string>::iterator propIter = propertySet.begin();
@@ -261,7 +266,6 @@ Data JSCDataModel::getValueAsData(const JSValueRef value) {
 			}
 			propIter++;
 		}
-
 		break;
 	}
 	}

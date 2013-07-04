@@ -634,13 +634,12 @@ void InterpreterImpl::send(const Arabica::DOM::Node<std::string>& element) {
 		}
 		if (delay.size() > 0) {
 			boost::trim(delay);
-			std::stringstream delayTime;
-			if (delay.size() > 2 && boost::iequals("ms", delay.substr(delay.length() - 2, 2))) {
-				delayTime << delay.substr(0, delay.size() - 2);
-				delayTime >> sendReq.delayMs;
-			} else if (delay.size() > 1 && boost::iequals("s", delay.substr(delay.length() - 1, 1))) {
-				delayTime << delay.substr(0, delay.size() - 1);
-				delayTime >> sendReq.delayMs;
+			
+			NumAttr delayAttr(delay);
+			if (boost::iequals(delayAttr.unit, "ms")) {
+				sendReq.delayMs = strTo<uint32_t>(delayAttr.value);
+			} else if (boost::iequals(delayAttr.unit, "s")) {
+				sendReq.delayMs = strTo<uint32_t>(delayAttr.value);
 				sendReq.delayMs *= 1000;
 			} else {
 				LOG(ERROR) << "Cannot make sense of delay value " << delay << ": does not end in 's' or 'ms'";
