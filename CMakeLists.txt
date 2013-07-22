@@ -639,10 +639,6 @@ if (NOT WIN32)
 	add_subdirectory(src/bindings)
 endif()
 
-#if (IOS)
-	add_subdirectory(apps/ios)
-#endif()
-
 ############################################################
 # Header Files
 ############################################################
