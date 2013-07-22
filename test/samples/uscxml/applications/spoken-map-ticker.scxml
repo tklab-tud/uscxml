@@ -1,0 +1,64 @@
+<scxml datamodel="ecmascript" name="comet-test"
+	xmlns:html="http://www.w3.org/1999/xhtml"
+  xmlns:vxml="http://www.w3.org/2001/vxml" 
+	xmlns="http://www.w3.org/2005/07/scxml">
+
+	<script src="http://uscxml.tk.informatik.tu-darmstadt.de/scripts/dump.js" />
+
+	<state id="start">
+		<invoke type="xhtml" id="xhtml1">
+			<content src="spoken-map-ticker.xhtml" />
+			<finalize>
+				<!-- <script>dump(_event);</script> -->
+			</finalize>
+		</invoke>
+		
+		<invoke type="vxml" id="vxml" />
+		
+		<invoke type="umundo" id="umundo">
+			<param name="channel" expr="'map/tick'" />
+			<finalize>
+				<script>dump(_event);</script>
+			</finalize>
+		</invoke>
+		
+		<invoke type="http://www.smartvortex.eu/mmi/spatial-audio/" src="../audio/click.wav" id="audio">
+			<!-- <param name="maxX" expr="180" />
+			<param name="maxY" expr="18" />
+			<param name="maxZ" expr="85" /> -->
+		</invoke>
+		
+		<state id="idle">
+			<transition target="idle" event="map.center">
+				<send event="move.listener" target="#_audio">
+					<param name="x" expr="_event.data.lon" />
+					<param name="y" expr="18 - _event.data.zoom" />
+					<!-- <param name="y" expr="0" /> -->
+					<param name="z" expr="_event.data.lat" />
+
+				</send>
+			</transition>
+			<transition target="idle" event="umundo.rcvd">
+				<send target="#_xhtml1">
+					<content>${_event.data}</content>
+				</send>
+				<send target="#_audio" event="play" delay="0ms">
+					<param name="x" expr="_event.data.lon" />
+					<param name="y" expr="0" />
+					<param name="z" expr="_event.data.lat" />
+				</send>
+				
+				<if cond="_event.data.lastMsg">
+					<send target="#_vxml">
+						<content>
+							<vxml:prompt>
+								${_event.data.lastMsg}
+							</vxml:prompt>
+						</content>
+					</send>
+				</if>
+				
+			</transition>
+		</state>		
+	</state>
+</scxml>

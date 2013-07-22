@@ -24,9 +24,36 @@ bool connect(pluma::Host& host) {
 JSCDataModel::JSCDataModel() {
 }
 
+#if 0
+typedef struct {
+	int                                 version; /* current (and only) version is 0 */
+	JSClassAttributes                   attributes;
+	
+	const char*                         className;
+	JSClassRef                          parentClass;
+	
+	const JSStaticValue*                staticValues;
+	const JSStaticFunction*             staticFunctions;
+	
+	JSObjectInitializeCallback          initialize;
+	JSObjectFinalizeCallback            finalize;
+	JSObjectHasPropertyCallback         hasProperty;
+	JSObjectGetPropertyCallback         getProperty;
+	JSObjectSetPropertyCallback         setProperty;
+	JSObjectDeletePropertyCallback      deleteProperty;
+	JSObjectGetPropertyNamesCallback    getPropertyNames;
+	JSObjectCallAsFunctionCallback      callAsFunction;
+	JSObjectCallAsConstructorCallback   callAsConstructor;
+	JSObjectHasInstanceCallback         hasInstance;
+	JSObjectConvertToTypeCallback       convertToType;
+} JSClassDefinition;
+#endif
+	
 // functions need to be objects to hold private data in JSC
 JSClassDefinition JSCDataModel::jsInClassDef = { 0, 0, "In", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, jsIn, 0, 0, 0 };
 JSClassDefinition JSCDataModel::jsPrintClassDef = { 0, 0, "print", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, jsPrint, 0, 0, 0 };
+
+JSClassDefinition JSCDataModel::jsIOProcessorsClassDef = { 0, 0, "ioProcessors", 0, 0, 0, 0, 0, jsIOProcessorHasProp, jsIOProcessorGetProp, 0, 0, jsIOProcessorListProps, 0, 0, 0, 0 };
 
 boost::shared_ptr<DataModelImpl> JSCDataModel::create(InterpreterImpl* interpreter) {
 	boost::shared_ptr<JSCDataModel> dm = boost::shared_ptr<JSCDataModel>(new JSCDataModel());
@@ -51,15 +78,33 @@ boost::shared_ptr<DataModelImpl> JSCDataModel::create(InterpreterImpl* interpret
 	JSObjectSetProperty(dm->_ctx, JSContextGetGlobalObject(dm->_ctx), printName, jsPrint, kJSPropertyAttributeNone, NULL);
 	JSStringRelease(inName);
 
-	dm->eval("_ioprocessors = {};");
+	JSClassRef jsIOProcClassRef = JSClassCreate(&jsIOProcessorsClassDef);
+	JSObjectRef jsIOProc = JSObjectMake(dm->_ctx, jsIOProcClassRef, dm.get());
+	JSStringRef ioProcName = JSStringCreateWithUTF8CString("_ioprocessors");
+	JSObjectSetProperty(dm->_ctx, JSContextGetGlobalObject(dm->_ctx), ioProcName, jsIOProc, kJSPropertyAttributeNone, NULL);
+	JSStringRelease(ioProcName);
+
+	JSStringRef nameName = JSStringCreateWithUTF8CString("_name");
+	JSStringRef name = JSStringCreateWithUTF8CString(dm->_interpreter->getName().c_str());
+	JSObjectSetProperty(dm->_ctx, JSContextGetGlobalObject(dm->_ctx), nameName, JSValueMakeString(dm->_ctx, name), kJSPropertyAttributeNone, NULL);
+	JSStringRelease(nameName);
+	JSStringRelease(name);
+
+	JSStringRef sessionIdName = JSStringCreateWithUTF8CString("_sessionid");
+	JSStringRef sessionId = JSStringCreateWithUTF8CString(dm->_interpreter->getSessionId().c_str());
+	JSObjectSetProperty(dm->_ctx, JSContextGetGlobalObject(dm->_ctx), sessionIdName, JSValueMakeString(dm->_ctx, sessionId), kJSPropertyAttributeNone, NULL);
+	JSStringRelease(sessionIdName);
+	JSStringRelease(sessionId);
 
 	Arabica::DOM::JSCDocument::JSCDocumentPrivate* privData = new Arabica::DOM::JSCDocument::JSCDocumentPrivate();
-	privData->nativeObj = new Arabica::DOM::Document<std::string>(interpreter->getDocument());
-	privData->dom = dm->_dom;
+	if (interpreter) {
+		privData->nativeObj = new Arabica::DOM::Document<std::string>(interpreter->getDocument());
+		privData->dom = dm->_dom;
 
-	JSObjectRef documentObject = JSObjectMake(dm->_ctx, Arabica::DOM::JSCDocument::getTmpl(), privData);
-	JSObjectRef globalObject = JSContextGetGlobalObject(dm->_ctx);
-	JSObjectSetProperty(dm->_ctx, globalObject, JSStringCreateWithUTF8CString("document"), documentObject, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontDelete, NULL);
+		JSObjectRef documentObject = JSObjectMake(dm->_ctx, Arabica::DOM::JSCDocument::getTmpl(), privData);
+		JSObjectRef globalObject = JSContextGetGlobalObject(dm->_ctx);
+		JSObjectSetProperty(dm->_ctx, globalObject, JSStringCreateWithUTF8CString("document"), documentObject, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontDelete, NULL);
+	}
 
 	dm->eval("_invokers = {};");
 	dm->eval("_x = {};");
@@ -202,10 +247,9 @@ Data JSCDataModel::getValueAsData(const JSValueRef value) {
 	JSValueRef exception = NULL;
 	switch(JSValueGetType(_ctx, value)) {
 	case kJSTypeUndefined:
-		LOG(ERROR) << "IsUndefined is unimplemented";
-		break;
 	case kJSTypeNull:
-		LOG(ERROR) << "IsNull is unimplemented";
+		data.atom = "null";
+		data.type = Data::INTERPRETED;
 		break;
 	case kJSTypeBoolean:
 		data.atom = (JSValueToBoolean(_ctx, value) ? "true" : "false");
@@ -225,6 +269,7 @@ Data JSCDataModel::getValueAsData(const JSValueRef value) {
 		JSStringGetUTF8CString(stringValue, buf, maxSize);
 
 		data.atom = std::string(buf);
+		data.type = Data::VERBATIM;
 		JSStringRelease(stringValue);
 		free(buf);
 		break;
@@ -486,6 +531,45 @@ JSValueRef JSCDataModel::jsIn(JSContextRef ctx, JSObjectRef function, JSObjectRe
 	}
 	return JSValueMakeBoolean(ctx, true);
 
+}
+
+bool JSCDataModel::jsIOProcessorHasProp(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName) {
+	JSCDataModel* INSTANCE = (JSCDataModel*)JSObjectGetPrivate(object);
+	std::map<std::string, IOProcessor> ioProcessors = INSTANCE->_interpreter->getIOProcessors();
+
+	size_t maxSize = JSStringGetMaximumUTF8CStringSize(propertyName);
+	char buffer[maxSize];
+	JSStringGetUTF8CString(propertyName, buffer, maxSize);
+	std::string prop(buffer);
+
+	return ioProcessors.find(prop) != ioProcessors.end();
+}
+
+JSValueRef JSCDataModel::jsIOProcessorGetProp(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef* exception) {
+	JSCDataModel* INSTANCE = (JSCDataModel*)JSObjectGetPrivate(object);
+	std::map<std::string, IOProcessor> ioProcessors = INSTANCE->_interpreter->getIOProcessors();
+
+	size_t maxSize = JSStringGetMaximumUTF8CStringSize(propertyName);
+	char buffer[maxSize];
+	JSStringGetUTF8CString(propertyName, buffer, maxSize);
+	std::string prop(buffer);
+
+	if (ioProcessors.find(prop) != ioProcessors.end()) {
+		return INSTANCE->getDataAsValue(ioProcessors.find(prop)->second.getDataModelVariables());
+	}
+	return JSValueMakeUndefined(ctx);
+}
+
+void JSCDataModel::jsIOProcessorListProps(JSContextRef ctx, JSObjectRef object, JSPropertyNameAccumulatorRef propertyNames) {
+	JSCDataModel* INSTANCE = (JSCDataModel*)JSObjectGetPrivate(object);
+	std::map<std::string, IOProcessor> ioProcessors = INSTANCE->_interpreter->getIOProcessors();
+
+	std::map<std::string, IOProcessor>::const_iterator ioProcIter = ioProcessors.begin();
+	while(ioProcIter != ioProcessors.end()) {
+		JSStringRef ioProcName = JSStringCreateWithUTF8CString(ioProcIter->first.c_str());
+		JSPropertyNameAccumulatorAddName(propertyNames, ioProcName);
+		ioProcIter++;
+	}	
 }
 
 }

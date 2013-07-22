@@ -40,7 +40,7 @@ if (OFF)
 	set_target_properties(test-dirmon PROPERTIES FOLDER "Tests")
 endif()
 
-if (OFF)
+if (NOT WIN32)
 	add_executable(test-arabica-events src/test-arabica-events.cpp)
 	target_link_libraries(test-arabica-events uscxml)
 	add_test(test-arabica-events ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-arabica-events ${CMAKE_SOURCE_DIR}/test/samples/uscxml/arabica/test-arabica-events.xml)
@@ -51,12 +51,22 @@ if (OFF)
 	add_test(test-arabica-xpath ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-arabica-xpath)
 	set_target_properties(test-arabica-xpath PROPERTIES FOLDER "Tests")
 
+	add_executable(test-arabica-parsing src/test-arabica-parsing.cpp)
+	target_link_libraries(test-arabica-parsing uscxml)
+	add_test(test-arabica-xpath ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-arabica-parsing)
+	set_target_properties(test-arabica-parsing PROPERTIES FOLDER "Tests")
+
 endif()
 
 add_executable(test-url src/test-url.cpp)
 target_link_libraries(test-url uscxml)
 add_test(test-url ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-url)
 set_target_properties(test-url PROPERTIES FOLDER "Tests")
+
+add_executable(test-datamodel src/test-datamodel.cpp)
+target_link_libraries(test-datamodel uscxml)
+add_test(test-datamodel ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-datamodel)
+set_target_properties(test-datamodel PROPERTIES FOLDER "Tests")
 
 # if (NOT WIN32)
 # 	add_executable(test-mmi src/test-mmi.cpp)

@@ -392,6 +392,62 @@ boost::shared_ptr<ExecutableContentImpl> Factory::createExecutableContent(const 
 
 }
 
+size_t DataModelImpl::replaceExpressions(std::string& content) {
+	std::stringstream ss;
+	size_t replacements = 0;
+	size_t indent = 0;
+	size_t pos = 0;
+	size_t start = std::string::npos;
+	size_t end = 0;
+	while (true) {
+		// find any of ${}
+		pos = content.find_first_of("${}", pos);
+		if (pos == std::string::npos) {
+			ss << content.substr(end, content.length() - end);
+			break;
+		}
+		if (content[pos] == '$') {
+			if (content.size() > pos && content[pos+1] == '{') {
+				pos++;
+				start = pos + 1;
+				// copy everything in between
+				ss << content.substr(end, (start - 2) - end);
+			}
+		} else if (content[pos] == '{' && start != std::string::npos) {
+			indent++;
+		} else if (content[pos] == '}' && start != std::string::npos) {
+			if (!indent) {
+				end = pos;
+				// we found a token to substitute
+				std::string expr = content.substr(start, end - start);
+				end++;
+				try {
+					Data data = getStringAsData(expr);
+//					if (data.type == Data::VERBATIM) {
+//						ss << "\"" << data.atom << "\"";
+//					} else {
+//						ss << data.atom;
+//					}
+					ss << Data::toJSON(data);
+					replacements++;
+				} catch (Event e) {
+					// insert unsubstituted
+					start -= 2;
+					ss << content.substr(start, end - start);
+				}
+				start = std::string::npos;
+			} else {
+				indent--;
+			}
+		}
+		pos++;
+	}
+	if (replacements)
+		content = ss.str();
+	
+	return replacements;
+}
+
 
 Factory* Factory::getInstance() {
 	if (_instance == NULL) {

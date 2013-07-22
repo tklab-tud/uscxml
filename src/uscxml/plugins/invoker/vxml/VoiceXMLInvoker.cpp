@@ -48,10 +48,20 @@ Data VoiceXMLInvoker::getDataModelVariables() {
 void VoiceXMLInvoker::send(const SendRequest& req) {
 	StartRequest start;
 	std::stringstream domSS;
+//	if (req.dom) {
+//		// hack until jVoiceXML supports XML
+//		std::cout << req.dom;
+//		Arabica::DOM::NodeList<std::string> prompts = req.dom.getElementsByTagName("vxml:prompt");
+//		for (int i = 0; i < prompts.getLength(); i++) {
+//			if (prompts.item(i).hasChildNodes()) {
+//				domSS << prompts.item(i).getFirstChild().getNodeValue() << ".";
+//			}
+//		}
+//	}
 	domSS << req.getFirstDOMElement();
 	start.content = domSS.str();
-
-	start.contentURL.href = "http://localhost/~sradomski/hello.vxml";
+	_interpreter->getDataModel().replaceExpressions(start.content);
+	
 	start.requestId = "asdf";
 	start.source = "asdf";
 	start.target = "umundo://mmi/jvoicexml";

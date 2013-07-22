@@ -66,6 +66,11 @@ protected:
 	static JSClassDefinition jsPrintClassDef;
 	static JSValueRef jsPrint(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef* exception);
 
+	static JSClassDefinition jsIOProcessorsClassDef;
+	static bool jsIOProcessorHasProp(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName);
+	static JSValueRef jsIOProcessorGetProp(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef* exception);
+	static void jsIOProcessorListProps(JSContextRef ctx, JSObjectRef object, JSPropertyNameAccumulatorRef propertyNames);
+	
 	JSValueRef getDocumentAsValue(const Arabica::DOM::Document<std::string>& doc);
 	JSValueRef getDataAsValue(const Data& data);
 	Data getValueAsData(const JSValueRef value);

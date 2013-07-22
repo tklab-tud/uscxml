@@ -247,7 +247,11 @@ void UmundoInvoker::receive(void* object, umundo::Message* msg) {
 	// get meta fields into event
 	std::map<std::string, std::string>::const_iterator metaIter = msg->getMeta().begin();
 	while(metaIter != msg->getMeta().end()) {
-		event.data.compound[metaIter->first] = Data(metaIter->second, Data::VERBATIM);
+		if (isNumeric(metaIter->second.c_str(), 10)) {
+			event.data.compound[metaIter->first] = Data(metaIter->second, Data::INTERPRETED);
+		} else {
+			event.data.compound[metaIter->first] = Data(metaIter->second, Data::VERBATIM);
+		}
 		metaIter++;
 	}
 
@@ -309,9 +313,13 @@ std::multimap<std::string, std::pair<std::string, boost::weak_ptr<umundo::Node> 
 boost::shared_ptr<umundo::Node> UmundoInvoker::getNode(InterpreterImpl* interpreter, const std::string& domain) {
 	std::pair<_nodes_t::iterator, _nodes_t::iterator> range = _nodes.equal_range(interpreter->getName());
 	for (_nodes_t::iterator it = range.first; it != range.second; it++) {
-		if (it->second.first.compare(domain) == 0)
-			return it->second.second.lock();
+		if (it->second.first.compare(domain) == 0) {
+			boost::shared_ptr<umundo::Node> node = it->second.second.lock();
+			if (node)
+				return node;
+		}
 	}
+	// create a new node
 	boost::shared_ptr<umundo::Node> node = boost::shared_ptr<umundo::Node>(new umundo::Node(domain));
 	std::pair<std::string, std::pair<std::string, boost::weak_ptr<umundo::Node> > > pair = std::make_pair(interpreter->getName(), std::make_pair(domain, node));
 	_nodes.insert(pair);

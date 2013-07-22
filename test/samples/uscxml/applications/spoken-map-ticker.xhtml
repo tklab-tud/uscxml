@@ -1,0 +1,236 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+	<head>
+		<!-- space in between script is required as <script/> is not valid HTML to most browsers -->
+		<script type="text/javascript" src="http://code.jquery.com/jquery-2.0.3.js"> </script>
+		<script type="text/javascript" src="http://www.openlayers.org/api/OpenLayers.js"> </script>
+		<script type="text/javascript" src="http://epikur.local/~sradomski/CometSession.js"> </script>
+		<script type="text/javascript" src="https://raw.github.com/jchavannes/jquery-timer/master/jquery.timer.js"> </script>
+		
+		<style type="text/css">
+			html, body, #map {
+				width: 100%;
+				height: 100%;
+				margin: 0;
+			}
+			.olPopup {
+				border-radius: 8px;
+			}
+			div.olControlOverviewMapElement {
+				background-color: #666;
+			}
+			div.olMap {
+				width: 180px;
+				height: 120px;
+				margin: 0;
+			}
+			div.timeRuler {
+				font-family:Courier,Arial,Helvetica,sans-serif;
+				font-size: 1.2em;
+				font-weight: bold;
+				background-color: #eee;
+			}
+			div#message {
+				overflow: auto;
+				height: 100%;
+				font-family:Courier,Arial,Helvetica,sans-serif;
+				font-size: 0.6em;
+			}
+
+			div#message p {
+				padding: 0px;
+				margin: 4px 2px;
+			}
+
+		</style>
+	  
+		<!-- script type="text/javascript" src="http://localhost/~sradomski/CometSession.js"></script -->
+		<script type="text/javascript">
+//<![CDATA[
+		$(document).ready(function() {
+			var scxml = new CometSession({
+				server: document.URL,
+				onEvent: function(response, message) {
+					if (message) {
+						console.log(message);
+						
+						if (!markers[message.id]) {
+							addMarker(message);
+						} else {
+							for (i = 0; i < map.popups.length; i++) {
+								if (map.popups[i].feature.id === message.id) {
+									map.popups[i].setContentHTML("<h3>" + message.id + "</h3>" + message.html);
+								}
+							}
+							markers[message.id].marker.opacity = 1.0;
+							markers[message.id].marker.setOpacity(1.0);
+							
+							markers[message.id].marker.timer.play();
+							markers[message.id].feature.popupContentHTML = "<h3>" + message.id + "</h3>" + message.html;
+						}
+						
+						if (message.lastMsg && message.lastMsg.length > 0) {
+							var messageDiv = $("#message")[0];
+							if (message.timeStamp > lastUpdateTime + 3000) {
+								var timeRuler = document.createElement("div");
+								timeRuler.setAttribute("class", "timeRuler");
+								timeRuler.innerHTML = message.time; // + messageDiv.innerHTML;
+								messageDiv.appendChild(timeRuler);
+								lastUpdateTime = message.timeStamp;
+							}
+
+							console.log(message.timeStamp);
+							console.log(lastUpdateTime);
+
+							var messagePara = document.createElement("p");
+							messagePara.innerHTML += message.lastMsg; // + messageDiv.innerHTML;
+							messageDiv.appendChild(messagePara);
+							messagePara.addEventListener("mousedown", function() {
+								var marker = markers[message.id].marker;
+								marker.events.triggerEvent("mousedown");
+							});
+							messagePara.addEventListener("mouseover", function() {
+								messagePara.style.backgroundColor = "#eee";
+							});
+							messagePara.addEventListener("mouseout", function() {
+								messagePara.style.backgroundColor = "#fff";
+							});
+
+							if (!stopScrolling) {
+								messageDiv.scrollTop = messageDiv.scrollHeight;
+							}
+						}
+					}
+				}
+			});
+			
+			// var map = new OpenLayers.Map("demoMap");
+			// map.addLayer(new OpenLayers.Layer.OSM());
+			// map.zoomToMaxExtent();
+			
+			var markers = {};
+			var lastUpdateTime = 0;
+			var stopScrolling = false;
+
+			var fromProjection = new OpenLayers.Projection("EPSG:4326");   // Transform from WGS 1984
+			var toProjection   = new OpenLayers.Projection("EPSG:900913"); // to Spherical Mercator Projection
+
+			function onMoveEvent() {
+				var position = map.getCenter().transform(toProjection, fromProjection);
+				if (Math.random() > 0.7) { // do not publish every move event
+					scxml.send('map.center', { 
+						'zoom': map.getZoom(), 
+						'lon': position.lon, 
+						'lat': position.lat });
+				}
+			}
+			
+			function onMoveEndEvent() {
+				var position = map.getCenter().transform(toProjection, fromProjection);
+				scxml.send('map.center', { 
+					'zoom': map.getZoom(), 
+					'lon': position.lon, 
+					'lat': position.lat });
+			}
+			
+			function addMarker(message) {
+				var feature = new OpenLayers.Feature(
+					markerLayer, 
+					new OpenLayers.LonLat(message.lon, message.lat).transform(fromProjection, toProjection));
+				feature.closeBox = true;
+				feature.popupClass =  OpenLayers.Class(OpenLayers.Popup.Anchored, {
+					'autoSize': true,
+//					'maxSize': new OpenLayers.Size(300,200)
+				});
+        feature.data.popupContentHTML = "<h3>" + message.id + "</h3>" + message.html;
+        feature.data.overflow = "auto";
+        feature.data.id = message.id;
+				var marker = feature.createMarker();
+
+				marker.timer = $.timer(function() {
+					if (marker.opacity > 0.5) {
+						marker.opacity -= 0.02;
+						marker.setOpacity(marker.opacity);
+					} else {
+						marker.timer.stop();
+					}
+				}, 100);
+				
+				marker.opacity = 1.0;
+				marker.setOpacity(marker.opacity);
+				marker.timer.play();
+
+				markerClick = function(evt) {
+					if (this.popup == null) {
+						this.popup = this.createPopup(this.closeBox);
+						map.addPopup(this.popup);
+						this.popup.show();
+					} else {
+						this.popup.toggle();
+					}
+					currentPopup = this.popup;
+					OpenLayers.Event.stop(evt);
+				};
+				
+				marker.events.register("mousedown", feature, markerClick);
+				markers[message.id] = {
+					'marker': marker,
+					'feature': feature
+				};
+				markerLayer.addMarker(marker);
+			}
+			// see also: http://php-baustelle.de/openlayers/step-by-step/
+			var map = new OpenLayers.Map('map', {
+				eventListeners: {
+					"move": onMoveEvent,
+					"moveend": onMoveEndEvent,
+				}
+			});
+			
+			var mapnik         = new OpenLayers.Layer.OSM();
+			var markerLayer    = new OpenLayers.Layer.Markers("Markers");
+//			var attribution    = new OpenLayers.Layer.Vector("Attribution", {attribution:"for Smart Vortex"});
+
+			map.addLayer(mapnik);
+//			map.addLayer(attribution);
+			map.addLayer(markerLayer); // has to be the last layer to receive events!
+
+			map.addControl(new OpenLayers.Control.LayerSwitcher());            
+			// see also http://dev.openlayers.org/releases/OpenLayers-2.12/examples/mousewheel-interval.html
+			map.addControl(new OpenLayers.Control.Navigation(
+				{dragPanOptions: {enableKinetic: true}}
+			));
+
+			var overview = new OpenLayers.Control.OverviewMap({
+				maximized: true,
+				minRatio: 200,
+				maxRatio: 300,
+			});            
+			map.addControl(overview);
+
+			// stockholm
+			var position       = new OpenLayers.LonLat(18.08,59.32).transform(fromProjection, toProjection);
+//			var position       = new OpenLayers.LonLat(0,0).transform(fromProjection, toProjection);
+			var zoom           = 11; 
+			map.setCenter(position, zoom);
+
+			// var message = {
+			// 	'id': "12",
+			// 	'lat': 59.454441065280534,
+			// 	'lon': 18.062356332194543,
+			// 	'html': '<p>asdf</p>'
+			// };
+
+//			addMarker(message);
+		});
+//]]>
+    </script>
+	</head>
+	<body>
+		<table width="100%" height="100%">
+			<tr>
+				<td width="20%" height="100%"><div id="message" onmouseover="stopScrolling = true" onmouseout="stopScrolling = false"></div></td>
+				<td width="80%" height="100%"><div id="map"></div></td>
+			</tr>
+		</table>
+	</body>
+</html>

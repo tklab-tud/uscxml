@@ -10,12 +10,14 @@
 #include <string>
 #include <set>
 #include <boost/shared_ptr.hpp>
+#include <limits>
 
 namespace uscxml {
 
 // see http://stackoverflow.com/questions/228005/alternative-to-itoa-for-converting-integer-to-string-c
 template <typename T> std::string toStr(T tmp) {
 	std::ostringstream out;
+	out.precision(std::numeric_limits<double>::digits10 + 1);
 	out << tmp;
 	return out.str();
 }
@@ -28,9 +30,9 @@ template <typename T> T strTo(std::string tmp) {
 }
 
 inline bool isNumeric( const char* pszInput, int nNumberBase) {
-	std::string base = "0123456789ABCDEF";
+	std::string base = ".0123456789ABCDEF";
 	std::string input = pszInput;
-	return (input.find_first_not_of(base.substr(0, nNumberBase)) == std::string::npos);
+	return (input.find_first_not_of(base.substr(0, nNumberBase + 1)) == std::string::npos);
 }
 
 class InterpreterImpl;
@@ -252,6 +254,8 @@ public:
 	virtual void setEvent(const Event& event) = 0;
 	virtual Data getStringAsData(const std::string& content) = 0;
 
+	size_t replaceExpressions(std::string& content);
+	
 	// foreach
 	virtual uint32_t getLength(const std::string& expr) = 0;
 	virtual void setForeach(const std::string& item,
@@ -361,6 +365,10 @@ public:
 
 	virtual bool isDeclared(const std::string& expr) {
 		return _impl->isDeclared(expr);
+	}
+
+	size_t replaceExpressions(std::string& content) {
+		return _impl->replaceExpressions(content);
 	}
 
 protected:

@@ -436,7 +436,7 @@ void InterpreterImpl::processContentElement(const Arabica::DOM::Node<std::string
         std::string& expr) {
 	if (HAS_ATTR(content, "expr")) {
 		expr = ATTR(content, "expr");
-	} else if (content.hasChildNodes()) {
+	} else if (content.hasChildNodes() || HAS_ATTR(content, "src") || HAS_ATTR(content, "srcexpr")) {
 		processDOMorText(content, dom, text);
 	} else {
 		LOG(ERROR) << "content element does not specify any content.";
@@ -455,7 +455,7 @@ void InterpreterImpl::processDOMorText(const Arabica::DOM::Node<std::string>& no
 			LOG(ERROR) << LOCALNAME(node) << " element has relative src or srcexpr URI with no baseURI set.";
 			return;
 		}
-		if (_cachedURLs.find(sourceURL.asString()) != _cachedURLs.end()) {
+		if (_cachedURLs.find(sourceURL.asString()) != _cachedURLs.end() && false) {
 			srcContent << _cachedURLs[sourceURL.asString()];
 		} else {
 			srcContent << sourceURL;
@@ -473,8 +473,12 @@ void InterpreterImpl::processDOMorText(const Arabica::DOM::Node<std::string>& no
 			std::auto_ptr<std::istream> ssPtr(ss);
 			Arabica::SAX::InputSource<std::string> inputSource;
 			inputSource.setByteStream(ssPtr);
+			
+//			parser.setFeature(Arabica::SAX::FeatureNames<std::string>().external_general, true);
+			
 			if (parser.parse(inputSource) && parser.getDocument()) {
 				dom = parser.getDocument();
+				std::cout << dom;
 				Node<std::string> content = dom.getDocumentElement();
 				assert(content.getNodeType() == Node_base::ELEMENT_NODE);
 				Node<std::string> container = dom.createElement("container");
@@ -1106,7 +1110,7 @@ void InterpreterImpl::executeContent(const Arabica::DOM::Node<std::string>& cont
 				}
 
 				std::stringstream srcContent;
-				if (_cachedURLs.find(scriptUrl.asString()) != _cachedURLs.end()) {
+				if (_cachedURLs.find(scriptUrl.asString()) != _cachedURLs.end() && false) {
 					srcContent << _cachedURLs[scriptUrl.asString()];
 				} else {
 					srcContent << scriptUrl;
@@ -1313,7 +1317,7 @@ Arabica::XPath::NodeSet<std::string> InterpreterImpl::getStates(const std::vecto
 
 Arabica::DOM::Node<std::string> InterpreterImpl::getState(const std::string& stateId) {
 
-	if (_cachedStates.find(stateId) != _cachedStates.end()) {
+	if (_cachedStates.find(stateId) != _cachedStates.end() && false) {
 		return _cachedStates[stateId];
 	}
 

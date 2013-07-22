@@ -68,7 +68,7 @@ bool MMIEventServlet::httpRecvRequest(const HTTPServer::Request& req) {
 		return true;
 	}
 
-	std::cout << mmiDoc.getNamespaceURI() << std::endl;
+//	std::cout << mmiDoc.getNamespaceURI() << std::endl;
 	Node<std::string> mmiEvent = mmiDoc.getFirstChild();
 	// get the first element
 	while (mmiEvent && mmiEvent.getNodeType() != Node_base::ELEMENT_NODE) {
@@ -81,7 +81,7 @@ bool MMIEventServlet::httpRecvRequest(const HTTPServer::Request& req) {
 			mmiEvent = mmiEvent.getNextSibling();
 		}
 	}
-	std::cout << mmiEvent << std::endl;
+//	std::cout << mmiEvent << std::endl;
 
 	if (!mmiEvent) {
 		evhttp_send_error(req.curlReq, 402, NULL);

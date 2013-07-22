@@ -56,6 +56,7 @@ int main(int argc, char** argv) {
 	assert(InterpreterImpl::nameMatch(transEvents, "foo.bar"));
 	assert(!InterpreterImpl::nameMatch(transEvents, "errors.my.custom"));
 	assert(!InterpreterImpl::nameMatch(transEvents, "errorhandler.mistake"));
-	assert(!InterpreterImpl::nameMatch(transEvents, "errOr.send"));
+	// is the event name case sensitive?
+	//	assert(!InterpreterImpl::nameMatch(transEvents, "errOr.send"));
 	assert(!InterpreterImpl::nameMatch(transEvents, "foobar"));
 }

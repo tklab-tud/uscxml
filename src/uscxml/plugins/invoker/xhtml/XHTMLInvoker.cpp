@@ -7,9 +7,12 @@
 #include <Pluma/Connector.hpp>
 #endif
 
-#if defined(__APPLE__) and defined(TARGET_OS_MAC)
-#include <CoreFoundation/CFBundle.h>
-#include <ApplicationServices/ApplicationServices.h>
+#if __APPLE__
+#	if TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR
+#	else
+#	include <CoreFoundation/CFBundle.h>
+#	include <ApplicationServices/ApplicationServices.h>
+#	endif
 #endif
 
 namespace uscxml {
@@ -41,6 +44,7 @@ bool XHTMLInvoker::httpRecvRequest(const HTTPServer::Request& req) {
 	// these are the XHR requests
 	if (boost::iequals(req.data["header"]["X-Requested-With"].atom, "XMLHttpRequest")) {
 		if (boost::iequals(req.data["type"].atom, "get")) {
+			// the long-polling GET
 			if (_longPoll) {
 				evhttp_send_error(_longPoll.curlReq, 204, NULL);
 				_longPoll.curlReq = NULL;
@@ -52,15 +56,21 @@ bool XHTMLInvoker::httpRecvRequest(const HTTPServer::Request& req) {
 			}
 			return true;
 		} else {
+			// a POST request
 			Event ev(req);
 			if (ev.data["header"]["X-SCXML-Name"]) {
 				ev.name = ev.data["header"]["X-SCXML-Name"].atom;
+			} else {
+				ev.name = req.data["type"].atom;
 			}
 			ev.origin = _invokeId;
 			ev.initContent(req.data["content"].atom);
 			ev.data.compound["Connection"] = req.data;
 			// content is already on ev.raw
 			ev.data.compound["Connection"].compound.erase("content");
+
+			HTTPServer::Reply reply(req);
+			HTTPServer::reply(reply);
 
 			returnEvent(ev);
 			return true;
@@ -70,17 +80,9 @@ bool XHTMLInvoker::httpRecvRequest(const HTTPServer::Request& req) {
 	// initial request for a document
 	if (!req.data["query"] && // no query parameters
 	        boost::iequals(req.data["type"].atom, "get") && // request type is GET
-	        (boost::icontains(req.data["header"]["Accept"].atom, "text/html") ||  // accepts html or
-	         boost::contains(req.data["header"]["User-Agent"].atom, "MSIE")) && // is the internet explorer
 	        req.content.length() == 0) { // no content
 
 		HTTPServer::Reply reply(req);
-		URL templateURL("templates/xhtml-invoker.html");
-		templateURL.toAbsolute(_interpreter->getBaseURI());
-		templateURL.download(true);
-		std::string templateContent = templateURL.getInContent();
-		boost::replace_all(templateContent, "${scxml.server}", _url);
-		boost::replace_all(templateContent, "${scxml.invokeId}", _invokeId);
 
 		std::string content;
 		std::stringstream ss;
@@ -90,15 +92,25 @@ bool XHTMLInvoker::httpRecvRequest(const HTTPServer::Request& req) {
 		} else if(_invokeReq.data) {
 			ss << _invokeReq.data;
 			content = ss.str();
-		} else {
+		} else if (_invokeReq.content.length() > 0){
 			content = _invokeReq.content;
+		} else {
+			URL templateURL("templates/xhtml-invoker.html");
+			templateURL.toAbsolute(_interpreter->getBaseURI());
+			templateURL.download(true);
+			content = templateURL.getInContent();
 		}
-		boost::replace_all(templateContent, "${scxml.content}", content);
-		reply.content = templateContent;
-		reply.headers["Content-Type"] = "text/html";
+		
+		_interpreter->getDataModel().replaceExpressions(content);
+		reply.content = content;
+		
+		// application/xhtml+xml
+		reply.headers["Content-Type"] = "text/html; charset=utf-8";
+//		reply.headers["Content-Type"] = "application/xhtml+xml; charset=utf-8";
 
 		// aggressive caching in IE will return all XHR get requests instantenously with the template otherwise
 		reply.headers["Cache-Control"] = "no-cache";
+//		reply.headers["Cache-Control"] = "max-age=3600";
 
 		HTTPServer::reply(reply);
 
@@ -122,17 +134,27 @@ Data XHTMLInvoker::getDataModelVariables() {
 
 void XHTMLInvoker::send(const SendRequest& req) {
 	tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
+	SendRequest reqCopy(req);
+	_interpreter->getDataModel().replaceExpressions(reqCopy.content);
+	Data json = Data::fromJSON(reqCopy.content);
+	if (json) {
+		reqCopy.data = json;
+	}
+	
 	if (!_longPoll) {
-		_outQueue.push_back(req);
+		_outQueue.push_back(reqCopy);
 		return;
 	}
-	reply(req, _longPoll);
+	reply(reqCopy, _longPoll);
 	_longPoll.curlReq = NULL;
 }
 
 void XHTMLInvoker::reply(const SendRequest& req, const HTTPServer::Request& longPoll) {
 	HTTPServer::Reply reply(longPoll);
 
+	// is there JSON in the content?
+	std::string content = req.content;
+	
 	if (req.dom) {
 		std::stringstream ss;
 		Arabica::DOM::Node<std::string> content = req.dom.getDocumentElement();
@@ -164,8 +186,10 @@ void XHTMLInvoker::cancel(const std::string sendId) {
 
 void XHTMLInvoker::invoke(const InvokeRequest& req) {
 	_invokeReq = req;
-	HTTPServer::registerServlet(_interpreter->getName() + "/xhtml/" + req.invokeid, this);
-#if defined(__APPLE__) and defined(TARGET_OS_MAC)
+	HTTPServer::registerServlet(_interpreter->getName() + "/xhtml/" + req.invokeid + ".html", this);
+#if __APPLE__
+#	if TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR
+#	else
 	// see http://stackoverflow.com/questions/4177744/c-osx-open-default-browser
 	CFURLRef url = CFURLCreateWithBytes (
 	                   NULL,                        // allocator
@@ -177,6 +201,7 @@ void XHTMLInvoker::invoke(const InvokeRequest& req) {
 	LSOpenCFURLRef(url,0);
 	CFRelease(url);
 	return;
+#	endif
 #endif
 #ifdef _WIN32
 // see http://support.microsoft.com/kb/224816

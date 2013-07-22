@@ -6,6 +6,13 @@
 
 namespace uscxml {
 
+class ScriptEntityResolver : public Arabica::SAX::EntityResolver<std::string> {
+	virtual InputSourceT resolveEntity(const std::string& publicId, const std::string& systemId) {
+		Arabica::SAX::InputSource<std::string> is;
+		return is;
+	}
+};
+	
 class NameSpacingParser : public Arabica::SAX2DOM::Parser<std::string> {
 public:
 	NameSpacingParser();

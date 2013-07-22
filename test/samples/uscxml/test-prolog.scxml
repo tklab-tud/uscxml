@@ -36,7 +36,7 @@
       </foreach>
     </onentry>
     <transition target="s2"
-                cond="mother(martha, X), father(bob, X)"/>
+                cond="mother(martha, X), father(bob, X), in(s1)"/>
   </state>
   <state id="s2">
     <onentry>
@@ -49,21 +49,10 @@
       </send>
     </onentry>
     <transition 
-      target="idle"
+      target="end"
       event="foo"
       cond="member(element('p',_,_), X), event(data(X))" />
   </state>
 
-	<state id="idle">
-		<transition event="http.post" target="idle">
-			<log expr="listing." />
-			<respond status="200" to="event(origin(X))" />
-		</transition>
-		<transition event="http.post" cond="" target="idle">
-			<log expr="listing." />
-			<respond status="200" to="event(origin(X))" />
-		</transition>
-	</state>
-	
   <state id="end" final="true" />
 </scxml>

@@ -287,10 +287,13 @@ if (APPLE)
 endif()
 
 if (IOS)
-	set(CMAKE_OSX_DEPLOYMENT_TARGET 4.3)
-	foreach(FLAGS CMAKE_C_FLAGS CMAKE_CXX_FLAGS CMAKE_EXE_LINKER_FLAGS CMAKE_SHARED_LINKER_FLAGS CMAKE_MODULE_LINKER_FLAGS)
-			set(${FLAGS} "${${FLAGS}} -miphoneos-version-min=${CMAKE_OSX_DEPLOYMENT_TARGET}")
-  endforeach()
+	if (${CMAKE_GENERATOR} STREQUAL "Xcode")
+	else()
+		set(CMAKE_OSX_DEPLOYMENT_TARGET 4.3)
+		foreach(FLAGS CMAKE_C_FLAGS CMAKE_CXX_FLAGS CMAKE_EXE_LINKER_FLAGS CMAKE_SHARED_LINKER_FLAGS CMAKE_MODULE_LINKER_FLAGS)
+				set(${FLAGS} "${${FLAGS}} -miphoneos-version-min=${CMAKE_OSX_DEPLOYMENT_TARGET}")
+	  endforeach()
+	endif()
 endif()
 
 ############################################################
@@ -635,6 +638,10 @@ endif()
 if (NOT WIN32)
 	add_subdirectory(src/bindings)
 endif()
+
+#if (IOS)
+	add_subdirectory(apps/ios)
+#endif()
 
 ############################################################
 # Header Files

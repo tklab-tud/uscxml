@@ -45,6 +45,7 @@ protected:
 
 	float* _pos;
 	float* _listener;
+	float* _maxPos;
 	bool _audioDevOpen;
 	int _audioDevIndex;
 	struct miles_audio_device* _audioDev;

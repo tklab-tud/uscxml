@@ -32,6 +32,25 @@ else()
 	list (APPEND USCXML_FILES ${DIRMON_INVOKER})
 endif()
 
+
+# Location invoker to watch for proximity to GPS coordinates
+
+file(GLOB_RECURSE LOCATION_INVOKER
+	location/*.cpp
+	location/*.h
+)
+source_group("Invoker\\location" FILES ${LOCATION_INVOKER})
+if (BUILD_AS_PLUGINS)
+	add_library(
+		invoker_location SHARED 
+		${LOCATION_INVOKER})
+	target_link_libraries(invoker_location uscxml)
+	set_target_properties(invoker_location PROPERTIES FOLDER "Plugin Invoker")
+else()
+	list (APPEND USCXML_FILES ${LOCATION_INVOKER})
+endif()
+
+
 # System invoker to open a native command
 
 file(GLOB_RECURSE XHTML_INVOKER

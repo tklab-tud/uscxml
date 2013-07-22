@@ -28,10 +28,10 @@ SpatialAudio::SpatialAudio() {
 	_pos[0] = _pos[1] = _pos[2] = 0.0;
 	_listener = new float[3];
 	_listener[0] = _listener[1] = _listener[2] = 0.0;
+	_maxPos = new float[3];
+	_maxPos[0] = _maxPos[1] = _maxPos[2] = 1.0;
 	miles_init();
-
 }
-
 
 SpatialAudio::~SpatialAudio() {
 };
@@ -53,8 +53,8 @@ void SpatialAudio::send(const SendRequest& req) {
 		_audioDev = miles_audio_device_open(MILES_AUDIO_IO_OPENAL, _audioDevIndex, 0, 22050, 2, 1, 1024, false);
 		if (_audioDev != NULL) {
 			_audioDevOpen = true;
-			float rolloffFactor = 0.2;
-			miles_audio_device_control(MILES_AUDIO_IO_OPENAL, _audioDev, MILES_AUDIO_DEVICE_CTRL_SET_ROLLOFF_FACTOR, &rolloffFactor);
+//			float rolloffFactor = 1.0;
+//			miles_audio_device_control(MILES_AUDIO_IO_OPENAL, _audioDev, MILES_AUDIO_DEVICE_CTRL_SET_ROLLOFF_FACTOR, &rolloffFactor);
 		}
 	}
 
@@ -70,24 +70,30 @@ void SpatialAudio::send(const SendRequest& req) {
 
 			miles_audio_device_control(MILES_AUDIO_IO_OPENAL, _audioDev, MILES_AUDIO_DEVICE_CTRL_SET_POSITION, _pos);
 
+			
 			char* buffer = (char*)malloc(_audioDev->chunk_size);
 			// skip wav header
 			_dataStream.seekg(44);
-
+			
 			while(_dataStream.readsome(buffer, _audioDev->chunk_size) != 0) {
-				miles_audio_device_write(MILES_AUDIO_IO_OPENAL, _audioDev, buffer, _audioDev->chunk_size);
+				int written = 0;
+				while(written < _audioDev->chunk_size) {
+					written += miles_audio_device_write(MILES_AUDIO_IO_OPENAL, _audioDev, buffer + written, _audioDev->chunk_size - written);
+					tthread::this_thread::sleep_for(tthread::chrono::milliseconds(10));
+				}
 			}
+			_dataStream.seekg(0);
 			free(buffer);
 		}
 	} else if (boost::iequals(req.name, "move.listener")) {
 		if (_audioDevOpen) {
 			getPosFromParams(req.params, _listener);
 
-			std::cout << "Listener: ";
-			for (int i = 0; i < 3; i++) {
-				std::cout << _listener[i] << " ";
-			}
-			std::cout << std::endl;
+//			std::cout << "Listener: ";
+//			for (int i = 0; i < 3; i++) {
+//				std::cout << _listener[i] << " ";
+//			}
+//			std::cout << std::endl;
 
 			miles_audio_device_control(MILES_AUDIO_IO_OPENAL, _audioDev, MILES_AUDIO_DEVICE_CTRL_SET_LISTENER_POS, _listener);
 
@@ -118,6 +124,17 @@ void SpatialAudio::invoke(const InvokeRequest& req) {
 	}
 
 	getPosFromParams(req.params, _pos);
+
+	std::multimap<std::string, std::string>::const_iterator paramIter = req.params.begin();
+	while(paramIter != req.params.end()) {
+		if (boost::iequals(paramIter->first, "maxX"))
+			_maxPos[0] = strTo<float>(paramIter->second);
+		if (boost::iequals(paramIter->first, "maxY"))
+			_maxPos[1] = strTo<float>(paramIter->second);
+		if (boost::iequals(paramIter->first, "maxZ"))
+			_maxPos[2] = strTo<float>(paramIter->second);
+		paramIter++;
+	}
 
 	struct miles_audio_device_description *devices;
 	int ndevs;
@@ -170,6 +187,10 @@ void SpatialAudio::getPosFromParams(const std::multimap<std::string, std::string
 	} catch (boost::bad_lexical_cast& e) {
 		LOG(ERROR) << "Cannot interpret circle as float value in params: " << e.what();
 	}
+	
+	position[0] = position[0] / _maxPos[0];
+	position[1] = position[1] / _maxPos[1];
+	position[2] = position[2] / _maxPos[2];
 //  std::cout << _pos[0] << ":" << _pos[1] << ":" << _pos[2] << std::endl;
 
 }

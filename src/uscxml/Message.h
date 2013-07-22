@@ -26,7 +26,7 @@ public:
 	    INTERPRETED
 	};
 
-	Data() {}
+	Data() : type(INTERPRETED) {}
 	Data(const std::string& atom_, Type type_ = INTERPRETED) : atom(atom_), type(type_) {}
 	explicit Data(const Arabica::DOM::Node<std::string>& dom);
 	virtual ~Data() {}

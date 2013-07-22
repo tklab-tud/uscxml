@@ -264,13 +264,17 @@ void SWIDataModel::eval(const std::string& expr) {
 }
 
 bool SWIDataModel::evalAsBool(const std::string& expr) {
-	PlCompound compound(expr.c_str());
-	PlTermv termv(compound.arity());
-	for (int i = 0; i < compound.arity(); i++) {
-		termv[i] = compound[i + 1];
+	try {
+		PlCompound compound(expr.c_str());
+		PlTermv termv(compound.arity());
+		for (int i = 0; i < compound.arity(); i++) {
+			termv[i] = compound[i + 1];
+		}
+		PlQuery query(compound.name(), termv);
+		return query.next_solution() > 0;
+	} catch(...) {
+		return false;
 	}
-	PlQuery query(compound.name(), termv);
-	return query.next_solution() > 0;
 }
 
 std::string SWIDataModel::evalAsString(const std::string& expr) {
