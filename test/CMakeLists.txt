@@ -63,6 +63,11 @@ target_link_libraries(test-url uscxml)
 add_test(test-url ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-url)
 set_target_properties(test-url PROPERTIES FOLDER "Tests")
 
+# add_executable(test-initial-config src/test-initial-config.cpp)
+# target_link_libraries(test-initial-config uscxml)
+# add_test(test-url ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-initial-config ${CMAKE_SOURCE_DIR}/test/samples/uscxml/test-initial-config.scxml)
+# set_target_properties(test-initial-config PROPERTIES FOLDER "Tests")
+
 add_executable(test-datamodel src/test-datamodel.cpp)
 target_link_libraries(test-datamodel uscxml)
 add_test(test-datamodel ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-datamodel)

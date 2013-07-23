@@ -16,3 +16,5 @@ package/windows*
 *.tgz
 
 *.class
+
+/package/*

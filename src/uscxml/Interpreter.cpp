@@ -382,12 +382,12 @@ void InterpreterImpl::normalize(Arabica::DOM::Element<std::string>& scxml) {
 }
 
 void InterpreterImpl::receiveInternal(const Event& event) {
-	std::cout << _name << " receiveInternal: " << event.name << std::endl;
+	//std::cout << _name << " receiveInternal: " << event.name << std::endl;
 	_internalQueue.push_back(event);
 }
 
 void InterpreterImpl::receive(const Event& event, bool toFront)   {
-	std::cout << _name << " receive: " << event.name << std::endl;
+	//std::cout << _name << " receive: " << event.name << std::endl;
 	if (toFront) {
 		_externalQueue.push_front(event);
 	} else {
@@ -478,7 +478,7 @@ void InterpreterImpl::processDOMorText(const Arabica::DOM::Node<std::string>& no
 			
 			if (parser.parse(inputSource) && parser.getDocument()) {
 				dom = parser.getDocument();
-				std::cout << dom;
+				//std::cout << dom;
 				Node<std::string> content = dom.getDocumentElement();
 				assert(content.getNodeType() == Node_base::ELEMENT_NODE);
 				Node<std::string> container = dom.createElement("container");
@@ -1704,7 +1704,7 @@ void InterpreterImpl::setCmdLineOptions(int argc, char** argv) {
  */
 bool InterpreterImpl::hasLegalConfiguration() {
 
-#if 0
+#if VERBOSE
 	std::cout << "Checking whether {";
 	std::string seperator;
 	for (int i = 0; i < _configuration.size(); i++) {
@@ -1757,8 +1757,10 @@ bool InterpreterImpl::hasLegalConfiguration() {
 	for (int i = 0; i < _configuration.size(); i++) {
 		if (!isAtomic(_configuration[i]) && !isParallel(_configuration[i])) {
 			bool foundChildState = false;
+			//std::cout << _configuration[i] << std::endl;
 			NodeSet<std::string> childs = getChildStates(_configuration[i]);
 			for (int j = 0; j < childs.size(); j++) {
+				//std::cout << childs[j] << std::endl;
 				if (isMember(childs[j], _configuration)) {
 					if (foundChildState)
 						return false;
@@ -1775,8 +1777,9 @@ bool InterpreterImpl::hasLegalConfiguration() {
 		if (isParallel(_configuration[i])) {
 			NodeSet<std::string> childs = getChildStates(_configuration[i]);
 			for (int j = 0; j < childs.size(); j++) {
-				if (!isMember(childs[j], _configuration) && !isHistory(childs[j]))
+				if (!isMember(childs[j], _configuration) && !isHistory(childs[j])) {
 					return false;
+				}
 			}
 		}
 	}

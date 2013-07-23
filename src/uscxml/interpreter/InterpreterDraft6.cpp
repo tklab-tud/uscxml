@@ -78,33 +78,48 @@ void InterpreterDraft6::interpret() {
 
 	NodeSet<std::string> initialTransitions;
 
-	if (_userDefinedStartConfiguration.size() == 0) {
+	if (_userDefinedStartConfiguration.size() > 0) {
+		// we emulate entering a given configuration by creating a pseudo deep history
+		Element<std::string> initHistory = _document.createElementNS(_nsURL, "history");
+		initHistory.setAttribute("id", getUUID());
+		initHistory.setAttribute("type", "deep");
+		_scxml.insertBefore(initHistory, _scxml.getFirstChild());
+
+		std::string histId = ATTR(initHistory, "id");
+		NodeSet<std::string> histStates;
+		for (int i = 0; i < _userDefinedStartConfiguration.size(); i++) {
+			histStates.push_back(getState(_userDefinedStartConfiguration[i]));
+		}
+		_historyValue[histId] = histStates;
+		
+		Element<std::string> initialElem = _document.createElementNS(_nsURL, "initial");
+		initialElem.setAttribute("generated", "true");
+		Element<std::string> transitionElem = _document.createElementNS(_nsURL, "transition");
+		transitionElem.setAttribute("target", histId);
+		initialElem.appendChild(transitionElem);
+		_scxml.appendChild(initialElem);
+		initialTransitions.push_back(transitionElem);
+
+	} else {
 		// try to get initial transition form initial element
 		initialTransitions = _xpath.evaluate("/" + _xpathPrefix + "initial/" + _xpathPrefix + "transition", _scxml).asNodeSet();
-	}
-
-	if (initialTransitions.size() == 0) {
-		Arabica::XPath::NodeSet<std::string> initialStates;
-		if (_userDefinedStartConfiguration.size() > 0) {
-			// otherwise use user supplied config
-			initialStates = getStates(_userDefinedStartConfiguration);
-		} else {
-			// or fetch per draft
+		if (initialTransitions.size() == 0) {
+			Arabica::XPath::NodeSet<std::string> initialStates;
+			// fetch per draft
 			initialStates = getInitialStates();
-		}
-
-		assert(initialStates.size() > 0);
-		for (int i = 0; i < initialStates.size(); i++) {
-			Element<std::string> initialElem = _document.createElementNS(_nsURL, "initial");
-			initialElem.setAttribute("generated", "true");
-			Element<std::string> transitionElem = _document.createElementNS(_nsURL, "transition");
-			transitionElem.setAttribute("target", ATTR(initialStates[i], "id"));
-			initialElem.appendChild(transitionElem);
-			_scxml.appendChild(initialElem);
-			initialTransitions.push_back(transitionElem);
+			assert(initialStates.size() > 0);
+			for (int i = 0; i < initialStates.size(); i++) {
+				Element<std::string> initialElem = _document.createElementNS(_nsURL, "initial");
+				initialElem.setAttribute("generated", "true");
+				Element<std::string> transitionElem = _document.createElementNS(_nsURL, "transition");
+				transitionElem.setAttribute("target", ATTR(initialStates[i], "id"));
+				initialElem.appendChild(transitionElem);
+				_scxml.appendChild(initialElem);
+				initialTransitions.push_back(transitionElem);
+			}
 		}
 	}
-
+	
 	assert(initialTransitions.size() > 0);
 	enterStates(initialTransitions);
 //	_mutex.unlock();
@@ -228,12 +243,13 @@ void InterpreterDraft6::mainEventLoop() {
 		if (_dataModel && boost::iequals(_currEvent.name, "cancel.invoke." + _sessionId))
 			break;
 
-		if (_dataModel)
+		if (_dataModel) {
 			try {
 				_dataModel.setEvent(_currEvent);
 			} catch (Event e) {
 				LOG(ERROR) << "Syntax error while setting external event:" << std::endl << e << std::endl;
 			}
+		}
 		for (unsigned int i = 0; i < _configuration.size(); i++) {
 			NodeSet<std::string> invokes = filterChildElements(_xmlNSPrefix + "invoke", _configuration[i]);
 			for (unsigned int j = 0; j < invokes.size(); j++) {
@@ -823,6 +839,14 @@ void InterpreterDraft6::enterStates(const Arabica::XPath::NodeSet<std::string>& 
 		}
 	}
 	statesToEnter.to_document_order();
+
+#if VERBOSE
+	std::cout << "States to enter: ";
+	for (int i = 0; i < statesToEnter.size(); i++) {
+		std::cout << ATTR(statesToEnter[i], "id") << ", ";
+	}
+	std::cout << std::endl;
+#endif
 
 	monIter = _monitors.begin();
 	while(monIter != _monitors.end()) {

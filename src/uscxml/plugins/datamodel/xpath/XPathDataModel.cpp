@@ -725,7 +725,7 @@ NodeSetVariableResolver::resolveVariable(const std::string& namepaceUri,
 	if(n == _variables.end()) {
 		throw Event("error.execution");
 	}
-#if 1
+#if VERBOSE
 	std::cout << std::endl << "Getting " << name << ":" << std::endl;
 	for (int i = 0; i < n->second.size(); i++) {
 		std::cout << n->second[i].getNodeType() << " | " << n->second[i] << std::endl;
@@ -736,7 +736,7 @@ NodeSetVariableResolver::resolveVariable(const std::string& namepaceUri,
 }
 
 void NodeSetVariableResolver::setVariable(const std::string& name, const NodeSet<std::string>& value) {
-#if 1
+#if VERBOSE
 	std::cout << std::endl << "Setting " << name << ":" << std::endl;
 	for (int i = 0; i < value.size(); i++) {
 		std::cout << value[i].getNodeType() << " | " << value[i] << std::endl;
