@@ -26,6 +26,7 @@ list (APPEND SWI_SEARCH_PATHS
 	${CMAKE_FIND_ROOT_PATH}
 	"/usr/lib/swi-prolog/"
 	"/opt/local/"
+	"/usr/local/"
 	"C:/Program Files (x86)/swipl"
 	"C:/Program Files/swipl"
 )
@@ -38,6 +39,7 @@ foreach(SWI_SEARCH_PATH ${SWI_SEARCH_PATHS})
 	if(NOT LOOP_DONE)
 		file(GLOB SWI_VERSIONS ${SWI_SEARCH_PATH}/lib/swipl*)
 		if (SWI_VERSIONS)
+#			message("SWI_VERSIONS: ${SWI_VERSIONS}")
 			set(LOOP_DONE 1)
 			list(SORT SWI_VERSIONS)
 			list(REVERSE SWI_VERSIONS)
@@ -46,6 +48,8 @@ foreach(SWI_SEARCH_PATH ${SWI_SEARCH_PATHS})
 		endif()
 	endif()
 endforeach()
+
+#message("SWI_VERSION: ${SWI_VERSION}")
 
 set(SWI_PLATFORMS)
 foreach (SWI_SEARCH_PATH ${SWI_SEARCH_PATHS})
