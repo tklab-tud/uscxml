@@ -202,7 +202,9 @@ public:
 
 	void dump();
 	bool hasLegalConfiguration();
-
+	bool isLegalConfiguration(const Arabica::XPath::NodeSet<std::string>&);
+	bool isLegalConfiguration(const std::vector<std::string>&);
+	
 	static bool isState(const Arabica::DOM::Node<std::string>& state);
 	static bool isPseudoState(const Arabica::DOM::Node<std::string>& state);
 	static bool isTransitionTarget(const Arabica::DOM::Node<std::string>& elem);
@@ -503,6 +505,14 @@ public:
 	}
 	bool hasLegalConfiguration() {
 		return _impl->hasLegalConfiguration();
+	}
+
+	bool isLegalConfiguration(const Arabica::XPath::NodeSet<std::string>& config) {
+		return _impl->isLegalConfiguration(config);
+	}
+
+	bool isLegalConfiguration(const std::vector<std::string>& config) {
+		return _impl->isLegalConfiguration(config);
 	}
 
 	static bool isState(const Arabica::DOM::Node<std::string>& state) {

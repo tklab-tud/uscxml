@@ -1699,16 +1699,36 @@ void InterpreterImpl::setCmdLineOptions(int argc, char** argv) {
 	}
 }
 
+bool InterpreterImpl::hasLegalConfiguration() {
+	return isLegalConfiguration(_configuration);
+}
+
+bool InterpreterImpl::isLegalConfiguration(const std::vector<std::string>& config) {
+	NodeSet<std::string> states;
+	for (int i = 0; i < config.size(); i++) {
+		Node<std::string> state = getState(config[i]);
+		if (!state) {
+			LOG(INFO) << "No state with id '" << config[i] << "'";
+			return false;
+		}
+		states.push_back(state);
+		while((state = getParentState(state))) {
+			states.push_back(state);
+		};
+	}
+	return isLegalConfiguration(states);
+}
+
 /**
  * See: http://www.w3.org/TR/scxml/#LegalStateConfigurations
  */
-bool InterpreterImpl::hasLegalConfiguration() {
+bool InterpreterImpl::isLegalConfiguration(const NodeSet<std::string>& config) {
 
 #if VERBOSE
 	std::cout << "Checking whether {";
 	std::string seperator;
-	for (int i = 0; i < _configuration.size(); i++) {
-		std::cout << seperator << ATTR(_configuration[i], "id");
+	for (int i = 0; i < config.size(); i++) {
+		std::cout << seperator << ATTR(config[i], "id");
 		seperator = ", ";
 	}
 	std::cout << "} is legal" << std::endl;
@@ -1718,7 +1738,7 @@ bool InterpreterImpl::hasLegalConfiguration() {
 	NodeSet<std::string> scxmlChilds = getChildStates(_scxml);
 	bool foundScxmlChild = false;
 	for (int i = 0; i < scxmlChilds.size(); i++) {
-		if (isMember(scxmlChilds[i], _configuration)) {
+		if (isMember(scxmlChilds[i], config)) {
 			if (foundScxmlChild)
 				return false;
 			foundScxmlChild = true;
@@ -1729,8 +1749,8 @@ bool InterpreterImpl::hasLegalConfiguration() {
 
 	// The configuration contains one or more atomic states.
 	bool foundAtomicState = false;
-	for (int i = 0; i < _configuration.size(); i++) {
-		if (isAtomic(_configuration[i])) {
+	for (int i = 0; i < config.size(); i++) {
+		if (isAtomic(config[i])) {
 			foundAtomicState = true;
 			break;
 		}
@@ -1739,14 +1759,14 @@ bool InterpreterImpl::hasLegalConfiguration() {
 		return false;
 
 	// When the configuration contains an atomic state, it contains all of its <state> and <parallel> ancestors.
-	for (int i = 0; i < _configuration.size(); i++) {
-		if (isAtomic(_configuration[i])) {
-			Node<std::string> parent = _configuration[i];
+	for (int i = 0; i < config.size(); i++) {
+		if (isAtomic(config[i])) {
+			Node<std::string> parent = config[i];
 			while((parent = parent.getParentNode())) {
 				if (isState(parent) &&
 				        (boost::iequals(LOCALNAME(parent), "state") ||
 				         boost::iequals(LOCALNAME(parent), "parallel"))) {
-					if (!isMember(parent, _configuration))
+					if (!isMember(parent, config))
 						return false;
 				}
 			}
@@ -1754,14 +1774,14 @@ bool InterpreterImpl::hasLegalConfiguration() {
 	}
 
 	// When the configuration contains a non-atomic <state>, it contains one and only one of the state's children
-	for (int i = 0; i < _configuration.size(); i++) {
-		if (!isAtomic(_configuration[i]) && !isParallel(_configuration[i])) {
+	for (int i = 0; i < config.size(); i++) {
+		if (!isAtomic(config[i]) && !isParallel(config[i])) {
 			bool foundChildState = false;
-			//std::cout << _configuration[i] << std::endl;
-			NodeSet<std::string> childs = getChildStates(_configuration[i]);
+			//std::cout << config[i] << std::endl;
+			NodeSet<std::string> childs = getChildStates(config[i]);
 			for (int j = 0; j < childs.size(); j++) {
 				//std::cout << childs[j] << std::endl;
-				if (isMember(childs[j], _configuration)) {
+				if (isMember(childs[j], config)) {
 					if (foundChildState)
 						return false;
 					foundChildState = true;
@@ -1773,11 +1793,11 @@ bool InterpreterImpl::hasLegalConfiguration() {
 	}
 
 	// If the configuration contains a <parallel> state, it contains all of its children
-	for (int i = 0; i < _configuration.size(); i++) {
-		if (isParallel(_configuration[i])) {
-			NodeSet<std::string> childs = getChildStates(_configuration[i]);
+	for (int i = 0; i < config.size(); i++) {
+		if (isParallel(config[i])) {
+			NodeSet<std::string> childs = getChildStates(config[i]);
 			for (int j = 0; j < childs.size(); j++) {
-				if (!isMember(childs[j], _configuration) && !isHistory(childs[j])) {
+				if (!isMember(childs[j], config) && !isHistory(childs[j])) {
 					return false;
 				}
 			}
