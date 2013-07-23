@@ -61,7 +61,8 @@ void NULLDataModel::setForeach(const std::string& item,
                                uint32_t iteration) {
 }
 
-void NULLDataModel::eval(const std::string& expr) {
+void NULLDataModel::eval(const Arabica::DOM::Element<std::string>& scriptElem,
+												 const std::string& expr) {
 }
 
 bool NULLDataModel::isDeclared(const std::string& expr) {

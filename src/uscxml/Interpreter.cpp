@@ -1122,7 +1122,7 @@ void InterpreterImpl::executeContent(const Arabica::DOM::Node<std::string>& cont
 
 
 				try {
-					_dataModel.eval(srcContent.str());
+					_dataModel.eval((Element<std::string>)content, srcContent.str());
 				}
 				CATCH_AND_DISTRIBUTE("Syntax error while executing script element from '" << ATTR(content, "src") << "':")
 			} else {
@@ -1130,7 +1130,7 @@ void InterpreterImpl::executeContent(const Arabica::DOM::Node<std::string>& cont
 					// search for the text node with the actual script
 					if (content.getFirstChild().getNodeType() == Node_base::TEXT_NODE) {
 						try {
-							_dataModel.eval(content.getFirstChild().getNodeValue());
+							_dataModel.eval((Element<std::string>)content, content.getFirstChild().getNodeValue());
 						}
 						CATCH_AND_DISTRIBUTE("Syntax error while executing script element")
 					}

@@ -51,7 +51,9 @@ public:
 	                  const std::string& content);
 	virtual void init(const std::string& location, const Data& data);
 
-	virtual void eval(const std::string& expr);
+	virtual void eval(const Arabica::DOM::Element<std::string>& scriptElem,
+										const std::string& expr);
+	
 	virtual bool isDeclared(const std::string& expr);
 
 	virtual Data getStringAsData(const std::string& content);

@@ -265,7 +265,9 @@ public:
 	virtual void pushContext() = 0;
 	virtual void popContext() = 0;
 
-	virtual void eval(const std::string& expr) = 0;
+	virtual void eval(const Arabica::DOM::Element<std::string>& scriptElem,
+										const std::string& expr) = 0;
+	
 	virtual std::string evalAsString(const std::string& expr) = 0;
 	virtual bool evalAsBool(const std::string& expr) = 0;
 
@@ -326,8 +328,9 @@ public:
 		return _impl->popContext();
 	}
 
-	virtual void eval(const std::string& expr) {
-		return _impl->eval(expr);
+	virtual void eval(const Arabica::DOM::Element<std::string>& scriptElem,
+										const std::string& expr) {
+		return _impl->eval(scriptElem, expr);
 	}
 	virtual std::string evalAsString(const std::string& expr) {
 		return _impl->evalAsString(expr);

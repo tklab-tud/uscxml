@@ -13,6 +13,9 @@
 
 namespace uscxml {
 
+using namespace Arabica::XPath;
+using namespace Arabica::DOM;
+	
 #ifdef BUILD_AS_PLUGINS
 PLUMA_CONNECTOR
 bool connect(pluma::Host& host) {
@@ -61,8 +64,8 @@ boost::shared_ptr<DataModelImpl> JSCDataModel::create(InterpreterImpl* interpret
 	dm->_ctx = JSGlobalContextCreate(NULL);
 	dm->_interpreter = interpreter;
 
-	dm->_dom = new Arabica::DOM::JSCDOM();
-	dm->_dom->xpath = new Arabica::XPath::XPath<std::string>();
+	dm->_dom = new JSCDOM();
+	dm->_dom->xpath = new XPath<std::string>();
 	dm->_dom->xpath->setNamespaceContext(interpreter->getNSContext());
 
 	// introduce global functions as objects for private data
@@ -96,18 +99,18 @@ boost::shared_ptr<DataModelImpl> JSCDataModel::create(InterpreterImpl* interpret
 	JSStringRelease(sessionIdName);
 	JSStringRelease(sessionId);
 
-	Arabica::DOM::JSCDocument::JSCDocumentPrivate* privData = new Arabica::DOM::JSCDocument::JSCDocumentPrivate();
+	JSCDocument::JSCDocumentPrivate* privData = new JSCDocument::JSCDocumentPrivate();
 	if (interpreter) {
-		privData->nativeObj = new Arabica::DOM::Document<std::string>(interpreter->getDocument());
+		privData->nativeObj = new Document<std::string>(interpreter->getDocument());
 		privData->dom = dm->_dom;
 
-		JSObjectRef documentObject = JSObjectMake(dm->_ctx, Arabica::DOM::JSCDocument::getTmpl(), privData);
+		JSObjectRef documentObject = JSObjectMake(dm->_ctx, JSCDocument::getTmpl(), privData);
 		JSObjectRef globalObject = JSContextGetGlobalObject(dm->_ctx);
 		JSObjectSetProperty(dm->_ctx, globalObject, JSStringCreateWithUTF8CString("document"), documentObject, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontDelete, NULL);
 	}
 
-	dm->eval("_invokers = {};");
-	dm->eval("_x = {};");
+	dm->eval(Element<std::string>(), "_invokers = {};");
+	dm->eval(Element<std::string>(), "_x = {};");
 
 	return dm;
 }
@@ -123,11 +126,11 @@ void JSCDataModel::popContext() {
 }
 
 void JSCDataModel::setEvent(const Event& event) {
-	Arabica::DOM::JSCSCXMLEvent::JSCSCXMLEventPrivate* privData = new Arabica::DOM::JSCSCXMLEvent::JSCSCXMLEventPrivate();
+	JSCSCXMLEvent::JSCSCXMLEventPrivate* privData = new JSCSCXMLEvent::JSCSCXMLEventPrivate();
 	privData->nativeObj = new Event(event);
 	privData->dom = _dom;
 
-	JSObjectRef eventObj = JSObjectMake(_ctx, Arabica::DOM::JSCSCXMLEvent::getTmpl(), privData);
+	JSObjectRef eventObj = JSObjectMake(_ctx, JSCSCXMLEvent::getTmpl(), privData);
 	JSObjectRef globalObject = JSContextGetGlobalObject(_ctx);
 	
 	JSValueRef exception = NULL;
@@ -355,7 +358,8 @@ bool JSCDataModel::isDeclared(const std::string& expr) {
 	return true;
 }
 
-void JSCDataModel::eval(const std::string& expr) {
+void JSCDataModel::eval(const Element<std::string>& scriptElem,
+												const std::string& expr) {
 	evalAsValue(expr);
 }
 
@@ -394,8 +398,8 @@ JSValueRef JSCDataModel::evalAsValue(const std::string& expr, bool dontThrow) {
 	return result;
 }
 
-void JSCDataModel::assign(const Arabica::DOM::Element<std::string>& assignElem,
-                          const Arabica::DOM::Document<std::string>& doc,
+void JSCDataModel::assign(const Element<std::string>& assignElem,
+                          const Document<std::string>& doc,
                           const std::string& content) {
 	std::string key;
 	JSValueRef exception = NULL;
@@ -426,13 +430,13 @@ void JSCDataModel::assign(const Arabica::DOM::Element<std::string>& assignElem,
 	}
 }
 
-JSValueRef JSCDataModel::getDocumentAsValue(const Arabica::DOM::Document<std::string>& doc) {
+JSValueRef JSCDataModel::getDocumentAsValue(const Document<std::string>& doc) {
 
-	struct Arabica::DOM::JSCDocument::JSCDocumentPrivate* retPrivData = new Arabica::DOM::JSCDocument::JSCDocumentPrivate();
+	struct JSCDocument::JSCDocumentPrivate* retPrivData = new JSCDocument::JSCDocumentPrivate();
 	retPrivData->dom = _dom;
-	retPrivData->nativeObj = new Arabica::DOM::Document<std::string>(doc);
+	retPrivData->nativeObj = new Document<std::string>(doc);
 
-	JSObjectRef retObj = JSObjectMake(_ctx, Arabica::DOM::JSCDocument::getTmpl(), retPrivData);
+	JSObjectRef retObj = JSObjectMake(_ctx, JSCDocument::getTmpl(), retPrivData);
 
 	return retObj;
 }
@@ -443,8 +447,8 @@ void JSCDataModel::assign(const std::string& location, const Data& data) {
 	evalAsValue(location + " = " + ssJSON.str());
 }
 
-void JSCDataModel::init(const Arabica::DOM::Element<std::string>& dataElem,
-                        const Arabica::DOM::Document<std::string>& doc,
+void JSCDataModel::init(const Element<std::string>& dataElem,
+                        const Document<std::string>& doc,
                         const std::string& content) {
 	try {
 		assign(dataElem, doc, content);

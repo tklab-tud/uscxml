@@ -14,6 +14,9 @@
 
 namespace uscxml {
 
+using namespace Arabica::XPath;
+using namespace Arabica::DOM;
+
 #ifdef BUILD_AS_PLUGINS
 PLUMA_CONNECTOR
 bool connect(pluma::Host& host) {
@@ -32,9 +35,9 @@ boost::shared_ptr<DataModelImpl> V8DataModel::create(InterpreterImpl* interprete
 	v8::Locker locker;
 	v8::HandleScope scope;
 
-	dm->_dom = new Arabica::DOM::V8DOM();
+	dm->_dom = new V8DOM();
 //  dom->interpreter = interpreter;
-	dm->_dom->xpath = new Arabica::XPath::XPath<std::string>();
+	dm->_dom->xpath = new XPath<std::string>();
 	dm->_dom->xpath->setNamespaceContext(interpreter->getNSContext());
 
 	// see http://stackoverflow.com/questions/3171418/v8-functiontemplate-class-instance
@@ -48,13 +51,13 @@ boost::shared_ptr<DataModelImpl> V8DataModel::create(InterpreterImpl* interprete
 	v8::Context::Scope contextScope(context);
 
 	// instantiate the document function
-	v8::Handle<v8::Function> docCtor = Arabica::DOM::V8Document::getTmpl()->GetFunction();
+	v8::Handle<v8::Function> docCtor = V8Document::getTmpl()->GetFunction();
 	v8::Handle<v8::Object> docObj = docCtor->NewInstance();
 
-	Arabica::DOM::V8Document::V8DocumentPrivate* privData = new Arabica::DOM::V8Document::V8DocumentPrivate();
-	privData->nativeObj = new Arabica::DOM::Document<std::string>(interpreter->getDocument());
+	V8Document::V8DocumentPrivate* privData = new V8Document::V8DocumentPrivate();
+	privData->nativeObj = new Document<std::string>(interpreter->getDocument());
 	privData->dom = dm->_dom;
-	docObj->SetInternalField(0, Arabica::DOM::V8DOM::toExternal(privData));
+	docObj->SetInternalField(0, V8DOM::toExternal(privData));
 
 	context->Global()->Set(v8::String::New("document"), docObj);
 
@@ -74,8 +77,8 @@ boost::shared_ptr<DataModelImpl> V8DataModel::create(InterpreterImpl* interprete
 	dm->_contexts.push_back(context);
 
 	// instantiate objects - we have to have a context for that!
-	dm->eval("_invokers = {};");
-	dm->eval("_x = {};");
+	dm->eval(Element<std::string>(), "_invokers = {};");
+	dm->eval(Element<std::string>(), "_x = {};");
 
 	return dm;
 }
@@ -91,7 +94,7 @@ void V8DataModel::setWithException(v8::Local<v8::String> property, v8::Local<v8:
 }
 
 v8::Handle<v8::Value> V8DataModel::getIOProcessors(v8::Local<v8::String> property, const v8::AccessorInfo& info) {
-	V8DataModel* dataModel = Arabica::DOM::V8DOM::toClassPtr<V8DataModel>(info.Data());
+	V8DataModel* dataModel = V8DOM::toClassPtr<V8DataModel>(info.Data());
 
 	if (dataModel->_ioProcessors.IsEmpty()) {
 		dataModel->_ioProcessors = v8::Persistent<v8::Object>::New(v8::Object::New());
@@ -135,14 +138,14 @@ void V8DataModel::setEvent(const Event& event) {
 	v8::Context::Scope contextScope(_contexts.front());
 	v8::Handle<v8::Object> global = _contexts.front()->Global();
 
-	v8::Handle<v8::Function> eventCtor = Arabica::DOM::V8SCXMLEvent::getTmpl()->GetFunction();
+	v8::Handle<v8::Function> eventCtor = V8SCXMLEvent::getTmpl()->GetFunction();
 	v8::Persistent<v8::Object> eventObj = v8::Persistent<v8::Object>::New(eventCtor->NewInstance());
 
-	Arabica::DOM::V8SCXMLEvent::V8SCXMLEventPrivate* privData = new Arabica::DOM::V8SCXMLEvent::V8SCXMLEventPrivate();
+	V8SCXMLEvent::V8SCXMLEventPrivate* privData = new V8SCXMLEvent::V8SCXMLEventPrivate();
 	privData->nativeObj = new Event(event);
 	privData->dom = _dom;
-	eventObj->SetInternalField(0, Arabica::DOM::V8DOM::toExternal(privData));
-	eventObj.MakeWeak(0, Arabica::DOM::V8SCXMLEvent::jsDestructor);
+	eventObj->SetInternalField(0, V8DOM::toExternal(privData));
+	eventObj.MakeWeak(0, V8SCXMLEvent::jsDestructor);
 
 	if (event.dom) {
 		eventObj->Set(v8::String::New("data"), getDocumentAsValue(event.dom));
@@ -261,16 +264,16 @@ Data V8DataModel::getValueAsData(const v8::Handle<v8::Value>& value, std::set<v8
 	return data;
 }
 
-v8::Handle<v8::Value> V8DataModel::getDocumentAsValue(const Arabica::DOM::Document<std::string>& doc) {
-	v8::Handle<v8::Function> retCtor = Arabica::DOM::V8Document::getTmpl()->GetFunction();
+v8::Handle<v8::Value> V8DataModel::getDocumentAsValue(const Document<std::string>& doc) {
+	v8::Handle<v8::Function> retCtor = V8Document::getTmpl()->GetFunction();
 	v8::Persistent<v8::Object> retObj = v8::Persistent<v8::Object>::New(retCtor->NewInstance());
 
-	struct Arabica::DOM::V8Document::V8DocumentPrivate* retPrivData = new Arabica::DOM::V8Document::V8DocumentPrivate();
+	struct V8Document::V8DocumentPrivate* retPrivData = new V8Document::V8DocumentPrivate();
 	retPrivData->dom = _dom;
-	retPrivData->nativeObj = new Arabica::DOM::Document<std::string>(doc);
+	retPrivData->nativeObj = new Document<std::string>(doc);
 
-	retObj->SetInternalField(0, Arabica::DOM::V8DOM::toExternal(retPrivData));
-	retObj.MakeWeak(0, Arabica::DOM::V8Document::jsDestructor);
+	retObj->SetInternalField(0, V8DOM::toExternal(retPrivData));
+	retObj.MakeWeak(0, V8Document::jsDestructor);
 
 	return retObj;
 }
@@ -363,7 +366,8 @@ void V8DataModel::setForeach(const std::string& item,
 	}
 }
 
-void V8DataModel::eval(const std::string& expr) {
+void V8DataModel::eval(const Element<std::string>& scriptElem,
+                       const std::string& expr) {
 	v8::Locker locker;
 	v8::HandleScope handleScope;
 	v8::Context::Scope contextScope(_contexts.back());
@@ -411,19 +415,19 @@ std::string V8DataModel::evalAsString(const std::string& expr) {
 		v8::Local<v8::Object> obj = result->ToObject();
 		v8::Local<v8::Object> proto;
 
-		proto = obj->FindInstanceInPrototypeChain(Arabica::DOM::V8Document::getTmpl());
+		proto = obj->FindInstanceInPrototypeChain(V8Document::getTmpl());
 		if (!proto.IsEmpty()) {
-			struct Arabica::DOM::V8Document::V8DocumentPrivate* privData =
-			    Arabica::DOM::V8DOM::toClassPtr<Arabica::DOM::V8Document::V8DocumentPrivate >(obj->GetInternalField(0));
+			struct V8Document::V8DocumentPrivate* privData =
+			    V8DOM::toClassPtr<V8Document::V8DocumentPrivate >(obj->GetInternalField(0));
 			std::stringstream ss;
 			ss << privData->nativeObj->getDocumentElement();
 			return ss.str();
 		}
 
-		proto = obj->FindInstanceInPrototypeChain(Arabica::DOM::V8Node::getTmpl());
+		proto = obj->FindInstanceInPrototypeChain(V8Node::getTmpl());
 		if (!proto.IsEmpty()) {
-			struct Arabica::DOM::V8Node::V8NodePrivate* privData =
-			    Arabica::DOM::V8DOM::toClassPtr<Arabica::DOM::V8Node::V8NodePrivate >(obj->GetInternalField(0));
+			struct V8Node::V8NodePrivate* privData =
+			    V8DOM::toClassPtr<V8Node::V8NodePrivate >(obj->GetInternalField(0));
 			std::stringstream ss;
 			ss << privData->nativeObj;
 			return ss.str();
@@ -450,8 +454,8 @@ double V8DataModel::evalAsNumber(const std::string& expr) {
 	return 0;
 }
 
-void V8DataModel::assign(const Arabica::DOM::Element<std::string>& assignElem,
-                         const Arabica::DOM::Document<std::string>& doc,
+void V8DataModel::assign(const Element<std::string>& assignElem,
+                         const Document<std::string>& doc,
                          const std::string& content) {
 	v8::Locker locker;
 	v8::HandleScope handleScope;
@@ -493,8 +497,8 @@ void V8DataModel::assign(const std::string& location,
 	evalAsValue(location + " = " + ssJSON.str());
 }
 
-void V8DataModel::init(const Arabica::DOM::Element<std::string>& dataElem,
-                       const Arabica::DOM::Document<std::string>& doc,
+void V8DataModel::init(const Element<std::string>& dataElem,
+                       const Document<std::string>& doc,
                        const std::string& content) {
 	try {
 		assign(dataElem, doc, content);

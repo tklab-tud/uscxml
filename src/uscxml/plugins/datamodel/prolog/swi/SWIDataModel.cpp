@@ -10,6 +10,9 @@
 
 namespace uscxml {
 
+using namespace Arabica::XPath;
+using namespace Arabica::DOM;
+
 #ifdef BUILD_AS_PLUGINS
 PLUMA_CONNECTOR
 bool connect(pluma::Host& host) {
@@ -86,7 +89,7 @@ boost::shared_ptr<DataModelImpl> SWIDataModel::create(InterpreterImpl* interpret
 foreign_t SWIDataModel::inPredicate(term_t a0, int arity, void* context) {
 	char *s;
 	if ( PL_get_atom_chars(a0, &s) ) {
-		Arabica::XPath::NodeSet<std::string> config = _swiInterpreterPtr->getConfiguration();
+		NodeSet<std::string> config = _swiInterpreterPtr->getConfiguration();
 		for (int i = 0; i < config.size(); i++) {
 			if (HAS_ATTR(config[i], "id") && strcmp(ATTR(config[i], "id").c_str(), s) == 0) {
 				return TRUE;
@@ -258,9 +261,13 @@ void SWIDataModel::setForeach(const std::string& item,
 	}
 }
 
-void SWIDataModel::eval(const std::string& expr) {
-	URL localPLFile = URL::toLocalFile(expr, ".pl");
-	PlCall("user", "load_files", PlTermv(localPLFile.asLocalFile(".pl").c_str())) || LOG(ERROR) << "Could not execute prolog from file";
+void SWIDataModel::eval(const Element<std::string>& scriptElem, const std::string& expr) {
+	if (scriptElem && HAS_ATTR(scriptElem, "type") && boost::iequals(ATTR(scriptElem, "type"), "query")) {
+		evalAsBool(expr);
+	} else {
+		URL localPLFile = URL::toLocalFile(expr, ".pl");
+		PlCall("user", "load_files", PlTermv(localPLFile.asLocalFile(".pl").c_str())) || LOG(ERROR) << "Could not execute prolog from file";
+	}
 }
 
 bool SWIDataModel::evalAsBool(const std::string& expr) {
@@ -333,8 +340,8 @@ std::map<std::string, PlTerm> SWIDataModel::resolveAtoms(PlTerm& term, PlTerm& o
 	return atoms;
 }
 
-void SWIDataModel::assign(const Arabica::DOM::Element<std::string>& assignElem,
-                          const Arabica::DOM::Document<std::string>& doc,
+void SWIDataModel::assign(const Element<std::string>& assignElem,
+                          const Document<std::string>& doc,
                           const std::string& content) {
 	std::string expr = content;
 	std::string predicate;
@@ -365,7 +372,7 @@ void SWIDataModel::assign(const Arabica::DOM::Element<std::string>& assignElem,
 		if (doc) {
 			std::stringstream dataInitStr;
 			std::stringstream xmlDoc;
-			Arabica::DOM::Node<std::string> node = Event::getFirstDOMElement(doc);
+			Node<std::string> node = Event::getFirstDOMElement(doc);
 			while(node) {
 				xmlDoc << node;
 				node = node.getNextSibling();
@@ -394,7 +401,7 @@ void SWIDataModel::assign(const Arabica::DOM::Element<std::string>& assignElem,
 		}
 	} else if (expr.length() > 0) {
 		if (boost::equals(TAGNAME(assignElem), "data")) {
-			eval(expr);
+			eval(assignElem, expr);
 		} else {
 			std::stringstream exprStream(expr);
 			std::string item;
@@ -409,11 +416,11 @@ void SWIDataModel::assign(const Arabica::DOM::Element<std::string>& assignElem,
 }
 
 void SWIDataModel::assign(const std::string& location, const Data& data) {
-	eval(data.atom);
+	eval(Element<std::string>(), data.atom);
 }
 
-void SWIDataModel::init(const Arabica::DOM::Element<std::string>& dataElem,
-                        const Arabica::DOM::Document<std::string>& doc,
+void SWIDataModel::init(const Element<std::string>& dataElem,
+                        const Document<std::string>& doc,
                         const std::string& content) {
 	assign(dataElem, doc, content);
 }

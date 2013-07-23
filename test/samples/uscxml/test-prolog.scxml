@@ -1,6 +1,6 @@
 <scxml datamodel="prolog">
   <datamodel>
-		<data src="" />
+    <data src="" />
     <data id="father">
       bob, jim.
       bob, john.
@@ -22,6 +22,15 @@
   </datamodel>
   <state id="s1">
     <onentry>
+      <log label="Entering s1" expr="listing." />
+      <script>
+        :- dynamic ampel/1.
+        ampel(false).
+        ampel(X) :- retract(ampel(_)), assertz(ampel(X)).
+      </script>
+      <script type="query">
+        ampel(true).
+      </script>
       <assign location="">
         retract(father(bob, jim)).
         assert(father(steve, jim)).
