@@ -382,12 +382,12 @@ void InterpreterImpl::normalize(Arabica::DOM::Element<std::string>& scxml) {
 }
 
 void InterpreterImpl::receiveInternal(const Event& event) {
-	//std::cout << _name << " receiveInternal: " << event.name << std::endl;
+	std::cout << _name << " receiveInternal: " << event.name << std::endl;
 	_internalQueue.push_back(event);
 }
 
 void InterpreterImpl::receive(const Event& event, bool toFront)   {
-	//std::cout << _name << " receive: " << event.name << std::endl;
+	std::cout << _name << " receive: " << event.name << std::endl;
 	if (toFront) {
 		_externalQueue.push_front(event);
 	} else {
@@ -695,6 +695,8 @@ void InterpreterImpl::send(const Arabica::DOM::Node<std::string>& element) {
 					e.name = "error.execution";
 					receiveInternal(e);
 				}
+			} else if (sendReq.content.length() > 0) {
+				sendReq.data = Data::fromJSON(sendReq.content);
 			}
 		}
 	} catch (Event e) {
@@ -822,7 +824,10 @@ void InterpreterImpl::invoke(const Arabica::DOM::Node<std::string>& element) {
 						e.name = "error.execution";
 						receiveInternal(e);
 					}
+				} else if (invokeReq.content.length() > 0) {
+					invokeReq.data = Data::fromJSON(invokeReq.content);
 				}
+
 			}
 		} catch (Event e) {
 			LOG(ERROR) << "Syntax error in send element content:" << std::endl << e << std::endl;
@@ -1062,18 +1067,16 @@ void InterpreterImpl::executeContent(const Arabica::DOM::Node<std::string>& cont
 	} else if (boost::iequals(TAGNAME(content), _xmlNSPrefix + "log")) {
 		// --- LOG --------------------------
 		Arabica::DOM::Element<std::string> logElem = (Arabica::DOM::Element<std::string>)content;
+		if (logElem.hasAttribute("label"))
+			std::cout << logElem.getAttribute("label") << ": ";
 		if (logElem.hasAttribute("expr")) {
-			if (logElem.hasAttribute("label"))
-				std::cout << logElem.getAttribute("label") << ": ";
-			if (_dataModel) {
-				try {
-					std::cout << _dataModel.evalAsString(logElem.getAttribute("expr")) << std::endl;
-				}
-				CATCH_AND_DISTRIBUTE("Syntax error in expr attribute of log element:")
-			} else {
-				if (logElem.hasAttribute("label"))
-					std::cout << std::endl;
+			try {
+				std::cout << _dataModel.evalAsString(logElem.getAttribute("expr")) << std::endl;
 			}
+			CATCH_AND_DISTRIBUTE("Syntax error in expr attribute of log element:")
+		} else {
+			if (logElem.hasAttribute("label"))
+				std::cout << std::endl;			
 		}
 	} else if (boost::iequals(TAGNAME(content), _xmlNSPrefix + "assign")) {
 		// --- ASSIGN --------------------------
@@ -1345,9 +1348,12 @@ Arabica::DOM::Node<std::string> InterpreterImpl::getState(const std::string& sta
 
 FOUND:
 	if (target.size() > 0) {
-		assert(target.size() == 1);
-		_cachedStates[stateId] = target[0];
-		return target[0];
+		for (int i = 0; i < target.size(); i++) {
+			if (!isInEmbeddedDocument(target[i])) {
+				_cachedStates[stateId] = target[i];
+				return target[i];
+			}
+		}
 	}
 	// return the empty node
 	return Arabica::DOM::Node<std::string>();
@@ -1546,6 +1552,21 @@ bool InterpreterImpl::isFinal(const Arabica::DOM::Node<std::string>& state) {
 		return true;
 	if (HAS_ATTR(state, "final") && boost::iequals("true", ATTR(state, "final")))
 		return true;
+	return false;
+}
+
+bool InterpreterImpl::isInEmbeddedDocument(const Node<std::string>& node) {
+	// a node is in an embedded document if there is a content element in its parents
+	Node<std::string> parent = node;
+	while(parent) {
+		if(parent == _scxml) {
+			return false;
+		}
+		if(boost::iequals(parent.getLocalName(), "content")) {
+			return true;
+		}
+		parent = parent.getParentNode();
+	}
 	return false;
 }
 

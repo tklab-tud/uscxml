@@ -26,7 +26,7 @@ if (GLOG_LIBRARY_DEBUG)
 	list(APPEND GLOG_LIBRARY debug ${GLOG_LIBRARY_DEBUG})
 else()
 	if (UNIX)
-		list(APPEND V8_LIBRARY debug ${GLOG_LIBRARY_RELEASE})
+		list(APPEND GLOG_LIBRARY debug ${GLOG_LIBRARY_RELEASE})
 	endif()
 endif()
 

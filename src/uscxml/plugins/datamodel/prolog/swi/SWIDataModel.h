@@ -66,8 +66,8 @@ protected:
 	std::map<std::string, PlTerm> resolveAtoms(PlTerm& term, PlTerm& orig);
 
 	Event _event;
-	PlEngine* _plEngine;
 
+	std::string _plModule;
 	std::string _name;
 	std::string _sessionId;
 };

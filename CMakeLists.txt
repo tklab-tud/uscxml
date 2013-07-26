@@ -505,6 +505,11 @@ if (FFMPEG_FOUND)
 	include_directories (${FFMPEG_INCLUDE_DIR})		
 endif()
 
+find_package(LIBICAL)
+if (LIBICAL_FOUND)
+	include_directories (${LIBICAL_INCLUDE_DIR})		
+endif()
+
 
 if (WIN32)
 	find_package(UMUNDO COMPONENTS convenience)

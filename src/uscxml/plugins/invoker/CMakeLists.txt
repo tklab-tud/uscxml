@@ -127,6 +127,26 @@ if (FFMPEG_FOUND)
 endif()
 
 
+# calendar invoker
+
+if (LIBICAL_FOUND)
+	file(GLOB_RECURSE CALENDAR_INVOKER
+		calendar/*.cpp
+		calendar/*.h
+	)
+	source_group("Invoker\\caledar" FILES ${CALENDAR_INVOKER})
+	if (BUILD_AS_PLUGINS)
+		add_library(
+			invoker_calendar SHARED 
+			${CALENDAR_INVOKER})
+		target_link_libraries(invoker_calendar uscxml)
+		set_target_properties(invoker_calendar PROPERTIES FOLDER "Plugin Invoker")
+	else()
+		list (APPEND USCXML_FILES ${CALENDAR_INVOKER})
+	endif()
+endif()
+
+
 # UMUNDO invoker 
 
 if (UMUNDO_FOUND)

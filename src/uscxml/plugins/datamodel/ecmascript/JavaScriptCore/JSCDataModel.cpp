@@ -57,6 +57,7 @@ JSClassDefinition JSCDataModel::jsInClassDef = { 0, 0, "In", 0, 0, 0, 0, 0, 0, 0
 JSClassDefinition JSCDataModel::jsPrintClassDef = { 0, 0, "print", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, jsPrint, 0, 0, 0 };
 
 JSClassDefinition JSCDataModel::jsIOProcessorsClassDef = { 0, 0, "ioProcessors", 0, 0, 0, 0, 0, jsIOProcessorHasProp, jsIOProcessorGetProp, 0, 0, jsIOProcessorListProps, 0, 0, 0, 0 };
+JSClassDefinition JSCDataModel::jsInvokersClassDef = { 0, 0, "invokers", 0, 0, 0, 0, 0, jsInvokerHasProp, jsInvokerGetProp, 0, 0, jsInvokerListProps, 0, 0, 0, 0 };
 
 boost::shared_ptr<DataModelImpl> JSCDataModel::create(InterpreterImpl* interpreter) {
 	boost::shared_ptr<JSCDataModel> dm = boost::shared_ptr<JSCDataModel>(new JSCDataModel());
@@ -80,6 +81,12 @@ boost::shared_ptr<DataModelImpl> JSCDataModel::create(InterpreterImpl* interpret
 	JSStringRef printName = JSStringCreateWithUTF8CString("print");
 	JSObjectSetProperty(dm->_ctx, JSContextGetGlobalObject(dm->_ctx), printName, jsPrint, kJSPropertyAttributeNone, NULL);
 	JSStringRelease(inName);
+
+	JSClassRef jsInvokerClassRef = JSClassCreate(&jsInvokersClassDef);
+	JSObjectRef jsInvoker = JSObjectMake(dm->_ctx, jsInvokerClassRef, dm.get());
+	JSStringRef invokerName = JSStringCreateWithUTF8CString("_invokers");
+	JSObjectSetProperty(dm->_ctx, JSContextGetGlobalObject(dm->_ctx), invokerName, jsInvoker, kJSPropertyAttributeNone, NULL);
+	JSStringRelease(invokerName);
 
 	JSClassRef jsIOProcClassRef = JSClassCreate(&jsIOProcessorsClassDef);
 	JSObjectRef jsIOProc = JSObjectMake(dm->_ctx, jsIOProcClassRef, dm.get());
@@ -109,7 +116,6 @@ boost::shared_ptr<DataModelImpl> JSCDataModel::create(InterpreterImpl* interpret
 		JSObjectSetProperty(dm->_ctx, globalObject, JSStringCreateWithUTF8CString("document"), documentObject, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontDelete, NULL);
 	}
 
-	dm->eval(Element<std::string>(), "_invokers = {};");
 	dm->eval(Element<std::string>(), "_x = {};");
 
 	return dm;
@@ -573,6 +579,46 @@ void JSCDataModel::jsIOProcessorListProps(JSContextRef ctx, JSObjectRef object, 
 		JSStringRef ioProcName = JSStringCreateWithUTF8CString(ioProcIter->first.c_str());
 		JSPropertyNameAccumulatorAddName(propertyNames, ioProcName);
 		ioProcIter++;
+	}	
+}
+
+	
+bool JSCDataModel::jsInvokerHasProp(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName) {
+	JSCDataModel* INSTANCE = (JSCDataModel*)JSObjectGetPrivate(object);
+	std::map<std::string, Invoker> invokers = INSTANCE->_interpreter->getInvokers();
+	
+	size_t maxSize = JSStringGetMaximumUTF8CStringSize(propertyName);
+	char buffer[maxSize];
+	JSStringGetUTF8CString(propertyName, buffer, maxSize);
+	std::string prop(buffer);
+	
+	return invokers.find(prop) != invokers.end();
+}
+
+JSValueRef JSCDataModel::jsInvokerGetProp(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef* exception) {
+	JSCDataModel* INSTANCE = (JSCDataModel*)JSObjectGetPrivate(object);
+	std::map<std::string, Invoker> invokers = INSTANCE->_interpreter->getInvokers();
+	
+	size_t maxSize = JSStringGetMaximumUTF8CStringSize(propertyName);
+	char buffer[maxSize];
+	JSStringGetUTF8CString(propertyName, buffer, maxSize);
+	std::string prop(buffer);
+	
+	if (invokers.find(prop) != invokers.end()) {
+		return INSTANCE->getDataAsValue(invokers.find(prop)->second.getDataModelVariables());
+	}
+	return JSValueMakeUndefined(ctx);
+}
+
+void JSCDataModel::jsInvokerListProps(JSContextRef ctx, JSObjectRef object, JSPropertyNameAccumulatorRef propertyNames) {
+	JSCDataModel* INSTANCE = (JSCDataModel*)JSObjectGetPrivate(object);
+	std::map<std::string, Invoker> invokers = INSTANCE->_interpreter->getInvokers();
+	
+	std::map<std::string, Invoker>::const_iterator invokerIter = invokers.begin();
+	while(invokerIter != invokers.end()) {
+		JSStringRef invokeName = JSStringCreateWithUTF8CString(invokerIter->first.c_str());
+		JSPropertyNameAccumulatorAddName(propertyNames, invokeName);
+		invokerIter++;
 	}	
 }
 

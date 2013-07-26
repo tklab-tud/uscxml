@@ -45,6 +45,10 @@
 #   include "uscxml/plugins/invoker/ffmpeg/FFMPEGInvoker.h"
 # endif
 
+# ifdef LIBICAL_FOUND
+#   include "uscxml/plugins/invoker/calendar/CalendarInvoker.h"
+# endif
+
 # ifdef V8_FOUND
 #   include "uscxml/plugins/datamodel/ecmascript/v8/V8DataModel.h"
 # endif

@@ -946,40 +946,8 @@ class Interpreter {
 		return Interpreter_hasLegalConfiguration($this->_cPtr);
 	}
 
-	static function isState($state) {
-		return Interpreter_isState($state);
-	}
-
-	static function isPseudoState($state) {
-		return Interpreter_isPseudoState($state);
-	}
-
-	static function isTransitionTarget($elem) {
-		return Interpreter_isTransitionTarget($elem);
-	}
-
-	static function isTargetless($transition) {
-		return Interpreter_isTargetless($transition);
-	}
-
-	static function isFinal($state) {
-		return Interpreter_isFinal($state);
-	}
-
-	static function isHistory($state) {
-		return Interpreter_isHistory($state);
-	}
-
-	static function isParallel($state) {
-		return Interpreter_isParallel($state);
-	}
-
-	static function isCompound($state) {
-		return Interpreter_isCompound($state);
-	}
-
-	static function isDescendant($s1,$s2) {
-		return Interpreter_isDescendant($s1,$s2);
+	function isLegalConfiguration($config) {
+		return Interpreter_isLegalConfiguration($this->_cPtr,$config);
 	}
 
 	static function tokenizeIdRefs($idRefs) {
@@ -994,10 +962,6 @@ class Interpreter {
 
 	static function spaceNormalize($text) {
 		return Interpreter_spaceNormalize($text);
-	}
-
-	function isInitial($state) {
-		return Interpreter_isInitial($this->_cPtr,$state);
 	}
 
 	function getInitialStates($state=null) {
@@ -1072,10 +1036,86 @@ class Interpreter {
 		return $r;
 	}
 
+	function isState($stateId=null) {
+		switch (func_num_args()) {
+		case 0: $r=Interpreter_isState($this->_cPtr); break;
+		default: $r=Interpreter_isState($this->_cPtr,$stateId);
+		}
+		return $r;
+	}
+
+	function isPseudoState($stateId=null) {
+		switch (func_num_args()) {
+		case 0: $r=Interpreter_isPseudoState($this->_cPtr); break;
+		default: $r=Interpreter_isPseudoState($this->_cPtr,$stateId);
+		}
+		return $r;
+	}
+
+	function isTransitionTarget($stateId=null) {
+		switch (func_num_args()) {
+		case 0: $r=Interpreter_isTransitionTarget($this->_cPtr); break;
+		default: $r=Interpreter_isTransitionTarget($this->_cPtr,$stateId);
+		}
+		return $r;
+	}
+
+	function isTargetless($stateId=null) {
+		switch (func_num_args()) {
+		case 0: $r=Interpreter_isTargetless($this->_cPtr); break;
+		default: $r=Interpreter_isTargetless($this->_cPtr,$stateId);
+		}
+		return $r;
+	}
+
 	function isAtomic($stateId=null) {
 		switch (func_num_args()) {
 		case 0: $r=Interpreter_isAtomic($this->_cPtr); break;
 		default: $r=Interpreter_isAtomic($this->_cPtr,$stateId);
+		}
+		return $r;
+	}
+
+	function isInitial($state_or_stateId) {
+		return Interpreter_isInitial($this->_cPtr,$state_or_stateId);
+	}
+
+	function isFinal($stateId=null) {
+		switch (func_num_args()) {
+		case 0: $r=Interpreter_isFinal($this->_cPtr); break;
+		default: $r=Interpreter_isFinal($this->_cPtr,$stateId);
+		}
+		return $r;
+	}
+
+	function isHistory($stateId=null) {
+		switch (func_num_args()) {
+		case 0: $r=Interpreter_isHistory($this->_cPtr); break;
+		default: $r=Interpreter_isHistory($this->_cPtr,$stateId);
+		}
+		return $r;
+	}
+
+	function isParallel($stateId=null) {
+		switch (func_num_args()) {
+		case 0: $r=Interpreter_isParallel($this->_cPtr); break;
+		default: $r=Interpreter_isParallel($this->_cPtr,$stateId);
+		}
+		return $r;
+	}
+
+	function isCompound($stateId=null) {
+		switch (func_num_args()) {
+		case 0: $r=Interpreter_isCompound($this->_cPtr); break;
+		default: $r=Interpreter_isCompound($this->_cPtr,$stateId);
+		}
+		return $r;
+	}
+
+	function isDescendant($s2_or_stateId1,$stateId2=null) {
+		switch (func_num_args()) {
+		case 1: $r=Interpreter_isDescendant($this->_cPtr,$s2_or_stateId1); break;
+		default: $r=Interpreter_isDescendant($this->_cPtr,$s2_or_stateId1,$stateId2);
 		}
 		return $r;
 	}

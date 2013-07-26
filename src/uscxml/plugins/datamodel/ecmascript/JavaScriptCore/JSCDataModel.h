@@ -71,7 +71,12 @@ protected:
 	static bool jsIOProcessorHasProp(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName);
 	static JSValueRef jsIOProcessorGetProp(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef* exception);
 	static void jsIOProcessorListProps(JSContextRef ctx, JSObjectRef object, JSPropertyNameAccumulatorRef propertyNames);
-	
+
+	static JSClassDefinition jsInvokersClassDef;
+	static bool jsInvokerHasProp(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName);
+	static JSValueRef jsInvokerGetProp(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef* exception);
+	static void jsInvokerListProps(JSContextRef ctx, JSObjectRef object, JSPropertyNameAccumulatorRef propertyNames);
+
 	JSValueRef getDocumentAsValue(const Arabica::DOM::Document<std::string>& doc);
 	JSValueRef getDataAsValue(const Data& data);
 	Data getValueAsData(const JSValueRef value);

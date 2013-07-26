@@ -215,11 +215,12 @@ public:
 	static bool isParallel(const Arabica::DOM::Node<std::string>& state);
 	static bool isCompound(const Arabica::DOM::Node<std::string>& state);
 	static bool isDescendant(const Arabica::DOM::Node<std::string>& s1, const Arabica::DOM::Node<std::string>& s2);
-
+	
 	static std::vector<std::string> tokenizeIdRefs(const std::string& idRefs);
 	static std::string spaceNormalize(const std::string& text);
 
-	bool isInitial(const Arabica::DOM::Node<std::string>& state);
+	bool isInEmbeddedDocument(const Arabica::DOM::Node<std::string>& node);
+	bool isInitial(const Arabica::DOM::Node<std::string>& state);	
 	Arabica::XPath::NodeSet<std::string> getInitialStates(Arabica::DOM::Node<std::string> state = Arabica::DOM::Node<std::string>());
 	static Arabica::XPath::NodeSet<std::string> getChildStates(const Arabica::DOM::Node<std::string>& state);
 	static Arabica::DOM::Node<std::string> getParentState(const Arabica::DOM::Node<std::string>& element);

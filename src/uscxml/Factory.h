@@ -14,6 +14,10 @@
 
 namespace uscxml {
 
+inline bool isnan(double x) {
+  return x != x;
+}
+
 // see http://stackoverflow.com/questions/228005/alternative-to-itoa-for-converting-integer-to-string-c
 template <typename T> std::string toStr(T tmp) {
 	std::ostringstream out;
@@ -30,9 +34,9 @@ template <typename T> T strTo(std::string tmp) {
 }
 
 inline bool isNumeric( const char* pszInput, int nNumberBase) {
-	std::string base = ".0123456789ABCDEF";
+	std::string base = ".-0123456789ABCDEF";
 	std::string input = pszInput;
-	return (input.find_first_not_of(base.substr(0, nNumberBase + 1)) == std::string::npos);
+	return (input.find_first_not_of(base.substr(0, nNumberBase + 2)) == std::string::npos);
 }
 
 class InterpreterImpl;

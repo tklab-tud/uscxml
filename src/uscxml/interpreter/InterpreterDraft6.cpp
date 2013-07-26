@@ -278,7 +278,9 @@ void InterpreterDraft6::mainEventLoop() {
 				}
 				if (boost::iequals(autoForward, "true")) {
 					try {
-						_invokers[invokeId].send(_currEvent);
+						// do not autoforward to invokers that send to #_parent from the SCXML IO Processor!
+						if (!boost::equals(_currEvent.getOriginType(), "http://www.w3.org/TR/scxml/#SCXMLEventProcessor"))
+							_invokers[invokeId].send(_currEvent);
 					} catch(...) {
 						LOG(ERROR) << "Exception caught while sending event to invoker " << invokeId;
 					}

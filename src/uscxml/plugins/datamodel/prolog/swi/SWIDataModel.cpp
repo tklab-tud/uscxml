@@ -8,6 +8,21 @@
 #include <Pluma/Connector.hpp>
 #endif
 
+#define SET_PL_CONTEXT \
+_dmPtr = this;
+
+#define PL_MODULE \
+_interpreter.getSessionId().c_str() \
+
+#define UNSET_PL_ENGINE(dm) \
+PL_set_engine(NULL, NULL);
+
+#define SET_PL_ENGINE(dm) \
+assert(_swiEngines.find(dm) != _swiEngines.end()); \
+int rc = PL_set_engine(_swiEngines[dm], NULL); \
+assert(rc == PL_ENGINE_SET); \
+_dmPtr = dm;
+
 namespace uscxml {
 
 using namespace Arabica::XPath;
@@ -21,43 +36,90 @@ bool connect(pluma::Host& host) {
 }
 #endif
 
+// SWI prolog does not support passing user data
+static SWIDataModel* _dmPtr;
+static std::map<SWIDataModel*, PL_engine_t> _swiEngines;
+
 SWIDataModel::SWIDataModel() {
 }
 
-// SWI prolog does not support passing user data
-static InterpreterImpl* _swiInterpreterPtr;
-
+SWIDataModel::~SWIDataModel() {
+	if (_swiEngines.find(this) != _swiEngines.end()) {
+		PL_destroy_engine(_swiEngines[this]);
+		_swiEngines.erase(this);
+	}
+}
+	
 boost::shared_ptr<DataModelImpl> SWIDataModel::create(InterpreterImpl* interpreter) {
 	boost::shared_ptr<SWIDataModel> dm = boost::shared_ptr<SWIDataModel>(new SWIDataModel());
 	dm->_interpreter = interpreter;
 
-	// this is most unfortunate!
-	_swiInterpreterPtr = interpreter;
 	const char* swibin = getenv("SWI_BINARY");
 	if (swibin == NULL)
 		swibin = SWI_BINARY;
 	const char* quiet = "--quiet";
 
+	int argc = 2;
 	static char * av[] = {
 		(char*)swibin,
 		(char*)quiet,
-		//    "-s",
-		//    "/Users/sradomski/Documents/TK/Code/pl-devel/demo/likes.pl",
 		NULL
 	};
-	if(!PL_initialise(2,av)) {
-		LOG(ERROR) << "Error intializing prolog engine";
-		PL_halt(1);
-		return boost::shared_ptr<DataModelImpl>();
+
+	PL_engine_t engine;
+
+	if (!PL_is_initialised(NULL, NULL)) {
+		if(!PL_initialise(argc,av)) {
+			LOG(ERROR) << "Error intializing prolog engine";
+			PL_halt(1);
+			return boost::shared_ptr<DataModelImpl>();
+		} else {
+			LOG(WARNING) << "Instantiating more than one SWI prolog datamodel will lead to weird effects as I cannot seperate the environments";
+		}
+		
+		PL_set_engine(PL_ENGINE_CURRENT, &engine);
+		
+		// load SWI XML parser
+		try {
+			PlCall("use_module", PlCompound("library", PlTerm("sgml")));
+		} catch (PlException plex) {
+			
+			LOG(ERROR) << "Cannot load prolog sgml module - make sure you have it installed in your prolog runtime: " << (char*)plex;
+			throw plex;
+		}
+		
+		// load json parser
+		try {
+			PlCall("use_module", PlCompound("library", PlTerm("http/json")));
+			PlCall("use_module", PlCompound("library", PlTerm("http/json_convert")));
+		} catch (PlException plex) {
+			LOG(ERROR) << "Cannot load prolog json module or json_convert - make sure you have it installed in your prolog runtime: " << (char*)plex;
+			throw plex;
+		}
+
+	} else {
+		engine = PL_create_engine(NULL);
 	}
+		
+	assert(engine);
+	_swiEngines[dm.get()] = engine;	
+	_dmPtr = dm.get();
+	
+	int rc = PL_set_engine(engine, NULL);
+	assert(rc == PL_ENGINE_SET);
 
-	// load SWI XML parser
-	PlCall("use_module", PlCompound("library", PlTerm("sgml")));
-
-	// load json parser
-	PlCall("use_module", PlCompound("library", PlTerm("http/json")));
-	PlCall("use_module", PlCompound("library", PlTerm("http/json_convert")));
-
+	_plModule = boost::replace_all_copy(interpreter->getSessionId(), "-", "");
+	boost::replace_all(_plModule, "0", "g");
+	boost::replace_all(_plModule, "1", "h");
+	boost::replace_all(_plModule, "2", "i");
+	boost::replace_all(_plModule, "3", "j");
+	boost::replace_all(_plModule, "4", "k");
+	boost::replace_all(_plModule, "5", "l");
+	boost::replace_all(_plModule, "6", "m");
+	boost::replace_all(_plModule, "7", "n");
+	boost::replace_all(_plModule, "8", "o");
+	boost::replace_all(_plModule, "9", "p");
+		
 	// use atoms for double quoted
 	PlCall("set_prolog_flag(double_quotes,atom).");
 
@@ -89,7 +151,7 @@ boost::shared_ptr<DataModelImpl> SWIDataModel::create(InterpreterImpl* interpret
 foreign_t SWIDataModel::inPredicate(term_t a0, int arity, void* context) {
 	char *s;
 	if ( PL_get_atom_chars(a0, &s) ) {
-		NodeSet<std::string> config = _swiInterpreterPtr->getConfiguration();
+		NodeSet<std::string> config = _dmPtr->_interpreter->getConfiguration();
 		for (int i = 0; i < config.size(); i++) {
 			if (HAS_ATTR(config[i], "id") && strcmp(ATTR(config[i], "id").c_str(), s) == 0) {
 				return TRUE;
@@ -113,9 +175,6 @@ void SWIDataModel::setName(const std::string& name) {
 	_name = name;
 }
 
-SWIDataModel::~SWIDataModel() {
-}
-
 void SWIDataModel::pushContext() {
 //	std::cout << "SWIDataModel::pushContext" << std::endl;
 }
@@ -129,6 +188,7 @@ void SWIDataModel::initialize() {
 }
 
 void SWIDataModel::setEvent(const Event& event) {
+	SET_PL_CONTEXT;
 	// remove old event
 	try {
 		PlCall("retractall(event(_))");
@@ -208,17 +268,20 @@ void SWIDataModel::setEvent(const Event& event) {
 }
 
 Data SWIDataModel::getStringAsData(const std::string& content) {
+	SET_PL_CONTEXT
 //	std::cout << "SWIDataModel::getStringAsData" << std::endl;
 	Data data;
 	return data;
 }
 
 bool SWIDataModel::validate(const std::string& location, const std::string& schema) {
+	SET_PL_CONTEXT
 //	std::cout << "SWIDataModel::validate" << std::endl;
 	return true;
 }
 
 uint32_t SWIDataModel::getLength(const std::string& expr) {
+	SET_PL_CONTEXT
 	PlCompound compound(expr.c_str());
 	PlTermv termv(compound.arity());
 	for (int i = 0; i < compound.arity(); i++) {
@@ -235,6 +298,7 @@ void SWIDataModel::setForeach(const std::string& item,
                               const std::string& array,
                               const std::string& index,
                               uint32_t iteration) {
+	SET_PL_CONTEXT
 	PlCompound compound(array.c_str());
 	PlCompound orig(array.c_str());
 	PlTermv termv(compound.arity());
@@ -262,6 +326,7 @@ void SWIDataModel::setForeach(const std::string& item,
 }
 
 void SWIDataModel::eval(const Element<std::string>& scriptElem, const std::string& expr) {
+	SET_PL_CONTEXT
 	if (scriptElem && HAS_ATTR(scriptElem, "type") && boost::iequals(ATTR(scriptElem, "type"), "query")) {
 		evalAsBool(expr);
 	} else {
@@ -271,6 +336,7 @@ void SWIDataModel::eval(const Element<std::string>& scriptElem, const std::strin
 }
 
 bool SWIDataModel::evalAsBool(const std::string& expr) {
+	SET_PL_CONTEXT
 	try {
 		PlCompound compound(expr.c_str());
 		PlTermv termv(compound.arity());
@@ -285,6 +351,7 @@ bool SWIDataModel::evalAsBool(const std::string& expr) {
 }
 
 std::string SWIDataModel::evalAsString(const std::string& expr) {
+	SET_PL_CONTEXT
 	PlCompound orig(expr.c_str()); // keep the original to find variables
 	PlCompound compound(expr.c_str());
 	if (strlen(compound.name())) {
@@ -316,6 +383,7 @@ std::string SWIDataModel::evalAsString(const std::string& expr) {
 
 // this is similar to http://etalis.googlecode.com/svn/eEtalis/src/term.c
 std::map<std::string, PlTerm> SWIDataModel::resolveAtoms(PlTerm& term, PlTerm& orig) {
+	SET_PL_CONTEXT
 	std::map<std::string, PlTerm> atoms;
 	switch (orig.type()) {
 	case PL_VARIABLE: {
@@ -343,6 +411,7 @@ std::map<std::string, PlTerm> SWIDataModel::resolveAtoms(PlTerm& term, PlTerm& o
 void SWIDataModel::assign(const Element<std::string>& assignElem,
                           const Document<std::string>& doc,
                           const std::string& content) {
+	SET_PL_CONTEXT
 	std::string expr = content;
 	std::string predicate;
 	if (HAS_ATTR(assignElem, "expr")) {
