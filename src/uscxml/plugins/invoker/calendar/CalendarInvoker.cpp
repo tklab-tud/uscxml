@@ -166,7 +166,7 @@ void CalendarInvoker::queueEvent(CalendarEvent* event) {
 	std::string beginEventId = event->getId() + "." + toStr(span.start) + ".started";
 	std::string endEventId = event->getId() + "." + toStr(span.end) + ".ended";
 
-#if 1
+#if 0
 	beginSecs = 1;
 	endSecs = 2;
 #endif
