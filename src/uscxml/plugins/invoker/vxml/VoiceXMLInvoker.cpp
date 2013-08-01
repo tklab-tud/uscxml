@@ -61,7 +61,7 @@ void VoiceXMLInvoker::send(const SendRequest& req) {
 	domSS << req.getFirstDOMElement();
 	start.content = domSS.str();
 	_interpreter->getDataModel().replaceExpressions(start.content);
-	
+
 	start.requestId = "asdf";
 	start.source = "asdf";
 	start.target = "umundo://mmi/jvoicexml";

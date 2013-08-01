@@ -12,7 +12,7 @@ class ScriptEntityResolver : public Arabica::SAX::EntityResolver<std::string> {
 		return is;
 	}
 };
-	
+
 class NameSpacingParser : public Arabica::SAX2DOM::Parser<std::string> {
 public:
 	NameSpacingParser();

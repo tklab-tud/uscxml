@@ -20,22 +20,31 @@ JSStaticFunction JSCEntity::staticFunctions[] = {
 
 JSValueRef JSCEntity::publicIdAttrGetter(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef *exception) {
 	struct JSCEntityPrivate* privData = (struct JSCEntityPrivate*)JSObjectGetPrivate(object);
+
 	JSStringRef stringRef = JSStringCreateWithUTF8CString(privData->nativeObj->getPublicId().c_str());
-	return JSValueMakeString(ctx, stringRef);
+	JSValueRef retVal = JSValueMakeString(ctx, stringRef);
+	JSStringRelease(stringRef);
+	return retVal;
 }
 
 
 JSValueRef JSCEntity::systemIdAttrGetter(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef *exception) {
 	struct JSCEntityPrivate* privData = (struct JSCEntityPrivate*)JSObjectGetPrivate(object);
+
 	JSStringRef stringRef = JSStringCreateWithUTF8CString(privData->nativeObj->getSystemId().c_str());
-	return JSValueMakeString(ctx, stringRef);
+	JSValueRef retVal = JSValueMakeString(ctx, stringRef);
+	JSStringRelease(stringRef);
+	return retVal;
 }
 
 
 JSValueRef JSCEntity::notationNameAttrGetter(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef *exception) {
 	struct JSCEntityPrivate* privData = (struct JSCEntityPrivate*)JSObjectGetPrivate(object);
+
 	JSStringRef stringRef = JSStringCreateWithUTF8CString(privData->nativeObj->getNotationName().c_str());
-	return JSValueMakeString(ctx, stringRef);
+	JSValueRef retVal = JSValueMakeString(ctx, stringRef);
+	JSStringRelease(stringRef);
+	return retVal;
 }
 
 

@@ -349,8 +349,11 @@ END
             push(@implContent, "\n      return JSValueMakeUndefined(ctx);");
           }
           push(@implContent, <<END);
+
 		JSStringRef stringRef = JSStringCreateWithUTF8CString(privData->nativeObj->${wrapperGetter}.c_str());
-		return JSValueMakeString(ctx, stringRef);
+		JSValueRef retVal = JSValueMakeString(ctx, stringRef);
+		JSStringRelease(stringRef);
+		return retVal;
 END
         } elsif($JSCType eq "Number") {
           push(@implContent, "\n    return JSValueMakeNumber(ctx, privData->nativeObj->${wrapperGetter});\n");
@@ -387,7 +390,9 @@ END
 		if ($JSCType eq "String") {
 			push(@implContent,
 			"\n		JSStringRef jscString = JSStringCreateWithUTF8CString(" . $constant->value . ");".
-			"\n		return JSValueMakeString(ctx, jscString);\n");
+			"\n		JSValueRef retVal = JSValueMakeString(ctx, jscString);".
+			"\n		JSStringRelease(jscString);".
+			"\n		return retVal;\n");
 		} elsif($JSCType eq "Number") {
 			push(@implContent, "\n		return JSValueMakeNumber(ctx, " . $constant->value . ");\n");
 		} elsif($JSCType eq "Boolean") {
@@ -633,7 +638,8 @@ sub NativeToHandle
   return ("\n		JSValueRef ${paramName} = JSValueMakeUndefined(ctx);") if ($nativeType eq "void");
   return (
 		"\n		JSStringRef jscString = JSStringCreateWithUTF8CString(${nativeName}.c_str());".
-		"\n		JSValueRef ${paramName} = JSValueMakeString(ctx, jscString);"
+		"\n		JSValueRef ${paramName} = JSValueMakeString(ctx, jscString);".
+		"\n		JSStringRelease(jscString);"
 	) if ($nativeType eq "std::string");
   
   die($nativeType);

@@ -19,15 +19,21 @@ JSStaticFunction JSCNotation::staticFunctions[] = {
 
 JSValueRef JSCNotation::publicIdAttrGetter(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef *exception) {
 	struct JSCNotationPrivate* privData = (struct JSCNotationPrivate*)JSObjectGetPrivate(object);
+
 	JSStringRef stringRef = JSStringCreateWithUTF8CString(privData->nativeObj->getPublicId().c_str());
-	return JSValueMakeString(ctx, stringRef);
+	JSValueRef retVal = JSValueMakeString(ctx, stringRef);
+	JSStringRelease(stringRef);
+	return retVal;
 }
 
 
 JSValueRef JSCNotation::systemIdAttrGetter(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef *exception) {
 	struct JSCNotationPrivate* privData = (struct JSCNotationPrivate*)JSObjectGetPrivate(object);
+
 	JSStringRef stringRef = JSStringCreateWithUTF8CString(privData->nativeObj->getSystemId().c_str());
-	return JSValueMakeString(ctx, stringRef);
+	JSValueRef retVal = JSValueMakeString(ctx, stringRef);
+	JSStringRelease(stringRef);
+	return retVal;
 }
 
 

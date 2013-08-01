@@ -35,8 +35,11 @@ JSStaticFunction JSCElement::staticFunctions[] = {
 
 JSValueRef JSCElement::tagNameAttrGetter(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef *exception) {
 	struct JSCElementPrivate* privData = (struct JSCElementPrivate*)JSObjectGetPrivate(object);
+
 	JSStringRef stringRef = JSStringCreateWithUTF8CString(privData->nativeObj->getTagName().c_str());
-	return JSValueMakeString(ctx, stringRef);
+	JSValueRef retVal = JSValueMakeString(ctx, stringRef);
+	JSStringRelease(stringRef);
+	return retVal;
 }
 
 JSValueRef JSCElement::getAttributeCallback(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObj, size_t argumentCount, const JSValueRef* arguments, JSValueRef* exception) {
@@ -63,6 +66,7 @@ JSValueRef JSCElement::getAttributeCallback(JSContextRef ctx, JSObjectRef functi
 
 	JSStringRef jscString = JSStringCreateWithUTF8CString(retVal.c_str());
 	JSValueRef jscRetVal = JSValueMakeString(ctx, jscString);
+	JSStringRelease(jscString);
 	return jscRetVal;
 }
 
@@ -276,6 +280,7 @@ JSValueRef JSCElement::getAttributeNSCallback(JSContextRef ctx, JSObjectRef func
 
 	JSStringRef jscString = JSStringCreateWithUTF8CString(retVal.c_str());
 	JSValueRef jscRetVal = JSValueMakeString(ctx, jscString);
+	JSStringRelease(jscString);
 	return jscRetVal;
 }
 

@@ -59,12 +59,12 @@ void UmundoInvoker::send(const SendRequest& req) {
 				LOG(ERROR) << "Cannot transform content to data object per datamodel";
 				return;
 			}
-			
+
 			std::string type;
 			if (req.params.find("type") != req.params.end()) {
 				// we are supposed to build a typed object
 				type = req.params.find("type")->second;
-				
+
 				const google::protobuf::Message* protoMsg = umundo::PBSerializer::getProto(type);
 				if (protoMsg == NULL) {
 					LOG(ERROR) << "No type '" << type << "' is known, pass a directory with proto .desc files via types param when invoking";
@@ -76,7 +76,7 @@ void UmundoInvoker::send(const SendRequest& req) {
 					LOG(ERROR) << "Cannot create message from JSON - not sending";
 					return;
 				}
-				
+
 				if (!_isService) {
 					// add all s11n properties
 					_pub->prepareMsg(&msg, type, pbMsg);
@@ -90,12 +90,12 @@ void UmundoInvoker::send(const SendRequest& req) {
 						void* rv = NULL;
 						stub->callStubMethod(req.name, pbMsg, type, rv, "");
 						protobufToData(event.data, *(const google::protobuf::Message*)rv);
-						
+
 						event.name = _invokeId + ".reply." + req.name;
 						event.origin = msg.getMeta("um.channel");
 						event.origintype = "umundo";
 						event.type = Event::EXTERNAL;
-						
+
 						returnEvent(event);
 						svcIter++;
 					}
@@ -116,7 +116,7 @@ void UmundoInvoker::send(const SendRequest& req) {
 					LOG(ERROR) << "Cannot invoke services with untyped JSON";
 					return;
 				}
-				
+
 			}
 		} catch (Event e) {
 			LOG(ERROR) << "Syntax error when invoking umundo:" << std::endl << e << std::endl;
@@ -125,7 +125,7 @@ void UmundoInvoker::send(const SendRequest& req) {
 	} else {
 		LOG(ERROR) << "Required JSON object in content" << std::endl;
 		return;
-	}	
+	}
 }
 
 void UmundoInvoker::cancel(const std::string sendId) {
@@ -187,7 +187,7 @@ void UmundoInvoker::invoke(const InvokeRequest& req) {
 
 		_pub->setGreeter(this);
 		_sub->registerType("JSON", new JSONProto());
-		
+
 		_node->addPublisher(*_pub);
 		_node->addSubscriber(*_sub);
 
@@ -237,7 +237,7 @@ void UmundoInvoker::receive(void* object, umundo::Message* msg) {
 
 	if (object != NULL) {
 		if (msg->getMeta().find("um.s11n.type") != msg->getMeta().end() &&
-				boost::equals(msg->getMeta().find("um.s11n.type")->second, "JSON")) {
+		        boost::equals(msg->getMeta().find("um.s11n.type")->second, "JSON")) {
 			jsonbufToData(event.data, *(JSONProto*)object);
 		} else {
 			protobufToData(event.data, *(const google::protobuf::Message*)object);
@@ -349,7 +349,7 @@ bool UmundoInvoker::jsonbufToData(Data& data, const JSONProto& json) {
 			data.type = Data::INTERPRETED;
 		}
 	}
-	
+
 	return true;
 }
 
@@ -485,7 +485,7 @@ bool UmundoInvoker::dataToJSONbuf(JSONProto* msg, Data& data) {
 	} else if (!data.array.empty()) {
 		const google::protobuf::FieldDescriptor* fieldDesc = desc->FindFieldByName("compound");
 
-		std::list<Data>::iterator arrayIter = data.array.begin();		
+		std::list<Data>::iterator arrayIter = data.array.begin();
 		while(arrayIter != data.array.end()) {
 			JSONProto* arrayMsg = (JSONProto*)reflect->AddMessage(msg, fieldDesc);
 			dataToJSONbuf(arrayMsg, *arrayIter);

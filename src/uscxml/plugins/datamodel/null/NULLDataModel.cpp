@@ -62,7 +62,7 @@ void NULLDataModel::setForeach(const std::string& item,
 }
 
 void NULLDataModel::eval(const Arabica::DOM::Element<std::string>& scriptElem,
-												 const std::string& expr) {
+                         const std::string& expr) {
 }
 
 bool NULLDataModel::isDeclared(const std::string& expr) {

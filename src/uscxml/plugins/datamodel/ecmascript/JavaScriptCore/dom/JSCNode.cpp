@@ -53,15 +53,21 @@ JSStaticFunction JSCNode::staticFunctions[] = {
 
 JSValueRef JSCNode::nodeNameAttrGetter(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef *exception) {
 	struct JSCNodePrivate* privData = (struct JSCNodePrivate*)JSObjectGetPrivate(object);
+
 	JSStringRef stringRef = JSStringCreateWithUTF8CString(privData->nativeObj->getNodeName().c_str());
-	return JSValueMakeString(ctx, stringRef);
+	JSValueRef retVal = JSValueMakeString(ctx, stringRef);
+	JSStringRelease(stringRef);
+	return retVal;
 }
 
 
 JSValueRef JSCNode::nodeValueAttrGetter(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef *exception) {
 	struct JSCNodePrivate* privData = (struct JSCNodePrivate*)JSObjectGetPrivate(object);
+
 	JSStringRef stringRef = JSStringCreateWithUTF8CString(privData->nativeObj->getNodeValue().c_str());
-	return JSValueMakeString(ctx, stringRef);
+	JSValueRef retVal = JSValueMakeString(ctx, stringRef);
+	JSStringRelease(stringRef);
+	return retVal;
 }
 
 
@@ -207,15 +213,21 @@ JSValueRef JSCNode::ownerDocumentAttrGetter(JSContextRef ctx, JSObjectRef object
 
 JSValueRef JSCNode::namespaceURIAttrGetter(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef *exception) {
 	struct JSCNodePrivate* privData = (struct JSCNodePrivate*)JSObjectGetPrivate(object);
+
 	JSStringRef stringRef = JSStringCreateWithUTF8CString(privData->nativeObj->getNamespaceURI().c_str());
-	return JSValueMakeString(ctx, stringRef);
+	JSValueRef retVal = JSValueMakeString(ctx, stringRef);
+	JSStringRelease(stringRef);
+	return retVal;
 }
 
 
 JSValueRef JSCNode::prefixAttrGetter(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef *exception) {
 	struct JSCNodePrivate* privData = (struct JSCNodePrivate*)JSObjectGetPrivate(object);
+
 	JSStringRef stringRef = JSStringCreateWithUTF8CString(privData->nativeObj->getPrefix().c_str());
-	return JSValueMakeString(ctx, stringRef);
+	JSValueRef retVal = JSValueMakeString(ctx, stringRef);
+	JSStringRelease(stringRef);
+	return retVal;
 }
 
 
@@ -235,8 +247,11 @@ bool JSCNode::prefixAttrSetter(JSContextRef ctx, JSObjectRef thisObj, JSStringRe
 
 JSValueRef JSCNode::localNameAttrGetter(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef *exception) {
 	struct JSCNodePrivate* privData = (struct JSCNodePrivate*)JSObjectGetPrivate(object);
+
 	JSStringRef stringRef = JSStringCreateWithUTF8CString(privData->nativeObj->getLocalName().c_str());
-	return JSValueMakeString(ctx, stringRef);
+	JSValueRef retVal = JSValueMakeString(ctx, stringRef);
+	JSStringRelease(stringRef);
+	return retVal;
 }
 
 JSValueRef JSCNode::ELEMENT_NODEConstGetter(JSContextRef ctx, JSObjectRef thisObj, JSStringRef propertyName, JSValueRef *exception) {

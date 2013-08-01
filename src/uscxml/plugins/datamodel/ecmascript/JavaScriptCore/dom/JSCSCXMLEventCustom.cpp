@@ -21,8 +21,10 @@ JSValueRef JSCSCXMLEvent::typeCustomAttrGetter(JSContextRef ctx, JSObjectRef thi
 		stringRef = JSStringCreateWithUTF8CString("undefined");
 		break;
 	}
-	
-	return JSValueMakeString(ctx, stringRef);
+
+	JSValueRef retVal = JSValueMakeString(ctx, stringRef);
+	JSStringRelease(stringRef);
+	return retVal;
 }
 
 JSValueRef JSCSCXMLEvent::sendidCustomAttrGetter(JSContextRef ctx, JSObjectRef thisObj, JSStringRef propertyName, JSValueRef* exception) {
@@ -33,7 +35,9 @@ JSValueRef JSCSCXMLEvent::sendidCustomAttrGetter(JSContextRef ctx, JSObjectRef t
 		return JSValueMakeUndefined(ctx);
 	} else {
 		stringRef = JSStringCreateWithUTF8CString(privData->nativeObj->sendid.c_str());
-		return JSValueMakeString(ctx, stringRef);
+		JSValueRef retVal = JSValueMakeString(ctx, stringRef);
+		JSStringRelease(stringRef);
+		return retVal;
 	}
 }
 

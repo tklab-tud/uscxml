@@ -7,19 +7,18 @@ namespace DOM {
 JSClassRef JSCSCXMLEvent::Tmpl;
 
 JSStaticValue JSCSCXMLEvent::staticValues[] = {
+	{ "type", typeCustomAttrGetter, 0, kJSPropertyAttributeDontDelete | kJSPropertyAttributeReadOnly },
 	{ "name", nameAttrGetter, 0, kJSPropertyAttributeDontDelete | kJSPropertyAttributeReadOnly },
 	{ "origin", originAttrGetter, 0, kJSPropertyAttributeDontDelete | kJSPropertyAttributeReadOnly },
-	{ "raw", rawAttrGetter, 0, kJSPropertyAttributeDontDelete | kJSPropertyAttributeReadOnly },
-	{ "invokeid", invokeidAttrGetter, 0, kJSPropertyAttributeDontDelete | kJSPropertyAttributeReadOnly },
-	{ "dom", domAttrGetter, 0, kJSPropertyAttributeDontDelete | kJSPropertyAttributeReadOnly },
 	{ "origintype", origintypeAttrGetter, 0, kJSPropertyAttributeDontDelete | kJSPropertyAttributeReadOnly },
-
-	{ "type", typeCustomAttrGetter, 0, kJSPropertyAttributeDontDelete | kJSPropertyAttributeReadOnly },
+	{ "raw", rawAttrGetter, 0, kJSPropertyAttributeDontDelete | kJSPropertyAttributeReadOnly },
+	{ "dom", domAttrGetter, 0, kJSPropertyAttributeDontDelete | kJSPropertyAttributeReadOnly },
 	{ "sendid", sendidCustomAttrGetter, 0, kJSPropertyAttributeDontDelete | kJSPropertyAttributeReadOnly },
+	{ "invokeid", invokeidAttrGetter, 0, kJSPropertyAttributeDontDelete | kJSPropertyAttributeReadOnly },
 
-	{ "INTERNAL", INTERNALConstGetter, 0, kJSPropertyAttributeDontDelete | kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum },
-	{ "EXTERNAL", EXTERNALConstGetter, 0, kJSPropertyAttributeDontDelete | kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum  },
-	{ "PLATFORM", PLATFORMConstGetter, 0, kJSPropertyAttributeDontDelete | kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum  },
+	{ "INTERNAL", INTERNALConstGetter, 0, kJSPropertyAttributeDontDelete | kJSPropertyAttributeReadOnly },
+	{ "EXTERNAL", EXTERNALConstGetter, 0, kJSPropertyAttributeDontDelete | kJSPropertyAttributeReadOnly },
+	{ "PLATFORM", PLATFORMConstGetter, 0, kJSPropertyAttributeDontDelete | kJSPropertyAttributeReadOnly },
 	{ 0, 0, 0, 0 }
 };
 
@@ -29,8 +28,11 @@ JSStaticFunction JSCSCXMLEvent::staticFunctions[] = {
 
 JSValueRef JSCSCXMLEvent::nameAttrGetter(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef *exception) {
 	struct JSCSCXMLEventPrivate* privData = (struct JSCSCXMLEventPrivate*)JSObjectGetPrivate(object);
+
 	JSStringRef stringRef = JSStringCreateWithUTF8CString(privData->nativeObj->name.c_str());
-	return JSValueMakeString(ctx, stringRef);
+	JSValueRef retVal = JSValueMakeString(ctx, stringRef);
+	JSStringRelease(stringRef);
+	return retVal;
 }
 
 
@@ -40,7 +42,9 @@ JSValueRef JSCSCXMLEvent::originAttrGetter(JSContextRef ctx, JSObjectRef object,
 	if (privData->nativeObj->origin.length() == 0)
 		return JSValueMakeUndefined(ctx);
 	JSStringRef stringRef = JSStringCreateWithUTF8CString(privData->nativeObj->origin.c_str());
-	return JSValueMakeString(ctx, stringRef);
+	JSValueRef retVal = JSValueMakeString(ctx, stringRef);
+	JSStringRelease(stringRef);
+	return retVal;
 }
 
 
@@ -50,7 +54,9 @@ JSValueRef JSCSCXMLEvent::origintypeAttrGetter(JSContextRef ctx, JSObjectRef obj
 	if (privData->nativeObj->origintype.length() == 0)
 		return JSValueMakeUndefined(ctx);
 	JSStringRef stringRef = JSStringCreateWithUTF8CString(privData->nativeObj->origintype.c_str());
-	return JSValueMakeString(ctx, stringRef);
+	JSValueRef retVal = JSValueMakeString(ctx, stringRef);
+	JSStringRelease(stringRef);
+	return retVal;
 }
 
 
@@ -60,7 +66,9 @@ JSValueRef JSCSCXMLEvent::rawAttrGetter(JSContextRef ctx, JSObjectRef object, JS
 	if (privData->nativeObj->raw.length() == 0)
 		return JSValueMakeUndefined(ctx);
 	JSStringRef stringRef = JSStringCreateWithUTF8CString(privData->nativeObj->raw.c_str());
-	return JSValueMakeString(ctx, stringRef);
+	JSValueRef retVal = JSValueMakeString(ctx, stringRef);
+	JSStringRelease(stringRef);
+	return retVal;
 }
 
 
@@ -87,7 +95,9 @@ JSValueRef JSCSCXMLEvent::invokeidAttrGetter(JSContextRef ctx, JSObjectRef objec
 	if (privData->nativeObj->invokeid.length() == 0)
 		return JSValueMakeUndefined(ctx);
 	JSStringRef stringRef = JSStringCreateWithUTF8CString(privData->nativeObj->invokeid.c_str());
-	return JSValueMakeString(ctx, stringRef);
+	JSValueRef retVal = JSValueMakeString(ctx, stringRef);
+	JSStringRelease(stringRef);
+	return retVal;
 }
 
 JSValueRef JSCSCXMLEvent::INTERNALConstGetter(JSContextRef ctx, JSObjectRef thisObj, JSStringRef propertyName, JSValueRef *exception) {

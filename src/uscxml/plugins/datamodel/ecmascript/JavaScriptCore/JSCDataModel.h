@@ -43,7 +43,7 @@ public:
 	virtual void popContext();
 
 	virtual void eval(const Arabica::DOM::Element<std::string>& scriptElem,
-										const std::string& expr);
+	                  const std::string& expr);
 	virtual std::string evalAsString(const std::string& expr);
 	virtual bool evalAsBool(const std::string& expr);
 

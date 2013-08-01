@@ -91,7 +91,7 @@ void InterpreterDraft6::interpret() {
 			histStates.push_back(getState(_userDefinedStartConfiguration[i]));
 		}
 		_historyValue[histId] = histStates;
-		
+
 		Element<std::string> initialElem = _document.createElementNS(_nsURL, "initial");
 		initialElem.setAttribute("generated", "true");
 		Element<std::string> transitionElem = _document.createElementNS(_nsURL, "transition");
@@ -119,7 +119,7 @@ void InterpreterDraft6::interpret() {
 			}
 		}
 	}
-	
+
 	assert(initialTransitions.size() > 0);
 	enterStates(initialTransitions);
 //	_mutex.unlock();

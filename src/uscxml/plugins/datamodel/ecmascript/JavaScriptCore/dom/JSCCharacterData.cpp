@@ -24,8 +24,11 @@ JSStaticFunction JSCCharacterData::staticFunctions[] = {
 
 JSValueRef JSCCharacterData::dataAttrGetter(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef *exception) {
 	struct JSCCharacterDataPrivate* privData = (struct JSCCharacterDataPrivate*)JSObjectGetPrivate(object);
+
 	JSStringRef stringRef = JSStringCreateWithUTF8CString(privData->nativeObj->getData().c_str());
-	return JSValueMakeString(ctx, stringRef);
+	JSValueRef retVal = JSValueMakeString(ctx, stringRef);
+	JSStringRelease(stringRef);
+	return retVal;
 }
 
 
@@ -68,6 +71,7 @@ JSValueRef JSCCharacterData::substringDataCallback(JSContextRef ctx, JSObjectRef
 
 	JSStringRef jscString = JSStringCreateWithUTF8CString(retVal.c_str());
 	JSValueRef jscRetVal = JSValueMakeString(ctx, jscString);
+	JSStringRelease(jscString);
 	return jscRetVal;
 }
 

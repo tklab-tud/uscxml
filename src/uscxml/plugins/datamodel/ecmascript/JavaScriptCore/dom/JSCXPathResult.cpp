@@ -32,8 +32,11 @@ JSValueRef JSCXPathResult::numberValueAttrGetter(JSContextRef ctx, JSObjectRef o
 
 JSValueRef JSCXPathResult::stringValueAttrGetter(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef *exception) {
 	struct JSCXPathResultPrivate* privData = (struct JSCXPathResultPrivate*)JSObjectGetPrivate(object);
+
 	JSStringRef stringRef = JSStringCreateWithUTF8CString(privData->nativeObj->asString().c_str());
-	return JSValueMakeString(ctx, stringRef);
+	JSValueRef retVal = JSValueMakeString(ctx, stringRef);
+	JSStringRelease(stringRef);
+	return retVal;
 }
 
 
@@ -81,6 +84,7 @@ JSValueRef JSCXPathResult::asStringCallback(JSContextRef ctx, JSObjectRef functi
 
 	JSStringRef jscString = JSStringCreateWithUTF8CString(retVal.c_str());
 	JSValueRef jscRetVal = JSValueMakeString(ctx, jscString);
+	JSStringRelease(jscString);
 	return jscRetVal;
 }
 

@@ -15,7 +15,7 @@ namespace uscxml {
 
 using namespace Arabica::XPath;
 using namespace Arabica::DOM;
-	
+
 #ifdef BUILD_AS_PLUGINS
 PLUMA_CONNECTOR
 bool connect(pluma::Host& host) {
@@ -25,19 +25,28 @@ bool connect(pluma::Host& host) {
 #endif
 
 JSCDataModel::JSCDataModel() {
+	_dom = NULL;
+	_ctx = NULL;
+}
+
+JSCDataModel::~JSCDataModel() {
+	if (_dom)
+		delete _dom;
+	if (_ctx)
+		JSGlobalContextRelease(_ctx);
 }
 
 #if 0
 typedef struct {
 	int                                 version; /* current (and only) version is 0 */
 	JSClassAttributes                   attributes;
-	
+
 	const char*                         className;
 	JSClassRef                          parentClass;
-	
+
 	const JSStaticValue*                staticValues;
 	const JSStaticFunction*             staticFunctions;
-	
+
 	JSObjectInitializeCallback          initialize;
 	JSObjectFinalizeCallback            finalize;
 	JSObjectHasPropertyCallback         hasProperty;
@@ -51,7 +60,7 @@ typedef struct {
 	JSObjectConvertToTypeCallback       convertToType;
 } JSClassDefinition;
 #endif
-	
+
 // functions need to be objects to hold private data in JSC
 JSClassDefinition JSCDataModel::jsInClassDef = { 0, 0, "In", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, jsIn, 0, 0, 0 };
 JSClassDefinition JSCDataModel::jsPrintClassDef = { 0, 0, "print", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, jsPrint, 0, 0, 0 };
@@ -113,16 +122,15 @@ boost::shared_ptr<DataModelImpl> JSCDataModel::create(InterpreterImpl* interpret
 
 		JSObjectRef documentObject = JSObjectMake(dm->_ctx, JSCDocument::getTmpl(), privData);
 		JSObjectRef globalObject = JSContextGetGlobalObject(dm->_ctx);
-		JSObjectSetProperty(dm->_ctx, globalObject, JSStringCreateWithUTF8CString("document"), documentObject, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontDelete, NULL);
+		JSStringRef documentName = JSStringCreateWithUTF8CString("document");
+
+		JSObjectSetProperty(dm->_ctx, globalObject, documentName, documentObject, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontDelete, NULL);
+		JSStringRelease(documentName);
 	}
 
 	dm->eval(Element<std::string>(), "_x = {};");
 
 	return dm;
-}
-
-JSCDataModel::~JSCDataModel() {
-	JSGlobalContextRelease(_ctx);
 }
 
 void JSCDataModel::pushContext() {
@@ -138,7 +146,7 @@ void JSCDataModel::setEvent(const Event& event) {
 
 	JSObjectRef eventObj = JSObjectMake(_ctx, JSCSCXMLEvent::getTmpl(), privData);
 	JSObjectRef globalObject = JSContextGetGlobalObject(_ctx);
-	
+
 	JSValueRef exception = NULL;
 
 	if (event.dom) {
@@ -199,8 +207,9 @@ void JSCDataModel::setEvent(const Event& event) {
 				handleException(exception);
 		}
 	}
-
-	JSObjectSetProperty(_ctx, globalObject, JSStringCreateWithUTF8CString("_event"), eventObj, kJSPropertyAttributeDontDelete, &exception);
+	JSStringRef eventName = JSStringCreateWithUTF8CString("_event");
+	JSObjectSetProperty(_ctx, globalObject, eventName, eventObj, kJSPropertyAttributeDontDelete, &exception);
+	JSStringRelease(eventName);
 	if (exception)
 		handleException(exception);
 
@@ -365,7 +374,7 @@ bool JSCDataModel::isDeclared(const std::string& expr) {
 }
 
 void JSCDataModel::eval(const Element<std::string>& scriptElem,
-												const std::string& expr) {
+                        const std::string& expr) {
 	evalAsValue(expr);
 }
 
@@ -511,7 +520,9 @@ JSValueRef JSCDataModel::jsPrint(JSContextRef ctx, JSObjectRef function, JSObjec
 			char* buffer = new char[maxSize];
 
 			JSStringGetUTF8CString(stringRef, buffer, maxSize);
+			JSStringRelease(stringRef);
 			std::string msg(buffer);
+			free(buffer);
 
 			std::cout << msg;
 		}
@@ -532,7 +543,10 @@ JSValueRef JSCDataModel::jsIn(JSContextRef ctx, JSObjectRef function, JSObjectRe
 			char* buffer = new char[maxSize];
 
 			JSStringGetUTF8CString(stringRef, buffer, maxSize);
+			JSStringRelease(stringRef);
 			std::string stateName(buffer);
+			free(buffer);
+
 			if (Interpreter::isMember(INSTANCE->_interpreter->getState(stateName), INSTANCE->_interpreter->getConfiguration())) {
 				continue;
 			}
@@ -579,31 +593,31 @@ void JSCDataModel::jsIOProcessorListProps(JSContextRef ctx, JSObjectRef object, 
 		JSStringRef ioProcName = JSStringCreateWithUTF8CString(ioProcIter->first.c_str());
 		JSPropertyNameAccumulatorAddName(propertyNames, ioProcName);
 		ioProcIter++;
-	}	
+	}
 }
 
-	
+
 bool JSCDataModel::jsInvokerHasProp(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName) {
 	JSCDataModel* INSTANCE = (JSCDataModel*)JSObjectGetPrivate(object);
 	std::map<std::string, Invoker> invokers = INSTANCE->_interpreter->getInvokers();
-	
+
 	size_t maxSize = JSStringGetMaximumUTF8CStringSize(propertyName);
 	char buffer[maxSize];
 	JSStringGetUTF8CString(propertyName, buffer, maxSize);
 	std::string prop(buffer);
-	
+
 	return invokers.find(prop) != invokers.end();
 }
 
 JSValueRef JSCDataModel::jsInvokerGetProp(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef* exception) {
 	JSCDataModel* INSTANCE = (JSCDataModel*)JSObjectGetPrivate(object);
 	std::map<std::string, Invoker> invokers = INSTANCE->_interpreter->getInvokers();
-	
+
 	size_t maxSize = JSStringGetMaximumUTF8CStringSize(propertyName);
 	char buffer[maxSize];
 	JSStringGetUTF8CString(propertyName, buffer, maxSize);
 	std::string prop(buffer);
-	
+
 	if (invokers.find(prop) != invokers.end()) {
 		return INSTANCE->getDataAsValue(invokers.find(prop)->second.getDataModelVariables());
 	}
@@ -613,13 +627,14 @@ JSValueRef JSCDataModel::jsInvokerGetProp(JSContextRef ctx, JSObjectRef object, 
 void JSCDataModel::jsInvokerListProps(JSContextRef ctx, JSObjectRef object, JSPropertyNameAccumulatorRef propertyNames) {
 	JSCDataModel* INSTANCE = (JSCDataModel*)JSObjectGetPrivate(object);
 	std::map<std::string, Invoker> invokers = INSTANCE->_interpreter->getInvokers();
-	
+
 	std::map<std::string, Invoker>::const_iterator invokerIter = invokers.begin();
 	while(invokerIter != invokers.end()) {
 		JSStringRef invokeName = JSStringCreateWithUTF8CString(invokerIter->first.c_str());
 		JSPropertyNameAccumulatorAddName(propertyNames, invokeName);
+		JSStringRelease(invokeName);
 		invokerIter++;
-	}	
+	}
 }
 
 }

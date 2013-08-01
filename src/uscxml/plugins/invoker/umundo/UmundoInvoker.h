@@ -18,7 +18,7 @@ namespace uscxml {
 
 class Interpreter;
 
-	class UmundoInvoker : public InvokerImpl, public umundo::TypedReceiver, public umundo::ResultSet<umundo::ServiceDescription>, public umundo::TypedGreeter {
+class UmundoInvoker : public InvokerImpl, public umundo::TypedReceiver, public umundo::ResultSet<umundo::ServiceDescription>, public umundo::TypedGreeter {
 public:
 	UmundoInvoker();
 	virtual ~UmundoInvoker();

@@ -300,7 +300,7 @@ bool XPathDataModel::isValidIdentifier(const std::string& identifier) {
 
 
 void XPathDataModel::eval(const Arabica::DOM::Element<std::string>& scriptElem,
-													const std::string& expr) {
+                          const std::string& expr) {
 	XPathValue<std::string> result = _xpath.evaluate_expr(expr, _doc);
 }
 

@@ -188,6 +188,10 @@ public:
 		return _sessionId;
 	}
 
+	DelayedEventQueue* getDelayQueue()                       {
+		return _sendQueue;
+	}
+
 	const std::map<std::string, IOProcessor>& getIOProcessors() {
 		return _ioProcessors;
 	}
@@ -204,7 +208,7 @@ public:
 	bool hasLegalConfiguration();
 	bool isLegalConfiguration(const Arabica::XPath::NodeSet<std::string>&);
 	bool isLegalConfiguration(const std::vector<std::string>&);
-	
+
 	static bool isState(const Arabica::DOM::Node<std::string>& state);
 	static bool isPseudoState(const Arabica::DOM::Node<std::string>& state);
 	static bool isTransitionTarget(const Arabica::DOM::Node<std::string>& elem);
@@ -215,12 +219,12 @@ public:
 	static bool isParallel(const Arabica::DOM::Node<std::string>& state);
 	static bool isCompound(const Arabica::DOM::Node<std::string>& state);
 	static bool isDescendant(const Arabica::DOM::Node<std::string>& s1, const Arabica::DOM::Node<std::string>& s2);
-	
+
 	static std::vector<std::string> tokenizeIdRefs(const std::string& idRefs);
 	static std::string spaceNormalize(const std::string& text);
 
 	bool isInEmbeddedDocument(const Arabica::DOM::Node<std::string>& node);
-	bool isInitial(const Arabica::DOM::Node<std::string>& state);	
+	bool isInitial(const Arabica::DOM::Node<std::string>& state);
 	Arabica::XPath::NodeSet<std::string> getInitialStates(Arabica::DOM::Node<std::string> state = Arabica::DOM::Node<std::string>());
 	static Arabica::XPath::NodeSet<std::string> getChildStates(const Arabica::DOM::Node<std::string>& state);
 	static Arabica::DOM::Node<std::string> getParentState(const Arabica::DOM::Node<std::string>& element);
@@ -483,6 +487,9 @@ public:
 	}
 	const std::string& getSessionId()                        {
 		return _impl->getSessionId();
+	}
+	DelayedEventQueue* getDelayQueue()                       {
+		return _impl->getDelayQueue();
 	}
 
 	const std::map<std::string, IOProcessor>& getIOProcessors() {

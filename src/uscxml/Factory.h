@@ -15,7 +15,7 @@
 namespace uscxml {
 
 inline bool isnan(double x) {
-  return x != x;
+	return x != x;
 }
 
 // see http://stackoverflow.com/questions/228005/alternative-to-itoa-for-converting-integer-to-string-c
@@ -259,7 +259,7 @@ public:
 	virtual Data getStringAsData(const std::string& content) = 0;
 
 	size_t replaceExpressions(std::string& content);
-	
+
 	// foreach
 	virtual uint32_t getLength(const std::string& expr) = 0;
 	virtual void setForeach(const std::string& item,
@@ -270,8 +270,8 @@ public:
 	virtual void popContext() = 0;
 
 	virtual void eval(const Arabica::DOM::Element<std::string>& scriptElem,
-										const std::string& expr) = 0;
-	
+	                  const std::string& expr) = 0;
+
 	virtual std::string evalAsString(const std::string& expr) = 0;
 	virtual bool evalAsBool(const std::string& expr) = 0;
 
@@ -333,7 +333,7 @@ public:
 	}
 
 	virtual void eval(const Arabica::DOM::Element<std::string>& scriptElem,
-										const std::string& expr) {
+	                  const std::string& expr) {
 		return _impl->eval(scriptElem, expr);
 	}
 	virtual std::string evalAsString(const std::string& expr) {

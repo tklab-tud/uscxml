@@ -13,7 +13,7 @@ _dmPtr = this;
 
 #define PL_MODULE \
 _interpreter.getSessionId().c_str() \
-
+ 
 #define UNSET_PL_ENGINE(dm) \
 PL_set_engine(NULL, NULL);
 
@@ -49,7 +49,7 @@ SWIDataModel::~SWIDataModel() {
 		_swiEngines.erase(this);
 	}
 }
-	
+
 boost::shared_ptr<DataModelImpl> SWIDataModel::create(InterpreterImpl* interpreter) {
 	boost::shared_ptr<SWIDataModel> dm = boost::shared_ptr<SWIDataModel>(new SWIDataModel());
 	dm->_interpreter = interpreter;
@@ -76,18 +76,18 @@ boost::shared_ptr<DataModelImpl> SWIDataModel::create(InterpreterImpl* interpret
 		} else {
 			LOG(WARNING) << "Instantiating more than one SWI prolog datamodel will lead to weird effects as I cannot seperate the environments";
 		}
-		
+
 		PL_set_engine(PL_ENGINE_CURRENT, &engine);
-		
+
 		// load SWI XML parser
 		try {
 			PlCall("use_module", PlCompound("library", PlTerm("sgml")));
 		} catch (PlException plex) {
-			
+
 			LOG(ERROR) << "Cannot load prolog sgml module - make sure you have it installed in your prolog runtime: " << (char*)plex;
 			throw plex;
 		}
-		
+
 		// load json parser
 		try {
 			PlCall("use_module", PlCompound("library", PlTerm("http/json")));
@@ -100,11 +100,11 @@ boost::shared_ptr<DataModelImpl> SWIDataModel::create(InterpreterImpl* interpret
 	} else {
 		engine = PL_create_engine(NULL);
 	}
-		
+
 	assert(engine);
-	_swiEngines[dm.get()] = engine;	
+	_swiEngines[dm.get()] = engine;
 	_dmPtr = dm.get();
-	
+
 	int rc = PL_set_engine(engine, NULL);
 	assert(rc == PL_ENGINE_SET);
 
@@ -119,7 +119,7 @@ boost::shared_ptr<DataModelImpl> SWIDataModel::create(InterpreterImpl* interpret
 	boost::replace_all(_plModule, "7", "n");
 	boost::replace_all(_plModule, "8", "o");
 	boost::replace_all(_plModule, "9", "p");
-		
+
 	// use atoms for double quoted
 	PlCall("set_prolog_flag(double_quotes,atom).");
 

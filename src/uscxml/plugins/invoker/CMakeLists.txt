@@ -147,6 +147,27 @@ if (LIBICAL_FOUND)
 endif()
 
 
+# location invoker
+
+if (CORELOCATION_LIBRARY AND OFF)
+	file(GLOB_RECURSE LOCATION_INVOKER
+		location/CoreLocation/*.cpp
+		location/CoreLocation/*.mm
+		location/CoreLocation/*.h
+	)
+	source_group("Invoker\\location" FILES ${LOCATION_INVOKER})
+	if (BUILD_AS_PLUGINS)
+		add_library(
+			invoker_location SHARED 
+			${LOCATION_INVOKER})
+		target_link_libraries(invoker_location uscxml)
+		set_target_properties(invoker_location PROPERTIES FOLDER "Plugin Invoker")
+	else()
+		list (APPEND USCXML_FILES ${LOCATION_INVOKER})
+	endif()
+endif()
+
+
 # UMUNDO invoker 
 
 if (UMUNDO_FOUND)

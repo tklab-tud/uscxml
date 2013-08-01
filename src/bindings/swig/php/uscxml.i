@@ -53,6 +53,8 @@ void*** tsrm_ls;
 // Beautify interpreter class
 //***********************************************
 
+%ignore uscxml::Interpreter::getDelayQueue();
+
 %extend uscxml::Interpreter {
 	std::vector<std::string> getConfiguration() {
 		std::vector<std::string> config;

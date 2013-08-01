@@ -92,7 +92,7 @@ bool XHTMLInvoker::httpRecvRequest(const HTTPServer::Request& req) {
 		} else if(_invokeReq.data) {
 			ss << _invokeReq.data;
 			content = ss.str();
-		} else if (_invokeReq.content.length() > 0){
+		} else if (_invokeReq.content.length() > 0) {
 			content = _invokeReq.content;
 		} else {
 			URL templateURL("templates/xhtml-invoker.html");
@@ -100,10 +100,10 @@ bool XHTMLInvoker::httpRecvRequest(const HTTPServer::Request& req) {
 			templateURL.download(true);
 			content = templateURL.getInContent();
 		}
-		
+
 		_interpreter->getDataModel().replaceExpressions(content);
 		reply.content = content;
-		
+
 		// application/xhtml+xml
 		reply.headers["Content-Type"] = "text/html; charset=utf-8";
 //		reply.headers["Content-Type"] = "application/xhtml+xml; charset=utf-8";
@@ -140,7 +140,7 @@ void XHTMLInvoker::send(const SendRequest& req) {
 	if (json) {
 		reqCopy.data = json;
 	}
-	
+
 	if (!_longPoll) {
 		_outQueue.push_back(reqCopy);
 		return;
@@ -154,7 +154,7 @@ void XHTMLInvoker::reply(const SendRequest& req, const HTTPServer::Request& long
 
 	// is there JSON in the content?
 	std::string content = req.content;
-	
+
 	if (req.dom) {
 		std::stringstream ss;
 		Arabica::DOM::Node<std::string> content = req.dom.getDocumentElement();

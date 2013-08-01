@@ -473,9 +473,9 @@ void InterpreterImpl::processDOMorText(const Arabica::DOM::Node<std::string>& no
 			std::auto_ptr<std::istream> ssPtr(ss);
 			Arabica::SAX::InputSource<std::string> inputSource;
 			inputSource.setByteStream(ssPtr);
-			
+
 //			parser.setFeature(Arabica::SAX::FeatureNames<std::string>().external_general, true);
-			
+
 			if (parser.parse(inputSource) && parser.getDocument()) {
 				dom = parser.getDocument();
 				//std::cout << dom;
@@ -498,7 +498,7 @@ void InterpreterImpl::processDOMorText(const Arabica::DOM::Node<std::string>& no
 
 	Node<std::string> child = node.getFirstChild();
 	while(child) {
-		if (child.getNodeType() == Node_base::TEXT_NODE) {
+		if (child.getNodeType() == Node_base::TEXT_NODE || child.getNodeType() == Node_base::CDATA_SECTION_NODE) {
 			std::string trimmed = child.getNodeValue();
 			boost::trim(trimmed);
 			if (trimmed.length() > 0)
@@ -515,8 +515,13 @@ void InterpreterImpl::processDOMorText(const Arabica::DOM::Node<std::string>& no
 		// we need to import the parent - to support xpath test150
 		Node<std::string> newNode = dom.importNode(child.getParentNode(), true);
 		dom.appendChild(newNode);
-	} else if(child && child.getNodeType() == Node_base::TEXT_NODE) {
-		text = child.getNodeValue();
+	} else if(child && (child.getNodeType() == Node_base::TEXT_NODE || child.getNodeType() == Node_base::CDATA_SECTION_NODE)) {
+		while(child) {
+			if ((child.getNodeType() == Node_base::TEXT_NODE || child.getNodeType() == Node_base::CDATA_SECTION_NODE)) {
+				text += child.getNodeValue();
+			}
+			child = child.getNextSibling();
+		}
 	} else {
 		LOG(ERROR) << LOCALNAME(node) << " has neither text nor element children.";
 	}
@@ -638,7 +643,7 @@ void InterpreterImpl::send(const Arabica::DOM::Node<std::string>& element) {
 		}
 		if (delay.size() > 0) {
 			boost::trim(delay);
-			
+
 			NumAttr delayAttr(delay);
 			if (boost::iequals(delayAttr.unit, "ms")) {
 				sendReq.delayMs = strTo<uint32_t>(delayAttr.value);
@@ -1076,7 +1081,7 @@ void InterpreterImpl::executeContent(const Arabica::DOM::Node<std::string>& cont
 			CATCH_AND_DISTRIBUTE("Syntax error in expr attribute of log element:")
 		} else {
 			if (logElem.hasAttribute("label"))
-				std::cout << std::endl;			
+				std::cout << std::endl;
 		}
 	} else if (boost::iequals(TAGNAME(content), _xmlNSPrefix + "assign")) {
 		// --- ASSIGN --------------------------
@@ -1131,9 +1136,14 @@ void InterpreterImpl::executeContent(const Arabica::DOM::Node<std::string>& cont
 			} else {
 				if (content.hasChildNodes()) {
 					// search for the text node with the actual script
-					if (content.getFirstChild().getNodeType() == Node_base::TEXT_NODE) {
+					std::string scriptContent;
+					for (Node<std::string> child = content.getFirstChild(); child; child = child.getNextSibling()) {
+						if (child.getNodeType() == Node_base::TEXT_NODE || child.getNodeType() == Node_base::CDATA_SECTION_NODE)
+							scriptContent += child.getNodeValue();
+					}
+					if (scriptContent.size() > 0) {
 						try {
-							_dataModel.eval((Element<std::string>)content, content.getFirstChild().getNodeValue());
+							_dataModel.eval((Element<std::string>)content, scriptContent);
 						}
 						CATCH_AND_DISTRIBUTE("Syntax error while executing script element")
 					}

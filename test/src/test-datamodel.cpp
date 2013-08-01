@@ -18,7 +18,7 @@ int main(int argc, char** argv) {
 	WSADATA wsaData;
 	WSAStartup(MAKEWORD(2, 2), &wsaData);
 #endif
-	
+
 	DataModel dm(Factory::getInstance()->createDataModel("ecmascript", NULL));
 	dm.evalAsString("var foo = 12");
 
@@ -61,7 +61,7 @@ int main(int argc, char** argv) {
 		std::cout << content << std::endl;
 		assert(boost::equals(content, "${bar}"));
 	}
-	
+
 	{
 		std::string content = "There are ${bar} monkeys! Really ${foo} monkeys!";
 		int rplc = dm.replaceExpressions(content);

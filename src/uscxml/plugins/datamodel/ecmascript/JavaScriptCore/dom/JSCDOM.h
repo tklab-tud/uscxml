@@ -17,7 +17,7 @@ namespace DOM {
 class JSCDOM {
 public:
 	JSCDOM();
-	virtual ~JSCDOM() { };
+	virtual ~JSCDOM();
 
 	Arabica::XPath::XPath<std::string>* xpath;
 };

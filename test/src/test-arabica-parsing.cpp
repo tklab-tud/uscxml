@@ -22,7 +22,7 @@ int main(int argc, char** argv) {
 		Arabica::SAX2DOM::Parser<std::string> domParser;
 		Arabica::SAX::CatchErrorHandler<std::string> errorHandler;
 		domParser.setErrorHandler(errorHandler);
-		
+
 		if(!domParser.parse(inputSource)) {
 			std::cout << errorHandler.errors();
 			return -1;
@@ -33,11 +33,11 @@ int main(int argc, char** argv) {
 	{
 		Arabica::SAX::InputSource<std::string> inputSource;
 		inputSource.setSystemId("/Users/sradomski/Documents/TK/Code/uscxml/test/samples/uscxml/arabica/test-arabica-parsing.xml");
-		
+
 		Arabica::SAX2DOM::Parser<std::string> domParser;
 		Arabica::SAX::CatchErrorHandler<std::string> errorHandler;
 		domParser.setErrorHandler(errorHandler);
-		
+
 		if(!domParser.parse(inputSource)) {
 			std::cout << errorHandler.errors();
 			return -1;

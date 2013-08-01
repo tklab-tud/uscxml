@@ -8,7 +8,6 @@
 #ifdef _WIN32
 #include <fcntl.h>
 #include <sys/types.h>
-#include <sys/stat.h>
 #include <io.h>
 #include <direct.h>
 #define getcwd _getcwd
@@ -24,6 +23,30 @@
 #include <boost/algorithm/string.hpp>
 
 namespace uscxml {
+
+std::string URL::tmpDir() {
+	// try hard to find a temporary directory
+	const char* tmpDir = NULL;
+	if (tmpDir == NULL)
+		tmpDir = getenv("TMPDIR");
+	if (tmpDir == NULL)
+		tmpDir = getenv("TMP");
+	if (tmpDir == NULL)
+		tmpDir = getenv("TEMP");
+	if (tmpDir == NULL)
+		tmpDir = getenv("USERPROFILE");
+	if (tmpDir == NULL)
+		tmpDir = "/tmp/";
+
+	char* tmpl = (char*)malloc(strlen(tmpDir) + 11);
+	char* writePtr = tmpl;
+	memcpy(writePtr, tmpDir, strlen(tmpDir));
+	writePtr += strlen(tmpDir);
+	memcpy(writePtr, "scxmlXXXXXX", 11);
+	writePtr += 11;
+	tmpl[writePtr - tmpl] = 0;
+	return tmpl;
+}
 
 URLImpl::URLImpl(const std::string& url) : _handle(NULL), _uri(url), _isDownloaded(false), _hasFailed(false) {
 	std::stringstream ss(_uri.path());

@@ -19,6 +19,11 @@
 %ignore operator!=;
 %ignore operator<;
 %ignore operator=;
+%ignore operator[];
+%ignore operator std::list<Data>;
+%ignore operator std::string;
+%ignore operator std::map<std::string,Data>;
+
 
 //**************************************************
 // This ends up in the generated wrapper code
@@ -38,6 +43,8 @@ using namespace uscxml;
 %ignore uscxml::NumAttr;
 %ignore uscxml::SCXMLParser;
 %ignore uscxml::InterpreterImpl;
+
+%ignore uscxml::Interpreter::getDelayQueue();
 
 //***********************************************
 // Parse the header file to generate wrappers

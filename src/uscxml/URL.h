@@ -10,6 +10,7 @@
 #include <set>
 #include <boost/shared_ptr.hpp>
 #include <boost/enable_shared_from_this.hpp>
+#include <sys/stat.h>
 
 #include "uscxml/concurrency/tinythread.h"
 
@@ -218,6 +219,8 @@ public:
 	const std::string asString() const {
 		return _impl->asString();
 	}
+
+	static std::string tmpDir();
 
 	friend class URLFetcher;
 	friend std::ostream & operator<<(std::ostream &stream, const URL& p);

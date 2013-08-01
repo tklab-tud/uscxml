@@ -70,11 +70,11 @@ void SpatialAudio::send(const SendRequest& req) {
 
 			miles_audio_device_control(MILES_AUDIO_IO_OPENAL, _audioDev, MILES_AUDIO_DEVICE_CTRL_SET_POSITION, _pos);
 
-			
+
 			char* buffer = (char*)malloc(_audioDev->chunk_size);
 			// skip wav header
 			_dataStream.seekg(44);
-			
+
 			while(_dataStream.readsome(buffer, _audioDev->chunk_size) != 0) {
 				int written = 0;
 				while(written < _audioDev->chunk_size) {
@@ -187,7 +187,7 @@ void SpatialAudio::getPosFromParams(const std::multimap<std::string, std::string
 	} catch (boost::bad_lexical_cast& e) {
 		LOG(ERROR) << "Cannot interpret circle as float value in params: " << e.what();
 	}
-	
+
 	position[0] = position[0] / _maxPos[0];
 	position[1] = position[1] / _maxPos[1];
 	position[2] = position[2] / _maxPos[2];

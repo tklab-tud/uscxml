@@ -49,6 +49,10 @@
 #   include "uscxml/plugins/invoker/calendar/CalendarInvoker.h"
 # endif
 
+# ifdef CORELOCATION_FOUND
+#   include "uscxml/plugins/invoker/location/CoreLocation/LocationInvoker.h"
+# endif
+
 # ifdef V8_FOUND
 #   include "uscxml/plugins/datamodel/ecmascript/v8/V8DataModel.h"
 # endif
@@ -134,8 +138,9 @@ Factory::Factory() {
 
 #ifdef MILES_FOUND
 	{
-		MilesSessionInvoker* invoker = new MilesSessionInvoker();
-		registerInvoker(invoker);
+		// eats 8MB of RAM!
+//		MilesSessionInvoker* invoker = new MilesSessionInvoker();
+//		registerInvoker(invoker);
 	}
 	{
 		SpatialAudio* invoker = new SpatialAudio();
@@ -146,6 +151,13 @@ Factory::Factory() {
 #ifdef FFMPEG_FOUND
 	{
 		FFMPEGInvoker* invoker = new FFMPEGInvoker();
+		registerInvoker(invoker);
+	}
+#endif
+
+#ifdef LIBICAL_FOUND
+	{
+		CalendarInvoker* invoker = new CalendarInvoker();
 		registerInvoker(invoker);
 	}
 #endif
@@ -448,7 +460,7 @@ size_t DataModelImpl::replaceExpressions(std::string& content) {
 	}
 	if (replacements)
 		content = ss.str();
-	
+
 	return replacements;
 }
 
