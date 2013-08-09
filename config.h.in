@@ -57,6 +57,9 @@
 
 /** Optional libraries we found */
 #cmakedefine UMUNDO_FOUND
+#cmakedefine OPENAL_FOUND
+#cmakedefine LIBSNDFILE_FOUND
+#cmakedefine AUDIOTOOLBOX_FOUND
 #cmakedefine MILES_FOUND
 #cmakedefine V8_FOUND
 #cmakedefine JSC_FOUND

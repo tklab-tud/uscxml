@@ -64,6 +64,24 @@ URLImpl::~URLImpl() {
 		curl_easy_cleanup(_handle);
 }
 
+URLImpl::operator Data() {
+	Data data;
+	data.compound["url"] = Data(asString(), Data::VERBATIM);
+	data.compound["host"] = Data(_uri.host(), Data::VERBATIM);
+	data.compound["scheme"] = Data(_uri.scheme(), Data::VERBATIM);
+	data.compound["path"] = Data(_uri.path(), Data::VERBATIM);
+	data.compound["port"] = Data(_uri.port());
+	data.compound["isAbsolute"] = Data(_uri.is_absolute() ? "true" : "false");
+
+	std::vector<std::string>::iterator pathIter = _pathComponents.begin();
+	while(pathIter != _pathComponents.end()) {
+		data.compound["pathComponent"].array.push_back(Data(*pathIter, Data::VERBATIM));
+		pathIter++;
+	}
+	
+	return data;
+}
+	
 CURL* URLImpl::getCurlHandle() {
 	if (_handle == NULL) {
 		_handle = curl_easy_init();

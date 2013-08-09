@@ -3,6 +3,7 @@ file(GLOB_RECURSE SAMPLE_INVOKER
 	sample/*.cpp
 	sample/*.h
 )
+
 source_group("Invoker\\sample" FILES ${SAMPLE_INVOKER})
 if (BUILD_AS_PLUGINS)
 	add_library(
@@ -13,7 +14,6 @@ if (BUILD_AS_PLUGINS)
 else()
 	list (APPEND USCXML_FILES ${SAMPLE_INVOKER})
 endif()
-
 
 # DirMon invoker to watch for filesystem changes
 
@@ -281,7 +281,40 @@ if (OPENSCENEGRAPH_FOUND AND OPENGL_FOUND)
 	else()
 		list (APPEND USCXML_FILES ${OPENSCENEGRAPH_CONVERTER_INVOKER})
 	endif()
+endif()
 
+
+# OpenAL modality components
+
+if (OPENAL_FOUND AND (LIBSNDFILE_FOUND OR AUDIOTOOLBOX_FOUND))
+  file(GLOB_RECURSE OPENAL_INVOKER 
+		audio/OpenAL*.cpp 
+		audio/OpenAL*.h)
+	if (LIBSNDFILE_FOUND)
+		file(GLOB_RECURSE LIBSNDFILE_WRAPPER 
+			audio/LibSoundFile*.cpp 
+			audio/LibSoundFile*.h)
+		LIST(APPEND OPENAL_INVOKER ${LIBSNDFILE_WRAPPER})
+	elseif(AUDIOTOOLBOX_FOUND)
+		file(GLOB_RECURSE AUDIOTOOLBOX_WRAPPER 
+			audio/AudioToolbox*.mm 
+			audio/AudioToolbox*.h)
+		LIST(APPEND OPENAL_INVOKER ${AUDIOTOOLBOX_WRAPPER})
+	endif()
+	source_group("Invoker\\audio" FILES ${OPENAL_INVOKER})
+#	message("MILES_INVOKER ${MILES_INVOKER}")
+
+	if (BUILD_AS_PLUGINS)
+		add_library(
+			invoker_openal SHARED 
+			${OPENAL_INVOKER})
+		target_link_libraries(invoker_openal 
+			${OPENAL_LIBRARY}
+			uscxml)
+		set_target_properties(invoker_openal PROPERTIES FOLDER "Plugin Invoker")
+	else()
+  	list (APPEND USCXML_FILES ${OPENAL_INVOKER})
+	endif()
 endif()
 
 

@@ -709,6 +709,13 @@ void InterpreterImpl::send(const Arabica::DOM::Node<std::string>& element) {
 		return;
 	}
 
+  if (sendReq.dom) {
+    std::stringstream ss;
+    ss << sendReq.dom;
+    sendReq.xml = ss.str();
+    _dataModel.replaceExpressions(sendReq.xml);
+  }
+
 	assert(_sendIds.find(sendReq.sendid) == _sendIds.end());
 	_sendIds[sendReq.sendid] = std::make_pair(this, sendReq);
 	if (sendReq.delayMs > 0) {
@@ -837,6 +844,13 @@ void InterpreterImpl::invoke(const Arabica::DOM::Node<std::string>& element) {
 		} catch (Event e) {
 			LOG(ERROR) << "Syntax error in send element content:" << std::endl << e << std::endl;
 			return;
+		}
+
+		if (invokeReq.dom) {
+			std::stringstream ss;
+			ss << invokeReq.dom;
+			invokeReq.xml = ss.str();
+			_dataModel.replaceExpressions(invokeReq.xml);
 		}
 
 		// test 422
@@ -1330,11 +1344,11 @@ Arabica::XPath::NodeSet<std::string> InterpreterImpl::getStates(const std::vecto
 
 Arabica::DOM::Node<std::string> InterpreterImpl::getState(const std::string& stateId) {
 
-	if (_cachedStates.find(stateId) != _cachedStates.end() && false) {
+	if (_cachedStates.find(stateId) != _cachedStates.end()) {
 		return _cachedStates[stateId];
 	}
 
-	// first try atomic and compund states
+	// first try atomic and compound states
 	NodeSet<std::string> target = _xpath.evaluate("//" + _xpathPrefix + "state[@id='" + stateId + "']", _scxml).asNodeSet();
 	if (target.size() > 0)
 		goto FOUND;

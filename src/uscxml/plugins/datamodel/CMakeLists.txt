@@ -1,4 +1,4 @@
-if (APPLE OR IOS)
+if (JSC_FOUND AND BUILD_DM_ECMA)
 	# JavaScriptCore ecmascript datamodel
 	file(GLOB JSC_DATAMODEL
 		ecmascript/JavaScriptCore/*.cpp

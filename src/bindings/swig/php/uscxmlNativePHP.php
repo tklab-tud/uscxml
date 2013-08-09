@@ -306,8 +306,8 @@ class Data {
 		return Data_toXMLString($this->_cPtr);
 	}
 
-	function getCompund() {
-		return Data_getCompund($this->_cPtr);
+	function getCompound() {
+		return Data_getCompound($this->_cPtr);
 	}
 
 	function setCompound($compound) {
@@ -357,8 +357,8 @@ class Event {
 	}
 
 	function __get($var) {
-		if ($var === 'data') return new Data(Event_data_get($this->_cPtr));
 		if ($var === 'namelist') return new StringMap(Event_namelist_get($this->_cPtr));
+		if ($var === 'data') return new Data(Event_data_get($this->_cPtr));
 		$func = 'Event_'.$var.'_get';
 		if (function_exists($func)) return call_user_func($func,$this->_cPtr);
 		if ($var === 'thisown') return swig_uscxmlNativePHP_get_newobject($this->_cPtr);
@@ -445,6 +445,14 @@ class Event {
 
 	function setContent($content) {
 		Event_setContent($this->_cPtr,$content);
+	}
+
+	function getXML() {
+		return Event_getXML($this->_cPtr);
+	}
+
+	function setXML($xml) {
+		Event_setXML($this->_cPtr,$xml);
 	}
 
 	function getSendId() {

@@ -34,14 +34,14 @@ int main(int argc, char** argv) {
 	assert(initialState[0] == atomicState);
 
 	NodeSet<std::string> childs = interpreter.getChildStates(compoundState);
-	Node<std::string> compundChild1 = interpreter.getState("compundChild1");
-	Node<std::string> compundChild2 = interpreter.getState("compundChild2");
+	Node<std::string> compoundChild1 = interpreter.getState("compoundChild1");
+	Node<std::string> compoundChild2 = interpreter.getState("compoundChild2");
 	assert(childs.size() > 0);
-	assert(Interpreter::isMember(compundChild1, childs));
-	assert(Interpreter::isMember(compundChild2, childs));
+	assert(Interpreter::isMember(compoundChild1, childs));
+	assert(Interpreter::isMember(compoundChild2, childs));
 	assert(!Interpreter::isMember(compoundState, childs));
 
-	assert(Interpreter::isDescendant(compundChild1, compoundState));
+	assert(Interpreter::isDescendant(compoundChild1, compoundState));
 
 	std::string transEvents;
 	transEvents = "error";

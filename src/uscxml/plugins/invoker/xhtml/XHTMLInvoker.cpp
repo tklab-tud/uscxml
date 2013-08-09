@@ -186,7 +186,7 @@ void XHTMLInvoker::cancel(const std::string sendId) {
 
 void XHTMLInvoker::invoke(const InvokeRequest& req) {
 	_invokeReq = req;
-	HTTPServer::registerServlet(_interpreter->getName() + "/xhtml/" + req.invokeid + ".html", this);
+	HTTPServer::registerServlet(_interpreter->getName() + "/" + req.invokeid + ".html", this);
 #if __APPLE__
 #	if TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR
 #	else

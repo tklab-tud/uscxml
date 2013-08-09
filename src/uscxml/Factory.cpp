@@ -49,6 +49,10 @@
 #   include "uscxml/plugins/invoker/calendar/CalendarInvoker.h"
 # endif
 
+#ifdef OPENAL_FOUND
+#   include "uscxml/plugins/invoker/audio/OpenALInvoker.h"
+#endif
+
 # ifdef CORELOCATION_FOUND
 #   include "uscxml/plugins/invoker/location/CoreLocation/LocationInvoker.h"
 # endif
@@ -158,6 +162,13 @@ Factory::Factory() {
 #ifdef LIBICAL_FOUND
 	{
 		CalendarInvoker* invoker = new CalendarInvoker();
+		registerInvoker(invoker);
+	}
+#endif
+
+#if (defined OPENAL_FOUND && (defined LIBSNDFILE_FOUND || defined AUDIOTOOLBOX_FOUND)) 
+	{
+		OpenALInvoker* invoker = new OpenALInvoker();
 		registerInvoker(invoker);
 	}
 #endif
@@ -470,6 +481,22 @@ Factory* Factory::getInstance() {
 		_instance = new Factory();
 	}
 	return _instance;
+}
+
+void EventHandlerImpl::returnErrorExecution(const std::string& cause) {
+	Event exceptionEvent;
+	exceptionEvent.data.compound["exception"] = Data(cause, Data::VERBATIM);
+	exceptionEvent.name = "error.execution";
+	exceptionEvent.type = Event::PLATFORM;
+	returnEvent(exceptionEvent);
+}
+
+void EventHandlerImpl::returnErrorPlatform(const std::string& cause) {
+	Event exceptionEvent;
+	exceptionEvent.data.compound["exception"] = Data(cause, Data::VERBATIM);
+	exceptionEvent.name = "error.platform";
+	exceptionEvent.type = Event::PLATFORM;
+	returnEvent(exceptionEvent);
 }
 
 void EventHandlerImpl::returnEvent(Event& event) {

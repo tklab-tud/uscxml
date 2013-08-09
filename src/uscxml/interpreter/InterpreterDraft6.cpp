@@ -882,7 +882,7 @@ void InterpreterDraft6::enterStates(const Arabica::XPath::NodeSet<std::string>& 
 		executeContent(onEntryElems);
 
 		if (isMember(stateElem, statesForDefaultEntry)) {
-			// execute initial transition content for compund states
+			// execute initial transition content for compound states
 			Arabica::XPath::NodeSet<std::string> transitions = _xpath.evaluate("" + _xpathPrefix + "initial/" + _xpathPrefix + "transition", stateElem).asNodeSet();
 			for (int j = 0; j < transitions.size(); j++) {
 				executeContent(transitions[j]);

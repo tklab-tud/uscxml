@@ -1,0 +1,39 @@
+<scxml datamodel="ecmascript">
+	<script src="http://uscxml.tk.informatik.tu-darmstadt.de/scripts/dump.js" />
+	<state id="start">
+		<state id="invokeNull">
+			<invoke type="java">
+				<finalize>
+					<script>dump(_event);</script>
+				</finalize>
+				<content>
+					<foo></foo>
+				</content>
+				
+			</invoke>
+			<transition event="*" target="invokeJSON" />
+		</state>
+		<state id="invokeJSON">
+			<invoke type="java">
+				<content>
+					<foo></foo>
+				</content>
+				<finalize>
+					<script>dump(_event);</script>
+				</finalize>
+			</invoke>
+			<transition event="*" target="invokeDOM" />
+		</state>
+		<state id="invokeDOM">
+			<invoke type="java">
+				<content>
+					<foo></foo>
+				</content>
+				<finalize>
+					<script>dump(_event);</script>
+				</finalize>
+			</invoke>
+			<transition event="*" target="invokeNull" />
+		</state>
+	</state>
+</scxml>

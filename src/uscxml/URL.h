@@ -8,6 +8,7 @@
 #include <map>
 #include <vector>
 #include <set>
+#include "Message.h"
 #include <boost/shared_ptr.hpp>
 #include <boost/enable_shared_from_this.hpp>
 #include <sys/stat.h>
@@ -89,6 +90,7 @@ public:
 	bool downloadFailed() {
 		return _hasFailed;
 	}
+	operator Data();
 
 	friend class URLFetcher;
 
@@ -225,6 +227,10 @@ public:
 	friend class URLFetcher;
 	friend std::ostream & operator<<(std::ostream &stream, const URL& p);
 
+	operator Data() {
+		return _impl->operator Data();
+	}
+		
 protected:
 	void downloadStarted() {
 		return _impl->downloadStarted();

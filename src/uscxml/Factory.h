@@ -111,6 +111,8 @@ protected:
 
 class EventHandlerImpl {
 public:
+	virtual ~EventHandlerImpl() {}
+
 	virtual std::set<std::string> getNames() = 0;
 
 	virtual void setInterpreter(InterpreterImpl* interpreter) {
@@ -128,6 +130,8 @@ public:
 
 	virtual void runOnMainThread() {};
 	void returnEvent(Event& event);
+	void returnErrorExecution(const std::string&);
+	void returnErrorPlatform(const std::string&);
 
 protected:
 	InterpreterImpl* _interpreter;
@@ -211,6 +215,7 @@ protected:
 
 class InvokerImpl : public EventHandlerImpl {
 public:
+	virtual ~InvokerImpl() {}
 	virtual void invoke(const InvokeRequest& req) = 0;
 	virtual boost::shared_ptr<InvokerImpl> create(InterpreterImpl* interpreter) = 0;
 };

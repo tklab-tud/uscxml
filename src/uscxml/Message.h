@@ -72,7 +72,7 @@ public:
 		return ss.str();
 	}
 
-	std::map<std::string, Data> getCompund() {
+	std::map<std::string, Data> getCompound() {
 		return compound;
 	}
 	void setCompound(const std::map<std::string, Data>& compound) {
@@ -187,6 +187,13 @@ public:
 		this->content = content;
 	}
 
+	std::string getXML() {
+		return xml;
+	}
+	void setXML(const std::string& xml) {
+		this->xml = xml;
+	}
+
 	std::string getSendId() {
 		return sendid;
 	}
@@ -270,6 +277,7 @@ protected:
 #endif
 
 	std::string raw;
+	std::string xml;
 	std::string name;
 	Type type;
 	std::string origin;

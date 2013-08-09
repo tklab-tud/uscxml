@@ -87,6 +87,9 @@ void customTerminate() {
 	} catch (const std::exception &e) {
 		std::cerr << __FUNCTION__ << " caught unhandled exception. what(): "
 		          << e.what() << std::endl;
+	} catch (const std::runtime_error &e) {
+		std::cerr << __FUNCTION__ << " caught unhandled exception. what(): "
+		<< e.what() << std::endl;
 	} catch (const uscxml::Event &e) {
 		std::cerr << __FUNCTION__ << " caught unhandled exception. Event: "
 		          << e << std::endl;

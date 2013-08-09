@@ -1,0 +1,55 @@
+<scxml datamodel="ecmascript" name="spatial.audio.test">
+	<script src="http://uscxml.tk.informatik.tu-darmstadt.de/scripts/dump.js" />
+	<script>
+		var bubblesDeg = 0;
+		var electricDeg = 90;
+	</script>
+	<state id="click.continuously">
+		<invoke type="openal" id="audio.id1" />
+		<state id="ready">
+			<onentry>
+				<send event="spatial-audio.play" delay="1ms" />
+				<log expr="'Ready'" />
+			</onentry>
+			<transition target="play" event="spatial-audio.play" />
+		</state>
+		<parallel id="play">
+			<state id="bubbles">
+				<onentry>
+					<send target="#_audio.id1" event="play" id="bubbles">
+						<param name="src" expr="'http://www.talkingwav.com/various/applause.wav'" />
+					</send>
+				</onentry>
+			</state>
+			<state id="electric">
+				<onentry>
+					<send target="#_audio.id1" event="play" id="electric">
+						<param name="src" expr="'http://www.talkingwav.com/various/aaaaagh.wav'" />
+					</send>
+				</onentry>
+			</state>
+			<state id="rotate">
+				<state id="rotateinner">
+					<onentry>
+						<send event="rotate" delay="1000ms" />
+						<send target="#_audio.id1" event="move.source">
+							<param name="source" expr="'bubbles'" />
+							<param name="circle" expr="bubblesDeg + 'deg'" />
+						</send>
+						<send target="#_audio.id1" event="move.source">
+							<param name="source" expr="'electric'" />
+							<param name="circle" expr="electricDeg + 'deg'" />
+						</send>
+						<script>
+							bubblesDeg += 10;
+							electricDeg += 20;
+						</script>
+					</onentry>
+					<transition event="rotate" type="internal" target="rotateinner" />
+				</state>
+			</state>
+		</parallel>
+	</state>
+	
+	<final id="final" />
+</scxml>
