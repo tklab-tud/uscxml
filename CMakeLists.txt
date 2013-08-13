@@ -461,7 +461,7 @@ list (APPEND USCXML_CORE_LIBS ${EVENT_LIBRARY})
 #################################################
 # Optional libraries
 
-if (APPLE OR IOS)
+if (OFF AND (APPLE OR IOS))
 	find_library(AUDIOTOOLBOX AudioToolbox REQUIRED)
 	list (APPEND USCXML_OPT_LIBS ${AUDIOTOOLBOX})
 

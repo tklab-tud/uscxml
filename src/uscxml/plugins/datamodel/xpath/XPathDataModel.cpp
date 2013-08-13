@@ -123,7 +123,7 @@ void XPathDataModel::setEvent(const Event& event) {
 		// -- type
 		Element<std::string> eventTypeElem = _doc.createElement("type");
 		Text<std::string> eventType;
-		switch (event.type) {
+		switch (event.eventType) {
 		case Event::INTERNAL:
 			eventType = _doc.createTextNode("internal");
 			break;

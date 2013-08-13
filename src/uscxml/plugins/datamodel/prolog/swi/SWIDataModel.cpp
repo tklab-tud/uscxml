@@ -202,7 +202,7 @@ void SWIDataModel::setEvent(const Event& event) {
 
 		// event.type
 		std::string type;
-		switch (event.type) {
+		switch (event.eventType) {
 		case Event::PLATFORM:
 			type = "platform";
 			break;

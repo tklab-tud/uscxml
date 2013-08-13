@@ -1,0 +1,105 @@
+<scxml datamodel="java" initial="comparison" binding="late">
+	<datamodel>
+		<data id="year" expr="2008" />
+		<data id="CEO" expr="'Mr Big'" />
+		<data id="profitable" />
+		<data id="json">
+			{
+				"id": 1,
+				"name": "Foo",
+				"price": 123,
+				"tags": [ "Bar", "Eek" ],
+				"stock": {
+					"warehouse": 300,
+					"retail": 20,
+				}
+			}
+		</data>
+	</datamodel>
+	<script>
+		var x = 4;
+		var a = ["a", "b", "c"];
+		var b = [10,20,30];
+	</script>
+	<script>
+		var y;
+		if (x > 10) {
+			y = 'true';
+		} else {
+			y = 'false';
+		}
+	</script>
+	<state id="comparison">
+		<onentry>
+			<log expr="'-- Testing comparisons'" />
+			<log expr="'x is ' + x + ', y is ' + y" />
+			<if cond="x &gt;= 2">
+				<log expr="'x is greater or equal to 2'" />
+			<else/>
+				<log expr="'x is smaller than 2'" />
+			</if>
+		</onentry>
+		<transition target="builtin" />
+	</state>
+	<state id="builtin">
+		<onentry>
+			<log expr="'-- Testing built ins'" />
+			<if cond="In('builtin')">
+				<log expr="'We are in state builtin'" />
+			<else/>
+				<log expr="'We are not in state builtin'" />
+			</if>
+		</onentry>
+		<transition target="conditionals" />
+	</state>
+	<state id="conditionals">
+		<onentry>
+			<log expr="'-- Testing conditionals'" />
+			<if cond="y == true">
+				<log expr="'x is great and y is'" />
+				<elseif cond="x > 3">
+					<log expr="'x is somewhat great and y is not'" />
+				</elseif>
+				<else>
+					<log expr="'x is great and y is not'" />
+				</else>
+			</if>
+		</onentry>
+		<transition target="foreach" />
+	</state>
+	<state id="foreach">
+		<onentry>
+			<log expr="'-- Testing loops'" />
+			<foreach array="a" item="itemA" index="indexA">
+				<foreach array="b" item="itemB" index="indexB">
+					<log expr="indexA + '.' + indexB + ' = ' + itemA + '.' + itemB" />
+				</foreach>
+			</foreach>
+		</onentry>
+		<transition target="datamodels" />
+	</state>
+	<state id="datamodels">
+		<datamodel>
+			<data id="bar" expr="'yeah, bar!'"/>
+		</datamodel>
+		<onentry>
+			<log expr="'-- DataModels'" />
+			<log expr="'year = ' + year" />
+			<log expr="'bar = ' + bar" />
+			<log expr="'json.stock.warehouse = ' + json.stock.warehouse" />
+		</onentry>
+		<transition target="syntaxerror" />
+	</state>
+	<state id="syntaxerror">
+		<onentry>
+			<log expr="'-- Syntax Error'" />
+			<log expr="year = ' + year" />
+		</onentry>
+		<transition event="error.execution" target="final" />
+	</state>
+	<final id="final">
+		<onentry>
+			<log expr="'Finished!'" />
+		</onentry>
+	</final>
+</scxml>

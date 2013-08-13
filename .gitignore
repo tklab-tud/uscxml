@@ -9,6 +9,9 @@ contrib/prebuilt/linux*
 contrib/prebuilt/windows*
 contrib/prebuilt/ios*
 contrib/prebuilt/android*
+contrib/java/bin*
+contrib/java/*.log
+
 package/linux*
 package/darwin*
 package/windows*

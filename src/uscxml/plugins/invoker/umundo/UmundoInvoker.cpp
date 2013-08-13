@@ -94,7 +94,7 @@ void UmundoInvoker::send(const SendRequest& req) {
 						event.name = _invokeId + ".reply." + req.name;
 						event.origin = msg.getMeta("um.channel");
 						event.origintype = "umundo";
-						event.type = Event::EXTERNAL;
+						event.eventType = Event::EXTERNAL;
 
 						returnEvent(event);
 						svcIter++;
@@ -230,7 +230,7 @@ void UmundoInvoker::receive(void* object, umundo::Message* msg) {
 	event.invokeid = _invokeId;
 	event.origin = msg->getMeta("um.channel");
 	event.origintype = "umundo";
-	event.type = Event::EXTERNAL;
+	event.eventType = Event::EXTERNAL;
 
 //  if (msg->getMeta().find("um.s11n.type") != msg->getMeta().end())
 //    event.compound["class"] = msg->getMeta("um.s11n.type");
@@ -268,7 +268,7 @@ void UmundoInvoker::added(umundo::ServiceDescription desc) {
 	addedEvent.invokeid = _invokeId;
 	addedEvent.origin = desc.getName();
 	addedEvent.origintype = "umundo";
-	addedEvent.type = Event::EXTERNAL;
+	addedEvent.eventType = Event::EXTERNAL;
 	addedEvent.name = _invokeId + ".added";
 
 	std::map<std::string, std::string>::const_iterator propIter = desc.getProperties().begin();
@@ -294,7 +294,7 @@ void UmundoInvoker::removed(umundo::ServiceDescription desc) {
 	addedEvent.invokeid = _invokeId;
 	addedEvent.origin = desc.getName();
 	addedEvent.origintype = "umundo";
-	addedEvent.type = Event::EXTERNAL;
+	addedEvent.eventType = Event::EXTERNAL;
 	addedEvent.name = _invokeId + ".removed";
 
 	std::map<std::string, std::string>::const_iterator propIter = desc.getProperties().begin();

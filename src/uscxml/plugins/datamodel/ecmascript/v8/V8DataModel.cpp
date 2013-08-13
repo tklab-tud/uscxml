@@ -558,7 +558,7 @@ void V8DataModel::throwExceptionEvent(const v8::TryCatch& tryCatch) {
 	assert(tryCatch.HasCaught());
 	Event exceptionEvent;
 	exceptionEvent.name = "error.execution";
-	exceptionEvent.type = Event::PLATFORM;
+	exceptionEvent.eventType = Event::PLATFORM;
 
 	std::string exceptionString(*v8::String::AsciiValue(tryCatch.Exception()));
 	exceptionEvent.data.compound["exception"] = Data(exceptionString, Data::VERBATIM);;

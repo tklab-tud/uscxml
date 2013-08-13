@@ -112,10 +112,7 @@ protected:
 
 protected:
 	Arabica::DOM::Document<std::string> toNode(const Arabica::DOM::Document<std::string>& factory, const Data& data);
-
-#ifndef SWIG
 	friend std::ostream& operator<< (std::ostream& os, const Data& data);
-#endif
 };
 
 class Event {
@@ -126,9 +123,9 @@ public:
 	    PLATFORM = 3
 	};
 
-	Event() : type(INTERNAL), hideSendId(false) {}
-	Event(const std::string& name, Type type = INTERNAL) : name(name), type(type), hideSendId(false) {}
-	Event(const Arabica::DOM::Node<std::string>& xmlString) : type(INTERNAL), hideSendId(false) {};
+	Event() : eventType(INTERNAL), hideSendId(false) {}
+	Event(const std::string& name, Type type = INTERNAL) : name(name), eventType(type), hideSendId(false) {}
+	Event(const Arabica::DOM::Node<std::string>& xmlString) : eventType(INTERNAL), hideSendId(false) {};
 	bool operator< (const Event& other) const     {
 		return this < &other;
 	}
@@ -140,11 +137,11 @@ public:
 		this->name = name;
 	}
 
-	Type getType() {
-		return type;
+	Type getEventType() {
+		return eventType;
 	}
-	void setType(const Type type) {
-		this->type = type;
+	void setEventType(const Type type) {
+		this->eventType = type;
 	}
 
 	std::string getOrigin() {
@@ -225,52 +222,12 @@ public:
 		return ss.str();
 	}
 
-#ifdef SWIG
-	/// TODO: Do we want to set namelist and params as well?
-	std::map<std::string, std::string> getNameList() {
-		return namelist;
-	}
-
-	const std::vector<std::string> getNameListKeys() {
-		std::set<std::string> keys;
-		namelist_t::const_iterator nameListIter = namelist.begin();
-		while (nameListIter != namelist.end()) {
-			keys.insert(nameListIter->first);
-			nameListIter++;
-		}
-		return std::vector<std::string>(keys.begin(), keys.end());
-	}
-
-	// substitute multimap by map with vectors for language bindings
-	std::map<std::string, std::vector<std::string> > getParams() {
-		std::map<std::string, std::vector<std::string> > paramsMap;
-		params_t::iterator paramIter = params.begin();
-		while(paramIter != params.end()) {
-			paramsMap[paramIter->first].push_back(paramIter->second);
-			paramIter++;
-		}
-		return paramsMap;
-	}
-
-	const std::vector<std::string> getParamKeys() {
-		std::set<std::string> keys;
-		params_t::iterator paramIter = params.begin();
-		while(paramIter != params.end()) {
-			keys.insert(paramIter->first);
-			paramIter++;
-		}
-		return std::vector<std::string>(keys.begin(), keys.end());
-	}
-
-#else
 	std::map<std::string, std::string>& getNameList() {
 		return namelist;
 	}
 	std::multimap<std::string, std::string>& getParams() {
 		return params;
 	}
-#endif
-
 
 #ifdef SWIGIMPORTED
 protected:
@@ -279,7 +236,7 @@ protected:
 	std::string raw;
 	std::string xml;
 	std::string name;
-	Type type;
+	Type eventType;
 	std::string origin;
 	std::string origintype;
 	Arabica::DOM::Document<std::string> dom;
@@ -294,9 +251,7 @@ protected:
 	typedef std::multimap<std::string, std::string> params_t;
 	typedef std::map<std::string, std::string> namelist_t;
 
-#ifndef SWIG
 	friend std::ostream& operator<< (std::ostream& os, const Event& event);
-#endif
 };
 
 class InvokeRequest : public Event {
@@ -340,9 +295,7 @@ protected:
 	std::string src;
 	bool autoForward;
 
-#ifndef SWIG
 	friend std::ostream& operator<< (std::ostream& os, const InvokeRequest& sendReq);
-#endif
 
 };
 
@@ -388,9 +341,7 @@ protected:
 	std::string type;
 	uint32_t delayMs;
 
-#ifndef SWIG
 	friend std::ostream& operator<< (std::ostream& os, const SendRequest& sendReq);
-#endif
 
 };
 

@@ -3,11 +3,11 @@
 namespace Arabica {
 namespace DOM {
 
-JSValueRef JSCSCXMLEvent::typeCustomAttrGetter(JSContextRef ctx, JSObjectRef thisObj, JSStringRef propertyName, JSValueRef* exception) {
+JSValueRef JSCSCXMLEvent::eventTypeCustomAttrGetter(JSContextRef ctx, JSObjectRef thisObj, JSStringRef propertyName, JSValueRef* exception) {
 	struct JSCSCXMLEventPrivate* privData = (struct JSCSCXMLEventPrivate*)JSObjectGetPrivate(thisObj);
 	JSStringRef stringRef;
 
-	switch (privData->nativeObj->type) {
+	switch (privData->nativeObj->eventType) {
 	case uscxml::Event::INTERNAL:
 		stringRef = JSStringCreateWithUTF8CString("internal");
 		break;

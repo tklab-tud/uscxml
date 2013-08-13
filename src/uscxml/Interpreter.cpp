@@ -32,7 +32,7 @@ catch (Event e) {\
 		throw(e);\
 	} else {\
 		e.name = "error.execution";\
-		e.type = Event::PLATFORM;\
+		e.eventType = Event::PLATFORM;\
 		receiveInternal(e);\
 	}\
 }
@@ -577,7 +577,7 @@ void InterpreterImpl::processParamChilds(const Arabica::DOM::Node<std::string>& 
 void InterpreterImpl::send(const Arabica::DOM::Node<std::string>& element) {
 	SendRequest sendReq;
 	// test 331
-	sendReq.Event::type = Event::EXTERNAL;
+	sendReq.Event::eventType = Event::EXTERNAL;
 	try {
 		// event
 		if (HAS_ATTR(element, "eventexpr") && _dataModel) {
@@ -776,7 +776,7 @@ void InterpreterImpl::delayedSend(void* userdata, std::string eventName) {
 
 void InterpreterImpl::invoke(const Arabica::DOM::Node<std::string>& element) {
 	InvokeRequest invokeReq;
-	invokeReq.Event::type = Event::EXTERNAL;
+	invokeReq.Event::eventType = Event::EXTERNAL;
 	try {
 		// type
 		if (HAS_ATTR(element, "typeexpr") && _dataModel) {

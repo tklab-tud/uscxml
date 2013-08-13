@@ -491,7 +491,7 @@ void EventHandlerImpl::returnErrorExecution(const std::string& cause) {
 	Event exceptionEvent;
 	exceptionEvent.data.compound["exception"] = Data(cause, Data::VERBATIM);
 	exceptionEvent.name = "error.execution";
-	exceptionEvent.type = Event::PLATFORM;
+	exceptionEvent.eventType = Event::PLATFORM;
 	returnEvent(exceptionEvent);
 }
 
@@ -499,15 +499,15 @@ void EventHandlerImpl::returnErrorPlatform(const std::string& cause) {
 	Event exceptionEvent;
 	exceptionEvent.data.compound["exception"] = Data(cause, Data::VERBATIM);
 	exceptionEvent.name = "error.platform";
-	exceptionEvent.type = Event::PLATFORM;
+	exceptionEvent.eventType = Event::PLATFORM;
 	returnEvent(exceptionEvent);
 }
 
 void EventHandlerImpl::returnEvent(Event& event) {
 	if (event.invokeid.length() == 0)
 		event.invokeid = _invokeId;
-	if (event.type == 0)
-		event.type = Event::EXTERNAL;
+	if (event.eventType == 0)
+		event.eventType = Event::EXTERNAL;
 	if (event.origin.length() == 0)
 		event.origin = "#_" + _invokeId;
 	if (event.origintype.length() == 0)

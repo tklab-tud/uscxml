@@ -246,7 +246,7 @@ void InterpreterDraft6::mainEventLoop() {
 #if VERBOSE
 		std::cout << "Received externalEvent event " << _currEvent.name << std::endl;
 #endif
-		_currEvent.type = Event::EXTERNAL; // make sure it is set to external
+		_currEvent.eventType = Event::EXTERNAL; // make sure it is set to external
 		if (!_running)
 			goto EXIT_INTERPRETER;
 

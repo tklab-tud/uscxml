@@ -39,7 +39,7 @@ boost::shared_ptr<IOProcessorImpl> MMIHTTPIOProcessor::create(InterpreterImpl* i
 
 bool MMIHTTPIOProcessor::httpRecvRequest(const HTTPServer::Request& req) {
 	Event reqEvent = req;
-	reqEvent.type = Event::EXTERNAL;
+	reqEvent.eventType = Event::EXTERNAL;
 	bool scxmlStructFound = false;
 
 	if (reqEvent.data.compound["header"].compound.find("Content-Type") != reqEvent.data.compound["header"].compound.end() &&

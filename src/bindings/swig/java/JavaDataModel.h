@@ -44,7 +44,11 @@ public:
 	virtual void popContext() {}
 
 	virtual void eval(const Arabica::DOM::Element<std::string>& scriptElem,
-	                  const std::string& expr) {}
+	                  const std::string& expr) {
+		std::ostringstream ssEval;
+		ssEval << scriptElem;
+		eval(ssEval.str(), expr);
+	}
 
 	virtual std::string evalAsString(const std::string& expr) {
 		return "";
@@ -59,14 +63,61 @@ public:
 
 	virtual void assign(const Arabica::DOM::Element<std::string>& assignElem,
 	                    const Arabica::DOM::Document<std::string>& doc,
-	                    const std::string& content) {}
-	virtual void assign(const std::string& location, const Data& data) {}
+	                    const std::string& content) {
+		// convert XML back into strings
+		std::string location;
+		if (assignElem.hasAttribute("location")) {
+			location = assignElem.getAttribute("location");
+		}
+		std::ostringstream ssAssign;
+		ssAssign << assignElem;
+		std::string tmp;
+		if (doc) {
+			std::ostringstream ssContent;
+			ssContent << doc;
+			tmp = ssContent.str();
+		} else {
+			tmp = content;
+		}
+		assign(location, ssAssign.str(), tmp);
+	}
+
+	virtual void assign(const std::string& location, const Data& data) {
+		init("", location, Data::toJSON(data));
+	}
+
+	// this is assign the function exposed to java
 
 	virtual void init(const Arabica::DOM::Element<std::string>& dataElem,
 	                  const Arabica::DOM::Document<std::string>& doc,
-	                  const std::string& content) {}
-	virtual void init(const std::string& location, const Data& data) {}
+	                  const std::string& content) {
+		// convert XML back into strings
+		std::string location;
+		if (dataElem.hasAttribute("id")) {
+			location = dataElem.getAttribute("id");
+		}
+		std::ostringstream ssData;
+		if (dataElem)
+			ssData << dataElem;
+		std::string tmp;
+		if (doc) {
+			std::ostringstream ssContent;
+			ssContent << doc;
+			tmp = ssContent.str();
+		} else {
+			tmp = content;
+		}
+		init(location, ssData.str(), tmp);
+	}
 
+	virtual void init(const std::string& location, const Data& data) {
+		init("", location, Data::toJSON(data));
+	}
+
+	// these functions are exposed to java
+	virtual void init(const std::string& dataElem, const std::string& location, const std::string& content) {}
+	virtual void assign(const std::string& assignElem, const std::string& location, const std::string& content) {}
+	virtual void eval(const std::string& scriptElem, const std::string& expr) {}
 
 };
 

@@ -5,24 +5,22 @@ namespace Arabica {
 namespace DOM {
 
 JSValueRef JSCXPathResult::singleNodeValueCustomAttrGetter(JSContextRef ctx, JSObjectRef thisObj, JSStringRef propertyName, JSValueRef* exception) {
-#if 0
-	v8::Local<v8::Object> self = info.Holder();
-	V8XPathResultPrivate* privData = V8DOM::toClassPtr<V8XPathResultPrivate >(self->GetInternalField(0));
+	struct JSCXPathResultPrivate* privData = (struct JSCXPathResultPrivate*)JSObjectGetPrivate(thisObj);
 
-	Arabica::DOM::Node<std::string>* retVal = new Arabica::DOM::Node<std::string>(privData->nativeObj->asNodeSet()[0]);
+	Arabica::XPath::NodeSet<std::string> nodeSet = privData->nativeObj->asNodeSet();
+	if (nodeSet.size() == 0)
+		return JSValueMakeUndefined(ctx);
 
-	v8::Handle<v8::Function> retCtor = V8Node::getTmpl()->GetFunction();
-	v8::Persistent<v8::Object> retObj = v8::Persistent<v8::Object>::New(retCtor->NewInstance());
+	Arabica::DOM::Node<std::string>* retVal = new Arabica::DOM::Node<std::string>(nodeSet[0]);
+	JSClassRef retClass = JSCNode::getTmpl();
 
-	struct V8Node::V8NodePrivate* retPrivData = new V8Node::V8NodePrivate();
+	struct JSCNode::JSCNodePrivate* retPrivData = new JSCNode::JSCNodePrivate();
 	retPrivData->dom = privData->dom;
 	retPrivData->nativeObj = retVal;
 
-	retObj->SetInternalField(0, V8DOM::toExternal(retPrivData));
+	JSObjectRef retObj = JSObjectMake(ctx, retClass, retPrivData);
 
-	retObj.MakeWeak(0, V8Node::jsDestructor);
 	return retObj;
-#endif
 }
 
 }

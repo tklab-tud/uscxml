@@ -41,7 +41,7 @@ public:
 	static bool hasInstance(v8::Handle<v8::Value>);
 
 
-	static v8::Handle<v8::Value> typeCustomAttrGetter(v8::Local<v8::String> property, const v8::AccessorInfo& info);
+	static v8::Handle<v8::Value> eventTypeCustomAttrGetter(v8::Local<v8::String> property, const v8::AccessorInfo& info);
 	static v8::Handle<v8::Value> nameAttrGetter(v8::Local<v8::String> property, const v8::AccessorInfo& info);
 	static v8::Handle<v8::Value> originAttrGetter(v8::Local<v8::String> property, const v8::AccessorInfo& info);
 	static v8::Handle<v8::Value> origintypeAttrGetter(v8::Local<v8::String> property, const v8::AccessorInfo& info);
@@ -63,7 +63,7 @@ public:
 
 			instance->SetInternalFieldCount(1);
 
-			instance->SetAccessor(v8::String::NewSymbol("type"), V8SCXMLEvent::typeCustomAttrGetter, 0,
+			instance->SetAccessor(v8::String::NewSymbol("eventType"), V8SCXMLEvent::eventTypeCustomAttrGetter, 0,
 			                      v8::External::New(0), static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None));
 			instance->SetAccessor(v8::String::NewSymbol("name"), V8SCXMLEvent::nameAttrGetter, 0,
 			                      v8::External::New(0), static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None));

@@ -509,7 +509,7 @@ void JSCDataModel::handleException(JSValueRef exception) {
 	Event exceptionEvent;
 	exceptionEvent.data.compound["exception"] = Data(exceptionMsg, Data::VERBATIM);
 	exceptionEvent.name = "error.execution";
-	exceptionEvent.type = Event::PLATFORM;
+	exceptionEvent.eventType = Event::PLATFORM;
 
 	throw(exceptionEvent);
 

@@ -503,7 +503,7 @@ std::ostream& operator<< (std::ostream& os, const Event& event) {
 		indent += "  ";
 	}
 
-	os << indent << (event.type == Event::EXTERNAL ? "External" : "Internal") << " Event " << (event.dom ? "with DOM attached" : "") << std::endl;
+	os << indent << (event.eventType == Event::EXTERNAL ? "External" : "Internal") << " Event " << (event.dom ? "with DOM attached" : "") << std::endl;
 
 	if (event.name.size() > 0)
 		os << indent << "  name: " << event.name << std::endl;
