@@ -19,6 +19,7 @@
 %ignore operator std::list<Data>;
 %ignore operator std::string;
 %ignore operator std::map<std::string,Data>;
+%ignore operator<<;
 
 %template(StringMap) std::map<std::string, std::string>;
 %template(StringVector) std::vector<std::string>;

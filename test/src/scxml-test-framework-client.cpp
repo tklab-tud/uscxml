@@ -152,7 +152,7 @@ public:
 			std::string token = jsonReq.compound["event"].compound["sessionToken"].atom;
 			assert(_interpreters.find(token) != _interpreters.end());
 			uscxml::Event event;
-			event.type = uscxml::Event::INTERNAL;
+			event.eventType = uscxml::Event::INTERNAL;
 			event.name = jsonReq.compound["event"].compound["name"].atom;
 			std::cout << "Sending event " << event << std::endl;
 //      evhttp_request_free(_interpreters[token].second);

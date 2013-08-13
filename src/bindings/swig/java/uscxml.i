@@ -38,6 +38,7 @@ typedef uscxml::SendRequest SendRequest;
 %ignore operator std::list<Data>;
 %ignore operator std::string;
 %ignore operator std::map<std::string,Data>;
+%ignore operator<<;
 
 
 //**************************************************
@@ -58,8 +59,6 @@ using namespace uscxml;
 #include "JavaDataModel.cpp"
 
 %}
-
-%rename(toString) operator<<;
 
 %ignore uscxml::NumAttr;
 %ignore uscxml::SCXMLParser;

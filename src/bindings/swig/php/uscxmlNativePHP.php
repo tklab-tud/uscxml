@@ -391,12 +391,12 @@ class Event {
 		Event_setName($this->_cPtr,$name);
 	}
 
-	function getType() {
-		return Event_getType($this->_cPtr);
+	function getEventType() {
+		return Event_getEventType($this->_cPtr);
 	}
 
-	function setType($type) {
-		Event_setType($this->_cPtr,$type);
+	function setEventType($type) {
+		Event_setEventType($this->_cPtr,$type);
 	}
 
 	function getOrigin() {
@@ -517,34 +517,8 @@ class Event {
 		return $r;
 	}
 
-	function getNameListKeys() {
-		$r=Event_getNameListKeys($this->_cPtr);
-		if (is_resource($r)) {
-			$c=substr(get_resource_type($r), (strpos(get_resource_type($r), '__') ? strpos(get_resource_type($r), '__') + 2 : 3));
-			if (class_exists($c)) return new $c($r);
-			return new StringVector($r);
-		}
-		return $r;
-	}
-
 	function getParams() {
-		$r=Event_getParams($this->_cPtr);
-		if (is_resource($r)) {
-			$c=substr(get_resource_type($r), (strpos(get_resource_type($r), '__') ? strpos(get_resource_type($r), '__') + 2 : 3));
-			if (class_exists($c)) return new $c($r);
-			return new Params($r);
-		}
-		return $r;
-	}
-
-	function getParamKeys() {
-		$r=Event_getParamKeys($this->_cPtr);
-		if (is_resource($r)) {
-			$c=substr(get_resource_type($r), (strpos(get_resource_type($r), '__') ? strpos(get_resource_type($r), '__') + 2 : 3));
-			if (class_exists($c)) return new $c($r);
-			return new StringVector($r);
-		}
-		return $r;
+		return Event_getParams($this->_cPtr);
 	}
 }
 

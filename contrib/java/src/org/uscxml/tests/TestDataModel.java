@@ -17,7 +17,7 @@ public class TestDataModel extends JavaDataModel {
 	@Override
 	public JavaDataModel create(Interpreter interpreter) {
 		/**
-		 * An SCXML interpreter wants an instance of this datamodel
+		 * Called when an SCXML interpreter wants an instance of this datamodel
 		 */
 		System.out.println("create");
 		return new TestDataModel();
@@ -27,7 +27,7 @@ public class TestDataModel extends JavaDataModel {
 	public StringSet getNames() {
 		/**
 		 * Register with the following names for the datamodel attribute
-		 * at the scxml element.
+		 * at the scxml element. <scxml datamodel="one of these">
 		 */
 		System.out.println("getNames");
 		StringSet ss = new StringSet();
@@ -48,7 +48,7 @@ public class TestDataModel extends JavaDataModel {
 	@Override
 	public void setEvent(Event event) {
 		/**
-		 * Make the event available as the variable _event
+		 * Make the current event available as the variable _event
 		 * in the datamodel.
 		 */
 		System.out.println("setEvent " + event);
@@ -144,12 +144,17 @@ public class TestDataModel extends JavaDataModel {
 	 * @param args
 	 */
 	public static void main(String[] args) {
+		// load JNI library from build directory
 		System.load("/Users/sradomski/Documents/TK/Code/uscxml/build/cli/lib/libuscxmlNativeJava64_d.jnilib");
 		
+		// register java datamodel at factory
 		TestDataModel datamodel = new TestDataModel(); 
 		Factory.getInstance().registerDataModel(datamodel);
 		
+		// instantiate interpreter with document from file
 		Interpreter interpreter = Interpreter.fromURI("/Users/sradomski/Documents/TK/Code/uscxml/test/samples/uscxml/test-java-datamodel.scxml");
+
+		// wait until interpreter has finished
 		while(true)
 			interpreter.interpret();
 	}
