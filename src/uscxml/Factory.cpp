@@ -226,7 +226,7 @@ Factory::Factory() {
 		NULLDataModel* dataModel = new NULLDataModel();
 		registerDataModel(dataModel);
 	}
-#if 0
+#if 1
 	{
 		XHTMLInvoker* invoker = new XHTMLInvoker();
 		registerInvoker(invoker);
