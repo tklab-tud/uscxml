@@ -1,6 +1,7 @@
 package org.uscxml.tests;
 
 import org.uscxml.Data;
+import org.uscxml.DataNative;
 import org.uscxml.Event;
 import org.uscxml.Factory;
 import org.uscxml.Interpreter;
@@ -20,10 +21,10 @@ public class TestInvoker extends JavaInvoker {
 	}
 
 	@Override
-	public Data getDataModelVariables() {
+	public DataNative getDataModelVariables() {
 		Data data = new Data();
-		data.getArray().add(new Data("foo", Data.Type.VERBATIM));
-		return data;
+		data.array.add(new Data("foo", Data.Type.VERBATIM));
+		return Data.toNative(data);
 	}
 
 	@Override
@@ -35,7 +36,7 @@ public class TestInvoker extends JavaInvoker {
 	public void invoke(InvokeRequest req) {
 		System.out.println("invoke");
 
-		System.out.println(Data.toJSON(req.getData()));
+		System.out.println(req.getData());
 		System.out.println(req.getXML());
 		
 		Event ev = new Event();

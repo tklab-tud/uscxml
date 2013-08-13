@@ -1,14 +1,11 @@
 package org.uscxml.tests;
 
 import org.uscxml.Data;
+import org.uscxml.DataNative;
 import org.uscxml.Event;
 import org.uscxml.Factory;
 import org.uscxml.Interpreter;
 import org.uscxml.JavaDataModel;
-import org.uscxml.SWIGTYPE_p_Arabica__DOM__DocumentT_std__string_t;
-import org.uscxml.SWIGTYPE_p_Arabica__DOM__ElementT_std__string_t;
-import org.uscxml.SWIGTYPE_p_boost__shared_ptrT_uscxml__DataModelImpl_t;
-import org.uscxml.SWIGTYPE_p_uscxml__InterpreterImpl;
 import org.uscxml.StringSet;
 
 
@@ -55,14 +52,14 @@ public class TestDataModel extends JavaDataModel {
 	}
 
 	@Override
-	public Data getStringAsData(String content) {
+	public DataNative getStringAsData(String content) {
 		/**
 		 * Evaluate the string as a value expression and
 		 * transform it into a JSON-like Data structure
 		 */
 		System.out.println("getStringAsData " + content);
 		Data data = new Data();
-		return data;
+		return Data.toNative(data);
 	}
 
 	@Override
@@ -79,7 +76,7 @@ public class TestDataModel extends JavaDataModel {
 	public void setForeach(String item, String array, String index, long iteration) {
 		/**
 		 * Prepare an iteration of the foreach element, by setting the variable in index
-		 * to the curent iteration and setting the variable in item to the current item
+		 * to the current iteration and setting the variable in item to the current item
 		 * from array.
 		 */
 		System.out.println("setForeach " + item + " " + index + " " + iteration);

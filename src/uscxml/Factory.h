@@ -299,7 +299,7 @@ public:
 class DataModel {
 public:
 	DataModel() : _impl() {}
-	DataModel(boost::shared_ptr<DataModelImpl> const impl) : _impl(impl) { }
+	DataModel(const boost::shared_ptr<DataModelImpl> impl) : _impl(impl) { }
 	DataModel(const DataModel& other) : _impl(other._impl) { }
 	virtual ~DataModel() {};
 
