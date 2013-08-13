@@ -21,14 +21,14 @@ UmundoInvoker::UmundoInvoker() : _pub(NULL), _sub(NULL) {
 
 UmundoInvoker::~UmundoInvoker() {
 	if (_node) {
-		if (_sub) {
-			_node->removeSubscriber(*_sub);
-			delete _sub;
-		}
-		if (_pub) {
-			_node->removePublisher(*_pub);
-			delete _pub;
-		}
+//		if (_sub) {
+//			_node->removeSubscriber(*_sub);
+//			delete _sub;
+//		}
+//		if (_pub) {
+//			_node->removePublisher(*_pub);
+//			delete _pub;
+//		}
 	}
 };
 

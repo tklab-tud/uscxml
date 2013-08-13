@@ -138,6 +138,9 @@ void SCXMLIOProcessor::send(const SendRequest& req) {
 			tthread::lock_guard<tthread::recursive_mutex> lock(_interpreter->_mutex);
 			try {
 				_interpreter->_invokers[invokeId].send(reqCopy);
+			} catch(Event e) {
+				// Is this the right thing to do?
+				_interpreter->receive(e);
 			} catch(...) {
 				LOG(ERROR) << "Exception caught while sending event to invoker " << invokeId;
 			}

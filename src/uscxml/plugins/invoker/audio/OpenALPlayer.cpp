@@ -17,11 +17,11 @@ OpenALPlayer::OpenALPlayer(ALCcontext* context, OpenALPlayerCallback* audioCallb
 	_nrBuffers = 0;
 	_thread = NULL;
 	_alId = 0;
-	
+
 	_position[0] = _position[1] = _position[2] = 0;
 	_velocity[0] = _velocity[1] = _velocity[2] = 0;
 	_direction[0] = _direction[1] = _direction[2] = 0;
-	
+
 	tthread::lock_guard<tthread::recursive_mutex> lock(_alMutex);
 	if (context == NULL) {
 		// this is in essence alutInit() from freealut.
@@ -143,7 +143,7 @@ void OpenALPlayer::init() {
 
 	// get available buffer ids
 	tthread::lock_guard<tthread::recursive_mutex> lock(_alMutex);
-	
+
 	if (!alcMakeContextCurrent (_context)) {
 		throw std::runtime_error("openal error make context current");
 	}
@@ -153,7 +153,7 @@ void OpenALPlayer::init() {
 
 	// get new source id from openAL
 	alGenSources(1, &_alId);
-	
+
 	checkOpenALError(__LINE__);
 	if (!alIsSource(_alId)) {
 		throw std::runtime_error("openal source id not valid");
@@ -254,7 +254,7 @@ int OpenALPlayer::write(char* buffer, int size, int* repollAt, bool blocking) {
 	if (!alcMakeContextCurrent (_context)) {
 		throw std::runtime_error("openal error make context current");
 	}
-	
+
 	// try to enqueue the given buffer data
 	for (;;) {
 		// do we have an empty buffer in the OpenAL queue?
@@ -264,7 +264,7 @@ int OpenALPlayer::write(char* buffer, int size, int* repollAt, bool blocking) {
 
 //		if (!isPlaying())
 //			std::cout << "-";
-		
+
 		if (processed > 0) {
 //			std::cout << "P" << processed;
 			ALuint bufferId = 0;
@@ -308,7 +308,7 @@ int OpenALPlayer::write(char* buffer, int size, int* repollAt, bool blocking) {
 				// there was a free buffer, repoll immediately to try to write more
 				if (repollAt)
 					*repollAt = 0;
-				
+
 				break;
 			} else {
 //				std::cout << "X";
@@ -330,7 +330,7 @@ int OpenALPlayer::write(char* buffer, int size, int* repollAt, bool blocking) {
 		checkOpenALError(__LINE__);
 		_isStarted = true;
 	}
-	
+
 	return size;
 }
 

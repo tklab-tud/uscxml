@@ -44,8 +44,9 @@ JSValueRef JSCNamedNodeMap::getNamedItemCallback(JSContextRef ctx, JSObjectRef f
 	JSStringRef stringReflocalName = JSValueToStringCopy(ctx, arguments[0], exception);
 	size_t localNameMaxSize = JSStringGetMaximumUTF8CStringSize(stringReflocalName);
 	char* localNameBuffer = new char[localNameMaxSize];
-	JSStringGetUTF8CString(stringReflocalName, localNameBuffer, sizeof(localNameBuffer));
-	std::string localName(localNameBuffer, localNameMaxSize);
+	JSStringGetUTF8CString(stringReflocalName, localNameBuffer, localNameMaxSize);
+	std::string localName(localNameBuffer);
+	JSStringRelease(stringReflocalName);
 	free(localNameBuffer);
 
 
@@ -74,7 +75,7 @@ JSValueRef JSCNamedNodeMap::setNamedItemCallback(JSContextRef ctx, JSObjectRef f
 
 	struct JSCNamedNodeMapPrivate* privData = (struct JSCNamedNodeMapPrivate*)JSObjectGetPrivate(thisObj);
 
-	Arabica::DOM::Node<std::string>* localArg = ((struct JSCNode::JSCNodePrivate*)JSObjectGetPrivate(thisObj))->nativeObj;
+	Arabica::DOM::Node<std::string>* localArg = ((struct JSCNode::JSCNodePrivate*)JSObjectGetPrivate(JSValueToObject(ctx, arguments[0], exception)))->nativeObj;
 
 	Arabica::DOM::Node<std::string>* retVal = new Arabica::DOM::Node<std::string>(privData->nativeObj->setNamedItem(*localArg));
 	JSClassRef retClass = JSCNode::getTmpl();
@@ -104,8 +105,9 @@ JSValueRef JSCNamedNodeMap::removeNamedItemCallback(JSContextRef ctx, JSObjectRe
 	JSStringRef stringReflocalName = JSValueToStringCopy(ctx, arguments[0], exception);
 	size_t localNameMaxSize = JSStringGetMaximumUTF8CStringSize(stringReflocalName);
 	char* localNameBuffer = new char[localNameMaxSize];
-	JSStringGetUTF8CString(stringReflocalName, localNameBuffer, sizeof(localNameBuffer));
-	std::string localName(localNameBuffer, localNameMaxSize);
+	JSStringGetUTF8CString(stringReflocalName, localNameBuffer, localNameMaxSize);
+	std::string localName(localNameBuffer);
+	JSStringRelease(stringReflocalName);
 	free(localNameBuffer);
 
 
@@ -164,15 +166,17 @@ JSValueRef JSCNamedNodeMap::getNamedItemNSCallback(JSContextRef ctx, JSObjectRef
 	JSStringRef stringReflocalNamespaceURI = JSValueToStringCopy(ctx, arguments[0], exception);
 	size_t localNamespaceURIMaxSize = JSStringGetMaximumUTF8CStringSize(stringReflocalNamespaceURI);
 	char* localNamespaceURIBuffer = new char[localNamespaceURIMaxSize];
-	JSStringGetUTF8CString(stringReflocalNamespaceURI, localNamespaceURIBuffer, sizeof(localNamespaceURIBuffer));
-	std::string localNamespaceURI(localNamespaceURIBuffer, localNamespaceURIMaxSize);
+	JSStringGetUTF8CString(stringReflocalNamespaceURI, localNamespaceURIBuffer, localNamespaceURIMaxSize);
+	std::string localNamespaceURI(localNamespaceURIBuffer);
+	JSStringRelease(stringReflocalNamespaceURI);
 	free(localNamespaceURIBuffer);
 
 	JSStringRef stringReflocalLocalName = JSValueToStringCopy(ctx, arguments[1], exception);
 	size_t localLocalNameMaxSize = JSStringGetMaximumUTF8CStringSize(stringReflocalLocalName);
 	char* localLocalNameBuffer = new char[localLocalNameMaxSize];
-	JSStringGetUTF8CString(stringReflocalLocalName, localLocalNameBuffer, sizeof(localLocalNameBuffer));
-	std::string localLocalName(localLocalNameBuffer, localLocalNameMaxSize);
+	JSStringGetUTF8CString(stringReflocalLocalName, localLocalNameBuffer, localLocalNameMaxSize);
+	std::string localLocalName(localLocalNameBuffer);
+	JSStringRelease(stringReflocalLocalName);
 	free(localLocalNameBuffer);
 
 
@@ -201,7 +205,7 @@ JSValueRef JSCNamedNodeMap::setNamedItemNSCallback(JSContextRef ctx, JSObjectRef
 
 	struct JSCNamedNodeMapPrivate* privData = (struct JSCNamedNodeMapPrivate*)JSObjectGetPrivate(thisObj);
 
-	Arabica::DOM::Node<std::string>* localArg = ((struct JSCNode::JSCNodePrivate*)JSObjectGetPrivate(thisObj))->nativeObj;
+	Arabica::DOM::Node<std::string>* localArg = ((struct JSCNode::JSCNodePrivate*)JSObjectGetPrivate(JSValueToObject(ctx, arguments[0], exception)))->nativeObj;
 
 	Arabica::DOM::Node<std::string>* retVal = new Arabica::DOM::Node<std::string>(privData->nativeObj->setNamedItemNS(*localArg));
 	JSClassRef retClass = JSCNode::getTmpl();
@@ -231,15 +235,17 @@ JSValueRef JSCNamedNodeMap::removeNamedItemNSCallback(JSContextRef ctx, JSObject
 	JSStringRef stringReflocalNamespaceURI = JSValueToStringCopy(ctx, arguments[0], exception);
 	size_t localNamespaceURIMaxSize = JSStringGetMaximumUTF8CStringSize(stringReflocalNamespaceURI);
 	char* localNamespaceURIBuffer = new char[localNamespaceURIMaxSize];
-	JSStringGetUTF8CString(stringReflocalNamespaceURI, localNamespaceURIBuffer, sizeof(localNamespaceURIBuffer));
-	std::string localNamespaceURI(localNamespaceURIBuffer, localNamespaceURIMaxSize);
+	JSStringGetUTF8CString(stringReflocalNamespaceURI, localNamespaceURIBuffer, localNamespaceURIMaxSize);
+	std::string localNamespaceURI(localNamespaceURIBuffer);
+	JSStringRelease(stringReflocalNamespaceURI);
 	free(localNamespaceURIBuffer);
 
 	JSStringRef stringReflocalLocalName = JSValueToStringCopy(ctx, arguments[1], exception);
 	size_t localLocalNameMaxSize = JSStringGetMaximumUTF8CStringSize(stringReflocalLocalName);
 	char* localLocalNameBuffer = new char[localLocalNameMaxSize];
-	JSStringGetUTF8CString(stringReflocalLocalName, localLocalNameBuffer, sizeof(localLocalNameBuffer));
-	std::string localLocalName(localLocalNameBuffer, localLocalNameMaxSize);
+	JSStringGetUTF8CString(stringReflocalLocalName, localLocalNameBuffer, localLocalNameMaxSize);
+	std::string localLocalName(localLocalNameBuffer);
+	JSStringRelease(stringReflocalLocalName);
 	free(localLocalNameBuffer);
 
 

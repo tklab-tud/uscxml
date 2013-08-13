@@ -236,7 +236,7 @@ public:
 	static Arabica::XPath::NodeSet<std::string> filterChildElements(const std::string& tagName, const Arabica::XPath::NodeSet<std::string>& nodeSet);
 	Arabica::DOM::Node<std::string> findLCCA(const Arabica::XPath::NodeSet<std::string>& states);
 	Arabica::XPath::NodeSet<std::string> getProperAncestors(const Arabica::DOM::Node<std::string>& s1, const Arabica::DOM::Node<std::string>& s2);
-	static const std::string getUUID();
+	static std::string getUUID();
 
 protected:
 	InterpreterImpl();
@@ -595,7 +595,7 @@ public:
 	Arabica::XPath::NodeSet<std::string> getProperAncestors(const Arabica::DOM::Node<std::string>& s1, const Arabica::DOM::Node<std::string>& s2) {
 		return _impl->getProperAncestors(s1, s2);
 	}
-	static const std::string getUUID() {
+	static std::string getUUID() {
 		return InterpreterImpl::getUUID();
 	}
 

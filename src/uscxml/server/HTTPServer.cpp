@@ -38,6 +38,7 @@ HTTPServer::HTTPServer(unsigned short port) {
 	_port = port;
 	_base = event_base_new();
 	_http = evhttp_new(_base);
+	_thread = NULL;
 
 	evhttp_set_allowed_methods(_http,
 	                           EVHTTP_REQ_GET |
@@ -63,6 +64,9 @@ HTTPServer::HTTPServer(unsigned short port) {
 }
 
 HTTPServer::~HTTPServer() {
+	_isRunning = false;
+	_thread->join();
+	delete _thread;
 }
 
 HTTPServer* HTTPServer::_instance = NULL;
@@ -229,7 +233,9 @@ void HTTPServer::httpRecvReqCallback(struct evhttp_request *req, void *callbackD
 		std::string contentType = request.data.compound["header"].compound["Content-Type"].atom;
 		if (false) {
 		} else if (boost::iequals(contentType, "application/x-www-form-urlencoded")) {
-			request.data.compound["content"].atom = evhttp_decode_uri(request.data.compound["content"].atom.c_str());
+			char* contentCStr = evhttp_decode_uri(request.data.compound["content"].atom.c_str());
+			request.data.compound["content"].atom = contentCStr;
+			free(contentCStr);
 		} else if (boost::iequals(contentType, "application/json")) {
 			request.data.compound["content"] = Data::fromJSON(request.data.compound["content"].atom);
 		}
@@ -346,7 +352,7 @@ bool HTTPServer::registerServlet(const std::string& path, HTTPServlet* servlet) 
 
 	INSTANCE->_servlets[suffixedPath] = servlet;
 
-	LOG(INFO) << "HTTP Servlet listening at: " << servletURL.str() << std::endl;
+//	LOG(INFO) << "HTTP Servlet listening at: " << servletURL.str() << std::endl;
 
 	// register callback
 	evhttp_set_cb(INSTANCE->_http, ("/" + suffixedPath).c_str(), HTTPServer::httpRecvReqCallback, servlet);

@@ -51,6 +51,25 @@ int main(int argc, char** argv) {
 	std::string exeName = argv[0];
 	exeName = exeName.substr(exeName.find_last_of("\\/") + 1);
 
+	{
+		try {
+			URL url("http://asdfasdfasdfasdf.wgferg");
+			url.download(true);
+			assert(false);
+		} catch (Event e) {
+		}
+	}
+
+	{
+		try {
+			URL url("http://uscxml.tk.informatik.tu-darmstadt.de/foobarfoo.html");
+			url.download(true);
+			assert(false);
+		} catch (Event e) {
+			std::cout << e << std::endl;
+		}
+	}
+
 #if 0
 	{
 		Interpreter interpreter = Interpreter::fromURI("/Users/sradomski/Desktop/application_small.scxml");

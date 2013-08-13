@@ -370,6 +370,14 @@ void JSCDataModel::setForeach(const std::string& item,
 }
 
 bool JSCDataModel::isDeclared(const std::string& expr) {
+	JSStringRef scriptJS = JSStringCreateWithUTF8CString(expr.c_str());
+	JSValueRef exception = NULL;
+	JSValueRef result = JSEvaluateScript(_ctx, scriptJS, NULL, NULL, 0, &exception);
+	JSStringRelease(scriptJS);
+
+	if (exception || JSValueIsNull(_ctx, result)) {
+		return false;
+	}
 	return true;
 }
 

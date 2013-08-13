@@ -33,6 +33,11 @@ target_link_libraries(test-eventdelay uscxml)
 add_test(test-eventdelay ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-eventdelay)
 set_target_properties(test-eventdelay PROPERTIES FOLDER "Tests")
 
+add_executable(test-stress src/test-stress.cpp)
+target_link_libraries(test-stress uscxml)
+add_test(test-stress ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-stress ${CMAKE_SOURCE_DIR}/test/samples/w3c)
+set_target_properties(test-stress PROPERTIES FOLDER "Tests")
+
 if (OFF)
 	add_executable(test-dirmon src/test-dirmon.cpp)
 	target_link_libraries(test-dirmon uscxml)

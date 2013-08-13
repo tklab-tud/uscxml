@@ -46,8 +46,12 @@ std::map<std::string, boost::weak_ptr<InterpreterImpl> > Interpreter::_instances
 tthread::recursive_mutex Interpreter::_instanceMutex;
 
 boost::uuids::random_generator InterpreterImpl::uuidGen;
-const std::string InterpreterImpl::getUUID() {
-	return boost::lexical_cast<std::string>(uuidGen());
+
+std::string InterpreterImpl::getUUID() {
+	boost::uuids::uuid uuid = uuidGen();
+	std::ostringstream os;
+	os << uuid;
+	return os.str();
 }
 
 InterpreterImpl::InterpreterImpl() {
@@ -131,6 +135,16 @@ Interpreter Interpreter::fromURI(const std::string& uri) {
 
 Interpreter Interpreter::fromInputSource(Arabica::SAX::InputSource<std::string>& source) {
 	tthread::lock_guard<tthread::recursive_mutex> lock(_instanceMutex);
+
+	std::map<std::string, boost::weak_ptr<InterpreterImpl> >::iterator instIter = _instances.begin();
+	while(instIter != _instances.end()) {
+		if (!instIter->second.lock()) {
+			_instances.erase(instIter++);
+		} else {
+			instIter++;
+		}
+	}
+
 	boost::shared_ptr<InterpreterDraft6> interpreterImpl = boost::shared_ptr<InterpreterDraft6>(new InterpreterDraft6);
 	Interpreter interpreter;
 	NameSpacingParser parser;
@@ -186,9 +200,9 @@ void InterpreterImpl::setName(const std::string& name) {
 }
 
 InterpreterImpl::~InterpreterImpl() {
+	_running = false;
 	tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
 	if (_thread) {
-		_running = false;
 		// unblock event queue
 		Event event;
 		_externalQueue.push(event);
@@ -197,6 +211,7 @@ InterpreterImpl::~InterpreterImpl() {
 	}
 	if (_sendQueue)
 		delete _sendQueue;
+
 //	if (_httpServlet)
 //		delete _httpServlet;
 }
@@ -709,12 +724,12 @@ void InterpreterImpl::send(const Arabica::DOM::Node<std::string>& element) {
 		return;
 	}
 
-  if (sendReq.dom) {
-    std::stringstream ss;
-    ss << sendReq.dom;
-    sendReq.xml = ss.str();
-    _dataModel.replaceExpressions(sendReq.xml);
-  }
+	if (sendReq.dom) {
+		std::stringstream ss;
+		ss << sendReq.dom;
+		sendReq.xml = ss.str();
+		_dataModel.replaceExpressions(sendReq.xml);
+	}
 
 	assert(_sendIds.find(sendReq.sendid) == _sendIds.end());
 	_sendIds[sendReq.sendid] = std::make_pair(this, sendReq);
@@ -1132,16 +1147,21 @@ void InterpreterImpl::executeContent(const Arabica::DOM::Node<std::string>& cont
 				}
 
 				std::stringstream srcContent;
-				if (_cachedURLs.find(scriptUrl.asString()) != _cachedURLs.end() && false) {
-					srcContent << _cachedURLs[scriptUrl.asString()];
-				} else {
-					srcContent << scriptUrl;
-					if (scriptUrl.downloadFailed()) {
-						LOG(ERROR) << "script element source cannot be downloaded";
+				try {
+					if (_cachedURLs.find(scriptUrl.asString()) != _cachedURLs.end() && false) {
+						srcContent << _cachedURLs[scriptUrl.asString()];
+					} else {
+						srcContent << scriptUrl;
+						if (scriptUrl.downloadFailed()) {
+							LOG(ERROR) << "script element source cannot be downloaded";
+						}
+						_cachedURLs[scriptUrl.asString()] = scriptUrl;
 					}
-					_cachedURLs[scriptUrl.asString()] = scriptUrl;
+				} catch (Event exception) {
+					// script failed to download
+					receive(exception);
+					return;
 				}
-
 
 				try {
 					_dataModel.eval((Element<std::string>)content, srcContent.str());
@@ -1437,7 +1457,7 @@ Arabica::XPath::NodeSet<std::string> InterpreterImpl::getInitialStates(Arabica::
 NodeSet<std::string> InterpreterImpl::getTargetStates(const Arabica::DOM::Node<std::string>& transition) {
 	NodeSet<std::string> targetStates;
 
-	assert(boost::iequals(LOCALNAME(transition), "transition"));
+	assert(boost::ends_with(TAGNAME(transition), "transition"));
 
 	// if we are called with a state, process all its transitions
 	if (isState(transition) || (transition.getNodeType() == Node_base::ELEMENT_NODE && boost::iequals(_xmlNSPrefix + "initial", TAGNAME(transition)))) {

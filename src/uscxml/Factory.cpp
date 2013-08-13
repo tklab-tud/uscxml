@@ -129,6 +129,7 @@ Factory::Factory() {
 		}
 	}
 #else
+#if 1
 #ifdef UMUNDO_FOUND
 	{
 		UmundoInvoker* invoker = new UmundoInvoker();
@@ -166,7 +167,7 @@ Factory::Factory() {
 	}
 #endif
 
-#if (defined OPENAL_FOUND && (defined LIBSNDFILE_FOUND || defined AUDIOTOOLBOX_FOUND)) 
+#if (defined OPENAL_FOUND && (defined LIBSNDFILE_FOUND || defined AUDIOTOOLBOX_FOUND))
 	{
 		OpenALInvoker* invoker = new OpenALInvoker();
 		registerInvoker(invoker);
@@ -218,12 +219,14 @@ Factory::Factory() {
 		registerIOProcessor(ioProcessor);
 	}
 #endif
+#endif
 
 	// these are always available
 	{
 		NULLDataModel* dataModel = new NULLDataModel();
 		registerDataModel(dataModel);
 	}
+#if 0
 	{
 		XHTMLInvoker* invoker = new XHTMLInvoker();
 		registerInvoker(invoker);
@@ -273,6 +276,7 @@ Factory::Factory() {
 		registerExecutableContent(element);
 	}
 
+#endif
 #endif
 }
 

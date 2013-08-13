@@ -17,11 +17,16 @@ v8::Handle<v8::Value> V8Document::evaluateCustomCallback(const v8::Arguments& ar
 	v8::String::AsciiValue localExpression(args[0]);
 
 	XPath::XPathValue<std::string>* retVal;
-	if (args.Length() > 1) {
-		Arabica::DOM::Node<std::string>* localContextNode = V8DOM::toClassPtr<Arabica::DOM::Node<std::string> >(args[1]->ToObject()->GetInternalField(0));
-		retVal = new XPath::XPathValue<std::string>(privData->dom->xpath->evaluate(*localExpression, *localContextNode));
-	} else {
-		retVal = new XPath::XPathValue<std::string>(privData->dom->xpath->evaluate(*localExpression, *privData->nativeObj));
+	try {
+		if (args.Length() > 1) {
+			Arabica::DOM::Node<std::string>* localContextNode = V8DOM::toClassPtr<Arabica::DOM::Node<std::string> >(args[1]->ToObject()->GetInternalField(0));
+			retVal = new XPath::XPathValue<std::string>(privData->dom->xpath->evaluate(*localExpression, *localContextNode));
+		} else {
+			retVal = new XPath::XPathValue<std::string>(privData->dom->xpath->evaluate(*localExpression, *privData->nativeObj));
+		}
+	} catch (std::runtime_error e) {
+		std::cout << e.what() << std::endl;
+		return v8::Undefined();
 	}
 
 	v8::Handle<v8::Function> retCtor = V8XPathResult::getTmpl()->GetFunction();

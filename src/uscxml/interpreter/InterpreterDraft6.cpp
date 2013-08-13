@@ -157,6 +157,10 @@ void InterpreterDraft6::mainEventLoop() {
 					(*monIter)->beforeMicroStep(shared_from_this());
 				} catch (Event e) {
 					LOG(ERROR) << "Syntax error when calling beforeMicroStep on monitors: " << std::endl << e << std::endl;
+				} catch (boost::bad_weak_ptr e) {
+					LOG(ERROR) << "Unclean shutdown " << std::endl << std::endl;
+					_mutex.unlock();
+					goto EXIT_INTERPRETER;
 				} catch (...) {
 					LOG(ERROR) << "An exception occured when calling beforeMicroStep on monitors";
 				}
@@ -185,6 +189,10 @@ void InterpreterDraft6::mainEventLoop() {
 						(*monIter)->beforeTakingTransitions(shared_from_this(), enabledTransitions);
 					} catch (Event e) {
 						LOG(ERROR) << "Syntax error when calling beforeTakingTransitions on monitors: " << std::endl << e << std::endl;
+					} catch (boost::bad_weak_ptr e) {
+						LOG(ERROR) << "Unclean shutdown " << std::endl << std::endl;
+						_mutex.unlock();
+						goto EXIT_INTERPRETER;
 					} catch (...) {
 						LOG(ERROR) << "An exception occured when calling beforeTakingTransitions on monitors";
 					}
@@ -217,6 +225,10 @@ void InterpreterDraft6::mainEventLoop() {
 				(*monIter)->onStableConfiguration(shared_from_this());
 			} catch (Event e) {
 				LOG(ERROR) << "Syntax error when calling onStableConfiguration on monitors: " << std::endl << e << std::endl;
+			} catch (boost::bad_weak_ptr e) {
+				LOG(ERROR) << "Unclean shutdown " << std::endl << std::endl;
+				_mutex.unlock();
+				goto EXIT_INTERPRETER;
 			} catch (...) {
 				LOG(ERROR) << "An exception occured when calling onStableConfiguration on monitors";
 			}
@@ -279,8 +291,9 @@ void InterpreterDraft6::mainEventLoop() {
 				if (boost::iequals(autoForward, "true")) {
 					try {
 						// do not autoforward to invokers that send to #_parent from the SCXML IO Processor!
-						if (!boost::equals(_currEvent.getOriginType(), "http://www.w3.org/TR/scxml/#SCXMLEventProcessor"))
-							_invokers[invokeId].send(_currEvent);
+						// Yes do so, see test229!
+						// if (!boost::equals(_currEvent.getOriginType(), "http://www.w3.org/TR/scxml/#SCXMLEventProcessor"))
+						_invokers[invokeId].send(_currEvent);
 					} catch(...) {
 						LOG(ERROR) << "Exception caught while sending event to invoker " << invokeId;
 					}
@@ -302,6 +315,9 @@ EXIT_INTERPRETER:
 			(*monIter)->beforeCompletion(shared_from_this());
 		} catch (Event e) {
 			LOG(ERROR) << "Syntax error when calling beforeCompletion on monitors: " << std::endl << e << std::endl;
+		} catch (boost::bad_weak_ptr e) {
+			LOG(ERROR) << "Unclean shutdown " << std::endl << std::endl;
+			exitInterpreter();
 		} catch (...) {
 			LOG(ERROR) << "An exception occured when calling beforeCompletion on monitors";
 		}
@@ -323,6 +339,9 @@ EXIT_INTERPRETER:
 			(*monIter)->afterCompletion(shared_from_this());
 		} catch (Event e) {
 			LOG(ERROR) << "Syntax error when calling afterCompletion on monitors: " << std::endl << e << std::endl;
+		} catch (boost::bad_weak_ptr e) {
+			LOG(ERROR) << "Unclean shutdown " << std::endl << std::endl;
+			exitInterpreter();
 		} catch (...) {
 			LOG(ERROR) << "An exception occured when calling afterCompletion on monitors";
 		}
@@ -610,6 +629,7 @@ void InterpreterDraft6::exitStates(const Arabica::XPath::NodeSet<std::string>& e
 		if (!isTargetless(t)) {
 			Node<std::string> ancestor;
 			Node<std::string> source = getSourceState(t);
+//			std::cout << t << std::endl << TAGNAME(t) << std::endl;
 			NodeSet<std::string> tStates = getTargetStates(t);
 			bool isInternal = (HAS_ATTR(t, "type") && boost::iequals(ATTR(t, "type"), "internal")); // external is default
 			bool allDescendants = true;
@@ -670,6 +690,9 @@ void InterpreterDraft6::exitStates(const Arabica::XPath::NodeSet<std::string>& e
 			(*monIter)->beforeExitingStates(shared_from_this(), statesToExit);
 		} catch (Event e) {
 			LOG(ERROR) << "Syntax error when calling beforeExitingStates on monitors: " << std::endl << e << std::endl;
+		} catch (boost::bad_weak_ptr e) {
+			LOG(ERROR) << "Unclean shutdown " << std::endl << std::endl;
+			exitInterpreter();
 		} catch (...) {
 			LOG(ERROR) << "An exception occured when calling beforeExitingStates on monitors";
 		}
@@ -731,6 +754,9 @@ void InterpreterDraft6::exitStates(const Arabica::XPath::NodeSet<std::string>& e
 			(*monIter)->afterExitingStates(shared_from_this());
 		} catch (Event e) {
 			LOG(ERROR) << "Syntax error when calling afterExitingStates on monitors: " << std::endl << e << std::endl;
+		} catch (boost::bad_weak_ptr e) {
+			LOG(ERROR) << "Unclean shutdown " << std::endl << std::endl;
+			exitInterpreter();
 		} catch (...) {
 			LOG(ERROR) << "An exception occured when calling afterExitingStates on monitors";
 		}
@@ -856,6 +882,9 @@ void InterpreterDraft6::enterStates(const Arabica::XPath::NodeSet<std::string>& 
 			(*monIter)->beforeEnteringStates(shared_from_this(), statesToEnter);
 		} catch (Event e) {
 			LOG(ERROR) << "Syntax error when calling beforeEnteringStates on monitors: " << std::endl << e << std::endl;
+		} catch (boost::bad_weak_ptr e) {
+			LOG(ERROR) << "Unclean shutdown " << std::endl << std::endl;
+			exitInterpreter();
 		} catch (...) {
 			LOG(ERROR) << "An exception occured when calling beforeEnteringStates on monitors";
 		}
@@ -924,6 +953,9 @@ void InterpreterDraft6::enterStates(const Arabica::XPath::NodeSet<std::string>& 
 			(*monIter)->afterEnteringStates(shared_from_this());
 		} catch (Event e) {
 			LOG(ERROR) << "Syntax error when calling afterEnteringStates on monitors: " << std::endl << e << std::endl;
+		} catch (boost::bad_weak_ptr e) {
+			LOG(ERROR) << "Unclean shutdown " << std::endl << std::endl;
+			return;
 		} catch (...) {
 			LOG(ERROR) << "An exception occured when calling afterEnteringStates on monitors";
 		}

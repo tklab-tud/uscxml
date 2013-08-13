@@ -1,6 +1,7 @@
 #ifndef DIRMONINVOKER_H_W09J90F0
 #define DIRMONINVOKER_H_W09J90F0
 
+#include <uscxml/config.h>
 #include <uscxml/Interpreter.h>
 #include <map>
 #include <sys/stat.h>
@@ -23,6 +24,7 @@ public:
 	};
 
 	DirectoryWatch(const std::string& dir, bool recurse = false) : _dir(dir), _recurse(recurse), _lastChecked(0) {}
+	~DirectoryWatch();
 
 	void addMonitor(DirectoryWatchMonitor* monitor) {
 		_monitors.insert(monitor);
@@ -32,6 +34,24 @@ public:
 	}
 	void updateEntries(bool reportAsExisting = false);
 	void reportAsDeleted();
+
+	std::map<std::string, struct stat> getAllEntries() {
+		std::map<std::string, struct stat> entries;
+		entries.insert(_knownEntries.begin(), _knownEntries.end());
+
+		std::map<std::string, DirectoryWatch*>::iterator dirIter = _knownDirs.begin();
+		while(dirIter != _knownDirs.end()) {
+			std::map<std::string, struct stat> dirEntries = dirIter->second->getAllEntries();
+			std::map<std::string, struct stat>::iterator dirEntryIter = dirEntries.begin();
+			while(dirEntryIter != dirEntries.end()) {
+				entries[dirIter->first + PATH_SEPERATOR + dirEntryIter->first] = dirEntryIter->second;
+				dirEntryIter++;
+			}
+			dirIter++;
+		}
+
+		return entries;
+	}
 
 protected:
 	DirectoryWatch(const std::string& dir, const std::string& relDir) : _dir(dir), _relDir(relDir), _recurse(true), _lastChecked(0) {}

@@ -41,6 +41,8 @@ public:
 	static JSValueRef itemCallback(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObj, size_t argumentCount, const JSValueRef* arguments, JSValueRef* exception);
 
 	static JSValueRef lengthAttrGetter(JSContextRef ctx, JSObjectRef thisObj, JSStringRef propertyName, JSValueRef* exception);
+	static bool hasPropertyCustomCallback(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName);
+	static JSValueRef getPropertyCustomCallback(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef* exception);
 
 
 	static JSStaticValue staticValues[];
@@ -53,6 +55,8 @@ public:
 			classDef.staticValues = staticValues;
 			classDef.staticFunctions = staticFunctions;
 			classDef.finalize = jsDestructor;
+			classDef.hasProperty = hasPropertyCustomCallback;
+			classDef.getProperty = getPropertyCustomCallback;
 
 			Tmpl = JSClassCreate(&classDef);
 			JSClassRetain(Tmpl);

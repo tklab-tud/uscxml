@@ -80,6 +80,11 @@ public:
 	void setRequestType(const std::string& requestType);
 
 	const std::map<std::string, std::string> getInHeaderFields();
+	const std::string getInHeaderField(const std::string& key);
+	const std::string getStatusCode();
+	const std::string getStatusMessage();
+
+
 	const std::string getInContent(bool forceReload = false);
 	const void download(bool blocking = false);
 
@@ -105,8 +110,12 @@ protected:
 	std::string _requestType;
 
 	CURL* _handle;
-	std::stringstream _inContent;
-	std::stringstream _inHeader;
+	std::stringstream _rawInContent;
+	std::stringstream _rawInHeader;
+
+	std::string _statusCode;
+	std::string _statusMsg;
+	std::map<std::string, std::string> _inHeaders;
 
 	Arabica::io::URI _uri;
 	std::vector<std::string> _pathComponents;
@@ -115,6 +124,7 @@ protected:
 	bool _hasFailed;
 
 	std::string _localFile;
+	std::string _error;
 
 	tthread::condition_variable _condVar;
 	tthread::recursive_mutex _mutex;
@@ -151,6 +161,16 @@ public:
 	const std::map<std::string, std::string> getInHeaderFields() const {
 		return _impl->getInHeaderFields();
 	}
+	const std::string getInHeaderField(const std::string& key) const {
+		return _impl->getInHeaderField(key);
+	}
+	const std::string getStatusCode() const {
+		return _impl->getStatusCode();
+	}
+	const std::string getStatusMessage() const {
+		return _impl->getStatusMessage();
+	}
+
 	const std::string getInContent() const {
 		return _impl->getInContent();
 	}
@@ -230,7 +250,7 @@ public:
 	operator Data() {
 		return _impl->operator Data();
 	}
-		
+
 protected:
 	void downloadStarted() {
 		return _impl->downloadStarted();

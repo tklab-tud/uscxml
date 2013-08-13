@@ -568,7 +568,7 @@ std::string Data::toJSON(const Data& data) {
 			seperator = ", ";
 			arrayIter++;
 		}
-		os << std::endl << indent << "]";
+		os << "]";
 	} else if (data.atom.size() > 0) {
 		if (data.type == Data::VERBATIM) {
 			os << "\"" << data.atom << "\"";

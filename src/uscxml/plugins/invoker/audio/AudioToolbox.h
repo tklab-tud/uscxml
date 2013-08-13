@@ -5,7 +5,7 @@
 #include <AudioToolbox/AudioToolbox.h>
 
 namespace uscxml {
-	
+
 class AudioToolbox : public PCMConverter {
 public:
 	AudioToolbox(const std::string filename);
@@ -20,7 +20,7 @@ protected:
 	ExtAudioFileRef _afId;
 	AudioStreamBasicDescription	_outputFormat;
 	AudioStreamBasicDescription _inputFormat;
-	
+
 	ALenum formatToALEnum(AudioStreamBasicDescription);
 	bool alEnumToFormat(AudioStreamBasicDescription&, ALenum);
 };

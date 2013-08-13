@@ -2,6 +2,8 @@
 #include "uscxml/Interpreter.h"
 #include <glog/logging.h>
 
+#include "uscxml/plugins/invoker/filesystem/dirmon/DirMonInvoker.h"
+
 #ifdef HAS_SIGNAL_H
 #include <signal.h>
 #endif
@@ -18,27 +20,6 @@
 #include "XGetopt.h"
 #endif
 
-class VerboseMonitor : public uscxml::InterpreterMonitor {
-	void onStableConfiguration(uscxml::Interpreter interpreter) {
-		printConfig(interpreter.getConfiguration());
-	}
-
-	void beforeCompletion(uscxml::Interpreter interpreter) {
-		printConfig(interpreter.getConfiguration());
-	}
-
-	void printConfig(const Arabica::XPath::NodeSet<std::string>& config) {
-		std::string seperator;
-		std::cout << "Config: {";
-		for (int i = 0; i < config.size(); i++) {
-			std::cout << seperator << ATTR(config[i], "id");
-			seperator = ", ";
-		}
-		std::cout << "}" << std::endl;
-	}
-};
-
-
 #ifdef HAS_EXECINFO_H
 void printBacktrace(void** array, int size) {
 	char** messages = backtrace_symbols(array, size);
@@ -48,6 +29,9 @@ void printBacktrace(void** array, int size) {
 	std::cerr << std::endl;
 	free(messages);
 }
+
+int startedAt;
+int lastTransitionAt;
 
 #ifdef HAS_DLFCN_H
 // see https://gist.github.com/nkuln/2020860
@@ -87,9 +71,6 @@ void customTerminate() {
 	} catch (const std::exception &e) {
 		std::cerr << __FUNCTION__ << " caught unhandled exception. what(): "
 		          << e.what() << std::endl;
-	} catch (const std::runtime_error &e) {
-		std::cerr << __FUNCTION__ << " caught unhandled exception. what(): "
-		          << e.what() << std::endl;
 	} catch (const uscxml::Event &e) {
 		std::cerr << __FUNCTION__ << " caught unhandled exception. Event: "
 		          << e << std::endl;
@@ -108,20 +89,23 @@ void customTerminate() {
 }
 
 void printUsageAndExit() {
-	printf("uscxml-browser version " USCXML_VERSION " (" CMAKE_BUILD_TYPE " build - " CMAKE_COMPILER_STRING ")\n");
+	printf("test-stress version " USCXML_VERSION " (" CMAKE_BUILD_TYPE " build - " CMAKE_COMPILER_STRING ")\n");
 	printf("Usage\n");
-	printf("\tuscxml-browser");
+	printf("\ttest-stress");
 #ifdef BUILD_AS_PLUGINS
-	printf(" [-d pluginPath]");
+	printf(" [-p pluginPath]");
 #endif
-	printf(" URL\n");
-	printf("\n");
-	printf("Options\n");
-	printf("\t-v        : be verbose\n");
-	printf("\t-pN       : port for HTTP server\n");
+	printf(" <PATH>\n");
 	printf("\n");
 	exit(1);
 }
+
+class StatusMonitor : public uscxml::InterpreterMonitor {
+	void beforeTakingTransitions(uscxml::Interpreter interpreter, const Arabica::XPath::NodeSet<std::string>& transitions) {
+		lastTransitionAt = time(NULL);
+	}
+
+};
 
 int main(int argc, char** argv) {
 	using namespace uscxml;
@@ -136,8 +120,6 @@ int main(int argc, char** argv) {
 		printUsageAndExit();
 	}
 
-	bool verbose = false;
-	size_t port = 8080;
 	google::InitGoogleLogging(argv[0]);
 	google::LogToStderr();
 
@@ -145,19 +127,13 @@ int main(int argc, char** argv) {
 	opterr = 0;
 #endif
 	int option;
-	while ((option = getopt(argc, argv, "vl:d:p:")) != -1) {
+	while ((option = getopt(argc, argv, "vl:p:")) != -1) {
 		switch(option) {
 		case 'l':
 			google::InitGoogleLogging(optarg);
 			break;
-		case 'd':
-			uscxml::Factory::pluginPath = optarg;
-			break;
 		case 'p':
-			port = strTo<size_t>(optarg);
-			break;
-		case 'v':
-			verbose = true;
+			uscxml::Factory::pluginPath = optarg;
 			break;
 		case '?':
 			break;
@@ -167,29 +143,41 @@ int main(int argc, char** argv) {
 		}
 	}
 
-//  for (int i = 0; i < argc; i++)
-//    std::cout << argv[i] << std::endl;
-//  std::cout << optind << std::endl;
+	DirectoryWatch* watcher = new DirectoryWatch(argv[optind], true);
+	watcher->updateEntries(true);
+	std::map<std::string, struct stat> entries = watcher->getAllEntries();
 
-	// intialize http server on given port
-	HTTPServer::getInstance(port);
+	StatusMonitor vm;
 
-	while(true) {
-		LOG(INFO) << "Processing " << argv[optind];
-		Interpreter interpreter = Interpreter::fromURI(argv[optind]);
+	std::map<std::string, struct stat>::iterator entryIter = entries.begin();
+	while(entryIter != entries.end()) {
+		if (!boost::ends_with(entryIter->first, ".scxml")) {
+			entryIter++;
+			continue;
+		}
+
+		startedAt = time(NULL);
+		lastTransitionAt = time(NULL);
+
+		LOG(INFO) << "Processing " << entryIter->first;
+		Interpreter interpreter = Interpreter::fromURI(std::string(argv[optind]) + PATH_SEPERATOR + entryIter->first);
 		if (interpreter) {
 			interpreter.setCmdLineOptions(argc, argv);
-			//		interpreter->setCapabilities(Interpreter::CAN_NOTHING);
-			//		interpreter->setCapabilities(Interpreter::CAN_BASIC_HTTP | Interpreter::CAN_GENERIC_HTTP);
 
-			if (verbose) {
-				VerboseMonitor* vm = new VerboseMonitor();
-				interpreter.addMonitor(vm);
-			}
+			interpreter.addMonitor(&vm);
 
 			interpreter.start();
-			while(interpreter.runOnMainThread(25));
+			int now = time(NULL);
+			while(now - startedAt < 20 && now - lastTransitionAt < 2) {
+				// let the interpreter run for a bit
+				tthread::this_thread::sleep_for(tthread::chrono::seconds(1));
+				now = time(NULL);
+			}
+
 		}
+		entryIter++;
 	}
+
+	delete watcher;
 	return EXIT_SUCCESS;
 }

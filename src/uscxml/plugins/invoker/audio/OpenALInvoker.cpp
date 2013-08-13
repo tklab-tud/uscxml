@@ -26,7 +26,6 @@ bool connect(pluma::Host& host) {
 
 OpenALInvoker::OpenALInvoker() {
 	_isStarted = false;
-	_isRunning = false;
 	_alContext = NULL;
 	_alDevice = NULL;
 	_thread = NULL;
@@ -34,13 +33,14 @@ OpenALInvoker::OpenALInvoker() {
 
 OpenALInvoker::~OpenALInvoker() {
 	if (_thread) {
-		_isRunning = false;
+		_isStarted = false;
+		_sourcesAvailable.notify_all();
 		_thread->join();
 		delete(_thread);
 	}
 	if (_alContext) {
-		alcCloseDevice(alcGetContextsDevice(_alContext));
-		alcDestroyContext(_alContext);
+//		alcCloseDevice(alcGetContextsDevice(_alContext));
+//		alcDestroyContext(_alContext);
 	}
 };
 
@@ -57,15 +57,15 @@ Data OpenALInvoker::getDataModelVariables() {
 
 void OpenALInvoker::send(const SendRequest& req) {
 	tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
-	
+
 	if (!_isStarted)
 		start();
-	
+
 	if (boost::iequals(req.name, "play")) {
 		if (req.params.find("src") == req.params.end()) {
 			LOG(ERROR) << "Sent event play with no src URL";
 		}
-		
+
 		URL srcURL = req.params.find("src")->second;
 		if (!srcURL.toAbsolute(_interpreter->getBaseURI())) {
 			LOG(ERROR) << "src URL " << req.params.find("src")->second << " is relative with no base URI set for interpreter";
@@ -87,12 +87,12 @@ void OpenALInvoker::send(const SendRequest& req) {
 			_sources.erase(req.sendid);
 			return;
 		}
-		
+
 		// force mono format to ensure actual spatial audio
 		PCMFormat format = _sources[req.sendid]->transform->getInFormat();
 		format.alFormat = AL_FORMAT_MONO16;
 		_sources[req.sendid]->transform->setOutFormat(format);
-		
+
 		try {
 			_sources[req.sendid]->player = new OpenALPlayer(_alContext, NULL, format.alFormat, format.sampleRate);
 		} catch (std::exception ex) {
@@ -108,10 +108,9 @@ void OpenALInvoker::send(const SendRequest& req) {
 			returnErrorExecution(ex.what());
 		}
 
-
 		_sourcesAvailable.notify_all();
 	}
-	
+
 	if (boost::iequals(req.name, "move.source")) {
 		std::string sourceId;
 		if (req.params.find("source") == req.params.end()) {
@@ -119,12 +118,12 @@ void OpenALInvoker::send(const SendRequest& req) {
 			return;
 		}
 		sourceId = req.params.find("source")->second;
-		
+
 		if (_sources.find(sourceId) == _sources.end()) {
 			LOG(WARNING) << "Given source '" << sourceId << "' not active or not existing";
 			return;
 		}
-		
+
 		getPosFromParams(req.params, _sources[sourceId]->pos);
 		try {
 			_sources[sourceId]->player->setPosition(_sources[sourceId]->pos);
@@ -145,12 +144,16 @@ void OpenALInvoker::fillBuffers(void* userdata) {
 		// do nothing until we have at least one source
 		int waitMs = std::numeric_limits<int>::max();
 		INST->_mutex.lock();
-		while (INST->_sources.size() == 0) {
+		while (INST->_sources.size() == 0 && INST->_isStarted) {
 			INST->_sourcesAvailable.wait(INST->_mutex);
 		}
+
+		if (!INST->_isStarted)
+			return;
+
 		// here we are with at least one source and a locked mutex
 		assert(INST->_sources.size() > 0);
-		
+
 		std::map<std::string, OpenALSource*>::iterator srcIter = INST->_sources.begin();
 		while(srcIter != INST->_sources.end()) {
 			OpenALSource* src = srcIter->second;
@@ -195,7 +198,7 @@ void OpenALInvoker::fillBuffers(void* userdata) {
 						}
 					}
 				}
-				
+
 				// there are unwritten samples in the buffer
 				if (src->read != src->written) {
 					try {
@@ -211,15 +214,16 @@ void OpenALInvoker::fillBuffers(void* userdata) {
 					assert(src->finished);
 				}
 			}
-			
+
 			waitMs = (wait < waitMs ? wait : waitMs);
 			srcIter++;
 		}
-		
+
 //		std::cout << "W" << waitMs << ".";
-		
+
 		INST->_mutex.unlock();
-		tthread::this_thread::sleep_for(tthread::chrono::milliseconds(waitMs));
+		if (waitMs < std::numeric_limits<int>::max())
+			tthread::this_thread::sleep_for(tthread::chrono::milliseconds(waitMs));
 	}
 }
 
@@ -233,14 +237,17 @@ void OpenALInvoker::invoke(const InvokeRequest& req) {
 	if (_alDevice == NULL) {
 		throw std::string("__FILE__ __LINE__ openal error opening device");
 	}
-	
+
 	// create new context with device
 	_alContext = alcCreateContext (_alDevice, NULL);
 	if (_alContext == NULL) {
 		alcCloseDevice (_alDevice);
 		throw std::string("openal error create context");
 	}
-	
+
+	std::cout << boost::lexical_cast<std::string>(_alContext);
+	std::cout << boost::lexical_cast<std::string>(_alDevice);
+
 //	alcMakeContextCurrent(_alContext);
 //	float listener[3] = {0,0,0};
 //	alListenerfv(AL_POSITION, listener);
@@ -257,7 +264,7 @@ void OpenALInvoker::invoke(const InvokeRequest& req) {
 
 	start();
 }
-	
+
 void OpenALInvoker::notifyOfEnd(OpenALSource* src) {
 	Event ev;
 	ev.name = "audio.end";
@@ -284,7 +291,7 @@ void OpenALInvoker::getPosFromParams(const std::multimap<std::string, std::strin
 	} catch (boost::bad_lexical_cast& e) {
 		LOG(ERROR) << "Cannot interpret x, y or z as float value in params: " << e.what();
 	}
-	
+
 	try {
 		// right is an alias for x
 		if (params.find("right") != params.end())
@@ -298,7 +305,7 @@ void OpenALInvoker::getPosFromParams(const std::multimap<std::string, std::strin
 	} catch (boost::bad_lexical_cast& e) {
 		LOG(ERROR) << "Cannot interpret right, height or front as float value in params: " << e.what();
 	}
-	
+
 	// do we have a position on a circle?
 	try {
 		if (params.find("circle") != params.end()) {
@@ -307,24 +314,24 @@ void OpenALInvoker::getPosFromParams(const std::multimap<std::string, std::strin
 			position[2] = -1 * sinf(rad); // z axis increases to front
 			position[0] *= 150;
 			position[2] *= 150;
-			
+
 		}
 	} catch (boost::bad_lexical_cast& e) {
 		LOG(ERROR) << "Cannot interpret circle as float value in params: " << e.what();
 	}
-	
+
 //	position[0] = position[0] / _maxPos[0];
 //	position[1] = position[1] / _maxPos[1];
 //	position[2] = position[2] / _maxPos[2];
 	//  std::cout << _pos[0] << ":" << _pos[1] << ":" << _pos[2] << std::endl;
-	
+
 }
 
 float OpenALInvoker::posToRadian(const std::string& pos) {
-	
+
 	std::string trimmedPos = boost::trim_copy(pos);
 	float rad = 0;
-	
+
 	if (trimmedPos.size() > 3 && boost::iequals("deg", trimmedPos.substr(trimmedPos.length() - 3, 3))) {
 		rad = boost::lexical_cast<float>(trimmedPos.substr(0, trimmedPos.size() - 3));
 		rad = fmodf(rad, 360); // into range [0-360]

@@ -33,15 +33,17 @@ JSValueRef JSCDOMImplementation::hasFeatureCallback(JSContextRef ctx, JSObjectRe
 	JSStringRef stringReflocalFeature = JSValueToStringCopy(ctx, arguments[0], exception);
 	size_t localFeatureMaxSize = JSStringGetMaximumUTF8CStringSize(stringReflocalFeature);
 	char* localFeatureBuffer = new char[localFeatureMaxSize];
-	JSStringGetUTF8CString(stringReflocalFeature, localFeatureBuffer, sizeof(localFeatureBuffer));
-	std::string localFeature(localFeatureBuffer, localFeatureMaxSize);
+	JSStringGetUTF8CString(stringReflocalFeature, localFeatureBuffer, localFeatureMaxSize);
+	std::string localFeature(localFeatureBuffer);
+	JSStringRelease(stringReflocalFeature);
 	free(localFeatureBuffer);
 
 	JSStringRef stringReflocalVersion = JSValueToStringCopy(ctx, arguments[1], exception);
 	size_t localVersionMaxSize = JSStringGetMaximumUTF8CStringSize(stringReflocalVersion);
 	char* localVersionBuffer = new char[localVersionMaxSize];
-	JSStringGetUTF8CString(stringReflocalVersion, localVersionBuffer, sizeof(localVersionBuffer));
-	std::string localVersion(localVersionBuffer, localVersionMaxSize);
+	JSStringGetUTF8CString(stringReflocalVersion, localVersionBuffer, localVersionMaxSize);
+	std::string localVersion(localVersionBuffer);
+	JSStringRelease(stringReflocalVersion);
 	free(localVersionBuffer);
 
 
@@ -66,22 +68,25 @@ JSValueRef JSCDOMImplementation::createDocumentTypeCallback(JSContextRef ctx, JS
 	JSStringRef stringReflocalQualifiedName = JSValueToStringCopy(ctx, arguments[0], exception);
 	size_t localQualifiedNameMaxSize = JSStringGetMaximumUTF8CStringSize(stringReflocalQualifiedName);
 	char* localQualifiedNameBuffer = new char[localQualifiedNameMaxSize];
-	JSStringGetUTF8CString(stringReflocalQualifiedName, localQualifiedNameBuffer, sizeof(localQualifiedNameBuffer));
-	std::string localQualifiedName(localQualifiedNameBuffer, localQualifiedNameMaxSize);
+	JSStringGetUTF8CString(stringReflocalQualifiedName, localQualifiedNameBuffer, localQualifiedNameMaxSize);
+	std::string localQualifiedName(localQualifiedNameBuffer);
+	JSStringRelease(stringReflocalQualifiedName);
 	free(localQualifiedNameBuffer);
 
 	JSStringRef stringReflocalPublicId = JSValueToStringCopy(ctx, arguments[1], exception);
 	size_t localPublicIdMaxSize = JSStringGetMaximumUTF8CStringSize(stringReflocalPublicId);
 	char* localPublicIdBuffer = new char[localPublicIdMaxSize];
-	JSStringGetUTF8CString(stringReflocalPublicId, localPublicIdBuffer, sizeof(localPublicIdBuffer));
-	std::string localPublicId(localPublicIdBuffer, localPublicIdMaxSize);
+	JSStringGetUTF8CString(stringReflocalPublicId, localPublicIdBuffer, localPublicIdMaxSize);
+	std::string localPublicId(localPublicIdBuffer);
+	JSStringRelease(stringReflocalPublicId);
 	free(localPublicIdBuffer);
 
 	JSStringRef stringReflocalSystemId = JSValueToStringCopy(ctx, arguments[2], exception);
 	size_t localSystemIdMaxSize = JSStringGetMaximumUTF8CStringSize(stringReflocalSystemId);
 	char* localSystemIdBuffer = new char[localSystemIdMaxSize];
-	JSStringGetUTF8CString(stringReflocalSystemId, localSystemIdBuffer, sizeof(localSystemIdBuffer));
-	std::string localSystemId(localSystemIdBuffer, localSystemIdMaxSize);
+	JSStringGetUTF8CString(stringReflocalSystemId, localSystemIdBuffer, localSystemIdMaxSize);
+	std::string localSystemId(localSystemIdBuffer);
+	JSStringRelease(stringReflocalSystemId);
 	free(localSystemIdBuffer);
 
 
@@ -113,18 +118,20 @@ JSValueRef JSCDOMImplementation::createDocumentCallback(JSContextRef ctx, JSObje
 	JSStringRef stringReflocalNamespaceURI = JSValueToStringCopy(ctx, arguments[0], exception);
 	size_t localNamespaceURIMaxSize = JSStringGetMaximumUTF8CStringSize(stringReflocalNamespaceURI);
 	char* localNamespaceURIBuffer = new char[localNamespaceURIMaxSize];
-	JSStringGetUTF8CString(stringReflocalNamespaceURI, localNamespaceURIBuffer, sizeof(localNamespaceURIBuffer));
-	std::string localNamespaceURI(localNamespaceURIBuffer, localNamespaceURIMaxSize);
+	JSStringGetUTF8CString(stringReflocalNamespaceURI, localNamespaceURIBuffer, localNamespaceURIMaxSize);
+	std::string localNamespaceURI(localNamespaceURIBuffer);
+	JSStringRelease(stringReflocalNamespaceURI);
 	free(localNamespaceURIBuffer);
 
 	JSStringRef stringReflocalQualifiedName = JSValueToStringCopy(ctx, arguments[1], exception);
 	size_t localQualifiedNameMaxSize = JSStringGetMaximumUTF8CStringSize(stringReflocalQualifiedName);
 	char* localQualifiedNameBuffer = new char[localQualifiedNameMaxSize];
-	JSStringGetUTF8CString(stringReflocalQualifiedName, localQualifiedNameBuffer, sizeof(localQualifiedNameBuffer));
-	std::string localQualifiedName(localQualifiedNameBuffer, localQualifiedNameMaxSize);
+	JSStringGetUTF8CString(stringReflocalQualifiedName, localQualifiedNameBuffer, localQualifiedNameMaxSize);
+	std::string localQualifiedName(localQualifiedNameBuffer);
+	JSStringRelease(stringReflocalQualifiedName);
 	free(localQualifiedNameBuffer);
 
-	Arabica::DOM::DocumentType<std::string>* localDoctype = ((struct JSCDocumentType::JSCDocumentTypePrivate*)JSObjectGetPrivate(thisObj))->nativeObj;
+	Arabica::DOM::DocumentType<std::string>* localDoctype = ((struct JSCDocumentType::JSCDocumentTypePrivate*)JSObjectGetPrivate(JSValueToObject(ctx, arguments[2], exception)))->nativeObj;
 
 	Arabica::DOM::Document<std::string>* retVal = new Arabica::DOM::Document<std::string>(privData->nativeObj->createDocument(localNamespaceURI, localQualifiedName, *localDoctype));
 	JSClassRef retClass = JSCDocument::getTmpl();

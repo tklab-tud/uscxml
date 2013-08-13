@@ -1,6 +1,7 @@
 <scxml datamodel="ecmascript" initial="start" binding="late" name="foo">
-	<state id="start">
-	
+	<script src="http://uscxml.tk.informatik.tu-darmstadt.de/scripts/dump.js" />
+
+	<state id="start">	
 		<!-- Setup datamodel, print environment and send ourself an event to transition to next state -->
 
 		<datamodel>
@@ -24,6 +25,9 @@ This is some content you got there dude!
 			</send>
 		</onentry>
 		<transition event="transitionToNext" target="step1" cond="_event.data.bar == 'this is the bar data'" />
+		<transition event="*" target="final">
+			<log label="FAIL!" expr="dump(_event)" />
+		</transition>
 	</state>
 	<state id="step1">
 		<onentry>

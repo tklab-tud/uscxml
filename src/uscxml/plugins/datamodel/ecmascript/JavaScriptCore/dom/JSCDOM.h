@@ -3,11 +3,21 @@
 
 #include "uscxml/Interpreter.h"
 #include <JavaScriptCore/JavaScriptCore.h>
+#include <XPath/XPath.hpp>
 
 #define JSC_DESTRUCTOR(type) \
 static void jsDestructor(JSObjectRef object) { \
+	type* thing = static_cast<type*>(JSObjectGetPrivate(object)); \
+	if (thing) {\
+		delete thing->nativeObj; \
+		delete thing; \
+		JSObjectSetPrivate(object, NULL);\
+	}\
+}
+
+#define JSC_DESTRUCTOR_KEEP_WRAPPED(type) \
+static void jsDestructor(JSObjectRef object) { \
 type* thing = static_cast<type*>(JSObjectGetPrivate(object)); \
-delete thing->nativeObj; \
 delete thing; \
 }
 

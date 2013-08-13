@@ -18,7 +18,7 @@ public:
 	virtual ~PCMConverter() {}
 	virtual void seek(unsigned int pos) = 0;
 	virtual int read(char* buffer, unsigned int size) = 0;
-	
+
 	virtual void setOutFormat(const PCMFormat& format) = 0;
 	virtual PCMFormat getInFormat() = 0;
 protected:

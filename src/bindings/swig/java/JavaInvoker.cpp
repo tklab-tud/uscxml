@@ -4,5 +4,5 @@ namespace uscxml {
 
 JavaInvoker::JavaInvoker() {}
 JavaInvoker::~JavaInvoker() {}
- 
+
 }

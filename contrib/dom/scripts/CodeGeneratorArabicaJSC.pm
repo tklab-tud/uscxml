@@ -209,10 +209,11 @@ END
 	  }
 
     if ($extensions->{'CustomIndexedGetter'}) {
-      push(@headerContent, "\n    static JSValueRef indexedPropertyCustomGetter(uint32_t, const JSC::AccessorInfo&);");
+      push(@headerContent, "\n    static bool hasPropertyCustomCallback(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName);");
+      push(@headerContent, "\n    static JSValueRef getPropertyCustomCallback(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef* exception);");
     }
     if ($extensions->{'CustomIndexedSetter'}) {
-      push(@headerContent, "\n    static JSValueRef indexedPropertyCustomSetter(uint32_t, JSC::Local<JSC::Value>, const JSC::AccessorInfo&);");
+      push(@headerContent, "\n    static JSValueRef setPropertyCustomCallback(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef value, JSValueRef* exception);");
     }
     push(@headerContent, "\n");
 
@@ -229,6 +230,20 @@ END
   		classDef.staticValues = staticValues;
   		classDef.staticFunctions = staticFunctions;
   		classDef.finalize = jsDestructor;
+END
+			if ($extensions->{'CustomIndexedGetter'}) {
+				push(@headerContent, "		classDef.hasProperty = hasPropertyCustomCallback;\n");
+				push(@headerContent, "		classDef.getProperty = getPropertyCustomCallback;\n");
+			}
+			if ($extensions->{'CustomIndexedSetter'}) {
+				push(@headerContent, "		classDef.setProperty = setPropertyCustomCallback;\n");
+			}
+		  if (@{$interface->parents}) {
+		    my $parent = @{$interface->parents}[0];
+		    push(@headerContent, "		classDef.parentClass = JSC${parent}::getTmpl();\n");
+		  }
+
+	    push(@headerContent, <<END);
 
   		Tmpl = JSClassCreate(&classDef);
   		JSClassRetain(Tmpl);
@@ -449,12 +464,12 @@ END
     my $parameterIndex = 0;
     my @argList;
     foreach my $parameter (@{$function->parameters}) {
-        my $value = "arguments[$parameterIndex]";
         my $type = $parameter->type;
         AddToImplIncludes("JSC".$type.".h") if (IsWrapperType($type));
 
         my ($handle, $deref) = IdlToArgHandle($parameter->type, "local".ucfirst($parameter->name), "arguments[${parameterIndex}]");
         push(@implContent, "\n    ${handle}");
+#        push(@implContent, "\n    if (exception)\n      return JSValueMakeUndefined(ctx);");
         push(@argList, $deref);
 
         $parameterIndex++;
@@ -666,8 +681,9 @@ sub IdlToArgHandle
 			"JSStringRef stringRef${localName} = JSValueToStringCopy(ctx, ${paramName}, exception);\n" .
 			"\t\tsize_t ${localName}MaxSize = JSStringGetMaximumUTF8CStringSize(stringRef${localName});\n" .
 			"\t\tchar* ${localName}Buffer = new char[${localName}MaxSize];\n" .
-			"\t\tJSStringGetUTF8CString(stringRef${localName}, ${localName}Buffer, sizeof(${localName}Buffer));\n" .
-			"\t\tstd::string ${localName}(${localName}Buffer, ${localName}MaxSize);\n" .
+			"\t\tJSStringGetUTF8CString(stringRef${localName}, ${localName}Buffer, ${localName}MaxSize);\n" .
+			"\t\tstd::string ${localName}(${localName}Buffer);\n" .
+			"\t\tJSStringRelease(stringRef${localName});\n" .
 			"\t\tfree(${localName}Buffer);\n", 
 			"${localName}") ;
 	}
@@ -677,7 +693,7 @@ sub IdlToArgHandle
   
   if (IsWrapperType($type)) {
     my $wrapperType = IdlToWrapperType($type);
-    return ("${wrapperType}* ${localName} = ((struct JSC${type}::JSC${type}Private*)JSObjectGetPrivate(thisObj))->nativeObj;", "*${localName}");
+    return ("${wrapperType}* ${localName} = ((struct JSC${type}::JSC${type}Private*)JSObjectGetPrivate(JSValueToObject(ctx, ${paramName}, exception)))->nativeObj;", "*${localName}");
   }
 
   print $type."\n";

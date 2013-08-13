@@ -3,6 +3,7 @@
 
 #include "uscxml/config.h"
 #include <fstream>
+#include <boost/lexical_cast.hpp>
 
 #include <stdio.h>  /* defines FILENAME_MAX */
 #ifdef _WIN32
@@ -72,16 +73,21 @@ URLImpl::operator Data() {
 	data.compound["path"] = Data(_uri.path(), Data::VERBATIM);
 	data.compound["port"] = Data(_uri.port());
 	data.compound["isAbsolute"] = Data(_uri.is_absolute() ? "true" : "false");
+	if (_statusCode.length() > 0)
+		data.compound["statusCode"] = Data(_statusCode, Data::VERBATIM);
+	if (_statusMsg.length() > 0)
+		data.compound["statusMsg"] = Data(_statusMsg, Data::VERBATIM);
+
 
 	std::vector<std::string>::iterator pathIter = _pathComponents.begin();
 	while(pathIter != _pathComponents.end()) {
 		data.compound["pathComponent"].array.push_back(Data(*pathIter, Data::VERBATIM));
 		pathIter++;
 	}
-	
+
 	return data;
 }
-	
+
 CURL* URLImpl::getCurlHandle() {
 	if (_handle == NULL) {
 		_handle = curl_easy_init();
@@ -93,7 +99,7 @@ CURL* URLImpl::getCurlHandle() {
 
 size_t URLImpl::writeHandler(void *ptr, size_t size, size_t nmemb, void *userdata) {
 	URLImpl* url = (URLImpl*)userdata;
-	url->_inContent.write((char*)ptr, size * nmemb);
+	url->_rawInContent.write((char*)ptr, size * nmemb);
 
 	monIter_t monIter = url->_monitors.begin();
 	while(monIter != url->_monitors.end()) {
@@ -106,7 +112,7 @@ size_t URLImpl::writeHandler(void *ptr, size_t size, size_t nmemb, void *userdat
 
 size_t URLImpl::headerHandler(void *ptr, size_t size, size_t nmemb, void *userdata) {
 	URLImpl* url = (URLImpl*)userdata;
-	url->_inHeader.write((char*)ptr, size * nmemb);
+	url->_rawInHeader.write((char*)ptr, size * nmemb);
 
 	monIter_t monIter = url->_monitors.begin();
 	while(monIter != url->_monitors.end()) {
@@ -119,10 +125,13 @@ size_t URLImpl::headerHandler(void *ptr, size_t size, size_t nmemb, void *userda
 
 void URLImpl::downloadStarted() {
 //	LOG(INFO) << "Starting download of " << asString() << std::endl;
-	_inContent.str("");
-	_inContent.clear();
-	_inHeader.str("");
-	_inHeader.clear();
+	_rawInContent.str("");
+	_rawInContent.clear();
+	_rawInHeader.str("");
+	_rawInHeader.clear();
+
+	_statusMsg = "";
+	_statusCode = "";
 
 	monIter_t monIter = _monitors.begin();
 	while(monIter != _monitors.end()) {
@@ -134,7 +143,32 @@ void URLImpl::downloadStarted() {
 void URLImpl::downloadCompleted() {
 	tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
 
-//	LOG(INFO) << "Finished downloading " << asString() << " with " << _inContent.str().size() << " bytes";
+	if (boost::iequals(scheme(), "http")) {
+		// process header fields
+		std::string line;
+		while (std::getline(_rawInHeader, line)) {
+			size_t colon = line.find_first_of(":");
+			size_t newline = line.find_first_of("\r\n");
+			if (newline == std::string::npos)
+				newline = line.size();
+
+			if (colon == std::string::npos) {
+				_statusMsg = line.substr(0, newline);
+				if (_statusMsg.length() >= 11)
+					_statusCode = _statusMsg.substr(9, 3);
+			} else {
+				std::string key = line.substr(0, colon);
+				size_t firstChar = line.find_first_not_of(": ", colon, 2);
+				if (firstChar == std::string::npos) {
+					// nothing but spaces?
+					_inHeaders[line.substr(0, newline)] = "";
+				} else {
+					std::string value = line.substr(firstChar, newline - firstChar);
+					_inHeaders[key] = value;
+				}
+			}
+		}
+	}
 
 	_hasFailed = false;
 	_isDownloaded = true;
@@ -152,6 +186,7 @@ void URLImpl::downloadFailed(CURLcode errorCode) {
 
 	LOG(ERROR) << "Downloading " << asString() << " failed: " << curl_easy_strerror(errorCode);
 
+	_error = curl_easy_strerror(errorCode);
 	_hasFailed = true;
 	_isDownloaded = false;
 	_condVar.notify_all();
@@ -164,40 +199,32 @@ void URLImpl::downloadFailed(CURLcode errorCode) {
 
 }
 
-const std::map<std::string, std::string> URLImpl::getInHeaderFields() {
-	if (!_isDownloaded) {
+const std::string URLImpl::getInHeaderField(const std::string& key) {
+	std::map<std::string, std::string> headerFields = getInHeaderFields();
+	if (headerFields.find(key) != headerFields.end()) {
+		return headerFields[key];
+	}
+	return "";
+}
+
+const std::string URLImpl::getStatusCode() {
+	if (!_isDownloaded)
 		download(true);
-	}
+	return _statusCode;
+}
 
-	std::map<std::string, std::string> headerFields;
-	std::string line;
-	while (std::getline(_inHeader, line)) {
-		size_t colon = line.find_first_of(":");
-		size_t newline = line.find_first_of("\r\n");
-		if (newline == std::string::npos)
-			newline = line.size();
+const std::string URLImpl::getStatusMessage() {
+	if (!_isDownloaded)
+		download(true);
+	return _statusMsg;
+}
 
-		if (colon == std::string::npos) {
-			if (headerFields.size() == 0) {
-				// put http status in a key that can never occur otherwise
-				headerFields["status:"] = line.substr(0, newline);
-			} else {
-				headerFields[line.substr(0, newline)] = line.substr(0, newline); // this should never happen
-			}
-		} else {
-			std::string key = line.substr(0, colon);
-			size_t firstChar = line.find_first_not_of(": ", colon, 2);
-			if (firstChar == std::string::npos) {
-				// nothing but spaces?
-				headerFields[line.substr(0, newline)] = "";
-			} else {
-				std::string value = line.substr(firstChar, newline - firstChar);
-				headerFields[key] = value;
-			}
-		}
-	}
 
-	return headerFields;
+const std::map<std::string, std::string> URLImpl::getInHeaderFields() {
+	if (!_isDownloaded)
+		download(true);
+
+	return _inHeaders;
 }
 
 void URLImpl::setRequestType(const std::string& requestType) {
@@ -212,7 +239,7 @@ const std::string URLImpl::getInContent(bool forceReload) {
 	if (!_isDownloaded) {
 		download(true);
 	}
-	return _inContent.str();
+	return _rawInContent.str();
 }
 
 const void URLImpl::download(bool blocking) {
@@ -227,6 +254,22 @@ const void URLImpl::download(bool blocking) {
 	if (blocking) {
 		while(!_isDownloaded && !_hasFailed) {
 			_condVar.wait(_mutex); // wait for notification
+		}
+		if (_hasFailed) {
+			Event exception;
+			exception.name = "error.communication";
+			exception.data = URL(shared_from_this());
+			if (_error.length() > 0)
+				exception.data.compound["reason"] = Data(_error, Data::VERBATIM);
+			throw exception;
+		}
+		if (boost::iequals(scheme(), "http")) {
+			if (_statusCode.size() > 0 && boost::lexical_cast<int>(_statusCode) > 400) {
+				Event exception;
+				exception.name = "error.communication";
+				exception.data = URL(shared_from_this());
+				throw exception;
+			}
 		}
 	}
 }
@@ -503,13 +546,17 @@ void URLFetcher::perform() {
 	CURLMsg *msg; /* for picking up messages with the transfer status */
 	int msgsLeft; /* how many messages are left */
 	int stillRunning;
+	CURLMcode err;
 
 	{
 		tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
 		if (_handlesToURLs.empty()) {
 			_condVar.wait(_mutex);
 		}
-		curl_multi_perform(_multiHandle, &stillRunning);
+		err = curl_multi_perform(_multiHandle, &stillRunning);
+		if (err != CURLM_OK) {
+			LOG(WARNING) << "curl_multi_perform: " << curl_multi_strerror(err);
+		}
 	}
 
 	do {
@@ -530,21 +577,28 @@ void URLFetcher::perform() {
 
 		{
 			tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
-			curl_multi_timeout(_multiHandle, &curlTimeOut);
+			err = curl_multi_timeout(_multiHandle, &curlTimeOut);
+			if (err != CURLM_OK) {
+				LOG(WARNING) << "curl_multi_timeout: " << curl_multi_strerror(err);
+			}
 		}
 
 		if(curlTimeOut >= 0) {
 			timeout.tv_sec = curlTimeOut / 1000;
-			if(timeout.tv_sec > 1)
+			if(timeout.tv_sec > 1) {
 				timeout.tv_sec = 1;
-			else
+			} else {
 				timeout.tv_usec = (curlTimeOut % 1000) * 1000;
+			}
 		}
 
 		/* get file descriptors from the transfers */
 		{
 			tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
-			curl_multi_fdset(_multiHandle, &fdread, &fdwrite, &fdexcep, &maxfd);
+			err = curl_multi_fdset(_multiHandle, &fdread, &fdwrite, &fdexcep, &maxfd);
+			if (err != CURLM_OK) {
+				LOG(WARNING) << "curl_multi_fdset: " << curl_multi_strerror(err);
+			}
 		}
 
 		rc = select(maxfd+1, &fdread, &fdwrite, &fdexcep, &timeout);
@@ -556,9 +610,12 @@ void URLFetcher::perform() {
 		case 0: /* timeout */
 		default: { /* action */
 			tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
-			curl_multi_perform(_multiHandle, &stillRunning);
+			err = curl_multi_perform(_multiHandle, &stillRunning);
+			if (err != CURLM_OK) {
+				LOG(WARNING) << "curl_multi_perform: " << curl_multi_strerror(err);
+			}
+			break;
 		}
-		break;
 		}
 
 		{
@@ -568,11 +625,13 @@ void URLFetcher::perform() {
 					switch (msg->data.result) {
 					case CURLM_OK:
 						_handlesToURLs[msg->easy_handle].downloadCompleted();
-						curl_multi_remove_handle(_multiHandle, msg->easy_handle);
+						err = curl_multi_remove_handle(_multiHandle, msg->easy_handle);
+						if (err != CURLM_OK) {
+							LOG(WARNING) << "curl_multi_remove_handle: " << curl_multi_strerror(err);
+						}
+
 						_handlesToURLs.erase(msg->easy_handle);
 						break;
-					default:
-						LOG(ERROR) << "Unhandled curl status";
 					case CURLM_BAD_HANDLE:
 					case CURLM_BAD_EASY_HANDLE:
 					case CURLE_FILE_COULDNT_READ_FILE:
@@ -582,9 +641,15 @@ void URLFetcher::perform() {
 					case CURLM_UNKNOWN_OPTION:
 					case CURLM_LAST:
 						_handlesToURLs[msg->easy_handle].downloadFailed(msg->data.result);
-						curl_multi_remove_handle(_multiHandle, msg->easy_handle);
+						err = curl_multi_remove_handle(_multiHandle, msg->easy_handle);
+						if (err != CURLM_OK) {
+							LOG(WARNING) << "curl_multi_remove_handle: " << curl_multi_strerror(err);
+						}
+
 						_handlesToURLs.erase(msg->easy_handle);
 						break;
+					default:
+						LOG(ERROR) << "Unhandled curl status";
 					}
 				} else {
 					LOG(ERROR) << "Curl reports info on unfinished download?!";

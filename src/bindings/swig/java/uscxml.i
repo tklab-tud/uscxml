@@ -48,10 +48,12 @@ typedef uscxml::SendRequest SendRequest;
 #include "../../../uscxml/Factory.h"
 #include "../../../uscxml/Interpreter.h"
 #include "JavaInvoker.h"
+#include "JavaDataModel.h"
 
 using namespace uscxml;
 
 #include "JavaInvoker.cpp"
+#include "JavaDataModel.cpp"
 
 %}
 
@@ -64,6 +66,7 @@ using namespace uscxml;
 %ignore uscxml::Interpreter::getDelayQueue();
 
 %ignore uscxml::JavaInvoker::create(InterpreterImpl*);
+%ignore uscxml::JavaDataModel::create(InterpreterImpl*);
 
 %template(DataMap) std::map<std::string, uscxml::Data>;
 %template(DataList) std::list<uscxml::Data>;
@@ -71,6 +74,7 @@ using namespace uscxml;
 
 
 %feature("director") uscxml::JavaInvoker;
+%feature("director") uscxml::JavaDataModel;
 
 //***********************************************
 // Parse the header file to generate wrappers
@@ -81,4 +85,5 @@ using namespace uscxml;
 %include "../../../uscxml/Message.h"
 %include "../../../uscxml/Interpreter.h"
 %include "JavaInvoker.h"
+%include "JavaDataModel.h"
 

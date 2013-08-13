@@ -57,8 +57,9 @@ JSValueRef JSCElement::getAttributeCallback(JSContextRef ctx, JSObjectRef functi
 	JSStringRef stringReflocalName = JSValueToStringCopy(ctx, arguments[0], exception);
 	size_t localNameMaxSize = JSStringGetMaximumUTF8CStringSize(stringReflocalName);
 	char* localNameBuffer = new char[localNameMaxSize];
-	JSStringGetUTF8CString(stringReflocalName, localNameBuffer, sizeof(localNameBuffer));
-	std::string localName(localNameBuffer, localNameMaxSize);
+	JSStringGetUTF8CString(stringReflocalName, localNameBuffer, localNameMaxSize);
+	std::string localName(localNameBuffer);
+	JSStringRelease(stringReflocalName);
 	free(localNameBuffer);
 
 
@@ -85,15 +86,17 @@ JSValueRef JSCElement::setAttributeCallback(JSContextRef ctx, JSObjectRef functi
 	JSStringRef stringReflocalName = JSValueToStringCopy(ctx, arguments[0], exception);
 	size_t localNameMaxSize = JSStringGetMaximumUTF8CStringSize(stringReflocalName);
 	char* localNameBuffer = new char[localNameMaxSize];
-	JSStringGetUTF8CString(stringReflocalName, localNameBuffer, sizeof(localNameBuffer));
-	std::string localName(localNameBuffer, localNameMaxSize);
+	JSStringGetUTF8CString(stringReflocalName, localNameBuffer, localNameMaxSize);
+	std::string localName(localNameBuffer);
+	JSStringRelease(stringReflocalName);
 	free(localNameBuffer);
 
 	JSStringRef stringReflocalValue = JSValueToStringCopy(ctx, arguments[1], exception);
 	size_t localValueMaxSize = JSStringGetMaximumUTF8CStringSize(stringReflocalValue);
 	char* localValueBuffer = new char[localValueMaxSize];
-	JSStringGetUTF8CString(stringReflocalValue, localValueBuffer, sizeof(localValueBuffer));
-	std::string localValue(localValueBuffer, localValueMaxSize);
+	JSStringGetUTF8CString(stringReflocalValue, localValueBuffer, localValueMaxSize);
+	std::string localValue(localValueBuffer);
+	JSStringRelease(stringReflocalValue);
 	free(localValueBuffer);
 
 
@@ -118,8 +121,9 @@ JSValueRef JSCElement::removeAttributeCallback(JSContextRef ctx, JSObjectRef fun
 	JSStringRef stringReflocalName = JSValueToStringCopy(ctx, arguments[0], exception);
 	size_t localNameMaxSize = JSStringGetMaximumUTF8CStringSize(stringReflocalName);
 	char* localNameBuffer = new char[localNameMaxSize];
-	JSStringGetUTF8CString(stringReflocalName, localNameBuffer, sizeof(localNameBuffer));
-	std::string localName(localNameBuffer, localNameMaxSize);
+	JSStringGetUTF8CString(stringReflocalName, localNameBuffer, localNameMaxSize);
+	std::string localName(localNameBuffer);
+	JSStringRelease(stringReflocalName);
 	free(localNameBuffer);
 
 
@@ -144,8 +148,9 @@ JSValueRef JSCElement::getAttributeNodeCallback(JSContextRef ctx, JSObjectRef fu
 	JSStringRef stringReflocalName = JSValueToStringCopy(ctx, arguments[0], exception);
 	size_t localNameMaxSize = JSStringGetMaximumUTF8CStringSize(stringReflocalName);
 	char* localNameBuffer = new char[localNameMaxSize];
-	JSStringGetUTF8CString(stringReflocalName, localNameBuffer, sizeof(localNameBuffer));
-	std::string localName(localNameBuffer, localNameMaxSize);
+	JSStringGetUTF8CString(stringReflocalName, localNameBuffer, localNameMaxSize);
+	std::string localName(localNameBuffer);
+	JSStringRelease(stringReflocalName);
 	free(localNameBuffer);
 
 
@@ -174,7 +179,7 @@ JSValueRef JSCElement::setAttributeNodeCallback(JSContextRef ctx, JSObjectRef fu
 
 	struct JSCElementPrivate* privData = (struct JSCElementPrivate*)JSObjectGetPrivate(thisObj);
 
-	Arabica::DOM::Attr<std::string>* localNewAttr = ((struct JSCAttr::JSCAttrPrivate*)JSObjectGetPrivate(thisObj))->nativeObj;
+	Arabica::DOM::Attr<std::string>* localNewAttr = ((struct JSCAttr::JSCAttrPrivate*)JSObjectGetPrivate(JSValueToObject(ctx, arguments[0], exception)))->nativeObj;
 
 	Arabica::DOM::Attr<std::string>* retVal = new Arabica::DOM::Attr<std::string>(privData->nativeObj->setAttributeNode(*localNewAttr));
 	JSClassRef retClass = JSCAttr::getTmpl();
@@ -201,7 +206,7 @@ JSValueRef JSCElement::removeAttributeNodeCallback(JSContextRef ctx, JSObjectRef
 
 	struct JSCElementPrivate* privData = (struct JSCElementPrivate*)JSObjectGetPrivate(thisObj);
 
-	Arabica::DOM::Attr<std::string>* localOldAttr = ((struct JSCAttr::JSCAttrPrivate*)JSObjectGetPrivate(thisObj))->nativeObj;
+	Arabica::DOM::Attr<std::string>* localOldAttr = ((struct JSCAttr::JSCAttrPrivate*)JSObjectGetPrivate(JSValueToObject(ctx, arguments[0], exception)))->nativeObj;
 
 	Arabica::DOM::Attr<std::string>* retVal = new Arabica::DOM::Attr<std::string>(privData->nativeObj->removeAttributeNode(*localOldAttr));
 	JSClassRef retClass = JSCAttr::getTmpl();
@@ -231,8 +236,9 @@ JSValueRef JSCElement::getElementsByTagNameCallback(JSContextRef ctx, JSObjectRe
 	JSStringRef stringReflocalName = JSValueToStringCopy(ctx, arguments[0], exception);
 	size_t localNameMaxSize = JSStringGetMaximumUTF8CStringSize(stringReflocalName);
 	char* localNameBuffer = new char[localNameMaxSize];
-	JSStringGetUTF8CString(stringReflocalName, localNameBuffer, sizeof(localNameBuffer));
-	std::string localName(localNameBuffer, localNameMaxSize);
+	JSStringGetUTF8CString(stringReflocalName, localNameBuffer, localNameMaxSize);
+	std::string localName(localNameBuffer);
+	JSStringRelease(stringReflocalName);
 	free(localNameBuffer);
 
 
@@ -264,15 +270,17 @@ JSValueRef JSCElement::getAttributeNSCallback(JSContextRef ctx, JSObjectRef func
 	JSStringRef stringReflocalNamespaceURI = JSValueToStringCopy(ctx, arguments[0], exception);
 	size_t localNamespaceURIMaxSize = JSStringGetMaximumUTF8CStringSize(stringReflocalNamespaceURI);
 	char* localNamespaceURIBuffer = new char[localNamespaceURIMaxSize];
-	JSStringGetUTF8CString(stringReflocalNamespaceURI, localNamespaceURIBuffer, sizeof(localNamespaceURIBuffer));
-	std::string localNamespaceURI(localNamespaceURIBuffer, localNamespaceURIMaxSize);
+	JSStringGetUTF8CString(stringReflocalNamespaceURI, localNamespaceURIBuffer, localNamespaceURIMaxSize);
+	std::string localNamespaceURI(localNamespaceURIBuffer);
+	JSStringRelease(stringReflocalNamespaceURI);
 	free(localNamespaceURIBuffer);
 
 	JSStringRef stringReflocalLocalName = JSValueToStringCopy(ctx, arguments[1], exception);
 	size_t localLocalNameMaxSize = JSStringGetMaximumUTF8CStringSize(stringReflocalLocalName);
 	char* localLocalNameBuffer = new char[localLocalNameMaxSize];
-	JSStringGetUTF8CString(stringReflocalLocalName, localLocalNameBuffer, sizeof(localLocalNameBuffer));
-	std::string localLocalName(localLocalNameBuffer, localLocalNameMaxSize);
+	JSStringGetUTF8CString(stringReflocalLocalName, localLocalNameBuffer, localLocalNameMaxSize);
+	std::string localLocalName(localLocalNameBuffer);
+	JSStringRelease(stringReflocalLocalName);
 	free(localLocalNameBuffer);
 
 
@@ -299,22 +307,25 @@ JSValueRef JSCElement::setAttributeNSCallback(JSContextRef ctx, JSObjectRef func
 	JSStringRef stringReflocalNamespaceURI = JSValueToStringCopy(ctx, arguments[0], exception);
 	size_t localNamespaceURIMaxSize = JSStringGetMaximumUTF8CStringSize(stringReflocalNamespaceURI);
 	char* localNamespaceURIBuffer = new char[localNamespaceURIMaxSize];
-	JSStringGetUTF8CString(stringReflocalNamespaceURI, localNamespaceURIBuffer, sizeof(localNamespaceURIBuffer));
-	std::string localNamespaceURI(localNamespaceURIBuffer, localNamespaceURIMaxSize);
+	JSStringGetUTF8CString(stringReflocalNamespaceURI, localNamespaceURIBuffer, localNamespaceURIMaxSize);
+	std::string localNamespaceURI(localNamespaceURIBuffer);
+	JSStringRelease(stringReflocalNamespaceURI);
 	free(localNamespaceURIBuffer);
 
 	JSStringRef stringReflocalQualifiedName = JSValueToStringCopy(ctx, arguments[1], exception);
 	size_t localQualifiedNameMaxSize = JSStringGetMaximumUTF8CStringSize(stringReflocalQualifiedName);
 	char* localQualifiedNameBuffer = new char[localQualifiedNameMaxSize];
-	JSStringGetUTF8CString(stringReflocalQualifiedName, localQualifiedNameBuffer, sizeof(localQualifiedNameBuffer));
-	std::string localQualifiedName(localQualifiedNameBuffer, localQualifiedNameMaxSize);
+	JSStringGetUTF8CString(stringReflocalQualifiedName, localQualifiedNameBuffer, localQualifiedNameMaxSize);
+	std::string localQualifiedName(localQualifiedNameBuffer);
+	JSStringRelease(stringReflocalQualifiedName);
 	free(localQualifiedNameBuffer);
 
 	JSStringRef stringReflocalValue = JSValueToStringCopy(ctx, arguments[2], exception);
 	size_t localValueMaxSize = JSStringGetMaximumUTF8CStringSize(stringReflocalValue);
 	char* localValueBuffer = new char[localValueMaxSize];
-	JSStringGetUTF8CString(stringReflocalValue, localValueBuffer, sizeof(localValueBuffer));
-	std::string localValue(localValueBuffer, localValueMaxSize);
+	JSStringGetUTF8CString(stringReflocalValue, localValueBuffer, localValueMaxSize);
+	std::string localValue(localValueBuffer);
+	JSStringRelease(stringReflocalValue);
 	free(localValueBuffer);
 
 
@@ -339,15 +350,17 @@ JSValueRef JSCElement::removeAttributeNSCallback(JSContextRef ctx, JSObjectRef f
 	JSStringRef stringReflocalNamespaceURI = JSValueToStringCopy(ctx, arguments[0], exception);
 	size_t localNamespaceURIMaxSize = JSStringGetMaximumUTF8CStringSize(stringReflocalNamespaceURI);
 	char* localNamespaceURIBuffer = new char[localNamespaceURIMaxSize];
-	JSStringGetUTF8CString(stringReflocalNamespaceURI, localNamespaceURIBuffer, sizeof(localNamespaceURIBuffer));
-	std::string localNamespaceURI(localNamespaceURIBuffer, localNamespaceURIMaxSize);
+	JSStringGetUTF8CString(stringReflocalNamespaceURI, localNamespaceURIBuffer, localNamespaceURIMaxSize);
+	std::string localNamespaceURI(localNamespaceURIBuffer);
+	JSStringRelease(stringReflocalNamespaceURI);
 	free(localNamespaceURIBuffer);
 
 	JSStringRef stringReflocalLocalName = JSValueToStringCopy(ctx, arguments[1], exception);
 	size_t localLocalNameMaxSize = JSStringGetMaximumUTF8CStringSize(stringReflocalLocalName);
 	char* localLocalNameBuffer = new char[localLocalNameMaxSize];
-	JSStringGetUTF8CString(stringReflocalLocalName, localLocalNameBuffer, sizeof(localLocalNameBuffer));
-	std::string localLocalName(localLocalNameBuffer, localLocalNameMaxSize);
+	JSStringGetUTF8CString(stringReflocalLocalName, localLocalNameBuffer, localLocalNameMaxSize);
+	std::string localLocalName(localLocalNameBuffer);
+	JSStringRelease(stringReflocalLocalName);
 	free(localLocalNameBuffer);
 
 
@@ -372,15 +385,17 @@ JSValueRef JSCElement::getAttributeNodeNSCallback(JSContextRef ctx, JSObjectRef 
 	JSStringRef stringReflocalNamespaceURI = JSValueToStringCopy(ctx, arguments[0], exception);
 	size_t localNamespaceURIMaxSize = JSStringGetMaximumUTF8CStringSize(stringReflocalNamespaceURI);
 	char* localNamespaceURIBuffer = new char[localNamespaceURIMaxSize];
-	JSStringGetUTF8CString(stringReflocalNamespaceURI, localNamespaceURIBuffer, sizeof(localNamespaceURIBuffer));
-	std::string localNamespaceURI(localNamespaceURIBuffer, localNamespaceURIMaxSize);
+	JSStringGetUTF8CString(stringReflocalNamespaceURI, localNamespaceURIBuffer, localNamespaceURIMaxSize);
+	std::string localNamespaceURI(localNamespaceURIBuffer);
+	JSStringRelease(stringReflocalNamespaceURI);
 	free(localNamespaceURIBuffer);
 
 	JSStringRef stringReflocalLocalName = JSValueToStringCopy(ctx, arguments[1], exception);
 	size_t localLocalNameMaxSize = JSStringGetMaximumUTF8CStringSize(stringReflocalLocalName);
 	char* localLocalNameBuffer = new char[localLocalNameMaxSize];
-	JSStringGetUTF8CString(stringReflocalLocalName, localLocalNameBuffer, sizeof(localLocalNameBuffer));
-	std::string localLocalName(localLocalNameBuffer, localLocalNameMaxSize);
+	JSStringGetUTF8CString(stringReflocalLocalName, localLocalNameBuffer, localLocalNameMaxSize);
+	std::string localLocalName(localLocalNameBuffer);
+	JSStringRelease(stringReflocalLocalName);
 	free(localLocalNameBuffer);
 
 
@@ -409,7 +424,7 @@ JSValueRef JSCElement::setAttributeNodeNSCallback(JSContextRef ctx, JSObjectRef 
 
 	struct JSCElementPrivate* privData = (struct JSCElementPrivate*)JSObjectGetPrivate(thisObj);
 
-	Arabica::DOM::Attr<std::string>* localNewAttr = ((struct JSCAttr::JSCAttrPrivate*)JSObjectGetPrivate(thisObj))->nativeObj;
+	Arabica::DOM::Attr<std::string>* localNewAttr = ((struct JSCAttr::JSCAttrPrivate*)JSObjectGetPrivate(JSValueToObject(ctx, arguments[0], exception)))->nativeObj;
 
 	Arabica::DOM::Attr<std::string>* retVal = new Arabica::DOM::Attr<std::string>(privData->nativeObj->setAttributeNodeNS(*localNewAttr));
 	JSClassRef retClass = JSCAttr::getTmpl();
@@ -439,15 +454,17 @@ JSValueRef JSCElement::getElementsByTagNameNSCallback(JSContextRef ctx, JSObject
 	JSStringRef stringReflocalNamespaceURI = JSValueToStringCopy(ctx, arguments[0], exception);
 	size_t localNamespaceURIMaxSize = JSStringGetMaximumUTF8CStringSize(stringReflocalNamespaceURI);
 	char* localNamespaceURIBuffer = new char[localNamespaceURIMaxSize];
-	JSStringGetUTF8CString(stringReflocalNamespaceURI, localNamespaceURIBuffer, sizeof(localNamespaceURIBuffer));
-	std::string localNamespaceURI(localNamespaceURIBuffer, localNamespaceURIMaxSize);
+	JSStringGetUTF8CString(stringReflocalNamespaceURI, localNamespaceURIBuffer, localNamespaceURIMaxSize);
+	std::string localNamespaceURI(localNamespaceURIBuffer);
+	JSStringRelease(stringReflocalNamespaceURI);
 	free(localNamespaceURIBuffer);
 
 	JSStringRef stringReflocalLocalName = JSValueToStringCopy(ctx, arguments[1], exception);
 	size_t localLocalNameMaxSize = JSStringGetMaximumUTF8CStringSize(stringReflocalLocalName);
 	char* localLocalNameBuffer = new char[localLocalNameMaxSize];
-	JSStringGetUTF8CString(stringReflocalLocalName, localLocalNameBuffer, sizeof(localLocalNameBuffer));
-	std::string localLocalName(localLocalNameBuffer, localLocalNameMaxSize);
+	JSStringGetUTF8CString(stringReflocalLocalName, localLocalNameBuffer, localLocalNameMaxSize);
+	std::string localLocalName(localLocalNameBuffer);
+	JSStringRelease(stringReflocalLocalName);
 	free(localLocalNameBuffer);
 
 
@@ -479,8 +496,9 @@ JSValueRef JSCElement::hasAttributeCallback(JSContextRef ctx, JSObjectRef functi
 	JSStringRef stringReflocalName = JSValueToStringCopy(ctx, arguments[0], exception);
 	size_t localNameMaxSize = JSStringGetMaximumUTF8CStringSize(stringReflocalName);
 	char* localNameBuffer = new char[localNameMaxSize];
-	JSStringGetUTF8CString(stringReflocalName, localNameBuffer, sizeof(localNameBuffer));
-	std::string localName(localNameBuffer, localNameMaxSize);
+	JSStringGetUTF8CString(stringReflocalName, localNameBuffer, localNameMaxSize);
+	std::string localName(localNameBuffer);
+	JSStringRelease(stringReflocalName);
 	free(localNameBuffer);
 
 
@@ -505,15 +523,17 @@ JSValueRef JSCElement::hasAttributeNSCallback(JSContextRef ctx, JSObjectRef func
 	JSStringRef stringReflocalNamespaceURI = JSValueToStringCopy(ctx, arguments[0], exception);
 	size_t localNamespaceURIMaxSize = JSStringGetMaximumUTF8CStringSize(stringReflocalNamespaceURI);
 	char* localNamespaceURIBuffer = new char[localNamespaceURIMaxSize];
-	JSStringGetUTF8CString(stringReflocalNamespaceURI, localNamespaceURIBuffer, sizeof(localNamespaceURIBuffer));
-	std::string localNamespaceURI(localNamespaceURIBuffer, localNamespaceURIMaxSize);
+	JSStringGetUTF8CString(stringReflocalNamespaceURI, localNamespaceURIBuffer, localNamespaceURIMaxSize);
+	std::string localNamespaceURI(localNamespaceURIBuffer);
+	JSStringRelease(stringReflocalNamespaceURI);
 	free(localNamespaceURIBuffer);
 
 	JSStringRef stringReflocalLocalName = JSValueToStringCopy(ctx, arguments[1], exception);
 	size_t localLocalNameMaxSize = JSStringGetMaximumUTF8CStringSize(stringReflocalLocalName);
 	char* localLocalNameBuffer = new char[localLocalNameMaxSize];
-	JSStringGetUTF8CString(stringReflocalLocalName, localLocalNameBuffer, sizeof(localLocalNameBuffer));
-	std::string localLocalName(localLocalNameBuffer, localLocalNameMaxSize);
+	JSStringGetUTF8CString(stringReflocalLocalName, localLocalNameBuffer, localLocalNameMaxSize);
+	std::string localLocalName(localLocalNameBuffer);
+	JSStringRelease(stringReflocalLocalName);
 	free(localLocalNameBuffer);
 
 

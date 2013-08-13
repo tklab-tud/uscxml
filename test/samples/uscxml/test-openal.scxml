@@ -1,55 +1,125 @@
 <scxml datamodel="ecmascript" name="spatial.audio.test">
 	<script src="http://uscxml.tk.informatik.tu-darmstadt.de/scripts/dump.js" />
 	<script>
-		var bubblesDeg = 0;
-		var electricDeg = 90;
+		var audioPos = 0;
+		var audioURL = "http://uscxml.tk.informatik.tu-darmstadt.de/audio";
 	</script>
-	<state id="click.continuously">
-		<invoke type="openal" id="audio.id1" />
+	<state id="audiotests">
+		<invoke type="openal" id="audio" />
 		<state id="ready">
 			<onentry>
-				<send event="spatial-audio.play" delay="1ms" />
+				<send event="start" delay="10ms" />
 				<log expr="'Ready'" />
 			</onentry>
-			<transition target="play" event="spatial-audio.play" />
-		</state>
-		<parallel id="play">
-			<state id="bubbles">
-				<onentry>
-					<send target="#_audio.id1" event="play" id="bubbles">
-						<param name="src" expr="'http://www.talkingwav.com/various/applause.wav'" />
+			<transition target="wav" event="spatial-audio.play" />
+			<parallel id="start">
+				<state id="move.audio">
+					<send target="#_audio" event="move.source">
 					</send>
-				</onentry>
-			</state>
-			<state id="electric">
-				<onentry>
-					<send target="#_audio.id1" event="play" id="electric">
-						<param name="src" expr="'http://www.talkingwav.com/various/aaaaagh.wav'" />
-					</send>
-				</onentry>
-			</state>
-			<state id="rotate">
-				<state id="rotateinner">
-					<onentry>
-						<send event="rotate" delay="1000ms" />
-						<send target="#_audio.id1" event="move.source">
-							<param name="source" expr="'bubbles'" />
-							<param name="circle" expr="bubblesDeg + 'deg'" />
-						</send>
-						<send target="#_audio.id1" event="move.source">
-							<param name="source" expr="'electric'" />
-							<param name="circle" expr="electricDeg + 'deg'" />
-						</send>
-						<script>
-							bubblesDeg += 10;
-							electricDeg += 20;
-						</script>
-					</onentry>
-					<transition event="rotate" type="internal" target="rotateinner" />
 				</state>
-			</state>
-		</parallel>
+				<state id="play.audio">
+					<state id="wav">
+						<state id="11025-8bit-wav">
+							<onentry>
+								<log expr="'11025-8bit-wav'" />
+								<send target="#_audio" event="play" delay="10ms"><param name="src" expr="audioURL + '/wav/11025-8bit-mono.wav'" /></send>
+							</onentry>
+							<transition event="audio.end" target="22050-8bit-wav" />
+						</state>
+						<state id="22050-8bit-wav">
+							<onentry>
+								<log expr="'22050-8bit-wav'" />
+								<send target="#_audio" event="play"><param name="src" expr="audioURL + '/wav/22050-8bit-mono.wav'" /></send>
+							</onentry>
+							<transition event="audio.end" target="44100-8bit-wav" />
+						</state>
+						<state id="44100-8bit-wav">
+							<onentry>
+								<log expr="'44100-8bit-wav'" />
+								<send target="#_audio" event="play"><param name="src" expr="audioURL + '/wav/44100-8bit-mono.wav'" /></send>
+							</onentry>
+							<transition event="audio.end" target="11025-16bit-wav" />
+						</state>
+						<state id="11025-16bit-wav">
+							<onentry>
+								<log expr="'11025-16bit-wav'" />
+								<send target="#_audio" event="play"><param name="src" expr="audioURL + '/wav/11025-16bit-mono.wav'" /></send>
+							</onentry>
+							<transition event="audio.end" target="22050-16bit-wav" />
+						</state>
+						<state id="22050-16bit-wav">
+							<onentry>
+								<log expr="'22050-16bit-wav'" />
+								<send target="#_audio" event="play"><param name="src" expr="audioURL + '/wav/22050-16bit-mono.wav'" /></send>
+							</onentry>
+							<transition event="audio.end" target="44100-16bit-wav" />
+						</state>
+						<state id="44100-16bit-wav">
+							<onentry>
+								<log expr="'44100-16bit-wav'" />
+								<send target="#_audio" event="play"><param name="src" expr="audioURL + '/wav/44100-16bit-mono.wav'" /></send>
+							</onentry>
+							<transition event="audio.end" target="11025-24bit-wav" />
+						</state>
+						<state id="11025-24bit-wav">
+							<onentry>
+								<log expr="'11025-24bit-wav'" />
+								<send target="#_audio" event="play"><param name="src" expr="audioURL + '/wav/11025-24bit-mono.wav'" /></send>
+							</onentry>
+							<transition event="audio.end" target="22050-24bit-wav" />
+						</state>
+						<state id="22050-24bit-wav">
+							<onentry>
+								<log expr="'22050-24bit-wav'" />
+								<send target="#_audio" event="play"><param name="src" expr="audioURL + '/wav/22050-24bit-mono.wav'" /></send>
+							</onentry>
+							<transition event="audio.end" target="44100-24bit-wav" />
+						</state>
+						<state id="44100-24bit-wav">
+							<onentry>
+								<log expr="'44100-24bit-wav'" />
+								<send target="#_audio" event="play"><param name="src" expr="audioURL + '/wav/44100-24bit-mono.wav'" /></send>
+							</onentry>
+							<transition event="audio.end" target="11025-32bit-wav" />
+						</state>
+						<state id="11025-32bit-wav">
+							<onentry>
+								<log expr="'11025-32bit-wav'" />
+								<send target="#_audio" event="play"><param name="src" expr="audioURL + '/wav/11025-32bit-mono.wav'" /></send>
+							</onentry>
+							<transition event="audio.end" target="22050-32bit-wav" />
+						</state>
+						<state id="22050-32bit-wav">
+							<onentry>
+								<log expr="'22050-32bit-wav'" />
+								<send target="#_audio" event="play"><param name="src" expr="audioURL + '/wav/22050-32bit-mono.wav'" /></send>
+							</onentry>
+							<transition event="audio.end" target="44100-32bit-wav" />
+						</state>
+						<state id="44100-32bit-wav">
+							<onentry>
+								<log expr="'44100-32bit-wav'" />
+								<send target="#_audio" event="play"><param name="src" expr="audioURL + '/wav/44100-32bit-mono.wav'" /></send>
+							</onentry>
+							<transition event="audio.end" target="final" />
+						</state>
+					</state>
+					<state id="caf">
+					</state>
+					<state id="flac">
+					</state>
+					<state id="mp3">
+					</state>
+					<state id="ogg">
+					</state>
+					<state id="aiff">
+					</state>
+				</state>
+			</parallel>
+		</state>
+		<transition event="error.*" target="final">
+			<log expr="dump(_event);" />
+		</transition>
 	</state>
-	
 	<final id="final" />
 </scxml>

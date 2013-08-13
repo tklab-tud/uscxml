@@ -28,13 +28,18 @@ DirMonInvoker::DirMonInvoker() :
 	_reportExisting(true),
 	_reportHidden(false),
 	_recurse(false),
-	_thread(NULL) {
+	_thread(NULL),
+	_watcher(NULL) {
 }
 
 DirMonInvoker::~DirMonInvoker() {
 	_isRunning = false;
-	if (_thread)
+	if (_thread) {
 		_thread->join();
+		delete _thread;
+	}
+	if (_watcher)
+		delete(_watcher);
 };
 
 boost::shared_ptr<InvokerImpl> DirMonInvoker::create(InterpreterImpl* interpreter) {
@@ -216,6 +221,15 @@ void DirMonInvoker::handleChanges(DirectoryWatch::Action action, const std::stri
 	event.data.compound["file"].compound["dir"] = Data(dir, Data::VERBATIM);
 
 	returnEvent(event);
+}
+
+DirectoryWatch::~DirectoryWatch() {
+	std::map<std::string, DirectoryWatch*>::iterator dirIter = _knownDirs.begin();
+	while(dirIter != _knownDirs.end()) {
+		delete(dirIter->second);
+		dirIter++;
+	}
+
 }
 
 void DirectoryWatch::reportAsDeleted() {

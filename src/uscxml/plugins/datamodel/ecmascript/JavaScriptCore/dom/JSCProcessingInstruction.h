@@ -55,6 +55,7 @@ public:
 			classDef.staticValues = staticValues;
 			classDef.staticFunctions = staticFunctions;
 			classDef.finalize = jsDestructor;
+			classDef.parentClass = JSCNode::getTmpl();
 
 			Tmpl = JSClassCreate(&classDef);
 			JSClassRetain(Tmpl);

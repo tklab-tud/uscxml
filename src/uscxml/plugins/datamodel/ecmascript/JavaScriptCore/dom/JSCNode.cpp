@@ -77,8 +77,9 @@ bool JSCNode::nodeValueAttrSetter(JSContextRef ctx, JSObjectRef thisObj, JSStrin
 	JSStringRef stringReflocalNodeValue = JSValueToStringCopy(ctx, value, exception);
 	size_t localNodeValueMaxSize = JSStringGetMaximumUTF8CStringSize(stringReflocalNodeValue);
 	char* localNodeValueBuffer = new char[localNodeValueMaxSize];
-	JSStringGetUTF8CString(stringReflocalNodeValue, localNodeValueBuffer, sizeof(localNodeValueBuffer));
-	std::string localNodeValue(localNodeValueBuffer, localNodeValueMaxSize);
+	JSStringGetUTF8CString(stringReflocalNodeValue, localNodeValueBuffer, localNodeValueMaxSize);
+	std::string localNodeValue(localNodeValueBuffer);
+	JSStringRelease(stringReflocalNodeValue);
 	free(localNodeValueBuffer);
 
 	privData->nativeObj->setNodeValue(localNodeValue);
@@ -237,8 +238,9 @@ bool JSCNode::prefixAttrSetter(JSContextRef ctx, JSObjectRef thisObj, JSStringRe
 	JSStringRef stringReflocalPrefix = JSValueToStringCopy(ctx, value, exception);
 	size_t localPrefixMaxSize = JSStringGetMaximumUTF8CStringSize(stringReflocalPrefix);
 	char* localPrefixBuffer = new char[localPrefixMaxSize];
-	JSStringGetUTF8CString(stringReflocalPrefix, localPrefixBuffer, sizeof(localPrefixBuffer));
-	std::string localPrefix(localPrefixBuffer, localPrefixMaxSize);
+	JSStringGetUTF8CString(stringReflocalPrefix, localPrefixBuffer, localPrefixMaxSize);
+	std::string localPrefix(localPrefixBuffer);
+	JSStringRelease(stringReflocalPrefix);
 	free(localPrefixBuffer);
 
 	privData->nativeObj->setPrefix(localPrefix);
@@ -314,8 +316,8 @@ JSValueRef JSCNode::insertBeforeCallback(JSContextRef ctx, JSObjectRef function,
 
 	struct JSCNodePrivate* privData = (struct JSCNodePrivate*)JSObjectGetPrivate(thisObj);
 
-	Arabica::DOM::Node<std::string>* localNewChild = ((struct JSCNode::JSCNodePrivate*)JSObjectGetPrivate(thisObj))->nativeObj;
-	Arabica::DOM::Node<std::string>* localRefChild = ((struct JSCNode::JSCNodePrivate*)JSObjectGetPrivate(thisObj))->nativeObj;
+	Arabica::DOM::Node<std::string>* localNewChild = ((struct JSCNode::JSCNodePrivate*)JSObjectGetPrivate(JSValueToObject(ctx, arguments[0], exception)))->nativeObj;
+	Arabica::DOM::Node<std::string>* localRefChild = ((struct JSCNode::JSCNodePrivate*)JSObjectGetPrivate(JSValueToObject(ctx, arguments[1], exception)))->nativeObj;
 
 	Arabica::DOM::Node<std::string>* retVal = new Arabica::DOM::Node<std::string>(privData->nativeObj->insertBefore(*localNewChild, *localRefChild));
 	JSClassRef retClass = JSCNode::getTmpl();
@@ -342,8 +344,8 @@ JSValueRef JSCNode::replaceChildCallback(JSContextRef ctx, JSObjectRef function,
 
 	struct JSCNodePrivate* privData = (struct JSCNodePrivate*)JSObjectGetPrivate(thisObj);
 
-	Arabica::DOM::Node<std::string>* localNewChild = ((struct JSCNode::JSCNodePrivate*)JSObjectGetPrivate(thisObj))->nativeObj;
-	Arabica::DOM::Node<std::string>* localOldChild = ((struct JSCNode::JSCNodePrivate*)JSObjectGetPrivate(thisObj))->nativeObj;
+	Arabica::DOM::Node<std::string>* localNewChild = ((struct JSCNode::JSCNodePrivate*)JSObjectGetPrivate(JSValueToObject(ctx, arguments[0], exception)))->nativeObj;
+	Arabica::DOM::Node<std::string>* localOldChild = ((struct JSCNode::JSCNodePrivate*)JSObjectGetPrivate(JSValueToObject(ctx, arguments[1], exception)))->nativeObj;
 
 	Arabica::DOM::Node<std::string>* retVal = new Arabica::DOM::Node<std::string>(privData->nativeObj->replaceChild(*localNewChild, *localOldChild));
 	JSClassRef retClass = JSCNode::getTmpl();
@@ -370,7 +372,7 @@ JSValueRef JSCNode::removeChildCallback(JSContextRef ctx, JSObjectRef function, 
 
 	struct JSCNodePrivate* privData = (struct JSCNodePrivate*)JSObjectGetPrivate(thisObj);
 
-	Arabica::DOM::Node<std::string>* localOldChild = ((struct JSCNode::JSCNodePrivate*)JSObjectGetPrivate(thisObj))->nativeObj;
+	Arabica::DOM::Node<std::string>* localOldChild = ((struct JSCNode::JSCNodePrivate*)JSObjectGetPrivate(JSValueToObject(ctx, arguments[0], exception)))->nativeObj;
 
 	Arabica::DOM::Node<std::string>* retVal = new Arabica::DOM::Node<std::string>(privData->nativeObj->removeChild(*localOldChild));
 	JSClassRef retClass = JSCNode::getTmpl();
@@ -397,7 +399,7 @@ JSValueRef JSCNode::appendChildCallback(JSContextRef ctx, JSObjectRef function, 
 
 	struct JSCNodePrivate* privData = (struct JSCNodePrivate*)JSObjectGetPrivate(thisObj);
 
-	Arabica::DOM::Node<std::string>* localNewChild = ((struct JSCNode::JSCNodePrivate*)JSObjectGetPrivate(thisObj))->nativeObj;
+	Arabica::DOM::Node<std::string>* localNewChild = ((struct JSCNode::JSCNodePrivate*)JSObjectGetPrivate(JSValueToObject(ctx, arguments[0], exception)))->nativeObj;
 
 	Arabica::DOM::Node<std::string>* retVal = new Arabica::DOM::Node<std::string>(privData->nativeObj->appendChild(*localNewChild));
 	JSClassRef retClass = JSCNode::getTmpl();
@@ -476,15 +478,17 @@ JSValueRef JSCNode::isSupportedCallback(JSContextRef ctx, JSObjectRef function, 
 	JSStringRef stringReflocalFeature = JSValueToStringCopy(ctx, arguments[0], exception);
 	size_t localFeatureMaxSize = JSStringGetMaximumUTF8CStringSize(stringReflocalFeature);
 	char* localFeatureBuffer = new char[localFeatureMaxSize];
-	JSStringGetUTF8CString(stringReflocalFeature, localFeatureBuffer, sizeof(localFeatureBuffer));
-	std::string localFeature(localFeatureBuffer, localFeatureMaxSize);
+	JSStringGetUTF8CString(stringReflocalFeature, localFeatureBuffer, localFeatureMaxSize);
+	std::string localFeature(localFeatureBuffer);
+	JSStringRelease(stringReflocalFeature);
 	free(localFeatureBuffer);
 
 	JSStringRef stringReflocalVersion = JSValueToStringCopy(ctx, arguments[1], exception);
 	size_t localVersionMaxSize = JSStringGetMaximumUTF8CStringSize(stringReflocalVersion);
 	char* localVersionBuffer = new char[localVersionMaxSize];
-	JSStringGetUTF8CString(stringReflocalVersion, localVersionBuffer, sizeof(localVersionBuffer));
-	std::string localVersion(localVersionBuffer, localVersionMaxSize);
+	JSStringGetUTF8CString(stringReflocalVersion, localVersionBuffer, localVersionMaxSize);
+	std::string localVersion(localVersionBuffer);
+	JSStringRelease(stringReflocalVersion);
 	free(localVersionBuffer);
 
 

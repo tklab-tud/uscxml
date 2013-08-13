@@ -7,16 +7,17 @@
 					<script>dump(_event);</script>
 				</finalize>
 				<content>
-					<foo></foo>
-				</content>
-				
+				</content>				
 			</invoke>
 			<transition event="*" target="invokeJSON" />
 		</state>
 		<state id="invokeJSON">
 			<invoke type="java">
 				<content>
-					<foo></foo>
+					{
+						"foo": "bar",
+						"baz": 12
+					}
 				</content>
 				<finalize>
 					<script>dump(_event);</script>

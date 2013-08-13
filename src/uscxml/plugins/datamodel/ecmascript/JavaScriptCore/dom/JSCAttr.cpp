@@ -53,8 +53,9 @@ bool JSCAttr::valueAttrSetter(JSContextRef ctx, JSObjectRef thisObj, JSStringRef
 	JSStringRef stringReflocalValue = JSValueToStringCopy(ctx, value, exception);
 	size_t localValueMaxSize = JSStringGetMaximumUTF8CStringSize(stringReflocalValue);
 	char* localValueBuffer = new char[localValueMaxSize];
-	JSStringGetUTF8CString(stringReflocalValue, localValueBuffer, sizeof(localValueBuffer));
-	std::string localValue(localValueBuffer, localValueMaxSize);
+	JSStringGetUTF8CString(stringReflocalValue, localValueBuffer, localValueMaxSize);
+	std::string localValue(localValueBuffer);
+	JSStringRelease(stringReflocalValue);
 	free(localValueBuffer);
 
 	privData->nativeObj->setValue(localValue);

@@ -73,6 +73,8 @@ void DelayedEventQueue::stop() {
 	if (_isStarted) {
 		_isStarted = false;
 		event_base_loopbreak(_eventLoop);
+	}
+	if (_thread) {
 		_thread->join();
 		delete _thread;
 	}

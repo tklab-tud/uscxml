@@ -80,8 +80,14 @@ bool BasicHTTPIOProcessor::httpRecvRequest(const HTTPServer::Request& req) {
 		while(std::getline(ss, term, '&')) {
 			size_t split = term.find_first_of("=");
 			if (split != std::string::npos) {
-				std::string key = evhttp_decode_uri(term.substr(0, split).c_str());
-				std::string value = evhttp_decode_uri(term.substr(split + 1).c_str());
+
+				char* keyCStr = evhttp_decode_uri(term.substr(0, split).c_str());
+				char* valueCStr = evhttp_decode_uri(term.substr(split + 1).c_str());
+				std::string key = keyCStr;
+				std::string value = valueCStr;
+				free(keyCStr);
+				free(valueCStr);
+
 				if (boost::iequals(key, "_scxmleventname")) {
 					reqEvent.name = value;
 				} else if (boost::iequals(key, "content")) {
@@ -92,22 +98,30 @@ bool BasicHTTPIOProcessor::httpRecvRequest(const HTTPServer::Request& req) {
 				}
 			} else {
 				// this is most likely wrong
-				reqEvent.content = evhttp_decode_uri(term.c_str());
+				char* contentCStr = evhttp_decode_uri(term.c_str());
+				reqEvent.content = contentCStr;
+				free(contentCStr);
 			}
 		}
 	} else {
 		if (reqEvent.data.compound["header"].compound.find("_scxmleventstruct") != reqEvent.data.compound["header"].compound.end()) {
 			// TODO: this looses all other information
-			reqEvent = Event::fromXML(evhttp_decode_uri(reqEvent.data.compound["header"].compound["_scxmleventstruct"].atom.c_str()));
+			char* scxmlStructCStr = evhttp_decode_uri(reqEvent.data.compound["header"].compound["_scxmleventstruct"].atom.c_str());
+			reqEvent = Event::fromXML(scxmlStructCStr);
+			free(scxmlStructCStr);
 			scxmlStructFound = true;
 		}
 		if (reqEvent.data.compound["header"].compound.find("_scxmleventname") != reqEvent.data.compound["header"].compound.end()) {
-			reqEvent.name = evhttp_decode_uri(reqEvent.data.compound["header"].compound["_scxmleventname"].atom.c_str());
+			char* evNameCStr = evhttp_decode_uri(reqEvent.data.compound["header"].compound["_scxmleventname"].atom.c_str());
+			reqEvent.name = evNameCStr;
+			free(evNameCStr);
 		}
 	}
 	std::map<std::string, Data>::iterator headerIter = reqEvent.data.compound["header"].compound.begin();
 	while(headerIter != reqEvent.data.compound["header"].compound.end()) {
-		reqEvent.data.compound[headerIter->first] = Data(evhttp_decode_uri(headerIter->second.atom.c_str()), Data::VERBATIM);
+		char* headerCStr = evhttp_decode_uri(headerIter->second.atom.c_str());
+		reqEvent.data.compound[headerIter->first] = Data(headerCStr, Data::VERBATIM);
+		free(headerCStr);
 		headerIter++;
 	}
 
@@ -162,8 +176,12 @@ void BasicHTTPIOProcessor::send(const SendRequest& req) {
 
 	// event name
 	if (req.name.size() > 0) {
-		kvps << kvpSeperator << evhttp_encode_uri("_scxmleventname") << "=" << evhttp_encode_uri(req.name.c_str());
+		char* eventNameCStr = evhttp_encode_uri("_scxmleventname");
+		char* eventValueCStr = evhttp_encode_uri(req.name.c_str());
+		kvps << kvpSeperator << eventNameCStr << "=" << eventValueCStr;
 		kvpSeperator = "&";
+		free(eventNameCStr);
+		free(eventValueCStr);
 //		targetURL.addOutHeader("_scxmleventname", evhttp_encode_uri(req.name.c_str()));
 	}
 
@@ -171,7 +189,11 @@ void BasicHTTPIOProcessor::send(const SendRequest& req) {
 	if (req.namelist.size() > 0) {
 		std::map<std::string, std::string>::const_iterator namelistIter = req.namelist.begin();
 		while (namelistIter != req.namelist.end()) {
-			kvps << kvpSeperator << evhttp_encode_uri(namelistIter->first.c_str()) << "=" << evhttp_encode_uri(namelistIter->second.c_str());
+			char* keyCStr = evhttp_encode_uri(namelistIter->first.c_str());
+			char* valueCStr = evhttp_encode_uri(namelistIter->second.c_str());
+			kvps << kvpSeperator << keyCStr << "=" << valueCStr;
+			free(keyCStr);
+			free(valueCStr);
 			kvpSeperator = "&";
 //			targetURL.addOutHeader(namelistIter->first, namelistIter->second);
 			namelistIter++;
@@ -182,7 +204,11 @@ void BasicHTTPIOProcessor::send(const SendRequest& req) {
 	if (req.params.size() > 0) {
 		std::multimap<std::string, std::string>::const_iterator paramIter = req.params.begin();
 		while (paramIter != req.params.end()) {
-			kvps << kvpSeperator << evhttp_encode_uri(paramIter->first.c_str()) << "=" << evhttp_encode_uri(paramIter->second.c_str());
+			char* keyCStr = evhttp_encode_uri(paramIter->first.c_str());
+			char* valueCStr = evhttp_encode_uri(paramIter->second.c_str());
+			kvps << kvpSeperator << keyCStr << "=" << valueCStr;
+			free(keyCStr);
+			free(valueCStr);
 			kvpSeperator = "&";
 //			targetURL.addOutHeader(paramIter->first, paramIter->second);
 			paramIter++;
@@ -192,13 +218,21 @@ void BasicHTTPIOProcessor::send(const SendRequest& req) {
 	// content
 
 	if (req.content.size() > 0) {
-		kvps << kvpSeperator << evhttp_encode_uri("content") << "=" << evhttp_encode_uri(req.content.c_str());
+		char* keyCStr = evhttp_encode_uri("content");
+		char* valueCStr = evhttp_encode_uri(req.content.c_str());
+		kvps << kvpSeperator << keyCStr << "=" << valueCStr;
+		free(keyCStr);
+		free(valueCStr);
 		kvpSeperator = "&";
 	}
 	if (req.dom) {
 		std::stringstream xmlStream;
 		xmlStream << req.dom;
-		kvps << kvpSeperator << evhttp_encode_uri("content") << "=" << evhttp_encode_uri(xmlStream.str().c_str());
+		char* keyCStr = evhttp_encode_uri("content");
+		char* valueCStr = evhttp_encode_uri(xmlStream.str().c_str());
+		kvps << kvpSeperator << keyCStr << "=" << valueCStr;
+		free(keyCStr);
+		free(valueCStr);
 		kvpSeperator = "&";
 	}
 	targetURL.setOutContent(kvps.str());

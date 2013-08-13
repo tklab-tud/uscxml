@@ -43,8 +43,9 @@ bool JSCProcessingInstruction::dataAttrSetter(JSContextRef ctx, JSObjectRef this
 	JSStringRef stringReflocalData = JSValueToStringCopy(ctx, value, exception);
 	size_t localDataMaxSize = JSStringGetMaximumUTF8CStringSize(stringReflocalData);
 	char* localDataBuffer = new char[localDataMaxSize];
-	JSStringGetUTF8CString(stringReflocalData, localDataBuffer, sizeof(localDataBuffer));
-	std::string localData(localDataBuffer, localDataMaxSize);
+	JSStringGetUTF8CString(stringReflocalData, localDataBuffer, localDataMaxSize);
+	std::string localData(localDataBuffer);
+	JSStringRelease(stringReflocalData);
 	free(localDataBuffer);
 
 	privData->nativeObj->setData(localData);

@@ -38,8 +38,9 @@ bool JSCCharacterData::dataAttrSetter(JSContextRef ctx, JSObjectRef thisObj, JSS
 	JSStringRef stringReflocalData = JSValueToStringCopy(ctx, value, exception);
 	size_t localDataMaxSize = JSStringGetMaximumUTF8CStringSize(stringReflocalData);
 	char* localDataBuffer = new char[localDataMaxSize];
-	JSStringGetUTF8CString(stringReflocalData, localDataBuffer, sizeof(localDataBuffer));
-	std::string localData(localDataBuffer, localDataMaxSize);
+	JSStringGetUTF8CString(stringReflocalData, localDataBuffer, localDataMaxSize);
+	std::string localData(localDataBuffer);
+	JSStringRelease(stringReflocalData);
 	free(localDataBuffer);
 
 	privData->nativeObj->setData(localData);
@@ -90,8 +91,9 @@ JSValueRef JSCCharacterData::appendDataCallback(JSContextRef ctx, JSObjectRef fu
 	JSStringRef stringReflocalArg = JSValueToStringCopy(ctx, arguments[0], exception);
 	size_t localArgMaxSize = JSStringGetMaximumUTF8CStringSize(stringReflocalArg);
 	char* localArgBuffer = new char[localArgMaxSize];
-	JSStringGetUTF8CString(stringReflocalArg, localArgBuffer, sizeof(localArgBuffer));
-	std::string localArg(localArgBuffer, localArgMaxSize);
+	JSStringGetUTF8CString(stringReflocalArg, localArgBuffer, localArgMaxSize);
+	std::string localArg(localArgBuffer);
+	JSStringRelease(stringReflocalArg);
 	free(localArgBuffer);
 
 
@@ -117,8 +119,9 @@ JSValueRef JSCCharacterData::insertDataCallback(JSContextRef ctx, JSObjectRef fu
 	JSStringRef stringReflocalArg = JSValueToStringCopy(ctx, arguments[1], exception);
 	size_t localArgMaxSize = JSStringGetMaximumUTF8CStringSize(stringReflocalArg);
 	char* localArgBuffer = new char[localArgMaxSize];
-	JSStringGetUTF8CString(stringReflocalArg, localArgBuffer, sizeof(localArgBuffer));
-	std::string localArg(localArgBuffer, localArgMaxSize);
+	JSStringGetUTF8CString(stringReflocalArg, localArgBuffer, localArgMaxSize);
+	std::string localArg(localArgBuffer);
+	JSStringRelease(stringReflocalArg);
 	free(localArgBuffer);
 
 
@@ -166,8 +169,9 @@ JSValueRef JSCCharacterData::replaceDataCallback(JSContextRef ctx, JSObjectRef f
 	JSStringRef stringReflocalArg = JSValueToStringCopy(ctx, arguments[2], exception);
 	size_t localArgMaxSize = JSStringGetMaximumUTF8CStringSize(stringReflocalArg);
 	char* localArgBuffer = new char[localArgMaxSize];
-	JSStringGetUTF8CString(stringReflocalArg, localArgBuffer, sizeof(localArgBuffer));
-	std::string localArg(localArgBuffer, localArgMaxSize);
+	JSStringGetUTF8CString(stringReflocalArg, localArgBuffer, localArgMaxSize);
+	std::string localArg(localArgBuffer);
+	JSStringRelease(stringReflocalArg);
 	free(localArgBuffer);
 
 
