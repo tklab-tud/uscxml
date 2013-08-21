@@ -14,6 +14,8 @@
 #define getcwd _getcwd
 #else
 #include <unistd.h>
+#include <sys/types.h>
+#include <pwd.h>
 #endif
 
 #include <cstdlib> // mkstemp
@@ -48,6 +50,42 @@ std::string URL::tmpDir() {
 	tmpl[writePtr - tmpl] = 0;
 	return tmpl;
 }
+
+#if (!defined APPLE && !defined IOS)
+std::string URL::getResourceDir() {
+#ifdef _WIN32
+	TCHAR szPath[MAX_PATH];
+	if (SHGetFolderPath(NULL, CSIDL_COMMON_APPDATA, NULL, 0, szPath)) {
+		return szPath;
+	} else {
+		return getenv("APPDATA");
+	}
+#else
+	struct passwd* pw = getpwuid(getuid());
+	std::string homedir(pw->pw_dir);
+	struct stat dirStat;
+	int err = 0;
+
+	err = stat(std::string(homedir + PATH_SEPERATOR + ".config").c_str(), &dirStat);
+	if (err == ENOENT) {
+		err = mkdir(std::string(homedir + PATH_SEPERATOR + ".config").c_str(), S_IWUSR | S_IRUSR | S_IROTH);
+	}
+
+	err = stat(std::string(homedir + PATH_SEPERATOR + ".config" + PATH_SEPERATOR + "uscxml").c_str(), &dirStat);
+	if (err != 0) {
+		std::cout << std::string(homedir + PATH_SEPERATOR + ".config" + PATH_SEPERATOR + "uscxml") << std::endl;
+		err = mkdir(std::string(homedir + PATH_SEPERATOR + ".config" + PATH_SEPERATOR + "uscxml").c_str(),
+		            S_IWUSR | S_IRUSR | S_IROTH | S_IRGRP | S_IXUSR | S_IXOTH | S_IXGRP);
+	}
+
+	err = stat(std::string(homedir + PATH_SEPERATOR + ".config" + PATH_SEPERATOR + "uscxml").c_str(), &dirStat);
+	if (err == 0) {
+		return homedir + PATH_SEPERATOR + ".config" + PATH_SEPERATOR + "uscxml";
+	}
+	return "";
+#endif
+}
+#endif
 
 URLImpl::URLImpl(const std::string& url) : _handle(NULL), _uri(url), _isDownloaded(false), _hasFailed(false) {
 	std::stringstream ss(_uri.path());
@@ -461,6 +499,11 @@ void URLFetcher::fetchURL(URL& url) {
 		(curlError = curl_easy_setopt(handle, CURLOPT_SSL_VERIFYPEER, false)) == CURLE_OK ||
 		LOG(ERROR) << "Cannot forfeit peer verification: " << curl_easy_strerror(curlError);
 
+		(curlError = curl_easy_setopt(handle, CURLOPT_USERAGENT, "curl/7.31.0")) == CURLE_OK ||
+		LOG(ERROR) << "Cannot set our user agent string: " << curl_easy_strerror(curlError);
+
+		(curlError = curl_easy_setopt(handle, CURLOPT_FOLLOWLOCATION, true)) == CURLE_OK ||
+		LOG(ERROR) << "Cannot enable follow redirects: " << curl_easy_strerror(curlError);
 
 		if (boost::iequals(url._impl->_requestType, "post")) {
 

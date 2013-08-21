@@ -23,17 +23,17 @@
 					</scenegraph:viewport>
 					<scenegraph:viewport x="0" y="50%" width="50%" height="50%" id="scene3">
 						<scenegraph:rotation id="treeRotation" pitch="100deg" roll="3.15149rad" yaw="10deg">
-							<scenegraph:node src="http://cs.iupui.edu/~aharris/webDesign/vrml/tree.wrl" />
+							<scenegraph:node src="http://people.sc.fsu.edu/~jburkardt/data/obj/airboat.obj" />
 						</scenegraph:rotation>
 					</scenegraph:viewport>
 					<scenegraph:viewport x="50%" y="50%" width="50%" height="50%" id="scene4">
 						<scenegraph:translation x="0" y="0" z="0">
-							<scenegraph:node src="scenegraph/HARD_MP_VAL_000.wrl" />
+							<scenegraph:node src="http://people.sc.fsu.edu/~jburkardt/data/obj/airboat.obj" />
 						</scenegraph:translation>
 					</scenegraph:viewport>
 					<scenegraph:viewport x="50%" y="0" width="50%" height="50%" id="scene2">
 						<scenegraph:translation x="0" y="0" z="0">
-							<scenegraph:node src="http://cs.iupui.edu/~aharris/mm/vrml4/house.wrl" />
+							<scenegraph:node src="http://people.sc.fsu.edu/~jburkardt/data/obj/airboat.obj" />
 						</scenegraph:translation>
 					</scenegraph:viewport>
 				</scenegraph:display>

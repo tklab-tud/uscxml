@@ -25,7 +25,7 @@
 #include "DOM/Node.hpp"
 #include "JSCNode.h"
 #include <JavaScriptCore/JavaScriptCore.h>
-#include "uscxml/plugins/datamodel/ecmascript/JavaScriptCore/dom/JSCDOM.h"
+#include "uscxml/plugins/datamodel/ecmascript/JavaScriptCore/JSCDOM.h"
 
 namespace Arabica {
 namespace DOM {
@@ -58,6 +58,7 @@ public:
 	static JSValueRef doctypeAttrGetter(JSContextRef ctx, JSObjectRef thisObj, JSStringRef propertyName, JSValueRef* exception);
 	static JSValueRef implementationAttrGetter(JSContextRef ctx, JSObjectRef thisObj, JSStringRef propertyName, JSValueRef* exception);
 	static JSValueRef documentElementAttrGetter(JSContextRef ctx, JSObjectRef thisObj, JSStringRef propertyName, JSValueRef* exception);
+	static JSValueRef localStorageCustomAttrGetter(JSContextRef ctx, JSObjectRef thisObj, JSStringRef propertyName, JSValueRef* exception);
 
 
 	static JSStaticValue staticValues[];

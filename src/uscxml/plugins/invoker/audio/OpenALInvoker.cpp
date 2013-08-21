@@ -29,6 +29,7 @@ OpenALInvoker::OpenALInvoker() {
 	_alContext = NULL;
 	_alDevice = NULL;
 	_thread = NULL;
+	_listenerPos[0] = _listenerPos[1] = _listenerPos[2] = 0;
 }
 
 OpenALInvoker::~OpenALInvoker() {
@@ -131,6 +132,18 @@ void OpenALInvoker::send(const SendRequest& req) {
 			returnErrorExecution(ex.what());
 		}
 	}
+
+	if (boost::iequals(req.name, "move.listener")) {
+		getPosFromParams(req.params, _listenerPos);
+		try {
+			alcMakeContextCurrent(_alContext);
+			alListenerfv(AL_POSITION, _listenerPos);
+			OpenALPlayer::checkOpenALError(__LINE__);
+		} catch (std::exception ex) {
+			returnErrorExecution(ex.what());
+		}
+	}
+
 }
 
 void OpenALInvoker::start() {

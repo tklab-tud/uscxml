@@ -1,4 +1,4 @@
-<scxml datamodel="ecmascript" initial="comparison" binding="late">
+<scxml datamodel="ecmascript" initial="comparison" binding="late" name="ecmafoo">
 	<datamodel>
 		<data id="year" expr="2008" />
 		<data id="CEO" expr="'Mr Big'" />
@@ -33,6 +33,10 @@
 		<onentry>
 			<log expr="'-- Testing comparisons'" />
 			<log expr="'x is ' + x + ', y is ' + y" />
+			<script>
+				print("Foo: " + document.localStorage.getItem("foo") + "\n");
+				document.localStorage.setItem("foo", "bar");
+			</script>
 		</onentry>
 		<transition cond="x &gt;= 2" target="builtin">
 			<log expr="'x is greater or equal to 2'" />

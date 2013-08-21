@@ -65,6 +65,8 @@ enum Capabilities {
 class InterpreterImpl : public boost::enable_shared_from_this<InterpreterImpl> {
 public:
 
+	typedef std::set<InterpreterMonitor*>::iterator monIter_t;
+
 	enum Binding {
 	    EARLY = 0,
 	    LATE = 1

@@ -1,6 +1,7 @@
 #include "uscxml/Common.h"
+#include "uscxml/config.h"
 #include "V8DataModel.h"
-#include "dom/V8DOM.h"
+#include "V8DOM.h"
 #include "dom/V8Document.h"
 #include "dom/V8Node.h"
 #include "dom/V8SCXMLEvent.h"
@@ -29,6 +30,15 @@ V8DataModel::V8DataModel() {
 //  _contexts.push_back(v8::Context::New());
 }
 
+V8DataModel::~V8DataModel() {
+	while(_contexts.size() > 0) {
+		_contexts.back().Dispose();
+		_contexts.pop_back();
+	}
+	if (_dom)
+		delete _dom;
+}
+
 boost::shared_ptr<DataModelImpl> V8DataModel::create(InterpreterImpl* interpreter) {
 	boost::shared_ptr<V8DataModel> dm = boost::shared_ptr<V8DataModel>(new V8DataModel());
 	dm->_interpreter = interpreter;
@@ -39,6 +49,7 @@ boost::shared_ptr<DataModelImpl> V8DataModel::create(InterpreterImpl* interprete
 //  dom->interpreter = interpreter;
 	dm->_dom->xpath = new XPath<std::string>();
 	dm->_dom->xpath->setNamespaceContext(interpreter->getNSContext());
+	dm->_dom->storage	= new Storage(URL::getResourceDir() + PATH_SEPERATOR + interpreter->getName() + ".storage");
 
 	// see http://stackoverflow.com/questions/3171418/v8-functiontemplate-class-instance
 
@@ -109,13 +120,6 @@ v8::Handle<v8::Value> V8DataModel::getIOProcessors(v8::Local<v8::String> propert
 		}
 	}
 	return dataModel->_ioProcessors;
-}
-
-V8DataModel::~V8DataModel() {
-	while(_contexts.size() > 0) {
-		_contexts.back().Dispose();
-		_contexts.pop_back();
-	}
 }
 
 void V8DataModel::pushContext() {

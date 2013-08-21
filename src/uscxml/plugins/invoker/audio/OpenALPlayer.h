@@ -63,7 +63,6 @@ private:
 
 	void updateBuffers();
 	void init();
-	void checkOpenALError(int line);
 
 	// static wrapper as an entry point for pthreads
 	static void updateBuffersWrapper(void *obj);
@@ -76,6 +75,7 @@ public:
 	virtual ~OpenALPlayer();
 
 	unsigned int isPlaying();
+	static void checkOpenALError(int line);
 
 	ALfloat* getPosition();
 	void setPosition(ALfloat[3]);

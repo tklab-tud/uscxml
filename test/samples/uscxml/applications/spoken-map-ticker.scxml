@@ -22,7 +22,7 @@
 			</finalize>
 		</invoke>
 		
-		<invoke type="http://www.smartvortex.eu/mmi/spatial-audio/" src="../audio/click.wav" id="audio">
+		<invoke type="openal" id="audio">
 			<!-- <param name="maxX" expr="180" />
 			<param name="maxY" expr="18" />
 			<param name="maxZ" expr="85" /> -->
@@ -43,16 +43,17 @@
 					<content>${_event.data}</content>
 				</send>
 				<send target="#_audio" event="play" delay="0ms">
+					<param name="src" expr="'../audio/click.wav'" />
 					<param name="x" expr="_event.data.lon" />
 					<param name="y" expr="0" />
 					<param name="z" expr="_event.data.lat" />
 				</send>
 				
-				<if cond="_event.data.lastMsg">
+				<if cond="_event.data.message &amp;&amp; _event.data.severity &gt; 8">
 					<send target="#_vxml">
 						<content>
 							<vxml:prompt>
-								${_event.data.lastMsg}
+								${_event.data.message}
 							</vxml:prompt>
 						</content>
 					</send>

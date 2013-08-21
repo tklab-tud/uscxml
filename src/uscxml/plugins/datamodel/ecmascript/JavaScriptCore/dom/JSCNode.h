@@ -24,7 +24,7 @@
 #include <string>
 #include "DOM/Node.hpp"
 #include <JavaScriptCore/JavaScriptCore.h>
-#include "uscxml/plugins/datamodel/ecmascript/JavaScriptCore/dom/JSCDOM.h"
+#include "uscxml/plugins/datamodel/ecmascript/JavaScriptCore/JSCDOM.h"
 
 namespace Arabica {
 namespace DOM {

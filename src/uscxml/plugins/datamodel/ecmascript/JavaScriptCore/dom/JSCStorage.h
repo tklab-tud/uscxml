@@ -18,35 +18,32 @@
     Boston, MA 02111-1307, USA.
 */
 
-#ifndef JSCCharacterData_h
-#define JSCCharacterData_h
+#ifndef JSCStorage_h
+#define JSCStorage_h
 
 #include <string>
 #include "DOM/Node.hpp"
-#include "JSCNode.h"
 #include <JavaScriptCore/JavaScriptCore.h>
 #include "uscxml/plugins/datamodel/ecmascript/JavaScriptCore/JSCDOM.h"
 
 namespace Arabica {
 namespace DOM {
 
-class JSCCharacterData {
+class JSCStorage {
 public:
-	struct JSCCharacterDataPrivate {
+	struct JSCStoragePrivate {
 		JSCDOM* dom;
-		Arabica::DOM::CharacterData<std::string>* nativeObj;
+		uscxml::Storage* nativeObj;
 	};
 
-	JSC_DESTRUCTOR(JSCCharacterDataPrivate);
+	JSC_DESTRUCTOR_KEEP_WRAPPED(JSCStoragePrivate);
 
-	static JSValueRef substringDataCallback(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObj, size_t argumentCount, const JSValueRef* arguments, JSValueRef* exception);
-	static JSValueRef appendDataCallback(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObj, size_t argumentCount, const JSValueRef* arguments, JSValueRef* exception);
-	static JSValueRef insertDataCallback(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObj, size_t argumentCount, const JSValueRef* arguments, JSValueRef* exception);
-	static JSValueRef deleteDataCallback(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObj, size_t argumentCount, const JSValueRef* arguments, JSValueRef* exception);
-	static JSValueRef replaceDataCallback(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObj, size_t argumentCount, const JSValueRef* arguments, JSValueRef* exception);
+	static JSValueRef keyCallback(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObj, size_t argumentCount, const JSValueRef* arguments, JSValueRef* exception);
+	static JSValueRef getItemCallback(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObj, size_t argumentCount, const JSValueRef* arguments, JSValueRef* exception);
+	static JSValueRef setItemCallback(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObj, size_t argumentCount, const JSValueRef* arguments, JSValueRef* exception);
+	static JSValueRef removeItemCallback(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObj, size_t argumentCount, const JSValueRef* arguments, JSValueRef* exception);
+	static JSValueRef clearCallback(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObj, size_t argumentCount, const JSValueRef* arguments, JSValueRef* exception);
 
-	static JSValueRef dataAttrGetter(JSContextRef ctx, JSObjectRef thisObj, JSStringRef propertyName, JSValueRef* exception);
-	static bool dataAttrSetter(JSContextRef ctx, JSObjectRef thisObj, JSStringRef propertyName, JSValueRef value, JSValueRef* exception);
 	static JSValueRef lengthAttrGetter(JSContextRef ctx, JSObjectRef thisObj, JSStringRef propertyName, JSValueRef* exception);
 
 
@@ -60,7 +57,6 @@ public:
 			classDef.staticValues = staticValues;
 			classDef.staticFunctions = staticFunctions;
 			classDef.finalize = jsDestructor;
-			classDef.parentClass = JSCNode::getTmpl();
 
 			Tmpl = JSClassCreate(&classDef);
 			JSClassRetain(Tmpl);
@@ -74,4 +70,4 @@ public:
 }
 }
 
-#endif // JSCCharacterData_h
+#endif // JSCStorage_h

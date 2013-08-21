@@ -20,14 +20,14 @@ public class SpatialMapTicker {
 
 	public class SensorMessage {
 		public String message;
-		public String severity;
-		public SensorMessage(String message, String severity) {
+		public int severity;
+		public SensorMessage(String message, int severity) {
 			this.message = message;
 			this.severity = severity;
 		}
 		public SensorMessage(String message) {
 			this.message = message;
-			this.severity = "Notice";
+			this.severity = 3;
 		}
 	}
 	
@@ -108,7 +108,7 @@ public class SpatialMapTicker {
 	}
 
 	private void run() {
-		messages.add(new SensorMessage("Oil pressure threshold exceeded", "Error"));
+		messages.add(new SensorMessage("Oil pressure threshold exceeded"));
 		messages.add(new SensorMessage("Error #245 in diagnostics unit"));
 		messages.add(new SensorMessage("Error #32 in diagnostics unit"));
 		messages.add(new SensorMessage("Error #81 in diagnostics unit"));
@@ -144,8 +144,8 @@ public class SpatialMapTicker {
 			msg.putMeta("html", sensor.getHTML());
 			msg.putMeta("time", nowString);
 			msg.putMeta("timeStamp", Long.toString(now.getTime()));
-			msg.putMeta("lastMsg", sensor.messages.getFirst().message);
-			msg.putMeta("severity", sensor.messages.getFirst().severity);
+			msg.putMeta("message", sensor.messages.getFirst().message);
+			msg.putMeta("severity", Integer.toString(random.nextInt(10)));
 			pub.send(msg);
 		}
 	}

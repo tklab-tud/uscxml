@@ -24,7 +24,7 @@
 #include <string>
 #include "DOM/Node.hpp"
 #include "string"
-#include "uscxml/plugins/datamodel/ecmascript/v8/dom/V8DOM.h"
+#include "uscxml/plugins/datamodel/ecmascript/v8/V8DOM.h"
 #include <v8.h>
 
 namespace Arabica {

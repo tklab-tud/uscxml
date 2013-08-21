@@ -4,6 +4,7 @@
 #include "uscxml/Interpreter.h"
 #include <JavaScriptCore/JavaScriptCore.h>
 #include <XPath/XPath.hpp>
+#include "../Storage.h"
 
 #define JSC_DESTRUCTOR(type) \
 static void jsDestructor(JSObjectRef object) { \
@@ -28,7 +29,7 @@ class JSCDOM {
 public:
 	JSCDOM();
 	virtual ~JSCDOM();
-
+	uscxml::Storage* storage;
 	Arabica::XPath::XPath<std::string>* xpath;
 };
 

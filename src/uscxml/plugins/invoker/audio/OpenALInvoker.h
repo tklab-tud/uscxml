@@ -66,6 +66,7 @@ protected:
 
 	bool _isStarted;
 	bool _isRunning;
+	float _listenerPos[3];
 
 	static void fillBuffers(void* userdata);
 	void start();

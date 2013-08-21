@@ -1,5 +1,6 @@
 #include "uscxml/config.h"
 #include "uscxml/Interpreter.h"
+#include "uscxml/debug/SCXMLDotWriter.h"
 #include <glog/logging.h>
 
 #ifdef HAS_SIGNAL_H
@@ -76,18 +77,16 @@ void __cxa_throw (void *thrown_exception, void *pvtinfo, void (*dest)(void *)) {
 // see http://stackoverflow.com/questions/2443135/how-do-i-find-where-an-exception-was-thrown-in-c
 void customTerminate() {
 	static bool tried_throw = false;
+
 	try {
 		// try once to re-throw currently active exception
 		if (!tried_throw) {
-			throw;
 			tried_throw = true;
+			throw;
 		} else {
 			tried_throw = false;
-		};
+		}
 	} catch (const std::exception &e) {
-		std::cerr << __FUNCTION__ << " caught unhandled exception. what(): "
-		          << e.what() << std::endl;
-	} catch (const std::runtime_error &e) {
 		std::cerr << __FUNCTION__ << " caught unhandled exception. what(): "
 		          << e.what() << std::endl;
 	} catch (const uscxml::Event &e) {
@@ -112,13 +111,14 @@ void printUsageAndExit() {
 	printf("Usage\n");
 	printf("\tuscxml-browser");
 #ifdef BUILD_AS_PLUGINS
-	printf(" [-d pluginPath]");
+	printf(" [-e pluginPath]");
 #endif
-	printf(" URL\n");
+	printf("[-v] [-pN] URL\n");
 	printf("\n");
 	printf("Options\n");
 	printf("\t-v        : be verbose\n");
 	printf("\t-pN       : port for HTTP server\n");
+	printf("\t-d        : write each configuration as a dot file\n");
 	printf("\n");
 	exit(1);
 }
@@ -137,6 +137,7 @@ int main(int argc, char** argv) {
 	}
 
 	bool verbose = false;
+	bool useDot = false;
 	size_t port = 8080;
 	google::InitGoogleLogging(argv[0]);
 	google::LogToStderr();
@@ -145,13 +146,16 @@ int main(int argc, char** argv) {
 	opterr = 0;
 #endif
 	int option;
-	while ((option = getopt(argc, argv, "vl:d:p:")) != -1) {
+	while ((option = getopt(argc, argv, "dvl:e:p:")) != -1) {
 		switch(option) {
 		case 'l':
 			google::InitGoogleLogging(optarg);
 			break;
-		case 'd':
+		case 'e':
 			uscxml::Factory::pluginPath = optarg;
+			break;
+		case 'd':
+			useDot = true;
 			break;
 		case 'p':
 			port = strTo<size_t>(optarg);
@@ -174,22 +178,24 @@ int main(int argc, char** argv) {
 	// intialize http server on given port
 	HTTPServer::getInstance(port);
 
-	while(true) {
-		LOG(INFO) << "Processing " << argv[optind];
-		Interpreter interpreter = Interpreter::fromURI(argv[optind]);
-		if (interpreter) {
-			interpreter.setCmdLineOptions(argc, argv);
-			//		interpreter->setCapabilities(Interpreter::CAN_NOTHING);
-			//		interpreter->setCapabilities(Interpreter::CAN_BASIC_HTTP | Interpreter::CAN_GENERIC_HTTP);
+	LOG(INFO) << "Processing " << argv[optind];
+	Interpreter interpreter = Interpreter::fromURI(argv[optind]);
+	if (interpreter) {
+		interpreter.setCmdLineOptions(argc, argv);
+		//		interpreter->setCapabilities(Interpreter::CAN_NOTHING);
+		//		interpreter->setCapabilities(Interpreter::CAN_BASIC_HTTP | Interpreter::CAN_GENERIC_HTTP);
 
-			if (verbose) {
-				VerboseMonitor* vm = new VerboseMonitor();
-				interpreter.addMonitor(vm);
-			}
-
-			interpreter.start();
-			while(interpreter.runOnMainThread(25));
+		if (verbose) {
+			VerboseMonitor* vm = new VerboseMonitor();
+			interpreter.addMonitor(vm);
 		}
+		if (useDot) {
+			SCXMLDotWriter* dotWriter = new SCXMLDotWriter();
+			interpreter.addMonitor(dotWriter);
+		}
+
+		interpreter.start();
+		while(interpreter.runOnMainThread(25));
 	}
 	return EXIT_SUCCESS;
 }

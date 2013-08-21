@@ -3,6 +3,8 @@ if (JSC_FOUND AND BUILD_DM_ECMA)
 	file(GLOB JSC_DATAMODEL
 		ecmascript/JavaScriptCore/*.cpp
 		ecmascript/JavaScriptCore/*.h
+		ecmascript/*.cpp
+		ecmascript/*.h
 	)
 	source_group("Datamodel\\jsc" FILES ${JSC_DATAMODEL})
 	file(GLOB_RECURSE JSC_DOM
@@ -32,6 +34,8 @@ else()
 		file(GLOB V8_DATAMODEL
 			ecmascript/v8/*.cpp
 			ecmascript/v8/*.h
+			ecmascript/*.cpp
+			ecmascript/*.h
 		)
 		source_group("Datamodel\\v8" FILES ${V8_DATAMODEL})
 		file(GLOB_RECURSE V8_DOM

@@ -1,10 +1,28 @@
 #include "JSCDocument.h"
+#include "JSCStorage.h"
 #include "JSCXPathResult.h"
 #include "JSCNode.h"
 #include <XPath/XPath.hpp>
 
 namespace Arabica {
 namespace DOM {
+
+JSValueRef JSCDocument::localStorageCustomAttrGetter(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef* exception) {
+	struct JSCDocumentPrivate* privData = (struct JSCDocumentPrivate*)JSObjectGetPrivate(object);
+
+	if (!privData->dom->storage) {
+		return JSValueMakeUndefined(ctx);
+	}
+
+	JSClassRef retClass = JSCStorage::getTmpl();
+	struct JSCStorage::JSCStoragePrivate* retPrivData = new JSCStorage::JSCStoragePrivate();
+	retPrivData->dom = privData->dom;
+	retPrivData->nativeObj = retPrivData->dom->storage;
+
+	JSObjectRef arbaicaRetObj = JSObjectMake(ctx, retClass, retPrivData);
+	return arbaicaRetObj;
+
+}
 
 
 JSValueRef JSCDocument::evaluateCustomCallback(JSContextRef ctx, JSObjectRef function, JSObjectRef object, size_t argumentCount, const JSValueRef* arguments, JSValueRef* exception) {

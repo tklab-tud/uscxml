@@ -4,7 +4,7 @@
 #include "uscxml/Interpreter.h"
 #include <list>
 #include <v8.h>
-#include "dom/V8DOM.h"
+#include "V8DOM.h"
 
 #ifdef BUILD_AS_PLUGINS
 #include "uscxml/plugins/Plugins.h"

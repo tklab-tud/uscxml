@@ -138,7 +138,7 @@ sub GenerateHeader
     push(@headerContent, GenerateHeaderContentHeader($interface));
 
     $headerIncludes{"string"} = 1;
-    $headerIncludes{"uscxml/plugins/datamodel/ecmascript/v8/dom/V8DOM.h"} = 1;
+    $headerIncludes{"uscxml/plugins/datamodel/ecmascript/v8/V8DOM.h"} = 1;
     $headerIncludes{"DOM/Node.hpp"} = 1;
     $headerIncludes{"v8.h"} = 1;
 
@@ -634,6 +634,7 @@ sub IdlToWrapperType
   return "Arabica::DOM::Node<std::string>" if ($idlType eq "Node");
   return "Arabica::DOM::Element<std::string>" if ($idlType eq "Element");
   return "uscxml::Event" if ($idlType eq "SCXMLEvent");
+  return "uscxml::Storage" if ($idlType eq "Storage");
   return "Arabica::DOM::${idlType}<std::string>";
 }
 

@@ -46,4 +46,6 @@ interface Document : Node {
 //                              in unsigned short type,
 //                              in XPathResult inResult)
                              raises(DOMException);
+  [CustomGetter] readonly attribute Storage localStorage;
+
 };

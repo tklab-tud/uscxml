@@ -30,6 +30,14 @@ file(GLOB_RECURSE USCXML_INTERPRETERS
 source_group("Interpreter" FILES ${USCXML_INTERPRETERS})
 list (APPEND USCXML_FILES ${USCXML_INTERPRETERS})
 
+if(APPLE OR IOS)
+	file(GLOB_RECURSE USCXML_APPLE
+		*.mm
+	)
+	source_group("Interpreter" FILES ${USCXML_APPLE})
+	list (APPEND USCXML_FILES ${USCXML_APPLE})
+endif()
+
 file(GLOB USCXML_CORE
 	${CMAKE_SOURCE_DIR}/contrib/src/jsmn/jsmn.c
 	*.cpp

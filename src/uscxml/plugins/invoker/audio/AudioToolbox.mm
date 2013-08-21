@@ -4,10 +4,20 @@
 #import <Foundation/Foundation.h>
 #import <Foundation/NSURL.h>
 
+#ifdef __has_feature
+# if __has_feature(objc_arc)
+#   define(HAS_AUTORELEASE_POOL)
+# endif
+#endif
+
 namespace uscxml {
 
 AudioToolbox::AudioToolbox(const std::string filename) {
-	@autoreleasepool {
+#if HAS_AUTORELEASE_POOL
+  @autoreleasepool {
+#else
+  NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+#endif
 		_afId = 0;
 		NSString* filePath = [NSString stringWithCString:filename.c_str() encoding:NSASCIIStringEncoding];
 		NSURL* afUrl = [NSURL fileURLWithPath:filePath];
@@ -44,7 +54,11 @@ AudioToolbox::AudioToolbox(const std::string filename) {
 			return;
 		}
 
-	}
+#if HAS_AUTORELEASE_POOL
+  }
+#else
+  [pool drain];
+#endif
 }
 
 AudioToolbox::~AudioToolbox() {

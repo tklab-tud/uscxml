@@ -121,6 +121,21 @@ void InterpreterDraft6::interpret() {
 	}
 
 	assert(initialTransitions.size() > 0);
+
+	monIter_t monIter = _monitors.begin();
+	while(monIter != _monitors.end()) {
+		try {
+			(*monIter)->beforeTakingTransitions(shared_from_this(), initialTransitions);
+		} catch (Event e) {
+			LOG(ERROR) << "Syntax error when calling beforeTakingTransitions on monitors: " << std::endl << e << std::endl;
+		} catch (boost::bad_weak_ptr e) {
+			LOG(ERROR) << "Unclean shutdown " << std::endl << std::endl;
+		} catch (...) {
+			LOG(ERROR) << "An exception occured when calling beforeTakingTransitions on monitors";
+		}
+		monIter++;
+	}
+
 	enterStates(initialTransitions);
 //	_mutex.unlock();
 
@@ -135,7 +150,7 @@ void InterpreterDraft6::interpret() {
 
 
 void InterpreterDraft6::mainEventLoop() {
-	std::set<InterpreterMonitor*>::iterator monIter;
+	monIter_t monIter;
 
 	while(_running) {
 		NodeSet<std::string> enabledTransitions;
@@ -217,6 +232,14 @@ void InterpreterDraft6::mainEventLoop() {
 
 		// assume that we have a legal configuration as soon as the internal queue is empty
 		assert(hasLegalConfiguration());
+
+#if 0
+		std::cout << "Configuration: ";
+		for (int i = 0; i < _configuration.size(); i++) {
+			std::cout << ATTR(_configuration[i], "id") << ", ";
+		}
+		std::cout << std::endl;
+#endif
 
 		monIter = _monitors.begin();
 //    if (!_sendQueue || _sendQueue->isEmpty()) {
@@ -614,7 +637,7 @@ void InterpreterDraft6::exitInterpreter() {
 
 void InterpreterDraft6::exitStates(const Arabica::XPath::NodeSet<std::string>& enabledTransitions) {
 	NodeSet<std::string> statesToExit;
-	std::set<InterpreterMonitor*>::iterator monIter;
+	monIter_t monIter;
 
 #if VERBOSE
 	std::cout << "Enabled exit transitions: " << std::endl;
@@ -768,7 +791,7 @@ void InterpreterDraft6::exitStates(const Arabica::XPath::NodeSet<std::string>& e
 void InterpreterDraft6::enterStates(const Arabica::XPath::NodeSet<std::string>& enabledTransitions) {
 	NodeSet<std::string> statesToEnter;
 	NodeSet<std::string> statesForDefaultEntry;
-	std::set<InterpreterMonitor*>::iterator monIter;
+	monIter_t monIter;
 
 #if VERBOSE
 	std::cout << "Enabled enter transitions: " << std::endl;

@@ -15,7 +15,7 @@ public:
 	virtual Arabica::XPath::XPathValue<string_type, string_adaptor> resolveVariable(const string_type& /* namepace_uri */,
 	        const string_type& name) const {
 		using namespace Arabica::XPath;
-		typename VarMap::const_iterator n = map_.find(name);
+		VarMap::const_iterator n = map_.find(name);
 		if(n == map_.end())
 			throw UnboundVariableException(string_adaptor::asStdString(name));
 		return XPathValue<string_type, string_adaptor>(new NodeSetValue<string_type, string_adaptor>((*n).second));

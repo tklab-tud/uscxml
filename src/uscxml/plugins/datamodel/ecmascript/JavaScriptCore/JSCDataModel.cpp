@@ -1,6 +1,7 @@
 #include "uscxml/Common.h"
+#include "uscxml/config.h"
 #include "JSCDataModel.h"
-#include "dom/JSCDOM.h"
+#include "JSCDOM.h"
 #include "dom/JSCDocument.h"
 #include "dom/JSCSCXMLEvent.h"
 
@@ -77,6 +78,7 @@ boost::shared_ptr<DataModelImpl> JSCDataModel::create(InterpreterImpl* interpret
 	dm->_dom = new JSCDOM();
 	dm->_dom->xpath = new XPath<std::string>();
 	dm->_dom->xpath->setNamespaceContext(interpreter->getNSContext());
+	dm->_dom->storage	= new Storage(URL::getResourceDir() + PATH_SEPERATOR + interpreter->getName() + ".storage");
 
 	// introduce global functions as objects for private data
 	JSClassRef jsInClassRef = JSClassCreate(&jsInClassDef);

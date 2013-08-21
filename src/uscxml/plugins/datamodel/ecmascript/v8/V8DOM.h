@@ -4,6 +4,7 @@
 #include "uscxml/Interpreter.h"
 #include <v8.h>
 #include <XPath/XPath.hpp>
+#include "../Storage.h"
 
 #define V8_DESTRUCTOR(type) \
 static void jsDestructor(v8::Persistent<v8::Value> object, void* data) { \
@@ -30,7 +31,7 @@ namespace DOM {
 class V8DOM {
 public:
 	V8DOM();
-	virtual ~V8DOM() { };
+	virtual ~V8DOM();
 
 	template <typename T>
 	static T* toClassPtr(v8::Local<v8::Value> data) {
@@ -48,6 +49,7 @@ public:
 	}
 
 	Arabica::XPath::XPath<std::string>* xpath;
+	uscxml::Storage* storage;
 };
 
 class V8Exception : public std::runtime_error {

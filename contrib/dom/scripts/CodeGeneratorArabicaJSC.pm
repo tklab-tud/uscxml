@@ -137,7 +137,7 @@ sub GenerateHeader
     # - Add default header template
     push(@headerContent, GenerateHeaderContentHeader($interface));
 
-    $headerIncludes{"uscxml/plugins/datamodel/ecmascript/JavaScriptCore/dom/JSCDOM.h"} = 1;
+    $headerIncludes{"uscxml/plugins/datamodel/ecmascript/JavaScriptCore/JSCDOM.h"} = 1;
     $headerIncludes{"DOM/Node.hpp"} = 1;
     $headerIncludes{"JavaScriptCore/JavaScriptCore.h"} = 1;
 
@@ -668,6 +668,7 @@ sub IdlToWrapperType
   return "Arabica::DOM::Node<std::string>" if ($idlType eq "Node");
   return "Arabica::DOM::Element<std::string>" if ($idlType eq "Element");
   return "uscxml::Event" if ($idlType eq "SCXMLEvent");
+  return "uscxml::Storage" if ($idlType eq "Storage");
   return "Arabica::DOM::${idlType}<std::string>";
 }
 

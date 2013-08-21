@@ -1,8 +1,27 @@
 #include "V8Document.h"
 #include "V8XPathResult.h"
+#include "V8Storage.h"
 
 namespace Arabica {
 namespace DOM {
+
+v8::Handle<v8::Value> V8Document::localStorageCustomAttrGetter(v8::Local<v8::String> property, const v8::AccessorInfo& info) {
+	v8::Local<v8::Object> self = info.Holder();
+	V8DocumentPrivate* privData = V8DOM::toClassPtr<V8DocumentPrivate >(self->GetInternalField(0));
+
+	v8::Handle<v8::Function> retCtor = V8Storage::getTmpl()->GetFunction();
+	v8::Persistent<v8::Object> retObj = v8::Persistent<v8::Object>::New(retCtor->NewInstance());
+
+	V8Storage::V8StoragePrivate* retPrivData = new V8Storage::V8StoragePrivate();
+	retPrivData->dom = privData->dom;
+	retPrivData->nativeObj = privData->dom->storage;
+
+	retObj->SetInternalField(0, V8DOM::toExternal(retPrivData));
+
+	retObj.MakeWeak(0, V8XPathResult::jsDestructor);
+	return retObj;
+
+}
 
 
 v8::Handle<v8::Value> V8Document::evaluateCustomCallback(const v8::Arguments& args) {

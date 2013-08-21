@@ -73,8 +73,6 @@ boost::shared_ptr<DataModelImpl> SWIDataModel::create(InterpreterImpl* interpret
 			LOG(ERROR) << "Error intializing prolog engine";
 			PL_halt(1);
 			return boost::shared_ptr<DataModelImpl>();
-		} else {
-			LOG(WARNING) << "Instantiating more than one SWI prolog datamodel will lead to weird effects as I cannot seperate the environments";
 		}
 
 		PL_set_engine(PL_ENGINE_CURRENT, &engine);
@@ -98,6 +96,7 @@ boost::shared_ptr<DataModelImpl> SWIDataModel::create(InterpreterImpl* interpret
 		}
 
 	} else {
+		LOG(WARNING) << "Instantiating more than one SWI prolog datamodel will lead to weird effects as I cannot seperate the environments";
 		engine = PL_create_engine(NULL);
 	}
 

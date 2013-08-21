@@ -21,6 +21,7 @@ JSStaticValue JSCDocument::staticValues[] = {
 	{ "doctype", doctypeAttrGetter, 0, kJSPropertyAttributeDontDelete | kJSPropertyAttributeReadOnly },
 	{ "implementation", implementationAttrGetter, 0, kJSPropertyAttributeDontDelete | kJSPropertyAttributeReadOnly },
 	{ "documentElement", documentElementAttrGetter, 0, kJSPropertyAttributeDontDelete | kJSPropertyAttributeReadOnly },
+	{ "localStorage", localStorageCustomAttrGetter, 0, kJSPropertyAttributeDontDelete | kJSPropertyAttributeReadOnly },
 
 	{ 0, 0, 0, 0 }
 };

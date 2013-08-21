@@ -25,7 +25,7 @@
 #include "DOM/Node.hpp"
 #include "V8Node.h"
 #include "string"
-#include "uscxml/plugins/datamodel/ecmascript/v8/dom/V8DOM.h"
+#include "uscxml/plugins/datamodel/ecmascript/v8/V8DOM.h"
 #include <v8.h>
 
 namespace Arabica {
@@ -60,6 +60,7 @@ public:
 	static v8::Handle<v8::Value> doctypeAttrGetter(v8::Local<v8::String> property, const v8::AccessorInfo& info);
 	static v8::Handle<v8::Value> implementationAttrGetter(v8::Local<v8::String> property, const v8::AccessorInfo& info);
 	static v8::Handle<v8::Value> documentElementAttrGetter(v8::Local<v8::String> property, const v8::AccessorInfo& info);
+	static v8::Handle<v8::Value> localStorageCustomAttrGetter(v8::Local<v8::String> property, const v8::AccessorInfo& info);
 
 	static v8::Persistent<v8::FunctionTemplate> Tmpl;
 	static v8::Handle<v8::FunctionTemplate> getTmpl() {
@@ -79,6 +80,8 @@ public:
 			instance->SetAccessor(v8::String::NewSymbol("implementation"), V8Document::implementationAttrGetter, 0,
 			                      v8::External::New(0), static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None));
 			instance->SetAccessor(v8::String::NewSymbol("documentElement"), V8Document::documentElementAttrGetter, 0,
+			                      v8::External::New(0), static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None));
+			instance->SetAccessor(v8::String::NewSymbol("localStorage"), V8Document::localStorageCustomAttrGetter, 0,
 			                      v8::External::New(0), static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None));
 
 			prototype->Set(v8::String::NewSymbol("createElement"),

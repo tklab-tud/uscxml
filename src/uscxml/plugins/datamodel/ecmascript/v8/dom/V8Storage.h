@@ -18,8 +18,8 @@
     Boston, MA 02111-1307, USA.
 */
 
-#ifndef V8NodeList_h
-#define V8NodeList_h
+#ifndef V8Storage_h
+#define V8Storage_h
 
 #include <string>
 #include "DOM/Node.hpp"
@@ -30,26 +30,29 @@
 namespace Arabica {
 namespace DOM {
 
-class V8NodeList {
+class V8Storage {
 public:
-	struct V8NodeListPrivate {
+	struct V8StoragePrivate {
 		V8DOM* dom;
-		Arabica::DOM::NodeList<std::string>* nativeObj;
+		uscxml::Storage* nativeObj;
 	};
 
-	V8_DESTRUCTOR(V8NodeListPrivate);
+	V8_DESTRUCTOR_KEEP_WRAPPED(V8StoragePrivate);
 	static bool hasInstance(v8::Handle<v8::Value>);
 
-	static v8::Handle<v8::Value> itemCallback(const v8::Arguments&);
+	static v8::Handle<v8::Value> keyCallback(const v8::Arguments&);
+	static v8::Handle<v8::Value> getItemCallback(const v8::Arguments&);
+	static v8::Handle<v8::Value> setItemCallback(const v8::Arguments&);
+	static v8::Handle<v8::Value> removeItemCallback(const v8::Arguments&);
+	static v8::Handle<v8::Value> clearCallback(const v8::Arguments&);
 
 	static v8::Handle<v8::Value> lengthAttrGetter(v8::Local<v8::String> property, const v8::AccessorInfo& info);
-	static v8::Handle<v8::Value> indexedPropertyCustomGetter(uint32_t, const v8::AccessorInfo&);
 
 	static v8::Persistent<v8::FunctionTemplate> Tmpl;
 	static v8::Handle<v8::FunctionTemplate> getTmpl() {
 		if (Tmpl.IsEmpty()) {
 			v8::Handle<v8::FunctionTemplate> tmpl = v8::FunctionTemplate::New();
-			tmpl->SetClassName(v8::String::New("NodeList"));
+			tmpl->SetClassName(v8::String::New("Storage"));
 			tmpl->ReadOnlyPrototype();
 
 			v8::Local<v8::ObjectTemplate> instance = tmpl->InstanceTemplate();
@@ -58,12 +61,19 @@ public:
 
 			instance->SetInternalFieldCount(1);
 
-			instance->SetAccessor(v8::String::NewSymbol("length"), V8NodeList::lengthAttrGetter, 0,
+			instance->SetAccessor(v8::String::NewSymbol("length"), V8Storage::lengthAttrGetter, 0,
 			                      v8::External::New(0), static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None));
 
-			instance->SetIndexedPropertyHandler(V8NodeList::indexedPropertyCustomGetter, 0);
-			prototype->Set(v8::String::NewSymbol("item"),
-			               v8::FunctionTemplate::New(V8NodeList::itemCallback, v8::Undefined()), static_cast<v8::PropertyAttribute>(v8::DontDelete));
+			prototype->Set(v8::String::NewSymbol("key"),
+			               v8::FunctionTemplate::New(V8Storage::keyCallback, v8::Undefined()), static_cast<v8::PropertyAttribute>(v8::DontDelete));
+			prototype->Set(v8::String::NewSymbol("getItem"),
+			               v8::FunctionTemplate::New(V8Storage::getItemCallback, v8::Undefined()), static_cast<v8::PropertyAttribute>(v8::DontDelete));
+			prototype->Set(v8::String::NewSymbol("setItem"),
+			               v8::FunctionTemplate::New(V8Storage::setItemCallback, v8::Undefined()), static_cast<v8::PropertyAttribute>(v8::DontDelete));
+			prototype->Set(v8::String::NewSymbol("removeItem"),
+			               v8::FunctionTemplate::New(V8Storage::removeItemCallback, v8::Undefined()), static_cast<v8::PropertyAttribute>(v8::DontDelete));
+			prototype->Set(v8::String::NewSymbol("clear"),
+			               v8::FunctionTemplate::New(V8Storage::clearCallback, v8::Undefined()), static_cast<v8::PropertyAttribute>(v8::DontDelete));
 
 
 			Tmpl = v8::Persistent<v8::FunctionTemplate>::New(tmpl);
@@ -77,4 +87,4 @@ public:
 }
 }
 
-#endif // V8NodeList_h
+#endif // V8Storage_h

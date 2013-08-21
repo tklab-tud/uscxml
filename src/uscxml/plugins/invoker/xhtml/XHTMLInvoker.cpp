@@ -2,6 +2,7 @@
 #include "XHTMLInvoker.h"
 #include <glog/logging.h>
 #include <uscxml/plugins/ioprocessor/comet/CometIOProcessor.h>
+#include <DOM/io/Stream.hpp>
 
 #ifdef BUILD_AS_PLUGINS
 #include <Pluma/Connector.hpp>
@@ -100,6 +101,8 @@ bool XHTMLInvoker::httpRecvRequest(const HTTPServer::Request& req) {
 			templateURL.download(true);
 			content = templateURL.getInContent();
 		}
+
+		std::cout << content;
 
 		_interpreter->getDataModel().replaceExpressions(content);
 		reply.content = content;

@@ -108,11 +108,13 @@ Interpreter Interpreter::fromURI(const std::string& uri) {
 		Arabica::SAX::InputSource<std::string> inputSource;
 		inputSource.setSystemId(absUrl.asString());
 		interpreter = fromInputSource(inputSource);
+#if 0
 	} else if (boost::iequals(absUrl.scheme(), "http")) {
-		// handle http per arabica
+		// handle http per arabica - this will not follow redirects
 		Arabica::SAX::InputSource<std::string> inputSource;
 		inputSource.setSystemId(absUrl.asString());
 		interpreter = fromInputSource(inputSource);
+#endif
 	} else {
 		// use curl for everything else
 		std::stringstream ss;

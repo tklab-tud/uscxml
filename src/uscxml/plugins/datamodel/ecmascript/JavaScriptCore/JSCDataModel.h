@@ -4,7 +4,7 @@
 #include "uscxml/Interpreter.h"
 #include <list>
 #include <JavaScriptCore/JavaScriptCore.h>
-#include "dom/JSCDOM.h"
+#include "JSCDOM.h"
 
 #ifdef BUILD_AS_PLUGINS
 #include "uscxml/plugins/Plugins.h"
