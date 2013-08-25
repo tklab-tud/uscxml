@@ -19,7 +19,8 @@ int main(int argc, char** argv) {
 	WSAStartup(MAKEWORD(2, 2), &wsaData);
 #endif
 
-	DataModel dm(Factory::getInstance()->createDataModel("ecmascript", NULL));
+	Interpreter interpreter = Interpreter::fromXML("<scxml></scxml>");
+	DataModel dm(Factory::getInstance()->createDataModel("ecmascript", interpreter.getImpl().get()));
 	dm.evalAsString("var foo = 12");
 
 	{

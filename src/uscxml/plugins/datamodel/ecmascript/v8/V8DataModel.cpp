@@ -4,6 +4,9 @@
 #include "V8DOM.h"
 #include "dom/V8Document.h"
 #include "dom/V8Node.h"
+#include "dom/V8Element.h"
+#include "dom/V8Text.h"
+#include "dom/V8CDATASection.h"
 #include "dom/V8SCXMLEvent.h"
 
 #include "uscxml/Message.h"
@@ -12,6 +15,17 @@
 #ifdef BUILD_AS_PLUGINS
 #include <Pluma/Connector.hpp>
 #endif
+
+#define TO_V8_DOMVALUE(type) \
+v8::Handle<v8::Function> retCtor = V8##type::getTmpl()->GetFunction();\
+v8::Persistent<v8::Object> retObj = v8::Persistent<v8::Object>::New(retCtor->NewInstance());\
+struct V8##type::V8##type##Private* retPrivData = new V8##type::V8##type##Private();\
+retPrivData->dom = _dom;\
+retPrivData->nativeObj = new type<std::string>(node);\
+retObj->SetInternalField(0, V8DOM::toExternal(retPrivData));\
+retObj.MakeWeak(0, V8##type::jsDestructor);\
+return retObj;
+
 
 namespace uscxml {
 
@@ -152,7 +166,7 @@ void V8DataModel::setEvent(const Event& event) {
 	eventObj.MakeWeak(0, V8SCXMLEvent::jsDestructor);
 
 	if (event.dom) {
-		eventObj->Set(v8::String::New("data"), getDocumentAsValue(event.dom));
+		eventObj->Set(v8::String::New("data"), getNodeAsValue(event.dom));
 	} else if (event.content.length() > 0) {
 		// _event.data is a string or JSON
 		Data json = Data::fromJSON(event.content);
@@ -268,18 +282,26 @@ Data V8DataModel::getValueAsData(const v8::Handle<v8::Value>& value, std::set<v8
 	return data;
 }
 
-v8::Handle<v8::Value> V8DataModel::getDocumentAsValue(const Document<std::string>& doc) {
-	v8::Handle<v8::Function> retCtor = V8Document::getTmpl()->GetFunction();
-	v8::Persistent<v8::Object> retObj = v8::Persistent<v8::Object>::New(retCtor->NewInstance());
+v8::Handle<v8::Value> V8DataModel::getNodeAsValue(const Node<std::string>& node) {
 
-	struct V8Document::V8DocumentPrivate* retPrivData = new V8Document::V8DocumentPrivate();
-	retPrivData->dom = _dom;
-	retPrivData->nativeObj = new Document<std::string>(doc);
+	switch (node.getNodeType()) {
+	case Node_base::ELEMENT_NODE:         {
+		TO_V8_DOMVALUE(Element);
+	}
+	case Node_base::TEXT_NODE:            {
+		TO_V8_DOMVALUE(Text);
+	}
+	case Node_base::CDATA_SECTION_NODE:   {
+		TO_V8_DOMVALUE(CDATASection);
+	}
+	case Node_base::DOCUMENT_NODE:        {
+		TO_V8_DOMVALUE(Document);
+	}
+	default:                              {
+		TO_V8_DOMVALUE(Node);
+	}
+	}
 
-	retObj->SetInternalField(0, V8DOM::toExternal(retPrivData));
-	retObj.MakeWeak(0, V8Document::jsDestructor);
-
-	return retObj;
 }
 
 v8::Handle<v8::Value> V8DataModel::getDataAsValue(const Data& data) {
@@ -459,7 +481,7 @@ double V8DataModel::evalAsNumber(const std::string& expr) {
 }
 
 void V8DataModel::assign(const Element<std::string>& assignElem,
-                         const Document<std::string>& doc,
+                         const Node<std::string>& node,
                          const std::string& content) {
 	v8::Locker locker;
 	v8::HandleScope handleScope;
@@ -477,8 +499,8 @@ void V8DataModel::assign(const Element<std::string>& assignElem,
 
 	if (HAS_ATTR(assignElem, "expr")) {
 		evalAsValue(key + " = " + ATTR(assignElem, "expr"));
-	} else if (doc) {
-		global->Set(v8::String::New(key.c_str()), getDocumentAsValue(doc));
+	} else if (node) {
+		global->Set(v8::String::New(key.c_str()), getNodeAsValue(node));
 	} else if (content.size() > 0) {
 		try {
 			evalAsValue(key + " = " + content);
@@ -502,7 +524,7 @@ void V8DataModel::assign(const std::string& location,
 }
 
 void V8DataModel::init(const Element<std::string>& dataElem,
-                       const Document<std::string>& doc,
+                       const Node<std::string>& doc,
                        const std::string& content) {
 	try {
 		assign(dataElem, doc, content);
@@ -536,7 +558,6 @@ void V8DataModel::init(const std::string& location,
 		evalAsValue(location + " = undefined", true);
 		throw e;
 	}
-
 }
 
 

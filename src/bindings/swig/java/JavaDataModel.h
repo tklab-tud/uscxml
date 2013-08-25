@@ -62,7 +62,7 @@ public:
 	}
 
 	virtual void assign(const Arabica::DOM::Element<std::string>& assignElem,
-	                    const Arabica::DOM::Document<std::string>& doc,
+	                    const Arabica::DOM::Node<std::string>& node,
 	                    const std::string& content) {
 		// convert XML back into strings
 		std::string location;
@@ -72,9 +72,9 @@ public:
 		std::ostringstream ssAssign;
 		ssAssign << assignElem;
 		std::string tmp;
-		if (doc) {
+		if (node) {
 			std::ostringstream ssContent;
-			ssContent << doc;
+			ssContent << node;
 			tmp = ssContent.str();
 		} else {
 			tmp = content;
@@ -89,7 +89,7 @@ public:
 	// this is assign the function exposed to java
 
 	virtual void init(const Arabica::DOM::Element<std::string>& dataElem,
-	                  const Arabica::DOM::Document<std::string>& doc,
+	                  const Arabica::DOM::Node<std::string>& node,
 	                  const std::string& content) {
 		// convert XML back into strings
 		std::string location;
@@ -100,9 +100,9 @@ public:
 		if (dataElem)
 			ssData << dataElem;
 		std::string tmp;
-		if (doc) {
+		if (node) {
 			std::ostringstream ssContent;
-			ssContent << doc;
+			ssContent << node;
 			tmp = ssContent.str();
 		} else {
 			tmp = content;

@@ -258,8 +258,8 @@ void OpenALInvoker::invoke(const InvokeRequest& req) {
 		throw std::string("openal error create context");
 	}
 
-	std::cout << boost::lexical_cast<std::string>(_alContext);
-	std::cout << boost::lexical_cast<std::string>(_alDevice);
+//	std::cout << boost::lexical_cast<std::string>(_alContext);
+//	std::cout << boost::lexical_cast<std::string>(_alDevice);
 
 //	alcMakeContextCurrent(_alContext);
 //	float listener[3] = {0,0,0};

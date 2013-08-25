@@ -22,7 +22,7 @@ pass, otherwise we fail.  The timer insures that some event is generated and tha
     </content>
     </invoke>
     <transition event="childToParent" target="pass"/>
-    <transition event="*" target="pass"/>
+    <transition event="*" target="fail"/>
 </state>
 
    <final id="pass"><onentry><log label="Outcome" expr="'pass'"/></onentry></final>

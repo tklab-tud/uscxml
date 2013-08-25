@@ -1,16 +1,12 @@
 # uSCXML ReadMe
 
-uSCXML is a SCXML interpreter written in C/C++. It is mostly feature-complete and
-[standards compliant](https://github.com/tklab-tud/uscxml#test-reports) to a large extend.
-It runs on <b>Linux</b>, <b>Windows</b> and <b>MacOSX</b>, each 32- as well as 64Bits.
-There are still a few rough edges, especially with the plugins and custom extensions.
-
-The latest release will also compile for <b>iOS</b> using the toolchain files in <tt>contrib/cmake/</tt> 
-it features the (still experimental) JavaScriptCore ecmascript datamodel and no prolog datamodel. I will 
-work on the Android version as soon as I have some time at my hands.
+uSCXML is a SCXML interpreter written in C/C++. It is mostly feature-complete and to a large extend
+[standards compliant](https://github.com/tklab-tud/uscxml#test-reports).
+It runs on <b>Linux</b>, <b>Windows</b> and <b>MacOSX</b>, each 32- as well as 64Bits as well as <b>iOS</b>.
+There are still a few rough edges though, especially with the plugins and custom extensions.
 
    * <b>Datamodels</b>
-       * Full [ECMAScript datamodel](https://github.com/tklab-tud/uscxml/tree/master/src/uscxml/plugins/datamodel/ecmascript) using Google's v8 and JavaScriptCore (JSC is somewhat experimental)
+       * Full [ECMAScript datamodel](https://github.com/tklab-tud/uscxml/tree/master/src/uscxml/plugins/datamodel/ecmascript) using Google's v8 (and JavaScriptCore on MacOSX and iOS)
        * Full [NULL datamodel](https://github.com/tklab-tud/uscxml/tree/master/src/uscxml/plugins/datamodel/null) with required <tt>In</tt> predicate
        * Early [Prolog datamodel](https://github.com/tklab-tud/uscxml/tree/master/src/uscxml/plugins/datamodel/prolog/swi) using SWI prolog
        * Rudimentary support for [XPath datamodel](https://github.com/tklab-tud/uscxml/tree/master/src/uscxml/plugins/datamodel/xpath)
@@ -35,12 +31,18 @@ work on the Android version as soon as I have some time at my hands.
 
  * We continuously run the [W3C IRP tests](http://www.w3.org/Voice/2013/scxml-irp/) for SCXML. 
  * Have a look at the [result](http://uscxml.tk.informatik.tu-darmstadt.de/cdash/index.php?project=uscxml) for the various platforms.
- * The manual tests are [excluded](https://github.com/tklab-tud/uscxml/blob/master/contrib/ctest/CTestCustom.ctest.in).
+ * The manual and XPath specific tests are [excluded](https://github.com/tklab-tud/uscxml/blob/master/contrib/ctest/CTestCustom.ctest.in).
 
 uSCXML still fails the following ecmascript tests:
 
 <table>
 	<tr><th>Test#</th><th>Status</th><th>Description</th><th>Comment</th></tr>
+	<tr>
+		<td><tt><a href="https://github.com/tklab-tud/uscxml/blob/master/test/samples/w3c/ecma/test159.scxml">159</a></tt></td>
+		<td><tt>Failed</tt></td>
+		<td>"If the processing of an element of executable content causes an error to be raised, the processor MUST NOT process the remaining elements of the block."</td>
+		<td>uSCXML continues processing the rest of the block as if there was no error.</td>
+	</tr>
 	<tr>
 		<td><tt><a href="https://github.com/tklab-tud/uscxml/blob/master/test/samples/w3c/ecma/test301.scxml">301</a></tt></td>
 		<td><tt>Failed</tt></td>
@@ -60,6 +62,18 @@ uSCXML still fails the following ecmascript tests:
 		<td>"test that any attempt to change the value of a system variable causes error.execution to be raised"</td>
 		<td>Same issue as above: we allow writing to <tt>_event</tt>.</td>
 	</tr>
+	<tr>
+		<td>
+			<tt>
+				<a href="https://github.com/tklab-tud/uscxml/blob/master/test/samples/w3c/ecma/test519.scxml">519</a>
+				<a href="https://github.com/tklab-tud/uscxml/blob/master/test/samples/w3c/ecma/test520.scxml">520</a>
+				<a href="https://github.com/tklab-tud/uscxml/blob/master/test/samples/w3c/ecma/test531.scxml">531</a>
+				<a href="https://github.com/tklab-tud/uscxml/blob/master/test/samples/w3c/ecma/test534.scxml">534</a>
+			</tt></td>
+		<td><tt>Failed</tt></td>
+		<td></td>
+		<td>Tests contain non-standard ECMAScript.</td>
+	</tr>
 </table>
 
 ## License 
@@ -72,3 +86,68 @@ upon](https://github.com/tklab-tud/uscxml/blob/master/docs/BUILDING.md#build-dep
 
 We do not yet feature installers. Please download the source and have a look at the [build
 instructions](https://github.com/tklab-tud/uscxml/blob/master/docs/BUILDING.md).
+
+## Usage
+
+In order to use the interpreter, you need to <tt>#include "uscxml/Interpreter.h"</tt> and instantiate
+objects of <tt>uscxml::Interpreter</tt>.
+
+### Blocking Interpretation with SCXML from URL
+    	Interpreter scxml = Interpreter::fromURL("http://www.example.com/fancy.scxml");
+    	scxml.start(); // non-blocking
+
+There are some cases, i.e. with graphical invokers, where the main thread is <emph>required</emph> in order
+to react to UI events. You will have to deligate control flow from the main thread into the interpreter
+every now and then:
+
+    	interpreter.runOnMainThread(25);
+
+This will perform a single iteration on the invoked components with a maximum of 25 frames per seconds 
+or return immediately. You will have to call this method every now and then if you are using e.g. the
+<tt>scenegraph</tt> invoker.
+
+### Non-Blocking Interpretation with inline SCXML
+    	Interpreter scxml = Interpreter::fromXML("<scxml><final id="exit"/></scxml>");
+    	scxml.interpret(); // blocking
+
+### Callbacks for an Interpreter
+
+You can register an <tt>InterpreterMonitor</tt> prior to start in order to receive
+control-flow upon various events in the Interpreter.
+
+    	class StatusMonitor : public uscxml::InterpreterMonitor {
+    		void onStableConfiguration(Interpreter) {}
+    		void beforeCompletion(Interpreter) {}
+    		void afterCompletion(Interpreter) {}
+    		void beforeMicroStep(Interpreter) {}
+    		void beforeTakingTransitions(Interpreter, const Arabica::XPath::NodeSet<std::string>&) {}
+    		void beforeEnteringStates(Interpreter, const Arabica::XPath::NodeSet<std::string>&) {}
+    		void afterEnteringStates(Interpreter) {}
+    		void beforeExitingStates(Interpreter, const Arabica::XPath::NodeSet<std::string>&) {}
+    		void afterExitingStates(Interpreter) {}
+    	};
+
+    	StatusMonitor statMon;
+    	Interpreter scxml = Interpreter::fromXML("<scxml><final id="exit"/></scxml>");
+    	scxml.addMonitor(&statMon);
+    	scxml.start();
+
+This will cause the interpreter to invoke the callbacks from the monitor whenever the corresponding
+internal phase is reached.
+
+## Extending uSCXML
+
+The uSCXML interpreter can be extended by introducing new
+
+   1. DataModels as embedded scripting languages (e.g. ECMAScript, Prolog and XPath)
+   2. Invokers to represent external components that deliver and accept events (e.g. iCal, SceneGraph, DirectoryMonitor)
+   3. I/O-Processors to provide communication with external systems (e.g. BasicHTTP, SCXML).
+   4. Elements for Executable Content (e.g. &lt;respond>, &lt;fetch>, &lt;postpone>).
+
+The basic approach to extend the interpreter is the same in all cases:
+
+   1. Write a class inheriting the abstract base class (e.g. <tt>DataModelImpl</tt>, <tt>InvokerImpl</tt>, <tt>IOProcessorImpl</tt>, <tt>ExecutableContentImpl</tt>).
+   2. Instantiate your class and register it as a prototype at the <tt>Factory</tt> via one of its static <tt>register*</tt> methods.
+      1. You can register at the global Factory Singleton via <tt>Factory::register*(prototypeInstance)</tt>
+      2. Or provide a new Factory instance to selected interpreters as an in-between.
+   3. Write an interpreter using your new functionality.

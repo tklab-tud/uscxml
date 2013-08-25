@@ -174,7 +174,7 @@ void InterpreterImpl::setNameSpaceInfo(const std::map<std::string, std::string> 
 		if (boost::iequals(uri, "http://www.w3.org/2005/07/scxml")) {
 			_nsURL = uri;
 			if (prefix.size() == 0) {
-				LOG(INFO) << "Mapped default namespace to 'scxml:'";
+//				LOG(INFO) << "Mapped default namespace to 'scxml:'";
 				_xpathPrefix = "scxml:";
 				_nsContext.addNamespaceDeclaration(uri, "scxml");
 				_nsToPrefix[uri] = "scxml";
@@ -203,11 +203,12 @@ void InterpreterImpl::setName(const std::string& name) {
 
 InterpreterImpl::~InterpreterImpl() {
 	_running = false;
-	tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
+//	tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
 	if (_thread) {
 		// unblock event queue
 		Event event;
-		_externalQueue.push(event);
+		event.name = "unblock.and.die";
+		receive(event);
 		_thread->join();
 		delete(_thread);
 	}
@@ -327,7 +328,7 @@ void InterpreterImpl::initializeData(const Element<std::string>& data) {
 	}
 
 	try {
-		Arabica::DOM::Document<std::string> dom;
+		Arabica::DOM::Node<std::string> dom;
 		std::string text;
 		processDOMorText(data, dom, text);
 		_dataModel.init(data, dom, text);
@@ -401,6 +402,7 @@ void InterpreterImpl::normalize(Arabica::DOM::Element<std::string>& scxml) {
 void InterpreterImpl::receiveInternal(const Event& event) {
 	std::cout << _name << " receiveInternal: " << event.name << std::endl;
 	_internalQueue.push_back(event);
+//	_condVar.notify_all();
 }
 
 void InterpreterImpl::receive(const Event& event, bool toFront)   {
@@ -410,6 +412,7 @@ void InterpreterImpl::receive(const Event& event, bool toFront)   {
 	} else {
 		_externalQueue.push(event);
 	}
+	_condVar.notify_all();
 }
 
 void InterpreterImpl::internalDoneSend(const Arabica::DOM::Node<std::string>& state) {
@@ -448,7 +451,7 @@ void InterpreterImpl::internalDoneSend(const Arabica::DOM::Node<std::string>& st
 }
 
 void InterpreterImpl::processContentElement(const Arabica::DOM::Node<std::string>& content,
-        Arabica::DOM::Document<std::string>& dom,
+        Arabica::DOM::Node<std::string>& dom,
         std::string& text,
         std::string& expr) {
 	if (HAS_ATTR(content, "expr")) {
@@ -460,16 +463,16 @@ void InterpreterImpl::processContentElement(const Arabica::DOM::Node<std::string
 	}
 }
 
-void InterpreterImpl::processDOMorText(const Arabica::DOM::Node<std::string>& node,
-                                       Arabica::DOM::Document<std::string>& dom,
+void InterpreterImpl::processDOMorText(const Arabica::DOM::Node<std::string>& element,
+                                       Arabica::DOM::Node<std::string>& dom,
                                        std::string& text) {
 	// do we need to download?
-	if (HAS_ATTR(node, "src") ||
-	        (HAS_ATTR(node, "srcexpr") && _dataModel)) {
+	if (HAS_ATTR(element, "src") ||
+	        (HAS_ATTR(element, "srcexpr") && _dataModel)) {
 		std::stringstream srcContent;
-		URL sourceURL(HAS_ATTR(node, "srcexpr") ? _dataModel.evalAsString(ATTR(node, "srcexpr")) : ATTR(node, "src"));
+		URL sourceURL(HAS_ATTR(element, "srcexpr") ? _dataModel.evalAsString(ATTR(element, "srcexpr")) : ATTR(element, "src"));
 		if (!sourceURL.toAbsolute(_baseURI)) {
-			LOG(ERROR) << LOCALNAME(node) << " element has relative src or srcexpr URI with no baseURI set.";
+			LOG(ERROR) << LOCALNAME(element) << " element has relative src or srcexpr URI with no baseURI set.";
 			return;
 		}
 		if (_cachedURLs.find(sourceURL.asString()) != _cachedURLs.end() && false) {
@@ -477,14 +480,14 @@ void InterpreterImpl::processDOMorText(const Arabica::DOM::Node<std::string>& no
 		} else {
 			srcContent << sourceURL;
 			if (sourceURL.downloadFailed()) {
-				LOG(ERROR) << LOCALNAME(node) << " source cannot be downloaded";
+				LOG(ERROR) << LOCALNAME(element) << " source cannot be downloaded";
 				return;
 			}
 			_cachedURLs[sourceURL.asString()] = sourceURL;
 		}
 		if (srcContent.str().length() > 0) {
 			// try to parse as XML
-			Arabica::SAX2DOM::Parser<std::string> parser;
+			NameSpacingParser parser;
 			std::stringstream* ss = new std::stringstream();
 			(*ss) << srcContent.str();
 			std::auto_ptr<std::istream> ssPtr(ss);
@@ -494,45 +497,68 @@ void InterpreterImpl::processDOMorText(const Arabica::DOM::Node<std::string>& no
 //			parser.setFeature(Arabica::SAX::FeatureNames<std::string>().external_general, true);
 
 			if (parser.parse(inputSource) && parser.getDocument()) {
-				dom = parser.getDocument();
-				//std::cout << dom;
-				Node<std::string> content = dom.getDocumentElement();
+				Document<std::string> doc = parser.getDocument();
+				dom = doc.getDocumentElement();
+#if 0
+				Node<std::string> content = doc.getDocumentElement();
 				assert(content.getNodeType() == Node_base::ELEMENT_NODE);
-				Node<std::string> container = dom.createElement("container");
+				Node<std::string> container = doc.createElement("container");
 				dom.replaceChild(container, content);
 				container.appendChild(content);
 //				std::cout << dom << std::endl;
+#endif
 				return;
 			} else {
+				if (parser.errorsReported()) {
+					LOG(ERROR) << parser.errors();
+				}
 				text = srcContent.str();
 				return;
 			}
 		}
 	}
 
-	if (!node.hasChildNodes())
+	if (!element.hasChildNodes())
 		return;
 
-	Node<std::string> child = node.getFirstChild();
-	while(child) {
-		if (child.getNodeType() == Node_base::TEXT_NODE || child.getNodeType() == Node_base::CDATA_SECTION_NODE) {
+	/**
+	 * Figure out whether the given element contains text, has one child or many childs
+	 */
+	bool hasTextContent = false;
+	bool hasOneChild = false;
+	Node<std::string> theOneChild;
+	bool hasManyChilds = false;
+
+	Node<std::string> child = element.getFirstChild();
+	while (child) {
+//		std::cout << child.getNodeType() << std::endl;
+		if (child.getNodeType() == Node_base::TEXT_NODE ||
+		        child.getNodeType() == Node_base::CDATA_SECTION_NODE) {
 			std::string trimmed = child.getNodeValue();
 			boost::trim(trimmed);
-			if (trimmed.length() > 0)
+			if (trimmed.length() > 0) {
+				hasTextContent = true;
+			}
+		} else {
+			if (hasOneChild) {
+				hasManyChilds = true;
+				hasOneChild = false;
 				break;
-		}
-		if (child.getNodeType() == Node_base::ELEMENT_NODE) {
-			break;
+			}
+			hasOneChild = true;
+			theOneChild = child;
 		}
 		child = child.getNextSibling();
 	}
-	if (child && child.getNodeType() == Node_base::ELEMENT_NODE) {
-		DOMImplementation<std::string> domFactory = Arabica::SimpleDOM::DOMImplementation<std::string>::getDOMImplementation();
-		dom = domFactory.createDocument(child.getNamespaceURI(), "", 0);
-		// we need to import the parent - to support xpath test150
-		Node<std::string> newNode = dom.importNode(child.getParentNode(), true);
-		dom.appendChild(newNode);
-	} else if(child && (child.getNodeType() == Node_base::TEXT_NODE || child.getNodeType() == Node_base::CDATA_SECTION_NODE)) {
+
+	if (hasOneChild) {
+		// if we have a single child, it will be the content of the dom
+		dom = theOneChild;
+	} else if (hasManyChilds) {
+		// if we have multiple childs
+		dom = element;
+	} else if(hasTextContent) {
+		child = element.getFirstChild();
 		while(child) {
 			if ((child.getNodeType() == Node_base::TEXT_NODE || child.getNodeType() == Node_base::CDATA_SECTION_NODE)) {
 				text += child.getNodeValue();
@@ -540,7 +566,7 @@ void InterpreterImpl::processDOMorText(const Arabica::DOM::Node<std::string>& no
 			child = child.getNextSibling();
 		}
 	} else {
-		LOG(ERROR) << LOCALNAME(node) << " has neither text nor element children.";
+		LOG(ERROR) << LOCALNAME(element) << " has neither text nor element children.";
 	}
 }
 
@@ -1123,7 +1149,7 @@ void InterpreterImpl::executeContent(const Arabica::DOM::Node<std::string>& cont
 					LOG(ERROR) << "Assigning to undeclared location '" << ATTR(content, "location") << "' not allowed." << std::endl;
 					throw Event("error.execution", Event::PLATFORM);
 				} else {
-					Document<std::string> dom;
+					Node<std::string> dom;
 					std::string text;
 					processDOMorText(content, dom, text);
 					_dataModel.assign(Element<std::string>(content), dom, text);
@@ -1188,7 +1214,10 @@ void InterpreterImpl::executeContent(const Arabica::DOM::Node<std::string>& cont
 		}
 	} else if (boost::iequals(TAGNAME(content), _xmlNSPrefix + "send")) {
 		// --- SEND --------------------------
-		send(content);
+		try {
+			send(content);
+		}
+		CATCH_AND_DISTRIBUTE("Error while sending content")
 	} else if (boost::iequals(TAGNAME(content), _xmlNSPrefix + "cancel")) {
 		// --- CANCEL --------------------------
 		std::string sendId;

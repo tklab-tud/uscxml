@@ -223,7 +223,8 @@ void SWIDataModel::setEvent(const Event& event) {
 		if (event.dom) {
 			std::stringstream dataInitStr;
 			std::stringstream xmlDoc;
-			xmlDoc << event.getFirstDOMElement();
+//			xmlDoc << event.getFirstDOMElement();
+			xmlDoc << event.dom;
 			domUrl = URL::toLocalFile(xmlDoc.str(), ".pl");
 			dataInitStr << "load_xml_file('" << domUrl.asLocalFile(".pl") << "', XML), copy_term(XML,DATA), assert(event(data(DATA)))";
 			PlCall(dataInitStr.str().c_str());
@@ -408,7 +409,7 @@ std::map<std::string, PlTerm> SWIDataModel::resolveAtoms(PlTerm& term, PlTerm& o
 }
 
 void SWIDataModel::assign(const Element<std::string>& assignElem,
-                          const Document<std::string>& doc,
+                          const Node<std::string>& node,
                           const std::string& content) {
 	SET_PL_CONTEXT
 	std::string expr = content;
@@ -435,15 +436,15 @@ void SWIDataModel::assign(const Element<std::string>& assignElem,
 
 		URL domUrl;
 		Data json;
-		if (!doc)
+		if (!node)
 			json = Data::fromJSON(expr);
-		if (doc) {
+		if (node) {
 			std::stringstream dataInitStr;
 			std::stringstream xmlDoc;
-			Node<std::string> node = Event::getFirstDOMElement(doc);
+			Node<std::string> child = node;
 			while(node) {
-				xmlDoc << node;
-				node = node.getNextSibling();
+				xmlDoc << child;
+				child = node.getNextSibling();
 			}
 			domUrl = URL::toLocalFile(xmlDoc.str(), ".pl");
 			if (boost::iequals(type, "retract"))
@@ -488,9 +489,9 @@ void SWIDataModel::assign(const std::string& location, const Data& data) {
 }
 
 void SWIDataModel::init(const Element<std::string>& dataElem,
-                        const Document<std::string>& doc,
+                        const Node<std::string>& node,
                         const std::string& content) {
-	assign(dataElem, doc, content);
+	assign(dataElem, node, content);
 }
 void SWIDataModel::init(const std::string& location, const Data& data) {
 	assign(location, data);

@@ -88,7 +88,8 @@ bool XHTMLInvoker::httpRecvRequest(const HTTPServer::Request& req) {
 		std::string content;
 		std::stringstream ss;
 		if (_invokeReq.dom) {
-			ss << _invokeReq.getFirstDOMElement();
+//			ss << _invokeReq.getFirstDOMElement();
+			ss << _invokeReq.dom;
 			content = ss.str();
 		} else if(_invokeReq.data) {
 			ss << _invokeReq.data;
@@ -160,14 +161,16 @@ void XHTMLInvoker::reply(const SendRequest& req, const HTTPServer::Request& long
 
 	if (req.dom) {
 		std::stringstream ss;
-		Arabica::DOM::Node<std::string> content = req.dom.getDocumentElement();
+//		Arabica::DOM::Node<std::string> content = req.dom.getDocumentElement();
+		Arabica::DOM::Node<std::string> content = req.dom;
 		if (content && boost::iequals(content.getLocalName(), "content")) {
 			reply.headers["X-SCXML-Type"] = (HAS_ATTR(content, "type") ? ATTR(content, "type") : "replacechildren");
 			reply.headers["X-SCXML-XPath"] = (HAS_ATTR(content, "xpath") ? ATTR(content, "xpath") : "/html/body");
 			if (HAS_ATTR(content, "attr"))
 				reply.headers["X-SCXML-Attr"] = ATTR(content, "attr");
 		}
-		ss << req.getFirstDOMElement();
+//		ss << req.getFirstDOMElement();
+		ss << req.dom;
 		reply.content = ss.str();
 		reply.headers["Content-Type"] = "application/xml";
 	} else if (req.data) {

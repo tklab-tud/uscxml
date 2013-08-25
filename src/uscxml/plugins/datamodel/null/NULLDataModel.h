@@ -42,12 +42,12 @@ public:
 	virtual void popContext();
 
 	virtual void assign(const Arabica::DOM::Element<std::string>& assignElem,
-	                    const Arabica::DOM::Document<std::string>& doc,
+	                    const Arabica::DOM::Node<std::string>& node,
 	                    const std::string& content) {}
 	virtual void assign(const std::string& location, const Data& data) {}
 
 	virtual void init(const Arabica::DOM::Element<std::string>& dataElem,
-	                  const Arabica::DOM::Document<std::string>& doc,
+	                  const Arabica::DOM::Node<std::string>& node,
 	                  const std::string& content) {}
 	virtual void init(const std::string& location, const Data& data) {}
 

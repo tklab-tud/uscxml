@@ -174,7 +174,8 @@ void XPathDataModel::setEvent(const Event& event) {
 		eventDataElem.appendChild(textNode);
 	}
 	if (event.dom) {
-		Node<std::string> importedNode = _doc.importNode(event.getFirstDOMElement(), true);
+//		Node<std::string> importedNode = _doc.importNode(event.getFirstDOMElement(), true);
+		Node<std::string> importedNode = _doc.importNode(event.dom, true);
 		eventDataElem.appendChild(importedNode);
 	}
 
@@ -370,7 +371,7 @@ double XPathDataModel::evalAsNumber(const std::string& expr) {
 }
 
 void XPathDataModel::assign(const Element<std::string>& assignElem,
-                            const Document<std::string>& doc,
+                            const Node<std::string>& node,
                             const std::string& content) {
 	std::string location;
 	if (HAS_ATTR(assignElem, "id")) {
@@ -399,9 +400,9 @@ void XPathDataModel::assign(const Element<std::string>& assignElem,
 	}
 #endif
 	NodeSet<std::string> nodeSet;
-	if (doc) {
-		if (doc.getDocumentElement()) {
-			Node<std::string> data = doc.getDocumentElement().getFirstChild();
+	if (node) {
+		if (node) {
+			Node<std::string> data = node;
 			while (data) {
 				// do not add empty text as a node
 				if (data.getNodeType() == Node_base::TEXT_NODE) {
@@ -447,7 +448,7 @@ NodeSet<std::string> XPathDataModel::dataToNodeSet(const Data& data) {
 }
 
 void XPathDataModel::init(const Element<std::string>& dataElem,
-                          const Document<std::string>& doc,
+                          const Node<std::string>& node,
                           const std::string& content) {
 	std::string location;
 	if (HAS_ATTR(dataElem, "id")) {
@@ -458,9 +459,9 @@ void XPathDataModel::init(const Element<std::string>& dataElem,
 
 	Element<std::string> container = _doc.createElement("data");
 	container.setAttribute("id", location);
-	if (doc) {
-		if (doc.getDocumentElement()) {
-			Node<std::string> data = doc.getDocumentElement().getFirstChild();
+	if (node) {
+		if (node) {
+			Node<std::string> data = node;
 			while (data) {
 				Node<std::string> dataClone = _doc.importNode(data, true);
 				container.appendChild(dataClone);
@@ -504,10 +505,10 @@ void XPathDataModel::init(const Element<std::string>& dataElem,
 #if 0
 	nodeSet.push_back(container);
 #else
-	Node<std::string> node = container.getFirstChild();
-	while(node) {
-		nodeSet.push_back(node);
-		node = node.getNextSibling();
+	Node<std::string> child = container.getFirstChild();
+	while(child) {
+		nodeSet.push_back(child);
+		child = child.getNextSibling();
 	}
 #endif
 	_varResolver.setVariable(location, nodeSet);

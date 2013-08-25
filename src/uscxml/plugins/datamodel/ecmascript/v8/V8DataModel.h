@@ -50,13 +50,13 @@ public:
 	virtual void eval(const Arabica::DOM::Element<std::string>& scriptElem,
 	                  const std::string& expr);
 	virtual void assign(const Arabica::DOM::Element<std::string>& assignElem,
-	                    const Arabica::DOM::Document<std::string>& doc,
+	                    const Arabica::DOM::Node<std::string>& node,
 	                    const std::string& content);
 	virtual void assign(const std::string& location,
 	                    const Data& data);
 
 	virtual void init(const Arabica::DOM::Element<std::string>& dataElem,
-	                  const Arabica::DOM::Document<std::string>& doc,
+	                  const Arabica::DOM::Node<std::string>& node,
 	                  const std::string& content);
 	virtual void init(const std::string& location,
 	                  const Data& data);
@@ -87,7 +87,7 @@ protected:
 
 	v8::Handle<v8::Value> evalAsValue(const std::string& expr, bool dontThrow = false);
 	v8::Handle<v8::Value> getDataAsValue(const Data& data);
-	v8::Handle<v8::Value> getDocumentAsValue(const Arabica::DOM::Document<std::string>& doc);
+	v8::Handle<v8::Value> getNodeAsValue(const Arabica::DOM::Node<std::string>& node);
 	void throwExceptionEvent(const v8::TryCatch& tryCatch);
 
 };

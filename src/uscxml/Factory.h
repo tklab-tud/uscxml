@@ -52,7 +52,9 @@ public:
 	}
 
 	virtual std::string getLocalName() = 0; ///< The name of the element.
-	virtual std::string getNamespace() = 0; ///< The namespace of the element.
+	virtual std::string getNamespace() {
+		return "http://www.w3.org/2005/07/scxml";    ///< The namespace of the element.
+	}
 	virtual void enterElement(const Arabica::DOM::Node<std::string>& node) = 0; ///< Invoked when entering the element as part of evaluating executable content.
 	virtual void exitElement(const Arabica::DOM::Node<std::string>& node) = 0; ///< Invoked when exiting the element as part of evaluating executable content.
 	virtual bool processChildren() = 0; ///< Whether or not the interpreter should process this elements children.
@@ -283,14 +285,18 @@ public:
 	virtual bool isDeclared(const std::string& expr) = 0;
 
 	virtual void assign(const Arabica::DOM::Element<std::string>& assignElem,
-	                    const Arabica::DOM::Document<std::string>& doc,
+	                    const Arabica::DOM::Node<std::string>& node,
 	                    const std::string& content) = 0;
 	virtual void assign(const std::string& location, const Data& data) = 0;
 
 	virtual void init(const Arabica::DOM::Element<std::string>& dataElem,
-	                  const Arabica::DOM::Document<std::string>& doc,
+	                  const Arabica::DOM::Node<std::string>& node,
 	                  const std::string& content) = 0;
 	virtual void init(const std::string& location, const Data& data) = 0;
+
+	virtual void setInterpreter(InterpreterImpl* interpreter) {
+		_interpreter = interpreter;
+	}
 
 	// we need it public for various static functions
 	InterpreterImpl* _interpreter;
@@ -358,18 +364,18 @@ public:
 	}
 
 	virtual void assign(const Arabica::DOM::Element<std::string>& assignElem,
-	                    const Arabica::DOM::Document<std::string>& doc,
+	                    const Arabica::DOM::Node<std::string>& node,
 	                    const std::string& content) {
-		return _impl->assign(assignElem, doc, content);
+		return _impl->assign(assignElem, node, content);
 	}
 	virtual void assign(const std::string& location, const Data& data) {
 		return _impl->assign(location, data);
 	}
 
 	virtual void init(const Arabica::DOM::Element<std::string>& dataElem,
-	                  const Arabica::DOM::Document<std::string>& doc,
+	                  const Arabica::DOM::Node<std::string>& node,
 	                  const std::string& content) {
-		return _impl->init(dataElem, doc, content);
+		return _impl->init(dataElem, node, content);
 	}
 	virtual void init(const std::string& location, const Data& data) {
 		return _impl->init(location, data);
@@ -381,6 +387,10 @@ public:
 
 	size_t replaceExpressions(std::string& content) {
 		return _impl->replaceExpressions(content);
+	}
+
+	virtual void setInterpreter(InterpreterImpl* interpreter) {
+		_impl->setInterpreter(interpreter);
 	}
 
 protected:

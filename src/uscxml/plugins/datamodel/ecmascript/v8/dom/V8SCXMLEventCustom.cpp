@@ -3,7 +3,7 @@
 namespace Arabica {
 namespace DOM {
 
-v8::Handle<v8::Value> V8SCXMLEvent::eventTypeCustomAttrGetter(v8::Local<v8::String> property, const v8::AccessorInfo& info) {
+v8::Handle<v8::Value> V8SCXMLEvent::typeCustomAttrGetter(v8::Local<v8::String> property, const v8::AccessorInfo& info) {
 	v8::Local<v8::Object> self = info.Holder();
 	V8SCXMLEventPrivate* privData = V8DOM::toClassPtr<V8SCXMLEventPrivate >(self->GetInternalField(0));
 

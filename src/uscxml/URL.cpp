@@ -103,7 +103,7 @@ URLImpl::~URLImpl() {
 		curl_easy_cleanup(_handle);
 }
 
-URLImpl::operator Data() {
+URLImpl::operator Data() const {
 	Data data;
 	data.compound["url"] = Data(asString(), Data::VERBATIM);
 	data.compound["host"] = Data(_uri.host(), Data::VERBATIM);
@@ -117,7 +117,7 @@ URLImpl::operator Data() {
 		data.compound["statusMsg"] = Data(_statusMsg, Data::VERBATIM);
 
 
-	std::vector<std::string>::iterator pathIter = _pathComponents.begin();
+	std::vector<std::string>::const_iterator pathIter = _pathComponents.begin();
 	while(pathIter != _pathComponents.end()) {
 		data.compound["pathComponent"].array.push_back(Data(*pathIter, Data::VERBATIM));
 		pathIter++;

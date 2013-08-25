@@ -9,7 +9,6 @@ using namespace Arabica::DOM;
 
 // see: http://www.w3.org/TR/scxml/#AlgorithmforSCXMLInterpretation
 void InterpreterDraft6::interpret() {
-//	_mutex.lock();
 	tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
 	if (!_isInitialized)
 		init();
@@ -264,7 +263,11 @@ void InterpreterDraft6::mainEventLoop() {
 		while(_externalQueue.isEmpty() && _thread == NULL) {
 			runOnMainThread(200);
 		}
+		_mutex.lock();
 
+		while(_externalQueue.isEmpty()) {
+			_condVar.wait(_mutex);
+		}
 		_currEvent = _externalQueue.pop();
 #if VERBOSE
 		std::cout << "Received externalEvent event " << _currEvent.name << std::endl;
@@ -272,8 +275,6 @@ void InterpreterDraft6::mainEventLoop() {
 		_currEvent.eventType = Event::EXTERNAL; // make sure it is set to external
 		if (!_running)
 			goto EXIT_INTERPRETER;
-
-		_mutex.lock();
 
 		if (_dataModel && boost::iequals(_currEvent.name, "cancel.invoke." + _sessionId))
 			break;

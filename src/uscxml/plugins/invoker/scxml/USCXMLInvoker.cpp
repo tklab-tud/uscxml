@@ -35,7 +35,7 @@ Data USCXMLInvoker::getDataModelVariables() {
 }
 
 void USCXMLInvoker::send(const SendRequest& req) {
-	_invokedInterpreter.getImpl()->_externalQueue.push(req);
+	_invokedInterpreter.receive(req);
 }
 
 void USCXMLInvoker::cancel(const std::string sendId) {
@@ -46,7 +46,12 @@ void USCXMLInvoker::invoke(const InvokeRequest& req) {
 	if (req.src.length() > 0) {
 		_invokedInterpreter = Interpreter::fromURI(req.src);
 	} else if (req.dom) {
-		_invokedInterpreter = Interpreter::fromDOM(req.dom);
+		Arabica::DOM::DOMImplementation<std::string> domFactory = Arabica::SimpleDOM::DOMImplementation<std::string>::getDOMImplementation();
+		Arabica::DOM::Document<std::string> dom = domFactory.createDocument(req.dom.getNamespaceURI(), "", 0);
+		// we need to import the parent - to support xpath test150
+		Arabica::DOM::Node<std::string> newNode = dom.importNode(req.dom, true);
+		dom.appendChild(newNode);
+		_invokedInterpreter = Interpreter::fromDOM(dom);
 	} else if (req.content.size() > 0) {
 		_invokedInterpreter = Interpreter::fromXML(req.content);
 	} else {
@@ -73,7 +78,8 @@ void USCXMLInvoker::invoke(const InvokeRequest& req) {
 		/// test240 assumes that invoke request params will carry over to the datamodel
 		_invokedInterpreter.getImpl()->setInvokeRequest(req);
 
-		_invokedInterpreter.getImpl()->start();
+		_invokedInterpreter.start();
+//		tthread::this_thread::sleep_for(tthread::chrono::seconds(1));
 	} else {
 		/// test 530
 		_parentInterpreter->receive(Event("done.invoke." + _invokeId, Event::PLATFORM));

@@ -7,7 +7,7 @@
   const unsigned short      EXTERNAL                   = 2;
   const unsigned short      PLATFORM                   = 3;
 
-  [CustomGetter, EmptyAsNull] readonly attribute DOMString        eventType;
+  [CustomGetter, EmptyAsNull] readonly attribute DOMString        type;
   readonly attribute DOMString        name;
   [EmptyAsNull] readonly attribute DOMString        origin;
   [EmptyAsNull] readonly attribute DOMString        origintype;

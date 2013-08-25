@@ -3,7 +3,7 @@
 namespace Arabica {
 namespace DOM {
 
-JSValueRef JSCSCXMLEvent::eventTypeCustomAttrGetter(JSContextRef ctx, JSObjectRef thisObj, JSStringRef propertyName, JSValueRef* exception) {
+JSValueRef JSCSCXMLEvent::typeCustomAttrGetter(JSContextRef ctx, JSObjectRef thisObj, JSStringRef propertyName, JSValueRef* exception) {
 	struct JSCSCXMLEventPrivate* privData = (struct JSCSCXMLEventPrivate*)JSObjectGetPrivate(thisObj);
 	JSStringRef stringRef;
 

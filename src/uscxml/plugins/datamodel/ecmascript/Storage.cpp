@@ -5,7 +5,7 @@ namespace uscxml {
 
 Storage::Storage(const std::string& filename) {
 	_filename = filename;
-	std::cout << _filename << std::endl;
+//	std::cout << _filename << std::endl;
 	std::fstream file;
 	file.open(_filename.c_str(), std::ios_base::in);
 	// read content into data

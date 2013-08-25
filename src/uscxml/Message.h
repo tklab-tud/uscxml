@@ -158,17 +158,18 @@ public:
 		this->origintype = originType;
 	}
 
-	Arabica::DOM::Document<std::string> getDOM() {
+	Arabica::DOM::Node<std::string> getDOM() {
 		return dom;
 	}
-	void setDOM(const Arabica::DOM::Document<std::string>& dom) {
+	void setDOM(const Arabica::DOM::Node<std::string>& dom) {
 		this->dom = dom;
 	}
-	Arabica::DOM::Node<std::string> getFirstDOMElement() const;
-	Arabica::DOM::Document<std::string> getStrippedDOM() const;
 
-	static Arabica::DOM::Node<std::string> getFirstDOMElement(const Arabica::DOM::Document<std::string> dom);
-	static Arabica::DOM::Document<std::string> getStrippedDOM(const Arabica::DOM::Document<std::string> dom);
+//	Arabica::DOM::Node<std::string> getFirstDOMElement() const;
+//	Arabica::DOM::Document<std::string> getStrippedDOM() const;
+//
+//	static Arabica::DOM::Node<std::string> getFirstDOMElement(const Arabica::DOM::Document<std::string> dom);
+//	static Arabica::DOM::Document<std::string> getStrippedDOM(const Arabica::DOM::Document<std::string> dom);
 
 	std::string getRaw() {
 		return raw;
@@ -239,7 +240,7 @@ protected:
 	Type eventType;
 	std::string origin;
 	std::string origintype;
-	Arabica::DOM::Document<std::string> dom;
+	Arabica::DOM::Node<std::string> dom;
 	std::string sendid;
 	bool hideSendId;
 	std::string invokeid;

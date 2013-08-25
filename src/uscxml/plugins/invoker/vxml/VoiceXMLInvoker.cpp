@@ -58,7 +58,8 @@ void VoiceXMLInvoker::send(const SendRequest& req) {
 //			}
 //		}
 //	}
-	domSS << req.getFirstDOMElement();
+//	domSS << req.getFirstDOMElement();
+	domSS << req.dom;
 	start.content = domSS.str();
 	_interpreter->getDataModel().replaceExpressions(start.content);
 

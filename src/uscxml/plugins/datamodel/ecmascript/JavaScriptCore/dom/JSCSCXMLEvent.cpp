@@ -7,7 +7,7 @@ namespace DOM {
 JSClassRef JSCSCXMLEvent::Tmpl;
 
 JSStaticValue JSCSCXMLEvent::staticValues[] = {
-	{ "eventType", eventTypeCustomAttrGetter, 0, kJSPropertyAttributeDontDelete | kJSPropertyAttributeReadOnly },
+	{ "type", typeCustomAttrGetter, 0, kJSPropertyAttributeDontDelete | kJSPropertyAttributeReadOnly },
 	{ "name", nameAttrGetter, 0, kJSPropertyAttributeDontDelete | kJSPropertyAttributeReadOnly },
 	{ "origin", originAttrGetter, 0, kJSPropertyAttributeDontDelete | kJSPropertyAttributeReadOnly },
 	{ "origintype", origintypeAttrGetter, 0, kJSPropertyAttributeDontDelete | kJSPropertyAttributeReadOnly },

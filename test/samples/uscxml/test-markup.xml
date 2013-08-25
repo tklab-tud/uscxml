@@ -1,0 +1,6 @@
+<root 
+	xmlns="http://www.w3.org/2005/07/scxml" 
+	xmlns:foo="http://uscxml.tk.informatik.tu-darmstadt.de/scenegraph.xsd">
+	<child>1</child>
+	<foo:child>2</foo:child>
+</root>

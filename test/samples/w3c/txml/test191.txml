@@ -25,7 +25,7 @@ pass, otherwise we fail.  The timer insures that some event is generated and tha
     </content>
     </invoke>
     <transition event="childToParent" conf:targetpass=""/>
-    <transition event="*" conf:targetpass=""/>
+    <transition event="*" conf:targetfail=""/>
 </state>
 
    <conf:pass/>

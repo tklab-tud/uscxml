@@ -352,7 +352,9 @@ boost::shared_ptr<InvokerImpl> Factory::createInvoker(const std::string& type, I
 	if (_invokerAliases.find(type) != _invokerAliases.end()) {
 		std::string canonicalName = _invokerAliases[type];
 		if (_invokers.find(canonicalName) != _invokers.end()) {
-			return _invokers[canonicalName]->create(interpreter);
+			boost::shared_ptr<InvokerImpl> invoker = _invokers[canonicalName]->create(interpreter);
+			invoker->setInterpreter(interpreter);
+			return invoker;
 		}
 	}
 
@@ -372,7 +374,9 @@ boost::shared_ptr<DataModelImpl> Factory::createDataModel(const std::string& typ
 	if (_dataModelAliases.find(type) != _dataModelAliases.end()) {
 		std::string canonicalName = _dataModelAliases[type];
 		if (_dataModels.find(canonicalName) != _dataModels.end()) {
-			return _dataModels[canonicalName]->create(interpreter);
+			boost::shared_ptr<DataModelImpl> dataModel = _dataModels[canonicalName]->create(interpreter);
+			dataModel->setInterpreter(interpreter);
+			return dataModel;
 		}
 	}
 
@@ -391,7 +395,9 @@ boost::shared_ptr<IOProcessorImpl> Factory::createIOProcessor(const std::string&
 	if (_ioProcessorAliases.find(type) != _ioProcessorAliases.end()) {
 		std::string canonicalName = _ioProcessorAliases[type];
 		if (_ioProcessors.find(canonicalName) != _ioProcessors.end()) {
-			return _ioProcessors[canonicalName]->create(interpreter);
+			boost::shared_ptr<IOProcessorImpl> ioProc = _ioProcessors[canonicalName]->create(interpreter);
+			ioProc->setInterpreter(interpreter);
+			return ioProc;
 		}
 	}
 
@@ -399,7 +405,7 @@ boost::shared_ptr<IOProcessorImpl> Factory::createIOProcessor(const std::string&
 	if (_parentFactory) {
 		return _parentFactory->createIOProcessor(type, interpreter);
 	} else {
-		LOG(ERROR) << "No " << type << " Datamodel known";
+		LOG(ERROR) << "No " << type << " IOProcessor known";
 	}
 
 	return boost::shared_ptr<IOProcessorImpl>();
@@ -409,7 +415,8 @@ boost::shared_ptr<ExecutableContentImpl> Factory::createExecutableContent(const 
 	// do we have this type in this factory?
 	std::string actualNameSpace = (nameSpace.length() == 0 ? "http://www.w3.org/2005/07/scxml" : nameSpace);
 	if (_executableContent.find(std::make_pair(localName, actualNameSpace)) != _executableContent.end()) {
-		return _executableContent[std::make_pair(localName, actualNameSpace)]->create(interpreter);
+		boost::shared_ptr<ExecutableContentImpl> execContent = _executableContent[std::make_pair(localName, actualNameSpace)]->create(interpreter);
+		execContent->setInterpreter(interpreter);
 	}
 
 	// lookup in parent factory

@@ -50,12 +50,12 @@ public:
 	virtual bool isDeclared(const std::string& expr);
 
 	virtual void assign(const Arabica::DOM::Element<std::string>& assignElem,
-	                    const Arabica::DOM::Document<std::string>& doc,
+	                    const Arabica::DOM::Node<std::string>& node,
 	                    const std::string& content);
 	virtual void assign(const std::string& location, const Data& data);
 
 	virtual void init(const Arabica::DOM::Element<std::string>& dataElem,
-	                  const Arabica::DOM::Document<std::string>& doc,
+	                  const Arabica::DOM::Node<std::string>& node,
 	                  const std::string& content);
 	virtual void init(const std::string& location, const Data& data);
 
@@ -77,7 +77,7 @@ protected:
 	static JSValueRef jsInvokerGetProp(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef* exception);
 	static void jsInvokerListProps(JSContextRef ctx, JSObjectRef object, JSPropertyNameAccumulatorRef propertyNames);
 
-	JSValueRef getDocumentAsValue(const Arabica::DOM::Document<std::string>& doc);
+	JSValueRef getNodeAsValue(const Arabica::DOM::Node<std::string>& node);
 	JSValueRef getDataAsValue(const Data& data);
 	Data getValueAsData(const JSValueRef value);
 	JSValueRef evalAsValue(const std::string& expr, bool dontThrow = false);

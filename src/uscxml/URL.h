@@ -95,7 +95,7 @@ public:
 	bool downloadFailed() {
 		return _hasFailed;
 	}
-	operator Data();
+	operator Data() const;
 
 	friend class URLFetcher;
 
@@ -249,7 +249,7 @@ public:
 	friend class URLFetcher;
 	friend std::ostream & operator<<(std::ostream &stream, const URL& p);
 
-	operator Data() {
+	operator Data() const {
 		return _impl->operator Data();
 	}
 

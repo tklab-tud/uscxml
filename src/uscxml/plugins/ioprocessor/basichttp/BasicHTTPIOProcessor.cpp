@@ -255,6 +255,16 @@ void BasicHTTPIOProcessor::downloadCompleted(const URL& url) {
 	std::map<std::string, std::pair<URL, SendRequest> >::iterator reqIter = _sendRequests.begin();
 	while(reqIter != _sendRequests.end()) {
 		if (reqIter->second.first == url) {
+			// test 513
+			std::string statusCode = url.getStatusCode();
+			if (statusCode.length() > 0) {
+				std::string statusPrefix = statusCode.substr(0,1);
+				std::string statusRest = statusCode.substr(1);
+				Event event;
+				event.data = url;
+				event.name = "HTTP." + statusPrefix + "." + statusRest;
+				returnEvent(event);
+			}
 			_sendRequests.erase(reqIter);
 			return;
 		}

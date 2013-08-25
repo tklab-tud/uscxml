@@ -110,37 +110,37 @@ Arabica::DOM::Document<std::string> Data::toDocument() {
 	return document;
 }
 
-Arabica::DOM::Node<std::string> Event::getFirstDOMElement() const {
-	return getFirstDOMElement(dom);
-}
+//Arabica::DOM::Node<std::string> Event::getFirstDOMElement() const {
+//	return getFirstDOMElement(dom);
+//}
+//
+//Arabica::DOM::Document<std::string> Event::getStrippedDOM() const {
+//	return getStrippedDOM(dom);
+//}
 
-Arabica::DOM::Document<std::string> Event::getStrippedDOM() const {
-	return getStrippedDOM(dom);
-}
-
-Arabica::DOM::Node<std::string> Event::getFirstDOMElement(const Arabica::DOM::Document<std::string> dom) {
-	Arabica::DOM::Node<std::string> data = dom.getDocumentElement().getFirstChild();
-	while (data) {
-		if (data.getNodeType() == Arabica::DOM::Node_base::TEXT_NODE) {
-			std::string trimmed = boost::trim_copy(data.getNodeValue());
-			if (trimmed.length() == 0) {
-				data = data.getNextSibling();
-				continue;
-			}
-		}
-		break;
-	}
-	return data;
-}
-
-Arabica::DOM::Document<std::string> Event::getStrippedDOM(const Arabica::DOM::Document<std::string> dom) {
-	Arabica::DOM::DOMImplementation<std::string> domFactory = Arabica::SimpleDOM::DOMImplementation<std::string>::getDOMImplementation();
-	Arabica::DOM::Document<std::string> document = domFactory.createDocument("", "", 0);
-	if (dom) {
-		document.getDocumentElement().appendChild(document.importNode(getFirstDOMElement(dom), true));
-	}
-	return document;
-}
+//Arabica::DOM::Node<std::string> Event::getFirstDOMElement(const Arabica::DOM::Document<std::string> dom) {
+//	Arabica::DOM::Node<std::string> data = dom.getDocumentElement().getFirstChild();
+//	while (data) {
+//		if (data.getNodeType() == Arabica::DOM::Node_base::TEXT_NODE) {
+//			std::string trimmed = boost::trim_copy(data.getNodeValue());
+//			if (trimmed.length() == 0) {
+//				data = data.getNextSibling();
+//				continue;
+//			}
+//		}
+//		break;
+//	}
+//	return data;
+//}
+//
+//Arabica::DOM::Document<std::string> Event::getStrippedDOM(const Arabica::DOM::Document<std::string> dom) {
+//	Arabica::DOM::DOMImplementation<std::string> domFactory = Arabica::SimpleDOM::DOMImplementation<std::string>::getDOMImplementation();
+//	Arabica::DOM::Document<std::string> document = domFactory.createDocument("", "", 0);
+//	if (dom) {
+//		document.getDocumentElement().appendChild(document.importNode(getFirstDOMElement(dom), true));
+//	}
+//	return document;
+//}
 
 Arabica::DOM::Document<std::string> Event::toDocument() {
 	Arabica::DOM::DOMImplementation<std::string> domFactory = Arabica::SimpleDOM::DOMImplementation<std::string>::getDOMImplementation();

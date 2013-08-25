@@ -158,6 +158,7 @@ void SCXMLIOProcessor::send(const SendRequest& req) {
 			LOG(ERROR) << "Not sure what to make of the target '" << reqCopy.target << "' - raising error" << std::endl;
 			Event error("error.execution", Event::PLATFORM);
 			error.sendid = reqCopy.sendid;
+			// test 159 still fails
 			_interpreter->receiveInternal(error);
 		}
 	}

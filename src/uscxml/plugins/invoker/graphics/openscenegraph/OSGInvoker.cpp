@@ -49,11 +49,9 @@ void OSGInvoker::invoke(const InvokeRequest& req) {
 	evTarget.addEventListener("DOMNodeRemoved", *this, false);
 	evTarget.addEventListener("DOMAttrModified", *this, false);
 
-	Arabica::XPath::NodeSet<std::string> content = Interpreter::filterChildElements("content", req.dom);
-
 	std::set<std::string> validChilds;
 	validChilds.insert("display");
-	processChildren(validChilds, content[0]);
+	processChildren(validChilds, req.dom);
 }
 
 void OSGInvoker::runOnMainThread() {

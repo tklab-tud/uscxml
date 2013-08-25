@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+ <!-- test that foreach works correctly, iterating over node set in document order.
+ This tests assertions 483-485 -->
+ 
+ <scxml xmlns="http://www.w3.org/2005/07/scxml" name="scxmltest" 
+   xmlns:conf="http://www.w3.org/2005/scxml-conformance" initial="s0" version="1.0" datamodel="xpath">
+   <datamodel>
+     <data id="var1">
+      <nodes xmlns="">
+       <node/>
+       <node/>
+       <node/>
+      </nodes>
+       </data>
+     </datamodel>
+     
+<state id="s0">
+  <onentry>
+   <foreach array="$var1/nodes/node" item="item" index="pos">
+      <assign location="$item" type="addattribute" attr="position" expr="$pos"/>
+     </foreach>
+  </onentry>
+  
+   <transition  cond="$var1/nodes/node[1]/@position = 1 and  $var1/nodes/node[2]/@position = 2 and $var1/nodes/node[3]/@position = 3" conf:targetpass=""/>
+   <transition  conf:targetfail=""/>
+  </state>
+    
+<conf:pass/>
+<conf:fail/>  
+
+</scxml>

@@ -251,6 +251,7 @@ protected:
 	bool _stable;
 	tthread::thread* _thread;
 	tthread::recursive_mutex _mutex;
+	tthread::condition_variable _condVar;
 	tthread::recursive_mutex _pluginMutex;
 
 	URL _baseURI;
@@ -291,13 +292,13 @@ protected:
 	void executeContent(const Arabica::XPath::NodeSet<std::string>& content, bool rethrow = false);
 
 	void processContentElement(const Arabica::DOM::Node<std::string>& element,
-	                           Arabica::DOM::Document<std::string>& dom,
+	                           Arabica::DOM::Node<std::string>& dom,
 	                           std::string& text,
 	                           std::string& expr);
 	void processParamChilds(const Arabica::DOM::Node<std::string>& element,
 	                        std::multimap<std::string, std::string>& params);
-	void processDOMorText(const Arabica::DOM::Node<std::string>& node,
-	                      Arabica::DOM::Document<std::string>& dom,
+	void processDOMorText(const Arabica::DOM::Node<std::string>& element,
+	                      Arabica::DOM::Node<std::string>& dom,
 	                      std::string& text);
 
 	void send(const Arabica::DOM::Node<std::string>& element);
