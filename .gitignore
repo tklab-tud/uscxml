@@ -21,3 +21,4 @@ package/windows*
 *.class
 
 /package/*
+contrib/prebuilt/include/*

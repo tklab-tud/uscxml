@@ -134,7 +134,7 @@ if (LIBICAL_FOUND)
 		calendar/*.cpp
 		calendar/*.h
 	)
-	source_group("Invoker\\caledar" FILES ${CALENDAR_INVOKER})
+	source_group("Invoker\\calendar" FILES ${CALENDAR_INVOKER})
 	if (BUILD_AS_PLUGINS)
 		add_library(
 			invoker_calendar SHARED 
