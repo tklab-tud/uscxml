@@ -56,8 +56,9 @@ protected:
 	icalcomponent* addIcal(const std::string& icalString);
 	void setupEvents(icalcomponent* comp);
 	void queueEvent(CalendarEvent* event);
-
+#if 0
 	void dumpComponent(icalcomponent* comp);
+#endif
 
 	tthread::recursive_mutex _mutex;
 

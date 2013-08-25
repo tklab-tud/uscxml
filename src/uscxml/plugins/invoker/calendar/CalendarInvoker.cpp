@@ -421,6 +421,7 @@ Data CalendarInvoker::toData(icalcomponent* comp) {
 	return data;
 }
 
+#if 0
 void CalendarInvoker::dumpComponent(icalcomponent* comp) {
 	std::cout << icalcomponent_kind_to_string(icalcomponent_isa(comp)) << std::endl;
 
@@ -622,6 +623,6 @@ void CalendarInvoker::dumpComponent(icalcomponent* comp) {
 		break;
 	}
 }
-
+#endif
 
 }
