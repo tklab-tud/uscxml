@@ -3,11 +3,13 @@ set(CTEST_SITE "buildslave-centos-5-32")
 set(CTEST_BUILD_CONFIGURATION "Debug")
 
 set(RETAIN_BUILD_DIR OFF)
+set(REMOVE_PREBUILDS ON)
 set(CTEST_BUILD_NAME "linux-x86_64 gcc 4.1.2 - ECMA datamodel")
 include("tests/ecma.ctest")
 include("common.ctest.inc")
 
 set(RETAIN_BUILD_DIR ON)
+set(REMOVE_PREBUILDS OFF)
 set(CTEST_BUILD_NAME "linux-x86_64 gcc 4.1.2 - XPath datamodel")
 include("tests/xpath.ctest")
 include("common.ctest.inc")

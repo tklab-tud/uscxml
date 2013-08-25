@@ -113,6 +113,27 @@ else()
 	endif()
 endif()
 
+if (NOT EXISTS ${PROJECT_SOURCE_DIR}/contrib/prebuilt/include)
+	message(STATUS "Downloading header files: ${USCXML_LIBRARY_HOST_URL_PREFIX}/${USCXML_VERSION}/include.tgz")
+	file(DOWNLOAD ${USCXML_LIBRARY_HOST_URL_PREFIX}/${USCXML_VERSION}/include.tgz
+		${PROJECT_SOURCE_DIR}/contrib/prebuilt/include.tgz
+		INACTIVITY_TIMEOUT 60 STATUS DOWNLOAD_STATUS SHOW_PROGRESS)
+	list(GET DOWNLOAD_STATUS 0 STATUS_CODE)
+	list(GET DOWNLOAD_STATUS 1 STATUS_STRING)
+	if(STATUS_CODE EQUAL 0)
+		execute_process(
+			COMMAND ${CMAKE_COMMAND} -E tar xzf ${PROJECT_SOURCE_DIR}/contrib/prebuilt/include.tgz
+			WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/contrib/prebuilt/
+		)
+		execute_process(
+			COMMAND ${CMAKE_COMMAND} -E remove ${PROJECT_SOURCE_DIR}/contrib/prebuilt/include.tgz
+			WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/contrib/prebuilt/
+		)
+	else()
+		message("Downloading header files failed with ${STATUS_STRING}")
+	endif()
+endif()
+
 if (NOT EXISTS ${USCXML_PREBUILT_LIBRARY_PATH})
 	message(STATUS "Downloading prebuilt libraries: ${USCXML_LIBRARY_HOST_URL_PREFIX}/${USCXML_VERSION}/${USCXML_LIBRARY_ARCHIVE_NAME}")
 	file(DOWNLOAD ${USCXML_LIBRARY_HOST_URL_PREFIX}/${USCXML_VERSION}/${USCXML_LIBRARY_ARCHIVE_NAME}
@@ -132,6 +153,7 @@ if (NOT EXISTS ${USCXML_PREBUILT_LIBRARY_PATH})
 	else()
 		message("Downloading prebuilt libraries failed with ${STATUS_STRING} - maybe this platform is not supported?")
 	endif()
+
 endif()
 
 if (WIN32 OR CMAKE_CROSSCOMPILING)

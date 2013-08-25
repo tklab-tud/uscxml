@@ -38,5 +38,9 @@ for FILE in ${PLATFORMS}; do
     tar cvzf uscxml-prebuilt-${PLATFORM}.tgz ${FILE}
     scp uscxml-prebuilt-${PLATFORM}.tgz ${USCXML_PREBUILT_HOST}:${USCXML_PREBUILT_PATH}/${VERSION}
     rm uscxml-prebuilt-${PLATFORM}.tgz
+	else
+		tar cvzf include.tgz ${FILE}
+    scp include.tgz ${USCXML_PREBUILT_HOST}:${USCXML_PREBUILT_PATH}/${VERSION}
+    rm include.tgz
   fi
 done
