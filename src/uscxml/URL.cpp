@@ -11,6 +11,7 @@
 #include <sys/types.h>
 #include <io.h>
 #include <direct.h>
+#include <Shlobj.h>
 #define getcwd _getcwd
 #else
 #include <unistd.h>
@@ -55,7 +56,7 @@ std::string URL::tmpDir() {
 std::string URL::getResourceDir() {
 #ifdef _WIN32
 	TCHAR szPath[MAX_PATH];
-	if (SHGetFolderPath(NULL, CSIDL_COMMON_APPDATA, NULL, 0, szPath)) {
+	if (SHGetFolderPath(NULL, CSIDL_APPDATA, NULL, 0, szPath)) {
 		return szPath;
 	} else {
 		return getenv("APPDATA");

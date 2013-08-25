@@ -20,6 +20,9 @@
 #include "XGetopt.h"
 #endif
 
+int startedAt;
+int lastTransitionAt;
+
 #ifdef HAS_EXECINFO_H
 void printBacktrace(void** array, int size) {
 	char** messages = backtrace_symbols(array, size);
@@ -29,9 +32,6 @@ void printBacktrace(void** array, int size) {
 	std::cerr << std::endl;
 	free(messages);
 }
-
-int startedAt;
-int lastTransitionAt;
 
 #ifdef HAS_DLFCN_H
 // see https://gist.github.com/nkuln/2020860
