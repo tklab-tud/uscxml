@@ -1,4 +1,5 @@
 if (JSC_FOUND AND BUILD_DM_ECMA)
+	set(USCXML_DATAMODELS "ecmascript(JSC) ${USCXML_DATAMODELS}")
 	# JavaScriptCore ecmascript datamodel
 	file(GLOB JSC_DATAMODEL
 		ecmascript/JavaScriptCore/*.cpp
@@ -29,6 +30,7 @@ if (JSC_FOUND AND BUILD_DM_ECMA)
 else()
 
 # GOOGLE V8 ecmascript datamodel
+	set(USCXML_DATAMODELS "ecmascript(V8) ${USCXML_DATAMODELS}")
 	# set(ENV{V8_SRC} ${CMAKE_SOURCE_DIR}/../v8)
 	if (V8_FOUND AND BUILD_DM_ECMA)
 		file(GLOB V8_DATAMODEL
@@ -63,6 +65,7 @@ endif()
 
 # NULL datamodel
 
+set(USCXML_DATAMODELS "null ${USCXML_DATAMODELS}")
 file(GLOB NULL_DATAMODEL
 	null/*.cpp
 	null/*.h
@@ -80,6 +83,7 @@ endif()
 # XPath datamodel
 
 if (BUILD_DM_XPATH)
+	set(USCXML_DATAMODELS "xpath ${USCXML_DATAMODELS}")
 	file(GLOB XPATH_DATAMODEL
 		xpath/*.cpp
 		xpath/*.h
@@ -97,6 +101,7 @@ endif()
 # SWI PROLOG datamodel
 
 if (SWI_FOUND AND BUILD_DM_PROLOG)
+	set(USCXML_DATAMODELS "prolog ${USCXML_DATAMODELS}")
 #	message(FATAL_ERROR "SWI_INCLUDE_DIR: ${SWI_INCLUDE_DIR}")
 
 	# if(${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
@@ -127,3 +132,4 @@ endif()
 
 set(USCXML_INCLUDE_DIRS ${USCXML_INCLUDE_DIRS} PARENT_SCOPE)
 set(USCXML_FILES ${USCXML_FILES} PARENT_SCOPE)
+set(USCXML_DATAMODELS ${USCXML_DATAMODELS} PARENT_SCOPE)

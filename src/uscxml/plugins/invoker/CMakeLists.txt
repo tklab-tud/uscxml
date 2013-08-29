@@ -1,4 +1,5 @@
 # sample invoker - include to make sure it compiles
+set(USCXML_INVOKERS "sample ${USCXML_INVOKERS}")
 file(GLOB_RECURSE SAMPLE_INVOKER
 	sample/*.cpp
 	sample/*.h
@@ -17,6 +18,7 @@ endif()
 
 # DirMon invoker to watch for filesystem changes
 
+set(USCXML_INVOKERS "dirmon ${USCXML_INVOKERS}")
 file(GLOB_RECURSE DIRMON_INVOKER
 	filesystem/dirmon/*.cpp
 	filesystem/dirmon/*.h
@@ -51,8 +53,9 @@ else()
 endif()
 
 
-# System invoker to open a native command
+# XHTML invoker
 
+set(USCXML_INVOKERS "xhtml ${USCXML_INVOKERS}")
 file(GLOB_RECURSE XHTML_INVOKER
 	xhtml/*.cpp
 	xhtml/*.h
@@ -130,6 +133,7 @@ endif()
 # calendar invoker
 
 if (LIBICAL_FOUND)
+	set(USCXML_INVOKERS "calendar ${USCXML_INVOKERS}")
 	file(GLOB_RECURSE CALENDAR_INVOKER
 		calendar/*.cpp
 		calendar/*.h
@@ -150,6 +154,7 @@ endif()
 # location invoker
 
 if (CORELOCATION_LIBRARY AND OFF)
+	set(USCXML_INVOKERS "location ${USCXML_INVOKERS}")
 	file(GLOB_RECURSE LOCATION_INVOKER
 		location/CoreLocation/*.cpp
 		location/CoreLocation/*.mm
@@ -171,6 +176,7 @@ endif()
 # UMUNDO invoker 
 
 if (UMUNDO_FOUND)
+	set(USCXML_INVOKERS "umundo ${USCXML_INVOKERS}")
 	file(GLOB_RECURSE UMUNDO_INVOKER 
 		umundo/*.cpp 
 		umundo/*.cc 
@@ -192,6 +198,7 @@ endif()
 
 # USCXML invoker 
 
+set(USCXML_INVOKERS "scxml ${USCXML_INVOKERS}")
 file(GLOB_RECURSE USCXML_INVOKER 
 	scxml/*.cpp 
 	scxml/*.h)
@@ -210,6 +217,7 @@ endif()
 
 # HTTP server invoker 
 
+set(USCXML_INVOKERS "httpservlet ${USCXML_INVOKERS}")
 file(GLOB_RECURSE HTTPSERVLET_INVOKER 
 	http/*.cpp 
 	http/*.h)
@@ -228,6 +236,7 @@ endif()
 
 # Heartbeat invoker
 
+set(USCXML_INVOKERS "heartbeat ${USCXML_INVOKERS}")
 file(GLOB_RECURSE HEARTBEAT_INVOKER
 	heartbeat/*.cpp
 	heartbeat/*.h
@@ -245,7 +254,8 @@ endif()
 
 
 # OpenSceneGraph invoker
-if (OPENSCENEGRAPH_FOUND AND OPENGL_FOUND)	
+if (OPENSCENEGRAPH_FOUND AND OPENGL_FOUND)
+	set(USCXML_INVOKERS "scenegraph ${USCXML_INVOKERS}")
 	file(GLOB OPENSCENEGRAPH_INVOKER 
 		graphics/openscenegraph/*.cpp 
 		graphics/openscenegraph/*.h)
@@ -264,6 +274,7 @@ if (OPENSCENEGRAPH_FOUND AND OPENGL_FOUND)
 		list (APPEND USCXML_FILES ${OPENSCENEGRAPH_INVOKER})
 	endif()
 
+	set(USCXML_INVOKERS "osgvonvert ${USCXML_INVOKERS}")
 	file(GLOB OPENSCENEGRAPH_CONVERTER_INVOKER 
 		graphics/openscenegraph/converter/*.cpp 
 		graphics/openscenegraph/converter/*.h)
@@ -287,7 +298,8 @@ endif()
 # OpenAL modality components
 
 if (OPENAL_FOUND AND (LIBSNDFILE_FOUND OR AUDIOTOOLBOX_FOUND))
-  file(GLOB_RECURSE OPENAL_INVOKER 
+	set(USCXML_INVOKERS "openal ${USCXML_INVOKERS}")
+	file(GLOB_RECURSE OPENAL_INVOKER 
 		audio/OpenAL*.cpp 
 		audio/OpenAL*.h)
 	if (LIBSNDFILE_FOUND)
@@ -321,6 +333,7 @@ endif()
 # MILES modality components
 
 if (MILES_FOUND)
+	set(USCXML_INVOKERS "miles ${USCXML_INVOKERS}")
   file(GLOB_RECURSE MILES_INVOKER 
 		miles/*.cpp 
 		miles/*.h)
@@ -345,6 +358,7 @@ endif()
 # VoiceXML modality components
 
 if (UMUNDO_FOUND)
+	set(USCXML_INVOKERS "vxml ${USCXML_INVOKERS}")
 	file(GLOB_RECURSE VXML_INVOKER
 		vxml/*.cpp
 		vxml/*.h
@@ -363,3 +377,4 @@ endif()
 
 set(USCXML_INCLUDE_DIRS ${USCXML_INCLUDE_DIRS} PARENT_SCOPE)
 set(USCXML_FILES ${USCXML_FILES} PARENT_SCOPE)
+set(USCXML_INVOKERS ${USCXML_INVOKERS} PARENT_SCOPE)

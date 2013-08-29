@@ -1,5 +1,6 @@
 # Fetch element
 
+set(USCXML_ELEMENTS "fetch ${USCXML_ELEMENTS}")
 file(GLOB_RECURSE FETCH_ELEMENT
 	fetch/*.cpp
 	fetch/*.h
@@ -35,6 +36,7 @@ endif()
 
 # Postpone element
 
+set(USCXML_ELEMENTS "postpone ${USCXML_ELEMENTS}")
 file(GLOB_RECURSE POSTPONE_ELEMENT
 	postpone/*.cpp
 	postpone/*.h
@@ -53,6 +55,7 @@ endif()
 
 # Respond element
 
+set(USCXML_ELEMENTS "respond ${USCXML_ELEMENTS}")
 file(GLOB_RECURSE RESPOND_ELEMENT
 	respond/*.cpp
 	respond/*.h
@@ -70,3 +73,4 @@ endif()
 
 set(USCXML_INCLUDE_DIRS ${USCXML_INCLUDE_DIRS} PARENT_SCOPE)
 set(USCXML_FILES ${USCXML_FILES} PARENT_SCOPE)
+set(USCXML_ELEMENTS ${USCXML_ELEMENTS} PARENT_SCOPE)

@@ -1,3 +1,4 @@
+set(USCXML_IOPROCESSORS "sample ${USCXML_IOPROCESSORS}")
 file(GLOB_RECURSE SAMPLE_IOPROCESSOR
 	sample/*.cpp
 	sample/*.h
@@ -13,6 +14,7 @@ else()
 	list (APPEND USCXML_FILES ${SAMPLE_IOPROCESSOR})
 endif()
 
+set(USCXML_IOPROCESSORS "comet ${USCXML_IOPROCESSORS}")
 file(GLOB_RECURSE COMET_IOPROCESSOR
 	comet/*.cpp
 	comet/*.h
@@ -31,6 +33,7 @@ endif()
 
 # LIBEVENT basichttp ioprocessor - this one is already required above
 
+set(USCXML_IOPROCESSORS "basichttp ${USCXML_IOPROCESSORS}")
 file(GLOB_RECURSE BASICHTTP_IOPROCESSOR
 	basichttp/*.cpp
 	basichttp/*.h
@@ -49,6 +52,7 @@ endif()
 
 # scxml ioprocessor - this one is already required above
 
+set(USCXML_IOPROCESSORS "scxml ${USCXML_IOPROCESSORS}")
 file(GLOB_RECURSE SCXML_IOPROCESSOR
 	scxml/*.cpp
 	scxml/*.h
@@ -73,6 +77,7 @@ if (PROTOBUF_FOUND)
 		message(FATAL_ERROR "protoc binary required for serialization")
 	endif()
 
+	set(USCXML_IOPROCESSORS "mmi ${USCXML_IOPROCESSORS}")
 	file(GLOB_RECURSE MMI_IOPROCESSOR
 		modality/*.cpp
 		modality/*.h
@@ -105,3 +110,4 @@ endif()
 set(USCXML_INCLUDE_DIRS ${USCXML_INCLUDE_DIRS} PARENT_SCOPE)
 set(USCXML_OPT_LIBS ${USCXML_OPT_LIBS} PARENT_SCOPE)
 set(USCXML_FILES ${USCXML_FILES} PARENT_SCOPE)
+set(USCXML_IOPROCESSORS ${USCXML_IOPROCESSORS} PARENT_SCOPE)

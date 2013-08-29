@@ -109,10 +109,10 @@ public class SpatialMapTicker {
 
 	private void run() {
 		messages.add(new SensorMessage("Oil pressure threshold exceeded"));
-		messages.add(new SensorMessage("Error #245 in diagnostics unit"));
+		messages.add(new SensorMessage("Equipment is on fire"));
 		messages.add(new SensorMessage("Error #32 in diagnostics unit"));
-		messages.add(new SensorMessage("Error #81 in diagnostics unit"));
-		messages.add(new SensorMessage("Error #15 in diagnostics unit"));
+		messages.add(new SensorMessage("Unauthorized startup"));
+		messages.add(new SensorMessage("Tire pressure too low"));
 		messages.add(new SensorMessage("Error #145 in diagnostics unit"));
 		messages.add(new SensorMessage("Unit was moved out of construction site area"));
 		messages.add(new SensorMessage("Hydraulic pressure exceeding safety limits"));
@@ -122,7 +122,7 @@ public class SpatialMapTicker {
 
 		while (true) {
 			try {
-				Thread.sleep((long) (Math.random() * 1000) + 200);
+				Thread.sleep((long) (Math.random() * 300) + 100);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}

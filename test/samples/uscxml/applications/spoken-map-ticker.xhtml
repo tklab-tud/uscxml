@@ -68,7 +68,7 @@
 							markers[message.id].feature.popupContentHTML = "<h3>" + message.id + "</h3>" + message.html;
 						}
 						
-						if (message.lastMsg && message.lastMsg.length > 0) {
+						if (message.message && message.message.length > 0) {
 							var messageDiv = $("#message")[0];
 							if (message.timeStamp > lastUpdateTime + 3000) {
 								var timeRuler = document.createElement("div");
@@ -82,7 +82,11 @@
 							console.log(lastUpdateTime);
 
 							var messagePara = document.createElement("p");
-							messagePara.innerHTML += message.lastMsg; // + messageDiv.innerHTML;
+							if (message.severity > 7) {
+								messagePara.setAttribute("style", "color:red; font-weight:bold;");
+							}
+							messagePara.innerHTML += message.message; // + messageDiv.innerHTML;
+
 							messageDiv.appendChild(messagePara);
 							messagePara.addEventListener("mousedown", function() {
 								var marker = markers[message.id].marker;

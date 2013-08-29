@@ -17,7 +17,7 @@
 		<initial>
 			<transition target="ready" />
 		</initial>
-		<invoke type="http://www.smartvortex.eu/mmi/spatial-audio/" src="audio/click.wav" id="spatial-audio.id1">
+		<invoke type="openal" id="spatial-audio.id1">
 			<!-- 
 				Explicitly set the start position of an audio source.
 				Keep in mind that the coordinate system is the same as in OpenGL:
@@ -31,7 +31,7 @@
 			<param name="y" expr="0" />
 			<param name="z" expr="0" />
 		</invoke>
-		<invoke type="http://www.smartvortex.eu/mmi/spatial-audio/" src="audio/click.wav" id="spatial-audio.id2">
+		<invoke type="openal" id="spatial-audio.id2">
 			<!-- 
 				Set position on a circle.
 				Unit for circle is "deg" in clockwise order with 0 being directly in front,
@@ -44,7 +44,9 @@
 		<state id="ready">
 			<onentry>
 				<!-- trigger transition in 1 second -->
-				<send event="spatial-audio.play" delay="1s" />
+				<send event="spatial-audio.play" delay="1s">
+					<param name="src" expr="'audio/click.wav'" />
+				</send>
 				<log expr="'Ready'" />
 			</onentry>
 			<transition target="click" event="spatial-audio.play" />
@@ -52,15 +54,18 @@
 		</state>
 		<state id="click">
 			<onentry>
-				<send target="#_spatial-audio.id1" event="play" delay="0ms" />
+				<send target="#_spatial-audio.id1" event="play">
+					<param name="src" expr="'audio/click.wav'" />
+				</send>
 				<!-- 
 					move position of audio 2 in a circle 
 				-->
 				<send target="#_spatial-audio.id2" event="play" delay="200ms">
+					<param name="src" expr="'audio/click.wav'" />
 					<param name="circle" expr="spatialAudio.id2.degree + 'deg'" />
 				</send>
 				<log expr="'Clicking'" />
-				<script>spatialAudio.id2.degree += 10;</script>
+				<script>spatialAudio.id2.degree += 90;</script>
 			</onentry>
 			<transition target="ready" />
 		</state>

@@ -29,7 +29,12 @@ OpenALInvoker::OpenALInvoker() {
 	_alContext = NULL;
 	_alDevice = NULL;
 	_thread = NULL;
-	_listenerPos[0] = _listenerPos[1] = _listenerPos[2] = 0;
+  _listenerPos[0] = _listenerPos[1] = _listenerPos[2] = 0;
+  _listenerVel[0] = _listenerVel[1] = _listenerVel[2] = 0;
+  _maxPos[0] = _maxPos[1] = _maxPos[2] = 1;
+
+  _listenerOrient[0] = _listenerOrient[1] = _listenerOrient[3] = _listenerOrient[5] = 0;
+  _listenerOrient[2] = _listenerOrient[4] = 1.0;
 }
 
 OpenALInvoker::~OpenALInvoker() {
@@ -103,8 +108,12 @@ void OpenALInvoker::send(const SendRequest& req) {
 
 		getPosFromParams(req.params, _sources[req.sendid]->pos);
 
+		_sources[req.sendid]->pos[0] -= _listenerPos[0];
+		_sources[req.sendid]->pos[1] -= _listenerPos[1];
+		_sources[req.sendid]->pos[2] -= _listenerPos[2];
 		try {
 			_sources[req.sendid]->player->setPosition(_sources[req.sendid]->pos);
+
 		} catch (std::exception ex) {
 			returnErrorExecution(ex.what());
 		}
@@ -135,6 +144,7 @@ void OpenALInvoker::send(const SendRequest& req) {
 
 	if (boost::iequals(req.name, "move.listener")) {
 		getPosFromParams(req.params, _listenerPos);
+		
 		try {
 			alcMakeContextCurrent(_alContext);
 			alListenerfv(AL_POSITION, _listenerPos);
@@ -251,6 +261,17 @@ void OpenALInvoker::invoke(const InvokeRequest& req) {
 		throw std::string("__FILE__ __LINE__ openal error opening device");
 	}
 
+	std::multimap<std::string, std::string>::const_iterator paramIter = req.params.begin();
+	while(paramIter != req.params.end()) {
+		if (boost::iequals(paramIter->first, "maxX"))
+			_maxPos[0] = strTo<float>(paramIter->second);
+		if (boost::iequals(paramIter->first, "maxY"))
+			_maxPos[1] = strTo<float>(paramIter->second);
+		if (boost::iequals(paramIter->first, "maxZ"))
+			_maxPos[2] = strTo<float>(paramIter->second);
+		paramIter++;
+	}
+
 	// create new context with device
 	_alContext = alcCreateContext (_alDevice, NULL);
 	if (_alContext == NULL) {
@@ -261,19 +282,16 @@ void OpenALInvoker::invoke(const InvokeRequest& req) {
 //	std::cout << boost::lexical_cast<std::string>(_alContext);
 //	std::cout << boost::lexical_cast<std::string>(_alDevice);
 
-//	alcMakeContextCurrent(_alContext);
+	alcMakeContextCurrent(_alContext);
 //	float listener[3] = {0,0,0};
 //	alListenerfv(AL_POSITION, listener);
-//
-//	float	orientation[6] = {
-//		0.0, 0.0, -1.0,    // direction
-//		0.0, 1.0, 0.0	}; //up
-//	alListenerfv(AL_ORIENTATION, orientation);
-//
-//	float	velocity[3] = {	0.0, 0.0, 0.0}; //up
-//	alListenerfv(AL_VELOCITY, velocity);
-//
-//	alListenerf(AL_GAIN, 0.5);
+
+	alcMakeContextCurrent(_alContext);
+	alListenerfv(AL_POSITION, _listenerPos);
+	alListenerfv(AL_VELOCITY, _listenerVel);
+	alListenerfv(AL_ORIENTATION, _listenerOrient);
+
+	alListenerf(AL_GAIN, 0.5);
 
 	start();
 }
@@ -325,18 +343,18 @@ void OpenALInvoker::getPosFromParams(const std::multimap<std::string, std::strin
 			float rad = posToRadian(params.find("circle")->second);
 			position[0] = cosf(rad);
 			position[2] = -1 * sinf(rad); // z axis increases to front
-			position[0] *= 150;
-			position[2] *= 150;
+//			position[0] *= 150;
+//			position[2] *= 150;
 
 		}
 	} catch (boost::bad_lexical_cast& e) {
 		LOG(ERROR) << "Cannot interpret circle as float value in params: " << e.what();
 	}
 
-//	position[0] = position[0] / _maxPos[0];
-//	position[1] = position[1] / _maxPos[1];
-//	position[2] = position[2] / _maxPos[2];
-	//  std::cout << _pos[0] << ":" << _pos[1] << ":" << _pos[2] << std::endl;
+	position[0] = position[0] / _maxPos[0];
+	position[1] = position[1] / _maxPos[1];
+	position[2] = position[2] / _maxPos[2];
+//	std::cout << position[0] << ":" << position[1] << ":" << position[2] << std::endl;
 
 }
 

@@ -83,7 +83,7 @@ OpenALPlayer::~OpenALPlayer() {
 		}
 		alDeleteBuffers(_nrBuffers, _bufferIds);
 		for (int i = 0; i < _nrBuffers; i++) {
-			assert(!alIsBuffer(_bufferIds[i]));
+//			assert(!alIsBuffer(_bufferIds[i]));
 		}
 		free(_buffers);
 		free(_bufferIds);
@@ -160,28 +160,27 @@ void OpenALPlayer::init() {
 	}
 
 	// set our position and various flags to meaningful defaults
+	alSourcei (_alId, AL_SOURCE_RELATIVE, AL_TRUE);
+	checkOpenALError(__LINE__);
 	alSourcei(_alId, AL_LOOPING, AL_FALSE);
 	checkOpenALError(__LINE__);
 	alSourcefv(_alId, AL_POSITION, _position);
 	checkOpenALError(__LINE__);
-	alSourcef(_alId,AL_REFERENCE_DISTANCE, 5.0f);
+//	alSourcef(_alId,AL_REFERENCE_DISTANCE, 5.0f);
+//	checkOpenALError(__LINE__);
+	alDistanceModel(AL_LINEAR_DISTANCE);
 	checkOpenALError(__LINE__);
-//	alDistanceModel(AL_LINEAR_DISTANCE);
-//	checkOpenALError(__LINE__);
-//	alSourcefv(_alId, AL_VELOCITY, _velocity);
-//	checkOpenALError(__LINE__);
-//	alSourcefv(_alId, AL_DIRECTION, _direction);
-//	checkOpenALError(__LINE__);
+	alSourcefv(_alId, AL_VELOCITY, _velocity);
+	checkOpenALError(__LINE__);
+	alSourcefv(_alId, AL_DIRECTION, _direction);
+	checkOpenALError(__LINE__);
 //	alSourcef (_alId, AL_ROLLOFF_FACTOR,  1.0);
 //	checkOpenALError(__LINE__);
-	alSourcef(_alId,AL_REFERENCE_DISTANCE, 5.0f);
-	checkOpenALError(__LINE__);
+//	alSourcef(_alId,AL_REFERENCE_DISTANCE, 5.0f);
+//	checkOpenALError(__LINE__);
 //	float listener[] = { 0.0, 0.0, 0.0 };
 //	alListenerfv(AL_POSITION, listener);
 //	checkOpenALError(__LINE__);
-
-	alSourcei (_alId, AL_SOURCE_RELATIVE, AL_TRUE);
-	checkOpenALError(__LINE__);
 }
 
 /**

@@ -31,7 +31,7 @@ public:
 	bool finished;
 	int read;
 	int written;
-	float pos[3];
+	ALfloat pos[3];
 	URL file;
 	PCMConverter* transform;
 };
@@ -66,7 +66,10 @@ protected:
 
 	bool _isStarted;
 	bool _isRunning;
-	float _listenerPos[3];
+	ALfloat _listenerPos[3];
+	ALfloat _listenerVel[3];
+	ALfloat _listenerOrient[6];
+	float _maxPos[3];
 
 	static void fillBuffers(void* userdata);
 	void start();
