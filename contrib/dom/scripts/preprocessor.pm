@@ -39,7 +39,7 @@ BEGIN {
 sub applyPreprocessor
 {
     my $fileName = shift;
-    my $defines = shift;
+    my $defines = shift || "";
     my $preprocessor = shift;
 
     my @args = ();

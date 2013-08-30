@@ -113,6 +113,7 @@ endif()
 # ffmpeg invoker
 
 if (FFMPEG_FOUND)
+	set(USCXML_INVOKERS "ffmpeg ${USCXML_INVOKERS}")
 	file(GLOB_RECURSE FFMPEG_INVOKER
 		ffmpeg/*.cpp
 		ffmpeg/*.h

@@ -29,12 +29,12 @@ OpenALInvoker::OpenALInvoker() {
 	_alContext = NULL;
 	_alDevice = NULL;
 	_thread = NULL;
-  _listenerPos[0] = _listenerPos[1] = _listenerPos[2] = 0;
-  _listenerVel[0] = _listenerVel[1] = _listenerVel[2] = 0;
-  _maxPos[0] = _maxPos[1] = _maxPos[2] = 1;
+	_listenerPos[0] = _listenerPos[1] = _listenerPos[2] = 0;
+	_listenerVel[0] = _listenerVel[1] = _listenerVel[2] = 0;
+	_maxPos[0] = _maxPos[1] = _maxPos[2] = 1;
 
-  _listenerOrient[0] = _listenerOrient[1] = _listenerOrient[3] = _listenerOrient[5] = 0;
-  _listenerOrient[2] = _listenerOrient[4] = 1.0;
+	_listenerOrient[0] = _listenerOrient[1] = _listenerOrient[3] = _listenerOrient[5] = 0;
+	_listenerOrient[2] = _listenerOrient[4] = 1.0;
 }
 
 OpenALInvoker::~OpenALInvoker() {
@@ -144,7 +144,7 @@ void OpenALInvoker::send(const SendRequest& req) {
 
 	if (boost::iequals(req.name, "move.listener")) {
 		getPosFromParams(req.params, _listenerPos);
-		
+
 		try {
 			alcMakeContextCurrent(_alContext);
 			alListenerfv(AL_POSITION, _listenerPos);

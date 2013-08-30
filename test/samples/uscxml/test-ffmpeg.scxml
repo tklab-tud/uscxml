@@ -1,0 +1,5 @@
+<scxml>
+	<state id="idle">
+		<invoke type="ffmpeg" id="ffmpeg" />
+	</state>
+</scxml>

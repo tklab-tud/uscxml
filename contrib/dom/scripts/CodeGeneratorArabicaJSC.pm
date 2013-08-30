@@ -127,7 +127,7 @@ sub GenerateHeader
     my $interface = shift;
     my $interfaceName = $interface->name;
     my $extensions = $interface->extendedAttributes;
-#    print Dumper($extensions);
+    #print Dumper($interface);
 
     # Copy contents of parent interfaces except the first parent.
     my @parents;
@@ -140,6 +140,10 @@ sub GenerateHeader
     $headerIncludes{"uscxml/plugins/datamodel/ecmascript/JavaScriptCore/JSCDOM.h"} = 1;
     $headerIncludes{"DOM/Node.hpp"} = 1;
     $headerIncludes{"JavaScriptCore/JavaScriptCore.h"} = 1;
+
+		if ($interfaceName =~ /.*Array$/ or $interfaceName =~ /^ArrayBuffer.*/) {
+			$headerIncludes{"../../TypedArray.h"} = 1;
+		}
 
     foreach (@{$interface->parents}) {
         my $parent = $_;
@@ -180,11 +184,15 @@ END
 
 
     # callbacks for actual functions
+		my %generated;
     foreach my $function (@{$interface->functions}) {
         my $name = $function->signature->name;
         my $attrExt = $function->signature->extendedAttributes;
         my $custom = ($attrExt->{'Custom'} ? "Custom" : "");
+        next if (exists $generated{"${name}${custom}Callback"});
+
         push(@headerContent, "\n  static JSValueRef ${name}${custom}Callback(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObj, size_t argumentCount, const JSValueRef* arguments, JSValueRef* exception);");
+        $generated{"${name}${custom}Callback"} = 1;
     }
     push(@headerContent, "\n");
 
@@ -440,6 +448,7 @@ sub GenerateImplementationFunctionCallbacks
   my $wrapperType = IdlToWrapperType($interfaceName);
   
   # Generate methods for functions.
+	my %generated;
   foreach my $function (@{$interface->functions}) {
     my $name = $function->signature->name;
     my $attrExt = $function->signature->extendedAttributes;
@@ -447,6 +456,8 @@ sub GenerateImplementationFunctionCallbacks
     my $wrapperRetType = IdlToWrapperType($retType);
 
     next if ($attrExt->{'Custom'});
+    next if (exists $generated{"${name}Callback"});
+    $generated{"${name}Callback"} = 1;
 
     # signature
     push(@implContent, <<END);
@@ -521,7 +532,7 @@ sub GenerateImplementation
     my $wrapperType = IdlToWrapperType($interfaceName);
 
     AddToImplIncludes("JSC${interfaceName}.h");
-    
+
     # Find the super descriptor.
     my $parentClass = "";
     my $parentClassTemplate = "";
@@ -637,8 +648,15 @@ sub IdlToNativeType
 
   return "std::string" if ($idlType eq "DOMString");
   return "bool" if ($idlType eq "boolean");
+  return "short" if ($idlType eq "short");
+  return "long" if ($idlType eq "long");
+  return "unsigned short" if ($idlType eq "unsigned short");
+  return "unsigned long" if ($idlType eq "unsigned long");
   return "void" if ($idlType eq "void");
+  return "char" if ($idlType eq "byte");
+  return "char" if ($idlType eq "octet");
   return "double" if ($idlType eq "double");
+  return "float" if ($idlType eq "float");
   die(${idlType});
 }
 
@@ -650,6 +668,12 @@ sub NativeToHandle
   
   return ("\n		JSValueRef ${paramName} = JSValueMakeBoolean(ctx, ${nativeName});") if ($nativeType eq "bool");
   return ("\n		JSValueRef ${paramName} = JSValueMakeNumber(ctx, ${nativeName});") if ($nativeType eq "double");
+  return ("\n		JSValueRef ${paramName} = JSValueMakeNumber(ctx, ${nativeName});") if ($nativeType eq "float");
+  return ("\n		JSValueRef ${paramName} = JSValueMakeNumber(ctx, ${nativeName});") if ($nativeType eq "short");
+  return ("\n		JSValueRef ${paramName} = JSValueMakeNumber(ctx, ${nativeName});") if ($nativeType eq "char");
+  return ("\n		JSValueRef ${paramName} = JSValueMakeNumber(ctx, ${nativeName});") if ($nativeType eq "unsigned short");
+  return ("\n		JSValueRef ${paramName} = JSValueMakeNumber(ctx, ${nativeName});") if ($nativeType eq "unsigned long");
+  return ("\n		JSValueRef ${paramName} = JSValueMakeNumber(ctx, ${nativeName});") if ($nativeType eq "long");
   return ("\n		JSValueRef ${paramName} = JSValueMakeUndefined(ctx);") if ($nativeType eq "void");
   return (
 		"\n		JSStringRef jscString = JSStringCreateWithUTF8CString(${nativeName}.c_str());".
@@ -669,6 +693,18 @@ sub IdlToWrapperType
   return "Arabica::DOM::Element<std::string>" if ($idlType eq "Element");
   return "uscxml::Event" if ($idlType eq "SCXMLEvent");
   return "uscxml::Storage" if ($idlType eq "Storage");
+  return "uscxml::ArrayBuffer" if ($idlType eq "ArrayBuffer");
+  return "uscxml::ArrayBufferView" if ($idlType eq "ArrayBufferView");
+  return "uscxml::Int8Array" if ($idlType eq "Int8Array");
+  return "uscxml::Uint8Array" if ($idlType eq "Uint8Array");
+  return "uscxml::Uint8ClampedArray" if ($idlType eq "Uint8ClampedArray");
+  return "uscxml::Int16Array" if ($idlType eq "Int16Array");
+  return "uscxml::Uint16Array" if ($idlType eq "Uint16Array");
+  return "uscxml::Int32Array" if ($idlType eq "Int32Array");
+  return "uscxml::Uint32Array" if ($idlType eq "Uint32Array");
+  return "uscxml::Float32Array" if ($idlType eq "Float32Array");
+  return "uscxml::Float64Array" if ($idlType eq "Float64Array");
+  return "uscxml::DataView" if ($idlType eq "DataView");
   return "Arabica::DOM::${idlType}<std::string>";
 }
 
@@ -689,8 +725,18 @@ sub IdlToArgHandle
 			"${localName}") ;
 	}
   return ("unsigned long ${localName} = (unsigned long)JSValueToNumber(ctx, ${paramName}, exception);", ${localName}) if ($type eq "unsigned long");
+  return ("long ${localName} = (long)JSValueToNumber(ctx, ${paramName}, exception);", ${localName}) if ($type eq "long");
   return ("unsigned short ${localName} = (unsigned short)JSValueToNumber(ctx, ${paramName}, exception);", ${localName}) if ($type eq "unsigned short");
+  return ("float ${localName} = (float)JSValueToNumber(ctx, ${paramName}, exception);", ${localName}) if ($type eq "float");
+  return ("double ${localName} = (double)JSValueToNumber(ctx, ${paramName}, exception);", ${localName}) if ($type eq "double");
+  return ("short ${localName} = (short)JSValueToNumber(ctx, ${paramName}, exception);", ${localName}) if ($type eq "short");
+  return ("char ${localName} = (char)JSValueToNumber(ctx, ${paramName}, exception);", ${localName}) if ($type eq "byte");
+  return ("unsigned char ${localName} = (char)JSValueToNumber(ctx, ${paramName}, exception);", ${localName}) if ($type eq "octet");
   return ("bool ${localName} = JSValueToBoolean(ctx, ${paramName});", ${localName}) if ($type eq "boolean");
+  return ("float[] ${localName} = JSObjectGetPrivate(JSValueToObject(ctx, ${paramName}, exception))->getFloatArray();", ${localName}) if ($type eq "float[]");
+  return ("double[] ${localName} = JSObjectGetPrivate(JSValueToObject(ctx, ${paramName}, exception))->getDoubleArray();", ${localName}) if ($type eq "double[]");
+  return ("long[] ${localName} = JSObjectGetPrivate(JSValueToObject(ctx, ${paramName}, exception))->getLongArray();", ${localName}) if ($type eq "long[]");
+  return ("void* ${localName} = JSObjectGetPrivate(JSValueToObject(ctx, ${paramName}, exception));", ${localName}) if ($type eq "any");
   
   if (IsWrapperType($type)) {
     my $wrapperType = IdlToWrapperType($type);
@@ -847,8 +893,16 @@ my %non_wrapper_types = (
     'int' => 1,
     'long long' => 1,
     'long' => 1,
+    'long[]' => 1,
     'short' => 1,
     'void' => 1,
+    'byte' => 1,
+    'octet' => 1,
+    'char' => 1,
+    'float[]' => 1,
+    'float' => 1,
+    'double[]' => 1,
+    'double' => 1,
     'unsigned int' => 1,
     'unsigned long long' => 1,
     'unsigned long' => 1,

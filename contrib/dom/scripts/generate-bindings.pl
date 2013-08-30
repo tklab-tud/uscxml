@@ -68,6 +68,8 @@ GetOptions('include=s@' => \@idlDirectories,
 
 my $targetIdlFile = $ARGV[0];
 
+print "$targetIdlFile\n";
+
 die('Must specify input file.') unless defined($targetIdlFile);
 die('Must specify generator') unless defined($generator);
 die('Must specify output directory.') unless defined($outputDirectory);

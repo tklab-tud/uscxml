@@ -142,6 +142,10 @@ sub GenerateHeader
     $headerIncludes{"DOM/Node.hpp"} = 1;
     $headerIncludes{"v8.h"} = 1;
 
+		if ($interfaceName =~ /.*Array$/ or $interfaceName =~ /^ArrayBuffer.*/) {
+			$headerIncludes{"../../TypedArray.h"} = 1;
+		}
+
     foreach (@{$interface->parents}) {
         my $parent = $_;
         $headerIncludes{"V8${parent}.h"} = 1;
@@ -182,11 +186,14 @@ END
 
 
     # callbacks for actual functions
+    my %generated;
     foreach my $function (@{$interface->functions}) {
         my $name = $function->signature->name;
         my $attrExt = $function->signature->extendedAttributes;
         my $custom = ($attrExt->{'Custom'} ? "Custom" : "");
+        next if (exists $generated{"${name}${custom}Callback"});
         push(@headerContent, "\n    static v8::Handle<v8::Value> ${name}${custom}Callback(const v8::Arguments&);");
+        $generated{"${name}${custom}Callback"} = 1;
     }
     push(@headerContent, "\n");
 
@@ -401,6 +408,7 @@ sub GenerateImplementationFunctionCallbacks
   my $wrapperType = IdlToWrapperType($interfaceName);
   
   # Generate methods for functions.
+  my %generated;
   foreach my $function (@{$interface->functions}) {
     my $name = $function->signature->name;
     my $attrExt = $function->signature->extendedAttributes;
@@ -408,6 +416,8 @@ sub GenerateImplementationFunctionCallbacks
     my $wrapperRetType = IdlToWrapperType($retType);
 
     next if ($attrExt->{'Custom'});
+    next if (exists $generated{"${name}Callback"});
+    $generated{"${name}Callback"} = 1;
 
     # signature
     push(@implContent, <<END);
@@ -608,8 +618,15 @@ sub IdlToNativeType
 
   return "std::string" if ($idlType eq "DOMString");
   return "bool" if ($idlType eq "boolean");
+  return "short" if ($idlType eq "short");
+  return "long" if ($idlType eq "long");
+  return "unsigned short" if ($idlType eq "unsigned short");
+  return "unsigned long" if ($idlType eq "unsigned long");
   return "void" if ($idlType eq "void");
+  return "char" if ($idlType eq "byte");
+  return "char" if ($idlType eq "octet");
   return "double" if ($idlType eq "double");
+  return "float" if ($idlType eq "float");
   die(${idlType});
 }
 
@@ -620,6 +637,13 @@ sub NativeToHandle
   
   return ("v8::Boolean::New(${nativeName})") if ($nativeType eq "bool");
   return ("v8::Number::New(${nativeName})") if ($nativeType eq "double");
+  return ("v8::Number::New(${nativeName})") if ($nativeType eq "double");
+  return ("v8::Number::New(${nativeName})") if ($nativeType eq "float");
+  return ("v8::Number::New(${nativeName})") if ($nativeType eq "short");
+  return ("v8::Number::New(${nativeName})") if ($nativeType eq "char");
+  return ("v8::Number::New(${nativeName})") if ($nativeType eq "unsigned short");
+  return ("v8::Number::New(${nativeName})") if ($nativeType eq "unsigned long");
+  return ("v8::Number::New(${nativeName})") if ($nativeType eq "long");
   return ("v8::String::New(${nativeName}.c_str())") if ($nativeType eq "std::string");
   return ("v8::Undefined()") if ($nativeType eq "void");
   
@@ -635,6 +659,18 @@ sub IdlToWrapperType
   return "Arabica::DOM::Element<std::string>" if ($idlType eq "Element");
   return "uscxml::Event" if ($idlType eq "SCXMLEvent");
   return "uscxml::Storage" if ($idlType eq "Storage");
+  return "uscxml::ArrayBuffer" if ($idlType eq "ArrayBuffer");
+  return "uscxml::ArrayBufferView" if ($idlType eq "ArrayBufferView");
+  return "uscxml::Int8Array" if ($idlType eq "Int8Array");
+  return "uscxml::Uint8Array" if ($idlType eq "Uint8Array");
+  return "uscxml::Uint8ClampedArray" if ($idlType eq "Uint8ClampedArray");
+  return "uscxml::Int16Array" if ($idlType eq "Int16Array");
+  return "uscxml::Uint16Array" if ($idlType eq "Uint16Array");
+  return "uscxml::Int32Array" if ($idlType eq "Int32Array");
+  return "uscxml::Uint32Array" if ($idlType eq "Uint32Array");
+  return "uscxml::Float32Array" if ($idlType eq "Float32Array");
+  return "uscxml::Float64Array" if ($idlType eq "Float64Array");
+  return "uscxml::DataView" if ($idlType eq "DataView");
   return "Arabica::DOM::${idlType}<std::string>";
 }
 
@@ -646,8 +682,18 @@ sub IdlToArgHandle
   
   return ("v8::String::AsciiValue ${localName}(${paramName});", "*${localName}") if ($type eq "DOMString");
   return ("unsigned long ${localName} = ${paramName}->ToNumber()->Uint32Value();", ${localName}) if ($type eq "unsigned long");
+  return ("long ${localName} = ${paramName}->ToNumber()->Int32Value();", ${localName}) if ($type eq "long");
+  return ("double ${localName} = ${paramName}->ToNumber()->Value();", ${localName}) if ($type eq "double");
+  return ("float ${localName} = ${paramName}->ToNumber()->Value();", ${localName}) if ($type eq "float");
   return ("unsigned short ${localName} = ${paramName}->ToNumber()->Uint32Value();", ${localName}) if ($type eq "unsigned short");
   return ("bool ${localName} = ${paramName}->ToBoolean()->BooleanValue();", ${localName}) if ($type eq "boolean");
+  return ("char ${localName} = ${paramName}->ToNumber()->Int32Value();", ${localName}) if ($type eq "byte");
+  return ("short ${localName} = ${paramName}->ToNumber()->Int32Value();", ${localName}) if ($type eq "short");
+  return ("unsigned char ${localName} = ${paramName}->ToNumber()->Uint32Value();", ${localName}) if ($type eq "octet");
+  return ("void* ${localName} = v8::External::Unwrap(${paramName}->ToObject()->GetInternalField(0));", ${localName}) if ($type eq "any");
+  return ("long[] ${localName} = V8DOM::toClassPtr<V8${type}::V8${type}Private >(${paramName}->ToObject()->GetInternalField(0))->nativeObj->getLongArray();", "${localName}")  if ($type eq "long[]");
+  return ("float[] ${localName} = V8DOM::toClassPtr<V8${type}::V8${type}Private >(${paramName}->ToObject()->GetInternalField(0))->nativeObj->getFloatArray();", "${localName}")  if ($type eq "float[]");
+  return ("double[] ${localName} = V8DOM::toClassPtr<V8${type}::V8${type}Private >(${paramName}->ToObject()->GetInternalField(0))->nativeObj->getDoubleArray();", "${localName}")  if ($type eq "double[]");
   
   if (IsWrapperType($type)) {
     my $wrapperType = IdlToWrapperType($type);
@@ -789,7 +835,6 @@ my %non_wrapper_types = (
     'JSObject' => 1,
     'MediaQueryListListener' => 1,
     'NodeFilter' => 1,
-    'SerializedScriptValue' => 1,
     'any' => 1,
     'boolean' => 1,
     'double' => 1,
@@ -797,8 +842,16 @@ my %non_wrapper_types = (
     'int' => 1,
     'long long' => 1,
     'long' => 1,
+    'long[]' => 1,
     'short' => 1,
     'void' => 1,
+    'byte' => 1,
+    'octet' => 1,
+    'char' => 1,
+    'float[]' => 1,
+    'float' => 1,
+    'double[]' => 1,
+    'double' => 1,
     'unsigned int' => 1,
     'unsigned long long' => 1,
     'unsigned long' => 1,
