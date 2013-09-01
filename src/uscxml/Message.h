@@ -22,8 +22,9 @@ namespace uscxml {
 class Data {
 public:
 	enum Type {
-	    VERBATIM,
-	    INTERPRETED
+		VERBATIM,
+		INTERPRETED,
+		BINARY,
 	};
 
 	Data() : type(INTERPRETED) {}

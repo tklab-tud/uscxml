@@ -350,11 +350,29 @@ v8::Handle<v8::Value> V8DataModel::getDataAsValue(const Data& data) {
 		}
 		return value;
 	}
-	if (data.type == Data::VERBATIM) {
-		return v8::String::New(data.atom.c_str());
-	} else {
-		return evalAsValue(data.atom);
+	switch (data.type) {
+		case Data::VERBATIM:
+			return v8::String::New(data.atom.c_str());
+			break;
+		case Data::INTERPRETED:
+			return evalAsValue(data.atom);
+			break;
+		case Data::BINARY: {
+			uscxml::ArrayBuffer* arrBuffer = new uscxml::ArrayBuffer((void*)data.atom.c_str(), data.atom.size());
+			v8::Handle<v8::Function> retCtor = V8ArrayBuffer::getTmpl()->GetFunction();
+			v8::Persistent<v8::Object> retObj = v8::Persistent<v8::Object>::New(retCtor->NewInstance());
+			
+			struct V8ArrayBuffer::V8ArrayBufferPrivate* retPrivData = new V8ArrayBuffer::V8ArrayBufferPrivate();
+			retPrivData->nativeObj = arrBuffer;
+			retObj->SetInternalField(0, V8DOM::toExternal(retPrivData));
+			
+			retObj.MakeWeak(0, V8ArrayBuffer::jsDestructor);
+			return retObj;
+			break;
+		}
 	}
+	// this will never be reached
+	return v8::Undefined();
 }
 
 v8::Handle<v8::Value> V8DataModel::jsPrint(const v8::Arguments& args) {

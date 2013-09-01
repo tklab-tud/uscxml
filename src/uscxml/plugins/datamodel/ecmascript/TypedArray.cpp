@@ -34,6 +34,10 @@ ArrayBuffer::ArrayBuffer(unsigned long length) {
 ArrayBuffer::ArrayBuffer(boost::shared_ptr<ArrayBuffer::Buffer> buffer) : _buffer(buffer) {
 }
 
+ArrayBuffer::ArrayBuffer(void* data, unsigned int size) {
+	_buffer = boost::shared_ptr<Buffer>(new Buffer(data, size));
+}
+
 unsigned long ArrayBuffer::getByteLength() {
 	return _buffer->_size;
 }

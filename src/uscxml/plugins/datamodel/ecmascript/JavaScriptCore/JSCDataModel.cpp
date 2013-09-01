@@ -292,14 +292,32 @@ JSValueRef JSCDataModel::getDataAsValue(const Data& data) {
 			handleException(exception);
 		return value;
 	}
-	if (data.type == Data::VERBATIM) {
-		JSStringRef stringRef = JSStringCreateWithUTF8CString(data.atom.c_str());
-		JSValueRef value = JSValueMakeString(_ctx, stringRef);
-		JSStringRelease(stringRef);
-		return value;
-	} else {
-		return evalAsValue(data.atom);
+	
+	switch (data.type) {
+		case Data::VERBATIM: {
+			JSStringRef stringRef = JSStringCreateWithUTF8CString(data.atom.c_str());
+			JSValueRef value = JSValueMakeString(_ctx, stringRef);
+			JSStringRelease(stringRef);
+			return value;
+			break;
+		}
+		case Data::INTERPRETED: {
+			return evalAsValue(data.atom);
+			break;
+		}
+		case Data::BINARY: {
+			uscxml::ArrayBuffer* localInstance = new uscxml::ArrayBuffer((void*)data.atom.c_str(), data.atom.size());
+
+			JSClassRef retClass = JSCArrayBuffer::getTmpl();
+			struct JSCArrayBuffer::JSCArrayBufferPrivate* retPrivData = new JSCArrayBuffer::JSCArrayBufferPrivate();
+			retPrivData->nativeObj = localInstance;
+			
+			JSObjectRef retObj = JSObjectMake(_ctx, retClass, retPrivData);
+			return retObj;
+			break;
+		}
 	}
+	
 }
 
 Data JSCDataModel::getValueAsData(const JSValueRef value) {

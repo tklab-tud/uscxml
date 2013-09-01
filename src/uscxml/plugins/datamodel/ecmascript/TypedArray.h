@@ -4,6 +4,9 @@
 #include <string>
 #include <vector>
 #include <boost/shared_ptr.hpp>
+#include <string.h>
+#include <inttypes.h>
+
 
 namespace uscxml {
 
@@ -18,6 +21,7 @@ public:
 		size_t _size;
 	};
 
+	ArrayBuffer(void* data, unsigned int size);
 	ArrayBuffer(unsigned long length);
 	ArrayBuffer(boost::shared_ptr<ArrayBuffer::Buffer>);
 	unsigned long getByteLength();
@@ -48,6 +52,7 @@ public:
 
 class ArrayBufferView {
 public:
+	virtual ~ArrayBufferView() {}
 	ArrayBuffer getBuffer();
 	virtual unsigned long getByteOffset() = 0;
 	virtual unsigned long getByteLength() = 0;

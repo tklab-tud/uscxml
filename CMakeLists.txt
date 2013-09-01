@@ -184,6 +184,7 @@ include_directories(${USCXML_PREBUILT_LIBRARY_PATH}/include)
 
 if (WIN32)
 	include_directories(${PROJECT_SOURCE_DIR}/contrib/src/getopt)
+	include_directories(${PROJECT_SOURCE_DIR}/contrib/src/inttypes)
 endif()
 include_directories(${PROJECT_SOURCE_DIR}/contrib/src/jsmn)
 

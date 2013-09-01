@@ -45,7 +45,7 @@ std::string Storage::key(unsigned long index) {
 		return "";
 
 	std::map<std::string, std::string>::iterator dataIter = _data.begin();
-	for (int i = 0; i < index; i++) {
+	for (unsigned int i = 0; i < index; i++) {
 		dataIter++;
 	}
 	return dataIter->first;
