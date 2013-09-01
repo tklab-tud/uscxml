@@ -2,148 +2,198 @@
 #define TYPEDARRAY_H_99815BLY
 
 #include <string>
-#include <map>
+#include <vector>
+#include <boost/shared_ptr.hpp>
 
 namespace uscxml {
 
 class ArrayBuffer {
 public:
+	class Buffer {
+	public:
+		~Buffer();
+		Buffer(size_t size);
+		Buffer(void* data, size_t size);
+		char* _data;
+		size_t _size;
+	};
+
+	ArrayBuffer(unsigned long length);
+	ArrayBuffer(boost::shared_ptr<ArrayBuffer::Buffer>);
 	unsigned long getByteLength();
-	ArrayBuffer slice(long begin, long end);
+	ArrayBuffer slice(long begin, long length);
+	ArrayBuffer slice(long begin);
 	static bool isView(void*);
+	unsigned long getLength() {
+		return getByteLength();
+	}
 	operator bool();
+	bool operator== (const ArrayBuffer& other) {
+		return other._buffer == _buffer;
+	}
+	unsigned char get(unsigned long index) {
+		if (index >= getLength())
+			return 0;
+		unsigned char retVal;
+		memcpy(&retVal, _buffer->_data + index * sizeof(unsigned char), sizeof(unsigned char));
+		return retVal;
+	}
+
+	void set(unsigned long index, unsigned char value) {
+		memcpy(_buffer->_data + index * sizeof(unsigned char), &value, sizeof(unsigned char));
+	}
+
+	boost::shared_ptr<Buffer> _buffer;
 };
 
 class ArrayBufferView {
 public:
 	ArrayBuffer getBuffer();
-	unsigned long getByteOffset();
-	unsigned long getByteLength();
-
+	virtual unsigned long getByteOffset() = 0;
+	virtual unsigned long getByteLength() = 0;
+	virtual unsigned long getLength() = 0;
+protected:
+	boost::shared_ptr<ArrayBuffer::Buffer> _buffer;
+	unsigned long _start;
+	unsigned long _end;
 };
 
-class DataView {
+class DataView : ArrayBufferView {
 public:
-	ArrayBuffer getBuffer();
+	DataView(ArrayBuffer*, unsigned long, unsigned long);
+	DataView(ArrayBuffer*, unsigned long);
+	DataView(ArrayBuffer*);
+
 	unsigned long getByteOffset();
 	unsigned long getByteLength();
+	unsigned long getLength();
 
 	char getInt8(unsigned long);
 	unsigned char getUint8(unsigned long);
-	short getInt16(unsigned long, bool);
-	unsigned short getUint16(unsigned long, bool);
-	long getInt32(unsigned long, bool);
-	unsigned long getUint32(unsigned long, bool);
-	float getFloat32(unsigned long, bool);
-	double getFloat64(unsigned long, bool);
+	short getInt16(unsigned long, bool = false);
+	unsigned short getUint16(unsigned long, bool = false);
+	long getInt32(unsigned long, bool = false);
+	unsigned long getUint32(unsigned long, bool = false);
+	float getFloat32(unsigned long, bool = false);
+	double getFloat64(unsigned long, bool = false);
 
 	void setInt8(long, char);
 	void setUint8(long, unsigned char);
-	void setInt16(long, short, bool);
-	void setUint16(long, unsigned short, bool);
-	void setInt32(long, long, bool);
-	void setUint32(long, unsigned long, bool);
-	void setFloat32(long, float, bool);
-	void setFloat64(long, double, bool);
+	void setInt16(long, short, bool = false);
+	void setUint16(long, unsigned short, bool = false);
+	void setInt32(long, long, bool = false);
+	void setUint32(long, unsigned long, bool = false);
+	void setFloat32(long, float, bool = false);
+	void setFloat64(long, double, bool = false);
 
 };
 
-class JSArray {
+template<class T, class S> class TypedArray : public ArrayBufferView {
 public:
-	virtual unsigned long getLength() = 0;
-protected:
-	std::string _data;
+	virtual ~TypedArray() {}
+	TypedArray(uscxml::ArrayBuffer* buffer, unsigned long start, unsigned long length) {
+		_start = start;
+		_end = start + length;
+		_buffer = buffer->_buffer;
+	}
+	TypedArray(uscxml::ArrayBuffer* buffer, unsigned long start) {
+		_start = start / sizeof(S);
+		_end = buffer->_buffer->_size / sizeof(S);
+		_buffer = buffer->_buffer;
+	}
+	TypedArray(uscxml::ArrayBuffer* buffer) {
+		_start = 0;
+		_end = (buffer->_buffer->_size) / sizeof(S);
+		_buffer = buffer->_buffer;
+	}
+
+	TypedArray(boost::shared_ptr<ArrayBuffer::Buffer> buffer, unsigned long start, unsigned long length) {
+		_start = start;
+		_end = start + length;
+		_buffer = buffer;
+	}
+	TypedArray(unsigned long length) {
+		_start = 0;
+		_end = length;
+		_buffer = boost::shared_ptr<ArrayBuffer::Buffer>(new ArrayBuffer::Buffer(length * sizeof(S)));
+	}
+	TypedArray(std::vector<T> data) {
+		_start = 0;
+		_end = data.size();
+		if (sizeof(T) == sizeof(S)) {
+			_buffer = boost::shared_ptr<ArrayBuffer::Buffer>(new ArrayBuffer::Buffer(((void*)&data[0]), data.size() * sizeof(T)));
+		} else {
+			S* buffer = (S*)malloc(data.size() * sizeof(S));
+			typename std::vector<T>::const_iterator dataIter = data.begin();
+			unsigned long i = 0;
+			while(dataIter != data.end()) {
+				buffer[i] = *dataIter;
+				dataIter++;
+				i++;
+			}
+			_buffer = boost::shared_ptr<ArrayBuffer::Buffer>(new ArrayBuffer::Buffer(buffer, data.size() * sizeof(S)));
+		}
+	}
+	TypedArray(TypedArray* other) {
+		_start = other->_start;
+		_end = other->_end;
+		_buffer = other->_buffer;
+	}
+	T get(unsigned long index) {
+		if (index >= getLength())
+			return static_cast<T>(0);
+		S retVal;
+		memcpy(&retVal, _buffer->_data + (_start + index) * sizeof(S), sizeof(S));
+		return retVal;
+	}
+	void set(unsigned long index, T value) {
+		memcpy(_buffer->_data + (_start + index) * sizeof(S), &value, sizeof(S));
+	}
+
+	void set(TypedArray<T, S>* value, unsigned long offset) {
+		memcpy(_buffer->_data + (_start) * sizeof(S), &value->_buffer->_data[offset], value->_buffer->_size);
+	}
+
+	void set(TypedArray<T, S>* value) {
+		set(value, 0);
+	}
+
+	void set(std::vector<T> data, unsigned long offset) {
+	}
+
+	void set(std::vector<T> data) {
+		set(data, 0);
+	}
+
+	TypedArray* subarray(long start, long end) {
+		return new TypedArray<T, S>(_buffer, start, end);
+	}
+
+	unsigned long getLength() {
+		return _end - _start;
+	}
+
+	unsigned long getByteLength() {
+		return (_end - _start) * sizeof(S);
+	}
+
+	unsigned long getByteOffset() {
+		return _start * sizeof(S);
+	}
+
+
 };
 
-class Uint8Array : public JSArray {
-public:
-	virtual ~Uint8Array() {}
-	Uint8Array(Uint8Array* other);
-	unsigned char get(unsigned long);
-	void set(unsigned long, char);
-	Uint8Array* subarray(long, long);
-	unsigned long getLength();
-};
+typedef TypedArray<unsigned char, uint8_t> Uint8Array;
+typedef TypedArray<unsigned char, uint8_t> Uint8ClampedArray;
+typedef TypedArray<char, int8_t> Int8Array;
+typedef TypedArray<short, int16_t> Int16Array;
+typedef TypedArray<unsigned short, uint16_t> Uint16Array;
+typedef TypedArray<long, int32_t> Int32Array;
+typedef TypedArray<unsigned long, uint32_t> Uint32Array;
+typedef TypedArray<float, float> Float32Array;
+typedef TypedArray<double, double> Float64Array;
 
-class Uint8ClampedArray : public JSArray {
-public:
-	virtual ~Uint8ClampedArray() {}
-	Uint8ClampedArray(Uint8ClampedArray* other);
-	unsigned char get(unsigned long);
-	void set(unsigned long, char);
-	Uint8ClampedArray* subarray(long, long);
-	unsigned long getLength();
-};
-
-class Int8Array : public JSArray {
-public:
-	virtual ~Int8Array() {}
-	Int8Array(Int8Array* other);
-	char get(unsigned long);
-	void set(unsigned long, char);
-	Int8Array* subarray(long, long);
-	unsigned long getLength();
-};
-
-class Int16Array : public JSArray {
-public:
-	virtual ~Int16Array() {}
-	Int16Array(Int16Array* other);
-	short get(unsigned long);
-	void set(unsigned long, short);
-	Int16Array* subarray(long, long);
-	unsigned long getLength();
-};
-
-class Uint16Array : public JSArray {
-public:
-	virtual ~Uint16Array() {}
-	Uint16Array(Uint16Array* other);
-	unsigned short get(unsigned long);
-	void set(unsigned long, unsigned short);
-	Uint16Array* subarray(long, long);
-	unsigned long getLength();
-};
-
-class Int32Array : public JSArray {
-public:
-	virtual ~Int32Array() {}
-	Int32Array(Int32Array* other);
-	long get(unsigned long);
-	void set(unsigned long, long);
-	Int32Array* subarray(long, long);
-	unsigned long getLength();
-};
-
-class Uint32Array : public JSArray {
-public:
-	virtual ~Uint32Array() {}
-	Uint32Array(Uint32Array* other);
-	unsigned long get(unsigned long);
-	void set(unsigned long, unsigned long);
-	Uint32Array* subarray(long, long);
-	unsigned long getLength();
-};
-
-class Float32Array : public JSArray {
-public:
-	virtual ~Float32Array() {}
-	Float32Array(Float32Array* other);
-	float get(unsigned long);
-	void set(unsigned long, float);
-	Float32Array* subarray(long, long);
-	unsigned long getLength();
-};
-
-class Float64Array : public JSArray {
-public:
-	virtual ~Float64Array() {}
-	Float64Array(Float64Array* other);
-	double get(unsigned long);
-	void set(unsigned long, double);
-	Float64Array* subarray(long, long);
-	unsigned long getLength();
-};
 }
 
 #endif /* end of include guard: TYPEDARRAY_H_99815BLY */

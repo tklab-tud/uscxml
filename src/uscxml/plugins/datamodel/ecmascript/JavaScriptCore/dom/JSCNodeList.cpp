@@ -23,33 +23,34 @@ JSValueRef JSCNodeList::lengthAttrGetter(JSContextRef ctx, JSObjectRef object, J
 	return JSValueMakeNumber(ctx, privData->nativeObj->getLength());
 }
 
+
 JSValueRef JSCNodeList::itemCallback(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObj, size_t argumentCount, const JSValueRef* arguments, JSValueRef* exception) {
-	if (argumentCount < 1) {
-		std::string errorMsg = "Wrong number of arguments in item";
-		JSStringRef string = JSStringCreateWithUTF8CString(errorMsg.c_str());
-		JSValueRef exceptionString =JSValueMakeString(ctx, string);
-		JSStringRelease(string);
-		*exception = JSValueToObject(ctx, exceptionString, NULL);
-		return NULL;
-	}
 
 	struct JSCNodeListPrivate* privData = (struct JSCNodeListPrivate*)JSObjectGetPrivate(thisObj);
 
-	unsigned long localIndex = (unsigned long)JSValueToNumber(ctx, arguments[0], exception);
+	if (false) {
+	} else if (argumentCount == 1 &&
+	           JSValueIsNumber(ctx, arguments[0])) {
+		unsigned long localIndex = (unsigned long)JSValueToNumber(ctx, arguments[0], exception);
 
-	Arabica::DOM::Node<std::string>* retVal = new Arabica::DOM::Node<std::string>(privData->nativeObj->item(localIndex));
-	JSClassRef retClass = JSCNode::getTmpl();
+		Arabica::DOM::Node<std::string>* retVal = new Arabica::DOM::Node<std::string>(privData->nativeObj->item(localIndex));
+		JSClassRef retClass = JSCNode::getTmpl();
 
-	struct JSCNode::JSCNodePrivate* retPrivData = new JSCNode::JSCNodePrivate();
-	retPrivData->dom = privData->dom;
-	retPrivData->nativeObj = retVal;
+		struct JSCNode::JSCNodePrivate* retPrivData = new JSCNode::JSCNodePrivate();
+		retPrivData->dom = privData->dom;
+		retPrivData->nativeObj = retVal;
 
-	JSObjectRef retObj = JSObjectMake(ctx, retClass, retPrivData);
+		JSObjectRef retObj = JSObjectMake(ctx, retClass, retPrivData);
 
-	return retObj;
+		return retObj;
 
+	}
+
+	JSStringRef exceptionString = JSStringCreateWithUTF8CString("Parameter mismatch while calling item");
+	*exception = JSValueMakeString(ctx, exceptionString);
+	JSStringRelease(exceptionString);
+	return JSValueMakeUndefined(ctx);
 }
-
 
 }
 }

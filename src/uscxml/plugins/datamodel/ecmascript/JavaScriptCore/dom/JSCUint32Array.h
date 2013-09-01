@@ -24,6 +24,7 @@
 #include <string>
 #include "../../TypedArray.h"
 #include "DOM/Node.hpp"
+#include "JSCArrayBufferView.h"
 #include <JavaScriptCore/JavaScriptCore.h>
 #include "uscxml/plugins/datamodel/ecmascript/JavaScriptCore/JSCDOM.h"
 
@@ -43,8 +44,12 @@ public:
 	static JSValueRef setCallback(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObj, size_t argumentCount, const JSValueRef* arguments, JSValueRef* exception);
 	static JSValueRef subarrayCallback(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObj, size_t argumentCount, const JSValueRef* arguments, JSValueRef* exception);
 
+	static JSObjectRef jsConstructor(JSContextRef ctx, JSObjectRef constructor, size_t argumentCount, const JSValueRef arguments[], JSValueRef* exception);
 	static JSValueRef lengthAttrGetter(JSContextRef ctx, JSObjectRef thisObj, JSStringRef propertyName, JSValueRef* exception);
 	static JSValueRef BYTES_PER_ELEMENTConstGetter(JSContextRef ctx, JSObjectRef thisObj, JSStringRef propertyName, JSValueRef* exception);
+	static bool hasPropertyCustomCallback(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName);
+	static JSValueRef getPropertyCustomCallback(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef* exception);
+	static bool setPropertyCustomCallback(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef value, JSValueRef* exception);
 
 
 	static JSStaticValue staticValues[];
@@ -57,6 +62,11 @@ public:
 			classDef.staticValues = staticValues;
 			classDef.staticFunctions = staticFunctions;
 			classDef.finalize = jsDestructor;
+			classDef.hasProperty = hasPropertyCustomCallback;
+			classDef.getProperty = getPropertyCustomCallback;
+			classDef.setProperty = setPropertyCustomCallback;
+			classDef.callAsConstructor = jsConstructor;
+			classDef.parentClass = JSCArrayBufferView::getTmpl();
 
 			Tmpl = JSClassCreate(&classDef);
 			JSClassRetain(Tmpl);

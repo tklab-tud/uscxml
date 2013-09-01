@@ -7,7 +7,6 @@ namespace DOM {
 
 v8::Persistent<v8::FunctionTemplate> V8DocumentType::Tmpl;
 
-
 v8::Handle<v8::Value> V8DocumentType::nameAttrGetter(v8::Local<v8::String> property, const v8::AccessorInfo& info) {
 	v8::Local<v8::Object> self = info.Holder();
 	struct V8DocumentTypePrivate* privData = V8DOM::toClassPtr<V8DocumentTypePrivate >(self->GetInternalField(0));

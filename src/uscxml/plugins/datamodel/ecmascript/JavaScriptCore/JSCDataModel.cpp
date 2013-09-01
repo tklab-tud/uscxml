@@ -8,6 +8,18 @@
 #include "dom/JSCCDATASection.h"
 #include "dom/JSCSCXMLEvent.h"
 
+#include "dom/JSCArrayBuffer.h"
+#include "dom/JSCInt8Array.h"
+#include "dom/JSCUint8Array.h"
+#include "dom/JSCUint8ClampedArray.h"
+#include "dom/JSCInt16Array.h"
+#include "dom/JSCUint16Array.h"
+#include "dom/JSCInt32Array.h"
+#include "dom/JSCUint32Array.h"
+#include "dom/JSCFloat32Array.h"
+#include "dom/JSCFloat64Array.h"
+#include "dom/JSCDataView.h"
+
 #include "uscxml/Message.h"
 #include <glog/logging.h>
 
@@ -21,6 +33,12 @@ privData->dom = _dom; \
 privData->nativeObj = new type<std::string>(node); \
 JSObjectRef retObj = JSObjectMake(_ctx, JSC##type::getTmpl(), privData);\
 return retObj;
+
+#define JSC_ADD_GLOBAL_OBJECT(name, constructor)\
+JSStringRef name##Name = JSStringCreateWithUTF8CString(#name);\
+JSObjectRef name = JSObjectMake(dm->_ctx, constructor, NULL);\
+JSObjectSetProperty(dm->_ctx, JSContextGetGlobalObject(dm->_ctx), name##Name, name, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontDelete, NULL);\
+JSStringRelease(name##Name);
 
 namespace uscxml {
 
@@ -126,6 +144,18 @@ boost::shared_ptr<DataModelImpl> JSCDataModel::create(InterpreterImpl* interpret
 	JSObjectSetProperty(dm->_ctx, JSContextGetGlobalObject(dm->_ctx), sessionIdName, JSValueMakeString(dm->_ctx, sessionId), kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontDelete, NULL);
 	JSStringRelease(sessionIdName);
 	JSStringRelease(sessionId);
+
+	JSC_ADD_GLOBAL_OBJECT(ArrayBuffer, JSCArrayBuffer::getTmpl());
+	JSC_ADD_GLOBAL_OBJECT(Int8Array, JSCInt8Array::getTmpl());
+	JSC_ADD_GLOBAL_OBJECT(Uint8Array, JSCUint8Array::getTmpl());
+	JSC_ADD_GLOBAL_OBJECT(Uint8ClampedArray, JSCUint8ClampedArray::getTmpl());
+	JSC_ADD_GLOBAL_OBJECT(Int16Array, JSCInt16Array::getTmpl());
+	JSC_ADD_GLOBAL_OBJECT(Uint16Array, JSCUint16Array::getTmpl());
+	JSC_ADD_GLOBAL_OBJECT(Int32Array, JSCInt32Array::getTmpl());
+	JSC_ADD_GLOBAL_OBJECT(Uint32Array, JSCUint32Array::getTmpl());
+	JSC_ADD_GLOBAL_OBJECT(Float32Array, JSCFloat32Array::getTmpl());
+	JSC_ADD_GLOBAL_OBJECT(Float64Array, JSCFloat64Array::getTmpl());
+	JSC_ADD_GLOBAL_OBJECT(DataView, JSCDataView::getTmpl());
 
 	JSCDocument::JSCDocumentPrivate* privData = new JSCDocument::JSCDocumentPrivate();
 	if (interpreter) {

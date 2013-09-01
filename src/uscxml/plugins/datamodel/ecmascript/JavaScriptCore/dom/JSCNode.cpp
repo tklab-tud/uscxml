@@ -105,7 +105,7 @@ JSValueRef JSCNode::parentNodeAttrGetter(JSContextRef ctx, JSObjectRef object, J
 	retPrivData->dom = privData->dom;
 	retPrivData->nativeObj = arabicaRet;
 
-	JSObjectRef arbaicaRetObj = JSObjectMake(ctx, arbaicaRetClass, arabicaRet);
+	JSObjectRef arbaicaRetObj = JSObjectMake(ctx, arbaicaRetClass, retPrivData);
 	return arbaicaRetObj;
 }
 
@@ -122,7 +122,7 @@ JSValueRef JSCNode::childNodesAttrGetter(JSContextRef ctx, JSObjectRef object, J
 	retPrivData->dom = privData->dom;
 	retPrivData->nativeObj = arabicaRet;
 
-	JSObjectRef arbaicaRetObj = JSObjectMake(ctx, arbaicaRetClass, arabicaRet);
+	JSObjectRef arbaicaRetObj = JSObjectMake(ctx, arbaicaRetClass, retPrivData);
 	return arbaicaRetObj;
 }
 
@@ -139,7 +139,7 @@ JSValueRef JSCNode::firstChildAttrGetter(JSContextRef ctx, JSObjectRef object, J
 	retPrivData->dom = privData->dom;
 	retPrivData->nativeObj = arabicaRet;
 
-	JSObjectRef arbaicaRetObj = JSObjectMake(ctx, arbaicaRetClass, arabicaRet);
+	JSObjectRef arbaicaRetObj = JSObjectMake(ctx, arbaicaRetClass, retPrivData);
 	return arbaicaRetObj;
 }
 
@@ -156,7 +156,7 @@ JSValueRef JSCNode::lastChildAttrGetter(JSContextRef ctx, JSObjectRef object, JS
 	retPrivData->dom = privData->dom;
 	retPrivData->nativeObj = arabicaRet;
 
-	JSObjectRef arbaicaRetObj = JSObjectMake(ctx, arbaicaRetClass, arabicaRet);
+	JSObjectRef arbaicaRetObj = JSObjectMake(ctx, arbaicaRetClass, retPrivData);
 	return arbaicaRetObj;
 }
 
@@ -173,7 +173,7 @@ JSValueRef JSCNode::previousSiblingAttrGetter(JSContextRef ctx, JSObjectRef obje
 	retPrivData->dom = privData->dom;
 	retPrivData->nativeObj = arabicaRet;
 
-	JSObjectRef arbaicaRetObj = JSObjectMake(ctx, arbaicaRetClass, arabicaRet);
+	JSObjectRef arbaicaRetObj = JSObjectMake(ctx, arbaicaRetClass, retPrivData);
 	return arbaicaRetObj;
 }
 
@@ -190,7 +190,7 @@ JSValueRef JSCNode::nextSiblingAttrGetter(JSContextRef ctx, JSObjectRef object, 
 	retPrivData->dom = privData->dom;
 	retPrivData->nativeObj = arabicaRet;
 
-	JSObjectRef arbaicaRetObj = JSObjectMake(ctx, arbaicaRetClass, arabicaRet);
+	JSObjectRef arbaicaRetObj = JSObjectMake(ctx, arbaicaRetClass, retPrivData);
 	return arbaicaRetObj;
 }
 
@@ -207,7 +207,7 @@ JSValueRef JSCNode::ownerDocumentAttrGetter(JSContextRef ctx, JSObjectRef object
 	retPrivData->dom = privData->dom;
 	retPrivData->nativeObj = arabicaRet;
 
-	JSObjectRef arbaicaRetObj = JSObjectMake(ctx, arbaicaRetClass, arabicaRet);
+	JSObjectRef arbaicaRetObj = JSObjectMake(ctx, arbaicaRetClass, retPrivData);
 	return arbaicaRetObj;
 }
 
@@ -304,211 +304,244 @@ JSValueRef JSCNode::NOTATION_NODEConstGetter(JSContextRef ctx, JSObjectRef thisO
 	return JSValueMakeNumber(ctx, 12);
 }
 
+
 JSValueRef JSCNode::insertBeforeCallback(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObj, size_t argumentCount, const JSValueRef* arguments, JSValueRef* exception) {
-	if (argumentCount < 2) {
-		std::string errorMsg = "Wrong number of arguments in insertBefore";
-		JSStringRef string = JSStringCreateWithUTF8CString(errorMsg.c_str());
-		JSValueRef exceptionString =JSValueMakeString(ctx, string);
-		JSStringRelease(string);
-		*exception = JSValueToObject(ctx, exceptionString, NULL);
-		return NULL;
-	}
 
 	struct JSCNodePrivate* privData = (struct JSCNodePrivate*)JSObjectGetPrivate(thisObj);
 
-	Arabica::DOM::Node<std::string>* localNewChild = ((struct JSCNode::JSCNodePrivate*)JSObjectGetPrivate(JSValueToObject(ctx, arguments[0], exception)))->nativeObj;
-	Arabica::DOM::Node<std::string>* localRefChild = ((struct JSCNode::JSCNodePrivate*)JSObjectGetPrivate(JSValueToObject(ctx, arguments[1], exception)))->nativeObj;
+	if (false) {
+	} else if (argumentCount == 2 &&
+	           JSValueIsObject(ctx, arguments[0]) && JSValueIsObjectOfClass(ctx, arguments[0], JSCNode::getTmpl()) &&
+	           JSValueIsObject(ctx, arguments[1]) && JSValueIsObjectOfClass(ctx, arguments[1], JSCNode::getTmpl())) {
+		Arabica::DOM::Node<std::string>* localNewChild = ((struct JSCNode::JSCNodePrivate*)JSObjectGetPrivate(JSValueToObject(ctx, arguments[0], exception)))->nativeObj;
+		Arabica::DOM::Node<std::string>* localRefChild = ((struct JSCNode::JSCNodePrivate*)JSObjectGetPrivate(JSValueToObject(ctx, arguments[1], exception)))->nativeObj;
 
-	Arabica::DOM::Node<std::string>* retVal = new Arabica::DOM::Node<std::string>(privData->nativeObj->insertBefore(*localNewChild, *localRefChild));
-	JSClassRef retClass = JSCNode::getTmpl();
+		Arabica::DOM::Node<std::string>* retVal = new Arabica::DOM::Node<std::string>(privData->nativeObj->insertBefore(*localNewChild, *localRefChild));
+		JSClassRef retClass = JSCNode::getTmpl();
 
-	struct JSCNode::JSCNodePrivate* retPrivData = new JSCNode::JSCNodePrivate();
-	retPrivData->dom = privData->dom;
-	retPrivData->nativeObj = retVal;
+		struct JSCNode::JSCNodePrivate* retPrivData = new JSCNode::JSCNodePrivate();
+		retPrivData->dom = privData->dom;
+		retPrivData->nativeObj = retVal;
 
-	JSObjectRef retObj = JSObjectMake(ctx, retClass, retPrivData);
+		JSObjectRef retObj = JSObjectMake(ctx, retClass, retPrivData);
 
-	return retObj;
+		return retObj;
 
+	}
+
+	JSStringRef exceptionString = JSStringCreateWithUTF8CString("Parameter mismatch while calling insertBefore");
+	*exception = JSValueMakeString(ctx, exceptionString);
+	JSStringRelease(exceptionString);
+	return JSValueMakeUndefined(ctx);
 }
 
 JSValueRef JSCNode::replaceChildCallback(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObj, size_t argumentCount, const JSValueRef* arguments, JSValueRef* exception) {
-	if (argumentCount < 2) {
-		std::string errorMsg = "Wrong number of arguments in replaceChild";
-		JSStringRef string = JSStringCreateWithUTF8CString(errorMsg.c_str());
-		JSValueRef exceptionString =JSValueMakeString(ctx, string);
-		JSStringRelease(string);
-		*exception = JSValueToObject(ctx, exceptionString, NULL);
-		return NULL;
-	}
 
 	struct JSCNodePrivate* privData = (struct JSCNodePrivate*)JSObjectGetPrivate(thisObj);
 
-	Arabica::DOM::Node<std::string>* localNewChild = ((struct JSCNode::JSCNodePrivate*)JSObjectGetPrivate(JSValueToObject(ctx, arguments[0], exception)))->nativeObj;
-	Arabica::DOM::Node<std::string>* localOldChild = ((struct JSCNode::JSCNodePrivate*)JSObjectGetPrivate(JSValueToObject(ctx, arguments[1], exception)))->nativeObj;
+	if (false) {
+	} else if (argumentCount == 2 &&
+	           JSValueIsObject(ctx, arguments[0]) && JSValueIsObjectOfClass(ctx, arguments[0], JSCNode::getTmpl()) &&
+	           JSValueIsObject(ctx, arguments[1]) && JSValueIsObjectOfClass(ctx, arguments[1], JSCNode::getTmpl())) {
+		Arabica::DOM::Node<std::string>* localNewChild = ((struct JSCNode::JSCNodePrivate*)JSObjectGetPrivate(JSValueToObject(ctx, arguments[0], exception)))->nativeObj;
+		Arabica::DOM::Node<std::string>* localOldChild = ((struct JSCNode::JSCNodePrivate*)JSObjectGetPrivate(JSValueToObject(ctx, arguments[1], exception)))->nativeObj;
 
-	Arabica::DOM::Node<std::string>* retVal = new Arabica::DOM::Node<std::string>(privData->nativeObj->replaceChild(*localNewChild, *localOldChild));
-	JSClassRef retClass = JSCNode::getTmpl();
+		Arabica::DOM::Node<std::string>* retVal = new Arabica::DOM::Node<std::string>(privData->nativeObj->replaceChild(*localNewChild, *localOldChild));
+		JSClassRef retClass = JSCNode::getTmpl();
 
-	struct JSCNode::JSCNodePrivate* retPrivData = new JSCNode::JSCNodePrivate();
-	retPrivData->dom = privData->dom;
-	retPrivData->nativeObj = retVal;
+		struct JSCNode::JSCNodePrivate* retPrivData = new JSCNode::JSCNodePrivate();
+		retPrivData->dom = privData->dom;
+		retPrivData->nativeObj = retVal;
 
-	JSObjectRef retObj = JSObjectMake(ctx, retClass, retPrivData);
+		JSObjectRef retObj = JSObjectMake(ctx, retClass, retPrivData);
 
-	return retObj;
+		return retObj;
 
+	}
+
+	JSStringRef exceptionString = JSStringCreateWithUTF8CString("Parameter mismatch while calling replaceChild");
+	*exception = JSValueMakeString(ctx, exceptionString);
+	JSStringRelease(exceptionString);
+	return JSValueMakeUndefined(ctx);
 }
 
 JSValueRef JSCNode::removeChildCallback(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObj, size_t argumentCount, const JSValueRef* arguments, JSValueRef* exception) {
-	if (argumentCount < 1) {
-		std::string errorMsg = "Wrong number of arguments in removeChild";
-		JSStringRef string = JSStringCreateWithUTF8CString(errorMsg.c_str());
-		JSValueRef exceptionString =JSValueMakeString(ctx, string);
-		JSStringRelease(string);
-		*exception = JSValueToObject(ctx, exceptionString, NULL);
-		return NULL;
-	}
 
 	struct JSCNodePrivate* privData = (struct JSCNodePrivate*)JSObjectGetPrivate(thisObj);
 
-	Arabica::DOM::Node<std::string>* localOldChild = ((struct JSCNode::JSCNodePrivate*)JSObjectGetPrivate(JSValueToObject(ctx, arguments[0], exception)))->nativeObj;
+	if (false) {
+	} else if (argumentCount == 1 &&
+	           JSValueIsObject(ctx, arguments[0]) && JSValueIsObjectOfClass(ctx, arguments[0], JSCNode::getTmpl())) {
+		Arabica::DOM::Node<std::string>* localOldChild = ((struct JSCNode::JSCNodePrivate*)JSObjectGetPrivate(JSValueToObject(ctx, arguments[0], exception)))->nativeObj;
 
-	Arabica::DOM::Node<std::string>* retVal = new Arabica::DOM::Node<std::string>(privData->nativeObj->removeChild(*localOldChild));
-	JSClassRef retClass = JSCNode::getTmpl();
+		Arabica::DOM::Node<std::string>* retVal = new Arabica::DOM::Node<std::string>(privData->nativeObj->removeChild(*localOldChild));
+		JSClassRef retClass = JSCNode::getTmpl();
 
-	struct JSCNode::JSCNodePrivate* retPrivData = new JSCNode::JSCNodePrivate();
-	retPrivData->dom = privData->dom;
-	retPrivData->nativeObj = retVal;
+		struct JSCNode::JSCNodePrivate* retPrivData = new JSCNode::JSCNodePrivate();
+		retPrivData->dom = privData->dom;
+		retPrivData->nativeObj = retVal;
 
-	JSObjectRef retObj = JSObjectMake(ctx, retClass, retPrivData);
+		JSObjectRef retObj = JSObjectMake(ctx, retClass, retPrivData);
 
-	return retObj;
+		return retObj;
 
+	}
+
+	JSStringRef exceptionString = JSStringCreateWithUTF8CString("Parameter mismatch while calling removeChild");
+	*exception = JSValueMakeString(ctx, exceptionString);
+	JSStringRelease(exceptionString);
+	return JSValueMakeUndefined(ctx);
 }
 
 JSValueRef JSCNode::appendChildCallback(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObj, size_t argumentCount, const JSValueRef* arguments, JSValueRef* exception) {
-	if (argumentCount < 1) {
-		std::string errorMsg = "Wrong number of arguments in appendChild";
-		JSStringRef string = JSStringCreateWithUTF8CString(errorMsg.c_str());
-		JSValueRef exceptionString =JSValueMakeString(ctx, string);
-		JSStringRelease(string);
-		*exception = JSValueToObject(ctx, exceptionString, NULL);
-		return NULL;
-	}
 
 	struct JSCNodePrivate* privData = (struct JSCNodePrivate*)JSObjectGetPrivate(thisObj);
 
-	Arabica::DOM::Node<std::string>* localNewChild = ((struct JSCNode::JSCNodePrivate*)JSObjectGetPrivate(JSValueToObject(ctx, arguments[0], exception)))->nativeObj;
+	if (false) {
+	} else if (argumentCount == 1 &&
+	           JSValueIsObject(ctx, arguments[0]) && JSValueIsObjectOfClass(ctx, arguments[0], JSCNode::getTmpl())) {
+		Arabica::DOM::Node<std::string>* localNewChild = ((struct JSCNode::JSCNodePrivate*)JSObjectGetPrivate(JSValueToObject(ctx, arguments[0], exception)))->nativeObj;
 
-	Arabica::DOM::Node<std::string>* retVal = new Arabica::DOM::Node<std::string>(privData->nativeObj->appendChild(*localNewChild));
-	JSClassRef retClass = JSCNode::getTmpl();
+		Arabica::DOM::Node<std::string>* retVal = new Arabica::DOM::Node<std::string>(privData->nativeObj->appendChild(*localNewChild));
+		JSClassRef retClass = JSCNode::getTmpl();
 
-	struct JSCNode::JSCNodePrivate* retPrivData = new JSCNode::JSCNodePrivate();
-	retPrivData->dom = privData->dom;
-	retPrivData->nativeObj = retVal;
+		struct JSCNode::JSCNodePrivate* retPrivData = new JSCNode::JSCNodePrivate();
+		retPrivData->dom = privData->dom;
+		retPrivData->nativeObj = retVal;
 
-	JSObjectRef retObj = JSObjectMake(ctx, retClass, retPrivData);
+		JSObjectRef retObj = JSObjectMake(ctx, retClass, retPrivData);
 
-	return retObj;
+		return retObj;
 
+	}
+
+	JSStringRef exceptionString = JSStringCreateWithUTF8CString("Parameter mismatch while calling appendChild");
+	*exception = JSValueMakeString(ctx, exceptionString);
+	JSStringRelease(exceptionString);
+	return JSValueMakeUndefined(ctx);
 }
 
 JSValueRef JSCNode::hasChildNodesCallback(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObj, size_t argumentCount, const JSValueRef* arguments, JSValueRef* exception) {
 
 	struct JSCNodePrivate* privData = (struct JSCNodePrivate*)JSObjectGetPrivate(thisObj);
 
+	if (false) {
+	} else if (argumentCount == 0) {
 
-	bool retVal = privData->nativeObj->hasChildNodes();
+		bool retVal = privData->nativeObj->hasChildNodes();
 
-	JSValueRef jscRetVal = JSValueMakeBoolean(ctx, retVal);
-	return jscRetVal;
+		JSValueRef jscRetVal = JSValueMakeBoolean(ctx, retVal);
+		return jscRetVal;
+	}
+
+	JSStringRef exceptionString = JSStringCreateWithUTF8CString("Parameter mismatch while calling hasChildNodes");
+	*exception = JSValueMakeString(ctx, exceptionString);
+	JSStringRelease(exceptionString);
+	return JSValueMakeUndefined(ctx);
 }
 
 JSValueRef JSCNode::cloneNodeCallback(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObj, size_t argumentCount, const JSValueRef* arguments, JSValueRef* exception) {
-	if (argumentCount < 1) {
-		std::string errorMsg = "Wrong number of arguments in cloneNode";
-		JSStringRef string = JSStringCreateWithUTF8CString(errorMsg.c_str());
-		JSValueRef exceptionString =JSValueMakeString(ctx, string);
-		JSStringRelease(string);
-		*exception = JSValueToObject(ctx, exceptionString, NULL);
-		return NULL;
-	}
 
 	struct JSCNodePrivate* privData = (struct JSCNodePrivate*)JSObjectGetPrivate(thisObj);
 
-	bool localDeep = JSValueToBoolean(ctx, arguments[0]);
+	if (false) {
+	} else if (argumentCount == 1 &&
+	           JSValueIsBoolean(ctx, arguments[0])) {
+		bool localDeep = JSValueToBoolean(ctx, arguments[0]);
 
-	Arabica::DOM::Node<std::string>* retVal = new Arabica::DOM::Node<std::string>(privData->nativeObj->cloneNode(localDeep));
-	JSClassRef retClass = JSCNode::getTmpl();
+		Arabica::DOM::Node<std::string>* retVal = new Arabica::DOM::Node<std::string>(privData->nativeObj->cloneNode(localDeep));
+		JSClassRef retClass = JSCNode::getTmpl();
 
-	struct JSCNode::JSCNodePrivate* retPrivData = new JSCNode::JSCNodePrivate();
-	retPrivData->dom = privData->dom;
-	retPrivData->nativeObj = retVal;
+		struct JSCNode::JSCNodePrivate* retPrivData = new JSCNode::JSCNodePrivate();
+		retPrivData->dom = privData->dom;
+		retPrivData->nativeObj = retVal;
 
-	JSObjectRef retObj = JSObjectMake(ctx, retClass, retPrivData);
+		JSObjectRef retObj = JSObjectMake(ctx, retClass, retPrivData);
 
-	return retObj;
+		return retObj;
 
+	}
+
+	JSStringRef exceptionString = JSStringCreateWithUTF8CString("Parameter mismatch while calling cloneNode");
+	*exception = JSValueMakeString(ctx, exceptionString);
+	JSStringRelease(exceptionString);
+	return JSValueMakeUndefined(ctx);
 }
 
 JSValueRef JSCNode::normalizeCallback(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObj, size_t argumentCount, const JSValueRef* arguments, JSValueRef* exception) {
 
 	struct JSCNodePrivate* privData = (struct JSCNodePrivate*)JSObjectGetPrivate(thisObj);
 
+	if (false) {
+	} else if (argumentCount == 0) {
 
-	privData->nativeObj->normalize();
+		privData->nativeObj->normalize();
 
-	JSValueRef jscRetVal = JSValueMakeUndefined(ctx);
-	return jscRetVal;
+		JSValueRef jscRetVal = JSValueMakeUndefined(ctx);
+		return jscRetVal;
+	}
+
+	JSStringRef exceptionString = JSStringCreateWithUTF8CString("Parameter mismatch while calling normalize");
+	*exception = JSValueMakeString(ctx, exceptionString);
+	JSStringRelease(exceptionString);
+	return JSValueMakeUndefined(ctx);
 }
 
 JSValueRef JSCNode::isSupportedCallback(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObj, size_t argumentCount, const JSValueRef* arguments, JSValueRef* exception) {
-	if (argumentCount < 2) {
-		std::string errorMsg = "Wrong number of arguments in isSupported";
-		JSStringRef string = JSStringCreateWithUTF8CString(errorMsg.c_str());
-		JSValueRef exceptionString =JSValueMakeString(ctx, string);
-		JSStringRelease(string);
-		*exception = JSValueToObject(ctx, exceptionString, NULL);
-		return NULL;
-	}
 
 	struct JSCNodePrivate* privData = (struct JSCNodePrivate*)JSObjectGetPrivate(thisObj);
 
-	JSStringRef stringReflocalFeature = JSValueToStringCopy(ctx, arguments[0], exception);
-	size_t localFeatureMaxSize = JSStringGetMaximumUTF8CStringSize(stringReflocalFeature);
-	char* localFeatureBuffer = new char[localFeatureMaxSize];
-	JSStringGetUTF8CString(stringReflocalFeature, localFeatureBuffer, localFeatureMaxSize);
-	std::string localFeature(localFeatureBuffer);
-	JSStringRelease(stringReflocalFeature);
-	free(localFeatureBuffer);
+	if (false) {
+	} else if (argumentCount == 2 &&
+	           JSValueIsString(ctx, arguments[0]) &&
+	           JSValueIsString(ctx, arguments[1])) {
+		JSStringRef stringReflocalFeature = JSValueToStringCopy(ctx, arguments[0], exception);
+		size_t localFeatureMaxSize = JSStringGetMaximumUTF8CStringSize(stringReflocalFeature);
+		char* localFeatureBuffer = new char[localFeatureMaxSize];
+		JSStringGetUTF8CString(stringReflocalFeature, localFeatureBuffer, localFeatureMaxSize);
+		std::string localFeature(localFeatureBuffer);
+		JSStringRelease(stringReflocalFeature);
+		free(localFeatureBuffer);
 
-	JSStringRef stringReflocalVersion = JSValueToStringCopy(ctx, arguments[1], exception);
-	size_t localVersionMaxSize = JSStringGetMaximumUTF8CStringSize(stringReflocalVersion);
-	char* localVersionBuffer = new char[localVersionMaxSize];
-	JSStringGetUTF8CString(stringReflocalVersion, localVersionBuffer, localVersionMaxSize);
-	std::string localVersion(localVersionBuffer);
-	JSStringRelease(stringReflocalVersion);
-	free(localVersionBuffer);
+		JSStringRef stringReflocalVersion = JSValueToStringCopy(ctx, arguments[1], exception);
+		size_t localVersionMaxSize = JSStringGetMaximumUTF8CStringSize(stringReflocalVersion);
+		char* localVersionBuffer = new char[localVersionMaxSize];
+		JSStringGetUTF8CString(stringReflocalVersion, localVersionBuffer, localVersionMaxSize);
+		std::string localVersion(localVersionBuffer);
+		JSStringRelease(stringReflocalVersion);
+		free(localVersionBuffer);
 
 
-	bool retVal = privData->nativeObj->isSupported(localFeature, localVersion);
+		bool retVal = privData->nativeObj->isSupported(localFeature, localVersion);
 
-	JSValueRef jscRetVal = JSValueMakeBoolean(ctx, retVal);
-	return jscRetVal;
+		JSValueRef jscRetVal = JSValueMakeBoolean(ctx, retVal);
+		return jscRetVal;
+	}
+
+	JSStringRef exceptionString = JSStringCreateWithUTF8CString("Parameter mismatch while calling isSupported");
+	*exception = JSValueMakeString(ctx, exceptionString);
+	JSStringRelease(exceptionString);
+	return JSValueMakeUndefined(ctx);
 }
 
 JSValueRef JSCNode::hasAttributesCallback(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObj, size_t argumentCount, const JSValueRef* arguments, JSValueRef* exception) {
 
 	struct JSCNodePrivate* privData = (struct JSCNodePrivate*)JSObjectGetPrivate(thisObj);
 
+	if (false) {
+	} else if (argumentCount == 0) {
 
-	bool retVal = privData->nativeObj->hasAttributes();
+		bool retVal = privData->nativeObj->hasAttributes();
 
-	JSValueRef jscRetVal = JSValueMakeBoolean(ctx, retVal);
-	return jscRetVal;
+		JSValueRef jscRetVal = JSValueMakeBoolean(ctx, retVal);
+		return jscRetVal;
+	}
+
+	JSStringRef exceptionString = JSStringCreateWithUTF8CString("Parameter mismatch while calling hasAttributes");
+	*exception = JSValueMakeString(ctx, exceptionString);
+	JSStringRelease(exceptionString);
+	return JSValueMakeUndefined(ctx);
 }
-
 
 }
 }

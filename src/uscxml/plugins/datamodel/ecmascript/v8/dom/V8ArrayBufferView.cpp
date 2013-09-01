@@ -6,7 +6,6 @@ namespace DOM {
 
 v8::Persistent<v8::FunctionTemplate> V8ArrayBufferView::Tmpl;
 
-
 v8::Handle<v8::Value> V8ArrayBufferView::bufferAttrGetter(v8::Local<v8::String> property, const v8::AccessorInfo& info) {
 	v8::Local<v8::Object> self = info.Holder();
 	struct V8ArrayBufferViewPrivate* privData = V8DOM::toClassPtr<V8ArrayBufferViewPrivate >(self->GetInternalField(0));

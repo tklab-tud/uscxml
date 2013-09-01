@@ -42,507 +42,530 @@ JSValueRef JSCElement::tagNameAttrGetter(JSContextRef ctx, JSObjectRef object, J
 	return retVal;
 }
 
+
 JSValueRef JSCElement::getAttributeCallback(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObj, size_t argumentCount, const JSValueRef* arguments, JSValueRef* exception) {
-	if (argumentCount < 1) {
-		std::string errorMsg = "Wrong number of arguments in getAttribute";
-		JSStringRef string = JSStringCreateWithUTF8CString(errorMsg.c_str());
-		JSValueRef exceptionString =JSValueMakeString(ctx, string);
-		JSStringRelease(string);
-		*exception = JSValueToObject(ctx, exceptionString, NULL);
-		return NULL;
-	}
 
 	struct JSCElementPrivate* privData = (struct JSCElementPrivate*)JSObjectGetPrivate(thisObj);
 
-	JSStringRef stringReflocalName = JSValueToStringCopy(ctx, arguments[0], exception);
-	size_t localNameMaxSize = JSStringGetMaximumUTF8CStringSize(stringReflocalName);
-	char* localNameBuffer = new char[localNameMaxSize];
-	JSStringGetUTF8CString(stringReflocalName, localNameBuffer, localNameMaxSize);
-	std::string localName(localNameBuffer);
-	JSStringRelease(stringReflocalName);
-	free(localNameBuffer);
+	if (false) {
+	} else if (argumentCount == 1 &&
+	           JSValueIsString(ctx, arguments[0])) {
+		JSStringRef stringReflocalName = JSValueToStringCopy(ctx, arguments[0], exception);
+		size_t localNameMaxSize = JSStringGetMaximumUTF8CStringSize(stringReflocalName);
+		char* localNameBuffer = new char[localNameMaxSize];
+		JSStringGetUTF8CString(stringReflocalName, localNameBuffer, localNameMaxSize);
+		std::string localName(localNameBuffer);
+		JSStringRelease(stringReflocalName);
+		free(localNameBuffer);
 
 
-	std::string retVal = privData->nativeObj->getAttribute(localName);
+		std::string retVal = privData->nativeObj->getAttribute(localName);
 
-	JSStringRef jscString = JSStringCreateWithUTF8CString(retVal.c_str());
-	JSValueRef jscRetVal = JSValueMakeString(ctx, jscString);
-	JSStringRelease(jscString);
-	return jscRetVal;
+		JSStringRef jscString = JSStringCreateWithUTF8CString(retVal.c_str());
+		JSValueRef jscRetVal = JSValueMakeString(ctx, jscString);
+		JSStringRelease(jscString);
+		return jscRetVal;
+	}
+
+	JSStringRef exceptionString = JSStringCreateWithUTF8CString("Parameter mismatch while calling getAttribute");
+	*exception = JSValueMakeString(ctx, exceptionString);
+	JSStringRelease(exceptionString);
+	return JSValueMakeUndefined(ctx);
 }
 
 JSValueRef JSCElement::setAttributeCallback(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObj, size_t argumentCount, const JSValueRef* arguments, JSValueRef* exception) {
-	if (argumentCount < 2) {
-		std::string errorMsg = "Wrong number of arguments in setAttribute";
-		JSStringRef string = JSStringCreateWithUTF8CString(errorMsg.c_str());
-		JSValueRef exceptionString =JSValueMakeString(ctx, string);
-		JSStringRelease(string);
-		*exception = JSValueToObject(ctx, exceptionString, NULL);
-		return NULL;
-	}
 
 	struct JSCElementPrivate* privData = (struct JSCElementPrivate*)JSObjectGetPrivate(thisObj);
 
-	JSStringRef stringReflocalName = JSValueToStringCopy(ctx, arguments[0], exception);
-	size_t localNameMaxSize = JSStringGetMaximumUTF8CStringSize(stringReflocalName);
-	char* localNameBuffer = new char[localNameMaxSize];
-	JSStringGetUTF8CString(stringReflocalName, localNameBuffer, localNameMaxSize);
-	std::string localName(localNameBuffer);
-	JSStringRelease(stringReflocalName);
-	free(localNameBuffer);
+	if (false) {
+	} else if (argumentCount == 2 &&
+	           JSValueIsString(ctx, arguments[0]) &&
+	           JSValueIsString(ctx, arguments[1])) {
+		JSStringRef stringReflocalName = JSValueToStringCopy(ctx, arguments[0], exception);
+		size_t localNameMaxSize = JSStringGetMaximumUTF8CStringSize(stringReflocalName);
+		char* localNameBuffer = new char[localNameMaxSize];
+		JSStringGetUTF8CString(stringReflocalName, localNameBuffer, localNameMaxSize);
+		std::string localName(localNameBuffer);
+		JSStringRelease(stringReflocalName);
+		free(localNameBuffer);
 
-	JSStringRef stringReflocalValue = JSValueToStringCopy(ctx, arguments[1], exception);
-	size_t localValueMaxSize = JSStringGetMaximumUTF8CStringSize(stringReflocalValue);
-	char* localValueBuffer = new char[localValueMaxSize];
-	JSStringGetUTF8CString(stringReflocalValue, localValueBuffer, localValueMaxSize);
-	std::string localValue(localValueBuffer);
-	JSStringRelease(stringReflocalValue);
-	free(localValueBuffer);
+		JSStringRef stringReflocalValue = JSValueToStringCopy(ctx, arguments[1], exception);
+		size_t localValueMaxSize = JSStringGetMaximumUTF8CStringSize(stringReflocalValue);
+		char* localValueBuffer = new char[localValueMaxSize];
+		JSStringGetUTF8CString(stringReflocalValue, localValueBuffer, localValueMaxSize);
+		std::string localValue(localValueBuffer);
+		JSStringRelease(stringReflocalValue);
+		free(localValueBuffer);
 
 
-	privData->nativeObj->setAttribute(localName, localValue);
+		privData->nativeObj->setAttribute(localName, localValue);
 
-	JSValueRef jscRetVal = JSValueMakeUndefined(ctx);
-	return jscRetVal;
+		JSValueRef jscRetVal = JSValueMakeUndefined(ctx);
+		return jscRetVal;
+	}
+
+	JSStringRef exceptionString = JSStringCreateWithUTF8CString("Parameter mismatch while calling setAttribute");
+	*exception = JSValueMakeString(ctx, exceptionString);
+	JSStringRelease(exceptionString);
+	return JSValueMakeUndefined(ctx);
 }
 
 JSValueRef JSCElement::removeAttributeCallback(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObj, size_t argumentCount, const JSValueRef* arguments, JSValueRef* exception) {
-	if (argumentCount < 1) {
-		std::string errorMsg = "Wrong number of arguments in removeAttribute";
-		JSStringRef string = JSStringCreateWithUTF8CString(errorMsg.c_str());
-		JSValueRef exceptionString =JSValueMakeString(ctx, string);
-		JSStringRelease(string);
-		*exception = JSValueToObject(ctx, exceptionString, NULL);
-		return NULL;
-	}
 
 	struct JSCElementPrivate* privData = (struct JSCElementPrivate*)JSObjectGetPrivate(thisObj);
 
-	JSStringRef stringReflocalName = JSValueToStringCopy(ctx, arguments[0], exception);
-	size_t localNameMaxSize = JSStringGetMaximumUTF8CStringSize(stringReflocalName);
-	char* localNameBuffer = new char[localNameMaxSize];
-	JSStringGetUTF8CString(stringReflocalName, localNameBuffer, localNameMaxSize);
-	std::string localName(localNameBuffer);
-	JSStringRelease(stringReflocalName);
-	free(localNameBuffer);
+	if (false) {
+	} else if (argumentCount == 1 &&
+	           JSValueIsString(ctx, arguments[0])) {
+		JSStringRef stringReflocalName = JSValueToStringCopy(ctx, arguments[0], exception);
+		size_t localNameMaxSize = JSStringGetMaximumUTF8CStringSize(stringReflocalName);
+		char* localNameBuffer = new char[localNameMaxSize];
+		JSStringGetUTF8CString(stringReflocalName, localNameBuffer, localNameMaxSize);
+		std::string localName(localNameBuffer);
+		JSStringRelease(stringReflocalName);
+		free(localNameBuffer);
 
 
-	privData->nativeObj->removeAttribute(localName);
+		privData->nativeObj->removeAttribute(localName);
 
-	JSValueRef jscRetVal = JSValueMakeUndefined(ctx);
-	return jscRetVal;
+		JSValueRef jscRetVal = JSValueMakeUndefined(ctx);
+		return jscRetVal;
+	}
+
+	JSStringRef exceptionString = JSStringCreateWithUTF8CString("Parameter mismatch while calling removeAttribute");
+	*exception = JSValueMakeString(ctx, exceptionString);
+	JSStringRelease(exceptionString);
+	return JSValueMakeUndefined(ctx);
 }
 
 JSValueRef JSCElement::getAttributeNodeCallback(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObj, size_t argumentCount, const JSValueRef* arguments, JSValueRef* exception) {
-	if (argumentCount < 1) {
-		std::string errorMsg = "Wrong number of arguments in getAttributeNode";
-		JSStringRef string = JSStringCreateWithUTF8CString(errorMsg.c_str());
-		JSValueRef exceptionString =JSValueMakeString(ctx, string);
-		JSStringRelease(string);
-		*exception = JSValueToObject(ctx, exceptionString, NULL);
-		return NULL;
-	}
 
 	struct JSCElementPrivate* privData = (struct JSCElementPrivate*)JSObjectGetPrivate(thisObj);
 
-	JSStringRef stringReflocalName = JSValueToStringCopy(ctx, arguments[0], exception);
-	size_t localNameMaxSize = JSStringGetMaximumUTF8CStringSize(stringReflocalName);
-	char* localNameBuffer = new char[localNameMaxSize];
-	JSStringGetUTF8CString(stringReflocalName, localNameBuffer, localNameMaxSize);
-	std::string localName(localNameBuffer);
-	JSStringRelease(stringReflocalName);
-	free(localNameBuffer);
+	if (false) {
+	} else if (argumentCount == 1 &&
+	           JSValueIsString(ctx, arguments[0])) {
+		JSStringRef stringReflocalName = JSValueToStringCopy(ctx, arguments[0], exception);
+		size_t localNameMaxSize = JSStringGetMaximumUTF8CStringSize(stringReflocalName);
+		char* localNameBuffer = new char[localNameMaxSize];
+		JSStringGetUTF8CString(stringReflocalName, localNameBuffer, localNameMaxSize);
+		std::string localName(localNameBuffer);
+		JSStringRelease(stringReflocalName);
+		free(localNameBuffer);
 
 
-	Arabica::DOM::Attr<std::string>* retVal = new Arabica::DOM::Attr<std::string>(privData->nativeObj->getAttributeNode(localName));
-	JSClassRef retClass = JSCAttr::getTmpl();
+		Arabica::DOM::Attr<std::string>* retVal = new Arabica::DOM::Attr<std::string>(privData->nativeObj->getAttributeNode(localName));
+		JSClassRef retClass = JSCAttr::getTmpl();
 
-	struct JSCAttr::JSCAttrPrivate* retPrivData = new JSCAttr::JSCAttrPrivate();
-	retPrivData->dom = privData->dom;
-	retPrivData->nativeObj = retVal;
+		struct JSCAttr::JSCAttrPrivate* retPrivData = new JSCAttr::JSCAttrPrivate();
+		retPrivData->dom = privData->dom;
+		retPrivData->nativeObj = retVal;
 
-	JSObjectRef retObj = JSObjectMake(ctx, retClass, retPrivData);
+		JSObjectRef retObj = JSObjectMake(ctx, retClass, retPrivData);
 
-	return retObj;
+		return retObj;
 
+	}
+
+	JSStringRef exceptionString = JSStringCreateWithUTF8CString("Parameter mismatch while calling getAttributeNode");
+	*exception = JSValueMakeString(ctx, exceptionString);
+	JSStringRelease(exceptionString);
+	return JSValueMakeUndefined(ctx);
 }
 
 JSValueRef JSCElement::setAttributeNodeCallback(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObj, size_t argumentCount, const JSValueRef* arguments, JSValueRef* exception) {
-	if (argumentCount < 1) {
-		std::string errorMsg = "Wrong number of arguments in setAttributeNode";
-		JSStringRef string = JSStringCreateWithUTF8CString(errorMsg.c_str());
-		JSValueRef exceptionString =JSValueMakeString(ctx, string);
-		JSStringRelease(string);
-		*exception = JSValueToObject(ctx, exceptionString, NULL);
-		return NULL;
-	}
 
 	struct JSCElementPrivate* privData = (struct JSCElementPrivate*)JSObjectGetPrivate(thisObj);
 
-	Arabica::DOM::Attr<std::string>* localNewAttr = ((struct JSCAttr::JSCAttrPrivate*)JSObjectGetPrivate(JSValueToObject(ctx, arguments[0], exception)))->nativeObj;
+	if (false) {
+	} else if (argumentCount == 1 &&
+	           JSValueIsObject(ctx, arguments[0]) && JSValueIsObjectOfClass(ctx, arguments[0], JSCAttr::getTmpl())) {
+		Arabica::DOM::Attr<std::string>* localNewAttr = ((struct JSCAttr::JSCAttrPrivate*)JSObjectGetPrivate(JSValueToObject(ctx, arguments[0], exception)))->nativeObj;
 
-	Arabica::DOM::Attr<std::string>* retVal = new Arabica::DOM::Attr<std::string>(privData->nativeObj->setAttributeNode(*localNewAttr));
-	JSClassRef retClass = JSCAttr::getTmpl();
+		Arabica::DOM::Attr<std::string>* retVal = new Arabica::DOM::Attr<std::string>(privData->nativeObj->setAttributeNode(*localNewAttr));
+		JSClassRef retClass = JSCAttr::getTmpl();
 
-	struct JSCAttr::JSCAttrPrivate* retPrivData = new JSCAttr::JSCAttrPrivate();
-	retPrivData->dom = privData->dom;
-	retPrivData->nativeObj = retVal;
+		struct JSCAttr::JSCAttrPrivate* retPrivData = new JSCAttr::JSCAttrPrivate();
+		retPrivData->dom = privData->dom;
+		retPrivData->nativeObj = retVal;
 
-	JSObjectRef retObj = JSObjectMake(ctx, retClass, retPrivData);
+		JSObjectRef retObj = JSObjectMake(ctx, retClass, retPrivData);
 
-	return retObj;
+		return retObj;
 
+	}
+
+	JSStringRef exceptionString = JSStringCreateWithUTF8CString("Parameter mismatch while calling setAttributeNode");
+	*exception = JSValueMakeString(ctx, exceptionString);
+	JSStringRelease(exceptionString);
+	return JSValueMakeUndefined(ctx);
 }
 
 JSValueRef JSCElement::removeAttributeNodeCallback(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObj, size_t argumentCount, const JSValueRef* arguments, JSValueRef* exception) {
-	if (argumentCount < 1) {
-		std::string errorMsg = "Wrong number of arguments in removeAttributeNode";
-		JSStringRef string = JSStringCreateWithUTF8CString(errorMsg.c_str());
-		JSValueRef exceptionString =JSValueMakeString(ctx, string);
-		JSStringRelease(string);
-		*exception = JSValueToObject(ctx, exceptionString, NULL);
-		return NULL;
-	}
 
 	struct JSCElementPrivate* privData = (struct JSCElementPrivate*)JSObjectGetPrivate(thisObj);
 
-	Arabica::DOM::Attr<std::string>* localOldAttr = ((struct JSCAttr::JSCAttrPrivate*)JSObjectGetPrivate(JSValueToObject(ctx, arguments[0], exception)))->nativeObj;
+	if (false) {
+	} else if (argumentCount == 1 &&
+	           JSValueIsObject(ctx, arguments[0]) && JSValueIsObjectOfClass(ctx, arguments[0], JSCAttr::getTmpl())) {
+		Arabica::DOM::Attr<std::string>* localOldAttr = ((struct JSCAttr::JSCAttrPrivate*)JSObjectGetPrivate(JSValueToObject(ctx, arguments[0], exception)))->nativeObj;
 
-	Arabica::DOM::Attr<std::string>* retVal = new Arabica::DOM::Attr<std::string>(privData->nativeObj->removeAttributeNode(*localOldAttr));
-	JSClassRef retClass = JSCAttr::getTmpl();
+		Arabica::DOM::Attr<std::string>* retVal = new Arabica::DOM::Attr<std::string>(privData->nativeObj->removeAttributeNode(*localOldAttr));
+		JSClassRef retClass = JSCAttr::getTmpl();
 
-	struct JSCAttr::JSCAttrPrivate* retPrivData = new JSCAttr::JSCAttrPrivate();
-	retPrivData->dom = privData->dom;
-	retPrivData->nativeObj = retVal;
+		struct JSCAttr::JSCAttrPrivate* retPrivData = new JSCAttr::JSCAttrPrivate();
+		retPrivData->dom = privData->dom;
+		retPrivData->nativeObj = retVal;
 
-	JSObjectRef retObj = JSObjectMake(ctx, retClass, retPrivData);
+		JSObjectRef retObj = JSObjectMake(ctx, retClass, retPrivData);
 
-	return retObj;
+		return retObj;
 
+	}
+
+	JSStringRef exceptionString = JSStringCreateWithUTF8CString("Parameter mismatch while calling removeAttributeNode");
+	*exception = JSValueMakeString(ctx, exceptionString);
+	JSStringRelease(exceptionString);
+	return JSValueMakeUndefined(ctx);
 }
 
 JSValueRef JSCElement::getElementsByTagNameCallback(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObj, size_t argumentCount, const JSValueRef* arguments, JSValueRef* exception) {
-	if (argumentCount < 1) {
-		std::string errorMsg = "Wrong number of arguments in getElementsByTagName";
-		JSStringRef string = JSStringCreateWithUTF8CString(errorMsg.c_str());
-		JSValueRef exceptionString =JSValueMakeString(ctx, string);
-		JSStringRelease(string);
-		*exception = JSValueToObject(ctx, exceptionString, NULL);
-		return NULL;
-	}
 
 	struct JSCElementPrivate* privData = (struct JSCElementPrivate*)JSObjectGetPrivate(thisObj);
 
-	JSStringRef stringReflocalName = JSValueToStringCopy(ctx, arguments[0], exception);
-	size_t localNameMaxSize = JSStringGetMaximumUTF8CStringSize(stringReflocalName);
-	char* localNameBuffer = new char[localNameMaxSize];
-	JSStringGetUTF8CString(stringReflocalName, localNameBuffer, localNameMaxSize);
-	std::string localName(localNameBuffer);
-	JSStringRelease(stringReflocalName);
-	free(localNameBuffer);
+	if (false) {
+	} else if (argumentCount == 1 &&
+	           JSValueIsString(ctx, arguments[0])) {
+		JSStringRef stringReflocalName = JSValueToStringCopy(ctx, arguments[0], exception);
+		size_t localNameMaxSize = JSStringGetMaximumUTF8CStringSize(stringReflocalName);
+		char* localNameBuffer = new char[localNameMaxSize];
+		JSStringGetUTF8CString(stringReflocalName, localNameBuffer, localNameMaxSize);
+		std::string localName(localNameBuffer);
+		JSStringRelease(stringReflocalName);
+		free(localNameBuffer);
 
 
-	Arabica::DOM::NodeList<std::string>* retVal = new Arabica::DOM::NodeList<std::string>(privData->nativeObj->getElementsByTagName(localName));
-	JSClassRef retClass = JSCNodeList::getTmpl();
+		Arabica::DOM::NodeList<std::string>* retVal = new Arabica::DOM::NodeList<std::string>(privData->nativeObj->getElementsByTagName(localName));
+		JSClassRef retClass = JSCNodeList::getTmpl();
 
-	struct JSCNodeList::JSCNodeListPrivate* retPrivData = new JSCNodeList::JSCNodeListPrivate();
-	retPrivData->dom = privData->dom;
-	retPrivData->nativeObj = retVal;
+		struct JSCNodeList::JSCNodeListPrivate* retPrivData = new JSCNodeList::JSCNodeListPrivate();
+		retPrivData->dom = privData->dom;
+		retPrivData->nativeObj = retVal;
 
-	JSObjectRef retObj = JSObjectMake(ctx, retClass, retPrivData);
+		JSObjectRef retObj = JSObjectMake(ctx, retClass, retPrivData);
 
-	return retObj;
+		return retObj;
 
+	}
+
+	JSStringRef exceptionString = JSStringCreateWithUTF8CString("Parameter mismatch while calling getElementsByTagName");
+	*exception = JSValueMakeString(ctx, exceptionString);
+	JSStringRelease(exceptionString);
+	return JSValueMakeUndefined(ctx);
 }
 
 JSValueRef JSCElement::getAttributeNSCallback(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObj, size_t argumentCount, const JSValueRef* arguments, JSValueRef* exception) {
-	if (argumentCount < 2) {
-		std::string errorMsg = "Wrong number of arguments in getAttributeNS";
-		JSStringRef string = JSStringCreateWithUTF8CString(errorMsg.c_str());
-		JSValueRef exceptionString =JSValueMakeString(ctx, string);
-		JSStringRelease(string);
-		*exception = JSValueToObject(ctx, exceptionString, NULL);
-		return NULL;
-	}
 
 	struct JSCElementPrivate* privData = (struct JSCElementPrivate*)JSObjectGetPrivate(thisObj);
 
-	JSStringRef stringReflocalNamespaceURI = JSValueToStringCopy(ctx, arguments[0], exception);
-	size_t localNamespaceURIMaxSize = JSStringGetMaximumUTF8CStringSize(stringReflocalNamespaceURI);
-	char* localNamespaceURIBuffer = new char[localNamespaceURIMaxSize];
-	JSStringGetUTF8CString(stringReflocalNamespaceURI, localNamespaceURIBuffer, localNamespaceURIMaxSize);
-	std::string localNamespaceURI(localNamespaceURIBuffer);
-	JSStringRelease(stringReflocalNamespaceURI);
-	free(localNamespaceURIBuffer);
+	if (false) {
+	} else if (argumentCount == 2 &&
+	           JSValueIsString(ctx, arguments[0]) &&
+	           JSValueIsString(ctx, arguments[1])) {
+		JSStringRef stringReflocalNamespaceURI = JSValueToStringCopy(ctx, arguments[0], exception);
+		size_t localNamespaceURIMaxSize = JSStringGetMaximumUTF8CStringSize(stringReflocalNamespaceURI);
+		char* localNamespaceURIBuffer = new char[localNamespaceURIMaxSize];
+		JSStringGetUTF8CString(stringReflocalNamespaceURI, localNamespaceURIBuffer, localNamespaceURIMaxSize);
+		std::string localNamespaceURI(localNamespaceURIBuffer);
+		JSStringRelease(stringReflocalNamespaceURI);
+		free(localNamespaceURIBuffer);
 
-	JSStringRef stringReflocalLocalName = JSValueToStringCopy(ctx, arguments[1], exception);
-	size_t localLocalNameMaxSize = JSStringGetMaximumUTF8CStringSize(stringReflocalLocalName);
-	char* localLocalNameBuffer = new char[localLocalNameMaxSize];
-	JSStringGetUTF8CString(stringReflocalLocalName, localLocalNameBuffer, localLocalNameMaxSize);
-	std::string localLocalName(localLocalNameBuffer);
-	JSStringRelease(stringReflocalLocalName);
-	free(localLocalNameBuffer);
+		JSStringRef stringReflocalLocalName = JSValueToStringCopy(ctx, arguments[1], exception);
+		size_t localLocalNameMaxSize = JSStringGetMaximumUTF8CStringSize(stringReflocalLocalName);
+		char* localLocalNameBuffer = new char[localLocalNameMaxSize];
+		JSStringGetUTF8CString(stringReflocalLocalName, localLocalNameBuffer, localLocalNameMaxSize);
+		std::string localLocalName(localLocalNameBuffer);
+		JSStringRelease(stringReflocalLocalName);
+		free(localLocalNameBuffer);
 
 
-	std::string retVal = privData->nativeObj->getAttributeNS(localNamespaceURI, localLocalName);
+		std::string retVal = privData->nativeObj->getAttributeNS(localNamespaceURI, localLocalName);
 
-	JSStringRef jscString = JSStringCreateWithUTF8CString(retVal.c_str());
-	JSValueRef jscRetVal = JSValueMakeString(ctx, jscString);
-	JSStringRelease(jscString);
-	return jscRetVal;
+		JSStringRef jscString = JSStringCreateWithUTF8CString(retVal.c_str());
+		JSValueRef jscRetVal = JSValueMakeString(ctx, jscString);
+		JSStringRelease(jscString);
+		return jscRetVal;
+	}
+
+	JSStringRef exceptionString = JSStringCreateWithUTF8CString("Parameter mismatch while calling getAttributeNS");
+	*exception = JSValueMakeString(ctx, exceptionString);
+	JSStringRelease(exceptionString);
+	return JSValueMakeUndefined(ctx);
 }
 
 JSValueRef JSCElement::setAttributeNSCallback(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObj, size_t argumentCount, const JSValueRef* arguments, JSValueRef* exception) {
-	if (argumentCount < 3) {
-		std::string errorMsg = "Wrong number of arguments in setAttributeNS";
-		JSStringRef string = JSStringCreateWithUTF8CString(errorMsg.c_str());
-		JSValueRef exceptionString =JSValueMakeString(ctx, string);
-		JSStringRelease(string);
-		*exception = JSValueToObject(ctx, exceptionString, NULL);
-		return NULL;
-	}
 
 	struct JSCElementPrivate* privData = (struct JSCElementPrivate*)JSObjectGetPrivate(thisObj);
 
-	JSStringRef stringReflocalNamespaceURI = JSValueToStringCopy(ctx, arguments[0], exception);
-	size_t localNamespaceURIMaxSize = JSStringGetMaximumUTF8CStringSize(stringReflocalNamespaceURI);
-	char* localNamespaceURIBuffer = new char[localNamespaceURIMaxSize];
-	JSStringGetUTF8CString(stringReflocalNamespaceURI, localNamespaceURIBuffer, localNamespaceURIMaxSize);
-	std::string localNamespaceURI(localNamespaceURIBuffer);
-	JSStringRelease(stringReflocalNamespaceURI);
-	free(localNamespaceURIBuffer);
+	if (false) {
+	} else if (argumentCount == 3 &&
+	           JSValueIsString(ctx, arguments[0]) &&
+	           JSValueIsString(ctx, arguments[1]) &&
+	           JSValueIsString(ctx, arguments[2])) {
+		JSStringRef stringReflocalNamespaceURI = JSValueToStringCopy(ctx, arguments[0], exception);
+		size_t localNamespaceURIMaxSize = JSStringGetMaximumUTF8CStringSize(stringReflocalNamespaceURI);
+		char* localNamespaceURIBuffer = new char[localNamespaceURIMaxSize];
+		JSStringGetUTF8CString(stringReflocalNamespaceURI, localNamespaceURIBuffer, localNamespaceURIMaxSize);
+		std::string localNamespaceURI(localNamespaceURIBuffer);
+		JSStringRelease(stringReflocalNamespaceURI);
+		free(localNamespaceURIBuffer);
 
-	JSStringRef stringReflocalQualifiedName = JSValueToStringCopy(ctx, arguments[1], exception);
-	size_t localQualifiedNameMaxSize = JSStringGetMaximumUTF8CStringSize(stringReflocalQualifiedName);
-	char* localQualifiedNameBuffer = new char[localQualifiedNameMaxSize];
-	JSStringGetUTF8CString(stringReflocalQualifiedName, localQualifiedNameBuffer, localQualifiedNameMaxSize);
-	std::string localQualifiedName(localQualifiedNameBuffer);
-	JSStringRelease(stringReflocalQualifiedName);
-	free(localQualifiedNameBuffer);
+		JSStringRef stringReflocalQualifiedName = JSValueToStringCopy(ctx, arguments[1], exception);
+		size_t localQualifiedNameMaxSize = JSStringGetMaximumUTF8CStringSize(stringReflocalQualifiedName);
+		char* localQualifiedNameBuffer = new char[localQualifiedNameMaxSize];
+		JSStringGetUTF8CString(stringReflocalQualifiedName, localQualifiedNameBuffer, localQualifiedNameMaxSize);
+		std::string localQualifiedName(localQualifiedNameBuffer);
+		JSStringRelease(stringReflocalQualifiedName);
+		free(localQualifiedNameBuffer);
 
-	JSStringRef stringReflocalValue = JSValueToStringCopy(ctx, arguments[2], exception);
-	size_t localValueMaxSize = JSStringGetMaximumUTF8CStringSize(stringReflocalValue);
-	char* localValueBuffer = new char[localValueMaxSize];
-	JSStringGetUTF8CString(stringReflocalValue, localValueBuffer, localValueMaxSize);
-	std::string localValue(localValueBuffer);
-	JSStringRelease(stringReflocalValue);
-	free(localValueBuffer);
+		JSStringRef stringReflocalValue = JSValueToStringCopy(ctx, arguments[2], exception);
+		size_t localValueMaxSize = JSStringGetMaximumUTF8CStringSize(stringReflocalValue);
+		char* localValueBuffer = new char[localValueMaxSize];
+		JSStringGetUTF8CString(stringReflocalValue, localValueBuffer, localValueMaxSize);
+		std::string localValue(localValueBuffer);
+		JSStringRelease(stringReflocalValue);
+		free(localValueBuffer);
 
 
-	privData->nativeObj->setAttributeNS(localNamespaceURI, localQualifiedName, localValue);
+		privData->nativeObj->setAttributeNS(localNamespaceURI, localQualifiedName, localValue);
 
-	JSValueRef jscRetVal = JSValueMakeUndefined(ctx);
-	return jscRetVal;
+		JSValueRef jscRetVal = JSValueMakeUndefined(ctx);
+		return jscRetVal;
+	}
+
+	JSStringRef exceptionString = JSStringCreateWithUTF8CString("Parameter mismatch while calling setAttributeNS");
+	*exception = JSValueMakeString(ctx, exceptionString);
+	JSStringRelease(exceptionString);
+	return JSValueMakeUndefined(ctx);
 }
 
 JSValueRef JSCElement::removeAttributeNSCallback(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObj, size_t argumentCount, const JSValueRef* arguments, JSValueRef* exception) {
-	if (argumentCount < 2) {
-		std::string errorMsg = "Wrong number of arguments in removeAttributeNS";
-		JSStringRef string = JSStringCreateWithUTF8CString(errorMsg.c_str());
-		JSValueRef exceptionString =JSValueMakeString(ctx, string);
-		JSStringRelease(string);
-		*exception = JSValueToObject(ctx, exceptionString, NULL);
-		return NULL;
-	}
 
 	struct JSCElementPrivate* privData = (struct JSCElementPrivate*)JSObjectGetPrivate(thisObj);
 
-	JSStringRef stringReflocalNamespaceURI = JSValueToStringCopy(ctx, arguments[0], exception);
-	size_t localNamespaceURIMaxSize = JSStringGetMaximumUTF8CStringSize(stringReflocalNamespaceURI);
-	char* localNamespaceURIBuffer = new char[localNamespaceURIMaxSize];
-	JSStringGetUTF8CString(stringReflocalNamespaceURI, localNamespaceURIBuffer, localNamespaceURIMaxSize);
-	std::string localNamespaceURI(localNamespaceURIBuffer);
-	JSStringRelease(stringReflocalNamespaceURI);
-	free(localNamespaceURIBuffer);
+	if (false) {
+	} else if (argumentCount == 2 &&
+	           JSValueIsString(ctx, arguments[0]) &&
+	           JSValueIsString(ctx, arguments[1])) {
+		JSStringRef stringReflocalNamespaceURI = JSValueToStringCopy(ctx, arguments[0], exception);
+		size_t localNamespaceURIMaxSize = JSStringGetMaximumUTF8CStringSize(stringReflocalNamespaceURI);
+		char* localNamespaceURIBuffer = new char[localNamespaceURIMaxSize];
+		JSStringGetUTF8CString(stringReflocalNamespaceURI, localNamespaceURIBuffer, localNamespaceURIMaxSize);
+		std::string localNamespaceURI(localNamespaceURIBuffer);
+		JSStringRelease(stringReflocalNamespaceURI);
+		free(localNamespaceURIBuffer);
 
-	JSStringRef stringReflocalLocalName = JSValueToStringCopy(ctx, arguments[1], exception);
-	size_t localLocalNameMaxSize = JSStringGetMaximumUTF8CStringSize(stringReflocalLocalName);
-	char* localLocalNameBuffer = new char[localLocalNameMaxSize];
-	JSStringGetUTF8CString(stringReflocalLocalName, localLocalNameBuffer, localLocalNameMaxSize);
-	std::string localLocalName(localLocalNameBuffer);
-	JSStringRelease(stringReflocalLocalName);
-	free(localLocalNameBuffer);
+		JSStringRef stringReflocalLocalName = JSValueToStringCopy(ctx, arguments[1], exception);
+		size_t localLocalNameMaxSize = JSStringGetMaximumUTF8CStringSize(stringReflocalLocalName);
+		char* localLocalNameBuffer = new char[localLocalNameMaxSize];
+		JSStringGetUTF8CString(stringReflocalLocalName, localLocalNameBuffer, localLocalNameMaxSize);
+		std::string localLocalName(localLocalNameBuffer);
+		JSStringRelease(stringReflocalLocalName);
+		free(localLocalNameBuffer);
 
 
-	privData->nativeObj->removeAttributeNS(localNamespaceURI, localLocalName);
+		privData->nativeObj->removeAttributeNS(localNamespaceURI, localLocalName);
 
-	JSValueRef jscRetVal = JSValueMakeUndefined(ctx);
-	return jscRetVal;
+		JSValueRef jscRetVal = JSValueMakeUndefined(ctx);
+		return jscRetVal;
+	}
+
+	JSStringRef exceptionString = JSStringCreateWithUTF8CString("Parameter mismatch while calling removeAttributeNS");
+	*exception = JSValueMakeString(ctx, exceptionString);
+	JSStringRelease(exceptionString);
+	return JSValueMakeUndefined(ctx);
 }
 
 JSValueRef JSCElement::getAttributeNodeNSCallback(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObj, size_t argumentCount, const JSValueRef* arguments, JSValueRef* exception) {
-	if (argumentCount < 2) {
-		std::string errorMsg = "Wrong number of arguments in getAttributeNodeNS";
-		JSStringRef string = JSStringCreateWithUTF8CString(errorMsg.c_str());
-		JSValueRef exceptionString =JSValueMakeString(ctx, string);
-		JSStringRelease(string);
-		*exception = JSValueToObject(ctx, exceptionString, NULL);
-		return NULL;
-	}
 
 	struct JSCElementPrivate* privData = (struct JSCElementPrivate*)JSObjectGetPrivate(thisObj);
 
-	JSStringRef stringReflocalNamespaceURI = JSValueToStringCopy(ctx, arguments[0], exception);
-	size_t localNamespaceURIMaxSize = JSStringGetMaximumUTF8CStringSize(stringReflocalNamespaceURI);
-	char* localNamespaceURIBuffer = new char[localNamespaceURIMaxSize];
-	JSStringGetUTF8CString(stringReflocalNamespaceURI, localNamespaceURIBuffer, localNamespaceURIMaxSize);
-	std::string localNamespaceURI(localNamespaceURIBuffer);
-	JSStringRelease(stringReflocalNamespaceURI);
-	free(localNamespaceURIBuffer);
+	if (false) {
+	} else if (argumentCount == 2 &&
+	           JSValueIsString(ctx, arguments[0]) &&
+	           JSValueIsString(ctx, arguments[1])) {
+		JSStringRef stringReflocalNamespaceURI = JSValueToStringCopy(ctx, arguments[0], exception);
+		size_t localNamespaceURIMaxSize = JSStringGetMaximumUTF8CStringSize(stringReflocalNamespaceURI);
+		char* localNamespaceURIBuffer = new char[localNamespaceURIMaxSize];
+		JSStringGetUTF8CString(stringReflocalNamespaceURI, localNamespaceURIBuffer, localNamespaceURIMaxSize);
+		std::string localNamespaceURI(localNamespaceURIBuffer);
+		JSStringRelease(stringReflocalNamespaceURI);
+		free(localNamespaceURIBuffer);
 
-	JSStringRef stringReflocalLocalName = JSValueToStringCopy(ctx, arguments[1], exception);
-	size_t localLocalNameMaxSize = JSStringGetMaximumUTF8CStringSize(stringReflocalLocalName);
-	char* localLocalNameBuffer = new char[localLocalNameMaxSize];
-	JSStringGetUTF8CString(stringReflocalLocalName, localLocalNameBuffer, localLocalNameMaxSize);
-	std::string localLocalName(localLocalNameBuffer);
-	JSStringRelease(stringReflocalLocalName);
-	free(localLocalNameBuffer);
+		JSStringRef stringReflocalLocalName = JSValueToStringCopy(ctx, arguments[1], exception);
+		size_t localLocalNameMaxSize = JSStringGetMaximumUTF8CStringSize(stringReflocalLocalName);
+		char* localLocalNameBuffer = new char[localLocalNameMaxSize];
+		JSStringGetUTF8CString(stringReflocalLocalName, localLocalNameBuffer, localLocalNameMaxSize);
+		std::string localLocalName(localLocalNameBuffer);
+		JSStringRelease(stringReflocalLocalName);
+		free(localLocalNameBuffer);
 
 
-	Arabica::DOM::Attr<std::string>* retVal = new Arabica::DOM::Attr<std::string>(privData->nativeObj->getAttributeNodeNS(localNamespaceURI, localLocalName));
-	JSClassRef retClass = JSCAttr::getTmpl();
+		Arabica::DOM::Attr<std::string>* retVal = new Arabica::DOM::Attr<std::string>(privData->nativeObj->getAttributeNodeNS(localNamespaceURI, localLocalName));
+		JSClassRef retClass = JSCAttr::getTmpl();
 
-	struct JSCAttr::JSCAttrPrivate* retPrivData = new JSCAttr::JSCAttrPrivate();
-	retPrivData->dom = privData->dom;
-	retPrivData->nativeObj = retVal;
+		struct JSCAttr::JSCAttrPrivate* retPrivData = new JSCAttr::JSCAttrPrivate();
+		retPrivData->dom = privData->dom;
+		retPrivData->nativeObj = retVal;
 
-	JSObjectRef retObj = JSObjectMake(ctx, retClass, retPrivData);
+		JSObjectRef retObj = JSObjectMake(ctx, retClass, retPrivData);
 
-	return retObj;
+		return retObj;
 
+	}
+
+	JSStringRef exceptionString = JSStringCreateWithUTF8CString("Parameter mismatch while calling getAttributeNodeNS");
+	*exception = JSValueMakeString(ctx, exceptionString);
+	JSStringRelease(exceptionString);
+	return JSValueMakeUndefined(ctx);
 }
 
 JSValueRef JSCElement::setAttributeNodeNSCallback(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObj, size_t argumentCount, const JSValueRef* arguments, JSValueRef* exception) {
-	if (argumentCount < 1) {
-		std::string errorMsg = "Wrong number of arguments in setAttributeNodeNS";
-		JSStringRef string = JSStringCreateWithUTF8CString(errorMsg.c_str());
-		JSValueRef exceptionString =JSValueMakeString(ctx, string);
-		JSStringRelease(string);
-		*exception = JSValueToObject(ctx, exceptionString, NULL);
-		return NULL;
-	}
 
 	struct JSCElementPrivate* privData = (struct JSCElementPrivate*)JSObjectGetPrivate(thisObj);
 
-	Arabica::DOM::Attr<std::string>* localNewAttr = ((struct JSCAttr::JSCAttrPrivate*)JSObjectGetPrivate(JSValueToObject(ctx, arguments[0], exception)))->nativeObj;
+	if (false) {
+	} else if (argumentCount == 1 &&
+	           JSValueIsObject(ctx, arguments[0]) && JSValueIsObjectOfClass(ctx, arguments[0], JSCAttr::getTmpl())) {
+		Arabica::DOM::Attr<std::string>* localNewAttr = ((struct JSCAttr::JSCAttrPrivate*)JSObjectGetPrivate(JSValueToObject(ctx, arguments[0], exception)))->nativeObj;
 
-	Arabica::DOM::Attr<std::string>* retVal = new Arabica::DOM::Attr<std::string>(privData->nativeObj->setAttributeNodeNS(*localNewAttr));
-	JSClassRef retClass = JSCAttr::getTmpl();
+		Arabica::DOM::Attr<std::string>* retVal = new Arabica::DOM::Attr<std::string>(privData->nativeObj->setAttributeNodeNS(*localNewAttr));
+		JSClassRef retClass = JSCAttr::getTmpl();
 
-	struct JSCAttr::JSCAttrPrivate* retPrivData = new JSCAttr::JSCAttrPrivate();
-	retPrivData->dom = privData->dom;
-	retPrivData->nativeObj = retVal;
+		struct JSCAttr::JSCAttrPrivate* retPrivData = new JSCAttr::JSCAttrPrivate();
+		retPrivData->dom = privData->dom;
+		retPrivData->nativeObj = retVal;
 
-	JSObjectRef retObj = JSObjectMake(ctx, retClass, retPrivData);
+		JSObjectRef retObj = JSObjectMake(ctx, retClass, retPrivData);
 
-	return retObj;
+		return retObj;
 
+	}
+
+	JSStringRef exceptionString = JSStringCreateWithUTF8CString("Parameter mismatch while calling setAttributeNodeNS");
+	*exception = JSValueMakeString(ctx, exceptionString);
+	JSStringRelease(exceptionString);
+	return JSValueMakeUndefined(ctx);
 }
 
 JSValueRef JSCElement::getElementsByTagNameNSCallback(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObj, size_t argumentCount, const JSValueRef* arguments, JSValueRef* exception) {
-	if (argumentCount < 2) {
-		std::string errorMsg = "Wrong number of arguments in getElementsByTagNameNS";
-		JSStringRef string = JSStringCreateWithUTF8CString(errorMsg.c_str());
-		JSValueRef exceptionString =JSValueMakeString(ctx, string);
-		JSStringRelease(string);
-		*exception = JSValueToObject(ctx, exceptionString, NULL);
-		return NULL;
-	}
 
 	struct JSCElementPrivate* privData = (struct JSCElementPrivate*)JSObjectGetPrivate(thisObj);
 
-	JSStringRef stringReflocalNamespaceURI = JSValueToStringCopy(ctx, arguments[0], exception);
-	size_t localNamespaceURIMaxSize = JSStringGetMaximumUTF8CStringSize(stringReflocalNamespaceURI);
-	char* localNamespaceURIBuffer = new char[localNamespaceURIMaxSize];
-	JSStringGetUTF8CString(stringReflocalNamespaceURI, localNamespaceURIBuffer, localNamespaceURIMaxSize);
-	std::string localNamespaceURI(localNamespaceURIBuffer);
-	JSStringRelease(stringReflocalNamespaceURI);
-	free(localNamespaceURIBuffer);
+	if (false) {
+	} else if (argumentCount == 2 &&
+	           JSValueIsString(ctx, arguments[0]) &&
+	           JSValueIsString(ctx, arguments[1])) {
+		JSStringRef stringReflocalNamespaceURI = JSValueToStringCopy(ctx, arguments[0], exception);
+		size_t localNamespaceURIMaxSize = JSStringGetMaximumUTF8CStringSize(stringReflocalNamespaceURI);
+		char* localNamespaceURIBuffer = new char[localNamespaceURIMaxSize];
+		JSStringGetUTF8CString(stringReflocalNamespaceURI, localNamespaceURIBuffer, localNamespaceURIMaxSize);
+		std::string localNamespaceURI(localNamespaceURIBuffer);
+		JSStringRelease(stringReflocalNamespaceURI);
+		free(localNamespaceURIBuffer);
 
-	JSStringRef stringReflocalLocalName = JSValueToStringCopy(ctx, arguments[1], exception);
-	size_t localLocalNameMaxSize = JSStringGetMaximumUTF8CStringSize(stringReflocalLocalName);
-	char* localLocalNameBuffer = new char[localLocalNameMaxSize];
-	JSStringGetUTF8CString(stringReflocalLocalName, localLocalNameBuffer, localLocalNameMaxSize);
-	std::string localLocalName(localLocalNameBuffer);
-	JSStringRelease(stringReflocalLocalName);
-	free(localLocalNameBuffer);
+		JSStringRef stringReflocalLocalName = JSValueToStringCopy(ctx, arguments[1], exception);
+		size_t localLocalNameMaxSize = JSStringGetMaximumUTF8CStringSize(stringReflocalLocalName);
+		char* localLocalNameBuffer = new char[localLocalNameMaxSize];
+		JSStringGetUTF8CString(stringReflocalLocalName, localLocalNameBuffer, localLocalNameMaxSize);
+		std::string localLocalName(localLocalNameBuffer);
+		JSStringRelease(stringReflocalLocalName);
+		free(localLocalNameBuffer);
 
 
-	Arabica::DOM::NodeList<std::string>* retVal = new Arabica::DOM::NodeList<std::string>(privData->nativeObj->getElementsByTagNameNS(localNamespaceURI, localLocalName));
-	JSClassRef retClass = JSCNodeList::getTmpl();
+		Arabica::DOM::NodeList<std::string>* retVal = new Arabica::DOM::NodeList<std::string>(privData->nativeObj->getElementsByTagNameNS(localNamespaceURI, localLocalName));
+		JSClassRef retClass = JSCNodeList::getTmpl();
 
-	struct JSCNodeList::JSCNodeListPrivate* retPrivData = new JSCNodeList::JSCNodeListPrivate();
-	retPrivData->dom = privData->dom;
-	retPrivData->nativeObj = retVal;
+		struct JSCNodeList::JSCNodeListPrivate* retPrivData = new JSCNodeList::JSCNodeListPrivate();
+		retPrivData->dom = privData->dom;
+		retPrivData->nativeObj = retVal;
 
-	JSObjectRef retObj = JSObjectMake(ctx, retClass, retPrivData);
+		JSObjectRef retObj = JSObjectMake(ctx, retClass, retPrivData);
 
-	return retObj;
+		return retObj;
 
+	}
+
+	JSStringRef exceptionString = JSStringCreateWithUTF8CString("Parameter mismatch while calling getElementsByTagNameNS");
+	*exception = JSValueMakeString(ctx, exceptionString);
+	JSStringRelease(exceptionString);
+	return JSValueMakeUndefined(ctx);
 }
 
 JSValueRef JSCElement::hasAttributeCallback(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObj, size_t argumentCount, const JSValueRef* arguments, JSValueRef* exception) {
-	if (argumentCount < 1) {
-		std::string errorMsg = "Wrong number of arguments in hasAttribute";
-		JSStringRef string = JSStringCreateWithUTF8CString(errorMsg.c_str());
-		JSValueRef exceptionString =JSValueMakeString(ctx, string);
-		JSStringRelease(string);
-		*exception = JSValueToObject(ctx, exceptionString, NULL);
-		return NULL;
-	}
 
 	struct JSCElementPrivate* privData = (struct JSCElementPrivate*)JSObjectGetPrivate(thisObj);
 
-	JSStringRef stringReflocalName = JSValueToStringCopy(ctx, arguments[0], exception);
-	size_t localNameMaxSize = JSStringGetMaximumUTF8CStringSize(stringReflocalName);
-	char* localNameBuffer = new char[localNameMaxSize];
-	JSStringGetUTF8CString(stringReflocalName, localNameBuffer, localNameMaxSize);
-	std::string localName(localNameBuffer);
-	JSStringRelease(stringReflocalName);
-	free(localNameBuffer);
+	if (false) {
+	} else if (argumentCount == 1 &&
+	           JSValueIsString(ctx, arguments[0])) {
+		JSStringRef stringReflocalName = JSValueToStringCopy(ctx, arguments[0], exception);
+		size_t localNameMaxSize = JSStringGetMaximumUTF8CStringSize(stringReflocalName);
+		char* localNameBuffer = new char[localNameMaxSize];
+		JSStringGetUTF8CString(stringReflocalName, localNameBuffer, localNameMaxSize);
+		std::string localName(localNameBuffer);
+		JSStringRelease(stringReflocalName);
+		free(localNameBuffer);
 
 
-	bool retVal = privData->nativeObj->hasAttribute(localName);
+		bool retVal = privData->nativeObj->hasAttribute(localName);
 
-	JSValueRef jscRetVal = JSValueMakeBoolean(ctx, retVal);
-	return jscRetVal;
+		JSValueRef jscRetVal = JSValueMakeBoolean(ctx, retVal);
+		return jscRetVal;
+	}
+
+	JSStringRef exceptionString = JSStringCreateWithUTF8CString("Parameter mismatch while calling hasAttribute");
+	*exception = JSValueMakeString(ctx, exceptionString);
+	JSStringRelease(exceptionString);
+	return JSValueMakeUndefined(ctx);
 }
 
 JSValueRef JSCElement::hasAttributeNSCallback(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObj, size_t argumentCount, const JSValueRef* arguments, JSValueRef* exception) {
-	if (argumentCount < 2) {
-		std::string errorMsg = "Wrong number of arguments in hasAttributeNS";
-		JSStringRef string = JSStringCreateWithUTF8CString(errorMsg.c_str());
-		JSValueRef exceptionString =JSValueMakeString(ctx, string);
-		JSStringRelease(string);
-		*exception = JSValueToObject(ctx, exceptionString, NULL);
-		return NULL;
-	}
 
 	struct JSCElementPrivate* privData = (struct JSCElementPrivate*)JSObjectGetPrivate(thisObj);
 
-	JSStringRef stringReflocalNamespaceURI = JSValueToStringCopy(ctx, arguments[0], exception);
-	size_t localNamespaceURIMaxSize = JSStringGetMaximumUTF8CStringSize(stringReflocalNamespaceURI);
-	char* localNamespaceURIBuffer = new char[localNamespaceURIMaxSize];
-	JSStringGetUTF8CString(stringReflocalNamespaceURI, localNamespaceURIBuffer, localNamespaceURIMaxSize);
-	std::string localNamespaceURI(localNamespaceURIBuffer);
-	JSStringRelease(stringReflocalNamespaceURI);
-	free(localNamespaceURIBuffer);
+	if (false) {
+	} else if (argumentCount == 2 &&
+	           JSValueIsString(ctx, arguments[0]) &&
+	           JSValueIsString(ctx, arguments[1])) {
+		JSStringRef stringReflocalNamespaceURI = JSValueToStringCopy(ctx, arguments[0], exception);
+		size_t localNamespaceURIMaxSize = JSStringGetMaximumUTF8CStringSize(stringReflocalNamespaceURI);
+		char* localNamespaceURIBuffer = new char[localNamespaceURIMaxSize];
+		JSStringGetUTF8CString(stringReflocalNamespaceURI, localNamespaceURIBuffer, localNamespaceURIMaxSize);
+		std::string localNamespaceURI(localNamespaceURIBuffer);
+		JSStringRelease(stringReflocalNamespaceURI);
+		free(localNamespaceURIBuffer);
 
-	JSStringRef stringReflocalLocalName = JSValueToStringCopy(ctx, arguments[1], exception);
-	size_t localLocalNameMaxSize = JSStringGetMaximumUTF8CStringSize(stringReflocalLocalName);
-	char* localLocalNameBuffer = new char[localLocalNameMaxSize];
-	JSStringGetUTF8CString(stringReflocalLocalName, localLocalNameBuffer, localLocalNameMaxSize);
-	std::string localLocalName(localLocalNameBuffer);
-	JSStringRelease(stringReflocalLocalName);
-	free(localLocalNameBuffer);
+		JSStringRef stringReflocalLocalName = JSValueToStringCopy(ctx, arguments[1], exception);
+		size_t localLocalNameMaxSize = JSStringGetMaximumUTF8CStringSize(stringReflocalLocalName);
+		char* localLocalNameBuffer = new char[localLocalNameMaxSize];
+		JSStringGetUTF8CString(stringReflocalLocalName, localLocalNameBuffer, localLocalNameMaxSize);
+		std::string localLocalName(localLocalNameBuffer);
+		JSStringRelease(stringReflocalLocalName);
+		free(localLocalNameBuffer);
 
 
-	bool retVal = privData->nativeObj->hasAttributeNS(localNamespaceURI, localLocalName);
+		bool retVal = privData->nativeObj->hasAttributeNS(localNamespaceURI, localLocalName);
 
-	JSValueRef jscRetVal = JSValueMakeBoolean(ctx, retVal);
-	return jscRetVal;
+		JSValueRef jscRetVal = JSValueMakeBoolean(ctx, retVal);
+		return jscRetVal;
+	}
+
+	JSStringRef exceptionString = JSStringCreateWithUTF8CString("Parameter mismatch while calling hasAttributeNS");
+	*exception = JSValueMakeString(ctx, exceptionString);
+	JSStringRelease(exceptionString);
+	return JSValueMakeUndefined(ctx);
 }
-
 
 }
 }

@@ -24,6 +24,7 @@
 #include <string>
 #include "../../TypedArray.h"
 #include "DOM/Node.hpp"
+#include "V8ArrayBufferView.h"
 #include "string"
 #include "uscxml/plugins/datamodel/ecmascript/v8/V8DOM.h"
 #include <v8.h>
@@ -58,6 +59,16 @@ public:
 	static v8::Handle<v8::Value> setFloat32Callback(const v8::Arguments&);
 	static v8::Handle<v8::Value> setFloat64Callback(const v8::Arguments&);
 
+
+	static v8::Handle<v8::Value> constructor(const v8::Arguments&);
+	static v8::Persistent<v8::FunctionTemplate> Constr;
+	static v8::Handle<v8::FunctionTemplate> getConstructor() {
+		if (Constr.IsEmpty()) {
+			v8::Handle<v8::FunctionTemplate> constr = v8::FunctionTemplate::New(constructor);
+			Constr = v8::Persistent<v8::FunctionTemplate>::New(constr);
+		}
+		return Constr;
+	}
 
 	static v8::Persistent<v8::FunctionTemplate> Tmpl;
 	static v8::Handle<v8::FunctionTemplate> getTmpl() {
@@ -107,6 +118,7 @@ public:
 			               v8::FunctionTemplate::New(V8DataView::setFloat64Callback, v8::Undefined()), static_cast<v8::PropertyAttribute>(v8::DontDelete));
 
 
+			tmpl->Inherit(V8ArrayBufferView::getTmpl());
 			Tmpl = v8::Persistent<v8::FunctionTemplate>::New(tmpl);
 		}
 		return Tmpl;

@@ -46,59 +46,91 @@ JSValueRef JSCXPathResult::booleanValueAttrGetter(JSContextRef ctx, JSObjectRef 
 	return JSValueMakeBoolean(ctx, privData->nativeObj->asBool());
 }
 
+
 JSValueRef JSCXPathResult::asNodeSetCallback(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObj, size_t argumentCount, const JSValueRef* arguments, JSValueRef* exception) {
 
 	struct JSCXPathResultPrivate* privData = (struct JSCXPathResultPrivate*)JSObjectGetPrivate(thisObj);
 
+	if (false) {
+	} else if (argumentCount == 0) {
 
-	Arabica::XPath::NodeSet<std::string>* retVal = new Arabica::XPath::NodeSet<std::string>(privData->nativeObj->asNodeSet());
-	JSClassRef retClass = JSCNodeSet::getTmpl();
+		Arabica::XPath::NodeSet<std::string>* retVal = new Arabica::XPath::NodeSet<std::string>(privData->nativeObj->asNodeSet());
+		JSClassRef retClass = JSCNodeSet::getTmpl();
 
-	struct JSCNodeSet::JSCNodeSetPrivate* retPrivData = new JSCNodeSet::JSCNodeSetPrivate();
-	retPrivData->dom = privData->dom;
-	retPrivData->nativeObj = retVal;
+		struct JSCNodeSet::JSCNodeSetPrivate* retPrivData = new JSCNodeSet::JSCNodeSetPrivate();
+		retPrivData->dom = privData->dom;
+		retPrivData->nativeObj = retVal;
 
-	JSObjectRef retObj = JSObjectMake(ctx, retClass, retPrivData);
+		JSObjectRef retObj = JSObjectMake(ctx, retClass, retPrivData);
 
-	return retObj;
+		return retObj;
 
+	}
+
+	JSStringRef exceptionString = JSStringCreateWithUTF8CString("Parameter mismatch while calling asNodeSet");
+	*exception = JSValueMakeString(ctx, exceptionString);
+	JSStringRelease(exceptionString);
+	return JSValueMakeUndefined(ctx);
 }
 
 JSValueRef JSCXPathResult::asBoolCallback(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObj, size_t argumentCount, const JSValueRef* arguments, JSValueRef* exception) {
 
 	struct JSCXPathResultPrivate* privData = (struct JSCXPathResultPrivate*)JSObjectGetPrivate(thisObj);
 
+	if (false) {
+	} else if (argumentCount == 0) {
 
-	bool retVal = privData->nativeObj->asBool();
+		bool retVal = privData->nativeObj->asBool();
 
-	JSValueRef jscRetVal = JSValueMakeBoolean(ctx, retVal);
-	return jscRetVal;
+		JSValueRef jscRetVal = JSValueMakeBoolean(ctx, retVal);
+		return jscRetVal;
+	}
+
+	JSStringRef exceptionString = JSStringCreateWithUTF8CString("Parameter mismatch while calling asBool");
+	*exception = JSValueMakeString(ctx, exceptionString);
+	JSStringRelease(exceptionString);
+	return JSValueMakeUndefined(ctx);
 }
 
 JSValueRef JSCXPathResult::asStringCallback(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObj, size_t argumentCount, const JSValueRef* arguments, JSValueRef* exception) {
 
 	struct JSCXPathResultPrivate* privData = (struct JSCXPathResultPrivate*)JSObjectGetPrivate(thisObj);
 
+	if (false) {
+	} else if (argumentCount == 0) {
 
-	std::string retVal = privData->nativeObj->asString();
+		std::string retVal = privData->nativeObj->asString();
 
-	JSStringRef jscString = JSStringCreateWithUTF8CString(retVal.c_str());
-	JSValueRef jscRetVal = JSValueMakeString(ctx, jscString);
-	JSStringRelease(jscString);
-	return jscRetVal;
+		JSStringRef jscString = JSStringCreateWithUTF8CString(retVal.c_str());
+		JSValueRef jscRetVal = JSValueMakeString(ctx, jscString);
+		JSStringRelease(jscString);
+		return jscRetVal;
+	}
+
+	JSStringRef exceptionString = JSStringCreateWithUTF8CString("Parameter mismatch while calling asString");
+	*exception = JSValueMakeString(ctx, exceptionString);
+	JSStringRelease(exceptionString);
+	return JSValueMakeUndefined(ctx);
 }
 
 JSValueRef JSCXPathResult::asNumberCallback(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObj, size_t argumentCount, const JSValueRef* arguments, JSValueRef* exception) {
 
 	struct JSCXPathResultPrivate* privData = (struct JSCXPathResultPrivate*)JSObjectGetPrivate(thisObj);
 
+	if (false) {
+	} else if (argumentCount == 0) {
 
-	double retVal = privData->nativeObj->asNumber();
+		double retVal = privData->nativeObj->asNumber();
 
-	JSValueRef jscRetVal = JSValueMakeNumber(ctx, retVal);
-	return jscRetVal;
+		JSValueRef jscRetVal = JSValueMakeNumber(ctx, retVal);
+		return jscRetVal;
+	}
+
+	JSStringRef exceptionString = JSStringCreateWithUTF8CString("Parameter mismatch while calling asNumber");
+	*exception = JSValueMakeString(ctx, exceptionString);
+	JSStringRelease(exceptionString);
+	return JSValueMakeUndefined(ctx);
 }
-
 
 }
 }

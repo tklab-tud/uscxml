@@ -24,6 +24,7 @@
 #include <string>
 #include "../../TypedArray.h"
 #include "DOM/Node.hpp"
+#include "JSCArrayBufferView.h"
 #include <JavaScriptCore/JavaScriptCore.h>
 #include "uscxml/plugins/datamodel/ecmascript/JavaScriptCore/JSCDOM.h"
 
@@ -56,6 +57,7 @@ public:
 	static JSValueRef setFloat32Callback(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObj, size_t argumentCount, const JSValueRef* arguments, JSValueRef* exception);
 	static JSValueRef setFloat64Callback(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObj, size_t argumentCount, const JSValueRef* arguments, JSValueRef* exception);
 
+	static JSObjectRef jsConstructor(JSContextRef ctx, JSObjectRef constructor, size_t argumentCount, const JSValueRef arguments[], JSValueRef* exception);
 
 
 	static JSStaticValue staticValues[];
@@ -68,6 +70,8 @@ public:
 			classDef.staticValues = staticValues;
 			classDef.staticFunctions = staticFunctions;
 			classDef.finalize = jsDestructor;
+			classDef.callAsConstructor = jsConstructor;
+			classDef.parentClass = JSCArrayBufferView::getTmpl();
 
 			Tmpl = JSClassCreate(&classDef);
 			JSClassRetain(Tmpl);

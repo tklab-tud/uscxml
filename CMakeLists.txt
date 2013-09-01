@@ -500,7 +500,7 @@ if (APPLE OR IOS)
 
 endif()
 
-if (OFF AND APPLE OR IOS)
+if (APPLE OR IOS)
 	find_library(JSC_LIBRARY JavaScriptCore)
 	list (APPEND USCXML_OPT_LIBS ${JSC_LIBRARY})
 	set(JSC_FOUND ON)

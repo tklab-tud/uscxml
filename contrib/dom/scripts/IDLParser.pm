@@ -25,6 +25,7 @@ use strict;
 
 use preprocessor;
 use Class::Struct;
+use Data::Dumper;
 
 use constant StringToken => 0;
 use constant IntegerToken => 1;
@@ -75,6 +76,7 @@ struct( domSignature => {
     type => '$',      # Variable type
     extendedAttributes => '$', # Extended attributes
     isNullable => '$', # Is variable type Nullable (T?)
+    isOptional => '$', # Is variable optional (T?)
     isVariadic => '$' # Is variable variadic (long... numbers)
 });
 
@@ -1282,6 +1284,8 @@ sub parseOptionalOrRequiredArgument
         $paramDataNode->type($type);
         $paramDataNode->name($self->parseArgumentName());
         $self->parseDefault();
+        $paramDataNode->isOptional(1);
+#        print Dumper($paramDataNode);
         return $paramDataNode;
     }
     if ($next->type() == IdentifierToken || $next->value() =~ /$nextExceptionField_1/) {
@@ -2431,8 +2435,8 @@ sub applyExtendedAttributeList
             $constructor->{overloadedIndex} = $index++;
             push(@{$interface->constructors}, $constructor);
         }
-        delete $extendedAttributeList->{"Constructors"};
-        $extendedAttributeList->{"Constructor"} = "VALUE_IS_MISSING";
+        # delete $extendedAttributeList->{"Constructors"};
+        # $extendedAttributeList->{"Constructor"} = "VALUE_IS_MISSING";
     } elsif (defined $extendedAttributeList->{"NamedConstructor"}) {
         my $newDataNode = domFunction->new();
         $newDataNode->signature(domSignature->new());

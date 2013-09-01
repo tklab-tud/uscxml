@@ -53,134 +53,144 @@ JSValueRef JSCCharacterData::lengthAttrGetter(JSContextRef ctx, JSObjectRef obje
 	return JSValueMakeNumber(ctx, privData->nativeObj->getLength());
 }
 
+
 JSValueRef JSCCharacterData::substringDataCallback(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObj, size_t argumentCount, const JSValueRef* arguments, JSValueRef* exception) {
-	if (argumentCount < 2) {
-		std::string errorMsg = "Wrong number of arguments in substringData";
-		JSStringRef string = JSStringCreateWithUTF8CString(errorMsg.c_str());
-		JSValueRef exceptionString =JSValueMakeString(ctx, string);
-		JSStringRelease(string);
-		*exception = JSValueToObject(ctx, exceptionString, NULL);
-		return NULL;
-	}
 
 	struct JSCCharacterDataPrivate* privData = (struct JSCCharacterDataPrivate*)JSObjectGetPrivate(thisObj);
 
-	unsigned long localOffset = (unsigned long)JSValueToNumber(ctx, arguments[0], exception);
-	unsigned long localCount = (unsigned long)JSValueToNumber(ctx, arguments[1], exception);
+	if (false) {
+	} else if (argumentCount == 2 &&
+	           JSValueIsNumber(ctx, arguments[0]) &&
+	           JSValueIsNumber(ctx, arguments[1])) {
+		unsigned long localOffset = (unsigned long)JSValueToNumber(ctx, arguments[0], exception);
+		unsigned long localCount = (unsigned long)JSValueToNumber(ctx, arguments[1], exception);
 
-	std::string retVal = privData->nativeObj->substringData(localOffset, localCount);
+		std::string retVal = privData->nativeObj->substringData(localOffset, localCount);
 
-	JSStringRef jscString = JSStringCreateWithUTF8CString(retVal.c_str());
-	JSValueRef jscRetVal = JSValueMakeString(ctx, jscString);
-	JSStringRelease(jscString);
-	return jscRetVal;
+		JSStringRef jscString = JSStringCreateWithUTF8CString(retVal.c_str());
+		JSValueRef jscRetVal = JSValueMakeString(ctx, jscString);
+		JSStringRelease(jscString);
+		return jscRetVal;
+	}
+
+	JSStringRef exceptionString = JSStringCreateWithUTF8CString("Parameter mismatch while calling substringData");
+	*exception = JSValueMakeString(ctx, exceptionString);
+	JSStringRelease(exceptionString);
+	return JSValueMakeUndefined(ctx);
 }
 
 JSValueRef JSCCharacterData::appendDataCallback(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObj, size_t argumentCount, const JSValueRef* arguments, JSValueRef* exception) {
-	if (argumentCount < 1) {
-		std::string errorMsg = "Wrong number of arguments in appendData";
-		JSStringRef string = JSStringCreateWithUTF8CString(errorMsg.c_str());
-		JSValueRef exceptionString =JSValueMakeString(ctx, string);
-		JSStringRelease(string);
-		*exception = JSValueToObject(ctx, exceptionString, NULL);
-		return NULL;
-	}
 
 	struct JSCCharacterDataPrivate* privData = (struct JSCCharacterDataPrivate*)JSObjectGetPrivate(thisObj);
 
-	JSStringRef stringReflocalArg = JSValueToStringCopy(ctx, arguments[0], exception);
-	size_t localArgMaxSize = JSStringGetMaximumUTF8CStringSize(stringReflocalArg);
-	char* localArgBuffer = new char[localArgMaxSize];
-	JSStringGetUTF8CString(stringReflocalArg, localArgBuffer, localArgMaxSize);
-	std::string localArg(localArgBuffer);
-	JSStringRelease(stringReflocalArg);
-	free(localArgBuffer);
+	if (false) {
+	} else if (argumentCount == 1 &&
+	           JSValueIsString(ctx, arguments[0])) {
+		JSStringRef stringReflocalArg = JSValueToStringCopy(ctx, arguments[0], exception);
+		size_t localArgMaxSize = JSStringGetMaximumUTF8CStringSize(stringReflocalArg);
+		char* localArgBuffer = new char[localArgMaxSize];
+		JSStringGetUTF8CString(stringReflocalArg, localArgBuffer, localArgMaxSize);
+		std::string localArg(localArgBuffer);
+		JSStringRelease(stringReflocalArg);
+		free(localArgBuffer);
 
 
-	privData->nativeObj->appendData(localArg);
+		privData->nativeObj->appendData(localArg);
 
-	JSValueRef jscRetVal = JSValueMakeUndefined(ctx);
-	return jscRetVal;
+		JSValueRef jscRetVal = JSValueMakeUndefined(ctx);
+		return jscRetVal;
+	}
+
+	JSStringRef exceptionString = JSStringCreateWithUTF8CString("Parameter mismatch while calling appendData");
+	*exception = JSValueMakeString(ctx, exceptionString);
+	JSStringRelease(exceptionString);
+	return JSValueMakeUndefined(ctx);
 }
 
 JSValueRef JSCCharacterData::insertDataCallback(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObj, size_t argumentCount, const JSValueRef* arguments, JSValueRef* exception) {
-	if (argumentCount < 2) {
-		std::string errorMsg = "Wrong number of arguments in insertData";
-		JSStringRef string = JSStringCreateWithUTF8CString(errorMsg.c_str());
-		JSValueRef exceptionString =JSValueMakeString(ctx, string);
-		JSStringRelease(string);
-		*exception = JSValueToObject(ctx, exceptionString, NULL);
-		return NULL;
-	}
 
 	struct JSCCharacterDataPrivate* privData = (struct JSCCharacterDataPrivate*)JSObjectGetPrivate(thisObj);
 
-	unsigned long localOffset = (unsigned long)JSValueToNumber(ctx, arguments[0], exception);
-	JSStringRef stringReflocalArg = JSValueToStringCopy(ctx, arguments[1], exception);
-	size_t localArgMaxSize = JSStringGetMaximumUTF8CStringSize(stringReflocalArg);
-	char* localArgBuffer = new char[localArgMaxSize];
-	JSStringGetUTF8CString(stringReflocalArg, localArgBuffer, localArgMaxSize);
-	std::string localArg(localArgBuffer);
-	JSStringRelease(stringReflocalArg);
-	free(localArgBuffer);
+	if (false) {
+	} else if (argumentCount == 2 &&
+	           JSValueIsNumber(ctx, arguments[0]) &&
+	           JSValueIsString(ctx, arguments[1])) {
+		unsigned long localOffset = (unsigned long)JSValueToNumber(ctx, arguments[0], exception);
+		JSStringRef stringReflocalArg = JSValueToStringCopy(ctx, arguments[1], exception);
+		size_t localArgMaxSize = JSStringGetMaximumUTF8CStringSize(stringReflocalArg);
+		char* localArgBuffer = new char[localArgMaxSize];
+		JSStringGetUTF8CString(stringReflocalArg, localArgBuffer, localArgMaxSize);
+		std::string localArg(localArgBuffer);
+		JSStringRelease(stringReflocalArg);
+		free(localArgBuffer);
 
 
-	privData->nativeObj->insertData(localOffset, localArg);
+		privData->nativeObj->insertData(localOffset, localArg);
 
-	JSValueRef jscRetVal = JSValueMakeUndefined(ctx);
-	return jscRetVal;
+		JSValueRef jscRetVal = JSValueMakeUndefined(ctx);
+		return jscRetVal;
+	}
+
+	JSStringRef exceptionString = JSStringCreateWithUTF8CString("Parameter mismatch while calling insertData");
+	*exception = JSValueMakeString(ctx, exceptionString);
+	JSStringRelease(exceptionString);
+	return JSValueMakeUndefined(ctx);
 }
 
 JSValueRef JSCCharacterData::deleteDataCallback(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObj, size_t argumentCount, const JSValueRef* arguments, JSValueRef* exception) {
-	if (argumentCount < 2) {
-		std::string errorMsg = "Wrong number of arguments in deleteData";
-		JSStringRef string = JSStringCreateWithUTF8CString(errorMsg.c_str());
-		JSValueRef exceptionString =JSValueMakeString(ctx, string);
-		JSStringRelease(string);
-		*exception = JSValueToObject(ctx, exceptionString, NULL);
-		return NULL;
-	}
 
 	struct JSCCharacterDataPrivate* privData = (struct JSCCharacterDataPrivate*)JSObjectGetPrivate(thisObj);
 
-	unsigned long localOffset = (unsigned long)JSValueToNumber(ctx, arguments[0], exception);
-	unsigned long localCount = (unsigned long)JSValueToNumber(ctx, arguments[1], exception);
+	if (false) {
+	} else if (argumentCount == 2 &&
+	           JSValueIsNumber(ctx, arguments[0]) &&
+	           JSValueIsNumber(ctx, arguments[1])) {
+		unsigned long localOffset = (unsigned long)JSValueToNumber(ctx, arguments[0], exception);
+		unsigned long localCount = (unsigned long)JSValueToNumber(ctx, arguments[1], exception);
 
-	privData->nativeObj->deleteData(localOffset, localCount);
+		privData->nativeObj->deleteData(localOffset, localCount);
 
-	JSValueRef jscRetVal = JSValueMakeUndefined(ctx);
-	return jscRetVal;
+		JSValueRef jscRetVal = JSValueMakeUndefined(ctx);
+		return jscRetVal;
+	}
+
+	JSStringRef exceptionString = JSStringCreateWithUTF8CString("Parameter mismatch while calling deleteData");
+	*exception = JSValueMakeString(ctx, exceptionString);
+	JSStringRelease(exceptionString);
+	return JSValueMakeUndefined(ctx);
 }
 
 JSValueRef JSCCharacterData::replaceDataCallback(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObj, size_t argumentCount, const JSValueRef* arguments, JSValueRef* exception) {
-	if (argumentCount < 3) {
-		std::string errorMsg = "Wrong number of arguments in replaceData";
-		JSStringRef string = JSStringCreateWithUTF8CString(errorMsg.c_str());
-		JSValueRef exceptionString =JSValueMakeString(ctx, string);
-		JSStringRelease(string);
-		*exception = JSValueToObject(ctx, exceptionString, NULL);
-		return NULL;
-	}
 
 	struct JSCCharacterDataPrivate* privData = (struct JSCCharacterDataPrivate*)JSObjectGetPrivate(thisObj);
 
-	unsigned long localOffset = (unsigned long)JSValueToNumber(ctx, arguments[0], exception);
-	unsigned long localCount = (unsigned long)JSValueToNumber(ctx, arguments[1], exception);
-	JSStringRef stringReflocalArg = JSValueToStringCopy(ctx, arguments[2], exception);
-	size_t localArgMaxSize = JSStringGetMaximumUTF8CStringSize(stringReflocalArg);
-	char* localArgBuffer = new char[localArgMaxSize];
-	JSStringGetUTF8CString(stringReflocalArg, localArgBuffer, localArgMaxSize);
-	std::string localArg(localArgBuffer);
-	JSStringRelease(stringReflocalArg);
-	free(localArgBuffer);
+	if (false) {
+	} else if (argumentCount == 3 &&
+	           JSValueIsNumber(ctx, arguments[0]) &&
+	           JSValueIsNumber(ctx, arguments[1]) &&
+	           JSValueIsString(ctx, arguments[2])) {
+		unsigned long localOffset = (unsigned long)JSValueToNumber(ctx, arguments[0], exception);
+		unsigned long localCount = (unsigned long)JSValueToNumber(ctx, arguments[1], exception);
+		JSStringRef stringReflocalArg = JSValueToStringCopy(ctx, arguments[2], exception);
+		size_t localArgMaxSize = JSStringGetMaximumUTF8CStringSize(stringReflocalArg);
+		char* localArgBuffer = new char[localArgMaxSize];
+		JSStringGetUTF8CString(stringReflocalArg, localArgBuffer, localArgMaxSize);
+		std::string localArg(localArgBuffer);
+		JSStringRelease(stringReflocalArg);
+		free(localArgBuffer);
 
 
-	privData->nativeObj->replaceData(localOffset, localCount, localArg);
+		privData->nativeObj->replaceData(localOffset, localCount, localArg);
 
-	JSValueRef jscRetVal = JSValueMakeUndefined(ctx);
-	return jscRetVal;
+		JSValueRef jscRetVal = JSValueMakeUndefined(ctx);
+		return jscRetVal;
+	}
+
+	JSStringRef exceptionString = JSStringCreateWithUTF8CString("Parameter mismatch while calling replaceData");
+	*exception = JSValueMakeString(ctx, exceptionString);
+	JSStringRelease(exceptionString);
+	return JSValueMakeUndefined(ctx);
 }
-
 
 }
 }

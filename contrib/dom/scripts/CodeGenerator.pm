@@ -277,7 +277,11 @@ sub IDLFileForInterface
             $File::Find::prune = 1 if /^\../;
         };
         find($wanted, @directories);
+        $idlFiles->{"ArrayBufferView"} = "../idl/TypedArray.idl"
     }
+
+    # print Dumper($object);
+    # print Dumper($interfaceName);
 
     return $idlFiles->{$interfaceName};
 }

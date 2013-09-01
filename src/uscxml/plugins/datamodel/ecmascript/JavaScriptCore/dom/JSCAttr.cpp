@@ -74,7 +74,7 @@ JSValueRef JSCAttr::ownerElementAttrGetter(JSContextRef ctx, JSObjectRef object,
 	retPrivData->dom = privData->dom;
 	retPrivData->nativeObj = arabicaRet;
 
-	JSObjectRef arbaicaRetObj = JSObjectMake(ctx, arbaicaRetClass, arabicaRet);
+	JSObjectRef arbaicaRetObj = JSObjectMake(ctx, arbaicaRetClass, retPrivData);
 	return arbaicaRetObj;
 }
 

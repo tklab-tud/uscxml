@@ -1,89 +1,156 @@
 #include "TypedArray.h"
 #include <iostream>
 
+#define DATAVIEW_TYPED_RETURN(type) \
+type retVal;\
+memcpy(&retVal, _buffer->_data + (_start + index), sizeof(type));\
+return retVal;
+
+#define DATAVIEW_TYPED_SET(type) \
+memcpy(_buffer->_data + (_start + index), &value, sizeof(type));
+
 namespace uscxml {
 
-unsigned long ArrayBuffer::getByteLength() {}
-ArrayBuffer ArrayBuffer::slice(long begin, long end) {}
-bool ArrayBuffer::isView(void*) {}
-ArrayBuffer::operator bool() {}
+ArrayBuffer::Buffer::~Buffer() {
+	free(_data);
+}
 
-ArrayBuffer ArrayBufferView::getBuffer() {}
-unsigned long ArrayBufferView::getByteOffset() {}
-unsigned long ArrayBufferView::getByteLength() {}
+ArrayBuffer::Buffer::Buffer(size_t size) {
+	_data = (char*)malloc(size);
+	memset(_data, 0, size);
+	_size = size;
+}
 
-ArrayBuffer DataView::getBuffer() {}
-unsigned long DataView::getByteOffset() {}
-unsigned long DataView::getByteLength() {}
-char DataView::getInt8(unsigned long) {}
-unsigned char DataView::getUint8(unsigned long) {}
-short DataView::getInt16(unsigned long, bool) {}
-unsigned short DataView::getUint16(unsigned long, bool) {}
-long DataView::getInt32(unsigned long, bool) {}
-unsigned long DataView::getUint32(unsigned long, bool) {}
-float DataView::getFloat32(unsigned long, bool) {}
-double DataView::getFloat64(unsigned long, bool) {}
-void DataView::setInt8(long, char) {}
-void DataView::setUint8(long, unsigned char) {}
-void DataView::setInt16(long, short, bool) {}
-void DataView::setUint16(long, unsigned short, bool) {}
-void DataView::setInt32(long, long, bool) {}
-void DataView::setUint32(long, unsigned long, bool) {}
-void DataView::setFloat32(long, float, bool) {}
-void DataView::setFloat64(long, double, bool) {}
+ArrayBuffer::Buffer::Buffer(void* data, size_t size) {
+	_data = (char*)malloc(size);
+	memcpy(_data, data, size);
+	_size = size;
+}
 
-Uint8Array::Uint8Array(Uint8Array* other) {}
-unsigned char Uint8Array::get(unsigned long) {}
-void Uint8Array::set(unsigned long, char) {}
-Uint8Array* Uint8Array::subarray(long, long) {}
-unsigned long Uint8Array::getLength() {}
+ArrayBuffer::ArrayBuffer(unsigned long length) {
+	_buffer = boost::shared_ptr<Buffer>(new Buffer(length));
+}
 
-Uint8ClampedArray::Uint8ClampedArray(Uint8ClampedArray* other) {}
-unsigned char Uint8ClampedArray::get(unsigned long) {}
-void Uint8ClampedArray::set(unsigned long, char) {}
-Uint8ClampedArray* Uint8ClampedArray::subarray(long, long) {}
-unsigned long Uint8ClampedArray::getLength() {}
+ArrayBuffer::ArrayBuffer(boost::shared_ptr<ArrayBuffer::Buffer> buffer) : _buffer(buffer) {
+}
 
-Int8Array::Int8Array(Int8Array* other) {}
-char Int8Array::get(unsigned long) {}
-void Int8Array::set(unsigned long, char) {}
-Int8Array* Int8Array::subarray(long, long) {}
-unsigned long Int8Array::getLength() {}
+unsigned long ArrayBuffer::getByteLength() {
+	return _buffer->_size;
+}
 
-Int16Array::Int16Array(Int16Array* other) {}
-short Int16Array::get(unsigned long) {}
-void Int16Array::set(unsigned long, short) {}
-Int16Array* Int16Array::subarray(long, long) {}
-unsigned long Int16Array::getLength() {}
+ArrayBuffer ArrayBuffer::slice(long begin, long length) {
+	ArrayBuffer arrBuffer(length);
+	memcpy(arrBuffer._buffer->_data, _buffer->_data + begin, length);
+	return arrBuffer;
+}
 
-Uint16Array::Uint16Array(Uint16Array* other) {}
-unsigned short Uint16Array::get(unsigned long) {}
-void Uint16Array::set(unsigned long, unsigned short) {}
-Uint16Array* Uint16Array::subarray(long, long) {}
-unsigned long Uint16Array::getLength() {}
+ArrayBuffer ArrayBuffer::slice(long begin) {
+	return slice(begin, _buffer->_size - begin);
+}
 
-Int32Array::Int32Array(Int32Array* other) {}
-long Int32Array::get(unsigned long) {}
-void Int32Array::set(unsigned long, long) {}
-Int32Array* Int32Array::subarray(long, long) {}
-unsigned long Int32Array::getLength() {}
+bool ArrayBuffer::isView(void*) {
+	return true;
+}
 
-Uint32Array::Uint32Array(Uint32Array* other) {}
-unsigned long Uint32Array::get(unsigned long) {}
-void Uint32Array::set(unsigned long, unsigned long) {}
-Uint32Array* Uint32Array::subarray(long, long) {}
-unsigned long Uint32Array::getLength() {}
+ArrayBuffer::operator bool() {
+	return _buffer;
+}
 
-Float32Array::Float32Array(Float32Array* other) {}
-float Float32Array::get(unsigned long) {}
-void Float32Array::set(unsigned long, float) {}
-Float32Array* Float32Array::subarray(long, long) {}
-unsigned long Float32Array::getLength() {}
+ArrayBuffer ArrayBufferView::getBuffer() {
+	return ArrayBuffer(_buffer);
+}
 
-Float64Array::Float64Array(Float64Array* other) {}
-double Float64Array::get(unsigned long) {}
-void Float64Array::set(unsigned long, double) {}
-Float64Array* Float64Array::subarray(long, long) {}
-unsigned long Float64Array::getLength() {}
+DataView::DataView(ArrayBuffer* buffer, unsigned long start, unsigned long length) {
+	_start = start;
+	_end = start + length;
+	_buffer = buffer->_buffer;
+}
+
+DataView::DataView(ArrayBuffer* buffer , unsigned long start) {
+	_start = start;
+	_end = buffer->_buffer->_size;
+	_buffer = buffer->_buffer;
+}
+
+DataView::DataView(ArrayBuffer* buffer) {
+	_start = 0;
+	_end = (buffer->_buffer->_size);
+	_buffer = buffer->_buffer;
+}
+
+unsigned long DataView::getByteOffset() {
+	return _start;
+}
+
+unsigned long DataView::getByteLength() {
+	return _end - _start;
+}
+
+unsigned long DataView::getLength() {
+	return _end - _start;
+}
+
+char DataView::getInt8(unsigned long index) {
+	DATAVIEW_TYPED_RETURN(int8_t);
+}
+
+unsigned char DataView::getUint8(unsigned long index) {
+	DATAVIEW_TYPED_RETURN(uint8_t);
+}
+
+short DataView::getInt16(unsigned long index, bool littleEndian) {
+	DATAVIEW_TYPED_RETURN(int16_t);
+}
+
+unsigned short DataView::getUint16(unsigned long index, bool littleEndian) {
+	DATAVIEW_TYPED_RETURN(uint16_t);
+}
+
+long DataView::getInt32(unsigned long index, bool littleEndian) {
+	DATAVIEW_TYPED_RETURN(int32_t);
+}
+
+unsigned long DataView::getUint32(unsigned long index, bool littleEndian) {
+	DATAVIEW_TYPED_RETURN(uint32_t);
+}
+
+float DataView::getFloat32(unsigned long index, bool littleEndian) {
+	DATAVIEW_TYPED_RETURN(float);
+}
+
+double DataView::getFloat64(unsigned long index, bool littleEndian) {
+	DATAVIEW_TYPED_RETURN(double);
+}
+
+void DataView::setInt8(long index, char value) {
+	DATAVIEW_TYPED_SET(int8_t);
+}
+
+void DataView::setUint8(long index, unsigned char value) {
+	DATAVIEW_TYPED_SET(uint8_t);
+}
+
+void DataView::setInt16(long index, short value, bool) {
+	DATAVIEW_TYPED_SET(int16_t);
+}
+void DataView::setUint16(long index, unsigned short value, bool littleEndian) {
+	DATAVIEW_TYPED_SET(uint16_t);
+}
+
+void DataView::setInt32(long index, long value, bool littleEndian) {
+	DATAVIEW_TYPED_SET(int32_t);
+}
+
+void DataView::setUint32(long index, unsigned long value, bool littleEndian) {
+	DATAVIEW_TYPED_SET(uint32_t);
+}
+
+void DataView::setFloat32(long index, float value, bool littleEndian) {
+	DATAVIEW_TYPED_SET(float);
+}
+
+void DataView::setFloat64(long index, double value, bool littleEndian) {
+	DATAVIEW_TYPED_SET(double);
+}
 
 }

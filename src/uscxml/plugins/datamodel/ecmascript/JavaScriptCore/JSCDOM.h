@@ -31,6 +31,7 @@ public:
 	virtual ~JSCDOM();
 	uscxml::Storage* storage;
 	Arabica::XPath::XPath<std::string>* xpath;
+
 };
 
 }

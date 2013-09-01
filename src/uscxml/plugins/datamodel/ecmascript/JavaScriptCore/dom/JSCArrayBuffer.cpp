@@ -17,60 +17,105 @@ JSStaticFunction JSCArrayBuffer::staticFunctions[] = {
 	{ 0, 0, 0 }
 };
 
+JSObjectRef JSCArrayBuffer::jsConstructor(JSContextRef ctx, JSObjectRef constructor, size_t argumentCount, const JSValueRef arguments[], JSValueRef* exception) {
+	uscxml::ArrayBuffer* localInstance = NULL;
+
+	if (false) {
+	} else if (argumentCount == 1 &&
+	           JSValueIsNumber(ctx, arguments[0])) {
+
+		unsigned long localLength = (unsigned long)JSValueToNumber(ctx, arguments[0], exception);
+		localInstance = new uscxml::ArrayBuffer(localLength);
+
+	}
+	if (!localInstance) {
+		JSStringRef exceptionString = JSStringCreateWithUTF8CString("Parameter mismatch while calling constructor for ArrayBuffer");
+		*exception = JSValueMakeString(ctx, exceptionString);
+		JSStringRelease(exceptionString);
+		return (JSObjectRef)JSValueMakeNull(ctx);
+	}
+
+	JSClassRef retClass = JSCArrayBuffer::getTmpl();
+
+	struct JSCArrayBuffer::JSCArrayBufferPrivate* retPrivData = new JSCArrayBuffer::JSCArrayBufferPrivate();
+	retPrivData->nativeObj = localInstance;
+
+	JSObjectRef retObj = JSObjectMake(ctx, retClass, retPrivData);
+	return retObj;
+}
+
 JSValueRef JSCArrayBuffer::byteLengthAttrGetter(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef *exception) {
 	struct JSCArrayBufferPrivate* privData = (struct JSCArrayBufferPrivate*)JSObjectGetPrivate(object);
 
 	return JSValueMakeNumber(ctx, privData->nativeObj->getByteLength());
 }
 
+
 JSValueRef JSCArrayBuffer::sliceCallback(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObj, size_t argumentCount, const JSValueRef* arguments, JSValueRef* exception) {
-	if (argumentCount < 2) {
-		std::string errorMsg = "Wrong number of arguments in slice";
-		JSStringRef string = JSStringCreateWithUTF8CString(errorMsg.c_str());
-		JSValueRef exceptionString =JSValueMakeString(ctx, string);
-		JSStringRelease(string);
-		*exception = JSValueToObject(ctx, exceptionString, NULL);
-		return NULL;
-	}
 
 	struct JSCArrayBufferPrivate* privData = (struct JSCArrayBufferPrivate*)JSObjectGetPrivate(thisObj);
 
-	long localBegin = (long)JSValueToNumber(ctx, arguments[0], exception);
-	long localEnd = (long)JSValueToNumber(ctx, arguments[1], exception);
+	if (false) {
+	} else if (argumentCount == 2 &&
+	           JSValueIsNumber(ctx, arguments[0]) &&
+	           JSValueIsNumber(ctx, arguments[1])) {
+		long localBegin = (long)JSValueToNumber(ctx, arguments[0], exception);
+		long localEnd = (long)JSValueToNumber(ctx, arguments[1], exception);
 
-	uscxml::ArrayBuffer* retVal = new uscxml::ArrayBuffer(privData->nativeObj->slice(localBegin, localEnd));
-	JSClassRef retClass = JSCArrayBuffer::getTmpl();
+		uscxml::ArrayBuffer* retVal = new uscxml::ArrayBuffer(privData->nativeObj->slice(localBegin, localEnd));
+		JSClassRef retClass = JSCArrayBuffer::getTmpl();
 
-	struct JSCArrayBuffer::JSCArrayBufferPrivate* retPrivData = new JSCArrayBuffer::JSCArrayBufferPrivate();
-	retPrivData->dom = privData->dom;
-	retPrivData->nativeObj = retVal;
+		struct JSCArrayBuffer::JSCArrayBufferPrivate* retPrivData = new JSCArrayBuffer::JSCArrayBufferPrivate();
+		retPrivData->dom = privData->dom;
+		retPrivData->nativeObj = retVal;
 
-	JSObjectRef retObj = JSObjectMake(ctx, retClass, retPrivData);
+		JSObjectRef retObj = JSObjectMake(ctx, retClass, retPrivData);
 
-	return retObj;
+		return retObj;
 
+	} else if (argumentCount == 1 &&
+	           JSValueIsNumber(ctx, arguments[0])) {
+		long localBegin = (long)JSValueToNumber(ctx, arguments[0], exception);
+
+		uscxml::ArrayBuffer* retVal = new uscxml::ArrayBuffer(privData->nativeObj->slice(localBegin));
+		JSClassRef retClass = JSCArrayBuffer::getTmpl();
+
+		struct JSCArrayBuffer::JSCArrayBufferPrivate* retPrivData = new JSCArrayBuffer::JSCArrayBufferPrivate();
+		retPrivData->dom = privData->dom;
+		retPrivData->nativeObj = retVal;
+
+		JSObjectRef retObj = JSObjectMake(ctx, retClass, retPrivData);
+
+		return retObj;
+
+	}
+
+	JSStringRef exceptionString = JSStringCreateWithUTF8CString("Parameter mismatch while calling slice");
+	*exception = JSValueMakeString(ctx, exceptionString);
+	JSStringRelease(exceptionString);
+	return JSValueMakeUndefined(ctx);
 }
 
 JSValueRef JSCArrayBuffer::isViewCallback(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObj, size_t argumentCount, const JSValueRef* arguments, JSValueRef* exception) {
-	if (argumentCount < 1) {
-		std::string errorMsg = "Wrong number of arguments in isView";
-		JSStringRef string = JSStringCreateWithUTF8CString(errorMsg.c_str());
-		JSValueRef exceptionString =JSValueMakeString(ctx, string);
-		JSStringRelease(string);
-		*exception = JSValueToObject(ctx, exceptionString, NULL);
-		return NULL;
-	}
 
 	struct JSCArrayBufferPrivate* privData = (struct JSCArrayBufferPrivate*)JSObjectGetPrivate(thisObj);
 
-	void* localValue = JSObjectGetPrivate(JSValueToObject(ctx, arguments[0], exception));
+	if (false) {
+	} else if (argumentCount == 1 &&
+	           true) {
+		void* localValue = JSObjectGetPrivate(JSValueToObject(ctx, arguments[0], exception));
 
-	bool retVal = privData->nativeObj->isView(localValue);
+		bool retVal = privData->nativeObj->isView(localValue);
 
-	JSValueRef jscRetVal = JSValueMakeBoolean(ctx, retVal);
-	return jscRetVal;
+		JSValueRef jscRetVal = JSValueMakeBoolean(ctx, retVal);
+		return jscRetVal;
+	}
+
+	JSStringRef exceptionString = JSStringCreateWithUTF8CString("Parameter mismatch while calling isView");
+	*exception = JSValueMakeString(ctx, exceptionString);
+	JSStringRelease(exceptionString);
+	return JSValueMakeUndefined(ctx);
 }
-
 
 }
 }

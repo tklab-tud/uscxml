@@ -42,7 +42,11 @@ public:
 	static JSValueRef sliceCallback(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObj, size_t argumentCount, const JSValueRef* arguments, JSValueRef* exception);
 	static JSValueRef isViewCallback(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObj, size_t argumentCount, const JSValueRef* arguments, JSValueRef* exception);
 
+	static JSObjectRef jsConstructor(JSContextRef ctx, JSObjectRef constructor, size_t argumentCount, const JSValueRef arguments[], JSValueRef* exception);
 	static JSValueRef byteLengthAttrGetter(JSContextRef ctx, JSObjectRef thisObj, JSStringRef propertyName, JSValueRef* exception);
+	static bool hasPropertyCustomCallback(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName);
+	static JSValueRef getPropertyCustomCallback(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef* exception);
+	static bool setPropertyCustomCallback(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef value, JSValueRef* exception);
 
 
 	static JSStaticValue staticValues[];
@@ -55,6 +59,10 @@ public:
 			classDef.staticValues = staticValues;
 			classDef.staticFunctions = staticFunctions;
 			classDef.finalize = jsDestructor;
+			classDef.hasProperty = hasPropertyCustomCallback;
+			classDef.getProperty = getPropertyCustomCallback;
+			classDef.setProperty = setPropertyCustomCallback;
+			classDef.callAsConstructor = jsConstructor;
 
 			Tmpl = JSClassCreate(&classDef);
 			JSClassRetain(Tmpl);

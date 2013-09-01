@@ -44,7 +44,7 @@ JSValueRef JSCDocumentType::entitiesAttrGetter(JSContextRef ctx, JSObjectRef obj
 	retPrivData->dom = privData->dom;
 	retPrivData->nativeObj = arabicaRet;
 
-	JSObjectRef arbaicaRetObj = JSObjectMake(ctx, arbaicaRetClass, arabicaRet);
+	JSObjectRef arbaicaRetObj = JSObjectMake(ctx, arbaicaRetClass, retPrivData);
 	return arbaicaRetObj;
 }
 
@@ -61,7 +61,7 @@ JSValueRef JSCDocumentType::notationsAttrGetter(JSContextRef ctx, JSObjectRef ob
 	retPrivData->dom = privData->dom;
 	retPrivData->nativeObj = arabicaRet;
 
-	JSObjectRef arbaicaRetObj = JSObjectMake(ctx, arbaicaRetClass, arabicaRet);
+	JSObjectRef arbaicaRetObj = JSObjectMake(ctx, arbaicaRetClass, retPrivData);
 	return arbaicaRetObj;
 }
 

@@ -127,7 +127,7 @@ sub GenerateHeader
     my $interface = shift;
     my $interfaceName = $interface->name;
     my $extensions = $interface->extendedAttributes;
-    #print Dumper($interface);
+#    print Dumper($interface);
 
     # Copy contents of parent interfaces except the first parent.
     my @parents;
@@ -196,6 +196,10 @@ END
     }
     push(@headerContent, "\n");
 
+    if ($extensions->{'Constructors'}) {
+      push(@headerContent, "\n  static JSObjectRef jsConstructor(JSContextRef ctx, JSObjectRef constructor, size_t argumentCount, const JSValueRef arguments[], JSValueRef* exception);");
+    }
+
     # attribute getter and setters
     foreach my $attribute (@{$interface->attributes}) {
         my $name = $attribute->signature->name;
@@ -221,7 +225,7 @@ END
       push(@headerContent, "\n    static JSValueRef getPropertyCustomCallback(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef* exception);");
     }
     if ($extensions->{'CustomIndexedSetter'}) {
-      push(@headerContent, "\n    static JSValueRef setPropertyCustomCallback(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef value, JSValueRef* exception);");
+      push(@headerContent, "\n    static bool setPropertyCustomCallback(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef value, JSValueRef* exception);");
     }
     push(@headerContent, "\n");
 
@@ -245,6 +249,9 @@ END
 			}
 			if ($extensions->{'CustomIndexedSetter'}) {
 				push(@headerContent, "		classDef.setProperty = setPropertyCustomCallback;\n");
+			}
+			if ($extensions->{'Constructors'}) {
+				push(@headerContent, "		classDef.callAsConstructor = jsConstructor;\n");
 			}
 		  if (@{$interface->parents}) {
 		    my $parent = @{$interface->parents}[0];
@@ -302,12 +309,15 @@ sub GenerateClassDefStatics
   push(@implContent, "\n};\n");
 
   push(@implContent, "\nJSStaticFunction JSC${interfaceName}::staticFunctions[] = {");
+	my %generated;
   foreach my $function (@{$interface->functions}) {
     my $name = $function->signature->name;
     my $attrExt = $function->signature->extendedAttributes;
     my $custom = ($attrExt->{'Custom'} ? "Custom" : "");
     my $callback = ${name}.${custom}."Callback";
     my $flags = "kJSPropertyAttributeDontDelete";
+    next if (exists $generated{"${name}"});
+    $generated{"${name}"} = 1;
     push(@implContent, "\n  { \"${name}\", ${callback}, ${flags} },");
     
   }
@@ -361,7 +371,7 @@ END
 		retPrivData->dom = privData->dom;
 		retPrivData->nativeObj = arabicaRet;
 
-		JSObjectRef arbaicaRetObj = JSObjectMake(ctx, arbaicaRetClass, arabicaRet);
+		JSObjectRef arbaicaRetObj = JSObjectMake(ctx, arbaicaRetClass, retPrivData);
     return arbaicaRetObj;
 END
       } else {
@@ -441,6 +451,130 @@ sub GenerateConditionalUndefReturn
   return "if (!$getterExpression) return JSValueMakeUndefined(ctx);";
 }
 
+sub GenerateConstructor
+{
+  my $interface = shift;
+  my $interfaceName = $interface->name;
+  my $extensions = $interface->extendedAttributes;
+  my $wrapperType = IdlToWrapperType($interfaceName);
+
+  if ($extensions->{'Constructors'}) {
+    push(@implContent, <<END);
+
+JSObjectRef JSC${interfaceName}::jsConstructor(JSContextRef ctx, JSObjectRef constructor, size_t argumentCount, const JSValueRef arguments[], JSValueRef* exception) {
+  ${wrapperType}* localInstance = NULL;
+END
+
+    
+    # dispatch the actual constructor
+    push(@implContent, "\n    if (false) {\n}");
+    my @variants;
+    foreach my $fullCons (@{$extensions->{'Constructors'}}) {
+      push (@variants, $fullCons);
+      
+      for (my $i = @{$fullCons}; $i > 0; $i--) {
+        my $variant = @{$fullCons}[$i];
+        if ($variant->{'domSignature::isOptional'}) {
+          my $slice;
+          for (my $j = 0; $j < $i; $j++) {
+            push(@{$slice}, @{$fullCons}[$j]);
+          }
+          push (@variants, $slice);
+        }
+      }
+      
+      # sort to put most determinate signatures first
+      @variants = sort {
+        if (@{$b} != @{$a}) { 
+          # more arguments are more determinant
+          @{$b} <=> @{$a};
+        } else {
+          my @aWrap = grep(IsWrapperType($_->{'domSignature::type'}), @{$a});
+          my @bWrap = grep(IsWrapperType($_->{'domSignature::type'}), @{$b});
+          @bWrap <=> @aWrap;
+        }
+      } @variants;
+    }
+    foreach my $constructor (@variants) {
+      push(@implContent, " else if (argumentCount == " . @{$constructor});
+      for (my $i = 0; $i < @{$constructor}; $i++) {
+        my $type = $constructor->[$i]->{'domSignature::type'};
+        AddToImplIncludes("JSC".$type.".h") if (IsWrapperType($type));
+        push(@implContent, " &&\n        " . IdlToTypeChecker($type, "arguments[$i]"));
+      
+      }
+      
+      push(@implContent, ") {\n");
+      my $constructorArgs;
+      my $constructorSep = "";
+      for (my $i = 0; $i < @{$constructor}; $i++) {
+        my $type = $constructor->[$i]->{'domSignature::type'};
+        my $name = $constructor->[$i]->{'domSignature::name'};
+        my ($handle, $deref) = IdlToArgHandle($type, "local".ucfirst($name), "arguments[$i]", $interfaceName);
+        $constructorArgs .= ${constructorSep}.${deref};
+        $constructorSep = ", ";
+        push(@implContent, "\n      $handle");
+      
+      }
+      push(@implContent, "\n      localInstance = new ".IdlToWrapperType($interfaceName)."(${constructorArgs});");
+      push(@implContent, "\n\n    }");
+      
+    }
+    push(@implContent, "\n");
+
+    push(@implContent, <<END);
+    if (!localInstance) {
+      JSStringRef exceptionString = JSStringCreateWithUTF8CString("Parameter mismatch while calling constructor for ${interfaceName}");
+      *exception = JSValueMakeString(ctx, exceptionString);
+      JSStringRelease(exceptionString);
+      return (JSObjectRef)JSValueMakeNull(ctx);
+    }
+
+    JSClassRef retClass = JSC${interfaceName}::getTmpl();
+
+    struct JSC${interfaceName}::JSC${interfaceName}Private* retPrivData = new JSC${interfaceName}::JSC${interfaceName}Private();
+    retPrivData->nativeObj = localInstance;
+
+		JSObjectRef retObj = JSObjectMake(ctx, retClass, retPrivData);
+    return retObj;
+  }
+END
+  }
+}
+
+sub IdlToTypeChecker
+{
+  my $idlType = shift;
+  my $attr = shift;
+  
+  return "JSValueIsString(ctx, ${attr})" if ($idlType eq "DOMString");
+  return "JSValueIsBoolean(ctx, ${attr})" if ($idlType eq "boolean");
+  return "JSValueIsNumber(ctx, ${attr})" if ($idlType eq "short");
+  return "JSValueIsNumber(ctx, ${attr})" if ($idlType eq "long");
+  return "JSValueIsObject(ctx, ${attr})" if ($idlType eq "long[]");
+  return "JSValueIsNumber(ctx, ${attr})" if ($idlType eq "unsigned short");
+  return "JSValueIsNumber(ctx, ${attr})" if ($idlType eq "unsigned long");
+  return "JSValueIsNumber(ctx, ${attr})" if ($idlType eq "byte");
+  return "JSValueIsNumber(ctx, ${attr})" if ($idlType eq "octet");
+  return "JSValueIsNumber(ctx, ${attr})" if ($idlType eq "double");
+  return "JSValueIsObject(ctx, ${attr})" if ($idlType eq "double[]");
+  return "JSValueIsNumber(ctx, ${attr})" if ($idlType eq "float");
+  return "JSValueIsObject(ctx, ${attr})" if ($idlType eq "float[]");
+  return "JSValueIsObject(ctx, ${attr})" if ($idlType eq "short[]");
+  return "JSValueIsObject(ctx, ${attr})" if ($idlType eq "unsigned short[]");
+  return "JSValueIsObject(ctx, ${attr})" if ($idlType eq "unsigned long[]");
+  return "JSValueIsObject(ctx, ${attr})" if ($idlType eq "byte[]");
+  return "JSValueIsObject(ctx, ${attr})" if ($idlType eq "octet[]");
+  return "true" if ($idlType eq "any");
+
+  return "JSValueIsObject(ctx, ${attr}) && JSValueIsObjectOfClass(ctx, ${attr}, JSC${idlType}::getTmpl())" if (IsWrapperType($idlType));
+
+  print $idlType."\n";
+  die();
+  
+}
+
+
 sub GenerateImplementationFunctionCallbacks
 {
   my $interface = shift;
@@ -459,22 +593,65 @@ sub GenerateImplementationFunctionCallbacks
     next if (exists $generated{"${name}Callback"});
     $generated{"${name}Callback"} = 1;
 
+    # get all functions with this name
+    my @sameFunctions = grep($_->signature->name eq $name, @{$interface->functions});
+
     # signature
     push(@implContent, <<END);
+
 	JSValueRef JSC${interfaceName}::${name}Callback(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObj, size_t argumentCount, const JSValueRef* arguments, JSValueRef* exception) {
 END
 
     # arguments count and type checking
-    push(@implContent, GenerateArgumentsCountCheck($function, $interface));
-    my $argCheckExpr = GenerateArgumentsTypeCheck($function, $interface);
+    # push(@implContent, GenerateArgumentsCountCheck($function, $interface));
+    # my $argCheckExpr = GenerateArgumentsTypeCheck($function, $interface);
 
     # get this
     push(@implContent, "\n    struct JSC${interfaceName}Private* privData = (struct JSC${interfaceName}Private*)JSObjectGetPrivate(thisObj);\n");
+    
+    # establish all variants
+    my @variants;
+    foreach my $functionVar (@sameFunctions) {
+      push (@variants, $functionVar->parameters);
+    
+      for (my $i = @{$functionVar->parameters}; $i > 0; $i--) {
+        my $variant = @{$functionVar->parameters}[$i];
+        if ($variant->{'domSignature::isOptional'}) {
+          my $slice;
+          for (my $j = 0; $j < $i; $j++) {
+            push(@{$slice}, @{$functionVar->parameters}[$j]);
+          }
+          push (@variants, $slice);
+        }
+      }
+    }
 
     # arguments to local handles
-    my $parameterIndex = 0;
-    my @argList;
-    foreach my $parameter (@{$function->parameters}) {
+    push(@implContent, "\n    if (false) {");
+    
+    # sort to put most determinate signatures first
+    @variants = sort {
+      if (@{$b} != @{$a}) { 
+        # more arguments are more determinant
+        @{$b} <=> @{$a};
+      } else {
+        my @aWrap = grep(IsWrapperType($_->{'domSignature::type'}), @{$a});
+        my @bWrap = grep(IsWrapperType($_->{'domSignature::type'}), @{$b});
+        @bWrap <=> @aWrap;
+      }
+    } @variants;
+    
+    foreach my $variant (@variants) {
+      my $parameterIndex = 0;
+      my @argList;
+      
+      push(@implContent, "\n    } else if (argumentCount == " . @{$variant});
+      for (my $i = 0; $i < @{$variant}; $i++) {
+        my $type = $variant->[$i]->{'domSignature::type'};
+        push(@implContent, " &&\n        " . IdlToTypeChecker($type, "arguments[$i]"));
+      }
+      push(@implContent, ")\n        {");
+      foreach my $parameter (@{$variant}) {
         my $type = $parameter->type;
         AddToImplIncludes("JSC".$type.".h") if (IsWrapperType($type));
 
@@ -484,40 +661,49 @@ END
         push(@argList, $deref);
 
         $parameterIndex++;
-    }
+      }
 
-    # invoke native function with argument handles
-    my $retNativeType = IdlToNativeType($retType);
-    my $wrapperFunctionName = IdlToWrapperFunction($interface, $function);
-    if (IsWrapperType($retType)) {
-      push(@implContent, "\n\n    ${retNativeType}* retVal = new $wrapperRetType(privData->nativeObj->${wrapperFunctionName}(" . join(", ", @argList) . "));\n");
-    } elsif ($retNativeType eq "void") {
-      push(@implContent, "\n\n    privData->nativeObj->${wrapperFunctionName}(" . join(", ", @argList) . ");\n");
-    } else {
-      push(@implContent, "\n\n    ${retNativeType} retVal = privData->nativeObj->${wrapperFunctionName}(" . join(", ", @argList) . ");\n");
-    }
+      # invoke native function with argument handles
+      my $retNativeType = IdlToNativeType($retType);
+      my $wrapperFunctionName = IdlToWrapperFunction($interface, $function);
+      if (IsWrapperType($retType)) {
+        push(@implContent, "\n\n    ${retNativeType}* retVal = new $wrapperRetType(privData->nativeObj->${wrapperFunctionName}(" . join(", ", @argList) . "));\n");
+      } elsif ($retNativeType eq "void") {
+        push(@implContent, "\n\n    privData->nativeObj->${wrapperFunctionName}(" . join(", ", @argList) . ");\n");
+      } else {
+        push(@implContent, "\n\n    ${retNativeType} retVal = privData->nativeObj->${wrapperFunctionName}(" . join(", ", @argList) . ");\n");
+      }
 
-    # wrap return type if needed
-    if (IsWrapperType($retType)) {
-      AddToImplIncludes("JSC".$retType.".h");
+      # wrap return type if needed
+      if (IsWrapperType($retType)) {
+        AddToImplIncludes("JSC".$retType.".h");
 
-      push(@implContent, <<END);
-		JSClassRef retClass = JSC${retType}::getTmpl();
+        push(@implContent, <<END);
+  		JSClassRef retClass = JSC${retType}::getTmpl();
 
-		struct JSC${retType}::JSC${retType}Private* retPrivData = new JSC${retType}::JSC${retType}Private();
-		retPrivData->dom = privData->dom;
-		retPrivData->nativeObj = retVal;
+  		struct JSC${retType}::JSC${retType}Private* retPrivData = new JSC${retType}::JSC${retType}Private();
+  		retPrivData->dom = privData->dom;
+  		retPrivData->nativeObj = retVal;
 
-		JSObjectRef retObj = JSObjectMake(ctx, retClass, retPrivData);
+  		JSObjectRef retObj = JSObjectMake(ctx, retClass, retPrivData);
 
-    return retObj;
+      return retObj;
 END
-    } else {
-      my $toHandleString = NativeToHandle($retNativeType, "retVal", "jscRetVal");
-      push(@implContent, "${toHandleString}\n    return jscRetVal;");
+      } else {
+        my $toHandleString = NativeToHandle($retNativeType, "retVal", "jscRetVal");
+        push(@implContent, "${toHandleString}\n    return jscRetVal;");
+      }
     }
+    push(@implContent, <<END);
 
-    push(@implContent, "\n  }\n\n");
+    }
+    
+    JSStringRef exceptionString = JSStringCreateWithUTF8CString("Parameter mismatch while calling ${name}");
+    *exception = JSValueMakeString(ctx, exceptionString);
+    JSStringRelease(exceptionString);
+    return JSValueMakeUndefined(ctx);
+  }
+END
   }
 
 }
@@ -547,6 +733,9 @@ sub GenerateImplementation
     push(@implContent, "JSClassRef JSC${interfaceName}::Tmpl;\n");
 
     GenerateClassDefStatics($interface);
+    if ($interface->extendedAttributes->{'Constructors'}) {
+      GenerateConstructor($interface);
+    }
     GenerateImplementationAttributes($interface);
     GenerateImplementationFunctionCallbacks($interface);
 
@@ -654,7 +843,7 @@ sub IdlToNativeType
   return "unsigned long" if ($idlType eq "unsigned long");
   return "void" if ($idlType eq "void");
   return "char" if ($idlType eq "byte");
-  return "char" if ($idlType eq "octet");
+  return "unsigned char" if ($idlType eq "octet");
   return "double" if ($idlType eq "double");
   return "float" if ($idlType eq "float");
   die(${idlType});
@@ -671,6 +860,7 @@ sub NativeToHandle
   return ("\n		JSValueRef ${paramName} = JSValueMakeNumber(ctx, ${nativeName});") if ($nativeType eq "float");
   return ("\n		JSValueRef ${paramName} = JSValueMakeNumber(ctx, ${nativeName});") if ($nativeType eq "short");
   return ("\n		JSValueRef ${paramName} = JSValueMakeNumber(ctx, ${nativeName});") if ($nativeType eq "char");
+  return ("\n		JSValueRef ${paramName} = JSValueMakeNumber(ctx, ${nativeName});") if ($nativeType eq "unsigned char");
   return ("\n		JSValueRef ${paramName} = JSValueMakeNumber(ctx, ${nativeName});") if ($nativeType eq "unsigned short");
   return ("\n		JSValueRef ${paramName} = JSValueMakeNumber(ctx, ${nativeName});") if ($nativeType eq "unsigned long");
   return ("\n		JSValueRef ${paramName} = JSValueMakeNumber(ctx, ${nativeName});") if ($nativeType eq "long");
@@ -731,16 +921,41 @@ sub IdlToArgHandle
   return ("double ${localName} = (double)JSValueToNumber(ctx, ${paramName}, exception);", ${localName}) if ($type eq "double");
   return ("short ${localName} = (short)JSValueToNumber(ctx, ${paramName}, exception);", ${localName}) if ($type eq "short");
   return ("char ${localName} = (char)JSValueToNumber(ctx, ${paramName}, exception);", ${localName}) if ($type eq "byte");
-  return ("unsigned char ${localName} = (char)JSValueToNumber(ctx, ${paramName}, exception);", ${localName}) if ($type eq "octet");
+  return ("unsigned char ${localName} = (unsigned char)JSValueToNumber(ctx, ${paramName}, exception);", ${localName}) if ($type eq "octet");
   return ("bool ${localName} = JSValueToBoolean(ctx, ${paramName});", ${localName}) if ($type eq "boolean");
-  return ("float[] ${localName} = JSObjectGetPrivate(JSValueToObject(ctx, ${paramName}, exception))->getFloatArray();", ${localName}) if ($type eq "float[]");
-  return ("double[] ${localName} = JSObjectGetPrivate(JSValueToObject(ctx, ${paramName}, exception))->getDoubleArray();", ${localName}) if ($type eq "double[]");
-  return ("long[] ${localName} = JSObjectGetPrivate(JSValueToObject(ctx, ${paramName}, exception))->getLongArray();", ${localName}) if ($type eq "long[]");
   return ("void* ${localName} = JSObjectGetPrivate(JSValueToObject(ctx, ${paramName}, exception));", ${localName}) if ($type eq "any");
+
+  if ($type =~ /(.*)\[\]$/) {
+    my $nativeType = $1;
+    $nativeType = "char" if ($nativeType =~ /^byte$/);
+    $nativeType = "unsigned char" if ($nativeType =~ /^octet$/);
+    return ("\
+      std::vector<${nativeType}> ${localName};\n\
+      JSValueRef ${localName}Item;
+      unsigned int ${localName}Index = 0;
+      while((${localName}Item = JSObjectGetPropertyAtIndex(ctx, JSValueToObject(ctx, ${paramName}, exception), ${localName}Index, exception))) {\
+        if (JSValueIsUndefined(ctx, ${localName}Item))\
+          break;\
+        if (JSValueIsNumber(ctx,${localName}Item))\
+          ${localName}.push_back(JSValueToNumber(ctx, ${localName}Item, exception));\
+        ${localName}Index++;\
+      }", "${localName}");
+    }
+  # return ("std::vector<float> ${localName};\nv8::Handle<v8::Array> ${localName}Array(v8::Array::Cast(*args[0]));\nfor (int i = 0; i < ${localName}Array->Length(); i++) {\n  ${localName}.push_back(${localName}Array->Get(i)->ToNumber()->Value());\n}", "${localName}")  if ($type eq "float[]");
+  # return ("std::vector<double> ${localName};\nv8::Handle<v8::Array> ${localName}Array(v8::Array::Cast(*args[0]));\nfor (int i = 0; i < ${localName}Array->Length(); i++) {\n  ${localName}.push_back(${localName}Array->Get(i)->ToNumber()->Value());\n}", "${localName}")  if ($type eq "double[]");
+  # return ("std::vector<char> ${localName};\nv8::Handle<v8::Array> ${localName}Array(v8::Array::Cast(*args[0]));\nfor (int i = 0; i < ${localName}Array->Length(); i++) {\n  ${localName}.push_back(${localName}Array->Get(i)->ToInt32()->Value());\n}", "${localName}")  if ($type eq "byte[]");
+  # return ("std::vector<short> ${localName};\nv8::Handle<v8::Array> ${localName}Array(v8::Array::Cast(*args[0]));\nfor (int i = 0; i < ${localName}Array->Length(); i++) {\n  ${localName}.push_back(${localName}Array->Get(i)->ToInt32()->Value());\n}", "${localName}")  if ($type eq "short[]");
+  # return ("std::vector<unsigned short> ${localName};\nv8::Handle<v8::Array> ${localName}Array(v8::Array::Cast(*args[0]));\nfor (int i = 0; i < ${localName}Array->Length(); i++) {\n  ${localName}.push_back(${localName}Array->Get(i)->ToUint32()->Value());\n}", "${localName}")  if ($type eq "unsigned short[]");
+  # return ("std::vector<unsigned long> ${localName};\nv8::Handle<v8::Array> ${localName}Array(v8::Array::Cast(*args[0]));\nfor (int i = 0; i < ${localName}Array->Length(); i++) {\n  ${localName}.push_back(${localName}Array->Get(i)->ToUint32()->Value());\n}", "${localName}")  if ($type eq "unsigned long[]");
+  # return ("std::vector<unsigned char> ${localName};\nv8::Handle<v8::Array> ${localName}Array(v8::Array::Cast(*args[0]));\nfor (int i = 0; i < ${localName}Array->Length(); i++) {\n  ${localName}.push_back(${localName}Array->Get(i)->ToUint32()->Value());\n}", "${localName}")  if ($type eq "octet[]");
   
   if (IsWrapperType($type)) {
     my $wrapperType = IdlToWrapperType($type);
-    return ("${wrapperType}* ${localName} = ((struct JSC${type}::JSC${type}Private*)JSObjectGetPrivate(JSValueToObject(ctx, ${paramName}, exception)))->nativeObj;", "*${localName}");
+    if ($wrapperType =~ /^Arabica.*/) {
+      return ("${wrapperType}* ${localName} = ((struct JSC${type}::JSC${type}Private*)JSObjectGetPrivate(JSValueToObject(ctx, ${paramName}, exception)))->nativeObj;", "*${localName}");
+    } else {
+      return ("${wrapperType}* ${localName} = ((struct JSC${type}::JSC${type}Private*)JSObjectGetPrivate(JSValueToObject(ctx, ${paramName}, exception)))->nativeObj;", "${localName}");      
+    }
   }
 
   print $type."\n";
@@ -832,7 +1047,7 @@ sub GenerateArgumentsTypeCheck
 
     my $parameterIndex = 0;
     foreach my $parameter (@{$function->parameters}) {
-        my $value = "args[$parameterIndex]";
+        my $value = "arguments[$parameterIndex]";
         my $type = $parameter->type;
 
         # Only DOMString or wrapper types are checked.
@@ -895,18 +1110,23 @@ my %non_wrapper_types = (
     'long' => 1,
     'long[]' => 1,
     'short' => 1,
+    'short[]' => 1,
     'void' => 1,
     'byte' => 1,
     'octet' => 1,
     'char' => 1,
     'float[]' => 1,
+    'byte[]' => 1,
     'float' => 1,
     'double[]' => 1,
     'double' => 1,
     'unsigned int' => 1,
     'unsigned long long' => 1,
     'unsigned long' => 1,
-    'unsigned short' => 1
+    'unsigned long[]' => 1,
+    'unsigned short' => 1,
+    'unsigned short[]' => 1,
+    'octet[]' => 1
 );
 
 sub IsWrapperType

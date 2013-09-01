@@ -8,7 +8,10 @@
  *   https://www.khronos.org/registry/typedarray/specs/latest/
  */
 
-[ Constructor(unsigned long length) ]
+[  CustomIndexedGetter,
+   CustomIndexedSetter,
+   Constructor(unsigned long length) 
+]
 interface ArrayBuffer {
     readonly attribute unsigned long byteLength;
     ArrayBuffer slice(long begin, optional long end);
@@ -26,13 +29,15 @@ interface ArrayBufferView {
 // The 'byte' type does not currently exist in Web IDL.
 // In this IDL, it should be a signed 8 bit type.
 [
+    CustomIndexedGetter,
+    CustomIndexedSetter,
     Constructor(unsigned long length),
     Constructor(Int8Array array),
     Constructor(byte[] array),
     Constructor(ArrayBuffer buffer, 
                 optional unsigned long byteOffset, optional unsigned long length)
 ]
-interface Int8Array {
+interface Int8Array : ArrayBufferView {
     const long BYTES_PER_ELEMENT = 1;
 
     readonly attribute unsigned long length;
@@ -49,13 +54,15 @@ Int8Array implements ArrayBufferView;
 // The 'unsigned byte' type does not currently exist in Web IDL, though
 // 'octet' is equivalent.
 [
+    CustomIndexedGetter,
+    CustomIndexedSetter,
     Constructor(unsigned long length),
     Constructor(Uint8Array array),
     Constructor(octet[] array),
     Constructor(ArrayBuffer buffer, 
                 optional unsigned long byteOffset, optional unsigned long length)
 ]
-interface Uint8Array {
+interface Uint8Array : ArrayBufferView{
     const long BYTES_PER_ELEMENT = 1;
     
     readonly attribute unsigned long length;
@@ -70,13 +77,15 @@ Uint8Array implements ArrayBufferView;
 
 
 [
+    CustomIndexedGetter,
+    CustomIndexedSetter,
     Constructor(unsigned long length),
     Constructor(Uint8ClampedArray array),
     Constructor(octet[] array),
     Constructor(ArrayBuffer buffer, 
                 optional unsigned long byteOffset, optional unsigned long length)
 ]
-interface Uint8ClampedArray {
+interface Uint8ClampedArray : ArrayBufferView {
     const long BYTES_PER_ELEMENT = 1;
     
     readonly attribute unsigned long length;
@@ -91,13 +100,15 @@ Uint8ClampedArray implements ArrayBufferView;
 
 
 [
+    CustomIndexedGetter,
+    CustomIndexedSetter,
     Constructor(unsigned long length),
     Constructor(Int16Array array),
     Constructor(short[] array),
     Constructor(ArrayBuffer buffer, 
                 optional unsigned long byteOffset, optional unsigned long length)
 ]
-interface Int16Array {
+interface Int16Array : ArrayBufferView {
     const long BYTES_PER_ELEMENT = 2;
     
     readonly attribute unsigned long length;
@@ -112,13 +123,15 @@ Int16Array implements ArrayBufferView;
 
 
 [
+    CustomIndexedGetter,
+    CustomIndexedSetter,
     Constructor(unsigned long length),
     Constructor(Uint16Array array),
     Constructor(unsigned short[] array),
     Constructor(ArrayBuffer buffer, 
                 optional unsigned long byteOffset, optional unsigned long length)
 ]
-interface Uint16Array {
+interface Uint16Array : ArrayBufferView {
     const long BYTES_PER_ELEMENT = 2;
     
     readonly attribute unsigned long length;
@@ -133,13 +146,15 @@ Uint16Array implements ArrayBufferView;
 
 
 [
+    CustomIndexedGetter,
+    CustomIndexedSetter,
     Constructor(unsigned long length),
     Constructor(Int32Array array),
     Constructor(long[] array),
     Constructor(ArrayBuffer buffer, 
                 optional unsigned long byteOffset, optional unsigned long length)
 ]
-interface Int32Array {
+interface Int32Array : ArrayBufferView {
     const long BYTES_PER_ELEMENT = 4;
     
     readonly attribute unsigned long length;
@@ -154,13 +169,15 @@ Int32Array implements ArrayBufferView;
 
 
 [
+    CustomIndexedGetter,
+    CustomIndexedSetter,
     Constructor(unsigned long length),
     Constructor(Uint32Array array),
     Constructor(unsigned long[] array),
     Constructor(ArrayBuffer buffer, 
                 optional unsigned long byteOffset, optional unsigned long length)
 ]
-interface Uint32Array {
+interface Uint32Array : ArrayBufferView {
     const long BYTES_PER_ELEMENT = 4;
     
     readonly attribute unsigned long length;
@@ -175,13 +192,15 @@ Uint32Array implements ArrayBufferView;
 
 
 [
+    CustomIndexedGetter,
+    CustomIndexedSetter,
     Constructor(unsigned long length),
     Constructor(Float32Array array),
     Constructor(float[] array),
     Constructor(ArrayBuffer buffer, 
                 optional unsigned long byteOffset, optional unsigned long length)
 ]
-interface Float32Array {
+interface Float32Array : ArrayBufferView {
     const long BYTES_PER_ELEMENT = 4;
     
     readonly attribute unsigned long length;
@@ -196,13 +215,15 @@ Float32Array implements ArrayBufferView;
 
 
 [
+    CustomIndexedGetter,
+    CustomIndexedSetter,
     Constructor(unsigned long length),
     Constructor(Float64Array array),
     Constructor(double[] array),
     Constructor(ArrayBuffer buffer, 
                 optional unsigned long byteOffset, optional unsigned long length)
 ]
-interface Float64Array {
+interface Float64Array : ArrayBufferView {
     const long BYTES_PER_ELEMENT = 8;
     
     readonly attribute unsigned long length;
@@ -221,7 +242,7 @@ Float64Array implements ArrayBufferView;
               optional unsigned long byteOffset,
               optional unsigned long byteLength)
 ]
-interface DataView {
+interface DataView : ArrayBufferView{
     // Gets the value of the given type at the specified byte offset
     // from the start of the view. There is no alignment constraint;
     // multi-byte values may be fetched from any offset.

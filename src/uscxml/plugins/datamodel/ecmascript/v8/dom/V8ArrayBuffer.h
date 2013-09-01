@@ -45,6 +45,18 @@ public:
 	static v8::Handle<v8::Value> isViewCallback(const v8::Arguments&);
 
 	static v8::Handle<v8::Value> byteLengthAttrGetter(v8::Local<v8::String> property, const v8::AccessorInfo& info);
+	static v8::Handle<v8::Value> indexedPropertyCustomGetter(uint32_t, const v8::AccessorInfo&);
+	static v8::Handle<v8::Value> indexedPropertyCustomSetter(uint32_t, v8::Local<v8::Value>, const v8::AccessorInfo&);
+
+	static v8::Handle<v8::Value> constructor(const v8::Arguments&);
+	static v8::Persistent<v8::FunctionTemplate> Constr;
+	static v8::Handle<v8::FunctionTemplate> getConstructor() {
+		if (Constr.IsEmpty()) {
+			v8::Handle<v8::FunctionTemplate> constr = v8::FunctionTemplate::New(constructor);
+			Constr = v8::Persistent<v8::FunctionTemplate>::New(constr);
+		}
+		return Constr;
+	}
 
 	static v8::Persistent<v8::FunctionTemplate> Tmpl;
 	static v8::Handle<v8::FunctionTemplate> getTmpl() {
@@ -62,6 +74,7 @@ public:
 			instance->SetAccessor(v8::String::NewSymbol("byteLength"), V8ArrayBuffer::byteLengthAttrGetter, 0,
 			                      v8::External::New(0), static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None));
 
+			instance->SetIndexedPropertyHandler(V8ArrayBuffer::indexedPropertyCustomGetter, V8ArrayBuffer::indexedPropertyCustomSetter);
 			prototype->Set(v8::String::NewSymbol("slice"),
 			               v8::FunctionTemplate::New(V8ArrayBuffer::sliceCallback, v8::Undefined()), static_cast<v8::PropertyAttribute>(v8::DontDelete));
 			prototype->Set(v8::String::NewSymbol("isView"),

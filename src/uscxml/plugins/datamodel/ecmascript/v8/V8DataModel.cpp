@@ -9,6 +9,18 @@
 #include "dom/V8CDATASection.h"
 #include "dom/V8SCXMLEvent.h"
 
+#include "dom/V8ArrayBuffer.h"
+#include "dom/V8Int8Array.h"
+#include "dom/V8Uint8Array.h"
+#include "dom/V8Uint8ClampedArray.h"
+#include "dom/V8Int16Array.h"
+#include "dom/V8Uint16Array.h"
+#include "dom/V8Int32Array.h"
+#include "dom/V8Uint32Array.h"
+#include "dom/V8Float32Array.h"
+#include "dom/V8Float64Array.h"
+#include "dom/V8DataView.h"
+
 #include "uscxml/Message.h"
 #include <glog/logging.h>
 
@@ -85,6 +97,20 @@ boost::shared_ptr<DataModelImpl> V8DataModel::create(InterpreterImpl* interprete
 	docObj->SetInternalField(0, V8DOM::toExternal(privData));
 
 	context->Global()->Set(v8::String::New("document"), docObj);
+
+	// setup constructors
+	context->Global()->Set(v8::String::New("ArrayBuffer"), V8ArrayBuffer::getConstructor()->GetFunction());
+	context->Global()->Set(v8::String::New("Int8Array"), V8Int8Array::getConstructor()->GetFunction());
+	context->Global()->Set(v8::String::New("Uint8Array"), V8Uint8Array::getConstructor()->GetFunction());
+	context->Global()->Set(v8::String::New("Uint8ClampedArray"), V8Uint8ClampedArray::getConstructor()->GetFunction());
+	context->Global()->Set(v8::String::New("Int16Array"), V8Int16Array::getConstructor()->GetFunction());
+	context->Global()->Set(v8::String::New("Uint16Array"), V8Uint16Array::getConstructor()->GetFunction());
+	context->Global()->Set(v8::String::New("Int32Array"), V8Int32Array::getConstructor()->GetFunction());
+	context->Global()->Set(v8::String::New("Uint32Array"), V8Uint32Array::getConstructor()->GetFunction());
+	context->Global()->Set(v8::String::New("Float32Array"), V8Float32Array::getConstructor()->GetFunction());
+	context->Global()->Set(v8::String::New("Float64Array"), V8Float64Array::getConstructor()->GetFunction());
+	context->Global()->Set(v8::String::New("DataView"), V8DataView::getConstructor()->GetFunction());
+
 
 	context->Global()->SetAccessor(v8::String::New("_sessionid"),
 	                               V8DataModel::getAttribute,

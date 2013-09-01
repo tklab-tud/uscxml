@@ -7,7 +7,6 @@ namespace DOM {
 
 v8::Persistent<v8::FunctionTemplate> V8Node::Tmpl;
 
-
 v8::Handle<v8::Value> V8Node::nodeNameAttrGetter(v8::Local<v8::String> property, const v8::AccessorInfo& info) {
 	v8::Local<v8::Object> self = info.Holder();
 	struct V8NodePrivate* privData = V8DOM::toClassPtr<V8NodePrivate >(self->GetInternalField(0));
@@ -203,175 +202,209 @@ v8::Handle<v8::Value> V8Node::localNameAttrGetter(v8::Local<v8::String> property
 
 	return v8::String::New(privData->nativeObj->getLocalName().c_str());
 }
+
 v8::Handle<v8::Value> V8Node::insertBeforeCallback(const v8::Arguments& args) {
-	if (args.Length() < 2)
-		throw V8Exception("Wrong number of arguments in insertBefore");
-	if (!((V8Node::hasInstance(args[0])) && (V8Node::hasInstance(args[1]))))
-		throw V8Exception("Parameter mismatch while calling insertBefore");
 
 	v8::Local<v8::Object> self = args.Holder();
 	struct V8NodePrivate* privData = V8DOM::toClassPtr<V8NodePrivate >(self->GetInternalField(0));
-	Arabica::DOM::Node<std::string>* localNewChild = V8DOM::toClassPtr<V8Node::V8NodePrivate >(args[0]->ToObject()->GetInternalField(0))->nativeObj;
-	Arabica::DOM::Node<std::string>* localRefChild = V8DOM::toClassPtr<V8Node::V8NodePrivate >(args[1]->ToObject()->GetInternalField(0))->nativeObj;
+	if (false) {
+	} else if (args.Length() == 2 &&
+	           args[0]->IsObject() && V8Node::hasInstance(args[0]) &&
+	           args[1]->IsObject() && V8Node::hasInstance(args[1])) {
+		Arabica::DOM::Node<std::string>* localNewChild = V8DOM::toClassPtr<V8Node::V8NodePrivate >(args[0]->ToObject()->GetInternalField(0))->nativeObj;
+		Arabica::DOM::Node<std::string>* localRefChild = V8DOM::toClassPtr<V8Node::V8NodePrivate >(args[1]->ToObject()->GetInternalField(0))->nativeObj;
 
-	Arabica::DOM::Node<std::string>* retVal = new Arabica::DOM::Node<std::string>(privData->nativeObj->insertBefore(*localNewChild, *localRefChild));
-	v8::Handle<v8::Function> retCtor = V8Node::getTmpl()->GetFunction();
-	v8::Persistent<v8::Object> retObj = v8::Persistent<v8::Object>::New(retCtor->NewInstance());
+		Arabica::DOM::Node<std::string>* retVal = new Arabica::DOM::Node<std::string>(privData->nativeObj->insertBefore(*localNewChild, *localRefChild));
+		v8::Handle<v8::Function> retCtor = V8Node::getTmpl()->GetFunction();
+		v8::Persistent<v8::Object> retObj = v8::Persistent<v8::Object>::New(retCtor->NewInstance());
 
-	struct V8Node::V8NodePrivate* retPrivData = new V8Node::V8NodePrivate();
-	retPrivData->dom = privData->dom;
-	retPrivData->nativeObj = retVal;
+		struct V8Node::V8NodePrivate* retPrivData = new V8Node::V8NodePrivate();
+		retPrivData->dom = privData->dom;
+		retPrivData->nativeObj = retVal;
 
-	retObj->SetInternalField(0, V8DOM::toExternal(retPrivData));
+		retObj->SetInternalField(0, V8DOM::toExternal(retPrivData));
 
-	retObj.MakeWeak(0, V8Node::jsDestructor);
-	return retObj;
+		retObj.MakeWeak(0, V8Node::jsDestructor);
+		return retObj;
 
+	}
+	throw V8Exception("Parameter mismatch while calling insertBefore");
+	return v8::Undefined();
 }
 
 v8::Handle<v8::Value> V8Node::replaceChildCallback(const v8::Arguments& args) {
-	if (args.Length() < 2)
-		throw V8Exception("Wrong number of arguments in replaceChild");
-	if (!((V8Node::hasInstance(args[0])) && (V8Node::hasInstance(args[1]))))
-		throw V8Exception("Parameter mismatch while calling replaceChild");
 
 	v8::Local<v8::Object> self = args.Holder();
 	struct V8NodePrivate* privData = V8DOM::toClassPtr<V8NodePrivate >(self->GetInternalField(0));
-	Arabica::DOM::Node<std::string>* localNewChild = V8DOM::toClassPtr<V8Node::V8NodePrivate >(args[0]->ToObject()->GetInternalField(0))->nativeObj;
-	Arabica::DOM::Node<std::string>* localOldChild = V8DOM::toClassPtr<V8Node::V8NodePrivate >(args[1]->ToObject()->GetInternalField(0))->nativeObj;
+	if (false) {
+	} else if (args.Length() == 2 &&
+	           args[0]->IsObject() && V8Node::hasInstance(args[0]) &&
+	           args[1]->IsObject() && V8Node::hasInstance(args[1])) {
+		Arabica::DOM::Node<std::string>* localNewChild = V8DOM::toClassPtr<V8Node::V8NodePrivate >(args[0]->ToObject()->GetInternalField(0))->nativeObj;
+		Arabica::DOM::Node<std::string>* localOldChild = V8DOM::toClassPtr<V8Node::V8NodePrivate >(args[1]->ToObject()->GetInternalField(0))->nativeObj;
 
-	Arabica::DOM::Node<std::string>* retVal = new Arabica::DOM::Node<std::string>(privData->nativeObj->replaceChild(*localNewChild, *localOldChild));
-	v8::Handle<v8::Function> retCtor = V8Node::getTmpl()->GetFunction();
-	v8::Persistent<v8::Object> retObj = v8::Persistent<v8::Object>::New(retCtor->NewInstance());
+		Arabica::DOM::Node<std::string>* retVal = new Arabica::DOM::Node<std::string>(privData->nativeObj->replaceChild(*localNewChild, *localOldChild));
+		v8::Handle<v8::Function> retCtor = V8Node::getTmpl()->GetFunction();
+		v8::Persistent<v8::Object> retObj = v8::Persistent<v8::Object>::New(retCtor->NewInstance());
 
-	struct V8Node::V8NodePrivate* retPrivData = new V8Node::V8NodePrivate();
-	retPrivData->dom = privData->dom;
-	retPrivData->nativeObj = retVal;
+		struct V8Node::V8NodePrivate* retPrivData = new V8Node::V8NodePrivate();
+		retPrivData->dom = privData->dom;
+		retPrivData->nativeObj = retVal;
 
-	retObj->SetInternalField(0, V8DOM::toExternal(retPrivData));
+		retObj->SetInternalField(0, V8DOM::toExternal(retPrivData));
 
-	retObj.MakeWeak(0, V8Node::jsDestructor);
-	return retObj;
+		retObj.MakeWeak(0, V8Node::jsDestructor);
+		return retObj;
 
+	}
+	throw V8Exception("Parameter mismatch while calling replaceChild");
+	return v8::Undefined();
 }
 
 v8::Handle<v8::Value> V8Node::removeChildCallback(const v8::Arguments& args) {
-	if (args.Length() < 1)
-		throw V8Exception("Wrong number of arguments in removeChild");
-	if (!(V8Node::hasInstance(args[0])))
-		throw V8Exception("Parameter mismatch while calling removeChild");
 
 	v8::Local<v8::Object> self = args.Holder();
 	struct V8NodePrivate* privData = V8DOM::toClassPtr<V8NodePrivate >(self->GetInternalField(0));
-	Arabica::DOM::Node<std::string>* localOldChild = V8DOM::toClassPtr<V8Node::V8NodePrivate >(args[0]->ToObject()->GetInternalField(0))->nativeObj;
+	if (false) {
+	} else if (args.Length() == 1 &&
+	           args[0]->IsObject() && V8Node::hasInstance(args[0])) {
+		Arabica::DOM::Node<std::string>* localOldChild = V8DOM::toClassPtr<V8Node::V8NodePrivate >(args[0]->ToObject()->GetInternalField(0))->nativeObj;
 
-	Arabica::DOM::Node<std::string>* retVal = new Arabica::DOM::Node<std::string>(privData->nativeObj->removeChild(*localOldChild));
-	v8::Handle<v8::Function> retCtor = V8Node::getTmpl()->GetFunction();
-	v8::Persistent<v8::Object> retObj = v8::Persistent<v8::Object>::New(retCtor->NewInstance());
+		Arabica::DOM::Node<std::string>* retVal = new Arabica::DOM::Node<std::string>(privData->nativeObj->removeChild(*localOldChild));
+		v8::Handle<v8::Function> retCtor = V8Node::getTmpl()->GetFunction();
+		v8::Persistent<v8::Object> retObj = v8::Persistent<v8::Object>::New(retCtor->NewInstance());
 
-	struct V8Node::V8NodePrivate* retPrivData = new V8Node::V8NodePrivate();
-	retPrivData->dom = privData->dom;
-	retPrivData->nativeObj = retVal;
+		struct V8Node::V8NodePrivate* retPrivData = new V8Node::V8NodePrivate();
+		retPrivData->dom = privData->dom;
+		retPrivData->nativeObj = retVal;
 
-	retObj->SetInternalField(0, V8DOM::toExternal(retPrivData));
+		retObj->SetInternalField(0, V8DOM::toExternal(retPrivData));
 
-	retObj.MakeWeak(0, V8Node::jsDestructor);
-	return retObj;
+		retObj.MakeWeak(0, V8Node::jsDestructor);
+		return retObj;
 
+	}
+	throw V8Exception("Parameter mismatch while calling removeChild");
+	return v8::Undefined();
 }
 
 v8::Handle<v8::Value> V8Node::appendChildCallback(const v8::Arguments& args) {
-	if (args.Length() < 1)
-		throw V8Exception("Wrong number of arguments in appendChild");
-	if (!(V8Node::hasInstance(args[0])))
-		throw V8Exception("Parameter mismatch while calling appendChild");
 
 	v8::Local<v8::Object> self = args.Holder();
 	struct V8NodePrivate* privData = V8DOM::toClassPtr<V8NodePrivate >(self->GetInternalField(0));
-	Arabica::DOM::Node<std::string>* localNewChild = V8DOM::toClassPtr<V8Node::V8NodePrivate >(args[0]->ToObject()->GetInternalField(0))->nativeObj;
+	if (false) {
+	} else if (args.Length() == 1 &&
+	           args[0]->IsObject() && V8Node::hasInstance(args[0])) {
+		Arabica::DOM::Node<std::string>* localNewChild = V8DOM::toClassPtr<V8Node::V8NodePrivate >(args[0]->ToObject()->GetInternalField(0))->nativeObj;
 
-	Arabica::DOM::Node<std::string>* retVal = new Arabica::DOM::Node<std::string>(privData->nativeObj->appendChild(*localNewChild));
-	v8::Handle<v8::Function> retCtor = V8Node::getTmpl()->GetFunction();
-	v8::Persistent<v8::Object> retObj = v8::Persistent<v8::Object>::New(retCtor->NewInstance());
+		Arabica::DOM::Node<std::string>* retVal = new Arabica::DOM::Node<std::string>(privData->nativeObj->appendChild(*localNewChild));
+		v8::Handle<v8::Function> retCtor = V8Node::getTmpl()->GetFunction();
+		v8::Persistent<v8::Object> retObj = v8::Persistent<v8::Object>::New(retCtor->NewInstance());
 
-	struct V8Node::V8NodePrivate* retPrivData = new V8Node::V8NodePrivate();
-	retPrivData->dom = privData->dom;
-	retPrivData->nativeObj = retVal;
+		struct V8Node::V8NodePrivate* retPrivData = new V8Node::V8NodePrivate();
+		retPrivData->dom = privData->dom;
+		retPrivData->nativeObj = retVal;
 
-	retObj->SetInternalField(0, V8DOM::toExternal(retPrivData));
+		retObj->SetInternalField(0, V8DOM::toExternal(retPrivData));
 
-	retObj.MakeWeak(0, V8Node::jsDestructor);
-	return retObj;
+		retObj.MakeWeak(0, V8Node::jsDestructor);
+		return retObj;
 
+	}
+	throw V8Exception("Parameter mismatch while calling appendChild");
+	return v8::Undefined();
 }
 
 v8::Handle<v8::Value> V8Node::hasChildNodesCallback(const v8::Arguments& args) {
 
 	v8::Local<v8::Object> self = args.Holder();
 	struct V8NodePrivate* privData = V8DOM::toClassPtr<V8NodePrivate >(self->GetInternalField(0));
+	if (false) {
+	} else if (args.Length() == 0) {
 
-	bool retVal = privData->nativeObj->hasChildNodes();
+		bool retVal = privData->nativeObj->hasChildNodes();
 
-	return v8::Boolean::New(retVal);
+		return v8::Boolean::New(retVal);
+	}
+	throw V8Exception("Parameter mismatch while calling hasChildNodes");
+	return v8::Undefined();
 }
 
 v8::Handle<v8::Value> V8Node::cloneNodeCallback(const v8::Arguments& args) {
-	if (args.Length() < 1)
-		throw V8Exception("Wrong number of arguments in cloneNode");
 
 	v8::Local<v8::Object> self = args.Holder();
 	struct V8NodePrivate* privData = V8DOM::toClassPtr<V8NodePrivate >(self->GetInternalField(0));
-	bool localDeep = args[0]->ToBoolean()->BooleanValue();
+	if (false) {
+	} else if (args.Length() == 1 &&
+	           args[0]->IsBoolean()) {
+		bool localDeep = args[0]->ToBoolean()->BooleanValue();
 
-	Arabica::DOM::Node<std::string>* retVal = new Arabica::DOM::Node<std::string>(privData->nativeObj->cloneNode(localDeep));
-	v8::Handle<v8::Function> retCtor = V8Node::getTmpl()->GetFunction();
-	v8::Persistent<v8::Object> retObj = v8::Persistent<v8::Object>::New(retCtor->NewInstance());
+		Arabica::DOM::Node<std::string>* retVal = new Arabica::DOM::Node<std::string>(privData->nativeObj->cloneNode(localDeep));
+		v8::Handle<v8::Function> retCtor = V8Node::getTmpl()->GetFunction();
+		v8::Persistent<v8::Object> retObj = v8::Persistent<v8::Object>::New(retCtor->NewInstance());
 
-	struct V8Node::V8NodePrivate* retPrivData = new V8Node::V8NodePrivate();
-	retPrivData->dom = privData->dom;
-	retPrivData->nativeObj = retVal;
+		struct V8Node::V8NodePrivate* retPrivData = new V8Node::V8NodePrivate();
+		retPrivData->dom = privData->dom;
+		retPrivData->nativeObj = retVal;
 
-	retObj->SetInternalField(0, V8DOM::toExternal(retPrivData));
+		retObj->SetInternalField(0, V8DOM::toExternal(retPrivData));
 
-	retObj.MakeWeak(0, V8Node::jsDestructor);
-	return retObj;
+		retObj.MakeWeak(0, V8Node::jsDestructor);
+		return retObj;
 
+	}
+	throw V8Exception("Parameter mismatch while calling cloneNode");
+	return v8::Undefined();
 }
 
 v8::Handle<v8::Value> V8Node::normalizeCallback(const v8::Arguments& args) {
 
 	v8::Local<v8::Object> self = args.Holder();
 	struct V8NodePrivate* privData = V8DOM::toClassPtr<V8NodePrivate >(self->GetInternalField(0));
+	if (false) {
+	} else if (args.Length() == 0) {
 
-	privData->nativeObj->normalize();
+		privData->nativeObj->normalize();
 
+		return v8::Undefined();
+	}
+	throw V8Exception("Parameter mismatch while calling normalize");
 	return v8::Undefined();
 }
 
 v8::Handle<v8::Value> V8Node::isSupportedCallback(const v8::Arguments& args) {
-	if (args.Length() < 2)
-		throw V8Exception("Wrong number of arguments in isSupported");
 
 	v8::Local<v8::Object> self = args.Holder();
 	struct V8NodePrivate* privData = V8DOM::toClassPtr<V8NodePrivate >(self->GetInternalField(0));
-	v8::String::AsciiValue localFeature(args[0]);
-	v8::String::AsciiValue localVersion(args[1]);
+	if (false) {
+	} else if (args.Length() == 2 &&
+	           args[0]->IsString() &&
+	           args[1]->IsString()) {
+		v8::String::AsciiValue localFeature(args[0]);
+		v8::String::AsciiValue localVersion(args[1]);
 
-	bool retVal = privData->nativeObj->isSupported(*localFeature, *localVersion);
+		bool retVal = privData->nativeObj->isSupported(*localFeature, *localVersion);
 
-	return v8::Boolean::New(retVal);
+		return v8::Boolean::New(retVal);
+	}
+	throw V8Exception("Parameter mismatch while calling isSupported");
+	return v8::Undefined();
 }
 
 v8::Handle<v8::Value> V8Node::hasAttributesCallback(const v8::Arguments& args) {
 
 	v8::Local<v8::Object> self = args.Holder();
 	struct V8NodePrivate* privData = V8DOM::toClassPtr<V8NodePrivate >(self->GetInternalField(0));
+	if (false) {
+	} else if (args.Length() == 0) {
 
-	bool retVal = privData->nativeObj->hasAttributes();
+		bool retVal = privData->nativeObj->hasAttributes();
 
-	return v8::Boolean::New(retVal);
+		return v8::Boolean::New(retVal);
+	}
+	throw V8Exception("Parameter mismatch while calling hasAttributes");
+	return v8::Undefined();
 }
-
 bool V8Node::hasInstance(v8::Handle<v8::Value> value) {
 	return getTmpl()->HasInstance(value);
 }

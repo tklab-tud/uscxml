@@ -84,6 +84,8 @@ sub GenerateInterface
     my $object = shift;
     my $interface = shift;
 
+#    print Dumper($interface);
+
     # Start actual generation
     if ($interface->extendedAttributes->{"Callback"}) {
         die();
@@ -184,7 +186,6 @@ END
     push(@headerContent, "\n    static bool hasInstance(v8::Handle<v8::Value>);");
     push(@headerContent, "\n");
 
-
     # callbacks for actual functions
     my %generated;
     foreach my $function (@{$interface->functions}) {
@@ -233,6 +234,22 @@ sub GenerateClassPrototypeHeader
   my $interfaceName = $interface->name;
   my $extensions = $interface->extendedAttributes;
 
+  if ($extensions->{'Constructors'}) {
+    
+    push(@headerContent, "\n");
+    push(@headerContent, "    static v8::Handle<v8::Value> constructor(const v8::Arguments&);\n");
+    push(@headerContent, "    static v8::Persistent<v8::FunctionTemplate> Constr;\n");
+	  push(@headerContent, <<END);
+    static v8::Handle<v8::FunctionTemplate> getConstructor() {
+        if (Constr.IsEmpty()) {
+            v8::Handle<v8::FunctionTemplate> constr = v8::FunctionTemplate::New(constructor);
+            Constr = v8::Persistent<v8::FunctionTemplate>::New(constr);
+        }
+        return Constr;
+    }
+END
+  }
+
   push(@headerContent, "\n    static v8::Persistent<v8::FunctionTemplate> Tmpl;\n");
   push(@headerContent, <<END);
     static v8::Handle<v8::FunctionTemplate> getTmpl() {
@@ -269,10 +286,13 @@ END
   }
 
   push(@headerContent, "\n");
+  my %generated;
   foreach my $function (@{$interface->functions}) {
     my $name = $function->signature->name;
     my $attrExt = $function->signature->extendedAttributes;
     my $custom = ($attrExt->{'Custom'} ? "Custom" : "");
+    next if (exists $generated{"${name}"});
+    $generated{"${name}"} = 1;
   push(@headerContent, <<END);
             prototype->Set(v8::String::NewSymbol("${name}"),
                            v8::FunctionTemplate::New(V8${interfaceName}::${name}${custom}Callback, v8::Undefined()), static_cast<v8::PropertyAttribute>(v8::DontDelete));
@@ -379,7 +399,7 @@ END
         push(@implContent, "\n    v8::Local<v8::Object> self = info.Holder();");
         push(@implContent, "\n    struct V8${interfaceName}Private* privData = V8DOM::toClassPtr<V8${interfaceName}Private >(self->GetInternalField(0));");
 
-        my ($handle, $deref) = IdlToArgHandle($attribute->signature->type, "local".ucfirst($attribute->signature->name), "value");
+        my ($handle, $deref) = IdlToArgHandle($attribute->signature->type, "local".ucfirst($attribute->signature->name), "value", $interfaceName);
 
         push(@implContent, "\n    $handle");
         push(@implContent, "\n    privData->nativeObj->${wrapperSetter}(${deref});");
@@ -401,12 +421,108 @@ sub GenerateConditionalUndefReturn
   return "if (!$getterExpression) return v8::Undefined();";
 }
 
+sub GenerateConstructor
+{
+  my $interface = shift;
+  my $interfaceName = $interface->name;
+  my $wrapperType = IdlToWrapperType($interfaceName);
+  my $extensions = $interface->extendedAttributes;
+  
+  if ($extensions->{'Constructors'}) {
+
+    push(@implContent, "\n  v8::Handle<v8::Value> V8${interfaceName}::constructor(const v8::Arguments& args) {");
+    push(@implContent, <<END);
+
+    if (!args.IsConstructCall()) 
+      return v8::ThrowException(v8::String::New("Cannot call constructor as function"));
+END
+
+    push(@implContent, "\n    ".IdlToWrapperType($interfaceName)."* localInstance = NULL;");
+    # dispatch the actual constructor
+    push(@implContent, "\n    if (false) {\n}");
+    my @variants;
+    foreach my $fullCons (@{$extensions->{'Constructors'}}) {
+      push (@variants, $fullCons);
+
+      for (my $i = @{$fullCons}; $i > 0; $i--) {
+        my $variant = @{$fullCons}[$i];
+        if ($variant->{'domSignature::isOptional'}) {
+          my $slice;
+          for (my $j = 0; $j < $i; $j++) {
+            push(@{$slice}, @{$fullCons}[$j]);
+          }
+          push (@variants, $slice);
+        }
+      }
+
+      # sort to put most determinate signatures first
+      @variants = sort {
+        if (@{$b} != @{$a}) { 
+          # more arguments are more determinant
+          @{$b} <=> @{$a};
+        } else {
+          my @aWrap = grep(IsWrapperType($_->{'domSignature::type'}), @{$a});
+          my @bWrap = grep(IsWrapperType($_->{'domSignature::type'}), @{$b});
+          @bWrap <=> @aWrap;
+        }
+      } @variants;
+    }
+    foreach my $constructor (@variants) {
+      push(@implContent, " else if (args.Length() == " . @{$constructor});
+
+      for (my $i = 0; $i < @{$constructor}; $i++) {
+        my $type = $constructor->[$i]->{'domSignature::type'};
+        AddToImplIncludes("V8".$type.".h") if (IsWrapperType($type));
+        push(@implContent, " &&\n        " . IdlToTypeChecker($type, "args[$i]"));
+
+      }
+      push(@implContent, ") {\n");
+      my $constructorArgs;
+      my $constructorSep = "";
+      for (my $i = 0; $i < @{$constructor}; $i++) {
+        my $type = $constructor->[$i]->{'domSignature::type'};
+        my $name = $constructor->[$i]->{'domSignature::name'};
+        my ($handle, $deref) = IdlToArgHandle($type, "local".ucfirst($name), "args[$i]", $interfaceName);
+        $constructorArgs .= ${constructorSep}.${deref};
+        $constructorSep = ", ";
+        push(@implContent, "\n      $handle");
+
+      }
+      push(@implContent, "\n      localInstance = new ".IdlToWrapperType($interfaceName)."(${constructorArgs});");
+      push(@implContent, "\n\n    }");
+    }
+    push(@implContent, "\n");
+
+    push(@implContent, <<END);
+    if (!localInstance) {
+      throw V8Exception("Parameter mismatch while calling constructor for ${interfaceName}");
+      return v8::Undefined();
+    }
+
+    v8::Handle<v8::Function> retCtor = V8${interfaceName}::getTmpl()->GetFunction();
+    v8::Persistent<v8::Object> retObj = v8::Persistent<v8::Object>::New(retCtor->NewInstance());
+
+    struct V8${interfaceName}::V8${interfaceName}Private* retPrivData = new V8${interfaceName}::V8${interfaceName}Private();
+    retPrivData->nativeObj = localInstance;
+
+    retObj->SetInternalField(0, V8DOM::toExternal(retPrivData));
+
+    retObj.MakeWeak(0, V8${interfaceName}::jsDestructor);
+    return retObj;
+  }
+END
+  }
+
+}
+
 sub GenerateImplementationFunctionCallbacks
 {
   my $interface = shift;
   my $interfaceName = $interface->name;
   my $wrapperType = IdlToWrapperType($interfaceName);
+  my $extensions = $interface->extendedAttributes;
   
+
   # Generate methods for functions.
   my %generated;
   foreach my $function (@{$interface->functions}) {
@@ -419,73 +535,112 @@ sub GenerateImplementationFunctionCallbacks
     next if (exists $generated{"${name}Callback"});
     $generated{"${name}Callback"} = 1;
 
+    # get all functions with this name
+    my @sameFunctions = grep($_->signature->name eq $name, @{$interface->functions});
+
     # signature
     push(@implContent, <<END);
+
   v8::Handle<v8::Value> V8${interfaceName}::${name}Callback(const v8::Arguments& args) {
-END
-
-    # arguments count and type checking
-    push(@implContent, GenerateArgumentsCountCheck($function, $interface));
-    my $argCheckExpr = GenerateArgumentsTypeCheck($function, $interface);
-
-    push(@implContent, <<END) if ($argCheckExpr);
-    if (!${argCheckExpr})
-      throw V8Exception(\"Parameter mismatch while calling ${name}\");
 END
 
     # get this
     push(@implContent, "\n    v8::Local<v8::Object> self = args.Holder();");
     push(@implContent, "\n    struct V8${interfaceName}Private* privData = V8DOM::toClassPtr<V8${interfaceName}Private >(self->GetInternalField(0));");
 
+    # establish all variants
+    my @variants;
+    foreach my $functionVar (@sameFunctions) {
+      push (@variants, $functionVar->parameters);
+    
+      for (my $i = @{$functionVar->parameters}; $i > 0; $i--) {
+        my $variant = @{$functionVar->parameters}[$i];
+        if ($variant->{'domSignature::isOptional'}) {
+          my $slice;
+          for (my $j = 0; $j < $i; $j++) {
+            push(@{$slice}, @{$functionVar->parameters}[$j]);
+          }
+          push (@variants, $slice);
+        }
+      }
+    }
+
     # arguments to local handles
-    my $parameterIndex = 0;
-    my @argList;
-    foreach my $parameter (@{$function->parameters}) {
-        my $value = "args[$parameterIndex]";
-        my $type = $parameter->type;
-        AddToImplIncludes("V8".$type.".h") if (IsWrapperType($type));
+    push(@implContent, "\n    if (false) {");
+    
+    # sort to put most determinate signatures first
+    @variants = sort {
+      if (@{$b} != @{$a}) { 
+        # more arguments are more determinant
+        @{$b} <=> @{$a};
+      } else {
+        my @aWrap = grep(IsWrapperType($_->{'domSignature::type'}), @{$a});
+        my @bWrap = grep(IsWrapperType($_->{'domSignature::type'}), @{$b});
+        @bWrap <=> @aWrap;
+      }
+    } @variants;
+    
+    foreach my $variant (@variants) {
+      my $parameterIndex = 0;
+      my @argList;
+      
+      push(@implContent, "\n    } else if (args.Length() == " . @{$variant});
+      for (my $i = 0; $i < @{$variant}; $i++) {
+        my $type = $variant->[$i]->{'domSignature::type'};
+        push(@implContent, " &&\n        " . IdlToTypeChecker($type, "args[$i]"));
+      }
+      push(@implContent, ")\n        {");
+      foreach my $parameter (@{$variant}) {
+          my $value = "args[$parameterIndex]";
+          my $type = $parameter->type;
+          AddToImplIncludes("V8".$type.".h") if (IsWrapperType($type));
 
-        my ($handle, $deref) = IdlToArgHandle($parameter->type, "local".ucfirst($parameter->name), "args[${parameterIndex}]");
-        push(@implContent, "\n    ${handle}");
-        push(@argList, $deref);
+          my ($handle, $deref) = IdlToArgHandle($parameter->type, "local".ucfirst($parameter->name), "args[${parameterIndex}]", $interfaceName);
+          push(@implContent, "\n      ${handle}");
+          push(@argList, $deref);
+          $parameterIndex++;
+      }
 
-        $parameterIndex++;
-    }
+      # invoke native function with argument handles
+      my $retNativeType = IdlToNativeType($retType);
+      my $wrapperFunctionName = IdlToWrapperFunction($interface, $function);
+      if (IsWrapperType($retType)) {
+        push(@implContent, "\n\n      ${retNativeType}* retVal = new $wrapperRetType(privData->nativeObj->${wrapperFunctionName}(" . join(", ", @argList) . "));\n");
+      } elsif ($retNativeType eq "void") {
+        push(@implContent, "\n\n      privData->nativeObj->${wrapperFunctionName}(" . join(", ", @argList) . ");\n");
+      } else {
+        push(@implContent, "\n\n      ${retNativeType} retVal = privData->nativeObj->${wrapperFunctionName}(" . join(", ", @argList) . ");\n");
+      }
 
-    # invoke native function with argument handles
-    my $retNativeType = IdlToNativeType($retType);
-    my $wrapperFunctionName = IdlToWrapperFunction($interface, $function);
-    if (IsWrapperType($retType)) {
-      push(@implContent, "\n\n    ${retNativeType}* retVal = new $wrapperRetType(privData->nativeObj->${wrapperFunctionName}(" . join(", ", @argList) . "));\n");
-    } elsif ($retNativeType eq "void") {
-      push(@implContent, "\n\n    privData->nativeObj->${wrapperFunctionName}(" . join(", ", @argList) . ");\n");
-    } else {
-      push(@implContent, "\n\n    ${retNativeType} retVal = privData->nativeObj->${wrapperFunctionName}(" . join(", ", @argList) . ");\n");
-    }
+      # wrap return type if needed
+      if (IsWrapperType($retType)) {
+        AddToImplIncludes("V8".$retType.".h");
 
-    # wrap return type if needed
-    if (IsWrapperType($retType)) {
-      AddToImplIncludes("V8".$retType.".h");
+        push(@implContent, <<END);
+        v8::Handle<v8::Function> retCtor = V8${retType}::getTmpl()->GetFunction();
+        v8::Persistent<v8::Object> retObj = v8::Persistent<v8::Object>::New(retCtor->NewInstance());
 
-      push(@implContent, <<END);
-    v8::Handle<v8::Function> retCtor = V8${retType}::getTmpl()->GetFunction();
-    v8::Persistent<v8::Object> retObj = v8::Persistent<v8::Object>::New(retCtor->NewInstance());
+        struct V8${retType}::V8${retType}Private* retPrivData = new V8${retType}::V8${retType}Private();
+        retPrivData->dom = privData->dom;
+        retPrivData->nativeObj = retVal;
 
-    struct V8${retType}::V8${retType}Private* retPrivData = new V8${retType}::V8${retType}Private();
-    retPrivData->dom = privData->dom;
-    retPrivData->nativeObj = retVal;
+        retObj->SetInternalField(0, V8DOM::toExternal(retPrivData));
 
-    retObj->SetInternalField(0, V8DOM::toExternal(retPrivData));
-
-    retObj.MakeWeak(0, V8${retType}::jsDestructor);
-    return retObj;
+        retObj.MakeWeak(0, V8${retType}::jsDestructor);
+        return retObj;
 END
-    } else {
-      my $toHandleString = NativeToHandle($retNativeType, "retVal");
-      push(@implContent, "\n    return ${toHandleString};");
+      } else {
+        my $toHandleString = NativeToHandle($retNativeType, "retVal");
+        push(@implContent, "\n      return ${toHandleString};");
+      }
     }
-
-    push(@implContent, "\n  }\n\n");
+    push(@implContent, <<END);
+    
+    }
+    throw V8Exception("Parameter mismatch while calling ${name}");
+    return v8::Undefined();
+  }
+END
   }
 
 }
@@ -498,6 +653,7 @@ sub GenerateImplementation
     my $visibleInterfaceName = $codeGenerator->GetVisibleInterfaceName($interface);
     my $v8InterfaceName = "V8$interfaceName";
     my $wrapperType = IdlToWrapperType($interfaceName);
+    my $extensions = $interface->extendedAttributes;
 
     AddToImplIncludes("V8${interfaceName}.h");
     
@@ -512,10 +668,16 @@ sub GenerateImplementation
     }
     push(@implContent, "namespace Arabica {\n");
     push(@implContent, "namespace DOM {\n\n");
-    push(@implContent, "  v8::Persistent<v8::FunctionTemplate> V8${interfaceName}::Tmpl;\n\n");
+    push(@implContent, "  v8::Persistent<v8::FunctionTemplate> V8${interfaceName}::Tmpl;\n");
 
+    if ($extensions->{'Constructors'}) {
+      push(@implContent, "  v8::Persistent<v8::FunctionTemplate> V8${interfaceName}::Constr;\n");
+      GenerateConstructor($interface);
+    }
+    
     GenerateImplementationAttributes($interface);
     GenerateImplementationFunctionCallbacks($interface);
+
 
     push(@implContent, <<END);
   bool V8${interfaceName}::hasInstance(v8::Handle<v8::Value> value) {
@@ -624,7 +786,7 @@ sub IdlToNativeType
   return "unsigned long" if ($idlType eq "unsigned long");
   return "void" if ($idlType eq "void");
   return "char" if ($idlType eq "byte");
-  return "char" if ($idlType eq "octet");
+  return "unsigned char" if ($idlType eq "octet");
   return "double" if ($idlType eq "double");
   return "float" if ($idlType eq "float");
   die(${idlType});
@@ -643,6 +805,7 @@ sub NativeToHandle
   return ("v8::Number::New(${nativeName})") if ($nativeType eq "char");
   return ("v8::Number::New(${nativeName})") if ($nativeType eq "unsigned short");
   return ("v8::Number::New(${nativeName})") if ($nativeType eq "unsigned long");
+  return ("v8::Number::New(${nativeName})") if ($nativeType eq "unsigned char");
   return ("v8::Number::New(${nativeName})") if ($nativeType eq "long");
   return ("v8::String::New(${nativeName}.c_str())") if ($nativeType eq "std::string");
   return ("v8::Undefined()") if ($nativeType eq "void");
@@ -679,6 +842,7 @@ sub IdlToArgHandle
   my $type = shift;
   my $localName = shift;
   my $paramName = shift;
+  my $thisType = shift;
   
   return ("v8::String::AsciiValue ${localName}(${paramName});", "*${localName}") if ($type eq "DOMString");
   return ("unsigned long ${localName} = ${paramName}->ToNumber()->Uint32Value();", ${localName}) if ($type eq "unsigned long");
@@ -691,17 +855,58 @@ sub IdlToArgHandle
   return ("short ${localName} = ${paramName}->ToNumber()->Int32Value();", ${localName}) if ($type eq "short");
   return ("unsigned char ${localName} = ${paramName}->ToNumber()->Uint32Value();", ${localName}) if ($type eq "octet");
   return ("void* ${localName} = v8::External::Unwrap(${paramName}->ToObject()->GetInternalField(0));", ${localName}) if ($type eq "any");
-  return ("long[] ${localName} = V8DOM::toClassPtr<V8${type}::V8${type}Private >(${paramName}->ToObject()->GetInternalField(0))->nativeObj->getLongArray();", "${localName}")  if ($type eq "long[]");
-  return ("float[] ${localName} = V8DOM::toClassPtr<V8${type}::V8${type}Private >(${paramName}->ToObject()->GetInternalField(0))->nativeObj->getFloatArray();", "${localName}")  if ($type eq "float[]");
-  return ("double[] ${localName} = V8DOM::toClassPtr<V8${type}::V8${type}Private >(${paramName}->ToObject()->GetInternalField(0))->nativeObj->getDoubleArray();", "${localName}")  if ($type eq "double[]");
+  return ("std::vector<long> ${localName};\nv8::Handle<v8::Array> ${localName}Array(v8::Array::Cast(*args[0]));\nfor (int i = 0; i < ${localName}Array->Length(); i++) {\n  ${localName}.push_back(${localName}Array->Get(i)->ToInteger()->Value());\n}", "${localName}")  if ($type eq "long[]");
+  return ("std::vector<float> ${localName};\nv8::Handle<v8::Array> ${localName}Array(v8::Array::Cast(*args[0]));\nfor (int i = 0; i < ${localName}Array->Length(); i++) {\n  ${localName}.push_back(${localName}Array->Get(i)->ToNumber()->Value());\n}", "${localName}")  if ($type eq "float[]");
+  return ("std::vector<double> ${localName};\nv8::Handle<v8::Array> ${localName}Array(v8::Array::Cast(*args[0]));\nfor (int i = 0; i < ${localName}Array->Length(); i++) {\n  ${localName}.push_back(${localName}Array->Get(i)->ToNumber()->Value());\n}", "${localName}")  if ($type eq "double[]");
+  return ("std::vector<char> ${localName};\nv8::Handle<v8::Array> ${localName}Array(v8::Array::Cast(*args[0]));\nfor (int i = 0; i < ${localName}Array->Length(); i++) {\n  ${localName}.push_back(${localName}Array->Get(i)->ToInt32()->Value());\n}", "${localName}")  if ($type eq "byte[]");
+  return ("std::vector<short> ${localName};\nv8::Handle<v8::Array> ${localName}Array(v8::Array::Cast(*args[0]));\nfor (int i = 0; i < ${localName}Array->Length(); i++) {\n  ${localName}.push_back(${localName}Array->Get(i)->ToInt32()->Value());\n}", "${localName}")  if ($type eq "short[]");
+  return ("std::vector<unsigned short> ${localName};\nv8::Handle<v8::Array> ${localName}Array(v8::Array::Cast(*args[0]));\nfor (int i = 0; i < ${localName}Array->Length(); i++) {\n  ${localName}.push_back(${localName}Array->Get(i)->ToUint32()->Value());\n}", "${localName}")  if ($type eq "unsigned short[]");
+  return ("std::vector<unsigned long> ${localName};\nv8::Handle<v8::Array> ${localName}Array(v8::Array::Cast(*args[0]));\nfor (int i = 0; i < ${localName}Array->Length(); i++) {\n  ${localName}.push_back(${localName}Array->Get(i)->ToUint32()->Value());\n}", "${localName}")  if ($type eq "unsigned long[]");
+  return ("std::vector<unsigned char> ${localName};\nv8::Handle<v8::Array> ${localName}Array(v8::Array::Cast(*args[0]));\nfor (int i = 0; i < ${localName}Array->Length(); i++) {\n  ${localName}.push_back(${localName}Array->Get(i)->ToUint32()->Value());\n}", "${localName}")  if ($type eq "octet[]");
   
   if (IsWrapperType($type)) {
     my $wrapperType = IdlToWrapperType($type);
+		if ($type =~ /.*Array$/ or $type =~ /^ArrayBuffer.*/) {
+		  return ("${wrapperType}* ${localName} = V8DOM::toClassPtr<V8${type}::V8${type}Private >(${paramName}->ToObject()->GetInternalField(0))->nativeObj;", "${localName}");
+		}
+
     return ("${wrapperType}* ${localName} = V8DOM::toClassPtr<V8${type}::V8${type}Private >(${paramName}->ToObject()->GetInternalField(0))->nativeObj;", "*${localName}");
   }
 
   print $type."\n";
   die();
+}
+
+sub IdlToTypeChecker
+{
+  my $idlType = shift;
+  my $attr = shift;
+  
+  return $attr."->IsString()" if ($idlType eq "DOMString");
+  return $attr."->IsBoolean()" if ($idlType eq "boolean");
+  return $attr."->IsInt32()" if ($idlType eq "short");
+  return $attr."->IsInt32()" if ($idlType eq "long");
+  return $attr."->IsArray()" if ($idlType eq "long[]");
+  return $attr."->IsUint32()" if ($idlType eq "unsigned short");
+  return $attr."->IsUint32()" if ($idlType eq "unsigned long");
+  return $attr."->IsInt32()" if ($idlType eq "byte");
+  return $attr."->IsUint32()" if ($idlType eq "octet");
+  return $attr."->IsNumber()" if ($idlType eq "double");
+  return $attr."->IsArray()" if ($idlType eq "double[]");
+  return $attr."->IsNumber()" if ($idlType eq "float");
+  return $attr."->IsArray()" if ($idlType eq "float[]");
+  return $attr."->IsArray()" if ($idlType eq "short[]");
+  return $attr."->IsArray()" if ($idlType eq "unsigned short[]");
+  return $attr."->IsArray()" if ($idlType eq "unsigned long[]");
+  return $attr."->IsArray()" if ($idlType eq "byte[]");
+  return $attr."->IsArray()" if ($idlType eq "octet[]");
+  return "true" if ($idlType eq "any");
+
+  return $attr."->IsObject() && V8".$idlType."::hasInstance(".$attr.")" if (IsWrapperType($idlType));
+
+  print $idlType."\n";
+  die();
+  
 }
 
 sub IdlToWrapperAttrGetter
@@ -749,76 +954,6 @@ sub IsReadonly
 }
 
 
-sub GenerateArgumentsCountCheck
-{
-    my $function = shift;
-    my $interface = shift;
-
-    my $numMandatoryParams = 0;
-    my $allowNonOptional = 1;
-    foreach my $param (@{$function->parameters}) {
-        if ($param->extendedAttributes->{"Optional"} or $param->isVariadic) {
-            $allowNonOptional = 0;
-        } else {
-            die "An argument must not be declared to be optional unless all subsequent arguments to the operation are also optional." if !$allowNonOptional;
-            $numMandatoryParams++;
-        }
-    }
-
-    my $argumentsCountCheckString = "";
-    if ($numMandatoryParams >= 1) {
-        $argumentsCountCheckString .= "    if (args.Length() < $numMandatoryParams)\n";
-        $argumentsCountCheckString .= "        throw V8Exception(\"Wrong number of arguments in " . $function->signature->name . "\");\n";
-    }
-    return $argumentsCountCheckString;
-}
-
-sub GenerateArgumentsTypeCheck
-{
-    my $function = shift;
-    my $interface = shift;
-
-    my @andExpression = ();
-
-    my $parameterIndex = 0;
-    foreach my $parameter (@{$function->parameters}) {
-        my $value = "args[$parameterIndex]";
-        my $type = $parameter->type;
-
-        # Only DOMString or wrapper types are checked.
-        # For DOMString with StrictTypeChecking only Null, Undefined and Object
-        # are accepted for compatibility. Otherwise, no restrictions are made to
-        # match the non-overloaded behavior.
-        # FIXME: Implement WebIDL overload resolution algorithm.
-        if ($codeGenerator->IsStringType($type)) {
-            if ($parameter->extendedAttributes->{"StrictTypeChecking"}) {
-                push(@andExpression, "(${value}->IsNull() || ${value}->IsUndefined() || ${value}->IsString() || ${value}->IsObject())");
-            }
-        } elsif ($parameter->extendedAttributes->{"Callback"}) {
-            # For Callbacks only checks if the value is null or object.
-            push(@andExpression, "(${value}->IsNull() || ${value}->IsFunction())");
-        } elsif ($codeGenerator->IsArrayType($type) || $codeGenerator->GetSequenceType($type)) {
-            if ($parameter->isNullable) {
-                push(@andExpression, "(${value}->IsNull() || ${value}->IsArray())");
-            } else {
-                push(@andExpression, "(${value}->IsArray())");
-            }
-        } elsif (IsWrapperType($type)) {
-            if ($parameter->isNullable) {
-                push(@andExpression, "(${value}->IsNull() || V8${type}::hasInstance($value))");
-            } else {
-                push(@andExpression, "(V8${type}::hasInstance($value))");
-            }
-        }
-
-        $parameterIndex++;
-    }
-    my $res = join(" && ", @andExpression);
-    $res = "($res)" if @andExpression > 1;
-    return $res;
-}
-
-
 my %non_wrapper_types = (
     'CompareHow' => 1,
     'DOMObject' => 1,
@@ -844,18 +979,23 @@ my %non_wrapper_types = (
     'long' => 1,
     'long[]' => 1,
     'short' => 1,
+    'short[]' => 1,
     'void' => 1,
     'byte' => 1,
+    'byte[]' => 1,
     'octet' => 1,
     'char' => 1,
     'float[]' => 1,
     'float' => 1,
     'double[]' => 1,
+    'octet[]' => 1,
     'double' => 1,
     'unsigned int' => 1,
     'unsigned long long' => 1,
     'unsigned long' => 1,
-    'unsigned short' => 1
+    'unsigned long[]' => 1,
+    'unsigned short' => 1,
+    'unsigned short[]' => 1
 );
 
 sub IsWrapperType
