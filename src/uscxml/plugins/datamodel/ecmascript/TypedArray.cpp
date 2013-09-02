@@ -4,9 +4,13 @@
 
 #define DATAVIEW_TYPED_GET(type) \
 type retVal;\
+if (index + _start + sizeof(type) > _buffer->_size)\
+	return 0;\
 memcpy(&retVal, _buffer->_data + (_start + index), sizeof(type));
 
 #define DATAVIEW_TYPED_SET(type) \
+if (index + _start + sizeof(type) > _buffer->_size)\
+	return;\
 memcpy(_buffer->_data + (_start + index), &value, sizeof(type));
 
 namespace uscxml {
@@ -75,15 +79,21 @@ ArrayBuffer ArrayBufferView::getBuffer() {
 	return ArrayBuffer(_buffer);
 }
 
-DataView::DataView(ArrayBuffer* buffer, unsigned long start, unsigned long length) {
-	_start = start;
-	_end = start + length;
+DataView::DataView(ArrayBuffer* buffer, unsigned long byteOffset, unsigned long byteLength) {
+	_start = byteOffset;
+	if (_start > buffer->_buffer->_size)
+		return;
+	_end = _start + byteLength;
+	if (_end > buffer->_buffer->_size)
+		return;
 	_buffer = buffer->_buffer;
 }
 
-DataView::DataView(ArrayBuffer* buffer , unsigned long start) {
-	_start = start;
+DataView::DataView(ArrayBuffer* buffer , unsigned long byteOffset) {
+	_start = byteOffset;
 	_end = buffer->_buffer->_size;
+	if (_start > buffer->_buffer->_size)
+		return;
 	_buffer = buffer->_buffer;
 }
 
@@ -105,17 +115,17 @@ unsigned long DataView::getLength() {
 	return _end - _start;
 }
 
-char DataView::getInt8(unsigned long index) {
+int8_t DataView::getInt8(unsigned long index) {
 	DATAVIEW_TYPED_GET(int8_t);
 	return retVal;
 }
 
-unsigned char DataView::getUint8(unsigned long index) {
+uint8_t DataView::getUint8(unsigned long index) {
 	DATAVIEW_TYPED_GET(uint8_t);
 	return retVal;
 }
 
-short DataView::getInt16(unsigned long index, bool littleEndian) {
+int16_t DataView::getInt16(unsigned long index, bool littleEndian) {
 	DATAVIEW_TYPED_GET(int16_t);
 #ifdef BOOST_LITTLE_ENDIAN
 	if (littleEndian)
@@ -128,7 +138,7 @@ short DataView::getInt16(unsigned long index, bool littleEndian) {
 #endif
 }
 
-unsigned short DataView::getUint16(unsigned long index, bool littleEndian) {
+uint16_t DataView::getUint16(unsigned long index, bool littleEndian) {
 	DATAVIEW_TYPED_GET(uint16_t);
 #ifdef BOOST_LITTLE_ENDIAN
 	if (littleEndian)
@@ -141,7 +151,7 @@ unsigned short DataView::getUint16(unsigned long index, bool littleEndian) {
 #endif
 }
 
-long DataView::getInt32(unsigned long index, bool littleEndian) {
+int32_t DataView::getInt32(unsigned long index, bool littleEndian) {
 	DATAVIEW_TYPED_GET(int32_t);
 #ifdef BOOST_LITTLE_ENDIAN
 	if (littleEndian)
@@ -154,7 +164,7 @@ long DataView::getInt32(unsigned long index, bool littleEndian) {
 #endif
 }
 
-unsigned long DataView::getUint32(unsigned long index, bool littleEndian) {
+uint32_t DataView::getUint32(unsigned long index, bool littleEndian) {
 	DATAVIEW_TYPED_GET(uint32_t);
 #ifdef BOOST_LITTLE_ENDIAN
 	if (littleEndian)
@@ -193,15 +203,15 @@ double DataView::getFloat64(unsigned long index, bool littleEndian) {
 #endif
 }
 
-void DataView::setInt8(long index, char value) {
+void DataView::setInt8(long index, int8_t value) {
 	DATAVIEW_TYPED_SET(int8_t);
 }
 
-void DataView::setUint8(long index, unsigned char value) {
+void DataView::setUint8(long index, uint8_t value) {
 	DATAVIEW_TYPED_SET(uint8_t);
 }
 
-void DataView::setInt16(long index, short value, bool littleEndian) {
+void DataView::setInt16(long index, int16_t value, bool littleEndian) {
 #ifdef BOOST_LITTLE_ENDIAN
 	if (!littleEndian)
 		value = byte_swap<little_endian, big_endian>(value);
@@ -212,7 +222,7 @@ void DataView::setInt16(long index, short value, bool littleEndian) {
 	DATAVIEW_TYPED_SET(int16_t);
 }
 
-void DataView::setUint16(long index, unsigned short value, bool littleEndian) {
+void DataView::setUint16(long index, uint16_t value, bool littleEndian) {
 #ifdef BOOST_LITTLE_ENDIAN
 	if (!littleEndian)
 		value = byte_swap<little_endian, big_endian>(value);
@@ -223,7 +233,7 @@ void DataView::setUint16(long index, unsigned short value, bool littleEndian) {
 	DATAVIEW_TYPED_SET(uint16_t);
 }
 
-void DataView::setInt32(long index, long value, bool littleEndian) {
+void DataView::setInt32(long index, int32_t value, bool littleEndian) {
 #ifdef BOOST_LITTLE_ENDIAN
 	if (!littleEndian)
 		value = byte_swap<little_endian, big_endian>(value);
@@ -234,7 +244,7 @@ void DataView::setInt32(long index, long value, bool littleEndian) {
 	DATAVIEW_TYPED_SET(int32_t);
 }
 
-void DataView::setUint32(long index, unsigned long value, bool littleEndian) {
+void DataView::setUint32(long index, uint32_t value, bool littleEndian) {
 #ifdef BOOST_LITTLE_ENDIAN
 	if (!littleEndian)
 		value = byte_swap<little_endian, big_endian>(value);

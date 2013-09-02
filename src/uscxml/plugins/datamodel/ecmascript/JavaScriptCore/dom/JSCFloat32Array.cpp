@@ -230,6 +230,21 @@ JSValueRef JSCFloat32Array::subarrayCallback(JSContextRef ctx, JSObjectRef funct
 
 		return retObj;
 
+	} else if (argumentCount == 1 &&
+	           JSValueIsNumber(ctx, arguments[0])) {
+		long localStart = (long)JSValueToNumber(ctx, arguments[0], exception);
+
+		uscxml::Float32Array* retVal = new uscxml::Float32Array(privData->nativeObj->subarray(localStart));
+		JSClassRef retClass = JSCFloat32Array::getTmpl();
+
+		struct JSCFloat32Array::JSCFloat32ArrayPrivate* retPrivData = new JSCFloat32Array::JSCFloat32ArrayPrivate();
+		retPrivData->dom = privData->dom;
+		retPrivData->nativeObj = retVal;
+
+		JSObjectRef retObj = JSObjectMake(ctx, retClass, retPrivData);
+
+		return retObj;
+
 	}
 
 	JSStringRef exceptionString = JSStringCreateWithUTF8CString("Parameter mismatch while calling subarray");

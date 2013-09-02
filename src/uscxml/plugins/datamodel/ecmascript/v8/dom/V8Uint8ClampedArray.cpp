@@ -185,6 +185,23 @@ v8::Handle<v8::Value> V8Uint8ClampedArray::subarrayCallback(const v8::Arguments&
 		retObj.MakeWeak(0, V8Uint8ClampedArray::jsDestructor);
 		return retObj;
 
+	} else if (args.Length() == 1 &&
+	           args[0]->IsInt32()) {
+		long localStart = args[0]->ToNumber()->Int32Value();
+
+		uscxml::Uint8ClampedArray* retVal = new uscxml::Uint8ClampedArray(privData->nativeObj->subarray(localStart));
+		v8::Handle<v8::Function> retCtor = V8Uint8ClampedArray::getTmpl()->GetFunction();
+		v8::Persistent<v8::Object> retObj = v8::Persistent<v8::Object>::New(retCtor->NewInstance());
+
+		struct V8Uint8ClampedArray::V8Uint8ClampedArrayPrivate* retPrivData = new V8Uint8ClampedArray::V8Uint8ClampedArrayPrivate();
+		retPrivData->dom = privData->dom;
+		retPrivData->nativeObj = retVal;
+
+		retObj->SetInternalField(0, V8DOM::toExternal(retPrivData));
+
+		retObj.MakeWeak(0, V8Uint8ClampedArray::jsDestructor);
+		return retObj;
+
 	}
 	throw V8Exception("Parameter mismatch while calling subarray");
 	return v8::Undefined();

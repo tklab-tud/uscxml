@@ -249,6 +249,166 @@ int main(int argc, char** argv) {
 
 	}
 
+	// TypedArray setting
+	{
+		dm.evalAsBool("var a = new Int32Array([1, 2, 3, 4, 5]);");
+		dm.evalAsBool("var b = new Int32Array(5);");
+		dm.evalAsBool("b.set(a);");
+		assert(dm.evalAsBool("checkArray(b, [1, 2, 3, 4, 5]);"));
+
+		dm.evalAsBool("b.set(new Int32Array([99, 98]), 2);");
+		assert(dm.evalAsBool("checkArray(b, [1, 2, 99, 98, 5]);"));
+
+		dm.evalAsBool("b.set(new Int32Array([99, 98, 97]), 2);");
+		assert(dm.evalAsBool("checkArray(b, [1, 2, 99, 98, 97]);"));
+
+		//  ab = [ 0, 1, 2, 3, 4, 5, 6, 7 ]
+		//  a1 = [ ^, ^, ^, ^, ^, ^, ^, ^ ]
+		//  a2 =             [ ^, ^, ^, ^ ]
+		dm.evalAsBool("var ab = new ArrayBuffer(8);");
+		dm.evalAsBool("var a1 = new Uint8Array(ab);");
+		dm.evalAsBool("for (var i = 0; i < a1.length; i += 1) { a1.set(i, i); }");
+		dm.evalAsBool("var a2 = new Uint8Array(ab, 4);");
+		dm.evalAsBool("a1.set(a2, 2);");
+		assert(dm.evalAsBool("checkArray(a1, [0, 1, 4, 5, 6, 7, 6, 7]);"));
+		assert(dm.evalAsBool("checkArray(a2, [6, 7, 6, 7]);"));
+
+	}
+
+	// TypedArray.subarray
+	{
+		dm.evalAsBool("var a = new Int32Array([1, 2, 3, 4, 5]);");
+		assert(dm.evalAsBool("checkArray(a.subarray(3), [4, 5]);"));
+		assert(dm.evalAsBool("checkArray(a.subarray(1, 3), [2, 3]);"));
+		assert(dm.evalAsBool("checkArray(a.subarray(-3), [3, 4, 5]);"));
+		assert(dm.evalAsBool("checkArray(a.subarray(-3, -1), [3, 4]);"));
+//		assert(dm.evalAsBool("checkArray(a.subarray(3, 2), []);"));
+//		assert(dm.evalAsBool("checkArray(a.subarray(-2, -3), []);"));
+//		assert(dm.evalAsBool("checkArray(a.subarray(4, 1), []);"));
+//		assert(dm.evalAsBool("checkArray(a.subarray(-1, -4), []);"));
+
+	}
+
+	// DataView constructors
+	{
+		dm.evalAsBool("var d = new DataView(new ArrayBuffer(8));");
+
+		dm.evalAsBool("d.setUint32(0, 0x12345678);");
+		assert(dm.evalAsBool("d.getUint32(0), 0x12345678;"));
+
+		dm.evalAsBool("d.setUint32(0, 0x12345678, true);");
+		assert(dm.evalAsBool("d.getUint32(0, true), 0x12345678;"));
+
+		dm.evalAsBool("d.setUint32(0, 0x12345678, true);");
+		assert(dm.evalAsBool("d.getUint32(0), 0x78563412;"));
+
+		dm.evalAsBool("d.setUint32(0, 0x12345678);");
+		assert(dm.evalAsBool("d.getUint32(0, true), 0x78563412;"));
+
+//		assertThrows('no arguments', TypeError, function() { return new DataView(); });
+//		assertThrows('non-ArrayBuffer argument', TypeError, function() { return new DataView([]); });
+//		assertThrows('non-ArrayBuffer argument', TypeError, function() { return new DataView("bogus"); });
+
+	}
+
+	// DataView accessors
+	{
+		dm.evalAsBool("var u = new Uint8Array(8), d = new DataView(u.buffer);");
+		assert(dm.evalAsBool("checkArray(u, [0, 0, 0, 0, 0, 0, 0, 0]);"));
+
+		dm.evalAsBool("d.setUint8(0, 255);");
+		assert(dm.evalAsBool("checkArray(u, [0xff, 0, 0, 0, 0, 0, 0, 0]);"));
+
+		dm.evalAsBool("d.setInt8(1, -1);");
+		assert(dm.evalAsBool("checkArray(u, [0xff, 0xff, 0, 0, 0, 0, 0, 0]);"));
+
+		dm.evalAsBool("d.setUint16(2, 0x1234);");
+		assert(dm.evalAsBool("checkArray(u, [0xff, 0xff, 0x12, 0x34, 0, 0, 0, 0]);"));
+
+		dm.evalAsBool("d.setInt16(4, -1);");
+		assert(dm.evalAsBool("checkArray(u, [0xff, 0xff, 0x12, 0x34, 0xff, 0xff, 0, 0]);"));
+
+		dm.evalAsBool("d.setUint32(1, 0x12345678);");
+		assert(dm.evalAsBool("checkArray(u, [0xff, 0x12, 0x34, 0x56, 0x78, 0xff, 0, 0]);"));
+
+		dm.evalAsBool("d.setInt32(4, -2023406815);");
+		assert(dm.evalAsBool("checkArray(u, [0xff, 0x12, 0x34, 0x56, 0x87, 0x65, 0x43, 0x21]);"));
+
+		dm.evalAsBool("d.setFloat32(2, 1.2E+38);");
+		assert(dm.evalAsBool("checkArray(u, [0xff, 0x12, 0x7e, 0xb4, 0x8e, 0x52, 0x43, 0x21]);"));
+
+		dm.evalAsBool("d.setFloat64(0, -1.2345678E+301);");
+		assert(dm.evalAsBool("checkArray(u, [0xfe, 0x72, 0x6f, 0x51, 0x5f, 0x61, 0x77, 0xe5]);"));
+
+		dm.evalAsBool("u.set([0x80, 0x81, 0x82, 0x83, 0x84, 0x85, 0x86, 0x87]);");
+		assert(dm.evalAsBool("d.getUint8(0) == 128;"));
+		assert(dm.evalAsBool("d.getInt8(1) == -127;"));
+		assert(dm.evalAsBool("d.getUint16(2) == 33411;"));
+		assert(dm.evalAsBool("d.getInt16(3) == -31868;"));
+		assert(dm.evalAsBool("d.getUint32(4) == 2223343239;"));
+		assert(dm.evalAsBool("d.getInt32(2) == -2105310075;"));
+		assert(dm.evalAsBool("d.getFloat32(2) == -1.932478247535851e-37;"));
+		assert(dm.evalAsBool("d.getFloat64(0) == -3.116851295377095e-306;"));
+
+	}
+
+	// DataView endian
+	{
+		dm.evalAsBool("var rawbuf = (new Uint8Array([0, 1, 2, 3, 4, 5, 6, 7])).buffer;");
+		dm.evalAsBool("var d;");
+
+		dm.evalAsBool("d = new DataView(rawbuf);");
+		assert(dm.evalAsBool("d.byteLength == 8;"));
+		assert(dm.evalAsBool("d.byteOffset == 0;"));
+//		assertThrows('bounds for buffer', DOMException, d.getUint8.bind(d), -2); // Chrome bug for index -1?
+//		assertThrows('bounds for buffer', DOMException, d.getUint8.bind(d), 8);
+//		assertThrows('bounds for buffer', DOMException, d.setUint8.bind(d), -2, 0);
+//		assertThrows('bounds for buffer', DOMException, d.setUint8.bind(d), 8, 0);
+
+		dm.evalAsBool("d = new DataView(rawbuf, 2);");
+		assert(dm.evalAsBool("d.byteLength == 6;"));
+		assert(dm.evalAsBool("d.byteOffset == 2;"));
+		assert(dm.evalAsBool("d.getUint8(5) == 7;"));
+//		assertThrows('bounds for buffer, byteOffset', DOMException, d.getUint8.bind(d), -2);
+//		assertThrows('bounds for buffer, byteOffset', DOMException, d.getUint8.bind(d), 6);
+//		assertThrows('bounds for buffer, byteOffset', DOMException, d.setUint8.bind(d), -2, 0);
+//		assertThrows('bounds for buffer, byteOffset', DOMException, d.setUint8.bind(d), 6, 0);
+
+		dm.evalAsBool("d = new DataView(rawbuf, 8);");
+		assert(dm.evalAsBool("d.byteLength == 0;"));
+
+//		assertThrows('invalid byteOffset', DOMException, function() { return new DataView(rawbuf, -1); });
+//		assertThrows('invalid byteOffset', DOMException, function() { return new DataView(rawbuf, 9); });
+//		assertThrows('invalid byteOffset', DOMException, function() { return new DataView(rawbuf, -1); });
+
+		dm.evalAsBool("d = new DataView(rawbuf, 2, 4);");
+		assert(dm.evalAsBool("d.byteLength == 4;"));
+		assert(dm.evalAsBool("d.byteOffset == 2;"));
+		assert(dm.evalAsBool("d.getUint8(3) == 5;"));
+//		assertThrows('bounds for buffer, byteOffset, length', DOMException, function() { return d.getUint8(-2); });
+//		assertThrows('bounds for buffer, byteOffset, length', DOMException, d.getUint8.bind(d), 4);
+//		assertThrows('bounds for buffer, byteOffset, length', DOMException, d.setUint8.bind(d), -2, 0);
+//		assertThrows('bounds for buffer, byteOffset, length', DOMException, d.setUint8.bind(d), 4, 0);
+
+//		assertThrows('invalid byteOffset+length', DOMException, function() { return new DataView(rawbuf, 0, 9); });
+//		assertThrows('invalid byteOffset+length', DOMException, function() { return new DataView(rawbuf, 8, 1); });
+//		assertThrows('invalid byteOffset+length', DOMException, function() { return new DataView(rawbuf, 9, -1); });
+
+	}
+
+	// Typed Array getters/setters
+	{
+
+		dm.evalAsBool("var bytes = new Uint8Array([1, 2, 3, 4]);");
+		dm.evalAsBool("var uint32s = new Uint32Array(bytes.buffer);");
+
+		assert(dm.evalAsBool("bytes[1] == 2;"));
+		dm.evalAsBool("uint32s[0] = 0xffffffff;");
+		assert(dm.evalAsBool("bytes[1] == 0xff;"));
+
+	}
+
+	// string replacement
 	{
 		std::string content = "$";
 		int rplc = dm.replaceExpressions(content);

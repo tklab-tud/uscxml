@@ -45,7 +45,7 @@ interface Int8Array : ArrayBufferView {
     setter void set(unsigned long index, byte value);
     void set(Int8Array array, optional unsigned long offset);
     void set(byte[] array, optional unsigned long offset);
-    Int8Array subarray(long start, long end);
+    Int8Array subarray(long start, optional long end);
 };
 Int8Array implements ArrayBufferView;
 
@@ -70,7 +70,7 @@ interface Uint8Array : ArrayBufferView{
     setter void set(unsigned long index, octet value);
     void set(Uint8Array array, optional unsigned long offset);
     void set(octet[] array, optional unsigned long offset);
-    Uint8Array subarray(long start, long end);
+    Uint8Array subarray(long start, optional long end);
 };
 Uint8Array implements ArrayBufferView;
 
@@ -93,7 +93,7 @@ interface Uint8ClampedArray : ArrayBufferView {
     setter void set(unsigned long index, [Clamp] octet value);
     void set(Uint8ClampedArray array, optional unsigned long offset);
     void set(octet[] array, optional unsigned long offset);
-    Uint8ClampedArray subarray(long start, long end);
+    Uint8ClampedArray subarray(long start, optional long end);
 };
 Uint8ClampedArray implements ArrayBufferView;
 
@@ -116,7 +116,7 @@ interface Int16Array : ArrayBufferView {
     setter void set(unsigned long index, short value);
     void set(Int16Array array, optional unsigned long offset);
     void set(short[] array, optional unsigned long offset);
-    Int16Array subarray(long start, long end);
+    Int16Array subarray(long start, optional long end);
 };
 Int16Array implements ArrayBufferView;
 
@@ -139,7 +139,7 @@ interface Uint16Array : ArrayBufferView {
     setter void set(unsigned long index, unsigned short value);
     void set(Uint16Array array, optional unsigned long offset);
     void set(unsigned short[] array, optional unsigned long offset);
-    Uint16Array subarray(long start, long end);
+    Uint16Array subarray(long start, optional long end);
 };
 Uint16Array implements ArrayBufferView;
 
@@ -162,7 +162,7 @@ interface Int32Array : ArrayBufferView {
     setter void set(unsigned long index, long value);
     void set(Int32Array array, optional unsigned long offset);
     void set(long[] array, optional unsigned long offset);
-    Int32Array subarray(long start, long end);
+    Int32Array subarray(long start, optional long end);
 };
 Int32Array implements ArrayBufferView;
 
@@ -185,7 +185,7 @@ interface Uint32Array : ArrayBufferView {
     setter void set(unsigned long index, unsigned long value);
     void set(Uint32Array array, optional unsigned long offset);
     void set(unsigned long[] array, optional unsigned long offset);
-    Uint32Array subarray(long start, long end);
+    Uint32Array subarray(long start, optional long end);
 };
 Uint32Array implements ArrayBufferView;
 
@@ -208,7 +208,7 @@ interface Float32Array : ArrayBufferView {
     setter void set(unsigned long index, float value);
     void set(Float32Array array, optional unsigned long offset);
     void set(float[] array, optional unsigned long offset);
-    Float32Array subarray(long start, long end);
+    Float32Array subarray(long start, optional long end);
 };
 Float32Array implements ArrayBufferView;
 
@@ -231,7 +231,7 @@ interface Float64Array : ArrayBufferView {
     setter void set(unsigned long index, double value);
     void set(Float64Array array, optional unsigned long offset);
     void set(double[] array, optional unsigned long offset);
-    Float64Array subarray(long start, long end);
+    Float64Array subarray(long start, optional long end);
 };
 Float64Array implements ArrayBufferView;
 

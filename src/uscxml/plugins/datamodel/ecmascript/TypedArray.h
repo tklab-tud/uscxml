@@ -113,6 +113,19 @@ protected:
 
 class DataView : ArrayBufferView {
 public:
+	/**
+	 * Create a new DataView object using the passed ArrayBuffer for its storage.
+	 * Optional byteOffset and byteLength can be used to limit the section of the
+	 * buffer referenced. The byteOffset indicates the offset in bytes from the
+	 * start of the ArrayBuffer, and the byteLength is the number of bytes from the
+	 * offset that this DataView will reference. If both byteOffset and byteLength
+	 * are omitted, the DataView spans the entire ArrayBuffer range. If the
+	 * byteLength is omitted, the DataView extends from the given byteOffset until
+	 * the end of the ArrayBuffer.
+	 * If the given byteOffset and byteLength references an area beyond the end of
+	 * the ArrayBuffer an exception is raised.
+	 */
+
 	DataView(ArrayBuffer*, unsigned long, unsigned long);
 	DataView(ArrayBuffer*, unsigned long);
 	DataView(ArrayBuffer*);
@@ -132,12 +145,12 @@ public:
 	 * beyond the end of the view.
 	 */
 
-	char getInt8(unsigned long);
-	unsigned char getUint8(unsigned long);
-	short getInt16(unsigned long, bool = false);
-	unsigned short getUint16(unsigned long, bool = false);
-	long getInt32(unsigned long, bool = false);
-	unsigned long getUint32(unsigned long, bool = false);
+	int8_t getInt8(unsigned long);
+	uint8_t getUint8(unsigned long);
+	int16_t getInt16(unsigned long, bool = false);
+	uint16_t getUint16(unsigned long, bool = false);
+	int32_t getInt32(unsigned long, bool = false);
+	uint32_t getUint32(unsigned long, bool = false);
 	float getFloat32(unsigned long, bool = false);
 	double getFloat64(unsigned long, bool = false);
 
@@ -153,12 +166,12 @@ public:
 	 * beyond the end of the view.
 	 */
 
-	void setInt8(long, char);
-	void setUint8(long, unsigned char);
-	void setInt16(long, short, bool = false);
-	void setUint16(long, unsigned short, bool = false);
-	void setInt32(long, long, bool = false);
-	void setUint32(long, unsigned long, bool = false);
+	void setInt8(long, int8_t);
+	void setUint8(long, uint8_t);
+	void setInt16(long, int16_t, bool = false);
+	void setUint16(long, uint16_t, bool = false);
+	void setInt32(long, int32_t, bool = false);
+	void setUint32(long, uint32_t, bool = false);
 	void setFloat32(long, float, bool = false);
 	void setFloat64(long, double, bool = false);
 
@@ -291,11 +304,13 @@ public:
 	void set(TypedArray<T, S>* value, unsigned long offset) {
 		if (!_buffer)
 			return;
-		if (offset * sizeof(S) + value->_buffer->_size > _buffer->_size)
+		if (offset * sizeof(S) + value->getByteLength() > _buffer->_size)
 			return;
 
+		unsigned long otherOffset = value->_start * sizeof(S);
+
 		// will this work if we use the same buffer?
-		memcpy(_buffer->_data + (_start + offset) * sizeof(S), &value->_buffer->_data, value->_buffer->_size);
+		memcpy(_buffer->_data + (_start + offset) * sizeof(S), value->_buffer->_data + otherOffset, value->getByteLength());
 	}
 
 	void set(TypedArray<T, S>* value) {
@@ -321,7 +336,7 @@ public:
 			return;
 
 		if (sizeof(T) == sizeof(S)) {
-			memcpy(_buffer->_data + offset, (void*)&data[0], data.size());
+			memcpy(_buffer->_data + offset, (void*)&data[0], data.size() * sizeof(S));
 		} else {
 			S* buffer = (S*)malloc(data.size() * sizeof(S));
 			typename std::vector<T>::const_iterator dataIter = data.begin();
@@ -331,7 +346,7 @@ public:
 				dataIter++;
 				i++;
 			}
-			memcpy(_buffer->_data + offset, buffer, data.size());
+			memcpy(_buffer->_data + offset, buffer, data.size() * sizeof(S));
 			free (buffer);
 		}
 	}
@@ -356,13 +371,22 @@ public:
 	TypedArray* subarray(long begin, long end) {
 		if (!_buffer)
 			return NULL;
-		unsigned int realBegin = (begin + _buffer->_size) % _buffer->_size;
-		unsigned int realEnd = (end + _buffer->_size) % _buffer->_size;
+		unsigned int length = getLength();
+		unsigned int realBegin = (begin + length) % length;
+		unsigned int realEnd = (end + length) % length;
+		if (realEnd == 0)
+			realEnd = length;
 
 		if (realEnd < realBegin)
 			return NULL;
 
-		return new TypedArray<T, S>(_buffer, realBegin, realEnd);
+		return new TypedArray<T, S>(_buffer, realBegin * sizeof(S), realEnd - realBegin);
+	}
+
+	TypedArray* subarray(long begin) {
+		if (!_buffer)
+			return NULL;
+		return subarray(begin, getLength());
 	}
 
 	unsigned long getLength() {
