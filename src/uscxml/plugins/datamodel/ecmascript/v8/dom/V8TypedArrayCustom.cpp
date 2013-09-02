@@ -75,16 +75,6 @@ v8::Handle<v8::Value> V8Uint8ClampedArray::indexedPropertyCustomSetter(unsigned 
 	return value;
 }
 
-v8::Handle<v8::Value> V8ArrayBuffer::indexedPropertyCustomSetter(unsigned int index, v8::Local<v8::Value> value, const v8::AccessorInfo &info) {
-	v8::Local<v8::Object> self = info.Holder();
-	uscxml::ArrayBuffer* array = V8DOM::toClassPtr<V8ArrayBufferPrivate >(self->GetInternalField(0))->nativeObj;
-	if (index > array->getByteLength())
-		return v8::Undefined();
-	array->_buffer->_data[index] = value->ToInt32()->Value() & 0xff;
-	return value;
-
-}
-
 // ----------------
 
 v8::Handle<v8::Value> V8Int8Array::indexedPropertyCustomGetter(unsigned int index, const v8::AccessorInfo &info) {
@@ -130,14 +120,6 @@ v8::Handle<v8::Value> V8Float64Array::indexedPropertyCustomGetter(unsigned int i
 v8::Handle<v8::Value> V8Uint8ClampedArray::indexedPropertyCustomGetter(unsigned int index, const v8::AccessorInfo &info) {
 	V8_TYPED_ARRAY_GET_PRIVATE(Uint8ClampedArray);
 	return v8::Uint32::New(array->get(index));
-}
-
-v8::Handle<v8::Value> V8ArrayBuffer::indexedPropertyCustomGetter(unsigned int index, const v8::AccessorInfo &info) {
-	v8::Local<v8::Object> self = info.Holder();
-	uscxml::ArrayBuffer* array = V8DOM::toClassPtr<V8ArrayBufferPrivate >(self->GetInternalField(0))->nativeObj;
-	if (index > array->getByteLength())
-		return v8::Undefined();
-	return v8::Int32::New(array->_buffer->_data[index]);
 }
 
 }

@@ -150,10 +150,6 @@ bool JSCUint8ClampedArray::hasPropertyCustomCallback(JSContextRef ctx, JSObjectR
 	JSC_TYPED_ARRAY_HAS_PROP_RETURN(Uint8ClampedArray);
 }
 
-bool JSCArrayBuffer::hasPropertyCustomCallback(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName) {
-	JSC_TYPED_ARRAY_HAS_PROP_RETURN(ArrayBuffer);
-}
-
 // -----------------
 
 JSValueRef JSCInt8Array::getPropertyCustomCallback(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef* exception) {
@@ -192,10 +188,6 @@ JSValueRef JSCUint8ClampedArray::getPropertyCustomCallback(JSContextRef ctx, JSO
 	JSC_TYPED_ARRAY_GET_PROP_RETURN(Uint8ClampedArray);
 }
 
-JSValueRef JSCArrayBuffer::getPropertyCustomCallback(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef* exception) {
-	JSC_TYPED_ARRAY_GET_PROP_RETURN(ArrayBuffer);
-}
-
 // ----------------
 
 bool JSCInt8Array::setPropertyCustomCallback(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef value, JSValueRef* exception) {
@@ -232,10 +224,6 @@ bool JSCFloat64Array::setPropertyCustomCallback(JSContextRef ctx, JSObjectRef ob
 
 bool JSCUint8ClampedArray::setPropertyCustomCallback(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef value, JSValueRef* exception) {
 	JSC_TYPED_ARRAY_SET_PROP_RETURN(Uint8ClampedArray);
-}
-
-bool JSCArrayBuffer::setPropertyCustomCallback(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef value, JSValueRef* exception) {
-	JSC_TYPED_ARRAY_SET_PROP_RETURN(ArrayBuffer);
 }
 
 

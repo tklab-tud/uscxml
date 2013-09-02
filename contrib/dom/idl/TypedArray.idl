@@ -8,8 +8,7 @@
  *   https://www.khronos.org/registry/typedarray/specs/latest/
  */
 
-[  CustomIndexedGetter,
-   CustomIndexedSetter,
+[
    Constructor(unsigned long length) 
 ]
 interface ArrayBuffer {
