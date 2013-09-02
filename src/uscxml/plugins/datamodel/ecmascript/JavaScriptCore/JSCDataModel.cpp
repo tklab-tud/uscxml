@@ -292,32 +292,32 @@ JSValueRef JSCDataModel::getDataAsValue(const Data& data) {
 			handleException(exception);
 		return value;
 	}
-
-	switch (data.type) {
-	case Data::VERBATIM: {
-		JSStringRef stringRef = JSStringCreateWithUTF8CString(data.atom.c_str());
-		JSValueRef value = JSValueMakeString(_ctx, stringRef);
-		JSStringRelease(stringRef);
-		return value;
-		break;
+	if (data.atom.size() > 0) {
+		switch (data.type) {
+		case Data::VERBATIM: {
+			JSStringRef stringRef = JSStringCreateWithUTF8CString(data.atom.c_str());
+			JSValueRef value = JSValueMakeString(_ctx, stringRef);
+			JSStringRelease(stringRef);
+			return value;
+			break;
+		}
+		case Data::INTERPRETED: {
+			return evalAsValue(data.atom);
+			break;
+		}
+		}
 	}
-	case Data::INTERPRETED: {
-		return evalAsValue(data.atom);
-		break;
-	}
-	case Data::BINARY: {
-		uscxml::ArrayBuffer* localInstance = new uscxml::ArrayBuffer((void*)data.atom.c_str(), data.atom.size());
-
+	if (data.binary) {
+		uscxml::ArrayBuffer* localInstance = new uscxml::ArrayBuffer(data.binary);
+		
 		JSClassRef retClass = JSCArrayBuffer::getTmpl();
 		struct JSCArrayBuffer::JSCArrayBufferPrivate* retPrivData = new JSCArrayBuffer::JSCArrayBufferPrivate();
 		retPrivData->nativeObj = localInstance;
-
+		
 		JSObjectRef retObj = JSObjectMake(_ctx, retClass, retPrivData);
 		return retObj;
-		break;
 	}
-	}
-
+	return JSValueMakeUndefined(_ctx);
 }
 
 Data JSCDataModel::getValueAsData(const JSValueRef value) {
@@ -356,6 +356,12 @@ Data JSCDataModel::getValueAsData(const JSValueRef value) {
 		JSObjectRef objValue = JSValueToObject(_ctx, value, &exception);
 		if (exception)
 			handleException(exception);
+		if (JSValueIsObjectOfClass(_ctx, value, JSCArrayBuffer::getTmpl())) {
+			// binary data!
+			JSCArrayBuffer::JSCArrayBufferPrivate* privObj = (JSCArrayBuffer::JSCArrayBufferPrivate*)JSObjectGetPrivate(objValue);
+			data.binary = privObj->nativeObj->_buffer;
+			return data;
+		}
 		std::set<std::string> propertySet;
 		JSPropertyNameArrayRef properties = JSObjectCopyPropertyNames(_ctx, objValue);
 		size_t paramCount = JSPropertyNameArrayGetCount(properties);

@@ -1,6 +1,8 @@
 #ifndef TYPEDARRAY_H_99815BLY
 #define TYPEDARRAY_H_99815BLY
 
+#include "uscxml/Message.h"
+
 #include <string>
 #include <vector>
 #include <boost/shared_ptr.hpp>
@@ -21,14 +23,6 @@ namespace uscxml {
 
 class ArrayBuffer {
 public:
-	class Buffer {
-	public:
-		~Buffer();
-		Buffer(size_t size);
-		Buffer(void* data, size_t size);
-		char* _data;
-		size_t _size;
-	};
 
 	ArrayBuffer(void* data, unsigned int size);
 
@@ -38,7 +32,7 @@ public:
 	 * be allocated an exception is raised.
 	 */
 	ArrayBuffer(unsigned long length);
-	ArrayBuffer(boost::shared_ptr<ArrayBuffer::Buffer>);
+	ArrayBuffer(boost::shared_ptr<Blob>);
 
 	/**
 	 * The length of the ArrayBuffer in bytes, as fixed at construction time.
@@ -79,7 +73,7 @@ public:
 //		memcpy(_buffer->_data + index * sizeof(unsigned char), &value, sizeof(unsigned char));
 //	}
 
-	boost::shared_ptr<Buffer> _buffer;
+	boost::shared_ptr<Blob> _buffer;
 };
 
 class ArrayBufferView {
@@ -105,7 +99,7 @@ public:
 	virtual unsigned long getByteLength() = 0;
 	virtual unsigned long getLength() = 0;
 protected:
-	boost::shared_ptr<ArrayBuffer::Buffer> _buffer;
+	boost::shared_ptr<Blob> _buffer;
 	unsigned long _start;
 	unsigned long _end;
 };
@@ -224,7 +218,7 @@ public:
 		_buffer = buffer->_buffer;
 	}
 
-	TypedArray(boost::shared_ptr<ArrayBuffer::Buffer> buffer, unsigned long byteOffset, unsigned long length) {
+	TypedArray(boost::shared_ptr<Blob> buffer, unsigned long byteOffset, unsigned long length) {
 		if (byteOffset % sizeof(S))
 			return;
 
@@ -247,7 +241,7 @@ public:
 	TypedArray(unsigned long length) {
 		_start = 0;
 		_end = length;
-		_buffer = boost::shared_ptr<ArrayBuffer::Buffer>(new ArrayBuffer::Buffer(length * sizeof(S)));
+		_buffer = boost::shared_ptr<Blob>(new Blob(length * sizeof(S)));
 	}
 
 	/**
@@ -260,7 +254,7 @@ public:
 	TypedArray(std::vector<T> data) {
 		_start = 0;
 		_end = data.size();
-		_buffer = boost::shared_ptr<ArrayBuffer::Buffer>(new ArrayBuffer::Buffer(data.size() * sizeof(S)));
+		_buffer = boost::shared_ptr<Blob>(new Blob(data.size() * sizeof(S)));
 		set(data, 0);
 	}
 	TypedArray(TypedArray* other) {

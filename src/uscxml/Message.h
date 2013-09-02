@@ -10,6 +10,7 @@
 #include <DOM/Document.hpp>
 #include <DOM/io/Stream.hpp>
 
+#include <boost/shared_ptr.hpp>
 #include <inttypes.h>
 
 #define TAGNAME(elem) ((Arabica::DOM::Element<std::string>)elem).getTagName()
@@ -19,16 +20,25 @@
 
 namespace uscxml {
 
+class Blob {
+public:
+	~Blob();
+	Blob(size_t size);
+	Blob(void* data, size_t size, bool adopt = false);
+	char* _data;
+	size_t _size;
+};
+	
 class Data {
 public:
 	enum Type {
 	    VERBATIM,
 	    INTERPRETED,
-	    BINARY,
 	};
 
 	Data() : type(INTERPRETED) {}
 	Data(const std::string& atom_, Type type_ = INTERPRETED) : atom(atom_), type(type_) {}
+	Data(const char* data, size_t size, bool adopt);
 	explicit Data(const Arabica::DOM::Node<std::string>& dom);
 	virtual ~Data() {}
 
@@ -109,6 +119,7 @@ protected:
 	std::map<std::string, Data> compound;
 	std::list<Data> array;
 	std::string atom;
+	boost::shared_ptr<Blob> binary;
 	Type type;
 
 protected:

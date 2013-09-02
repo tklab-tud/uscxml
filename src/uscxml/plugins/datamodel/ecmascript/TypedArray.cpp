@@ -15,31 +15,15 @@ memcpy(_buffer->_data + (_start + index), &value, sizeof(type));
 
 namespace uscxml {
 
-ArrayBuffer::Buffer::~Buffer() {
-	free(_data);
-}
-
-ArrayBuffer::Buffer::Buffer(size_t size) {
-	_data = (char*)malloc(size);
-	memset(_data, 0, size);
-	_size = size;
-}
-
-ArrayBuffer::Buffer::Buffer(void* data, size_t size) {
-	_data = (char*)malloc(size);
-	memcpy(_data, data, size);
-	_size = size;
-}
-
 ArrayBuffer::ArrayBuffer(unsigned long length) {
-	_buffer = boost::shared_ptr<Buffer>(new Buffer(length));
+	_buffer = boost::shared_ptr<Blob>(new Blob(length));
 }
 
-ArrayBuffer::ArrayBuffer(boost::shared_ptr<ArrayBuffer::Buffer> buffer) : _buffer(buffer) {
+ArrayBuffer::ArrayBuffer(boost::shared_ptr<Blob> buffer) : _buffer(buffer) {
 }
 
 ArrayBuffer::ArrayBuffer(void* data, unsigned int size) {
-	_buffer = boost::shared_ptr<Buffer>(new Buffer(data, size));
+	_buffer = boost::shared_ptr<Blob>(new Blob(data, size));
 }
 
 unsigned long ArrayBuffer::getByteLength() {

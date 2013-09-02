@@ -73,6 +73,7 @@
 #include "uscxml/plugins/datamodel/xpath/XPathDataModel.h"
 
 
+# include "uscxml/plugins/element/file/FileElement.h"
 # include "uscxml/plugins/element/fetch/FetchElement.h"
 # include "uscxml/plugins/element/respond/RespondElement.h"
 # include "uscxml/plugins/element/postpone/PostponeElement.h"
@@ -275,6 +276,10 @@ Factory::Factory() {
 		PostponeElement* element = new PostponeElement();
 		registerExecutableContent(element);
 	}
+	{
+		FileElement* element = new FileElement();
+		registerExecutableContent(element);
+	}
 
 #endif
 #endif
@@ -417,6 +422,7 @@ boost::shared_ptr<ExecutableContentImpl> Factory::createExecutableContent(const 
 	if (_executableContent.find(std::make_pair(localName, actualNameSpace)) != _executableContent.end()) {
 		boost::shared_ptr<ExecutableContentImpl> execContent = _executableContent[std::make_pair(localName, actualNameSpace)]->create(interpreter);
 		execContent->setInterpreter(interpreter);
+		return execContent;
 	}
 
 	// lookup in parent factory

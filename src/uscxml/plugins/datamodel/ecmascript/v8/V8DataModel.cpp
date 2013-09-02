@@ -282,6 +282,11 @@ Data V8DataModel::getValueAsData(const v8::Handle<v8::Value>& value, std::set<v8
 	} else if (value->IsNumberObject()) {
 		LOG(ERROR) << "IsNumberObject is unimplemented" << std::endl;
 	} else if (value->IsObject()) {
+		if (V8ArrayBuffer::hasInstance(value)) {
+			uscxml::V8ArrayBuffer::V8ArrayBufferPrivate* privObj = V8DOM::toClassPtr<V8ArrayBuffer::V8ArrayBufferPrivate >(value->ToObject()->GetInternalField(0));
+			data.binary = privObj->nativeObj->_buffer;
+			return data;
+		}
 		v8::Handle<v8::Object> object = v8::Handle<v8::Object>::Cast(value);
 		v8::Local<v8::Array> properties = object->GetPropertyNames();
 		for (int i = 0; i < properties->Length(); i++) {
@@ -350,15 +355,18 @@ v8::Handle<v8::Value> V8DataModel::getDataAsValue(const Data& data) {
 		}
 		return value;
 	}
-	switch (data.type) {
-	case Data::VERBATIM:
-		return v8::String::New(data.atom.c_str());
-		break;
-	case Data::INTERPRETED:
-		return evalAsValue(data.atom);
-		break;
-	case Data::BINARY: {
-		uscxml::ArrayBuffer* arrBuffer = new uscxml::ArrayBuffer((void*)data.atom.c_str(), data.atom.size());
+	if (data.atom.length() > 0) {
+		switch (data.type) {
+			case Data::VERBATIM:
+				return v8::String::New(data.atom.c_str());
+				break;
+			case Data::INTERPRETED:
+				return evalAsValue(data.atom);
+				break;
+		}
+	}
+	if (data.binary) {
+		uscxml::ArrayBuffer* arrBuffer = new uscxml::ArrayBuffer(data.binary);
 		v8::Handle<v8::Function> retCtor = V8ArrayBuffer::getTmpl()->GetFunction();
 		v8::Persistent<v8::Object> retObj = v8::Persistent<v8::Object>::New(retCtor->NewInstance());
 
@@ -368,8 +376,6 @@ v8::Handle<v8::Value> V8DataModel::getDataAsValue(const Data& data) {
 
 		retObj.MakeWeak(0, V8ArrayBuffer::jsDestructor);
 		return retObj;
-		break;
-	}
 	}
 	// this will never be reached
 	return v8::Undefined();

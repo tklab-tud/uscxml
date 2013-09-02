@@ -21,6 +21,30 @@ namespace uscxml {
 
 static int _dataIndentation = 1;
 
+Blob::~Blob() {
+	free(_data);
+}
+
+Blob::Blob(size_t size) {
+	_data = (char*)malloc(size);
+	memset(_data, 0, size);
+	_size = size;
+}
+
+Blob::Blob(void* data, size_t size, bool adopt) {
+	if (adopt) {
+		_data = (char*)data;
+	} else {
+		_data = (char*)malloc(size);
+		memcpy(_data, data, size);
+	}
+	_size = size;
+}
+
+Data::Data(const char* data, size_t size, bool adopt) {
+	binary = boost::shared_ptr<Blob>(new Blob((void*)data, size, adopt));
+}
+
 Data::Data(const Arabica::DOM::Node<std::string>& dom) {
 	// we may need to convert some keys to arrays if we have the same name as an element
 	std::map<std::string, std::list<Data> > arrays;

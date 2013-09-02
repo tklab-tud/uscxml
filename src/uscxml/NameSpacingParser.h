@@ -16,6 +16,7 @@ class ScriptEntityResolver : public Arabica::SAX::EntityResolver<std::string> {
 class NameSpacingParser : public Arabica::SAX2DOM::Parser<std::string> {
 public:
 	NameSpacingParser();
+	NameSpacingParser(const NameSpacingParser& other) {}
 	static NameSpacingParser fromXML(const std::string& xml);
 	static NameSpacingParser fromInputSource(Arabica::SAX::InputSource<std::string>& source);
 
@@ -33,7 +34,6 @@ public:
 
 private:
 	Arabica::SAX::CatchErrorHandler<std::string> _errorHandler;
-	NameSpacingParser(const NameSpacingParser& other) {}
 };
 
 }

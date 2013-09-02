@@ -16,7 +16,7 @@ std::string URL::getResourceDir() {
 		NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 #endif
 		NSString *resourcePath = [[NSBundle mainBundle] resourcePath];
-		return [resourcePath cStringUsingEncoding:NSUTF8StringEncoding];
+		return std::string([resourcePath cStringUsingEncoding:NSUTF8StringEncoding]);
 
 #if HAS_AUTORELEASE_POOL
   }

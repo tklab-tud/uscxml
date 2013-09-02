@@ -53,6 +53,25 @@ else()
 endif()
 
 
+# File element
+
+set(USCXML_ELEMENTS "file ${USCXML_ELEMENTS}")
+file(GLOB_RECURSE FILE_ELEMENT
+	file/*.cpp
+	file/*.h
+)
+source_group("Element\\file" FILES ${FILE_ELEMENT})
+if (BUILD_AS_PLUGINS)
+	add_library(
+		element_file SHARED 
+		${FILE_ELEMENT})
+	target_link_libraries(element_file uscxml)
+	set_target_properties(element_file PROPERTIES FOLDER "Plugin Element")
+else()
+	list (APPEND USCXML_FILES ${FILE_ELEMENT})
+endif()
+
+
 # Respond element
 
 set(USCXML_ELEMENTS "respond ${USCXML_ELEMENTS}")
