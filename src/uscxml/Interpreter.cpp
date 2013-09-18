@@ -1,6 +1,7 @@
 #include "uscxml/Common.h"
 #include "uscxml/Interpreter.h"
 #include "uscxml/URL.h"
+#include "uscxml/UUID.h"
 #include "uscxml/NameSpacingParser.h"
 #include "uscxml/debug/SCXMLDotWriter.h"
 
@@ -9,9 +10,6 @@
 #include <DOM/Simple/DOMImplementation.hpp>
 #include <SAX/helpers/InputSourceResolver.hpp>
 
-#include <boost/uuid/uuid.hpp>
-#include <boost/uuid/uuid_generators.hpp>
-#include <boost/uuid/uuid_io.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/tokenizer.hpp>
 
@@ -44,15 +42,6 @@ using namespace Arabica::DOM;
 
 std::map<std::string, boost::weak_ptr<InterpreterImpl> > Interpreter::_instances;
 tthread::recursive_mutex Interpreter::_instanceMutex;
-
-boost::uuids::random_generator InterpreterImpl::uuidGen;
-
-std::string InterpreterImpl::getUUID() {
-	boost::uuids::uuid uuid = uuidGen();
-	std::ostringstream os;
-	os << uuid;
-	return os.str();
-}
 
 InterpreterImpl::InterpreterImpl() {
 	_lastRunOnMainThread = 0;
@@ -271,7 +260,7 @@ void InterpreterImpl::init() {
 			_xpath.setNamespaceContext(_nsContext);
 
 			if (_name.length() == 0)
-				_name = (HAS_ATTR(_scxml, "name") ? ATTR(_scxml, "name") : getUUID());
+				_name = (HAS_ATTR(_scxml, "name") ? ATTR(_scxml, "name") : UUID::getUUID());
 
 			normalize(_scxml);
 
@@ -293,7 +282,7 @@ void InterpreterImpl::init() {
 	}
 
 	if (_sessionId.length() == 0)
-		_sessionId = getUUID();
+		_sessionId = UUID::getUUID();
 
 	_isInitialized = true;
 }
@@ -347,7 +336,7 @@ void InterpreterImpl::normalize(Arabica::DOM::Element<std::string>& scxml) {
 		Arabica::DOM::Element<std::string> stateElem = Arabica::DOM::Element<std::string>(states[i]);
 		stateElem.setAttribute("isFirstEntry", "true");
 		if (!stateElem.hasAttribute("id")) {
-			stateElem.setAttribute("id", getUUID());
+			stateElem.setAttribute("id", UUID::getUUID());
 		}
 	}
 
@@ -356,7 +345,7 @@ void InterpreterImpl::normalize(Arabica::DOM::Element<std::string>& scxml) {
 	for (int i = 0; i < invokes.size(); i++) {
 		Arabica::DOM::Element<std::string> invokeElem = Arabica::DOM::Element<std::string>(invokes[i]);
 		if (!invokeElem.hasAttribute("id") && !invokeElem.hasAttribute("idlocation")) {
-			invokeElem.setAttribute("id", getUUID());
+			invokeElem.setAttribute("id", UUID::getUUID());
 		}
 //    // make sure every finalize element contained has the invoke id as an attribute
 //    Arabica::XPath::NodeSet<std::string> finalizes = _xpath.evaluate("" + _xpathPrefix + "finalize", invokeElem).asNodeSet();
@@ -371,7 +360,7 @@ void InterpreterImpl::normalize(Arabica::DOM::Element<std::string>& scxml) {
 		Arabica::DOM::Element<std::string> finalElem = Arabica::DOM::Element<std::string>(finals[i]);
 		finalElem.setAttribute("isFirstEntry", "true");
 		if (!finalElem.hasAttribute("id")) {
-			finalElem.setAttribute("id", getUUID());
+			finalElem.setAttribute("id", UUID::getUUID());
 		}
 	}
 
@@ -379,12 +368,12 @@ void InterpreterImpl::normalize(Arabica::DOM::Element<std::string>& scxml) {
 	for (int i = 0; i < histories.size(); i++) {
 		Arabica::DOM::Element<std::string> historyElem = Arabica::DOM::Element<std::string>(histories[i]);
 		if (!historyElem.hasAttribute("id")) {
-			historyElem.setAttribute("id", getUUID());
+			historyElem.setAttribute("id", UUID::getUUID());
 		}
 	}
 
 	if (!scxml.hasAttribute("id")) {
-		scxml.setAttribute("id", getUUID());
+		scxml.setAttribute("id", UUID::getUUID());
 	}
 
 	// create a pseudo initial and transition element
@@ -570,7 +559,7 @@ void InterpreterImpl::processDOMorText(const Arabica::DOM::Node<std::string>& el
 	}
 }
 
-void InterpreterImpl::processParamChilds(const Arabica::DOM::Node<std::string>& element, std::multimap<std::string, std::string>& params) {
+void InterpreterImpl::processParamChilds(const Arabica::DOM::Node<std::string>& element, std::multimap<std::string, Data>& params) {
 	NodeSet<std::string> paramElems = filterChildElements(_xmlNSPrefix + "param", element);
 	try {
 		for (int i = 0; i < paramElems.size(); i++) {
@@ -578,11 +567,11 @@ void InterpreterImpl::processParamChilds(const Arabica::DOM::Node<std::string>& 
 				LOG(ERROR) << "param element is missing name attribute";
 				continue;
 			}
-			std::string paramValue;
+			Data paramValue;
 			if (HAS_ATTR(paramElems[i], "expr") && _dataModel) {
-				paramValue = _dataModel.evalAsString(ATTR(paramElems[i], "expr"));
+				paramValue = _dataModel.getStringAsData(ATTR(paramElems[i], "expr"));
 			} else if(HAS_ATTR(paramElems[i], "location") && _dataModel) {
-				paramValue = _dataModel.evalAsString(ATTR(paramElems[i], "location"));
+				paramValue = _dataModel.getStringAsData(ATTR(paramElems[i], "location"));
 			} else {
 				LOG(ERROR) << "param element is missing expr or location or no datamodel is specified";
 				continue;
@@ -593,7 +582,7 @@ void InterpreterImpl::processParamChilds(const Arabica::DOM::Node<std::string>& 
 	} catch(Event e) {
 		LOG(ERROR) << "Syntax error while processing params:" << std::endl << e << std::endl;
 		// test 343
-		std::multimap<std::string, std::string>::iterator paramIter = params.begin();
+		std::multimap<std::string, Data>::iterator paramIter = params.begin();
 		while(paramIter != params.end()) {
 			params.erase(paramIter++);
 		}
@@ -663,7 +652,7 @@ void InterpreterImpl::send(const Arabica::DOM::Node<std::string>& element) {
 			 * See 3.14 IDs for details.
 			 *
 			 */
-			sendReq.sendid = ATTR(getParentState(element), "id") + "." + getUUID();
+			sendReq.sendid = ATTR(getParentState(element), "id") + "." + UUID::getUUID();
 			if (HAS_ATTR(element, "idlocation") && _dataModel) {
 				_dataModel.assign(ATTR(element, "idlocation"), "'" + sendReq.sendid + "'");
 			} else {
@@ -708,9 +697,9 @@ void InterpreterImpl::send(const Arabica::DOM::Node<std::string>& element) {
 			if (_dataModel) {
 				std::vector<std::string> names = tokenizeIdRefs(ATTR(element, "namelist"));
 				for (int i = 0; i < names.size(); i++) {
-					std::string namelistValue = _dataModel.evalAsString(names[i]);
+					Data namelistValue = _dataModel.getStringAsData(names[i]);
 					sendReq.namelist[names[i]] = namelistValue;
-					sendReq.data.compound[names[i]] = Data(namelistValue, Data::VERBATIM);
+					sendReq.data.compound[names[i]] = namelistValue;
 				}
 			} else {
 				LOG(ERROR) << "Namelist attribute at send requires datamodel to be defined";
@@ -834,7 +823,7 @@ void InterpreterImpl::invoke(const Arabica::DOM::Node<std::string>& element) {
 			if (HAS_ATTR(element, "id")) {
 				invokeReq.invokeid = ATTR(element, "id");
 			} else {
-				invokeReq.invokeid = ATTR(getParentState(element), "id") + "." + getUUID();
+				invokeReq.invokeid = ATTR(getParentState(element), "id") + "." + UUID::getUUID();
 				if (HAS_ATTR(element, "idlocation") && _dataModel) {
 					_dataModel.assign(ATTR(element, "idlocation"), "'" + invokeReq.invokeid + "'");
 				}
@@ -954,7 +943,7 @@ void InterpreterImpl::cancelInvoke(const Arabica::DOM::Node<std::string>& elemen
 		}
 		_invokers.erase(invokeId);
 	} else {
-		LOG(ERROR) << "Cannot cancel invoke for id " << invokeId << ": no soch invokation";
+		LOG(ERROR) << "Cannot cancel invoke for id " << invokeId << ": no such invokation";
 	}
 	//receiveInternal(Event("done.invoke." + invokeId, Event::PLATFORM));
 }

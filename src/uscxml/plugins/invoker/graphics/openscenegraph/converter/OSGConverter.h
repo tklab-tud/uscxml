@@ -31,7 +31,7 @@ public:
 	virtual void cancel(const std::string sendId);
 	virtual void invoke(const InvokeRequest& req);
 
-	void reportSuccess(const SendRequest& req);
+	void reportSuccess(const SendRequest& req, const Data& content);
 	void reportFailure(const SendRequest& req);
 
 	osg::Matrix requestToModelPose(const SendRequest& req);
@@ -60,6 +60,8 @@ protected:
 	uscxml::concurrency::BlockingQueue<SendRequest> _workQueue;
 	osg::ref_ptr<osg::Node> setupGraph(const std::string filename, bool autoRotate = false);
 	osg::ref_ptr<osg::Node> getOrigin();
+
+	tthread::recursive_mutex _viewerMutex;
 
 	std::map<std::string, std::pair<long, osg::ref_ptr<osg::Node> > > _models;
 	tthread::recursive_mutex _cacheMutex;

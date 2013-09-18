@@ -205,6 +205,7 @@ public:
 	static void toBaseURL(URL& uri);
 
 	static std::string getResourceDir();
+	static std::string getTmpFilename(const std::string& suffix = "");
 
 	static URL toLocalFile(const std::string& content, const std::string& suffix) {
 		boost::shared_ptr<URLImpl> impl = URLImpl::toLocalFile(content, suffix);

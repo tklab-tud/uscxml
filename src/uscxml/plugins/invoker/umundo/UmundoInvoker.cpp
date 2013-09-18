@@ -63,7 +63,7 @@ void UmundoInvoker::send(const SendRequest& req) {
 			std::string type;
 			if (req.params.find("type") != req.params.end()) {
 				// we are supposed to build a typed object
-				type = req.params.find("type")->second;
+				type = req.params.find("type")->second.atom;
 
 				const google::protobuf::Message* protoMsg = umundo::PBSerializer::getProto(type);
 				if (protoMsg == NULL) {
@@ -139,17 +139,17 @@ void UmundoInvoker::invoke(const InvokeRequest& req) {
 	std::string serviceName;
 
 	if (req.params.find("channel") != req.params.end()) {
-		channelName = req.params.find("channel")->second;
+		channelName = req.params.find("channel")->second.atom;
 		_isService = false;
 	} else if (req.params.find("service") != req.params.end()) {
-		serviceName = req.params.find("service")->second;
+		serviceName = req.params.find("service")->second.atom;
 		_isService = true;
 	} else {
 		LOG(ERROR) << "Invoking umundo needs a service or a channel param";
 		return;
 	}
 	if (req.params.find("domain") != req.params.end()) {
-		domain = req.params.find("domain")->second;
+		domain = req.params.find("domain")->second.atom;
 	}
 	_node = getNode(_interpreter, domain);
 
@@ -157,7 +157,7 @@ void UmundoInvoker::invoke(const InvokeRequest& req) {
 	if (req.params.find("type") != req.params.end()) {
 		std::pair<InvokeRequest::params_t::const_iterator, InvokeRequest::params_t::const_iterator> typeRange = req.params.equal_range("types");
 		for (InvokeRequest::params_t::const_iterator it = typeRange.first; it != typeRange.second; it++) {
-			URL typeURI(it->second);
+			URL typeURI(it->second.atom);
 			if (typeURI.toAbsolute(_interpreter->getBaseURI())) {
 				std::string filename = typeURI.asLocalFile(".proto");
 				umundo::PBSerializer::addProto(filename);
@@ -171,7 +171,7 @@ void UmundoInvoker::invoke(const InvokeRequest& req) {
 	if (req.params.find("types") != req.params.end()) {
 		std::pair<InvokeRequest::params_t::const_iterator, InvokeRequest::params_t::const_iterator> typeRange = req.params.equal_range("types");
 		for (InvokeRequest::params_t::const_iterator it = typeRange.first; it != typeRange.second; it++) {
-			URL typeURI(it->second);
+			URL typeURI(it->second.atom);
 			if (typeURI.toAbsolute(_interpreter->getBaseURI()) && typeURI.scheme().compare("file") == 0) {
 				umundo::PBSerializer::addProto(typeURI.path());
 			} else {

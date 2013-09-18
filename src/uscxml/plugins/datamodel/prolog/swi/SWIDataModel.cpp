@@ -230,6 +230,8 @@ void SWIDataModel::setEvent(const Event& event) {
 			PlCall(dataInitStr.str().c_str());
 		} else if (event.content.size() > 0) {
 			PlCall("assert", PlCompound("event", PlCompound("data", PlString(Interpreter::spaceNormalize(event.content).c_str()))));
+		} else if (event.data) {
+      LOG(ERROR) << "No support for structured data from events in prolog datamodel yet";
 		}
 
 		// event.params

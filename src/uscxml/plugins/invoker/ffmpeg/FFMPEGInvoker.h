@@ -4,11 +4,9 @@
 #include <uscxml/Interpreter.h>
 
 extern "C" {
-#include <libavutil/opt.h>
-#include <libavutil/mathematics.h>
+#include <libavutil/avutil.h>
 #include <libavformat/avformat.h>
 #include <libswscale/swscale.h>
-#include <libswresample/swresample.h>
 }
 
 #ifdef BUILD_AS_PLUGINS
@@ -37,14 +35,53 @@ public:
 
 protected:
 	class EncodingContext {
+	public:
+		EncodingContext() :
+			format(NULL),
+			formatCtx(NULL),
+			audioStream(NULL), videoStream(NULL),
+			audioCodec(NULL), videoCodec(NULL),
+			audioTime(0), videoTime(0),
+			frame(NULL),
+			frame_count(0),
+			width(0),
+			height(0),
+			sws_flags(SWS_BICUBIC) {}
+
+		virtual ~EncodingContext() {
+			if (sws_ctx)
+				sws_freeContext(sws_ctx);
+		}
+		
+		tthread::recursive_mutex mutex;
+		PixelFormat videoPixFmt;
 		std::string filename;
 		AVOutputFormat* format;
 		AVFormatContext* formatCtx;
-		AVStream *audio_st, *video_st;
-		AVCodec *audio_codec, *video_codec;
-		double audio_time, video_time;
+		AVStream *audioStream, *videoStream;
+		AVCodec *audioCodec, *videoCodec, *imageCodec;
+		double audioTime, videoTime;
+		AVFrame *frame;
+		AVPicture src_picture, dst_picture;
+		int frame_count;
+		size_t width, height;
+		int sws_flags;
+		SwsContext *sws_ctx;
+		std::string extension;
 	};
 
+	AVStream* addStream(EncodingContext* ctx, AVFormatContext *oc, AVCodec **codec, enum AVCodecID codec_id);
+	void openVideo(EncodingContext* ctx, AVFormatContext *oc, AVCodec *codec, AVStream *st);
+	void writeVideoFrame(EncodingContext* ctx, AVFormatContext *oc, AVStream *st, boost::shared_ptr<Blob> image);
+	void closeVideo(EncodingContext* ctx, AVFormatContext *oc, AVStream *st);
+
+	static void run(void*);
+	void finish(EncodingContext* ctx, const SendRequest& req);
+	void process(const SendRequest& req);
+	
+	std::set<tthread::thread*> _threads;
+	uscxml::concurrency::BlockingQueue<SendRequest> _workQueue;
+	bool _isRunning;
 	std::map<std::string, EncodingContext*> _encoders;
 };
 

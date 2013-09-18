@@ -1,6 +1,7 @@
 #include "MMISessionManager.h"
 #include <uscxml/NameSpacingParser.h>
 #include <uscxml/concurrency/tinythread.h>
+#include <uscxml/UUID.h>
 
 #include <io/uri.hpp>
 #include <glog/logging.h>
@@ -135,7 +136,7 @@ void MMISessionManager::received(const NewContextRequest& mmiEvent, const std::s
 	newDOM.appendChild(newDOM.importNode(_protoInterpreter.getDocument().getDocumentElement(), true));
 
 	// instantiate new interpreter and name it after the context
-	std::string contextId = Interpreter::getUUID();
+	std::string contextId = UUID::getUUID();
 	Interpreter interpreter = Interpreter::fromDOM(newDOM);
 	interpreter.setFactory(_factory);
 	interpreter.setName(contextId);

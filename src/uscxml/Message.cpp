@@ -193,22 +193,24 @@ Arabica::DOM::Document<std::string> SendRequest::toDocument() {
 		Arabica::DOM::Node<std::string> payloadElem = scxmlMsg.getElementsByTagName("scxml:payload").item(0);
 
 		// add parameters
-		std::multimap<std::string, std::string>::iterator paramIter = params.begin();
+		std::multimap<std::string, Data>::iterator paramIter = params.begin();
 		while(paramIter != params.end()) {
 			Arabica::DOM::Element<std::string> propertyElem = document.createElementNS("http://www.w3.org/2005/07/scxml", "scxml:property");
 			propertyElem.setAttribute("name", paramIter->first);
-			Arabica::DOM::Text<std::string> textElem = document.createTextNode(paramIter->second);
+			// this is simplified - Data might be more elaborate than a simple string atom
+			Arabica::DOM::Text<std::string> textElem = document.createTextNode(paramIter->second.atom);
 			propertyElem.appendChild(textElem);
 			payloadElem.appendChild(propertyElem);
 			paramIter++;
 		}
 
 		// add namelist elements
-		std::map<std::string, std::string>::iterator namelistIter = namelist.begin();
+		std::map<std::string, Data>::iterator namelistIter = namelist.begin();
 		while(namelistIter != namelist.end()) {
 			Arabica::DOM::Element<std::string> propertyElem = document.createElementNS("http://www.w3.org/2005/07/scxml", "scxml:property");
 			propertyElem.setAttribute("name", namelistIter->first);
-			Arabica::DOM::Text<std::string> textElem = document.createTextNode(namelistIter->second);
+			// this is simplified - Data might be more elaborate than a simple string atom
+			Arabica::DOM::Text<std::string> textElem = document.createTextNode(namelistIter->second.atom);
 			propertyElem.appendChild(textElem);
 			payloadElem.appendChild(propertyElem);
 			namelistIter++;
@@ -294,14 +296,21 @@ Data Data::fromJSON(const std::string& jsonString) {
 	if (t[0].end != trimmed.length())
 		return data;
 
+//	jsmntok_t* token = t;
+//	while(token->end) {
+//		std::cout << trimmed.substr(token->start, token->end - token->start) << std::endl;
+//		std::cout << "------" << std::endl;
+//		token++;
+//	}
+	
 	std::list<Data*> dataStack;
 	std::list<jsmntok_t> tokenStack;
 	dataStack.push_back(&data);
 
 	size_t currTok = 0;
 	do {
-		jsmntok_t t2 = t[currTok];
-		std::string value = trimmed.substr(t[currTok].start, t[currTok].end - t[currTok].start);
+//		jsmntok_t t2 = t[currTok];
+//		std::string value = trimmed.substr(t[currTok].start, t[currTok].end - t[currTok].start);
 		switch (t[currTok].type) {
 		case JSMN_STRING:
 			dataStack.back()->type = Data::VERBATIM;
@@ -317,15 +326,15 @@ Data Data::fromJSON(const std::string& jsonString) {
 			break;
 		}
 
-		t2 = t[currTok];
-		value = trimmed.substr(t[currTok].start, t[currTok].end - t[currTok].start);
+//		t2 = t[currTok];
+//		value = trimmed.substr(t[currTok].start, t[currTok].end - t[currTok].start);
 
 		// there are no more tokens
 		if (t[currTok].end == 0 || tokenStack.empty())
 			break;
 
 		// next token starts after current one => pop
-		if (t[currTok].end > tokenStack.back().end) {
+		while (t[currTok].end > tokenStack.back().end) {
 			tokenStack.pop_back();
 			dataStack.pop_back();
 		}

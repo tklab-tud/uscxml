@@ -138,9 +138,10 @@ void MMIHTTPIOProcessor::send(const SendRequest& req) {
 
 	// event namelist
 	if (req.namelist.size() > 0) {
-		std::map<std::string, std::string>::const_iterator namelistIter = req.namelist.begin();
+		std::map<std::string, Data>::const_iterator namelistIter = req.namelist.begin();
 		while (namelistIter != req.namelist.end()) {
-			kvps << kvpSeperator << evhttp_encode_uri(namelistIter->first.c_str()) << "=" << evhttp_encode_uri(namelistIter->second.c_str());
+			// this is simplified - Data might be more elaborate than a simple string atom
+			kvps << kvpSeperator << evhttp_encode_uri(namelistIter->first.c_str()) << "=" << evhttp_encode_uri(namelistIter->second.atom.c_str());
 			kvpSeperator = "&";
 //			targetURL.addOutHeader(namelistIter->first, namelistIter->second);
 			namelistIter++;
@@ -149,9 +150,10 @@ void MMIHTTPIOProcessor::send(const SendRequest& req) {
 
 	// event params
 	if (req.params.size() > 0) {
-		std::multimap<std::string, std::string>::const_iterator paramIter = req.params.begin();
+		std::multimap<std::string, Data>::const_iterator paramIter = req.params.begin();
 		while (paramIter != req.params.end()) {
-			kvps << kvpSeperator << evhttp_encode_uri(paramIter->first.c_str()) << "=" << evhttp_encode_uri(paramIter->second.c_str());
+			// this is simplified - Data might be more elaborate than a simple string atom
+			kvps << kvpSeperator << evhttp_encode_uri(paramIter->first.c_str()) << "=" << evhttp_encode_uri(paramIter->second.atom.c_str());
 			kvpSeperator = "&";
 //			targetURL.addOutHeader(paramIter->first, paramIter->second);
 			paramIter++;

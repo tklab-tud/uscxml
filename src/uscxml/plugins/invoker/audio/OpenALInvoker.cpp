@@ -72,14 +72,14 @@ void OpenALInvoker::send(const SendRequest& req) {
 			LOG(ERROR) << "Sent event play with no src URL";
 		}
 
-		URL srcURL = req.params.find("src")->second;
+		URL srcURL = req.params.find("src")->second.atom;
 		if (!srcURL.toAbsolute(_interpreter->getBaseURI())) {
 			LOG(ERROR) << "src URL " << req.params.find("src")->second << " is relative with no base URI set for interpreter";
 			return;
 		}
 
 		_sources[req.sendid] = new OpenALSource();
-		_sources[req.sendid]->loop = req.params.find("loop") != req.params.end() && boost::iequals(req.params.find("loop")->second, "true");
+		_sources[req.sendid]->loop = req.params.find("loop") != req.params.end() && boost::iequals(req.params.find("loop")->second.atom, "true");
 		_sources[req.sendid]->file = srcURL;
 #ifdef LIBSNDFILE_FOUND
 		_sources[req.sendid]->transform	= new LibSoundFile(srcURL.asLocalFile(".audio"));
@@ -127,7 +127,7 @@ void OpenALInvoker::send(const SendRequest& req) {
 			LOG(WARNING) << "Cannot move source with no source given in parameters";
 			return;
 		}
-		sourceId = req.params.find("source")->second;
+		sourceId = req.params.find("source")->second.atom;
 
 		if (_sources.find(sourceId) == _sources.end()) {
 			LOG(WARNING) << "Given source '" << sourceId << "' not active or not existing";
@@ -261,14 +261,14 @@ void OpenALInvoker::invoke(const InvokeRequest& req) {
 		throw std::string("__FILE__ __LINE__ openal error opening device");
 	}
 
-	std::multimap<std::string, std::string>::const_iterator paramIter = req.params.begin();
+	std::multimap<std::string, Data>::const_iterator paramIter = req.params.begin();
 	while(paramIter != req.params.end()) {
 		if (boost::iequals(paramIter->first, "maxX"))
-			_maxPos[0] = strTo<float>(paramIter->second);
+			_maxPos[0] = strTo<float>(paramIter->second.atom);
 		if (boost::iequals(paramIter->first, "maxY"))
-			_maxPos[1] = strTo<float>(paramIter->second);
+			_maxPos[1] = strTo<float>(paramIter->second.atom);
 		if (boost::iequals(paramIter->first, "maxZ"))
-			_maxPos[2] = strTo<float>(paramIter->second);
+			_maxPos[2] = strTo<float>(paramIter->second.atom);
 		paramIter++;
 	}
 
@@ -310,7 +310,7 @@ void OpenALInvoker::notifyOfLoop(OpenALSource* src) {
 	returnEvent(ev);
 }
 
-void OpenALInvoker::getPosFromParams(const std::multimap<std::string, std::string>& params, float* position) {
+void OpenALInvoker::getPosFromParams(const std::multimap<std::string, Data>& params, float* position) {
 	// vector explicitly given
 	try {
 		if (params.find("x") != params.end())

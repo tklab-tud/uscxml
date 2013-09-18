@@ -11,6 +11,7 @@
 #include <DOM/io/Stream.hpp>
 
 #include <boost/shared_ptr.hpp>
+#include <boost/lexical_cast.hpp>
 #include <inttypes.h>
 
 #define TAGNAME(elem) ((Arabica::DOM::Element<std::string>)elem).getTagName()
@@ -43,7 +44,7 @@ public:
 	virtual ~Data() {}
 
 	operator bool() const {
-		return (atom.length() > 0 || !compound.empty() || !array.empty());
+		return (atom.length() > 0 || !compound.empty() || !array.empty() || binary);
 	}
 
 	bool hasKey(const std::string& key) const {
@@ -60,11 +61,11 @@ public:
 		Data data;
 		return data;
 	}
-
-	operator std::string() {
+	
+	operator std::string() const {
 		return atom;
 	}
-
+	
 	operator std::map<std::string, Data>() {
 		return compound;
 	}
@@ -72,7 +73,7 @@ public:
 	operator std::list<Data>() {
 		return array;
 	}
-
+	
 	static Data fromJSON(const std::string& jsonString);
 	static std::string toJSON(const Data& data);
 	static Data fromXML(const std::string& xmlString);
@@ -235,12 +236,56 @@ public:
 		return ss.str();
 	}
 
-	std::map<std::string, std::string>& getNameList() {
+	std::map<std::string, Data>& getNameList() {
 		return namelist;
 	}
-	std::multimap<std::string, std::string>& getParams() {
+	std::multimap<std::string, Data>& getParams() {
 		return params;
 	}
+
+	typedef std::multimap<std::string, Data> params_t;
+	typedef std::map<std::string, Data> namelist_t;
+
+	static bool getParam(params_t params, const std::string& name, Data& target) {
+		if (params.find(name) != params.end()) {
+			target = params.find(name)->second;
+			return true;
+		}
+		return false;
+	}
+
+	static bool getParam(params_t params, const std::string& name, std::list<Data>& target) {
+		if (params.find(name) != params.end()) {
+			std::pair<params_t::iterator, params_t::iterator> rangeIter = params.equal_range(name);
+			while(rangeIter.first != rangeIter.second) {
+				target.push_back(rangeIter.first->second);
+				rangeIter.first++;
+			}
+			return true;
+		}
+		return false;
+	}
+
+	template <typename T> static bool getParam(params_t params, const std::string& name, T& target) {
+		if (params.find(name) != params.end()) {
+			target = boost::lexical_cast<T>(params.find(name)->second.atom);
+			return true;
+		}
+		return false;
+	}
+
+	template <typename T> static bool getParam(params_t params, const std::string& name, std::list<T>& target) {
+		if (params.find(name) != params.end()) {
+			std::pair<params_t::iterator, params_t::iterator> rangeIter = params.equal_range(name);
+			while(rangeIter.first != rangeIter.second) {
+				target.push_back(boost::lexical_cast<T>(rangeIter.first->second.atom));
+				rangeIter.first++;
+			}
+			return true;
+		}
+		return false;
+	}
+	
 
 #ifdef SWIGIMPORTED
 protected:
@@ -258,11 +303,8 @@ protected:
 	std::string invokeid;
 	Data data;
 	std::string content;
-	std::map<std::string, std::string> namelist;
-	std::multimap<std::string, std::string> params;
-
-	typedef std::multimap<std::string, std::string> params_t;
-	typedef std::map<std::string, std::string> namelist_t;
+	std::map<std::string, Data> namelist;
+	std::multimap<std::string, Data> params;
 
 	friend std::ostream& operator<< (std::ostream& os, const Event& event);
 };

@@ -52,15 +52,15 @@ void HTTPServletInvoker::send(const SendRequest& req) {
 		HTTPServer::Reply httpReply(httpRequest);
 		httpReply.content = req.content;
 
-		std::map<std::string, std::string>::const_iterator nameListIter = req.namelist.begin();
+		std::map<std::string, Data>::const_iterator nameListIter = req.namelist.begin();
 		while(nameListIter != req.namelist.end()) {
-			httpReply.headers[nameListIter->first] = nameListIter->second;
+			httpReply.headers[nameListIter->first] = nameListIter->second.atom;
 			nameListIter++;
 		}
 
-		std::multimap<std::string, std::string>::const_iterator paramIter = req.params.begin();
+		std::multimap<std::string, Data>::const_iterator paramIter = req.params.begin();
 		while(paramIter != req.params.end()) {
-			httpReply.headers[paramIter->first] = paramIter->second;
+			httpReply.headers[paramIter->first] = paramIter->second.atom;
 			paramIter++;
 		}
 
@@ -78,10 +78,10 @@ void HTTPServletInvoker::invoke(const InvokeRequest& req) {
 	if (req.params.find("path") == req.params.end()) {
 		LOG(ERROR) << "Path parameter required with httpserver";
 	}
-	_path = (*req.params.find("path")).second;
+	_path = (*req.params.find("path")).second.atom;
 
 	if (req.params.find("callback") != req.params.end()) {
-		_callback = (*req.params.find("callback")).second;
+		_callback = (*req.params.find("callback")).second.atom;
 	} else {
 		_callback = _path;
 		std::replace(_callback.begin(), _callback.end(), '/', '.');

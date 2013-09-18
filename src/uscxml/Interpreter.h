@@ -4,7 +4,6 @@
 #include "uscxml/Common.h"
 #include "uscxml/URL.h"
 
-#include <boost/uuid/uuid_generators.hpp>
 #include <boost/algorithm/string.hpp>
 
 #include <iostream>
@@ -238,7 +237,6 @@ public:
 	static Arabica::XPath::NodeSet<std::string> filterChildElements(const std::string& tagName, const Arabica::XPath::NodeSet<std::string>& nodeSet);
 	Arabica::DOM::Node<std::string> findLCCA(const Arabica::XPath::NodeSet<std::string>& states);
 	Arabica::XPath::NodeSet<std::string> getProperAncestors(const Arabica::DOM::Node<std::string>& s1, const Arabica::DOM::Node<std::string>& s2);
-	static std::string getUUID();
 
 protected:
 	InterpreterImpl();
@@ -296,7 +294,7 @@ protected:
 	                           std::string& text,
 	                           std::string& expr);
 	void processParamChilds(const Arabica::DOM::Node<std::string>& element,
-	                        std::multimap<std::string, std::string>& params);
+	                        std::multimap<std::string, Data>& params);
 	void processDOMorText(const Arabica::DOM::Node<std::string>& element,
 	                      Arabica::DOM::Node<std::string>& dom,
 	                      std::string& text);
@@ -312,8 +310,6 @@ protected:
 	bool hasConditionMatch(const Arabica::DOM::Node<std::string>& conditional);
 	bool isInFinalState(const Arabica::DOM::Node<std::string>& state);
 	bool parentIsScxmlState(const Arabica::DOM::Node<std::string>& state);
-
-	static boost::uuids::random_generator uuidGen;
 
 	long _lastRunOnMainThread;
 	std::string _name;
@@ -597,9 +593,6 @@ public:
 	}
 	Arabica::XPath::NodeSet<std::string> getProperAncestors(const Arabica::DOM::Node<std::string>& s1, const Arabica::DOM::Node<std::string>& s2) {
 		return _impl->getProperAncestors(s1, s2);
-	}
-	static std::string getUUID() {
-		return InterpreterImpl::getUUID();
 	}
 
 	boost::shared_ptr<InterpreterImpl> getImpl() {

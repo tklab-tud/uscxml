@@ -49,8 +49,8 @@ void HeartbeatInvoker::invoke(const InvokeRequest& req) {
 	InvokeRequest::params_t::const_iterator paramIter = req.params.begin();
 	while(paramIter != req.params.end()) {
 		if (boost::iequals(paramIter->first, "interval")) {
-			intervalStr = paramIter->second;
-			NumAttr intervalAttr(paramIter->second);
+			intervalStr = paramIter->second.atom;
+			NumAttr intervalAttr(paramIter->second.atom);
 			interval = strTo<double>(intervalAttr.value);
 			if (false) {
 			} else if (boost::iequals(intervalAttr.unit, "s")) {
@@ -62,7 +62,7 @@ void HeartbeatInvoker::invoke(const InvokeRequest& req) {
 			}
 		}
 		if (boost::iequals(paramIter->first, "eventname")) {
-			_event.name = paramIter->second;
+			_event.name = paramIter->second.atom;
 		}
 		paramIter++;
 	}

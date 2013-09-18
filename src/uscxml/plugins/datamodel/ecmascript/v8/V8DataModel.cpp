@@ -207,18 +207,19 @@ void V8DataModel::setEvent(const Event& event) {
 		if (!eventCopy.params.empty()) {
 			Event::params_t::iterator paramIter = eventCopy.params.begin();
 			while(paramIter != eventCopy.params.end()) {
-				eventCopy.data.compound[paramIter->first] = Data(paramIter->second, Data::VERBATIM);
+				eventCopy.data.compound[paramIter->first] = paramIter->second;
 				paramIter++;
 			}
 		}
 		if (!eventCopy.namelist.empty()) {
 			Event::namelist_t::iterator nameListIter = eventCopy.namelist.begin();
 			while(nameListIter != eventCopy.namelist.end()) {
-				eventCopy.data.compound[nameListIter->first] = Data(nameListIter->second, Data::VERBATIM);
+				eventCopy.data.compound[nameListIter->first] = nameListIter->second;
 				nameListIter++;
 			}
 		}
 		if (eventCopy.data) {
+//			std::cout << Data::toJSON(eventCopy.data);
 			eventObj->Set(v8::String::New("data"), getDataAsValue(eventCopy.data)); // set data part of _event
 		} else {
 			// test 343 / test 488
@@ -340,6 +341,7 @@ v8::Handle<v8::Value> V8DataModel::getDataAsValue(const Data& data) {
 		v8::Handle<v8::Object> value = v8::Object::New();
 		std::map<std::string, Data>::const_iterator compoundIter = data.compound.begin();
 		while(compoundIter != data.compound.end()) {
+//			std::cout << compoundIter->first.c_str() << std::endl;
 			value->Set(v8::String::New(compoundIter->first.c_str()), getDataAsValue(compoundIter->second));
 			compoundIter++;
 		}

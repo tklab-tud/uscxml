@@ -78,7 +78,7 @@ protected:
 	void notifyOfLoop(OpenALSource*);
 
 	float posToRadian(const std::string& pos);
-	void getPosFromParams(const std::multimap<std::string, std::string>& params, float* position);
+	void getPosFromParams(const std::multimap<std::string, Data>& params, float* position);
 
 };
 

@@ -63,8 +63,14 @@ void RespondElement::enterElement(const Arabica::DOM::Node<std::string>& node) {
 		if (HAS_ATTR(contents[0], "expr")) { // -- content is evaluated string from datamodel ------
 			if (_interpreter->getDataModel()) {
 				try {
-					std::string contentValue = _interpreter->getDataModel().evalAsString(ATTR(contents[0], "expr"));
-					httpReply.content = contentValue;
+					Data contentData = _interpreter->getDataModel().getStringAsData(ATTR(contents[0], "expr"));
+					if (contentData.atom.length() > 0) {
+						httpReply.content = contentData.atom;
+					} else if (contentData.binary) {
+						httpReply.content = std::string(contentData.binary->_data, contentData.binary->_size);
+					} else {
+						httpReply.content = Data::toJSON(contentData);
+					}
 				} catch (Event e) {
 					LOG(ERROR) << "Syntax error with expr in content child of Respond element:" << std::endl << e << std::endl;
 					return;
@@ -132,20 +138,20 @@ void RespondElement::enterElement(const Arabica::DOM::Node<std::string>& node) {
 		std::string value;
 		if (HAS_ATTR(headers[i], "value")) {
 			value = ATTR(headers[i], "value");
-		} else if(HAS_ATTR(headers[i], "expr")) {
+		} else if(HAS_ATTR(headers[i], "valueexpr")) {
 			if (_interpreter->getDataModel()) {
 				try {
-					value = _interpreter->getDataModel().evalAsString(ATTR(headers[i], "expr"));
+					value = _interpreter->getDataModel().evalAsString(ATTR(headers[i], "valueexpr"));
 				} catch (Event e) {
-					LOG(ERROR) << "Syntax error with expr in header child of Respond element:" << std::endl << e << std::endl;
+					LOG(ERROR) << "Syntax error with valueexpr in header child of Respond element:" << std::endl << e << std::endl;
 					return;
 				}
 			} else {
-				LOG(ERROR) << "header element has expr attribute but no datamodel is specified.";
+				LOG(ERROR) << "header element has valueexpr attribute but no datamodel is specified.";
 				return;
 			}
 		} else {
-			LOG(ERROR) << "header element has no value or expr attribute.";
+			LOG(ERROR) << "header element has no value or valueexpr attribute.";
 			return;
 		}
 

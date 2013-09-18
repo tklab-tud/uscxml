@@ -1,5 +1,6 @@
 #include <glog/logging.h>
 #include "URL.h"
+#include "UUID.h"
 
 #include "uscxml/config.h"
 #include <fstream>
@@ -42,6 +43,7 @@ std::string URL::tmpDir() {
 	if (tmpDir == NULL)
 		tmpDir = "/tmp/";
 
+#if 0
 	char* tmpl = (char*)malloc(strlen(tmpDir) + 11);
 	char* writePtr = tmpl;
 	memcpy(writePtr, tmpDir, strlen(tmpDir));
@@ -50,6 +52,22 @@ std::string URL::tmpDir() {
 	writePtr += 11;
 	tmpl[writePtr - tmpl] = 0;
 	return tmpl;
+#endif
+	return tmpDir;
+}
+
+	
+std::string URL::getTmpFilename(const std::string& suffix) {
+	std::string tmpFilename = tmpDir();
+	if (tmpFilename.find_last_of(PATH_SEPERATOR) != tmpFilename.length() - 1)
+		tmpFilename += PATH_SEPERATOR;
+	
+	tmpFilename += UUID::getUUID();
+	if (suffix.length() > 0) {
+		tmpFilename += ".";
+		tmpFilename += suffix;
+	}
+	return tmpFilename;
 }
 
 #if (!defined APPLE && !defined IOS)

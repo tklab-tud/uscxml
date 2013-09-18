@@ -65,20 +65,21 @@ void DirMonInvoker::invoke(const InvokeRequest& req) {
 		return;
 	}
 
-	if (boost::iequals(req.params.find("reportexisting")->second, "false"))
+	if (req.params.find("reportexisting") != req.params.end() &&
+					boost::iequals(req.params.find("reportexisting")->second.atom, "false"))
 		_reportExisting = false;
 	if (req.params.find("recurse") != req.params.end() &&
-	        boost::iequals(req.params.find("recurse")->second, "true"))
+	        boost::iequals(req.params.find("recurse")->second.atom, "true"))
 		_recurse = true;
 	if (req.params.find("reporthidden") != req.params.end() &&
-	        boost::iequals(req.params.find("reporthidden")->second, "true"))
+	        boost::iequals(req.params.find("reporthidden")->second.atom, "true"))
 		_reportHidden = true;
 
 	std::string suffixList;
 	if (req.params.find("suffix") != req.params.end()) {
-		suffixList = req.params.find("suffix")->second;
+		suffixList = req.params.find("suffix")->second.atom;
 	} else if (req.params.find("suffixes") != req.params.end()) {
-		suffixList = req.params.find("suffixes")->second;
+		suffixList = req.params.find("suffixes")->second.atom;
 	}
 
 	if (suffixList.size() > 0) {
@@ -92,9 +93,10 @@ void DirMonInvoker::invoke(const InvokeRequest& req) {
 		}
 	}
 
-	std::multimap<std::string, std::string>::const_iterator dirIter = req.params.find("dir");
+	std::multimap<std::string, Data>::const_iterator dirIter = req.params.find("dir");
 	while(dirIter != req.params.upper_bound("dir")) {
-		URL url(dirIter->second);
+		// this is simplified - Data might be more elaborate than a simple string atom
+		URL url(dirIter->second.atom);
 		if (!url.toAbsolute(_interpreter->getBaseURI()) || !boost::iequals(url.scheme(), "file")) {
 			LOG(ERROR) << "Given directory '" << dirIter->second << "' cannot be transformed to absolute path";
 		} else {
@@ -266,6 +268,8 @@ void DirectoryWatch::updateEntries(bool reportAsExisting) {
 	}
 
 	if ((unsigned)dirStat.st_mtime >= (unsigned)_lastChecked) {
+//		std::cout << "dirStat.st_mtime: " << dirStat.st_mtime << " / _lastChecked: " << _lastChecked << std::endl;
+		
 		// there are changes in the directory
 		std::set<std::string> currEntries;
 

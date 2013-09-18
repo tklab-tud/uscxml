@@ -187,6 +187,7 @@ if (WIN32)
 	include_directories(${PROJECT_SOURCE_DIR}/contrib/src/inttypes)
 endif()
 include_directories(${PROJECT_SOURCE_DIR}/contrib/src/jsmn)
+#include_directories(${PROJECT_SOURCE_DIR}/contrib/src/google-url)
 
 ############################################################
 # General setup
@@ -352,6 +353,13 @@ else()
 	add_definitions("-DUSCXML_STATIC")
 endif()
 
+# file(GLOB 
+# 	GURL_SOURCE ${PROJECT_SOURCE_DIR}/contrib/src/google-url/googleurl/src/*.cc
+# 	GURL_SOURCE ${PROJECT_SOURCE_DIR}/contrib/src/google-url/googleurl/src/*.h)
+# list(APPEND USCXML_FILES ${GURL_SOURCE})
+# list(APPEND USCXML_FILES ${PROJECT_SOURCE_DIR}/contrib/src/google-url/base/string16.cc)
+
+
 # library suffix order
 if (IOS)
 	LIST(APPEND CMAKE_FIND_LIBRARY_SUFFIXES ".dylib")
@@ -446,6 +454,11 @@ elseif(WIN32)
 	list (APPEND XML_LIBRARIES "Netapi32")
 	list (APPEND USCXML_CORE_LIBS ${XML_LIBRARIES})
 endif()
+
+# ICU
+# find_package(ICU REQUIRED)
+# include_directories(${ICU_INCLUDE_DIRS})
+# list (APPEND USCXML_CORE_LIBS ${ICU_LIBRARIES})
 
 # CURL
 find_package(CURL REQUIRED)
@@ -685,9 +698,13 @@ foreach( FILE ${USCXML_FILES} )
 		STRING(REGEX MATCH "[^\\/]*$" COMP_NAME ${PATH})
 		source_group("Element\\${COMP_NAME}" FILES ${FILE})
 
-		elseif (${PATH} MATCHES ".*\\/ioprocessor\\/.*")
-			STRING(REGEX MATCH "[^\\/]*$" COMP_NAME ${PATH})
-			source_group("IOProcessor\\${COMP_NAME}" FILES ${FILE})
+	elseif (${PATH} MATCHES ".*\\/ioprocessor\\/.*")
+		STRING(REGEX MATCH "[^\\/]*$" COMP_NAME ${PATH})
+		source_group("IOProcessor\\${COMP_NAME}" FILES ${FILE})
+
+	# elseif (${PATH} MATCHES ".*\\/google-url\\/.*")
+	# 	STRING(REGEX MATCH "[^\\/]*$" COMP_NAME ${PATH})
+	# 	source_group("Interpreter\\URL" FILES ${FILE})
 
 	else ()
 		source_group(Interpreter FILES ${FILE})

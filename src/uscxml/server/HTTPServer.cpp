@@ -194,14 +194,15 @@ void HTTPServer::httpRecvReqCallback(struct evhttp_request *req, void *callbackD
 //	}
 
 	// seperate path into components
-	std::stringstream ss(request.data.compound["path"].atom);
-	std::string item;
-	while(std::getline(ss, item, '/')) {
-		if (item.length() == 0)
-			continue;
-		request.data.compound["pathComponent"].array.push_back(Data(item, Data::VERBATIM));
+	{
+		std::stringstream ss(request.data.compound["path"].atom);
+		std::string item;
+		while(std::getline(ss, item, '/')) {
+			if (item.length() == 0)
+				continue;
+			request.data.compound["pathComponent"].array.push_back(Data(item, Data::VERBATIM));
+		}
 	}
-
 	// parse query string
 	struct evkeyvalq params;
 	struct evkeyval *param;
@@ -233,9 +234,27 @@ void HTTPServer::httpRecvReqCallback(struct evhttp_request *req, void *callbackD
 		std::string contentType = request.data.compound["header"].compound["Content-Type"].atom;
 		if (false) {
 		} else if (boost::iequals(contentType, "application/x-www-form-urlencoded")) {
-			char* contentCStr = evhttp_decode_uri(request.data.compound["content"].atom.c_str());
-			request.data.compound["content"].atom = contentCStr;
-			free(contentCStr);
+			// this is a form submit
+			std::stringstream ss(request.data.compound["content"].atom);
+			std::string item;
+			std::string key;
+			std::string value;
+			while(std::getline(ss, item, '=')) {
+				if (item.length() == 0)
+					continue;
+				if (key.length() == 0) {
+					key = item;
+					continue;
+				}
+				value = item;
+				char* keyCStr = evhttp_decode_uri(key.c_str());
+				char* valueCStr = evhttp_decode_uri(value.c_str());
+				request.data.compound["content"].compound[keyCStr] = Data(valueCStr, Data::VERBATIM);
+				free(keyCStr);
+				free(valueCStr);
+				key.clear();
+			}
+			request.data.compound["content"].atom.clear();
 		} else if (boost::iequals(contentType, "application/json")) {
 			request.data.compound["content"] = Data::fromJSON(request.data.compound["content"].atom);
 		}

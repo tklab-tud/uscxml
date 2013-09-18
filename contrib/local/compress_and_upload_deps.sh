@@ -31,7 +31,7 @@ cd ../prebuilt
 ssh ${USCXML_PREBUILT_HOST} mkdir -p ${USCXML_PREBUILT_PATH}/${VERSION}
 
 PLATFORMS=`find . -maxdepth 1 -type d -regex ./[^\.].*`
-PLATFORMS="include"
+PLATFORMS="windows-x86_64"
 for FILE in ${PLATFORMS}; do
   PLATFORM=`basename $FILE`
   if [ "$PLATFORM" != "include" ]; then

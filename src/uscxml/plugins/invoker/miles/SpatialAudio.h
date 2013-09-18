@@ -34,7 +34,7 @@ public:
 	virtual void invoke(const InvokeRequest& req);
 	virtual void sendToParent(SendRequest& req);
 
-	void getPosFromParams(const std::multimap<std::string, std::string>& params, float* position);
+	void getPosFromParams(const std::multimap<std::string, Data>& params, float* position);
 	static float posToRadian(const std::string& position);
 
 protected:

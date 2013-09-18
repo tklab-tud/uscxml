@@ -1,5 +1,6 @@
 #include "OSGInvoker.h"
 #include "uscxml/URL.h"
+#include "uscxml/UUID.h"
 #include <glog/logging.h>
 
 #ifdef BUILD_AS_PLUGINS
@@ -110,7 +111,7 @@ void OSGInvoker::processViewport(const Arabica::DOM::Node<std::string>& element)
 	_nodes[element] = group;
 	sceneView->setSceneData(group);
 
-	std::string name = (HAS_ATTR(element, "id") ? ATTR(element, "id") : Interpreter::getUUID());
+	std::string name = (HAS_ATTR(element, "id") ? ATTR(element, "id") : UUID::getUUID());
 
 	unsigned int actualX = 0;
 	unsigned int actualY = 0;

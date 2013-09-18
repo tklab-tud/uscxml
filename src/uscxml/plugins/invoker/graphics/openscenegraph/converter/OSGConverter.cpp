@@ -21,12 +21,12 @@
 
 #define EVAL_PARAM_EXPR(param, expr, key) \
 if (param.find(key) == param.end() && param.find(expr) != param.end() && _interpreter->getDataModel()) \
-  param.insert(std::make_pair(key, _interpreter->getDataModel().evalAsString(param.find(expr)->second)));
+  param.insert(std::make_pair(key, _interpreter->getDataModel().evalAsString(param.find(expr)->second.atom)));
 
 #define CAST_PARAM(param, var, key, type) \
 if (param.find(key) != param.end()) { \
-  try { var = boost::lexical_cast<type>(param.find(key)->second); } \
-  catch(...) { LOG(ERROR) << "Attribute " key " of sendrequest to osgconverter is of invalid format: " << param.find(key)->second; } \
+  try { var = boost::lexical_cast<type>(param.find(key)->second.atom); } \
+  catch(...) { LOG(ERROR) << "Attribute " key " of sendrequest to osgconverter is of invalid format: " << param.find(key)->second.atom; } \
 }
 
 
@@ -42,6 +42,7 @@ bool connect(pluma::Host& host) {
 
 OSGConverter::OSGConverter() : _isRunning(false) {
 //  osg::setNotifyLevel(osg::DEBUG_FP);
+	osg::setNotifyLevel(osg::FATAL);
 }
 
 OSGConverter::~OSGConverter() {
@@ -76,7 +77,7 @@ void OSGConverter::send(const SendRequest& req) {
 	if (actualReq.params.find("source") == actualReq.params.end()) {
 		// no explicit source
 		if (actualReq.params.find("sourceexpr") != actualReq.params.end() && _interpreter->getDataModel()) {
-			actualReq.params.insert(std::make_pair("source", _interpreter->getDataModel().evalAsString(actualReq.params.find("sourceexpr")->second)));
+			actualReq.params.insert(std::make_pair("source", _interpreter->getDataModel().getStringAsData(actualReq.params.find("sourceexpr")->second)));
 		} else {
 			LOG(ERROR) << "SendRequests for osginvoker missing source or sourceExpr and datamodel";
 			return;
@@ -86,20 +87,16 @@ void OSGConverter::send(const SendRequest& req) {
 	if (actualReq.params.find("dest") == actualReq.params.end()) {
 		// no explicit destination
 		if (actualReq.params.find("destexpr") != actualReq.params.end() && _interpreter->getDataModel()) {
-			actualReq.params.insert(std::make_pair("dest", _interpreter->getDataModel().evalAsString(actualReq.params.find("destexpr")->second)));
-		} else {
-			LOG(ERROR) << "SendRequests for osginvoker missing dest or destExpr and datamodel";
-			return;
+			actualReq.params.insert(std::make_pair("dest", _interpreter->getDataModel().getStringAsData(actualReq.params.find("destexpr")->second)));
+			boost::algorithm::replace_all(actualReq.params.find("dest")->second.atom, "//", "/");
+			boost::algorithm::replace_all(actualReq.params.find("dest")->second.atom, "\\\\", "\\");
 		}
 	}
-
-	boost::algorithm::replace_all(actualReq.params.find("dest")->second, "//", "/");
-	boost::algorithm::replace_all(actualReq.params.find("dest")->second, "\\\\", "\\");
 
 	if (actualReq.params.find("autorotate") == actualReq.params.end()) {
 		if (actualReq.params.find("autorotateexpr") != actualReq.params.end()) {
 			if (_interpreter->getDataModel()) {
-				actualReq.params.insert(std::make_pair("autorotate", _interpreter->getDataModel().evalAsString(actualReq.params.find("autorotateexpr")->second)));
+				actualReq.params.insert(std::make_pair("autorotate", _interpreter->getDataModel().getStringAsData(actualReq.params.find("autorotateexpr")->second)));
 			} else {
 				LOG(ERROR) << "SendRequests for osginvoker ncludes autorotateexpr but no datamodel is specified";
 				return;
@@ -110,33 +107,24 @@ void OSGConverter::send(const SendRequest& req) {
 	if (actualReq.params.find("format") == actualReq.params.end()) {
 		// no explicit format
 		if (actualReq.params.find("formatexpr") != actualReq.params.end() && _interpreter->getDataModel()) {
-			actualReq.params.insert(std::make_pair("format", _interpreter->getDataModel().evalAsString(actualReq.params.find("formatexpr")->second)));
+			actualReq.params.insert(std::make_pair("format", _interpreter->getDataModel().getStringAsData(actualReq.params.find("formatexpr")->second)));
 		} else {
 			std::string format;
-			size_t lastDot;
-			std::string dest = req.params.find("dest")->second;
-			if ((lastDot = dest.find_last_of(".")) != std::string::npos) {
-				lastDot++;
-				format = dest.substr(lastDot, dest.length() - lastDot);
+			std::string dest;
+			if (Event::getParam(actualReq.params, "dest", dest)) {
+				size_t lastDot;
+				if ((lastDot = dest.find_last_of(".")) != std::string::npos) {
+					lastDot++;
+					format = dest.substr(lastDot, dest.length() - lastDot);
+				}
 			}
 			if (format.length() == 0 || format.find_last_of(PATH_SEPERATOR) != std::string::npos) {
 				// empty format or pathseperator in format
 				format = "png";
 			}
-			actualReq.params.insert(std::make_pair("format", format));
+			actualReq.params.insert(std::make_pair("format", Data(format, Data::VERBATIM)));
 		}
 	}
-
-//  assert(osgDB::Registry::instance()->getReaderWriterForExtension("png"));
-//  osgDB::Registry::ReaderWriterList formatList = osgDB::Registry::instance()->getReaderWriterList();
-//  for (int i = 0; i < formatList.size(); i++) {
-//    std::map<std::string, std::string> funcDesc = formatList[i]->supportedProtocols();
-//    std::map<std::string, std::string>::iterator funcDescIter = funcDesc.begin();
-//    while(funcDescIter != funcDesc.end()) {
-//      std::cout << funcDescIter->first << ": " << funcDescIter->second << std::endl;
-//      funcDescIter++;
-//    }
-//  }
 
 	EVAL_PARAM_EXPR(actualReq.params, "heightexpr", "height");
 	EVAL_PARAM_EXPR(actualReq.params, "widthexpr", "width");
@@ -157,7 +145,8 @@ void OSGConverter::cancel(const std::string sendId) {
 
 void OSGConverter::invoke(const InvokeRequest& req) {
 	int nrThreads = 1;
-	if (req.params.find("threads") != req.params.end() && isNumeric(req.params.find("threads")->second.c_str(), 10)) {
+	
+	if (req.params.find("threads") != req.params.end() && isNumeric(req.params.find("threads")->second.atom.c_str(), 10)) {
 		nrThreads = strTo<int>(req.params.find("threads")->second);
 	}
 
@@ -185,22 +174,28 @@ void OSGConverter::process(const SendRequest& req) {
 
 	int width = 640;
 	int height = 480;
-	CAST_PARAM(req.params, width, "width", int);
-	CAST_PARAM(req.params, height, "height", int);
+	Event::getParam(req.params, "width", width);
+	Event::getParam(req.params, "height", height);
 
 	assert(req.params.find("source") != req.params.end());
-	assert(req.params.find("dest") != req.params.end());
 	assert(req.params.find("format") != req.params.end());
 
-	std::string source = req.params.find("source")->second;
-	std::string dest = req.params.find("dest")->second;
-	std::string format = req.params.find("format")->second;
+	std::string source;
+	if (!Event::getParam(req.params, "source", source))
+		reportFailure(req);
+
+	std::string dest;
+	Event::getParam(req.params, "dest", dest);
+
+	std::string format;
+	if (!Event::getParam(req.params, "format", format))
+		reportFailure(req);
 
 	bool autoRotate = true;
 	if (req.params.find("autorotate") != req.params.end()) {
-		if (boost::iequals(req.params.find("autorotate")->second, "off") ||
-		        boost::iequals(req.params.find("autorotate")->second, "0") ||
-		        boost::iequals(req.params.find("autorotate")->second, "false")) {
+		if (boost::iequals(req.params.find("autorotate")->second.atom, "off") ||
+				boost::iequals(req.params.find("autorotate")->second.atom, "0") ||
+				boost::iequals(req.params.find("autorotate")->second.atom, "false")) {
 			autoRotate = false;
 		}
 	}
@@ -215,16 +210,22 @@ void OSGConverter::process(const SendRequest& req) {
 	sceneGraph->addChild(model);
 
 	osgDB::ReaderWriter::WriteResult result;
-	if (osgDB::Registry::instance()->getReaderWriterForExtension(format) != NULL) {
-		// write as another 3D file
-		result = osgDB::Registry::instance()->writeNode(*sceneGraph, dest, osgDB::Registry::instance()->getOptions());
+	
+	osg::ref_ptr<osgDB::ReaderWriter> writer = osgDB::Registry::instance()->getReaderWriterForExtension(format);
+	if(writer.valid()) {
+		std::stringstream ss;
+		result = writer->writeNode(*sceneGraph, ss);
 		if (result.success()) {
-			// we can know about success right here
-			reportSuccess(req);
+			if (dest.length() > 0) {
+				std::ofstream outFile(dest.c_str());
+				outFile << ss.str();
+			}
+			Data content(ss.str().c_str(), ss.str().size(), false);
+			reportSuccess(req, content);
 			return;
 		}
 	}
-
+	
 	/**
 	 * If we failed to interpret the extension as another 3D file, try to make a screenshot.
 	 */
@@ -245,53 +246,66 @@ void OSGConverter::process(const SendRequest& req) {
 
 	osgViewer::ScreenCaptureHandler* captureHandler = new osgViewer::ScreenCaptureHandler(cOp, -1);
 
-	osgViewer::Viewer viewer;
-	viewer.setSceneData(sceneGraph);
-	viewer.setCameraManipulator(new osgGA::TrackballManipulator());
-	viewer.addEventHandler(captureHandler);
-	captureHandler->startCapture();
+	{
+//		tthread::lock_guard<tthread::recursive_mutex> lock(_viewerMutex);
+		osgViewer::Viewer viewer;
+		osg::ref_ptr<osg::GraphicsContext> gc;
 
-	osg::DisplaySettings* ds = osg::DisplaySettings::instance().get();
-	osg::ref_ptr<osg::GraphicsContext::Traits> traits = new osg::GraphicsContext::Traits(ds);
-	traits->width = width;
-	traits->height = height;
-	traits->pbuffer = true;
-	osg::ref_ptr<osg::GraphicsContext> gc = osg::GraphicsContext::createGraphicsContext(traits.get());
+		viewer.setSceneData(sceneGraph);
+		viewer.addEventHandler(captureHandler);
+		captureHandler->startCapture();
 
-	if (!gc.valid()) {
-		LOG(ERROR) << "Cannot create GraphicsContext!";
-		return;
+		osg::DisplaySettings* ds = osg::DisplaySettings::instance().get();
+		osg::ref_ptr<osg::GraphicsContext::Traits> traits = new osg::GraphicsContext::Traits(ds);
+		traits->width = width;
+		traits->height = height;
+		traits->pbuffer = true;
+		gc = osg::GraphicsContext::createGraphicsContext(traits.get());
+
+		if (!gc.valid()) {
+			LOG(ERROR) << "Cannot create GraphicsContext!";
+			return;
+		}
+
+		GLenum pbuffer = gc->getTraits()->doubleBuffer ? GL_BACK : GL_FRONT;
+
+		viewer.setCameraManipulator(new osgGA::TrackballManipulator());
+		viewer.getCamera()->setGraphicsContext(gc.get());
+		viewer.getCamera()->setViewport(new osg::Viewport(0,0,traits->width,traits->height));
+		viewer.getCamera()->setDrawBuffer(pbuffer);
+		viewer.getCamera()->setReadBuffer(pbuffer);
+
+		double zoom = 1;
+		CAST_PARAM(req.params, zoom, "zoom", double);
+
+		// set background color
+		viewer.getCamera()->setClearColor(osg::Vec4f(1.0f,1.0f,1.0f,1.0f));
+		viewer.getCamera()->setClearMask(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		viewer.getCameraManipulator()->setByMatrix(osg::Matrix::lookAt(osg::Vec3d(0,0,bs.radius() * (-3.4 * zoom)),  // eye
+						(osg::Vec3d)bs.center(),           // center
+						osg::Vec3d(0,1,0)));               // up
+
+	//  viewer.home();
+
+		// perform one viewer iteration
+		viewer.realize();
+		viewer.frame();
+
+		viewer.removeEventHandler(captureHandler);
 	}
 
-	GLenum pbuffer = gc->getTraits()->doubleBuffer ? GL_BACK : GL_FRONT;
-
-	viewer.getCamera()->setGraphicsContext(gc.get());
-	viewer.getCamera()->setViewport(new osg::Viewport(0,0,traits->width,traits->height));
-	viewer.getCamera()->setDrawBuffer(pbuffer);
-	viewer.getCamera()->setReadBuffer(pbuffer);
-
-	double zoom = 1;
-	CAST_PARAM(req.params, zoom, "zoom", double);
-
-	// set background color
-	viewer.getCamera()->setClearColor(osg::Vec4f(1.0f,1.0f,1.0f,1.0f));
-	viewer.getCamera()->setClearMask(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	viewer.getCameraManipulator()->setByMatrix(osg::Matrix::lookAt(osg::Vec3d(0,0,bs.radius() * (-3.4 * zoom)),  // eye
-	        (osg::Vec3d)bs.center(),           // center
-	        osg::Vec3d(0,1,0)));               // up
-
-//  viewer.home();
-
-	// perform one viewer iteration
-	viewer.realize();
-	viewer.frame();
+//	delete(cOp);
+//	delete(captureHandler);
 }
 
-void OSGConverter::reportSuccess(const SendRequest& req) {
+void OSGConverter::reportSuccess(const SendRequest& req, const Data& content) {
 	Event event(req);
+	
 	if (event.name.length() == 0)
 		event.name = "convert";
 	event.name += ".success";
+	if (content)
+		event.data.compound["content"] = content;
 	returnEvent(event);
 }
 
@@ -366,7 +380,7 @@ osg::ref_ptr<osg::Node> OSGConverter::setupGraph(const std::string filename, boo
 		std::map<std::string, std::pair<long, osg::ref_ptr<osg::Node> > >::iterator modelIter = _models.begin();
 		while(modelIter != _models.end()) {
 			// delete every model unused for 1 minutes
-			if (now - modelIter->second.first > 60000) {
+			if (now - modelIter->second.first > 6000) {
 				_models.erase(modelIter++);
 			} else {
 				modelIter++;
@@ -504,30 +518,79 @@ void OSGConverter::dumpMatrix(const osg::Matrix& m) {
 }
 
 void OSGConverter::NameRespectingWriteToFile::operator()(const osg::Image& image, const unsigned int context_id) {
-
-//  URL fileURL(_filename);
-//  fileURL.path()
-
-	std::string tmpName = _filename;
-	size_t pathSep = _filename.find_last_of(PATH_SEPERATOR);
-	if (pathSep != std::string::npos) {
-		tmpName = _filename.substr(0, pathSep) + PATH_SEPERATOR + ".tmp" + _filename.substr(pathSep + 1, _filename.length() - pathSep - 1);
-	}
-
-	bool success = osgDB::writeImageFile(image, tmpName); // <- no plugin to write to .tmp format
-	if (!success) {
+	
+	// write to memory first
+	std::string format;
+	if (_req.params.find("format") != _req.params.end()) {
+		format = _req.params.find("format")->second.atom;
+	} else {
 		_converter->reportFailure(_req);
-		return;
 	}
 
-	if (pathSep != std::string::npos) {
-		int err = rename(tmpName.c_str(), _filename.c_str());
-		if (err) {
-			_converter->reportFailure(_req);
+	osg::ref_ptr<osgDB::ReaderWriter::Options> op = new osgDB::ReaderWriter::Options();
+	//op->setOptionString("JPEG_QUALITY 75");
+	//op->setOptionString("PNG_COMPRESSION 9");
+
+	// osgDB got confused when we write to a stringstream
+	std::string tempFile = URL::getTmpFilename(format);
+	osgDB::writeImageFile(image, tempFile, op);
+	
+	char* buffer = NULL;
+	size_t length = 0;
+	{
+		std::ifstream file(tempFile.c_str());
+		
+		file.seekg(0, std::ios::end);
+		length = file.tellg();
+		file.seekg(0, std::ios::beg);
+		buffer = (char*)malloc(length);
+		file.read(buffer, length);
+	}
+	
+	remove(tempFile.c_str());
+//	osg::ref_ptr<osgDB::ReaderWriter> writerFormat = osgDB::Registry::instance()->getReaderWriterForExtension(format);
+//	if(!writerFormat.valid())
+//		_converter->reportFailure(_req);
+
+
+#if 0
+	std::stringstream ssFormat;
+
+	osgDB::ReaderWriter::WriteResult res = writerFormat->writeImage(image, ssFormat, op);
+	
+	if (_filename.length() > 0) {
+		std::string tmpName = _filename;
+		size_t pathSep = _filename.find_last_of(PATH_SEPERATOR);
+		if (pathSep != std::string::npos) {
+			tmpName = _filename.substr(0, pathSep) + PATH_SEPERATOR + ".tmp" + _filename.substr(pathSep + 1, _filename.length() - pathSep - 1);
+		}
+
+		{
+			std::ofstream outFile(tmpName.c_str());
+			outFile << ssFormat.str();
+		}
+		
+		if (pathSep != std::string::npos) {
+			int err = rename(tmpName.c_str(), _filename.c_str());
+			if (err) {
+				_converter->reportFailure(_req);
+			}
 		}
 	}
+#endif
+	
+	Data content;
+	content.compound[format] = Data(buffer, length, false);
 
-	_converter->reportSuccess(_req);
+	// save image as a raw rgba as well for ffmpeg - we are using the mpb format for now
+//	osg::ref_ptr<osgDB::ReaderWriter> writerRGBA = osgDB::Registry::instance()->getReaderWriterForExtension("rgba");
+//	if(writerRGBA.valid()) {
+//		std::stringstream ssRGBA;
+//		osgDB::ReaderWriter::WriteResult res = writerRGBA->writeImage(image, ssRGBA, op);
+//		content.compound["rgba"] = Data(ssRGBA.str().c_str(), ssRGBA.str().size(), false);
+//	}
+
+	_converter->reportSuccess(_req, content);
 }
 
 }

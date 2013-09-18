@@ -187,10 +187,11 @@ void BasicHTTPIOProcessor::send(const SendRequest& req) {
 
 	// event namelist
 	if (req.namelist.size() > 0) {
-		std::map<std::string, std::string>::const_iterator namelistIter = req.namelist.begin();
+		std::map<std::string, Data>::const_iterator namelistIter = req.namelist.begin();
 		while (namelistIter != req.namelist.end()) {
 			char* keyCStr = evhttp_encode_uri(namelistIter->first.c_str());
-			char* valueCStr = evhttp_encode_uri(namelistIter->second.c_str());
+			// this is simplified - Data might be more elaborate than a simple string atom
+			char* valueCStr = evhttp_encode_uri(namelistIter->second.atom.c_str());
 			kvps << kvpSeperator << keyCStr << "=" << valueCStr;
 			free(keyCStr);
 			free(valueCStr);
@@ -202,10 +203,11 @@ void BasicHTTPIOProcessor::send(const SendRequest& req) {
 
 	// event params
 	if (req.params.size() > 0) {
-		std::multimap<std::string, std::string>::const_iterator paramIter = req.params.begin();
+		std::multimap<std::string, Data>::const_iterator paramIter = req.params.begin();
 		while (paramIter != req.params.end()) {
 			char* keyCStr = evhttp_encode_uri(paramIter->first.c_str());
-			char* valueCStr = evhttp_encode_uri(paramIter->second.c_str());
+			// this is simplified - Data might be more elaborate than a simple string atom
+			char* valueCStr = evhttp_encode_uri(paramIter->second.atom.c_str());
 			kvps << kvpSeperator << keyCStr << "=" << valueCStr;
 			free(keyCStr);
 			free(valueCStr);

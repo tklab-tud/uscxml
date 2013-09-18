@@ -223,14 +223,14 @@ void JSCDataModel::setEvent(const Event& event) {
 		if (!eventCopy.params.empty()) {
 			Event::params_t::iterator paramIter = eventCopy.params.begin();
 			while(paramIter != eventCopy.params.end()) {
-				eventCopy.data.compound[paramIter->first] = Data(paramIter->second, Data::VERBATIM);
+				eventCopy.data.compound[paramIter->first] = paramIter->second;
 				paramIter++;
 			}
 		}
 		if (!eventCopy.namelist.empty()) {
 			Event::namelist_t::iterator nameListIter = eventCopy.namelist.begin();
 			while(nameListIter != eventCopy.namelist.end()) {
-				eventCopy.data.compound[nameListIter->first] = Data(nameListIter->second, Data::VERBATIM);
+				eventCopy.data.compound[nameListIter->first] = nameListIter->second;
 				nameListIter++;
 			}
 		}

@@ -139,10 +139,11 @@ void XPathDataModel::setEvent(const Event& event) {
 	}
 
 	if (event.params.size() > 0) {
-		std::multimap<std::string, std::string>::const_iterator paramIter = event.params.begin();
+		std::multimap<std::string, Data>::const_iterator paramIter = event.params.begin();
 		while(paramIter != event.params.end()) {
 			Element<std::string> eventParamElem = _doc.createElement("data");
-			Text<std::string> eventParamText = _doc.createTextNode(paramIter->second);
+			// this is simplified - Data might be more elaborate than a simple string atom
+			Text<std::string> eventParamText = _doc.createTextNode(paramIter->second.atom);
 
 			eventParamElem.setAttribute("id", paramIter->first);
 			eventParamElem.appendChild(eventParamText);
@@ -151,10 +152,11 @@ void XPathDataModel::setEvent(const Event& event) {
 		}
 	}
 	if (event.namelist.size() > 0) {
-		std::map<std::string, std::string>::const_iterator namelistIter = event.namelist.begin();
+		std::map<std::string, Data>::const_iterator namelistIter = event.namelist.begin();
 		while(namelistIter != event.namelist.end()) {
 			Element<std::string> eventNamelistElem = _doc.createElement("data");
-			Text<std::string> eventNamelistText = _doc.createTextNode(namelistIter->second);
+			// this is simplified - Data might be more elaborate than a simple string atom
+			Text<std::string> eventNamelistText = _doc.createTextNode(namelistIter->second.atom);
 
 			eventNamelistElem.setAttribute("id", namelistIter->first);
 			eventNamelistElem.appendChild(eventNamelistText);

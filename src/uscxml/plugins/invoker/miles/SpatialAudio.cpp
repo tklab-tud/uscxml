@@ -125,7 +125,7 @@ void SpatialAudio::invoke(const InvokeRequest& req) {
 
 	getPosFromParams(req.params, _pos);
 
-	std::multimap<std::string, std::string>::const_iterator paramIter = req.params.begin();
+	std::multimap<std::string, Data>::const_iterator paramIter = req.params.begin();
 	while(paramIter != req.params.end()) {
 		if (boost::iequals(paramIter->first, "maxX"))
 			_maxPos[0] = strTo<float>(paramIter->second);
@@ -150,7 +150,7 @@ void SpatialAudio::invoke(const InvokeRequest& req) {
 	}
 }
 
-void SpatialAudio::getPosFromParams(const std::multimap<std::string, std::string>& params, float* position) {
+void SpatialAudio::getPosFromParams(const std::multimap<std::string, Data>& params, float* position) {
 	// vector explicitly given
 	try {
 		if (params.find("x") != params.end())

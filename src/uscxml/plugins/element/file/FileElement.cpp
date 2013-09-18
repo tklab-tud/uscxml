@@ -34,7 +34,7 @@ void FileElement::enterElement(const Arabica::DOM::Node<std::string>& node) {
 	}
 	_givenUrl = (HAS_ATTR(node, "url") ? ATTR(node, "url") : _interpreter->getDataModel().evalAsString(ATTR(node, "urlexpr")));
 
-  std::string sandBoxStr = (HAS_ATTR(node, "sandboxed") ? ATTR(node, "sandboxed") : "on");
+  std::string sandBoxStr = (HAS_ATTR(node, "sandbox") ? ATTR(node, "sandbox") : "on");
   if (boost::iequals(sandBoxStr, "off") || boost::iequals(sandBoxStr, "false") || boost::iequals(sandBoxStr, "no")) {
     _sandBoxed = false;
   }

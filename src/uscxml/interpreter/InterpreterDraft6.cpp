@@ -1,6 +1,7 @@
 #include "InterpreterDraft6.h"
 
 #include <glog/logging.h>
+#include "uscxml/UUID.h"
 
 namespace uscxml {
 
@@ -80,7 +81,7 @@ void InterpreterDraft6::interpret() {
 	if (_userDefinedStartConfiguration.size() > 0) {
 		// we emulate entering a given configuration by creating a pseudo deep history
 		Element<std::string> initHistory = _document.createElementNS(_nsURL, "history");
-		initHistory.setAttribute("id", getUUID());
+		initHistory.setAttribute("id", UUID::getUUID());
 		initHistory.setAttribute("type", "deep");
 		_scxml.insertBefore(initHistory, _scxml.getFirstChild());
 

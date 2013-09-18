@@ -1,6 +1,7 @@
 #include "InterpreterDraft7.h"
 
 #include <glog/logging.h>
+#include "uscxml/UUID.h"
 
 namespace uscxml {
 
@@ -31,7 +32,7 @@ void InterpreterDraft7::interpret() {
 	if (!_scxml)
 		return;
 
-	_sessionId = getUUID();
+	_sessionId = UUID::getUUID();
 
 	std::string datamodelName;
 	if (datamodelName.length() == 0 && HAS_ATTR(_scxml, "datamodel"))
