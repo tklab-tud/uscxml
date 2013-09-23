@@ -131,6 +131,27 @@ if (FFMPEG_FOUND)
 endif()
 
 
+# instant messaging invoker
+
+if (LIBPURPLE_FOUND)
+	set(USCXML_INVOKERS "im ${USCXML_INVOKERS}")
+	file(GLOB_RECURSE LIBPURPLE_INVOKER
+		im/*.cpp
+		im/*.h
+	)
+	source_group("Invoker\\im" FILES ${LIBPURPLE_INVOKER})
+	if (BUILD_AS_PLUGINS)
+		add_library(
+			invoker_im SHARED 
+			${LIBPURPLE_INVOKER})
+		target_link_libraries(invoker_im uscxml)
+		set_target_properties(invoker_im PROPERTIES FOLDER "Plugin Invoker")
+	else()
+		list (APPEND USCXML_FILES ${LIBPURPLE_INVOKER})
+	endif()
+endif()
+
+
 # calendar invoker
 
 if (LIBICAL_FOUND)

@@ -71,7 +71,6 @@ HTTPServer::~HTTPServer() {
 
 HTTPServer* HTTPServer::_instance = NULL;
 tthread::recursive_mutex HTTPServer::_instanceMutex;
-std::map<std::string, std::string> HTTPServer::mimeTypes;
 
 HTTPServer* HTTPServer::getInstance(int port) {
 //	tthread::lock_guard<tthread::recursive_mutex> lock(_instanceMutex);
@@ -80,25 +79,6 @@ HTTPServer* HTTPServer::getInstance(int port) {
 		WSADATA wsaData;
 		WSAStartup(MAKEWORD(2, 2), &wsaData);
 #endif
-		// this is but a tiny list, supply a content-type <header> yourself
-		mimeTypes["txt"] = "text/plain";
-		mimeTypes["c"] = "text/plain";
-		mimeTypes["h"] = "text/plain";
-		mimeTypes["html"] = "text/html";
-		mimeTypes["htm"] = "text/htm";
-		mimeTypes["css"] = "text/css";
-		mimeTypes["bmp"] = "image/bmp";
-		mimeTypes["gif"] = "image/gif";
-		mimeTypes["jpg"] = "image/jpeg";
-		mimeTypes["jpeg"] = "image/jpeg";
-		mimeTypes["mpg"] = "video/mpeg";
-		mimeTypes["mov"] = "video/quicktime";
-		mimeTypes["png"] = "image/png";
-		mimeTypes["pdf"] = "application/pdf";
-		mimeTypes["ps"] = "application/postscript";
-		mimeTypes["tif"] = "image/tiff";
-		mimeTypes["tiff"] = "image/tiff";
-
 #ifndef _WIN32
 		evthread_use_pthreads();
 #else
@@ -108,12 +88,6 @@ HTTPServer* HTTPServer::getInstance(int port) {
 		_instance->start();
 	}
 	return _instance;
-}
-
-std::string HTTPServer::mimeTypeForExtension(const std::string& ext) {
-	if (mimeTypes.find(ext) != mimeTypes.end())
-		return mimeTypes[ext];
-	return "";
 }
 
 /**
@@ -165,7 +139,10 @@ void HTTPServer::httpRecvReqCallback(struct evhttp_request *req, void *callbackD
 	request.data.compound["httpMajor"] = Data(toStr((unsigned short)req->major), Data::VERBATIM);
 	request.data.compound["httpMinor"] = Data(toStr((unsigned short)req->minor), Data::VERBATIM);
 	request.data.compound["uri"] = Data(HTTPServer::getBaseURL() + req->uri, Data::VERBATIM);
-	request.data.compound["path"] = Data(evhttp_uri_get_path(evhttp_request_get_evhttp_uri(req)), Data::VERBATIM);
+	
+	char* pathCStr = evhttp_decode_uri(evhttp_uri_get_path(evhttp_request_get_evhttp_uri(req)));
+	request.data.compound["path"] = Data(pathCStr, Data::VERBATIM);
+	free(pathCStr);
 
 	raw << " " << request.data.compound["path"].atom;
 	const char* query = evhttp_uri_get_query(evhttp_request_get_evhttp_uri(req));

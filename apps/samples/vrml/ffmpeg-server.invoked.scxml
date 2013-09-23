@@ -201,6 +201,7 @@
 							job.frames.push(frame);
 						}
 					}
+					job.totalFrames = job.frames.length;
 					requests[_event.origin] = {};
 					requests[_event.origin].job = job;
 //]]>

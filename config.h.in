@@ -29,12 +29,6 @@
 
 #cmakedefine PATH_SEPERATOR '@PATH_SEPERATOR@'
 
-/** Loglevels */
-#cmakedefine LOGLEVEL_COMMON @LOGLEVEL_COMMON@
-#cmakedefine LOGLEVEL_DISC @LOGLEVEL_DISC@
-#cmakedefine LOGLEVEL_NET @LOGLEVEL_NET@
-#cmakedefine LOGLEVEL_S11N @LOGLEVEL_S11N@
-
 /** version */
 #cmakedefine USCXML_VERSION_MAJOR "@USCXML_VERSION_MAJOR@"
 #cmakedefine USCXML_VERSION_MINOR "@USCXML_VERSION_MINOR@"
@@ -43,6 +37,8 @@
 
 /** build type */
 #cmakedefine CMAKE_BUILD_TYPE "@CMAKE_BUILD_TYPE@"
+#cmakedefine CMAKE_BUILD_TYPE_DEBUG
+#cmakedefine CMAKE_BUILD_TYPE_RELEASE
 #cmakedefine CMAKE_COMPILER_STRING "@CMAKE_COMPILER_STRING@"
 
 /** miscellaneous */
@@ -69,6 +65,7 @@
 #cmakedefine OPENSCENEGRAPH_FOUND
 #cmakedefine PROTOBUF_FOUND
 #cmakedefine CORELOCATION_FOUND
+#cmakedefine LIBPURPLE_FOUND
 
 /** Header files we found */
 #cmakedefine HAS_UNISTD_H

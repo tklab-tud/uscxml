@@ -905,7 +905,7 @@ void InterpreterImpl::invoke(const Arabica::DOM::Node<std::string>& element) {
 				}
 				if (_dataModel) {
 					try {
-						_dataModel.assign("_invokers['" + invokeReq.invokeid + "']", invoker.getDataModelVariables());
+//						_dataModel.assign("_invokers['" + invokeReq.invokeid + "']", invoker.getDataModelVariables());
 					} catch(...) {
 						LOG(ERROR) << "Exception caught while assigning datamodel variables from invoker " << invokeReq.invokeid;
 					}

@@ -46,7 +46,8 @@ protected:
 			frame_count(0),
 			width(0),
 			height(0),
-			sws_flags(SWS_BICUBIC) {}
+			sws_flags(SWS_BICUBIC),
+			sws_ctx(NULL) {}
 
 		virtual ~EncodingContext() {
 			if (sws_ctx)

@@ -1,0 +1,20 @@
+<scxml datamodel="ecmascript">
+	<script src="http://uscxml.tk.informatik.tu-darmstadt.de/scripts/dump.js" />
+	<state id="idle">
+		<onentry>
+			<send event="dump" delay="100ms" />
+		</onentry>
+		
+		<invoke type="instant-messaging" id="im">
+			<param name="username" expr="'uscxml@localhost'" />
+			<param name="password" expr="'password'" />
+			<param name="protocol" expr="'prpl-jabber'" />
+		</invoke>
+
+		<state id="dump">
+			<transition event="dump" target="dump">
+				<script>dump(_invokers['im']);</script>
+			</transition>
+		</state>
+	</state>
+</scxml>

@@ -129,13 +129,12 @@
 			<!-- Called for every file we found -->
 			<finalize>
 				<script>
-					
 					var key = keyForFile(_event.data.file);
 					// this is a binary 3D file converted from the wrls
 					
 					if (_event.name === "file.deleted") {
 						delete models[key];
-						print("Removed a vanished osgb file at " + _event.fileStruct.key + "\n");
+						print("Removed a vanished osgb file at " + key + "\n");
 					} else {
 						models[key] = _event.data.file;
 						models[key].group = '/' + _event.data.file.name.split(pathDelim).slice(0,-1).join('/');
@@ -155,14 +154,20 @@
 					_event.key = keyForFile(_event.data.file);
 					if (_event.name === "file.existing" || _event.name === "file.added") {
 						wrls[_event.key] = _event.data.file;
-						print("Inserting wrl " + _event.data.file.path + " from " +_event.data.file.relDir + " at " + _event.key + "\n");
+						var dirMonFile = _event.data.file.relDir.substr(1) + _event.data.file.strippedName + ".osgb"
+						// we already procressed this file
+						if (_invokers['dirmon.processed'].file[dirMonFile]) {
+							models[_event.key] = _event.data.file;
+						}
+						print("Inserting wrl " + _event.data.file.path + " from " + _event.data.file.relDir + " at " + _event.key + "\n");
 					}
 					if (_event.name === "file.deleted") {
 						delete wrls[_event.key];
-						print("Deleting wrl " + _event.data.file.path + " from " +_event.data.file.relDir + " at " + _event.key + "\n");
+						delete models[_event.key];
+						print("Deleting wrl " + _event.data.file.path + " from " + _event.data.file.relDir + " at " + _event.key + "\n");
 					}
 				</script>
-				<if cond="models &amp;&amp;
+				<if cond="models &amp;&amp; _event.name !== 'file.deleted' &amp;&amp;
 						(!(_event.key in models) || wrls[_event.key].mtime > models[_event.key].mtime)">
 					<send target="#_osgvonvert.osgb">
 						<param name="source" expr="_event.data.file.path" />
@@ -186,6 +191,7 @@
 							<header name="Connection" value="close" />
 							<header name="Content-Type" value="application/json" />
 							<header name="Access-Control-Allow-Origin" value="*" />
+							<header name="Content-Type" valueexpr="_event.data.mimetype" />
 							<content expr="_event.data.content[_event.data.format]" />
 						</respond>
 					<else />
@@ -198,7 +204,7 @@
 		</invoke>
 		
 		<!-- Start a nested SCXML interpreter to create movies from the images -->
-		<invoke type="scxml" id="scxml.ffmpeg" src="ffmpeg-server.scxml" autoforward="true">
+		<invoke type="scxml" id="scxml.ffmpeg" src="ffmpeg-server.invoked.scxml" autoforward="true">
 			<param name="modelDir" expr="_x['args']['tmp-path']" />
 		</invoke>
 
@@ -209,12 +215,14 @@
 					_event.data.pathComponent[_event.data.pathComponent.length - 1].indexOf('.') !== -1">
 				<!-- request for a specific format http://host/vrml/relative/path/format?query=string -->
 				<script>
+					//dump(_invokers['dirmon.vrml']);
 					_event.fileStruct = reqToStruct(_event.data);
 				</script>
 				<if cond="_event.fileStruct.key in models &amp;&amp; isSupportedFormat(_event['fileStruct'].ext)">
 					<!-- There is such a file available as osgb -->
 					<send target="#_osgvonvert.osgb">
 						<param name="source" expr="models[_event['fileStruct'].key].path" />
+						<param name="format" expr="_event['fileStruct'].ext" />
 						<param name="pitch" expr="_event.fileStruct.pitch" />
 						<param name="roll" expr="_event.fileStruct.roll" />
 						<param name="yaw" expr="_event.fileStruct.yaw" />

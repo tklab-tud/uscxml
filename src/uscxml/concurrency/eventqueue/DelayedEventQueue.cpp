@@ -1,6 +1,7 @@
 #include "DelayedEventQueue.h"
 #include <assert.h>
 #include <event2/event.h>
+#include <sstream>
 
 namespace uscxml {
 
@@ -34,6 +35,27 @@ void DelayedEventQueue::run(void* instance) {
 			(void)result;
 		}
 	}
+}
+
+void DelayedEventQueue::addEvent(std::string eventId, int fd, short opMask, void (*callback)(void*, const std::string eventId), void* userData, bool persist) {
+	if(_callbackData.find(eventId) != _callbackData.end()) {
+		cancelEvent(eventId);
+	}
+
+	if (persist)
+		opMask |= EV_PERSIST;
+
+	struct event* event = event_new(_eventLoop, fd, opMask, DelayedEventQueue::fileCallback, &_callbackData[eventId]);
+
+	_callbackData[eventId].eventId = eventId;
+	_callbackData[eventId].userData = userData;
+	_callbackData[eventId].eventQueue = this;
+	_callbackData[eventId].callback = callback;
+	_callbackData[eventId].event = event;
+	_callbackData[eventId].persist = false;
+	
+	event_add(event, NULL);
+
 }
 
 void DelayedEventQueue::addEvent(std::string eventId, void (*callback)(void*, const std::string eventId), uint32_t delayMs, void* userData, bool persist) {
@@ -81,6 +103,13 @@ void DelayedEventQueue::stop() {
 }
 
 void DelayedEventQueue::dummyCallback(evutil_socket_t fd, short what, void *arg) {
+}
+
+void DelayedEventQueue::fileCallback(evutil_socket_t fd, short what, void *arg) {
+	struct callbackData *data = (struct callbackData*)arg;
+	tthread::lock_guard<tthread::recursive_mutex> lock(data->eventQueue->_mutex);
+	std::string eventId = data->eventId; // copy eventId
+	data->callback(data->userData, eventId);
 }
 
 void DelayedEventQueue::timerCallback(evutil_socket_t fd, short what, void *arg) {

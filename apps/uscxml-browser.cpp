@@ -39,6 +39,7 @@ class VerboseMonitor : public uscxml::InterpreterMonitor {
 	}
 };
 
+#ifdef CMAKE_BUILD_TYPE_DEBUG
 
 #ifdef HAS_EXECINFO_H
 void printBacktrace(void** array, int size) {
@@ -105,6 +106,7 @@ void customTerminate() {
 #endif
 	abort();
 }
+#endif
 
 void printUsageAndExit() {
 	printf("uscxml-browser version " USCXML_VERSION " (" CMAKE_BUILD_TYPE " build - " CMAKE_COMPILER_STRING ")\n");
@@ -126,10 +128,12 @@ void printUsageAndExit() {
 int main(int argc, char** argv) {
 	using namespace uscxml;
 
-	std::set_terminate(customTerminate);
-
 #if defined(HAS_SIGNAL_H) && !defined(WIN32)
 	signal(SIGPIPE, SIG_IGN);
+#endif
+
+#ifdef CMAKE_BUILD_TYPE_DEBUG
+	std::set_terminate(customTerminate);
 #endif
 
 	if (argc < 2) {
@@ -138,10 +142,11 @@ int main(int argc, char** argv) {
 
 	bool verbose = false;
 	bool useDot = false;
+	bool glogIsInitialized = false;
 	size_t port = 8080;
-	google::InitGoogleLogging(argv[0]);
+	
 	google::LogToStderr();
-
+	
 #ifndef _WIN32
 	opterr = 0;
 #endif
@@ -150,6 +155,7 @@ int main(int argc, char** argv) {
 		switch(option) {
 		case 'l':
 			google::InitGoogleLogging(optarg);
+			glogIsInitialized = true;
 			break;
 		case 'e':
 			uscxml::Factory::pluginPath = optarg;
@@ -170,6 +176,9 @@ int main(int argc, char** argv) {
 			break;
 		}
 	}
+
+	if (!glogIsInitialized)
+		google::InitGoogleLogging(argv[0]);
 
 //  for (int i = 0; i < argc; i++)
 //    std::cout << argv[i] << std::endl;

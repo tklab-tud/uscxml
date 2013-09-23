@@ -18,6 +18,12 @@ namespace uscxml {
 class DelayedEventQueue {
 public:
 
+	enum OpMask {
+		FD_READ = EV_READ,
+		FD_WRITE = EV_WRITE,
+		FD_SIGNAL = EV_SIGNAL
+	};
+	
 	struct callbackData {
 		void *userData;
 		void (*callback)(void*, const std::string eventId);
@@ -30,6 +36,7 @@ public:
 	DelayedEventQueue();
 	virtual ~DelayedEventQueue();
 
+	void addEvent(std::string eventId, int fd, short opMask, void (*callback)(void*, const std::string eventId), void* userData, bool persist = true);
 	void addEvent(std::string eventId, void (*callback)(void*, const std::string eventId), uint32_t delayMs, void* userData, bool persist = false);
 	void cancelEvent(std::string eventId);
 
@@ -42,6 +49,7 @@ public:
 	}
 
 	static void timerCallback(evutil_socket_t fd, short what, void *arg);
+	static void fileCallback(evutil_socket_t fd, short what, void *arg);
 	static void dummyCallback(evutil_socket_t fd, short what, void *arg);
 
 	bool _isStarted;

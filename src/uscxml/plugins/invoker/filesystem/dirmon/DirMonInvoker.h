@@ -44,7 +44,7 @@ public:
 			std::map<std::string, struct stat> dirEntries = dirIter->second->getAllEntries();
 			std::map<std::string, struct stat>::iterator dirEntryIter = dirEntries.begin();
 			while(dirEntryIter != dirEntries.end()) {
-				entries[dirIter->first + PATH_SEPERATOR + dirEntryIter->first] = dirEntryIter->second;
+				entries[dirIter->first + '/' + dirEntryIter->first] = dirEntryIter->second;
 				dirEntryIter++;
 			}
 			dirIter++;
