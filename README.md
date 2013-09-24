@@ -94,7 +94,7 @@ instructions](https://github.com/tklab-tud/uscxml/blob/master/docs/BUILDING.md).
 In order to use the interpreter, you need to <tt>#include "uscxml/Interpreter.h"</tt> and instantiate
 objects of <tt>uscxml::Interpreter</tt>.
 
-### Blocking Interpretation with SCXML from URL
+### Non-Blocking Interpretation with SCXML from URL
     	Interpreter scxml = Interpreter::fromURL("http://www.example.com/fancy.scxml");
     	scxml.start(); // non-blocking
 
@@ -108,7 +108,7 @@ This will perform a single iteration on the invoked components with a maximum of
 or return immediately. You will have to call this method every now and then if you are using e.g. the
 <tt>scenegraph</tt> invoker.
 
-### Non-Blocking Interpretation with inline SCXML
+### Blocking Interpretation with inline SCXML
     	Interpreter scxml = Interpreter::fromXML("<scxml><final id="exit"/></scxml>");
     	scxml.interpret(); // blocking
 

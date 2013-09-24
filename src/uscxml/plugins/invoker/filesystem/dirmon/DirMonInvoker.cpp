@@ -53,7 +53,27 @@ boost::shared_ptr<InvokerImpl> DirMonInvoker::create(InterpreterImpl* interprete
 }
 
 Data DirMonInvoker::getDataModelVariables() {
+	tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
+	
 	Data data;
+	data.compound["dir"] = Data(_dir, Data::VERBATIM);
+
+	std::set<std::string>::iterator suffixIter = _suffixes.begin();
+	while(suffixIter != _suffixes.end()) {
+		data.compound["suffixes"].array.push_back(Data(*suffixIter, Data::VERBATIM));
+		suffixIter++;
+	}
+	
+	std::map<std::string, struct stat> entries = _watcher->getAllEntries();
+	std::map<std::string, struct stat>::iterator entryIter = entries.begin();
+	while(entryIter != entries.end()) {
+		data.compound["file"].compound[entryIter->first].compound["mtime"] = toStr(entryIter->second.st_mtime);
+		data.compound["file"].compound[entryIter->first].compound["ctime"] = toStr(entryIter->second.st_mtime);
+		data.compound["file"].compound[entryIter->first].compound["atime"] = toStr(entryIter->second.st_mtime);
+		data.compound["file"].compound[entryIter->first].compound["size"] = toStr(entryIter->second.st_mtime);
+		entryIter++;
+	}
+	
 	return data;
 }
 
@@ -122,7 +142,10 @@ void DirMonInvoker::invoke(const InvokeRequest& req) {
 
 void DirMonInvoker::run(void* instance) {
 	while(((DirMonInvoker*)instance)->_isRunning) {
-		((DirMonInvoker*)instance)->_watcher->updateEntries();
+		{
+			tthread::lock_guard<tthread::recursive_mutex> lock(((DirMonInvoker*)instance)->_mutex);
+			((DirMonInvoker*)instance)->_watcher->updateEntries();
+		}
 		tthread::this_thread::sleep_for(tthread::chrono::milliseconds(20));
 	}
 }
@@ -240,7 +263,7 @@ DirectoryWatch::~DirectoryWatch() {
 	}
 
 }
-
+	
 void DirectoryWatch::reportAsDeleted() {
 	std::map<std::string, struct stat>::iterator fileIter = _knownEntries.begin();
 	while(fileIter != _knownEntries.end()) {
@@ -255,8 +278,8 @@ void DirectoryWatch::reportAsDeleted() {
 				monIter++;
 			}
 		}
-		_knownEntries.erase(fileIter->first);
-		fileIter++;
+		_knownEntries.erase(fileIter++);
+//		fileIter++;
 	}
 	assert(_knownDirs.size() == 0);
 	assert(_knownEntries.size() == 0);

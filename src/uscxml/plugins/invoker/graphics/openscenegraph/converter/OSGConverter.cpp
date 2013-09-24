@@ -247,7 +247,7 @@ void OSGConverter::process(const SendRequest& req) {
 	osgViewer::ScreenCaptureHandler* captureHandler = new osgViewer::ScreenCaptureHandler(cOp, -1);
 
 	{
-//		tthread::lock_guard<tthread::recursive_mutex> lock(_viewerMutex);
+		tthread::lock_guard<tthread::recursive_mutex> lock(_viewerMutex);
 		osgViewer::Viewer viewer;
 		osg::ref_ptr<osg::GraphicsContext> gc;
 
@@ -259,7 +259,9 @@ void OSGConverter::process(const SendRequest& req) {
 		osg::ref_ptr<osg::GraphicsContext::Traits> traits = new osg::GraphicsContext::Traits(ds);
 		traits->width = width;
 		traits->height = height;
+		// this fails with ubuntu in a VM in parallels
 		traits->pbuffer = true;
+
 		gc = osg::GraphicsContext::createGraphicsContext(traits.get());
 
 		if (!gc.valid()) {
@@ -267,6 +269,11 @@ void OSGConverter::process(const SendRequest& req) {
 			return;
 		}
 
+		if (!traits->width || !traits->height) {
+			LOG(ERROR) << "Traits returned with zero dimensions";
+			return;
+		}
+		
 		GLenum pbuffer = gc->getTraits()->doubleBuffer ? GL_BACK : GL_FRONT;
 
 		viewer.setCameraManipulator(new osgGA::TrackballManipulator());
@@ -300,6 +307,11 @@ void OSGConverter::process(const SendRequest& req) {
 
 void OSGConverter::reportSuccess(const SendRequest& req, const Data& content) {
 	Event event(req);
+
+	std::string format;
+	Event::getParam(req.params, "format", format);
+	
+	event.data.compound["mimetype"] = Data(URL::getMimeType(format), Data::VERBATIM);
 	
 	if (event.name.length() == 0)
 		event.name = "convert";
@@ -519,6 +531,10 @@ void OSGConverter::dumpMatrix(const osg::Matrix& m) {
 
 void OSGConverter::NameRespectingWriteToFile::operator()(const osg::Image& image, const unsigned int context_id) {
 	
+//	std::cout << "NameRespectingWriteToFile" << std::endl;
+//	std::cout << image.s() << std::endl;
+//	std::cout << image.t() << std::endl;
+	
 	// write to memory first
 	std::string format;
 	if (_req.params.find("format") != _req.params.end()) {
@@ -533,7 +549,9 @@ void OSGConverter::NameRespectingWriteToFile::operator()(const osg::Image& image
 
 	// osgDB got confused when we write to a stringstream
 	std::string tempFile = URL::getTmpFilename(format);
-	osgDB::writeImageFile(image, tempFile, op);
+	if (!osgDB::writeImageFile(image, tempFile, op)) {
+		_converter->reportFailure(_req);
+	}
 	
 	char* buffer = NULL;
 	size_t length = 0;
@@ -547,7 +565,9 @@ void OSGConverter::NameRespectingWriteToFile::operator()(const osg::Image& image
 		file.read(buffer, length);
 	}
 	
-	remove(tempFile.c_str());
+  std::cout << tempFile << std::endl;
+	
+//	remove(tempFile.c_str());
 //	osg::ref_ptr<osgDB::ReaderWriter> writerFormat = osgDB::Registry::instance()->getReaderWriterForExtension(format);
 //	if(!writerFormat.valid())
 //		_converter->reportFailure(_req);

@@ -45,7 +45,6 @@ public:
 	static std::string getBaseURL();
 
 	static void reply(const Reply& reply);
-	static std::string mimeTypeForExtension(const std::string& ext);
 	static bool registerServlet(const std::string& path, HTTPServlet* servlet); ///< Register a servlet, returns false if path is already taken
 	static void unregisterServlet(HTTPServlet* servlet);
 

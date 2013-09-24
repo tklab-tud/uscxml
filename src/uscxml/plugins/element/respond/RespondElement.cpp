@@ -98,7 +98,7 @@ void RespondElement::enterElement(const Arabica::DOM::Node<std::string>& node) {
 				size_t lastDot;
 				if ((lastDot = file.path().find_last_of(".")) != std::string::npos) {
 					std::string extension = file.path().substr(lastDot + 1);
-					std::string mimeType = HTTPServer::mimeTypeForExtension(extension);
+					std::string mimeType = URL::getMimeType(extension);
 					if (mimeType.length() > 0) {
 						httpReply.headers["Content-Type"] = mimeType;
 					}

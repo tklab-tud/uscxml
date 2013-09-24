@@ -49,6 +49,10 @@
 #   include "uscxml/plugins/invoker/calendar/CalendarInvoker.h"
 # endif
 
+# ifdef LIBPURPLE_FOUND
+#   include "uscxml/plugins/invoker/im/IMInvoker.h"
+# endif
+
 #ifdef OPENAL_FOUND
 #   include "uscxml/plugins/invoker/audio/OpenALInvoker.h"
 #endif
@@ -165,6 +169,13 @@ Factory::Factory() {
 #ifdef LIBICAL_FOUND
 	{
 		CalendarInvoker* invoker = new CalendarInvoker();
+		registerInvoker(invoker);
+	}
+#endif
+
+#ifdef LIBPURPLE_FOUND
+	{
+		IMInvoker* invoker = new IMInvoker();
 		registerInvoker(invoker);
 	}
 #endif

@@ -96,9 +96,10 @@ function VRMLViewer(element, params) {
               codec !== "y41p" && 
               codec !== "yuv4")
             continue;
+          console.log(codec);
           selectElem.options.push({ label: result.video[codec].longName, value: codec });              
           if (codec === "mpeg4")
-            selectElem[selectElem.options.length - 1].selected = true;
+            selectElem.options[selectElem.options.length - 1].selected = true;
         }
       }
     });
@@ -107,17 +108,26 @@ function VRMLViewer(element, params) {
   this.refreshServer = function(server) {
     self.serverURL = server;
     self.localStorage.put("vrmlServer", self.serverURL, null);
-//    self.progressElem.appendChild(self.progress.domNode);
-//    self.progress.start();
+    if (self.fileStandby) { self.fileStandby.show(); }
     self.xhr.get({
       // The URL to request
       url: server,
       handleAs:"json",
       headers:{"X-Requested-With":null},
+      error: function(result) {
+        if (self.browseButton) { self.browseButton.setAttribute('label', 'Browse'); }
+        if (self.fileStandby) { self.fileStandby.hide(); }
+        var allItems = self.fileStore.query();
+        for (var i = 0; i < allItems.total; i++) {
+          self.fileStore.remove(allItems[i].id);          
+        }
+      },
       load: function(result) {
-//        self.progress.stop();
-        for (id in self.fileStore.query) {
-          self.fileStore.remove(id);
+        if (self.browseButton) { self.browseButton.setAttribute('label', 'Refresh'); }
+        if (self.fileStandby) { self.fileStandby.hide(); }
+        var allItems = self.fileStore.query();
+        for (var i = 0; i < allItems.total; i++) {
+          self.fileStore.remove(allItems[i].id);          
         }
         (function fillstore(tree, parentId) {
           for (key in tree) {
@@ -126,7 +136,7 @@ function VRMLViewer(element, params) {
             } else {
               self.fileStore.add({id:parentId+key, name:key, parent:parentId});
               fillstore(tree[key], parentId+key);
-            }
+            }            
           }
         } (result.models, "root", ""));
       }
@@ -172,7 +182,7 @@ function VRMLViewer(element, params) {
            "dijit/Tree",
            "dijit/form/TextBox",
            "dijit/form/Button",
-           "dojox/mobile/ProgressIndicator",
+           "dojox/widget/Standby",
            "dijit/form/DropDownButton",
            "dijit/TooltipDialog",
            "dojo/dnd/Moveable",
@@ -192,7 +202,7 @@ function VRMLViewer(element, params) {
              Tree,
              TextBox,
              Button,
-             ProgressIndicator,
+             Standby,
              DropDownButton,
              TooltipDialog,
              Moveable,
@@ -212,7 +222,6 @@ function VRMLViewer(element, params) {
         
         self.element = element;
         self.xhr = xhr;
-        self.progress = new ProgressIndicator({size:40, center:false});
         self.localStorage = dojox.storage.manager.getProvider();
         self.localStorage.initialize();
         
@@ -286,9 +295,10 @@ function VRMLViewer(element, params) {
         // fetch special dom nodes for content
         self.messageBox = dojo.query("div.messages", element)[0];
         self.imgElem = dojo.query("img.model", element)[0];
-        self.filesDropDownElem = dojo.query("td.filesDropDown", element)[0];
-        self.movieDropDownElem = dojo.query("div.movieDropDown", element)[0];
-        self.movieAddButtonElem = dojo.query("button.movieAddButton", element)[0];
+
+        /**
+         * === POSE MANIPULATION AND RESET ====================
+         */
 
         self.resetButtonElem = dojo.query("button.resetButton", element)[0];
         self.progressElem = dojo.query("div.progress", element)[0];
@@ -407,6 +417,12 @@ function VRMLViewer(element, params) {
           yLabel.innerHTML = 'Y:' + self.pose.y;
         };
         
+        /**
+         * === FILES DROPDOWN ====================
+         */
+        
+        self.filesDropDownElem = dojo.query("td.filesDropDown", element)[0];
+        
         self.createAvatar = function(item, mode) {
           if (mode == 'avatar') {
              // create your avatar if you want
@@ -480,6 +496,16 @@ function VRMLViewer(element, params) {
           value: self.serverURL,
           style: "width: 65%",
 
+          onKeyUp: function(e) {
+            if (self.browseButton) { 
+              if (this.get("value") !== self.serverURL) {
+                self.browseButton.setAttribute('label', 'Browse'); 
+              } else {
+                self.browseButton.setAttribute('label', 'Refresh'); 
+              }
+            }
+          },
+
           onKeyDown: function(e) {
             var code = e.keyCode || e.which;
             if( code === 13 ) {
@@ -506,15 +532,34 @@ function VRMLViewer(element, params) {
         self.filesDropDown = new DropDownButton({ label: "Files", dropDown: self.filesToolTip });
         self.filesDropDownElem.appendChild(self.filesDropDown.domNode);
 
-        self.movieDropDownContent = domConst.toDom('<div style="overflow: auto; max-height: 420px;" />');
+        self.fileStandby = new Standby({target: self.filesDropDownContent });
+        self.filesDropDownContent.appendChild(self.fileStandby.domNode);
 
+        /**
+         * === MOVIE DROPDOWN ====================
+         */
+         
+        self.movieDropDownElem = dojo.query("div.movieDropDown", element)[0];
+        self.movieAddButtonElem = dojo.query("button.movieAddButton", element)[0];
+
+        self.movieDropDownContent = domConst.toDom(
+          '<div style="overflow: auto; max-height: 420px;"> \
+            <table><tr class="movieFormatLengthRow" /></tr><tr class="movieWidthHeightLengthRow" /></table> \
+            <div class=\"dndArea\" /> \
+          </div>'
+        );
+        
+        self.movieFormatLengthRowElem = dojo.query("tr.movieFormatLengthRow", self.movieDropDownContent)[0];
+        self.movieWidthHeightLengthRowElem = dojo.query("tr.movieWidthHeightLengthRow", self.movieDropDownContent)[0];
+        self.movieDnDArea = dojo.query("div.dndArea", self.movieDropDownContent)[0];
+        
         self.createMovieThumb = function(item, mode) {
           if (mode == 'avatar') {
              // when dragged 
              var avatar = dojo.create( 'div', { innerHTML: item.data });
              var avatarPose = dojo.clone(self.pose);
-             avatarPose.width=60;
-             avatarPose.height=60;
+             avatarPose.width = 60;
+             avatarPose.height = 60;
              var avatarImgUrl = urlSuffixForPose(avatarPose);
              avatar.innerHTML = '<img src=' + self.imageURL + avatarImgUrl + ' /> ';
              item.srcEcc = "VRMLViewer";
@@ -524,7 +569,6 @@ function VRMLViewer(element, params) {
              item.pose = avatarPose;
              return {node: avatar, data: item, type: item.type};
           } else {
-            // var thumb = dojo.create( 'div', { innerHTML: item.data });
             
             // when added to list
             var thumb = domConst.toDom("\
@@ -535,6 +579,7 @@ function VRMLViewer(element, params) {
                 </td><td align=\"left\">\
                   <table><tr>\
                     <td>Frame:</td><td><div class=\"relFrameLength\"/></td>\
+                    <td><div class=\"fillInSeries\" \></td>\
                   </tr><tr>\
                     <td>Transition:</td><td><div class=\"relTransitionLength\"/></td>\
                   </tr></table>\
@@ -547,6 +592,23 @@ function VRMLViewer(element, params) {
             var removeImgElem = dojo.query("img.removeThumb", thumb)[0];
             var relFrameLengthElem = dojo.query("div.relFrameLength", thumb)[0];
             var relTransitionLengthElem = dojo.query("div.relTransitionLength", thumb)[0];
+            var fillInSeriesElem = dojo.query("div.fillInSeries", thumb)[0];
+            
+            item.getThisAndNeighborsFromDnD = function() {
+              var thisAndNeighbors = {};
+              self.addToMovieHandler.forInItems(function(obj, key, ctx) {
+                if (obj.data === item) {
+                  thisAndNeighbors.this = { key: key, obj: obj };
+                } else {
+                  thisAndNeighbors.before = { key: key, obj: obj };
+                }
+                if (thisAndNeighbors.this) {
+                  thisAndNeighbors.after = { key: key, obj: obj };
+                  return thisAndNeighbors;
+                }
+              });
+              return thisAndNeighbors;
+            };
             
             item.relFrameLengthSlider = new HorizontalSlider({ 
               value: 50,
@@ -555,21 +617,33 @@ function VRMLViewer(element, params) {
             }, relFrameLengthElem);
 
             item.relTransitionLengthSlider = new HorizontalSlider({ 
-              value: 80,
+              value: 100,
               title: "Relative Duration of Transition",
               style: "width:150px;"
             }, relTransitionLengthElem);
             
             removeImgElem.onclick = function() {
-              self.addToMovieHandler.forInItems(function(obj, key, ctx) {
-                if (obj.data === item) {
-                  // haha - what a mess!
-                  self.addToMovieHandler.selectNone();
-                  self.addToMovieHandler.selection[key] = obj;
-                  self.addToMovieHandler.deleteSelectedNodes();
-                }
-              });
+              var thisItem = item.getThisAndNeighborsFromDnD();
+              if (thisItem.this) {
+                // haha - what a mess!
+                self.addToMovieHandler.selectNone();
+                self.addToMovieHandler.selection[thisItem.this.key] = thisItem.this.obj;
+                self.addToMovieHandler.deleteSelectedNodes();
+              }
+              // disable create button if this was the last one
+              if (!thisItem.after || !thisItem.before) {
+                self.movieCreateButton.setAttribute('disabled', true);
+              }
             }
+            
+            item.fillInSeriesButton = new Button({ 
+              label: "Insert Series",
+              style: "display: none;",
+              onClick: function(){
+                alert("foo");
+              }
+            }, fillInSeriesElem);
+            
             removeImgElem.src = self.resRoot + "img/close.png";
             
             var thumbPose = dojo.clone(self.pose);
@@ -590,31 +664,18 @@ function VRMLViewer(element, params) {
           }
         };
 
-        self.addToMovieHandler = new Source(self.movieDropDownContent, {copyOnly: true, creator: self.createMovieThumb});
+        self.addToMovieHandler = new Source(self.movieDnDArea, {copyOnly: true, creator: self.createMovieThumb});
 
         self.movieFormatSelection = new Selector({
           name: "movieFormat",
+          style: "width: 320px",
           options: []
         });
         self.populateMovieCodecs(self.serverURL + '/movie/codecs', self.movieFormatSelection);
-        
-        self.movieDropDownContent.appendChild(dojo.create( 'div', { 
-          innerHTML: "Format: ", 
-          style: "margin-right: 1em; margin-left: 0.2em; display:inline;" 
-        }));
-        self.movieDropDownContent.appendChild(self.movieFormatSelection.domNode);
 
-        self.movieDurationSpinner = new NumberSpinner({
-          value: 10,
-          smallDelta: 1,
-          style: "width: 40px",
-          constraints: { min:0, places:0 },
-        });
-        self.movieDropDownContent.appendChild(self.movieDurationSpinner.domNode);
-        self.movieDropDownContent.appendChild(dojo.create( 'div', { 
-          innerHTML: "sec ", 
-          style: "margin-right: 1em; margin-left: 0.2em; display:inline;" 
-        }));
+        self.movieFormatLengthRowElem.appendChild(dojo.create('td', { innerHTML: 'Format:'} ));
+        self.movieFormatLengthRowElem.appendChild(dojo.create('td', { colspan: "2"}));
+        self.movieFormatLengthRowElem.lastChild.appendChild(self.movieFormatSelection.domNode);
         
         self.movieHeightSpinner = new NumberSpinner({
           value: 400,
@@ -622,11 +683,6 @@ function VRMLViewer(element, params) {
           style: "width: 60px",
           constraints: { min:40, places:0 },
         });
-        self.movieDropDownContent.appendChild(self.movieHeightSpinner.domNode);
-        self.movieDropDownContent.appendChild(dojo.create( 'div', { 
-          innerHTML: "x", 
-          style: "margin-right: 0.5em; margin-left: 0.5em; display:inline;" 
-        }));
         
         self.movieWidthSpinner = new NumberSpinner({
           value: 600,
@@ -634,11 +690,12 @@ function VRMLViewer(element, params) {
           style: "width: 60px",
           constraints: { min:40, places:0 },
         });
-        self.movieDropDownContent.appendChild(self.movieWidthSpinner.domNode);
 
         self.movieCreateButton = new Button({
           label: "Create",
+          disabled: true,
           onClick: function(){
+                        
             var form = document.createElement("form");
 
             form.setAttribute("method", "post");
@@ -670,12 +727,39 @@ function VRMLViewer(element, params) {
 
             form.appendChild(hiddenField);
             
+            // this will not save the returned binary file
+            // self.xhr.post({
+            //   form: form,
+            //   load: function(data){
+            //     alert("asd");
+            //   }
+            // });
+            
             document.body.appendChild(form);
             form.submit();
             document.body.removeChild(form);
           }
         });
-        self.movieDropDownContent.appendChild(self.movieCreateButton.domNode);
+
+        self.movieDurationSpinner = new NumberSpinner({
+          value: 10,
+          smallDelta: 1,
+          style: "width: 40px",
+          constraints: { min:0, places:0 },
+        });
+
+        // append format duration cell
+        self.movieWidthHeightLengthRowElem.appendChild(dojo.create('td', { innerHTML: 'Size:'} ));
+        var movieDimensionCell = dojo.create('td');
+        movieDimensionCell.appendChild(self.movieWidthSpinner.domNode);
+        movieDimensionCell.appendChild(dojo.create('span', { innerHTML: "x"} ));
+        movieDimensionCell.appendChild(self.movieHeightSpinner.domNode);
+        movieDimensionCell.appendChild(self.movieDurationSpinner.domNode);
+        movieDimensionCell.appendChild(dojo.create('span', { innerHTML: "sec"} ));        
+        self.movieWidthHeightLengthRowElem.appendChild(movieDimensionCell);
+
+        self.movieWidthHeightLengthRowElem.appendChild(dojo.create('td', { align: "right"}));
+        self.movieWidthHeightLengthRowElem.lastChild.appendChild(self.movieCreateButton.domNode);
 
 
         self.movieToolTip = new TooltipDialog({ content:self.movieDropDownContent });
@@ -689,8 +773,13 @@ function VRMLViewer(element, params) {
           label: "+",
           style: "margin-left: -10px; display: none;",
           onClick: function(){
+            if (self.movieFormatSelection.options.length == 0) {
+              self.populateMovieCodecs(self.serverURL + '/movie/codecs', self.movieFormatSelection);
+            }
             // we could pass item.data here to creator
             self.addToMovieHandler.insertNodes(false, [ { } ]);
+            self.movieCreateButton.setAttribute('disabled', false);
+            
           }
         }, self.movieAddButtonElem);
 

@@ -124,11 +124,14 @@ boost::shared_ptr<DataModelImpl> V8DataModel::create(InterpreterImpl* interprete
 	                               V8DataModel::getIOProcessors,
 	                               V8DataModel::setWithException,
 	                               v8::External::New(reinterpret_cast<void*>(dm.get())));
+	context->Global()->SetAccessor(v8::String::New("_invokers"),
+	                               V8DataModel::getInvokers,
+	                               V8DataModel::setWithException,
+	                               v8::External::New(reinterpret_cast<void*>(dm.get())));
 
 	dm->_contexts.push_back(context);
 
 	// instantiate objects - we have to have a context for that!
-	dm->eval(Element<std::string>(), "_invokers = {};");
 	dm->eval(Element<std::string>(), "_x = {};");
 
 	return dm;
@@ -147,19 +150,33 @@ void V8DataModel::setWithException(v8::Local<v8::String> property, v8::Local<v8:
 v8::Handle<v8::Value> V8DataModel::getIOProcessors(v8::Local<v8::String> property, const v8::AccessorInfo& info) {
 	V8DataModel* dataModel = V8DOM::toClassPtr<V8DataModel>(info.Data());
 
-	if (dataModel->_ioProcessors.IsEmpty()) {
-		dataModel->_ioProcessors = v8::Persistent<v8::Object>::New(v8::Object::New());
-		//v8::Handle<v8::Object> ioProcessorObj = v8::Object::New();
-		std::map<std::string, IOProcessor> ioProcessors = dataModel->_interpreter->getIOProcessors();
-		std::map<std::string, IOProcessor>::const_iterator ioProcIter = ioProcessors.begin();
-		while(ioProcIter != ioProcessors.end()) {
+	dataModel->_ioProcessors = v8::Persistent<v8::Object>::New(v8::Object::New());
+	//v8::Handle<v8::Object> ioProcessorObj = v8::Object::New();
+	std::map<std::string, IOProcessor> ioProcessors = dataModel->_interpreter->getIOProcessors();
+	std::map<std::string, IOProcessor>::const_iterator ioProcIter = ioProcessors.begin();
+	while(ioProcIter != ioProcessors.end()) {
 //			std::cout << ioProcIter->first << std::endl;
-			dataModel->_ioProcessors->Set(v8::String::New(ioProcIter->first.c_str()),
-			                              dataModel->getDataAsValue(ioProcIter->second.getDataModelVariables()));
-			ioProcIter++;
-		}
+		dataModel->_ioProcessors->Set(v8::String::New(ioProcIter->first.c_str()),
+																	dataModel->getDataAsValue(ioProcIter->second.getDataModelVariables()));
+		ioProcIter++;
 	}
 	return dataModel->_ioProcessors;
+}
+
+v8::Handle<v8::Value> V8DataModel::getInvokers(v8::Local<v8::String> property, const v8::AccessorInfo& info) {
+	V8DataModel* dataModel = V8DOM::toClassPtr<V8DataModel>(info.Data());
+	
+	dataModel->_invokers = v8::Persistent<v8::Object>::New(v8::Object::New());
+	//v8::Handle<v8::Object> ioProcessorObj = v8::Object::New();
+	std::map<std::string, Invoker> invokers = dataModel->_interpreter->getInvokers();
+	std::map<std::string, Invoker>::const_iterator invokerIter = invokers.begin();
+	while(invokerIter != invokers.end()) {
+		//			std::cout << ioProcIter->first << std::endl;
+		dataModel->_invokers->Set(v8::String::New(invokerIter->first.c_str()),
+															dataModel->getDataAsValue(invokerIter->second.getDataModelVariables()));
+		invokerIter++;
+	}
+	return dataModel->_invokers;
 }
 
 void V8DataModel::pushContext() {

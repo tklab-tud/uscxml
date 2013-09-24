@@ -81,7 +81,9 @@ protected:
 	Arabica::DOM::V8DOM* _dom;
 
 	v8::Persistent<v8::Object> _ioProcessors;
+	v8::Persistent<v8::Object> _invokers;
 	static v8::Handle<v8::Value> getIOProcessors(v8::Local<v8::String> property, const v8::AccessorInfo& info);
+	static v8::Handle<v8::Value> getInvokers(v8::Local<v8::String> property, const v8::AccessorInfo& info);
 	static v8::Handle<v8::Value> getAttribute(v8::Local<v8::String> property, const v8::AccessorInfo& info);
 	static void setWithException(v8::Local<v8::String> property, v8::Local<v8::Value> value, const v8::AccessorInfo& info);
 

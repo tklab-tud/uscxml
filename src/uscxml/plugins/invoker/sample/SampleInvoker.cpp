@@ -23,7 +23,6 @@ SampleInvoker::~SampleInvoker() {
 
 boost::shared_ptr<InvokerImpl> SampleInvoker::create(InterpreterImpl* interpreter) {
 	boost::shared_ptr<SampleInvoker> invoker = boost::shared_ptr<SampleInvoker>(new SampleInvoker());
-	invoker->_interpreter = interpreter;
 	return invoker;
 }
 

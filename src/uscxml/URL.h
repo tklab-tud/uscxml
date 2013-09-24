@@ -246,7 +246,9 @@ public:
 	}
 
 	static std::string tmpDir();
-
+	static std::map<std::string, std::string> mimeTypes;
+	static std::string getMimeType(const std::string extension, std::string magic = "");
+	
 	friend class URLFetcher;
 	friend std::ostream & operator<<(std::ostream &stream, const URL& p);
 

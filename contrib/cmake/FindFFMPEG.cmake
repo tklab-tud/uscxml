@@ -1,93 +1,164 @@
-# - Try to find ffmpeg libraries (libavcodec, libavformat and libavutil)
-# Once done this will define
+# Locate ffmpeg
+# This module defines
+# FFMPEG_LIBRARIES
+# FFMPEG_FOUND, if false, do not try to link to ffmpeg
+# FFMPEG_INCLUDE_DIR, where to find the headers
 #
-#  FFMPEG_FOUND - system has ffmpeg or libav
-#  FFMPEG_INCLUDE_DIR - the ffmpeg include directory
-#  FFMPEG_LIBRARIES - Link these to use ffmpeg
-#  FFMPEG_LIBAVCODEC
-#  FFMPEG_LIBAVFORMAT
-#  FFMPEG_LIBAVUTIL
+# $FFMPEG_DIR is an environment variable that would
+# correspond to the ./configure --prefix=$FFMPEG_DIR
 #
-#  Copyright (c) 2008 Andreas Schneider <mail@cynapses.org>
-#  Modified for other libraries by Lasse Kärkkäinen <tronic>
-#  Modified for Hedgewars by Stepik777
-#
-#  Redistribution and use is allowed according to the terms of the New
-#  BSD license.
-#
+# Created by Robert Osfield.
 
-if (FFMPEG_LIBRARIES AND FFMPEG_INCLUDE_DIR)
-  # in cache already
-  set(FFMPEG_FOUND TRUE)
-else (FFMPEG_LIBRARIES AND FFMPEG_INCLUDE_DIR)
-  # use pkg-config to get the directories and then use these values
-  # in the FIND_PATH() and FIND_LIBRARY() calls
-  find_package(PkgConfig)
-  if (PKG_CONFIG_FOUND)
-    pkg_check_modules(_FFMPEG_AVCODEC libavcodec)
-    pkg_check_modules(_FFMPEG_AVFORMAT libavformat)
-    pkg_check_modules(_FFMPEG_AVUTIL libavutil)
-    pkg_check_modules(_FFMPEG_SWSCALE libswscale)
-#    pkg_check_modules(_FFMPEG_SWRESAMPLE libswresample)
-  endif (PKG_CONFIG_FOUND)
 
-  find_path(FFMPEG_AVCODEC_INCLUDE_DIR
-    NAMES libavcodec/avcodec.h
-    PATHS ${_FFMPEG_AVCODEC_INCLUDE_DIRS} /usr/include /usr/local/include /opt/local/include /sw/include
-    PATH_SUFFIXES ffmpeg libav
-  )
+#In ffmpeg code, old version use "#include <header.h>" and newer use "#include <libname/header.h>"
+#In OSG ffmpeg plugin, we used "#include <header.h>" for compatibility with old version of ffmpeg
+#With the new version of FFmpeg, a file named "time.h" was added that breaks compatability with the old version of ffmpeg.
 
-  find_library(FFMPEG_LIBAVCODEC
-    NAMES avcodec
-    PATHS ${_FFMPEG_AVCODEC_LIBRARY_DIRS} /usr/lib /usr/local/lib /opt/local/lib /sw/lib
-  )
+#We have to search the path which contain the header.h (usefull for old version)
+#and search the path which contain the libname/header.h (usefull for new version)
 
-  find_library(FFMPEG_LIBAVFORMAT
-    NAMES avformat
-    PATHS ${_FFMPEG_AVFORMAT_LIBRARY_DIRS} /usr/lib /usr/local/lib /opt/local/lib /sw/lib
-  )
+#Then we need to include ${FFMPEG_libname_INCLUDE_DIRS} (in old version case, use by ffmpeg header and osg plugin code)
+#                                                       (in new version case, use by ffmpeg header) 
+#and ${FFMPEG_libname_INCLUDE_DIRS/libname}             (in new version case, use by osg plugin code)
 
-  find_library(FFMPEG_LIBAVUTIL
-    NAMES avutil
-    PATHS ${_FFMPEG_AVUTIL_LIBRARY_DIRS} /usr/lib /usr/local/lib /opt/local/lib /sw/lib
-  )
 
-  find_library(FFMPEG_LIBSWSCALE
-    NAMES swscale
-    PATHS ${_FFMPEG_SWSCALE_LIBRARY_DIRS} /usr/lib /usr/local/lib /opt/local/lib /sw/lib
-  )
+# Macro to find header and lib directories
+# example: FFMPEG_FIND(AVFORMAT avformat avformat.h)
+MACRO(FFMPEG_FIND varname shortname headername)
+    # old version of ffmpeg put header in $prefix/include/[ffmpeg]
+    # so try to find header in include directory
 
-  # find_library(FFMPEG_SWRESAMPLE
-  #   NAMES swresample
-  #   PATHS ${_FFMPEG_SWRESAMPLE_LIBRARY_DIRS} /usr/lib /usr/local/lib /opt/local/lib /sw/lib
-  # )
-
-  if (FFMPEG_LIBAVCODEC AND FFMPEG_LIBAVFORMAT)
-    set(FFMPEG_FOUND TRUE)
-  endif()
-
-  if (FFMPEG_FOUND)
-    set(FFMPEG_INCLUDE_DIR ${FFMPEG_AVCODEC_INCLUDE_DIR})
-
-    set(FFMPEG_LIBRARIES
-      ${FFMPEG_LIBAVCODEC}
-      ${FFMPEG_LIBAVFORMAT}
-      ${FFMPEG_LIBAVUTIL}
-      ${FFMPEG_LIBSWSCALE}
-#      ${FFMPEG_SWRESAMPLE}
+    FIND_PATH(FFMPEG_${varname}_INCLUDE_DIRS lib${shortname}/${headername}
+        PATHS
+        ${FFMPEG_ROOT}/include
+        $ENV{FFMPEG_DIR}/include
+        ~/Library/Frameworks
+        /Library/Frameworks
+        /usr/local/include
+        /usr/include
+        /sw/include # Fink
+        /opt/local/include # DarwinPorts
+        /opt/csw/include # Blastwave
+        /opt/include
+        /usr/freeware/include
+        PATH_SUFFIXES ffmpeg
+        DOC "Location of FFMPEG Headers"
     )
 
-  endif (FFMPEG_FOUND)
+    FIND_PATH(FFMPEG_${varname}_INCLUDE_DIRS ${headername}
+        PATHS
+        ${FFMPEG_ROOT}/include
+        $ENV{FFMPEG_DIR}/include
+        ~/Library/Frameworks
+        /Library/Frameworks
+        /usr/local/include
+        /usr/include
+        /sw/include # Fink
+        /opt/local/include # DarwinPorts
+        /opt/csw/include # Blastwave
+        /opt/include
+        /usr/freeware/include
+        PATH_SUFFIXES ffmpeg
+        DOC "Location of FFMPEG Headers"
+    )
 
-  if (FFMPEG_FOUND)
-    if (NOT FFMPEG_FIND_QUIETLY)
-      message(STATUS "Found FFMPEG or Libav: ${FFMPEG_LIBRARIES}, ${FFMPEG_INCLUDE_DIR}")
-    endif (NOT FFMPEG_FIND_QUIETLY)
-  else (FFMPEG_FOUND)
-    if (FFMPEG_FIND_REQUIRED)
-      message(FATAL_ERROR "Could not find libavcodec or libavformat or libavutil")
-    endif (FFMPEG_FIND_REQUIRED)
-  endif (FFMPEG_FOUND)
+    FIND_LIBRARY(FFMPEG_${varname}_LIBRARIES
+        NAMES ${shortname}
+        PATHS
+        ${FFMPEG_ROOT}/lib
+        $ENV{FFMPEG_DIR}/lib
+        ~/Library/Frameworks
+        /Library/Frameworks
+        /usr/local/lib
+        /usr/local/lib64
+        /usr/lib
+        /usr/lib64
+        /sw/lib
+        /opt/local/lib
+        /opt/csw/lib
+        /opt/lib
+        /usr/freeware/lib64
+        DOC "Location of FFMPEG Libraries"
+    )
 
-endif (FFMPEG_LIBRARIES AND FFMPEG_INCLUDE_DIR)
+    IF (FFMPEG_${varname}_LIBRARIES AND FFMPEG_${varname}_INCLUDE_DIRS)
+        SET(FFMPEG_${varname}_FOUND 1)
+    ENDIF(FFMPEG_${varname}_LIBRARIES AND FFMPEG_${varname}_INCLUDE_DIRS)
 
+ENDMACRO(FFMPEG_FIND)
+
+SET(FFMPEG_ROOT "$ENV{FFMPEG_DIR}" CACHE PATH "Location of FFMPEG")
+
+# find stdint.h
+IF(WIN32)
+
+    FIND_PATH(FFMPEG_STDINT_INCLUDE_DIR stdint.h
+        PATHS
+        ${FFMPEG_ROOT}/include
+        $ENV{FFMPEG_DIR}/include
+        ~/Library/Frameworks
+        /Library/Frameworks
+        /usr/local/include
+        /usr/include
+        /sw/include # Fink
+        /opt/local/include # DarwinPorts
+        /opt/csw/include # Blastwave
+        /opt/include
+        /usr/freeware/include
+        PATH_SUFFIXES ffmpeg
+        DOC "Location of FFMPEG stdint.h Header"
+    )
+
+    IF (FFMPEG_STDINT_INCLUDE_DIR)
+        SET(STDINT_OK TRUE)
+    ENDIF()
+
+ELSE()
+
+    SET(STDINT_OK TRUE)
+
+ENDIF()
+
+FFMPEG_FIND(LIBAVFORMAT avformat avformat.h)
+FFMPEG_FIND(LIBAVDEVICE avdevice avdevice.h)
+FFMPEG_FIND(LIBAVCODEC  avcodec  avcodec.h)
+FFMPEG_FIND(LIBAVUTIL   avutil   avutil.h)
+FFMPEG_FIND(LIBSWSCALE  swscale  swscale.h)  # not sure about the header to look for here.
+
+SET(FFMPEG_FOUND "NO")
+# Note we don't check FFMPEG_LIBSWSCALE_FOUND here, it's optional.
+IF   (FFMPEG_LIBAVFORMAT_FOUND AND FFMPEG_LIBAVDEVICE_FOUND AND FFMPEG_LIBAVCODEC_FOUND AND FFMPEG_LIBAVUTIL_FOUND AND FFMPEG_LIBSWSCALE_FOUND AND STDINT_OK)
+
+    SET(FFMPEG_FOUND "YES")
+
+    SET(FFMPEG_INCLUDE_DIRS
+        ${FFMPEG_LIBAVFORMAT_INCLUDE_DIRS}
+        ${FFMPEG_LIBAVDEVICE_INCLUDE_DIRS}
+        ${FFMPEG_LIBAVCODEC_INCLUDE_DIRS}
+        ${FFMPEG_LIBAVUTIL_INCLUDE_DIRS}
+    )
+
+# Using the new include style for FFmpeg prevents issues with #include <time.h>
+    IF (FFMPEG_STDINT_INCLUDE_DIR)
+        SET(FFMPEG_INCLUDE_DIRS
+            ${FFMPEG_INCLUDE_DIRS}
+            ${FFMPEG_STDINT_INCLUDE_DIR}
+        )
+    ENDIF()
+
+
+    SET(FFMPEG_LIBRARY_DIRS ${FFMPEG_LIBAVFORMAT_LIBRARY_DIRS})
+
+    # Note we don't add FFMPEG_LIBSWSCALE_LIBRARIES here, it will be added if found later.
+    SET(FFMPEG_LIBRARIES
+        ${FFMPEG_LIBAVFORMAT_LIBRARIES}
+        ${FFMPEG_LIBSWSCALE_LIBRARIES}
+        ${FFMPEG_LIBAVDEVICE_LIBRARIES}
+        ${FFMPEG_LIBAVCODEC_LIBRARIES}
+        ${FFMPEG_LIBAVUTIL_LIBRARIES})
+
+ENDIF()
+
+INCLUDE(FindPackageHandleStandardArgs)
+FIND_PACKAGE_HANDLE_STANDARD_ARGS(FFMPEG DEFAULT_MSG FFMPEG_LIBRARIES FFMPEG_INCLUDE_DIRS)
+MARK_AS_ADVANCED(FFMPEG_LIBRARIES FFMPEG_INCLUDE_DIR)
