@@ -542,8 +542,9 @@ void EventHandlerImpl::returnEvent(Event& event) {
 	if (event.origintype.length() == 0)
 		event.origintype = _type;
 
+	const Event& copyRef = event;
 	LOG(INFO) << "Qui tutto ok" << endl;
-	_interpreter->receive(event);
+	_interpreter->receive(copyRef);
 }
 
 Factory* Factory::_instance = NULL;

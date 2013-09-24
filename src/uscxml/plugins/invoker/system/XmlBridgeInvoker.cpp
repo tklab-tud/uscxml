@@ -17,7 +17,7 @@ bool connect(pluma::Host& host) {
 
 XmlBridgeInvoker::XmlBridgeInvoker() :
 	_thread(NULL) {
-		XmlBridgeInputEvents myinstance = XmlBridgeInputEvents::getInstance();
+		XmlBridgeInputEvents& myinstance = XmlBridgeInputEvents::getInstance();
 		myinstance._invokPointer = this;
 		LOG(INFO) << "Initializing XmlBridgeInvoker instance" << endl;
 }
@@ -31,11 +31,14 @@ XmlBridgeInvoker::~XmlBridgeInvoker() {
 }
 
 boost::shared_ptr<InvokerImpl> XmlBridgeInvoker::create(InterpreterImpl* interpreter) {
-
 	LOG(INFO) << "Creating XmlBridgeInvoker instance" << endl;
 
 	boost::shared_ptr<XmlBridgeInvoker> invoker = boost::shared_ptr<XmlBridgeInvoker>(new XmlBridgeInvoker());
-	invoker->_interpreter = interpreter;
+
+	invoker->setInterpreter(interpreter);
+	invoker->setInvokeId("xmlbridge1");
+	invoker->setType("xmlbridge");
+
 	return invoker;
 }
 
@@ -51,10 +54,9 @@ void XmlBridgeInvoker::send(const SendRequest& req) {
 
 	std::cout << reqCopy.getXML() << std::endl;
 
-/*
+	/*
 	_interpreter->getDataModel().replaceExpressions(reqCopy.content);
 
-	/*
 	Data xml = Data::fromXML(reqCopy.content);
 	if (xml) {
 		reqCopy.data = xml;
@@ -87,11 +89,13 @@ void XmlBridgeInvoker::send(const SendRequest& req) {
 				domSS << prompts.item(i).getFirstChild().getNodeValue() << ".";
 			}
 		}
-	} */
+	}
+	*/
 
 	/*
 	domSS << req.getFirstDOMElement();
-	domSS << req.dom;*/
+	domSS << req.dom;
+	*/
 
 	//_interpreter->getDataModel().replaceExpressions(start.content);
 }
@@ -107,7 +111,6 @@ void XmlBridgeInvoker::invoke(const InvokeRequest& req) {
 		LOG(ERROR) << "No datablock param given";
 		return;
 	}
-	this->setInvokeId("xmlbridge");
 
 	/*
 	if (boost::iequals(req.params.find("reportexisting")->second, "false"))
@@ -124,10 +127,11 @@ void XmlBridgeInvoker::invoke(const InvokeRequest& req) {
 		suffixList = req.params.find("suffix")->second;
 	} else if (req.params.find("suffixes") != req.params.end()) {
 		suffixList = req.params.find("suffixes")->second;
-	}*/
+	}
+	*/
 
 
-/*
+	/*
 	if (_bridgeconf.getDBFrameList())
 
 	if (suffixList.size() > 0) {
@@ -150,7 +154,8 @@ void XmlBridgeInvoker::invoke(const InvokeRequest& req) {
 			_dir = url.path();
 		}
 		break;
-	} */
+	}
+	*/
 
 	/*
 	_watcher = new XmlBridgeSMIO(_dir, _recurse);
@@ -251,11 +256,6 @@ void XmlBridgeInvoker::handleReply(const std::string reply_raw_data) {
 	uscxml::Event myevent("reply", uscxml::Event::EXTERNAL);
 	//event.setName("reply." + _interpreter->getState())
 
-	LOG(INFO) << "Setting Event Invokeid" << endl;
-	myevent.invokeid = "xmlbridge1";
-	myevent.origin = "xmlbridge1";
-	myevent.origintype = "xmlbridge";
-
 	LOG(INFO) << "Building Event Data from RawData" << endl;
 	const uscxml::Data eventdata(reply_raw_data);
 
@@ -280,9 +280,7 @@ void XmlBridgeInvoker::handleReply(const std::string reply_raw_data) {
 	*/
 
 	LOG(INFO) << "Sending Event to StateMachine" << endl;
-	const Event myevent2 = myevent;
-
-	returnEvent(&myevent2);
+	returnEvent(myevent);
 }
 
 void XmlBridgeInputEvents::receiveReplyID(const uint8_t datablockID, const char *replyData)
