@@ -34,6 +34,23 @@ else()
 	list (APPEND USCXML_FILES ${DIRMON_INVOKER})
 endif()
 
+# DirMon invoker to watch for filesystem changes
+
+set(USCXML_INVOKERS "xmlbridge ${USCXML_INVOKERS}")
+file(GLOB_RECURSE XMLBRIDGE_INVOKER
+	system/XmlBridgeInvoker.cpp
+	system/XmlBridgeInvoker.h
+)
+source_group("Invoker\\xmlbridge" FILES ${XMLBRIDGE_INVOKER})
+if (BUILD_AS_PLUGINS)
+	add_library(
+		invoker_xmlbridge SHARED 
+		${XMLBRIDGE_INVOKER})
+	target_link_libraries(invoker_xmlbridge uscxml)
+	set_target_properties(invoker_xmlbridge PROPERTIES FOLDER "Plugin Invoker")
+else()
+	list (APPEND USCXML_FILES ${XMLBRIDGE_INVOKER})
+endif()
 
 # Location invoker to watch for proximity to GPS coordinates
 
