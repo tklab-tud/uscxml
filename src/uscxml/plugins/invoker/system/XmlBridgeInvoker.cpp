@@ -1,9 +1,9 @@
 #include "XmlBridgeInvoker.h"
-#include <glog/logging.h>
 
 #ifdef BUILD_AS_PLUGINS
 #include <Pluma/Connector.hpp>
 #endif
+
 
 namespace uscxml {
 
@@ -16,8 +16,10 @@ bool connect(pluma::Host& host) {
 #endif
 
 XmlBridgeInvoker::XmlBridgeInvoker() :
-	_thread(NULL),
-	_watcher(NULL) {
+	_thread(NULL) {
+		XmlBridgeInputEvents myinstance = XmlBridgeInputEvents::getInstance();
+		myinstance._invokPointer = this;
+		LOG(INFO) << "Initializing XmlBridgeInvoker instance" << endl;
 }
 
 XmlBridgeInvoker::~XmlBridgeInvoker() {
@@ -26,17 +28,12 @@ XmlBridgeInvoker::~XmlBridgeInvoker() {
 		_thread->join();
 		delete _thread;
 	}
-	if (_watcher)
-		delete(_watcher);
-};
-
-XmlBridgeInvoker::XmlBridgeInvoker() {
 }
 
-XmlBridgeInvoker::~XmlBridgeInvoker() {
-};
-
 boost::shared_ptr<InvokerImpl> XmlBridgeInvoker::create(InterpreterImpl* interpreter) {
+
+	LOG(INFO) << "Creating XmlBridgeInvoker instance" << endl;
+
 	boost::shared_ptr<XmlBridgeInvoker> invoker = boost::shared_ptr<XmlBridgeInvoker>(new XmlBridgeInvoker());
 	invoker->_interpreter = interpreter;
 	return invoker;
@@ -48,17 +45,69 @@ Data XmlBridgeInvoker::getDataModelVariables() {
 }
 
 void XmlBridgeInvoker::send(const SendRequest& req) {
-	//TODOOOOOO!!
+	tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
+
+	SendRequest reqCopy(req);
+
+	std::cout << reqCopy.getXML() << std::endl;
+
+/*
+	_interpreter->getDataModel().replaceExpressions(reqCopy.content);
+
+	/*
+	Data xml = Data::fromXML(reqCopy.content);
+	if (xml) {
+		reqCopy.data = xml;
+		cout << xml.toXMLString() << endl;
+	} else
+		cerr << "Failed parsing send request" << endl;*/
+
+	//cout << reqCopy.toXMLString() << endl;
+
+	/* lock automatically released */
+
+	/*
+	if(!_longPoll) {
+		_outQueue.push_back(reqCopy);
+		return;
+	}
+	reply(reqCopy, _longPoll);
+	_longPoll.curlReq = NULL;
+
+	//2
+	std::stringstream domSS;*/
+
+	/*
+	if (req.dom) {
+		// hack until jVoiceXML supports XML
+		std::cout << req.dom;
+		Arabica::DOM::NodeList<std::string> prompts = req.dom.getElementsByTagName("vxml:prompt");
+		for (int i = 0; i < prompts.getLength(); i++) {
+			if (prompts.item(i).hasChildNodes()) {
+				domSS << prompts.item(i).getFirstChild().getNodeValue() << ".";
+			}
+		}
+	} */
+
+	/*
+	domSS << req.getFirstDOMElement();
+	domSS << req.dom;*/
+
+	//_interpreter->getDataModel().replaceExpressions(start.content);
 }
 
 void XmlBridgeInvoker::cancel(const std::string sendId) {
 }
 
 void XmlBridgeInvoker::invoke(const InvokeRequest& req) {
+
+	LOG(INFO) << "Invoking XmlBridge" << endl;
+
 	if (req.params.find("datablock") == req.params.end()) {
 		LOG(ERROR) << "No datablock param given";
 		return;
 	}
+	this->setInvokeId("xmlbridge");
 
 	/*
 	if (boost::iequals(req.params.find("reportexisting")->second, "false"))
@@ -78,7 +127,7 @@ void XmlBridgeInvoker::invoke(const InvokeRequest& req) {
 	}*/
 
 
-
+/*
 	if (_bridgeconf.getDBFrameList())
 
 	if (suffixList.size() > 0) {
@@ -101,22 +150,156 @@ void XmlBridgeInvoker::invoke(const InvokeRequest& req) {
 			_dir = url.path();
 		}
 		break;
-	}
+	} */
 
-
-	if _watcher = new XmlBridgeSMIO(_dir, _recurse);
+	/*
+	_watcher = new XmlBridgeSMIO(_dir, _recurse);
 	_watcher->addMonitor(this);
 	_watcher->updateEntries(true);
+	*/
 
 	_isRunning = true;
+
+	LOG(INFO) << "Initializing XmlBridge thread";
+
 	_thread = new tthread::thread(XmlBridgeInvoker::run, this);
 }
 
+/* wait for IO events or send instructions */
 void XmlBridgeInvoker::run(void* instance) {
+
+	LOG(INFO) << "Running XmlBridge thread";
+
 	while(((XmlBridgeInvoker*)instance)->_isRunning) {
 		//((XmlBridgeInvoker*)instance)->_watcher->updateEntries();
 		tthread::this_thread::sleep_for(tthread::chrono::milliseconds(20));
 	}
 }
 
+void XmlBridgeInvoker::handleReply(const std::string reply_raw_data) {
+
+	//  std::cout << action << " on " << reportedFilename << std::endl;
+
+	/*
+	std::string path;         // complete path to the file including filename
+	std::string relPath;      // path relative to monitored directory including filename
+	std::string dir;          // the name of the directory we monitor
+	std::string relDir;       // the directory from dir to the actual directory where we found a file
+	std::string basename;     // filename including suffix
+	std::string strippedName; // filename without the suffix
+	std::string extension;    // the extension
+	*/
+
+	/*
+	dir = reportedDir;
+
+	path = dir + reportedFilename;
+	boost::algorithm::replace_all(path, "\\", "/");
+	boost::algorithm::replace_all(path, "//", "/");
+
+	assert(boost::algorithm::starts_with(path, dir));
+	relPath = path.substr(dir.length());
+	assert(boost::equal(path, dir + relPath));
+
+	size_t lastSep;
+	if ((lastSep = path.find_last_of(PATH_SEPERATOR)) != std::string::npos) {
+		lastSep++;
+		basename = path.substr(lastSep, path.length() - lastSep);
+	} else {
+		assert(false);
+	}
+	assert(boost::algorithm::ends_with(relPath, basename));
+
+	// extension is the suffix and strippedName the basename without the suffix
+	size_t lastDot;
+	if ((lastDot = basename.find_last_of(".")) != std::string::npos) {
+		if (lastDot == 0) {
+			// hidden file
+			strippedName = basename;
+		} else {
+			extension = basename.substr(lastDot + 1);
+			strippedName = basename.substr(0, lastDot);
+		}
+	} else {
+		strippedName = basename;
+	}
+
+	relDir = relPath.substr(0, relPath.length() - basename.length());
+	assert(boost::equal(path, dir + relDir + basename));
+
+	// return if this is a hidden file
+	if (boost::algorithm::starts_with(basename, ".") && !_reportHidden)
+		return;
+
+	// ilter suffixes
+	if (_suffixes.size() > 0) {
+		bool validSuffix = false;
+		std::set<std::string>::iterator suffixIter = _suffixes.begin();
+		while(suffixIter != _suffixes.end()) {
+			if (boost::algorithm::ends_with(path, *suffixIter)) {
+				validSuffix = true;
+				break;
+			}
+			suffixIter++;
+		}
+		if (!validSuffix)
+			return;
+	}
+	*/
+
+	LOG(INFO) << "Building Event" << endl;
+	uscxml::Event myevent("reply", uscxml::Event::EXTERNAL);
+	//event.setName("reply." + _interpreter->getState())
+
+	LOG(INFO) << "Setting Event Invokeid" << endl;
+	myevent.invokeid = "xmlbridge1";
+	myevent.origin = "xmlbridge1";
+	myevent.origintype = "xmlbridge";
+
+	LOG(INFO) << "Building Event Data from RawData" << endl;
+	const uscxml::Data eventdata(reply_raw_data);
+
+	LOG(INFO) << "Setting Event Data" << endl;
+	myevent.setData(eventdata);
+
+	/*
+	if (action != DirectoryWatch::DELETED) {
+		event.data.compound["file"].compound["mtime"] = toStr(fileStat.st_mtime);
+		event.data.compound["file"].compound["ctime"] = toStr(fileStat.st_ctime);
+		event.data.compound["file"].compound["atime"] = toStr(fileStat.st_atime);
+		event.data.compound["file"].compound["size"]  = toStr(fileStat.st_size);
+	}
+
+	event.data.compound["file"].compound["name"] = Data(basename, Data::VERBATIM);
+	event.data.compound["file"].compound["extension"] = Data(extension, Data::VERBATIM);
+	event.data.compound["file"].compound["strippedName"] = Data(strippedName, Data::VERBATIM);
+	event.data.compound["file"].compound["relPath"] = Data(relPath, Data::VERBATIM);
+	event.data.compound["file"].compound["relDir"] = Data(relDir, Data::VERBATIM);
+	event.data.compound["file"].compound["path"] = Data(path, Data::VERBATIM);
+	event.data.compound["file"].compound["dir"] = Data(dir, Data::VERBATIM);
+	*/
+
+	LOG(INFO) << "Sending Event to StateMachine" << endl;
+	const Event myevent2 = myevent;
+
+	returnEvent(&myevent2);
 }
+
+void XmlBridgeInputEvents::receiveReplyID(const uint8_t datablockID, const char *replyData)
+{
+	string repdata(replyData);
+	XmlBridgeInputEvents myinstance = XmlBridgeInputEvents::getInstance();
+	myinstance._invokPointer->handleReply(repdata);
+}
+
+
+}
+/*
+XmlBridgeInputEvents::~XmlBridgeInputEvents() {
+	std::map<std::string, DirectoryWatch*>::iterator dirIter = _knownDirs.begin();
+	while(dirIter != _knownDirs.end()) {
+		delete(dirIter->second);
+		dirIter++;
+	}
+}
+*/

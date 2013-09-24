@@ -30,6 +30,7 @@ DirMonInvoker::DirMonInvoker() :
 	_recurse(false),
 	_thread(NULL),
 	_watcher(NULL) {
+	LOG(INFO) << "Instantiating DirMon Invoker instance" << std::endl;
 }
 
 DirMonInvoker::~DirMonInvoker() {
@@ -43,6 +44,9 @@ DirMonInvoker::~DirMonInvoker() {
 };
 
 boost::shared_ptr<InvokerImpl> DirMonInvoker::create(InterpreterImpl* interpreter) {
+
+	LOG(INFO) << "Creating DirMon Invoker" << std::endl;
+
 	boost::shared_ptr<DirMonInvoker> invoker = boost::shared_ptr<DirMonInvoker>(new DirMonInvoker());
 	invoker->_interpreter = interpreter;
 	return invoker;
@@ -60,6 +64,9 @@ void DirMonInvoker::cancel(const std::string sendId) {
 }
 
 void DirMonInvoker::invoke(const InvokeRequest& req) {
+
+	LOG(INFO) << "Invoking DirMon Invoker" << std::endl;
+
 	if (req.params.find("dir") == req.params.end()) {
 		LOG(ERROR) << "No dir param given";
 		return;

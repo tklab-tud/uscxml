@@ -395,7 +395,7 @@ void InterpreterImpl::receiveInternal(const Event& event) {
 }
 
 void InterpreterImpl::receive(const Event& event, bool toFront)   {
-//	std::cout << _name << " receive: " << event.name << std::endl;
+	LOG(INFO) << _name << " receive: " << event.name << std::endl;
 	if (toFront) {
 		_externalQueue.push_front(event);
 	} else {
@@ -794,6 +794,8 @@ void InterpreterImpl::delayedSend(void* userdata, std::string eventName) {
 void InterpreterImpl::invoke(const Arabica::DOM::Node<std::string>& element) {
 	InvokeRequest invokeReq;
 	invokeReq.Event::eventType = Event::EXTERNAL;
+
+	LOG(INFO) << "calling invoke element" << std::endl;
 	try {
 		// type
 		if (HAS_ATTR(element, "typeexpr") && _dataModel) {

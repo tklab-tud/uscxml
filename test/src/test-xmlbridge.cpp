@@ -9,30 +9,35 @@
 using namespace uscxml;
 using namespace boost;
 
-class XmlEventWatcher : public XmlEventsMonitor {
-	void handleChanges(DirectoryWatch::Action action, const std::string dir, const std::string file, struct stat fileStat) {
-		std::cout << "Monitor on " << dir << ": " << action << " for " << file << std::endl;
-	}
-};
-
 int main(int argc, char** argv) {
 
 	/* one intepreter for each datablock */
-	Interpreter interpreter = Interpreter::fromURI("file:///home/sunkiss/_Projects/uscxml-master/test/samples/uscxml/test-dirmon.scxml");
+	std::cout << "Initializing interpreter " << endl;
+	Interpreter interpreter = Interpreter::fromURI("file:///home/sunkiss/_Projects/xmlBridgeCPP/autoware.scxml");
+
+	if (!interpreter)
+		exit(EXIT_FAILURE);
 
 	/* initialized only once */
-	XmlBridgeSMIO* dw = new XmlBridgeSMIO(mybridgeconfig);
+	//std::cout << "Initializing IO monitor" << endl;
+	//XmlBridgeInputEvents dw();
 
 	/* one monitor/watcher for each state machine */
-	XmlEventWatcher watcher;
-	std::cout << "Adding Monitor " << endl;
-	dw->addMonitor(&watcher);
+	//XmlEventWatcher watcher;
+
+	//dw->addMonitor(&watcher);
 
 	std::cout << "Starting SCXML " << endl;
 	interpreter.start(); /* calls XmlBridgeInvoker::invoke */
 
 	while(interpreter.runOnMainThread(25)) {
-		dw->updateEntries();
+		tthread::this_thread::sleep_for(tthread::chrono::milliseconds(20));
+
+		char replydata[200];
+		std::cout << "Immettere il contenuto della risposta ricevuta dal SIM: " << endl;
+		cin.getline(replydata, 200);
+
+		XmlBridgeInputEvents::receiveReplyID(100, replydata);
 	}
 
 	return EXIT_SUCCESS;

@@ -19,7 +19,7 @@
 # include "uscxml/plugins/invoker/http/HTTPServletInvoker.h"
 # include "uscxml/plugins/invoker/heartbeat/HeartbeatInvoker.h"
 # include "uscxml/plugins/invoker/filesystem/dirmon/DirMonInvoker.h"
-# include "uscxml/plugins/invoker/system/SystemInvoker.h"
+# include "uscxml/plugins/invoker/system/XmlBridgeInvoker.h"
 # include "uscxml/plugins/invoker/xhtml/XHTMLInvoker.h"
 
 #ifdef PROTOBUF_FOUND
@@ -110,6 +110,7 @@ Factory::Factory() {
 
 		std::vector<InvokerImplProvider*> invokerProviders;
 		pluma.getProviders(invokerProviders);
+		LOG(INFO) << "lauching create invokers from factory" << endl;
 		for (std::vector<InvokerImplProvider*>::iterator it = invokerProviders.begin() ; it != invokerProviders.end() ; ++it) {
 			InvokerImpl* invoker = (*it)->create();
 			registerInvoker(invoker);
@@ -249,8 +250,12 @@ Factory::Factory() {
 		registerInvoker(invoker);
 	}
 	{
-		SystemInvoker* invoker = new SystemInvoker();
-		registerInvoker(invoker);
+		LOG(INFO) << "Factoring XmlBridgeInvoker instance" << endl;
+		XmlBridgeInvoker* invoker = new XmlBridgeInvoker();
+		if (invoker) {
+			LOG(INFO) << "Registering XmlBridgeInvoker instance" << endl;
+			registerInvoker(invoker);
+		}
 	}
 	{
 		BasicHTTPIOProcessor* ioProcessor = new BasicHTTPIOProcessor();
@@ -526,6 +531,7 @@ void EventHandlerImpl::returnEvent(Event& event) {
 	if (event.origintype.length() == 0)
 		event.origintype = _type;
 
+	LOG(INFO) << "Qui tutto ok" << endl;
 	_interpreter->receive(event);
 }
 
