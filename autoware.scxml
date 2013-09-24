@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scxml	version="1.0"
+	name="BlockID-100"
+	datamodel="xpath"
+	initial="root"
+	xmlns:fn="http://www.w3.org/2005/xpath-functions"
+	xmlns="http://www.w3.org/2005/07/scxml" >
+	
+	<!-- Not supported in the xpath datamodel 
+	<script src="http://uscxml.tk.informatik.tu-darmstadt.de/scripts/dump.js" />
+	-->
+	
+	<!-- Syntax for XPath data model initialization -->
+	<datamodel>
+	  <data id="TIM">
+		<frame xmlns="">
+		    <data type="request" index="12">language</data>
+		    <data type="request" index="13">diagnostic</data>
+		    <data type="request" index="14">optional</data>
+		    <!-- Operator oriented write commands -->
+		    <data type="wrapperProgram" index="15">
+			<nestedData type="numWorking">3</nestedData>
+		    </data>
+		    <data type="operativeMode" index="16">
+			<item i="0">
+			    <nestedData type="state">on</nestedData>
+			</item>
+			<item i="1">
+			    <nestedData type="state">off</nestedData>
+			</item>
+			<item i="2">
+			    <nestedData type="state">off</nestedData>
+			</item>
+		    </data>
+		    <data type="temperature" index="17">
+			<item i="0">
+			    <nestedData type="setPoint">30</nestedData>
+			</item>
+			<item i="1">
+			    <nestedData type="setPoint">20</nestedData>
+			</item>
+		    </data>
+		</frame>
+	  </data>
+<!--	  <data id="employees" src="http://example.com/employees.xml"/>-->
+	  <data id="defaultdata"/>
+	</datamodel>
+
+	<state id="root">
+		<invoke type="xmlbridge" id="xmlbridge1">
+			<param name="datablock" expr="'100'"/>
+		</invoke>
+	 	<initial>
+			<transition target="GetProdId" />
+		</initial>
+		<!-- Use Cases -->
+		<state id="GetProdId">
+			<onentry>
+				
+<!--				<assign location="time" expr="currentDateTime()"/>-->
+<!--				<assign location="$cities/list/city[@id='nyc']/@count" expr="d"/>-->
+<!--				<assign location="$myEventData" expr="$_event/data"/>-->
+<!--				<assign location="$cart/myCart/books/book[1]/title"  expr="'My favorite book'"/>-->
+				<assign location="$TIM/frame/data[@index='17']/item/nestedData" expr="'50'"/>
+<!--				<assign location="$TIM/frame/data[@index='17']/item/nestedData" expr="'50'"/>-->
+				
+				<!-- The following statement would iterate over the elements in the nodeset
+				 of <book> elements and replace their children with the <price> structure: -->
+<!--				<assign location="$cart/myCart/books/book">-->
+<!--				  <price>20.0</price>-->
+<!--				</assign>-->
+
+<!--				<foreach array="$cart//book" item="book">-->
+<!--					<log expr="fn:concat('Cart contains book with ISBN ', + $book/isbn)"/>-->
+<!--				</foreach>-->
+
+				<send target="#_xmlbridge1" event="ilnomedelmessaggiocheinviamo" delay="1s">
+					<param name="paramatername" expr="'paramatervalue'"/>
+					<content>
+						<root>
+							<alpha>1</alpha>
+							<beta>2</beta>
+							<gamma>3</gamma>
+						</root>
+					</content>
+				</send>
+<!--				<send targetexpr="$_ioprocessors/processor[@name=&#34;http://www.w3.org/TR/scxml/#BasicHTTPEventProcessor&#34;]/location/text()" type="http://www.w3.org/TR/scxml/#BasicHTTPEventProcessor">-->
+<!--					<!-- this content will be ignored, but it's here to make sure we have a message body -->-->
+<!--					<content>some content</content>-->
+<!--      				</send>  -->
+<!--				<send event="event1" type="http://www.w3.org/TR/scxml/#SCXMLEventProcessor" namelist="Var1"> -->
+<!--					<param name="param1" expr="2"/>-->
+<!--				</send>-->
+				<send id="send-123"
+				      target="#_xmlbridge1"
+				      type="http://www.w3.org/TR/scxml/#SCXMLEventProcessor"
+				      event="reply"
+				      namelist="TIM"/>
+
+				<send id="send-124"
+				      target="#_xmlbridge1"
+				      type="http://www.w3.org/TR/scxml/#SCXMLEventProcessor">
+
+<!--				  <content> NON SUPPORTATO -->
+<!--				     <MakeCall>-->
+<!--				       <callingDevice>"$TIM/frame/data[@index='17']/item/nestedData"</callingDevice>-->
+<!--				       <calledDirectoryNumber>18005551212</csta:calledDirectoryNumber>-->
+<!--				     </MakeCall>-->
+<!--				  </content>-->
+
+				  <content>
+				     <MakeCall>
+				       <callingDevice>VALORE</callingDevice>
+				       <calledDirectoryNumber>18005551212</calledDirectoryNumber>
+				     </MakeCall>
+				  </content>
+				</send>
+			</onentry>
+
+<!--			<transition cond="$_sessionid = '12345'" target="nextState"/>-->
+<!--			<transition cond="fn:year-from-dateTime($time) > 2009" target="newBehavior"/>-->
+			
+			<transition event="reply" cond="data('_event')/data[@index='17']/item[@id='0']/nestedData = 50" target="NewOrder" />
+<!--			<transition event="reply" cond="yearFromDatetime(time) > 2009" target="Exit" />-->
+
+
+<!--			<transition event="email.send">-->
+<!--				<my:email to="data('_event')/scxml:property[@name='email']"-->
+<!--				    cc="data('_event')/scxml:property[@name='xmlcontent']/h:headers/h:cc"-->
+<!--				    subject="data('_event')/scxml:property[@name='xmlcontent']/h:headers/h:subject"-->
+<!--				    content="data('_event')/scxml:property[@name='content']"/>-->
+<!--			</transition>-->
+
+<!--			<transition event="external.event">-->
+<!--				<csta:makecall callingDevice="data('_event')/csta:MakeCall/csta:callingDevice"-->
+<!--					callingDirectoryNumber="data('_event')/csta:MakeCall/csta:callingDirectoryNumber"/>-->
+<!--			<transition>-->
+
+<!--			<transition event="email.send">-->
+<!--				<my:email to="_event.email"-->
+<!--					cc="_event.jsoncontent.headers.cc"-->
+<!--					subject="_event.jsoncontent.headers.subject"-->
+<!--					content="_event.content"/>-->
+<!--			</transition>-->
+
+		</state>
+		<state id="NewOrder">
+			<onentry>
+				<script></script>
+				<send target="#_xmlbridge1">
+					<param name="paramatername" expr="'paramatervalue'"/>
+					<param name="othername" expr="'othervalue'"/>
+					<content>
+						<root>
+					      		<alpha>3</alpha>
+							<beta>2</beta>
+					      		<gamma>1</gamma>
+					   	</root>
+					</content>
+				</send>
+			</onentry>
+			<transition event="reply.NewOrder" cond="${ack == 'OK'}" target="PlaceOrder" /> 
+			<transition event="reply.NewOrder" cond="${ack == 'FAIL'}" target="Fail" /> 
+		</state>
+		<state id="PlaceOrder">
+			<onentry>
+				<script></script>
+				<send target="#_xmlbridge1">
+					<param name="$field" expr="'paramatervalue'"/>
+					<content>
+						<root>
+					      		<alpha>1</alpha>
+							<beta>2</beta>
+					      		<gamma>3</gamma>
+					   	</root>
+					</content>
+				</send>
+			</onentry>
+			<transition event="reply.SUCCESS" target="Exit" /> 
+			<transition event="reply.FAIL" target="Fail" /> 
+		</state>
+		<final id="Fail">
+			<onentry>
+				<send target="#_xmlbridge1">
+				  <param name="paramatername" expr="'paramatervalue'"/>
+				</send>
+			</onentry>
+	 	</final>
+		<final id="Exit">
+			<onentry>
+				<send target="#_xmlbridge1">
+				  <param name="paramatername" expr="'paramatervalue'"/>
+				</send>
+			</onentry>
+		</final>
+	</state>
+</scxml>

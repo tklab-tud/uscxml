@@ -18,24 +18,15 @@ int main(int argc, char** argv) {
 	if (!interpreter)
 		exit(EXIT_FAILURE);
 
-	/* initialized only once */
-	//std::cout << "Initializing IO monitor" << endl;
-	//XmlBridgeInputEvents dw();
-
-	/* one monitor/watcher for each state machine */
-	//XmlEventWatcher watcher;
-
-	//dw->addMonitor(&watcher);
-
-	std::cout << "Starting SCXML " << endl;
+	std::cout << endl << "Starting SCXML " << endl;
 	interpreter.start(); /* calls XmlBridgeInvoker::invoke */
 
 	while(interpreter.runOnMainThread(25)) {
 		tthread::this_thread::sleep_for(tthread::chrono::milliseconds(20));
 
-		char replydata[200];
-		std::cout << "Immettere il contenuto della risposta ricevuta dal SIM: " << endl;
-		cin.getline(replydata, 200);
+		const char *replydata = "<data type=\"temperature\" index=\"17\"><item i=\"0\"><nestedData type=\"setPoint\">30</nestedData></item><item i=\"1\"><nestedData type=\"setPoint\">20</nestedData></item></data>";
+		//std::cout << endl << "Immettere il contenuto della risposta ricevuta dal TIM: " << endl;
+		//cin.getline(replydata, 200);
 
 		XmlBridgeInputEvents::receiveReplyID(100, replydata);
 	}

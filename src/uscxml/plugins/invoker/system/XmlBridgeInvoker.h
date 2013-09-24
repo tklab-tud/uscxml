@@ -61,8 +61,9 @@ public:
 	static void receiveReplyID(const uint8_t datablockID, const char *replyData);
 
 	//std::map<std::string, struct stat> getAllEntries() {}
+
 	static XmlBridgeInputEvents& getInstance() {
-		LOG(INFO) << "Initializing XmlBridgeInputEvents instance" << endl;
+		LOG(INFO) << "Initializing XmlBridgeInputEvents static instance" << endl;
 		static XmlBridgeInputEvents instance;
 		return instance;
 	}

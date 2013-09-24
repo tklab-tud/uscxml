@@ -34,8 +34,6 @@ else()
 	list (APPEND USCXML_FILES ${DIRMON_INVOKER})
 endif()
 
-# DirMon invoker to watch for filesystem changes
-
 set(USCXML_INVOKERS "xmlbridge ${USCXML_INVOKERS}")
 file(GLOB_RECURSE XMLBRIDGE_INVOKER
 	system/XmlBridgeInvoker.cpp
@@ -91,20 +89,20 @@ endif()
 
 # System invoker to open a native command
 
-#file(GLOB_RECURSE SYSTEM_INVOKER
-#	system/*.cpp
-#	system/*.h
-#)
-#source_group("Invoker\\system" FILES ${SYSTEM_INVOKER})
-#if (BUILD_AS_PLUGINS)
-#	add_library(
-#		invoker_system SHARED 
-#		${SYSTEM_INVOKER})
-#	target_link_libraries(invoker_system uscxml)
-#	set_target_properties(invoker_system PROPERTIES FOLDER "Plugin Invoker")
-#else()
-#	list (APPEND USCXML_FILES ${SYSTEM_INVOKER})
-#endif()
+file(GLOB_RECURSE SYSTEM_INVOKER
+	system/*.cpp
+	system/*.h
+)
+source_group("Invoker\\system" FILES ${SYSTEM_INVOKER})
+if (BUILD_AS_PLUGINS)
+	add_library(
+		invoker_system SHARED
+		${SYSTEM_INVOKER})
+	target_link_libraries(invoker_system uscxml)
+	set_target_properties(invoker_system PROPERTIES FOLDER "Plugin Invoker")
+else()
+	list (APPEND USCXML_FILES ${SYSTEM_INVOKER})
+endif()
 
 
 # SQLite3 SQL Invoker

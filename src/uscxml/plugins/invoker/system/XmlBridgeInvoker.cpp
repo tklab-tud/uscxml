@@ -52,17 +52,22 @@ void XmlBridgeInvoker::send(const SendRequest& req) {
 
 	SendRequest reqCopy(req);
 
-	std::cout << reqCopy.getXML() << std::endl;
+	//leggere parametri
 
-	/*
+	//estrarre la struttura XML del messaggio da inviare al TIM
+
+	//riempire i campi del messaggio XML al tim con i field ricevuti dal Modbus
+
 	_interpreter->getDataModel().replaceExpressions(reqCopy.content);
 
-	Data xml = Data::fromXML(reqCopy.content);
-	if (xml) {
-		reqCopy.data = xml;
-		cout << xml.toXMLString() << endl;
-	} else
-		cerr << "Failed parsing send request" << endl;*/
+	std::cout << std::endl << reqCopy.getXML() << std::endl;
+
+	//Data xml = Data::fromXML(reqCopy.content);
+	//if (xml) {
+	//	reqCopy.data = xml;
+	//	cout << xml.toXMLString() << endl;
+	//} else
+	//	cerr << "Failed parsing send request" << endl;*/
 
 	//cout << reqCopy.toXMLString() << endl;
 

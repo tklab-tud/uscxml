@@ -20,6 +20,7 @@
 # include "uscxml/plugins/invoker/heartbeat/HeartbeatInvoker.h"
 # include "uscxml/plugins/invoker/filesystem/dirmon/DirMonInvoker.h"
 # include "uscxml/plugins/invoker/system/SystemInvoker.h"
+# include "uscxml/plugins/invoker/system/XmlBridgeInvoker.h"
 # include "uscxml/plugins/invoker/xhtml/XHTMLInvoker.h"
 
 #ifdef PROTOBUF_FOUND
@@ -261,6 +262,10 @@ Factory::Factory() {
 	}
 	{
 		SystemInvoker* invoker = new SystemInvoker();
+		registerInvoker(invoker);
+	}
+	{
+		XmlBridgeInvoker* invoker = new XmlBridgeInvoker();
 		registerInvoker(invoker);
 	}
 	{
