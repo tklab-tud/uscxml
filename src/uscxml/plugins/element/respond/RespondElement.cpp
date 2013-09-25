@@ -67,7 +67,7 @@ void RespondElement::enterElement(const Arabica::DOM::Node<std::string>& node) {
 					if (contentData.atom.length() > 0) {
 						httpReply.content = contentData.atom;
 					} else if (contentData.binary) {
-						httpReply.content = std::string(contentData.binary->_data, contentData.binary->_size);
+						httpReply.content = std::string(contentData.binary->data, contentData.binary->size);
 					} else {
 						httpReply.content = Data::toJSON(contentData);
 					}

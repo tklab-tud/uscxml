@@ -204,6 +204,33 @@ void XPathDataModel::setEvent(const Event& event) {
 
 Data XPathDataModel::getStringAsData(const std::string& content) {
 	Data data;
+	XPathValue<std::string> result = _xpath.evaluate_expr(content, _doc);
+
+	std::stringstream ss;
+
+	switch (result.type()) {
+		case ANY:
+			break;
+		case BOOL:
+			ss << result.asBool();
+			break;
+		case NUMBER:
+			ss << result.asNumber();
+			break;
+		case STRING:
+			ss << result.asString();
+			break;
+		case NODE_SET:
+			NodeSet<std::string> ns = result.asNodeSet();
+			for (int i = 0; i < ns.size(); i++) {
+				ss << ns[i];
+			}
+			ss << result;
+			break;
+	}
+	
+	data.atom = ss.str();
+	data.type = Data::VERBATIM;
 	return data;
 }
 
@@ -308,6 +335,7 @@ void XPathDataModel::eval(const Arabica::DOM::Element<std::string>& scriptElem,
 }
 
 bool XPathDataModel::isDeclared(const std::string& expr) {
+	return true;
 	try {
 		return _varResolver.isDeclared(expr) || evalAsBool(expr);
 	} catch(...) {
@@ -461,14 +489,13 @@ void XPathDataModel::init(const Element<std::string>& dataElem,
 
 	Element<std::string> container = _doc.createElement("data");
 	container.setAttribute("id", location);
+
 	if (node) {
-		if (node) {
-			Node<std::string> data = node;
-			while (data) {
-				Node<std::string> dataClone = _doc.importNode(data, true);
-				container.appendChild(dataClone);
-				data = data.getNextSibling();
-			}
+		Node<std::string> data = node;
+		while (data) {
+			Node<std::string> dataClone = _doc.importNode(data, true);
+			container.appendChild(dataClone);
+			data = data.getNextSibling();
 		}
 	} else if (content.length() > 0) {
 		Text<std::string> textNode = _doc.createTextNode(Interpreter::spaceNormalize(content));
@@ -497,8 +524,6 @@ void XPathDataModel::init(const Element<std::string>& dataElem,
 		} catch (SyntaxException e) {
 			throw Event("error.execution", Event::PLATFORM);
 		}
-	} else {
-		LOG(ERROR) << "data element has no content";
 	}
 	_datamodel.appendChild(container);
 
@@ -740,7 +765,7 @@ NodeSetVariableResolver::resolveVariable(const std::string& namepaceUri,
 }
 
 void NodeSetVariableResolver::setVariable(const std::string& name, const NodeSet<std::string>& value) {
-#if VERBOSE
+#if 0
 	std::cout << std::endl << "Setting " << name << ":" << std::endl;
 	for (int i = 0; i < value.size(); i++) {
 		std::cout << value[i].getNodeType() << " | " << value[i] << std::endl;
@@ -748,9 +773,26 @@ void NodeSetVariableResolver::setVariable(const std::string& name, const NodeSet
 	std::cout << std::endl;
 #endif
 	_variables[name] = value;
+#if 0
+	std::map<std::string, Arabica::XPath::NodeSet<std::string> >::iterator varIter =  _variables.begin();
+	while (varIter != _variables.end()) {
+		std::cout << varIter->first << ":" << std::endl;
+		for (int i = 0; i < varIter->second.size(); i++) {
+			std::cout << varIter->second[i].getNodeType() << " | " << varIter->second[i] << std::endl;
+		}
+		varIter++;
+	}
+#endif
 }
 
 bool NodeSetVariableResolver::isDeclared(const std::string& name) {
+#if 0
+	std::map<std::string, Arabica::XPath::NodeSet<std::string> >::iterator varIter =  _variables.begin();
+	while (varIter != _variables.end()) {
+		std::cout << varIter->first << std::endl;
+		varIter++;
+	}
+#endif
 	return _variables.find(name) != _variables.end();
 }
 

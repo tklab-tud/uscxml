@@ -56,8 +56,9 @@ void InterpreterDraft6::interpret() {
 		for (unsigned int i = 0; i < dataElems.size(); i++) {
 			// do not process data elements of nested documents from invokers
 			if (!getAncestorElement(dataElems[i], _xmlNSPrefix + "invoke"))
-				if (dataElems[i].getNodeType() == Node_base::ELEMENT_NODE)
+				if (dataElems[i].getNodeType() == Node_base::ELEMENT_NODE) {
 					initializeData(Element<std::string>(dataElems[i]));
+				}
 		}
 	} else if(_dataModel) {
 		// initialize current data elements

@@ -14,6 +14,8 @@
 #include <boost/lexical_cast.hpp>
 #include <inttypes.h>
 
+#include "uscxml/Convenience.h"
+
 #define TAGNAME(elem) ((Arabica::DOM::Element<std::string>)elem).getTagName()
 #define LOCALNAME(elem) ((Arabica::DOM::Element<std::string>)elem).getLocalName()
 #define ATTR(elem, attr) ((Arabica::DOM::Element<std::string>)elem).getAttribute(attr)
@@ -26,8 +28,9 @@ public:
 	~Blob();
 	Blob(size_t size);
 	Blob(void* data, size_t size, bool adopt = false);
-	char* _data;
-	size_t _size;
+	char* data;
+	size_t size;
+	std::string mimetype;
 };
 	
 class Data {
@@ -40,6 +43,15 @@ public:
 	Data() : type(INTERPRETED) {}
 	Data(const std::string& atom_, Type type_ = INTERPRETED) : atom(atom_), type(type_) {}
 	Data(const char* data, size_t size, bool adopt);
+	Data(bool atom_) : type(INTERPRETED) {
+		if (atom_) {
+			atom = "true";
+		} else {
+			atom = "false";
+		}
+	}
+	template <typename T> Data(T value) : atom(toStr(value)), type(INTERPRETED) {}
+	
 	explicit Data(const Arabica::DOM::Node<std::string>& dom);
 	virtual ~Data() {}
 
