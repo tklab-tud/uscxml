@@ -13,7 +13,7 @@ int main(int argc, char** argv) {
 
 	/* one intepreter for each datablock */
 	std::cout << "Initializing interpreter " << endl;
-	Interpreter interpreter = Interpreter::fromURI("file:///home/sunkiss/_Projects/xmlBridgeCPP/autoware.scxml");
+	Interpreter interpreter = Interpreter::fromURI("file:///home/sunkiss/_Projects/uscxml/autoware.scxml");
 
 	if (!interpreter)
 		exit(EXIT_FAILURE);

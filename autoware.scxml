@@ -12,36 +12,42 @@
 	
 	<!-- Syntax for XPath data model initialization -->
 	<datamodel>
-	  <data id="TIM">
-		<frame xmlns="">
-		    <data type="request" index="12">language</data>
-		    <data type="request" index="13">diagnostic</data>
-		    <data type="request" index="14">optional</data>
-		    <!-- Operator oriented write commands -->
-		    <data type="wrapperProgram" index="15">
-			<nestedData type="numWorking">3</nestedData>
-		    </data>
-		    <data type="operativeMode" index="16">
-			<item i="0">
-			    <nestedData type="state">on</nestedData>
-			</item>
-			<item i="1">
-			    <nestedData type="state">off</nestedData>
-			</item>
-			<item i="2">
-			    <nestedData type="state">off</nestedData>
-			</item>
-		    </data>
-		    <data type="temperature" index="17">
-			<item i="0">
-			    <nestedData type="setPoint">30</nestedData>
-			</item>
-			<item i="1">
-			    <nestedData type="setPoint">20</nestedData>
-			</item>
-		    </data>
-		</frame>
-	  </data>
+		<data id="TIM">
+		    <headers xmlns="">
+		      <cc>archive@example.com</cc>
+		      <subject>Example email</subject>
+		    </headers>
+		</data>
+<!--	  <data id="TIM">-->
+<!--		<frame >-->
+<!--		    <data type="request" index="12">language</data>-->
+<!--		    <data type="request" index="13">diagnostic</data>-->
+<!--		    <data type="request" index="14">optional</data>-->
+<!--		   Operator oriented write commands -->
+<!--		    <data type="wrapperProgram" index="15">-->
+<!--			<nestedData type="numWorking">3</nestedData>-->
+<!--		    </data>-->
+<!--		    <data type="operativeMode" index="16">-->
+<!--			<item i="0">-->
+<!--			    <nestedData type="state">on</nestedData>-->
+<!--			</item>-->
+<!--			<item i="1">-->
+<!--			    <nestedData type="state">off</nestedData>-->
+<!--			</item>-->
+<!--			<item i="2">-->
+<!--			    <nestedData type="state">off</nestedData>-->
+<!--			</item>-->
+<!--		    </data>-->
+<!--		    <data type="temperature" index="17">-->
+<!--			<item i="0">-->
+<!--			    <nestedData type="setPoint">30</nestedData>-->
+<!--			</item>-->
+<!--			<item i="1">-->
+<!--			    <nestedData type="setPoint">20</nestedData>-->
+<!--			</item>-->
+<!--		    </data>-->
+<!--		</frame>-->
+<!--	  </data>-->
 <!--	  <data id="employees" src="http://example.com/employees.xml"/>-->
 	  <data id="defaultdata"/>
 	</datamodel>
@@ -61,7 +67,8 @@
 <!--				<assign location="$cities/list/city[@id='nyc']/@count" expr="d"/>-->
 <!--				<assign location="$myEventData" expr="$_event/data"/>-->
 <!--				<assign location="$cart/myCart/books/book[1]/title"  expr="'My favorite book'"/>-->
-				<assign location="$TIM/frame/data[@index='17']/item/nestedData" expr="'50'"/>
+<!--				<assign location="$TIM/frame/data[@index='17']/item/nestedData" expr="'50'"/>-->
+				<assign location="$TIM/headers/subject">20</assign>
 <!--				<assign location="$TIM/frame/data[@index='17']/item/nestedData" expr="'50'"/>-->
 				
 				<!-- The following statement would iterate over the elements in the nodeset
@@ -74,7 +81,10 @@
 <!--					<log expr="fn:concat('Cart contains book with ISBN ', + $book/isbn)"/>-->
 <!--				</foreach>-->
 
-				<send target="#_xmlbridge1" event="ilnomedelmessaggiocheinviamo" delay="1s">
+				<send id="send-122"
+				      target="#_xmlbridge1"
+				      event="ilnomedelmessaggiocheinviamo"
+				      delay="1s">
 					<param name="paramatername" expr="'paramatervalue'"/>
 					<content>
 						<root>
@@ -84,22 +94,18 @@
 						</root>
 					</content>
 				</send>
-<!--				<send targetexpr="$_ioprocessors/processor[@name=&#34;http://www.w3.org/TR/scxml/#BasicHTTPEventProcessor&#34;]/location/text()" type="http://www.w3.org/TR/scxml/#BasicHTTPEventProcessor">-->
-<!--					<!-- this content will be ignored, but it's here to make sure we have a message body -->-->
-<!--					<content>some content</content>-->
-<!--      				</send>  -->
-<!--				<send event="event1" type="http://www.w3.org/TR/scxml/#SCXMLEventProcessor" namelist="Var1"> -->
-<!--					<param name="param1" expr="2"/>-->
-<!--				</send>-->
+
 				<send id="send-123"
 				      target="#_xmlbridge1"
 				      type="http://www.w3.org/TR/scxml/#SCXMLEventProcessor"
 				      event="reply"
+				      delay="1s"
 				      namelist="TIM"/>
 
-				<send id="send-124"
-				      target="#_xmlbridge1"
-				      type="http://www.w3.org/TR/scxml/#SCXMLEventProcessor">
+<!--				<send id="send-124"-->
+<!--				      target="#_xmlbridge1"-->
+<!--				      delay="100s"-->
+<!--				      event="reply">-->
 
 <!--				  <content> NON SUPPORTATO -->
 <!--				     <MakeCall>-->
@@ -108,19 +114,20 @@
 <!--				     </MakeCall>-->
 <!--				  </content>-->
 
-				  <content>
-				     <MakeCall>
-				       <callingDevice>VALORE</callingDevice>
-				       <calledDirectoryNumber>18005551212</calledDirectoryNumber>
-				     </MakeCall>
-				  </content>
-				</send>
+<!--				  <content>-->
+<!--				     <MakeCall>-->
+<!--				       <callingDevice>VALORE</callingDevice>-->
+<!--				       <calledDirectoryNumber>18005551212</calledDirectoryNumber>-->
+<!--				     </MakeCall>-->
+<!--				  </content>-->
+<!--				</send>-->
 			</onentry>
 
 <!--			<transition cond="$_sessionid = '12345'" target="nextState"/>-->
 <!--			<transition cond="fn:year-from-dateTime($time) > 2009" target="newBehavior"/>-->
 			
-			<transition event="reply" cond="data('_event')/data[@index='17']/item[@id='0']/nestedData = 50" target="NewOrder" />
+<!--			<transition event="reply" cond="data('_event')/data[@index='17']/item[@id='0']/nestedData = 50" target="NewOrder" />-->
+<!--			<transition event="reply" cond="data('_event')/headers/subject = 20" target="NewOrder" />-->
 <!--			<transition event="reply" cond="yearFromDatetime(time) > 2009" target="Exit" />-->
 
 

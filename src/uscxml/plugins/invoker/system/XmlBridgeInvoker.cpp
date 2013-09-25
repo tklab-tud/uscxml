@@ -61,6 +61,9 @@ void XmlBridgeInvoker::send(const SendRequest& req) {
 	_interpreter->getDataModel().replaceExpressions(reqCopy.content);
 
 	std::cout << std::endl << reqCopy.getXML() << std::endl;
+	std::cout << std::endl << reqCopy.getContent() << std::endl;
+	std::cout << std::endl << reqCopy.getData() << std::endl;
+	std::cout << std::endl << reqCopy.getRaw() << std::endl;
 
 	//Data xml = Data::fromXML(reqCopy.content);
 	//if (xml) {
