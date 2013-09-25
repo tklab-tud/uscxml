@@ -38,7 +38,6 @@ public:
 	static void run(void* instance);
 
 protected:
-
 	bool _isRunning;
 	tthread::thread* _thread;
 	tthread::recursive_mutex _mutex;
