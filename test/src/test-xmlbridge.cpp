@@ -10,10 +10,8 @@ using namespace uscxml;
 using namespace boost;
 
 int main(int argc, char** argv) {
-	const char *replydata = "<data type=\"temperature\" index=\"17\"><item i=\"0\"><nestedData type=\"setPoint\">30</nestedData></item><item i=\"1\"><nestedData type=\"setPoint\">20</nestedData></item></data>";
+//	const char *replydata = "<data type=\"temperature\" index=\"17\"><item i=\"0\"><nestedData type=\"setPoint\">30</nestedData></item><item i=\"1\"><nestedData type=\"setPoint\">20</nestedData></item></data>";
 
-	//std::cout << endl << "Immettere il contenuto della risposta ricevuta dal TIM: " << endl;
-	//cin.getline(replydata, 200);
 
 	/* one intepreter for each datablock */
 	std::cout << "Initializing interpreter " << endl;
@@ -26,7 +24,10 @@ int main(int argc, char** argv) {
 	interpreter.start(); /* calls XmlBridgeInvoker::invoke */
 
 	while(interpreter.runOnMainThread(25)) {
+		char *replydata = NULL;
 		tthread::this_thread::sleep_for(tthread::chrono::milliseconds(20));
+		std::cout << endl << "Immettere il contenuto della risposta ricevuta dal TIM: " << endl;
+		cin.getline(replydata, 200);
 		XmlBridgeInputEvents::receiveReply(100, replydata);
 	}
 

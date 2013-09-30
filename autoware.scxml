@@ -26,7 +26,7 @@
 
 
 	  <data id="TIM">
-		<frame >
+		<frame xmlns="">
 		    <get type="request" index="12">language</get>
 		    <get type="request" index="13">diagnostic</get>
 		    <get type="request" index="14">optional</get>
@@ -66,13 +66,15 @@
 		<!-- Use Cases -->
 		<state id="GetProdId">
 			<onentry>
-				<file url="foo.bin" operation="read" type="xml" callback="foo.bin" />
-				<file url="bar.bin" operation="write" type="xml" contentexpr="_event['data']['content']" />
+<!--				<file url="foo.bin" operation="read" type="xml" callback="foo.bin" />-->
+<!--				<file url="bar.bin" operation="write" type="xml" contentexpr="_event['data']['content']" />-->
+
+				<assign location="$TIM" expr="'50'"/>
+
 <!--				<assign location="time" expr="currentDateTime()"/>-->
 <!--				<assign location="$cities/list/city[@id='nyc']/@count" expr="d"/>-->
 <!--				<assign location="$myEventData" expr="$_event/data"/>-->
 <!--				<assign location="$cart/myCart/books/book[1]/title"  expr="'My favorite book'"/>-->
-				<assign location="$TIM/frame/data[@index='17']/item/nestedData" expr=""/>
 <!--				<assign location="$TIM/headers/subject">20</assign>-->
 <!--				<assign location="$TIM/frame/data[@index='17']/item/nestedData" expr="'50'"/>-->
 				
@@ -106,8 +108,8 @@
 				      target="#_xmlbridge1"
 				      type="http://www.w3.org/TR/scxml/#SCXMLEventProcessor"
 				      event="reply"
-				      delay="1s"
-				      namelist="ciao"/>
+				      delay="2s"
+				      namelist="TIM"/>
 
 <!--				<send id="send-124"-->
 <!--				      target="#_xmlbridge1"-->
@@ -130,13 +132,12 @@
 <!--				</send>-->
 			</onentry>
 
+<!--			<transition event="reply" cond="data('_event')/data[@index='17']/item[@id='0']/nestedData=='50'" target="NewOrder" />-->
+
 <!--			<transition cond="$_sessionid = '12345'" target="nextState"/>-->
 <!--			<transition cond="fn:year-from-dateTime($time) > 2009" target="newBehavior"/>-->
-			
-			<transition event="reply" cond="data('_event')/data[@index='17']/item[@id='0']/nestedData=='50'" target="NewOrder" />
 <!--			<transition event="reply" cond="data('_event')/headers/subject = 20" target="NewOrder" />-->
 <!--			<transition event="reply" cond="yearFromDatetime(time) > 2009" target="Exit" />-->
-
 
 <!--			<transition event="email.send">-->
 <!--				<my:email to="data('_event')/scxml:property[@name='email']"-->
@@ -156,7 +157,6 @@
 <!--					subject="_event.jsoncontent.headers.subject"-->
 <!--					content="_event.content"/>-->
 <!--			</transition>-->
-
 		</state>
 		<state id="NewOrder">
 			<onentry>
