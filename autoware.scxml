@@ -18,16 +18,23 @@
 <!--		      <subject>Example email</subject>-->
 <!--		    </headers>-->
 <!--		</data>-->
+<!--	<data id="ciao">-->
+<!--		    <data type="request" index="12">nuovovalore</data>-->
+<!--		    <data type="request" index="13">diagnostic</data>-->
+<!--		    <data type="request" index="14">optional</data>-->
+<!--	</data>-->
+
+
 	  <data id="TIM">
 		<frame >
-		    <data type="request" index="12">language</data>
-		    <data type="request" index="13">diagnostic</data>
-		    <data type="request" index="14">optional</data>
+		    <get type="request" index="12">language</get>
+		    <get type="request" index="13">diagnostic</get>
+		    <get type="request" index="14">optional</get>
 <!--		   Operator oriented write commands -->
-		    <data type="wrapperProgram" index="15">
+		    <set type="wrapperProgram" index="15">
 			<nestedData type="numWorking">3</nestedData>
-		    </data>
-		    <data type="operativeMode" index="16">
+		    </set>
+		    <set type="operativeMode" index="16">
 			<item i="0">
 			    <nestedData type="state">on</nestedData>
 			</item>
@@ -37,37 +44,35 @@
 			<item i="2">
 			    <nestedData type="state">off</nestedData>
 			</item>
-		    </data>
-		    <data type="temperature" index="17">
+		    </set>
+		    <set type="temperature" index="17">
 			<item i="0">
 			    <nestedData type="setPoint">30</nestedData>
 			</item>
 			<item i="1">
 			    <nestedData type="setPoint">20</nestedData>
 			</item>
-		    </data>
+		    </set>
 		</frame>
 	  </data>
 <!--	  <data id="employees" src="http://example.com/employees.xml"/>-->
-	  <data id="defaultdata"/>
+<!--	  <data id="defaultdata"/>-->
 	</datamodel>
 
-	<state id="root">
+	<state id="root" initial="GetProdId">
 		<invoke type="xmlbridge" id="xmlbridge1">
 			<param name="datablock" expr="'100'"/>
 		</invoke>
-	 	<initial>
-			<transition target="GetProdId" />
-		</initial>
 		<!-- Use Cases -->
 		<state id="GetProdId">
 			<onentry>
-				
+				<file url="foo.bin" operation="read" type="xml" callback="foo.bin" />
+				<file url="bar.bin" operation="write" type="xml" contentexpr="_event['data']['content']" />
 <!--				<assign location="time" expr="currentDateTime()"/>-->
 <!--				<assign location="$cities/list/city[@id='nyc']/@count" expr="d"/>-->
 <!--				<assign location="$myEventData" expr="$_event/data"/>-->
 <!--				<assign location="$cart/myCart/books/book[1]/title"  expr="'My favorite book'"/>-->
-				<assign location="$TIM/frame/data[@index='17']/item/nestedData" expr="'50'"/>
+				<assign location="$TIM/frame/data[@index='17']/item/nestedData" expr=""/>
 <!--				<assign location="$TIM/headers/subject">20</assign>-->
 <!--				<assign location="$TIM/frame/data[@index='17']/item/nestedData" expr="'50'"/>-->
 				
@@ -76,6 +81,8 @@
 <!--				<assign location="$cart/myCart/books/book">-->
 <!--				  <price>20.0</price>-->
 <!--				</assign>-->
+
+<!--			        <assign location="$Var2" expr="$_event/data/data[@id='aParam']/text()"/>-->
 
 <!--				<foreach array="$cart//book" item="book">-->
 <!--					<log expr="fn:concat('Cart contains book with ISBN ', + $book/isbn)"/>-->
@@ -100,7 +107,7 @@
 				      type="http://www.w3.org/TR/scxml/#SCXMLEventProcessor"
 				      event="reply"
 				      delay="1s"
-				      namelist="TIM"/>
+				      namelist="ciao"/>
 
 <!--				<send id="send-124"-->
 <!--				      target="#_xmlbridge1"-->

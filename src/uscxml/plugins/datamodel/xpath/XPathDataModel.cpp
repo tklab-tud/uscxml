@@ -2,6 +2,13 @@
 #include "XPathDataModel.h"
 
 #include "uscxml/Message.h"
+#include <arabica/DOM/Node.hpp>
+#include <arabica/DOM/NodeList.hpp>
+#include <arabica/DOM/Document.hpp>
+#include <arabica/DOM/Element.hpp>
+#include <arabica/DOM/Attr.hpp>
+#include <arabica/XPath/XPath.hpp>
+#include <arabica/XPath/impl/xpath_expression.hpp>
 #include <glog/logging.h>
 
 #ifdef BUILD_AS_PLUGINS
@@ -204,6 +211,33 @@ void XPathDataModel::setEvent(const Event& event) {
 
 Data XPathDataModel::getStringAsData(const std::string& content) {
 	Data data;
+	XPathValue<std::string> result = _xpath.evaluate_expr(content, _doc);
+
+	std::stringstream ss;
+
+	switch (result.type()) {
+	case ANY:
+		break;
+	case BOOL:
+		ss << result.asBool();
+		break;
+	case NUMBER:
+		ss << result.asNumber();
+		break;
+	case STRING:
+		ss << result.asString();
+		break;
+	case NODE_SET:
+		NodeSet<std::string> ns = result.asNodeSet();
+		for (int i = 0; i < ns.size(); i++) {
+			ss << ns[i];
+		}
+		ss << result;
+		break;
+	}
+
+	data.atom = ss.str();
+	data.type = Data::VERBATIM;
 	return data;
 }
 

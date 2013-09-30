@@ -172,21 +172,8 @@ void XmlBridgeInvoker::invoke(const InvokeRequest& req) {
 	*/
 
 	_isRunning = true;
-
-	LOG(INFO) << "Initializing XmlBridge thread";
-
+	LOG(INFO) << "Moving XmlBridgeInvoker to a new thread" << endl;
 	_thread = new tthread::thread(XmlBridgeInvoker::run, this);
-}
-
-/* wait for IO events or send instructions */
-void XmlBridgeInvoker::run(void* instance) {
-
-	LOG(INFO) << "Running XmlBridge thread";
-
-	while(((XmlBridgeInvoker*)instance)->_isRunning) {
-		//((XmlBridgeInvoker*)instance)->_watcher->updateEntries();
-		tthread::this_thread::sleep_for(tthread::chrono::milliseconds(20));
-	}
 }
 
 void XmlBridgeInvoker::handleReply(const std::string reply_raw_data) {
@@ -291,7 +278,7 @@ void XmlBridgeInvoker::handleReply(const std::string reply_raw_data) {
 	returnEvent(myevent);
 }
 
-void XmlBridgeInputEvents::receiveReplyID(const uint8_t datablockID, const char *replyData)
+void XmlBridgeInputEvents::receiveReply(const uint8_t datablockID, const char *replyData)
 {
 	string repdata(replyData);
 	XmlBridgeInputEvents myinstance = XmlBridgeInputEvents::getInstance();
