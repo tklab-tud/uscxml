@@ -661,6 +661,7 @@ void XPathDataModel::assign(const NodeSet<std::string>& key,
 void XPathDataModel::assign(const NodeSet<std::string>& key,
                             const bool value,
                             const Element<std::string>& assignElem) {
+	LOG(ERROR) << "XPathDataModel::assign bool not implemented";
 }
 
 void XPathDataModel::assign(const NodeSet<std::string>& key,

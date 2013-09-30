@@ -6,6 +6,8 @@ SET(USCXML_VERSION_MINOR "1")
 SET(USCXML_VERSION_PATCH "0")
 SET(USCXML_VERSION ${USCXML_VERSION_MAJOR}.${USCXML_VERSION_MINOR}.${USCXML_VERSION_PATCH})
 
+SET(CMAKE_BUILD_TYPE Debug)
+
 # build type has to be set before the project definition4
 SET(BUILD_TYPE_HELP "Choose the type of build, options are: None(CMAKE_CXX_FLAGS or CMAKE_C_FLAGS used) Debug, Release, RelWithDebInfo, MinSizeRel.")
 IF(DEFINED CMAKE_BUILD_TYPE)

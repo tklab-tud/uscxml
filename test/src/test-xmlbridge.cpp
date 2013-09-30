@@ -24,11 +24,11 @@ int main(int argc, char** argv) {
 	interpreter.start(); /* calls XmlBridgeInvoker::invoke */
 
 	while(interpreter.runOnMainThread(25)) {
-		char *replydata = NULL;
+		//char replydata[200];
 		tthread::this_thread::sleep_for(tthread::chrono::milliseconds(20));
-		std::cout << endl << "Immettere il contenuto della risposta ricevuta dal TIM: " << endl;
-		cin.getline(replydata, 200);
-		XmlBridgeInputEvents::receiveReply(100, replydata);
+		//std::cout << endl << "Immettere il contenuto della risposta ricevuta dal TIM: " << endl;
+		//cin.getline(replydata, 200);
+		//XmlBridgeInputEvents::receiveReply(100, replydata);
 	}
 
 	return EXIT_SUCCESS;
