@@ -4,6 +4,17 @@
 #include <iostream>
 #include <string>
 
+#include <arabica/Arabica/StringAdaptor.hpp>
+#include <arabica/DOM/Node.hpp>
+#include <arabica/DOM/NodeList.hpp>
+#include <arabica/DOM/Document.hpp>
+#include <arabica/DOM/Element.hpp>
+#include <arabica/DOM/Attr.hpp>
+#include <arabica/XPath/XPath.hpp>
+#include <arabica/XPath/impl/xpath_expression.hpp>
+
+
+
 #define string_type std::string
 #define string_adaptor Arabica::default_string_adaptor<std::string>
 
@@ -126,7 +137,7 @@ int main(int argc, char** argv) {
 	std::cout << chapters_ << std::endl;
 
 
-	if (false) {
+	if (true) {
 		using namespace Arabica::XPath;
 		StringVariableResolver svr;
 		svr.setVariable(SA::construct_from_utf8("index"), SA::construct_from_utf8("1"));
@@ -139,7 +150,7 @@ int main(int argc, char** argv) {
 		parser.resetVariableResolver();
 	} // test18
 
-	if (false) {
+	if (true) {
 		using namespace Arabica::XPath;
 		XPathExpression<string_type, string_adaptor> xpath = parser.compile(SA::construct_from_utf8("root/*[position() = 2]"));
 		XPathValue<string_type, string_adaptor> result = xpath.evaluate(document_);
@@ -153,7 +164,9 @@ int main(int argc, char** argv) {
 	if (false) {
 		using namespace Arabica::XPath;
 		Arabica::DOM::DocumentFragment<string_type, string_adaptor> frag = document_.createDocumentFragment();
-		frag.appendChild(document_.createElement(SA::construct_from_utf8("foo")));
+		document_.getFirstChild().appendChild(document_.createElement(SA::construct_from_utf8("foo"))).appendChild(document_.createElement(SA::construct_from_utf8("one")));
+
+		std::cout << std::endl << document_ << std::endl << std::endl;
 
 		NodeSetVariableResolver svr;
 		NodeSet<string_type, string_adaptor> ns;
@@ -161,13 +174,75 @@ int main(int argc, char** argv) {
 		svr.setVariable(SA::construct_from_utf8("fruit"), ns);
 		parser.setVariableResolver(svr);
 
-		XPathValue<string_type, string_adaptor> result = parser.evaluate_expr(SA::construct_from_utf8("$fruit/foo|/root/child3"), document_);
+		XPathValue<string_type, string_adaptor> result = parser.evaluate_expr(SA::construct_from_utf8("$fruit/foo"), document_);
 		assert(NODE_SET == result.type());
-		assert(2 == result.asNodeSet().size());
-		assert(element3_ == result.asNodeSet()[0]);
+		assert(1 == result.asNodeSet().size());
+		std::cout << std::endl << result.asString() << std::endl;
 	} // testUnion11
 
-	if (false) {
+if (true) {
+    using namespace Arabica::XPath;
+		NodeSetVariableResolver svr;
+    NodeSet<string_type, string_adaptor> ns;
+    ns.push_back(element1_);
+    ns.push_back(element2_);
+    ns.push_back(element3_);
+    svr.setVariable(SA::construct_from_utf8("fruit"), ns);
+
+    parser.setVariableResolver(svr);
+    XPathValue<string_type, string_adaptor> result = parser.evaluate_expr(SA::construct_from_utf8("$fruit"), document_);
+    assert(NODE_SET == result.type());
+    assert(element1_ == result.asNodeSet()[0]);
+    assert(element2_ == result.asNodeSet()[1]);
+    assert(element3_ == result.asNodeSet()[2]);
+		std::cout << std::endl << result.asString() << std::endl;
+
+  } // testNodeSetVars1
+
+if (true) {
+    using namespace Arabica::XPath;
+		NodeSetVariableResolver svr;
+    NodeSet<string_type, string_adaptor> ns;
+    ns.push_back(element1_);
+    ns.push_back(element2_);
+    ns.push_back(element3_);
+    svr.setVariable(SA::construct_from_utf8("fruit"), ns);
+
+    parser.setVariableResolver(svr);
+    XPathValue<string_type, string_adaptor> result = parser.evaluate_expr(SA::construct_from_utf8("$fruit/spinkle"), document_);
+    assert(NODE_SET == result.type());
+    assert(spinkle_ == result.asNodeSet()[0]);
+		std::cout << std::endl << result.asString() << std::endl;
+
+  } // testNodeSetVars2
+
+if (true) {
+    using namespace Arabica::XPath;
+		NodeSetVariableResolver svr;
+    NodeSet<string_type, string_adaptor> ns;
+    ns.push_back(element1_);
+    ns.push_back(element2_);
+    ns.push_back(element3_);
+    svr.setVariable(SA::construct_from_utf8("fruit"), ns);
+
+    parser.setVariableResolver(svr);
+    XPathValue<string_type, string_adaptor> result = parser.evaluate_expr(SA::construct_from_utf8("$fruit[2]/*"), document_);
+    assert(NODE_SET == result.type());
+    assert(spinkle_ == result.asNodeSet()[0]);
+		std::cout << std::endl << result.asString() << std::endl;
+
+  } // testNodeSetVars3
+
+
+
+
+
+
+
+
+
+
+	if (true) {
 		using namespace Arabica::XPath;
 		XPathValue<string_type, string_adaptor> result = parser.evaluate_expr(SA::construct_from_utf8("local-name(/root)"), document_);
 		assert(STRING == result.type());

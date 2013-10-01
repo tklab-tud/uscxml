@@ -26,7 +26,7 @@
 
 
 	  <data id="TIM">
-		<ciao>77</ciao>
+		<ciao xmlns="">77</ciao>
 		<frame xmlns="">
 		    <get type="request" index="12">language</get>
 		    <get type="request" index="13">diagnostic</get>
@@ -56,8 +56,6 @@
 		    </set>
 		</frame>
 	  </data>
-<!--	  <data id="employees" src="http://example.com/employees.xml"/>-->
-<!--	  <data id="defaultdata"/>-->
 	</datamodel>
 
 	<state id="root" initial="GetProdId">
@@ -70,8 +68,10 @@
 <!--				<file url="foo.bin" operation="read" type="xml" callback="foo.bin" />-->
 <!--				<file url="bar.bin" operation="write" type="xml" contentexpr="_event['data']['content']" />-->
 
-				<assign location="$TIM/frame/set[@index='17']/item[@id='0']/nestedData" expr="'50'"/>
-				<assign location="$TIM/ciao" expr="'50'"/>
+<!--				<assign location="/datamodel/data[@id='TIM']/frame/set[@index='17']/item[@id='0']/nestedData" expr="'50'"/>-->
+				<assign location="$TIM/frame/set[@index='17']/item[@i='0']/nestedData" expr="'50'"/>
+<!--				<assign location="$TIM/ciao" expr="'50'"/>-->
+<!--				<assign location="$TIM" expr="'50'"/>-->
 
 <!--				<assign location="time" expr="currentDateTime()"/>-->
 <!--				<assign location="$cities/list/city[@id='nyc']/@count" expr="d"/>-->
