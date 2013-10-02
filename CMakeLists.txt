@@ -201,7 +201,7 @@ if (CMAKE_CROSSCOMPILING)
 else()
 	OPTION(BUILD_TESTS "Build USCXML tests" ON)
 	OPTION(RUN_W3C_ECMA_TESTS "Run W3C ECMAScript tests" OFF)
-	OPTION(RUN_W3C_XPATH_TESTS "Run W3C XPath tests" OFF)
+	OPTION(RUN_W3C_XPATH_TESTS "Run W3C XPath tests" ON)
 endif()
 OPTION(ENABLE_GCOV "Compile with gcov support" OFF)
 

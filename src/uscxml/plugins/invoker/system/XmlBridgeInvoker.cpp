@@ -16,7 +16,8 @@ bool connect(pluma::Host& host) {
 #endif
 
 XmlBridgeInvoker::XmlBridgeInvoker() :
-	_thread(NULL) {
+	_thread(NULL)
+{
 		XmlBridgeInputEvents& myinstance = XmlBridgeInputEvents::getInstance();
 		myinstance._invokPointer = this;
 		LOG(INFO) << "Initializing XmlBridgeInvoker instance" << endl;
