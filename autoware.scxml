@@ -26,8 +26,8 @@
 
 
 	  <data id="TIM">
-		<ciao xmlns="">77</ciao>
-		<frame xmlns="">
+		<ciao>77</ciao>
+		<frame>
 		    <get type="request" index="12">language</get>
 		    <get type="request" index="13">diagnostic</get>
 		    <get type="request" index="14">optional</get>
@@ -133,8 +133,22 @@
 <!--				  </content>-->
 <!--				</send>-->
 			</onentry>
-
-<!--			<transition event="reply" cond="data('_event')/data[@index='17']/item[@id='0']/nestedData=='50'" target="NewOrder" />-->
+			<transition event="OP.INSERT">
+				<log level="0" expr="_event.data[0]" />
+				<if cond="_event.data[0] == 'OPER.PLUS'">
+				    <assign location="long_expr" expr="long_expr+'+'" />
+				<elseif cond="_event.data[0]=='OPER.MINUS'" />
+				    <assign location="long_expr" expr="long_expr+'-'" />
+				<elseif cond="_event.data[0]=='OPER.STAR'" />
+				    <assign location="long_expr" expr="long_expr+'*'" />
+				<elseif cond="_event.data[0]=='OPER.DIV'" />
+				    <assign location="long_expr" expr="long_expr+'/'" />
+				</if>
+			</transition>
+			<transition event="reply" cond="$_event/data = 'ComandiMes'" target="NewOrder" />
+<!--			<transition event="reply" target="NewOrder">-->
+<!--				<log label="invokeid is " expr="$_event/text()" />-->
+<!--			</transition>-->
 
 <!--			<transition cond="$_sessionid = '12345'" target="nextState"/>-->
 <!--			<transition cond="fn:year-from-dateTime($time) > 2009" target="newBehavior"/>-->
@@ -162,16 +176,12 @@
 		</state>
 		<state id="NewOrder">
 			<onentry>
-				<script></script>
-				<send target="#_xmlbridge1">
+				<send target="#_xmlbridge1"
+				      event="ilnomedelmessaggiocheinviamo">
 					<param name="paramatername" expr="'paramatervalue'"/>
 					<param name="othername" expr="'othervalue'"/>
 					<content>
-						<root>
-					      		<alpha>3</alpha>
-							<beta>2</beta>
-					      		<gamma>1</gamma>
-					   	</root>
+						<root>NUOVO ORDINE!!</root>
 					</content>
 				</send>
 			</onentry>
@@ -180,15 +190,10 @@
 		</state>
 		<state id="PlaceOrder">
 			<onentry>
-				<script></script>
 				<send target="#_xmlbridge1">
 					<param name="$field" expr="'paramatervalue'"/>
 					<content>
-						<root>
-					      		<alpha>1</alpha>
-							<beta>2</beta>
-					      		<gamma>3</gamma>
-					   	</root>
+						<root></root>
 					</content>
 				</send>
 			</onentry>

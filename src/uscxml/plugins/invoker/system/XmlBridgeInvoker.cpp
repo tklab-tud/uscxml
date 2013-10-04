@@ -34,7 +34,7 @@ XmlBridgeInvoker::~XmlBridgeInvoker() {
 boost::shared_ptr<InvokerImpl> XmlBridgeInvoker::create(InterpreterImpl* interpreter) {
 	LOG(INFO) << "Creating XmlBridgeInvoker instance" << endl;
 
-	boost::shared_ptr<XmlBridgeInvoker> invoker = boost::shared_ptr<XmlBridgeInvoker>(new XmlBridgeInvoker());
+	boost::shared_ptr<XmlBridgeInvoker> invoker = boost::shared_ptr<XmlBridgeInvoker>(this);
 
 	invoker->setInterpreter(interpreter);
 	invoker->setInvokeId("xmlbridge1");
@@ -49,8 +49,8 @@ Data XmlBridgeInvoker::getDataModelVariables() {
 }
 
 void XmlBridgeInvoker::send(const SendRequest& req) {
-	tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
 
+	tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
 	SendRequest reqCopy(req);
 
 	//leggere parametri
@@ -121,6 +121,10 @@ void XmlBridgeInvoker::invoke(const InvokeRequest& req) {
 		return;
 	}
 
+	_isRunning = true;
+	LOG(INFO) << "Moving XmlBridgeInvoker to a new thread" << endl;
+	_thread = new tthread::thread(XmlBridgeInvoker::run, this);
+
 	/*
 	if (boost::iequals(req.params.find("reportexisting")->second, "false"))
 		_reportExisting = false;
@@ -171,13 +175,21 @@ void XmlBridgeInvoker::invoke(const InvokeRequest& req) {
 	_watcher->addMonitor(this);
 	_watcher->updateEntries(true);
 	*/
-
-	_isRunning = true;
-	LOG(INFO) << "Moving XmlBridgeInvoker to a new thread" << endl;
-	_thread = new tthread::thread(XmlBridgeInvoker::run, this);
 }
 
-void XmlBridgeInvoker::handleReply(const std::string reply_raw_data) {
+void XmlBridgeInvoker::buildEvent(const std::string reply_raw_data) {
+
+	uscxml::Event myevent("reply", uscxml::Event::EXTERNAL);
+	//event.setName("reply." + _interpreter->getState())
+
+	const uscxml::Data eventdata(reply_raw_data);
+	myevent.setData(eventdata);
+
+	myevent.setContent(reply_raw_data);
+	myevent.setRaw(reply_raw_data);
+	myevent.setXML(reply_raw_data);
+
+	returnEvent(myevent);
 
 	//  std::cout << action << " on " << reportedFilename << std::endl;
 
@@ -248,16 +260,6 @@ void XmlBridgeInvoker::handleReply(const std::string reply_raw_data) {
 	}
 	*/
 
-	LOG(INFO) << "Building Event" << endl;
-	uscxml::Event myevent("reply", uscxml::Event::EXTERNAL);
-	//event.setName("reply." + _interpreter->getState())
-
-	LOG(INFO) << "Building Event Data from RawData" << endl;
-	const uscxml::Data eventdata(reply_raw_data);
-
-	LOG(INFO) << "Setting Event Data" << endl;
-	myevent.setData(eventdata);
-
 	/*
 	if (action != DirectoryWatch::DELETED) {
 		event.data.compound["file"].compound["mtime"] = toStr(fileStat.st_mtime);
@@ -274,18 +276,27 @@ void XmlBridgeInvoker::handleReply(const std::string reply_raw_data) {
 	event.data.compound["file"].compound["path"] = Data(path, Data::VERBATIM);
 	event.data.compound["file"].compound["dir"] = Data(dir, Data::VERBATIM);
 	*/
-
-	LOG(INFO) << "Sending Event to StateMachine" << endl;
-	returnEvent(myevent);
 }
 
-void XmlBridgeInputEvents::receiveReply(const uint8_t datablockID, const char *replyData)
+void XmlBridgeInputEvents::handleTIMmsg(const string replyData)
 {
-	string repdata(replyData);
-	XmlBridgeInputEvents myinstance = XmlBridgeInputEvents::getInstance();
-	myinstance._invokPointer->handleReply(repdata);
+	_invokPointer->buildEvent(replyData);
 }
 
+void XmlBridgeInputEvents::handleTIMreply(const string replyData)
+{
+	_invokPointer->buildEvent(replyData);
+}
+
+void XmlBridgeInputEvents::handleMESmsg(const string replyData)
+{
+	_invokPointer->buildEvent(replyData);
+}
+
+void XmlBridgeInputEvents::handleMESreply(const string replyData)
+{
+	_invokPointer->buildEvent(replyData);
+}
 
 }
 /*

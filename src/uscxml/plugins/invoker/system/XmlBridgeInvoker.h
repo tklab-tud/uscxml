@@ -4,7 +4,6 @@
 #include <map>
 #include <iostream>
 
-#include <uscxml/config.h>
 #include <uscxml/Interpreter.h>
 #include <glog/logging.h>
 //#include "bridgeconfig.h"
@@ -34,7 +33,7 @@ public:
 	void cancel(const std::string sendId);
 	void invoke(const InvokeRequest& req);
 
-	void handleReply(const std::string reply_raw_data);
+	void buildEvent(const std::string reply_raw_data);
 
 	/* move invoker to new thread */
 	static void run(void* instance) {
@@ -62,8 +61,10 @@ public:
 
 	~XmlBridgeInputEvents() {}
 
-	static void loadDBFrame(const uint8_t datablockID, const string dbframeID);
-	static void receiveReply(const uint8_t datablockID, const char *replyData);
+	void handleTIMmsg(const string replyData);
+	void handleTIMreply(const string replyData);
+	void handleMESmsg(const string replyData);
+	void handleMESreply(const string replyData);
 
 	//std::map<std::string, struct stat> getAllEntries() {}
 
@@ -77,12 +78,11 @@ public:
 
 protected:
 	XmlBridgeInputEvents() : _invokPointer(NULL), _initialization(false), _lastChecked(0) {}
+
 	/* second private constructor */
 	//XmlBridgeInputEvents(const std::string& dir, const std::string& relDir) : _dir(dir), _relDir(relDir), _recurse(true), _lastChecked(0) {}
-
 	/*std::string _dir;
 	std::string _relDir;
-
 	std::map<std::string, struct stat> _knownEntries;
 	std::map<std::string, XmlBridgeSMIO*> _knownDirs;
 	*/
