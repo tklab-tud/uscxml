@@ -493,6 +493,7 @@ include_directories(${Boost_INCLUDE_DIR})
 find_package(EVENT REQUIRED)
 include_directories(${EVENT_INCLUDE_DIR})
 list (APPEND USCXML_CORE_LIBS ${EVENT_LIBRARY})
+#set(EVENT_SSL_FOUND OFF) # deactivate for now
 
 #################################################
 # Optional libraries
@@ -524,6 +525,13 @@ else()
 		include_directories(${V8_INCLUDE_DIR})
 		list (APPEND USCXML_OPT_LIBS ${V8_LIBRARY})
 	endif()
+endif()
+
+
+find_package(OpenSSL)
+if (OPENSSL_FOUND)
+	include_directories(${OPENSSL_INCLUDE_DIR})
+	list (APPEND USCXML_OPT_LIBS ${OPENSSL_LIBRARIES})
 endif()
 
 
@@ -729,6 +737,12 @@ foreach( FILE ${USCXML_FILES} )
 	endif()
 endforeach()
 
+# add compile time reducer
+# see https://github.com/sakra/cotire
+if ((WIN32 OR UNIX) AND NOT APPLE)
+	include(cotire)
+endif()
+
 # build library
 if (BUILD_AS_PLUGINS)
 	add_library(uscxml ${USCXML_FILES})
@@ -736,6 +750,10 @@ if (BUILD_AS_PLUGINS)
 else()
 	add_library(uscxml ${USCXML_FILES})
 	target_link_libraries(uscxml ${USCXML_OPT_LIBS} ${USCXML_CORE_LIBS})
+endif()
+if ((WIN32 OR UNIX) AND NOT APPLE)
+	set_target_properties(uscxml PROPERTIES COTIRE_CXX_PREFIX_HEADER_INIT "src/uscxml/pch.h")
+	cotire(uscxml)
 endif()
 
 if (NOT CMAKE_CROSSCOMPILING)

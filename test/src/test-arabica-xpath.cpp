@@ -1,3 +1,5 @@
+#include <iostream>
+
 #include <XPath/XPath.hpp>
 #include <DOM/Simple/DOMImplementation.hpp>
 #include <DOM/io/Stream.hpp>

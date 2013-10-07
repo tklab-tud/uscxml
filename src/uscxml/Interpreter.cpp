@@ -1,3 +1,4 @@
+#include "uscxml/config.h"
 #include "uscxml/Common.h"
 #include "uscxml/Interpreter.h"
 #include "uscxml/URL.h"
@@ -40,6 +41,145 @@ namespace uscxml {
 using namespace Arabica::XPath;
 using namespace Arabica::DOM;
 
+void InterpreterOptions::printUsageAndExit(const char* progName) {
+	printf("%s version " USCXML_VERSION " (" CMAKE_BUILD_TYPE " build - " CMAKE_COMPILER_STRING ")\n", progName);
+	printf("Usage\n");
+	printf("\t%s", progName);
+#ifdef BUILD_AS_PLUGINS
+	printf(" [-e pluginPath]");
+#endif
+	printf("[-v] [-pN] URL\n");
+	printf("\n");
+	printf("Options\n");
+	printf("\t-v        : be verbose\n");
+	printf("\t-pN       : port for HTTP server\n");
+	printf("\t-d        : write each configuration as a dot file\n");
+	printf("\n");
+	exit(1);
+}
+
+unsigned int InterpreterOptions::getCapabilities() {
+	unsigned int capabilities = CAN_NOTHING;
+	if (withHTTP)
+		capabilities = capabilities | CAN_GENERIC_HTTP | CAN_BASIC_HTTP;
+	
+	return capabilities;
+}
+	
+InterpreterOptions InterpreterOptions::fromCmdLine(int argc, char** argv) {
+	InterpreterOptions options;
+	struct option longOptions[] = {
+		{"verbose",       no_argument,       0, 'v'},
+		{"dot",           no_argument,       0, 'd'},
+		{"port",          required_argument, 0, 't'},
+		{"ssl-port",      required_argument, 0, 's'},
+		{"certificate",   required_argument, 0, 'c'},
+		{"private-key",   required_argument, 0, 0},
+		{"public-key",    required_argument, 0, 0},
+		{"plugin-path",   required_argument, 0, 'p'},
+		{"loglevel",      required_argument, 0, 'l'},
+		{"disable-http",  no_argument, 0, 0},
+		{0, 0, 0, 0}
+	};
+	
+	opterr = 0;
+	if (argc < 2) {
+		options.error = "No SCXML document to evaluate";
+		return options;
+	}
+	
+	InterpreterOptions* currOptions = &options;
+	
+	// parse global options
+	int optionInd = 0;
+	int option;
+	for (;;) {
+		option = getopt_long_only(argc, argv, "+vdt:s:c:p:l:", longOptions, &optionInd);
+		if (option == -1) {
+			if (optind == argc)
+				// we are done with parsing
+				goto DONE_PARSING_CMD;
+
+			std::string url = argv[optind];
+			options.interpreters[url] = new InterpreterOptions();
+			currOptions = options.interpreters[url];
+			
+			argc -= optind;
+			argv += optind;
+			optind = 0;
+			
+			if (argc <= 1)
+				goto DONE_PARSING_CMD;
+			
+		}
+		switch(option) {
+			// cases without short option
+			case 0: {
+				if (boost::equals(longOptions[optionInd].name, "disable-http")) {
+					currOptions->withHTTP = false;
+				} else if (boost::equals(longOptions[optionInd].name, "private-key")) {
+					currOptions->privateKey = optarg;
+				} else if (boost::equals(longOptions[optionInd].name, "public-key")) {
+					currOptions->publicKey = optarg;
+				}
+				break;
+			}
+			// cases with short-hand options
+			case 'l':
+				currOptions->logLevel = strTo<unsigned int>(optarg);
+				break;
+			case 'p':
+				currOptions->pluginPath = optarg;
+				break;
+			case 'd':
+				currOptions->useDot = true;
+				break;
+			case 'c':
+				currOptions->certificate = optarg;
+				break;
+			case 't':
+				currOptions->httpPort = strTo<unsigned short>(optarg);
+				break;
+			case 's':
+				currOptions->httpsPort = strTo<unsigned short>(optarg);
+				break;
+			case 'v':
+				currOptions->verbose = true;
+				break;
+			case '?': {
+				std::string param = argv[optind - 1];
+				if (boost::starts_with(param, "--")) {
+					param = param.substr(2, param.length() - 2);
+				}	else if (boost::starts_with(param, "-")) {
+					param = param.substr(1, param.length() - 1);
+				} else {
+					break;
+				}
+				boost::trim(param);
+				
+				size_t equalPos = param.find("=");
+				if (equalPos != std::string::npos) {
+					std::string key = param.substr(0, equalPos);
+					std::string value = param.substr(equalPos + 1, param.length() - (equalPos + 1));
+					currOptions->additionalParameters[key] = value;
+				} else {
+					currOptions->additionalParameters[param] = "";
+				}
+				break;
+			}
+			default:
+				break;
+		}
+	}
+	
+DONE_PARSING_CMD:
+	
+	if (options.interpreters.size() == 0)
+		options.error = "No SCXML document to evaluate";
+	
+	return options;
+}
+	
 std::map<std::string, boost::weak_ptr<InterpreterImpl> > Interpreter::_instances;
 tthread::recursive_mutex Interpreter::_instanceMutex;
 
@@ -1761,26 +1901,15 @@ IOProcessor InterpreterImpl::getIOProcessor(const std::string& type) {
 	return _ioProcessors[type];
 }
 
-void InterpreterImpl::setCmdLineOptions(int argc, char** argv) {
-	char* key = NULL;
-	char* value = NULL;
-	for (int i = 0; i < argc; i++) {
-		if (false) {
-		} else if (strlen(argv[i]) > 2 && strncmp(&argv[i][0], "-", 1) == 0 && strncmp(&argv[i][1], "-", 1) == 0) {
-			// longopt
-			key = &argv[i][2];
-		} else if (strlen(argv[i]) > 1 && strncmp(&argv[i][0], "-", 1) == 0 && strncmp(&argv[i][1], "-", 1) != 0) {
-			// shortopt
-			key = &argv[i][1];
+void InterpreterImpl::setCmdLineOptions(std::map<std::string, std::string> params) {
+	std::map<std::string, std::string>::iterator paramIter = params.begin();
+	while (paramIter != params.end()) {
+		if (paramIter->second.length() > 0) {
+			_cmdLineOptions.compound[paramIter->first] = Data(paramIter->second, Data::VERBATIM);
+		} else {
+			_cmdLineOptions.compound[paramIter->first] = Data("true");
 		}
-		if (key != NULL) {
-			if (i + 1 < argc && strncmp(&argv[i + 1][0], "-", 1) != 0) {
-				value = argv[++i];
-				_cmdLineOptions.compound[key] = Data(value, Data::VERBATIM);
-			} else {
-				_cmdLineOptions.compound[key] = Data("true");
-			}
-		}
+		paramIter++;
 	}
 }
 

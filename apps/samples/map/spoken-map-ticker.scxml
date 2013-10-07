@@ -27,7 +27,7 @@
 		<invoke type="umundo" id="umundo">
 			<param name="channel" expr="'map/tick'" />
 			<finalize>
-				<script>dump(_event);</script>
+				<!-- <script>dump(_event);</script> -->
 			</finalize>
 		</invoke>
 		

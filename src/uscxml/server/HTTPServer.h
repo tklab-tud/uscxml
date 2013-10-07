@@ -26,6 +26,14 @@ public:
 		}
 	};
 
+	class SSLConfig {
+	public:
+		SSLConfig() : port(8443) {}
+		std::string privateKey;
+		std::string publicKey;
+		unsigned short port;
+	};
+	
 	class Reply {
 	public:
 		Reply(Request req) : status(200), type(req.data.compound["type"].atom), curlReq(req.curlReq) {}
@@ -41,7 +49,7 @@ public:
 		evhttp_request* httpReq;
 	};
 
-	static HTTPServer* getInstance(int port = 8080);
+	static HTTPServer* getInstance(unsigned short port = 8080, SSLConfig* sslConf = NULL);
 	static std::string getBaseURL();
 
 	static void reply(const Reply& reply);
@@ -58,7 +66,7 @@ private:
 		};
 	};
 
-	HTTPServer(unsigned short port);
+	HTTPServer(unsigned short port, SSLConfig* sslConf = NULL);
 	~HTTPServer();
 
 	void start();
@@ -90,6 +98,15 @@ private:
 	bool _isRunning;
 
 	friend class HTTPServlet;
+	
+#if (defined EVENT_SSL_FOUND && defined OPENSSL_FOUND)
+	struct evhttp* _https;
+  struct evhttp_bound_socket* _sslHandle;
+	unsigned short _sslPort;
+
+	static struct bufferevent* sslBufferEventCallback(struct event_base *base, void *arg);
+	static void sslGeneralBufferEventCallback (struct evhttp_request *req, void *arg);
+#endif
 };
 
 class HTTPServlet {

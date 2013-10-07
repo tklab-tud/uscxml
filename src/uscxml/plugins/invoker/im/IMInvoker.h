@@ -13,6 +13,20 @@ extern "C" {
 
 namespace uscxml {
 
+typedef enum {
+	PURPLE_BUDDY_NONE                    = 0x00, /**< No events.                    */
+	PURPLE_BUDDY_SIGNON                  = 0x01, /**< The buddy signed on.          */
+	PURPLE_BUDDY_SIGNOFF                 = 0x02, /**< The buddy signed off.         */
+	PURPLE_BUDDY_INFO_UPDATED            = 0x10, /**< The buddy's information (profile) changed.     */
+	PURPLE_BUDDY_ICON                    = 0x40, /**< The buddy's icon changed.     */
+	PURPLE_BUDDY_MISCELLANEOUS           = 0x80, /**< The buddy's service-specific miscalleneous info changed.     */
+	PURPLE_BUDDY_SIGNON_TIME             = 0x11, /**< The buddy's signon time changed.     */
+	PURPLE_BUDDY_EVIL                    = 0x12,  /**< The buddy's warning level changed.     */
+	PURPLE_BUDDY_DIRECTIM_CONNECTED      = 0x14, /**< Connected to the buddy via DirectIM.  */
+	PURPLE_BUDDY_DIRECTIM_DISCONNECTED   = 0x18, /**< Disconnected from the buddy via DirectIM.  */
+	PURPLE_BUDDY_NAME                    = 0x20 /**<Buddy name (UID) changed. */
+} PurpleBuddyEvent;
+
 class IMInvoker : public InvokerImpl {
 public:
 	struct EventContext {
@@ -38,13 +52,14 @@ public:
 	virtual void cancel(const std::string sendId);
 	virtual void invoke(const InvokeRequest& req);
 
-protected:
+private:
 	static bool _libPurpleIsInitialized;
 	static Data _pluginData;
 	
 	Data _dataModelVars;
 
 	static Data buddyToData(PurpleBuddy *buddy);
+	static Data statusToData(PurpleStatus *status);
 	static Data purpleValueToData(PurpleValue* value);
 	
 	static PurpleAccountUiOps _uiAccountOps;
@@ -58,31 +73,39 @@ protected:
 	static PurpleRequestUiOps _uiRequestOps;
 	static PurpleConnectionUiOps _uiConnectOps;
 	static PurpleWhiteboardUiOps _uiWhiteboardOps;
+	static PurpleDebugUiOps _uiDebugOps;
 	
 	static PurpleRequestFeature _features;
 	static GHashTable* _uiInfo;
 	static GRand* _gRand;
 
-	static tthread::mutex _accountMutex;
+	static tthread::recursive_mutex _accountMutex;
 	static std::map<PurpleAccount*, IMInvoker*> _accountInstances;
 	static tthread::mutex _initMutex;
 	static tthread::condition_variable _initCond;
 	static DelayedEventQueue* _eventQueue;
 	
-	// event callbacks
+	// libpurple event callbacks
 	static void signedOnCB(PurpleConnection *gc, gpointer null);
-	static void buddySignOnOffCB(PurpleBuddy *buddy);
-	static void buddyStatusChangedCB(PurpleBuddy *buddy, PurpleStatus *oldstatus, PurpleStatus *newstatus);
-	static void buddyIdleChangeCB(PurpleBuddy *buddy, gboolean old_idle, gboolean idle);
-	static void buddyUpdateIdleCB();
+	static void conversationCreatedCB(PurpleConversation *conv, void *data);
+	static void chatJoinedCB(PurpleConversation *conv, void *data);
+	static void chatJoinFailedCB(PurpleConnection *gc, GHashTable *components);
+	static void buddyTypingCB(PurpleAccount *account, const char *name, void *data);
+	static void buddyTypedCB(PurpleAccount *account, const char *name, void *data);
+	static void buddyTypingStoppedCB(PurpleAccount *account, const char *name, void *data);
+	static void buddyIdleChangedCB(PurpleBuddy *buddy, gboolean old_idle, gboolean idle, PurpleBuddyEvent event);
+	static void blistNodeAliasedCB(PurpleBlistNode *node, char *old_alias);
+	static void buddyEventCB(PurpleBuddy *buddy, PurpleBuddyEvent event);
+	static void buddyStatusChangedCB(PurpleBuddy *buddy, PurpleStatus *oldstatus, PurpleStatus *newstatus, PurpleBuddyEvent event);
 	static void buddyAddedCB(PurpleBuddy* buddy);
 	static void buddyRemovedCB(PurpleBuddy* buddy);
+	static void fileRecvRequestCB(PurpleXfer *xfer);
 	static void buddyCapsChangedCB(PurpleBuddy* buddy, PurpleMediaCaps newcaps, PurpleMediaCaps oldcaps);
-	static gboolean jabberRcvdPresenceCB(PurpleConnection *gc, const char *type, const char *from, xmlnode *presence);
-
 	
 	// these are only being called from the delayed queue's thread
 	static void initLibPurple(void *userdata, const std::string event);
+	static void setupPurpleSignals();
+
 	static void send(void *userdata, const std::string event);
 	static void invoke(void *userdata, const std::string event);
 
@@ -103,6 +126,11 @@ protected:
 		gpointer data;
 	};
 	static void purpleCallback(void *userdata, const std::string event);
+	
+	// libpurple debug
+	static void purpleDebugPrint(PurpleDebugLevel level, const char *category, const char *arg_s);
+	static gboolean purpleDebugIsEnabled(PurpleDebugLevel level, const char *category);
+
 	
 	// libpurple core operations
 	static void purplePrefsInit(void);

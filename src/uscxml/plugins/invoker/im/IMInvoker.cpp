@@ -7,12 +7,13 @@
 #endif
 
 #define GET_INSTANCE_IN_CALLBACK(account) \
-tthread::lock_guard<tthread::mutex> lock(_accountMutex); \
+tthread::lock_guard<tthread::recursive_mutex> lock(_accountMutex); \
+IMInvoker* inst = NULL;\
 if (_accountInstances.find(account) == _accountInstances.end()) { \
 	LOG(ERROR) << "Callback for unknown account called"; \
-	return; \
-} \
-IMInvoker* inst = _accountInstances[account];\
+} else {\
+	inst = _accountInstances[account];\
+}
 
 
 namespace uscxml {
@@ -35,13 +36,19 @@ PurpleEventLoopUiOps IMInvoker::_uiEventLoopOps =
 	purpleEventTimeoutRemove,
 	purpleEventInputAdd,
 	purpleEventInputRemove,
-	NULL, //purpleEventInputGetError,
+	purpleEventInputGetError,
 	purpleEventTimeoutAddSec,
 	NULL,
 	NULL,
 	NULL
 };
-	
+
+PurpleDebugUiOps IMInvoker::_uiDebugOps = {
+	purpleDebugPrint,
+	purpleDebugIsEnabled,
+	NULL, NULL, NULL, NULL
+};
+
 PurpleAccountUiOps IMInvoker::_uiAccountOps = {
 	accountNotifyAdded,
 	accountStatusChanged,
@@ -181,7 +188,7 @@ PurpleWhiteboardUiOps IMInvoker::_uiWhiteboardOps = {
 };
 	
 PurpleCoreUiOps IMInvoker::_uiCoreOps = {
-	NULL,
+	purplePrefsInit,
 	NULL,
 	purpleUIInit,
 	NULL,
@@ -196,9 +203,39 @@ DelayedEventQueue* IMInvoker::_eventQueue = NULL;
 tthread::mutex IMInvoker::_initMutex;
 tthread::condition_variable IMInvoker::_initCond;
 
-tthread::mutex IMInvoker::_accountMutex;
+tthread::recursive_mutex IMInvoker::_accountMutex;
 std::map<PurpleAccount*, IMInvoker*> IMInvoker::_accountInstances;
+	
+void IMInvoker::setupPurpleSignals() {
+	int handle;
+	// connection signals
+	purple_signal_connect(purple_connections_get_handle(), "signed-on", &handle, PURPLE_CALLBACK(signedOnCB), NULL);
+	
+	// conversation signals
+	purple_signal_connect(purple_conversations_get_handle(), "conversation-created", &handle, PURPLE_CALLBACK(conversationCreatedCB), NULL);
+	purple_signal_connect(purple_conversations_get_handle(), "chat-joined", &handle, PURPLE_CALLBACK(chatJoinedCB), NULL);
+	purple_signal_connect(purple_conversations_get_handle(), "chat-join-failed", &handle, PURPLE_CALLBACK(chatJoinFailedCB), NULL);
+	purple_signal_connect(purple_conversations_get_handle(), "buddy-typing", &handle, PURPLE_CALLBACK(buddyTypingCB), NULL);
+	purple_signal_connect(purple_conversations_get_handle(), "buddy-typed", &handle, PURPLE_CALLBACK(buddyTypedCB), NULL);
+	purple_signal_connect(purple_conversations_get_handle(), "buddy-typing-stopped", &handle, PURPLE_CALLBACK(buddyTypingStoppedCB), NULL);
+	
+	// buddy signals
+	purple_signal_connect(purple_blist_get_handle(), "buddy-signed-on", &handle, PURPLE_CALLBACK(buddyEventCB), GINT_TO_POINTER(PURPLE_BUDDY_SIGNON));
+	purple_signal_connect(purple_blist_get_handle(), "buddy-signed-off", &handle, PURPLE_CALLBACK(buddyEventCB), GINT_TO_POINTER(PURPLE_BUDDY_SIGNOFF));
+	purple_signal_connect(purple_blist_get_handle(), "buddy-got-login-time", &handle, PURPLE_CALLBACK(buddyEventCB), GINT_TO_POINTER(PURPLE_BUDDY_SIGNON_TIME));
+	purple_signal_connect(purple_blist_get_handle(), "buddy-idle-changed", &handle, PURPLE_CALLBACK(buddyIdleChangedCB), NULL);
+	purple_signal_connect(purple_blist_get_handle(), "buddy-status-changed", &handle, PURPLE_CALLBACK(buddyStatusChangedCB), NULL);
+	purple_signal_connect(purple_blist_get_handle(), "buddy-icon-changed", &handle, PURPLE_CALLBACK(buddyEventCB), GINT_TO_POINTER(PURPLE_BUDDY_ICON));
+	purple_signal_connect(purple_blist_get_handle(), "buddy-added", &handle, PURPLE_CALLBACK(buddyAddedCB), NULL);
+	purple_signal_connect(purple_blist_get_handle(), "buddy-removed", &handle, PURPLE_CALLBACK(buddyRemovedCB), NULL);
+	purple_signal_connect(purple_blist_get_handle(), "blist-node-aliased", &handle, PURPLE_CALLBACK(blistNodeAliasedCB), NULL);
+	purple_signal_connect(purple_blist_get_handle(), "buddy-caps-changed", &handle, PURPLE_CALLBACK(buddyCapsChangedCB), NULL);
+	
+	// xfer signals
+	purple_signal_connect(purple_xfers_get_handle(), "file-recv-request", &handle, PURPLE_CALLBACK(fileRecvRequestCB), NULL);
 
+}
+	
 void IMInvoker::initLibPurple(void *userdata, const std::string event) {
 	_initMutex.lock();
 
@@ -218,7 +255,6 @@ void IMInvoker::initLibPurple(void *userdata, const std::string event) {
 	purple_debug_set_enabled(false);
 	
 	purple_core_set_ui_ops(&_uiCoreOps);
-//	purple_eventloop_set_ui_ops(&glib_eventloops);
 	purple_eventloop_set_ui_ops(&_uiEventLoopOps);
 	
 	purple_plugins_add_search_path("/usr/local/lib/purple-3");
@@ -257,64 +293,153 @@ void IMInvoker::initLibPurple(void *userdata, const std::string event) {
 
 	_initMutex.unlock();
 	_initCond.notify_all();
-
 }
 
-void IMInvoker::buddyStatusChangedCB(PurpleBuddy *buddy, PurpleStatus *old, PurpleStatus *newstatus) {
+// purple event callbacks
+void IMInvoker::signedOnCB(PurpleConnection *gc, gpointer null) {
+	PurpleAccount *account = purple_connection_get_account(gc);
+	GET_INSTANCE_IN_CALLBACK(account);
+	if (!inst)
+		return;
+
+#if 0
+	GSList *buddies = purple_find_buddies(purple_connection_get_account(gc), NULL);
+	GSList *cur;
+	for (cur = buddies; cur; cur = cur->next) {
+		buddyAddedCB((PurpleBuddy *)cur->data);
+	}
+	g_slist_free(buddies);
+#endif
+
+	// set my status to active
+	PurpleSavedStatus* status = purple_savedstatus_new(NULL, PURPLE_STATUS_AVAILABLE);
+	purple_savedstatus_activate(status);
+	
+	Event retEv("im.signed.on");
+	inst->returnEvent(retEv);
+}
+
+void IMInvoker::conversationCreatedCB(PurpleConversation *conv, void *data) {}
+void IMInvoker::chatJoinedCB(PurpleConversation *conv, void *data) {}
+void IMInvoker::chatJoinFailedCB(PurpleConnection *gc, GHashTable *components) {}
+void IMInvoker::buddyTypingCB(PurpleAccount *account, const char *name, void *data) {}
+void IMInvoker::buddyTypedCB(PurpleAccount *account, const char *name, void *data) {}
+void IMInvoker::buddyTypingStoppedCB(PurpleAccount *account, const char *name, void *data) {}
+
+void IMInvoker::buddyEventCB(PurpleBuddy *buddy, PurpleBuddyEvent event) {
+	if (!buddy)
+		return;
+	
+	PurpleAccount *account = purple_buddy_get_account(buddy);
+	GET_INSTANCE_IN_CALLBACK(account);
+	if (!inst)
+		return;
+
+	switch (event) {
+		case PURPLE_BUDDY_SIGNOFF:
+		case PURPLE_BUDDY_SIGNON: {
+			PurplePresence* presence = purple_buddy_get_presence(buddy);
+			PurpleStatus* status = purple_presence_get_active_status(presence);
+			buddyStatusChangedCB(buddy, NULL, status, event);
+			break;
+		}
+		case PURPLE_BUDDY_ICON:
+			break;
+
+		default:
+			break;
+	}
+	
+}
+
+void IMInvoker::buddyIdleChangedCB(PurpleBuddy *buddy, gboolean old_idle, gboolean idle, PurpleBuddyEvent event) {
+}
+	
+void IMInvoker::buddyStatusChangedCB(PurpleBuddy *buddy, PurpleStatus *old, PurpleStatus *newstatus, PurpleBuddyEvent event) {
 	PurpleAccount *account = purple_buddy_get_account(buddy);
 	GET_INSTANCE_IN_CALLBACK(account);
 	
 	std::string buddyName = purple_buddy_get_name(buddy);
-	inst->_dataModelVars.compound["buddies"].compound[buddyName] = buddyToData(buddy);
-}
+	Data buddyData = buddyToData(buddy);
+	inst->_dataModelVars.compound["buddies"].compound[buddyName] = buddyData;
+	
+	Event retEv("im.buddy.status.changed");
+	retEv.data = buddyData;
+	inst->returnEvent(retEv);
 
-void IMInvoker::buddyIdleChangeCB(PurpleBuddy *buddy, gboolean old_idle, gboolean idle) {
-	PurpleAccount *account = purple_buddy_get_account(buddy);
-	GET_INSTANCE_IN_CALLBACK(account);
-}
-
-void IMInvoker::buddyUpdateIdleCB() {
 }
 
 void IMInvoker::buddyAddedCB(PurpleBuddy* buddy) {
 	PurpleAccount *account = purple_buddy_get_account(buddy);
 	GET_INSTANCE_IN_CALLBACK(account);
+	if (!inst)
+		return;
+	
+	std::string buddyName = purple_buddy_get_name(buddy);
+
+	Event retEv("im.buddy.added");
+	retEv.data.compound["name"] = Data(buddyName, Data::VERBATIM);
+	inst->returnEvent(retEv);
+
+	buddyStatusChangedCB(buddy, NULL, purple_presence_get_active_status(purple_buddy_get_presence(buddy)), PURPLE_BUDDY_NONE);
+
 }
 
 void IMInvoker::buddyRemovedCB(PurpleBuddy* buddy) {
 	PurpleAccount *account = purple_buddy_get_account(buddy);
 	GET_INSTANCE_IN_CALLBACK(account);
+	std::string buddyName = purple_buddy_get_name(buddy);
+	
+	Event retEv("im.buddy.removed");
+	retEv.data.compound["name"] = Data(buddyName, Data::VERBATIM);
+	inst->returnEvent(retEv);
+	
+	inst->_dataModelVars.compound["buddies"].compound.erase(buddyName);
+
 }
+
+void IMInvoker::blistNodeAliasedCB(PurpleBlistNode *node, char *old_alias) {
+}
+
+void IMInvoker::fileRecvRequestCB(PurpleXfer *xfer) {
+	purple_xfer_set_local_filename(xfer, "");
+}
+
 
 void IMInvoker::buddyCapsChangedCB(PurpleBuddy* buddy, PurpleMediaCaps newcaps, PurpleMediaCaps oldcaps) {
 	PurpleAccount *account = purple_buddy_get_account(buddy);
 	GET_INSTANCE_IN_CALLBACK(account);
 }
 
-gboolean IMInvoker::jabberRcvdPresenceCB(PurpleConnection *gc, const char *type, const char *from, xmlnode *presence) {
-	PurpleAccount *account = purple_connection_get_account(gc);
-	GET_INSTANCE_IN_CALLBACK(account);
-}
-
-void IMInvoker::buddySignOnOffCB(PurpleBuddy *buddy) {
-	PurpleAccount *account = purple_buddy_get_account(buddy);
-	tthread::lock_guard<tthread::mutex> lock(_accountMutex);
-	if (_accountInstances.find(account) == _accountInstances.end()) {
-		LOG(ERROR) << "Callback for unknown account called";
-		return;
+Data IMInvoker::statusToData(PurpleStatus *status) {
+	Data data;
+	const char* statusName = purple_status_get_name(status);
+	if (statusName) data.compound["name"] = Data(statusName, Data::VERBATIM);
+	
+	PurpleStatusType* statusType = purple_status_get_type(status);
+	
+	GList *statusAttrElem;
+	GList *statusAttrList = purple_status_type_get_attrs(statusType);
+	PurpleStatusAttr* statusAttr;
+	for(statusAttrElem = statusAttrList; statusAttrElem; statusAttrElem = statusAttrElem->next) {
+		statusAttr = (PurpleStatusAttr*)statusAttrElem->data;
+		const char* statusAttrId = purple_status_attr_get_id(statusAttr);
+		PurpleValue* statusValue = purple_status_get_attr_value(status, statusAttrId);
+		if (statusValue) {
+			data.compound[statusAttrId] = purpleValueToData(statusValue);
+		}
 	}
-	IMInvoker* inst = _accountInstances[account];
 	
-	std::string buddyName = purple_buddy_get_name(buddy);
-	inst->_dataModelVars.compound["buddies"].compound[buddyName] = buddyToData(buddy);
+	data.compound["active"] = Data((bool)purple_status_is_active(status));
+	data.compound["available"] = Data((bool)purple_status_is_available(status));
+	data.compound["exclusive"] = Data((bool)purple_status_is_exclusive(status));
+	data.compound["active"] = Data((bool)purple_status_is_active(status));
+	data.compound["independent"] = Data((bool)purple_status_is_independent(status));
+	data.compound["online"] = Data((bool)purple_status_is_online(status));
+	
+	return data;
 }
 
-void IMInvoker::signedOnCB(PurpleConnection *gc, gpointer null) {
-	PurpleSavedStatus* status = purple_savedstatus_new(NULL, PURPLE_STATUS_AVAILABLE);
-	purple_savedstatus_activate(status);	
-}
-
-	
 Data IMInvoker::buddyToData(PurpleBuddy *buddy) {
 	Data data;
 	std::string buddyName = purple_buddy_get_name(buddy);
@@ -346,53 +471,16 @@ Data IMInvoker::buddyToData(PurpleBuddy *buddy) {
 		for(statusElem = statusList; statusElem; statusElem = statusElem->next) {
 			status = (PurpleStatus*)statusElem->data;
 			const char* statusId = purple_status_get_id(status);
-			const char* statusName = purple_status_get_name(status);
 			PurpleStatusPrimitive statusPrimitive = purple_primitive_get_type_from_id(statusId);
-			
+
 			// only include active states
 			if(statusPrimitive == PURPLE_STATUS_UNSET || !purple_presence_is_status_primitive_active(presence, statusPrimitive))
 				continue;
-			
-			if (statusName) data.compound["status"].compound[statusId] = Data(statusName, Data::VERBATIM);
-			
-			PurpleStatusType* statusType = purple_status_get_type(status);
-
-			GList *statusAttrElem;
-			GList *statusAttrList = purple_status_type_get_attrs(statusType);
-			PurpleStatusAttr* statusAttr;
-			for(statusAttrElem = statusAttrList; statusAttrElem; statusAttrElem = statusAttrElem->next) {
-				statusAttr = (PurpleStatusAttr*)statusAttrElem->data;
-				const char* statusAttrId = purple_status_attr_get_id(statusAttr);
-				const char* statusAttrName = purple_status_attr_get_name(statusAttr);
-				
-				PurpleValue* statusAttrValue = purple_status_attr_get_value(statusAttr);
-				if (statusAttrValue) {
-					Data purpleValue = purpleValueToData(statusAttrValue);
-					if (purpleValue) {
-						data.compound["status"].compound[statusId].compound[statusAttrId].compound["value"] = purpleValue;
-						if (statusAttrName) {
-							data.compound["status"].compound[statusId].compound[statusAttrId].compound["name"] = Data(statusAttrName, Data::VERBATIM);
-						}
-					}
-				}
-			}
-			
-			data.compound["status"].compound[statusId].compound["active"] = Data((bool)purple_status_is_active(status));
-			data.compound["status"].compound[statusId].compound["available"] = Data((bool)purple_status_is_available(status));
-			data.compound["status"].compound[statusId].compound["exclusive"] = Data((bool)purple_status_is_exclusive(status));
-			data.compound["status"].compound[statusId].compound["active"] = Data((bool)purple_status_is_active(status));
-			data.compound["status"].compound[statusId].compound["independent"] = Data((bool)purple_status_is_independent(status));
-			data.compound["status"].compound[statusId].compound["online"] = Data((bool)purple_status_is_online(status));
-			
-			
-			PurpleValue* statusValue = purple_status_get_attr_value(status, statusId);
-			if (statusValue)
-				data.compound["status"].compound[statusId].compound["value"] = purpleValueToData(statusValue);
-						
+			data.compound["status"].compound[statusId] = statusToData(status);
 		}
 		
 	}
-	std::cout << Data::toJSON(data);
+
 	return data;
 }
 
@@ -407,7 +495,6 @@ Data IMInvoker::purpleValueToData(PurpleValue* value) {
 		case PURPLE_TYPE_STRING:
 			if (purple_value_get_string(value)) {
 				data = Data(purple_value_get_string(value), Data::VERBATIM);
-				std::cout << purple_value_get_string(value) << std::endl;
 			}
 			break;
 		case PURPLE_TYPE_CHAR:
@@ -480,7 +567,7 @@ boost::shared_ptr<InvokerImpl> IMInvoker::create(InterpreterImpl* interpreter) {
 }
 
 Data IMInvoker::getDataModelVariables() {
-	tthread::lock_guard<tthread::mutex> lock(_accountMutex);
+	tthread::lock_guard<tthread::recursive_mutex> lock(_accountMutex);
 	return _dataModelVars;
 }
 
@@ -497,7 +584,7 @@ void IMInvoker::send(const SendRequest& req) {
 void IMInvoker::send(void *userdata, const std::string event) {
 	// we are in the thread that manages all of libpurple
 	EventContext* ctx = (EventContext*)userdata;
-#if 0
+
 	if (boost::iequals(ctx->sendReq.name, "im.send")) {
 		if (ctx->instance->_account) {
 			std::string receiver;
@@ -510,7 +597,6 @@ void IMInvoker::send(void *userdata, const std::string event) {
 			PurpleConversation* conv = purple_conversation_new(PURPLE_CONV_TYPE_IM, ctx->instance->_account, receiver.c_str());
 			purple_conv_im_send(purple_conversation_get_im_data(conv), ctx->sendReq.content.c_str());
 			
-#if 0
 			if (data.binary) {
 				PurpleConnection *gc = purple_account_get_connection(ctx->instance->_account);
 				PurplePlugin *prpl;
@@ -521,18 +607,30 @@ void IMInvoker::send(void *userdata, const std::string event) {
 					prpl = purple_connection_get_prpl(gc);
 					prpl_info = PURPLE_PLUGIN_PROTOCOL_INFO(prpl);
 					
-//					if (prpl_info->send_file &&
-//							(prpl_info->can_receive_file
-//							 && prpl_info->can_receive_file(gc, receiver.c_str())))
-//						prpl_info->send_file(gc, receiver.c_str(), file);
-						prpl_info->send_raw(gc, data.binary->_data, data.binary->_size);
+//					if (prpl_info && prpl_info->new_xfer) {
+//						PurpleXfer* xfer = (prpl_info->new_xfer)(purple_account_get_connection(ctx->instance->_account), receiver.c_str());
+//						purple_xfer_set_local_filename(xfer, "/Users/sradomski/Documents/W3C Standards.pdf");
+//						purple_xfer_set_filename(xfer, "asdfadsf.pdf");
+//						purple_xfer_request(xfer);
+//						purple_xfer_request_accepted(xfer, "/Users/sradomski/Documents/W3C Standards.pdf");
+//					}
+					
+					//Set the filename
+//					purple_xfer_set_local_filename(xfer, [[fileTransfer localFilename] UTF8String]);
+//					purple_xfer_set_filename(xfer, [[[fileTransfer localFilename] lastPathComponent] UTF8String]);
+//					xfer->ui_data
+//					purple_xfer_request(xfer);
+
+					serv_send_file(gc, "sradomski@localhost", "/Users/sradomski/Documents/W3C Standards.pdf");
+//					if (prpl_info->send_file && (prpl_info->can_receive_file && prpl_info->can_receive_file(gc, receiver.c_str()))) {
+//						prpl_info->send_file(gc, receiver.c_str(), "/Users/sradomski/Documents/W3C Standards.pdf");
+//					}
+//						prpl_info->send_raw(gc, data.binary->data, data.binary->size);
 				}
 
 			}
-#endif
 		}
 	}
-#endif
 	delete(ctx);
 }
 
@@ -565,23 +663,8 @@ void IMInvoker::invoke(void *userdata, const std::string event) {
 	_accountInstances[instance->_account] = instance;
 	
 	purple_account_set_password(instance->_account, password.c_str(), NULL, NULL);
-	
 	purple_account_set_enabled(instance->_account, "uscxml", true);
 		
-	int handle;
-	purple_signal_connect(purple_connections_get_handle(), "signed-on", &handle, PURPLE_CALLBACK(signedOnCB), NULL);
-	
-	purple_signal_connect(purple_blist_get_handle(), "buddy-signed-on", &handle, PURPLE_CALLBACK(buddySignOnOffCB), NULL);
-	purple_signal_connect(purple_blist_get_handle(), "buddy-signed-off", &handle, PURPLE_CALLBACK(buddySignOnOffCB), NULL);
-	purple_signal_connect(purple_blist_get_handle(), "buddy-status-changed", &handle, PURPLE_CALLBACK(buddyStatusChangedCB), NULL);
-
-	purple_signal_connect(purple_blist_get_handle(), "buddy-idle-changed", &handle, PURPLE_CALLBACK(buddyIdleChangeCB), NULL);
-	purple_signal_connect(purple_blist_get_handle(), "update-idle", &handle, PURPLE_CALLBACK(buddyUpdateIdleCB), NULL);
-	purple_signal_connect(purple_blist_get_handle(), "buddy-added", &handle, PURPLE_CALLBACK(buddyAddedCB), NULL);
-	purple_signal_connect(purple_blist_get_handle(), "buddy-removed", &handle, PURPLE_CALLBACK(buddyRemovedCB), NULL);
-	purple_signal_connect(purple_blist_get_handle(), "buddy-caps-changed", &handle, PURPLE_CALLBACK(buddyCapsChangedCB), NULL);
-	purple_signal_connect(purple_blist_get_handle(), "jabber-receiving-presence", &handle, PURPLE_CALLBACK(jabberRcvdPresenceCB), NULL);
-	
 	delete(ctx);
 	_accountMutex.unlock();
 }
@@ -616,24 +699,65 @@ guint IMInvoker::purpleEventInputAdd(int fd, PurpleInputCondition cond, PurpleIn
 	
 	short opMask = 0;
 	if (cond & PURPLE_INPUT_READ)
-		opMask |= DelayedEventQueue::FD_READ;
+		opMask |= DelayedEventQueue::DEQ_READ;
 	if (cond & PURPLE_INPUT_WRITE)
-		opMask |= DelayedEventQueue::FD_WRITE;
+		opMask |= DelayedEventQueue::DEQ_WRITE;
 	
 	guint eventId = g_rand_int(_gRand);
+//	std::cout << "-- Input add " << eventId << " --------" << fd << std::endl;
 	_eventQueue->addEvent(toStr(eventId), fd, opMask, purpleCallback, ctx, true);
 	return eventId;
 }
 
 gboolean IMInvoker::purpleEventInputRemove(guint handle) {
+//	std::cout << "-- Input del " << handle << std::endl;
 	_eventQueue->cancelEvent(toStr(handle));
 	return true;
 }
 
 int IMInvoker::purpleEventInputGetError(int fd, int *error) {
-	// unused
-	std::cout << "purpleEventInputGetError" << std::endl;
-	return 0;
+	int		  ret;
+	socklen_t len;
+	len = sizeof(*error);
+	
+	ret = getsockopt(fd, SOL_SOCKET, SO_ERROR, error, &len);
+	if (!ret && !(*error)) {
+		/*
+		 * Taken from Fire's FaimP2PConnection.m:
+		 * The job of this function is to detect if the connection failed or not
+		 * There has to be a better way to do this
+		 *
+		 * Any socket that fails to connect will select for reading and writing
+		 * and all reads and writes will fail
+		 * Any listening socket will select for reading, and any read will fail
+		 * So, select for writing, if you can write, and the write fails, not connected
+		 */
+		
+		{
+			fd_set thisfd;
+			struct timeval timeout;
+			
+			FD_ZERO(&thisfd);
+			FD_SET(fd, &thisfd);
+			timeout.tv_sec = 0;
+			timeout.tv_usec = 0;
+			select(fd+1, NULL, &thisfd, NULL, &timeout);
+			if(FD_ISSET(fd, &thisfd)){
+				ssize_t length = 0;
+				char buffer[4] = {0, 0, 0, 0};
+				
+				length = write(fd, buffer, length);
+				if(length == -1)
+				{
+					/* Not connected */
+					ret = -1;
+					*error = ENOTCONN;
+				}
+			}
+		}
+	}
+	
+	return ret;
 }
 
 void IMInvoker::purpleCallback(void *userdata, const std::string event) {
@@ -642,16 +766,20 @@ void IMInvoker::purpleCallback(void *userdata, const std::string event) {
 		ctx->function(ctx->data);
 		delete ctx;
 	} else if(ctx->input) {
+//		std::cout << "operating on " << ctx->inputFD << std::endl;
 		ctx->input(ctx->data, ctx->inputFD, ctx->cond);
 	}
 }
 
-void IMInvoker::purplePrefsInit(void) {}
+void IMInvoker::purplePrefsInit(void) {
+	purple_prefs_add_bool("/auto-login", false);
+}
+
 void IMInvoker::purpleDebugInit(void) {}
 
 void IMInvoker::purpleUIInit(void) {
 	purple_accounts_set_ui_ops(&_uiAccountOps);
-	purple_xfers_set_ui_ops(&_uiXferOps);
+//	purple_xfers_set_ui_ops(&_uiXferOps);
 //	purple_blist_set_ui_ops(&_uiBuddyOps);
 //	purple_notify_set_ui_ops(&_uiNotifyOps);
 //	purple_privacy_set_ui_ops(&_uiPrivacyOps);
@@ -659,6 +787,10 @@ void IMInvoker::purpleUIInit(void) {
 //	purple_connections_set_ui_ops(&_uiConnectOps);
 //	purple_whiteboard_set_ui_ops(&_uiWhiteboardOps);
 	purple_conversations_set_ui_ops(&_uiConvOps);
+	purple_debug_set_ui_ops(&_uiDebugOps);
+
+	setupPurpleSignals();
+
 }
 void IMInvoker::purpleQuit(void) {}
 
@@ -697,7 +829,7 @@ void* IMInvoker::accountRequestAuthorize(PurpleAccount *account,
 																				PurpleAccountRequestAuthorizationCb authorize_cb,
 																				PurpleAccountRequestAuthorizationCb deny_cb,
 																				void *user_data) {
-	// always accept all requests
+	// always accept all "may I add you as a buddy?" requests
 	authorize_cb(message, user_data);
 	return user_data;
 }
@@ -788,9 +920,11 @@ void IMInvoker::purpleCancelRemote(PurpleXfer *xfer) {
 }
 gssize IMInvoker::purpleWrite(PurpleXfer *xfer, const guchar *buffer, gssize size) {
 	std::cout << "purpleWrite" << std::endl;
+	return 0;
 }
 gssize IMInvoker::purpleRead(PurpleXfer *xfer, guchar **buffer, gssize size) {
 	std::cout << "purpleRead" << std::endl;
+	return 0;
 }
 void IMInvoker::purpleDataNotSent(PurpleXfer *xfer, const guchar *buffer, gsize size) {
 	std::cout << "purpleDataNotSent" << std::endl;
@@ -837,34 +971,66 @@ void* IMInvoker::purpleRequestInput(const char *title, const char *primary,
 																		gboolean multiline, gboolean masked, gchar *hint,
 																		const char *ok_text, GCallback ok_cb,
 																		const char *cancel_text, GCallback cancel_cb,
-																		PurpleRequestCommonParameters *cpar, void *user_data) {}
+																		PurpleRequestCommonParameters *cpar, void *user_data) {
+	return NULL;
+}
 void* IMInvoker::purpleRequestChoice(const char *title, const char *primary,
 																		 const char *secondary, gpointer default_value,
 																		 const char *ok_text, GCallback ok_cb, const char *cancel_text,
 																		 GCallback cancel_cb, PurpleRequestCommonParameters *cpar,
-																		 void *user_data, va_list choices) {}
+																		 void *user_data, va_list choices) {
+	return NULL;
+}
 void* IMInvoker::purpleRequestAction(const char *title, const char *primary,
 																		 const char *secondary, int default_action,
 																		 PurpleRequestCommonParameters *cpar, void *user_data,
-																		 size_t action_count, va_list actions) {}
+																		 size_t action_count, va_list actions) {
+	return NULL;
+}
 void* IMInvoker::purpleRequestWait(const char *title, const char *primary,
 																	 const char *secondary, gboolean with_progress,
 																	 PurpleRequestCancelCb cancel_cb,
-																	 PurpleRequestCommonParameters *cpar, void *user_data) {}
+																	 PurpleRequestCommonParameters *cpar, void *user_data) {
+	return NULL;
+}
 
-void IMInvoker::purpleRequestWaitUpdate(void *ui_handle, gboolean pulse, gfloat fraction) {}
+void IMInvoker::purpleRequestWaitUpdate(void *ui_handle, gboolean pulse, gfloat fraction) {
+
+}
 void* IMInvoker::purpleRequestFields(const char *title, const char *primary,
 																		 const char *secondary, PurpleRequestFields *fields,
 																		 const char *ok_text, GCallback ok_cb,
 																		 const char *cancel_text, GCallback cancel_cb,
-																		 PurpleRequestCommonParameters *cpar, void *user_data) {}
+																		 PurpleRequestCommonParameters *cpar, void *user_data) {
+	return NULL;
+}
 void* IMInvoker::purpleRequestFile(const char *title, const char *filename,
 																	 gboolean savedialog, GCallback ok_cb, GCallback cancel_cb,
-																	 PurpleRequestCommonParameters *cpar, void *user_data) {}
+																	 PurpleRequestCommonParameters *cpar, void *user_data) {
+	// click ok
+	PurpleXfer *xfer = (PurpleXfer *)user_data;
+	PurpleXferType xferType = purple_xfer_get_type(xfer);
+	if (xferType == PURPLE_XFER_RECEIVE) {
+		((PurpleRequestFileCb)ok_cb)(user_data, filename);
+	} else if (xferType == PURPLE_XFER_SEND) {
+		if (xfer->local_filename != NULL && xfer->filename != NULL) {
+			((PurpleRequestFileCb)ok_cb)(user_data, xfer->local_filename);
+		} else {
+			((PurpleRequestFileCb)cancel_cb)(user_data, xfer->local_filename);
+		}
+	}
+	return NULL;
+}
+
 void* IMInvoker::purpleRequestFolder(const char *title, const char *dirname,
 																		 GCallback ok_cb, GCallback cancel_cb,
-																		 PurpleRequestCommonParameters *cpar, void *user_data) {}
-void IMInvoker::purpleRequestClose(PurpleRequestType type, void *ui_handle) {}
+																		 PurpleRequestCommonParameters *cpar, void *user_data) {
+	return NULL;
+}
+
+void IMInvoker::purpleRequestClose(PurpleRequestType type, void *ui_handle) {
+
+}
 
 
 // connection ui operations
@@ -885,4 +1051,14 @@ void IMInvoker::purpleDrawPont(PurpleWhiteboard *wb, int x, int y, int color, in
 void IMInvoker::purpleDrawLine(PurpleWhiteboard *wb, int x1, int y1, int x2, int y2, int color, int size) {}
 void IMInvoker::purpleClearWB(PurpleWhiteboard *wb) {}
 
+// debug ui operations
+void IMInvoker::purpleDebugPrint(PurpleDebugLevel level, const char *category, const char *arg_s) {
+//	std::cout << category << ": " << arg_s << std::endl;
+}
+
+gboolean IMInvoker::purpleDebugIsEnabled(PurpleDebugLevel level, const char *category) {
+	return true;
+}
+
+	
 }

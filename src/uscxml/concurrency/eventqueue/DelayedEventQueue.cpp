@@ -26,14 +26,12 @@ DelayedEventQueue::~DelayedEventQueue() {
 }
 
 void DelayedEventQueue::run(void* instance) {
-	DelayedEventQueue* THIS = (DelayedEventQueue*)instance;
+	DelayedEventQueue* INSTANCE = (DelayedEventQueue*)instance;
 	int result;
-	while(THIS->_isStarted) {
-		{
-			//result = event_base_dispatch(THIS->_eventLoop);
-			result = event_base_loop(THIS->_eventLoop, EVLOOP_NO_EXIT_ON_EMPTY);
-			(void)result;
-		}
+	while(INSTANCE->_isStarted) {
+		//result = event_base_dispatch(THIS->_eventLoop);
+		result = event_base_loop(INSTANCE->_eventLoop, EVLOOP_NO_EXIT_ON_EMPTY);
+		(void)result;
 	}
 }
 
