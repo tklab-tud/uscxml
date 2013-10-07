@@ -10,6 +10,9 @@
 #include <sys/socket.h>
 #endif
 
+#define _USE_MATH_DEFINES
+#include <cmath>
+
 #if defined(_MSC_VER)
 // disable signed / unsigned comparison warnings
 #pragma warning (disable : 4018)

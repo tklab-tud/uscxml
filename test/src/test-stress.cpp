@@ -162,7 +162,7 @@ int main(int argc, char** argv) {
 		LOG(INFO) << "Processing " << entryIter->first;
 		Interpreter interpreter = Interpreter::fromURI(std::string(argv[optind]) + PATH_SEPERATOR + entryIter->first);
 		if (interpreter) {
-			interpreter.setCmdLineOptions(argc, argv);
+//			interpreter.setCmdLineOptions(argc, argv);
 
 			interpreter.addMonitor(&vm);
 

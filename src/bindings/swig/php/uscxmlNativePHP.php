@@ -702,6 +702,57 @@ class SendRequest extends Event {
 	}
 }
 
+class InterpreterOptions {
+	public $_cPtr=null;
+	protected $_pData=array();
+
+	function __set($var,$value) {
+		$func = 'InterpreterOptions_'.$var.'_set';
+		if (function_exists($func)) return call_user_func($func,$this->_cPtr,$value);
+		if ($var === 'thisown') return swig_uscxmlNativePHP_alter_newobject($this->_cPtr,$value);
+		$this->_pData[$var] = $value;
+	}
+
+	function __isset($var) {
+		if (function_exists('InterpreterOptions_'.$var.'_set')) return true;
+		if ($var === 'thisown') return true;
+		return array_key_exists($var, $this->_pData);
+	}
+
+	function __get($var) {
+		if ($var === 'additionalParameters') return new StringMap(InterpreterOptions_additionalParameters_get($this->_cPtr));
+		$func = 'InterpreterOptions_'.$var.'_get';
+		if (function_exists($func)) return call_user_func($func,$this->_cPtr);
+		if ($var === 'thisown') return swig_uscxmlNativePHP_get_newobject($this->_cPtr);
+		return $this->_pData[$var];
+	}
+	function __construct($h) {
+		$this->_cPtr=$h;
+	}
+
+	function isValid() {
+		return InterpreterOptions_isValid($this->_cPtr);
+	}
+
+	static function printUsageAndExit($progName) {
+		InterpreterOptions_printUsageAndExit($progName);
+	}
+
+	static function fromCmdLine($argc,$argv) {
+		$r=InterpreterOptions_fromCmdLine($argc,$argv);
+		if (is_resource($r)) {
+			$c=substr(get_resource_type($r), (strpos(get_resource_type($r), '__') ? strpos(get_resource_type($r), '__') + 2 : 3));
+			if (class_exists($c)) return new $c($r);
+			return new InterpreterOptions($r);
+		}
+		return $r;
+	}
+
+	function getCapabilities() {
+		return InterpreterOptions_getCapabilities($this->_cPtr);
+	}
+}
+
 class Interpreter {
 	public $_cPtr=null;
 	protected $_pData=array();
@@ -826,8 +877,8 @@ class Interpreter {
 		return $r;
 	}
 
-	function setCmdLineOptions($argc,$argv) {
-		Interpreter_setCmdLineOptions($this->_cPtr,$argc,$argv);
+	function setCmdLineOptions($params) {
+		Interpreter_setCmdLineOptions($this->_cPtr,$params);
 	}
 
 	function getCmdLineOptions() {

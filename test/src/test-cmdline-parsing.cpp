@@ -35,7 +35,6 @@ int main(int argc, char** argv) {
 		assert(!options); // invalid as no SCXML document is given
 		
 		optind = 0;
-		optreset = 1;
 	}
 
 	if (true) {
@@ -53,7 +52,6 @@ int main(int argc, char** argv) {
 		assert(options.interpreters.find("/foo/bar.scxml") != options.interpreters.end());
 
 		optind = 0;
-		optreset = 1;
 	}
 
 	if (true) {
@@ -80,7 +78,6 @@ int main(int argc, char** argv) {
 		assert(!options.interpreters["/foo/bar3.scxml"]->withHTTP);
 
 		optind = 0;
-		optreset = 1;
 	}
 
 	if (true) {
@@ -102,7 +99,6 @@ int main(int argc, char** argv) {
 		assert(options.interpreters["/foo/bar1.scxml"]->additionalParameters.find("tmp-path") != options.interpreters["/foo/bar1.scxml"]->additionalParameters.end());
 		
 		optind = 0;
-		optreset = 1;
 	}
 
 	return EXIT_SUCCESS;

@@ -739,7 +739,7 @@ endforeach()
 
 # add compile time reducer
 # see https://github.com/sakra/cotire
-if ((WIN32 OR UNIX) AND NOT APPLE)
+if (NOT CMAKE_CROSSCOMPILING)
 	include(cotire)
 endif()
 
@@ -751,7 +751,7 @@ else()
 	add_library(uscxml ${USCXML_FILES})
 	target_link_libraries(uscxml ${USCXML_OPT_LIBS} ${USCXML_CORE_LIBS})
 endif()
-if ((WIN32 OR UNIX) AND NOT APPLE)
+if (NOT CMAKE_CROSSCOMPILING)
 	set_target_properties(uscxml PROPERTIES COTIRE_CXX_PREFIX_HEADER_INIT "src/uscxml/pch.h")
 	cotire(uscxml)
 endif()

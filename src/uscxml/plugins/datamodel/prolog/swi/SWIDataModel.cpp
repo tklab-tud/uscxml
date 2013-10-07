@@ -106,7 +106,8 @@ boost::shared_ptr<DataModelImpl> SWIDataModel::create(InterpreterImpl* interpret
 
 	int rc = PL_set_engine(engine, NULL);
 	assert(rc == PL_ENGINE_SET);
-
+  (void)rc;
+  
 	_plModule = boost::replace_all_copy(interpreter->getSessionId(), "-", "");
 	boost::replace_all(_plModule, "0", "g");
 	boost::replace_all(_plModule, "1", "h");
