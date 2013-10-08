@@ -26,8 +26,8 @@
 
 
 	  <data id="TIM">
-		<ciao>77</ciao>
-		<frame>
+		<ciao xmlns="">77</ciao>
+		<frame xmlns="">
 		    <get type="request" index="12">language</get>
 		    <get type="request" index="13">diagnostic</get>
 		    <get type="request" index="14">optional</get>
@@ -69,7 +69,7 @@
 <!--				<file url="bar.bin" operation="write" type="xml" contentexpr="_event['data']['content']" />-->
 
 <!--				<assign location="/datamodel/data[@id='TIM']/frame/set[@index='17']/item[@id='0']/nestedData" expr="'50'"/>-->
-				<assign location="$TIM/frame/set[@index='17']/item[@i='0']/nestedData" expr="'50'"/>
+				<assign location="$TIM/frame/set[@index='17']/item[@i='0']/nestedData" expr="'5999'"/>
 <!--				<assign location="$TIM/ciao" expr="'50'"/>-->
 <!--				<assign location="$TIM" expr="'50'"/>-->
 
@@ -93,9 +93,8 @@
 <!--				</foreach>-->
 
 				<send id="send-122"
-				      target="#_xmlbridge1"
-				      event="ilnomedelmessaggiocheinviamo"
-				      delay="1s">
+				      event="reply"
+				      delay="10000s">
 					<param name="paramatername" expr="'paramatervalue'"/>
 					<content>
 						<root>
@@ -107,10 +106,9 @@
 				</send>
 
 				<send id="send-123"
-				      target="#_xmlbridge1"
 				      type="http://www.w3.org/TR/scxml/#SCXMLEventProcessor"
 				      event="reply"
-				      delay="2s"
+				      delay="5s"
 				      namelist="$TIM"/>
 
 <!--				<send id="send-124"-->
@@ -145,14 +143,17 @@
 				    <assign location="long_expr" expr="long_expr+'/'" />
 				</if>
 			</transition>
-			<transition event="reply" cond="$_event/data = 'ComandiMes'" target="NewOrder" />
+<!--			<transition event="reply" cond="$_event/data = 'ComandiMes'" target="NewOrder" />-->
 <!--			<transition event="reply" target="NewOrder">-->
 <!--				<log label="invokeid is " expr="$_event/text()" />-->
 <!--			</transition>-->
 
 <!--			<transition cond="$_sessionid = '12345'" target="nextState"/>-->
 <!--			<transition cond="fn:year-from-dateTime($time) > 2009" target="newBehavior"/>-->
-<!--			<transition event="reply" cond="data('_event')/headers/subject = 20" target="NewOrder" />-->
+<!--			<transition event="reply" cond="data('_event')/ciao/subject = '77'" target="NewOrder" />-->
+<!--			<transition event="reply" cond="data('_event')/root/alpha = '1'" target="NewOrder" />-->
+			<transition event="reply" cond="$_event/data/data/data/ciao = '77'" target="NewOrder" />
+<!--			<transition event="reply" cond="$_event/data/root/alpha = '1'" target="NewOrder" />-->
 <!--			<transition event="reply" cond="yearFromDatetime(time) > 2009" target="Exit" />-->
 
 <!--			<transition event="email.send">-->

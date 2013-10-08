@@ -18,7 +18,7 @@ namespace uscxml {
 
 class XmlBridgeInvoker : public InvokerImpl {
 public:
-	XmlBridgeInvoker();
+	XmlBridgeInvoker() : _thread(NULL) {}
 	~XmlBridgeInvoker();
 	boost::shared_ptr<InvokerImpl> create(InterpreterImpl* interpreter);
 
@@ -61,36 +61,26 @@ public:
 
 	~XmlBridgeInputEvents() {}
 
-	void handleTIMmsg(const string replyData);
-	void handleTIMreply(const string replyData);
-	void handleMESmsg(const string replyData);
-	void handleMESreply(const string replyData);
+	void handleMESreadreq(const string dbname, const string replyData);
+	void handleTIMreply(const string dbname, const string replyData);
+	void handleMESwritemsgreq(const string dbname, const string replyData);
+	void handleMESwriteboolreq(const string dbname, const string replyData);
 
-	//std::map<std::string, struct stat> getAllEntries() {}
-
+	void registerInvoker(std::string smName, XmlBridgeInvoker* invokref) {
+		_invokers[smName] = invokref;
+	}
 	static XmlBridgeInputEvents& getInstance() {
-		LOG(INFO) << "Initializing XmlBridgeInputEvents static instance" << endl;
+		LOG(INFO) << "Instantiating XmlBridgeInputEvents singleton" << endl;
 		static XmlBridgeInputEvents instance;
 		return instance;
 	}
 
-	XmlBridgeInvoker* _invokPointer;
+private:
+	XmlBridgeInputEvents() : _lastChecked(0) {}
+	XmlBridgeInputEvents& operator=( const XmlBridgeInputEvents& );
 
-protected:
-	XmlBridgeInputEvents() : _invokPointer(NULL), _initialization(false), _lastChecked(0) {}
-
-	/* second private constructor */
-	//XmlBridgeInputEvents(const std::string& dir, const std::string& relDir) : _dir(dir), _relDir(relDir), _recurse(true), _lastChecked(0) {}
-	/*std::string _dir;
-	std::string _relDir;
-	std::map<std::string, struct stat> _knownEntries;
-	std::map<std::string, XmlBridgeSMIO*> _knownDirs;
-	*/
-
-	bool _initialization;
+	std::map<std::string, XmlBridgeInvoker*> _invokers;
 	time_t _lastChecked;
-
-	//BridgeConfig& _bridgeconf;
 };
 
 #ifdef BUILD_AS_PLUGINS

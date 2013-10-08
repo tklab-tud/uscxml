@@ -15,14 +15,6 @@ bool connect(pluma::Host& host) {
 }
 #endif
 
-XmlBridgeInvoker::XmlBridgeInvoker() :
-	_thread(NULL)
-{
-		XmlBridgeInputEvents& myinstance = XmlBridgeInputEvents::getInstance();
-		myinstance._invokPointer = this;
-		LOG(INFO) << "Initializing XmlBridgeInvoker instance" << endl;
-}
-
 XmlBridgeInvoker::~XmlBridgeInvoker() {
 	_isRunning = false;
 	if (_thread) {
@@ -102,7 +94,6 @@ void XmlBridgeInvoker::send(const SendRequest& req) {
 	*/
 
 	/*
-	domSS << req.getFirstDOMElement();
 	domSS << req.dom;
 	*/
 
@@ -113,7 +104,6 @@ void XmlBridgeInvoker::cancel(const std::string sendId) {
 }
 
 void XmlBridgeInvoker::invoke(const InvokeRequest& req) {
-
 	LOG(INFO) << "Invoking XmlBridge" << endl;
 
 	if (req.params.find("datablock") == req.params.end()) {
@@ -121,12 +111,15 @@ void XmlBridgeInvoker::invoke(const InvokeRequest& req) {
 		return;
 	}
 
+	XmlBridgeInputEvents& myinstance = XmlBridgeInputEvents::getInstance();
+	myinstance.registerInvoker(req.params.find("datablock")->second.atom, this);
+
 	_isRunning = true;
 	LOG(INFO) << "Moving XmlBridgeInvoker to a new thread" << endl;
 	_thread = new tthread::thread(XmlBridgeInvoker::run, this);
 
 	/*
-	if (boost::iequals(req.params.find("reportexisting")->second, "false"))
+	 *if (boost::iequals(req.params.find("reportexisting")->second, "false"))
 		_reportExisting = false;
 	if (req.params.find("recurse") != req.params.end() &&
 		boost::iequals(req.params.find("recurse")->second, "true"))
@@ -145,9 +138,7 @@ void XmlBridgeInvoker::invoke(const InvokeRequest& req) {
 
 
 	/*
-	if (_bridgeconf.getDBFrameList())
-
-	if (suffixList.size() > 0) {
+	 *if (suffixList.size() > 0) {
 		// seperate path into components
 		std::stringstream ss(suffixList);
 		std::string item;
@@ -278,27 +269,26 @@ void XmlBridgeInvoker::buildEvent(const std::string reply_raw_data) {
 	*/
 }
 
-void XmlBridgeInputEvents::handleTIMmsg(const string replyData)
+void XmlBridgeInputEvents::handleTIMreply(const string dbname, const string replyData)
 {
-	_invokPointer->buildEvent(replyData);
+	_invokers[dbname]->buildEvent(replyData);
 }
 
-void XmlBridgeInputEvents::handleTIMreply(const string replyData)
+void XmlBridgeInputEvents::handleMESreadreq(const string dbname, const string replyData)
 {
-	_invokPointer->buildEvent(replyData);
+	_invokers[dbname]->buildEvent(replyData);
 }
 
-void XmlBridgeInputEvents::handleMESmsg(const string replyData)
+void XmlBridgeInputEvents::handleMESwritemsgreq(const string dbname, const string replyData)
 {
-	_invokPointer->buildEvent(replyData);
+	_invokers[dbname]->buildEvent(replyData);
 }
 
-void XmlBridgeInputEvents::handleMESreply(const string replyData)
+void XmlBridgeInputEvents::handleMESwriteboolreq(const string dbname, const string replyData)
 {
-	_invokPointer->buildEvent(replyData);
+	_invokers[dbname]->buildEvent(replyData);
 }
 
-}
 /*
 XmlBridgeInputEvents::~XmlBridgeInputEvents() {
 	std::map<std::string, DirectoryWatch*>::iterator dirIter = _knownDirs.begin();
@@ -308,3 +298,7 @@ XmlBridgeInputEvents::~XmlBridgeInputEvents() {
 	}
 }
 */
+
+} //namespace uscxml
+
+

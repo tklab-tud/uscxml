@@ -9,6 +9,7 @@
 
 #include <DOM/Document.hpp>
 #include <DOM/io/Stream.hpp>
+#include <XPath/impl/xpath_object.hpp>
 
 #include <boost/shared_ptr.hpp>
 #include <boost/lexical_cast.hpp>
@@ -44,7 +45,7 @@ public:
 	virtual ~Data() {}
 
 	operator bool() const {
-		return (atom.length() > 0 || !compound.empty() || !array.empty() || binary);
+		return (atom.length() > 0 || !compound.empty() || !array.empty() || binary );
 	}
 
 	bool hasKey(const std::string& key) const {
@@ -121,6 +122,7 @@ protected:
 	std::list<Data> array;
 	std::string atom;
 	boost::shared_ptr<Blob> binary;
+	Arabica::XPath::NodeSet<std::string> xpathres;
 	Type type;
 
 protected:

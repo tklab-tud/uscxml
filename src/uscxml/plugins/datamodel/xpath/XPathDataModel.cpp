@@ -162,14 +162,20 @@ void XPathDataModel::setEvent(const Event& event) {
 	if (event.namelist.size() > 0) {
 		std::map<std::string, Data>::const_iterator namelistIter = event.namelist.begin();
 		while(namelistIter != event.namelist.end()) {
-			Element<std::string> eventNamelistElem = _doc.createElement("data");
-			// this is simplified - Data might be more elaborate than a simple string atom
-			Text<std::string> eventNamelistText = _doc.createTextNode(namelistIter->second.atom);
+			if (namelistIter->second.type == Data::INTERPRETED) {
+				NodeSet<std::string> xpathresult = namelistIter->second.xpathres;
+				NodeSet<std::string>::const_iterator nodesetIter = xpathresult.begin();
+				while(nodesetIter != xpathresult.end())
+					eventDataElem.appendChild(*nodesetIter);
+			} else {
+				Element<std::string> eventNamelistElem = _doc.createElement("data");
+				Text<std::string> eventNamelistText = _doc.createTextNode(namelistIter->second.atom);
 
-			eventNamelistElem.setAttribute("id", namelistIter->first);
-			eventNamelistElem.appendChild(eventNamelistText);
-			eventDataElem.appendChild(eventNamelistElem);
-			namelistIter++;
+				eventNamelistElem.setAttribute("id", namelistIter->first);
+				eventNamelistElem.appendChild(eventNamelistText);
+				eventDataElem.appendChild(eventNamelistElem);
+				namelistIter++;
+			}
 		}
 	}
 	if (event.raw.size() > 0) {
@@ -184,7 +190,6 @@ void XPathDataModel::setEvent(const Event& event) {
 		eventDataElem.appendChild(textNode);
 	}
 	if (event.dom) {
-//		Node<std::string> importedNode = _doc.importNode(event.getFirstDOMElement(), true);
 		Node<std::string> importedNode = _doc.importNode(event.dom, true);
 		eventDataElem.appendChild(importedNode);
 	}
@@ -211,11 +216,10 @@ void XPathDataModel::setEvent(const Event& event) {
 }
 
 Data XPathDataModel::getStringAsData(const std::string& content) {
-	Data data;
 	XPathValue<std::string> result = _xpath.evaluate_expr(content, _doc);
-
 	std::stringstream ss;
 
+	Data data;
 	switch (result.type()) {
 	case ANY:
 		break;
@@ -229,12 +233,9 @@ Data XPathDataModel::getStringAsData(const std::string& content) {
 		ss << result.asString();
 		break;
 	case NODE_SET:
-		NodeSet<std::string> ns = result.asNodeSet();
-		for (int i = 0; i < ns.size(); i++) {
-			ss << ns[i];
-		}
-		ss << result;
-		break;
+		data.xpathres = result.asNodeSet();
+		data.type = Data::INTERPRETED;
+		return data;
 	}
 
 	data.atom = ss.str();
@@ -351,9 +352,11 @@ bool XPathDataModel::isDeclared(const std::string& expr) {
 }
 
 bool XPathDataModel::evalAsBool(const std::string& expr) {
-//	std::cout << std::endl << evalAsString(expr);
+	std::cout << std::endl << evalAsString(expr);
 	XPathValue<std::string> result;
 	try {
+		std::cout << std::endl << "Documento Attuale : " << std::endl << _doc << std::endl;
+		std::cout << std::endl << "Attuale Datamodel : " << std::endl << _datamodel << std::endl;
 		result = _xpath.evaluate_expr(expr, _doc);
 	} catch(SyntaxException e) {
 		throw Event("error.execution", Event::PLATFORM);

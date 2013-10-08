@@ -256,11 +256,7 @@ if(${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
 
 	# all warnings
 	add_definitions(-Wall)
-#	add_definitions(-Wno-parentheses-equality)
-	add_definitions(-Wno-attributes)
-
-	# we cannot tread warning as error with the "narrowing problem"
-	# add_definitions(-Werror)
+	add_definitions(-Werror)
 
 	if(GCC_VERSION VERSION_EQUAL 4.7 OR GCC_VERSION VERSION_GREATER 4.7)
 		# when compiling as C++11, narrowing is a warning but older compilers complain about the option
@@ -488,8 +484,8 @@ if (WIN32)
 endif()
 
 # BOOST - header only
-FIND_PATH(Boost_INCLUDE_DIR boost/version.hpp)
-include_directories(${Boost_INCLUDE_DIR})
+#FIND_PATH(Boost_INCLUDE_DIR boost/version.hpp)
+#include_directories(${Boost_INCLUDE_DIR})
 
 # LIBEVENT
 #set(ENV{EVENT_SRC} ${CMAKE_SOURCE_DIR}/../libevent)
