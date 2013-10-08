@@ -211,7 +211,7 @@ Data XPathDataModel::getStringAsData(const std::string& content) {
 	switch (result.type()) {
 		case ANY:
 			break;
-		case BOOL:
+		case Arabica::XPath::BOOL:
 			ss << result.asBool();
 			break;
 		case NUMBER:
@@ -225,7 +225,6 @@ Data XPathDataModel::getStringAsData(const std::string& content) {
 			for (int i = 0; i < ns.size(); i++) {
 				ss << ns[i];
 			}
-			ss << result;
 			break;
 	}
 	

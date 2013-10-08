@@ -5,7 +5,9 @@
 #include <winsock2.h>
 // see http://stackoverflow.com/questions/1372480/c-redefinition-header-files
 #define _WINSOCKAPI_    // stops windows.h including winsock.h
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
+#undef WIN32_LEAN_AND_MEAN
 #else
 #include <sys/socket.h>
 #endif

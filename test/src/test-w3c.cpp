@@ -123,32 +123,12 @@ int main(int argc, char** argv) {
 	google::InitGoogleLogging(argv[0]);
 	google::LogToStderr();
 
-#ifndef _WIN32
-	opterr = 0;
-#endif
-	int option;
-	while ((option = getopt(argc, argv, "vl:p:")) != -1) {
-		switch(option) {
-		case 'l':
-			google::InitGoogleLogging(optarg);
-			break;
-		case 'p':
-			uscxml::Factory::pluginPath = optarg;
-			break;
-		case '?':
-			break;
-		default:
-			printUsageAndExit();
-			break;
-		}
-	}
-
 //  for (int i = 0; i < argc; i++)
 //    std::cout << argv[i] << std::endl;
 //  std::cout << optind << std::endl;
 
-	LOG(INFO) << "Processing " << argv[optind];
-	Interpreter interpreter = Interpreter::fromURI(argv[optind]);
+	LOG(INFO) << "Processing " << argv[1];
+	Interpreter interpreter = Interpreter::fromURI(argv[1]);
 	if (interpreter) {
 //		interpreter.setCmdLineOptions(argc, argv);
 //		interpreter->setCapabilities(Interpreter::CAN_NOTHING);

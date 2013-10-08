@@ -688,6 +688,9 @@ SET(USCXML_LANGUAGE_BINDINGS)
 
 add_subdirectory(src/uscxml)
 include_directories(${USCXML_INCLUDE_DIRS})
+if (WIN32)
+	list(APPEND USCXML_FILES "${PROJECT_SOURCE_DIR}/contrib/src/getopt/getopt.c")
+endif()
 
 if (UNIX AND NOT APPLE)
 	list (APPEND USCXML_CORE_LIBS "rt")
@@ -757,7 +760,7 @@ if (NOT CMAKE_CROSSCOMPILING)
 endif()
 
 if (NOT CMAKE_CROSSCOMPILING)
-	add_executable(uscxml-browser apps/uscxml-browser.cpp ${PROJECT_SOURCE_DIR}/contrib/src/getopt/XGetopt.cpp)
+	add_executable(uscxml-browser apps/uscxml-browser.cpp)
 	target_link_libraries(uscxml-browser uscxml)
 	set_target_properties(uscxml-browser PROPERTIES FOLDER "Apps")
 	install_executable(TARGETS uscxml-browser COMPONENT tools)
