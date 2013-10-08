@@ -67,7 +67,7 @@ void FileElement::enterElement(const Arabica::DOM::Node<std::string>& node) {
 	
 	std::string contentStr;
 	char* content = NULL;
-	size_t contentSize;
+	size_t contentSize = 0;
 	if (_operation == WRITE || _operation == APPEND) {
 		if (!HAS_ATTR(node, "content") && !HAS_ATTR(node, "contentexpr")) {
 			LOG(ERROR) << "File element requires content or contentexpr";
@@ -78,8 +78,8 @@ void FileElement::enterElement(const Arabica::DOM::Node<std::string>& node) {
 		} else {
 			Data data = _interpreter->getDataModel().getStringAsData(ATTR(node, "contentexpr"));
 			if (data.binary) {
-				content = data.binary->_data;
-				contentSize = data.binary->_size;
+				content = data.binary->data;
+				contentSize = data.binary->size;
 			} else if (data.atom.length() > 0) {
 				contentStr = data.atom;
 			}

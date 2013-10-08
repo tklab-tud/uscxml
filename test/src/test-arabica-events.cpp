@@ -1,3 +1,5 @@
+#include <iostream>
+
 #include "uscxml/config.h"
 #include "uscxml/Common.h"
 #include <DOM/Document.hpp>

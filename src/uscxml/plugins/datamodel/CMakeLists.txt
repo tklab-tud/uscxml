@@ -1,63 +1,65 @@
-if (JSC_FOUND AND BUILD_DM_ECMA)
-	set(USCXML_DATAMODELS "ecmascript(JSC) ${USCXML_DATAMODELS}")
-	# JavaScriptCore ecmascript datamodel
-	file(GLOB JSC_DATAMODEL
-		ecmascript/JavaScriptCore/*.cpp
-		ecmascript/JavaScriptCore/*.h
-		ecmascript/*.cpp
-		ecmascript/*.h
-	)
-	source_group("Datamodel\\jsc" FILES ${JSC_DATAMODEL})
-	file(GLOB_RECURSE JSC_DOM
-		ecmascript/JavaScriptCore/dom/*.cpp
-		ecmascript/JavaScriptCore/dom/*.h
-	)
-	source_group("Datamodel\\DOM" FILES ${JSC_DOM})
-	if (BUILD_AS_PLUGINS)
-		add_library(
-			datamodel_jsc SHARED 
-			${JSC_DATAMODEL}
-			${JSC_DOM})
-		target_link_libraries(datamodel_jsc 
-			uscxml
-			${JSC_LIBRARY})
-		set_target_properties(datamodel_jsc PROPERTIES FOLDER "Plugin DataModel")
-	else()
-		list (APPEND USCXML_FILES ${JSC_DATAMODEL})
-		list (APPEND USCXML_FILES ${JSC_DOM})
-		list (APPEND USCXML_OPT_LIBS ${JSC_LIBRARY})
-	endif()
-else()
-
-# GOOGLE V8 ecmascript datamodel
-	set(USCXML_DATAMODELS "ecmascript(V8) ${USCXML_DATAMODELS}")
-	# set(ENV{V8_SRC} ${CMAKE_SOURCE_DIR}/../v8)
-	if (V8_FOUND AND BUILD_DM_ECMA)
-		file(GLOB V8_DATAMODEL
-			ecmascript/v8/*.cpp
-			ecmascript/v8/*.h
+if (BUILD_DM_ECMA)
+	if (JSC_FOUND)
+		set(USCXML_DATAMODELS "ecmascript(JSC) ${USCXML_DATAMODELS}")
+		# JavaScriptCore ecmascript datamodel
+		file(GLOB JSC_DATAMODEL
+			ecmascript/JavaScriptCore/*.cpp
+			ecmascript/JavaScriptCore/*.h
 			ecmascript/*.cpp
 			ecmascript/*.h
 		)
-		source_group("Datamodel\\v8" FILES ${V8_DATAMODEL})
-		file(GLOB_RECURSE V8_DOM
-			ecmascript/v8/dom/*.cpp
-			ecmascript/v8/dom/*.h
+		source_group("Datamodel\\jsc" FILES ${JSC_DATAMODEL})
+		file(GLOB_RECURSE JSC_DOM
+			ecmascript/JavaScriptCore/dom/*.cpp
+			ecmascript/JavaScriptCore/dom/*.h
 		)
-		source_group("Datamodel\\v8\\DOM" FILES ${V8_DOM})
-
+		source_group("Datamodel\\DOM" FILES ${JSC_DOM})
 		if (BUILD_AS_PLUGINS)
 			add_library(
-				datamodel_v8 SHARED 
-				${V8_DATAMODEL}
-				${V8_DOM})
-			target_link_libraries(datamodel_v8 
+				datamodel_jsc SHARED 
+				${JSC_DATAMODEL}
+				${JSC_DOM})
+			target_link_libraries(datamodel_jsc 
 				uscxml
-				${V8_LIBRARY})
-			set_target_properties(datamodel_v8 PROPERTIES FOLDER "Plugin DataModel")
+				${JSC_LIBRARY})
+			set_target_properties(datamodel_jsc PROPERTIES FOLDER "Plugin DataModel")
 		else()
-			list (APPEND USCXML_FILES ${V8_DATAMODEL})
-			list (APPEND USCXML_FILES ${V8_DOM})
+			list (APPEND USCXML_FILES ${JSC_DATAMODEL})
+			list (APPEND USCXML_FILES ${JSC_DOM})
+			list (APPEND USCXML_OPT_LIBS ${JSC_LIBRARY})
+		endif()
+	else()
+
+	# GOOGLE V8 ecmascript datamodel
+		set(USCXML_DATAMODELS "ecmascript(V8) ${USCXML_DATAMODELS}")
+		# set(ENV{V8_SRC} ${CMAKE_SOURCE_DIR}/../v8)
+		if (V8_FOUND AND BUILD_DM_ECMA)
+			file(GLOB V8_DATAMODEL
+				ecmascript/v8/*.cpp
+				ecmascript/v8/*.h
+				ecmascript/*.cpp
+				ecmascript/*.h
+			)
+			source_group("Datamodel\\v8" FILES ${V8_DATAMODEL})
+			file(GLOB_RECURSE V8_DOM
+				ecmascript/v8/dom/*.cpp
+				ecmascript/v8/dom/*.h
+			)
+			source_group("Datamodel\\v8\\DOM" FILES ${V8_DOM})
+
+			if (BUILD_AS_PLUGINS)
+				add_library(
+					datamodel_v8 SHARED 
+					${V8_DATAMODEL}
+					${V8_DOM})
+				target_link_libraries(datamodel_v8 
+					uscxml
+					${V8_LIBRARY})
+				set_target_properties(datamodel_v8 PROPERTIES FOLDER "Plugin DataModel")
+			else()
+				list (APPEND USCXML_FILES ${V8_DATAMODEL})
+				list (APPEND USCXML_FILES ${V8_DOM})
+			endif()
 		endif()
 	endif()
 endif()

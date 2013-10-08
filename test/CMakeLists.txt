@@ -75,12 +75,24 @@ if (NOT WIN32)
 	add_test(test-stress ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-stress ${CMAKE_SOURCE_DIR}/test/samples/w3c)
 	set_target_properties(test-stress PROPERTIES FOLDER "Tests")
 
+	if (LIBPURPLE_FOUND)
+		add_executable(test-instant-messaging src/test-instant-messaging.cpp)
+		target_link_libraries(test-instant-messaging uscxml)
+		add_test(test-instant-messaging ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-instant-messaging)
+		set_target_properties(test-instant-messaging PROPERTIES FOLDER "Tests")
+	endif()
 endif()
 
 add_executable(test-url src/test-url.cpp)
 target_link_libraries(test-url uscxml)
 add_test(test-url ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-url)
 set_target_properties(test-url PROPERTIES FOLDER "Tests")
+
+
+add_executable(test-cmdline-parsing src/test-cmdline-parsing.cpp)
+target_link_libraries(test-cmdline-parsing uscxml)
+add_test(test-cmdline-parsing ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-cmdline-parsing)
+set_target_properties(test-cmdline-parsing PROPERTIES FOLDER "Tests")
 
 # add_executable(test-initial-config src/test-initial-config.cpp)
 # target_link_libraries(test-initial-config uscxml)
@@ -109,7 +121,7 @@ set_target_properties(scxml-test-framework-client PROPERTIES FOLDER "Tests")
 # add_test(test-curl-multi-api ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-completion)
 # set_target_properties(test-curl-multi-api PROPERTIES FOLDER "Tests")
 
-	add_executable(test-w3c src/test-w3c.cpp ${PROJECT_SOURCE_DIR}/contrib/src/getopt/XGetopt.cpp)
+	add_executable(test-w3c src/test-w3c.cpp)
 	target_link_libraries(test-w3c uscxml)
 	set_target_properties(test-w3c PROPERTIES FOLDER "Tests")
 

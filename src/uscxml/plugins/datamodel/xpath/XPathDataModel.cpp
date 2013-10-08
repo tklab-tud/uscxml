@@ -2,14 +2,6 @@
 #include "XPathDataModel.h"
 
 #include "uscxml/Message.h"
-#include <arabica/Arabica/StringAdaptor.hpp>
-#include <arabica/DOM/Node.hpp>
-#include <arabica/DOM/NodeList.hpp>
-#include <arabica/DOM/Document.hpp>
-#include <arabica/DOM/Element.hpp>
-#include <arabica/DOM/Attr.hpp>
-#include <arabica/XPath/XPath.hpp>
-#include <arabica/XPath/impl/xpath_expression.hpp>
 #include <glog/logging.h>
 
 #ifdef BUILD_AS_PLUGINS
@@ -190,6 +182,7 @@ void XPathDataModel::setEvent(const Event& event) {
 		eventDataElem.appendChild(textNode);
 	}
 	if (event.dom) {
+//		Node<std::string> importedNode = _doc.importNode(event.getFirstDOMElement(), true);
 		Node<std::string> importedNode = _doc.importNode(event.dom, true);
 		eventDataElem.appendChild(importedNode);
 	}
@@ -499,14 +492,13 @@ void XPathDataModel::init(const Element<std::string>& dataElem,
 
 	Element<std::string> container = _doc.createElement("data");
 	container.setAttribute("id", location);
+
 	if (node) {
-		if (node) {
-			Node<std::string> data = node;
-			while (data) {
-				Node<std::string> dataClone = _doc.importNode(data, true);
-				container.appendChild(dataClone);
-				data = data.getNextSibling();
-			}
+		Node<std::string> data = node;
+		while (data) {
+			Node<std::string> dataClone = _doc.importNode(data, true);
+			container.appendChild(dataClone);
+			data = data.getNextSibling();
 		}
 	} else if (content.length() > 0) {
 		Text<std::string> textNode = _doc.createTextNode(Interpreter::spaceNormalize(content));
@@ -786,9 +778,26 @@ void NodeSetVariableResolver::setVariable(const std::string& name, const NodeSet
 	std::cout << std::endl;
 #endif
 	_variables[name] = value;
+#if 0
+	std::map<std::string, Arabica::XPath::NodeSet<std::string> >::iterator varIter =  _variables.begin();
+	while (varIter != _variables.end()) {
+		std::cout << varIter->first << ":" << std::endl;
+		for (int i = 0; i < varIter->second.size(); i++) {
+			std::cout << varIter->second[i].getNodeType() << " | " << varIter->second[i] << std::endl;
+		}
+		varIter++;
+	}
+#endif
 }
 
 bool NodeSetVariableResolver::isDeclared(const std::string& name) {
+#if 0
+	std::map<std::string, Arabica::XPath::NodeSet<std::string> >::iterator varIter =  _variables.begin();
+	while (varIter != _variables.end()) {
+		std::cout << varIter->first << std::endl;
+		varIter++;
+	}
+#endif
 	return _variables.find(name) != _variables.end();
 }
 

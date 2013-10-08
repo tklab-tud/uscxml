@@ -174,7 +174,7 @@ int main(int argc, char** argv) {
 	LOG(INFO) << "Processing " << argv[optind];
 	Interpreter interpreter = Interpreter::fromURI(argv[optind]);
 	if (interpreter) {
-		interpreter.setCmdLineOptions(argc, argv);
+//		interpreter.setCmdLineOptions(argc, argv);
 //		interpreter->setCapabilities(Interpreter::CAN_NOTHING);
 //		interpreter->setCapabilities(Interpreter::CAN_BASIC_HTTP | Interpreter::CAN_GENERIC_HTTP);
 

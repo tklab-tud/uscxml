@@ -8,6 +8,8 @@
 #include "uscxml/server/HTTPServer.h"
 #include "uscxml/Message.h"
 #include "uscxml/Factory.h"
+
+#include <string>
 #include <iostream>
 #include <event2/dns.h>
 #include <event2/event.h>
@@ -17,9 +19,6 @@
 #include <event2/http_struct.h>
 #include <event2/thread.h>
 
-#include <string>
-#include <iostream>
-
 #include <glog/logging.h>
 #include <boost/algorithm/string.hpp>
 
@@ -28,34 +27,84 @@
 #include <arpa/inet.h>
 #endif
 
+#if (defined EVENT_SSL_FOUND && defined OPENSSL_FOUND)
+#include <openssl/ssl.h>
+#include <openssl/bio.h>
+#include <openssl/err.h>
+#include <openssl/pem.h>
+#include <event2/bufferevent_ssl.h>
+#endif
+
 #ifdef BUILD_AS_PLUGINS
 #include <Pluma/Connector.hpp>
 #endif
 
 namespace uscxml {
 
-HTTPServer::HTTPServer(unsigned short port) {
+HTTPServer::HTTPServer(unsigned short port, SSLConfig* sslConf) {
 	_port = port;
 	_base = event_base_new();
 	_http = evhttp_new(_base);
 	_thread = NULL;
-
-	evhttp_set_allowed_methods(_http,
-	                           EVHTTP_REQ_GET |
-	                           EVHTTP_REQ_POST |
-	                           EVHTTP_REQ_HEAD |
-	                           EVHTTP_REQ_PUT |
-	                           EVHTTP_REQ_DELETE |
-	                           EVHTTP_REQ_OPTIONS |
-	                           EVHTTP_REQ_TRACE |
-	                           EVHTTP_REQ_CONNECT |
-	                           EVHTTP_REQ_PATCH); // allow all methods
+	
+	unsigned int allowedMethods =
+		EVHTTP_REQ_GET |
+		EVHTTP_REQ_POST |
+		EVHTTP_REQ_HEAD |
+		EVHTTP_REQ_PUT |
+		EVHTTP_REQ_DELETE |
+		EVHTTP_REQ_OPTIONS |
+		EVHTTP_REQ_TRACE |
+		EVHTTP_REQ_CONNECT |
+		EVHTTP_REQ_PATCH;
+	
+	evhttp_set_allowed_methods(_http, allowedMethods); // allow all methods
 
 	_handle = NULL;
 	while((_handle = evhttp_bind_socket_with_handle(_http, INADDR_ANY, _port)) == NULL) {
 		_port++;
 	}
 	determineAddress();
+
+#if (defined EVENT_SSL_FOUND && defined OPENSSL_FOUND)
+	if (!sslConf) {
+		_https = NULL;
+		_sslHandle = NULL;
+		_sslPort = 0;
+	} else {
+		_sslPort = sslConf->port;
+		
+		// Initialize OpenSSL
+		SSL_library_init();
+		ERR_load_crypto_strings();
+		SSL_load_error_strings();
+		OpenSSL_add_all_algorithms();
+
+		_https = evhttp_new(_base);
+		evhttp_set_allowed_methods(_https, allowedMethods); // allow all methods
+
+		SSL_CTX* ctx = SSL_CTX_new (SSLv23_server_method ());
+		SSL_CTX_set_options(ctx,
+												SSL_OP_SINGLE_DH_USE |
+												SSL_OP_SINGLE_ECDH_USE |
+												SSL_OP_NO_SSLv2);
+
+		EC_KEY* ecdh = EC_KEY_new_by_curve_name(NID_X9_62_prime256v1);
+		SSL_CTX_set_tmp_ecdh (ctx, ecdh);
+
+		SSL_CTX_use_certificate_chain_file(ctx, sslConf->publicKey.c_str());
+		SSL_CTX_use_PrivateKey_file(ctx, sslConf->privateKey.c_str(), SSL_FILETYPE_PEM);
+		SSL_CTX_check_private_key(ctx);
+
+		evhttp_set_bevcb(_https, sslBufferEventCallback, ctx);
+		evhttp_set_gencb(_https, sslGeneralBufferEventCallback, NULL);
+
+		_sslHandle = NULL;
+		while((_sslHandle = evhttp_bind_socket_with_handle(_https, INADDR_ANY, _sslPort)) == NULL) {
+			_sslPort++;
+		}
+	}
+#endif
 
 //	evhttp_set_timeout(_http, 5);
 
@@ -72,7 +121,7 @@ HTTPServer::~HTTPServer() {
 HTTPServer* HTTPServer::_instance = NULL;
 tthread::recursive_mutex HTTPServer::_instanceMutex;
 
-HTTPServer* HTTPServer::getInstance(int port) {
+HTTPServer* HTTPServer::getInstance(unsigned short port, SSLConfig* sslConf) {
 //	tthread::lock_guard<tthread::recursive_mutex> lock(_instanceMutex);
 	if (_instance == NULL) {
 #ifdef _WIN32
@@ -84,11 +133,90 @@ HTTPServer* HTTPServer::getInstance(int port) {
 #else
 		evthread_use_windows_threads();
 #endif
-		_instance = new HTTPServer(port);
+		_instance = new HTTPServer(port, sslConf);
 		_instance->start();
 	}
 	return _instance;
 }
+
+#if (defined EVENT_SSL_FOUND && defined OPENSSL_FOUND)
+// see https://github.com/ppelleti/https-example/blob/master/https-server.c
+struct bufferevent* HTTPServer::sslBufferEventCallback(struct event_base *base, void *arg) {
+	struct bufferevent* r;
+	SSL_CTX *ctx = (SSL_CTX *) arg;
+	r = bufferevent_openssl_socket_new (base,
+																			-1,
+																			SSL_new (ctx),
+																			BUFFEREVENT_SSL_ACCEPTING,
+																			BEV_OPT_CLOSE_ON_FREE);
+	return r;
+}
+
+
+void HTTPServer::sslGeneralBufferEventCallback (struct evhttp_request *req, void *arg) {
+	struct evbuffer *evb = NULL;
+	const char *uri = evhttp_request_get_uri (req);
+	struct evhttp_uri *decoded = NULL;
+	
+	/* We only handle POST requests. */
+	if (evhttp_request_get_command (req) != EVHTTP_REQ_POST)
+	{ evhttp_send_reply (req, 200, "OK", NULL);
+		return;
+	}
+	
+	printf ("Got a POST request for <%s>\n", uri);
+	
+	/* Decode the URI */
+	decoded = evhttp_uri_parse (uri);
+	if (! decoded)
+	{ printf ("It's not a good URI. Sending BADREQUEST\n");
+		evhttp_send_error (req, HTTP_BADREQUEST, 0);
+		return;
+	}
+	
+	/* Decode the payload */
+	struct evkeyvalq kv;
+	memset (&kv, 0, sizeof (kv));
+	struct evbuffer *buf = evhttp_request_get_input_buffer (req);
+	evbuffer_add (buf, "", 1);    /* NUL-terminate the buffer */
+	char *payload = (char *) evbuffer_pullup (buf, -1);
+	if (0 != evhttp_parse_query_str (payload, &kv))
+	{ printf ("Malformed payload. Sending BADREQUEST\n");
+		evhttp_send_error (req, HTTP_BADREQUEST, 0);
+		return;
+	}
+	
+	/* Determine peer */
+	char *peer_addr;
+	ev_uint16_t peer_port;
+	struct evhttp_connection *con = evhttp_request_get_connection (req);
+	evhttp_connection_get_peer (con, &peer_addr, &peer_port);
+	
+	/* Extract passcode */
+	const char *passcode = evhttp_find_header (&kv, "passcode");
+	char response[256];
+	evutil_snprintf (response, sizeof (response),
+									 "Hi %s!  I %s your passcode.\n", peer_addr,
+									 (0 == strcmp (passcode, "R23")
+										?  "liked"
+										:  "didn't like"));
+	evhttp_clear_headers (&kv);   /* to free memory held by kv */
+	
+	/* This holds the content we're sending. */
+	evb = evbuffer_new ();
+	
+	evhttp_add_header (evhttp_request_get_output_headers (req),
+										 "Content-Type", "application/x-yaml");
+	evbuffer_add (evb, response, strlen (response));
+	
+	evhttp_send_reply (req, 200, "OK", evb);
+	
+	if (decoded)
+		evhttp_uri_free (decoded);
+	if (evb)
+		evbuffer_free (evb);
+}
+#endif
 
 /**
  * This callback is registered for all HTTP requests

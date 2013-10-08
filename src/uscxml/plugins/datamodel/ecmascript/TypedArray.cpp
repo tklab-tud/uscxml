@@ -4,14 +4,14 @@
 
 #define DATAVIEW_TYPED_GET(type) \
 type retVal;\
-if (index + _start + sizeof(type) > _buffer->_size)\
+if (index + _start + sizeof(type) > _buffer->size)\
 	return 0;\
-memcpy(&retVal, _buffer->_data + (_start + index), sizeof(type));
+memcpy(&retVal, _buffer->data + (_start + index), sizeof(type));
 
 #define DATAVIEW_TYPED_SET(type) \
-if (index + _start + sizeof(type) > _buffer->_size)\
+if (index + _start + sizeof(type) > _buffer->size)\
 	return;\
-memcpy(_buffer->_data + (_start + index), &value, sizeof(type));
+memcpy(_buffer->data + (_start + index), &value, sizeof(type));
 
 namespace uscxml {
 
@@ -29,26 +29,26 @@ ArrayBuffer::ArrayBuffer(void* data, unsigned int size) {
 unsigned long ArrayBuffer::getByteLength() {
 	if (!_buffer)
 		return 0;
-	return _buffer->_size;
+	return _buffer->size;
 }
 
 ArrayBuffer ArrayBuffer::slice(long begin, long end) {
 	if (!_buffer) {
 		return ArrayBuffer(0);
 	}
-	unsigned int realBegin = (begin + _buffer->_size) % _buffer->_size;
-	unsigned int realEnd = (end + _buffer->_size) % _buffer->_size;
+	unsigned int realBegin = (begin + _buffer->size) % _buffer->size;
+	unsigned int realEnd = (end + _buffer->size) % _buffer->size;
 	if (realEnd < realBegin) {
 		return ArrayBuffer(0);
 	}
 
 	ArrayBuffer arrBuffer(realEnd - realBegin);
-	memcpy(arrBuffer._buffer->_data, _buffer->_data + realBegin, realEnd - realBegin);
+	memcpy(arrBuffer._buffer->data, _buffer->data + realBegin, realEnd - realBegin);
 	return arrBuffer;
 }
 
 ArrayBuffer ArrayBuffer::slice(long begin) {
-	return slice(begin, _buffer->_size);
+	return slice(begin, _buffer->size);
 }
 
 bool ArrayBuffer::isView(void*) {
@@ -65,25 +65,25 @@ ArrayBuffer ArrayBufferView::getBuffer() {
 
 DataView::DataView(ArrayBuffer* buffer, unsigned long byteOffset, unsigned long byteLength) {
 	_start = byteOffset;
-	if (_start > buffer->_buffer->_size)
+	if (_start > buffer->_buffer->size)
 		return;
 	_end = _start + byteLength;
-	if (_end > buffer->_buffer->_size)
+	if (_end > buffer->_buffer->size)
 		return;
 	_buffer = buffer->_buffer;
 }
 
 DataView::DataView(ArrayBuffer* buffer , unsigned long byteOffset) {
 	_start = byteOffset;
-	_end = buffer->_buffer->_size;
-	if (_start > buffer->_buffer->_size)
+	_end = buffer->_buffer->size;
+	if (_start > buffer->_buffer->size)
 		return;
 	_buffer = buffer->_buffer;
 }
 
 DataView::DataView(ArrayBuffer* buffer) {
 	_start = 0;
-	_end = (buffer->_buffer->_size);
+	_end = (buffer->_buffer->size);
 	_buffer = buffer->_buffer;
 }
 

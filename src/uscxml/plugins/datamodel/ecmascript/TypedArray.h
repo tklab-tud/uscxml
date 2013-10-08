@@ -1,6 +1,7 @@
 #ifndef TYPEDARRAY_H_99815BLY
 #define TYPEDARRAY_H_99815BLY
 
+#include "uscxml/Common.h"
 #include "uscxml/Message.h"
 
 #include <string>
@@ -199,7 +200,7 @@ public:
 		_start = byteOffset / sizeof(S);
 		_end = _start + length;
 
-		if (_end > buffer->_buffer->_size / sizeof(S))
+		if (_end > buffer->_buffer->size / sizeof(S))
 			return;
 
 		_buffer = buffer->_buffer;
@@ -209,12 +210,12 @@ public:
 			return;
 
 		_start = byteOffset / sizeof(S);
-		_end = buffer->_buffer->_size / sizeof(S);
+		_end = buffer->_buffer->size / sizeof(S);
 		_buffer = buffer->_buffer;
 	}
 	TypedArray(uscxml::ArrayBuffer* buffer) {
 		_start = 0;
-		_end = (buffer->_buffer->_size) / sizeof(S);
+		_end = (buffer->_buffer->size) / sizeof(S);
 		_buffer = buffer->_buffer;
 	}
 
@@ -225,7 +226,7 @@ public:
 		_start = byteOffset / sizeof(S);
 		_end = _start + length;
 
-		if (_end > buffer->_size / sizeof(S))
+		if (_end > buffer->size / sizeof(S))
 			return;
 
 		_buffer = buffer;
@@ -271,7 +272,7 @@ public:
 		if (index >= getLength())
 			return static_cast<T>(0);
 		S retVal;
-		memcpy(&retVal, _buffer->_data + (_start + index) * sizeof(S), sizeof(S));
+		memcpy(&retVal, _buffer->data + (_start + index) * sizeof(S), sizeof(S));
 		return retVal;
 	}
 
@@ -280,7 +281,7 @@ public:
 	 * Sets the element at the given numeric index to the given value.
 	 */
 	void set(unsigned long index, T value) {
-		memcpy(_buffer->_data + (_start + index) * sizeof(S), &value, sizeof(S));
+		memcpy(_buffer->data + (_start + index) * sizeof(S), &value, sizeof(S));
 	}
 
 	/**
@@ -298,13 +299,13 @@ public:
 	void set(TypedArray<T, S>* value, unsigned long offset) {
 		if (!_buffer)
 			return;
-		if (offset * sizeof(S) + value->getByteLength() > _buffer->_size)
+		if (offset * sizeof(S) + value->getByteLength() > _buffer->size)
 			return;
 
 		unsigned long otherOffset = value->_start * sizeof(S);
 
 		// will this work if we use the same buffer?
-		memcpy(_buffer->_data + (_start + offset) * sizeof(S), value->_buffer->_data + otherOffset, value->getByteLength());
+		memcpy(_buffer->data + (_start + offset) * sizeof(S), value->_buffer->data + otherOffset, value->getByteLength());
 	}
 
 	void set(TypedArray<T, S>* value) {
@@ -330,7 +331,7 @@ public:
 			return;
 
 		if (sizeof(T) == sizeof(S)) {
-			memcpy(_buffer->_data + offset, (void*)&data[0], data.size() * sizeof(S));
+			memcpy(_buffer->data + offset, (void*)&data[0], data.size() * sizeof(S));
 		} else {
 			S* buffer = (S*)malloc(data.size() * sizeof(S));
 			typename std::vector<T>::const_iterator dataIter = data.begin();
@@ -340,7 +341,7 @@ public:
 				dataIter++;
 				i++;
 			}
-			memcpy(_buffer->_data + offset, buffer, data.size() * sizeof(S));
+			memcpy(_buffer->data + offset, buffer, data.size() * sizeof(S));
 			free (buffer);
 		}
 	}

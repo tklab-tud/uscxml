@@ -1,4 +1,14 @@
 <scxml datamodel="ecmascript">
+	<script>
+//<![CDATA[
+		someBinaryData = new ArrayBuffer(256);
+		var view = new Uint8Array(someBinaryData);
+		for (var i = 0; i < view.length; i++) {
+			view[i] = i;
+		}
+//]]>
+	</script>
+
 	<script src="http://uscxml.tk.informatik.tu-darmstadt.de/scripts/dump.js" />
 	<state id="idle">
 		<onentry>
@@ -9,12 +19,25 @@
 			<param name="username" expr="'uscxml@localhost'" />
 			<param name="password" expr="'password'" />
 			<param name="protocol" expr="'prpl-jabber'" />
+			<finalize>
+				<script>print("-----------------\n"); dump(_event);</script>
+			</finalize>
 		</invoke>
 
 		<state id="dump">
 			<transition event="dump" target="dump">
-				<script>dump(_invokers['im']);</script>
+				<send event="dump" delay="1000ms" />
+				<script>//dump(_invokers['im']);</script>
 			</transition>
 		</state>
+		
+		<transition event="im.buddy.status.changed" cond="_event.data.name === 'sradomski@localhost'">
+			<send target="#_im" event="im.send">
+				<param name="receiver" expr="'sradomski@localhost'" />
+				<param name="data" expr="someBinaryData" />
+				<content>Hey There!</content>
+			</send>
+		</transition>
+
 	</state>
 </scxml>

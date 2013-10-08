@@ -19,9 +19,9 @@ class DelayedEventQueue {
 public:
 
 	enum OpMask {
-		FD_READ = EV_READ,
-		FD_WRITE = EV_WRITE,
-		FD_SIGNAL = EV_SIGNAL
+		DEQ_READ = EV_READ,
+		DEQ_WRITE = EV_WRITE,
+		DEQ_SIGNAL = EV_SIGNAL
 	};
 	
 	struct callbackData {

@@ -1,6 +1,7 @@
 #ifndef V8DOM_H_LKE1HKJK
 #define V8DOM_H_LKE1HKJK
 
+#include "uscxml/Common.h"
 #include "uscxml/Interpreter.h"
 #include <v8.h>
 #include <XPath/XPath.hpp>

@@ -22,27 +22,27 @@ namespace uscxml {
 static int _dataIndentation = 1;
 
 Blob::~Blob() {
-	free(_data);
+	free(data);
 }
 
-Blob::Blob(size_t size) {
-	_data = (char*)malloc(size);
-	memset(_data, 0, size);
-	_size = size;
+Blob::Blob(size_t _size) {
+	data = (char*)malloc(_size);
+	memset(data, 0, _size);
+	size = _size;
 }
 
-Blob::Blob(void* data, size_t size, bool adopt) {
+Blob::Blob(void* _data, size_t _size, bool adopt) {
 	if (adopt) {
-		_data = (char*)data;
+		data = (char*)_data;
 	} else {
-		_data = (char*)malloc(size);
-		memcpy(_data, data, size);
+		data = (char*)malloc(_size);
+		memcpy(data, _data, _size);
 	}
-	_size = size;
+	size = _size;
 }
 
-Data::Data(const char* data, size_t size, bool adopt) {
-	binary = boost::shared_ptr<Blob>(new Blob((void*)data, size, adopt));
+Data::Data(const char* _data, size_t _size, bool adopt) {
+	binary = boost::shared_ptr<Blob>(new Blob((void*)_data, _size, adopt));
 }
 
 Data::Data(const Arabica::DOM::Node<std::string>& dom) {

@@ -1,0 +1,78 @@
+<scxml datamodel="ecmascript" name="mapticker"
+	xmlns:html="http://www.w3.org/1999/xhtml"
+  xmlns:vxml="http://www.w3.org/2001/vxml" 
+	xmlns="http://www.w3.org/2005/07/scxml">
+
+	<script src="http://uscxml.tk.informatik.tu-darmstadt.de/scripts/dump.js" />
+
+	<state id="start">
+		<!--
+			Invoke an external HTML browser
+		-->
+		<invoke type="xhtml" id="xhtml1">
+			<content src="spoken-map-ticker.xhtml" />
+			<finalize>
+				<!-- <script>dump(_event);</script> -->
+			</finalize>
+		</invoke>
+		
+		<!--
+			Invoke a VoiceXML browser
+		-->
+		<!-- invoke type="vxml" id="vxml" / -->
+		
+		<!--
+			Invoke a uMundo component for pub/sub ticker subscription
+		-->
+		<invoke type="umundo" id="umundo">
+			<param name="channel" expr="'map/tick'" />
+			<finalize>
+				<!-- <script>dump(_event);</script> -->
+			</finalize>
+		</invoke>
+		
+		<invoke type="openal" id="audio"></invoke>
+		
+		<state id="idle">
+			<!--
+				Map in XHTML invoker was moved -> update OpenAL listener position
+			-->
+			<transition event="map.center" target="idle">
+				<send event="move.listener" target="#_audio">
+					<param name="x" expr="_event.data.lon" />
+					<param name="y" expr="1" />
+					<param name="z" expr="_event.data.lat" />
+				</send>
+			</transition>
+
+			<!--
+				Ticker message was received
+				-> Send to XHTML invoker to display
+				-> Play clicking noise from respective direction
+				-> Speak content if severity exceeds a given threshold
+			-->
+			<transition target="idle" event="umundo.rcvd">
+				<send target="#_xhtml1">
+					<content>${_event.data}</content>
+				</send>
+				<send target="#_audio" event="play" delay="0ms">
+					<param name="src" expr="'click.wav'" />
+					<param name="x" expr="_event.data.lon" />
+					<param name="y" expr="0" />
+					<param name="z" expr="_event.data.lat" />
+				</send>
+
+				<if cond="_event.data.message &amp;&amp; _event.data.severity &gt; 8">
+					<send target="#_vxml">
+						<content>
+							<vxml:prompt>
+								${_event.data.message}
+							</vxml:prompt>
+						</content>
+					</send>
+				</if>
+				
+			</transition>
+		</state>		
+	</state>
+</scxml>

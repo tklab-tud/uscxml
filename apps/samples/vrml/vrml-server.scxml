@@ -179,7 +179,7 @@
 		
 		<!-- Start the osgconvert invoker to transform 3D files -->
 		<invoke type="osgconvert" id="osgvonvert.osgb">
-			<param name="threads" expr="20" />
+			<param name="threads" expr="4" />
 			<finalize>
 				<script>
 					//dump(_event);

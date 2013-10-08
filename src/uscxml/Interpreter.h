@@ -1,7 +1,10 @@
 #ifndef RUNTIME_H_SQ1MBKGN
 #define RUNTIME_H_SQ1MBKGN
 
+// this has to be the first include or MSVC will run amok
 #include "uscxml/Common.h"
+#include "getopt.h"
+
 #include "uscxml/URL.h"
 
 #include <boost/algorithm/string.hpp>
@@ -61,6 +64,44 @@ enum Capabilities {
     CAN_GENERIC_HTTP = 2,
 };
 
+class InterpreterOptions {
+public:
+	bool useDot;
+	bool verbose;
+	bool withHTTP;
+	bool withHTTPS;
+	int logLevel;
+	unsigned short httpPort;
+	unsigned short httpsPort;
+	std::string pluginPath;
+	std::string certificate;
+	std::string privateKey;
+	std::string publicKey;
+	std::map<std::string, InterpreterOptions*> interpreters;
+	std::map<std::string, std::string> additionalParameters;
+
+	std::string error;
+
+	operator bool() {
+		return error.length() == 0;
+	}
+	
+	static void printUsageAndExit(const char* progName);
+	static InterpreterOptions fromCmdLine(int argc, char** argv);
+	unsigned int getCapabilities();
+	
+protected:
+	InterpreterOptions() :
+		useDot(false),
+		verbose(false),
+		withHTTP(true),
+		withHTTPS(true),
+		logLevel(0),
+		httpPort(8080),
+		httpsPort(8443)
+	{}
+};
+	
 class InterpreterImpl : public boost::enable_shared_from_this<InterpreterImpl> {
 public:
 
@@ -100,7 +141,7 @@ public:
 		return _baseURI;
 	}
 
-	void setCmdLineOptions(int argc, char** argv);
+	void setCmdLineOptions(std::map<std::string, std::string> params);
 	Data getCmdLineOptions() {
 		return _cmdLineOptions;
 	}
@@ -400,8 +441,8 @@ public:
 		return _impl->getNameSpaceInfo();
 	}
 
-	void setCmdLineOptions(int argc, char** argv) {
-		return _impl->setCmdLineOptions(argc, argv);
+	void setCmdLineOptions(std::map<std::string, std::string> params) {
+		return _impl->setCmdLineOptions(params);
 	}
 	Data getCmdLineOptions() {
 		return _impl->getCmdLineOptions();

@@ -15,10 +15,6 @@
 #include <dlfcn.h>
 #endif
 
-#ifdef _WIN32
-#include "XGetopt.h"
-#endif
-
 class VerboseMonitor : public uscxml::InterpreterMonitor {
 	void onStableConfiguration(uscxml::Interpreter interpreter) {
 		printConfig(interpreter.getConfiguration());
@@ -108,23 +104,6 @@ void customTerminate() {
 }
 #endif
 
-void printUsageAndExit() {
-	printf("uscxml-browser version " USCXML_VERSION " (" CMAKE_BUILD_TYPE " build - " CMAKE_COMPILER_STRING ")\n");
-	printf("Usage\n");
-	printf("\tuscxml-browser");
-#ifdef BUILD_AS_PLUGINS
-	printf(" [-e pluginPath]");
-#endif
-	printf("[-v] [-pN] URL\n");
-	printf("\n");
-	printf("Options\n");
-	printf("\t-v        : be verbose\n");
-	printf("\t-pN       : port for HTTP server\n");
-	printf("\t-d        : write each configuration as a dot file\n");
-	printf("\n");
-	exit(1);
-}
-
 int main(int argc, char** argv) {
 	using namespace uscxml;
 
@@ -136,75 +115,78 @@ int main(int argc, char** argv) {
 	std::set_terminate(customTerminate);
 #endif
 
-	if (argc < 2) {
-		printUsageAndExit();
+	InterpreterOptions options = InterpreterOptions::fromCmdLine(argc, argv);
+	if (!options) {
+		InterpreterOptions::printUsageAndExit(argv[0]);
 	}
-
-	bool verbose = false;
-	bool useDot = false;
-	bool glogIsInitialized = false;
-	size_t port = 8080;
 	
+	// setup logging
 	google::LogToStderr();
+	google::InitGoogleLogging(argv[0]);
+
+	// setup HTTP server
+	HTTPServer::SSLConfig* sslConf = NULL;
+	if (options.certificate.length() > 0) {
+		sslConf = new HTTPServer::SSLConfig();
+		sslConf->privateKey = options.certificate;
+		sslConf->publicKey = options.certificate;
+		sslConf->port = options.httpsPort;
+		
+	} else if (options.privateKey.length() > 0 && options.publicKey.length() > 0) {
+		sslConf = new HTTPServer::SSLConfig();
+		sslConf->privateKey = options.privateKey;
+		sslConf->publicKey = options.publicKey;
+		sslConf->port = options.httpsPort;
+		
+	}
+	HTTPServer::getInstance(options.httpPort, sslConf);
+
+	// instantiate and configure interpreters
+	std::list<Interpreter> interpreters;
+	std::map<std::string, InterpreterOptions*>::iterator confIter = options.interpreters.begin();
+	while(confIter != options.interpreters.end()) {
+
+		InterpreterOptions* currOptions = confIter->second;
+		std::string documentURL = confIter->first;
+		
+		LOG(INFO) << "Processing " << documentURL;
+		Interpreter interpreter = Interpreter::fromURI(documentURL);
+		if (interpreter) {
+			interpreter.setCmdLineOptions(currOptions->additionalParameters);
+			interpreter.setCapabilities(options.getCapabilities());
+
+			if (options.verbose) {
+				VerboseMonitor* vm = new VerboseMonitor();
+				interpreter.addMonitor(vm);
+			}
+			if (options.useDot) {
+				SCXMLDotWriter* dotWriter = new SCXMLDotWriter();
+				interpreter.addMonitor(dotWriter);
+			}
+			
+			interpreters.push_back(interpreter);
+
+		} else {
+			LOG(ERROR) << "Cannot create interpreter from " << documentURL;
+		}
+		confIter++;
+	}
+
+	// start interpreters
+	std::list<Interpreter>::iterator interpreterIter = interpreters.begin();
+	while(interpreterIter != interpreters.end()) {
+		interpreterIter->start();
+		interpreterIter++;
+	}
+
+	// call from main thread for UI events
+	while(interpreters.size() > 0) {
+		interpreterIter = interpreters.begin();
+		while(interpreterIter != interpreters.end()) {
+			interpreterIter->runOnMainThread(25);
+			interpreterIter++;
+		}
+	}
 	
-#ifndef _WIN32
-	opterr = 0;
-#endif
-	int option;
-	while ((option = getopt(argc, argv, "dvl:e:p:")) != -1) {
-		switch(option) {
-		case 'l':
-			google::InitGoogleLogging(optarg);
-			glogIsInitialized = true;
-			break;
-		case 'e':
-			uscxml::Factory::pluginPath = optarg;
-			break;
-		case 'd':
-			useDot = true;
-			break;
-		case 'p':
-			port = strTo<size_t>(optarg);
-			break;
-		case 'v':
-			verbose = true;
-			break;
-		case '?':
-			break;
-		default:
-			printUsageAndExit();
-			break;
-		}
-	}
-
-	if (!glogIsInitialized)
-		google::InitGoogleLogging(argv[0]);
-
-//  for (int i = 0; i < argc; i++)
-//    std::cout << argv[i] << std::endl;
-//  std::cout << optind << std::endl;
-
-	// intialize http server on given port
-	HTTPServer::getInstance(port);
-
-	LOG(INFO) << "Processing " << argv[optind];
-	Interpreter interpreter = Interpreter::fromURI(argv[optind]);
-	if (interpreter) {
-		interpreter.setCmdLineOptions(argc, argv);
-		//		interpreter->setCapabilities(Interpreter::CAN_NOTHING);
-		//		interpreter->setCapabilities(Interpreter::CAN_BASIC_HTTP | Interpreter::CAN_GENERIC_HTTP);
-
-		if (verbose) {
-			VerboseMonitor* vm = new VerboseMonitor();
-			interpreter.addMonitor(vm);
-		}
-		if (useDot) {
-			SCXMLDotWriter* dotWriter = new SCXMLDotWriter();
-			interpreter.addMonitor(dotWriter);
-		}
-
-		interpreter.start();
-		while(interpreter.runOnMainThread(25));
-	}
 	return EXIT_SUCCESS;
 }

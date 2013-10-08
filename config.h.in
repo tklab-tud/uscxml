@@ -66,6 +66,8 @@
 #cmakedefine PROTOBUF_FOUND
 #cmakedefine CORELOCATION_FOUND
 #cmakedefine LIBPURPLE_FOUND
+#cmakedefine OPENSSL_FOUND
+#cmakedefine EVENT_SSL_FOUND
 
 /** Header files we found */
 #cmakedefine HAS_UNISTD_H

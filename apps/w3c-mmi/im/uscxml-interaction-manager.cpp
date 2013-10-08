@@ -167,6 +167,7 @@ int main(int argc, char** argv) {
 		}
 	}
 
+  (void)verbose;
 	// intialize http server on given port
 	HTTPServer::getInstance(port);
 

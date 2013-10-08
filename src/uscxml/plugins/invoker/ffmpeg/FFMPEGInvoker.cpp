@@ -370,14 +370,14 @@ void FFMPEGInvoker::writeVideoFrame(EncodingContext* ctx, AVFormatContext *oc, A
 		}
 
 		uint32_t headerOffset = 0;
-		headerOffset += image->_data[10] << 0;
-		headerOffset += image->_data[11] << 8;
-		headerOffset += image->_data[12] << 16;
-		headerOffset += image->_data[13] << 24;
+		headerOffset += image->data[10] << 0;
+		headerOffset += image->data[11] << 8;
+		headerOffset += image->data[12] << 16;
+		headerOffset += image->data[13] << 24;
 
 //		std::cout << headerOffset + (c->width * c->height) << " / " << image->_size << std::endl;
 		
-		ret = avpicture_fill(&ctx->src_picture, (uint8_t*)(image->_data + headerOffset), BMP_FORMAT, c->width, c->height);
+		ret = avpicture_fill(&ctx->src_picture, (uint8_t*)(image->data + headerOffset), BMP_FORMAT, c->width, c->height);
 		if (ret < 0) {
 			fprintf(stderr,
 							"Could not fill image from given bitmap\n");
@@ -386,7 +386,7 @@ void FFMPEGInvoker::writeVideoFrame(EncodingContext* ctx, AVFormatContext *oc, A
 							(const uint8_t * const *)ctx->src_picture.data, ctx->src_picture.linesize,
 							0, c->height, ctx->dst_picture.data, ctx->dst_picture.linesize);
 	} else {
-		avpicture_fill(&ctx->dst_picture, (uint8_t*)image->_data, c->pix_fmt, c->width, c->height);
+		avpicture_fill(&ctx->dst_picture, (uint8_t*)image->data, c->pix_fmt, c->width, c->height);
 	}
 
 	if (oc->oformat->flags & AVFMT_RAWPICTURE) {
