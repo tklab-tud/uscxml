@@ -71,84 +71,15 @@ Data BasicHTTPIOProcessor::getDataModelVariables() {
 bool BasicHTTPIOProcessor::httpRecvRequest(const HTTPServer::Request& req) {
 	Event reqEvent = req;
 	reqEvent.eventType = Event::EXTERNAL;
-	bool scxmlStructFound = false;
 
-	if (reqEvent.data.compound["header"].compound.find("Content-Type") != reqEvent.data.compound["header"].compound.end() &&
-	        boost::iequals(reqEvent.data.compound["header"].compound["Content-Type"].atom, "application/x-www-form-urlencoded")) {
-		std::stringstream ss(reqEvent.data.compound["content"].atom);
-		std::string term;
-		while(std::getline(ss, term, '&')) {
-			size_t split = term.find_first_of("=");
-			if (split != std::string::npos) {
-
-				char* keyCStr = evhttp_decode_uri(term.substr(0, split).c_str());
-				char* valueCStr = evhttp_decode_uri(term.substr(split + 1).c_str());
-				std::string key = keyCStr;
-				std::string value = valueCStr;
-				free(keyCStr);
-				free(valueCStr);
-
-				if (boost::iequals(key, "_scxmleventname")) {
-					reqEvent.name = value;
-				} else if (boost::iequals(key, "content")) {
-					reqEvent.initContent(value);
-				} else {
-					reqEvent.data.compound[key] = value;
-					reqEvent.params.insert(std::make_pair(key, value));
-				}
-			} else {
-				// this is most likely wrong
-				char* contentCStr = evhttp_decode_uri(term.c_str());
-				reqEvent.content = contentCStr;
-				free(contentCStr);
-			}
-		}
-	} else {
-		if (reqEvent.data.compound["header"].compound.find("_scxmleventstruct") != reqEvent.data.compound["header"].compound.end()) {
-			// TODO: this looses all other information
-			char* scxmlStructCStr = evhttp_decode_uri(reqEvent.data.compound["header"].compound["_scxmleventstruct"].atom.c_str());
-			reqEvent = Event::fromXML(scxmlStructCStr);
-			free(scxmlStructCStr);
-			scxmlStructFound = true;
-		}
-		if (reqEvent.data.compound["header"].compound.find("_scxmleventname") != reqEvent.data.compound["header"].compound.end()) {
-			char* evNameCStr = evhttp_decode_uri(reqEvent.data.compound["header"].compound["_scxmleventname"].atom.c_str());
-			reqEvent.name = evNameCStr;
-			free(evNameCStr);
-		}
+	// this will call the const subscript operator
+	if (req.data["content"]["_scxmleventname"]) {
+		reqEvent.name = req.data["content"]["_scxmleventname"].atom;
 	}
-	std::map<std::string, Data>::iterator headerIter = reqEvent.data.compound["header"].compound.begin();
-	while(headerIter != reqEvent.data.compound["header"].compound.end()) {
-		char* headerCStr = evhttp_decode_uri(headerIter->second.atom.c_str());
-		reqEvent.data.compound[headerIter->first] = Data(headerCStr, Data::VERBATIM);
-		free(headerCStr);
-		headerIter++;
-	}
-
-#if 0
-	std::map<std::string, std::string>::const_iterator headerIter = req.headers.begin();
-	while(headerIter != req.headers.end()) {
-		if (boost::iequals("_scxmleventstruct", headerIter->first)) {
-			reqEvent = Event::fromXML(evhttp_decode_uri(headerIter->second.c_str()));
-			scxmlStructFound = true;
-			break;
-		} else if (boost::iequals("_scxmleventname", headerIter->first)) {
-			reqEvent.name = evhttp_decode_uri(headerIter->second.c_str());
-		} else {
-			reqEvent.data.compound[headerIter->first] = Data(evhttp_decode_uri(headerIter->second.c_str()), Data::VERBATIM);
-		}
-		headerIter++;
-	}
-#endif
 
 	/// test532
 	if (reqEvent.name.length() == 0)
 		reqEvent.name = "http." + req.data.compound.at("type").atom;
-
-	if (!scxmlStructFound) {
-		// get content into event
-		reqEvent.data.compound["content"] = Data(req.content, Data::VERBATIM);
-	}
 
 	returnEvent(reqEvent);
 	evhttp_send_reply(req.curlReq, 200, "OK", NULL);

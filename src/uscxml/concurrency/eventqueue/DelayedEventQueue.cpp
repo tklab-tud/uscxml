@@ -1,4 +1,6 @@
+#include "uscxml/Message.h"
 #include "DelayedEventQueue.h"
+#include <glog/logging.h>
 #include <assert.h>
 #include <event2/event.h>
 #include <sstream>
@@ -115,7 +117,13 @@ void DelayedEventQueue::timerCallback(evutil_socket_t fd, short what, void *arg)
 	tthread::lock_guard<tthread::recursive_mutex> lock(data->eventQueue->_mutex);
 
 	std::string eventId = data->eventId; // copy eventId
-	data->callback(data->userData, eventId);
+	try {
+		data->callback(data->userData, eventId);
+	} catch (Event e) {
+		LOG(ERROR) << "Exception thrown when executing delayed event:" << std::endl << e << std::endl;
+	} catch (...) {
+		LOG(ERROR) << "Exception thrown when executing delayed event" << std::endl;
+	}
 	if (!data->persist) {
 		event_free(data->event);
 		data->eventQueue->_callbackData.erase(data->eventId);

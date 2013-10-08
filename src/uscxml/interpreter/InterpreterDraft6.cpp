@@ -934,7 +934,7 @@ void InterpreterDraft6::enterStates(const Arabica::XPath::NodeSet<std::string>& 
 		}
 		// execute onentry executable content
 		NodeSet<std::string> onEntryElems = filterChildElements(_xmlNSPrefix + "onEntry", stateElem);
-		executeContent(onEntryElems);
+		executeContent(onEntryElems, false);
 
 		if (isMember(stateElem, statesForDefaultEntry)) {
 			// execute initial transition content for compound states

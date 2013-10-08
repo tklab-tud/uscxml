@@ -40,12 +40,6 @@ uSCXML still fails the following ecmascript tests:
 <table>
 	<tr><th>Test#</th><th>Status</th><th>Description</th><th>Comment</th></tr>
 	<tr>
-		<td><tt><a href="https://github.com/tklab-tud/uscxml/blob/master/test/samples/w3c/ecma/test159.scxml">159</a></tt></td>
-		<td><tt>Failed</tt></td>
-		<td>"If the processing of an element of executable content causes an error to be raised, the processor MUST NOT process the remaining elements of the block."</td>
-		<td>uSCXML continues processing the rest of the block as if there was no error.</td>
-	</tr>
-	<tr>
 		<td><tt><a href="https://github.com/tklab-tud/uscxml/blob/master/test/samples/w3c/ecma/test301.scxml">301</a></tt></td>
 		<td><tt>Failed</tt></td>
 		<td>"the processor should  reject this document because it can't download the script"</td>
@@ -67,6 +61,7 @@ uSCXML still fails the following ecmascript tests:
 	<tr>
 		<td>
 			<tt>
+				<a href="https://github.com/tklab-tud/uscxml/blob/master/test/samples/w3c/ecma/test518.scxml">518</a>
 				<a href="https://github.com/tklab-tud/uscxml/blob/master/test/samples/w3c/ecma/test519.scxml">519</a>
 				<a href="https://github.com/tklab-tud/uscxml/blob/master/test/samples/w3c/ecma/test520.scxml">520</a>
 				<a href="https://github.com/tklab-tud/uscxml/blob/master/test/samples/w3c/ecma/test531.scxml">531</a>
