@@ -137,6 +137,9 @@ int main(int argc, char** argv) {
 		W3CStatusMonitor* vm = new W3CStatusMonitor();
 		interpreter.addMonitor(vm);
 
+//		if (interpreter.getDataModel().getNames().find("ecmascript") != interpreter.getDataModel().getNames().end()) {
+//		}
+		
 		interpreter.start();
 		while(interpreter.runOnMainThread(25));
 	}

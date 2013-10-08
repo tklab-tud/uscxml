@@ -61,7 +61,6 @@ uSCXML still fails the following ecmascript tests:
 	<tr>
 		<td>
 			<tt>
-				<a href="https://github.com/tklab-tud/uscxml/blob/master/test/samples/w3c/ecma/test518.scxml">518</a>
 				<a href="https://github.com/tklab-tud/uscxml/blob/master/test/samples/w3c/ecma/test519.scxml">519</a>
 				<a href="https://github.com/tklab-tud/uscxml/blob/master/test/samples/w3c/ecma/test520.scxml">520</a>
 				<a href="https://github.com/tklab-tud/uscxml/blob/master/test/samples/w3c/ecma/test531.scxml">531</a>

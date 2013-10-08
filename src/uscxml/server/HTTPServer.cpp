@@ -344,14 +344,15 @@ void HTTPServer::httpRecvReqCallback(struct evhttp_request *req, void *callbackD
 			std::string item;
 			std::string key;
 			std::string value;
-			while(std::getline(ss, item, '=')) {
+			while(std::getline(ss, item, '&')) {
 				if (item.length() == 0)
 					continue;
-				if (key.length() == 0) {
-					key = item;
+				size_t equalPos = item.find('=');
+				if (equalPos == std::string::npos)
 					continue;
-				}
-				value = item;
+				
+				key = item.substr(0, equalPos);
+				value = item.substr(equalPos + 1, item.length() - (equalPos + 1));
 				char* keyCStr = evhttp_decode_uri(key.c_str());
 				char* valueCStr = evhttp_decode_uri(value.c_str());
 				request.data.compound["content"].compound[keyCStr] = Data(valueCStr, Data::VERBATIM);
