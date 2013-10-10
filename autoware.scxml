@@ -92,18 +92,18 @@
 <!--					<log expr="fn:concat('Cart contains book with ISBN ', + $book/isbn)"/>-->
 <!--				</foreach>-->
 
-				<send id="send-122"
-				      event="reply"
-				      delay="5s">
-					<param name="paramatername" expr="'paramatervalue'"/>
-					<content>
-						<root>
-							<alpha>1</alpha>
-							<beta>2</beta>
-							<gamma>3</gamma>
-						</root>
-					</content>
-				</send>
+<!--				<send id="send-122"-->
+<!--				      event="reply"-->
+<!--				      delay="5s">-->
+<!--					<param name="paramatername" expr="'paramatervalue'"/>-->
+<!--					<content>-->
+<!--						<root>-->
+<!--							<alpha>1</alpha>-->
+<!--							<beta>2</beta>-->
+<!--							<gamma>3</gamma>-->
+<!--						</root>-->
+<!--					</content>-->
+<!--				</send>-->
 
 <!--				<send id="send-123"-->
 <!--				      type="http://www.w3.org/TR/scxml/#SCXMLEventProcessor"-->
@@ -131,18 +131,18 @@
 <!--				  </content>-->
 <!--				</send>-->
 			</onentry>
-			<transition event="OP.INSERT">
-				<log level="0" expr="_event.data[0]" />
-				<if cond="_event.data[0] == 'OPER.PLUS'">
-				    <assign location="long_expr" expr="long_expr+'+'" />
-				<elseif cond="_event.data[0]=='OPER.MINUS'" />
-				    <assign location="long_expr" expr="long_expr+'-'" />
-				<elseif cond="_event.data[0]=='OPER.STAR'" />
-				    <assign location="long_expr" expr="long_expr+'*'" />
-				<elseif cond="_event.data[0]=='OPER.DIV'" />
-				    <assign location="long_expr" expr="long_expr+'/'" />
-				</if>
-			</transition>
+<!--			<transition event="OP.INSERT">-->
+<!--				<log level="0" expr="_event.data[0]" />-->
+<!--				<if cond="_event.data[0] == 'OPER.PLUS'">-->
+<!--				    <assign location="long_expr" expr="long_expr+'+'" />-->
+<!--				<elseif cond="_event.data[0]=='OPER.MINUS'" />-->
+<!--				    <assign location="long_expr" expr="long_expr+'-'" />-->
+<!--				<elseif cond="_event.data[0]=='OPER.STAR'" />-->
+<!--				    <assign location="long_expr" expr="long_expr+'*'" />-->
+<!--				<elseif cond="_event.data[0]=='OPER.DIV'" />-->
+<!--				    <assign location="long_expr" expr="long_expr+'/'" />-->
+<!--				</if>-->
+<!--			</transition>-->
 <!--			<transition event="reply" cond="$_event/data = 'ComandiMes'" target="NewOrder" />-->
 <!--			<transition event="reply" target="NewOrder">-->
 <!--				<log label="invokeid is " expr="$_event/text()" />-->
@@ -154,9 +154,10 @@
 <!--			<transition event="reply" cond="data('_event')/root/alpha = '1'" target="NewOrder" />-->
 <!--			<transition event="reply" cond="$_event/data/data/data/ciao = '77'" target="NewOrder" />-->
 			<transition event="0" target="NewOrder">
-				<log label="Event full data:" expr="$_event/text()" />
-				<assign location="$TIM/frame/set[@index='17']/item[@i='0']/nestedData" expr="'$_event/data'"/>
+				<log label="Event full data is:" expr="$_event/text()" />
+				<assign location="$TIM/frame/set[@index='17']/item[@i='0']/nestedData" expr="$_event/data/text()"/>
 			</transition>
+
 
 			<transition event="reply">
 				<log label="Event full data:" expr="$_event/text()" />
