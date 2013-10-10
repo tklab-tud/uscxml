@@ -91,6 +91,8 @@ void MilesSessionInvoker::send(const SendRequest& req) {
 		std::string problemName = "Generic";
 		Event::getParam(req.params, "problemname", problemName);
 
+		return;
+
 		int rv;
 		rv = miles_connect_reflector_session((char*)reflectorIP.c_str(), (char*)problemName.c_str());
 		if (!rv) {

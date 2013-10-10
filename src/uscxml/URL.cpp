@@ -530,6 +530,9 @@ void URLFetcher::fetchURL(URL& url) {
 
 		(curlError = curl_easy_setopt(handle, CURLOPT_URL, url.asString().c_str())) == CURLE_OK ||
 		LOG(ERROR) << "Cannot set url to " << url.asString() << ": " << curl_easy_strerror(curlError);
+		
+//		(curlError = curl_easy_setopt(handle, CURLOPT_NOSIGNAL, 1)) == CURLE_OK ||
+//		LOG(ERROR) << "Cannot set curl to ignore signals: " << curl_easy_strerror(curlError);
 
 		(curlError = curl_easy_setopt(handle, CURLOPT_WRITEDATA, url._impl.get())) == CURLE_OK ||
 		LOG(ERROR) << "Cannot register this as write userdata: " << curl_easy_strerror(curlError);

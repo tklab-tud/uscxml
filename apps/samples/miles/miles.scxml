@@ -5,9 +5,11 @@
 			<param name="foo" expr="'asdf'" />
 			<finalize>
 				<if cond="_event.data.origin">
-					<!-- log label="Reply-length" expr="_event.data.base64.length" / -->
+					<!-- <log label="Reply-length" expr="_event.data.base64.length" /> -->
 					<respond status="200" to="_event.data.origin">
-						<header name="Content-Type" value="text/ascii" />
+						<header name="Cache-Control" value="no-cache" /> <!-- force IE to actually reload -->
+						<header name="Content-Type" value="text/plain" />
+						<header name="Access-Control-Allow-Origin" value="*" />
 						<content expr="_event.data.base64" />
 					</respond>
 				</if>
@@ -20,8 +22,8 @@
 				<script>//dump(_event);</script>
 				<respond status="200" to="_event.origin">
 					<header name="Access-Control-Allow-Origin" value="*" />
-					<header name="Access-Control-Allow-Methods" value="GET, OPTIONS" />
-					<header name="Access-Control-Allow-Headers" value="X-Requested-With" />
+					<header name="Access-Control-Allow-Methods" value="POST, GET, OPTIONS" />
+					<header name="Access-Control-Allow-Headers" value="X-Requested-With, Content-Type" />
 				</respond>
 			</transition>
 			
@@ -36,7 +38,11 @@
 						<param name="email" expr="_event.data.content.email" />
 						<param name="problemName" expr="_event.data.content.problemName" />
 					</send>
-					<respond status="200" to="_event.origin" />
+					<respond status="200" to="_event.origin">
+						<header name="Connection" value="close" />
+						<header name="Content-Type" value="application/json" />
+						<header name="Access-Control-Allow-Origin" value="*" />
+					</respond>
 				
 				<elseif cond="_event.data.pathComponent[1] === 'disconnect'" />
 					<send target="#_miles" event="disconnect">

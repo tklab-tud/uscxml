@@ -13,8 +13,8 @@ function Miles(element, params) {
   this.imageIteration = 0;
 
   // private attributes
-  var scxmlURL    = "127.0.0.1:8080"
-  var reflectorIp = "127.0.0.1"
+  var scxmlURL    = "localhost:8080"
+  var reflectorIp = "localhost"
   var email       = "me@somehost.de";
   var problemName = "some really hard problem";
   
@@ -29,7 +29,7 @@ function Miles(element, params) {
     self.xhr.post({
       // The URL to request
       url: "http://" + scxmlURL + "/miles/connect",
-      handleAs:"json",
+      // handleAs:"text",
       postData: dojo.toJson({
         reflectorIp: reflectorIp,
         email: email,
@@ -37,7 +37,10 @@ function Miles(element, params) {
       }),
       headers:{
         "X-Requested-With": null,
-        "Content-Type": "application/json",
+        "Content-Type": "application/json"
+      },
+      error: function(err) {
+        console.log(err);
       },
       load: function(result) {
         // we expect nothing in return
@@ -52,15 +55,15 @@ function Miles(element, params) {
     self.xhr.get({
       // The URL to request
       url: "http://" + scxmlURL + "/miles/image",
-      handleAs:"text",
-      postData: dojo.toJson({
-        reflectorIp: reflectorIp,
-        email: email,
-        problemName: problemName
-      }),
       headers:{
-        "X-Requested-With": null,
-        "Content-Type": "application/json",
+        "X-Requested-With":null
+      },
+      error: function(err) {
+        console.log(err);
+        if (self.connected) {
+          self.messageElem.innerHTML = self.imageIteration++;
+          refreshImage();
+        }
       },
       load: function(result) {
         self.pictureElem.src = "data:image/jpeg;base64," + result;
@@ -97,7 +100,7 @@ function Miles(element, params) {
             <tr>\
               <td valign="top">\
                   <div style="position: relative; padding: 0px">\
-                    <img class="picture" src="test.jpeg"></img>\
+                    <img class="picture" src="test1.jpeg"></img>\
                     <div style="position: absolute; left: 10px; top: 10px">\
                       <table></tr>\
                         <td class="control" style="vertical-align: middle"></td>\
@@ -124,6 +127,9 @@ function Miles(element, params) {
         self.controlDropDown = new DropDownButton({ label: "Connect", dropDown: self.controlToolTip });
         self.controlElem.appendChild(self.controlDropDown.domNode);
         
+        // self.connected = true;
+        // refreshImage();
+
         self.connect();
         
       })
