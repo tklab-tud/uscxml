@@ -26,26 +26,7 @@
 
 
 	  <data id="TIM">
-		<ciao xmlns="">77</ciao>
 		<frame xmlns="">
-		    <get type="request" index="12">language</get>
-		    <get type="request" index="13">diagnostic</get>
-		    <get type="request" index="14">optional</get>
-<!--		   Operator oriented write commands -->
-		    <set type="wrapperProgram" index="15">
-			<nestedData type="numWorking">3</nestedData>
-		    </set>
-		    <set type="operativeMode" index="16">
-			<item i="0">
-			    <nestedData type="state">on</nestedData>
-			</item>
-			<item i="1">
-			    <nestedData type="state">off</nestedData>
-			</item>
-			<item i="2">
-			    <nestedData type="state">off</nestedData>
-			</item>
-		    </set>
 		    <set type="temperature" index="17">
 			<item i="0">
 			    <nestedData type="setPoint">30</nestedData>
@@ -155,12 +136,13 @@
 <!--			<transition event="reply" cond="$_event/data/data/data/ciao = '77'" target="NewOrder" />-->
 			<transition event="0" target="NewOrder">
 				<log label="Event full data:" expr="$_event/text()" />
-				<assign location="$TIM/frame/set[@index='17']/item[@i='0']/nestedData" expr="'$_event/data'"/>
+				<log label="Tim full data:" expr="$TIM/text()" />
+				<assign location="$TIM/frame/set[@index='17']/item[@i='0']/nestedData" expr="$_event/data/text()"/>
 			</transition>
 
-			<transition event="reply">
-				<log label="Event full data:" expr="$_event/text()" />
-			</transition>
+<!--			<transition event="reply">-->
+<!--				<log label="Event full data:" expr="$_event/text()" />-->
+<!--			</transition>-->
 <!--			<transition event="reply" cond="$_event/data/root/alpha = '1'" target="NewOrder" />-->
 <!--			<transition event="reply" cond="yearFromDatetime(time) > 2009" target="Exit" />-->
 

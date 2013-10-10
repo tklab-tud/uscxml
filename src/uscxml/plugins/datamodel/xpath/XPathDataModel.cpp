@@ -186,6 +186,11 @@ void XPathDataModel::setEvent(const Event& event) {
 		Node<std::string> importedNode = _doc.importNode(event.dom, true);
 		eventDataElem.appendChild(importedNode);
 	}
+	if (!event.data.atom.empty()) {
+		Element<std::string> eventNamelistElem = _doc.createElement("data");
+		Text<std::string> eventNamelistText = _doc.createTextNode(event.data.atom);
+		eventDataElem.appendChild(eventNamelistText);
+	}
 
 	eventElem.appendChild(eventDataElem);
 	eventNodeSet.push_back(eventElem);
@@ -414,8 +419,8 @@ void XPathDataModel::assign(const Element<std::string>& assignElem,
 	}
 
 	// test 326ff
-	std::cout << std::endl <<  "!!!!!!! Current DOC!: " << _doc;
-	XPathValue<std::string> key = _xpath.evaluate_expr(location, _doc);
+	std::cout << std::endl <<  "!!!!!!! Current Datamodel!: " << _datamodel;
+	XPathValue<std::string> key = _xpath.evaluate_expr(location, _datamodel);
 #if 0
 	if (key.type() == NODE_SET) {
 		try {
@@ -455,8 +460,7 @@ void XPathDataModel::assign(const Element<std::string>& assignElem,
 		nodeSet.push_back(textNode);
 		assign(key, nodeSet, assignElem);
 	} else if (HAS_ATTR(assignElem, "expr")) {
-		std::cout << std::endl <<  "!!!!!!! Current DOC!: " << _doc;
-		XPathValue<std::string> value = _xpath.evaluate_expr(ATTR(assignElem, "expr"), _doc);
+		XPathValue<std::string> value = _xpath.evaluate_expr(ATTR(assignElem, "expr"), _datamodel);
 		assign(key, value, assignElem);
 	} else {
 		LOG(ERROR) << "assign element has no content";
