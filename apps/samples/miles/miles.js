@@ -25,6 +25,7 @@ function Miles(element, params) {
   if (params && params.email)        email = params.email;
   if (params && params.problemName)  problemName = params.problemName;
 
+  // called when dojo loaded all requirements below
   this.connect = function() {
     self.xhr.post({
       // The URL to request
@@ -51,6 +52,7 @@ function Miles(element, params) {
     });  
   }
 
+  // fetch a base64 encoded image and set it as the src attribute
   var refreshImage = function() {
     self.xhr.get({
       // The URL to request
@@ -91,10 +93,12 @@ function Miles(element, params) {
       ready(function() {
         self.xhr = xhr;
         
+        // if we were passed an id, resolve to dom node
         if (typeof(element) === 'string') {
           element = dom.byId(element);
         }
 
+        // dynamically assemble the DOM we need
         element.appendChild(domConst.toDom('\
           <table>\
             <tr>\
@@ -117,6 +121,7 @@ function Miles(element, params) {
           </table>\
         '));
         
+        // from the above DOM, fetch some nodes to put dojo widgets in
         self.pictureElem = dojo.query("img.picture", element)[0];
         self.controlElem = dojo.query("td.control", element)[0];
         self.messageElem = dojo.query("div.messages", element)[0];
@@ -127,9 +132,9 @@ function Miles(element, params) {
         self.controlDropDown = new DropDownButton({ label: "Connect", dropDown: self.controlToolTip });
         self.controlElem.appendChild(self.controlDropDown.domNode);
         
-        // self.connected = true;
-        // refreshImage();
-
+        // many more control widgets to be instantiated here
+        
+        // connect and start to fetch images from the server
         self.connect();
         
       })
