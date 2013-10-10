@@ -16,6 +16,9 @@ using namespace std;
 
 namespace uscxml {
 
+#define MESwriteCMD "MESwrite";
+#define MESreadCMD "MESread";
+
 class XmlBridgeInvoker : public InvokerImpl {
 public:
 	XmlBridgeInvoker() : _thread(NULL) {}
@@ -33,7 +36,7 @@ public:
 	void cancel(const std::string sendId);
 	void invoke(const InvokeRequest& req);
 
-	void buildEvent(const std::string reply_raw_data);
+	void buildEvent(unsigned int cmd, unsigned int nice, const std::string reply_raw_data);
 
 	/* move invoker to new thread */
 	static void run(void* instance) {
@@ -61,10 +64,8 @@ public:
 
 	~XmlBridgeInputEvents() {}
 
-	void handleMESreadreq(const string dbname, const string replyData);
-	void handleTIMreply(const string dbname, const string replyData);
-	void handleMESwritemsgreq(const string dbname, const string replyData);
-	void handleMESwriteboolreq(const string dbname, const string replyData);
+	void handleTIMreply(unsigned int cmd, unsigned int nice,const string replyData);
+	void handleMESreq(unsigned int cmd, unsigned int nice,const string replyData="");
 
 	void registerInvoker(std::string smName, XmlBridgeInvoker* invokref) {
 		_invokers[smName] = invokref;
@@ -76,11 +77,13 @@ public:
 	}
 
 private:
-	XmlBridgeInputEvents() : _lastChecked(0) {}
+	XmlBridgeInputEvents() : _lastChecked(0), _dbname("100") {}
 	XmlBridgeInputEvents& operator=( const XmlBridgeInputEvents& );
 
-	std::map<std::string, XmlBridgeInvoker*> _invokers;
 	time_t _lastChecked;
+	std::string _dbname;
+	std::map<std::string, XmlBridgeInvoker*> _invokers;
+
 };
 
 #ifdef BUILD_AS_PLUGINS

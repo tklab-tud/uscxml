@@ -69,7 +69,7 @@
 <!--				<file url="bar.bin" operation="write" type="xml" contentexpr="_event['data']['content']" />-->
 
 <!--				<assign location="/datamodel/data[@id='TIM']/frame/set[@index='17']/item[@id='0']/nestedData" expr="'50'"/>-->
-				<assign location="$TIM/frame/set[@index='17']/item[@i='0']/nestedData" expr="'5999'"/>
+<!--				<assign location="$TIM/frame/set[@index='17']/item[@i='0']/nestedData" expr="'5999'"/>-->
 <!--				<assign location="$TIM/ciao" expr="'50'"/>-->
 <!--				<assign location="$TIM" expr="'50'"/>-->
 
@@ -94,7 +94,7 @@
 
 				<send id="send-122"
 				      event="reply"
-				      delay="10000s">
+				      delay="5s">
 					<param name="paramatername" expr="'paramatervalue'"/>
 					<content>
 						<root>
@@ -105,11 +105,11 @@
 					</content>
 				</send>
 
-				<send id="send-123"
-				      type="http://www.w3.org/TR/scxml/#SCXMLEventProcessor"
-				      event="reply"
-				      delay="5s"
-				      namelist="$TIM"/>
+<!--				<send id="send-123"-->
+<!--				      type="http://www.w3.org/TR/scxml/#SCXMLEventProcessor"-->
+<!--				      event="reply"-->
+<!--				      delay="5s"-->
+<!--				      namelist="$TIM"/>-->
 
 <!--				<send id="send-124"-->
 <!--				      target="#_xmlbridge1"-->
@@ -152,7 +152,15 @@
 <!--			<transition cond="fn:year-from-dateTime($time) > 2009" target="newBehavior"/>-->
 <!--			<transition event="reply" cond="data('_event')/ciao/subject = '77'" target="NewOrder" />-->
 <!--			<transition event="reply" cond="data('_event')/root/alpha = '1'" target="NewOrder" />-->
-			<transition event="reply" cond="$_event/data/data/data/ciao = '77'" target="NewOrder" />
+<!--			<transition event="reply" cond="$_event/data/data/data/ciao = '77'" target="NewOrder" />-->
+			<transition event="0" target="NewOrder">
+				<log label="Event full data:" expr="$_event/text()" />
+				<assign location="$TIM/frame/set[@index='17']/item[@i='0']/nestedData" expr="'$_event/data'"/>
+			</transition>
+
+			<transition event="reply">
+				<log label="Event full data:" expr="$_event/text()" />
+			</transition>
 <!--			<transition event="reply" cond="$_event/data/root/alpha = '1'" target="NewOrder" />-->
 <!--			<transition event="reply" cond="yearFromDatetime(time) > 2009" target="Exit" />-->
 
@@ -177,14 +185,10 @@
 		</state>
 		<state id="NewOrder">
 			<onentry>
-				<send target="#_xmlbridge1"
-				      event="ilnomedelmessaggiocheinviamo">
-					<param name="paramatername" expr="'paramatervalue'"/>
-					<param name="othername" expr="'othervalue'"/>
-					<content>
-						<root>NUOVO ORDINE!!</root>
-					</content>
-				</send>
+				<send id="send-123"
+				      type="http://www.w3.org/TR/scxml/#SCXMLEventProcessor"
+				      event="command"
+				      namelist="$TIM"/>
 			</onentry>
 			<transition event="reply.NewOrder" cond="${ack == 'OK'}" target="PlaceOrder" /> 
 			<transition event="reply.NewOrder" cond="${ack == 'FAIL'}" target="Fail" /> 

@@ -153,7 +153,7 @@ void XPathDataModel::setEvent(const Event& event) {
 	}
 	if (event.namelist.size() > 0) {
 		std::map<std::string, Data>::const_iterator namelistIter = event.namelist.begin();
-		while(namelistIter != event.namelist.end()) {
+		while (namelistIter != event.namelist.end()) {
 			if (namelistIter->second.type == Data::INTERPRETED) {
 				NodeSet<std::string> xpathresult = namelistIter->second.xpathres;
 				NodeSet<std::string>::const_iterator nodesetIter = xpathresult.begin();
@@ -216,7 +216,7 @@ Data XPathDataModel::getStringAsData(const std::string& content) {
 	switch (result.type()) {
 	case ANY:
 		break;
-	case BOOL:
+	case Arabica::XPath::BOOL:
 		ss << result.asBool();
 		break;
 	case NUMBER:
@@ -414,6 +414,7 @@ void XPathDataModel::assign(const Element<std::string>& assignElem,
 	}
 
 	// test 326ff
+	std::cout << std::endl <<  "!!!!!!! Current DOC!: " << _doc;
 	XPathValue<std::string> key = _xpath.evaluate_expr(location, _doc);
 #if 0
 	if (key.type() == NODE_SET) {
@@ -434,21 +435,19 @@ void XPathDataModel::assign(const Element<std::string>& assignElem,
 #endif
 	NodeSet<std::string> nodeSet;
 	if (node) {
-		if (node) {
-			Node<std::string> data = node;
-			while (data) {
-				// do not add empty text as a node
-				if (data.getNodeType() == Node_base::TEXT_NODE) {
-					std::string trimmed = data.getNodeValue();
-					boost::trim(trimmed);
-					if (trimmed.length() == 0) {
-						data = data.getNextSibling();
-						continue;
-					}
+		Node<std::string> data = node;
+		while (data) {
+			// do not add empty text as a node
+			if (data.getNodeType() == Node_base::TEXT_NODE) {
+				std::string trimmed = data.getNodeValue();
+				boost::trim(trimmed);
+				if (trimmed.length() == 0) {
+					data = data.getNextSibling();
+					continue;
 				}
-				nodeSet.push_back(data);
-				data = data.getNextSibling();
 			}
+			nodeSet.push_back(data);
+			data = data.getNextSibling();
 		}
 		assign(key, nodeSet, assignElem);
 	} else if (content.length() > 0) {
@@ -456,6 +455,7 @@ void XPathDataModel::assign(const Element<std::string>& assignElem,
 		nodeSet.push_back(textNode);
 		assign(key, nodeSet, assignElem);
 	} else if (HAS_ATTR(assignElem, "expr")) {
+		std::cout << std::endl <<  "!!!!!!! Current DOC!: " << _doc;
 		XPathValue<std::string> value = _xpath.evaluate_expr(ATTR(assignElem, "expr"), _doc);
 		assign(key, value, assignElem);
 	} else {

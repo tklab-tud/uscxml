@@ -4,6 +4,7 @@
 #include <Pluma/Connector.hpp>
 #endif
 
+#include <string>
 
 namespace uscxml {
 
@@ -168,17 +169,28 @@ void XmlBridgeInvoker::invoke(const InvokeRequest& req) {
 	*/
 }
 
-void XmlBridgeInvoker::buildEvent(const std::string reply_raw_data) {
+void XmlBridgeInvoker::buildEvent(unsigned int cmd, unsigned int nice, const std::string reply_raw_data) {
 
-	uscxml::Event myevent("reply", uscxml::Event::EXTERNAL);
+	std::ostringstream strator;
+	strator << dec << cmd;
+
+	uscxml::Event myevent(strator.str(), uscxml::Event::EXTERNAL);
+
+
 	//event.setName("reply." + _interpreter->getState())
 
 	const uscxml::Data eventdata(reply_raw_data);
 	myevent.setData(eventdata);
+	myevent.setSendId("xmlbridge");
+	myevent.setOrigin("MES");
 
-	myevent.setContent(reply_raw_data);
-	myevent.setRaw(reply_raw_data);
-	myevent.setXML(reply_raw_data);
+	strator.flush();
+	strator << dec << nice;
+	myevent.setOriginType(strator.str());
+
+//	myevent.setContent(reply_raw_data);
+//	myevent.setRaw(reply_raw_data);
+//	myevent.setXML(reply_raw_data);
 
 	returnEvent(myevent);
 
@@ -269,25 +281,16 @@ void XmlBridgeInvoker::buildEvent(const std::string reply_raw_data) {
 	*/
 }
 
-void XmlBridgeInputEvents::handleTIMreply(const string dbname, const string replyData)
+void XmlBridgeInputEvents::handleTIMreply(unsigned int cmd, unsigned int nice, const std::string replyData)
 {
-	_invokers[dbname]->buildEvent(replyData);
+	_invokers[_dbname]->buildEvent(cmd, nice, replyData);
 }
 
-void XmlBridgeInputEvents::handleMESreadreq(const string dbname, const string replyData)
+void XmlBridgeInputEvents::handleMESreq(unsigned int cmd, unsigned int nice, const std::string replyData)
 {
-	_invokers[dbname]->buildEvent(replyData);
+	_invokers[_dbname]->buildEvent(cmd, nice, replyData);
 }
 
-void XmlBridgeInputEvents::handleMESwritemsgreq(const string dbname, const string replyData)
-{
-	_invokers[dbname]->buildEvent(replyData);
-}
-
-void XmlBridgeInputEvents::handleMESwriteboolreq(const string dbname, const string replyData)
-{
-	_invokers[dbname]->buildEvent(replyData);
-}
 
 /*
 XmlBridgeInputEvents::~XmlBridgeInputEvents() {
