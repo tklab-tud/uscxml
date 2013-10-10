@@ -39,20 +39,57 @@ Data MilesSessionInvoker::getDataModelVariables() {
 void MilesSessionInvoker::send(const SendRequest& req) {
 //	std::cout << req;
 	if (boost::iequals(req.name, "disconnect")) {
-		std::string reflectorIP = req.params.find("reflectorip")->second;
-		std::string problemName = req.params.find("problemname")->second;
+		std::string reflectorIP = "127.0.0.1";
+		Event::getParam(req.params, "reflectorip", reflectorIP);
+		
+		std::string problemName = "Generic";
+		Event::getParam(req.params, "problemname", problemName);
+		
 		int rv;
 		rv = miles_disconnect_reflector_session((char*)reflectorIP.c_str(), (char*)problemName.c_str());
 		if (!rv) {
 			LOG(ERROR) << "Could not disconnect from reflector session";
 			return;
 		}
+	} else if (boost::iequals(req.name, "image")) {
+		// client wants an image
+		URL imageURL1("test1.jpeg");
+		URL imageURL2("test2.jpeg");
 
-	}
-	if (boost::iequals(req.name, "connect")) {
-		std::string email = req.params.find("email")->second;
-		std::string reflectorIP = req.params.find("reflectorip")->second;
-		std::string problemName = req.params.find("problemname")->second;
+		imageURL1.toAbsolute(_interpreter->getBaseURI());
+		imageURL2.toAbsolute(_interpreter->getBaseURI());
+
+		std::stringstream ssImage;
+		
+		if (alternate) {
+			ssImage << imageURL1;
+		} else {
+			ssImage << imageURL2;
+		}
+		alternate = !alternate;
+		
+		std::string imageContent = ssImage.str();
+		
+		Event retEv;
+		retEv.data.compound["base64"] = Data(base64_encode(imageContent.data(), imageContent.size()), Data::VERBATIM);
+
+		std::string origin;
+		Event::getParam(req.params, "origin", origin);
+		retEv.data.compound["origin"] = origin;
+		
+		tthread::this_thread::sleep_for(tthread::chrono::milliseconds(20));
+		
+		returnEvent(retEv);
+		
+	} else if (boost::iequals(req.name, "connect")) {
+		std::string email = "someSaneDefault";
+		Event::getParam(req.params, "email", email);
+		
+		std::string reflectorIP = "127.0.0.1";
+		Event::getParam(req.params, "reflectorip", reflectorIP);
+
+		std::string problemName = "Generic";
+		Event::getParam(req.params, "problemname", problemName);
 
 		int rv;
 		rv = miles_connect_reflector_session((char*)reflectorIP.c_str(), (char*)problemName.c_str());
@@ -168,8 +205,9 @@ void MilesSessionInvoker::send(const SendRequest& req) {
 //			audio_transmitter(audio_dev, audio_encoder, out_rtp_audio_stream, out_rtcp_audio_stream);
 //		}
 
-		_audioThread = new tthread::thread(MilesSessionInvoker::runAudio, this);
-		_videoThread = new tthread::thread(MilesSessionInvoker::runVideo, this);
+		// don't start threads for mockup
+//		_audioThread = new tthread::thread(MilesSessionInvoker::runAudio, this);
+//		_videoThread = new tthread::thread(MilesSessionInvoker::runVideo, this);
 	}
 }
 

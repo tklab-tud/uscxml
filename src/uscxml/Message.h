@@ -16,6 +16,9 @@
 
 #include "uscxml/Convenience.h"
 
+#include "uscxml/util/MD5.h"
+#include "uscxml/util/Base64.h"
+
 #define TAGNAME(elem) ((Arabica::DOM::Element<std::string>)elem).getTagName()
 #define LOCALNAME(elem) ((Arabica::DOM::Element<std::string>)elem).getLocalName()
 #define ATTR(elem, attr) ((Arabica::DOM::Element<std::string>)elem).getAttribute(attr)
@@ -31,6 +34,19 @@ public:
 	char* data;
 	size_t size;
 	std::string mimetype;
+
+	std::string md5() {
+		return uscxml::md5(data, size);
+	}
+	
+	std::string base64() {
+		return base64_encode((char* const)data, size);
+	}
+	
+	Blob* fromBase64(const std::string base64) {
+		std::string decoded = base64_decode(base64);
+		return new Blob((void*)decoded.c_str(), decoded.length());
+	}
 };
 	
 class Data {

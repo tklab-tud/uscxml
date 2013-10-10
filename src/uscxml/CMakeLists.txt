@@ -9,6 +9,13 @@ file(GLOB_RECURSE USCXML_SERVER
 source_group("Interpreter" FILES ${USCXML_SERVER})
 list (APPEND USCXML_FILES ${USCXML_SERVER})
 
+file(GLOB_RECURSE USCXML_UTIL
+	util/*.cpp
+	util/*.h
+)
+source_group("Interpreter" FILES ${USCXML_UTIL})
+list (APPEND USCXML_FILES ${USCXML_UTIL})
+
 file(GLOB_RECURSE USCXML_CONCURRENCY
 	concurrency/*.cpp
 	concurrency/*.h

@@ -149,8 +149,8 @@ Factory::Factory() {
 #ifdef MILES_FOUND
 	{
 		// eats 8MB of RAM!
-//		MilesSessionInvoker* invoker = new MilesSessionInvoker();
-//		registerInvoker(invoker);
+		MilesSessionInvoker* invoker = new MilesSessionInvoker();
+		registerInvoker(invoker);
 	}
 	{
 		SpatialAudio* invoker = new SpatialAudio();
