@@ -4,6 +4,11 @@ set(CTEST_BUILD_CONFIGURATION "Debug")
 
 set(RETAIN_BUILD_DIR OFF)
 set(CTEST_BUILD_NAME "darwin-x86_64 llvm")
+include("tests/plugins.ctest")
+include("common.ctest.inc")
+
+set(RETAIN_BUILD_DIR OFF)
+set(CTEST_BUILD_NAME "darwin-x86_64 llvm")
 include("tests/ecma.ctest")
 include("common.ctest.inc")
 
@@ -11,3 +16,4 @@ set(RETAIN_BUILD_DIR OFF)
 set(CTEST_BUILD_NAME "darwin-x86_64 llvm")
 include("tests/xpath.ctest")
 include("common.ctest.inc")
+

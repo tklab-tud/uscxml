@@ -132,6 +132,10 @@ Factory::Factory() {
 			DataModelImpl* dataModel = (*it)->create();
 			registerDataModel(dataModel);
 		}
+	} else {
+		LOG(ERROR) << "No path to plugins known, export USCXML_PLUGIN_PATH or pass path as parameter";
+		Event e;
+		throw e;
 	}
 #else
 #if 1
