@@ -38,7 +38,7 @@ source_group("Interpreter" FILES ${USCXML_INTERPRETERS})
 list (APPEND USCXML_FILES ${USCXML_INTERPRETERS})
 
 if(APPLE OR IOS)
-	file(GLOB_RECURSE USCXML_APPLE
+	file(GLOB USCXML_APPLE
 		*.mm
 	)
 	source_group("Interpreter" FILES ${USCXML_APPLE})

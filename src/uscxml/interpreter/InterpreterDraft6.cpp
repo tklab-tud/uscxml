@@ -34,6 +34,11 @@ void InterpreterDraft6::interpret() {
 		datamodelName = ATTR(_scxml, "profile");
 	if(datamodelName.length() > 0) {
 		_dataModel = _factory->createDataModel(datamodelName, this);
+		if (!_dataModel) {
+			Event e;
+			e.data.compound["cause"] = Data("Cannot instantiate datamodel");
+			throw e;
+		}
 	} else {
 		_dataModel = _factory->createDataModel("null", this);
 	}

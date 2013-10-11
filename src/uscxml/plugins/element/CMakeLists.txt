@@ -5,8 +5,8 @@ file(GLOB_RECURSE FETCH_ELEMENT
 	fetch/*.cpp
 	fetch/*.h
 )
-source_group("Element\\fetch" FILES ${FETCH_ELEMENT})
 if (BUILD_AS_PLUGINS)
+	source_group("" FILES ${FETCH_ELEMENT})
 	add_library(
 		element_fetch SHARED 
 		${FETCH_ELEMENT})
@@ -22,8 +22,8 @@ endif()
 # 	mmi/*.cpp
 # 	mmi/*.h
 # )
-# source_group("Element\\mmi" FILES ${MMI_ELEMENT})
 # if (BUILD_AS_PLUGINS)
+# 	source_group("" FILES ${MMI_ELEMENT})
 # 	add_library(
 # 		element_mmi SHARED 
 # 		${MMI_ELEMENT})
@@ -41,8 +41,8 @@ file(GLOB_RECURSE POSTPONE_ELEMENT
 	postpone/*.cpp
 	postpone/*.h
 )
-source_group("Element\\postpone" FILES ${POSTPONE_ELEMENT})
 if (BUILD_AS_PLUGINS)
+	source_group("" FILES ${POSTPONE_ELEMENT})
 	add_library(
 		element_postpone SHARED 
 		${POSTPONE_ELEMENT})
@@ -60,8 +60,8 @@ file(GLOB_RECURSE FILE_ELEMENT
 	file/*.cpp
 	file/*.h
 )
-source_group("Element\\file" FILES ${FILE_ELEMENT})
 if (BUILD_AS_PLUGINS)
+	source_group("" FILES ${FILE_ELEMENT})
 	add_library(
 		element_file SHARED 
 		${FILE_ELEMENT})
@@ -79,8 +79,8 @@ file(GLOB_RECURSE RESPOND_ELEMENT
 	respond/*.cpp
 	respond/*.h
 )
-source_group("Element\\respond" FILES ${RESPOND_ELEMENT})
 if (BUILD_AS_PLUGINS)
+	source_group("" FILES ${RESPOND_ELEMENT})
 	add_library(
 		element_respond SHARED 
 		${RESPOND_ELEMENT})

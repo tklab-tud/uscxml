@@ -260,6 +260,24 @@ class Blob {
 		default: $this->_cPtr=new_Blob($size_or_data,$size,$adopt);
 		}
 	}
+
+	function md5() {
+		return Blob_md5($this->_cPtr);
+	}
+
+	function base64() {
+		return Blob_base64($this->_cPtr);
+	}
+
+	function fromBase64($base64) {
+		$r=Blob_fromBase64($this->_cPtr,$base64);
+		if (is_resource($r)) {
+			$c=substr(get_resource_type($r), (strpos(get_resource_type($r), '__') ? strpos(get_resource_type($r), '__') + 2 : 3));
+			if (class_exists($c)) return new $c($r);
+			return new Blob($r);
+		}
+		return $r;
+	}
 }
 
 class Data {
