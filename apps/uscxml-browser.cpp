@@ -179,12 +179,17 @@ int main(int argc, char** argv) {
 		interpreterIter++;
 	}
 
+	bool stillRunning = true;
 	// call from main thread for UI events
 	while(interpreters.size() > 0) {
 		interpreterIter = interpreters.begin();
 		while(interpreterIter != interpreters.end()) {
-			interpreterIter->runOnMainThread(25);
-			interpreterIter++;
+			stillRunning = interpreterIter->runOnMainThread(25);
+			if (stillRunning) {
+				interpreters.erase(interpreterIter++);
+			} else {
+				interpreterIter++;
+			}
 		}
 	}
 	
