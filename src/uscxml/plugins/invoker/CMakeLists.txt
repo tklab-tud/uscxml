@@ -18,26 +18,30 @@ endif()
 
 # DirMon invoker to watch for filesystem changes
 
-set(USCXML_INVOKERS "dirmon ${USCXML_INVOKERS}")
-file(GLOB_RECURSE DIRMON_INVOKER
-	filesystem/dirmon/*.cpp
-	filesystem/dirmon/*.h
-)
-source_group("Invoker\\dirmon" FILES ${DIRMON_INVOKER})
-if (BUILD_AS_PLUGINS)
-	add_library(
-		invoker_dirmon SHARED 
-		${DIRMON_INVOKER})
-	target_link_libraries(invoker_dirmon uscxml)
-	set_target_properties(invoker_dirmon PROPERTIES FOLDER "Plugin Invoker")
-else()
-	list (APPEND USCXML_FILES ${DIRMON_INVOKER})
+if (false)
+	set(USCXML_INVOKERS "dirmon ${USCXML_INVOKERS}")
+	file(GLOB_RECURSE DIRMON_INVOKER
+		filesystem/dirmon/*.cpp
+		filesystem/dirmon/*.h
+	)
+	source_group("Invoker\\dirmon" FILES ${DIRMON_INVOKER})
+	if (BUILD_AS_PLUGINS)
+		add_library(
+			invoker_dirmon SHARED
+			${DIRMON_INVOKER})
+		target_link_libraries(invoker_dirmon uscxml)
+		set_target_properties(invoker_dirmon PROPERTIES FOLDER "Plugin Invoker")
+	else()
+		list (APPEND USCXML_FILES ${DIRMON_INVOKER})
+	endif()
 endif()
 
 set(USCXML_INVOKERS "xmlbridge ${USCXML_INVOKERS}")
 file(GLOB_RECURSE XMLBRIDGE_INVOKER
 	system/XmlBridgeInvoker.cpp
 	system/XmlBridgeInvoker.h
+	system/timio.cpp
+	system/timio.h
 )
 source_group("Invoker\\system" FILES ${XMLBRIDGE_INVOKER})
 if (BUILD_AS_PLUGINS)
@@ -52,40 +56,43 @@ endif()
 
 # Location invoker to watch for proximity to GPS coordinates
 
-file(GLOB_RECURSE LOCATION_INVOKER
-	location/*.cpp
-	location/*.h
-)
-source_group("Invoker\\location" FILES ${LOCATION_INVOKER})
-if (BUILD_AS_PLUGINS)
-	add_library(
-		invoker_location SHARED 
-		${LOCATION_INVOKER})
-	target_link_libraries(invoker_location uscxml)
-	set_target_properties(invoker_location PROPERTIES FOLDER "Plugin Invoker")
-else()
-	list (APPEND USCXML_FILES ${LOCATION_INVOKER})
+if (false)
+	file(GLOB_RECURSE LOCATION_INVOKER
+		location/*.cpp
+		location/*.h
+	)
+	source_group("Invoker\\location" FILES ${LOCATION_INVOKER})
+	if (BUILD_AS_PLUGINS)
+		add_library(
+			invoker_location SHARED
+			${LOCATION_INVOKER})
+		target_link_libraries(invoker_location uscxml)
+		set_target_properties(invoker_location PROPERTIES FOLDER "Plugin Invoker")
+	else()
+		list (APPEND USCXML_FILES ${LOCATION_INVOKER})
+	endif()
 endif()
 
 
 # XHTML invoker
 
-set(USCXML_INVOKERS "xhtml ${USCXML_INVOKERS}")
-file(GLOB_RECURSE XHTML_INVOKER
-	xhtml/*.cpp
-	xhtml/*.h
-)
-source_group("Invoker\\xhtml" FILES ${XHTML_INVOKER})
-if (BUILD_AS_PLUGINS)
-	add_library(
-		invoker_xhtml SHARED 
-		${XHTML_INVOKER})
-	target_link_libraries(invoker_xhtml uscxml)
-	set_target_properties(invoker_xhtml PROPERTIES FOLDER "Plugin Invoker")
-else()
-	list (APPEND USCXML_FILES ${XHTML_INVOKER})
+if (false)
+	set(USCXML_INVOKERS "xhtml ${USCXML_INVOKERS}")
+	file(GLOB_RECURSE XHTML_INVOKER
+		xhtml/*.cpp
+		xhtml/*.h
+	)
+	source_group("Invoker\\xhtml" FILES ${XHTML_INVOKER})
+	if (BUILD_AS_PLUGINS)
+		add_library(
+			invoker_xhtml SHARED
+			${XHTML_INVOKER})
+		target_link_libraries(invoker_xhtml uscxml)
+		set_target_properties(invoker_xhtml PROPERTIES FOLDER "Plugin Invoker")
+	else()
+		list (APPEND USCXML_FILES ${XHTML_INVOKER})
+	endif()
 endif()
-
 
 # System invoker to open a native command
 

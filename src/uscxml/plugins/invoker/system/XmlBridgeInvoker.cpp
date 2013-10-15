@@ -25,7 +25,7 @@ XmlBridgeInvoker::~XmlBridgeInvoker() {
 }
 
 boost::shared_ptr<InvokerImpl> XmlBridgeInvoker::create(InterpreterImpl* interpreter) {
-	LOG(INFO) << "Creating XmlBridgeInvoker instance" << endl;
+	LOG(INFO) << "Creating XmlBridgeInvoker instance";
 
 	boost::shared_ptr<XmlBridgeInvoker> invoker = boost::shared_ptr<XmlBridgeInvoker>(this);
 
@@ -36,76 +36,8 @@ boost::shared_ptr<InvokerImpl> XmlBridgeInvoker::create(InterpreterImpl* interpr
 	return invoker;
 }
 
-Data XmlBridgeInvoker::getDataModelVariables() {
-	Data data;
-	return data;
-}
-
-void XmlBridgeInvoker::send(const SendRequest& req) {
-
-	tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
-	SendRequest reqCopy(req);
-
-	//leggere parametri
-
-	//estrarre la struttura XML del messaggio da inviare al TIM
-
-	//riempire i campi del messaggio XML al tim con i field ricevuti dal Modbus
-
-	_interpreter->getDataModel().replaceExpressions(reqCopy.content);
-
-	std::cout << std::endl << reqCopy.getXML() << std::endl;
-	std::cout << std::endl << reqCopy.getContent() << std::endl;
-	std::cout << std::endl << reqCopy.getData() << std::endl;
-	std::cout << std::endl << reqCopy.getRaw() << std::endl;
-
-	//Data xml = Data::fromXML(reqCopy.content);
-	//if (xml) {
-	//	reqCopy.data = xml;
-	//	cout << xml.toXMLString() << endl;
-	//} else
-	//	cerr << "Failed parsing send request" << endl;*/
-
-	//cout << reqCopy.toXMLString() << endl;
-
-	/* lock automatically released */
-
-	/*
-	if(!_longPoll) {
-		_outQueue.push_back(reqCopy);
-		return;
-	}
-	reply(reqCopy, _longPoll);
-	_longPoll.curlReq = NULL;
-
-	//2
-	std::stringstream domSS;*/
-
-	/*
-	if (req.dom) {
-		// hack until jVoiceXML supports XML
-		std::cout << req.dom;
-		Arabica::DOM::NodeList<std::string> prompts = req.dom.getElementsByTagName("vxml:prompt");
-		for (int i = 0; i < prompts.getLength(); i++) {
-			if (prompts.item(i).hasChildNodes()) {
-				domSS << prompts.item(i).getFirstChild().getNodeValue() << ".";
-			}
-		}
-	}
-	*/
-
-	/*
-	domSS << req.dom;
-	*/
-
-	//_interpreter->getDataModel().replaceExpressions(start.content);
-}
-
-void XmlBridgeInvoker::cancel(const std::string sendId) {
-}
-
 void XmlBridgeInvoker::invoke(const InvokeRequest& req) {
-	LOG(INFO) << "Invoking XmlBridge" << endl;
+	LOG(INFO) << "Invoking XmlBridge";
 
 	if (req.params.find("datablock") == req.params.end()) {
 		LOG(ERROR) << "No datablock param given";
@@ -116,7 +48,7 @@ void XmlBridgeInvoker::invoke(const InvokeRequest& req) {
 	myinstance.registerInvoker(req.params.find("datablock")->second.atom, this);
 
 	_isRunning = true;
-	LOG(INFO) << "Moving XmlBridgeInvoker to a new thread" << endl;
+	LOG(INFO) << "Moving XmlBridgeInvoker to a new thread";
 	_thread = new tthread::thread(XmlBridgeInvoker::run, this);
 
 	/*
@@ -169,28 +101,106 @@ void XmlBridgeInvoker::invoke(const InvokeRequest& req) {
 	*/
 }
 
-void XmlBridgeInvoker::buildEvent(unsigned int cmd, unsigned int nice, const std::string reply_raw_data) {
+Data XmlBridgeInvoker::getDataModelVariables() {
+	//tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
+
+	Data data;
+//	data.compound["dir"] = Data(_dir, Data::VERBATIM);
+
+//	std::set<std::string>::iterator suffixIter = _suffixes.begin();
+//	while(suffixIter != _suffixes.end()) {
+//		data.compound["suffixes"].array.push_back(Data(*suffixIter, Data::VERBATIM));
+//		suffixIter++;
+//	}
+
+//	std::map<std::string, struct stat> entries = _watcher->getAllEntries();
+//	std::map<std::string, struct stat>::iterator entryIter = entries.begin();
+//	while(entryIter != entries.end()) {
+//		data.compound["file"].compound[entryIter->first].compound["mtime"] = toStr(entryIter->second.st_mtime);
+//		data.compound["file"].compound[entryIter->first].compound["ctime"] = toStr(entryIter->second.st_mtime);
+//		data.compound["file"].compound[entryIter->first].compound["atime"] = toStr(entryIter->second.st_mtime);
+//		data.compound["file"].compound[entryIter->first].compound["size"] = toStr(entryIter->second.st_mtime);
+//		entryIter++;
+//	}
+
+	return data;
+}
+
+void XmlBridgeInvoker::send(const SendRequest& req) {
+
+	tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
+	SendRequest reqCopy(req);
+
+	std::cout << std::endl << "send xml: " << reqCopy.getXML() << std::endl;
+	std::cout << std::endl << "send content: " << reqCopy.getContent() << std::endl;
+	std::cout << std::endl << "send data: " << reqCopy.getData() << std::endl;
+	std::cout << std::endl << "send raw: " << reqCopy.getRaw() << std::endl;
+
+	uscxml::XmlBridgeInputEvents& bridgeInstance = uscxml::XmlBridgeInputEvents::getInstance();
+	//_interpreter->getDataModel().replaceExpressions(reqCopy.content);
+
+	if (reqCopy.getName().substr(0, 3) == "cmd") {
+		bridgeInstance.sendTIMmsg(reqCopy.getName().at(3), reqCopy.getRaw());
+	} else if (reqCopy.getName().substr(0, 3) == "ack") {
+		bridgeInstance.sendMESreply(reqCopy.getName().at(3), reqCopy.getRaw());
+	} else {
+		LOG(ERROR) << "Unsupported event type";
+		return;
+	}
+
+	// build xml output
+
+	/* lock automatically released */
+
+	/*
+	if(!_longPoll) {
+		_outQueue.push_back(reqCopy);
+		return;
+	}
+	reply(reqCopy, _longPoll);
+	_longPoll.curlReq = NULL;
+
+	//2
+	std::stringstream domSS;*/
+
+	/*
+	if (req.dom) {
+		// hack until jVoiceXML supports XML
+		std::cout << req.dom;
+		Arabica::DOM::NodeList<std::string> prompts = req.dom.getElementsByTagName("vxml:prompt");
+		for (int i = 0; i < prompts.getLength(); i++) {
+			if (prompts.item(i).hasChildNodes()) {
+				domSS << prompts.item(i).getFirstChild().getNodeValue() << ".";
+			}
+		}
+	}
+	*/
+
+	/*
+	domSS << req.dom;
+	*/
+
+	//_interpreter->getDataModel().replaceExpressions(start.content);
+}
+
+
+
+void XmlBridgeInvoker::buildEvent(unsigned int offset, const std::string reply_raw_data) {
 
 	std::ostringstream strator;
-	strator << dec << cmd;
+	strator << std::dec << offset;
 
 	uscxml::Event myevent(strator.str(), uscxml::Event::EXTERNAL);
 
-
 	//event.setName("reply." + _interpreter->getState())
 
-	const uscxml::Data eventdata(reply_raw_data);
-	myevent.setData(eventdata);
 	myevent.setSendId("xmlbridge");
 	myevent.setOrigin("MES");
+	myevent.setRaw(reply_raw_data);
 
-	strator.flush();
-	strator << dec << nice;
-	myevent.setOriginType(strator.str());
-
-//	myevent.setContent(reply_raw_data);
-//	myevent.setRaw(reply_raw_data);
-//	myevent.setXML(reply_raw_data);
+	//	myevent.setContent(reply_raw_data);
+	//	myevent.setRaw(reply_raw_data);
+	//	myevent.setXML(reply_raw_data);
 
 	returnEvent(myevent);
 
@@ -281,26 +291,32 @@ void XmlBridgeInvoker::buildEvent(unsigned int cmd, unsigned int nice, const std
 	*/
 }
 
-void XmlBridgeInputEvents::handleTIMreply(unsigned int cmd, unsigned int nice, const std::string replyData)
+void XmlBridgeInputEvents::sendTIMreq(const char& cmdid,  const std::string reqData)
 {
-	_invokers[_dbname]->buildEvent(cmd, nice, replyData);
+	//check command id and str first
+
+	_timio->_timCmdIds.push(cmdid);
+	_timio->_timCmds.push(replyData);
+	_timio->_thread = new tthread::thread(_timio->client, _timio);
 }
 
-void XmlBridgeInputEvents::handleMESreq(unsigned int cmd, unsigned int nice, const std::string replyData)
+void XmlBridgeInputEvents::sendMESreply(const char& cmdid, const std::string replyData)
 {
-	_invokers[_dbname]->buildEvent(cmd, nice, replyData);
+	_invokers[_dbname]->buildEvent(cmdid, replyData);
 }
 
+void XmlBridgeInputEvents::handleMESreq(unsigned int offset, const std::string reqData)
+{
+	_invokers[_dbname]->buildEvent(offset, reqData);
+}
 
-/*
 XmlBridgeInputEvents::~XmlBridgeInputEvents() {
-	std::map<std::string, DirectoryWatch*>::iterator dirIter = _knownDirs.begin();
-	while(dirIter != _knownDirs.end()) {
-		delete(dirIter->second);
-		dirIter++;
+	std::map<std::string, XmlBridgeInvoker*>::iterator invIter = _invokers.begin();
+	while(invIter != _invokers.end()) {
+		invIter->second->_interpreter.join();
+		invIter++;
 	}
 }
-*/
 
 } //namespace uscxml
 

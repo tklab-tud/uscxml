@@ -12,194 +12,97 @@
 	
 	<!-- Syntax for XPath data model initialization -->
 	<datamodel>
-<!--		<data id="TIM">-->
-<!--		    <headers xmlns="">-->
-<!--		      <cc>archive@example.com</cc>-->
-<!--		      <subject>Example email</subject>-->
-<!--		    </headers>-->
-<!--		</data>-->
-<!--	<data id="ciao">-->
-<!--		    <data type="request" index="12">nuovovalore</data>-->
-<!--		    <data type="request" index="13">diagnostic</data>-->
-<!--		    <data type="request" index="14">optional</data>-->
-<!--	</data>-->
-
-
-	  <data id="TIM">
-		<frame xmlns="">
-		    <set type="temperature" index="17">
-			<item i="0">
-			    <nestedData type="setPoint">30</nestedData>
-			</item>
-			<item i="1">
-			    <nestedData type="setPoint">20</nestedData>
-			</item>
-		    </set>
-		</frame>
-	  </data>
+		<data id="CMD0">
+			<data type="wrapperProgram" index="0">
+			    <nestedData type="numWorking">33</nestedData>
+			</data>
+		</data>
+		<data id="CMD1">
+			<data type="operativeMode" index="1">
+			 <item i="0">
+			    <nestedData type="state">off</nestedData>
+			 </item>
+			 <item i="1">
+			    <nestedData type="state">on</nestedData>
+			 </item>         
+			 <item i="2">
+			    <nestedData type="state">off</nestedData>
+			 </item>         
+			 <item i="3">
+			    <nestedData type="state">off</nestedData>
+			 </item>                           
+			</data>
+		</data>
+		<data id="CMD3">
+			<data type="setting" index="3">
+			 <item i="0">
+			    <nestedData type="value">11</nestedData>
+			 </item>
+			 <item i="1">
+			    <nestedData type="value">22</nestedData>
+			 </item>         
+			 <item i="3">
+			    <nestedData type="value">33</nestedData>
+			 </item>
+			 <item i="4">
+			    <nestedData type="value">44</nestedData>
+			 </item>                  
+			 <item i="5">
+			    <nestedData type="value">55</nestedData>
+			 </item>                           
+			</data>
+		</data>
+		<data id="ACK">
+		<data id="NACK">
+		<data id="TIMEOUT">
 	</datamodel>
-
-	<state id="root" initial="GetProdId">
-		<invoke type="xmlbridge" id="xmlbridge1">
-			<param name="datablock" expr="'100'"/>
-		</invoke>
-		<!-- Use Cases -->
-		<state id="GetProdId">
-			<onentry>
-<!--				<file url="foo.bin" operation="read" type="xml" callback="foo.bin" />-->
-<!--				<file url="bar.bin" operation="write" type="xml" contentexpr="_event['data']['content']" />-->
-
-<!--				<assign location="/datamodel/data[@id='TIM']/frame/set[@index='17']/item[@id='0']/nestedData" expr="'50'"/>-->
-<!--				<assign location="$TIM/frame/set[@index='17']/item[@i='0']/nestedData" expr="'5999'"/>-->
-<!--				<assign location="$TIM/ciao" expr="'50'"/>-->
-<!--				<assign location="$TIM" expr="'50'"/>-->
-
-<!--				<assign location="time" expr="currentDateTime()"/>-->
-<!--				<assign location="$cities/list/city[@id='nyc']/@count" expr="d"/>-->
-<!--				<assign location="$myEventData" expr="$_event/data"/>-->
-<!--				<assign location="$cart/myCart/books/book[1]/title"  expr="'My favorite book'"/>-->
-<!--				<assign location="$TIM/headers/subject">20</assign>-->
-<!--				<assign location="$TIM/frame/data[@index='17']/item/nestedData" expr="'50'"/>-->
-				
-				<!-- The following statement would iterate over the elements in the nodeset
-				 of <book> elements and replace their children with the <price> structure: -->
-<!--				<assign location="$cart/myCart/books/book">-->
-<!--				  <price>20.0</price>-->
-<!--				</assign>-->
-
-<!--			        <assign location="$Var2" expr="$_event/data/data[@id='aParam']/text()"/>-->
-
-<!--				<foreach array="$cart//book" item="book">-->
-<!--					<log expr="fn:concat('Cart contains book with ISBN ', + $book/isbn)"/>-->
-<!--				</foreach>-->
-
-				<send id="send-122"
-				      event="reply"
-				      delay="5s">
-					<param name="paramatername" expr="'paramatervalue'"/>
-					<content>
-						<root>
-							<alpha>1</alpha>
-							<beta>2</beta>
-							<gamma>3</gamma>
-						</root>
-					</content>
-				</send>
-
-<!--				<send id="send-123"-->
-<!--				      type="http://www.w3.org/TR/scxml/#SCXMLEventProcessor"-->
-<!--				      event="reply"-->
-<!--				      delay="5s"-->
-<!--				      namelist="$TIM"/>-->
-
-<!--				<send id="send-124"-->
-<!--				      target="#_xmlbridge1"-->
-<!--				      delay="100s"-->
-<!--				      event="reply">-->
-
-<!--				  <content> NON SUPPORTATO -->
-<!--				     <MakeCall>-->
-<!--				       <callingDevice>"$TIM/frame/data[@index='17']/item/nestedData"</callingDevice>-->
-<!--				       <calledDirectoryNumber>18005551212</csta:calledDirectoryNumber>-->
-<!--				     </MakeCall>-->
-<!--				  </content>-->
-
-<!--				  <content>-->
-<!--				     <MakeCall>-->
-<!--				       <callingDevice>VALORE</callingDevice>-->
-<!--				       <calledDirectoryNumber>18005551212</calledDirectoryNumber>-->
-<!--				     </MakeCall>-->
-<!--				  </content>-->
-<!--				</send>-->
-			</onentry>
-			<transition event="OP.INSERT">
-				<log level="0" expr="_event.data[0]" />
-				<if cond="_event.data[0] == 'OPER.PLUS'">
-				    <assign location="long_expr" expr="long_expr+'+'" />
-				<elseif cond="_event.data[0]=='OPER.MINUS'" />
-				    <assign location="long_expr" expr="long_expr+'-'" />
-				<elseif cond="_event.data[0]=='OPER.STAR'" />
-				    <assign location="long_expr" expr="long_expr+'*'" />
-				<elseif cond="_event.data[0]=='OPER.DIV'" />
-				    <assign location="long_expr" expr="long_expr+'/'" />
-				</if>
-			</transition>
-<!--			<transition event="reply" cond="$_event/data = 'ComandiMes'" target="NewOrder" />-->
-<!--			<transition event="reply" target="NewOrder">-->
-<!--				<log label="invokeid is " expr="$_event/text()" />-->
-<!--			</transition>-->
-
-<!--			<transition cond="$_sessionid = '12345'" target="nextState"/>-->
-<!--			<transition cond="fn:year-from-dateTime($time) > 2009" target="newBehavior"/>-->
-<!--			<transition event="reply" cond="data('_event')/ciao/subject = '77'" target="NewOrder" />-->
-<!--			<transition event="reply" cond="data('_event')/root/alpha = '1'" target="NewOrder" />-->
-<!--			<transition event="reply" cond="$_event/data/data/data/ciao = '77'" target="NewOrder" />-->
-			<transition event="0" target="NewOrder">
-				<log label="Event full data:" expr="$_event/text()" />
-				<log label="Tim full data:" expr="$TIM/text()" />
-				<assign location="$TIM/frame/set[@index='17']/item[@i='0']/nestedData" expr="$_event/data/text()"/>
-			</transition>
-
-<!--			<transition event="reply">-->
-<!--				<log label="Event full data:" expr="$_event/text()" />-->
-<!--			</transition>-->
-<!--			<transition event="reply" cond="$_event/data/root/alpha = '1'" target="NewOrder" />-->
-<!--			<transition event="reply" cond="yearFromDatetime(time) > 2009" target="Exit" />-->
-
-<!--			<transition event="email.send">-->
-<!--				<my:email to="data('_event')/scxml:property[@name='email']"-->
-<!--				    cc="data('_event')/scxml:property[@name='xmlcontent']/h:headers/h:cc"-->
-<!--				    subject="data('_event')/scxml:property[@name='xmlcontent']/h:headers/h:subject"-->
-<!--				    content="data('_event')/scxml:property[@name='content']"/>-->
-<!--			</transition>-->
-
-<!--			<transition event="external.event">-->
-<!--				<csta:makecall callingDevice="data('_event')/csta:MakeCall/csta:callingDevice"-->
-<!--					callingDirectoryNumber="data('_event')/csta:MakeCall/csta:callingDirectoryNumber"/>-->
-<!--			<transition>-->
-
-<!--			<transition event="email.send">-->
-<!--				<my:email to="_event.email"-->
-<!--					cc="_event.jsoncontent.headers.cc"-->
-<!--					subject="_event.jsoncontent.headers.subject"-->
-<!--					content="_event.content"/>-->
-<!--			</transition>-->
-		</state>
-		<state id="NewOrder">
-			<onentry>
-				<send id="send-123"
-				      type="http://www.w3.org/TR/scxml/#SCXMLEventProcessor"
-				      event="command"
-				      namelist="$TIM"/>
-			</onentry>
-			<transition event="reply.NewOrder" cond="${ack == 'OK'}" target="PlaceOrder" /> 
-			<transition event="reply.NewOrder" cond="${ack == 'FAIL'}" target="Fail" /> 
-		</state>
-		<state id="PlaceOrder">
-			<onentry>
-				<send target="#_xmlbridge1">
-					<param name="$field" expr="'paramatervalue'"/>
-					<content>
-						<root></root>
-					</content>
-				</send>
-			</onentry>
-			<transition event="reply.SUCCESS" target="Exit" /> 
-			<transition event="reply.FAIL" target="Fail" /> 
-		</state>
-		<final id="Fail">
-			<onentry>
-				<send target="#_xmlbridge1">
-				  <param name="paramatername" expr="'paramatervalue'"/>
-				</send>
-			</onentry>
-	 	</final>
-		<final id="Exit">
-			<onentry>
-				<send target="#_xmlbridge1">
-				  <param name="paramatername" expr="'paramatervalue'"/>
-				</send>
-			</onentry>
-		</final>
+	<state id="root">
+		<initial>
+			<invoke type="xmlbridge" id="xmlbridge1">
+				<param name="datablock" expr="'100'"/>
+			</invoke>
+			<transition target="Run">
+			<!--	<file url="foo.bin" operation="read" type="xml" callback="foo.bin" />-->
+			<!--	<file url="bar.bin" operation="write" type="xml" contentexpr="_event['data']['content']" /> -->
+		</initial>
+		<parallel id="Run">
+			<state id="0" initial="init0">
+				<state id="init0">
+					<transition event="3" target="send0">
+<!--						<log label="Event full data is:" expr="$_event/text()" />-->
+						<assign location="$cmd0/data/nestedData" expr="$_event/data/text()"/>
+						<send 	event="cmd0"
+							namelist="$CMD0"
+							target="xmlbridge1"/>
+					</transition>
+				</state>
+				<state id="send0">
+					<onentry>
+						<send 	event="timeout0"
+							namelist="$TIMEOUT"
+							delay="5s"/>
+					</onentry>
+					<transition event="reply0" cond="true" target="init0">
+<!--						<log label="Event full data is:" expr="$_event/text()" />-->
+						<send 	event="ack0"
+							namelist="$ACK"
+							target="xmlbridge1"/>
+					</transition>
+					<transition event="reply0" cond="false" target="init0">
+<!--						<log label="Event full data is:" expr="$_event/text()" />-->
+						<send 	event="ack0"
+							namelist="$NACK"
+							target="xmlbridge1"/>
+					</transition>
+					<transition event="timeout0" target="init0" />
+				</state>
+			</state>
+			<state id="1" initial="init1">
+				<state id="init1"/>
+			</state>			
+			<state id="3" initial="init2">
+				<state id="init2"/>
+			</state>
+		</parallel>
 	</state>
 </scxml>
