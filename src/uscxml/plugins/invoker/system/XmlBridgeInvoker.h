@@ -6,7 +6,7 @@
 
 #include <uscxml/Interpreter.h>
 #include <glog/logging.h>
-#include "timio.h"
+#include "uscxml/plugins/invoker/system/timio.h"
 
 #ifdef BUILD_AS_PLUGINS
 #include "uscxml/plugins/Plugins.h"
@@ -41,7 +41,8 @@ public:
 	void invoke(const InvokeRequest& req);
 	Data getDataModelVariables();
 
-	void buildEvent(unsigned int cmd, const std::string reply_raw_data);
+	void buildMESreq(unsigned int cmd, const std::string reply_raw_data);
+	void buildTIMreply(unsigned int cmd, const std::string reply_raw_data);
 
 	/* move invoker to new thread */
 	static void run(void* instance) {
@@ -52,6 +53,7 @@ public:
 	}
 
 protected:
+	std::string _DBid;
 	bool _isRunning;
 	tthread::thread* _thread;
 	tthread::recursive_mutex _mutex;
@@ -62,11 +64,13 @@ public:
 	~XmlBridgeInputEvents();
 
 	void sendTIMreq(const char& cmdid, const std::string reqData);
-	void sendMESreply(const char& cmdid, const std::string replyData);
-	void handleMESreq(unsigned int offset, const std::string reqData="");
+	void sendMESreply(std::string DBid, const char& cmdid, const std::string replyData);
 
-	void registerInvoker(std::string smName, XmlBridgeInvoker* invokref) {
-		_invokers[smName] = invokref;
+	void handleTIMreply(const char& cmdid, const std::string replyData);
+	void handleMESreq(unsigned int DBid, unsigned int offset, const std::string reqData="");
+
+	void registerInvoker(std::string DBid, XmlBridgeInvoker* invokref) {
+		_invokers[DBid] = invokref;
 	}
 	void registerTimio(TimIO* ioref) {
 		_timio = ioref;
@@ -83,6 +87,8 @@ private:
 	XmlBridgeInputEvents& operator=( const XmlBridgeInputEvents& );
 
 	time_t _lastChecked;
+
+	/** One invoker/interpreter for each datablock */
 	std::map<std::string, XmlBridgeInvoker*> _invokers;
 	TimIO* _timio;
 };

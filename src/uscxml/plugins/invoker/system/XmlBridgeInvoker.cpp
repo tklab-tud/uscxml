@@ -44,15 +44,17 @@ void XmlBridgeInvoker::invoke(const InvokeRequest& req) {
 		return;
 	}
 
+	_DBid = req.params.find("datablock")->second.atom;
+
 	XmlBridgeInputEvents& myinstance = XmlBridgeInputEvents::getInstance();
-	myinstance.registerInvoker(req.params.find("datablock")->second.atom, this);
+	myinstance.registerInvoker(_DBid, this);
 
-	_isRunning = true;
 	LOG(INFO) << "Moving XmlBridgeInvoker to a new thread";
+	_isRunning = true;
 	_thread = new tthread::thread(XmlBridgeInvoker::run, this);
-
+}
 	/*
-	 *if (boost::iequals(req.params.find("reportexisting")->second, "false"))
+	if (boost::iequals(req.params.find("reportexisting")->second, "false"))
 		_reportExisting = false;
 	if (req.params.find("recurse") != req.params.end() &&
 		boost::iequals(req.params.find("recurse")->second, "true"))
@@ -67,11 +69,8 @@ void XmlBridgeInvoker::invoke(const InvokeRequest& req) {
 	} else if (req.params.find("suffixes") != req.params.end()) {
 		suffixList = req.params.find("suffixes")->second;
 	}
-	*/
 
-
-	/*
-	 *if (suffixList.size() > 0) {
+	if (suffixList.size() > 0) {
 		// seperate path into components
 		std::stringstream ss(suffixList);
 		std::string item;
@@ -92,20 +91,18 @@ void XmlBridgeInvoker::invoke(const InvokeRequest& req) {
 		}
 		break;
 	}
-	*/
-
-	/*
 	_watcher = new XmlBridgeSMIO(_dir, _recurse);
 	_watcher->addMonitor(this);
 	_watcher->updateEntries(true);
 	*/
-}
 
 Data XmlBridgeInvoker::getDataModelVariables() {
 	//tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
 
 	Data data;
-//	data.compound["dir"] = Data(_dir, Data::VERBATIM);
+	return data;
+}
+	/*data.compound["dir"] = Data(_dir, Data::VERBATIM);
 
 //	std::set<std::string>::iterator suffixIter = _suffixes.begin();
 //	while(suffixIter != _suffixes.end()) {
@@ -121,10 +118,7 @@ Data XmlBridgeInvoker::getDataModelVariables() {
 //		data.compound["file"].compound[entryIter->first].compound["atime"] = toStr(entryIter->second.st_mtime);
 //		data.compound["file"].compound[entryIter->first].compound["size"] = toStr(entryIter->second.st_mtime);
 //		entryIter++;
-//	}
-
-	return data;
-}
+//	} */
 
 void XmlBridgeInvoker::send(const SendRequest& req) {
 
@@ -140,19 +134,21 @@ void XmlBridgeInvoker::send(const SendRequest& req) {
 	//_interpreter->getDataModel().replaceExpressions(reqCopy.content);
 
 	if (reqCopy.getName().substr(0, 3) == "cmd") {
-		bridgeInstance.sendTIMmsg(reqCopy.getName().at(3), reqCopy.getRaw());
+		bridgeInstance.sendTIMreq(reqCopy.getName().at(3), reqCopy.getRaw());
 	} else if (reqCopy.getName().substr(0, 3) == "ack") {
-		bridgeInstance.sendMESreply(reqCopy.getName().at(3), reqCopy.getRaw());
+		bridgeInstance.sendMESreply(_DBid, reqCopy.getName().at(3), reqCopy.getRaw());
 	} else {
 		LOG(ERROR) << "Unsupported event type";
 		return;
 	}
+}
 
-	// build xml output
+/*
+	build xml output
 
-	/* lock automatically released */
+	lock automatically released
 
-	/*
+
 	if(!_longPoll) {
 		_outQueue.push_back(reqCopy);
 		return;
@@ -161,9 +157,8 @@ void XmlBridgeInvoker::send(const SendRequest& req) {
 	_longPoll.curlReq = NULL;
 
 	//2
-	std::stringstream domSS;*/
+	std::stringstream domSS;
 
-	/*
 	if (req.dom) {
 		// hack until jVoiceXML supports XML
 		std::cout << req.dom;
@@ -174,18 +169,13 @@ void XmlBridgeInvoker::send(const SendRequest& req) {
 			}
 		}
 	}
-	*/
 
-	/*
 	domSS << req.dom;
-	*/
 
 	//_interpreter->getDataModel().replaceExpressions(start.content);
-}
+*/
 
-
-
-void XmlBridgeInvoker::buildEvent(unsigned int offset, const std::string reply_raw_data) {
+void XmlBridgeInvoker::buildMESreq(unsigned int offset, const std::string reply_raw_data) {
 
 	std::ostringstream strator;
 	strator << std::dec << offset;
@@ -203,10 +193,30 @@ void XmlBridgeInvoker::buildEvent(unsigned int offset, const std::string reply_r
 	//	myevent.setXML(reply_raw_data);
 
 	returnEvent(myevent);
+}
 
-	//  std::cout << action << " on " << reportedFilename << std::endl;
+void XmlBridgeInvoker::buildTIMreply(unsigned int offset, const std::string reply_raw_data) {
 
-	/*
+	std::ostringstream strator;
+	strator << std::dec << offset;
+
+	uscxml::Event myevent(strator.str(), uscxml::Event::EXTERNAL);
+
+	//event.setName("reply." + _interpreter->getState())
+
+	myevent.setSendId("xmlbridge");
+	myevent.setOrigin("MES");
+	myevent.setRaw(reply_raw_data);
+
+	//	myevent.setContent(reply_raw_data);
+	//	myevent.setRaw(reply_raw_data);
+	//	myevent.setXML(reply_raw_data);
+
+	returnEvent(myevent);
+}
+
+	/*  std::cout << action << " on " << reportedFilename << std::endl;
+
 	std::string path;         // complete path to the file including filename
 	std::string relPath;      // path relative to monitored directory including filename
 	std::string dir;          // the name of the directory we monitor
@@ -214,9 +224,7 @@ void XmlBridgeInvoker::buildEvent(unsigned int offset, const std::string reply_r
 	std::string basename;     // filename including suffix
 	std::string strippedName; // filename without the suffix
 	std::string extension;    // the extension
-	*/
 
-	/*
 	dir = reportedDir;
 
 	path = dir + reportedFilename;
@@ -271,9 +279,7 @@ void XmlBridgeInvoker::buildEvent(unsigned int offset, const std::string reply_r
 		if (!validSuffix)
 			return;
 	}
-	*/
 
-	/*
 	if (action != DirectoryWatch::DELETED) {
 		event.data.compound["file"].compound["mtime"] = toStr(fileStat.st_mtime);
 		event.data.compound["file"].compound["ctime"] = toStr(fileStat.st_ctime);
@@ -289,34 +295,43 @@ void XmlBridgeInvoker::buildEvent(unsigned int offset, const std::string reply_r
 	event.data.compound["file"].compound["path"] = Data(path, Data::VERBATIM);
 	event.data.compound["file"].compound["dir"] = Data(dir, Data::VERBATIM);
 	*/
-}
 
-void XmlBridgeInputEvents::sendTIMreq(const char& cmdid,  const std::string reqData)
+void XmlBridgeInputEvents::sendTIMreq(const char& cmdid, const std::string reqData)
 {
-	//check command id and str first
+	//mutex?
 
+	//can be done earlier?
+	_timio->_timCmds.pop();
+
+	//check command id and str first
 	_timio->_timCmdIds.push(cmdid);
-	_timio->_timCmds.push(replyData);
+	_timio->_timCmds.push(reqData);
 	_timio->_thread = new tthread::thread(_timio->client, _timio);
 }
 
-void XmlBridgeInputEvents::sendMESreply(const char& cmdid, const std::string replyData)
+void XmlBridgeInputEvents::sendMESreply(std::string DBid, const char& cmdid, const std::string replyData)
 {
-	_invokers[_dbname]->buildEvent(cmdid, replyData);
+	/* Contatta MESbufferer */
+
+	/* chiamata a mesbufferer, dobbiamo fare plugin per forza */
 }
 
-void XmlBridgeInputEvents::handleMESreq(unsigned int offset, const std::string reqData)
+void XmlBridgeInputEvents::handleTIMreply(const char &cmdid, const std::string replyData)
 {
-	_invokers[_dbname]->buildEvent(offset, reqData);
-}
-
-XmlBridgeInputEvents::~XmlBridgeInputEvents() {
-	std::map<std::string, XmlBridgeInvoker*>::iterator invIter = _invokers.begin();
-	while(invIter != _invokers.end()) {
-		invIter->second->_interpreter.join();
-		invIter++;
+	std::map<std::string, XmlBridgeInvoker*>::iterator inviter = _invokers.begin();
+	while (inviter != _invokers.end()) {
+		inviter->second->buildTIMreply(cmdid, replyData);
 	}
 }
+
+void XmlBridgeInputEvents::handleMESreq(unsigned int DBid, unsigned int offset, const std::string reqData)
+{
+	std::stringstream ss;
+	ss << std::dec << DBid;
+	_invokers[ss.str()]->buildMESreq(offset, reqData);
+}
+
+XmlBridgeInputEvents::~XmlBridgeInputEvents() {}
 
 } //namespace uscxml
 

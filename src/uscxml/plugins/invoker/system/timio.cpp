@@ -1,8 +1,11 @@
 #include "timio.h"
+#include "uscxml/plugins/invoker/system/XmlBridgeInvoker.h"
 
 namespace uscxml {
 
-TimIO::TimIO(std::string ipaddr, std::string port) {
+TimIO::TimIO(std::string ipaddr, std::string port) :
+	_thread(NULL), _reply(NULL)
+{
 	if (ipaddr.empty() || port.empty())
 		exit(EXIT_FAILURE);
 
@@ -27,7 +30,7 @@ TimIO::TimIO(std::string ipaddr, std::string port) {
 		}
 
 		if (connect(_socketfd, p->ai_addr, p->ai_addrlen) == -1) {
-			close(sockfd);
+			close(_socketfd);
 			perror("client: connect");
 			continue;
 		}
@@ -42,18 +45,13 @@ TimIO::TimIO(std::string ipaddr, std::string port) {
 
 	freeaddrinfo(servinfo);
 
-	_command = calloc(1, MAXDATASIZE);
-	if (_command == NULL) {
-		LOG(ERROR) << "client: failed to allocate _command memory";
-		exit(EXIT_FAILURE);
-	}
-	_reply = calloc(1, MAXDATASIZE);
+	_reply = (char*)calloc(1, MAXDATASIZE);
 	if (_reply == NULL) {
 		LOG(ERROR) << "client: failed to allocate _reply memory";
 		exit(EXIT_FAILURE);
 	}
 
-	uscxml::XmlBridgeInputEvents& bridgeInstance = uscxml::XmlBridgeInputEvents::getInstance();
+	XmlBridgeInputEvents& bridgeInstance = XmlBridgeInputEvents::getInstance();
 	bridgeInstance.registerTimio(this);
 }
 
@@ -61,7 +59,6 @@ TimIO::~TimIO()
 {
 	close(_socketfd);
 	free(_reply);
-	free(_command);
 	if (_thread) {
 		_thread->join();
 		delete _thread;
@@ -81,13 +78,12 @@ void TimIO::client(void *instance) {
 		return;
 	}
 
-	if (numbytes != myobj->_commandLength) {
+	if (numbytes != myobj->_timCmds.front().length()) {
 		LOG(ERROR) << "TIM client: sent an incomplete message";
 		return;
 	}
 
 	myobj->_timCmdIds.pop();
-	myobj->_timCmds.pop();
 
 	/**
 	 * Function block until the full amount of message data can be returned
@@ -95,7 +91,7 @@ void TimIO::client(void *instance) {
 	 * Should we close the stream after recv?
 	 */
 	int replylen;
-	memset(_reply, 0, MAXDATASIZE);
+	memset(myobj->_reply, 0, MAXDATASIZE);
 	if ((replylen = recv(myobj->_socketfd, myobj->_reply, MAXDATASIZE, MSG_WAITALL)) == -1) {
 		perror("TIM client: recv error");
 		LOG(ERROR) << "TIM client: recv error";
@@ -107,11 +103,12 @@ void TimIO::client(void *instance) {
 		return;
 	}
 
-	std::string replyStr(myobj->_reply);
-	if (replylen != replyStr.length())
-		LOG(ERROR) << "TIM client: invalid length of received data";
+//	std::string replyStr;
+//	if (replylen != replyStr.length())
+//		LOG(ERROR) << "TIM client: invalid length of received data";
 
-	myobj->_bridgeInstance.handleTIMreply(replyStr);
+	XmlBridgeInputEvents& bridgeInstance = XmlBridgeInputEvents::getInstance();
+	bridgeInstance.handleTIMreply(myobj->_timCmdIds.front(), std::string(myobj->_reply));
 
 	return;
 }

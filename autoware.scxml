@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <scxml	version="1.0"
-	name="BlockID-100"
+	name="Datablock100"
 	datamodel="xpath"
 	initial="root"
 	xmlns:fn="http://www.w3.org/2005/xpath-functions"
@@ -59,6 +59,7 @@
 	<state id="root">
 		<initial>
 			<invoke type="xmlbridge" id="xmlbridge1">
+				<!-- expr value must be the exact offset used in MES datablock fields -->
 				<param name="datablock" expr="'100'"/>
 			</invoke>
 			<transition target="Run">
@@ -68,9 +69,37 @@
 		<parallel id="Run">
 			<state id="0" initial="init0">
 				<state id="init0">
-					<transition event="3" target="send0">
+					<transition event="40" target="send0">
 <!--						<log label="Event full data is:" expr="$_event/text()" />-->
 						<assign location="$cmd0/data/nestedData" expr="$_event/data/text()"/>
+						<send 	event="cmd0"
+							namelist="$CMD0"
+							target="xmlbridge1"/>
+					</transition>
+					<transition event="40" target="send0">
+<!--						<log label="Event full data is:" expr="$_event/text()" />-->
+						<assign location="$cmd0/data/nestedData" expr="$_event/data/text()"/>
+						<send 	event="cmd0"
+							namelist="$CMD0"
+							target="xmlbridge1"/>
+					</transition>
+					<transition event="40" target="send0">
+<!--						<log label="Event full data is:" expr="$_event/text()" />-->
+						<assign location="$cmd0/data/nestedData" expr="$_event/data/text()"/>
+						<send 	event="cmd0"
+							namelist="$CMD0"
+							target="xmlbridge1"/>
+					</transition>
+					<transition event="40" target="send0">
+<!--						<log label="Event full data is:" expr="$_event/text()" />-->
+						<assign location="$cmd0/data/nestedData[3]" expr="$_event/data/text()"/>
+						<send 	event="cmd0"
+							namelist="$CMD0"
+							target="xmlbridge1"/>
+					</transition>
+					<transition event="40" target="send0">
+<!--						<log label="Event full data is:" expr="$_event/text()" />-->
+						<assign location="$cmd0/data/nestedData[4]" expr="$_event/data/text()"/>
 						<send 	event="cmd0"
 							namelist="$CMD0"
 							target="xmlbridge1"/>

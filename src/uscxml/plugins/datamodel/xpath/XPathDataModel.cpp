@@ -186,14 +186,6 @@ void XPathDataModel::setEvent(const Event& event) {
 		Node<std::string> importedNode = _doc.importNode(event.dom, true);
 		eventDataElem.appendChild(importedNode);
 	}
-	if (!event.data.atom.empty()) {
-<<<<<<< HEAD
-		Element<std::string> eventNamelistElem = _doc.createElement("data");
-=======
->>>>>>> recupero
-		Text<std::string> eventNamelistText = _doc.createTextNode(event.data.atom);
-		eventDataElem.appendChild(eventNamelistText);
-	}
 
 	eventElem.appendChild(eventDataElem);
 	eventNodeSet.push_back(eventElem);
@@ -422,11 +414,7 @@ void XPathDataModel::assign(const Element<std::string>& assignElem,
 	}
 
 	// test 326ff
-<<<<<<< HEAD
 	std::cout << std::endl <<  "!!!!!!! Current Datamodel!: " << _datamodel;
-=======
-	std::cout << std::endl <<  "!!!!!!! Current DOC!: " << _datamodel;
->>>>>>> recupero
 	XPathValue<std::string> key = _xpath.evaluate_expr(location, _datamodel);
 #if 0
 	if (key.type() == NODE_SET) {
