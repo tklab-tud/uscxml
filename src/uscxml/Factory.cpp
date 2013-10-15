@@ -133,6 +133,10 @@ Factory::Factory() {
 			DataModelImpl* dataModel = (*it)->create();
 			registerDataModel(dataModel);
 		}
+	} else {
+		LOG(ERROR) << "No path to plugins known, export USCXML_PLUGIN_PATH or pass path as parameter";
+		Event e;
+		throw e;
 	}
 #else
 #if 1
@@ -150,8 +154,8 @@ Factory::Factory() {
 #ifdef MILES_FOUND
 	{
 		// eats 8MB of RAM!
-//		MilesSessionInvoker* invoker = new MilesSessionInvoker();
-//		registerInvoker(invoker);
+		MilesSessionInvoker* invoker = new MilesSessionInvoker();
+		registerInvoker(invoker);
 	}
 	{
 		SpatialAudio* invoker = new SpatialAudio();

@@ -159,7 +159,8 @@ void SCXMLIOProcessor::send(const SendRequest& req) {
 			Event error("error.execution", Event::PLATFORM);
 			error.sendid = reqCopy.sendid;
 			// test 159 still fails
-			_interpreter->receiveInternal(error);
+//			_interpreter->receiveInternal(error);
+			throw error;
 		}
 	}
 }

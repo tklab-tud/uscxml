@@ -39,6 +39,8 @@ public:
 	virtual void invoke(const InvokeRequest& req);
 
 protected:
+	bool alternate; // this is to alternate test1 an test2.jpeg and has no other use! remove me later ..
+	
 	int video_rtp_in_socket, audio_rtp_in_socket;
 	int video_rtp_out_socket, audio_rtp_out_socket;
 	int video_rtcp_in_socket, audio_rtcp_in_socket;

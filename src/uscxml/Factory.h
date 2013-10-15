@@ -302,6 +302,10 @@ public:
 		return *this;
 	}
 
+	virtual std::set<std::string> getNames() {
+		return _impl->getNames();
+	}
+
 	virtual bool validate(const std::string& location, const std::string& schema) {
 		return _impl->validate(location, schema);
 	}

@@ -3,8 +3,8 @@ file(GLOB_RECURSE SAMPLE_IOPROCESSOR
 	sample/*.cpp
 	sample/*.h
 )
-source_group("IOProcessor\\sample" FILES ${SAMPLE_IOPROCESSOR})
 if (BUILD_AS_PLUGINS)
+	source_group("" FILES ${SAMPLE_IOPROCESSOR})
 	add_library(
 		ioprocessor_sample SHARED 
 		${SAMPLE_IOPROCESSOR})
@@ -19,8 +19,8 @@ file(GLOB_RECURSE COMET_IOPROCESSOR
 	comet/*.cpp
 	comet/*.h
 )
-source_group("IOProcessor\\comet" FILES ${COMET_IOPROCESSOR})
 if (BUILD_AS_PLUGINS)
+	source_group("" FILES ${COMET_IOPROCESSOR})
 	add_library(
 		ioprocessor_comet SHARED 
 		${COMET_IOPROCESSOR})
@@ -38,8 +38,8 @@ file(GLOB_RECURSE BASICHTTP_IOPROCESSOR
 	basichttp/*.cpp
 	basichttp/*.h
 )
-source_group("IOProcessor\\basichttp" FILES ${BASICHTTP_IOPROCESSOR})
 if (BUILD_AS_PLUGINS)
+	source_group("" FILES ${BASICHTTP_IOPROCESSOR})
 	add_library(
 		ioprocessor_basichttp SHARED 
 		${BASICHTTP_IOPROCESSOR})
@@ -57,12 +57,13 @@ file(GLOB_RECURSE SCXML_IOPROCESSOR
 	scxml/*.cpp
 	scxml/*.h
 )
-source_group("IOProcessor\\scxml" FILES ${SCXML_IOPROCESSOR})
 if (BUILD_AS_PLUGINS)
+	source_group("" FILES ${SCXML_IOPROCESSOR})
 	add_library(
 		ioprocessor_scxml SHARED 
 		${SCXML_IOPROCESSOR})
-	target_link_libraries(ioprocessor_scxml uscxml)
+	# scxml ioprocessor is a basichttp ioprocessor
+	target_link_libraries(ioprocessor_scxml ioprocessor_basichttp uscxml)
 	set_target_properties(ioprocessor_scxml PROPERTIES FOLDER "Plugin IOProcessor")
 else()
 	list (APPEND USCXML_FILES ${SCXML_IOPROCESSOR})
@@ -71,7 +72,7 @@ endif()
 
 # mmi ioprocessor
 
-if (PROTOBUF_FOUND)
+if (PROTOBUF_FOUND AND OFF)
 
 	if (NOT PROTOBUF_PROTOC_EXECUTABLE)
 		message(FATAL_ERROR "protoc binary required for serialization")
@@ -94,8 +95,8 @@ if (PROTOBUF_FOUND)
 	add_library(mmi_proto STATIC ${PROTO_SRCS})
 	set_target_properties(mmi_proto PROPERTIES FOLDER "Generated")
 
-	source_group("IOProcessor\\modality" FILES ${MMI_IOPROCESSOR})
 	if (BUILD_AS_PLUGINS)
+		source_group("" FILES ${MMI_IOPROCESSOR})
 		add_library(
 			ioprocessor_mmi SHARED 
 			${MMI_IOPROCESSOR})

@@ -4,48 +4,61 @@
 		<invoke type="miles" id="miles">
 			<param name="foo" expr="'asdf'" />
 			<finalize>
-				<script>
-				</script>
+				<if cond="_event.data.origin">
+					<!-- <log label="Reply-length" expr="_event.data.base64.length" /> -->
+					<respond status="200" to="_event.data.origin">
+						<header name="Cache-Control" value="no-cache" /> <!-- force IE to actually reload -->
+						<header name="Content-Type" value="text/plain" />
+						<header name="Access-Control-Allow-Origin" value="*" />
+						<content expr="_event.data.base64" />
+					</respond>
+				</if>
 			</finalize>
 		</invoke>
 
 		<state id="idle">
-			<!-- XHR CORS preflight response -->
+			<!-- XHR CORS preflight respond -->
 			<transition event="http.options" target="idle">
-				<script>dump(_event);</script>
-				<response status="200" requestexpr="_event.origin">
+				<script>//dump(_event);</script>
+				<respond status="200" to="_event.origin">
 					<header name="Access-Control-Allow-Origin" value="*" />
-					<header name="Access-Control-Allow-Methods" value="GET, OPTIONS" />
-					<header name="Access-Control-Allow-Headers" value="X-Requested-With" />
-				</response>
+					<header name="Access-Control-Allow-Methods" value="POST, GET, OPTIONS" />
+					<header name="Access-Control-Allow-Headers" value="X-Requested-With, Content-Type" />
+				</respond>
 			</transition>
 			
-			<transition event="http.post" target="idle">
-				<script>dump(_event);</script>
+			<transition event="http.*" target="idle">
+				<script>//dump(_event);</script>
 				<if cond="_event.data.pathComponent[1] === 'session'">
-					<response status="200" requestexpr="_event.origin" />
+					<respond status="200" to="_event.origin" />
 				
-					<elseif cond="_event.data.pathComponent[1] === 'connect'">
-						<send target="#_miles" event="connect">
-							<param name="reflectorIP" expr="_event.data.content.reflectorIP" />
-							<param name="email" expr="_event.data.content.email" />
-							<param name="problemName" expr="_event.data.content.problemName" />
-						</send>
-						<response status="200" requestexpr="_event.origin" />
-					
-					</elseif>
-					<elseif cond="_event.data.pathComponent[1] === 'disconnect'">
-						<send target="#_miles" event="disconnect">
-							<param name="reflectorIP" expr="_event.data.content.reflectorIP" />
-							<param name="problemName" expr="_event.data.content.problemName" />
-						</send>
-						<response status="200" requestexpr="_event.origin" />
+				<elseif cond="_event.data.pathComponent[1] === 'connect'" />
+					<send target="#_miles" event="connect">
+						<param name="reflectorIP" expr="_event.data.content.reflectorIP" />
+						<param name="email" expr="_event.data.content.email" />
+						<param name="problemName" expr="_event.data.content.problemName" />
+					</send>
+					<respond status="200" to="_event.origin">
+						<header name="Connection" value="close" />
+						<header name="Content-Type" value="application/json" />
+						<header name="Access-Control-Allow-Origin" value="*" />
+					</respond>
+				
+				<elseif cond="_event.data.pathComponent[1] === 'disconnect'" />
+					<send target="#_miles" event="disconnect">
+						<param name="reflectorIP" expr="_event.data.content.reflectorIP" />
+						<param name="problemName" expr="_event.data.content.problemName" />
+					</send>
+					<respond status="200" to="_event.origin" />
 
-					</elseif>
-					<else>
-						<response status="404" requestexpr="_event.origin" />
+				<elseif cond="_event.data.pathComponent[1] === 'image'" />
+					<send target="#_miles" event="image">
+						<param name="origin" expr="_event.origin" />
+					</send>
+				
+				<else />
+					<respond status="404" to="_event.origin" />
 
-					</else>
 				</if>
 			</transition>
 		</state>

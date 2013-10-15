@@ -912,6 +912,8 @@ void InterpreterImpl::delayedSend(void* userdata, std::string eventName) {
 	if (ioProc) {
 		try {
 			ioProc.send(sendReq);
+		} catch(Event e) {
+			throw e;
 		} catch(...) {
 			LOG(ERROR) << "Exception caught while sending event to ioprocessor " << sendReq.type;
 		}
@@ -1155,7 +1157,10 @@ void InterpreterImpl::executeContent(const NodeList<std::string>& content, bool 
 	for (unsigned int i = 0; i < content.getLength(); i++) {
 		if (content.item(i).getNodeType() != Node_base::ELEMENT_NODE)
 			continue;
-		executeContent(content.item(i), rethrow);
+		try {
+			executeContent(content.item(i), true);
+		}
+		CATCH_AND_DISTRIBUTE("Error when executing content");
 	}
 }
 
@@ -1163,7 +1168,10 @@ void InterpreterImpl::executeContent(const NodeSet<std::string>& content, bool r
 	for (unsigned int i = 0; i < content.size(); i++) {
 		if (content[i].getNodeType() != Node_base::ELEMENT_NODE)
 			continue;
-		executeContent(content[i], rethrow);
+		try {
+			executeContent(content[i], true);
+		}
+		CATCH_AND_DISTRIBUTE("Error when executing content");
 	}
 }
 
@@ -1244,7 +1252,7 @@ void InterpreterImpl::executeContent(const Arabica::DOM::Node<std::string>& cont
 						_dataModel.setForeach(item, array, index, iteration);
 						if (content.hasChildNodes())
 							// execute content and have exception rethrown to break foreach
-							executeContent(content.getChildNodes(), true);
+							executeContent(content.getChildNodes(), rethrow);
 					}
 					_dataModel.popContext(); // leave stacked context
 				}

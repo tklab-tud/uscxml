@@ -1,0 +1,29 @@
+<scxml datamodel="ecmascript" initial="start" binding="late" 
+	xmlns="http://www.w3.org/2005/07/scxml" 
+	xmlns:scenegraph="http://uscxml.tk.informatik.tu-darmstadt.de/scenegraph.xsd">
+	<state id="start">
+		<invoke type="scenegraph">
+			<content>
+				<scenegraph:display x="0" y="0" width="80%" height="80%">
+					<scenegraph:viewport x="0" y="0" width="100%" height="100%" bgcolor="grey" id="scene1">
+						<scenegraph:translation x="0" y="0" z="0">
+							<scenegraph:sphere radius="1" materialcolor="1.0,1.0,0,0.3" />
+						</scenegraph:translation>
+						<scenegraph:translation x="5" y="0" z="0">
+							<scenegraph:box x="1" y="2" z="3" color="red" />
+						</scenegraph:translation>
+						<scenegraph:translation x="0" y="5" z="0">
+							<scenegraph:capsule radius="1" height="2" materialcolor="blue" transparency="0.5"/>
+						</scenegraph:translation>
+						<scenegraph:translation x="0" y="0" z="5">
+							<scenegraph:cone radius="1" height="2" color="lightblue" />
+						</scenegraph:translation>
+						<scenegraph:translation x="0" y="-5" z="0">
+							<scenegraph:cylinder radius="1" height="2" color="orange" />
+						</scenegraph:translation>
+					</scenegraph:viewport>
+				</scenegraph:display>
+			</content>
+		</invoke>
+	</state>
+</scxml>

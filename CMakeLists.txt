@@ -660,7 +660,7 @@ set(CMAKE_FIND_FRAMEWORK "LAST")
 
 #	include_directories (${MILES_INCLUDE_DIR})
 #	list (APPEND USCXML_OPT_LIBS ${MILES_LIBRARIES})
-#	list (APPEND USCXML_OPT_LIBS ${OPENAL_LIBRARY})
+#	# list (APPEND USCXML_OPT_LIBS ${OPENAL_LIBRARY})
 #endif()
 
 set(CMAKE_FIND_LIBRARY_SUFFIXES ${CMAKE_FIND_LIBRARY_SUFFIXES_SHARED})
@@ -755,16 +755,22 @@ else()
 endif()
 if (NOT CMAKE_CROSSCOMPILING)
 	set_target_properties(uscxml PROPERTIES COTIRE_CXX_PREFIX_HEADER_INIT "src/uscxml/pch.h")
+	set_target_properties(uscxml PROPERTIES COTIRE_ADD_UNITY_BUILD FALSE)
 	cotire(uscxml)
 endif()
 
 if (NOT CMAKE_CROSSCOMPILING)
 	add_executable(uscxml-browser apps/uscxml-browser.cpp)
 	target_link_libraries(uscxml-browser uscxml)
+	if (NOT CMAKE_CROSSCOMPILING)
+		set_target_properties(uscxml-browser PROPERTIES COTIRE_ADD_UNITY_BUILD FALSE)
+		cotire(uscxml-browser)
+	endif()
+
 	set_target_properties(uscxml-browser PROPERTIES FOLDER "Apps")
 	install_executable(TARGETS uscxml-browser COMPONENT tools)
 
-	if (PROTOBUF_FOUND)
+	if (PROTOBUF_FOUND AND OFF)
 		file(GLOB W3C-MMI-COMMON ${PROJECT_SOURCE_DIR}/apps/w3c-mmi/*.cpp ${PROJECT_SOURCE_DIR}/apps/w3c-mmi/*.h)
 
 		file(GLOB_RECURSE W3C-MMI-IM ${PROJECT_SOURCE_DIR}/apps/w3c-mmi/im/*.cpp ${PROJECT_SOURCE_DIR}/apps/w3c-mmi/im/*.h)
