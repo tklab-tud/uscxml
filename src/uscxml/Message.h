@@ -73,7 +73,7 @@ public:
 	virtual ~Data() {}
 
 	operator bool() const {
-		return (atom.length() > 0 || !compound.empty() || !array.empty() || binary );
+		return (atom.length() > 0 || !compound.empty() || !array.empty() || binary);
 	}
 
 	bool hasKey(const std::string& key) const {

@@ -191,6 +191,7 @@ if (CORELOCATION_LIBRARY AND OFF)
 	)
 	source_group("Invoker\\location" FILES ${LOCATION_INVOKER})
 	if (BUILD_AS_PLUGINS)
+		source_group("" FILES ${LOCATION_INVOKER})
 		add_library(
 			invoker_location SHARED 
 			${LOCATION_INVOKER})

@@ -401,6 +401,12 @@ endforeach()
 
 OPTION(BUILD_AS_PLUGINS "Build invokers, ioprocessors and datamodels as plugins" OFF)
 
+if (BUILD_AS_PLUGINS)
+	add_definitions("-DBUILD_AS_PLUGINS")
+	include_directories("src/uscxml/plugins")
+#	list(APPEND USCXML_FILES "src/uscxml/plugins/Plugins.cpp")
+endif()
+
 # this is where the config.h ends up
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(src)
@@ -443,8 +449,10 @@ if (NOT WIN32)
 	elseif(APPLE)
 		find_library(APP_SERVICES_LIBRARY ApplicationServices)
 		find_library(COREFOUNDATION_LIBRARY CoreFoundation)
+		find_library(FOUNDATION_LIBRARY Foundation)
 		list (APPEND USCXML_CORE_LIBS ${APP_SERVICES_LIBRARY})
 		list (APPEND USCXML_CORE_LIBS ${COREFOUNDATION_LIBRARY})
+		list (APPEND USCXML_CORE_LIBS ${FOUNDATION_LIBRARY})
 	endif()
 elseif(WIN32)
 	list (APPEND XML_LIBRARIES "Ws2_32")

@@ -1279,16 +1279,16 @@ void InterpreterImpl::executeContent(const Arabica::DOM::Node<std::string>& cont
 		// --- ASSIGN --------------------------
 		if (_dataModel && HAS_ATTR(content, "location")) {
 			try {
-//				if (!_dataModel.isDeclared(ATTR(content, "location"))) {
-//					// test 286, 331
-//					LOG(ERROR) << "Assigning to undeclared location '" << ATTR(content, "location") << "' not allowed." << std::endl;
-//					throw Event("error.execution", Event::PLATFORM);
-//				} else {
+				if (!_dataModel.isDeclared(ATTR(content, "location"))) {
+					// test 286, 331
+					LOG(ERROR) << "Assigning to undeclared location '" << ATTR(content, "location") << "' not allowed." << std::endl;
+					throw Event("error.execution", Event::PLATFORM);
+				} else {
 					Node<std::string> dom;
 					std::string text;
 					processDOMorText(content, dom, text);
 					_dataModel.assign(Element<std::string>(content), dom, text);
-//				}
+				}
 			}
 			CATCH_AND_DISTRIBUTE("Syntax error in attributes of assign element:")
 		}
