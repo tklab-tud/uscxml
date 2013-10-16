@@ -11,3 +11,8 @@ set(RETAIN_BUILD_DIR OFF)
 set(CTEST_BUILD_NAME "win7-x86_64 msvc")
 include("tests/xpath.ctest")
 include("common.ctest.inc")
+
+set(RETAIN_BUILD_DIR OFF)
+set(CTEST_BUILD_NAME "win7-x86_64 msvc")
+include("tests/plugins.ctest")
+include("common.ctest.inc")

@@ -1,3 +1,22 @@
+/**
+ *  @file
+ *  @author     2012-2013 Stefan Radomski (stefan.radomski@cs.tu-darmstadt.de)
+ *  @copyright  Simplified BSD
+ *
+ *  @cond
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the FreeBSD license as published by the FreeBSD
+ *  project.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ *  You should have received a copy of the FreeBSD license along with this
+ *  program. If not, see <http://www.opensource.org/licenses/bsd-license>.
+ *  @endcond
+ */
+
 #include "DirMonInvoker.h"
 #include <glog/logging.h>
 
@@ -18,7 +37,7 @@ namespace uscxml {
 
 #ifdef BUILD_AS_PLUGINS
 PLUMA_CONNECTOR
-bool connect(pluma::Host& host) {
+bool pluginConnect(pluma::Host& host) {
 	host.add( new DirMonInvokerProvider() );
 	return true;
 }
@@ -50,7 +69,7 @@ boost::shared_ptr<InvokerImpl> DirMonInvoker::create(InterpreterImpl* interprete
 
 Data DirMonInvoker::getDataModelVariables() {
 	tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
-	
+
 	Data data;
 	data.compound["dir"] = Data(_dir, Data::VERBATIM);
 
@@ -59,7 +78,7 @@ Data DirMonInvoker::getDataModelVariables() {
 		data.compound["suffixes"].array.push_back(Data(*suffixIter, Data::VERBATIM));
 		suffixIter++;
 	}
-	
+
 	std::map<std::string, struct stat> entries = _watcher->getAllEntries();
 	std::map<std::string, struct stat>::iterator entryIter = entries.begin();
 	while(entryIter != entries.end()) {
@@ -69,7 +88,7 @@ Data DirMonInvoker::getDataModelVariables() {
 		data.compound["file"].compound[entryIter->first].compound["size"] = toStr(entryIter->second.st_mtime);
 		entryIter++;
 	}
-	
+
 	return data;
 }
 
@@ -86,7 +105,7 @@ void DirMonInvoker::invoke(const InvokeRequest& req) {
 	}
 
 	if (req.params.find("reportexisting") != req.params.end() &&
-					boost::iequals(req.params.find("reportexisting")->second.atom, "false"))
+	        boost::iequals(req.params.find("reportexisting")->second.atom, "false"))
 		_reportExisting = false;
 	if (req.params.find("recurse") != req.params.end() &&
 	        boost::iequals(req.params.find("recurse")->second.atom, "true"))
@@ -256,7 +275,7 @@ DirectoryWatch::~DirectoryWatch() {
 	}
 
 }
-	
+
 void DirectoryWatch::reportAsDeleted() {
 	std::map<std::string, struct stat>::iterator fileIter = _knownEntries.begin();
 	while(fileIter != _knownEntries.end()) {
@@ -292,7 +311,7 @@ void DirectoryWatch::updateEntries(bool reportAsExisting) {
 
 	if ((unsigned)dirStat.st_mtime >= (unsigned)_lastChecked) {
 //		std::cout << "dirStat.st_mtime: " << dirStat.st_mtime << " / _lastChecked: " << _lastChecked << std::endl;
-		
+
 		// there are changes in the directory
 		std::set<std::string> currEntries;
 

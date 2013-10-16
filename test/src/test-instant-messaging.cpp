@@ -51,13 +51,11 @@ typedef struct _PurpleGLibIOClosure {
 	gpointer data;
 } PurpleGLibIOClosure;
 
-static void purple_glib_io_destroy(gpointer data)
-{
+static void purple_glib_io_destroy(gpointer data) {
 	g_free(data);
 }
 
-static gboolean purple_glib_io_invoke(GIOChannel *source, GIOCondition condition, gpointer data)
-{
+static gboolean purple_glib_io_invoke(GIOChannel *source, GIOCondition condition, gpointer data) {
 	PurpleGLibIOClosure *closure = (PurpleGLibIOClosure*)data;
 	int purple_cond = 0;
 
@@ -67,14 +65,13 @@ static gboolean purple_glib_io_invoke(GIOChannel *source, GIOCondition condition
 		purple_cond |= PURPLE_INPUT_WRITE;
 
 	closure->function(closure->data, g_io_channel_unix_get_fd(source),
-			  (PurpleInputCondition)purple_cond);
+	                  (PurpleInputCondition)purple_cond);
 
 	return TRUE;
 }
 
 static guint glib_input_add(gint fd, PurpleInputCondition condition, PurpleInputFunction function,
-							   gpointer data)
-{
+                            gpointer data) {
 	PurpleGLibIOClosure *closure = g_new0(PurpleGLibIOClosure, 1);
 	GIOChannel *channel;
 	int cond = 0;
@@ -93,14 +90,13 @@ static guint glib_input_add(gint fd, PurpleInputCondition condition, PurpleInput
 	channel = g_io_channel_unix_new(fd);
 #endif
 	closure->result = g_io_add_watch_full(channel, G_PRIORITY_DEFAULT, (GIOCondition)cond,
-					      purple_glib_io_invoke, closure, purple_glib_io_destroy);
+	                                      purple_glib_io_invoke, closure, purple_glib_io_destroy);
 
 	g_io_channel_unref(channel);
 	return closure->result;
 }
 
-static PurpleEventLoopUiOps glib_eventloops =
-{
+static PurpleEventLoopUiOps glib_eventloops = {
 	g_timeout_add,
 	g_source_remove,
 	glib_input_add,
@@ -118,8 +114,7 @@ static PurpleEventLoopUiOps glib_eventloops =
 /*** Conversation uiops ***/
 static void
 null_write_conv(PurpleConversation *conv, const char *who, const char *alias,
-			const char *message, PurpleMessageFlags flags, time_t mtime)
-{
+                const char *message, PurpleMessageFlags flags, time_t mtime) {
 	const char *name;
 	if (alias && *alias)
 		name = alias;
@@ -129,12 +124,11 @@ null_write_conv(PurpleConversation *conv, const char *who, const char *alias,
 		name = NULL;
 
 	printf("(%s) %s %s: %s\n", purple_conversation_get_name(conv),
-			purple_utf8_strftime("(%H:%M:%S)", localtime(&mtime)),
-			name, message);
+	       purple_utf8_strftime("(%H:%M:%S)", localtime(&mtime)),
+	       name, message);
 }
 
-static PurpleConversationUiOps null_conv_uiops =
-{
+static PurpleConversationUiOps null_conv_uiops = {
 	NULL,                      /* create_conversation  */
 	NULL,                      /* destroy_conversation */
 	NULL,                      /* write_chat           */
@@ -157,8 +151,7 @@ static PurpleConversationUiOps null_conv_uiops =
 };
 
 static void
-null_ui_init(void)
-{
+null_ui_init(void) {
 	/**
 	 * This should initialize the UI components for all the modules. Here we
 	 * just initialize the UI for conversations.
@@ -166,8 +159,7 @@ null_ui_init(void)
 	purple_conversations_set_ui_ops(&null_conv_uiops);
 }
 
-static PurpleCoreUiOps null_core_uiops =
-{
+static PurpleCoreUiOps null_core_uiops = {
 	NULL,
 	NULL,
 	null_ui_init,
@@ -181,8 +173,7 @@ static PurpleCoreUiOps null_core_uiops =
 };
 
 static void
-init_libpurple(void)
-{
+init_libpurple(void) {
 	/* Set a custom user directory (optional) */
 	purple_util_set_user_dir(CUSTOM_USER_DIRECTORY);
 
@@ -212,8 +203,8 @@ init_libpurple(void)
 	if (!purple_core_init(UI_ID)) {
 		/* Initializing the core failed. Terminate. */
 		fprintf(stderr,
-				"libpurple initialization failed. Dumping core.\n"
-				"Please report this!\n");
+		        "libpurple initialization failed. Dumping core.\n"
+		        "Please report this!\n");
 		abort();
 	}
 
@@ -226,8 +217,7 @@ init_libpurple(void)
 }
 
 static void
-signed_on(PurpleConnection *gc, gpointer null)
-{
+signed_on(PurpleConnection *gc, gpointer null) {
 	PurpleAccount *account = purple_connection_get_account(gc);
 	printf("Account connected: %s %s\n", purple_account_get_username(account), purple_account_get_protocol_id(account));
 }
@@ -245,17 +235,15 @@ buddy_signed_on(PurpleBuddy *buddy) {
 }
 
 static void
-connect_to_signals_for_demonstration_purposes_only(void)
-{
+connect_to_signals_for_demonstration_purposes_only(void) {
 	static int handle;
 	purple_signal_connect(purple_connections_get_handle(), "signed-on", &handle,
-												PURPLE_CALLBACK(signed_on), NULL);
+	                      PURPLE_CALLBACK(signed_on), NULL);
 	purple_signal_connect(purple_blist_get_handle(), "buddy-signed-on", &handle,
-												PURPLE_CALLBACK(buddy_signed_on), NULL);
+	                      PURPLE_CALLBACK(buddy_signed_on), NULL);
 }
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {
 	GList *iter;
 	GMainLoop *loop = g_main_loop_new(NULL, FALSE);
 	PurpleAccount *account;

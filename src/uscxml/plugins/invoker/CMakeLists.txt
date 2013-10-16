@@ -9,7 +9,8 @@ if (BUILD_AS_PLUGINS)
 	source_group("" FILES ${SAMPLE_INVOKER})
 	add_library(
 		invoker_sample SHARED 
-		${SAMPLE_INVOKER})
+		${SAMPLE_INVOKER}
+		"../Plugins.cpp")
 	target_link_libraries(invoker_sample uscxml)
 	set_target_properties(invoker_sample PROPERTIES FOLDER "Plugin Invoker")
 else()
@@ -27,7 +28,8 @@ if (BUILD_AS_PLUGINS)
 	source_group("" FILES ${DIRMON_INVOKER})
 	add_library(
 		invoker_dirmon SHARED 
-		${DIRMON_INVOKER})
+		${DIRMON_INVOKER}
+		"../Plugins.cpp")
 	target_link_libraries(invoker_dirmon uscxml)
 	set_target_properties(invoker_dirmon PROPERTIES FOLDER "Plugin Invoker")
 else()
@@ -45,7 +47,8 @@ endif()
 # 	source_group("" FILES ${LOCATION_INVOKER})
 # 	add_library(
 # 		invoker_location SHARED 
-# 		${LOCATION_INVOKER})
+# 		${LOCATION_INVOKER}
+# 		"../Plugins.cpp")
 # 	target_link_libraries(invoker_location uscxml)
 # 	set_target_properties(invoker_location PROPERTIES FOLDER "Plugin Invoker")
 # else()
@@ -64,7 +67,8 @@ if (BUILD_AS_PLUGINS)
 	source_group("" FILES ${XHTML_INVOKER})
 	add_library(
 		invoker_xhtml SHARED 
-		${XHTML_INVOKER})
+		${XHTML_INVOKER}
+		"../Plugins.cpp")
 	target_link_libraries(invoker_xhtml uscxml)
 	set_target_properties(invoker_xhtml PROPERTIES FOLDER "Plugin Invoker")
 else()
@@ -82,7 +86,8 @@ if (BUILD_AS_PLUGINS)
 	source_group("" FILES ${SYSTEM_INVOKER})
 	add_library(
 		invoker_system SHARED 
-		${SYSTEM_INVOKER})
+		${SYSTEM_INVOKER}
+		"../Plugins.cpp")
 	target_link_libraries(invoker_system uscxml)
 	set_target_properties(invoker_system PROPERTIES FOLDER "Plugin Invoker")
 else()
@@ -101,7 +106,8 @@ if (SQLITE3_FOUND)
 		source_group("" FILES ${SQLITE3_INVOKER})
 		add_library(
 			invoker_sqlite3 SHARED 
-			${SQLITE3_INVOKER})
+			${SQLITE3_INVOKER}
+			"../Plugins.cpp")
 		target_link_libraries(invoker_sqlite3 uscxml)
 		set_target_properties(invoker_sqlite3 PROPERTIES FOLDER "Plugin Invoker")
 	else()
@@ -122,7 +128,8 @@ if (FFMPEG_FOUND)
 		source_group("" FILES ${FFMPEG_INVOKER})
 		add_library(
 			invoker_ffmpeg SHARED 
-			${FFMPEG_INVOKER})
+			${FFMPEG_INVOKER}
+			"../Plugins.cpp")
 		target_link_libraries(invoker_ffmpeg uscxml ${FFMPEG_LIBRARIES})
 		set_target_properties(invoker_ffmpeg PROPERTIES FOLDER "Plugin Invoker")
 	else()
@@ -143,7 +150,8 @@ if (LIBPURPLE_FOUND)
 		source_group("" FILES ${LIBPURPLE_INVOKER})
 		add_library(
 			invoker_im SHARED 
-			${LIBPURPLE_INVOKER})
+			${LIBPURPLE_INVOKER}
+			"../Plugins.cpp")
 		target_link_libraries(invoker_im uscxml ${LIBPURPLE_LIBRARY} ${GLIB2_LIBRARIES} ${ICONV_LIBRARIES})
 		set_target_properties(invoker_im PROPERTIES FOLDER "Plugin Invoker")
 	else()
@@ -164,7 +172,8 @@ if (LIBICAL_FOUND)
 		source_group("" FILES ${CALENDAR_INVOKER})
 		add_library(
 			invoker_calendar SHARED 
-			${CALENDAR_INVOKER})
+			${CALENDAR_INVOKER}
+			"../Plugins.cpp")
 		target_link_libraries(invoker_calendar uscxml ${LIBICAL_LIBRARIES})
 		set_target_properties(invoker_calendar PROPERTIES FOLDER "Plugin Invoker")
 	else()
@@ -186,7 +195,8 @@ if (CORELOCATION_LIBRARY AND OFF)
 		source_group("" FILES ${LOCATION_INVOKER})
 		add_library(
 			invoker_location SHARED 
-			${LOCATION_INVOKER})
+			${LOCATION_INVOKER}
+			"../Plugins.cpp")
 		target_link_libraries(invoker_location uscxml)
 		set_target_properties(invoker_location PROPERTIES FOLDER "Plugin Invoker")
 	else()
@@ -208,7 +218,8 @@ if (UMUNDO_FOUND)
 #		message(FATAL_ERROR "UMUNDO_LIBRARIES: ${UMUNDO_LIBRARIES}")
 		add_library(
 			invoker_umundo SHARED 
-			${UMUNDO_INVOKER})
+			${UMUNDO_INVOKER}
+			"../Plugins.cpp")
 		target_link_libraries(invoker_umundo uscxml 
 		optimized ${PROTOBUF_LIBRARY}
 		debug ${PROTOBUF_LIBRARY_DEBUG}
@@ -230,7 +241,8 @@ if (BUILD_AS_PLUGINS)
 	source_group("" FILES ${USCXML_INVOKER})
 	add_library(
 		invoker_uscxml SHARED 
-		${USCXML_INVOKER})
+		${USCXML_INVOKER}
+		"../Plugins.cpp")
 	target_link_libraries(invoker_uscxml 
 		uscxml)
 		set_target_properties(invoker_uscxml PROPERTIES FOLDER "Plugin Invoker")
@@ -249,7 +261,8 @@ if (BUILD_AS_PLUGINS)
 	source_group("" FILES ${HTTPSERVLET_INVOKER})
 	add_library(
 		invoker_httpserver SHARED 
-		${HTTPSERVLET_INVOKER})
+		${HTTPSERVLET_INVOKER}
+		"../Plugins.cpp")
 	target_link_libraries(invoker_httpserver 
 		uscxml)
 		set_target_properties(invoker_httpserver PROPERTIES FOLDER "Plugin Invoker")
@@ -269,7 +282,8 @@ if (BUILD_AS_PLUGINS)
 	source_group("" FILES ${HEARTBEAT_INVOKER})
 	add_library(
 		invoker_heartbeat SHARED 
-		${HEARTBEAT_INVOKER})
+		${HEARTBEAT_INVOKER}
+		"../Plugins.cpp")
 	target_link_libraries(invoker_heartbeat uscxml)
 	set_target_properties(invoker_heartbeat PROPERTIES FOLDER "Plugin Invoker")
 else()
@@ -288,7 +302,8 @@ if (OPENSCENEGRAPH_FOUND AND OPENGL_FOUND)
 		source_group("" FILES ${OPENSCENEGRAPH_INVOKER})
 		add_library(
 			invoker_openscenegraph SHARED 
-			${OPENSCENEGRAPH_INVOKER})
+			${OPENSCENEGRAPH_INVOKER}
+			"../Plugins.cpp")
 		target_link_libraries(invoker_openscenegraph
 			${OPENSCENEGRAPH_LIBRARIES}
 			${OPENGL_LIBRARIES}
@@ -307,7 +322,8 @@ if (OPENSCENEGRAPH_FOUND AND OPENGL_FOUND)
 		source_group("" FILES ${OPENSCENEGRAPH_CONVERTER_INVOKER})
 		add_library(
 			invoker_openscenegraph_convert SHARED 
-			${OPENSCENEGRAPH_CONVERTER_INVOKER})
+			${OPENSCENEGRAPH_CONVERTER_INVOKER}
+			"../Plugins.cpp")
 		target_link_libraries(invoker_openscenegraph_convert
 			${OPENSCENEGRAPH_LIBRARIES}
 			${OPENGL_LIBRARIES}
@@ -343,7 +359,8 @@ if (OPENAL_FOUND AND (LIBSNDFILE_FOUND OR AUDIOTOOLBOX_FOUND))
 		source_group("" FILES ${OPENAL_INVOKER})
 		add_library(
 			invoker_openal SHARED 
-			${OPENAL_INVOKER})
+			${OPENAL_INVOKER}
+			"../Plugins.cpp")
 		if (LIBSNDFILE_FOUND)
 			target_link_libraries(invoker_openal 
 				${OPENAL_LIBRARY}
@@ -375,7 +392,8 @@ if (MILES_FOUND)
 		source_group("" FILES ${MILES_INVOKER})
 		add_library(
 			invoker_miles SHARED 
-			${MILES_INVOKER})
+			${MILES_INVOKER}
+			"../Plugins.cpp")
 		target_link_libraries(invoker_miles 
 			${MILES_LIBRARIES}
 			${OPENAL_LIBRARY}
@@ -401,7 +419,8 @@ if (UMUNDO_FOUND AND OFF)
 		source_group("" FILES ${VXML_INVOKER})
 		add_library(
 			invoker_voicexml SHARED 
-			${VXML_INVOKER})
+			${VXML_INVOKER}
+			"../Plugins.cpp")
 		target_link_libraries(invoker_voicexml uscxml)
 		set_target_properties(invoker_voicexml PROPERTIES FOLDER "Plugin Invoker")
 	else()

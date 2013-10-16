@@ -1,3 +1,22 @@
+/**
+ *  @file
+ *  @author     2012-2013 Stefan Radomski (stefan.radomski@cs.tu-darmstadt.de)
+ *  @copyright  Simplified BSD
+ *
+ *  @cond
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the FreeBSD license as published by the FreeBSD
+ *  project.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ *  You should have received a copy of the FreeBSD license along with this
+ *  program. If not, see <http://www.opensource.org/licenses/bsd-license>.
+ *  @endcond
+ */
+
 #ifndef RUNTIME_H_SQ1MBKGN
 #define RUNTIME_H_SQ1MBKGN
 
@@ -33,7 +52,7 @@ namespace uscxml {
 class HTTPServletInvoker;
 class InterpreterMonitor;
 
-class NumAttr {
+class USCXML_API NumAttr {
 public:
 	NumAttr(const std::string& str) {
 		size_t valueStart = str.find_first_of("0123456789.");
@@ -64,7 +83,7 @@ enum Capabilities {
     CAN_GENERIC_HTTP = 2,
 };
 
-class InterpreterOptions {
+class USCXML_API InterpreterOptions {
 public:
 	bool useDot;
 	bool verbose;
@@ -85,11 +104,11 @@ public:
 	operator bool() {
 		return error.length() == 0;
 	}
-	
+
 	static void printUsageAndExit(const char* progName);
 	static InterpreterOptions fromCmdLine(int argc, char** argv);
 	unsigned int getCapabilities();
-	
+
 protected:
 	InterpreterOptions() :
 		useDot(false),
@@ -101,8 +120,8 @@ protected:
 		httpsPort(8443)
 	{}
 };
-	
-class InterpreterImpl : public boost::enable_shared_from_this<InterpreterImpl> {
+
+class USCXML_API InterpreterImpl : public boost::enable_shared_from_this<InterpreterImpl> {
 public:
 
 	typedef std::set<InterpreterMonitor*>::iterator monIter_t;
@@ -376,7 +395,7 @@ protected:
 	friend class Interpreter;
 };
 
-class Interpreter {
+class USCXML_API Interpreter {
 public:
 	static Interpreter fromDOM(const Arabica::DOM::Document<std::string>& dom);
 	static Interpreter fromXML(const std::string& xml);
@@ -640,18 +659,7 @@ public:
 		return _impl;
 	}
 
-	static std::map<std::string, boost::weak_ptr<InterpreterImpl> > getInstances() {
-		tthread::lock_guard<tthread::recursive_mutex> lock(_instanceMutex);
-		std::map<std::string, boost::weak_ptr<InterpreterImpl> >::iterator instIter = _instances.begin();
-		while(instIter != _instances.end()) {
-			if (!instIter->second.lock()) {
-				_instances.erase(instIter++);
-			} else {
-				instIter++;
-			}
-		}
-		return _instances;
-	}
+	static std::map<std::string, boost::weak_ptr<InterpreterImpl> > getInstances();
 
 protected:
 	boost::shared_ptr<InterpreterImpl> _impl;
@@ -659,7 +667,7 @@ protected:
 	static tthread::recursive_mutex _instanceMutex;
 };
 
-class InterpreterMonitor {
+class USCXML_API InterpreterMonitor {
 public:
 	virtual ~InterpreterMonitor() {}
 	virtual void onStableConfiguration(Interpreter interpreter) {}

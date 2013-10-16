@@ -1,3 +1,22 @@
+/**
+ *  @file
+ *  @author     2012-2013 Stefan Radomski (stefan.radomski@cs.tu-darmstadt.de)
+ *  @copyright  Simplified BSD
+ *
+ *  @cond
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the FreeBSD license as published by the FreeBSD
+ *  project.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ *  You should have received a copy of the FreeBSD license along with this
+ *  program. If not, see <http://www.opensource.org/licenses/bsd-license>.
+ *  @endcond
+ */
+
 #ifndef MILESSESIONINVOKER_H_W09J90F0
 #define MILESSESIONINVOKER_H_W09J90F0
 
@@ -40,7 +59,7 @@ public:
 
 protected:
 	bool alternate; // this is to alternate test1 an test2.jpeg and has no other use! remove me later ..
-	
+
 	int video_rtp_in_socket, audio_rtp_in_socket;
 	int video_rtp_out_socket, audio_rtp_out_socket;
 	int video_rtcp_in_socket, audio_rtcp_in_socket;

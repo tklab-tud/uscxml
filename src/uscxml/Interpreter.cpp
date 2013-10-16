@@ -1,3 +1,22 @@
+/**
+ *  @file
+ *  @author     2012-2013 Stefan Radomski (stefan.radomski@cs.tu-darmstadt.de)
+ *  @copyright  Simplified BSD
+ *
+ *  @cond
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the FreeBSD license as published by the FreeBSD
+ *  project.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ *  You should have received a copy of the FreeBSD license along with this
+ *  program. If not, see <http://www.opensource.org/licenses/bsd-license>.
+ *  @endcond
+ */
+
 #include "uscxml/config.h"
 #include "uscxml/Common.h"
 #include "uscxml/Interpreter.h"
@@ -62,10 +81,10 @@ unsigned int InterpreterOptions::getCapabilities() {
 	unsigned int capabilities = CAN_NOTHING;
 	if (withHTTP)
 		capabilities = capabilities | CAN_GENERIC_HTTP | CAN_BASIC_HTTP;
-	
+
 	return capabilities;
 }
-	
+
 InterpreterOptions InterpreterOptions::fromCmdLine(int argc, char** argv) {
 	InterpreterOptions options;
 	struct option longOptions[] = {
@@ -81,15 +100,15 @@ InterpreterOptions InterpreterOptions::fromCmdLine(int argc, char** argv) {
 		{"disable-http",  no_argument, 0, 0},
 		{0, 0, 0, 0}
 	};
-	
+
 	opterr = 0;
 	if (argc < 2) {
 		options.error = "No SCXML document to evaluate";
 		return options;
 	}
-	
+
 	InterpreterOptions* currOptions = &options;
-	
+
 	// parse global options
 	int optionInd = 0;
 	int option;
@@ -103,85 +122,99 @@ InterpreterOptions InterpreterOptions::fromCmdLine(int argc, char** argv) {
 			std::string url = argv[optind];
 			options.interpreters[url] = new InterpreterOptions();
 			currOptions = options.interpreters[url];
-			
+
 			argc -= optind;
 			argv += optind;
 			optind = 0;
-			
+
 			if (argc <= 1)
 				goto DONE_PARSING_CMD;
-			
+
 		}
 		switch(option) {
 			// cases without short option
-			case 0: {
-				if (boost::equals(longOptions[optionInd].name, "disable-http")) {
-					currOptions->withHTTP = false;
-				} else if (boost::equals(longOptions[optionInd].name, "private-key")) {
-					currOptions->privateKey = optarg;
-				} else if (boost::equals(longOptions[optionInd].name, "public-key")) {
-					currOptions->publicKey = optarg;
-				}
+		case 0: {
+			if (boost::equals(longOptions[optionInd].name, "disable-http")) {
+				currOptions->withHTTP = false;
+			} else if (boost::equals(longOptions[optionInd].name, "private-key")) {
+				currOptions->privateKey = optarg;
+			} else if (boost::equals(longOptions[optionInd].name, "public-key")) {
+				currOptions->publicKey = optarg;
+			}
+			break;
+		}
+		// cases with short-hand options
+		case 'l':
+			currOptions->logLevel = strTo<unsigned int>(optarg);
+			break;
+		case 'p':
+			currOptions->pluginPath = optarg;
+			break;
+		case 'd':
+			currOptions->useDot = true;
+			break;
+		case 'c':
+			currOptions->certificate = optarg;
+			break;
+		case 't':
+			currOptions->httpPort = strTo<unsigned short>(optarg);
+			break;
+		case 's':
+			currOptions->httpsPort = strTo<unsigned short>(optarg);
+			break;
+		case 'v':
+			currOptions->verbose = true;
+			break;
+		case '?': {
+			std::string param = argv[optind - 1];
+			if (boost::starts_with(param, "--")) {
+				param = param.substr(2, param.length() - 2);
+			}	else if (boost::starts_with(param, "-")) {
+				param = param.substr(1, param.length() - 1);
+			} else {
 				break;
 			}
-			// cases with short-hand options
-			case 'l':
-				currOptions->logLevel = strTo<unsigned int>(optarg);
-				break;
-			case 'p':
-				currOptions->pluginPath = optarg;
-				break;
-			case 'd':
-				currOptions->useDot = true;
-				break;
-			case 'c':
-				currOptions->certificate = optarg;
-				break;
-			case 't':
-				currOptions->httpPort = strTo<unsigned short>(optarg);
-				break;
-			case 's':
-				currOptions->httpsPort = strTo<unsigned short>(optarg);
-				break;
-			case 'v':
-				currOptions->verbose = true;
-				break;
-			case '?': {
-				std::string param = argv[optind - 1];
-				if (boost::starts_with(param, "--")) {
-					param = param.substr(2, param.length() - 2);
-				}	else if (boost::starts_with(param, "-")) {
-					param = param.substr(1, param.length() - 1);
-				} else {
-					break;
-				}
-				boost::trim(param);
-				
-				size_t equalPos = param.find("=");
-				if (equalPos != std::string::npos) {
-					std::string key = param.substr(0, equalPos);
-					std::string value = param.substr(equalPos + 1, param.length() - (equalPos + 1));
-					currOptions->additionalParameters[key] = value;
-				} else {
-					currOptions->additionalParameters[param] = "";
-				}
-				break;
+			boost::trim(param);
+
+			size_t equalPos = param.find("=");
+			if (equalPos != std::string::npos) {
+				std::string key = param.substr(0, equalPos);
+				std::string value = param.substr(equalPos + 1, param.length() - (equalPos + 1));
+				currOptions->additionalParameters[key] = value;
+			} else {
+				currOptions->additionalParameters[param] = "";
 			}
-			default:
-				break;
+			break;
+		}
+		default:
+			break;
 		}
 	}
-	
+
 DONE_PARSING_CMD:
-	
+
 	if (options.interpreters.size() == 0)
 		options.error = "No SCXML document to evaluate";
-	
+
 	return options;
 }
-	
+
 std::map<std::string, boost::weak_ptr<InterpreterImpl> > Interpreter::_instances;
 tthread::recursive_mutex Interpreter::_instanceMutex;
+
+std::map<std::string, boost::weak_ptr<InterpreterImpl> > Interpreter::getInstances() {
+	tthread::lock_guard<tthread::recursive_mutex> lock(_instanceMutex);
+	std::map<std::string, boost::weak_ptr<InterpreterImpl> >::iterator instIter = _instances.begin();
+	while(instIter != _instances.end()) {
+		if (!instIter->second.lock()) {
+			_instances.erase(instIter++);
+		} else {
+			instIter++;
+		}
+	}
+	return _instances;
+}
+
 
 InterpreterImpl::InterpreterImpl() {
 	_lastRunOnMainThread = 0;

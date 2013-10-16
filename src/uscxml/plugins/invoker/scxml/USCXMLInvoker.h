@@ -1,3 +1,22 @@
+/**
+ *  @file
+ *  @author     2012-2013 Stefan Radomski (stefan.radomski@cs.tu-darmstadt.de)
+ *  @copyright  Simplified BSD
+ *
+ *  @cond
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the FreeBSD license as published by the FreeBSD
+ *  project.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ *  You should have received a copy of the FreeBSD license along with this
+ *  program. If not, see <http://www.opensource.org/licenses/bsd-license>.
+ *  @endcond
+ */
+
 #ifndef USCXMLINVOKER_H_OQFA21IO
 #define USCXMLINVOKER_H_OQFA21IO
 
@@ -12,12 +31,19 @@
 namespace uscxml {
 
 class Interpreter;
-
+class USCXMLInvoker;
+	
 class USCXMLInvoker :
 	public InvokerImpl,
-	public uscxml::concurrency::BlockingQueue<SendRequest>,
 	public boost::enable_shared_from_this<USCXMLInvoker> {
 public:
+	class ParentQueue : public concurrency::BlockingQueue<SendRequest> {
+	public:
+		ParentQueue() {}
+		virtual void push(const SendRequest& event);
+		USCXMLInvoker* _invoker;
+	};
+		
 	USCXMLInvoker();
 	virtual ~USCXMLInvoker();
 	virtual boost::shared_ptr<InvokerImpl> create(InterpreterImpl* interpreter);
@@ -34,11 +60,10 @@ public:
 	virtual void send(const SendRequest& req);
 	virtual void cancel(const std::string sendId);
 	virtual void invoke(const InvokeRequest& req);
-
-	virtual void push(const SendRequest& event);
-
+		
 protected:
 	bool _cancelled;
+	ParentQueue _parentQueue;
 	Interpreter _invokedInterpreter;
 	InterpreterImpl* _parentInterpreter;
 };

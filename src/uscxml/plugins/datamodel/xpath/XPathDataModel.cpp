@@ -1,3 +1,22 @@
+/**
+ *  @file
+ *  @author     2012-2013 Stefan Radomski (stefan.radomski@cs.tu-darmstadt.de)
+ *  @copyright  Simplified BSD
+ *
+ *  @cond
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the FreeBSD license as published by the FreeBSD
+ *  project.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ *  You should have received a copy of the FreeBSD license along with this
+ *  program. If not, see <http://www.opensource.org/licenses/bsd-license>.
+ *  @endcond
+ */
+
 #include "uscxml/Common.h"
 #include "XPathDataModel.h"
 
@@ -15,7 +34,7 @@ using namespace Arabica::DOM;
 
 #ifdef BUILD_AS_PLUGINS
 PLUMA_CONNECTOR
-bool connect(pluma::Host& host) {
+bool pluginConnect(pluma::Host& host) {
 	host.add( new XPathDataModelProvider() );
 	return true;
 }
@@ -209,25 +228,25 @@ Data XPathDataModel::getStringAsData(const std::string& content) {
 	std::stringstream ss;
 
 	switch (result.type()) {
-		case ANY:
-			break;
-		case Arabica::XPath::BOOL:
-			ss << result.asBool();
-			break;
-		case NUMBER:
-			ss << result.asNumber();
-			break;
-		case STRING:
-			ss << result.asString();
-			break;
-		case NODE_SET:
-			NodeSet<std::string> ns = result.asNodeSet();
-			for (int i = 0; i < ns.size(); i++) {
-				ss << ns[i];
-			}
-			break;
+	case ANY:
+		break;
+	case Arabica::XPath::BOOL:
+		ss << result.asBool();
+		break;
+	case NUMBER:
+		ss << result.asNumber();
+		break;
+	case STRING:
+		ss << result.asString();
+		break;
+	case NODE_SET:
+		NodeSet<std::string> ns = result.asNodeSet();
+		for (int i = 0; i < ns.size(); i++) {
+			ss << ns[i];
+		}
+		break;
 	}
-	
+
 	data.atom = ss.str();
 	data.type = Data::VERBATIM;
 	return data;

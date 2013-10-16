@@ -1,3 +1,22 @@
+/**
+ *  @file
+ *  @author     2012-2013 Stefan Radomski (stefan.radomski@cs.tu-darmstadt.de)
+ *  @copyright  Simplified BSD
+ *
+ *  @cond
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the FreeBSD license as published by the FreeBSD
+ *  project.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ *  You should have received a copy of the FreeBSD license along with this
+ *  program. If not, see <http://www.opensource.org/licenses/bsd-license>.
+ *  @endcond
+ */
+
 #include "uscxml/Message.h"
 #include "DelayedEventQueue.h"
 #include <glog/logging.h>
@@ -31,8 +50,12 @@ void DelayedEventQueue::run(void* instance) {
 	DelayedEventQueue* INSTANCE = (DelayedEventQueue*)instance;
 	int result;
 	while(INSTANCE->_isStarted) {
+#ifndef EVLOOP_NO_EXIT_ON_EMPTY
+	  result = event_base_dispatch(INSTANCE->_eventLoop);
+#else
 		//result = event_base_dispatch(THIS->_eventLoop);
 		result = event_base_loop(INSTANCE->_eventLoop, EVLOOP_NO_EXIT_ON_EMPTY);
+#endif
 		(void)result;
 	}
 }
@@ -53,7 +76,7 @@ void DelayedEventQueue::addEvent(std::string eventId, int fd, short opMask, void
 	_callbackData[eventId].callback = callback;
 	_callbackData[eventId].event = event;
 	_callbackData[eventId].persist = false;
-	
+
 	event_add(event, NULL);
 
 }

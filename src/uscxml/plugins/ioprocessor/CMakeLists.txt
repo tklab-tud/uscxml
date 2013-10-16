@@ -7,7 +7,8 @@ if (BUILD_AS_PLUGINS)
 	source_group("" FILES ${SAMPLE_IOPROCESSOR})
 	add_library(
 		ioprocessor_sample SHARED 
-		${SAMPLE_IOPROCESSOR})
+		${SAMPLE_IOPROCESSOR}
+		"../Plugins.cpp")
 	target_link_libraries(ioprocessor_sample uscxml)
 	set_target_properties(ioprocessor_sample PROPERTIES FOLDER "Plugin IOProcessor")
 else()
@@ -23,7 +24,8 @@ if (BUILD_AS_PLUGINS)
 	source_group("" FILES ${COMET_IOPROCESSOR})
 	add_library(
 		ioprocessor_comet SHARED 
-		${COMET_IOPROCESSOR})
+		${COMET_IOPROCESSOR}
+		"../Plugins.cpp")
 	target_link_libraries(ioprocessor_comet uscxml)
 	set_target_properties(ioprocessor_comet PROPERTIES FOLDER "Plugin IOProcessor")
 else()
@@ -42,7 +44,8 @@ if (BUILD_AS_PLUGINS)
 	source_group("" FILES ${BASICHTTP_IOPROCESSOR})
 	add_library(
 		ioprocessor_basichttp SHARED 
-		${BASICHTTP_IOPROCESSOR})
+		${BASICHTTP_IOPROCESSOR}
+		"../Plugins.cpp")
 	target_link_libraries(ioprocessor_basichttp uscxml)
 	set_target_properties(ioprocessor_basichttp PROPERTIES FOLDER "Plugin IOProcessor")
 else()
@@ -61,7 +64,8 @@ if (BUILD_AS_PLUGINS)
 	source_group("" FILES ${SCXML_IOPROCESSOR})
 	add_library(
 		ioprocessor_scxml SHARED 
-		${SCXML_IOPROCESSOR})
+		${SCXML_IOPROCESSOR}
+		"../Plugins.cpp")
 	# scxml ioprocessor is a basichttp ioprocessor
 	target_link_libraries(ioprocessor_scxml ioprocessor_basichttp uscxml)
 	set_target_properties(ioprocessor_scxml PROPERTIES FOLDER "Plugin IOProcessor")
@@ -99,7 +103,8 @@ if (PROTOBUF_FOUND AND OFF)
 		source_group("" FILES ${MMI_IOPROCESSOR})
 		add_library(
 			ioprocessor_mmi SHARED 
-			${MMI_IOPROCESSOR})
+			${MMI_IOPROCESSOR}
+			"../Plugins.cpp")
 		target_link_libraries(ioprocessor_mmi uscxml mmi_proto)
 		set_target_properties(ioprocessor_mmi PROPERTIES FOLDER "Plugin IOProcessor")
 	else()

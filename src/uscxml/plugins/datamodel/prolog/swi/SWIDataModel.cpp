@@ -1,3 +1,22 @@
+/**
+ *  @file
+ *  @author     2012-2013 Stefan Radomski (stefan.radomski@cs.tu-darmstadt.de)
+ *  @copyright  Simplified BSD
+ *
+ *  @cond
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the FreeBSD license as published by the FreeBSD
+ *  project.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ *  You should have received a copy of the FreeBSD license along with this
+ *  program. If not, see <http://www.opensource.org/licenses/bsd-license>.
+ *  @endcond
+ */
+
 #include "uscxml/Common.h"
 #include "uscxml/config.h"
 #include "SWIDataModel.h"
@@ -30,7 +49,7 @@ using namespace Arabica::DOM;
 
 #ifdef BUILD_AS_PLUGINS
 PLUMA_CONNECTOR
-bool connect(pluma::Host& host) {
+bool pluginConnect(pluma::Host& host) {
 	host.add( new SWIDataModelProvider() );
 	return true;
 }
@@ -106,8 +125,8 @@ boost::shared_ptr<DataModelImpl> SWIDataModel::create(InterpreterImpl* interpret
 
 	int rc = PL_set_engine(engine, NULL);
 	assert(rc == PL_ENGINE_SET);
-  (void)rc;
-  
+	(void)rc;
+
 	_plModule = boost::replace_all_copy(interpreter->getSessionId(), "-", "");
 	boost::replace_all(_plModule, "0", "g");
 	boost::replace_all(_plModule, "1", "h");
@@ -232,7 +251,7 @@ void SWIDataModel::setEvent(const Event& event) {
 		} else if (event.content.size() > 0) {
 			PlCall("assert", PlCompound("event", PlCompound("data", PlString(Interpreter::spaceNormalize(event.content).c_str()))));
 		} else if (event.data) {
-      LOG(ERROR) << "No support for structured data from events in prolog datamodel yet";
+			LOG(ERROR) << "No support for structured data from events in prolog datamodel yet";
 		}
 
 		// event.params

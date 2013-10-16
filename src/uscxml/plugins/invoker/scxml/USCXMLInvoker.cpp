@@ -1,3 +1,22 @@
+/**
+ *  @file
+ *  @author     2012-2013 Stefan Radomski (stefan.radomski@cs.tu-darmstadt.de)
+ *  @copyright  Simplified BSD
+ *
+ *  @cond
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the FreeBSD license as published by the FreeBSD
+ *  project.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ *  You should have received a copy of the FreeBSD license along with this
+ *  program. If not, see <http://www.opensource.org/licenses/bsd-license>.
+ *  @endcond
+ */
+
 #include "USCXMLInvoker.h"
 #include <glog/logging.h>
 
@@ -9,13 +28,14 @@ namespace uscxml {
 
 #ifdef BUILD_AS_PLUGINS
 PLUMA_CONNECTOR
-bool connect(pluma::Host& host) {
+bool pluginConnect(pluma::Host& host) {
 	host.add( new USCXMLInvokerProvider() );
 	return true;
 }
 #endif
 
 USCXMLInvoker::USCXMLInvoker() : _cancelled(false) {
+	_parentQueue._invoker = this;
 }
 
 
@@ -62,7 +82,7 @@ void USCXMLInvoker::invoke(const InvokeRequest& req) {
 		if (dataModel) {
 
 		}
-		_invokedInterpreter.getImpl()->setParentQueue(this);
+		_invokedInterpreter.getImpl()->setParentQueue(&_parentQueue);
 		// transfer namespace prefixes
 		_invokedInterpreter.getImpl()->_nsURL = _parentInterpreter->_nsURL;
 		_invokedInterpreter.getImpl()->_xpathPrefix = _parentInterpreter->_xpathPrefix;
@@ -86,13 +106,13 @@ void USCXMLInvoker::invoke(const InvokeRequest& req) {
 	}
 }
 
-void USCXMLInvoker::push(const SendRequest& event) {
+void USCXMLInvoker::ParentQueue::push(const SendRequest& event) {
 	// test 252
-	if (_cancelled)
+	if (_invoker->_cancelled)
 		return;
 	SendRequest copyEvent(event);
-	copyEvent.invokeid = _invokeId;
-	_parentInterpreter->receive(copyEvent);
+	copyEvent.invokeid = _invoker->_invokeId;
+	_invoker->_parentInterpreter->receive(copyEvent);
 }
 
 }

@@ -54,11 +54,12 @@
  * C++ convinience
  */
 #include <string>
+#include "uscxml/Common.h"
 
 namespace uscxml {
 
-extern std::string md5(const char* data, size_t length);
-extern std::string md5(const std::string& data);
+extern USCXML_API std::string md5(const char* data, size_t length);
+extern USCXML_API std::string md5(const std::string& data);
 
 /*
  * This package supports both compile-time and run-time determination of CPU
