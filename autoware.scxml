@@ -5,12 +5,6 @@
 	initial="root"
 	xmlns:fn="http://www.w3.org/2005/xpath-functions"
 	xmlns="http://www.w3.org/2005/07/scxml" >
-	
-	<!-- Not supported in the xpath datamodel 
-	<script src="http://uscxml.tk.informatik.tu-darmstadt.de/scripts/dump.js" />
-	-->
-	
-	<!-- Syntax for XPath data model initialization -->
 	<datamodel>
 		<data id="CMD0">
 			<data type="wrapperProgram" index="0">
@@ -72,34 +66,6 @@
 					<transition event="40" target="send0">
 <!--						<log label="Event full data is:" expr="$_event/text()" />-->
 						<assign location="$cmd0/data/nestedData" expr="$_event/data/text()"/>
-						<send 	event="cmd0"
-							namelist="$CMD0"
-							target="xmlbridge1"/>
-					</transition>
-					<transition event="40" target="send0">
-<!--						<log label="Event full data is:" expr="$_event/text()" />-->
-						<assign location="$cmd0/data/nestedData" expr="$_event/data/text()"/>
-						<send 	event="cmd0"
-							namelist="$CMD0"
-							target="xmlbridge1"/>
-					</transition>
-					<transition event="40" target="send0">
-<!--						<log label="Event full data is:" expr="$_event/text()" />-->
-						<assign location="$cmd0/data/nestedData" expr="$_event/data/text()"/>
-						<send 	event="cmd0"
-							namelist="$CMD0"
-							target="xmlbridge1"/>
-					</transition>
-					<transition event="40" target="send0">
-<!--						<log label="Event full data is:" expr="$_event/text()" />-->
-						<assign location="$cmd0/data/nestedData[3]" expr="$_event/data/text()"/>
-						<send 	event="cmd0"
-							namelist="$CMD0"
-							target="xmlbridge1"/>
-					</transition>
-					<transition event="40" target="send0">
-<!--						<log label="Event full data is:" expr="$_event/text()" />-->
-						<assign location="$cmd0/data/nestedData[4]" expr="$_event/data/text()"/>
 						<send 	event="cmd0"
 							namelist="$CMD0"
 							target="xmlbridge1"/>

@@ -258,13 +258,13 @@ if(${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
 	add_definitions(-Wall)
 	add_definitions(-Werror)
 
-	if(GCC_VERSION VERSION_EQUAL 4.7 OR GCC_VERSION VERSION_GREATER 4.7)
-		# when compiling as C++11, narrowing is a warning but older compilers complain about the option
-		add_definitions(-Wno-narrowing)
-	endif()
+#	if(GCC_VERSION VERSION_EQUAL 4.7 OR GCC_VERSION VERSION_GREATER 4.7)
+#		# when compiling as C++11, narrowing is a warning but older compilers complain about the option
+#		add_definitions(-Wno-narrowing)
+#	endif()
 
 	# swig will throw a warning with optimization otherwise
-	add_definitions(-fno-strict-aliasing)
+#	add_definitions(-fno-strict-aliasing)
 	add_definitions("-Wno-unused-value -Wno-sign-compare")
 #	add_definitions(-Wno-unused-function)
 	if (NOT CMAKE_BUILD_TYPE MATCHES ".*Deb.*") # when not building for debug

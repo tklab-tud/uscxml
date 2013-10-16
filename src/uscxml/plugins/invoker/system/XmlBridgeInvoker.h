@@ -19,17 +19,16 @@ namespace uscxml {
 
 class XmlBridgeInvoker : public InvokerImpl {
 public:
-	enum Action {
-		MES,
-		COMMAND = 1,
-		REPLY = 2,
-		TIMEOUT = 4,
-		EXISTING = 8
-	};
+//	enum Action {
+//		MES,
+//		COMMAND = 1,
+//		REPLY = 2,
+//		TIMEOUT = 4,
+//		EXISTING = 8
+//	};
 
 	XmlBridgeInvoker() : _thread(NULL) {}
 	~XmlBridgeInvoker();
-	boost::shared_ptr<InvokerImpl> create(InterpreterImpl* interpreter);
 
 	std::set<std::string> getNames() {
 		std::set<std::string> names;
@@ -37,12 +36,13 @@ public:
 		return names;
 	}
 
+	boost::shared_ptr<InvokerImpl> create(InterpreterImpl* interpreter);
 	void send(const SendRequest& req);
 	void invoke(const InvokeRequest& req);
 	Data getDataModelVariables();
 
 	void buildMESreq(unsigned int cmd, const std::string reply_raw_data);
-	void buildTIMreply(unsigned int cmd, const std::string reply_raw_data);
+	void buildTIMreply(const char &cmdid, const std::string reply_raw_data);
 
 	/* move invoker to new thread */
 	static void run(void* instance) {

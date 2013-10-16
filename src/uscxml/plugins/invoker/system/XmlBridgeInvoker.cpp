@@ -4,8 +4,6 @@
 #include <Pluma/Connector.hpp>
 #endif
 
-#include <string>
-
 namespace uscxml {
 
 #ifdef BUILD_AS_PLUGINS
@@ -195,22 +193,10 @@ void XmlBridgeInvoker::buildMESreq(unsigned int offset, const std::string reply_
 	returnEvent(myevent);
 }
 
-void XmlBridgeInvoker::buildTIMreply(unsigned int offset, const std::string reply_raw_data) {
+void XmlBridgeInvoker::buildTIMreply(const char& cmdid, const std::string reply_raw_data) {
+	/* parse XML */
 
-	std::ostringstream strator;
-	strator << std::dec << offset;
-
-	uscxml::Event myevent(strator.str(), uscxml::Event::EXTERNAL);
-
-	//event.setName("reply." + _interpreter->getState())
-
-	myevent.setSendId("xmlbridge");
-	myevent.setOrigin("MES");
-	myevent.setRaw(reply_raw_data);
-
-	//	myevent.setContent(reply_raw_data);
-	//	myevent.setRaw(reply_raw_data);
-	//	myevent.setXML(reply_raw_data);
+	uscxml::Event myevent(reply_raw_data, uscxml::Event::EXTERNAL);
 
 	returnEvent(myevent);
 }
@@ -314,6 +300,8 @@ void XmlBridgeInputEvents::sendMESreply(std::string DBid, const char& cmdid, con
 	/* Contatta MESbufferer */
 
 	/* chiamata a mesbufferer, dobbiamo fare plugin per forza */
+
+	/* per ora non facciamo nulla! */
 }
 
 void XmlBridgeInputEvents::handleTIMreply(const char &cmdid, const std::string replyData)
