@@ -116,48 +116,48 @@ else()
 	endif()
 endif()
 
-if (NOT EXISTS ${PROJECT_SOURCE_DIR}/contrib/prebuilt/include)
-	message(STATUS "Downloading header files: ${USCXML_LIBRARY_HOST_URL_PREFIX}/${USCXML_VERSION}/include.tgz")
-	file(DOWNLOAD ${USCXML_LIBRARY_HOST_URL_PREFIX}/${USCXML_VERSION}/include.tgz
-		${PROJECT_SOURCE_DIR}/contrib/prebuilt/include.tgz
-		INACTIVITY_TIMEOUT 60 STATUS DOWNLOAD_STATUS SHOW_PROGRESS)
-	list(GET DOWNLOAD_STATUS 0 STATUS_CODE)
-	list(GET DOWNLOAD_STATUS 1 STATUS_STRING)
-	if(STATUS_CODE EQUAL 0)
-		execute_process(
-			COMMAND ${CMAKE_COMMAND} -E tar xzf ${PROJECT_SOURCE_DIR}/contrib/prebuilt/include.tgz
-			WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/contrib/prebuilt/
-		)
-		execute_process(
-			COMMAND ${CMAKE_COMMAND} -E remove ${PROJECT_SOURCE_DIR}/contrib/prebuilt/include.tgz
-			WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/contrib/prebuilt/
-		)
-	else()
-		message("Downloading header files failed with ${STATUS_STRING}")
-	endif()
-endif()
+#if (NOT EXISTS ${PROJECT_SOURCE_DIR}/contrib/prebuilt/include)
+#	message(STATUS "Downloading header files: ${USCXML_LIBRARY_HOST_URL_PREFIX}/${USCXML_VERSION}/include.tgz")
+#	file(DOWNLOAD ${USCXML_LIBRARY_HOST_URL_PREFIX}/${USCXML_VERSION}/include.tgz
+#		${PROJECT_SOURCE_DIR}/contrib/prebuilt/include.tgz
+#		INACTIVITY_TIMEOUT 60 STATUS DOWNLOAD_STATUS SHOW_PROGRESS)
+#	list(GET DOWNLOAD_STATUS 0 STATUS_CODE)
+#	list(GET DOWNLOAD_STATUS 1 STATUS_STRING)
+#	if(STATUS_CODE EQUAL 0)
+#		execute_process(
+#			COMMAND ${CMAKE_COMMAND} -E tar xzf ${PROJECT_SOURCE_DIR}/contrib/prebuilt/include.tgz
+#			WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/contrib/prebuilt/
+#		)
+#		execute_process(
+#			COMMAND ${CMAKE_COMMAND} -E remove ${PROJECT_SOURCE_DIR}/contrib/prebuilt/include.tgz
+#			WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/contrib/prebuilt/
+#		)
+#	else()
+#		message("Downloading header files failed with ${STATUS_STRING}")
+#	endif()
+#endif()
 
-if (NOT EXISTS ${USCXML_PREBUILT_LIBRARY_PATH})
-	message(STATUS "Downloading prebuilt libraries: ${USCXML_LIBRARY_HOST_URL_PREFIX}/${USCXML_VERSION}/${USCXML_LIBRARY_ARCHIVE_NAME}")
-	file(DOWNLOAD ${USCXML_LIBRARY_HOST_URL_PREFIX}/${USCXML_VERSION}/${USCXML_LIBRARY_ARCHIVE_NAME}
-		${PROJECT_SOURCE_DIR}/contrib/prebuilt/${USCXML_LIBRARY_ARCHIVE_NAME}
-		INACTIVITY_TIMEOUT 60 STATUS DOWNLOAD_STATUS SHOW_PROGRESS)
-	list(GET DOWNLOAD_STATUS 0 STATUS_CODE)
-	list(GET DOWNLOAD_STATUS 1 STATUS_STRING)
-	if(STATUS_CODE EQUAL 0)
-		execute_process(
-			COMMAND ${CMAKE_COMMAND} -E tar xzf ${PROJECT_SOURCE_DIR}/contrib/prebuilt/${USCXML_LIBRARY_ARCHIVE_NAME}
-			WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/contrib/prebuilt/
-		)
-		execute_process(
-			COMMAND ${CMAKE_COMMAND} -E remove ${PROJECT_SOURCE_DIR}/contrib/prebuilt/${USCXML_LIBRARY_ARCHIVE_NAME}
-			WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/contrib/prebuilt/
-		)
-	else()
-		message("Downloading prebuilt libraries failed with ${STATUS_STRING} - maybe this platform is not supported?")
-	endif()
+#if (NOT EXISTS ${USCXML_PREBUILT_LIBRARY_PATH})
+#	message(STATUS "Downloading prebuilt libraries: ${USCXML_LIBRARY_HOST_URL_PREFIX}/${USCXML_VERSION}/${USCXML_LIBRARY_ARCHIVE_NAME}")
+#	file(DOWNLOAD ${USCXML_LIBRARY_HOST_URL_PREFIX}/${USCXML_VERSION}/${USCXML_LIBRARY_ARCHIVE_NAME}
+#		${PROJECT_SOURCE_DIR}/contrib/prebuilt/${USCXML_LIBRARY_ARCHIVE_NAME}
+#		INACTIVITY_TIMEOUT 60 STATUS DOWNLOAD_STATUS SHOW_PROGRESS)
+#	list(GET DOWNLOAD_STATUS 0 STATUS_CODE)
+#	list(GET DOWNLOAD_STATUS 1 STATUS_STRING)
+#	if(STATUS_CODE EQUAL 0)
+#		execute_process(
+#			COMMAND ${CMAKE_COMMAND} -E tar xzf ${PROJECT_SOURCE_DIR}/contrib/prebuilt/${USCXML_LIBRARY_ARCHIVE_NAME}
+#			WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/contrib/prebuilt/
+#		)
+#		execute_process(
+#			COMMAND ${CMAKE_COMMAND} -E remove ${PROJECT_SOURCE_DIR}/contrib/prebuilt/${USCXML_LIBRARY_ARCHIVE_NAME}
+#			WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/contrib/prebuilt/
+#		)
+#	else()
+#		message("Downloading prebuilt libraries failed with ${STATUS_STRING} - maybe this platform is not supported?")
+#	endif()
 
-endif()
+#endif()
 
 if (CMAKE_CROSSCOMPILING)
 	OPTION(BUILD_SHARED_LIBS "Build shared libraries" OFF)
@@ -261,7 +261,7 @@ if(${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
 
 	# all warnings
 	add_definitions(-Wall)
-#	add_definitions(-Werror)
+	add_definitions(-Werror)
 
 #	if(GCC_VERSION VERSION_EQUAL 4.7 OR GCC_VERSION VERSION_GREATER 4.7)
 #		# when compiling as C++11, narrowing is a warning but older compilers complain about the option
@@ -270,7 +270,8 @@ if(${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
 
 	# swig will throw a warning with optimization otherwise
 #	add_definitions(-fno-strict-aliasing)
-#	add_definitions("-Wno-unused-value -Wno-sign-compare")
+	add_definitions("-Wno-sign-compare")
+#	add_definitions("-Wno-unused-value")
 #	add_definitions(-Wno-unused-function)
 	if (NOT CMAKE_BUILD_TYPE MATCHES ".*Deb.*") # when not building for debug
 		# add_definitions("-s")
