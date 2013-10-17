@@ -1,3 +1,22 @@
+/**
+ *  @file
+ *  @author     2012-2013 Stefan Radomski (stefan.radomski@cs.tu-darmstadt.de)
+ *  @copyright  Simplified BSD
+ *
+ *  @cond
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the FreeBSD license as published by the FreeBSD
+ *  project.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ *  You should have received a copy of the FreeBSD license along with this
+ *  program. If not, see <http://www.opensource.org/licenses/bsd-license>.
+ *  @endcond
+ */
+
 #include <glog/logging.h>
 #include "URL.h"
 #include "UUID.h"
@@ -57,7 +76,7 @@ std::string URL::tmpDir() {
 }
 
 std::map<std::string, std::string> URL::mimeTypes;
-	std::string URL::getMimeType(const std::string extension, std::string magic) {
+std::string URL::getMimeType(const std::string extension, std::string magic) {
 	if (mimeTypes.empty()) {
 		mimeTypes["txt"] = "text/plain";
 		mimeTypes["c"] = "text/plain";
@@ -77,19 +96,19 @@ std::map<std::string, std::string> URL::mimeTypes;
 		mimeTypes["tif"] = "image/tiff";
 		mimeTypes["tiff"] = "image/tiff";
 	}
-	
+
 	if (mimeTypes.find(extension) != mimeTypes.end()) {
 		return mimeTypes[extension];
 	}
 	return "";
 }
 
-	
+
 std::string URL::getTmpFilename(const std::string& suffix) {
 	std::string tmpFilename = tmpDir();
 	if (tmpFilename.find_last_of(PATH_SEPERATOR) != tmpFilename.length() - 1)
 		tmpFilename += PATH_SEPERATOR;
-	
+
 	tmpFilename += UUID::getUUID();
 	if (suffix.length() > 0) {
 		tmpFilename += ".";
@@ -530,7 +549,7 @@ void URLFetcher::fetchURL(URL& url) {
 
 		(curlError = curl_easy_setopt(handle, CURLOPT_URL, url.asString().c_str())) == CURLE_OK ||
 		LOG(ERROR) << "Cannot set url to " << url.asString() << ": " << curl_easy_strerror(curlError);
-		
+
 //		(curlError = curl_easy_setopt(handle, CURLOPT_NOSIGNAL, 1)) == CURLE_OK ||
 //		LOG(ERROR) << "Cannot set curl to ignore signals: " << curl_easy_strerror(curlError);
 

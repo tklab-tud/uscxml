@@ -1,5 +1,39 @@
+/**
+ *  @file
+ *  @author     2012-2013 Stefan Radomski (stefan.radomski@cs.tu-darmstadt.de)
+ *  @copyright  Simplified BSD
+ *
+ *  @cond
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the FreeBSD license as published by the FreeBSD
+ *  project.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ *  You should have received a copy of the FreeBSD license along with this
+ *  program. If not, see <http://www.opensource.org/licenses/bsd-license>.
+ *  @endcond
+ */
+
 #ifndef BASICHTTPIOPROCESSOR_H_2CUY93KU
 #define BASICHTTPIOPROCESSOR_H_2CUY93KU
+
+extern "C" {
+#include <event2/http.h>
+#include <event2/http_struct.h>
+}
+
+#if defined(_WIN32) && !defined(USCXML_STATIC)
+#	if (defined ioprocessor_basichttp_EXPORTS || defined USCXML_EXPORT)
+#		define USCXML_PLUGIN_API __declspec(dllexport)
+#	else
+#		define USCXML_PLUGIN_API __declspec(dllimport)
+#	endif
+#else
+#	define USCXML_PLUGIN_API
+#endif
 
 #include "uscxml/concurrency/eventqueue/DelayedEventQueue.h"
 #include "uscxml/server/HTTPServer.h"
@@ -9,16 +43,13 @@
 #include <sys/time.h>
 #endif
 
-#include <event2/http.h>
-#include <event2/http_struct.h>
-
 #ifdef BUILD_AS_PLUGINS
 #include "uscxml/plugins/Plugins.h"
 #endif
 
 namespace uscxml {
 
-class BasicHTTPIOProcessor : public IOProcessorImpl, public HTTPServlet, public URLMonitor {
+class USCXML_PLUGIN_API BasicHTTPIOProcessor : public IOProcessorImpl, public HTTPServlet, public URLMonitor {
 public:
 	BasicHTTPIOProcessor();
 	virtual ~BasicHTTPIOProcessor();

@@ -1,3 +1,22 @@
+/**
+ *  @file
+ *  @author     2012-2013 Stefan Radomski (stefan.radomski@cs.tu-darmstadt.de)
+ *  @copyright  Simplified BSD
+ *
+ *  @cond
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the FreeBSD license as published by the FreeBSD
+ *  project.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ *  You should have received a copy of the FreeBSD license along with this
+ *  program. If not, see <http://www.opensource.org/licenses/bsd-license>.
+ *  @endcond
+ */
+
 #include "FFMPEGInvoker.h"
 #include <glog/logging.h>
 
@@ -16,7 +35,7 @@ namespace uscxml {
 
 #ifdef BUILD_AS_PLUGINS
 PLUMA_CONNECTOR
-bool connect(pluma::Host& host) {
+bool pluginConnect(pluma::Host& host) {
 	host.add( new FFMPEGInvokerProvider() );
 	return true;
 }
@@ -43,43 +62,43 @@ Data FFMPEGInvoker::getDataModelVariables() {
 		AVCodec* codecInst = avcodec_find_encoder(codec->id);
 		if (!codecInst)
 			continue;
-		
+
 		switch (codec->type) {
-			case AVMEDIA_TYPE_VIDEO: {
-				Data codecData;
-				codecData.compound["name"] = Data(codec->name, Data::VERBATIM);
-				codecData.compound["longName"] = Data(codec->long_name, Data::VERBATIM);
-				data.compound["video"].compound[codec->name] = codecData;
-				break;
-			}
-			case AVMEDIA_TYPE_AUDIO: {
-				Data codecData;
-				codecData.compound["name"] = Data(codec->name, Data::VERBATIM);
-				codecData.compound["longName"] = Data(codec->long_name, Data::VERBATIM);
-				data.compound["audio"].compound[codec->name] = codecData;
-				break;
-			}
-			default:
-				break;
+		case AVMEDIA_TYPE_VIDEO: {
+			Data codecData;
+			codecData.compound["name"] = Data(codec->name, Data::VERBATIM);
+			codecData.compound["longName"] = Data(codec->long_name, Data::VERBATIM);
+			data.compound["video"].compound[codec->name] = codecData;
+			break;
+		}
+		case AVMEDIA_TYPE_AUDIO: {
+			Data codecData;
+			codecData.compound["name"] = Data(codec->name, Data::VERBATIM);
+			codecData.compound["longName"] = Data(codec->long_name, Data::VERBATIM);
+			data.compound["audio"].compound[codec->name] = codecData;
+			break;
+		}
+		default:
+			break;
 		}
 	}
-	
+
 	return data;
 }
 
 void FFMPEGInvoker::invoke(const InvokeRequest& req) {
 	int nrThreads = 1;
 	Event::getParam(req.params, "threads", nrThreads);
-	
+
 	_isRunning = true;
 	for (int i = 0; i < nrThreads; i++) {
 		_threads.insert(new tthread::thread(FFMPEGInvoker::run, this));
 	}
 }
-	
+
 void FFMPEGInvoker::send(const SendRequest& req) {
 	SendRequest reqCopy = req;
-	
+
 	if (boost::iequals(req.name, "render.start")) {
 		// create a new encoding context
 		int ret;
@@ -97,52 +116,52 @@ void FFMPEGInvoker::send(const SendRequest& req) {
 
 		if (!ctx->width || !ctx->height)
 			return;
-		
+
 		ctx->filename = URL::getTmpFilename();
-				
-    /* allocate the output media context */
-    avformat_alloc_output_context2(&ctx->formatCtx, NULL, ctx->extension.c_str(), ctx->filename.c_str());
-    if (!ctx->formatCtx) {
+
+		/* allocate the output media context */
+		avformat_alloc_output_context2(&ctx->formatCtx, NULL, ctx->extension.c_str(), ctx->filename.c_str());
+		if (!ctx->formatCtx) {
 			printf("Could not deduce output format from file extension: using MPEG.\n");
 			avformat_alloc_output_context2(&ctx->formatCtx, NULL, "mpeg", ctx->filename.c_str());
-    }
-    if (!ctx->formatCtx) {
+		}
+		if (!ctx->formatCtx) {
 			return;
-    }
-    ctx->format = ctx->formatCtx->oformat;
-		
-    /* Add the audio and video streams using the default format codecs
-     * and initialize the codecs. */
-    ctx->videoStream = NULL;
-		
-    if (ctx->format->video_codec != AV_CODEC_ID_NONE) {
+		}
+		ctx->format = ctx->formatCtx->oformat;
+
+		/* Add the audio and video streams using the default format codecs
+		 * and initialize the codecs. */
+		ctx->videoStream = NULL;
+
+		if (ctx->format->video_codec != AV_CODEC_ID_NONE) {
 			ctx->videoStream = addStream(ctx, ctx->formatCtx, &ctx->videoCodec, ctx->format->video_codec);
-    }
-		
-    /* Now that all the parameters are set, we can open the audio and
-     * video codecs and allocate the necessary encode buffers. */
-    if (ctx->videoStream)
+		}
+
+		/* Now that all the parameters are set, we can open the audio and
+		 * video codecs and allocate the necessary encode buffers. */
+		if (ctx->videoStream)
 			openVideo(ctx, ctx->formatCtx, ctx->videoCodec, ctx->videoStream);
-		
-    /* open the output file, if needed */
-    if (!(ctx->format->flags & AVFMT_NOFILE)) {
+
+		/* open the output file, if needed */
+		if (!(ctx->format->flags & AVFMT_NOFILE)) {
 			ret = avio_open(&ctx->formatCtx->pb, ctx->filename.c_str(), AVIO_FLAG_WRITE);
 			if (ret < 0) {
-        // fprintf(stderr, "Could not open '%s': %s\n", ctx->filename.c_str(),
-        //        av_err2str(ret));
+				// fprintf(stderr, "Could not open '%s': %s\n", ctx->filename.c_str(),
+				//        av_err2str(ret));
 				return;
 			}
-    }
-		
-    /* Write the stream header, if any. */
-    ret = avformat_write_header(ctx->formatCtx, NULL);
-    if (ret < 0) {
-      // fprintf(stderr, "Error occurred when opening output file: %s\n",
-      //        av_err2str(ret));
+		}
+
+		/* Write the stream header, if any. */
+		ret = avformat_write_header(ctx->formatCtx, NULL);
+		if (ret < 0) {
+			// fprintf(stderr, "Error occurred when opening output file: %s\n",
+			//        av_err2str(ret));
 			return;
-    }
-		
-    if (ctx->frame)
+		}
+
+		if (ctx->frame)
 			ctx->frame->pts = 0;
 
 		_encoders[context] = ctx;
@@ -170,33 +189,33 @@ void FFMPEGInvoker::run(void* instance) {
 
 void FFMPEGInvoker::finish(EncodingContext* ctx, const SendRequest& req) {
 	av_write_trailer(ctx->formatCtx);
-	
+
 	/* Close each codec. */
 	if (ctx->videoStream)
 		closeVideo(ctx, ctx->formatCtx, ctx->videoStream);
-	
+
 	if (!(ctx->formatCtx->oformat->flags & AVFMT_NOFILE))
-	/* Close the output file. */
+		/* Close the output file. */
 		avio_close(ctx->formatCtx->pb);
-	
+
 	/* free the stream */
 	avformat_free_context(ctx->formatCtx);
-	
+
 	// read file
 	std::ifstream movieFile(ctx->filename.c_str());
 	movieFile.seekg(0, std::ios::end);
 	size_t length = movieFile.tellg();
 	movieFile.seekg(0, std::ios::beg);
-	
+
 	char* movieBuffer = (char*)malloc(length);
 	movieFile.read(movieBuffer, length);
-	
+
 	// move to desktop for checking
 //	int err = rename(ctx->filename.c_str(), "/Users/sradomski/Desktop/foo.mpg");
 //	if (err) {
 //		printf("%s", strerror(errno));
 //	}
-	
+
 	std::string context;
 	Event::getParam(req.params, "context", context);
 
@@ -206,7 +225,7 @@ void FFMPEGInvoker::finish(EncodingContext* ctx, const SendRequest& req) {
 	event.data.compound["movie"] = Data(movieBuffer, length, true);
 	event.data.compound["mimetype"] = Data("video/mpeg", Data::VERBATIM);
 	event.data.compound["filename"] = Data(std::string("movie.") + ctx->extension, Data::VERBATIM);
-	
+
 	returnEvent(event);
 }
 
@@ -217,7 +236,7 @@ void FFMPEGInvoker::process(const SendRequest& req) {
 	if (_encoders.find(context) == _encoders.end()) {
 		return;
 	}
-	
+
 	EncodingContext* ctx = _encoders[context];
 	tthread::lock_guard<tthread::recursive_mutex> lock(ctx->mutex);
 
@@ -227,7 +246,7 @@ void FFMPEGInvoker::process(const SendRequest& req) {
 		delete _encoders[context];
 		_encoders.erase(context);
 	}
-	
+
 	Data image;
 	Event::getParam(req.params, "frame", image);
 	if (!image) {
@@ -236,25 +255,25 @@ void FFMPEGInvoker::process(const SendRequest& req) {
 
 	std::string format = "bmp";
 	Event::getParam(req.params, "format", format);
-	
+
 	writeVideoFrame(ctx, ctx->formatCtx, ctx->videoStream, image.binary);
 	ctx->frame->pts += av_rescale_q(1, ctx->videoStream->codec->time_base, ctx->videoStream->time_base);
 
 }
-	
+
 AVStream* FFMPEGInvoker::addStream(EncodingContext* ctx, AVFormatContext *oc, AVCodec **codec,
-																						 enum AVCodecID codec_id) {
+                                   enum AVCodecID codec_id) {
 	AVCodecContext *c;
 	AVStream *st;
-	
+
 	/* find the encoder */
 	*codec = avcodec_find_encoder(codec_id);
 	if (!(*codec)) {
 		fprintf(stderr, "Could not find encoder for '%s'\n",
-						avcodec_get_name(codec_id));
+		        avcodec_get_name(codec_id));
 		return NULL;
 	}
-	
+
 	st = avformat_new_stream(oc, *codec);
 	ctx->videoPixFmt = (*codec)->pix_fmts[0];
 	if (!st) {
@@ -263,50 +282,50 @@ AVStream* FFMPEGInvoker::addStream(EncodingContext* ctx, AVFormatContext *oc, AV
 	}
 	st->id = oc->nb_streams-1;
 	c = st->codec;
-	
+
 	switch ((*codec)->type) {
-    case AVMEDIA_TYPE_AUDIO:
-			c->sample_fmt  = AV_SAMPLE_FMT_FLTP;
-			c->bit_rate    = 64000;
-			c->sample_rate = 44100;
-			c->channels    = 2;
-			break;
-			
-    case AVMEDIA_TYPE_VIDEO:
-			c->codec_id = codec_id;
-						
-			c->bit_rate = 800000;
-			/* Resolution must be a multiple of two. */
-			c->width    = ctx->width;
-			c->height   = ctx->height;
-			/* timebase: This is the fundamental unit of time (in seconds) in terms
-			 * of which frame timestamps are represented. For fixed-fps content,
-			 * timebase should be 1/framerate and timestamp increments should be
-			 * identical to 1. */
-			c->time_base.den = STREAM_FRAME_RATE;
-			c->time_base.num = 1;
-			c->gop_size      = 12; /* emit one intra frame every twelve frames at most */
-			c->pix_fmt       = ctx->videoPixFmt;
-			if (c->codec_id == AV_CODEC_ID_MPEG2VIDEO) {
-				/* just for testing, we also add B frames */
-				c->max_b_frames = 2;
-			}
-			if (c->codec_id == AV_CODEC_ID_MPEG1VIDEO) {
-				/* Needed to avoid using macroblocks in which some coeffs overflow.
-				 * This does not happen with normal video, it just happens here as
-				 * the motion of the chroma plane does not match the luma plane. */
-				c->mb_decision = 2;
-			}
-			break;
-			
-    default:
-			break;
+	case AVMEDIA_TYPE_AUDIO:
+		c->sample_fmt  = AV_SAMPLE_FMT_FLTP;
+		c->bit_rate    = 64000;
+		c->sample_rate = 44100;
+		c->channels    = 2;
+		break;
+
+	case AVMEDIA_TYPE_VIDEO:
+		c->codec_id = codec_id;
+
+		c->bit_rate = 800000;
+		/* Resolution must be a multiple of two. */
+		c->width    = ctx->width;
+		c->height   = ctx->height;
+		/* timebase: This is the fundamental unit of time (in seconds) in terms
+		 * of which frame timestamps are represented. For fixed-fps content,
+		 * timebase should be 1/framerate and timestamp increments should be
+		 * identical to 1. */
+		c->time_base.den = STREAM_FRAME_RATE;
+		c->time_base.num = 1;
+		c->gop_size      = 12; /* emit one intra frame every twelve frames at most */
+		c->pix_fmt       = ctx->videoPixFmt;
+		if (c->codec_id == AV_CODEC_ID_MPEG2VIDEO) {
+			/* just for testing, we also add B frames */
+			c->max_b_frames = 2;
+		}
+		if (c->codec_id == AV_CODEC_ID_MPEG1VIDEO) {
+			/* Needed to avoid using macroblocks in which some coeffs overflow.
+			 * This does not happen with normal video, it just happens here as
+			 * the motion of the chroma plane does not match the luma plane. */
+			c->mb_decision = 2;
+		}
+		break;
+
+	default:
+		break;
 	}
-	
+
 	/* Some formats want stream headers to be separate. */
 	if (oc->oformat->flags & AVFMT_GLOBALHEADER)
 		c->flags |= CODEC_FLAG_GLOBAL_HEADER;
-	
+
 	return st;
 }
 
@@ -317,7 +336,7 @@ void FFMPEGInvoker::openVideo(EncodingContext* ctx, AVFormatContext *oc, AVCodec
 	/* open the codec */
 	ret = avcodec_open2(c, codec, NULL);
 	if (ret < 0) {
-    // fprintf(stderr, "Could not open video codec: %s\n", av_err2str(ret));
+		// fprintf(stderr, "Could not open video codec: %s\n", av_err2str(ret));
 		return;
 	}
 
@@ -341,8 +360,8 @@ void FFMPEGInvoker::openVideo(EncodingContext* ctx, AVFormatContext *oc, AVCodec
 	if (c->pix_fmt != BMP_FORMAT) {
 		ret = avpicture_alloc(&ctx->src_picture, BMP_FORMAT, c->width, c->height);
 		if (ret < 0) {
-      // fprintf(stderr, "Could not allocate temporary picture: %s\n",
-      //         av_err2str(ret));
+			// fprintf(stderr, "Could not allocate temporary picture: %s\n",
+			//         av_err2str(ret));
 			return;
 		}
 	}
@@ -350,7 +369,7 @@ void FFMPEGInvoker::openVideo(EncodingContext* ctx, AVFormatContext *oc, AVCodec
 	/* copy data and linesize picture pointers to frame */
 	*((AVPicture *)ctx->frame) = ctx->dst_picture;
 }
-	
+
 void FFMPEGInvoker::writeVideoFrame(EncodingContext* ctx, AVFormatContext *oc, AVStream *st, boost::shared_ptr<Blob> image) {
 	int ret;
 	AVCodecContext *c = st->codec;
@@ -360,11 +379,11 @@ void FFMPEGInvoker::writeVideoFrame(EncodingContext* ctx, AVFormatContext *oc, A
 		 * to the codec pixel format if needed */
 		if (!ctx->sws_ctx) {
 			ctx->sws_ctx = sws_getContext(c->width, c->height, BMP_FORMAT,
-															 c->width, c->height, c->pix_fmt,
-															 ctx->sws_flags, NULL, NULL, NULL);
+			                              c->width, c->height, c->pix_fmt,
+			                              ctx->sws_flags, NULL, NULL, NULL);
 			if (!ctx->sws_ctx) {
 				fprintf(stderr,
-								"Could not initialize the conversion context\n");
+				        "Could not initialize the conversion context\n");
 				return;
 			}
 		}
@@ -376,15 +395,15 @@ void FFMPEGInvoker::writeVideoFrame(EncodingContext* ctx, AVFormatContext *oc, A
 		headerOffset += image->data[13] << 24;
 
 //		std::cout << headerOffset + (c->width * c->height) << " / " << image->_size << std::endl;
-		
+
 		ret = avpicture_fill(&ctx->src_picture, (uint8_t*)(image->data + headerOffset), BMP_FORMAT, c->width, c->height);
 		if (ret < 0) {
 			fprintf(stderr,
-							"Could not fill image from given bitmap\n");
+			        "Could not fill image from given bitmap\n");
 		}
 		sws_scale(ctx->sws_ctx,
-							(const uint8_t * const *)ctx->src_picture.data, ctx->src_picture.linesize,
-							0, c->height, ctx->dst_picture.data, ctx->dst_picture.linesize);
+		          (const uint8_t * const *)ctx->src_picture.data, ctx->src_picture.linesize,
+		          0, c->height, ctx->dst_picture.data, ctx->dst_picture.linesize);
 	} else {
 		avpicture_fill(&ctx->dst_picture, (uint8_t*)image->data, c->pix_fmt, c->width, c->height);
 	}
@@ -408,7 +427,7 @@ void FFMPEGInvoker::writeVideoFrame(EncodingContext* ctx, AVFormatContext *oc, A
 		/* encode the image */
 		ret = avcodec_encode_video2(c, &pkt, ctx->frame, &got_packet);
 		if (ret < 0) {
-      // fprintf(stderr, "Error encoding video frame: %s\n", av_err2str(ret));
+			// fprintf(stderr, "Error encoding video frame: %s\n", av_err2str(ret));
 			return;
 		}
 		/* If size is zero, it means the image was buffered. */

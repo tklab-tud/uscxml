@@ -1,3 +1,22 @@
+/**
+ *  @file
+ *  @author     2012-2013 Stefan Radomski (stefan.radomski@cs.tu-darmstadt.de)
+ *  @copyright  Simplified BSD
+ *
+ *  @cond
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the FreeBSD license as published by the FreeBSD
+ *  project.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ *  You should have received a copy of the FreeBSD license along with this
+ *  program. If not, see <http://www.opensource.org/licenses/bsd-license>.
+ *  @endcond
+ */
+
 #include "OSGInvoker.h"
 #include "uscxml/URL.h"
 #include "uscxml/UUID.h"
@@ -37,7 +56,7 @@ namespace uscxml {
 
 #ifdef BUILD_AS_PLUGINS
 PLUMA_CONNECTOR
-bool connect(pluma::Host& host) {
+bool pluginConnect(pluma::Host& host) {
 	host.add( new OSGInvokerProvider() );
 	return true;
 }
@@ -47,8 +66,8 @@ bool connect(pluma::Host& host) {
 } else if (boost::iequals(LOCALNAME(childs.item(i)), tagName) && \
 	validChildren.find(tagName) != validChildren.end()) { \
 		procFunc(childs.item(i));\
+ 
 
-	
 OSGInvoker::OSGInvoker() {
 }
 
@@ -68,7 +87,7 @@ Data OSGInvoker::getDataModelVariables() {
 
 void OSGInvoker::send(const SendRequest& req) {
 	if (boost::iequals(req.name, "intersect")) {
-		
+
 	}
 }
 
@@ -79,9 +98,9 @@ void OSGInvoker::invoke(const InvokeRequest& req) {
 	tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
 
 	setupColors();
-	
+
 	std::cout << req.dom;
-	
+
 	// register default event handlers
 	Arabica::DOM::Events::EventTarget<std::string> evTarget = Arabica::DOM::Events::EventTarget<std::string>(req.dom);
 	evTarget.addEventListener("DOMSubtreeModified", *this, false);
@@ -91,7 +110,7 @@ void OSGInvoker::invoke(const InvokeRequest& req) {
 
 	std::set<std::string> validChilds;
 	validChilds.insert("display");
-	
+
 	// this is somewhat unfortunate, if content contains a single child, we will get that, otherwise its parent (<content>)
 	if (boost::iequals(LOCALNAME(req.dom), "display")) {
 		processChildren(validChilds, req.dom.getParentNode());
@@ -121,7 +140,7 @@ void OSGInvoker::setupColors() {
 	_colors["green"] =      osg::Vec4(0.0,    0.5,    0.0,    1.0);
 	_colors["olive"] =      osg::Vec4(0.5,    0.5,    0.0,    1.0);
 }
-	
+
 void OSGInvoker::runOnMainThread() {
 	_displays_t::iterator dispIter = _displays.begin();
 	if (_mutex.try_lock()) {
@@ -184,7 +203,7 @@ void OSGInvoker::processViewport(const Arabica::DOM::Node<std::string>& element)
 	unsigned int actualY = 0;
 	unsigned int actualWidth = 0;
 	unsigned int actualHeight = 0;
-	
+
 	getViewport(element, actualX, actualY, actualWidth, actualHeight, compDisp);
 	osg::Viewport* viewPort = new osg::Viewport(actualX, actualY, actualWidth, actualHeight);
 	compDisp->addView(name, viewPort, sceneView);
@@ -196,7 +215,7 @@ void OSGInvoker::processViewport(const Arabica::DOM::Node<std::string>& element)
 	} else {
 		sceneView->getCamera()->setClearColor(_colors["white"]);
 	}
-	
+
 	std::set<std::string> validChilds;
 	validChilds.insert("camera");
 	validChilds.insert("translation");
@@ -391,11 +410,11 @@ void OSGInvoker::processSphere(const Arabica::DOM::Node<std::string>& element) {
 
 	float radius = 1;
 	osg::Vec3 center(0,0,0);
-	
+
 	if (HAS_ATTR(element, "radius")) {
 		radius = strTo<float>(ATTR(element, "radius"));
 	}
-	
+
 	osg::ref_ptr<osg::Sphere> sphere = new osg::Sphere(center, radius);
 	osg::ref_ptr<osg::ShapeDrawable> drawable = new osg::ShapeDrawable(sphere);
 	osg::ref_ptr<osg::Geode> geode = new osg::Geode();
@@ -415,26 +434,26 @@ void OSGInvoker::updateSphere(osg::ref_ptr<osg::Node> node, Arabica::DOM::Events
 void OSGInvoker::processBox(const Arabica::DOM::Node<std::string>& element) {
 	assert(_nodes.find(element.getParentNode()) != _nodes.end());
 	osg::ref_ptr<osg::Node> parent = _nodes[element.getParentNode()];
-	
+
 	float x = 1;
 	float y = 1;
 	float z = 1;
 	osg::Vec3 center(0,0,0);
-	
+
 	if (HAS_ATTR(element, "x")) x = strTo<float>(ATTR(element, "x"));
 	if (HAS_ATTR(element, "y")) y = strTo<float>(ATTR(element, "y"));
 	if (HAS_ATTR(element, "z")) z = strTo<float>(ATTR(element, "z"));
-	
+
 	osg::ref_ptr<osg::Box> box = new osg::Box(center, x, y, z);
 	osg::ref_ptr<osg::ShapeDrawable> drawable = new osg::ShapeDrawable(box);
 	osg::ref_ptr<osg::Geode> geode = new osg::Geode();
 	geode->addDrawable(drawable);
-	
+
 	OSG_SET_COLOR;
 	OSG_SET_MATERIAL;
 
 	_nodes[element] = geode;
-	
+
 	parent->asGroup()->addChild(geode);
 
 }
@@ -443,19 +462,19 @@ void OSGInvoker::updateBox(osg::ref_ptr<osg::Node> node, Arabica::DOM::Events::E
 void OSGInvoker::processCapsule(const Arabica::DOM::Node<std::string>& element) {
 	assert(_nodes.find(element.getParentNode()) != _nodes.end());
 	osg::ref_ptr<osg::Node> parent = _nodes[element.getParentNode()];
-	
+
 	float radius = 1;
 	float height = 1;
 	osg::Vec3 center(0,0,0);
-	
+
 	if (HAS_ATTR(element, "radius")) radius = strTo<float>(ATTR(element, "radius"));
 	if (HAS_ATTR(element, "height")) height = strTo<float>(ATTR(element, "height"));
-	
+
 	osg::ref_ptr<osg::Capsule> capsule = new osg::Capsule(center, radius, height);
 	osg::ref_ptr<osg::ShapeDrawable> drawable = new osg::ShapeDrawable(capsule);
 	osg::ref_ptr<osg::Geode> geode = new osg::Geode();
 	geode->addDrawable(drawable);
-	
+
 	OSG_SET_COLOR;
 	OSG_SET_MATERIAL;
 
@@ -464,28 +483,28 @@ void OSGInvoker::processCapsule(const Arabica::DOM::Node<std::string>& element) 
 }
 void OSGInvoker::updateCapsule(osg::ref_ptr<osg::Node> node, Arabica::DOM::Events::Event<std::string>& event) {
 }
-	
+
 void OSGInvoker::processCone(const Arabica::DOM::Node<std::string>& element) {
 	assert(_nodes.find(element.getParentNode()) != _nodes.end());
 	osg::ref_ptr<osg::Node> parent = _nodes[element.getParentNode()];
-	
+
 	float radius = 1;
 	float height = 1;
 	osg::Vec3 center(0,0,0);
-	
+
 	if (HAS_ATTR(element, "radius")) radius = strTo<float>(ATTR(element, "radius"));
 	if (HAS_ATTR(element, "height")) height = strTo<float>(ATTR(element, "height"));
-	
+
 	osg::ref_ptr<osg::Cone> cone = new osg::Cone(center, radius, height);
 	osg::ref_ptr<osg::ShapeDrawable> drawable = new osg::ShapeDrawable(cone);
 	osg::ref_ptr<osg::Geode> geode = new osg::Geode();
 	geode->addDrawable(drawable);
-	
+
 	OSG_SET_COLOR;
 	OSG_SET_MATERIAL;
 
 	_nodes[element] = geode;
-	
+
 	parent->asGroup()->addChild(geode);
 
 }
@@ -495,24 +514,24 @@ void OSGInvoker::updateCone(osg::ref_ptr<osg::Node> node, Arabica::DOM::Events::
 void OSGInvoker::processCylinder(const Arabica::DOM::Node<std::string>& element) {
 	assert(_nodes.find(element.getParentNode()) != _nodes.end());
 	osg::ref_ptr<osg::Node> parent = _nodes[element.getParentNode()];
-	
+
 	float radius = 1;
 	float height = 1;
 	osg::Vec3 center(0,0,0);
-	
+
 	if (HAS_ATTR(element, "radius")) radius = strTo<float>(ATTR(element, "radius"));
 	if (HAS_ATTR(element, "height")) height = strTo<float>(ATTR(element, "height"));
-	
+
 	osg::ref_ptr<osg::Cylinder> cylinder = new osg::Cylinder(center, radius, height);
 	osg::ref_ptr<osg::ShapeDrawable> drawable = new osg::ShapeDrawable(cylinder);
 	osg::ref_ptr<osg::Geode> geode = new osg::Geode();
 	geode->addDrawable(drawable);
-	
+
 	OSG_SET_COLOR;
 	OSG_SET_MATERIAL;
 
 	_nodes[element] = geode;
-	
+
 	parent->asGroup()->addChild(geode);
 
 }
@@ -528,14 +547,15 @@ osg::Vec4 OSGInvoker::getColor(const Arabica::DOM::Node<std::string>& element, c
 			valid = true;
 			return _colors[color];
 		}
-		
+
 		// otherwise try to parse as rgba values
 		int i;
 		osg::Vec4 colorVec = parseVec4(color, i);
-		
+
 		if (i == 1) {
 			// only a single value was given, interpret as grey value
-			colorVec[1] = colorVec[2] = colorVec[0]; colorVec[3] = 1.0;
+			colorVec[1] = colorVec[2] = colorVec[0];
+			colorVec[3] = 1.0;
 			valid = true;
 			return colorVec;
 		}
@@ -547,7 +567,7 @@ osg::Vec4 OSGInvoker::getColor(const Arabica::DOM::Node<std::string>& element, c
 			return colorVec;
 		}
 	}
-	
+
 	// return empty reference
 	valid = false;
 	return osg::Vec4();
@@ -566,7 +586,7 @@ osg::ref_ptr<osg::Material> OSGInvoker::getMaterial(const Arabica::DOM::Node<std
 		nodeMat->setDiffuse(osg::Material::FRONT, matColor);
 		nodeMat->setDiffuse(osg::Material::BACK, matColor);
 	}
-	
+
 	// translucency
 	if (HAS_ATTR(element, "transparency")) {
 		std::string transparency = ATTR(element, "transparency");
@@ -576,18 +596,18 @@ osg::ref_ptr<osg::Material> OSGInvoker::getMaterial(const Arabica::DOM::Node<std
 		nodeMat->setTransparency(osg::Material::FRONT, trans);
 		nodeMat->setTransparency(osg::Material::BACK, trans);
 	}
-	
+
 	return nodeMat;
 }
 
 osg::Vec4 OSGInvoker::parseVec4(const std::string& coeffs, int& i) {
-	
+
 	// otherwise try to parse as rgba values
 	std::string coeff;
 	std::stringstream coeffSS(coeffs);
-	
+
 	osg::Vec4 vec;
-	
+
 	i = 0;
 	while(std::getline(coeffSS, coeff, ',')) {
 		boost::trim(coeff);
@@ -595,13 +615,13 @@ osg::Vec4 OSGInvoker::parseVec4(const std::string& coeffs, int& i) {
 			continue;
 		if (!isNumeric(coeff.c_str(), 10))
 			continue;
-		
+
 		vec[i] = strTo<float>(coeff);
 		i++;
 	}
 	return vec;
 }
-	
+
 void OSGInvoker::processChildren(const std::set<std::string>& validChildren, const Arabica::DOM::Node<std::string>& element) {
 	Arabica::DOM::NodeList<std::string> childs = element.getChildNodes();
 	for (int i = 0; i < childs.getLength(); ++i) {

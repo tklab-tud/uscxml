@@ -125,9 +125,9 @@ set_target_properties(scxml-test-framework-client PROPERTIES FOLDER "Tests")
 # add_test(test-curl-multi-api ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-completion)
 # set_target_properties(test-curl-multi-api PROPERTIES FOLDER "Tests")
 
-	add_executable(test-w3c src/test-w3c.cpp)
-	target_link_libraries(test-w3c uscxml)
-	set_target_properties(test-w3c PROPERTIES FOLDER "Tests")
+add_executable(test-w3c src/test-w3c.cpp)
+target_link_libraries(test-w3c uscxml)
+set_target_properties(test-w3c PROPERTIES FOLDER "Tests")
 
 file(GLOB_RECURSE W3C_TESTS
 	samples/w3c/*.scxml

@@ -1,17 +1,44 @@
+/**
+ *  @file
+ *  @author     2012-2013 Stefan Radomski (stefan.radomski@cs.tu-darmstadt.de)
+ *  @copyright  Simplified BSD
+ *
+ *  @cond
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the FreeBSD license as published by the FreeBSD
+ *  project.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ *  You should have received a copy of the FreeBSD license along with this
+ *  program. If not, see <http://www.opensource.org/licenses/bsd-license>.
+ *  @endcond
+ */
+
 #ifndef SAMPLEIOPROCESSOR_H_2CUY93KU
 #define SAMPLEIOPROCESSOR_H_2CUY93KU
 
-#include "uscxml/concurrency/eventqueue/DelayedEventQueue.h"
-#include "uscxml/Interpreter.h"
 #include "uscxml/Factory.h"
 
 #ifdef BUILD_AS_PLUGINS
 #include "uscxml/plugins/Plugins.h"
 #endif
 
+#if defined(_WIN32) && !defined(USCXML_STATIC)
+#	if (defined ioprocessor_sample_EXPORTS || defined USCXML_EXPORT)
+#		define USCXML_PLUGIN_API __declspec(dllexport)
+#	else
+#		define USCXML_PLUGIN_API __declspec(dllimport)
+#	endif
+#else
+#	define USCXML_PLUGIN_API
+#endif
+
 namespace uscxml {
 
-class SampleIOProcessor : public IOProcessorImpl {
+class USCXML_PLUGIN_API SampleIOProcessor : public IOProcessorImpl {
 public:
 	SampleIOProcessor();
 	virtual ~SampleIOProcessor();

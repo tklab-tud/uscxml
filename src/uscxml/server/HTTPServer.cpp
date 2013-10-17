@@ -1,3 +1,22 @@
+/**
+ *  @file
+ *  @author     2012-2013 Stefan Radomski (stefan.radomski@cs.tu-darmstadt.de)
+ *  @copyright  Simplified BSD
+ *
+ *  @cond
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the FreeBSD license as published by the FreeBSD
+ *  project.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ *  You should have received a copy of the FreeBSD license along with this
+ *  program. If not, see <http://www.opensource.org/licenses/bsd-license>.
+ *  @endcond
+ */
+
 #include "uscxml/config.h"
 
 #ifdef _WIN32
@@ -11,6 +30,8 @@
 
 #include <string>
 #include <iostream>
+
+extern "C" {
 #include <event2/dns.h>
 #include <event2/event.h>
 #include <event2/buffer.h>
@@ -18,6 +39,7 @@
 #include <event2/keyvalq_struct.h>
 #include <event2/http_struct.h>
 #include <event2/thread.h>
+}
 
 #include <glog/logging.h>
 #include <boost/algorithm/string.hpp>
@@ -46,18 +68,18 @@ HTTPServer::HTTPServer(unsigned short port, SSLConfig* sslConf) {
 	_base = event_base_new();
 	_http = evhttp_new(_base);
 	_thread = NULL;
-	
+
 	unsigned int allowedMethods =
-		EVHTTP_REQ_GET |
-		EVHTTP_REQ_POST |
-		EVHTTP_REQ_HEAD |
-		EVHTTP_REQ_PUT |
-		EVHTTP_REQ_DELETE |
-		EVHTTP_REQ_OPTIONS |
-		EVHTTP_REQ_TRACE |
-		EVHTTP_REQ_CONNECT |
-		EVHTTP_REQ_PATCH;
-	
+	    EVHTTP_REQ_GET |
+	    EVHTTP_REQ_POST |
+	    EVHTTP_REQ_HEAD |
+	    EVHTTP_REQ_PUT |
+	    EVHTTP_REQ_DELETE |
+	    EVHTTP_REQ_OPTIONS |
+	    EVHTTP_REQ_TRACE |
+	    EVHTTP_REQ_CONNECT |
+	    EVHTTP_REQ_PATCH;
+
 	evhttp_set_allowed_methods(_http, allowedMethods); // allow all methods
 
 	_handle = NULL;
@@ -73,7 +95,7 @@ HTTPServer::HTTPServer(unsigned short port, SSLConfig* sslConf) {
 		_sslPort = 0;
 	} else {
 		_sslPort = sslConf->port;
-		
+
 		// Initialize OpenSSL
 		SSL_library_init();
 		ERR_load_crypto_strings();
@@ -85,9 +107,9 @@ HTTPServer::HTTPServer(unsigned short port, SSLConfig* sslConf) {
 
 		SSL_CTX* ctx = SSL_CTX_new (SSLv23_server_method ());
 		SSL_CTX_set_options(ctx,
-												SSL_OP_SINGLE_DH_USE |
-												SSL_OP_SINGLE_ECDH_USE |
-												SSL_OP_NO_SSLv2);
+		                    SSL_OP_SINGLE_DH_USE |
+		                    SSL_OP_SINGLE_ECDH_USE |
+		                    SSL_OP_NO_SSLv2);
 
 		EC_KEY* ecdh = EC_KEY_new_by_curve_name(NID_X9_62_prime256v1);
 		SSL_CTX_set_tmp_ecdh (ctx, ecdh);
@@ -145,10 +167,10 @@ struct bufferevent* HTTPServer::sslBufferEventCallback(struct event_base *base, 
 	struct bufferevent* r;
 	SSL_CTX *ctx = (SSL_CTX *) arg;
 	r = bufferevent_openssl_socket_new (base,
-																			-1,
-																			SSL_new (ctx),
-																			BUFFEREVENT_SSL_ACCEPTING,
-																			BEV_OPT_CLOSE_ON_FREE);
+	                                    -1,
+	                                    SSL_new (ctx),
+	                                    BUFFEREVENT_SSL_ACCEPTING,
+	                                    BEV_OPT_CLOSE_ON_FREE);
 	return r;
 }
 
@@ -157,60 +179,60 @@ void HTTPServer::sslGeneralBufferEventCallback (struct evhttp_request *req, void
 	struct evbuffer *evb = NULL;
 	const char *uri = evhttp_request_get_uri (req);
 	struct evhttp_uri *decoded = NULL;
-	
+
 	/* We only handle POST requests. */
-	if (evhttp_request_get_command (req) != EVHTTP_REQ_POST)
-	{ evhttp_send_reply (req, 200, "OK", NULL);
+	if (evhttp_request_get_command (req) != EVHTTP_REQ_POST) {
+		evhttp_send_reply (req, 200, "OK", NULL);
 		return;
 	}
-	
+
 	printf ("Got a POST request for <%s>\n", uri);
-	
+
 	/* Decode the URI */
 	decoded = evhttp_uri_parse (uri);
-	if (! decoded)
-	{ printf ("It's not a good URI. Sending BADREQUEST\n");
+	if (! decoded) {
+		printf ("It's not a good URI. Sending BADREQUEST\n");
 		evhttp_send_error (req, HTTP_BADREQUEST, 0);
 		return;
 	}
-	
+
 	/* Decode the payload */
 	struct evkeyvalq kv;
 	memset (&kv, 0, sizeof (kv));
 	struct evbuffer *buf = evhttp_request_get_input_buffer (req);
 	evbuffer_add (buf, "", 1);    /* NUL-terminate the buffer */
 	char *payload = (char *) evbuffer_pullup (buf, -1);
-	if (0 != evhttp_parse_query_str (payload, &kv))
-	{ printf ("Malformed payload. Sending BADREQUEST\n");
+	if (0 != evhttp_parse_query_str (payload, &kv)) {
+		printf ("Malformed payload. Sending BADREQUEST\n");
 		evhttp_send_error (req, HTTP_BADREQUEST, 0);
 		return;
 	}
-	
+
 	/* Determine peer */
 	char *peer_addr;
 	ev_uint16_t peer_port;
 	struct evhttp_connection *con = evhttp_request_get_connection (req);
 	evhttp_connection_get_peer (con, &peer_addr, &peer_port);
-	
+
 	/* Extract passcode */
 	const char *passcode = evhttp_find_header (&kv, "passcode");
 	char response[256];
 	evutil_snprintf (response, sizeof (response),
-									 "Hi %s!  I %s your passcode.\n", peer_addr,
-									 (0 == strcmp (passcode, "R23")
-										?  "liked"
-										:  "didn't like"));
+	                 "Hi %s!  I %s your passcode.\n", peer_addr,
+	                 (0 == strcmp (passcode, "R23")
+	                  ?  "liked"
+	                  :  "didn't like"));
 	evhttp_clear_headers (&kv);   /* to free memory held by kv */
-	
+
 	/* This holds the content we're sending. */
 	evb = evbuffer_new ();
-	
+
 	evhttp_add_header (evhttp_request_get_output_headers (req),
-										 "Content-Type", "application/x-yaml");
+	                   "Content-Type", "application/x-yaml");
 	evbuffer_add (evb, response, strlen (response));
-	
+
 	evhttp_send_reply (req, 200, "OK", evb);
-	
+
 	if (decoded)
 		evhttp_uri_free (decoded);
 	if (evb)
@@ -267,7 +289,7 @@ void HTTPServer::httpRecvReqCallback(struct evhttp_request *req, void *callbackD
 	request.data.compound["httpMajor"] = Data(toStr((unsigned short)req->major), Data::VERBATIM);
 	request.data.compound["httpMinor"] = Data(toStr((unsigned short)req->minor), Data::VERBATIM);
 	request.data.compound["uri"] = Data(HTTPServer::getBaseURL() + req->uri, Data::VERBATIM);
-	
+
 	char* pathCStr = evhttp_decode_uri(evhttp_uri_get_path(evhttp_request_get_evhttp_uri(req)));
 	request.data.compound["path"] = Data(pathCStr, Data::VERBATIM);
 	free(pathCStr);
@@ -350,7 +372,7 @@ void HTTPServer::httpRecvReqCallback(struct evhttp_request *req, void *callbackD
 				size_t equalPos = item.find('=');
 				if (equalPos == std::string::npos)
 					continue;
-				
+
 				key = item.substr(0, equalPos);
 				value = item.substr(equalPos + 1, item.length() - (equalPos + 1));
 				char* keyCStr = evhttp_decode_uri(key.c_str());

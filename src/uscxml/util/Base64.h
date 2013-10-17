@@ -3,11 +3,12 @@
 #define BASE64_H_5FKG12HF
 
 #include <string>
+#include "uscxml/Common.h"
 
 namespace uscxml {
 
-std::string base64_encode(char const* , unsigned int len);
-std::string base64_decode(std::string const& s);
+USCXML_API std::string base64_encode(char const* , unsigned int len);
+USCXML_API std::string base64_decode(std::string const& s);
 
 }
 

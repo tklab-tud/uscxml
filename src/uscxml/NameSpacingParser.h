@@ -1,6 +1,26 @@
+/**
+ *  @file
+ *  @author     2012-2013 Stefan Radomski (stefan.radomski@cs.tu-darmstadt.de)
+ *  @copyright  Simplified BSD
+ *
+ *  @cond
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the FreeBSD license as published by the FreeBSD
+ *  project.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ *  You should have received a copy of the FreeBSD license along with this
+ *  program. If not, see <http://www.opensource.org/licenses/bsd-license>.
+ *  @endcond
+ */
+
 #ifndef NAMESPACINGPARSER_H_1S91TNPM
 #define NAMESPACINGPARSER_H_1S91TNPM
 
+#include "uscxml/Common.h"
 #include <DOM/SAX2DOM/SAX2DOM.hpp>
 #include <SAX/helpers/CatchErrorHandler.hpp>
 
@@ -13,7 +33,7 @@ class ScriptEntityResolver : public Arabica::SAX::EntityResolver<std::string> {
 	}
 };
 
-class NameSpacingParser : public Arabica::SAX2DOM::Parser<std::string> {
+class USCXML_API NameSpacingParser : public Arabica::SAX2DOM::Parser<std::string> {
 public:
 	NameSpacingParser();
 	NameSpacingParser(const NameSpacingParser& other) {}

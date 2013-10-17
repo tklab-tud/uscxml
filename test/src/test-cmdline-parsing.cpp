@@ -33,8 +33,6 @@ int main(int argc, char** argv) {
 		assert(options.logLevel == 10);
 		assert(!options.withHTTP);
 		assert(!options); // invalid as no SCXML document is given
-		
-		optind = 0;
 	}
 
 	if (true) {
@@ -50,8 +48,6 @@ int main(int argc, char** argv) {
 		assert(options.verbose);
 		assert(options.interpreters.size() == 1);
 		assert(options.interpreters.find("/foo/bar.scxml") != options.interpreters.end());
-
-		optind = 0;
 	}
 
 	if (true) {
@@ -76,8 +72,6 @@ int main(int argc, char** argv) {
 		assert(!options.interpreters["/foo/bar1.scxml"]->withHTTP);
 		assert(options.interpreters["/foo/bar2.scxml"]->withHTTP);
 		assert(!options.interpreters["/foo/bar3.scxml"]->withHTTP);
-
-		optind = 0;
 	}
 
 	if (true) {
@@ -97,8 +91,6 @@ int main(int argc, char** argv) {
 		assert(options.interpreters.find("/foo/bar1.scxml") != options.interpreters.end());
 		assert(options.interpreters["/foo/bar1.scxml"]->additionalParameters.find("vrml-path") != options.interpreters["/foo/bar1.scxml"]->additionalParameters.end());
 		assert(options.interpreters["/foo/bar1.scxml"]->additionalParameters.find("tmp-path") != options.interpreters["/foo/bar1.scxml"]->additionalParameters.end());
-		
-		optind = 0;
 	}
 
 	return EXIT_SUCCESS;

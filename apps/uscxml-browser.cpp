@@ -119,7 +119,7 @@ int main(int argc, char** argv) {
 	if (!options) {
 		InterpreterOptions::printUsageAndExit(argv[0]);
 	}
-	
+
 	// setup logging
 	google::LogToStderr();
 	google::InitGoogleLogging(argv[0]);
@@ -131,13 +131,13 @@ int main(int argc, char** argv) {
 		sslConf->privateKey = options.certificate;
 		sslConf->publicKey = options.certificate;
 		sslConf->port = options.httpsPort;
-		
+
 	} else if (options.privateKey.length() > 0 && options.publicKey.length() > 0) {
 		sslConf = new HTTPServer::SSLConfig();
 		sslConf->privateKey = options.privateKey;
 		sslConf->publicKey = options.publicKey;
 		sslConf->port = options.httpsPort;
-		
+
 	}
 	HTTPServer::getInstance(options.httpPort, sslConf);
 
@@ -148,7 +148,7 @@ int main(int argc, char** argv) {
 
 		InterpreterOptions* currOptions = confIter->second;
 		std::string documentURL = confIter->first;
-		
+
 		LOG(INFO) << "Processing " << documentURL;
 		Interpreter interpreter = Interpreter::fromURI(documentURL);
 		if (interpreter) {
@@ -163,7 +163,7 @@ int main(int argc, char** argv) {
 				SCXMLDotWriter* dotWriter = new SCXMLDotWriter();
 				interpreter.addMonitor(dotWriter);
 			}
-			
+
 			interpreters.push_back(interpreter);
 
 		} else {
@@ -192,6 +192,6 @@ int main(int argc, char** argv) {
 			}
 		}
 	}
-	
+
 	return EXIT_SUCCESS;
 }

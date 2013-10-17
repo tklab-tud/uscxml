@@ -1,10 +1,33 @@
+/**
+ *  @file
+ *  @author     2012-2013 Stefan Radomski (stefan.radomski@cs.tu-darmstadt.de)
+ *  @copyright  Simplified BSD
+ *
+ *  @cond
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the FreeBSD license as published by the FreeBSD
+ *  project.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ *  You should have received a copy of the FreeBSD license along with this
+ *  program. If not, see <http://www.opensource.org/licenses/bsd-license>.
+ *  @endcond
+ */
+
 #ifndef HTTPSERVER_H_AIH108EG
 #define HTTPSERVER_H_AIH108EG
 
 #include <string>
 #include <map>
 
+#include "uscxml/Common.h"
+
+extern "C" {
 #include <event2/http.h>
+}
 
 #include "uscxml/concurrency/tinythread.h"
 #include "uscxml/Message.h"
@@ -13,7 +36,7 @@ namespace uscxml {
 
 class HTTPServlet;
 
-class HTTPServer {
+class USCXML_API HTTPServer {
 public:
 	class Request : public Event {
 	public:
@@ -33,7 +56,7 @@ public:
 		std::string publicKey;
 		unsigned short port;
 	};
-	
+
 	class Reply {
 	public:
 		Reply(Request req) : status(200), type(req.data.compound["type"].atom), curlReq(req.curlReq) {}
@@ -98,10 +121,10 @@ private:
 	bool _isRunning;
 
 	friend class HTTPServlet;
-	
+
 #if (defined EVENT_SSL_FOUND && defined OPENSSL_FOUND)
 	struct evhttp* _https;
-  struct evhttp_bound_socket* _sslHandle;
+	struct evhttp_bound_socket* _sslHandle;
 	unsigned short _sslPort;
 
 	static struct bufferevent* sslBufferEventCallback(struct event_base *base, void *arg);
@@ -109,7 +132,7 @@ private:
 #endif
 };
 
-class HTTPServlet {
+class USCXML_API HTTPServlet {
 public:
 	virtual bool httpRecvRequest(const HTTPServer::Request& request) = 0;
 	virtual void setURL(const std::string& url) = 0; /// Called by the server with the actual URL

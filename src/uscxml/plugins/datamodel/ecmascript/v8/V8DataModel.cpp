@@ -1,3 +1,22 @@
+/**
+ *  @file
+ *  @author     2012-2013 Stefan Radomski (stefan.radomski@cs.tu-darmstadt.de)
+ *  @copyright  Simplified BSD
+ *
+ *  @cond
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the FreeBSD license as published by the FreeBSD
+ *  project.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ *  You should have received a copy of the FreeBSD license along with this
+ *  program. If not, see <http://www.opensource.org/licenses/bsd-license>.
+ *  @endcond
+ */
+
 #include "uscxml/Common.h"
 #include "uscxml/config.h"
 #include "V8DataModel.h"
@@ -46,7 +65,7 @@ using namespace Arabica::DOM;
 
 #ifdef BUILD_AS_PLUGINS
 PLUMA_CONNECTOR
-bool connect(pluma::Host& host) {
+bool pluginConnect(pluma::Host& host) {
 	host.add( new V8DataModelProvider() );
 	return true;
 }
@@ -157,7 +176,7 @@ v8::Handle<v8::Value> V8DataModel::getIOProcessors(v8::Local<v8::String> propert
 	while(ioProcIter != ioProcessors.end()) {
 //			std::cout << ioProcIter->first << std::endl;
 		dataModel->_ioProcessors->Set(v8::String::New(ioProcIter->first.c_str()),
-																	dataModel->getDataAsValue(ioProcIter->second.getDataModelVariables()));
+		                              dataModel->getDataAsValue(ioProcIter->second.getDataModelVariables()));
 		ioProcIter++;
 	}
 	return dataModel->_ioProcessors;
@@ -165,7 +184,7 @@ v8::Handle<v8::Value> V8DataModel::getIOProcessors(v8::Local<v8::String> propert
 
 v8::Handle<v8::Value> V8DataModel::getInvokers(v8::Local<v8::String> property, const v8::AccessorInfo& info) {
 	V8DataModel* dataModel = V8DOM::toClassPtr<V8DataModel>(info.Data());
-	
+
 	dataModel->_invokers = v8::Persistent<v8::Object>::New(v8::Object::New());
 	//v8::Handle<v8::Object> ioProcessorObj = v8::Object::New();
 	std::map<std::string, Invoker> invokers = dataModel->_interpreter->getInvokers();
@@ -173,7 +192,7 @@ v8::Handle<v8::Value> V8DataModel::getInvokers(v8::Local<v8::String> property, c
 	while(invokerIter != invokers.end()) {
 		//			std::cout << ioProcIter->first << std::endl;
 		dataModel->_invokers->Set(v8::String::New(invokerIter->first.c_str()),
-															dataModel->getDataAsValue(invokerIter->second.getDataModelVariables()));
+		                          dataModel->getDataAsValue(invokerIter->second.getDataModelVariables()));
 		invokerIter++;
 	}
 	return dataModel->_invokers;
@@ -376,12 +395,12 @@ v8::Handle<v8::Value> V8DataModel::getDataAsValue(const Data& data) {
 	}
 	if (data.atom.length() > 0) {
 		switch (data.type) {
-			case Data::VERBATIM:
-				return v8::String::New(data.atom.c_str());
-				break;
-			case Data::INTERPRETED:
-				return evalAsValue(data.atom);
-				break;
+		case Data::VERBATIM:
+			return v8::String::New(data.atom.c_str());
+			break;
+		case Data::INTERPRETED:
+			return evalAsValue(data.atom);
+			break;
 		}
 	}
 	if (data.binary) {

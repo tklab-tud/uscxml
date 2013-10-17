@@ -1,5 +1,6 @@
-FIND_PATH(LIBICAL_INCLUDE_DIR libical/ical.h
-  PATH_SUFFIXES include src
+# we cannot search for ical.h as we might find the wrong one without the libical suffix
+FIND_PATH(LIBICAL_INCLUDE_DIR icalcomponent.h
+  PATH_SUFFIXES include/libical
   PATHS
   /usr/local
   /usr

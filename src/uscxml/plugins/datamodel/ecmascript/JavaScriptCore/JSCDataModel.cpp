@@ -1,3 +1,22 @@
+/**
+ *  @file
+ *  @author     2012-2013 Stefan Radomski (stefan.radomski@cs.tu-darmstadt.de)
+ *  @copyright  Simplified BSD
+ *
+ *  @cond
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the FreeBSD license as published by the FreeBSD
+ *  project.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ *  You should have received a copy of the FreeBSD license along with this
+ *  program. If not, see <http://www.opensource.org/licenses/bsd-license>.
+ *  @endcond
+ */
+
 #include "uscxml/Common.h"
 #include "uscxml/config.h"
 #include "JSCDataModel.h"
@@ -47,7 +66,7 @@ using namespace Arabica::DOM;
 
 #ifdef BUILD_AS_PLUGINS
 PLUMA_CONNECTOR
-bool connect(pluma::Host& host) {
+bool pluginConnect(pluma::Host& host) {
 	host.add( new JSCDataModelProvider() );
 	return true;
 }
@@ -119,7 +138,7 @@ boost::shared_ptr<DataModelImpl> JSCDataModel::create(InterpreterImpl* interpret
 	JSObjectRef jsPrint = JSObjectMake(dm->_ctx, jsPrintClassRef, dm.get());
 	JSStringRef printName = JSStringCreateWithUTF8CString("print");
 	JSObjectSetProperty(dm->_ctx, JSContextGetGlobalObject(dm->_ctx), printName, jsPrint, kJSPropertyAttributeNone, NULL);
-	JSStringRelease(inName);
+	JSStringRelease(printName);
 
 	JSClassRef jsInvokerClassRef = JSClassCreate(&jsInvokersClassDef);
 	JSObjectRef jsInvoker = JSObjectMake(dm->_ctx, jsInvokerClassRef, dm.get());
@@ -309,11 +328,11 @@ JSValueRef JSCDataModel::getDataAsValue(const Data& data) {
 	}
 	if (data.binary) {
 		uscxml::ArrayBuffer* localInstance = new uscxml::ArrayBuffer(data.binary);
-		
+
 		JSClassRef retClass = JSCArrayBuffer::getTmpl();
 		struct JSCArrayBuffer::JSCArrayBufferPrivate* retPrivData = new JSCArrayBuffer::JSCArrayBufferPrivate();
 		retPrivData->nativeObj = localInstance;
-		
+
 		JSObjectRef retObj = JSObjectMake(_ctx, retClass, retPrivData);
 		return retObj;
 	}

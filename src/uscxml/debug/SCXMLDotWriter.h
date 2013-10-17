@@ -1,3 +1,22 @@
+/**
+ *  @file
+ *  @author     2012-2013 Stefan Radomski (stefan.radomski@cs.tu-darmstadt.de)
+ *  @copyright  Simplified BSD
+ *
+ *  @cond
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the FreeBSD license as published by the FreeBSD
+ *  project.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ *  You should have received a copy of the FreeBSD license along with this
+ *  program. If not, see <http://www.opensource.org/licenses/bsd-license>.
+ *  @endcond
+ */
+
 #ifndef SCXMLDOTWRITER_H_AOP0OHXX
 #define SCXMLDOTWRITER_H_AOP0OHXX
 
@@ -32,7 +51,7 @@ class Interpreter;
  * # unflatten can be used to create more compact graphs
  * find . -name "*.dot" -exec unflatten -f -l2 -o {}.flat.dot {} \;
  */
-class SCXMLDotWriter : public InterpreterMonitor {
+class USCXML_API SCXMLDotWriter : public InterpreterMonitor {
 public:
 
 	struct ElemDetails {

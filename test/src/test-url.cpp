@@ -47,7 +47,7 @@ int main(int argc, char** argv) {
 	WSADATA wsaData;
 	WSAStartup(MAKEWORD(2, 2), &wsaData);
 #endif
-	
+
 	std::string exeName = argv[0];
 	exeName = exeName.substr(exeName.find_last_of("\\/") + 1);
 

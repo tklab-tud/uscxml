@@ -1,3 +1,22 @@
+/**
+ *  @file
+ *  @author     2012-2013 Stefan Radomski (stefan.radomski@cs.tu-darmstadt.de)
+ *  @copyright  Simplified BSD
+ *
+ *  @cond
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the FreeBSD license as published by the FreeBSD
+ *  project.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ *  You should have received a copy of the FreeBSD license along with this
+ *  program. If not, see <http://www.opensource.org/licenses/bsd-license>.
+ *  @endcond
+ */
+
 #include "MilesSessionInvoker.h"
 #include <glog/logging.h>
 
@@ -11,7 +30,7 @@ namespace uscxml {
 
 #ifdef BUILD_AS_PLUGINS
 PLUMA_CONNECTOR
-bool connect(pluma::Host& host) {
+bool pluginConnect(pluma::Host& host) {
 	host.add( new MilesSessionInvokerProvider() );
 	return true;
 }
@@ -41,10 +60,10 @@ void MilesSessionInvoker::send(const SendRequest& req) {
 	if (boost::iequals(req.name, "disconnect")) {
 		std::string reflectorIP = "127.0.0.1";
 		Event::getParam(req.params, "reflectorip", reflectorIP);
-		
+
 		std::string problemName = "Generic";
 		Event::getParam(req.params, "problemname", problemName);
-		
+
 		int rv;
 		rv = miles_disconnect_reflector_session((char*)reflectorIP.c_str(), (char*)problemName.c_str());
 		if (!rv) {
@@ -60,31 +79,31 @@ void MilesSessionInvoker::send(const SendRequest& req) {
 		imageURL2.toAbsolute(_interpreter->getBaseURI());
 
 		std::stringstream ssImage;
-		
+
 		if (alternate) {
 			ssImage << imageURL1;
 		} else {
 			ssImage << imageURL2;
 		}
 		alternate = !alternate;
-		
+
 		std::string imageContent = ssImage.str();
-		
+
 		Event retEv;
 		retEv.data.compound["base64"] = Data(base64_encode(imageContent.data(), imageContent.size()), Data::VERBATIM);
 
 		std::string origin;
 		Event::getParam(req.params, "origin", origin);
 		retEv.data.compound["origin"] = origin;
-		
+
 		tthread::this_thread::sleep_for(tthread::chrono::milliseconds(20));
-		
+
 		returnEvent(retEv);
-		
+
 	} else if (boost::iequals(req.name, "connect")) {
 		std::string email = "someSaneDefault";
 		Event::getParam(req.params, "email", email);
-		
+
 		std::string reflectorIP = "127.0.0.1";
 		Event::getParam(req.params, "reflectorip", reflectorIP);
 

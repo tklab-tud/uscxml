@@ -1,3 +1,22 @@
+/**
+ *  @file
+ *  @author     2012-2013 Stefan Radomski (stefan.radomski@cs.tu-darmstadt.de)
+ *  @copyright  Simplified BSD
+ *
+ *  @cond
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the FreeBSD license as published by the FreeBSD
+ *  project.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ *  You should have received a copy of the FreeBSD license along with this
+ *  program. If not, see <http://www.opensource.org/licenses/bsd-license>.
+ *  @endcond
+ */
+
 #include "OSGConverter.h"
 #include <glog/logging.h>
 #include "uscxml/config.h"
@@ -34,7 +53,7 @@ namespace uscxml {
 
 #ifdef BUILD_AS_PLUGINS
 PLUMA_CONNECTOR
-bool connect(pluma::Host& host) {
+bool pluginConnect(pluma::Host& host) {
 	host.add( new OSGConverterProvider() );
 	return true;
 }
@@ -145,7 +164,7 @@ void OSGConverter::cancel(const std::string sendId) {
 
 void OSGConverter::invoke(const InvokeRequest& req) {
 	int nrThreads = 1;
-	
+
 	if (req.params.find("threads") != req.params.end() && isNumeric(req.params.find("threads")->second.atom.c_str(), 10)) {
 		nrThreads = strTo<int>(req.params.find("threads")->second);
 	}
@@ -194,8 +213,8 @@ void OSGConverter::process(const SendRequest& req) {
 	bool autoRotate = true;
 	if (req.params.find("autorotate") != req.params.end()) {
 		if (boost::iequals(req.params.find("autorotate")->second.atom, "off") ||
-				boost::iequals(req.params.find("autorotate")->second.atom, "0") ||
-				boost::iequals(req.params.find("autorotate")->second.atom, "false")) {
+		        boost::iequals(req.params.find("autorotate")->second.atom, "0") ||
+		        boost::iequals(req.params.find("autorotate")->second.atom, "false")) {
 			autoRotate = false;
 		}
 	}
@@ -210,7 +229,7 @@ void OSGConverter::process(const SendRequest& req) {
 	sceneGraph->addChild(model);
 
 	osgDB::ReaderWriter::WriteResult result;
-	
+
 	osg::ref_ptr<osgDB::ReaderWriter> writer = osgDB::Registry::instance()->getReaderWriterForExtension(format);
 	if(writer.valid()) {
 		std::stringstream ss;
@@ -225,7 +244,7 @@ void OSGConverter::process(const SendRequest& req) {
 			return;
 		}
 	}
-	
+
 	/**
 	 * If we failed to interpret the extension as another 3D file, try to make a screenshot.
 	 */
@@ -273,7 +292,7 @@ void OSGConverter::process(const SendRequest& req) {
 			LOG(ERROR) << "Traits returned with zero dimensions";
 			return;
 		}
-		
+
 		GLenum pbuffer = gc->getTraits()->doubleBuffer ? GL_BACK : GL_FRONT;
 
 		viewer.setCameraManipulator(new osgGA::TrackballManipulator());
@@ -289,10 +308,10 @@ void OSGConverter::process(const SendRequest& req) {
 		viewer.getCamera()->setClearColor(osg::Vec4f(1.0f,1.0f,1.0f,1.0f));
 		viewer.getCamera()->setClearMask(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		viewer.getCameraManipulator()->setByMatrix(osg::Matrix::lookAt(osg::Vec3d(0,0,bs.radius() * (-3.4 * zoom)),  // eye
-						(osg::Vec3d)bs.center(),           // center
-						osg::Vec3d(0,1,0)));               // up
+		        (osg::Vec3d)bs.center(),           // center
+		        osg::Vec3d(0,1,0)));               // up
 
-	//  viewer.home();
+		//  viewer.home();
 
 		// perform one viewer iteration
 		viewer.realize();
@@ -310,9 +329,9 @@ void OSGConverter::reportSuccess(const SendRequest& req, const Data& content) {
 
 	std::string format;
 	Event::getParam(req.params, "format", format);
-	
+
 	event.data.compound["mimetype"] = Data(URL::getMimeType(format), Data::VERBATIM);
-	
+
 	if (event.name.length() == 0)
 		event.name = "convert";
 	event.name += ".success";
@@ -530,11 +549,11 @@ void OSGConverter::dumpMatrix(const osg::Matrix& m) {
 }
 
 void OSGConverter::NameRespectingWriteToFile::operator()(const osg::Image& image, const unsigned int context_id) {
-	
+
 //	std::cout << "NameRespectingWriteToFile" << std::endl;
 //	std::cout << image.s() << std::endl;
 //	std::cout << image.t() << std::endl;
-	
+
 	// write to memory first
 	std::string format;
 	if (_req.params.find("format") != _req.params.end()) {
@@ -552,21 +571,21 @@ void OSGConverter::NameRespectingWriteToFile::operator()(const osg::Image& image
 	if (!osgDB::writeImageFile(image, tempFile, op)) {
 		_converter->reportFailure(_req);
 	}
-	
+
 	char* buffer = NULL;
 	size_t length = 0;
 	{
 		std::ifstream file(tempFile.c_str());
-		
+
 		file.seekg(0, std::ios::end);
 		length = file.tellg();
 		file.seekg(0, std::ios::beg);
 		buffer = (char*)malloc(length);
 		file.read(buffer, length);
 	}
-	
-  std::cout << tempFile << std::endl;
-	
+
+	std::cout << tempFile << std::endl;
+
 //	remove(tempFile.c_str());
 //	osg::ref_ptr<osgDB::ReaderWriter> writerFormat = osgDB::Registry::instance()->getReaderWriterForExtension(format);
 //	if(!writerFormat.valid())
@@ -577,7 +596,7 @@ void OSGConverter::NameRespectingWriteToFile::operator()(const osg::Image& image
 	std::stringstream ssFormat;
 
 	osgDB::ReaderWriter::WriteResult res = writerFormat->writeImage(image, ssFormat, op);
-	
+
 	if (_filename.length() > 0) {
 		std::string tmpName = _filename;
 		size_t pathSep = _filename.find_last_of(PATH_SEPERATOR);
@@ -589,7 +608,7 @@ void OSGConverter::NameRespectingWriteToFile::operator()(const osg::Image& image
 			std::ofstream outFile(tmpName.c_str());
 			outFile << ssFormat.str();
 		}
-		
+
 		if (pathSep != std::string::npos) {
 			int err = rename(tmpName.c_str(), _filename.c_str());
 			if (err) {
@@ -598,7 +617,7 @@ void OSGConverter::NameRespectingWriteToFile::operator()(const osg::Image& image
 		}
 	}
 #endif
-	
+
 	Data content;
 	content.compound[format] = Data(buffer, length, false);
 

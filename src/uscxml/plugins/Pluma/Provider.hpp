@@ -161,7 +161,7 @@ private:
 /// #include "Keyboard.hpp"
 ///
 /// PLUMA_CONNECTOR
-/// bool connect(pluma::Host& host){
+/// bool pluginConnect(pluma::Host& host){
 ///     // add a keyboard provider to host
 ///     host.add( new KeyboardProvider() );
 ///     return true;

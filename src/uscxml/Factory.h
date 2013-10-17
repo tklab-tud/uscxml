@@ -1,6 +1,26 @@
+/**
+ *  @file
+ *  @author     2012-2013 Stefan Radomski (stefan.radomski@cs.tu-darmstadt.de)
+ *  @copyright  Simplified BSD
+ *
+ *  @cond
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the FreeBSD license as published by the FreeBSD
+ *  project.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ *  You should have received a copy of the FreeBSD license along with this
+ *  program. If not, see <http://www.opensource.org/licenses/bsd-license>.
+ *  @endcond
+ */
+
 #ifndef FACTORY_H_5WKLGPRB
 #define FACTORY_H_5WKLGPRB
 
+#include "uscxml/Common.h"
 #include "uscxml/Message.h"
 #include "uscxml/Convenience.h"
 
@@ -17,7 +37,7 @@ namespace uscxml {
 
 class InterpreterImpl;
 
-class ExecutableContentImpl {
+class USCXML_API ExecutableContentImpl {
 public:
 	ExecutableContentImpl() {};
 	virtual ~ExecutableContentImpl() {};
@@ -39,7 +59,7 @@ protected:
 	InterpreterImpl* _interpreter;
 };
 
-class ExecutableContent {
+class USCXML_API ExecutableContent {
 public:
 	ExecutableContent() : _impl() {}
 	ExecutableContent(boost::shared_ptr<ExecutableContentImpl> const impl) : _impl(impl) { }
@@ -87,7 +107,7 @@ protected:
 
 };
 
-class EventHandlerImpl {
+class USCXML_API EventHandlerImpl {
 public:
 	virtual ~EventHandlerImpl() {}
 
@@ -118,7 +138,7 @@ protected:
 
 };
 
-class EventHandler {
+class USCXML_API EventHandler {
 public:
 	EventHandler() : _impl() {}
 	EventHandler(boost::shared_ptr<EventHandlerImpl> const impl) : _impl(impl) { }
@@ -154,14 +174,14 @@ protected:
 	friend class InterpreterImpl;
 };
 
-class IOProcessorImpl : public EventHandlerImpl {
+class USCXML_API IOProcessorImpl : public EventHandlerImpl {
 public:
 	IOProcessorImpl() {};
 	virtual ~IOProcessorImpl() {};
 	virtual boost::shared_ptr<IOProcessorImpl> create(InterpreterImpl* interpreter) = 0;
 };
 
-class IOProcessor : public EventHandler {
+class USCXML_API IOProcessor : public EventHandler {
 public:
 	IOProcessor() : _impl() {}
 	IOProcessor(boost::shared_ptr<IOProcessorImpl> const impl) : EventHandler(impl), _impl(impl) { }
@@ -191,14 +211,14 @@ protected:
 	friend class InterpreterImpl;
 };
 
-class InvokerImpl : public EventHandlerImpl {
+class USCXML_API InvokerImpl : public EventHandlerImpl {
 public:
 	virtual ~InvokerImpl() {}
 	virtual void invoke(const InvokeRequest& req) = 0;
 	virtual boost::shared_ptr<InvokerImpl> create(InterpreterImpl* interpreter) = 0;
 };
 
-class Invoker : public EventHandler {
+class USCXML_API Invoker : public EventHandler {
 public:
 	Invoker() : _impl() {}
 	Invoker(boost::shared_ptr<InvokerImpl> const impl) : EventHandler(impl), _impl(impl) { }
@@ -231,7 +251,7 @@ protected:
 	boost::shared_ptr<InvokerImpl> _impl;
 };
 
-class DataModelImpl {
+class USCXML_API DataModelImpl {
 public:
 	virtual ~DataModelImpl() {}
 	virtual boost::shared_ptr<DataModelImpl> create(InterpreterImpl* interpreter) = 0;
@@ -278,7 +298,7 @@ public:
 	InterpreterImpl* _interpreter;
 };
 
-class DataModel {
+class USCXML_API DataModel {
 public:
 	DataModel() : _impl() {}
 	DataModel(const boost::shared_ptr<DataModelImpl> impl) : _impl(impl) { }
@@ -377,7 +397,7 @@ protected:
 	boost::shared_ptr<DataModelImpl> _impl;
 };
 
-class Factory {
+class USCXML_API Factory {
 public:
 	Factory(Factory* parentFactory);
 

@@ -19,7 +19,8 @@ if (BUILD_DM_ECMA)
 			add_library(
 				datamodel_jsc SHARED 
 				${JSC_DATAMODEL}
-				${JSC_DOM})
+				${JSC_DOM}
+				"../Plugins.cpp")
 			target_link_libraries(datamodel_jsc  uscxml ${JSC_LIBRARY})
 			set_target_properties(datamodel_jsc PROPERTIES FOLDER "Plugin DataModel")
 		else()		
@@ -51,7 +52,8 @@ if (BUILD_DM_ECMA)
 				add_library(
 					datamodel_v8 SHARED 
 					${V8_DATAMODEL}
-					${V8_DOM})
+					${V8_DOM}
+					"../Plugins.cpp")
 				target_link_libraries(datamodel_v8 uscxml ${V8_LIBRARY})
 				set_target_properties(datamodel_v8 PROPERTIES FOLDER "Plugin DataModel")
 			else()
@@ -72,9 +74,10 @@ file(GLOB NULL_DATAMODEL
 )
 if (BUILD_AS_PLUGINS)
 	source_group("" FILES ${NULL_DATAMODEL})
-	add_library(datamodel_null SHARED ${NULL_DATAMODEL})
+	add_library(datamodel_null SHARED ${NULL_DATAMODEL} "../Plugins.cpp")
 	target_link_libraries(datamodel_null uscxml)
 	set_target_properties(datamodel_null PROPERTIES FOLDER "Plugin DataModel")
+	set_target_properties(datamodel_null PROPERTIES COMPILE_FLAGS "-DPLUGIN_EXPORTS")
 else()
 	list (APPEND USCXML_FILES ${NULL_DATAMODEL})
 endif()
@@ -90,7 +93,7 @@ if (BUILD_DM_XPATH)
 	)
 	if (BUILD_AS_PLUGINS)
 		source_group("" FILES ${XPATH_DATAMODEL})
-		add_library(datamodel_xpath SHARED ${XPATH_DATAMODEL})
+		add_library(datamodel_xpath SHARED ${XPATH_DATAMODEL} "../Plugins.cpp")
 		target_link_libraries(datamodel_xpath uscxml)
 		set_target_properties(datamodel_xpath PROPERTIES FOLDER "Plugin DataModel")
 	else()
@@ -118,7 +121,8 @@ if (SWI_FOUND AND BUILD_DM_PROLOG)
 		source_group("" FILES ${SWI_DATAMODEL})
 		add_library(
 			datamodel_swi SHARED 
-			${SWI_DATAMODEL})
+			${SWI_DATAMODEL}
+			"../Plugins.cpp")
 		target_link_libraries(datamodel_swi 
 			uscxml
 			${GMP_LIBRARY}

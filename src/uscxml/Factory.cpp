@@ -1,4 +1,22 @@
-#include "uscxml/Common.h"
+/**
+ *  @file
+ *  @author     2012-2013 Stefan Radomski (stefan.radomski@cs.tu-darmstadt.de)
+ *  @copyright  Simplified BSD
+ *
+ *  @cond
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the FreeBSD license as published by the FreeBSD
+ *  project.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ *  You should have received a copy of the FreeBSD license along with this
+ *  program. If not, see <http://www.opensource.org/licenses/bsd-license>.
+ *  @endcond
+ */
+
 #include "uscxml/config.h"
 
 #include "uscxml/Factory.h"
@@ -23,14 +41,15 @@
 # include "uscxml/plugins/invoker/system/XmlBridgeInvoker.h"
 # include "uscxml/plugins/invoker/xhtml/XHTMLInvoker.h"
 
+
 #ifdef PROTOBUF_FOUND
-# include "uscxml/plugins/ioprocessor/modality/MMIHTTPIOProcessor.h"
+//# include "uscxml/plugins/ioprocessor/modality/MMIHTTPIOProcessor.h"
 #endif
 
-# ifdef UMUNDO_FOUND
+# ifdef UMUNDO_FOUND 
 #   include "uscxml/plugins/invoker/umundo/UmundoInvoker.h"
-#   include "uscxml/plugins/invoker/vxml/VoiceXMLInvoker.h"
-# endif
+//#   include "uscxml/plugins/invoker/vxml/VoiceXMLInvoker.h"
+#endif
 
 # ifdef OPENSCENEGRAPH_FOUND
 #   include "uscxml/plugins/invoker/graphics/openscenegraph/OSGInvoker.h"
@@ -39,7 +58,7 @@
 
 # ifdef MILES_FOUND
 #   include "uscxml/plugins/invoker/miles/MilesSessionInvoker.h"
-#   include "uscxml/plugins/invoker/miles/SpatialAudio.h"
+//#   include "uscxml/plugins/invoker/miles/SpatialAudio.h"
 # endif
 
 # ifdef FFMPEG_FOUND
@@ -145,10 +164,12 @@ Factory::Factory() {
 		UmundoInvoker* invoker = new UmundoInvoker();
 		registerInvoker(invoker);
 	}
+#if 0
 	{
 		VoiceXMLInvoker* invoker = new VoiceXMLInvoker();
 		registerInvoker(invoker);
 	}
+#endif
 #endif
 
 #ifdef MILES_FOUND
@@ -157,10 +178,10 @@ Factory::Factory() {
 		MilesSessionInvoker* invoker = new MilesSessionInvoker();
 		registerInvoker(invoker);
 	}
-	{
-		SpatialAudio* invoker = new SpatialAudio();
-		registerInvoker(invoker);
-	}
+	// {
+	//  SpatialAudio* invoker = new SpatialAudio();
+	//  registerInvoker(invoker);
+	// }
 #endif
 
 #ifdef FFMPEG_FOUND
@@ -232,8 +253,8 @@ Factory::Factory() {
 
 #ifdef PROTOBUF_FOUND
 	{
-		MMIHTTPIOProcessor* ioProcessor = new MMIHTTPIOProcessor();
-		registerIOProcessor(ioProcessor);
+    // MMIHTTPIOProcessor* ioProcessor = new MMIHTTPIOProcessor();
+    // registerIOProcessor(ioProcessor);
 	}
 #endif
 #endif

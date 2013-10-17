@@ -1,3 +1,22 @@
+/**
+ *  @file
+ *  @author     2012-2013 Stefan Radomski (stefan.radomski@cs.tu-darmstadt.de)
+ *  @copyright  Simplified BSD
+ *
+ *  @cond
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the FreeBSD license as published by the FreeBSD
+ *  project.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ *  You should have received a copy of the FreeBSD license along with this
+ *  program. If not, see <http://www.opensource.org/licenses/bsd-license>.
+ *  @endcond
+ */
+
 #ifndef EVENT_H_XZAQ4HR
 #define EVENT_H_XZAQ4HR
 
@@ -15,6 +34,8 @@
 #include <boost/lexical_cast.hpp>
 #include <inttypes.h>
 
+#include "uscxml/Common.h"
+
 #include "uscxml/Convenience.h"
 
 #include "uscxml/util/MD5.h"
@@ -27,7 +48,7 @@
 
 namespace uscxml {
 
-class Blob {
+class USCXML_API Blob {
 public:
 	~Blob();
 	Blob(size_t size);
@@ -39,18 +60,18 @@ public:
 	std::string md5() {
 		return uscxml::md5(data, size);
 	}
-	
+
 	std::string base64() {
 		return base64_encode((char* const)data, size);
 	}
-	
+
 	Blob* fromBase64(const std::string base64) {
 		std::string decoded = base64_decode(base64);
 		return new Blob((void*)decoded.c_str(), decoded.length());
 	}
 };
-	
-class Data {
+
+class USCXML_API Data {
 public:
 	enum Type {
 	    VERBATIM,
@@ -68,7 +89,7 @@ public:
 		}
 	}
 	template <typename T> Data(T value) : atom(toStr(value)), type(INTERPRETED) {}
-	
+
 	explicit Data(const Arabica::DOM::Node<std::string>& dom);
 	virtual ~Data() {}
 
@@ -90,11 +111,11 @@ public:
 		Data data;
 		return data;
 	}
-	
+
 	operator std::string() const {
 		return atom;
 	}
-	
+
 	operator std::map<std::string, Data>() {
 		return compound;
 	}
@@ -102,7 +123,7 @@ public:
 	operator std::list<Data>() {
 		return array;
 	}
-	
+
 	static Data fromJSON(const std::string& jsonString);
 	static std::string toJSON(const Data& data);
 	static Data fromXML(const std::string& xmlString);
@@ -155,10 +176,10 @@ protected:
 
 protected:
 	Arabica::DOM::Document<std::string> toNode(const Arabica::DOM::Document<std::string>& factory, const Data& data);
-	friend std::ostream& operator<< (std::ostream& os, const Data& data);
+	friend USCXML_API std::ostream& operator<< (std::ostream& os, const Data& data);
 };
 
-class Event {
+class USCXML_API Event {
 public:
 	enum Type {
 	    INTERNAL = 1,
@@ -315,7 +336,7 @@ public:
 		}
 		return false;
 	}
-	
+
 
 #ifdef SWIGIMPORTED
 protected:
@@ -336,10 +357,10 @@ protected:
 	std::map<std::string, Data> namelist;
 	std::multimap<std::string, Data> params;
 
-	friend std::ostream& operator<< (std::ostream& os, const Event& event);
+	friend USCXML_API std::ostream& operator<< (std::ostream& os, const Event& event);
 };
 
-class InvokeRequest : public Event {
+class USCXML_API InvokeRequest : public Event {
 public:
 	InvokeRequest(Event event) : Event(event) {}
 	InvokeRequest() {}
@@ -380,11 +401,11 @@ protected:
 	std::string src;
 	bool autoForward;
 
-	friend std::ostream& operator<< (std::ostream& os, const InvokeRequest& sendReq);
+	friend USCXML_API std::ostream& operator<< (std::ostream& os, const InvokeRequest& sendReq);
 
 };
 
-class SendRequest : public Event {
+class USCXML_API SendRequest : public Event {
 public:
 	SendRequest() {}
 	SendRequest(Event event) : Event(event) {}
@@ -426,9 +447,14 @@ protected:
 	std::string type;
 	uint32_t delayMs;
 
-	friend std::ostream& operator<< (std::ostream& os, const SendRequest& sendReq);
+	friend USCXML_API std::ostream& operator<< (std::ostream& os, const SendRequest& sendReq);
 
 };
+
+USCXML_API std::ostream& operator<< (std::ostream& os, const InvokeRequest& invokeReq);
+USCXML_API std::ostream& operator<< (std::ostream& os, const SendRequest& sendReq);
+USCXML_API std::ostream& operator<< (std::ostream& os, const Event& event);
+USCXML_API std::ostream& operator<< (std::ostream& os, const Data& data);
 
 }
 

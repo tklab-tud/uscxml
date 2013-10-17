@@ -1,3 +1,22 @@
+/**
+ *  @file
+ *  @author     2012-2013 Stefan Radomski (stefan.radomski@cs.tu-darmstadt.de)
+ *  @copyright  Simplified BSD
+ *
+ *  @cond
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the FreeBSD license as published by the FreeBSD
+ *  project.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ *  You should have received a copy of the FreeBSD license along with this
+ *  program. If not, see <http://www.opensource.org/licenses/bsd-license>.
+ *  @endcond
+ */
+
 #ifndef URL_H_9DAEGSMV
 #define URL_H_9DAEGSMV
 
@@ -22,7 +41,7 @@ namespace uscxml {
 
 class URL;
 
-class URLMonitor {
+class USCXML_API URLMonitor {
 public:
 	virtual void downloadStarted(const URL& url) {};
 	virtual void downloadCompleted(const URL& url) {};
@@ -31,7 +50,7 @@ public:
 	virtual void contentChunkReceived(const URL& url, const std::string& contentChunk) {};
 };
 
-class URLImpl : public boost::enable_shared_from_this<URLImpl> {
+class USCXML_API URLImpl : public boost::enable_shared_from_this<URLImpl> {
 public:
 	URLImpl(const std::string& url);
 	~URLImpl();
@@ -133,7 +152,7 @@ protected:
 	typedef std::set<URLMonitor*>::iterator monIter_t;
 };
 
-class URL {
+class USCXML_API URL {
 public:
 	URL() : _impl() {}
 	URL(const std::string url) : _impl(new URLImpl(url)) {}
@@ -248,9 +267,9 @@ public:
 	static std::string tmpDir();
 	static std::map<std::string, std::string> mimeTypes;
 	static std::string getMimeType(const std::string extension, std::string magic = "");
-	
+
 	friend class URLFetcher;
-	friend std::ostream & operator<<(std::ostream &stream, const URL& p);
+	friend USCXML_API std::ostream & operator<<(std::ostream &stream, const URL& p);
 
 	operator Data() const {
 		return _impl->operator Data();
@@ -270,7 +289,7 @@ protected:
 	boost::shared_ptr<URLImpl> _impl;
 };
 
-class URLFetcher {
+class USCXML_API URLFetcher {
 public:
 	URLFetcher();
 	~URLFetcher();
@@ -296,6 +315,8 @@ protected:
 	std::map<CURL*, URL> _handlesToURLs;
 	CURLM* _multiHandle;
 };
+
+USCXML_API std::ostream& operator<< (std::ostream &stream, const URL& p);
 
 }
 

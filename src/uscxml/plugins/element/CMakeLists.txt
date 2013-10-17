@@ -9,7 +9,8 @@ if (BUILD_AS_PLUGINS)
 	source_group("" FILES ${FETCH_ELEMENT})
 	add_library(
 		element_fetch SHARED 
-		${FETCH_ELEMENT})
+		${FETCH_ELEMENT}
+		"../Plugins.cpp")
 	target_link_libraries(element_fetch uscxml)
 	set_target_properties(element_fetch PROPERTIES FOLDER "Plugin Element")
 else()
@@ -26,7 +27,8 @@ endif()
 # 	source_group("" FILES ${MMI_ELEMENT})
 # 	add_library(
 # 		element_mmi SHARED 
-# 		${MMI_ELEMENT})
+# 		${MMI_ELEMENT}
+# 		"../Plugins.cpp")
 # 	target_link_libraries(element_mmi uscxml)
 # 	set_target_properties(element_mmi PROPERTIES FOLDER "Plugin Element")
 # else()
@@ -45,7 +47,8 @@ if (BUILD_AS_PLUGINS)
 	source_group("" FILES ${POSTPONE_ELEMENT})
 	add_library(
 		element_postpone SHARED 
-		${POSTPONE_ELEMENT})
+		${POSTPONE_ELEMENT}
+		"../Plugins.cpp")
 	target_link_libraries(element_postpone uscxml)
 	set_target_properties(element_postpone PROPERTIES FOLDER "Plugin Element")
 else()
@@ -64,7 +67,8 @@ if (BUILD_AS_PLUGINS)
 	source_group("" FILES ${FILE_ELEMENT})
 	add_library(
 		element_file SHARED 
-		${FILE_ELEMENT})
+		${FILE_ELEMENT}
+		"../Plugins.cpp")
 	target_link_libraries(element_file uscxml)
 	set_target_properties(element_file PROPERTIES FOLDER "Plugin Element")
 else()
@@ -83,7 +87,8 @@ if (BUILD_AS_PLUGINS)
 	source_group("" FILES ${RESPOND_ELEMENT})
 	add_library(
 		element_respond SHARED 
-		${RESPOND_ELEMENT})
+		${RESPOND_ELEMENT}
+		"../Plugins.cpp")
 	target_link_libraries(element_respond uscxml)
 	set_target_properties(element_respond PROPERTIES FOLDER "Plugin Element")
 else()

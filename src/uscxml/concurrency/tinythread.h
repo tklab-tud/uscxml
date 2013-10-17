@@ -24,6 +24,8 @@ freely, subject to the following restrictions:
 #ifndef _TINYTHREAD_H_
 #define _TINYTHREAD_H_
 
+#include "uscxml/Common.h"
+
 /// @file
 /// @mainpage TinyThread++ API Reference
 ///
@@ -161,7 +163,8 @@ unsigned long long int timeStamp();
 /// program may deadlock if the thread that owns a mutex object calls lock()
 /// on that object).
 /// @see recursive_mutex
-class mutex {
+
+class USCXML_API mutex {
 public:
 	/// Constructor.
 	mutex()
@@ -229,7 +232,7 @@ public:
 #endif
 	}
 
-	_TTHREAD_DISABLE_ASSIGNMENT(mutex)
+	//_TTHREAD_DISABLE_ASSIGNMENT(mutex)
 
 private:
 #if defined(_TTHREAD_WIN32_)
@@ -248,7 +251,7 @@ private:
 /// may lock the mutex several times, as long as it unlocks the mutex the same
 /// number of times).
 /// @see mutex
-class recursive_mutex {
+class USCXML_API recursive_mutex {
 public:
 	/// Constructor.
 	recursive_mutex() {
@@ -307,7 +310,7 @@ public:
 #endif
 	}
 
-	_TTHREAD_DISABLE_ASSIGNMENT(recursive_mutex)
+	//_TTHREAD_DISABLE_ASSIGNMENT(recursive_mutex)
 
 private:
 #if defined(_TTHREAD_WIN32_)
@@ -335,7 +338,7 @@ private:
 /// @endcode
 
 template <class T>
-class lock_guard {
+class USCXML_API lock_guard {
 public:
 	typedef T mutex_type;
 
@@ -382,7 +385,7 @@ private:
 ///   cond.notify_all();
 /// }
 /// @endcode
-class condition_variable {
+class USCXML_API condition_variable {
 public:
 	/// Constructor.
 #if defined(_TTHREAD_WIN32_)
@@ -451,7 +454,7 @@ public:
 	}
 #endif
 
-	_TTHREAD_DISABLE_ASSIGNMENT(condition_variable)
+	//_TTHREAD_DISABLE_ASSIGNMENT(condition_variable)
 
 private:
 #if defined(_TTHREAD_WIN32_)
@@ -466,7 +469,7 @@ private:
 
 
 /// Thread class.
-class thread {
+class USCXML_API thread {
 public:
 #if defined(_TTHREAD_WIN32_)
 	typedef HANDLE native_handle_type;
@@ -535,7 +538,7 @@ public:
 	/// @note If this value is not defined, the function returns zero (0).
 	static unsigned hardware_concurrency();
 
-	_TTHREAD_DISABLE_ASSIGNMENT(thread)
+	//_TTHREAD_DISABLE_ASSIGNMENT(thread)
 
 private:
 	native_handle_type mHandle;   ///< Thread handle.
@@ -556,7 +559,7 @@ private:
 /// Thread ID.
 /// The thread ID is a unique identifier for each thread.
 /// @see thread::get_id()
-class thread::id {
+class USCXML_API thread::id {
 public:
 	/// Default constructor.
 	/// The default constructed ID is that of thread without a thread of
@@ -623,7 +626,7 @@ public:
 namespace chrono {
 /// Duration template class. This class provides enough functionality to
 /// implement @c this_thread::sleep_for().
-template <class _Rep, class _Period = ratio<1> > class duration {
+template <class _Rep, class _Period = ratio<1> > class USCXML_API duration {
 private:
 	_Rep rep_;
 public:

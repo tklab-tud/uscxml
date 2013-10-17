@@ -1,3 +1,22 @@
+/**
+ *  @file
+ *  @author     2012-2013 Stefan Radomski (stefan.radomski@cs.tu-darmstadt.de)
+ *  @copyright  Simplified BSD
+ *
+ *  @cond
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the FreeBSD license as published by the FreeBSD
+ *  project.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ *  You should have received a copy of the FreeBSD license along with this
+ *  program. If not, see <http://www.opensource.org/licenses/bsd-license>.
+ *  @endcond
+ */
+
 #ifndef IMINVOKER_H_FNWG0XCQ
 #define IMINVOKER_H_FNWG0XCQ
 
@@ -6,7 +25,7 @@
 extern "C" {
 #include <libpurple/purple.h>
 }
-	
+
 #ifdef BUILD_AS_PLUGINS
 #include "uscxml/plugins/Plugins.h"
 #endif
@@ -14,17 +33,17 @@ extern "C" {
 namespace uscxml {
 
 typedef enum {
-	PURPLE_BUDDY_NONE                    = 0x00, /**< No events.                    */
-	PURPLE_BUDDY_SIGNON                  = 0x01, /**< The buddy signed on.          */
-	PURPLE_BUDDY_SIGNOFF                 = 0x02, /**< The buddy signed off.         */
-	PURPLE_BUDDY_INFO_UPDATED            = 0x10, /**< The buddy's information (profile) changed.     */
-	PURPLE_BUDDY_ICON                    = 0x40, /**< The buddy's icon changed.     */
-	PURPLE_BUDDY_MISCELLANEOUS           = 0x80, /**< The buddy's service-specific miscalleneous info changed.     */
-	PURPLE_BUDDY_SIGNON_TIME             = 0x11, /**< The buddy's signon time changed.     */
-	PURPLE_BUDDY_EVIL                    = 0x12,  /**< The buddy's warning level changed.     */
-	PURPLE_BUDDY_DIRECTIM_CONNECTED      = 0x14, /**< Connected to the buddy via DirectIM.  */
-	PURPLE_BUDDY_DIRECTIM_DISCONNECTED   = 0x18, /**< Disconnected from the buddy via DirectIM.  */
-	PURPLE_BUDDY_NAME                    = 0x20 /**<Buddy name (UID) changed. */
+    PURPLE_BUDDY_NONE                    = 0x00, /**< No events.                    */
+    PURPLE_BUDDY_SIGNON                  = 0x01, /**< The buddy signed on.          */
+    PURPLE_BUDDY_SIGNOFF                 = 0x02, /**< The buddy signed off.         */
+    PURPLE_BUDDY_INFO_UPDATED            = 0x10, /**< The buddy's information (profile) changed.     */
+    PURPLE_BUDDY_ICON                    = 0x40, /**< The buddy's icon changed.     */
+    PURPLE_BUDDY_MISCELLANEOUS           = 0x80, /**< The buddy's service-specific miscalleneous info changed.     */
+    PURPLE_BUDDY_SIGNON_TIME             = 0x11, /**< The buddy's signon time changed.     */
+    PURPLE_BUDDY_EVIL                    = 0x12,  /**< The buddy's warning level changed.     */
+    PURPLE_BUDDY_DIRECTIM_CONNECTED      = 0x14, /**< Connected to the buddy via DirectIM.  */
+    PURPLE_BUDDY_DIRECTIM_DISCONNECTED   = 0x18, /**< Disconnected from the buddy via DirectIM.  */
+    PURPLE_BUDDY_NAME                    = 0x20 /**<Buddy name (UID) changed. */
 } PurpleBuddyEvent;
 
 class IMInvoker : public InvokerImpl {
@@ -34,7 +53,7 @@ public:
 		SendRequest sendReq;
 		IMInvoker* instance;
 	};
-	
+
 	IMInvoker();
 	virtual ~IMInvoker();
 	virtual boost::shared_ptr<InvokerImpl> create(InterpreterImpl* interpreter);
@@ -55,13 +74,13 @@ public:
 private:
 	static bool _libPurpleIsInitialized;
 	static Data _pluginData;
-	
+
 	Data _dataModelVars;
 
 	static Data buddyToData(PurpleBuddy *buddy);
 	static Data statusToData(PurpleStatus *status);
 	static Data purpleValueToData(PurpleValue* value);
-	
+
 	static PurpleAccountUiOps _uiAccountOps;
 	static PurpleEventLoopUiOps _uiEventLoopOps;
 	static PurpleCoreUiOps _uiCoreOps;
@@ -74,7 +93,7 @@ private:
 	static PurpleConnectionUiOps _uiConnectOps;
 	static PurpleWhiteboardUiOps _uiWhiteboardOps;
 	static PurpleDebugUiOps _uiDebugOps;
-	
+
 	static PurpleRequestFeature _features;
 	static GHashTable* _uiInfo;
 	static GRand* _gRand;
@@ -84,7 +103,7 @@ private:
 	static tthread::mutex _initMutex;
 	static tthread::condition_variable _initCond;
 	static DelayedEventQueue* _eventQueue;
-	
+
 	// libpurple event callbacks
 	static void signedOnCB(PurpleConnection *gc, gpointer null);
 	static void conversationCreatedCB(PurpleConversation *conv, void *data);
@@ -101,7 +120,7 @@ private:
 	static void buddyRemovedCB(PurpleBuddy* buddy);
 	static void fileRecvRequestCB(PurpleXfer *xfer);
 	static void buddyCapsChangedCB(PurpleBuddy* buddy, PurpleMediaCaps newcaps, PurpleMediaCaps oldcaps);
-	
+
 	// these are only being called from the delayed queue's thread
 	static void initLibPurple(void *userdata, const std::string event);
 	static void setupPurpleSignals();
@@ -126,12 +145,12 @@ private:
 		gpointer data;
 	};
 	static void purpleCallback(void *userdata, const std::string event);
-	
+
 	// libpurple debug
 	static void purpleDebugPrint(PurpleDebugLevel level, const char *category, const char *arg_s);
 	static gboolean purpleDebugIsEnabled(PurpleDebugLevel level, const char *category);
 
-	
+
 	// libpurple core operations
 	static void purplePrefsInit(void);
 	static void purpleDebugInit(void);
@@ -155,7 +174,7 @@ private:
 	static void purpleCustomSmileyWrite(PurpleConversation *conv, const char *smile, const guchar *data, gsize size);
 	static void purpleCustomSmileyClose(PurpleConversation *conv, const char *smile);
 	static void purpleSendConfirm(PurpleConversation *conv, const char *message);
-	
+
 	// buddy operations
 	static void purpleNewList(PurpleBuddyList *list);
 	static void purpleNewNode(PurpleBlistNode *node);
@@ -193,7 +212,7 @@ private:
 	static void* purpeNotifyUserInfo(PurpleConnection *gc, const char *who, PurpleNotifyUserInfo *user_info);
 	static void* purpeNotifyURI(const char *uri);
 	static void purpeNotifyClose(PurpleNotifyType type, void *ui_handle);
-	
+
 	// account operations
 	static void accountNotifyAdded(PurpleAccount *account, const char *remote_user, const char *id, const char *alias, const char *message);
 	static void accountStatusChanged(PurpleAccount *account, PurpleStatus *status);
@@ -209,40 +228,40 @@ private:
 
 	// request ui operations
 	static void* purpleRequestInput(const char *title, const char *primary,
-																	const char *secondary, const char *default_value,
-																	gboolean multiline, gboolean masked, gchar *hint,
-																	const char *ok_text, GCallback ok_cb,
-																	const char *cancel_text, GCallback cancel_cb,
-																	PurpleRequestCommonParameters *cpar, void *user_data);
+	                                const char *secondary, const char *default_value,
+	                                gboolean multiline, gboolean masked, gchar *hint,
+	                                const char *ok_text, GCallback ok_cb,
+	                                const char *cancel_text, GCallback cancel_cb,
+	                                PurpleRequestCommonParameters *cpar, void *user_data);
 	static void* purpleRequestChoice(const char *title, const char *primary,
-																	 const char *secondary, gpointer default_value,
-																	 const char *ok_text, GCallback ok_cb, const char *cancel_text,
-																	 GCallback cancel_cb, PurpleRequestCommonParameters *cpar,
-																	 void *user_data, va_list choices);
+	                                 const char *secondary, gpointer default_value,
+	                                 const char *ok_text, GCallback ok_cb, const char *cancel_text,
+	                                 GCallback cancel_cb, PurpleRequestCommonParameters *cpar,
+	                                 void *user_data, va_list choices);
 	static void* purpleRequestAction(const char *title, const char *primary,
-																	 const char *secondary, int default_action,
-																	 PurpleRequestCommonParameters *cpar, void *user_data,
-																	 size_t action_count, va_list actions);
+	                                 const char *secondary, int default_action,
+	                                 PurpleRequestCommonParameters *cpar, void *user_data,
+	                                 size_t action_count, va_list actions);
 	static void* purpleRequestWait(const char *title, const char *primary,
-																 const char *secondary, gboolean with_progress,
-																 PurpleRequestCancelCb cancel_cb,
-																 PurpleRequestCommonParameters *cpar, void *user_data);
+	                               const char *secondary, gboolean with_progress,
+	                               PurpleRequestCancelCb cancel_cb,
+	                               PurpleRequestCommonParameters *cpar, void *user_data);
 
 	static void purpleRequestWaitUpdate(void *ui_handle, gboolean pulse, gfloat fraction);
 	static void* purpleRequestFields(const char *title, const char *primary,
-																	 const char *secondary, PurpleRequestFields *fields,
-																	 const char *ok_text, GCallback ok_cb,
-																	 const char *cancel_text, GCallback cancel_cb,
-																	 PurpleRequestCommonParameters *cpar, void *user_data);
+	                                 const char *secondary, PurpleRequestFields *fields,
+	                                 const char *ok_text, GCallback ok_cb,
+	                                 const char *cancel_text, GCallback cancel_cb,
+	                                 PurpleRequestCommonParameters *cpar, void *user_data);
 	static void* purpleRequestFile(const char *title, const char *filename,
-																 gboolean savedialog, GCallback ok_cb, GCallback cancel_cb,
-																 PurpleRequestCommonParameters *cpar, void *user_data);
+	                               gboolean savedialog, GCallback ok_cb, GCallback cancel_cb,
+	                               PurpleRequestCommonParameters *cpar, void *user_data);
 	static void* purpleRequestFolder(const char *title, const char *dirname,
-																	 GCallback ok_cb, GCallback cancel_cb,
-																	 PurpleRequestCommonParameters *cpar, void *user_data);
+	                                 GCallback ok_cb, GCallback cancel_cb,
+	                                 PurpleRequestCommonParameters *cpar, void *user_data);
 	static void purpleRequestClose(PurpleRequestType type, void *ui_handle);
 
-	
+
 	// connection ui operations
 	static void purpleConnectProgress(PurpleConnection *gc, const char *text, size_t step, size_t step_count);
 	static void purpleConnected(PurpleConnection *gc);
@@ -251,8 +270,8 @@ private:
 	static void purpleNetworkConnected(void);
 	static void purpleNetworkDisconnected(void);
 	static void purpleReportDisconnect(PurpleConnection *gc, PurpleConnectionError reason, const char *text);
-	
-	
+
+
 	// whiteboard ui operations
 	static void purpleCreateWB(PurpleWhiteboard *wb);
 	static void purpleDestroyWB(PurpleWhiteboard *wb);
@@ -261,7 +280,7 @@ private:
 	static void purpleDrawPont(PurpleWhiteboard *wb, int x, int y, int color, int size);
 	static void purpleDrawLine(PurpleWhiteboard *wb, int x1, int y1, int x2, int y2, int color, int size);
 	static void purpleClearWB(PurpleWhiteboard *wb);
-		
+
 
 	PurpleAccount* _account;
 };

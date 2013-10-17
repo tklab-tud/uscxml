@@ -173,6 +173,7 @@ void*** tsrm_ls;
 // Parse the header file to generate wrappers
 //***********************************************
 
+%include "../../../uscxml/Common.h"
 %include "../../../uscxml/Message.h"
 %include "../../../uscxml/Interpreter.h"
 %include "../../../uscxml/concurrency/BlockingQueue.h"

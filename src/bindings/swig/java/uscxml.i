@@ -160,6 +160,7 @@ using namespace Arabica::DOM;
 // Parse the header file to generate wrappers
 //***********************************************
 
+%include "../../../uscxml/Common.h"
 %include "../../../uscxml/Factory.h"
 %include "../../../uscxml/Message.h"
 %include "../../../uscxml/Interpreter.h"
