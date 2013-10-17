@@ -207,7 +207,7 @@ void XPathDataModel::setEvent(const Event& event) {
 	if (event.data.array.size()) {
 		std::list<uscxml::Data>::const_iterator ptr;
 		std::stringstream ss;
-		int i;
+		unsigned int i;
 
 		if (event.data.array.size() == 1) {
 			Text<std::string> textNode = _doc.createTextNode(event.data.array.front().atom.c_str());
@@ -248,11 +248,9 @@ void XPathDataModel::setEvent(const Event& event) {
 }
 
 Data XPathDataModel::getStringAsData(const std::string& content) {
-	Data data;
 	XPathValue<std::string> result = _xpath.evaluate_expr(content, _doc);
 
 	std::stringstream ss;
-
 	Data data;
 	switch (result.type()) {
 	case ANY:
