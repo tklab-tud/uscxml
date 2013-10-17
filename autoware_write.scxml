@@ -59,9 +59,9 @@
 			 </item>
 			</data>
 		</data>
-		<data id="ACK">
-		<data id="NACK">
-		<data id="TIMEOUT">
+		<data id="ACK"/>
+		<data id="NACK"/>
+		<data id="TIMEOUT"/>
 	</datamodel>
 <!-- legend:
 		init<id>

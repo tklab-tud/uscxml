@@ -164,6 +164,8 @@ freely, subject to the following restrictions:
 /// the std::mutex class.
 namespace tthread {
 
+unsigned long long int timeStamp();
+
 /// Mutex class.
 /// This is a mutual exclusion object for synchronizing access to shared
 /// memory areas for several threads. The mutex is non-recursive (i.e. a

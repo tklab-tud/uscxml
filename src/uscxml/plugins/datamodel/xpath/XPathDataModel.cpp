@@ -182,10 +182,11 @@ void XPathDataModel::setEvent(const Event& event) {
 				Element<std::string> eventNamelistElem = _doc.createElement("data");
 				Text<std::string> eventNamelistText = _doc.createTextNode(namelistIter->second.atom);
 
-			eventNamelistElem.setAttribute("id", namelistIter->first);
-			eventNamelistElem.appendChild(eventNamelistText);
-			eventDataElem.appendChild(eventNamelistElem);
-			namelistIter++;
+				eventNamelistElem.setAttribute("id", namelistIter->first);
+				eventNamelistElem.appendChild(eventNamelistText);
+				eventDataElem.appendChild(eventNamelistElem);
+				namelistIter++;
+			}
 		}
 	}
 	if (event.raw.size() > 0) {
@@ -214,8 +215,8 @@ void XPathDataModel::setEvent(const Event& event) {
 			eventElem.appendChild(textNode);
 		} else {
 			for( i = 0 , ptr = event.data.array.begin() ;
-			 i < event.data.array.size() && ptr != event.data.array.end() ;
-			 i++ , ptr++ ) {
+				((i < event.data.array.size()) && (ptr != event.data.array.end())) ;
+				i++ , ptr++ ) {
 				Element<std::string> eventMESElem = _doc.createElement("data");
 				Text<std::string> textNode = _doc.createTextNode(ptr->atom.c_str());
 				ss.flush(); ss << i;
