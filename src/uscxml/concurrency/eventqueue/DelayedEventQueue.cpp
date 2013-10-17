@@ -50,12 +50,11 @@ void DelayedEventQueue::run(void* instance) {
 	DelayedEventQueue* INSTANCE = (DelayedEventQueue*)instance;
 	int result;
 	while(INSTANCE->_isStarted) {
-#ifndef EVLOOP_NO_EXIT_ON_EMPTY
-	  result = event_base_dispatch(INSTANCE->_eventLoop);
-#else
-		//result = event_base_dispatch(THIS->_eventLoop);
+// #ifndef EVLOOP_NO_EXIT_ON_EMPTY
+//    result = event_base_dispatch(INSTANCE->_eventLoop);
+// #else
 		result = event_base_loop(INSTANCE->_eventLoop, EVLOOP_NO_EXIT_ON_EMPTY);
-#endif
+//#endif
 		(void)result;
 	}
 }
