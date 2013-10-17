@@ -19,6 +19,7 @@ ENDIF()
 project(uscxml)
 
 # CMake 2.8.11 reports AMD64 for Windows 64Bit, where earlier versions reported x86
+# we resolve it with a 64bit check later
 if (${CMAKE_SYSTEM_PROCESSOR} STREQUAL "AMD64")
   set(CMAKE_SYSTEM_PROCESSOR "x86")
 endif()
