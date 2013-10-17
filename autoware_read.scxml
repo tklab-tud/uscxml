@@ -64,7 +64,7 @@
 								namelist="$_event/data/frame/data/text()"
 								target="xmlbridge1"/>
 						<else/>
-	S						<send 	event="ack0"
+							<send 	event="ack0"
 								namelist="$NACK"
 								target="xmlbridge1"/>
 						</if>

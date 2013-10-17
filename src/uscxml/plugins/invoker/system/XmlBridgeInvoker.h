@@ -14,8 +14,10 @@
 
 namespace uscxml {
 
-#define MESwriteCMD "MESwrite";
-#define MESreadCMD "MESread";
+#define SCXML2TIM_EV	"cmd"
+#define SCXML2MES_EV	"ack"
+#define MES2SCXML_EV	"ready"
+#define TIM2SCXML_EV	"ready"
 
 class XmlBridgeInvoker : public InvokerImpl {
 public:
@@ -41,8 +43,8 @@ public:
 	void invoke(const InvokeRequest& req);
 	Data getDataModelVariables();
 
-	void buildMESreq(unsigned int cmd, const std::string reply_raw_data);
-	void buildTIMreply(const char &cmdid, const std::string reply_raw_data);
+	void buildMESreq(unsigned int cmdid, const std::list<std::string> reply_raw_data);
+	void buildTIMreply(const char cmdid, const std::string reply_raw_data);
 
 	/* move invoker to new thread */
 	static void run(void* instance) {
@@ -63,11 +65,11 @@ class XmlBridgeInputEvents {
 public:
 	~XmlBridgeInputEvents();
 
-	void sendTIMreq(const char& cmdid, const std::string reqData);
-	void sendMESreply(std::string DBid, const char& cmdid, const std::string replyData);
+	void sendTIMreq(const char cmdid, const std::string reqData);
+	void sendMESreply(std::string DBid, const char cmdid, const std::string replyData);
 
-	void handleTIMreply(const char& cmdid, const std::string replyData);
-	void handleMESreq(unsigned int DBid, unsigned int offset, const std::string reqData="");
+	void handleTIMreply(const char cmdid, const std::string replyData);
+	void handleMESreq(unsigned int DBid, unsigned int cmdid, const std::list<std::string> reqData);
 
 	void registerInvoker(std::string DBid, XmlBridgeInvoker* invokref) {
 		_invokers[DBid] = invokref;
@@ -75,22 +77,29 @@ public:
 	void registerTimio(TimIO* ioref) {
 		_timio = ioref;
 	}
+
+	/** It is not the exact type since mesbufferer.h is included only in xmlbridgeinvoker.cpp */
+	void registerMesbufferer(void* mesref) {
+		_mesbufferer = mesref;
+	}
+
 	static XmlBridgeInputEvents& getInstance() {
 		static XmlBridgeInputEvents instance;
 		return instance;
 	}
 
 private:
-	XmlBridgeInputEvents() : _lastChecked(0) {
+	XmlBridgeInputEvents() {
 		LOG(INFO) << "Instantiating XmlBridgeInputEvents Singleton";
 	}
 	XmlBridgeInputEvents& operator=( const XmlBridgeInputEvents& );
 
-	time_t _lastChecked;
-
 	/** One invoker/interpreter for each datablock */
 	std::map<std::string, XmlBridgeInvoker*> _invokers;
 	TimIO* _timio;
+
+	/** It is not the exact type since mesbufferer.h is included only in xmlbridgeinvoker.cpp */
+	void* _mesbufferer;
 };
 
 #ifdef BUILD_AS_PLUGINS

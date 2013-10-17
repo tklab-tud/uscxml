@@ -186,6 +186,27 @@ void XPathDataModel::setEvent(const Event& event) {
 		Node<std::string> importedNode = _doc.importNode(event.dom, true);
 		eventDataElem.appendChild(importedNode);
 	}
+	if (event.data.array.size()) {
+		std::list<uscxml::Data>::const_iterator ptr;
+		std::stringstream ss;
+		int i;
+
+		if (event.data.array.size() == 1) {
+			Text<std::string> textNode = _doc.createTextNode(event.data.array.front().atom.c_str());
+			eventElem.appendChild(textNode);
+		} else {
+			for( i = 0 , ptr = event.data.array.begin() ;
+			 i < event.data.array.size() && ptr != event.data.array.end() ;
+			 i++ , ptr++ ) {
+				Element<std::string> eventMESElem = _doc.createElement("data");
+				Text<std::string> textNode = _doc.createTextNode(ptr->atom.c_str());
+				ss.flush(); ss << i;
+				eventElem.setAttribute("id", ss.str());
+				eventMESElem.appendChild(textNode);
+				eventElem.appendChild(eventMESElem);
+			}
+		}
+	}
 
 	eventElem.appendChild(eventDataElem);
 	eventNodeSet.push_back(eventElem);

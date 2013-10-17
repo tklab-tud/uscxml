@@ -1,4 +1,5 @@
 #include "XmlBridgeInvoker.h"
+#include "../xmlBridgeCPP/mesbufferer.h"
 
 #ifdef BUILD_AS_PLUGINS
 #include <Pluma/Connector.hpp>
@@ -131,10 +132,10 @@ void XmlBridgeInvoker::send(const SendRequest& req) {
 	uscxml::XmlBridgeInputEvents& bridgeInstance = uscxml::XmlBridgeInputEvents::getInstance();
 	//_interpreter->getDataModel().replaceExpressions(reqCopy.content);
 
-	if (reqCopy.getName().substr(0, 3) == "cmd") {
-		bridgeInstance.sendTIMreq(reqCopy.getName().at(3), reqCopy.getRaw());
-	} else if (reqCopy.getName().substr(0, 3) == "ack") {
-		bridgeInstance.sendMESreply(_DBid, reqCopy.getName().at(3), reqCopy.getRaw());
+	if (reqCopy.getName().substr(0, 3) == SCXML2TIM_EV) {
+		bridgeInstance.sendTIMreq(reqCopy.getName().c_str()[sizeof(SCXML2TIM_EV)-1], reqCopy.getRaw());
+	} else if (reqCopy.getName().substr(0, 3) == SCXML2MES_EV) {
+		bridgeInstance.sendMESreply(_DBid, reqCopy.getName().c_str()[sizeof(SCXML2MES_EV)-1], reqCopy.getRaw());
 	} else {
 		LOG(ERROR) << "Unsupported event type";
 		return;
@@ -173,30 +174,42 @@ void XmlBridgeInvoker::send(const SendRequest& req) {
 	//_interpreter->getDataModel().replaceExpressions(start.content);
 */
 
-void XmlBridgeInvoker::buildMESreq(unsigned int offset, const std::string reply_raw_data) {
+void XmlBridgeInvoker::buildMESreq(unsigned int cmdid, const std::list < std::string > reply_raw_data) {
+	std::stringstream ss;
+	ss << MES2SCXML_EV << cmdid;
 
-	std::ostringstream strator;
-	strator << std::dec << offset;
+	uscxml::Event myevent(ss.str(), uscxml::Event::EXTERNAL);
+	uscxml::Data mydata;
 
-	uscxml::Event myevent(strator.str(), uscxml::Event::EXTERNAL);
-
-	//event.setName("reply." + _interpreter->getState())
+	std::list<std::string>::const_iterator myiter;
+	for(myiter = reply_raw_data.begin(); myiter != reply_raw_data.end(); myiter++) {
+		mydata.array.push_front(Data(myiter));
+	}
 
 	myevent.setSendId("xmlbridge");
 	myevent.setOrigin("MES");
-	myevent.setRaw(reply_raw_data);
-
-	//	myevent.setContent(reply_raw_data);
-	//	myevent.setRaw(reply_raw_data);
-	//	myevent.setXML(reply_raw_data);
 
 	returnEvent(myevent);
 }
 
-void XmlBridgeInvoker::buildTIMreply(const char& cmdid, const std::string reply_raw_data) {
-	/* parse XML */
+void XmlBridgeInvoker::buildTIMreply(const char cmdid, const std::string reply_raw_data) {
+	Arabica::SAX2DOM::Parser<std::string> myparser;
+	if (!(myparser.parse(reply_raw_data))) {
+		LOG(ERROR) << "Failed parsing TIM XML reply string for command " << cmdid;
+		LOG(ERROR) << "TIM XML string was: " << std::endl << reply_raw_data;
+		return;
+	}
 
-	uscxml::Event myevent(reply_raw_data, uscxml::Event::EXTERNAL);
+	Arabica::DOM::Document<std::string> myreply = myparser.getDocument();
+
+	std::stringstream ss;
+	ss << TIM2SCXML_EV << cmdid;
+
+	uscxml::Event myevent(ss.str(), uscxml::Event::EXTERNAL);
+	myevent.dom = myreply;
+
+	myevent.setSendId("xmlbridge");
+	myevent.setOrigin("TIM");
 
 	returnEvent(myevent);
 }
@@ -282,7 +295,8 @@ void XmlBridgeInvoker::buildTIMreply(const char& cmdid, const std::string reply_
 	event.data.compound["file"].compound["dir"] = Data(dir, Data::VERBATIM);
 	*/
 
-void XmlBridgeInputEvents::sendTIMreq(const char& cmdid, const std::string reqData)
+/** SCXML -> TIM */
+void XmlBridgeInputEvents::sendTIMreq(const char cmdid, const std::string reqData)
 {
 	//mutex?
 
@@ -295,16 +309,14 @@ void XmlBridgeInputEvents::sendTIMreq(const char& cmdid, const std::string reqDa
 	_timio->_thread = new tthread::thread(_timio->client, _timio);
 }
 
-void XmlBridgeInputEvents::sendMESreply(std::string DBid, const char& cmdid, const std::string replyData)
+/** SCXML -> MES */
+void XmlBridgeInputEvents::sendMESreply(std::string DBid, const char cmdid, const std::string replyData)
 {
-	/* Contatta MESbufferer */
-
-	/* chiamata a mesbufferer, dobbiamo fare plugin per forza */
-
-	/* per ora non facciamo nulla! */
+	((MesBufferer *)_mesbufferer)->bufferMESreplyWRITE(atoi(DBid.c_str()), atoi(&cmdid), replyData);
 }
 
-void XmlBridgeInputEvents::handleTIMreply(const char &cmdid, const std::string replyData)
+/**  TIM -> SCXML */
+void XmlBridgeInputEvents::handleTIMreply(const char cmdid, const std::string replyData)
 {
 	std::map<std::string, XmlBridgeInvoker*>::iterator inviter = _invokers.begin();
 	while (inviter != _invokers.end()) {
@@ -312,11 +324,12 @@ void XmlBridgeInputEvents::handleTIMreply(const char &cmdid, const std::string r
 	}
 }
 
-void XmlBridgeInputEvents::handleMESreq(unsigned int DBid, unsigned int offset, const std::string reqData)
+/**  MES -> SCXML */
+void XmlBridgeInputEvents::handleMESreq(unsigned int DBid, unsigned int cmdid, const std::list <std::string> reqData)
 {
 	std::stringstream ss;
 	ss << std::dec << DBid;
-	_invokers[ss.str()]->buildMESreq(offset, reqData);
+	_invokers[ss.str()]->buildMESreq(cmdid, reqData);
 }
 
 XmlBridgeInputEvents::~XmlBridgeInputEvents() {}
