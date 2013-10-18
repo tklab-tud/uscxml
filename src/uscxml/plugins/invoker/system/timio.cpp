@@ -4,7 +4,7 @@
 namespace uscxml {
 
 TimIO::TimIO(std::string ipaddr, std::string port) :
-	_thread(NULL), _reply(NULL)
+	_timCmds(), _timCmdIds(), _thread(NULL), _reply(NULL)
 {
 	if (ipaddr.empty() || port.empty())
 		exit(EXIT_FAILURE);
@@ -70,8 +70,16 @@ void TimIO::client(void *instance) {
 
 	int numbytes;
 
+	LOG(INFO) << "Sending to socket " << myobj->_socketfd
+		<< " the string: '" << myobj->_timCmds.front().c_str()
+		<< "' with length " << myobj->_timCmds.front().length();
+
+	/**  TODO: Check if connection is still alive and the server had not closed it
+	 *	If yes, set a timeout end reconnect */
+
 	/** Potential blocking call */
-	if ((numbytes = send(myobj->_socketfd, myobj->_timCmds.front().c_str(), myobj->_timCmds.front().length(), 0)) == -1) {
+	if ((numbytes = send(myobj->_socketfd, myobj->_timCmds.front().c_str(),
+			myobj->_timCmds.front().length(), 0)) == -1) {
 		perror("TIM client: send error");
 		LOG(ERROR) << "TIM client: send error";
 		return;
@@ -81,8 +89,6 @@ void TimIO::client(void *instance) {
 		LOG(ERROR) << "TIM client: sent an incomplete message";
 		return;
 	}
-
-	myobj->_timCmdIds.pop();
 
 	/**
 	 * Function block until the full amount of message data can be returned
@@ -102,14 +108,10 @@ void TimIO::client(void *instance) {
 		return;
 	}
 
-//	std::string replyStr;
-//	if (replylen != replyStr.length())
-//		LOG(ERROR) << "TIM client: invalid length of received data";
+	LOG(INFO) << "Received reply : " << myobj->_reply;
 
 	XmlBridgeInputEvents& bridgeInstance = XmlBridgeInputEvents::getInstance();
 	bridgeInstance.handleTIMreply(myobj->_timCmdIds.front(), std::string(myobj->_reply));
-
-	return;
 }
 
 }

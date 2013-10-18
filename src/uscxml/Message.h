@@ -171,7 +171,6 @@ protected:
 	std::list<Data> array;
 	std::string atom;
 	boost::shared_ptr<Blob> binary;
-	Arabica::XPath::NodeSet<std::string> xpathres;
 	Type type;
 
 protected:

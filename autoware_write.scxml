@@ -2,9 +2,9 @@
 <scxml	version="1.0"
 	name="Datablock0"
 	datamodel="xpath"
-	initial="InterpreterInitialization"
-	xmlns:fn="http://www.w3.org/2005/xpath-functions"
-	xmlns="http://www.w3.org/2005/07/scxml" >
+	initial="InterpreterInitialization">
+<!--	xmlns:fn="http://www.w3.org/2005/xpath-functions"-->
+<!--	xmlns="http://www.w3.org/2005/07/scxml" >-->
 	<datamodel>
 		<data id="CMD0">
 			<data type="wrapperProgram" index="0" xmlns="">
@@ -81,17 +81,17 @@
 			<state id="0" initial="gotset0">
 				<state id="gotset0">
 					<transition event="ready0" target="sent0">
-						<assign location="$CMD0/data/nestedData" expr="$_event/data/text()"/>
+<!--						<assign location="$CMD0/data/nestedData" expr="$_event/data/text()"/>-->
 					</transition>
 				</state>
 				<state id="sent0">
 					<onentry>
-<!--						<send 	event="cmd0"-->
-<!--							namelist="$CMD0"-->
-<!--							target="xmlbridge1"/>-->
-<!--						<send 	event="timeout0"-->
-<!--							namelist="$TIMEOUT"-->
-<!--							delay="5s"/>-->
+						<send 	event="cmd0"
+							namelist="$CMD0"
+							target="#_xmlbridge1"/>
+						<send 	event="timeout0"
+							namelist="$TIMEOUT"
+							delay="5s"/>
 					</onentry>
 					<transition event="reply0" cond="true" target="gotset0">
 <!--						<log label="Event full data is:" expr="$_event/text()" />-->

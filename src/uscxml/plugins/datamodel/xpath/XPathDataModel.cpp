@@ -173,12 +173,12 @@ void XPathDataModel::setEvent(const Event& event) {
 	if (event.namelist.size() > 0) {
 		std::map<std::string, Data>::const_iterator namelistIter = event.namelist.begin();
 		while (namelistIter != event.namelist.end()) {
-			if (namelistIter->second.type == Data::INTERPRETED) {
-				NodeSet<std::string> xpathresult = namelistIter->second.xpathres;
-				NodeSet<std::string>::const_iterator nodesetIter = xpathresult.begin();
-				while(nodesetIter != xpathresult.end())
-					eventDataElem.appendChild(*nodesetIter);
-			} else {
+//			if (namelistIter->second.type == Data::INTERPRETED) {
+//				NodeSet<std::string> xpathresult = namelistIter->second.xpathres;
+//				NodeSet<std::string>::const_iterator nodesetIter = xpathresult.begin();
+//				while(nodesetIter != xpathresult.end())
+//					eventDataElem.appendChild(*nodesetIter);
+//			} else {
 				Element<std::string> eventNamelistElem = _doc.createElement("data");
 				Text<std::string> eventNamelistText = _doc.createTextNode(namelistIter->second.atom);
 
@@ -186,7 +186,7 @@ void XPathDataModel::setEvent(const Event& event) {
 				eventNamelistElem.appendChild(eventNamelistText);
 				eventDataElem.appendChild(eventNamelistElem);
 				namelistIter++;
-			}
+//			}
 		}
 	}
 	if (event.raw.size() > 0) {
@@ -267,9 +267,11 @@ Data XPathDataModel::getStringAsData(const std::string& content) {
 		ss << result.asString();
 		break;
 	case NODE_SET:
-		data.xpathres = result.asNodeSet();
-		data.type = Data::INTERPRETED;
-		return data;
+		NodeSet<std::string> ns = result.asNodeSet();
+		for (int i = 0; i < ns.size(); i++) {
+			ss << ns[i];
+		}
+		break;
 	}
 
 	data.atom = ss.str();
@@ -455,10 +457,9 @@ void XPathDataModel::assign(const Element<std::string>& assignElem,
 
 	// test 326ff
 	XPathValue<std::string> key = _xpath.evaluate_expr(location, _doc);
-//	LOG(INFO) << "XPath key: " << key.asString();
-//	if (key.asNodeSet().size() == 0) {
-//		throw Event("error.execution", Event::PLATFORM);
-//	}
+	if (key.asNodeSet().size() == 0)
+		throw Event("error.execution", Event::PLATFORM);
+	LOG(INFO) << "Key XPath : " << key.asString();
 #if 0
 	if (key.type() == NODE_SET) {
 		try {
@@ -500,6 +501,9 @@ void XPathDataModel::assign(const Element<std::string>& assignElem,
 		assign(key, nodeSet, assignElem);
 	} else if (HAS_ATTR(assignElem, "expr")) {
 		XPathValue<std::string> value = _xpath.evaluate_expr(ATTR(assignElem, "expr"), _doc);
+		if (value.asNodeSet().size() == 0)
+			throw Event("error.execution", Event::PLATFORM);
+		LOG(INFO) << "Key XPath : " << value.asString();
 		assign(key, value, assignElem);
 	} else {
 		LOG(ERROR) << "assign element has no content";
