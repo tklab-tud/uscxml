@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <scxml	version="1.0"
-	name="Datablock100"
+	name="Datablock0"
 	datamodel="xpath"
 	initial="InterpreterInitialization"
 	xmlns:fn="http://www.w3.org/2005/xpath-functions"
@@ -59,9 +59,9 @@
 			 </item>
 			</data>
 		</data>
-		<data id="ACK"/>
-		<data id="NACK"/>
-		<data id="TIMEOUT"/>
+		<data id="ACK">OK!!</data>
+		<data id="NACK">NOK!!</data>
+		<data id="TIMEOUT">TIMEOUT!!</data>
 	</datamodel>
 <!-- legend:
 		init<id>
@@ -70,29 +70,26 @@
 		cmd<id>
 		ack<id>
  -->
-	<state id="InterpreterInitialization">
-		<initial>
-			<invoke type="xmlbridge" id="xmlbridge1">
-				<!-- expr value must be the exact offset used in MES datablock fields -->
-				<param name="datablock" expr="'100'"/>
-			</invoke>
-			<transition target="RunCommandsStateMachines">
+	<state id="InterpreterInitialization" initial="RunCommandsStateMachines">
+		<invoke type="xmlbridge" id="xmlbridge1">
+			<!-- expr value must be the exact offset used in MES datablock fields -->
+			<param name="datablock" expr="'0'"/>
+		</invoke>
 			<!--	<file url="foo.bin" operation="read" type="xml" callback="foo.bin" />-->
 			<!--	<file url="bar.bin" operation="write" type="xml" contentexpr="_event['data']['content']" /> -->
-		</initial>
 		<parallel id="RunCommandsStateMachines">
 			<state id="0" initial="gotset0">
 				<state id="gotset0">
 					<transition event="ready0" target="sent0">
 <!--						<log label="Event full data is:" expr="$_event/text()" />-->
 						<assign location="$CMD0/data/nestedData" expr="$_event/data/text()"/>
-						<send 	event="cmd0"
-							namelist="$CMD0"
-							target="xmlbridge1"/>
 					</transition>
 				</state>
 				<state id="sent0">
 					<onentry>
+						<send 	event="cmd0"
+							namelist="$CMD0"
+							target="xmlbridge1"/>
 						<send 	event="timeout0"
 							namelist="$TIMEOUT"
 							delay="5s"/>
@@ -216,7 +213,7 @@
 					<transition event="timeout3" target="gotset30" />
 				</state>
 			</state>
-			<state id="4" initial="gotset40">
+			<state id="4" initial="gotset4">
 				<state id="gotset4">
 					<transition event="ready4" target="gotset41">
 <!--						<log label="Event full data is:" expr="$_event/text()" />-->

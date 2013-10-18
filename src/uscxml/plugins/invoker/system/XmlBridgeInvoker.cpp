@@ -24,7 +24,7 @@ XmlBridgeInvoker::~XmlBridgeInvoker() {
 }
 
 boost::shared_ptr<InvokerImpl> XmlBridgeInvoker::create(InterpreterImpl* interpreter) {
-	LOG(INFO) << "Creating XmlBridgeInvoker instance";
+	LOG(INFO) << "Creating XmlBridgeInvoker invoker";
 
 	boost::shared_ptr<XmlBridgeInvoker> invoker = boost::shared_ptr<XmlBridgeInvoker>(this);
 
@@ -36,7 +36,7 @@ boost::shared_ptr<InvokerImpl> XmlBridgeInvoker::create(InterpreterImpl* interpr
 }
 
 void XmlBridgeInvoker::invoke(const InvokeRequest& req) {
-	LOG(INFO) << "Invoking XmlBridge";
+	LOG(INFO) << "Invoking XmlBridgeInvoker";
 
 	if (req.params.find("datablock") == req.params.end()) {
 		LOG(ERROR) << "No datablock param given";
@@ -174,7 +174,8 @@ void XmlBridgeInvoker::send(const SendRequest& req) {
 	//_interpreter->getDataModel().replaceExpressions(start.content);
 */
 
-void XmlBridgeInvoker::buildMESreq(unsigned int cmdid, const std::list < std::string > reply_raw_data) {
+/** MES->SCXML */
+void XmlBridgeInvoker::buildMESreq(unsigned int cmdid, const std::list < std::string > req_raw_data) {
 	std::stringstream ss;
 	ss << MES2SCXML_EV << cmdid;
 
@@ -182,16 +183,22 @@ void XmlBridgeInvoker::buildMESreq(unsigned int cmdid, const std::list < std::st
 	uscxml::Data mydata;
 
 	std::list<std::string>::const_iterator myiter;
-	for(myiter = reply_raw_data.begin(); myiter != reply_raw_data.end(); myiter++) {
-		mydata.array.push_front(Data(myiter));
+	for(myiter = req_raw_data.begin(); myiter != req_raw_data.end(); myiter++) {
+		mydata.array.push_back(Data(*myiter));
 	}
 
-	myevent.setSendId("xmlbridge");
+	myevent.setInvokeId("xmlbridge");
 	myevent.setOrigin("MES");
+	if (req_raw_data.empty())
+		myevent.setOriginType("r");
+	else
+		myevent.setOriginType("w");
+	myevent.data = mydata;
 
 	returnEvent(myevent);
 }
 
+/** TIM->SCXML */
 void XmlBridgeInvoker::buildTIMreply(const char cmdid, const std::string reply_raw_data) {
 	Arabica::SAX2DOM::Parser<std::string> myparser;
 	if (!(myparser.parse(reply_raw_data))) {
@@ -208,8 +215,12 @@ void XmlBridgeInvoker::buildTIMreply(const char cmdid, const std::string reply_r
 	uscxml::Event myevent(ss.str(), uscxml::Event::EXTERNAL);
 	myevent.dom = myreply;
 
-	myevent.setSendId("xmlbridge");
+	myevent.setInvokeId("xmlbridge");
 	myevent.setOrigin("TIM");
+	if (reply_raw_data.empty())
+		myevent.setOriginType("r");
+	else
+		myevent.setOriginType("w");
 
 	returnEvent(myevent);
 }
@@ -329,6 +340,10 @@ void XmlBridgeInputEvents::handleMESreq(unsigned int DBid, unsigned int cmdid, c
 {
 	std::stringstream ss;
 	ss << std::dec << DBid;
+	if (_invokers.count(ss.str()) == 0) {
+		LOG(ERROR) << "Datablock not supported, ignoring request";
+		return;
+	}
 	_invokers[ss.str()]->buildMESreq(cmdid, reqData);
 }
 

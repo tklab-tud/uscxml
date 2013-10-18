@@ -29,7 +29,9 @@ public:
 //		EXISTING = 8
 //	};
 
-	XmlBridgeInvoker() : _thread(NULL) {}
+	XmlBridgeInvoker() : _thread(NULL) {
+		LOG(INFO) << "Instantiating XmlBridgeInvoker";
+	}
 	~XmlBridgeInvoker();
 
 	std::set<std::string> getNames() {
@@ -72,7 +74,7 @@ public:
 	void handleMESreq(unsigned int DBid, unsigned int cmdid, const std::list<std::string> reqData);
 
 	void registerInvoker(std::string DBid, XmlBridgeInvoker* invokref) {
-		_invokers[DBid] = invokref;
+		_invokers.insert(std::pair< std::string, XmlBridgeInvoker* >(DBid,invokref));
 	}
 	void registerTimio(TimIO* ioref) {
 		_timio = ioref;
@@ -89,7 +91,7 @@ public:
 	}
 
 private:
-	XmlBridgeInputEvents() {
+	XmlBridgeInputEvents() : _invokers(), _timio(NULL) {
 		LOG(INFO) << "Instantiating XmlBridgeInputEvents Singleton";
 	}
 	XmlBridgeInputEvents& operator=( const XmlBridgeInputEvents& );

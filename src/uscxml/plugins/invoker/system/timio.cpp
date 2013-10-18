@@ -13,7 +13,7 @@ TimIO::TimIO(std::string ipaddr, std::string port) :
 	int rv;
 
 	memset(&hints, 0, sizeof hints);
-	hints.ai_family = AF_UNIX;
+	hints.ai_family = PF_INET;
 	hints.ai_socktype = SOCK_STREAM;
 
 	if ((rv = getaddrinfo(ipaddr.c_str(), port.c_str(), &hints, &servinfo)) != 0) {
@@ -34,7 +34,6 @@ TimIO::TimIO(std::string ipaddr, std::string port) :
 			perror("client: connect");
 			continue;
 		}
-
 		break;
 	}
 

@@ -212,7 +212,7 @@ void XPathDataModel::setEvent(const Event& event) {
 
 		if (event.data.array.size() == 1) {
 			Text<std::string> textNode = _doc.createTextNode(event.data.array.front().atom.c_str());
-			eventElem.appendChild(textNode);
+			eventDataElem.appendChild(textNode);
 		} else {
 			for( i = 0 , ptr = event.data.array.begin() ;
 				((i < event.data.array.size()) && (ptr != event.data.array.end())) ;
@@ -220,9 +220,9 @@ void XPathDataModel::setEvent(const Event& event) {
 				Element<std::string> eventMESElem = _doc.createElement("data");
 				Text<std::string> textNode = _doc.createTextNode(ptr->atom.c_str());
 				ss.flush(); ss << i;
-				eventElem.setAttribute("id", ss.str());
+				eventDataElem.setAttribute("id", ss.str());
 				eventMESElem.appendChild(textNode);
-				eventElem.appendChild(eventMESElem);
+				eventDataElem.appendChild(eventMESElem);
 			}
 		}
 	}
@@ -249,7 +249,7 @@ void XPathDataModel::setEvent(const Event& event) {
 }
 
 Data XPathDataModel::getStringAsData(const std::string& content) {
-	XPathValue<std::string> result = _xpath.evaluate_expr(content, _doc);
+	XPathValue<std::string> result = _xpath.evaluate_expr(content, _datamodel);
 
 	std::stringstream ss;
 	Data data;
@@ -385,11 +385,9 @@ bool XPathDataModel::isDeclared(const std::string& expr) {
 }
 
 bool XPathDataModel::evalAsBool(const std::string& expr) {
-	std::cout << std::endl << evalAsString(expr);
+//	std::cout << std::endl << evalAsString(expr);
 	XPathValue<std::string> result;
 	try {
-		std::cout << std::endl << "Documento Attuale : " << std::endl << _doc << std::endl;
-		std::cout << std::endl << "Attuale Datamodel : " << std::endl << _datamodel << std::endl;
 		result = _xpath.evaluate_expr(expr, _doc);
 	} catch(SyntaxException e) {
 		throw Event("error.execution", Event::PLATFORM);
@@ -475,6 +473,7 @@ void XPathDataModel::assign(const Element<std::string>& assignElem,
 #endif
 	NodeSet<std::string> nodeSet;
 	if (node) {
+		/** This case is superfluous */
 		Node<std::string> data = node;
 		while (data) {
 			// do not add empty text as a node
@@ -505,7 +504,7 @@ void XPathDataModel::assign(const Element<std::string>& assignElem,
 }
 
 void XPathDataModel::assign(const std::string& location, const Data& data) {
-	XPathValue<std::string> locationResult = _xpath.evaluate_expr(location, _doc);
+	XPathValue<std::string> locationResult = _xpath.evaluate_expr(location, _datamodel);
 	NodeSet<std::string> dataNodeSet = dataToNodeSet(data);
 	assign(locationResult, dataNodeSet, Element<std::string>());
 //	std::cout << _datamodel << std::endl;
@@ -830,6 +829,7 @@ void NodeSetVariableResolver::setVariable(const std::string& name, const NodeSet
 }
 
 bool NodeSetVariableResolver::isDeclared(const std::string& name) {
+	return true;
 #if 0
 	std::map<std::string, Arabica::XPath::NodeSet<std::string> >::iterator varIter =  _variables.begin();
 	while (varIter != _variables.end()) {
