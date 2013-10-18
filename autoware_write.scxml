@@ -7,12 +7,12 @@
 	xmlns="http://www.w3.org/2005/07/scxml" >
 	<datamodel>
 		<data id="CMD0">
-			<data type="wrapperProgram" index="0">
+			<data type="wrapperProgram" index="0" xmlns="">
 			    <nestedData type="numWorking">33</nestedData>
 			</data>
 		</data>
 		<data id="CMD1">
-			<data type="operativeMode" index="1">
+			<data type="operativeMode" index="1" xmlns="">
 			 <item i="0">
 			    <nestedData type="state">off</nestedData>
 			 </item>
@@ -28,7 +28,7 @@
 			</data>
 		</data>
 		<data id="CMD3">
-			<data type="setting" index="3">
+			<data type="setting" index="3" xmlns="">
 			 <item i="0">
 			    <nestedData type="value">11</nestedData>
 			 </item>
@@ -47,7 +47,7 @@
 			</data>
 		</data>
 		<data id="CMD4">
-			<data type="function" index="4">
+			<data type="function" index="4" xmlns="">
 			 <item i="0">
 			    <nestedData type="state">off</nestedData>
 			 </item>
@@ -59,9 +59,9 @@
 			 </item>
 			</data>
 		</data>
-		<data id="ACK">OK!!</data>
-		<data id="NACK">NOK!!</data>
-		<data id="TIMEOUT">TIMEOUT!!</data>
+		<data id="ACK" xmlns="">OK!!</data>
+		<data id="NACK" xmlns="">NOK!!</data>
+		<data id="TIMEOUT" xmlns="">TIMEOUT!!</data>
 	</datamodel>
 <!-- legend:
 		init<id>
@@ -81,18 +81,17 @@
 			<state id="0" initial="gotset0">
 				<state id="gotset0">
 					<transition event="ready0" target="sent0">
-<!--						<log label="Event full data is:" expr="$_event/text()" />-->
 						<assign location="$CMD0/data/nestedData" expr="$_event/data/text()"/>
 					</transition>
 				</state>
 				<state id="sent0">
 					<onentry>
-						<send 	event="cmd0"
-							namelist="$CMD0"
-							target="xmlbridge1"/>
-						<send 	event="timeout0"
-							namelist="$TIMEOUT"
-							delay="5s"/>
+<!--						<send 	event="cmd0"-->
+<!--							namelist="$CMD0"-->
+<!--							target="xmlbridge1"/>-->
+<!--						<send 	event="timeout0"-->
+<!--							namelist="$TIMEOUT"-->
+<!--							delay="5s"/>-->
 					</onentry>
 					<transition event="reply0" cond="true" target="gotset0">
 <!--						<log label="Event full data is:" expr="$_event/text()" />-->
@@ -104,7 +103,7 @@
 <!--						<log label="Event full data is:" expr="$_event/text()" />-->
 						<send 	event="ack0"
 							namelist="$NACK"
-							target="xmlbridge1"/>
+							target="#_xmlbridge1"/>
 					</transition>
 					<transition event="timeout0" target="gotset0" />
 				</state>

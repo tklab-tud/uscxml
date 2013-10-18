@@ -249,10 +249,11 @@ void XPathDataModel::setEvent(const Event& event) {
 }
 
 Data XPathDataModel::getStringAsData(const std::string& content) {
-	XPathValue<std::string> result = _xpath.evaluate_expr(content, _datamodel);
+	Data data;
+	XPathValue<std::string> result = _xpath.evaluate_expr(content, _doc);
 
 	std::stringstream ss;
-	Data data;
+
 	switch (result.type()) {
 	case ANY:
 		break;
@@ -377,6 +378,7 @@ void XPathDataModel::eval(const Arabica::DOM::Element<std::string>& scriptElem,
 }
 
 bool XPathDataModel::isDeclared(const std::string& expr) {
+	return true;
 	try {
 		return _varResolver.isDeclared(expr) || evalAsBool(expr);
 	} catch(...) {
@@ -452,8 +454,11 @@ void XPathDataModel::assign(const Element<std::string>& assignElem,
 	}
 
 	// test 326ff
-	std::cout << std::endl <<  "!!!!!!! Current Datamodel!: " << _datamodel;
-	XPathValue<std::string> key = _xpath.evaluate_expr(location, _datamodel);
+	XPathValue<std::string> key = _xpath.evaluate_expr(location, _doc);
+//	LOG(INFO) << "XPath key: " << key.asString();
+//	if (key.asNodeSet().size() == 0) {
+//		throw Event("error.execution", Event::PLATFORM);
+//	}
 #if 0
 	if (key.type() == NODE_SET) {
 		try {
@@ -494,7 +499,7 @@ void XPathDataModel::assign(const Element<std::string>& assignElem,
 		nodeSet.push_back(textNode);
 		assign(key, nodeSet, assignElem);
 	} else if (HAS_ATTR(assignElem, "expr")) {
-		XPathValue<std::string> value = _xpath.evaluate_expr(ATTR(assignElem, "expr"), _datamodel);
+		XPathValue<std::string> value = _xpath.evaluate_expr(ATTR(assignElem, "expr"), _doc);
 		assign(key, value, assignElem);
 	} else {
 		LOG(ERROR) << "assign element has no content";
@@ -504,7 +509,7 @@ void XPathDataModel::assign(const Element<std::string>& assignElem,
 }
 
 void XPathDataModel::assign(const std::string& location, const Data& data) {
-	XPathValue<std::string> locationResult = _xpath.evaluate_expr(location, _datamodel);
+	XPathValue<std::string> locationResult = _xpath.evaluate_expr(location, _doc);
 	NodeSet<std::string> dataNodeSet = dataToNodeSet(data);
 	assign(locationResult, dataNodeSet, Element<std::string>());
 //	std::cout << _datamodel << std::endl;
@@ -829,7 +834,6 @@ void NodeSetVariableResolver::setVariable(const std::string& name, const NodeSet
 }
 
 bool NodeSetVariableResolver::isDeclared(const std::string& name) {
-	return true;
 #if 0
 	std::map<std::string, Arabica::XPath::NodeSet<std::string> >::iterator varIter =  _variables.begin();
 	while (varIter != _variables.end()) {
