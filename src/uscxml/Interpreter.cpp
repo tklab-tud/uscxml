@@ -87,6 +87,7 @@ unsigned int InterpreterOptions::getCapabilities() {
 
 InterpreterOptions InterpreterOptions::fromCmdLine(int argc, char** argv) {
 	InterpreterOptions options;
+	optind = 0;
 	struct option longOptions[] = {
 		{"verbose",       no_argument,       0, 'v'},
 		{"dot",           no_argument,       0, 'd'},
