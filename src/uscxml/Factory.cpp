@@ -152,9 +152,7 @@ Factory::Factory() {
 			registerDataModel(dataModel);
 		}
 	} else {
-		LOG(ERROR) << "No path to plugins known, export USCXML_PLUGIN_PATH or pass path as parameter";
-		Event e;
-		throw e;
+		LOG(WARNING) << "No path to plugins known, export USCXML_PLUGIN_PATH or pass path as parameter";
 	}
 #else
 #if 1

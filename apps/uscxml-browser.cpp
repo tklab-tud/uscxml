@@ -185,7 +185,7 @@ int main(int argc, char** argv) {
 		interpreterIter = interpreters.begin();
 		while(interpreterIter != interpreters.end()) {
 			stillRunning = interpreterIter->runOnMainThread(25);
-			if (stillRunning) {
+			if (!stillRunning) {
 				interpreters.erase(interpreterIter++);
 			} else {
 				interpreterIter++;

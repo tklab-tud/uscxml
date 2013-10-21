@@ -13,7 +13,7 @@
 							<scenegraph:box x="1" y="2" z="3" color="red" />
 						</scenegraph:translation>
 						<scenegraph:translation x="0" y="5" z="0">
-							<scenegraph:capsule radius="1" height="2" materialcolor="blue" transparency="0.5"/>
+							<scenegraph:capsule radius="1" height="2" materialcolor="blue"/>
 						</scenegraph:translation>
 						<scenegraph:translation x="0" y="0" z="5">
 							<scenegraph:cone radius="1" height="2" color="lightblue" />
