@@ -858,7 +858,7 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/contrib/ctest/CTestCustom.ctest.in ${
 # Some concluding remarks
 ############################################################
 
-message(STATUS "Linking against external:")
+message(STATUS "Linking against external (check if you need to export in LD_LIBRARY_PATH or PATH):")
 set(SKIP_NEXT OFF)
 foreach(LIBRARY ${USCXML_OPT_LIBS})
 	if (LIBRARY MATCHES "debug")
