@@ -6,7 +6,12 @@
 	xmlns:fn="http://www.w3.org/2005/xpath-functions"
 	xmlns="http://www.w3.org/2005/07/scxml" >
 	<datamodel>
-
+		<data id="CMD0">
+			<ciao xmlns="">77</ciao>
+			<data type="wrapperProgram" index="0" xmlns="">
+			    <nestedData type="numWorking">33</nestedData>
+			</data>
+		</data>
 		<data id="CMD1">
 			<data type="operativeMode" index="1" xmlns="">
 			 <item i="0">
@@ -24,6 +29,7 @@
 			</data>
 		</data>
 		<data id="CMD3">
+			<ciao xmlns="">77</ciao>
 			<data type="setting" index="3" xmlns="">
 			 <item i="0">
 			    <nestedData type="value">11</nestedData>
@@ -55,47 +61,6 @@
 			 </item>
 			</data>
 		</data>
-		<data id="ACK" xmlns="">OK!!</data>
-		<data id="NACK" xmlns="">NOK!!</data>
-		<data id="TIMEOUT" xmlns="">TIMEOUT!!</data>
-		  <data id="TIM">
-			<ciao xmlns="">77</ciao>
-			<frame xmlns="">
-			    <get type="request" index="12">language</get>
-			    <get type="request" index="13">diagnostic</get>
-			    <get type="request" index="14">optional</get>
-	<!--		   Operator oriented write commands -->
-			    <set type="wrapperProgram" index="15">
-				<nestedData type="numWorking">3</nestedData>
-			    </set>
-			    <set type="operativeMode" index="16">
-				<item i="0">
-				    <nestedData type="state">on</nestedData>
-				</item>
-				<item i="1">
-				    <nestedData type="state">off</nestedData>
-				</item>
-				<item i="2">
-				    <nestedData type="state">off</nestedData>
-				</item>
-			    </set>
-			    <set type="temperature" index="17">
-				<item i="0">
-				    <nestedData type="setPoint">30</nestedData>
-				</item>
-				<item i="1">
-				    <nestedData type="setPoint">20</nestedData>
-				</item>
-			    </set>
-			</frame>
-		  </data>
-		<data id="CMD0">
-			<frame xmlns="">	
-				<data type="wrapperProgram" index="0">
-				    <nestedData type="numWorking">33</nestedData>
-				</data>
-			</frame>
-		</data>
 	</datamodel>
 <!-- legend:
 		init<id>
@@ -115,7 +80,7 @@
 			<state id="0" initial="gotset0">
 				<state id="gotset0">
 					<transition event="ready0" target="sent0">
-						<assign location="$CMD0/frame/data/nestedData" expr="$_event/data/text()"/>
+						<assign location="$CMD0/data/nestedData" expr="$_event/data/text()"/>
 					</transition>
 <!--					<transition event="ready0" target="sent0">-->
 <!--						<assign location="$TIM/frame/set[@index='17']/item[@i='0']/nestedData" expr="$_event/data/text()"/>-->
