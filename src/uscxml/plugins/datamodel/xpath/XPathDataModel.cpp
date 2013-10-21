@@ -500,10 +500,10 @@ void XPathDataModel::assign(const Element<std::string>& assignElem,
 	} else if (HAS_ATTR(assignElem, "expr")) {
 		XPathValue<std::string> value = _xpath.evaluate_expr(ATTR(assignElem, "expr"), _doc);
 		LOG(INFO) << "Value XPath : " << value.asString();
-		//assign(key, value, assignElem);
-		nodeSet = key.asNodeSet();
-		for (NodeSet<std::string>::iterator it = nodeSet.begin(); it != nodeSet.end(); it++)
-			it->setNodeValue(value.asString());
+		assign(key, value, assignElem);
+		//nodeSet = key.asNodeSet();
+		//for (NodeSet<std::string>::iterator it = nodeSet.begin(); it != nodeSet.end(); it++)
+		//	it->setNodeValue(value.asString());
 	} else {
 		LOG(ERROR) << "assign element has no content";
 	}
@@ -699,7 +699,7 @@ void XPathDataModel::assign(const NodeSet<std::string>& key,
 	for (int i = 0; i < key.size(); i++) {
 		switch (key[i].getNodeType()) {
 		case Node_base::ELEMENT_NODE: {
-			assign(key[i], value, assignElem);
+			assign(Element<std::string>(key[i]), value, assignElem);
 			break;
 		}
 		default:
@@ -710,9 +710,9 @@ void XPathDataModel::assign(const NodeSet<std::string>& key,
 	}
 }
 
-void XPathDataModel::assign(const Arabica::DOM::Node<std::string> &key,
-			    const NodeSet<std::string>& value,
-			    const Element<std::string>& assignElem) {
+void XPathDataModel::assign(const Element<std::string>& key,
+                            const NodeSet<std::string>& value,
+                            const Element<std::string>& assignElem) {
 	Element<std::string> element(key);
 	if (value.size() == 0 || !value[0])
 		return;

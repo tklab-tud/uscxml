@@ -156,9 +156,9 @@ protected:
 	            const Arabica::DOM::Element<std::string>& assignElem);
 
 	// assign value to an element key (from nodeset)
-	void assign(const Arabica::DOM::Node<std::string>& key,
-		    const Arabica::XPath::NodeSet<std::string> &value,
-		    const Arabica::DOM::Element<std::string> &assignElem);
+	void assign(const Arabica::DOM::Element<std::string>& key,
+	            const Arabica::XPath::NodeSet<std::string>& value,
+	            const Arabica::DOM::Element<std::string>& assignElem);
 
 
 	// assign value to a text node key (from nodeset)
