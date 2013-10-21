@@ -457,8 +457,6 @@ void XPathDataModel::assign(const Element<std::string>& assignElem,
 
 	// test 326ff
 	XPathValue<std::string> key = _xpath.evaluate_expr(location, _doc);
-	if (key.asNodeSet().size() == 0)
-		throw Event("error.execution", Event::PLATFORM);
 	LOG(INFO) << "Key XPath : " << key.asString();
 #if 0
 	if (key.type() == NODE_SET) {
@@ -501,10 +499,11 @@ void XPathDataModel::assign(const Element<std::string>& assignElem,
 		assign(key, nodeSet, assignElem);
 	} else if (HAS_ATTR(assignElem, "expr")) {
 		XPathValue<std::string> value = _xpath.evaluate_expr(ATTR(assignElem, "expr"), _doc);
-		if (value.asNodeSet().size() == 0)
-			throw Event("error.execution", Event::PLATFORM);
-		LOG(INFO) << "Key XPath : " << value.asString();
-		assign(key, value, assignElem);
+		LOG(INFO) << "Value XPath : " << value.asString();
+		//assign(key, value, assignElem);
+		nodeSet = key.asNodeSet();
+		for (NodeSet<std::string>::iterator it = nodeSet.begin(); it != nodeSet.end(); it++)
+			it->setNodeValue(value.asString());
 	} else {
 		LOG(ERROR) << "assign element has no content";
 	}
@@ -540,11 +539,7 @@ void XPathDataModel::init(const Element<std::string>& dataElem,
 	NodeSet<std::string> nodeSet;
 	if (node || (content.length() > 0)) {
 		_datamodel.appendChild(_doc.importNode(dataElem, true));
-		Node<std::string> child = dataElem.getFirstChild();
-		while(child) {
-			nodeSet.push_back(child);
-			child = child.getNextSibling();
-		}
+		nodeSet.push_back(dataElem);
 	} else if (HAS_ATTR(dataElem, "expr")) {
 		try {
 			Element<std::string> container = _doc.createElement("data");
@@ -580,8 +575,6 @@ void XPathDataModel::init(const Element<std::string>& dataElem,
 	}
 
 	_varResolver.setVariable(location, nodeSet);
-
-	std::cout << "DATAMODELLO ATTUALE :" << _datamodel << std::endl;
 }
 
 void XPathDataModel::init(const std::string& location, const Data& data) {
@@ -594,7 +587,7 @@ void XPathDataModel::assign(const XPathValue<std::string>& key,
                             const XPathValue<std::string>& value,
                             const Element<std::string>& assignElem) {
 	switch (key.type()) {
-	case NODE_SET: {
+	case NODE_SET:
 		if (key.asNodeSet().size() == 0) {
 			throw Event("error.execution", Event::PLATFORM);
 		}
@@ -615,12 +608,12 @@ void XPathDataModel::assign(const XPathValue<std::string>& key,
 			throw Event("error.execution", Event::PLATFORM);
 		}
 		break;
-	}
 	case STRING:
 	case Arabica::XPath::BOOL:
 	case NUMBER:
 	case ANY:
 		throw Event("error.execution", Event::PLATFORM);
+		break;
 	}
 }
 
@@ -706,7 +699,7 @@ void XPathDataModel::assign(const NodeSet<std::string>& key,
 	for (int i = 0; i < key.size(); i++) {
 		switch (key[i].getNodeType()) {
 		case Node_base::ELEMENT_NODE: {
-			assign(Element<std::string>(key[i]), value, assignElem);
+			assign(key[i], value, assignElem);
 			break;
 		}
 		default:
@@ -717,9 +710,9 @@ void XPathDataModel::assign(const NodeSet<std::string>& key,
 	}
 }
 
-void XPathDataModel::assign(const Element<std::string>& key,
-                            const NodeSet<std::string>& value,
-                            const Element<std::string>& assignElem) {
+void XPathDataModel::assign(const Arabica::DOM::Node<std::string> &key,
+			    const NodeSet<std::string>& value,
+			    const Element<std::string>& assignElem) {
 	Element<std::string> element(key);
 	if (value.size() == 0 || !value[0])
 		return;

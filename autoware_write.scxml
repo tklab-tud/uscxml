@@ -7,7 +7,6 @@
 	xmlns="http://www.w3.org/2005/07/scxml" >
 	<datamodel>
 		<data id="CMD0">
-			<ciao xmlns="">77</ciao>
 			<data type="wrapperProgram" index="0" xmlns="">
 			    <nestedData type="numWorking">33</nestedData>
 			</data>
@@ -29,7 +28,6 @@
 			</data>
 		</data>
 		<data id="CMD3">
-			<ciao xmlns="">77</ciao>
 			<data type="setting" index="3" xmlns="">
 			 <item i="0">
 			    <nestedData type="value">11</nestedData>
