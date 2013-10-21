@@ -3,7 +3,7 @@ set(CTEST_SITE "epikur.local")
 set(CTEST_BUILD_CONFIGURATION "Debug")
 
 set(RETAIN_BUILD_DIR OFF)
-set(REMOVE_PREBUILDS ON)
+set(REMOVE_PREBUILDS OFF)
 set(CTEST_BUILD_NAME "darwin-x86_64 llvm")
 include("tests/ecma.ctest")
 include("common.ctest.inc")
