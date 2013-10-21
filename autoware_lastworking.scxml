@@ -60,7 +60,7 @@
 
 	<state id="root" initial="GetProdId">
 		<invoke type="xmlbridge" id="xmlbridge1">
-			<param name="datablock" expr="'100'"/>
+			<param name="datablock" expr="'0'"/>
 		</invoke>
 		<!-- Use Cases -->
 		<state id="GetProdId">
@@ -153,7 +153,7 @@
 <!--			<transition event="reply" cond="data('_event')/ciao/subject = '77'" target="NewOrder" />-->
 <!--			<transition event="reply" cond="data('_event')/root/alpha = '1'" target="NewOrder" />-->
 <!--			<transition event="reply" cond="$_event/data/data/data/ciao = '77'" target="NewOrder" />-->
-			<transition event="0" target="NewOrder">
+			<transition event="ready0" target="NewOrder">
 				<log label="Event full data is:" expr="$_event/text()" />
 				<assign location="$TIM/frame/set[@index='17']/item[@i='0']/nestedData" expr="$_event/data/text()"/>
 			</transition>
