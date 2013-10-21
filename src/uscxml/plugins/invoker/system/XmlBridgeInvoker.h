@@ -17,7 +17,7 @@ namespace uscxml {
 #define SCXML2TIM_EV	"cmd"
 #define SCXML2MES_EV	"ack"
 #define MES2SCXML_EV	"ready"
-#define TIM2SCXML_EV	"ready"
+#define TIM2SCXML_EV	"reply"
 
 class XmlBridgeInvoker : public InvokerImpl {
 public:

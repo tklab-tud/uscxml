@@ -81,7 +81,7 @@
 			<state id="0" initial="gotset0">
 				<state id="gotset0">
 					<transition event="ready0" target="sent0">
-<!--						<assign location="$CMD0/data/nestedData" expr="$_event/data/text()"/>-->
+						<assign location="$CMD0/data/nestedData" expr="$_event/data/text()"/>
 					</transition>
 				</state>
 				<state id="sent0">
@@ -89,18 +89,18 @@
 						<send 	event="cmd0"
 							namelist="$CMD0"
 							target="#_xmlbridge1"/>
-						<send 	event="timeout0"
-							namelist="$TIMEOUT"
-							delay="5s"/>
+<!--						<send 	event="timeout0"-->
+<!--							namelist="$TIMEOUT"-->
+<!--							delay="5s"/>-->
 					</onentry>
-					<transition event="reply0" cond="true" target="gotset0">
-<!--						<log label="Event full data is:" expr="$_event/text()" />-->
+					<transition event="reply0" cond="$_event/data/nestedData[@id='state']/text() = 'ok'" target="gotset0">
+						<log label="Event full data is:" expr="$_event" />
 						<send 	event="ack0"
 							namelist="$ACK"
 							target="xmlbridge1"/>
 					</transition>
-					<transition event="reply0" cond="false" target="gotset0">
-<!--						<log label="Event full data is:" expr="$_event/text()" />-->
+					<transition event="reply0" cond="$_event/data/nestedData[@id='state']/text() = 'error'" target="gotset0">
+						<log label="Event full data is:" expr="$_event" />
 						<send 	event="ack0"
 							namelist="$NACK"
 							target="#_xmlbridge1"/>
