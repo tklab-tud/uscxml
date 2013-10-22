@@ -201,7 +201,6 @@ void XPathDataModel::setEvent(const Event& event) {
 		eventDataElem.appendChild(textNode);
 	}
 	if (event.dom) {
-//		Node<std::string> importedNode = _doc.importNode(event.getFirstDOMElement(), true);
 		Node<std::string> importedNode = _doc.importNode(event.dom, true);
 		eventDataElem.appendChild(importedNode);
 	}
@@ -806,7 +805,7 @@ void NodeSetVariableResolver::setVariable(const std::string& name, const NodeSet
 	std::cout << std::endl;
 #endif
 	_variables[name] = value;
-#if VERBOSE
+#if 0
 	std::map<std::string, Arabica::XPath::NodeSet<std::string> >::iterator varIter =  _variables.begin();
 	while (varIter != _variables.end()) {
 		std::cout << varIter->first << ":" << std::endl;

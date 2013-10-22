@@ -59,6 +59,9 @@
 			 </item>
 			</data>
 		</data>
+		<data id="ACK">OK</data>
+		<data id="NACK">FAIL</data>
+		<data id="TIMEOUT">TIMEOUT</data>
 	</datamodel>
 <!-- legend:
 		init<id>
@@ -80,30 +83,22 @@
 					<transition event="ready0" target="sent0">
 						<assign location="$CMD0/data/nestedData" expr="$_event/data/text()"/>
 					</transition>
-<!--					<transition event="ready0" target="sent0">-->
-<!--						<assign location="$TIM/frame/set[@index='17']/item[@i='0']/nestedData" expr="$_event/data/text()"/>-->
-<!--					</transition>-->
 				</state>
 				<state id="sent0">
 					<onentry>
 						<send 	event="cmd0"
 							namelist="$CMD0"
 							target="#_xmlbridge1"/>
-<!--						<send 	event="cmd0"-->
-<!--							namelist="$TIM"-->
-<!--							target="#_xmlbridge1"/>-->
 <!--						<send 	event="timeout0"-->
 <!--							namelist="$TIMEOUT"-->
 <!--							delay="5s"/>-->
 					</onentry>
-					<transition event="reply0" cond="$_event/data/nestedData[@id='state']/text() = 'ok'" target="gotset0">
-						<log label="Event full data is:" expr="$_event" />
+					<transition event="reply0" cond="$_event//data/nestedData[@type='state']/text() = 'ok'" target="gotset0">
 						<send 	event="ack0"
 							namelist="$ACK"
-							target="xmlbridge1"/>
+							target="#_xmlbridge1"/>
 					</transition>
-					<transition event="reply0" cond="$_event/data/nestedData[@id='state']/text() = 'error'" target="gotset0">
-						<log label="Event full data is:" expr="$_event" />
+					<transition event="reply0" cond="$_event/data/nestedData[@type='state']/text() = 'error'" target="gotset0">
 						<send 	event="ack0"
 							namelist="$NACK"
 							target="#_xmlbridge1"/>
@@ -114,33 +109,29 @@
 			<state id="1" initial="gotset10">
 				<state id="gotset10">
 					<transition event="ready1" target="gotset11">
-<!--						<log label="Event full data is:" expr="$_event/text()" />-->
-						<assign location="$CMD1/data/item[0]/nestedData" expr="$_event/data/text()"/>
+						<assign location="$CMD1/data/item[@i='0']/nestedData" expr="$_event/data/text()"/>
 					</transition>
 				</state>
 				<state id="gotset11">
 					<transition event="ready1" target="gotset12">
-<!--						<log label="Event full data is:" expr="$_event/text()" />-->
-						<assign location="$CMD1/data/item[1]/nestedData" expr="$_event/data/text()"/>
+						<assign location="$CMD1/data/item[@i='1']/nestedData" expr="$_event/data/text()"/>
 					</transition>
 				</state>
 				<state id="gotset12">
 					<transition event="ready1" target="gotset13">
-<!--						<log label="Event full data is:" expr="$_event/text()" />-->
-						<assign location="$CMD1/data/item[2]/nestedData" expr="$_event/data/text()"/>
+						<assign location="$CMD1/data/item[@i='2']/nestedData" expr="$_event/data/text()"/>
 					</transition>
 				</state>
 				<state id="gotset13">
 					<transition event="ready1" target="sent1">
-<!--						<log label="Event full data is:" expr="$_event/text()" />-->
-						<assign location="$CMD1/data/item[3]/nestedData" expr="$_event/data/text()"/>
-						<send 	event="cmd1"
-							namelist="$CMD1"
-							target="xmlbridge1" />
+						<assign location="$CMD1/data/item[@i='3']/nestedData" expr="$_event/data/text()"/>
 					</transition>
 				</state>
 				<state id="sent1">
 					<onentry>
+						<send 	event="cmd1"
+							namelist="$CMD1"
+							target="#_xmlbridge1" />
 						<send 	event="timeout1"
 							namelist="$TIMEOUT"
 							delay="5s"/>
@@ -155,7 +146,7 @@
 <!--						<log label="Event full data is:" expr="$_event/text()" />-->
 						<send 	event="ack1"
 							namelist="$NACK"
-							target="xmlbridge1"/>
+							target="#_xmlbridge1"/>
 					</transition>
 					<transition event="timeout1" target="gotset10" />
 				</state>
@@ -191,7 +182,7 @@
 						<assign location="$CMD3/data/item[4]/nestedData" expr="$_event/data/text()"/>
 						<send 	event="cmd3"
 							namelist="$CMD3"
-							target="xmlbridge1" />
+							target="#_xmlbridge1" />
 					</transition>
 				</state>
 				<state id="sent3">
@@ -204,27 +195,26 @@
 <!--						<log label="Event full data is:" expr="$_event/text()" />-->
 						<send 	event="ack3"
 							namelist="$ACK"
-							target="xmlbridge1"/>
+							target="#_xmlbridge1"/>
 					</transition>
 					<transition event="reply3" cond="XPATH" target="gotset30">
 <!--						<log label="Event full data is:" expr="$_event/text()" />-->
 						<send 	event="ack3"
 							namelist="$NACK"
-							target="xmlbridge1"/>
+							target="#_xmlbridge1"/>
 					</transition>
 					<transition event="timeout3" target="gotset30" />
 				</state>
 			</state>
 			<state id="4" initial="gotset4">
 				<state id="gotset4">
-					<transition event="ready4" target="gotset41">
-<!--						<log label="Event full data is:" expr="$_event/text()" />-->
+					<transition event="ready4" target="sent4">
 						<foreach array="$_event/data" item="itemCorrente" index="numRiga">
-							<assign location="$CMD4/data/item[numRiga]/nestedData" expr="$itemCorrente"/>
+							<assign location="$CMD4/data/item[@id='numRiga']/nestedData" expr="$itemCorrente"/>
 						</foreach>
 						<send 	event="cmd4"
 							namelist="$CMD4"
-							target="xmlbridge1" />
+							target="#_xmlbridge1" />
 					</transition>
 				</state>
 				<state id="sent4">
@@ -237,13 +227,13 @@
 <!--						<log label="Event full data is:" expr="$_event/text()" />-->
 						<send 	event="ack4"
 							namelist="$ACK"
-							target="xmlbridge1"/>
+							target="#_xmlbridge1"/>
 					</transition>
 					<transition event="reply4" cond="XPATH" target="gotset4">
 <!--						<log label="Event full data is:" expr="$_event/text()" />-->
 						<send 	event="ack4"
 							namelist="$NACK"
-							target="xmlbridge1"/>
+							target="#_xmlbridge1"/>
 					</transition>
 					<transition event="timeout4" target="gotset4" />
 				</state>

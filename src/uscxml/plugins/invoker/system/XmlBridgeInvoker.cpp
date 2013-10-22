@@ -203,21 +203,32 @@ void XmlBridgeInvoker::buildMESreq(unsigned int cmdid, const std::list < std::st
 }
 
 /** TIM->SCXML */
-void XmlBridgeInvoker::buildTIMreply(const char cmdid, const std::string reply_raw_data) {
-	Arabica::SAX2DOM::Parser<std::string> myparser;
-	if (!(myparser.parse(reply_raw_data))) {
+void XmlBridgeInvoker::buildTIMreply(const char cmdid, const std::string reply_raw_data)
+{
+	Arabica::SAX2DOM::Parser<std::string> domParser;
+	Arabica::SAX::CatchErrorHandler<std::string> errorHandler;
+	domParser.setErrorHandler(errorHandler);
+
+	std::istringstream is(reply_raw_data);
+	Arabica::SAX::InputSource<std::string> inputSource;
+	inputSource.setByteStream(is);
+
+	if (!(domParser.parse(inputSource))) {
 		LOG(ERROR) << "Failed parsing TIM XML reply string for command " << cmdid;
+		LOG(ERROR) << "Errors " << errorHandler.errors();;
 		LOG(ERROR) << "TIM XML string was: " << std::endl << reply_raw_data;
 		return;
 	}
-
-	Arabica::DOM::Document<std::string> myreply = myparser.getDocument();
 
 	std::stringstream ss;
 	ss << TIM2SCXML_EV << cmdid;
 
 	uscxml::Event myevent(ss.str(), uscxml::Event::EXTERNAL);
-	myevent.dom = myreply.getDocumentElement();
+	if (!domParser.getDocument().hasChildNodes()) {
+		LOG(ERROR) << "Failed parsing TIM XML reply. Resulting document has no nodes";
+		return;
+	}
+	myevent.dom = domParser.getDocument().getDocumentElement();
 
 	myevent.setInvokeId("xmlbridge");
 	myevent.setOrigin("TIM");
@@ -315,7 +326,6 @@ void XmlBridgeInputEvents::sendTIMreq(const char cmdid, const std::string reqDat
 {
 	//mutex?
 
-	//can be done earlier?
 	if (!_timio->_timCmds.empty())
 		_timio->_timCmds.pop();
 	if (!_timio->_timCmdIds.empty())
