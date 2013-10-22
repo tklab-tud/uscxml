@@ -187,7 +187,7 @@ else()
 		SET(CMAKE_FIND_ROOT_PATH "/;${CMAKE_FIND_ROOT_PATH};${USCXML_PREBUILT_LIBRARY_PATH};${USCXML_PREBUILT_HEADER_PATH}")
 	endif()
 endif()
-include_directories("/usr/local/include" ${USCXML_PREBUILT_LIBRARY_PATH}/include)
+include_directories("/usr/local/include" "/home/sunkiss/_Projects/xmlBridgeCPP" ${USCXML_PREBUILT_LIBRARY_PATH}/include)
 
 if (WIN32)
 	include_directories(${PROJECT_SOURCE_DIR}/contrib/src/getopt)
@@ -261,7 +261,7 @@ if(${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
 
 	# all warnings
 	add_definitions(-Wall)
-	add_definitions(-Werror)
+	#add_definitions(-Werror)
 
 #	if(GCC_VERSION VERSION_EQUAL 4.7 OR GCC_VERSION VERSION_GREATER 4.7)
 #		# when compiling as C++11, narrowing is a warning but older compilers complain about the option

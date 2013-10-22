@@ -1,5 +1,5 @@
 #include "XmlBridgeInvoker.h"
-#include "../xmlBridgeCPP/mesbufferer.h"
+#include <mesbufferer.h>
 
 #ifdef BUILD_AS_PLUGINS
 #include <Pluma/Connector.hpp>
