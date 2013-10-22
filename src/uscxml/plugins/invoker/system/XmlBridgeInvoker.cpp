@@ -184,20 +184,22 @@ void XmlBridgeInvoker::buildMESreq(unsigned int cmdid, const std::list < std::st
 	ss << MES2SCXML_EV << cmdid;
 
 	uscxml::Event myevent(ss.str(), uscxml::Event::EXTERNAL);
-	uscxml::Data mydata;
-
-	std::list<std::string>::const_iterator myiter;
-	for(myiter = req_raw_data.begin(); myiter != req_raw_data.end(); myiter++) {
-		mydata.array.push_back(Data(*myiter));
-	}
-
 	myevent.setInvokeId("xmlbridge");
 	myevent.setOrigin("MES");
-	if (req_raw_data.empty())
+
+	if (req_raw_data.empty()) {
 		myevent.setOriginType("r");
-	else
+	} else {
 		myevent.setOriginType("w");
-	myevent.data = mydata;
+
+		uscxml::Data mydata;
+
+		std::list<std::string>::const_iterator myiter;
+		for(myiter = req_raw_data.begin(); myiter != req_raw_data.end(); myiter++)
+			mydata.array.push_back(Data(*myiter));
+
+		myevent.data = mydata;
+	}
 
 	returnEvent(myevent);
 }

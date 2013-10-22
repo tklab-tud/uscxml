@@ -89,16 +89,16 @@
 						<send 	event="cmd0"
 							namelist="$CMD0"
 							target="#_xmlbridge1"/>
-<!--						<send 	event="timeout0"-->
-<!--							namelist="$TIMEOUT"-->
-<!--							delay="5s"/>-->
+						<send 	event="timeout0"
+							namelist="$TIMEOUT"
+							delay="5s"/>
 					</onentry>
 					<transition event="reply0" cond="$_event//data/nestedData[@type='state']/text() = 'ok'" target="gotset0">
 						<send 	event="ack0"
 							namelist="$ACK"
 							target="#_xmlbridge1"/>
 					</transition>
-					<transition event="reply0" cond="$_event/data/nestedData[@type='state']/text() = 'error'" target="gotset0">
+					<transition event="reply0" cond="$_event//data/nestedData[@type='state']/text() = 'error'" target="gotset0">
 						<send 	event="ack0"
 							namelist="$NACK"
 							target="#_xmlbridge1"/>
