@@ -5,7 +5,6 @@ file(GLOB_RECURSE SAMPLE_INVOKER
 	sample/*.h
 )
 
-source_group("Invoker\\sample" FILES ${SAMPLE_INVOKER})
 if (BUILD_AS_PLUGINS)
 	source_group("" FILES ${SAMPLE_INVOKER})
 	add_library(
@@ -25,7 +24,6 @@ file(GLOB_RECURSE DIRMON_INVOKER
 	filesystem/dirmon/*.cpp
 	filesystem/dirmon/*.h
 )
-source_group("Invoker\\dirmon" FILES ${DIRMON_INVOKER})
 if (BUILD_AS_PLUGINS)
 	source_group("" FILES ${DIRMON_INVOKER})
 	add_library(
@@ -84,7 +82,6 @@ file(GLOB_RECURSE SYSTEM_INVOKER
 	system/*.cpp
 	system/*.h
 )
-source_group("Invoker\\system" FILES ${SYSTEM_INVOKER})
 if (BUILD_AS_PLUGINS)
 	source_group("" FILES ${SYSTEM_INVOKER})
 	add_library(
@@ -105,7 +102,6 @@ if (SQLITE3_FOUND)
 		sqlite3/*.cpp
 		sqlite3/*.h
 	)
-	source_group("Invoker\\sqlite" FILES ${SQLITE3_INVOKER})
 	if (BUILD_AS_PLUGINS)
 		source_group("" FILES ${SQLITE3_INVOKER})
 		add_library(
@@ -128,7 +124,6 @@ if (FFMPEG_FOUND)
 		ffmpeg/*.cpp
 		ffmpeg/*.h
 	)
-	source_group("Invoker\\ffmpeg" FILES ${FFMPEG_INVOKER})
 	if (BUILD_AS_PLUGINS)
 		source_group("" FILES ${FFMPEG_INVOKER})
 		add_library(
@@ -151,7 +146,6 @@ if (LIBPURPLE_FOUND)
 		im/*.cpp
 		im/*.h
 	)
-	source_group("Invoker\\im" FILES ${LIBPURPLE_INVOKER})
 	if (BUILD_AS_PLUGINS)
 		source_group("" FILES ${LIBPURPLE_INVOKER})
 		add_library(
@@ -174,7 +168,6 @@ if (LIBICAL_FOUND)
 		calendar/*.cpp
 		calendar/*.h
 	)
-	source_group("Invoker\\calendar" FILES ${CALENDAR_INVOKER})
 	if (BUILD_AS_PLUGINS)
 		source_group("" FILES ${CALENDAR_INVOKER})
 		add_library(
@@ -198,7 +191,6 @@ if (CORELOCATION_LIBRARY AND OFF)
 		location/CoreLocation/*.mm
 		location/CoreLocation/*.h
 	)
-	source_group("Invoker\\location" FILES ${LOCATION_INVOKER})
 	if (BUILD_AS_PLUGINS)
 		source_group("" FILES ${LOCATION_INVOKER})
 		add_library(
@@ -221,7 +213,6 @@ if (UMUNDO_FOUND)
 		umundo/*.cpp 
 		umundo/*.cc 
 		umundo/*.h)
-	source_group("Invoker\\umundo" FILES ${UMUNDO_INVOKER})
 	if (BUILD_AS_PLUGINS)
 		source_group("" FILES ${UMUNDO_INVOKER})
 #		message(FATAL_ERROR "UMUNDO_LIBRARIES: ${UMUNDO_LIBRARIES}")
@@ -246,7 +237,6 @@ set(USCXML_INVOKERS "scxml ${USCXML_INVOKERS}")
 file(GLOB_RECURSE USCXML_INVOKER 
 	scxml/*.cpp 
 	scxml/*.h)
-source_group("Invoker\\uscxml" FILES ${USCXML_INVOKER})
 if (BUILD_AS_PLUGINS)
 	source_group("" FILES ${USCXML_INVOKER})
 	add_library(
@@ -267,7 +257,6 @@ set(USCXML_INVOKERS "httpservlet ${USCXML_INVOKERS}")
 file(GLOB_RECURSE HTTPSERVLET_INVOKER 
 	http/*.cpp 
 	http/*.h)
-source_group("Invoker\\httpservlet" FILES ${HTTPSERVLET_INVOKER})
 if (BUILD_AS_PLUGINS)
 	source_group("" FILES ${HTTPSERVLET_INVOKER})
 	add_library(
@@ -289,7 +278,6 @@ file(GLOB_RECURSE HEARTBEAT_INVOKER
 	heartbeat/*.cpp
 	heartbeat/*.h
 )
-source_group("Invoker\\heartbeat" FILES ${HEARTBEAT_INVOKER})
 if (BUILD_AS_PLUGINS)
 	source_group("" FILES ${HEARTBEAT_INVOKER})
 	add_library(
@@ -309,7 +297,6 @@ if (OPENSCENEGRAPH_FOUND AND OPENGL_FOUND)
 	file(GLOB OPENSCENEGRAPH_INVOKER 
 		graphics/openscenegraph/*.cpp 
 		graphics/openscenegraph/*.h)
-	source_group("Invoker\\scenegraph" FILES ${OPENSCENEGRAPH_INVOKER})
 
 	if (BUILD_AS_PLUGINS)
 		source_group("" FILES ${OPENSCENEGRAPH_INVOKER})
@@ -330,7 +317,6 @@ if (OPENSCENEGRAPH_FOUND AND OPENGL_FOUND)
 	file(GLOB OPENSCENEGRAPH_CONVERTER_INVOKER 
 		graphics/openscenegraph/converter/*.cpp 
 		graphics/openscenegraph/converter/*.h)
-	source_group("Invoker\\scenegraph\\convert" FILES ${OPENSCENEGRAPH_CONVERTER_INVOKER})
 
 	if (BUILD_AS_PLUGINS)
 		source_group("" FILES ${OPENSCENEGRAPH_CONVERTER_INVOKER})
@@ -367,7 +353,6 @@ if (OPENAL_FOUND AND (LIBSNDFILE_FOUND OR AUDIOTOOLBOX_FOUND))
 			audio/AudioToolbox*.h)
 		LIST(APPEND OPENAL_INVOKER ${AUDIOTOOLBOX_WRAPPER})
 	endif()
-	source_group("Invoker\\audio" FILES ${OPENAL_INVOKER})
 #	message("MILES_INVOKER ${MILES_INVOKER}")
 
 	if (BUILD_AS_PLUGINS)
@@ -401,7 +386,6 @@ if (MILES_FOUND)
   file(GLOB_RECURSE MILES_INVOKER 
 		miles/*.cpp 
 		miles/*.h)
-	source_group("Invoker\\miles" FILES ${MILES_INVOKER})
 #	message("MILES_INVOKER ${MILES_INVOKER}")
 
 	if (BUILD_AS_PLUGINS)
@@ -431,7 +415,6 @@ if (UMUNDO_FOUND AND OFF)
 		vxml/*.cpp
 		vxml/*.h
 	)
-	source_group("Invoker\\voicexml" FILES ${VXML_INVOKER})
 	if (BUILD_AS_PLUGINS)
 		source_group("" FILES ${VXML_INVOKER})
 		add_library(

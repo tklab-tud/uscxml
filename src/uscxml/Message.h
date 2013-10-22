@@ -28,7 +28,6 @@
 
 #include <DOM/Document.hpp>
 #include <DOM/io/Stream.hpp>
-#include <XPath/impl/xpath_object.hpp>
 
 #include <boost/shared_ptr.hpp>
 #include <boost/lexical_cast.hpp>

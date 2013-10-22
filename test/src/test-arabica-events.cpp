@@ -4,6 +4,7 @@
 #include "uscxml/Common.h"
 #include <DOM/Document.hpp>
 #include <XPath/XPath.hpp>
+#include <DOM/SAX2DOM/SAX2DOM.hpp>
 #include <SAX/helpers/CatchErrorHandler.hpp>
 #include <DOM/Events/EventTarget.hpp>
 #include <DOM/Events/EventListener.hpp>

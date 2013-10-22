@@ -556,13 +556,13 @@ void EventHandlerImpl::returnErrorPlatform(const std::string& cause) {
 }
 
 void EventHandlerImpl::returnEvent(Event& event) {
-	if (event.invokeid.empty())
+	if (event.invokeid.length() == 0)
 		event.invokeid = _invokeId;
 	if (event.eventType == 0)
 		event.eventType = Event::EXTERNAL;
-	if (event.origin.empty())
+	if (event.origin.length() == 0)
 		event.origin = "#_" + _invokeId;
-	if (event.origintype.empty())
+	if (event.origintype.length() == 0)
 		event.origintype = _type;
 
 	_interpreter->receive(event);
