@@ -172,21 +172,15 @@ void XPathDataModel::setEvent(const Event& event) {
 	}
 	if (event.namelist.size() > 0) {
 		std::map<std::string, Data>::const_iterator namelistIter = event.namelist.begin();
-		while (namelistIter != event.namelist.end()) {
-//			if (namelistIter->second.type == Data::INTERPRETED) {
-//				NodeSet<std::string> xpathresult = namelistIter->second.xpathres;
-//				NodeSet<std::string>::const_iterator nodesetIter = xpathresult.begin();
-//				while(nodesetIter != xpathresult.end())
-//					eventDataElem.appendChild(*nodesetIter);
-//			} else {
-				Element<std::string> eventNamelistElem = _doc.createElement("data");
-				Text<std::string> eventNamelistText = _doc.createTextNode(namelistIter->second.atom);
+		while(namelistIter != event.namelist.end()) {
+			Element<std::string> eventNamelistElem = _doc.createElement("data");
+			// this is simplified - Data might be more elaborate than a simple string atom
+			Text<std::string> eventNamelistText = _doc.createTextNode(namelistIter->second.atom);
 
-				eventNamelistElem.setAttribute("id", namelistIter->first);
-				eventNamelistElem.appendChild(eventNamelistText);
-				eventDataElem.appendChild(eventNamelistElem);
-				namelistIter++;
-//			}
+			eventNamelistElem.setAttribute("id", namelistIter->first);
+			eventNamelistElem.appendChild(eventNamelistText);
+			eventDataElem.appendChild(eventNamelistElem);
+			namelistIter++;
 		}
 	}
 	if (event.raw.size() > 0) {
@@ -499,9 +493,6 @@ void XPathDataModel::assign(const Element<std::string>& assignElem,
 		XPathValue<std::string> value = _xpath.evaluate_expr(ATTR(assignElem, "expr"), _doc);
 		LOG(INFO) << "Value XPath : " << value.asString();
 		assign(key, value, assignElem);
-		//nodeSet = key.asNodeSet();
-		//for (NodeSet<std::string>::iterator it = nodeSet.begin(); it != nodeSet.end(); it++)
-		//	it->setNodeValue(value.asString());
 	} else {
 		LOG(ERROR) << "assign element has no content";
 	}
@@ -769,6 +760,7 @@ void XPathDataModel::assign(const Element<std::string>& key,
 			throw Event("error.execution", Event::PLATFORM);
 		parent.removeChild(element);
 	} else {
+		// replacechildren: Replace all the children at 'location' with the value specified by 'expr'.
 		while(element.hasChildNodes())
 			element.removeChild(element.getChildNodes().item(0));
 		for (int i = 0; i < value.size(); i++) {
