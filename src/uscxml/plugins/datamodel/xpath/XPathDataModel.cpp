@@ -771,9 +771,11 @@ void XPathDataModel::assign(const Element<std::string>& key,
 			throw Event("error.execution", Event::PLATFORM);
 		parent.removeChild(element);
 	} else {
+		while(element.hasChildNodes())
+			element.removeChild(element.getChildNodes().item(0));
 		for (int i = 0; i < value.size(); i++) {
-			Node<std::string> importedNode = value[i].getOwnerDocument().importNode(value[i], true);
-			element.replaceChild(importedNode, element.getChildNodes().item(i));
+			Node<std::string> importedNode = element.getOwnerDocument().importNode(value[i], true);
+			element.appendChild(importedNode);
 		}
 	}
 }
