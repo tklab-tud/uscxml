@@ -125,20 +125,20 @@ void XmlBridgeInvoker::send(const SendRequest& req) {
 	tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
 	SendRequest reqCopy(req);
 
-	uscxml::XmlBridgeInputEvents& bridgeInstance = uscxml::XmlBridgeInputEvents::getInstance();
+	XmlBridgeInputEvents& bridgeInstance = XmlBridgeInputEvents::getInstance();
 	//_interpreter->getDataModel().replaceExpressions(reqCopy.content);
 
 	if (reqCopy.getName().substr(0, 3) == SCXML2TIM_EV) {
 		/* namelist compound data */
 		std::map<std::string, Data>::const_iterator nameiter;
 		for (nameiter = reqCopy.namelist.begin(); nameiter != reqCopy.namelist.end(); nameiter++)
-			bridgeInstance.sendTIMreq(reqCopy.getName().c_str()[sizeof(SCXML2TIM_EV)-1],
+			bridgeInstance.sendreq2TIM(reqCopy.getName().c_str()[sizeof(SCXML2TIM_EV)-1],
 				reqCopy.data.compound[nameiter->first].atom);
 	} else if (reqCopy.getName().substr(0, 3) == SCXML2MES_EV) {
 		/* namelist compound data */
 		std::map<std::string, Data>::const_iterator nameiter;
 		for (nameiter = reqCopy.namelist.begin(); nameiter != reqCopy.namelist.end(); nameiter++)
-			bridgeInstance.sendMESreply(_DBid, reqCopy.getName().c_str()[sizeof(SCXML2MES_EV)-1],
+			bridgeInstance.sendreply2MES(_DBid, reqCopy.getName().c_str()[sizeof(SCXML2MES_EV)-1],
 				reqCopy.data.compound[nameiter->first].atom);
 	} else {
 		LOG(ERROR) << "Unsupported event type";
@@ -183,7 +183,7 @@ void XmlBridgeInvoker::buildMESreq(unsigned int cmdid, const std::list < std::st
 	std::stringstream ss;
 	ss << MES2SCXML_EV << cmdid;
 
-	uscxml::Event myevent(ss.str(), uscxml::Event::EXTERNAL);
+	Event myevent(ss.str(), Event::EXTERNAL);
 	myevent.setInvokeId("xmlbridge");
 	myevent.setOrigin("MES");
 
@@ -192,7 +192,7 @@ void XmlBridgeInvoker::buildMESreq(unsigned int cmdid, const std::list < std::st
 	} else {
 		myevent.setOriginType("w");
 
-		uscxml::Data mydata;
+		Data mydata;
 
 		std::list<std::string>::const_iterator myiter;
 		for(myiter = req_raw_data.begin(); myiter != req_raw_data.end(); myiter++)
@@ -225,7 +225,7 @@ void XmlBridgeInvoker::buildTIMreply(const char cmdid, const std::string reply_r
 	std::stringstream ss;
 	ss << TIM2SCXML_EV << cmdid;
 
-	uscxml::Event myevent(ss.str(), uscxml::Event::EXTERNAL);
+	Event myevent(ss.str(), Event::EXTERNAL);
 	if (!domParser.getDocument().hasChildNodes()) {
 		LOG(ERROR) << "Failed parsing TIM XML reply. Resulting document has no nodes";
 		return;
@@ -324,7 +324,7 @@ void XmlBridgeInvoker::buildTIMreply(const char cmdid, const std::string reply_r
 	*/
 
 /** SCXML -> TIM */
-void XmlBridgeInputEvents::sendTIMreq(const char cmdid, const std::string reqData)
+void XmlBridgeInputEvents::sendreq2TIM(const char cmdid, const std::string reqData)
 {
 	//mutex?
 
@@ -341,7 +341,7 @@ void XmlBridgeInputEvents::sendTIMreq(const char cmdid, const std::string reqDat
 }
 
 /** SCXML -> MES */
-void XmlBridgeInputEvents::sendMESreply(std::string DBid, const char cmdid, const std::string replyData)
+void XmlBridgeInputEvents::sendreply2MES(std::string DBid, const char cmdid, const std::string replyData)
 {
 	((MesBufferer *)_mesbufferer)->bufferMESreplyWRITE(atoi(DBid.c_str()), atoi(&cmdid), replyData);
 }

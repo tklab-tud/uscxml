@@ -21,14 +21,6 @@ namespace uscxml {
 
 class XmlBridgeInvoker : public InvokerImpl {
 public:
-//	enum Action {
-//		MES,
-//		COMMAND = 1,
-//		REPLY = 2,
-//		TIMEOUT = 4,
-//		EXISTING = 8
-//	};
-
 	XmlBridgeInvoker() : _thread(NULL) {
 		LOG(INFO) << "Instantiating XmlBridgeInvoker";
 	}
@@ -50,10 +42,8 @@ public:
 
 	/* move invoker to new thread */
 	static void run(void* instance) {
-		while(((XmlBridgeInvoker*)instance)->_isRunning) {
-			//((XmlBridgeInvoker*)instance)->_watcher->updateEntries();
+		while(((XmlBridgeInvoker*)instance)->_isRunning)
 			tthread::this_thread::sleep_for(tthread::chrono::milliseconds(20));
-		}
 	}
 
 protected:
@@ -67,14 +57,14 @@ class XmlBridgeInputEvents {
 public:
 	~XmlBridgeInputEvents();
 
-	void sendTIMreq(const char cmdid, const std::string reqData);
-	void sendMESreply(std::string DBid, const char cmdid, const std::string replyData);
+	void sendreq2TIM(const char cmdid, const std::string reqData);
+	void sendreply2MES(std::string DBid, const char cmdid, const std::string replyData);
 
 	void handleTIMreply(const char cmdid, const std::string replyData);
 	void handleMESreq(unsigned int DBid, unsigned int cmdid, const std::list<std::string> reqData);
 
 	void registerInvoker(std::string DBid, XmlBridgeInvoker* invokref) {
-		_invokers.insert(std::pair< std::string, XmlBridgeInvoker* >(DBid,invokref));
+		_invokers.insert(std::pair< std::string, XmlBridgeInvoker* >(DBid, invokref));
 	}
 	void registerTimio(TimIO* ioref) {
 		_timio = ioref;
@@ -91,7 +81,7 @@ public:
 	}
 
 private:
-	XmlBridgeInputEvents() : _invokers(), _timio(NULL) {
+	XmlBridgeInputEvents() : _invokers() {
 		LOG(INFO) << "Instantiating XmlBridgeInputEvents Singleton";
 	}
 	XmlBridgeInputEvents& operator=( const XmlBridgeInputEvents& );

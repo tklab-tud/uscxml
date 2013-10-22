@@ -204,25 +204,24 @@ void XPathDataModel::setEvent(const Event& event) {
 		Node<std::string> importedNode = _doc.importNode(event.dom, true);
 		eventDataElem.appendChild(importedNode);
 	}
-	if (event.data.array.size()) {
+	if (event.data.array.size() == 1) {
+		Text<std::string> textNode = _doc.createTextNode(event.data.array.front().atom.c_str());
+		eventDataElem.appendChild(textNode);
+	} else if (event.data.array.size() > 1) {
 		std::list<uscxml::Data>::const_iterator ptr;
-		std::stringstream ss;
 		unsigned int i;
 
-		if (event.data.array.size() == 1) {
-			Text<std::string> textNode = _doc.createTextNode(event.data.array.front().atom.c_str());
-			eventDataElem.appendChild(textNode);
-		} else {
-			for( i = 0 , ptr = event.data.array.begin() ;
-				((i < event.data.array.size()) && (ptr != event.data.array.end())) ;
-				i++ , ptr++ ) {
-				Element<std::string> eventMESElem = _doc.createElement("data");
-				Text<std::string> textNode = _doc.createTextNode(ptr->atom.c_str());
-				ss.flush(); ss << i;
-				eventDataElem.setAttribute("id", ss.str());
-				eventMESElem.appendChild(textNode);
-				eventDataElem.appendChild(eventMESElem);
-			}
+		for( i = 0 , ptr = event.data.array.begin() ;
+			((i < event.data.array.size()) && (ptr != event.data.array.end()));
+			i++ , ptr++ )
+		{
+			Element<std::string> eventMESElem = _doc.createElement("data");
+			Text<std::string> textNode = _doc.createTextNode(ptr->atom.c_str());
+			std::stringstream ss;
+			ss << i;
+			eventMESElem.setAttribute("id", ss.str());
+			eventMESElem.appendChild(textNode);
+			eventDataElem.appendChild(eventMESElem);
 		}
 	}
 

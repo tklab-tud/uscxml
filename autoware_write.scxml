@@ -62,6 +62,7 @@
 		<data id="ACK">OK</data>
 		<data id="NACK">FAIL</data>
 		<data id="TIMEOUT">TIMEOUT</data>
+		<data id="counter4" expr="0"/>
 	</datamodel>
 <!-- legend:
 		init<id>
@@ -70,13 +71,16 @@
 		cmd<id>
 		ack<id>
  -->
-	<state id="InterpreterInitialization" initial="RunCommandsStateMachines">
+	<state id="InterpreterInitialization">
+		<initial>
+<!--			<file url="foo.bin" operation="read" type="xml" callback="foo.bin" />-->
+<!--			<file url="bar.bin" operation="write" type="xml" contentexpr="_event['data']['content']" />-->
+			<transition target="RunCommandsStateMachines">
+		</initial>
 		<invoke type="xmlbridge" id="xmlbridge1">
 			<!-- expr value must be the exact offset used in MES datablock fields -->
 			<param name="datablock" expr="'0'"/>
 		</invoke>
-			<!--	<file url="foo.bin" operation="read" type="xml" callback="foo.bin" />-->
-			<!--	<file url="bar.bin" operation="write" type="xml" contentexpr="_event['data']['content']" /> -->
 		<parallel id="RunCommandsStateMachines">
 			<state id="0" initial="gotset0">
 				<state id="gotset0">
@@ -114,17 +118,17 @@
 				</state>
 				<state id="gotset11">
 					<transition event="ready1" target="gotset12">
-						<assign location="$CMD1/data/item[@i='1']/nestedData" expr="$_event/data/text()"/>
+						<assign location="$CMD1/data/item[@i='1']/nestedData" expr="$_event//data[@id='1']/text()"/>
 					</transition>
 				</state>
 				<state id="gotset12">
 					<transition event="ready1" target="gotset13">
-						<assign location="$CMD1/data/item[@i='2']/nestedData" expr="$_event/data/text()"/>
+						<assign location="$CMD1/data/item[@i='2']/nestedData" expr="$_event//data[@id='2']/text()"/>
 					</transition>
 				</state>
 				<state id="gotset13">
 					<transition event="ready1" target="sent1">
-						<assign location="$CMD1/data/item[@i='3']/nestedData" expr="$_event/data/text()"/>
+						<assign location="$CMD1/data/item[@i='3']/nestedData" expr="$_event//data[@id='3']/text()"/>
 					</transition>
 				</state>
 				<state id="sent1">
@@ -208,17 +212,21 @@
 			</state>
 			<state id="4" initial="gotset4">
 				<state id="gotset4">
-					<transition event="ready4" target="sent4">
-						<foreach array="$_event/data" item="itemCorrente" index="numRiga">
-							<assign location="$CMD4/data/item[@id='numRiga']/nestedData" expr="$itemCorrente"/>
-						</foreach>
-						<send 	event="cmd4"
-							namelist="$CMD4"
-							target="#_xmlbridge1" />
+					<transition event="ready4" >
+						<assign location="$counter4" expr="$counter4 + 1"/>	
+						<if cond="$counter4 = 4">
+							<foreach array="$_event/data/" item="itemCorrente" index="numRiga">
+								<assign location="$CMD4/data/item[@i='$numRiga']/nestedData" expr="$itemCorrente/text()"/>
+							</foreach>
+							<transition target="sent4"/>
+						</if>
 					</transition>
 				</state>
 				<state id="sent4">
 					<onentry>
+						<send 	event="cmd4"
+							namelist="$CMD4"
+							target="#_xmlbridge1" />
 						<send 	event="timeout4"
 							namelist="$TIMEOUT"
 							delay="5s"/>
