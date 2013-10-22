@@ -4,49 +4,50 @@
 namespace uscxml {
 
 TimIO::TimIO(std::string ipaddr, std::string port) :
-	_timCmds(), _timCmdIds(), _thread(NULL), _reply(NULL)
+	_timCmds(), _timCmdIds()
 {
 	if (ipaddr.empty() || port.empty())
 		exit(EXIT_FAILURE);
 
-	struct addrinfo hints, *servinfo, *p;
+	struct addrinfo hints, *p;
 	int rv;
 
 	memset(&hints, 0, sizeof hints);
 	hints.ai_family = PF_INET;
 	hints.ai_socktype = SOCK_STREAM;
 
-	if ((rv = getaddrinfo(ipaddr.c_str(), port.c_str(), &hints, &servinfo)) != 0) {
+	if ((rv = getaddrinfo(ipaddr.c_str(), port.c_str(), &hints, &_servinfo)) != 0) {
 		LOG(ERROR) << "Getaddrinfo: " << gai_strerror(rv);
+		perror("Getaddrinfo:");
 		exit(EXIT_FAILURE);
 	}
 
 	// loop through all the results and connect to the first we can
-	for (p = servinfo; p != NULL; p = p->ai_next) {
+	for (p = _servinfo; p != NULL; p = p->ai_next) {
 		if ((_socketfd = socket(p->ai_family, p->ai_socktype,
 				p->ai_protocol)) == -1) {
-			perror("client: socket");
+			perror("TIM Client: socket");
 			continue;
 		}
 
 		if (connect(_socketfd, p->ai_addr, p->ai_addrlen) == -1) {
 			close(_socketfd);
-			perror("client: connect");
+			perror("TIM Client: connect");
 			continue;
 		}
 		break;
 	}
 
 	if (p == NULL) {
-		LOG(ERROR) << "client: failed to connect: " << gai_strerror(rv);
+		freeaddrinfo(_servinfo);
+		LOG(ERROR) << "TIM Client: failed to connect";
 		exit(EXIT_FAILURE);
 	}
 
-	freeaddrinfo(servinfo);
-
-	_reply = (char*)calloc(1, MAXDATASIZE);
+	_reply = (char*)calloc(1, MAXTIMREPLYSIZE);
 	if (_reply == NULL) {
-		LOG(ERROR) << "client: failed to allocate _reply memory";
+		freeaddrinfo(_servinfo);
+		LOG(ERROR) << "TIM Client: failed to allocate _reply memory";
 		exit(EXIT_FAILURE);
 	}
 
@@ -56,6 +57,7 @@ TimIO::TimIO(std::string ipaddr, std::string port) :
 
 TimIO::~TimIO()
 {
+	freeaddrinfo(_servinfo);
 	close(_socketfd);
 	free(_reply);
 	if (_thread) {
@@ -74,41 +76,48 @@ void TimIO::client(void *instance) {
 		<< " the string: '" << myobj->_timCmds.front().c_str()
 		<< "' with length " << myobj->_timCmds.front().length();
 
-	/**  TODO: Check if connection is still alive and the server had not closed it
-	 *	If yes, set a timeout end reconnect */
-
 	/** Potential blocking call */
-	if ((numbytes = send(myobj->_socketfd, myobj->_timCmds.front().c_str(),
-			myobj->_timCmds.front().length(), 0)) == -1) {
+	while ((numbytes = send(myobj->_socketfd, myobj->_timCmds.front().c_str(),
+			myobj->_timCmds.front().length(), MSG_MORE | MSG_NOSIGNAL)) == -1) {
 		perror("TIM client: send error");
-		LOG(ERROR) << "TIM client: send error";
-		return;
+		if (errno == EPIPE) {
+			if (connect(myobj->_socketfd, myobj->_servinfo->ai_addr,
+				myobj->_servinfo->ai_addrlen) == -1) {
+					close(myobj->_socketfd);
+					perror("TIM Client: connect");
+					return;
+			}
+			continue;
+		} else {
+			LOG(ERROR) << "client: failed to connect: ";
+			return;
+		}
 	}
-
 	if (numbytes != myobj->_timCmds.front().length()) {
-		LOG(ERROR) << "TIM client: sent an incomplete message";
+		perror("TIM client: sent incomplete message");
+		LOG(ERROR) << "TIM client: ignoring SCXML send event";
 		return;
 	}
 
 	/**
-	 * Function block until the full amount of message data can be returned
+	 * Function blocks until the full amount of message data can be returned
 	 *
 	 * Should we close the stream after recv?
 	 */
 	int replylen;
-	memset(myobj->_reply, 0, MAXDATASIZE);
-	if ((replylen = recv(myobj->_socketfd, myobj->_reply, MAXDATASIZE, MSG_WAITALL)) == -1) {
+	memset(myobj->_reply, 0, MAXTIMREPLYSIZE);
+	if ((replylen = recv(myobj->_socketfd, myobj->_reply, MAXTIMREPLYSIZE, MSG_WAITALL)) == -1) {
 		perror("TIM client: recv error");
-		LOG(ERROR) << "TIM client: recv error";
+		LOG(ERROR) << "TIM client: ignoring SCXML send event";
 		return;
 	}
-
 	if (replylen == 0) {
 		LOG(ERROR) << "TIM client: received zero-length message";
+		LOG(ERROR) << "TIM client: ignoring SCXML send event";
 		return;
 	}
 
-	LOG(INFO) << "Received reply : " << myobj->_reply;
+	LOG(INFO) << "Received reply from TIM: " << myobj->_reply;
 
 	XmlBridgeInputEvents& bridgeInstance = XmlBridgeInputEvents::getInstance();
 	bridgeInstance.handleTIMreply(myobj->_timCmdIds.front(), std::string(myobj->_reply));

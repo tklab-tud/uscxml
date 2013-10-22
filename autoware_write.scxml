@@ -59,9 +59,6 @@
 			 </item>
 			</data>
 		</data>
-		<data id="ACK">OK</data>
-		<data id="NACK">FAIL</data>
-		<data id="TIMEOUT">TIMEOUT</data>
 		<data id="counter4" expr="0"/>
 	</datamodel>
 <!-- legend:
@@ -75,7 +72,7 @@
 		<initial>
 <!--			<file url="foo.bin" operation="read" type="xml" callback="foo.bin" />-->
 <!--			<file url="bar.bin" operation="write" type="xml" contentexpr="_event['data']['content']" />-->
-			<transition target="RunCommandsStateMachines">
+			<transition target="RunCommandsStateMachines" />
 		</initial>
 		<invoke type="xmlbridge" id="xmlbridge1">
 			<!-- expr value must be the exact offset used in MES datablock fields -->
@@ -94,20 +91,27 @@
 							namelist="$CMD0"
 							target="#_xmlbridge1"/>
 						<send 	event="timeout0"
-							namelist="$TIMEOUT"
 							delay="5s"/>
 					</onentry>
 					<transition event="reply0" cond="$_event//data/nestedData[@type='state']/text() = 'ok'" target="gotset0">
 						<send 	event="ack0"
-							namelist="$ACK"
-							target="#_xmlbridge1"/>
+							target="#_xmlbridge1">
+							<param cmd="true">
+						</send>
 					</transition>
 					<transition event="reply0" cond="$_event//data/nestedData[@type='state']/text() = 'error'" target="gotset0">
 						<send 	event="ack0"
-							namelist="$NACK"
-							target="#_xmlbridge1"/>
+							target="#_xmlbridge1">
+							<param cmd="false">
+						</send>
 					</transition>
 					<transition event="timeout0" target="gotset0" />
+						<log label="TIMEOUT for cmd 0 reply"/>
+						<send 	event="stop0"
+							target="#_xmlbridge1">
+							<param cmd="0">
+						</send>
+					</transition>
 				</state>
 			</state>
 			<state id="1" initial="gotset10">

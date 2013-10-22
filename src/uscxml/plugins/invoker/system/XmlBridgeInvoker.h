@@ -21,10 +21,8 @@ namespace uscxml {
 
 class XmlBridgeInvoker : public InvokerImpl {
 public:
-	XmlBridgeInvoker() : _thread(NULL) {
-		LOG(INFO) << "Instantiating XmlBridgeInvoker";
-	}
-	~XmlBridgeInvoker();
+	XmlBridgeInvoker() {}
+	~XmlBridgeInvoker() {}
 
 	std::set<std::string> getNames() {
 		std::set<std::string> names;
@@ -40,17 +38,8 @@ public:
 	void buildMESreq(unsigned int cmdid, const std::list<std::string> reply_raw_data);
 	void buildTIMreply(const char cmdid, const std::string reply_raw_data);
 
-	/* move invoker to new thread */
-	static void run(void* instance) {
-		while(((XmlBridgeInvoker*)instance)->_isRunning)
-			tthread::this_thread::sleep_for(tthread::chrono::milliseconds(20));
-	}
-
 protected:
 	std::string _DBid;
-	bool _isRunning;
-	tthread::thread* _thread;
-	tthread::recursive_mutex _mutex;
 };
 
 class XmlBridgeInputEvents {

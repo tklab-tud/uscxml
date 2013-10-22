@@ -15,14 +15,6 @@ bool connect(pluma::Host& host) {
 }
 #endif
 
-XmlBridgeInvoker::~XmlBridgeInvoker() {
-	_isRunning = false;
-	if (_thread) {
-		_thread->join();
-		delete _thread;
-	}
-}
-
 boost::shared_ptr<InvokerImpl> XmlBridgeInvoker::create(InterpreterImpl* interpreter) {
 	LOG(INFO) << "Creating XmlBridgeInvoker invoker";
 
@@ -47,10 +39,6 @@ void XmlBridgeInvoker::invoke(const InvokeRequest& req) {
 
 	XmlBridgeInputEvents& myinstance = XmlBridgeInputEvents::getInstance();
 	myinstance.registerInvoker(_DBid, this);
-
-	LOG(INFO) << "Moving XmlBridgeInvoker to a new thread";
-	_isRunning = true;
-	_thread = new tthread::thread(XmlBridgeInvoker::run, this);
 }
 	/*
 	if (boost::iequals(req.params.find("reportexisting")->second, "false"))
@@ -121,8 +109,6 @@ Data XmlBridgeInvoker::getDataModelVariables() {
 
 /** SCXML->TIM | SCXML->MES */
 void XmlBridgeInvoker::send(const SendRequest& req) {
-
-	tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
 	SendRequest reqCopy(req);
 
 	XmlBridgeInputEvents& bridgeInstance = XmlBridgeInputEvents::getInstance();

@@ -11,9 +11,9 @@
 
 namespace uscxml {
 
-#define MAXDATASIZE	2000
-#define DEF_TIMADDR	"127.0.0.1"
-#define DEF_TIMPORT	"3200"
+#define MAXTIMREPLYSIZE		2000
+#define DEF_TIMADDR		"127.0.0.1"
+#define DEF_TIMPORT		"3200"
 
 class TimIO
 {
@@ -29,8 +29,8 @@ public:
 	static void client(void *instance);
 private:
 	char* _reply;
-
 	int _socketfd ; // The socket descriptor
+	struct addrinfo *_servinfo;
 
 	tthread::recursive_mutex _mutex;
 };
