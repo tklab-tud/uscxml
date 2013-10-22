@@ -7,12 +7,12 @@
 	xmlns="http://www.w3.org/2005/07/scxml" >
 	<datamodel>
 		<data id="CMD0">
-			<data type="wrapperProgram" index="0" xmlns="">
+			<data xmlns="" type="wrapperProgram" index="0" >
 			    <nestedData type="numWorking">33</nestedData>
 			</data>
 		</data>
 		<data id="CMD1">
-			<data type="operativeMode" index="1" xmlns="">
+			<data xmlns="" type="operativeMode" index="1">
 			 <item i="0">
 			    <nestedData type="state">off</nestedData>
 			 </item>
@@ -28,7 +28,7 @@
 			</data>
 		</data>
 		<data id="CMD3">
-			<data type="setting" index="3" xmlns="">
+			<data xmlns="" type="setting" index="3">
 			 <item i="0">
 			    <nestedData type="value">11</nestedData>
 			 </item>
@@ -47,7 +47,7 @@
 			</data>
 		</data>
 		<data id="CMD4">
-			<data type="function" index="4" xmlns="">
+			<data xmlns="" type="function" index="4">
 			 <item i="0">
 			    <nestedData type="state">off</nestedData>
 			 </item>
