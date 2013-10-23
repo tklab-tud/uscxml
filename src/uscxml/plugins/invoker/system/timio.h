@@ -21,8 +21,9 @@ public:
 	TimIO(std::string ipaddr, std::string port);
 	~TimIO();
 
-	std::queue<std::string> _timCmds;
-	std::queue<unsigned int> _timCmdIds;
+	std::queue<std::string> _timCmd;
+	std::queue<unsigned int> _timCmdId;
+	std::queue<bool> _timCmdWrite;
 	unsigned int _defTimeout;
 
 	tthread::thread* _thread;

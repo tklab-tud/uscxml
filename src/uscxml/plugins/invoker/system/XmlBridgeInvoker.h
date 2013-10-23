@@ -14,11 +14,16 @@
 
 namespace uscxml {
 
-#define SCXML2TIM_EV		"cmd"
-#define SCXML2MES_EV		"ack"
-#define MES2SCXML_READ		"read0"
-#define MES2SCXML_WRITE		"write0"
-#define TIM2SCXML_EV		"reply"
+#define READOP			'r'
+#define WRITEOP			'w'
+
+#define SCXML2TIM		"Cmd"
+#define SCXML2MES_ACK		"Ack"
+#define SCXML2MES_ERR		"Err"
+
+#define MES2SCXML		"Req"
+#define TIM2SCXML		"Reply"
+
 #define TIM2SCXML_TIMEOUT	"timeout"
 #define TIM2SCXML_ERROR		"error"
 
@@ -59,13 +64,12 @@ class XmlBridgeInputEvents {
 public:
 	~XmlBridgeInputEvents();
 
-	void sendreq2TIM(const char *cmdid, const std::string reqData, unsigned int timeout);
-	void sendreply2MES(unsigned int DBid, const char *cmdid, const std::string replyData);
+	void sendReq2TIM(unsigned int cmdid, bool write, const std::string reqData, unsigned int timeout);
+	void sendReply2MES(unsigned int DBid, unsigned int cmdid, bool write, const std::string replyData);
 
 	void handleTIMreply(const std::string replyData);
+	void handleTIMexception(exceptions type);
 	bool handleMESreq(unsigned int DBid, unsigned int cmdid, const std::list<std::string> reqData);
-	void handleTIMerror();
-	void handleTIMtimeout();
 
 	void registerInvoker(unsigned int DBid, XmlBridgeInvoker* invokref) {
 		_invokers.insert(std::pair<unsigned int, XmlBridgeInvoker* >(DBid, invokref));

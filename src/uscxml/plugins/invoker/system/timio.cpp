@@ -93,14 +93,14 @@ void TimIO::client(void *instance) {
 			if (connect(myobj->_socketfd, myobj->_servinfo->ai_addr,
 				myobj->_servinfo->ai_addrlen) == -1) {
 				perror("TIM Client: connect");
-				bridgeInstance.handleTIMerror();
+				bridgeInstance.handleTIMexception(TIM_ERROR);
 				return;
 			}
 			/** If we lost the TCP connection we retry the send of data */
 			continue;
 		} else if (errno == EAGAIN || errno == EWOULDBLOCK) {
 			LOG(ERROR) << "TIM client: command timeout";
-			bridgeInstance.handleTIMtimeout();
+			bridgeInstance.handleTIMexception(TIM_TIMEOUT);
 			return;
 		}
 		bridgeInstance.handleTIMerror();
@@ -118,17 +118,17 @@ void TimIO::client(void *instance) {
 	if ((replylen = recv(myobj->_socketfd, myobj->_reply, MAXTIMREPLYSIZE, MSG_WAITALL)) == -1) {
 		if (errno == EAGAIN || errno == EWOULDBLOCK) {
 			LOG(ERROR) << "TIM client: command timeout";
-			bridgeInstance.handleTIMtimeout();
+			bridgeInstance.handleTIMexception(TIM_TIMEOUT);
 			return;
 		}
 		perror("TIM client: recv error");
 		LOG(ERROR) << "TIM client: ignoring SCXML send event";
-		bridgeInstance.handleTIMerror();
+		bridgeInstance.handleTIMexception(TIM_ERROR);
 		return;
 	}
 	if (replylen == 0) {
 		LOG(ERROR) << "TIM client: received zero-length message";
-		bridgeInstance.handleTIMerror();
+		bridgeInstance.handleTIMexception(TIM_ERROR);
 		return;
 	}
 

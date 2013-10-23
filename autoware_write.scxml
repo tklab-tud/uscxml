@@ -81,14 +81,14 @@
 	<parallel id="RunCommandsStateMachines">
 		<state id="0" initial="init0">
 			<state id="init0">
-				<transition event="0_write" target="sent0">
+				<transition event="0_wReq" target="sent0">
 					<assign location="$CMD0/data/nestedData" expr="$_event/data/text()"/>
-					<send 	event="0_w"
+					<send 	event="0_wCmd"
 						namelist="$0_WRITE"
 						target="#_xmlbridge0"/>
 				</transition>
-				<transition event="0_read" target="sent0">
-					<send 	event="0_r"
+				<transition event="0_rReq" target="sent0">
+					<send 	event="0_rCmd"
 						namelist="$0_READ"
 						target="#_xmlbridge0"/>
 				</transition>
@@ -100,7 +100,7 @@
 						target="#_xmlbridge0"/>
 				</transition>
 				<transition event="0_wReply" cond="$_event//data/nestedData[@type='state']/text() = 'error'" target="init0">
-					<send 	event="0_wFail"
+					<send 	event="0_wErr"
 						target="#_xmlbridge0"/>
 				</transition>
 				<transition event="0_rReply" target="init0">
@@ -109,7 +109,7 @@
 							namelist="$_event/data/frame/data/text()"
 							target="#_xmlbridge0"/>
 					<else/>
-						<send 	event="0_rFail"
+						<send 	event="0_rErr"
 							target="#_xmlbridge0"/>
 					</if>
 				</transition>

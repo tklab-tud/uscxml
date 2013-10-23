@@ -52,43 +52,44 @@ Data XmlBridgeInvoker::getDataModelVariables() {
 
 /** SCXML->TIM | SCXML->MES */
 void XmlBridgeInvoker::send(const SendRequest& req) {
-	SendRequest reqCopy(req);
+	std::string evName = req.getName();
+	int index = evName.find('_');
+	bool write = (evName.c_str()[index + 1] == 'w');
+	std::string evType = evName.substr(index + 2, 3);
+	unsigned int cmdid = atoi(evName.substr(0, index - 1).c_str());
 
 	XmlBridgeInputEvents& bridgeInstance = XmlBridgeInputEvents::getInstance();
 	//_interpreter->getDataModel().replaceExpressions(reqCopy.content);
 
-	if (reqCopy.getName().substr(0, 3) == SCXML2TIM_EV) {
-		/* namelist compound data */
-		std::map<std::string, Data>::const_iterator nameiter;
-		for (nameiter = reqCopy.namelist.begin(); nameiter != reqCopy.namelist.end(); nameiter++)
-			bridgeInstance.sendreq2TIM(reqCopy.getName().c_str() + sizeof(SCXML2TIM_EV),
-				reqCopy.data.compound[nameiter->first].atom, _timeoutVal);
-	} else if (reqCopy.getName().substr(0, 3) == SCXML2MES_EV) {
-		/* namelist compound data */
-		std::map<std::string, Data>::const_iterator nameiter;
-		for (nameiter = reqCopy.namelist.begin(); nameiter != reqCopy.namelist.end(); nameiter++)
-			bridgeInstance.sendreply2MES(_DBid, reqCopy.getName().c_str() + sizeof(SCXML2MES_EV),
-				reqCopy.data.compound[nameiter->first].atom);
-	} else {
-		LOG(ERROR) << "XmlBridgeInvoker: received an unsupported event type from Interpreter, discarding request";
-		return;
+	std::map<std::string, Data>::const_iterator nameiter;
+	for (nameiter = req.namelist.begin(); nameiter != req.namelist.end(); nameiter++) {
+		if (evType == SCXML2TIM) {
+			bridgeInstance.sendReq2TIM(cmdid, write, req.data.compound[nameiter->first].atom, _timeoutVal);
+		} else if (evType == SCXML2MES_ACK) {
+			bridgeInstance.sendReply2MES(_DBid, cmdid, write,
+				write ? std::string() : req.data.compound[nameiter->first].atom);
+		} else if (evType == SCXML2MES_ERR) {
+			bridgeInstance.sendErr2MES(_DBid, cmdid, write);
+			return;
+		} else {
+			LOG(ERROR) << "XmlBridgeInvoker: received an unsupported event type from Interpreter, discarding request\n"
+				<< "The event name in the SCXML file is propably incorrect.";
+			return;
+		}
 	}
 }
 
 /** MES->SCXML */
 void XmlBridgeInvoker::buildMESreq(unsigned int cmdid, const std::list < std::string > req_raw_data) {
 	std::stringstream ss;
-	ss << MES2SCXML_EV << cmdid;
+	if (!req_raw_data.empty())
+		ss << cmdid << '_' << WRITEOP << MES2SCXML;
+	else
+		ss << cmdid << '_' << READOP << MES2SCXML;
 
 	Event myevent(ss.str(), Event::EXTERNAL);
-	myevent.setInvokeId("xmlbridge");
-	myevent.setOrigin("MES");
 
-	if (req_raw_data.empty()) {
-		myevent.setOriginType("r");
-	} else {
-		myevent.setOriginType("w");
-
+	if (!req_raw_data.empty()) {
 		Data mydata;
 
 		std::list<std::string>::const_iterator myiter;
@@ -102,7 +103,7 @@ void XmlBridgeInvoker::buildMESreq(unsigned int cmdid, const std::list < std::st
 }
 
 /** TIM->SCXML */
-void XmlBridgeInvoker::buildTIMreply(unsigned int cmdid, const std::string reply_raw_data)
+void XmlBridgeInvoker::buildTIMreply(unsigned int cmdid, bool type, const std::string reply_raw_data)
 {
 	Arabica::SAX2DOM::Parser<std::string> domParser;
 	Arabica::SAX::CatchErrorHandler<std::string> errorHandler;
@@ -121,7 +122,10 @@ void XmlBridgeInvoker::buildTIMreply(unsigned int cmdid, const std::string reply
 	}
 
 	std::stringstream ss;
-	ss << TIM2SCXML_EV << cmdid;
+	if (type)
+		ss << cmdid << '_' << WRITEOP << TIM2SCXML;
+	else
+		ss << cmdid << '_' << READOP << TIM2SCXML;
 
 	Event myevent(ss.str(), Event::EXTERNAL);
 	if (!domParser.getDocument().hasChildNodes()) {
@@ -130,13 +134,6 @@ void XmlBridgeInvoker::buildTIMreply(unsigned int cmdid, const std::string reply
 		return;
 	}
 	myevent.dom = domParser.getDocument().getDocumentElement();
-
-	myevent.setInvokeId("xmlbridge");
-	myevent.setOrigin("TIM");
-	if (reply_raw_data.empty())
-		myevent.setOriginType("r");
-	else
-		myevent.setOriginType("w");
 
 	returnEvent(myevent);
 }
@@ -162,19 +159,30 @@ void XmlBridgeInvoker::buildTIMexception(unsigned int cmdid, exceptions type)
 }
 
 /** SCXML -> TIM */
-void XmlBridgeInputEvents::sendreq2TIM(const char *cmdid, const std::string reqData, unsigned int timeout)
+void XmlBridgeInputEvents::sendReq2TIM(unsigned int cmdid, bool write, const std::string reqData, unsigned int timeout)
 {
 	//check command id and str first
-	_timio->_timCmdIds.push(atoi(cmdid));
-	_timio->_timCmds.push(reqData);
+	_timio->_timCmdId.push(cmdid);
+	_timio->_timCmd.push(reqData);
+	_timio->_timCmdType.push(write);
 	_timio->_defTimeout = timeout;
 	_timio->_thread = new tthread::thread(TimIO::client, _timio);
 }
 
 /** SCXML -> MES */
-void XmlBridgeInputEvents::sendreply2MES(unsigned int DBid, const char *cmdid, const std::string replyData)
+void XmlBridgeInputEvents::sendReply2MES(unsigned int DBid, unsigned int cmdid, bool write, const std::string replyData)
 {
-	((MesBufferer *)_mesbufferer)->bufferMESreplyWRITE(DBid, atoi(cmdid), replyData);
+	if (write)
+		((MesBufferer *)_mesbufferer)->bufferMESreplyWRITE(DBid, cmdid);
+	else
+		((MesBufferer *)_mesbufferer)->bufferMESreplyREAD(DBid, cmdid, replyData);
+}
+
+
+/** SCXML -> MES */
+void XmlBridgeInputEvents::senderr2MES(unsigned int DBid, unsigned int cmdid, bool write)
+{
+	((MesBufferer *)_mesbufferer)->bufferMESerr(DBid, cmdid, write);
 }
 
 /**  TIM -> SCXML */
@@ -182,11 +190,12 @@ void XmlBridgeInputEvents::handleTIMreply(const std::string replyData)
 {
 	std::map<unsigned int, XmlBridgeInvoker*>::const_iterator inviter = _invokers.begin();
 	while (inviter != _invokers.end()) {
-		inviter->second->buildTIMreply(_timio->_timCmdIds.front(), replyData);
+		inviter->second->buildTIMreply(_timio->_timCmdId.front(), _timio->_timCmdWrite.front(), replyData);
 		inviter++;
 	}
-	_timio->_timCmds.pop();
-	_timio->_timCmdIds.pop();
+	_timio->_timCmd.pop();
+	_timio->_timCmdId.pop();
+	_timio->_timCmdWrite.pop();
 }
 
 /**  MES -> SCXML */
@@ -200,28 +209,16 @@ bool XmlBridgeInputEvents::handleMESreq(unsigned int DBid, unsigned int cmdid, c
 	return true;
 }
 
-XmlBridgeInputEvents::~XmlBridgeInputEvents() {}
-
-void XmlBridgeInputEvents::handleTIMtimeout()
+void XmlBridgeInputEvents::handleTIMerror(exceptions type)
 {
 	std::map<unsigned int, XmlBridgeInvoker*>::const_iterator inviter = _invokers.begin();
 	while (inviter != _invokers.end()) {
-		inviter->second->buildTIMexception(_timio->_timCmdIds.front(), TIM_TIMEOUT);
+		inviter->second->buildTIMexception(_timio->_timCmdIds.front(), type);
 		inviter++;
 	}
-	_timio->_timCmds.pop();
-	_timio->_timCmdIds.pop();
-}
-
-void XmlBridgeInputEvents::handleTIMerror()
-{
-	std::map<unsigned int, XmlBridgeInvoker*>::const_iterator inviter = _invokers.begin();
-	while (inviter != _invokers.end()) {
-		inviter->second->buildTIMexception(_timio->_timCmdIds.front(), TIM_ERROR);
-		inviter++;
-	}
-	_timio->_timCmds.pop();
-	_timio->_timCmdIds.pop();
+	_timio->_timCmd.pop();
+	_timio->_timCmdId.pop();
+	_timio->_timCmdWrite.pop();
 }
 
 } //namespace uscxml
