@@ -1,6 +1,5 @@
 #include "XmlBridgeInvoker.h"
 #include <mesbufferer.h>
-#include <regex>
 
 #ifdef BUILD_AS_PLUGINS
 #include <Pluma/Connector.hpp>
@@ -29,8 +28,7 @@ boost::shared_ptr<InvokerImpl> XmlBridgeInvoker::create(InterpreterImpl* interpr
 }
 
 void XmlBridgeInvoker::invoke(const InvokeRequest& req) {
-	LOG(INFO) << "Invoking XmlBridgeInvoker (source:" <<
-		req.getSource() << ", type:" << req.getType() << ")";
+	LOG(INFO) << "Invoking XmlBridgeInvoker";
 
 	if (req.params.find("timeout") == req.params.end()) {
 		LOG(ERROR) << "XmlBridgeInvoker: No timeout param given, assuming 5 seconds";
@@ -52,7 +50,8 @@ Data XmlBridgeInvoker::getDataModelVariables() {
 
 /** SCXML->TIM | SCXML->MES */
 void XmlBridgeInvoker::send(const SendRequest& req) {
-	std::string evName = req.getName();
+	SendRequest reqCopy = req;
+	std::string evName = reqCopy.getName();
 	int index = evName.find('_');
 	bool write = (evName.c_str()[index + 1] == 'w');
 	std::string evType = evName.substr(index + 2, 3);
@@ -62,12 +61,12 @@ void XmlBridgeInvoker::send(const SendRequest& req) {
 	//_interpreter->getDataModel().replaceExpressions(reqCopy.content);
 
 	std::map<std::string, Data>::const_iterator nameiter;
-	for (nameiter = req.namelist.begin(); nameiter != req.namelist.end(); nameiter++) {
+	for (nameiter = reqCopy.namelist.begin(); nameiter != reqCopy.namelist.end(); nameiter++) {
 		if (evType == SCXML2TIM) {
-			bridgeInstance.sendReq2TIM(cmdid, write, req.data.compound[nameiter->first].atom, _timeoutVal);
+			bridgeInstance.sendReq2TIM(cmdid, write, reqCopy.data.compound[nameiter->first].atom, _timeoutVal);
 		} else if (evType == SCXML2MES_ACK) {
 			bridgeInstance.sendReply2MES(_DBid, cmdid, write,
-				write ? std::string() : req.data.compound[nameiter->first].atom);
+				write ? std::string() : reqCopy.data.compound[nameiter->first].atom);
 		} else if (evType == SCXML2MES_ERR) {
 			bridgeInstance.sendErr2MES(_DBid, cmdid, write);
 			return;
@@ -164,7 +163,7 @@ void XmlBridgeInputEvents::sendReq2TIM(unsigned int cmdid, bool write, const std
 	//check command id and str first
 	_timio->_timCmdId.push(cmdid);
 	_timio->_timCmd.push(reqData);
-	_timio->_timCmdType.push(write);
+	_timio->_timCmdWrite.push(write);
 	_timio->_defTimeout = timeout;
 	_timio->_thread = new tthread::thread(TimIO::client, _timio);
 }
@@ -180,9 +179,9 @@ void XmlBridgeInputEvents::sendReply2MES(unsigned int DBid, unsigned int cmdid, 
 
 
 /** SCXML -> MES */
-void XmlBridgeInputEvents::senderr2MES(unsigned int DBid, unsigned int cmdid, bool write)
+void XmlBridgeInputEvents::sendErr2MES(unsigned int DBid, unsigned int cmdid, bool write)
 {
-	((MesBufferer *)_mesbufferer)->bufferMESerr(DBid, cmdid, write);
+	((MesBufferer *)_mesbufferer)->bufferMESerror(DBid, cmdid, write);
 }
 
 /**  TIM -> SCXML */
@@ -209,11 +208,11 @@ bool XmlBridgeInputEvents::handleMESreq(unsigned int DBid, unsigned int cmdid, c
 	return true;
 }
 
-void XmlBridgeInputEvents::handleTIMerror(exceptions type)
+void XmlBridgeInputEvents::handleTIMexception(exceptions type)
 {
 	std::map<unsigned int, XmlBridgeInvoker*>::const_iterator inviter = _invokers.begin();
 	while (inviter != _invokers.end()) {
-		inviter->second->buildTIMexception(_timio->_timCmdIds.front(), type);
+		inviter->second->buildTIMexception(_timio->_timCmdId.front(), type);
 		inviter++;
 	}
 	_timio->_timCmd.pop();

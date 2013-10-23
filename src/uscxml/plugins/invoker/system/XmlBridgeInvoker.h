@@ -52,7 +52,7 @@ public:
 	Data getDataModelVariables();
 
 	void buildMESreq(unsigned int cmdid, const std::list<std::string> req_raw_data);
-	void buildTIMreply(unsigned int cmdid, const std::string reply_raw_data);
+	void buildTIMreply(unsigned int cmdid, bool type, const std::string reply_raw_data);
 	void buildTIMexception(unsigned int cmdid, exceptions type);
 
 protected:
@@ -62,10 +62,13 @@ protected:
 
 class XmlBridgeInputEvents {
 public:
-	~XmlBridgeInputEvents();
+	~XmlBridgeInputEvents() {
+		// call all the invokers and send event to final
+	}
 
 	void sendReq2TIM(unsigned int cmdid, bool write, const std::string reqData, unsigned int timeout);
 	void sendReply2MES(unsigned int DBid, unsigned int cmdid, bool write, const std::string replyData);
+	void sendErr2MES(unsigned int DBid, unsigned int cmdid, bool write);
 
 	void handleTIMreply(const std::string replyData);
 	void handleTIMexception(exceptions type);

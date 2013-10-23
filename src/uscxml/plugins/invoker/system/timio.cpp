@@ -4,7 +4,7 @@
 namespace uscxml {
 
 TimIO::TimIO(std::string ipaddr, std::string port) :
-	_timCmds(), _timCmdIds()
+	_timCmd(), _timCmdId(), _timCmdWrite()
 {
 	if (ipaddr.empty() || port.empty())
 		exit(EXIT_FAILURE);
@@ -81,12 +81,12 @@ void TimIO::client(void *instance) {
 	int numbytes;
 
 	LOG(INFO) << "Sending to socket " << myobj->_socketfd
-		<< " the string: '" << myobj->_timCmds.front()
-		<< "' with length " << myobj->_timCmds.front().length();
+		<< " the string: '" << myobj->_timCmd.front()
+		<< "' with length " << myobj->_timCmd.front().length();
 
-	while ((numbytes = send(myobj->_socketfd, myobj->_timCmds.front().c_str(),
-			myobj->_timCmds.front().length(),
-			MSG_MORE | MSG_NOSIGNAL)) != myobj->_timCmds.front().length()) {
+	while ((numbytes = send(myobj->_socketfd, myobj->_timCmd.front().c_str(),
+			myobj->_timCmd.front().length(),
+			MSG_MORE | MSG_NOSIGNAL)) != myobj->_timCmd.front().length()) {
 
 		perror("TIM client: send error");
 		if (errno == EPIPE) {
@@ -103,7 +103,7 @@ void TimIO::client(void *instance) {
 			bridgeInstance.handleTIMexception(TIM_TIMEOUT);
 			return;
 		}
-		bridgeInstance.handleTIMerror();
+		bridgeInstance.handleTIMexception(TIM_ERROR);
 		LOG(ERROR) << "TIM client: failed to send";
 		return;
 	}
