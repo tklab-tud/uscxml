@@ -28,15 +28,15 @@ boost::shared_ptr<InvokerImpl> XmlBridgeInvoker::create(InterpreterImpl* interpr
 }
 
 void XmlBridgeInvoker::invoke(const InvokeRequest& req) {
-	LOG(INFO) << "Invoking XmlBridgeInvoker";
+	LOG(INFO) << "Invoking XmlBridgeInvoker " << _invokeId;
 
 	if (req.params.find("timeout") == req.params.end()) {
 		LOG(ERROR) << "XmlBridgeInvoker: No timeout param given, assuming 5 seconds";
 		_timeoutVal = 5;
 	} else
-		_timeoutVal = atoi(req.params.find("datablock")->second.atom.c_str());
+		_timeoutVal = atoi(req.params.find("timeout")->second.atom.c_str());
 
-	_DBid = atoi(_invokeId.c_str() + sizeof(INVOKER_TYPE));
+	_DBid = atoi(_invokeId.substr(sizeof(INVOKER_TYPE)).c_str());
 
 	XmlBridgeInputEvents& myinstance = XmlBridgeInputEvents::getInstance();
 	myinstance.registerInvoker(_DBid, this);

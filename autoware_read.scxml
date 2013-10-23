@@ -40,32 +40,7 @@
 		<parallel id="RunCommandsStateMachines">
 			<state id="0" initial="gotset0">
 				<state id="gotset0">
-					<transition event="ready0" target="sent0">
-<!--						<log label="Event full data is:" expr="$_event/text()" />-->
-						<send 	event="cmd0"
-							namelist="$CMD0"
-							target="#_xmlbridge0"/>
-					</transition>
-				</state>
-				<state id="sent0">
-					<onentry>
-						<send 	event="timeout0"
-							namelist="$TIMEOUT"
-							delay="5s"/>
-					</onentry>
-					<transition event="reply0"  target="gotset0">
-<!--						<log label="Event full data is:" expr="$_event/text()" />-->
-						<if cond="$_event/data/frame/data/text()">
-							<send 	event="ack0"
-								namelist="$_event/data/frame/data/text()"
-								target="#_xmlbridge0"/>
-						<else/>
-							<send 	event="ack0"
-								namelist="$NACK"
-								target="#_xmlbridge0"/>
-						</if>
-					</transition>
-					<transition event="timeout0" target="gotset0" />
+
 				</state>
 			</state>
 			<state id="1" initial="gotset1">

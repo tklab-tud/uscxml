@@ -6,12 +6,17 @@
 	xmlns:fn="http://www.w3.org/2005/xpath-functions"
 	xmlns="http://www.w3.org/2005/07/scxml" >
 <datamodel>
-	<data id="0_WRITE">
+	<data id="WRITE0">
 		<data xmlns="" type="wrapperProgram" index="0" >
 		    <nestedData type="numWorking">33</nestedData>
 		</data>
 	</data>
-	<data id="1_WRITE">
+	<data id="READ0">
+	   <frame>
+	       <data type="requestItem" index="0">totalPacks</data>
+	   </frame>
+	</data>
+	<data id="WRITE1">
 		<data xmlns="" type="operativeMode" index="1">
 		 <item i="0">
 		    <nestedData type="state">off</nestedData>
@@ -27,7 +32,12 @@
 		 </item>                           
 		</data>
 	</data>
-	<data id="3_WRITE">
+	<data id="READ1">
+	   <frame>
+	       <data type="requestItem" index="1">switchHw</data>
+	   </frame>
+	</data>
+	<data id="WRITE3">
 		<data xmlns="" type="setting" index="3">
 		 <item i="0">
 		    <nestedData type="value">11</nestedData>
@@ -46,7 +56,12 @@
 		 </item>                           
 		</data>
 	</data>
-	<data id="4_WRITE">
+	<data id="READ3">
+	   <frame>
+	       <data type="requestItem" index="0">information</data>
+	   </frame>
+	</data>
+	<data id="WRITE4">
 		<data xmlns="" type="function" index="4">
 		 <item i="0">
 		    <nestedData type="state">off</nestedData>
@@ -82,14 +97,14 @@
 		<state id="0" initial="init0">
 			<state id="init0">
 				<transition event="0_wReq" target="sent0">
-					<assign location="$CMD0/data/nestedData" expr="$_event/data/text()"/>
+					<assign location="$WRITE0/data/nestedData" expr="$_event/data/text()"/>
 					<send 	event="0_wCmd"
-						namelist="$0_WRITE"
+						namelist="$WRITE0"
 						target="#_xmlbridge0"/>
 				</transition>
 				<transition event="0_rReq" target="sent0">
 					<send 	event="0_rCmd"
-						namelist="$0_READ"
+						namelist="$READ0"
 						target="#_xmlbridge0"/>
 				</transition>
 				<transition event="*"/>
