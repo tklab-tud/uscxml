@@ -21,9 +21,6 @@
 		       <data type="requestItem" index="0">information</data>
 		   </frame>
 		</data>
-		<data id="ACK">OK</data>
-		<data id="NACK">FAIL</data>
-		<data id="TIMEOUT">TIMEOUT</data>
 	</datamodel>
 <!-- legend:
 		init<id>
@@ -33,9 +30,10 @@
 		ack<id>
  -->
 	<state id="InterpreterInitialization" initial="RunCommandsStateMachines">
-		<invoke type="xmlbridge" id="xmlbridge1">
+		<invoke type="xmlbridge" id="xmlbridge0">
 			<!-- expr value must be the exact offset used in MES datablock fields -->
 			<param name="datablock" expr="'0'"/>
+			<param name="timeout" expr="'5'"/>
 		</invoke>
 			<!--	<file url="foo.bin" operation="read" type="xml" callback="foo.bin" />-->
 			<!--	<file url="bar.bin" operation="write" type="xml" contentexpr="_event['data']['content']" /> -->
@@ -46,7 +44,7 @@
 <!--						<log label="Event full data is:" expr="$_event/text()" />-->
 						<send 	event="cmd0"
 							namelist="$CMD0"
-							target="#_xmlbridge1"/>
+							target="#_xmlbridge0"/>
 					</transition>
 				</state>
 				<state id="sent0">
@@ -60,11 +58,11 @@
 						<if cond="$_event/data/frame/data/text()">
 							<send 	event="ack0"
 								namelist="$_event/data/frame/data/text()"
-								target="#_xmlbridge1"/>
+								target="#_xmlbridge0"/>
 						<else/>
 							<send 	event="ack0"
 								namelist="$NACK"
-								target="#_xmlbridge1"/>
+								target="#_xmlbridge0"/>
 						</if>
 					</transition>
 					<transition event="timeout0" target="gotset0" />
@@ -76,7 +74,7 @@
 <!--						<log label="Event full data is:" expr="$_event/text()" />-->
 						<send 	event="cmd1"
 							namelist="$CMD1"
-							target="#_xmlbridge1"/>
+							target="#_xmlbridge0"/>
 					</transition>
 				</state>
 				<state id="sent1">
@@ -91,12 +89,12 @@
 							<foreach array="$_event/data/frame/data/item/nestedData" item="itemCorrente">
 								<send 	event="ack1"
 									namelist="$itemCorrente"
-									target="#_xmlbridge1"/>
+									target="#_xmlbridge0"/>
 							</foreach>
 						<else/>
 							<send 	event="ack1"
 								namelist="$NACK"
-								target="#_xmlbridge1"/>
+								target="#_xmlbridge0"/>
 						</if>
 					</transition>
 					<transition event="timeout1" target="gotset1" />
@@ -104,4 +102,7 @@
 			</state>	
 		</parallel>
 	</state>
+	<final id="EXIT">
+		<log label="Unrecoverable Error" expr="$_event/text()" />
+	</final>
 </scxml>

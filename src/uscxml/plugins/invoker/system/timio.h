@@ -22,7 +22,8 @@ public:
 	~TimIO();
 
 	std::queue<std::string> _timCmds;
-	std::queue<char> _timCmdIds;
+	std::queue<unsigned int> _timCmdIds;
+	unsigned int _defTimeout;
 
 	tthread::thread* _thread;
 

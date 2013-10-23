@@ -1,5 +1,6 @@
 #include "XmlBridgeInvoker.h"
 #include <mesbufferer.h>
+#include <regex>
 
 #ifdef BUILD_AS_PLUGINS
 #include <Pluma/Connector.hpp>
@@ -16,96 +17,45 @@ bool connect(pluma::Host& host) {
 #endif
 
 boost::shared_ptr<InvokerImpl> XmlBridgeInvoker::create(InterpreterImpl* interpreter) {
-	LOG(INFO) << "Creating XmlBridgeInvoker invoker";
+	LOG(INFO) << "Creating XmlBridgeInvoker(s) for each datablock";
+
+	interpreter->getName()
 
 	boost::shared_ptr<XmlBridgeInvoker> invoker = boost::shared_ptr<XmlBridgeInvoker>(this);
 
 	invoker->setInterpreter(interpreter);
-	invoker->setInvokeId("xmlbridge1");
-	invoker->setType("xmlbridge");
+	invoker->setInvokeId(INVOKER_TYPE + interpreter->getName());
+	invoker->setType(INVOKER_TYPE);
 
 	return invoker;
 }
 
 void XmlBridgeInvoker::invoke(const InvokeRequest& req) {
-	LOG(INFO) << "Invoking XmlBridgeInvoker";
+	LOG(INFO) << "Invoking XmlBridgeInvoker (source:" <<
+		req.getSource() << ", type:" << req.getType() << ")";
 
 	if (req.params.find("datablock") == req.params.end()) {
-		LOG(ERROR) << "No datablock param given";
+		LOG(ERROR) << "XmlBridgeInvoker: No datablock param given";
+		//TODO TERMINATE EVERYTHING
 		return;
 	}
-
-	_DBid = req.params.find("datablock")->second.atom;
+	if (req.params.find("timeout") == req.params.end()) {
+		LOG(ERROR) << "XmlBridgeInvoker: No timeout param given";
+		//TODO TERMINATE EVERYTHING
+		return;
+	}
+	_DBid = atoi(req.params.find("datablock")->second.atom.c_str());
+	_timeoutVal = atoi(req.params.find("datablock")->second.atom.c_str());
 
 	XmlBridgeInputEvents& myinstance = XmlBridgeInputEvents::getInstance();
 	myinstance.registerInvoker(_DBid, this);
 }
-	/*
-	if (boost::iequals(req.params.find("reportexisting")->second, "false"))
-		_reportExisting = false;
-	if (req.params.find("recurse") != req.params.end() &&
-		boost::iequals(req.params.find("recurse")->second, "true"))
-		_recurse = true;
-	if (req.params.find("reporthidden") != req.params.end() &&
-		boost::iequals(req.params.find("reporthidden")->second, "true"))
-		_reportHidden = true;
-
-	std::string suffixList;
-	if (req.params.find("suffix") != req.params.end()) {
-		suffixList = req.params.find("suffix")->second;
-	} else if (req.params.find("suffixes") != req.params.end()) {
-		suffixList = req.params.find("suffixes")->second;
-	}
-
-	if (suffixList.size() > 0) {
-		// seperate path into components
-		std::stringstream ss(suffixList);
-		std::string item;
-		while(std::getline(ss, item, ' ')) {
-			if (item.length() == 0)
-				continue;
-			_suffixes.insert(item);
-		}
-	}
-
-	std::multimap<std::string, std::string>::const_iterator dirIter = req.params.find("dir");
-	while(dirIter != req.params.upper_bound("dir")) {
-		URL url(dirIter->second);
-		if (!url.toAbsolute(_interpreter->getBaseURI()) || !boost::iequals(url.scheme(), "file")) {
-			LOG(ERROR) << "Given directory '" << dirIter->second << "' cannot be transformed to absolute path";
-		} else {
-			_dir = url.path();
-		}
-		break;
-	}
-	_watcher = new XmlBridgeSMIO(_dir, _recurse);
-	_watcher->addMonitor(this);
-	_watcher->updateEntries(true);
-	*/
 
 Data XmlBridgeInvoker::getDataModelVariables() {
 	//tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
-
 	Data data;
 	return data;
 }
-	/*data.compound["dir"] = Data(_dir, Data::VERBATIM);
-
-//	std::set<std::string>::iterator suffixIter = _suffixes.begin();
-//	while(suffixIter != _suffixes.end()) {
-//		data.compound["suffixes"].array.push_back(Data(*suffixIter, Data::VERBATIM));
-//		suffixIter++;
-//	}
-
-//	std::map<std::string, struct stat> entries = _watcher->getAllEntries();
-//	std::map<std::string, struct stat>::iterator entryIter = entries.begin();
-//	while(entryIter != entries.end()) {
-//		data.compound["file"].compound[entryIter->first].compound["mtime"] = toStr(entryIter->second.st_mtime);
-//		data.compound["file"].compound[entryIter->first].compound["ctime"] = toStr(entryIter->second.st_mtime);
-//		data.compound["file"].compound[entryIter->first].compound["atime"] = toStr(entryIter->second.st_mtime);
-//		data.compound["file"].compound[entryIter->first].compound["size"] = toStr(entryIter->second.st_mtime);
-//		entryIter++;
-//	} */
 
 /** SCXML->TIM | SCXML->MES */
 void XmlBridgeInvoker::send(const SendRequest& req) {
@@ -118,51 +68,19 @@ void XmlBridgeInvoker::send(const SendRequest& req) {
 		/* namelist compound data */
 		std::map<std::string, Data>::const_iterator nameiter;
 		for (nameiter = reqCopy.namelist.begin(); nameiter != reqCopy.namelist.end(); nameiter++)
-			bridgeInstance.sendreq2TIM(reqCopy.getName().c_str()[sizeof(SCXML2TIM_EV)-1],
-				reqCopy.data.compound[nameiter->first].atom);
+			bridgeInstance.sendreq2TIM(reqCopy.getName().c_str() + sizeof(SCXML2TIM_EV),
+				reqCopy.data.compound[nameiter->first].atom, _timeoutVal);
 	} else if (reqCopy.getName().substr(0, 3) == SCXML2MES_EV) {
 		/* namelist compound data */
 		std::map<std::string, Data>::const_iterator nameiter;
 		for (nameiter = reqCopy.namelist.begin(); nameiter != reqCopy.namelist.end(); nameiter++)
-			bridgeInstance.sendreply2MES(_DBid, reqCopy.getName().c_str()[sizeof(SCXML2MES_EV)-1],
+			bridgeInstance.sendreply2MES(_DBid, reqCopy.getName().c_str() + sizeof(SCXML2MES_EV),
 				reqCopy.data.compound[nameiter->first].atom);
 	} else {
-		LOG(ERROR) << "Unsupported event type";
+		LOG(ERROR) << "XmlBridgeInvoker: received an unsupported event type from Interpreter, discarding request";
 		return;
 	}
 }
-
-/*
-	build xml output
-
-	lock automatically released
-
-
-	if(!_longPoll) {
-		_outQueue.push_back(reqCopy);
-		return;
-	}
-	reply(reqCopy, _longPoll);
-	_longPoll.curlReq = NULL;
-
-	//2
-	std::stringstream domSS;
-
-	if (req.dom) {
-		// hack until jVoiceXML supports XML
-		std::cout << req.dom;
-		Arabica::DOM::NodeList<std::string> prompts = req.dom.getElementsByTagName("vxml:prompt");
-		for (int i = 0; i < prompts.getLength(); i++) {
-			if (prompts.item(i).hasChildNodes()) {
-				domSS << prompts.item(i).getFirstChild().getNodeValue() << ".";
-			}
-		}
-	}
-
-	domSS << req.dom;
-
-	//_interpreter->getDataModel().replaceExpressions(start.content);
-*/
 
 /** MES->SCXML */
 void XmlBridgeInvoker::buildMESreq(unsigned int cmdid, const std::list < std::string > req_raw_data) {
@@ -191,7 +109,7 @@ void XmlBridgeInvoker::buildMESreq(unsigned int cmdid, const std::list < std::st
 }
 
 /** TIM->SCXML */
-void XmlBridgeInvoker::buildTIMreply(const char cmdid, const std::string reply_raw_data)
+void XmlBridgeInvoker::buildTIMreply(unsigned int cmdid, const std::string reply_raw_data)
 {
 	Arabica::SAX2DOM::Parser<std::string> domParser;
 	Arabica::SAX::CatchErrorHandler<std::string> errorHandler;
@@ -205,6 +123,7 @@ void XmlBridgeInvoker::buildTIMreply(const char cmdid, const std::string reply_r
 		LOG(ERROR) << "Failed parsing TIM XML reply string for command " << cmdid;
 		LOG(ERROR) << "Errors " << errorHandler.errors();;
 		LOG(ERROR) << "TIM XML string was: " << std::endl << reply_raw_data;
+		buildTIMexception(cmdid, TIM_ERROR);
 		return;
 	}
 
@@ -214,6 +133,7 @@ void XmlBridgeInvoker::buildTIMreply(const char cmdid, const std::string reply_r
 	Event myevent(ss.str(), Event::EXTERNAL);
 	if (!domParser.getDocument().hasChildNodes()) {
 		LOG(ERROR) << "Failed parsing TIM XML reply. Resulting document has no nodes";
+		buildTIMexception(cmdid, TIM_ERROR);
 		return;
 	}
 	myevent.dom = domParser.getDocument().getDocumentElement();
@@ -228,133 +148,88 @@ void XmlBridgeInvoker::buildTIMreply(const char cmdid, const std::string reply_r
 	returnEvent(myevent);
 }
 
-	/*  std::cout << action << " on " << reportedFilename << std::endl;
-
-	std::string path;         // complete path to the file including filename
-	std::string relPath;      // path relative to monitored directory including filename
-	std::string dir;          // the name of the directory we monitor
-	std::string relDir;       // the directory from dir to the actual directory where we found a file
-	std::string basename;     // filename including suffix
-	std::string strippedName; // filename without the suffix
-	std::string extension;    // the extension
-
-	dir = reportedDir;
-
-	path = dir + reportedFilename;
-	boost::algorithm::replace_all(path, "\\", "/");
-	boost::algorithm::replace_all(path, "//", "/");
-
-	assert(boost::algorithm::starts_with(path, dir));
-	relPath = path.substr(dir.length());
-	assert(boost::equal(path, dir + relPath));
-
-	size_t lastSep;
-	if ((lastSep = path.find_last_of(PATH_SEPERATOR)) != std::string::npos) {
-		lastSep++;
-		basename = path.substr(lastSep, path.length() - lastSep);
-	} else {
-		assert(false);
-	}
-	assert(boost::algorithm::ends_with(relPath, basename));
-
-	// extension is the suffix and strippedName the basename without the suffix
-	size_t lastDot;
-	if ((lastDot = basename.find_last_of(".")) != std::string::npos) {
-		if (lastDot == 0) {
-			// hidden file
-			strippedName = basename;
-		} else {
-			extension = basename.substr(lastDot + 1);
-			strippedName = basename.substr(0, lastDot);
-		}
-	} else {
-		strippedName = basename;
+/** TIM->SCXML */
+void XmlBridgeInvoker::buildTIMexception(unsigned int cmdid, exceptions type)
+{
+	std::stringstream ss;
+	switch(type) {
+		case TIM_TIMEOUT:
+			ss << TIM2SCXML_TIMEOUT << cmdid;
+			break;
+		default:
+			ss << TIM2SCXML_ERROR << cmdid;
+			break;
 	}
 
-	relDir = relPath.substr(0, relPath.length() - basename.length());
-	assert(boost::equal(path, dir + relDir + basename));
-
-	// return if this is a hidden file
-	if (boost::algorithm::starts_with(basename, ".") && !_reportHidden)
-		return;
-
-	// ilter suffixes
-	if (_suffixes.size() > 0) {
-		bool validSuffix = false;
-		std::set<std::string>::iterator suffixIter = _suffixes.begin();
-		while(suffixIter != _suffixes.end()) {
-			if (boost::algorithm::ends_with(path, *suffixIter)) {
-				validSuffix = true;
-				break;
-			}
-			suffixIter++;
-		}
-		if (!validSuffix)
-			return;
-	}
-
-	if (action != DirectoryWatch::DELETED) {
-		event.data.compound["file"].compound["mtime"] = toStr(fileStat.st_mtime);
-		event.data.compound["file"].compound["ctime"] = toStr(fileStat.st_ctime);
-		event.data.compound["file"].compound["atime"] = toStr(fileStat.st_atime);
-		event.data.compound["file"].compound["size"]  = toStr(fileStat.st_size);
-	}
-
-	event.data.compound["file"].compound["name"] = Data(basename, Data::VERBATIM);
-	event.data.compound["file"].compound["extension"] = Data(extension, Data::VERBATIM);
-	event.data.compound["file"].compound["strippedName"] = Data(strippedName, Data::VERBATIM);
-	event.data.compound["file"].compound["relPath"] = Data(relPath, Data::VERBATIM);
-	event.data.compound["file"].compound["relDir"] = Data(relDir, Data::VERBATIM);
-	event.data.compound["file"].compound["path"] = Data(path, Data::VERBATIM);
-	event.data.compound["file"].compound["dir"] = Data(dir, Data::VERBATIM);
-	*/
+	Event myevent(ss.str(), Event::EXTERNAL);
+	myevent.setInvokeId("xmlbridge");
+	myevent.setOrigin("TIM");
+	myevent.setOriginType("e");
+	returnEvent(myevent);
+}
 
 /** SCXML -> TIM */
-void XmlBridgeInputEvents::sendreq2TIM(const char cmdid, const std::string reqData)
+void XmlBridgeInputEvents::sendreq2TIM(const char *cmdid, const std::string reqData, unsigned int timeout)
 {
-	//mutex?
-
-	if (!_timio->_timCmds.empty())
-		_timio->_timCmds.pop();
-	if (!_timio->_timCmdIds.empty())
-		_timio->_timCmdIds.pop();
-
 	//check command id and str first
-	_timio->_timCmdIds.push(cmdid);
+	_timio->_timCmdIds.push(atoi(cmdid));
 	_timio->_timCmds.push(reqData);
+	_timio->_defTimeout = timeout;
 	_timio->_thread = new tthread::thread(TimIO::client, _timio);
-	_timio->_thread->detach();
 }
 
 /** SCXML -> MES */
-void XmlBridgeInputEvents::sendreply2MES(std::string DBid, const char cmdid, const std::string replyData)
+void XmlBridgeInputEvents::sendreply2MES(unsigned int DBid, const char *cmdid, const std::string replyData)
 {
-	((MesBufferer *)_mesbufferer)->bufferMESreplyWRITE(atoi(DBid.c_str()), atoi(&cmdid), replyData);
+	((MesBufferer *)_mesbufferer)->bufferMESreplyWRITE(DBid, atoi(cmdid), replyData);
 }
 
 /**  TIM -> SCXML */
-void XmlBridgeInputEvents::handleTIMreply(const char cmdid, const std::string replyData)
+void XmlBridgeInputEvents::handleTIMreply(const std::string replyData)
 {
-	std::map<std::string, XmlBridgeInvoker*>::const_iterator inviter = _invokers.begin();
+	std::map<unsigned int, XmlBridgeInvoker*>::const_iterator inviter = _invokers.begin();
 	while (inviter != _invokers.end()) {
-		inviter->second->buildTIMreply(cmdid, replyData);
+		inviter->second->buildTIMreply(_timio->_timCmdIds.front(), replyData);
 		inviter++;
 	}
+	_timio->_timCmds.pop();
+	_timio->_timCmdIds.pop();
 }
 
 /**  MES -> SCXML */
-void XmlBridgeInputEvents::handleMESreq(unsigned int DBid, unsigned int cmdid, const std::list <std::string> reqData)
+bool XmlBridgeInputEvents::handleMESreq(unsigned int DBid, unsigned int cmdid, const std::list <std::string> reqData)
 {
-	std::stringstream ss;
-	ss << std::dec << DBid;
-	if (_invokers.count(ss.str()) == 0) {
-		LOG(ERROR) << "Datablock not supported, ignoring request";
-		return;
+	if (_invokers.count(DBid) == 0) {
+		LOG(ERROR) << "Datablock not supported by currently active SCXML interpreters and invokers, ignoring MES request";
+		return false;
 	}
-	_invokers[ss.str()]->buildMESreq(cmdid, reqData);
+	_invokers[DBid]->buildMESreq(cmdid, reqData);
+	return true;
 }
 
 XmlBridgeInputEvents::~XmlBridgeInputEvents() {}
+
+void XmlBridgeInputEvents::handleTIMtimeout()
+{
+	std::map<unsigned int, XmlBridgeInvoker*>::const_iterator inviter = _invokers.begin();
+	while (inviter != _invokers.end()) {
+		inviter->second->buildTIMexception(_timio->_timCmdIds.front(), TIM_TIMEOUT);
+		inviter++;
+	}
+	_timio->_timCmds.pop();
+	_timio->_timCmdIds.pop();
+}
+
+void XmlBridgeInputEvents::handleTIMerror()
+{
+	std::map<unsigned int, XmlBridgeInvoker*>::const_iterator inviter = _invokers.begin();
+	while (inviter != _invokers.end()) {
+		inviter->second->buildTIMexception(_timio->_timCmdIds.front(), TIM_ERROR);
+		inviter++;
+	}
+	_timio->_timCmds.pop();
+	_timio->_timCmdIds.pop();
+}
 
 } //namespace uscxml
 

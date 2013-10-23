@@ -40,7 +40,7 @@ TimIO::TimIO(std::string ipaddr, std::string port) :
 
 	if (p == NULL) {
 		freeaddrinfo(_servinfo);
-		LOG(ERROR) << "TIM Client: failed to connect";
+		LOG(ERROR) << "TIM Client: failed to connect to " << ipaddr << ":" << port;
 		exit(EXIT_FAILURE);
 	}
 
@@ -52,7 +52,7 @@ TimIO::TimIO(std::string ipaddr, std::string port) :
 	}
 
 	XmlBridgeInputEvents& bridgeInstance = XmlBridgeInputEvents::getInstance();
-	bridgeInstance.registerTimio(this);
+	bridgeInstance.registerTimio(this);	
 }
 
 TimIO::~TimIO()
@@ -68,59 +68,74 @@ TimIO::~TimIO()
 
 void TimIO::client(void *instance) {
 	TimIO* myobj = (TimIO*)instance;
+	XmlBridgeInputEvents& bridgeInstance = XmlBridgeInputEvents::getInstance();
+
 	tthread::lock_guard<tthread::recursive_mutex> lock(myobj->_mutex);
+
+	struct timeval tv;
+	tv.tv_sec = myobj->_defTimeout;
+	tv.tv_usec = 0;  // Not init'ing this can cause strange errors
+	setsockopt(myobj->_socketfd, SOL_SOCKET, SO_SNDTIMEO, &tv, sizeof(struct timeval));
+	setsockopt(myobj->_socketfd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(struct timeval));
 
 	int numbytes;
 
 	LOG(INFO) << "Sending to socket " << myobj->_socketfd
-		<< " the string: '" << myobj->_timCmds.front().c_str()
+		<< " the string: '" << myobj->_timCmds.front()
 		<< "' with length " << myobj->_timCmds.front().length();
 
-	/** Potential blocking call */
 	while ((numbytes = send(myobj->_socketfd, myobj->_timCmds.front().c_str(),
-			myobj->_timCmds.front().length(), MSG_MORE | MSG_NOSIGNAL)) == -1) {
+			myobj->_timCmds.front().length(),
+			MSG_MORE | MSG_NOSIGNAL)) != myobj->_timCmds.front().length()) {
+
 		perror("TIM client: send error");
 		if (errno == EPIPE) {
 			if (connect(myobj->_socketfd, myobj->_servinfo->ai_addr,
 				myobj->_servinfo->ai_addrlen) == -1) {
-					close(myobj->_socketfd);
-					perror("TIM Client: connect");
-					return;
+				perror("TIM Client: connect");
+				bridgeInstance.handleTIMerror();
+				return;
 			}
+			/** If we lost the TCP connection we retry the send of data */
 			continue;
-		} else {
-			LOG(ERROR) << "client: failed to connect: ";
+		} else if (errno == EAGAIN || errno == EWOULDBLOCK) {
+			LOG(ERROR) << "TIM client: command timeout";
+			bridgeInstance.handleTIMtimeout();
 			return;
 		}
-	}
-	if (numbytes != myobj->_timCmds.front().length()) {
-		perror("TIM client: sent incomplete message");
-		LOG(ERROR) << "TIM client: ignoring SCXML send event";
+		bridgeInstance.handleTIMerror();
+		LOG(ERROR) << "TIM client: failed to send";
 		return;
 	}
 
+	errno = 0;
+
 	/**
 	 * Function blocks until the full amount of message data can be returned
-	 *
-	 * Should we close the stream after recv?
 	 */
 	int replylen;
 	memset(myobj->_reply, 0, MAXTIMREPLYSIZE);
 	if ((replylen = recv(myobj->_socketfd, myobj->_reply, MAXTIMREPLYSIZE, MSG_WAITALL)) == -1) {
+		if (errno == EAGAIN || errno == EWOULDBLOCK) {
+			LOG(ERROR) << "TIM client: command timeout";
+			bridgeInstance.handleTIMtimeout();
+			return;
+		}
 		perror("TIM client: recv error");
 		LOG(ERROR) << "TIM client: ignoring SCXML send event";
+		bridgeInstance.handleTIMerror();
 		return;
 	}
 	if (replylen == 0) {
 		LOG(ERROR) << "TIM client: received zero-length message";
-		LOG(ERROR) << "TIM client: ignoring SCXML send event";
+		bridgeInstance.handleTIMerror();
 		return;
 	}
 
 	LOG(INFO) << "Received reply from TIM: " << myobj->_reply;
 
-	XmlBridgeInputEvents& bridgeInstance = XmlBridgeInputEvents::getInstance();
-	bridgeInstance.handleTIMreply(myobj->_timCmdIds.front(), std::string(myobj->_reply));
+	/** This function logs and reports errors internally */
+	bridgeInstance.handleTIMreply(std::string(myobj->_reply));
 }
 
 }

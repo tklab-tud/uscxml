@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <scxml	version="1.0"
-	name="Datablock0"
+	name="0,"
 	datamodel="xpath"
 	initial="InterpreterInitialization"
 	xmlns:fn="http://www.w3.org/2005/xpath-functions"
@@ -74,9 +74,10 @@
 <!--			<file url="bar.bin" operation="write" type="xml" contentexpr="_event['data']['content']" />-->
 			<transition target="RunCommandsStateMachines" />
 		</initial>
-		<invoke type="xmlbridge" id="xmlbridge1">
+		<invoke type="xmlbridge" id="xmlbridge0">
 			<!-- expr value must be the exact offset used in MES datablock fields -->
 			<param name="datablock" expr="'0'"/>
+			<param name="timeout" expr="'5'"/>
 		</invoke>
 		<parallel id="RunCommandsStateMachines">
 			<state id="0" initial="gotset0">
@@ -84,34 +85,25 @@
 					<transition event="ready0" target="sent0">
 						<assign location="$CMD0/data/nestedData" expr="$_event/data/text()"/>
 					</transition>
+					<transition event="*"/>
 				</state>
 				<state id="sent0">
 					<onentry>
 						<send 	event="cmd0"
 							namelist="$CMD0"
-							target="#_xmlbridge1"/>
-						<send 	event="timeout0"
-							delay="5s"/>
+							target="#_xmlbridge0"/>
 					</onentry>
 					<transition event="reply0" cond="$_event//data/nestedData[@type='state']/text() = 'ok'" target="gotset0">
 						<send 	event="ack0"
-							target="#_xmlbridge1">
-							<param cmd="true">
-						</send>
+							target="#_xmlbridge0"/>
 					</transition>
 					<transition event="reply0" cond="$_event//data/nestedData[@type='state']/text() = 'error'" target="gotset0">
 						<send 	event="ack0"
-							target="#_xmlbridge1">
-							<param cmd="false">
-						</send>
+							target="#_xmlbridge0"/>
 					</transition>
 					<transition event="timeout0" target="gotset0" />
-						<log label="TIMEOUT for cmd 0 reply"/>
-						<send 	event="stop0"
-							target="#_xmlbridge1">
-							<param cmd="0">
-						</send>
-					</transition>
+					<transition event="error0" target="gotset0" />
+					<transition event="*"/>
 				</state>
 			</state>
 			<state id="1" initial="gotset10">
@@ -139,7 +131,7 @@
 					<onentry>
 						<send 	event="cmd1"
 							namelist="$CMD1"
-							target="#_xmlbridge1" />
+							target="#_xmlbridge0" />
 						<send 	event="timeout1"
 							namelist="$TIMEOUT"
 							delay="5s"/>
@@ -148,15 +140,16 @@
 <!--						<log label="Event full data is:" expr="$_event/text()" />-->
 						<send 	event="ack1"
 							namelist="$ACK"
-							target="xmlbridge1"/>
+							target="xmlbridge0"/>
 					</transition>
 					<transition event="reply1" cond="XPATH" target="gotset10">
 <!--						<log label="Event full data is:" expr="$_event/text()" />-->
 						<send 	event="ack1"
 							namelist="$NACK"
-							target="#_xmlbridge1"/>
+							target="#_xmlbridge0"/>
 					</transition>
 					<transition event="timeout1" target="gotset10" />
+					<transition event="error1" target="gotset1" />
 				</state>
 			</state>			
 			<state id="3" initial="gotset30">
@@ -190,7 +183,7 @@
 						<assign location="$CMD3/data/item[4]/nestedData" expr="$_event/data/text()"/>
 						<send 	event="cmd3"
 							namelist="$CMD3"
-							target="#_xmlbridge1" />
+							target="#_xmlbridge0" />
 					</transition>
 				</state>
 				<state id="sent3">
@@ -203,15 +196,16 @@
 <!--						<log label="Event full data is:" expr="$_event/text()" />-->
 						<send 	event="ack3"
 							namelist="$ACK"
-							target="#_xmlbridge1"/>
+							target="#_xmlbridge0"/>
 					</transition>
 					<transition event="reply3" cond="XPATH" target="gotset30">
 <!--						<log label="Event full data is:" expr="$_event/text()" />-->
 						<send 	event="ack3"
 							namelist="$NACK"
-							target="#_xmlbridge1"/>
+							target="#_xmlbridge0"/>
 					</transition>
 					<transition event="timeout3" target="gotset30" />
+					<transition event="error3" target="gotset3" />
 				</state>
 			</state>
 			<state id="4" initial="gotset4">
@@ -230,7 +224,7 @@
 					<onentry>
 						<send 	event="cmd4"
 							namelist="$CMD4"
-							target="#_xmlbridge1" />
+							target="#_xmlbridge0" />
 						<send 	event="timeout4"
 							namelist="$TIMEOUT"
 							delay="5s"/>
@@ -239,17 +233,21 @@
 <!--						<log label="Event full data is:" expr="$_event/text()" />-->
 						<send 	event="ack4"
 							namelist="$ACK"
-							target="#_xmlbridge1"/>
+							target="#_xmlbridge0"/>
 					</transition>
 					<transition event="reply4" cond="XPATH" target="gotset4">
 <!--						<log label="Event full data is:" expr="$_event/text()" />-->
 						<send 	event="ack4"
 							namelist="$NACK"
-							target="#_xmlbridge1"/>
+							target="#_xmlbridge0"/>
 					</transition>
 					<transition event="timeout4" target="gotset4" />
+					<transition event="error4" target="gotset4" />
 				</state>
 			</state>			
 		</parallel>
 	</state>
+	<final id="EXIT">
+		<log label="Unrecoverable Error" expr="$_event/text()" />
+	</final>
 </scxml>
