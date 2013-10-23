@@ -30,6 +30,10 @@ public:
 
 	static void client(void *instance);
 private:
+	bool TimIO::connect2TIM();
+
+	std::string _TIMport;
+	std::string _TIMaddr;
 	char* _reply;
 	int _socketfd ; // The socket descriptor
 	struct addrinfo *_servinfo;

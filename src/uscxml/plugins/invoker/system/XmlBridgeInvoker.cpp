@@ -81,10 +81,7 @@ void XmlBridgeInvoker::send(const SendRequest& req) {
 /** MES->SCXML */
 void XmlBridgeInvoker::buildMESreq(unsigned int cmdid, const std::list < std::string > req_raw_data) {
 	std::stringstream ss;
-	if (!req_raw_data.empty())
-		ss << cmdid << '_' << WRITEOP << MES2SCXML;
-	else
-		ss << cmdid << '_' << READOP << MES2SCXML;
+	ss << cmdid << '_' << (!req_raw_data.empty() ? WRITEOP : READOP) << MES2SCXML;
 
 	Event myevent(ss.str(), Event::EXTERNAL);
 
@@ -121,10 +118,7 @@ void XmlBridgeInvoker::buildTIMreply(unsigned int cmdid, bool type, const std::s
 	}
 
 	std::stringstream ss;
-	if (type)
-		ss << cmdid << '_' << WRITEOP << TIM2SCXML;
-	else
-		ss << cmdid << '_' << READOP << TIM2SCXML;
+	ss << cmdid << '_' << (type ? WRITEOP : READOP) << TIM2SCXML;
 
 	Event myevent(ss.str(), Event::EXTERNAL);
 	if (!domParser.getDocument().hasChildNodes()) {
@@ -151,9 +145,6 @@ void XmlBridgeInvoker::buildTIMexception(unsigned int cmdid, exceptions type)
 	}
 
 	Event myevent(ss.str(), Event::EXTERNAL);
-	myevent.setInvokeId("xmlbridge");
-	myevent.setOrigin("TIM");
-	myevent.setOriginType("e");
 	returnEvent(myevent);
 }
 
@@ -166,6 +157,7 @@ void XmlBridgeInputEvents::sendReq2TIM(unsigned int cmdid, bool write, const std
 	_timio->_timCmdWrite.push(write);
 	_timio->_defTimeout = timeout;
 	_timio->_thread = new tthread::thread(TimIO::client, _timio);
+	_timio->_thread->detach();
 }
 
 /** SCXML -> MES */

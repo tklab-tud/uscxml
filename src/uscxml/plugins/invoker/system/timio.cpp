@@ -3,12 +3,7 @@
 
 namespace uscxml {
 
-TimIO::TimIO(std::string ipaddr, std::string port) :
-	_timCmd(), _timCmdId(), _timCmdWrite()
-{
-	if (ipaddr.empty() || port.empty())
-		exit(EXIT_FAILURE);
-
+bool TimIO::connect2TIM() {
 	struct addrinfo hints, *p;
 	int rv;
 
@@ -16,10 +11,10 @@ TimIO::TimIO(std::string ipaddr, std::string port) :
 	hints.ai_family = PF_INET;
 	hints.ai_socktype = SOCK_STREAM;
 
-	if ((rv = getaddrinfo(ipaddr.c_str(), port.c_str(), &hints, &_servinfo)) != 0) {
+	if ((rv = getaddrinfo(_TIMaddr.c_str(), _TIMport.c_str(), &hints, &_servinfo)) != 0) {
 		LOG(ERROR) << "Getaddrinfo: " << gai_strerror(rv);
 		perror("Getaddrinfo:");
-		exit(EXIT_FAILURE);
+		return false;
 	}
 
 	// loop through all the results and connect to the first we can
@@ -40,6 +35,19 @@ TimIO::TimIO(std::string ipaddr, std::string port) :
 
 	if (p == NULL) {
 		freeaddrinfo(_servinfo);
+		return false;
+	}
+
+	return true;
+}
+
+TimIO::TimIO(std::string ipaddr, std::string port) :
+	_timCmd(), _timCmdId(), _timCmdWrite(), _TIMaddr(ipaddr), _TIMport(port)
+{
+	if (ipaddr.empty() || port.empty())
+		exit(EXIT_FAILURE);
+
+	if (!connect2TIM()) {
 		LOG(ERROR) << "TIM Client: failed to connect to " << ipaddr << ":" << port;
 		exit(EXIT_FAILURE);
 	}
@@ -90,9 +98,7 @@ void TimIO::client(void *instance) {
 
 		perror("TIM client: send error");
 		if (errno == EPIPE) {
-			if (connect(myobj->_socketfd, myobj->_servinfo->ai_addr,
-				myobj->_servinfo->ai_addrlen) == -1) {
-				perror("TIM Client: connect");
+			if (!connect2TIM()) {
 				bridgeInstance.handleTIMexception(TIM_ERROR);
 				return;
 			}
