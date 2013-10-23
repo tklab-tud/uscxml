@@ -19,8 +19,6 @@ bool connect(pluma::Host& host) {
 boost::shared_ptr<InvokerImpl> XmlBridgeInvoker::create(InterpreterImpl* interpreter) {
 	LOG(INFO) << "Creating XmlBridgeInvoker(s) for each datablock";
 
-	interpreter->getName()
-
 	boost::shared_ptr<XmlBridgeInvoker> invoker = boost::shared_ptr<XmlBridgeInvoker>(this);
 
 	invoker->setInterpreter(interpreter);
@@ -34,18 +32,13 @@ void XmlBridgeInvoker::invoke(const InvokeRequest& req) {
 	LOG(INFO) << "Invoking XmlBridgeInvoker (source:" <<
 		req.getSource() << ", type:" << req.getType() << ")";
 
-	if (req.params.find("datablock") == req.params.end()) {
-		LOG(ERROR) << "XmlBridgeInvoker: No datablock param given";
-		//TODO TERMINATE EVERYTHING
-		return;
-	}
 	if (req.params.find("timeout") == req.params.end()) {
-		LOG(ERROR) << "XmlBridgeInvoker: No timeout param given";
-		//TODO TERMINATE EVERYTHING
-		return;
-	}
-	_DBid = atoi(req.params.find("datablock")->second.atom.c_str());
-	_timeoutVal = atoi(req.params.find("datablock")->second.atom.c_str());
+		LOG(ERROR) << "XmlBridgeInvoker: No timeout param given, assuming 5 seconds";
+		_timeoutVal = 5;
+	} else
+		_timeoutVal = atoi(req.params.find("datablock")->second.atom.c_str());
+
+	_DBid = atoi(_invokeId.c_str() + sizeof(INVOKER_TYPE));
 
 	XmlBridgeInputEvents& myinstance = XmlBridgeInputEvents::getInstance();
 	myinstance.registerInvoker(_DBid, this);
