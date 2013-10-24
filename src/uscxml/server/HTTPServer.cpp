@@ -25,8 +25,6 @@
 #endif
 
 #include "uscxml/server/HTTPServer.h"
-#include "uscxml/Message.h"
-#include "uscxml/Factory.h"
 
 #include <string>
 #include <iostream>
@@ -35,7 +33,6 @@ extern "C" {
 #include <event2/dns.h>
 #include <event2/event.h>
 #include <event2/buffer.h>
-#include <event2/http.h>
 #include <event2/keyvalq_struct.h>
 #include <event2/http_struct.h>
 #include <event2/thread.h>
@@ -45,8 +42,12 @@ extern "C" {
 #include <boost/algorithm/string.hpp>
 
 #ifndef _WIN32
-#include <netdb.h>
-#include <arpa/inet.h>
+#include <netinet/in.h>                 // for INADDR_ANY
+#include <stdint.h>                     // for uint16_t
+#include <stdlib.h>                     // for NULL, free
+#include <unistd.h>                     // for gethostname
+//#include <netdb.h>
+//#include <arpa/inet.h>
 #endif
 
 #if (defined EVENT_SSL_FOUND && defined OPENSSL_FOUND)
@@ -56,6 +57,9 @@ extern "C" {
 #include <openssl/pem.h>
 #include <event2/bufferevent_ssl.h>
 #endif
+
+#include "uscxml/Message.h"
+#include "uscxml/Convenience.h"         // for toStr
 
 #ifdef BUILD_AS_PLUGINS
 #include <Pluma/Connector.hpp>

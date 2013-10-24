@@ -2,6 +2,8 @@
 #include "uscxml/Interpreter.h"
 #include <glog/logging.h>
 
+#include <boost/algorithm/string.hpp>
+
 int main(int argc, char** argv) {
 	using namespace uscxml;
 

@@ -3,6 +3,7 @@
 #include <glog/logging.h>
 
 #include "uscxml/plugins/invoker/filesystem/dirmon/DirMonInvoker.h"
+#include <boost/algorithm/string.hpp>
 
 #ifdef HAS_SIGNAL_H
 #include <signal.h>
