@@ -32,6 +32,7 @@
 
 #include <boost/lexical_cast.hpp>
 #include <boost/tokenizer.hpp>
+#include <boost/algorithm/string.hpp>
 
 #include <glog/logging.h>
 
@@ -61,18 +62,33 @@ using namespace Arabica::XPath;
 using namespace Arabica::DOM;
 
 void InterpreterOptions::printUsageAndExit(const char* progName) {
-	printf("%s version " USCXML_VERSION " (" CMAKE_BUILD_TYPE " build - " CMAKE_COMPILER_STRING ")\n", progName);
+	// remove path from program name
+	std::string progStr(progName);
+	if (progStr.find_last_of(PATH_SEPERATOR) != std::string::npos) {
+		progStr = progStr.substr(progStr.find_last_of(PATH_SEPERATOR) + 1, progStr.length() - (progStr.find_last_of(PATH_SEPERATOR) + 1));
+	}
+
+	printf("%s version " USCXML_VERSION " (" CMAKE_BUILD_TYPE " build - " CMAKE_COMPILER_STRING ")\n", progStr.c_str());
 	printf("Usage\n");
-	printf("\t%s", progName);
+	printf("\t%s", progStr.c_str());
+	printf(" [-v] [-d] [-lN]");
 #ifdef BUILD_AS_PLUGINS
-	printf(" [-e pluginPath]");
+	printf(" [-p pluginPath]");
 #endif
-	printf("[-v] [-pN] URL\n");
+	printf(" [-tN]");
+#ifdef EVENT_SSL_FOUND
+	printf(" [-sN] [--certificate=FILE | --private-key=FILE --public-key=FILE] ");
+#endif
+	printf(" \\\n\t\tURL1 [--disable-http] [--option1=value1 --option2=value2]");
+	printf(" \\\n\t\t[URL2 [--disable-http] [--option3=value3 --option4=value4]]");
+	printf(" \\\n\t\t[URLN [--disable-http] [--optionN=valueN --optionM=valueM]]");
 	printf("\n");
 	printf("Options\n");
 	printf("\t-v        : be verbose\n");
-	printf("\t-pN       : port for HTTP server\n");
 	printf("\t-d        : write each configuration as a dot file\n");
+	printf("\t-lN       : Set loglevel to N\n");
+	printf("\t-tN       : port for HTTP server\n");
+	printf("\t-sN       : port for HTTPS server\n");
 	printf("\n");
 	exit(1);
 }
