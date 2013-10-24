@@ -29,7 +29,7 @@
 		 </item>         
 		 <item i="3">
 		    <nestedData type="state">off</nestedData>
-		 </item>                           
+		 </item>
 		</data>
 	</data>
 	<data id="READ1">
@@ -44,16 +44,16 @@
 		 </item>
 		 <item i="1">
 		    <nestedData type="value">22</nestedData>
-		 </item>         
+		 </item>    
 		 <item i="3">
 		    <nestedData type="value">33</nestedData>
 		 </item>
 		 <item i="4">
 		    <nestedData type="value">44</nestedData>
-		 </item>                  
+		 </item>             
 		 <item i="5">
 		    <nestedData type="value">55</nestedData>
-		 </item>                           
+		 </item>
 		</data>
 	</data>
 	<data id="READ3">

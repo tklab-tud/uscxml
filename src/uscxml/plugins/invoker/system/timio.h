@@ -30,7 +30,7 @@ public:
 
 	static void client(void *instance);
 private:
-	bool TimIO::connect2TIM();
+	bool connect2TIM();
 
 	std::string _TIMport;
 	std::string _TIMaddr;

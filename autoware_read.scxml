@@ -6,21 +6,7 @@
 	xmlns:fn="http://www.w3.org/2005/xpath-functions"
 	xmlns="http://www.w3.org/2005/07/scxml" >
 	<datamodel>
-		<data id="CMD0">
-		   <frame>
-		       <data type="requestItem" index="0">totalPacks</data>
-		   </frame>
-		</data>
-		<data id="CMD1">
-		   <frame>
-		       <data type="requestItem" index="1">switchHw</data>
-		   </frame>
-		</data>
-		<data id="CMD3">
-		   <frame>
-		       <data type="requestItem" index="0">information</data>
-		   </frame>
-		</data>
+
 	</datamodel>
 <!-- legend:
 		init<id>
