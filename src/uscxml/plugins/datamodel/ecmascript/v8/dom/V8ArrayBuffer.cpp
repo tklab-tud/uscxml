@@ -62,6 +62,20 @@ v8::Handle<v8::Value> V8ArrayBuffer::byteLengthAttrGetter(v8::Local<v8::String> 
 	return v8::Integer::New(privData->nativeObj->getByteLength());
 }
 
+v8::Handle<v8::Value> V8ArrayBuffer::mimeTypeAttrGetter(v8::Local<v8::String> property, const v8::AccessorInfo& info) {
+	v8::Local<v8::Object> self = info.Holder();
+	struct V8ArrayBufferPrivate* privData = V8DOM::toClassPtr<V8ArrayBufferPrivate >(self->GetInternalField(0));
+
+	return v8::String::New(privData->nativeObj->getMimeType().c_str());
+}
+
+void V8ArrayBuffer::mimeTypeAttrSetter(v8::Local<v8::String> property, v8::Local<v8::Value> value, const v8::AccessorInfo& info) {
+	v8::Local<v8::Object> self = info.Holder();
+	struct V8ArrayBufferPrivate* privData = V8DOM::toClassPtr<V8ArrayBufferPrivate >(self->GetInternalField(0));
+	v8::String::AsciiValue localMimeType(value);
+	privData->nativeObj->setMimeType(*localMimeType);
+}
+
 v8::Handle<v8::Value> V8ArrayBuffer::sliceCallback(const v8::Arguments& args) {
 
 	v8::Local<v8::Object> self = args.Holder();

@@ -191,7 +191,7 @@
 							<header name="Connection" value="close" />
 							<header name="Content-Type" value="application/json" />
 							<header name="Access-Control-Allow-Origin" value="*" />
-							<header name="Content-Type" valueexpr="_event.data.mimetype" />
+							<header name="Content-Type" valueexpr="_event.data.content[_event.data.format].mimetype" />
 							<content expr="_event.data.content[_event.data.format]" />
 						</respond>
 					<else />

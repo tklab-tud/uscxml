@@ -200,7 +200,7 @@ void FileElement::enterElement(const Arabica::DOM::Node<std::string>& node) {
 
 		switch (_type) {
 		case BINARY:
-			event.data.compound["content"] = Data(fileContents, fileStat.st_size, 1);
+			event.data.compound["content"] = Data(fileContents, fileStat.st_size, "application/octet-stream", true);
 			break;
 		case TEXT:
 			event.data.compound["content"] = Data(fileContents, Data::VERBATIM);

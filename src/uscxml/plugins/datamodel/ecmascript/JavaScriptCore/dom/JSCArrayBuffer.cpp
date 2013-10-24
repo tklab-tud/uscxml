@@ -25,6 +25,7 @@ JSClassRef JSCArrayBuffer::Tmpl;
 
 JSStaticValue JSCArrayBuffer::staticValues[] = {
 	{ "byteLength", byteLengthAttrGetter, 0, kJSPropertyAttributeDontDelete | kJSPropertyAttributeReadOnly },
+	{ "mimeType", mimeTypeAttrGetter, mimeTypeAttrSetter, kJSPropertyAttributeDontDelete },
 
 	{ 0, 0, 0, 0 }
 };
@@ -68,6 +69,31 @@ JSValueRef JSCArrayBuffer::byteLengthAttrGetter(JSContextRef ctx, JSObjectRef ob
 	return JSValueMakeNumber(ctx, privData->nativeObj->getByteLength());
 }
 
+
+JSValueRef JSCArrayBuffer::mimeTypeAttrGetter(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef *exception) {
+	struct JSCArrayBufferPrivate* privData = (struct JSCArrayBufferPrivate*)JSObjectGetPrivate(object);
+
+	JSStringRef stringRef = JSStringCreateWithUTF8CString(privData->nativeObj->getMimeType().c_str());
+	JSValueRef retVal = JSValueMakeString(ctx, stringRef);
+	JSStringRelease(stringRef);
+	return retVal;
+}
+
+
+bool JSCArrayBuffer::mimeTypeAttrSetter(JSContextRef ctx, JSObjectRef thisObj, JSStringRef propertyName, JSValueRef value, JSValueRef* exception) {
+	struct JSCArrayBufferPrivate* privData = (struct JSCArrayBufferPrivate*)JSObjectGetPrivate(thisObj);
+
+	JSStringRef stringReflocalMimeType = JSValueToStringCopy(ctx, value, exception);
+	size_t localMimeTypeMaxSize = JSStringGetMaximumUTF8CStringSize(stringReflocalMimeType);
+	char* localMimeTypeBuffer = new char[localMimeTypeMaxSize];
+	JSStringGetUTF8CString(stringReflocalMimeType, localMimeTypeBuffer, localMimeTypeMaxSize);
+	std::string localMimeType(localMimeTypeBuffer);
+	JSStringRelease(stringReflocalMimeType);
+	free(localMimeTypeBuffer);
+
+	privData->nativeObj->setMimeType(localMimeType);
+	return true;
+}
 
 JSValueRef JSCArrayBuffer::sliceCallback(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObj, size_t argumentCount, const JSValueRef* arguments, JSValueRef* exception) {
 

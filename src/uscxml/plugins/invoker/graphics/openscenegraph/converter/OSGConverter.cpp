@@ -33,6 +33,7 @@
 #include <osg/ShapeDrawable>
 
 #include <boost/lexical_cast.hpp>
+#include <boost/algorithm/string.hpp>
 
 #ifdef BUILD_AS_PLUGINS
 #include <Pluma/Connector.hpp>
@@ -239,7 +240,7 @@ void OSGConverter::process(const SendRequest& req) {
 				std::ofstream outFile(dest.c_str());
 				outFile << ss.str();
 			}
-			Data content(ss.str().c_str(), ss.str().size(), false);
+			Data content(ss.str().c_str(), ss.str().size(), URL::getMimeType(format), false);
 			reportSuccess(req, content);
 			return;
 		}
@@ -619,7 +620,7 @@ void OSGConverter::NameRespectingWriteToFile::operator()(const osg::Image& image
 #endif
 
 	Data content;
-	content.compound[format] = Data(buffer, length, false);
+	content.compound[format] = Data(buffer, length, URL::getMimeType(format), false);
 
 	// save image as a raw rgba as well for ffmpeg - we are using the mpb format for now
 //	osg::ref_ptr<osgDB::ReaderWriter> writerRGBA = osgDB::Registry::instance()->getReaderWriterForExtension("rgba");

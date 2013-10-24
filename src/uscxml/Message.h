@@ -51,10 +51,10 @@ class USCXML_API Blob {
 public:
 	~Blob();
 	Blob(size_t size);
-	Blob(void* data, size_t size, bool adopt = false);
+	Blob(void* data, size_t size, const std::string& mimeType, bool adopt = false);
 	char* data;
 	size_t size;
-	std::string mimetype;
+	std::string mimeType;
 
 	std::string md5() {
 		return uscxml::md5(data, size);
@@ -66,7 +66,7 @@ public:
 
 	Blob* fromBase64(const std::string base64) {
 		std::string decoded = base64_decode(base64);
-		return new Blob((void*)decoded.c_str(), decoded.length());
+		return new Blob((void*)decoded.c_str(), decoded.length(), mimeType);
 	}
 };
 
@@ -79,7 +79,7 @@ public:
 
 	Data() : type(INTERPRETED) {}
 	Data(const std::string& atom_, Type type_ = INTERPRETED) : atom(atom_), type(type_) {}
-	Data(const char* data, size_t size, bool adopt);
+	Data(const char* data, size_t size, const std::string& mimeType, bool adopt);
 	Data(bool atom_) : type(INTERPRETED) {
 		if (atom_) {
 			atom = "true";

@@ -222,8 +222,7 @@ void FFMPEGInvoker::finish(EncodingContext* ctx, const SendRequest& req) {
 	Event event;
 	event.name = "render.done";
 	event.data.compound["context"] = context;
-	event.data.compound["movie"] = Data(movieBuffer, length, true);
-	event.data.compound["mimetype"] = Data("video/mpeg", Data::VERBATIM);
+	event.data.compound["movie"] = Data(movieBuffer, length, "video/mpeg", true);
 	event.data.compound["filename"] = Data(std::string("movie.") + ctx->extension, Data::VERBATIM);
 
 	returnEvent(event);

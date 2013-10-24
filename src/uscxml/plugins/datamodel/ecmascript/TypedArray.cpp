@@ -42,7 +42,7 @@ ArrayBuffer::ArrayBuffer(boost::shared_ptr<Blob> buffer) : _buffer(buffer) {
 }
 
 ArrayBuffer::ArrayBuffer(void* data, unsigned int size) {
-	_buffer = boost::shared_ptr<Blob>(new Blob(data, size));
+	_buffer = boost::shared_ptr<Blob>(new Blob(data, size, "application/octet-stream"));
 }
 
 unsigned long ArrayBuffer::getByteLength() {

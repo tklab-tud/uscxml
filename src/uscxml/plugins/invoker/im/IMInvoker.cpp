@@ -20,6 +20,7 @@
 #include "IMInvoker.h"
 #include <glog/logging.h>
 #include "uscxml/UUID.h"
+#include <boost/algorithm/string.hpp>
 
 #ifdef BUILD_AS_PLUGINS
 #include <Pluma/Connector.hpp>
@@ -475,7 +476,7 @@ Data IMInvoker::buddyToData(PurpleBuddy *buddy) {
 	if (icon) {
 		size_t iconSize = 0;
 		gconstpointer iconData = purple_buddy_icon_get_data(icon, &iconSize);
-		data.compound["icon"] = Data((char*)iconData, iconSize, false);
+		data.compound["icon"] = Data((char*)iconData, iconSize, "application/octet-stream", false);
 	}
 
 	PurplePresence* presence = purple_buddy_get_presence(buddy);

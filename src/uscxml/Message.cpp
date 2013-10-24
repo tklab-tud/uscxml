@@ -50,18 +50,19 @@ Blob::Blob(size_t _size) {
 	size = _size;
 }
 
-Blob::Blob(void* _data, size_t _size, bool adopt) {
+Blob::Blob(void* _data, size_t _size, const std::string& _mimeType, bool adopt) {
 	if (adopt) {
 		data = (char*)_data;
 	} else {
 		data = (char*)malloc(_size);
 		memcpy(data, _data, _size);
 	}
+	mimeType = _mimeType;
 	size = _size;
 }
 
-Data::Data(const char* _data, size_t _size, bool adopt) {
-	binary = boost::shared_ptr<Blob>(new Blob((void*)_data, _size, adopt));
+Data::Data(const char* _data, size_t _size, const std::string& mimeType, bool adopt) {
+	binary = boost::shared_ptr<Blob>(new Blob((void*)_data, _size, mimeType, adopt));
 }
 
 Data::Data(const Arabica::DOM::Node<std::string>& dom) {

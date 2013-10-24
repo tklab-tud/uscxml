@@ -13,6 +13,7 @@
 ]
 interface ArrayBuffer {
     readonly attribute unsigned long byteLength;
+    attribute DOMString mimeType;
     ArrayBuffer slice(long begin, optional long end);
     static boolean isView(any value);
 };
