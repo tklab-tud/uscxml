@@ -105,17 +105,6 @@ if (NOT RETAIN_BUILD_DIR)
 	ctest_empty_binary_directory(${CTEST_BINARY_DIRECTORY})
 endif()
 
-if (REMOVE_PREBUILDS)
-	# on some platforms, REMOVE_RECURSE chokes on symlinks
-	file(GLOB_RECURSE PREBUILDS "${CTEST_SOURCE_DIRECTORY}/contrib/prebuilt/*")
-	if (PREBUILDS)
-		file(REMOVE ${PREBUILDS})
-	endif()
-	file(REMOVE_RECURSE "${CTEST_SOURCE_DIRECTORY}/contrib/prebuilt")
-	file(REMOVE "${CTEST_SOURCE_DIRECTORY}/contrib/prebuilt")
-	file(MAKE_DIRECTORY "${CTEST_SOURCE_DIRECTORY}/contrib/prebuilt")
-endif()
-
 ctest_start(${CTEST_SUBMIT_TYPE}) # start testing
 #
 # I accidentally resynced when running from IDE thrice!
