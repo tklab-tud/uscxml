@@ -100,7 +100,7 @@ std::string URL::getMimeType(const std::string extension, std::string magic) {
 	if (mimeTypes.find(extension) != mimeTypes.end()) {
 		return mimeTypes[extension];
 	}
-	return "";
+	return "application/octet-stream";
 }
 
 
