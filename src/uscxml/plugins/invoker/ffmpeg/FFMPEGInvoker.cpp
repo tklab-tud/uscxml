@@ -17,6 +17,8 @@
  *  @endcond
  */
 
+#include <boost/algorithm/string.hpp>
+
 #include "FFMPEGInvoker.h"
 #include <glog/logging.h>
 

@@ -17,6 +17,8 @@
  *  @endcond
  */
 
+#include <boost/algorithm/string.hpp>
+
 #include "uscxml/Common.h"
 #include "uscxml/config.h"
 #include "SWIDataModel.h"

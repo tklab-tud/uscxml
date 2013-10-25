@@ -30,6 +30,7 @@
 
 #include <io/uri.hpp>
 #include <glog/logging.h>
+#include <boost/algorithm/string.hpp>
 
 #ifdef _WIN32
 #include <winsock2.h>

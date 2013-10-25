@@ -17,6 +17,8 @@
  *  @endcond
  */
 
+#include <boost/algorithm/string.hpp>
+
 #include "PostponeElement.h"
 #include "uscxml/plugins/invoker/http/HTTPServletInvoker.h"
 #include <glog/logging.h>

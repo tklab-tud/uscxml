@@ -17,6 +17,8 @@
  *  @endcond
  */
 
+#include <boost/algorithm/string.hpp>
+
 #include "UmundoInvoker.h"
 #include <glog/logging.h>
 #include "uscxml/URL.h"

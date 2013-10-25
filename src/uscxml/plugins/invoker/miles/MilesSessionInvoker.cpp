@@ -17,6 +17,8 @@
  *  @endcond
  */
 
+#include <boost/algorithm/string.hpp>
+
 #include "MilesSessionInvoker.h"
 #include <glog/logging.h>
 

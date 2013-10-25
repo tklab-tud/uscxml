@@ -17,6 +17,8 @@
  *  @endcond
  */
 
+#include <boost/algorithm/string.hpp>
+
 #include "OSGInvoker.h"
 #include "uscxml/URL.h"
 #include "uscxml/UUID.h"

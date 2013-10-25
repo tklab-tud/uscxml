@@ -21,6 +21,8 @@
 #define _USE_MATH_DEFINES
 #include <cmath>
 
+#include <boost/algorithm/string.hpp>
+
 #include "OpenALInvoker.h"
 #include <uscxml/config.h>
 #include <glog/logging.h>

@@ -17,6 +17,8 @@
  *  @endcond
  */
 
+#include <boost/algorithm/string.hpp>
+
 #include <uscxml/config.h>
 #include "XHTMLInvoker.h"
 #include <glog/logging.h>

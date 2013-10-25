@@ -17,6 +17,8 @@
  *  @endcond
  */
 
+#include <boost/algorithm/string.hpp>
+
 #include "CalendarInvoker.h"
 #include <glog/logging.h>
 
