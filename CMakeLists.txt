@@ -187,7 +187,7 @@ else()
 		SET(CMAKE_FIND_ROOT_PATH "/;${CMAKE_FIND_ROOT_PATH};${USCXML_PREBUILT_LIBRARY_PATH};${USCXML_PREBUILT_HEADER_PATH}")
 	endif()
 endif()
-include_directories("/usr/local/include" "/home/sunkiss/_Projects/xmlBridgeCPP" ${USCXML_PREBUILT_LIBRARY_PATH}/include)
+include_directories("/usr/local/include" "/home/sunkiss/_Projects/xmlBridgeCPP" "/home/sunkiss/_Projects/libmodbus/include" ${USCXML_PREBUILT_LIBRARY_PATH}/include)
 
 if (WIN32)
 	include_directories(${PROJECT_SOURCE_DIR}/contrib/src/getopt)
