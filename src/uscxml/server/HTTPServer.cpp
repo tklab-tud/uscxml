@@ -50,7 +50,7 @@ extern "C" {
 //#include <arpa/inet.h>
 #endif
 
-#if (defined EVENT_SSL_FOUND && defined OPENSSL_FOUND)
+#if (defined EVENT_SSL_FOUND && defined OPENSSL_FOUND && defined OPENSSL_HAS_ELIPTIC_CURVES)
 #include <openssl/ssl.h>
 #include <openssl/bio.h>
 #include <openssl/err.h>
@@ -92,7 +92,7 @@ HTTPServer::HTTPServer(unsigned short port, SSLConfig* sslConf) {
 	}
 	determineAddress();
 
-#if (defined EVENT_SSL_FOUND && defined OPENSSL_FOUND)
+#if (defined EVENT_SSL_FOUND && defined OPENSSL_FOUND && defined OPENSSL_HAS_ELIPTIC_CURVES)
 	if (!sslConf) {
 		_https = NULL;
 		_sslHandle = NULL;
@@ -165,7 +165,7 @@ HTTPServer* HTTPServer::getInstance(unsigned short port, SSLConfig* sslConf) {
 	return _instance;
 }
 
-#if (defined EVENT_SSL_FOUND && defined OPENSSL_FOUND)
+#if (defined EVENT_SSL_FOUND && defined OPENSSL_FOUND && defined OPENSSL_HAS_ELIPTIC_CURVES)
 // see https://github.com/ppelleti/https-example/blob/master/https-server.c
 struct bufferevent* HTTPServer::sslBufferEventCallback(struct event_base *base, void *arg) {
 	struct bufferevent* r;

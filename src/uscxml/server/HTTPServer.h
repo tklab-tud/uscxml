@@ -125,7 +125,7 @@ private:
 
 	friend class HTTPServlet;
 
-#if (defined EVENT_SSL_FOUND && defined OPENSSL_FOUND)
+#if (defined EVENT_SSL_FOUND && defined OPENSSL_FOUND && defined OPENSSL_HAS_ELIPTIC_CURVES)
 	struct evhttp* _https;
 	struct evhttp_bound_socket* _sslHandle;
 	unsigned short _sslPort;

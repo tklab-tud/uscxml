@@ -590,8 +590,12 @@ endif()
 
 find_package(OpenSSL)
 if (OPENSSL_FOUND)
+	set(OPENSSL_HAS_ELIPTIC_CURVES OFF)
 	include_directories(${OPENSSL_INCLUDE_DIR})
 	list (APPEND USCXML_OPT_LIBS ${OPENSSL_LIBRARIES})
+	if (EXISTS ${OPENSSL_INCLUDE_DIR}/openssl/ec.h)
+		set(OPENSSL_HAS_ELIPTIC_CURVES ON)
+	endif()
 endif()
 
 if (EVENT_SSL_FOUND AND OPENSSL_FOUND)
