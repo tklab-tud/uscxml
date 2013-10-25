@@ -84,11 +84,11 @@ TimIO::TimIO(std::string ipaddr, std::string port) :
 
 TimIO::~TimIO()
 {
-	freeaddrinfo(_servinfo);
+	if (_servinfo != NULL)
+		freeaddrinfo(_servinfo);
 	close(_socketfd);
 	free(_reply);
 	if (_thread) {
-		_thread->join();
 		delete _thread;
 	}
 }
@@ -104,19 +104,17 @@ void TimIO::client(void *instance) {
 		<< "' with length " << myobj->_timCmd.front().length();
 
 	int numbytes;
-	//bool retry;
 	while ((numbytes = send(myobj->_socketfd, myobj->_timCmd.front().c_str(),
 			myobj->_timCmd.front().length(), MSG_NOSIGNAL | MSG_MORE))
 			!= myobj->_timCmd.front().length()) {
 
 		perror("TIM client: send error");
 		if (errno == EPIPE) {
+			/** If we lost the TCP connection we retry the send of data */
 			if (!myobj->connect2TIM()) {
 				bridgeInstance.handleTIMexception(TIM_ERROR);
 				return;
 			}
-			//retry=true;
-			/** If we lost the TCP connection we retry the send of data */
 			continue;
 		} else if (errno == EAGAIN || errno == EWOULDBLOCK) {
 			LOG(ERROR) << "TIM client: command timeout";

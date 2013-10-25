@@ -51,7 +51,7 @@ public:
 	void invoke(const InvokeRequest& req);
 	Data getDataModelVariables();
 
-	void buildMESreq(unsigned int cmdid, const std::list<std::string> req_raw_data);
+	void buildMESreq(unsigned int cmdid, bool write, const std::list<std::string> req_raw_data);
 	void buildTIMreply(unsigned int cmdid, bool type, const std::string reply_raw_data);
 	void buildTIMexception(unsigned int cmdid, exceptions type);
 
@@ -72,7 +72,7 @@ public:
 
 	void handleTIMreply(const std::string replyData);
 	void handleTIMexception(exceptions type);
-	bool handleMESreq(unsigned int DBid, unsigned int cmdid, const std::list<std::string> reqData);
+	bool handleMESreq(unsigned int DBid, unsigned int cmdid, bool write, const std::list<std::string> reqData);
 
 	void registerInvoker(unsigned int DBid, XmlBridgeInvoker* invokref) {
 		_invokers.insert(std::pair<unsigned int, XmlBridgeInvoker* >(DBid, invokref));

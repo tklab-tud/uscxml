@@ -79,13 +79,13 @@ void XmlBridgeInvoker::send(const SendRequest& req) {
 }
 
 /** MES->SCXML */
-void XmlBridgeInvoker::buildMESreq(unsigned int cmdid, const std::list < std::string > req_raw_data) {
+void XmlBridgeInvoker::buildMESreq(unsigned int cmdid, bool write, const std::list < std::string > req_raw_data) {
 	std::stringstream ss;
-	ss << cmdid << '_' << (!req_raw_data.empty() ? WRITEOP : READOP) << MES2SCXML;
+	ss << cmdid << '_' << (write ? WRITEOP : READOP) << MES2SCXML;
 
 	Event myevent(ss.str(), Event::EXTERNAL);
 
-	if (!req_raw_data.empty()) {
+	if (write && !req_raw_data.empty()) {
 		Data mydata;
 
 		std::list<std::string>::const_iterator myiter;
@@ -190,16 +190,18 @@ void XmlBridgeInputEvents::handleTIMreply(const std::string replyData)
 }
 
 /**  MES -> SCXML */
-bool XmlBridgeInputEvents::handleMESreq(unsigned int DBid, unsigned int cmdid, const std::list <std::string> reqData)
+bool XmlBridgeInputEvents::handleMESreq(unsigned int DBid, unsigned int cmdid,
+				 bool write, const std::list <std::string> reqData)
 {
 	if (_invokers.count(DBid) == 0) {
 		LOG(ERROR) << "Datablock not supported by currently active SCXML interpreters and invokers, ignoring MES request";
 		return false;
 	}
-	_invokers[DBid]->buildMESreq(cmdid, reqData);
+	_invokers[DBid]->buildMESreq(cmdid, write, reqData);
 	return true;
 }
 
+/**  TIM -> SCXML */
 void XmlBridgeInputEvents::handleTIMexception(exceptions type)
 {
 	std::map<unsigned int, XmlBridgeInvoker*>::const_iterator inviter = _invokers.begin();
@@ -213,5 +215,3 @@ void XmlBridgeInputEvents::handleTIMexception(exceptions type)
 }
 
 } //namespace uscxml
-
-
