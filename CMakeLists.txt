@@ -16,6 +16,13 @@ ENDIF()
 
 project(uscxml)
 
+# where to find the cmake modules we distribute
+set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/contrib/cmake)
+include("${CMAKE_MODULE_PATH}/USCXMLMacros.cmake")
+include("${CMAKE_MODULE_PATH}/FunctionExists.cmake")
+include("${CMAKE_MODULE_PATH}/HeaderExists.cmake")
+include("${CMAKE_MODULE_PATH}/BinaryExists.cmake")
+
 # CMake 2.8.11 reports AMD64 for Windows 64Bit, where earlier versions reported x86
 # we resolve it with a 64bit check later
 if (${CMAKE_SYSTEM_PROCESSOR} STREQUAL "AMD64")
@@ -47,6 +54,18 @@ if(CMAKE_SIZEOF_VOID_P EQUAL 8)
 	set(FIND_LIBRARY_USE_LIB64_PATHS ON)
 # 	LIST(APPEND CMAKE_FIND_ROOT_PATH "/usr/local/lib64")
 # 	LIST(APPEND CMAKE_FIND_ROOT_PATH "/usr/lib64")
+endif()
+
+if (APPLE)
+	# get MacOSX version
+	execute_process(COMMAND /usr/bin/sw_vers -productVersion
+		OUTPUT_VARIABLE MACOSX_VERSION
+		ERROR_VARIABLE MACOSX_VERSION_errors
+		RESULT_VARIABLE MACOSX_VERSION_result
+	OUTPUT_STRIP_TRAILING_WHITESPACE)
+	if (MACOSX_VERSION)
+		THREE_PART_VERSION_TO_VARS(${MACOSX_VERSION} MACOSX_VERSION_MAJOR MACOSX_VERSION_MINOR MACOSX_VERSION_PATCH)
+	endif()
 endif()
 
 # We use the toolchain file from http://code.google.com/p/android-cmake/
@@ -108,7 +127,11 @@ else ()
 	# SET(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM "BOTH")
 	# SET(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE "BOTH")
 	# SET(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY "BOTH")
-	SET(USCXML_PREBUILT_LIBRARY_PATH "${PROJECT_SOURCE_DIR}/contrib/prebuilt/${USCXML_PLATFORM_ID}/${CMAKE_CXX_COMPILER_ID_LC}")
+	if (APPLE)
+		SET(USCXML_PREBUILT_LIBRARY_PATH "${PROJECT_SOURCE_DIR}/contrib/prebuilt/${USCXML_PLATFORM_ID}/${MACOSX_VERSION_MAJOR}.${MACOSX_VERSION_MINOR}/${CMAKE_CXX_COMPILER_ID_LC}")
+	else()
+		SET(USCXML_PREBUILT_LIBRARY_PATH "${PROJECT_SOURCE_DIR}/contrib/prebuilt/${USCXML_PLATFORM_ID}/${CMAKE_CXX_COMPILER_ID_LC}")
+	endif()
 endif()
 
 SET(USCXML_LIBRARY_HOST_URL_PREFIX "http://uscxml.tk.informatik.tu-darmstadt.de/prebuilt" CACHE STRING "The root path of an URL where to look for prebuilt libraries.")
@@ -257,13 +280,6 @@ endif()
 
 OPTION(DIST_PREPARE "Put libraries into the lib folder of the source tree" OFF)
 
-# where to find the cmake modules we distribute
-set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/contrib/cmake)
-include("${CMAKE_MODULE_PATH}/USCXMLMacros.cmake")
-include("${CMAKE_MODULE_PATH}/FunctionExists.cmake")
-include("${CMAKE_MODULE_PATH}/HeaderExists.cmake")
-include("${CMAKE_MODULE_PATH}/BinaryExists.cmake")
-
 # we need USCXML_CORE_LIBS here for -lgcov
 set(USCXML_CORE_LIBS)
 set(USCXML_OPT_LIBS)
@@ -349,6 +365,7 @@ elseif (${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-string-plus-int")
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-non-literal-null-conversion")
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-null-conversion")
+	SET(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -stdlib=libstdc++")
 	
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
 	# set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -read_only_relocs suppress")

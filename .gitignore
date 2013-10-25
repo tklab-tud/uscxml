@@ -2,7 +2,6 @@
 *.DS_Store
 build/*
 build/
-build*/
 nbproject
 contrib/prebuilt/darwin*
 contrib/prebuilt/linux*
