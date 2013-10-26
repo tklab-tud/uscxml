@@ -46,6 +46,16 @@ inline bool isNumeric( const char* pszInput, int nNumberBase) {
 	return (input.find_first_not_of(base.substr(0, nNumberBase + 2)) == std::string::npos);
 }
 
+inline bool iequals(const std::string& a, const std::string& b) {
+	unsigned int size = a.size();
+	if (b.size() != size)
+		return false;
+	for (unsigned int i = 0; i < size; ++i)
+		if (tolower(a[i]) != tolower(b[i]))
+			return false;
+	return true;
+}
+
 }
 
 

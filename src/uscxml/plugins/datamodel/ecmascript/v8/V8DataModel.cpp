@@ -324,6 +324,11 @@ Data V8DataModel::getValueAsData(const v8::Handle<v8::Value>& value, std::set<v8
 			data.binary = privObj->nativeObj->_buffer;
 			return data;
 		}
+		if (V8Node::hasInstance(value)) {
+			uscxml::V8Node::V8NodePrivate* privObj = V8DOM::toClassPtr<V8Node::V8NodePrivate >(value->ToObject()->GetInternalField(0));
+			data.node = *privObj->nativeObj;
+			return data;
+		}
 		v8::Handle<v8::Object> object = v8::Handle<v8::Object>::Cast(value);
 		v8::Local<v8::Array> properties = object->GetPropertyNames();
 		for (int i = 0; i < properties->Length(); i++) {

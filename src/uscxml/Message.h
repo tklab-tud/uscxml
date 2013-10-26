@@ -166,6 +166,7 @@ public:
 protected:
 #endif
 
+	Arabica::DOM::Node<std::string> node;
 	std::map<std::string, Data> compound;
 	std::list<Data> array;
 	std::string atom;
