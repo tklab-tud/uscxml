@@ -64,7 +64,7 @@ void PostponeElement::enterElement(const Arabica::DOM::Node<std::string>& node) 
 	// chaining causes the event to fire if the condition was true since postponing
 	bool chained = false;
 	if (HAS_ATTR(node, "chaining")) {
-		chained = boost::iequals(ATTR(node, "chaining"), "true");
+		chained = iequals(ATTR(node, "chaining"), "true");
 	}
 
 	// when will we refire the event?
@@ -102,9 +102,9 @@ void PostponeElement::enterElement(const Arabica::DOM::Node<std::string>& node) 
 
 	uint64_t timeout = 0;
 	NumAttr timeoutAttr(timeoutStr);
-	if (boost::iequals(timeoutAttr.unit, "s")) {
+	if (iequals(timeoutAttr.unit, "s")) {
 		timeout = strTo<int>(timeoutAttr.value) * 1000;
-	} else if (boost::iequals(timeoutAttr.unit, "ms")) {
+	} else if (iequals(timeoutAttr.unit, "ms")) {
 		timeout = strTo<int>(timeoutAttr.value);
 	}
 	if (timeout > 0) {

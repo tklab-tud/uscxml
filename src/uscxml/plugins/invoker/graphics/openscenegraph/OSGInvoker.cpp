@@ -65,7 +65,7 @@ bool pluginConnect(pluma::Host& host) {
 #endif
 
 #define OSG_TAG_HANDLE(tagName, procFunc) \
-} else if (boost::iequals(LOCALNAME(childs.item(i)), tagName) && \
+} else if (iequals(LOCALNAME(childs.item(i)), tagName) && \
 	validChildren.find(tagName) != validChildren.end()) { \
 		procFunc(childs.item(i));\
  
@@ -88,7 +88,7 @@ Data OSGInvoker::getDataModelVariables() {
 }
 
 void OSGInvoker::send(const SendRequest& req) {
-	if (boost::iequals(req.name, "intersect")) {
+	if (iequals(req.name, "intersect")) {
 
 	}
 }
@@ -114,7 +114,7 @@ void OSGInvoker::invoke(const InvokeRequest& req) {
 	validChilds.insert("display");
 
 	// this is somewhat unfortunate, if content contains a single child, we will get that, otherwise its parent (<content>)
-	if (boost::iequals(LOCALNAME(req.dom), "display")) {
+	if (iequals(LOCALNAME(req.dom), "display")) {
 		processChildren(validChilds, req.dom.getParentNode());
 	} else {
 		processChildren(validChilds, req.dom);
@@ -160,7 +160,7 @@ void OSGInvoker::handleEvent(Arabica::DOM::Events::Event<std::string>& event) {
 	if (_nodes.find(node) != _nodes.end()) {
 		osg::ref_ptr<osg::Node> osgNode = _nodes[node];
 		if (false) {
-		} else if (boost::iequals(LOCALNAME(node), "rotation")) {
+		} else if (iequals(LOCALNAME(node), "rotation")) {
 			updateRotation(osgNode, event);
 		}
 	}
@@ -294,7 +294,7 @@ void OSGInvoker::processRotation(const Arabica::DOM::Node<std::string>& element)
 void OSGInvoker::updateRotation(osg::ref_ptr<osg::Node> node, Arabica::DOM::Events::Event<std::string>& event) {
 	osg::ref_ptr<osg::MatrixTransform> transform = static_cast<osg::MatrixTransform*>(node->asTransform());
 	if (false) {
-	} else if (boost::iequals(event.getType(), "DOMAttrModified")) {
+	} else if (iequals(event.getType(), "DOMAttrModified")) {
 		osg::Matrix rotation = rotationFromElement(Arabica::DOM::Node<std::string>(event.getTarget()));
 		transform->setMatrix(rotation);
 	}
@@ -304,9 +304,9 @@ osg::Matrix OSGInvoker::rotationFromElement(const Arabica::DOM::Node<std::string
 	double pitch = 0, roll = 0, yaw = 0;
 	if (HAS_ATTR(element, "pitch")) {
 		NumAttr pitchAttr = NumAttr(ATTR(element, "pitch"));
-		if (boost::iequals(pitchAttr.unit, "deg")) {
+		if (iequals(pitchAttr.unit, "deg")) {
 			pitch = osg::DegreesToRadians(strTo<float>(pitchAttr.value));
-		} else if (boost::iequals(pitchAttr.unit, "%")) {
+		} else if (iequals(pitchAttr.unit, "%")) {
 			pitch = osg::DegreesToRadians((strTo<float>(pitchAttr.value) * 360) / 100);
 		} else {
 			pitch = strTo<float>(pitchAttr.value);
@@ -314,9 +314,9 @@ osg::Matrix OSGInvoker::rotationFromElement(const Arabica::DOM::Node<std::string
 	}
 	if (HAS_ATTR(element, "roll")) {
 		NumAttr rollAttr = NumAttr(ATTR(element, "roll"));
-		if (boost::iequals(rollAttr.unit, "deg")) {
+		if (iequals(rollAttr.unit, "deg")) {
 			roll = osg::DegreesToRadians(strTo<float>(rollAttr.value));
-		} else if (boost::iequals(rollAttr.unit, "%")) {
+		} else if (iequals(rollAttr.unit, "%")) {
 			roll = osg::DegreesToRadians((strTo<float>(rollAttr.value) * 360) / 100);
 		} else {
 			roll = strTo<float>(rollAttr.value);
@@ -324,9 +324,9 @@ osg::Matrix OSGInvoker::rotationFromElement(const Arabica::DOM::Node<std::string
 	}
 	if (HAS_ATTR(element, "yaw")) {
 		NumAttr yawAttr = NumAttr(ATTR(element, "yaw"));
-		if (boost::iequals(yawAttr.unit, "deg")) {
+		if (iequals(yawAttr.unit, "deg")) {
 			yaw = osg::DegreesToRadians(strTo<float>(yawAttr.value));
-		} else if (boost::iequals(yawAttr.unit, "%")) {
+		} else if (iequals(yawAttr.unit, "%")) {
 			yaw = osg::DegreesToRadians((strTo<float>(yawAttr.value) * 360) / 100);
 		} else {
 			yaw = strTo<float>(yawAttr.value);
@@ -683,32 +683,32 @@ void OSGInvoker::getViewport(const Arabica::DOM::Node<std::string>& element,
 	if (HAS_ATTR(element, "x")) {
 		NumAttr xAttr = NumAttr(ATTR(element, "x"));
 		x = strTo<float>(xAttr.value);
-		if (boost::iequals(xAttr.unit, "%"))
+		if (iequals(xAttr.unit, "%"))
 			x = (x * fullWidth) / 100;
 	}
 	if (HAS_ATTR(element, "y")) {
 		NumAttr yAttr = NumAttr(ATTR(element, "y"));
 		y = strTo<float>(yAttr.value);
-		if (boost::iequals(yAttr.unit, "%"))
+		if (iequals(yAttr.unit, "%"))
 			y = (y * fullHeight) / 100;
 	}
 	if (HAS_ATTR(element, "width")) {
 		NumAttr widthAttr = NumAttr(ATTR(element, "width"));
 		width = strTo<float>(widthAttr.value);
-		if (boost::iequals(widthAttr.unit, "%"))
+		if (iequals(widthAttr.unit, "%"))
 			width = (width * fullWidth) / 100;
 	}
 	if (HAS_ATTR(element, "height")) {
 		NumAttr heightAttr = NumAttr(ATTR(element, "height"));
 		height = strTo<float>(heightAttr.value);
-		if (boost::iequals(heightAttr.unit, "%"))
+		if (iequals(heightAttr.unit, "%"))
 			height = (height * fullHeight) / 100;
 	}
 }
 
 osgViewer::View* OSGInvoker::getView(const Arabica::DOM::Node<std::string>& element) {
 	Arabica::DOM::Node<std::string> curr = element;
-	while(curr && !boost::iequals(LOCALNAME(curr), "viewport")) {
+	while(curr && !iequals(LOCALNAME(curr), "viewport")) {
 		curr = curr.getParentNode();
 	}
 	if (curr && _views.find(curr) != _views.end())

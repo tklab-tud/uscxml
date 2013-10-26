@@ -208,7 +208,7 @@ void XPathDataModel::setEvent(const Event& event) {
 	Node<std::string> oldEventElem = _datamodel.getFirstChild();
 	while(oldEventElem) {
 		if (oldEventElem.getNodeType() == Node_base::ELEMENT_NODE) {
-			if (HAS_ATTR(oldEventElem, "id") && boost::iequals(ATTR(oldEventElem, "id"), "_event"))
+			if (HAS_ATTR(oldEventElem, "id") && iequals(ATTR(oldEventElem, "id"), "_event"))
 				break;
 		}
 		oldEventElem = oldEventElem.getNextSibling();
@@ -640,7 +640,7 @@ void XPathDataModel::assign(const NodeSet<std::string>& key,
 		}
 		case Node_base::ELEMENT_NODE: {
 			Element<std::string> element(node);
-			if (HAS_ATTR(assignElem, "type") && boost::iequals(ATTR(assignElem, "type"), "addattribute")) {
+			if (HAS_ATTR(assignElem, "type") && iequals(ATTR(assignElem, "type"), "addattribute")) {
 				// addattribute: Add an attribute with the name specified by 'attr'
 				// and value specified by 'expr' to the node specified by 'location'.
 				if (!HAS_ATTR(assignElem, "attr"))
@@ -703,19 +703,19 @@ void XPathDataModel::assign(const Element<std::string>& key,
 		return;
 
 	if (false) {
-	} else if (assignElem && HAS_ATTR(assignElem, "type") && boost::iequals(ATTR(assignElem, "type"), "firstchild")) {
+	} else if (assignElem && HAS_ATTR(assignElem, "type") && iequals(ATTR(assignElem, "type"), "firstchild")) {
 		// firstchild: Insert the value specified by 'expr' before all of the children at 'location'.
 		for (int i = value.size(); i; i--) {
 			Node<std::string> importedNode = (value[i-1].getOwnerDocument() == _doc ? value[i-1].cloneNode(true) : _doc.importNode(value[i-1], true));
 			element.insertBefore(importedNode, element.getFirstChild());
 		}
-	} else if (assignElem && HAS_ATTR(assignElem, "type") && boost::iequals(ATTR(assignElem, "type"), "lastchild")) {
+	} else if (assignElem && HAS_ATTR(assignElem, "type") && iequals(ATTR(assignElem, "type"), "lastchild")) {
 		// lastchild: Insert the value specified by 'expr' after all of the children at 'location'.
 		for (int i = 0; i < value.size(); i++) {
 			Node<std::string> importedNode = (value[i].getOwnerDocument() == _doc ? value[i].cloneNode(true) : _doc.importNode(value[i], true));
 			element.appendChild(importedNode);
 		}
-	} else if (assignElem && HAS_ATTR(assignElem, "type") && boost::iequals(ATTR(assignElem, "type"), "previoussibling")) {
+	} else if (assignElem && HAS_ATTR(assignElem, "type") && iequals(ATTR(assignElem, "type"), "previoussibling")) {
 		// previoussibling: Insert the value specified by 'expr' before the
 		// node specified by 'location', keeping the same parent.
 		Node<std::string> parent = element.getParentNode();
@@ -725,7 +725,7 @@ void XPathDataModel::assign(const Element<std::string>& key,
 			Node<std::string> importedNode = (value[i].getOwnerDocument() == _doc ? value[i].cloneNode(true) : _doc.importNode(value[i], true));
 			parent.insertBefore(importedNode, element);
 		}
-	} else if (assignElem && HAS_ATTR(assignElem, "type") && boost::iequals(ATTR(assignElem, "type"), "nextsibling")) {
+	} else if (assignElem && HAS_ATTR(assignElem, "type") && iequals(ATTR(assignElem, "type"), "nextsibling")) {
 		// nextsibling: Insert the value specified by 'expr' after the node
 		// specified by 'location', keeping the same parent.
 		Node<std::string> parent = element.getParentNode();
@@ -740,7 +740,7 @@ void XPathDataModel::assign(const Element<std::string>& key,
 				parent.appendChild(importedNode);
 			}
 		}
-	} else if (assignElem && HAS_ATTR(assignElem, "type") && boost::iequals(ATTR(assignElem, "type"), "replace")) {
+	} else if (assignElem && HAS_ATTR(assignElem, "type") && iequals(ATTR(assignElem, "type"), "replace")) {
 		// replace: Replace the node specified by 'location' by the value specified by 'expr'.
 		Node<std::string> parent = element.getParentNode();
 		if (!parent)
@@ -749,7 +749,7 @@ void XPathDataModel::assign(const Element<std::string>& key,
 			throw Event("error.execution", Event::PLATFORM);
 		Node<std::string> importedNode = (value[0].getOwnerDocument() == _doc ? value[0].cloneNode(true) : _doc.importNode(value[0], true));
 		parent.replaceChild(importedNode, element);
-	} else if (assignElem && HAS_ATTR(assignElem, "type") && boost::iequals(ATTR(assignElem, "type"), "delete")) {
+	} else if (assignElem && HAS_ATTR(assignElem, "type") && iequals(ATTR(assignElem, "type"), "delete")) {
 		// delete: Delete the node specified by 'location'. ('expr' is ignored.).
 		Node<std::string> parent = element.getParentNode();
 		if (!parent)
@@ -819,7 +819,7 @@ XPathFunction<std::string>*
 XPathFunctionResolver::resolveFunction(const std::string& namespace_uri,
                                        const std::string& name,
                                        const std::vector<XPathExpression<std::string> >& argExprs) const {
-	if (boost::iequals(name, "in")) {
+	if (iequals(name, "in")) {
 		return new XPathFunctionIn(1, -1, argExprs, _interpreter);
 	}
 	return _xpathFuncRes.resolveFunction(namespace_uri, name, argExprs);

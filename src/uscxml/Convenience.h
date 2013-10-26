@@ -47,6 +47,7 @@ inline bool isNumeric( const char* pszInput, int nNumberBase) {
 }
 
 inline bool iequals(const std::string& a, const std::string& b) {
+	// this impementation beats boost::iequals 2700ms vs 2100ms for test-performance.scxml
 	unsigned int size = a.size();
 	if (b.size() != size)
 		return false;

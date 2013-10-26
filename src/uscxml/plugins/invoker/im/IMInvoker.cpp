@@ -603,7 +603,7 @@ void IMInvoker::send(void *userdata, const std::string event) {
 	// we are in the thread that manages all of libpurple
 	EventContext* ctx = (EventContext*)userdata;
 
-	if (boost::iequals(ctx->sendReq.name, "im.send")) {
+	if (iequals(ctx->sendReq.name, "im.send")) {
 		if (ctx->instance->_account) {
 			std::string receiver;
 			Event::getParam(ctx->sendReq.params, "receiver", receiver);

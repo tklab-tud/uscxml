@@ -165,7 +165,7 @@ void SCXMLDotWriter::writeStateElement(std::ostream& os, const Arabica::DOM::Ele
 //  }
 
 	for (int i = 0; i < childElems.getLength(); i++) {
-		if (childElems.item(i).getNodeType() == Node_base::ELEMENT_NODE && boost::iequals(TAGNAME(childElems.item(i)), "transition")) {
+		if (childElems.item(i).getNodeType() == Node_base::ELEMENT_NODE && iequals(TAGNAME(childElems.item(i)), "transition")) {
 			writeTransitionElement(os, (Arabica::DOM::Element<std::string>)childElems.item(i));
 			bool active = Interpreter::isMember(childElems.item(i), _transitions);
 			os << getPrefix() << "\"" << elemId << "\" -> \"" << idForNode(childElems.item(i)) << "\" [arrowhead=none" << std::endl;
@@ -178,10 +178,10 @@ void SCXMLDotWriter::writeStateElement(std::ostream& os, const Arabica::DOM::Ele
 		if (Interpreter::isState(childElems.item(i))) {
 			writeStateElement(os, (Arabica::DOM::Element<std::string>)childElems.item(i));
 		}
-		if (childElems.item(i).getNodeType() == Node_base::ELEMENT_NODE && boost::iequals(TAGNAME(childElems.item(i)), "initial")) {
+		if (childElems.item(i).getNodeType() == Node_base::ELEMENT_NODE && iequals(TAGNAME(childElems.item(i)), "initial")) {
 			NodeList<std::string > grandChildElems = childElems.item(i).getChildNodes();
 			for (int j = 0; j < grandChildElems.getLength(); j++) {
-				if (grandChildElems.item(j).getNodeType() == Node_base::ELEMENT_NODE && boost::iequals(TAGNAME(grandChildElems.item(j)), "transition")) {
+				if (grandChildElems.item(j).getNodeType() == Node_base::ELEMENT_NODE && iequals(TAGNAME(grandChildElems.item(j)), "transition")) {
 					writeTransitionElement(os, (Arabica::DOM::Element<std::string>)grandChildElems.item(j));
 					os << getPrefix() << "\"" << elemId << "\" -> \"" << idForNode(grandChildElems.item(j)) << "\"" << std::endl;
 				}
@@ -256,8 +256,8 @@ std::string SCXMLDotWriter::getDetailedLabel(const Arabica::DOM::Element<std::st
 			continue;
 
 		if (Interpreter::isState(childElems.item(i)) ||
-		        boost::iequals(TAGNAME(childElems.item(i)), "transition") ||
-		        boost::iequals(TAGNAME(childElems.item(i)), "initial") ||
+		        iequals(TAGNAME(childElems.item(i)), "transition") ||
+		        iequals(TAGNAME(childElems.item(i)), "initial") ||
 		        false)
 			continue;
 
@@ -267,7 +267,7 @@ std::string SCXMLDotWriter::getDetailedLabel(const Arabica::DOM::Element<std::st
 		// provide details for special elements here
 
 		// param ---------
-		if (boost::iequals(TAGNAME(childElems.item(i)), "param")) {
+		if (iequals(TAGNAME(childElems.item(i)), "param")) {
 			if (HAS_ATTR(childElems.item(i), "name"))
 				details.name += " " + ATTR(childElems.item(i), "name") + " = ";
 			if (HAS_ATTR(childElems.item(i), "expr"))
@@ -277,7 +277,7 @@ std::string SCXMLDotWriter::getDetailedLabel(const Arabica::DOM::Element<std::st
 		}
 
 		// data ---------
-		if (boost::iequals(TAGNAME(childElems.item(i)), "data")) {
+		if (iequals(TAGNAME(childElems.item(i)), "data")) {
 			if (HAS_ATTR(childElems.item(i), "id"))
 				details.name += " " + ATTR(childElems.item(i), "id");
 			if (HAS_ATTR(childElems.item(i), "src"))
@@ -293,7 +293,7 @@ std::string SCXMLDotWriter::getDetailedLabel(const Arabica::DOM::Element<std::st
 		}
 
 		// invoke ---------
-		if (boost::iequals(TAGNAME(childElems.item(i)), "invoke")) {
+		if (iequals(TAGNAME(childElems.item(i)), "invoke")) {
 			if (HAS_ATTR(childElems.item(i), "type"))
 				details.name += "<br />type = " + ATTR(childElems.item(i), "type");
 			if (HAS_ATTR(childElems.item(i), "typeexpr"))
@@ -309,7 +309,7 @@ std::string SCXMLDotWriter::getDetailedLabel(const Arabica::DOM::Element<std::st
 		}
 
 		// send ---------
-		if (boost::iequals(TAGNAME(childElems.item(i)), "send")) {
+		if (iequals(TAGNAME(childElems.item(i)), "send")) {
 			if (HAS_ATTR(childElems.item(i), "type"))
 				details.name += "<br />type = " + ATTR(childElems.item(i), "type");
 			if (HAS_ATTR(childElems.item(i), "typeexpr"))
@@ -329,7 +329,7 @@ std::string SCXMLDotWriter::getDetailedLabel(const Arabica::DOM::Element<std::st
 		}
 
 		// script ---------
-		if (boost::iequals(TAGNAME(childElems.item(i)), "script")) {
+		if (iequals(TAGNAME(childElems.item(i)), "script")) {
 			details.name += " ";
 			if (HAS_ATTR(childElems.item(i), "src"))
 				details.name += ATTR(childElems.item(i), "src");
@@ -342,19 +342,19 @@ std::string SCXMLDotWriter::getDetailedLabel(const Arabica::DOM::Element<std::st
 		}
 
 		// if ---------
-		if (boost::iequals(TAGNAME(childElems.item(i)), "if")) {
+		if (iequals(TAGNAME(childElems.item(i)), "if")) {
 			if (HAS_ATTR(childElems.item(i), "cond"))
 				details.name += " cond = " + dotEscape(ATTR(childElems.item(i), "cond"));
 		}
 
 		// elseif ---------
-		if (boost::iequals(TAGNAME(childElems.item(i)), "elseif")) {
+		if (iequals(TAGNAME(childElems.item(i)), "elseif")) {
 			if (HAS_ATTR(childElems.item(i), "cond"))
 				details.name += " cond = " + dotEscape(ATTR(childElems.item(i), "cond"));
 		}
 
 		// log ---------
-		if (boost::iequals(TAGNAME(childElems.item(i)), "log")) {
+		if (iequals(TAGNAME(childElems.item(i)), "log")) {
 			details.name += " ";
 			if (HAS_ATTR(childElems.item(i), "label"))
 				details.name += ATTR(childElems.item(i), "label") + " = ";
@@ -363,7 +363,7 @@ std::string SCXMLDotWriter::getDetailedLabel(const Arabica::DOM::Element<std::st
 		}
 
 		// foreach ---------
-		if (boost::iequals(TAGNAME(childElems.item(i)), "foreach")) {
+		if (iequals(TAGNAME(childElems.item(i)), "foreach")) {
 			if (HAS_ATTR(childElems.item(i), "item"))
 				details.name += "<br />&nbsp;&nbsp;item = " + ATTR(childElems.item(i), "item");
 			if (HAS_ATTR(childElems.item(i), "array"))

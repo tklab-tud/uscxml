@@ -364,7 +364,7 @@ void HTTPServer::httpRecvReqCallback(struct evhttp_request *req, void *callbackD
 	        request.data.compound["header"].compound.find("Content-Type") != request.data.compound["header"].compound.end()) {
 		std::string contentType = request.data.compound["header"].compound["Content-Type"].atom;
 		if (false) {
-		} else if (boost::iequals(contentType, "application/x-www-form-urlencoded")) {
+		} else if (iequals(contentType, "application/x-www-form-urlencoded")) {
 			// this is a form submit
 			std::stringstream ss(request.data.compound["content"].atom);
 			std::string item;
@@ -387,7 +387,7 @@ void HTTPServer::httpRecvReqCallback(struct evhttp_request *req, void *callbackD
 				key.clear();
 			}
 			request.data.compound["content"].atom.clear();
-		} else if (boost::iequals(contentType, "application/json")) {
+		} else if (iequals(contentType, "application/json")) {
 			request.data.compound["content"] = Data::fromJSON(request.data.compound["content"].atom);
 		}
 	}
@@ -415,8 +415,8 @@ void HTTPServer::processByMatchingServlet(const Request& request) {
 	while(servletIter != _servlets.end()) {
 		// is the servlet path a prefix of the actual path?
 		std::string servletPath = "/" + servletIter->first;
-		if (boost::iequals(actualPath.substr(0, servletPath.length()), servletPath) && // actual path is a prefix
-		        boost::iequals(actualPath.substr(servletPath.length(), 1), "/")) {     // and next character is a '/'
+		if (iequals(actualPath.substr(0, servletPath.length()), servletPath) && // actual path is a prefix
+		        iequals(actualPath.substr(servletPath.length(), 1), "/")) {     // and next character is a '/'
 			matches.insert(std::make_pair(servletPath, servletIter->second));
 		}
 		servletIter++;
@@ -462,7 +462,7 @@ void HTTPServer::replyCallback(evutil_socket_t fd, short what, void *arg) {
 
 	struct evbuffer *evb = NULL;
 
-	if (!boost::iequals(reply->type, "HEAD") && reply->content.size() > 0) {
+	if (!iequals(reply->type, "HEAD") && reply->content.size() > 0) {
 		evb = evbuffer_new();
 		evbuffer_add(evb, reply->content.data(), reply->content.size());
 	}

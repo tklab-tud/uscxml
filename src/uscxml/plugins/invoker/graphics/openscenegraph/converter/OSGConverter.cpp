@@ -213,9 +213,9 @@ void OSGConverter::process(const SendRequest& req) {
 
 	bool autoRotate = true;
 	if (req.params.find("autorotate") != req.params.end()) {
-		if (boost::iequals(req.params.find("autorotate")->second.atom, "off") ||
-		        boost::iequals(req.params.find("autorotate")->second.atom, "0") ||
-		        boost::iequals(req.params.find("autorotate")->second.atom, "false")) {
+		if (iequals(req.params.find("autorotate")->second.atom, "off") ||
+		        iequals(req.params.find("autorotate")->second.atom, "0") ||
+		        iequals(req.params.find("autorotate")->second.atom, "false")) {
 			autoRotate = false;
 		}
 	}

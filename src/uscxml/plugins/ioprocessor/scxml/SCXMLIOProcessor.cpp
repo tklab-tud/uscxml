@@ -107,7 +107,7 @@ void SCXMLIOProcessor::send(const SendRequest& req) {
 //		reqCopy.sendid = "";
 		// test 198
 		_interpreter->receive(reqCopy);
-	} else if (boost::iequals(reqCopy.target, "#_internal")) {
+	} else if (iequals(reqCopy.target, "#_internal")) {
 		/**
 		 * #_internal: If the target is the special term '#_internal', the Processor
 		 * must add the event to the internal event queue of the sending session.
@@ -133,7 +133,7 @@ void SCXMLIOProcessor::send(const SendRequest& req) {
 			error.sendid = reqCopy.sendid;
 			_interpreter->receiveInternal(error);
 		}
-	} else if (boost::iequals(reqCopy.target, "#_parent")) {
+	} else if (iequals(reqCopy.target, "#_parent")) {
 		/**
 		 * #_parent: If the target is the special term '#_parent', the Processor must
 		 * add the event to the external event queue of the SCXML session that invoked

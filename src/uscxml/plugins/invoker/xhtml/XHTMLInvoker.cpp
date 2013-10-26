@@ -64,8 +64,8 @@ bool XHTMLInvoker::httpRecvRequest(const HTTPServer::Request& req) {
 	tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
 
 	// these are the XHR requests
-	if (boost::iequals(req.data["header"]["X-Requested-With"].atom, "XMLHttpRequest")) {
-		if (boost::iequals(req.data["type"].atom, "get")) {
+	if (iequals(req.data["header"]["X-Requested-With"].atom, "XMLHttpRequest")) {
+		if (iequals(req.data["type"].atom, "get")) {
 			// the long-polling GET
 			if (_longPoll) {
 				evhttp_send_error(_longPoll.curlReq, 204, NULL);
@@ -101,7 +101,7 @@ bool XHTMLInvoker::httpRecvRequest(const HTTPServer::Request& req) {
 
 	// initial request for a document
 	if (!req.data["query"] && // no query parameters
-	        boost::iequals(req.data["type"].atom, "get") && // request type is GET
+	        iequals(req.data["type"].atom, "get") && // request type is GET
 	        req.content.length() == 0) { // no content
 
 		HTTPServer::Reply reply(req);
@@ -184,7 +184,7 @@ void XHTMLInvoker::reply(const SendRequest& req, const HTTPServer::Request& long
 		std::stringstream ss;
 //		Arabica::DOM::Node<std::string> content = req.dom.getDocumentElement();
 		Arabica::DOM::Node<std::string> content = req.dom;
-		if (content && boost::iequals(content.getLocalName(), "content")) {
+		if (content && iequals(content.getLocalName(), "content")) {
 			reply.headers["X-SCXML-Type"] = (HAS_ATTR(content, "type") ? ATTR(content, "type") : "replacechildren");
 			reply.headers["X-SCXML-XPath"] = (HAS_ATTR(content, "xpath") ? ATTR(content, "xpath") : "/html/body");
 			if (HAS_ATTR(content, "attr"))

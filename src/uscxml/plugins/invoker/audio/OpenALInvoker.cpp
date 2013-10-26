@@ -88,7 +88,7 @@ void OpenALInvoker::send(const SendRequest& req) {
 	if (!_isStarted)
 		start();
 
-	if (boost::iequals(req.name, "play")) {
+	if (iequals(req.name, "play")) {
 		if (req.params.find("src") == req.params.end()) {
 			LOG(ERROR) << "Sent event play with no src URL";
 		}
@@ -100,7 +100,7 @@ void OpenALInvoker::send(const SendRequest& req) {
 		}
 
 		_sources[req.sendid] = new OpenALSource();
-		_sources[req.sendid]->loop = req.params.find("loop") != req.params.end() && boost::iequals(req.params.find("loop")->second.atom, "true");
+		_sources[req.sendid]->loop = req.params.find("loop") != req.params.end() && iequals(req.params.find("loop")->second.atom, "true");
 		_sources[req.sendid]->file = srcURL;
 #ifdef LIBSNDFILE_FOUND
 		_sources[req.sendid]->transform	= new LibSoundFile(srcURL.asLocalFile(".audio"));
@@ -142,7 +142,7 @@ void OpenALInvoker::send(const SendRequest& req) {
 		_sourcesAvailable.notify_all();
 	}
 
-	if (boost::iequals(req.name, "move.source")) {
+	if (iequals(req.name, "move.source")) {
 		std::string sourceId;
 		if (req.params.find("source") == req.params.end()) {
 			LOG(WARNING) << "Cannot move source with no source given in parameters";
@@ -163,7 +163,7 @@ void OpenALInvoker::send(const SendRequest& req) {
 		}
 	}
 
-	if (boost::iequals(req.name, "move.listener")) {
+	if (iequals(req.name, "move.listener")) {
 		getPosFromParams(req.params, _listenerPos);
 
 		try {
@@ -284,11 +284,11 @@ void OpenALInvoker::invoke(const InvokeRequest& req) {
 
 	std::multimap<std::string, Data>::const_iterator paramIter = req.params.begin();
 	while(paramIter != req.params.end()) {
-		if (boost::iequals(paramIter->first, "maxX"))
+		if (iequals(paramIter->first, "maxX"))
 			_maxPos[0] = strTo<float>(paramIter->second.atom);
-		if (boost::iequals(paramIter->first, "maxY"))
+		if (iequals(paramIter->first, "maxY"))
 			_maxPos[1] = strTo<float>(paramIter->second.atom);
-		if (boost::iequals(paramIter->first, "maxZ"))
+		if (iequals(paramIter->first, "maxZ"))
 			_maxPos[2] = strTo<float>(paramIter->second.atom);
 		paramIter++;
 	}
@@ -384,7 +384,7 @@ float OpenALInvoker::posToRadian(const std::string& pos) {
 	std::string trimmedPos = boost::trim_copy(pos);
 	float rad = 0;
 
-	if (trimmedPos.size() > 3 && boost::iequals("deg", trimmedPos.substr(trimmedPos.length() - 3, 3))) {
+	if (trimmedPos.size() > 3 && iequals("deg", trimmedPos.substr(trimmedPos.length() - 3, 3))) {
 		rad = boost::lexical_cast<float>(trimmedPos.substr(0, trimmedPos.size() - 3));
 		rad = fmodf(rad, 360); // into range [0-360]
 		rad /= 180; // into range [0-2]
@@ -392,7 +392,7 @@ float OpenALInvoker::posToRadian(const std::string& pos) {
 		rad -= M_PI_2; // 0 to top;
 		rad *= -1; // make clockwise
 		rad += 2 * M_PI; // make positive
-	} else if (trimmedPos.size() > 3 && boost::iequals("rad", trimmedPos.substr(trimmedPos.length() - 3, 3))) {
+	} else if (trimmedPos.size() > 3 && iequals("rad", trimmedPos.substr(trimmedPos.length() - 3, 3))) {
 		rad = boost::lexical_cast<float>(trimmedPos.substr(0, trimmedPos.size() - 3));
 		rad = fmodf(rad, M_PI * 2); // into range [0-2*PI]
 	} else {
