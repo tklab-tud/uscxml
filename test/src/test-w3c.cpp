@@ -100,7 +100,7 @@ void printUsageAndExit() {
 class W3CStatusMonitor : public uscxml::InterpreterMonitor {
 	void beforeCompletion(uscxml::Interpreter interpreter) {
 		Arabica::XPath::NodeSet<std::string> config = interpreter.getConfiguration();
-		if (config.size() == 1 && iequals(ATTR(config[0], "id"), "pass")) {
+		if (config.size() == 1 && boost::iequals(ATTR(config[0], "id"), "pass")) {
 			std::cout << "TEST SUCCEEDED" << std::endl;
 			exit(EXIT_SUCCESS);
 		}
