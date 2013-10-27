@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #
-# build libevent for MacOSX
+# build libevent for linux
 #
 
 # exit on error

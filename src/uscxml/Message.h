@@ -43,6 +43,7 @@
 #define TAGNAME(elem) ((Arabica::DOM::Element<std::string>)elem).getTagName()
 #define LOCALNAME(elem) ((Arabica::DOM::Element<std::string>)elem).getLocalName()
 #define ATTR(elem, attr) ((Arabica::DOM::Element<std::string>)elem).getAttribute(attr)
+#define ATTR_NODE(elem, attr) ((Arabica::DOM::Element<std::string>)elem).getAttributeNode(attr)
 #define HAS_ATTR(elem, attr) ((Arabica::DOM::Element<std::string>)elem).hasAttribute(attr)
 
 namespace uscxml {

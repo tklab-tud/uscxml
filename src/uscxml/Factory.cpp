@@ -45,7 +45,7 @@
 //# include "uscxml/plugins/ioprocessor/modality/MMIHTTPIOProcessor.h"
 #endif
 
-# ifdef UMUNDO_FOUND 
+# ifdef UMUNDO_FOUND
 #   include "uscxml/plugins/invoker/umundo/UmundoInvoker.h"
 //#   include "uscxml/plugins/invoker/vxml/VoiceXMLInvoker.h"
 #endif
@@ -250,8 +250,8 @@ Factory::Factory() {
 
 #ifdef PROTOBUF_FOUND
 	{
-    // MMIHTTPIOProcessor* ioProcessor = new MMIHTTPIOProcessor();
-    // registerIOProcessor(ioProcessor);
+		// MMIHTTPIOProcessor* ioProcessor = new MMIHTTPIOProcessor();
+		// registerIOProcessor(ioProcessor);
 	}
 #endif
 #endif

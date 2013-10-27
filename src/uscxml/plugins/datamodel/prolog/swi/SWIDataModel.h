@@ -78,6 +78,7 @@ public:
 	virtual Data getStringAsData(const std::string& content);
 
 	virtual std::string evalAsString(const std::string& expr);
+	virtual bool evalAsBool(const Arabica::DOM::Node<std::string>& node, const std::string& expr);
 	virtual bool evalAsBool(const std::string& expr);
 
 	static foreign_t inPredicate(term_t a0, int arity, void* context);

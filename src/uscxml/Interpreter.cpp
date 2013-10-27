@@ -1193,7 +1193,7 @@ bool InterpreterImpl::hasConditionMatch(const Arabica::DOM::Node<std::string>& c
 			return false;
 		}
 		try {
-			return _dataModel.evalAsBool(ATTR(conditional, "cond"));
+			return _dataModel.evalAsBool(ATTR_NODE(conditional, "cond"), ATTR(conditional, "cond"));
 		} catch (Event e) {
 			LOG(ERROR) << "Syntax error in cond attribute of " << TAGNAME(conditional) << " element:" << std::endl << e << std::endl;
 			e.name = "error.execution";
@@ -1702,6 +1702,7 @@ NodeSet<std::string> InterpreterImpl::getTargetStates(const Arabica::DOM::Node<s
 std::vector<std::string> InterpreterImpl::tokenizeIdRefs(const std::string& idRefs) {
 	std::vector<std::string> ids;
 
+#if 0
 	if (idRefs.length() > 0) {
 		std::istringstream iss(idRefs);
 
@@ -1709,6 +1710,13 @@ std::vector<std::string> InterpreterImpl::tokenizeIdRefs(const std::string& idRe
 		          std::istream_iterator<std::string>(),
 		          std::back_inserter<std::vector<std::string> >(ids));
 	}
+#endif
+
+	// this version is somewhat fatser than the one above
+	std::stringstream ss (idRefs);
+	std::string item;
+	while(ss >> item)
+		ids.push_back(item);
 
 	return ids;
 }
