@@ -70,7 +70,7 @@ void InterpreterDraft6::interpret() {
 	}
 
 	_running = true;
-	_binding = (HAS_ATTR(_scxml, "binding") && boost::iequals(ATTR(_scxml, "binding"), "late") ? LATE : EARLY);
+	_binding = (HAS_ATTR(_scxml, "binding") && iequals(ATTR(_scxml, "binding"), "late") ? LATE : EARLY);
 
 	// @TODO: Reread http://www.w3.org/TR/scxml/#DataBinding
 
@@ -302,7 +302,7 @@ void InterpreterDraft6::mainEventLoop() {
 		if (!_running)
 			goto EXIT_INTERPRETER;
 
-		if (_dataModel && boost::iequals(_currEvent.name, "cancel.invoke." + _sessionId))
+		if (_dataModel && iequals(_currEvent.name, "cancel.invoke." + _sessionId))
 			break;
 
 		if (_dataModel) {
@@ -329,7 +329,7 @@ void InterpreterDraft6::mainEventLoop() {
 					}
 				}
 				std::string autoForward = invokeElem.getAttribute("autoforward");
-				if (boost::iequals(invokeId, _currEvent.invokeid)) {
+				if (iequals(invokeId, _currEvent.invokeid)) {
 
 					Arabica::XPath::NodeSet<std::string> finalizes = filterChildElements(_xmlNSPrefix + "finalize", invokeElem);
 					for (int k = 0; k < finalizes.size(); k++) {
@@ -338,7 +338,7 @@ void InterpreterDraft6::mainEventLoop() {
 					}
 
 				}
-				if (boost::iequals(autoForward, "true")) {
+				if (iequals(autoForward, "true")) {
 					try {
 						// do not autoforward to invokers that send to #_parent from the SCXML IO Processor!
 						// Yes do so, see test229!
@@ -592,7 +592,7 @@ bool InterpreterDraft6::isWithinParallel(const Node<std::string>& transition) {
 		return false;
 
 	Node<std::string> source;
-	if (HAS_ATTR(transition, "type") && boost::iequals(ATTR(transition, "type"), "internal")) {
+	if (HAS_ATTR(transition, "type") && iequals(ATTR(transition, "type"), "internal")) {
 		source = getSourceState(transition);
 	} else {
 		source = getSourceState(transition).getParentNode();
@@ -681,7 +681,7 @@ void InterpreterDraft6::exitStates(const Arabica::XPath::NodeSet<std::string>& e
 			Node<std::string> source = getSourceState(t);
 //			std::cout << t << std::endl << TAGNAME(t) << std::endl;
 			NodeSet<std::string> tStates = getTargetStates(t);
-			bool isInternal = (HAS_ATTR(t, "type") && boost::iequals(ATTR(t, "type"), "internal")); // external is default
+			bool isInternal = (HAS_ATTR(t, "type") && iequals(ATTR(t, "type"), "internal")); // external is default
 			bool allDescendants = true;
 			for (int j = 0; j < tStates.size(); j++) {
 				if (!isDescendant(tStates[j], source)) {
@@ -756,7 +756,7 @@ void InterpreterDraft6::exitStates(const Arabica::XPath::NodeSet<std::string>& e
 			std::string historyType = (historyElem.hasAttribute("type") ? historyElem.getAttribute("type") : "shallow");
 			NodeSet<std::string> historyNodes;
 			for (int k = 0; k < _configuration.size(); k++) {
-				if (boost::iequals(historyType, "deep")) {
+				if (iequals(historyType, "deep")) {
 					if (isAtomic(_configuration[k]) && isDescendant(_configuration[k], statesToExit[i]))
 						historyNodes.push_back(_configuration[k]);
 				} else {
@@ -831,7 +831,7 @@ void InterpreterDraft6::enterStates(const Arabica::XPath::NodeSet<std::string>& 
 	for (int i = 0; i < enabledTransitions.size(); i++) {
 		Element<std::string> transition = ((Element<std::string>)enabledTransitions[i]);
 		if (!isTargetless(transition)) {
-			std::string transitionType = (boost::iequals(transition.getAttribute("type"), "internal") ? "internal" : "external");
+			std::string transitionType = (iequals(transition.getAttribute("type"), "internal") ? "internal" : "external");
 			NodeSet<std::string> tStates = getTargetStates(transition);
 
 #if VERBOSE
@@ -856,7 +856,7 @@ void InterpreterDraft6::enterStates(const Arabica::XPath::NodeSet<std::string>& 
 					break;
 				}
 			}
-			if (boost::iequals(transitionType, "internal") &&
+			if (iequals(transitionType, "internal") &&
 			        isCompound(source) &&
 			        allDescendants) {
 				ancestor = source;

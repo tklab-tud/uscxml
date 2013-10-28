@@ -11,7 +11,7 @@ endif()
 # copied from cmake's FindPHP4.cmake and adapted
 if(APPLE)
 	# this is a hack for now
-  set(PHP_MODULE_CXX_FLAGS "${CMAKE_SHARED_MODULE_CREATE_CXX_FLAGS} -Wl,-flat_namespace")
+  set(PHP_MODULE_CXX_FLAGS "${CMAKE_SHARED_MODULE_CREATE_CXX_FLAGS} -Wno-unused-label -Wl,-flat_namespace")
   foreach(symbol
 		__efree
 		__emalloc

@@ -32,7 +32,7 @@ namespace uscxml {
 
 class Interpreter;
 class USCXMLInvoker;
-	
+
 class USCXMLInvoker :
 	public InvokerImpl,
 	public boost::enable_shared_from_this<USCXMLInvoker> {
@@ -43,7 +43,7 @@ public:
 		virtual void push(const SendRequest& event);
 		USCXMLInvoker* _invoker;
 	};
-		
+
 	USCXMLInvoker();
 	virtual ~USCXMLInvoker();
 	virtual boost::shared_ptr<InvokerImpl> create(InterpreterImpl* interpreter);
@@ -60,7 +60,7 @@ public:
 	virtual void send(const SendRequest& req);
 	virtual void cancel(const std::string sendId);
 	virtual void invoke(const InvokeRequest& req);
-		
+
 protected:
 	bool _cancelled;
 	ParentQueue _parentQueue;

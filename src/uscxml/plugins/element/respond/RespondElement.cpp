@@ -85,10 +85,18 @@ void RespondElement::enterElement(const Arabica::DOM::Node<std::string>& node) {
 					Data contentData = _interpreter->getDataModel().getStringAsData(ATTR(contents[0], "expr"));
 					if (contentData.atom.length() > 0) {
 						httpReply.content = contentData.atom;
+						httpReply.headers["Content-Type"] = "text/plain";
 					} else if (contentData.binary) {
 						httpReply.content = std::string(contentData.binary->data, contentData.binary->size);
+						httpReply.headers["Content-Type"] = contentData.binary->mimeType;
+					} else if (contentData.node) {
+						std::stringstream ss;
+						ss << contentData.node;
+						httpReply.content = ss.str();;
+						httpReply.headers["Content-Type"] = "application/xml";
 					} else {
 						httpReply.content = Data::toJSON(contentData);
+						httpReply.headers["Content-Type"] = "application/json";
 					}
 				} catch (Event e) {
 					LOG(ERROR) << "Syntax error with expr in content child of Respond element:" << std::endl << e << std::endl;

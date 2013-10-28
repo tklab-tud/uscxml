@@ -3,13 +3,11 @@ set(CTEST_SITE "buildslave-fedora-16-64")
 set(CTEST_BUILD_CONFIGURATION "Debug")
 
 set(RETAIN_BUILD_DIR OFF)
-set(REMOVE_PREBUILDS ON)
 set(CTEST_BUILD_NAME "linux-x86_64 gcc 4.6.3")
 include("tests/ecma.ctest")
 include("common.ctest.inc")
 
 set(RETAIN_BUILD_DIR OFF)
-set(REMOVE_PREBUILDS OFF)
 set(CTEST_BUILD_NAME "linux-x86_64 gcc 4.6.3")
 include("tests/xpath.ctest")
 include("common.ctest.inc")

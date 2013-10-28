@@ -100,7 +100,7 @@ std::string URL::getMimeType(const std::string extension, std::string magic) {
 	if (mimeTypes.find(extension) != mimeTypes.end()) {
 		return mimeTypes[extension];
 	}
-	return "";
+	return "application/octet-stream";
 }
 
 
@@ -247,7 +247,7 @@ void URLImpl::downloadStarted() {
 void URLImpl::downloadCompleted() {
 	tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
 
-	if (boost::iequals(scheme(), "http")) {
+	if (iequals(scheme(), "http")) {
 		// process header fields
 		std::string line;
 		while (std::getline(_rawInHeader, line)) {
@@ -367,7 +367,7 @@ const void URLImpl::download(bool blocking) {
 				exception.data.compound["reason"] = Data(_error, Data::VERBATIM);
 			throw exception;
 		}
-		if (boost::iequals(scheme(), "http")) {
+		if (iequals(scheme(), "http")) {
 			if (_statusCode.size() > 0 && boost::lexical_cast<int>(_statusCode) > 400) {
 				Event exception;
 				exception.name = "error.communication";
@@ -574,7 +574,7 @@ void URLFetcher::fetchURL(URL& url) {
 		(curlError = curl_easy_setopt(handle, CURLOPT_FOLLOWLOCATION, true)) == CURLE_OK ||
 		LOG(ERROR) << "Cannot enable follow redirects: " << curl_easy_strerror(curlError);
 
-		if (boost::iequals(url._impl->_requestType, "post")) {
+		if (iequals(url._impl->_requestType, "post")) {
 
 			(curlError = curl_easy_setopt(handle, CURLOPT_POST, 1)) == CURLE_OK ||
 			LOG(ERROR) << "Cannot set request type to post for " << url.asString() << ": " << curl_easy_strerror(curlError);
@@ -602,7 +602,7 @@ void URLFetcher::fetchURL(URL& url) {
 			//curl_slist_free_all(headers);
 
 
-		} else if (boost::iequals(url._impl->_requestType, "get")) {
+		} else if (iequals(url._impl->_requestType, "get")) {
 			(curlError = curl_easy_setopt(handle, CURLOPT_HTTPGET, 1)) == CURLE_OK ||
 			LOG(ERROR) << "Cannot set request type to get for " << url.asString() << ": " << curl_easy_strerror(curlError);
 		}

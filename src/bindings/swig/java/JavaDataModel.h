@@ -57,6 +57,10 @@ public:
 		return false;
 	}
 
+	virtual bool evalAsBool(const Arabica::DOM::Node<std::string>& node, const std::string& expr) {
+		return false;
+	}
+
 	virtual bool isDeclared(const std::string& expr) {
 		return false;
 	}

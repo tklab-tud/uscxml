@@ -26,8 +26,7 @@
 
 #include "uscxml/URL.h"
 
-#include <boost/algorithm/string.hpp>
-
+#include <boost/shared_ptr.hpp>
 #include <iostream>
 #include <set>
 #include <map>

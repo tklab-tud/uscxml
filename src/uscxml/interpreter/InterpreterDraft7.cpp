@@ -75,7 +75,7 @@ void InterpreterDraft7::interpret() {
 	setupIOProcessors();
 
 	_running = true;
-	_binding = (HAS_ATTR(_scxml, "binding") && boost::iequals(ATTR(_scxml, "binding"), "late") ? LATE : EARLY);
+	_binding = (HAS_ATTR(_scxml, "binding") && iequals(ATTR(_scxml, "binding"), "late") ? LATE : EARLY);
 
 	// @TODO: Reread http://www.w3.org/TR/scxml/#DataBinding
 

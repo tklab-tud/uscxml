@@ -17,6 +17,8 @@
  *  @endcond
  */
 
+#include <boost/algorithm/string.hpp>
+
 #include "FetchElement.h"
 #include <glog/logging.h>
 
@@ -55,13 +57,13 @@ void FetchElement::downloadCompleted(const URL& url) {
 	std::map<std::string, std::string> headerFields = url.getInHeaderFields();
 
 	if (false) {
-	} else if (boost::iequals(_type, "text")) {
+	} else if (iequals(_type, "text")) {
 		event.data.atom = content;
 		event.data.type = Data::VERBATIM;
-	} else if (boost::iequals(_type, "url")) {
-	} else if (boost::iequals(_type, "json")) {
+	} else if (iequals(_type, "url")) {
+	} else if (iequals(_type, "json")) {
 		event.data = Data::fromJSON(content);
-	} else if (boost::iequals(_type, "xml")) {
+	} else if (iequals(_type, "xml")) {
 		event = Event::fromXML(content);
 	}
 
@@ -99,10 +101,10 @@ void FetchElement::enterElement(const Arabica::DOM::Node<std::string>& node) {
 	_callback = (HAS_ATTR(node, "callback") ? ATTR(node, "callback") : _interpreter->getDataModel().evalAsString(ATTR(node, "callbackexpr")));
 
 	_type = (HAS_ATTR(node, "type") ? ATTR(node, "type") : "text");
-	if (!boost::iequals(_type, "text") &&
-	        !boost::iequals(_type, "url") &&
-	        !boost::iequals(_type, "json") &&
-	        !boost::iequals(_type, "xml")) {
+	if (!iequals(_type, "text") &&
+	        !iequals(_type, "url") &&
+	        !iequals(_type, "json") &&
+	        !iequals(_type, "xml")) {
 		LOG(ERROR) << "Fetch element type attribute not one of text, url, json, xml.";
 		return;
 	}

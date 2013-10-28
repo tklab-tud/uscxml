@@ -1,6 +1,7 @@
 #include "uscxml/config.h"
 #include "uscxml/Interpreter.h"
 #include <glog/logging.h>
+#include <boost/algorithm/string.hpp>
 
 #ifdef HAS_SIGNAL_H
 #include <signal.h>
@@ -17,6 +18,7 @@
 #ifdef _WIN32
 #include "XGetopt.h"
 #endif
+
 
 #ifdef HAS_EXECINFO_H
 void printBacktrace(void** array, int size) {

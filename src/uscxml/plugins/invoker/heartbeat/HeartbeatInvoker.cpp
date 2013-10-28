@@ -17,6 +17,8 @@
  *  @endcond
  */
 
+#include <boost/algorithm/string.hpp>
+
 #include "HeartbeatInvoker.h"
 #include <glog/logging.h>
 
@@ -67,20 +69,20 @@ void HeartbeatInvoker::invoke(const InvokeRequest& req) {
 	unsigned long intervalMs = 0;
 	InvokeRequest::params_t::const_iterator paramIter = req.params.begin();
 	while(paramIter != req.params.end()) {
-		if (boost::iequals(paramIter->first, "interval")) {
+		if (iequals(paramIter->first, "interval")) {
 			intervalStr = paramIter->second.atom;
 			NumAttr intervalAttr(paramIter->second.atom);
 			interval = strTo<double>(intervalAttr.value);
 			if (false) {
-			} else if (boost::iequals(intervalAttr.unit, "s")) {
+			} else if (iequals(intervalAttr.unit, "s")) {
 				intervalMs = interval * 1000;
-			} else if (boost::iequals(intervalAttr.unit, "ms")) {
+			} else if (iequals(intervalAttr.unit, "ms")) {
 				intervalMs = interval;
 			} else {
 				intervalMs = interval;
 			}
 		}
-		if (boost::iequals(paramIter->first, "eventname")) {
+		if (iequals(paramIter->first, "eventname")) {
 			_event.name = paramIter->second.atom;
 		}
 		paramIter++;

@@ -60,12 +60,14 @@ public:
 		else if(!data->IsExternal())
 			return NULL;
 		else
+//			return v8::External::Cast(*data)->Value();
 			return static_cast<T *>(v8::External::Unwrap(data));
 		return NULL;
 	}
 	static v8::Local<v8::External> toExternal(void* pointer) {
 		v8::HandleScope scope;
 		return scope.Close(v8::External::New(pointer));
+//		return v8::External::New(pointer);
 	}
 
 	Arabica::XPath::XPath<std::string>* xpath;

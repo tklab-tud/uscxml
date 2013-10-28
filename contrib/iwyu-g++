@@ -1,0 +1,5 @@
+#!/bin/sh
+IWYU_COMMAND=/usr/bin/iwyu
+COMPILER_COMMAND=/usr/bin/g++
+$IWYU_COMMAND $@
+$COMPILER_COMMAND $@

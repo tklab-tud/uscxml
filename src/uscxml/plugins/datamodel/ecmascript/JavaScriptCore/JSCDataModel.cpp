@@ -376,9 +376,14 @@ Data JSCDataModel::getValueAsData(const JSValueRef value) {
 		if (exception)
 			handleException(exception);
 		if (JSValueIsObjectOfClass(_ctx, value, JSCArrayBuffer::getTmpl())) {
-			// binary data!
+			// binary data
 			JSCArrayBuffer::JSCArrayBufferPrivate* privObj = (JSCArrayBuffer::JSCArrayBufferPrivate*)JSObjectGetPrivate(objValue);
 			data.binary = privObj->nativeObj->_buffer;
+			return data;
+		} else if (JSValueIsObjectOfClass(_ctx, value, JSCNode::getTmpl())) {
+			// dom node
+			JSCNode::JSCNodePrivate* privObj = (JSCNode::JSCNodePrivate*)JSObjectGetPrivate(objValue);
+			data.node = *privObj->nativeObj;
 			return data;
 		}
 		std::set<std::string> propertySet;
@@ -482,7 +487,7 @@ void JSCDataModel::eval(const Element<std::string>& scriptElem,
 	evalAsValue(expr);
 }
 
-bool JSCDataModel::evalAsBool(const std::string& expr) {
+bool JSCDataModel::evalAsBool(const Arabica::DOM::Node<std::string>& node, const std::string& expr) {
 	JSValueRef result = evalAsValue(expr);
 	return JSValueToBoolean(_ctx, result);
 }

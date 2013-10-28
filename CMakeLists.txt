@@ -6,8 +6,6 @@ SET(USCXML_VERSION_MINOR "1")
 SET(USCXML_VERSION_PATCH "1")
 SET(USCXML_VERSION ${USCXML_VERSION_MAJOR}.${USCXML_VERSION_MINOR}.${USCXML_VERSION_PATCH})
 
-SET(CMAKE_BUILD_TYPE Debug)
-
 # build type has to be set before the project definition4
 SET(BUILD_TYPE_HELP "Choose the type of build, options are: None(CMAKE_CXX_FLAGS or CMAKE_C_FLAGS used) Debug, Release, RelWithDebInfo, MinSizeRel.")
 IF(DEFINED CMAKE_BUILD_TYPE)
@@ -17,6 +15,13 @@ ELSE()
 ENDIF()
 
 project(uscxml)
+
+# where to find the cmake modules we distribute
+set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/contrib/cmake)
+include("${CMAKE_MODULE_PATH}/USCXMLMacros.cmake")
+include("${CMAKE_MODULE_PATH}/FunctionExists.cmake")
+include("${CMAKE_MODULE_PATH}/HeaderExists.cmake")
+include("${CMAKE_MODULE_PATH}/BinaryExists.cmake")
 
 # CMake 2.8.11 reports AMD64 for Windows 64Bit, where earlier versions reported x86
 # we resolve it with a 64bit check later
@@ -51,6 +56,22 @@ if(CMAKE_SIZEOF_VOID_P EQUAL 8)
 # 	LIST(APPEND CMAKE_FIND_ROOT_PATH "/usr/lib64")
 endif()
 
+if (APPLE)
+	# get MacOSX version
+	execute_process(COMMAND /usr/bin/sw_vers -productVersion
+		OUTPUT_VARIABLE MACOSX_VERSION
+		ERROR_VARIABLE MACOSX_VERSION_errors
+		RESULT_VARIABLE MACOSX_VERSION_result
+	OUTPUT_STRIP_TRAILING_WHITESPACE)
+	if (MACOSX_VERSION)
+		THREE_PART_VERSION_TO_VARS(
+			"10.8"
+			MACOSX_VERSION_MAJOR 
+			MACOSX_VERSION_MINOR 
+			MACOSX_VERSION_PATCH)
+	endif()
+endif()
+
 # We use the toolchain file from http://code.google.com/p/android-cmake/
 if (CMAKE_CROSSCOMPILING AND ANDROID_ABI)
 	set(ANDROID ON)
@@ -65,11 +86,29 @@ if (CMAKE_CROSSCOMPILING)
 		add_definitions(-DTARGET_IPHONE_SIMULATOR)
 	endif()
 endif()
+
 #
 # Setting the CMAKE_FIND_ROOT_PATH to a list of directories will cause all CMake modules
 # to look in these directories in addition to the system search paths:
 # http://www.vtk.org/Wiki/CMake_Cross_Compiling#Searching_and_finding_external_software
 #
+
+SET(USCXML_PLATFORM_ID)
+if (CMAKE_CROSSCOMPILING)
+	if (IOS)
+		SET(USCXML_PLATFORM_ID "ios")
+	elseif (ANDROID)
+		SET(USCXML_PLATFORM_ID "android")
+	else()
+		SET(USCXML_PLATFORM_ID "${CMAKE_SYSTEM_NAME_LC}-${CMAKE_SYSTEM_PROCESSOR}_64")
+	endif()
+else()
+	if (WIN32 AND 64BIT_HOST)
+		SET(USCXML_PLATFORM_ID "${CMAKE_SYSTEM_NAME_LC}-${CMAKE_SYSTEM_PROCESSOR}_64")
+	else()
+		SET(USCXML_PLATFORM_ID "${CMAKE_SYSTEM_NAME_LC}-${CMAKE_SYSTEM_PROCESSOR}")
+	endif()
+endif()
 
 SET(USCXML_PREBUILT_LIBRARY_PATH)
 SET(USCXML_PREBUILT_HEADER_PATH "${PROJECT_SOURCE_DIR}/contrib/prebuilt")
@@ -92,10 +131,10 @@ else ()
 	# SET(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM "BOTH")
 	# SET(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE "BOTH")
 	# SET(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY "BOTH")
-	if (WIN32 AND 64BIT_HOST)
-		SET(USCXML_PREBUILT_LIBRARY_PATH "${PROJECT_SOURCE_DIR}/contrib/prebuilt/${CMAKE_SYSTEM_NAME_LC}-${CMAKE_SYSTEM_PROCESSOR}_64/${CMAKE_CXX_COMPILER_ID_LC}")
+	if (APPLE)
+		SET(USCXML_PREBUILT_LIBRARY_PATH "${PROJECT_SOURCE_DIR}/contrib/prebuilt/${USCXML_PLATFORM_ID}/${MACOSX_VERSION_MAJOR}.${MACOSX_VERSION_MINOR}/${CMAKE_CXX_COMPILER_ID_LC}")
 	else()
-		SET(USCXML_PREBUILT_LIBRARY_PATH "${PROJECT_SOURCE_DIR}/contrib/prebuilt/${CMAKE_SYSTEM_NAME_LC}-${CMAKE_SYSTEM_PROCESSOR}/${CMAKE_CXX_COMPILER_ID_LC}")
+		SET(USCXML_PREBUILT_LIBRARY_PATH "${PROJECT_SOURCE_DIR}/contrib/prebuilt/${USCXML_PLATFORM_ID}/${CMAKE_CXX_COMPILER_ID_LC}")
 	endif()
 endif()
 
@@ -109,65 +148,86 @@ if (CMAKE_CROSSCOMPILING)
 	else()
 	endif()
 else()
-	if (WIN32 AND 64BIT_HOST)
-		SET(USCXML_LIBRARY_ARCHIVE_NAME uscxml-prebuilt-${CMAKE_SYSTEM_NAME_LC}-${CMAKE_SYSTEM_PROCESSOR}_64.tgz)
+	SET(USCXML_LIBRARY_ARCHIVE_NAME uscxml-prebuilt-${USCXML_PLATFORM_ID}.tgz)
+endif()
+
+
+if (EXISTS "${PROJECT_SOURCE_DIR}/contrib/prebuilt/include/VERSION.txt")
+	file (STRINGS "${PROJECT_SOURCE_DIR}/contrib/prebuilt/include/VERSION.txt" PREBUILT_INCUDES_VERSION)
+endif()
+if (NOT "${USCXML_VERSION}" VERSION_EQUAL "${PREBUILT_INCUDES_VERSION}")
+	message(STATUS "Prebuilt headers unversioned, too old or non-existant - downloading (again)")
+	execute_process(
+		COMMAND ${CMAKE_COMMAND} -E remove_directory ${PROJECT_SOURCE_DIR}/contrib/prebuilt/include
+	)
+endif()
+
+if (EXISTS "${PROJECT_SOURCE_DIR}/contrib/prebuilt/${USCXML_PLATFORM_ID}/VERSION.txt")
+	file (STRINGS "${PROJECT_SOURCE_DIR}/contrib/prebuilt/${USCXML_PLATFORM_ID}/VERSION.txt" PREBUILT_LIBRARIES_VERSION)
+endif()
+if (NOT "${USCXML_VERSION}" VERSION_EQUAL "${PREBUILT_LIBRARIES_VERSION}")
+	message(STATUS "Prebuilt libraries unversioned, too old or non-existant - downloading (again)")
+	execute_process(
+		COMMAND ${CMAKE_COMMAND} -E remove_directory ${PROJECT_SOURCE_DIR}/contrib/prebuilt/${USCXML_PLATFORM_ID}
+	)
+endif()
+
+if (NOT EXISTS ${PROJECT_SOURCE_DIR}/contrib/prebuilt/include)
+	message(STATUS "Downloading header files: ${USCXML_LIBRARY_HOST_URL_PREFIX}/${USCXML_VERSION}/include.tgz")
+	file(DOWNLOAD ${USCXML_LIBRARY_HOST_URL_PREFIX}/${USCXML_VERSION}/include.tgz
+		${PROJECT_SOURCE_DIR}/contrib/prebuilt/include.tgz
+		INACTIVITY_TIMEOUT 60 STATUS DOWNLOAD_STATUS SHOW_PROGRESS)
+	list(GET DOWNLOAD_STATUS 0 STATUS_CODE)
+	list(GET DOWNLOAD_STATUS 1 STATUS_STRING)
+	if(STATUS_CODE EQUAL 0)
+		execute_process(
+			COMMAND ${CMAKE_COMMAND} -E tar xzf ${PROJECT_SOURCE_DIR}/contrib/prebuilt/include.tgz
+			WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/contrib/prebuilt/
+		)
+		execute_process(
+			COMMAND ${CMAKE_COMMAND} -E remove ${PROJECT_SOURCE_DIR}/contrib/prebuilt/include.tgz
+			WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/contrib/prebuilt/
+		)
+		file(WRITE ${PROJECT_SOURCE_DIR}/contrib/prebuilt/include/VERSION.txt "${USCXML_VERSION}")
 	else()
-		SET(USCXML_LIBRARY_ARCHIVE_NAME uscxml-prebuilt-${CMAKE_SYSTEM_NAME_LC}-${CMAKE_SYSTEM_PROCESSOR}.tgz)
+		message("Downloading header files failed with ${STATUS_STRING}")
 	endif()
 endif()
 
-#if (NOT EXISTS ${PROJECT_SOURCE_DIR}/contrib/prebuilt/include)
-#	message(STATUS "Downloading header files: ${USCXML_LIBRARY_HOST_URL_PREFIX}/${USCXML_VERSION}/include.tgz")
-#	file(DOWNLOAD ${USCXML_LIBRARY_HOST_URL_PREFIX}/${USCXML_VERSION}/include.tgz
-#		${PROJECT_SOURCE_DIR}/contrib/prebuilt/include.tgz
-#		INACTIVITY_TIMEOUT 60 STATUS DOWNLOAD_STATUS SHOW_PROGRESS)
-#	list(GET DOWNLOAD_STATUS 0 STATUS_CODE)
-#	list(GET DOWNLOAD_STATUS 1 STATUS_STRING)
-#	if(STATUS_CODE EQUAL 0)
-#		execute_process(
-#			COMMAND ${CMAKE_COMMAND} -E tar xzf ${PROJECT_SOURCE_DIR}/contrib/prebuilt/include.tgz
-#			WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/contrib/prebuilt/
-#		)
-#		execute_process(
-#			COMMAND ${CMAKE_COMMAND} -E remove ${PROJECT_SOURCE_DIR}/contrib/prebuilt/include.tgz
-#			WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/contrib/prebuilt/
-#		)
-#	else()
-#		message("Downloading header files failed with ${STATUS_STRING}")
-#	endif()
-#endif()
-
-#if (NOT EXISTS ${USCXML_PREBUILT_LIBRARY_PATH})
-#	message(STATUS "Downloading prebuilt libraries: ${USCXML_LIBRARY_HOST_URL_PREFIX}/${USCXML_VERSION}/${USCXML_LIBRARY_ARCHIVE_NAME}")
-#	file(DOWNLOAD ${USCXML_LIBRARY_HOST_URL_PREFIX}/${USCXML_VERSION}/${USCXML_LIBRARY_ARCHIVE_NAME}
-#		${PROJECT_SOURCE_DIR}/contrib/prebuilt/${USCXML_LIBRARY_ARCHIVE_NAME}
-#		INACTIVITY_TIMEOUT 60 STATUS DOWNLOAD_STATUS SHOW_PROGRESS)
-#	list(GET DOWNLOAD_STATUS 0 STATUS_CODE)
-#	list(GET DOWNLOAD_STATUS 1 STATUS_STRING)
-#	if(STATUS_CODE EQUAL 0)
-#		execute_process(
-#			COMMAND ${CMAKE_COMMAND} -E tar xzf ${PROJECT_SOURCE_DIR}/contrib/prebuilt/${USCXML_LIBRARY_ARCHIVE_NAME}
-#			WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/contrib/prebuilt/
-#		)
-#		execute_process(
-#			COMMAND ${CMAKE_COMMAND} -E remove ${PROJECT_SOURCE_DIR}/contrib/prebuilt/${USCXML_LIBRARY_ARCHIVE_NAME}
-#			WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/contrib/prebuilt/
-#		)
-#	else()
-#		message("Downloading prebuilt libraries failed with ${STATUS_STRING} - maybe this platform is not supported?")
-#	endif()
-
-#endif()
+if (NOT EXISTS ${USCXML_PREBUILT_LIBRARY_PATH})
+	message(STATUS "Downloading prebuilt libraries: ${USCXML_LIBRARY_HOST_URL_PREFIX}/${USCXML_VERSION}/${USCXML_LIBRARY_ARCHIVE_NAME}")
+	file(DOWNLOAD ${USCXML_LIBRARY_HOST_URL_PREFIX}/${USCXML_VERSION}/${USCXML_LIBRARY_ARCHIVE_NAME}
+		${PROJECT_SOURCE_DIR}/contrib/prebuilt/${USCXML_LIBRARY_ARCHIVE_NAME}
+		INACTIVITY_TIMEOUT 60 STATUS DOWNLOAD_STATUS SHOW_PROGRESS)
+	list(GET DOWNLOAD_STATUS 0 STATUS_CODE)
+	list(GET DOWNLOAD_STATUS 1 STATUS_STRING)
+	if(STATUS_CODE EQUAL 0)
+		execute_process(
+			COMMAND ${CMAKE_COMMAND} -E tar xzf ${PROJECT_SOURCE_DIR}/contrib/prebuilt/${USCXML_LIBRARY_ARCHIVE_NAME}
+			WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/contrib/prebuilt/
+		)
+		execute_process(
+			COMMAND ${CMAKE_COMMAND} -E remove ${PROJECT_SOURCE_DIR}/contrib/prebuilt/${USCXML_LIBRARY_ARCHIVE_NAME}
+			WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/contrib/prebuilt/
+		)
+		file(WRITE ${PROJECT_SOURCE_DIR}/contrib/prebuilt/${USCXML_PLATFORM_ID}/VERSION.txt "${USCXML_VERSION}")
+	else()
+		message("Downloading prebuilt libraries failed with ${STATUS_STRING} - maybe this platform is not supported?")
+	endif()
+endif()
 
 if (CMAKE_CROSSCOMPILING)
 	OPTION(BUILD_SHARED_LIBS "Build shared libraries" OFF)
+	OPTION(ENABLE_COTIRE "Enable compile time reduction techniques" OFF)
 else()
 	OPTION(BUILD_SHARED_LIBS "Build shared libraries" ON)
+	OPTION(ENABLE_COTIRE "Enable compile time reduction techniques" ON)
 endif()
 
 if (NOT BUILD_SHARED_LIBS)
 	add_definitions("-DUSCXML_STATIC")
 endif()
+
 
 #
 # BUILD_PREFER_PREBUILT_LIBS:
@@ -206,7 +266,7 @@ if (CMAKE_CROSSCOMPILING)
 else()
 	OPTION(BUILD_TESTS "Build USCXML tests" ON)
 	OPTION(RUN_W3C_ECMA_TESTS "Run W3C ECMAScript tests" OFF)
-	OPTION(RUN_W3C_XPATH_TESTS "Run W3C XPath tests" ON)
+	OPTION(RUN_W3C_XPATH_TESTS "Run W3C XPath tests" OFF)
 endif()
 OPTION(ENABLE_GCOV "Compile with gcov support" OFF)
 
@@ -223,13 +283,6 @@ if (BUILD_TESTS)
 endif()
 
 OPTION(DIST_PREPARE "Put libraries into the lib folder of the source tree" OFF)
-
-# where to find the cmake modules we distribute
-set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/contrib/cmake)
-include("${CMAKE_MODULE_PATH}/USCXMLMacros.cmake")
-include("${CMAKE_MODULE_PATH}/FunctionExists.cmake")
-include("${CMAKE_MODULE_PATH}/HeaderExists.cmake")
-include("${CMAKE_MODULE_PATH}/BinaryExists.cmake")
 
 # we need USCXML_CORE_LIBS here for -lgcov
 set(USCXML_CORE_LIBS)
@@ -314,6 +367,7 @@ elseif (${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-string-plus-int")
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-non-literal-null-conversion")
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-null-conversion")
+	SET(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -stdlib=libstdc++")
 	
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
 	# set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -read_only_relocs suppress")
@@ -396,13 +450,8 @@ if (DIST_PREPARE)
 		set(OUTPUT_DIR
 			${PROJECT_SOURCE_DIR}/package/cross-compiled/${CMAKE_CROSSCOMPILING_TARGET_LC}-${CMAKE_SYSTEM_VERSION}/${CMAKE_SYSTEM_PROCESSOR})
 	else()
-		if (WIN32 AND 64BIT_HOST)
-			set(OUTPUT_DIR
-				${PROJECT_SOURCE_DIR}/package/${CMAKE_SYSTEM_NAME_LC}-${CMAKE_SYSTEM_PROCESSOR}_64/${CMAKE_CXX_COMPILER_ID_LC})
-		else()
-			set(OUTPUT_DIR
-				${PROJECT_SOURCE_DIR}/package/${CMAKE_SYSTEM_NAME_LC}-${CMAKE_SYSTEM_PROCESSOR}/${CMAKE_CXX_COMPILER_ID_LC})
-		endif()
+		set(OUTPUT_DIR
+			${PROJECT_SOURCE_DIR}/package/${USCXML_PLATFORM_ID}/${CMAKE_CXX_COMPILER_ID_LC})
 	endif()
 else()
 	set(OUTPUT_DIR ${PROJECT_BINARY_DIR})
@@ -445,6 +494,10 @@ if (NOT WIN32)
 	# message("CMAKE_SYSTEM_LIBRARY_PATH: ${CMAKE_SYSTEM_LIBRARY_PATH}")
 	# message("CMAKE_SYSTEM_PROGRAM_PATH: ${CMAKE_SYSTEM_PROGRAM_PATH}")
 	# message("CMAKE_FIND_ROOT_PATH: ${CMAKE_FIND_ROOT_PATH}")
+
+	if (APPLE)
+		set(PC_LIBXML_INCLUDEDIR "/usr/include/libxml2/")
+	endif()
 
 	find_package(LibXml2 REQUIRED)
 	include_directories(${LIBXML2_INCLUDE_DIR})
@@ -556,8 +609,16 @@ endif()
 
 #find_package(OpenSSL)
 if (OPENSSL_FOUND)
+	set(OPENSSL_HAS_ELIPTIC_CURVES OFF)
 	include_directories(${OPENSSL_INCLUDE_DIR})
 	list (APPEND USCXML_OPT_LIBS ${OPENSSL_LIBRARIES})
+	if (EXISTS ${OPENSSL_INCLUDE_DIR}/openssl/ec.h)
+		set(OPENSSL_HAS_ELIPTIC_CURVES ON)
+	endif()
+endif()
+
+if (EVENT_SSL_FOUND AND OPENSSL_FOUND)
+	list (APPEND USCXML_CORE_LIBS ${OPENSSL_LIBRARIES})
 endif()
 
 
@@ -768,14 +829,12 @@ endforeach()
 
 # add compile time reducer
 # see https://github.com/sakra/cotire
-if (NOT CMAKE_CROSSCOMPILING)
-	include(cotire)
-endif()
+include(cotire)
 
 # build library
 if (BUILD_AS_PLUGINS)
 	add_library(uscxml ${USCXML_FILES})
-	target_link_libraries(	uscxml ${USCXML_CORE_LIBS})
+	target_link_libraries(uscxml ${USCXML_CORE_LIBS})
 	set_target_properties(uscxml PROPERTIES COMPILE_FLAGS "-DUSCXML_EXPORT")
 #	set_target_properties(uscxml PROPERTIES COMPILE_FLAGS "-DPLUMA_EXPORTS")
 	add_definitions(-DPLUMA_EXPORTS)
@@ -786,7 +845,9 @@ endif()
 if (NOT CMAKE_CROSSCOMPILING)
 	set_target_properties(uscxml PROPERTIES COTIRE_CXX_PREFIX_HEADER_INIT "src/uscxml/pch.h")
 	set_target_properties(uscxml PROPERTIES COTIRE_ADD_UNITY_BUILD FALSE)
-	cotire(uscxml)
+	if (ENABLE_COTIRE)
+		cotire(uscxml)
+	endif()
 endif()
 
 if (NOT CMAKE_CROSSCOMPILING)
@@ -855,6 +916,28 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.h.in ${CMAKE_CURRENT_BINARY_DI
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/contrib/ctest/CTestCustom.ctest.in ${CMAKE_CURRENT_BINARY_DIR}/CTestCustom.ctest @ONCE)
 
 ############################################################
+# Include What You Use support
+# https://code.google.com/p/chromium/wiki/IncludeWhatYouUse
+############################################################
+# find_program(IWYU_BIN "iwyu" PATHS ENV PATH)
+# if (IWYU_BIN)
+# 	set(IWYU_ARGS "")
+# 	get_property(IWYU_INCLUDES DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY INCLUDE_DIRECTORIES)
+# 	list(REMOVE_DUPLICATES IWYU_INCLUDES)
+# 	foreach(DIR ${IWYU_INCLUDES})
+# 		set(IWYU_ARGS "${IWYU_ARGS} -I${DIR}")
+# 	endforeach()	
+# 	
+# 	message(FATAL_ERROR ${IWYU_ARGS})
+# 	
+# 	add_custom_target(iwyu ${IWYU_BIN} 
+# 		${IWYU_ARGS} ${PROJECT_SOURCE_DIR}/src/uscxml/Factory.cpp
+# 		COMMENT "Run include-what-you-use")
+# 	add_dependencies(iwyu ${CMAKE_CURRENT_BINARY_DIR}/uscxml/config.h)
+# #	message(FATAL_ERROR "asdf")
+#endif()
+
+############################################################
 # Some concluding remarks
 ############################################################
 
@@ -894,11 +977,19 @@ if (BUILD_SHARED_LIBS AND BUILD_BINDINGS)
 endif()
 
 message(STATUS "General information:")
-message(STATUS "  Build type ..................... : ${CMAKE_BUILD_TYPE}")
+message(STATUS "  Build type ..................... : ${CMAKE_BUILD_TYPE} for ${USCXML_PLATFORM_ID}")
 if (BUILD_SHARED_LIBS)
-	message(STATUS "  Building library as ............ : SHARED")
+	if (BUILD_AS_PLUGINS)
+		message(STATUS "  Building library as ............ : SHARED with plugins")
+	else()
+		message(STATUS "  Building library as ............ : SHARED without plugins")
+	endif()
 else()
-	message(STATUS "  Building library as ............ : STATIC")
+	if (BUILD_AS_PLUGINS)
+		message(STATUS "  Building library as ............ : STATIC with plugins")
+	else()
+		message(STATUS "  Building library as ............ : STATIC without plugins")
+	endif()
 endif()
 
 if (BUILD_PREFER_STATIC_LIBRARIES)

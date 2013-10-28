@@ -17,6 +17,8 @@
  *  @endcond
  */
 
+#include <boost/algorithm/string.hpp>
+
 #include "uscxml/Common.h"
 #include "uscxml/config.h"
 #include "SWIDataModel.h"
@@ -349,7 +351,7 @@ void SWIDataModel::setForeach(const std::string& item,
 
 void SWIDataModel::eval(const Element<std::string>& scriptElem, const std::string& expr) {
 	SET_PL_CONTEXT
-	if (scriptElem && HAS_ATTR(scriptElem, "type") && boost::iequals(ATTR(scriptElem, "type"), "query")) {
+	if (scriptElem && HAS_ATTR(scriptElem, "type") && iequals(ATTR(scriptElem, "type"), "query")) {
 		evalAsBool(expr);
 	} else {
 		URL localPLFile = URL::toLocalFile(expr, ".pl");
@@ -358,6 +360,10 @@ void SWIDataModel::eval(const Element<std::string>& scriptElem, const std::strin
 }
 
 bool SWIDataModel::evalAsBool(const std::string& expr) {
+	return evalAsBool(Arabica::DOM::Node<std::string>(), expr);
+}
+
+bool SWIDataModel::evalAsBool(const Arabica::DOM::Node<std::string>& node, const std::string& expr) {
 	SET_PL_CONTEXT
 	try {
 		PlCompound compound(expr.c_str());
@@ -449,9 +455,9 @@ void SWIDataModel::assign(const Element<std::string>& assignElem,
 		std::string type;
 		if (HAS_ATTR(assignElem, "type")) {
 			type = ATTR(assignElem, "type");
-			if(boost::iequals(type, "append")) {
+			if(iequals(type, "append")) {
 				callAssert = "assertz";
-			} else if(boost::iequals(type, "prepend")) {
+			} else if(iequals(type, "prepend")) {
 				callAssert = "asserta";
 			}
 		}
@@ -469,13 +475,13 @@ void SWIDataModel::assign(const Element<std::string>& assignElem,
 				child = node.getNextSibling();
 			}
 			domUrl = URL::toLocalFile(xmlDoc.str(), ".pl");
-			if (boost::iequals(type, "retract"))
+			if (iequals(type, "retract"))
 				PlCall("retractall", PlCompound(predicate.c_str(), 1));
 			dataInitStr << "load_xml_file('" << domUrl.asLocalFile(".pl") << "', XML), copy_term(XML,DATA), " << callAssert << "(" << predicate << "(DATA))";
 			PlCall(dataInitStr.str().c_str());
 		} else if (json) {
 			std::stringstream dataInitStr;
-			if (boost::iequals(type, "retract"))
+			if (iequals(type, "retract"))
 				PlCall("retractall", PlCompound(predicate.c_str(), 1));
 			dataInitStr << "json_to_prolog(" << expr << ", JSON), assert(" << predicate << "(JSON))";
 			PlCall(dataInitStr.str().c_str());

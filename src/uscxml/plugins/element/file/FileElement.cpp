@@ -21,6 +21,7 @@
 #include <glog/logging.h>
 #include <stdio.h>
 #include <vector>
+#include <boost/algorithm/string.hpp>
 
 #include "uscxml/NameSpacingParser.h"
 
@@ -54,17 +55,17 @@ void FileElement::enterElement(const Arabica::DOM::Node<std::string>& node) {
 	_givenUrl = (HAS_ATTR(node, "url") ? ATTR(node, "url") : _interpreter->getDataModel().evalAsString(ATTR(node, "urlexpr")));
 
 	std::string sandBoxStr = (HAS_ATTR(node, "sandbox") ? ATTR(node, "sandbox") : "on");
-	if (boost::iequals(sandBoxStr, "off") || boost::iequals(sandBoxStr, "false") || boost::iequals(sandBoxStr, "no")) {
+	if (iequals(sandBoxStr, "off") || iequals(sandBoxStr, "false") || iequals(sandBoxStr, "no")) {
 		_sandBoxed = false;
 	}
 
 	if (HAS_ATTR(node, "operation")) {
 		std::string operation = ATTR(node, "operation");
-		if (boost::iequals(operation, "read") || boost::iequals(operation, "load")) {
+		if (iequals(operation, "read") || iequals(operation, "load")) {
 			_operation = READ;
-		} else if(boost::iequals(operation, "write")) {
+		} else if(iequals(operation, "write")) {
 			_operation = WRITE;
-		} else if(boost::iequals(operation, "append")) {
+		} else if(iequals(operation, "append")) {
 			_operation = APPEND;
 		} else {
 			LOG(ERROR) << "File element operation attribute not one of read, write or append.";
@@ -111,13 +112,13 @@ void FileElement::enterElement(const Arabica::DOM::Node<std::string>& node) {
 	} else if(HAS_ATTR(node, "typeexpr")) {
 		type = _interpreter->getDataModel().evalAsString(ATTR(node, "typeexpr"));
 	}
-	if (boost::iequals(type, "text")) {
+	if (iequals(type, "text")) {
 		_type = TEXT;
-	} else if (boost::iequals(type, "json")) {
+	} else if (iequals(type, "json")) {
 		_type = JSON;
-	} else if (boost::iequals(type, "binary")) {
+	} else if (iequals(type, "binary")) {
 		_type = BINARY;
-	} else if(boost::iequals(type, "xml")) {
+	} else if(iequals(type, "xml")) {
 		_type = XML;
 	} else {
 		LOG(ERROR) << "File element type attribute not one of text, json, xml or binary.";
@@ -200,7 +201,7 @@ void FileElement::enterElement(const Arabica::DOM::Node<std::string>& node) {
 
 		switch (_type) {
 		case BINARY:
-			event.data.compound["content"] = Data(fileContents, fileStat.st_size, 1);
+			event.data.compound["content"] = Data(fileContents, fileStat.st_size, "application/octet-stream", true);
 			break;
 		case TEXT:
 			event.data.compound["content"] = Data(fileContents, Data::VERBATIM);

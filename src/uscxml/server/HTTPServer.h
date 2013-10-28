@@ -20,17 +20,20 @@
 #ifndef HTTPSERVER_H_AIH108EG
 #define HTTPSERVER_H_AIH108EG
 
-#include <string>
-#include <map>
+#include <stddef.h>                     // for NULL
 
-#include "uscxml/Common.h"
+#include <map>                          // for map, map<>::iterator, etc
+#include <string>                       // for string, operator<
 
 extern "C" {
-#include <event2/http.h>
+#include "event2/util.h"                // for evutil_socket_t
+#include <event2/http.h>                // for evhttp_request
 }
 
-#include "uscxml/concurrency/tinythread.h"
-#include "uscxml/Message.h"
+#include "uscxml/Common.h"              // for USCXML_API
+#include "uscxml/Message.h"             // for Data, Event
+#include "uscxml/concurrency/tinythread.h"  // for recursive_mutex, etc
+#include "uscxml/config.h"              // for OPENSSL_FOUND
 
 namespace uscxml {
 
@@ -122,7 +125,7 @@ private:
 
 	friend class HTTPServlet;
 
-#if (defined EVENT_SSL_FOUND && defined OPENSSL_FOUND)
+#if (defined EVENT_SSL_FOUND && defined OPENSSL_FOUND && defined OPENSSL_HAS_ELIPTIC_CURVES)
 	struct evhttp* _https;
 	struct evhttp_bound_socket* _sslHandle;
 	unsigned short _sslPort;

@@ -32,6 +32,7 @@
 
 #include <boost/lexical_cast.hpp>
 #include <boost/tokenizer.hpp>
+#include <boost/algorithm/string.hpp>
 
 #include <glog/logging.h>
 
@@ -59,18 +60,33 @@ using namespace Arabica::XPath;
 using namespace Arabica::DOM;
 
 void InterpreterOptions::printUsageAndExit(const char* progName) {
-	printf("%s version " USCXML_VERSION " (" CMAKE_BUILD_TYPE " build - " CMAKE_COMPILER_STRING ")\n", progName);
+	// remove path from program name
+	std::string progStr(progName);
+	if (progStr.find_last_of(PATH_SEPERATOR) != std::string::npos) {
+		progStr = progStr.substr(progStr.find_last_of(PATH_SEPERATOR) + 1, progStr.length() - (progStr.find_last_of(PATH_SEPERATOR) + 1));
+	}
+
+	printf("%s version " USCXML_VERSION " (" CMAKE_BUILD_TYPE " build - " CMAKE_COMPILER_STRING ")\n", progStr.c_str());
 	printf("Usage\n");
-	printf("\t%s", progName);
+	printf("\t%s", progStr.c_str());
+	printf(" [-v] [-d] [-lN]");
 #ifdef BUILD_AS_PLUGINS
-	printf(" [-e pluginPath]");
+	printf(" [-p pluginPath]");
 #endif
-	printf("[-v] [-pN] URL\n");
+	printf(" [-tN]");
+#ifdef EVENT_SSL_FOUND
+	printf(" [-sN] [--certificate=FILE | --private-key=FILE --public-key=FILE] ");
+#endif
+	printf(" \\\n\t\tURL1 [--disable-http] [--option1=value1 --option2=value2]");
+	printf(" \\\n\t\t[URL2 [--disable-http] [--option3=value3 --option4=value4]]");
+	printf(" \\\n\t\t[URLN [--disable-http] [--optionN=valueN --optionM=valueM]]");
 	printf("\n");
 	printf("Options\n");
 	printf("\t-v        : be verbose\n");
-	printf("\t-pN       : port for HTTP server\n");
 	printf("\t-d        : write each configuration as a dot file\n");
+	printf("\t-lN       : Set loglevel to N\n");
+	printf("\t-tN       : port for HTTP server\n");
+	printf("\t-sN       : port for HTTPS server\n");
 	printf("\n");
 	exit(1);
 }
@@ -265,12 +281,12 @@ Interpreter Interpreter::fromURI(const std::string& uri) {
 
 	Interpreter interpreter;
 
-	if (boost::iequals(absUrl.scheme(), "file")) {
+	if (iequals(absUrl.scheme(), "file")) {
 		Arabica::SAX::InputSource<std::string> inputSource;
 		inputSource.setSystemId(absUrl.asString());
 		interpreter = fromInputSource(inputSource);
 #if 0
-	} else if (boost::iequals(absUrl.scheme(), "http")) {
+	} else if (iequals(absUrl.scheme(), "http")) {
 		// handle http per arabica - this will not follow redirects
 		Arabica::SAX::InputSource<std::string> inputSource;
 		inputSource.setSystemId(absUrl.asString());
@@ -332,7 +348,7 @@ void InterpreterImpl::setNameSpaceInfo(const std::map<std::string, std::string> 
 	while(nsIter != namespaceInfo.end()) {
 		std::string uri = nsIter->first;
 		std::string prefix = nsIter->second;
-		if (boost::iequals(uri, "http://www.w3.org/2005/07/scxml")) {
+		if (iequals(uri, "http://www.w3.org/2005/07/scxml")) {
 			_nsURL = uri;
 			if (prefix.size() == 0) {
 //				LOG(INFO) << "Mapped default namespace to 'scxml:'";
@@ -849,9 +865,9 @@ void InterpreterImpl::send(const Arabica::DOM::Node<std::string>& element) {
 			boost::trim(delay);
 
 			NumAttr delayAttr(delay);
-			if (boost::iequals(delayAttr.unit, "ms")) {
+			if (iequals(delayAttr.unit, "ms")) {
 				sendReq.delayMs = strTo<uint32_t>(delayAttr.value);
-			} else if (boost::iequals(delayAttr.unit, "s")) {
+			} else if (iequals(delayAttr.unit, "s")) {
 				sendReq.delayMs = strTo<uint32_t>(delayAttr.value);
 				sendReq.delayMs *= 1000;
 			} else {
@@ -1017,7 +1033,7 @@ void InterpreterImpl::invoke(const Arabica::DOM::Node<std::string>& element) {
 
 		// autoforward
 		if (HAS_ATTR(element, "autoforward")) {
-			if (boost::iequals(ATTR(element, "autoforward"), "true")) {
+			if (iequals(ATTR(element, "autoforward"), "true")) {
 				invokeReq.autoForward = true;
 			}
 		} else {
@@ -1129,7 +1145,7 @@ bool InterpreterImpl::nameMatch(const std::string& transitionEvent, const std::s
 		return false;
 
 	// naive case of single descriptor and exact match
-	if (boost::iequals(transitionEvent, event))
+	if (iequals(transitionEvent, event))
 		return true;
 
 	boost::char_separator<char> sep(" ");
@@ -1150,7 +1166,7 @@ bool InterpreterImpl::nameMatch(const std::string& transitionEvent, const std::s
 			return true;
 
 		// are they already equal?
-		if (boost::iequals(eventDesc, event))
+		if (iequals(eventDesc, event))
 			return true;
 
 		// eventDesc has to be a real prefix of event now and therefore shorter
@@ -1175,7 +1191,7 @@ bool InterpreterImpl::hasConditionMatch(const Arabica::DOM::Node<std::string>& c
 			return false;
 		}
 		try {
-			return _dataModel.evalAsBool(ATTR(conditional, "cond"));
+			return _dataModel.evalAsBool(ATTR_NODE(conditional, "cond"), ATTR(conditional, "cond"));
 		} catch (Event e) {
 			LOG(ERROR) << "Syntax error in cond attribute of " << TAGNAME(conditional) << " element:" << std::endl << e << std::endl;
 			e.name = "error.execution";
@@ -1214,21 +1230,21 @@ void InterpreterImpl::executeContent(const Arabica::DOM::Node<std::string>& cont
 		return;
 
 	if (false) {
-	} else if (boost::iequals(TAGNAME(content), _xmlNSPrefix + "onentry") ||
-	           boost::iequals(TAGNAME(content), _xmlNSPrefix + "onexit") ||
-	           boost::iequals(TAGNAME(content), _xmlNSPrefix + "finalize") ||
-	           boost::iequals(TAGNAME(content), _xmlNSPrefix + "transition")) {
+	} else if (iequals(TAGNAME(content), _xmlNSPrefix + "onentry") ||
+	           iequals(TAGNAME(content), _xmlNSPrefix + "onexit") ||
+	           iequals(TAGNAME(content), _xmlNSPrefix + "finalize") ||
+	           iequals(TAGNAME(content), _xmlNSPrefix + "transition")) {
 		// --- CONVENIENCE LOOP --------------------------
 		NodeList<std::string> executable = content.getChildNodes();
 		for (int i = 0; i < executable.getLength(); i++) {
 			executeContent(executable.item(i), rethrow);
 		}
-	} else if (boost::iequals(TAGNAME(content), _xmlNSPrefix + "raise")) {
+	} else if (iequals(TAGNAME(content), _xmlNSPrefix + "raise")) {
 		// --- RAISE --------------------------
 		if (HAS_ATTR(content, "event")) {
 			receiveInternal(Event(ATTR(content, "event")));
 		}
-	} else if (boost::iequals(TAGNAME(content), _xmlNSPrefix + "if")) {
+	} else if (iequals(TAGNAME(content), _xmlNSPrefix + "if")) {
 		// --- IF / ELSEIF / ELSE --------------
 		Arabica::DOM::Element<std::string> ifElem = (Arabica::DOM::Element<std::string>)content;
 #if 0
@@ -1245,8 +1261,8 @@ void InterpreterImpl::executeContent(const Arabica::DOM::Node<std::string>& cont
 			for (unsigned int i = 0; i < childs.getLength(); i++) {
 				if (childs.item(i).getNodeType() != Node_base::ELEMENT_NODE)
 					continue;
-				if (boost::iequals(TAGNAME(childs.item(i)), _xmlNSPrefix + "elseif") ||
-				        boost::iequals(TAGNAME(childs.item(i)), _xmlNSPrefix + "else")) {
+				if (iequals(TAGNAME(childs.item(i)), _xmlNSPrefix + "elseif") ||
+				        iequals(TAGNAME(childs.item(i)), _xmlNSPrefix + "else")) {
 					if (blockIsTrue) {
 						// last block was true, break here
 						break;
@@ -1261,11 +1277,11 @@ void InterpreterImpl::executeContent(const Arabica::DOM::Node<std::string>& cont
 				}
 			}
 		}
-	} else if (boost::iequals(TAGNAME(content), _xmlNSPrefix + "elseif")) {
+	} else if (iequals(TAGNAME(content), _xmlNSPrefix + "elseif")) {
 		std::cerr << "Found single elsif to evaluate!" << std::endl;
-	} else if (boost::iequals(TAGNAME(content), _xmlNSPrefix + "else")) {
+	} else if (iequals(TAGNAME(content), _xmlNSPrefix + "else")) {
 		std::cerr << "Found single else to evaluate!" << std::endl;
-	} else if (boost::iequals(TAGNAME(content), _xmlNSPrefix + "foreach")) {
+	} else if (iequals(TAGNAME(content), _xmlNSPrefix + "foreach")) {
 		// --- FOREACH --------------------------
 		if (_dataModel) {
 			if (HAS_ATTR(content, "array") && HAS_ATTR(content, "item")) {
@@ -1295,7 +1311,7 @@ void InterpreterImpl::executeContent(const Arabica::DOM::Node<std::string>& cont
 				LOG(ERROR) << "Expected array and item attributes with foreach element!" << std::endl;
 			}
 		}
-	} else if (boost::iequals(TAGNAME(content), _xmlNSPrefix + "log")) {
+	} else if (iequals(TAGNAME(content), _xmlNSPrefix + "log")) {
 		// --- LOG --------------------------
 		Arabica::DOM::Element<std::string> logElem = (Arabica::DOM::Element<std::string>)content;
 		if (logElem.hasAttribute("label"))
@@ -1309,7 +1325,7 @@ void InterpreterImpl::executeContent(const Arabica::DOM::Node<std::string>& cont
 			if (logElem.hasAttribute("label"))
 				std::cout << std::endl;
 		}
-	} else if (boost::iequals(TAGNAME(content), _xmlNSPrefix + "assign")) {
+	} else if (iequals(TAGNAME(content), _xmlNSPrefix + "assign")) {
 		// --- ASSIGN --------------------------
 		if (_dataModel && HAS_ATTR(content, "location")) {
 			try {
@@ -1326,14 +1342,14 @@ void InterpreterImpl::executeContent(const Arabica::DOM::Node<std::string>& cont
 			}
 			CATCH_AND_DISTRIBUTE("Syntax error in attributes of assign element:")
 		}
-	} else if (boost::iequals(TAGNAME(content), _xmlNSPrefix + "validate")) {
+	} else if (iequals(TAGNAME(content), _xmlNSPrefix + "validate")) {
 		// --- VALIDATE --------------------------
 		if (_dataModel) {
 			std::string location = (HAS_ATTR(content, "location") ? ATTR(content, "location") : "");
 			std::string schema = (HAS_ATTR(content, "schema") ? ATTR(content, "schema") : "");
 			_dataModel.validate(location, schema);
 		}
-	} else if (boost::iequals(TAGNAME(content), _xmlNSPrefix + "script")) {
+	} else if (iequals(TAGNAME(content), _xmlNSPrefix + "script")) {
 		// --- SCRIPT --------------------------
 		if (_dataModel) {
 			if (HAS_ATTR(content, "src")) {
@@ -1381,13 +1397,13 @@ void InterpreterImpl::executeContent(const Arabica::DOM::Node<std::string>& cont
 				}
 			}
 		}
-	} else if (boost::iequals(TAGNAME(content), _xmlNSPrefix + "send")) {
+	} else if (iequals(TAGNAME(content), _xmlNSPrefix + "send")) {
 		// --- SEND --------------------------
 		try {
 			send(content);
 		}
 		CATCH_AND_DISTRIBUTE("Error while sending content")
-	} else if (boost::iequals(TAGNAME(content), _xmlNSPrefix + "cancel")) {
+	} else if (iequals(TAGNAME(content), _xmlNSPrefix + "cancel")) {
 		// --- CANCEL --------------------------
 		std::string sendId;
 		try {
@@ -1403,7 +1419,7 @@ void InterpreterImpl::executeContent(const Arabica::DOM::Node<std::string>& cont
 
 		}
 		CATCH_AND_DISTRIBUTE("Syntax error while executing cancel element")
-	} else if (boost::iequals(TAGNAME(content), _xmlNSPrefix + "invoke")) {
+	} else if (iequals(TAGNAME(content), _xmlNSPrefix + "invoke")) {
 		// --- INVOKE --------------------------
 	} else {
 		// --- Custom Executable Content
@@ -1443,7 +1459,7 @@ void InterpreterImpl::returnDoneEvent(const Arabica::DOM::Node<std::string>& sta
 bool InterpreterImpl::parentIsScxmlState(const Arabica::DOM::Node<std::string>& state) {
 	Arabica::DOM::Element<std::string> stateElem = (Arabica::DOM::Element<std::string>)state;
 	Arabica::DOM::Element<std::string> parentElem = (Arabica::DOM::Element<std::string>)state.getParentNode();
-	if (boost::iequals(TAGNAME(parentElem), _xmlNSPrefix + "scxml"))
+	if (iequals(TAGNAME(parentElem), _xmlNSPrefix + "scxml"))
 		return true;
 	return false;
 }
@@ -1498,7 +1514,7 @@ Arabica::DOM::Node<std::string> InterpreterImpl::getAncestorElement(const Arabic
 	Arabica::DOM::Node<std::string> parent = node.getParentNode();
 	while(parent) {
 		if (parent.getNodeType() == Node_base::ELEMENT_NODE &&
-		        boost::iequals(TAGNAME(parent), tagName)) {
+		        iequals(TAGNAME(parent), tagName)) {
 			return parent;
 		}
 		parent = parent.getParentNode();
@@ -1604,7 +1620,7 @@ FOUND:
 }
 
 Arabica::DOM::Node<std::string> InterpreterImpl::getSourceState(const Arabica::DOM::Node<std::string>& transition) {
-	if (boost::iequals(TAGNAME(transition.getParentNode()), _xmlNSPrefix + "initial"))
+	if (iequals(TAGNAME(transition.getParentNode()), _xmlNSPrefix + "initial"))
 		return transition.getParentNode().getParentNode();
 	return transition.getParentNode();
 }
@@ -1635,7 +1651,7 @@ Arabica::XPath::NodeSet<std::string> InterpreterImpl::getInitialStates(Arabica::
 
 	// initial element as child - but not the implicit generated one
 	NodeSet<std::string> initElems = filterChildElements(_xmlNSPrefix + "initial", state);
-	if(initElems.size() == 1 && !boost::iequals(ATTR(initElems[0], "generated"), "true")) {
+	if(initElems.size() == 1 && !iequals(ATTR(initElems[0], "generated"), "true")) {
 		NodeSet<std::string> initTrans = filterChildElements(_xmlNSPrefix + "transition", initElems[0]);
 		return getTargetStates(initTrans[0]);
 	}
@@ -1660,10 +1676,10 @@ NodeSet<std::string> InterpreterImpl::getTargetStates(const Arabica::DOM::Node<s
 	assert(boost::ends_with(TAGNAME(transition), "transition"));
 
 	// if we are called with a state, process all its transitions
-	if (isState(transition) || (transition.getNodeType() == Node_base::ELEMENT_NODE && boost::iequals(_xmlNSPrefix + "initial", TAGNAME(transition)))) {
+	if (isState(transition) || (transition.getNodeType() == Node_base::ELEMENT_NODE && iequals(_xmlNSPrefix + "initial", TAGNAME(transition)))) {
 		NodeList<std::string> childs = transition.getChildNodes();
 		for (int i = 0; i < childs.getLength(); i++) {
-			if (childs.item(i).getNodeType() == Node_base::ELEMENT_NODE && boost::iequals(TAGNAME(childs.item(i)), _xmlNSPrefix + "transition")) {
+			if (childs.item(i).getNodeType() == Node_base::ELEMENT_NODE && iequals(TAGNAME(childs.item(i)), _xmlNSPrefix + "transition")) {
 				targetStates.push_back(getTargetStates(childs.item(i)));
 			}
 		}
@@ -1684,6 +1700,7 @@ NodeSet<std::string> InterpreterImpl::getTargetStates(const Arabica::DOM::Node<s
 std::vector<std::string> InterpreterImpl::tokenizeIdRefs(const std::string& idRefs) {
 	std::vector<std::string> ids;
 
+#if 0
 	if (idRefs.length() > 0) {
 		std::istringstream iss(idRefs);
 
@@ -1691,6 +1708,13 @@ std::vector<std::string> InterpreterImpl::tokenizeIdRefs(const std::string& idRe
 		          std::istream_iterator<std::string>(),
 		          std::back_inserter<std::vector<std::string> >(ids));
 	}
+#endif
+
+	// this version is somewhat fatser than the one above
+	std::stringstream ss (idRefs);
+	std::string item;
+	while(ss >> item)
+		ids.push_back(item);
 
 	return ids;
 }
@@ -1724,7 +1748,7 @@ NodeSet<std::string> InterpreterImpl::filterChildElements(const std::string& tag
 	NodeList<std::string> childs = node.getChildNodes();
 	for (unsigned int i = 0; i < childs.getLength(); i++) {
 		if (childs.item(i).getNodeType() != Node_base::ELEMENT_NODE ||
-		        !boost::iequals(TAGNAME(childs.item(i)), tagName))
+		        !iequals(TAGNAME(childs.item(i)), tagName))
 			continue;
 		filteredChildElems.push_back(childs.item(i));
 	}
@@ -1739,9 +1763,9 @@ NodeSet<std::string> InterpreterImpl::getProperAncestors(const Arabica::DOM::Nod
 		while((node = node.getParentNode())) {
 			if (!isState(node))
 				break;
-			if (boost::iequals(TAGNAME(node), _xmlNSPrefix + "scxml")) // do not return scxml root itself - this is somewhat ill-defined
+			if (iequals(TAGNAME(node), _xmlNSPrefix + "scxml")) // do not return scxml root itself - this is somewhat ill-defined
 				break;
-			if (!boost::iequals(TAGNAME(node), _xmlNSPrefix + "parallel") && !boost::iequals(TAGNAME(node), _xmlNSPrefix + "state") && !boost::iequals(TAGNAME(node), _xmlNSPrefix + "scxml"))
+			if (!iequals(TAGNAME(node), _xmlNSPrefix + "parallel") && !iequals(TAGNAME(node), _xmlNSPrefix + "state") && !iequals(TAGNAME(node), _xmlNSPrefix + "scxml"))
 				break;
 			if (node == s2)
 				break;
@@ -1777,24 +1801,24 @@ bool InterpreterImpl::isState(const Arabica::DOM::Node<std::string>& state) {
 		return false;
 
 	std::string tagName = LOCALNAME(state);
-	if (boost::iequals("state", tagName))
+	if (iequals("state", tagName))
 		return true;
-	if (boost::iequals("scxml", tagName))
+	if (iequals("scxml", tagName))
 		return true;
-	if (boost::iequals("parallel", tagName))
+	if (iequals("parallel", tagName))
 		return true;
-//	if (boost::iequals("history", tagName)) // this is no state, see mail to W3C list
+//	if (iequals("history", tagName)) // this is no state, see mail to W3C list
 //		return true;
-	if (boost::iequals("final", tagName))
+	if (iequals("final", tagName))
 		return true;
 	return false;
 }
 
 bool InterpreterImpl::isFinal(const Arabica::DOM::Node<std::string>& state) {
 	std::string tagName = LOCALNAME(state);
-	if (boost::iequals("final", tagName))
+	if (iequals("final", tagName))
 		return true;
-	if (HAS_ATTR(state, "final") && boost::iequals("true", ATTR(state, "final")))
+	if (HAS_ATTR(state, "final") && iequals("true", ATTR(state, "final")))
 		return true;
 	return false;
 }
@@ -1806,7 +1830,7 @@ bool InterpreterImpl::isInEmbeddedDocument(const Node<std::string>& node) {
 		if(parent == _scxml) {
 			return false;
 		}
-		if(boost::iequals(parent.getLocalName(), "content")) {
+		if(iequals(parent.getLocalName(), "content")) {
 			return true;
 		}
 		parent = parent.getParentNode();
@@ -1830,22 +1854,22 @@ bool InterpreterImpl::isInitial(const Arabica::DOM::Node<std::string>& state) {
 
 bool InterpreterImpl::isPseudoState(const Arabica::DOM::Node<std::string>& state) {
 	std::string tagName = LOCALNAME(state);
-	if (boost::iequals("initial", tagName))
+	if (iequals("initial", tagName))
 		return true;
-	if (boost::iequals("history", tagName))
+	if (iequals("history", tagName))
 		return true;
 	return false;
 }
 
 bool InterpreterImpl::isTransitionTarget(const Arabica::DOM::Node<std::string>& elem) {
-	return (isState(elem) || boost::iequals(LOCALNAME(elem), "history"));
+	return (isState(elem) || iequals(LOCALNAME(elem), "history"));
 }
 
 bool InterpreterImpl::isAtomic(const Arabica::DOM::Node<std::string>& state) {
-	if (boost::iequals("final", LOCALNAME(state)))
+	if (iequals("final", LOCALNAME(state)))
 		return true;
 
-	if (boost::iequals("parallel", LOCALNAME(state)))
+	if (iequals("parallel", LOCALNAME(state)))
 		return false;
 
 	Arabica::DOM::NodeList<std::string> childs = state.getChildNodes();
@@ -1857,7 +1881,7 @@ bool InterpreterImpl::isAtomic(const Arabica::DOM::Node<std::string>& state) {
 }
 
 bool InterpreterImpl::isHistory(const Arabica::DOM::Node<std::string>& state) {
-	if (boost::iequals("history", LOCALNAME(state)))
+	if (iequals("history", LOCALNAME(state)))
 		return true;
 	return false;
 }
@@ -1865,7 +1889,7 @@ bool InterpreterImpl::isHistory(const Arabica::DOM::Node<std::string>& state) {
 bool InterpreterImpl::isParallel(const Arabica::DOM::Node<std::string>& state) {
 	if (!isState(state))
 		return false;
-	if (boost::iequals("parallel", LOCALNAME(state)))
+	if (iequals("parallel", LOCALNAME(state)))
 		return true;
 	return false;
 }
@@ -1875,7 +1899,7 @@ bool InterpreterImpl::isCompound(const Arabica::DOM::Node<std::string>& state) {
 	if (!isState(state))
 		return false;
 
-	if (boost::iequals(LOCALNAME(state), "parallel")) // parallel is no compound state
+	if (iequals(LOCALNAME(state), "parallel")) // parallel is no compound state
 		return false;
 
 	Arabica::DOM::NodeList<std::string> childs = state.getChildNodes();
@@ -1891,11 +1915,11 @@ void InterpreterImpl::setupIOProcessors() {
 	std::map<std::string, IOProcessorImpl*> ioProcs = _factory->getIOProcessors();
 	std::map<std::string, IOProcessorImpl*>::iterator ioProcIter = ioProcs.begin();
 	while(ioProcIter != ioProcs.end()) {
-		if (boost::iequals(ioProcIter->first, "basichttp") && !(_capabilities & CAN_BASIC_HTTP)) {
+		if (iequals(ioProcIter->first, "basichttp") && !(_capabilities & CAN_BASIC_HTTP)) {
 			ioProcIter++;
 			continue;
 		}
-		if (boost::iequals(ioProcIter->first, "http") && !(_capabilities & CAN_GENERIC_HTTP)) {
+		if (iequals(ioProcIter->first, "http") && !(_capabilities & CAN_GENERIC_HTTP)) {
 			ioProcIter++;
 			continue;
 		}
@@ -1904,7 +1928,7 @@ void InterpreterImpl::setupIOProcessors() {
 		_ioProcessors[ioProcIter->first].setType(ioProcIter->first);
 		_ioProcessors[ioProcIter->first].setInterpreter(this);
 
-		if (boost::iequals(ioProcIter->first, "http")) {
+		if (iequals(ioProcIter->first, "http")) {
 			// this is somewhat ugly
 			_httpServlet = static_cast<InterpreterServlet*>(_ioProcessors[ioProcIter->first]._impl.get());
 		}
@@ -2018,8 +2042,8 @@ bool InterpreterImpl::isLegalConfiguration(const NodeSet<std::string>& config) {
 			Node<std::string> parent = config[i];
 			while((parent = parent.getParentNode())) {
 				if (isState(parent) &&
-				        (boost::iequals(LOCALNAME(parent), "state") ||
-				         boost::iequals(LOCALNAME(parent), "parallel"))) {
+				        (iequals(LOCALNAME(parent), "state") ||
+				         iequals(LOCALNAME(parent), "parallel"))) {
 					if (!isMember(parent, config))
 						return false;
 				}

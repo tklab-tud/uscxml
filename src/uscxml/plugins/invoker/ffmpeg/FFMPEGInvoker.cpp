@@ -17,6 +17,8 @@
  *  @endcond
  */
 
+#include <boost/algorithm/string.hpp>
+
 #include "FFMPEGInvoker.h"
 #include <glog/logging.h>
 
@@ -99,7 +101,7 @@ void FFMPEGInvoker::invoke(const InvokeRequest& req) {
 void FFMPEGInvoker::send(const SendRequest& req) {
 	SendRequest reqCopy = req;
 
-	if (boost::iequals(req.name, "render.start")) {
+	if (iequals(req.name, "render.start")) {
 		// create a new encoding context
 		int ret;
 		EncodingContext* ctx = new EncodingContext();
@@ -165,9 +167,9 @@ void FFMPEGInvoker::send(const SendRequest& req) {
 			ctx->frame->pts = 0;
 
 		_encoders[context] = ctx;
-	} else if(boost::iequals(req.name, "render.frame")) {
+	} else if(iequals(req.name, "render.frame")) {
 		_workQueue.push(req);
-	} else if(boost::iequals(req.name, "render.end")) {
+	} else if(iequals(req.name, "render.end")) {
 		_workQueue.push(req);
 	}
 }
@@ -222,8 +224,7 @@ void FFMPEGInvoker::finish(EncodingContext* ctx, const SendRequest& req) {
 	Event event;
 	event.name = "render.done";
 	event.data.compound["context"] = context;
-	event.data.compound["movie"] = Data(movieBuffer, length, true);
-	event.data.compound["mimetype"] = Data("video/mpeg", Data::VERBATIM);
+	event.data.compound["movie"] = Data(movieBuffer, length, "video/mpeg", true);
 	event.data.compound["filename"] = Data(std::string("movie.") + ctx->extension, Data::VERBATIM);
 
 	returnEvent(event);
@@ -241,7 +242,7 @@ void FFMPEGInvoker::process(const SendRequest& req) {
 	tthread::lock_guard<tthread::recursive_mutex> lock(ctx->mutex);
 
 	// finish encoding and return
-	if(boost::iequals(req.name, "render.end")) {
+	if(iequals(req.name, "render.end")) {
 		finish(ctx, req);
 		delete _encoders[context];
 		_encoders.erase(context);

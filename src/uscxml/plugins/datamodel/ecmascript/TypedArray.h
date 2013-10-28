@@ -93,6 +93,17 @@ public:
 //		memcpy(_buffer->_data + index * sizeof(unsigned char), &value, sizeof(unsigned char));
 //	}
 
+	std::string getMimeType() {
+		if (_buffer)
+			return _buffer->mimeType;
+		return "";
+	}
+
+	void setMimeType(const std::string& mimeType) {
+		if (_buffer)
+			_buffer->mimeType = mimeType;
+	}
+
 	boost::shared_ptr<Blob> _buffer;
 };
 

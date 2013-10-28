@@ -17,6 +17,8 @@
  *  @endcond
  */
 
+#include <boost/algorithm/string.hpp>
+
 #include "DirMonInvoker.h"
 #include <glog/logging.h>
 
@@ -105,13 +107,13 @@ void DirMonInvoker::invoke(const InvokeRequest& req) {
 	}
 
 	if (req.params.find("reportexisting") != req.params.end() &&
-	        boost::iequals(req.params.find("reportexisting")->second.atom, "false"))
+	        iequals(req.params.find("reportexisting")->second.atom, "false"))
 		_reportExisting = false;
 	if (req.params.find("recurse") != req.params.end() &&
-	        boost::iequals(req.params.find("recurse")->second.atom, "true"))
+	        iequals(req.params.find("recurse")->second.atom, "true"))
 		_recurse = true;
 	if (req.params.find("reporthidden") != req.params.end() &&
-	        boost::iequals(req.params.find("reporthidden")->second.atom, "true"))
+	        iequals(req.params.find("reporthidden")->second.atom, "true"))
 		_reportHidden = true;
 
 	std::string suffixList;
@@ -136,7 +138,7 @@ void DirMonInvoker::invoke(const InvokeRequest& req) {
 	while(dirIter != req.params.upper_bound("dir")) {
 		// this is simplified - Data might be more elaborate than a simple string atom
 		URL url(dirIter->second.atom);
-		if (!url.toAbsolute(_interpreter->getBaseURI()) || !boost::iequals(url.scheme(), "file")) {
+		if (!url.toAbsolute(_interpreter->getBaseURI()) || !iequals(url.scheme(), "file")) {
 			LOG(ERROR) << "Given directory '" << dirIter->second << "' cannot be transformed to absolute path";
 		} else {
 			_dir = url.path();

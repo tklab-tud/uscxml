@@ -25,8 +25,6 @@
 #endif
 
 #include "uscxml/server/HTTPServer.h"
-#include "uscxml/Message.h"
-#include "uscxml/Factory.h"
 
 #include <string>
 #include <iostream>
@@ -35,7 +33,6 @@ extern "C" {
 #include <event2/dns.h>
 #include <event2/event.h>
 #include <event2/buffer.h>
-#include <event2/http.h>
 #include <event2/keyvalq_struct.h>
 #include <event2/http_struct.h>
 #include <event2/thread.h>
@@ -45,17 +42,24 @@ extern "C" {
 #include <boost/algorithm/string.hpp>
 
 #ifndef _WIN32
-#include <netdb.h>
-#include <arpa/inet.h>
+#include <netinet/in.h>                 // for INADDR_ANY
+#include <stdint.h>                     // for uint16_t
+#include <stdlib.h>                     // for NULL, free
+#include <unistd.h>                     // for gethostname
+//#include <netdb.h>
+//#include <arpa/inet.h>
 #endif
 
-#if (defined EVENT_SSL_FOUND && defined OPENSSL_FOUND)
+#if (defined EVENT_SSL_FOUND && defined OPENSSL_FOUND && defined OPENSSL_HAS_ELIPTIC_CURVES)
 #include <openssl/ssl.h>
 #include <openssl/bio.h>
 #include <openssl/err.h>
 #include <openssl/pem.h>
 #include <event2/bufferevent_ssl.h>
 #endif
+
+#include "uscxml/Message.h"
+#include "uscxml/Convenience.h"         // for toStr
 
 #ifdef BUILD_AS_PLUGINS
 #include <Pluma/Connector.hpp>
@@ -88,7 +92,7 @@ HTTPServer::HTTPServer(unsigned short port, SSLConfig* sslConf) {
 	}
 	determineAddress();
 
-#if (defined EVENT_SSL_FOUND && defined OPENSSL_FOUND)
+#if (defined EVENT_SSL_FOUND && defined OPENSSL_FOUND && defined OPENSSL_HAS_ELIPTIC_CURVES)
 	if (!sslConf) {
 		_https = NULL;
 		_sslHandle = NULL;
@@ -161,7 +165,7 @@ HTTPServer* HTTPServer::getInstance(unsigned short port, SSLConfig* sslConf) {
 	return _instance;
 }
 
-#if (defined EVENT_SSL_FOUND && defined OPENSSL_FOUND)
+#if (defined EVENT_SSL_FOUND && defined OPENSSL_FOUND && defined OPENSSL_HAS_ELIPTIC_CURVES)
 // see https://github.com/ppelleti/https-example/blob/master/https-server.c
 struct bufferevent* HTTPServer::sslBufferEventCallback(struct event_base *base, void *arg) {
 	struct bufferevent* r;
@@ -360,7 +364,7 @@ void HTTPServer::httpRecvReqCallback(struct evhttp_request *req, void *callbackD
 	        request.data.compound["header"].compound.find("Content-Type") != request.data.compound["header"].compound.end()) {
 		std::string contentType = request.data.compound["header"].compound["Content-Type"].atom;
 		if (false) {
-		} else if (boost::iequals(contentType, "application/x-www-form-urlencoded")) {
+		} else if (iequals(contentType, "application/x-www-form-urlencoded")) {
 			// this is a form submit
 			std::stringstream ss(request.data.compound["content"].atom);
 			std::string item;
@@ -383,7 +387,7 @@ void HTTPServer::httpRecvReqCallback(struct evhttp_request *req, void *callbackD
 				key.clear();
 			}
 			request.data.compound["content"].atom.clear();
-		} else if (boost::iequals(contentType, "application/json")) {
+		} else if (iequals(contentType, "application/json")) {
 			request.data.compound["content"] = Data::fromJSON(request.data.compound["content"].atom);
 		}
 	}
@@ -411,8 +415,8 @@ void HTTPServer::processByMatchingServlet(const Request& request) {
 	while(servletIter != _servlets.end()) {
 		// is the servlet path a prefix of the actual path?
 		std::string servletPath = "/" + servletIter->first;
-		if (boost::iequals(actualPath.substr(0, servletPath.length()), servletPath) && // actual path is a prefix
-		        boost::iequals(actualPath.substr(servletPath.length(), 1), "/")) {     // and next character is a '/'
+		if (iequals(actualPath.substr(0, servletPath.length()), servletPath) && // actual path is a prefix
+		        iequals(actualPath.substr(servletPath.length(), 1), "/")) {     // and next character is a '/'
 			matches.insert(std::make_pair(servletPath, servletIter->second));
 		}
 		servletIter++;
@@ -458,7 +462,7 @@ void HTTPServer::replyCallback(evutil_socket_t fd, short what, void *arg) {
 
 	struct evbuffer *evb = NULL;
 
-	if (!boost::iequals(reply->type, "HEAD") && reply->content.size() > 0) {
+	if (!iequals(reply->type, "HEAD") && reply->content.size() > 0) {
 		evb = evbuffer_new();
 		evbuffer_add(evb, reply->content.data(), reply->content.size());
 	}

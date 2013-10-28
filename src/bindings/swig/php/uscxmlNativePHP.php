@@ -250,14 +250,15 @@ class Blob {
 		return $this->_pData[$var];
 	}
 
-	function __construct($size_or_data,$size=null,$adopt=false) {
+	function __construct($size_or_data,$size=null,$mimeType=null,$adopt=false) {
 		if (is_resource($size_or_data) && get_resource_type($size_or_data) === '_p_uscxml__Blob') {
 			$this->_cPtr=$size_or_data;
 			return;
 		}
 		switch (func_num_args()) {
 		case 1: $this->_cPtr=new_Blob($size_or_data); break;
-		default: $this->_cPtr=new_Blob($size_or_data,$size,$adopt);
+		case 2: $this->_cPtr=new_Blob($size_or_data,$size); break;
+		default: $this->_cPtr=new_Blob($size_or_data,$size,$mimeType,$adopt);
 		}
 	}
 
@@ -308,7 +309,7 @@ class Data {
 
 	const INTERPRETED = Data_INTERPRETED;
 
-	function __construct($atom__or_data_or_dom=null,$type__or_size=null,$adopt=null) {
+	function __construct($atom__or_data_or_dom=null,$type__or_size=null,$mimeType=null,$adopt=null) {
 		if (is_resource($atom__or_data_or_dom) && get_resource_type($atom__or_data_or_dom) === '_p_uscxml__Data') {
 			$this->_cPtr=$atom__or_data_or_dom;
 			return;
@@ -317,7 +318,8 @@ class Data {
 		case 0: $this->_cPtr=new_Data(); break;
 		case 1: $this->_cPtr=new_Data($atom__or_data_or_dom); break;
 		case 2: $this->_cPtr=new_Data($atom__or_data_or_dom,$type__or_size); break;
-		default: $this->_cPtr=new_Data($atom__or_data_or_dom,$type__or_size,$adopt);
+		case 3: $this->_cPtr=new_Data($atom__or_data_or_dom,$type__or_size,$mimeType); break;
+		default: $this->_cPtr=new_Data($atom__or_data_or_dom,$type__or_size,$mimeType,$adopt);
 		}
 	}
 

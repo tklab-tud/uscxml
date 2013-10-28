@@ -17,6 +17,8 @@
  *  @endcond
  */
 
+#include <boost/algorithm/string.hpp>
+
 #include "MilesSessionInvoker.h"
 #include <glog/logging.h>
 
@@ -57,7 +59,7 @@ Data MilesSessionInvoker::getDataModelVariables() {
 
 void MilesSessionInvoker::send(const SendRequest& req) {
 //	std::cout << req;
-	if (boost::iequals(req.name, "disconnect")) {
+	if (iequals(req.name, "disconnect")) {
 		std::string reflectorIP = "127.0.0.1";
 		Event::getParam(req.params, "reflectorip", reflectorIP);
 
@@ -70,7 +72,7 @@ void MilesSessionInvoker::send(const SendRequest& req) {
 			LOG(ERROR) << "Could not disconnect from reflector session";
 			return;
 		}
-	} else if (boost::iequals(req.name, "image")) {
+	} else if (iequals(req.name, "image")) {
 		// client wants an image
 		URL imageURL1("test1.jpeg");
 		URL imageURL2("test2.jpeg");
@@ -100,7 +102,7 @@ void MilesSessionInvoker::send(const SendRequest& req) {
 
 		returnEvent(retEv);
 
-	} else if (boost::iequals(req.name, "connect")) {
+	} else if (iequals(req.name, "connect")) {
 		std::string email = "someSaneDefault";
 		Event::getParam(req.params, "email", email);
 

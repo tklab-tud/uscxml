@@ -17,6 +17,8 @@
  *  @endcond
  */
 
+#include <boost/algorithm/string.hpp>
+
 #include "uscxml/Common.h"
 #include "NULLDataModel.h"
 
@@ -94,7 +96,7 @@ bool NULLDataModel::isDeclared(const std::string& expr) {
  * The predicate must return 'true' if and only if that state is in the current
  * state configuration.
  */
-bool NULLDataModel::evalAsBool(const std::string& expr) {
+bool NULLDataModel::evalAsBool(const Arabica::DOM::Node<std::string>& node, const std::string& expr) {
 	std::string trimmedExpr = expr;
 	boost::trim(trimmedExpr);
 	if (!boost::istarts_with(trimmedExpr, "in"))
