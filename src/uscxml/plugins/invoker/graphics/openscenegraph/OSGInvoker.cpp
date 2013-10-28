@@ -101,7 +101,7 @@ void OSGInvoker::invoke(const InvokeRequest& req) {
 
 	setupColors();
 
-	std::cout << req.dom;
+//	std::cout << req.dom;
 
 	// register default event handlers
 	Arabica::DOM::Events::EventTarget<std::string> evTarget = Arabica::DOM::Events::EventTarget<std::string>(req.dom);

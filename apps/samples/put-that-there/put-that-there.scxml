@@ -1,6 +1,7 @@
-<scxml datamodel="ecmascript" initial="start" binding="late" 
+<scxml datamodel="ecmascript" initial="start" binding="late" name="ptt"
 	xmlns="http://www.w3.org/2005/07/scxml" 
 	xmlns:scenegraph="http://uscxml.tk.informatik.tu-darmstadt.de/scenegraph.xsd">
+	<script src="http://uscxml.tk.informatik.tu-darmstadt.de/scripts/dump.js" />
 	<state id="start">
 		<invoke type="scenegraph">
 			<content>
@@ -25,5 +26,46 @@
 				</scenegraph:display>
 			</content>
 		</invoke>
+		<state id="main">
+			<transition event="http" target="main" type="internal" 
+				cond="_event.data.pathComponent[1] === 'basichttp' &amp;&amp; _event.data.pathComponent[2] === 'query'" >
+				<!-- a request for /ptt/basichttp/query -->
+				<script>dump(_event);</script>
+				<if cond="_event.data.header['X-XPath']">
+					<script>
+						// a xpath query, evaluate, check for result and set reply on event
+						var nodes = document.evaluate(_event.data.header['X-XPath']);
+						if (nodes.asNodeSet().size &gt; 0) {
+							_event.reply = nodes.asNodeSet()[0];
+						} else {
+							_event.reply = "No nodes!";
+						}
+					</script>
+				</if>
+				<send type="basichttp" targetexpr="_event.data.header['X-Reply-To']">
+					<content expr="_event.reply" />
+				</send>
+			</transition>
+
+			<transition event="http" target="main" type="internal" 
+				cond="_event.data.pathComponent[1] === 'query'" >
+				<!-- a request for /ptt/query -->
+				<script>dump(_event);</script>
+				<if cond="_event.data.header['X-XPath']">
+					<script>
+						// a xpath query, evaluate, check for result and set reply on event
+						var nodes = document.evaluate(_event.data.header['X-XPath']);
+						if (nodes.asNodeSet().size &gt; 0) {
+							_event.reply = nodes.asNodeSet()[0];
+						} else {
+							_event.reply = "No nodes!";
+						}
+					</script>
+				</if>
+				<respond to="_event.origin">
+					<content expr="_event.reply" />
+				</respond>
+			</transition>
+		</state>
 	</state>
 </scxml>

@@ -61,7 +61,7 @@ JSValueRef JSCNodeSet::getPropertyCustomCallback(JSContextRef ctx, JSObjectRef o
 
 	int index = boost::lexical_cast<int>(propName);
 	struct JSCNodeSetPrivate* privData = (struct JSCNodeSetPrivate*)JSObjectGetPrivate(object);
-	if (privData->nativeObj->size() < index) {
+	if (privData->nativeObj->size() <= index) {
 		return JSValueMakeUndefined(ctx);
 	}
 
