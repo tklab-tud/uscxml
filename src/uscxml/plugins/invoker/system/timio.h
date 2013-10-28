@@ -21,24 +21,25 @@ public:
 	TimIO(std::string ipaddr, std::string port);
 	~TimIO();
 
-	std::queue<std::string> _timCmd;
-	std::queue<unsigned int> _timCmdId;
-	std::queue<bool> _timCmdWrite;
-	unsigned int _defTimeout;
+	std::queue<std::string> _timCmd;	/**< Coda FIFO del contenuto dei comandi da inviare al TIM */
+	std::queue<unsigned int> _timCmdId;	/**< Coda FIFO degli id dei comandi da inviare al TIM */
+	std::queue<bool> _timCmdWrite;		/**< Coda FIFO del tipo di comando da inviare al TIM */
+	unsigned int _defTimeout;		/**< Timeout di default da applicare nelle interazioni col TIM */
 
-	tthread::thread* _thread;
+	tthread::thread* _thread;	/**< Thread del client TCP */
 
 	static void client(void *instance);
+
 private:
 	bool connect2TIM();
 
-	std::string _TIMport;
-	std::string _TIMaddr;
-	char* _reply;
-	int _socketfd ; // The socket descriptor
-	struct addrinfo *_servinfo;
+	std::string _TIMport;	/**< Porta TCP del server TIM */
+	std::string _TIMaddr;	/**< Indirizzo del server TIM */
+	char* _reply;		/**< Buffer di ricezione del client TIM */
+	int _socketfd;		/**< Socket descriptor del client TIM */
+	struct addrinfo *_servinfo;	/**< Informazioni di sessione del server TIM */
 
-	tthread::recursive_mutex _mutex;
+	tthread::recursive_mutex _mutex; /**< Mutex del thread del client TIM */
 };
 
 }

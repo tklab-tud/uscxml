@@ -29,6 +29,8 @@ namespace uscxml {
 
 #define INVOKER_TYPE		"xmlbridge"
 
+#define DBID_DELIMITER		','
+
 enum exceptions {
 	TIM_TIMEOUT,
 	TIM_ERROR,
@@ -56,8 +58,8 @@ public:
 	void buildTIMexception(unsigned int cmdid, exceptions type);
 
 protected:
-	unsigned int _DBid;
-	unsigned int _timeoutVal;
+	unsigned int _DBid;		/** L'ID del datablock gestito dall'invoker */
+	unsigned int _timeoutVal;	/** Il Timeout di default da applicare per le comunicazioni col TIM */
 };
 
 class XmlBridgeInputEvents {
@@ -74,35 +76,55 @@ public:
 	void handleTIMexception(exceptions type);
 	bool handleMESreq(unsigned int DBid, unsigned int cmdid, bool write, const std::list<std::string> reqData);
 
+	/**
+	 * @brief Registra un invoker
+	 * @param Puntatore all'istanza
+	 */
 	void registerInvoker(unsigned int DBid, XmlBridgeInvoker* invokref) {
 		_invokers.insert(std::pair<unsigned int, XmlBridgeInvoker* >(DBid, invokref));
 	}
+	/**
+	 * @brief Registra una istanza di TimIO
+	 * @param Puntatore all'istanza
+	 */
 	void registerTimio(TimIO* ioref) {
 		_timio = ioref;
 	}
 
-	/** It is not the exact type since mesbufferer.h is included only in xmlbridgeinvoker.cpp */
+	/**
+	 * @brief Registra una istanza di MesBufferer
+	 * @param Puntatore all'istanza
+	 */
 	void registerMesbufferer(void* mesref) {
 		_mesbufferer = mesref;
 	}
 
+	/**
+	 * @brief Ritorna una reference all'istanza del singleton XmlBridgeInputEvents
+	 *	Se l'oggetto statico non è ancora stato creato, istanzia la classe.
+	 * @return La reference di XmlBridgeInputEvents
+	 */
 	static XmlBridgeInputEvents& getInstance() {
 		static XmlBridgeInputEvents instance;
 		return instance;
 	}
 
 private:
+	/**
+	 * @brief Istanzia il Singleton XmlBridgeInputEvents
+	 */
 	XmlBridgeInputEvents() : _invokers() {
 		LOG(INFO) << "Instantiating XmlBridgeInputEvents Singleton";
 	}
 	XmlBridgeInputEvents& operator=( const XmlBridgeInputEvents& );
 
-	/** One invoker/interpreter for each datablock */
+	/** Mappa che ha per indice l'id di un datablock e per contenuto
+	 * il puntatore all'invoker che lo gestisce.
+	 * Esiste un invoker per ciascun datablock specificato nel nome della macchina a stati SCXML */
 	std::map<unsigned int, XmlBridgeInvoker*> _invokers;
-	TimIO* _timio;
 
-	/** It is not the exact type since mesbufferer.h is included only in xmlbridgeinvoker.cpp */
-	void* _mesbufferer;
+	TimIO* _timio;		/**< Puntatore all'istanza del TIM Client */
+	void* _mesbufferer;	/**< Puntatore all'istanze di MesBufferer */
 };
 
 #ifdef BUILD_AS_PLUGINS

@@ -3,6 +3,10 @@
 
 namespace uscxml {
 
+/**
+ * @brief Attiva una sessione TCP con il server TIM
+ * @return Esito operazione
+ */
 bool TimIO::connect2TIM() {
 	struct addrinfo hints, *p;
 	int rv;
@@ -21,7 +25,7 @@ bool TimIO::connect2TIM() {
 		return false;
 	}
 
-	// loop through all the results and connect to the first we can
+	/* loop through all the results and connect to the first we can */
 	for (p = _servinfo; p != NULL; p = p->ai_next) {
 		if ((_socketfd = socket(p->ai_family, p->ai_socktype,
 				p->ai_protocol)) == -1) {
@@ -58,6 +62,12 @@ bool TimIO::connect2TIM() {
 	return true;
 }
 
+/**
+ * @brief Inizializzazione del Client TCP
+ *
+ * @param ipaddr
+ * @param port
+ */
 TimIO::TimIO(std::string ipaddr, std::string port) :
 	_timCmd(), _timCmdId(), _timCmdWrite(),
 	_TIMport(port), _TIMaddr(ipaddr),
@@ -82,6 +92,10 @@ TimIO::TimIO(std::string ipaddr, std::string port) :
 	bridgeInstance.registerTimio(this);	
 }
 
+/**
+ * @brief Distruttore del client TCP
+ *
+ */
 TimIO::~TimIO()
 {
 	if (_servinfo != NULL)
@@ -93,6 +107,14 @@ TimIO::~TimIO()
 	}
 }
 
+/**
+ * @brief Invia un comando al TIM. Il comando è ricevuto dall'interprete SCXML.
+ *	Immediatamente dopo l'invio attende la risposta del TIM.
+ *	Invia un'eventuale risposta all'interprete SCXML.
+ *	Tutte le operazioni bloccanti sono interrotte da un timeout.
+ *
+ * @param Puntatore ad all'istanza di TimIO
+ */
 void TimIO::client(void *instance) {
 	TimIO* myobj = (TimIO*)instance;
 	XmlBridgeInputEvents& bridgeInstance = XmlBridgeInputEvents::getInstance();
@@ -110,7 +132,7 @@ void TimIO::client(void *instance) {
 
 		perror("TIM client: send error");
 		if (errno == EPIPE) {
-			/** If we lost the TCP connection we retry the send of data */
+			/* If we lost the TCP connection we retry the send of data */
 			if (!myobj->connect2TIM()) {
 				bridgeInstance.handleTIMexception(TIM_ERROR);
 				return;
@@ -126,7 +148,7 @@ void TimIO::client(void *instance) {
 		return;
 	}
 
-	/**
+	/*
 	 * Function blocks until the full amount of message data can be returned
 	 */
 	int replylen;
@@ -155,7 +177,7 @@ void TimIO::client(void *instance) {
 
 	LOG(INFO) << "Received reply from TIM: " << myobj->_reply;
 
-	/** This function logs and reports errors internally */
+	/* This function logs and reports errors internally */
 	bridgeInstance.handleTIMreply(std::string(myobj->_reply));
 }
 
