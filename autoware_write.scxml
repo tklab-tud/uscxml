@@ -107,16 +107,13 @@
 					namelist="$READ0"
 					target="#_xmlbridge0"/>
 			</transition>
-			<transition event="*"/>
 		</state>
 		<state id="sent0">
 			<transition event="0_wReply" cond="$_event/data/data/nestedData[@type='state']/text() = 'ok'" target="init0">
-				<send 	event="0_wAck"
-					target="#_xmlbridge0"/>
+				<send 	event="0_wAck" target="#_xmlbridge0"/>
 			</transition>
 			<transition event="0_wReply" cond="$_event/data/data/nestedData[@type='state']/text() = 'error'" target="init0">
-				<send 	event="0_wErr"
-					target="#_xmlbridge0"/>
+				<send 	event="0__Err" target="#_xmlbridge0"/>
 			</transition>
 			<transition event="0_rReply" target="init0">
 				<if cond="$_event/data/frame/data/text()">
@@ -124,13 +121,16 @@
 						namelist="$_event/data/frame/data/text()"
 						target="#_xmlbridge0"/>
 				<else/>
-					<send 	event="0_rErr"
+					<send 	event="0__Err"
 						target="#_xmlbridge0"/>
 				</if>
 			</transition>
-			<transition event="timeout0" target="init0" />
-			<transition event="error0" target="init0" />
-			<transition event="*"/>
+			<transition event="timeout0" target="init0">
+				<send 	event="0__Err" target="#_xmlbridge0"/>
+			</transition>
+			<transition event="error0" target="init0">
+				<send 	event="0__Err" target="#_xmlbridge0"/>
+			</transition>
 		</state>
 	</state>
 	<state id="1" initial="init1">

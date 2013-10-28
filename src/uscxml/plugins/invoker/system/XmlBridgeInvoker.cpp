@@ -68,7 +68,7 @@ void XmlBridgeInvoker::send(const SendRequest& req) {
 			bridgeInstance.sendReply2MES(_DBid, cmdid, write,
 				write ? std::string() : reqCopy.data.compound[nameiter->first].atom);
 		} else if (evType == SCXML2MES_ERR) {
-			bridgeInstance.sendErr2MES(_DBid, cmdid, write);
+			bridgeInstance.sendErr2MES(_DBid, cmdid);
 			return;
 		} else {
 			LOG(ERROR) << "XmlBridgeInvoker: received an unsupported event type from Interpreter, discarding request\n"
@@ -171,9 +171,9 @@ void XmlBridgeInputEvents::sendReply2MES(unsigned int DBid, unsigned int cmdid, 
 
 
 /** SCXML -> MES */
-void XmlBridgeInputEvents::sendErr2MES(unsigned int DBid, unsigned int cmdid, bool write)
+void XmlBridgeInputEvents::sendErr2MES(unsigned int DBid, unsigned int cmdid)
 {
-	((MesBufferer *)_mesbufferer)->bufferMESerror(DBid, cmdid, write);
+	((MesBufferer *)_mesbufferer)->bufferMESerror(DBid, cmdid);
 }
 
 /**  TIM -> SCXML */
