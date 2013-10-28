@@ -100,7 +100,5 @@ make
 cp ./src/.libs/libarabica.a ./libarabica.i386.a
 make clean
 
-exit
-
 lipo -create ./libarabica.i386.a ./libarabica.x86_64.a -output ${DEST_DIR}/lib/libarabica.a
 lipo -create ./libarabica_d.i386.a ./libarabica_d.x86_64.a -output ${DEST_DIR}/lib/libarabica_d.a
