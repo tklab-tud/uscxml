@@ -144,7 +144,7 @@
 				<assign location="$WRITE1/data/item[@i='3']/nestedData" expr="$_event/data/data[@id='3']/text()"/>
 				<send 	event="1_wCmd"
 					namelist="$WRITE1"
-					target="#_xmlbridge0" />
+					target="#_xmlbridge0"/>
 			</transition>
 			<transition event="1_wReq" cond="$_event/data/data[@id='2']">
 				<assign location="$WRITE1/data/item[@i='2']/nestedData" expr="$_event/data/data[@id='2']/text()"/>
@@ -155,7 +155,6 @@
 			<transition event="1_wReq">
 				<assign location="$WRITE1/data/item[@i='0']/nestedData" expr="$_event/data/text()"/>
 			</transition>
-			<transition event="*"/>
 		</state>
 		<state id="sent1">
 			<transition event="1_wReply" cond="$_event/data/data/nestedData[@type='state']/text() = 'ok'" target="init1">
