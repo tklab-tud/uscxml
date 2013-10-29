@@ -2,6 +2,11 @@
 	xmlns="http://www.w3.org/2005/07/scxml" 
 	xmlns:scenegraph="http://uscxml.tk.informatik.tu-darmstadt.de/scenegraph.xsd">
 	<script src="http://uscxml.tk.informatik.tu-darmstadt.de/scripts/dump.js" />
+
+	<datamodel>
+		<data id="foo">This is foo!</data>
+	</datamodel>
+
 	<state id="start">
 		<invoke type="scenegraph">
 			<content>
@@ -27,8 +32,10 @@
 			</content>
 		</invoke>
 		<state id="main">
+			
 			<transition event="http" target="main" type="internal" 
-				cond="_event.data.pathComponent[1] === 'basichttp' &amp;&amp; _event.data.pathComponent[2] === 'query'" >
+				cond="_event.data.path	Component[1] === 'basichttp' &amp;&amp; 
+							_event.data.pathComponent[2] === 'query'" >
 				<!-- a request for /ptt/basichttp/query -->
 				<script>dump(_event);</script>
 				<if cond="_event.data.header['X-XPath']">
@@ -40,6 +47,11 @@
 						} else {
 							_event.reply = "No nodes!";
 						}
+					</script>
+				<elseif cond="_event.data.header['X-ECMAPath']" />
+					<script>
+						// an ecmascript expression evaluate and set reply on event
+						_event.reply = eval(_event.data.header['X-ECMAPath']);
 					</script>
 				</if>
 				<send type="basichttp" targetexpr="_event.data.header['X-Reply-To']">
@@ -60,6 +72,11 @@
 						} else {
 							_event.reply = "No nodes!";
 						}
+					</script>
+				<elseif cond="_event.data.header['X-ECMAPath']" />
+					<script>
+						// an ecmascript expression evaluate and set reply on event
+						_event.reply = eval(_event.data.header['X-ECMAPath']);
 					</script>
 				</if>
 				<respond to="_event.origin">
