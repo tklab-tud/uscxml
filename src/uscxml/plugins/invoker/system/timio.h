@@ -6,7 +6,6 @@
 #include <queue>
 #include <sys/socket.h>
 #include <netdb.h>
-#include <bsd/string.h>
 #include "uscxml/concurrency/tinythread.h"
 
 namespace uscxml {
@@ -15,6 +14,9 @@ namespace uscxml {
 #define DEF_TIMADDR		"127.0.0.1"
 #define DEF_TIMPORT		"3200"
 
+/**
+ * @brief Implementa un TCP client in comunicazione con il TIM
+ */
 class TimIO
 {
 public:

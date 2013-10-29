@@ -154,7 +154,7 @@ void TimIO::client(void *instance) {
 	int replylen;
 	memset(myobj->_reply, 0, MAXTIMREPLYSIZE);
 	if ((replylen = recv(myobj->_socketfd, myobj->_reply,
-		MAXTIMREPLYSIZE, MSG_WAITALL | MSG_WAITFORONE )) == -1) {
+		MAXTIMREPLYSIZE, MSG_WAITFORONE )) == -1) {
 		if (errno == EAGAIN || errno == EWOULDBLOCK) {
 			LOG(ERROR) << "TIM client: command timeout";
 			bridgeInstance.handleTIMexception(TIM_TIMEOUT);

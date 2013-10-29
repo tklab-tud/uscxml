@@ -37,6 +37,9 @@ enum exceptions {
 	SCXML_ERROR
 };
 
+/**
+ * @brief Implementa un generico USCXML Invoker che gestisce eventi SCXML esterni/interni appartenenti ad un dato datablock
+ */
 class XmlBridgeInvoker : public InvokerImpl {
 public:
 	XmlBridgeInvoker() {}
@@ -62,6 +65,9 @@ protected:
 	unsigned int _timeoutVal;	/** Il Timeout di default da applicare per le comunicazioni col TIM */
 };
 
+/**
+ * @brief Un'interfaccia comune tra SCXML(XmlBridgeInvoker), TIM(TimIO) e MES(MesBufferer) [Oggetto Singleton]
+ */
 class XmlBridgeInputEvents {
 public:
 	~XmlBridgeInputEvents() {
