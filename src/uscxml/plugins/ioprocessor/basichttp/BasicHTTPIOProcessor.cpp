@@ -170,28 +170,44 @@ void BasicHTTPIOProcessor::send(const SendRequest& req) {
 		}
 	}
 
-	// content
-
+	// try hard to find actual content
+	char* keyCStr = evhttp_encode_uri("content");
 	if (req.content.size() > 0) {
-		char* keyCStr = evhttp_encode_uri("content");
 		char* valueCStr = evhttp_encode_uri(req.content.c_str());
 		kvps << kvpSeperator << keyCStr << "=" << valueCStr;
 		free(keyCStr);
 		free(valueCStr);
 		kvpSeperator = "&";
-	}
-	if (req.dom) {
+	} else if (req.dom) {
 		std::stringstream xmlStream;
 		xmlStream << req.dom;
-		char* keyCStr = evhttp_encode_uri("content");
 		char* valueCStr = evhttp_encode_uri(xmlStream.str().c_str());
 		kvps << kvpSeperator << keyCStr << "=" << valueCStr;
-		free(keyCStr);
 		free(valueCStr);
 		kvpSeperator = "&";
+	} else if (req.data) {
+		char* valueCStr = NULL;
+		if (req.data.atom.length() || req.data.array.size() || req.data.compound.size()) {
+			valueCStr = evhttp_encode_uri(Data::toJSON(req.data).c_str());
+		} else if(req.data.node) {
+			std::stringstream xmlStream;
+			xmlStream << req.data.node;
+			valueCStr = evhttp_encode_uri(xmlStream.str().c_str());
+		} else if(req.data.binary) {
+			valueCStr = evhttp_encode_uri(req.data.binary->base64().c_str());
+		}
+		if (valueCStr != NULL) {
+			kvps << kvpSeperator << keyCStr << "=" << valueCStr;
+			free(valueCStr);
+			kvpSeperator = "&";
+		}
 	}
+	free(keyCStr);
+
 	targetURL.setOutContent(kvps.str());
 
+//	targetURL.addOutHeader("Content-Type", "application/x-www-form-urlencoded");
+	
 	targetURL.setRequestType("post");
 	targetURL.addMonitor(this);
 

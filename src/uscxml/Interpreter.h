@@ -190,8 +190,8 @@ public:
 		return _nsContext;
 	}
 	std::string getXMLPrefixForNS(const std::string& ns)     {
-		if (_nsToPrefix.find(ns) != _nsToPrefix.end())
-			return _nsToPrefix[ns] + ":";
+		if (_nameSpaceInfo.find(ns) != _nameSpaceInfo.end() && _nameSpaceInfo[ns].size())
+			return _nameSpaceInfo[ns] + ":";
 		return "";
 	}
 	void setNameSpaceInfo(const std::map<std::string, std::string> nameSpaceInfo);

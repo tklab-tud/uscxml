@@ -9,7 +9,9 @@ set -e
 
 ME=`basename $0`
 DIR="$( cd "$( dirname "$0" )" && pwd )" 
-DEST_DIR="${DIR}/../prebuilt/darwin-i386/gnu"
+MACOSX_VER=`/usr/bin/sw_vers -productVersion`
+MACOSX_COMP=(`echo $MACOSX_VER | tr '.' ' '`)
+DEST_DIR="${DIR}/../prebuilt/darwin-i386/${MACOSX_COMP[0]}.${MACOSX_COMP[1]}/gnu"
 VERSION=`cat VERSION`
 
 if [ ! -f src/pl-main.c ]; then

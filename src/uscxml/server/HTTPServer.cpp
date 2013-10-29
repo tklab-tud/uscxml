@@ -415,7 +415,7 @@ void HTTPServer::processByMatchingServlet(const Request& request) {
 	while(servletIter != _servlets.end()) {
 		// is the servlet path a prefix of the actual path?
 		std::string servletPath = "/" + servletIter->first;
-		if (iequals(actualPath.substr(0, servletPath.length()), servletPath) && // actual path is a prefix
+		if (iequals(actualPath.substr(0, servletPath.length()), servletPath) && // servlet path is a prefix
 		        iequals(actualPath.substr(servletPath.length(), 1), "/")) {     // and next character is a '/'
 			matches.insert(std::make_pair(servletPath, servletIter->second));
 		}

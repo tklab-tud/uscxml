@@ -915,7 +915,7 @@ void InterpreterImpl::send(const Arabica::DOM::Node<std::string>& element) {
 			processContentElement(contents[0], sendReq.dom, sendReq.content, expr);
 			if (expr.length() > 0 && _dataModel) {
 				try {
-					sendReq.content =_dataModel.evalAsString(expr);
+					sendReq.data = _dataModel.getStringAsData(expr);
 				} catch (Event e) {
 					e.name = "error.execution";
 					receiveInternal(e);
@@ -1053,7 +1053,7 @@ void InterpreterImpl::invoke(const Arabica::DOM::Node<std::string>& element) {
 				processContentElement(contents[0], invokeReq.dom, invokeReq.content, expr);
 				if (expr.length() > 0 && _dataModel) {
 					try {
-						invokeReq.content =_dataModel.evalAsString(expr);
+						invokeReq.data =_dataModel.getStringAsData(expr);
 					} catch (Event e) {
 						e.name = "error.execution";
 						receiveInternal(e);
@@ -1747,8 +1747,10 @@ NodeSet<std::string> InterpreterImpl::filterChildElements(const std::string& tag
 	NodeSet<std::string> filteredChildElems;
 	NodeList<std::string> childs = node.getChildNodes();
 	for (unsigned int i = 0; i < childs.getLength(); i++) {
-		if (childs.item(i).getNodeType() != Node_base::ELEMENT_NODE ||
-		        !iequals(TAGNAME(childs.item(i)), tagName))
+		if (childs.item(i).getNodeType() != Node_base::ELEMENT_NODE)
+			continue;
+//		std::cout << tagName << " vs " << TAGNAME(childs.item(i)) << std::endl;
+		if (!iequals(TAGNAME(childs.item(i)), tagName))
 			continue;
 		filteredChildElems.push_back(childs.item(i));
 	}

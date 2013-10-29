@@ -87,8 +87,8 @@ private:
 		bool operator()(std::string const& l, std::string const& r) const {
 			if (l.size() < r.size())
 				return false;
-
-			return l < r;
+			return true;
+//			return l < r;
 		};
 	};
 

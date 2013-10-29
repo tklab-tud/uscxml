@@ -65,7 +65,7 @@ if (APPLE)
 	OUTPUT_STRIP_TRAILING_WHITESPACE)
 	if (MACOSX_VERSION)
 		THREE_PART_VERSION_TO_VARS(
-			"10.8"
+			${MACOSX_VERSION}
 			MACOSX_VERSION_MAJOR 
 			MACOSX_VERSION_MINOR 
 			MACOSX_VERSION_PATCH)
@@ -367,7 +367,7 @@ elseif (${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-string-plus-int")
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-non-literal-null-conversion")
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-null-conversion")
-	SET(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -stdlib=libstdc++")
+	#SET(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -stdlib=libstdc++")
 	
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
 	# set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -read_only_relocs suppress")
@@ -379,7 +379,8 @@ endif()
 set(CMAKE_COMPILER_STRING "${CMAKE_CXX_COMPILER_ID} ${CMAKE_CXX_COMPILER_VERSION}")
 
 # see http://www.mail-archive.com/cmake@cmake.org/msg23240.html
-if (APPLE)
+if (APPLE AND MACOSX_VERSION VERSION_LESS "10.9")
+	# figure out what to do with Mavericks (10.9) later
 #	add_definitions("-D_DARWIN_UNLIMITED_SELECT")
 #	set(CMAKE_OSX_ARCHITECTURES "x86_64;i386")
 	# support leopard and above
