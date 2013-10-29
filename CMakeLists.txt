@@ -740,7 +740,7 @@ if (NOT AUDIOTOOLBOX_FOUND)
 	set(CMAKE_FIND_LIBRARY_SUFFIXES ${CMAKE_FIND_LIBRARY_SUFFIXES_STATIC})
 endif()
 
-find_package(MILES COMPONENTS audio video core)
+find_package(MILES COMPONENTS audio video core network session utils)
 if (MILES_FOUND)
 
 	# openal is only needed for miles
