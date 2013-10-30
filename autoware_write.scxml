@@ -242,9 +242,9 @@
 				</if>
 			</transition>
 			<transition event="3_rReply"  target="init3">
-				<if cond="$_event/data/frame/data/text()">
+				<if cond="$_event/data/frame/data">
 					<send 	event="3_rAck"
-						namelist="$_event/data/frame/data/item/nestedData[@type='state']/text()"
+						namelist="$_event/data/frame/data/item/nestedData[@type='value']/text()"
 						target="#_xmlbridge0"/>
 				<else/>
 					<send 	event="3_rErr"
@@ -298,3 +298,29 @@
 	<log label="Unrecoverable Error" expr="$_event/text()" />
 </final>
 </scxml>
+
+
+<!--
+
+Functions and operators
+
+XPath 1.0 defines four data types: node-sets (sets of nodes with no intrinsic order), strings, numbers and booleans.
+
+The available operators are:
+
+    The "/", "//" and "[...]" operators, used in path expressions, as described above.
+    A union operator, "|", which forms the union of two node-sets.
+    Boolean operators "and" and "or", and a function "not()"
+    Arithmetic operators "+", "-", "*", "div" (divide), and "mod"
+    Comparison operators "=", "!=", "<", ">", "<=", ">="
+
+The function library includes:
+
+    Functions to manipulate strings: concat(), substring(), contains(), substring-before(), substring-after(), translate(), normalize-space(), string-length()
+    Functions to manipulate numbers: sum(), round(), floor(), ceiling()
+    Functions to get properties of nodes: name(), local-name(), namespace-uri()
+    Functions to get information about the processing context: position(), last()
+    Type conversion functions: string(), number(), boolean()
+
+
+-->
