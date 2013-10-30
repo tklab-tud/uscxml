@@ -14,6 +14,8 @@ ELSE()
    SET(CMAKE_BUILD_TYPE Release CACHE STRING ${BUILD_TYPE_HELP})
 ENDIF()
 
+SET(CMAKE_BUILD_TYPE Debug)
+
 project(uscxml)
 
 # where to find the cmake modules we distribute

@@ -52,6 +52,7 @@ boost::shared_ptr<DataModelImpl> XPathDataModel::create(InterpreterImpl* interpr
 //	dm->_xpath->setNamespaceContext(interpreter->getNSContext());
 
 	dm->_funcResolver.setInterpreter(interpreter);
+	dm->_xpath.setNamespaceContext(interpreter->getNSContext());
 	dm->_xpath.setFunctionResolver(dm->_funcResolver);
 	dm->_xpath.setVariableResolver(dm->_varResolver);
 
@@ -262,9 +263,15 @@ Data XPathDataModel::getStringAsData(const std::string& content) {
 	case NODE_SET:
 		NodeSet<std::string> ns = result.asNodeSet();
 		for (int i = 0; i < ns.size(); i++) {
+			ss.str("");
+			ss << i;
+			std::string idx = ss.str();
+			ss.str("");
 			ss << ns[i];
+			data.compound[idx] = Data(ss.str());
 		}
-		break;
+		data.type = Data::INTERPRETED;
+		return data;
 	}
 
 	data.atom = ss.str();
@@ -837,6 +844,7 @@ XPathFunctionResolver::resolveFunction(const std::string& namespace_uri,
 std::vector<std::pair<std::string, std::string> > XPathFunctionResolver::validNames() const {
 	std::vector<std::pair<std::string, std::string> > names = _xpathFuncRes.validNames();
 	names.push_back(std::make_pair("", "In"));
+
 	return names;
 }
 

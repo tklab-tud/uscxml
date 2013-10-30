@@ -86,33 +86,41 @@ void XmlBridgeInvoker::send(const SendRequest& req) {
 	int index = evName.find('_');
 	bool write = (evName.c_str()[index + 1] == 'w');
 	std::string evType = evName.substr(index + 2, 3);
-	unsigned int cmdid = atoi(evName.substr(0, index - 1).c_str());
+	unsigned int cmdid = atoi(evName.substr(0, index).c_str());
 
 	XmlBridgeInputEvents& bridgeInstance = XmlBridgeInputEvents::getInstance();
 	//_interpreter->getDataModel().replaceExpressions(reqCopy.content);
 
 	std::map<std::string, Data>::const_iterator nameiter;
 
+	/* SCXML -> TIM */
 	if (evType == SCXML2TIM) {
 		if (reqCopy.namelist.size() != 1) {
 			LOG(ERROR) << "Sending an Unsupported number of TIM commands";
 			buildTIMexception(cmdid, TIM_ERROR);
 			return;
 		}
-
+		nameiter = reqCopy.namelist.begin();
 		bridgeInstance.sendReq2TIM(cmdid, write, reqCopy.data.compound[nameiter->first].atom, _timeoutVal);
+
+	/* SCXML -> MES */
 	} else if (evType == SCXML2MES_ACK) {
 		std::list<std::string> MESstrList;
 		if (!write) {
-			if (reqCopy.namelist.size() < 1) {
-				LOG(ERROR) << "Sending an Unsupported number of TIM replies";
+			if (reqCopy.namelist.size() != 1) {
+				LOG(ERROR) << "Receiving an Unsupported number of TIM replies";
 				buildTIMexception(cmdid, TIM_ERROR);
 				return;
 			}
-			for (nameiter = reqCopy.namelist.begin(); nameiter != reqCopy.namelist.end(); nameiter++)
-				MESstrList.push_back(reqCopy.data.compound[nameiter->first].atom);
+			nameiter = reqCopy.namelist.begin();
+			std::map<std::string, Data>::const_iterator fields;
+			fields = reqCopy.data.compound[nameiter->first].compound.begin();
+			for (fields; fields != reqCopy.data.compound[nameiter->first].compound.end(); fields++)
+				MESstrList.push_back(fields->second.atom);
 		}
 		bridgeInstance.sendReply2MES(_DBid, cmdid, write, MESstrList);
+
+	/* SCXML -> MES */
 	} else if (evType == SCXML2MES_ERR) {
 		bridgeInstance.sendErr2MES(_DBid, cmdid);
 		return;
