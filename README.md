@@ -6,28 +6,28 @@ It runs on <b>Linux</b>, <b>Windows</b> and <b>MacOSX</b>, each 32- as well as 6
 There are still a few rough edges though, especially with the plugins and custom extensions.
 
    * <b>Datamodels</b>
-       * Full [ECMAScript datamodel](https://github.com/tklab-tud/uscxml/tree/master/src/uscxml/plugins/datamodel/ecmascript) using Google's v8 (and JavaScriptCore on MacOSX and iOS)
-           * Simplified support for [Web Storage](http://www.w3.org/TR/2013/REC-webstorage-20130730/) in document.localStorage
-           * Support for binary data via [TypedArrays](https://www.khronos.org/registry/typedarray/specs/latest/) (will not throw exceptions yet)
-       * Full [NULL datamodel](https://github.com/tklab-tud/uscxml/tree/master/src/uscxml/plugins/datamodel/null) with required <tt>In</tt> predicate
-       * Early [Prolog datamodel](https://github.com/tklab-tud/uscxml/tree/master/src/uscxml/plugins/datamodel/prolog/swi) using SWI prolog
-       * Rudimentary support for [XPath datamodel](https://github.com/tklab-tud/uscxml/tree/master/src/uscxml/plugins/datamodel/xpath)
+      * Full [ECMAScript datamodel](https://github.com/tklab-tud/uscxml/tree/master/src/uscxml/plugins/datamodel/ecmascript) using Google's v8 (and JavaScriptCore on MacOSX and iOS)
+         * Simplified support for [Web Storage](http://www.w3.org/TR/2013/REC-webstorage-20130730/) in document.localStorage
+         * Support for binary data via [TypedArrays](https://www.khronos.org/registry/typedarray/specs/latest/) (will not throw exceptions yet)
+      * Full [NULL datamodel](https://github.com/tklab-tud/uscxml/tree/master/src/uscxml/plugins/datamodel/null) with required <tt>In</tt> predicate
+      * Early [Prolog datamodel](https://github.com/tklab-tud/uscxml/tree/master/src/uscxml/plugins/datamodel/prolog/swi) using SWI prolog
+      * Rudimentary support for [XPath datamodel](https://github.com/tklab-tud/uscxml/tree/master/src/uscxml/plugins/datamodel/xpath)
    * <b>Invokers</b>
-       * <tt>scxml</tt>: Invoke a nested scxml interpreter
-       * <tt>dirmon</tt>: Watches a directory for changes to files
-       * <tt>scenegraph</tt>: Simplified 3D scenegraphs with custom markup
-       * <tt>heartbeat</tt>: Periodically sends events
-       * <tt>umundo</tt>: Subscribe to channels and publish events
+      * <tt>scxml</tt>: Invoke a nested scxml interpreter
+      * <tt>dirmon</tt>: Watches a directory for changes to files
+      * <tt>scenegraph</tt>: Simplified 3D scenegraphs with custom markup
+      * <tt>heartbeat</tt>: Periodically sends events
+      * <tt>umundo</tt>: Subscribe to channels and publish events
    * <b>DOM</b>
-       * DOM Core Level 2 + XPath extensions available for ecmascript datamodel
-       * Namespace aware to embed custom markup for special invokers
+      * DOM Core Level 2 + XPath extensions available for ecmascript datamodel
+      * Namespace aware to embed custom markup for special invokers
    * <b>Communication</b>
-       * Features the standard basichttp io-processor
-       * Features the required SCXML io-processor
-       * <b>No</b> DOM io-processor
-       * Can actually respond to HTTP requests with data via &lt;response>
+      * Features the standard basichttp io-processor
+      * Features the required SCXML io-processor
+      * <b>No</b> DOM io-processor
+      * Can actually respond to HTTP requests with data via &lt;response>
    * <b>Language Bindings</b>
-       * PHP module for apache and cli interpreter
+      * PHP module for apache and cli interpreter
 
 ## Test Reports
 
