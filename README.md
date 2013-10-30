@@ -147,3 +147,7 @@ The basic approach to extend the interpreter is the same in all cases:
     1. You can register at the global Factory Singleton via <tt>Factory::register*(prototypeInstance)</tt>
     2. Or provide a new Factory instance to selected interpreters as an in-between.
 3. Write an interpreter using your new functionality.
+
+# Acknowledgments
+
+This SCXML interpreter is developed as part of the [SmartVortex](http://smartvortex.eu) project funded by the [7th European framework program](http://ec.europa.eu/research/fp7/index_en.cfm).
