@@ -75,7 +75,7 @@ public:
 	}
 
 	void sendReq2TIM(unsigned int cmdid, bool write, const std::string reqData, unsigned int timeout);
-	void sendReply2MES(unsigned int DBid, unsigned int cmdid, bool write, const std::string replyData);
+	void sendReply2MES(unsigned int DBid, unsigned int cmdid, bool write, const std::list<std::string> replyData);
 	void sendErr2MES(unsigned int DBid, unsigned int cmdid);
 
 	void handleTIMreply(const std::string replyData);

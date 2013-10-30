@@ -92,20 +92,34 @@ void XmlBridgeInvoker::send(const SendRequest& req) {
 	//_interpreter->getDataModel().replaceExpressions(reqCopy.content);
 
 	std::map<std::string, Data>::const_iterator nameiter;
-	for (nameiter = reqCopy.namelist.begin(); nameiter != reqCopy.namelist.end(); nameiter++) {
-		if (evType == SCXML2TIM) {
-			bridgeInstance.sendReq2TIM(cmdid, write, reqCopy.data.compound[nameiter->first].atom, _timeoutVal);
-		} else if (evType == SCXML2MES_ACK) {
-			bridgeInstance.sendReply2MES(_DBid, cmdid, write,
-				write ? std::string() : reqCopy.data.compound[nameiter->first].atom);
-		} else if (evType == SCXML2MES_ERR) {
-			bridgeInstance.sendErr2MES(_DBid, cmdid);
-			return;
-		} else {
-			LOG(ERROR) << "XmlBridgeInvoker: received an unsupported event type from Interpreter, discarding request\n"
-				<< "The event name in the SCXML file is propably incorrect.";
+
+	if (evType == SCXML2TIM) {
+		if (reqCopy.namelist.size() != 1) {
+			LOG(ERROR) << "Sending an Unsupported number of TIM commands";
+			buildTIMexception(cmdid, TIM_ERROR);
 			return;
 		}
+
+		bridgeInstance.sendReq2TIM(cmdid, write, reqCopy.data.compound[nameiter->first].atom, _timeoutVal);
+	} else if (evType == SCXML2MES_ACK) {
+		std::list<std::string> MESstrList;
+		if (!write) {
+			if (reqCopy.namelist.size() < 1) {
+				LOG(ERROR) << "Sending an Unsupported number of TIM replies";
+				buildTIMexception(cmdid, TIM_ERROR);
+				return;
+			}
+			for (nameiter = reqCopy.namelist.begin(); nameiter != reqCopy.namelist.end(); nameiter++)
+				MESstrList.push_back(reqCopy.data.compound[nameiter->first].atom);
+		}
+		bridgeInstance.sendReply2MES(_DBid, cmdid, write, MESstrList);
+	} else if (evType == SCXML2MES_ERR) {
+		bridgeInstance.sendErr2MES(_DBid, cmdid);
+		return;
+	} else {
+		LOG(ERROR) << "XmlBridgeInvoker: received an unsupported event type from Interpreter, discarding request\n"
+			<< "The event name in the SCXML file is propably incorrect.";
+		return;
 	}
 }
 
@@ -229,7 +243,7 @@ void XmlBridgeInputEvents::sendReq2TIM(unsigned int cmdid, bool write, const std
  * @param write Lettura/Scrittura
  * @param replyData Dati della risposta
  */
-void XmlBridgeInputEvents::sendReply2MES(unsigned int DBid, unsigned int cmdid, bool write, const std::string replyData)
+void XmlBridgeInputEvents::sendReply2MES(unsigned int DBid, unsigned int cmdid, bool write, const std::list<std::string> replyData)
 {
 	if (write)
 		((MesBufferer *)_mesbufferer)->bufferMESreplyWRITE(DBid, cmdid);
