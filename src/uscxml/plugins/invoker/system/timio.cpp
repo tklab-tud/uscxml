@@ -81,7 +81,7 @@ TimIO::TimIO(std::string ipaddr, std::string port) :
 		exit(EXIT_FAILURE);
 	}
 
-	_reply = (char*)calloc(1, MAXTIMREPLYSIZE);
+	_reply = new char[MAXTIMREPLYSIZE]();
 	if (_reply == NULL) {
 		freeaddrinfo(_servinfo);
 		LOG(ERROR) << "TIM Client: failed to allocate _reply memory";
@@ -101,7 +101,7 @@ TimIO::~TimIO()
 	if (_servinfo != NULL)
 		freeaddrinfo(_servinfo);
 	close(_socketfd);
-	free(_reply);
+	delete _reply;
 	if (_thread) {
 		delete _thread;
 	}
@@ -121,6 +121,12 @@ void TimIO::client(void *instance) {
 
 	tthread::lock_guard<tthread::recursive_mutex> lock(myobj->_mutex);
 
+	if (myobj->_timCmd.front().length() == 0) {
+		LOG(ERROR) << "TIM client: sending a 0 length message";
+		bridgeInstance.handleTIMexception(TIM_ERROR);
+		return;
+	}
+
 	LOG(INFO) << "Sending to socket " << myobj->_socketfd
 		<< " the string: '" << myobj->_timCmd.front()
 		<< "' with length " << myobj->_timCmd.front().length();
@@ -132,7 +138,7 @@ void TimIO::client(void *instance) {
 
 		perror("TIM client: send error");
 		if (errno == EPIPE) {
-			/* If we lost the TCP connection we retry the send of data */
+			LOG(INFO) << "TCP connection with TCP lost, reconnecting";
 			if (!myobj->connect2TIM()) {
 				bridgeInstance.handleTIMexception(TIM_ERROR);
 				return;

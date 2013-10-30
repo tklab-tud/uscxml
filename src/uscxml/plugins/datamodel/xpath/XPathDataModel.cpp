@@ -699,10 +699,9 @@ void XPathDataModel::assign(const NodeSet<std::string>& key,
 
 	for (int i = 0; i < key.size(); i++) {
 		switch (key[i].getNodeType()) {
-		case Node_base::ELEMENT_NODE: {
+		case Node_base::ELEMENT_NODE:
 			assign(Element<std::string>(key[i]), value, assignElem);
 			break;
-		}
 		default:
 //			std::cout << key[i].getNodeType() << std::endl;
 			throw Event("error.execution", Event::PLATFORM);

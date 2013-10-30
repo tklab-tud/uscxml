@@ -101,7 +101,13 @@ void XmlBridgeInvoker::send(const SendRequest& req) {
 			return;
 		}
 		nameiter = reqCopy.namelist.begin();
-		bridgeInstance.sendReq2TIM(cmdid, write, reqCopy.data.compound[nameiter->first].atom, _timeoutVal);
+		std::map<std::string, Data>::const_iterator fields;
+		std::stringstream ss;
+		for (fields = reqCopy.data.compound[nameiter->first].compound.begin();
+			     fields != reqCopy.data.compound[nameiter->first].compound.end(); fields++)
+			ss << fields->second.atom;
+
+		bridgeInstance.sendReq2TIM(cmdid, write, ss.str(), _timeoutVal);
 
 	/* SCXML -> MES */
 	} else if (evType == SCXML2MES_ACK) {
@@ -114,8 +120,9 @@ void XmlBridgeInvoker::send(const SendRequest& req) {
 			}
 			nameiter = reqCopy.namelist.begin();
 			std::map<std::string, Data>::const_iterator fields;
-			fields = reqCopy.data.compound[nameiter->first].compound.begin();
-			for (fields; fields != reqCopy.data.compound[nameiter->first].compound.end(); fields++)
+
+			for (fields = reqCopy.data.compound[nameiter->first].compound.begin();
+			     fields != reqCopy.data.compound[nameiter->first].compound.end(); fields++)
 				MESstrList.push_back(fields->second.atom);
 		}
 		bridgeInstance.sendReply2MES(_DBid, cmdid, write, MESstrList);
@@ -233,7 +240,11 @@ void XmlBridgeInvoker::buildTIMexception(unsigned int cmdid, exceptions type)
  */
 void XmlBridgeInputEvents::sendReq2TIM(unsigned int cmdid, bool write, const std::string reqData, unsigned int timeout)
 {
-	//check command id and str first
+	if (reqData.empty() || timeout == 0) {
+		handleTIMexception(TIM_ERROR);
+		return;
+	}
+
 	_timio->_timCmdId.push(cmdid);
 	_timio->_timCmd.push(reqData);
 	_timio->_timCmdWrite.push(write);
