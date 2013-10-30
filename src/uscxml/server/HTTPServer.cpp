@@ -387,11 +387,11 @@ void HTTPServer::httpRecvReqCallback(struct evhttp_request *req, void *callbackD
 				key.clear();
 			}
 			request.data.compound["content"].atom.clear();
-		} else if (iequals(contentType, "application/json")) {
+		} else if (iequals(contentType.substr(0, 16), "application/json")) {
 			request.data.compound["content"] = Data::fromJSON(request.data.compound["content"].atom);
 		}
 	}
-
+	
 	request.raw = raw.str();
 
 	// try with the handler registered for path first

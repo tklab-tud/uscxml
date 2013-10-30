@@ -33,8 +33,9 @@
 					<respond status="200" to="_event.origin" />
 				
 				<elseif cond="_event.data.pathComponent[1] === 'connect'" />
+					<script>dump(_event);</script>
 					<send target="#_miles" event="connect">
-						<param name="reflectorIP" expr="_event.data.content.reflectorIP" />
+						<param name="reflectorIp" expr="_event.data.content.reflectorIp" />
 						<param name="email" expr="_event.data.content.email" />
 						<param name="problemName" expr="_event.data.content.problemName" />
 					</send>
@@ -46,7 +47,7 @@
 				
 				<elseif cond="_event.data.pathComponent[1] === 'disconnect'" />
 					<send target="#_miles" event="disconnect">
-						<param name="reflectorIP" expr="_event.data.content.reflectorIP" />
+						<param name="reflectorIp" expr="_event.data.content.reflectorIp" />
 						<param name="problemName" expr="_event.data.content.problemName" />
 					</send>
 					<respond status="200" to="_event.origin" />

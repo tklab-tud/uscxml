@@ -103,11 +103,14 @@ void MilesSessionInvoker::send(const SendRequest& req) {
 		returnEvent(retEv);
 
 	} else if (iequals(req.name, "connect")) {
+		
+		std::cout << req;
+		
 		std::string email = "someSaneDefault";
 		Event::getParam(req.params, "email", email);
 
-		std::string reflectorIP = "127.0.0.1";
-		Event::getParam(req.params, "reflectorip", reflectorIP);
+		std::string reflectorIp = "127.0.0.1";
+		Event::getParam(req.params, "reflectorIp", reflectorIp);
 
 		std::string problemName = "Generic";
 		Event::getParam(req.params, "problemname", problemName);
@@ -115,21 +118,21 @@ void MilesSessionInvoker::send(const SendRequest& req) {
 		return;
 
 		int rv;
-		rv = miles_connect_reflector_session((char*)reflectorIP.c_str(), (char*)problemName.c_str());
+		rv = miles_connect_reflector_session((char*)reflectorIp.c_str(), (char*)problemName.c_str());
 		if (!rv) {
 			LOG(ERROR) << "Could not setup reflector session";
 			return;
 		}
 
 		/* Set up audio and video RTP sockets */
-		video_rtp_in_socket = miles_net_setup_udp_socket((char*)reflectorIP.c_str(), video_port, video_port, 10, 16000);
-		audio_rtp_in_socket = miles_net_setup_udp_socket((char*)reflectorIP.c_str(), audio_port, audio_port, 10, 16000);
+		video_rtp_in_socket = miles_net_setup_udp_socket((char*)reflectorIp.c_str(), video_port, video_port, 10, 16000);
+		audio_rtp_in_socket = miles_net_setup_udp_socket((char*)reflectorIp.c_str(), audio_port, audio_port, 10, 16000);
 		video_rtp_out_socket = video_rtp_in_socket; //miles_net_setup_udp_socket((char*)reflectorIP.c_str(), video_port, 0, 10, 16000);
 		audio_rtp_out_socket = audio_rtp_in_socket; //miles_net_setup_udp_socket((char*)reflectorIP.c_str(), audio_port, 0, 10, 16000);
 
 		/* Set up audio and video RTCP sockets */
-		video_rtcp_in_socket = miles_net_setup_udp_socket((char*)reflectorIP.c_str(), video_port+1, video_port+1, 10, 16000);
-		audio_rtcp_in_socket = miles_net_setup_udp_socket((char*)reflectorIP.c_str(), audio_port+1, audio_port+1, 10, 16000);
+		video_rtcp_in_socket = miles_net_setup_udp_socket((char*)reflectorIp.c_str(), video_port+1, video_port+1, 10, 16000);
+		audio_rtcp_in_socket = miles_net_setup_udp_socket((char*)reflectorIp.c_str(), audio_port+1, audio_port+1, 10, 16000);
 		video_rtcp_out_socket = video_rtcp_in_socket; //miles_net_setup_udp_socket((char*)reflectorIP.c_str(), video_port+1, 0, 10, 16000);
 		audio_rtcp_out_socket = audio_rtcp_in_socket; //miles_net_setup_udp_socket((char*)reflectorIP.c_str(), audio_port+1, 0, 10, 16000);
 

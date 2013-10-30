@@ -31,6 +31,7 @@ function Miles(element, params) {
       // The URL to request
       url: "http://" + scxmlURL + "/miles/connect",
       // handleAs:"text",
+      contentType: 'application/json',
       postData: dojo.toJson({
         reflectorIp: reflectorIp,
         email: email,
@@ -38,7 +39,6 @@ function Miles(element, params) {
       }),
       headers:{
         "X-Requested-With": null,
-        "Content-Type": "application/json"
       },
       error: function(err) {
         console.log(err);
