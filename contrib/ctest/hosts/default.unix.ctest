@@ -1,19 +1,18 @@
 set(CTEST_CMAKE_GENERATOR "Unix Makefiles")
-set(CTEST_SITE "hal9000.local")
+set(CTEST_SITE "Unknown")
 set(CTEST_BUILD_CONFIGURATION "Debug")
 
 set(RETAIN_BUILD_DIR OFF)
-set(CTEST_BUILD_NAME "${CMAKE_SYSTEM}-i386 gcc")
+set(CTEST_BUILD_NAME "${CMAKE_SYSTEM}")
 include("tests/plugins.ctest")
 include("common.ctest.inc")
 
 set(RETAIN_BUILD_DIR OFF)
-set(CTEST_BUILD_NAME "${CMAKE_SYSTEM}-i386 gcc")
+set(CTEST_BUILD_NAME "${CMAKE_SYSTEM}")
 include("tests/ecma.ctest")
 include("common.ctest.inc")
 
 set(RETAIN_BUILD_DIR OFF)
-set(CTEST_BUILD_NAME "${CMAKE_SYSTEM}-i386 gcc")
+set(CTEST_BUILD_NAME "${CMAKE_SYSTEM}")
 include("tests/xpath.ctest")
 include("common.ctest.inc")
-

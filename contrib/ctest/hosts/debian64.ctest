@@ -3,11 +3,11 @@ set(CTEST_SITE "epikur.local")
 set(CTEST_BUILD_CONFIGURATION "Debug")
 
 set(RETAIN_BUILD_DIR OFF)
-set(CTEST_BUILD_NAME "darwin-x86_64 llvm")
+set(CTEST_BUILD_NAME "${CMAKE_SYSTEM}-x86_64 gcc")
 include("tests/ecma.ctest")
 include("common.ctest.inc")
 
 set(RETAIN_BUILD_DIR OFF)
-set(CTEST_BUILD_NAME "darwin-x86_64 llvm")
+set(CTEST_BUILD_NAME "${CMAKE_SYSTEM}-x86_64 gcc")
 include("tests/xpath.ctest")
 include("common.ctest.inc")

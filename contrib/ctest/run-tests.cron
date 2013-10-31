@@ -46,8 +46,8 @@ if [ ! -e ${USCXML_SOURCE_DIR}/CMakeLists.txt ]; then
 fi
 
 if [ ! -e $TESTFILE ]; then
-	echo "Error: No tests for $HOSTNAME in $TESTFILE."
-	exit;	
+	echo "Warning: No tests for $HOSTNAME in $TESTFILE - defaulting."
+	TESTFILE=$HOSTS/default.unix.ctest
 fi
 
 #
