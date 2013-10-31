@@ -56,8 +56,8 @@ if (NOT fso.FileExists(USCXML_SOURCE_DIR + "\CMakeLists.txt")) Then
 End If
 
 if (NOT fso.FileExists(TESTFILE)) Then
-	MsgBox "Could not find test file for this host at " + TESTFILE
-	WScript.Quit
+	MsgBox "Warning: Could not find test file for this host at " + TESTFILE + " - defaulting"
+	TESTFILE = HOSTS + "\default.nmake.ctest"
 End If
 
 ' continue with cscript
@@ -79,7 +79,7 @@ if (CTEST_SUBMIT_TYPE = "Continuous") Then
 End If
 
 shell.CurrentDirectory = TEST_DIR
-Set exec = shell.Exec("CMD /S /K ctest -VV --timeout 100 -S " + TESTFILE + " 2>&1")
+Set exec = shell.Exec("CMD /S /K ctest -VV --timeout 100 -S " + TESTFILE + " -DHOSTNAME=" + HOSTNAME + " 2>&1")
 Do While exec.Status = 0
     WScript.Sleep 10
     WScript.StdOut.Write(exec.StdOut.ReadLine() & vbCRLF)
