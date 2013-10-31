@@ -164,6 +164,7 @@ using namespace Arabica::DOM;
 %include "../../../uscxml/Factory.h"
 %include "../../../uscxml/Message.h"
 %include "../../../uscxml/Interpreter.h"
+#include "../../../uscxml/DOMUtils.h"
 
 # %include <DOM/Document.hpp>
 # %include <DOM/Node.hpp>

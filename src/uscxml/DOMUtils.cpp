@@ -18,7 +18,7 @@
  */
 
 #include <uscxml/Common.h>
-#include "DOMUtils.h"
+#include "uscxml/DOMUtils.h"
 #include <uscxml/Convenience.h>
 #include <glog/logging.h>
 #include <SAX/helpers/InputSourceResolver.hpp>

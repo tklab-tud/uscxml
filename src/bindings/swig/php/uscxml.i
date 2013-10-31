@@ -33,6 +33,7 @@
 #include "../../../uscxml/Message.h"
 #include "../../../uscxml/Interpreter.h"
 #include "../../../uscxml/concurrency/BlockingQueue.h"
+#include "../../../uscxml/DOMUtils.h"
 
 using namespace uscxml;
 
