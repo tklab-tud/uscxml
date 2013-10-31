@@ -22,7 +22,7 @@
 #include "uscxml/Interpreter.h"
 #include "uscxml/URL.h"
 #include "uscxml/UUID.h"
-#include "uscxml/NameSpacingParser.h"
+#include "uscxml/DOMUtils.h"
 #include "uscxml/debug/SCXMLDotWriter.h"
 
 #include "uscxml/plugins/invoker/http/HTTPServletInvoker.h"
@@ -52,6 +52,19 @@ catch (Event e) {\
 	} else {\
 		e.name = "error.execution";\
 		e.eventType = Event::PLATFORM;\
+		receiveInternal(e);\
+	}\
+}
+
+#define CATCH_AND_DISTRIBUTE2(msg, node) \
+catch (Event e) {\
+	LOG(ERROR) << msg << " " << DOMUtils::xPathForNode(node) << ":" << std::endl << e << std::endl;\
+	if (rethrow) {\
+		throw(e);\
+	} else {\
+		e.name = "error.execution";\
+		e.eventType = Event::PLATFORM;\
+		e.dom = node;\
 		receiveInternal(e);\
 	}\
 }
@@ -245,7 +258,8 @@ InterpreterImpl::InterpreterImpl() {
 	_httpServlet = NULL;
 	_factory = NULL;
 	_capabilities = CAN_BASIC_HTTP | CAN_GENERIC_HTTP;
-
+	_domEventListener._interpreter = this;
+	
 #ifdef _WIN32
 	WSADATA wsaData;
 	WSAStartup(MAKEWORD(2, 2), &wsaData);
@@ -458,6 +472,12 @@ void InterpreterImpl::init() {
 			_sendQueue = new DelayedEventQueue();
 			_sendQueue->start();
 
+			// register for dom events to manage cached states
+			Arabica::DOM::Events::EventTarget<std::string> eventTarget(_scxml);
+			eventTarget.addEventListener("DOMNodeInserted", _domEventListener, true);
+			eventTarget.addEventListener("DOMNodeRemoved", _domEventListener, true);
+			eventTarget.addEventListener("DOMSubtreeModified", _domEventListener, true);
+
 			if (_factory == NULL)
 				_factory = Factory::getInstance();
 
@@ -491,7 +511,7 @@ void InterpreterImpl::initializeData(const Element<std::string>& data) {
 		try {
 			_dataModel.init(ATTR(data, "id"), _invokeReq.params.find(ATTR(data, "id"))->second);
 		} catch (Event e) {
-			LOG(ERROR) << "Syntax error when initializing data from parameters:" << std::endl << e << std::endl;
+			LOG(ERROR) << "Syntax error when initializing data " << DOMUtils::xPathForNode(data) << " from parameters:" << std::endl << e << std::endl;
 			receiveInternal(e);
 		}
 		return;
@@ -500,7 +520,7 @@ void InterpreterImpl::initializeData(const Element<std::string>& data) {
 		try {
 			_dataModel.init(ATTR(data, "id"), _invokeReq.namelist.find(ATTR(data, "id"))->second);
 		} catch (Event e) {
-			LOG(ERROR) << "Syntax error when initializing data from namelist:" << std::endl << e << std::endl;
+			LOG(ERROR) << "Syntax error when initializing data " << DOMUtils::xPathForNode(data) << " from namelist:" << std::endl << e << std::endl;
 			receiveInternal(e);
 		}
 		return;
@@ -512,7 +532,7 @@ void InterpreterImpl::initializeData(const Element<std::string>& data) {
 		processDOMorText(data, dom, text);
 		_dataModel.init(data, dom, text);
 	} catch (Event e) {
-		LOG(ERROR) << "Syntax error when initializing data:" << std::endl << e << std::endl;
+		LOG(ERROR) << "Syntax error when initializing data " << DOMUtils::xPathForNode(data) << ":" << std::endl << e << std::endl;
 		receiveInternal(e);
 	}
 }
@@ -618,6 +638,7 @@ void InterpreterImpl::internalDoneSend(const Arabica::DOM::Node<std::string>& st
 					event.content =_dataModel.evalAsString(expr);
 				} catch (Event e) {
 					e.name = "error.execution";
+					e.dom = contents[0];
 					receiveInternal(e);
 				}
 			}
@@ -751,34 +772,35 @@ void InterpreterImpl::processDOMorText(const Arabica::DOM::Node<std::string>& el
 
 void InterpreterImpl::processParamChilds(const Arabica::DOM::Node<std::string>& element, std::multimap<std::string, Data>& params) {
 	NodeSet<std::string> paramElems = filterChildElements(_xmlNSPrefix + "param", element);
-	try {
 		for (int i = 0; i < paramElems.size(); i++) {
-			if (!HAS_ATTR(paramElems[i], "name")) {
-				LOG(ERROR) << "param element is missing name attribute";
-				continue;
+			try {
+				if (!HAS_ATTR(paramElems[i], "name")) {
+					LOG(ERROR) << "param element is missing name attribute";
+					continue;
+				}
+				Data paramValue;
+				if (HAS_ATTR(paramElems[i], "expr") && _dataModel) {
+					paramValue = _dataModel.getStringAsData(ATTR(paramElems[i], "expr"));
+				} else if(HAS_ATTR(paramElems[i], "location") && _dataModel) {
+					paramValue = _dataModel.getStringAsData(ATTR(paramElems[i], "location"));
+				} else {
+					LOG(ERROR) << "param element is missing expr or location or no datamodel is specified";
+					continue;
+				}
+				std::string paramKey = ATTR(paramElems[i], "name");
+				params.insert(std::make_pair(paramKey, paramValue));
+			} catch(Event e) {
+				LOG(ERROR) << "Syntax error while processing params " << DOMUtils::xPathForNode(paramElems[i]) << ":" << std::endl << e << std::endl;
+				// test 343
+				std::multimap<std::string, Data>::iterator paramIter = params.begin();
+				while(paramIter != params.end()) {
+					params.erase(paramIter++);
+				}
+				e.name = "error.execution";
+				receiveInternal(e);
+				break;
 			}
-			Data paramValue;
-			if (HAS_ATTR(paramElems[i], "expr") && _dataModel) {
-				paramValue = _dataModel.getStringAsData(ATTR(paramElems[i], "expr"));
-			} else if(HAS_ATTR(paramElems[i], "location") && _dataModel) {
-				paramValue = _dataModel.getStringAsData(ATTR(paramElems[i], "location"));
-			} else {
-				LOG(ERROR) << "param element is missing expr or location or no datamodel is specified";
-				continue;
-			}
-			std::string paramKey = ATTR(paramElems[i], "name");
-			params.insert(std::make_pair(paramKey, paramValue));
 		}
-	} catch(Event e) {
-		LOG(ERROR) << "Syntax error while processing params:" << std::endl << e << std::endl;
-		// test 343
-		std::multimap<std::string, Data>::iterator paramIter = params.begin();
-		while(paramIter != params.end()) {
-			params.erase(paramIter++);
-		}
-		e.name = "error.execution";
-		receiveInternal(e);
-	}
 }
 
 void InterpreterImpl::send(const Arabica::DOM::Node<std::string>& element) {
@@ -793,7 +815,7 @@ void InterpreterImpl::send(const Arabica::DOM::Node<std::string>& element) {
 			sendReq.name = ATTR(element, "event");
 		}
 	} catch (Event e) {
-		LOG(ERROR) << "Syntax error in send element eventexpr:" << std::endl << e << std::endl;
+		LOG(ERROR) << "Syntax error in send element eventexpr " << DOMUtils::xPathForNode(element) << ":" << std::endl << e << std::endl;
 		return;
 	}
 	try {
@@ -804,7 +826,7 @@ void InterpreterImpl::send(const Arabica::DOM::Node<std::string>& element) {
 			sendReq.target = ATTR(element, "target");
 		}
 	} catch (Event e) {
-		LOG(ERROR) << "Syntax error in send element targetexpr:" << std::endl << e << std::endl;
+		LOG(ERROR) << "Syntax error in send element " << DOMUtils::xPathForNode(element) << " targetexpr:" << std::endl << e << std::endl;
 		return;
 	}
 	try {
@@ -815,7 +837,7 @@ void InterpreterImpl::send(const Arabica::DOM::Node<std::string>& element) {
 			sendReq.type = ATTR(element, "type");
 		}
 	} catch (Event e) {
-		LOG(ERROR) << "Syntax error in send element typeexpr:" << std::endl << e << std::endl;
+		LOG(ERROR) << "Syntax error in send element " << DOMUtils::xPathForNode(element) << " typeexpr:" << std::endl << e << std::endl;
 		return;
 	}
 	try {
@@ -850,7 +872,7 @@ void InterpreterImpl::send(const Arabica::DOM::Node<std::string>& element) {
 			}
 		}
 	} catch (Event e) {
-		LOG(ERROR) << "Syntax error in send element idlocation:" << std::endl << e << std::endl;
+		LOG(ERROR) << "Syntax error in send element " << DOMUtils::xPathForNode(element) << " idlocation:" << std::endl << e << std::endl;
 		return;
 	}
 
@@ -877,7 +899,7 @@ void InterpreterImpl::send(const Arabica::DOM::Node<std::string>& element) {
 			}
 		}
 	} catch (Event e) {
-		LOG(ERROR) << "Syntax error in send element delayexpr:" << std::endl << e << std::endl;
+		LOG(ERROR) << "Syntax error in send element " << DOMUtils::xPathForNode(element) << " delayexpr:" << std::endl << e << std::endl;
 		return;
 	}
 
@@ -896,7 +918,7 @@ void InterpreterImpl::send(const Arabica::DOM::Node<std::string>& element) {
 			}
 		}
 	} catch (Event e) {
-		LOG(ERROR) << "Syntax error in send element namelist:" << std::endl << e << std::endl;
+		LOG(ERROR) << "Syntax error in send element " << DOMUtils::xPathForNode(element) << " namelist:" << std::endl << e << std::endl;
 		return;
 	}
 
@@ -904,14 +926,14 @@ void InterpreterImpl::send(const Arabica::DOM::Node<std::string>& element) {
 		// params
 		processParamChilds(element, sendReq.params);
 	} catch (Event e) {
-		LOG(ERROR) << "Syntax error in send element param expr:" << std::endl << e << std::endl;
+		LOG(ERROR) << "Syntax error in send element " << DOMUtils::xPathForNode(element) << " param expr:" << std::endl << e << std::endl;
 		return;
 	}
 	try {
 		// content
 		NodeSet<std::string> contents = filterChildElements(_xmlNSPrefix + "content", element);
 		if (contents.size() > 1)
-			LOG(ERROR) << "Only a single content element is allowed for send elements - using first one";
+			LOG(ERROR) << "Only a single content element is allowed for send elements " << DOMUtils::xPathForNode(element) << " - using first one";
 		if (contents.size() > 0) {
 			std::string expr;
 			processContentElement(contents[0], sendReq.dom, sendReq.content, expr);
@@ -927,7 +949,7 @@ void InterpreterImpl::send(const Arabica::DOM::Node<std::string>& element) {
 			}
 		}
 	} catch (Event e) {
-		LOG(ERROR) << "Syntax error in send element content:" << std::endl << e << std::endl;
+		LOG(ERROR) << "Syntax error in send element " << DOMUtils::xPathForNode(element) << " content:" << std::endl << e << std::endl;
 		return;
 	}
 
@@ -1058,6 +1080,7 @@ void InterpreterImpl::invoke(const Arabica::DOM::Node<std::string>& element) {
 						invokeReq.data =_dataModel.getStringAsData(expr);
 					} catch (Event e) {
 						e.name = "error.execution";
+						e.dom = contents[0];
 						receiveInternal(e);
 					}
 				} else if (invokeReq.content.length() > 0) {
@@ -1066,7 +1089,7 @@ void InterpreterImpl::invoke(const Arabica::DOM::Node<std::string>& element) {
 
 			}
 		} catch (Event e) {
-			LOG(ERROR) << "Syntax error in send element content:" << std::endl << e << std::endl;
+			LOG(ERROR) << "Syntax error in send element " << DOMUtils::xPathForNode(element) << " content:" << std::endl << e << std::endl;
 			return;
 		}
 
@@ -1110,7 +1133,7 @@ void InterpreterImpl::invoke(const Arabica::DOM::Node<std::string>& element) {
 		}
 
 	} catch (Event e) {
-		LOG(ERROR) << "Syntax error in invoke element:" << std::endl << e << std::endl;
+		LOG(ERROR) << "Syntax error in invoke element " << DOMUtils::xPathForNode(element) << ":" << std::endl << e << std::endl;
 	}
 }
 
@@ -1195,7 +1218,7 @@ bool InterpreterImpl::hasConditionMatch(const Arabica::DOM::Node<std::string>& c
 		try {
 			return _dataModel.evalAsBool(ATTR_NODE(conditional, "cond"), ATTR(conditional, "cond"));
 		} catch (Event e) {
-			LOG(ERROR) << "Syntax error in cond attribute of " << TAGNAME(conditional) << " element:" << std::endl << e << std::endl;
+			LOG(ERROR) << "Syntax error in cond attribute of " << TAGNAME(conditional) << " element " << DOMUtils::xPathForNode(conditional) << ":" << std::endl << e << std::endl;
 			e.name = "error.execution";
 			receiveInternal(e);
 			return false;
@@ -1212,7 +1235,7 @@ void InterpreterImpl::executeContent(const NodeList<std::string>& content, bool 
 		try {
 			executeContent(content.item(i), true);
 		}
-		CATCH_AND_DISTRIBUTE("Error when executing content");
+		CATCH_AND_DISTRIBUTE2("Error when executing content", content.item(i));
 	}
 }
 
@@ -1223,7 +1246,7 @@ void InterpreterImpl::executeContent(const NodeSet<std::string>& content, bool r
 		try {
 			executeContent(content[i], true);
 		}
-		CATCH_AND_DISTRIBUTE("Error when executing content");
+		CATCH_AND_DISTRIBUTE2("Error when executing content", content[i]);
 	}
 }
 
@@ -1294,7 +1317,7 @@ void InterpreterImpl::executeContent(const Arabica::DOM::Node<std::string>& cont
 				try {
 					iterations = _dataModel.getLength(array);
 				}
-				CATCH_AND_DISTRIBUTE("Syntax error in array attribute of foreach element:")
+				CATCH_AND_DISTRIBUTE2("Syntax error in array attribute of foreach element", content)
 				try {
 					_dataModel.pushContext(); // copy old and enter new context
 //					if (!_dataModel.isDeclared(item)) {
@@ -1308,7 +1331,7 @@ void InterpreterImpl::executeContent(const Arabica::DOM::Node<std::string>& cont
 					}
 					_dataModel.popContext(); // leave stacked context
 				}
-				CATCH_AND_DISTRIBUTE("Syntax error in foreach element:")
+				CATCH_AND_DISTRIBUTE2("Syntax error in foreach element", content)
 			} else {
 				LOG(ERROR) << "Expected array and item attributes with foreach element!" << std::endl;
 			}
@@ -1322,7 +1345,7 @@ void InterpreterImpl::executeContent(const Arabica::DOM::Node<std::string>& cont
 			try {
 				std::cout << _dataModel.evalAsString(logElem.getAttribute("expr")) << std::endl;
 			}
-			CATCH_AND_DISTRIBUTE("Syntax error in expr attribute of log element:")
+			CATCH_AND_DISTRIBUTE2("Syntax error in expr attribute of log element", content)
 		} else {
 			if (logElem.hasAttribute("label"))
 				std::cout << std::endl;
@@ -1342,7 +1365,7 @@ void InterpreterImpl::executeContent(const Arabica::DOM::Node<std::string>& cont
 					_dataModel.assign(Element<std::string>(content), dom, text);
 				}
 			}
-			CATCH_AND_DISTRIBUTE("Syntax error in attributes of assign element:")
+			CATCH_AND_DISTRIBUTE2("Syntax error in attributes of assign element", content)
 		}
 	} else if (iequals(TAGNAME(content), _xmlNSPrefix + "validate")) {
 		// --- VALIDATE --------------------------
@@ -1394,7 +1417,7 @@ void InterpreterImpl::executeContent(const Arabica::DOM::Node<std::string>& cont
 						try {
 							_dataModel.eval((Element<std::string>)content, scriptContent);
 						}
-						CATCH_AND_DISTRIBUTE("Syntax error while executing script element")
+						CATCH_AND_DISTRIBUTE2("Syntax error while executing script element", content)
 					}
 				}
 			}
@@ -1404,7 +1427,7 @@ void InterpreterImpl::executeContent(const Arabica::DOM::Node<std::string>& cont
 		try {
 			send(content);
 		}
-		CATCH_AND_DISTRIBUTE("Error while sending content")
+		CATCH_AND_DISTRIBUTE2("Error while sending content", content)
 	} else if (iequals(TAGNAME(content), _xmlNSPrefix + "cancel")) {
 		// --- CANCEL --------------------------
 		std::string sendId;
@@ -1420,7 +1443,7 @@ void InterpreterImpl::executeContent(const Arabica::DOM::Node<std::string>& cont
 			_sendQueue->cancelEvent(sendId);
 
 		}
-		CATCH_AND_DISTRIBUTE("Syntax error while executing cancel element")
+		CATCH_AND_DISTRIBUTE2("Syntax error while executing cancel element", content)
 	} else if (iequals(TAGNAME(content), _xmlNSPrefix + "invoke")) {
 		// --- INVOKE --------------------------
 	} else {
@@ -2090,6 +2113,19 @@ bool InterpreterImpl::isLegalConfiguration(const NodeSet<std::string>& config) {
 	return true;
 }
 
+void InterpreterImpl::DOMEventListener::handleEvent(Arabica::DOM::Events::Event<std::string>& event) {
+	// remove modified states from cache
+	if (event.getType().compare("DOMAttrModified") == 0) // we do not care about attributes
+		return;
+	Node<std::string> target = Arabica::DOM::Node<std::string>(event.getTarget());
+	NodeSet<std::string> childs = Interpreter::filterChildElements(_interpreter->_xmlNSPrefix + "state", target);
+	for (int i = 0; i < childs.size(); i++) {
+		if (HAS_ATTR(childs[i], "id")) {
+			_interpreter->_cachedStates.erase(ATTR(childs[i], "id"));
+		}
+	}
+}
+	
 void InterpreterImpl::dump() {
 	if (!_document)
 		return;

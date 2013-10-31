@@ -17,14 +17,25 @@
  *  @endcond
  */
 
-#ifndef NAMESPACINGPARSER_H_1S91TNPM
-#define NAMESPACINGPARSER_H_1S91TNPM
+#ifndef DOMUTILS_H_WK0WAEA7
+#define DOMUTILS_H_WK0WAEA7
 
 #include "uscxml/Common.h"
 #include <DOM/SAX2DOM/SAX2DOM.hpp>
 #include <SAX/helpers/CatchErrorHandler.hpp>
 
+#define TAGNAME(elem) ((Arabica::DOM::Element<std::string>)elem).getTagName()
+#define LOCALNAME(elem) ((Arabica::DOM::Element<std::string>)elem).getLocalName()
+#define ATTR(elem, attr) ((Arabica::DOM::Element<std::string>)elem).getAttribute(attr)
+#define ATTR_NODE(elem, attr) ((Arabica::DOM::Element<std::string>)elem).getAttributeNode(attr)
+#define HAS_ATTR(elem, attr) ((Arabica::DOM::Element<std::string>)elem).hasAttribute(attr)
+
 namespace uscxml {
+
+class USCXML_API DOMUtils {
+public:
+	static std::string xPathForNode(const Arabica::DOM::Node<std::string>& node);
+};
 
 class ScriptEntityResolver : public Arabica::SAX::EntityResolver<std::string> {
 	virtual InputSourceT resolveEntity(const std::string& publicId, const std::string& systemId) {
@@ -58,4 +69,5 @@ private:
 
 }
 
-#endif /* end of include guard: NAMESPACINGPARSER_H_1S91TNPM */
+
+#endif /* end of include guard: DOMUTILS_H_WK0WAEA7 */

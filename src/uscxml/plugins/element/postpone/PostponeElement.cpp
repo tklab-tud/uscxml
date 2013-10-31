@@ -21,6 +21,7 @@
 
 #include "PostponeElement.h"
 #include "uscxml/plugins/invoker/http/HTTPServletInvoker.h"
+#include "uscxml/DOMUtils.h"
 #include <glog/logging.h>
 
 #ifdef BUILD_AS_PLUGINS

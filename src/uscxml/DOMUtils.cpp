@@ -18,11 +18,54 @@
  */
 
 #include <uscxml/Common.h>
-#include "NameSpacingParser.h"
+#include "DOMUtils.h"
+#include <uscxml/Convenience.h>
 #include <glog/logging.h>
 #include <SAX/helpers/InputSourceResolver.hpp>
 
 namespace uscxml {
+
+std::string DOMUtils::xPathForNode(const Arabica::DOM::Node<std::string>& node) {
+  std::string xPath;
+	
+	if (!node || node.getNodeType() != Arabica::DOM::Node_base::ELEMENT_NODE)
+		return xPath;
+	
+  Arabica::DOM::Node<std::string> curr = node;
+	while(curr) {
+		switch (curr.getNodeType()) {
+			case Arabica::DOM::Node_base::ELEMENT_NODE: {
+				if (HAS_ATTR(curr, "id")) {
+					// we assume ids to be unique and return immediately
+					xPath.insert(0, "//" + TAGNAME(curr) + "[@id=\"" + ATTR(curr, "id") + "\"]");
+					return xPath;
+				} else {
+					// check previous siblings to count our index
+					Arabica::DOM::Node<std::string> sibling = curr.getPreviousSibling();
+					int index = 1;
+					while(sibling) {
+						if (sibling.getNodeType() == Arabica::DOM::Node_base::ELEMENT_NODE) {
+							if (iequals(TAGNAME(sibling), TAGNAME(curr))) {
+								index++;
+							}
+						}
+						sibling = sibling.getPreviousSibling();
+					}
+					xPath.insert(0, "/" + TAGNAME(curr) + "[" + toStr(index) + "]");
+				}
+				break;
+			}
+			case Arabica::DOM::Node_base::DOCUMENT_NODE:
+				return xPath;
+			default:
+				LOG(ERROR) << "Only nodes of type element supported for now";
+				return "";
+				break;
+		}
+		curr = curr.getParentNode();
+	}
+	return xPath;
+}
 
 NameSpacingParser NameSpacingParser::fromXML(const std::string& xml) {
 	std::stringstream* ss = new std::stringstream();

@@ -37,6 +37,8 @@
 
 #include <DOM/SAX2DOM/SAX2DOM.hpp>
 #include <SAX/helpers/CatchErrorHandler.hpp>
+#include <DOM/Events/EventTarget.hpp>
+#include <DOM/Events/EventListener.hpp>
 
 #include "uscxml/concurrency/tinythread.h"
 #include "uscxml/concurrency/eventqueue/DelayedEventQueue.h"
@@ -130,6 +132,12 @@ public:
 	    LATE = 1
 	};
 
+	class DOMEventListener : public Arabica::DOM::Events::EventListener<std::string> {
+	public:
+		void handleEvent(Arabica::DOM::Events::Event<std::string>& event);
+		InterpreterImpl* _interpreter;
+	};
+	
 	virtual ~InterpreterImpl();
 
 	void start();
@@ -339,6 +347,8 @@ protected:
 	uscxml::concurrency::BlockingQueue<SendRequest>* _parentQueue;
 	DelayedEventQueue* _sendQueue;
 
+	DOMEventListener _domEventListener;
+	
 	Event _currEvent;
 	Factory* _factory;
 	InterpreterServlet* _httpServlet;

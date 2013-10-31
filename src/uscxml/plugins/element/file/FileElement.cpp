@@ -23,7 +23,7 @@
 #include <vector>
 #include <boost/algorithm/string.hpp>
 
-#include "uscxml/NameSpacingParser.h"
+#include "uscxml/DOMUtils.h"
 
 #ifdef BUILD_AS_PLUGINS
 #include <Pluma/Connector.hpp>

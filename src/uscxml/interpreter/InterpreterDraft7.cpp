@@ -22,6 +22,7 @@
 
 #include <glog/logging.h>
 #include "uscxml/UUID.h"
+#include "uscxml/DOMUtils.h"
 
 namespace uscxml {
 

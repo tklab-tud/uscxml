@@ -19,6 +19,7 @@
 
 #include "uscxml/Common.h"
 #include "SCXMLDotWriter.h"
+#include "uscxml/DOMUtils.h"
 #include <boost/algorithm/string.hpp> // replace_all
 #include <iomanip>
 

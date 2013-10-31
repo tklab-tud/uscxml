@@ -22,6 +22,7 @@
 #include <uscxml/config.h>
 #include "XHTMLInvoker.h"
 #include <glog/logging.h>
+#include "uscxml/DOMUtils.h"
 #include <uscxml/plugins/ioprocessor/comet/CometIOProcessor.h>
 #include <DOM/io/Stream.hpp>
 

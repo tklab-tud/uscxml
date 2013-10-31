@@ -5,6 +5,7 @@
 #include <DOM/io/Stream.hpp>
 #include <iostream>
 #include <string>
+#include "uscxml/DOMUtils.h"
 
 #define string_type std::string
 #define string_adaptor Arabica::default_string_adaptor<std::string>
@@ -127,6 +128,23 @@ int main(int argc, char** argv) {
 	std::cout << numbers_ << std::endl;
 	std::cout << chapters_ << std::endl;
 
+	if (true) {
+		using namespace Arabica::XPath;
+		using namespace Arabica::DOM;
+		XPathValue<string_type, string_adaptor> result = parser.evaluate(SA::construct_from_utf8("//*"), document_);
+		for(int i = 0; i < result.asNodeSet().size(); i++) {
+			Node<string_type, string_adaptor> node = result.asNodeSet()[i];
+			std::string xpathExpr = uscxml::DOMUtils::xPathForNode(node);
+			if (xpathExpr.size()) {
+				XPathValue<string_type, string_adaptor> innerResult = parser.evaluate(xpathExpr, document_);
+				assert(innerResult.asNodeSet().size() > 0);
+				assert(innerResult.asNodeSet().size() == 1);
+				assert(innerResult.asNodeSet()[0] == node);
+			} else {
+				assert(node.getNodeType() != Node_base::ELEMENT_NODE);
+			}
+		}
+	}
 
 	if (false) {
 		using namespace Arabica::XPath;
