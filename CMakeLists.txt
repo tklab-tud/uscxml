@@ -305,7 +305,7 @@ if(${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
 #	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
 	add_definitions(-fPIC)
 	#add_definitions(-Wunreachable-code)
-	add_definitions(-DVERBOSE)
+	#add_definitions(-DVERBOSE)
 
 	if (CMAKE_BUILD_TYPE MATCHES ".*Deb.*" AND ENABLE_GCOV) # when not building for debug
 		# coverage information
@@ -316,7 +316,7 @@ if(${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
 
 	# all warnings
 	add_definitions(-Wall)
-	#add_definitions(-Werror)
+	add_definitions(-Werror)
 
 #	if(GCC_VERSION VERSION_EQUAL 4.7 OR GCC_VERSION VERSION_GREATER 4.7)
 #		# when compiling as C++11, narrowing is a warning but older compilers complain about the option

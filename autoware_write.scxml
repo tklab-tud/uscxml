@@ -40,10 +40,10 @@
 	<data id="WRITE3">
 		<data xmlns="" type="setting" index="3">
 		 <item i="0">
-		    <nestedData type="value">11</nestedData>
+		    <nestedData type="value">0</nestedData>
 		 </item>
 		 <item i="1">
-		    <nestedData type="value">22</nestedData>
+		    <nestedData type="value">0</nestedData>
 		 </item>    
 		 <item i="2">
 		    <nestedData type="value">33</nestedData>

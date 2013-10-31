@@ -20,8 +20,7 @@ bool TimIO::connect2TIM() {
 		freeaddrinfo(_servinfo);
 
 	if ((rv = getaddrinfo(_TIMaddr.c_str(), _TIMport.c_str(), &hints, &_servinfo)) != 0) {
-		LOG(ERROR) << "Getaddrinfo: " << gai_strerror(rv);
-		perror("Getaddrinfo:");
+		PLOG(ERROR) << "Getaddrinfo: " << gai_strerror(rv);
 		return false;
 	}
 
@@ -29,7 +28,7 @@ bool TimIO::connect2TIM() {
 	for (p = _servinfo; p != NULL; p = p->ai_next) {
 		if ((_socketfd = socket(p->ai_family, p->ai_socktype,
 				p->ai_protocol)) == -1) {
-			perror("TIM Client: socket");
+			PLOG(ERROR) << "TIM Client: socket";
 			continue;
 		}
 
@@ -37,17 +36,17 @@ bool TimIO::connect2TIM() {
 		tv.tv_sec = _defTimeout;
 		tv.tv_usec = 0;  // Not init'ing this can cause strange errors
 		if (setsockopt(_socketfd, SOL_SOCKET, SO_SNDTIMEO, &tv, sizeof(struct timeval))) {
-			perror("TIM Client: setting socket options error");
+			PLOG(ERROR) << "TIM Client: setting socket options error";
 			continue;
 		}
 		if (setsockopt(_socketfd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(struct timeval))) {
-			perror("TIM Client: setting socket options error");
+			PLOG(ERROR) << "TIM Client: setting socket options error";
 			continue;
 		}
 
 		if (connect(_socketfd, p->ai_addr, p->ai_addrlen) == -1) {
 			close(_socketfd);
-			perror("TIM Client: connect");
+			PLOG(ERROR) << "TIM Client connect()";
 			continue;
 		}
 		break;
@@ -77,8 +76,8 @@ TimIO::TimIO(std::string ipaddr, std::string port) :
 		exit(EXIT_FAILURE);
 
 	if (!connect2TIM()) {
-		LOG(ERROR) << "TIM Client: failed to connect to " << ipaddr << ":" << port;
-		exit(EXIT_FAILURE);
+		LOG(WARNING) << "TIM Client: failed to connect to " << ipaddr << ":" << port;
+		LOG(WARNING) << "We will try to reconnect later when needed";
 	}
 
 	_reply = new char[MAXTIMREPLYSIZE]();
@@ -136,7 +135,7 @@ void TimIO::client(void *instance) {
 			myobj->_timCmd.front().length(), MSG_NOSIGNAL | MSG_MORE))
 			!= myobj->_timCmd.front().length()) {
 
-		perror("TIM client: send error");
+		PLOG(ERROR) << "TIM client: send error";
 		if (errno == EPIPE) {
 			LOG(INFO) << "TCP connection with TCP lost, reconnecting";
 			if (!myobj->connect2TIM()) {
@@ -166,8 +165,7 @@ void TimIO::client(void *instance) {
 			bridgeInstance.handleTIMexception(TIM_TIMEOUT);
 			return;
 		}
-		perror("TIM client: recv error");
-		LOG(ERROR) << "TIM client: ignoring SCXML send event";
+		PLOG(ERROR) << "TIM recv error: client ignoring TIM reply";
 		bridgeInstance.handleTIMexception(TIM_ERROR);
 		return;
 	}
