@@ -654,6 +654,7 @@ find_package(FFMPEG)
 if (FFMPEG_FOUND)
 	include_directories (${FFMPEG_INCLUDE_DIR})
 	list (APPEND USCXML_OPT_LIBS ${FFMPEG_LIBRARIES})
+	
 endif()
 set(CMAKE_FIND_LIBRARY_SUFFIXES ${CMAKE_FIND_LIBRARY_SUFFIXES_ORIG})
 
@@ -934,28 +935,6 @@ endif()
 # enable config.h style compile time options and add as "uscxml/config.h"
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.h.in ${CMAKE_CURRENT_BINARY_DIR}/uscxml/config.h)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/contrib/ctest/CTestCustom.ctest.in ${CMAKE_CURRENT_BINARY_DIR}/CTestCustom.ctest @ONCE)
-
-############################################################
-# Include What You Use support
-# https://code.google.com/p/chromium/wiki/IncludeWhatYouUse
-############################################################
-# find_program(IWYU_BIN "iwyu" PATHS ENV PATH)
-# if (IWYU_BIN)
-# 	set(IWYU_ARGS "")
-# 	get_property(IWYU_INCLUDES DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY INCLUDE_DIRECTORIES)
-# 	list(REMOVE_DUPLICATES IWYU_INCLUDES)
-# 	foreach(DIR ${IWYU_INCLUDES})
-# 		set(IWYU_ARGS "${IWYU_ARGS} -I${DIR}")
-# 	endforeach()	
-# 	
-# 	message(FATAL_ERROR ${IWYU_ARGS})
-# 	
-# 	add_custom_target(iwyu ${IWYU_BIN} 
-# 		${IWYU_ARGS} ${PROJECT_SOURCE_DIR}/src/uscxml/Factory.cpp
-# 		COMMENT "Run include-what-you-use")
-# 	add_dependencies(iwyu ${CMAKE_CURRENT_BINARY_DIR}/uscxml/config.h)
-# #	message(FATAL_ERROR "asdf")
-#endif()
 
 ############################################################
 # Some concluding remarks
