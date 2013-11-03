@@ -259,7 +259,7 @@ InterpreterImpl::InterpreterImpl() {
 	_factory = NULL;
 	_capabilities = CAN_BASIC_HTTP | CAN_GENERIC_HTTP;
 	_domEventListener._interpreter = this;
-	
+
 #ifdef _WIN32
 	WSADATA wsaData;
 	WSAStartup(MAKEWORD(2, 2), &wsaData);
@@ -772,35 +772,35 @@ void InterpreterImpl::processDOMorText(const Arabica::DOM::Node<std::string>& el
 
 void InterpreterImpl::processParamChilds(const Arabica::DOM::Node<std::string>& element, std::multimap<std::string, Data>& params) {
 	NodeSet<std::string> paramElems = filterChildElements(_xmlNSPrefix + "param", element);
-		for (int i = 0; i < paramElems.size(); i++) {
-			try {
-				if (!HAS_ATTR(paramElems[i], "name")) {
-					LOG(ERROR) << "param element is missing name attribute";
-					continue;
-				}
-				Data paramValue;
-				if (HAS_ATTR(paramElems[i], "expr") && _dataModel) {
-					paramValue = _dataModel.getStringAsData(ATTR(paramElems[i], "expr"));
-				} else if(HAS_ATTR(paramElems[i], "location") && _dataModel) {
-					paramValue = _dataModel.getStringAsData(ATTR(paramElems[i], "location"));
-				} else {
-					LOG(ERROR) << "param element is missing expr or location or no datamodel is specified";
-					continue;
-				}
-				std::string paramKey = ATTR(paramElems[i], "name");
-				params.insert(std::make_pair(paramKey, paramValue));
-			} catch(Event e) {
-				LOG(ERROR) << "Syntax error while processing params " << DOMUtils::xPathForNode(paramElems[i]) << ":" << std::endl << e << std::endl;
-				// test 343
-				std::multimap<std::string, Data>::iterator paramIter = params.begin();
-				while(paramIter != params.end()) {
-					params.erase(paramIter++);
-				}
-				e.name = "error.execution";
-				receiveInternal(e);
-				break;
+	for (int i = 0; i < paramElems.size(); i++) {
+		try {
+			if (!HAS_ATTR(paramElems[i], "name")) {
+				LOG(ERROR) << "param element is missing name attribute";
+				continue;
 			}
+			Data paramValue;
+			if (HAS_ATTR(paramElems[i], "expr") && _dataModel) {
+				paramValue = _dataModel.getStringAsData(ATTR(paramElems[i], "expr"));
+			} else if(HAS_ATTR(paramElems[i], "location") && _dataModel) {
+				paramValue = _dataModel.getStringAsData(ATTR(paramElems[i], "location"));
+			} else {
+				LOG(ERROR) << "param element is missing expr or location or no datamodel is specified";
+				continue;
+			}
+			std::string paramKey = ATTR(paramElems[i], "name");
+			params.insert(std::make_pair(paramKey, paramValue));
+		} catch(Event e) {
+			LOG(ERROR) << "Syntax error while processing params " << DOMUtils::xPathForNode(paramElems[i]) << ":" << std::endl << e << std::endl;
+			// test 343
+			std::multimap<std::string, Data>::iterator paramIter = params.begin();
+			while(paramIter != params.end()) {
+				params.erase(paramIter++);
+			}
+			e.name = "error.execution";
+			receiveInternal(e);
+			break;
 		}
+	}
 }
 
 void InterpreterImpl::send(const Arabica::DOM::Node<std::string>& element) {
@@ -2125,7 +2125,7 @@ void InterpreterImpl::DOMEventListener::handleEvent(Arabica::DOM::Events::Event<
 		}
 	}
 }
-	
+
 void InterpreterImpl::dump() {
 	if (!_document)
 		return;

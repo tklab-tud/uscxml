@@ -1,0 +1,77 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+
+		<style type="text/css">
+		</style>
+
+		<script type="text/javascript">
+		</script>
+
+		<script src="http://ajax.googleapis.com/ajax/libs/dojo/1.9.1/dojo/dojo.js"></script>
+    
+    <script type="text/javascript">
+			require([
+				"dojo/domReady!",
+				"dojox/socket",
+      ], function(
+				dom,
+				Socket
+			) {
+				var socket = new Socket("ws://localhost:8080/websockets");
+
+				function send(data){
+					return socket.send(json.stringify(data));
+				}
+
+				socket.on("connect", function(){
+					// send a handshake
+					send([
+						{
+							"channel": "/meta/handshake",
+							"version": "1.0",
+							"minimumVersion": "1.0beta",
+							"supportedConnectionTypes": ["long-polling"] // or ["callback-polling"] for x-domain
+						}
+					])
+					socket.on("message", function(data){
+						// wait for the response so we can connect with the provided client id
+						data = json.parse(data);
+						if(data.error){
+							throw new Error(error);
+						}
+						// get the client id for all future messages
+						clientId = data.clientId;
+						// send a connect message
+						send([
+							{
+								"channel": "/meta/connect",
+								"clientId": clientId,
+								"connectionType": "long-polling"
+							},
+							{ // also send a subscription message
+								"channel": "/meta/subscribe",
+								"clientId": clientId,
+								"subscription": "/foo/**"
+							}
+						]);
+						socket.on("message", function(data){
+							console.log(data);
+						});
+					});
+				});
+			});		  
+		</script>
+	</head>
+	<body class="tundra">
+		<table>
+			<tr>
+				<td>
+					<div id="websockets"></div>
+				</td>
+				<td>
+			</tr>
+		</table>
+	</body>
+</html>

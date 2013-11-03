@@ -76,6 +76,36 @@ void V8ArrayBuffer::mimeTypeAttrSetter(v8::Local<v8::String> property, v8::Local
 	privData->nativeObj->setMimeType(*localMimeType);
 }
 
+v8::Handle<v8::Value> V8ArrayBuffer::md5Callback(const v8::Arguments& args) {
+
+	v8::Local<v8::Object> self = args.Holder();
+	struct V8ArrayBufferPrivate* privData = V8DOM::toClassPtr<V8ArrayBufferPrivate >(self->GetInternalField(0));
+	if (false) {
+	} else if (args.Length() == 0) {
+
+		std::string retVal = privData->nativeObj->md5();
+
+		return v8::String::New(retVal.c_str());
+	}
+	throw V8Exception("Parameter mismatch while calling md5");
+	return v8::Undefined();
+}
+
+v8::Handle<v8::Value> V8ArrayBuffer::base64Callback(const v8::Arguments& args) {
+
+	v8::Local<v8::Object> self = args.Holder();
+	struct V8ArrayBufferPrivate* privData = V8DOM::toClassPtr<V8ArrayBufferPrivate >(self->GetInternalField(0));
+	if (false) {
+	} else if (args.Length() == 0) {
+
+		std::string retVal = privData->nativeObj->base64();
+
+		return v8::String::New(retVal.c_str());
+	}
+	throw V8Exception("Parameter mismatch while calling base64");
+	return v8::Undefined();
+}
+
 v8::Handle<v8::Value> V8ArrayBuffer::sliceCallback(const v8::Arguments& args) {
 
 	v8::Local<v8::Object> self = args.Holder();

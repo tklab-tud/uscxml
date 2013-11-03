@@ -93,6 +93,16 @@ public:
 //		memcpy(_buffer->_data + index * sizeof(unsigned char), &value, sizeof(unsigned char));
 //	}
 
+	// non-standard extension
+	std::string md5() {
+		return _buffer->md5();
+	}
+
+	// non-standard extension
+	std::string base64() {
+		return _buffer->base64();
+	}
+
 	std::string getMimeType() {
 		if (_buffer)
 			return _buffer->mimeType;

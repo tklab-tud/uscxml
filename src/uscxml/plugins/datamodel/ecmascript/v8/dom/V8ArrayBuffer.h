@@ -41,6 +41,8 @@ public:
 	V8_DESTRUCTOR(V8ArrayBufferPrivate);
 	static bool hasInstance(v8::Handle<v8::Value>);
 
+	static v8::Handle<v8::Value> md5Callback(const v8::Arguments&);
+	static v8::Handle<v8::Value> base64Callback(const v8::Arguments&);
 	static v8::Handle<v8::Value> sliceCallback(const v8::Arguments&);
 	static v8::Handle<v8::Value> isViewCallback(const v8::Arguments&);
 
@@ -76,6 +78,10 @@ public:
 			instance->SetAccessor(v8::String::NewSymbol("mimeType"), V8ArrayBuffer::mimeTypeAttrGetter, V8ArrayBuffer::mimeTypeAttrSetter,
 			                      v8::External::New(0), static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None));
 
+			prototype->Set(v8::String::NewSymbol("md5"),
+			               v8::FunctionTemplate::New(V8ArrayBuffer::md5Callback, v8::Undefined()), static_cast<v8::PropertyAttribute>(v8::DontDelete));
+			prototype->Set(v8::String::NewSymbol("base64"),
+			               v8::FunctionTemplate::New(V8ArrayBuffer::base64Callback, v8::Undefined()), static_cast<v8::PropertyAttribute>(v8::DontDelete));
 			prototype->Set(v8::String::NewSymbol("slice"),
 			               v8::FunctionTemplate::New(V8ArrayBuffer::sliceCallback, v8::Undefined()), static_cast<v8::PropertyAttribute>(v8::DontDelete));
 			prototype->Set(v8::String::NewSymbol("isView"),

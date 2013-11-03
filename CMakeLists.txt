@@ -654,7 +654,8 @@ find_package(FFMPEG)
 if (FFMPEG_FOUND)
 	include_directories (${FFMPEG_INCLUDE_DIR})
 	list (APPEND USCXML_OPT_LIBS ${FFMPEG_LIBRARIES})
-	
+	# required with static ffmpeg builds
+	# set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-Bsymbolic")
 endif()
 set(CMAKE_FIND_LIBRARY_SUFFIXES ${CMAKE_FIND_LIBRARY_SUFFIXES_ORIG})
 

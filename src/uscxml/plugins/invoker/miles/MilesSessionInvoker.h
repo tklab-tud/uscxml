@@ -32,10 +32,26 @@ extern "C" {
 #include "miles/video_grabber.h"
 #include "miles/session.h"
 #include "miles/image.h"
+#include "miles/list.h"
+	long elapsed_time(struct timeval *before, struct timeval *after);
 }
 #ifdef BUILD_AS_PLUGINS
 #include "uscxml/plugins/Plugins.h"
 #endif
+
+#define WEBCONFERO_THUMB_NONE 0
+#define WEBCONFERO_THUMB_JPEG 1
+#define WEBCONFERO_THUMB_PNG 2
+
+struct thumb_entry {
+	char *img_buf;
+	int buf_size; // The size of the buffer malloced
+	int img_size; // The size of the image
+	int img_format; // JPEG or PNG image
+	char *decode_buf;
+	u_int32_t ssrc;
+	void *window_ctx; // The context of the window popped up when the thumbnail is clicked.
+};
 
 namespace uscxml {
 
@@ -58,7 +74,21 @@ public:
 	virtual void invoke(const InvokeRequest& req);
 
 protected:
-	bool alternate; // this is to alternate test1 an test2.jpeg and has no other use! remove me later ..
+	void processEventStart(const std::string& origin, const std::string& userid, const std::string& reflector, const std::string& session);
+	void processEventParticipants(const std::string& origin);
+	void processEventThumbnail(const std::string& origin, const std::string& userid);
+	void processEventVideoOn(const std::string& origin, const std::string& userid);
+	void processEventVideoOff(const std::string& origin, const std::string& userid);
+	void processEventAudioOn(const std::string& origin, const std::string& userid);
+	void processEventAudioOff(const std::string& origin, const std::string& userid);
+	void processEventSendVideo(const std::string& origin, size_t width, size_t height, size_t framerate, const std::string& compression);
+	void processEventSendVideoOff(const std::string& origin);
+	void processEventSendAudio(const std::string& origin, const std::string& encoding);
+	void processEventSendAudioOff(const std::string& origin);
+	void processEventPostText(const std::string& origin, const std::string& userid, const std::string& message);
+	void processEventGetText(const std::string& origin);
+
+	int _imageSeq;
 
 	int video_rtp_in_socket, audio_rtp_in_socket;
 	int video_rtp_out_socket, audio_rtp_out_socket;
@@ -76,26 +106,34 @@ protected:
 	int video_port, audio_port;
 	std::string ip_address;
 
-	char video_out_buf[1000000];
-	char encoded_out_img[1000000];
-	char decoded_in_img[1000000];
-	char audio_in_buf[1000000];
-	char render_img[1000000];
-	char audio_data[1000000];
-	char video_data[1000000];
+	char *video_out_buf;
+	char *encoded_out_img;
+	char *audio_in_buf;
+	char *render_img;
+	int render_img_size;
+	char *audio_data;
+	char *video_data;
 
-	char encoded_out_audio[1000000];
-	char audio_read_buf[1000000];
+	char *encoded_out_audio;
+	char *audio_read_buf;
+	struct miles_list *thumb_list;
+	int save_image;
 
 	struct miles_audio_device *audio_dev_playback;
 	int audio_dev_playback_id;
+	int audio_available;
+	int video_grabber_available;
 
 	static void runAudio(void* instance);
 	static void runVideo(void* instance);
 	void processVideo();
 	void processAudio();
+	int setup_video_grabber();
+	int setup_audio();
 
-	void render_video_image(u_int32_t ssrc, char *img, int width, int height, int img_format);
+	void init_media_buffers();
+	void free_media_buffers();
+	void render_video_image(char *img, int width, int height, int img_format);
 	void playback_audio(u_int32_t ssrc, char *buf, int sample_rate, int bps, int audio_format, int size);
 	int video_receiver(struct miles_rtp_in_stream *rtp_stream, char *data, int bytes_read);
 	int audio_receiver(struct miles_rtp_in_stream *rtp_stream, char *data, int bytes_read);

@@ -74,7 +74,7 @@ public:
 
 	Data() : type(INTERPRETED) {}
 	Data(const std::string& atom_, Type type_ = INTERPRETED) : atom(atom_), type(type_) {}
-	Data(const char* data, size_t size, const std::string& mimeType, bool adopt);
+	Data(const char* data, size_t size, const std::string& mimeType, bool adopt = false);
 	Data(bool atom_) : type(INTERPRETED) {
 		if (atom_) {
 			atom = "true";
