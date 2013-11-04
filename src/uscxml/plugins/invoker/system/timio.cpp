@@ -12,7 +12,7 @@ namespace uscxml {
 bool TimIO::connect2TIM() {
 	struct addrinfo hints, *p;
 	int rv;
-	bool lasttry;
+	bool lasttry = true;
 
 	memset(&hints, 0, sizeof hints);
 	hints.ai_family = PF_INET;
@@ -53,12 +53,15 @@ bool TimIO::connect2TIM() {
 			lasttry = false;
 			continue;
 		}
+		lasttry = true;
 		break;
 	}
 
 	if (p == NULL || !lasttry) {
 		freeaddrinfo(_servinfo);
+		close(_socketfd);
 		_servinfo = NULL;
+		_socketfd = -1;
 		return false;
 	}
 
@@ -139,8 +142,8 @@ void TimIO::client(void *instance) {
 			myobj->_timCmd.front().length(), MSG_NOSIGNAL | MSG_MORE))
 			!= myobj->_timCmd.front().length()) {
 
-		PLOG(ERROR) << "TIM client: send error";
-		if (errno == EPIPE) {
+		PLOG(INFO) << "TIM client: send error";
+		if (errno == EPIPE || errno == EBADF) {
 			LOG(INFO) << "TCP connection with TCP lost, reconnecting";
 			if (!myobj->connect2TIM()) {
 				bridgeInstance.handleTIMexception(TIM_ERROR);
@@ -183,7 +186,7 @@ void TimIO::client(void *instance) {
 		return;
 	}
 
-	LOG(INFO) << "Received reply from TIM: " << myobj->_reply;
+	LOG(ERROR) << "Received reply from TIM: " << myobj->_reply;
 
 	/* This function logs and reports errors internally */
 	bridgeInstance.handleTIMreply(std::string(myobj->_reply));

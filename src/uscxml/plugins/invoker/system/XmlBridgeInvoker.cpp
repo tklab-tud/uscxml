@@ -103,8 +103,8 @@ void XmlBridgeInvoker::send(const SendRequest& req) {
 		nameiter = reqCopy.namelist.begin();
 		std::map<std::string, Data>::const_iterator fields;
 		std::stringstream ss;
-		for (fields = reqCopy.data.compound[nameiter->first].begin();
-			     fields != reqCopy.data.compound[nameiter->first].end(); fields++)
+		for (fields = reqCopy.data.compound[nameiter->first].compound.begin();
+			     fields != reqCopy.data.compound[nameiter->first].compound.end(); fields++)
 			ss << fields->second.atom;
 
 		bridgeInstance.sendReq2TIM(cmdid, write, ss.str(), _timeoutVal);
