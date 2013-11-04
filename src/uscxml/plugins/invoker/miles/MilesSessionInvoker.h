@@ -75,6 +75,7 @@ public:
 
 protected:
 	void processEventStart(const std::string& origin, const std::string& userid, const std::string& reflector, const std::string& session);
+	void processEventStop(const std::string& origin);
 	void processEventParticipants(const std::string& origin);
 	void processEventThumbnail(const std::string& origin, const std::string& userid);
 	void processEventVideoOn(const std::string& origin, const std::string& userid);
@@ -144,6 +145,7 @@ protected:
 
 
 	bool _isRunning;
+	std::string _userId, _reflector, _session;
 	tthread::thread* _videoThread;
 	tthread::thread* _audioThread;
 	tthread::recursive_mutex _mutex;
