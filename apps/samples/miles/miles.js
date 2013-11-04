@@ -141,7 +141,7 @@ function Miles(element, params) {
       return;
 
     var query = "";
-    query += "?userid=" + encodeURIComponent(email);
+    query += "?userid=" + encodeURIComponent(remoteEmail);
     self.xhr.get({
       // The URL to request
       url: "http://" + scxmlURL + "/miles/thumbnail" + query,
@@ -313,7 +313,7 @@ function Miles(element, params) {
             <table>\
               <tr><td>Problem Name:</td><td><div class="problemName" /></td></tr>\
               <tr><td>Your Email:</td><td><div class="email" /></td></tr>\
-              <!-- tr><td>Other Email:</td><td><div class="remoteEmail" /></td></tr -->\
+              <tr><td>Other Email:</td><td><div class="remoteEmail" /></td></tr>\
               <tr><td>Reflector Host:</td><td><div class="reflectorIp" /></td></tr>\
               <tr><td>Video Server:</td><td><div class="scxmlURL" /></td></tr>\
               <tr><td></td><td align="right"><div class="connectButton" /></td></tr>\
@@ -336,6 +336,13 @@ function Miles(element, params) {
           style: "width: 100%",
         });
         dojo.query("div.email", self.connectToolTip.domNode)[0].appendChild(self.emailBox.domNode);
+
+        self.remoteEmailBox = new TextBox({
+          name: "remoteEmail",
+          value: remoteEmail,
+          style: "width: 100%",
+        });
+        dojo.query("div.remoteEmail", self.connectToolTip.domNode)[0].appendChild(self.remoteEmailBox.domNode);
 
         self.reflectorIpBox = new TextBox({
           name: "reflectorIp",
