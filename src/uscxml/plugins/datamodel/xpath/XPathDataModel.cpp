@@ -838,12 +838,16 @@ XPathFunctionResolver::resolveFunction(const std::string& namespace_uri,
 	if (iequals(name, "in")) {
 		return new XPathFunctionIn(1, -1, argExprs, _interpreter);
 	}
+	if (iequals(name, "tokenize")) {
+		return new XPathFunctionIn(2, -1, argExprs, _interpreter);
+	}
 	return _xpathFuncRes.resolveFunction(namespace_uri, name, argExprs);
 }
 
 std::vector<std::pair<std::string, std::string> > XPathFunctionResolver::validNames() const {
 	std::vector<std::pair<std::string, std::string> > names = _xpathFuncRes.validNames();
 	names.push_back(std::make_pair("", "In"));
+	names.push_back(std::make_pair("", "tokenize"));
 	return names;
 }
 

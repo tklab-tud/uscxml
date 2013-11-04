@@ -1,7 +1,5 @@
 #include "timio.h"
 #include "uscxml/plugins/invoker/system/XmlBridgeInvoker.h"
-#include <glog/logging.h>
-#include <glog/log_severity.h>
 
 namespace uscxml {
 
@@ -49,7 +47,7 @@ bool TimIO::connect2TIM() {
 
 		if (connect(_socketfd, p->ai_addr, p->ai_addrlen) == -1) {
 			close(_socketfd);
-			PLOG(ERROR) << "TIM Client connect()";
+			PLOG(INFO) << "TIM Client connect()";
 			lasttry = false;
 			continue;
 		}
@@ -82,10 +80,9 @@ TimIO::TimIO(std::string ipaddr, std::string port) :
 	if (ipaddr.empty() || port.empty())
 		exit(EXIT_FAILURE);
 
-	if (!connect2TIM()) {
-		LOG(ERROR) << "TIM Client: failed to connect to " << ipaddr << ":" << port;
-		LOG(ERROR) << "We will try to reconnect later when needed";
-	}
+	if (!connect2TIM())
+		LOG(INFO) << "TIM Client: failed to connect to " << ipaddr << ":"
+			<< port << ". We try to reconnect later when a TIM cmd is pending";
 
 	_reply = new char[MAXTIMREPLYSIZE]();
 	if (_reply == NULL) {
@@ -108,9 +105,6 @@ TimIO::~TimIO()
 		freeaddrinfo(_servinfo);
 	close(_socketfd);
 	delete _reply;
-	if (_thread) {
-		delete _thread;
-	}
 }
 
 /**
@@ -133,9 +127,8 @@ void TimIO::client(void *instance) {
 		return;
 	}
 
-	LOG(INFO) << "Sending to socket " << myobj->_socketfd
-		<< " the string: '" << myobj->_timCmd.front()
-		<< "' with length " << myobj->_timCmd.front().length();
+	LOG(ERROR) << "Sending cmd to TIM (length=" << myobj->_timCmd.front().length() << "):"
+		<< std::endl << myobj->_timCmd.front();
 
 	int numbytes;
 	while ((numbytes = send(myobj->_socketfd, myobj->_timCmd.front().c_str(),
@@ -186,7 +179,7 @@ void TimIO::client(void *instance) {
 		return;
 	}
 
-	LOG(ERROR) << "Received reply from TIM: " << myobj->_reply;
+	LOG(ERROR) << "Received reply from TIM: " << std::endl << myobj->_reply;
 
 	/* This function logs and reports errors internally */
 	bridgeInstance.handleTIMreply(std::string(myobj->_reply));

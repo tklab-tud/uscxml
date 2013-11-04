@@ -299,6 +299,7 @@ void XmlBridgeInputEvents::handleTIMreply(const std::string replyData)
 	_timio->_timCmd.pop();
 	_timio->_timCmdId.pop();
 	_timio->_timCmdWrite.pop();
+	_timio->_thread = NULL;
 }
 
 /**  MES -> SCXML */
@@ -338,6 +339,7 @@ void XmlBridgeInputEvents::handleTIMexception(exceptions type)
 		_timio->_timCmd.pop();
 		_timio->_timCmdId.pop();
 		_timio->_timCmdWrite.pop();
+		_timio->_thread = NULL;
 	}
 }
 
