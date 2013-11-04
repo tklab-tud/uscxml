@@ -253,76 +253,66 @@ void OSGConverter::process(const SendRequest& req) {
 	((osg::MatrixTransform*)model.get())->setMatrix(requestToModelPose(req));
 	osg::BoundingSphere bs = model->getBound();
 
-//  osg::ref_ptr<osg::MatrixTransform> scale = new osg::MatrixTransform();
-//  scale->setMatrix(osg::Matrix::scale(bs.radius() / 5, bs.radius() / 5, bs.radius() / 5));
-//  scale->addChild(getOrigin());
-//  sceneGraph->addChild(scale);
+	tthread::lock_guard<tthread::recursive_mutex> lock(_viewerMutex);
+	osgViewer::Viewer viewer;
+	osg::Camera *camera = viewer.getCamera();
+	
+	osg::ref_ptr<osg::GraphicsContext::Traits> traits = new
+			osg::GraphicsContext::Traits;
+	traits->width = width;
+	traits->height = height;
+	traits->pbuffer = true;
+	traits->readDISPLAY();
+	osg::GraphicsContext *gc =
+			osg::GraphicsContext::createGraphicsContext(traits.get());
 
-	osgViewer::ScreenCaptureHandler::CaptureOperation* cOp = new NameRespectingWriteToFile(
-	    dest,
-	    format,
-	    osgViewer::ScreenCaptureHandler::WriteToFile::OVERWRITE,
-	    req, this);
+	camera->setGraphicsContext(gc);
+	camera->setDrawBuffer(GL_FRONT);
+	camera->setViewport(new osg::Viewport(0, 0, width, height));
 
-	osgViewer::ScreenCaptureHandler* captureHandler = new osgViewer::ScreenCaptureHandler(cOp, -1);
+	viewer.setSceneData(sceneGraph);
 
+	viewer.setCameraManipulator(new osgGA::TrackballManipulator());
+	viewer.getCamera()->setClearColor(osg::Vec4f(1.0f,1.0f,1.0f,1.0f));
+	viewer.getCamera()->setClearMask(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	double zoom = 1;
+	CAST_PARAM(req.params, zoom, "zoom", double);
+
+	viewer.getCameraManipulator()->setByMatrix(osg::Matrix::lookAt(osg::Vec3d(0,0,bs.radius() * (-3.4 * zoom)),  // eye
+																															 (osg::Vec3d)bs.center(),           // center
+																															 osg::Vec3d(0,1,0)));               // up
+
+	osg::Image *image = new osg::Image();
+	camera->attach(osg::Camera::COLOR_BUFFER0, image);
+
+	viewer.setThreadingModel(osgViewer::Viewer::SingleThreaded);
+	viewer.realize();
+	viewer.frame();
+
+	std::string tempFile = URL::getTmpFilename(format);
+
+	if (!osgDB::writeImageFile(*image, tempFile)) {
+		reportFailure(req);
+	}
+	
+	// read file into buffer
+	char* buffer = NULL;
+	size_t length = 0;
 	{
-		tthread::lock_guard<tthread::recursive_mutex> lock(_viewerMutex);
-		osgViewer::Viewer viewer;
-		osg::ref_ptr<osg::GraphicsContext> gc;
-
-		viewer.setSceneData(sceneGraph);
-		viewer.addEventHandler(captureHandler);
-		captureHandler->startCapture();
-
-		osg::DisplaySettings* ds = osg::DisplaySettings::instance().get();
-		osg::ref_ptr<osg::GraphicsContext::Traits> traits = new osg::GraphicsContext::Traits(ds);
-		traits->width = width;
-		traits->height = height;
-		// this fails with ubuntu in a VM in parallels
-		traits->pbuffer = true;
-
-		gc = osg::GraphicsContext::createGraphicsContext(traits.get());
-
-		if (!gc.valid()) {
-			LOG(ERROR) << "Cannot create GraphicsContext!";
-			return;
-		}
-
-		if (!traits->width || !traits->height) {
-			LOG(ERROR) << "Traits returned with zero dimensions";
-			return;
-		}
-
-		GLenum pbuffer = gc->getTraits()->doubleBuffer ? GL_BACK : GL_FRONT;
-
-		viewer.setCameraManipulator(new osgGA::TrackballManipulator());
-		viewer.getCamera()->setGraphicsContext(gc.get());
-		viewer.getCamera()->setViewport(new osg::Viewport(0,0,traits->width,traits->height));
-		viewer.getCamera()->setDrawBuffer(pbuffer);
-		viewer.getCamera()->setReadBuffer(pbuffer);
-
-		double zoom = 1;
-		CAST_PARAM(req.params, zoom, "zoom", double);
-
-		// set background color
-		viewer.getCamera()->setClearColor(osg::Vec4f(1.0f,1.0f,1.0f,1.0f));
-		viewer.getCamera()->setClearMask(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		viewer.getCameraManipulator()->setByMatrix(osg::Matrix::lookAt(osg::Vec3d(0,0,bs.radius() * (-3.4 * zoom)),  // eye
-		        (osg::Vec3d)bs.center(),           // center
-		        osg::Vec3d(0,1,0)));               // up
-
-		//  viewer.home();
-
-		// perform one viewer iteration
-		viewer.realize();
-		viewer.frame();
-
-		viewer.removeEventHandler(captureHandler);
+		std::ifstream file(tempFile.c_str());
+		
+		file.seekg(0, std::ios::end);
+		length = file.tellg();
+		file.seekg(0, std::ios::beg);
+		buffer = (char*)malloc(length);
+		file.read(buffer, length);
 	}
 
-//	delete(cOp);
-//	delete(captureHandler);
+	Data content;
+	content.compound[format] = Data(buffer, length, URL::getMimeType(format), false);
+	reportSuccess(req, content);
+
 }
 
 void OSGConverter::reportSuccess(const SendRequest& req, const Data& content) {
@@ -549,88 +539,5 @@ void OSGConverter::dumpMatrix(const osg::Matrix& m) {
 	}
 }
 
-void OSGConverter::NameRespectingWriteToFile::operator()(const osg::Image& image, const unsigned int context_id) {
-
-//	std::cout << "NameRespectingWriteToFile" << std::endl;
-//	std::cout << image.s() << std::endl;
-//	std::cout << image.t() << std::endl;
-
-	// write to memory first
-	std::string format;
-	if (_req.params.find("format") != _req.params.end()) {
-		format = _req.params.find("format")->second.atom;
-	} else {
-		_converter->reportFailure(_req);
-	}
-
-	osg::ref_ptr<osgDB::ReaderWriter::Options> op = new osgDB::ReaderWriter::Options();
-	//op->setOptionString("JPEG_QUALITY 75");
-	//op->setOptionString("PNG_COMPRESSION 9");
-
-	// osgDB got confused when we write to a stringstream
-	std::string tempFile = URL::getTmpFilename(format);
-	if (!osgDB::writeImageFile(image, tempFile, op)) {
-		_converter->reportFailure(_req);
-	}
-
-	char* buffer = NULL;
-	size_t length = 0;
-	{
-		std::ifstream file(tempFile.c_str());
-
-		file.seekg(0, std::ios::end);
-		length = file.tellg();
-		file.seekg(0, std::ios::beg);
-		buffer = (char*)malloc(length);
-		file.read(buffer, length);
-	}
-
-	std::cout << tempFile << std::endl;
-
-//	remove(tempFile.c_str());
-//	osg::ref_ptr<osgDB::ReaderWriter> writerFormat = osgDB::Registry::instance()->getReaderWriterForExtension(format);
-//	if(!writerFormat.valid())
-//		_converter->reportFailure(_req);
-
-
-#if 0
-	std::stringstream ssFormat;
-
-	osgDB::ReaderWriter::WriteResult res = writerFormat->writeImage(image, ssFormat, op);
-
-	if (_filename.length() > 0) {
-		std::string tmpName = _filename;
-		size_t pathSep = _filename.find_last_of(PATH_SEPERATOR);
-		if (pathSep != std::string::npos) {
-			tmpName = _filename.substr(0, pathSep) + PATH_SEPERATOR + ".tmp" + _filename.substr(pathSep + 1, _filename.length() - pathSep - 1);
-		}
-
-		{
-			std::ofstream outFile(tmpName.c_str());
-			outFile << ssFormat.str();
-		}
-
-		if (pathSep != std::string::npos) {
-			int err = rename(tmpName.c_str(), _filename.c_str());
-			if (err) {
-				_converter->reportFailure(_req);
-			}
-		}
-	}
-#endif
-
-	Data content;
-	content.compound[format] = Data(buffer, length, URL::getMimeType(format), false);
-
-	// save image as a raw rgba as well for ffmpeg - we are using the mpb format for now
-//	osg::ref_ptr<osgDB::ReaderWriter> writerRGBA = osgDB::Registry::instance()->getReaderWriterForExtension("rgba");
-//	if(writerRGBA.valid()) {
-//		std::stringstream ssRGBA;
-//		osgDB::ReaderWriter::WriteResult res = writerRGBA->writeImage(image, ssRGBA, op);
-//		content.compound["rgba"] = Data(ssRGBA.str().c_str(), ssRGBA.str().size(), false);
-//	}
-
-	_converter->reportSuccess(_req, content);
-}
 
 }
