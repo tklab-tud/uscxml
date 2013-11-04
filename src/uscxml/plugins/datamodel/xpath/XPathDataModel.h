@@ -49,6 +49,21 @@ protected:
 	InterpreterImpl* _interpreter;
 };
 
+class XPathFunctionTokenize : public Arabica::XPath::NodeSetXPathFunction<std::string> {
+public:
+	XPathFunctionTokenize(int minArgs,
+			int maxArgs,
+			const std::vector<Arabica::XPath::XPathExpression<std::string> >& args,
+			InterpreterImpl* interpreter) :
+		Arabica::XPath::NodeSetXPathFunction<std::string>(minArgs, maxArgs, args),
+		_interpreter(interpreter) {}
+
+protected:
+	Arabica::XPath::NodeSet<std::string> doEvaluate(const Arabica::DOM::Node<std::string>& context,
+			const Arabica::XPath::ExecutionContext<std::string>& executionContext) const;
+	InterpreterImpl* _interpreter;
+};
+
 class XPathFunctionResolver : public Arabica::XPath::FunctionResolver<std::string> {
 public:
 	virtual ~XPathFunctionResolver() { }

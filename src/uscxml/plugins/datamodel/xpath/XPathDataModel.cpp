@@ -52,7 +52,6 @@ boost::shared_ptr<DataModelImpl> XPathDataModel::create(InterpreterImpl* interpr
 //	dm->_xpath->setNamespaceContext(interpreter->getNSContext());
 
 	dm->_funcResolver.setInterpreter(interpreter);
-	dm->_xpath.setNamespaceContext(interpreter->getNSContext());
 	dm->_xpath.setFunctionResolver(dm->_funcResolver);
 	dm->_xpath.setVariableResolver(dm->_varResolver);
 
@@ -263,15 +262,9 @@ Data XPathDataModel::getStringAsData(const std::string& content) {
 	case NODE_SET:
 		NodeSet<std::string> ns = result.asNodeSet();
 		for (int i = 0; i < ns.size(); i++) {
-			ss.str("");
-			ss << i;
-			std::string idx = ss.str();
-			ss.str("");
 			ss << ns[i];
-			data.compound[idx] = Data(ss.str());
 		}
-		data.type = Data::INTERPRETED;
-		return data;
+		break;
 	}
 
 	data.atom = ss.str();
@@ -699,9 +692,10 @@ void XPathDataModel::assign(const NodeSet<std::string>& key,
 
 	for (int i = 0; i < key.size(); i++) {
 		switch (key[i].getNodeType()) {
-		case Node_base::ELEMENT_NODE:
+		case Node_base::ELEMENT_NODE: {
 			assign(Element<std::string>(key[i]), value, assignElem);
 			break;
+		}
 		default:
 //			std::cout << key[i].getNodeType() << std::endl;
 			throw Event("error.execution", Event::PLATFORM);
@@ -843,7 +837,6 @@ XPathFunctionResolver::resolveFunction(const std::string& namespace_uri,
 std::vector<std::pair<std::string, std::string> > XPathFunctionResolver::validNames() const {
 	std::vector<std::pair<std::string, std::string> > names = _xpathFuncRes.validNames();
 	names.push_back(std::make_pair("", "In"));
-
 	return names;
 }
 
@@ -858,6 +851,38 @@ bool XPathFunctionIn::doEvaluate(const Node<std::string>& context,
 		}
 	}
 	return true;
+}
+
+Arabica::XPath::NodeSet<std::string> XPathFunctionTokenize::doEvaluate(const Node<std::string>& context,
+				 const ExecutionContext<std::string>& executionContext) const {
+
+	Arabica::XPath::NodeSet<std::string> tokens();
+
+	if (argCount() != 2)
+		return tokens;
+
+	XPathValue<std::string> firstArg = arg(1, context, executionContext);
+	if (firstArg.type() != STRING)
+		return tokens;
+
+	std::string mesData = firstArg.asString();
+
+	XPathValue<std::string> secondArg = arg(2, context, executionContext);
+	if (secondArg.type() != STRING)
+		return tokens;
+
+	char delim = secondArg.asString().c_str()[0];
+
+	std::size_t current;
+	std::size_t next = -1;
+	do {
+		current = next + 1;
+		next = mesData.find_first_of(delim, current);
+		tokens.push_back(_interpreter->getDocument().createTextNode(
+			mesData.substr(current, next - current)));
+	} while (next != std::string::npos);
+
+	return tokens;
 }
 
 }
