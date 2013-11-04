@@ -201,9 +201,13 @@ void MilesSessionInvoker::send(const SendRequest& req) {
 
 void MilesSessionInvoker::processEventStart(const std::string& origin, const std::string& userid, const std::string& reflector, const std::string& session) {
 
+	Event ev;
+	ev.data.compound["origin"] = origin;
 	//std::cout << req;
 	if(_isRunning) {
 		LOG(ERROR) << "already connected";
+		ev.name = "start.error";
+		returnEvent(ev);
 		return;
 	}
 
@@ -213,6 +217,8 @@ void MilesSessionInvoker::processEventStart(const std::string& origin, const std
 	rv = miles_connect_reflector_session((char*)reflector.c_str(), (char*)session.c_str());
 	if (!rv) {
 		LOG(ERROR) << "Could not setup reflector session";
+		ev.name = "start.error";
+		returnEvent(ev);
 		return;
 	}
 	LOG(ERROR) << "session set up";
@@ -271,24 +277,32 @@ void MilesSessionInvoker::processEventStart(const std::string& origin, const std
 	if(audio_available)
 		_audioThread = new tthread::thread(MilesSessionInvoker::runAudio, this);
 	_videoThread = new tthread::thread(MilesSessionInvoker::runVideo, this);
-	Event ev;
 	ev.name = "start.reply";
-	ev.data.compound["origin"] = origin;
 	returnEvent(ev);
 }
 
 void MilesSessionInvoker::processEventStop(const std::string& origin) {
+	Event ev;
+	ev.data.compound["origin"] = origin;
+
+	if(!_isRunning) {
+		LOG(ERROR) << "not connected";
+		ev.name = "stop.error";
+		returnEvent(ev);
+		return;
+	}
 	int rv = miles_disconnect_reflector_session((char*)_reflector.c_str(), (char*)_session.c_str());
 	if (!rv) {
 		LOG(ERROR) << "Could not disconnect from reflector session";
+		ev.name = "stop.error";
+		returnEvent(ev);
 		return;
 	}
 	free_media_buffers();
 	_isRunning = false;
-	Event ev;
 	ev.name = "stop.reply";
-	ev.data.compound["origin"] = origin;
 	returnEvent(ev);
+	LOG(ERROR) << "disconnected from reflector session";
 }
 
 void MilesSessionInvoker::processEventParticipants(const std::string& origin) {
@@ -308,6 +322,14 @@ void MilesSessionInvoker::processEventParticipants(const std::string& origin) {
 
 }
 void MilesSessionInvoker::processEventThumbnail(const std::string& origin, const std::string& userid) {
+	Event ev;
+	ev.data.compound["origin"] = origin;
+	if(!_isRunning) {
+		LOG(ERROR) << "not connected";
+		ev.name = "thumbnail.error";
+		returnEvent(ev);
+		return;
+	}
 	LOG(ERROR) << "processEventThumbnail";
 	URL imageURL("emptyface.jpg");
 	imageURL.toAbsolute(_interpreter->getBaseURI());
@@ -315,9 +337,7 @@ void MilesSessionInvoker::processEventThumbnail(const std::string& origin, const
 	ssImage << imageURL;
 	std::string imageContent = ssImage.str();
 
-	Event ev;
 	ev.name = "thumbnail.reply";
-	ev.data.compound["origin"] = origin;
 
 	int has_thumb = 0;
 	struct miles_rtp_in_stream *rtps;
@@ -406,9 +426,15 @@ void MilesSessionInvoker::processEventPostText(const std::string& origin, const 
 }
 void MilesSessionInvoker::processEventGetText(const std::string& origin) {
 	Event ev;
-	ev.name = "gettext.reply";
 	ev.data.compound["origin"] = origin;
+	if(!_isRunning) {
+		LOG(ERROR) << "not connected";
+		ev.name = "gettext.error";
+		returnEvent(ev);
+		return;
+	}
 	
+	ev.name = "gettext.reply";
 	if (rand() % 5 == 0) { // return some mocked up chat message
 		ev.data.compound["message"] = Data(".. and then she was all like: aren't we supposed to discuss work related stuff?", Data::VERBATIM);
 		ev.data.compound["user"] = Data("username1", Data::VERBATIM);

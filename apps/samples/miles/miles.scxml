@@ -11,12 +11,14 @@
 						<respond status="200" to="_event.data.origin">
 							<header name="Cache-Control" value="no-cache" /> <!-- force IE to actually reload -->
 							<header name="Content-Type" value="text/plain" />
+							<header name="Access-Control-Allow-Origin" value="*" />
 							<content expr="_event.data.image.base64()" />
 						</respond>
 					<else />
 						<respond status="200" to="_event.data.origin">
 							<header name="Cache-Control" value="no-cache" /> <!-- force IE to actually reload -->
 							<!-- respond element will add content-type header -->
+							<header name="Access-Control-Allow-Origin" value="*" />
 							<content expr="_event.data" />
 						</respond>
 					</if>
@@ -39,12 +41,21 @@
 			
 			<transition event="http.get" target="idle">
 				<log label="in" expr="_event.data.path" />
-				<script>//dump(_event);</script>
+				<script>dump(_event);</script>
 				<if cond="false">
 
 				<!-- START ############### -->
 				<elseif cond="_event.data.pathComponent[1] === 'start'" />
 					<send target="#_miles" event="start">
+						<param name="origin" expr="_event.origin" />
+						<param name="reflector" expr="_event.data.query.reflector" />
+						<param name="userId" expr="_event.data.query.userid" />
+						<param name="session" expr="_event.data.query.session" />
+					</send>
+
+				<!-- STOP ############### -->
+				<elseif cond="_event.data.pathComponent[1] === 'stop'" />
+					<send target="#_miles" event="stop">
 						<param name="origin" expr="_event.origin" />
 						<param name="reflector" expr="_event.data.query.reflector" />
 						<param name="userId" expr="_event.data.query.userid" />

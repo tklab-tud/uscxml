@@ -18,9 +18,11 @@ function Miles(element, params) {
   // private attributes
   var scxmlURL    = "localhost:8080"
   var reflectorIp = "88.131.107.12"
-  var email       = "user@smartvortex.eu";
+  //var email       = "user@smartvortex.eu";
+  var email       = "mathias";
   var problemName = "webconfero";
-  var remoteEmail = "other@smartvortex.eu";
+  //var remoteEmail = "other@smartvortex.eu";
+  var remoteEmail = "stefan";
 
   var participants = []; // empty array
   var videoCompressions = [
@@ -92,10 +94,25 @@ function Miles(element, params) {
   }
 
   this.disconnect = function() {
-    self.connected = false;
-    hideChat();
-    self.controlDropDown.dropDown.onCancel(true);
-    self.controlElem.replaceChild(self.connectDropDown.domNode, self.controlDropDown.domNode);
+    var query = "";
+    query += "?reflector=" + encodeURIComponent(reflectorIp);
+    query += "&userid=" + encodeURIComponent(email);
+    query += "&session=" + encodeURIComponent(problemName);
+    
+    self.xhr.get({
+      // The URL to request
+      url: "http://" + scxmlURL + "/miles/stop" + query,
+      // handleAs:"text",
+      error: function(err) {
+        console.log(err);
+      },
+      load: function(result) {
+    	self.connected = false;
+    	hideChat();
+    	self.controlDropDown.dropDown.onCancel(true);
+    	self.controlElem.replaceChild(self.connectDropDown.domNode, self.controlDropDown.domNode);
+      }
+    });  
   }
   
   var hideChat = function() {
