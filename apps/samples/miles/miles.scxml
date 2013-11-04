@@ -10,12 +10,14 @@
 					<if cond="_event.name === 'thumbnail.reply'">
 						<respond status="200" to="_event.data.origin">
 							<header name="Cache-Control" value="no-cache" /> <!-- force IE to actually reload -->
+							<header name="Access-Control-Allow-Origin" value="*" />
 							<header name="Content-Type" value="text/plain" />
 							<content expr="_event.data.image.base64()" />
 						</respond>
 					<else />
 						<respond status="200" to="_event.data.origin">
 							<header name="Cache-Control" value="no-cache" /> <!-- force IE to actually reload -->
+							<header name="Access-Control-Allow-Origin" value="*" />
 							<!-- respond element will add content-type header -->
 							<content expr="_event.data" />
 						</respond>
