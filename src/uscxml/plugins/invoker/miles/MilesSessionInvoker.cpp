@@ -119,6 +119,10 @@ void MilesSessionInvoker::send(const SendRequest& req) {
 		Event::getParam(req.params, "session", session);
 		processEventStart(origin, userId, reflector, session);
 
+	} else if (iequals(req.name, "stop")) {
+
+		processEventStop(origin);
+
 	} else if (iequals(req.name, "participants")) {
 
 		processEventParticipants(origin);
@@ -193,174 +197,96 @@ void MilesSessionInvoker::send(const SendRequest& req) {
 		LOG(ERROR) << "Do not know how to handle event " << req.name;
 	}
 
-#if 0
-	if (iequals(req.name, "disconnect")) {
-		std::string reflectorIP = "127.0.0.1";
-		Event::getParam(req.params, "reflectorip", reflectorIP);
-
-		std::string problemName = "Generic";
-		Event::getParam(req.params, "problemname", problemName);
-
-		int rv;
-		rv = miles_disconnect_reflector_session((char*)reflectorIP.c_str(), (char*)problemName.c_str());
-		if (!rv) {
-			LOG(ERROR) << "Could not disconnect from reflector session";
-			return;
-		}
-		free_media_buffers();
-		_isRunning = false;
-	} else if (iequals(req.name, "image")) {
-		// client wants an image
-		URL imageURL1("emptyface.jpg");
-		//URL imageURL2("test2.jpeg");
-
-		imageURL1.toAbsolute(_interpreter->getBaseURI());
-		//imageURL2.toAbsolute(_interpreter->getBaseURI());
-
-		std::stringstream ssImage;
-
-		ssImage << imageURL1;
-		/*if (alternate) {
-			ssImage << imageURL1;
-		} else {
-			ssImage << imageURL2;
-		}
-		alternate = !alternate;*/
-
-		std::string imageContent = ssImage.str();
-
-		Event retEv;
-		int has_thumb = 0;
-		struct miles_rtp_in_stream *rtps;
-		struct miles_list *p;
-		struct thumb_entry *te;
-		_mutex.lock();
-		// MJ: first param, void * to image, second size of image
-		//retEv.data.compound["base64"] = Data(base64_encode(imageContent.data(), imageContent.size()), Data::VERBATIM);
-		if(video_session->instreams) {
-			rtps = video_session->instreams->stream;
-			if(rtps) {
-				p = thumb_list;
-				while(p) {
-					te = (struct thumb_entry *)p->item;
-					if(te->ssrc == rtps->ssrc) {
-						break;
-					}
-					p = p->next;
-				}
-				if(p) {
-					has_thumb = 1;
-					retEv.data.compound["base64"] = Data(base64_encode(te->img_buf, te->img_size), Data::VERBATIM);
-				}
-			}
-		}
-		if(!has_thumb) {
-			// Return empty face image
-			retEv.data.compound["base64"] = Data(base64_encode(imageContent.data(), imageContent.size()), Data::VERBATIM);
-		}
-
-		_mutex.unlock();
-		std::string origin;
-		Event::getParam(req.params, "origin", origin);
-		retEv.data.compound["origin"] = origin;
-
-		tthread::this_thread::sleep_for(tthread::chrono::milliseconds(20));
-
-		returnEvent(retEv);
-
-	} else if (iequals(req.name, "connect")) {
-
-		//std::cout << req;
-		if(_isRunning) {
-			LOG(ERROR) << "already connected";
-			return;
-		}
-
-		std::string email = "someSaneDefault";
-		Event::getParam(req.params, "email", email);
-
-		std::string reflectorIp = "127.0.0.1";
-		Event::getParam(req.params, "reflectorIp", reflectorIp);
-
-		std::string problemName = "Generic";
-		Event::getParam(req.params, "problemName", problemName);
-		LOG(ERROR) << "connect called, reflector ip = ";
-		LOG(ERROR) << reflectorIp;
-		LOG(ERROR) << problemName;
-		LOG(ERROR) << email;
-
-		//return;
-
-		int rv;
-		rv = miles_connect_reflector_session((char*)reflectorIp.c_str(), (char*)problemName.c_str());
-		if (!rv) {
-			LOG(ERROR) << "Could not setup reflector session";
-			return;
-		}
-		LOG(ERROR) << "session set up";
-
-		/* Set up audio and video RTP sockets */
-		video_rtp_in_socket = miles_net_setup_udp_socket((char*)reflectorIp.c_str(), video_port, video_port, 10, 16000);
-		audio_rtp_in_socket = miles_net_setup_udp_socket((char*)reflectorIp.c_str(), audio_port, audio_port, 10, 16000);
-		video_rtp_out_socket = video_rtp_in_socket; //miles_net_setup_udp_socket((char*)reflectorIP.c_str(), video_port, 0, 10, 16000);
-		audio_rtp_out_socket = audio_rtp_in_socket; //miles_net_setup_udp_socket((char*)reflectorIP.c_str(), audio_port, 0, 10, 16000);
-
-		LOG(ERROR) << "rtp sockets set up";
-
-		/* Set up audio and video RTCP sockets */
-		video_rtcp_in_socket = miles_net_setup_udp_socket((char*)reflectorIp.c_str(), video_port+1, video_port+1, 10, 16000);
-		audio_rtcp_in_socket = miles_net_setup_udp_socket((char*)reflectorIp.c_str(), audio_port+1, audio_port+1, 10, 16000);
-		video_rtcp_out_socket = video_rtcp_in_socket; //miles_net_setup_udp_socket((char*)reflectorIP.c_str(), video_port+1, 0, 10, 16000);
-		audio_rtcp_out_socket = audio_rtcp_in_socket; //miles_net_setup_udp_socket((char*)reflectorIP.c_str(), audio_port+1, 0, 10, 16000);
-
-		LOG(ERROR) << "rtcp sockets set up";
-
-		/* Set up RTP audio and video sessions */
-		video_session = miles_rtp_setup_session(video_rtp_in_socket, MILES_RTP_MEDIA_TYPE_VIDEO);
-		audio_session = miles_rtp_setup_session(audio_rtp_in_socket, MILES_RTP_MEDIA_TYPE_AUDIO);
-
-		/* Set up RTCP audio and video sessions */
-		video_session->rtcp_session = miles_rtp_setup_rtcp_session(video_session, video_rtcp_in_socket);
-		audio_session->rtcp_session = miles_rtp_setup_rtcp_session(audio_session, audio_rtcp_in_socket);
-
-		LOG(ERROR) << "rtp/rtcp sessions  set up";
-
-		/* Set up video capture */
-		video_grabber_available = setup_video_grabber();
-
-		/* Set up audio capture/playback */
-		audio_available = setup_audio();
-
-		/* Set up outgoing RTP stream for video */
-		if(video_grabber_available) {
-			out_rtp_video_stream = miles_rtp_setup_outgoing_stream(video_session, video_rtp_out_socket, 0, MILES_RTP_PAYLOAD_TYPE_JPEG);
-			out_rtp_video_stream->codec_ctx = video_encoder;
-			out_rtcp_video_stream = miles_rtp_setup_outgoing_rtcp_stream(video_session->rtcp_session, video_rtcp_out_socket, out_rtp_video_stream->ssrc);
-		}
-
-		/* Set up outgoing RTP stream for audio */
-		if(audio_available) {
-			out_rtp_audio_stream = miles_rtp_setup_outgoing_stream(audio_session, audio_rtp_out_socket, 0, MILES_RTP_PAYLOAD_TYPE_L16);
-
-			/* Associate RTP stream with codec context */
-			out_rtp_audio_stream->codec_ctx = audio_encoder;
-
-			/* Set up outgoing RTCP streams for audio */
-			out_rtcp_audio_stream = miles_rtp_setup_outgoing_rtcp_stream(audio_session->rtcp_session, audio_rtcp_out_socket, out_rtp_audio_stream->ssrc);
-		}
-
-		_isRunning = true;
-
-		if(audio_available)
-			_audioThread = new tthread::thread(MilesSessionInvoker::runAudio, this);
-		_videoThread = new tthread::thread(MilesSessionInvoker::runVideo, this);
-	}
-#endif
 }
 
 void MilesSessionInvoker::processEventStart(const std::string& origin, const std::string& userid, const std::string& reflector, const std::string& session) {
+
+	//std::cout << req;
+	if(_isRunning) {
+		LOG(ERROR) << "already connected";
+		return;
+	}
+
+	LOG(ERROR) << "miles/start called, reflector ip = " << reflector << " session name = " << session << " userid = " << userid;
+
+	int rv;
+	rv = miles_connect_reflector_session((char*)reflector.c_str(), (char*)session.c_str());
+	if (!rv) {
+		LOG(ERROR) << "Could not setup reflector session";
+		return;
+	}
+	LOG(ERROR) << "session set up";
+
+	/* Set up audio and video RTP sockets */
+	video_rtp_in_socket = miles_net_setup_udp_socket((char*)reflector.c_str(), video_port, video_port, 10, 16000);
+	audio_rtp_in_socket = miles_net_setup_udp_socket((char*)reflector.c_str(), audio_port, audio_port, 10, 16000);
+	video_rtp_out_socket = video_rtp_in_socket; 
+	audio_rtp_out_socket = audio_rtp_in_socket; 
+
+	LOG(ERROR) << "rtp sockets set up";
+
+	/* Set up audio and video RTCP sockets */
+	video_rtcp_in_socket = miles_net_setup_udp_socket((char*)reflector.c_str(), video_port+1, video_port+1, 10, 16000);
+	audio_rtcp_in_socket = miles_net_setup_udp_socket((char*)reflector.c_str(), audio_port+1, audio_port+1, 10, 16000);
+	video_rtcp_out_socket = video_rtcp_in_socket;
+	audio_rtcp_out_socket = audio_rtcp_in_socket; 
+
+	/* Set up RTP audio and video sessions */
+	video_session = miles_rtp_setup_session(video_rtp_in_socket, MILES_RTP_MEDIA_TYPE_VIDEO);
+	audio_session = miles_rtp_setup_session(audio_rtp_in_socket, MILES_RTP_MEDIA_TYPE_AUDIO);
+
+	/* Set up RTCP audio and video sessions */
+	video_session->rtcp_session = miles_rtp_setup_rtcp_session(video_session, video_rtcp_in_socket);
+	audio_session->rtcp_session = miles_rtp_setup_rtcp_session(audio_session, audio_rtcp_in_socket);
+
+	/* Set up video capture */
+	video_grabber_available = setup_video_grabber();
+
+	/* Set up audio capture/playback */
+	audio_available = setup_audio();
+
+	/* Set up outgoing RTP stream for video */
+	if(video_grabber_available) {
+		out_rtp_video_stream = miles_rtp_setup_outgoing_stream(video_session, video_rtp_out_socket, 0, MILES_RTP_PAYLOAD_TYPE_JPEG);
+		out_rtp_video_stream->codec_ctx = video_encoder;
+		out_rtcp_video_stream = miles_rtp_setup_outgoing_rtcp_stream(video_session->rtcp_session, video_rtcp_out_socket, out_rtp_video_stream->ssrc);
+	}
+
+	/* Set up outgoing RTP stream for audio */
+	if(audio_available) {
+		out_rtp_audio_stream = miles_rtp_setup_outgoing_stream(audio_session, audio_rtp_out_socket, 0, MILES_RTP_PAYLOAD_TYPE_L16);
+
+		/* Associate RTP stream with codec context */
+		out_rtp_audio_stream->codec_ctx = audio_encoder;
+
+		/* Set up outgoing RTCP streams for audio */
+		out_rtcp_audio_stream = miles_rtp_setup_outgoing_rtcp_stream(audio_session->rtcp_session, audio_rtcp_out_socket, out_rtp_audio_stream->ssrc);
+	}
+
+	_isRunning = true;
+	_reflector = reflector;
+	_userId = userid;
+	_session = session;
+
+	if(audio_available)
+		_audioThread = new tthread::thread(MilesSessionInvoker::runAudio, this);
+	_videoThread = new tthread::thread(MilesSessionInvoker::runVideo, this);
 	Event ev;
 	ev.name = "start.reply";
+	ev.data.compound["origin"] = origin;
+	returnEvent(ev);
+}
+
+void MilesSessionInvoker::processEventStop(const std::string& origin) {
+	int rv = miles_disconnect_reflector_session((char*)_reflector.c_str(), (char*)_session.c_str());
+	if (!rv) {
+		LOG(ERROR) << "Could not disconnect from reflector session";
+		return;
+	}
+	free_media_buffers();
+	_isRunning = false;
+	Event ev;
+	ev.name = "stop.reply";
 	ev.data.compound["origin"] = origin;
 	returnEvent(ev);
 }
@@ -382,8 +308,8 @@ void MilesSessionInvoker::processEventParticipants(const std::string& origin) {
 
 }
 void MilesSessionInvoker::processEventThumbnail(const std::string& origin, const std::string& userid) {
-	_imageSeq = (++_imageSeq % 4);
-	URL imageURL("test" + toStr(_imageSeq + 1) + ".jpeg");
+	LOG(ERROR) << "processEventThumbnail";
+	URL imageURL("emptyface.jpg");
 	imageURL.toAbsolute(_interpreter->getBaseURI());
 	std::stringstream ssImage;
 	ssImage << imageURL;
@@ -393,10 +319,37 @@ void MilesSessionInvoker::processEventThumbnail(const std::string& origin, const
 	ev.name = "thumbnail.reply";
 	ev.data.compound["origin"] = origin;
 
-	// as we support ECMAScript TYpedArrays, we can handle blobs in the datamodel
-	ev.data.compound["image"] = Data(imageContent.data(), imageContent.size(), "image/jpeg");
+	int has_thumb = 0;
+	struct miles_rtp_in_stream *rtps;
+	struct miles_list *p;
+	struct thumb_entry *te;
+	_mutex.lock();
+	if(video_session->instreams) {
+		rtps = video_session->instreams->stream;
+		if(rtps) {
+			p = thumb_list;
+			while(p) {
+				te = (struct thumb_entry *)p->item;
+				if(te->ssrc == rtps->ssrc) {
+					break;
+				}
+				p = p->next;
+  		}
+			if(p) {
+				has_thumb = 1;
+				ev.data.compound["image"] = Data(te->img_buf, te->img_size, "image/jpeg");
+			}
+		}
+	}
+	if(!has_thumb) {
+			// Return empty face image
+			ev.data.compound["image"] = Data(imageContent.data(), imageContent.size(), "image/jpeg");
+	}
+	_mutex.unlock();
+
 	returnEvent(ev);
 }
+
 void MilesSessionInvoker::processEventVideoOn(const std::string& origin, const std::string& userid) {
 	Event ev;
 	ev.name = "videoon.reply";
