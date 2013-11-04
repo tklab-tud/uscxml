@@ -1,5 +1,7 @@
 #include "timio.h"
 #include "uscxml/plugins/invoker/system/XmlBridgeInvoker.h"
+#include <glog/logging.h>
+#include <glog/log_severity.h>
 
 namespace uscxml {
 
@@ -10,6 +12,7 @@ namespace uscxml {
 bool TimIO::connect2TIM() {
 	struct addrinfo hints, *p;
 	int rv;
+	bool lasttry;
 
 	memset(&hints, 0, sizeof hints);
 	hints.ai_family = PF_INET;
@@ -28,7 +31,7 @@ bool TimIO::connect2TIM() {
 	for (p = _servinfo; p != NULL; p = p->ai_next) {
 		if ((_socketfd = socket(p->ai_family, p->ai_socktype,
 				p->ai_protocol)) == -1) {
-			PLOG(ERROR) << "TIM Client: socket";
+			PLOG(ERROR) << "TIM Client socket()";
 			continue;
 		}
 
@@ -36,23 +39,24 @@ bool TimIO::connect2TIM() {
 		tv.tv_sec = _defTimeout;
 		tv.tv_usec = 0;  // Not init'ing this can cause strange errors
 		if (setsockopt(_socketfd, SOL_SOCKET, SO_SNDTIMEO, &tv, sizeof(struct timeval))) {
-			PLOG(ERROR) << "TIM Client: setting socket options error";
+			PLOG(ERROR) << "TIM Client setting socket options error";
 			continue;
 		}
 		if (setsockopt(_socketfd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(struct timeval))) {
-			PLOG(ERROR) << "TIM Client: setting socket options error";
+			PLOG(ERROR) << "TIM Client setting socket options error";
 			continue;
 		}
 
 		if (connect(_socketfd, p->ai_addr, p->ai_addrlen) == -1) {
 			close(_socketfd);
 			PLOG(ERROR) << "TIM Client connect()";
+			lasttry = false;
 			continue;
 		}
 		break;
 	}
 
-	if (p == NULL) {
+	if (p == NULL || !lasttry) {
 		freeaddrinfo(_servinfo);
 		_servinfo = NULL;
 		return false;
@@ -76,8 +80,8 @@ TimIO::TimIO(std::string ipaddr, std::string port) :
 		exit(EXIT_FAILURE);
 
 	if (!connect2TIM()) {
-		LOG(WARNING) << "TIM Client: failed to connect to " << ipaddr << ":" << port;
-		LOG(WARNING) << "We will try to reconnect later when needed";
+		LOG(ERROR) << "TIM Client: failed to connect to " << ipaddr << ":" << port;
+		LOG(ERROR) << "We will try to reconnect later when needed";
 	}
 
 	_reply = new char[MAXTIMREPLYSIZE]();

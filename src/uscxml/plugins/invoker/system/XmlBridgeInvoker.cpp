@@ -103,8 +103,8 @@ void XmlBridgeInvoker::send(const SendRequest& req) {
 		nameiter = reqCopy.namelist.begin();
 		std::map<std::string, Data>::const_iterator fields;
 		std::stringstream ss;
-		for (fields = reqCopy.data.compound[nameiter->first].compound.begin();
-			     fields != reqCopy.data.compound[nameiter->first].compound.end(); fields++)
+		for (fields = reqCopy.data.compound[nameiter->first].begin();
+			     fields != reqCopy.data.compound[nameiter->first].end(); fields++)
 			ss << fields->second.atom;
 
 		bridgeInstance.sendReq2TIM(cmdid, write, ss.str(), _timeoutVal);
@@ -334,9 +334,11 @@ void XmlBridgeInputEvents::handleTIMexception(exceptions type)
 		inviter->second->buildTIMexception(_timio->_timCmdId.front(), type);
 		inviter++;
 	}
-	_timio->_timCmd.pop();
-	_timio->_timCmdId.pop();
-	_timio->_timCmdWrite.pop();
+	if (!_timio->_timCmd.empty()) {
+		_timio->_timCmd.pop();
+		_timio->_timCmdId.pop();
+		_timio->_timCmdWrite.pop();
+	}
 }
 
 } //namespace uscxml

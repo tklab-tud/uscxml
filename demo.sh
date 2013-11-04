@@ -13,6 +13,7 @@ case "$1" in
 	/home/sunkiss/_Projects/xmlBridgeCPP-build/GW-MES2TIM -c ../xmlBridgeCPP/map.csv -x autoware_write.scxml &
     ;;
 0)  echo "Sending command $1"
+	pkill -f /usr/bin/nc
 	if [ "$2" -eq "1" ] ; then
 		/usr/bin/nc -l -v -p 3200 < write0.xml &
 		sleep 1
@@ -24,6 +25,7 @@ case "$1" in
 	fi
     ;;
 1)  echo  "Sending command $1"
+	pkill -f /usr/bin/nc
     	if [ "$2" -eq "1" ] ; then
 		/usr/bin/nc -l -v -p 3200 < write1.xml &
 		sleep 1				

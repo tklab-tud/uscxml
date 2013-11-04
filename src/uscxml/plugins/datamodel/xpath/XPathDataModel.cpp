@@ -52,6 +52,7 @@ boost::shared_ptr<DataModelImpl> XPathDataModel::create(InterpreterImpl* interpr
 //	dm->_xpath->setNamespaceContext(interpreter->getNSContext());
 
 	dm->_funcResolver.setInterpreter(interpreter);
+	dm->_xpath.setNamespaceContext(interpreter->getNSContext());
 	dm->_xpath.setFunctionResolver(dm->_funcResolver);
 	dm->_xpath.setVariableResolver(dm->_varResolver);
 
@@ -262,8 +263,15 @@ Data XPathDataModel::getStringAsData(const std::string& content) {
 	case NODE_SET:
 		NodeSet<std::string> ns = result.asNodeSet();
 		for (int i = 0; i < ns.size(); i++) {
+			ss.str("");
+			ss << i;
+			std::string idx = ss.str();
+			ss.str("");
 			ss << ns[i];
+			data.compound[idx] = Data(ss.str());
 		}
+		data.type = Data::INTERPRETED;
+		return data;
 		break;
 	}
 
@@ -691,11 +699,10 @@ void XPathDataModel::assign(const NodeSet<std::string>& key,
 		return;
 
 	for (int i = 0; i < key.size(); i++) {
-		switch (key[i].getNodeType()) {
+		switch (key[i].getNodeType())
 		case Node_base::ELEMENT_NODE: {
 			assign(Element<std::string>(key[i]), value, assignElem);
 			break;
-		}
 		default:
 //			std::cout << key[i].getNodeType() << std::endl;
 			throw Event("error.execution", Event::PLATFORM);
@@ -856,7 +863,7 @@ bool XPathFunctionIn::doEvaluate(const Node<std::string>& context,
 Arabica::XPath::NodeSet<std::string> XPathFunctionTokenize::doEvaluate(const Node<std::string>& context,
 				 const ExecutionContext<std::string>& executionContext) const {
 
-	Arabica::XPath::NodeSet<std::string> tokens();
+	Arabica::XPath::NodeSet<std::string> tokens(true);
 
 	if (argCount() != 2)
 		return tokens;
