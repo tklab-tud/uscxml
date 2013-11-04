@@ -43,6 +43,8 @@ function Miles(element, params) {
     participants: 1000
   };
   
+  var surpressPublication = false; // do not publish changes performed from subscriptions
+  
   var showVideo = true;
   var enableAudio = true;
   var stopChatScrolling = false;
@@ -75,26 +77,46 @@ function Miles(element, params) {
       },
       load: function(result) {
         self.connected = true;
-
         // toggle connect button to disconnect
         self.connectDropDown.dropDown.onCancel(true);
         self.controlElem.replaceChild(self.controlDropDown.domNode, self.connectDropDown.domNode);
+
+        showChat();
         
         // trigger continuous updates
-        refreshImage();
-        getChatText();
-        getParticipants();
+       refreshImage();
+       getChatText();
+       getParticipants();
       }
     });  
   }
 
   this.disconnect = function() {
     self.connected = false;
+    hideChat();
     self.controlDropDown.dropDown.onCancel(true);
     self.controlElem.replaceChild(self.connectDropDown.domNode, self.controlDropDown.domNode);
   }
   
+  var hideChat = function() {
+    // hide chat elements until connected
+    for(var key in self.chatElems) {
+      if (self.chatElems.hasOwnProperty(key) && "style" in self.chatElems[key])
+        self.chatElems[key].style.display = "none";
+    }
+  }
+  
+  var showChat = function() {
+    for(var key in self.chatElems) {
+      if (self.chatElems.hasOwnProperty(key) && "style" in self.chatElems[key])
+        self.chatElems[key].style.display = "";
+    }
+  }
+  
   var getParticipants = function() {
+    if (!self.connected)
+      return;
+
     var query = "";
     self.xhr.get({
       // The URL to request
@@ -102,24 +124,22 @@ function Miles(element, params) {
       handleAs:"json",
       error: function(err) {
         console.log(err);
-        if (self.connected) {
-          setTimeout(getParticipants, repollInterval.participants);
-        }
+        setTimeout(getParticipants, repollInterval.participants);
       },
       load: function(result) {
         if (result.participants) {
           participants = result.participants;
         }
-        if (self.connected) {
-          console.log(participants);
-          setTimeout(getParticipants, repollInterval.participants);
-        }
+        setTimeout(getParticipants, repollInterval.participants);
       }
     });
   }
   
   // fetch a base64 encoded image and set it as the src attribute
   var refreshImage = function() {
+    if (!self.connected)
+      return;
+
     var query = "";
     query += "?userid=" + encodeURIComponent(email);
     self.xhr.get({
@@ -131,30 +151,27 @@ function Miles(element, params) {
       },
       error: function(err) {
         console.log(err);
-        if (self.connected) {
-          setTimeout(refreshImage, repollInterval.image);
-        }
+        setTimeout(refreshImage, repollInterval.image);
       },
       load: function(result) {
         self.pictureElem.src = "data:image/jpeg;base64," + result;
-        if (self.connected) {
-          self.messageElem.innerHTML = self.imageIteration++;
-          setTimeout(refreshImage, repollInterval.image);
-        }
+        self.messageElem.innerHTML = self.imageIteration++;
+        setTimeout(refreshImage, repollInterval.image);
       }
     });  
   };
 
   var getChatText = function() {
+    if (!self.connected)
+      return;
+
     self.xhr.get({
       // The URL to request
       url: "http://" + scxmlURL + "/miles/gettext",
       handleAs:"json",
       error: function(err) {
         console.log(err);
-        if (self.connected) {
-          setTimeout(getChatText, repollInterval.chat);
-        } 
+        setTimeout(getChatText, repollInterval.chat);
       },
       load: function(result) {
         if (result.message) {
@@ -162,9 +179,7 @@ function Miles(element, params) {
           if (!stopChatScrolling)
             self.chatOutputElem.scrollTop = self.chatOutputElem.scrollHeight;
         }
-        if (self.connected) {
-          setTimeout(getChatText, repollInterval.chat);
-        }
+        setTimeout(getChatText, repollInterval.chat);
       }
     });  
   };
@@ -174,6 +189,7 @@ function Miles(element, params) {
            "dojo/_base/xhr", 
            "dojo/dom",
            "dojo/on",
+           "dojo/topic",
            "dojo/_base/unload",
            "dijit/form/DropDownButton",
            "dijit/TooltipDialog",
@@ -187,6 +203,7 @@ function Miles(element, params) {
              xhr, 
              dom,
              on,
+             topic,
              baseUnload,
              DropDownButton,
              TooltipDialog,
@@ -206,7 +223,7 @@ function Miles(element, params) {
         element.style.width = self.width + "px";
 
         baseUnload.addOnWindowUnload(function(){
-//          alert("unloading...");
+          // have a call to close the session here
         });
 
         // dynamically assemble the DOM we need
@@ -227,7 +244,7 @@ function Miles(element, params) {
             <tr><td valign="top" colspan="2" >\
                   <div class="chatOutput" style="max-height:120px; overflow: auto">\
             </td></tr>\
-            <tr>\
+            <tr class="chat">\
               <td valign="top" style="vertical-align: middle">\
                 <div class="chatInput">\
               </td>\
@@ -249,6 +266,10 @@ function Miles(element, params) {
         self.messageElem = dojo.query("div.messages", element)[0];
         self.chatOutputElem = dojo.query("div.chatOutput", element)[0];
         self.chatOutputElem.style.fontSize = "0.8em";
+        self.chatElems = dojo.query(".chat", element);
+
+        hideChat();
+        
         on(self.chatOutputElem, "mouseover", function(evt) {
           stopChatScrolling = true;
         });
@@ -261,12 +282,14 @@ function Miles(element, params) {
         self.chatSendButton = new Button({
           label: "Send",
           onClick: function(){
+            alert(self.chatInput.value);
             self.xhr.post({
               // The URL to request
-              url: "http://" + scxmlURL + "/miles/chat",
-              contentType: 'text/plain',
+              url: "http://" + scxmlURL + "/miles/text",
+              contentType: 'application/json',
               postData: dojo.toJson({
-                message: chatInputElem.value
+                message: self.chatInput.value,
+                userid: email
               }),
               error: function(err) {
                 console.log(err);
@@ -314,13 +337,6 @@ function Miles(element, params) {
         });
         dojo.query("div.email", self.connectToolTip.domNode)[0].appendChild(self.emailBox.domNode);
 
-        // self.remoteEmailBox = new TextBox({
-        //   name: "remoteEmail",
-        //   value: remoteEmail,
-        //   style: "width: 100%",
-        // });
-        // dojo.query("div.remoteEmail", self.connectToolTip.domNode)[0].appendChild(self.remoteEmailBox.domNode);
-
         self.reflectorIpBox = new TextBox({
           name: "reflectorIp",
           value: reflectorIp,
@@ -346,73 +362,189 @@ function Miles(element, params) {
         // Control parameters
         self.controlDropDownContent = domConst.toDom('\
           <div>\
-            <table>\
-              <tr><td>Activate Camera:</td><td><div class="activateCamera" /></td></tr>\
-              <tr><td style="padding-left: 1em">Compression:</td><td><div class="videoCompression" /></td></tr>\
-              <tr><td style="padding-left: 1em">Framerate:</td><td><div class="videoFramerate" /></td></tr>\
-              <tr><td style="padding-left: 1em">Width:</td><td><div class="videoWidth" /></td></tr>\
-              <tr><td style="padding-left: 1em">Height:</td><td><div class="videoHeight" /></td></tr>\
-              <tr><td>Open Microphone:</td><td><div class="openMicrophone" /></td></tr>\
-              <tr><td style="padding-left: 1em">Encoding:</td><td><div class="audioEncoding" /></td></tr>\
-              <tr><td colspan="2"><hr /></td></tr>\
-              <tr><td>Enable Audio:</td><td><div class="enableAudio" /></td></tr>\
-              <tr><td>Show Video:</td><td><div class="showVideo" /></td></tr>\
-              <tr><td colspan="2"><hr /></td></tr>\
-              <tr><td></td><td align="right"><div class="disconnectButton" /></td></tr>\
+            <fieldset name="global">\
+              <legend>Global Options</legend>\
+              <table>\
+                <tr><td>Activate Camera:</td><td><div class="activateCamera" /></td></tr>\
+                <tr><td style="padding-left: 1em">Compression:</td><td><div class="videoCompression" /></td></tr>\
+                <tr><td style="padding-left: 1em">Framerate:</td><td><div class="videoFramerate" /></td></tr>\
+                <tr><td style="padding-left: 1em">Width:</td><td><div class="videoWidth" /></td></tr>\
+                <tr><td style="padding-left: 1em">Height:</td><td><div class="videoHeight" /></td></tr>\
+                <tr><td>Open Microphone:</td><td><div class="openMicrophone" /></td></tr>\
+                <tr><td style="padding-left: 1em">Encoding:</td><td><div class="audioEncoding" /></td></tr>\
+              </table>\
+            </fieldset>\
+            <fieldset name="session">\
+              <legend>Session Options</legend>\
+              <table>\
+                <tr><td>Enable Audio:</td><td><div class="enableAudio" /></td></tr>\
+                <tr><td>Show Video:</td><td><div class="showVideo" /></td></tr>\
+                <tr><td></td><td align="right"><div class="disconnectButton" /></td></tr>\
+              </table>\
+            </fieldset>\
           </div>\
         ');
         self.controlToolTip = new TooltipDialog({ content:self.controlDropDownContent, style:"max-height:320px"});
         self.controlDropDown = new DropDownButton({ label: "Session", dropDown: self.controlToolTip });
         
         // Control parameters
+        
+        // global camera
+        topic.subscribe("miles/activateCamera", function(data) {
+          surpressPublication = true;
+          self.activateCameraCheckbox.set('value', data.activateCamera);
+          self.videoCompressionSelect.set('value', data.videoCompression);
+          self.videoFramerateSpinner.set('value', data.videoFramerate);
+          self.videoWidthSpinner.set('value', data.videoWidth);
+          self.videoHeightSpinner.set('value', data.videoHeight);
+          surpressPublication = false;
+        });
+
+        var publishCameraParameters = function() {
+          topic.publish("miles/activateCamera", {
+            "activateCamera": activateCamera,
+            "videoCompression": videoCompression,
+            "videoFramerate": videoFramerate,
+            "videoWidth": videoWidth,
+            "videoHeight": videoHeight
+          });
+          // tell the server
+          if (activateCamera) {
+            var query = "";
+            query += "?width=" + encodeURIComponent(videoWidth);
+            query += "&height=" + encodeURIComponent(videoHeight);
+            query += "&framerate=" + encodeURIComponent(videoFramerate);
+            query += "&compression=" + encodeURIComponent(videoCompression);
+            self.xhr.get({
+              url: "http://" + scxmlURL + "/miles/sendvideo" + query,
+              error: function(err) {
+                console.log(err);
+              }
+            });  
+          } else {
+            self.xhr.get({
+              url: "http://" + scxmlURL + "/miles/sendvideooff",
+              error: function(err) {
+                console.log(err);
+              }
+            });  
+          }
+        };
+
         self.activateCameraCheckbox = new CheckBox({
           name: "activateCamera",
-          value: activateCamera,
           checked: activateCamera,
+          onChange: function() { 
+            activateCamera = self.activateCameraCheckbox.get('value');
+            if (!surpressPublication)
+              publishCameraParameters();
+          }
         });
         dojo.query("div.activateCamera", self.controlToolTip.domNode)[0].appendChild(self.activateCameraCheckbox.domNode);
         
         self.videoCompressionSelect = new Select({
           name: "videoCompression",
-          value: videoCompression,
           options: videoCompressions,
+          onChange: function() { 
+            videoCompression = self.videoCompressionSelect.get('value');
+            if (!surpressPublication)
+              publishCameraParameters();
+          }
         });
         dojo.query("div.videoCompression", self.controlToolTip.domNode)[0].appendChild(self.videoCompressionSelect.domNode);
 
         self.videoFramerateSpinner = new NumberSpinner({
           name: "videoFramerate",
           value: videoFramerate,
-          style: "width: 50px"
+          style: "width: 50px",
+          onChange: function() { 
+            videoFramerate = self.videoFramerateSpinner.get('value');
+            if (!surpressPublication)
+              publishCameraParameters();
+          }
         });
         dojo.query("div.videoFramerate", self.controlToolTip.domNode)[0].appendChild(self.videoFramerateSpinner.domNode);
 
         self.videoWidthSpinner = new NumberSpinner({
           name: "videoWidth",
           value: videoWidth,
-          style: "width: 50px"
+          style: "width: 50px",
+          onChange: function() { 
+            videoWidth = self.videoWidthSpinner.get('value');
+            if (!surpressPublication)
+              publishCameraParameters();
+          }
         });
         dojo.query("div.videoWidth", self.controlToolTip.domNode)[0].appendChild(self.videoWidthSpinner.domNode);
 
         self.videoHeightSpinner = new NumberSpinner({
           name: "videoHeight",
           value: videoHeight,
-          style: "width: 50px"
+          style: "width: 50px",
+          onChange: function() { 
+            videoHeight = self.videoHeightSpinner.get('value');
+            if (!surpressPublication)
+              publishCameraParameters();
+          }
         });
         dojo.query("div.videoHeight", self.controlToolTip.domNode)[0].appendChild(self.videoHeightSpinner.domNode);
+
+        // global microphone
+        topic.subscribe("miles/openMicrophone", function(data) {
+          surpressPublication = true;
+          self.openMicrophoneCheckbox.set('value', data.openMicrophone);
+          self.audioEncodingSelect.set('value', data.audioEncoding);
+          surpressPublication = false;
+        });
+
+        var publishMicrophoneParameters = function() {
+          topic.publish("miles/openMicrophone", {
+            "openMicrophone": openMicrophone,
+            "audioEncoding": audioEncoding
+          });
+          // tell the server
+          if (openMicrophone) {
+            var query = "";
+            query += "?encoding=" + encodeURIComponent(audioEncoding);
+            self.xhr.get({
+              url: "http://" + scxmlURL + "/miles/sendaudio" + query,
+              error: function(err) {
+                console.log(err);
+              }
+            });  
+          } else {
+            self.xhr.get({
+              url: "http://" + scxmlURL + "/miles/sendaudiooff",
+              error: function(err) {
+                console.log(err);
+              }
+            });  
+          }
+        }
 
         self.openMicrophoneCheckbox = new CheckBox({
           name: "openMicrophone",
           value: openMicrophone,
           checked: openMicrophone,
+          onChange: function() { 
+            openMicrophone = self.openMicrophoneCheckbox.get('value');
+            if (!surpressPublication)
+              publishMicrophoneParameters();
+          }
         });
         dojo.query("div.openMicrophone", self.controlToolTip.domNode)[0].appendChild(self.openMicrophoneCheckbox.domNode);
         
         self.audioEncodingSelect = new Select({
           name: "audioEncoding",
-          value: audioEncoding,
           options: audioEncodings,
+          onChange: function() {
+            audioEncoding = self.audioEncodingSelect.get('value');
+            if (!surpressPublication)
+              publishMicrophoneParameters();
+          }
         });
         dojo.query("div.audioEncoding", self.controlToolTip.domNode)[0].appendChild(self.audioEncodingSelect.domNode);
+
 
         // session scoped parameters
         self.enableAudioCheckbox = new CheckBox({

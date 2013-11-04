@@ -3,6 +3,7 @@
 	<state id="main">
 		<invoke type="miles" id="miles">
 			<finalize>
+				<log label="out" expr="_event.name" />
 				<script>//dump(_event);</script>
 				<if cond="_event.data.origin">
 					<!-- <log label="Reply-length" expr="_event.data.base64.length" /> -->
@@ -37,6 +38,7 @@
 			</transition>
 			
 			<transition event="http.get" target="idle">
+				<log label="in" expr="_event.data.path" />
 				<script>//dump(_event);</script>
 				<if cond="false">
 
@@ -116,6 +118,7 @@
 				<!-- SEND AUDIO OFF ############### -->
 				<elseif cond="_event.data.pathComponent[1] === 'sendaudiooff'" />
 					<send target="#_miles" event="sendaudiooff">
+						<param name="origin" expr="_event.origin" />
 					</send>
 
 				<!-- GET TEXT ############### -->
@@ -130,15 +133,16 @@
 			</transition>
 			
 			<transition event="http.post" target="idle">
-				<script>//dump(_event);</script>
+				<log label="in" expr="_event.data.path" />
+				<script>dump(_event);</script>
 				<if cond="false">
 				
 				<!-- POST TEXT ############### -->
 				<elseif cond="_event.data.pathComponent[1] === 'text'" />
 					<send target="#_miles" event="posttext">
 						<param name="origin" expr="_event.origin" />
-						<param name="userid" expr="_event.data.query.userid" />
-						<param name="message" expr="_event.data.content" />
+						<param name="userid" expr="_event.data.content.userid" />
+						<param name="message" expr="_event.data.content.message" />
 					</send>
 				
 				<else />
