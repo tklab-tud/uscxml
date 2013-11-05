@@ -201,15 +201,21 @@ void OSGConverter::process(const SendRequest& req) {
 	assert(req.params.find("format") != req.params.end());
 
 	std::string source;
-	if (!Event::getParam(req.params, "source", source))
+	if (!Event::getParam(req.params, "source", source)) {
 		reportFailure(req);
+		LOG(ERROR) << "No source given for convert request";
+		return;
+	}
 
 	std::string dest;
 	Event::getParam(req.params, "dest", dest);
 
 	std::string format;
-	if (!Event::getParam(req.params, "format", format))
+	if (!Event::getParam(req.params, "format", format)) {
 		reportFailure(req);
+		LOG(ERROR) << "No format given for convert request";
+		return;
+	}
 
 	bool autoRotate = true;
 	if (req.params.find("autorotate") != req.params.end()) {
@@ -223,6 +229,7 @@ void OSGConverter::process(const SendRequest& req) {
 	osg::ref_ptr<osg::Node> model = setupGraph(source, autoRotate);
 	if (model->asGroup()->getNumChildren() == 0) {
 		reportFailure(req);
+		LOG(ERROR) << "Could not setup scenegraph";
 		return;
 	}
 
@@ -294,6 +301,8 @@ void OSGConverter::process(const SendRequest& req) {
 
 	if (!osgDB::writeImageFile(*image, tempFile)) {
 		reportFailure(req);
+		LOG(ERROR) << "Could write image file at " << tempFile;
+		return;
 	}
 	
 	// read file into buffer
