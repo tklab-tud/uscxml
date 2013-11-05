@@ -326,6 +326,7 @@ if(${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
 	# swig will throw a warning with optimization otherwise
 #	add_definitions(-fno-strict-aliasing)
 	add_definitions("-Wno-sign-compare")
+	add_definitions("-Wno-reorder")
 #	add_definitions("-Wno-unused-value")
 #	add_definitions(-Wno-unused-function)
 	if (NOT CMAKE_BUILD_TYPE MATCHES ".*Deb.*") # when not building for debug
