@@ -34,6 +34,22 @@
 			struct.key = _event.data.pathComponent.slice(1, _event.data.pathComponent.length - 1).join(pathDelim);
 			if (struct.key.length > 0)
 				struct.key += pathDelim;
+			
+			// support for meta file "latest.ext"
+			if (struct.file === "latest") {
+				dump(struct);
+				var latestStamp = 0;
+				for (var key in models) {
+					if (key.substring(0, struct.key.length) == struct.key) {
+						if (models[key].ctime > latestStamp) {
+							var name = models[key].strippedName;
+							struct.file = name.substring(name.lastIndexOf(pathDelim) + 1);
+							latestStamp = models[key].ctime;
+						}
+					}
+				}
+			}
+			
 			struct.key += struct.file;
 			
 			return struct;
