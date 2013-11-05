@@ -1,0 +1,16 @@
+<scxml datamodel="ecmascript" name="websockets">
+	<script src="http://uscxml.tk.informatik.tu-darmstadt.de/scripts/dump.js" />
+	<state id="main">
+		<transition target="main" event="http.get" cond="_event.data.header['Upgrade'] === 'websocket'">
+			<respond status="101">
+				
+			</respond>
+		</transition>
+
+		<transition target="main" event="*">
+			<script>
+				dump(_event);
+			</script>
+		</transition>
+	</state>
+</scxml>

@@ -1,5 +1,6 @@
 #include "uscxml/Interpreter.h"
 #include "uscxml/server/HTTPServer.h"
+#include "uscxml/DOMUtils.h"
 #include <sstream>
 
 extern "C" {

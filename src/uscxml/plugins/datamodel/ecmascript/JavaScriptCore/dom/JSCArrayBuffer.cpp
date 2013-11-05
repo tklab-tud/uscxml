@@ -31,6 +31,8 @@ JSStaticValue JSCArrayBuffer::staticValues[] = {
 };
 
 JSStaticFunction JSCArrayBuffer::staticFunctions[] = {
+	{ "md5", md5Callback, kJSPropertyAttributeDontDelete },
+	{ "base64", base64Callback, kJSPropertyAttributeDontDelete },
 	{ "slice", sliceCallback, kJSPropertyAttributeDontDelete },
 	{ "isView", isViewCallback, kJSPropertyAttributeDontDelete },
 	{ 0, 0, 0 }
@@ -93,6 +95,48 @@ bool JSCArrayBuffer::mimeTypeAttrSetter(JSContextRef ctx, JSObjectRef thisObj, J
 
 	privData->nativeObj->setMimeType(localMimeType);
 	return true;
+}
+
+JSValueRef JSCArrayBuffer::md5Callback(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObj, size_t argumentCount, const JSValueRef* arguments, JSValueRef* exception) {
+
+	struct JSCArrayBufferPrivate* privData = (struct JSCArrayBufferPrivate*)JSObjectGetPrivate(thisObj);
+
+	if (false) {
+	} else if (argumentCount == 0) {
+
+		std::string retVal = privData->nativeObj->md5();
+
+		JSStringRef jscString = JSStringCreateWithUTF8CString(retVal.c_str());
+		JSValueRef jscRetVal = JSValueMakeString(ctx, jscString);
+		JSStringRelease(jscString);
+		return jscRetVal;
+	}
+
+	JSStringRef exceptionString = JSStringCreateWithUTF8CString("Parameter mismatch while calling md5");
+	*exception = JSValueMakeString(ctx, exceptionString);
+	JSStringRelease(exceptionString);
+	return JSValueMakeUndefined(ctx);
+}
+
+JSValueRef JSCArrayBuffer::base64Callback(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObj, size_t argumentCount, const JSValueRef* arguments, JSValueRef* exception) {
+
+	struct JSCArrayBufferPrivate* privData = (struct JSCArrayBufferPrivate*)JSObjectGetPrivate(thisObj);
+
+	if (false) {
+	} else if (argumentCount == 0) {
+
+		std::string retVal = privData->nativeObj->base64();
+
+		JSStringRef jscString = JSStringCreateWithUTF8CString(retVal.c_str());
+		JSValueRef jscRetVal = JSValueMakeString(ctx, jscString);
+		JSStringRelease(jscString);
+		return jscRetVal;
+	}
+
+	JSStringRef exceptionString = JSStringCreateWithUTF8CString("Parameter mismatch while calling base64");
+	*exception = JSValueMakeString(ctx, exceptionString);
+	JSStringRelease(exceptionString);
+	return JSValueMakeUndefined(ctx);
 }
 
 JSValueRef JSCArrayBuffer::sliceCallback(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObj, size_t argumentCount, const JSValueRef* arguments, JSValueRef* exception) {

@@ -21,6 +21,7 @@
 #include "XPathDataModel.h"
 
 #include "uscxml/Message.h"
+#include "uscxml/DOMUtils.h"
 #include <glog/logging.h>
 #include <boost/algorithm/string.hpp>
 

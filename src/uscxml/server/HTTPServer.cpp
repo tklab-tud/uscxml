@@ -25,6 +25,7 @@
 #endif
 
 #include "uscxml/server/HTTPServer.h"
+#include "uscxml/DOMUtils.h"
 
 #include <string>
 #include <iostream>
@@ -364,7 +365,7 @@ void HTTPServer::httpRecvReqCallback(struct evhttp_request *req, void *callbackD
 	        request.data.compound["header"].compound.find("Content-Type") != request.data.compound["header"].compound.end()) {
 		std::string contentType = request.data.compound["header"].compound["Content-Type"].atom;
 		if (false) {
-		} else if (iequals(contentType, "application/x-www-form-urlencoded")) {
+		} else if (iequals(contentType.substr(0, 33), "application/x-www-form-urlencoded")) {
 			// this is a form submit
 			std::stringstream ss(request.data.compound["content"].atom);
 			std::string item;
@@ -387,11 +388,18 @@ void HTTPServer::httpRecvReqCallback(struct evhttp_request *req, void *callbackD
 				key.clear();
 			}
 			request.data.compound["content"].atom.clear();
-		} else if (iequals(contentType, "application/json")) {
+		} else if (iequals(contentType.substr(0, 16), "application/json")) {
 			request.data.compound["content"] = Data::fromJSON(request.data.compound["content"].atom);
+		} else if (iequals(contentType.substr(0, 15), "application/xml")) {
+			NameSpacingParser parser = NameSpacingParser::fromXML(request.data.compound["content"].atom);
+			if (parser.errorsReported()) {
+				LOG(ERROR) << "Cannot parse contents of HTTP request as XML";
+			} else {
+				request.data.compound["content"].node = parser.getDocument().getDocumentElement();
+			}
 		}
 	}
-
+	
 	request.raw = raw.str();
 
 	// try with the handler registered for path first

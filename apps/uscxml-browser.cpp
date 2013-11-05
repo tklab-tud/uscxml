@@ -1,5 +1,6 @@
 #include "uscxml/config.h"
 #include "uscxml/Interpreter.h"
+#include "uscxml/DOMUtils.h"
 #include "uscxml/debug/SCXMLDotWriter.h"
 #include <glog/logging.h>
 

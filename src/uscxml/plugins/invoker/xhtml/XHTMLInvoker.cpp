@@ -22,6 +22,7 @@
 #include <uscxml/config.h>
 #include "XHTMLInvoker.h"
 #include <glog/logging.h>
+#include "uscxml/DOMUtils.h"
 #include <uscxml/plugins/ioprocessor/comet/CometIOProcessor.h>
 #include <DOM/io/Stream.hpp>
 
@@ -199,7 +200,7 @@ void XHTMLInvoker::reply(const SendRequest& req, const HTTPServer::Request& long
 		reply.headers["Content-Type"] = "application/json";
 	} else if (req.content.length() > 0) {
 		reply.content = req.content;
-		reply.headers["Content-Type"] = "application/text";
+		reply.headers["Content-Type"] = "text/plain";
 	}
 
 	if (req.params.find("Content-Type") != req.params.end())

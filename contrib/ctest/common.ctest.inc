@@ -39,7 +39,8 @@
 # CTEST_CUSTOM_COVERAGE_EXCLUDE                     Regular expression for excluding files from coverage testing 
 
 if ("$ENV{CTEST_SUBMIT_TYPE}" STREQUAL "")
-	message(FATAL_ERROR "ENV{CTEST_SUBMIT_TYPE} is emtpy")
+	set(CTEST_SUBMIT_TYPE "Experimental")
+	message(STATUS "ENV{CTEST_SUBMIT_TYPE} is emtpy - defaulting to Experimental")
 endif()
 
 if ("$ENV{USCXML_SOURCE_DIR}" STREQUAL "")

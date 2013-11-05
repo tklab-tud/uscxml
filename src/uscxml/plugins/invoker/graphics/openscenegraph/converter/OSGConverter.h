@@ -61,20 +61,6 @@ public:
 	static void matrixToEuler(const osg::Matrix& m, double& pitch, double& roll, double& yaw);
 
 protected:
-	class NameRespectingWriteToFile : public osgViewer::ScreenCaptureHandler::WriteToFile {
-	public:
-		NameRespectingWriteToFile(const std::string& filename,
-		                          const std::string& extension,
-		                          SavePolicy savePolicy,
-		                          const SendRequest& req,
-		                          OSGConverter* converter) : osgViewer::ScreenCaptureHandler::WriteToFile(filename, extension, savePolicy),
-			_req(req), _converter(converter) {
-		}
-
-		virtual void operator()(const osg::Image& image, const unsigned int context_id);
-		SendRequest _req;
-		OSGConverter* _converter;
-	};
 
 	uscxml::concurrency::BlockingQueue<SendRequest> _workQueue;
 	osg::ref_ptr<osg::Node> setupGraph(const std::string filename, bool autoRotate = false);

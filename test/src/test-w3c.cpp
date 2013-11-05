@@ -1,5 +1,6 @@
 #include "uscxml/config.h"
 #include "uscxml/Interpreter.h"
+#include "uscxml/DOMUtils.h"
 #include <glog/logging.h>
 #include <boost/algorithm/string.hpp>
 

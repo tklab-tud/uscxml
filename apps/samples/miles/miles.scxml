@@ -2,16 +2,28 @@
 	<script src="http://uscxml.tk.informatik.tu-darmstadt.de/scripts/dump.js" />
 	<state id="main">
 		<invoke type="miles" id="miles">
-			<param name="foo" expr="'asdf'" />
 			<finalize>
+				<log label="out" expr="_event.name" />
+				<script>//dump(_event);</script>
 				<if cond="_event.data.origin">
 					<!-- <log label="Reply-length" expr="_event.data.base64.length" /> -->
-					<respond status="200" to="_event.data.origin">
-						<header name="Cache-Control" value="no-cache" /> <!-- force IE to actually reload -->
-						<header name="Content-Type" value="text/plain" />
-						<header name="Access-Control-Allow-Origin" value="*" />
-						<content expr="_event.data.base64" />
-					</respond>
+					<if cond="_event.name === 'thumbnail.reply'">
+						<respond status="200" to="_event.data.origin">
+							<header name="Cache-Control" value="no-cache" /> <!-- force IE to actually reload -->
+							<header name="Access-Control-Allow-Origin" value="*" />
+							<header name="Content-Type" value="text/plain" />
+							<content expr="_event.data.image.base64()" />
+						</respond>
+					<else />
+						<respond status="200" to="_event.data.origin">
+							<header name="Cache-Control" value="no-cache" /> <!-- force IE to actually reload -->
+							<header name="Access-Control-Allow-Origin" value="*" />
+							<!-- respond element will add content-type header -->
+							<content expr="_event.data" />
+						</respond>
+					</if>
+				<else />
+					<log label="Error" expr="'Event returned from invoker did not specify its origin for a reply'" />
 				</if>
 			</finalize>
 		</invoke>
@@ -19,48 +31,128 @@
 		<state id="idle">
 			<!-- XHR CORS preflight respond -->
 			<transition event="http.options" target="idle">
-				<script>//dump(_event);</script>
 				<respond status="200" to="_event.origin">
-					<header name="Access-Control-Allow-Origin" value="*" />
-					<header name="Access-Control-Allow-Methods" value="POST, GET, OPTIONS" />
-					<header name="Access-Control-Allow-Headers" value="X-Requested-With, Content-Type" />
+					<header name="Access-Control-Allow-Origin" value="*" /> <!-- request origins we allow -->
+					<header name="Access-Control-Allow-Methods" value="POST, GET, OPTIONS" /> <!-- http methods we allow -->
+					<header name="Access-Control-Allow-Headers" 
+						value="X-Requested-With, X-Content-Encoding, Content-Type" /> <!-- headers we allow -->
 				</respond>
 			</transition>
 			
-			<transition event="http.*" target="idle">
+			<transition event="http.get" target="idle">
+				<log label="in" expr="_event.data.path" />
 				<script>//dump(_event);</script>
-				<if cond="_event.data.pathComponent[1] === 'session'">
-					<respond status="200" to="_event.origin" />
-				
-				<elseif cond="_event.data.pathComponent[1] === 'connect'" />
-					<send target="#_miles" event="connect">
-						<param name="reflectorIP" expr="_event.data.content.reflectorIP" />
-						<param name="email" expr="_event.data.content.email" />
-						<param name="problemName" expr="_event.data.content.problemName" />
-					</send>
-					<respond status="200" to="_event.origin">
-						<header name="Connection" value="close" />
-						<header name="Content-Type" value="application/json" />
-						<header name="Access-Control-Allow-Origin" value="*" />
-					</respond>
-				
-				<elseif cond="_event.data.pathComponent[1] === 'disconnect'" />
-					<send target="#_miles" event="disconnect">
-						<param name="reflectorIP" expr="_event.data.content.reflectorIP" />
-						<param name="problemName" expr="_event.data.content.problemName" />
-					</send>
-					<respond status="200" to="_event.origin" />
+				<if cond="false">
 
-				<elseif cond="_event.data.pathComponent[1] === 'image'" />
-					<send target="#_miles" event="image">
+				<!-- START ############### -->
+				<elseif cond="_event.data.pathComponent[1] === 'start'" />
+					<send target="#_miles" event="start">
 						<param name="origin" expr="_event.origin" />
+						<param name="reflector" expr="_event.data.query.reflector" />
+						<param name="userId" expr="_event.data.query.userid" />
+						<param name="session" expr="_event.data.query.session" />
+					</send>
+
+				<!-- PARTICIPANTS ############### -->
+				<elseif cond="_event.data.pathComponent[1] === 'participants'" />
+					<send target="#_miles" event="participants">
+						<param name="origin" expr="_event.origin" />
+					</send>
+
+				<!-- THUMBNAIL ############### -->
+				<elseif cond="_event.data.pathComponent[1] === 'thumbnail'" />
+					<send target="#_miles" event="thumbnail">
+						<param name="origin" expr="_event.origin" />
+						<param name="userId" expr="_event.data.query.userid" />
+					</send>
+
+				<!-- VIDEO ON ############### -->
+				<elseif cond="_event.data.pathComponent[1] === 'videoon'" />
+					<send target="#_miles" event="videoon">
+						<param name="origin" expr="_event.origin" />
+						<param name="userid" expr="_event.data.query.userid" />
+					</send>
+
+				<!-- VIDEO OFF ############### -->
+				<elseif cond="_event.data.pathComponent[1] === 'videooff'" />
+					<send target="#_miles" event="videooff">
+						<param name="origin" expr="_event.origin" />
+						<param name="userid" expr="_event.data.query.userid" />
+					</send>
+
+				<!-- AUDIO ON ############### -->
+				<elseif cond="_event.data.pathComponent[1] === 'audioon'" />
+					<send target="#_miles" event="audioon">
+						<param name="origin" expr="_event.origin" />
+						<param name="userid" expr="_event.data.query.userid" />
+					</send>
+
+				<!-- AUDIO OFF ############### -->
+				<elseif cond="_event.data.pathComponent[1] === 'videooff'" />
+					<send target="#_miles" event="audiooff">
+						<param name="origin" expr="_event.origin" />
+						<param name="userid" expr="_event.data.query.userid" />
+					</send>
+
+				<!-- SEND VIDEO ############### -->
+				<elseif cond="_event.data.pathComponent[1] === 'sendvideo'" />
+					<send target="#_miles" event="sendvideo">
+						<param name="origin" expr="_event.origin" />
+						<param name="width" expr="_event.data.query.width" />
+						<param name="height" expr="_event.data.query.height" />
+						<param name="framerate" expr="_event.data.query.framerate" />
+						<param name="compression" expr="_event.data.query.compression" />
+					</send>
+
+				<!-- SEND VIDEO OFF ############### -->
+				<elseif cond="_event.data.pathComponent[1] === 'sendvideooff'" />
+					<send target="#_miles" event="sendvideooff">
+						<param name="origin" expr="_event.origin" />
+					</send>
+
+				<!-- SEND AUDIO ############### -->
+				<elseif cond="_event.data.pathComponent[1] === 'sendaudio'" />
+					<send target="#_miles" event="sendaudio">
+						<param name="origin" expr="_event.origin" />
+						<param name="encoding" expr="_event.data.query.encoding" />
+					</send>
+
+				<!-- SEND AUDIO OFF ############### -->
+				<elseif cond="_event.data.pathComponent[1] === 'sendaudiooff'" />
+					<send target="#_miles" event="sendaudiooff">
+						<param name="origin" expr="_event.origin" />
+					</send>
+
+				<!-- GET TEXT ############### -->
+				<elseif cond="_event.data.pathComponent[1] === 'gettext'" />
+					<send target="#_miles" event="gettext">
+						<param name="origin" expr="_event.origin" />
+					</send>
+
+				<else />
+					<respond status="404" to="_event.origin" />
+				</if>
+			</transition>
+			
+			<transition event="http.post" target="idle">
+				<log label="in" expr="_event.data.path" />
+				<script>dump(_event);</script>
+				<if cond="false">
+				
+				<!-- POST TEXT ############### -->
+				<elseif cond="_event.data.pathComponent[1] === 'text'" />
+					<send target="#_miles" event="posttext">
+						<param name="origin" expr="_event.origin" />
+						<param name="userid" expr="_event.data.content.userid" />
+						<param name="message" expr="_event.data.content.message" />
 					</send>
 				
 				<else />
 					<respond status="404" to="_event.origin" />
-
 				</if>
+				
 			</transition>
+			
 		</state>
 	</state>
 </scxml>

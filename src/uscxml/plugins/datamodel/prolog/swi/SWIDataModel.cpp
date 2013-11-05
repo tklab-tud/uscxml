@@ -22,6 +22,7 @@
 #include "uscxml/Common.h"
 #include "uscxml/config.h"
 #include "SWIDataModel.h"
+#include "uscxml/DOMUtils.h"
 #include "uscxml/Message.h"
 #include <glog/logging.h>
 

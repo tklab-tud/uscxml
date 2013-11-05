@@ -21,6 +21,7 @@
 
 #include "uscxml/Common.h"
 #include "NULLDataModel.h"
+#include "uscxml/DOMUtils.h"
 
 #include "uscxml/Message.h"
 #include <glog/logging.h>

@@ -21,7 +21,7 @@
 
 #include "uscxml/Common.h"
 #include "uscxml/Message.h"
-//#include "uscxml/Interpreter.h"
+#include "uscxml/DOMUtils.h"
 #include <DOM/SAX2DOM/SAX2DOM.hpp>
 #include <SAX/helpers/CatchErrorHandler.hpp>
 #include <glog/logging.h>
@@ -509,7 +509,7 @@ std::ostream& operator<< (std::ostream& os, const SendRequest& sendReq) {
 		indent += "  ";
 	}
 
-	os << indent<< "SendReq" << std::endl;
+	os << indent << "SendReq" << std::endl;
 
 	if (sendReq.target.size() > 0)
 		os << indent << "  target: " << sendReq.target << std::endl;
@@ -625,6 +625,12 @@ std::string Data::toJSON(const Data& data) {
 	} else if (data.atom.size() > 0) {
 		if (data.type == Data::VERBATIM) {
 			os << "\"" << data.atom << "\"";
+		} else {
+			os << data.atom;
+		}
+	} else if (data.node) {
+		if (data.type == Data::VERBATIM) {
+			os << "";
 		} else {
 			os << data.atom;
 		}

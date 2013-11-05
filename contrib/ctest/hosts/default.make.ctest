@@ -1,13 +1,20 @@
+if (NOT HOSTNAME)
+	set(HOSTNAME "Unknown Host")
+endif()
+
 set(CTEST_CMAKE_GENERATOR "Unix Makefiles")
-set(CTEST_SITE "buildslave-centos-5-32")
+set(CTEST_SITE "${HOSTNAME}")
 set(CTEST_BUILD_CONFIGURATION "Debug")
+set(CTEST_BUILD_NAME "${CMAKE_SYSTEM}")
 
 set(RETAIN_BUILD_DIR OFF)
-set(CTEST_BUILD_NAME "linux-x86_64 gcc 4.1.2 - ECMA datamodel")
+include("tests/plugins.ctest")
+include("common.ctest.inc")
+
+set(RETAIN_BUILD_DIR OFF)
 include("tests/ecma.ctest")
 include("common.ctest.inc")
 
 set(RETAIN_BUILD_DIR OFF)
-set(CTEST_BUILD_NAME "linux-x86_64 gcc 4.1.2 - XPath datamodel")
 include("tests/xpath.ctest")
 include("common.ctest.inc")
