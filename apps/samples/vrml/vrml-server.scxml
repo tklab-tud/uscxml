@@ -37,7 +37,6 @@
 			
 			// support for meta file "latest.ext"
 			if (struct.file === "latest") {
-				dump(struct);
 				var latestStamp = 0;
 				for (var key in models) {
 					if (key.substring(0, struct.key.length) == struct.key) {
