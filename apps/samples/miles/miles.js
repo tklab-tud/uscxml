@@ -68,6 +68,7 @@ function Miles(element, params) {
     query += "&userid=" + encodeURIComponent(email);
     query += "&session=" + encodeURIComponent(problemName);
     
+    self.messageElem.innerHTML += "Connecting to http://" + scxmlURL + "/miles/start" + query + "<br />";
     self.xhr.get({
       // The URL to request
       url: "http://" + scxmlURL + "/miles/start" + query,
@@ -327,6 +328,10 @@ function Miles(element, params) {
           name: "problemName",
           value: problemName,
           style: "width: 100%",
+          onChange: function(){
+            problemName = self.problemNameBox.get('value');
+          }
+          
         });
         dojo.query("div.problemName", self.connectToolTip.domNode)[0].appendChild(self.problemNameBox.domNode);
 
@@ -334,6 +339,9 @@ function Miles(element, params) {
           name: "email",
           value: email,
           style: "width: 100%",
+          onChange: function(){
+            email = self.emailBox.get('value');
+          }
         });
         dojo.query("div.email", self.connectToolTip.domNode)[0].appendChild(self.emailBox.domNode);
 
@@ -341,6 +349,9 @@ function Miles(element, params) {
           name: "remoteEmail",
           value: remoteEmail,
           style: "width: 100%",
+          onChange: function(){
+            remoteEmail = self.remoteEmailBox.get('value');
+          }
         });
         dojo.query("div.remoteEmail", self.connectToolTip.domNode)[0].appendChild(self.remoteEmailBox.domNode);
 
@@ -348,6 +359,9 @@ function Miles(element, params) {
           name: "reflectorIp",
           value: reflectorIp,
           style: "width: 100%",
+          onChange: function(){
+            reflectorIp = self.reflectorIpBox.get('value');
+          }
         });
         dojo.query("div.reflectorIp", self.connectToolTip.domNode)[0].appendChild(self.reflectorIpBox.domNode);
 
@@ -355,6 +369,9 @@ function Miles(element, params) {
           name: "scxmlURL",
           value: scxmlURL,
           style: "width: 100%",
+          onChange: function(){
+            scxmlURL = self.scxmlURLBox.get('value');
+          }
         });
         dojo.query("div.scxmlURL", self.connectToolTip.domNode)[0].appendChild(self.scxmlURLBox.domNode);
 
