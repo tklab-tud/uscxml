@@ -12,17 +12,15 @@ function Miles(element, params) {
   this.connected = false;
   this.imageIteration = 0;
 
-  this.width = 300;
-  this.height = 200;
+  this.width = 320;
+  this.height = 240;
 
   // private attributes
   var scxmlURL    = "localhost:8080"
   var reflectorIp = "88.131.107.12"
-  //var email       = "user@smartvortex.eu";
-  var email       = "mathias";
+  var email       = "user@smartvortex.eu";
   var problemName = "webconfero";
-  //var remoteEmail = "other@smartvortex.eu";
-  var remoteEmail = "stefan";
+  var remoteEmail = "other@smartvortex.eu";
 
   var participants = []; // empty array
   var videoCompressions = [
@@ -192,7 +190,7 @@ function Miles(element, params) {
       },
       load: function(result) {
         if (result.message) {
-          self.chatOutputElem.innerHTML += stopChatScrolling + " " + Math.random() + ": " + result.message + '<br />';
+          self.chatOutputElem.innerHTML += result.message + '<br />';
           if (!stopChatScrolling)
             self.chatOutputElem.scrollTop = self.chatOutputElem.scrollHeight;
         }
@@ -299,7 +297,7 @@ function Miles(element, params) {
         self.chatSendButton = new Button({
           label: "Send",
           onClick: function(){
-            alert(self.chatInput.value);
+            //alert(self.chatInput.value);
             self.xhr.post({
               // The URL to request
               url: "http://" + scxmlURL + "/miles/text",

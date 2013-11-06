@@ -120,6 +120,9 @@ protected:
 	struct miles_list *thumb_list;
 	int save_image;
 
+	char *text_msg_buf;
+	int text_msg_available;
+
 	struct miles_audio_device *audio_dev_playback;
 	int audio_dev_playback_id;
 	int audio_available;
