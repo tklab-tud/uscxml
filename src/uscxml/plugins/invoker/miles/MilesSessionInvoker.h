@@ -124,6 +124,8 @@ protected:
 	int audio_dev_playback_id;
 	int audio_available;
 	int video_grabber_available;
+	int sendvideo_enabled;
+	int sendaudio_enabled;
 
 	static void runAudio(void* instance);
 	static void runVideo(void* instance);

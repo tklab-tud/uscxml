@@ -247,9 +247,13 @@ void MilesSessionInvoker::processEventStart(const std::string& origin, const std
 
 	/* Set up video capture */
 	video_grabber_available = setup_video_grabber();
+	if(video_grabber_available)
+		sendvideo_enabled = 1;
 
 	/* Set up audio capture/playback */
 	audio_available = setup_audio();
+	if(audio_available)
+		sendaudio_enabled = 1;
 
 	/* Set up outgoing RTP stream for video */
 	if(video_grabber_available) {
@@ -308,6 +312,13 @@ void MilesSessionInvoker::processEventStop(const std::string& origin) {
 void MilesSessionInvoker::processEventParticipants(const std::string& origin) {
 
 	Event ev;
+	ev.data.compound["origin"] = origin;
+	if(!_isRunning) {
+		LOG(ERROR) << "not connected";
+		ev.name = "participants.error";
+		returnEvent(ev);
+		return;
+	}
 	// create an array with objects inside
 	for (int i = 0; i < 5; i++) {
 		Data userInfo;
@@ -317,10 +328,9 @@ void MilesSessionInvoker::processEventParticipants(const std::string& origin) {
 	}
 
 	ev.name = "participants.reply";
-	ev.data.compound["origin"] = origin;
 	returnEvent(ev);
-
 }
+
 void MilesSessionInvoker::processEventThumbnail(const std::string& origin, const std::string& userid) {
 	Event ev;
 	ev.data.compound["origin"] = origin;
@@ -398,6 +408,7 @@ void MilesSessionInvoker::processEventSendVideo(const std::string& origin, size_
 	Event ev;
 	ev.name = "sendvideo.reply";
 	ev.data.compound["origin"] = origin;
+	sendvideo_enabled = 1;
 	returnEvent(ev);
 }
 void MilesSessionInvoker::processEventSendVideoOff(const std::string& origin) {
@@ -405,18 +416,21 @@ void MilesSessionInvoker::processEventSendVideoOff(const std::string& origin) {
 	ev.name = "sendvideooff.reply";
 	ev.data.compound["origin"] = origin;
 	returnEvent(ev);
+	sendvideo_enabled = 0;
 }
 void MilesSessionInvoker::processEventSendAudio(const std::string& origin, const std::string& encoding) {
 	Event ev;
 	ev.name = "sendaudio.reply";
 	ev.data.compound["origin"] = origin;
 	returnEvent(ev);
+	sendaudio_enabled = 1;
 }
 void MilesSessionInvoker::processEventSendAudioOff(const std::string& origin) {
 	Event ev;
 	ev.name = "sendaudiooff.reply";
 	ev.data.compound["origin"] = origin;
 	returnEvent(ev);
+	sendaudio_enabled = 0;
 }
 void MilesSessionInvoker::processEventPostText(const std::string& origin, const std::string& userid, const std::string& message) {
 	Event ev;
@@ -454,7 +468,7 @@ void MilesSessionInvoker::runVideo(void* instance) {
 void MilesSessionInvoker::processVideo() {
 	while(_isRunning) {
 		rtp_video_receiver(video_session);
-		if(video_grabber_available)
+		if(video_grabber_available && sendvideo_enabled)
 			video_transmitter(video_grabber, video_encoder, out_rtp_video_stream, out_rtcp_video_stream);
 	}
 }
@@ -462,7 +476,8 @@ void MilesSessionInvoker::processVideo() {
 void MilesSessionInvoker::processAudio() {
 	while(_isRunning) {
 		rtp_audio_receiver(audio_session);
-		audio_transmitter(audio_dev, audio_encoder, out_rtp_audio_stream, out_rtcp_audio_stream);
+		if(audio_available && sendaudio_enabled)
+			audio_transmitter(audio_dev, audio_encoder, out_rtp_audio_stream, out_rtcp_audio_stream);
 	}
 }
 
