@@ -65,6 +65,7 @@ Data MilesSessionInvoker::getDataModelVariables() {
 
 void MilesSessionInvoker::init_media_buffers() {
 	video_out_buf = NULL;
+	video_conv_buf = NULL;
 	encoded_out_img = NULL;
 	audio_in_buf = NULL;
 	render_img = NULL;
@@ -81,6 +82,9 @@ void MilesSessionInvoker::free_media_buffers() {
 	if(video_out_buf)
 		free(video_out_buf);
 	video_out_buf = NULL;
+	if(video_conv_buf)
+		free(video_conv_buf);
+	video_conv_buf = NULL;
 	if(encoded_out_img)
 		free(encoded_out_img);
 	encoded_out_img = NULL;
@@ -113,6 +117,9 @@ void MilesSessionInvoker::free_video_buffers() {
 	if(video_out_buf)
 		free(video_out_buf);
 	video_out_buf = NULL;
+	if(video_conv_buf)
+		free(video_conv_buf);
+	video_conv_buf = NULL;
 	if(encoded_out_img)
 		free(encoded_out_img);
 	encoded_out_img = NULL;
@@ -438,11 +445,10 @@ void MilesSessionInvoker::processEventThumbnail(const std::string& origin, const
 	ev.name = "thumbnail.reply";
 
 	struct thumb_entry *use_thumb = NULL;
-	struct miles_rtp_in_stream *rtps;
 	struct miles_list *p;
 	struct thumb_entry *te;
 	_mutex.lock();
-  // Find thumbnail of user
+	// Find thumbnail of user
 	p = thumb_list;
 	while(p) {
 		te = (struct thumb_entry *)p->item;
@@ -689,18 +695,6 @@ int MilesSessionInvoker::setup_audio() {
 int MilesSessionInvoker::setup_video_grabber() {
 	struct miles_video_grabber_description *grabber_description;
 
-	/* Initialize and configure video encoder */
-	video_encoder = miles_video_codec_init_encoder();
-	video_encoder->codec_id = miles_video_codec_get_encoder_for_rtp_payload_type(MILES_RTP_PAYLOAD_TYPE_JPEG);
-	video_encoder->width = 320;
-	video_encoder->height = 240;
-	video_encoder->qfactor = 50;
-	int rv = miles_video_codec_setup_encoder(video_encoder);
-	if (!rv) {
-		LOG(ERROR) << "Could not setup video encoder";
-		return 0;
-	}
-
 	/* Set up video grabber */
 	int n = miles_video_grabber_get_supported_grabbers(&supported_video_grabbers);
 	if(n<=0) {
@@ -717,17 +711,40 @@ int MilesSessionInvoker::setup_video_grabber() {
 				/* Make sure there is a device */
 				if(grabber_description->devices != NULL) {
 					use_grabber = i;
+					free(grabber_description);
 					break;
 				}
 			}
+			free(grabber_description);
 		}
 	}
+	grabber_description = miles_video_grabber_get_description(supported_video_grabbers[use_grabber]);
 	video_grabber = miles_video_grabber_create_context(supported_video_grabbers[use_grabber]);
-	video_grabber->width = video_encoder->width;
-	video_grabber->height = video_encoder->height;
+	video_grabber->width = 320;
+	video_grabber->height = 240;
 	video_grabber->frame_rate = 25*100;
+	/* Select first supported image format */
+  struct miles_video_grabber_device *dev;
+	dev = (struct miles_video_grabber_device *)grabber_description->devices->item;
+	struct miles_int_struct *img_format;
+	img_format = (struct miles_int_struct *)dev->capabilities->formats->item;
+	video_grabber->image_format = img_format->value;
 	miles_video_grabber_setup(video_grabber);
 	free(supported_video_grabbers);
+	free(grabber_description);
+
+	/* Initialize and configure video encoder */
+	video_encoder = miles_video_codec_init_encoder();
+	video_encoder->codec_id = miles_video_codec_get_encoder_for_rtp_payload_type(MILES_RTP_PAYLOAD_TYPE_JPEG);
+	video_encoder->width = video_grabber->width = 320;
+	video_encoder->height = video_grabber->height = 240;
+	video_encoder->qfactor = 50;
+	video_encoder->input_format = video_grabber->image_format;
+	int rv = miles_video_codec_setup_encoder(video_encoder);
+	if (!rv) {
+		LOG(ERROR) << "Could not setup video encoder";
+		return 0;
+	}
 
 	video_out_buf = (char *)malloc(video_encoder->width*video_encoder->height*4);
 	encoded_out_img = (char *)malloc(video_encoder->width*video_encoder->height*4);
@@ -997,6 +1014,7 @@ int MilesSessionInvoker::video_transmitter(struct miles_video_grabber_context *g
 	static int first_time=1;
 	struct timeval now;
 	int tbf;
+	char *video_buf_ptr;
 
 	if (first_time) {
 		gettimeofday(&last_time, 0);
@@ -1017,8 +1035,15 @@ int MilesSessionInvoker::video_transmitter(struct miles_video_grabber_context *g
 		return 0;
 	if(grabber->image_format != codec_ctx->input_format) {
 		/* image conversion ... */
+		if(video_conv_buf==NULL)
+			video_conv_buf = (char *)malloc(codec_ctx->width*codec_ctx->height*4);
+		printf("converting video...\n");
+		miles_image_convert(video_out_buf, video_conv_buf, grabber->image_format, codec_ctx->input_format, codec_ctx->width, codec_ctx->height);
+		video_buf_ptr = video_conv_buf;
+	} else {
+		video_buf_ptr = video_out_buf;
 	}
-	n = miles_video_codec_encode(codec_ctx, video_out_buf, encoded_out_img);
+	n = miles_video_codec_encode(codec_ctx, video_buf_ptr, encoded_out_img);
 	if(n<=0)
 		return 0;
 	return miles_rtp_send(rtp_stream, encoded_out_img, n);
