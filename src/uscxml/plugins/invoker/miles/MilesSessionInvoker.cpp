@@ -41,11 +41,8 @@ bool pluginConnect(pluma::Host& host) {
 #endif
 
 MilesSessionInvoker::MilesSessionInvoker() {
-	/* Initalize Miles */
+	/* Initialize Miles */
 	miles_init();
-
-	/* set up media buffers */
-	init_media_buffers();
 
 	_isRunning = false;
 	num_connected = 0;
@@ -106,6 +103,45 @@ void MilesSessionInvoker::free_media_buffers() {
 	if(audio_read_buf)
 		free(audio_read_buf);
 	audio_read_buf = NULL;
+	if(text_msg_buf)
+		free(text_msg_buf);
+	text_msg_buf = NULL;
+	text_msg_available = 0;
+}
+
+void MilesSessionInvoker::free_video_buffers() {
+	if(video_out_buf)
+		free(video_out_buf);
+	video_out_buf = NULL;
+	if(encoded_out_img)
+		free(encoded_out_img);
+	encoded_out_img = NULL;
+	if(render_img)
+		free(render_img);
+	render_img = NULL;
+	render_img_size = 0;
+	if(video_data)
+		free(video_data);
+	video_data = NULL;
+}
+
+void MilesSessionInvoker::free_audio_buffers() {
+	if(audio_in_buf)
+		free(audio_in_buf);
+	audio_in_buf = NULL;
+	if(audio_data)
+		free(audio_data);
+	audio_data = NULL;
+	video_data = NULL;
+	if(encoded_out_audio)
+		free(encoded_out_audio);
+	encoded_out_audio = NULL;
+	if(audio_read_buf)
+		free(audio_read_buf);
+	audio_read_buf = NULL;
+}
+
+void MilesSessionInvoker::free_text_buffers() {
 	if(text_msg_buf)
 		free(text_msg_buf);
 	text_msg_buf = NULL;
@@ -255,6 +291,8 @@ void MilesSessionInvoker::processEventStart(const std::string& origin, const std
 	}
 	LOG(ERROR) << "session set up";
 
+	/* set up media buffers */
+	init_media_buffers();
 
 	/* Set up audio and video RTP sockets */
 	video_rtp_in_socket = miles_net_setup_udp_socket((char*)reflector.c_str(), video_port, video_port, 10, 16000);
@@ -354,6 +392,7 @@ void MilesSessionInvoker::processEventStop(const std::string& origin) {
 		LOG(ERROR) << "Error registering text message callback";
 	}
 	_isRunning = false;
+	free_text_buffers();
 	ev.name = "stop.reply";
 	returnEvent(ev);
 	LOG(ERROR) << "disconnected from reflector session";
@@ -558,6 +597,8 @@ void MilesSessionInvoker::processVideo() {
 	thumb_list = NULL;
 	miles_net_socket_close(video_rtp_in_socket);
 	miles_net_socket_close(video_rtcp_in_socket);
+
+	free_video_buffers();
 }
 
 void MilesSessionInvoker::processAudio() {
@@ -580,6 +621,8 @@ void MilesSessionInvoker::processAudio() {
 	miles_rtp_destroy_session(audio_session);
 	miles_net_socket_close(audio_rtp_in_socket);
 	miles_net_socket_close(audio_rtcp_in_socket);
+
+	free_video_buffers();
 }
 
 int MilesSessionInvoker::setup_audio() {

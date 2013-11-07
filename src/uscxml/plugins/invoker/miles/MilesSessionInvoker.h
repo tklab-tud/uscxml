@@ -140,6 +140,10 @@ protected:
 
 	void init_media_buffers();
 	void free_media_buffers();
+	void free_video_buffers();
+	void free_audio_buffers();
+	void free_text_buffers();
+
 	void render_video_image(char *img, int width, int height, int img_format);
 	void playback_audio(u_int32_t ssrc, char *buf, int sample_rate, int bps, int audio_format, int size);
 	int video_receiver(struct miles_rtp_in_stream *rtp_stream, char *data, int bytes_read);
