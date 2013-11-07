@@ -75,6 +75,8 @@ void MilesSessionInvoker::init_media_buffers() {
 	encoded_out_audio = NULL;
 	audio_read_buf = NULL;
 	video_data = (char *)malloc(1000000);
+	text_msg_buf = (char *)malloc(1000);
+	text_msg_available = 0;
 }
 
 void MilesSessionInvoker::free_media_buffers() {
@@ -103,6 +105,35 @@ void MilesSessionInvoker::free_media_buffers() {
 	if(audio_read_buf)
 		free(audio_read_buf);
 	audio_read_buf = NULL;
+	if(text_msg_buf)
+		free(text_msg_buf);
+	text_msg_buf = NULL;
+	text_msg_available = 0;
+}
+
+// Yes, sort of ugly...
+char confero_text_msg_buf[1000];
+int confero_text_msg_available = 0;
+
+int receive_text_message_callback(u_int32_t ssrc, char *pkt, int length) {
+	char cname[100];
+	int i=0, j;
+
+	while(pkt[i]) {
+		cname[i] = pkt[i];
+		i++;
+	}
+	cname[i++] = 0;
+	j = i;
+	while(pkt[j] && j<length) {
+		if(pkt[j]=='<' || pkt[j]=='>' || pkt[j]=='\r' || pkt[j]=='\n')
+			pkt[j] = ' ';
+		j++;
+	}
+	memcpy(confero_text_msg_buf, pkt+i, length-i);
+	//printf("RTCP app depacketizer called, cname = %s, msg = %s\n", cname, confero_text_msg_buf);
+	confero_text_msg_available = 1;
+	return length;
 }
 
 void MilesSessionInvoker::send(const SendRequest& req) {
@@ -201,9 +232,13 @@ void MilesSessionInvoker::send(const SendRequest& req) {
 
 void MilesSessionInvoker::processEventStart(const std::string& origin, const std::string& userid, const std::string& reflector, const std::string& session) {
 
+	Event ev;
+	ev.data.compound["origin"] = origin;
 	//std::cout << req;
 	if(_isRunning) {
 		LOG(ERROR) << "already connected";
+		ev.name = "start.error";
+		returnEvent(ev);
 		return;
 	}
 
@@ -213,6 +248,8 @@ void MilesSessionInvoker::processEventStart(const std::string& origin, const std
 	rv = miles_connect_reflector_session((char*)reflector.c_str(), (char*)session.c_str());
 	if (!rv) {
 		LOG(ERROR) << "Could not setup reflector session";
+		ev.name = "start.error";
+		returnEvent(ev);
 		return;
 	}
 	LOG(ERROR) << "session set up";
@@ -223,7 +260,6 @@ void MilesSessionInvoker::processEventStart(const std::string& origin, const std
 	video_rtp_out_socket = video_rtp_in_socket; 
 	audio_rtp_out_socket = audio_rtp_in_socket; 
 
-	LOG(ERROR) << "rtp sockets set up";
 
 	/* Set up audio and video RTCP sockets */
 	video_rtcp_in_socket = miles_net_setup_udp_socket((char*)reflector.c_str(), video_port+1, video_port+1, 10, 16000);
@@ -241,9 +277,13 @@ void MilesSessionInvoker::processEventStart(const std::string& origin, const std
 
 	/* Set up video capture */
 	video_grabber_available = setup_video_grabber();
+	if(video_grabber_available)
+		sendvideo_enabled = 1;
 
 	/* Set up audio capture/playback */
 	audio_available = setup_audio();
+	if(audio_available)
+		sendaudio_enabled = 1;
 
 	/* Set up outgoing RTP stream for video */
 	if(video_grabber_available) {
@@ -263,6 +303,13 @@ void MilesSessionInvoker::processEventStart(const std::string& origin, const std
 		out_rtcp_audio_stream = miles_rtp_setup_outgoing_rtcp_stream(audio_session->rtcp_session, audio_rtcp_out_socket, out_rtp_audio_stream->ssrc);
 	}
 
+	/* Register RTCP APP handler for text messages */
+	rv = miles_rtp_register_rtcp_app_handler("text", NULL, receive_text_message_callback, 0);	
+	if(rv==0) {
+		LOG(ERROR) << "Error registering text message callback";
+	}
+	memset(confero_text_msg_buf, 0, 1000);
+
 	_isRunning = true;
 	_reflector = reflector;
 	_userId = userid;
@@ -271,29 +318,44 @@ void MilesSessionInvoker::processEventStart(const std::string& origin, const std
 	if(audio_available)
 		_audioThread = new tthread::thread(MilesSessionInvoker::runAudio, this);
 	_videoThread = new tthread::thread(MilesSessionInvoker::runVideo, this);
-	Event ev;
 	ev.name = "start.reply";
-	ev.data.compound["origin"] = origin;
 	returnEvent(ev);
 }
 
 void MilesSessionInvoker::processEventStop(const std::string& origin) {
+	Event ev;
+	ev.data.compound["origin"] = origin;
+
+	if(!_isRunning) {
+		LOG(ERROR) << "not connected";
+		ev.name = "stop.error";
+		returnEvent(ev);
+		return;
+	}
 	int rv = miles_disconnect_reflector_session((char*)_reflector.c_str(), (char*)_session.c_str());
 	if (!rv) {
 		LOG(ERROR) << "Could not disconnect from reflector session";
+		ev.name = "stop.error";
+		returnEvent(ev);
 		return;
 	}
 	free_media_buffers();
 	_isRunning = false;
-	Event ev;
 	ev.name = "stop.reply";
-	ev.data.compound["origin"] = origin;
 	returnEvent(ev);
+	LOG(ERROR) << "disconnected from reflector session";
 }
 
 void MilesSessionInvoker::processEventParticipants(const std::string& origin) {
 
 	Event ev;
+	ev.data.compound["origin"] = origin;
+	if(!_isRunning) {
+		LOG(ERROR) << "not connected";
+		ev.name = "participants.error";
+		returnEvent(ev);
+		return;
+	}
 	// create an array with objects inside
 	for (int i = 0; i < 5; i++) {
 		Data userInfo;
@@ -303,21 +365,25 @@ void MilesSessionInvoker::processEventParticipants(const std::string& origin) {
 	}
 
 	ev.name = "participants.reply";
-	ev.data.compound["origin"] = origin;
 	returnEvent(ev);
-
 }
+
 void MilesSessionInvoker::processEventThumbnail(const std::string& origin, const std::string& userid) {
-	LOG(ERROR) << "processEventThumbnail";
+	Event ev;
+	ev.data.compound["origin"] = origin;
+	if(!_isRunning) {
+		LOG(ERROR) << "not connected";
+		ev.name = "thumbnail.error";
+		returnEvent(ev);
+		return;
+	}
 	URL imageURL("emptyface.jpg");
 	imageURL.toAbsolute(_interpreter->getBaseURI());
 	std::stringstream ssImage;
 	ssImage << imageURL;
 	std::string imageContent = ssImage.str();
 
-	Event ev;
 	ev.name = "thumbnail.reply";
-	ev.data.compound["origin"] = origin;
 
 	int has_thumb = 0;
 	struct miles_rtp_in_stream *rtps;
@@ -378,6 +444,7 @@ void MilesSessionInvoker::processEventSendVideo(const std::string& origin, size_
 	Event ev;
 	ev.name = "sendvideo.reply";
 	ev.data.compound["origin"] = origin;
+	sendvideo_enabled = 1;
 	returnEvent(ev);
 }
 void MilesSessionInvoker::processEventSendVideoOff(const std::string& origin) {
@@ -385,34 +452,69 @@ void MilesSessionInvoker::processEventSendVideoOff(const std::string& origin) {
 	ev.name = "sendvideooff.reply";
 	ev.data.compound["origin"] = origin;
 	returnEvent(ev);
+	sendvideo_enabled = 0;
 }
 void MilesSessionInvoker::processEventSendAudio(const std::string& origin, const std::string& encoding) {
 	Event ev;
 	ev.name = "sendaudio.reply";
 	ev.data.compound["origin"] = origin;
 	returnEvent(ev);
+	sendaudio_enabled = 1;
 }
 void MilesSessionInvoker::processEventSendAudioOff(const std::string& origin) {
 	Event ev;
 	ev.name = "sendaudiooff.reply";
 	ev.data.compound["origin"] = origin;
 	returnEvent(ev);
+	sendaudio_enabled = 0;
 }
 void MilesSessionInvoker::processEventPostText(const std::string& origin, const std::string& userid, const std::string& message) {
+	char msgbuf[1000];
+	char pkt[1000];
+	char *cname = "user@all"; // for now
+	int n, length;
 	Event ev;
+
 	ev.name = "posttext.reply";
 	ev.data.compound["origin"] = origin;
 	returnEvent(ev);
+	if(out_rtcp_video_stream==NULL)
+		return;
+	//printf("sending message %s\n", message.c_str());
+	memcpy(msgbuf, cname, strlen(cname)+1);
+	sprintf(msgbuf+strlen(cname)+1, "<%s>: %s", userid.c_str(), message.c_str());
+	n = strlen(cname)+1 + userid.length() + 4 + message.length();
+	length = miles_rtp_make_rtcp_app(pkt, out_rtcp_video_stream->ssrc, "text", n, msgbuf);
+	if(length>0 && out_rtcp_video_stream)
+		out_rtcp_video_stream->send_packet(out_rtcp_video_stream->socket, pkt, length, 0);
 }
+
 void MilesSessionInvoker::processEventGetText(const std::string& origin) {
 	Event ev;
-	ev.name = "gettext.reply";
 	ev.data.compound["origin"] = origin;
+	if(!_isRunning) {
+		LOG(ERROR) << "not connected";
+		ev.name = "gettext.error";
+		returnEvent(ev);
+		return;
+	}
 	
+	ev.name = "gettext.reply";
+#if 0
 	if (rand() % 5 == 0) { // return some mocked up chat message
 		ev.data.compound["message"] = Data(".. and then she was all like: aren't we supposed to discuss work related stuff?", Data::VERBATIM);
 		ev.data.compound["user"] = Data("username1", Data::VERBATIM);
 	}
+#else
+	if(confero_text_msg_available) {
+		strcpy(text_msg_buf, confero_text_msg_buf);
+		ev.data.compound["message"] = Data(text_msg_buf, Data::VERBATIM);
+		//ev.data.compound["message"] = Data(base64_encode(text_msg_buf, strlen(text_msg_buf)), Data::VERBATIM);
+		ev.data.compound["user"] = Data("username1", Data::VERBATIM);
+		memset(confero_text_msg_buf, 0, 1000);
+		confero_text_msg_available = 0;
+	}
+#endif
 	
 	returnEvent(ev);
 }
@@ -428,7 +530,7 @@ void MilesSessionInvoker::runVideo(void* instance) {
 void MilesSessionInvoker::processVideo() {
 	while(_isRunning) {
 		rtp_video_receiver(video_session);
-		if(video_grabber_available)
+		if(video_grabber_available && sendvideo_enabled)
 			video_transmitter(video_grabber, video_encoder, out_rtp_video_stream, out_rtcp_video_stream);
 	}
 }
@@ -436,7 +538,8 @@ void MilesSessionInvoker::processVideo() {
 void MilesSessionInvoker::processAudio() {
 	while(_isRunning) {
 		rtp_audio_receiver(audio_session);
-		audio_transmitter(audio_dev, audio_encoder, out_rtp_audio_stream, out_rtcp_audio_stream);
+		if(audio_available && sendaudio_enabled)
+			audio_transmitter(audio_dev, audio_encoder, out_rtp_audio_stream, out_rtcp_audio_stream);
 	}
 }
 

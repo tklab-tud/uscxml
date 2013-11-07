@@ -3,7 +3,7 @@
 	<state id="main">
 		<invoke type="miles" id="miles">
 			<finalize>
-				<log label="out" expr="_event.name" />
+				<!-- <log label="out" expr="_event.name" /> -->
 				<script>//dump(_event);</script>
 				<if cond="_event.data.origin">
 					<!-- <log label="Reply-length" expr="_event.data.base64.length" /> -->
@@ -12,6 +12,7 @@
 							<header name="Cache-Control" value="no-cache" /> <!-- force IE to actually reload -->
 							<header name="Access-Control-Allow-Origin" value="*" />
 							<header name="Content-Type" value="text/plain" />
+							<header name="Access-Control-Allow-Origin" value="*" />
 							<content expr="_event.data.image.base64()" />
 						</respond>
 					<else />
@@ -19,6 +20,7 @@
 							<header name="Cache-Control" value="no-cache" /> <!-- force IE to actually reload -->
 							<header name="Access-Control-Allow-Origin" value="*" />
 							<!-- respond element will add content-type header -->
+							<header name="Access-Control-Allow-Origin" value="*" />
 							<content expr="_event.data" />
 						</respond>
 					</if>
@@ -40,13 +42,22 @@
 			</transition>
 			
 			<transition event="http.get" target="idle">
-				<log label="in" expr="_event.data.path" />
+				<!-- <log label="in" expr="_event.data.path" /> -->
 				<script>//dump(_event);</script>
 				<if cond="false">
 
 				<!-- START ############### -->
 				<elseif cond="_event.data.pathComponent[1] === 'start'" />
 					<send target="#_miles" event="start">
+						<param name="origin" expr="_event.origin" />
+						<param name="reflector" expr="_event.data.query.reflector" />
+						<param name="userId" expr="_event.data.query.userid" />
+						<param name="session" expr="_event.data.query.session" />
+					</send>
+
+				<!-- STOP ############### -->
+				<elseif cond="_event.data.pathComponent[1] === 'stop'" />
+					<send target="#_miles" event="stop">
 						<param name="origin" expr="_event.origin" />
 						<param name="reflector" expr="_event.data.query.reflector" />
 						<param name="userId" expr="_event.data.query.userid" />
@@ -135,8 +146,8 @@
 			</transition>
 			
 			<transition event="http.post" target="idle">
-				<log label="in" expr="_event.data.path" />
-				<script>dump(_event);</script>
+				<!-- <log label="in" expr="_event.data.path" /> -->
+				<script>//dump(_event);</script>
 				<if cond="false">
 				
 				<!-- POST TEXT ############### -->

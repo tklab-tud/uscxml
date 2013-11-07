@@ -12,8 +12,8 @@ function Miles(element, params) {
   this.connected = false;
   this.imageIteration = 0;
 
-  this.width = 300;
-  this.height = 200;
+  this.width = 320;
+  this.height = 240;
 
   // private attributes
   var scxmlURL    = "localhost:8080"
@@ -93,10 +93,25 @@ function Miles(element, params) {
   }
 
   this.disconnect = function() {
-    self.connected = false;
-    hideChat();
-    self.controlDropDown.dropDown.onCancel(true);
-    self.controlElem.replaceChild(self.connectDropDown.domNode, self.controlDropDown.domNode);
+    var query = "";
+    query += "?reflector=" + encodeURIComponent(reflectorIp);
+    query += "&userid=" + encodeURIComponent(email);
+    query += "&session=" + encodeURIComponent(problemName);
+    
+    self.xhr.get({
+      // The URL to request
+      url: "http://" + scxmlURL + "/miles/stop" + query,
+      // handleAs:"text",
+      error: function(err) {
+        console.log(err);
+      },
+      load: function(result) {
+    	self.connected = false;
+    	hideChat();
+    	self.controlDropDown.dropDown.onCancel(true);
+    	self.controlElem.replaceChild(self.connectDropDown.domNode, self.controlDropDown.domNode);
+      }
+    });  
   }
   
   var hideChat = function() {
@@ -176,7 +191,7 @@ function Miles(element, params) {
       },
       load: function(result) {
         if (result.message) {
-          self.chatOutputElem.innerHTML += stopChatScrolling + " " + Math.random() + ": " + result.message + '<br />';
+          self.chatOutputElem.innerHTML += result.message + '<br />';
           if (!stopChatScrolling)
             self.chatOutputElem.scrollTop = self.chatOutputElem.scrollHeight;
         }
@@ -283,7 +298,7 @@ function Miles(element, params) {
         self.chatSendButton = new Button({
           label: "Send",
           onClick: function(){
-            alert(self.chatInput.value);
+            //alert(self.chatInput.value);
             self.xhr.post({
               // The URL to request
               url: "http://" + scxmlURL + "/miles/text",
