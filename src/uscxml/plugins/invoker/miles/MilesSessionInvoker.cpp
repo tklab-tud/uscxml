@@ -437,31 +437,31 @@ void MilesSessionInvoker::processEventThumbnail(const std::string& origin, const
 
 	ev.name = "thumbnail.reply";
 
-	int has_thumb = 0;
+	struct thumb_entry *use_thumb = NULL;
 	struct miles_rtp_in_stream *rtps;
 	struct miles_list *p;
 	struct thumb_entry *te;
 	_mutex.lock();
-	if(video_session->instreams) {
-		rtps = video_session->instreams->stream;
-		if(rtps) {
-			p = thumb_list;
-			while(p) {
-				te = (struct thumb_entry *)p->item;
-				if(te->ssrc == rtps->ssrc) {
-					break;
-				}
-				p = p->next;
-  		}
-			if(p) {
-				has_thumb = 1;
-				ev.data.compound["image"] = Data(te->img_buf, te->img_size, "image/jpeg");
-			}
+  // Find thumbnail of user
+	p = thumb_list;
+	while(p) {
+		te = (struct thumb_entry *)p->item;
+		if(te->userid && strcmp(te->userid, userid.c_str()) == 0) {
+			use_thumb = te;
+			break;
 		}
-	}
-	if(!has_thumb) {
-			// Return empty face image
-			ev.data.compound["image"] = Data(imageContent.data(), imageContent.size(), "image/jpeg");
+		if(te->userid==NULL && use_thumb == NULL) {
+			use_thumb = te;
+		}
+		p = p->next;
+  }
+	if(!p && use_thumb)
+		use_thumb->userid = strdup(userid.c_str());
+	if(use_thumb) {
+		ev.data.compound["image"] = Data(use_thumb->img_buf, use_thumb->img_size, "image/jpeg");
+	} else {
+		// Return empty face image
+		ev.data.compound["image"] = Data(imageContent.data(), imageContent.size(), "image/jpeg");
 	}
 	_mutex.unlock();
 
@@ -845,6 +845,7 @@ int MilesSessionInvoker::video_receiver(struct miles_rtp_in_stream *rtp_stream, 
 			p = miles_list_append(thumb_list, te);
 		te->ssrc = rtp_stream->ssrc;
 		te->window_ctx = NULL;
+		te->userid = NULL;
 		te->img_buf = (char *)malloc(bytes_read);
 		te->buf_size = bytes_read;
 		te->img_size = 0;

@@ -51,6 +51,7 @@ struct thumb_entry {
 	int img_format; // JPEG or PNG image
 	char *decode_buf;
 	u_int32_t ssrc;
+	char *userid; // The user id assigned to the video stream
 	void *window_ctx; // The context of the window popped up when the thumbnail is clicked.
 };
 

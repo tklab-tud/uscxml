@@ -49,7 +49,7 @@
 					<send target="#_miles" event="start">
 						<param name="origin" expr="_event.origin" />
 						<param name="reflector" expr="_event.data.query.reflector" />
-						<param name="userId" expr="_event.data.query.userid" />
+						<param name="userid" expr="_event.data.query.userid" />
 						<param name="session" expr="_event.data.query.session" />
 					</send>
 
@@ -58,7 +58,7 @@
 					<send target="#_miles" event="stop">
 						<param name="origin" expr="_event.origin" />
 						<param name="reflector" expr="_event.data.query.reflector" />
-						<param name="userId" expr="_event.data.query.userid" />
+						<param name="userid" expr="_event.data.query.userid" />
 						<param name="session" expr="_event.data.query.session" />
 					</send>
 
@@ -72,7 +72,7 @@
 				<elseif cond="_event.data.pathComponent[1] === 'thumbnail'" />
 					<send target="#_miles" event="thumbnail">
 						<param name="origin" expr="_event.origin" />
-						<param name="userId" expr="_event.data.query.userid" />
+						<param name="userid" expr="_event.data.query.userid" />
 					</send>
 
 				<!-- VIDEO ON ############### -->
