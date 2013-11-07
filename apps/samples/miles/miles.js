@@ -60,6 +60,7 @@ function Miles(element, params) {
   if (params && params.reflectorIp)  reflectorIp = params.reflectorIp;
   if (params && params.email)        email = params.email;
   if (params && params.problemName)  problemName = params.problemName;
+  if (params && params.remoteEmail)        remoteEmail = params.remoteEmail;
 
   // called when dojo loaded all requirements below
   this.connect = function() {
