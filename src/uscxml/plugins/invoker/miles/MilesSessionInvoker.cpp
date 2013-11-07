@@ -44,10 +44,11 @@ MilesSessionInvoker::MilesSessionInvoker() {
 	/* Initalize Miles */
 	miles_init();
 
-	/* media buffers */
+	/* set up media buffers */
 	init_media_buffers();
 
 	_isRunning = false;
+	num_connected = 0;
 }
 
 MilesSessionInvoker::~MilesSessionInvoker() {
@@ -235,9 +236,9 @@ void MilesSessionInvoker::processEventStart(const std::string& origin, const std
 	Event ev;
 	ev.data.compound["origin"] = origin;
 	//std::cout << req;
-	if(_isRunning) {
-		LOG(ERROR) << "already connected";
-		ev.name = "start.error";
+	if(num_connected>0) {
+		num_connected++;
+		ev.name = "start.reply";
 		returnEvent(ev);
 		return;
 	}
@@ -253,6 +254,7 @@ void MilesSessionInvoker::processEventStart(const std::string& origin, const std
 		return;
 	}
 	LOG(ERROR) << "session set up";
+
 
 	/* Set up audio and video RTP sockets */
 	video_rtp_in_socket = miles_net_setup_udp_socket((char*)reflector.c_str(), video_port, video_port, 10, 16000);
@@ -311,6 +313,7 @@ void MilesSessionInvoker::processEventStart(const std::string& origin, const std
 	memset(confero_text_msg_buf, 0, 1000);
 
 	_isRunning = true;
+	num_connected=1;
 	_reflector = reflector;
 	_userId = userid;
 	_session = session;
@@ -326,9 +329,15 @@ void MilesSessionInvoker::processEventStop(const std::string& origin) {
 	Event ev;
 	ev.data.compound["origin"] = origin;
 
-	if(!_isRunning) {
+	if(num_connected==0) {
 		LOG(ERROR) << "not connected";
 		ev.name = "stop.error";
+		returnEvent(ev);
+		return;
+	}
+	num_connected--;
+	if(num_connected>0) {
+		ev.name = "stop.reply";
 		returnEvent(ev);
 		return;
 	}
@@ -339,7 +348,11 @@ void MilesSessionInvoker::processEventStop(const std::string& origin) {
 		returnEvent(ev);
 		return;
 	}
-	free_media_buffers();
+	/* Unregister RTCP APP handler for text messages */
+	rv = miles_rtp_unregister_rtcp_app_handler("text");	
+	if(rv==0) {
+		LOG(ERROR) << "Error registering text message callback";
+	}
 	_isRunning = false;
 	ev.name = "stop.reply";
 	returnEvent(ev);
@@ -350,7 +363,7 @@ void MilesSessionInvoker::processEventParticipants(const std::string& origin) {
 
 	Event ev;
 	ev.data.compound["origin"] = origin;
-	if(!_isRunning) {
+	if(num_connected==0) {
 		LOG(ERROR) << "not connected";
 		ev.name = "participants.error";
 		returnEvent(ev);
@@ -371,7 +384,7 @@ void MilesSessionInvoker::processEventParticipants(const std::string& origin) {
 void MilesSessionInvoker::processEventThumbnail(const std::string& origin, const std::string& userid) {
 	Event ev;
 	ev.data.compound["origin"] = origin;
-	if(!_isRunning) {
+	if(num_connected==0) {
 		LOG(ERROR) << "not connected";
 		ev.name = "thumbnail.error";
 		returnEvent(ev);
@@ -475,8 +488,14 @@ void MilesSessionInvoker::processEventPostText(const std::string& origin, const 
 	int n, length;
 	Event ev;
 
-	ev.name = "posttext.reply";
 	ev.data.compound["origin"] = origin;
+	if(num_connected==0) {
+		LOG(ERROR) << "not connected";
+		ev.name = "posttext.error";
+		returnEvent(ev);
+		return;
+	}
+	ev.name = "posttext.reply";
 	returnEvent(ev);
 	if(out_rtcp_video_stream==NULL)
 		return;
@@ -492,7 +511,7 @@ void MilesSessionInvoker::processEventPostText(const std::string& origin, const 
 void MilesSessionInvoker::processEventGetText(const std::string& origin) {
 	Event ev;
 	ev.data.compound["origin"] = origin;
-	if(!_isRunning) {
+	if(num_connected==0) {
 		LOG(ERROR) << "not connected";
 		ev.name = "gettext.error";
 		returnEvent(ev);
@@ -500,12 +519,6 @@ void MilesSessionInvoker::processEventGetText(const std::string& origin) {
 	}
 	
 	ev.name = "gettext.reply";
-#if 0
-	if (rand() % 5 == 0) { // return some mocked up chat message
-		ev.data.compound["message"] = Data(".. and then she was all like: aren't we supposed to discuss work related stuff?", Data::VERBATIM);
-		ev.data.compound["user"] = Data("username1", Data::VERBATIM);
-	}
-#else
 	if(confero_text_msg_available) {
 		strcpy(text_msg_buf, confero_text_msg_buf);
 		ev.data.compound["message"] = Data(text_msg_buf, Data::VERBATIM);
@@ -514,7 +527,6 @@ void MilesSessionInvoker::processEventGetText(const std::string& origin) {
 		memset(confero_text_msg_buf, 0, 1000);
 		confero_text_msg_available = 0;
 	}
-#endif
 	
 	returnEvent(ev);
 }
@@ -533,6 +545,19 @@ void MilesSessionInvoker::processVideo() {
 		if(video_grabber_available && sendvideo_enabled)
 			video_transmitter(video_grabber, video_encoder, out_rtp_video_stream, out_rtcp_video_stream);
 	}
+	/* done, clean up */
+	if(video_grabber_available) {
+		miles_rtp_destroy_out_stream(out_rtp_video_stream);
+		miles_video_grabber_destroy(video_grabber);
+		miles_video_codec_destroy_encoder(video_encoder);
+		video_grabber_available = 0;
+		sendvideo_enabled = 0;
+	}
+	miles_rtp_destroy_session(video_session);
+	miles_list_destroy(thumb_list);
+	thumb_list = NULL;
+	miles_net_socket_close(video_rtp_in_socket);
+	miles_net_socket_close(video_rtcp_in_socket);
 }
 
 void MilesSessionInvoker::processAudio() {
@@ -541,9 +566,29 @@ void MilesSessionInvoker::processAudio() {
 		if(audio_available && sendaudio_enabled)
 			audio_transmitter(audio_dev, audio_encoder, out_rtp_audio_stream, out_rtcp_audio_stream);
 	}
+	/* done, clean up */
+	if(audio_available) {
+		miles_rtp_destroy_out_stream(out_rtp_audio_stream);
+		if(audio_dev_playback)
+			miles_audio_device_close(MILES_AUDIO_IO_OPENAL, audio_dev_playback, 0);
+		if(audio_dev)
+			miles_audio_device_close(MILES_AUDIO_IO_OPENAL, audio_dev_playback, 1);
+		miles_audio_codec_destroy_encoder(audio_encoder);
+		audio_available = 0;
+		sendaudio_enabled = 0;
+	}
+	miles_rtp_destroy_session(audio_session);
+	miles_net_socket_close(audio_rtp_in_socket);
+	miles_net_socket_close(audio_rtcp_in_socket);
 }
 
 int MilesSessionInvoker::setup_audio() {
+	/* Check that we have OpeanAL audio */
+	if(!miles_audio_io_is_supported(MILES_AUDIO_IO_OPENAL)) {
+ 		fprintf(stderr, "OpenAL audio i/o not supported on this platform.\n");
+		return 0;
+	}
+
 	/* Initialize and configure audio encoder */
 	audio_encoder = miles_audio_codec_init_encoder();
 	audio_encoder->codec_id = miles_audio_codec_get_encoder_for_rtp_payload_type(MILES_RTP_PAYLOAD_TYPE_L16);
@@ -557,10 +602,9 @@ int MilesSessionInvoker::setup_audio() {
 		LOG(ERROR) << "Couldn't set up audio codec";
 		return 0;
 	}
-	LOG(ERROR) << "audio enc set up";
 
 	/* Set up audio grabber */
-	int n = miles_audio_device_get_supported_devices(MILES_AUDIO_DEVICE_OPENAL, &supported_audio_devices);
+	int n = miles_audio_device_get_supported_devices(MILES_AUDIO_IO_OPENAL, &supported_audio_devices);
 	if(n<=0) {
 		/* No audio device available */
 		LOG(ERROR) << "No audio device available";
@@ -568,7 +612,7 @@ int MilesSessionInvoker::setup_audio() {
 	}
 	/* Use first device that supports capture */
 	for(int i=0; i<n; i++) {
-		audio_dev = miles_audio_device_open(MILES_AUDIO_DEVICE_OPENAL, supported_audio_devices[i].id, MILES_AUDIO_FORMAT_PCM, 16000, 2, 1, 640, 1);
+		audio_dev = miles_audio_device_open(MILES_AUDIO_IO_OPENAL, supported_audio_devices[i].id, MILES_AUDIO_FORMAT_PCM, 16000, 2, 1, 640, 1);
 		if(audio_dev)
 			break;
 	}
@@ -579,7 +623,7 @@ int MilesSessionInvoker::setup_audio() {
 
 	/* Find first audio device that supports playback */
 	for(int i=0; i<n; i++) {
-		audio_dev_playback = miles_audio_device_open(MILES_AUDIO_DEVICE_OPENAL, supported_audio_devices[i].id, MILES_AUDIO_FORMAT_PCM, 16000, 2, 1, 640, 0);
+		audio_dev_playback = miles_audio_device_open(MILES_AUDIO_IO_OPENAL, supported_audio_devices[i].id, MILES_AUDIO_FORMAT_PCM, 16000, 2, 1, 640, 0);
 		if(audio_dev_playback) {
 			audio_dev_playback_id = supported_audio_devices[i].id;
 			break;
@@ -697,14 +741,14 @@ void MilesSessionInvoker::playback_audio(u_int32_t ssrc, char *buf, int sample_r
 	if(audio_dev_playback == NULL || audio_dev_playback->chunk_size != size || audio_dev_playback->sample_rate != sample_rate ||
 	        audio_dev_playback->format != audio_format ||	audio_dev_playback->bytes_per_sample != bps) {
 		if(audio_dev_playback)
-			miles_audio_device_close(MILES_AUDIO_DEVICE_OPENAL, audio_dev_playback, 0);
-		audio_dev_playback = miles_audio_device_open(MILES_AUDIO_DEVICE_OPENAL, audio_dev_playback_id, audio_format, sample_rate, bps, 1, size, 0);
+			miles_audio_device_close(MILES_AUDIO_IO_OPENAL, audio_dev_playback, 0);
+		audio_dev_playback = miles_audio_device_open(MILES_AUDIO_IO_OPENAL, audio_dev_playback_id, audio_format, sample_rate, bps, 1, size, 0);
 		if(audio_dev_playback == NULL)
 			return;
 	}
 
 	/* play audio */
-	miles_audio_device_write(MILES_AUDIO_DEVICE_OPENAL, audio_dev_playback, buf, size);
+	miles_audio_device_write(MILES_AUDIO_IO_OPENAL, audio_dev_playback, buf, size);
 }
 
 /**
@@ -945,7 +989,7 @@ int MilesSessionInvoker::audio_transmitter(struct miles_audio_device *dev, struc
 	/* Send RTCP packets, if due */
 	miles_rtp_send_rtcp(out_rtcp_audio_stream);
 
-	n = miles_audio_device_read(MILES_AUDIO_DEVICE_OPENAL, dev, audio_read_buf, codec_ctx->chunk_size);
+	n = miles_audio_device_read(MILES_AUDIO_IO_OPENAL, dev, audio_read_buf, codec_ctx->chunk_size);
 	if(n <= 0)
 		return 0;
 	if(dev->format != codec_ctx->input_format) {

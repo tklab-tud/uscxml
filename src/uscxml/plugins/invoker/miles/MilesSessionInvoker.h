@@ -27,6 +27,7 @@ extern "C" {
 #include "miles/network.h"
 #include "miles/rtp.h"
 #include "miles/audio_codec.h"
+#include "miles/audio_io.h"
 #include "miles/audio_device.h"
 #include "miles/video_codec.h"
 #include "miles/video_grabber.h"
@@ -150,6 +151,7 @@ protected:
 
 
 	bool _isRunning;
+	int num_connected;
 	std::string _userId, _reflector, _session;
 	tthread::thread* _videoThread;
 	tthread::thread* _audioThread;
