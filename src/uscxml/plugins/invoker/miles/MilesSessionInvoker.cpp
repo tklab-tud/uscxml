@@ -337,11 +337,17 @@ void MilesSessionInvoker::processEventStart(const std::string& origin, const std
 		out_rtp_video_stream = miles_rtp_setup_outgoing_stream(video_session, video_rtp_out_socket, 0, MILES_RTP_PAYLOAD_TYPE_JPEG);
 		out_rtp_video_stream->codec_ctx = video_encoder;
 		out_rtcp_video_stream = miles_rtp_setup_outgoing_rtcp_stream(video_session->rtcp_session, video_rtcp_out_socket, out_rtp_video_stream->ssrc);
+		if(out_rtp_video_stream->sdes.cname)
+			free(out_rtp_video_stream->sdes.cname);
+		out_rtp_video_stream->sdes.cname = strdup(userid.c_str());
 	}
 
 	/* Set up outgoing RTP stream for audio */
 	if(audio_available) {
 		out_rtp_audio_stream = miles_rtp_setup_outgoing_stream(audio_session, audio_rtp_out_socket, 0, MILES_RTP_PAYLOAD_TYPE_L16);
+		if(out_rtp_audio_stream->sdes.cname)
+			free(out_rtp_audio_stream->sdes.cname);
+		out_rtp_audio_stream->sdes.cname = strdup(userid.c_str());
 
 		/* Associate RTP stream with codec context */
 		out_rtp_audio_stream->codec_ctx = audio_encoder;
