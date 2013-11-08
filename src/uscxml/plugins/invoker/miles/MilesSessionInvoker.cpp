@@ -1022,6 +1022,8 @@ int MilesSessionInvoker::video_transmitter(struct miles_video_grabber_context *g
 	int tbf;
 	char *video_buf_ptr;
 
+#ifndef WIN32
+	// Need to fix gettimeofday() on Win
 	if (first_time) {
 		gettimeofday(&last_time, 0);
 		first_time = 0;
@@ -1032,6 +1034,7 @@ int MilesSessionInvoker::video_transmitter(struct miles_video_grabber_context *g
 		return 0;
 
 	last_time = now;
+#endif
 
 	/* Send RTCP packets, if due */
 	miles_rtp_send_rtcp(out_rtcp_stream);
