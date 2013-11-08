@@ -39,11 +39,13 @@ function VRMLViewer(element, params) {
   this.resRoot = "";
   
   // copy over values from constructor arguments
-  for (var param in params) {
-    if (self.hasOwnProperty(param))
-      self[param] = params[param];
+  if (params) {
+    for (var param in params) {
+      if (self.hasOwnProperty(param))
+        self[param] = params[param];
+    }
   }
-
+  
   // normalize parameters
   
   // make sure server url begins with protocol and does *not* ends in /

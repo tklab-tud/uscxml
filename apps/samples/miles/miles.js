@@ -5,22 +5,38 @@ function Miles(element, params) {
   // private instanceId
   if (!Miles.instances)
     Miles.instances = 0;
-    
-  // public attributes
   this.instanceId = Miles.instances++;
-  this.element = element;
-  this.connected = false;
+    
+  // public attributes defaults
   this.imageIteration = 0;
+  this.resRoot = "";
+  this.reflectorIp = "88.131.107.12";
+  this.email       = "user@smartvortex.eu";
+  this.problemName = "webconfero";
+  this.remoteEmail = "other@smartvortex.eu";
+  this.scxmlURL    = "localhost:8080"
 
   this.width = 320;
   this.height = 240;
 
+  this.showVideo = true;
+  this.enableAudio = true;
+  this.activateCamera = true;
+  this.openMicrophone = true;
+  this.videoFramerate = 25;
+  this.videoHeight = this.height;
+  this.videoWidth = this.width;
+
+  // copy over values from constructor arguments
+  if (params) {
+    for (var param in params) {
+      if (self.hasOwnProperty(param))
+        self[param] = params[param];
+    }
+  }
+
   // private attributes
-  var scxmlURL    = "localhost:8080"
-  var reflectorIp = "88.131.107.12"
-  var email       = "user@smartvortex.eu";
-  var problemName = "webconfero";
-  var remoteEmail = "other@smartvortex.eu";
+  var connected = false;
 
   var participants = []; // empty array
   var videoCompressions = [
@@ -44,41 +60,25 @@ function Miles(element, params) {
   };
   
   var surpressPublication = false; // do not publish changes performed from subscriptions
-  
-  var showVideo = true;
-  var enableAudio = true;
   var stopChatScrolling = false;
-  var activateCamera = true;
-  var openMicrophone = true;
-  var videoFramerate = 25;
-  var videoHeight = self.height;
-  var videoWidth = self.width;
-  
-  // override with parameters if given
-  this.params = params;
-  if (params && params.scxmlURL)     scxmlURL = params.scxmlURL;
-  if (params && params.reflectorIp)  reflectorIp = params.reflectorIp;
-  if (params && params.email)        email = params.email;
-  if (params && params.problemName)  problemName = params.problemName;
-  if (params && params.remoteEmail)        remoteEmail = params.remoteEmail;
-
+    
   // called when dojo loaded all requirements below
   this.connect = function() {
     var query = "";
-    query += "?reflector=" + encodeURIComponent(reflectorIp);
-    query += "&userid=" + encodeURIComponent(email);
-    query += "&session=" + encodeURIComponent(problemName);
+    query += "?reflector=" + encodeURIComponent(self.reflectorIp);
+    query += "&userid=" + encodeURIComponent(self.email);
+    query += "&session=" + encodeURIComponent(self.problemName);
     
-    self.messageElem.innerHTML += "Connecting to http://" + scxmlURL + "/miles/start" + query + "<br />";
+    //self.messageElem.innerHTML += "Connecting to http://" + self.scxmlURL + "/miles/start" + query + "<br />";
     self.xhr.get({
       // The URL to request
-      url: "http://" + scxmlURL + "/miles/start" + query,
+      url: "http://" + self.scxmlURL + "/miles/start" + query,
       // handleAs:"text",
       error: function(err) {
         console.log(err);
       },
       load: function(result) {
-        self.connected = true;
+        connected = true;
         // toggle connect button to disconnect
         self.connectDropDown.dropDown.onCancel(true);
         self.controlElem.replaceChild(self.controlDropDown.domNode, self.connectDropDown.domNode);
@@ -86,31 +86,31 @@ function Miles(element, params) {
         showChat();
         
         // trigger continuous updates
-       refreshImage();
-       getChatText();
-       getParticipants();
+        refreshImage();
+        getChatText();
+        getParticipants();
       }
     });  
   }
 
   this.disconnect = function() {
     var query = "";
-    query += "?reflector=" + encodeURIComponent(reflectorIp);
-    query += "&userid=" + encodeURIComponent(email);
-    query += "&session=" + encodeURIComponent(problemName);
+    query += "?reflector=" + encodeURIComponent(self.reflectorIp);
+    query += "&userid=" + encodeURIComponent(self.email);
+    query += "&session=" + encodeURIComponent(self.problemName);
     
     self.xhr.get({
       // The URL to request
-      url: "http://" + scxmlURL + "/miles/stop" + query,
+      url: "http://" + self.scxmlURL + "/miles/stop" + query,
       // handleAs:"text",
       error: function(err) {
         console.log(err);
       },
       load: function(result) {
-    	self.connected = false;
-    	hideChat();
-    	self.controlDropDown.dropDown.onCancel(true);
-    	self.controlElem.replaceChild(self.connectDropDown.domNode, self.controlDropDown.domNode);
+        connected = false;
+        hideChat();
+        self.controlDropDown.dropDown.onCancel(true);
+        self.controlElem.replaceChild(self.connectDropDown.domNode, self.controlDropDown.domNode);
       }
     });  
   }
@@ -131,13 +131,13 @@ function Miles(element, params) {
   }
   
   var getParticipants = function() {
-    if (!self.connected)
+    if (!connected)
       return;
 
     var query = "";
     self.xhr.get({
       // The URL to request
-      url: "http://" + scxmlURL + "/miles/participants" + query,
+      url: "http://" + self.scxmlURL + "/miles/participants" + query,
       handleAs:"json",
       error: function(err) {
         console.log(err);
@@ -154,14 +154,14 @@ function Miles(element, params) {
   
   // fetch a base64 encoded image and set it as the src attribute
   var refreshImage = function() {
-    if (!self.connected)
+    if (!connected)
       return;
 
     var query = "";
-    query += "?userid=" + encodeURIComponent(remoteEmail);
+    query += "?userid=" + encodeURIComponent(self.remoteEmail);
     self.xhr.get({
       // The URL to request
-      url: "http://" + scxmlURL + "/miles/thumbnail" + query,
+      url: "http://" + self.scxmlURL + "/miles/thumbnail" + query,
       handleAs:"text",
       headers:{
         "X-Content-Encoding": "base64"
@@ -172,19 +172,19 @@ function Miles(element, params) {
       },
       load: function(result) {
         self.pictureElem.src = "data:image/jpeg;base64," + result;
-        self.messageElem.innerHTML = self.imageIteration++;
+        //self.messageElem.innerHTML = self.imageIteration++;
         setTimeout(refreshImage, repollInterval.image);
       }
     });  
   };
 
   var getChatText = function() {
-    if (!self.connected)
+    if (!connected)
       return;
 
     self.xhr.get({
       // The URL to request
-      url: "http://" + scxmlURL + "/miles/gettext",
+      url: "http://" + self.scxmlURL + "/miles/gettext",
       handleAs:"json",
       error: function(err) {
         console.log(err);
@@ -240,7 +240,7 @@ function Miles(element, params) {
         element.style.width = self.width + "px";
 
         baseUnload.addOnWindowUnload(function(){
-          // have a call to close the session here
+         self.disconnect();
         });
 
         // dynamically assemble the DOM we need
@@ -285,6 +285,8 @@ function Miles(element, params) {
         self.chatOutputElem.style.fontSize = "0.8em";
         self.chatElems = dojo.query(".chat", element);
 
+        console.log(self.controlElem);
+
         hideChat();
         
         on(self.chatOutputElem, "mouseover", function(evt) {
@@ -302,11 +304,11 @@ function Miles(element, params) {
             //alert(self.chatInput.value);
             self.xhr.post({
               // The URL to request
-              url: "http://" + scxmlURL + "/miles/text",
+              url: "http://" + self.scxmlURL + "/miles/text",
               contentType: 'application/json',
               postData: dojo.toJson({
                 message: self.chatInput.value,
-                userid: email
+                userid: self.email
               }),
               error: function(err) {
                 console.log(err);
@@ -342,10 +344,10 @@ function Miles(element, params) {
         // Connect parameters
         self.problemNameBox = new TextBox({
           name: "problemName",
-          value: problemName,
+          value: self.problemName,
           style: "width: 100%",
           onChange: function(){
-            problemName = self.problemNameBox.get('value');
+            self.problemName = self.problemNameBox.get('value');
           }
           
         });
@@ -353,40 +355,40 @@ function Miles(element, params) {
 
         self.emailBox = new TextBox({
           name: "email",
-          value: email,
+          value: self.email,
           style: "width: 100%",
           onChange: function(){
-            email = self.emailBox.get('value');
+            self.email = self.emailBox.get('value');
           }
         });
         dojo.query("div.email", self.connectToolTip.domNode)[0].appendChild(self.emailBox.domNode);
 
         self.remoteEmailBox = new TextBox({
           name: "remoteEmail",
-          value: remoteEmail,
+          value: self.remoteEmail,
           style: "width: 100%",
           onChange: function(){
-            remoteEmail = self.remoteEmailBox.get('value');
+            self.remoteEmail = self.remoteEmailBox.get('value');
           }
         });
         dojo.query("div.remoteEmail", self.connectToolTip.domNode)[0].appendChild(self.remoteEmailBox.domNode);
 
         self.reflectorIpBox = new TextBox({
-          name: "reflectorIp",
-          value: reflectorIp,
+          name: "self.reflectorIp",
+          value: self.reflectorIp,
           style: "width: 100%",
           onChange: function(){
-            reflectorIp = self.reflectorIpBox.get('value');
+            self.reflectorIp = self.reflectorIpBox.get('value');
           }
         });
         dojo.query("div.reflectorIp", self.connectToolTip.domNode)[0].appendChild(self.reflectorIpBox.domNode);
 
         self.scxmlURLBox = new TextBox({
           name: "scxmlURL",
-          value: scxmlURL,
+          value: self.scxmlURL,
           style: "width: 100%",
           onChange: function(){
-            scxmlURL = self.scxmlURLBox.get('value');
+            self.scxmlURL = self.scxmlURLBox.get('value');
           }
         });
         dojo.query("div.scxmlURL", self.connectToolTip.domNode)[0].appendChild(self.scxmlURLBox.domNode);
@@ -442,28 +444,28 @@ function Miles(element, params) {
 
         var publishCameraParameters = function() {
           topic.publish("miles/activateCamera", {
-            "activateCamera": activateCamera,
-            "videoCompression": videoCompression,
-            "videoFramerate": videoFramerate,
-            "videoWidth": videoWidth,
-            "videoHeight": videoHeight
+            "activateCamera": self.activateCamera,
+            "videoCompression": self.videoCompression,
+            "videoFramerate": self.videoFramerate,
+            "videoWidth": self.videoWidth,
+            "videoHeight": self.videoHeight
           });
           // tell the server
           if (activateCamera) {
             var query = "";
-            query += "?width=" + encodeURIComponent(videoWidth);
-            query += "&height=" + encodeURIComponent(videoHeight);
-            query += "&framerate=" + encodeURIComponent(videoFramerate);
-            query += "&compression=" + encodeURIComponent(videoCompression);
+            query += "?width=" + encodeURIComponent(self.videoWidth);
+            query += "&height=" + encodeURIComponent(self.videoHeight);
+            query += "&framerate=" + encodeURIComponent(self.videoFramerate);
+            query += "&compression=" + encodeURIComponent(self.videoCompression);
             self.xhr.get({
-              url: "http://" + scxmlURL + "/miles/sendvideo" + query,
+              url: "http://" + self.scxmlURL + "/miles/sendvideo" + query,
               error: function(err) {
                 console.log(err);
               }
             });  
           } else {
             self.xhr.get({
-              url: "http://" + scxmlURL + "/miles/sendvideooff",
+              url: "http://" + self.scxmlURL + "/miles/sendvideooff",
               error: function(err) {
                 console.log(err);
               }
@@ -473,9 +475,9 @@ function Miles(element, params) {
 
         self.activateCameraCheckbox = new CheckBox({
           name: "activateCamera",
-          checked: activateCamera,
+          checked: self.activateCamera,
           onChange: function() { 
-            activateCamera = self.activateCameraCheckbox.get('value');
+            self.activateCamera = self.activateCameraCheckbox.get('value');
             if (!surpressPublication)
               publishCameraParameters();
           }
@@ -484,9 +486,9 @@ function Miles(element, params) {
         
         self.videoCompressionSelect = new Select({
           name: "videoCompression",
-          options: videoCompressions,
+          options: self.videoCompressions,
           onChange: function() { 
-            videoCompression = self.videoCompressionSelect.get('value');
+            self.videoCompression = self.videoCompressionSelect.get('value');
             if (!surpressPublication)
               publishCameraParameters();
           }
@@ -495,10 +497,10 @@ function Miles(element, params) {
 
         self.videoFramerateSpinner = new NumberSpinner({
           name: "videoFramerate",
-          value: videoFramerate,
+          value: self.videoFramerate,
           style: "width: 50px",
           onChange: function() { 
-            videoFramerate = self.videoFramerateSpinner.get('value');
+            self.videoFramerate = self.videoFramerateSpinner.get('value');
             if (!surpressPublication)
               publishCameraParameters();
           }
@@ -507,10 +509,10 @@ function Miles(element, params) {
 
         self.videoWidthSpinner = new NumberSpinner({
           name: "videoWidth",
-          value: videoWidth,
+          value: self.videoWidth,
           style: "width: 50px",
           onChange: function() { 
-            videoWidth = self.videoWidthSpinner.get('value');
+            self.videoWidth = self.videoWidthSpinner.get('value');
             if (!surpressPublication)
               publishCameraParameters();
           }
@@ -519,10 +521,10 @@ function Miles(element, params) {
 
         self.videoHeightSpinner = new NumberSpinner({
           name: "videoHeight",
-          value: videoHeight,
+          value: self.videoHeight,
           style: "width: 50px",
           onChange: function() { 
-            videoHeight = self.videoHeightSpinner.get('value');
+            self.videoHeight = self.videoHeightSpinner.get('value');
             if (!surpressPublication)
               publishCameraParameters();
           }
@@ -545,16 +547,16 @@ function Miles(element, params) {
           // tell the server
           if (openMicrophone) {
             var query = "";
-            query += "?encoding=" + encodeURIComponent(audioEncoding);
+            query += "?encoding=" + encodeURIComponent(self.audioEncoding);
             self.xhr.get({
-              url: "http://" + scxmlURL + "/miles/sendaudio" + query,
+              url: "http://" + self.scxmlURL + "/miles/sendaudio" + query,
               error: function(err) {
                 console.log(err);
               }
             });  
           } else {
             self.xhr.get({
-              url: "http://" + scxmlURL + "/miles/sendaudiooff",
+              url: "http://" + self.scxmlURL + "/miles/sendaudiooff",
               error: function(err) {
                 console.log(err);
               }
@@ -564,10 +566,10 @@ function Miles(element, params) {
 
         self.openMicrophoneCheckbox = new CheckBox({
           name: "openMicrophone",
-          value: openMicrophone,
-          checked: openMicrophone,
+          value: self.openMicrophone,
+          checked: self.openMicrophone,
           onChange: function() { 
-            openMicrophone = self.openMicrophoneCheckbox.get('value');
+            self.openMicrophone = self.openMicrophoneCheckbox.get('value');
             if (!surpressPublication)
               publishMicrophoneParameters();
           }
@@ -576,9 +578,9 @@ function Miles(element, params) {
         
         self.audioEncodingSelect = new Select({
           name: "audioEncoding",
-          options: audioEncodings,
+          options: self.audioEncodings,
           onChange: function() {
-            audioEncoding = self.audioEncodingSelect.get('value');
+            self.audioEncoding = self.audioEncodingSelect.get('value');
             if (!surpressPublication)
               publishMicrophoneParameters();
           }
@@ -589,15 +591,15 @@ function Miles(element, params) {
         // session scoped parameters
         self.enableAudioCheckbox = new CheckBox({
           name: "enableAudio",
-          value: enableAudio,
-          checked: enableAudio,
+          value: self.enableAudio,
+          checked: self.enableAudio,
         });
         dojo.query("div.enableAudio", self.controlToolTip.domNode)[0].appendChild(self.enableAudioCheckbox.domNode);
 
         self.showVideo = new CheckBox({
           name: "showVideo",
-          value: showVideo,
-          checked: showVideo,
+          value: self.showVideo,
+          checked: self.showVideo,
         });
         dojo.query("div.showVideo", self.controlToolTip.domNode)[0].appendChild(self.showVideo.domNode);
 

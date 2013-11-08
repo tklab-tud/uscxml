@@ -15,7 +15,13 @@
     
     <script type="text/javascript">
 			require(["dojo/domReady!"], function(dom) {
-				var milesSession1 = new Miles("miles1");
+				var milesSession1 = new Miles("miles1", {
+					"scxmlURL": "85.22.93.138:8085", 
+					"reflectorIp": "88.131.107.12", 
+					"email": "user@smartvortex.eu", 
+					"problemName": "webconfero", 
+					"remoteEmail": "yetanother@smartvortex.eu"
+				});
 				var milesSession2 = new Miles("miles2", {"scxmlURL": "localhost:8080", "reflectorIp": "88.131.107.12", "email": "user@smartvortex.eu", "problemName": "webconfero", "remoteEmail": "yetanother@smartvortex.eu"});
 				var milesSession3 = new Miles("miles3", {"scxmlURL": "localhost:8080", "reflectorIp": "88.131.107.12", "email": "user@smartvortex.eu", "problemName": "webconfero", "remoteEmail": "stillanother@smartvortex.eu"});
 				var milesSession4 = new Miles("miles4", {"scxmlURL": "localhost:8080", "reflectorIp": "88.131.107.12", "email": "user@smartvortex.eu", "problemName": "webconfero", "remoteEmail": "last@smartvortex.eu"});
