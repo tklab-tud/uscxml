@@ -249,7 +249,7 @@ function Miles(element, params) {
             <tr>\
               <td valign="top" colspan="2" >\
                   <div style="position: relative; padding: 0px">\
-                    <img class="picture" src="emptyface.jpg"></img>\
+                    <img class="picture" src="' + self.resRoot + 'emptyface.jpg"></img>\
                     <div style="position: absolute; left: 10px; top: 10px">\
                       <table></tr>\
                         <td class="control" style="vertical-align: middle"></td>\
