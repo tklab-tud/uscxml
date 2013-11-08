@@ -110,6 +110,7 @@ protected:
 	std::string ip_address;
 
 	char *video_out_buf;
+	char *video_conv_buf;
 	char *encoded_out_img;
 	char *audio_in_buf;
 	char *render_img;
