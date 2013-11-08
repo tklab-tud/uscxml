@@ -1,3 +1,10 @@
+/*
+ * Use is subject to license terms.
+ * Copyright (c) 2013, Ajile di Antonio Iudici. All rights reserved.
+ *	<antonio.iudici@ajile.it>
+ *	<enrico.papi@ajile.it>
+ */
+
 #include "XmlBridgeInvoker.h"
 #include <mesbufferer.h>
 

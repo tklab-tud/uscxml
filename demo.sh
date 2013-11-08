@@ -15,11 +15,11 @@ case "$1" in
 0)  echo "Sending command $1"
 	pkill -f /usr/bin/nc
 	if [ "$2" -eq "1" ] ; then
-		(/usr/bin/cat write0.xml | /usr/bin/nc -l -v -p 3200 >/dev/null) &
+		(/usr/bin/cat write0.xml | /usr/bin/nc -l -v -p 3000 >/dev/null) &
 		sleep 1
 		/usr/local/bin/modpoll -1 -c 1 -o 4 -p 1501 -t0 -r4 127.0.0.1	1
 	else
-		(/usr/bin/cat read0.xml | /usr/bin/nc -l -v -p 3200 >/dev/null) &
+		(/usr/bin/cat read0.xml | /usr/bin/nc -l -v -p 3000 >/dev/null) &
 		sleep 1
 		/usr/local/bin/modpoll -1 -c 1 -o 4 -p 1501 -t0 -r4 127.0.0.1
 	fi
@@ -27,11 +27,11 @@ case "$1" in
 1)  echo  "Sending command $1"
 	pkill -f /usr/bin/nc
     	if [ "$2" -eq "1" ] ; then
-		#/usr/bin/nc -l -v -p 3200 < write1.xml &
+		#/usr/bin/nc -l -v -p 3000 < write1.xml &
 		sleep 1				
 		#/usr/local/bin/modpoll -1 -c 4 -o 4 -p 1501 -t0 -r14 127.0.0.1	1 0 1 0
 	else
-		(/usr/bin/cat read1.xml | /usr/bin/nc -l -v -p 3200 >/dev/null) &
+		(/usr/bin/cat read1.xml | /usr/bin/nc -l -v -p 3000 >/dev/null) &
 		sleep 1
 		/usr/local/bin/modpoll -1 -c 8 -o 4 -p 1501 -t0 -r14 127.0.0.1
 	fi
@@ -41,7 +41,7 @@ case "$1" in
 3)  echo  "Sending command $1"
 	pkill -f /usr/bin/nc
     	if [ "$2" -eq "1" ] ; then
-		(/usr/bin/cat write3.xml | /usr/bin/nc -l -v -p 3200 >/dev/null) &
+		(/usr/bin/cat write3.xml | /usr/bin/nc -l -v -p 3000 >/dev/null) &
 		sleep 1
 		/usr/local/bin/modpoll -1 -c 1 -o 4 -p 1501 -t4 -r41 127.0.0.1 62000
 		/usr/local/bin/modpoll -1 -c 1 -o 4 -p 1501 -t4 -r45 127.0.0.1 254
@@ -50,7 +50,7 @@ case "$1" in
 		/usr/local/bin/modpoll -1 -c 1 -o 4 -p 1501 -t4 -r78 127.0.0.1 61000
 		/usr/local/bin/modpoll -1 -c 1 -o 4 -p 1501 -t4 -r84 127.0.0.1 48
 	else
-		(/usr/bin/cat read3.xml | /usr/bin/nc -l -v -p 3200 >/dev/null) &
+		(/usr/bin/cat read3.xml | /usr/bin/nc -l -v -p 3000 >/dev/null) &
 		sleep 1
 		/usr/local/bin/modpoll -1 -c 1 -o 4 -p 1501 -t4 -r41 127.0.0.1
 	fi

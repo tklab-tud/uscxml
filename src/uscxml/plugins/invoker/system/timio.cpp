@@ -1,3 +1,10 @@
+/*
+ * Use is subject to license terms.
+ * Copyright (c) 2013, Ajile di Antonio Iudici. All rights reserved.
+ *	<antonio.iudici@ajile.it>
+ *	<enrico.papi@ajile.it>
+ */
+
 #include "timio.h"
 #include "uscxml/plugins/invoker/system/XmlBridgeInvoker.h"
 
@@ -86,6 +93,7 @@ TimIO::TimIO(std::string ipaddr, std::string port) :
 
 	_reply = new char[MAXTIMREPLYSIZE]();
 	if (_reply == NULL) {
+		close(_socketfd);
 		freeaddrinfo(_servinfo);
 		LOG(ERROR) << "TIM Client: failed to allocate _reply memory";
 		exit(EXIT_FAILURE);
@@ -168,8 +176,7 @@ void TimIO::client(void *instance) {
 		PLOG(ERROR) << "TIM recv error: client ignoring TIM reply";
 		bridgeInstance.handleTIMexception(TIM_ERROR);
 		return;
-	}
-	if (replylen == 0 && errno == 0) {
+	} else if (replylen == 0 && errno == 0) {
 		LOG(ERROR) << "TIM client: received zero-length message";
 		bridgeInstance.handleTIMexception(TIM_ERROR);
 		return;

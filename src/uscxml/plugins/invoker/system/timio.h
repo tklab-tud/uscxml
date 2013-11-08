@@ -1,3 +1,10 @@
+/*
+ * Use is subject to license terms.
+ * Copyright (c) 2013, Ajile di Antonio Iudici. All rights reserved.
+ *	<antonio.iudici@ajile.it>
+ *	<enrico.papi@ajile.it>
+ */
+
 #ifndef TIMIO_H
 #define TIMIO_H
 
@@ -12,7 +19,7 @@ namespace uscxml {
 
 #define MAXTIMREPLYSIZE		2000
 #define DEF_TIMADDR		"127.0.0.1"
-#define DEF_TIMPORT		"3200"
+#define DEF_TIMPORT		"3000"
 
 /**
  * @brief Implementa un TCP client in comunicazione con il TIM

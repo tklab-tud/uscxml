@@ -1,3 +1,10 @@
+/*
+ * Use is subject to license terms.
+ * Copyright (c) 2013, Ajile di Antonio Iudici. All rights reserved.
+ *	<antonio.iudici@ajile.it>
+ *	<enrico.papi@ajile.it>
+ */
+
 #ifndef XmlBridgeInvoker_H_W09J90F0
 #define XmlBridgeInvoker_H_W09J90F0
 

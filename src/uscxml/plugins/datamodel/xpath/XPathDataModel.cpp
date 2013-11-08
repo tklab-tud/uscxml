@@ -17,6 +17,12 @@
  *  @endcond
  */
 
+/*
+ * Use is subject to license terms.
+ * Copyright (c) 2013, Enrico Papi. All rights reserved.
+ *	<enrico.papi@ajile.it>
+ */
+
 #include "uscxml/Common.h"
 #include "XPathDataModel.h"
 
@@ -463,7 +469,9 @@ void XPathDataModel::assign(const Element<std::string>& assignElem,
 
 	// test 326ff
 	XPathValue<std::string> key = _xpath.evaluate_expr(location, _doc);
+#ifdef VERBOSE
 	LOG(INFO) << "Key XPath : " << key.asString();
+#endif
 #if 0
 	if (key.type() == NODE_SET) {
 		try {
@@ -483,7 +491,6 @@ void XPathDataModel::assign(const Element<std::string>& assignElem,
 #endif
 	NodeSet<std::string> nodeSet;
 	if (node) {
-		/** This case is superfluous */
 		Node<std::string> data = node;
 		while (data) {
 			// do not add empty text as a node
@@ -505,7 +512,9 @@ void XPathDataModel::assign(const Element<std::string>& assignElem,
 		assign(key, nodeSet, assignElem);
 	} else if (HAS_ATTR(assignElem, "expr")) {
 		XPathValue<std::string> value = _xpath.evaluate_expr(ATTR(assignElem, "expr"), _doc);
+#ifdef VERBOSE
 		LOG(INFO) << "Value XPath : " << value.asString();
+#endif
 		assign(key, value, assignElem);
 	} else {
 		LOG(ERROR) << "assign element has no content";
