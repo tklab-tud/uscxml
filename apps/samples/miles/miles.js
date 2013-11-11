@@ -329,6 +329,7 @@ function Miles(element, params) {
             var code = e.keyCode || e.which;
             if( code === 13 ) {
               e.preventDefault();
+              self.chatInput.get('value'); // send button reads empty string otherwise?!
               self.chatSendButton.onClick();
               return false; 
             }
