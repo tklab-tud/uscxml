@@ -305,8 +305,8 @@ if(${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
 	#	add_definitions(-Weffc++)
 
   # order of arguments of gcc matters again
-	set(CMAKE_CXX_FLAGS "-mabi=sysv -m32 -march=i586 -mtune=generic -O2 -pipe -L/usr/lib32 -L/usr/local/lib32 ${CMAKE_CXX_FLAGS}")
-	add_definitions(-m32 -mabi=sysv -march=i586 -mtune=generic -O2 -pipe -L/usr/lib32 -L/usr/local/lib32)
+	set(CMAKE_CXX_FLAGS "-mabi=sysv -m32 -march=i586 -O2 -L/usr/lib32 -L/usr/local/lib32 ${CMAKE_CXX_FLAGS}")
+	add_definitions(-m32 -mabi=sysv -march=i586 -O2 -L/usr/lib32 -L/usr/local/lib32)
 	#add_definitions(-Wunreachable-code)
 	#add_definitions(-DVERBOSE)
 
@@ -1022,7 +1022,7 @@ message(STATUS "  Binaries will end up in ........ : " ${REL_CMAKE_RUNTIME_OUTPU
 # Installation / Provide package target
 ############################################################
 
-set_target_properties(uscxml PROPERTIES COMPILE_FLAGS "-fPIC -m32 -march=i586 -mtune=generic -L/usr/lib32 -L/usr/local/lib32" LINK_FLAGS "-fPIC -m32 -march=i586 -mtune=generic -L/usr/lib32 -L/usr/local/lib32")
+set_target_properties(uscxml PROPERTIES COMPILE_FLAGS "-fPIC -m32 -march=i586 -O2 -L/usr/lib32 -L/usr/local/lib32" LINK_FLAGS "-fPIC -m32 -march=i586 -O2 -L/usr/lib32 -L/usr/local/lib32")
 
 # see contrib/cmake/CPackUSCXML.cmake
 include(contrib/cmake/CPackUSCXML.cmake)
