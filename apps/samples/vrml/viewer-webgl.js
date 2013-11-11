@@ -55,6 +55,31 @@ function VRMLViewer(element, params) {
     }
   }
   
+  var hasWebGL = function() {
+    try {
+      if (!window.WebGLRenderingContext) {
+         return false;
+      }
+      var canvas = document.createElement("canvas");
+      var names = ["webgl", "experimental-webgl", "moz-webgl", "webkit-3d"];
+      for (var i = 0; i < 4; i++) {
+        var gl = canvas.getContext(names[i]);
+        if (gl) {
+          return true;
+        }
+      }
+    } catch(e) {
+      return false;
+    }
+    return false;
+  }
+  
+  if (self.enableWebGL && !hasWebGL()) {
+    console.log("Your browser does no support WebGL, falling back to sceneshots");
+    self.enableWebGL = false;
+    self.enableSceneshots = true;
+  }
+  
   // normalize parameters
   var normalizeParams = function() {
     // make sure server url begins with protocol and does *not* ends in /
