@@ -27,6 +27,7 @@ extern "C" {
 #include "miles/network.h"
 #include "miles/rtp.h"
 #include "miles/audio_codec.h"
+#include "miles/audio_io.h"
 #include "miles/audio_device.h"
 #include "miles/video_codec.h"
 #include "miles/video_grabber.h"
@@ -50,6 +51,7 @@ struct thumb_entry {
 	int img_format; // JPEG or PNG image
 	char *decode_buf;
 	u_int32_t ssrc;
+	char *userid; // The user id assigned to the video stream
 	void *window_ctx; // The context of the window popped up when the thumbnail is clicked.
 };
 
@@ -108,6 +110,7 @@ protected:
 	std::string ip_address;
 
 	char *video_out_buf;
+	char *video_conv_buf;
 	char *encoded_out_img;
 	char *audio_in_buf;
 	char *render_img;
@@ -120,10 +123,15 @@ protected:
 	struct miles_list *thumb_list;
 	int save_image;
 
+	char *text_msg_buf;
+	int text_msg_available;
+
 	struct miles_audio_device *audio_dev_playback;
 	int audio_dev_playback_id;
 	int audio_available;
 	int video_grabber_available;
+	int sendvideo_enabled;
+	int sendaudio_enabled;
 
 	static void runAudio(void* instance);
 	static void runVideo(void* instance);
@@ -134,6 +142,10 @@ protected:
 
 	void init_media_buffers();
 	void free_media_buffers();
+	void free_video_buffers();
+	void free_audio_buffers();
+	void free_text_buffers();
+
 	void render_video_image(char *img, int width, int height, int img_format);
 	void playback_audio(u_int32_t ssrc, char *buf, int sample_rate, int bps, int audio_format, int size);
 	int video_receiver(struct miles_rtp_in_stream *rtp_stream, char *data, int bytes_read);
@@ -145,6 +157,7 @@ protected:
 
 
 	bool _isRunning;
+	int num_connected;
 	std::string _userId, _reflector, _session;
 	tthread::thread* _videoThread;
 	tthread::thread* _audioThread;

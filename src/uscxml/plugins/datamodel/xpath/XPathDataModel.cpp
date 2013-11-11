@@ -1,6 +1,7 @@
 /**
  *  @file
  *  @author     2012-2013 Stefan Radomski (stefan.radomski@cs.tu-darmstadt.de)
+ *  @author	2013 Enrico Papi (enrico.papi@ajile.it)
  *  @copyright  Simplified BSD
  *
  *  @cond
@@ -15,12 +16,6 @@
  *  You should have received a copy of the FreeBSD license along with this
  *  program. If not, see <http://www.opensource.org/licenses/bsd-license>.
  *  @endcond
- */
-
-/*
- * Use is subject to license terms.
- * Copyright (c) 2013, Enrico Papi. All rights reserved.
- *	<enrico.papi@ajile.it>
  */
 
 #include "uscxml/Common.h"
@@ -204,6 +199,7 @@ void XPathDataModel::setEvent(const Event& event) {
 		eventDataElem.appendChild(textNode);
 	}
 	if (event.dom) {
+//		Node<std::string> importedNode = _doc.importNode(event.getFirstDOMElement(), true);
 		Node<std::string> importedNode = _doc.importNode(event.dom, true);
 		eventDataElem.appendChild(importedNode);
 	}

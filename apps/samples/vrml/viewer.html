@@ -57,24 +57,30 @@
     <script type="text/javascript" src="annotations.js"></script>
     
     <script type="text/javascript">
+
 			require(["dojo/domReady!", "dojo"], function(dom, dojo) {
 				var viewer = new VRMLViewer("scene1", {
-					"pose": {
-					  "pitch"       : 0,
-					  "roll"        : 0,
-					  "yaw"         : 0,
-					  "zoom"        : 1,
-					  "x"           : 0,
-					  "y"           : 0,
-					  "z"           : 0,
-					  "width"       : 400,
-					  "height"      : 400,
-					  "autorotate"  : false
+					pose: {
+					  pitch       : 0,
+					  roll        : 0,
+					  yaw         : 0,
+					  zoom        : 1,
+					  x           : 0,
+					  y           : 0,
+					  z           : 0,
+					  width       : 400,
+					  height      : 400,
+					  autorotate  : true
 					},
-//					"serverURL": "http://smartvortex.tbm.tudelft.nl:8090/vrml",
-//					"imageURL": "http://smartvortex.tbm.tudelft.nl:8090/vrml/hook/HARD_MP_VAL_005.png"
+					enableMovies: false,
+					enableDND: false,
+					modelNavigationStyle: "list",
+					listDirectory: "/10975/2",
+					poseNavigationStyle: "draggables",
+					imagePath: "/10975/2/latest.png",
+					serverURL: "http://85.22.93.138:8086/vrml",
 				});
-				var viewer2 = new VRMLViewer("scene2");
+				//var viewer2 = new VRMLViewer("scene2");
 //				var annotations = new Annotations("annotations1", { 'viewer': viewer });
 			});
 		</script>
@@ -82,7 +88,7 @@
 	<body class="tundra">
 		<table align="center">
 			<tr>
-				<td><br /><br /><br /><br /><br /><br />
+				<td ><br /><br /><br /><br /><br /><br />
 					<div id="scene1" />
 				</td>
 				<td><br /><br /><br /><br /><br /><br />

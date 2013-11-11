@@ -2,47 +2,83 @@ function VRMLViewer(element, params) {
 
   // private attributes
   var self = this;
+  var batchChanges = false;
   
   // private instanceId
   if (!VRMLViewer.instances)
     VRMLViewer.instances = 0;
   this.instanceId = VRMLViewer.instances++;
-  var batchChanges = false;
   
-  // public attributes
+  // public attribute defaults
   this.width       = 450;
   this.height      = 350;
   
-  this.pose = {};
-  this.pose.pitch       = 0;
-  this.pose.roll        = 0;
-  this.pose.yaw         = 0;
-  this.pose.zoom        = 1;
-  this.pose.x           = 0;
-  this.pose.y           = 0;
-  this.pose.z           = 0;
-  this.pose.autorotate  = false;
-  this.serverURL;
-  this.imageURL;
-  this.resRoot = (params && params.resRoot ? params.resRoot : "");
+  {
+    var pose = {
+      pitch: 0,
+      roll: 0,
+      yaw: 0,
+      zoom: 1,
+      x: 0,
+      y: 0,
+      z: 0,
+      width: this.width,
+      height: this.height,
+      autorotate: false,
+    }
+    this.pose = pose;
+  }
   
-  this.pose.width       = this.width;
-  this.pose.height      = this.height;
+  this.enableMovies = true;
+  this.enableDND = true;
+  this.modelNavigationStyle = "tree"; // tree, list, none
+  this.poseNavigationStyle = "draggables"; // draggables, sliders
+  this.listDirectory = "";
+  this.serverURL = "localhost:8080";
+  this.imagePath = "";
+  this.resRoot = "";
   
-  this.params = params;
+  // copy over values from constructor arguments
+  if (params) {
+    for (var param in params) {
+      if (self.hasOwnProperty(param))
+        self[param] = params[param];
+    }
+  }
+  
+  // normalize parameters
+  
+  // make sure server url begins with protocol and does *not* ends in /
+  if (!self.serverURL.substring(0, 7) == "http://" && 
+      !self.serverURL.substring(0, 8) == "https://")
+    self.serverURL = "http://" + self.serverURL;
+  if (!self.serverURL.lastIndexOf("/") === self.serverURL.length)
+    self.serverURL += self.serverURL.substring(0, self.serverURL - 1);
 
+  // make sure we have a listDirectory with navigation style list ending in /
+  if (self.modelNavigationStyle === "list" && !self.listDirectory && self.imagePath)
+    self.listDirectory = self.imagePath.substring(0, self.imagePath.lastIndexOf("/"));
+  if (!self.listDirectory.indexOf("/", self.listDirectory.length - 1) !== -1)
+    self.listDirectory += "/";
+  
+  // use latest image if none given
+  if (!self.imagePath)
+    self.imagePath = self.listDirectory + "latest.png";
+  
   // privileged public methods
   this.updateScene = function() {
-    if (self.imageURL && !self.batchChanges) {
-      self.imgElem.src = self.imageURL + urlSuffixForPose(self.pose);
-      // we are showing an image, activate additional controls
-      self.movieAddButton.domNode.style.display = "";
-      self.movieDropDown.domNode.style.display = "";
+    if (self.serverURL && self.imagePath && !self.batchChanges) {
+      self.imgElem.src = self.serverURL + self.imagePath + urlSuffixForPose(self.pose);
+      if (self.enableMovies) {
+        // we are showing an image, activate movie controls
+        self.movieAddButton.domNode.style.display = "";
+        self.movieDropDown.domNode.style.display = "";
+      }
     }
   };
 
   var urlSuffixForPose = function(pose) {
-    var url =
+    var queryString =
     '?width=' + pose.width + 
     '&height=' + pose.height +
     '&pitch=' + pose.pitch +
@@ -53,7 +89,7 @@ function VRMLViewer(element, params) {
     '&z=' + pose.z +
     '&zoom=' + pose.zoom +
     '&autorotate=' + (pose.autorotate ? '1' : '0');
-    return url;
+    return queryString;
   };
 
   var moverRelativeTo = function(mover, container) {
@@ -96,7 +132,7 @@ function VRMLViewer(element, params) {
               codec !== "y41p" && 
               codec !== "yuv4")
             continue;
-          console.log(codec);
+          //console.log(codec);
           selectElem.options.push({ label: result.video[codec].longName, value: codec });              
           if (codec === "mpeg4")
             selectElem.options[selectElem.options.length - 1].selected = true;
@@ -107,14 +143,15 @@ function VRMLViewer(element, params) {
 
   this.refreshServer = function(server) {
     self.serverURL = server;
-    self.localStorage.put("vrmlServer", self.serverURL, null);
     if (self.fileStandby) { self.fileStandby.show(); }
+    
     self.xhr.get({
       // The URL to request
       url: server,
       handleAs:"json",
       headers:{"X-Requested-With":null},
       error: function(result) {
+        
         if (self.browseButton) { self.browseButton.setAttribute('label', 'Browse'); }
         if (self.fileStandby) { self.fileStandby.hide(); }
         var allItems = self.fileStore.query();
@@ -123,31 +160,63 @@ function VRMLViewer(element, params) {
         }
       },
       load: function(result) {
+        self.localStorage.put("vrmlServer", self.serverURL, null);
         if (self.browseButton) { self.browseButton.setAttribute('label', 'Refresh'); }
         if (self.fileStandby) { self.fileStandby.hide(); }
+
+        // empty store
         var allItems = self.fileStore.query();
         for (var i = 0; i < allItems.total; i++) {
           self.fileStore.remove(allItems[i].id);          
         }
-        (function fillstore(tree, parentId) {
-          for (key in tree) {
-            if ('url' in tree[key]) {
-              self.fileStore.add({id:parentId+key, name:key, url:self.serverURL + tree[key].path, parent:parentId});
+        
+        if (self.modelNavigationStyle === "tree") {
+          
+          // parse result as tree
+          (function fillstore(tree, parentId) {
+            // todo: respect navigation style
+            for (key in tree) {
+              if ('url' in tree[key]) {
+                self.fileStore.add({id:parentId+key, name:key, url:self.serverURL + tree[key].path, parent:parentId});
+              } else {
+                self.fileStore.add({id:parentId+key, name:key, parent:parentId});
+                fillstore(tree[key], parentId+key);
+              }            
+            }
+          } (result.models, "root", ""));
+        } else if (self.modelNavigationStyle === "list") {
+          
+          // parse result as list
+          if (!self.listDirectory)
+            console.log("Requested modelNavigationStyle === list but provided no listDirectory");
+          var dirs = self.listDirectory.split("/");
+          var models = result.models;
+          for (var dir in dirs) {
+            if (!dirs[dir].length)
+              continue;
+            if (dirs[dir] in models) {
+              models = models[dirs[dir]];
             } else {
-              self.fileStore.add({id:parentId+key, name:key, parent:parentId});
-              fillstore(tree[key], parentId+key);
-            }            
+              console.log("No " + dirs[dir] + " in " + models);
+            }
           }
-        } (result.models, "root", ""));
+          for (var key in models) {
+            var url = self.serverURL + models[key].path;
+            self.fileStore.add({id:key, value:url, label:key, name:key, url:url});
+          }
+          self.fileListSelect.startup();
+        }
+
+        self.updateScene();
       }
     });
   };
 
-  this.setPose = function(imageURL, pose, serverURL) {
+  this.setPose = function(imagePath, pose, serverURL) {
     if (serverURL && serverURL != self.serverURL) {
       self.refreshServer(serverURL);
     }
-    self.imageURL = imageURL;
+    self.imagePath = imagePath;
     self.pose = pose;
 
     var pitch = (pose.pitch % (2 * 3.14159) + 0.5) * 100;
@@ -161,10 +230,8 @@ function VRMLViewer(element, params) {
 
     self.pitchRollHandlerElem.parentNode.style.right = pitch + "%";
     self.pitchRollHandlerElem.parentNode.style.top = roll + "%";
-
     self.yawZoomHandlerElem.parentNode.style.right = yaw + "%";
     self.yawZoomHandlerElem.parentNode.style.top = zoom + "%";
-
     self.xyHandlerElem.parentNode.style.right = x + "%";
     self.xyHandlerElem.parentNode.style.top = y + "%";
     
@@ -179,6 +246,7 @@ function VRMLViewer(element, params) {
            "dojo/store/Memory", 
            "dojo/store/Observable", 
            "dijit/tree/ObjectStoreModel",
+           "dojo/data/ObjectStore",
            "dijit/Tree",
            "dijit/form/TextBox",
            "dijit/form/Button",
@@ -199,6 +267,7 @@ function VRMLViewer(element, params) {
              Memory,
              Observable,
              ObjectStoreModel,
+             ObjectStore,
              Tree,
              TextBox,
              Button,
@@ -238,7 +307,7 @@ function VRMLViewer(element, params) {
                     <div style="position: absolute; left: 10px; top: 10px">\
                       <table></tr>\
                         <td class="filesDropDown" style="vertical-align: middle"></td>\
-                        <td>\
+                        <td class="movieControls">\
                           <div class="movieDropDown" style="display: inline"></div>\
                           <button type="button" class="movieAddButton"></button>\
                         </td>\
@@ -281,6 +350,13 @@ function VRMLViewer(element, params) {
                         </table>\
                       </div>\
                     </div>\
+                    <div class="listNavigation" style="position: absolute; left: 10px; bottom: 10px">\
+                      <table></tr>\
+                        <td style="vertical-align: middle"><button class="prevButton" type="button" /></td>\
+                        <td style="vertical-align: middle"><div class="fileList" /></td>\
+                        <td style="vertical-align: middle"><button class="nextButton" type="button" /></td>\
+                      </tr></table>\
+                    </div>\
                   </div>\
               </td>\
               <td valign="top" height="100%">\
@@ -302,6 +378,7 @@ function VRMLViewer(element, params) {
 
         self.resetButtonElem = dojo.query("button.resetButton", element)[0];
         self.progressElem = dojo.query("div.progress", element)[0];
+
         self.pitchRollHandlerElem = dojo.query(".pitchRollHandler", element)[0];
         self.yawZoomHandlerElem = dojo.query(".yawZoomHandler", element)[0];
         self.xyHandlerElem = dojo.query(".xyHandler", element)[0];
@@ -417,372 +494,454 @@ function VRMLViewer(element, params) {
           yLabel.innerHTML = 'Y:' + self.pose.y;
         };
         
+        
         /**
-         * === FILES DROPDOWN ====================
+         * === DRAG HANDLER ====================
+         */
+        if (self.enableDND) {
+          self.createAvatar = function(item, mode) {
+            if (mode == 'avatar') {
+               // create your avatar if you want
+               var avatar = dojo.create( 'div', { innerHTML: item.data });
+               var avatarPose = dojo.clone(self.pose);
+               avatarPose.width=60;
+               avatarPose.height=60;
+               var avatarImgUrl = urlSuffixForPose(avatarPose);
+               avatar.innerHTML = '<img src=' + self.imagePath + avatarImgUrl + ' /> ';
+               item.srcEcc = "VRMLViewer";
+               item.iconPoseUrl = self.imagePath + avatarImgUrl;
+               item.imagePath = self.imagePath;
+               item.serverURL = self.serverURL;
+               item.pose = avatarPose;
+               return {node: avatar, data: item, type: item.type};
+            }
+            var handler = dojo.create( 'div', { innerHTML: '<img src="' + self.resRoot + 'img/drag.png" width="20px" />' });
+            return {node: handler, data: item, type: item.type};
+          };
+      
+          self.dragHandler = new Source(dojo.query("td.dragHandler", element)[0], {copyOnly: true, creator: self.createAvatar});
+          self.dragHandler.insertNodes(false, [ { } ]);
+        }
+        
+        /**
+         * === FILE NAVIGATION ====================
          */
         
-        self.filesDropDownElem = dojo.query("td.filesDropDown", element)[0];
-        
-        self.createAvatar = function(item, mode) {
-          if (mode == 'avatar') {
-             // create your avatar if you want
-             var avatar = dojo.create( 'div', { innerHTML: item.data });
-             var avatarPose = dojo.clone(self.pose);
-             avatarPose.width=60;
-             avatarPose.height=60;
-             var avatarImgUrl = urlSuffixForPose(avatarPose);
-             avatar.innerHTML = '<img src=' + self.imageURL + avatarImgUrl + ' /> ';
-             item.srcEcc = "VRMLViewer";
-             item.iconPoseUrl = self.imageURL + avatarImgUrl;
-             item.imageURL = self.imageURL;
-             item.serverURL = self.serverURL;
-             item.pose = avatarPose;
-             return {node: avatar, data: item, type: item.type};
-          }
-          var handler = dojo.create( 'div', { innerHTML: '<img src="' + self.resRoot + 'img/drag.png" width="20px" />' });
-          return {node: handler, data: item, type: item.type};
-        };
-        
-        self.dragHandler = new Source(dojo.query("td.dragHandler", element)[0], {copyOnly: true, creator: self.createAvatar});
-        self.dragHandler.insertNodes(false, [ { } ]);
-
-        // setup fileStore for tree list
-        self.fileStore = new Observable(new Memory({
-          data: [ { id: 'root', name:'3D Models'} ],
-          getChildren: function(object){
-              return this.query({parent: object.id});
-          }
-        }));
-        self.fileTreeModel = new ObjectStoreModel({
-            store: self.fileStore,
-            query: { id: "root" }
-        });
-        
-        // setup actual tree dijit
-        self.fileList = new dijit.Tree({
-            id: "fileList" + self.instanceId,
-            model: self.fileTreeModel,
-            persist: false,
-            showRoot: false,
-            style: "height: 300px;",
-            onClick: function(item){
-                if ('url' in item) {
-                  self.imageURL = item.url;
+        if (self.modelNavigationStyle !== 'none') {
+          if (self.modelNavigationStyle === 'list') {
+          
+            // setup fileStore
+            self.fileStore = new Observable(new Memory({
+              data: [],
+            }));
+            
+            self.prevButtonElem = dojo.query("button.prevButton", element)[0];
+            self.nextButtonElem = dojo.query("button.nextButton", element)[0];
+            self.fileListElem = dojo.query("div.fileList", element)[0];
+            
+            var os = new ObjectStore({ objectStore: self.fileStore });
+            
+            self.fileListSelect = new Selector({
+              store: os,
+              onChange: function(name) {
+                var item = self.fileStore.query({ id: name })[0];
+                self.imagePath = self.listDirectory + item.name + ".png";
+                self.updateScene();
+              }
+            }, self.fileListElem);
+            
+            self.prevButton = new Button({
+              label: "<",
+              onClick: function() {
+                var allItems = self.fileStore.query();
+                var foundAt = 0;
+                for (var i = 0; i < allItems.total; i++) {
+                  //console.log(self.serverURL + self.imagePath + " === " + allItems[i].url);
+                  if (self.serverURL + self.imagePath === allItems[i].url) {
+                    foundAt = i;
+                    break;
+                  }
+                }
+                
+                if (foundAt > 0) {
+                  self.imagePath = self.listDirectory + allItems[foundAt - 1].name + ".png";
+                  self.fileListSelect.attr( 'value', allItems[foundAt - 1].id );
+                  if (self.serverURL + self.imagePath !== allItems[foundAt - 1].url)
+                    console.log(self.serverURL + self.imagePath + " !== " + allItems[foundAt - 1].url);
                   self.updateScene();
                 }
-            },
-            getIconClass: function(item, opened) {
-                return (!item || !('url' in item)) ? (opened ? "dijitFolderOpened" : "dijitFolderClosed") : "dijitLeaf";
-            },
-            getIconStyle: function(item, opened){
-              if('url' in item) {
-                return { backgroundImage: "url('" + item.url + "?width=16&height=16')"};
               }
-            }
-            //return {backgroundImage: "url('" + item.url + "?width=16&height=16')"};
+            }, self.prevButtonElem);
 
-        });
+            self.nextButton = new Button({
+              label: ">",
+              onClick: function() {
+                var allItems = self.fileStore.query();
+                var foundAt = 0;
+                for (var i = 0; i < allItems.total; i++) {
+                  //console.log(self.serverURL + self.imagePath + " === " + allItems[i].url);
+                  if (self.serverURL + self.imagePath === allItems[i].url) {
+                    foundAt = i;
+                    break
+                  }
+                }
+                if (foundAt + 1 < allItems.total) {
+                  self.imagePath = self.listDirectory + allItems[foundAt + 1].name + ".png";
+                  self.fileListSelect.attr( 'value', allItems[foundAt + 1].id );
+                  if (self.serverURL + self.imagePath !== allItems[foundAt + 1].url)
+                    console.log(self.serverURL + self.imagePath + " !== " + allItems[foundAt + 1].url);
+                  self.updateScene();
+                }
+              }
+            }, self.nextButtonElem);
+            
+          } else {
+          
+            // setup fileStore
+            self.fileStore = new Observable(new Memory({
+              data: [ { id: 'root', name:'3D Models'} ],
+              getChildren: function(object){
+                  return this.query({parent: object.id});
+              }
+            }));
+          
+            self.fileTreeModel = new ObjectStoreModel({
+                store: self.fileStore,
+                query: { id: "root" }
+            });
 
-        if (self.params && self.params.serverURL)
-        	self.serverURL = self.params.serverURL;
+            // setup actual tree dijit
+            self.fileList = new dijit.Tree({
+                id: "fileList" + self.instanceId,
+                model: self.fileTreeModel,
+                persist: false,
+                showRoot: false,
+                style: "height: 300px;",
+                onClick: function(item){
+                    if ('url' in item) {
+                      self.imagePath = item.url;
+                      self.updateScene();
+                    }
+                },
+                getIconClass: function(item, opened) {
+                    return (!item || !('url' in item)) ? (opened ? "dijitFolderOpened" : "dijitFolderClosed") : "dijitLeaf";
+                },
+                getIconStyle: function(item, opened){
+                  if('url' in item) {
+                    return { backgroundImage: "url('" + item.url + "?width=16&height=16')"};
+                  }
+                }
+                //return {backgroundImage: "url('" + item.url + "?width=16&height=16')"};
+            });
+          
+            self.filesDropDownElem = dojo.query("td.filesDropDown", element)[0];
+
+            self.serverBox = new TextBox({
+              name: "Server",
+              value: self.serverURL,
+              style: "width: 65%",
+
+              onKeyUp: function(e) {
+                if (self.browseButton) { 
+                  if (this.get("value") !== self.serverURL) {
+                    self.browseButton.setAttribute('label', 'Browse'); 
+                  } else {
+                    self.browseButton.setAttribute('label', 'Refresh'); 
+                  }
+                }
+              },
+
+              onKeyDown: function(e) {
+                var code = e.keyCode || e.which;
+                if( code === 13 ) {
+                  e.preventDefault();
+                  self.refreshServer(this.get("value"));
+                  return false; 
+                }
+              },
+            });
+
+            self.browseButton = new Button({
+              label: "Browse",
+              onClick: function(){
+                self.refreshServer(self.serverBox.get("value"));
+              }
+            });
+
+            self.filesDropDownContent = domConst.toDom('<div />');
+            self.filesDropDownContent.appendChild(self.serverBox.domNode);
+            self.filesDropDownContent.appendChild(self.browseButton.domNode);
+            self.filesDropDownContent.appendChild(self.fileList.domNode);
+
+            self.filesToolTip = new TooltipDialog({ content:self.filesDropDownContent, style:"max-height:320px"});
+            self.filesDropDown = new DropDownButton({ label: "Files", dropDown: self.filesToolTip });
+            self.filesDropDownElem.appendChild(self.filesDropDown.domNode);
+
+            self.fileStandby = new Standby({target: self.filesDropDownContent });
+            self.filesDropDownContent.appendChild(self.fileStandby.domNode);
+          }
+        }
+
         var savedServerURL = self.localStorage.get("vrmlServer");
         if (savedServerURL && !self.serverURL) {
           self.serverURL = savedServerURL;
-          self.refreshServer(savedServerURL);
         }
-
-        self.serverBox = new TextBox({
-          name: "Server",
-          value: self.serverURL,
-          style: "width: 65%",
-
-          onKeyUp: function(e) {
-            if (self.browseButton) { 
-              if (this.get("value") !== self.serverURL) {
-                self.browseButton.setAttribute('label', 'Browse'); 
-              } else {
-                self.browseButton.setAttribute('label', 'Refresh'); 
-              }
-            }
-          },
-
-          onKeyDown: function(e) {
-            var code = e.keyCode || e.which;
-            if( code === 13 ) {
-              e.preventDefault();
-              self.refreshServer(this.get("value"));
-              return false; 
-            }
-          },
-        });
-
-        self.browseButton = new Button({
-          label: "Browse",
-          onClick: function(){
-            self.refreshServer(self.serverBox.get("value"));
-          }
-        });
-
-        self.filesDropDownContent = domConst.toDom('<div />');
-        self.filesDropDownContent.appendChild(self.serverBox.domNode);
-        self.filesDropDownContent.appendChild(self.browseButton.domNode);
-        self.filesDropDownContent.appendChild(self.fileList.domNode);
-
-        self.filesToolTip = new TooltipDialog({ content:self.filesDropDownContent, style:"max-height:320px"});
-        self.filesDropDown = new DropDownButton({ label: "Files", dropDown: self.filesToolTip });
-        self.filesDropDownElem.appendChild(self.filesDropDown.domNode);
-
-        self.fileStandby = new Standby({target: self.filesDropDownContent });
-        self.filesDropDownContent.appendChild(self.fileStandby.domNode);
-
+        if (self.serverURL) {
+          self.refreshServer(self.serverURL);
+        }
         /**
          * === MOVIE DROPDOWN ====================
          */
-         
-        self.movieDropDownElem = dojo.query("div.movieDropDown", element)[0];
-        self.movieAddButtonElem = dojo.query("button.movieAddButton", element)[0];
+        
+        if (self.enableMovies) {
+          self.movieDropDownElem = dojo.query("div.movieDropDown", element)[0];
+          self.movieAddButtonElem = dojo.query("button.movieAddButton", element)[0];
 
-        self.movieDropDownContent = domConst.toDom(
-          '<div style="overflow: auto; max-height: 420px;"> \
-            <table><tr class="movieFormatLengthRow" /></tr><tr class="movieWidthHeightLengthRow" /></table> \
-            <div class=\"dndArea\" /> \
-          </div>'
-        );
+          self.movieDropDownContent = domConst.toDom(
+            '<div style="overflow: auto; max-height: 420px;"> \
+              <table><tr class="movieFormatLengthRow" /></tr><tr class="movieWidthHeightLengthRow" /></table> \
+              <div class=\"dndArea\" /> \
+            </div>'
+          );
         
-        self.movieFormatLengthRowElem = dojo.query("tr.movieFormatLengthRow", self.movieDropDownContent)[0];
-        self.movieWidthHeightLengthRowElem = dojo.query("tr.movieWidthHeightLengthRow", self.movieDropDownContent)[0];
-        self.movieDnDArea = dojo.query("div.dndArea", self.movieDropDownContent)[0];
+          self.movieFormatLengthRowElem = dojo.query("tr.movieFormatLengthRow", self.movieDropDownContent)[0];
+          self.movieWidthHeightLengthRowElem = dojo.query("tr.movieWidthHeightLengthRow", self.movieDropDownContent)[0];
+          self.movieDnDArea = dojo.query("div.dndArea", self.movieDropDownContent)[0];
         
-        self.createMovieThumb = function(item, mode) {
-          if (mode == 'avatar') {
-             // when dragged 
-             var avatar = dojo.create( 'div', { innerHTML: item.data });
-             var avatarPose = dojo.clone(self.pose);
-             avatarPose.width = 60;
-             avatarPose.height = 60;
-             var avatarImgUrl = urlSuffixForPose(avatarPose);
-             avatar.innerHTML = '<img src=' + self.imageURL + avatarImgUrl + ' /> ';
-             item.srcEcc = "VRMLViewer";
-             item.iconPoseUrl = self.imageURL + avatarImgUrl;
-             item.imageURL = self.imageURL;
-             item.serverURL = self.serverURL;
-             item.pose = avatarPose;
-             return {node: avatar, data: item, type: item.type};
-          } else {
+          self.createMovieThumb = function(item, mode) {
+            if (mode == 'avatar') {
+               // when dragged 
+               var avatar = dojo.create( 'div', { innerHTML: item.data });
+               var avatarPose = dojo.clone(self.pose);
+               avatarPose.width = 60;
+               avatarPose.height = 60;
+               var avatarImgUrl = urlSuffixForPose(avatarPose);
+               avatar.innerHTML = '<img src=' + self.imagePath + avatarImgUrl + ' /> ';
+               item.srcEcc = "VRMLViewer";
+               item.iconPoseUrl = self.imagePath + avatarImgUrl;
+               item.imagePath = self.imagePath;
+               item.serverURL = self.serverURL;
+               item.pose = avatarPose;
+               return {node: avatar, data: item, type: item.type};
+            } else {
             
-            // when added to list
-            var thumb = domConst.toDom("\
-              <div>\
-                <table><tr><td>\
-                  <img class=\"movieThumb\"/>\
-                  <img class=\"removeThumb\" style=\"vertical-align: top; margin: -3px 0px 0px -8px; width: 20px; height: 20px;\"/>\
-                </td><td align=\"left\">\
-                  <table><tr>\
-                    <td>Frame:</td><td><div class=\"relFrameLength\"/></td>\
-                    <td><div class=\"fillInSeries\" \></td>\
-                  </tr><tr>\
-                    <td>Transition:</td><td><div class=\"relTransitionLength\"/></td>\
-                  </tr></table>\
-                </td></tr></table>\
-              </div>\
-            ");
-            thumb = dojo.query("div", thumb)[0];
+              // when added to list
+              var thumb = domConst.toDom("\
+                <div>\
+                  <table><tr><td>\
+                    <img class=\"movieThumb\"/>\
+                    <img class=\"removeThumb\" style=\"vertical-align: top; margin: -3px 0px 0px -8px; width: 20px; height: 20px;\"/>\
+                  </td><td align=\"left\">\
+                    <table><tr>\
+                      <td>Frame:</td><td><div class=\"relFrameLength\"/></td>\
+                      <td><div class=\"fillInSeries\" \></td>\
+                    </tr><tr>\
+                      <td>Transition:</td><td><div class=\"relTransitionLength\"/></td>\
+                    </tr></table>\
+                  </td></tr></table>\
+                </div>\
+              ");
+              thumb = dojo.query("div", thumb)[0];
             
-            var thumbImgElem = dojo.query("img.movieThumb", thumb)[0];
-            var removeImgElem = dojo.query("img.removeThumb", thumb)[0];
-            var relFrameLengthElem = dojo.query("div.relFrameLength", thumb)[0];
-            var relTransitionLengthElem = dojo.query("div.relTransitionLength", thumb)[0];
-            var fillInSeriesElem = dojo.query("div.fillInSeries", thumb)[0];
+              var thumbImgElem = dojo.query("img.movieThumb", thumb)[0];
+              var removeImgElem = dojo.query("img.removeThumb", thumb)[0];
+              var relFrameLengthElem = dojo.query("div.relFrameLength", thumb)[0];
+              var relTransitionLengthElem = dojo.query("div.relTransitionLength", thumb)[0];
+              var fillInSeriesElem = dojo.query("div.fillInSeries", thumb)[0];
             
-            item.getThisAndNeighborsFromDnD = function() {
-              var thisAndNeighbors = {};
+              item.getThisAndNeighborsFromDnD = function() {
+                var thisAndNeighbors = {};
+                self.addToMovieHandler.forInItems(function(obj, key, ctx) {
+                  if (obj.data === item) {
+                    thisAndNeighbors.this = { key: key, obj: obj };
+                  } else {
+                    thisAndNeighbors.before = { key: key, obj: obj };
+                  }
+                  if (thisAndNeighbors.this) {
+                    thisAndNeighbors.after = { key: key, obj: obj };
+                    return thisAndNeighbors;
+                  }
+                });
+                return thisAndNeighbors;
+              };
+            
+              item.relFrameLengthSlider = new HorizontalSlider({ 
+                value: 50,
+                title: "Relative Duration of Frame",
+                style: "width:150px;"
+              }, relFrameLengthElem);
+
+              item.relTransitionLengthSlider = new HorizontalSlider({ 
+                value: 100,
+                title: "Relative Duration of Transition",
+                style: "width:150px;"
+              }, relTransitionLengthElem);
+            
+              removeImgElem.onclick = function() {
+                var thisItem = item.getThisAndNeighborsFromDnD();
+                if (thisItem.this) {
+                  // haha - what a mess!
+                  self.addToMovieHandler.selectNone();
+                  self.addToMovieHandler.selection[thisItem.this.key] = thisItem.this.obj;
+                  self.addToMovieHandler.deleteSelectedNodes();
+                }
+                // disable create button if this was the last one
+                if (!thisItem.after || !thisItem.before) {
+                  self.movieCreateButton.setAttribute('disabled', true);
+                }
+              }
+            
+              item.fillInSeriesButton = new Button({ 
+                label: "Insert Series",
+                style: "display: none;",
+                onClick: function(){
+                  alert("foo");
+                }
+              }, fillInSeriesElem);
+            
+              removeImgElem.src = self.resRoot + "img/close.png";
+            
+              var thumbPose = dojo.clone(self.pose);
+              thumbPose.width = self.pose.width / 10;
+              thumbPose.height = self.pose.height / 10;
+              var thumbImgUrl = urlSuffixForPose(thumbPose);
+            
+              thumbImgElem.src = self.imagePath + thumbImgUrl;
+              // removeImgElem.src = self.resRoot + 'img/close.png';
+                        
+              item.srcEcc = "VRMLViewer";
+              item.iconPoseUrl = self.imagePath + thumbImgUrl;
+              item.imagePath = self.imagePath;
+              item.serverURL = self.serverURL;
+              item.pose = thumbPose;
+            
+              return {node: thumb, data: item, type: item.type};
+            }
+          };
+
+          self.addToMovieHandler = new Source(self.movieDnDArea, {copyOnly: true, creator: self.createMovieThumb});
+
+          self.movieFormatSelection = new Selector({
+            name: "movieFormat",
+            style: "width: 320px",
+            options: []
+          });
+          self.populateMovieCodecs("http://" + self.serverURL + '/movie/codecs', self.movieFormatSelection);
+
+          self.movieFormatLengthRowElem.appendChild(dojo.create('td', { innerHTML: 'Format:'} ));
+          self.movieFormatLengthRowElem.appendChild(dojo.create('td', { colspan: "2"}));
+          self.movieFormatLengthRowElem.lastChild.appendChild(self.movieFormatSelection.domNode);
+        
+          self.movieHeightSpinner = new NumberSpinner({
+            value: 400,
+            smallDelta: 1,
+            style: "width: 60px",
+            constraints: { min:40, places:0 },
+          });
+        
+          self.movieWidthSpinner = new NumberSpinner({
+            value: 600,
+            smallDelta: 1,
+            style: "width: 60px",
+            constraints: { min:40, places:0 },
+          });
+
+          self.movieCreateButton = new Button({
+            label: "Create",
+            disabled: true,
+            onClick: function(){
+                        
+              var form = document.createElement("form");
+
+              form.setAttribute("method", "post");
+              form.setAttribute("action", self.serverURL + "/movie");
+
+              var submitData = {};
+              submitData.frames = [];
+              submitData.movieLength = self.movieDurationSpinner.value;
+              submitData.format = self.movieFormatSelection.value;
+              submitData.width = self.movieWidthSpinner.value;
+              submitData.height = self.movieHeightSpinner.value;
+            
               self.addToMovieHandler.forInItems(function(obj, key, ctx) {
-                if (obj.data === item) {
-                  thisAndNeighbors.this = { key: key, obj: obj };
-                } else {
-                  thisAndNeighbors.before = { key: key, obj: obj };
+                var jsonData = {
+                  iconPoseUrl: obj.data.iconPoseUrl,
+                  imagePath: obj.data.imagePath,
+                  serverURL: obj.data.serverURL,
+                  pose: obj.data.pose,
+                  relFrameLength: obj.data.relFrameLengthSlider.value,
+                  relTransitionLength: obj.data.relTransitionLengthSlider.value,
                 }
-                if (thisAndNeighbors.this) {
-                  thisAndNeighbors.after = { key: key, obj: obj };
-                  return thisAndNeighbors;
-                }
+                submitData.frames.push(jsonData);
               });
-              return thisAndNeighbors;
-            };
-            
-            item.relFrameLengthSlider = new HorizontalSlider({ 
-              value: 50,
-              title: "Relative Duration of Frame",
-              style: "width:150px;"
-            }, relFrameLengthElem);
 
-            item.relTransitionLengthSlider = new HorizontalSlider({ 
-              value: 100,
-              title: "Relative Duration of Transition",
-              style: "width:150px;"
-            }, relTransitionLengthElem);
+              var hiddenField = document.createElement("input");
+              hiddenField.setAttribute("type", "hidden");
+              hiddenField.setAttribute("name", "data");
+              hiddenField.setAttribute("value", JSON.stringify(submitData));
+
+              form.appendChild(hiddenField);
             
-            removeImgElem.onclick = function() {
-              var thisItem = item.getThisAndNeighborsFromDnD();
-              if (thisItem.this) {
-                // haha - what a mess!
-                self.addToMovieHandler.selectNone();
-                self.addToMovieHandler.selection[thisItem.this.key] = thisItem.this.obj;
-                self.addToMovieHandler.deleteSelectedNodes();
-              }
-              // disable create button if this was the last one
-              if (!thisItem.after || !thisItem.before) {
-                self.movieCreateButton.setAttribute('disabled', true);
-              }
+              // this will not save the returned binary file
+              // self.xhr.post({
+              //   form: form,
+              //   load: function(data){
+              //     alert("asd");
+              //   }
+              // });
+            
+              document.body.appendChild(form);
+              form.submit();
+              document.body.removeChild(form);
             }
-            
-            item.fillInSeriesButton = new Button({ 
-              label: "Insert Series",
-              style: "display: none;",
-              onClick: function(){
-                alert("foo");
+          });
+
+          self.movieDurationSpinner = new NumberSpinner({
+            value: 10,
+            smallDelta: 1,
+            style: "width: 40px",
+            constraints: { min:0, places:0 },
+          });
+
+          // append format duration cell
+          self.movieWidthHeightLengthRowElem.appendChild(dojo.create('td', { innerHTML: 'Size:'} ));
+          var movieDimensionCell = dojo.create('td');
+          movieDimensionCell.appendChild(self.movieWidthSpinner.domNode);
+          movieDimensionCell.appendChild(dojo.create('span', { innerHTML: "x"} ));
+          movieDimensionCell.appendChild(self.movieHeightSpinner.domNode);
+          movieDimensionCell.appendChild(self.movieDurationSpinner.domNode);
+          movieDimensionCell.appendChild(dojo.create('span', { innerHTML: "sec"} ));        
+          self.movieWidthHeightLengthRowElem.appendChild(movieDimensionCell);
+
+          self.movieWidthHeightLengthRowElem.appendChild(dojo.create('td', { align: "right"}));
+          self.movieWidthHeightLengthRowElem.lastChild.appendChild(self.movieCreateButton.domNode);
+
+
+          self.movieToolTip = new TooltipDialog({ content:self.movieDropDownContent });
+          self.movieDropDown = new DropDownButton({ 
+            label: "Movie", 
+            style: "display: none;",
+            dropDown: self.movieToolTip });
+          self.movieDropDownElem.appendChild(self.movieDropDown.domNode);
+
+          self.movieAddButton = new Button({
+            label: "+",
+            style: "margin-left: -10px; display: none;",
+            onClick: function(){
+              if (self.movieFormatSelection.options.length == 0) {
+                self.populateMovieCodecs(self.serverURL + '/movie/codecs', self.movieFormatSelection);
               }
-            }, fillInSeriesElem);
+              // we could pass item.data here to creator
+              self.addToMovieHandler.insertNodes(false, [ { } ]);
+              self.movieCreateButton.setAttribute('disabled', false);
             
-            removeImgElem.src = self.resRoot + "img/close.png";
-            
-            var thumbPose = dojo.clone(self.pose);
-            thumbPose.width = self.pose.width / 10;
-            thumbPose.height = self.pose.height / 10;
-            var thumbImgUrl = urlSuffixForPose(thumbPose);
-            
-            thumbImgElem.src = self.imageURL + thumbImgUrl;
-            // removeImgElem.src = self.resRoot + 'img/close.png';
-                        
-            item.srcEcc = "VRMLViewer";
-            item.iconPoseUrl = self.imageURL + thumbImgUrl;
-            item.imageURL = self.imageURL;
-            item.serverURL = self.serverURL;
-            item.pose = thumbPose;
-            
-            return {node: thumb, data: item, type: item.type};
-          }
-        };
-
-        self.addToMovieHandler = new Source(self.movieDnDArea, {copyOnly: true, creator: self.createMovieThumb});
-
-        self.movieFormatSelection = new Selector({
-          name: "movieFormat",
-          style: "width: 320px",
-          options: []
-        });
-        self.populateMovieCodecs(self.serverURL + '/movie/codecs', self.movieFormatSelection);
-
-        self.movieFormatLengthRowElem.appendChild(dojo.create('td', { innerHTML: 'Format:'} ));
-        self.movieFormatLengthRowElem.appendChild(dojo.create('td', { colspan: "2"}));
-        self.movieFormatLengthRowElem.lastChild.appendChild(self.movieFormatSelection.domNode);
-        
-        self.movieHeightSpinner = new NumberSpinner({
-          value: 400,
-          smallDelta: 1,
-          style: "width: 60px",
-          constraints: { min:40, places:0 },
-        });
-        
-        self.movieWidthSpinner = new NumberSpinner({
-          value: 600,
-          smallDelta: 1,
-          style: "width: 60px",
-          constraints: { min:40, places:0 },
-        });
-
-        self.movieCreateButton = new Button({
-          label: "Create",
-          disabled: true,
-          onClick: function(){
-                        
-            var form = document.createElement("form");
-
-            form.setAttribute("method", "post");
-            form.setAttribute("action", self.serverURL + "/movie");
-
-            var submitData = {};
-            submitData.frames = [];
-            submitData.movieLength = self.movieDurationSpinner.value;
-            submitData.format = self.movieFormatSelection.value;
-            submitData.width = self.movieWidthSpinner.value;
-            submitData.height = self.movieHeightSpinner.value;
-            
-            self.addToMovieHandler.forInItems(function(obj, key, ctx) {
-              var jsonData = {
-                iconPoseUrl: obj.data.iconPoseUrl,
-                imageURL: obj.data.imageURL,
-                serverURL: obj.data.serverURL,
-                pose: obj.data.pose,
-                relFrameLength: obj.data.relFrameLengthSlider.value,
-                relTransitionLength: obj.data.relTransitionLengthSlider.value,
-              }
-              submitData.frames.push(jsonData);
-            });
-
-            var hiddenField = document.createElement("input");
-            hiddenField.setAttribute("type", "hidden");
-            hiddenField.setAttribute("name", "data");
-            hiddenField.setAttribute("value", JSON.stringify(submitData));
-
-            form.appendChild(hiddenField);
-            
-            // this will not save the returned binary file
-            // self.xhr.post({
-            //   form: form,
-            //   load: function(data){
-            //     alert("asd");
-            //   }
-            // });
-            
-            document.body.appendChild(form);
-            form.submit();
-            document.body.removeChild(form);
-          }
-        });
-
-        self.movieDurationSpinner = new NumberSpinner({
-          value: 10,
-          smallDelta: 1,
-          style: "width: 40px",
-          constraints: { min:0, places:0 },
-        });
-
-        // append format duration cell
-        self.movieWidthHeightLengthRowElem.appendChild(dojo.create('td', { innerHTML: 'Size:'} ));
-        var movieDimensionCell = dojo.create('td');
-        movieDimensionCell.appendChild(self.movieWidthSpinner.domNode);
-        movieDimensionCell.appendChild(dojo.create('span', { innerHTML: "x"} ));
-        movieDimensionCell.appendChild(self.movieHeightSpinner.domNode);
-        movieDimensionCell.appendChild(self.movieDurationSpinner.domNode);
-        movieDimensionCell.appendChild(dojo.create('span', { innerHTML: "sec"} ));        
-        self.movieWidthHeightLengthRowElem.appendChild(movieDimensionCell);
-
-        self.movieWidthHeightLengthRowElem.appendChild(dojo.create('td', { align: "right"}));
-        self.movieWidthHeightLengthRowElem.lastChild.appendChild(self.movieCreateButton.domNode);
-
-
-        self.movieToolTip = new TooltipDialog({ content:self.movieDropDownContent });
-        self.movieDropDown = new DropDownButton({ 
-          label: "Movie", 
-          style: "display: none;",
-          dropDown: self.movieToolTip });
-        self.movieDropDownElem.appendChild(self.movieDropDown.domNode);
-
-        self.movieAddButton = new Button({
-          label: "+",
-          style: "margin-left: -10px; display: none;",
-          onClick: function(){
-            if (self.movieFormatSelection.options.length == 0) {
-              self.populateMovieCodecs(self.serverURL + '/movie/codecs', self.movieFormatSelection);
             }
-            // we could pass item.data here to creator
-            self.addToMovieHandler.insertNodes(false, [ { } ]);
-            self.movieCreateButton.setAttribute('disabled', false);
-            
-          }
-        }, self.movieAddButtonElem);
-
+          }, self.movieAddButtonElem);
+        } else {
+          // remove movie controls
+          var movieControls = dojo.query("td.movieControls", element)[0];
+          movieControls.parentNode.removeChild(movieControls);
+        }
 
         self.resetButton = new Button({
           label: "Reset",
@@ -807,7 +966,7 @@ function VRMLViewer(element, params) {
 
         // do we have parameters for the initial pose?
         if(self.params && self.params.pose)
-          self.setPose(self.params.imageURL, self.params.pose, self.params.serverURL);
+          self.setPose(self.params.imagePath, self.params.pose, self.params.serverURL);
 
       });
     });
