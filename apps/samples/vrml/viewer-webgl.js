@@ -105,6 +105,7 @@ function VRMLViewer(element, params) {
   normalizeParams();
   
   var getWebGLModel = function(url) {
+    if (self.webGLStandby) { self.webGLStandby.show(); }
     var defer = osgDB.Promise.defer();
     var node = new osg.MatrixTransform();
     //node.setMatrix(osg.Matrix.makeRotate(-Math.PI/2, 1,0,0, []));
@@ -124,6 +125,7 @@ function VRMLViewer(element, params) {
           } else {
             osg.log("error " + url);            
           }
+          if (self.webGLStandby) { self.webGLStandby.hide(); }
         }
       };
       req.send(null);
@@ -507,6 +509,9 @@ function VRMLViewer(element, params) {
               self.webGLViewer.getCamera().setClearColor([0.0, 0.0, 0.0, 0.0]);
               self.webGLViewer.setupManipulator();
               self.webGLViewer.run();
+              
+              self.webGLStandby = new Standby({target: self.element });
+              self.element.appendChild(self.webGLStandby.domNode);
             }
             
             // show elements
