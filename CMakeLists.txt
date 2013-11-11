@@ -14,7 +14,10 @@ ELSE()
    SET(CMAKE_BUILD_TYPE Release CACHE STRING ${BUILD_TYPE_HELP})
 ENDIF()
 
-SET(CMAKE_BUILD_TYPE Debug)
+set(CMAKE_SYSTEM_PROCESSOR "i586")
+SET_PROPERTY(GLOBAL PROPERTY FIND_LIBRARY_USE_LIB64_PATHS 0)
+set(CMAKE_IGNORE_PATH /lib /usr/lib /usr/local/lib)
+set(CMAKE_SYSTEM_LIBRARY_PATH /usr/lib32 /usr/local/lib32)
 
 project(uscxml)
 
@@ -302,8 +305,8 @@ if(${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
 	#	add_definitions(-Weffc++)
 
   # order of arguments of gcc matters again
-#	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
-	add_definitions(-fPIC)
+	set(CMAKE_CXX_FLAGS "-mabi=sysv -m32 -march=i586 -mtune=generic -O2 -pipe -L/usr/lib32 -L/usr/local/lib32 ${CMAKE_CXX_FLAGS}")
+	add_definitions(-m32 -mabi=sysv -march=i586 -mtune=generic -O2 -pipe -L/usr/lib32 -L/usr/local/lib32)
 	#add_definitions(-Wunreachable-code)
 	#add_definitions(-DVERBOSE)
 
@@ -339,7 +342,7 @@ if(${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
 		# add_definitions("-fno-inline")
 		# add_definitions("-ffunction-sections -fdata-sections")
 	else()
-		add_definitions(-rdynamic)
+		#add_definitions(-rdynamic)
 	endif()
 elseif (${CMAKE_CXX_COMPILER_ID} STREQUAL "MSVC")
 	add_definitions("-DZMQ_STATIC")
@@ -1018,6 +1021,8 @@ message(STATUS "  Binaries will end up in ........ : " ${REL_CMAKE_RUNTIME_OUTPU
 ############################################################
 # Installation / Provide package target
 ############################################################
+
+set_target_properties(uscxml PROPERTIES COMPILE_FLAGS "-fPIC -m32 -march=i586 -mtune=generic -L/usr/lib32 -L/usr/local/lib32" LINK_FLAGS "-fPIC -m32 -march=i586 -mtune=generic -L/usr/lib32 -L/usr/local/lib32")
 
 # see contrib/cmake/CPackUSCXML.cmake
 include(contrib/cmake/CPackUSCXML.cmake)
