@@ -250,6 +250,15 @@ void OSGConverter::process(const SendRequest& req) {
 		}
 	}
 
+	bool antiAliased = true;
+	if (req.params.find("antialiased") != req.params.end()) {
+		if (iequals(req.params.find("antialiased")->second.atom, "off") ||
+				iequals(req.params.find("antialiased")->second.atom, "0") ||
+				iequals(req.params.find("antialiased")->second.atom, "false")) {
+			antiAliased = false;
+		}
+	}
+
 	// get the 3D scene
 	osg::ref_ptr<osg::Node> model = setupGraph(source, autoRotate);
 	if (model->asGroup()->getNumChildren() == 0) {
@@ -307,7 +316,14 @@ void OSGConverter::process(const SendRequest& req) {
 		traits->width = width;
 		traits->height = height;
 		traits->pbuffer = true;
+
 		traits->readDISPLAY();
+		if (antiAliased) {
+			traits->samples = 4; // to make anti-aliased.
+			osg::DisplaySettings* ds = osg::DisplaySettings::instance();
+			ds->setNumMultiSamples(4);
+			viewer.setDisplaySettings(ds);
+		}
 		osg::GraphicsContext *gc =
 		osg::GraphicsContext::createGraphicsContext(traits.get());
 		
