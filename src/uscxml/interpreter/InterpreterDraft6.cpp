@@ -310,7 +310,7 @@ void InterpreterDraft6::mainEventLoop() {
 			try {
 				_dataModel.setEvent(_currEvent);
 			} catch (Event e) {
-				LOG(ERROR) << "Syntax error while setting external event:" << std::endl << e << std::endl;
+				LOG(ERROR) << "Syntax error while setting external event:" << std::endl << e << std::endl << _currEvent;
 			}
 		}
 		for (unsigned int i = 0; i < _configuration.size(); i++) {

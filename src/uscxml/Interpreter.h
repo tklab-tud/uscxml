@@ -131,12 +131,6 @@ public:
 	    EARLY = 0,
 	    LATE = 1
 	};
-
-	class DOMEventListener : public Arabica::DOM::Events::EventListener<std::string> {
-	public:
-		void handleEvent(Arabica::DOM::Events::Event<std::string>& event);
-		InterpreterImpl* _interpreter;
-	};
 	
 	virtual ~InterpreterImpl();
 
@@ -306,6 +300,13 @@ public:
 	Arabica::XPath::NodeSet<std::string> getProperAncestors(const Arabica::DOM::Node<std::string>& s1, const Arabica::DOM::Node<std::string>& s2);
 
 protected:
+
+	class DOMEventListener : public Arabica::DOM::Events::EventListener<std::string> {
+	public:
+		void handleEvent(Arabica::DOM::Events::Event<std::string>& event);
+		InterpreterImpl* _interpreter;
+	};
+	
 	InterpreterImpl();
 	void init();
 

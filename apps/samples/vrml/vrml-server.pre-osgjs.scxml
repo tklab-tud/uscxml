@@ -4,7 +4,7 @@
 	<script src="http://uscxml.tk.informatik.tu-darmstadt.de/scripts/array.last.js" />
 	<script>
 		var wrls = {};        // information of the wrl, vrml files
-		var models = {};      // information of the osgb / osgjs files
+		var models = {};      // information of the osgb files
 		
 		var pathDelim = ':';  // we need to flatten directories - this will seperate them in filenames
 		
@@ -50,6 +50,7 @@
 			}
 			
 			struct.key += struct.file;
+			
 			return struct;
 		}
 
@@ -73,8 +74,6 @@
 				return true;
 			if (extension === "bmp")
 				return true;
-			if (extension === "osgjs")
-				return true;
 			return false;
 		}
 
@@ -88,8 +87,8 @@
 				var name = model.strippedName.split(pathDelim).last();
 				var entry = assign(struct, ['models'].concat(group.substr(1).split('/')).concat(name), {});
 				entry.url = 
-					_ioprocessors['http'].location + model.relDir + model.strippedName.split(pathDelim).join('/');
-				entry.path = model.relDir + model.strippedName.split(pathDelim).join('/');
+					_ioprocessors['http'].location + model.relDir + model.strippedName.split(pathDelim).join('/') + '.png';
+				entry.path = model.relDir + model.strippedName.split(pathDelim).join('/') + '.png';
 			}
 			return struct;
 		}
@@ -121,12 +120,12 @@
 	</script>
 	<state id="main">
 		<!-- Stop processing if no vrml-path was given on command line -->
-		<transition target="final" cond="_x.args == undefined || _x.args['vrml-path'] == undefined || _x.args['vrml-path'].length == 0">
+		<transition target="final" cond="_x['args']['vrml-path'] == undefined || _x['args']['vrml-path'].length == 0">
 			<log expr="'No --vrml-path given'" />
 		</transition>
 
 		<!-- Stop processing if no tmp-path was given on command line -->
-		<transition target="final" cond="_x.args == undefined || _x.args['tmp-path'] == undefined || _x.args['tmp-path'].length == 0">
+		<transition target="final" cond="_x['args']['tmp-path'] == undefined || _x['args']['tmp-path'].length == 0">
 			<log expr="'No --tmp-path given'" />
 		</transition>
 				
@@ -147,6 +146,7 @@
 				<script>
 					var key = keyForFile(_event.data.file);
 					// this is a binary 3D file converted from the wrls
+					
 					if (_event.name === "file.deleted") {
 						delete models[key];
 						print("Removed a vanished osgb file at " + key + "\n");
@@ -184,21 +184,16 @@
 				</script>
 				<if cond="models &amp;&amp; _event.name !== 'file.deleted' &amp;&amp;
 						(!(_event.key in models) || wrls[_event.key].mtime > models[_event.key].mtime)">
-					<send target="#_osgvonvert.toNative">
+					<send target="#_osgvonvert.osgb">
 						<param name="source" expr="_event.data.file.path" />
 						<param name="dest" expr="_x['args']['tmp-path'] + '/' + _event.key + '.osgb'" />
-						<param name="optimizegeometry" expr="true" />
 					</send>
 				</if>
 			</finalize>
 		</invoke>
 		
 		<!-- Start the osgconvert invoker to transform 3D files -->
-		<invoke type="osgconvert" id="osgvonvert.toNative">
-			<param name="threads" expr="4" />
-    </invoke>
-
-		<invoke type="osgconvert" id="osgvonvert.toClient">
+		<invoke type="osgconvert" id="osgvonvert.osgb">
 			<param name="threads" expr="4" />
 			<finalize>
 				<script>
@@ -209,8 +204,9 @@
 					<if cond="_event.name.endsWith('success')">
 						<respond status="200" to="_event.data.context">
 							<header name="Connection" value="close" />
+							<header name="Content-Type" value="application/json" />
 							<header name="Access-Control-Allow-Origin" value="*" />
-							<header name="Content-Type" valueexpr="_event.data.content[_event.data.format].mimeType" />
+							<header name="Content-Type" valueexpr="_event.data.content[_event.data.format].mimetype" />
 							<content expr="_event.data.content[_event.data.format]" />
 						</respond>
 					<else />
@@ -239,7 +235,7 @@
 				</script>
 				<if cond="_event.fileStruct.key in models &amp;&amp; isSupportedFormat(_event['fileStruct'].ext)">
 					<!-- There is such a file available as osgb -->
-					<send target="#_osgvonvert.toClient">
+					<send target="#_osgvonvert.osgb">
 						<param name="source" expr="models[_event['fileStruct'].key].path" />
 						<param name="format" expr="_event['fileStruct'].ext" />
 						<param name="pitch" expr="_event.fileStruct.pitch" />
@@ -315,7 +311,7 @@
 				<script>//dump(_event);</script>
 				<respond status="200" to="_event.data.context">
 					<header name="Connection" value="close" />
-					<header name="Content-Type" valueexpr="_event.data.movie.mimeType" />
+					<header name="Content-Type" valueexpr="_event.data.mimetype" />
 					<header name="Content-Disposition" valueexpr="'attachment; filename=' + _event.data.filename" />
 					<content expr="_event.data.movie" />
 				</respond>
@@ -325,7 +321,7 @@
 				<script>//dump(_event);</script>
 				<respond status="200" to="_event.data.context">
 					<header name="Connection" value="close" />
-					<header name="Content-Type" valueexpr="application/json" />
+					<header name="Content-Type" valueexpr="_event.data.mimetype" />
 					<header name="Content-Disposition" valueexpr="'attachment; filename=' + _event.data.filename" />
 					<content expr="_event.data.codecs" />
 				</respond>

@@ -25,6 +25,7 @@
 #include <osg/Node>
 #include <osg/Group>
 #include <osg/ComputeBoundsVisitor>
+#include <osgUtil/Optimizer>
 #include <osgDB/ReadFile>
 #include <osgDB/WriteFile>
 #include <osgDB/Registry>
@@ -100,6 +101,7 @@ void OSGConverter::send(const SendRequest& req) {
 			actualReq.params.insert(std::make_pair("source", _interpreter->getDataModel().getStringAsData(actualReq.params.find("sourceexpr")->second)));
 		} else {
 			LOG(ERROR) << "SendRequests for osginvoker missing source or sourceExpr and datamodel";
+			reportFailure(req);
 			return;
 		}
 	}
@@ -119,31 +121,44 @@ void OSGConverter::send(const SendRequest& req) {
 				actualReq.params.insert(std::make_pair("autorotate", _interpreter->getDataModel().getStringAsData(actualReq.params.find("autorotateexpr")->second)));
 			} else {
 				LOG(ERROR) << "SendRequests for osginvoker ncludes autorotateexpr but no datamodel is specified";
+				reportFailure(req);
 				return;
 			}
 		}
 	}
 
+	// support for multiple formats at the same time
+	std::list<Data> formats;
+	Event::getParam(req.params, "format", formats);
+	for (std::list<Data>::const_iterator formatIter = formats.begin(); formatIter != formats.end(); formatIter++) {
+		actualReq.params.insert(std::make_pair("format", *formatIter));
+	}
+	
+	// format given as expression
+	std::list<Data> formatExprs;
+	Event::getParam(req.params, "formatexpr", formatExprs);
+	for (std::list<Data>::const_iterator formatIter = formatExprs.begin(); formatIter != formatExprs.end(); formatIter++) {
+		actualReq.params.insert(std::make_pair("format", _interpreter->getDataModel().getStringAsData(*formatIter)));
+	}
+	
 	if (actualReq.params.find("format") == actualReq.params.end()) {
-		// no explicit format
-		if (actualReq.params.find("formatexpr") != actualReq.params.end() && _interpreter->getDataModel()) {
-			actualReq.params.insert(std::make_pair("format", _interpreter->getDataModel().getStringAsData(actualReq.params.find("formatexpr")->second)));
-		} else {
+		// no explicit format, try to get from destination
+		std::string dest;
+		if (Event::getParam(actualReq.params, "dest", dest)) {
 			std::string format;
-			std::string dest;
-			if (Event::getParam(actualReq.params, "dest", dest)) {
-				size_t lastDot;
-				if ((lastDot = dest.find_last_of(".")) != std::string::npos) {
-					lastDot++;
-					format = dest.substr(lastDot, dest.length() - lastDot);
-				}
+			size_t lastDot;
+			if ((lastDot = dest.find_last_of(".")) != std::string::npos) {
+				lastDot++;
+				format = dest.substr(lastDot, dest.length() - lastDot);
+				actualReq.params.insert(std::make_pair("format", Data(format, Data::VERBATIM)));
 			}
-			if (format.length() == 0 || format.find_last_of(PATH_SEPERATOR) != std::string::npos) {
-				// empty format or pathseperator in format
-				format = "png";
-			}
-			actualReq.params.insert(std::make_pair("format", Data(format, Data::VERBATIM)));
 		}
+	}
+	
+	if (actualReq.params.find("format") == actualReq.params.end()) {
+		LOG(ERROR) << "missing format";
+		reportFailure(req);
+		return;
 	}
 
 	EVAL_PARAM_EXPR(actualReq.params, "heightexpr", "height");
@@ -210,8 +225,8 @@ void OSGConverter::process(const SendRequest& req) {
 	std::string dest;
 	Event::getParam(req.params, "dest", dest);
 
-	std::string format;
-	if (!Event::getParam(req.params, "format", format)) {
+	std::list<Data> formats;
+	if (!Event::getParam(req.params, "format", formats)) {
 		reportFailure(req);
 		LOG(ERROR) << "No format given for convert request";
 		return;
@@ -226,6 +241,16 @@ void OSGConverter::process(const SendRequest& req) {
 		}
 	}
 
+	bool optimizeGeometry = false;
+	if (req.params.find("optimizegeometry") != req.params.end()) {
+		if (iequals(req.params.find("optimizegeometry")->second.atom, "on") ||
+				iequals(req.params.find("optimizegeometry")->second.atom, "1") ||
+				iequals(req.params.find("optimizegeometry")->second.atom, "true")) {
+			optimizeGeometry = true;
+		}
+	}
+
+	// get the 3D scene
 	osg::ref_ptr<osg::Node> model = setupGraph(source, autoRotate);
 	if (model->asGroup()->getNumChildren() == 0) {
 		reportFailure(req);
@@ -233,108 +258,126 @@ void OSGConverter::process(const SendRequest& req) {
 		return;
 	}
 
+	if (optimizeGeometry) {
+		osgUtil::Optimizer optimizer;
+		optimizer.optimize(model, osgUtil::Optimizer::ALL_OPTIMIZATIONS);
+	}
+	
+	Data retContent;
+	
+	// setup scenegraph
 	osg::ref_ptr<osg::Group> sceneGraph = new osg::Group();
 	sceneGraph->addChild(model);
-
-	osgDB::ReaderWriter::WriteResult result;
-
-	osg::ref_ptr<osgDB::ReaderWriter> writer = osgDB::Registry::instance()->getReaderWriterForExtension(format);
-	if(writer.valid()) {
-		std::stringstream ss;
-		result = writer->writeNode(*sceneGraph, ss);
-		if (result.success()) {
-			if (dest.length() > 0) {
-				std::ofstream outFile(dest.c_str());
-				outFile << ss.str();
-			}
-			Data content(ss.str().c_str(), ss.str().size(), URL::getMimeType(format), false);
-			reportSuccess(req, content);
-			return;
-		}
-	}
-
-	/**
-	 * If we failed to interpret the extension as another 3D file, try to make a screenshot.
-	 */
-
 	((osg::MatrixTransform*)model.get())->setMatrix(requestToModelPose(req));
 	osg::BoundingSphere bs = model->getBound();
 
-	tthread::lock_guard<tthread::recursive_mutex> lock(_viewerMutex);
-	osgViewer::Viewer viewer;
-	osg::Camera *camera = viewer.getCamera();
-	
-	osg::ref_ptr<osg::GraphicsContext::Traits> traits = new
-			osg::GraphicsContext::Traits;
-	traits->width = width;
-	traits->height = height;
-	traits->pbuffer = true;
-	traits->readDISPLAY();
-	osg::GraphicsContext *gc =
-			osg::GraphicsContext::createGraphicsContext(traits.get());
-
-	camera->setGraphicsContext(gc);
-	camera->setDrawBuffer(GL_FRONT);
-	camera->setViewport(new osg::Viewport(0, 0, width, height));
-
-	viewer.setSceneData(sceneGraph);
-
-	viewer.setCameraManipulator(new osgGA::TrackballManipulator());
-	viewer.getCamera()->setClearColor(osg::Vec4f(1.0f,1.0f,1.0f,1.0f));
-	viewer.getCamera()->setClearMask(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-	double zoom = 1;
-	CAST_PARAM(req.params, zoom, "zoom", double);
-
-	viewer.getCameraManipulator()->setByMatrix(osg::Matrix::lookAt(osg::Vec3d(0,0,bs.radius() * (-3.4 * zoom)),  // eye
-																															 (osg::Vec3d)bs.center(),           // center
-																															 osg::Vec3d(0,1,0)));               // up
-
-	osg::Image *image = new osg::Image();
-	camera->attach(osg::Camera::COLOR_BUFFER0, image);
-
-	viewer.setThreadingModel(osgViewer::Viewer::SingleThreaded);
-	viewer.realize();
-	viewer.frame();
-
-	std::string tempFile = URL::getTmpFilename(format);
-
-	if (!osgDB::writeImageFile(*image, tempFile)) {
-		reportFailure(req);
-		LOG(ERROR) << "Could write image file at " << tempFile;
-		return;
-	}
-	
-	// read file into buffer
-	char* buffer = NULL;
-	size_t length = 0;
-	{
-		std::ifstream file(tempFile.c_str());
+	for (std::list<Data>::iterator formatIter = formats.begin(); formatIter != formats.end(); formatIter++) {
+		std::string format = *formatIter;
 		
-		file.seekg(0, std::ios::end);
-		length = file.tellg();
-		file.seekg(0, std::ios::beg);
-		buffer = (char*)malloc(length);
-		file.read(buffer, length);
+		osg::ref_ptr<osgDB::ReaderWriter> writer = osgDB::Registry::instance()->getReaderWriterForExtension(format);
+
+		if (writer.valid()) {
+			// conversion from 3d model to 3d model
+			std::stringstream ss;
+			osgDB::ReaderWriter::WriteResult result;
+			osgDB::ReaderWriter::Options* rwOptions = new osgDB::ReaderWriter::Options();
+
+			// pass option to disable tristrips when writing osgjs files
+			if (strcmp(format.c_str(), "osgjs") == 0)
+				rwOptions->setOptionString("disableTriStrip");
+			
+			result = writer->writeNode(*sceneGraph, ss, rwOptions);
+			if (result.success()) {
+				if (dest.length() > 0) {
+					std::ofstream outFile(dest.c_str());
+					outFile << ss.str();
+				}
+				retContent.compound[format] = Data(ss.str().c_str(), ss.str().size(), URL::getMimeType(format), false);
+				continue;
+			}
+		}
+		
+		// conversion from 3d model to image
+		tthread::lock_guard<tthread::recursive_mutex> lock(_viewerMutex);
+		osgViewer::Viewer viewer;
+		osg::Camera *camera = viewer.getCamera();
+		
+		osg::ref_ptr<osg::GraphicsContext::Traits> traits = new
+		osg::GraphicsContext::Traits;
+		traits->width = width;
+		traits->height = height;
+		traits->pbuffer = true;
+		traits->readDISPLAY();
+		osg::GraphicsContext *gc =
+		osg::GraphicsContext::createGraphicsContext(traits.get());
+		
+		camera->setGraphicsContext(gc);
+		camera->setDrawBuffer(GL_FRONT);
+		camera->setViewport(new osg::Viewport(0, 0, width, height));
+		
+		viewer.setSceneData(sceneGraph);
+		
+		viewer.setCameraManipulator(new osgGA::TrackballManipulator());
+		viewer.getCamera()->setClearColor(osg::Vec4f(1.0f,1.0f,1.0f,1.0f));
+		viewer.getCamera()->setClearMask(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		
+		double zoom = 1;
+		CAST_PARAM(req.params, zoom, "zoom", double);
+		
+		viewer.getCameraManipulator()->setByMatrix(osg::Matrix::lookAt(osg::Vec3d(0,0,bs.radius() * (-3.4 * zoom)),  // eye
+																																	 (osg::Vec3d)bs.center(),           // center
+																																	 osg::Vec3d(0,1,0)));               // up
+		
+		osg::Image *image = new osg::Image();
+		camera->attach(osg::Camera::COLOR_BUFFER0, image);
+		
+		viewer.setThreadingModel(osgViewer::Viewer::SingleThreaded);
+		viewer.realize();
+		viewer.frame();
+		
+		std::string tempFile = URL::getTmpFilename(format);
+		
+		if (!osgDB::writeImageFile(*image, tempFile)) {
+			LOG(ERROR) << "Could write image file at " << tempFile;
+			return;
+		}
+		
+		// read file into buffer
+		char* buffer = NULL;
+		size_t length = 0;
+		{
+			std::ifstream file(tempFile.c_str());
+			
+			file.seekg(0, std::ios::end);
+			length = file.tellg();
+			file.seekg(0, std::ios::beg);
+			buffer = (char*)malloc(length);
+			file.read(buffer, length);
+		}
+		
+		retContent.compound[format] = Data(buffer, length, URL::getMimeType(format), false);
 	}
-
-	Data content;
-	content.compound[format] = Data(buffer, length, URL::getMimeType(format), false);
-	reportSuccess(req, content);
-
+	
+	if (retContent.compound.size()) {
+		reportSuccess(req, retContent);
+	} else {
+		reportFailure(req);
+	}
+	return;
 }
 
 void OSGConverter::reportSuccess(const SendRequest& req, const Data& content) {
 	Event event(req);
 
-	std::string format;
-	Event::getParam(req.params, "format", format);
-
-	event.data.compound["mimetype"] = Data(URL::getMimeType(format), Data::VERBATIM);
-
+//	for (Event::params_t::const_iterator paramIter = req.params.begin(); paramIter != req.params.end(); paramIter++) {
+//		Data foo = paramIter->second;
+//		std::cout << paramIter->first << " = " << foo << std::endl;
+//	}
+	
 	if (event.name.length() == 0)
 		event.name = "convert";
 	event.name += ".success";
+	
 	if (content)
 		event.data.compound["content"] = content;
 	returnEvent(event);
