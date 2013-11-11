@@ -301,28 +301,38 @@ function Miles(element, params) {
         self.chatSendButton = new Button({
           label: "Send",
           onClick: function(){
-            //alert(self.chatInput.value);
             self.xhr.post({
               // The URL to request
               url: "http://" + self.scxmlURL + "/miles/text",
               contentType: 'application/json',
               postData: dojo.toJson({
-                message: self.chatInput.value,
+                message: self.chatInput.get('value'),
                 userid: self.email
               }),
               error: function(err) {
                 console.log(err);
               },
-              load: function(result) {}
+              load: function(result) {
+                self.chatInput.set('value', '');
+              }
             });  
             
           }
+          
         }, dojo.query("div.chatSendButton", element)[0]);
         
         // the chat interface
         self.chatInput = new TextBox({
           name: "chatInput",
           style: "width: 100%",
+          onKeyDown: function(e) {
+            var code = e.keyCode || e.which;
+            if( code === 13 ) {
+              e.preventDefault();
+              self.chatSendButton.onClick();
+              return false; 
+            }
+          },
         }, self.chatInputElem);
         
         
