@@ -30,16 +30,15 @@
 # include "uscxml/plugins/Plugins.h"
 #else
 
-# include "uscxml/plugins/ioprocessor/basichttp/BasicHTTPIOProcessor.h"
-# include "uscxml/plugins/ioprocessor/comet/CometIOProcessor.h"
+//# include "uscxml/plugins/ioprocessor/basichttp/BasicHTTPIOProcessor.h"
+//# include "uscxml/plugins/ioprocessor/comet/CometIOProcessor.h"
 # include "uscxml/plugins/ioprocessor/scxml/SCXMLIOProcessor.h"
-# include "uscxml/plugins/invoker/scxml/USCXMLInvoker.h"
-# include "uscxml/plugins/invoker/http/HTTPServletInvoker.h"
-# include "uscxml/plugins/invoker/heartbeat/HeartbeatInvoker.h"
-# include "uscxml/plugins/invoker/filesystem/dirmon/DirMonInvoker.h"
-# include "uscxml/plugins/invoker/system/SystemInvoker.h"
+//# include "uscxml/plugins/invoker/scxml/USCXMLInvoker.h"
+//# include "uscxml/plugins/invoker/http/HTTPServletInvoker.h"
+//# include "uscxml/plugins/invoker/heartbeat/HeartbeatInvoker.h"
+//# include "uscxml/plugins/invoker/filesystem/dirmon/DirMonInvoker.h"
 # include "uscxml/plugins/invoker/system/XmlBridgeInvoker.h"
-# include "uscxml/plugins/invoker/xhtml/XHTMLInvoker.h"
+//# include "uscxml/plugins/invoker/xhtml/XHTMLInvoker.h"
 
 
 #ifdef PROTOBUF_FOUND
@@ -263,38 +262,34 @@ Factory::Factory() {
 		registerDataModel(dataModel);
 	}
 #if 1
-	{
-		XHTMLInvoker* invoker = new XHTMLInvoker();
-		registerInvoker(invoker);
-	}
-	{
-		USCXMLInvoker* invoker = new USCXMLInvoker();
-		registerInvoker(invoker);
-	}
-	{
-		HTTPServletInvoker* invoker = new HTTPServletInvoker();
-		registerInvoker(invoker);
-	}
-	{
-		HeartbeatInvoker* invoker = new HeartbeatInvoker();
-		registerInvoker(invoker);
-	}
-	{
-		DirMonInvoker* invoker = new DirMonInvoker();
-		registerInvoker(invoker);
-	}
-	{
-		SystemInvoker* invoker = new SystemInvoker();
-		registerInvoker(invoker);
-	}
+//	{
+//		XHTMLInvoker* invoker = new XHTMLInvoker();
+//		registerInvoker(invoker);
+//	}
+//	{
+//		USCXMLInvoker* invoker = new USCXMLInvoker();
+//		registerInvoker(invoker);
+//	}
+//	{
+//		HTTPServletInvoker* invoker = new HTTPServletInvoker();
+//		registerInvoker(invoker);
+//	}
+//	{
+//		HeartbeatInvoker* invoker = new HeartbeatInvoker();
+//		registerInvoker(invoker);
+//	}
+//	{
+//		DirMonInvoker* invoker = new DirMonInvoker();
+//		registerInvoker(invoker);
+//	}
 	{
 		XmlBridgeInvoker* invoker = new XmlBridgeInvoker();
 		registerInvoker(invoker);
 	}
-	{
-		BasicHTTPIOProcessor* ioProcessor = new BasicHTTPIOProcessor();
-		registerIOProcessor(ioProcessor);
-	}
+//	{
+//		BasicHTTPIOProcessor* ioProcessor = new BasicHTTPIOProcessor();
+//		registerIOProcessor(ioProcessor);
+//	}
 	{
 		SCXMLIOProcessor* ioProcessor = new SCXMLIOProcessor();
 		registerIOProcessor(ioProcessor);

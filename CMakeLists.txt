@@ -305,17 +305,17 @@ if(${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
 	#	add_definitions(-Weffc++)
 
   # order of arguments of gcc matters again
-	set(CMAKE_CXX_FLAGS "-mabi=sysv -m32 -march=i586 -O2 -L/usr/lib32 -L/usr/local/lib32 ${CMAKE_CXX_FLAGS}")
-	add_definitions(-m32 -mabi=sysv -march=i586 -O2 -L/usr/lib32 -L/usr/local/lib32)
+	set(CMAKE_CXX_FLAGS "-fPIC -mabi=sysv -m32 -march=i586 -O2 -L/usr/lib32 -L/usr/local/lib32 ${CMAKE_CXX_FLAGS}")
+	add_definitions(-fPIC -m32 -mabi=sysv -march=i586 -O2 -L/usr/lib32 -L/usr/local/lib32)
 	#add_definitions(-Wunreachable-code)
 	#add_definitions(-DVERBOSE)
 
-	if (CMAKE_BUILD_TYPE MATCHES ".*Deb.*" AND ENABLE_GCOV) # when not building for debug
+#	if (CMAKE_BUILD_TYPE MATCHES ".*Deb.*" AND ENABLE_GCOV) # when not building for debug
 		# coverage information
-		add_definitions(-fprofile-arcs)
-		add_definitions(-ftest-coverage)
-		list (APPEND USCXML_CORE_LIBS "gcov")
-	endif()
+#		add_definitions(-fprofile-arcs)
+#		add_definitions(-ftest-coverage)
+#		list (APPEND USCXML_CORE_LIBS "gcov")
+#	endif()
 
 	# all warnings
 	add_definitions(-Wall)
@@ -331,7 +331,7 @@ if(${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
 	add_definitions("-Wno-sign-compare")
 #	add_definitions("-Wno-unused-value")
 #	add_definitions(-Wno-unused-function)
-	if (NOT CMAKE_BUILD_TYPE MATCHES ".*Deb.*") # when not building for debug
+#	if (NOT CMAKE_BUILD_TYPE MATCHES ".*Deb.*") # when not building for debug
 		# add_definitions("-s")
     	#set(CMAKE_CXX_FLAGS "-s")  ## Strip binary for everything but debug builds
     	# set(CMAKE_EXE_LINKER_FLAGS "-Wl,--gc-sections")
@@ -341,9 +341,9 @@ if(${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
 		# add_definitions("-fno-exceptions")
 		# add_definitions("-fno-inline")
 		# add_definitions("-ffunction-sections -fdata-sections")
-	else()
-		#add_definitions(-rdynamic)
-	endif()
+#	else()
+#		add_definitions(-rdynamic)
+#	endif()
 elseif (${CMAKE_CXX_COMPILER_ID} STREQUAL "MSVC")
 	add_definitions("-DZMQ_STATIC")
 	add_definitions("-DPCRE_STATIC")
@@ -547,7 +547,7 @@ endif()
 # list (APPEND USCXML_CORE_LIBS ${ICU_LIBRARIES})
 
 # CURL
-find_package(CURL REQUIRED)
+#find_package(CURL REQUIRED)
 include_directories(${CURL_INCLUDE_DIRS})
 list (APPEND USCXML_CORE_LIBS ${CURL_LIBRARIES})
 if (WIN32)
@@ -576,7 +576,7 @@ include_directories(${Boost_INCLUDE_DIR})
 
 # LIBEVENT
 #set(ENV{EVENT_SRC} ${CMAKE_SOURCE_DIR}/../libevent)
-find_package(EVENT REQUIRED)
+#find_package(EVENT REQUIRED)
 include_directories(${EVENT_INCLUDE_DIR})
 list (APPEND USCXML_CORE_LIBS ${EVENT_LIBRARY})
 #set(EVENT_SSL_FOUND OFF) # deactivate for now
@@ -1022,7 +1022,7 @@ message(STATUS "  Binaries will end up in ........ : " ${REL_CMAKE_RUNTIME_OUTPU
 # Installation / Provide package target
 ############################################################
 
-set_target_properties(uscxml PROPERTIES COMPILE_FLAGS "-fPIC -m32 -march=i586 -O2 -L/usr/lib32 -L/usr/local/lib32" LINK_FLAGS "-fPIC -m32 -march=i586 -O2 -L/usr/lib32 -L/usr/local/lib32")
+set_target_properties(uscxml PROPERTIES COMPILE_FLAGS "-fPIC -mabi=sysv  -m32 -march=i586 -O2 -L/usr/lib32 -L/usr/local/lib32" LINK_FLAGS "-fPIC -mabi=sysv -m32 -march=i586 -O2 -L/usr/lib32 -L/usr/local/lib32")
 
 # see contrib/cmake/CPackUSCXML.cmake
 include(contrib/cmake/CPackUSCXML.cmake)
