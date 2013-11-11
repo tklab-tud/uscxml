@@ -770,8 +770,8 @@ function VRMLViewer(element, params) {
                   var allItems = self.fileListStore.query();
                   var foundAt = 0;
                   for (var i = 0; i < allItems.total; i++) {
-                    //console.log(self.serverURL + self.imagePath + " === " + allItems[i].url);
-                    if (self.serverURL + self.imagePath + self.imageFormat === allItems[i].url) {
+                    console.log(self.serverURL + self.imagePath + " === " + allItems[i].url);
+                    if (self.serverURL + self.imagePath === allItems[i].url) {
                       foundAt = i;
                       break;
                     }
