@@ -252,7 +252,7 @@ else()
 		SET(CMAKE_FIND_ROOT_PATH "/;${CMAKE_FIND_ROOT_PATH};${USCXML_PREBUILT_LIBRARY_PATH};${USCXML_PREBUILT_HEADER_PATH}")
 	endif()
 endif()
-include_directories("/usr/local/include" "/home/sunkiss/_Projects/xmlBridgeCPP" "/home/sunkiss/_Projects/libmodbus/include" ${USCXML_PREBUILT_LIBRARY_PATH}/include)
+include_directories("/usr/local/include" "/home/xmlBridgeCPP" ${USCXML_PREBUILT_LIBRARY_PATH}/include)
 
 if (WIN32)
 	include_directories(${PROJECT_SOURCE_DIR}/contrib/src/getopt)
@@ -305,8 +305,8 @@ if(${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
 	#	add_definitions(-Weffc++)
 
   # order of arguments of gcc matters again
-	set(CMAKE_CXX_FLAGS "-fPIC -mabi=sysv -m32 -march=i586 -O2 -L/usr/lib32 -L/usr/local/lib32 ${CMAKE_CXX_FLAGS}")
-	add_definitions(-fPIC -m32 -mabi=sysv -march=i586 -O2 -L/usr/lib32 -L/usr/local/lib32)
+	set(CMAKE_CXX_FLAGS "-mabi=sysv -fabi-version=1 -m32 -march=i586 -O2 -L/usr/lib32 -L/usr/local/lib32 ${CMAKE_CXX_FLAGS}")
+	add_definitions(-m32 -mabi=sysv -march=i586 -O2 -L/usr/lib32 -L/usr/local/lib32)
 	#add_definitions(-Wunreachable-code)
 	#add_definitions(-DVERBOSE)
 
@@ -374,7 +374,7 @@ elseif (${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-null-conversion")
 	#SET(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -stdlib=libstdc++")
 	
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 	# set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -read_only_relocs suppress")
 	# set(CMAKE_EXE_LINKER_FLAGS_DEBUG "${CMAKE_EXE_LINKER_FLAGS_DEBUG} -read_only_relocs suppress")
 else()
@@ -547,7 +547,7 @@ endif()
 # list (APPEND USCXML_CORE_LIBS ${ICU_LIBRARIES})
 
 # CURL
-#find_package(CURL REQUIRED)
+find_package(CURL REQUIRED)
 include_directories(${CURL_INCLUDE_DIRS})
 list (APPEND USCXML_CORE_LIBS ${CURL_LIBRARIES})
 if (WIN32)
@@ -576,7 +576,7 @@ include_directories(${Boost_INCLUDE_DIR})
 
 # LIBEVENT
 #set(ENV{EVENT_SRC} ${CMAKE_SOURCE_DIR}/../libevent)
-#find_package(EVENT REQUIRED)
+find_package(EVENT REQUIRED)
 include_directories(${EVENT_INCLUDE_DIR})
 list (APPEND USCXML_CORE_LIBS ${EVENT_LIBRARY})
 #set(EVENT_SSL_FOUND OFF) # deactivate for now
@@ -1022,7 +1022,7 @@ message(STATUS "  Binaries will end up in ........ : " ${REL_CMAKE_RUNTIME_OUTPU
 # Installation / Provide package target
 ############################################################
 
-set_target_properties(uscxml PROPERTIES COMPILE_FLAGS "-fPIC -mabi=sysv  -m32 -march=i586 -O2 -L/usr/lib32 -L/usr/local/lib32" LINK_FLAGS "-fPIC -mabi=sysv -m32 -march=i586 -O2 -L/usr/lib32 -L/usr/local/lib32")
+set_target_properties(uscxml PROPERTIES COMPILE_FLAGS "-mabi=sysv -fabi-version=1 -m32 -march=i586 -O2 -L/usr/lib32 -L/usr/local/lib32" LINK_FLAGS "-mabi=sysv -m32 -march=i586 -O2 -L/usr/lib32 -L/usr/local/lib32")
 
 # see contrib/cmake/CPackUSCXML.cmake
 include(contrib/cmake/CPackUSCXML.cmake)

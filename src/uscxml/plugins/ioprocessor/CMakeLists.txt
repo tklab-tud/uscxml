@@ -35,22 +35,22 @@
 
 ## LIBEVENT basichttp ioprocessor - this one is already required above
 
-#set(USCXML_IOPROCESSORS "basichttp ${USCXML_IOPROCESSORS}")
-#file(GLOB_RECURSE BASICHTTP_IOPROCESSOR
-#	basichttp/*.cpp
-#	basichttp/*.h
-#)
-#if (BUILD_AS_PLUGINS)
-#	source_group("" FILES ${BASICHTTP_IOPROCESSOR})
-#	add_library(
-#		ioprocessor_basichttp SHARED
-#		${BASICHTTP_IOPROCESSOR}
-#		"../Plugins.cpp")
-#	target_link_libraries(ioprocessor_basichttp uscxml)
-#	set_target_properties(ioprocessor_basichttp PROPERTIES FOLDER "Plugin IOProcessor")
-#else()
-#	list (APPEND USCXML_FILES ${BASICHTTP_IOPROCESSOR})
-#endif()
+set(USCXML_IOPROCESSORS "basichttp ${USCXML_IOPROCESSORS}")
+file(GLOB_RECURSE BASICHTTP_IOPROCESSOR
+	basichttp/*.cpp
+	basichttp/*.h
+)
+if (BUILD_AS_PLUGINS)
+	source_group("" FILES ${BASICHTTP_IOPROCESSOR})
+	add_library(
+		ioprocessor_basichttp SHARED
+		${BASICHTTP_IOPROCESSOR}
+		"../Plugins.cpp")
+	target_link_libraries(ioprocessor_basichttp uscxml)
+	set_target_properties(ioprocessor_basichttp PROPERTIES FOLDER "Plugin IOProcessor")
+else()
+	list (APPEND USCXML_FILES ${BASICHTTP_IOPROCESSOR})
+endif()
 
 
 # scxml ioprocessor - this one is already required above

@@ -30,7 +30,7 @@
 # include "uscxml/plugins/Plugins.h"
 #else
 
-//# include "uscxml/plugins/ioprocessor/basichttp/BasicHTTPIOProcessor.h"
+# include "uscxml/plugins/ioprocessor/basichttp/BasicHTTPIOProcessor.h"
 //# include "uscxml/plugins/ioprocessor/comet/CometIOProcessor.h"
 # include "uscxml/plugins/ioprocessor/scxml/SCXMLIOProcessor.h"
 //# include "uscxml/plugins/invoker/scxml/USCXMLInvoker.h"
@@ -286,10 +286,10 @@ Factory::Factory() {
 		XmlBridgeInvoker* invoker = new XmlBridgeInvoker();
 		registerInvoker(invoker);
 	}
-//	{
-//		BasicHTTPIOProcessor* ioProcessor = new BasicHTTPIOProcessor();
-//		registerIOProcessor(ioProcessor);
-//	}
+	{
+		BasicHTTPIOProcessor* ioProcessor = new BasicHTTPIOProcessor();
+		registerIOProcessor(ioProcessor);
+	}
 	{
 		SCXMLIOProcessor* ioProcessor = new SCXMLIOProcessor();
 		registerIOProcessor(ioProcessor);
