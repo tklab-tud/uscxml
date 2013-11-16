@@ -295,7 +295,11 @@ Factory::Factory() {
 		registerIOProcessor(ioProcessor);
 	}
 	{
-		InterpreterServlet* ioProcessor = new InterpreterServlet();
+		InterpreterHTTPServlet* ioProcessor = new InterpreterHTTPServlet();
+		registerIOProcessor(ioProcessor);
+	}
+	{
+		InterpreterWebSocketServlet* ioProcessor = new InterpreterWebSocketServlet();
 		registerIOProcessor(ioProcessor);
 	}
 	{

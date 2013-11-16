@@ -37,8 +37,8 @@
 
 #include "uscxml/Convenience.h"
 
-#include "uscxml/util/MD5.h"
-#include "uscxml/util/Base64.h"
+#include "uscxml/util/MD5.hpp"
+#include "uscxml/util/Base64.hpp"
 
 namespace uscxml {
 
@@ -56,11 +56,11 @@ public:
 	}
 
 	std::string base64() {
-		return base64_encode((char* const)data, size);
+		return base64Encode((char* const)data, size);
 	}
 
 	Blob* fromBase64(const std::string base64) {
-		std::string decoded = base64_decode(base64);
+		std::string decoded = base64Decode(base64);
 		return new Blob((void*)decoded.c_str(), decoded.length(), mimeType);
 	}
 };

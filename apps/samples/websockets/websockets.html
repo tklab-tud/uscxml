@@ -1,77 +1,79 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN">
 <html>
-<head>
-    <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+  <head>
+    <meta charset="utf-8">
+    <title>
+      WebSocket Test
+    </title>
+    <script language="javascript" type="text/javascript">
+    var wsUri = "ws://localhost:8082/websockets";
+//    var wsUri = "ws://echo.websocket.org";
 
-		<style type="text/css">
-		</style>
+    var output;
 
-		<script type="text/javascript">
-		</script>
+    var littlePacket = "0123456789ABCDEF";
+    var mediumPacket = "";
+    var hugePacket   = "";
+    for (var i = 0; i < 16; i++) {
+      mediumPacket += littlePacket;
+    }
+    for (var i = 0; i < 16; i++) {
+      hugePacket += mediumPacket;
+    }
 
-		<script src="http://ajax.googleapis.com/ajax/libs/dojo/1.9.1/dojo/dojo.js"></script>
-    
-    <script type="text/javascript">
-			require([
-				"dojo/domReady!",
-				"dojox/socket",
-      ], function(
-				dom,
-				Socket
-			) {
-				var socket = new Socket("ws://localhost:8080/websockets");
-
-				function send(data){
-					return socket.send(json.stringify(data));
-				}
-
-				socket.on("connect", function(){
-					// send a handshake
-					send([
-						{
-							"channel": "/meta/handshake",
-							"version": "1.0",
-							"minimumVersion": "1.0beta",
-							"supportedConnectionTypes": ["long-polling"] // or ["callback-polling"] for x-domain
-						}
-					])
-					socket.on("message", function(data){
-						// wait for the response so we can connect with the provided client id
-						data = json.parse(data);
-						if(data.error){
-							throw new Error(error);
-						}
-						// get the client id for all future messages
-						clientId = data.clientId;
-						// send a connect message
-						send([
-							{
-								"channel": "/meta/connect",
-								"clientId": clientId,
-								"connectionType": "long-polling"
-							},
-							{ // also send a subscription message
-								"channel": "/meta/subscribe",
-								"clientId": clientId,
-								"subscription": "/foo/**"
-							}
-						]);
-						socket.on("message", function(data){
-							console.log(data);
-						});
-					});
-				});
-			});		  
-		</script>
-	</head>
-	<body class="tundra">
-		<table>
-			<tr>
-				<td>
-					<div id="websockets"></div>
-				</td>
-				<td>
-			</tr>
-		</table>
-	</body>
+    function init() {
+      output = document.getElementById("output");
+      testWebSocket();
+    }
+    function testWebSocket() {
+      websocket = new WebSocket(wsUri);
+      websocket.onopen = function(evt) {
+        onOpen(evt)
+      };
+      websocket.onclose = function(evt) {
+        onClose(evt)
+      };
+      websocket.onmessage = function(evt) {
+        onMessage(evt)
+      };
+      websocket.onerror = function(evt) {
+        onError(evt)
+      };
+    }
+    function onOpen(evt) {
+      writeToScreen("CONNECTED");
+      doSend(littlePacket);
+      // doSend(mediumPacket);
+      // doSend(hugePacket);
+    }
+    function onClose(evt) {
+      writeToScreen("DISCONNECTED");
+    }
+    function onMessage(evt) {
+      var value = evt.data.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+      writeToScreen('<span style="color: blue;">RESPONSE: <pre>' + value + '</pre><\/span>');
+//      websocket.close();
+    }
+    function onError(evt) {
+      writeToScreen('<span style="color: red;">ERROR:<\/span> ' + evt.data);
+    }
+    function doSend(message) {
+      writeToScreen("SENT: " + message);
+      websocket.send(message);
+    }
+    function writeToScreen(message) {
+      var pre = document.createElement("p");
+      pre.style.wordWrap = "break-word";
+      pre.innerHTML = message;
+      output.appendChild(pre);
+    }
+    window.addEventListener("load", init, false);
+    </script>
+  </head>
+  <body>
+    <h2>
+      WebSocket Test
+    </h2>
+    <div id="output"></div>
+  </body>
 </html>

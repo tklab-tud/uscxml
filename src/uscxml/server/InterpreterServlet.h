@@ -27,11 +27,11 @@ namespace uscxml {
 
 class Interpreter;
 
-class InterpreterServlet : public HTTPServlet, public IOProcessorImpl {
+class InterpreterHTTPServlet : public HTTPServlet, public IOProcessorImpl {
 public:
-	InterpreterServlet() {};
-	InterpreterServlet(InterpreterImpl* interpreter);
-	virtual ~InterpreterServlet() {}
+	InterpreterHTTPServlet() {};
+	InterpreterHTTPServlet(InterpreterImpl* interpreter);
+	virtual ~InterpreterHTTPServlet() {}
 
 	virtual boost::shared_ptr<IOProcessorImpl> create(InterpreterImpl* interpreter);
 
@@ -76,6 +76,56 @@ protected:
 	std::string _path;
 	std::string _url;
 
+};
+
+class InterpreterWebSocketServlet : public WebSocketServlet, public IOProcessorImpl {
+public:
+	InterpreterWebSocketServlet() {};
+	InterpreterWebSocketServlet(InterpreterImpl* interpreter);
+	virtual ~InterpreterWebSocketServlet() {}
+	
+	virtual boost::shared_ptr<IOProcessorImpl> create(InterpreterImpl* interpreter);
+	
+	virtual std::set<std::string> getNames() {
+		std::set<std::string> names;
+		names.insert("websocket");
+		names.insert("http://www.w3.org/TR/scxml/#WebSocketEventProcessor");
+		return names;
+	}
+	
+	Data getDataModelVariables();
+	virtual void send(const SendRequest& req);
+	
+	virtual bool wsRecvRequest(struct evws_connection *conn, const HTTPServer::WSFrame& frame);
+	
+	std::string getPath() {
+		return _path;
+	}
+	std::string getURL() {
+		return _url;
+	}
+	void setURL(const std::string& url) {
+		_url = url;
+	}
+	bool canAdaptPath() {
+		return false;
+	}
+
+	std::map<std::string, struct evws_connection*>& getRequests() {
+		return _requests;
+	}
+	tthread::recursive_mutex& getMutex() {
+		return _mutex;
+	}
+	
+protected:
+	InterpreterImpl* _interpreter;
+	
+	tthread::recursive_mutex _mutex;
+	std::map<std::string, struct evws_connection*> _requests;
+	std::string _path;
+	std::string _url;
+	
 };
 
 }

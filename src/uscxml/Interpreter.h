@@ -90,9 +90,11 @@ public:
 	bool verbose;
 	bool withHTTP;
 	bool withHTTPS;
+	bool withWS;
 	int logLevel;
 	unsigned short httpPort;
 	unsigned short httpsPort;
+	unsigned short wsPort;
 	std::string pluginPath;
 	std::string certificate;
 	std::string privateKey;
@@ -116,9 +118,11 @@ protected:
 		verbose(false),
 		withHTTP(true),
 		withHTTPS(true),
+		withWS(true),
 		logLevel(0),
-		httpPort(8080),
-		httpsPort(8443)
+		httpPort(0),
+		httpsPort(0),
+		wsPort(0)
 	{}
 };
 
@@ -166,7 +170,7 @@ public:
 		return _cmdLineOptions;
 	}
 
-	InterpreterServlet* getHTTPServlet() {
+	InterpreterHTTPServlet* getHTTPServlet() {
 		return _httpServlet;
 	}
 
@@ -352,7 +356,8 @@ protected:
 	
 	Event _currEvent;
 	Factory* _factory;
-	InterpreterServlet* _httpServlet;
+	InterpreterHTTPServlet* _httpServlet;
+	InterpreterWebSocketServlet* _wsServlet;
 	std::set<InterpreterMonitor*> _monitors;
 
 	void executeContent(const Arabica::DOM::Node<std::string>& content, bool rethrow = false);
@@ -477,7 +482,7 @@ public:
 		return _impl->getCmdLineOptions();
 	}
 
-	InterpreterServlet* getHTTPServlet() {
+	InterpreterHTTPServlet* getHTTPServlet() {
 		return _impl->getHTTPServlet();
 	}
 

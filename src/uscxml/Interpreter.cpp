@@ -102,6 +102,7 @@ void InterpreterOptions::printUsageAndExit(const char* progName) {
 	printf("\t-lN       : Set loglevel to N\n");
 	printf("\t-tN       : port for HTTP server\n");
 	printf("\t-sN       : port for HTTPS server\n");
+	printf("\t-wN       : port for WebSocket server\n");
 	printf("\n");
 	exit(1);
 }
@@ -122,6 +123,7 @@ InterpreterOptions InterpreterOptions::fromCmdLine(int argc, char** argv) {
 		{"dot",           no_argument,       0, 'd'},
 		{"port",          required_argument, 0, 't'},
 		{"ssl-port",      required_argument, 0, 's'},
+		{"ws-port",       required_argument, 0, 'w'},
 		{"certificate",   required_argument, 0, 'c'},
 		{"private-key",   required_argument, 0, 0},
 		{"public-key",    required_argument, 0, 0},
@@ -143,7 +145,7 @@ InterpreterOptions InterpreterOptions::fromCmdLine(int argc, char** argv) {
 	int optionInd = 0;
 	int option;
 	for (;;) {
-		option = getopt_long_only(argc, argv, "+vdt:s:c:p:l:", longOptions, &optionInd);
+		option = getopt_long_only(argc, argv, "+vdt:s:w:c:p:l:", longOptions, &optionInd);
 		if (option == -1) {
 			if (optind == argc)
 				// we are done with parsing
@@ -191,6 +193,9 @@ InterpreterOptions InterpreterOptions::fromCmdLine(int argc, char** argv) {
 			break;
 		case 's':
 			currOptions->httpsPort = strTo<unsigned short>(optarg);
+			break;
+		case 'w':
+			currOptions->wsPort = strTo<unsigned short>(optarg);
 			break;
 		case 'v':
 			currOptions->verbose = true;
@@ -1957,7 +1962,12 @@ void InterpreterImpl::setupIOProcessors() {
 
 		if (iequals(ioProcIter->first, "http")) {
 			// this is somewhat ugly
-			_httpServlet = static_cast<InterpreterServlet*>(_ioProcessors[ioProcIter->first]._impl.get());
+			_httpServlet = static_cast<InterpreterHTTPServlet*>(_ioProcessors[ioProcIter->first]._impl.get());
+		}
+
+		if (iequals(ioProcIter->first, "websocket")) {
+			// this is somewhat ugly
+			_wsServlet = static_cast<InterpreterWebSocketServlet*>(_ioProcessors[ioProcIter->first]._impl.get());
 		}
 
 		// register aliases
