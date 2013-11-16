@@ -50,16 +50,9 @@
 #ifndef md5_INCLUDED
 #  define md5_INCLUDED
 
-/**
- * C++ convinience
- */
-#include <string>
-#include "uscxml/Common.h"
-
-namespace uscxml {
-
-extern USCXML_API std::string md5(const char* data, size_t length);
-extern USCXML_API std::string md5(const std::string& data);
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /*
  * This package supports both compile-time and run-time determination of CPU
@@ -81,10 +74,6 @@ typedef struct md5_state_s {
 	md5_byte_t buf[64];		/* accumulate block */
 } md5_state_t;
 
-#ifdef __cplusplus
-extern "C"
-{
-#endif
 
 	/* Initialize the algorithm. */
 	void md5_init(md5_state_t *pms);
@@ -99,5 +88,4 @@ extern "C"
 }  /* end extern "C" */
 #endif
 
-}
 #endif /* md5_INCLUDED */
