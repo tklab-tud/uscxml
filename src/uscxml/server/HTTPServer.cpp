@@ -76,7 +76,7 @@ HTTPServer::HTTPServer(unsigned short port, unsigned short wsPort, SSLConfig* ss
 	_thread = NULL;
 	_httpHandle = NULL;
 	_wsHandle = NULL;
-	
+
 	determineAddress();
 
 	unsigned int allowedMethods =
@@ -91,12 +91,12 @@ HTTPServer::HTTPServer(unsigned short port, unsigned short wsPort, SSLConfig* ss
 	    EVHTTP_REQ_PATCH;
 
 	evhttp_set_allowed_methods(_http, allowedMethods); // allow all methods
-	
+
 	if (_port > 0)
 		_httpHandle = evhttp_bind_socket_with_handle(_http, INADDR_ANY, _port);
 	if (_httpHandle)
 		LOG(INFO) << "HTTP server listening on tcp/" << _port;
-	
+
 	_wsPort = wsPort;
 	if (_wsPort > 0)
 		_wsHandle = evws_bind_socket(_evws, _wsPort);
@@ -186,42 +186,42 @@ void HTTPServer::wsRecvReqCallback(struct evws_connection *conn, struct evws_fra
 	wsFrame.evwsConn = conn;
 
 	struct evws_header *header;
-	TAILQ_FOREACH(header, &conn->headers, next) {
+	for (header = conn->headers.tqh_first; header; header = header->next.tqe_next) {
 		wsFrame.data.compound["header"].compound[header->key] = Data(header->value, Data::VERBATIM);
 	}
 
 	switch (frame->opcode) {
-		case EVWS_CONTINUATION_FRAME:
-			wsFrame.data.compound["type"] = Data("continuation", Data::VERBATIM);
-			wsFrame.data.compound["content"] = Data(std::string(frame->data, frame->size), Data::VERBATIM);
-			break;
-		case EVWS_TEXT_FRAME:
-			wsFrame.data.compound["type"] = Data("text", Data::VERBATIM);
-			wsFrame.data.compound["content"] = Data(std::string(frame->data, frame->size), Data::VERBATIM);
-			break;
-		case EVWS_BINARY_FRAME:
-			wsFrame.data.compound["type"] = Data("binary", Data::VERBATIM);
-			wsFrame.data.compound["content"] = Data(frame->data, frame->size, "application/octet-stream");
-			break;
-		case EVWS_CONNECTION_CLOSE:
-			wsFrame.data.compound["type"] = Data("close", Data::VERBATIM);
-			break;
-		case EVWS_PING:
-			wsFrame.data.compound["type"] = Data("ping", Data::VERBATIM);
-			break;
-		case EVWS_PONG:
-			wsFrame.data.compound["type"] = Data("ping", Data::VERBATIM);
-			break;
+	case EVWS_CONTINUATION_FRAME:
+		wsFrame.data.compound["type"] = Data("continuation", Data::VERBATIM);
+		wsFrame.data.compound["content"] = Data(std::string(frame->data, frame->size), Data::VERBATIM);
+		break;
+	case EVWS_TEXT_FRAME:
+		wsFrame.data.compound["type"] = Data("text", Data::VERBATIM);
+		wsFrame.data.compound["content"] = Data(std::string(frame->data, frame->size), Data::VERBATIM);
+		break;
+	case EVWS_BINARY_FRAME:
+		wsFrame.data.compound["type"] = Data("binary", Data::VERBATIM);
+		wsFrame.data.compound["content"] = Data(frame->data, frame->size, "application/octet-stream");
+		break;
+	case EVWS_CONNECTION_CLOSE:
+		wsFrame.data.compound["type"] = Data("close", Data::VERBATIM);
+		break;
+	case EVWS_PING:
+		wsFrame.data.compound["type"] = Data("ping", Data::VERBATIM);
+		break;
+	case EVWS_PONG:
+		wsFrame.data.compound["type"] = Data("ping", Data::VERBATIM);
+		break;
 	}
 
 	wsFrame.data.compound["uri"] = Data(HTTPServer::getBaseURL(WebSockets) + conn->uri, Data::VERBATIM);
 	wsFrame.data.compound["path"] = Data(conn->uri, Data::VERBATIM);
-	
+
 	// try with the handler registered for path first
 	bool answered = false;
 	if (callbackData != NULL)
 		answered = ((WebSocketServlet*)callbackData)->wsRecvRequest(conn, wsFrame);
-	
+
 	if (!answered)
 		HTTPServer::getInstance()->processByMatchingServlet(conn, wsFrame);
 
@@ -246,7 +246,7 @@ void HTTPServer::httpRecvReqCallback(struct evhttp_request *req, void *callbackD
 		}
 	}
 #endif
-	
+
 	evhttp_request_own(req);
 	Request request;
 	request.evhttpReq = req;
@@ -393,7 +393,7 @@ void HTTPServer::httpRecvReqCallback(struct evhttp_request *req, void *callbackD
 			}
 		}
 	}
-	
+
 	request.raw = raw.str();
 
 	// try with the handler registered for path first
@@ -439,22 +439,22 @@ void HTTPServer::processByMatchingServlet(const Request& request) {
 
 void HTTPServer::processByMatchingServlet(evws_connection* conn, const WSFrame& frame) {
 	tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
-	
+
 	ws_servlet_iter_t servletIter = _wsServlets.begin();
-	
+
 	std::string actualPath = frame.data.compound.at("path").atom;
 	std::map<std::string, WebSocketServlet*, comp_strsize_less> matches;
-	
+
 	while(servletIter != _wsServlets.end()) {
 		// is the servlet path a prefix of the actual path?
 		std::string servletPath = "/" + servletIter->first;
 		if (iequals(actualPath.substr(0, servletPath.length()), servletPath) && // servlet path is a prefix
-				iequals(actualPath.substr(servletPath.length(), 1), "/")) {     // and next character is a '/'
+		        iequals(actualPath.substr(servletPath.length(), 1), "/")) {     // and next character is a '/'
 			matches.insert(std::make_pair(servletPath, servletIter->second));
 		}
 		servletIter++;
 	}
-	
+
 	// process by best matching servlet until someone feels responsible
 	std::map<std::string, WebSocketServlet*, comp_strsize_less>::iterator matchesIter = matches.begin();
 	while(matchesIter != matches.end()) {
@@ -544,7 +544,7 @@ bool HTTPServer::registerServlet(const std::string& path, HTTPServlet* servlet) 
 bool HTTPServer::registerServlet(const std::string& path, WebSocketServlet* servlet) {
 	HTTPServer* INSTANCE = getInstance();
 	tthread::lock_guard<tthread::recursive_mutex> lock(INSTANCE->_mutex);
-	
+
 	// remove trailing and leading slash
 	std::string actualPath = path;
 	if (boost::ends_with(actualPath, "/"))
@@ -552,7 +552,7 @@ bool HTTPServer::registerServlet(const std::string& path, WebSocketServlet* serv
 	if (boost::starts_with(actualPath, "/"))
 		actualPath = actualPath.substr(1);
 	std::string suffixedPath = actualPath;
-	
+
 	// if this servlet allows to adapt the path, do so
 	int i = 2;
 	while(INSTANCE->_wsServlets.find(suffixedPath) != INSTANCE->_wsServlets.end()) {
@@ -562,15 +562,15 @@ bool HTTPServer::registerServlet(const std::string& path, WebSocketServlet* serv
 		ss << actualPath << i++;
 		suffixedPath = ss.str();
 	}
-	
+
 	std::stringstream servletURL;
 	servletURL << "ws://" << INSTANCE->_address << ":" << INSTANCE->_wsPort << "/" << suffixedPath;
 	servlet->setURL(servletURL.str());
-	
+
 	INSTANCE->_wsServlets[suffixedPath] = servlet;
-	
+
 	//	LOG(INFO) << "HTTP Servlet listening at: " << servletURL.str() << std::endl;
-		
+
 	// register callback
 	evws_set_cb(INSTANCE->_evws, ("/" + suffixedPath).c_str(), HTTPServer::wsRecvReqCallback, NULL, servlet);
 
@@ -582,15 +582,19 @@ std::string HTTPServer::getBaseURL(ServerType type) {
 	std::stringstream servletURL;
 
 	switch (type) {
-		case HTTP:
-			servletURL << "http://" << INSTANCE->_address << ":" << INSTANCE->_port;
-			break;
-		case HTTPS:
-			servletURL << "https://" << INSTANCE->_address << ":" << INSTANCE->_sslPort;
-			break;
-		case WebSockets:
-			servletURL << "ws://" << INSTANCE->_address << ":" << INSTANCE->_wsPort;
-			break;
+	case HTTP:
+		servletURL << "http://" << INSTANCE->_address << ":" << INSTANCE->_port;
+		break;
+#if (defined EVENT_SSL_FOUND && defined OPENSSL_FOUND && defined OPENSSL_HAS_ELIPTIC_CURVES)
+	case HTTPS:
+		servletURL << "https://" << INSTANCE->_address << ":" << INSTANCE->_sslPort;
+		break;
+#endif
+	case WebSockets:
+		servletURL << "ws://" << INSTANCE->_address << ":" << INSTANCE->_wsPort;
+		break;
+	default:
+		break;
 	}
 	return servletURL.str();
 }
@@ -628,84 +632,84 @@ void HTTPServer::determineAddress() {
 	_address = std::string(hostname);
 }
 
-	
+
 #if (defined EVENT_SSL_FOUND && defined OPENSSL_FOUND && defined OPENSSL_HAS_ELIPTIC_CURVES)
-	// see https://github.com/ppelleti/https-example/blob/master/https-server.c
-	struct bufferevent* HTTPServer::sslBufferEventCallback(struct event_base *base, void *arg) {
-		struct bufferevent* r;
-		SSL_CTX *ctx = (SSL_CTX *) arg;
-		r = bufferevent_openssl_socket_new (base,
-																				-1,
-																				SSL_new (ctx),
-																				BUFFEREVENT_SSL_ACCEPTING,
-																				BEV_OPT_CLOSE_ON_FREE);
-		return r;
+// see https://github.com/ppelleti/https-example/blob/master/https-server.c
+struct bufferevent* HTTPServer::sslBufferEventCallback(struct event_base *base, void *arg) {
+	struct bufferevent* r;
+	SSL_CTX *ctx = (SSL_CTX *) arg;
+	r = bufferevent_openssl_socket_new (base,
+	                                    -1,
+	                                    SSL_new (ctx),
+	                                    BUFFEREVENT_SSL_ACCEPTING,
+	                                    BEV_OPT_CLOSE_ON_FREE);
+	return r;
+}
+
+
+void HTTPServer::sslGeneralBufferEventCallback (struct evhttp_request *req, void *arg) {
+	struct evbuffer *evb = NULL;
+	const char *uri = evhttp_request_get_uri (req);
+	struct evhttp_uri *decoded = NULL;
+
+	/* We only handle POST requests. */
+	if (evhttp_request_get_command (req) != EVHTTP_REQ_POST) {
+		evhttp_send_reply (req, 200, "OK", NULL);
+		return;
 	}
-	
-	
-	void HTTPServer::sslGeneralBufferEventCallback (struct evhttp_request *req, void *arg) {
-		struct evbuffer *evb = NULL;
-		const char *uri = evhttp_request_get_uri (req);
-		struct evhttp_uri *decoded = NULL;
-		
-		/* We only handle POST requests. */
-		if (evhttp_request_get_command (req) != EVHTTP_REQ_POST) {
-			evhttp_send_reply (req, 200, "OK", NULL);
-			return;
-		}
-		
-		printf ("Got a POST request for <%s>\n", uri);
-		
-		/* Decode the URI */
-		decoded = evhttp_uri_parse (uri);
-		if (! decoded) {
-			printf ("It's not a good URI. Sending BADREQUEST\n");
-			evhttp_send_error (req, HTTP_BADREQUEST, 0);
-			return;
-		}
-		
-		/* Decode the payload */
-		struct evkeyvalq kv;
-		memset (&kv, 0, sizeof (kv));
-		struct evbuffer *buf = evhttp_request_get_input_buffer (req);
-		evbuffer_add (buf, "", 1);    /* NUL-terminate the buffer */
-		char *payload = (char *) evbuffer_pullup (buf, -1);
-		if (0 != evhttp_parse_query_str (payload, &kv)) {
-			printf ("Malformed payload. Sending BADREQUEST\n");
-			evhttp_send_error (req, HTTP_BADREQUEST, 0);
-			return;
-		}
-		
-		/* Determine peer */
-		char *peer_addr;
-		ev_uint16_t peer_port;
-		struct evhttp_connection *con = evhttp_request_get_connection (req);
-		evhttp_connection_get_peer (con, &peer_addr, &peer_port);
-		
-		/* Extract passcode */
-		const char *passcode = evhttp_find_header (&kv, "passcode");
-		char response[256];
-		evutil_snprintf (response, sizeof (response),
-										 "Hi %s!  I %s your passcode.\n", peer_addr,
-										 (0 == strcmp (passcode, "R23")
-											?  "liked"
-											:  "didn't like"));
-		evhttp_clear_headers (&kv);   /* to free memory held by kv */
-		
-		/* This holds the content we're sending. */
-		evb = evbuffer_new ();
-		
-		evhttp_add_header (evhttp_request_get_output_headers (req),
-											 "Content-Type", "application/x-yaml");
-		evbuffer_add (evb, response, strlen (response));
-		
-		evhttp_send_reply (req, 200, "OK", evb);
-		
-		if (decoded)
-			evhttp_uri_free (decoded);
-		if (evb)
-			evbuffer_free (evb);
+
+	printf ("Got a POST request for <%s>\n", uri);
+
+	/* Decode the URI */
+	decoded = evhttp_uri_parse (uri);
+	if (! decoded) {
+		printf ("It's not a good URI. Sending BADREQUEST\n");
+		evhttp_send_error (req, HTTP_BADREQUEST, 0);
+		return;
 	}
+
+	/* Decode the payload */
+	struct evkeyvalq kv;
+	memset (&kv, 0, sizeof (kv));
+	struct evbuffer *buf = evhttp_request_get_input_buffer (req);
+	evbuffer_add (buf, "", 1);    /* NUL-terminate the buffer */
+	char *payload = (char *) evbuffer_pullup (buf, -1);
+	if (0 != evhttp_parse_query_str (payload, &kv)) {
+		printf ("Malformed payload. Sending BADREQUEST\n");
+		evhttp_send_error (req, HTTP_BADREQUEST, 0);
+		return;
+	}
+
+	/* Determine peer */
+	char *peer_addr;
+	ev_uint16_t peer_port;
+	struct evhttp_connection *con = evhttp_request_get_connection (req);
+	evhttp_connection_get_peer (con, &peer_addr, &peer_port);
+
+	/* Extract passcode */
+	const char *passcode = evhttp_find_header (&kv, "passcode");
+	char response[256];
+	evutil_snprintf (response, sizeof (response),
+	                 "Hi %s!  I %s your passcode.\n", peer_addr,
+	                 (0 == strcmp (passcode, "R23")
+	                  ?  "liked"
+	                  :  "didn't like"));
+	evhttp_clear_headers (&kv);   /* to free memory held by kv */
+
+	/* This holds the content we're sending. */
+	evb = evbuffer_new ();
+
+	evhttp_add_header (evhttp_request_get_output_headers (req),
+	                   "Content-Type", "application/x-yaml");
+	evbuffer_add (evb, response, strlen (response));
+
+	evhttp_send_reply (req, 200, "OK", evb);
+
+	if (decoded)
+		evhttp_uri_free (decoded);
+	if (evb)
+		evbuffer_free (evb);
+}
 #endif
 
 }

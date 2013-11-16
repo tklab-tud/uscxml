@@ -30,6 +30,10 @@
 #include <inttypes.h>
 #include <stdlib.h> /* srand, rand */
 
+#ifdef _WIN32
+#define strdup _strdup
+#endif
+
 namespace uscxml {
 
 #ifdef BUILD_AS_PLUGINS
@@ -304,15 +308,15 @@ void MilesSessionInvoker::processEventStart(const std::string& origin, const std
 	/* Set up audio and video RTP sockets */
 	video_rtp_in_socket = miles_net_setup_udp_socket((char*)reflector.c_str(), video_port, video_port, 10, 16000);
 	audio_rtp_in_socket = miles_net_setup_udp_socket((char*)reflector.c_str(), audio_port, audio_port, 10, 16000);
-	video_rtp_out_socket = video_rtp_in_socket; 
-	audio_rtp_out_socket = audio_rtp_in_socket; 
+	video_rtp_out_socket = video_rtp_in_socket;
+	audio_rtp_out_socket = audio_rtp_in_socket;
 
 
 	/* Set up audio and video RTCP sockets */
 	video_rtcp_in_socket = miles_net_setup_udp_socket((char*)reflector.c_str(), video_port+1, video_port+1, 10, 16000);
 	audio_rtcp_in_socket = miles_net_setup_udp_socket((char*)reflector.c_str(), audio_port+1, audio_port+1, 10, 16000);
 	video_rtcp_out_socket = video_rtcp_in_socket;
-	audio_rtcp_out_socket = audio_rtcp_in_socket; 
+	audio_rtcp_out_socket = audio_rtcp_in_socket;
 
 	/* Set up RTP audio and video sessions */
 	video_session = miles_rtp_setup_session(video_rtp_in_socket, MILES_RTP_MEDIA_TYPE_VIDEO);
@@ -357,7 +361,7 @@ void MilesSessionInvoker::processEventStart(const std::string& origin, const std
 	}
 
 	/* Register RTCP APP handler for text messages */
-	rv = miles_rtp_register_rtcp_app_handler("text", NULL, receive_text_message_callback, 0);	
+	rv = miles_rtp_register_rtcp_app_handler("text", NULL, receive_text_message_callback, 0);
 	if(rv==0) {
 		LOG(ERROR) << "Error registering text message callback";
 	}
@@ -400,7 +404,7 @@ void MilesSessionInvoker::processEventStop(const std::string& origin) {
 		return;
 	}
 	/* Unregister RTCP APP handler for text messages */
-	rv = miles_rtp_unregister_rtcp_app_handler("text");	
+	rv = miles_rtp_unregister_rtcp_app_handler("text");
 	if(rv==0) {
 		LOG(ERROR) << "Error registering text message callback";
 	}
@@ -466,7 +470,7 @@ void MilesSessionInvoker::processEventThumbnail(const std::string& origin, const
 			use_thumb = te;
 		}
 		p = p->next;
-  }
+	}
 	if(!p && use_thumb)
 		use_thumb->userid = strdup(userid.c_str());
 	if(use_thumb) {
@@ -568,7 +572,7 @@ void MilesSessionInvoker::processEventGetText(const std::string& origin) {
 		returnEvent(ev);
 		return;
 	}
-	
+
 	ev.name = "gettext.reply";
 	if(confero_text_msg_available) {
 		strcpy(text_msg_buf, confero_text_msg_buf);
@@ -578,7 +582,7 @@ void MilesSessionInvoker::processEventGetText(const std::string& origin) {
 		memset(confero_text_msg_buf, 0, 1000);
 		confero_text_msg_available = 0;
 	}
-	
+
 	returnEvent(ev);
 }
 
@@ -640,7 +644,7 @@ void MilesSessionInvoker::processAudio() {
 int MilesSessionInvoker::setup_audio() {
 	/* Check that we have OpeanAL audio */
 	if(!miles_audio_io_is_supported(MILES_AUDIO_IO_OPENAL)) {
- 		fprintf(stderr, "OpenAL audio i/o not supported on this platform.\n");
+		fprintf(stderr, "OpenAL audio i/o not supported on this platform.\n");
 		return 0;
 	}
 
@@ -730,7 +734,7 @@ int MilesSessionInvoker::setup_video_grabber() {
 	video_grabber->height = 240;
 	video_grabber->frame_rate = 25*100;
 	/* Select first supported image format */
-  struct miles_video_grabber_device *dev;
+	struct miles_video_grabber_device *dev;
 	dev = (struct miles_video_grabber_device *)grabber_description->devices->item;
 	struct miles_int_struct *img_format;
 	img_format = (struct miles_int_struct *)dev->capabilities->formats->item;

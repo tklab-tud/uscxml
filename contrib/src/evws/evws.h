@@ -24,13 +24,21 @@
 #include <event2/event.h>
 #include <event2/bufferevent.h>
 #include <event2/listener.h>
-#include <sys/queue.h>
+#ifndef _WIN32
+#	include <sys/queue.h>
+#endif
 #include <stdint.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+struct evws;
+struct evws_header;
+struct evws_frame;
+struct evws_connection;
+struct evwsconq;
+	
 enum evws_opcode {
 	EVWS_CONTINUATION_FRAME = 0x0,
 	EVWS_TEXT_FRAME = 0x1,
@@ -58,7 +66,10 @@ enum evws_frame_state {
 };
 
 struct evws_header {
-	TAILQ_ENTRY(evws_header) next;
+	struct {
+		struct evws_header *tqe_next;
+		struct evws_header **tqe_prev;
+	} next;
 	char *key;
 	char *value;
 };
@@ -125,9 +136,11 @@ struct evws_frame {
 	uint8_t state;
 };
 
-struct evws_connection
-{
-	TAILQ_ENTRY(evws_connection) next;
+struct evws_connection {
+	struct {
+		struct evws_connection *tqe_next;
+		struct evws_connection **tqe_prev;
+	} next;
 	struct evws *ws;
 	struct evws_frame *frame;
 	char *uri;
@@ -136,33 +149,41 @@ struct evws_connection
 	int fd;
 
 	// headers
-	TAILQ_HEAD(wsheadersq, evws_header) headers;
+	struct wsheadersq {
+		struct evws_header *tqh_first;
+		struct evws_header **tqh_last;
+	} headers;
+
 };
 
 typedef void (*cb_type)(struct evws_connection *, const char *, size_t, void *);
 typedef void (*cb_frame_type)(struct evws_connection *, struct evws_frame *, void *);
 
-struct evws_cb
-{
-	TAILQ_ENTRY(evws_cb) next;
+struct evws_cb {
+	struct {
+		struct evws_cb *tqe_next;
+		struct evws_cb **tqe_prev;
+	} next;
+	
 	char * uri;
 	cb_frame_type msg_cb;
 	cb_type conn_cb;
 	void * cb_arg;
 };
 
-struct evws_read_buf
-{
-	TAILQ_ENTRY(evws_read_buf) next;
-	char* data;
+
+struct evwsconq {
+	struct evws_connection *tqh_first;
+	struct evws_connection **tqh_last;
 };
 
-TAILQ_HEAD(evwsconq, evws_connection);
-
-struct evws
-{
+struct evws {
 	struct evconnlistener *listener;
-	TAILQ_HEAD(wscbq, evws_cb) callbacks;
+	struct wscbq {
+		struct evws_cb *tqh_first;
+		struct evws_cb **tqh_last;
+	} callbacks;
+	
 	struct evwsconq connections;
 
 	// generic callback

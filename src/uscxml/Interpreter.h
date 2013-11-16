@@ -135,7 +135,7 @@ public:
 	    EARLY = 0,
 	    LATE = 1
 	};
-	
+
 	virtual ~InterpreterImpl();
 
 	void start();
@@ -310,7 +310,7 @@ protected:
 		void handleEvent(Arabica::DOM::Events::Event<std::string>& event);
 		InterpreterImpl* _interpreter;
 	};
-	
+
 	InterpreterImpl();
 	void init();
 
@@ -353,7 +353,7 @@ protected:
 	DelayedEventQueue* _sendQueue;
 
 	DOMEventListener _domEventListener;
-	
+
 	Event _currEvent;
 	Factory* _factory;
 	InterpreterHTTPServlet* _httpServlet;

@@ -40,7 +40,7 @@ namespace uscxml {
 
 class HTTPServlet;
 class WebSocketServlet;
-	
+
 class USCXML_API HTTPServer {
 public:
 	class Request : public Event {
@@ -60,7 +60,7 @@ public:
 		std::string content;
 		struct evws_connection* evwsConn;
 	};
-	
+
 	class SSLConfig {
 	public:
 		SSLConfig() : port(8443) {}
@@ -85,11 +85,11 @@ public:
 	};
 
 	enum ServerType {
-		HTTPS,
-		HTTP,
-		WebSockets
+	    HTTPS,
+	    HTTP,
+	    WebSockets
 	};
-	
+
 	static HTTPServer* getInstance(unsigned short port, unsigned short wsPort, SSLConfig* sslConf = NULL);
 	static HTTPServer* getInstance() {
 		return getInstance(0, 0, NULL);
@@ -140,10 +140,10 @@ private:
 	struct event_base* _base;
 	struct evhttp* _http;
 	struct evws* _evws;
-	
+
 	struct evhttp_bound_socket* _httpHandle;
 	evutil_socket_t _wsHandle;
-	
+
 	unsigned short _port;
 	unsigned short _wsPort;
 	std::string _address;

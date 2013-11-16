@@ -85,11 +85,11 @@ void InterpreterHTTPServlet::send(const SendRequest& req) {
 	LOG(ERROR) << "send not supported by http iorprocessor, use the fetch element";
 }
 
-	
-	
+
+
 InterpreterWebSocketServlet::InterpreterWebSocketServlet(InterpreterImpl* interpreter) {
 	_interpreter = interpreter;
-	
+
 	std::stringstream path;
 	path << _interpreter->getName();
 	int i = 2;
@@ -109,16 +109,16 @@ boost::shared_ptr<IOProcessorImpl> InterpreterWebSocketServlet::create(Interpret
 
 bool InterpreterWebSocketServlet::wsRecvRequest(struct evws_connection *conn, const HTTPServer::WSFrame& frame) {
 	tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
-	
+
 	//  evhttp_request_own(req.curlReq);
-	
+
 	_requests[toStr((uintptr_t)conn)] = conn;
-	
+
 	Event event = frame;
-	
+
 	event.name = "ws." + event.data.compound["type"].atom;
 	event.origin = toStr((uintptr_t)conn);
-	
+
 	if (event.data.compound["type"].atom.compare("text") == 0 && event.data.compound["content"]) {
 		if (event.data.compound["content"].compound.size() > 0) {
 			std::map<std::string, Data>::iterator compoundIter = event.data.compound["content"].compound.begin();
@@ -131,7 +131,7 @@ bool InterpreterWebSocketServlet::wsRecvRequest(struct evws_connection *conn, co
 			}
 		}
 	}
-	
+
 	_interpreter->receive(event);
 	return true;
 }
@@ -155,23 +155,23 @@ void InterpreterWebSocketServlet::send(const SendRequest& req) {
 		if (false) {
 		} else if (req.data.binary) {
 			evws_send_data(_requests[req.target],
-										 EVWS_BINARY_FRAME,
-										 req.data.binary->data,
-										 req.data.binary->size);
+			               EVWS_BINARY_FRAME,
+			               req.data.binary->data,
+			               req.data.binary->size);
 		} else if (req.data.node) {
 			std::stringstream ssXML;
 			ssXML << req.data.node;
 			std::string data = ssXML.str();
 			evws_send_data(_requests[req.target],
-										 EVWS_TEXT_FRAME,
-										 data.c_str(),
-										 data.length());
+			               EVWS_TEXT_FRAME,
+			               data.c_str(),
+			               data.length());
 		} else if (req.data) {
 			std::string data = Data::toJSON(req.data);
 			evws_send_data(_requests[req.target],
-										 EVWS_TEXT_FRAME,
-										 data.c_str(),
-										 data.length());
+			               EVWS_TEXT_FRAME,
+			               data.c_str(),
+			               data.length());
 		} else {
 			LOG(WARNING) << "Not sure what to make off content given to send on websocket!";
 		}
@@ -180,23 +180,23 @@ void InterpreterWebSocketServlet::send(const SendRequest& req) {
 		if (false) {
 		} else if (req.data.binary) {
 			evws_broadcast(getWSBase(), req.target.c_str(),
-										 EVWS_BINARY_FRAME,
-										 req.data.binary->data,
-										 req.data.binary->size);
+			               EVWS_BINARY_FRAME,
+			               req.data.binary->data,
+			               req.data.binary->size);
 		} else if (req.data.node) {
 			std::stringstream ssXML;
 			ssXML << req.data.node;
 			std::string data = ssXML.str();
 			evws_broadcast(getWSBase(), req.target.c_str(),
-										 EVWS_TEXT_FRAME,
-										 data.c_str(),
-										 data.length());
+			               EVWS_TEXT_FRAME,
+			               data.c_str(),
+			               data.length());
 		} else if (req.data) {
 			std::string data = Data::toJSON(req.data);
 			evws_broadcast(getWSBase(), req.target.c_str(),
-										 EVWS_TEXT_FRAME,
-										 data.c_str(),
-										 data.length());
+			               EVWS_TEXT_FRAME,
+			               data.c_str(),
+			               data.length());
 		} else {
 			LOG(WARNING) << "Not sure what to make off content given to broadcast on websocket!";
 		}

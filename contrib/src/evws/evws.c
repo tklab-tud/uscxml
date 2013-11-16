@@ -26,6 +26,31 @@
 #include "uscxml/util/SHA1.h"
 #include "uscxml/util/Base64.h"
 
+#ifdef _WIN32
+
+char* strsep(char** stringp, const char* delim) {
+  char* start = *stringp;
+  char* p;
+	
+  p = (start != NULL) ? strpbrk(start, delim) : NULL;
+	
+  if (p == NULL)
+  {
+    *stringp = NULL;
+  }
+  else
+  {
+    *p = '\0';
+    *stringp = p + 1;
+  }
+	
+  return start;
+}
+
+#define strdup _strdup
+
+#endif
+
 static int evws_parse_first_line(struct evws_connection *conn, char *line);
 static int evws_parse_header_line(char *line, char **skey, char **svalue);
 
@@ -41,8 +66,11 @@ struct evws *evws_new(struct event_base *base) {
 	ret_obj->base = base;
 	ret_obj->listener = NULL;
 
-	TAILQ_INIT(&ret_obj->connections);
-	TAILQ_INIT(&ret_obj->callbacks);
+	ret_obj->connections.tqh_first = NULL;
+	ret_obj->connections.tqh_last = &(ret_obj->connections.tqh_first);
+
+	ret_obj->callbacks.tqh_first = NULL;
+	ret_obj->callbacks.tqh_last = &(ret_obj->callbacks.tqh_first);
 
 	return ret_obj;
 }
@@ -70,7 +98,7 @@ evutil_socket_t evws_bind_socket(struct evws * ws, unsigned short port) {
 int evws_set_cb(struct evws * ws, const char * uri, cb_frame_type message_cb, cb_type connect_cb, void * arg) {
 	struct evws_cb *ws_cb;
 
-	TAILQ_FOREACH(ws_cb, &ws->callbacks, next) {
+	for (ws_cb = ws->callbacks.tqh_first; ws_cb; ws_cb = ws_cb->next.tqe_next) {
 		if (strcmp(ws_cb->uri, uri) == 0)
 			return (-1);
 	}
@@ -84,7 +112,11 @@ int evws_set_cb(struct evws * ws, const char * uri, cb_frame_type message_cb, cb
 	ws_cb->conn_cb = connect_cb;
 	ws_cb->cb_arg = arg;
 
-	TAILQ_INSERT_TAIL(&ws->callbacks, ws_cb, next);
+	// TAILQ_INSERT_TAIL
+	ws_cb->next.tqe_next = NULL;
+	ws_cb->next.tqe_prev = ws->callbacks.tqh_last;
+	ws->callbacks.tqh_last = &ws_cb;
+	ws->callbacks.tqh_last = &ws_cb->next.tqe_next;
 
 	return (0);
 }
@@ -99,7 +131,7 @@ cb_frame_type evws_set_gencb(struct evws *ws, cb_frame_type cb, void * arg) {
 // Broadcast data to all buffers associated with pattern
 void evws_broadcast(struct evws *ws, const char *uri, enum evws_opcode opcode, const char *data, uint64_t length) {
 	struct evws_connection *ws_connection;
-	TAILQ_FOREACH(ws_connection, &ws->connections, next) {
+	for (ws_connection = ws->connections.tqh_first; ws_connection; ws_connection = ws_connection->next.tqe_next) {
 		if (strcmp(ws_connection->uri, uri) == 0)
 			evws_send_data(ws_connection, opcode, data, length);
 	}
@@ -108,7 +140,16 @@ void evws_broadcast(struct evws *ws, const char *uri, enum evws_opcode opcode, c
 // Error callback
 static void cb_error(struct bufferevent *bev, short what, void *ctx) {
 	struct evws_connection *conn = ctx;
-	TAILQ_REMOVE(&(conn->ws->connections), conn, next);
+	
+	//TAILQ_REMOVE
+	if (conn->next.tqe_next != NULL)
+		conn->next.tqe_next->next.tqe_prev = conn->next.tqe_prev;
+	else {
+		conn->ws->connections.tqh_last = conn->next.tqe_prev;
+	}
+	conn->next.tqe_prev = &conn->next.tqe_next;
+
+	
 	evws_connection_free(conn);
 }
 
@@ -149,11 +190,18 @@ void cb_read_handshake(struct bufferevent *bev, void *arg) {
 	struct evws_connection *ws_conn = arg;
 	char *line, *skey, *svalue;
 	struct evbuffer *buffer = bufferevent_get_input(bev);
+	struct evws_header *header = NULL;
 	size_t line_length;
 	char *key = NULL;
 	char *host = NULL;
 	char *origin = NULL;
-
+	SHA1Context sha1;
+	char chksumSha1[21];
+  int i;
+	int md5End = 0;
+	char chksumBase64[200];
+	base64_encodestate* base64Ctx = NULL;
+	
 	switch(ws_conn->state) {
 	case 0:
 		line = evbuffer_readln(buffer, &line_length, EVBUFFER_EOL_CRLF);
@@ -175,8 +223,13 @@ void cb_read_handshake(struct bufferevent *bev, void *arg) {
 			} else if(strcmp(skey, "Origin") == 0) {
 				origin = strdup(svalue);
 			}
-			struct evws_header *header = evws_header_new(skey, svalue);
-			TAILQ_INSERT_TAIL(&ws_conn->headers, header, next);
+			header = evws_header_new(skey, svalue);
+			//TAILQ_INSERT_TAIL
+			header->next.tqe_next = NULL;
+			header->next.tqe_prev = ws_conn->headers.tqh_last;
+			ws_conn->headers.tqh_last = &header;
+			ws_conn->headers.tqh_last = &header->next.tqe_next;
+
 			free(line);
 		}
 	default:
@@ -185,14 +238,11 @@ void cb_read_handshake(struct bufferevent *bev, void *arg) {
 
 	// -- SHA1
 	
-	SHA1Context sha1;
 	SHA1Reset(&sha1);
 	SHA1Input(&sha1, (const unsigned char*)key, 24);
 	SHA1Input(&sha1, (const unsigned char*)WS_GUID, 36);
 	SHA1Result(&sha1);
 	
-	char chksumSha1[21];
-  int i;
 	for (i = 0; i < 5; i++) {
 		chksumSha1[i * 4 + 0] = (sha1.Message_Digest[i] >> 24) & 0xff;
 		chksumSha1[i * 4 + 1] = (sha1.Message_Digest[i] >> 16) & 0xff;
@@ -203,9 +253,7 @@ void cb_read_handshake(struct bufferevent *bev, void *arg) {
 
 	// -- BASE64
 	
-	int md5End = 0;
-	char chksumBase64[200];
-	base64_encodestate* base64Ctx = malloc(sizeof(base64_encodestate));
+	base64Ctx = malloc(sizeof(base64_encodestate));
 	base64_init_encodestate(base64Ctx);
 	md5End += base64_encode_block(chksumSha1, 20, chksumBase64, base64Ctx);
 	md5End += base64_encode_blockend(&chksumBase64[md5End], base64Ctx);
@@ -234,10 +282,15 @@ void cb_read_handshake(struct bufferevent *bev, void *arg) {
 	);
 	bufferevent_setcb(ws_conn->bufev, cb_read_frame, NULL, cb_error, ws_conn);
 
-	TAILQ_INSERT_TAIL(&(ws_conn->ws->connections), ws_conn, next);
+	//TAILQ_INSERT_TAIL(&(ws_conn->ws->connections), ws_conn, next);
+	ws_conn->next.tqe_next = NULL;
+	ws_conn->next.tqe_prev = ws_conn->ws->connections.tqh_last;
+	ws_conn->ws->connections.tqh_last = &ws_conn;
+	ws_conn->ws->connections.tqh_last = &ws_conn->next.tqe_next;
+
 	{
 		struct evws_cb *ws_cb;
-		TAILQ_FOREACH(ws_cb, &ws_conn->ws->callbacks, next) {
+		for (ws_cb = ws_conn->ws->callbacks.tqh_first; ws_cb; ws_cb = ws_cb->next.tqe_next) {
 			if (strcmp(ws_cb->uri, ws_conn->uri) == 0) {
 				if(ws_cb->conn_cb != NULL)
 					ws_cb->conn_cb(ws_conn, NULL, 0, ws_cb->cb_arg);
@@ -361,7 +414,7 @@ NEXT_FRAME:
 		if (conn->frame->payload_read == conn->frame->size) {
 			// done reading this frame - invoke callbacks
 			struct evws_cb *ws_cb;
-			TAILQ_FOREACH(ws_cb, &ws->callbacks, next) {
+			for (ws_cb = ws->callbacks.tqh_first; ws_cb; ws_cb = ws_cb->next.tqe_next) {
 				if (strcmp(ws_cb->uri, conn->uri) == 0) {
 					if(ws_cb->msg_cb != NULL)
 						ws_cb->msg_cb(conn, conn->frame, ws_cb->cb_arg);
@@ -379,11 +432,15 @@ NEXT_FRAME:
 }
 
 void evws_send_data(struct evws_connection *conn, enum evws_opcode opcode, const char *data, uint64_t length) {
-	char *sendbuf = malloc(length + 10); // payload + header without masking key
+	char* writePtr = NULL;
+	char *sendbuf = NULL;
+	struct evbuffer *buffer = NULL;
+	
+	sendbuf = malloc(length + 10); // payload + header without masking key
 	if(sendbuf == NULL)
 		return;
 	
-	char* writePtr = sendbuf;
+	writePtr = sendbuf;
 	
 	writePtr[0] = (1 << 7); // set fin header and zero out RSV
 	writePtr[0] += opcode; // set opcode
@@ -415,7 +472,7 @@ void evws_send_data(struct evws_connection *conn, enum evws_opcode opcode, const
 	memcpy(writePtr, data, length);
 	writePtr += length;
 	
-	struct evbuffer *buffer =  bufferevent_get_output(conn->bufev);
+	buffer = bufferevent_get_output(conn->bufev);
 	evbuffer_add(buffer, sendbuf, writePtr - sendbuf);
 	free(sendbuf);
 }
@@ -432,7 +489,10 @@ struct evws_connection* evws_connection_new(struct evws *ws, evutil_socket_t fd)
 	conn->bufev = bufferevent_socket_new(ws->base, fd, BEV_OPT_CLOSE_ON_FREE);
 	conn->state = 0;
 	conn->frame = NULL;
-	TAILQ_INIT(&conn->headers);
+	
+	conn->headers.tqh_first = NULL;
+	conn->headers.tqh_last = &(conn->headers.tqh_first);
+
 	return conn;
 }
 
@@ -442,7 +502,7 @@ void evws_connection_free(struct evws_connection *conn) {
 	if(conn->uri != NULL)
 		free(conn->uri);
 
-	TAILQ_FOREACH(header, &conn->headers, next) {
+	for (header = conn->headers.tqh_first; header; header = header->next.tqe_next) {
 		evws_header_free(header);
 	}
 	free(conn);
@@ -477,11 +537,12 @@ void evws_header_free(struct evws_header *header) {
 }
 
 char *evws_find_header(const struct wsheadersq *q, const char *key) {
-	struct evws_header *hdr;
+	struct evws_header *header;
 	char * ret = NULL;
-	TAILQ_FOREACH(hdr, q, next) {
-		if(strcmp(hdr->key, key) == 0) {
-			ret = hdr->value;
+	for (header = q->tqh_first; header; header = header->next.tqe_next) {
+
+		if(strcmp(header->key, key) == 0) {
+			ret = header->value;
 			break;
 		}
 	}
