@@ -69,8 +69,8 @@ bool XHTMLInvoker::httpRecvRequest(const HTTPServer::Request& req) {
 		if (iequals(req.data["type"].atom, "get")) {
 			// the long-polling GET
 			if (_longPoll) {
-				evhttp_send_error(_longPoll.curlReq, 204, NULL);
-				_longPoll.curlReq = NULL;
+				evhttp_send_error(_longPoll.evhttpReq, 204, NULL);
+				_longPoll.evhttpReq = NULL;
 			}
 			_longPoll = req;
 			if (!_outQueue.empty()) {
@@ -141,7 +141,7 @@ bool XHTMLInvoker::httpRecvRequest(const HTTPServer::Request& req) {
 		HTTPServer::reply(reply);
 
 		// queue invoke request for initial html
-		_longPoll.curlReq = NULL;
+		_longPoll.evhttpReq = NULL;
 		_outQueue = std::deque<SendRequest>();
 		SendRequest sendReq(_invokeReq);
 		send(sendReq);
@@ -172,7 +172,7 @@ void XHTMLInvoker::send(const SendRequest& req) {
 		return;
 	}
 	reply(reqCopy, _longPoll);
-	_longPoll.curlReq = NULL;
+	_longPoll.evhttpReq = NULL;
 }
 
 void XHTMLInvoker::reply(const SendRequest& req, const HTTPServer::Request& longPoll) {

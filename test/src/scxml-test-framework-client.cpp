@@ -35,7 +35,7 @@ public:
 	}
 
 	virtual void afterCompletion(uscxml::Interpreter interpreter) {
-		_interpreters[interpreter.getName()].second.curlReq = NULL;
+		_interpreters[interpreter.getName()].second.evhttpReq = NULL;
 	}
 	virtual void beforeMicroStep(uscxml::Interpreter interpreter) {}
 	virtual void beforeTakingTransitions(uscxml::Interpreter interpreter, const Arabica::XPath::NodeSet<std::string>& transitions) {}
