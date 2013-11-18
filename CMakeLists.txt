@@ -15,9 +15,6 @@ ELSE()
 ENDIF()
 
 set(CMAKE_SYSTEM_PROCESSOR "i586")
-SET_PROPERTY(GLOBAL PROPERTY FIND_LIBRARY_USE_LIB64_PATHS 0)
-set(CMAKE_IGNORE_PATH /lib /usr/lib /usr/local/lib)
-set(CMAKE_SYSTEM_LIBRARY_PATH /usr/lib32 /usr/local/lib32)
 
 project(uscxml)
 
@@ -226,7 +223,7 @@ if (CMAKE_CROSSCOMPILING)
 	OPTION(ENABLE_COTIRE "Enable compile time reduction techniques" OFF)
 else()
 	OPTION(BUILD_SHARED_LIBS "Build shared libraries" ON)
-	OPTION(ENABLE_COTIRE "Enable compile time reduction techniques" ON)
+	OPTION(ENABLE_COTIRE "Enable compile time reduction techniques" OFF)
 endif()
 
 if (NOT BUILD_SHARED_LIBS)
@@ -305,8 +302,6 @@ if(${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
 	#	add_definitions(-Weffc++)
 
   # order of arguments of gcc matters again
-	set(CMAKE_CXX_FLAGS "-mabi=sysv -fabi-version=1 -m32 -march=i586 -O2 -L/usr/lib32 -L/usr/local/lib32 ${CMAKE_CXX_FLAGS}")
-	add_definitions(-m32 -mabi=sysv -march=i586 -O2 -L/usr/lib32 -L/usr/local/lib32)
 	#add_definitions(-Wunreachable-code)
 	#add_definitions(-DVERBOSE)
 
@@ -1021,8 +1016,6 @@ message(STATUS "  Binaries will end up in ........ : " ${REL_CMAKE_RUNTIME_OUTPU
 ############################################################
 # Installation / Provide package target
 ############################################################
-
-set_target_properties(uscxml PROPERTIES COMPILE_FLAGS "-mabi=sysv -fabi-version=1 -m32 -march=i586 -O2 -L/usr/lib32 -L/usr/local/lib32" LINK_FLAGS "-mabi=sysv -m32 -march=i586 -O2 -L/usr/lib32 -L/usr/local/lib32")
 
 # see contrib/cmake/CPackUSCXML.cmake
 include(contrib/cmake/CPackUSCXML.cmake)
