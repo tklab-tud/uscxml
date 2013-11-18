@@ -14,8 +14,6 @@ ELSE()
    SET(CMAKE_BUILD_TYPE Release CACHE STRING ${BUILD_TYPE_HELP})
 ENDIF()
 
-set(CMAKE_SYSTEM_PROCESSOR "i586")
-
 project(uscxml)
 
 # where to find the cmake modules we distribute

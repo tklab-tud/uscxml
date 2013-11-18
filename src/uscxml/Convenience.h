@@ -20,6 +20,8 @@
 #ifndef CONVENIENCE_H_LU7GZ6CB
 #define CONVENIENCE_H_LU7GZ6CB
 
+#include <limits>
+
 namespace uscxml {
 inline bool isnan(double x) {
 	return x != x;
