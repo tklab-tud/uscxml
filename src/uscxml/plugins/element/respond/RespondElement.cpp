@@ -55,7 +55,7 @@ void RespondElement::enterElement(const Arabica::DOM::Node<std::string>& node) {
 	std::string requestId = _interpreter->getDataModel().evalAsString(ATTR(node, "to"));
 
 	// try to get the request object
-	InterpreterServlet* servlet = _interpreter->getHTTPServlet();
+	InterpreterHTTPServlet* servlet = _interpreter->getHTTPServlet();
 	tthread::lock_guard<tthread::recursive_mutex> lock(servlet->getMutex());
 
 	if (servlet->getRequests().find(requestId) == servlet->getRequests().end()) {
@@ -65,7 +65,7 @@ void RespondElement::enterElement(const Arabica::DOM::Node<std::string>& node) {
 
 	assert(servlet->getRequests().find(requestId) != servlet->getRequests().end());
 	HTTPServer::Request httpReq = servlet->getRequests()[requestId];
-	assert(httpReq.curlReq != NULL);
+	assert(httpReq.evhttpReq != NULL);
 	HTTPServer::Reply httpReply(httpReq);
 	servlet->getRequests().erase(requestId);
 

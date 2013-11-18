@@ -22,6 +22,7 @@
 
 #include "uscxml/Common.h"
 #include <DOM/SAX2DOM/SAX2DOM.hpp>
+#include <SAX/helpers/DefaultHandler.hpp>
 #include <SAX/helpers/CatchErrorHandler.hpp>
 
 #define TAGNAME(elem) ((Arabica::DOM::Element<std::string>)elem).getTagName()

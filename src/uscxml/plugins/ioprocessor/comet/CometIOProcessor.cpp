@@ -101,7 +101,7 @@ bool CometIOProcessor::httpRecvRequest(const HTTPServer::Request& request) {
 
 	if (_longPollingReq)
 		// send 204 to last request and remember new one
-		evhttp_send_error(_longPollingReq.curlReq, 204, NULL);
+		evhttp_send_error(_longPollingReq.evhttpReq, 204, NULL);
 	_longPollingReq = request;
 	if (!_outQueue.empty()) {
 		send(_outQueue.front());

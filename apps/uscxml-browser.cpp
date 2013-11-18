@@ -140,7 +140,7 @@ int main(int argc, char** argv) {
 		sslConf->port = options.httpsPort;
 
 	}
-	HTTPServer::getInstance(options.httpPort, sslConf);
+	HTTPServer::getInstance(options.httpPort, options.wsPort, sslConf);
 
 	// instantiate and configure interpreters
 	std::list<Interpreter> interpreters;

@@ -18,8 +18,8 @@
  */
 
 #include "TypedArray.h"
+#include "uscxml/Convenience.h"
 #include <iostream>
-#include <boost/detail/endian.hpp>
 
 #define DATAVIEW_TYPED_GET(type) \
 type retVal;\

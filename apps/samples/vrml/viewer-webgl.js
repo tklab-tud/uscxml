@@ -30,11 +30,11 @@ function VRMLViewer(element, params) {
     this.pose = pose;
   }
   
-  this.enableMovies = true;
+  this.enableMovies = false;
   this.enableDND = true;
-  this.enableWebGL = false;
-  this.enableSceneshots = true;
-  this.enableDraggables = true;
+  this.enableWebGL = true;
+  this.enableSceneshots = false;
+  this.enableDraggables = false;
   this.treeNavigationStyle = true;
   this.listNavigationStyle = true;
   this.listDirectory = "";
@@ -99,7 +99,7 @@ function VRMLViewer(element, params) {
     if (!self.imagePath)
       self.imagePath = self.listDirectory + "latest";
   
-    if (!self.imageFormat.substring(0, 1) != ".")
+    if (!self.imageFormat.substring(0, 1) == ".")
       self.imageFormat = "." + self.imageFormat;
   }
   normalizeParams();
@@ -171,7 +171,7 @@ function VRMLViewer(element, params) {
         osgDB.Promise.when(getWebGLModel(self.serverURL + self.imagePath + '.osgjs')).then(function(model) {       
           self.webGLViewer.setSceneData(model);
           if (!webGLManipulatorsSetup) {
-            self.webGLViewer.setupManipulator();
+            self.webGLViewer.setupManipulator(new osgGA.OrbitManipulator(), false);
             self.webGLViewer.getManipulator().computeHomePosition();  
           }
           webGLManipulatorsSetup = true;
@@ -711,9 +711,9 @@ function VRMLViewer(element, params) {
                  avatarPose.width=60;
                  avatarPose.height=60;
                  var avatarImgUrl = urlSuffixForPose(avatarPose);
-                 avatar.innerHTML = '<img src=' + self.imagePath + self.imageFormat + avatarImgUrl + ' /> ';
+                 avatar.innerHTML = '<img src=' + self.serverURL + self.imagePath + self.imageFormat + avatarImgUrl + ' /> ';
                  item.srcEcc = "VRMLViewer";
-                 item.iconPoseUrl = self.imagePath + self.imageFormat + avatarImgUrl;
+                 item.iconPoseUrl = self.serverURL + self.imagePath + self.imageFormat + avatarImgUrl;
                  item.imagePath = self.imagePath;
                  item.imageFormat = self.imageFormat;
                  item.serverURL = self.serverURL;
@@ -826,7 +826,7 @@ function VRMLViewer(element, params) {
           if (enable) {
 
             array.forEach(dojo.query(".treeNavigation", element), function(entry, i) {
-              entry.style.display = "inline";
+              entry.style.display = "";
             });
           
             if (!self.fileTreeStore) {

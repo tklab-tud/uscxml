@@ -119,12 +119,12 @@ bool HTTPServletInvoker::httpRecvRequest(const HTTPServer::Request& req) {
 
 //  evhttp_request_own(req.curlReq);
 
-	_requests[toStr((uintptr_t)req.curlReq)] = req;
+	_requests[toStr((uintptr_t)req.evhttpReq)] = req;
 
 	Event event = req;
 
 	event.name = _callback;
-	event.data.compound["reqId"] = Data(toStr((uintptr_t)req.curlReq), Data::VERBATIM);
+	event.data.compound["reqId"] = Data(toStr((uintptr_t)req.evhttpReq), Data::VERBATIM);
 
 	returnEvent(event);
 	return true;

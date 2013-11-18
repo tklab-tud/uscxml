@@ -36,7 +36,11 @@ for FILE in ${PLATFORMS}; do
   PLATFORM=`basename $FILE`
   echo $FILE
   if [ "$PLATFORM" != "include" ]; then
-    tar cvzf uscxml-prebuilt-${PLATFORM}.tgz --exclude='*/.DS_Store' --exclude='VERSION.txt' --exclude='lib/*_d.a' ${FILE}
+    if [ "$PLATFORM" == windows* ]; then
+      tar cvzf uscxml-prebuilt-${PLATFORM}.tgz --exclude='*/.DS_Store' --exclude='VERSION.txt' ${FILE}
+    else
+      tar cvzf uscxml-prebuilt-${PLATFORM}.tgz --exclude='*/.DS_Store' --exclude='VERSION.txt' --exclude='lib/*_d.a' ${FILE}
+    fi
     scp uscxml-prebuilt-${PLATFORM}.tgz ${USCXML_PREBUILT_HOST}:${USCXML_PREBUILT_PATH}/${VERSION}
     rm uscxml-prebuilt-${PLATFORM}.tgz
   else

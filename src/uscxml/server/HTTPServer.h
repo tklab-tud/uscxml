@@ -28,6 +28,7 @@
 extern "C" {
 #include "event2/util.h"                // for evutil_socket_t
 #include <event2/http.h>                // for evhttp_request
+#include <evws.h>
 }
 
 #include "uscxml/Common.h"              // for USCXML_API
@@ -38,18 +39,26 @@ extern "C" {
 namespace uscxml {
 
 class HTTPServlet;
+class WebSocketServlet;
 
 class USCXML_API HTTPServer {
 public:
 	class Request : public Event {
 	public:
-		Request() : curlReq(NULL) {}
+		Request() : evhttpReq(NULL) {}
 		std::string content;
-		struct evhttp_request* curlReq;
+		struct evhttp_request* evhttpReq;
 
 		operator bool() {
-			return curlReq != NULL;
+			return evhttpReq != NULL;
 		}
+	};
+
+	class WSFrame : public Event {
+	public:
+		WSFrame() : evwsConn(NULL) {}
+		std::string content;
+		struct evws_connection* evwsConn;
 	};
 
 	class SSLConfig {
@@ -62,12 +71,12 @@ public:
 
 	class Reply {
 	public:
-		Reply(Request req) : status(200), type(req.data.compound["type"].atom), curlReq(req.curlReq) {}
+		Reply(Request req) : status(200), type(req.data.compound["type"].atom), evhttpReq(req.evhttpReq) {}
 		int status;
 		std::string type;
 		std::map<std::string, std::string> headers;
 		std::string content;
-		struct evhttp_request* curlReq;
+		struct evhttp_request* evhttpReq;
 	};
 
 	struct CallbackData {
@@ -75,12 +84,25 @@ public:
 		evhttp_request* httpReq;
 	};
 
-	static HTTPServer* getInstance(unsigned short port = 8080, SSLConfig* sslConf = NULL);
-	static std::string getBaseURL();
+	enum ServerType {
+	    HTTPS,
+	    HTTP,
+	    WebSockets
+	};
+
+	static HTTPServer* getInstance(unsigned short port, unsigned short wsPort, SSLConfig* sslConf = NULL);
+	static HTTPServer* getInstance() {
+		return getInstance(0, 0, NULL);
+	}
+
+	static std::string getBaseURL(ServerType type = HTTP);
 
 	static void reply(const Reply& reply);
 	static bool registerServlet(const std::string& path, HTTPServlet* servlet); ///< Register a servlet, returns false if path is already taken
 	static void unregisterServlet(HTTPServlet* servlet);
+
+	static bool registerServlet(const std::string& path, WebSocketServlet* servlet); ///< Register a servlet, returns false if path is already taken
+	static void unregisterServlet(WebSocketServlet* servlet);
 
 private:
 	struct comp_strsize_less {
@@ -92,7 +114,7 @@ private:
 		};
 	};
 
-	HTTPServer(unsigned short port, SSLConfig* sslConf = NULL);
+	HTTPServer(unsigned short port, unsigned short wsPort, SSLConfig* sslConf = NULL);
 	~HTTPServer();
 
 	void start();
@@ -103,17 +125,27 @@ private:
 
 	static void replyCallback(evutil_socket_t fd, short what, void *arg);
 	static void httpRecvReqCallback(struct evhttp_request *req, void *callbackData);
+	static void wsRecvReqCallback(struct evws_connection *conn, struct evws_frame *, void *callbackData);
+
 	void processByMatchingServlet(const Request& request);
+	void processByMatchingServlet(evws_connection* conn, const WSFrame& frame);
 
 	static std::map<std::string, std::string> mimeTypes;
-	std::map<std::string, HTTPServlet*> _servlets;
-	typedef std::map<std::string, HTTPServlet*>::iterator servlet_iter_t;
+	std::map<std::string, HTTPServlet*> _httpServlets;
+	typedef std::map<std::string, HTTPServlet*>::iterator http_servlet_iter_t;
+
+	std::map<std::string, WebSocketServlet*> _wsServlets;
+	typedef std::map<std::string, WebSocketServlet*>::iterator ws_servlet_iter_t;
 
 	struct event_base* _base;
 	struct evhttp* _http;
-	struct evhttp_bound_socket* _handle;
+	struct evws* _evws;
+
+	struct evhttp_bound_socket* _httpHandle;
+	evutil_socket_t _wsHandle;
 
 	unsigned short _port;
+	unsigned short _wsPort;
 	std::string _address;
 
 	static HTTPServer* _instance;
@@ -124,6 +156,7 @@ private:
 	bool _isRunning;
 
 	friend class HTTPServlet;
+	friend class WebSocketServlet;
 
 #if (defined EVENT_SSL_FOUND && defined OPENSSL_FOUND && defined OPENSSL_HAS_ELIPTIC_CURVES)
 	struct evhttp* _https;
@@ -141,6 +174,18 @@ public:
 	virtual void setURL(const std::string& url) = 0; /// Called by the server with the actual URL
 	virtual bool canAdaptPath() {
 		return true;
+	}
+};
+
+class USCXML_API WebSocketServlet {
+public:
+	virtual bool wsRecvRequest(struct evws_connection *conn, const HTTPServer::WSFrame& frame) = 0;
+	virtual void setURL(const std::string& url) = 0; /// Called by the server with the actual URL
+	virtual bool canAdaptPath() {
+		return true;
+	}
+	struct evws* getWSBase() {
+		return HTTPServer::getInstance()->_evws;
 	}
 };
 

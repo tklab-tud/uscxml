@@ -104,7 +104,7 @@ bool BasicHTTPIOProcessor::httpRecvRequest(const HTTPServer::Request& req) {
 		reqEvent.name = "http." + req.data.compound.at("type").atom;
 
 	returnEvent(reqEvent);
-	evhttp_send_reply(req.curlReq, 200, "OK", NULL);
+	evhttp_send_reply(req.evhttpReq, 200, "OK", NULL);
 	return true;
 }
 
@@ -207,7 +207,7 @@ void BasicHTTPIOProcessor::send(const SendRequest& req) {
 	targetURL.setOutContent(kvps.str());
 
 //	targetURL.addOutHeader("Content-Type", "application/x-www-form-urlencoded");
-	
+
 	targetURL.setRequestType("post");
 	targetURL.addMonitor(this);
 

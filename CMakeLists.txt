@@ -254,6 +254,7 @@ if (WIN32)
 	include_directories(${PROJECT_SOURCE_DIR}/contrib/src/inttypes)
 endif()
 include_directories(${PROJECT_SOURCE_DIR}/contrib/src/jsmn)
+include_directories(${PROJECT_SOURCE_DIR}/contrib/src/evws)
 #include_directories(${PROJECT_SOURCE_DIR}/contrib/src/google-url)
 
 ############################################################
@@ -909,7 +910,10 @@ endif()
 # Header Files
 ############################################################
 
-file(GLOB_RECURSE USCXML_HEADERS ${PROJECT_SOURCE_DIR}/src/*.h ${CMAKE_BINARY_DIR}/*.h)
+file(GLOB_RECURSE USCXML_HEADERS 
+  ${PROJECT_SOURCE_DIR}/src/*.h 
+  ${PROJECT_SOURCE_DIR}/src/*.hpp 
+  ${CMAKE_BINARY_DIR}/*.h)
 INSTALL_HEADERS(HEADERS ${USCXML_HEADERS} COMPONENT headers)
 
 ############################################################

@@ -552,7 +552,7 @@ void URLFetcher::fetchURL(URL& url) {
 
 //		(curlError = curl_easy_setopt(handle, CURLOPT_NOSIGNAL, 1)) == CURLE_OK ||
 //		LOG(ERROR) << "Cannot set curl to ignore signals: " << curl_easy_strerror(curlError);
-		
+
 		(curlError = curl_easy_setopt(handle, CURLOPT_WRITEDATA, url._impl.get())) == CURLE_OK ||
 		LOG(ERROR) << "Cannot register this as write userdata: " << curl_easy_strerror(curlError);
 
@@ -605,7 +605,7 @@ void URLFetcher::fetchURL(URL& url) {
 
 			// Disable "Expect: 100-continue"
 			headers = curl_slist_append(headers, "Expect:");
-			
+
 			(curlError = curl_easy_setopt(handle, CURLOPT_HTTPHEADER, headers)) == CURLE_OK ||
 			LOG(ERROR) << "Cannot headers for " << url.asString() << ": " << curl_easy_strerror(curlError);
 

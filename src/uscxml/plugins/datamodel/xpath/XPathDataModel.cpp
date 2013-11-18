@@ -211,9 +211,8 @@ void XPathDataModel::setEvent(const Event& event) {
 		unsigned int i;
 
 		for( i = 0 , ptr = event.data.array.begin() ;
-			((i < event.data.array.size()) && (ptr != event.data.array.end()));
-			i++ , ptr++ )
-		{
+		        ((i < event.data.array.size()) && (ptr != event.data.array.end()));
+		        i++ , ptr++ ) {
 			Element<std::string> eventMESElem = _doc.createElement("data");
 			Text<std::string> textNode = _doc.createTextNode(ptr->atom.c_str());
 			std::stringstream ss;
@@ -496,7 +495,7 @@ void XPathDataModel::assign(const Element<std::string>& assignElem,
 				if (trimmed.length() == 0) {
 					data = data.getNextSibling();
 					continue;
-				}		
+				}
 			}
 			nodeSet.push_back(data);
 			data = data.getNextSibling();
@@ -707,8 +706,8 @@ void XPathDataModel::assign(const NodeSet<std::string>& key,
 	for (int i = 0; i < key.size(); i++) {
 		switch (key[i].getNodeType())
 		case Node_base::ELEMENT_NODE: {
-			assign(Element<std::string>(key[i]), value, assignElem);
-			break;
+		assign(Element<std::string>(key[i]), value, assignElem);
+		break;
 		default:
 //			std::cout << key[i].getNodeType() << std::endl;
 			throw Event("error.execution", Event::PLATFORM);

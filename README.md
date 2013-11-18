@@ -25,9 +25,11 @@ There are still a few rough edges though, especially with the plugins and custom
     * Features the standard basichttp io-processor
     * Features the required SCXML io-processor
     * <b>No</b> DOM io-processor
+    * Early support for [WebSockets](http://datatracker.ietf.org/doc/rfc6455/)
     * Can actually respond to HTTP requests with data via &lt;response>
 * <b>Language Bindings</b>
     * PHP module for apache and cli interpreter
+    * Java bindings
 
 ## Test Reports
 

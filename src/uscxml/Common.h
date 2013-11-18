@@ -56,6 +56,7 @@
 // is thrown alot in arabica headers
 #pragma warning (disable : 4240)
 #pragma warning (disable : 4250)
+#pragma warning (disable : 4661)
 
 // dll interface
 #pragma warning (disable : 4251)

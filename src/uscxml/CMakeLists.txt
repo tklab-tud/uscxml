@@ -10,7 +10,9 @@ source_group("Interpreter" FILES ${USCXML_SERVER})
 list (APPEND USCXML_FILES ${USCXML_SERVER})
 
 file(GLOB_RECURSE USCXML_UTIL
-	util/*.cpp
+  util/*.cpp
+  util/*.hpp
+  util/*.c
 	util/*.h
 )
 source_group("Interpreter" FILES ${USCXML_UTIL})
@@ -46,7 +48,8 @@ if(APPLE OR IOS)
 endif()
 
 file(GLOB USCXML_CORE
-	${CMAKE_SOURCE_DIR}/contrib/src/jsmn/jsmn.c
+  ${CMAKE_SOURCE_DIR}/contrib/src/jsmn/jsmn.c
+  ${CMAKE_SOURCE_DIR}/contrib/src/evws/*.c
 	*.cpp
 	*.h
 )
