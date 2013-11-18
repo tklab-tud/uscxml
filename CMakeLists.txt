@@ -222,7 +222,7 @@ if (CMAKE_CROSSCOMPILING)
 	OPTION(BUILD_SHARED_LIBS "Build shared libraries" OFF)
 	OPTION(ENABLE_COTIRE "Enable compile time reduction techniques" OFF)
 else()
-	OPTION(BUILD_SHARED_LIBS "Build shared libraries" ON)
+	OPTION(BUILD_SHARED_LIBS "Build shared libraries" OFF)
 	OPTION(ENABLE_COTIRE "Enable compile time reduction techniques" OFF)
 endif()
 
