@@ -104,8 +104,8 @@ function VRMLViewer(element, params) {
     if (!self.imagePath)
       self.imagePath = self.listDirectory + "latest";
   
-    if (!self.imageFormat.substring(0, 1) == ".")
-      self.imageFormat = "." + self.imageFormat;
+    if (!self.imageFormat.substring(0, 1) !== ".")
+      self.imageFormat = "." + self.imageFormat;    
   }
   normalizeParams();
   
