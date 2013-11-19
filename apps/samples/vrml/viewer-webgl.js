@@ -23,8 +23,8 @@ function VRMLViewer(element, params) {
       x: 0,
       y: 0,
       z: 0,
-      width: this.width,
-      height: this.height,
+      width: false,
+      height: false,
       autorotate: false,
     }
     this.pose = pose;
@@ -54,6 +54,11 @@ function VRMLViewer(element, params) {
       }
     }
   }
+  
+  if (!self.pose.width)
+    self.pose.width = self.width;
+  if (!self.pose.height)
+    self.pose.height = self.height;
   
   var hasWebGL = function() {
     try {
