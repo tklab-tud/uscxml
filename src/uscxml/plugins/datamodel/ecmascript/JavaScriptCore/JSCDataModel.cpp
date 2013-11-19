@@ -538,13 +538,13 @@ void JSCDataModel::assign(const Element<std::string>& assignElem,
 
 	// flags on attribute are ignored?
 	if (key.compare("_sessionid") == 0)
-		throw Event("error.execution", Event::PLATFORM);
+		return; //throw Event("error.execution", Event::PLATFORM);
 	if (key.compare("_name") == 0)
-		throw Event("error.execution", Event::PLATFORM);
+		return; //throw Event("error.execution", Event::PLATFORM);
 	if (key.compare("_ioprocessors") == 0)
-		throw Event("error.execution", Event::PLATFORM);
+		return; //throw Event("error.execution", Event::PLATFORM);
 	if (key.compare("_invokers") == 0)
-		throw Event("error.execution", Event::PLATFORM);
+		return; //throw Event("error.execution", Event::PLATFORM);
 
 	if (HAS_ATTR(assignElem, "expr")) {
 		evalAsValue(key + " = " + ATTR(assignElem, "expr"));

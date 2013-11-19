@@ -86,18 +86,6 @@ void customTerminate() {
 	abort();
 }
 
-void printUsageAndExit() {
-	printf("w3c-test version " USCXML_VERSION " (" CMAKE_BUILD_TYPE " build - " CMAKE_COMPILER_STRING ")\n");
-	printf("Usage\n");
-	printf("\tmmi-browser");
-#ifdef BUILD_AS_PLUGINS
-	printf(" [-p pluginPath]");
-#endif
-	printf(" URL\n");
-	printf("\n");
-	exit(1);
-}
-
 class W3CStatusMonitor : public uscxml::InterpreterMonitor {
 	void beforeCompletion(uscxml::Interpreter interpreter) {
 		Arabica::XPath::NodeSet<std::string> config = interpreter.getConfiguration();
@@ -120,8 +108,10 @@ int main(int argc, char** argv) {
 #endif
 
 	if (argc < 2) {
-		printUsageAndExit();
+		exit(EXIT_FAILURE);
 	}
+
+	HTTPServer::getInstance(32954, 32955, NULL); // bind to some random tcp sockets for ioprocessor tests
 
 	google::InitGoogleLogging(argv[0]);
 	google::LogToStderr();
