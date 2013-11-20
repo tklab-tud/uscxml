@@ -173,7 +173,14 @@ HTTPServer* HTTPServer::getInstance(unsigned short port, unsigned short wsPort, 
 		evthread_use_windows_threads();
 #endif
 		_instance = new HTTPServer(port, wsPort, sslConf);
-		_instance->start();
+
+		// only start if we have something to do!
+#if (defined EVENT_SSL_FOUND && defined OPENSSL_FOUND && defined OPENSSL_HAS_ELIPTIC_CURVES)
+		if (_instance->_httpHandle || _instance->_wsHandle || _instance->_sslHandle)
+#else
+		if (_instance->_httpHandle || _instance->_wsHandle)
+#endif
+			_instance->start();
 	}
 	return _instance;
 }
