@@ -6,17 +6,20 @@
 	xmlns="http://www.w3.org/2005/07/scxml" >
 <datamodel>
 	<data id="WRITE0">
-		<data xmlns="" type="wrapperProgram" index="0" >
+	   <frame xmlns="">
+		<data type="wrapperProgram" index="0" >
 		    <nestedData type="numWorking">33</nestedData>
 		</data>
+	   </frame>
 	</data>
 	<data id="READ0">
-	   <frame>
+	   <frame xmlns="">
 	       <data type="requestItem" index="0">totalPacks</data>
 	   </frame>
 	</data>
 	<data id="WRITE1">
-		<data xmlns="" type="operativeMode" index="1">
+	   <frame xmlns="">
+		<data type="operativeMode" index="1">
 		 <item i="0">
 		    <nestedData type="state">off</nestedData>
 		 </item>
@@ -30,14 +33,16 @@
 		    <nestedData type="state">off</nestedData>
 		 </item>
 		</data>
+	   </frame>
 	</data>
 	<data id="READ1">
-	   <frame>
+	   <frame xmlns="">
 	       <data type="requestItem" index="1">switchHw</data>
 	   </frame>
 	</data>
 	<data id="WRITE3">
-		<data xmlns="" type="setting" index="3">
+	   <frame xmlns="">
+		<data type="setting" index="3">
 		 <item i="0">
 		    <nestedData type="value">0</nestedData>
 		 </item>
@@ -57,14 +62,16 @@
 		    <nestedData type="value">55</nestedData>
 		 </item>
 		</data>
+	   </frame>
 	</data>
 	<data id="READ3">
-	   <frame>
+	   <frame xmlns="">
 	       <data type="requestItem" index="0">information</data>
 	   </frame>
 	</data>
 	<data id="WRITE4">
-		<data xmlns="" type="function" index="4">
+	   <frame xmlns="">
+		<data type="function" index="4">
 		 <item i="0">
 		    <nestedData type="state">off</nestedData>
 		 </item>
@@ -75,6 +82,7 @@
 		    <nestedData type="state">on</nestedData>
 		 </item>
 		</data>
+	   </frame>
 	</data>
 	<data id="iterator">
 		<replaceme/>
@@ -104,7 +112,7 @@
 	<state id="0" initial="init0">
 		<state id="init0">
 			<transition event="0_wReq" target="sent0">
-				<assign location="$WRITE0/data/nestedData" expr="$_event/data/text()"/>
+				<assign location="$WRITE0/frame/data/nestedData" expr="$_event/data/text()"/>
 				<send 	event="0_wCmd"
 					namelist="$WRITE0"
 					target="#_xmlbridge0"/>
@@ -149,7 +157,7 @@
 			</transition>
 			<transition event="1_wReq" target="sent1">
 				<foreach array="tokenize($_event/data/text(), ',')" item="$iterator" index="numRiga">
-					<assign location="$WRITE1/data/item[@i=$numRiga]/nestedData" expr="$iterator"/>
+					<assign location="$WRITE1/frame/data/item[@i=$numRiga]/nestedData" expr="$iterator"/>
 				</foreach>
 				<send 	event="1_wCmd"
 					namelist="$WRITE1"
@@ -187,7 +195,7 @@
 			</transition>
 			<transition event="2_wReq" target="sent2">
 				<foreach array="tokenize($_event/data/text(), ',')" item="$iterator" index="numRiga">
-					<assign location="$WRITE2/data/item[@i=$numRiga]/nestedData" expr="$iterator"/>
+					<assign location="$WRITE2/frame/data/item[@i=$numRiga]/nestedData" expr="$iterator"/>
 				</foreach>
 				<send 	event="2_wCmd"
 					namelist="$WRITE2"
@@ -225,7 +233,7 @@
 			</transition>
 			<transition event="3_wReq" target="sent3">
 				<foreach array="$_event/data/data/text()" item="iterator" index="numRiga">
-					<assign location="$WRITE3/data/item[@i=$numRiga]/nestedData" expr="$iterator"/>
+					<assign location="$WRITE3/frame/data/item[@i=$numRiga]/nestedData" expr="$iterator"/>
 				</foreach>
 				<send 	event="3_wCmd"
 					namelist="$WRITE3"
