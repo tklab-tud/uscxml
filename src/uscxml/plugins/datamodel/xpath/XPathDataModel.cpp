@@ -177,14 +177,19 @@ void XPathDataModel::setEvent(const Event& event) {
 	if (event.namelist.size() > 0) {
 		std::map<std::string, Data>::const_iterator namelistIter = event.namelist.begin();
 		while(namelistIter != event.namelist.end()) {
-			Element<std::string> eventNamelistElem = _doc.createElement("data");
-			// this is simplified - Data might be more elaborate than a simple string atom
-			Text<std::string> eventNamelistText = _doc.createTextNode(namelistIter->second.atom);
+			if (event.data.type == Data::VERBATIM) {
+				Element<std::string> eventNamelistElem = _doc.createElement("data");
+				// this is simplified - Data might be more elaborate than a simple string atom
+				Text<std::string> eventNamelistText = _doc.createTextNode(namelistIter->second.atom);
 
-			eventNamelistElem.setAttribute("id", namelistIter->first);
-			eventNamelistElem.appendChild(eventNamelistText);
-			eventDataElem.appendChild(eventNamelistElem);
-			namelistIter++;
+				eventNamelistElem.setAttribute("id", namelistIter->first);
+				eventNamelistElem.appendChild(eventNamelistText);
+				eventDataElem.appendChild(eventNamelistElem);
+				namelistIter++;
+			} else if (event.data.type == Data::INTERPRETED) {
+				eventDataElem.appendChild(namelistIter->second.node);
+				namelistIter++;
+			}
 		}
 	}
 	if (event.raw.size() > 0) {
@@ -268,9 +273,9 @@ Data XPathDataModel::getStringAsData(const std::string& content) {
 			ss.str("");
 			ss << i;
 			std::string idx = ss.str();
-			ss.str("");
-			ss << ns[i];
-			data.compound[idx] = Data(ss.str());
+			Data tmpdata;
+			tmpdata.node = ns[i];
+			data.compound[idx] = tmpdata;
 		}
 		data.type = Data::INTERPRETED;
 		return data;

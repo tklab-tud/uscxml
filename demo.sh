@@ -9,8 +9,9 @@ fi
 case "$1" in
 
 -1) echo "Initializing Interpreter"
-	pkill -f /home/sunkiss/_Projects/xmlBridgeCPP-build/GW-MES2TIM
-	/home/sunkiss/_Projects/xmlBridgeCPP-build/GW-MES2TIM -c ../xmlBridgeCPP/map.csv -x autoware_write.scxml &
+	export LD_PRELOAD="/usr/local/lib/libmodbus.so.5"
+	pkill -f /home/sunkiss/_Projects/xmlBridgeCPP/GW-MES2TIM
+	/home/sunkiss/_Projects/xmlBridgeCPP/GW-MES2TIM -c ../xmlBridgeCPP/map.csv -x autoware_tim.scxml &
     ;;
 0)  echo "Sending command $1"
 	pkill -f /usr/bin/nc
