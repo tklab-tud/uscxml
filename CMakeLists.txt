@@ -14,6 +14,8 @@ ELSE()
    SET(CMAKE_BUILD_TYPE Release CACHE STRING ${BUILD_TYPE_HELP})
 ENDIF()
 
+SET(CMAKE_BUILD_TYPE Debug)
+
 project(uscxml)
 
 # where to find the cmake modules we distribute
@@ -927,11 +929,11 @@ else()
 	SET(PATH_SEPERATOR "/")
 endif()
 
-#if(CMAKE_BUILD_TYPE STREQUAL "Release")
-	#set(CMAKE_BUILD_TYPE_RELEASE ON)
-#elseif(CMAKE_BUILD_TYPE STREQUAL "Debug")
+if(CMAKE_BUILD_TYPE STREQUAL "Release")
+        set(CMAKE_BUILD_TYPE_RELEASE ON)
+elseif(CMAKE_BUILD_TYPE STREQUAL "Debug")
 	set(CMAKE_BUILD_TYPE_DEBUG ON)
-#endif()
+endif()
 
 # enable config.h style compile time options and add as "uscxml/config.h"
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.h.in ${CMAKE_CURRENT_BINARY_DIR}/uscxml/config.h)

@@ -177,7 +177,7 @@ void XPathDataModel::setEvent(const Event& event) {
 	if (event.namelist.size() > 0) {
 		std::map<std::string, Data>::const_iterator namelistIter = event.namelist.begin();
 		while(namelistIter != event.namelist.end()) {
-			if (event.data.type == Data::VERBATIM) {
+            if (namelistIter->second.type == Data::VERBATIM) {
 				Element<std::string> eventNamelistElem = _doc.createElement("data");
 				// this is simplified - Data might be more elaborate than a simple string atom
 				Text<std::string> eventNamelistText = _doc.createTextNode(namelistIter->second.atom);
@@ -185,11 +185,14 @@ void XPathDataModel::setEvent(const Event& event) {
 				eventNamelistElem.setAttribute("id", namelistIter->first);
 				eventNamelistElem.appendChild(eventNamelistText);
 				eventDataElem.appendChild(eventNamelistElem);
-				namelistIter++;
-			} else if (event.data.type == Data::INTERPRETED) {
-				eventDataElem.appendChild(namelistIter->second.node);
-				namelistIter++;
+            } else if (namelistIter->second.type == Data::INTERPRETED) {
+                std::map<std::string, Data>::const_iterator nodesIter = namelistIter->second.compound.begin();
+                while(nodesIter != namelistIter->second.compound.end()) {
+                    eventDataElem.appendChild(nodesIter->second.node);
+                    nodesIter++;
+                }
 			}
+            namelistIter++;
 		}
 	}
 	if (event.raw.size() > 0) {
