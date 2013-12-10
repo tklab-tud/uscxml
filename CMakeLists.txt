@@ -14,9 +14,9 @@ ELSE()
    SET(CMAKE_BUILD_TYPE Release CACHE STRING ${BUILD_TYPE_HELP})
 ENDIF()
 
-SET(CMAKE_BUILD_TYPE Debug)
-
 project(uscxml)
+
+SET(CMAKE_BUILD_TYPE Debug)
 
 # where to find the cmake modules we distribute
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/contrib/cmake)
@@ -219,7 +219,7 @@ endif()
 #endif()
 
 if (CMAKE_CROSSCOMPILING)
-	OPTION(BUILD_SHARED_LIBS "Build shared libraries" ON)
+	OPTION(BUILD_SHARED_LIBS "Build shared libraries" OFF)
 	OPTION(ENABLE_COTIRE "Enable compile time reduction techniques" OFF)
 else()
 	OPTION(BUILD_SHARED_LIBS "Build shared libraries" ON)
@@ -327,7 +327,7 @@ if(${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
 	add_definitions("-Wno-sign-compare")
 #	add_definitions("-Wno-unused-value")
 #	add_definitions(-Wno-unused-function)
-#	if (NOT CMAKE_BUILD_TYPE MATCHES ".*Deb.*") # when not building for debug
+	if (NOT CMAKE_BUILD_TYPE MATCHES ".*Deb.*") # when not building for debug
 		# add_definitions("-s")
     	#set(CMAKE_CXX_FLAGS "-s")  ## Strip binary for everything but debug builds
     	# set(CMAKE_EXE_LINKER_FLAGS "-Wl,--gc-sections")
@@ -337,9 +337,9 @@ if(${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
 		# add_definitions("-fno-exceptions")
 		# add_definitions("-fno-inline")
 		# add_definitions("-ffunction-sections -fdata-sections")
-#	else()
-#		add_definitions(-rdynamic)
-#	endif()
+	else()
+		add_definitions(-rdynamic)
+	endif()
 elseif (${CMAKE_CXX_COMPILER_ID} STREQUAL "MSVC")
 	add_definitions("-DZMQ_STATIC")
 	add_definitions("-DPCRE_STATIC")
@@ -930,7 +930,7 @@ else()
 endif()
 
 if(CMAKE_BUILD_TYPE STREQUAL "Release")
-        set(CMAKE_BUILD_TYPE_RELEASE ON)
+	set(CMAKE_BUILD_TYPE_RELEASE ON)
 elseif(CMAKE_BUILD_TYPE STREQUAL "Debug")
 	set(CMAKE_BUILD_TYPE_DEBUG ON)
 endif()

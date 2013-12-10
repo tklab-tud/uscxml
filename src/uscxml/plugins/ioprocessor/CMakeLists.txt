@@ -33,7 +33,7 @@
 #endif()
 
 
-## LIBEVENT basichttp ioprocessor - this one is already required above
+# LIBEVENT basichttp ioprocessor - this one is already required above
 
 set(USCXML_IOPROCESSORS "basichttp ${USCXML_IOPROCESSORS}")
 file(GLOB_RECURSE BASICHTTP_IOPROCESSOR
@@ -43,7 +43,7 @@ file(GLOB_RECURSE BASICHTTP_IOPROCESSOR
 if (BUILD_AS_PLUGINS)
 	source_group("" FILES ${BASICHTTP_IOPROCESSOR})
 	add_library(
-		ioprocessor_basichttp SHARED
+		ioprocessor_basichttp SHARED 
 		${BASICHTTP_IOPROCESSOR}
 		"../Plugins.cpp")
 	target_link_libraries(ioprocessor_basichttp uscxml)

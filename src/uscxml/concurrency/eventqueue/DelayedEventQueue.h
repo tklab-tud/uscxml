@@ -34,7 +34,7 @@
 
 namespace uscxml {
 
-class DelayedEventQueue {
+class USCXML_API DelayedEventQueue {
 public:
 
 	enum OpMask {
