@@ -425,7 +425,7 @@ std::string URLImpl::getLocalFilename(const std::string& suffix) {
 	_mktemp_s(tmpl, strlen(tmpl) + 1);
 	int fd = _open(tmpl, _O_CREAT, _S_IREAD | _S_IWRITE);
 #else
-	int fd = mkstemps(tmpl, suffix.length());
+	int fd = mkstemp(tmpl);
 #endif
 	if (fd < 0) {
 		LOG(ERROR) << "mkstemp " << tmpl << ": " << strerror(errno) << std::endl;
