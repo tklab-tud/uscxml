@@ -177,7 +177,7 @@ void XPathDataModel::setEvent(const Event& event) {
 	if (event.namelist.size() > 0) {
 		std::map<std::string, Data>::const_iterator namelistIter = event.namelist.begin();
 		while(namelistIter != event.namelist.end()) {
-            if (namelistIter->second.type == Data::VERBATIM) {
+			if (namelistIter->second.type == Data::VERBATIM) {
 				Element<std::string> eventNamelistElem = _doc.createElement("data");
 				// this is simplified - Data might be more elaborate than a simple string atom
 				Text<std::string> eventNamelistText = _doc.createTextNode(namelistIter->second.atom);
@@ -185,14 +185,14 @@ void XPathDataModel::setEvent(const Event& event) {
 				eventNamelistElem.setAttribute("id", namelistIter->first);
 				eventNamelistElem.appendChild(eventNamelistText);
 				eventDataElem.appendChild(eventNamelistElem);
-            } else if (namelistIter->second.type == Data::INTERPRETED) {
-                std::map<std::string, Data>::const_iterator nodesIter = namelistIter->second.compound.begin();
-                while(nodesIter != namelistIter->second.compound.end()) {
-                    eventDataElem.appendChild(nodesIter->second.node);
-                    nodesIter++;
-                }
+			} else if (namelistIter->second.type == Data::INTERPRETED) {
+				std::map<std::string, Data>::const_iterator nodesIter = namelistIter->second.compound.begin();
+				while(nodesIter != namelistIter->second.compound.end()) {
+					eventDataElem.appendChild(nodesIter->second.node);
+					nodesIter++;
+				}
 			}
-            namelistIter++;
+			namelistIter++;
 		}
 	}
 	if (event.raw.size() > 0) {
@@ -219,8 +219,9 @@ void XPathDataModel::setEvent(const Event& event) {
 		unsigned int i;
 
 		for( i = 0 , ptr = event.data.array.begin() ;
-		        ((i < event.data.array.size()) && (ptr != event.data.array.end()));
-		        i++ , ptr++ ) {
+			((i < event.data.array.size()) && (ptr != event.data.array.end()));
+			i++ , ptr++ )
+		{
 			Element<std::string> eventMESElem = _doc.createElement("data");
 			Text<std::string> textNode = _doc.createTextNode(ptr->atom.c_str());
 			std::stringstream ss;
@@ -714,8 +715,8 @@ void XPathDataModel::assign(const NodeSet<std::string>& key,
 	for (int i = 0; i < key.size(); i++) {
 		switch (key[i].getNodeType())
 		case Node_base::ELEMENT_NODE: {
-		assign(Element<std::string>(key[i]), value, assignElem);
-		break;
+			assign(Element<std::string>(key[i]), value, assignElem);
+			break;
 		default:
 //			std::cout << key[i].getNodeType() << std::endl;
 			throw Event("error.execution", Event::PLATFORM);

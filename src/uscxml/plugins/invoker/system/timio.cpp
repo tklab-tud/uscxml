@@ -19,8 +19,9 @@ bool TimIO::connect2TIM() {
 	int rv;
 	bool lasttry = true;
 
-	memset(&hints, 0, sizeof hints);
-	hints.ai_family = PF_INET;
+	hints.ai_flags = AI_NUMERICHOST;
+	hints.ai_family = AF_INET;
+	hints.ai_protocol = IPPROTO_TCP;
 	hints.ai_socktype = SOCK_STREAM;
 
 	close(_socketfd);
@@ -167,7 +168,7 @@ void TimIO::client(void *instance) {
 	int replylen;
 	memset(myobj->_reply, 0, MAXTIMREPLYSIZE);
 	if ((replylen = recv(myobj->_socketfd, myobj->_reply,
-		MAXTIMREPLYSIZE, MSG_WAITFORONE )) == -1) {
+		MAXTIMREPLYSIZE, 0 )) == -1) {
 		if (errno == EAGAIN || errno == EWOULDBLOCK) {
 			LOG(ERROR) << "TIM client: command timeout";
 			bridgeInstance.handleTIMexception(TIM_TIMEOUT);

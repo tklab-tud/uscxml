@@ -102,35 +102,31 @@ void XmlBridgeInvoker::send(const SendRequest& req) {
 
 	/* SCXML -> TIM */
 	if (evType == SCXML2TIM) {
-		if (reqCopy.namelist.size() != 1) {
-			LOG(ERROR) << "Sending an Unsupported number of TIM commands";
-			buildTIMexception(cmdid, TIM_ERROR);
-			return;
-		}
-		nameiter = reqCopy.namelist.begin();
-		std::map<std::string, Data>::const_iterator fields;
 		std::stringstream ss;
-		for (fields = reqCopy.data.compound[nameiter->first].compound.begin();
-			     fields != reqCopy.data.compound[nameiter->first].compound.end(); fields++)
-			ss << fields->second.atom;
-
+		std::map<std::string, Data>::const_iterator namelistIter = reqCopy.namelist.begin();
+		while(namelistIter != reqCopy.namelist.end()) {
+			std::map<std::string, Data>::const_iterator nodesIter = namelistIter->second.compound.begin();
+			while(nodesIter != namelistIter->second.compound.end()) {
+				ss << nodesIter->second.node;
+				nodesIter++;
+			}
+			namelistIter++;
+		}
 		bridgeInstance.sendReq2TIM(cmdid, write, ss.str(), _timeoutVal);
 
 	/* SCXML -> MES */
 	} else if (evType == SCXML2MES_ACK) {
 		std::list<std::string> MESstrList;
 		if (!write) {
-			if (reqCopy.namelist.size() != 1) {
-				LOG(ERROR) << "Receiving an Unsupported number of TIM replies";
-				buildTIMexception(cmdid, TIM_ERROR);
-				return;
+			std::map<std::string, Data>::const_iterator namelistIter = reqCopy.namelist.begin();
+			while(namelistIter != reqCopy.namelist.end()) {
+				std::map<std::string, Data>::const_iterator nodesIter = namelistIter->second.compound.begin();
+				while(nodesIter != namelistIter->second.compound.end()) {
+					MESstrList.push_back(nodesIter->second.node.getNodeValue());
+					nodesIter++;
+				}
+				namelistIter++;
 			}
-			nameiter = reqCopy.namelist.begin();
-			std::map<std::string, Data>::const_iterator fields;
-
-			for (fields = reqCopy.data.compound[nameiter->first].compound.begin();
-			     fields != reqCopy.data.compound[nameiter->first].compound.end(); fields++)
-				MESstrList.push_back(fields->second.atom);
 		}
 		bridgeInstance.sendReply2MES(_DBid, cmdid, write, MESstrList);
 

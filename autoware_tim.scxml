@@ -114,12 +114,12 @@
 			<transition event="0_wReq" target="sent0">
 				<assign location="$WRITE0/frame/data/nestedData" expr="$_event/data/text()"/>
 				<send 	event="0_wCmd"
-					namelist="$WRITE0"
+					namelist="$WRITE0/frame"
 					target="#_xmlbridge0"/>
 			</transition>
 			<transition event="0_rReq" target="sent0">
 				<send 	event="0_rCmd"
-					namelist="$READ0"
+					namelist="$READ0/frame"
 					target="#_xmlbridge0"/>
 			</transition>
 		</state>
