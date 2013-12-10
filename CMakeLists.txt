@@ -302,7 +302,7 @@ if(${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
 
   # order of arguments of gcc matters again
 	#add_definitions(-Wunreachable-code)
-	#add_definitions(-DVERBOSE)
+	add_definitions(-DVERBOSE)
 
 #	if (CMAKE_BUILD_TYPE MATCHES ".*Deb.*" AND ENABLE_GCOV) # when not building for debug
 		# coverage information
@@ -927,11 +927,11 @@ else()
 	SET(PATH_SEPERATOR "/")
 endif()
 
-if(CMAKE_BUILD_TYPE STREQUAL "Release")
-	set(CMAKE_BUILD_TYPE_RELEASE ON)
-elseif(CMAKE_BUILD_TYPE STREQUAL "Debug")
+#if(CMAKE_BUILD_TYPE STREQUAL "Release")
+	#set(CMAKE_BUILD_TYPE_RELEASE ON)
+#elseif(CMAKE_BUILD_TYPE STREQUAL "Debug")
 	set(CMAKE_BUILD_TYPE_DEBUG ON)
-endif()
+#endif()
 
 # enable config.h style compile time options and add as "uscxml/config.h"
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.h.in ${CMAKE_CURRENT_BINARY_DIR}/uscxml/config.h)

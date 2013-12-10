@@ -9,7 +9,7 @@ fi
 case "$1" in
 
 -1) echo "Initializing Interpreter"
-	export LD_PRELOAD="/usr/local/lib/libmodbus.so.5"
+#	export LD_PRELOAD="/usr/local/lib/libmodbus.so.5"
 	pkill -f /home/sunkiss/_Projects/xmlBridgeCPP/GW-MES2TIM
 	/home/sunkiss/_Projects/xmlBridgeCPP/GW-MES2TIM -c ../xmlBridgeCPP/map.csv -x autoware_tim.scxml &
     ;;

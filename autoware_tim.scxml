@@ -7,7 +7,7 @@
 <datamodel>
 	<data id="WRITE0">
 	   <frame xmlns="">
-		<data type="wrapperProgram" index="0" >
+		<data type="wrapperProgram" index="0">
 		    <nestedData type="numWorking">33</nestedData>
 		</data>
 	   </frame>
