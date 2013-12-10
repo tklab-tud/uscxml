@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.4)
+cmake_minimum_required(VERSION 2.6.2)
 
 # specify USCXML version
 SET(USCXML_VERSION_MAJOR "0")
@@ -16,7 +16,7 @@ ENDIF()
 
 project(uscxml)
 
-SET(CMAKE_BUILD_TYPE Debug)
+SET(BUILD_PREFER_STATIC_LIBRARIES ON)
 
 # where to find the cmake modules we distribute
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/contrib/cmake)
@@ -222,7 +222,7 @@ if (CMAKE_CROSSCOMPILING)
 	OPTION(BUILD_SHARED_LIBS "Build shared libraries" OFF)
 	OPTION(ENABLE_COTIRE "Enable compile time reduction techniques" OFF)
 else()
-	OPTION(BUILD_SHARED_LIBS "Build shared libraries" ON)
+	OPTION(BUILD_SHARED_LIBS "Build shared libraries" OFF)
 	OPTION(ENABLE_COTIRE "Enable compile time reduction techniques" OFF)
 endif()
 
@@ -304,7 +304,7 @@ if(${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
 
   # order of arguments of gcc matters again
 	#add_definitions(-Wunreachable-code)
-	add_definitions(-DVERBOSE)
+	#add_definitions(-DVERBOSE)
 
 #	if (CMAKE_BUILD_TYPE MATCHES ".*Deb.*" AND ENABLE_GCOV) # when not building for debug
 		# coverage information
@@ -850,7 +850,6 @@ endforeach()
 
 # add compile time reducer
 # see https://github.com/sakra/cotire
-include(cotire)
 
 # build library
 if (BUILD_AS_PLUGINS)

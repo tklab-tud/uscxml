@@ -228,7 +228,7 @@
 		<state id="init3">
 			<transition event="3_rReq" target="sent3">
 				<send 	event="3_rCmd"
-					namelist="$READ3"
+					namelist="$READ3/frame"
 					target="#_xmlbridge0"/>
 			</transition>
 			<transition event="3_wReq" target="sent3">
@@ -236,7 +236,7 @@
 					<assign location="$WRITE3/frame/data/item[@i=$numRiga]/nestedData" expr="$iterator"/>
 				</foreach>
 				<send 	event="3_wCmd"
-					namelist="$WRITE3"
+					namelist="$WRITE3/frame"
 					target="#_xmlbridge0"/>
 			</transition>
 		</state>

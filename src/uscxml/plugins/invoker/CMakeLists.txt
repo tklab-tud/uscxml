@@ -337,7 +337,7 @@ endif()
 
 # OpenAL modality components
 
-if (OPENAL_FOUND AND (LIBSNDFILE_FOUND OR AUDIOTOOLBOX_FOUND))
+if (OPENAL_FOUND)
 	set(USCXML_INVOKERS "openal ${USCXML_INVOKERS}")
 	file(GLOB_RECURSE OPENAL_INVOKER 
 		audio/OpenAL*.cpp 
