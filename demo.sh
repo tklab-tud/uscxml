@@ -29,7 +29,7 @@ case "$1" in
 #	pkill -f /usr/bin/nc
     	if [ "$2" -eq "1" ] ; then
 		#/usr/bin/nc -l -v -p 3000 < write1.xml &
-#		sleep 1				
+		sleep 1				
 		#/usr/local/bin/modpoll -1 -c 4 -o 4 -p 501 -t0 -r14 10.1.30.150	1 0 1 0
 	else
 #		(/usr/bin/cat read1.xml | /usr/bin/nc -l -v -p 3000 >/dev/null) &
