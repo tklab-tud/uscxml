@@ -88,6 +88,8 @@ Data XmlBridgeInvoker::getDataModelVariables() {
  * @param req La richiesta specificata nell'elemento <send> dell'SCXML
  */
 void XmlBridgeInvoker::send(const SendRequest& req) {
+	//TODO HANDLE MALFORMED EVENT
+
 	SendRequest reqCopy = req;
 	std::string evName = reqCopy.getName();
 	int index = evName.find('_');
@@ -97,8 +99,7 @@ void XmlBridgeInvoker::send(const SendRequest& req) {
 
 	XmlBridgeInputEvents& bridgeInstance = XmlBridgeInputEvents::getInstance();
 	//_interpreter->getDataModel().replaceExpressions(reqCopy.content);
-
-	std::map<std::string, Data>::const_iterator nameiter;
+	//TODO LOG EVENT
 
 	/* SCXML -> TIM */
 	if (evType == SCXML2TIM) {
@@ -113,6 +114,7 @@ void XmlBridgeInvoker::send(const SendRequest& req) {
 			namelistIter++;
 		}
 		bridgeInstance.sendReq2TIM(cmdid, write, ss.str(), _timeoutVal);
+		//TODO HANDLE MALFORMED DATA
 
 	/* SCXML -> MES */
 	} else if (evType == SCXML2MES_ACK) {
@@ -129,15 +131,14 @@ void XmlBridgeInvoker::send(const SendRequest& req) {
 			}
 		}
 		bridgeInstance.sendReply2MES(_DBid, cmdid, write, MESstrList);
+		//TODO HANDLE MALFORMED DATA
 
 	/* SCXML -> MES */
 	} else if (evType == SCXML2MES_ERR) {
 		bridgeInstance.sendErr2MES(_DBid, cmdid);
-		return;
 	} else {
 		LOG(ERROR) << "XmlBridgeInvoker: received an unsupported event type from Interpreter, discarding request\n"
-			<< "The event name in the SCXML file is propably incorrect.";
-		return;
+			<< "Propably the event name in the SCXML file is incorrect.";
 	}
 }
 

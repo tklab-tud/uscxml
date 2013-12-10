@@ -1,4 +1,6 @@
-<data  type="reply" index="1">
-	<nestedData  type="command">operativeMode</nestedData>
-	<nestedData  type="state">ok</nestedData>
-</data>
+<frame>
+	<data  type="reply" index="1">
+		<nestedData  type="command">operativeMode</nestedData>
+		<nestedData  type="state">ok</nestedData>
+	</data>
+</frame>

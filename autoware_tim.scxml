@@ -125,7 +125,7 @@
 		</state>
 		<state id="sent0">
 			<transition event="0_wReply" target="init0">
-				<if cond="$_event/data/data/nestedData[@type='state']/text() = 'ok'">
+				<if cond="$_event/data/frame/data/nestedData[@type='state']/text() = 'ok'">
 					<send 	event="0_wAck" target="#_xmlbridge0"/>
 				<elseif/>
 					<send 	event="0__Err" target="#_xmlbridge0"/>
@@ -152,21 +152,21 @@
 		<state id="init1">
 			<transition event="1_rReq" target="sent1">
 				<send 	event="1_rCmd"
-					namelist="$READ1"
+					namelist="$READ1/frame"
 					target="#_xmlbridge0"/>
 			</transition>
 			<transition event="1_wReq" target="sent1">
 				<foreach array="tokenize($_event/data/text(), ',')" item="$iterator" index="numRiga">
-					<assign location="$WRITE1/frame/data/item[@i=$numRiga]/nestedData" expr="$iterator"/>
+					<assign location="$WRITE1/data/frame/data/item[@i=$numRiga]/nestedData" expr="$iterator"/>
 				</foreach>
 				<send 	event="1_wCmd"
-					namelist="$WRITE1"
+					namelist="$WRITE1/frame"
 					target="#_xmlbridge0"/>
 			</transition>
 		</state>
 		<state id="sent1">
 			<transition event="1_wReply" target="init1">
-				<if cond="$_event/data/data/nestedData[@type='state']/text() = 'ok'">
+				<if cond="$_event/data/frame/data/nestedData[@type='state']/text() = 'ok'">
 					<send 	event="1_wAck" target="#_xmlbridge0"/>
 				<elseif/>
 					<send 	event="1__Err" target="#_xmlbridge0"/>
@@ -190,28 +190,28 @@
 		<state id="init2">
 			<transition event="2_rReq" target="sent2">
 				<send 	event="2_rCmd"
-					namelist="$READ2"
+					namelist="$READ2/frame"
 					target="#_xmlbridge0"/>
 			</transition>
 			<transition event="2_wReq" target="sent2">
 				<foreach array="tokenize($_event/data/text(), ',')" item="$iterator" index="numRiga">
-					<assign location="$WRITE2/frame/data/item[@i=$numRiga]/nestedData" expr="$iterator"/>
+					<assign location="$WRITE2/data/frame/data/item[@i=$numRiga]/nestedData" expr="$iterator"/>
 				</foreach>
 				<send 	event="2_wCmd"
-					namelist="$WRITE2"
+					namelist="$WRITE2/frame"
 					target="#_xmlbridge0"/>
 			</transition>
 		</state>
 		<state id="sent2">
 			<transition event="2_wReply" target="init2">
-				<if cond="$_event/data/data/nestedData[@type='state']/text() = 'ok'">
+				<if cond="$_event/data/frame/data/nestedData[@type='state']/text() = 'ok'">
 					<send 	event="2_wAck" target="#_xmlbridge0"/>
 				<elseif/>
 					<send 	event="2__Err" target="#_xmlbridge0"/>
 				</if>
 			</transition>
 			<transition event="2_rReply"  target="init2">
-				<if cond="$_event/data/frame/data/text()">
+				<if cond="$_event/data/data/text()">
 					<send 	event="2_rAck"
 						namelist="$_event/data/frame/data/item/nestedData[@type='state']/text()"
 						target="#_xmlbridge0"/>
@@ -242,7 +242,7 @@
 		</state>
 		<state id="sent3">
 			<transition event="3_wReply" target="init3">
-				<if cond="$_event/data/data/nestedData[@type='state']/text() = 'ok'">
+				<if cond="$_event/data/frame/data/nestedData[@type='state']/text() = 'ok'">
 					<send 	event="3_wAck" target="#_xmlbridge0"/>
 				<elseif/>
 					<send 	event="3__Err" target="#_xmlbridge0"/>
