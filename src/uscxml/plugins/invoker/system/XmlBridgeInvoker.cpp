@@ -249,8 +249,13 @@ void XmlBridgeInputEvents::sendReq2TIM(unsigned int cmdid, bool write, const std
 		return;
 	}
 
+	int index = reqData.find('>');
+	std::string cleanstr = reqData.substr(index + 1, reqData.length());
+	std::string okstr = "<frame>" + cleanstr;
+	LOG(INFO) << "String inviata: " << okstr;
+
 	_timio->_timCmdId.push(cmdid);
-	_timio->_timCmd.push(reqData);
+	_timio->_timCmd.push(okstr);
 	_timio->_timCmdWrite.push(write);
 	_timio->_defTimeout = timeout;
 	_timio->_thread = new tthread::thread(TimIO::client, _timio);
