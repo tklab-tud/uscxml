@@ -103,6 +103,8 @@ void XmlBridgeInvoker::send(const SendRequest& req) {
 
 	/* SCXML -> TIM */
 	if (evType == SCXML2TIM) {
+		//TODO HANDLE MALFORMED DATA
+
 		std::stringstream ss;
 		std::map<std::string, Data>::const_iterator namelistIter = reqCopy.namelist.begin();
 		while(namelistIter != reqCopy.namelist.end()) {
@@ -113,11 +115,22 @@ void XmlBridgeInvoker::send(const SendRequest& req) {
 			}
 			namelistIter++;
 		}
+
+		int index = reqData.find('>');
+		if (index == std::string::npos) {
+			LOG(ERROR) << "Invalid TIM frame";
+			buildTIMexception(cmdid, TIM_ERROR);
+		}
+
+		std::string okstr = "<frame>" + reqData.substr(index + 1, reqData.length());
+		LOG(INFO) << "String inviata: " << okstr;
+
 		bridgeInstance.sendReq2TIM(cmdid, write, ss.str(), _timeoutVal);
-		//TODO HANDLE MALFORMED DATA
 
 	/* SCXML -> MES */
 	} else if (evType == SCXML2MES_ACK) {
+		//TODO HANDLE MALFORMED DATA
+
 		std::list<std::string> MESstrList;
 		if (!write) {
 			std::map<std::string, Data>::const_iterator namelistIter = reqCopy.namelist.begin();
@@ -131,7 +144,6 @@ void XmlBridgeInvoker::send(const SendRequest& req) {
 			}
 		}
 		bridgeInstance.sendReply2MES(_DBid, cmdid, write, MESstrList);
-		//TODO HANDLE MALFORMED DATA
 
 	/* SCXML -> MES */
 	} else if (evType == SCXML2MES_ERR) {
@@ -248,11 +260,6 @@ void XmlBridgeInputEvents::sendReq2TIM(unsigned int cmdid, bool write, const std
 		handleTIMexception(TIM_ERROR);
 		return;
 	}
-
-	int index = reqData.find('>');
-	std::string cleanstr = reqData.substr(index + 1, reqData.length());
-	std::string okstr = "<frame>" + cleanstr;
-	LOG(INFO) << "String inviata: " << okstr;
 
 	_timio->_timCmdId.push(cmdid);
 	_timio->_timCmd.push(okstr);
