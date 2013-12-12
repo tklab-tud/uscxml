@@ -116,16 +116,14 @@ void XmlBridgeInvoker::send(const SendRequest& req) {
 			namelistIter++;
 		}
 
-		int index = reqData.find('>');
+		int index = ss.str().find('>');
 		if (index == std::string::npos) {
 			LOG(ERROR) << "Invalid TIM frame";
 			buildTIMexception(cmdid, TIM_ERROR);
 		}
+		std::string timstr = "<frame>" + ss.str().substr(index + 1, ss.str().length());
 
-		std::string okstr = "<frame>" + reqData.substr(index + 1, reqData.length());
-		LOG(INFO) << "String inviata: " << okstr;
-
-		bridgeInstance.sendReq2TIM(cmdid, write, ss.str(), _timeoutVal);
+		bridgeInstance.sendReq2TIM(cmdid, write, timstr, _timeoutVal);
 
 	/* SCXML -> MES */
 	} else if (evType == SCXML2MES_ACK) {
@@ -262,7 +260,7 @@ void XmlBridgeInputEvents::sendReq2TIM(unsigned int cmdid, bool write, const std
 	}
 
 	_timio->_timCmdId.push(cmdid);
-	_timio->_timCmd.push(okstr);
+	_timio->_timCmd.push(reqData);
 	_timio->_timCmdWrite.push(write);
 	_timio->_defTimeout = timeout;
 	_timio->_thread = new tthread::thread(TimIO::client, _timio);
