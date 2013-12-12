@@ -7,37 +7,30 @@
 <datamodel>
 	<data id="WRITE0">
 	   <frame xmlns="">
-		<data type="wrapperProgram" index="0">
-		    <nestedData type="numWorking">33</nestedData>
+		<data type="setting" index="3">
+		 <item i="1">
+		    <nestedData type="value">0</nestedData>
+		 </item>
 		</data>
 	   </frame>
 	</data>
 	<data id="READ0">
 	   <frame xmlns="">
-	       <data type="requestItem" index="0">totalPacks</data>
+	       <data type="requestItem" index="0">setting</data>
 	   </frame>
 	</data>
 	<data id="WRITE1">
 	   <frame xmlns="">
-		<data type="operativeMode" index="1">
-		 <item i="0">
-		    <nestedData type="state">off</nestedData>
-		 </item>
+		<data type="controls" index="3">
 		 <item i="1">
-		    <nestedData type="state">on</nestedData>
-		 </item>         
-		 <item i="2">
-		    <nestedData type="state">off</nestedData>
-		 </item>         
-		 <item i="3">
-		    <nestedData type="state">off</nestedData>
+		    <nestedData type="value">0</nestedData>
 		 </item>
 		</data>
 	   </frame>
 	</data>
 	<data id="READ1">
 	   <frame xmlns="">
-	       <data type="requestItem" index="1">switchHw</data>
+	       <data type="requestItem" index="0">controls</data>
 	   </frame>
 	</data>
 	<data id="WRITE3">
@@ -50,23 +43,23 @@
 		    <nestedData type="value">0</nestedData>
 		 </item>    
 		 <item i="2">
-		    <nestedData type="value">33</nestedData>
+		    <nestedData type="value">0</nestedData>
 		 </item>
 		 <item i="3">
-		    <nestedData type="value">55</nestedData>
+		    <nestedData type="value">0</nestedData>
 		 </item>
 		 <item i="4">
-		    <nestedData type="value">44</nestedData>
+		    <nestedData type="value">0</nestedData>
 		 </item>             
 		 <item i="5">
-		    <nestedData type="value">55</nestedData>
+		    <nestedData type="value">0</nestedData>
 		 </item>
 		</data>
 	   </frame>
 	</data>
 	<data id="READ3">
 	   <frame xmlns="">
-	       <data type="requestItem" index="0">information</data>
+	       <data type="requestItem" index="3">setting</data>
 	   </frame>
 	</data>
 	<data id="WRITE4">
@@ -112,7 +105,7 @@
 	<state id="0" initial="init0">
 		<state id="init0">
 			<transition event="0_wReq" target="sent0">
-				<assign location="$WRITE0/frame/data/nestedData" expr="$_event/data/text()"/>
+				<assign location="$WRITE0/frame/data/item[@i='1']/nestedData[@type='value']" expr="$_event/data/text()"/>
 				<send 	event="0_wCmd"
 					namelist="$WRITE0/frame"
 					target="#_xmlbridge0"/>
@@ -132,9 +125,9 @@
 				</if>
 			</transition>
 			<transition event="0_rReply" target="init0">
-				<if cond="$_event/data/frame/data/text()">
+				<if cond="$_event/data/frame">
 					<send 	event="0_rAck"
-						namelist="$_event/data/frame/data/text()"
+						namelist="$_event/data/frame/data/item[@i='1']/nestedData[@type='value']/text()"
 						target="#_xmlbridge0"/>
 				<else/>
 					<send 	event="0__Err" target="#_xmlbridge0"/>
@@ -156,9 +149,9 @@
 					target="#_xmlbridge0"/>
 			</transition>
 			<transition event="1_wReq" target="sent1">
-				<foreach array="tokenize($_event/data/text(), ',')" item="$iterator" index="numRiga">
-					<assign location="$WRITE1/data/frame/data/item[@i=$numRiga]/nestedData" expr="$iterator"/>
-				</foreach>
+<!--				<foreach array="tokenize($_event/data/text(), ',')" item="$iterator" index="numRiga"> -->
+					<assign location="$WRITE1/frame/data/item[@i='1']/nestedData[@type='value']" expr="$_event/data/text()"/>
+<!-->				</foreach>  -->
 				<send 	event="1_wCmd"
 					namelist="$WRITE1/frame"
 					target="#_xmlbridge0"/>
@@ -173,9 +166,9 @@
 				</if>
 			</transition>
 			<transition event="1_rReply"  target="init1">
-				<if cond="$_event/data/frame/data/text()">
+				<if cond="$_event/data/frame">
 					<send 	event="1_rAck"
-						namelist="$_event/data/frame/data/item/nestedData[@type='state']/text()"
+						namelist="$_event/data/frame/data/item[@i='1']/nestedData[@type='value']/text()"
 						target="#_xmlbridge0"/>
 				<else/>
 					<send 	event="1_rErr"
@@ -228,7 +221,7 @@
 		<state id="init3">
 			<transition event="3_rReq" target="sent3">
 				<send 	event="3_rCmd"
-					namelist="$READ3"
+					namelist="$READ3/frame"
 					target="#_xmlbridge0"/>
 			</transition>
 			<transition event="3_wReq" target="sent3">
@@ -236,7 +229,7 @@
 					<assign location="$WRITE3/frame/data/item[@i=$numRiga]/nestedData" expr="$iterator"/>
 				</foreach>
 				<send 	event="3_wCmd"
-					namelist="$WRITE3"
+					namelist="$WRITE3/frame"
 					target="#_xmlbridge0"/>
 			</transition>
 		</state>
