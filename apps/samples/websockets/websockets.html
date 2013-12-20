@@ -43,8 +43,8 @@
     function onOpen(evt) {
       writeToScreen("CONNECTED");
       doSend(littlePacket);
-      // doSend(mediumPacket);
-      // doSend(hugePacket);
+      doSend(mediumPacket);
+      //doSend(hugePacket);
     }
     function onClose(evt) {
       writeToScreen("DISCONNECTED");

@@ -55,9 +55,7 @@ public:
 		return uscxml::md5(data, size);
 	}
 
-	std::string base64() {
-		return base64Encode((char* const)data, size);
-	}
+	std::string base64();
 
 	Blob* fromBase64(const std::string base64) {
 		std::string decoded = base64Decode(base64);

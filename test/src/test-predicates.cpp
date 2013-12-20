@@ -43,12 +43,66 @@ int main(int argc, char** argv) {
 
 	assert(Interpreter::isDescendant(compoundChild1, compoundState));
 
-	std::string idrefs("id1 \nid2  \tid3");
-	std::vector<std::string> tokenizedIdrefs = Interpreter::tokenizeIdRefs(idrefs);
-	assert(tokenizedIdrefs.size() == 3);
-	assert(tokenizedIdrefs[0].compare("id1") == 0);
-	assert(tokenizedIdrefs[1].compare("id2") == 0);
-	assert(tokenizedIdrefs[2].compare("id3") == 0);
+	{
+		std::string idrefs("id1");
+		std::list<std::string> tokenizedIdrefs = Interpreter::tokenizeIdRefs(idrefs);
+		assert(tokenizedIdrefs.size() == 1);
+		assert(tokenizedIdrefs.front().compare("id1") == 0);
+	}
+
+	{
+		std::string idrefs(" id1");
+		std::list<std::string> tokenizedIdrefs = Interpreter::tokenizeIdRefs(idrefs);
+		assert(tokenizedIdrefs.size() == 1);
+		assert(tokenizedIdrefs.front().compare("id1") == 0);
+	}
+
+	{
+		std::string idrefs(" id1 ");
+		std::list<std::string> tokenizedIdrefs = Interpreter::tokenizeIdRefs(idrefs);
+		assert(tokenizedIdrefs.size() == 1);
+		assert(tokenizedIdrefs.front().compare("id1") == 0);
+	}
+
+	{
+		std::string idrefs(" \tid1\n ");
+		std::list<std::string> tokenizedIdrefs = Interpreter::tokenizeIdRefs(idrefs);
+		assert(tokenizedIdrefs.size() == 1);
+		assert(tokenizedIdrefs.front().compare("id1") == 0);
+	}
+
+	{
+		std::string idrefs("id1 id2 id3");
+		std::list<std::string> tokenizedIdrefs = Interpreter::tokenizeIdRefs(idrefs);
+		assert(tokenizedIdrefs.size() == 3);
+		assert(tokenizedIdrefs.front().compare("id1") == 0);
+		tokenizedIdrefs.pop_front();
+		assert(tokenizedIdrefs.front().compare("id2") == 0);
+		tokenizedIdrefs.pop_front();
+		assert(tokenizedIdrefs.front().compare("id3") == 0);
+	}
+
+	{
+		std::string idrefs("\t  id1 \nid2\n\n id3\t");
+		std::list<std::string> tokenizedIdrefs = Interpreter::tokenizeIdRefs(idrefs);
+		assert(tokenizedIdrefs.size() == 3);
+		assert(tokenizedIdrefs.front().compare("id1") == 0);
+		tokenizedIdrefs.pop_front();
+		assert(tokenizedIdrefs.front().compare("id2") == 0);
+		tokenizedIdrefs.pop_front();
+		assert(tokenizedIdrefs.front().compare("id3") == 0);
+	}
+
+	{
+		std::string idrefs("id1 \nid2  \tid3");
+		std::list<std::string> tokenizedIdrefs = Interpreter::tokenizeIdRefs(idrefs);
+		assert(tokenizedIdrefs.size() == 3);
+		assert(tokenizedIdrefs.front().compare("id1") == 0);
+		tokenizedIdrefs.pop_front();
+		assert(tokenizedIdrefs.front().compare("id2") == 0);
+		tokenizedIdrefs.pop_front();
+		assert(tokenizedIdrefs.front().compare("id3") == 0);
+	}
 
 	std::string transEvents;
 	transEvents = "error";

@@ -121,7 +121,7 @@
 				-->
 				<script>
 //<![CDATA[
-//					dump(_event);
+					dump(_event);
 					var pathDelim = ':';  // we need to flatten directories - this will seperate them in filenames
 					
 					// store event
@@ -158,9 +158,7 @@
 						}
 						var keyFrame = job.keyFrames[kfIndex];
 
-						keyFrame.modelFile = keyFrame.imageURL.substr(keyFrame.serverURL.length + 1);
-						keyFrame.file = keyFrame.modelFile.substr(0, keyFrame.modelFile.indexOf('.'));
-						keyFrame.ext = keyFrame.modelFile.substr(keyFrame.modelFile.indexOf('.') + 1);
+						keyFrame.file = keyFrame.imagePath.substr(1);
 
 						keyFrame.modelFile = keyFrame.file + ".osgb";
 						keyFrame.modelFile = keyFrame.modelFile.replace(/\//g, pathDelim);
@@ -236,6 +234,7 @@
 					_event.data.pathComponent.length == 3 &amp;&amp; 
 					_event.data.pathComponent[1] === 'movie' &amp;&amp; 
 					_event.data.pathComponent[2] === 'codecs'">
+				<log expr="_invokers['ffmpeg']" />
 				<send target="#_parent" event="send.codecs">
 					<param name="context" expr="_event.origin" />
 					<param name="codecs" expr="_invokers['ffmpeg']" />

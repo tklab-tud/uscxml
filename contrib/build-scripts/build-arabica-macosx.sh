@@ -1,8 +1,9 @@
 #!/bin/bash
 
 #
-# build libevent for MacOSX
+# build arabica for MacOSX
 #
+# ./configure --with-boost=/opt/local/include/ --with-libxml2=`xcrun --show-sdk-path`/usr --with-parser=libxml2
 
 # exit on error
 set -e
@@ -12,6 +13,7 @@ DIR="$( cd "$( dirname "$0" )" && pwd )"
 MACOSX_VER=`/usr/bin/sw_vers -productVersion`
 MACOSX_COMP=(`echo $MACOSX_VER | tr '.' ' '`)
 DEST_DIR="${DIR}/../prebuilt/darwin-i386/${MACOSX_COMP[0]}.${MACOSX_COMP[1]}/gnu"
+SYSROOT=`xcrun --show-sdk-path`
 
 if [ ! -f src/arabica.cpp ]; then
 	echo
@@ -62,6 +64,7 @@ LDFLAGS="${MACOSX_VERSION_MIN} -arch x86_64" \
 --disable-shared \
 --disable-dependency-tracking \
 --with-pic
+
 
 make
 cp ./src/.libs/libarabica.a ./libarabica.x86_64.a

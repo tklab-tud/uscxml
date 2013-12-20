@@ -92,17 +92,24 @@ HTTPServer::HTTPServer(unsigned short port, unsigned short wsPort, SSLConfig* ss
 
 	evhttp_set_allowed_methods(_http, allowedMethods); // allow all methods
 
-	if (_port > 0)
+	if (_port > 0) {
 		_httpHandle = evhttp_bind_socket_with_handle(_http, INADDR_ANY, _port);
-	if (_httpHandle)
-		LOG(INFO) << "HTTP server listening on tcp/" << _port;
+		if (_httpHandle) {
+			LOG(INFO) << "HTTP server listening on tcp/" << _port;
+		} else {
+			LOG(ERROR) << "HTTP server cannot bind to tcp/" << _wsPort;
+		}
+	}
 
 	_wsPort = wsPort;
-	if (_wsPort > 0)
+	if (_wsPort > 0) {
 		_wsHandle = evws_bind_socket(_evws, _wsPort);
-	if (_wsHandle)
-		LOG(INFO) << "WebSocket server listening on tcp/" << _wsPort;
-
+		if (_wsHandle) {
+			LOG(INFO) << "WebSocket server listening on tcp/" << _wsPort;
+		} else {
+			LOG(ERROR) << "WebSocket server cannot bind to tcp/" << _wsPort;
+		}
+	}
 #if (defined EVENT_SSL_FOUND && defined OPENSSL_FOUND && defined OPENSSL_HAS_ELIPTIC_CURVES)
 	_sslHandle = NULL;
 	_https = NULL;
@@ -136,11 +143,15 @@ HTTPServer::HTTPServer(unsigned short port, unsigned short wsPort, SSLConfig* ss
 		evhttp_set_bevcb(_https, sslBufferEventCallback, ctx);
 		evhttp_set_gencb(_https, sslGeneralBufferEventCallback, NULL);
 
-		if (_sslPort > 0)
+		if (_sslPort > 0) {
 			_sslHandle = evhttp_bind_socket_with_handle(_https, INADDR_ANY, _sslPort);
-		if (_sslHandle)
-			LOG(INFO) << "HTTPS server listening on tcp/" << _wsPort;
+			if (_sslHandle) {
+				LOG(INFO) << "HTTPS server listening on tcp/" << _wsPort;
+			} else {
+				LOG(ERROR) << "HTTPS server cannot bind to tcp/" << _wsPort;
 
+			}
+		}
 	}
 #endif
 

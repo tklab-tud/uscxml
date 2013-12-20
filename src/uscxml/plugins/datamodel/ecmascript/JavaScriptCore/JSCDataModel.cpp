@@ -400,9 +400,10 @@ Data JSCDataModel::getValueAsData(const JSValueRef value) {
 			if (!isNumeric(property.c_str(), 10))
 				isArray = false;
 			propertySet.insert(property);
-			JSStringRelease(stringValue);
+			//JSStringRelease(stringValue); // JSPropertyNameArrayRelease does the job it seems
 			free(buf);
 		}
+		JSPropertyNameArrayRelease(properties);
 		std::set<std::string>::iterator propIter = propertySet.begin();
 		while(propIter != propertySet.end()) {
 			if (isArray) {
@@ -537,14 +538,14 @@ void JSCDataModel::assign(const Element<std::string>& assignElem,
 		throw Event("error.execution", Event::PLATFORM);
 
 	// flags on attribute are ignored?
-	if (key.compare("_sessionid") == 0)
-		return; //throw Event("error.execution", Event::PLATFORM);
+	if (key.compare("_sessionid") == 0) // test 322
+		throw Event("error.execution", Event::PLATFORM);
 	if (key.compare("_name") == 0)
-		return; //throw Event("error.execution", Event::PLATFORM);
-	if (key.compare("_ioprocessors") == 0)
-		return; //throw Event("error.execution", Event::PLATFORM);
+		throw Event("error.execution", Event::PLATFORM);
+	if (key.compare("_ioprocessors") == 0)  // test 326
+		throw Event("error.execution", Event::PLATFORM);
 	if (key.compare("_invokers") == 0)
-		return; //throw Event("error.execution", Event::PLATFORM);
+		throw Event("error.execution", Event::PLATFORM);
 
 	if (HAS_ATTR(assignElem, "expr")) {
 		evalAsValue(key + " = " + ATTR(assignElem, "expr"));

@@ -49,12 +49,22 @@ inline bool isNumeric( const char* pszInput, int nNumberBase) {
 }
 
 inline bool iequals(const std::string& a, const std::string& b) {
-	// this impementation beats boost::iequals 2700ms vs 2100ms for test-performance.scxml
+	// this impementation beats boost::iequals 2700ms vs 2100ms for test-performance.scxml - we don't care for non-ascii yet
 	unsigned int size = a.size();
 	if (b.size() != size)
 		return false;
 	for (unsigned int i = 0; i < size; ++i)
 		if (tolower(a[i]) != tolower(b[i]))
+			return false;
+	return true;
+}
+
+inline bool equals(const std::string& a, const std::string& b) {
+	unsigned int size = a.size();
+	if (b.size() != size)
+		return false;
+	for (unsigned int i = 0; i < size; ++i)
+		if (a[i] != b[i])
 			return false;
 	return true;
 }

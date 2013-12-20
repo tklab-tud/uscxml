@@ -236,7 +236,7 @@ public:
 	}
 
 	Arabica::DOM::Node<std::string> getState(const std::string& stateId);
-	Arabica::XPath::NodeSet<std::string> getStates(const std::vector<std::string>& stateIds);
+	Arabica::XPath::NodeSet<std::string> getStates(const std::list<std::string>& stateIds);
 
 	Arabica::DOM::Document<std::string>& getDocument()       {
 		return _document;
@@ -286,7 +286,7 @@ public:
 	static bool isCompound(const Arabica::DOM::Node<std::string>& state);
 	static bool isDescendant(const Arabica::DOM::Node<std::string>& s1, const Arabica::DOM::Node<std::string>& s2);
 
-	static std::vector<std::string> tokenizeIdRefs(const std::string& idRefs);
+	static std::list<std::string> tokenizeIdRefs(const std::string& idRefs);
 	static std::string spaceNormalize(const std::string& text);
 
 	bool isInEmbeddedDocument(const Arabica::DOM::Node<std::string>& node);
@@ -540,7 +540,7 @@ public:
 	Arabica::DOM::Node<std::string> getState(const std::string& stateId) {
 		return _impl->getState(stateId);
 	}
-	Arabica::XPath::NodeSet<std::string> getStates(const std::vector<std::string>& stateIds) {
+	Arabica::XPath::NodeSet<std::string> getStates(const std::list<std::string>& stateIds) {
 		return _impl->getStates(stateIds);
 	}
 
@@ -628,7 +628,7 @@ public:
 		return InterpreterImpl::isDescendant(s1, s2);
 	}
 
-	static std::vector<std::string> tokenizeIdRefs(const std::string& idRefs) {
+	static std::list<std::string> tokenizeIdRefs(const std::string& idRefs) {
 		return InterpreterImpl::tokenizeIdRefs(idRefs);
 	}
 	static std::string spaceNormalize(const std::string& text) {

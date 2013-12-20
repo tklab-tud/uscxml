@@ -17,6 +17,10 @@ $ ./configure --disable-render-text-node --disable-script-node-javascript --disa
 $ sudo make install
 $ cd ..
 
+for mavericks:
+PNG_CFLAGS="-I/opt/local/include" PNG_LIBS="-L/opt/local/lib" XML_CFLAGS="-I`xcrun --show-sdk-path`/usr/include/libxml2" XML_LIBS="-L`xcrun --show-sdk-path`/usr/lib" CPPFLAGS="--sysroot=`xcrun --show-sdk-path` -I/opt/local/include -I`xcrun --show-sdk-path`/usr/include/libxml2" LDFLAGS="--sysroot=`xcrun --show-sdk-path` -L/opt/local/lib -lboost_system-mt -lxml2 -lpng" ./configure --disable-render-text-node --disable-script-node-javascript --disable-script-node-java --disable-gl-renderer --disable-xembed --disable-player --disable-examples --disable-mozilla-plugin
+
+
 $ sudo apt-get install git
 $ git clone https://github.com/openscenegraph/osg
 $ cd osg

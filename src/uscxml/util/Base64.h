@@ -36,9 +36,7 @@ extern "C" {
 	} base64_decodestate;
 
 	USCXML_API void base64_init_decodestate(base64_decodestate* state_in);
-
 	USCXML_API int base64_decode_value(char value_in);
-
 	USCXML_API int base64_decode_block(const char* code_in, const int length_in, char* plaintext_out, base64_decodestate* state_in);
 
 /// ENDCODE
@@ -54,11 +52,8 @@ extern "C" {
 	} base64_encodestate;
 
 	USCXML_API void base64_init_encodestate(base64_encodestate* state_in);
-
 	USCXML_API char base64_encode_value(char value_in);
-
 	USCXML_API int base64_encode_block(const char* plaintext_in, int length_in, char* code_out, base64_encodestate* state_in);
-
 	USCXML_API int base64_encode_blockend(char* code_out, base64_encodestate* state_in);
 
 #ifdef __cplusplus

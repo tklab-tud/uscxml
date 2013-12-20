@@ -70,6 +70,18 @@ if (APPLE)
 			MACOSX_VERSION_MINOR 
 			MACOSX_VERSION_PATCH)
 	endif()
+	if (MACOSX_VERSION VERSION_GREATER "10.8.99")
+		# LIST(APPEND CMAKE_FIND_ROOT_PATH ${CMAKE_OSX_SYSROOT})
+		# make sure that we find libxml2 here first
+		set(CMAKE_FIND_ROOT_PATH ${CMAKE_OSX_SYSROOT} ${CMAKE_FIND_ROOT_PATH})
+	endif()
+endif()
+
+if (NOT $ENV{MACOSX_DEPLOYMENT_TARGET} STREQUAL "" 
+    AND ENV{MACOSX_DEPLOYMENT_TARGET} VERSION_LESS "10.9" 
+    AND MACOSX_VERSION VERSION_GREATER "10.8.99")
+  message(WARNING "\nMACOSX_DEPLOYMENT_TARGET is set to $ENV{MACOSX_DEPLOYMENT_TARGET} implying libstdc++ instead of libc++ - linking against prebuilts from 10.8")
+  set(MACOSX_VERSION_MINOR 8)
 endif()
 
 # We use the toolchain file from http://code.google.com/p/android-cmake/
@@ -249,6 +261,8 @@ else()
 endif()
 include_directories(${USCXML_PREBUILT_LIBRARY_PATH}/include)
 
+#message(STATUS "Searching for prebuilt libraries in: ${CMAKE_FIND_ROOT_PATH}")
+
 if (WIN32)
 	include_directories(${PROJECT_SOURCE_DIR}/contrib/src/getopt)
 	include_directories(${PROJECT_SOURCE_DIR}/contrib/src/inttypes)
@@ -266,8 +280,8 @@ if (CMAKE_CROSSCOMPILING)
 	OPTION(BUILD_TESTS "Build USCXML tests" OFF)
 else()
 	OPTION(BUILD_TESTS "Build USCXML tests" ON)
-	OPTION(RUN_W3C_ECMA_TESTS "Run W3C ECMAScript tests" OFF)
-	OPTION(RUN_W3C_XPATH_TESTS "Run W3C XPath tests" OFF)
+	OPTION(BUILD_TESTS_W3C_ECMA "Run W3C ECMAScript tests" OFF)
+	OPTION(BUILD_TESTS_W3C_XPATH "Run W3C XPath tests" OFF)
 endif()
 OPTION(ENABLE_GCOV "Compile with gcov support" OFF)
 
@@ -500,7 +514,8 @@ if (NOT WIN32)
 	# message("CMAKE_SYSTEM_PROGRAM_PATH: ${CMAKE_SYSTEM_PROGRAM_PATH}")
 	# message("CMAKE_FIND_ROOT_PATH: ${CMAKE_FIND_ROOT_PATH}")
 
-	if (APPLE)
+	# MacOSX Mavericks moved libxml2 into SDK
+	if (APPLE AND ${MACOSX_VERSION} VERSION_LESS "10.9.0")
 		set(PC_LIBXML_INCLUDEDIR "/usr/include/libxml2/")
 	endif()
 
@@ -957,6 +972,7 @@ foreach(LIBRARY ${USCXML_OPT_LIBS})
 			set(SKIP_NEXT ON)
 		endif()
 	elseif (LIBRARY MATCHES "uscxml.*")
+	elseif (LIBRARY MATCHES ".*\\.framework.*")
 	elseif (LIBRARY MATCHES "mmi_proto.*")
 	else()
 		if (NOT SKIP_NEXT)

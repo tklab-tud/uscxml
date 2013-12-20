@@ -912,11 +912,11 @@ void InterpreterImpl::send(const Arabica::DOM::Node<std::string>& element) {
 		// namelist
 		if (HAS_ATTR(element, "namelist")) {
 			if (_dataModel) {
-				std::vector<std::string> names = tokenizeIdRefs(ATTR(element, "namelist"));
-				for (int i = 0; i < names.size(); i++) {
-					Data namelistValue = _dataModel.getStringAsData(names[i]);
-					sendReq.namelist[names[i]] = namelistValue;
-					sendReq.data.compound[names[i]] = namelistValue;
+				std::list<std::string> names = tokenizeIdRefs(ATTR(element, "namelist"));
+				for (std::list<std::string>::const_iterator nameIter = names.begin(); nameIter != names.end(); nameIter++) {
+					Data namelistValue = _dataModel.getStringAsData(*nameIter);
+					sendReq.namelist[*nameIter] = namelistValue;
+					sendReq.data.compound[*nameIter] = namelistValue;
 				}
 			} else {
 				LOG(ERROR) << "Namelist attribute at send requires datamodel to be defined";
@@ -1054,9 +1054,9 @@ void InterpreterImpl::invoke(const Arabica::DOM::Node<std::string>& element) {
 
 		// namelist
 		if (HAS_ATTR(element, "namelist")) {
-			std::vector<std::string> names = tokenizeIdRefs(ATTR(element, "namelist"));
-			for (int i = 0; i < names.size(); i++) {
-				invokeReq.namelist[names[i]] = _dataModel.evalAsString(names[i]);
+			std::list<std::string> names = tokenizeIdRefs(ATTR(element, "namelist"));
+			for (std::list<std::string>::const_iterator nameIter = names.begin(); nameIter != names.end(); nameIter++) {
+				invokeReq.namelist[*nameIter] = _dataModel.evalAsString(*nameIter);
 			}
 		}
 
@@ -1235,10 +1235,11 @@ bool InterpreterImpl::hasConditionMatch(const Arabica::DOM::Node<std::string>& c
 
 void InterpreterImpl::executeContent(const NodeList<std::string>& content, bool rethrow) {
 	for (unsigned int i = 0; i < content.getLength(); i++) {
-		if (content.item(i).getNodeType() != Node_base::ELEMENT_NODE)
+		const Arabica::DOM::Node<std::string>& node = content.item(i);
+		if (node.getNodeType() != Node_base::ELEMENT_NODE)
 			continue;
 		try {
-			executeContent(content.item(i), true);
+			executeContent(node, true);
 		}
 		CATCH_AND_DISTRIBUTE2("Error when executing content", content.item(i));
 	}
@@ -1246,10 +1247,11 @@ void InterpreterImpl::executeContent(const NodeList<std::string>& content, bool 
 
 void InterpreterImpl::executeContent(const NodeSet<std::string>& content, bool rethrow) {
 	for (unsigned int i = 0; i < content.size(); i++) {
-		if (content[i].getNodeType() != Node_base::ELEMENT_NODE)
+		const Arabica::DOM::Node<std::string>& node = content[i];
+		if (node.getNodeType() != Node_base::ELEMENT_NODE)
 			continue;
 		try {
-			executeContent(content[i], true);
+			executeContent(node, true);
 		}
 		CATCH_AND_DISTRIBUTE2("Error when executing content", content[i]);
 	}
@@ -1598,9 +1600,9 @@ NEXT_ANCESTOR:
 	return ancestor;
 }
 
-Arabica::XPath::NodeSet<std::string> InterpreterImpl::getStates(const std::vector<std::string>& stateIds) {
+Arabica::XPath::NodeSet<std::string> InterpreterImpl::getStates(const std::list<std::string>& stateIds) {
 	Arabica::XPath::NodeSet<std::string> states;
-	std::vector<std::string>::const_iterator tokenIter = stateIds.begin();
+	std::list<std::string>::const_iterator tokenIter = stateIds.begin();
 	while(tokenIter != stateIds.end()) {
 		states.push_back(getState(*tokenIter));
 		tokenIter++;
@@ -1717,18 +1719,32 @@ NodeSet<std::string> InterpreterImpl::getTargetStates(const Arabica::DOM::Node<s
 	}
 
 	std::string targetId = ((Arabica::DOM::Element<std::string>)transition).getAttribute("target");
-
-	std::vector<std::string> targetIds = InterpreterImpl::tokenizeIdRefs(ATTR(transition, "target"));
-	for (int i = 0; i < targetIds.size(); i++) {
-		Arabica::DOM::Node<std::string> state = getState(targetIds[i]);
+	std::list<std::string> targetIds = InterpreterImpl::tokenizeIdRefs(ATTR(transition, "target"));
+	for (std::list<std::string>::const_iterator targetIter = targetIds.begin(); targetIter != targetIds.end(); targetIter++) {
+		Arabica::DOM::Node<std::string> state = getState(*targetIter);
 		assert(HAS_ATTR(state, "id"));
 		targetStates.push_back(state);
 	}
 	return targetStates;
 }
 
-std::vector<std::string> InterpreterImpl::tokenizeIdRefs(const std::string& idRefs) {
-	std::vector<std::string> ids;
+std::list<std::string> InterpreterImpl::tokenizeIdRefs(const std::string& idRefs) {
+	std::list<std::string> ids;
+
+	// appr. 3x faster than stringstream
+	size_t start = 0;
+	for (int i = 0; i < idRefs.size(); i++) {
+		if (isspace(idRefs[i])) {
+			if (i > 0 && start < i - 1) {
+				ids.push_back(idRefs.substr(start, i - start));
+			}
+			while(isspace(idRefs[++i])); // skip whitespaces
+			start = i;
+		} else if (i + 1 == idRefs.size()) {
+			ids.push_back(idRefs.substr(start, i + 1 - start));
+		}
+	}
+
 
 #if 0
 	if (idRefs.length() > 0) {
@@ -1740,11 +1756,13 @@ std::vector<std::string> InterpreterImpl::tokenizeIdRefs(const std::string& idRe
 	}
 #endif
 
+#if 0
 	// this version is somewhat fatser than the one above
 	std::stringstream ss (idRefs);
 	std::string item;
 	while(ss >> item)
 		ids.push_back(item);
+#endif
 
 	return ids;
 }
