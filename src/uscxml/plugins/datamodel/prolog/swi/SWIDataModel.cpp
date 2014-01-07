@@ -471,9 +471,9 @@ void SWIDataModel::assign(const Element<std::string>& assignElem,
 			std::stringstream dataInitStr;
 			std::stringstream xmlDoc;
 			Node<std::string> child = node;
-			while(node) {
+			while(child) {
 				xmlDoc << child;
-				child = node.getNextSibling();
+				child = child.getNextSibling();
 			}
 			domUrl = URL::toLocalFile(xmlDoc.str(), ".pl");
 			if (iequals(type, "retract"))

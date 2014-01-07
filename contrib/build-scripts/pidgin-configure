@@ -1,0 +1,1 @@
+./configure --disable-nls --disable-gtkui --disable-consoleui --disable-gstreamer --disable-vv --disable-meanwhile --disable-avahi --disable-dbus --disable-gnome-keyring --disable-kwallet --disable-nss --disable-gnutls --disable-tcl --disable-perl --disable-tk --enable-static --with-pic

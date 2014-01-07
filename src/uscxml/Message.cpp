@@ -62,7 +62,7 @@ Blob::Blob(void* _data, size_t _size, const std::string& _mimeType, bool adopt) 
 }
 
 #if 0
-// there used to work base64 encoded images in a browser - can't check extensively just now
+// this used to work base64 encoded images in a browser - can't check extensively just now
 static const std::string base64_chars =
     "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
     "abcdefghijklmnopqrstuvwxyz"

@@ -29,13 +29,21 @@ if [ -f Makefile ]; then
 	make clean
 fi
 
+if [ ${MACOSX_COMP[1]} -lt 9 ]; then
+  export CXXFLAGS="-mmacosx-version-min=10.6 -stdlib=libstdc++ -arch x86_64 -arch i386"
+  export CFLAGS="-mmacosx-version-min=10.6 -arch x86_64 -arch i386"
+  export LDFLAGS="-stdlib=libstdc++"
+else
+  export CXXFLAGS="-mmacosx-version-min=10.7 -stdlib=libc++ -arch x86_64 -arch i386"
+  export CFLAGS="-mmacosx-version-min=10.7 -stdlib=libc++ -arch x86_64 -arch i386"
+  export LDFLAGS="-stdlib=libc++"
+fi
+
 #CPPFLAGS="-DHAVE_CURSES_H=0 -DHAVE_TGETENT=0 -DHAVE_TCSETATTR=0 -DHAVE_TERM_H=0 -DHAVE_LIBNCURSES=0" \
 
 ./configure \
-CFLAGS="-mmacosx-version-min=10.6 -arch x86_64 -arch i386" \
-CXXFLAGS="-mmacosx-version-min=10.6 -arch x86_64 -arch i386" \
-LDFLAGS="-mmacosx-version-min=10.6 -arch x86_64 -arch i386" \
 --disable-gmp --disable-readline \
+--without-jpl \
 --prefix=${DEST_DIR}
 
 sed -ie 's/define HAVE_CURSES_H 1/undef HAVE_CURSES_H/' config.h

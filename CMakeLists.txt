@@ -339,6 +339,10 @@ if(${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
 		add_definitions(-Wno-narrowing)
 	endif()
 
+	if(GCC_VERSION VERSION_EQUAL 4.8 OR GCC_VERSION VERSION_GREATER 4.8)
+		add_definitions(-Wno-unused-local-typedefs)
+	endif()
+
 	# swig will throw a warning with optimization otherwise
 	add_definitions(-fno-strict-aliasing)
 	add_definitions("-Wno-unused-value -Wno-sign-compare")
@@ -515,7 +519,7 @@ if (NOT WIN32)
 	# message("CMAKE_FIND_ROOT_PATH: ${CMAKE_FIND_ROOT_PATH}")
 
 	# MacOSX Mavericks moved libxml2 into SDK
-	if (APPLE AND ${MACOSX_VERSION} VERSION_LESS "10.9.0")
+	if (APPLE AND "${MACOSX_VERSION}" VERSION_LESS "10.9.0")
 		set(PC_LIBXML_INCLUDEDIR "/usr/include/libxml2/")
 	endif()
 
