@@ -54,6 +54,7 @@ public:
 			classDef.staticValues = staticValues;
 			classDef.staticFunctions = staticFunctions;
 			classDef.finalize = jsDestructor;
+			classDef.className = "ArrayBufferView";
 
 			Tmpl = JSClassCreate(&classDef);
 			JSClassRetain(Tmpl);

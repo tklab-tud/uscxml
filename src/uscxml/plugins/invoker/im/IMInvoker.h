@@ -79,7 +79,7 @@ private:
 
 	static Data buddyToData(PurpleBuddy *buddy);
 	static Data statusToData(PurpleStatus *status);
-	static Data purpleValueToData(PurpleValue* value);
+	static Data purpleValueToData(GValue* value);
 
 	static PurpleAccountUiOps _uiAccountOps;
 	static PurpleEventLoopUiOps _uiEventLoopOps;
@@ -88,7 +88,7 @@ private:
 	static PurpleBlistUiOps _uiBuddyOps;
 	static PurpleXferUiOps _uiXferOps;
 	static PurpleNotifyUiOps _uiNotifyOps;
-	static PurplePrivacyUiOps _uiPrivacyOps;
+//	static PurplePrivacyUiOps _uiPrivacyOps;
 	static PurpleRequestUiOps _uiRequestOps;
 	static PurpleConnectionUiOps _uiConnectOps;
 	static PurpleWhiteboardUiOps _uiWhiteboardOps;

@@ -61,6 +61,7 @@ public:
 			classDef.staticValues = staticValues;
 			classDef.staticFunctions = staticFunctions;
 			classDef.finalize = jsDestructor;
+			classDef.className = "SCXMLEvent";
 
 			Tmpl = JSClassCreate(&classDef);
 			JSClassRetain(Tmpl);

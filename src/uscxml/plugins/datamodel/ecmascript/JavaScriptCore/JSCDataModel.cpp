@@ -286,6 +286,14 @@ Data JSCDataModel::getStringAsData(const std::string& content) {
 JSValueRef JSCDataModel::getDataAsValue(const Data& data) {
 	JSValueRef exception = NULL;
 
+	if (data.node) {
+		JSCNode::JSCNodePrivate* privData = new JSCNode::JSCNodePrivate();
+		privData->nativeObj = new Node<std::string>(data.node);
+		privData->dom = _dom;
+
+		JSObjectRef value = JSObjectMake(_ctx, JSCNode::getTmpl(), privData);
+		return value;
+	}
 	if (data.compound.size() > 0) {
 		JSObjectRef value = JSObjectMake(_ctx, 0, 0);
 		std::map<std::string, Data>::const_iterator compoundIter = data.compound.begin();

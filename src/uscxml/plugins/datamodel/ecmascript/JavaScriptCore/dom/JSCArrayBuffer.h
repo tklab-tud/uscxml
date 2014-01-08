@@ -59,6 +59,7 @@ public:
 			classDef.staticValues = staticValues;
 			classDef.staticFunctions = staticFunctions;
 			classDef.finalize = jsDestructor;
+			classDef.className = "ArrayBuffer";
 			classDef.callAsConstructor = jsConstructor;
 
 			Tmpl = JSClassCreate(&classDef);

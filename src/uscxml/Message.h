@@ -81,6 +81,7 @@ public:
 		}
 	}
 	template <typename T> Data(T value) : atom(toStr(value)), type(INTERPRETED) {}
+	template <typename T> Data(T value, Type type_) : atom(toStr(value)), type(type_) {}
 
 	explicit Data(const Arabica::DOM::Node<std::string>& dom);
 	virtual ~Data() {}

@@ -67,6 +67,42 @@ std::string DOMUtils::xPathForNode(const Arabica::DOM::Node<std::string>& node) 
 	return xPath;
 }
 
+std::list<Arabica::DOM::Node<std::string> > DOMUtils::getElementsByType(const Arabica::DOM::Node<std::string>& root, Arabica::DOM::Node_base::Type type) {
+	std::list<Arabica::DOM::Node<std::string> > result;
+	std::list<Arabica::DOM::Node<std::string> > stack;
+	std::list<Arabica::DOM::Node<std::string> >::iterator stackIter;
+
+	if (!root)
+		return result;
+
+	stack.push_back(root);
+	while(stack.size() > 0) {
+//		for(stackIter = stack.begin(); stackIter != stack.end(); stackIter++) {
+//			std::cout << stackIter->getNodeType() << " " << stackIter->getLocalName() << " " << stackIter->getNodeValue() << std::endl;
+//		}
+//		std::cout << std::endl;
+
+		Arabica::DOM::Node<std::string> currNode = stack.back();
+		if (currNode.hasChildNodes()) {
+			stack.push_back(currNode.getFirstChild());
+			continue;
+		}
+
+		// roll back stack and pop everyone without next sibling
+		do {
+			currNode = stack.back();
+			if (currNode.getNodeType() == type)
+				result.push_back(currNode);
+			stack.pop_back();
+			if (currNode.getNextSibling()) {
+				stack.push_back(currNode.getNextSibling());
+				break;
+			}
+		} while(stack.size() > 0);
+	}
+	return result;
+}
+
 NameSpacingParser NameSpacingParser::fromXML(const std::string& xml) {
 	std::stringstream* ss = new std::stringstream();
 	(*ss) << xml;
@@ -81,8 +117,8 @@ NameSpacingParser NameSpacingParser::fromInputSource(Arabica::SAX::InputSource<s
 	NameSpacingParser parser;
 	if(!parser.parse(source) || !parser.getDocument().hasChildNodes()) {
 		if(parser._errorHandler.errorsReported()) {
-			LOG(ERROR) << "could not parse input:";
-			LOG(ERROR) << parser._errorHandler.errors() << std::endl;
+//			LOG(ERROR) << "could not parse input:";
+//			LOG(ERROR) << parser._errorHandler.errors() << std::endl;
 		} else {
 			Arabica::SAX::InputSourceResolver resolver(source, Arabica::default_string_adaptor<std::string>());
 			if (!resolver.resolve()) {

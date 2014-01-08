@@ -20,6 +20,7 @@
 #include "IMInvoker.h"
 #include <glog/logging.h>
 #include "uscxml/UUID.h"
+#include "uscxml/DOMUtils.h"
 #include <boost/algorithm/string.hpp>
 
 #ifdef BUILD_AS_PLUGINS
@@ -162,6 +163,7 @@ PurpleNotifyUiOps IMInvoker::_uiNotifyOps = {
 	NULL
 };
 
+#if 0
 PurplePrivacyUiOps IMInvoker::_uiPrivacyOps = {
 	purplePermitAdded,
 	purplePermitRemoved,
@@ -172,6 +174,7 @@ PurplePrivacyUiOps IMInvoker::_uiPrivacyOps = {
 	NULL,
 	NULL
 };
+#endif
 
 PurpleRequestFeature IMInvoker::_features;
 PurpleRequestUiOps IMInvoker::_uiRequestOps = {
@@ -304,9 +307,13 @@ void IMInvoker::initLibPurple(void *userdata, const std::string event) {
 		if (plugin->info->major_version) pluginData.compound["majorVersion"] = Data(toStr(plugin->info->major_version), Data::VERBATIM);
 		if (plugin->info->minor_version) pluginData.compound["minorVersion"] = Data(toStr(plugin->info->minor_version), Data::VERBATIM);
 
-		if (plugin->info->type == PURPLE_PLUGIN_PROTOCOL)
+		if (plugin->info->type == PURPLE_PLUGIN_PROTOCOL) {
 			_pluginData.compound["protocol"].compound[plugin->info->id] = pluginData;
-
+		} else if (plugin->info->type == PURPLE_PLUGIN_STANDARD) {
+//			_pluginData.compound["standard"].compound[plugin->info->id] = pluginData;
+		} else if (plugin->info->type == PURPLE_PLUGIN_LOADER) {
+//			_pluginData.compound["loader"].compound[plugin->info->id] = pluginData;
+		}
 	}
 
 	_initMutex.unlock();
@@ -340,9 +347,15 @@ void IMInvoker::signedOnCB(PurpleConnection *gc, gpointer null) {
 void IMInvoker::conversationCreatedCB(PurpleConversation *conv, void *data) {}
 void IMInvoker::chatJoinedCB(PurpleConversation *conv, void *data) {}
 void IMInvoker::chatJoinFailedCB(PurpleConnection *gc, GHashTable *components) {}
-void IMInvoker::buddyTypingCB(PurpleAccount *account, const char *name, void *data) {}
-void IMInvoker::buddyTypedCB(PurpleAccount *account, const char *name, void *data) {}
-void IMInvoker::buddyTypingStoppedCB(PurpleAccount *account, const char *name, void *data) {}
+void IMInvoker::buddyTypingCB(PurpleAccount *account, const char *name, void *data) {
+	std::cout << "buddyTypingCB" << std::endl;
+}
+void IMInvoker::buddyTypedCB(PurpleAccount *account, const char *name, void *data) {
+	std::cout << "buddyTypedCB" << std::endl;
+}
+void IMInvoker::buddyTypingStoppedCB(PurpleAccount *account, const char *name, void *data) {
+	std::cout << "buddyTypingStoppedCB" << std::endl;
+}
 
 void IMInvoker::buddyEventCB(PurpleBuddy *buddy, PurpleBuddyEvent event) {
 	if (!buddy)
@@ -434,15 +447,16 @@ Data IMInvoker::statusToData(PurpleStatus *status) {
 	const char* statusName = purple_status_get_name(status);
 	if (statusName) data.compound["name"] = Data(statusName, Data::VERBATIM);
 
-	PurpleStatusType* statusType = purple_status_get_type(status);
+	PurpleStatusType* statusType = purple_status_get_status_type(status);
 
 	GList *statusAttrElem;
+	PurpleStatusAttribute* statusAttr;
 	GList *statusAttrList = purple_status_type_get_attrs(statusType);
-	PurpleStatusAttr* statusAttr;
+
 	for(statusAttrElem = statusAttrList; statusAttrElem; statusAttrElem = statusAttrElem->next) {
-		statusAttr = (PurpleStatusAttr*)statusAttrElem->data;
-		const char* statusAttrId = purple_status_attr_get_id(statusAttr);
-		PurpleValue* statusValue = purple_status_get_attr_value(status, statusAttrId);
+		statusAttr = (PurpleStatusAttribute*)statusAttrElem->data;
+		const char* statusAttrId = purple_status_attribute_get_id(statusAttr);
+		GValue* statusValue = purple_status_get_attr_value(status, statusAttrId);
 		if (statusValue) {
 			data.compound[statusAttrId] = purpleValueToData(statusValue);
 		}
@@ -502,57 +516,56 @@ Data IMInvoker::buddyToData(PurpleBuddy *buddy) {
 	return data;
 }
 
-Data IMInvoker::purpleValueToData(PurpleValue* value) {
+Data IMInvoker::purpleValueToData(GValue* value) {
 	Data data;
-	switch (purple_value_get_type(value)) {
-	case PURPLE_TYPE_BOOLEAN:
-		if (purple_value_get_boolean(value))
-			data = Data("true");
-		data = Data("false");
-		break;
-	case PURPLE_TYPE_STRING:
-		if (purple_value_get_string(value)) {
-			data = Data(purple_value_get_string(value), Data::VERBATIM);
+
+	if (false) {
+	} else if (g_type_check_value_holds(value, G_TYPE_CHAR)) {
+		data = Data(g_value_get_schar(value), Data::VERBATIM);
+
+	} else if (g_type_check_value_holds(value, G_TYPE_UCHAR)) {
+		data = Data(g_value_get_uchar(value), Data::VERBATIM);
+
+	} else if (g_type_check_value_holds(value, G_TYPE_BOOLEAN)) {
+		data = Data(g_value_get_boolean(value));
+
+	} else if (g_type_check_value_holds(value, G_TYPE_INT)) {
+		data = Data(g_value_get_int(value));
+
+	} else if (g_type_check_value_holds(value, G_TYPE_UINT)) {
+		data = Data(g_value_get_uint(value));
+
+	} else if (g_type_check_value_holds(value, G_TYPE_LONG)) {
+		data = Data(g_value_get_long(value));
+
+	} else if (g_type_check_value_holds(value, G_TYPE_ULONG)) {
+		data = Data(g_value_get_ulong(value));
+
+	} else if (g_type_check_value_holds(value, G_TYPE_INT64)) {
+		data = Data(g_value_get_int64(value));
+
+	} else if (g_type_check_value_holds(value, G_TYPE_FLOAT)) {
+		data = Data(g_value_get_float(value));
+
+	} else if (g_type_check_value_holds(value, G_TYPE_DOUBLE)) {
+		data = Data(g_value_get_double(value));
+
+	} else if (g_type_check_value_holds(value, G_TYPE_STRING)) {
+		const gchar* tmp = g_value_get_string(value);
+		if (tmp == NULL) {
+			data = Data("", Data::VERBATIM);
+		} else {
+			data = Data(g_value_get_string(value), Data::VERBATIM);
 		}
-		break;
-	case PURPLE_TYPE_CHAR:
-		Data(purple_value_get_char(value));
-		break;
-	case PURPLE_TYPE_UCHAR:
-		Data(purple_value_get_uchar(value));
-		break;
-	case PURPLE_TYPE_SHORT:
-		Data(purple_value_get_short(value));
-		break;
-	case PURPLE_TYPE_USHORT:
-		Data(purple_value_get_ushort(value));
-		break;
-	case PURPLE_TYPE_INT:
-		Data(purple_value_get_int(value));
-		break;
-	case PURPLE_TYPE_UINT:
-		Data(purple_value_get_uint(value));
-		break;
-	case PURPLE_TYPE_LONG:
-		Data(purple_value_get_long(value));
-		break;
-	case PURPLE_TYPE_ULONG:
-		Data(purple_value_get_ulong(value));
-		break;
-	case PURPLE_TYPE_INT64:
-		Data(purple_value_get_int64(value));
-		break;
-	case PURPLE_TYPE_UINT64:
-		Data(purple_value_get_uint64(value));
-		break;
-	case PURPLE_TYPE_OBJECT:
-	case PURPLE_TYPE_POINTER:
-	case PURPLE_TYPE_ENUM:
-	case PURPLE_TYPE_BOXED:
-	case PURPLE_TYPE_UNKNOWN:
-	case PURPLE_TYPE_SUBTYPE:
+
+	} else if (g_type_check_value_holds(value, G_TYPE_OBJECT) ||
+	           g_type_check_value_holds(value, G_TYPE_PARAM) ||
+	           g_type_check_value_holds(value, G_TYPE_POINTER) ||
+	           g_type_check_value_holds(value, G_TYPE_FLAGS) ||
+	           g_type_check_value_holds(value, G_TYPE_ENUM)) {
 		LOG(ERROR) << "purple thingy not supported";
-		break;
+	} else {
+		LOG(ERROR) << "purple thingy unknown";
 	}
 	return data;
 }
@@ -567,20 +580,20 @@ IMInvoker::IMInvoker() {
 		// make sure to have the shebang initialized when we leave
 		_initCond.wait(_initMutex);
 	}
-
 }
 
 IMInvoker::~IMInvoker() {
 	if (_account) {
 		_accountMutex.lock();
 		_accountInstances.erase(_account);
-		purple_account_destroy(_account);
+//		purple_account_destroy(_account);
 		_accountMutex.unlock();
 	}
 };
 
 boost::shared_ptr<InvokerImpl> IMInvoker::create(InterpreterImpl* interpreter) {
 	boost::shared_ptr<IMInvoker> invoker = boost::shared_ptr<IMInvoker>(new IMInvoker());
+	invoker->_dataModelVars.compound["plugins"] = _pluginData;
 	return invoker;
 }
 
@@ -603,27 +616,36 @@ void IMInvoker::send(void *userdata, const std::string event) {
 	// we are in the thread that manages all of libpurple
 	EventContext* ctx = (EventContext*)userdata;
 
+	if (!ctx)
+		return;
+
+	if (!ctx->instance || !ctx->instance->_account) {
+		ctx->instance->returnErrorExecution("No account available");
+		delete(ctx);
+		return;
+	}
+
 	if (iequals(ctx->sendReq.name, "im.send")) {
-		if (ctx->instance->_account) {
-			std::string receiver;
-			Event::getParam(ctx->sendReq.params, "receiver", receiver);
+		std::string receiver;
+		Event::getParam(ctx->sendReq.params, "receiver", receiver);
 
-			Data data;
-			Event::getParam(ctx->sendReq.params, "data", data);
+		Data data;
+		Event::getParam(ctx->sendReq.params, "data", data);
 
-			//			purple_conv_im_send
-			PurpleConversation* conv = purple_conversation_new(PURPLE_CONV_TYPE_IM, ctx->instance->_account, receiver.c_str());
-			purple_conv_im_send(purple_conversation_get_im_data(conv), ctx->sendReq.content.c_str());
+		PurpleIMConversation* conv = purple_im_conversation_new(ctx->instance->_account, receiver.c_str());
+		if (ctx->sendReq.content.length() > 0)
+			purple_conversation_send(PURPLE_CONVERSATION(conv), ctx->sendReq.content.c_str());
 
-			if (data.binary) {
-				PurpleConnection *gc = purple_account_get_connection(ctx->instance->_account);
-				PurplePlugin *prpl;
-				PurplePluginProtocolInfo *prpl_info;
+#if 0
+		if (data.binary) {
+			PurpleConnection *gc = purple_account_get_connection(ctx->instance->_account);
+			PurplePlugin *prpl;
+			PurplePluginProtocolInfo *prpl_info;
 
 
-				if (gc) {
-					prpl = purple_connection_get_prpl(gc);
-					prpl_info = PURPLE_PLUGIN_PROTOCOL_INFO(prpl);
+			if (gc) {
+				prpl = purple_connection_get_prpl(gc);
+				prpl_info = PURPLE_PLUGIN_PROTOCOL_INFO(prpl);
 
 //					if (prpl_info && prpl_info->new_xfer) {
 //						PurpleXfer* xfer = (prpl_info->new_xfer)(purple_account_get_connection(ctx->instance->_account), receiver.c_str());
@@ -633,22 +655,43 @@ void IMInvoker::send(void *userdata, const std::string event) {
 //						purple_xfer_request_accepted(xfer, "/Users/sradomski/Documents/W3C Standards.pdf");
 //					}
 
-					//Set the filename
+				//Set the filename
 //					purple_xfer_set_local_filename(xfer, [[fileTransfer localFilename] UTF8String]);
 //					purple_xfer_set_filename(xfer, [[[fileTransfer localFilename] lastPathComponent] UTF8String]);
 //					xfer->ui_data
 //					purple_xfer_request(xfer);
 
-					serv_send_file(gc, "sradomski@localhost", "/Users/sradomski/Documents/W3C Standards.pdf");
+				serv_send_file(gc, "sradomski@localhost", "/Users/sradomski/Documents/W3C Standards.pdf");
 //					if (prpl_info->send_file && (prpl_info->can_receive_file && prpl_info->can_receive_file(gc, receiver.c_str()))) {
 //						prpl_info->send_file(gc, receiver.c_str(), "/Users/sradomski/Documents/W3C Standards.pdf");
 //					}
 //						prpl_info->send_raw(gc, data.binary->data, data.binary->size);
-				}
-
 			}
+
+		}
+#endif
+	} else if (iequals(ctx->sendReq.name, "im.buddy.add")) {
+		std::string buddyName;
+		Event::getParam(ctx->sendReq.params, "name", buddyName);
+
+		std::string reqMsg;
+		Event::getParam(ctx->sendReq.params, "msg", reqMsg);
+
+		PurpleBuddy* buddy = purple_buddy_new(ctx->instance->_account, buddyName.c_str(), NULL);
+		purple_blist_add_buddy(buddy, NULL, NULL, NULL);
+		purple_account_add_buddy(ctx->instance->_account, buddy, reqMsg.c_str());
+
+	} else if (iequals(ctx->sendReq.name, "im.buddy.remove")) {
+		std::string buddyName;
+		Event::getParam(ctx->sendReq.params, "name", buddyName);
+
+		PurpleBuddy* buddy = purple_blist_find_buddy(ctx->instance->_account, buddyName.c_str());
+		if (PURPLE_IS_BUDDY(buddy)) {
+			purple_account_remove_buddy(ctx->instance->_account, buddy, purple_buddy_get_group(buddy));
+			purple_blist_remove_buddy(buddy);
 		}
 	}
+
 	delete(ctx);
 }
 
@@ -682,6 +725,17 @@ void IMInvoker::invoke(void *userdata, const std::string event) {
 
 	purple_account_set_password(instance->_account, password.c_str(), NULL, NULL);
 	purple_account_set_enabled(instance->_account, "uscxml", true);
+
+	GSList* buddies = purple_blist_get_buddies();
+	GSList *cur;
+	for (cur = buddies; cur; cur = cur->next) {
+		std::string buddyName = purple_buddy_get_name((PurpleBuddy *)cur->data);
+		Data buddyData = buddyToData((PurpleBuddy *)cur->data);
+		instance->_dataModelVars.compound["buddies"].compound[buddyName] = buddyData;
+	}
+	g_slist_free(buddies);
+
+
 
 	delete(ctx);
 	_accountMutex.unlock();
@@ -858,20 +912,106 @@ void IMInvoker::accountCloseRequest(void *ui_handle) {
 //libpurple conversation operations
 void IMInvoker::purpleCreateConversation(PurpleConversation *conv) {}
 void IMInvoker::purpleDestroyConversation(PurpleConversation *conv) {}
-void IMInvoker::purpleWriteChat(PurpleConversation *conv, const char *who, const char *message, PurpleMessageFlags flags, time_t mtime) {}
-void IMInvoker::purpleWriteIm(PurpleConversation *conv, const char *who, const char *message, PurpleMessageFlags flags, time_t mtime) {}
+void IMInvoker::purpleWriteChat(PurpleConversation *conv, const char *who, const char *message, PurpleMessageFlags flags, time_t mtime) {
+	std::cout << "purpleWriteChat" << std::endl;
+}
+void IMInvoker::purpleWriteIm(PurpleConversation *conv, const char *who, const char *message, PurpleMessageFlags flags, time_t mtime) {
+	std::cout << "purpleWriteIm" << std::endl;
+}
 void IMInvoker::purpleWriteConv(PurpleConversation *conv, const char *name, const char *alias, const char *message, PurpleMessageFlags flags, time_t mtime) {
-	const char *who;
-	if (alias && *alias)
-		who = alias;
-	else if (name && *name)
-		who = name;
-	else
-		who = NULL;
 
-	printf("(%s) %s %s: %s\n", purple_conversation_get_name(conv),
-	       purple_utf8_strftime("(%H:%M:%S)", localtime(&mtime)),
-	       who, message);
+	GET_INSTANCE_IN_CALLBACK(purple_conversation_get_account(conv));
+	if (inst == NULL)
+		return;
+
+	Event msgRcvdEv;
+	if (flags & PURPLE_MESSAGE_SEND)
+		msgRcvdEv.name = "im.send.conv";
+	if (flags & PURPLE_MESSAGE_RECV)
+		msgRcvdEv.name = "im.rcvd.conv";
+
+	if (alias && *alias)
+		msgRcvdEv.data.compound["alias"] = Data(alias, Data::VERBATIM);
+	if (name && *name)
+		msgRcvdEv.data.compound["name"] = Data(name, Data::VERBATIM);
+
+	msgRcvdEv.data.compound["conversation"] = Data(purple_conversation_get_name(conv), Data::VERBATIM);
+	msgRcvdEv.data.compound["timestamp"] = Data(mtime);
+	msgRcvdEv.data.compound["time"] = Data(purple_utf8_strftime("%T", localtime(&mtime)), Data::VERBATIM);
+	msgRcvdEv.data.compound["date"] = Data(purple_utf8_strftime("%F", localtime(&mtime)), Data::VERBATIM);
+	msgRcvdEv.data.compound["datetime"] = Data(purple_utf8_strftime("%c", localtime(&mtime)), Data::VERBATIM);
+
+	msgRcvdEv.data.compound["raw"] = Data(message, Data::VERBATIM);
+	if (flags & PURPLE_MESSAGE_RAW) {
+		msgRcvdEv.data.compound["message"] = Data(message, Data::VERBATIM);
+	} else {
+		bool successParse = false; // unfortunate code layout as parsers operator= is private :(
+		std::string origErrors;
+
+		// try to parse as XHTML
+		{
+			NameSpacingParser parser = NameSpacingParser::fromXML(message);
+			if (!parser.errorsReported()) {
+				msgRcvdEv.data.compound["message"].node = parser.getDocument().getDocumentElement();
+				successParse = true;
+			} else {
+				origErrors = parser.errors();
+			}
+		}
+
+		// try again with added XHTML tags
+		if (!successParse) {
+			NameSpacingParser parser = NameSpacingParser::fromXML(std::string("<html xmlns='http://jabber.org/protocol/xhtml-im'>") +
+			                           std::string("<body xmlns='http://www.w3.org/1999/xhtml'>") +
+			                           message +
+			                           std::string("</body>") +
+			                           std::string("</html>"));
+			if (!parser.errorsReported()) {
+				msgRcvdEv.data.compound["message"].node = parser.getDocument().getDocumentElement();
+				successParse = true;
+			} else {
+				LOG(ERROR) << "Cannot parse message as XHTML: " << origErrors << std::endl << message;
+			}
+		}
+
+		if (successParse) {
+			// prepare stripped message content
+			std::list<Arabica::DOM::Node<std::string> > texts = DOMUtils::getElementsByType(msgRcvdEv.data.compound["message"].node, Arabica::DOM::Node_base::TEXT_NODE);
+			std::stringstream ssTexts;
+			std::string seperator;
+			while(texts.size() > 0) {
+				ssTexts << seperator << texts.front().getNodeValue();
+				texts.pop_front();
+				if (ssTexts.str().length() > 0 && isspace(ssTexts.str()[ssTexts.str().length() - 1])) {
+					seperator = "";
+				} else {
+					seperator = " ";
+				}
+			}
+
+			msgRcvdEv.data.compound["stripped"] = Data(ssTexts.str(), Data::VERBATIM);
+		}
+		// erase for now as JS dump croaks on dom nodes with cycles
+		msgRcvdEv.data.compound.erase("message");
+	}
+
+	msgRcvdEv.data.compound["flags"].compound["send"]         = Data((bool)(flags & PURPLE_MESSAGE_SEND));
+	msgRcvdEv.data.compound["flags"].compound["rcvd"]         = Data((bool)(flags & PURPLE_MESSAGE_RECV));
+	msgRcvdEv.data.compound["flags"].compound["system"]       = Data((bool)(flags & PURPLE_MESSAGE_SYSTEM));
+	msgRcvdEv.data.compound["flags"].compound["auoresponse"]  = Data((bool)(flags & PURPLE_MESSAGE_AUTO_RESP));
+	msgRcvdEv.data.compound["flags"].compound["activeonly"]   = Data((bool)(flags & PURPLE_MESSAGE_ACTIVE_ONLY));
+	msgRcvdEv.data.compound["flags"].compound["containsnick"] = Data((bool)(flags & PURPLE_MESSAGE_NICK));
+	msgRcvdEv.data.compound["flags"].compound["nolog"]        = Data((bool)(flags & PURPLE_MESSAGE_NO_LOG));
+	msgRcvdEv.data.compound["flags"].compound["whisper"]      = Data((bool)(flags & PURPLE_MESSAGE_WHISPER));
+	msgRcvdEv.data.compound["flags"].compound["error"]        = Data((bool)(flags & PURPLE_MESSAGE_ERROR));
+	msgRcvdEv.data.compound["flags"].compound["delayed"]      = Data((bool)(flags & PURPLE_MESSAGE_DELAYED));
+	msgRcvdEv.data.compound["flags"].compound["raw"]          = Data((bool)(flags & PURPLE_MESSAGE_RAW));
+	msgRcvdEv.data.compound["flags"].compound["images"]       = Data((bool)(flags & PURPLE_MESSAGE_IMAGES));
+	msgRcvdEv.data.compound["flags"].compound["notify"]       = Data((bool)(flags & PURPLE_MESSAGE_NOTIFY));
+	msgRcvdEv.data.compound["flags"].compound["nolinkify"]    = Data((bool)(flags & PURPLE_MESSAGE_NO_LINKIFY));
+	msgRcvdEv.data.compound["flags"].compound["invisible"]    = Data((bool)(flags & PURPLE_MESSAGE_INVISIBLE));
+
+	inst->returnEvent(msgRcvdEv);
 }
 void IMInvoker::purpleChatAddUsers(PurpleConversation *conv, GList *cbuddies, gboolean new_arrivals) {}
 void IMInvoker::purpleChatRenameUser(PurpleConversation *conv, const char *old_name, const char *new_name, const char *new_alias) {}
@@ -1026,14 +1166,14 @@ void* IMInvoker::purpleRequestFile(const char *title, const char *filename,
                                    PurpleRequestCommonParameters *cpar, void *user_data) {
 	// click ok
 	PurpleXfer *xfer = (PurpleXfer *)user_data;
-	PurpleXferType xferType = purple_xfer_get_type(xfer);
-	if (xferType == PURPLE_XFER_RECEIVE) {
+	PurpleXferType xferType = purple_xfer_get_xfer_type(xfer);
+	if (xferType == PURPLE_XFER_TYPE_RECEIVE) {
 		((PurpleRequestFileCb)ok_cb)(user_data, filename);
-	} else if (xferType == PURPLE_XFER_SEND) {
-		if (xfer->local_filename != NULL && xfer->filename != NULL) {
-			((PurpleRequestFileCb)ok_cb)(user_data, xfer->local_filename);
+	} else if (xferType == PURPLE_XFER_TYPE_SEND) {
+		if (purple_xfer_get_local_filename(xfer) != NULL && purple_xfer_get_filename(xfer) != NULL) {
+			((PurpleRequestFileCb)ok_cb)(user_data, purple_xfer_get_local_filename(xfer));
 		} else {
-			((PurpleRequestFileCb)cancel_cb)(user_data, xfer->local_filename);
+			((PurpleRequestFileCb)cancel_cb)(user_data, purple_xfer_get_local_filename(xfer));
 		}
 	}
 	return NULL;

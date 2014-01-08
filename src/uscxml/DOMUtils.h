@@ -36,6 +36,7 @@ namespace uscxml {
 class USCXML_API DOMUtils {
 public:
 	static std::string xPathForNode(const Arabica::DOM::Node<std::string>& node);
+	static std::list<Arabica::DOM::Node<std::string> > getElementsByType(const Arabica::DOM::Node<std::string>& root, Arabica::DOM::Node_base::Type type);
 };
 
 class ScriptEntityResolver : public Arabica::SAX::EntityResolver<std::string> {
