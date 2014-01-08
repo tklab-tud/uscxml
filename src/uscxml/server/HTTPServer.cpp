@@ -550,8 +550,7 @@ bool HTTPServer::registerServlet(const std::string& path, HTTPServlet* servlet) 
 	servlet->setURL(servletURL.str());
 
 	INSTANCE->_httpServlets[suffixedPath] = servlet;
-
-//	LOG(INFO) << "HTTP Servlet listening at: " << servletURL.str() << std::endl;
+	LOG(INFO) << "HTTP Servlet listening at: " << servletURL.str() << std::endl;
 
 	// register callback
 	evhttp_set_cb(INSTANCE->_http, ("/" + suffixedPath).c_str(), HTTPServer::httpRecvReqCallback, servlet);
