@@ -949,6 +949,10 @@ void InterpreterImpl::send(const Arabica::DOM::Node<std::string>& element) {
 					e.name = "error.execution";
 					receiveInternal(e);
 				}
+				// set as content if it's only an atom
+				if (sendReq.data.atom.length() > 0) {
+					sendReq.content = sendReq.data.atom;
+				}
 			} else if (sendReq.content.length() > 0) {
 				sendReq.data = Data::fromJSON(sendReq.content);
 			}
