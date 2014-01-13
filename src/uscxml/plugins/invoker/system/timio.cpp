@@ -182,7 +182,7 @@ void TimIO::client(void *instance) {
 		bridgeInstance.handleTIMexception(TIM_ERROR);
 		return;
 	} else if (replylen == MAXTIMREPLYSIZE) {
-		LOG(ERROR) << "TIM client: received message too long";
+        LOG(ERROR) << "TIM client: received too long message";
 		bridgeInstance.handleTIMexception(TIM_ERROR);
 		return;
 	}
