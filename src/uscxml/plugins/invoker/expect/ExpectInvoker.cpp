@@ -45,7 +45,6 @@ ExpectInvoker::ExpectInvoker() : _eventQueue(NULL) {
 
 ExpectInvoker::~ExpectInvoker() {
 	_eventQueue->stop();
-	exp_cl
 //	if (_tcl) {
 //		Tcl_DeleteInterp(_tcl);
 //	}
