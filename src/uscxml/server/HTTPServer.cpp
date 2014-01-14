@@ -75,7 +75,6 @@ HTTPServer::HTTPServer(unsigned short port, unsigned short wsPort, SSLConfig* ss
 	_evws = evws_new(_base);
 	_thread = NULL;
 	_httpHandle = NULL;
-	_wsHandle = NULL;
 
 #ifdef _WIN32
 	_wsHandle = NULL;
