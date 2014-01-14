@@ -82,17 +82,23 @@ int main(int argc, char** argv) {
 #endif
 
 	{
-		URL url(argv[0]);
-		assert(canResolve(argv[0]));
-		assert(canResolve(url.asString()));
+		try {
 
-		URL baseUrl = URL::asBaseURL(url);
-		URL exeUrl(exeName);
-		exeUrl.toAbsolute(baseUrl);
-		assert(canResolve(exeUrl.asString()));
-		std::cout << exeUrl.asString() << std::endl;
-		exeUrl.download(true);
-		assert(exeUrl.getInContent().length() > 0);
+			URL url(argv[0]);
+			assert(canResolve(argv[0]));
+			assert(canResolve(url.asString()));
+
+			URL baseUrl = URL::asBaseURL(url);
+			URL exeUrl(exeName);
+			exeUrl.toAbsolute(baseUrl);
+			assert(canResolve(exeUrl.asString()));
+			std::cout << exeUrl.asString() << std::endl;
+			exeUrl.download(true);
+			assert(exeUrl.getInContent().length() > 0);
+
+		} catch (Event e) {
+			std::cout << e << std::endl;
+		}
 	}
 
 	{

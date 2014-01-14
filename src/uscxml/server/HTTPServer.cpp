@@ -77,6 +77,12 @@ HTTPServer::HTTPServer(unsigned short port, unsigned short wsPort, SSLConfig* ss
 	_httpHandle = NULL;
 	_wsHandle = NULL;
 
+#ifdef _WIN32
+	_wsHandle = NULL;
+#else
+	_wsHandle = 0;
+#endif
+
 	determineAddress();
 
 	unsigned int allowedMethods =
@@ -525,6 +531,10 @@ void HTTPServer::replyCallback(evutil_socket_t fd, short what, void *arg) {
 
 bool HTTPServer::registerServlet(const std::string& path, HTTPServlet* servlet) {
 	HTTPServer* INSTANCE = getInstance();
+	
+	if (!INSTANCE->_httpHandle)
+		return true;
+		
 	tthread::lock_guard<tthread::recursive_mutex> lock(INSTANCE->_mutex);
 
 	// remove trailing and leading slash
@@ -560,6 +570,10 @@ bool HTTPServer::registerServlet(const std::string& path, HTTPServlet* servlet) 
 
 bool HTTPServer::registerServlet(const std::string& path, WebSocketServlet* servlet) {
 	HTTPServer* INSTANCE = getInstance();
+	
+	if (!INSTANCE->_wsHandle)
+		return true;
+
 	tthread::lock_guard<tthread::recursive_mutex> lock(INSTANCE->_mutex);
 
 	// remove trailing and leading slash

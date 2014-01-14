@@ -181,6 +181,9 @@ int evws_parse_first_line(struct evws_connection *conn, char *line) {
 	if (line != NULL)
 		return (-1);
 
+	(void)method;
+	(void)version;
+	
 	if ((conn->uri = strdup(uri)) == NULL) {
 		return (-1);
 	}

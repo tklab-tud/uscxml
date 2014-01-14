@@ -423,7 +423,15 @@ void InterpreterImpl::start() {
 }
 
 void InterpreterImpl::run(void* instance) {
-	((InterpreterImpl*)instance)->interpret();
+	try {
+		((InterpreterImpl*)instance)->interpret();
+	} catch (Event e) {
+		LOG(ERROR) << e;
+	} catch(boost::bad_lexical_cast e) {
+		LOG(ERROR) << "InterpreterImpl::run catched exception: " << e.what();
+	} catch (...) {
+		LOG(ERROR) << "InterpreterImpl::run catched unknown exception";
+	}
 }
 
 bool InterpreterImpl::runOnMainThread(int fps, bool blocking) {
@@ -1124,8 +1132,10 @@ void InterpreterImpl::invoke(const Arabica::DOM::Node<std::string>& element) {
 				LOG(INFO) << "Added invoker " << invokeReq.type << " at " << invokeReq.invokeid;
 				try {
 					invoker.invoke(invokeReq);
+				} catch(boost::bad_lexical_cast e) {
+					LOG(ERROR) << "Exception caught while sending invoke request to invoker " << invokeReq.invokeid << ": " << e.what();
 				} catch(...) {
-					LOG(ERROR) << "Exception caught while sending invoke requst to invoker " << invokeReq.invokeid;
+					LOG(ERROR) << "Unknown exception caught while sending invoke request to invoker " << invokeReq.invokeid;
 				}
 				if (_dataModel) {
 					try {
@@ -1641,7 +1651,13 @@ Arabica::DOM::Node<std::string> InterpreterImpl::getState(const std::string& sta
 		goto FOUND;
 
 	LOG(ERROR) << "No state with id " << stateId << " found!";
-
+	{
+		Event ev;
+		ev.name = "error.execution";
+		ev.eventType = Event::PLATFORM;
+		ev.data.compound["cause"] = Data("No state with id " + stateId + " found", Data::VERBATIM);
+		throw ev;
+	}
 FOUND:
 	if (target.size() > 0) {
 		for (int i = 0; i < target.size(); i++) {
@@ -1726,8 +1742,10 @@ NodeSet<std::string> InterpreterImpl::getTargetStates(const Arabica::DOM::Node<s
 	std::list<std::string> targetIds = InterpreterImpl::tokenizeIdRefs(ATTR(transition, "target"));
 	for (std::list<std::string>::const_iterator targetIter = targetIds.begin(); targetIter != targetIds.end(); targetIter++) {
 		Arabica::DOM::Node<std::string> state = getState(*targetIter);
-		assert(HAS_ATTR(state, "id"));
-		targetStates.push_back(state);
+		if (state) {
+			assert(HAS_ATTR(state, "id"));
+			targetStates.push_back(state);
+		}
 	}
 	return targetStates;
 }

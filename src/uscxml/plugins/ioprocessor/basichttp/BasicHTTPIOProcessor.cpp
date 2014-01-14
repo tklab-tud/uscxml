@@ -21,6 +21,7 @@
 
 #include "uscxml/plugins/ioprocessor/basichttp/BasicHTTPIOProcessor.h"
 #include "uscxml/Message.h"
+#include "uscxml/DOMUtils.h"
 #include <iostream>
 #include <event2/dns.h>
 #include <event2/buffer.h>
@@ -85,8 +86,26 @@ boost::shared_ptr<IOProcessorImpl> BasicHTTPIOProcessor::create(InterpreterImpl*
 
 Data BasicHTTPIOProcessor::getDataModelVariables() {
 	Data data;
-	assert(_url.length() > 0);
+	
+	// we are not connected!
+	if(_url.length() == 0)
+		return data;
+	
 	data.compound["location"] = Data(_url, Data::VERBATIM);
+
+	URL url(_url);
+	data.compound["host"] = Data(url.host(), Data::VERBATIM);
+	data.compound["port"] = Data(url.port(), Data::VERBATIM);
+	data.compound["path"] = Data(url.path(), Data::VERBATIM);
+	data.compound["scheme"] = Data(url.scheme(), Data::VERBATIM);
+
+	std::vector<std::string> pathComps = url.pathComponents();
+	std::vector<std::string>::const_iterator pathCompIter = pathComps.begin();
+	while(pathCompIter != pathComps.end()) {
+		data.compound["pathComponens"].array.push_back(Data(*pathCompIter, Data::VERBATIM));
+		pathCompIter++;
+	}
+	
 	return data;
 }
 
@@ -94,9 +113,28 @@ bool BasicHTTPIOProcessor::httpRecvRequest(const HTTPServer::Request& req) {
 	Event reqEvent = req;
 	reqEvent.eventType = Event::EXTERNAL;
 
+//	std::cout << req.raw << std::endl;
+	
+	/**
+	 * If a single instance of the parameter '_scxmleventname' is present, the 
+	 * SCXML Processor must use its value as the name of the SCXML event that it 
+	 * raises.
+	 */
+	
 	// this will call the const subscript operator
 	if (req.data["content"]["_scxmleventname"]) {
 		reqEvent.name = req.data["content"]["_scxmleventname"].atom;
+	}
+	if (req.data["content"]["content"]) {
+		reqEvent.content = req.data["content"]["content"].atom;
+	}
+	
+	// check whether we can parse it as XML
+	if (reqEvent.content.length() > 0) {
+		NameSpacingParser parser = NameSpacingParser::fromXML(reqEvent.content);
+		if (!parser.errorsReported()) {
+			reqEvent.dom = parser.getDocument();
+		}
 	}
 
 	/// test532

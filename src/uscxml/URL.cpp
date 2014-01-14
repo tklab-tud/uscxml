@@ -757,6 +757,7 @@ void URLFetcher::perform() {
 					case CURLM_BAD_HANDLE:
 					case CURLM_BAD_EASY_HANDLE:
 					case CURLE_FILE_COULDNT_READ_FILE:
+					case CURLE_COULDNT_CONNECT:
 					case CURLM_OUT_OF_MEMORY:
 					case CURLM_INTERNAL_ERROR:
 					case CURLM_BAD_SOCKET:

@@ -72,6 +72,10 @@
 #   include "uscxml/plugins/invoker/im/IMInvoker.h"
 # endif
 
+# if (defined EXPECT_FOUND && defined TCL_FOUND)
+#   include "uscxml/plugins/invoker/expect/ExpectInvoker.h"
+# endif
+
 #ifdef OPENAL_FOUND
 #   include "uscxml/plugins/invoker/audio/OpenALInvoker.h"
 #endif
@@ -202,6 +206,13 @@ Factory::Factory() {
 	}
 #endif
 
+#if (defined EXPECT_FOUND && defined TCL_FOUND)
+	{
+		ExpectInvoker* invoker = new ExpectInvoker();
+		registerInvoker(invoker);
+	}
+#endif
+	
 #if (defined OPENAL_FOUND && (defined LIBSNDFILE_FOUND || defined AUDIOTOOLBOX_FOUND))
 	{
 		OpenALInvoker* invoker = new OpenALInvoker();
@@ -510,7 +521,11 @@ size_t DataModelImpl::replaceExpressions(std::string& content) {
 //					} else {
 //						ss << data.atom;
 //					}
-					ss << Data::toJSON(data);
+					if (data.atom.length() > 0) {
+						ss << data.atom;
+					} else {
+						ss << Data::toJSON(data);
+					}
 					replacements++;
 				} catch (Event e) {
 					// insert unsubstituted

@@ -572,14 +572,6 @@ Data IMInvoker::purpleValueToData(GValue* value) {
 
 IMInvoker::IMInvoker() {
 	_account = NULL;
-	if (!_eventQueue) {
-		tthread::lock_guard<tthread::mutex> lock(_initMutex);
-		_eventQueue = new DelayedEventQueue();
-		_eventQueue->addEvent("initLibPurple", IMInvoker::initLibPurple, 0, NULL);
-		_eventQueue->start();
-		// make sure to have the shebang initialized when we leave
-		_initCond.wait(_initMutex);
-	}
 }
 
 IMInvoker::~IMInvoker() {
@@ -593,6 +585,16 @@ IMInvoker::~IMInvoker() {
 
 boost::shared_ptr<InvokerImpl> IMInvoker::create(InterpreterImpl* interpreter) {
 	boost::shared_ptr<IMInvoker> invoker = boost::shared_ptr<IMInvoker>(new IMInvoker());
+
+	if (!_eventQueue) {
+		tthread::lock_guard<tthread::mutex> lock(_initMutex);
+		_eventQueue = new DelayedEventQueue();
+		_eventQueue->addEvent("initLibPurple", IMInvoker::initLibPurple, 0, NULL);
+		_eventQueue->start();
+		// make sure to have the shebang initialized when we leave
+		_initCond.wait(_initMutex);
+	}
+
 	invoker->_dataModelVars.compound["plugins"] = _pluginData;
 	return invoker;
 }

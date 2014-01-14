@@ -23,7 +23,7 @@
 				dump(_event);</script>
 			<respond status="200" to="_event.origin" />
 			<send target="#_im" event="im.send">
-				<param name="receiver" expr="'sradomski@diogenes.local'" />
+				<param name="receiver" expr="'benedikt@diogenes.local'" />
 				<content expr="_event.data.query.msg" />
 			</send>
 		</transition>
@@ -40,7 +40,6 @@
 			<!-- <script>print("\n\n"); dump(_invokers['im']);</script> -->
 			<send target="#_im" event="im.send">
 				<param name="receiver" expr="'sradomski@diogenes.local'" />
-				<param name="data" expr="someBinaryData" /> <!-- Unsupported :( -->
 				<content><![CDATA[Have a look <a href="http://www.heise.de">here</a>]]></content>
 			</send>
 		</transition>

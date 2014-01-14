@@ -318,6 +318,23 @@ public:
 		return false;
 	}
 
+	static bool getParam(params_t params, const std::string& name, bool& target) {
+		if (params.find(name) != params.end()) {
+			target = true;
+			if (iequals(params.find(name)->second.atom, "false")) {
+				target = false;
+			} else if(iequals(params.find(name)->second.atom, "off")) {
+				target = false;
+			} else if(iequals(params.find(name)->second.atom, "no")) {
+				target = false;
+			} else if(iequals(params.find(name)->second.atom, "0")) {
+				target = false;
+			}
+			return true;
+		}
+		return false;
+	}
+
 	template <typename T> static bool getParam(params_t params, const std::string& name, std::list<T>& target) {
 		if (params.find(name) != params.end()) {
 			std::pair<params_t::iterator, params_t::iterator> rangeIter = params.equal_range(name);
