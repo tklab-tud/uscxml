@@ -198,7 +198,7 @@ This is sufficient to get uscxml to build. If you want some more functionality, 
 	$ sudo yum install libical-devel
 
 	# expect invoker
-	$ sudo yum install expect-devel
+	$ sudo yum install expect-devel tk-devel
 
 ### Console / Make
 
