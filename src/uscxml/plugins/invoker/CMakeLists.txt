@@ -97,21 +97,23 @@ endif()
 
 # expect invoker
 
-set(USCXML_INVOKERS "expect ${USCXML_INVOKERS}")
-file(GLOB_RECURSE EXPECT_INVOKER
-	expect/*.cpp
-	expect/*.h
-)
-if (BUILD_AS_PLUGINS)
-	source_group("" FILES EXPECT_INVOKER)
-	add_library(
-		invoker_expect SHARED 
-		${EXPECT_INVOKER}
-		"../Plugins.cpp")
-	target_link_libraries(invoker_expect uscxml)
-	set_target_properties(invoker_expect PROPERTIES FOLDER "Plugin Invoker")
-else()
-	list (APPEND USCXML_FILES ${EXPECT_INVOKER})
+if (EXPECT_FOUND AND TCL_FOUND)
+	set(USCXML_INVOKERS "expect ${USCXML_INVOKERS}")
+	file(GLOB_RECURSE EXPECT_INVOKER
+		expect/*.cpp
+		expect/*.h
+	)
+	if (BUILD_AS_PLUGINS)
+		source_group("" FILES EXPECT_INVOKER)
+		add_library(
+			invoker_expect SHARED 
+			${EXPECT_INVOKER}
+			"../Plugins.cpp")
+		target_link_libraries(invoker_expect uscxml)
+		set_target_properties(invoker_expect PROPERTIES FOLDER "Plugin Invoker")
+	else()
+		list (APPEND USCXML_FILES ${EXPECT_INVOKER})
+	endif()
 endif()
 
 
