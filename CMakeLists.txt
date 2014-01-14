@@ -687,7 +687,7 @@ if (LIBICAL_FOUND)
 endif()
 set(CMAKE_FIND_LIBRARY_SUFFIXES ${CMAKE_FIND_LIBRARY_SUFFIXES_ORIG})
 
-find_package(EXPECT)
+find_package(Expect)
 find_package(TCL)
 if (EXPECT_FOUND AND TCL_FOUND)
 	include_directories (${EXPECT_INCLUDE_DIR})
