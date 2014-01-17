@@ -200,6 +200,9 @@ This is sufficient to get uscxml to build. If you want some more functionality, 
 	# expect invoker
 	$ sudo yum install expect-devel tk-devel
 
+	# instant messaging invoker
+	$ sudo yum install libpurple-devel
+
 ### Console / Make
 
 Instructions are a literal copy of building uscxml for MacOSX on the console from above:

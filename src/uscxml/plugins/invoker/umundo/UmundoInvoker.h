@@ -62,8 +62,8 @@ public:
 	virtual void removed(umundo::ServiceDescription);
 	virtual void changed(umundo::ServiceDescription);
 
-	virtual void welcome(umundo::TypedPublisher, const std::string& nodeId, const std::string& subId);
-	virtual void farewell(umundo::TypedPublisher, const std::string& nodeId, const std::string& subId);
+	virtual void welcome(umundo::TypedPublisher atPub, const umundo::SubscriberStub& sub);
+	virtual void farewell(umundo::TypedPublisher fromPub, const umundo::SubscriberStub& sub);
 
 protected:
 	bool _isService;
@@ -74,17 +74,14 @@ protected:
 	bool jsonbufToData(Data& data, const JSONProto& json);
 	bool protobufToData(Data& data, const google::protobuf::Message& msg);
 
-	boost::shared_ptr<umundo::Node> _node;
+	umundo::Node* _node;
+	umundo::Discovery* _discovery;
 	umundo::TypedPublisher* _pub;
 	umundo::TypedSubscriber* _sub;
 
 	umundo::ServiceFilter* _svcFilter;
 	umundo::ServiceManager* _svcMgr;
 	std::map<umundo::ServiceDescription, umundo::ServiceStub*> _svcs;
-
-	static std::multimap<std::string, std::pair<std::string, boost::weak_ptr<umundo::Node> > > _nodes;
-	typedef std::multimap<std::string, std::pair<std::string, boost::weak_ptr<umundo::Node> > > _nodes_t;
-	static boost::shared_ptr<umundo::Node> getNode(InterpreterImpl* interpreter, const std::string& domain);
 };
 
 #ifdef BUILD_AS_PLUGINS
