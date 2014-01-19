@@ -105,6 +105,34 @@ public:
 		return data;
 	}
 
+	bool operator==(const Data &other) const {
+		if (other.atom.size() != atom.size())
+			return false;
+		if (other.type != type)
+			return false;
+		if (other.binary != binary)
+			return false;
+		if (other.array.size() != array.size())
+			return false;
+		if (other.compound.size() != compound.size())
+			return false;
+
+		if (other.atom != atom)
+			return false;
+		if (other.array != array)
+			return false;
+		if (other.compound != compound)
+			return false;
+		if (other.node != node)
+			return false;
+		
+		return true;
+  }
+
+	bool operator!=(const Data &other) const {
+    return !(*this == other);
+  }
+
 	operator std::string() const {
 		return atom;
 	}

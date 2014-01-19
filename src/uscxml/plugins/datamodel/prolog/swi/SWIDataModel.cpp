@@ -30,6 +30,11 @@
 #include <Pluma/Connector.hpp>
 #endif
 
+// these are defined but not exported by swi-prolog 7
+extern "C" {
+	PL_EXPORT(int) PL_is_dict(term_t t);
+	PL_EXPORT(int) PL_for_dict(term_t dict, int (*func)(term_t key, term_t value, int last, void *closure), void *closure, int flags);
+}
 #define RETHROW_PLEX_AS_EVENT \
 catch (PlException plex) { \
 	Event e; \
@@ -38,6 +43,7 @@ catch (PlException plex) { \
 	throw e; \
 } \
 
+// this might evolve into multi-threaded prolog, but no need for now
 #define SET_PL_CONTEXT \
 _dmPtr = this;
 
@@ -69,6 +75,16 @@ bool pluginConnect(pluma::Host& host) {
 // SWI prolog does not support passing user data
 static SWIDataModel* _dmPtr;
 static std::map<SWIDataModel*, PL_engine_t> _swiEngines;
+
+PL_blob_t SWIDataModel::blobType =
+{ PL_BLOB_MAGIC,
+	PL_BLOB_NOCOPY,
+	"blob",
+	releaseBlob,
+	compareBlob,
+	writeBlob,
+	acquireBlob
+};
 
 SWIDataModel::SWIDataModel() {
 }
@@ -269,7 +285,7 @@ void SWIDataModel::setEvent(const Event& event) {
 		} else if (event.content.size() > 0) {
 			PlCall("assert", PlCompound("event", PlCompound("data", PlString(Interpreter::spaceNormalize(event.content).c_str()))));
 		} else if (event.data) {
-			LOG(ERROR) << "No support for structured data from events in prolog datamodel yet";
+			assertFromData(event.data, "event(data(", 2);
 		}
 
 		// event.params
@@ -305,11 +321,209 @@ void SWIDataModel::setEvent(const Event& event) {
 	} RETHROW_PLEX_AS_EVENT;
 }
 
+void SWIDataModel::assertFromData(const Data& data, const std::string& expr, size_t nesting) {
+	if (data.atom.size() > 0) {
+		std::stringstream ss;
+		ss << expr << "(";
+		nesting++;
+
+		if (data.type == Data::VERBATIM) {
+			ss << "\"" << data.atom << "\"";
+		} else {
+			ss << data.atom;
+		}
+		
+		for (size_t i = 0; i < nesting; i++) {
+			ss << ")";
+		}
+		PlCall("assert", PlCompound(ss.str().c_str()));
+		return;
+	}
+	
+	if (data.compound.size() > 0) {
+		std::map<std::string, Data>::const_iterator compIter = data.compound.begin();
+		while(compIter != data.compound.end()) {
+			assertFromData(compIter->second, expr + "(" + compIter->first, nesting + 1);
+			compIter++;
+		}
+	}
+	
+	if (data.array.size() > 0) {
+		std::list<Data>::const_iterator arrIter = data.array.begin();
+		while(arrIter != data.array.end()) {
+			assertFromData(*arrIter, expr, nesting);
+			arrIter++;
+		}
+	}
+	
+	if (data.node) {
+		std::stringstream dataInitStr;
+		std::stringstream xmlDoc;
+
+		xmlDoc << data.node;
+		URL domUrl = URL::toLocalFile(xmlDoc.str(), ".pl");
+		dataInitStr << "load_xml_file('" << domUrl.asLocalFile(".pl") << "', XML), ";
+		dataInitStr << "copy_term(XML,DATA), ";
+		dataInitStr << "assert(";
+		dataInitStr << expr << "(DATA)";
+		
+		for (size_t i = 0; i < nesting; i++) {
+			dataInitStr << ")";
+		}
+
+		PlCall(dataInitStr.str().c_str());
+		return;
+	}
+}
+
 Data SWIDataModel::getStringAsData(const std::string& content) {
 	SET_PL_CONTEXT
-//	std::cout << "SWIDataModel::getStringAsData" << std::endl;
+	try {
+		PlTerm term(content.c_str());
+		return(termAsData(term));
+	} RETHROW_PLEX_AS_EVENT
+}
+
+Data SWIDataModel::termAsData(PlTerm term) {
 	Data data;
+
+//	std::cout << term.name() << (char*)term << std::endl;
+	
+	switch (term.type()) {
+		case PL_TERM:
+			for (int i = 1; i <= term.arity(); i++) { // arguments start at 1
+				data.compound[term.name()].array.push_back(termAsData(term[i]));
+			}
+			break;
+		case PL_INTEGER:
+		case PL_FLOAT:
+		case PL_SHORT:
+		case PL_INT:
+		case PL_LONG:
+		case PL_DOUBLE:
+			data.atom = std::string(term);
+			data.type = Data::INTERPRETED;
+			break;
+		case PL_ATOM:
+			data.atom = std::string(term);
+			data.type = Data::VERBATIM;
+			break;
+		case PL_NIL:
+			data.array.push_back(Data("", Data::VERBATIM));
+			break;
+		case PL_LIST_PAIR: {
+			PlTail tail(term);
+			PlTerm item;
+			while(tail.next(item)) {
+				data.array.push_back(termAsData(item));
+			}
+			break;
+		}
+		case PL_DICT: {
+			std::string key(term);
+			size_t curlyPos = key.find_first_of("{");
+			if (curlyPos == std::string::npos || curlyPos == 0) {
+				// no key given
+				PL_for_dict(term, SWIDataModel::dictCallBack, &data, 0);
+			} else {
+				// with key given
+				Data& tmp = data.compound[boost::trim_copy(key.substr(0, curlyPos))];
+				PL_for_dict(term, SWIDataModel::dictCallBack, &tmp, 0);
+			}
+			break;
+		}
+		default:
+			LOG(ERROR) << "Prolog type " << term.type() << " at '" << (char*)term << "' not supported";
+			break;
+	}
 	return data;
+}
+
+int SWIDataModel::dictCallBack(term_t key, term_t value, int last, void *closure) {
+	Data* data = (Data*)closure;
+	PlTerm keyTerm(key);
+	data->compound[(char*)keyTerm] = termAsData(value);
+	return 0;
+}
+
+PlTerm SWIDataModel::dataAsTerm(Data data) {
+	if (data.atom.length() > 0) {
+		return PlTerm(data.atom.c_str());
+	}
+	if (data.array.size() > 0) {
+		PlTerm head;
+		PlTail list(head);
+		
+		std::list<Data>::const_iterator arrIter = data.array.begin();
+		while(arrIter != data.array.end()) {
+			list.append(dataAsTerm(*arrIter));
+			arrIter++;
+		}
+		list.close();
+		return PlTail(head);
+	}
+	if (data.compound.size() > 0) {
+		if (data.compound.size() == 1 && data.compound.begin()->second.array.size() > 0) {
+			// this used to be a prolog compound
+			const Data& arr = data.compound.begin()->second;
+			PlTermv termv(arr.array.size());
+			int index = 0;
+
+			std::list<Data>::const_iterator arrIter = arr.array.begin();
+			while(arrIter != arr.array.end()) {
+				termv[index] = dataAsTerm(*arrIter);
+				index++;
+				arrIter++;
+			}
+			return PlCompound(data.compound.begin()->first.c_str(), termv);
+		} else if (data.compound.size() == 1 && data.compound.begin()->second.compound.size() > 0) {
+			// this used to be a named dict - until we have dict support in C/C++ use PL_chars_to_term
+			std::stringstream dictSS;
+			std::string seperator;
+			dictSS << data.compound.begin()->first << "{";
+			
+			std::map<std::string, Data>::const_iterator keyIter = data.compound.begin()->second.compound.begin();
+			while(keyIter != data.compound.begin()->second.compound.end()) {
+				dictSS << seperator << keyIter->first << ":" << (char*)dataAsTerm(keyIter->second);
+				seperator = ",";
+				keyIter++;
+			}
+			dictSS << "}";
+			return PlCompound(dictSS.str().c_str());
+			
+		} else {
+			// an array of dicts
+			PlTermv termv(data.compound.size());
+			int index = 0;
+			
+			std::map<std::string, Data>::const_iterator compIter = data.compound.begin();
+			while(compIter != data.compound.end()) {
+				termv[index] = PlCompound(compIter->first.c_str(), dataAsTerm(compIter->second));
+				index++;
+				compIter++;
+			}
+			return PlCompound(data.compound.begin()->first.c_str(), termv);
+
+		}
+	}
+	if (data.binary) {
+		LOG(ERROR) << "Binary data with prolog datamodel still very experimental";
+//		term_t binTerm = PL_new_term_ref();
+//		PL_put_blob(binTerm, data.binary->data, data.binary->size, &blobType);
+//		return binTerm;
+	}
+	if (data.node) {
+		LOG(ERROR) << "DOM in event with prolog datamodel still very experimental";
+		std::stringstream dataInitStr;
+		std::stringstream xmlDoc;
+		//			xmlDoc << event.getFirstDOMElement();
+		xmlDoc << data.node;
+		URL domUrl = URL::toLocalFile(xmlDoc.str(), ".pl");
+		dataInitStr << "load_xml_file('" << domUrl.asLocalFile(".pl") << "', XML), copy_term(XML,DATA), assert(event(data(DATA)))";
+		PlCall(dataInitStr.str().c_str());
+	}
+	
+	return PlTerm();
 }
 
 bool SWIDataModel::validate(const std::string& location, const std::string& schema) {
@@ -401,8 +615,10 @@ bool SWIDataModel::evalAsBool(const Arabica::DOM::Node<std::string>& node, const
 std::string SWIDataModel::evalAsString(const std::string& expr) {
 	SET_PL_CONTEXT
 	try {
+		
 		PlCompound orig(expr.c_str()); // keep the original to find variables
 		PlCompound compound(expr.c_str());
+		
 		if (strlen(compound.name())) {
 			PlTermv termv(compound.arity());
 			for (int i = 0; i < compound.arity(); i++) {
@@ -415,7 +631,8 @@ std::string SWIDataModel::evalAsString(const std::string& expr) {
 			while (query.next_solution()) {
 				std::map<std::string, PlTerm> vars = resolveAtoms(compound, orig);
 				if (vars.size() == 1) {
-					ss << (char *)vars.begin()->second;
+					ss << separator << (char *)vars.begin()->second;
+					separator = "\n";
 				} else {
 					std::map<std::string, PlTerm>::const_iterator varIter = vars.begin();
 					while(varIter != vars.end()) {
@@ -428,7 +645,19 @@ std::string SWIDataModel::evalAsString(const std::string& expr) {
 			return ss.str();
 		}
 		return std::string(compound);
-	} RETHROW_PLEX_AS_EVENT
+
+	} catch(PlException plex) {
+		// we got an exception while trying to evaluate as compound
+		PlTerm term(expr.c_str());
+		if (term.type() == PL_ATOM | term.type() == PL_CHARS | term.type() == PL_STRING) {
+			return std::string(term);
+		} else {
+			Event e;
+			e.name = "error.execution";
+			e.data.compound["cause"] = (char*)plex;
+			throw e;
+		}
+	}
 }
 
 // this is similar to http://etalis.googlecode.com/svn/eEtalis/src/term.c
@@ -555,4 +784,21 @@ bool SWIDataModel::isDeclared(const std::string& expr) {
 	return true;
 }
 
+void SWIDataModel::acquireBlob(atom_t symbol) {
+}
+	
+	
+int SWIDataModel::releaseBlob(atom_t symbol) {
+	return TRUE;
+}
+
+int SWIDataModel::compareBlob(atom_t a, atom_t b) {
+	return 0;
+}
+
+int SWIDataModel::writeBlob(void *s, atom_t symbol, int flags) {
+	return TRUE;
+}
+
+	
 }

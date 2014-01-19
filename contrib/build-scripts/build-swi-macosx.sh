@@ -30,12 +30,12 @@ if [ -f Makefile ]; then
 fi
 
 if [ ${MACOSX_COMP[1]} -lt 9 ]; then
-  export CXXFLAGS="-mmacosx-version-min=10.6 -stdlib=libstdc++ -arch x86_64 -arch i386"
-  export CFLAGS="-mmacosx-version-min=10.6 -arch x86_64 -arch i386"
+  export CXXFLAGS="-g -mmacosx-version-min=10.6 -stdlib=libstdc++ -arch x86_64 -arch i386"
+  export CFLAGS="-g -mmacosx-version-min=10.6 -arch x86_64 -arch i386"
   export LDFLAGS="-stdlib=libstdc++"
 else
-  export CXXFLAGS="-mmacosx-version-min=10.7 -stdlib=libc++ -arch x86_64 -arch i386"
-  export CFLAGS="-mmacosx-version-min=10.7 -stdlib=libc++ -arch x86_64 -arch i386"
+  export CXXFLAGS="-g -mmacosx-version-min=10.7 -stdlib=libc++ -arch x86_64 -arch i386"
+  export CFLAGS="-g -mmacosx-version-min=10.7 -stdlib=libc++ -arch x86_64 -arch i386"
   export LDFLAGS="-stdlib=libc++"
 fi
 

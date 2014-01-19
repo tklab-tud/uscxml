@@ -37,7 +37,7 @@ bool pluginConnect(pluma::Host& host) {
 }
 #endif
 
-UmundoInvoker::UmundoInvoker() : _pub(NULL), _sub(NULL), _node(NULL) {
+UmundoInvoker::UmundoInvoker() : _node(NULL), _discovery(NULL), _pub(NULL), _sub(NULL) {
 }
 
 UmundoInvoker::~UmundoInvoker() {
