@@ -117,6 +117,26 @@ if (EXPECT_FOUND AND TCL_FOUND)
 endif()
 
 
+# SMTP invoker via curl
+
+set(USCXML_INVOKERS "smtp ${USCXML_INVOKERS}")
+file(GLOB_RECURSE SMTP_INVOKER
+	smtp/*.cpp
+	smtp/*.h
+)
+if (BUILD_AS_PLUGINS)
+	source_group("" FILES SMTP_INVOKER)
+	add_library(
+		invoker_smtp SHARED 
+		${SMTP_INVOKER}
+		"../Plugins.cpp")
+	target_link_libraries(invoker_smtp uscxml)
+	set_target_properties(invoker_smtp PROPERTIES FOLDER "Plugin Invoker")
+else()
+	list (APPEND USCXML_FILES ${SMTP_INVOKER})
+endif()
+
+
 # SQLite3 SQL Invoker
 
 if (SQLITE3_FOUND)

@@ -39,6 +39,7 @@
 # include "uscxml/plugins/invoker/filesystem/dirmon/DirMonInvoker.h"
 # include "uscxml/plugins/invoker/system/SystemInvoker.h"
 # include "uscxml/plugins/invoker/xhtml/XHTMLInvoker.h"
+# include "uscxml/plugins/invoker/smtp/SMTPInvoker.h"
 
 
 #ifdef PROTOBUF_FOUND
@@ -275,6 +276,10 @@ Factory::Factory() {
 #if 1
 	{
 		XHTMLInvoker* invoker = new XHTMLInvoker();
+		registerInvoker(invoker);
+	}
+	{
+		SMTPInvoker* invoker = new SMTPInvoker();
 		registerInvoker(invoker);
 	}
 	{

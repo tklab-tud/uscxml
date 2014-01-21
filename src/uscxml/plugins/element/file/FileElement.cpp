@@ -134,8 +134,9 @@ void FileElement::enterElement(const Arabica::DOM::Node<std::string>& node) {
 	if (_sandBoxed)
 		_actualUrl.toAbsolute(URL::getResourceDir());
 
-	_filename = _actualUrl.path();
-
+	_filepath = _actualUrl.path();
+	
+	
 	std::string writeMode;
 	switch (_operation) {
 	case APPEND:
@@ -145,39 +146,43 @@ void FileElement::enterElement(const Arabica::DOM::Node<std::string>& node) {
 			writeMode = "w+";
 
 		FILE *fp;
-		fp = fopen(_filename.c_str(), writeMode.c_str());
+		fp = fopen(_filepath.c_str(), writeMode.c_str());
 		if (fp == NULL) {
-			LOG(ERROR) << "Error opening '" << _filename << "' for writing: " << strerror(errno);
+			LOG(ERROR) << "Error opening '" << _filepath << "' for writing: " << strerror(errno);
 		}
 
 		if (content && contentSize > 0) {
 			size_t written = fwrite(content, 1, contentSize, fp);
 			if (written != contentSize) {
-				LOG(ERROR) << "Error writing to '" << _filename << "': " << strerror(errno);
+				LOG(ERROR) << "Error writing to '" << _filepath << "': " << strerror(errno);
 				return;
 			}
 		} else if (contentStr.length() > 0) {
 			size_t written = fwrite(contentStr.c_str(), contentStr.length(), 1, fp);
 			if (written < 1) {
-				LOG(ERROR) << "Error writing to '" << _filename << "': " << strerror(errno);
+				LOG(ERROR) << "Error writing to '" << _filepath << "': " << strerror(errno);
 			}
 		} else {
-			LOG(WARNING) << "Nothing to write to '" << _filename;
+			LOG(WARNING) << "Nothing to write to '" << _filepath;
 		}
 		fclose(fp);
 		break;
 	}
 	case READ: {
 		struct stat fileStat;
-		int err = stat(_filename.c_str(), &fileStat);
+		int err = stat(_filepath.c_str(), &fileStat);
 		if (err < 0) {
-			LOG(ERROR) << "Cannot stat file '" << _filename << "': " << strerror(errno);
+			LOG(ERROR) << "Cannot stat file '" << _filepath << "': " << strerror(errno);
 			return;
 		}
 
 		Event event;
 		event.name = callback;
-		event.data.compound["file"].compound["name"] = Data(_filename, Data::VERBATIM);
+		
+		std::string filename = _actualUrl.pathComponents()[_actualUrl.pathComponents().size() - 1];
+		
+		event.data.compound["file"].compound["name"] = Data(filename, Data::VERBATIM);
+		event.data.compound["file"].compound["path"] = Data(_filepath, Data::VERBATIM);
 		event.data.compound["file"].compound["mtime"] = toStr(fileStat.st_mtime);
 		event.data.compound["file"].compound["ctime"] = toStr(fileStat.st_ctime);
 		event.data.compound["file"].compound["atime"] = toStr(fileStat.st_atime);
@@ -185,7 +190,7 @@ void FileElement::enterElement(const Arabica::DOM::Node<std::string>& node) {
 
 
 		FILE *fp;
-		fp = fopen(_filename.c_str(), "r");
+		fp = fopen(_filepath.c_str(), "r");
 
 		fseek (fp, 0, SEEK_END);
 		size_t filesize = ftell(fp);
@@ -195,14 +200,22 @@ void FileElement::enterElement(const Arabica::DOM::Node<std::string>& node) {
 		size_t read = fread(fileContents, 1, filesize, fp);
 		fclose(fp);
 		if (read != filesize) {
-			LOG(ERROR) << "Error reading from '" << _filename << "': " << strerror(errno);
+			LOG(ERROR) << "Error reading from '" << _filepath << "': " << strerror(errno);
 			return;
 		}
 
 		switch (_type) {
-		case BINARY:
-			event.data.compound["content"] = Data(fileContents, fileStat.st_size, "application/octet-stream", true);
+			case BINARY: {
+			std::string mimetype = "application/octet-stream";
+			if (HAS_ATTR(node, "mimetype")) {
+				mimetype = ATTR(node, "mimetype");
+			} else if(HAS_ATTR(node, "mimetypeexpr")) {
+				mimetype = _interpreter->getDataModel().evalAsString(ATTR(node, "mimetypeexpr"));
+			}
+
+			event.data.compound["content"] = Data(fileContents, fileStat.st_size, mimetype, true);
 			break;
+		}
 		case TEXT:
 			event.data.compound["content"] = Data(fileContents, Data::VERBATIM);
 			free(fileContents);
@@ -211,7 +224,7 @@ void FileElement::enterElement(const Arabica::DOM::Node<std::string>& node) {
 			Data json = Data::fromJSON(fileContents);
 			free(fileContents);
 			if (!json) {
-				LOG(ERROR) << "Cannot parse contents of " << _filename << " as JSON";
+				LOG(ERROR) << "Cannot parse contents of " << _filepath << " as JSON";
 				return;
 			}
 			event.data.compound["content"] = json;
@@ -220,7 +233,7 @@ void FileElement::enterElement(const Arabica::DOM::Node<std::string>& node) {
 		case XML: {
 			NameSpacingParser parser = NameSpacingParser::fromXML(fileContents);
 			if (parser.errorsReported()) {
-				LOG(ERROR) << "Cannot parse contents of " << _filename << " as XML";
+				LOG(ERROR) << "Cannot parse contents of " << _filepath << " as XML";
 				return;
 			}
 			event.dom = parser.getDocument().getDocumentElement();

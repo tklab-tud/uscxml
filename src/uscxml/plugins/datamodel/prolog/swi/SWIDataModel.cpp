@@ -627,20 +627,19 @@ std::string SWIDataModel::evalAsString(const std::string& expr) {
 			PlQuery query(compound.name(), termv);
 
 			std::stringstream ss;
-			const char* separator = "";
+			std::string solSeparator = "";
 			while (query.next_solution()) {
+				ss << solSeparator;
 				std::map<std::string, PlTerm> vars = resolveAtoms(compound, orig);
-				if (vars.size() == 1) {
-					ss << separator << (char *)vars.begin()->second;
-					separator = "\n";
-				} else {
-					std::map<std::string, PlTerm>::const_iterator varIter = vars.begin();
-					while(varIter != vars.end()) {
-						ss << separator << (char *)varIter->second;
-						separator = ", ";
-						varIter++;
-					}
+				std::map<std::string, PlTerm>::const_iterator varIter = vars.begin();
+
+				std::string varSeparator = "";
+				while(varIter != vars.end()) {
+					ss << varSeparator << (char *)varIter->second;
+					varSeparator = ", ";
+					varIter++;
 				}
+				solSeparator = "\n";
 			}
 			return ss.str();
 		}
@@ -684,6 +683,8 @@ std::map<std::string, PlTerm> SWIDataModel::resolveAtoms(PlTerm& term, PlTerm& o
 				atoms.insert(result.begin(), result.end());
 			}
 			break;
+		default:
+			LOG(ERROR) << "Resolving variable of unknown type in query solution";
 		}
 		return atoms;
 	} RETHROW_PLEX_AS_EVENT
