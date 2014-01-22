@@ -79,7 +79,7 @@ static std::map<SWIDataModel*, PL_engine_t> _swiEngines;
 PL_blob_t SWIDataModel::blobType =
 { PL_BLOB_MAGIC,
 	PL_BLOB_NOCOPY,
-	"blob",
+	(char*)"blob",
 	releaseBlob,
 	compareBlob,
 	writeBlob,
@@ -654,7 +654,7 @@ std::string SWIDataModel::evalAsString(const std::string& expr) {
 	} catch(PlException plex) {
 		// we got an exception while trying to evaluate as compound
 		PlTerm term(expr.c_str());
-		if (term.type() == PL_ATOM | term.type() == PL_CHARS | term.type() == PL_STRING) {
+		if (term.type() == PL_ATOM || term.type() == PL_CHARS || term.type() == PL_STRING) {
 			return std::string(term);
 		} else {
 			Event e;
