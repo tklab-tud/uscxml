@@ -17,8 +17,8 @@
  *  @endcond
  */
 
-#ifndef SMTPINVOKER_H_W09J90F0
-#define SMTPINVOKER_H_W09J90F0
+#ifndef IMAPINVOKER_H_W09JFED0
+#define IMAPINVOKER_H_W09JFED0
 
 #include <uscxml/Interpreter.h>
 
@@ -30,16 +30,16 @@
 
 namespace uscxml {
 
-class SMTPInvoker : public InvokerImpl {
+class IMAPInvoker : public InvokerImpl {
 public:
-	SMTPInvoker();
-	virtual ~SMTPInvoker();
+	IMAPInvoker();
+	virtual ~IMAPInvoker();
 	virtual boost::shared_ptr<InvokerImpl> create(InterpreterImpl* interpreter);
 
 	virtual std::set<std::string> getNames() {
 		std::set<std::string> names;
-		names.insert("smtp");
-		names.insert("http://uscxml.tk.informatik.tu-darmstadt.de/#smtp");
+		names.insert("imap");
+		names.insert("http://uscxml.tk.informatik.tu-darmstadt.de/#imap");
 		return names;
 	}
 
@@ -50,12 +50,12 @@ public:
 
 protected:
 	
-	class SMTPContext {
+	class IMAPContext {
 	public:
-		SMTPContext() : readPtr(0) {}
+		IMAPContext() : readPtr(0) {}
 		std::string content;
 		size_t readPtr;		
-		SMTPInvoker* invoker;
+		IMAPInvoker* invoker;
 	};
 	
 	CURL* _curl;
@@ -69,10 +69,10 @@ protected:
 };
 
 #ifdef BUILD_AS_PLUGINS
-PLUMA_INHERIT_PROVIDER(SMTPInvoker, InvokerImpl);
+PLUMA_INHERIT_PROVIDER(IMAPInvoker, InvokerImpl);
 #endif
 
 }
 
 
-#endif /* end of include guard: SMTPINVOKER_H_W09J90F0 */
+#endif /* end of include guard: IMAPINVOKER_H_W09JFED0 */

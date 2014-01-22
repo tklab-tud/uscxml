@@ -408,9 +408,12 @@ Data SWIDataModel::termAsData(PlTerm term) {
 			data.atom = std::string(term);
 			data.type = Data::VERBATIM;
 			break;
+#ifdef SWI_HAS_PL_NIL
 		case PL_NIL:
 			data.array.push_back(Data("", Data::VERBATIM));
 			break;
+#endif
+#ifdef SWI_HAS_PL_LIST_PAIR
 		case PL_LIST_PAIR: {
 			PlTail tail(term);
 			PlTerm item;
@@ -419,6 +422,8 @@ Data SWIDataModel::termAsData(PlTerm term) {
 			}
 			break;
 		}
+#endif
+#ifdef SWI_HAS_DICT
 		case PL_DICT: {
 			std::string key(term);
 			size_t curlyPos = key.find_first_of("{");
@@ -432,6 +437,7 @@ Data SWIDataModel::termAsData(PlTerm term) {
 			}
 			break;
 		}
+#endif
 		default:
 			LOG(ERROR) << "Prolog type " << term.type() << " at '" << (char*)term << "' not supported";
 			break;

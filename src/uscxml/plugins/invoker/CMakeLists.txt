@@ -137,6 +137,26 @@ else()
 endif()
 
 
+# IMAP invoker via curl
+
+set(USCXML_INVOKERS "imap ${USCXML_INVOKERS}")
+file(GLOB_RECURSE IMAP_INVOKER
+	imap/*.cpp
+	imap/*.h
+)
+if (BUILD_AS_PLUGINS)
+	source_group("" FILES IMAP_INVOKER)
+	add_library(
+		invoker_imap SHARED 
+		IMAP_INVOKER}
+		"../Plugins.cpp")
+	target_link_libraries(invoker_imap uscxml)
+	set_target_properties(invoker_imap PROPERTIES FOLDER "Plugin Invoker")
+else()
+	list (APPEND USCXML_FILES ${IMAP_INVOKER})
+endif()
+
+
 # SQLite3 SQL Invoker
 
 if (SQLITE3_FOUND)
@@ -184,10 +204,13 @@ endif()
 
 if (LIBPURPLE_FOUND)
 	set(USCXML_INVOKERS "im ${USCXML_INVOKERS}")
+	configure_file(${CMAKE_CURRENT_SOURCE_DIR}/im/IMConfig.h.in ${CMAKE_BINARY_DIR}/uscxml/IMConfig.h)
+	
 	file(GLOB_RECURSE LIBPURPLE_INVOKER
 		im/*.cpp
 		im/*.h
 	)
+	
 	if (BUILD_AS_PLUGINS)
 		source_group("" FILES ${LIBPURPLE_INVOKER})
 		add_library(

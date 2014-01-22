@@ -138,7 +138,7 @@ bool InterpreterWebSocketServlet::wsRecvRequest(struct evws_connection *conn, co
 
 Data InterpreterWebSocketServlet::getDataModelVariables() {
 	Data data;
-	if(_url.length() > 0);
+	if(_url.length() > 0)
 		data.compound["location"] = Data(_url, Data::VERBATIM);
 	return data;
 }

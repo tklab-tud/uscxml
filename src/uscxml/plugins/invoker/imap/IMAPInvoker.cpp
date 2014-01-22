@@ -17,7 +17,7 @@
  *  @endcond
  */
 
-#include "SMTPInvoker.h"
+#include "IMAPInvoker.h"
 #include <glog/logging.h>
 
 #ifdef BUILD_AS_PLUGINS
@@ -32,32 +32,32 @@ namespace uscxml {
 #ifdef BUILD_AS_PLUGINS
 PLUMA_CONNECTOR
 bool pluginConnect(pluma::Host& host) {
-	host.add( new SMTPInvokerProvider() );
+	host.add( new IMAPInvokerProvider() );
 	return true;
 }
 #endif
 
-SMTPInvoker::SMTPInvoker() {
+IMAPInvoker::IMAPInvoker() {
 }
 
-SMTPInvoker::~SMTPInvoker() {
+IMAPInvoker::~IMAPInvoker() {
 };
 
-boost::shared_ptr<InvokerImpl> SMTPInvoker::create(InterpreterImpl* interpreter) {
-	boost::shared_ptr<SMTPInvoker> invoker = boost::shared_ptr<SMTPInvoker>(new SMTPInvoker());
+boost::shared_ptr<InvokerImpl> IMAPInvoker::create(InterpreterImpl* interpreter) {
+	boost::shared_ptr<IMAPInvoker> invoker = boost::shared_ptr<IMAPInvoker>(new IMAPInvoker());
 	return invoker;
 }
 
-Data SMTPInvoker::getDataModelVariables() {
+Data IMAPInvoker::getDataModelVariables() {
 	Data data;
 	return data;
 }
 
-size_t SMTPInvoker::writeCurlData(void *ptr, size_t size, size_t nmemb, void *userdata) {
+size_t IMAPInvoker::writeCurlData(void *ptr, size_t size, size_t nmemb, void *userdata) {
 	if (!userdata)
 		return 0;
 
-	SMTPContext* ctx = (SMTPContext*)userdata;
+	IMAPContext* ctx = (IMAPContext*)userdata;
 
 	size_t toWrite = std::min(ctx->content.length() - ctx->readPtr, size * nmemb);
 	if (toWrite > 0) {
@@ -68,7 +68,7 @@ size_t SMTPInvoker::writeCurlData(void *ptr, size_t size, size_t nmemb, void *us
 	return toWrite;
 }
 
-std::list<std::string> SMTPInvoker::getAtoms(std::list<Data> list) {
+std::list<std::string> IMAPInvoker::getAtoms(std::list<Data> list) {
 	std::list<std::string> atoms;
 	
 	std::list<Data>::const_iterator iter = list.begin();
@@ -90,7 +90,7 @@ std::list<std::string> SMTPInvoker::getAtoms(std::list<Data> list) {
 	return atoms;
 }
 
-void SMTPInvoker::getAttachments(std::list<Data> list, std::list<Data>& attachments) {
+void IMAPInvoker::getAttachments(std::list<Data> list, std::list<Data>& attachments) {
 	// accumulate attachments with filename, mimetype and data
 	std::list<Data>::const_iterator iter = list.begin();
 	while(iter != list.end()) {
@@ -160,7 +160,7 @@ void SMTPInvoker::getAttachments(std::list<Data> list, std::list<Data>& attachme
 	}
 }
 	
-void SMTPInvoker::send(const SendRequest& req) {
+void IMAPInvoker::send(const SendRequest& req) {
 	if (iequals(req.name, "mail.send")) {
 		
 		struct curl_slist* recipients = NULL;
@@ -168,6 +168,7 @@ void SMTPInvoker::send(const SendRequest& req) {
 		std::string multipartSep;
 
 		bool verbose;
+		bool useSSL;
 		std::string from;
 		std::string subject;
 		std::string contentType;
@@ -178,6 +179,7 @@ void SMTPInvoker::send(const SendRequest& req) {
 		std::list<Data> attachmentParams;
 		
 		Event::getParam(req.params, "verbose", verbose);
+		Event::getParam(req.params, "ssl", useSSL);
 		Event::getParam(req.params, "Content-Type", contentType);
 		Event::getParam(req.params, "attachment", attachmentParams);
 		Event::getParam(req.params, "from", from);
@@ -190,7 +192,7 @@ void SMTPInvoker::send(const SendRequest& req) {
 		if (contentType.size() == 0)
 			contentType = "text/plain; charset=\"UTF-8\"";
 		
-		SMTPContext* ctx = new SMTPContext();
+		IMAPContext* ctx = new IMAPContext();
 		std::stringstream contentSS;
 
 		std::list<std::string>::const_iterator recIter;
@@ -283,7 +285,7 @@ void SMTPInvoker::send(const SendRequest& req) {
 		ctx->invoker = this;
 		
 
-		// see http://curl.haxx.se/libcurl/c/smtp-tls.html
+		// see http://curl.haxx.se/libcurl/c/imap-tls.html
 		_curl = curl_easy_init();
 		if(_curl) {
 			(curlError = curl_easy_setopt(_curl, CURLOPT_USERNAME, _username.c_str())) == CURLE_OK ||
@@ -292,30 +294,33 @@ void SMTPInvoker::send(const SendRequest& req) {
 			LOG(ERROR) << "Cannot set password: " << curl_easy_strerror(curlError);
 			(curlError = curl_easy_setopt(_curl, CURLOPT_URL, _server.c_str())) == CURLE_OK ||
 			LOG(ERROR) << "Cannot set server string: " << curl_easy_strerror(curlError);
-			(curlError = curl_easy_setopt(_curl, CURLOPT_USE_SSL, (long)CURLUSESSL_ALL)) == CURLE_OK ||
-			LOG(ERROR) << "Cannot use SSL: " << curl_easy_strerror(curlError);
+			
+			if (useSSL) {
+				(curlError = curl_easy_setopt(_curl, CURLOPT_USE_SSL, (long)CURLUSESSL_ALL)) == CURLE_OK ||
+				LOG(ERROR) << "Cannot use SSL: " << curl_easy_strerror(curlError);
+#if 1
+				(curlError = curl_easy_setopt(_curl, CURLOPT_SSL_VERIFYPEER, 0L)) == CURLE_OK ||
+				LOG(ERROR) << "Cannot unset verify peer with SSL: " << curl_easy_strerror(curlError);
+				(curlError = curl_easy_setopt(_curl, CURLOPT_SSL_VERIFYHOST, 0L)) == CURLE_OK ||
+				LOG(ERROR) << "Cannot unset verify host with SSL: " << curl_easy_strerror(curlError);
+#else
+				(curlError = curl_easy_setopt(_curl, CURLOPT_CAINFO, "/path/to/certificate.pem")) == CURLE_OK ||
+				LOG(ERROR) << "Cannot set CA info path: " << curl_easy_strerror(curlError);
+#endif
+
+			}
 			
 			// this is needed, even if we have a callback function
 			recipients = curl_slist_append(recipients, to.begin()->c_str());
 			(curlError = curl_easy_setopt(_curl, CURLOPT_MAIL_RCPT, recipients)) == CURLE_OK ||
 			LOG(ERROR) << "Cannot set mail recipient: " << curl_easy_strerror(curlError);
 			
-			(curlError = curl_easy_setopt(_curl, CURLOPT_READFUNCTION, SMTPInvoker::writeCurlData)) == CURLE_OK ||
+			(curlError = curl_easy_setopt(_curl, CURLOPT_READFUNCTION, IMAPInvoker::writeCurlData)) == CURLE_OK ||
 			LOG(ERROR) << "Cannot register read function: " << curl_easy_strerror(curlError);
 			(curlError = curl_easy_setopt(_curl, CURLOPT_READDATA, ctx)) == CURLE_OK ||
 			LOG(ERROR) << "Cannot register userdata for read function: " << curl_easy_strerror(curlError);
 			(curlError = curl_easy_setopt(_curl, CURLOPT_UPLOAD, 1L)) == CURLE_OK ||
 			LOG(ERROR) << "Cannot set upload parameter: " << curl_easy_strerror(curlError);
-
-#if 1
-			(curlError = curl_easy_setopt(_curl, CURLOPT_SSL_VERIFYPEER, 0L)) == CURLE_OK ||
-			LOG(ERROR) << "Cannot unset verify peer with SSL: " << curl_easy_strerror(curlError);
-			(curlError = curl_easy_setopt(_curl, CURLOPT_SSL_VERIFYHOST, 0L)) == CURLE_OK ||
-			LOG(ERROR) << "Cannot unset verify host with SSL: " << curl_easy_strerror(curlError);
-#else
-			(curlError = curl_easy_setopt(_curl, CURLOPT_CAINFO, "/path/to/certificate.pem")) == CURLE_OK ||
-			LOG(ERROR) << "Cannot set CA info path: " << curl_easy_strerror(curlError);
-#endif
 
 			if (from.length() > 0) {
 				(curlError = curl_easy_setopt(_curl, CURLOPT_MAIL_FROM, from.c_str())) == CURLE_OK ||
@@ -348,10 +353,10 @@ void SMTPInvoker::send(const SendRequest& req) {
 	}
 }
 
-void SMTPInvoker::cancel(const std::string sendId) {
+void IMAPInvoker::cancel(const std::string sendId) {
 }
 
-void SMTPInvoker::invoke(const InvokeRequest& req) {
+void IMAPInvoker::invoke(const InvokeRequest& req) {
 	Event::getParam(req.params, "username", _username);
 	Event::getParam(req.params, "password", _password);
 	Event::getParam(req.params, "server", _server);

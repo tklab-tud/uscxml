@@ -1,0 +1,3 @@
+#cmakedefine SWI_HAS_PL_NIL
+#cmakedefine SWI_HAS_PL_DICT
+#cmakedefine SWI_HAS_PL_LIST_PAIR

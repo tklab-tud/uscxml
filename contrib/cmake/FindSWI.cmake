@@ -1,3 +1,15 @@
+set (SWI_SEARCH_PATHS)
+list (APPEND SWI_SEARCH_PATHS 
+	$ENV{SWI_HOME}
+	${CMAKE_FIND_ROOT_PATH}
+	"/usr/lib/swi-prolog/"
+	"/opt/local/"
+	"/usr/local/"
+	"C:/Program Files (x86)/swipl"
+	"C:/Program Files/swipl"
+)
+
+
 if (NOT WIN32)
 	include(FindPkgConfig)
 	pkg_check_modules(SWI swipl)
@@ -11,6 +23,7 @@ if (SWI_FOUND)
 	# message("SWI_INCLUDE_DIRS: ${SWI_INCLUDE_DIRS}")
 	# message("SWI_CFLAGS: ${SWI_CFLAGS}")
 	# message("SWI_CFLAGS_OTHER: ${SWI_CFLAGS_OTHER}")
+	# message("SWI_VERSION: ${SWI_VERSION}")
 	# 
 	# message("SWI_LIBRARIES_STATIC: ${SWI_LIBRARIES_STATIC}")
 	# message("SWI_LIBRARY_DIRS_STATIC: ${SWI_LIBRARY_DIRS_STATIC}")
@@ -21,7 +34,16 @@ if (SWI_FOUND)
 	# message("SWI_CFLAGS_OTHER_STATIC: ${SWI_CFLAGS_OTHER_STATIC}")
 	# message(FATAL_ERROR "")
 
-	set(SWI_INCLUDE_DIR ${SWI_INCLUDE_DIRS})
+	if (SWI_INCLUDE_DIRS)
+		set(SWI_INCLUDE_DIR ${SWI_INCLUDE_DIRS})
+	else()
+		FIND_PATH(SWI_INCLUDE_DIR SWI-Prolog.h
+		  PATH_SUFFIXES 
+				include
+				lib/swipl-${SWI_VERSION}/include
+		  PATHS ${SWI_SEARCH_PATHS}
+		)
+	endif()
 
 	FIND_LIBRARY(SWI_LIBRARY
 	  NAMES libswipl swipl
@@ -57,7 +79,6 @@ else()
 
 	#message("SWI_PLATFORM_ID: ${SWI_PLATFORM_ID}")
 
-	set (SWI_SEARCH_PATHS)
 	list (APPEND SWI_SEARCH_PATHS 
 		$ENV{SWI_HOME}
 		${CMAKE_FIND_ROOT_PATH}
@@ -166,4 +187,51 @@ endif()
 
 INCLUDE(FindPackageHandleStandardArgs)
 FIND_PACKAGE_HANDLE_STANDARD_ARGS(SWI DEFAULT_MSG SWI_LIBRARY SWI_BINARY SWI_INCLUDE_DIR SWI_CPP_INCLUDE_DIR)
+
+
+if (SWI_FOUND)
+	include(CheckCXXSourceCompiles)
+	
+	set(CMAKE_REQUIRED_INCLUDES ${SWI_INCLUDE_DIR})
+	set(CMAKE_REQUIRED_LIBRARIES ${SWI_LIBRARY})
+
+	check_cxx_source_compiles("
+		#include <SWI-Prolog.h>
+		int main(){
+			int a = 0;
+			switch(a) {
+				case PL_NIL:
+				break;
+			}
+	  }
+	" SWI_HAS_PL_NIL)
+	
+	check_cxx_source_compiles("
+		#include <SWI-Prolog.h>
+		int main(){
+			int a = 0;
+			switch(a) {
+				case PL_DICT:
+				break;
+			}
+	  }
+	" SWI_HAS_PL_DICT)
+	
+	check_cxx_source_compiles("
+		#include <SWI-Prolog.h>
+		int main(){
+			int a = 0;
+			switch(a) {
+				case PL_LIST_PAIR:
+				break;
+			}
+	  }
+	" SWI_HAS_PL_LIST_PAIR)
+	
+	set(CMAKE_REQUIRED_INCLUDES)
+	set(CMAKE_REQUIRED_LIBRARIES)
+endif()
+
 MARK_AS_ADVANCED(SWI_LIBRARY SWI_INCLUDE_DIR)
+
+

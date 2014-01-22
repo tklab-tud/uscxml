@@ -24,6 +24,8 @@
 #include <list>
 #include <SWI-cpp.h>
 
+#include "uscxml/SWIConfig.h"
+
 #ifdef BUILD_AS_PLUGINS
 #include "uscxml/plugins/Plugins.h"
 #endif

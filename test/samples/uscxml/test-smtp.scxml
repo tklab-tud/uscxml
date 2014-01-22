@@ -12,18 +12,20 @@
 	<state id="main">
 		
 		<invoke type="smtp" id="smtp">
+			<param name="ssl" expr="'true'" />
 			<param name="username" expr="'username'" />
 			<param name="password" expr="'password'" />
 			<param name="server" expr="'smtp://example.com:587'" />
 		</invoke>
 
 		<transition event="invoke.success.smtp">
-			<file operation="read"
-						sandbox="off"
-						url="file:///Users/sradomski/Documents/TK/Presentations/umundo/umundo-techtalk.pdf"
-						callback="file.load.success"
-						type="binary"
-						mimetype="application/pdf"
+			<file 
+				operation="read"
+				sandbox="off"
+				url="file:///Users/sradomski/Documents/TK/Presentations/umundo/umundo-techtalk.pdf"
+				callback="file.load.success"
+				type="binary"
+				mimetype="application/pdf"
 			/>
 		</transition>
 		

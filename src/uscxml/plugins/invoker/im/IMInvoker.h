@@ -23,8 +23,10 @@
 #include <uscxml/Interpreter.h>
 
 extern "C" {
-#include <libpurple/purple.h>
+#include <purple.h>
 }
+
+#include "uscxml/IMConfig.h"
 
 #ifdef BUILD_AS_PLUGINS
 #include "uscxml/plugins/Plugins.h"
