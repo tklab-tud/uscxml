@@ -86,11 +86,11 @@ boost::shared_ptr<IOProcessorImpl> BasicHTTPIOProcessor::create(InterpreterImpl*
 
 Data BasicHTTPIOProcessor::getDataModelVariables() {
 	Data data;
-	
+
 	// we are not connected!
 	if(_url.length() == 0)
 		return data;
-	
+
 	data.compound["location"] = Data(_url, Data::VERBATIM);
 
 	URL url(_url);
@@ -105,7 +105,7 @@ Data BasicHTTPIOProcessor::getDataModelVariables() {
 		data.compound["pathComponens"].array.push_back(Data(*pathCompIter, Data::VERBATIM));
 		pathCompIter++;
 	}
-	
+
 	return data;
 }
 
@@ -114,13 +114,13 @@ bool BasicHTTPIOProcessor::httpRecvRequest(const HTTPServer::Request& req) {
 	reqEvent.eventType = Event::EXTERNAL;
 
 //	std::cout << req.raw << std::endl;
-	
+
 	/**
-	 * If a single instance of the parameter '_scxmleventname' is present, the 
-	 * SCXML Processor must use its value as the name of the SCXML event that it 
+	 * If a single instance of the parameter '_scxmleventname' is present, the
+	 * SCXML Processor must use its value as the name of the SCXML event that it
 	 * raises.
 	 */
-	
+
 	// this will call the const subscript operator
 	if (req.data["content"]["_scxmleventname"]) {
 		reqEvent.name = req.data["content"]["_scxmleventname"].atom;
@@ -128,7 +128,7 @@ bool BasicHTTPIOProcessor::httpRecvRequest(const HTTPServer::Request& req) {
 	if (req.data["content"]["content"]) {
 		reqEvent.content = req.data["content"]["content"].atom;
 	}
-	
+
 	// check whether we can parse it as XML
 	if (reqEvent.content.length() > 0) {
 		NameSpacingParser parser = NameSpacingParser::fromXML(reqEvent.content);

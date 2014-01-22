@@ -177,9 +177,9 @@ void UmundoInvoker::invoke(const InvokeRequest& req) {
 
 	umundo::MDNSDiscoveryOptions discOpts;
 	_discovery = new umundo::Discovery(umundo::Discovery::MDNS, &discOpts);
-	
+
 	_discovery->add(*_node);
-	
+
 	// add type from .proto or .desc files
 	std::list<std::string> type;
 	Event::getParam(req.params, "type", type);
@@ -194,7 +194,7 @@ void UmundoInvoker::invoke(const InvokeRequest& req) {
 		}
 		typeIter++;
 	}
-	
+
 	// add directory with .proto or .desc files
 	std::list<std::string> types;
 	Event::getParam(req.params, "type", types);
@@ -282,7 +282,7 @@ void UmundoInvoker::receive(void* object, umundo::Message* msg) {
 	if (msg->size() > 0) {
 		event.data.compound["protobuf"] = Data(msg->data(), msg->size(), "application/x-protobuf");
 	}
-	
+
 	returnEvent(event);
 }
 

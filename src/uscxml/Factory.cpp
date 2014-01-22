@@ -213,7 +213,7 @@ Factory::Factory() {
 		registerInvoker(invoker);
 	}
 #endif
-	
+
 #if (defined OPENAL_FOUND && (defined LIBSNDFILE_FOUND || defined AUDIOTOOLBOX_FOUND))
 	{
 		OpenALInvoker* invoker = new OpenALInvoker();

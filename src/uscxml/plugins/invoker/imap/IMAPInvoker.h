@@ -49,20 +49,20 @@ public:
 	virtual void invoke(const InvokeRequest& req);
 
 protected:
-	
+
 	class IMAPContext {
 	public:
 		IMAPContext() : readPtr(0) {}
 		std::string content;
-		size_t readPtr;		
+		size_t readPtr;
 		IMAPInvoker* invoker;
 	};
-	
+
 	CURL* _curl;
 	std::string _username;
 	std::string _password;
 	std::string _server;
-	
+
 	std::list<std::string> getAtoms(std::list<Data> list);
 	void getAttachments(std::list<Data> list, std::list<Data>& attachments);
 	static size_t writeCurlData(void *ptr, size_t size, size_t nmemb, void *userdata);

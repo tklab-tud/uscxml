@@ -135,8 +135,8 @@ void FileElement::enterElement(const Arabica::DOM::Node<std::string>& node) {
 		_actualUrl.toAbsolute(URL::getResourceDir());
 
 	_filepath = _actualUrl.path();
-	
-	
+
+
 	std::string writeMode;
 	switch (_operation) {
 	case APPEND:
@@ -178,9 +178,9 @@ void FileElement::enterElement(const Arabica::DOM::Node<std::string>& node) {
 
 		Event event;
 		event.name = callback;
-		
+
 		std::string filename = _actualUrl.pathComponents()[_actualUrl.pathComponents().size() - 1];
-		
+
 		event.data.compound["file"].compound["name"] = Data(filename, Data::VERBATIM);
 		event.data.compound["file"].compound["path"] = Data(_filepath, Data::VERBATIM);
 		event.data.compound["file"].compound["mtime"] = toStr(fileStat.st_mtime);
@@ -205,7 +205,7 @@ void FileElement::enterElement(const Arabica::DOM::Node<std::string>& node) {
 		}
 
 		switch (_type) {
-			case BINARY: {
+		case BINARY: {
 			std::string mimetype = "application/octet-stream";
 			if (HAS_ATTR(node, "mimetype")) {
 				mimetype = ATTR(node, "mimetype");

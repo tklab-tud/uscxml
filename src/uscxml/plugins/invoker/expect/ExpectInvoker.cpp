@@ -64,33 +64,33 @@ void ExpectInvoker::send(const SendRequest& req) {
 	EventContext* ctx = new EventContext();
 	ctx->sendReq = req;
 	ctx->instance = this;
-	
+
 //	LOG(ERROR) << "################ " << req;
-	
+
 	std::string eventId = UUID::getUUID();
 	_eventQueue->addEvent(eventId, ExpectInvoker::send, 0, ctx);
-	
+
 //	send(ctx, "");
 }
-	
+
 void ExpectInvoker::send(void *userdata, const std::string event) {
 
 	EventContext* ctx = (EventContext*)userdata;
 	if (!ctx)
 		return;
-	
+
 	if (!ctx->instance) {
 		delete(ctx);
 		return;
 	}
 
 	const SendRequest& req = ctx->sendReq;
-	
+
 	if (iequals(req.name, "expect.match")) {
 		int nrCases = req.params.size();
 		struct exp_case *cases = (struct exp_case*)malloc(sizeof(struct exp_case) * (nrCases + 1));
 		memset(cases, 0, sizeof(exp_case) * (nrCases + 1));
-		
+
 		/**
 		 exp_end: indicates that no more  patterns appear.
 		 exp_glob: indicates that the pattern is a glob-style string pattern.
@@ -99,7 +99,7 @@ void ExpectInvoker::send(void *userdata, const std::string event) {
 		 exp_compiled: indicates that the pattern is a regexp-style string pattern, and that its compiled form is also provided.
 		 exp_null: indicates that the pattern is a null (for debugging purposes, a string pattern must also follow).
 		*/
-		
+
 		Event::params_t::const_iterator paramIter = req.params.begin();
 		int index = 0;
 		while (paramIter != req.params.end()) {
@@ -119,7 +119,7 @@ void ExpectInvoker::send(void *userdata, const std::string event) {
 			} else {
 				expCase->type = exp_regexp;
 			}
-			
+
 			expCase->pattern = strdup(paramIter->second.atom.c_str());
 //			LOG(ERROR) << "################ " << expCase->pattern;
 
@@ -134,21 +134,21 @@ void ExpectInvoker::send(void *userdata, const std::string event) {
 			paramIter++;
 			index++;
 		}
-		
+
 		assert(index == nrCases);
-		
+
 		cases[nrCases].type = exp_end;
 
 		/**
 		 * The functions wait until the output from a process matches one of the
 		 * patterns, a specified time period has passed, or an EOF is seen.
 		 */
-		
+
 		int rc = 0;
 		// exp_fexpectv won't return on timeout when called in thread
 //		rc = exp_fexpectv(ctx->instance->_cmdFP, cases);
 		rc = exp_expectv(ctx->instance->_cmdFD, cases);
-	
+
 		if (rc == EXP_EOF) {
 			Event ev;
 			ev.name = "expect.match.eof";
@@ -175,7 +175,7 @@ void ExpectInvoker::send(void *userdata, const std::string event) {
 			}
 			if (paramIter != req.params.end()) {
 				Event event;
-				
+
 				size_t colonPos = paramIter->first.find(":");
 				if (colonPos != std::string::npos) {
 					std::string eventName = paramIter->first;
@@ -186,7 +186,7 @@ void ExpectInvoker::send(void *userdata, const std::string event) {
 					event.name = std::string("expect.match.") + paramIter->first;
 					event.data.compound["type"] = Data("regex", Data::VERBATIM);
 				}
-				
+
 				event.data.compound["pattern"] = Data(paramIter->second.atom, Data::VERBATIM);
 				event.data.compound["buffer"] = Data(exp_buffer, Data::VERBATIM);
 				event.data.compound["start"] = Data((int)(exp_match - exp_buffer));
@@ -216,7 +216,7 @@ void ExpectInvoker::send(void *userdata, const std::string event) {
 		ctx->instance->_interpreter->getDataModel().replaceExpressions(toSend);
 		fwrite(toSend.c_str(), toSend.length(), 1, ctx->instance->_cmdFP);
 	}
-		
+
 	delete(ctx);
 }
 
@@ -235,31 +235,31 @@ void ExpectInvoker::invoke(const InvokeRequest& req) {
 
 	//_eventQueue->addEvent(req.sendid, ExpectInvoker::invoke, 0, ctx);
 	invoke(ctx, "");
-	
+
 }
-	
+
 void ExpectInvoker::invoke(void *userdata, const std::string event) {
 	EventContext* ctx = (EventContext*)userdata;
-	
+
 	if (!ctx)
 		return;
-	
+
 	if (!ctx->instance) {
 		delete(ctx);
 		return;
 	}
-	
+
 	const InvokeRequest& req = ctx->invokeReq;
-	
+
 	// moved here for thread local storage
 	if (ctx->instance->_tcl == NULL) {
-	  ctx->instance->_tcl = Tcl_CreateInterp();
+		ctx->instance->_tcl = Tcl_CreateInterp();
 		if (ctx->instance->_tcl) {
 			Tcl_Init(ctx->instance->_tcl);
 			Expect_Init(ctx->instance->_tcl);
 		}
 		ctx->instance->_cmdFP = NULL;
-		
+
 		bool debug = false;
 		Event::getParam(req.params, "debug", debug);
 		if (debug) {
@@ -267,11 +267,11 @@ void ExpectInvoker::invoke(void *userdata, const std::string event) {
 		} else {
 			exp_is_debugging = 0;
 		}
-		
+
 		int timeout = 20;
 		Event::getParam(req.params, "timeout", timeout);
 		exp_timeout = timeout;
-		
+
 		bool logUser = false;
 		Event::getParam(req.params, "loguser", logUser);
 		if (logUser) {
@@ -279,12 +279,12 @@ void ExpectInvoker::invoke(void *userdata, const std::string event) {
 		} else {
 			exp_loguser = 0;
 		}
-		
+
 		// exp_interactive = 1;
 		exp_logfile = 0;
 		// exp_remove_nulls = 1;
 		// exp_ttyinit = 1;
-		
+
 	} else {
 //		assert(false);
 	}
@@ -292,7 +292,7 @@ void ExpectInvoker::invoke(void *userdata, const std::string event) {
 	char* cmd = NULL;
 	char** args = NULL;
 	int nrArgs = 0;
-	
+
 	if (req.params.count("spawn")) {
 		// get command
 		std::string command;
@@ -314,14 +314,14 @@ void ExpectInvoker::invoke(void *userdata, const std::string event) {
 		}
 		args[index] = (char*)0;
 	} else if(req.params.count("command")) {
-		
+
 	}
-		
+
 	// open socket
 	ctx->instance->_cmdFD = exp_spawnv(cmd, args);
 	if (ctx->instance->_cmdFD > 0) {
 		ctx->instance->_cmdFP = fdopen(ctx->instance->_cmdFD, "r+");
-		
+
 		if (ctx->instance->_cmdFP) {
 			// disable buffering
 			setbuf(ctx->instance->_cmdFP,(char *)0);
@@ -330,7 +330,7 @@ void ExpectInvoker::invoke(void *userdata, const std::string event) {
 			ctx->instance->returnEvent(event);
 		}
 	}
-	
+
 	if (ctx->instance->_cmdFP == NULL || ctx->instance->_cmdFD <= 0) {
 		Event event;
 		event.name = "spawn.failed";
@@ -345,14 +345,14 @@ void ExpectInvoker::invoke(void *userdata, const std::string event) {
 
 	if (cmd)
 		free(cmd);
-	
+
 	if (args) {
 		for (int i = 0; i < nrArgs + 1; i++) {
 			free(args[i]);
 		}
 		free(args);
 	}
-	
+
 }
 
 }

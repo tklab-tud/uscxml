@@ -61,16 +61,16 @@ size_t SMTPInvoker::writeCurlData(void *ptr, size_t size, size_t nmemb, void *us
 
 	size_t toWrite = std::min(ctx->content.length() - ctx->readPtr, size * nmemb);
 	if (toWrite > 0) {
-	  memcpy (ptr, ctx->content.c_str() + ctx->readPtr, toWrite);
+		memcpy (ptr, ctx->content.c_str() + ctx->readPtr, toWrite);
 		ctx->readPtr += toWrite;
 	}
-	
+
 	return toWrite;
 }
 
 std::list<std::string> SMTPInvoker::getAtoms(std::list<Data> list) {
 	std::list<std::string> atoms;
-	
+
 	std::list<Data>::const_iterator iter = list.begin();
 	while(iter != list.end()) {
 		const Data& data = *iter;
@@ -106,7 +106,7 @@ void SMTPInvoker::getAttachments(std::list<Data> list, std::list<Data>& attachme
 					att.compound["mimetype"] = Data("text/plain", Data::VERBATIM);
 				}
 			}
-			
+
 			if (!att.hasKey("filename")) {
 				std::stringstream filenameSS;
 				filenameSS << "attachment" << attachments.size() + 1;
@@ -119,19 +119,19 @@ void SMTPInvoker::getAttachments(std::list<Data> list, std::list<Data>& attachme
 			}
 
 			attachments.push_back(att);
-			
+
 		} else if (data.binary) {
 			// a single binary blob
 			Data att;
 
 			att.compound["data"].binary = data.binary;
-			
+
 			if (data.binary->mimeType.size() > 0) {
 				att.compound["mimetype"] = Data(attachments.back()["data"].binary->mimeType, Data::VERBATIM);
 			} else {
 				att.compound["mimetype"] = Data("application/octet-stream", Data::VERBATIM);
 			}
-			
+
 			std::stringstream filenameSS;
 			filenameSS << "attachment" << attachments.size() + 1;
 			if (boost::starts_with(att.compound["mimetype"].atom, "text")) {
@@ -140,7 +140,7 @@ void SMTPInvoker::getAttachments(std::list<Data> list, std::list<Data>& attachme
 				filenameSS << ".bin";
 			}
 			att.compound["filename"] = Data(filenameSS.str(), Data::VERBATIM);
-			
+
 			attachments.push_back(att);
 
 		} else if (data.compound.size() > 0) {
@@ -159,10 +159,10 @@ void SMTPInvoker::getAttachments(std::list<Data> list, std::list<Data>& attachme
 		iter++;
 	}
 }
-	
+
 void SMTPInvoker::send(const SendRequest& req) {
 	if (iequals(req.name, "mail.send")) {
-		
+
 		struct curl_slist* recipients = NULL;
 		CURLcode curlError;
 		std::string multipartSep;
@@ -176,7 +176,7 @@ void SMTPInvoker::send(const SendRequest& req) {
 		std::list<Data> ccParams;
 		std::list<Data> bccParams;
 		std::list<Data> attachmentParams;
-		
+
 		Event::getParam(req.params, "verbose", verbose);
 		Event::getParam(req.params, "Content-Type", contentType);
 		Event::getParam(req.params, "attachment", attachmentParams);
@@ -189,7 +189,7 @@ void SMTPInvoker::send(const SendRequest& req) {
 
 		if (contentType.size() == 0)
 			contentType = "text/plain; charset=\"UTF-8\"";
-		
+
 		SMTPContext* ctx = new SMTPContext();
 		std::stringstream contentSS;
 
@@ -198,11 +198,12 @@ void SMTPInvoker::send(const SendRequest& req) {
 		std::list<std::string> cc = getAtoms(ccParams);
 		std::list<std::string> bcc = getAtoms(bccParams);
 		std::list<std::string> headers = getAtoms(headerParams);
-		std::list<Data> attachments; getAttachments(attachmentParams, attachments);
+		std::list<Data> attachments;
+		getAttachments(attachmentParams, attachments);
 
 		if (to.size() == 0)
 			return;
-		
+
 		recIter = to.begin();
 		recIter++; // skip first as we need it in CURLOPT_MAIL_RCPT
 		while(recIter != to.end()) {
@@ -233,7 +234,7 @@ void SMTPInvoker::send(const SendRequest& req) {
 			boost::replace_all(subject, "\r", " ");
 			contentSS << "Subject: " << subject << "\n";
 		}
-		
+
 		// content type is different when we have attachments
 		if (attachments.size() > 0) {
 			multipartSep = UUID::getUUID();
@@ -247,10 +248,10 @@ void SMTPInvoker::send(const SendRequest& req) {
 			// when we have no attachment, respect user-defined or use text/plain
 			contentSS << "Content-Type: " << contentType << "\n";
 		}
-		
+
 		contentSS << "\n";
 		contentSS << req.content;
-		
+
 		std::list<Data>::iterator attIter = attachments.begin();
 		while(attIter != attachments.end()) {
 			// only send valid attachments
@@ -261,7 +262,7 @@ void SMTPInvoker::send(const SendRequest& req) {
 				contentSS << "--" << multipartSep << "\n";
 				contentSS << "Content-Disposition: attachment; filename=\"" << attIter->compound["filename"].atom << "\"";
 				contentSS << "\n";
-				
+
 				contentSS << "Content-Type: " << attIter->compound["mimetype"].atom << "; ";
 				contentSS << "name=\"" << attIter->compound["filename"].atom << "\"";
 				contentSS << "\n";
@@ -278,10 +279,10 @@ void SMTPInvoker::send(const SendRequest& req) {
 			}
 			attIter++;
 		}
-		
+
 		ctx->content = contentSS.str();
 		ctx->invoker = this;
-		
+
 
 		// see http://curl.haxx.se/libcurl/c/smtp-tls.html
 		_curl = curl_easy_init();
@@ -294,12 +295,12 @@ void SMTPInvoker::send(const SendRequest& req) {
 			LOG(ERROR) << "Cannot set server string: " << curl_easy_strerror(curlError);
 			(curlError = curl_easy_setopt(_curl, CURLOPT_USE_SSL, (long)CURLUSESSL_ALL)) == CURLE_OK ||
 			LOG(ERROR) << "Cannot use SSL: " << curl_easy_strerror(curlError);
-			
+
 			// this is needed, even if we have a callback function
 			recipients = curl_slist_append(recipients, to.begin()->c_str());
 			(curlError = curl_easy_setopt(_curl, CURLOPT_MAIL_RCPT, recipients)) == CURLE_OK ||
 			LOG(ERROR) << "Cannot set mail recipient: " << curl_easy_strerror(curlError);
-			
+
 			(curlError = curl_easy_setopt(_curl, CURLOPT_READFUNCTION, SMTPInvoker::writeCurlData)) == CURLE_OK ||
 			LOG(ERROR) << "Cannot register read function: " << curl_easy_strerror(curlError);
 			(curlError = curl_easy_setopt(_curl, CURLOPT_READDATA, ctx)) == CURLE_OK ||
@@ -321,16 +322,16 @@ void SMTPInvoker::send(const SendRequest& req) {
 				(curlError = curl_easy_setopt(_curl, CURLOPT_MAIL_FROM, from.c_str())) == CURLE_OK ||
 				LOG(ERROR) << "Cannot set from parameter: " << curl_easy_strerror(curlError);
 			}
-			
+
 			if (verbose) {
 				(curlError = curl_easy_setopt(_curl, CURLOPT_VERBOSE, 1L)) == CURLE_OK ||
 				LOG(ERROR) << "Cannot set curl to verbose: " << curl_easy_strerror(curlError);
 			}
 
 			CURLcode res = curl_easy_perform(_curl);
-			
+
 			/* Check for errors */
-			if(res != CURLE_OK){
+			if(res != CURLE_OK) {
 				LOG(ERROR) << "curl_easy_perform() failed: " << curl_easy_strerror(res);
 				returnErrorExecution("error.mail.send");
 			} else {
@@ -339,7 +340,7 @@ void SMTPInvoker::send(const SendRequest& req) {
 			/* Free the list of recipients */
 			if (recipients)
 				curl_slist_free_all(recipients);
-			
+
 			/* Always cleanup */
 			curl_easy_cleanup(_curl);
 

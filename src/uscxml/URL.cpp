@@ -760,7 +760,7 @@ void URLFetcher::perform() {
 						if (err != CURLM_OK) {
 							LOG(WARNING) << "curl_multi_remove_handle: " << curl_multi_strerror(err);
 						}
-						
+
 						_handlesToURLs.erase(msg->easy_handle);
 					}
 				} else {

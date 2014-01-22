@@ -87,11 +87,11 @@ public:
 protected:
 	std::map<std::string, PlTerm> resolveAtoms(PlTerm& term, PlTerm& orig);
 	void assertFromData(const Data& data, const std::string& expr, size_t nesting);
-	
+
 	static Data termAsData(PlTerm term);
 	static PlTerm dataAsTerm(Data data);
 
-	
+
 	static int dictCallBack(term_t key, term_t value, int last, void *closure);
 
 	static PL_blob_t blobType;

@@ -116,13 +116,21 @@ PurpleConnectionUiOps IMInvoker::_uiConnectOps = {
 	purpleConnected,
 	purpleDisonnected,
 	purpleNotice,
+#if LIBPURPLE_VERSION_MAJOR >= 3
 	purpleNetworkConnected,
 	purpleNetworkDisconnected,
 	purpleReportDisconnect,
 	NULL,
 	NULL,
 	NULL
-
+#else
+	purpleReportDisconnect,
+	purpleNetworkConnected,
+	purpleNetworkDisconnected,
+	NULL,
+	NULL,
+	NULL
+#endif
 };
 
 //libpurple conversation operations
@@ -163,7 +171,7 @@ PurpleNotifyUiOps IMInvoker::_uiNotifyOps = {
 	NULL
 };
 
-#if 0
+#if LIBPURPLE_VERSION_MAJOR < 3
 PurplePrivacyUiOps IMInvoker::_uiPrivacyOps = {
 	purplePermitAdded,
 	purplePermitRemoved,
@@ -176,8 +184,11 @@ PurplePrivacyUiOps IMInvoker::_uiPrivacyOps = {
 };
 #endif
 
+#if LIBPURPLE_VERSION_MAJOR >= 3
 PurpleRequestFeature IMInvoker::_features;
+#endif
 PurpleRequestUiOps IMInvoker::_uiRequestOps = {
+#if LIBPURPLE_VERSION_MAJOR >= 3
 	_features,
 	purpleRequestInput,
 	purpleRequestChoice,
@@ -192,6 +203,21 @@ PurpleRequestUiOps IMInvoker::_uiRequestOps = {
 	NULL,
 	NULL,
 	NULL
+#else
+	purpleRequestInput,
+	purpleRequestChoice,
+	purpleRequestAction,
+	purpleRequestFields,
+	purpleRequestFile,
+	purpleRequestClose,
+	purpleRequestFolder,
+	purpleRequestActionWithIcon,
+	NULL,
+	NULL,
+	NULL
+
+#endif
+
 };
 
 PurpleWhiteboardUiOps IMInvoker::_uiWhiteboardOps = {
@@ -447,16 +473,16 @@ Data IMInvoker::statusToData(PurpleStatus *status) {
 	const char* statusName = purple_status_get_name(status);
 	if (statusName) data.compound["name"] = Data(statusName, Data::VERBATIM);
 
-	PurpleStatusType* statusType = purple_status_get_status_type(status);
+	PurpleStatusType* statusType = PURPLE_STATUS_GET_TYPE(status);
 
 	GList *statusAttrElem;
-	PurpleStatusAttribute* statusAttr;
+	PURPLE_STATUS_ATTR* statusAttr;
 	GList *statusAttrList = purple_status_type_get_attrs(statusType);
 
 	for(statusAttrElem = statusAttrList; statusAttrElem; statusAttrElem = statusAttrElem->next) {
-		statusAttr = (PurpleStatusAttribute*)statusAttrElem->data;
-		const char* statusAttrId = purple_status_attribute_get_id(statusAttr);
-		GValue* statusValue = purple_status_get_attr_value(status, statusAttrId);
+		statusAttr = (PURPLE_STATUS_ATTR*)statusAttrElem->data;
+		const char* statusAttrId = PURPLE_STATUS_ATTR_GET_ID(statusAttr);
+		PURPLE_VALUE* statusValue = purple_status_get_attr_value(status, statusAttrId);
 		if (statusValue) {
 			data.compound[statusAttrId] = purpleValueToData(statusValue);
 		}
@@ -510,15 +536,15 @@ Data IMInvoker::buddyToData(PurpleBuddy *buddy) {
 				continue;
 			data.compound["status"].compound[statusId] = statusToData(status);
 		}
-
 	}
 
 	return data;
 }
 
-Data IMInvoker::purpleValueToData(GValue* value) {
+Data IMInvoker::purpleValueToData(PURPLE_VALUE* value) {
 	Data data;
 
+#if LIBPURPLE_VERSION_MAJOR >= 3
 	if (false) {
 	} else if (g_type_check_value_holds(value, G_TYPE_CHAR)) {
 		data = Data(g_value_get_schar(value), Data::VERBATIM);
@@ -567,6 +593,58 @@ Data IMInvoker::purpleValueToData(GValue* value) {
 	} else {
 		LOG(ERROR) << "purple thingy unknown";
 	}
+#else
+	switch (purple_value_get_type(value)) {
+	case PURPLE_TYPE_BOOLEAN:
+		if (purple_value_get_boolean(value))
+			data = Data("true");
+		data = Data("false");
+		break;
+	case PURPLE_TYPE_STRING:
+		if (purple_value_get_string(value)) {
+			data = Data(purple_value_get_string(value), Data::VERBATIM);
+		}
+		break;
+	case PURPLE_TYPE_CHAR:
+		Data(purple_value_get_char(value));
+		break;
+	case PURPLE_TYPE_UCHAR:
+		Data(purple_value_get_uchar(value));
+		break;
+	case PURPLE_TYPE_SHORT:
+		Data(purple_value_get_short(value));
+		break;
+	case PURPLE_TYPE_USHORT:
+		Data(purple_value_get_ushort(value));
+		break;
+	case PURPLE_TYPE_INT:
+		Data(purple_value_get_int(value));
+		break;
+	case PURPLE_TYPE_UINT:
+		Data(purple_value_get_uint(value));
+		break;
+	case PURPLE_TYPE_LONG:
+		Data(purple_value_get_long(value));
+		break;
+	case PURPLE_TYPE_ULONG:
+		Data(purple_value_get_ulong(value));
+		break;
+	case PURPLE_TYPE_INT64:
+		Data(purple_value_get_int64(value));
+		break;
+	case PURPLE_TYPE_UINT64:
+		Data(purple_value_get_uint64(value));
+		break;
+	case PURPLE_TYPE_OBJECT:
+	case PURPLE_TYPE_POINTER:
+	case PURPLE_TYPE_ENUM:
+	case PURPLE_TYPE_BOXED:
+	case PURPLE_TYPE_UNKNOWN:
+	case PURPLE_TYPE_SUBTYPE:
+		LOG(ERROR) << "purple thingy not supported";
+		break;
+	}
+#endif
 	return data;
 }
 
@@ -634,10 +712,16 @@ void IMInvoker::send(void *userdata, const std::string event) {
 		Data data;
 		Event::getParam(ctx->sendReq.params, "data", data);
 
+#if LIBPURPLE_VERSION_MAJOR >= 3
 		PurpleIMConversation* conv = purple_im_conversation_new(ctx->instance->_account, receiver.c_str());
 		if (ctx->sendReq.content.length() > 0)
 			purple_conversation_send(PURPLE_CONVERSATION(conv), ctx->sendReq.content.c_str());
-
+#else
+		PurpleConversation* conv = purple_conversation_new(PURPLE_CONV_TYPE_IM, ctx->instance->_account, receiver.c_str());
+		if (ctx->sendReq.content.length() > 0)
+			purple_conv_im_send(purple_conversation_get_im_data(conv), ctx->sendReq.content.c_str());
+#endif
+		
 #if 0
 		if (data.binary) {
 			PurpleConnection *gc = purple_account_get_connection(ctx->instance->_account);
@@ -681,17 +765,28 @@ void IMInvoker::send(void *userdata, const std::string event) {
 
 		PurpleBuddy* buddy = purple_buddy_new(ctx->instance->_account, buddyName.c_str(), NULL);
 		purple_blist_add_buddy(buddy, NULL, NULL, NULL);
+#if LIBPURPLE_VERSION_MAJOR >= 3
 		purple_account_add_buddy(ctx->instance->_account, buddy, reqMsg.c_str());
-
+#else
+		purple_account_add_buddy(ctx->instance->_account, buddy);
+#endif
+		
 	} else if (iequals(ctx->sendReq.name, "im.buddy.remove")) {
 		std::string buddyName;
 		Event::getParam(ctx->sendReq.params, "name", buddyName);
 
+#if LIBPURPLE_VERSION_MAJOR >= 3
 		PurpleBuddy* buddy = purple_blist_find_buddy(ctx->instance->_account, buddyName.c_str());
 		if (PURPLE_IS_BUDDY(buddy)) {
 			purple_account_remove_buddy(ctx->instance->_account, buddy, purple_buddy_get_group(buddy));
 			purple_blist_remove_buddy(buddy);
 		}
+#else
+		PurpleBuddy* buddy = purple_find_buddy(ctx->instance->_account, buddyName.c_str());
+		purple_account_remove_buddy(ctx->instance->_account, buddy, purple_buddy_get_group(buddy));
+		purple_blist_remove_buddy(buddy);
+
+#endif
 	}
 
 	delete(ctx);
@@ -725,7 +820,11 @@ void IMInvoker::invoke(void *userdata, const std::string event) {
 	instance->_account = purple_account_new(username.c_str(), protocolId.c_str());
 	_accountInstances[instance->_account] = instance;
 
+#if LIBPURPLE_VERSION_MAJOR >= 3
 	purple_account_set_password(instance->_account, password.c_str(), NULL, NULL);
+#else
+	purple_account_set_password(instance->_account, password.c_str());
+#endif
 	purple_account_set_enabled(instance->_account, "uscxml", true);
 
 	GSList* buddies = purple_blist_get_buddies();
@@ -903,7 +1002,11 @@ void* IMInvoker::accountRequestAuthorize(PurpleAccount *account,
         PurpleAccountRequestAuthorizationCb deny_cb,
         void *user_data) {
 	// always accept all "may I add you as a buddy?" requests
+#if LIBPURPLE_VERSION_MAJOR >= 3
 	authorize_cb(message, user_data);
+#else
+	authorize_cb(user_data);
+#endif
 	return user_data;
 }
 
@@ -1093,7 +1196,11 @@ void IMInvoker::purpleAddThumbnail(PurpleXfer *xfer, const gchar *formats) {
 }
 
 // notification operations
+#if LIBPURPLE_VERSION_MAJOR >= 3
 void* IMInvoker::purpeNotifyMessage(PurpleNotifyMsgType type, const char *title, const char *primary, const char *secondary, PurpleRequestCommonParameters *cpar) {
+#else
+void* IMInvoker::purpeNotifyMessage(PurpleNotifyMsgType type, const char *title, const char *primary, const char *secondary) {
+#endif
 	return NULL;
 }
 void* IMInvoker::purpeNotifyEmail(PurpleConnection *gc, const char *subject, const char *from, const char *to, const char *url) {
@@ -1125,6 +1232,8 @@ void IMInvoker::purpleDenyRemoved(PurpleAccount *account, const char *name) {}
 
 
 // request ui operations
+#if LIBPURPLE_VERSION_MAJOR >= 3
+
 void* IMInvoker::purpleRequestInput(const char *title, const char *primary,
                                     const char *secondary, const char *default_value,
                                     gboolean multiline, gboolean masked, gchar *hint,
@@ -1136,7 +1245,7 @@ void* IMInvoker::purpleRequestInput(const char *title, const char *primary,
 void* IMInvoker::purpleRequestChoice(const char *title, const char *primary,
                                      const char *secondary, gpointer default_value,
                                      const char *ok_text, GCallback ok_cb, const char *cancel_text,
-                                     GCallback cancel_cb, PurpleRequestCommonParameters *cpar,
+                                     GCallback cancel_cb , PurpleRequestCommonParameters *cpar,
                                      void *user_data, va_list choices) {
 	return NULL;
 }
@@ -1146,6 +1255,7 @@ void* IMInvoker::purpleRequestAction(const char *title, const char *primary,
                                      size_t action_count, va_list actions) {
 	return NULL;
 }
+
 void* IMInvoker::purpleRequestWait(const char *title, const char *primary,
                                    const char *secondary, gboolean with_progress,
                                    PurpleRequestCancelCb cancel_cb,
@@ -1154,8 +1264,8 @@ void* IMInvoker::purpleRequestWait(const char *title, const char *primary,
 }
 
 void IMInvoker::purpleRequestWaitUpdate(void *ui_handle, gboolean pulse, gfloat fraction) {
-
 }
+
 void* IMInvoker::purpleRequestFields(const char *title, const char *primary,
                                      const char *secondary, PurpleRequestFields *fields,
                                      const char *ok_text, GCallback ok_cb,
@@ -1182,14 +1292,82 @@ void* IMInvoker::purpleRequestFile(const char *title, const char *filename,
 }
 
 void* IMInvoker::purpleRequestFolder(const char *title, const char *dirname,
-                                     GCallback ok_cb, GCallback cancel_cb,
-                                     PurpleRequestCommonParameters *cpar, void *user_data) {
+                                     GCallback ok_cb, GCallback cancel_cb
+                                     , PurpleRequestCommonParameters *cpar, void *user_data) {
 	return NULL;
 }
 
 void IMInvoker::purpleRequestClose(PurpleRequestType type, void *ui_handle) {
 
 }
+#else
+
+void* IMInvoker::purpleRequestInput(const char *title, const char *primary,
+                                    const char *secondary, const char *default_value,
+                                    gboolean multiline, gboolean masked, gchar *hint,
+                                    const char *ok_text, GCallback ok_cb,
+                                    const char *cancel_text, GCallback cancel_cb,
+                                    PurpleAccount *account, const char *who,
+                                    PurpleConversation *conv, void *user_data) {
+	return NULL;
+}
+
+void* IMInvoker::purpleRequestChoice(const char *title, const char *primary,
+                                     const char *secondary, int default_value,
+                                     const char *ok_text, GCallback ok_cb,
+                                     const char *cancel_text, GCallback cancel_cb,
+                                     PurpleAccount *account, const char *who,
+                                     PurpleConversation *conv, void *user_data,
+                                     va_list choices) {
+	return NULL;
+}
+
+void* IMInvoker::purpleRequestAction(const char *title, const char *primary,
+                                     const char *secondary, int default_action,
+                                     PurpleAccount *account, const char *who,
+                                     PurpleConversation *conv, void *user_data,
+                                     size_t action_count, va_list actions) {
+	return NULL;
+}
+
+void* IMInvoker::purpleRequestFields(const char *title, const char *primary,
+                                     const char *secondary, PurpleRequestFields *fields,
+                                     const char *ok_text, GCallback ok_cb,
+                                     const char *cancel_text, GCallback cancel_cb,
+                                     PurpleAccount *account, const char *who,
+                                     PurpleConversation *conv, void *user_data) {
+	return NULL;
+}
+
+void* IMInvoker::purpleRequestFile(const char *title, const char *filename,
+                                   gboolean savedialog, GCallback ok_cb,
+                                   GCallback cancel_cb, PurpleAccount *account,
+                                   const char *who, PurpleConversation *conv,
+                                   void *user_data) {
+	return NULL;
+}
+
+void IMInvoker::purpleRequestClose(PurpleRequestType type, void *ui_handle) {
+}
+
+void* IMInvoker::purpleRequestFolder(const char *title, const char *dirname,
+                                     GCallback ok_cb, GCallback cancel_cb,
+                                     PurpleAccount *account, const char *who,
+                                     PurpleConversation *conv, void *user_data) {
+	return NULL;
+}
+
+void* IMInvoker::purpleRequestActionWithIcon(const char *title, const char *primary,
+        const char *secondary, int default_action,
+        PurpleAccount *account, const char *who,
+        PurpleConversation *conv,
+        gconstpointer icon_data, gsize icon_size,
+        void *user_data,
+        size_t action_count, va_list actions) {
+	return NULL;
+}
+
+#endif
 
 
 // connection ui operations
@@ -1199,8 +1377,13 @@ void IMInvoker::purpleDisonnected(PurpleConnection *gc) {}
 void IMInvoker::purpleNotice(PurpleConnection *gc, const char *text) {}
 void IMInvoker::purpleNetworkConnected(void) {}
 void IMInvoker::purpleNetworkDisconnected(void) {}
-void IMInvoker::purpleReportDisconnect(PurpleConnection *gc, PurpleConnectionError reason, const char *text) {}
 
+#if LIBPURPLE_VERSION_MAJOR >= 3
+void IMInvoker::purpleReportDisconnect(PurpleConnection *gc, PurpleConnectionError reason, const char *text) {
+#else
+void IMInvoker::purpleReportDisconnect(PurpleConnection *gc, const char *text) {
+#endif
+}
 // whiteboard ui operations
 void IMInvoker::purpleCreateWB(PurpleWhiteboard *wb) {}
 void IMInvoker::purpleDestroyWB(PurpleWhiteboard *wb) {}

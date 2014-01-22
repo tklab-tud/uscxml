@@ -73,21 +73,39 @@ inline bool equals(const std::string& a, const std::string& b) {
 inline std::string unescape(const std::string& a) {
 	std::stringstream b;
 	// see http://en.cppreference.com/w/cpp/language/escape
-	
+
 	std::string::const_iterator it = a.begin();
 	while (it != a.end()) {
 		char c = *it++;
 		if (c == '\\' && it != a.end()) {
 			switch (*it++) {
-				case '\\': c = '\\'; break;
-				case '0': c = '\0'; break;
-				case 'a': c = '\a'; break;
-				case 'b': c = '\b'; break;
-				case 'f': c = '\f'; break;
-				case 'n': c = '\n'; break;
-				case 'r': c = '\r'; break;
-				case 't': c = '\t'; break;
-				case 'v': c = '\v'; break;
+			case '\\':
+				c = '\\';
+				break;
+			case '0':
+				c = '\0';
+				break;
+			case 'a':
+				c = '\a';
+				break;
+			case 'b':
+				c = '\b';
+				break;
+			case 'f':
+				c = '\f';
+				break;
+			case 'n':
+				c = '\n';
+				break;
+			case 'r':
+				c = '\r';
+				break;
+			case 't':
+				c = '\t';
+				break;
+			case 'v':
+				c = '\v';
+				break;
 			}
 		}
 		b << c;
@@ -95,7 +113,7 @@ inline std::string unescape(const std::string& a) {
 
 	return b.str();
 }
-	
+
 // see http://www.cplusplus.com/forum/general/27544/
 
 // Little-endian operating systems:

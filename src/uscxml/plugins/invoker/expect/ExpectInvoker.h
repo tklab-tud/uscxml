@@ -57,14 +57,14 @@ public:
 	virtual void invoke(const InvokeRequest& req);
 
 protected:
-	
+
 	static void send(void *userdata, const std::string event);
 	static void invoke(void *userdata, const std::string event);
 
 	static Tcl_Interp* _tcl;
 	FILE* _cmdFP;
 	int _cmdFD;
-	
+
 	DelayedEventQueue* _eventQueue;
 
 };

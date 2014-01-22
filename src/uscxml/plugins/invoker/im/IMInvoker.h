@@ -28,6 +28,18 @@ extern "C" {
 
 #include "uscxml/IMConfig.h"
 
+#if LIBPURPLE_VERSION_MAJOR < 3
+#define PURPLE_STATUS_GET_TYPE purple_status_get_type
+#define PURPLE_STATUS_ATTR_GET_ID purple_status_attr_get_id
+#define PURPLE_STATUS_ATTR PurpleStatusAttr
+#define PURPLE_VALUE PurpleValue
+#else
+#define PURPLE_STATUS_GET_TYPE purple_status_get_status_type
+#define PURPLE_STATUS_ATTR_GET_ID purple_status_attribute_get_id
+#define PURPLE_STATUS_ATTR PurpleStatusAttribute
+#define PURPLE_VALUE GValue
+#endif
+
 #ifdef BUILD_AS_PLUGINS
 #include "uscxml/plugins/Plugins.h"
 #endif
@@ -81,7 +93,7 @@ private:
 
 	static Data buddyToData(PurpleBuddy *buddy);
 	static Data statusToData(PurpleStatus *status);
-	static Data purpleValueToData(GValue* value);
+	static Data purpleValueToData(PURPLE_VALUE* value);
 
 	static PurpleAccountUiOps _uiAccountOps;
 	static PurpleEventLoopUiOps _uiEventLoopOps;
@@ -90,13 +102,18 @@ private:
 	static PurpleBlistUiOps _uiBuddyOps;
 	static PurpleXferUiOps _uiXferOps;
 	static PurpleNotifyUiOps _uiNotifyOps;
-//	static PurplePrivacyUiOps _uiPrivacyOps;
+#if LIBPURPLE_VERSION_MAJOR < 3
+	static PurplePrivacyUiOps _uiPrivacyOps;
+#endif
 	static PurpleRequestUiOps _uiRequestOps;
 	static PurpleConnectionUiOps _uiConnectOps;
 	static PurpleWhiteboardUiOps _uiWhiteboardOps;
 	static PurpleDebugUiOps _uiDebugOps;
 
+#if LIBPURPLE_VERSION_MAJOR >= 3
 	static PurpleRequestFeature _features;
+#endif
+
 	static GHashTable* _uiInfo;
 	static GRand* _gRand;
 
@@ -205,7 +222,11 @@ private:
 	static void purpleAddThumbnail(PurpleXfer *xfer, const gchar *formats);
 
 	// notification operations
-	static void* purpeNotifyMessage(PurpleNotifyMsgType type, const char *title, const char *primary, const char *secondary, PurpleRequestCommonParameters *cpar);
+#if LIBPURPLE_VERSION_MAJOR >= 3
+	static void* purpeNotifyMessage(PurpleNotifyMsgType type, const char *title, const char *primary, const char *secondary , PurpleRequestCommonParameters *cpar);
+#else
+	static void* purpeNotifyMessage(PurpleNotifyMsgType type, const char *title, const char *primary, const char *secondary);
+#endif
 	static void* purpeNotifyEmail(PurpleConnection *gc, const char *subject, const char *from, const char *to, const char *url);
 	static void* purpeNotifyEmails(PurpleConnection *gc, size_t count, gboolean detailed, const char **subjects, const char **froms, const char **tos, const char **urls);
 	static void* purpeNotifyFormatted(const char *title, const char *primary, const char *secondary, const char *text);
@@ -229,6 +250,8 @@ private:
 	static void purpleDenyRemoved(PurpleAccount *account, const char *name);
 
 	// request ui operations
+#if LIBPURPLE_VERSION_MAJOR >= 3
+
 	static void* purpleRequestInput(const char *title, const char *primary,
 	                                const char *secondary, const char *default_value,
 	                                gboolean multiline, gboolean masked, gchar *hint,
@@ -238,7 +261,7 @@ private:
 	static void* purpleRequestChoice(const char *title, const char *primary,
 	                                 const char *secondary, gpointer default_value,
 	                                 const char *ok_text, GCallback ok_cb, const char *cancel_text,
-	                                 GCallback cancel_cb, PurpleRequestCommonParameters *cpar,
+	                                 GCallback cancel_cb , PurpleRequestCommonParameters *cpar,
 	                                 void *user_data, va_list choices);
 	static void* purpleRequestAction(const char *title, const char *primary,
 	                                 const char *secondary, int default_action,
@@ -250,6 +273,7 @@ private:
 	                               PurpleRequestCommonParameters *cpar, void *user_data);
 
 	static void purpleRequestWaitUpdate(void *ui_handle, gboolean pulse, gfloat fraction);
+
 	static void* purpleRequestFields(const char *title, const char *primary,
 	                                 const char *secondary, PurpleRequestFields *fields,
 	                                 const char *ok_text, GCallback ok_cb,
@@ -262,6 +286,59 @@ private:
 	                                 GCallback ok_cb, GCallback cancel_cb,
 	                                 PurpleRequestCommonParameters *cpar, void *user_data);
 	static void purpleRequestClose(PurpleRequestType type, void *ui_handle);
+#else
+
+	static void* purpleRequestInput(const char *title, const char *primary,
+	                                const char *secondary, const char *default_value,
+	                                gboolean multiline, gboolean masked, gchar *hint,
+	                                const char *ok_text, GCallback ok_cb,
+	                                const char *cancel_text, GCallback cancel_cb,
+	                                PurpleAccount *account, const char *who,
+	                                PurpleConversation *conv, void *user_data);
+
+	static void* purpleRequestChoice(const char *title, const char *primary,
+	                                 const char *secondary, int default_value,
+	                                 const char *ok_text, GCallback ok_cb,
+	                                 const char *cancel_text, GCallback cancel_cb,
+	                                 PurpleAccount *account, const char *who,
+	                                 PurpleConversation *conv, void *user_data,
+	                                 va_list choices);
+
+	static void* purpleRequestAction(const char *title, const char *primary,
+	                                 const char *secondary, int default_action,
+	                                 PurpleAccount *account, const char *who,
+	                                 PurpleConversation *conv, void *user_data,
+	                                 size_t action_count, va_list actions);
+
+	static void* purpleRequestFields(const char *title, const char *primary,
+	                                 const char *secondary, PurpleRequestFields *fields,
+	                                 const char *ok_text, GCallback ok_cb,
+	                                 const char *cancel_text, GCallback cancel_cb,
+	                                 PurpleAccount *account, const char *who,
+	                                 PurpleConversation *conv, void *user_data);
+
+	static void* purpleRequestFile(const char *title, const char *filename,
+	                               gboolean savedialog, GCallback ok_cb,
+	                               GCallback cancel_cb, PurpleAccount *account,
+	                               const char *who, PurpleConversation *conv,
+	                               void *user_data);
+
+	static void purpleRequestClose(PurpleRequestType type, void *ui_handle);
+
+	static void* purpleRequestFolder(const char *title, const char *dirname,
+	                                 GCallback ok_cb, GCallback cancel_cb,
+	                                 PurpleAccount *account, const char *who,
+	                                 PurpleConversation *conv, void *user_data);
+
+	static void* purpleRequestActionWithIcon(const char *title, const char *primary,
+	        const char *secondary, int default_action,
+	        PurpleAccount *account, const char *who,
+	        PurpleConversation *conv,
+	        gconstpointer icon_data, gsize icon_size,
+	        void *user_data,
+	        size_t action_count, va_list actions);
+
+#endif
 
 
 	// connection ui operations
@@ -271,8 +348,11 @@ private:
 	static void purpleNotice(PurpleConnection *gc, const char *text);
 	static void purpleNetworkConnected(void);
 	static void purpleNetworkDisconnected(void);
+#if LIBPURPLE_VERSION_MAJOR >= 3
 	static void purpleReportDisconnect(PurpleConnection *gc, PurpleConnectionError reason, const char *text);
-
+#else
+	static void purpleReportDisconnect(PurpleConnection *gc, const char *text);
+#endif
 
 	// whiteboard ui operations
 	static void purpleCreateWB(PurpleWhiteboard *wb);

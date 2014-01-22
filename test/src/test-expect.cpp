@@ -10,19 +10,19 @@ int main(int argc, char** argv) {
 	Tcl_FindExecutable(argv[0]);
 
 	if (Tcl_Init(interp) == TCL_ERROR) {
-	    fprintf(stderr,"Tcl_Init failed: %s\n",Tcl_GetStringResult (interp));
-	    (void) exit(1);
+		fprintf(stderr,"Tcl_Init failed: %s\n",Tcl_GetStringResult (interp));
+		(void) exit(1);
 	}
 
 	if (Expect_Init(interp) == TCL_ERROR) {
-	    fprintf(stderr,"Expect_Init failed: %s\n",Tcl_GetStringResult (interp));
-	    (void) exit(1);
+		fprintf(stderr,"Expect_Init failed: %s\n",Tcl_GetStringResult (interp));
+		(void) exit(1);
 	}
-  
+
 	exp_loguser = 1;
 	exp_is_debugging = 1;
 	exp_timeout = 3;
-	
+
 	FILE *fp;
 	int ec;
 //	char* program = "/usr/bin/telnet localhost 80";
@@ -39,20 +39,20 @@ int main(int argc, char** argv) {
 	setbuf(fp,(char *)0);
 
 	switch (exp_fexpectl(fp,
-											 exp_glob, "qConnected to", 1,
-											 exp_glob, "qConnection failed", 2,
-											 exp_end)) {
-		case 1:
-			printf("SUCCESS!");
-			fprintf(fp, "%s\r", "GET /");
+	                     exp_glob, "qConnected to", 1,
+	                     exp_glob, "qConnection failed", 2,
+	                     exp_end)) {
+	case 1:
+		printf("SUCCESS!");
+		fprintf(fp, "%s\r", "GET /");
 
-			break;
-		case 2:
-			printf("FAIL!");
-			break;
-			
-		default:
-			break;
+		break;
+	case 2:
+		printf("FAIL!");
+		break;
+
+	default:
+		break;
 	}
-  exit(EXIT_SUCCESS);
+	exit(EXIT_SUCCESS);
 }

@@ -125,13 +125,13 @@ public:
 			return false;
 		if (other.node != node)
 			return false;
-		
+
 		return true;
-  }
+	}
 
 	bool operator!=(const Data &other) const {
-    return !(*this == other);
-  }
+		return !(*this == other);
+	}
 
 	operator std::string() const {
 		return atom;

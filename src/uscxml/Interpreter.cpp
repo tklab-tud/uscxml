@@ -1132,12 +1132,12 @@ void InterpreterImpl::invoke(const Arabica::DOM::Node<std::string>& element) {
 				LOG(INFO) << "Added invoker " << invokeReq.type << " at " << invokeReq.invokeid;
 				try {
 					invoker.invoke(invokeReq);
-					
+
 					// this is out of draft but so useful to know when an invoker started
 					Event invSuccess;
 					invSuccess.name = "invoke.success." + invokeReq.invokeid;
 					receive(invSuccess);
-					
+
 				} catch(boost::bad_lexical_cast e) {
 					LOG(ERROR) << "Exception caught while sending invoke request to invoker " << invokeReq.invokeid << ": " << e.what();
 				} catch(...) {
