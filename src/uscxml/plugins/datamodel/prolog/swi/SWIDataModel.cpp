@@ -351,8 +351,21 @@ void SWIDataModel::assertFromData(const Data& data, const std::string& expr, siz
 	if (data.compound.size() > 0) {
 		std::map<std::string, Data>::const_iterator compIter = data.compound.begin();
 		while(compIter != data.compound.end()) {
-			assert(compIter->first.length() > 0);
-			assertFromData(compIter->second, expr + compIter->first + "(", nesting + 1);
+//			std::cout << compIter->first << std::endl;
+			std::stringstream prefix;
+			size_t prefixNesting = 0;
+			size_t oldPos = 0;
+			size_t pos = 0;
+			while((pos = compIter->first.find_first_of(",.(-", oldPos)) != std::string::npos) {
+				prefix << compIter->first.substr(oldPos, pos - oldPos) << "(";
+				prefixNesting++;
+				oldPos = pos + 1;
+			}
+			if (oldPos != compIter->first.size()) {
+				prefix << compIter->first.substr(oldPos, compIter->first.size() - oldPos) << "(";
+				prefixNesting++;
+			}
+			assertFromData(compIter->second, expr + prefix.str(), nesting + prefixNesting);
 			compIter++;
 		}
 	}
