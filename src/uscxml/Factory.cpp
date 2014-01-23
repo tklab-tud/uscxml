@@ -40,6 +40,7 @@
 # include "uscxml/plugins/invoker/system/SystemInvoker.h"
 # include "uscxml/plugins/invoker/xhtml/XHTMLInvoker.h"
 # include "uscxml/plugins/invoker/smtp/SMTPInvoker.h"
+# include "uscxml/plugins/invoker/imap/IMAPInvoker.h"
 
 
 #ifdef PROTOBUF_FOUND
@@ -280,6 +281,10 @@ Factory::Factory() {
 	}
 	{
 		SMTPInvoker* invoker = new SMTPInvoker();
+		registerInvoker(invoker);
+	}
+	{
+		IMAPInvoker* invoker = new IMAPInvoker();
 		registerInvoker(invoker);
 	}
 	{

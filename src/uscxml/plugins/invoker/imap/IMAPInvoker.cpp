@@ -53,307 +53,432 @@ Data IMAPInvoker::getDataModelVariables() {
 	return data;
 }
 
+void IMAPInvoker::run(void* instance) {
+	IMAPInvoker* INSTANCE = (IMAPInvoker*)instance;
+	while(true) {
+		IMAPContext* req = INSTANCE->_workQueue.pop();
+		if (INSTANCE->_isRunning) {
+			INSTANCE->process(req);
+		} else {
+			return;
+		}
+	}
+}
+
 size_t IMAPInvoker::writeCurlData(void *ptr, size_t size, size_t nmemb, void *userdata) {
 	if (!userdata)
 		return 0;
 
 	IMAPContext* ctx = (IMAPContext*)userdata;
 
-	size_t toWrite = std::min(ctx->content.length() - ctx->readPtr, size * nmemb);
+	size_t toWrite = std::min(ctx->outContent.length() - ctx->readPtr, size * nmemb);
 	if (toWrite > 0) {
-		memcpy (ptr, ctx->content.c_str() + ctx->readPtr, toWrite);
+		memcpy (ptr, ctx->outContent.c_str() + ctx->readPtr, toWrite);
 		ctx->readPtr += toWrite;
 	}
 
 	return toWrite;
 }
 
-std::list<std::string> IMAPInvoker::getAtoms(std::list<Data> list) {
-	std::list<std::string> atoms;
-
-	std::list<Data>::const_iterator iter = list.begin();
-	while(iter != list.end()) {
-		const Data& data = *iter;
-		if (data.atom.size() > 0) {
-			atoms.push_back(data.atom);
-		} else if (data.array.size() > 0) {
-			std::list<Data>::const_iterator arrIter = data.array.begin();
-			while(arrIter != data.array.end()) {
-				if (arrIter->atom.size() > 0) {
-					atoms.push_back(arrIter->atom);
-					arrIter++;
-				}
-			}
-		}
-		iter++;
-	}
-	return atoms;
+size_t IMAPInvoker::readCurlData(void *ptr, size_t size, size_t nmemb, void *userdata) {
+	if (!userdata)
+		return 0;
+	
+	IMAPContext* ctx = (IMAPContext*)userdata;
+	ctx->inContent << std::string((char*)ptr, size * nmemb);
+	
+	return size * nmemb;
 }
 
-void IMAPInvoker::getAttachments(std::list<Data> list, std::list<Data>& attachments) {
-	// accumulate attachments with filename, mimetype and data
-	std::list<Data>::const_iterator iter = list.begin();
-	while(iter != list.end()) {
-		const Data& data = *iter;
-		if (data.hasKey("data")) {
-			// compound structure with all information
-			Data att = data;
-
-			if (!att.hasKey("mimetype")) {
-				if (att["data"].binary && att["data"].binary->mimeType.size() > 0) {
-					att.compound["mimetype"] = Data(att["data"].binary->mimeType, Data::VERBATIM);
-				} else {
-					att.compound["mimetype"] = Data("text/plain", Data::VERBATIM);
-				}
-			}
-
-			if (!att.hasKey("filename")) {
-				std::stringstream filenameSS;
-				filenameSS << "attachment" << attachments.size() + 1;
-				if (boost::starts_with(att.compound["mimetype"].atom, "text")) {
-					filenameSS << ".txt";
-				} else {
-					filenameSS << ".bin";
-				}
-				att.compound["filename"] = Data(filenameSS.str(), Data::VERBATIM);
-			}
-
-			attachments.push_back(att);
-
-		} else if (data.binary) {
-			// a single binary blob
-			Data att;
-
-			att.compound["data"].binary = data.binary;
-
-			if (data.binary->mimeType.size() > 0) {
-				att.compound["mimetype"] = Data(attachments.back()["data"].binary->mimeType, Data::VERBATIM);
-			} else {
-				att.compound["mimetype"] = Data("application/octet-stream", Data::VERBATIM);
-			}
-
-			std::stringstream filenameSS;
-			filenameSS << "attachment" << attachments.size() + 1;
-			if (boost::starts_with(att.compound["mimetype"].atom, "text")) {
-				filenameSS << ".txt";
-			} else {
-				filenameSS << ".bin";
-			}
-			att.compound["filename"] = Data(filenameSS.str(), Data::VERBATIM);
-
-			attachments.push_back(att);
-
-		} else if (data.compound.size() > 0) {
-			// data is some compound, descent to find attachment structures or binaries
-			std::map<std::string, Data>::const_iterator compIter = data.compound.begin();
-			while(compIter != data.compound.end()) {
-				std::list<Data> tmp;
-				tmp.push_back(compIter->second);
-				getAttachments(tmp, attachments);
-				compIter++;
-			}
-		} else if (data.array.size() > 0) {
-			// descent into array
-			getAttachments(data.array, attachments);
-		}
-		iter++;
-	}
-}
-
+	
 void IMAPInvoker::send(const SendRequest& req) {
-	if (iequals(req.name, "mail.send")) {
+	IMAPContext* ctx = NULL;
+	
+	if (false) {
+	} else if (iequals(req.name, "select")) {
+		IMAPContext::Select* args = new IMAPContext::Select();
+		Event::getParam(req.params, "mailbox", args->mailbox);
+		
+		ctx = new IMAPContext();
+		ctx->command = IMAPContext::SELECT;
+		ctx->arguments = args;
 
-		struct curl_slist* recipients = NULL;
-		CURLcode curlError;
-		std::string multipartSep;
+	} else if (iequals(req.name, "examine")) {
+		IMAPContext::Examine* args = new IMAPContext::Examine();
+		Event::getParam(req.params, "mailbox", args->mailbox);
+		
+		ctx = new IMAPContext();
+		ctx->command = IMAPContext::EXAMINE;
+		ctx->arguments = args;
 
-		bool verbose;
-		bool useSSL;
-		std::string from;
-		std::string subject;
-		std::string contentType;
-		std::list<Data> headerParams;
-		std::list<Data> toParams;
-		std::list<Data> ccParams;
-		std::list<Data> bccParams;
-		std::list<Data> attachmentParams;
+	} else if (iequals(req.name, "delete")) {
+		IMAPContext::Delete* args = new IMAPContext::Delete();
+		Event::getParam(req.params, "mailbox", args->mailbox);
+		
+		ctx = new IMAPContext();
+		ctx->command = IMAPContext::DELETE;
+		ctx->arguments = args;
 
-		Event::getParam(req.params, "verbose", verbose);
-		Event::getParam(req.params, "ssl", useSSL);
-		Event::getParam(req.params, "Content-Type", contentType);
-		Event::getParam(req.params, "attachment", attachmentParams);
-		Event::getParam(req.params, "from", from);
-		Event::getParam(req.params, "subject", subject);
-		Event::getParam(req.params, "header", headerParams);
-		Event::getParam(req.params, "to", toParams);
-		Event::getParam(req.params, "cc", ccParams);
-		Event::getParam(req.params, "bcc", bccParams);
+	} else if (iequals(req.name, "rename")) {
+		IMAPContext::Rename* args = new IMAPContext::Rename();
+		Event::getParam(req.params, "mailbox", args->mailbox);
+		Event::getParam(req.params, "name", args->newName);
+		
+		ctx = new IMAPContext();
+		ctx->command = IMAPContext::RENAME;
+		ctx->arguments = args;
 
-		if (contentType.size() == 0)
-			contentType = "text/plain; charset=\"UTF-8\"";
+	} else if (iequals(req.name, "subscribe")) {
+		IMAPContext::Subscribe* args = new IMAPContext::Subscribe();
+		Event::getParam(req.params, "mailbox", args->mailbox);
+		
+		ctx = new IMAPContext();
+		ctx->command = IMAPContext::SUBSCRIBE;
+		ctx->arguments = args;
 
-		IMAPContext* ctx = new IMAPContext();
-		std::stringstream contentSS;
+	} else if (iequals(req.name, "unsubscribe")) {
+		IMAPContext::Unsubscribe* args = new IMAPContext::Unsubscribe();
+		Event::getParam(req.params, "mailbox", args->mailbox);
+		
+		ctx = new IMAPContext();
+		ctx->command = IMAPContext::UNSUBSCRIBE;
+		ctx->arguments = args;
 
-		std::list<std::string>::const_iterator recIter;
-		std::list<std::string> to = getAtoms(toParams);
-		std::list<std::string> cc = getAtoms(ccParams);
-		std::list<std::string> bcc = getAtoms(bccParams);
-		std::list<std::string> headers = getAtoms(headerParams);
-		std::list<Data> attachments;
-		getAttachments(attachmentParams, attachments);
+	} else if (iequals(req.name, "list")) {
+		IMAPContext::List* args = new IMAPContext::List();
+		Event::getParam(req.params, "mailbox", args->mailbox);
+		Event::getParam(req.params, "reference", args->refName);
+		
+		ctx = new IMAPContext();
+		ctx->command = IMAPContext::LIST;
+		ctx->arguments = args;
 
-		if (to.size() == 0)
-			return;
+	} else if (iequals(req.name, "lsub")) {
+		IMAPContext::LSub* args = new IMAPContext::LSub();
+		Event::getParam(req.params, "mailbox", args->mailbox);
+		Event::getParam(req.params, "reference", args->refName);
+		
+		ctx = new IMAPContext();
+		ctx->command = IMAPContext::LSUB;
+		ctx->arguments = args;
 
-		recIter = to.begin();
-		recIter++; // skip first as we need it in CURLOPT_MAIL_RCPT
-		while(recIter != to.end()) {
-			contentSS << "TO: " << *recIter << std::endl;
-			recIter++;
+	} else if (iequals(req.name, "status")) {
+		IMAPContext::Status* args = new IMAPContext::Status();
+		Event::getParam(req.params, "mailbox", args->mailbox);
+		Event::getParam(req.params, "dataitems", args->dataItems);
+		
+		ctx = new IMAPContext();
+		ctx->command = IMAPContext::STATUS;
+		ctx->arguments = args;
+
+	} else if (iequals(req.name, "append")) {
+		IMAPContext::Append* args = new IMAPContext::Append();
+		Event::getParam(req.params, "mailbox", args->mailbox);
+		Event::getParam(req.params, "flags", args->flags);
+		Event::getParam(req.params, "datetime", args->dateTime);
+
+		if (!Event::getParam(req.params, "message", args->literal)) {
+			args->literal = req.content;
 		}
-		recIter = cc.begin();
-		while(recIter != cc.end()) {
-			contentSS << "CC: " << *recIter << std::endl;
-			recIter++;
-		}
-		recIter = bcc.begin();
-		while(recIter != bcc.end()) {
-			contentSS << "BCC: " << *recIter << std::endl;
-			recIter++;
-		}
+		
+		ctx = new IMAPContext();
+		ctx->command = IMAPContext::APPEND;
+		ctx->arguments = args;
 
-		recIter = headers.begin();
-		while(recIter != headers.end()) {
-			contentSS << *recIter << std::endl;
-			recIter++;
-		}
+	} else if (iequals(req.name, "check")) {
+		IMAPContext::Check* args = new IMAPContext::Check();
+		
+		ctx = new IMAPContext();
+		ctx->command = IMAPContext::CHECK;
+		ctx->arguments = args;
 
-		if (subject.length() > 0) {
-			boost::replace_all(subject, "\n\r", " ");
-			boost::replace_all(subject, "\r\n", " ");
-			boost::replace_all(subject, "\n", " ");
-			boost::replace_all(subject, "\r", " ");
-			contentSS << "Subject: " << subject << "\n";
-		}
+	} else if (iequals(req.name, "close")) {
+		IMAPContext::Close* args = new IMAPContext::Close();
+		
+		ctx = new IMAPContext();
+		ctx->command = IMAPContext::CLOSE;
+		ctx->arguments = args;
+		
+	} else if (iequals(req.name, "expunge")) {
+		IMAPContext::Expunge* args = new IMAPContext::Expunge();
+		
+		ctx = new IMAPContext();
+		ctx->command = IMAPContext::EXPUNGE;
+		ctx->arguments = args;
+		
+	} else if (iequals(req.name, "search")) {
+		IMAPContext::Search* args = new IMAPContext::Search();
+		Event::getParam(req.params, "charset", args->charSet);
+		Event::getParam(req.params, "criteria", args->criteria);
+		
+		ctx = new IMAPContext();
+		ctx->command = IMAPContext::SEARCH;
+		ctx->arguments = args;
+		
+	} else if (iequals(req.name, "fetch")) {
+		IMAPContext::Fetch* args = new IMAPContext::Fetch();
+		Event::getParam(req.params, "sequence", args->sequence);
+		Event::getParam(req.params, "itemnames", args->itemNames);
+		
+		ctx = new IMAPContext();
+		ctx->command = IMAPContext::FETCH;
+		ctx->arguments = args;
+		
+	} else if (iequals(req.name, "store")) {
+		IMAPContext::Store* args = new IMAPContext::Store();
+		Event::getParam(req.params, "sequence", args->sequence);
+		Event::getParam(req.params, "itemnames", args->itemNames);
+		Event::getParam(req.params, "values", args->values);
+		
+		ctx = new IMAPContext();
+		ctx->command = IMAPContext::STORE;
+		ctx->arguments = args;
+		
+	} else if (iequals(req.name, "copy")) {
+		IMAPContext::Copy* args = new IMAPContext::Copy();
+		Event::getParam(req.params, "mailbox", args->mailbox);
+		Event::getParam(req.params, "sequence", args->sequence);
+		
+		ctx = new IMAPContext();
+		ctx->command = IMAPContext::COPY;
+		ctx->arguments = args;
+		
+	} else if (iequals(req.name, "uid")) {
+		IMAPContext::UId* args = new IMAPContext::UId();
+		Event::getParam(req.params, "command", args->command);
+		Event::getParam(req.params, "arguments", args->arguments);
+		
+		ctx = new IMAPContext();
+		ctx->command = IMAPContext::UID;
+		ctx->arguments = args;
+		
+	} else if (boost::istarts_with(req.name, "x")) {
+		IMAPContext::XExtension* args = new IMAPContext::XExtension();
+		args->command = req.name;
+		Event::getParam(req.params, "arguments", args->arguments);
+		
+		ctx = new IMAPContext();
+		ctx->command = IMAPContext::XEXTENSION;
+		ctx->arguments = args;
+		
+	}
+	
+	if (ctx == NULL) {
+		returnErrorExecution("Event '" + req.name + "' not known");
+		return;
+	}
+	
+	Event::getParam(req.params, "verbose", ctx->verbose);
+	Event::getParam(req.params, "ssl", ctx->useSSL);
 
-		// content type is different when we have attachments
-		if (attachments.size() > 0) {
-			multipartSep = UUID::getUUID();
-			boost::replace_all(multipartSep, "-", "");
-			contentSS << "Content-Type: multipart/mixed; boundary=\"" << multipartSep << "\"\n";
-			contentSS << "MIME-Version: 1.0\n";
-			contentSS << "\n";
-			contentSS << "--" << multipartSep << "\n";
-			contentSS << "Content-Type: " << contentType << "\n";
-		} else {
-			// when we have no attachment, respect user-defined or use text/plain
-			contentSS << "Content-Type: " << contentType << "\n";
-		}
+	ctx->invoker = this;
+	ctx->sendReq = req;
+	
+	_workQueue.push(ctx);
+}
 
-		contentSS << "\n";
-		contentSS << req.content;
-
-		std::list<Data>::iterator attIter = attachments.begin();
-		while(attIter != attachments.end()) {
-			// only send valid attachments
-			if(!attIter->hasKey("filename") || !attIter->hasKey("mimetype") || !attIter->hasKey("data")) {
-				LOG(ERROR) << "Not sending attachment as filename, mimetype or data is missing: " << *attIter;
-			} else {
-				contentSS << "\n\n";
-				contentSS << "--" << multipartSep << "\n";
-				contentSS << "Content-Disposition: attachment; filename=\"" << attIter->compound["filename"].atom << "\"";
-				contentSS << "\n";
-
-				contentSS << "Content-Type: " << attIter->compound["mimetype"].atom << "; ";
-				contentSS << "name=\"" << attIter->compound["filename"].atom << "\"";
-				contentSS << "\n";
-
-				if (attIter->compound["data"].binary) {
-					contentSS << "Content-Transfer-Encoding: base64";
-					contentSS << "\n\n";
-					contentSS << attIter->compound["data"].binary->base64();
-				} else {
-					contentSS << "Content-Transfer-Encoding: 7Bit";
-					contentSS << "\n\n";
-					contentSS << attIter->compound["data"].atom;
-				}
-			}
-			attIter++;
-		}
-
-		ctx->content = contentSS.str();
-		ctx->invoker = this;
-
-
-		// see http://curl.haxx.se/libcurl/c/imap-tls.html
-		_curl = curl_easy_init();
-		if(_curl) {
-			(curlError = curl_easy_setopt(_curl, CURLOPT_USERNAME, _username.c_str())) == CURLE_OK ||
-			LOG(ERROR) << "Cannot set username: " << curl_easy_strerror(curlError);
-			(curlError = curl_easy_setopt(_curl, CURLOPT_PASSWORD, _password.c_str())) == CURLE_OK ||
-			LOG(ERROR) << "Cannot set password: " << curl_easy_strerror(curlError);
-			(curlError = curl_easy_setopt(_curl, CURLOPT_URL, _server.c_str())) == CURLE_OK ||
-			LOG(ERROR) << "Cannot set server string: " << curl_easy_strerror(curlError);
-
-			if (useSSL) {
-				(curlError = curl_easy_setopt(_curl, CURLOPT_USE_SSL, (long)CURLUSESSL_ALL)) == CURLE_OK ||
-				LOG(ERROR) << "Cannot use SSL: " << curl_easy_strerror(curlError);
+void IMAPInvoker::process(IMAPContext* ctx) {
+	CURL* _curl;
+	CURLcode curlError;
+	
+	// see http://curl.haxx.se/libcurl/c/imap-tls.html
+	_curl = curl_easy_init();
+	if(_curl) {
+		(curlError = curl_easy_setopt(_curl, CURLOPT_USERNAME, _username.c_str())) == CURLE_OK ||
+		LOG(ERROR) << "Cannot set username: " << curl_easy_strerror(curlError);
+		(curlError = curl_easy_setopt(_curl, CURLOPT_PASSWORD, _password.c_str())) == CURLE_OK ||
+		LOG(ERROR) << "Cannot set password: " << curl_easy_strerror(curlError);
+		(curlError = curl_easy_setopt(_curl, CURLOPT_URL, _server.c_str())) == CURLE_OK ||
+		LOG(ERROR) << "Cannot set server string: " << curl_easy_strerror(curlError);
+		
+		if (ctx->useSSL) {
+			(curlError = curl_easy_setopt(_curl, CURLOPT_USE_SSL, (long)CURLUSESSL_ALL)) == CURLE_OK ||
+			LOG(ERROR) << "Cannot use SSL: " << curl_easy_strerror(curlError);
 #if 1
-				(curlError = curl_easy_setopt(_curl, CURLOPT_SSL_VERIFYPEER, 0L)) == CURLE_OK ||
-				LOG(ERROR) << "Cannot unset verify peer with SSL: " << curl_easy_strerror(curlError);
-				(curlError = curl_easy_setopt(_curl, CURLOPT_SSL_VERIFYHOST, 0L)) == CURLE_OK ||
-				LOG(ERROR) << "Cannot unset verify host with SSL: " << curl_easy_strerror(curlError);
+			(curlError = curl_easy_setopt(_curl, CURLOPT_SSL_VERIFYPEER, 0L)) == CURLE_OK ||
+			LOG(ERROR) << "Cannot unset verify peer with SSL: " << curl_easy_strerror(curlError);
+			(curlError = curl_easy_setopt(_curl, CURLOPT_SSL_VERIFYHOST, 0L)) == CURLE_OK ||
+			LOG(ERROR) << "Cannot unset verify host with SSL: " << curl_easy_strerror(curlError);
 #else
-				(curlError = curl_easy_setopt(_curl, CURLOPT_CAINFO, "/path/to/certificate.pem")) == CURLE_OK ||
-				LOG(ERROR) << "Cannot set CA info path: " << curl_easy_strerror(curlError);
+			(curlError = curl_easy_setopt(_curl, CURLOPT_CAINFO, "/path/to/certificate.pem")) == CURLE_OK ||
+			LOG(ERROR) << "Cannot set CA info path: " << curl_easy_strerror(curlError);
 #endif
-
-			}
-
-			// this is needed, even if we have a callback function
-			recipients = curl_slist_append(recipients, to.begin()->c_str());
-			(curlError = curl_easy_setopt(_curl, CURLOPT_MAIL_RCPT, recipients)) == CURLE_OK ||
-			LOG(ERROR) << "Cannot set mail recipient: " << curl_easy_strerror(curlError);
-
-			(curlError = curl_easy_setopt(_curl, CURLOPT_READFUNCTION, IMAPInvoker::writeCurlData)) == CURLE_OK ||
-			LOG(ERROR) << "Cannot register read function: " << curl_easy_strerror(curlError);
-			(curlError = curl_easy_setopt(_curl, CURLOPT_READDATA, ctx)) == CURLE_OK ||
-			LOG(ERROR) << "Cannot register userdata for read function: " << curl_easy_strerror(curlError);
-			(curlError = curl_easy_setopt(_curl, CURLOPT_UPLOAD, 1L)) == CURLE_OK ||
-			LOG(ERROR) << "Cannot set upload parameter: " << curl_easy_strerror(curlError);
-
-			if (from.length() > 0) {
-				(curlError = curl_easy_setopt(_curl, CURLOPT_MAIL_FROM, from.c_str())) == CURLE_OK ||
-				LOG(ERROR) << "Cannot set from parameter: " << curl_easy_strerror(curlError);
-			}
-
-			if (verbose) {
-				(curlError = curl_easy_setopt(_curl, CURLOPT_VERBOSE, 1L)) == CURLE_OK ||
-				LOG(ERROR) << "Cannot set curl to verbose: " << curl_easy_strerror(curlError);
-			}
-
-			CURLcode res = curl_easy_perform(_curl);
-
-			/* Check for errors */
-			if(res != CURLE_OK) {
-				LOG(ERROR) << "curl_easy_perform() failed: " << curl_easy_strerror(res);
-				returnErrorExecution("error.mail.send");
-			} else {
-				returnErrorExecution("success.mail.send");
-			}
-			/* Free the list of recipients */
-			if (recipients)
-				curl_slist_free_all(recipients);
-
-			/* Always cleanup */
-			curl_easy_cleanup(_curl);
-
+			
+		}
+				
+		(curlError = curl_easy_setopt(_curl, CURLOPT_READFUNCTION, IMAPInvoker::writeCurlData)) == CURLE_OK ||
+		LOG(ERROR) << "Cannot register read function: " << curl_easy_strerror(curlError);
+		(curlError = curl_easy_setopt(_curl, CURLOPT_READDATA, ctx)) == CURLE_OK ||
+		LOG(ERROR) << "Cannot register userdata for read function: " << curl_easy_strerror(curlError);
+		(curlError = curl_easy_setopt(_curl, CURLOPT_WRITEFUNCTION, IMAPInvoker::readCurlData)) == CURLE_OK ||
+		LOG(ERROR) << "Cannot register read function: " << curl_easy_strerror(curlError);
+		(curlError = curl_easy_setopt(_curl, CURLOPT_WRITEDATA, ctx)) == CURLE_OK ||
+		LOG(ERROR) << "Cannot register userdata for write function: " << curl_easy_strerror(curlError);
+		
+		if (ctx->verbose) {
+			(curlError = curl_easy_setopt(_curl, CURLOPT_VERBOSE, 1L)) == CURLE_OK ||
+			LOG(ERROR) << "Cannot set curl to verbose: " << curl_easy_strerror(curlError);
 		}
 
+		std::stringstream cmdSS;
+		switch (ctx->command) {
+			case IMAPContext::SELECT: {
+				IMAPContext::Select* cmd = (IMAPContext::Select*)ctx->arguments;
+				cmdSS << "SELECT " << "\"" << cmd->mailbox << "\"";
+				break;
+			}
+			case IMAPContext::EXAMINE: {
+				IMAPContext::Examine* cmd = (IMAPContext::Examine*)ctx->arguments;
+				cmdSS << "EXAMINE " << "\"" << cmd->mailbox << "\"";
+				break;
+			}
+			case IMAPContext::CREATE: {
+				IMAPContext::Create* cmd = (IMAPContext::Create*)ctx->arguments;
+				cmdSS << "CREATE " << "\"" << cmd->mailbox << "\"";
+				break;
+			}
+			case IMAPContext::DELETE: {
+				IMAPContext::Delete* cmd = (IMAPContext::Delete*)ctx->arguments;
+				cmdSS << "DELETE " << "\"" << cmd->mailbox << "\"";
+				break;
+			}
+			case IMAPContext::RENAME: {
+				IMAPContext::Rename* cmd = (IMAPContext::Rename*)ctx->arguments;
+				cmdSS << "RENAME " << "\"" << cmd->mailbox << "\" \"" << cmd->newName << "\"";
+				break;
+			}
+			case IMAPContext::SUBSCRIBE: {
+				IMAPContext::Subscribe* cmd = (IMAPContext::Subscribe*)ctx->arguments;
+				cmdSS << "SUBSCRIBE " << "\"" << cmd->mailbox << "\"";
+				break;
+			}
+			case IMAPContext::UNSUBSCRIBE: {
+				IMAPContext::Unsubscribe* cmd = (IMAPContext::Unsubscribe*)ctx->arguments;
+				cmdSS << "UNSUBSCRIBE " << "\"" << cmd->mailbox << "\"";
+				break;
+			}
+			case IMAPContext::LIST: {
+				IMAPContext::List* cmd = (IMAPContext::List*)ctx->arguments;
+				cmdSS << "LIST " << "\"" << cmd->mailbox << "\" \"" << cmd->refName << "\"";
+				break;
+			}
+			case IMAPContext::LSUB: {
+				IMAPContext::LSub* cmd = (IMAPContext::LSub*)ctx->arguments;
+				cmdSS << "LSUB " << "\"" << cmd->mailbox << "\" \"" << cmd->refName << "\"";
+				break;
+			}
+			case IMAPContext::STATUS: {
+				IMAPContext::Status* cmd = (IMAPContext::Status*)ctx->arguments;
+				cmdSS << "STATUS " << "\"" << cmd->mailbox << "\" (" << cmd->dataItems << ")";
+				break;
+			}
+			case IMAPContext::APPEND: {
+				IMAPContext::Append* cmd = (IMAPContext::Append*)ctx->arguments;
+				cmdSS << "APPEND " << "\"" << cmd->mailbox << "\" (" << cmd->flags << ") {" << cmd->dateTime << "}";
+				break;
+			}
+			case IMAPContext::CHECK: {
+				cmdSS << "CHECK";
+				break;
+			}
+			case IMAPContext::CLOSE: {
+				cmdSS << "CLOSE";
+				break;
+			}
+			case IMAPContext::EXPUNGE: {
+				cmdSS << "EXPUNGE";
+				break;
+			}
+			case IMAPContext::SEARCH: {
+				IMAPContext::Search* cmd = (IMAPContext::Search*)ctx->arguments;
+				cmdSS << "SEARCH ";
+				if (cmd->charSet.size() > 0) {
+					cmdSS << "CHARSET " << cmd->charSet << " ";
+				}
+				cmdSS << cmd->criteria;
+				break;
+			}
+			case IMAPContext::FETCH: {
+				IMAPContext::Fetch* cmd = (IMAPContext::Fetch*)ctx->arguments;
+				cmdSS << "FETCH " << cmd->sequence << " " << cmd->itemNames;
+				break;
+			}
+			case IMAPContext::STORE: {
+				IMAPContext::Store* cmd = (IMAPContext::Store*)ctx->arguments;
+				cmdSS << "STORE " << cmd->sequence << " " << cmd->itemNames << " " << cmd->values;
+				break;
+			}
+			case IMAPContext::COPY: {
+				IMAPContext::Copy* cmd = (IMAPContext::Copy*)ctx->arguments;
+				cmdSS << "COPY " << "\"" << cmd->mailbox << "\" " << cmd->sequence;
+				break;
+			}
+			case IMAPContext::UID: {
+				IMAPContext::UId* cmd = (IMAPContext::UId*)ctx->arguments;
+				cmdSS << "UID " << cmd->command << " " << cmd->arguments;
+				break;
+			}
+			case IMAPContext::XEXTENSION: {
+				IMAPContext::XExtension* cmd = (IMAPContext::XExtension*)ctx->arguments;
+				cmdSS << cmd->command << " " << cmd->arguments;
+				break;
+			}
+			default:
+				break;
+		}
+		curl_easy_setopt(_curl, CURLOPT_CUSTOMREQUEST, cmdSS.str().c_str());
+
+		CURLcode res = curl_easy_perform(_curl);
+		
+		/* Check for errors */
+		if(res != CURLE_OK) {
+			LOG(ERROR) << "curl_easy_perform() failed: " << curl_easy_strerror(res);
+			returnErrorExecution("error.mail.send");
+		} else {
+
+			Event e;
+
+#if 0
+			switch (ctx->command) {
+				case IMAPContext::LIST:
+					e.data = parseListReponse(ctx->inContent.str());
+					break;
+				default:
+					break;
+			}
+#endif
+			
+			e.name = ctx->sendReq.name + ".success";
+			e.data.compound["raw"] = Data(ctx->inContent.str(), Data::VERBATIM);
+
+			returnEvent(e);
+		}
+		
+		/* Always cleanup */
+		curl_easy_cleanup(_curl);
+		
 	}
 }
 
+#if 0
+Data IMAPInvoker::parseListReponse(const std::string& response) {
+	Data data;
+	
+	std::string line;
+	std::istringstream inSS(response);
+
+	while(std::getline(inSS, line, '\n')) {
+		// individual lines
+		size_t lastSep = line.find_last_of("\" ");
+		if (lastSep != std::string::npos) {
+			
+		}
+	}
+	
+	return data;
+}
+#endif
+	
 void IMAPInvoker::cancel(const std::string sendId) {
 }
 
@@ -361,6 +486,9 @@ void IMAPInvoker::invoke(const InvokeRequest& req) {
 	Event::getParam(req.params, "username", _username);
 	Event::getParam(req.params, "password", _password);
 	Event::getParam(req.params, "server", _server);
+	
+	_isRunning = true;
+	_thread = new tthread::thread(IMAPInvoker::run, this);
 }
 
 }
