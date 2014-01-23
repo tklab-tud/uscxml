@@ -327,9 +327,11 @@ void SWIDataModel::setEvent(const Event& event) {
 
 void SWIDataModel::assertFromData(const Data& data, const std::string& expr, size_t nesting) {
 	if (data.atom.size() > 0) {
+		// terminal branch, this is where we assert
+		
 		std::stringstream ss;
-		ss << expr << "(";
-		nesting++;
+		ss << expr;
+//		nesting++;
 
 		if (data.type == Data::VERBATIM) {
 			ss << "\"" << data.atom << "\"";
@@ -340,6 +342,8 @@ void SWIDataModel::assertFromData(const Data& data, const std::string& expr, siz
 		for (size_t i = 0; i < nesting; i++) {
 			ss << ")";
 		}
+		
+//		std::cout << ss.str() << std::endl;
 		PlCall("assert", PlCompound(ss.str().c_str()));
 		return;
 	}
@@ -347,7 +351,8 @@ void SWIDataModel::assertFromData(const Data& data, const std::string& expr, siz
 	if (data.compound.size() > 0) {
 		std::map<std::string, Data>::const_iterator compIter = data.compound.begin();
 		while(compIter != data.compound.end()) {
-			assertFromData(compIter->second, expr + "(" + compIter->first, nesting + 1);
+			assert(compIter->first.length() > 0);
+			assertFromData(compIter->second, expr + compIter->first + "(", nesting + 1);
 			compIter++;
 		}
 	}
