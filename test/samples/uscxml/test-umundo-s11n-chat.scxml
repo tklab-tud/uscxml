@@ -1,0 +1,16 @@
+<scxml datamodel="prolog">
+	<state id="start">
+		<invoke type="umundo" id="umundo">
+		  <param name="type" expr="/Users/sradomski/Documents/TK/Code/umundo/examples/cpp/s11n/chat/proto/ChatS11N.proto" />
+		  <param name="channel" expr="s11nChat" />
+			<finalize>
+				<!-- <script type="query">listing.</script> -->
+				<log expr="event(X)" />
+			</finalize>
+		</invoke>
+		<onentry>
+			<log expr="Entering start" />
+      <!-- send target="#_scxml.umundo" delay="0s" event="send" / -->
+		</onentry>
+	</state>
+</scxml>

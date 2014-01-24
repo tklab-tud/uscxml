@@ -52,6 +52,7 @@ public:
 			classDef.staticValues = staticValues;
 			classDef.staticFunctions = staticFunctions;
 			classDef.finalize = jsDestructor;
+			classDef.className = "Text";
 			classDef.parentClass = JSCCharacterData::getTmpl();
 
 			Tmpl = JSClassCreate(&classDef);

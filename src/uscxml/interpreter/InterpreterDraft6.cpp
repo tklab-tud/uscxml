@@ -467,9 +467,8 @@ bool InterpreterDraft6::isEnabledTransition(const Node<std::string>& transition,
 		return false;
 	}
 
-	std::vector<std::string> eventNames = tokenizeIdRefs(eventName);
-
-	std::vector<std::string>::iterator eventIter = eventNames.begin();
+	std::list<std::string> eventNames = tokenizeIdRefs(eventName);
+	std::list<std::string>::iterator eventIter = eventNames.begin();
 	while(eventIter != eventNames.end()) {
 		if(nameMatch(*eventIter, event) && hasConditionMatch(transition)) {
 			return true;

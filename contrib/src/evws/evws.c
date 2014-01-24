@@ -66,11 +66,11 @@ struct evws *evws_new(struct event_base *base) {
 	ret_obj->base = base;
 	ret_obj->listener = NULL;
 
-	ret_obj->connections.tqh_first = NULL;
-	ret_obj->connections.tqh_last = &(ret_obj->connections.tqh_first);
-
-	ret_obj->callbacks.tqh_first = NULL;
-	ret_obj->callbacks.tqh_last = &(ret_obj->callbacks.tqh_first);
+	(&ret_obj->connections)->tqh_first = NULL;
+	(&ret_obj->connections)->tqh_last = &((&ret_obj->connections)->tqh_first);
+	
+	(&ret_obj->callbacks)->tqh_first = NULL;
+	(&ret_obj->callbacks)->tqh_last = &((&ret_obj->callbacks)->tqh_first);
 
 	return ret_obj;
 }
@@ -89,16 +89,22 @@ evutil_socket_t evws_bind_socket(struct evws * ws, unsigned short port) {
 	sin.sin_addr.s_addr = htonl(0);
 	sin.sin_port = htons(port);
 
-	if(!(ws->listener = evconnlistener_new_bind(ws->base, cb_accept, ws, LEV_OPT_CLOSE_ON_FREE|LEV_OPT_REUSEABLE|LEV_OPT_THREADSAFE, -1, (struct sockaddr*)&sin, sizeof(sin)))) {
+	if(!(ws->listener = evconnlistener_new_bind(ws->base,
+																							cb_accept,
+																							ws,
+																							LEV_OPT_CLOSE_ON_FREE|LEV_OPT_REUSEABLE|LEV_OPT_THREADSAFE,
+																							-1,
+																							(struct sockaddr*)&sin, sizeof(sin)))
+		 ) {
 		return 0;
 	}
 	return evconnlistener_get_fd(ws->listener);
 }
 
 int evws_set_cb(struct evws * ws, const char * uri, cb_frame_type message_cb, cb_type connect_cb, void * arg) {
-	struct evws_cb *ws_cb;
+	struct evws_cb *ws_cb = NULL;
 
-	for (ws_cb = ws->callbacks.tqh_first; ws_cb; ws_cb = ws_cb->next.tqe_next) {
+	for (ws_cb = (&ws->callbacks)->tqh_first; ws_cb; ws_cb = ws_cb->next.tqe_next) {
 		if (strcmp(ws_cb->uri, uri) == 0)
 			return (-1);
 	}
@@ -114,9 +120,9 @@ int evws_set_cb(struct evws * ws, const char * uri, cb_frame_type message_cb, cb
 
 	// TAILQ_INSERT_TAIL
 	ws_cb->next.tqe_next = NULL;
-	ws_cb->next.tqe_prev = ws->callbacks.tqh_last;
-	ws->callbacks.tqh_last = &ws_cb;
-	ws->callbacks.tqh_last = &ws_cb->next.tqe_next;
+	ws_cb->next.tqe_prev = (&ws->callbacks)->tqh_last;
+	*(&ws->callbacks)->tqh_last = ws_cb;
+	(&ws->callbacks)->tqh_last = &(ws_cb->next.tqe_next);
 
 	return (0);
 }
@@ -131,7 +137,7 @@ cb_frame_type evws_set_gencb(struct evws *ws, cb_frame_type cb, void * arg) {
 // Broadcast data to all buffers associated with pattern
 void evws_broadcast(struct evws *ws, const char *uri, enum evws_opcode opcode, const char *data, uint64_t length) {
 	struct evws_connection *ws_connection;
-	for (ws_connection = ws->connections.tqh_first; ws_connection; ws_connection = ws_connection->next.tqe_next) {
+	for ((ws_connection) = (&ws->connections)->tqh_first; ws_connection; ws_connection = ws_connection->next.tqe_next) {
 		if (strcmp(ws_connection->uri, uri) == 0)
 			evws_send_data(ws_connection, opcode, data, length);
 	}
@@ -140,15 +146,12 @@ void evws_broadcast(struct evws *ws, const char *uri, enum evws_opcode opcode, c
 // Error callback
 static void cb_error(struct bufferevent *bev, short what, void *ctx) {
 	struct evws_connection *conn = ctx;
-	
-	//TAILQ_REMOVE
-	if (conn->next.tqe_next != NULL)
+	if (conn->next.tqe_next != NULL) {
 		conn->next.tqe_next->next.tqe_prev = conn->next.tqe_prev;
-	else {
-		conn->ws->connections.tqh_last = conn->next.tqe_prev;
+	} else {
+		(&(conn->ws->connections))->tqh_last = conn->next.tqe_prev;
 	}
-	conn->next.tqe_prev = &conn->next.tqe_next;
-
+	*(conn)->next.tqe_prev = conn->next.tqe_next;
 	
 	evws_connection_free(conn);
 }
@@ -178,6 +181,9 @@ int evws_parse_first_line(struct evws_connection *conn, char *line) {
 	if (line != NULL)
 		return (-1);
 
+	(void)method;
+	(void)version;
+	
 	if ((conn->uri = strdup(uri)) == NULL) {
 		return (-1);
 	}
@@ -224,11 +230,12 @@ void cb_read_handshake(struct bufferevent *bev, void *arg) {
 				origin = strdup(svalue);
 			}
 			header = evws_header_new(skey, svalue);
-			//TAILQ_INSERT_TAIL
+			
+			// TAILQ_INSERT_TAIL
 			header->next.tqe_next = NULL;
-			header->next.tqe_prev = ws_conn->headers.tqh_last;
-			ws_conn->headers.tqh_last = &header;
-			ws_conn->headers.tqh_last = &header->next.tqe_next;
+			header->next.tqe_prev = (&ws_conn->headers)->tqh_last;
+			*(&ws_conn->headers)->tqh_last = header;
+			(&ws_conn->headers)->tqh_last = &(header->next.tqe_next);
 
 			free(line);
 		}
@@ -236,6 +243,9 @@ void cb_read_handshake(struct bufferevent *bev, void *arg) {
 		break;
 	};
 
+	if (key == NULL)
+		return;
+	
 	// -- SHA1
 	
 	SHA1Reset(&sha1);
@@ -280,24 +290,24 @@ void cb_read_handshake(struct bufferevent *bev, void *arg) {
 											"\r\n",
 											chksumBase64
 	);
-	bufferevent_setcb(ws_conn->bufev, cb_read_frame, NULL, cb_error, ws_conn);
-
-	//TAILQ_INSERT_TAIL(&(ws_conn->ws->connections), ws_conn, next);
+	bufferevent_setcb(ws_conn->bufev, cb_read_frame, ((void*)0), cb_error, ws_conn);
+	
 	ws_conn->next.tqe_next = NULL;
-	ws_conn->next.tqe_prev = ws_conn->ws->connections.tqh_last;
-	ws_conn->ws->connections.tqh_last = &ws_conn;
-	ws_conn->ws->connections.tqh_last = &ws_conn->next.tqe_next;
+	ws_conn->next.tqe_prev = (&(ws_conn->ws->connections))->tqh_last;
+	*(&(ws_conn->ws->connections))->tqh_last = ws_conn;
+	(&(ws_conn->ws->connections))->tqh_last = &(ws_conn->next.tqe_next);
 
 	{
 		struct evws_cb *ws_cb;
-		for (ws_cb = ws_conn->ws->callbacks.tqh_first; ws_cb; ws_cb = ws_cb->next.tqe_next) {
+		for (ws_cb = ((&ws_conn->ws->callbacks))->tqh_first; ws_cb; ws_cb = ws_cb->next.tqe_next) {
 			if (strcmp(ws_cb->uri, ws_conn->uri) == 0) {
-				if(ws_cb->conn_cb != NULL)
-					ws_cb->conn_cb(ws_conn, NULL, 0, ws_cb->cb_arg);
+				if(ws_cb->conn_cb != ((void*)0))
+					ws_cb->conn_cb(ws_conn, ((void*)0), 0, ws_cb->cb_arg);
 				return;
 			}
 		}
 	}
+
 }
 
 int evws_parse_header_line(char *line, char **skey, char **svalue)
@@ -317,7 +327,7 @@ void cb_read_frame(struct bufferevent *bev, void *arg)
 {
 	struct evws_connection *conn = arg;
 	struct evws *ws = conn->ws;
-	char readbuf[1024];
+	char readbuf[2048]; // make sure a MTU fits
 	int size = 0;
 	struct evbuffer *buffer = bufferevent_get_input(bev);
 	while ((size = evbuffer_remove(buffer, readbuf, sizeof(readbuf))) > 0) {
@@ -414,11 +424,12 @@ NEXT_FRAME:
 		if (conn->frame->payload_read == conn->frame->size) {
 			// done reading this frame - invoke callbacks
 			struct evws_cb *ws_cb;
-			for (ws_cb = ws->callbacks.tqh_first; ws_cb; ws_cb = ws_cb->next.tqe_next) {
+			// TAILQ_FOREACH
+			for (ws_cb = ((&ws->callbacks))->tqh_first; ws_cb; ws_cb = (ws_cb->next.tqe_next)) {
 				if (strcmp(ws_cb->uri, conn->uri) == 0) {
-					if(ws_cb->msg_cb != NULL)
+					if(ws_cb->msg_cb != ((void*)0))
 						ws_cb->msg_cb(conn, conn->frame, ws_cb->cb_arg);
-					continue;
+					return;
 				}
 			}
 			ws->gencb(conn, conn->frame, ws->gencb_arg);
@@ -484,27 +495,28 @@ struct evws_connection* evws_connection_new(struct evws *ws, evutil_socket_t fd)
 	struct evws_connection* conn = calloc(1, sizeof(struct evws_connection));
 	conn->ws = ws;
 	conn->fd = fd;
-	conn->uri = NULL;
-
+	conn->uri = ((void*)0);
+	
 	conn->bufev = bufferevent_socket_new(ws->base, fd, BEV_OPT_CLOSE_ON_FREE);
 	conn->state = 0;
-	conn->frame = NULL;
+	conn->frame = ((void*)0);
 	
-	conn->headers.tqh_first = NULL;
-	conn->headers.tqh_last = &(conn->headers.tqh_first);
-
+	(&conn->headers)->tqh_first = NULL;
+	(&conn->headers)->tqh_last = &(((&conn->headers))->tqh_first);
+	
 	return conn;
 }
 
 void evws_connection_free(struct evws_connection *conn) {
 	struct evws_header *header;
 	bufferevent_free(conn->bufev);
-	if(conn->uri != NULL)
+	if(conn->uri != ((void*)0))
 		free(conn->uri);
-
-	for (header = conn->headers.tqh_first; header; header = header->next.tqe_next) {
+	
+	for (header = (&conn->headers)->tqh_first; header; header = header->next.tqe_next) {
 		evws_header_free(header);
 	}
+	
 	free(conn);
 }
 
@@ -530,19 +542,18 @@ struct evws_header *evws_header_new(char *key, char *value)
 void evws_header_free(struct evws_header *header) {
 	if(header->key != NULL)
 		free(header->key);
-	// @Note: segfault when freeing value, some strange value
 	if(header->value != NULL)
 		free(header->value);
 	free(header);
 }
 
 char *evws_find_header(const struct wsheadersq *q, const char *key) {
-	struct evws_header *header;
-	char * ret = NULL;
-	for (header = q->tqh_first; header; header = header->next.tqe_next) {
-
-		if(strcmp(header->key, key) == 0) {
-			ret = header->value;
+	struct evws_header *hdr;
+	char * ret = ((void*)0);
+	
+	for (hdr = q->tqh_first; hdr; hdr = hdr->next.tqe_next) {
+		if(strcmp(hdr->key, key) == 0) {
+			ret = hdr->value;
 			break;
 		}
 	}

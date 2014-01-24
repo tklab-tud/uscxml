@@ -51,6 +51,7 @@ public:
 			classDef.staticValues = staticValues;
 			classDef.staticFunctions = staticFunctions;
 			classDef.finalize = jsDestructor;
+			classDef.className = "CDATASection";
 			classDef.parentClass = JSCText::getTmpl();
 
 			Tmpl = JSClassCreate(&classDef);

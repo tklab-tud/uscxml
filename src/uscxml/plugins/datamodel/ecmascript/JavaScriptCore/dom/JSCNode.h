@@ -87,6 +87,7 @@ public:
 			classDef.staticValues = staticValues;
 			classDef.staticFunctions = staticFunctions;
 			classDef.finalize = jsDestructor;
+			classDef.className = "Node";
 
 			Tmpl = JSClassCreate(&classDef);
 			JSClassRetain(Tmpl);

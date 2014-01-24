@@ -76,8 +76,8 @@ bool InterpreterHTTPServlet::httpRecvRequest(const HTTPServer::Request& req) {
 
 Data InterpreterHTTPServlet::getDataModelVariables() {
 	Data data;
-	assert(_url.length() > 0);
-	data.compound["location"] = Data(_url, Data::VERBATIM);
+	if(_url.length() > 0)
+		data.compound["location"] = Data(_url, Data::VERBATIM);
 	return data;
 }
 
@@ -138,8 +138,8 @@ bool InterpreterWebSocketServlet::wsRecvRequest(struct evws_connection *conn, co
 
 Data InterpreterWebSocketServlet::getDataModelVariables() {
 	Data data;
-	assert(_url.length() > 0);
-	data.compound["location"] = Data(_url, Data::VERBATIM);
+	if(_url.length() > 0)
+		data.compound["location"] = Data(_url, Data::VERBATIM);
 	return data;
 }
 

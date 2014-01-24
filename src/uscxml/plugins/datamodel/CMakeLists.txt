@@ -105,6 +105,9 @@ endif()
 
 if (SWI_FOUND AND BUILD_DM_PROLOG)
 	set(USCXML_DATAMODELS "prolog ${USCXML_DATAMODELS}")
+	
+	configure_file(${CMAKE_CURRENT_SOURCE_DIR}/prolog/swi/SWIConfig.h.in ${CMAKE_BINARY_DIR}/uscxml/SWIConfig.h)
+	
 #	message(FATAL_ERROR "SWI_INCLUDE_DIR: ${SWI_INCLUDE_DIR}")
 
 	# if(${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")

@@ -39,6 +39,8 @@
 //# include "uscxml/plugins/invoker/filesystem/dirmon/DirMonInvoker.h"
 # include "uscxml/plugins/invoker/system/XmlBridgeInvoker.h"
 //# include "uscxml/plugins/invoker/xhtml/XHTMLInvoker.h"
+//# include "uscxml/plugins/invoker/smtp/SMTPInvoker.h"
+//# include "uscxml/plugins/invoker/imap/IMAPInvoker.h"
 
 
 #ifdef PROTOBUF_FOUND
@@ -70,6 +72,10 @@
 
 # ifdef LIBPURPLE_FOUND
 #   include "uscxml/plugins/invoker/im/IMInvoker.h"
+# endif
+
+# if (defined EXPECT_FOUND && defined TCL_FOUND)
+#   include "uscxml/plugins/invoker/expect/ExpectInvoker.h"
 # endif
 
 #ifdef OPENAL_FOUND
@@ -202,6 +208,13 @@ Factory::Factory() {
 	}
 #endif
 
+#if (defined EXPECT_FOUND && defined TCL_FOUND)
+	{
+		ExpectInvoker* invoker = new ExpectInvoker();
+		registerInvoker(invoker);
+	}
+#endif
+
 #if (defined OPENAL_FOUND && (defined LIBSNDFILE_FOUND || defined AUDIOTOOLBOX_FOUND))
 	{
 		OpenALInvoker* invoker = new OpenALInvoker();
@@ -262,28 +275,28 @@ Factory::Factory() {
 		registerDataModel(dataModel);
 	}
 #if 1
-//	{
-//		XHTMLInvoker* invoker = new XHTMLInvoker();
-//		registerInvoker(invoker);
-//	}
-//	{
-//		USCXMLInvoker* invoker = new USCXMLInvoker();
-//		registerInvoker(invoker);
-//	}
-//	{
-//		HTTPServletInvoker* invoker = new HTTPServletInvoker();
-//		registerInvoker(invoker);
-//	}
-//	{
-//		HeartbeatInvoker* invoker = new HeartbeatInvoker();
-//		registerInvoker(invoker);
-//	}
-//	{
-//		DirMonInvoker* invoker = new DirMonInvoker();
-//		registerInvoker(invoker);
-//	}
 	{
-		XmlBridgeInvoker* invoker = new XmlBridgeInvoker();
+		XHTMLInvoker* invoker = new XHTMLInvoker();
+		registerInvoker(invoker);
+	}
+	{
+		USCXMLInvoker* invoker = new USCXMLInvoker();
+		registerInvoker(invoker);
+	}
+	{
+		HTTPServletInvoker* invoker = new HTTPServletInvoker();
+		registerInvoker(invoker);
+	}
+	{
+		HeartbeatInvoker* invoker = new HeartbeatInvoker();
+		registerInvoker(invoker);
+	}
+	{
+		DirMonInvoker* invoker = new DirMonInvoker();
+		registerInvoker(invoker);
+	}
+	{
+		SystemInvoker* invoker = new SystemInvoker();
 		registerInvoker(invoker);
 	}
 	{
@@ -510,7 +523,11 @@ size_t DataModelImpl::replaceExpressions(std::string& content) {
 //					} else {
 //						ss << data.atom;
 //					}
-					ss << Data::toJSON(data);
+					if (data.atom.length() > 0) {
+						ss << data.atom;
+					} else {
+						ss << Data::toJSON(data);
+					}
 					replacements++;
 				} catch (Event e) {
 					// insert unsubstituted

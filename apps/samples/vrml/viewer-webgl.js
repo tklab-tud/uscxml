@@ -184,7 +184,7 @@ function VRMLViewer(element, params) {
       } 
       if (self.enableSceneshots) {
         self.imgElem.src = self.serverURL + self.imagePath + self.imageFormat + urlSuffixForPose(self.pose);
-        if (self.enableMovies) {
+        if (self.enableMovies && self.movieAddButton) {
           // we are showing an image, activate movie controls
           self.movieAddButton.domNode.style.display = "";
           self.movieDropDown.domNode.style.display = "";
@@ -964,7 +964,7 @@ function VRMLViewer(element, params) {
                avatarPose.width = 60;
                avatarPose.height = 60;
                var avatarImgUrl = urlSuffixForPose(avatarPose);
-               avatar.innerHTML = '<img src=' + self.imagePath + avatarImgUrl + ' /> ';
+               avatar.innerHTML = '<img src=' + self.imagePath + self.imageFormat + avatarImgUrl + ' /> ';
                item.srcEcc = "VRMLViewer";
                item.iconPoseUrl = self.imagePath + avatarImgUrl;
                item.imagePath = self.imagePath;
@@ -1054,7 +1054,7 @@ function VRMLViewer(element, params) {
               thumbPose.height = self.pose.height / 10;
               var thumbImgUrl = urlSuffixForPose(thumbPose);
             
-              thumbImgElem.src = self.imagePath + thumbImgUrl;
+              thumbImgElem.src = self.serverURL + self.imagePath + self.imageFormat + thumbImgUrl;
               // removeImgElem.src = self.resRoot + 'img/close.png';
                         
               item.srcEcc = "VRMLViewer";
@@ -1074,7 +1074,7 @@ function VRMLViewer(element, params) {
             style: "width: 320px",
             options: []
           });
-          self.populateMovieCodecs("http://" + self.serverURL + '/movie/codecs', self.movieFormatSelection);
+          self.populateMovieCodecs(self.serverURL + '/movie/codecs', self.movieFormatSelection);
 
           self.movieFormatLengthRowElem.appendChild(dojo.create('td', { innerHTML: 'Format:'} ));
           self.movieFormatLengthRowElem.appendChild(dojo.create('td', { colspan: "2"}));

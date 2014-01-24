@@ -54,7 +54,7 @@ function Miles(element, params) {
   var audioEncoding = "";
   
   var repollInterval = {
-    image: 50,
+    image: 20,
     chat: 500,
     participants: 1000
   };

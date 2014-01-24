@@ -61,6 +61,7 @@ public:
 			classDef.staticValues = staticValues;
 			classDef.staticFunctions = staticFunctions;
 			classDef.finalize = jsDestructor;
+			classDef.className = "Uint8Array";
 			classDef.hasProperty = hasPropertyCustomCallback;
 			classDef.getProperty = getPropertyCustomCallback;
 			classDef.setProperty = setPropertyCustomCallback;

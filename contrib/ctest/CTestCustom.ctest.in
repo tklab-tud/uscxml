@@ -11,11 +11,6 @@
 set(CTEST_CUSTOM_TESTS_IGNORE
 	"ecma/test178.scxml"
 	"ecma/test230.scxml"
-	"ecma/test250.scxml"
-	"ecma/test307.scxml"
-	"ecma/test313.scxml"
-	"ecma/test314.scxml"
-	"ecma/test415.scxml"
 	"ecma/test463.scxml"
 	"ecma/test464.scxml"
 	"ecma/test465.scxml"

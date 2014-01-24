@@ -70,7 +70,7 @@ protected:
 	bool _sandBoxed;
 	std::string _givenUrl;
 	URL _actualUrl;
-	std::string _filename;
+	std::string _filepath;
 	Operation _operation;
 	Type _type;
 };

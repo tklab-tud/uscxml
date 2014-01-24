@@ -745,7 +745,7 @@ void URLFetcher::perform() {
 			while ((msg = curl_multi_info_read(_multiHandle, &msgsLeft))) {
 				if (msg->msg == CURLMSG_DONE) {
 					switch (msg->data.result) {
-					case CURLM_OK:
+					case CURLE_OK:
 						_handlesToURLs[msg->easy_handle].downloadCompleted();
 						err = curl_multi_remove_handle(_multiHandle, msg->easy_handle);
 						if (err != CURLM_OK) {
@@ -754,14 +754,7 @@ void URLFetcher::perform() {
 
 						_handlesToURLs.erase(msg->easy_handle);
 						break;
-					case CURLM_BAD_HANDLE:
-					case CURLM_BAD_EASY_HANDLE:
-					case CURLE_FILE_COULDNT_READ_FILE:
-					case CURLM_OUT_OF_MEMORY:
-					case CURLM_INTERNAL_ERROR:
-					case CURLM_BAD_SOCKET:
-					case CURLM_UNKNOWN_OPTION:
-					case CURLM_LAST:
+					default:
 						_handlesToURLs[msg->easy_handle].downloadFailed(msg->data.result);
 						err = curl_multi_remove_handle(_multiHandle, msg->easy_handle);
 						if (err != CURLM_OK) {
@@ -769,9 +762,6 @@ void URLFetcher::perform() {
 						}
 
 						_handlesToURLs.erase(msg->easy_handle);
-						break;
-					default:
-						LOG(ERROR) << "Unhandled curl status";
 					}
 				} else {
 					LOG(ERROR) << "Curl reports info on unfinished download?!";

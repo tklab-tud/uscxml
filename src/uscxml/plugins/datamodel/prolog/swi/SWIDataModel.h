@@ -24,6 +24,8 @@
 #include <list>
 #include <SWI-cpp.h>
 
+#include "uscxml/SWIConfig.h"
+
 #ifdef BUILD_AS_PLUGINS
 #include "uscxml/plugins/Plugins.h"
 #endif
@@ -84,6 +86,19 @@ public:
 	static foreign_t inPredicate(term_t a0, int arity, void* context);
 protected:
 	std::map<std::string, PlTerm> resolveAtoms(PlTerm& term, PlTerm& orig);
+	void assertFromData(const Data& data, const std::string& expr, size_t nesting);
+
+	static Data termAsData(PlTerm term);
+	static PlTerm dataAsTerm(Data data);
+
+
+	static int dictCallBack(term_t key, term_t value, int last, void *closure);
+
+	static PL_blob_t blobType;
+	static void acquireBlob(atom_t symbol);
+	static int releaseBlob(atom_t symbol);
+	static int compareBlob(atom_t a, atom_t b);
+	static int writeBlob(void *s, atom_t symbol, int flags);
 
 	Event _event;
 

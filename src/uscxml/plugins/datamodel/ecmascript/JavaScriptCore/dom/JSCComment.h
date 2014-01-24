@@ -51,6 +51,7 @@ public:
 			classDef.staticValues = staticValues;
 			classDef.staticFunctions = staticFunctions;
 			classDef.finalize = jsDestructor;
+			classDef.className = "Comment";
 			classDef.parentClass = JSCCharacterData::getTmpl();
 
 			Tmpl = JSClassCreate(&classDef);

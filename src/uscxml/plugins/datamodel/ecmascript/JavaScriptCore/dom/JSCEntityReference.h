@@ -51,6 +51,7 @@ public:
 			classDef.staticValues = staticValues;
 			classDef.staticFunctions = staticFunctions;
 			classDef.finalize = jsDestructor;
+			classDef.className = "EntityReference";
 			classDef.parentClass = JSCNode::getTmpl();
 
 			Tmpl = JSClassCreate(&classDef);

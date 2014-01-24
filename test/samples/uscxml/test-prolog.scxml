@@ -23,7 +23,7 @@
     </data>
   </datamodel>
   <state id="start">
-    <invoke type="http://www.w3.org/TR/scxml/" autoforward="true">
+    <!-- invoke type="http://www.w3.org/TR/scxml/" autoforward="true">
       <content>
         <scxml datamodel="prolog" name="inner">
           <state id="idle">
@@ -39,7 +39,7 @@
           <state id="end" final="true" />
         </scxml>
       </content>
-    </invoke>
+    </invoke -->
   
     <state id="s1">
       <onentry>
@@ -65,8 +65,7 @@
           <log label="child" expr="child(X)" />
         </foreach>
       </onentry>
-      <transition event="inner"
-                  target="s2"
+      <transition target="s2"
                   cond="mother(martha, X), father(bob, X), in(s1)"/>
     </state>
     <state id="s2">

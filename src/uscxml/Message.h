@@ -55,9 +55,7 @@ public:
 		return uscxml::md5(data, size);
 	}
 
-	std::string base64() {
-		return base64Encode((char* const)data, size);
-	}
+	std::string base64();
 
 	Blob* fromBase64(const std::string base64) {
 		std::string decoded = base64Decode(base64);
@@ -83,6 +81,7 @@ public:
 		}
 	}
 	template <typename T> Data(T value) : atom(toStr(value)), type(INTERPRETED) {}
+	template <typename T> Data(T value, Type type_) : atom(toStr(value)), type(type_) {}
 
 	explicit Data(const Arabica::DOM::Node<std::string>& dom);
 	virtual ~Data() {}
@@ -104,6 +103,34 @@ public:
 			return compound.at(key);
 		Data data;
 		return data;
+	}
+
+	bool operator==(const Data &other) const {
+		if (other.atom.size() != atom.size())
+			return false;
+		if (other.type != type)
+			return false;
+		if (other.binary != binary)
+			return false;
+		if (other.array.size() != array.size())
+			return false;
+		if (other.compound.size() != compound.size())
+			return false;
+
+		if (other.atom != atom)
+			return false;
+		if (other.array != array)
+			return false;
+		if (other.compound != compound)
+			return false;
+		if (other.node != node)
+			return false;
+
+		return true;
+	}
+
+	bool operator!=(const Data &other) const {
+		return !(*this == other);
 	}
 
 	operator std::string() const {
@@ -314,6 +341,23 @@ public:
 	template <typename T> static bool getParam(params_t params, const std::string& name, T& target) {
 		if (params.find(name) != params.end()) {
 			target = boost::lexical_cast<T>(params.find(name)->second.atom);
+			return true;
+		}
+		return false;
+	}
+
+	static bool getParam(params_t params, const std::string& name, bool& target) {
+		if (params.find(name) != params.end()) {
+			target = true;
+			if (iequals(params.find(name)->second.atom, "false")) {
+				target = false;
+			} else if(iequals(params.find(name)->second.atom, "off")) {
+				target = false;
+			} else if(iequals(params.find(name)->second.atom, "no")) {
+				target = false;
+			} else if(iequals(params.find(name)->second.atom, "0")) {
+				target = false;
+			}
 			return true;
 		}
 		return false;
