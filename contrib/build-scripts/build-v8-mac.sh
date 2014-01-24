@@ -37,6 +37,14 @@ fi
 DEPOT_PATH="${PWD}/../depot_tools"
 export PATH="${DEPOT_PATH}:${PATH}"
 
+if [ ${MACOSX_COMP[1]} -lt 9 ]; then
+  CXXFLAGS="-mmacosx-version-min=10.6 -stdlib=libstdc++"
+  LDFLAGS="-stdlib=libstdc++"
+else
+  CXXFLAGS="-mmacosx-version-min=10.7 -stdlib=libc++"
+  LDFLAGS="-stdlib=libc++"
+fi
+
 make dependencies
 
 make ia32.release

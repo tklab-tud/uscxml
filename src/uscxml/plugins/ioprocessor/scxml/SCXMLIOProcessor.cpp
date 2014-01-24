@@ -81,7 +81,7 @@ boost::shared_ptr<IOProcessorImpl> SCXMLIOProcessor::create(InterpreterImpl* int
 
 Data SCXMLIOProcessor::getDataModelVariables() {
 	Data data;
-	assert(_url.length() > 0);
+	if(_url.length() > 0);
 	data.compound["location"] = Data(_url, Data::VERBATIM);
 	return data;
 }

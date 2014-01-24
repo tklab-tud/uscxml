@@ -12,7 +12,7 @@ extern "C" {
 
 namespace uscxml {
 
-USCXML_API inline std::string base64Encode(const char* data, unsigned int len) {
+USCXML_API inline std::string base64Encode(const char* data, unsigned int len, bool withBlockEnd = true) {
 	base64_encodestate* ctx = (base64_encodestate*)malloc(sizeof(base64_encodestate));
 	base64_init_encodestate(ctx);
 	
@@ -22,10 +22,15 @@ USCXML_API inline std::string base64Encode(const char* data, unsigned int len) {
 	 * be approximated with this formula:
 	 */
 	
+	int written = 0;
 	char* out = (char*)malloc(len * 1.4 + 814);
-	base64_encode_block(data, len, out, ctx);
+	written += base64_encode_block(data, len, out, ctx);
+	if (withBlockEnd) {
+		written += base64_encode_blockend(out + written, ctx);
+		written--;  // drop the newline
+	}
+	std::string result(out, written);
 	free(ctx);
-	std::string result(out);
 	free(out);
 	return result;
 }
@@ -41,6 +46,9 @@ USCXML_API inline std::string base64Decode(const std::string& data) {
 	free(out);
 	return result;
 }
+
+//	USCXML_API std::string base64Decode(const std::string& data);
+//	USCXML_API std::string base64Encode(const char* data, unsigned int len);
 
 }
 #endif /* end of include guard: BASE64_H_5FKG12HF */

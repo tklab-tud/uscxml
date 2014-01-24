@@ -1,4 +1,8 @@
 if (UNIX)
+	if (APPLE)
+		# mavericks broke it - will look into it eventually
+		return()
+	endif()
 	if (NOT PHP_CONFIG)
 		find_program(PHP_CONFIG
 			NAMES php-config

@@ -168,7 +168,40 @@ This would be all distributions based on Redhat, e.g. Fedora.
 	$ sudo yum install git cmake cmake-gui gcc-c++
 
 	# uscxml required dependencies
-	$ sudo yum install xml2-devel
+	$ sudo yum install xml2-devel libcurl-devel
+
+#### Fedora 20
+
+Here is a complete walk-through to get uscxml running on Fedora 20, starting with the net installer.
+
+	# get us git and the developer tools
+	$ sudo yum install git gcc-c++ cmake
+	
+	# uscxml required dependencies
+	$ sudo yum install libxml2-devel libcurl-devel
+
+This is sufficient to get uscxml to build. If you want some more functionality, install some more libraries:
+
+	# SWI prolog datamodel
+	$ sudo yum install pl-devel
+
+	# OpenAL invoker
+	$ sudo yum install openal-soft-devel libsndfile-devel
+
+	# scenegraph and osgconvert invoker
+	$ sudo yum install OpenSceneGraph-devel mesa-libGL-devel
+	
+	# ffmpeg invoker (add repository from http://rpmfusion.org)
+	$ sudo yum install ffmpeg-devel ffmpeg-compat-devel
+
+	# calendar invoker
+	$ sudo yum install libical-devel
+
+	# expect invoker
+	$ sudo yum install expect-devel tk-devel
+
+	# instant messaging invoker
+	$ sudo yum install libpurple-devel
 
 ### Console / Make
 

@@ -242,6 +242,7 @@ END
   		classDef.staticFunctions = staticFunctions;
   		classDef.finalize = jsDestructor;
 END
+			push(@headerContent, "		classDef.className = \"${interfaceName}\";\n");
 			if ($extensions->{'CustomIndexedGetter'}) {
 				push(@headerContent, "		classDef.hasProperty = hasPropertyCustomCallback;\n");
 				push(@headerContent, "		classDef.getProperty = getPropertyCustomCallback;\n");

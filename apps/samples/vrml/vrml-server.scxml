@@ -325,8 +325,7 @@
 				<script>//dump(_event);</script>
 				<respond status="200" to="_event.data.context">
 					<header name="Connection" value="close" />
-					<header name="Content-Type" valueexpr="application/json" />
-					<header name="Content-Disposition" valueexpr="'attachment; filename=' + _event.data.filename" />
+					<header name="Content-Type" value="application/json" />
 					<content expr="_event.data.codecs" />
 				</respond>
 			</transition>

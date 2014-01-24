@@ -12,30 +12,41 @@
 	<script src="http://uscxml.tk.informatik.tu-darmstadt.de/scripts/dump.js" />
 	<state id="idle">
 		<onentry>
-			<send event="dump" delay="100ms" />
+			<!-- <send event="dump" delay="100ms" /> -->
 		</onentry>
 		
 		<invoke type="instant-messaging" id="im">
-			<param name="username" expr="'uscxml@localhost'" />
-			<param name="password" expr="'password'" />
+			<param name="username" expr="'uscxml@diogenes.local'" />
+			<param name="password" expr="'uscxml'" />
 			<param name="protocol" expr="'prpl-jabber'" />
 			<finalize>
-				<script>print("-----------------\n"); dump(_event);</script>
+				<script>
+					print("-----------------\n"); 
+					dump(_event);</script>
 			</finalize>
 		</invoke>
 
-		<state id="dump">
+		<!-- <state id="dump">
 			<transition event="dump" target="dump">
 				<send event="dump" delay="1000ms" />
 				<script>//dump(_invokers['im']);</script>
 			</transition>
-		</state>
+		</state> -->
+
+		<transition event="im.buddy.status.changed">
+			<!-- <script>print("\n\n"); dump(_invokers['im']);</script> -->
+		</transition>
 		
-		<transition event="im.buddy.status.changed" cond="_event.data.name === 'sradomski@localhost'">
+		<transition event="im.signed.on">
+			<!-- <send target="#_im" event="im.buddy.add">
+				<param name="name" expr="'sradomski@diogenes.local'" />
+				<param name="msg" expr="'Please add me as a contact!'" />
+			</send> -->
+			<!-- <script>print("\n\n"); dump(_invokers['im']);</script> -->
 			<send target="#_im" event="im.send">
-				<param name="receiver" expr="'sradomski@localhost'" />
-				<param name="data" expr="someBinaryData" />
-				<content>Hey There!</content>
+				<param name="receiver" expr="'sradomski@diogenes.local'" />
+				<param name="data" expr="someBinaryData" /> <!-- Unsupported :( -->
+				<content><![CDATA[Have a look <a href="http://www.heise.de">here</a>]]></content>
 			</send>
 		</transition>
 

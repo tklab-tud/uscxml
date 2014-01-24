@@ -8,6 +8,7 @@
 				<if cond="_event.data.origin">
 					<!-- <log label="Reply-length" expr="_event.data.base64.length" /> -->
 					<if cond="_event.name === 'thumbnail.reply'">
+            <!-- <log expr="_event.data.image.base64().length" /> -->
 						<respond status="200" to="_event.data.origin">
 							<header name="Cache-Control" value="no-cache" /> <!-- force IE to actually reload -->
 							<header name="Access-Control-Allow-Origin" value="*" />

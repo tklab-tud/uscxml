@@ -75,7 +75,12 @@ HTTPServer::HTTPServer(unsigned short port, unsigned short wsPort, SSLConfig* ss
 	_evws = evws_new(_base);
 	_thread = NULL;
 	_httpHandle = NULL;
+
+#ifdef _WIN32
 	_wsHandle = NULL;
+#else
+	_wsHandle = 0;
+#endif
 
 	determineAddress();
 
@@ -92,17 +97,24 @@ HTTPServer::HTTPServer(unsigned short port, unsigned short wsPort, SSLConfig* ss
 
 	evhttp_set_allowed_methods(_http, allowedMethods); // allow all methods
 
-	if (_port > 0)
+	if (_port > 0) {
 		_httpHandle = evhttp_bind_socket_with_handle(_http, INADDR_ANY, _port);
-	if (_httpHandle)
-		LOG(INFO) << "HTTP server listening on tcp/" << _port;
+		if (_httpHandle) {
+			LOG(INFO) << "HTTP server listening on tcp/" << _port;
+		} else {
+			LOG(ERROR) << "HTTP server cannot bind to tcp/" << _wsPort;
+		}
+	}
 
 	_wsPort = wsPort;
-	if (_wsPort > 0)
+	if (_wsPort > 0) {
 		_wsHandle = evws_bind_socket(_evws, _wsPort);
-	if (_wsHandle)
-		LOG(INFO) << "WebSocket server listening on tcp/" << _wsPort;
-
+		if (_wsHandle) {
+			LOG(INFO) << "WebSocket server listening on tcp/" << _wsPort;
+		} else {
+			LOG(ERROR) << "WebSocket server cannot bind to tcp/" << _wsPort;
+		}
+	}
 #if (defined EVENT_SSL_FOUND && defined OPENSSL_FOUND && defined OPENSSL_HAS_ELIPTIC_CURVES)
 	_sslHandle = NULL;
 	_https = NULL;
@@ -136,11 +148,15 @@ HTTPServer::HTTPServer(unsigned short port, unsigned short wsPort, SSLConfig* ss
 		evhttp_set_bevcb(_https, sslBufferEventCallback, ctx);
 		evhttp_set_gencb(_https, sslGeneralBufferEventCallback, NULL);
 
-		if (_sslPort > 0)
+		if (_sslPort > 0) {
 			_sslHandle = evhttp_bind_socket_with_handle(_https, INADDR_ANY, _sslPort);
-		if (_sslHandle)
-			LOG(INFO) << "HTTPS server listening on tcp/" << _wsPort;
+			if (_sslHandle) {
+				LOG(INFO) << "HTTPS server listening on tcp/" << _wsPort;
+			} else {
+				LOG(ERROR) << "HTTPS server cannot bind to tcp/" << _wsPort;
 
+			}
+		}
 	}
 #endif
 
@@ -514,6 +530,10 @@ void HTTPServer::replyCallback(evutil_socket_t fd, short what, void *arg) {
 
 bool HTTPServer::registerServlet(const std::string& path, HTTPServlet* servlet) {
 	HTTPServer* INSTANCE = getInstance();
+
+	if (!INSTANCE->_httpHandle)
+		return true;
+
 	tthread::lock_guard<tthread::recursive_mutex> lock(INSTANCE->_mutex);
 
 	// remove trailing and leading slash
@@ -539,8 +559,7 @@ bool HTTPServer::registerServlet(const std::string& path, HTTPServlet* servlet) 
 	servlet->setURL(servletURL.str());
 
 	INSTANCE->_httpServlets[suffixedPath] = servlet;
-
-//	LOG(INFO) << "HTTP Servlet listening at: " << servletURL.str() << std::endl;
+	LOG(INFO) << "HTTP Servlet listening at: " << servletURL.str() << std::endl;
 
 	// register callback
 	evhttp_set_cb(INSTANCE->_http, ("/" + suffixedPath).c_str(), HTTPServer::httpRecvReqCallback, servlet);
@@ -550,6 +569,10 @@ bool HTTPServer::registerServlet(const std::string& path, HTTPServlet* servlet) 
 
 bool HTTPServer::registerServlet(const std::string& path, WebSocketServlet* servlet) {
 	HTTPServer* INSTANCE = getInstance();
+
+	if (!INSTANCE->_wsHandle)
+		return true;
+
 	tthread::lock_guard<tthread::recursive_mutex> lock(INSTANCE->_mutex);
 
 	// remove trailing and leading slash

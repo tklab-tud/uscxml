@@ -1,6 +1,6 @@
 <scxml datamodel="ecmascript">
 	<datamodel>
-		<data id="iterations">10000</data>
+		<data id="iterations">100000</data>
 	</datamodel>
 	<state id="start">
 		<transition target="loop" />

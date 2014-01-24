@@ -69,6 +69,7 @@ public:
 			classDef.staticValues = staticValues;
 			classDef.staticFunctions = staticFunctions;
 			classDef.finalize = jsDestructor;
+			classDef.className = "DataView";
 			classDef.callAsConstructor = jsConstructor;
 			classDef.parentClass = JSCArrayBufferView::getTmpl();
 

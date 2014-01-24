@@ -26,6 +26,7 @@
 #include <cwchar>
 #include <limits>
 #include <boost/static_assert.hpp>
+#include <inttypes.h>
 #include <boost/detail/endian.hpp>
 #include <boost/type_traits/is_arithmetic.hpp>
 
@@ -56,7 +57,7 @@ inline bool isNumeric( const char* pszInput, int nNumberBase) {
 }
 
 inline bool iequals(const std::string& a, const std::string& b) {
-	// this impementation beats boost::iequals 2700ms vs 2100ms for test-performance.scxml
+	// this impementation beats boost::iequals 2700ms vs 2100ms for test-performance.scxml - we don't care for non-ascii yet
 	unsigned int size = a.size();
 	if (b.size() != size)
 		return false;
@@ -64,6 +65,60 @@ inline bool iequals(const std::string& a, const std::string& b) {
 		if (tolower(a[i]) != tolower(b[i]))
 			return false;
 	return true;
+}
+
+inline bool equals(const std::string& a, const std::string& b) {
+	unsigned int size = a.size();
+	if (b.size() != size)
+		return false;
+	for (unsigned int i = 0; i < size; ++i)
+		if (a[i] != b[i])
+			return false;
+	return true;
+}
+
+inline std::string unescape(const std::string& a) {
+	std::stringstream b;
+	// see http://en.cppreference.com/w/cpp/language/escape
+
+	std::string::const_iterator it = a.begin();
+	while (it != a.end()) {
+		char c = *it++;
+		if (c == '\\' && it != a.end()) {
+			switch (*it++) {
+			case '\\':
+				c = '\\';
+				break;
+			case '0':
+				c = '\0';
+				break;
+			case 'a':
+				c = '\a';
+				break;
+			case 'b':
+				c = '\b';
+				break;
+			case 'f':
+				c = '\f';
+				break;
+			case 'n':
+				c = '\n';
+				break;
+			case 'r':
+				c = '\r';
+				break;
+			case 't':
+				c = '\t';
+				break;
+			case 'v':
+				c = '\v';
+				break;
+			}
+		}
+		b << c;
+	}
+
+	return b.str();
 }
 
 // see http://www.cplusplus.com/forum/general/27544/
