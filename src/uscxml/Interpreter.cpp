@@ -92,7 +92,7 @@ void InterpreterOptions::printUsageAndExit(const char* progName) {
 #ifdef EVENT_SSL_FOUND
 	printf(" [-sN] [--certificate=FILE | --private-key=FILE --public-key=FILE] ");
 #endif
-	printf(" \\\n\t\tURL1 [--disable-http] [--option1=value1 --option2=value2]");
+	printf(" \\\n\t\t URL1 [--disable-http] [--option1=value1 --option2=value2]");
 	printf(" \\\n\t\t[URL2 [--disable-http] [--option3=value3 --option4=value4]]");
 	printf(" \\\n\t\t[URLN [--disable-http] [--optionN=valueN --optionM=valueM]]");
 	printf("\n");

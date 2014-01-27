@@ -682,7 +682,15 @@ std::string Data::toJSON(const Data& data) {
 		os << "]";
 	} else if (data.atom.size() > 0) {
 		if (data.type == Data::VERBATIM) {
-			os << "\"" << data.atom << "\"";
+			os << "\"";
+			for (int i = 0; i < data.atom.size(); i++) {
+				// escape string
+				if (data.atom[i] == '"') {
+					os << '\\';
+				}
+				os << data.atom[i];
+			}
+			os << "\"";
 		} else {
 			os << data.atom;
 		}

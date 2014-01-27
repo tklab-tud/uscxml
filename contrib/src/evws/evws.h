@@ -194,6 +194,7 @@ struct evws {
 
 struct evws_connection *evws_connection_new(struct evws *ws, evutil_socket_t fd);
 void evws_connection_free(struct evws_connection *conn);
+int evws_is_valid_connection(struct evws *ws, struct evws_connection *conn);
 
 struct evws_frame *evws_frame_new();
 void evws_frame_free(struct evws_frame *frame);

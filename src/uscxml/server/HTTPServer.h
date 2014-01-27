@@ -98,6 +98,9 @@ public:
 	static std::string getBaseURL(ServerType type = HTTP);
 
 	static void reply(const Reply& reply);
+	static void wsSend(struct evws_connection *conn, enum evws_opcode opcode, const char *data, uint64_t length);
+	static void wsBroadcast(const char *uri, enum evws_opcode opcode, const char *data, uint64_t length);
+
 	static bool registerServlet(const std::string& path, HTTPServlet* servlet); ///< Register a servlet, returns false if path is already taken
 	static void unregisterServlet(HTTPServlet* servlet);
 
@@ -105,6 +108,22 @@ public:
 	static void unregisterServlet(WebSocketServlet* servlet);
 
 private:
+	
+	class WSData {
+	public:
+		WSData(struct evws_connection *conn_, const char *uri_, enum evws_opcode opcode_, const char *data_, uint64_t length_) {
+			conn = conn_;
+			if (uri_)
+				uri = uri_;
+			opcode = opcode_;
+			data = std::string(data_, length_);
+		}
+		struct evws_connection *conn;
+		std::string data;
+		std::string uri;
+		evws_opcode opcode;
+	};
+
 	struct comp_strsize_less {
 		bool operator()(std::string const& l, std::string const& r) const {
 			if (l.size() < r.size())
@@ -124,9 +143,11 @@ private:
 	void determineAddress();
 
 	static void replyCallback(evutil_socket_t fd, short what, void *arg);
+	static void wsSendCallback(evutil_socket_t fd, short what, void *arg);
+
 	static void httpRecvReqCallback(struct evhttp_request *req, void *callbackData);
 	static void wsRecvReqCallback(struct evws_connection *conn, struct evws_frame *, void *callbackData);
-
+	
 	void processByMatchingServlet(const Request& request);
 	void processByMatchingServlet(evws_connection* conn, const WSFrame& frame);
 
@@ -183,9 +204,6 @@ public:
 	virtual void setURL(const std::string& url) = 0; /// Called by the server with the actual URL
 	virtual bool canAdaptPath() {
 		return true;
-	}
-	struct evws* getWSBase() {
-		return HTTPServer::getInstance()->_evws;
 	}
 };
 
