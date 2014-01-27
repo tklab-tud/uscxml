@@ -17,9 +17,9 @@
 
 namespace uscxml {
 
-#define MAXTIMREPLYSIZE		2000
-#define DEF_TIMADDR		"127.0.0.1"
-#define DEF_TIMPORT		"3000"
+#define MAXTIMREPLYSIZE     20000
+#define DEF_TIMADDR         "127.0.0.1"
+#define DEF_TIMPORT         "3000"
 
 /**
  * @brief Implementa un TCP client in comunicazione con il TIM

@@ -201,7 +201,6 @@ void XmlBridgeInvoker::buildTIMreply(unsigned int cmdid, bool type, const std::s
 	if (!(domParser.parse(inputSource))) {
 		LOG(ERROR) << "Failed parsing TIM XML reply string for command " << cmdid;
 		LOG(ERROR) << "Errors " << errorHandler.errors();;
-		LOG(ERROR) << "TIM XML string was: " << std::endl << reply_raw_data;
 		buildTIMexception(cmdid, TIM_ERROR);
 		return;
 	}
