@@ -143,6 +143,16 @@ void evws_broadcast(struct evws *ws, const char *uri, enum evws_opcode opcode, c
 	}
 }
 
+int evws_is_valid_connection(struct evws *ws, struct evws_connection *conn) {
+	struct evws_connection *ws_connection;
+	for ((ws_connection) = (&ws->connections)->tqh_first; ws_connection; ws_connection = ws_connection->next.tqe_next) {
+		if (ws_connection == conn)
+			return 1;
+	}
+	return 0;
+}
+
+
 // Error callback
 static void cb_error(struct bufferevent *bev, short what, void *ctx) {
 	struct evws_connection *conn = ctx;
@@ -374,7 +384,7 @@ NEXT_FRAME:
 			while(conn->frame->payload_bytes > 0 && // need to add more bytes to the payload length
 						(size - (dataPtr - readbuf) > 0)) { // and bytes still available
 				// length is in MSB network order - shift to left and add
-				conn->frame->size = (conn->frame->size << 8) + dataPtr[0];
+				conn->frame->size = (conn->frame->size << 8) + (uint8_t)dataPtr[0];
 				conn->frame->payload_bytes--;
 				dataPtr++;
 			}
@@ -427,9 +437,9 @@ NEXT_FRAME:
 			// TAILQ_FOREACH
 			for (ws_cb = ((&ws->callbacks))->tqh_first; ws_cb; ws_cb = (ws_cb->next.tqe_next)) {
 				if (strcmp(ws_cb->uri, conn->uri) == 0) {
-					if(ws_cb->msg_cb != ((void*)0))
+					if(ws_cb->msg_cb != ((void*)0)) {
 						ws_cb->msg_cb(conn, conn->frame, ws_cb->cb_arg);
-					return;
+					}
 				}
 			}
 			ws->gencb(conn, conn->frame, ws->gencb_arg);
