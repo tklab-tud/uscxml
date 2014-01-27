@@ -165,27 +165,32 @@ void TimIO::client(void *instance) {
 	/*
 	 * Function blocks until the full amount of message data can be returned
 	 */
-	int replylen;
+    size_t replylen = 0;
 	memset(myobj->_reply, 0, MAXTIMREPLYSIZE);
-	if ((replylen = recv(myobj->_socketfd, myobj->_reply,
-		MAXTIMREPLYSIZE, 0 )) == -1) {
-		if (errno == EAGAIN || errno == EWOULDBLOCK) {
-			LOG(ERROR) << "TIM client: command timeout";
-			bridgeInstance.handleTIMexception(TIM_TIMEOUT);
-			return;
-		}
-		PLOG(ERROR) << "TIM recv error: client ignoring TIM reply";
-		bridgeInstance.handleTIMexception(TIM_ERROR);
-		return;
-	} else if (replylen == 0 && errno == 0) {
-		LOG(ERROR) << "TIM client: received zero-length message";
-		bridgeInstance.handleTIMexception(TIM_ERROR);
-		return;
-	} else if (replylen == MAXTIMREPLYSIZE) {
-        LOG(ERROR) << "TIM client: received too long message";
-		bridgeInstance.handleTIMexception(TIM_ERROR);
-		return;
-	}
+    do {
+        int recvlen;
+        if ((recvlen = recv(myobj->_socketfd, myobj->_reply + replylen,
+            MAXTIMREPLYSIZE - replylen, 0)) == -1) {
+            if (errno == EAGAIN || errno == EWOULDBLOCK) {
+                LOG(ERROR) << "TIM client: command timeout";
+                bridgeInstance.handleTIMexception(TIM_TIMEOUT);
+                return;
+            }
+            PLOG(ERROR) << "TIM recv error: client ignoring TIM reply";
+            bridgeInstance.handleTIMexception(TIM_ERROR);
+            return;
+        } else if (recvlen == 0 && errno == 0) {
+            LOG(ERROR) << "TIM client: received zero-length message";
+            bridgeInstance.handleTIMexception(TIM_ERROR);
+            return;
+        } else if (recvlen == MAXTIMREPLYSIZE) {
+            LOG(ERROR) << "TIM client: received message too long";
+//            bridgeInstance.handleTIMexception(TIM_ERROR);
+//            return;
+        }
+        replylen += recvlen;
+    } while (std::strncmp(myobj->_reply, "<frame>", 7) != 0 ||
+             std::strncmp(&myobj->_reply[replylen-8], "</frame>", 8) != 0);
 
 	LOG(ERROR) << "Received reply from TIM: " << std::endl << myobj->_reply;
 

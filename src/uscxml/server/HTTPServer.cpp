@@ -489,7 +489,7 @@ void HTTPServer::processByMatchingServlet(evws_connection* conn, const WSFrame& 
 }
 
 void HTTPServer::reply(const Reply& reply) {
-	// we need to reply from the thread calling event_base_dispatch, just add to ist base queue!
+	// we need to reply from the thread calling event_base_dispatch, just add to its base queue!
 	Reply* replyCB = new Reply(reply);
 	HTTPServer* INSTANCE = getInstance();
 	event_base_once(INSTANCE->_base, -1, EV_TIMEOUT, HTTPServer::replyCallback, replyCB, NULL);
@@ -528,6 +528,33 @@ void HTTPServer::replyCallback(evutil_socket_t fd, short what, void *arg) {
 	delete(reply);
 }
 
+	
+void HTTPServer::wsSend(struct evws_connection *conn, enum evws_opcode opcode, const char *data, uint64_t length) {
+	HTTPServer* INSTANCE = getInstance();
+	WSData* sendCB = new WSData(conn, NULL, opcode, data, length);
+	event_base_once(INSTANCE->_base, -1, EV_TIMEOUT, HTTPServer::wsSendCallback, sendCB, NULL);
+}
+
+void HTTPServer::wsBroadcast(const char *uri, enum evws_opcode opcode, const char *data, uint64_t length) {
+	HTTPServer* INSTANCE = getInstance();
+	WSData* sendCB = new WSData(NULL, uri, opcode, data, length);
+	event_base_once(INSTANCE->_base, -1, EV_TIMEOUT, HTTPServer::wsSendCallback, sendCB, NULL);
+
+}
+
+void HTTPServer::wsSendCallback(evutil_socket_t fd, short what, void *arg) {
+	WSData* wsSend = (WSData*)arg;
+	if (wsSend->uri.size() > 0) {
+		evws_broadcast(getInstance()->_evws, wsSend->uri.c_str(), wsSend->opcode, wsSend->data.data(), wsSend->data.length());
+	} else {
+		if (evws_is_valid_connection(getInstance()->_evws, wsSend->conn) > 0) {
+			evws_send_data(wsSend->conn, wsSend->opcode, wsSend->data.data(), wsSend->data.length());
+		}
+	}
+	
+	delete wsSend;
+}
+	
 bool HTTPServer::registerServlet(const std::string& path, HTTPServlet* servlet) {
 	HTTPServer* INSTANCE = getInstance();
 

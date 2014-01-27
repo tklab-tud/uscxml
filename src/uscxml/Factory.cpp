@@ -275,30 +275,30 @@ Factory::Factory() {
 		registerDataModel(dataModel);
 	}
 #if 1
-	{
-		XHTMLInvoker* invoker = new XHTMLInvoker();
-		registerInvoker(invoker);
-	}
-	{
-		USCXMLInvoker* invoker = new USCXMLInvoker();
-		registerInvoker(invoker);
-	}
-	{
-		HTTPServletInvoker* invoker = new HTTPServletInvoker();
-		registerInvoker(invoker);
-	}
-	{
-		HeartbeatInvoker* invoker = new HeartbeatInvoker();
-		registerInvoker(invoker);
-	}
-	{
-		DirMonInvoker* invoker = new DirMonInvoker();
-		registerInvoker(invoker);
-	}
-	{
-		SystemInvoker* invoker = new SystemInvoker();
-		registerInvoker(invoker);
-	}
+//	{
+//		XHTMLInvoker* invoker = new XHTMLInvoker();
+//		registerInvoker(invoker);
+//	}
+//	{
+//		USCXMLInvoker* invoker = new USCXMLInvoker();
+//		registerInvoker(invoker);
+//	}
+//	{
+//		HTTPServletInvoker* invoker = new HTTPServletInvoker();
+//		registerInvoker(invoker);
+//	}
+//	{
+//		HeartbeatInvoker* invoker = new HeartbeatInvoker();
+//		registerInvoker(invoker);
+//	}
+//	{
+//		DirMonInvoker* invoker = new DirMonInvoker();
+//		registerInvoker(invoker);
+//	}
+    {
+        XmlBridgeInvoker* invoker = new XmlBridgeInvoker();
+        registerInvoker(invoker);
+    }
 	{
 		BasicHTTPIOProcessor* ioProcessor = new BasicHTTPIOProcessor();
 		registerIOProcessor(ioProcessor);
@@ -307,14 +307,14 @@ Factory::Factory() {
 		SCXMLIOProcessor* ioProcessor = new SCXMLIOProcessor();
 		registerIOProcessor(ioProcessor);
 	}
-	{
-		InterpreterHTTPServlet* ioProcessor = new InterpreterHTTPServlet();
-		registerIOProcessor(ioProcessor);
-	}
-	{
-		InterpreterWebSocketServlet* ioProcessor = new InterpreterWebSocketServlet();
-		registerIOProcessor(ioProcessor);
-	}
+//	{
+//		InterpreterHTTPServlet* ioProcessor = new InterpreterHTTPServlet();
+//		registerIOProcessor(ioProcessor);
+//	}
+//	{
+//		InterpreterWebSocketServlet* ioProcessor = new InterpreterWebSocketServlet();
+//		registerIOProcessor(ioProcessor);
+//	}
 	{
 		FetchElement* element = new FetchElement();
 		registerExecutableContent(element);
