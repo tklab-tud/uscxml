@@ -214,7 +214,7 @@
 			<transition event="3_rReply"  target="init3">
 				<if cond="$_event/data/frame">
 					<send 	event="3_rAck"
-						namelist="$_event/data/frame/data/nestedData/item/nestedData[@type='code']/text()"
+						namelist="$_event/data/frame/data/nestedData/item/nestedData[@type='phrase']/text()"
 						target="#_xmlbridge0"/>
 				<else/>
 					<send 	event="3_rErr"
