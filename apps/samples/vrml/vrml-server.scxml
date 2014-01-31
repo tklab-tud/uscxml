@@ -311,6 +311,13 @@
 				</respond>
 			</transition>
 
+			<transition event="ws.*" target="idle">
+				<script>dump(_event);</script>
+			  <send targetexpr="_event.origin" type="websocket">
+          <content expr="_event" /> <!-- reply with event -->
+			  </send>
+			</transition>
+
 			<transition event="render.done" target="idle">
 				<script>//dump(_event);</script>
 				<respond status="200" to="_event.data.context">
