@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 2.8.4)
 # specify USCXML version
 SET(USCXML_VERSION_MAJOR "0")
 SET(USCXML_VERSION_MINOR "1")
-SET(USCXML_VERSION_PATCH "1")
+SET(USCXML_VERSION_PATCH "2")
 SET(USCXML_VERSION ${USCXML_VERSION_MAJOR}.${USCXML_VERSION_MINOR}.${USCXML_VERSION_PATCH})
 
 # build type has to be set before the project definition4
