@@ -39,9 +39,11 @@
 # include "uscxml/plugins/invoker/filesystem/dirmon/DirMonInvoker.h"
 # include "uscxml/plugins/invoker/system/SystemInvoker.h"
 # include "uscxml/plugins/invoker/xhtml/XHTMLInvoker.h"
-# include "uscxml/plugins/invoker/smtp/SMTPInvoker.h"
 # include "uscxml/plugins/invoker/imap/IMAPInvoker.h"
 
+# ifdef CURL_HAS_SMTP
+#   include "uscxml/plugins/invoker/smtp/SMTPInvoker.h"
+# endif
 
 #ifdef PROTOBUF_FOUND
 //# include "uscxml/plugins/ioprocessor/modality/MMIHTTPIOProcessor.h"
@@ -269,6 +271,13 @@ Factory::Factory() {
 #endif
 #endif
 
+#ifdef CURL_HAS_SMTP
+	{
+		SMTPInvoker* invoker = new SMTPInvoker();
+		registerInvoker(invoker);
+	}
+#endif
+
 	// these are always available
 	{
 		NULLDataModel* dataModel = new NULLDataModel();
@@ -277,10 +286,6 @@ Factory::Factory() {
 #if 1
 	{
 		XHTMLInvoker* invoker = new XHTMLInvoker();
-		registerInvoker(invoker);
-	}
-	{
-		SMTPInvoker* invoker = new SMTPInvoker();
 		registerInvoker(invoker);
 	}
 	{

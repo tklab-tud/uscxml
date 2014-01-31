@@ -577,15 +577,11 @@ set(CMAKE_REQUIRED_LIBRARIES ${CURL_LIBRARIES})
 
 check_cxx_source_compiles("
 	#include <curl/curl.h>
-	int main(){return CURLOPT_MAIL_RCPT}
+	int main(){return CURLOPT_MAIL_RCPT; }
 " CURL_HAS_SMTP)
 
 set(CMAKE_REQUIRED_INCLUDES)
 set(CMAKE_REQUIRED_LIBRARIES)
-
-if (NOT CURL_HAS_SMTP)
-	message(STATUS "Curl missing SMTP support.")
-endif()
 
 # GLOG
 # set(ENV{GLOG_SRC} ${CMAKE_SOURCE_DIR}/../glog)

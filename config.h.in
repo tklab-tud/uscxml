@@ -72,6 +72,9 @@
 #cmakedefine EXPECT_FOUND
 #cmakedefine TCL_FOUND
 
+/** Properties of the libraries we found */
+#cmakedefine CURL_HAS_SMTP
+
 /** Header files we found */
 #cmakedefine HAS_UNISTD_H
 #cmakedefine HAS_STRING_H
