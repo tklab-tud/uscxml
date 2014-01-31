@@ -102,7 +102,7 @@ HTTPServer::HTTPServer(unsigned short port, unsigned short wsPort, SSLConfig* ss
 		if (_httpHandle) {
 			LOG(INFO) << "HTTP server listening on tcp/" << _port;
 		} else {
-			LOG(ERROR) << "HTTP server cannot bind to tcp/" << _wsPort;
+			LOG(ERROR) << "HTTP server cannot bind to tcp/" << _port;
 		}
 	}
 
