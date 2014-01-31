@@ -1,5 +1,7 @@
 # uSCXML ReadMe
 
+[![Build Status](https://travis-ci.org/sradomski/uscxml.png?branch=master)](https://travis-ci.org/sradomski/uscxml)
+
 uSCXML is a SCXML interpreter written in C/C++. It is mostly feature-complete and to a large extend
 [standards compliant](https://github.com/tklab-tud/uscxml#test-reports).
 It runs on <b>Linux</b>, <b>Windows</b> and <b>MacOSX</b>, each 32- as well as 64Bits as well as <b>iOS</b>.
