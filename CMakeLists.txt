@@ -570,6 +570,22 @@ list (APPEND USCXML_CORE_LIBS ${CURL_LIBRARIES})
 if (WIN32)
 	add_definitions("-DCURL_STATICLIB")
 endif()
+include(CheckCXXSourceCompiles)
+
+set(CMAKE_REQUIRED_INCLUDES ${CURL_INCLUDE_DIRS})
+set(CMAKE_REQUIRED_LIBRARIES ${CURL_LIBRARIES})
+
+check_cxx_source_compiles("
+	#include <curl/curl.h>
+	int main(){return CURLOPT_MAIL_RCPT}
+" CURL_HAS_SMTP)
+
+set(CMAKE_REQUIRED_INCLUDES)
+set(CMAKE_REQUIRED_LIBRARIES)
+
+if (NOT CURL_HAS_SMTP)
+	message(STATUS "Curl missing SMTP support.")
+endif()
 
 # GLOG
 # set(ENV{GLOG_SRC} ${CMAKE_SOURCE_DIR}/../glog)
