@@ -150,7 +150,7 @@ if (BUILD_AS_PLUGINS)
 	source_group("" FILES IMAP_INVOKER)
 	add_library(
 		invoker_imap SHARED 
-		IMAP_INVOKER}
+		${IMAP_INVOKER}
 		"../Plugins.cpp")
 	target_link_libraries(invoker_imap uscxml)
 	set_target_properties(invoker_imap PROPERTIES FOLDER "Plugin Invoker")
