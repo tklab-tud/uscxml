@@ -8,4 +8,6 @@ before_install:
  - sudo apt-get install -qq libpurple-dev
  - sudo apt-get install -qq libical-dev
  - sudo apt-get install -qq libopenal-dev libsndfile-dev
+ - sudo apt-get install -qq expect-dev
+ - sudo apt-get install -qq libprotobuf-dev libprotoc-dev
 script: mkdir build && cd build && cmake .. && make
