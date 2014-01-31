@@ -42,11 +42,11 @@ for FILE in ${PLATFORMS}; do
     else
       tar cvzf uscxml-prebuilt-${PLATFORM}.tgz --exclude='*/.DS_Store' --exclude='VERSION.txt' --exclude='lib/*_d.a' ${FILE}
     fi
-#    scp uscxml-prebuilt-${PLATFORM}.tgz ${USCXML_PREBUILT_HOST}:${USCXML_PREBUILT_PATH}/${VERSION}
+    scp uscxml-prebuilt-${PLATFORM}.tgz ${USCXML_PREBUILT_HOST}:${USCXML_PREBUILT_PATH}/${VERSION}
     rm uscxml-prebuilt-${PLATFORM}.tgz
   else
     tar cvzf include.tgz --exclude='*/.DS_Store' --exclude='VERSION.txt' ${FILE}
-#    scp include.tgz ${USCXML_PREBUILT_HOST}:${USCXML_PREBUILT_PATH}/${VERSION}
+    scp include.tgz ${USCXML_PREBUILT_HOST}:${USCXML_PREBUILT_PATH}/${VERSION}
     rm include.tgz
   fi
 done
