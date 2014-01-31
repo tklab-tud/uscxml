@@ -10,6 +10,6 @@ before_install:
  - sudo apt-get install -qq libopenal-dev libsndfile-dev
  - sudo apt-get install -qq expect-dev
  - sudo apt-get install -qq libprotobuf-dev libprotoc-dev
- - sudo apt-get install -qq swi-prolog swi-prolog-sgml
+ - sudo apt-get install -qq swi-prolog
  
 script: mkdir build && cd build && cmake .. && make
