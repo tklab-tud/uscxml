@@ -39,9 +39,11 @@
 //# include "uscxml/plugins/invoker/filesystem/dirmon/DirMonInvoker.h"
 # include "uscxml/plugins/invoker/system/XmlBridgeInvoker.h"
 //# include "uscxml/plugins/invoker/xhtml/XHTMLInvoker.h"
-//# include "uscxml/plugins/invoker/smtp/SMTPInvoker.h"
 //# include "uscxml/plugins/invoker/imap/IMAPInvoker.h"
 
+# ifdef CURL_HAS_SMTP
+#   include "uscxml/plugins/invoker/smtp/SMTPInvoker.h"
+# endif
 
 #ifdef PROTOBUF_FOUND
 //# include "uscxml/plugins/ioprocessor/modality/MMIHTTPIOProcessor.h"
@@ -269,36 +271,48 @@ Factory::Factory() {
 #endif
 #endif
 
+#ifdef CURL_HAS_SMTP
+	{
+		SMTPInvoker* invoker = new SMTPInvoker();
+		registerInvoker(invoker);
+	}
+#endif
+
 	// these are always available
 	{
 		NULLDataModel* dataModel = new NULLDataModel();
 		registerDataModel(dataModel);
 	}
-#if 1
-//	{
-//		XHTMLInvoker* invoker = new XHTMLInvoker();
-//		registerInvoker(invoker);
-//	}
-//	{
-//		USCXMLInvoker* invoker = new USCXMLInvoker();
-//		registerInvoker(invoker);
-//	}
-//	{
-//		HTTPServletInvoker* invoker = new HTTPServletInvoker();
-//		registerInvoker(invoker);
-//	}
-//	{
-//		HeartbeatInvoker* invoker = new HeartbeatInvoker();
-//		registerInvoker(invoker);
-//	}
-//	{
-//		DirMonInvoker* invoker = new DirMonInvoker();
-//		registerInvoker(invoker);
-//	}
-    {
-        XmlBridgeInvoker* invoker = new XmlBridgeInvoker();
-        registerInvoker(invoker);
-    }
+#if 0
+	{
+		XHTMLInvoker* invoker = new XHTMLInvoker();
+		registerInvoker(invoker);
+	}
+	{
+		IMAPInvoker* invoker = new IMAPInvoker();
+		registerInvoker(invoker);
+	}
+	{
+		USCXMLInvoker* invoker = new USCXMLInvoker();
+		registerInvoker(invoker);
+	}
+	{
+		HTTPServletInvoker* invoker = new HTTPServletInvoker();
+		registerInvoker(invoker);
+	}
+	{
+		HeartbeatInvoker* invoker = new HeartbeatInvoker();
+		registerInvoker(invoker);
+	}
+	{
+		DirMonInvoker* invoker = new DirMonInvoker();
+		registerInvoker(invoker);
+	}
+#endif
+	{
+		XmlBridgeInvoker* invoker = new XmlBridgeInvoker();
+		registerInvoker(invoker);
+	}
 	{
 		BasicHTTPIOProcessor* ioProcessor = new BasicHTTPIOProcessor();
 		registerIOProcessor(ioProcessor);
@@ -307,14 +321,16 @@ Factory::Factory() {
 		SCXMLIOProcessor* ioProcessor = new SCXMLIOProcessor();
 		registerIOProcessor(ioProcessor);
 	}
-//	{
-//		InterpreterHTTPServlet* ioProcessor = new InterpreterHTTPServlet();
-//		registerIOProcessor(ioProcessor);
-//	}
-//	{
-//		InterpreterWebSocketServlet* ioProcessor = new InterpreterWebSocketServlet();
-//		registerIOProcessor(ioProcessor);
-//	}
+#if 0
+	{
+		InterpreterHTTPServlet* ioProcessor = new InterpreterHTTPServlet();
+		registerIOProcessor(ioProcessor);
+	}
+	{
+		InterpreterWebSocketServlet* ioProcessor = new InterpreterWebSocketServlet();
+		registerIOProcessor(ioProcessor);
+	}
+#endif
 	{
 		FetchElement* element = new FetchElement();
 		registerExecutableContent(element);
@@ -332,7 +348,6 @@ Factory::Factory() {
 		registerExecutableContent(element);
 	}
 
-#endif
 #endif
 }
 

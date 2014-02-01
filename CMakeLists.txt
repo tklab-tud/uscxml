@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 2.8.4)
 # specify USCXML version
 SET(USCXML_VERSION_MAJOR "0")
 SET(USCXML_VERSION_MINOR "1")
-SET(USCXML_VERSION_PATCH "1")
+SET(USCXML_VERSION_PATCH "2")
 SET(USCXML_VERSION ${USCXML_VERSION_MAJOR}.${USCXML_VERSION_MINOR}.${USCXML_VERSION_PATCH})
 
 # build type has to be set before the project definition4
@@ -568,6 +568,18 @@ list (APPEND USCXML_CORE_LIBS ${CURL_LIBRARIES})
 if (WIN32)
 	add_definitions("-DCURL_STATICLIB")
 endif()
+include(CheckCXXSourceCompiles)
+
+set(CMAKE_REQUIRED_INCLUDES ${CURL_INCLUDE_DIRS})
+set(CMAKE_REQUIRED_LIBRARIES ${CURL_LIBRARIES})
+
+check_cxx_source_compiles("
+	#include <curl/curl.h>
+	int main(){return CURLOPT_MAIL_RCPT; }
+" CURL_HAS_SMTP)
+
+set(CMAKE_REQUIRED_INCLUDES)
+set(CMAKE_REQUIRED_LIBRARIES)
 
 # GLOG
 # set(ENV{GLOG_SRC} ${CMAKE_SOURCE_DIR}/../glog)

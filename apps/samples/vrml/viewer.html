@@ -78,38 +78,40 @@
          enableWebGL: true,
          enableSceneshots: false,
          enableDraggables: false,
+         enablePosePublishing: true,
          listNavigationStyle: true,
          treeNavigationStyle: true,
          listDirectory: "/hard_mp",
          imagePath: "/hard_mp/HARD_MP_VAL_000",
          imageFormat: "png",
          serverURL: "http://localhost:8082/vrml",
+         webSocketURL: "ws://localhost:8083/vrml",
         });
-				var viewer2 = new VRMLViewer("scene2", {
-					pose: {
-					  pitch       : 0,
-					  roll        : 0,
-					  yaw         : 0,
-					  zoom        : 1,
-					  x           : 0,
-					  y           : 0,
-					  z           : 0,
-					  autorotate  : true
-					},
-					height: 300,
-					width: 400,
-					enableMovies: true,
-					enableDND: false,
-					enableWebGL: false,
-					enableSceneshots: true,
-					enableDraggables: true,
-					listNavigationStyle: true,
-					treeNavigationStyle: true,
-					listDirectory: "/hard_mp",
-					imagePath: "/hard_mp/HARD_MP_VAL_000",
-					imageFormat: "png",
-					serverURL: "http://localhost:8082/vrml"
-				});
+				// var viewer2 = new VRMLViewer("scene2", {
+				// 	pose: {
+				// 	  pitch       : 0,
+				// 	  roll        : 0,
+				// 	  yaw         : 0,
+				// 	  zoom        : 1,
+				// 	  x           : 0,
+				// 	  y           : 0,
+				// 	  z           : 0,
+				// 	  autorotate  : true
+				// 	},
+				// 	height: 300,
+				// 	width: 400,
+				// 	enableMovies: true,
+				// 	enableDND: false,
+				// 	enableWebGL: false,
+				// 	enableSceneshots: true,
+				// 	enableDraggables: true,
+				// 	listNavigationStyle: true,
+				// 	treeNavigationStyle: true,
+				// 	listDirectory: "/hard_mp",
+				// 	imagePath: "/hard_mp/HARD_MP_VAL_000",
+				// 	imageFormat: "png",
+				// 	serverURL: "http://localhost:8082/vrml"
+				// });
 			});
 		</script>
 	</head>
