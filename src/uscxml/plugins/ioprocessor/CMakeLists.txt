@@ -1,37 +1,38 @@
-#set(USCXML_IOPROCESSORS "sample ${USCXML_IOPROCESSORS}")
-#file(GLOB_RECURSE SAMPLE_IOPROCESSOR
-#	sample/*.cpp
-#	sample/*.h
-#)
-#if (BUILD_AS_PLUGINS)
-#	source_group("" FILES ${SAMPLE_IOPROCESSOR})
-#	add_library(
-#		ioprocessor_sample SHARED
-#		${SAMPLE_IOPROCESSOR}
-#		"../Plugins.cpp")
-#	target_link_libraries(ioprocessor_sample uscxml)
-#	set_target_properties(ioprocessor_sample PROPERTIES FOLDER "Plugin IOProcessor")
-#else()
-#	list (APPEND USCXML_FILES ${SAMPLE_IOPROCESSOR})
-#endif()
+if (0)
+set(USCXML_IOPROCESSORS "sample ${USCXML_IOPROCESSORS}")
+file(GLOB_RECURSE SAMPLE_IOPROCESSOR
+	sample/*.cpp
+	sample/*.h
+)
+if (BUILD_AS_PLUGINS)
+	source_group("" FILES ${SAMPLE_IOPROCESSOR})
+	add_library(
+		ioprocessor_sample SHARED 
+		${SAMPLE_IOPROCESSOR}
+		"../Plugins.cpp")
+	target_link_libraries(ioprocessor_sample uscxml)
+	set_target_properties(ioprocessor_sample PROPERTIES FOLDER "Plugin IOProcessor")
+else()
+	list (APPEND USCXML_FILES ${SAMPLE_IOPROCESSOR})
+endif()
 
-#set(USCXML_IOPROCESSORS "comet ${USCXML_IOPROCESSORS}")
-#file(GLOB_RECURSE COMET_IOPROCESSOR
-#	comet/*.cpp
-#	comet/*.h
-#)
-#if (BUILD_AS_PLUGINS)
-#	source_group("" FILES ${COMET_IOPROCESSOR})
-#	add_library(
-#		ioprocessor_comet SHARED
-#		${COMET_IOPROCESSOR}
-#		"../Plugins.cpp")
-#	target_link_libraries(ioprocessor_comet uscxml)
-#	set_target_properties(ioprocessor_comet PROPERTIES FOLDER "Plugin IOProcessor")
-#else()
-#	list (APPEND USCXML_FILES ${COMET_IOPROCESSOR})
-#endif()
-
+set(USCXML_IOPROCESSORS "comet ${USCXML_IOPROCESSORS}")
+file(GLOB_RECURSE COMET_IOPROCESSOR
+	comet/*.cpp
+	comet/*.h
+)
+if (BUILD_AS_PLUGINS)
+	source_group("" FILES ${COMET_IOPROCESSOR})
+	add_library(
+		ioprocessor_comet SHARED 
+		${COMET_IOPROCESSOR}
+		"../Plugins.cpp")
+	target_link_libraries(ioprocessor_comet uscxml)
+	set_target_properties(ioprocessor_comet PROPERTIES FOLDER "Plugin IOProcessor")
+else()
+	list (APPEND USCXML_FILES ${COMET_IOPROCESSOR})
+endif()
+endif()
 
 # LIBEVENT basichttp ioprocessor - this one is already required above
 

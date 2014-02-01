@@ -20,7 +20,6 @@
 #ifndef DELAYEDEVENTQUEUE_H_JA6WRBVP
 #define DELAYEDEVENTQUEUE_H_JA6WRBVP
 
-#include "uscxml/Common.h"
 #include "uscxml/concurrency/tinythread.h"
 
 #include <event2/thread.h>

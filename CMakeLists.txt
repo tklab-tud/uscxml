@@ -186,49 +186,51 @@ if (NOT "${USCXML_VERSION}" VERSION_EQUAL "${PREBUILT_LIBRARIES_VERSION}")
 	)
 endif()
 
-#if (NOT EXISTS ${PROJECT_SOURCE_DIR}/contrib/prebuilt/include)
-#	message(STATUS "Downloading header files: ${USCXML_LIBRARY_HOST_URL_PREFIX}/${USCXML_VERSION}/include.tgz")
-#	file(DOWNLOAD ${USCXML_LIBRARY_HOST_URL_PREFIX}/${USCXML_VERSION}/include.tgz
-#		${PROJECT_SOURCE_DIR}/contrib/prebuilt/include.tgz
-#		INACTIVITY_TIMEOUT 60 STATUS DOWNLOAD_STATUS SHOW_PROGRESS)
-#	list(GET DOWNLOAD_STATUS 0 STATUS_CODE)
-#	list(GET DOWNLOAD_STATUS 1 STATUS_STRING)
-#	if(STATUS_CODE EQUAL 0)
-#		execute_process(
-#			COMMAND ${CMAKE_COMMAND} -E tar xzf ${PROJECT_SOURCE_DIR}/contrib/prebuilt/include.tgz
-#			WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/contrib/prebuilt/
-#		)
-#		execute_process(
-#			COMMAND ${CMAKE_COMMAND} -E remove ${PROJECT_SOURCE_DIR}/contrib/prebuilt/include.tgz
-#			WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/contrib/prebuilt/
-#		)
-#		file(WRITE ${PROJECT_SOURCE_DIR}/contrib/prebuilt/include/VERSION.txt "${USCXML_VERSION}")
-#	else()
-#		message("Downloading header files failed with ${STATUS_STRING}")
-#	endif()
-#endif()
+if (0)
+if (NOT EXISTS ${PROJECT_SOURCE_DIR}/contrib/prebuilt/include)
+	message(STATUS "Downloading header files: ${USCXML_LIBRARY_HOST_URL_PREFIX}/${USCXML_VERSION}/include.tgz")
+	file(DOWNLOAD ${USCXML_LIBRARY_HOST_URL_PREFIX}/${USCXML_VERSION}/include.tgz
+		${PROJECT_SOURCE_DIR}/contrib/prebuilt/include.tgz
+		INACTIVITY_TIMEOUT 60 STATUS DOWNLOAD_STATUS SHOW_PROGRESS)
+	list(GET DOWNLOAD_STATUS 0 STATUS_CODE)
+	list(GET DOWNLOAD_STATUS 1 STATUS_STRING)
+	if(STATUS_CODE EQUAL 0)
+		execute_process(
+			COMMAND ${CMAKE_COMMAND} -E tar xzf ${PROJECT_SOURCE_DIR}/contrib/prebuilt/include.tgz
+			WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/contrib/prebuilt/
+		)
+		execute_process(
+			COMMAND ${CMAKE_COMMAND} -E remove ${PROJECT_SOURCE_DIR}/contrib/prebuilt/include.tgz
+			WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/contrib/prebuilt/
+		)
+		file(WRITE ${PROJECT_SOURCE_DIR}/contrib/prebuilt/include/VERSION.txt "${USCXML_VERSION}")
+	else()
+		message("Downloading header files failed with ${STATUS_STRING}")
+	endif()
+endif()
 
-#if (NOT EXISTS ${USCXML_PREBUILT_LIBRARY_PATH})
-#	message(STATUS "Downloading prebuilt libraries: ${USCXML_LIBRARY_HOST_URL_PREFIX}/${USCXML_VERSION}/${USCXML_LIBRARY_ARCHIVE_NAME}")
-#	file(DOWNLOAD ${USCXML_LIBRARY_HOST_URL_PREFIX}/${USCXML_VERSION}/${USCXML_LIBRARY_ARCHIVE_NAME}
-#		${PROJECT_SOURCE_DIR}/contrib/prebuilt/${USCXML_LIBRARY_ARCHIVE_NAME}
-#		INACTIVITY_TIMEOUT 60 STATUS DOWNLOAD_STATUS SHOW_PROGRESS)
-#	list(GET DOWNLOAD_STATUS 0 STATUS_CODE)
-#	list(GET DOWNLOAD_STATUS 1 STATUS_STRING)
-#	if(STATUS_CODE EQUAL 0)
-#		execute_process(
-#			COMMAND ${CMAKE_COMMAND} -E tar xzf ${PROJECT_SOURCE_DIR}/contrib/prebuilt/${USCXML_LIBRARY_ARCHIVE_NAME}
-#			WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/contrib/prebuilt/
-#		)
-#		execute_process(
-#			COMMAND ${CMAKE_COMMAND} -E remove ${PROJECT_SOURCE_DIR}/contrib/prebuilt/${USCXML_LIBRARY_ARCHIVE_NAME}
-#			WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/contrib/prebuilt/
-#		)
-#		file(WRITE ${PROJECT_SOURCE_DIR}/contrib/prebuilt/${USCXML_PLATFORM_ID}/VERSION.txt "${USCXML_VERSION}")
-#	else()
-#		message("Downloading prebuilt libraries failed with ${STATUS_STRING} - maybe this platform is not supported?")
-#	endif()
-#endif()
+if (NOT EXISTS ${USCXML_PREBUILT_LIBRARY_PATH})
+	message(STATUS "Downloading prebuilt libraries: ${USCXML_LIBRARY_HOST_URL_PREFIX}/${USCXML_VERSION}/${USCXML_LIBRARY_ARCHIVE_NAME}")
+	file(DOWNLOAD ${USCXML_LIBRARY_HOST_URL_PREFIX}/${USCXML_VERSION}/${USCXML_LIBRARY_ARCHIVE_NAME}
+		${PROJECT_SOURCE_DIR}/contrib/prebuilt/${USCXML_LIBRARY_ARCHIVE_NAME}
+		INACTIVITY_TIMEOUT 60 STATUS DOWNLOAD_STATUS SHOW_PROGRESS)
+	list(GET DOWNLOAD_STATUS 0 STATUS_CODE)
+	list(GET DOWNLOAD_STATUS 1 STATUS_STRING)
+	if(STATUS_CODE EQUAL 0)
+		execute_process(
+			COMMAND ${CMAKE_COMMAND} -E tar xzf ${PROJECT_SOURCE_DIR}/contrib/prebuilt/${USCXML_LIBRARY_ARCHIVE_NAME}
+			WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/contrib/prebuilt/
+		)
+		execute_process(
+			COMMAND ${CMAKE_COMMAND} -E remove ${PROJECT_SOURCE_DIR}/contrib/prebuilt/${USCXML_LIBRARY_ARCHIVE_NAME}
+			WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/contrib/prebuilt/
+		)
+		file(WRITE ${PROJECT_SOURCE_DIR}/contrib/prebuilt/${USCXML_PLATFORM_ID}/VERSION.txt "${USCXML_VERSION}")
+	else()
+		message("Downloading prebuilt libraries failed with ${STATUS_STRING} - maybe this platform is not supported?")
+	endif()
+endif()
+endif()
 
 if (CMAKE_CROSSCOMPILING)
 	OPTION(BUILD_SHARED_LIBS "Build shared libraries" OFF)
@@ -261,7 +263,7 @@ else()
 		SET(CMAKE_FIND_ROOT_PATH "/;${CMAKE_FIND_ROOT_PATH};${USCXML_PREBUILT_LIBRARY_PATH};${USCXML_PREBUILT_HEADER_PATH}")
 	endif()
 endif()
-include_directories("/usr/local/include" "../xmlBridgeCPP" ${USCXML_PREBUILT_LIBRARY_PATH}/include)
+include_directories("../xmlBridgeCPP" ${USCXML_PREBUILT_LIBRARY_PATH}/include)
 
 #message(STATUS "Searching for prebuilt libraries in: ${CMAKE_FIND_ROOT_PATH}")
 
@@ -317,15 +319,17 @@ if(${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
 	#	add_definitions(-Weffc++)
 
   # order of arguments of gcc matters again
+#	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
+	add_definitions(-fPIC)
 	#add_definitions(-Wunreachable-code)
 	add_definitions(-DVERBOSE)
 
-#	if (CMAKE_BUILD_TYPE MATCHES ".*Deb.*" AND ENABLE_GCOV) # when not building for debug
+	if (CMAKE_BUILD_TYPE MATCHES ".*Deb.*" AND ENABLE_GCOV) # when not building for debug
 		# coverage information
-#		add_definitions(-fprofile-arcs)
-#		add_definitions(-ftest-coverage)
-#		list (APPEND USCXML_CORE_LIBS "gcov")
-#	endif()
+		add_definitions(-fprofile-arcs)
+		add_definitions(-ftest-coverage)
+		list (APPEND USCXML_CORE_LIBS "gcov")
+	endif()
 
 	# all warnings
 	add_definitions(-Wall)

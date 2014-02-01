@@ -41,6 +41,8 @@
 
 #include "uscxml/interpreter/InterpreterDraft6.h"
 
+#define VERBOSE 0
+
 /// macro to catch exceptions in executeContent
 #define CATCH_AND_DISTRIBUTE(msg) \
 catch (Event e) {\
