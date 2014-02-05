@@ -41,17 +41,18 @@
 //# include "uscxml/plugins/invoker/xhtml/XHTMLInvoker.h"
 //# include "uscxml/plugins/invoker/imap/IMAPInvoker.h"
 
+#undef CURL_HAS_SMTP
 # ifdef CURL_HAS_SMTP
 #   include "uscxml/plugins/invoker/smtp/SMTPInvoker.h"
 # endif
 
 #ifdef PROTOBUF_FOUND
-//# include "uscxml/plugins/ioprocessor/modality/MMIHTTPIOProcessor.h"
+# include "uscxml/plugins/ioprocessor/modality/MMIHTTPIOProcessor.h"
 #endif
 
 # ifdef UMUNDO_FOUND
 #   include "uscxml/plugins/invoker/umundo/UmundoInvoker.h"
-//#   include "uscxml/plugins/invoker/vxml/VoiceXMLInvoker.h"
+#   include "uscxml/plugins/invoker/vxml/VoiceXMLInvoker.h"
 #endif
 
 # ifdef OPENSCENEGRAPH_FOUND
@@ -61,7 +62,7 @@
 
 # ifdef MILES_FOUND
 #   include "uscxml/plugins/invoker/miles/MilesSessionInvoker.h"
-//#   include "uscxml/plugins/invoker/miles/SpatialAudio.h"
+#   include "uscxml/plugins/invoker/miles/SpatialAudio.h"
 # endif
 
 # ifdef FFMPEG_FOUND

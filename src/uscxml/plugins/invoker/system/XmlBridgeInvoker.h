@@ -8,12 +8,12 @@
 #ifndef XmlBridgeInvoker_H_W09J90F0
 #define XmlBridgeInvoker_H_W09J90F0
 
-#include <map>
-#include <iostream>
-
 #include <uscxml/Interpreter.h>
 #include <glog/logging.h>
 #include "uscxml/plugins/invoker/system/timio.h"
+
+#include <map>
+#include <iostream>
 
 #ifdef BUILD_AS_PLUGINS
 #include "uscxml/plugins/Plugins.h"
