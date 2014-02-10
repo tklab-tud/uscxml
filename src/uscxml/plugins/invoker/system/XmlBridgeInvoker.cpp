@@ -65,7 +65,7 @@ void XmlBridgeInvoker::invoke(const InvokeRequest& req) {
 	} else
 		_timeoutVal = atoi(req.params.find("timeout")->second.atom.c_str());
 
-	_DBid = atoi(_invokeId.substr(sizeof(INVOKER_TYPE)).c_str());
+	_CMDid = atoi(_invokeId.substr(sizeof(INVOKER_TYPE)).c_str());
 
 	XmlBridgeInputEvents& myinstance = XmlBridgeInputEvents::getInstance();
 	myinstance.registerInvoker(_DBid, this);
@@ -88,22 +88,21 @@ Data XmlBridgeInvoker::getDataModelVariables() {
  * @param req La richiesta specificata nell'elemento <send> dell'SCXML
  */
 void XmlBridgeInvoker::send(const SendRequest& req) {
-	//TODO HANDLE MALFORMED EVENT
+	//TODO HANDLE MALFORMED EVENT NAME and DATA
 
 	SendRequest reqCopy = req;
 	std::string evName = reqCopy.getName();
-	int index = evName.find('_');
-	bool write = (evName.c_str()[index + 1] == 'w');
-	std::string evType = evName.substr(index + 2, 3);
-	unsigned int cmdid = atoi(evName.substr(0, index).c_str());
+	bool write = (evName.c_str()[0] == WRITEOP);
+	std::string evType = evName.substr(1, 3);
 
 	XmlBridgeInputEvents& bridgeInstance = XmlBridgeInputEvents::getInstance();
 	//_interpreter->getDataModel().replaceExpressions(reqCopy.content);
 	//TODO LOG EVENT
 
+	/* I dati inviati dal SCXML all'TIM o al MES sono sempre mappati nella struttura dati 'namelist' dell'evento */
 	/* SCXML -> TIM */
 	if (evType == SCXML2TIM) {
-		//TODO HANDLE MALFORMED DATA
+		//TODO HANDLE MALFORMED SCXML and DATA
 
 		std::stringstream ss;
 		std::map<std::string, Data>::const_iterator namelistIter = reqCopy.namelist.begin();
@@ -116,36 +115,38 @@ void XmlBridgeInvoker::send(const SendRequest& req) {
 			namelistIter++;
 		}
 
+		/* Elimina SCXML namespace */
 		int index = ss.str().find('>');
 		if (index == std::string::npos) {
 			LOG(ERROR) << "Invalid TIM frame";
-			buildTIMexception(cmdid, TIM_ERROR);
+			buildTIMexception(_CMDid, TIM_ERROR);
 		}
 		std::string timstr = "<frame>" + ss.str().substr(index + 1, ss.str().length());
 
-		bridgeInstance.sendReq2TIM(cmdid, write, timstr, _timeoutVal);
+		bridgeInstance.sendReq2TIM(_CMDid, write, timstr, _timeoutVal);
 
 	/* SCXML -> MES */
 	} else if (evType == SCXML2MES_ACK) {
-		//TODO HANDLE MALFORMED DATA
+		//TODO HANDLE MALFORMED SCXML and DATA
 
-		std::list<std::string> MESstrList;
 		if (!write) {
 			std::map<std::string, Data>::const_iterator namelistIter = reqCopy.namelist.begin();
 			while(namelistIter != reqCopy.namelist.end()) {
 				std::map<std::string, Data>::const_iterator nodesIter = namelistIter->second.compound.begin();
 				while(nodesIter != namelistIter->second.compound.end()) {
-					MESstrList.push_back(nodesIter->second.node.getNodeValue());
+					_itemsRead.push_back(nodesIter->second.node.getNodeValue());
 					nodesIter++;
 				}
 				namelistIter++;
 			}
 		}
-		bridgeInstance.sendReply2MES(_DBid, cmdid, write, MESstrList);
 
-	/* SCXML -> MES */
+		if (_itemsRead.size() >= _currItems || write)
+			bridgeInstance.sendReply2MES(_CMDid, _currAddr, _currLen, write, _itemsRead);
+
+	/* SCXML -> MES (errore) */
 	} else if (evType == SCXML2MES_ERR) {
-		bridgeInstance.sendErr2MES(_DBid, cmdid);
+		bridgeInstance.sendErr2MES(_CMDid);
 	} else {
 		LOG(ERROR) << "XmlBridgeInvoker: received an unsupported event type from Interpreter, discarding request\n"
 			<< "Propably the event name in the SCXML file is incorrect.";
@@ -160,13 +161,14 @@ void XmlBridgeInvoker::send(const SendRequest& req) {
  * @param write	Indica se si tratta di una richiesta di scrittura
  * @param req_raw_data La lista delle stringhe utilizzate per popolare il comando TIM (se richiesta di scrittura)
  */
-void XmlBridgeInvoker::buildMESreq(unsigned int cmdid, bool write, const std::list < std::string > req_raw_data) {
+void XmlBridgeInvoker::buildMESreq(unsigned int addr, unsigned int len, bool write, const std::list<std::string> req_raw_data) {
 	std::stringstream ss;
-	ss << cmdid << '_' << (write ? WRITEOP : READOP) << MES2SCXML;
+	ss << _CMDid << '_' << (write ? WRITEOP : READOP) << MES2SCXML;
 
 	Event myevent(ss.str(), Event::EXTERNAL);
 
-	if (write && !req_raw_data.empty()) {
+	/* I dati inviati dal MES all'SCXML sono sempre mappati nella struttura dati 'array' dell'evento */
+	if (!req_raw_data.empty()) {
 		Data mydata;
 
 		std::list<std::string>::const_iterator myiter;
@@ -174,7 +176,13 @@ void XmlBridgeInvoker::buildMESreq(unsigned int cmdid, bool write, const std::li
 			mydata.array.push_back(Data(*myiter));
 
 		myevent.data = mydata;
+		_currItems = req_raw_data.size();
+	} else {
+		_currItems = 0;
 	}
+	_currAddr = addr;
+	_currLen = len;
+	_itemsRead.clear();
 
 	returnEvent(myevent);
 }
@@ -188,7 +196,7 @@ void XmlBridgeInvoker::buildMESreq(unsigned int cmdid, bool write, const std::li
  * @param type Lettura/Scrittura
  * @param reply_raw_data Stringa Raw della risposta dal TIM
  */
-void XmlBridgeInvoker::buildTIMreply(unsigned int cmdid, bool type, const std::string reply_raw_data)
+void XmlBridgeInvoker::buildTIMreply(bool type, const std::string reply_raw_data)
 {
 	Arabica::SAX2DOM::Parser<std::string> domParser;
 	Arabica::SAX::CatchErrorHandler<std::string> errorHandler;
@@ -199,21 +207,23 @@ void XmlBridgeInvoker::buildTIMreply(unsigned int cmdid, bool type, const std::s
 	inputSource.setByteStream(is);
 
 	if (!(domParser.parse(inputSource))) {
-		LOG(ERROR) << "Failed parsing TIM XML reply string for command " << cmdid;
+		LOG(ERROR) << "Failed parsing TIM XML reply string for command " << _CMDid;
 		LOG(ERROR) << "Errors " << errorHandler.errors();;
-		buildTIMexception(cmdid, TIM_ERROR);
+		buildTIMexception(_CMDid, TIM_ERROR);
 		return;
 	}
 
 	std::stringstream ss;
-	ss << cmdid << '_' << (type ? WRITEOP : READOP) << TIM2SCXML;
+	ss << _CMDid << '_' << (type ? WRITEOP : READOP) << TIM2SCXML;
 
 	Event myevent(ss.str(), Event::EXTERNAL);
 	if (!domParser.getDocument().hasChildNodes()) {
 		LOG(ERROR) << "Failed parsing TIM XML reply. Resulting document has no nodes";
-		buildTIMexception(cmdid, TIM_ERROR);
+		buildTIMexception(_CMDid, TIM_ERROR);
 		return;
 	}
+
+	/* I dati inviati dal SCXML all'SCXML sono sempre mappati nella struttura dati 'dom' dell'evento */
 	myevent.dom = domParser.getDocument().getDocumentElement();
 
 	returnEvent(myevent);
@@ -226,15 +236,15 @@ void XmlBridgeInvoker::buildTIMreply(unsigned int cmdid, bool type, const std::s
  * @param cmdid Il TIM cmd ID
  * @param type Tipo di eccezione
  */
-void XmlBridgeInvoker::buildTIMexception(unsigned int cmdid, exceptions type)
+void XmlBridgeInvoker::buildTIMexception(exceptions type)
 {
 	std::stringstream ss;
 	switch(type) {
 		case TIM_TIMEOUT:
-			ss << TIM2SCXML_TIMEOUT << cmdid;
+			ss << TIM2SCXML_TIMEOUT << _CMDid;
 			break;
 		default:
-			ss << TIM2SCXML_ERROR << cmdid;
+			ss << TIM2SCXML_ERROR << _CMDid;
 			break;
 	}
 
@@ -261,6 +271,7 @@ void XmlBridgeInputEvents::sendReq2TIM(unsigned int cmdid, bool write, const std
 	_timio->_timCmdId.push(cmdid);
 	_timio->_timCmd.push(reqData);
 	_timio->_timCmdWrite.push(write);
+
 	_timio->_defTimeout = timeout;
 	_timio->_thread = new tthread::thread(TimIO::client, _timio);
 	_timio->_thread->detach();
@@ -275,12 +286,15 @@ void XmlBridgeInputEvents::sendReq2TIM(unsigned int cmdid, bool write, const std
  * @param write Lettura/Scrittura
  * @param replyData Dati della risposta
  */
-void XmlBridgeInputEvents::sendReply2MES(unsigned int DBid, unsigned int cmdid, bool write, const std::list<std::string> replyData)
+void XmlBridgeInputEvents::sendReply2MES(unsigned int cmdid, unsigned int addr, unsigned int len,
+					 bool write, const std::list<std::string> replyData)
 {
+	/* L'istanza dell'invoker, corrispondente al comando corrente, mette in coda i dati della risposta del TIM
+	 * Quando MesBufferer avrà terminato di bufferizzare la risposta precedente, il comando SCXML <send> ritorna */
 	if (write)
-		((MesBufferer *)_mesbufferer)->bufferMESreplyWRITE(DBid, cmdid);
+		((MesBufferer *)_mesbufferer)->bufferMESreplyWRITE(cmdid);
 	else
-		((MesBufferer *)_mesbufferer)->bufferMESreplyREAD(DBid, cmdid, replyData);
+		((MesBufferer *)_mesbufferer)->bufferMESreplyREAD(cmdid, addr, len, replyData);
 }
 
 
@@ -291,7 +305,7 @@ void XmlBridgeInputEvents::sendReply2MES(unsigned int DBid, unsigned int cmdid, 
  * @param DBid Il Datablock ID
  * @param cmdid Il TIM cmd ID
  */
-void XmlBridgeInputEvents::sendErr2MES(unsigned int DBid, unsigned int cmdid)
+void XmlBridgeInputEvents::sendErr2MES(unsigned int cmdid)
 {
 	((MesBufferer *)_mesbufferer)->bufferMESerror(DBid, cmdid);
 }
@@ -305,6 +319,7 @@ void XmlBridgeInputEvents::sendErr2MES(unsigned int DBid, unsigned int cmdid)
 void XmlBridgeInputEvents::handleTIMreply(const std::string replyData)
 {
 	std::map<unsigned int, XmlBridgeInvoker*>::const_iterator inviter = _invokers.begin();
+
 	while (inviter != _invokers.end()) {
 		inviter->second->buildTIMreply(_timio->_timCmdId.front(), _timio->_timCmdWrite.front(), replyData);
 		inviter++;
@@ -325,14 +340,14 @@ void XmlBridgeInputEvents::handleTIMreply(const std::string replyData)
  * @param reqData Lista dei valori fields associati al comando TIM (nel caso di scrittura)
  * @return bool Esito Richiesta
  */
-bool XmlBridgeInputEvents::handleMESreq(unsigned int DBid, unsigned int cmdid,
-				 bool write, const std::list <std::string> reqData)
+bool XmlBridgeInputEvents::handleMESreq(unsigned int cmdid, unsigned int addr, unsigned int len, bool write, const std::list<std::string> reqData)
 {
-	if (_invokers.count(DBid) == 0) {
-		LOG(ERROR) << "Datablock not supported by currently active SCXML interpreters and invokers, ignoring MES request";
+	if (_invokers.count(len) == 0) {
+		LOG(ERROR) << "Command ID not supported by currently active SCXML interpreters and invokers, ignoring MES request";
+		LOG(ERROR) << "Fix the CSV";
 		return false;
 	}
-	_invokers[DBid]->buildMESreq(cmdid, write, reqData);
+	_invokers[len]->buildMESreq(addr, len, write, reqData);
 	return true;
 }
 

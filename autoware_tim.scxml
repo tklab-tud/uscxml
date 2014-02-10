@@ -1,141 +1,57 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <scxml	version="1.0"
-	name="0"
+	name="0,1,2,3,4,5,6,7,8,9,10,11"
 	datamodel="xpath"
-	initial="InterpreterInitialization"
+	initial="RunCommandsStateMachines"
 	xmlns="http://www.w3.org/2005/07/scxml" >
-<datamodel>
-	<data id="READ0">
-		<frame xmlns="">
-			<data  type="requestItem" index="0">startWrapping</data>
-		</frame>
-	</data>
-	<data id="WRITE0">
-		<frame xmlns="">
-			<data  type="startWrapping" index="0">
-				<nestedData type="state"> </nestedData>
-			</data>
-		</frame>
-	</data>
-	<data id="READ1">
-		<frame xmlns="">
-			<data type="requestItem" index="0">information</data>
-		</frame>
-	</data>
-	<data id="READ2">
-		<frame xmlns="">
-			<data type="requestItem" index="0">statistic</data>
-		</frame>
-	</data>
-	<data id="READ3">
-		<frame xmlns="">
-			<data type="requestItem" index="0">statistic</data>
-		</frame>
-	</data>
-	<data id="READ4">
-		<frame xmlns="">
-			<data type="requestItem" index="0">temperature</data>
-		</frame>
-	</data>
-	<data id="READ5">
-		<frame xmlns="">
-			<data type="requestItem" index="0">totalPacks</data>
-		</frame>
-	</data>
-	<data id="READ6">
-		<frame xmlns="">
-    			<data type="requestItem" index="0">setting</data>
-		</frame>
-	</data>
-	<data id="WRITE6">
-		<frame xmlns="">
-		    <data  type="setting" index="0">
-			<item  i="3">
-			    <nestedData  type="value"> </nestedData>
-			</item>
-		    </data> 
-		</frame>
-	</data>
-	<data id="READ7">
-		<frame xmlns="">
-    			<data type="requestItem" index="0">controls</data>
-		</frame>
-	</data>
 
-	<data id="WRITE7">
-		<frame xmlns="">
-		    <data  type="controls" index="0">
-			<item  i="3">
-			    <nestedData  type="value"> </nestedData>
-			</item>
-		    </data> 
-		</frame>
-	</data>
-	<data id="READ8">
-		<frame xmlns="">
-		    <data type="requestItem" index="0">wrapperProgram</data>
-		</frame>
-	</data>
-
-	<data id="WRITE8">
-		<frame xmlns="">
-		    <data type="wrapperProgram" index="0">
-			<nestedData  type="numWorking">3</nestedData>
-		    </data>
-		</frame>
-	</data>
-	<data id="READ9">
-		<frame xmlns="">
-		    <data type="requestItem" index="0">lastError</data>
-		</frame>
-	</data>
-	<data id="iterator">
-		<replaceme/>
-	</data>
-	<data id="numRiga">
-		<replaceme/>
-	</data>
-</datamodel>
-<state id="InterpreterInitialization">
-<initial>
-<!--		<file url="foo.bin" operation="read" type="xml" callback="foo.bin" />-->
-<!--		<file url="bar.bin" operation="write" type="xml" contentexpr="_event['data']['content']" />-->
-	<transition target="RunCommandsStateMachines" />
-</initial>
-<invoke type="xmlbridge" id="xmlbridge0">
-	<!-- id index must be the exact MES datablock id used in the SCXML 'name' tag and in CSV config file -->
-	<param name="timeout" expr="'5'"/>
-</invoke>
 <parallel id="RunCommandsStateMachines">
 	<state id="0" initial="init0">
+		<invoke type="xmlbridge" id="xmlbridge0">
+			<param name="timeout" expr="'5'"/>
+		</invoke>
 		<state id="init0">
-			<transition event="0_wReq" target="sent0">
+			<datamodel>
+				<data id="READ0">
+					<frame xmlns="">
+						<data  type="requestItem" index="0">startWrapping</data>
+					</frame>
+				</data>
+				<data id="WRITE0">
+					<frame xmlns="">
+						<data  type="startWrapping" index="0">
+							<nestedData type="state"> </nestedData>
+						</data>
+					</frame>
+				</data>
+			</datamodel>
+			<transition event="0_wREQ" target="sent0">
 				<assign location="$WRITE0/frame/data/nestedData" expr="$_event/data/text()"/>
-				<send 	event="0_wCmd"
+				<send 	event="wCMD"
 					namelist="$WRITE0/frame"
 					target="#_xmlbridge0"/>
 			</transition>
-			<transition event="0_rReq" target="sent0">
-				<send 	event="0_rCmd"
+			<transition event="0_rREQ" target="sent0">
+				<send 	event="rCMD"
 					namelist="$READ0/frame"
 					target="#_xmlbridge0"/>
 			</transition>
 		</state>
 		<state id="sent0">
-			<transition event="0_wReply" target="init0">
+			<transition event="0_wREPLY" target="init0">
 				<if cond="$_event/data/frame/data/nestedData[@type='state']/text() = 'ok'">
-					<send 	event="0_wAck" target="#_xmlbridge0"/>
+					<send 	event="wACK" target="#_xmlbridge0"/>
 				<elseif/>
-					<send 	event="0__Err" target="#_xmlbridge0"/>
+					<send 	event="_ERR" target="#_xmlbridge0"/>
 				</if>
 			</transition>
-			<transition event="0_rReply" target="init0">
+			<transition event="0_rREPLY" target="init0">
 				<if cond="$_event/data/frame">
-					<send 	event="0_rAck"
+					<send 	event="_rAck"
 						namelist="$_event/data/frame/data/nestedData[@type='state']/text()"
 						target="#_xmlbridge0"/>
 				<else/>
-					<send 	event="0__Err" target="#_xmlbridge0"/>
+					<send 	event="_Err" target="#_xmlbridge0"/>
 				</if>
 			</transition>
 			<transition event="timeout0" target="init0">
@@ -148,35 +64,52 @@
 	</state>
 	<state id="1" initial="init1">
 		<state id="init1">
+			<datamodel>
+				<data id="IDX1"/>
+				<data id="currIDX1"/>
+				<data id="READ1">
+					<frame xmlns="">
+						<data type="requestItem" index="0">information</data>
+					</frame>
+				</data>
+			</datamodel>
 			<transition event="1_rReq" target="sent1">
+				<assign location="$IDX1" expr="$_event/data"/>
 				<send 	event="1_rCmd"
 					namelist="$READ1/frame"
-					target="#_xmlbridge0"/>
+					target="#_xmlbridge1"/>
 			</transition>
 		</state>
 		<state id="sent1">
 			<transition event="1_rReply"  target="init1">
 				<if cond="$_event/data/frame">
-					<send 	event="1_rAck"
-						namelist="$_event/data/frame/data/item[@i='3']/nestedData[@type='value']/text()
-							$_event/data/frame/data/item[@i='5']/nestedData[@type='value']/text()
-							$_event/data/frame/data/item[@i='7']/nestedData[@type='value']/text()"
-						target="#_xmlbridge0"/>
+					<foreach array="$IDXs1" item="currIDX1">
+						<send 	event="1_rAck"
+							namelist="$_event/data/frame/data/item[@i='$currIDX1']/nestedData[@type='phrase' or @type='value' or @type='unit']/text()"
+							target="#_xmlbridge1"/>
+					</foreach>
 				<else/>
 					<send 	event="1_rErr"
-						target="#_xmlbridge0"/>
+						target="#_xmlbridge1"/>
 				</if>
 			</transition>
 			<transition event="timeout1" target="init1">
-				<send 	event="1__Err" target="#_xmlbridge0"/>
+				<send 	event="1__Err" target="#_xmlbridge1"/>
 			</transition>
 			<transition event="error1" target="init1">
-				<send 	event="1__Err" target="#_xmlbridge0"/>
+				<send 	event="1__Err" target="#_xmlbridge1"/>
 			</transition>
 		</state>
 	</state>
 	<state id="2" initial="init2">
 		<state id="init2">
+			<datamodel>
+				<data id="READ2">
+					<frame xmlns="">
+						<data type="requestItem" index="0">statistic</data>
+					</frame>
+				</data>
+			</datamodel>
 			<transition event="2_rReq" target="sent2">
 				<send 	event="2_rCmd"
 					namelist="$READ2/frame"
@@ -204,6 +137,13 @@
 	</state>
 	<state id="3" initial="init3">
 		<state id="init3">
+			<datamodel>
+				<data id="READ3">
+					<frame xmlns="">
+						<data type="requestItem" index="0">statistic</data>
+					</frame>
+				</data>
+			</datamodel>
 			<transition event="3_rReq" target="sent3">
 				<send 	event="3_rCmd"
 					namelist="$READ3/frame"
@@ -231,6 +171,13 @@
 	</state>
 	<state id="4" initial="init4">
 		<state id="init4">
+			<datamodel>
+				<data id="READ4">
+					<frame xmlns="">
+						<data type="requestItem" index="0">temperature</data>
+					</frame>
+				</data>
+			</datamodel>
 			<transition event="4_rReq" target="sent4">
 				<send 	event="4_rCmd"
 					namelist="$READ4/frame"
@@ -260,6 +207,13 @@
 	</state>
 	<state id="5" initial="init5">
 		<state id="init5">
+			<datamodel>
+				<data id="READ5">
+					<frame xmlns="">
+						<data type="requestItem" index="0">totalPacks</data>
+					</frame>
+				</data>
+			</datamodel>
 			<transition event="5_rReq" target="sent5">
 				<send 	event="5_rCmd"
 					namelist="$READ5/frame"
@@ -287,6 +241,22 @@
 	</state>
 	<state id="6" initial="init6">
 		<state id="init6">
+			<datamodel>
+				<data id="READ6">
+					<frame xmlns="">
+			    			<data type="requestItem" index="0">setting</data>
+					</frame>
+				</data>		
+				<data id="WRITE6">
+					<frame xmlns="">
+					    <data  type="setting" index="0">
+						<item  i="3">
+						    <nestedData  type="value"> </nestedData>
+						</item>
+					    </data> 
+					</frame>
+				</data>
+			</datamodel>
 			<transition event="6_wReq" target="sent6">
 				<assign location="$WRITE6/frame/data/item/nestedData" expr="$_event/data/text()"/>
 				<send 	event="6_wCmd"
@@ -326,6 +296,23 @@
 	</state>
 	<state id="7" initial="init7">
 		<state id="init7">
+			<datamodel>
+				<data id="READ7">
+					<frame xmlns="">
+			    			<data type="requestItem" index="0">controls</data>
+					</frame>
+				</data>
+
+				<data id="WRITE7">
+					<frame xmlns="">
+					    <data  type="controls" index="0">
+						<item  i="3">
+						    <nestedData  type="value"> </nestedData>
+						</item>
+					    </data> 
+					</frame>
+				</data>
+			</datamodel>
 			<transition event="7_wReq" target="sent7">
 				<assign location="$WRITE7/frame/data/item/nestedData" expr="$_event/data/text()"/>
 				<send 	event="7_wCmd"
@@ -365,6 +352,20 @@
 	</state>
 	<state id="8" initial="init8">
 		<state id="init8">
+			<datamodel>
+				<data id="READ8">
+					<frame xmlns="">
+					    <data type="requestItem" index="0">wrapperProgram</data>
+					</frame>
+				</data>
+				<data id="WRITE8">
+					<frame xmlns="">
+					    <data type="wrapperProgram" index="0">
+						<nestedData  type="numWorking">3</nestedData>
+					    </data>
+					</frame>
+				</data>
+			</datamodel>
 			<transition event="8_wReq" target="sent8">
 				<assign location="$WRITE8/frame/data/item/nestedData" expr="$_event/data/text()"/>
 				<send 	event="8_wCmd"
@@ -404,6 +405,11 @@
 	</state>
 	<state id="9" initial="init9">
 		<state id="init9">
+			<data id="READ9">
+				<frame xmlns="">
+				    <data type="requestItem" index="0">lastError</data>
+				</frame>
+			</data>
 			<transition event="9_rReq" target="sent9">
 				<send 	event="9_rCmd"
 					namelist="$READ9/frame"
@@ -429,54 +435,54 @@
 			</transition>
 		</state>
 	</state>
-<!--	<state id="3" initial="init3">-->
-<!--		<state id="init3">-->
-<!--			<transition event="3_rReq" target="sent3">-->
-<!--				<send 	event="3_rCmd"-->
-<!--					namelist="$READ3/frame"-->
-<!--					target="#_xmlbridge0"/>-->
-<!--			</transition>-->
-<!--			<transition event="3_wReq" target="sent3">-->
-<!--				<foreach array="$_event/data/data/text()" item="iterator" index="numRiga">-->
-<!--					<assign location="$WRITE3/frame/data/item[@i=$numRiga]/nestedData" expr="$iterator"/>-->
-<!--				</foreach>-->
-<!--				<send 	event="3_wCmd"-->
-<!--					namelist="$WRITE3/frame"-->
-<!--					target="#_xmlbridge0"/>-->
-<!--			</transition>-->
-<!--		</state>-->
-<!--		<state id="sent3">-->
-<!--			<transition event="3_wReply" target="init3">-->
-<!--				<if cond="$_event/data/frame/data/nestedData[@type='state']/text() = 'ok'">-->
-<!--					<send 	event="3_wAck" target="#_xmlbridge0"/>-->
-<!--				<elseif/>-->
-<!--					<send 	event="3__Err" target="#_xmlbridge0"/>-->
-<!--				</if>-->
-<!--			</transition>-->
-<!--			<transition event="3_rReply"  target="init3">-->
-<!--				<if cond="$_event/data/frame/data">-->
-<!--					<send 	event="3_rAck"-->
-<!--						namelist="$_event/data/frame/data/item/nestedData[@type='value']/text()"-->
-<!--						target="#_xmlbridge0"/>-->
-<!--				<else/>-->
-<!--					<send 	event="3_rErr"-->
-<!--						target="#_xmlbridge0"/>-->
-<!--				</if>-->
-<!--			</transition>-->
-<!--			<transition event="timeout3" target="init3" />-->
-<!--			<transition event="error3" target="init3" />-->
-<!--		</state>-->
-<!--	</state>	-->
+	<state id="11" initial="init11">
+		<state id="init11">
+			<transition event="11_rReq" target="sent11">
+				<send 	event="11_rCmd"
+					namelist="$READ3/frame"
+					target="#_xmlbridge0"/>
+			</transition>
+			<transition event="11_wReq" target="sent11">
+				<foreach array="$_event/data/data/text()" item="iterator" index="numRiga">
+					<assign location="$WRITE11/frame/data/item[@i=$numRiga]/nestedData" expr="$iterator"/>
+				</foreach>
+				<send 	event="11_wCmd"
+					namelist="$WRITE3/frame"
+					target="#_xmlbridge11"/>
+			</transition>
+		</state>
+		<state id="sent11">
+			<transition event="11_wReply" target="init11">
+				<if cond="$_event/data/frame/data/nestedData[@type='state']/text() = 'ok'">
+					<send 	event="11_wAck" target="#_xmlbridge0"/>
+				<elseif/>
+					<send 	event="3__Err" target="#_xmlbridge0"/>
+				</if>
+			</transition>
+			<transition event="11_rReply"  target="init11">
+				<if cond="$_event/data/frame/data">
+					<foreach array="$_event/data/data/text()" item="iterator" index="numRiga">
+						<assign location="$WRITE11/frame/data/item[@i=$numRiga]/nestedData" expr="$iterator"/>
+					</foreach>
+					<send 	event="11_rAck"
+						namelist="$_event/data/frame/data/item/nestedData[@type='value']/text()"
+						target="#_xmlbridge0"/>
+				<else/>
+					<send 	event="3_rErr"
+						target="#_xmlbridge0"/>
+				</if>
+			</transition>
+			<transition event="timeout3" target="init3" />
+			<transition event="error3" target="init3" />
+		</state>
+	</state>	
 </parallel>
-</state>
 <final id="EXIT">
 	<log label="Unrecoverable Error" expr="$_event/text()" />
 </final>
 </scxml>
 
-
 <!--
-
 Functions and operators
 
 XPath 1.0 defines four data types: node-sets (sets of nodes with no intrinsic order), strings, numbers and booleans.
@@ -496,6 +502,4 @@ The function library includes:
     Functions to get properties of nodes: name(), local-name(), namespace-uri()
     Functions to get information about the processing context: position(), last()
     Type conversion functions: string(), number(), boolean()
-
-
 -->

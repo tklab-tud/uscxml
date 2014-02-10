@@ -36,7 +36,7 @@ bool TimIO::connect2TIM() {
 	/* loop through all the results and connect to the first we can */
 	for (p = _servinfo; p != NULL; p = p->ai_next) {
 		if ((_socketfd = socket(p->ai_family, p->ai_socktype,
-				p->ai_protocol)) == -1) {
+					p->ai_protocol)) == -1) {
 			PLOG(ERROR) << "TIM Client socket()";
 			continue;
 		}
@@ -90,7 +90,7 @@ TimIO::TimIO(std::string ipaddr, std::string port) :
 
 	if (!connect2TIM())
 		LOG(INFO) << "TIM Client: failed to connect to " << ipaddr << ":"
-			<< port << ". We try to reconnect later when a TIM cmd is pending";
+			  << port << ". We retry to connect later when a TIM cmd is pending";
 
 	_reply = new char[MAXTIMREPLYSIZE]();
 	if (_reply == NULL) {
@@ -101,7 +101,7 @@ TimIO::TimIO(std::string ipaddr, std::string port) :
 	}
 
 	XmlBridgeInputEvents& bridgeInstance = XmlBridgeInputEvents::getInstance();
-	bridgeInstance.registerTimio(this);	
+	bridgeInstance.registerTimio(this);
 }
 
 /**
@@ -137,12 +137,12 @@ void TimIO::client(void *instance) {
 	}
 
 	LOG(ERROR) << "Sending cmd to TIM (length=" << myobj->_timCmd.front().length() << "):"
-		<< std::endl << myobj->_timCmd.front();
+		   << std::endl << myobj->_timCmd.front();
 
 	int numbytes;
 	while ((numbytes = send(myobj->_socketfd, myobj->_timCmd.front().c_str(),
-			myobj->_timCmd.front().length(), MSG_NOSIGNAL | MSG_MORE))
-			!= myobj->_timCmd.front().length()) {
+				myobj->_timCmd.front().length(), MSG_NOSIGNAL | MSG_MORE))
+	       != myobj->_timCmd.front().length()) {
 
 		PLOG(INFO) << "TIM client: send error";
 		if (errno == EPIPE || errno == EBADF) {
@@ -165,32 +165,32 @@ void TimIO::client(void *instance) {
 	/*
 	 * Function blocks until the full amount of message data can be returned
 	 */
-    size_t replylen = 0;
+	size_t replylen = 0;
 	memset(myobj->_reply, 0, MAXTIMREPLYSIZE);
-    do {
-        int recvlen;
-        if ((recvlen = recv(myobj->_socketfd, myobj->_reply + replylen,
-            MAXTIMREPLYSIZE - replylen, 0)) == -1) {
-            if (errno == EAGAIN || errno == EWOULDBLOCK) {
-                LOG(ERROR) << "TIM client: command timeout";
-                bridgeInstance.handleTIMexception(TIM_TIMEOUT);
-                return;
-            }
-            PLOG(ERROR) << "TIM recv error: client ignoring TIM reply";
-            bridgeInstance.handleTIMexception(TIM_ERROR);
-            return;
-        } else if (recvlen == 0 && errno == 0) {
-            LOG(ERROR) << "TIM client: received zero-length message";
-            bridgeInstance.handleTIMexception(TIM_ERROR);
-            return;
-        } else if (recvlen == MAXTIMREPLYSIZE) {
-            LOG(ERROR) << "TIM client: received message too long";
-//            bridgeInstance.handleTIMexception(TIM_ERROR);
-//            return;
-        }
-        replylen += recvlen;
-    } while (std::strncmp(myobj->_reply, "<frame>", 7) != 0 ||
-             std::strncmp(&myobj->_reply[replylen-8], "</frame>", 8) != 0);
+	do {
+		int recvlen;
+		if ((recvlen = recv(myobj->_socketfd, myobj->_reply + replylen,
+				    MAXTIMREPLYSIZE - replylen, 0)) == -1) {
+			if (errno == EAGAIN || errno == EWOULDBLOCK) {
+				LOG(ERROR) << "TIM client: command timeout";
+				bridgeInstance.handleTIMexception(TIM_TIMEOUT);
+				return;
+			}
+			PLOG(ERROR) << "TIM recv error: client ignoring TIM reply";
+			bridgeInstance.handleTIMexception(TIM_ERROR);
+			return;
+		} else if (recvlen == 0 && errno == 0) {
+			LOG(ERROR) << "TIM client: received zero-length message";
+			bridgeInstance.handleTIMexception(TIM_ERROR);
+			return;
+		} else if (recvlen == MAXTIMREPLYSIZE) {
+			LOG(ERROR) << "TIM client: received message too long";
+			//            bridgeInstance.handleTIMexception(TIM_ERROR);
+			//            return;
+		}
+		replylen += recvlen;
+	} while (std::strncmp(myobj->_reply, "<frame>", 7) != 0 ||
+		 std::strncmp(&myobj->_reply[replylen-8], "</frame>", 8) != 0);
 
 	LOG(ERROR) << "Received reply from TIM: " << std::endl << myobj->_reply;
 

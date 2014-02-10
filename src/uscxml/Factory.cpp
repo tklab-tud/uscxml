@@ -47,12 +47,12 @@
 # endif
 
 #ifdef PROTOBUF_FOUND
-# include "uscxml/plugins/ioprocessor/modality/MMIHTTPIOProcessor.h"
+//# include "uscxml/plugins/ioprocessor/modality/MMIHTTPIOProcessor.h"
 #endif
 
 # ifdef UMUNDO_FOUND
 #   include "uscxml/plugins/invoker/umundo/UmundoInvoker.h"
-#   include "uscxml/plugins/invoker/vxml/VoiceXMLInvoker.h"
+//#   include "uscxml/plugins/invoker/vxml/VoiceXMLInvoker.h"
 #endif
 
 # ifdef OPENSCENEGRAPH_FOUND
@@ -62,7 +62,7 @@
 
 # ifdef MILES_FOUND
 #   include "uscxml/plugins/invoker/miles/MilesSessionInvoker.h"
-#   include "uscxml/plugins/invoker/miles/SpatialAudio.h"
+//#   include "uscxml/plugins/invoker/miles/SpatialAudio.h"
 # endif
 
 # ifdef FFMPEG_FOUND
