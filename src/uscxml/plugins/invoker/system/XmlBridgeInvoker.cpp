@@ -6,7 +6,6 @@
  */
 
 #include "XmlBridgeInvoker.h"
-#include <mesbufferer.h>
 
 #ifdef BUILD_AS_PLUGINS
 #include <Pluma/Connector.hpp>
@@ -23,6 +22,18 @@ bool connect(pluma::Host& host) {
 #endif
 
 /**
+ * @brief Distruttore del client TCP
+ *
+ */
+XmlBridgeInvoker::~TimIO()
+{
+	if (_servinfo != NULL)
+		freeaddrinfo(_servinfo);
+	close(_socketfd);
+	delete _reply;
+}
+
+/**
  * @brief Crea e Registra un Invoker all'interprete SCXML.
  *	Metodo eseguito per ogni elemento <invoke> nell'SCXML
  *
@@ -30,25 +41,13 @@ bool connect(pluma::Host& host) {
  * @return boost::shared_ptr<InvokerImpl>	Il puntatore all'invoker.
  */
 boost::shared_ptr<InvokerImpl> XmlBridgeInvoker::create(InterpreterImpl* interpreter) {
-	LOG(INFO) << "Creating XmlBridgeInvoker(s) for each datablock";
-
 	boost::shared_ptr<XmlBridgeInvoker> invoker = boost::shared_ptr<XmlBridgeInvoker>(this);
-
-	/* Scorro l'elenco dei datablock gestiti specificati nel nome dell'SCXML
-	 * Per il primo DBid del quale non esiste un invoker registro un nuovo invoker. */
-	std::size_t current;
-	std::size_t next = -1;
-	do {
-		current = next + 1;
-		next = interpreter->getName().find_first_of(DBID_DELIMITER, current);
-		if (interpreter->getInvokers().count(INVOKER_TYPE + interpreter->getName().substr(current, next - current)) == 0) {
-			invoker->setInvokeId(INVOKER_TYPE + interpreter->getName());
-			break;
-		}
-	} while (next != std::string::npos);
 
 	invoker->setType(INVOKER_TYPE);
 	invoker->setInterpreter(interpreter);
+
+	LOG(INFO) << "Creating " << _invokeId;
+
 	return invoker;
 }
 
@@ -65,10 +64,20 @@ void XmlBridgeInvoker::invoke(const InvokeRequest& req) {
 	} else
 		_timeoutVal = atoi(req.params.find("timeout")->second.atom.c_str());
 
+	/* TODO check integer */
+	/* TODO: get all invokers and check for duplicated ids */
 	_CMDid = atoi(_invokeId.substr(sizeof(INVOKER_TYPE)).c_str());
 
-	XmlBridgeInputEvents& myinstance = XmlBridgeInputEvents::getInstance();
-	myinstance.registerInvoker(_DBid, this);
+	_mesbufferer = MesBufferer::getInstance();
+
+	std::string timaddr = _interpreter->getName();
+	size_t index = timaddr.find(':');
+	_TIMaddr = timaddr.substr(0, index - 1);
+	_TIMport = timaddr.substr(index + 1);
+
+	/* Connessione al TIM */
+	initClient(_TIMaddr.empty() ? DEF_TIMADDR : _TIMaddr,
+		   _TIMport.empty() ? DEF_TIMPORT : _TIMport);
 }
 
 /**
@@ -76,7 +85,6 @@ void XmlBridgeInvoker::invoke(const InvokeRequest& req) {
  * @return Data
  */
 Data XmlBridgeInvoker::getDataModelVariables() {
-	//tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
 	Data data;
 	return data;
 }
@@ -95,8 +103,8 @@ void XmlBridgeInvoker::send(const SendRequest& req) {
 	bool write = (evName.c_str()[0] == WRITEOP);
 	std::string evType = evName.substr(1, 3);
 
-	XmlBridgeInputEvents& bridgeInstance = XmlBridgeInputEvents::getInstance();
 	//_interpreter->getDataModel().replaceExpressions(reqCopy.content);
+
 	//TODO LOG EVENT
 
 	/* I dati inviati dal SCXML all'TIM o al MES sono sempre mappati nella struttura dati 'namelist' dell'evento */
@@ -115,17 +123,22 @@ void XmlBridgeInvoker::send(const SendRequest& req) {
 			namelistIter++;
 		}
 
+		if (ss.str().empty() || timeout == 0) {
+			buildTIMexception(TIM_ERROR);
+			return;
+		}
+
 		/* Elimina SCXML namespace */
 		int index = ss.str().find('>');
 		if (index == std::string::npos) {
 			LOG(ERROR) << "Invalid TIM frame";
-			buildTIMexception(_CMDid, TIM_ERROR);
+			buildTIMexception(TIM_ERROR);
+			return;
 		}
-		std::string timstr = "<frame>" + ss.str().substr(index + 1, ss.str().length());
 
-		bridgeInstance.sendReq2TIM(_CMDid, write, timstr, _timeoutVal);
+		client("<frame>" + ss.str().substr(index + 1, ss.str().length()));
 
-	/* SCXML -> MES */
+		/* SCXML -> MES */
 	} else if (evType == SCXML2MES_ACK) {
 		//TODO HANDLE MALFORMED SCXML and DATA
 
@@ -142,14 +155,18 @@ void XmlBridgeInvoker::send(const SendRequest& req) {
 		}
 
 		if (_itemsRead.size() >= _currItems || write)
-			bridgeInstance.sendReply2MES(_CMDid, _currAddr, _currLen, write, _itemsRead);
+			if (write)
+				((MesBufferer *)_mesbufferer)->bufferMESreplyWRITE(cmdid);
+			else
+				((MesBufferer *)_mesbufferer)->bufferMESreplyREAD(cmdid, addr, len, replyData);
 
-	/* SCXML -> MES (errore) */
+		/* SCXML -> MES (errore) */
 	} else if (evType == SCXML2MES_ERR) {
-		bridgeInstance.sendErr2MES(_CMDid);
+		((MesBufferer *)_mesbufferer)->bufferMESerror(DBid, cmdid);
+
 	} else {
 		LOG(ERROR) << "XmlBridgeInvoker: received an unsupported event type from Interpreter, discarding request\n"
-			<< "Propably the event name in the SCXML file is incorrect.";
+			   << "Propably the event name in the SCXML file is incorrect.";
 	}
 }
 
@@ -161,22 +178,44 @@ void XmlBridgeInvoker::send(const SendRequest& req) {
  * @param write	Indica se si tratta di una richiesta di scrittura
  * @param req_raw_data La lista delle stringhe utilizzate per popolare il comando TIM (se richiesta di scrittura)
  */
-void XmlBridgeInvoker::buildMESreq(unsigned int addr, unsigned int len, bool write, const std::list<std::string> req_raw_data) {
+void XmlBridgeInvoker::buildMESreq(unsigned int addr, unsigned int len, bool write,
+				   const std::list<std::string> req_raw_data,
+				   const std::list<std::string> req_indexes) {
 	std::stringstream ss;
 	ss << _CMDid << '_' << (write ? WRITEOP : READOP) << MES2SCXML;
 
 	Event myevent(ss.str(), Event::EXTERNAL);
 
-	/* I dati inviati dal MES all'SCXML sono sempre mappati nella struttura dati 'array' dell'evento */
-	if (!req_raw_data.empty()) {
-		Data mydata;
+	/* I dati inviati dal MES all'SCXML sono sempre mappati nella struttura dati 'node' dell'evento */
 
-		std::list<std::string>::const_iterator myiter;
-		for(myiter = req_raw_data.begin(); myiter != req_raw_data.end(); myiter++)
-			mydata.array.push_back(Data(*myiter));
+	/* Nel caso della lettura vado a scrivere gli indici
+	 * Nel caso della scrittura vado a scrivere i valori e gli indici */
+	if (!req_indexes.empty() && !req_raw_data.empty() && write) {
+		std::list<std::string>::const_iterator valueiter = req_raw_data.begin();
+		std::list<std::string>::const_iterator indexiter = req_indexes.begin();
 
-		myevent.data = mydata;
+		for (valueiter, indexiter; valueiter!= req_raw_data.end(); valueiter++, indexiter++) {
+			Element<std::string> eventMESElem = _doc.createElement("data");
+			Text<std::string> textNode = _doc.createTextNode(*valueiter);
+			eventMESElem.setAttribute("i", *indexiter);
+			eventMESElem.appendChild(textNode);
+			myevent.data.node.appendChild(eventMESElem);
+		}
 		_currItems = req_raw_data.size();
+	} else if (!req_indexes.empty() && !write) {
+		unsigned int i = 0;
+		std::list<std::string>::const_iterator valueiter = req_indexes.begin();
+
+		for (i, valueiter; valueiter!= req_raw_data.end(); valueiter++, i++) {
+			Element<std::string> eventMESElem = _doc.createElement("data");
+			Text<std::string> textNode = _doc.createTextNode(*valueiter);
+			std::stringstream ss;
+			ss << i;
+			eventMESElem.setAttribute("i", ss.str());
+			eventMESElem.appendChild(textNode);
+			myevent.data.node.appendChild(eventMESElem);
+		}
+		_currItems = req_indexes.size();
 	} else {
 		_currItems = 0;
 	}
@@ -240,135 +279,179 @@ void XmlBridgeInvoker::buildTIMexception(exceptions type)
 {
 	std::stringstream ss;
 	switch(type) {
-		case TIM_TIMEOUT:
-			ss << TIM2SCXML_TIMEOUT << _CMDid;
-			break;
-		default:
-			ss << TIM2SCXML_ERROR << _CMDid;
-			break;
+	case TIM_TIMEOUT:
+		ss << TIM2SCXML_TIMEOUT << _CMDid;
+		break;
+	default:
+		ss << TIM2SCXML_ERROR << _CMDid;
+		break;
 	}
 
 	Event myevent(ss.str(), Event::EXTERNAL);
 	returnEvent(myevent);
 }
 
-/** SCXML -> TIM */
 /**
- * @brief Configura il thread del client TIM ad inviare un nuovo comando
- *
- * @param cmdid Il TIM cmd ID
- * @param write Lettura/Scrittura
- * @param reqData Dati del comando
- * @param timeout Timeout da impostare
+ * @brief Attiva una sessione TCP con il server TIM
+ * @return Esito operazione
  */
-void XmlBridgeInputEvents::sendReq2TIM(unsigned int cmdid, bool write, const std::string reqData, unsigned int timeout)
-{
-	if (reqData.empty() || timeout == 0) {
-		handleTIMexception(TIM_ERROR);
-		return;
-	}
+bool XmlBridgeInvoker::connect2TIM() {
+	struct addrinfo hints, *p;
+	int rv;
 
-	_timio->_timCmdId.push(cmdid);
-	_timio->_timCmd.push(reqData);
-	_timio->_timCmdWrite.push(write);
+	hints.ai_flags = AI_NUMERICHOST;
+	hints.ai_family = AF_INET;
+	hints.ai_protocol = IPPROTO_TCP;
+	hints.ai_socktype = SOCK_STREAM;
 
-	_timio->_defTimeout = timeout;
-	_timio->_thread = new tthread::thread(TimIO::client, _timio);
-	_timio->_thread->detach();
-}
+	close(_socketfd);
+	if (_servinfo != NULL)
+		freeaddrinfo(_servinfo);
 
-/** SCXML -> MES */
-/**
- * @brief Invia al MES i dati generati dall'SCXML (valori XPATH) da una risposta del TIM
- *
- * @param DBid Il Datablock ID
- * @param cmdid Il TIM cmd ID
- * @param write Lettura/Scrittura
- * @param replyData Dati della risposta
- */
-void XmlBridgeInputEvents::sendReply2MES(unsigned int cmdid, unsigned int addr, unsigned int len,
-					 bool write, const std::list<std::string> replyData)
-{
-	/* L'istanza dell'invoker, corrispondente al comando corrente, mette in coda i dati della risposta del TIM
-	 * Quando MesBufferer avrà terminato di bufferizzare la risposta precedente, il comando SCXML <send> ritorna */
-	if (write)
-		((MesBufferer *)_mesbufferer)->bufferMESreplyWRITE(cmdid);
-	else
-		((MesBufferer *)_mesbufferer)->bufferMESreplyREAD(cmdid, addr, len, replyData);
-}
-
-
-/** SCXML -> MES */
-/**
- * @brief Segnala al Modbus Slave che l'ultima operazione ha generato un'eccezione
- *
- * @param DBid Il Datablock ID
- * @param cmdid Il TIM cmd ID
- */
-void XmlBridgeInputEvents::sendErr2MES(unsigned int cmdid)
-{
-	((MesBufferer *)_mesbufferer)->bufferMESerror(DBid, cmdid);
-}
-
-/**  TIM -> SCXML */
-/**
- * @brief Riceve i dati inviati dal TIM e costruisce una risposta analizzabile dall'SCXML
- *
- * @param replyData Dati grezzi della risposta.
- */
-void XmlBridgeInputEvents::handleTIMreply(const std::string replyData)
-{
-	std::map<unsigned int, XmlBridgeInvoker*>::const_iterator inviter = _invokers.begin();
-
-	while (inviter != _invokers.end()) {
-		inviter->second->buildTIMreply(_timio->_timCmdId.front(), _timio->_timCmdWrite.front(), replyData);
-		inviter++;
-	}
-	_timio->_timCmd.pop();
-	_timio->_timCmdId.pop();
-	_timio->_timCmdWrite.pop();
-	_timio->_thread = NULL;
-}
-
-/**  MES -> SCXML */
-/**
- * @brief Invia una richiesta del MES all'interprete SCXML
- *
- * @param DBid  Il Datablock ID
- * @param cmdid Il TIM cmd ID
- * @param write Lettura/Scrittura
- * @param reqData Lista dei valori fields associati al comando TIM (nel caso di scrittura)
- * @return bool Esito Richiesta
- */
-bool XmlBridgeInputEvents::handleMESreq(unsigned int cmdid, unsigned int addr, unsigned int len, bool write, const std::list<std::string> reqData)
-{
-	if (_invokers.count(len) == 0) {
-		LOG(ERROR) << "Command ID not supported by currently active SCXML interpreters and invokers, ignoring MES request";
-		LOG(ERROR) << "Fix the CSV";
+	if ((rv = getaddrinfo(_TIMaddr.c_str(), _TIMport.c_str(), &hints, &_servinfo)) != 0) {
+		PLOG(ERROR) << "Getaddrinfo: " << gai_strerror(rv);
 		return false;
 	}
-	_invokers[len]->buildMESreq(addr, len, write, reqData);
+
+	/* loop through all the results and connect to the first we can */
+	for (p = _servinfo; p != NULL; p = p->ai_next) {
+		if ((_socketfd = socket(p->ai_family, p->ai_socktype,
+					p->ai_protocol)) == -1) {
+			PLOG(ERROR) << "TIM Client socket()";
+			continue;
+		}
+
+		struct timeval tv;
+		tv.tv_sec = _defTimeout;
+		tv.tv_usec = 0;  // Not init'ing this can cause strange errors
+		if (setsockopt(_socketfd, SOL_SOCKET, SO_SNDTIMEO, &tv, sizeof(struct timeval))) {
+			PLOG(ERROR) << "TIM Client setting socket options error";
+			continue;
+		}
+		if (setsockopt(_socketfd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(struct timeval))) {
+			PLOG(ERROR) << "TIM Client setting socket options error";
+			continue;
+		}
+
+		if (connect(_socketfd, p->ai_addr, p->ai_addrlen) == -1) {
+			close(_socketfd);
+			PLOG(INFO) << "TIM Client connect()";
+			continue;
+		}
+		break;
+	}
+
+	if (p == NULL) {
+		freeaddrinfo(_servinfo);
+		close(_socketfd);
+		_servinfo = NULL;
+		_socketfd = -1;
+		return false;
+	}
+
 	return true;
 }
 
-/**  TIM -> SCXML */
 /**
- * @brief Genera una eccezione per l'ultimo comando inviato dal TIM.
- * @param type Tipo di eccezione
+ * @brief Inizializzazione del Client TCP
+ *
+ * @param ipaddr
+ * @param port
  */
-void XmlBridgeInputEvents::handleTIMexception(exceptions type)
+XmlBridgeInvoker::initClient(std::string ipaddr, std::string port)
 {
-	std::map<unsigned int, XmlBridgeInvoker*>::const_iterator inviter = _invokers.begin();
-	while (inviter != _invokers.end()) {
-		inviter->second->buildTIMexception(_timio->_timCmdId.front(), type);
-		inviter++;
+	if (ipaddr.empty() || port.empty())
+		return false;
+
+	if (!connect2TIM())
+		LOG(ERROR) << "TIM Client: failed to connect to " << ipaddr << ":"
+			   << port << ". We retry to connect later when a TIM cmd is pending";
+
+	_reply = new char[MAXTIMREPLYSIZE]();
+	if (_reply == NULL) {
+		close(_socketfd);
+		freeaddrinfo(_servinfo);
+		LOG(ERROR) << "TIM Client: failed to allocate _reply memory";
+		return false;
 	}
-	if (!_timio->_timCmd.empty()) {
-		_timio->_timCmd.pop();
-		_timio->_timCmdId.pop();
-		_timio->_timCmdWrite.pop();
-		_timio->_thread = NULL;
+
+	return true;
+}
+
+/**
+ * @brief Invia un comando al TIM. Il comando è ricevuto dall'interprete SCXML.
+ *	Immediatamente dopo l'invio attende la risposta del TIM.
+ *	Invia un'eventuale risposta all'interprete SCXML.
+ *	Tutte le operazioni bloccanti sono interrotte da un timeout.
+ *
+ * @param Puntatore ad all'istanza di TimIO
+ */
+void XmlBridgeInvoker::client(std::string cmdframe) {
+	if (cmdframe.length() == 0) {
+		LOG(ERROR) << "TIM client: sending a 0 length message";
+		buildTIMexception(TIM_ERROR);
 	}
+
+	LOG(ERROR) << "Sending cmd to TIM (length=" << cmdframe.length() << "): "
+		   << std::endl << cmdframe;
+
+	int numbytes;
+	while ((numbytes = send(_socketfd, cmdframe.c_str(),
+				cmdframe.length(), MSG_NOSIGNAL | MSG_MORE))
+	       != cmdframe.length()) {
+
+		PLOG(INFO) << "TIM client: send error";
+		if (errno == EPIPE || errno == EBADF) {
+			LOG(INFO) << "TCP connection with TCP lost, reconnecting";
+			if (!connect2TIM()) {
+				buildTIMexception(TIM_ERROR);
+				return;
+			}
+			continue;
+		} else if (errno == EAGAIN || errno == EWOULDBLOCK) {
+			LOG(ERROR) << "TIM client: command timeout";
+			buildTIMexception(TIM_TIMEOUT);
+			return;
+		}
+		buildTIMexception(TIM_ERROR);
+		LOG(ERROR) << "TIM client: failed to send";
+		return;
+	}
+
+	/*
+	 * Function blocks until the full amount of message data can be returned
+	 */
+	size_t replylen = 0;
+	memset(_reply, 0, MAXTIMREPLYSIZE);
+	do {
+		int recvlen;
+		if ((recvlen = recv(_socketfd, _reply + replylen,
+				    MAXTIMREPLYSIZE - replylen, 0)) == -1) {
+			if (errno == EAGAIN || errno == EWOULDBLOCK) {
+				LOG(ERROR) << "TIM client: command timeout";
+				buildTIMexception(TIM_TIMEOUT);
+				return;
+			}
+			PLOG(ERROR) << "TIM recv error: client ignoring TIM reply";
+			buildTIMexception(TIM_ERROR);
+			return;
+		} else if (recvlen == 0 && errno == 0) {
+			LOG(ERROR) << "TIM client: received zero-length message";
+			buildTIMexception(TIM_ERROR);
+			return;
+		} else if (recvlen == (MAXTIMREPLYSIZE - replylen)) {
+			LOG(ERROR) << "TIM client: received message too long";
+			buildTIMexception(TIM_ERROR);
+			return;
+		}
+		replylen += recvlen;
+	} while (std::strncmp(_reply, "<frame>", 7) != 0 ||
+		 std::strncmp(&_reply[replylen-8], "</frame>", 8) != 0);
+
+	LOG(ERROR) << "Received reply from TIM: " << std::endl << _reply;
+
+	/* This function logs and reports errors internally */
+	buildTIMreply(_timio->_timCmdId.front(), _timio->_timCmdWrite.front(), replyData);
 }
 
 } //namespace uscxml

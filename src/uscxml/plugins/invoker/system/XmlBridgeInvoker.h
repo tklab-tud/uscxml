@@ -10,10 +10,10 @@
 
 #include <uscxml/Interpreter.h>
 #include <glog/logging.h>
-#include "uscxml/plugins/invoker/system/timio.h"
-
-#include <map>
 #include <iostream>
+#include <sys/socket.h>
+#include <netdb.h>
+#include <mesbufferer.h>
 
 #ifdef BUILD_AS_PLUGINS
 #include "uscxml/plugins/Plugins.h"
@@ -36,7 +36,9 @@ namespace uscxml {
 
 #define INVOKER_TYPE		"xmlbridge"
 
-#define DBID_DELIMITER		','
+#define MAXTIMREPLYSIZE		20000
+#define DEF_TIMADDR		"127.0.0.1"
+#define DEF_TIMPORT		"3000"
 
 enum exceptions {
 	TIM_TIMEOUT,
@@ -63,21 +65,32 @@ public:
 	void invoke(const InvokeRequest& req);
 	Data getDataModelVariables();
 
-	void buildMESreq(unsigned int addr, unsigned int len, bool write, const std::list<std::string> req_raw_data);
+	void buildMESreq(unsigned int addr, unsigned int len, bool write, const std::list<std::string> req_raw_data, const std::list<std::string> req_indexes);
 	void buildTIMreply(bool type, const std::string reply_raw_data);
 	void buildTIMexception(exceptions type);
 
 protected:
-	const unsigned int _CMDid;		/** L'ID del comando gestito dall'invoker */
+
+	bool initClient(std::string& ipaddr, std::string& port);
+	void client(std::string cmdframe);
+	bool connect2TIM();
+
+	const unsigned int _CMDid;	/** L'ID del comando gestito dall'invoker */
 	const unsigned int _timeoutVal;	/** Il massimo tempo di attesa per ricevere una risposta dal TIM per questo comando */
 	unsigned int _currItems;	/** Il numero di items scritti/letti nella richiesta corrent */
 	unsigned int _currLen;
 	unsigned int _currAddr;
+	bool _currWrite;
 
-	TimIO* _timio;		/**< Puntatore all'istanza del TIM Client */
-	void* _mesbufferer;	/**< Puntatore all'istanze di MesBufferer */
+	std::list<std::string> _items;	/** Lista di elementi estratti dalla risposta del TIM tramite query xpath */
 
-	std::list<std::string> _itemsRead; /** Lista di elementi estratti dalla risposta del TIM tramite query xpath */
+	MesBufferer* _mesbufferer;	/**< Puntatore all'istanze di MesBufferer */
+
+	std::string _TIMport;		/**< Porta TCP del server TIM */
+	std::string _TIMaddr;		/**< Indirizzo del server TIM */
+	char* _reply;			/**< Buffer di ricezione del client TIM */
+	int _socketfd;			/**< Socket descriptor del client TIM */
+	struct addrinfo *_servinfo;	/**< Informazioni di sessione del server TIM */
 };
 
 #ifdef BUILD_AS_PLUGINS
