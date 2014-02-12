@@ -445,52 +445,52 @@
 			</transition>
 		</state>
 	</state>
-	<state id="11" initial="init11">
-		<invoke type="xmlbridge" id="xmlbridge11"/>
-		<state id="init11">
-			<transition event="11_rReq" target="sent11">
-				<send 	event="11_rCmd"
-					namelist="$READ3/frame"
-					target="#_xmlbridge11"/>
-			</transition>
-			<transition event="11_wReq" target="sent11">
-				<foreach array="$_event/data/data/text()" item="iterator" index="numRiga">
-					<assign location="$WRITE11/frame/data/item[@i=$numRiga]/nestedData" expr="$iterator"/>
-				</foreach>
-				<send 	event="11_wCmd"
-					namelist="$WRITE3/frame"
-					target="#_xmlbridge11"/>
-			</transition>
-		</state>
-		<state id="sent11">
-			<transition event="11_wReply" target="init11">
-				<if cond="$_event/data/frame/data/nestedData[@type='state']/text() = 'ok'">
-					<send 	event="11_wAck" target="#_xmlbridge11"/>
-				<elseif/>
-					<send 	event="11__Err" target="#_xmlbridge11"/>
-				</if>
-			</transition>
-			<transition event="11_rReply"  target="init11">
-				<if cond="$_event/data/frame/data">
-					<foreach array="$_event/data/data/text()" item="iterator" index="numRiga">
-						<assign location="$WRITE11/frame/data/item[@i=$numRiga]/nestedData" expr="$iterator"/>
-					</foreach>
-					<send 	event="11_rAck"
-						namelist="$_event/data/frame/data/item/nestedData[@type='value']/text()"
-						target="#_xmlbridge11"/>
-				<else/>
-					<send 	event="11_rErr"
-						target="#_xmlbridge11"/>
-				</if>
-			</transition>
-			<transition event="timeout11" target="init11">
-				<send 	event="11__Err" target="#_xmlbridge11"/>
-			</transition>
-			<transition event="error3" target="init3">
-				<send 	event="11__Err" target="#_xmlbridge11"/>
-			</transition>
-		</state>
-	</state>	
+<!--	<state id="11" initial="init11">-->
+<!--		<invoke type="xmlbridge" id="xmlbridge11"/>-->
+<!--		<state id="init11">-->
+<!--			<transition event="11_rReq" target="sent11">-->
+<!--				<send 	event="11_rCmd"-->
+<!--					namelist="$READ3/frame"-->
+<!--					target="#_xmlbridge11"/>-->
+<!--			</transition>-->
+<!--			<transition event="11_wReq" target="sent11">-->
+<!--				<foreach array="$_event/data/data/text()" item="iterator" index="numRiga">-->
+<!--					<assign location="$WRITE11/frame/data/item[@i=$numRiga]/nestedData" expr="$iterator"/>-->
+<!--				</foreach>-->
+<!--				<send 	event="11_wCmd"-->
+<!--					namelist="$WRITE3/frame"-->
+<!--					target="#_xmlbridge11"/>-->
+<!--			</transition>-->
+<!--		</state>-->
+<!--		<state id="sent11">-->
+<!--			<transition event="11_wReply" target="init11">-->
+<!--				<if cond="$_event/data/frame/data/nestedData[@type='state']/text() = 'ok'">-->
+<!--					<send 	event="11_wAck" target="#_xmlbridge11"/>-->
+<!--				<elseif/>-->
+<!--					<send 	event="11__Err" target="#_xmlbridge11"/>-->
+<!--				</if>-->
+<!--			</transition>-->
+<!--			<transition event="11_rReply"  target="init11">-->
+<!--				<if cond="$_event/data/frame/data">-->
+<!--					<foreach array="$_event/data/data/text()" item="iterator" index="numRiga">-->
+<!--						<assign location="$WRITE11/frame/data/item[@i=$numRiga]/nestedData" expr="$iterator"/>-->
+<!--					</foreach>-->
+<!--					<send 	event="11_rAck"-->
+<!--						namelist="$_event/data/frame/data/item/nestedData[@type='value']/text()"-->
+<!--						target="#_xmlbridge11"/>-->
+<!--				<else/>-->
+<!--					<send 	event="11_rErr"-->
+<!--						target="#_xmlbridge11"/>-->
+<!--				</if>-->
+<!--			</transition>-->
+<!--			<transition event="timeout11" target="init11">-->
+<!--				<send 	event="11__Err" target="#_xmlbridge11"/>-->
+<!--			</transition>-->
+<!--			<transition event="error3" target="init3">-->
+<!--				<send 	event="11__Err" target="#_xmlbridge11"/>-->
+<!--			</transition>-->
+<!--		</state>-->
+<!--	</state>-->
 </parallel>
 <final id="EXIT">
 	<log label="Unrecoverable Error" expr="$_event/text()" />

@@ -231,7 +231,8 @@ void XPathDataModel::setEvent(const Event& event) {
 		}
 	}
 	if (event.data.node) {
-		eventDataElem.appendChild(event.data.node);
+		Node<std::string> importedNode = _doc.importNode(event.data.node, true);
+		eventDataElem.appendChild(importedNode);
 	}
 
 	eventElem.appendChild(eventDataElem);

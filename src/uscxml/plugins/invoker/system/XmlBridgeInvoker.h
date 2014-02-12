@@ -50,7 +50,7 @@ enum exceptions {
  */
 class XmlBridgeInvoker : public InvokerImpl {
 public:
-	XmlBridgeInvoker() : _reply(NULL), _servinfo(NULL), _socketfd(), _mesbufferer(MesBufferer::getInstance()) {}
+	XmlBridgeInvoker() : _reply(NULL), _servinfo(NULL), _socketfd(0), _itemsRead(), _mesbufferer(MesBufferer::getInstance()) {}
 	std::set<std::string> getNames() {
 		std::set<std::string> names;
 		names.insert("xmlbridge");

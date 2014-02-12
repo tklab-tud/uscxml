@@ -43,14 +43,8 @@ XmlBridgeInvoker::~XmlBridgeInvoker()
  * @return boost::shared_ptr<InvokerImpl>	Il puntatore all'invoker.
  */
 boost::shared_ptr<InvokerImpl> XmlBridgeInvoker::create(InterpreterImpl* interpreter) {
-	boost::shared_ptr<XmlBridgeInvoker> invoker = boost::shared_ptr<XmlBridgeInvoker>(this);
-
-	invoker->setType(INVOKER_TYPE);
-	invoker->setInterpreter(interpreter);
-
-	LOG(INFO) << "Creating " << _invokeId;
-
-	return invoker;
+	boost::shared_ptr<XmlBridgeInvoker> ptr = boost::shared_ptr<XmlBridgeInvoker>(new XmlBridgeInvoker());
+	return ptr;
 }
 
 /**
@@ -68,8 +62,6 @@ void XmlBridgeInvoker::invoke(const InvokeRequest& req) {
 
 	/* TODO check integer */
 	/* TODO: get all invokers and check for duplicated ids */
-	_CMDid = atoi(_invokeId.substr(sizeof(INVOKER_TYPE)-1).c_str());
-	_mesbufferer.registerInvoker(_CMDid, this);
 
 	std::string timaddr = _interpreter->getName();
 	size_t index = timaddr.find(':');
@@ -79,6 +71,9 @@ void XmlBridgeInvoker::invoke(const InvokeRequest& req) {
 	/* Connessione al TIM */
 	initClient(_TIMaddr.empty() ? DEF_TIMADDR : _TIMaddr,
 		   _TIMport.empty() ? DEF_TIMPORT : _TIMport);
+
+	_CMDid = atoi(_invokeId.substr(sizeof(INVOKER_TYPE)-1).c_str());
+	_mesbufferer.registerInvoker(_CMDid, this);
 }
 
 /**
@@ -210,7 +205,7 @@ void XmlBridgeInvoker::buildMESreq(unsigned int addr, unsigned int len, bool wri
 		std::list<std::string>::const_iterator valueiter = req_indexes.begin();
 		Arabica::DOM::Element<std::string> eventDataElem = _interpreter->getDocument().createElement("data");
 
-		for (valueiter; valueiter!= req_raw_data.end(); valueiter++, i++) {
+		for (valueiter; valueiter!= req_indexes.end(); valueiter++, i++) {
 			Arabica::DOM::Element<std::string> eventMESElem = _interpreter->getDocument().createElement("data");
 			Arabica::DOM::Text<std::string> textNode = _interpreter->getDocument().createTextNode(*valueiter);
 			std::stringstream ss;
