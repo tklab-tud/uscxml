@@ -10,7 +10,6 @@
 
 #include <uscxml/Interpreter.h>
 #include <glog/logging.h>
-#include <iostream>
 #include <sys/socket.h>
 #include <netdb.h>
 #include <mesbufferer.h>
@@ -51,9 +50,7 @@ enum exceptions {
  */
 class XmlBridgeInvoker : public InvokerImpl {
 public:
-	XmlBridgeInvoker() {}
-	~XmlBridgeInvoker() {}
-
+	XmlBridgeInvoker() : _reply(NULL), _servinfo(NULL), _socketfd(), _mesbufferer(MesBufferer::getInstance()) {}
 	std::set<std::string> getNames() {
 		std::set<std::string> names;
 		names.insert("xmlbridge");
@@ -65,26 +62,28 @@ public:
 	void invoke(const InvokeRequest& req);
 	Data getDataModelVariables();
 
-	void buildMESreq(unsigned int addr, unsigned int len, bool write, const std::list<std::string> req_raw_data, const std::list<std::string> req_indexes);
-	void buildTIMreply(bool type, const std::string reply_raw_data);
+	void buildMESreq(unsigned int addr, unsigned int len, bool write, const std::list<std::string> req_raw_data,
+									const std::list<std::string> req_indexes);
+	void buildTIMreply(const std::string reply_raw_data);
 	void buildTIMexception(exceptions type);
 
+	~XmlBridgeInvoker();
 protected:
 
-	bool initClient(std::string& ipaddr, std::string& port);
+	bool initClient(std::string ipaddr, std::string port);
 	void client(std::string cmdframe);
 	bool connect2TIM();
 
-	const unsigned int _CMDid;	/** L'ID del comando gestito dall'invoker */
-	const unsigned int _timeoutVal;	/** Il massimo tempo di attesa per ricevere una risposta dal TIM per questo comando */
+	unsigned int _CMDid;		/** L'ID del comando gestito dall'invoker */
+	unsigned int _timeoutVal;	/** Il massimo tempo di attesa per ricevere una risposta dal TIM per questo comando */
 	unsigned int _currItems;	/** Il numero di items scritti/letti nella richiesta corrent */
 	unsigned int _currLen;
 	unsigned int _currAddr;
 	bool _currWrite;
 
-	std::list<std::string> _items;	/** Lista di elementi estratti dalla risposta del TIM tramite query xpath */
+	std::list<std::string> _itemsRead;	/** Lista di elementi estratti dalla risposta del TIM tramite query xpath */
 
-	MesBufferer* _mesbufferer;	/**< Puntatore all'istanze di MesBufferer */
+	MesBufferer& _mesbufferer;	/**< Puntatore all'istanze di MesBufferer */
 
 	std::string _TIMport;		/**< Porta TCP del server TIM */
 	std::string _TIMaddr;		/**< Indirizzo del server TIM */

@@ -25,8 +25,10 @@ bool connect(pluma::Host& host) {
  * @brief Distruttore del client TCP
  *
  */
-XmlBridgeInvoker::~TimIO()
+XmlBridgeInvoker::~XmlBridgeInvoker()
 {
+	LOG(INFO) << "Stopping " << _invokeId;
+
 	if (_servinfo != NULL)
 		freeaddrinfo(_servinfo);
 	close(_socketfd);
@@ -66,13 +68,12 @@ void XmlBridgeInvoker::invoke(const InvokeRequest& req) {
 
 	/* TODO check integer */
 	/* TODO: get all invokers and check for duplicated ids */
-	_CMDid = atoi(_invokeId.substr(sizeof(INVOKER_TYPE)).c_str());
-
-	_mesbufferer = MesBufferer::getInstance();
+	_CMDid = atoi(_invokeId.substr(sizeof(INVOKER_TYPE)-1).c_str());
+	_mesbufferer.registerInvoker(_CMDid, this);
 
 	std::string timaddr = _interpreter->getName();
 	size_t index = timaddr.find(':');
-	_TIMaddr = timaddr.substr(0, index - 1);
+	_TIMaddr = timaddr.substr(0, index);
 	_TIMport = timaddr.substr(index + 1);
 
 	/* Connessione al TIM */
@@ -123,7 +124,7 @@ void XmlBridgeInvoker::send(const SendRequest& req) {
 			namelistIter++;
 		}
 
-		if (ss.str().empty() || timeout == 0) {
+		if (ss.str().empty() || _timeoutVal == 0) {
 			buildTIMexception(TIM_ERROR);
 			return;
 		}
@@ -154,15 +155,14 @@ void XmlBridgeInvoker::send(const SendRequest& req) {
 			}
 		}
 
-		if (_itemsRead.size() >= _currItems || write)
-			if (write)
-				((MesBufferer *)_mesbufferer)->bufferMESreplyWRITE(cmdid);
-			else
-				((MesBufferer *)_mesbufferer)->bufferMESreplyREAD(cmdid, addr, len, replyData);
+		if (_itemsRead.size() >= _currItems)
+			_mesbufferer.bufferMESreplyREAD(_CMDid, _currAddr, _currLen, _itemsRead);
+		else if (write)
+			_mesbufferer.bufferMESreplyWRITE(_CMDid);
 
 		/* SCXML -> MES (errore) */
 	} else if (evType == SCXML2MES_ERR) {
-		((MesBufferer *)_mesbufferer)->bufferMESerror(DBid, cmdid);
+		_mesbufferer.bufferMESerror(_CMDid);
 
 	} else {
 		LOG(ERROR) << "XmlBridgeInvoker: received an unsupported event type from Interpreter, discarding request\n"
@@ -183,6 +183,7 @@ void XmlBridgeInvoker::buildMESreq(unsigned int addr, unsigned int len, bool wri
 				   const std::list<std::string> req_indexes) {
 	std::stringstream ss;
 	ss << _CMDid << '_' << (write ? WRITEOP : READOP) << MES2SCXML;
+	LOG(INFO) << "(" << _invokeId << ") Building Event " << ss.str();
 
 	Event myevent(ss.str(), Event::EXTERNAL);
 
@@ -193,34 +194,40 @@ void XmlBridgeInvoker::buildMESreq(unsigned int addr, unsigned int len, bool wri
 	if (!req_indexes.empty() && !req_raw_data.empty() && write) {
 		std::list<std::string>::const_iterator valueiter = req_raw_data.begin();
 		std::list<std::string>::const_iterator indexiter = req_indexes.begin();
+		Arabica::DOM::Element<std::string> eventDataElem = _interpreter->getDocument().createElement("data");
 
-		for (valueiter, indexiter; valueiter!= req_raw_data.end(); valueiter++, indexiter++) {
-			Element<std::string> eventMESElem = _doc.createElement("data");
-			Text<std::string> textNode = _doc.createTextNode(*valueiter);
+		for (valueiter; valueiter!= req_raw_data.end(); valueiter++, indexiter++) {
+			Arabica::DOM::Element<std::string> eventMESElem = _interpreter->getDocument().createElement("data");
+			Arabica::DOM::Text<std::string> textNode = _interpreter->getDocument().createTextNode(*valueiter);
 			eventMESElem.setAttribute("i", *indexiter);
 			eventMESElem.appendChild(textNode);
-			myevent.data.node.appendChild(eventMESElem);
+			eventDataElem.appendChild(eventMESElem);
 		}
+		myevent.data.node = eventDataElem;
 		_currItems = req_raw_data.size();
 	} else if (!req_indexes.empty() && !write) {
 		unsigned int i = 0;
 		std::list<std::string>::const_iterator valueiter = req_indexes.begin();
+		Arabica::DOM::Element<std::string> eventDataElem = _interpreter->getDocument().createElement("data");
 
-		for (i, valueiter; valueiter!= req_raw_data.end(); valueiter++, i++) {
-			Element<std::string> eventMESElem = _doc.createElement("data");
-			Text<std::string> textNode = _doc.createTextNode(*valueiter);
+		for (valueiter; valueiter!= req_raw_data.end(); valueiter++, i++) {
+			Arabica::DOM::Element<std::string> eventMESElem = _interpreter->getDocument().createElement("data");
+			Arabica::DOM::Text<std::string> textNode = _interpreter->getDocument().createTextNode(*valueiter);
 			std::stringstream ss;
 			ss << i;
 			eventMESElem.setAttribute("i", ss.str());
 			eventMESElem.appendChild(textNode);
-			myevent.data.node.appendChild(eventMESElem);
+			eventDataElem.appendChild(eventMESElem);
 		}
+		myevent.data.node = eventDataElem;
 		_currItems = req_indexes.size();
 	} else {
 		_currItems = 0;
 	}
 	_currAddr = addr;
 	_currLen = len;
+	_currWrite = write;
+
 	_itemsRead.clear();
 
 	returnEvent(myevent);
@@ -235,7 +242,7 @@ void XmlBridgeInvoker::buildMESreq(unsigned int addr, unsigned int len, bool wri
  * @param type Lettura/Scrittura
  * @param reply_raw_data Stringa Raw della risposta dal TIM
  */
-void XmlBridgeInvoker::buildTIMreply(bool type, const std::string reply_raw_data)
+void XmlBridgeInvoker::buildTIMreply(const std::string reply_raw_data)
 {
 	Arabica::SAX2DOM::Parser<std::string> domParser;
 	Arabica::SAX::CatchErrorHandler<std::string> errorHandler;
@@ -248,17 +255,17 @@ void XmlBridgeInvoker::buildTIMreply(bool type, const std::string reply_raw_data
 	if (!(domParser.parse(inputSource))) {
 		LOG(ERROR) << "Failed parsing TIM XML reply string for command " << _CMDid;
 		LOG(ERROR) << "Errors " << errorHandler.errors();;
-		buildTIMexception(_CMDid, TIM_ERROR);
+		buildTIMexception(TIM_ERROR);
 		return;
 	}
 
 	std::stringstream ss;
-	ss << _CMDid << '_' << (type ? WRITEOP : READOP) << TIM2SCXML;
+	ss << _CMDid << '_' << (_currWrite ? WRITEOP : READOP) << TIM2SCXML;
 
 	Event myevent(ss.str(), Event::EXTERNAL);
 	if (!domParser.getDocument().hasChildNodes()) {
 		LOG(ERROR) << "Failed parsing TIM XML reply. Resulting document has no nodes";
-		buildTIMexception(_CMDid, TIM_ERROR);
+		buildTIMexception(TIM_ERROR);
 		return;
 	}
 
@@ -322,7 +329,7 @@ bool XmlBridgeInvoker::connect2TIM() {
 		}
 
 		struct timeval tv;
-		tv.tv_sec = _defTimeout;
+		tv.tv_sec = _timeoutVal;
 		tv.tv_usec = 0;  // Not init'ing this can cause strange errors
 		if (setsockopt(_socketfd, SOL_SOCKET, SO_SNDTIMEO, &tv, sizeof(struct timeval))) {
 			PLOG(ERROR) << "TIM Client setting socket options error";
@@ -358,7 +365,7 @@ bool XmlBridgeInvoker::connect2TIM() {
  * @param ipaddr
  * @param port
  */
-XmlBridgeInvoker::initClient(std::string ipaddr, std::string port)
+bool XmlBridgeInvoker::initClient(std::string ipaddr, std::string port)
 {
 	if (ipaddr.empty() || port.empty())
 		return false;
@@ -396,9 +403,8 @@ void XmlBridgeInvoker::client(std::string cmdframe) {
 		   << std::endl << cmdframe;
 
 	int numbytes;
-	while ((numbytes = send(_socketfd, cmdframe.c_str(),
-				cmdframe.length(), MSG_NOSIGNAL | MSG_MORE))
-	       != cmdframe.length()) {
+	while ((numbytes = ::send(_socketfd, cmdframe.c_str(),
+				cmdframe.length(), MSG_NOSIGNAL | MSG_MORE)) != cmdframe.length()) {
 
 		PLOG(INFO) << "TIM client: send error";
 		if (errno == EPIPE || errno == EBADF) {
@@ -451,7 +457,7 @@ void XmlBridgeInvoker::client(std::string cmdframe) {
 	LOG(ERROR) << "Received reply from TIM: " << std::endl << _reply;
 
 	/* This function logs and reports errors internally */
-	buildTIMreply(_timio->_timCmdId.front(), _timio->_timCmdWrite.front(), replyData);
+	buildTIMreply(std::string(_reply));
 }
 
 } //namespace uscxml
