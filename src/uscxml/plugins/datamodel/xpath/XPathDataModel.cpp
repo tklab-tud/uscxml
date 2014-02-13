@@ -231,8 +231,8 @@ void XPathDataModel::setEvent(const Event& event) {
 		}
 	}
 	if (event.data.node) {
-		Node<std::string> importedNode = _doc.importNode(event.data.node, true);
-		eventDataElem.appendChild(importedNode);
+		for (unsigned int i = 0; i < event.data.node.getChildNodes().getLength(); i++)
+			eventDataElem.appendChild( _doc.importNode(event.data.node.getChildNodes().item(i), true));
 	}
 
 	eventElem.appendChild(eventDataElem);
@@ -279,10 +279,9 @@ Data XPathDataModel::getStringAsData(const std::string& content) {
 		for (int i = 0; i < ns.size(); i++) {
 			ss.str("");
 			ss << i;
-			std::string idx = ss.str();
 			Data tmpdata;
 			tmpdata.node = ns[i];
-			data.compound[idx] = tmpdata;
+			data.compound[ss.str()] = tmpdata;
 		}
 		data.type = Data::INTERPRETED;
 		return data;
@@ -343,7 +342,7 @@ void XPathDataModel::setForeach(const std::string& item,
 			throw Event("error.execution", Event::PLATFORM);
 		Element<std::string> container = _doc.createElement("data");
 		container.setAttribute("id", item);
-		container.appendChild(arrayResult.asNodeSet()[iteration].cloneNode(true));
+		container.appendChild(_doc.importNode(arrayResult.asNodeSet()[iteration], true));
 		_datamodel.appendChild(container);
 		_varResolver.setVariable(item, arrayNodeSet);
 	}
@@ -396,7 +395,6 @@ void XPathDataModel::eval(const Arabica::DOM::Element<std::string>& scriptElem,
 }
 
 bool XPathDataModel::isDeclared(const std::string& expr) {
-	return true;
 	try {
 		return _varResolver.isDeclared(expr) || evalAsBool(expr);
 	} catch(...) {

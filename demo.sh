@@ -18,11 +18,11 @@ case "$1" in
 	if [ "$2" -eq "1" ] ; then
 #		(/usr/bin/cat write0.xml | /usr/bin/nc -l -v -p 3000 >/dev/null) &
 #		sleep 1
-		/usr/local/bin/modpoll -1 -c 1 -o 4 -p 1502 -t0 -r1 127.0.0.1 1
+		/usr/local/bin/modpoll -0 -1 -c 1 -o 4 -p 1502 -t0 -r1 127.0.0.1 1
 	else
 #		(/usr/bin/cat read0.xml | /usr/bin/nc -l -v -p 3000 >/dev/null) &
 #		sleep 1
-		/usr/local/bin/modpoll -1 -c 1 -o 4 -p 1502 -t0 -r1 127.0.0.1
+		/usr/local/bin/modpoll -0 -1 -c 1 -o 4 -p 1502 -t0 -r2 127.0.0.1
 	fi
     ;;
 1)  echo  "Sending command $1"
@@ -30,11 +30,11 @@ case "$1" in
     	if [ "$2" -eq "1" ] ; then
 		#/usr/bin/nc -l -v -p 3000 < write1.xml &
 		sleep 1				
-		#/usr/local/bin/modpoll -1 -c 4 -o 4 -p 1502 -t0 -r14 127.0.0.1	1 0 1 0
+		#/usr/local/bin/modpoll -0 -1 -c 4 -o 4 -p 1502 -t0 -r14 127.0.0.1	1 0 1 0
 	else
 #		(/usr/bin/cat read1.xml | /usr/bin/nc -l -v -p 3000 >/dev/null) &
 #		sleep 1
-		/usr/local/bin/modpoll -1 -c 8 -o 4 -p 1502 -t0 -r14 127.0.0.1
+		/usr/local/bin/modpoll -0 -1 -t4 -o 4 -p 1502 -r3 -c115 127.0.0.1
 	fi
     ;;
 2)  echo  "Sending command $1"
@@ -44,16 +44,16 @@ case "$1" in
     	if [ "$2" -eq "1" ] ; then
 #		(/usr/bin/cat write3.xml | /usr/bin/nc -l -v -p 3000 >/dev/null) &
 #		sleep 1
-		/usr/local/bin/modpoll -1 -c 1 -o 4 -p 1502 -t4 -r41 127.0.0.1 62000
-		/usr/local/bin/modpoll -1 -c 1 -o 4 -p 1502 -t4 -r45 127.0.0.1 254
-		/usr/local/bin/modpoll -1 -c 2 -o 4 -p 1502 -t4 -r49 127.0.0.1 254 223
-		/usr/local/bin/modpoll -1 -c 1 -o 4 -p 1502 -t0 -r54 127.0.0.1 1
-		/usr/local/bin/modpoll -1 -c 1 -o 4 -p 1502 -t4 -r78 127.0.0.1 61000
-		/usr/local/bin/modpoll -1 -c 1 -o 4 -p 1502 -t4 -r84 127.0.0.1 48
+		/usr/local/bin/modpoll -0 -1 -c 1 -o 4 -p 1502 -t4 -r41 127.0.0.1 62000
+		/usr/local/bin/modpoll -0 -1 -c 1 -o 4 -p 1502 -t4 -r45 127.0.0.1 254
+		/usr/local/bin/modpoll -0 -1 -c 2 -o 4 -p 1502 -t4 -r49 127.0.0.1 254 223
+		/usr/local/bin/modpoll -0 -1 -c 1 -o 4 -p 1502 -t0 -r54 127.0.0.1 1
+		/usr/local/bin/modpoll -0 -1 -c 1 -o 4 -p 1502 -t4 -r78 127.0.0.1 61000
+		/usr/local/bin/modpoll -0 -1 -c 1 -o 4 -p 1502 -t4 -r84 127.0.0.1 48
 #	else
 #		(/usr/bin/cat read3.xml | /usr/bin/nc -l -v -p 3000 >/dev/null) &
 #		sleep 1
-		/usr/local/bin/modpoll -1 -c 1 -o 4 -p 1502 -t4 -r41 127.0.0.1
+		/usr/local/bin/modpoll -0 -1 -c 1 -o 4 -p 1502 -t4 -r41 127.0.0.1
 	fi
    ;;
 *) echo "Signal number $1 is not supported"

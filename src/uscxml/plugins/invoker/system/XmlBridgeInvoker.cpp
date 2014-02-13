@@ -99,9 +99,7 @@ void XmlBridgeInvoker::send(const SendRequest& req) {
 	bool write = (evName.c_str()[0] == WRITEOP);
 	std::string evType = evName.substr(1, 3);
 
-	//_interpreter->getDataModel().replaceExpressions(reqCopy.content);
-
-	//TODO LOG EVENT
+	LOG(INFO) << "(" << _invokeId << ") Sending Event " << evName;
 
 	/* I dati inviati dal SCXML all'TIM o al MES sono sempre mappati nella struttura dati 'namelist' dell'evento */
 	/* SCXML -> TIM */
@@ -111,6 +109,7 @@ void XmlBridgeInvoker::send(const SendRequest& req) {
 		std::stringstream ss;
 		std::map<std::string, Data>::const_iterator namelistIter = reqCopy.namelist.begin();
 		while(namelistIter != reqCopy.namelist.end()) {
+			/* When sending namelist from _datamodel variables, data is interpreted as nodes (data.node) */
 			std::map<std::string, Data>::const_iterator nodesIter = namelistIter->second.compound.begin();
 			while(nodesIter != namelistIter->second.compound.end()) {
 				ss << nodesIter->second.node;
@@ -134,23 +133,29 @@ void XmlBridgeInvoker::send(const SendRequest& req) {
 
 		client("<frame>" + ss.str().substr(index + 1, ss.str().length()));
 
-		/* SCXML -> MES */
+	/* SCXML -> MES */
 	} else if (evType == SCXML2MES_ACK) {
 		//TODO HANDLE MALFORMED SCXML and DATA
 
 		if (!write) {
+			/* When sending namelist from XPath variables, data is interpreted as nodes (data.node) */
 			std::map<std::string, Data>::const_iterator namelistIter = reqCopy.namelist.begin();
 			while(namelistIter != reqCopy.namelist.end()) {
 				std::map<std::string, Data>::const_iterator nodesIter = namelistIter->second.compound.begin();
 				while(nodesIter != namelistIter->second.compound.end()) {
-					_itemsRead.push_back(nodesIter->second.node.getNodeValue());
+					std::stringstream ss;
+					ss << nodesIter->second.node;
+					LOG(INFO) << "currnode " << ss.str();
+					_itemsRead.push_back(ss.str());
 					nodesIter++;
 				}
 				namelistIter++;
 			}
 		}
+		LOG(INFO) << "size " << _itemsRead.size();
+		LOG(INFO) << "size2 " << _currItems;
 
-		if (_itemsRead.size() >= _currItems)
+		if (_itemsRead.size() >= _currItems && !write)
 			_mesbufferer.bufferMESreplyREAD(_CMDid, _currAddr, _currLen, _itemsRead);
 		else if (write)
 			_mesbufferer.bufferMESreplyWRITE(_CMDid);
@@ -158,10 +163,10 @@ void XmlBridgeInvoker::send(const SendRequest& req) {
 		/* SCXML -> MES (errore) */
 	} else if (evType == SCXML2MES_ERR) {
 		_mesbufferer.bufferMESerror(_CMDid);
-
 	} else {
 		LOG(ERROR) << "XmlBridgeInvoker: received an unsupported event type from Interpreter, discarding request\n"
 			   << "Propably the event name in the SCXML file is incorrect.";
+		_mesbufferer.bufferMESerror(_CMDid);
 	}
 }
 
@@ -182,6 +187,7 @@ void XmlBridgeInvoker::buildMESreq(unsigned int addr, unsigned int len, bool wri
 
 	Event myevent(ss.str(), Event::EXTERNAL);
 
+
 	/* I dati inviati dal MES all'SCXML sono sempre mappati nella struttura dati 'node' dell'evento */
 
 	/* Nel caso della lettura vado a scrivere gli indici
@@ -189,32 +195,24 @@ void XmlBridgeInvoker::buildMESreq(unsigned int addr, unsigned int len, bool wri
 	if (!req_indexes.empty() && !req_raw_data.empty() && write) {
 		std::list<std::string>::const_iterator valueiter = req_raw_data.begin();
 		std::list<std::string>::const_iterator indexiter = req_indexes.begin();
-		Arabica::DOM::Element<std::string> eventDataElem = _interpreter->getDocument().createElement("data");
-
+		myevent.data.node = _interpreter->getDocument().createElement("data");
 		for (valueiter; valueiter!= req_raw_data.end(); valueiter++, indexiter++) {
 			Arabica::DOM::Element<std::string> eventMESElem = _interpreter->getDocument().createElement("data");
 			Arabica::DOM::Text<std::string> textNode = _interpreter->getDocument().createTextNode(*valueiter);
 			eventMESElem.setAttribute("i", *indexiter);
 			eventMESElem.appendChild(textNode);
-			eventDataElem.appendChild(eventMESElem);
+			myevent.data.node.appendChild(eventMESElem);
 		}
-		myevent.data.node = eventDataElem;
 		_currItems = req_raw_data.size();
 	} else if (!req_indexes.empty() && !write) {
-		unsigned int i = 0;
 		std::list<std::string>::const_iterator valueiter = req_indexes.begin();
-		Arabica::DOM::Element<std::string> eventDataElem = _interpreter->getDocument().createElement("data");
-
-		for (valueiter; valueiter!= req_indexes.end(); valueiter++, i++) {
+		myevent.data.node = _interpreter->getDocument().createElement("data");
+		for (valueiter; valueiter!=req_indexes.end(); valueiter++) {
 			Arabica::DOM::Element<std::string> eventMESElem = _interpreter->getDocument().createElement("data");
 			Arabica::DOM::Text<std::string> textNode = _interpreter->getDocument().createTextNode(*valueiter);
-			std::stringstream ss;
-			ss << i;
-			eventMESElem.setAttribute("i", ss.str());
 			eventMESElem.appendChild(textNode);
-			eventDataElem.appendChild(eventMESElem);
+			myevent.data.node.appendChild(eventMESElem);
 		}
-		myevent.data.node = eventDataElem;
 		_currItems = req_indexes.size();
 	} else {
 		_currItems = 0;

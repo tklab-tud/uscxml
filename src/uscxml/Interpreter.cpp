@@ -41,7 +41,7 @@
 
 #include "uscxml/interpreter/InterpreterDraft6.h"
 
-//#define VERBOSE 0
+#define VERBOSE 0
 
 /// macro to catch exceptions in executeContent
 #define CATCH_AND_DISTRIBUTE(msg) \
@@ -922,9 +922,12 @@ void InterpreterImpl::send(const Arabica::DOM::Node<std::string>& element) {
 			if (_dataModel) {
 				std::list<std::string> names = tokenizeIdRefs(ATTR(element, "namelist"));
 				for (std::list<std::string>::const_iterator nameIter = names.begin(); nameIter != names.end(); nameIter++) {
-					Data namelistValue = _dataModel.getStringAsData(*nameIter);
-					sendReq.namelist[*nameIter] = namelistValue;
-					sendReq.data.compound[*nameIter] = namelistValue;
+					std::string cleanedName(*nameIter);
+					_dataModel.replaceExpressions(cleanedName);
+					LOG(INFO) << "getting name : " << cleanedName;
+					Data namelistValue = _dataModel.getStringAsData(cleanedName);
+					sendReq.namelist[cleanedName] = namelistValue;
+					sendReq.data.compound[cleanedName] = namelistValue;
 				}
 			} else {
 				LOG(ERROR) << "Namelist attribute at send requires datamodel to be defined";
