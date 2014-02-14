@@ -63,7 +63,7 @@ public:
 	Data getDataModelVariables();
 
 	void buildMESreq(unsigned int addr, unsigned int len, bool write, const std::list<std::string> req_raw_data,
-									const std::list<std::string> req_indexes);
+									const std::list<std::pair<std::string, std::string> > req_indexes);
 	void buildTIMreply(const std::string reply_raw_data);
 	void buildTIMexception(exceptions type);
 

@@ -145,15 +145,14 @@ void XmlBridgeInvoker::send(const SendRequest& req) {
 				while(nodesIter != namelistIter->second.compound.end()) {
 					std::stringstream ss;
 					ss << nodesIter->second.node;
-					LOG(INFO) << "currnode " << ss.str();
+					LOG(INFO) << "storing " << ss.str();
 					_itemsRead.push_back(ss.str());
 					nodesIter++;
 				}
 				namelistIter++;
 			}
 		}
-		LOG(INFO) << "size " << _itemsRead.size();
-		LOG(INFO) << "size2 " << _currItems;
+		LOG(INFO) << "grande " << _itemsRead.size();
 
 		if (_itemsRead.size() >= _currItems && !write)
 			_mesbufferer.bufferMESreplyREAD(_CMDid, _currAddr, _currLen, _itemsRead);
@@ -180,7 +179,7 @@ void XmlBridgeInvoker::send(const SendRequest& req) {
  */
 void XmlBridgeInvoker::buildMESreq(unsigned int addr, unsigned int len, bool write,
 				   const std::list<std::string> req_raw_data,
-				   const std::list<std::string> req_indexes) {
+				   const std::list<std::pair<std::string,std::string> > req_indexes) {
 	std::stringstream ss;
 	ss << _CMDid << '_' << (write ? WRITEOP : READOP) << MES2SCXML;
 	LOG(INFO) << "(" << _invokeId << ") Building Event " << ss.str();
@@ -194,22 +193,24 @@ void XmlBridgeInvoker::buildMESreq(unsigned int addr, unsigned int len, bool wri
 	 * Nel caso della scrittura vado a scrivere i valori e gli indici */
 	if (!req_indexes.empty() && !req_raw_data.empty() && write) {
 		std::list<std::string>::const_iterator valueiter = req_raw_data.begin();
-		std::list<std::string>::const_iterator indexiter = req_indexes.begin();
+		std::list<std::pair<std::string,std::string> >::const_iterator indexiter = req_indexes.begin();
 		myevent.data.node = _interpreter->getDocument().createElement("data");
 		for (valueiter; valueiter!= req_raw_data.end(); valueiter++, indexiter++) {
 			Arabica::DOM::Element<std::string> eventMESElem = _interpreter->getDocument().createElement("data");
 			Arabica::DOM::Text<std::string> textNode = _interpreter->getDocument().createTextNode(*valueiter);
-			eventMESElem.setAttribute("i", *indexiter);
+			eventMESElem.setAttribute("index", indexiter->first);
+			eventMESElem.setAttribute("var", indexiter->second);
 			eventMESElem.appendChild(textNode);
 			myevent.data.node.appendChild(eventMESElem);
 		}
 		_currItems = req_raw_data.size();
 	} else if (!req_indexes.empty() && !write) {
-		std::list<std::string>::const_iterator valueiter = req_indexes.begin();
+		std::list<std::pair<std::string,std::string> >::const_iterator indexiter = req_indexes.begin();
 		myevent.data.node = _interpreter->getDocument().createElement("data");
-		for (valueiter; valueiter!=req_indexes.end(); valueiter++) {
+		for (indexiter; indexiter!=req_indexes.end(); indexiter++) {
 			Arabica::DOM::Element<std::string> eventMESElem = _interpreter->getDocument().createElement("data");
-			Arabica::DOM::Text<std::string> textNode = _interpreter->getDocument().createTextNode(*valueiter);
+			Arabica::DOM::Text<std::string> textNode = _interpreter->getDocument().createTextNode(indexiter->second);
+			eventMESElem.setAttribute("index", indexiter->first);
 			eventMESElem.appendChild(textNode);
 			myevent.data.node.appendChild(eventMESElem);
 		}

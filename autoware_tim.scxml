@@ -3,7 +3,8 @@
 	name="10.1.30.150:3000"
 	datamodel="xpath"
 	initial="RunCommandsStateMachines"
-	xmlns="http://www.w3.org/2005/07/scxml" >
+	xmlns="http://www.w3.org/2005/07/scxml" 
+	xmlns:fn="http://www.w3.org/2005/xpath-functions">
 
 <parallel id="RunCommandsStateMachines">
 	<state id="0" initial="init0">
@@ -66,7 +67,7 @@
 		<invoke type="xmlbridge" id="xmlbridge1"/>
 		<state id="init1">
 			<datamodel>
-				<data id="IDX1">0</data>
+				<data id="IDX1"></data>
 				<data id="READ1">
 					<frame xmlns="">
 						<data type="requestItem" index="0">information</data>
@@ -85,9 +86,7 @@
 				<if cond="$_event/data/frame">
 					<foreach array="$IDX1/data" item="currIDX1">
 						<send 	event="rACK"
-							namelist="$_event/data/frame/data/item[@i='${$currIDX1/data/text()}']/nestedData[@type='phrase']/text()
-								  $_event/data/frame/data/item[@i='${$currIDX1/data/text()}']/nestedData[@type='value']/text()
-								  $_event/data/frame/data/item[@i='${$currIDX1/data/text()}']/nestedData[@type='unit']/text()"
+							namelist="$_event/data/frame/data/item[@i='${$currIDX1/data/@index}']/nestedData[@type='${$currIDX1/data/text()}']/text()"
 							target="#_xmlbridge1"/>
 					</foreach>
 				<else/>

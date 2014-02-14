@@ -924,7 +924,6 @@ void InterpreterImpl::send(const Arabica::DOM::Node<std::string>& element) {
 				for (std::list<std::string>::const_iterator nameIter = names.begin(); nameIter != names.end(); nameIter++) {
 					std::string cleanedName(*nameIter);
 					_dataModel.replaceExpressions(cleanedName);
-					LOG(INFO) << "getting name : " << cleanedName;
 					Data namelistValue = _dataModel.getStringAsData(cleanedName);
 					sendReq.namelist[cleanedName] = namelistValue;
 					sendReq.data.compound[cleanedName] = namelistValue;
