@@ -720,10 +720,10 @@ void XPathDataModel::assign(const NodeSet<std::string>& key,
 			assign(Element<std::string>(key[i]), value, assignElem);
 			break;
 		default:
-				//			std::cout << key[i].getNodeType() << std::endl;
-				throw Event("error.execution", Event::PLATFORM);
-				break;
-			}
+//			std::cout << key[i].getNodeType() << std::endl;
+			throw Event("error.execution", Event::PLATFORM);
+			break;
+		}
 	}
 }
 
