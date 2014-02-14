@@ -67,7 +67,7 @@
 		<invoke type="xmlbridge" id="xmlbridge1"/>
 		<state id="init1">
 			<datamodel>
-				<data id="IDX1"></data>
+				<data id="IDX1"><indexes>goeshere</indexes></data>
 				<data id="READ1">
 					<frame xmlns="">
 						<data type="requestItem" index="0">information</data>

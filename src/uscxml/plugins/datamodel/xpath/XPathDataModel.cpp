@@ -589,9 +589,6 @@ void XPathDataModel::init(const Element<std::string>& dataElem,
 			throw Event("error.execution", Event::PLATFORM);
 		}
 	} else {
-		Element<std::string> container = _doc.createElement("data");
-		container.setAttribute("id", location);
-		_datamodel.appendChild(container);
 		LOG(ERROR) << "data element has no content";
 	}
 
