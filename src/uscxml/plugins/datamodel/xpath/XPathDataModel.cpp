@@ -320,11 +320,11 @@ void XPathDataModel::setForeach(const std::string& item,
                                 const std::string& array,
                                 const std::string& index,
                                 uint32_t iteration) {
-
+	/* resolve the array expression in nodeset (pointers to datamodel) */
 	XPathValue<std::string> arrayResult = _xpath.evaluate_expr(array, _doc);
 	assert(arrayResult.type() == NODE_SET);
 
-#if 0
+#if VERBOSE
 	std::cout << "Array Size: " << arrayResult.asNodeSet().size() << std::endl;
 	for (int i = 0; i < arrayResult.asNodeSet().size(); i++) {
 		std::cout << arrayResult.asNodeSet()[i] << std::endl;
@@ -332,7 +332,6 @@ void XPathDataModel::setForeach(const std::string& item,
 #endif
 
 	assert(arrayResult.asNodeSet().size() >= iteration);
-
 
 	NodeSet<std::string> arrayNodeSet;
 	arrayNodeSet.push_back(arrayResult.asNodeSet()[iteration]);
@@ -345,9 +344,10 @@ void XPathDataModel::setForeach(const std::string& item,
 		container.appendChild(_doc.importNode(arrayResult.asNodeSet()[iteration], true));
 		_datamodel.appendChild(container);
 		_varResolver.setVariable(item, arrayNodeSet);
+	} else {
+		XPathValue<std::string> itemResult = _varResolver.resolveVariable("", item);
+		assign(itemResult, arrayNodeSet, Element<std::string>());
 	}
-	XPathValue<std::string> itemResult = _varResolver.resolveVariable("", item);
-	assign(itemResult, arrayNodeSet, Element<std::string>());
 
 	if (index.length() > 0) {
 		NodeSet<std::string> indexNodeSet;
@@ -368,16 +368,9 @@ void XPathDataModel::setForeach(const std::string& item,
 		assign(indexResult, indexNodeSet, Element<std::string>());
 	}
 
-
-#if 0
+#if VERBOSE
 	std::cout << _datamodel << std::endl << std::endl;
-	std::cout << "Index: " << indexResult.asNodeSet().size() << std::endl;
-	for (int i = 0; i < indexResult.asNodeSet().size(); i++) {
-		std::cout << indexResult.asNodeSet()[i] << std::endl;
-	}
-	std::cout << std::endl;
 #endif
-
 
 }
 
@@ -823,8 +816,9 @@ void NodeSetVariableResolver::setVariable(const std::string& name, const NodeSet
 	}
 	std::cout << std::endl;
 #endif
-	_variables[name] = value;
-#if 0
+	_variables.erase(name);
+	_variables.insert(std::pair<std::string, Arabica::XPath::NodeSet<std::string> >(name, value));
+#if VERBOSE
 	std::map<std::string, Arabica::XPath::NodeSet<std::string> >::iterator varIter =  _variables.begin();
 	while (varIter != _variables.end()) {
 		std::cout << varIter->first << ":" << std::endl;

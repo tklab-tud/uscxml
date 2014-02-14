@@ -186,7 +186,6 @@ void XmlBridgeInvoker::buildMESreq(unsigned int addr, unsigned int len, bool wri
 
 	Event myevent(ss.str(), Event::EXTERNAL);
 
-
 	/* I dati inviati dal MES all'SCXML sono sempre mappati nella struttura dati 'node' dell'evento */
 
 	/* Nel caso della lettura vado a scrivere gli indici

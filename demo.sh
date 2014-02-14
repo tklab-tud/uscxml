@@ -34,7 +34,7 @@ case "$1" in
 	else
 #		(/usr/bin/cat read1.xml | /usr/bin/nc -l -v -p 3000 >/dev/null) &
 #		sleep 1
-		/usr/local/bin/modpoll -0 -1 -t4 -o 4 -p 1502 -r3 -c115 127.0.0.1
+		/usr/local/bin/modpoll -0 -1 -t4 -o 4 -p 1502 -r47 -c23 127.0.0.1
 	fi
     ;;
 2)  echo  "Sending command $1"
