@@ -318,8 +318,7 @@ Data Data::fromXML(const std::string& xmlString) {
 Data Data::fromJSON(const std::string& jsonString) {
 	Data data;
 
-	std::string trimmed = jsonString;
-	boost::trim(trimmed);
+	std::string trimmed = boost::trim_copy(jsonString);
 
 	if (trimmed.length() == 0)
 		return data;
@@ -387,23 +386,29 @@ Data Data::fromJSON(const std::string& jsonString) {
 
 	size_t currTok = 0;
 	do {
+		// used for debugging
 //		jsmntok_t t2 = t[currTok];
 //		std::string value = trimmed.substr(t[currTok].start, t[currTok].end - t[currTok].start);
 		switch (t[currTok].type) {
 		case JSMN_STRING:
 			dataStack.back()->type = Data::VERBATIM;
-		case JSMN_PRIMITIVE:
-			dataStack.back()->atom = trimmed.substr(t[currTok].start, t[currTok].end - t[currTok].start);
+		case JSMN_PRIMITIVE: {
+			std::string value = trimmed.substr(t[currTok].start, t[currTok].end - t[currTok].start);
+			if (dataStack.back()->type == Data::VERBATIM) {
+				boost::replace_all(value, "\\\"", "\"");
+			}
+			dataStack.back()->atom = value;
 			dataStack.pop_back();
 			currTok++;
 			break;
+		}
 		case JSMN_OBJECT:
 		case JSMN_ARRAY:
 			tokenStack.push_back(t[currTok]);
 			currTok++;
 			break;
 		}
-
+		// used for debugging
 //		t2 = t[currTok];
 //		value = trimmed.substr(t[currTok].start, t[currTok].end - t[currTok].start);
 
@@ -419,7 +424,8 @@ Data Data::fromJSON(const std::string& jsonString) {
 
 		if (tokenStack.back().type == JSMN_OBJECT && (t[currTok].type == JSMN_PRIMITIVE || t[currTok].type == JSMN_STRING)) {
 			// grab key and push new data
-			dataStack.push_back(&(dataStack.back()->compound[trimmed.substr(t[currTok].start, t[currTok].end - t[currTok].start)]));
+			std::string value = trimmed.substr(t[currTok].start, t[currTok].end - t[currTok].start);
+			dataStack.push_back(&(dataStack.back()->compound[value]));
 			currTok++;
 		}
 		if (tokenStack.back().type == JSMN_ARRAY) {

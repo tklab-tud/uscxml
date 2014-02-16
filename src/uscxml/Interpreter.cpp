@@ -707,24 +707,11 @@ void InterpreterImpl::processDOMorText(const Arabica::DOM::Node<std::string>& el
 			Arabica::SAX::InputSource<std::string> inputSource;
 			inputSource.setByteStream(ssPtr);
 
-//			parser.setFeature(Arabica::SAX::FeatureNames<std::string>().external_general, true);
-
 			if (parser.parse(inputSource) && parser.getDocument()) {
 				Document<std::string> doc = parser.getDocument();
 				dom = doc.getDocumentElement();
-#if 0
-				Node<std::string> content = doc.getDocumentElement();
-				assert(content.getNodeType() == Node_base::ELEMENT_NODE);
-				Node<std::string> container = doc.createElement("container");
-				dom.replaceChild(container, content);
-				container.appendChild(content);
-//				std::cout << dom << std::endl;
-#endif
 				return;
 			} else {
-				if (parser.errorsReported()) {
-					LOG(ERROR) << parser.errors();
-				}
 				text = srcContent.str();
 				return;
 			}
