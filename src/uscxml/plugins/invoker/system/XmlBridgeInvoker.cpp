@@ -123,15 +123,7 @@ void XmlBridgeInvoker::send(const SendRequest& req) {
 			return;
 		}
 
-		/* Elimina SCXML namespace */
-		int index = ss.str().find('>');
-		if (index == std::string::npos) {
-			LOG(ERROR) << "Invalid TIM frame";
-			buildTIMexception(TIM_ERROR);
-			return;
-		}
-
-		client("<frame>" + ss.str().substr(index + 1, ss.str().length()));
+		client(ss.str());
 
 	/* SCXML -> MES */
 	} else if (evType == SCXML2MES_ACK) {

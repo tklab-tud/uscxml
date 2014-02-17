@@ -345,11 +345,10 @@ void XPathDataModel::setForeach(const std::string& item,
 		_datamodel.appendChild(container);
 		_varResolver.setVariable(item, arrayNodeSet);
 	} else {
-		Element<std::string> optype = _doc.createElement("data");
-		optype.setAttribute("type", "replace");
 		XPathValue<std::string> itemResult = _varResolver.resolveVariable("", item);
-		assign(itemResult, arrayNodeSet, optype);
+		assign(itemResult, arrayNodeSet, Element<std::string>());
 	}
+
 
 	if (index.length() > 0) {
 		NodeSet<std::string> indexNodeSet;
@@ -549,52 +548,54 @@ void XPathDataModel::init(const Element<std::string>& dataElem,
 		location = ATTR(dataElem, "location");
 	}
 
-	NodeSet<std::string> nodeSet;
-	if (node || (content.length() > 0)) {
-		Node<std::string> dataClone = _doc.importNode(dataElem, true);
-		_datamodel.appendChild(dataClone);
-		nodeSet.push_back(dataClone); 
+	Element<std::string> container = _doc.createElement("data");
+	container.setAttribute("id", location);
+
+	if (node) {
+		Node<std::string> data = node;
+		while (data) {
+			Node<std::string> dataClone = _doc.importNode(data, true);
+			container.appendChild(dataClone);
+			data = data.getNextSibling();
+		}
 	} else if (content.length() > 0) {
-		Element<std::string> container = _doc.createElement("data");
-		container.setAttribute("id", location);
 		Text<std::string> textNode = _doc.createTextNode(Interpreter::spaceNormalize(content));
 		container.appendChild(textNode);
-		_datamodel.appendChild(container);
-		nodeSet.push_back(container);
 	} else if (HAS_ATTR(dataElem, "expr")) {
 		try {
-			Element<std::string> container = _doc.createElement("data");
-			container.setAttribute("id", location);
 			XPathValue<std::string> expr = _xpath.evaluate_expr(ATTR(dataElem, "expr"), _doc);
 			switch (expr.type()) {
 			case NODE_SET: {
 				for (int i = 0; i < expr.asNodeSet().size(); i++) {
 					container.appendChild(expr.asNodeSet()[i].cloneNode(true));
-					nodeSet.push_back(expr.asNodeSet()[i].cloneNode(true));
 				}
 				break;
 			}
 			case STRING:
 				container.appendChild(_doc.createTextNode(expr.asString()));
-				nodeSet.push_back(_doc.createTextNode(expr.asString()));
 				break;
 			case NUMBER: {
 				container.appendChild(_doc.createTextNode(toStr(expr.asNumber())));
-				nodeSet.push_back(_doc.createTextNode(toStr(expr.asNumber())));
 				break;
 			}
 			case Arabica::XPath::BOOL:
 			case ANY:
 				throw Event("error.execution", Event::PLATFORM);
 			}
-			_datamodel.appendChild(container);
 		} catch (SyntaxException e) {
 			throw Event("error.execution", Event::PLATFORM);
 		}
-	} else {
-		LOG(ERROR) << "data element has no content";
 	}
+	_datamodel.appendChild(container);
 
+	// put data element into nodeset and bind to xpath variable
+	NodeSet<std::string> nodeSet;
+
+	Node<std::string> child = container.getFirstChild();
+	while(child) {
+		nodeSet.push_back(child);
+		child = child.getNextSibling();
+	}
 	_varResolver.setVariable(location, nodeSet);
 }
 

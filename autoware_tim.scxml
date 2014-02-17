@@ -67,7 +67,7 @@
 		<invoke type="xmlbridge" id="xmlbridge1"/>
 		<state id="init1">
 			<datamodel>
-				<data id="IDX1">0</data>
+				<data id="IDX1"><mynode>indexes</mynode></data>
 				<data id="READ1">
 					<frame xmlns="">
 						<data type="requestItem" index="0">information</data>
@@ -77,7 +77,7 @@
 			<transition event="1_rREQ" target="sent1">
 				<assign location="$IDX1" expr="$_event/data/index"/>
 				<send 	event="rCMD"
-					namelist="$READ1/frame"
+					namelist="$READ1"
 					target="#_xmlbridge1"/>
 			</transition>
 		</state>
@@ -86,7 +86,7 @@
 				<if cond="$_event/data/frame">
 					<foreach array="$IDX1/index" item="currIDX1">
 						<send 	event="rACK"
-							namelist="$_event/data/frame/data/item[@i='${$currIDX1//@listid}']/nestedData[@type='${$currIDX1//text()}']/text()"
+							namelist="$_event/data/frame/data/item[@i='${$currIDX1/@listid}']/nestedData[@type='${$currIDX1/text()}']/text()"
 							target="#_xmlbridge1"/>
 					</foreach>
 				<else/>
