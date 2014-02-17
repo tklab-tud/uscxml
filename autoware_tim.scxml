@@ -75,7 +75,7 @@
 				</data>
 			</datamodel>
 			<transition event="1_rREQ" target="sent1">
-				<assign location="$IDX1" expr="$_event/data/data"/>
+				<assign location="$IDX1" expr="$_event/data/index"/>
 				<send 	event="rCMD"
 					namelist="$READ1/frame"
 					target="#_xmlbridge1"/>
@@ -84,9 +84,9 @@
 		<state id="sent1">
 			<transition event="1_rREPLY"  target="init1">
 				<if cond="$_event/data/frame">
-					<foreach array="$IDX1/data" item="currIDX1">
+					<foreach array="$IDX1/index" item="currIDX1">
 						<send 	event="rACK"
-							namelist="$_event/data/frame/data/item[@i='${$currIDX1/data/@index}']/nestedData[@type='${$currIDX1/data/text()}']/text()"
+							namelist="$_event/data/frame/data/item[@i='${$currIDX1//@listid}']/nestedData[@type='${$currIDX1//text()}']/text()"
 							target="#_xmlbridge1"/>
 					</foreach>
 				<else/>

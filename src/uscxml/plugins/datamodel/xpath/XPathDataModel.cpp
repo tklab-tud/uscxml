@@ -341,12 +341,14 @@ void XPathDataModel::setForeach(const std::string& item,
 			throw Event("error.execution", Event::PLATFORM);
 		Element<std::string> container = _doc.createElement("data");
 		container.setAttribute("id", item);
-		container.appendChild(_doc.importNode(arrayResult.asNodeSet()[iteration], true));
+		container.appendChild(arrayResult.asNodeSet()[iteration].cloneNode(true));
 		_datamodel.appendChild(container);
 		_varResolver.setVariable(item, arrayNodeSet);
 	} else {
+		Element<std::string> optype = _doc.createElement("data");
+		optype.setAttribute("type", "replace");
 		XPathValue<std::string> itemResult = _varResolver.resolveVariable("", item);
-		assign(itemResult, arrayNodeSet, Element<std::string>());
+		assign(itemResult, arrayNodeSet, optype);
 	}
 
 	if (index.length() > 0) {

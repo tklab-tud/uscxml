@@ -195,7 +195,7 @@ void XmlBridgeInvoker::buildMESreq(unsigned int addr, unsigned int len, bool wri
 		std::list<std::pair<std::string,std::string> >::const_iterator indexiter = req_indexes.begin();
 		myevent.data.node = _interpreter->getDocument().createElement("data");
 		for (valueiter; valueiter!= req_raw_data.end(); valueiter++, indexiter++) {
-			Arabica::DOM::Element<std::string> eventMESElem = _interpreter->getDocument().createElement("data");
+			Arabica::DOM::Element<std::string> eventMESElem = _interpreter->getDocument().createElement("value");
 			Arabica::DOM::Text<std::string> textNode = _interpreter->getDocument().createTextNode(*valueiter);
 			eventMESElem.setAttribute("index", indexiter->first);
 			eventMESElem.setAttribute("var", indexiter->second);
@@ -207,9 +207,9 @@ void XmlBridgeInvoker::buildMESreq(unsigned int addr, unsigned int len, bool wri
 		std::list<std::pair<std::string,std::string> >::const_iterator indexiter = req_indexes.begin();
 		myevent.data.node = _interpreter->getDocument().createElement("data");
 		for (indexiter; indexiter!=req_indexes.end(); indexiter++) {
-			Arabica::DOM::Element<std::string> eventMESElem = _interpreter->getDocument().createElement("data");
+			Arabica::DOM::Element<std::string> eventMESElem = _interpreter->getDocument().createElement("index");
 			Arabica::DOM::Text<std::string> textNode = _interpreter->getDocument().createTextNode(indexiter->second);
-			eventMESElem.setAttribute("index", indexiter->first);
+			eventMESElem.setAttribute("listid", indexiter->first);
 			eventMESElem.appendChild(textNode);
 			myevent.data.node.appendChild(eventMESElem);
 		}
