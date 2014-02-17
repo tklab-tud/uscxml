@@ -551,8 +551,16 @@ void XPathDataModel::init(const Element<std::string>& dataElem,
 
 	NodeSet<std::string> nodeSet;
 	if (node || (content.length() > 0)) {
-		_datamodel.appendChild(_doc.importNode(dataElem, true));
-		nodeSet.push_back(dataElem);
+		Node<std::string> dataClone = _doc.importNode(dataElem, true);
+		_datamodel.appendChild(dataClone);
+		nodeSet.push_back(dataClone); 
+	} else if (content.length() > 0) {
+		Element<std::string> container = _doc.createElement("data");
+		container.setAttribute("id", location);
+		Text<std::string> textNode = _doc.createTextNode(Interpreter::spaceNormalize(content));
+		container.appendChild(textNode);
+		_datamodel.appendChild(container);
+		nodeSet.push_back(container);
 	} else if (HAS_ATTR(dataElem, "expr")) {
 		try {
 			Element<std::string> container = _doc.createElement("data");
@@ -787,7 +795,7 @@ void XPathDataModel::assign(const Element<std::string>& key,
 		while(element.hasChildNodes())
 			element.removeChild(element.getChildNodes().item(0));
 		for (int i = 0; i < value.size(); i++) {
-			Node<std::string> importedNode = element.getOwnerDocument().importNode(value[i], true);
+			Node<std::string> importedNode = (value[i].getOwnerDocument() == _doc ? value[i].cloneNode(true) : _doc.importNode(value[i], true));
 			element.appendChild(importedNode);
 		}
 	}
