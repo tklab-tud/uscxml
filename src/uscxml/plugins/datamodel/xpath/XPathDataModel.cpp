@@ -321,7 +321,7 @@ void XPathDataModel::setForeach(const std::string& item,
                                 const std::string& index,
                                 uint32_t iteration) {
 	/* resolve the array expression in nodeset (pointers to datamodel) */
-	XPathValue<std::string> arrayResult = _xpath.evaluate_expr(array, _doc);
+	XPathValue<std::string> arrayResult = _xpath.evaluate_expr(array, _datamodel);
 	assert(arrayResult.type() == NODE_SET);
 
 #if VERBOSE
@@ -334,21 +334,19 @@ void XPathDataModel::setForeach(const std::string& item,
 	assert(arrayResult.asNodeSet().size() >= iteration);
 
 	NodeSet<std::string> arrayNodeSet;
-	arrayNodeSet.push_back(arrayResult.asNodeSet()[iteration]);
+	arrayNodeSet.push_back(arrayResult.asNodeSet()[iteration].cloneNode(true));
 
 	if (!isDeclared(item)) {
 		if (!isValidIdentifier(item))
 			throw Event("error.execution", Event::PLATFORM);
 		Element<std::string> container = _doc.createElement("data");
 		container.setAttribute("id", item);
-		container.appendChild(arrayResult.asNodeSet()[iteration].cloneNode(true));
+		container.appendChild(arrayNodeSet[0]);
 		_datamodel.appendChild(container);
 		_varResolver.setVariable(item, arrayNodeSet);
 	} else {
-		XPathValue<std::string> itemResult = _varResolver.resolveVariable("", item);
-		assign(itemResult, arrayNodeSet, Element<std::string>());
+		_varResolver.setVariable(item, arrayNodeSet);
 	}
-
 
 	if (index.length() > 0) {
 		NodeSet<std::string> indexNodeSet;
@@ -369,7 +367,7 @@ void XPathDataModel::setForeach(const std::string& item,
 		assign(indexResult, indexNodeSet, Element<std::string>());
 	}
 
-#if VERBOSE
+#if 0
 	std::cout << _datamodel << std::endl << std::endl;
 #endif
 
@@ -809,7 +807,7 @@ NodeSetVariableResolver::resolveVariable(const std::string& namepaceUri,
 	if(n == _variables.end()) {
 		throw Event("error.execution");
 	}
-#if VERBOSE
+#if 0
 	std::cout << std::endl << "Getting " << name << ":" << std::endl;
 	for (int i = 0; i < n->second.size(); i++) {
 		std::cout << n->second[i].getNodeType() << " | " << n->second[i] << std::endl;
@@ -820,7 +818,7 @@ NodeSetVariableResolver::resolveVariable(const std::string& namepaceUri,
 }
 
 void NodeSetVariableResolver::setVariable(const std::string& name, const NodeSet<std::string>& value) {
-#if VERBOSE
+#if 0
 	std::cout << std::endl << "Setting " << name << ":" << std::endl;
 	for (int i = 0; i < value.size(); i++) {
 		std::cout << value[i].getNodeType() << " | " << value[i] << std::endl;
@@ -829,7 +827,7 @@ void NodeSetVariableResolver::setVariable(const std::string& name, const NodeSet
 #endif
 	_variables.erase(name);
 	_variables.insert(std::pair<std::string, Arabica::XPath::NodeSet<std::string> >(name, value));
-#if VERBOSE
+#if 0
 	std::map<std::string, Arabica::XPath::NodeSet<std::string> >::iterator varIter =  _variables.begin();
 	while (varIter != _variables.end()) {
 		std::cout << varIter->first << ":" << std::endl;
