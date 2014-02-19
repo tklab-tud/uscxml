@@ -123,6 +123,40 @@ Data::Data(const char* _data, size_t _size, const std::string& mimeType, bool ad
 	binary = boost::shared_ptr<Blob>(new Blob((void*)_data, _size, mimeType, adopt));
 }
 
+void Data::merge(const Data& other) {
+	if (other.compound.size() > 0) {
+		if (compound.size() == 0) {
+			compound = other.compound;
+		} else {
+			std::map<std::string, Data>::const_iterator compIter = other.compound.begin();
+			while (compIter !=  other.compound.end()) {
+				if (compound.find(compIter->first) != compound.end()) {
+					// we do have the same key, merge
+					compound[compIter->first].merge(compIter->second);
+				} else {
+					compound[compIter->first] = compIter->second;
+				}
+				compIter++;
+			}
+		}
+	}
+	if (other.array.size() > 0) {
+		if (array.size() == 0) {
+			array = other.array;
+		} else {
+			std::list<Data>::const_iterator arrIter = other.array.begin();
+			while(arrIter != other.array.end()) {
+				array.push_back(*arrIter);
+				arrIter++;
+			}
+		}
+	}
+	if (other.atom.size() > 0) {
+		atom = other.atom;
+		type = other.type;
+	}
+}
+
 Data::Data(const Arabica::DOM::Node<std::string>& dom) {
 	// we may need to convert some keys to arrays if we have the same name as an element
 	std::map<std::string, std::list<Data> > arrays;

@@ -73,79 +73,80 @@ void UmundoInvoker::send(const SendRequest& req) {
 	} else {
 		msg.putMeta("event", "umundo");
 	}
+	
+	try {
+		Data data = req.data;
+		
+		if (!data && req.content.length())
+			data = _interpreter->getDataModel().getStringAsData(req.content);
+			
+		if (!data) {
+			LOG(ERROR) << "Cannot transform content to data object per datamodel or no data given";
+			return;
+		}
 
-	if (req.content.length()) {
-		try {
-			Data data = _interpreter->getDataModel().getStringAsData(req.content);
-			if (!data) {
-				LOG(ERROR) << "Cannot transform content to data object per datamodel";
+//		std::cout << Data::toJSON(data) << std::endl;
+		
+		std::string type;
+		if (req.params.find("type") != req.params.end()) {
+			// we are supposed to build a typed object
+			type = req.params.find("type")->second.atom;
+
+			const google::protobuf::Message* protoMsg = umundo::PBSerializer::getProto(type);
+			if (protoMsg == NULL) {
+				LOG(ERROR) << "No type '" << type << "' is known, pass a directory with proto .desc files via types param when invoking";
 				return;
 			}
 
-			std::string type;
-			if (req.params.find("type") != req.params.end()) {
-				// we are supposed to build a typed object
-				type = req.params.find("type")->second.atom;
-
-				const google::protobuf::Message* protoMsg = umundo::PBSerializer::getProto(type);
-				if (protoMsg == NULL) {
-					LOG(ERROR) << "No type '" << type << "' is known, pass a directory with proto .desc files via types param when invoking";
-					return;
-				}
-
-				google::protobuf::Message* pbMsg = protoMsg->New();
-				if (!dataToProtobuf(pbMsg, data)) {
-					LOG(ERROR) << "Cannot create message from JSON - not sending";
-					return;
-				}
-
-				if (!_isService) {
-					// add all s11n properties
-					_pub->prepareMsg(&msg, type, pbMsg);
-					_pub->send(&msg);
-				} else {
-					// invoke as service
-					std::map<umundo::ServiceDescription, umundo::ServiceStub*>::iterator svcIter = _svcs.begin();
-					while(svcIter != _svcs.end()) {
-						umundo::ServiceStub* stub = svcIter->second;
-						Event event;
-						void* rv = NULL;
-						stub->callStubMethod(req.name, pbMsg, type, rv, "");
-						protobufToData(event.data, *(const google::protobuf::Message*)rv);
-
-						event.name = _invokeId + ".reply." + req.name;
-						event.origin = msg.getMeta("um.channel");
-						event.origintype = "umundo";
-						event.eventType = Event::EXTERNAL;
-
-						returnEvent(event);
-						svcIter++;
-					}
-				}
-			} else {
-				// just encode JSON
-				JSONProto* jsonProtoMsg = new JSONProto();
-				if (!dataToJSONbuf(jsonProtoMsg, data)) {
-					LOG(ERROR) << "Cannot create message from JSON - not sending";
-					return;
-				}
-
-				if (!_isService) {
-					// add all s11n properties
-					_pub->prepareMsg(&msg, "JSON", jsonProtoMsg);
-					_pub->send(&msg);
-				} else {
-					LOG(ERROR) << "Cannot invoke services with untyped JSON";
-					return;
-				}
-
+			google::protobuf::Message* pbMsg = protoMsg->New();
+			if (!dataToProtobuf(pbMsg, data)) {
+				LOG(ERROR) << "Cannot create message from JSON - not sending";
+				return;
 			}
-		} catch (Event e) {
-			LOG(ERROR) << "Syntax error when invoking umundo:" << std::endl << e << std::endl;
-			return;
+
+			if (!_isService) {
+				// add all s11n properties
+				_pub->prepareMsg(&msg, type, pbMsg);
+				_pub->send(&msg);
+			} else {
+				// invoke as service
+				std::map<umundo::ServiceDescription, umundo::ServiceStub*>::iterator svcIter = _svcs.begin();
+				while(svcIter != _svcs.end()) {
+					umundo::ServiceStub* stub = svcIter->second;
+					Event event;
+					void* rv = NULL;
+					stub->callStubMethod(req.name, pbMsg, type, rv, "");
+					protobufToData(event.data, *(const google::protobuf::Message*)rv);
+
+					event.name = _invokeId + ".reply." + req.name;
+					event.origin = msg.getMeta("um.channel");
+					event.origintype = "umundo";
+					event.eventType = Event::EXTERNAL;
+
+					returnEvent(event);
+					svcIter++;
+				}
+			}
+		} else {
+			// just encode JSON
+			JSONProto* jsonProtoMsg = new JSONProto();
+			if (!dataToJSONbuf(jsonProtoMsg, data)) {
+				LOG(ERROR) << "Cannot create message from JSON - not sending";
+				return;
+			}
+
+			if (!_isService) {
+				// add all s11n properties
+				_pub->prepareMsg(&msg, "JSON", jsonProtoMsg);
+				_pub->send(&msg);
+			} else {
+				LOG(ERROR) << "Cannot invoke services with untyped JSON";
+				return;
+			}
+
 		}
-	} else {
-		LOG(ERROR) << "Required JSON object in content" << std::endl;
+	} catch (Event e) {
+		LOG(ERROR) << "Syntax error when invoking umundo:" << std::endl << e << std::endl;
 		return;
 	}
 }
@@ -534,7 +535,7 @@ bool UmundoInvoker::dataToProtobuf(google::protobuf::Message* msg, Data& data) {
 
 		if (data.compound.find(key) == data.compound.end()) {
 			if (fieldDesc->is_required()) {
-				LOG(ERROR) << "required field " << key << " not given in JSON";
+				LOG(ERROR) << "required field " << key << " not given";
 				return false;
 			}
 			continue;
