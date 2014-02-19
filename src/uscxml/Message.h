@@ -98,6 +98,8 @@ public:
 		return operator[](key.c_str());
 	}
 
+	void merge(const Data& other);
+	
 	const Data operator[](const char* key) const {
 		if (hasKey(key))
 			return compound.at(key);

@@ -78,20 +78,21 @@ public:
 	virtual bool isDeclared(const std::string& expr);
 
 	virtual Data getStringAsData(const std::string& content);
-
+	
 	virtual std::string evalAsString(const std::string& expr);
 	virtual bool evalAsBool(const Arabica::DOM::Node<std::string>& node, const std::string& expr);
 	virtual bool evalAsBool(const std::string& expr);
 
 	static foreign_t inPredicate(term_t a0, int arity, void* context);
 protected:
-	std::map<std::string, PlTerm> resolveAtoms(PlTerm& term, PlTerm& orig);
 	void assertFromData(const Data& data, const std::string& expr, size_t nesting);
 
 	static Data termAsData(PlTerm term);
 	static PlTerm dataAsTerm(Data data);
 
-
+//	virtual std::list<PlCompound> getSolutions(PlCompound compound);
+	virtual std::map<std::string, PlTerm> resolveAtoms(PlTerm& term, PlTerm& orig);
+	
 	static int dictCallBack(term_t key, term_t value, int last, void *closure);
 
 	static PL_blob_t blobType;

@@ -123,6 +123,40 @@ Data::Data(const char* _data, size_t _size, const std::string& mimeType, bool ad
 	binary = boost::shared_ptr<Blob>(new Blob((void*)_data, _size, mimeType, adopt));
 }
 
+void Data::merge(const Data& other) {
+	if (other.compound.size() > 0) {
+		if (compound.size() == 0) {
+			compound = other.compound;
+		} else {
+			std::map<std::string, Data>::const_iterator compIter = other.compound.begin();
+			while (compIter !=  other.compound.end()) {
+				if (compound.find(compIter->first) != compound.end()) {
+					// we do have the same key, merge
+					compound[compIter->first].merge(compIter->second);
+				} else {
+					compound[compIter->first] = compIter->second;
+				}
+				compIter++;
+			}
+		}
+	}
+	if (other.array.size() > 0) {
+		if (array.size() == 0) {
+			array = other.array;
+		} else {
+			std::list<Data>::const_iterator arrIter = other.array.begin();
+			while(arrIter != other.array.end()) {
+				array.push_back(*arrIter);
+				arrIter++;
+			}
+		}
+	}
+	if (other.atom.size() > 0) {
+		atom = other.atom;
+		type = other.type;
+	}
+}
+
 Data::Data(const Arabica::DOM::Node<std::string>& dom) {
 	// we may need to convert some keys to arrays if we have the same name as an element
 	std::map<std::string, std::list<Data> > arrays;
@@ -318,8 +352,7 @@ Data Data::fromXML(const std::string& xmlString) {
 Data Data::fromJSON(const std::string& jsonString) {
 	Data data;
 
-	std::string trimmed = jsonString;
-	boost::trim(trimmed);
+	std::string trimmed = boost::trim_copy(jsonString);
 
 	if (trimmed.length() == 0)
 		return data;
@@ -387,23 +420,29 @@ Data Data::fromJSON(const std::string& jsonString) {
 
 	size_t currTok = 0;
 	do {
+		// used for debugging
 //		jsmntok_t t2 = t[currTok];
 //		std::string value = trimmed.substr(t[currTok].start, t[currTok].end - t[currTok].start);
 		switch (t[currTok].type) {
 		case JSMN_STRING:
 			dataStack.back()->type = Data::VERBATIM;
-		case JSMN_PRIMITIVE:
-			dataStack.back()->atom = trimmed.substr(t[currTok].start, t[currTok].end - t[currTok].start);
+		case JSMN_PRIMITIVE: {
+			std::string value = trimmed.substr(t[currTok].start, t[currTok].end - t[currTok].start);
+			if (dataStack.back()->type == Data::VERBATIM) {
+				boost::replace_all(value, "\\\"", "\"");
+			}
+			dataStack.back()->atom = value;
 			dataStack.pop_back();
 			currTok++;
 			break;
+		}
 		case JSMN_OBJECT:
 		case JSMN_ARRAY:
 			tokenStack.push_back(t[currTok]);
 			currTok++;
 			break;
 		}
-
+		// used for debugging
 //		t2 = t[currTok];
 //		value = trimmed.substr(t[currTok].start, t[currTok].end - t[currTok].start);
 
@@ -419,7 +458,8 @@ Data Data::fromJSON(const std::string& jsonString) {
 
 		if (tokenStack.back().type == JSMN_OBJECT && (t[currTok].type == JSMN_PRIMITIVE || t[currTok].type == JSMN_STRING)) {
 			// grab key and push new data
-			dataStack.push_back(&(dataStack.back()->compound[trimmed.substr(t[currTok].start, t[currTok].end - t[currTok].start)]));
+			std::string value = trimmed.substr(t[currTok].start, t[currTok].end - t[currTok].start);
+			dataStack.push_back(&(dataStack.back()->compound[value]));
 			currTok++;
 		}
 		if (tokenStack.back().type == JSMN_ARRAY) {
