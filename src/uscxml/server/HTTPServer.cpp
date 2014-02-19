@@ -440,7 +440,9 @@ void HTTPServer::processByMatchingServlet(const Request& request) {
 	while(servletIter != _httpServlets.end()) {
 		// is the servlet path a prefix of the actual path?
 		std::string servletPath = "/" + servletIter->first;
-		if (iequals(actualPath.substr(0, servletPath.length()), servletPath) && // servlet path is a prefix
+		if (servletIter->first.length() == 0) {
+			matches.insert(std::make_pair(servletPath, servletIter->second)); // single servlet at root
+		} else if (iequals(actualPath.substr(0, servletPath.length()), servletPath) && // servlet path is a prefix
 		        iequals(actualPath.substr(servletPath.length(), 1), "/")) {     // and next character is a '/'
 			matches.insert(std::make_pair(servletPath, servletIter->second));
 		}

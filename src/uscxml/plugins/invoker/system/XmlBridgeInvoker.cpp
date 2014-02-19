@@ -92,8 +92,6 @@ Data XmlBridgeInvoker::getDataModelVariables() {
  * @param req La richiesta specificata nell'elemento <send> dell'SCXML
  */
 void XmlBridgeInvoker::send(const SendRequest& req) {
-	//TODO HANDLE MALFORMED EVENT NAME and DATA
-
 	SendRequest reqCopy = req;
 	std::string evName = reqCopy.getName();
 	bool write = (evName.c_str()[0] == WRITEOP);
@@ -135,23 +133,21 @@ void XmlBridgeInvoker::send(const SendRequest& req) {
 			while(namelistIter != reqCopy.namelist.end()) {
 				std::map<std::string, Data>::const_iterator nodesIter = namelistIter->second.compound.begin();
 				while(nodesIter != namelistIter->second.compound.end()) {
-					std::stringstream ss;
-					ss << nodesIter->second.node;
-					LOG(INFO) << "storing " << ss.str();
-					_itemsRead.push_back(ss.str());
+					_itemsRead.push_back(nodesIter->second.node.getNodeValue());
 					nodesIter++;
 				}
 				namelistIter++;
 			}
 		}
-		LOG(INFO) << "grande " << _itemsRead.size();
 
 		if (_itemsRead.size() >= _currItems && !write)
 			_mesbufferer.bufferMESreplyREAD(_CMDid, _currAddr, _currLen, _itemsRead);
 		else if (write)
 			_mesbufferer.bufferMESreplyWRITE(_CMDid);
+		else
+			LOG(INFO) << "Parsed " << _itemsRead.size() << " fields of " << _currItems << " requested";
 
-		/* SCXML -> MES (errore) */
+	/* SCXML -> MES (errore) */
 	} else if (evType == SCXML2MES_ERR) {
 		_mesbufferer.bufferMESerror(_CMDid);
 	} else {

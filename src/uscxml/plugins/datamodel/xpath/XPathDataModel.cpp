@@ -399,10 +399,9 @@ bool XPathDataModel::evalAsBool(const std::string& expr) {
 }
 
 bool XPathDataModel::evalAsBool(const Arabica::DOM::Node<std::string>& node, const std::string& expr) {
-//	std::cout << std::endl << evalAsString(expr);
 	XPathValue<std::string> result;
 	try {
-		result = _xpath.evaluate_expr(expr, _doc);
+		result = _xpath.evaluate_expr(expr, _datamodel);
 	} catch(SyntaxException e) {
 		throw Event("error.execution", Event::PLATFORM);
 	} catch(std::runtime_error e) {
@@ -466,7 +465,7 @@ void XPathDataModel::assign(const Element<std::string>& assignElem,
 	}
 
 	// test 326ff
-	XPathValue<std::string> key = _xpath.evaluate_expr(location, _doc);
+	XPathValue<std::string> key = _xpath.evaluate_expr(location, _datamodel);
 #ifdef VERBOSE
 	LOG(INFO) << "Key XPath : " << key.asString();
 #endif
@@ -509,7 +508,7 @@ void XPathDataModel::assign(const Element<std::string>& assignElem,
 		nodeSet.push_back(textNode);
 		assign(key, nodeSet, assignElem);
 	} else if (HAS_ATTR(assignElem, "expr")) {
-		XPathValue<std::string> value = _xpath.evaluate_expr(ATTR(assignElem, "expr"), _doc);
+		XPathValue<std::string> value = _xpath.evaluate_expr(ATTR(assignElem, "expr"), _datamodel);
 #ifdef VERBOSE
 		LOG(INFO) << "Value XPath : " << value.asString();
 #endif
@@ -517,8 +516,6 @@ void XPathDataModel::assign(const Element<std::string>& assignElem,
 	} else {
 		LOG(ERROR) << "assign element has no content";
 	}
-
-//	std::cout << _datamodel << std::endl;
 }
 
 void XPathDataModel::assign(const std::string& location, const Data& data) {

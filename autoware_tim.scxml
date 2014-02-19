@@ -14,27 +14,27 @@
 		<state id="init0">
 			<datamodel>
 				<data id="READ0">
-					<frame xmlns="">
-						<data  type="requestItem" index="0">startWrapping</data>
+					<frame>
+						<data type="requestItem" index="0">startWrapping</data>
 					</frame>
 				</data>
 				<data id="WRITE0">
-					<frame xmlns="">
-						<data  type="startWrapping" index="0">
-							<nestedData type="state"> </nestedData>
+					<frame>
+						<data type="startWrapping" index="0">
+							<nestedData type="state">1</nestedData>
 						</data>
 					</frame>
 				</data>
 			</datamodel>
 			<transition event="0_wREQ" target="sent0">
-				<assign location="$WRITE0/frame/data/nestedData" expr="$_event/data/data/text()"/>
+				<assign location="$WRITE0/frame/data/nestedData" expr="$_event/data/value/text()"/>
 				<send 	event="wCMD"
-					namelist="$WRITE0/frame"
+					namelist="$WRITE0"
 					target="#_xmlbridge0"/>
 			</transition>
 			<transition event="0_rREQ" target="sent0">
 				<send 	event="rCMD"
-					namelist="$READ0/frame"
+					namelist="$READ0"
 					target="#_xmlbridge0"/>
 			</transition>
 		</state>
@@ -67,7 +67,7 @@
 		<invoke type="xmlbridge" id="xmlbridge1"/>
 		<state id="init1">
 			<datamodel>
-				<data id="IDX1"><mynode>indexes</mynode></data>
+				<data id="IDX1"><req>indexes</req></data>
 				<data id="READ1">
 					<frame xmlns="">
 						<data type="requestItem" index="0">information</data>
@@ -107,34 +107,39 @@
 		<invoke type="xmlbridge" id="xmlbridge2"/>
 		<state id="init2">
 			<datamodel>
+				<data id="IDX2"><req>indexes</req></data>
 				<data id="READ2">
 					<frame xmlns="">
 						<data type="requestItem" index="0">statistic</data>
 					</frame>
 				</data>
 			</datamodel>
-			<transition event="2_rReq" target="sent2">
-				<send 	event="2_rCmd"
-					namelist="$READ2/frame"
-					target="#_xmlbridge0"/>
+			<transition event="2_rREQ" target="sent2">
+				<assign location="$IDX2" expr="$_event/data/index"/>
+				<send 	event="rCMD"
+					namelist="$READ2"
+					target="#_xmlbridge2"/>
 			</transition>
 		</state>
 		<state id="sent2">
-			<transition event="2_rReply"  target="init2">
+			<transition event="2_rREPLY"  target="init2">
 				<if cond="$_event/data/frame">
-					<send 	event="2_rAck"
-						namelist="$_event/data/frame/data/nestedData/item/nestedData[@type='value']/text()"
-						target="#_xmlbridge0"/>
+					<foreach array="$IDX2/index" item="currIDX2">
+						<send 	event="rACK"
+							namelist="$_event/data/frame/data/nestedData[@type='statisticList']/item[@i='${$currIDX2/@listid}']/nestedData[@type='${$currIDX2/text()}']/text()"
+							target="#_xmlbridge2"/>
+					</foreach>
 				<else/>
-					<send 	event="2_rErr"
-						target="#_xmlbridge0"/>
+					<send 	event="rERR"
+						target="#_xmlbridge2"/>
 				</if>
+				<send event="timeout2" delay="5s"/>
 			</transition>
 			<transition event="timeout2" target="init2">
-				<send 	event="2__Err" target="#_xmlbridge0"/>
+				<send 	event="_ERR" target="#_xmlbridge2"/>
 			</transition>
 			<transition event="error2" target="init2">
-				<send 	event="2__Err" target="#_xmlbridge0"/>
+				<send 	event="_ERR" target="#_xmlbridge2"/>
 			</transition>
 		</state>
 	</state>
@@ -142,34 +147,39 @@
 		<invoke type="xmlbridge" id="xmlbridge3"/>
 		<state id="init3">
 			<datamodel>
+				<data id="IDX3"><req>indexes</req></data>
 				<data id="READ3">
 					<frame xmlns="">
-						<data type="requestItem" index="0">statistic</data>
+						<data type="requestItem" index="0">temperature</data>
 					</frame>
 				</data>
 			</datamodel>
-			<transition event="3_rReq" target="sent3">
-				<send 	event="3_rCmd"
-					namelist="$READ3/frame"
-					target="#_xmlbridge0"/>
+			<transition event="3_rREQ" target="sent3">
+				<assign location="$IDX3" expr="$_event/data/index"/>
+				<send 	event="rCMD"
+					namelist="$READ3"
+					target="#_xmlbridge3"/>
 			</transition>
 		</state>
 		<state id="sent3">
-			<transition event="3_rReply"  target="init3">
+			<transition event="3_rREPLY"  target="init3">
 				<if cond="$_event/data/frame">
-					<send 	event="3_rAck"
-						namelist="$_event/data/frame/data/nestedData/item/nestedData[@type='phrase']/text()"
-						target="#_xmlbridge0"/>
+					<foreach array="$IDX3/index" item="currIDX3">
+						<send 	event="rACK"
+							namelist="$_event/data/frame/data/item[@i='${$currIDX3/@listid}']/nestedData[@type='${$currIDX3/text()}']/text()"
+							target="#_xmlbridge3"/>
+					</foreach>
 				<else/>
-					<send 	event="3_rErr"
-						target="#_xmlbridge0"/>
+					<send 	event="rERR"
+						target="#_xmlbridge3"/>
 				</if>
+				<send event="timeout3" delay="5s"/>
 			</transition>
 			<transition event="timeout3" target="init3">
-				<send 	event="3__Err" target="#_xmlbridge0"/>
+				<send 	event="_ERR" target="#_xmlbridge3"/>
 			</transition>
 			<transition event="error3" target="init3">
-				<send 	event="3__Err" target="#_xmlbridge0"/>
+				<send 	event="_ERR" target="#_xmlbridge3"/>
 			</transition>
 		</state>
 	</state>
@@ -179,34 +189,33 @@
 			<datamodel>
 				<data id="READ4">
 					<frame xmlns="">
-						<data type="requestItem" index="0">temperature</data>
+						<data type="requestItem" index="0">totalPacks</data>
 					</frame>
 				</data>
 			</datamodel>
-			<transition event="4_rReq" target="sent4">
-				<send 	event="4_rCmd"
-					namelist="$READ4/frame"
-					target="#_xmlbridge0"/>
+			<transition event="4_rREQ" target="sent4">
+				<send 	event="rCMD"
+					namelist="$READ4"
+					target="#_xmlbridge4"/>
 			</transition>
 		</state>
 		<state id="sent4">
-			<transition event="4_rReply"  target="init4">
+			<transition event="4_rREPLY"  target="init4">
 				<if cond="$_event/data/frame">
-					<send 	event="4_rAck"
-						namelist="$_event/data/frame/data/item[@i='3']/nestedData/text()
-							$_event/data/frame/data/item[@i='5']/nestedData/text()
-							$_event/data/frame/data/item[@i='7']/nestedData/text()"
-						target="#_xmlbridge0"/>
+					<send 	event="rACK"
+						namelist="$_event/data/frame/data/nestedData[@type='value']/text()"
+						target="#_xmlbridge4"/>
 				<else/>
-					<send 	event="4_rErr"
-						target="#_xmlbridge0"/>
+					<send 	event="rERR"
+						target="#_xmlbridge4"/>
 				</if>
+				<send event="timeout4" delay="5s"/>
 			</transition>
 			<transition event="timeout4" target="init4">
-				<send 	event="4__Err" target="#_xmlbridge0"/>
+				<send 	event="_ERR" target="#_xmlbridge4"/>
 			</transition>
 			<transition event="error4" target="init4">
-				<send 	event="4__Err" target="#_xmlbridge0"/>
+				<send 	event="_ERR" target="#_xmlbridge4"/>
 			</transition>
 		</state>
 	</state>
@@ -214,34 +223,40 @@
 		<invoke type="xmlbridge" id="xmlbridge5"/>
 		<state id="init5">
 			<datamodel>
+				<data id="IDX5"><req>indexes</req></data>
 				<data id="READ5">
 					<frame xmlns="">
-						<data type="requestItem" index="0">totalPacks</data>
+						<data type="requestItem" index="0">wrapperError</data>
 					</frame>
 				</data>
 			</datamodel>
-			<transition event="5_rReq" target="sent5">
-				<send 	event="5_rCmd"
-					namelist="$READ5/frame"
-					target="#_xmlbridge0"/>
+			<transition event="5_rREQ" target="sent5">
+				<assign location="$IDX5" expr="$_event/data/index"/>
+				<send 	event="rCMD"
+					namelist="$READ5"
+					target="#_xmlbridge5"/>
 			</transition>
 		</state>
 		<state id="sent5">
-			<transition event="5_rReply"  target="init5">
+			<transition event="5_rREPLY"  target="init5">
 				<if cond="$_event/data/frame">
-					<send 	event="5_rAck"
-						namelist="$_event/data/frame/data/nestedData[@type='value']/text()"
-						target="#_xmlbridge0"/>
+					<foreach array="$IDX5/index" item="currIDX5">
+						<send 	event="rACK"
+							namelist="$_event/data/frame/data/nestedData[@type='${$currIDX5/text()}']/text()"
+							target="#_xmlbridge5"/>
+					</foreach>
+
 				<else/>
-					<send 	event="5_rErr"
-						target="#_xmlbridge0"/>
+					<send 	event="rERR"
+						target="#_xmlbridge5"/>
 				</if>
+				<send event="timeout5" delay="5s"/>
 			</transition>
 			<transition event="timeout5" target="init5">
-				<send 	event="5__Err" target="#_xmlbridge0"/>
+				<send 	event="_ERR" target="#_xmlbridge5"/>
 			</transition>
 			<transition event="error5" target="init5">
-				<send 	event="5__Err" target="#_xmlbridge0"/>
+				<send 	event="_ERR" target="#_xmlbridge5"/>
 			</transition>
 		</state>
 	</state>
