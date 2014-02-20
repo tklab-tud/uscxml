@@ -40,7 +40,11 @@ for FILE in ${PLATFORMS}; do
     if [[ "$PLATFORM" == *windows* ]]; then
       tar cvzf uscxml-prebuilt-${PLATFORM}.tgz --exclude='*/.DS_Store' --exclude='VERSION.txt' ${FILE}
     else
-      tar cvzf uscxml-prebuilt-${PLATFORM}.tgz --exclude='*/.DS_Store' --exclude='VERSION.txt' --exclude='lib/*_d.a' ${FILE}
+      if [[ "$PLATFORM" == *darwin* ]]; then
+        tar cvzf uscxml-prebuilt-${PLATFORM}.tgz --exclude='*/.DS_Store' --exclude='VERSION.txt' --exclude='lib/libv8*' --exclude='lib/*_d.a' ${FILE}
+      else
+        tar cvzf uscxml-prebuilt-${PLATFORM}.tgz --exclude='*/.DS_Store' --exclude='VERSION.txt' --exclude='lib/*_d.a' ${FILE}
+      fi
     fi
     scp uscxml-prebuilt-${PLATFORM}.tgz ${USCXML_PREBUILT_HOST}:${USCXML_PREBUILT_PATH}/${VERSION}
     rm uscxml-prebuilt-${PLATFORM}.tgz
