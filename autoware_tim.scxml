@@ -414,16 +414,20 @@
 			</transition>
 			<transition event="8_rREPLY" target="init8">
 				<if cond="$_event/data/frame">
-					<foreach array="$IDX8/index[@itemi = '-1']" item="currIDX8">
-						<send 	event="rACK"
-							namelist="$_event/data/frame/data/nestedData[@type='${$currIDX8/text()}']/text()"
-							target="#_xmlbridge8"/>
-					</foreach>
-					<foreach array="$IDX8/index[@itemi != '-1']" item="currIDX8">
-						<send 	event="rACK"
-							namelist="$_event/data/frame/data/nestedData[@type='wrapperProgramList']/item[@i='${$currIDX8/@itemi}']/nestedData[@type='${$currIDX8/text()}']/text()"
-							target="#_xmlbridge8"/>
-					</foreach>
+					<if cond="$IDX8/index[@itemi = '-1']">
+						<foreach array="$IDX8/index[@itemi = '-1']" item="currIDX8">
+							<send 	event="rACK"
+								namelist="$_event/data/frame/data/nestedData[@type='${$currIDX8/text()}']/text()"
+								target="#_xmlbridge8"/>
+						</foreach>
+					</if>
+					<if cond="$IDX8/index[@itemi != '-1']">
+						<foreach array="$IDX8/index[@itemi != '-1']" item="currIDX8">
+							<send 	event="rACK"
+								namelist="$_event/data/frame/data/nestedData[@type='wrapperProgramList']/item[@i='${$currIDX8/@itemi}']/nestedData[@type='${$currIDX8/text()}']/text()"
+								target="#_xmlbridge8"/>
+						</foreach>
+					</if>
 				<else/>
 					<send 	event="_ERR" target="#_xmlbridge8"/>
 				</if>
