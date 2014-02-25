@@ -104,8 +104,6 @@ void XmlBridgeInvoker::send(const SendRequest& req) {
 	if (evType == SCXML2TIM) {
 		//TODO HANDLE MALFORMED SCXML and DATA
 
-		client(reqCopy.xml);
-
 		if (!reqCopy.namelist.empty()) {
 			std::stringstream ss;
 			std::map<std::string, Data>::const_iterator namelistIter = reqCopy.namelist.begin();
@@ -187,25 +185,27 @@ void XmlBridgeInvoker::buildMESreq(unsigned int addr, unsigned int len, bool wri
 	/* Nel caso della lettura vado a scrivere gli indici
 	 * Nel caso della scrittura vado a scrivere i valori e gli indici */
 	if (!req_indexes.empty() && !req_raw_data.empty() && write) {
+        /* scrittura */
 		std::list<std::string>::const_iterator valueiter = req_raw_data.begin();
 		std::list<std::pair<std::string,std::string> >::const_iterator indexiter = req_indexes.begin();
 		myevent.data.node = _interpreter->getDocument().createElement("data");
 		for (valueiter; valueiter!= req_raw_data.end(); valueiter++, indexiter++) {
 			Arabica::DOM::Element<std::string> eventMESElem = _interpreter->getDocument().createElement("value");
 			Arabica::DOM::Text<std::string> textNode = _interpreter->getDocument().createTextNode(*valueiter);
-			eventMESElem.setAttribute("index", indexiter->first);
+            eventMESElem.setAttribute("itemi", indexiter->first);
 			eventMESElem.setAttribute("var", indexiter->second);
 			eventMESElem.appendChild(textNode);
 			myevent.data.node.appendChild(eventMESElem);
 		}
 		_currItems = req_raw_data.size();
 	} else if (!req_indexes.empty() && !write) {
+        /* lettura */
 		std::list<std::pair<std::string,std::string> >::const_iterator indexiter = req_indexes.begin();
 		myevent.data.node = _interpreter->getDocument().createElement("data");
 		for (indexiter; indexiter!=req_indexes.end(); indexiter++) {
 			Arabica::DOM::Element<std::string> eventMESElem = _interpreter->getDocument().createElement("index");
 			Arabica::DOM::Text<std::string> textNode = _interpreter->getDocument().createTextNode(indexiter->second);
-			eventMESElem.setAttribute("listid", indexiter->first);
+            eventMESElem.setAttribute("itemi", indexiter->first);
 			eventMESElem.appendChild(textNode);
 			myevent.data.node.appendChild(eventMESElem);
 		}
@@ -388,12 +388,14 @@ void XmlBridgeInvoker::client(std::string cmdframe) {
 		buildTIMexception(TIM_ERROR);
 	}
 
+    std::string timframe = std::string("<frame>") + cmdframe.substr(cmdframe.find('>')+1);
+
 	LOG(ERROR) << "Sending cmd to TIM (length=" << cmdframe.length() << "): "
-		   << std::endl << cmdframe;
+           << std::endl << timframe;
 
 	int numbytes;
-	while ((numbytes = ::send(_socketfd, cmdframe.c_str(),
-				cmdframe.length(), MSG_NOSIGNAL | MSG_MORE)) != cmdframe.length()) {
+    while ((numbytes = ::send(_socketfd, timframe.c_str(),
+                timframe.length(), MSG_NOSIGNAL | MSG_MORE)) != timframe.length()) {
 
 		PLOG(INFO) << "TIM client: send error";
 		if (errno == EPIPE || errno == EBADF) {
