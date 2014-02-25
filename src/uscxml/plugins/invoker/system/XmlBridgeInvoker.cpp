@@ -104,25 +104,33 @@ void XmlBridgeInvoker::send(const SendRequest& req) {
 	if (evType == SCXML2TIM) {
 		//TODO HANDLE MALFORMED SCXML and DATA
 
-		std::stringstream ss;
-		std::map<std::string, Data>::const_iterator namelistIter = reqCopy.namelist.begin();
-		while(namelistIter != reqCopy.namelist.end()) {
-			/* When sending namelist from _datamodel variables, data is interpreted as nodes (data.node) */
-			std::map<std::string, Data>::const_iterator nodesIter = namelistIter->second.compound.begin();
-			while(nodesIter != namelistIter->second.compound.end()) {
-				ss << nodesIter->second.node;
-				nodesIter++;
+		client(reqCopy.xml);
+
+		if (!reqCopy.namelist.empty()) {
+			std::stringstream ss;
+			std::map<std::string, Data>::const_iterator namelistIter = reqCopy.namelist.begin();
+			while(namelistIter != reqCopy.namelist.end()) {
+				/* When sending namelist from _datamodel variables, data is interpreted as nodes (data.node) */
+				std::map<std::string, Data>::const_iterator nodesIter = namelistIter->second.compound.begin();
+				while(nodesIter != namelistIter->second.compound.end()) {
+					ss << nodesIter->second.node;
+					nodesIter++;
+				}
+				namelistIter++;
 			}
-			namelistIter++;
-		}
 
-		if (ss.str().empty() || _timeoutVal == 0) {
+			if (ss.str().empty() || _timeoutVal == 0) {
+				LOG(ERROR) << "TIM Frame is empty";
+				buildTIMexception(TIM_ERROR);
+				return;
+			}
+			client(ss.str());
+		} else if (!reqCopy.xml.empty()) {
+			client(reqCopy.xml);
+		} else {
+			LOG(ERROR) << "Cannot create TIM command from send request";
 			buildTIMexception(TIM_ERROR);
-			return;
 		}
-
-		client(ss.str());
-
 	/* SCXML -> MES */
 	} else if (evType == SCXML2MES_ACK) {
 		//TODO HANDLE MALFORMED SCXML and DATA

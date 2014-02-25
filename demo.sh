@@ -22,8 +22,7 @@ case "$1" in
     	if [ "$2" -eq "1" ] ; then
 		sleep 1				
 	else
-
-		/usr/local/bin/modpoll -0 -1 -t4 -o4 -p 1502 -r47 -c23 127.0.0.1
+		/usr/local/bin/modpoll -0 -1 -t4 -o4 -p 1502 -r56 -c84 127.0.0.1
 	fi
     ;;
 2)  echo  "Sending command $1"

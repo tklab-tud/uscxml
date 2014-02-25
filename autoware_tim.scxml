@@ -12,30 +12,27 @@
 			<param name="timeout" expr="'5'"/>
 		</invoke>
 		<state id="init0">
-			<datamodel>
-				<data id="READ0">
-					<frame>
-						<data type="requestItem" index="0">startWrapping</data>
-					</frame>
-				</data>
-				<data id="WRITE0">
+			<transition event="0_wREQ" target="sent0">
+				<send 	event="wCMD"
+					target="#_xmlbridge0">
+					<content>
 					<frame>
 						<data type="startWrapping" index="0">
-							<nestedData type="state">1</nestedData>
+							<nestedData type="state">${$_event/data/value/text()}</nestedData>
 						</data>
 					</frame>
-				</data>
-			</datamodel>
-			<transition event="0_wREQ" target="sent0">
-				<assign location="$WRITE0/frame/data/nestedData" expr="$_event/data/value/text()"/>
-				<send 	event="wCMD"
-					namelist="$WRITE0"
-					target="#_xmlbridge0"/>
+					</content>
+				</send>
 			</transition>
 			<transition event="0_rREQ" target="sent0">
 				<send 	event="rCMD"
-					namelist="$READ0"
-					target="#_xmlbridge0"/>
+					target="#_xmlbridge0">
+					<content>
+					<frame>
+						<data type="requestItem" index="0">startWrapping</data>
+					</frame>
+					</content>
+				</send>
 			</transition>
 		</state>
 		<state id="sent0">
