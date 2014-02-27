@@ -366,7 +366,7 @@
 				</if>
 				<send event="timeout7" delay="5s"/>
 			</transition>
-			<transition event="timeout7" target="init67">
+			<transition event="timeout7" target="init7">
 				<send 	event="_ERR" target="#_xmlbridge7"/>
 			</transition>
 			<transition event="error7" target="init7">
@@ -473,10 +473,10 @@
 				</if>
 				<send event="timeout9" delay="5s"/>
 			</transition>
-			<transition event="timeout9" target="init3">
+			<transition event="timeout9" target="init9">
 				<send 	event="_ERR" target="#_xmlbridge9"/>
 			</transition>
-			<transition event="error9" target="init3">
+			<transition event="error9" target="init9">
 				<send 	event="_ERR" target="#_xmlbridge9"/>
 			</transition>
 		</state>
@@ -513,10 +513,10 @@
 				</if>
 				<send event="timeout10" delay="5s"/>
 			</transition>
-			<transition event="timeout9" target="init3">
+			<transition event="timeout10" target="init10">
 				<send 	event="_ERR" target="#_xmlbridge10"/>
 			</transition>
-			<transition event="error9" target="init3">
+			<transition event="error10" target="init10">
 				<send 	event="_ERR" target="#_xmlbridge10"/>
 			</transition>
 		</state>
