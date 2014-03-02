@@ -50,7 +50,8 @@ enum exceptions {
  */
 class XmlBridgeInvoker : public InvokerImpl {
 public:
-	XmlBridgeInvoker() : _reply(NULL), _servinfo(NULL), _socketfd(0), _itemsRead(), _mesbufferer(MesBufferer::getInstance()) {}
+	XmlBridgeInvoker() : currSock(-1), _reply(NULL), _servinfo(NULL), _socketfd(0), _itemsRead(), _mesbufferer(MesBufferer::getInstance()),
+		_currAddr(-1), _currItems(0), _currLen(0), _currWrite(false) {}
 	std::set<std::string> getNames() {
 		std::set<std::string> names;
 		names.insert("xmlbridge");
@@ -68,6 +69,9 @@ public:
 	void buildTIMexception(exceptions type);
 
 	~XmlBridgeInvoker();
+
+	int currSock;
+	tthread::mutex sockMUTEX;
 protected:
 
 	bool initClient(std::string ipaddr, std::string port);
@@ -78,7 +82,7 @@ protected:
 	unsigned int _timeoutVal;	/** Il massimo tempo di attesa per ricevere una risposta dal TIM per questo comando */
 	unsigned int _currItems;	/** Il numero di items scritti/letti nella richiesta corrent */
 	unsigned int _currLen;
-	unsigned int _currAddr;
+	int _currAddr;
 	bool _currWrite;
 
 	std::list<std::string> _itemsRead;	/** Lista di elementi estratti dalla risposta del TIM tramite query xpath */

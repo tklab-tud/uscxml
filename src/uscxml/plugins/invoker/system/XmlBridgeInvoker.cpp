@@ -81,8 +81,7 @@ void XmlBridgeInvoker::invoke(const InvokeRequest& req) {
  * @return Data
  */
 Data XmlBridgeInvoker::getDataModelVariables() {
-	Data data;
-	return data;
+	return Data();
 }
 
 /** SCXML->TIM | SCXML->MES */
@@ -119,7 +118,7 @@ void XmlBridgeInvoker::send(const SendRequest& req) {
 
 			if (ss.str().empty() || _timeoutVal == 0) {
 				LOG(ERROR) << "TIM Frame is empty";
-				buildTIMexception(TIM_ERROR);
+				buildTIMexception(SCXML_ERROR);
 				return;
 			}
 			client(ss.str());
@@ -127,9 +126,11 @@ void XmlBridgeInvoker::send(const SendRequest& req) {
 			client(reqCopy.xml);
 		} else {
 			LOG(ERROR) << "Cannot create TIM command from send request";
-			buildTIMexception(TIM_ERROR);
+			buildTIMexception(SCXML_ERROR);
 		}
-	/* SCXML -> MES */
+
+		return;
+		/* SCXML -> MES */
 	} else if (evType == SCXML2MES_ACK) {
 		//TODO HANDLE MALFORMED SCXML and DATA
 
@@ -147,20 +148,28 @@ void XmlBridgeInvoker::send(const SendRequest& req) {
 		}
 
 		if (_itemsRead.size() >= _currItems && !write)
-			_mesbufferer.bufferMESreplyREAD(_CMDid, _currAddr, _currLen, _itemsRead);
+			_mesbufferer.bufferMESreplyREAD(currSock, _CMDid, _currAddr, _currLen, _itemsRead);
 		else if (write)
-			_mesbufferer.bufferMESreplyWRITE(_CMDid);
+			_mesbufferer.bufferMESreplyWRITE(currSock, _CMDid);
 		else
 			LOG(INFO) << "Parsed " << _itemsRead.size() << " fields of " << _currItems << " requested";
 
-	/* SCXML -> MES (errore) */
+		/* SCXML -> MES (errore) */
 	} else if (evType == SCXML2MES_ERR) {
-		_mesbufferer.bufferMESerror(_CMDid);
+		_mesbufferer.bufferMESerror(currSock, _CMDid);
 	} else {
 		LOG(ERROR) << "XmlBridgeInvoker: received an unsupported event type from Interpreter, discarding request\n"
 			   << "Propably the event name in the SCXML file is incorrect.";
-		_mesbufferer.bufferMESerror(_CMDid);
+		buildTIMexception(SCXML_ERROR);
+
+		return;
 	}
+
+	currSock = -1;
+	_currAddr = -1;
+	_currLen = 0;
+	_currItems = 0;
+	_currWrite = false;
 }
 
 /** MES->SCXML */
@@ -172,40 +181,43 @@ void XmlBridgeInvoker::send(const SendRequest& req) {
  * @param req_raw_data La lista delle stringhe utilizzate per popolare il comando TIM (se richiesta di scrittura)
  */
 void XmlBridgeInvoker::buildMESreq(unsigned int addr, unsigned int len, bool write,
-				   const std::list<std::string> req_raw_data,
-				   const std::list<std::pair<std::string,std::string> > req_indexes) {
+				   const std::list<std::string> &req_raw_data,
+				   const std::list<std::pair<std::string,std::string> > &req_indexes) {
 	std::stringstream ss;
 	ss << _CMDid << '_' << (write ? WRITEOP : READOP) << MES2SCXML;
 	LOG(INFO) << "(" << _invokeId << ") Building Event " << ss.str();
 
+	_currAddr = addr;
+	_currLen = len;
+	_currWrite = write;
+
 	Event myevent(ss.str(), Event::EXTERNAL);
 
 	/* I dati inviati dal MES all'SCXML sono sempre mappati nella struttura dati 'node' dell'evento */
-
 	/* Nel caso della lettura vado a scrivere gli indici
 	 * Nel caso della scrittura vado a scrivere i valori e gli indici */
 	if (!req_indexes.empty() && !req_raw_data.empty() && write) {
-        /* scrittura */
+		/* scrittura */
 		std::list<std::string>::const_iterator valueiter = req_raw_data.begin();
 		std::list<std::pair<std::string,std::string> >::const_iterator indexiter = req_indexes.begin();
 		myevent.data.node = _interpreter->getDocument().createElement("data");
 		for (valueiter; valueiter!= req_raw_data.end(); valueiter++, indexiter++) {
 			Arabica::DOM::Element<std::string> eventMESElem = _interpreter->getDocument().createElement("value");
 			Arabica::DOM::Text<std::string> textNode = _interpreter->getDocument().createTextNode(*valueiter);
-            eventMESElem.setAttribute("itemi", indexiter->first);
+			eventMESElem.setAttribute("itemi", indexiter->first);
 			eventMESElem.setAttribute("var", indexiter->second);
 			eventMESElem.appendChild(textNode);
 			myevent.data.node.appendChild(eventMESElem);
 		}
 		_currItems = req_raw_data.size();
 	} else if (!req_indexes.empty() && !write) {
-        /* lettura */
+		/* lettura */
 		std::list<std::pair<std::string,std::string> >::const_iterator indexiter = req_indexes.begin();
 		myevent.data.node = _interpreter->getDocument().createElement("data");
 		for (indexiter; indexiter!=req_indexes.end(); indexiter++) {
 			Arabica::DOM::Element<std::string> eventMESElem = _interpreter->getDocument().createElement("index");
 			Arabica::DOM::Text<std::string> textNode = _interpreter->getDocument().createTextNode(indexiter->second);
-            eventMESElem.setAttribute("itemi", indexiter->first);
+			eventMESElem.setAttribute("itemi", indexiter->first);
 			eventMESElem.appendChild(textNode);
 			myevent.data.node.appendChild(eventMESElem);
 		}
@@ -213,9 +225,6 @@ void XmlBridgeInvoker::buildMESreq(unsigned int addr, unsigned int len, bool wri
 	} else {
 		_currItems = 0;
 	}
-	_currAddr = addr;
-	_currLen = len;
-	_currWrite = write;
 
 	_itemsRead.clear();
 
@@ -231,7 +240,7 @@ void XmlBridgeInvoker::buildMESreq(unsigned int addr, unsigned int len, bool wri
  * @param type Lettura/Scrittura
  * @param reply_raw_data Stringa Raw della risposta dal TIM
  */
-void XmlBridgeInvoker::buildTIMreply(const std::string reply_raw_data)
+void XmlBridgeInvoker::buildTIMreply(const std::string &reply_raw_data)
 {
 	Arabica::SAX2DOM::Parser<std::string> domParser;
 	Arabica::SAX::CatchErrorHandler<std::string> errorHandler;
@@ -382,20 +391,20 @@ bool XmlBridgeInvoker::initClient(std::string ipaddr, std::string port)
  *
  * @param Puntatore ad all'istanza di TimIO
  */
-void XmlBridgeInvoker::client(std::string cmdframe) {
+void XmlBridgeInvoker::client(const std::string &cmdframe) {
 	if (cmdframe.length() == 0) {
 		LOG(ERROR) << "TIM client: sending a 0 length message";
 		buildTIMexception(TIM_ERROR);
 	}
 
-    std::string timframe = std::string("<frame>") + cmdframe.substr(cmdframe.find('>')+1);
+	std::string timframe = std::string("<frame>") + cmdframe.substr(cmdframe.find('>')+1);
 
 	LOG(ERROR) << "Sending cmd to TIM (length=" << cmdframe.length() << "): "
-           << std::endl << timframe;
+		   << std::endl << timframe;
 
 	int numbytes;
-    while ((numbytes = ::send(_socketfd, timframe.c_str(),
-                timframe.length(), MSG_NOSIGNAL | MSG_MORE)) != timframe.length()) {
+	while ((numbytes = ::send(_socketfd, timframe.c_str(),
+				  timframe.length(), MSG_NOSIGNAL | MSG_MORE)) != timframe.length()) {
 
 		PLOG(INFO) << "TIM client: send error";
 		if (errno == EPIPE || errno == EBADF) {

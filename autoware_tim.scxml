@@ -87,10 +87,8 @@
 							target="#_xmlbridge1"/>
 					</foreach>
 				<else/>
-					<send 	event="rERR"
-						target="#_xmlbridge1"/>
+					<send 	event="rERR" target="#_xmlbridge1"/>
 				</if>
-				<send event="timeout1" delay="5s"/>
 			</transition>
 			<transition event="timeout1" target="init1">
 				<send 	event="_ERR" target="#_xmlbridge1"/>
@@ -127,10 +125,8 @@
 							target="#_xmlbridge2"/>
 					</foreach>
 				<else/>
-					<send 	event="rERR"
-						target="#_xmlbridge2"/>
+					<send 	event="rERR" target="#_xmlbridge2"/>
 				</if>
-				<send event="timeout2" delay="5s"/>
 			</transition>
 			<transition event="timeout2" target="init2">
 				<send 	event="_ERR" target="#_xmlbridge2"/>
@@ -167,10 +163,8 @@
 							target="#_xmlbridge3"/>
 					</foreach>
 				<else/>
-					<send 	event="rERR"
-						target="#_xmlbridge3"/>
+					<send 	event="rERR" target="#_xmlbridge3"/>
 				</if>
-				<send event="timeout3" delay="5s"/>
 			</transition>
 			<transition event="timeout3" target="init3">
 				<send 	event="_ERR" target="#_xmlbridge3"/>
@@ -201,10 +195,8 @@
 						namelist="$_event/data/frame/data/nestedData[@type='value']/text()"
 						target="#_xmlbridge4"/>
 				<else/>
-					<send 	event="rERR"
-						target="#_xmlbridge4"/>
+					<send 	event="rERR" target="#_xmlbridge4"/>
 				</if>
-				<send event="timeout4" delay="5s"/>
 			</transition>
 			<transition event="timeout4" target="init4">
 				<send 	event="_ERR" target="#_xmlbridge4"/>
@@ -241,10 +233,8 @@
 							target="#_xmlbridge5"/>
 					</foreach>
 				<else/>
-					<send 	event="rERR"
-						target="#_xmlbridge5"/>
+					<send 	event="rERR" target="#_xmlbridge5"/>
 				</if>
-				<send event="timeout5" delay="5s"/>
 			</transition>
 			<transition event="timeout5" target="init5">
 				<send 	event="_ERR" target="#_xmlbridge5"/>
@@ -304,7 +294,6 @@
 				<else/>
 					<send 	event="_ERR" target="#_xmlbridge6"/>
 				</if>
-				<send event="timeout6" delay="5s"/>
 			</transition>
 			<transition event="timeout6" target="init6">
 				<send 	event="_ERR" target="#_xmlbridge6"/>
@@ -364,7 +353,6 @@
 				<else/>
 					<send 	event="_ERR" target="#_xmlbridge7"/>
 				</if>
-				<send event="timeout7" delay="5s"/>
 			</transition>
 			<transition event="timeout7" target="init7">
 				<send 	event="_ERR" target="#_xmlbridge7"/>
@@ -431,7 +419,6 @@
 				<else/>
 					<send 	event="_ERR" target="#_xmlbridge8"/>
 				</if>
-				<send event="timeout8" delay="5s"/>
 			</transition>
 			<transition event="timeout8" target="init8">
 				<send 	event="_ERR" target="#_xmlbridge8"/>
@@ -468,10 +455,8 @@
 							target="#_xmlbridge9"/>
 					</foreach>
 				<else/>
-					<send 	event="rERR"
-						target="#_xmlbridge9"/>
+					<send 	event="rERR" target="#_xmlbridge9"/>
 				</if>
-				<send event="timeout9" delay="5s"/>
 			</transition>
 			<transition event="timeout9" target="init9">
 				<send 	event="_ERR" target="#_xmlbridge9"/>
@@ -508,10 +493,8 @@
 							target="#_xmlbridge10"/>
 					</foreach>
 				<else/>
-					<send 	event="rERR"
-						target="#_xmlbridge10"/>
+					<send 	event="rERR" target="#_xmlbridge10"/>
 				</if>
-				<send event="timeout10" delay="5s"/>
 			</transition>
 			<transition event="timeout10" target="init10">
 				<send 	event="_ERR" target="#_xmlbridge10"/>
