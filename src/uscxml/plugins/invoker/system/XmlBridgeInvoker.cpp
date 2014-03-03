@@ -134,6 +134,7 @@ void XmlBridgeInvoker::send(const SendRequest& req) {
 		//TODO HANDLE MALFORMED SCXML and DATA
 
 		if (!write) {
+			size_t tmpsize = _itemsRead.size();
 			/* When sending namelist from XPath variables, data is interpreted as nodes (data.node) */
 			std::map<std::string, Data>::const_iterator namelistIter = reqCopy.namelist.begin();
 			while(namelistIter != reqCopy.namelist.end()) {
@@ -143,6 +144,11 @@ void XmlBridgeInvoker::send(const SendRequest& req) {
 					nodesIter++;
 				}
 				namelistIter++;
+			}
+			if (tmpsize == _itemsRead.size()) {
+				LOG(ERROR) << "(" << _invokeId << ") SCXML have returned 0 items from TIM command";
+				buildTIMexception(SCXML_ERROR);
+				return;
 			}
 		}
 
@@ -294,6 +300,8 @@ void XmlBridgeInvoker::buildTIMexception(exceptions type)
 	case TIM_TIMEOUT:
 		ss << TIM2SCXML_TIMEOUT << _CMDid;
 		break;
+	case SCXML_ERROR:
+	case TIM_ERROR:
 	default:
 		ss << TIM2SCXML_ERROR << _CMDid;
 		break;
@@ -413,10 +421,11 @@ void XmlBridgeInvoker::client(const std::string &cmdframe) {
 	while ((numbytes = ::send(_socketfd, timframe.c_str(),
 				  timframe.length(), MSG_NOSIGNAL | MSG_MORE)) != timframe.length()) {
 
-		PLOG(INFO) << "TIM client: send error";
+		PLOG(INFO) << "TIM client: send() error";
 		if (errno == EPIPE || errno == EBADF) {
 			LOG(INFO) << "TCP connection with TCP lost, reconnecting";
 			if (!connect2TIM()) {
+				LOG(ERROR) << "Cannot reconnect to TIM for sending command";
 				buildTIMexception(TIM_ERROR);
 				return;
 			}
@@ -427,7 +436,6 @@ void XmlBridgeInvoker::client(const std::string &cmdframe) {
 			return;
 		}
 		buildTIMexception(TIM_ERROR);
-		LOG(ERROR) << "TIM client: failed to send";
 		return;
 	}
 
@@ -441,7 +449,7 @@ void XmlBridgeInvoker::client(const std::string &cmdframe) {
 		if ((recvlen = recv(_socketfd, _reply + replylen,
 				    MAXTIMREPLYSIZE - replylen, 0)) == -1) {
 			if (errno == EAGAIN || errno == EWOULDBLOCK) {
-				LOG(ERROR) << "TIM client: command timeout";
+				PLOG(ERROR) << "TIM client: command timeout";
 				buildTIMexception(TIM_TIMEOUT);
 				return;
 			}
@@ -449,11 +457,11 @@ void XmlBridgeInvoker::client(const std::string &cmdframe) {
 			buildTIMexception(TIM_ERROR);
 			return;
 		} else if (recvlen == 0 && errno == 0) {
-			LOG(ERROR) << "TIM client: received zero-length message";
+			PLOG(ERROR) << "TIM client: received zero-length message";
 			buildTIMexception(TIM_ERROR);
 			return;
 		} else if (recvlen == (MAXTIMREPLYSIZE - replylen)) {
-			LOG(ERROR) << "TIM client: received message too long";
+			PLOG(ERROR) << "TIM client: received message too long";
 			buildTIMexception(TIM_ERROR);
 			return;
 		}

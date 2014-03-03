@@ -43,49 +43,49 @@ case "$1" in
     	if [ "$2" -eq "1" ] ; then
 		echo "Write Mode is Not Supported"		
 	else
-		/usr/local/bin/modpoll -0 -1 -t4 -o4 -p 1502 -r893 -c1 127.0.0.1
+		/usr/local/bin/modpoll -0 -1 -t4 -o4 -p 1502 -r943 -c1 127.0.0.1
 	fi
    ;;
 5)  echo  "Sending command $1"
     	if [ "$2" -eq "1" ] ; then
 		echo "Write Mode is Not Supported"		
 	else
-		/usr/local/bin/modpoll -0 -1 -t4 -o4 -p 1502 -r894 -c23 127.0.0.1
+		/usr/local/bin/modpoll -0 -1 -t4 -o4 -p 1502 -r944 -c23 127.0.0.1
 	fi
    ;;
 6)  echo  "Sending command $1"
     	if [ "$2" -eq "1" ] ; then
-		/usr/local/bin/modpoll -0 -1 -t4 -o4 -p 1502 -r1029 -c1 127.0.0.1 2158
+		/usr/local/bin/modpoll -0 -1 -t4 -o4 -p 1502 -r992 -c1 127.0.0.1 18
 	else
-		/usr/local/bin/modpoll -0 -1 -t4 -o4 -p 1502 -r917 -c29 127.0.0.1
+		/usr/local/bin/modpoll -0 -1 -t4 -o4 -p 1502 -r967 -c29 127.0.0.1
 	fi
    ;;
 7)  echo  "Sending command $1"
 	if [ "$2" -eq "1" ] ; then
-		/usr/local/bin/modpoll -0 -1 -t4 -o4 -p 1502 -r1316 -c1 127.0.0.1 878
+		/usr/local/bin/modpoll -0 -1 -t4 -o4 -p 1502 -r1297 -c1 127.0.0.1 1
 	else
-		/usr/local/bin/modpoll -0 -1 -t4 -o4 -p 1502 -r1207 -c74 127.0.0.1
+		/usr/local/bin/modpoll -0 -1 -t4 -o4 -p 1502 -r1299 -c84 127.0.0.1
 	fi
    ;;
 8)  echo  "Sending command $1"
     	if [ "$2" -eq "1" ] ; then
-		/usr/local/bin/modpoll -0 -1 -t4 -o4 -p 1502 -r1587 -c1 127.0.0.1 1
+		/usr/local/bin/modpoll -0 -1 -t4 -o4 -p 1502 -r1687 -c1 127.0.0.1 1
 	else
-		/usr/local/bin/modpoll -0 -1 -t4 -o4 -p 1502 -r1577 -c23 127.0.0.1
+		/usr/local/bin/modpoll -0 -1 -t4 -o4 -p 1502 -r1677 -c23 127.0.0.1
 	fi
    ;;
 9)  echo  "Sending command $1"
     	if [ "$2" -eq "1" ] ; then
 		echo "Write Mode is Not Supported"	
 	else
-		/usr/local/bin/modpoll -0 -1 -t4 -o4 -p 1502 -r1699 -c29 127.0.0.1
+		/usr/local/bin/modpoll -0 -1 -t4 -o4 -p 1502 -r1802 -c29 127.0.0.1
 	fi
    ;;
 10)  echo  "Sending command $1"
     	if [ "$2" -eq "1" ] ; then
 		echo "Write Mode is Not Supported"	
 	else
-		/usr/local/bin/modpoll -0 -1 -t4 -o4 -p 1502 -r1989 -c32 127.0.0.1
+		/usr/local/bin/modpoll -0 -1 -t4 -o4 -p 1502 -r2089 -c32 127.0.0.1
 	fi
    ;;
 *) echo "Signal number $1 is not supported"
