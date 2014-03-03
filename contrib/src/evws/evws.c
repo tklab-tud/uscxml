@@ -517,6 +517,25 @@ struct evws_connection* evws_connection_new(struct evws *ws, evutil_socket_t fd)
 	return conn;
 }
 
+#if 0
+struct evws_connection* evws_connection_upgrade(struct evws *ws, struct bufferevent *bufev) {
+	struct evws_connection* conn = calloc(1, sizeof(struct evws_connection));
+	conn->ws = ws;
+	conn->fd = 0;
+	conn->uri = ((void*)0);
+	
+//	conn->bufev = bufferevent_socket_new(ws->base, fd, BEV_OPT_CLOSE_ON_FREE);
+	conn->bufev = bufev;
+	conn->state = 0;
+	conn->frame = ((void*)0);
+	
+	(&conn->headers)->tqh_first = NULL;
+	(&conn->headers)->tqh_last = &(((&conn->headers))->tqh_first);
+	
+	return conn;
+}
+#endif
+
 void evws_connection_free(struct evws_connection *conn) {
 	struct evws_header *header;
 	bufferevent_free(conn->bufev);

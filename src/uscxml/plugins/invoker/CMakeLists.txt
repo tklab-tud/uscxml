@@ -1,80 +1,81 @@
 # sample invoker - include to make sure it compiles
-#set(USCXML_INVOKERS "sample ${USCXML_INVOKERS}")
-#file(GLOB_RECURSE SAMPLE_INVOKER
-#	sample/*.cpp
-#	sample/*.h
-#)
+if (0)
+set(USCXML_INVOKERS "sample ${USCXML_INVOKERS}")
+file(GLOB_RECURSE SAMPLE_INVOKER
+	sample/*.cpp
+	sample/*.h
+)
 
-#if (BUILD_AS_PLUGINS)
-#	source_group("" FILES ${SAMPLE_INVOKER})
-#	add_library(
-#		invoker_sample SHARED
-#		${SAMPLE_INVOKER}
-#		"../Plugins.cpp")
-#	target_link_libraries(invoker_sample uscxml)
-#	set_target_properties(invoker_sample PROPERTIES FOLDER "Plugin Invoker")
-#else()
-#	list (APPEND USCXML_FILES ${SAMPLE_INVOKER})
-#endif()
+if (BUILD_AS_PLUGINS)
+	source_group("" FILES ${SAMPLE_INVOKER})
+	add_library(
+		invoker_sample SHARED 
+		${SAMPLE_INVOKER}
+		"../Plugins.cpp")
+	target_link_libraries(invoker_sample uscxml)
+	set_target_properties(invoker_sample PROPERTIES FOLDER "Plugin Invoker")
+else()
+	list (APPEND USCXML_FILES ${SAMPLE_INVOKER})
+endif()
 
-## DirMon invoker to watch for filesystem changes
+# DirMon invoker to watch for filesystem changes
 
-#set(USCXML_INVOKERS "dirmon ${USCXML_INVOKERS}")
-#file(GLOB_RECURSE DIRMON_INVOKER
-#	filesystem/dirmon/*.cpp
-#	filesystem/dirmon/*.h
-#)
-#if (BUILD_AS_PLUGINS)
-#	source_group("" FILES ${DIRMON_INVOKER})
-#	add_library(
-#		invoker_dirmon SHARED
-#		${DIRMON_INVOKER}
-#		"../Plugins.cpp")
-#	target_link_libraries(invoker_dirmon uscxml)
-#	set_target_properties(invoker_dirmon PROPERTIES FOLDER "Plugin Invoker")
-#else()
-#	list (APPEND USCXML_FILES ${DIRMON_INVOKER})
-#endif()
-
-
-## Location invoker to watch for proximity to GPS coordinates
-
-## file(GLOB_RECURSE LOCATION_INVOKER
-## 	location/*.cpp
-## 	location/*.h
-## )
-## if (BUILD_AS_PLUGINS)
-## 	source_group("" FILES ${LOCATION_INVOKER})
-## 	add_library(
-## 		invoker_location SHARED
-## 		${LOCATION_INVOKER}
-## 		"../Plugins.cpp")
-## 	target_link_libraries(invoker_location uscxml)
-## 	set_target_properties(invoker_location PROPERTIES FOLDER "Plugin Invoker")
-## else()
-## 	list (APPEND USCXML_FILES ${LOCATION_INVOKER})
-## endif()
+set(USCXML_INVOKERS "dirmon ${USCXML_INVOKERS}")
+file(GLOB_RECURSE DIRMON_INVOKER
+	filesystem/dirmon/*.cpp
+	filesystem/dirmon/*.h
+)
+if (BUILD_AS_PLUGINS)
+	source_group("" FILES ${DIRMON_INVOKER})
+	add_library(
+		invoker_dirmon SHARED 
+		${DIRMON_INVOKER}
+		"../Plugins.cpp")
+	target_link_libraries(invoker_dirmon uscxml)
+	set_target_properties(invoker_dirmon PROPERTIES FOLDER "Plugin Invoker")
+else()
+	list (APPEND USCXML_FILES ${DIRMON_INVOKER})
+endif()
 
 
-## XHTML invoker
+# Location invoker to watch for proximity to GPS coordinates
 
-#set(USCXML_INVOKERS "xhtml ${USCXML_INVOKERS}")
-#file(GLOB_RECURSE XHTML_INVOKER
-#	xhtml/*.cpp
-#	xhtml/*.h
-#)
-#if (BUILD_AS_PLUGINS)
-#	source_group("" FILES ${XHTML_INVOKER})
-#	add_library(
-#		invoker_xhtml SHARED
-#		${XHTML_INVOKER}
-#		"../Plugins.cpp")
-#	target_link_libraries(invoker_xhtml uscxml)
-#	set_target_properties(invoker_xhtml PROPERTIES FOLDER "Plugin Invoker")
-#else()
-#	list (APPEND USCXML_FILES ${XHTML_INVOKER})
-#endif()
+# file(GLOB_RECURSE LOCATION_INVOKER
+# 	location/*.cpp
+# 	location/*.h
+# )
+# if (BUILD_AS_PLUGINS)
+# 	source_group("" FILES ${LOCATION_INVOKER})
+# 	add_library(
+# 		invoker_location SHARED 
+# 		${LOCATION_INVOKER}
+# 		"../Plugins.cpp")
+# 	target_link_libraries(invoker_location uscxml)
+# 	set_target_properties(invoker_location PROPERTIES FOLDER "Plugin Invoker")
+# else()
+# 	list (APPEND USCXML_FILES ${LOCATION_INVOKER})
+# endif()
 
+
+# XHTML invoker
+
+set(USCXML_INVOKERS "xhtml ${USCXML_INVOKERS}")
+file(GLOB_RECURSE XHTML_INVOKER
+	xhtml/*.cpp
+	xhtml/*.h
+)
+if (BUILD_AS_PLUGINS)
+	source_group("" FILES ${XHTML_INVOKER})
+	add_library(
+		invoker_xhtml SHARED 
+		${XHTML_INVOKER}
+		"../Plugins.cpp")
+	target_link_libraries(invoker_xhtml uscxml)
+	set_target_properties(invoker_xhtml PROPERTIES FOLDER "Plugin Invoker")
+else()
+	list (APPEND USCXML_FILES ${XHTML_INVOKER})
+endif()
+endif()
 
 # System invoker to open a native command
 
@@ -96,265 +97,267 @@ endif()
 
 
 # expect invoker
-
-#if (EXPECT_FOUND AND TCL_FOUND)
-#	set(USCXML_INVOKERS "expect ${USCXML_INVOKERS}")
-#	file(GLOB_RECURSE EXPECT_INVOKER
-#		expect/*.cpp
-#		expect/*.h
-#	)
-#	if (BUILD_AS_PLUGINS)
-#		source_group("" FILES EXPECT_INVOKER)
-#		add_library(
-#			invoker_expect SHARED
-#			${EXPECT_INVOKER}
-#			"../Plugins.cpp")
-#		target_link_libraries(invoker_expect uscxml)
-#		set_target_properties(invoker_expect PROPERTIES FOLDER "Plugin Invoker")
-#	else()
-#		list (APPEND USCXML_FILES ${EXPECT_INVOKER})
-#	endif()
-#endif()
-
-
-## SMTP invoker via curl
-
-#set(USCXML_INVOKERS "smtp ${USCXML_INVOKERS}")
-#file(GLOB_RECURSE SMTP_INVOKER
-#	smtp/*.cpp
-#	smtp/*.h
-#)
-#if (BUILD_AS_PLUGINS)
-#	source_group("" FILES SMTP_INVOKER)
-#	add_library(
-#		invoker_smtp SHARED
-#		${SMTP_INVOKER}
-#		"../Plugins.cpp")
-#	target_link_libraries(invoker_smtp uscxml)
-#	set_target_properties(invoker_smtp PROPERTIES FOLDER "Plugin Invoker")
-#else()
-#	list (APPEND USCXML_FILES ${SMTP_INVOKER})
-#endif()
+if (0)
+if (EXPECT_FOUND AND TCL_FOUND)
+	set(USCXML_INVOKERS "expect ${USCXML_INVOKERS}")
+	file(GLOB_RECURSE EXPECT_INVOKER
+		expect/*.cpp
+		expect/*.h
+	)
+	if (BUILD_AS_PLUGINS)
+		source_group("" FILES EXPECT_INVOKER)
+		add_library(
+			invoker_expect SHARED 
+			${EXPECT_INVOKER}
+			"../Plugins.cpp")
+		target_link_libraries(invoker_expect uscxml)
+		set_target_properties(invoker_expect PROPERTIES FOLDER "Plugin Invoker")
+	else()
+		list (APPEND USCXML_FILES ${EXPECT_INVOKER})
+	endif()
+endif()
 
 
-## IMAP invoker via curl
+# SMTP invoker via curl
 
-#set(USCXML_INVOKERS "imap ${USCXML_INVOKERS}")
-#file(GLOB_RECURSE IMAP_INVOKER
-#	imap/*.cpp
-#	imap/*.h
-#)
-#if (BUILD_AS_PLUGINS)
-#	source_group("" FILES IMAP_INVOKER)
-#	add_library(
-#		invoker_imap SHARED
-#		IMAP_INVOKER}
-#		"../Plugins.cpp")
-#	target_link_libraries(invoker_imap uscxml)
-#	set_target_properties(invoker_imap PROPERTIES FOLDER "Plugin Invoker")
-#else()
-#	list (APPEND USCXML_FILES ${IMAP_INVOKER})
-#endif()
-
-
-## SQLite3 SQL Invoker
-
-#if (SQLITE3_FOUND)
-#	file(GLOB_RECURSE SQLITE3_INVOKER
-#		sqlite3/*.cpp
-#		sqlite3/*.h
-#	)
-#	if (BUILD_AS_PLUGINS)
-#		source_group("" FILES ${SQLITE3_INVOKER})
-#		add_library(
-#			invoker_sqlite3 SHARED
-#			${SQLITE3_INVOKER}
-#			"../Plugins.cpp")
-#		target_link_libraries(invoker_sqlite3 uscxml)
-#		set_target_properties(invoker_sqlite3 PROPERTIES FOLDER "Plugin Invoker")
-#	else()
-#		list (APPEND USCXML_FILES ${SQLITE3_INVOKER})
-#	endif()
-#endif()
+if (CURL_HAS_SMTP)
+	set(USCXML_INVOKERS "smtp ${USCXML_INVOKERS}")
+	file(GLOB_RECURSE SMTP_INVOKER
+		smtp/*.cpp
+		smtp/*.h
+	)
+	if (BUILD_AS_PLUGINS)
+		source_group("" FILES SMTP_INVOKER)
+		add_library(
+			invoker_smtp SHARED 
+			${SMTP_INVOKER}
+			"../Plugins.cpp")
+		target_link_libraries(invoker_smtp uscxml)
+		set_target_properties(invoker_smtp PROPERTIES FOLDER "Plugin Invoker")
+	else()
+		list (APPEND USCXML_FILES ${SMTP_INVOKER})
+	endif()
+endif()
 
 
-## ffmpeg invoker
+# IMAP invoker via curl
 
-#if (FFMPEG_FOUND)
-#	set(USCXML_INVOKERS "ffmpeg ${USCXML_INVOKERS}")
-#	file(GLOB_RECURSE FFMPEG_INVOKER
-#		ffmpeg/*.cpp
-#		ffmpeg/*.h
-#	)
-#	if (BUILD_AS_PLUGINS)
-#		source_group("" FILES ${FFMPEG_INVOKER})
-#		add_library(
-#			invoker_ffmpeg SHARED
-#			${FFMPEG_INVOKER}
-#			"../Plugins.cpp")
-#		target_link_libraries(invoker_ffmpeg uscxml ${FFMPEG_LIBRARIES})
-#		set_target_properties(invoker_ffmpeg PROPERTIES FOLDER "Plugin Invoker")
-#	else()
-#		list (APPEND USCXML_FILES ${FFMPEG_INVOKER})
-#	endif()
-#endif()
+set(USCXML_INVOKERS "imap ${USCXML_INVOKERS}")
+file(GLOB_RECURSE IMAP_INVOKER
+	imap/*.cpp
+	imap/*.h
+)
+if (BUILD_AS_PLUGINS)
+	source_group("" FILES IMAP_INVOKER)
+	add_library(
+		invoker_imap SHARED 
+		${IMAP_INVOKER}
+		"../Plugins.cpp")
+	target_link_libraries(invoker_imap uscxml)
+	set_target_properties(invoker_imap PROPERTIES FOLDER "Plugin Invoker")
+else()
+	list (APPEND USCXML_FILES ${IMAP_INVOKER})
+endif()
 
 
-## instant messaging invoker
+# SQLite3 SQL Invoker
 
-#if (LIBPURPLE_FOUND)
-#	set(USCXML_INVOKERS "im ${USCXML_INVOKERS}")
-#	configure_file(${CMAKE_CURRENT_SOURCE_DIR}/im/IMConfig.h.in ${CMAKE_BINARY_DIR}/uscxml/IMConfig.h)
+if (SQLITE3_FOUND)
+	file(GLOB_RECURSE SQLITE3_INVOKER
+		sqlite3/*.cpp
+		sqlite3/*.h
+	)
+	if (BUILD_AS_PLUGINS)
+		source_group("" FILES ${SQLITE3_INVOKER})
+		add_library(
+			invoker_sqlite3 SHARED 
+			${SQLITE3_INVOKER}
+			"../Plugins.cpp")
+		target_link_libraries(invoker_sqlite3 uscxml)
+		set_target_properties(invoker_sqlite3 PROPERTIES FOLDER "Plugin Invoker")
+	else()
+		list (APPEND USCXML_FILES ${SQLITE3_INVOKER})
+	endif()
+endif()
+
+
+# ffmpeg invoker
+
+if (FFMPEG_FOUND)
+	set(USCXML_INVOKERS "ffmpeg ${USCXML_INVOKERS}")
+	file(GLOB_RECURSE FFMPEG_INVOKER
+		ffmpeg/*.cpp
+		ffmpeg/*.h
+	)
+	if (BUILD_AS_PLUGINS)
+		source_group("" FILES ${FFMPEG_INVOKER})
+		add_library(
+			invoker_ffmpeg SHARED 
+			${FFMPEG_INVOKER}
+			"../Plugins.cpp")
+		target_link_libraries(invoker_ffmpeg uscxml ${FFMPEG_LIBRARIES})
+		set_target_properties(invoker_ffmpeg PROPERTIES FOLDER "Plugin Invoker")
+	else()
+		list (APPEND USCXML_FILES ${FFMPEG_INVOKER})
+	endif()
+endif()
+
+
+# instant messaging invoker
+
+if (LIBPURPLE_FOUND)
+	set(USCXML_INVOKERS "im ${USCXML_INVOKERS}")
+	configure_file(${CMAKE_CURRENT_SOURCE_DIR}/im/IMConfig.h.in ${CMAKE_BINARY_DIR}/uscxml/IMConfig.h)
 	
-#	file(GLOB_RECURSE LIBPURPLE_INVOKER
-#		im/*.cpp
-#		im/*.h
-#	)
+	file(GLOB_RECURSE LIBPURPLE_INVOKER
+		im/*.cpp
+		im/*.h
+	)
 	
-#	if (BUILD_AS_PLUGINS)
-#		source_group("" FILES ${LIBPURPLE_INVOKER})
-#		add_library(
-#			invoker_im SHARED
-#			${LIBPURPLE_INVOKER}
-#			"../Plugins.cpp")
-#		target_link_libraries(invoker_im uscxml ${LIBPURPLE_LIBRARY} ${GLIB2_LIBRARIES} ${ICONV_LIBRARIES})
-#		set_target_properties(invoker_im PROPERTIES FOLDER "Plugin Invoker")
-#	else()
-#		list (APPEND USCXML_FILES ${LIBPURPLE_INVOKER})
-#	endif()
-#endif()
+	if (BUILD_AS_PLUGINS)
+		source_group("" FILES ${LIBPURPLE_INVOKER})
+		add_library(
+			invoker_im SHARED 
+			${LIBPURPLE_INVOKER}
+			"../Plugins.cpp")
+		target_link_libraries(invoker_im uscxml ${LIBPURPLE_LIBRARY} ${GLIB2_LIBRARIES} ${ICONV_LIBRARIES})
+		set_target_properties(invoker_im PROPERTIES FOLDER "Plugin Invoker")
+	else()
+		list (APPEND USCXML_FILES ${LIBPURPLE_INVOKER})
+	endif()
+endif()
 
 
-## calendar invoker
+# calendar invoker
 
-#if (LIBICAL_FOUND)
-#	set(USCXML_INVOKERS "calendar ${USCXML_INVOKERS}")
-#	file(GLOB_RECURSE CALENDAR_INVOKER
-#		calendar/*.cpp
-#		calendar/*.h
-#	)
-#	if (BUILD_AS_PLUGINS)
-#		source_group("" FILES ${CALENDAR_INVOKER})
-#		add_library(
-#			invoker_calendar SHARED
-#			${CALENDAR_INVOKER}
-#			"../Plugins.cpp")
-#		target_link_libraries(invoker_calendar uscxml ${LIBICAL_LIBRARIES})
-#		set_target_properties(invoker_calendar PROPERTIES FOLDER "Plugin Invoker")
-#	else()
-#		list (APPEND USCXML_FILES ${CALENDAR_INVOKER})
-#	endif()
-#endif()
-
-
-## location invoker
-
-#if (CORELOCATION_LIBRARY AND OFF)
-#	set(USCXML_INVOKERS "location ${USCXML_INVOKERS}")
-#	file(GLOB_RECURSE LOCATION_INVOKER
-#		location/CoreLocation/*.cpp
-#		location/CoreLocation/*.mm
-#		location/CoreLocation/*.h
-#	)
-#	if (BUILD_AS_PLUGINS)
-#		source_group("" FILES ${LOCATION_INVOKER})
-#		add_library(
-#			invoker_location SHARED
-#			${LOCATION_INVOKER}
-#			"../Plugins.cpp")
-#		target_link_libraries(invoker_location uscxml)
-#		set_target_properties(invoker_location PROPERTIES FOLDER "Plugin Invoker")
-#	else()
-#		list (APPEND USCXML_FILES ${LOCATION_INVOKER})
-#	endif()
-#endif()
+if (LIBICAL_FOUND)
+	set(USCXML_INVOKERS "calendar ${USCXML_INVOKERS}")
+	file(GLOB_RECURSE CALENDAR_INVOKER
+		calendar/*.cpp
+		calendar/*.h
+	)
+	if (BUILD_AS_PLUGINS)
+		source_group("" FILES ${CALENDAR_INVOKER})
+		add_library(
+			invoker_calendar SHARED 
+			${CALENDAR_INVOKER}
+			"../Plugins.cpp")
+		target_link_libraries(invoker_calendar uscxml ${LIBICAL_LIBRARIES})
+		set_target_properties(invoker_calendar PROPERTIES FOLDER "Plugin Invoker")
+	else()
+		list (APPEND USCXML_FILES ${CALENDAR_INVOKER})
+	endif()
+endif()
 
 
-## UMUNDO invoker
+# location invoker
 
-#if (UMUNDO_FOUND)
-#	set(USCXML_INVOKERS "umundo ${USCXML_INVOKERS}")
-#	file(GLOB_RECURSE UMUNDO_INVOKER
-#		umundo/*.cpp
-#		umundo/*.cc
-#		umundo/*.h)
-#	if (BUILD_AS_PLUGINS)
-#		source_group("" FILES ${UMUNDO_INVOKER})
-##		message(FATAL_ERROR "UMUNDO_LIBRARIES: ${UMUNDO_LIBRARIES}")
-#		add_library(
-#			invoker_umundo SHARED
-#			${UMUNDO_INVOKER}
-#			"../Plugins.cpp")
-#		target_link_libraries(invoker_umundo uscxml
-#		optimized ${PROTOBUF_LIBRARY}
-#		debug ${PROTOBUF_LIBRARY_DEBUG}
-#		${UMUNDO_LIBRARIES})
-#		set_target_properties(invoker_umundo PROPERTIES FOLDER "Plugin Invoker")
-#	else()
-#		list (APPEND USCXML_FILES ${UMUNDO_INVOKER})
-#	endif()
-#endif()
+if (CORELOCATION_LIBRARY AND OFF)
+	set(USCXML_INVOKERS "location ${USCXML_INVOKERS}")
+	file(GLOB_RECURSE LOCATION_INVOKER
+		location/CoreLocation/*.cpp
+		location/CoreLocation/*.mm
+		location/CoreLocation/*.h
+	)
+	if (BUILD_AS_PLUGINS)
+		source_group("" FILES ${LOCATION_INVOKER})
+		add_library(
+			invoker_location SHARED 
+			${LOCATION_INVOKER}
+			"../Plugins.cpp")
+		target_link_libraries(invoker_location uscxml)
+		set_target_properties(invoker_location PROPERTIES FOLDER "Plugin Invoker")
+	else()
+		list (APPEND USCXML_FILES ${LOCATION_INVOKER})
+	endif()
+endif()
+
+
+# UMUNDO invoker 
+
+if (UMUNDO_FOUND)
+	set(USCXML_INVOKERS "umundo ${USCXML_INVOKERS}")
+	file(GLOB_RECURSE UMUNDO_INVOKER 
+		umundo/*.cpp 
+		umundo/*.cc 
+		umundo/*.h)
+	if (BUILD_AS_PLUGINS)
+		source_group("" FILES ${UMUNDO_INVOKER})
+#		message(FATAL_ERROR "UMUNDO_LIBRARIES: ${UMUNDO_LIBRARIES}")
+		add_library(
+			invoker_umundo SHARED 
+			${UMUNDO_INVOKER}
+			"../Plugins.cpp")
+		target_link_libraries(invoker_umundo uscxml 
+		optimized ${PROTOBUF_LIBRARY}
+		debug ${PROTOBUF_LIBRARY_DEBUG}
+		${UMUNDO_LIBRARIES})
+		set_target_properties(invoker_umundo PROPERTIES FOLDER "Plugin Invoker")
+	else()
+		list (APPEND USCXML_FILES ${UMUNDO_INVOKER})
+	endif()
+endif()
 
 
 # USCXML invoker 
 
-#set(USCXML_INVOKERS "scxml ${USCXML_INVOKERS}")
-#file(GLOB_RECURSE USCXML_INVOKER
-#	scxml/*.cpp
-#	scxml/*.h)
-#if (BUILD_AS_PLUGINS)
-#	source_group("" FILES ${USCXML_INVOKER})
-#	add_library(
-#		invoker_uscxml SHARED
-#		${USCXML_INVOKER}
-#		"../Plugins.cpp")
-#	target_link_libraries(invoker_uscxml
-#		uscxml)
-#		set_target_properties(invoker_uscxml PROPERTIES FOLDER "Plugin Invoker")
-#else()
-#	list (APPEND USCXML_FILES ${USCXML_INVOKER})
-#endif()
+set(USCXML_INVOKERS "scxml ${USCXML_INVOKERS}")
+file(GLOB_RECURSE USCXML_INVOKER 
+	scxml/*.cpp 
+	scxml/*.h)
+if (BUILD_AS_PLUGINS)
+	source_group("" FILES ${USCXML_INVOKER})
+	add_library(
+		invoker_uscxml SHARED 
+		${USCXML_INVOKER}
+		"../Plugins.cpp")
+	target_link_libraries(invoker_uscxml 
+		uscxml)
+		set_target_properties(invoker_uscxml PROPERTIES FOLDER "Plugin Invoker")
+else()
+	list (APPEND USCXML_FILES ${USCXML_INVOKER})
+endif()
 
 
-## HTTP server invoker
+# HTTP server invoker 
 
-#set(USCXML_INVOKERS "httpservlet ${USCXML_INVOKERS}")
-#file(GLOB_RECURSE HTTPSERVLET_INVOKER
-#	http/*.cpp
-#	http/*.h)
-#if (BUILD_AS_PLUGINS)
-#	source_group("" FILES ${HTTPSERVLET_INVOKER})
-#	add_library(
-#		invoker_httpserver SHARED
-#		${HTTPSERVLET_INVOKER}
-#		"../Plugins.cpp")
-#	target_link_libraries(invoker_httpserver
-#		uscxml)
-#		set_target_properties(invoker_httpserver PROPERTIES FOLDER "Plugin Invoker")
-#else()
-#	list (APPEND USCXML_FILES ${HTTPSERVLET_INVOKER})
-#endif()
+set(USCXML_INVOKERS "httpservlet ${USCXML_INVOKERS}")
+file(GLOB_RECURSE HTTPSERVLET_INVOKER 
+	http/*.cpp 
+	http/*.h)
+if (BUILD_AS_PLUGINS)
+	source_group("" FILES ${HTTPSERVLET_INVOKER})
+	add_library(
+		invoker_httpserver SHARED 
+		${HTTPSERVLET_INVOKER}
+		"../Plugins.cpp")
+	target_link_libraries(invoker_httpserver 
+		uscxml)
+		set_target_properties(invoker_httpserver PROPERTIES FOLDER "Plugin Invoker")
+else()
+	list (APPEND USCXML_FILES ${HTTPSERVLET_INVOKER})
+endif()
 
 
-## Heartbeat invoker
+# Heartbeat invoker
 
-#set(USCXML_INVOKERS "heartbeat ${USCXML_INVOKERS}")
-#file(GLOB_RECURSE HEARTBEAT_INVOKER
-#	heartbeat/*.cpp
-#	heartbeat/*.h
-#)
-#if (BUILD_AS_PLUGINS)
-#	source_group("" FILES ${HEARTBEAT_INVOKER})
-#	add_library(
-#		invoker_heartbeat SHARED
-#		${HEARTBEAT_INVOKER}
-#		"../Plugins.cpp")
-#	target_link_libraries(invoker_heartbeat uscxml)
-#	set_target_properties(invoker_heartbeat PROPERTIES FOLDER "Plugin Invoker")
-#else()
-#	list (APPEND USCXML_FILES ${HEARTBEAT_INVOKER})
-#endif()
-
+set(USCXML_INVOKERS "heartbeat ${USCXML_INVOKERS}")
+file(GLOB_RECURSE HEARTBEAT_INVOKER
+	heartbeat/*.cpp
+	heartbeat/*.h
+)
+if (BUILD_AS_PLUGINS)
+	source_group("" FILES ${HEARTBEAT_INVOKER})
+	add_library(
+		invoker_heartbeat SHARED 
+		${HEARTBEAT_INVOKER}
+		"../Plugins.cpp")
+	target_link_libraries(invoker_heartbeat uscxml)
+	set_target_properties(invoker_heartbeat PROPERTIES FOLDER "Plugin Invoker")
+else()
+	list (APPEND USCXML_FILES ${HEARTBEAT_INVOKER})
+endif()
+endif()
 
 # OpenSceneGraph invoker
 if (OPENSCENEGRAPH_FOUND AND OPENGL_FOUND)
@@ -402,7 +405,7 @@ endif()
 
 # OpenAL modality components
 
-if (OPENAL_FOUND)
+if (OPENAL_FOUND AND (LIBSNDFILE_FOUND OR AUDIOTOOLBOX_FOUND))
 	set(USCXML_INVOKERS "openal ${USCXML_INVOKERS}")
 	file(GLOB_RECURSE OPENAL_INVOKER 
 		audio/OpenAL*.cpp 

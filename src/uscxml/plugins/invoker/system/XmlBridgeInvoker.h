@@ -1,6 +1,6 @@
 /*
  * Use is subject to license terms.
- * Copyright (c) 2013, Ajile di Antonio Iudici. All rights reserved.
+ * Copyright (c) 2014, Ajile di Antonio Iudici. All rights reserved.
  *	<antonio.iudici@ajile.it>
  *	<enrico.papi@ajile.it>
  */
@@ -8,12 +8,11 @@
 #ifndef XmlBridgeInvoker_H_W09J90F0
 #define XmlBridgeInvoker_H_W09J90F0
 
-#include <map>
-#include <iostream>
-
 #include <uscxml/Interpreter.h>
 #include <glog/logging.h>
-#include "uscxml/plugins/invoker/system/timio.h"
+#include <sys/socket.h>
+#include <netdb.h>
+#include <mesbufferer.h>
 
 #ifdef BUILD_AS_PLUGINS
 #include "uscxml/plugins/Plugins.h"
@@ -24,19 +23,21 @@ namespace uscxml {
 #define READOP			'r'
 #define WRITEOP			'w'
 
-#define SCXML2TIM		"Cmd"
-#define SCXML2MES_ACK		"Ack"
-#define SCXML2MES_ERR		"Err"
+#define SCXML2TIM		"CMD"
+#define SCXML2MES_ACK		"ACK"
+#define SCXML2MES_ERR		"ERR"
 
-#define MES2SCXML		"Req"
-#define TIM2SCXML		"Reply"
+#define MES2SCXML		"REQ"
+#define TIM2SCXML		"REPLY"
 
 #define TIM2SCXML_TIMEOUT	"timeout"
 #define TIM2SCXML_ERROR		"error"
 
 #define INVOKER_TYPE		"xmlbridge"
 
-#define DBID_DELIMITER		','
+#define MAXTIMREPLYSIZE		20000
+#define DEF_TIMADDR		"127.0.0.1"
+#define DEF_TIMPORT		"3000"
 
 enum exceptions {
 	TIM_TIMEOUT,
@@ -49,9 +50,8 @@ enum exceptions {
  */
 class XmlBridgeInvoker : public InvokerImpl {
 public:
-	XmlBridgeInvoker() {}
-	~XmlBridgeInvoker() {}
-
+	XmlBridgeInvoker() : currSock(-1), _reply(NULL), _servinfo(NULL), _socketfd(0), _itemsRead(), _mesbufferer(MesBufferer::getInstance()),
+		_currAddr(-1), _currItems(0), _currLen(0), _currWrite(false) {}
 	std::set<std::string> getNames() {
 		std::set<std::string> names;
 		names.insert("xmlbridge");
@@ -63,81 +63,37 @@ public:
 	void invoke(const InvokeRequest& req);
 	Data getDataModelVariables();
 
-	void buildMESreq(unsigned int cmdid, bool write, const std::list<std::string> req_raw_data);
-	void buildTIMreply(unsigned int cmdid, bool type, const std::string reply_raw_data);
-	void buildTIMexception(unsigned int cmdid, exceptions type);
+	void buildMESreq(unsigned int addr, unsigned int len, bool write, const std::list<std::string> &req_raw_data,
+									const std::list<std::pair<std::string, std::string> > &req_indexes);
+	void buildTIMreply(const std::string &reply_raw_data);
+	void buildTIMexception(exceptions type);
 
+	~XmlBridgeInvoker();
+
+	int currSock;
+	tthread::mutex sockMUTEX;
 protected:
-	unsigned int _DBid;		/** L'ID del datablock gestito dall'invoker */
-	unsigned int _timeoutVal;	/** Il Timeout di default da applicare per le comunicazioni col TIM */
-};
 
-/**
- * @brief Un'interfaccia comune tra SCXML(XmlBridgeInvoker), TIM(TimIO) e MES(MesBufferer) [Oggetto Singleton]
- */
-class XmlBridgeInputEvents {
-public:
-	~XmlBridgeInputEvents() {
-		// call all the invokers and send event to final
-	}
+	bool initClient(std::string ipaddr, std::string port);
+	void client(const std::string &cmdframe);
+	bool connect2TIM();
 
-	void sendReq2TIM(unsigned int cmdid, bool write, const std::string reqData, unsigned int timeout);
-	void sendReply2MES(unsigned int DBid, unsigned int cmdid, bool write, const std::list<std::string> replyData);
-	void sendErr2MES(unsigned int DBid, unsigned int cmdid);
+	unsigned int _CMDid;		/** L'ID del comando gestito dall'invoker */
+	unsigned int _timeoutVal;	/** Il massimo tempo di attesa per ricevere una risposta dal TIM per questo comando */
+	unsigned int _currItems;	/** Il numero di items scritti/letti nella richiesta corrent */
+	unsigned int _currLen;
+	int _currAddr;
+	bool _currWrite;
 
-	void handleTIMreply(const std::string replyData);
-	void handleTIMexception(exceptions type);
-	bool handleMESreq(unsigned int DBid, unsigned int cmdid, bool write, const std::list<std::string> reqData);
+	std::list<std::string> _itemsRead;	/** Lista di elementi estratti dalla risposta del TIM tramite query xpath */
 
-	/**
-	 * @brief Registra un invoker
-	 * @param Puntatore all'istanza
-	 */
-	void registerInvoker(unsigned int DBid, XmlBridgeInvoker* invokref) {
-		_invokers.insert(std::pair<unsigned int, XmlBridgeInvoker* >(DBid, invokref));
-	}
-	/**
-	 * @brief Registra una istanza di TimIO
-	 * @param Puntatore all'istanza
-	 */
-	void registerTimio(TimIO* ioref) {
-		_timio = ioref;
-	}
+	MesBufferer& _mesbufferer;	/**< Puntatore all'istanze di MesBufferer */
 
-	/**
-	 * @brief Registra una istanza di MesBufferer
-	 * @param Puntatore all'istanza
-	 */
-	void registerMesbufferer(void* mesref) {
-		_mesbufferer = mesref;
-	}
-
-	/**
-	 * @brief Ritorna una reference all'istanza del singleton XmlBridgeInputEvents
-	 *	Se l'oggetto statico non è ancora stato creato, istanzia la classe.
-	 * @return La reference di XmlBridgeInputEvents
-	 */
-	static XmlBridgeInputEvents& getInstance() {
-		static XmlBridgeInputEvents instance;
-		return instance;
-	}
-
-private:
-	/**
-	 * @brief Istanzia il Singleton XmlBridgeInputEvents
-	 */
-	XmlBridgeInputEvents() : _invokers() {
-		LOG(INFO) << "Instantiating XmlBridgeInputEvents Singleton";
-	}
-	XmlBridgeInputEvents& operator=( const XmlBridgeInputEvents& );
-
-	/** Mappa che ha per indice l'id di un datablock e per contenuto
-	 * il puntatore all'invoker che lo gestisce.
-	 * Esiste un invoker per ciascun datablock specificato nel nome della macchina a stati SCXML */
-	std::map<unsigned int, XmlBridgeInvoker*> _invokers;
-
-	TimIO* _timio;		/**< Puntatore all'istanza del TIM Client */
-	void* _mesbufferer;	/**< Puntatore all'istanze di MesBufferer */
+	std::string _TIMport;		/**< Porta TCP del server TIM */
+	std::string _TIMaddr;		/**< Indirizzo del server TIM */
+	char* _reply;			/**< Buffer di ricezione del client TIM */
+	int _socketfd;			/**< Socket descriptor del client TIM */
+	struct addrinfo *_servinfo;	/**< Informazioni di sessione del server TIM */
 };
 
 #ifdef BUILD_AS_PLUGINS

@@ -41,6 +41,8 @@
 
 #include "uscxml/interpreter/InterpreterDraft6.h"
 
+#define VERBOSE 0
+
 /// macro to catch exceptions in executeContent
 #define CATCH_AND_DISTRIBUTE(msg) \
 catch (Event e) {\
@@ -705,24 +707,11 @@ void InterpreterImpl::processDOMorText(const Arabica::DOM::Node<std::string>& el
 			Arabica::SAX::InputSource<std::string> inputSource;
 			inputSource.setByteStream(ssPtr);
 
-//			parser.setFeature(Arabica::SAX::FeatureNames<std::string>().external_general, true);
-
 			if (parser.parse(inputSource) && parser.getDocument()) {
 				Document<std::string> doc = parser.getDocument();
 				dom = doc.getDocumentElement();
-#if 0
-				Node<std::string> content = doc.getDocumentElement();
-				assert(content.getNodeType() == Node_base::ELEMENT_NODE);
-				Node<std::string> container = doc.createElement("container");
-				dom.replaceChild(container, content);
-				container.appendChild(content);
-//				std::cout << dom << std::endl;
-#endif
 				return;
 			} else {
-				if (parser.errorsReported()) {
-					LOG(ERROR) << parser.errors();
-				}
 				text = srcContent.str();
 				return;
 			}
@@ -920,9 +909,11 @@ void InterpreterImpl::send(const Arabica::DOM::Node<std::string>& element) {
 			if (_dataModel) {
 				std::list<std::string> names = tokenizeIdRefs(ATTR(element, "namelist"));
 				for (std::list<std::string>::const_iterator nameIter = names.begin(); nameIter != names.end(); nameIter++) {
-					Data namelistValue = _dataModel.getStringAsData(*nameIter);
-					sendReq.namelist[*nameIter] = namelistValue;
-					sendReq.data.compound[*nameIter] = namelistValue;
+					std::string cleanedName(*nameIter);
+					_dataModel.replaceExpressions(cleanedName);
+					Data namelistValue = _dataModel.getStringAsData(cleanedName);
+					sendReq.namelist[cleanedName] = namelistValue;
+					sendReq.data.compound[cleanedName] = namelistValue;
 				}
 			} else {
 				LOG(ERROR) << "Namelist attribute at send requires datamodel to be defined";
