@@ -1,6 +1,6 @@
 /*
  * Use is subject to license terms.
- * Copyright (c) 2013, Ajile di Antonio Iudici. All rights reserved.
+ * Copyright (c) 2014, Ajile di Antonio Iudici. All rights reserved.
  *	<antonio.iudici@ajile.it>
  *	<enrico.papi@ajile.it>
  */
@@ -63,9 +63,9 @@ public:
 	void invoke(const InvokeRequest& req);
 	Data getDataModelVariables();
 
-	void buildMESreq(unsigned int addr, unsigned int len, bool write, const std::list<std::string> req_raw_data,
-									const std::list<std::pair<std::string, std::string> > req_indexes);
-	void buildTIMreply(const std::string reply_raw_data);
+	void buildMESreq(unsigned int addr, unsigned int len, bool write, const std::list<std::string> &req_raw_data,
+									const std::list<std::pair<std::string, std::string> > &req_indexes);
+	void buildTIMreply(const std::string &reply_raw_data);
 	void buildTIMexception(exceptions type);
 
 	~XmlBridgeInvoker();
@@ -75,7 +75,7 @@ public:
 protected:
 
 	bool initClient(std::string ipaddr, std::string port);
-	void client(std::string cmdframe);
+	void client(const std::string &cmdframe);
 	bool connect2TIM();
 
 	unsigned int _CMDid;		/** L'ID del comando gestito dall'invoker */

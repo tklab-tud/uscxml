@@ -1,6 +1,6 @@
 /*
  * Use is subject to license terms.
- * Copyright (c) 2013, Ajile di Antonio Iudici. All rights reserved.
+ * Copyright (c) 2014, Ajile di Antonio Iudici. All rights reserved.
  *	<antonio.iudici@ajile.it>
  *	<enrico.papi@ajile.it>
  */
@@ -129,7 +129,6 @@ void XmlBridgeInvoker::send(const SendRequest& req) {
 			buildTIMexception(SCXML_ERROR);
 		}
 
-		return;
 		/* SCXML -> MES */
 	} else if (evType == SCXML2MES_ACK) {
 		//TODO HANDLE MALFORMED SCXML and DATA
@@ -147,29 +146,37 @@ void XmlBridgeInvoker::send(const SendRequest& req) {
 			}
 		}
 
-		if (_itemsRead.size() >= _currItems && !write)
+		if (_itemsRead.size() >= _currItems && !write) {
 			_mesbufferer.bufferMESreplyREAD(currSock, _CMDid, _currAddr, _currLen, _itemsRead);
-		else if (write)
+			currSock = -1;
+			_currAddr = -1;
+			_currLen = 0;
+			_currItems = 0;
+			_currWrite = false;
+		} else if (write) {
 			_mesbufferer.bufferMESreplyWRITE(currSock, _CMDid);
-		else
+			currSock = -1;
+			_currAddr = -1;
+			_currLen = 0;
+			_currItems = 0;
+			_currWrite = false;
+		} else {
 			LOG(INFO) << "Parsed " << _itemsRead.size() << " fields of " << _currItems << " requested";
+		}
 
 		/* SCXML -> MES (errore) */
 	} else if (evType == SCXML2MES_ERR) {
 		_mesbufferer.bufferMESerror(currSock, _CMDid);
+		currSock = -1;
+		_currAddr = -1;
+		_currLen = 0;
+		_currItems = 0;
+		_currWrite = false;
 	} else {
 		LOG(ERROR) << "XmlBridgeInvoker: received an unsupported event type from Interpreter, discarding request\n"
 			   << "Propably the event name in the SCXML file is incorrect.";
 		buildTIMexception(SCXML_ERROR);
-
-		return;
 	}
-
-	currSock = -1;
-	_currAddr = -1;
-	_currLen = 0;
-	_currItems = 0;
-	_currWrite = false;
 }
 
 /** MES->SCXML */

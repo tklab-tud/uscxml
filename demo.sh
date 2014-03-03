@@ -29,14 +29,14 @@ case "$1" in
     	if [ "$2" -eq "1" ] ; then
 		echo "Write Mode is Not Supported"		
 	else
-		/usr/local/bin/modpoll -0 -1 -t4 -o4 -p 1502 -r305 -c23 127.0.0.1
+		/usr/local/bin/modpoll -0 -1 -t4 -o4 -p 1502 -r310 -c31 127.0.0.1
 	fi
    ;;
 3)  echo  "Sending command $1"
     	if [ "$2" -eq "1" ] ; then
 		echo "Write Mode is Not Supported"		
 	else
-		/usr/local/bin/modpoll -0 -1 -t4 -o4 -p 1502 -r549 -c114 127.0.0.1
+		/usr/local/bin/modpoll -0 -1 -t4 -o4 -p 1502 -r563 -c114 127.0.0.1
 	fi
    ;;
 4)  echo  "Sending command $1"
