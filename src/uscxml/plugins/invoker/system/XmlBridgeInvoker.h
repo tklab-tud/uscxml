@@ -39,6 +39,10 @@ namespace uscxml {
 #define DEF_TIMADDR		"127.0.0.1"
 #define DEF_TIMPORT		"3000"
 
+#ifdef EMBEDDED
+#define MAXCONN         5
+#endif
+
 enum exceptions {
 	TIM_TIMEOUT,
 	TIM_ERROR,
@@ -95,6 +99,10 @@ protected:
 	char* _reply;			/**< Buffer di ricezione del client TIM */
 	int _socketfd;			/**< Socket descriptor del client TIM */
 	struct addrinfo *_servinfo;	/**< Informazioni di sessione del server TIM */
+
+#ifdef EMBEDDED
+    unsigned int connCount;
+#endif
 };
 
 #ifdef BUILD_AS_PLUGINS

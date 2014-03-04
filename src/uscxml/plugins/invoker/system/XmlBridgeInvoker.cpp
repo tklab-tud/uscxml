@@ -396,6 +396,7 @@ bool XmlBridgeInvoker::initClient(std::string ipaddr, std::string port)
 		LOG(ERROR) << "TIM Client: failed to allocate _reply memory";
 		return false;
 	}
+    connCount = 0;
 #endif
 
 	return true;
@@ -436,6 +437,7 @@ void XmlBridgeInvoker::client(const std::string &cmdframe) {
             return;
         }
     }
+    connCount++;
 #endif
 
 	int numbytes;
@@ -494,6 +496,14 @@ void XmlBridgeInvoker::client(const std::string &cmdframe) {
 
 	/* This function logs and reports errors internally */
 	buildTIMreply(std::string(_reply));
+
+#ifdef EMBEDDED
+    if (connCount == MAXCONN) {
+        close(_socketfd);
+        _socketfd = -1;
+        connCount--;
+    }
+#endif
 }
 
 } //namespace uscxml
