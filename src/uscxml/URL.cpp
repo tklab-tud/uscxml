@@ -579,8 +579,8 @@ void URLFetcher::fetchURL(URL& url) {
 			(curlError = curl_easy_setopt(handle, CURLOPT_POST, 1)) == CURLE_OK ||
 			LOG(ERROR) << "Cannot set request type to post for " << url.asString() << ": " << strerror(curlError);
 
-			(curlError = curl_easy_setopt(handle, CURLOPT_COPYPOSTFIELDS, url._impl->_outContent.c_str())) == CURLE_OK ||
-			LOG(ERROR) << "Cannot set post data " << url.asString() << ": " << strerror(curlError);
+            //(curlError = curl_easy_setopt(handle, CURLOPT_COPYPOSTFIELDS, url._impl->_outContent.c_str())) == CURLE_OK ||
+            //LOG(ERROR) << "Cannot set post data " << url.asString() << ": " << strerror(curlError);
 
 			// Disable "Expect: 100-continue"
 //			curl_slist* disallowed_headers = 0;

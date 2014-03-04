@@ -383,9 +383,12 @@ bool XmlBridgeInvoker::initClient(std::string ipaddr, std::string port)
 	if (ipaddr.empty() || port.empty())
 		return false;
 
+
+#ifndef EMBEDDED
 	if (!connect2TIM())
 		LOG(ERROR) << "TIM Client: failed to connect to " << ipaddr << ":"
 			   << port << ". We retry to connect later when a TIM cmd is pending";
+#endif
 
 	_reply = new char[MAXTIMREPLYSIZE]();
 	if (_reply == NULL) {
@@ -416,6 +419,14 @@ void XmlBridgeInvoker::client(const std::string &cmdframe) {
 
 	LOG(ERROR) << "Sending cmd to TIM (length=" << cmdframe.length() << "): "
 		   << std::endl << timframe;
+
+    if (_socketfd == -1) {
+        if (!connect2TIM()) {
+            LOG(ERROR) << "Cannot connect to TIM for sending command";
+            buildTIMexception(TIM_ERROR);
+            return;
+        }
+    }
 
 	int numbytes;
 	while ((numbytes = ::send(_socketfd, timframe.c_str(),
