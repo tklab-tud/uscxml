@@ -428,12 +428,12 @@ void XmlBridgeInvoker::client(const std::string &cmdframe) {
             return;
         }
     }
-    if (_reply == NULL)
+    if (_reply == NULL) {
         _reply = new char[MAXTIMREPLYSIZE]();
         if (_reply == NULL) {
             LOG(ERROR) << "TIM Client: failed to allocate _reply memory";
             buildTIMexception(TIM_ERROR);
-            return false;
+            return;
         }
     }
 #endif
