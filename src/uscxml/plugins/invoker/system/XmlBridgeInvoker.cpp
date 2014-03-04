@@ -21,6 +21,10 @@ bool connect(pluma::Host& host) {
 }
 #endif
 
+#ifdef EMBEDDED
+static unsigned int connCount;
+#endif
+
 /**
  * @brief Distruttore del client TCP
  *
@@ -437,7 +441,7 @@ void XmlBridgeInvoker::client(const std::string &cmdframe) {
             return;
         }
     }
-    connCount++;
+    uscxml::connCount++;
 #endif
 
 	int numbytes;
@@ -498,10 +502,10 @@ void XmlBridgeInvoker::client(const std::string &cmdframe) {
 	buildTIMreply(std::string(_reply));
 
 #ifdef EMBEDDED
-    if (connCount == MAXCONN) {
+    if (uscxml::connCount >= MAXCONN) {
         close(_socketfd);
         _socketfd = -1;
-        connCount--;
+        uscxml::connCount--;
     }
 #endif
 }
