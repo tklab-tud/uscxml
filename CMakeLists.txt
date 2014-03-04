@@ -323,6 +323,7 @@ if(${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
 	add_definitions(-fPIC)
 	#add_definitions(-Wunreachable-code)
         #add_definitions(-DVERBOSE)
+        add_definitions(-DEMBEDDED)
 
 	if (CMAKE_BUILD_TYPE MATCHES ".*Deb.*" AND ENABLE_GCOV) # when not building for debug
 		# coverage information
