@@ -24,8 +24,8 @@ namespace uscxml {
 #define WRITEOP			'w'
 
 #define SCXML2TIM		"CMD"
-#define SCXML2MES_ACK	"ACK"
-#define SCXML2MES_ERR	"ERR"
+#define SCXML2MES_ACK		"ACK"
+#define SCXML2MES_ERR		"ERR"
 
 #define MES2SCXML		"REQ"
 #define TIM2SCXML		"REPLY"
@@ -33,14 +33,14 @@ namespace uscxml {
 #define TIM2SCXML_TIMEOUT	"timeout"
 #define TIM2SCXML_ERROR		"error"
 
-#define INVOKER_TYPE	"xmlbridge"
+#define INVOKER_TYPE		"xmlbridge"
 
-#define MAXTIMREPLYSIZE	20000
+#define MAXTIMREPLYSIZE		20000
 #define DEF_TIMADDR		"127.0.0.1"
 #define DEF_TIMPORT		"3000"
 
 #ifdef EMBEDDED
-#define MAXCONN         5
+#define MAXCONN			5
 #endif
 
 enum exceptions {
@@ -99,10 +99,6 @@ protected:
 	char* _reply;			/**< Buffer di ricezione del client TIM */
 	int _socketfd;			/**< Socket descriptor del client TIM */
 	struct addrinfo *_servinfo;	/**< Informazioni di sessione del server TIM */
-
-#ifdef EMBEDDED
-    static unsigned int connCount;
-#endif
 };
 
 #ifdef BUILD_AS_PLUGINS
