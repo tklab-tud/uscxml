@@ -39,6 +39,10 @@ namespace uscxml {
 #define DEF_TIMADDR		"127.0.0.1"
 #define DEF_TIMPORT		"3000"
 
+#ifdef EMBEDDED
+#define MAXCONN			5
+#endif
+
 enum exceptions {
 	TIM_TIMEOUT,
 	TIM_ERROR,
@@ -50,7 +54,8 @@ enum exceptions {
  */
 class XmlBridgeInvoker : public InvokerImpl {
 public:
-	XmlBridgeInvoker() : currSock(-1), _reply(NULL), _servinfo(NULL), _socketfd(0), _itemsRead(), _mesbufferer(MesBufferer::getInstance()),
+    XmlBridgeInvoker() : currSock(-1), _reply(NULL), _servinfo(NULL), _socketfd(-1),
+        _itemsRead(), _mesbufferer(MesBufferer::getInstance()),
 		_currAddr(-1), _currItems(0), _currLen(0), _currWrite(false) {}
 	std::set<std::string> getNames() {
 		std::set<std::string> names;

@@ -21,6 +21,10 @@ bool connect(pluma::Host& host) {
 }
 #endif
 
+#ifdef EMBEDDED
+static unsigned int connCount;
+#endif
+
 /**
  * @brief Distruttore del client TCP
  *
@@ -383,6 +387,8 @@ bool XmlBridgeInvoker::initClient(std::string ipaddr, std::string port)
 	if (ipaddr.empty() || port.empty())
 		return false;
 
+
+#ifndef EMBEDDED
 	if (!connect2TIM())
 		LOG(ERROR) << "TIM Client: failed to connect to " << ipaddr << ":"
 			   << port << ". We retry to connect later when a TIM cmd is pending";
@@ -394,6 +400,8 @@ bool XmlBridgeInvoker::initClient(std::string ipaddr, std::string port)
 		LOG(ERROR) << "TIM Client: failed to allocate _reply memory";
 		return false;
 	}
+    connCount = 0;
+#endif
 
 	return true;
 }
@@ -416,6 +424,25 @@ void XmlBridgeInvoker::client(const std::string &cmdframe) {
 
 	LOG(ERROR) << "Sending cmd to TIM (length=" << cmdframe.length() << "): "
 		   << std::endl << timframe;
+
+#ifdef EMBEDDED
+    if (_socketfd == -1) {
+        if (!connect2TIM()) {
+            LOG(ERROR) << "Cannot connect to TIM for sending command";
+            buildTIMexception(TIM_ERROR);
+            return;
+        }
+    }
+    if (_reply == NULL) {
+        _reply = new char[MAXTIMREPLYSIZE]();
+        if (_reply == NULL) {
+            LOG(ERROR) << "TIM Client: failed to allocate _reply memory";
+            buildTIMexception(TIM_ERROR);
+            return;
+        }
+    }
+    uscxml::connCount++;
+#endif
 
 	int numbytes;
 	while ((numbytes = ::send(_socketfd, timframe.c_str(),
@@ -473,6 +500,14 @@ void XmlBridgeInvoker::client(const std::string &cmdframe) {
 
 	/* This function logs and reports errors internally */
 	buildTIMreply(std::string(_reply));
+
+#ifdef EMBEDDED
+    if (uscxml::connCount >= MAXCONN) {
+        close(_socketfd);
+        _socketfd = -1;
+        uscxml::connCount--;
+    }
+#endif
 }
 
 } //namespace uscxml
