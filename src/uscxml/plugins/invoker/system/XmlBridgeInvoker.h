@@ -66,12 +66,15 @@ public:
 	void invoke(const InvokeRequest& req);
 	Data getDataModelVariables();
 
-    bool buildMESreq(int sock, unsigned int addr, unsigned int len, bool write, const std::list<std::string> &req_raw_data,
-                                    const std::list<std::pair<std::string, std::string> > &req_indexes);
+	bool buildMESreq(unsigned int addr, unsigned int len, bool write, const std::list<std::string> &req_raw_data,
+				    const std::list<std::pair<std::string, std::string> > &req_indexes);
 	void buildTIMreply(const std::string &reply_raw_data);
 	void buildTIMexception(exceptions type);
 
 	~XmlBridgeInvoker();
+
+	int currSock;
+	tthread::mutex sockMUTEX;
 protected:    
 	bool initClient(std::string ipaddr, std::string port);
 	void client(const std::string &cmdframe);
@@ -83,9 +86,6 @@ protected:
 	unsigned int _currLen;
 	int _currAddr;
 	bool _currWrite;
-
-    int currSock;
-    tthread::mutex sockMUTEX;
 
 	std::list<std::string> _itemsRead;	/** Lista di elementi estratti dalla risposta del TIM tramite query xpath */
 

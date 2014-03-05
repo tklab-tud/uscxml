@@ -195,16 +195,9 @@ void XmlBridgeInvoker::send(const SendRequest& req) {
  * @param write	Indica se si tratta di una richiesta di scrittura
  * @param req_raw_data La lista delle stringhe utilizzate per popolare il comando TIM (se richiesta di scrittura)
  */
-bool XmlBridgeInvoker::buildMESreq(int sock, unsigned int addr, unsigned int len, bool write,
+bool XmlBridgeInvoker::buildMESreq(unsigned int addr, unsigned int len, bool write,
 				   const std::list<std::string> &req_raw_data,
 				   const std::list<std::pair<std::string,std::string> > &req_indexes) {
-
-	if (currSock != -1) {
-		LOG(ERROR) << "Invoker is currently handling another request, discarding";
-		return false;
-	}
-	currSock = sock;
-
 	std::stringstream ss;
 	ss << _CMDid << '_' << (write ? WRITEOP : READOP) << MES2SCXML;
 	LOG(INFO) << "(" << _invokeId << ") Building Event " << ss.str();

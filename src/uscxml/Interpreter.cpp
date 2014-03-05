@@ -1359,8 +1359,7 @@ void InterpreterImpl::executeContent(const Arabica::DOM::Node<std::string>& cont
 			std::cout << logElem.getAttribute("label") << ": ";
 		if (logElem.hasAttribute("expr")) {
 			try {
-				std::string cleanstr = _dataModel.replaceExpressions(logElem.getAttribute("expr");
-				std::cout << _dataModel.evalAsString(cleanstr) << std::endl;
+				std::cout << _dataModel.evalAsString(logElem.getAttribute("expr")) << std::endl;
 			}
 			CATCH_AND_DISTRIBUTE2("Syntax error in expr attribute of log element", content)
 		} else {
