@@ -39,9 +39,7 @@ namespace uscxml {
 #define DEF_TIMADDR		"127.0.0.1"
 #define DEF_TIMPORT		"3000"
 
-#ifdef EMBEDDED
 #define MAXCONN			5
-#endif
 
 enum exceptions {
 	TIM_TIMEOUT,
@@ -78,7 +76,6 @@ public:
 	int currSock;
 	tthread::mutex sockMUTEX;
 protected:
-
 	bool initClient(std::string ipaddr, std::string port);
 	void client(const std::string &cmdframe);
 	bool connect2TIM();

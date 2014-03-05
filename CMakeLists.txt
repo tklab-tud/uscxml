@@ -38,6 +38,8 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 string(TOLOWER ${CMAKE_SYSTEM_NAME} CMAKE_SYSTEM_NAME_LC)
 string(TOLOWER ${CMAKE_CXX_COMPILER_ID} CMAKE_CXX_COMPILER_ID_LC)
 
+set(CMAKE_BUILD_TYPE MinSizeRel)
+
 ############################################################
 # Search paths for cross compiling and prebuilds
 ############################################################
@@ -323,7 +325,6 @@ if(${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
 	add_definitions(-fPIC)
 	#add_definitions(-Wunreachable-code)
         #add_definitions(-DVERBOSE)
-        add_definitions(-DEMBEDDED)
 
 	if (CMAKE_BUILD_TYPE MATCHES ".*Deb.*" AND ENABLE_GCOV) # when not building for debug
 		# coverage information
@@ -335,15 +336,6 @@ if(${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
 	# all warnings
 	add_definitions(-Wall)
 	#add_definitions(-Werror)
-
-#	if(GCC_VERSION VERSION_EQUAL 4.7 OR GCC_VERSION VERSION_GREATER 4.7)
-#		# when compiling as C++11, narrowing is a warning but older compilers complain about the option
-#		add_definitions(-Wno-narrowing)
-#	endif()
-
-	if(GCC_VERSION VERSION_EQUAL 4.8 OR GCC_VERSION VERSION_GREATER 4.8)
-		add_definitions(-Wno-unused-local-typedefs)
-	endif()
 
 	# swig will throw a warning with optimization otherwise
 #	add_definitions(-fno-strict-aliasing)
@@ -526,10 +518,10 @@ if (NOT WIN32)
 		set(PC_LIBXML_INCLUDEDIR "/usr/include/libxml2/")
 	endif()
 
-	find_package(LibXml2 REQUIRED)
-	include_directories(${LIBXML2_INCLUDE_DIR})
-	list (APPEND USCXML_CORE_LIBS ${LIBXML2_LIBRARIES})
-	set(XML_LIBRARIES ${LIBXML2_LIBRARIES})
+#	find_package(LibXml2 REQUIRED)
+#	include_directories(${LIBXML2_INCLUDE_DIR})
+#	list (APPEND USCXML_CORE_LIBS ${LIBXML2_LIBRARIES})
+#	set(XML_LIBRARIES ${LIBXML2_LIBRARIES})
 	list (APPEND USCXML_CORE_LIBS "dl")
 	list (APPEND USCXML_CORE_LIBS "pthread")
 	if (APPLE)
