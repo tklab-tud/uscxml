@@ -321,7 +321,7 @@ void XPathDataModel::setForeach(const std::string& item,
                                 const std::string& index,
                                 uint32_t iteration) {
 	/* resolve the array expression in nodeset (pointers to datamodel) */
-	XPathValue<std::string> arrayResult = _xpath.evaluate_expr(array, _datamodel);
+	XPathValue<std::string> arrayResult = _xpath.evaluate_expr(array, _doc);
 	assert(arrayResult.type() == NODE_SET);
 
 #if VERBOSE
@@ -401,7 +401,7 @@ bool XPathDataModel::evalAsBool(const std::string& expr) {
 bool XPathDataModel::evalAsBool(const Arabica::DOM::Node<std::string>& node, const std::string& expr) {
 	XPathValue<std::string> result;
 	try {
-		result = _xpath.evaluate_expr(expr, _datamodel);
+		result = _xpath.evaluate_expr(expr, _doc);
 	} catch(SyntaxException e) {
 		throw Event("error.execution", Event::PLATFORM);
 	} catch(std::runtime_error e) {
@@ -465,7 +465,7 @@ void XPathDataModel::assign(const Element<std::string>& assignElem,
 	}
 
 	// test 326ff
-	XPathValue<std::string> key = _xpath.evaluate_expr(location, _datamodel);
+	XPathValue<std::string> key = _xpath.evaluate_expr(location, _doc);
 #ifdef VERBOSE
 	LOG(INFO) << "Key XPath : " << key.asString();
 #endif
@@ -508,7 +508,7 @@ void XPathDataModel::assign(const Element<std::string>& assignElem,
 		nodeSet.push_back(textNode);
 		assign(key, nodeSet, assignElem);
 	} else if (HAS_ATTR(assignElem, "expr")) {
-		XPathValue<std::string> value = _xpath.evaluate_expr(ATTR(assignElem, "expr"), _datamodel);
+		XPathValue<std::string> value = _xpath.evaluate_expr(ATTR(assignElem, "expr"), _doc);
 #ifdef VERBOSE
 		LOG(INFO) << "Value XPath : " << value.asString();
 #endif
