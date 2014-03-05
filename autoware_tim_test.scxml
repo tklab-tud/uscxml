@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scxml	version="1.0"
+	name="10.1.30.150:3000"
+	datamodel="xpath"
+	initial="RunCommandsStateMachines"
+	xmlns="http://www.w3.org/2005/07/scxml" 
+	xmlns:fn="http://www.w3.org/2005/xpath-functions">
+
+<parallel id="RunCommandsStateMachines">
+	<state id="1" initial="init1">
+		<state id="init1">
+			<datamodel>
+				<data id="IDX1"><index itemi="1">value</index><index itemi="1">unit</index><index itemi="2">phrase</index><index itemi="2">value</index><index itemi="2">unit</index><index itemi="3">phrase</index><index itemi="3">value</index><index itemi="3">unit</index><index itemi="4">phrase</index></data>
+				<data id="myevent">
+					<frame><data  type="information" index="0"><item  i="0"><nestedData  type="phrase">TEMPO SALITA ARRESTO [1] FILA [1]</nestedData><nestedData  type="value">0</nestedData><nestedData  type="unit">msec</nestedData></item><item  i="1"><nestedData  type="phrase">TEMPO SALITA ARRESTO [2] FILA [1]</nestedData><nestedData  type="value">0</nestedData><nestedData  type="unit">msec</nestedData></item><item  i="2"><nestedData  type="phrase">TEMPO SALITA ARRESTO [3] FILA [1]</nestedData><nestedData  type="value">0</nestedData><nestedData  type="unit">msec</nestedData></item><item  i="3"><nestedData  type="phrase">TEMPO SALITA ARRESTO [4] FILA [1]</nestedData><nestedData  type="value">0</nestedData><nestedData  type="unit">msec</nestedData></item><item  i="4"><nestedData  type="phrase">TEMPO SALITA ARRESTO [5] FILA [1]</nestedData><nestedData  type="value">0</nestedData><nestedData  type="unit">msec</nestedData></item><item  i="5"><nestedData  type="phrase">TEMPO SALITA ARRESTO [6] FILA [1]</nestedData><nestedData  type="value">0</nestedData><nestedData  type="unit">msec</nestedData></item><item  i="6"><nestedData  type="phrase">TEMPO SALITA ARRESTO [7] FILA [1]</nestedData><nestedData  type="value">0</nestedData><nestedData  type="unit">msec</nestedData></item><item  i="7"><nestedData  type="phrase">TEMPO SALITA ARRESTO [8] FILA [1]</nestedData><nestedData  type="value">0</nestedData><nestedData  type="unit">msec</nestedData></item><item  i="8"><nestedData  type="phrase">TEMPO SALITA ARRESTO [1] FILA [2]</nestedData><nestedData  type="value">0</nestedData><nestedData  type="unit">msec</nestedData></item><item  i="9"><nestedData  type="phrase">TEMPO SALITA ARRESTO [2] FILA [2]</nestedData><nestedData  type="value">0</nestedData><nestedData  type="unit">msec</nestedData></item><item  i="10"><nestedData  type="phrase">TEMPO SALITA ARRESTO [3] FILA [2]</nestedData><nestedData  type="value">0</nestedData><nestedData  type="unit">msec</nestedData></item><item  i="11"><nestedData  type="phrase">TEMPO SALITA ARRESTO [4] FILA [2]</nestedData><nestedData  type="value">0</nestedData><nestedData  type="unit">msec</nestedData></item><item  i="12"><nestedData  type="phrase">TEMPO SALITA ARRESTO [5] FILA [2]</nestedData><nestedData  type="value">0</nestedData><nestedData  type="unit">msec</nestedData></item><item  i="13"><nestedData  type="phrase">TEMPO SALITA ARRESTO [6] FILA [2]</nestedData><nestedData  type="value">0</nestedData><nestedData  type="unit">msec</nestedData></item><item  i="14"><nestedData  type="phrase">TEMPO SALITA ARRESTO [7] FILA [2]</nestedData><nestedData  type="value">0</nestedData><nestedData  type="unit">msec</nestedData></item><item  i="15"><nestedData  type="phrase">TEMPO SALITA ARRESTO [8] FILA [2]</nestedData><nestedData  type="value">0</nestedData><nestedData  type="unit">msec</nestedData></item><item  i="16"><nestedData  type="phrase">TEMPO DISCESA ARRESTO [1] FILA [1]</nestedData><nestedData  type="value">0</nestedData><nestedData  type="unit">msec</nestedData></item><item  i="17"><nestedData  type="phrase">TEMPO DISCESA ARRESTO [2] FILA [1]</nestedData><nestedData  type="value">0</nestedData><nestedData  type="unit">msec</nestedData></item><item  i="18"><nestedData  type="phrase">TEMPO DISCESA ARRESTO [3] FILA [1]</nestedData><nestedData  type="value">0</nestedData><nestedData  type="unit">msec</nestedData></item><item  i="19"><nestedData  type="phrase">TEMPO DISCESA ARRESTO [4] FILA [1]</nestedData><nestedData  type="value">0</nestedData><nestedData  type="unit">msec</nestedData></item><item  i="20"><nestedData  type="phrase">TEMPO DISCESA ARRESTO [5] FILA [1]</nestedData><nestedData  type="value">0</nestedData><nestedData  type="unit">msec</nestedData></item><item  i="21"><nestedData  type="phrase">TEMPO DISCESA ARRESTO [6] FILA [1]</nestedData><nestedData  type="value">0</nestedData><nestedData  type="unit">msec</nestedData></item><item  i="22"><nestedData  type="phrase">TEMPO DISCESA ARRESTO [7] FILA [1]</nestedData><nestedData  type="value">0</nestedData><nestedData  type="unit">msec</nestedData></item><item  i="23"><nestedData  type="phrase">TEMPO DISCESA ARRESTO [8] FILA [1]</nestedData><nestedData  type="value">0</nestedData><nestedData  type="unit">msec</nestedData></item><item  i="24"><nestedData  type="phrase">TEMPO DISCESA ARRESTO [1] FILA [2]</nestedData><nestedData  type="value">0</nestedData><nestedData  type="unit">msec</nestedData></item><item  i="25"><nestedData  type="phrase">TEMPO DISCESA ARRESTO [2] FILA [2]</nestedData><nestedData  type="value">0</nestedData><nestedData  type="unit">msec</nestedData></item><item  i="26"><nestedData  type="phrase">TEMPO DISCESA ARRESTO [3] FILA [2]</nestedData><nestedData  type="value">0</nestedData><nestedData  type="unit">msec</nestedData></item><item  i="27"><nestedData  type="phrase">TEMPO DISCESA ARRESTO [4] FILA [2]</nestedData><nestedData  type="value">0</nestedData><nestedData  type="unit">msec</nestedData></item><item  i="28"><nestedData  type="phrase">TEMPO DISCESA ARRESTO [5] FILA [2]</nestedData><nestedData  type="value">0</nestedData><nestedData  type="unit">msec</nestedData></item><item  i="29"><nestedData  type="phrase">TEMPO DISCESA ARRESTO [6] FILA [2]</nestedData><nestedData  type="value">0</nestedData><nestedData  type="unit">msec</nestedData></item><item  i="30"><nestedData  type="phrase">TEMPO DISCESA ARRESTO [7] FILA [2]</nestedData><nestedData  type="value">0</nestedData><nestedData  type="unit">msec</nestedData></item><item  i="31"><nestedData  type="phrase">TEMPO DISCESA ARRESTO [8] FILA [2]</nestedData><nestedData  type="value">0</nestedData><nestedData  type="unit">msec</nestedData></item><item  i="32"><nestedData  type="phrase">TEMPO SALITA CILINDRO [1] FUSTELLA</nestedData><nestedData  type="value">0</nestedData><nestedData  type="unit">msec</nestedData></item><item  i="33"><nestedData  type="phrase">TEMPO SALITA CILINDRO [2] FUSTELLA</nestedData><nestedData  type="value">0</nestedData><nestedData  type="unit">msec</nestedData></item><item  i="34"><nestedData  type="phrase">TEMPO SALITA CILINDRO [3] FUSTELLA</nestedData><nestedData  type="value">0</nestedData><nestedData  type="unit">msec</nestedData></item><item  i="35"><nestedData  type="phrase">TEMPO DISCESA CILINDRO [1] FUSTELLA</nestedData><nestedData  type="value">0</nestedData><nestedData  type="unit">msec</nestedData></item><item  i="36"><nestedData  type="phrase">TEMPO DISCESA CILINDRO [2] FUSTELLA</nestedData><nestedData  type="value">0</nestedData><nestedData  type="unit">msec</nestedData></item><item  i="37"><nestedData  type="phrase">TEMPO SCAMBIO GAS</nestedData><nestedData  type="value">0</nestedData><nestedData  type="unit">msec</nestedData></item><item  i="38"><nestedData  type="phrase">TEMPO IMPIEGATO DALLA PALETTA DEL DEVIATORE PER PORTARSI DALLA POSIZIONE 2 ALLA POSIZIONE 1</nestedData><nestedData  type="value">0</nestedData><nestedData  type="unit">msec</nestedData></item><item  i="39"><nestedData  type="phrase">TEMPO IMPIEGATO DALLA PALETTA DEL DEVIATORE PER PORTARSI DALLA POSIZIONE 1 ALLA POSIZIONE 2</nestedData><nestedData  type="value">0</nestedData><nestedData  type="unit">msec</nestedData></item><item  i="40"><nestedData  type="phrase">TEMPO SALITA PINZA [B]</nestedData><nestedData  type="value">0</nestedData><nestedData  type="unit">msec</nestedData></item><item  i="41"><nestedData  type="phrase">TEMPO SALITA PINZA [A]</nestedData><nestedData  type="value">0</nestedData><nestedData  type="unit">msec</nestedData></item><item  i="42"><nestedData  type="phrase">TEMPO DISCESA PINZA [B]</nestedData><nestedData  type="value">0</nestedData><nestedData  type="unit">msec</nestedData></item><item  i="43"><nestedData  type="phrase">TEMPO DISCESA PINZA [A]</nestedData><nestedData  type="value">0</nestedData><nestedData  type="unit">msec</nestedData></item><item  i="44"><nestedData  type="phrase">TEMPO ENTRATA PINZA [B]</nestedData><nestedData  type="value">0</nestedData><nestedData  type="unit">msec</nestedData></item><item  i="45"><nestedData  type="phrase">TEMPO ENTRATA PINZA [A]</nestedData><nestedData  type="value">0</nestedData><nestedData  type="unit">msec</nestedData></item><item  i="46"><nestedData  type="phrase">TEMPO USCITA PINZA [B]</nestedData><nestedData  type="value">0</nestedData><nestedData  type="unit">msec</nestedData></item><item  i="47"><nestedData  type="phrase">TEMPO USCITA PINZA [A]</nestedData><nestedData  type="value">0</nestedData><nestedData  type="unit">msec</nestedData></item><item  i="48"><nestedData  type="phrase">TEMPO TRASLAZIONE PINZE VERSO L'ALIMENTAZIONE</nestedData><nestedData  type="value">0</nestedData><nestedData  type="unit">msec</nestedData></item><item  i="49"><nestedData  type="phrase">TEMPO TRASLAZIONE PINZE VERSO LO SCARICO</nestedData><nestedData  type="value">0</nestedData><nestedData  type="unit">msec</nestedData></item><item  i="50"><nestedData  type="phrase">TEMPO DECELERAZIONE MOTORE USCITA</nestedData><nestedData  type="value">0</nestedData><nestedData  type="unit">msec</nestedData></item><item  i="51"><nestedData  type="phrase">TEMPO SALITA SOLLEVATORE</nestedData><nestedData  type="value">0</nestedData><nestedData  type="unit">msec</nestedData></item><item  i="52"><nestedData  type="phrase">Velocità di rotazione del motore alimentazione</nestedData><nestedData  type="value">0</nestedData><nestedData  type="unit">rpm</nestedData></item><item  i="53"><nestedData  type="phrase">Velocità di rotazione del motore uscita</nestedData><nestedData  type="value">0</nestedData><nestedData  type="unit">rpm</nestedData></item><item  i="54"><nestedData  type="phrase">Velocità di rotazione del motore prolunga alimentazione</nestedData><nestedData  type="value">0</nestedData><nestedData  type="unit">rpm</nestedData></item><item  i="55"><nestedData  type="phrase">Velocità di rotazione del motore prolunga alimentazione fila doppia</nestedData><nestedData  type="value">0</nestedData><nestedData  type="unit">rpm</nestedData></item><item  i="56"><nestedData  type="phrase">Velocità di rotazione del motore prolunga scarico</nestedData><nestedData  type="value">0</nestedData><nestedData  type="unit">rpm</nestedData></item><item  i="57"><nestedData  type="phrase">Velocità di rotazione del motore deviatore</nestedData><nestedData  type="value">0</nestedData><nestedData  type="unit">rpm</nestedData></item></data></frame>
+				<data>
+			</datamodel>
+			<onentry> 
+				<send event="1_rREQ" delay="1s"/>
+			</onentry>
+			<transition event="1_rREQ" target="sent1"/>
+		</state>
+		<state id="sent1">
+			<onentry> 
+				<send event="1_rREPLY" delay="1s"/>
+			</onentry>
+			<transition event="1_rREPLY"  target="init1">
+				<foreach array="$IDX1/index" item="currIDX1">
+					<log 	
+						expr="$myevent/frame/data/item[@i='${$currIDX1/@itemi}']/nestedData[@type='${$currIDX1/text()}']/text()"
+						/>
+				</foreach>
+			</transition>
+			<transition event="timeout1" target="init1"/>
+			<transition event="error1" target="init1"/>
+		</state>
+	</state>
+</parallel>
+<final id="EXIT">
+	<log label="Unrecoverable Error" expr="$_event/text()" />
+</final>
+</scxml>
+
+<!--
+Functions and operators
+
+XPath 1.0 defines four data types: node-sets (sets of nodes with no intrinsic order), strings, numbers and booleans.
+
+The available operators are:
+
+    The "/", "//" and "[...]" operators, used in path expressions, as described above.
+    A union operator, "|", which forms the union of two node-sets.
+    Boolean operators "and" and "or", and a function "not()"
+    Arithmetic operators "+", "-", "*", "div" (divide), and "mod"
+    Comparison operators "=", "!=", "<", ">", "<=", ">="
+
+The function library includes:
+
+    Functions to manipulate strings: concat(), substring(), contains(), substring-before(), substring-after(), translate(), normalize-space(), string-length()
+    Functions to manipulate numbers: sum(), round(), floor(), ceiling()
+    Functions to get properties of nodes: name(), local-name(), namespace-uri()
+    Functions to get information about the processing context: position(), last()
+    Type conversion functions: string(), number(), boolean()
+-->

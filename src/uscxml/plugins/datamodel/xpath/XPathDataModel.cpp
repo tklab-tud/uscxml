@@ -804,14 +804,12 @@ NodeSetVariableResolver::resolveVariable(const std::string& namepaceUri,
 	if(n == _variables.end()) {
 		throw Event("error.execution");
 	}
-#if 0
 	std::cout << std::endl << "Getting " << name << ":" << std::endl;
 	for (int i = 0; i < n->second.size(); i++) {
 		std::cout << n->second[i].getNodeType() << " | " << n->second[i] << std::endl;
 	}
 	std::cout << std::endl;
-#endif
-	return XPathValue<std::string>(new NodeSetValue<std::string>(n->second));
+	return NodeSetValue<std::string>::createValue(n->second);
 }
 
 void NodeSetVariableResolver::setVariable(const std::string& name, const NodeSet<std::string>& value) {
