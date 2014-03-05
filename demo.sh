@@ -6,8 +6,8 @@ then
         exit
 fi
 
-TIM="10.1.30.150"
-PORT="502"
+TIM="127.0.0.1"
+PORT="1502"
 
 case "$1" in
 
