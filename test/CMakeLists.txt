@@ -113,11 +113,6 @@ set_target_properties(test-datamodel PROPERTIES FOLDER "Tests")
 # 	set_target_properties(test-mmi PROPERTIES FOLDER "Tests")
 # endif()
 
-add_executable(scxml-test-framework-client 
-	src/scxml-test-framework-client.cpp)
-	target_link_libraries(scxml-test-framework-client uscxml)
-set_target_properties(scxml-test-framework-client PROPERTIES FOLDER "Tests")
-
 # add_executable(test-curl-multi-api src/test-curl-multi-api.cpp)
 # target_link_libraries(test-curl-multi-api uscxml)
 # add_test(test-curl-multi-api ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-completion)

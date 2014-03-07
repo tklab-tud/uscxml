@@ -48,6 +48,18 @@
 
 #include "uscxml/server/InterpreterServlet.h"
 
+#define USCXML_MONITOR_CATCH_BLOCK(callback)\
+catch (Event e) {\
+	LOG(ERROR) << "Syntax error when calling " #callback " on monitors: " << std::endl << e << std::endl;\
+} catch (boost::bad_weak_ptr e) {\
+	LOG(ERROR) << "Unclean shutdown " << std::endl << std::endl;\
+} catch (...) {\
+	LOG(ERROR) << "An exception occured when calling " #callback " on monitors";\
+}\
+if (_destroyed) {\
+	throw boost::bad_weak_ptr();\
+}
+
 namespace uscxml {
 
 class HTTPServletInvoker;
@@ -139,6 +151,7 @@ public:
 	virtual ~InterpreterImpl();
 
 	void start();
+	void stop();
 	static void run(void*);
 	void join() {
 		if (_thread != NULL) _thread->join();
@@ -288,6 +301,7 @@ public:
 
 	static std::list<std::string> tokenizeIdRefs(const std::string& idRefs);
 	static std::string spaceNormalize(const std::string& text);
+	static bool nameMatch(const std::string& transitionEvent, const std::string& event);
 
 	bool isInEmbeddedDocument(const Arabica::DOM::Node<std::string>& node);
 	bool isInitial(const Arabica::DOM::Node<std::string>& state);
@@ -337,6 +351,7 @@ protected:
 
 	bool _running;
 	bool _done;
+	bool _destroyed; // see comment in destructor
 	bool _isInitialized;
 	InterpreterImpl::Binding _binding;
 	Arabica::XPath::NodeSet<std::string> _configuration;
@@ -381,7 +396,6 @@ protected:
 	void internalDoneSend(const Arabica::DOM::Node<std::string>& state);
 	static void delayedSend(void* userdata, std::string eventName);
 
-	static bool nameMatch(const std::string& transitionEvent, const std::string& event);
 	bool hasConditionMatch(const Arabica::DOM::Node<std::string>& conditional);
 	bool isInFinalState(const Arabica::DOM::Node<std::string>& state);
 	bool parentIsScxmlState(const Arabica::DOM::Node<std::string>& state);
@@ -417,7 +431,7 @@ public:
 	static Interpreter fromURI(const std::string& uri);
 	static Interpreter fromInputSource(Arabica::SAX::InputSource<std::string>& source);
 
-	Interpreter() : _impl() {}
+	Interpreter() : _impl() {} // the empty, invalid interpreter
 	Interpreter(boost::shared_ptr<InterpreterImpl> const impl) : _impl(impl) { }
 	Interpreter(const Interpreter& other) : _impl(other._impl) { }
 	virtual ~Interpreter() {};
@@ -441,6 +455,9 @@ public:
 
 	void start() {
 		return _impl->start();
+	}
+	void stop() {
+		return _impl->stop();
 	}
 	void join() {
 		return _impl->join();
@@ -685,15 +702,35 @@ protected:
 class USCXML_API InterpreterMonitor {
 public:
 	virtual ~InterpreterMonitor() {}
+
+	virtual void beforeProcessingEvent(Interpreter interpreter, const Event& event) {}
+	virtual void beforeMicroStep(Interpreter interpreter) {}
+	
+	virtual void beforeExitingState(Interpreter interpreter, const Arabica::DOM::Element<std::string>& state) {}
+	virtual void afterExitingState(Interpreter interpreter, const Arabica::DOM::Element<std::string>& state) {}
+
+	virtual void beforeUninvoking(Interpreter interpreter, const Arabica::DOM::Element<std::string>& invokeElem, const std::string& invokeid) {}
+	virtual void afterUninvoking(Interpreter interpreter, const Arabica::DOM::Element<std::string>& invokeElem, const std::string& invokeid) {}
+
+	virtual void beforeTakingTransition(Interpreter interpreter, const Arabica::DOM::Element<std::string>& transition) {}
+	virtual void afterTakingTransition(Interpreter interpreter, const Arabica::DOM::Element<std::string>& transition) {}
+
+	virtual void beforeEnteringState(Interpreter interpreter, const Arabica::DOM::Element<std::string>& state) {}
+	virtual void afterEnteringState(Interpreter interpreter, const Arabica::DOM::Element<std::string>& state) {}
+	
+	virtual void beforeInvoking(Interpreter interpreter, const Arabica::DOM::Element<std::string>& invokeElem, const std::string& invokeid) {}
+	virtual void afterInvoking(Interpreter interpreter, const Arabica::DOM::Element<std::string>& invokeElem, const std::string& invokeid) {}
+
+	virtual void afterMicroStep(Interpreter interpreter) {}
+
+	virtual void beforeExecutingContent(Interpreter interpreter, const Arabica::DOM::Element<std::string>& element) {}
+	virtual void afterExecutingContent(Interpreter interpreter, const Arabica::DOM::Element<std::string>& element) {}
+
 	virtual void onStableConfiguration(Interpreter interpreter) {}
+	
 	virtual void beforeCompletion(Interpreter interpreter) {}
 	virtual void afterCompletion(Interpreter interpreter) {}
-	virtual void beforeMicroStep(Interpreter interpreter) {}
-	virtual void beforeTakingTransitions(Interpreter interpreter, const Arabica::XPath::NodeSet<std::string>& transitions) {}
-	virtual void beforeEnteringStates(Interpreter interpreter, const Arabica::XPath::NodeSet<std::string>& statesToEnter) {}
-	virtual void afterEnteringStates(Interpreter interpreter) {}
-	virtual void beforeExitingStates(Interpreter interpreter, const Arabica::XPath::NodeSet<std::string>& statesToExit) {}
-	virtual void afterExitingStates(Interpreter interpreter) {}
+
 };
 
 }

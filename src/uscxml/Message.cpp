@@ -721,27 +721,38 @@ std::string Data::toJSON(const Data& data) {
 		}
 		os << "]";
 	} else if (data.atom.size() > 0) {
+		// empty string is handled below
 		if (data.type == Data::VERBATIM) {
 			os << "\"";
 			for (int i = 0; i < data.atom.size(); i++) {
 				// escape string
-				if (data.atom[i] == '"') {
+				if (false) {
+				} else if (data.atom[i] == '"') {
 					os << '\\';
+					os << data.atom[i];
+				} else if (data.atom[i] == '\n') {
+					os << "\\n";
+				} else {
+					os << data.atom[i];
 				}
-				os << data.atom[i];
 			}
 			os << "\"";
 		} else {
 			os << data.atom;
 		}
 	} else if (data.node) {
-		if (data.type == Data::VERBATIM) {
-			os << "";
-		} else {
-			os << data.atom;
-		}
+		std::ostringstream xmlSerSS;
+		xmlSerSS << data.node;
+		std::string xmlSer = xmlSerSS.str();
+		boost::replace_all(xmlSer, "\"", "\\\"");
+		boost::replace_all(xmlSer, "\n", "\\n");
+		os << "\"" << xmlSer << "\"";
 	} else {
-		os << "undefined";
+		if (data.type == Data::VERBATIM) {
+			os << "\"\""; // empty string
+		} else {
+			os << "null";
+		}
 	}
 	return os.str();
 }

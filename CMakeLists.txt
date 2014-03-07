@@ -854,6 +854,7 @@ endif()
 # Binaries and tests
 ############################################################
 
+list(SORT USCXML_FILES)
 # we cannot use source groups in sub directories!
 foreach( FILE ${USCXML_FILES} )
 	get_filename_component(PATH ${FILE} PATH)
@@ -888,6 +889,15 @@ foreach( FILE ${USCXML_FILES} )
 	# elseif (${PATH} MATCHES ".*\\/google-url\\/.*")
 	# 	STRING(REGEX MATCH "[^\\/]*$" COMP_NAME ${PATH})
 	# 	source_group("Interpreter\\URL" FILES ${FILE})
+
+	elseif (${FILE} MATCHES ".*\\/debug\\/.*")
+		source_group("Interpreter\\debug" FILES ${FILE})
+	elseif (${FILE} MATCHES ".*\\/util\\/.*")
+		source_group("Interpreter\\util" FILES ${FILE})
+	elseif (${FILE} MATCHES ".*\\/concurrency\\/.*")
+		source_group("Interpreter\\concurrency" FILES ${FILE})
+	elseif (${FILE} MATCHES ".*\\/server\\/.*")
+		source_group("Interpreter\\server" FILES ${FILE})
 
 	else ()
 		source_group(Interpreter FILES ${FILE})

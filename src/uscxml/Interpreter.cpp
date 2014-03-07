@@ -258,6 +258,7 @@ InterpreterImpl::InterpreterImpl() {
 	_sendQueue = NULL;
 	_parentQueue = NULL;
 	_running = false;
+	_destroyed = false;
 	_done = true;
 	_isInitialized = false;
 	_httpServlet = NULL;
@@ -403,12 +404,18 @@ InterpreterImpl::~InterpreterImpl() {
 	_running = false;
 //	tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
 	if (_thread) {
-		// unblock event queue
-		Event event;
-		event.name = "unblock.and.die";
-		receive(event);
-		_thread->join();
-		delete(_thread);
+		if (_thread->get_id() != tthread::this_thread::get_id()) {
+			// unblock event queue
+			Event event;
+			event.name = "unblock.and.die";
+			receive(event);
+			
+			_thread->join();
+			delete(_thread);
+		} else {
+			// this can happen with a shared_from_this at an interpretermonitor
+			_destroyed = true;
+		}
 	}
 	if (_sendQueue)
 		delete _sendQueue;
@@ -422,6 +429,11 @@ void InterpreterImpl::start() {
 	_thread = new tthread::thread(InterpreterImpl::run, this);
 }
 
+void InterpreterImpl::stop() {
+	_running = false;
+}
+
+	
 void InterpreterImpl::run(void* instance) {
 	try {
 		((InterpreterImpl*)instance)->interpret();
@@ -1116,9 +1128,24 @@ void InterpreterImpl::invoke(const Arabica::DOM::Node<std::string>& element) {
 				invoker.setType(invokeReq.type);
 				invoker.setInterpreter(this);
 				_invokers[invokeReq.invokeid] = invoker;
-				LOG(INFO) << "Added invoker " << invokeReq.type << " at " << invokeReq.invokeid;
 				try {
+					
+					// --- MONITOR: beforeInvoking ------------------------------
+					for(monIter_t monIter = _monitors.begin(); monIter != _monitors.end(); monIter++) {
+						try {
+							(*monIter)->beforeInvoking(shared_from_this(), Element<std::string>(element), invokeReq.invokeid);
+						} USCXML_MONITOR_CATCH_BLOCK(beforeInvoking)
+					}
+
 					invoker.invoke(invokeReq);
+					LOG(INFO) << "Added invoker " << invokeReq.type << " at " << invokeReq.invokeid;
+
+					// --- MONITOR: afterInvoking ------------------------------
+					for(monIter_t monIter = _monitors.begin(); monIter != _monitors.end(); monIter++) {
+						try {
+							(*monIter)->afterInvoking(shared_from_this(), Element<std::string>(element), invokeReq.invokeid);
+						} USCXML_MONITOR_CATCH_BLOCK(afterInvoking)
+					}
 
 					// this is out of draft but so useful to know when an invoker started
 //					Event invSuccess;
@@ -1166,9 +1193,24 @@ void InterpreterImpl::cancelInvoke(const Arabica::DOM::Node<std::string>& elemen
 			} catch (Event e) {
 				LOG(ERROR) << "Syntax when removing invoker:" << std::endl << e << std::endl;
 			}
-
 		}
+		
+		// --- MONITOR: beforeUninvoking ------------------------------
+		for(monIter_t monIter = _monitors.begin(); monIter != _monitors.end(); monIter++) {
+			try {
+				(*monIter)->beforeUninvoking(shared_from_this(), Element<std::string>(element), invokeId);
+			} USCXML_MONITOR_CATCH_BLOCK(beforeUninvoking)
+		}
+
 		_invokers.erase(invokeId);
+
+		// --- MONITOR: afterUninvoking ------------------------------
+		for(monIter_t monIter = _monitors.begin(); monIter != _monitors.end(); monIter++) {
+			try {
+				(*monIter)->afterUninvoking(shared_from_this(), Element<std::string>(element), invokeId);
+			} USCXML_MONITOR_CATCH_BLOCK(beforeUninvoking)
+		}
+
 	} else {
 		LOG(ERROR) << "Cannot cancel invoke for id " << invokeId << ": no such invokation";
 	}

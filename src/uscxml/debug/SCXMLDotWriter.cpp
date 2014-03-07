@@ -32,9 +32,9 @@ SCXMLDotWriter::SCXMLDotWriter() {
 	_indentation = 0;
 }
 
-SCXMLDotWriter::SCXMLDotWriter(Interpreter interpreter, const Arabica::XPath::NodeSet<std::string>& transitions) {
+SCXMLDotWriter::SCXMLDotWriter(Interpreter interpreter, const Arabica::DOM::Element<std::string>& transition) {
 	_interpreter = interpreter;
-	_transitions = transitions;
+	_transition = transition;
 	_iteration = 0;
 	_indentation = 0;
 }
@@ -61,10 +61,10 @@ void SCXMLDotWriter::beforeMicroStep(Interpreter interpreter) {
 //	toDot(fileSS.str(), interpreter);
 }
 
-void SCXMLDotWriter::beforeTakingTransitions(Interpreter interpreter, const Arabica::XPath::NodeSet<std::string>& transitions) {
+void SCXMLDotWriter::beforeTakingTransition(Interpreter interpreter, const Arabica::DOM::Element<std::string>& transition) {
 	std::ostringstream fileSS;
 	fileSS << interpreter.getName() << "." << std::setw(6) << std::setfill('0') << _iteration++ << ".dot";
-	toDot(fileSS.str(), interpreter, transitions);
+	toDot(fileSS.str(), interpreter, transition);
 }
 
 std::string SCXMLDotWriter::getPrefix() {
@@ -74,10 +74,10 @@ std::string SCXMLDotWriter::getPrefix() {
 	return prefix;
 }
 
-void SCXMLDotWriter::toDot(const std::string& filename, Interpreter interpreter, const Arabica::XPath::NodeSet<std::string>& transitions) {
+void SCXMLDotWriter::toDot(const std::string& filename, Interpreter interpreter, const Arabica::DOM::Element<std::string>& transition) {
 	std::ofstream outfile(filename.c_str());
 	NodeList<std::string > scxmlElems = interpreter.getDocument().getElementsByTagName("scxml");
-	SCXMLDotWriter writer(interpreter, transitions);
+	SCXMLDotWriter writer(interpreter, transition);
 	if (scxmlElems.getLength() > 0) {
 		writer._indentation++;
 		outfile << "digraph {" << std::endl;
@@ -168,7 +168,7 @@ void SCXMLDotWriter::writeStateElement(std::ostream& os, const Arabica::DOM::Ele
 	for (int i = 0; i < childElems.getLength(); i++) {
 		if (childElems.item(i).getNodeType() == Node_base::ELEMENT_NODE && iequals(TAGNAME(childElems.item(i)), "transition")) {
 			writeTransitionElement(os, (Arabica::DOM::Element<std::string>)childElems.item(i));
-			bool active = Interpreter::isMember(childElems.item(i), _transitions);
+			bool active = (childElems.item(i) == _transition);
 			os << getPrefix() << "\"" << elemId << "\" -> \"" << idForNode(childElems.item(i)) << "\" [arrowhead=none" << std::endl;
 			if (active) {
 				os << ", penwidth=3, color=red]" << std::endl;
@@ -202,7 +202,7 @@ void SCXMLDotWriter::writeTransitionElement(std::ostream& os, const Arabica::DOM
 
 	Arabica::XPath::NodeSet<std::string> targetStates = _interpreter.getTargetStates(elem);
 
-	bool active = Interpreter::isMember(elem, _transitions);
+	bool active = (elem == _transition);
 
 	std::string label;
 	os << getPrefix() << "\"" << elemId << "\"[";
