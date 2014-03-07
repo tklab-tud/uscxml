@@ -288,9 +288,9 @@ void URLImpl::downloadCompleted() {
 void URLImpl::downloadFailed(CURLcode errorCode) {
 	tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
 
-	LOG(ERROR) << "Downloading " << asString() << " failed: " << curl_easy_strerror(errorCode);
+	LOG(ERROR) << "Downloading " << asString() << " failed: " << strerror(errorCode);
 
-	_error = curl_easy_strerror(errorCode);
+	_error = strerror(errorCode);
 	_hasFailed = true;
 	_isDownloaded = false;
 	_condVar.notify_all();
@@ -425,7 +425,7 @@ std::string URLImpl::getLocalFilename(const std::string& suffix) {
 	_mktemp_s(tmpl, strlen(tmpl) + 1);
 	int fd = _open(tmpl, _O_CREAT, _S_IREAD | _S_IWRITE);
 #else
-	int fd = mkstemps(tmpl, suffix.length());
+	int fd = mkstemp(tmpl);
 #endif
 	if (fd < 0) {
 		LOG(ERROR) << "mkstemp " << tmpl << ": " << strerror(errno) << std::endl;
@@ -548,58 +548,58 @@ void URLFetcher::fetchURL(URL& url) {
 		CURLcode curlError;
 
 		(curlError = curl_easy_setopt(handle, CURLOPT_URL, url.asString().c_str())) == CURLE_OK ||
-		LOG(ERROR) << "Cannot set url to " << url.asString() << ": " << curl_easy_strerror(curlError);
+		LOG(ERROR) << "Cannot set url to " << url.asString() << ": " << strerror(curlError);
 
 //		(curlError = curl_easy_setopt(handle, CURLOPT_NOSIGNAL, 1)) == CURLE_OK ||
-//		LOG(ERROR) << "Cannot set curl to ignore signals: " << curl_easy_strerror(curlError);
+//		LOG(ERROR) << "Cannot set curl to ignore signals: " << strerror(curlError);
 
 		(curlError = curl_easy_setopt(handle, CURLOPT_WRITEDATA, url._impl.get())) == CURLE_OK ||
-		LOG(ERROR) << "Cannot register this as write userdata: " << curl_easy_strerror(curlError);
+		LOG(ERROR) << "Cannot register this as write userdata: " << strerror(curlError);
 
 		(curlError = curl_easy_setopt(handle, CURLOPT_WRITEFUNCTION, URLImpl::writeHandler)) == CURLE_OK ||
-		LOG(ERROR) << "Cannot set write callback: " << curl_easy_strerror(curlError);
+		LOG(ERROR) << "Cannot set write callback: " << strerror(curlError);
 
 		(curlError = curl_easy_setopt(handle, CURLOPT_HEADERFUNCTION, URLImpl::headerHandler)) == CURLE_OK ||
-		LOG(ERROR) << "Cannot request header from curl: " << curl_easy_strerror(curlError);
+		LOG(ERROR) << "Cannot request header from curl: " << strerror(curlError);
 
 		(curlError = curl_easy_setopt(handle, CURLOPT_HEADERDATA, url._impl.get())) == CURLE_OK ||
-		LOG(ERROR) << "Cannot register this as header userdata: " << curl_easy_strerror(curlError);
+		LOG(ERROR) << "Cannot register this as header userdata: " << strerror(curlError);
 
 		(curlError = curl_easy_setopt(handle, CURLOPT_SSL_VERIFYPEER, false)) == CURLE_OK ||
-		LOG(ERROR) << "Cannot forfeit peer verification: " << curl_easy_strerror(curlError);
+		LOG(ERROR) << "Cannot forfeit peer verification: " << strerror(curlError);
 
 		(curlError = curl_easy_setopt(handle, CURLOPT_USERAGENT, "curl/7.31.0")) == CURLE_OK ||
-		LOG(ERROR) << "Cannot set our user agent string: " << curl_easy_strerror(curlError);
+		LOG(ERROR) << "Cannot set our user agent string: " << strerror(curlError);
 
 		(curlError = curl_easy_setopt(handle, CURLOPT_FOLLOWLOCATION, true)) == CURLE_OK ||
-		LOG(ERROR) << "Cannot enable follow redirects: " << curl_easy_strerror(curlError);
+		LOG(ERROR) << "Cannot enable follow redirects: " << strerror(curlError);
 
 		if (iequals(url._impl->_requestType, "post")) {
 
 			(curlError = curl_easy_setopt(handle, CURLOPT_POST, 1)) == CURLE_OK ||
-			LOG(ERROR) << "Cannot set request type to post for " << url.asString() << ": " << curl_easy_strerror(curlError);
+			LOG(ERROR) << "Cannot set request type to post for " << url.asString() << ": " << strerror(curlError);
 
-			(curlError = curl_easy_setopt(handle, CURLOPT_COPYPOSTFIELDS, url._impl->_outContent.c_str())) == CURLE_OK ||
-			LOG(ERROR) << "Cannot set post data " << url.asString() << ": " << curl_easy_strerror(curlError);
+            //(curlError = curl_easy_setopt(handle, CURLOPT_COPYPOSTFIELDS, url._impl->_outContent.c_str())) == CURLE_OK ||
+            //LOG(ERROR) << "Cannot set post data " << url.asString() << ": " << strerror(curlError);
 
 			// Disable "Expect: 100-continue"
 //			curl_slist* disallowed_headers = 0;
 //			disallowed_headers = curl_slist_append(disallowed_headers, "Expect:");
 //			(curlError = curl_easy_setopt(handle, CURLOPT_HTTPHEADER, disallowed_headers)) == CURLE_OK ||
-//			LOG(ERROR) << "Cannot disable Expect 100 header: " << curl_easy_strerror(curlError);
+//			LOG(ERROR) << "Cannot disable Expect 100 header: " << strerror(curlError);
 
 			struct curl_slist* headers = NULL;
 			std::map<std::string, std::string>::iterator paramIter = url._impl->_outHeader.begin();
 			while(paramIter != url._impl->_outHeader.end()) {
-				char* key = curl_easy_escape(handle, paramIter->first.c_str(), paramIter->first.length());
-				char* value = curl_easy_escape(handle, paramIter->second.c_str(), paramIter->second.length());
+				//char* key = curl_easy_escape(handle, paramIter->first.c_str(), paramIter->first.length());
+				//char* value = curl_easy_escape(handle, paramIter->second.c_str(), paramIter->second.length());
 
-				char* header = (char*)malloc(paramIter->first.size() + strlen(value) + 3);
-				sprintf(header,"%s: %s", paramIter->first.c_str(), value);
-				headers = curl_slist_append(headers, header);
+				//char* header = (char*)malloc(paramIter->first.size() + strlen(value) + 3);
+				//sprintf(header,"%s: %s", paramIter->first.c_str(), value);
+				//headers = curl_slist_append(headers, header);
 
-				curl_free(key);
-				curl_free(value);
+				//curl_free(key);
+				//curl_free(value);
 				paramIter++;
 			}
 
@@ -607,14 +607,14 @@ void URLFetcher::fetchURL(URL& url) {
 			headers = curl_slist_append(headers, "Expect:");
 
 			(curlError = curl_easy_setopt(handle, CURLOPT_HTTPHEADER, headers)) == CURLE_OK ||
-			LOG(ERROR) << "Cannot headers for " << url.asString() << ": " << curl_easy_strerror(curlError);
+			LOG(ERROR) << "Cannot headers for " << url.asString() << ": " << strerror(curlError);
 
 			//curl_slist_free_all(headers);
 
 
 		} else if (iequals(url._impl->_requestType, "get")) {
 			(curlError = curl_easy_setopt(handle, CURLOPT_HTTPGET, 1)) == CURLE_OK ||
-			LOG(ERROR) << "Cannot set request type to get for " << url.asString() << ": " << curl_easy_strerror(curlError);
+			LOG(ERROR) << "Cannot set request type to get for " << url.asString() << ": " << strerror(curlError);
 		}
 
 		url.downloadStarted();
@@ -677,7 +677,7 @@ void URLFetcher::perform() {
 		}
 		err = curl_multi_perform(_multiHandle, &stillRunning);
 		if (err != CURLM_OK) {
-			LOG(WARNING) << "curl_multi_perform: " << curl_multi_strerror(err);
+			LOG(WARNING) << "curl_multi_perform: " << strerror(err);
 		}
 	}
 
@@ -699,9 +699,9 @@ void URLFetcher::perform() {
 
 		{
 			tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
-			err = curl_multi_timeout(_multiHandle, &curlTimeOut);
+			//err = curl_multi_timeout(_multiHandle, &curlTimeOut);
 			if (err != CURLM_OK) {
-				LOG(WARNING) << "curl_multi_timeout: " << curl_multi_strerror(err);
+				LOG(WARNING) << "curl_multi_timeout: " << strerror(err);
 			}
 		}
 
@@ -719,7 +719,7 @@ void URLFetcher::perform() {
 			tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
 			err = curl_multi_fdset(_multiHandle, &fdread, &fdwrite, &fdexcep, &maxfd);
 			if (err != CURLM_OK) {
-				LOG(WARNING) << "curl_multi_fdset: " << curl_multi_strerror(err);
+				LOG(WARNING) << "curl_multi_fdset: " << strerror(err);
 			}
 		}
 
@@ -734,7 +734,7 @@ void URLFetcher::perform() {
 			tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
 			err = curl_multi_perform(_multiHandle, &stillRunning);
 			if (err != CURLM_OK) {
-				LOG(WARNING) << "curl_multi_perform: " << curl_multi_strerror(err);
+				LOG(WARNING) << "curl_multi_perform: " << strerror(err);
 			}
 			break;
 		}
@@ -749,7 +749,7 @@ void URLFetcher::perform() {
 						_handlesToURLs[msg->easy_handle].downloadCompleted();
 						err = curl_multi_remove_handle(_multiHandle, msg->easy_handle);
 						if (err != CURLM_OK) {
-							LOG(WARNING) << "curl_multi_remove_handle: " << curl_multi_strerror(err);
+							LOG(WARNING) << "curl_multi_remove_handle: " << strerror(err);
 						}
 
 						_handlesToURLs.erase(msg->easy_handle);
@@ -758,7 +758,7 @@ void URLFetcher::perform() {
 						_handlesToURLs[msg->easy_handle].downloadFailed(msg->data.result);
 						err = curl_multi_remove_handle(_multiHandle, msg->easy_handle);
 						if (err != CURLM_OK) {
-							LOG(WARNING) << "curl_multi_remove_handle: " << curl_multi_strerror(err);
+							LOG(WARNING) << "curl_multi_remove_handle: " << strerror(err);
 						}
 
 						_handlesToURLs.erase(msg->easy_handle);

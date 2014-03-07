@@ -36,7 +36,7 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 string(TOLOWER ${CMAKE_SYSTEM_NAME} CMAKE_SYSTEM_NAME_LC)
 string(TOLOWER ${CMAKE_CXX_COMPILER_ID} CMAKE_CXX_COMPILER_ID_LC)
 
-SET(CMAKE_BUILD_TYPE Debug)
+set(CMAKE_BUILD_TYPE Debug)
 
 ############################################################
 # Search paths for cross compiling and prebuilds
@@ -516,10 +516,10 @@ if (NOT WIN32)
 		set(PC_LIBXML_INCLUDEDIR "/usr/include/libxml2/")
 	endif()
 
-#	find_package(LibXml2 REQUIRED)
-#	include_directories(${LIBXML2_INCLUDE_DIR})
-#	list (APPEND USCXML_CORE_LIBS ${LIBXML2_LIBRARIES})
-#	set(XML_LIBRARIES ${LIBXML2_LIBRARIES})
+	find_package(LibXml2 REQUIRED)
+	include_directories(${LIBXML2_INCLUDE_DIR})
+	list (APPEND USCXML_CORE_LIBS ${LIBXML2_LIBRARIES})
+	set(XML_LIBRARIES ${LIBXML2_LIBRARIES})
 	list (APPEND USCXML_CORE_LIBS "dl")
 	list (APPEND USCXML_CORE_LIBS "pthread")
 	if (APPLE)
@@ -889,7 +889,6 @@ endforeach()
 
 # add compile time reducer
 # see https://github.com/sakra/cotire
-include(cotire)
 
 # build library
 if (BUILD_AS_PLUGINS)

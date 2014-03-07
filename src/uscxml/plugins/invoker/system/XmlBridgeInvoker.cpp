@@ -195,9 +195,19 @@ void XmlBridgeInvoker::send(const SendRequest& req) {
  * @param write	Indica se si tratta di una richiesta di scrittura
  * @param req_raw_data La lista delle stringhe utilizzate per popolare il comando TIM (se richiesta di scrittura)
  */
-bool XmlBridgeInvoker::buildMESreq(unsigned int addr, unsigned int len, bool write,
+void XmlBridgeInvoker::buildMESreq(int sock, unsigned int addr, unsigned int len, bool write,
 				   const std::list<std::string> &req_raw_data,
 				   const std::list<std::pair<std::string,std::string> > &req_indexes) {
+
+	{
+		tthread::lock_guard<tthread::mutex> socklock(sockMUTEX);
+		if(currSock != -1) {
+			LOG(INFO) << "Invoker is currently handling another request, discarding";
+			return false;
+		}
+		currSock = sock;
+	}
+
 	std::stringstream ss;
 	ss << _CMDid << '_' << (write ? WRITEOP : READOP) << MES2SCXML;
 	LOG(INFO) << "(" << _invokeId << ") Building Event " << ss.str();
@@ -244,7 +254,6 @@ bool XmlBridgeInvoker::buildMESreq(unsigned int addr, unsigned int len, bool wri
 	_itemsRead.clear();
 
 	returnEvent(myevent);
-	return true;
 }
 
 /** TIM->SCXML */
@@ -479,7 +488,7 @@ void XmlBridgeInvoker::client(const std::string &cmdframe) {
 	} while (std::strncmp(_reply, "<frame>", 7) != 0 ||
 		 std::strncmp(&_reply[replylen-8], "</frame>", 8) != 0);
 
-	LOG(ERROR) << "Received reply from TIM: " << std::endl << _reply;
+	LOG(INFO) << "Received reply from TIM: " << std::endl << _reply;
 
 	/* This function logs and reports errors internally */
 	buildTIMreply(std::string(_reply));

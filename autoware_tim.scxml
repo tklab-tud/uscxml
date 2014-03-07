@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <scxml	version="1.0"
-	name="10.1.30.150:3000"
+	name="127.0.0.1:3000"
 	datamodel="xpath"
 	initial="RunCommandsStateMachines"
 	xmlns="http://www.w3.org/2005/07/scxml" 
@@ -10,6 +10,7 @@
 	<state id="0" initial="init0">
 		<invoke type="xmlbridge" id="xmlbridge0">
 			<param name="timeout" expr="'5'"/>
+			<param name="queue" expr="'4'"/>
 		</invoke>
 		<state id="init0">
 			<transition event="0_wREQ" target="sent0">
@@ -525,6 +526,75 @@
 			</transition>
 			<transition event="error10" target="init10">
 				<send 	event="_ERR" target="#_xmlbridge10"/>
+			</transition>
+		</state>
+	</state>
+	<state id="11" initial="init11">
+		<invoke type="xmlbridge" id="xmlbridge11"/>
+		<state id="init11">
+			<datamodel>
+				<data id="IDX11"><req>indexes</req></data>
+			</datamodel>
+			<transition event="11_wREQ" target="sent11">
+				<send 	event="wCMD"
+					target="#_xmlbridge11">
+					<content>
+					<frame>
+					    <data type="wrapperProgram" index="0">
+						<nestedData  type="numWorking">${$_event/data/value/text()}</nestedData>
+					    </data>
+					</frame>
+					</content>
+				</send>
+			</transition>
+			<transition event="11_rREQ" target="sent11">
+				<assign location="$IDX8" expr="$_event/data/index"/>
+				<send 	event="rCMD"
+					target="#_xmlbridge11">
+					<content>
+					<frame>
+					    <data type="requestItem" index="0">wrapperProgramAddDelete</data>
+					</frame>
+					</content>
+				</send>
+			</transition>
+		</state>
+		<state id="sent11">
+			<onentry>
+				<send 	event="timeou11" delay="5s"/>
+			</onentry>
+			<transition event="11_wREPLY" target="init11">
+				<if cond="$_event/data/frame/data/nestedData[@type='state']/text() = 'ok'">
+					<send 	event="wACK" target="#_xmlbridge11"/>
+				<elseif/>
+					<send 	event="_ERR" target="#_xmlbridge11"/>
+				</if>
+			</transition>
+			<transition event="11_rREPLY" target="init11">
+				<if cond="$_event/data/frame">
+					<if cond="$IDX11/index[@itemi = '-1']">
+						<foreach array="$IDX11/index[@itemi = '-1']" item="currIDX11">
+							<send 	event="rACK"
+								namelist="$_event/data/frame/data/nestedData[@type='addDelete']/nestedData[@type='${$currIDX11/text()}']/text()"
+								target="#_xmlbridge11"/>
+						</foreach>
+					</if>
+					<if cond="$IDX11/index[@itemi != '-1']">
+						<foreach array="$IDX11/index[@itemi != '-1']" item="currIDX11">
+							<send 	event="rACK"
+								namelist="$_event/data/frame/data/nestedData[@type='wrapperProgramList']/item[@i='${$currIDX11/@itemi}']/nestedData[@type='${$currIDX11/text()}']/text()"
+								target="#_xmlbridge11"/>
+						</foreach>
+					</if>
+				<else/>
+					<send 	event="_ERR" target="#_xmlbridge11"/>
+				</if>
+			</transition>
+			<transition event="timeout11" target="init11">
+				<send 	event="_ERR" target="#_xmlbridge11"/>
+			</transition>
+			<transition event="error11" target="init11">
+				<send 	event="_ERR" target="#_xmlbridge11"/>
 			</transition>
 		</state>
 	</state>
