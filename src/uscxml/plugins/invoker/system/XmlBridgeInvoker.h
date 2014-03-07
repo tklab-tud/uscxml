@@ -66,15 +66,13 @@ public:
 	void invoke(const InvokeRequest& req);
 	Data getDataModelVariables();
 
-	void buildMESreq(unsigned int addr, unsigned int len, bool write, const std::list<std::string> &req_raw_data,
+	void buildMESreq(int sock, unsigned int addr, unsigned int len, bool write, const std::list<std::string> &req_raw_data,
 									const std::list<std::pair<std::string, std::string> > &req_indexes);
 	void buildTIMreply(const std::string &reply_raw_data);
 	void buildTIMexception(exceptions type);
 
 	~XmlBridgeInvoker();
 
-	int currSock;
-	tthread::mutex sockMUTEX;
 protected:
 	bool initClient(std::string ipaddr, std::string port);
 	void client(const std::string &cmdframe);
@@ -96,6 +94,9 @@ protected:
 	char* _reply;			/**< Buffer di ricezione del client TIM */
 	int _socketfd;			/**< Socket descriptor del client TIM */
 	struct addrinfo *_servinfo;	/**< Informazioni di sessione del server TIM */
+
+	int currSock;
+	tthread::mutex sockMUTEX;
 };
 
 #ifdef BUILD_AS_PLUGINS
