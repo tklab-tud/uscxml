@@ -71,12 +71,8 @@ void XmlBridgeInvoker::invoke(const InvokeRequest& req) {
 	/* TODO: check address errors */
 	std::string timaddr = _interpreter->getName();
 	size_t index = timaddr.find(':');
-	_TIMaddr = timaddr.substr(0, index);
-	_TIMport = timaddr.substr(index + 1);
-
-	/* Inizializza connessione al TIM */
-	initClient(_TIMaddr.empty() ? DEF_TIMADDR : _TIMaddr,
-		   _TIMport.empty() ? DEF_TIMPORT : _TIMport);
+	_TIMaddr = timaddr.substr(0, index).empty() ? DEF_TIMADDR : timaddr.substr(0, index);
+	_TIMport = timaddr.substr(index + 1).empty() ? DEF_TIMPORT : timaddr.substr(index + 1);
 
 	/* TODO: get all invokers and check for duplicated ids */
 	_CMDid = atoi(_invokeId.substr(sizeof(INVOKER_TYPE)-1).c_str());
@@ -160,7 +156,7 @@ void XmlBridgeInvoker::send(const SendRequest& req) {
 		}
 
 		if (write) {
-			_mesbufferer.bufferMESreplyWRITE(currSock, _CMDid);
+			_mesbufferer.bufferMESreplyWRITE(_reqQueue.back()->sock, _CMDid);
 		} else {
 			if (_itemsRead.size() > _reqQueue.back()->indexes.size()) {
 				LOG(ERROR) << _invokeId << " parsed too many fields!";
@@ -180,7 +176,7 @@ void XmlBridgeInvoker::send(const SendRequest& req) {
 
 	/* SCXML -> MES (errore) */
 	} else if (evType == SCXML2MES_ERR) {
-		_mesbufferer.bufferMESerror(currSock, _CMDid);
+		_mesbufferer.bufferMESerror(_reqQueue.back()->sock, _CMDid);
 	} else {
 		LOG(ERROR) << "XmlBridgeInvoker: received an unsupported event type from Interpreter, discarding request\n"
 			   << "Propably the event name in the SCXML file is incorrect.";
@@ -240,7 +236,7 @@ bool XmlBridgeInvoker::buildMESreq(uscxml::request *myreq, bool newreq) {
 		} else if (_reqQueue.size() > 0) {
 			_reqIsNew.push_front(false);
 		}
-		_reqQueue.push_front(req);
+		_reqQueue.push_front(myreq);
 	}
 
 	std::stringstream ss;
@@ -254,10 +250,10 @@ bool XmlBridgeInvoker::buildMESreq(uscxml::request *myreq, bool newreq) {
 	   Nel caso della scrittura vado a scrivere i valori e gli indici */
 	if (write) {
 		/* scrittura */
-		std::list<std::string>::const_iterator valueiter = _reqQueue.back().begin();
-		std::list<std::pair<std::string,std::string> >::const_iterator indexiter = _reqQueue.back().begin();
+		std::list<std::string>::const_iterator valueiter = _reqQueue.back()->wdata.begin();
+		std::list<std::pair<std::string,std::string> >::const_iterator indexiter = _reqQueue.back()->indexes.begin();
 		myevent.data.node = _interpreter->getDocument().createElement("data");
-		for (valueiter; valueiter!= _reqQueue.back().end(); valueiter++, indexiter++) {
+		for (valueiter; valueiter!= _reqQueue.back()->wdata.end(); valueiter++, indexiter++) {
 			Arabica::DOM::Element<std::string> eventMESElem = _interpreter->getDocument().createElement("value");
 			Arabica::DOM::Text<std::string> textNode = _interpreter->getDocument().createTextNode(*valueiter);
 			eventMESElem.setAttribute("itemi", indexiter->first);
@@ -267,9 +263,9 @@ bool XmlBridgeInvoker::buildMESreq(uscxml::request *myreq, bool newreq) {
 		}
 	} else {
 		/* lettura */
-		std::list<std::pair<std::string,std::string> >::const_iterator indexiter = _reqQueue.back().begin();
+		std::list<std::pair<std::string,std::string> >::const_iterator indexiter = _reqQueue.back()->indexes.begin();
 		myevent.data.node = _interpreter->getDocument().createElement("data");
-		for (indexiter; indexiter!=_reqQueue.back().end(); indexiter++) {
+		for (indexiter; indexiter!=_reqQueue.back()->indexes.end(); indexiter++) {
 			Arabica::DOM::Element<std::string> eventMESElem = _interpreter->getDocument().createElement("index");
 			Arabica::DOM::Text<std::string> textNode = _interpreter->getDocument().createTextNode(indexiter->second);
 			eventMESElem.setAttribute("itemi", indexiter->first);
@@ -311,7 +307,7 @@ void XmlBridgeInvoker::buildTIMreply(const std::string &reply_raw_data)
 	}
 
 	std::stringstream ss;
-	ss << _CMDid << '_' << (_currWrite ? WRITEOP : READOP) << TIM2SCXML;
+	ss << _CMDid << '_' << (_reqQueue.back()->write ? WRITEOP : READOP) << TIM2SCXML;
 
 	Event myevent(ss.str(), Event::EXTERNAL);
 	if (!domParser.getDocument().hasChildNodes()) {
@@ -481,6 +477,7 @@ void XmlBridgeInvoker::client(const std::string &cmdframe) {
 	LOG(INFO) << _invokeId << " sending cmd to TIM (length=" << cmdframe.length() << "): "
 		   << std::endl << timframe;
 
+	int result = true;
 	int numbytes;
 	while ((numbytes = ::send(_socketfd, timframe.c_str(),
 				  timframe.length(), MSG_NOSIGNAL | MSG_MORE)) != timframe.length()) {
@@ -491,55 +488,62 @@ void XmlBridgeInvoker::client(const std::string &cmdframe) {
 			if (!connect2TIM()) {
 				LOG(ERROR) << "Cannot reconnect to TIM for sending command";
 				buildTIMexception(TIM_ERROR);
-				goto end;
+				result = false;
+				break;
 			}
 			continue;
 		} else if (errno == EAGAIN || errno == EWOULDBLOCK) {
 			LOG(ERROR) << "TIM client: command timeout";
 			buildTIMexception(TIM_TIMEOUT);
-			goto end;
+			result = false;
+			break;
 		}
 		buildTIMexception(TIM_ERROR);
-		goto end;
+		result = false;
+		break;
 	}
 
 	/*
 	 * Function blocks until the full amount of message data can be returned
 	 */
-	size_t replylen = 0;
-	do {
-		int recvlen;
-		if ((recvlen = recv(_socketfd, _reply + replylen,
-				    MAXTIMREPLYSIZE - replylen, 0)) == -1) {
-			if (errno == EAGAIN || errno == EWOULDBLOCK) {
-				PLOG(ERROR) << "TIM client: command timeout";
-				buildTIMexception(TIM_TIMEOUT);
-				goto end;
+	if (result) {
+		size_t replylen = 0;
+		do {
+			int recvlen;
+			if ((recvlen = recv(_socketfd, _reply + replylen,
+					    MAXTIMREPLYSIZE - replylen, 0)) == -1) {
+				if (errno == EAGAIN || errno == EWOULDBLOCK) {
+					PLOG(ERROR) << "TIM client: command timeout";
+					buildTIMexception(TIM_TIMEOUT);
+					result = false;
+					break;
+				}
+				PLOG(ERROR) << "TIM recv error: client ignoring TIM reply";
+				buildTIMexception(TIM_ERROR);
+				result = false;
+				break;
+			} else if (recvlen == 0 && errno == 0) {
+				PLOG(ERROR) << "TIM client: received zero-length message";
+				buildTIMexception(TIM_ERROR);
+				result = false;
+				break;
+			} else if (recvlen == (MAXTIMREPLYSIZE - replylen)) {
+				PLOG(ERROR) << "TIM client: received message too long";
+				buildTIMexception(TIM_ERROR);
+				result = false;
+				break;
 			}
-			PLOG(ERROR) << "TIM recv error: client ignoring TIM reply";
-			buildTIMexception(TIM_ERROR);
-			goto end;
-		} else if (recvlen == 0 && errno == 0) {
-			PLOG(ERROR) << "TIM client: received zero-length message";
-			buildTIMexception(TIM_ERROR);
-			goto end;
-		} else if (recvlen == (MAXTIMREPLYSIZE - replylen)) {
-			PLOG(ERROR) << "TIM client: received message too long";
-			buildTIMexception(TIM_ERROR);
-			goto end;
-		}
-		replylen += recvlen;
-	} while (std::strncmp(_reply, "<frame>", 7) != 0 ||
-		 std::strncmp(&_reply[replylen-8], "</frame>", 8) != 0);
+			replylen += recvlen;
+		} while (std::strncmp(_reply, "<frame>", 7) != 0 ||
+			 std::strncmp(&_reply[replylen-8], "</frame>", 8) != 0);
+	}
 
-	LOG(INFO) << "Received reply from TIM: " << std::endl << _reply;
+	if (result) {
+		LOG(INFO) << "Received reply from TIM: " << std::endl << _reply;
+		/* This function logs and reports errors internally */
+		buildTIMreply(std::string(_reply));
+	}
 
-	/* This function logs and reports errors internally */
-	buildTIMreply(std::string(_reply));
-	/* We cannot free _reply right now, we don't know if in the meanwhile
-	 * another request has been queued */
-
-end:
 	{
 		tthread::lock_guard<tthread::mutex> timconnlock(timconnMUTEX);
 		if (timconnCount >= MAXTIMCONN) {
