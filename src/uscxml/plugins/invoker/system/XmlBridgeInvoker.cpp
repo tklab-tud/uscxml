@@ -195,33 +195,38 @@ void XmlBridgeInvoker::send(const SendRequest& req) {
  * @param write	Indica se si tratta di una richiesta di scrittura
  * @param req_raw_data La lista delle stringhe utilizzate per popolare il comando TIM (se richiesta di scrittura)
  */
-void XmlBridgeInvoker::buildMESreq(int sock, unsigned int addr, unsigned int len, bool write,
-				   const std::list<std::string> &req_raw_data,
-				   const std::list<std::pair<std::string,std::string> > &req_indexes) {
-
+bool XmlBridgeInvoker::buildMESreq(uscxml::request *myreq) {
 	{
-		tthread::lock_guard<tthread::mutex> socklock(sockMUTEX);
-		if(currSock != -1) {
-			LOG(INFO) << "Invoker is currently handling another request, discarding";
+		/* verifico se la coda è piena */
+		tthread::lock_guard<tthread::mutex> socklock(queueMUTEX);
+		if (_reqQueue.size() >= _queueSize) {
+			LOG(INFO) << "Invoker is currently handling too many requests";
 			return false;
 		}
-		currSock = sock;
+		/* verifico la richiesta in ingresso */
+		if (myreq->sock <= 0 || myreq->len == 0 || (myreq->wdata.size() == 0 || myreq->indexes.size())) {
+
+			int sock;
+			unsigned int addr;
+			unsigned int len;
+			bool write;
+			const std::list<std::string> wdata;
+			const std::list<std::pair<std::string,std::string> > indexes;
+		}
+
+		_reqQueue.push_front(req);
 	}
 
 	std::stringstream ss;
 	ss << _CMDid << '_' << (write ? WRITEOP : READOP) << MES2SCXML;
 	LOG(INFO) << "(" << _invokeId << ") Building Event " << ss.str();
 
-	_currAddr = addr;
-	_currLen = len;
-	_currWrite = write;
-
 	Event myevent(ss.str(), Event::EXTERNAL);
 
 	/* I dati inviati dal MES all'SCXML sono sempre mappati nella struttura dati 'node' dell'evento */
 	/* Nel caso della lettura vado a scrivere gli indici
-	 * Nel caso della scrittura vado a scrivere i valori e gli indici */
-	if (!req_indexes.empty() && !req_raw_data.empty() && write) {
+	   Nel caso della scrittura vado a scrivere i valori e gli indici */
+	if (write) {
 		/* scrittura */
 		std::list<std::string>::const_iterator valueiter = req_raw_data.begin();
 		std::list<std::pair<std::string,std::string> >::const_iterator indexiter = req_indexes.begin();
@@ -234,8 +239,7 @@ void XmlBridgeInvoker::buildMESreq(int sock, unsigned int addr, unsigned int len
 			eventMESElem.appendChild(textNode);
 			myevent.data.node.appendChild(eventMESElem);
 		}
-		_currItems = req_raw_data.size();
-	} else if (!req_indexes.empty() && !write) {
+	} else {
 		/* lettura */
 		std::list<std::pair<std::string,std::string> >::const_iterator indexiter = req_indexes.begin();
 		myevent.data.node = _interpreter->getDocument().createElement("data");
@@ -246,9 +250,6 @@ void XmlBridgeInvoker::buildMESreq(int sock, unsigned int addr, unsigned int len
 			eventMESElem.appendChild(textNode);
 			myevent.data.node.appendChild(eventMESElem);
 		}
-		_currItems = req_indexes.size();
-	} else {
-		_currItems = 0;
 	}
 
 	_itemsRead.clear();

@@ -47,14 +47,26 @@ enum exceptions {
 	SCXML_ERROR
 };
 
+typedef struct request {
+	int sock;
+	unsigned int addr;
+	unsigned int len;
+	bool write;
+	const std::list<std::string> wdata;
+	const std::list<std::pair<std::string,std::string> > indexes;
+} request_t;
+
 /**
  * @brief Implementa un generico USCXML Invoker che gestisce eventi SCXML esterni/interni appartenenti ad un dato datablock
  */
 class XmlBridgeInvoker : public InvokerImpl {
 public:
-    XmlBridgeInvoker() : currSock(-1), _reply(NULL), _servinfo(NULL), _socketfd(-1),
-        _itemsRead(), _mesbufferer(MesBufferer::getInstance()),
-		_currAddr(-1), _currItems(0), _currLen(0), _currWrite(false) {}
+	XmlBridgeInvoker() :
+		currSock(-1), _reply(NULL), _servinfo(NULL), _socketfd(-1),
+		_itemsRead(), _mesbufferer(MesBufferer::getInstance()),
+		_currAddr(-1), _currItems(0), _currLen(0), _currWrite(false),
+		_reqQueue() {}
+
 	std::set<std::string> getNames() {
 		std::set<std::string> names;
 		names.insert("xmlbridge");
@@ -66,8 +78,7 @@ public:
 	void invoke(const InvokeRequest& req);
 	Data getDataModelVariables();
 
-	void buildMESreq(int sock, unsigned int addr, unsigned int len, bool write, const std::list<std::string> &req_raw_data,
-									const std::list<std::pair<std::string, std::string> > &req_indexes);
+	bool buildMESreq(request *myreq);
 	void buildTIMreply(const std::string &reply_raw_data);
 	void buildTIMexception(exceptions type);
 
@@ -78,12 +89,10 @@ protected:
 	void client(const std::string &cmdframe);
 	bool connect2TIM();
 
+	/* FIXED */
 	unsigned int _CMDid;		/** L'ID del comando gestito dall'invoker */
 	unsigned int _timeoutVal;	/** Il massimo tempo di attesa per ricevere una risposta dal TIM per questo comando */
-	unsigned int _currItems;	/** Il numero di items scritti/letti nella richiesta corrent */
-	unsigned int _currLen;
-	int _currAddr;
-	bool _currWrite;
+	unsigned int _queueSize;	/** Massimo numero di richieste parallele accodate per comando */
 
 	std::list<std::string> _itemsRead;	/** Lista di elementi estratti dalla risposta del TIM tramite query xpath */
 
@@ -95,8 +104,9 @@ protected:
 	int _socketfd;			/**< Socket descriptor del client TIM */
 	struct addrinfo *_servinfo;	/**< Informazioni di sessione del server TIM */
 
-	int currSock;
-	tthread::mutex sockMUTEX;
+	std::list<request *> _reqQueue;
+
+	tthread::mutex queueMUTEX;
 };
 
 #ifdef BUILD_AS_PLUGINS
