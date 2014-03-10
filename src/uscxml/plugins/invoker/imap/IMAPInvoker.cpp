@@ -17,6 +17,7 @@
  *  @endcond
  */
 
+#define NOMINMAX // and have MSVC die in a fire for defining min macro
 #include "IMAPInvoker.h"
 #include <glog/logging.h>
 
@@ -71,7 +72,7 @@ size_t IMAPInvoker::writeCurlData(void *ptr, size_t size, size_t nmemb, void *us
 
 	IMAPContext* ctx = (IMAPContext*)userdata;
 
-	size_t toWrite = std::min(ctx->outContent.length() - ctx->readPtr, size * nmemb);
+	size_t toWrite = (std::min)(ctx->outContent.length() - ctx->readPtr, size * nmemb);
 	if (toWrite > 0) {
 		memcpy (ptr, ctx->outContent.c_str() + ctx->readPtr, toWrite);
 		ctx->readPtr += toWrite;
@@ -100,7 +101,7 @@ void IMAPInvoker::send(const SendRequest& req) {
 		Event::getParam(req.params, "mailbox", args->mailbox);
 		
 		ctx = new IMAPContext();
-		ctx->command = IMAPContext::SELECT;
+		ctx->command = IMAPContext::IMAP_SELECT;
 		ctx->arguments = args;
 
 	} else if (iequals(req.name, "examine")) {
@@ -108,7 +109,7 @@ void IMAPInvoker::send(const SendRequest& req) {
 		Event::getParam(req.params, "mailbox", args->mailbox);
 		
 		ctx = new IMAPContext();
-		ctx->command = IMAPContext::EXAMINE;
+		ctx->command = IMAPContext::IMAP_EXAMINE;
 		ctx->arguments = args;
 
 	} else if (iequals(req.name, "delete")) {
@@ -116,7 +117,7 @@ void IMAPInvoker::send(const SendRequest& req) {
 		Event::getParam(req.params, "mailbox", args->mailbox);
 		
 		ctx = new IMAPContext();
-		ctx->command = IMAPContext::DELETE;
+		ctx->command = IMAPContext::IMAP_DELETE;
 		ctx->arguments = args;
 
 	} else if (iequals(req.name, "rename")) {
@@ -125,7 +126,7 @@ void IMAPInvoker::send(const SendRequest& req) {
 		Event::getParam(req.params, "name", args->newName);
 		
 		ctx = new IMAPContext();
-		ctx->command = IMAPContext::RENAME;
+		ctx->command = IMAPContext::IMAP_RENAME;
 		ctx->arguments = args;
 
 	} else if (iequals(req.name, "subscribe")) {
@@ -133,7 +134,7 @@ void IMAPInvoker::send(const SendRequest& req) {
 		Event::getParam(req.params, "mailbox", args->mailbox);
 		
 		ctx = new IMAPContext();
-		ctx->command = IMAPContext::SUBSCRIBE;
+		ctx->command = IMAPContext::IMAP_SUBSCRIBE;
 		ctx->arguments = args;
 
 	} else if (iequals(req.name, "unsubscribe")) {
@@ -141,7 +142,7 @@ void IMAPInvoker::send(const SendRequest& req) {
 		Event::getParam(req.params, "mailbox", args->mailbox);
 		
 		ctx = new IMAPContext();
-		ctx->command = IMAPContext::UNSUBSCRIBE;
+		ctx->command = IMAPContext::IMAP_UNSUBSCRIBE;
 		ctx->arguments = args;
 
 	} else if (iequals(req.name, "list")) {
@@ -150,7 +151,7 @@ void IMAPInvoker::send(const SendRequest& req) {
 		Event::getParam(req.params, "reference", args->refName);
 		
 		ctx = new IMAPContext();
-		ctx->command = IMAPContext::LIST;
+		ctx->command = IMAPContext::IMAP_LIST;
 		ctx->arguments = args;
 
 	} else if (iequals(req.name, "lsub")) {
@@ -159,7 +160,7 @@ void IMAPInvoker::send(const SendRequest& req) {
 		Event::getParam(req.params, "reference", args->refName);
 		
 		ctx = new IMAPContext();
-		ctx->command = IMAPContext::LSUB;
+		ctx->command = IMAPContext::IMAP_LSUB;
 		ctx->arguments = args;
 
 	} else if (iequals(req.name, "status")) {
@@ -168,7 +169,7 @@ void IMAPInvoker::send(const SendRequest& req) {
 		Event::getParam(req.params, "dataitems", args->dataItems);
 		
 		ctx = new IMAPContext();
-		ctx->command = IMAPContext::STATUS;
+		ctx->command = IMAPContext::IMAP_STATUS;
 		ctx->arguments = args;
 
 	} else if (iequals(req.name, "append")) {
@@ -182,28 +183,28 @@ void IMAPInvoker::send(const SendRequest& req) {
 		}
 		
 		ctx = new IMAPContext();
-		ctx->command = IMAPContext::APPEND;
+		ctx->command = IMAPContext::IMAP_APPEND;
 		ctx->arguments = args;
 
 	} else if (iequals(req.name, "check")) {
 		IMAPContext::Check* args = new IMAPContext::Check();
 		
 		ctx = new IMAPContext();
-		ctx->command = IMAPContext::CHECK;
+		ctx->command = IMAPContext::IMAP_CHECK;
 		ctx->arguments = args;
 
 	} else if (iequals(req.name, "close")) {
 		IMAPContext::Close* args = new IMAPContext::Close();
 		
 		ctx = new IMAPContext();
-		ctx->command = IMAPContext::CLOSE;
+		ctx->command = IMAPContext::IMAP_CLOSE;
 		ctx->arguments = args;
 		
 	} else if (iequals(req.name, "expunge")) {
 		IMAPContext::Expunge* args = new IMAPContext::Expunge();
 		
 		ctx = new IMAPContext();
-		ctx->command = IMAPContext::EXPUNGE;
+		ctx->command = IMAPContext::IMAP_EXPUNGE;
 		ctx->arguments = args;
 		
 	} else if (iequals(req.name, "search")) {
@@ -212,7 +213,7 @@ void IMAPInvoker::send(const SendRequest& req) {
 		Event::getParam(req.params, "criteria", args->criteria);
 		
 		ctx = new IMAPContext();
-		ctx->command = IMAPContext::SEARCH;
+		ctx->command = IMAPContext::IMAP_SEARCH;
 		ctx->arguments = args;
 		
 	} else if (iequals(req.name, "fetch")) {
@@ -221,7 +222,7 @@ void IMAPInvoker::send(const SendRequest& req) {
 		Event::getParam(req.params, "itemnames", args->itemNames);
 		
 		ctx = new IMAPContext();
-		ctx->command = IMAPContext::FETCH;
+		ctx->command = IMAPContext::IMAP_FETCH;
 		ctx->arguments = args;
 		
 	} else if (iequals(req.name, "store")) {
@@ -231,7 +232,7 @@ void IMAPInvoker::send(const SendRequest& req) {
 		Event::getParam(req.params, "values", args->values);
 		
 		ctx = new IMAPContext();
-		ctx->command = IMAPContext::STORE;
+		ctx->command = IMAPContext::IMAP_STORE;
 		ctx->arguments = args;
 		
 	} else if (iequals(req.name, "copy")) {
@@ -240,7 +241,7 @@ void IMAPInvoker::send(const SendRequest& req) {
 		Event::getParam(req.params, "sequence", args->sequence);
 		
 		ctx = new IMAPContext();
-		ctx->command = IMAPContext::COPY;
+		ctx->command = IMAPContext::IMAP_COPY;
 		ctx->arguments = args;
 		
 	} else if (iequals(req.name, "uid")) {
@@ -249,7 +250,7 @@ void IMAPInvoker::send(const SendRequest& req) {
 		Event::getParam(req.params, "arguments", args->arguments);
 		
 		ctx = new IMAPContext();
-		ctx->command = IMAPContext::UID;
+		ctx->command = IMAPContext::IMAP_UID;
 		ctx->arguments = args;
 		
 	} else if (boost::istarts_with(req.name, "x")) {
@@ -258,7 +259,7 @@ void IMAPInvoker::send(const SendRequest& req) {
 		Event::getParam(req.params, "arguments", args->arguments);
 		
 		ctx = new IMAPContext();
-		ctx->command = IMAPContext::XEXTENSION;
+		ctx->command = IMAPContext::IMAP_XEXTENSION;
 		ctx->arguments = args;
 		
 	}
@@ -322,74 +323,74 @@ void IMAPInvoker::process(IMAPContext* ctx) {
 
 		std::stringstream cmdSS;
 		switch (ctx->command) {
-			case IMAPContext::SELECT: {
+			case IMAPContext::IMAP_SELECT: {
 				IMAPContext::Select* cmd = (IMAPContext::Select*)ctx->arguments;
 				cmdSS << "SELECT " << "\"" << cmd->mailbox << "\"";
 				break;
 			}
-			case IMAPContext::EXAMINE: {
+			case IMAPContext::IMAP_EXAMINE: {
 				IMAPContext::Examine* cmd = (IMAPContext::Examine*)ctx->arguments;
 				cmdSS << "EXAMINE " << "\"" << cmd->mailbox << "\"";
 				break;
 			}
-			case IMAPContext::CREATE: {
+			case IMAPContext::IMAP_CREATE: {
 				IMAPContext::Create* cmd = (IMAPContext::Create*)ctx->arguments;
 				cmdSS << "CREATE " << "\"" << cmd->mailbox << "\"";
 				break;
 			}
-			case IMAPContext::DELETE: {
+			case IMAPContext::IMAP_DELETE: {
 				IMAPContext::Delete* cmd = (IMAPContext::Delete*)ctx->arguments;
 				cmdSS << "DELETE " << "\"" << cmd->mailbox << "\"";
 				break;
 			}
-			case IMAPContext::RENAME: {
+			case IMAPContext::IMAP_RENAME: {
 				IMAPContext::Rename* cmd = (IMAPContext::Rename*)ctx->arguments;
 				cmdSS << "RENAME " << "\"" << cmd->mailbox << "\" \"" << cmd->newName << "\"";
 				break;
 			}
-			case IMAPContext::SUBSCRIBE: {
+			case IMAPContext::IMAP_SUBSCRIBE: {
 				IMAPContext::Subscribe* cmd = (IMAPContext::Subscribe*)ctx->arguments;
 				cmdSS << "SUBSCRIBE " << "\"" << cmd->mailbox << "\"";
 				break;
 			}
-			case IMAPContext::UNSUBSCRIBE: {
+			case IMAPContext::IMAP_UNSUBSCRIBE: {
 				IMAPContext::Unsubscribe* cmd = (IMAPContext::Unsubscribe*)ctx->arguments;
 				cmdSS << "UNSUBSCRIBE " << "\"" << cmd->mailbox << "\"";
 				break;
 			}
-			case IMAPContext::LIST: {
+			case IMAPContext::IMAP_LIST: {
 				IMAPContext::List* cmd = (IMAPContext::List*)ctx->arguments;
 				cmdSS << "LIST " << "\"" << cmd->mailbox << "\" \"" << cmd->refName << "\"";
 				break;
 			}
-			case IMAPContext::LSUB: {
+			case IMAPContext::IMAP_LSUB: {
 				IMAPContext::LSub* cmd = (IMAPContext::LSub*)ctx->arguments;
 				cmdSS << "LSUB " << "\"" << cmd->mailbox << "\" \"" << cmd->refName << "\"";
 				break;
 			}
-			case IMAPContext::STATUS: {
+			case IMAPContext::IMAP_STATUS: {
 				IMAPContext::Status* cmd = (IMAPContext::Status*)ctx->arguments;
 				cmdSS << "STATUS " << "\"" << cmd->mailbox << "\" (" << cmd->dataItems << ")";
 				break;
 			}
-			case IMAPContext::APPEND: {
+			case IMAPContext::IMAP_APPEND: {
 				IMAPContext::Append* cmd = (IMAPContext::Append*)ctx->arguments;
 				cmdSS << "APPEND " << "\"" << cmd->mailbox << "\" (" << cmd->flags << ") {" << cmd->dateTime << "}";
 				break;
 			}
-			case IMAPContext::CHECK: {
+			case IMAPContext::IMAP_CHECK: {
 				cmdSS << "CHECK";
 				break;
 			}
-			case IMAPContext::CLOSE: {
+			case IMAPContext::IMAP_CLOSE: {
 				cmdSS << "CLOSE";
 				break;
 			}
-			case IMAPContext::EXPUNGE: {
+			case IMAPContext::IMAP_EXPUNGE: {
 				cmdSS << "EXPUNGE";
 				break;
 			}
-			case IMAPContext::SEARCH: {
+			case IMAPContext::IMAP_SEARCH: {
 				IMAPContext::Search* cmd = (IMAPContext::Search*)ctx->arguments;
 				cmdSS << "SEARCH ";
 				if (cmd->charSet.size() > 0) {
@@ -398,27 +399,27 @@ void IMAPInvoker::process(IMAPContext* ctx) {
 				cmdSS << cmd->criteria;
 				break;
 			}
-			case IMAPContext::FETCH: {
+			case IMAPContext::IMAP_FETCH: {
 				IMAPContext::Fetch* cmd = (IMAPContext::Fetch*)ctx->arguments;
 				cmdSS << "FETCH " << cmd->sequence << " " << cmd->itemNames;
 				break;
 			}
-			case IMAPContext::STORE: {
+			case IMAPContext::IMAP_STORE: {
 				IMAPContext::Store* cmd = (IMAPContext::Store*)ctx->arguments;
 				cmdSS << "STORE " << cmd->sequence << " " << cmd->itemNames << " " << cmd->values;
 				break;
 			}
-			case IMAPContext::COPY: {
+			case IMAPContext::IMAP_COPY: {
 				IMAPContext::Copy* cmd = (IMAPContext::Copy*)ctx->arguments;
 				cmdSS << "COPY " << "\"" << cmd->mailbox << "\" " << cmd->sequence;
 				break;
 			}
-			case IMAPContext::UID: {
+			case IMAPContext::IMAP_UID: {
 				IMAPContext::UId* cmd = (IMAPContext::UId*)ctx->arguments;
 				cmdSS << "UID " << cmd->command << " " << cmd->arguments;
 				break;
 			}
-			case IMAPContext::XEXTENSION: {
+			case IMAPContext::IMAP_XEXTENSION: {
 				IMAPContext::XExtension* cmd = (IMAPContext::XExtension*)ctx->arguments;
 				cmdSS << cmd->command << " " << cmd->arguments;
 				break;

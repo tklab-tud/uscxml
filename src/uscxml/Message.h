@@ -71,8 +71,19 @@ public:
 	};
 
 	Data() : type(INTERPRETED) {}
+	
+	// TODO: default INTERPRETED is unfortunate
 	Data(const std::string& atom_, Type type_ = INTERPRETED) : atom(atom_), type(type_) {}
 	Data(const char* data, size_t size, const std::string& mimeType, bool adopt = false);
+
+	// convenience constructors
+	Data(short atom_) : atom(toStr(atom_)), type(INTERPRETED) {}
+	Data(int atom_) : atom(toStr(atom_)), type(INTERPRETED) {}
+	Data(unsigned int atom_) : atom(toStr(atom_)), type(INTERPRETED) {}
+	Data(long atom_) : atom(toStr(atom_)), type(INTERPRETED) {}
+	Data(unsigned long atom_) : atom(toStr(atom_)), type(INTERPRETED) {}
+	Data(float atom_) : atom(toStr(atom_)), type(INTERPRETED) {}
+	Data(double atom_) : atom(toStr(atom_)), type(INTERPRETED) {}
 	Data(bool atom_) : type(INTERPRETED) {
 		if (atom_) {
 			atom = "true";
@@ -80,8 +91,17 @@ public:
 			atom = "false";
 		}
 	}
-	template <typename T> Data(T value) : atom(toStr(value)), type(INTERPRETED) {}
+
 	template <typename T> Data(T value, Type type_) : atom(toStr(value)), type(type_) {}
+
+#if 0
+	// constructor for arbitrary types, skip if type is subclass though (C++11)
+	// we will have to drop this constructor as it interferes with operator Data() and entails C++11
+	template <typename T>
+	Data(T value, typename std::enable_if<! std::is_base_of<Data, T>::value>::type* = nullptr)
+	: atom(toStr(value)), type(INTERPRETED) {}
+#endif
+	
 
 	explicit Data(const Arabica::DOM::Node<std::string>& dom);
 	virtual ~Data() {}

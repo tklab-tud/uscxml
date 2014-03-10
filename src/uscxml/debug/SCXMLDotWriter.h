@@ -65,12 +65,12 @@ public:
 
 	virtual void onStableConfiguration(Interpreter interpreter);
 	virtual void afterCompletion(Interpreter interpreter);
-	virtual void beforeTakingTransitions(Interpreter interpreter, const Arabica::XPath::NodeSet<std::string>& transitions);
+	virtual void beforeTakingTransition(Interpreter interpreter, const Arabica::DOM::Element<std::string>& transition);
 	virtual void beforeMicroStep(Interpreter interpreter);
 
 	static void toDot(const std::string& filename,
 	                  Interpreter interpreter,
-	                  const Arabica::XPath::NodeSet<std::string>& transitions = Arabica::XPath::NodeSet<std::string>());
+	                  const Arabica::DOM::Element<std::string>& transition = Arabica::DOM::Element<std::string>());
 
 	std::string getDetailedLabel(const Arabica::DOM::Element<std::string>& elem, int indentation = 0);
 	std::string colorForIndent(int indent);
@@ -84,7 +84,7 @@ public:
 protected:
 
 	SCXMLDotWriter(Interpreter interpreter,
-	               const Arabica::XPath::NodeSet<std::string>& transitions);
+	               const Arabica::DOM::Element<std::string>& transition);
 
 	void writeSCXMLElement(std::ostream& os, const Arabica::DOM::Element<std::string>& elem);
 	void writeStateElement(std::ostream& os, const Arabica::DOM::Element<std::string>& elem);
@@ -95,7 +95,7 @@ protected:
 	int _indentation;
 
 	// these are only set in ephemeral instances per monitor call
-	Arabica::XPath::NodeSet<std::string> _transitions;
+	Arabica::DOM::Element<std::string> _transition;
 	Interpreter _interpreter;
 };
 

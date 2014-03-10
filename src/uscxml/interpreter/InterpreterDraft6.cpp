@@ -30,144 +30,130 @@ using namespace Arabica::DOM;
 
 // see: http://www.w3.org/TR/scxml/#AlgorithmforSCXMLInterpretation
 void InterpreterDraft6::interpret() {
-	tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
-	if (!_isInitialized)
-		init();
+	try {
+		tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
+		if (!_isInitialized)
+			init();
 
-//	std::cout << _scxml << std::endl;
-
-	if (!_scxml) {
-//		_mutex.unlock();
-		return;
-	}
-//  dump();
-
-	// just make sure we have a session id
-	assert(_sessionId.length() > 0);
-
-	setupIOProcessors();
-
-	std::string datamodelName;
-	if (datamodelName.length() == 0 && HAS_ATTR(_scxml, "datamodel"))
-		datamodelName = ATTR(_scxml, "datamodel");
-	if (datamodelName.length() == 0 && HAS_ATTR(_scxml, "profile")) // SCION SCXML uses profile to specify datamodel
-		datamodelName = ATTR(_scxml, "profile");
-	if(datamodelName.length() > 0) {
-		_dataModel = _factory->createDataModel(datamodelName, this);
-		if (!_dataModel) {
-			Event e;
-			e.data.compound["cause"] = Data("Cannot instantiate datamodel");
-			throw e;
+		if (!_scxml) {
+			return;
 		}
-	} else {
-		_dataModel = _factory->createDataModel("null", this);
-	}
-	if(datamodelName.length() > 0  && !_dataModel) {
-		LOG(ERROR) << "No datamodel for " << datamodelName << " registered";
-	}
+	//  dump();
 
-	if (_dataModel) {
-		_dataModel.assign("_x.args", _cmdLineOptions);
-	}
+		// just make sure we have a session id
+		assert(_sessionId.length() > 0);
 
-	_running = true;
-	_binding = (HAS_ATTR(_scxml, "binding") && iequals(ATTR(_scxml, "binding"), "late") ? LATE : EARLY);
+		setupIOProcessors();
 
-	// @TODO: Reread http://www.w3.org/TR/scxml/#DataBinding
-
-	if (_dataModel && _binding == EARLY) {
-		// initialize all data elements
-		NodeSet<std::string> dataElems = _xpath.evaluate("//" + _xpathPrefix + "data", _scxml).asNodeSet();
-		for (unsigned int i = 0; i < dataElems.size(); i++) {
-			// do not process data elements of nested documents from invokers
-			if (!getAncestorElement(dataElems[i], _xmlNSPrefix + "invoke"))
-				if (dataElems[i].getNodeType() == Node_base::ELEMENT_NODE) {
-					initializeData(Element<std::string>(dataElems[i]));
-				}
+		std::string datamodelName;
+		if (datamodelName.length() == 0 && HAS_ATTR(_scxml, "datamodel"))
+			datamodelName = ATTR(_scxml, "datamodel");
+		if (datamodelName.length() == 0 && HAS_ATTR(_scxml, "profile")) // SCION SCXML uses profile to specify datamodel
+			datamodelName = ATTR(_scxml, "profile");
+		if(datamodelName.length() > 0) {
+			_dataModel = _factory->createDataModel(datamodelName, this);
+			if (!_dataModel) {
+				Event e;
+				e.data.compound["cause"] = Data("Cannot instantiate datamodel");
+				throw e;
+			}
+		} else {
+			_dataModel = _factory->createDataModel("null", this);
 		}
-	} else if(_dataModel) {
-		// initialize current data elements
-		NodeSet<std::string> topDataElems = filterChildElements(_xmlNSPrefix + "data", filterChildElements(_xmlNSPrefix + "datamodel", _scxml));
-		for (unsigned int i = 0; i < topDataElems.size(); i++) {
-			if (topDataElems[i].getNodeType() == Node_base::ELEMENT_NODE)
-				initializeData(Element<std::string>(topDataElems[i]));
+		if(datamodelName.length() > 0  && !_dataModel) {
+			LOG(ERROR) << "No datamodel for " << datamodelName << " registered";
 		}
-	}
 
-	// executeGlobalScriptElements
-	NodeSet<std::string> globalScriptElems = filterChildElements(_xmlNSPrefix + "script", _scxml);
-	for (unsigned int i = 0; i < globalScriptElems.size(); i++) {
 		if (_dataModel) {
-			executeContent(globalScriptElems[i]);
+			_dataModel.assign("_x.args", _cmdLineOptions);
 		}
-	}
 
-	NodeSet<std::string> initialTransitions;
+		_running = true;
+		_binding = (HAS_ATTR(_scxml, "binding") && iequals(ATTR(_scxml, "binding"), "late") ? LATE : EARLY);
 
-	if (_userDefinedStartConfiguration.size() > 0) {
-		// we emulate entering a given configuration by creating a pseudo deep history
-		Element<std::string> initHistory = _document.createElementNS(_nsURL, "history");
-		initHistory.setAttribute("id", UUID::getUUID());
-		initHistory.setAttribute("type", "deep");
-		_scxml.insertBefore(initHistory, _scxml.getFirstChild());
+		// @TODO: Reread http://www.w3.org/TR/scxml/#DataBinding
 
-		std::string histId = ATTR(initHistory, "id");
-		NodeSet<std::string> histStates;
-		for (int i = 0; i < _userDefinedStartConfiguration.size(); i++) {
-			histStates.push_back(getState(_userDefinedStartConfiguration[i]));
-		}
-		_historyValue[histId] = histStates;
-
-		Element<std::string> initialElem = _document.createElementNS(_nsURL, "initial");
-		initialElem.setAttribute("generated", "true");
-		Element<std::string> transitionElem = _document.createElementNS(_nsURL, "transition");
-		transitionElem.setAttribute("target", histId);
-		initialElem.appendChild(transitionElem);
-		_scxml.appendChild(initialElem);
-		initialTransitions.push_back(transitionElem);
-
-	} else {
-		// try to get initial transition form initial element
-		initialTransitions = _xpath.evaluate("/" + _xpathPrefix + "initial/" + _xpathPrefix + "transition", _scxml).asNodeSet();
-		if (initialTransitions.size() == 0) {
-			Arabica::XPath::NodeSet<std::string> initialStates;
-			// fetch per draft
-			initialStates = getInitialStates();
-			assert(initialStates.size() > 0);
-			for (int i = 0; i < initialStates.size(); i++) {
-				Element<std::string> initialElem = _document.createElementNS(_nsURL, "initial");
-				initialElem.setAttribute("generated", "true");
-				Element<std::string> transitionElem = _document.createElementNS(_nsURL, "transition");
-				transitionElem.setAttribute("target", ATTR(initialStates[i], "id"));
-				initialElem.appendChild(transitionElem);
-				_scxml.appendChild(initialElem);
-				initialTransitions.push_back(transitionElem);
+		if (_dataModel && _binding == EARLY) {
+			// initialize all data elements
+			NodeSet<std::string> dataElems = _xpath.evaluate("//" + _xpathPrefix + "data", _scxml).asNodeSet();
+			for (unsigned int i = 0; i < dataElems.size(); i++) {
+				// do not process data elements of nested documents from invokers
+				if (!getAncestorElement(dataElems[i], _xmlNSPrefix + "invoke"))
+					if (dataElems[i].getNodeType() == Node_base::ELEMENT_NODE) {
+						initializeData(Element<std::string>(dataElems[i]));
+					}
+			}
+		} else if(_dataModel) {
+			// initialize current data elements
+			NodeSet<std::string> topDataElems = filterChildElements(_xmlNSPrefix + "data", filterChildElements(_xmlNSPrefix + "datamodel", _scxml));
+			for (unsigned int i = 0; i < topDataElems.size(); i++) {
+				if (topDataElems[i].getNodeType() == Node_base::ELEMENT_NODE)
+					initializeData(Element<std::string>(topDataElems[i]));
 			}
 		}
-	}
 
-	assert(initialTransitions.size() > 0);
-
-	monIter_t monIter = _monitors.begin();
-	while(monIter != _monitors.end()) {
-		try {
-			(*monIter)->beforeTakingTransitions(shared_from_this(), initialTransitions);
-		} catch (Event e) {
-			LOG(ERROR) << "Syntax error when calling beforeTakingTransitions on monitors: " << std::endl << e << std::endl;
-		} catch (boost::bad_weak_ptr e) {
-			LOG(ERROR) << "Unclean shutdown " << std::endl << std::endl;
-		} catch (...) {
-			LOG(ERROR) << "An exception occured when calling beforeTakingTransitions on monitors";
+		// executeGlobalScriptElements
+		NodeSet<std::string> globalScriptElems = filterChildElements(_xmlNSPrefix + "script", _scxml);
+		for (unsigned int i = 0; i < globalScriptElems.size(); i++) {
+			if (_dataModel) {
+				executeContent(globalScriptElems[i]);
+			}
 		}
-		monIter++;
+
+		NodeSet<std::string> initialTransitions;
+
+		if (_userDefinedStartConfiguration.size() > 0) {
+			// we emulate entering a given configuration by creating a pseudo deep history
+			Element<std::string> initHistory = _document.createElementNS(_nsURL, "history");
+			initHistory.setAttribute("id", UUID::getUUID());
+			initHistory.setAttribute("type", "deep");
+			_scxml.insertBefore(initHistory, _scxml.getFirstChild());
+
+			std::string histId = ATTR(initHistory, "id");
+			NodeSet<std::string> histStates;
+			for (int i = 0; i < _userDefinedStartConfiguration.size(); i++) {
+				histStates.push_back(getState(_userDefinedStartConfiguration[i]));
+			}
+			_historyValue[histId] = histStates;
+
+			Element<std::string> initialElem = _document.createElementNS(_nsURL, "initial");
+			initialElem.setAttribute("generated", "true");
+			Element<std::string> transitionElem = _document.createElementNS(_nsURL, "transition");
+			transitionElem.setAttribute("target", histId);
+			initialElem.appendChild(transitionElem);
+			_scxml.appendChild(initialElem);
+			initialTransitions.push_back(transitionElem);
+
+		} else {
+			// try to get initial transition form initial element
+			initialTransitions = _xpath.evaluate("/" + _xpathPrefix + "initial/" + _xpathPrefix + "transition", _scxml).asNodeSet();
+			if (initialTransitions.size() == 0) {
+				Arabica::XPath::NodeSet<std::string> initialStates;
+				// fetch per draft
+				initialStates = getInitialStates();
+				assert(initialStates.size() > 0);
+				for (int i = 0; i < initialStates.size(); i++) {
+					Element<std::string> initialElem = _document.createElementNS(_nsURL, "initial");
+					initialElem.setAttribute("generated", "true");
+					Element<std::string> transitionElem = _document.createElementNS(_nsURL, "transition");
+					transitionElem.setAttribute("target", ATTR(initialStates[i], "id"));
+					initialElem.appendChild(transitionElem);
+					_scxml.appendChild(initialElem);
+					initialTransitions.push_back(transitionElem);
+				}
+			}
+		}
+
+		assert(initialTransitions.size() > 0);
+
+		enterStates(initialTransitions);
+	//	_mutex.unlock();
+
+	//  assert(hasLegalConfiguration());
+		mainEventLoop();
+	} catch (boost::bad_weak_ptr e) {
+		LOG(ERROR) << "Unclean shutdown " << std::endl << std::endl;
 	}
-
-	enterStates(initialTransitions);
-//	_mutex.unlock();
-
-//  assert(hasLegalConfiguration());
-	mainEventLoop();
-
 	// set datamodel to null from this thread
 	if(_dataModel)
 		_dataModel = DataModel();
@@ -192,22 +178,7 @@ void InterpreterDraft6::mainEventLoop() {
 			}
 			std::cout << std::endl;
 #endif
-			monIter = _monitors.begin();
-			while(monIter != _monitors.end()) {
-				try {
-					(*monIter)->beforeMicroStep(shared_from_this());
-				} catch (Event e) {
-					LOG(ERROR) << "Syntax error when calling beforeMicroStep on monitors: " << std::endl << e << std::endl;
-				} catch (boost::bad_weak_ptr e) {
-					LOG(ERROR) << "Unclean shutdown " << std::endl << std::endl;
-					_mutex.unlock();
-					goto EXIT_INTERPRETER;
-				} catch (...) {
-					LOG(ERROR) << "An exception occured when calling beforeMicroStep on monitors";
-				}
-				monIter++;
-			}
-
+			
 			enabledTransitions = selectEventlessTransitions();
 			if (enabledTransitions.size() == 0) {
 				if (_internalQueue.size() == 0) {
@@ -218,27 +189,20 @@ void InterpreterDraft6::mainEventLoop() {
 #if VERBOSE
 					std::cout << "Received internal event " << _currEvent.name << std::endl;
 #endif
+					
+					// --- MONITOR: beforeProcessingEvent ------------------------------
+					for(monIter_t monIter = _monitors.begin(); monIter != _monitors.end(); monIter++) {
+						try {
+							(*monIter)->beforeProcessingEvent(shared_from_this(), _currEvent);
+						} USCXML_MONITOR_CATCH_BLOCK(beforeProcessingEvent)
+					}
+
 					if (_dataModel)
 						_dataModel.setEvent(_currEvent);
 					enabledTransitions = selectTransitions(_currEvent.name);
 				}
 			}
 			if (!enabledTransitions.empty()) {
-				monIter = _monitors.begin();
-				while(monIter != _monitors.end()) {
-					try {
-						(*monIter)->beforeTakingTransitions(shared_from_this(), enabledTransitions);
-					} catch (Event e) {
-						LOG(ERROR) << "Syntax error when calling beforeTakingTransitions on monitors: " << std::endl << e << std::endl;
-					} catch (boost::bad_weak_ptr e) {
-						LOG(ERROR) << "Unclean shutdown " << std::endl << std::endl;
-						_mutex.unlock();
-						goto EXIT_INTERPRETER;
-					} catch (...) {
-						LOG(ERROR) << "An exception occured when calling beforeTakingTransitions on monitors";
-					}
-					monIter++;
-				}
 				// test 403b
 				enabledTransitions.to_document_order();
 				microstep(enabledTransitions);
@@ -269,20 +233,14 @@ void InterpreterDraft6::mainEventLoop() {
 
 		monIter = _monitors.begin();
 //    if (!_sendQueue || _sendQueue->isEmpty()) {
-		while(monIter != _monitors.end()) {
+
+		// --- MONITOR: onStableConfiguration ------------------------------
+		for(monIter_t monIter = _monitors.begin(); monIter != _monitors.end(); monIter++) {
 			try {
 				(*monIter)->onStableConfiguration(shared_from_this());
-			} catch (Event e) {
-				LOG(ERROR) << "Syntax error when calling onStableConfiguration on monitors: " << std::endl << e << std::endl;
-			} catch (boost::bad_weak_ptr e) {
-				LOG(ERROR) << "Unclean shutdown " << std::endl << std::endl;
-				_mutex.unlock();
-				goto EXIT_INTERPRETER;
-			} catch (...) {
-				LOG(ERROR) << "An exception occured when calling onStableConfiguration on monitors";
-			}
-			monIter++;
+			} USCXML_MONITOR_CATCH_BLOCK(onStableConfiguration)
 		}
+		
 //    }
 
 		_mutex.unlock();
@@ -302,6 +260,13 @@ void InterpreterDraft6::mainEventLoop() {
 		_currEvent.eventType = Event::EXTERNAL; // make sure it is set to external
 		if (!_running)
 			goto EXIT_INTERPRETER;
+
+		// --- MONITOR: beforeProcessingEvent ------------------------------
+		for(monIter_t monIter = _monitors.begin(); monIter != _monitors.end(); monIter++) {
+			try {
+				(*monIter)->beforeProcessingEvent(shared_from_this(), _currEvent);
+			} USCXML_MONITOR_CATCH_BLOCK(beforeProcessingEvent)
+		}
 
 		if (_dataModel && iequals(_currEvent.name, "cancel.invoke." + _sessionId))
 			break;
@@ -360,19 +325,11 @@ void InterpreterDraft6::mainEventLoop() {
 	}
 
 EXIT_INTERPRETER:
-	monIter = _monitors.begin();
-	while(monIter != _monitors.end()) {
+	// --- MONITOR: beforeCompletion ------------------------------
+	for(monIter_t monIter = _monitors.begin(); monIter != _monitors.end(); monIter++) {
 		try {
 			(*monIter)->beforeCompletion(shared_from_this());
-		} catch (Event e) {
-			LOG(ERROR) << "Syntax error when calling beforeCompletion on monitors: " << std::endl << e << std::endl;
-		} catch (boost::bad_weak_ptr e) {
-			LOG(ERROR) << "Unclean shutdown " << std::endl << std::endl;
-			exitInterpreter();
-		} catch (...) {
-			LOG(ERROR) << "An exception occured when calling beforeCompletion on monitors";
-		}
-		monIter++;
+		} USCXML_MONITOR_CATCH_BLOCK(beforeCompletion)
 	}
 
 	exitInterpreter();
@@ -384,19 +341,11 @@ EXIT_INTERPRETER:
 		}
 	}
 
-	monIter = _monitors.begin();
-	while(monIter != _monitors.end()) {
+	// --- MONITOR: afterCompletion ------------------------------
+	for(monIter_t monIter = _monitors.begin(); monIter != _monitors.end(); monIter++) {
 		try {
 			(*monIter)->afterCompletion(shared_from_this());
-		} catch (Event e) {
-			LOG(ERROR) << "Syntax error when calling afterCompletion on monitors: " << std::endl << e << std::endl;
-		} catch (boost::bad_weak_ptr e) {
-			LOG(ERROR) << "Unclean shutdown " << std::endl << std::endl;
-			exitInterpreter();
-		} catch (...) {
-			LOG(ERROR) << "An exception occured when calling afterCompletion on monitors";
-		}
-		monIter++;
+		} USCXML_MONITOR_CATCH_BLOCK(afterCompletion)
 	}
 
 }
@@ -635,9 +584,45 @@ void InterpreterDraft6::microstep(const Arabica::XPath::NodeSet<std::string>& en
 	std::cout << std::endl;
 #endif
 
+	// --- MONITOR: beforeMicroStep ------------------------------
+	for(monIter_t monIter = _monitors.begin(); monIter != _monitors.end(); monIter++) {
+		try {
+			(*monIter)->beforeMicroStep(shared_from_this());
+		} USCXML_MONITOR_CATCH_BLOCK(beforeMicroStep)
+	}
+
 	exitStates(enabledTransitions);
-	executeContent(enabledTransitions);
+	
+	monIter_t monIter;
+	for (int i = 0; i < enabledTransitions.size(); i++) {
+		Element<std::string> transition(enabledTransitions[i]);
+
+		// --- MONITOR: beforeTakingTransitions ------------------------------
+		for(monIter_t monIter = _monitors.begin(); monIter != _monitors.end(); monIter++) {
+			try {
+				(*monIter)->beforeTakingTransition(shared_from_this(), transition);
+			} USCXML_MONITOR_CATCH_BLOCK(beforeTakingTransitions)
+		}
+		
+		executeContent(transition);
+		
+		// --- MONITOR: afterTakingTransitions ------------------------------
+		for(monIter_t monIter = _monitors.begin(); monIter != _monitors.end(); monIter++) {
+			try {
+				(*monIter)->afterTakingTransition(shared_from_this(), transition);
+			} USCXML_MONITOR_CATCH_BLOCK(afterTakingTransitions)
+		}
+	}
+
 	enterStates(enabledTransitions);
+	
+	// --- MONITOR: afterMicroStep ------------------------------
+	for(monIter_t monIter = _monitors.begin(); monIter != _monitors.end(); monIter++) {
+		try {
+			(*monIter)->afterMicroStep(shared_from_this());
+		} USCXML_MONITOR_CATCH_BLOCK(afterMicroStep)
+	}
+
 }
 
 void InterpreterDraft6::exitInterpreter() {
@@ -734,21 +719,6 @@ void InterpreterDraft6::exitStates(const Arabica::XPath::NodeSet<std::string>& e
 	std::cout << std::endl;
 #endif
 
-	monIter = _monitors.begin();
-	while(monIter != _monitors.end()) {
-		try {
-			(*monIter)->beforeExitingStates(shared_from_this(), statesToExit);
-		} catch (Event e) {
-			LOG(ERROR) << "Syntax error when calling beforeExitingStates on monitors: " << std::endl << e << std::endl;
-		} catch (boost::bad_weak_ptr e) {
-			LOG(ERROR) << "Unclean shutdown " << std::endl << std::endl;
-			exitInterpreter();
-		} catch (...) {
-			LOG(ERROR) << "An exception occured when calling beforeExitingStates on monitors";
-		}
-		monIter++;
-	}
-
 	for (int i = 0; i < statesToExit.size(); i++) {
 		NodeSet<std::string> histories = filterChildElements(_xmlNSPrefix + "history", statesToExit[i]);
 		for (int j = 0; j < histories.size(); j++) {
@@ -777,11 +747,26 @@ void InterpreterDraft6::exitStates(const Arabica::XPath::NodeSet<std::string>& e
 	}
 
 	for (int i = 0; i < statesToExit.size(); i++) {
+		// --- MONITOR: beforeExitingState ------------------------------
+		for(monIter_t monIter = _monitors.begin(); monIter != _monitors.end(); monIter++) {
+			try {
+				(*monIter)->beforeExitingState(shared_from_this(), Element<std::string>(statesToExit[i]));
+			} USCXML_MONITOR_CATCH_BLOCK(beforeExitingState)
+		}
+
 		NodeSet<std::string> onExits = filterChildElements(_xmlNSPrefix + "onExit", statesToExit[i]);
 		for (int j = 0; j < onExits.size(); j++) {
 			Element<std::string> onExitElem = (Element<std::string>)onExits[j];
 			executeContent(onExitElem);
 		}
+		
+		// --- MONITOR: afterExitingState ------------------------------
+		for(monIter_t monIter = _monitors.begin(); monIter != _monitors.end(); monIter++) {
+			try {
+				(*monIter)->afterExitingState(shared_from_this(), Element<std::string>(statesToExit[i]));
+			} USCXML_MONITOR_CATCH_BLOCK(afterExitingState)
+		}
+
 		NodeSet<std::string> invokes = filterChildElements(_xmlNSPrefix + "invoke", statesToExit[i]);
 		for (int j = 0; j < invokes.size(); j++) {
 			Element<std::string> invokeElem = (Element<std::string>)invokes[j];
@@ -797,22 +782,6 @@ void InterpreterDraft6::exitStates(const Arabica::XPath::NodeSet<std::string>& e
 		_configuration = NodeSet<std::string>();
 		_configuration.insert(_configuration.end(), tmp.begin(), tmp.end());
 	}
-
-	monIter = _monitors.begin();
-	while(monIter != _monitors.end()) {
-		try {
-			(*monIter)->afterExitingStates(shared_from_this());
-		} catch (Event e) {
-			LOG(ERROR) << "Syntax error when calling afterExitingStates on monitors: " << std::endl << e << std::endl;
-		} catch (boost::bad_weak_ptr e) {
-			LOG(ERROR) << "Unclean shutdown " << std::endl << std::endl;
-			exitInterpreter();
-		} catch (...) {
-			LOG(ERROR) << "An exception occured when calling afterExitingStates on monitors";
-		}
-		monIter++;
-	}
-
 }
 
 void InterpreterDraft6::enterStates(const Arabica::XPath::NodeSet<std::string>& enabledTransitions) {
@@ -926,23 +895,16 @@ void InterpreterDraft6::enterStates(const Arabica::XPath::NodeSet<std::string>& 
 	std::cout << std::endl;
 #endif
 
-	monIter = _monitors.begin();
-	while(monIter != _monitors.end()) {
-		try {
-			(*monIter)->beforeEnteringStates(shared_from_this(), statesToEnter);
-		} catch (Event e) {
-			LOG(ERROR) << "Syntax error when calling beforeEnteringStates on monitors: " << std::endl << e << std::endl;
-		} catch (boost::bad_weak_ptr e) {
-			LOG(ERROR) << "Unclean shutdown " << std::endl << std::endl;
-			exitInterpreter();
-		} catch (...) {
-			LOG(ERROR) << "An exception occured when calling beforeEnteringStates on monitors";
-		}
-		monIter++;
-	}
-
 	for (int i = 0; i < statesToEnter.size(); i++) {
 		Element<std::string> stateElem = (Element<std::string>)statesToEnter[i];
+		
+		// --- MONITOR: beforeEnteringState ------------------------------
+		for(monIter_t monIter = _monitors.begin(); monIter != _monitors.end(); monIter++) {
+			try {
+				(*monIter)->beforeEnteringState(shared_from_this(), stateElem);
+			} USCXML_MONITOR_CATCH_BLOCK(beforeEnteringState)
+		}
+
 		_configuration.push_back(stateElem);
 		_statesToInvoke.push_back(stateElem);
 		if (_binding == LATE && stateElem.getAttribute("isFirstEntry").size() > 0) {
@@ -959,6 +921,13 @@ void InterpreterDraft6::enterStates(const Arabica::XPath::NodeSet<std::string>& 
 		// execute onentry executable content
 		NodeSet<std::string> onEntryElems = filterChildElements(_xmlNSPrefix + "onEntry", stateElem);
 		executeContent(onEntryElems, false);
+
+		// --- MONITOR: afterEnteringState ------------------------------
+		for(monIter_t monIter = _monitors.begin(); monIter != _monitors.end(); monIter++) {
+			try {
+				(*monIter)->afterEnteringState(shared_from_this(), stateElem);
+			} USCXML_MONITOR_CATCH_BLOCK(afterEnteringState)
+		}
 
 		if (isMember(stateElem, statesForDefaultEntry)) {
 			// execute initial transition content for compound states
@@ -996,22 +965,6 @@ void InterpreterDraft6::enterStates(const Arabica::XPath::NodeSet<std::string>& 
 			_done = true;
 		}
 	}
-
-	monIter = _monitors.begin();
-	while(monIter != _monitors.end()) {
-		try {
-			(*monIter)->afterEnteringStates(shared_from_this());
-		} catch (Event e) {
-			LOG(ERROR) << "Syntax error when calling afterEnteringStates on monitors: " << std::endl << e << std::endl;
-		} catch (boost::bad_weak_ptr e) {
-			LOG(ERROR) << "Unclean shutdown " << std::endl << std::endl;
-			return;
-		} catch (...) {
-			LOG(ERROR) << "An exception occured when calling afterEnteringStates on monitors";
-		}
-		monIter++;
-	}
-
 }
 
 void InterpreterDraft6::addStatesToEnter(const Node<std::string>& state,

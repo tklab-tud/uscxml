@@ -369,7 +369,7 @@ bool UmundoInvoker::protobufToData(Data& data, const google::protobuf::Message& 
 	const google::protobuf::Descriptor* desc = msg.GetDescriptor();
 	const google::protobuf::Reflection* reflect = msg.GetReflection();
 
-	data.compound["type"] = Data(desc->name(), Data::VERBATIM);
+	data.compound["protobufType"] = Data(desc->name(), Data::VERBATIM);
 
 	for (int i = 0; i < desc->field_count(); i++) {
 		const google::protobuf::FieldDescriptor* fieldDesc = desc->field(i);

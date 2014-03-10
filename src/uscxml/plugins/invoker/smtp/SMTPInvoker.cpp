@@ -59,7 +59,7 @@ size_t SMTPInvoker::writeCurlData(void *ptr, size_t size, size_t nmemb, void *us
 
 	SMTPContext* ctx = (SMTPContext*)userdata;
 
-	size_t toWrite = std::min(ctx->content.length() - ctx->readPtr, size * nmemb);
+	size_t toWrite = (std::min)(ctx->content.length() - ctx->readPtr, size * nmemb);
 	if (toWrite > 0) {
 		memcpy (ptr, ctx->content.c_str() + ctx->readPtr, toWrite);
 		ctx->readPtr += toWrite;
