@@ -39,7 +39,7 @@ namespace uscxml {
 #define DEF_TIMADDR		"127.0.0.1"
 #define DEF_TIMPORT		"3000"
 
-#define MAXCONN			5
+#define MAXTIMCONN		6
 
 enum exceptions {
 	TIM_TIMEOUT,
@@ -52,8 +52,8 @@ typedef struct request {
 	unsigned int addr;
 	unsigned int len;
 	bool write;
-	const std::list<std::string> wdata;
-	const std::list<std::pair<std::string,std::string> > indexes;
+	std::list<std::string> wdata;
+	std::list<std::pair<std::string,std::string> > indexes;
 } request_t;
 
 /**
@@ -62,10 +62,8 @@ typedef struct request {
 class XmlBridgeInvoker : public InvokerImpl {
 public:
 	XmlBridgeInvoker() :
-		currSock(-1), _reply(NULL), _servinfo(NULL), _socketfd(-1),
-		_itemsRead(), _mesbufferer(MesBufferer::getInstance()),
-		_currAddr(-1), _currItems(0), _currLen(0), _currWrite(false),
-		_reqQueue() {}
+		_reply(NULL), _servinfo(NULL), _socketfd(-1),
+		_itemsRead(), _mesbufferer(MesBufferer::getInstance()),	_reqQueue() {}
 
 	std::set<std::string> getNames() {
 		std::set<std::string> names;
@@ -78,14 +76,13 @@ public:
 	void invoke(const InvokeRequest& req);
 	Data getDataModelVariables();
 
-	bool buildMESreq(request *myreq);
+	bool buildMESreq(request *myreq, bool newreq);
 	void buildTIMreply(const std::string &reply_raw_data);
 	void buildTIMexception(exceptions type);
 
 	~XmlBridgeInvoker();
 
 protected:
-	bool initClient(std::string ipaddr, std::string port);
 	void client(const std::string &cmdframe);
 	bool connect2TIM();
 
@@ -105,6 +102,8 @@ protected:
 	struct addrinfo *_servinfo;	/**< Informazioni di sessione del server TIM */
 
 	std::list<request *> _reqQueue;
+	std::list<bool> _reqIsNew;
+	bool isNewReq;
 
 	tthread::mutex queueMUTEX;
 };
