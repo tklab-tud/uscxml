@@ -32,7 +32,7 @@ case "$1" in
     	if [ "$2" -eq "1" ] ; then
 		echo "Write Mode is Not Supported"		
 	else
-		/usr/local/bin/modpoll -0 -1 -t4 -o4 -p $PORT -r385 -c56 $TIM
+		/usr/local/bin/modpoll -0 -1 -t4 -o4 -p $PORT -r413 -c56 $TIM
 	fi
    ;;
 3)  echo  "Sending command $1"
