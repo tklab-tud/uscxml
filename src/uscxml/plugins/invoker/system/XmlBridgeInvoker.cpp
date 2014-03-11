@@ -194,7 +194,7 @@ void XmlBridgeInvoker::send(const SendRequest& req) {
 	{
 		tthread::lock_guard<tthread::mutex> queuelock(queueMUTEX);
 		_reqQueue.pop_back();
-		_reqIsNew.pop_back();
+		_reqClock.pop_back();
 	}
 
 	/* Quando la richiesta precedente è stata gestita e rimossa
@@ -232,12 +232,16 @@ bool XmlBridgeInvoker::buildMESreq(uscxml::request *myreq, bool newreq) {
 				LOG(ERROR) << _invokeId << " is currently handling too many requests";
 				return false;
 			} else if (_reqQueue.size() == 0) {
-				_reqIsNew.push_front(true);
+				/* Se la richiesta è la prima ad essere accodata deve sempre
+				 * forzare la connessione al TIM */
+				_reqClock.push_front(0);
 			} else if (_reqQueue.size() > 0) {
-				_reqIsNew.push_front(false);
+				_reqClock.push_front(std::clock());
 			}
 			_reqQueue.push_front(myreq);
 		} else {
+			/* Se richiedo di analizzare richieste già esistenti
+			 * si suppone che la coda non sia piena */
 			if (_reqQueue.empty()) {
 				LOG(ERROR) << _invokeId << " queue is empty!";
 				return false;
@@ -429,7 +433,8 @@ bool XmlBridgeInvoker::connect2TIM() {
 void XmlBridgeInvoker::client(const std::string &cmdframe) {
 
 	/* controllo se devo riutilizzare l'xml archiviato del TIM o no */
-	if (!_reqIsNew.back()) {
+	if (_reqClock.back() != 0 && ((std::clock() - _reqClock.back()) < (MAXQUEUEDELAY * CLOCKS_PER_SEC))) {
+		LOG(INFO) << _invokeId << " reusing old TIM reply!";
 		if (_reply == NULL) {
 			LOG(ERROR) << _invokeId << " empty reply buffer, cannot reuse TIM xml data";
 			buildTIMexception(TIM_ERROR);
@@ -452,6 +457,7 @@ void XmlBridgeInvoker::client(const std::string &cmdframe) {
 	}
 
 	if (_socketfd == -1) {
+		LOG(INFO) << _invokeId << " connecting to TIM";
 		tthread::lock_guard<tthread::mutex> timconnlock(timconnMUTEX);
 		if (timconnCount >= MAXTIMCONN) {
 			timconnFLAG.wait(timconnMUTEX);

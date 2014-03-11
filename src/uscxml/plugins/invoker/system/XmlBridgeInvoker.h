@@ -13,6 +13,7 @@
 #include <sys/socket.h>
 #include <netdb.h>
 #include <mesbufferer.h>
+#include <ctime>
 
 #ifdef BUILD_AS_PLUGINS
 #include "uscxml/plugins/Plugins.h"
@@ -40,6 +41,7 @@ namespace uscxml {
 #define DEF_TIMPORT		"3000"
 
 #define MAXTIMCONN		6
+#define MAXQUEUEDELAY		2
 
 enum exceptions {
 	TIM_TIMEOUT,
@@ -104,8 +106,7 @@ protected:
 	struct addrinfo *_servinfo;	/**< Informazioni di sessione del server TIM */
 
 	std::list<request *> _reqQueue;
-	std::list<bool> _reqIsNew;
-	bool isNewReq;
+	std::list<std::clock_t> _reqClock;
 
 	tthread::mutex queueMUTEX;
 };
