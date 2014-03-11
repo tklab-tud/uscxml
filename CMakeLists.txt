@@ -929,15 +929,6 @@ if (NOT CMAKE_CROSSCOMPILING)
 	set_target_properties(uscxml-browser PROPERTIES FOLDER "Apps")
 	install_executable(TARGETS uscxml-browser COMPONENT tools)
 
-	add_executable(uscxml-debug apps/uscxml-debug.cpp)
-	target_link_libraries(uscxml-debug uscxml)
-	if (NOT CMAKE_CROSSCOMPILING)
-		set_target_properties(uscxml-debug PROPERTIES COTIRE_ADD_UNITY_BUILD FALSE)
-#		cotire(uscxml-browser)
-	endif()
-	set_target_properties(uscxml-debug PROPERTIES FOLDER "Apps")
-	install_executable(TARGETS uscxml-debug COMPONENT tools)
-
 	if (PROTOBUF_FOUND AND OFF)
 		file(GLOB W3C-MMI-COMMON ${PROJECT_SOURCE_DIR}/apps/w3c-mmi/*.cpp ${PROJECT_SOURCE_DIR}/apps/w3c-mmi/*.h)
 

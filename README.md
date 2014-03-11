@@ -44,12 +44,6 @@ uSCXML still fails the following ecmascript tests:
 <table>
 	<tr><th>Test#</th><th>Status</th><th>Description</th><th>Comment</th></tr>
 	<tr>
-		<td><tt><a href="https://github.com/tklab-tud/uscxml/blob/master/test/samples/w3c/ecma/test301.scxml">301</a></tt></td>
-		<td><tt>Failed</tt></td>
-		<td>"the processor should  reject this document because it can't download the script"</td>
-		<td>uSCXML continues processing as if there was no <tt>&lt;script></tt> element.</td>
-	</tr>
-	<tr>
 		<td><tt><a href="https://github.com/tklab-tud/uscxml/blob/master/test/samples/w3c/ecma/test329.scxml">329</a></tt></td>
 		<td><tt>Failed</tt></td>
 		<td>"test that none of the system variables can be modified"</td>

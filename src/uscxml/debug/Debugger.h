@@ -23,45 +23,40 @@
 #include "uscxml/Message.h"
 #include "uscxml/Interpreter.h"
 #include "uscxml/debug/Breakpoint.h"
-
-#include <glog/logging.h>
+#include "uscxml/debug/DebugSession.h"
 	
 namespace uscxml {
 	
-class USCXML_API Debugger : public InterpreterMonitor, public google::LogSink {
+class USCXML_API Debugger : public InterpreterMonitor {
 public:
 	Debugger() {
-		_isStepping = false;
 	}
 	virtual ~Debugger() {}
-
-	class LogMessage : public Data {
-	public:
-		LogMessage(google::LogSeverity severity, const char* full_filename,
-							 const char* base_filename, int line,
-							 const struct ::tm* tm_time,
-							 std::string message, std::string formatted) {
-			
-			compound["severity"] = severity;
-			compound["fullFilename"] = Data(full_filename, Data::VERBATIM);
-			compound["baseFilename"] = Data(base_filename, Data::VERBATIM);
-			compound["line"] = line;
-			compound["message"] = Data(message, Data::VERBATIM);
-			compound["time"] = Data(mktime((struct ::tm*)tm_time), Data::INTERPRETED);
-			compound["formatted"] = Data(formatted, Data::VERBATIM);
-		}
-	};
   
-	virtual void pushData(Data pushData) = 0;
-	virtual void hitBreakpoint(const Interpreter& interpreter, Data data) = 0;
-	
-	void stepping(bool enable) {
-		_isStepping = enable;
+	virtual void attachSession(Interpreter interpreter, boost::shared_ptr<DebugSession> session) {
+		tthread::lock_guard<tthread::recursive_mutex> lock(_sessionMutex);
+		_sessionForInterpreter[interpreter] = session;
+	}
+
+	virtual void detachSession(Interpreter interpreter) {
+		tthread::lock_guard<tthread::recursive_mutex> lock(_sessionMutex);
+		_sessionForInterpreter.erase(interpreter);
 	}
 	
+	virtual boost::shared_ptr<DebugSession> getSession(Interpreter interpreter) {
+		tthread::lock_guard<tthread::recursive_mutex> lock(_sessionMutex);
+		if (_sessionForInterpreter.find(interpreter) != _sessionForInterpreter.end())
+			return _sessionForInterpreter[interpreter];
+		return boost::shared_ptr<DebugSession>();
+	}
+	
+	virtual void pushData(boost::shared_ptr<DebugSession> session, Data pushData) = 0;
+		
 	// InterpreterMonitor
 	virtual void beforeProcessingEvent(Interpreter interpreter, const Event& event);
 	virtual void beforeMicroStep(Interpreter interpreter);
+	virtual void beforeExecutingContent(Interpreter interpreter, const Arabica::DOM::Node<std::string>& content);
+	virtual void afterExecutingContent(Interpreter interpreter, const Arabica::DOM::Node<std::string>& content);
 	virtual void beforeExitingState(Interpreter interpreter, const Arabica::DOM::Element<std::string>& state);
 	virtual void afterExitingState(Interpreter interpreter, const Arabica::DOM::Element<std::string>& state);
 	virtual void beforeUninvoking(Interpreter interpreter, const Arabica::DOM::Element<std::string>& invokeElem, const std::string& invokeid);
@@ -79,12 +74,6 @@ public:
 	virtual void beforeCompletion(Interpreter interpreter) {}
 	virtual void afterCompletion(Interpreter interpreter);
 
-	// Logsink
-	virtual void send(google::LogSeverity severity, const char* full_filename,
-										const char* base_filename, int line,
-										const struct ::tm* tm_time,
-										const char* message, size_t message_len);
-
 protected:
   
 	void handleTransition(Interpreter interpreter,
@@ -99,14 +88,15 @@ protected:
 										const std::string& invokeId,
 										Breakpoint::When when,
 										Breakpoint::Action action);
+	void handleExecutable(Interpreter interpreter,
+												const Arabica::DOM::Element<std::string>& execContentElem,
+												Breakpoint::When when);
 	void handleStable(Interpreter interpreter, Breakpoint::When when);
 	void handleMicrostep(Interpreter interpreter, Breakpoint::When when);
 	void handleEvent(Interpreter interpreter, const Event& event, Breakpoint::When when);
-	void checkBreakpoints(Interpreter interpreter, const std::list<Breakpoint> qualifiedBreakpoints);
 
-	bool _isStepping;
-	std::set<Breakpoint> _breakPoints;
-  
+	tthread::recursive_mutex _sessionMutex;
+  std::map<Interpreter, boost::shared_ptr<DebugSession> > _sessionForInterpreter;
 };
 
 }

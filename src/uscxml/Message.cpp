@@ -430,6 +430,7 @@ Data Data::fromJSON(const std::string& jsonString) {
 			std::string value = trimmed.substr(t[currTok].start, t[currTok].end - t[currTok].start);
 			if (dataStack.back()->type == Data::VERBATIM) {
 				boost::replace_all(value, "\\\"", "\"");
+				boost::replace_all(value, "\\n", "\n");
 			}
 			dataStack.back()->atom = value;
 			dataStack.pop_back();
@@ -728,10 +729,11 @@ std::string Data::toJSON(const Data& data) {
 				// escape string
 				if (false) {
 				} else if (data.atom[i] == '"') {
-					os << '\\';
-					os << data.atom[i];
+					os << "\\\"";
 				} else if (data.atom[i] == '\n') {
 					os << "\\n";
+				} else if (data.atom[i] == '\t') {
+					os << "\\t";
 				} else {
 					os << data.atom[i];
 				}
@@ -746,6 +748,7 @@ std::string Data::toJSON(const Data& data) {
 		std::string xmlSer = xmlSerSS.str();
 		boost::replace_all(xmlSer, "\"", "\\\"");
 		boost::replace_all(xmlSer, "\n", "\\n");
+		boost::replace_all(xmlSer, "\t", "\\t");
 		os << "\"" << xmlSer << "\"";
 	} else {
 		if (data.type == Data::VERBATIM) {

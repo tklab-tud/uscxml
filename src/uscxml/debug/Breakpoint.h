@@ -21,6 +21,7 @@
 #define BREAKPOINT_H_VR7K7T1X
 
 #include "uscxml/Message.h"
+#include "uscxml/Interpreter.h"
 
 namespace uscxml {
 
@@ -39,35 +40,49 @@ public:
 		UNDEF_ACTION, ENTER, EXIT, INVOKE, UNINVOKE
 	};
 	
-	Breakpoint() {}
+	Breakpoint() {
+		subject = UNDEF_SUBJECT;
+		when    = UNDEF_WHEN;
+		action  = UNDEF_ACTION;
+	}
 	Breakpoint(const Data& data);
 	
 	// would we match the given breakpoint as well?
-	bool matches(const Breakpoint& other) const;
-	
-	bool isValid();
-	
+	bool matches(Interpreter interpreter, const Breakpoint& other) const;
+		
 	Data toData() const;
 	
 	bool operator<(const Breakpoint& other) const {
-		return (origData < other.origData);
+		return (toData() < other.toData());
 	}
+	
+	operator bool() {
+		return (subject != UNDEF_SUBJECT ||
+						when    != UNDEF_WHEN ||
+						action  != UNDEF_ACTION);
+	}
+	
+	mutable bool enabled;
 	
 	When when;
 	Subject subject;
 	Action action;
 
+	Arabica::DOM::Element<std::string> element;
+	
 	std::string invokeId;
 	std::string invokeType;
 
 	std::string eventName;
+	
+	std::string executableName;
+	std::string executableXPath;
 	
 	std::string stateId;
 	std::string transSource;
 	std::string transTarget;
 	
 	std::string condition;
-	Data origData;
 };
 
 }

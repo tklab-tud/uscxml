@@ -98,7 +98,7 @@ void InterpreterOptions::printUsageAndExit(const char* progName) {
 	printf("\n");
 	printf("Options\n");
 	printf("\t-v        : be verbose\n");
-	printf("\t-d        : write each configuration as a dot file\n");
+	printf("\t-d        : enable debugging via HTTP\n");
 	printf("\t-lN       : Set loglevel to N\n");
 	printf("\t-tN       : port for HTTP server\n");
 	printf("\t-sN       : port for HTTPS server\n");
@@ -120,7 +120,7 @@ InterpreterOptions InterpreterOptions::fromCmdLine(int argc, char** argv) {
 	optind = 0;
 	struct option longOptions[] = {
 		{"verbose",       no_argument,       0, 'v'},
-		{"dot",           no_argument,       0, 'd'},
+		{"debug",         no_argument,       0, 'd'},
 		{"port",          required_argument, 0, 't'},
 		{"ssl-port",      required_argument, 0, 's'},
 		{"ws-port",       required_argument, 0, 'w'},
@@ -134,11 +134,6 @@ InterpreterOptions InterpreterOptions::fromCmdLine(int argc, char** argv) {
 	};
 
 	opterr = 0;
-	if (argc < 2) {
-		options.error = "No SCXML document to evaluate";
-		return options;
-	}
-
 	InterpreterOptions* currOptions = &options;
 
 	// parse global options
@@ -183,7 +178,7 @@ InterpreterOptions InterpreterOptions::fromCmdLine(int argc, char** argv) {
 			currOptions->pluginPath = optarg;
 			break;
 		case 'd':
-			currOptions->useDot = true;
+			currOptions->withDebugger = true;
 			break;
 		case 'c':
 			currOptions->certificate = optarg;
@@ -228,7 +223,7 @@ InterpreterOptions InterpreterOptions::fromCmdLine(int argc, char** argv) {
 
 DONE_PARSING_CMD:
 
-	if (options.interpreters.size() == 0)
+	if (options.interpreters.size() == 0 && !options.withDebugger)
 		options.error = "No SCXML document to evaluate";
 
 	return options;
@@ -328,6 +323,7 @@ Interpreter Interpreter::fromURI(const std::string& uri) {
 	// try to establish URI root for relative src attributes in document
 	if (interpreter) {
 		interpreter._impl->_baseURI = URL::asBaseURL(absUrl);
+		interpreter._impl->_sourceURI = absUrl;
 	} else {
 		LOG(ERROR) << "Cannot create interpreter from URI '" << absUrl.asString() << "'";
 	}
@@ -1312,16 +1308,26 @@ void InterpreterImpl::executeContent(const Arabica::DOM::Node<std::string>& cont
 	if (content.getNodeType() != Node_base::ELEMENT_NODE)
 		return;
 
-	if (false) {
-	} else if (iequals(TAGNAME(content), _xmlNSPrefix + "onentry") ||
-	           iequals(TAGNAME(content), _xmlNSPrefix + "onexit") ||
-	           iequals(TAGNAME(content), _xmlNSPrefix + "finalize") ||
-	           iequals(TAGNAME(content), _xmlNSPrefix + "transition")) {
+	if (iequals(TAGNAME(content), _xmlNSPrefix + "onentry") ||
+			iequals(TAGNAME(content), _xmlNSPrefix + "onexit") ||
+			iequals(TAGNAME(content), _xmlNSPrefix + "finalize") ||
+			iequals(TAGNAME(content), _xmlNSPrefix + "transition")) {
 		// --- CONVENIENCE LOOP --------------------------
 		NodeList<std::string> executable = content.getChildNodes();
 		for (int i = 0; i < executable.getLength(); i++) {
 			executeContent(executable.item(i), rethrow);
 		}
+		return;
+	}
+
+	// --- MONITOR: beforeExecutingContent ------------------------------
+	for(monIter_t monIter = _monitors.begin(); monIter != _monitors.end(); monIter++) {
+		try {
+			(*monIter)->beforeExecutingContent(shared_from_this(), content);
+		} USCXML_MONITOR_CATCH_BLOCK(beforeExecutingContent)
+	}
+
+	if (false) {
 	} else if (iequals(TAGNAME(content), _xmlNSPrefix + "raise")) {
 		// --- RAISE --------------------------
 		if (HAS_ATTR(content, "event")) {
@@ -1455,6 +1461,9 @@ void InterpreterImpl::executeContent(const Arabica::DOM::Node<std::string>& cont
 					}
 				} catch (Event exception) {
 					// script failed to download
+					if (exception.name == "error.communication") {
+						throw exception; // terminate test329
+					}
 					receive(exception);
 					return;
 				}
@@ -1528,6 +1537,14 @@ void InterpreterImpl::executeContent(const Arabica::DOM::Node<std::string>& cont
 		}
 		execContent.exitElement(content);
 	}
+	
+	// --- MONITOR: afterExecutingContent ------------------------------
+	for(monIter_t monIter = _monitors.begin(); monIter != _monitors.end(); monIter++) {
+		try {
+			(*monIter)->afterExecutingContent(shared_from_this(), content);
+		} USCXML_MONITOR_CATCH_BLOCK(afterExecutingContent)
+	}
+
 }
 
 void InterpreterImpl::returnDoneEvent(const Arabica::DOM::Node<std::string>& state) {
