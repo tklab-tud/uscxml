@@ -2,7 +2,7 @@
 	<script src="http://uscxml.tk.informatik.tu-darmstadt.de/scripts/dump.js" />
 	<state id="start">
 		<invoke type="dirmon">
-			<param name="dir" expr="'.'" />
+			<param name="dir" expr="'./audio'" />
 			<param name="recurse" expr="'true'" />
 			<param name="reportexisting" expr="'true'" />
 			<param name="suffix" expr="'.scxml'" />

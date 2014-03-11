@@ -1,7 +1,7 @@
 #include "uscxml/config.h"
 #include "uscxml/Interpreter.h"
 #include "uscxml/DOMUtils.h"
-#include "uscxml/debug/SCXMLDotWriter.h"
+#include "uscxml/debug/DebuggerServlet.h"
 #include <glog/logging.h>
 
 #ifdef HAS_SIGNAL_H
@@ -142,6 +142,12 @@ int main(int argc, char** argv) {
 	}
 	HTTPServer::getInstance(options.httpPort, options.wsPort, sslConf);
 
+	DebuggerServlet* debugger;
+	if (options.withDebugger) {
+		debugger = new DebuggerServlet();
+		HTTPServer::getInstance()->registerServlet("/debug", debugger);
+	}
+	
 	// instantiate and configure interpreters
 	std::list<Interpreter> interpreters;
 	std::map<std::string, InterpreterOptions*>::iterator confIter = options.interpreters.begin();
@@ -160,9 +166,8 @@ int main(int argc, char** argv) {
 				VerboseMonitor* vm = new VerboseMonitor();
 				interpreter.addMonitor(vm);
 			}
-			if (options.useDot) {
-				SCXMLDotWriter* dotWriter = new SCXMLDotWriter();
-				interpreter.addMonitor(dotWriter);
+			if (options.withDebugger) {
+				interpreter.addMonitor(debugger);
 			}
 
 			interpreters.push_back(interpreter);
@@ -194,5 +199,11 @@ int main(int argc, char** argv) {
 		}
 	}
 
+	if (options.withDebugger) {
+		// idle and wait for CTRL+C or debugging events
+		while(true)
+			tthread::this_thread::sleep_for(tthread::chrono::seconds(1));
+	}
+	
 	return EXIT_SUCCESS;
 }

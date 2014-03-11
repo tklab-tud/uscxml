@@ -1,0 +1,2832 @@
+<!doctype html>
+<html>
+<head>
+  <!-- <link href="http://localhost/~sradomski/jsPlumb/font-awesome.css" rel="stylesheet"> -->
+  <!-- <link rel="stylesheet" href="http://localhost/~sradomski/jsPlumb/demo-all.css"> -->
+  <!-- <link rel="stylesheet" href="http://localhost/~sradomski/jsPlumb/demo.css"> -->
+	
+	<!-- script src="https://google-code-prettify.googlecode.com/svn/loader/prettify.js?autoload=false"></script -->
+	<!--script src="https://google-code-prettify.googlecode.com/svn/loader/run_prettify.js?autoload=false&amp;lang=xml" defer="defer"></script-->
+
+  <script src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.0/jquery.min.js"></script>
+	<script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.10.4/jquery-ui.min.js"></script>
+	<script src="http://ajax.aspnetcdn.com/ajax/jquery.validate/1.11.1/jquery.validate.min.js"></script>
+	<script src="http://ajax.aspnetcdn.com/ajax/jquery.validate/1.11.1/additional-methods.min.js"></script>
+	<script src="http://netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
+	
+	<script src="http://cdn.jsdelivr.net/ace/1.1.01/min/ace.js" charset="utf-8"></script>
+  <script src="http://vkbeautify.googlecode.com/files/vkbeautify.0.99.00.beta.js" charset="utf-8"></script>	
+	<script src="http://cdnjs.cloudflare.com/ajax/libs/typeahead.js/0.9.3/typeahead.min.js" charset="utf-8"></script>
+	<script src="http://dean.edwards.name/base/Base.js" charset="utf-8"></script>
+	<!-- alternatively http://maxailloud.github.io/confirm-bootstrap/#liveDemo -->
+	
+	<script src="https://rawgithub.com/jibe914/Bootstrap-Confirmation/master/bootstrap3-confirmation.js" charset="utf-8"></script>
+	<!--script src="https://raw.githubusercontent.com/jibe914/Bootstrap-Confirmation/master/bootstrap3-confirmation.js" charset="utf-8"></script-->
+	<!-- script src="https://raw.github.com/Tavicu/bootstrap-confirmation/master/bootstrap-confirmation.js" charset="utf-8"></script -->
+
+
+	<script src="https://rawgithub.com/msurguy/ladda-bootstrap/master/dist/spin.js" charset="utf-8"></script>
+	<script src="https://rawgithub.com/msurguy/ladda-bootstrap/master/dist/ladda.js" charset="utf-8"></script>
+	<script src="https://rawgithub.com/prettycode/Object.identical.js/master/Object.identical.js" charset="utf-8"></script>
+	
+	
+	<!-- <link rel="stylesheet" href="jQuery-File-Upload/css/style.css">
+	<link rel="stylesheet" href="jQuery-File-Upload/css/jquery.fileupload.css"> -->
+	
+	
+	
+	<link rel="stylesheet" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.10.4/themes/smoothness/jquery-ui.css" />
+	<link rel="stylesheet" href="http://netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
+	<!-- <link rel="stylesheet" href="http://netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap-theme.min.css"> -->
+	<!-- <link rel="stylesheet" href="http://twitter.github.io/typeahead.js/css/main.css" /> -->
+	<link rel="stylesheet" href="https://raw.githubusercontent.com/hyspace/typeahead.js-bootstrap3.less/master/typeahead.css" />
+	<link rel="stylesheet" href="https://rawgithub.com/msurguy/ladda-bootstrap/master/dist/ladda-themeless.min.css" />
+	
+	<!-- script src="jquery-ui-1.10.4.uscxml/js/jquery-1.10.2.js"></script>
+  <script src="http://cdnjs.cloudflare.com/ajax/libs/select2/3.4.5/select2.min.js" charset="utf-8"></script>
+	<link rel="stylesheet" href="http://twitter.github.io/typeahead.js/css/main.css" />
+	<script src="Base.js"></script>
+	<script src="jquery-ui-1.10.4.uscxml/js/jquery-ui-1.10.4.custom.js"></script>
+  <script src="http://localhost/~sradomski/ace/ace.js" charset="utf-8"></script>
+  <script src="http://localhost/~sradomski/vkbeautify.0.99.00.beta.js" charset="utf-8"></script>	
+	<link rel="stylesheet" href="http://cdnjs.cloudflare.com/ajax/libs/select2/3.4.5/select2.min.css">
+	
+	<script src='http://localhost/~sradomski/jsPlumb/jquery.min.js'></script>
+	<script src='http://localhost/~sradomski/jsPlumb/jquery-ui.min.js'></script>
+	<script src='http://localhost/~sradomski/jsPlumb/jquery.ui.touch-punch.min.js'></script>
+	<script src="//cdnjs.cloudflare.com/ajax/libs/ace/1.1.01/ace.js"></script>
+	<script src='http://localhost/~sradomski/jsPlumb/jquery.jsPlumb-1.5.5.js'></script>
+  <script src="http://localhost/~sradomski/ace/ace.js" charset="utf-8"></script>
+  <script src="http://localhost/~sradomski/jquery.dropdown.min.js" charset="utf-8"></script>
+  <script src="http://localhost/~sradomski/bootstrap/js/bootstrap.min.js"></script -->
+	
+	<!-- link href="jquery.dropdown.css" rel="stylesheet" / -->
+  <!-- <link rel="stylesheet" href="//code.jquery.com/ui/1.10.4/themes/dark-hive/jquery-ui.css"> -->
+  <!-- link rel="stylesheet" href="//code.jquery.com/ui/1.10.4/themes/smoothness/jquery-ui.css" -->
+
+	<style type="text/css">
+	
+	  body {
+/*			font-family: "Trebuchet MS", "Helvetica", "Arial",  "Verdana", "sans-serif";*/
+	  }
+			
+	  .windowlet { 
+	    position: absolute;
+			top: 3em;
+			left: 5em;
+			box-shadow: 5px 2px 19px #aaa;
+			-o-box-shadow: 5px 2px 19px #aaa;
+			-webkit-box-shadow: 5px 2px 19px #aaa;
+			-moz-box-shadow: 5px 2px 19px #aaa;
+		}
+		
+		.windowlet .panel-body {
+			padding: 8px;
+		}
+		
+		.windowlet textarea {
+			resize:vertical;
+		}
+		
+		.debug {
+	    position:fixed !important;
+			width: 320px;
+			min-width: 250px;
+		}
+
+		.debug > .panel > .panel-group {
+/*			overflow: hidden;*/
+			margin-bottom: 0px;
+		}
+
+		.debug > .panel {
+			margin-bottom: 0;
+		}
+
+		.debug > .panel > .panel-footer {
+			padding: 5px 5px;
+			font-family:Consolas,Monaco,Lucida Console,Liberation Mono,DejaVu Sans Mono,Bitstream Vera Sans Mono,Courier New, monospace;
+			font-size: 10px;
+		}
+		
+		.panel-group .panel {
+/*	    border: 1px solid transparent;*/
+			overflow: visible;
+		}
+		
+		.debug-header {
+			cursor: move;
+/*			padding: 10px 15px 5px 15px;
+*/		}
+
+		.subtitle {
+			font-size: 0.7em;
+			font-weight: normal;
+		}
+
+		/* nested panels */
+		.panel .panel .panel-heading {
+			padding: 8px 15px;
+		}
+
+		.panel .panel-group .panel {
+			border-radius: 0px;
+		}
+
+		.panel .panel .panel-title {
+			font-size: 100%; /* Override explicit font-size from bootstrap */
+		}
+
+		.panel .panel {
+			font-size: 90%;
+		}
+
+		.panel-group .panel+.panel {
+			margin-top: 0px;
+		}
+
+		.panel-heading {
+			position: relative;
+		}
+		.heading-decoration {
+			position: absolute;
+			right: 40px;
+			top: 4px;
+		}
+
+		.heading-decoration .badge {
+			float: left;
+			margin-top: 2px;
+			margin-right: 5px;
+		}
+
+		.panel-heading .panel-toggle:after {
+		    /* symbol for "opening" panels */
+		    font-family: 'Glyphicons Halflings';  /* essential for enabling glyphicon */
+		    content: "\e114";    /* adjust as needed, taken from bootstrap.css */
+		    float: right;        /* adjust as needed */
+		    color: grey;         /* adjust as needed */
+		}
+		.panel-heading.collapsed .panel-toggle:after {
+		    /* symbol for "collapsed" panels */
+		    content: "\e080";    /* adjust as needed, taken from bootstrap.css */
+		}
+
+		/* see http://stackoverflow.com/questions/18059161/css-issue-on-twitter-typeahead-with-bootstrap-3 */
+		.twitter-typeahead .tt-hint {
+		    display: block;
+		    height: 34px;
+		    padding: 6px 12px;
+		    font-size: 14px;
+		    line-height: 1.428571429;
+		    border: 1px solid transparent;
+		}
+
+		.form-group .twitter-typeahead {
+			width: 100%;
+		}
+
+		.messages-content textarea.messages {
+			font-size: 10px;
+			cursor: auto;
+			white-space: pre;
+			overflow: auto;
+			font-family:Consolas,Monaco,Lucida Console,Liberation Mono,DejaVu Sans Mono,Bitstream Vera Sans Mono,Courier New, monospace;
+			height: 16em;
+		}
+		
+		ul.dropdown-menu li.server-session {
+			padding-left: 0.7em;
+		}
+		
+		ul.recent-documents span.recent-document-features {
+			padding-left: 0.7em;
+		}
+		
+		.tooltip-inner {
+			background-color: #333;
+		}
+		.tooltip.bottom .tooltip-arrow {
+			border-bottom-color: #333;
+			background-color: #FFF transparent;
+		}
+		
+		.dom {
+			font-size: 10px;
+			font-family:Consolas,Monaco,Lucida Console,Liberation Mono,DejaVu Sans Mono,Bitstream Vera Sans Mono,Courier New, monospace;
+			color: #666;
+		}
+		
+		.dom .active-state {
+			color: #000;
+		}
+
+		.dom .xpath-selected {
+			color: #A00;
+			font-weight: bold;
+		}
+		
+	</style>
+			
+	<script type="text/javascript">
+
+	var SCXMLEditor = Base.extend({
+		constructor: function(params) {
+			$.extend(this, params);
+
+			this.debugger = new SCXMLEditor.Debugger.USCXML({
+				debuggerURL: "http://localhost:8088",
+				scxmlEditor: this,
+			});
+			
+			this.xmlView = new SCXMLEditor.XMLView({
+				destNode: $("body").find(".dom")[0],
+			});
+			
+			$(this.debugger.getNode()).appendTo($("body"));
+		},
+  
+		scxmlDOM: undefined,
+		scxmlURL: undefined,
+		scxmlRoot: undefined,
+		scxmlStates: {},
+	
+		setDocumentNameFromURL: function(url) {
+			var tmp = $('<a>', { href:url } )[0];
+			$(this.debugger.debugDocumentNameNode).html(tmp.pathname.split('/').pop());
+			$(this.debugger.saveBreakpointsNode).closest("li").removeClass("disabled");
+		},
+	
+		loadURL: function(scxmlURL) {
+			this.scxmlURL = scxmlURL;
+			this.setDocumentNameFromURL(scxmlURL);
+
+			if (scxmlURL in this.debugger.recentDocuments) {
+				// load breakpoints
+				if ('breakpoints' in this.debugger.recentDocuments[scxmlURL]) {
+					for (var index in this.debugger.recentDocuments[scxmlURL].breakpoints) {
+						var breakpointData = this.debugger.recentDocuments[scxmlURL].breakpoints[index];
+						var breakpoint = new SCXMLEditor.Debugger.Breakpoint({
+							data: breakpointData
+						});
+						
+						var serializedBreakpoint = JSON.stringify(breakpoint.toWireFormat());
+						var alreadyExists = false;
+
+						// check if such a breakpoint already exists
+						for (var index in this.debugger.breakpoints) {
+							var otherBreakpoint = this.debugger.breakpoints[index];
+							if (serializedBreakpoint === JSON.stringify(otherBreakpoint.toWireFormat())) {
+								alreadyExists = true;
+								break;
+							}
+						}
+						
+						if (!alreadyExists)
+							this.debugger.addBreakpoint(breakpoint);
+					}
+				}
+			}
+			
+			// get instance into scope chain
+			var scxmlEdit = this;
+			$.ajax({
+				type: "GET",
+				dataType: "text xml",
+				url: scxmlURL,
+				success: function (dom) {
+					scxmlEdit.loadDOM(dom);
+				},
+				error: function(data) {
+					console.log(data);
+				}
+			});
+		},
+	
+		loadDOM: function(scxmlDOM) {
+			this.scxmlDOM = scxmlDOM;
+			this.scxmlRoot = $(scxmlDOM).find("scxml")[0];
+
+			// notify the debugger
+			this.debugger.loadDOM(scxmlDOM);
+			
+			// var domText = SCXMLEditor.xmlToString(this.scxmlDOM);
+			// $("body").find("pre.dom").text(domText);
+			if (this.xmlView) {
+				this.xmlView.setXML(this.scxmlDOM);
+				this.xmlView.prettyPrint();
+			}
+
+			// add 'nested' class to states of nested scxml documents
+			$(this.scxmlRoot).find("scxml").find("state, final, parallel, history").addClass("nested");
+			$(this.getNode()).appendTo(this.containerNode);
+		},
+
+		getNode: function() {
+			this.node = document.createElement('div');
+			this.node.className = "scxml-editor";
+			this.node.innerHTML = '\
+			<div class="state-tree"></div>\
+			<div class="tools"></div>\
+			';
+			
+			this.stateTreeNode = $(this.node).children("div.state-tree");
+			this.toolsNode = $(this.node).children("div.tools");
+
+			// var rootState = new SCXMLEditor.PortletStateView({
+			// 	scxmlState: this.scxmlRoot,
+			// 	scxmlEditor: this
+			// });
+			// this.rootNode = rootState.getNode();
+			// $(this.rootNode).appendTo(this.stateTreeNode);
+			// $(this.rootNode).draggable();
+
+			return this.node;
+		},
+		
+		getAllChildStates: function() {
+			return $(this.scxmlRoot).find("state, parallel, final, history").not(".nested");
+		},
+		
+		getAllStateIds: function() {
+			var stateIds = [];
+			var self = this;
+			$.each(this.getAllChildStates(), function(index, state) {
+				stateIds.push(SCXMLEditor.getStateId(state));
+			});
+			return stateIds;
+		}
+		
+	});
+
+	SCXMLEditor.getStateId = function(state) {
+		return $(state).attr("id") || $(state).attr("name") || "scxml";
+	}
+
+	SCXMLEditor.getStateType = function(state) {
+		return state.nodeName.toLowerCase();
+	}
+
+	SCXMLEditor.xmlToString = function (xmlNode) {
+		var text = xmlNode.xml || (new XMLSerializer()).serializeToString(xmlNode);
+		return vkbeautify.xml(text);
+	}
+
+	SCXMLEditor.XMLView = Base.extend({
+		constructor: function(params) {
+			$.extend(this, params); 
+		},
+		
+		prettyPrint: function(destNode) {
+			var self = this;
+			
+			function escapeText(text) {
+				return $('<div/>').text(text).html();
+			}
+			function prettyIndent(xmlNode, indentation) {
+				var outputText = '';
+				var indenter = '';
+			
+				for (var i = 0; i < indentation; i++) {
+					indenter += "&nbsp;&nbsp;&nbsp;&nbsp;";
+				}
+				var isActive = false;
+				var isXPathSelected = false;
+				
+				switch(xmlNode.nodeType) {
+					case Node.ELEMENT_NODE:
+						if (xmlNode.nodeName.toLowerCase() === "state") {
+							var stateId = xmlNode.getAttribute("id");
+							if ($.inArray(stateId, self.activeStates) >= 0) {
+								outputText += '<span class="active-state">';
+								isActive = true;
+							}
+						}
+
+						if (xpathNodeSet && xpathNodeSet.snapshotLength > 0) {
+							for (var i = 0; i < xpathNodeSet.snapshotLength; i++) {
+								var currNode = xpathNodeSet.snapshotItem(i);
+								// console.log("Comparing:");
+								// console.log(currNode);
+								// console.log(xmlNode);
+								if (currNode === xmlNode) {
+									// console.log("currNode:");
+									// console.log(currNode);
+									outputText += '<span class="xpath-selected">';
+									isXPathSelected = true;
+									break;
+								}
+							}
+						}
+				
+						outputText += indenter;
+						outputText += '&lt;' + xmlNode.nodeName;
+						for (var j = 0; j < xmlNode.attributes.length; j++) {
+							var attribute = xmlNode.attributes.item(j);
+								outputText += " " + attribute.nodeName + "=\"" + attribute.nodeValue + "\"";
+							}
+						if (!xmlNode.hasChildNodes()) {
+							outputText += ' /&gt;';
+							outputText += '<br />';
+						} else {
+							outputText += '&gt;';
+							outputText += '<br />';
+						}
+						break;
+					case Node.COMMENT_NODE:
+						outputText += indenter;
+						outputText += '&lt;!-- ' + escapeText(xmlNode.nodeValue.trim()) + ' -->';
+						outputText += '<br />';
+						break;	
+					case Node.TEXT_NODE:
+						var text = xmlNode.nodeValue.trim();
+						if (text.length > 0) {
+							outputText += indenter;
+							outputText += escapeText(text);
+							outputText += '<br />';
+						}
+						break;	
+					case Node.ATTRIBUTE_NODE:
+					case Node.CDATA_SECTION_NODE:
+					case Node.ENTITY_REFERENCE_NODE:
+					case Node.ENTITY_NODE:
+					case Node.PROCESSING_INSTRUCTION_NODE:
+					case Node.DOCUMENT_NODE:
+					case Node.DOCUMENT_TYPE_NODE:
+					case Node.DOCUMENT_FRAGMENT_NODE:
+					case Node.NOTATION_NODE:
+					default:
+				}
+			
+				var child = xmlNode.firstChild;
+				while(child) {
+					outputText += prettyIndent(child, indentation + 1);
+					child = child.nextSibling;
+				}
+		
+				switch(xmlNode.nodeType) {
+					case Node.ELEMENT_NODE:
+						if (xmlNode.hasChildNodes()) {
+							outputText += indenter;
+							outputText += '&lt;/' + xmlNode.nodeName;
+							outputText += '&gt;';
+							outputText += '<br />';
+						}
+						break;
+					default:
+				}
+		
+				if (isActive) {
+					outputText += '</span>';
+				}
+				if (isXPathSelected) {
+					outputText += '</span>';
+				}
+		
+				return outputText;
+			}
+
+			if (typeof this.xmlNode == "string") {
+				this.xmlNode = $.parseXML(this.xmlNode);
+			}
+
+			// this.xpath = "//*[local-name() = \"state\"][@id=\"s0\"]/*[local-name() = \"onentry\"][1]/*[local-name() = \"foreach\"][1]";
+			// this.xpath = "//*[local-name() = \"state\"][@id=\"s0\"]/*[local-name() = \"onentry\"][1]/*[local-name() = \"foreach\"][1]";
+			var xpathNodeSet = undefined;
+
+			// console.log("xpath:");
+			// console.log(this.xpath);
+			
+			if (this.xpath) {
+				try {
+					xpathNodeSet = this.xmlNode.evaluate(
+						this.xpath, 
+						this.xmlNode,    
+						function (prefix) {
+							switch (prefix) {
+								case 'scxml':
+								default:
+									return 'http://www.w3.org/2005/07/scxml';
+							}
+							return null;
+						},
+						XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, 
+						null);
+						for (var i = 0; i < xpathNodeSet.snapshotLength; i++) {
+							var currNode = xpathNodeSet.snapshotItem(i);
+							// console.log("Got node:");
+							// console.log(currNode);
+						}
+						
+				} catch(e) {
+					console.log(e);
+				}
+			}
+			
+			
+			var xmlMarkup = '<font color=#888>' + prettyIndent(this.xmlNode, 0) + '</font>';
+			
+
+			if (destNode) {
+				$(destNode).html(xmlMarkup);
+			} else {
+				$(this.destNode).html(xmlMarkup);
+			}
+		},
+		
+		setDestinationNode: function(destNode) {
+			this.destNode = destNode;
+		},
+		
+		setXML: function(xmlNode) {
+			this.xmlNode = xmlNode;
+		},
+		
+		setElementXPath: function(xpath) {
+			this.xpath = xpath;
+		},
+		
+		setActiveStates: function(states) {
+			this.activeStates = states;
+		},
+	});
+
+	// base class of all views onto a state
+	SCXMLEditor.StateView = Base.extend({
+		constructor: function(params) {
+			$.extend(this, params); 
+			this.scxmlStateType = SCXMLEditor.getStateType(this.scxmlState);
+			this.scxmlStateId = SCXMLEditor.getStateId(this.scxmlState);
+			
+			$(this.scxmlState).bind("DOMSubtreeModified", this.scxmlStateSubtreeModified)
+		},
+		
+		node: undefined,
+		scxmlStateType: undefined,
+		scxmlStateId: undefined,
+		scxmlState: undefined,
+				
+		getNode: function() {
+			console.log("SCXMLEditor.StateView.getNode()");
+		},
+		
+		scxmlStateSubtreeModified: function() {
+			console.log("SCXMLEditor.StateView.scxmlStateSubtreeModified()");
+		},
+						
+		isRoot: function() {
+			return $(this.scxmlState).prop("tagName").toLowerCase() === "scxml";
+		},
+		
+		getDirectChildStates: function() {
+			return $(this.scxmlState).children("state, parallel, final, history").not(".nested");
+		},
+
+		getAllChildStates: function() {
+			return $(this.scxmlState).find("state, parallel, final, history").not(".nested");
+		},
+		
+	  createTransitions: function() {
+			
+		}
+	});
+
+	// view a state in a small windowlet
+	SCXMLEditor.ToolsStateView = SCXMLEditor.StateView.extend({
+		constructor: function(params) {
+			this.base(params);
+		},
+		
+		getNode: function() {
+			
+			var tools = this;
+			
+			this.node = document.createElement('div');
+			this.node.className = 'windowlet tools ui-widget-content';
+			this.node.innerHTML = '\
+				<div class="ui-widget-header">' + this.getStateId() + '<span class="ui-icon ui-icon-close"></span></div>\
+			';
+			
+			$(this.node).children( ".ui-widget-header" ).children( ".ui-icon-close" ).click(function() {
+				$(tools.node).remove();
+			});
+			
+			$(this.node).resizable();
+			$(this.node).draggable();
+			$(this.node).css("position", "absolute");
+			$(this.node).appendTo(this.containerNode);
+			
+			return this.node;
+		},
+
+		scxmlStateSubtreeModified: function() {
+			console.log("SCXMLEditor.StateView.scxmlStateSubtreeModified()");
+		},
+
+	});
+	
+	SCXMLEditor.PortletStateView = SCXMLEditor.StateView.extend({
+		constructor: function(params) {
+			this.base(params);
+		},
+		
+		getNode: function() {
+			
+			this.node = document.createElement('div');
+			this.node.className = 'portlet';
+			
+			this.node.innerHTML = '\
+		    <div class="portlet-header"><span class="stateId">' + this.scxmlStateId + '</span></div>\
+		    <div class="portlet-content"></div>\
+			';
+			
+			this.portletHeader = $(this.node).children("div.portlet-header")[0];
+			this.portletContent = $(this.node).children("div.portlet-content")[0];
+
+			var scxmlState = this.scxmlState;
+
+			var settingsButton = document.createElement('button');
+			settingsButton.innerHTML = 'Settings';
+			$(settingsButton).button({
+				icons: {
+					primary: "ui-icon-gear",
+					secondary: "ui-icon-triangle-1-s"
+				},
+				text: false
+			});
+
+			var settingsMenu = document.createElement('ul');
+			settingsMenu.innerHTML = '\
+				<li><a href="#"><span class="ui-icon ui-icon-plus"></span>Add nested State</a></li>\
+				<li><a href="#"><span class="ui-icon ui-icon-arrow-4-diag"></span>Move this State</a></li>\
+				<li><a href="#"><span class="ui-icon ui-icon-trash"></span>Remove this State</a></li>\
+				<li>-</li>\
+				<li><a href="#"><span class="ui-icon ui-icon-transfer-e-w"></span>Transitions</a></li>\
+				<li><a href="#"><span class="ui-icon ui-icon-gear"></span>Executable Content</a></li>\
+				<li><a href="#"><span class="ui-icon ui-icon-tag"></span>Datamodel</a></li>\
+				<li><a href="#"><span class="ui-icon ui-icon-document"></span>Invokers</a></li>\
+				<li><a href="#"><span class="ui-icon ui-icon-zoomin"></span>States</a></li>\
+			';
+			
+			$(settingsMenu).menu().hide();
+			
+			$(settingsButton).click(function() {
+				$(settingsMenu).show().position({
+					my: "left top",
+					at: "left top",
+					of: this
+				});
+				$(settingsMenu).find("a").click(function event() {
+					$(settingsMenu).hide();
+				});
+				$(settingsMenu).mouseleave(function(event) {
+					$(settingsMenu).hide();
+				});
+				return false;
+      })
+
+			$(settingsMenu).prependTo(this.portletHeader);
+			$(settingsButton).prependTo(this.portletHeader);
+			
+			var childs = this.getDirectChildStates();
+			var nrChilds = childs.length + 1;
+			
+			var nrCols = Math.ceil(Math.sqrt(nrChilds));
+			var nrRows = Math.ceil(nrChilds / nrCols);
+
+			// console.log(nrCols + ' / ' + nrRows);
+			for (var col = 0; col < nrCols; col++) {
+				var colNode = document.createElement('div');
+				colNode.className = "column";
+				
+				for (var row = 0; row < nrRows; row++) {
+					if (childs.length > col * nrRows + row) {
+						var child = childs[col * nrRows + row];
+						var childPortlet = new SCXMLEditor.PortletStateView({
+							scxmlState: child,
+							scxmlEditor: this.scxmlEditor
+						});
+						$(childPortlet.getNode()).appendTo(colNode);
+					}
+				}
+				$(colNode).appendTo(this.portletContent);
+				
+				$(colNode).sortable({
+					connectWith: ".column",
+					handle: ".portlet-header",
+					cancel: ".portlet-toggle",
+					placeholder: "portlet-placeholder ui-corner-all"
+				});				
+			}
+			
+			// see https://api.jqueryui.com/theming/icons/
+			$(this.node)
+				.addClass( "ui-widget ui-widget-content ui-helper-clearfix ui-corner-all" )
+				.children( ".portlet-header" )
+				.addClass( "ui-widget-header ui-corner-all" )
+				.prepend( "<span class='ui-icon ui-icon-minusthick portlet-toggle'></span>")
+				.prepend( "<span class='ui-icon ui-icon-newwin portlet-detach'></span>")
+				.append( "&nbsp;&nbsp;&nbsp;");
+
+			$(this.node).children( ".portlet-header" ).children( ".portlet-toggle" ).click(function() {
+				var icon = $(this);
+				icon.toggleClass( "ui-icon-minusthick ui-icon-plusthick" );
+				icon.closest( ".portlet" ).children( ".portlet-content" ).toggle();
+			});
+
+			$(this.node).children( ".portlet-header" ).children( ".portlet-detach" ).click(function() {
+				var detach = $(this);
+				detach.toggleClass( "ui-icon-arrowthickstop-1-s ui-icon-newwin" );
+				this.tools = new SCXMLEditor.ToolsStateView({
+					scxmlState: scxmlState,
+					scxmlEditor: this.scxmlEditor
+				});
+				$(this.tools.getNode()).appendTo($("body")); // TODO ought to be relative?
+			});
+			return this.node;
+			
+		},		
+	})
+
+	SCXMLEditor.Debugger = Base.extend({
+		constructor: function(params) {
+			this.breakpointsEnabled = true;
+			$.extend(this, params);
+		},
+		
+		breakpoints: [],
+		currEvent: {},
+		
+		loadDOM: function(scxmlDOM) {
+			// called by the editor, inherit to e.g. activate buttons
+		},
+		
+		getNode: function() {
+
+			var debug = this;
+			this.node = document.createElement('div');
+			this.node.className = 'windowlet debug';
+			$(this.node).css("position", "absolute");
+
+			// data-parent="#accordion" missing from <a> to show multiple panels
+			this.node.innerHTML = '\
+				<div class="panel panel-default">\
+					<div class="panel-heading debug-header">\
+						<h4 class="panel-title">Debugger<span class="toolbar pull-right"></span></h4>\
+						<!--span class="subtitle document-name">No Document loaded</span -->\
+					</div>\
+					<div class="panel-group">\
+<!-- Breakpoints -->\
+						<div class="breakpoints panel panel-default">\
+							<div class="panel-heading" data-toggle="collapse" data-target="#collapseBreakpoints">\
+								<span class="panel-toggle"></span>\
+								<h4 class="panel-title">Breakpoints<br/><span class="subtitle current-breakpoint"></span>\
+								<i class="heading-decoration pull-right">\
+									<div class="btn-group">\
+										<button title="Deactivate all Breakpoints" class="deactivate btn btn-default btn-xs btn-primary"><span class="glyphicon glyphicon-off"></span></button>\
+									</div>\
+									<div class="btn-group">\
+										<button title="Add a new Breakpoint" class="new btn btn-default btn-xs"><span class="glyphicon glyphicon-plus"></span></button>\
+										<button \
+											title="Remove all Breakpoints" class="delete-all btn btn-default btn-xs"><span class="glyphicon glyphicon-remove"></span></button>\
+									</div>\
+								</i>\
+								</h4>\
+							</div>\
+							<div id="collapseBreakpoints" class="breakpoints-content panel-collapse collapse">\
+							</div>\
+						</div>\
+<!-- Current Event -->\
+						<!--div class="event panel panel-default">\
+							<div class="panel-heading" data-toggle="collapse" data-target="#collapseEvent">\
+								<h4 class="panel-title">Current Event\
+								<i class="heading-decoration pull-right">\
+									<div class="btn-group">\
+										<button title="Insert a new Event" class="new btn btn-default btn-xs"><span class="glyphicon glyphicon-plus"></span></button>\
+										<button title="Edit current Event" class="edit btn btn-default btn-xs"><span class="glyphicon glyphicon-pencil"></span></button>\
+										<button title="View Event in Window" class="view btn btn-default btn-xs"><span class="glyphicon glyphicon-search"></span></button>\
+									</div>\
+								</i>\
+								<span class="panel-toggle"></span></h4>\
+							</div>\
+							<div id="collapseEvent" class="panel-collapse collapse">\
+								<div class="panel-body event-content"></div>\
+							</div>\
+						</div-->\
+<!-- Active States -->\
+						<!-- div class="states panel panel-default">\
+							<div class="panel-heading" data-toggle="collapse" data-target="#collapseStates">\
+								<h4 class="panel-title">Active States<span class="panel-toggle"></span></h4>\
+							</div>\
+							<div id="collapseStates" class="panel-collapse collapse">\
+								<div class="panel-body states-content">\
+									Anim pariatur cliche reprehenderit, enim eiusmod high life\
+								</div>\
+							</div>\
+						</div -->\
+<!-- Datamodel -->\
+						<div class="datamodel panel panel-default">\
+							<div class="panel-heading" data-toggle="collapse" data-target="#collapseDatamodel">\
+								<h4 class="panel-title">Datamodel\
+								<!--i class="heading-decoration pull-right">\
+									<div class="btn-group">\
+										<button title="Clear Log" class="clear btn btn-default btn-xs"><span class="glyphicon glyphicon-trash"></span></button>\
+										<button title="View Log in Window" class="view btn btn-default btn-xs"><span class="glyphicon glyphicon-search"></span></button>\
+									</div>\
+								</i-->\
+								<span class="panel-toggle"></span></h4>\
+							</div>\
+							<div id="collapseDatamodel" class="panel-collapse collapse">\
+								<div class="panel-body datamodel-content"></div>\
+							</div>\
+						</div>\
+<!-- Assets -->\
+						<!--div class="assets panel panel-default">\
+							<div class="panel-heading" data-toggle="collapse" data-target="#collapseAssets">\
+								<h4 class="panel-title">Assets\
+								<i class="heading-decoration pull-right">\
+									<div class="btn-group">\
+										<button title="New Asset" class="view btn btn-default btn-xs"><span class="glyphicon glyphicon-plus"></span></button>\
+									</div>\
+								</i>\
+								<span class="panel-toggle"></span></h4>\
+							</div>\
+							<div id="collapseAssets" class="panel-collapse collapse">\
+								<div class="panel-body assets-content"></div>\
+							</div>\
+						</div-->\
+<!-- Message -->\
+						<div class="messages panel panel-default">\
+							<div class="panel-heading" data-toggle="collapse" data-target="#collapseMessages">\
+								<h4 class="panel-title">Messages\
+								<i class="heading-decoration pull-right">\
+									<span class="badge"></span>\
+									<div class="btn-group">\
+										<button title="Clear Log" class="clear btn btn-default btn-xs"><span class="glyphicon glyphicon-trash"></span></button>\
+										<button title="Text Wrap" class="textwrap btn btn-default btn-xs"><span class="glyphicon glyphicon-align-left"></span></button>\
+									</div>\
+								</i>\
+								<span class="panel-toggle"></span></h4>\
+							</div>\
+							<div id="collapseMessages" class="panel-collapse collapse in">\
+								<div class="panel-body messages-content">\
+									<textarea class="form-control messages" wrap="off" readonly></textarea>\
+								</div>\
+							</div>\
+						</div>\
+					</div>\
+					<div class="panel-footer">\
+						<span class="status-indicators"></span>\
+						<span class="pull-right document-name"></span>\
+					</div>\
+				</div>\
+			';
+			
+			$(this.node).find("div.panel-collapse").not(".in").prev().addClass("collapsed");
+						
+			
+			// get some nodes
+			this.debugFooterNode = $(this.node).find(".panel-footer")[0];
+			this.statusIndicatorNode = $(this.node).find(".status-indicators")[0];
+			this.debugDocumentNameNode = $(this.node).find(".document-name")[0];
+			this.currentBreakpointNode = $(this.node).find(".current-breakpoint")[0];
+			this.toolbarNode = $(this.node).find(".toolbar")[0];
+			
+			this.messagesNode = $(this.node).find("div.messages-content")[0];
+			this.messagesBadgeNode = $(this.node).find("div.messages").find("span.badge")[0];
+			this.clearMessagesButton = $(this.node).find("div.messages").find("button.clear")[0];
+			this.textwrapMessagesButton = $(this.node).find("div.messages").find("button.textwrap")[0];
+			this.messagesTextarea = $(this.node).find("div.messages-content").find("textarea")[0];
+			
+			this.breakpointNode = $(this.node).find("div.breakpoints-content")[0];
+			this.deleteAllBreakpointsButton = $(this.node).find("div.breakpoints").find("button.delete-all")[0];
+			this.disableBreakpointsButton = $(this.node).find("div.breakpoints").find("button.deactivate")[0];
+			this.addNewBreakpointsButton = $(this.node).find("div.breakpoints").find("button.new")[0];
+
+			this.currEventNode = $(this.node).find("div.event-content")[0];
+			this.insertEventButton = $(this.node).find("div.event").find("button.new")[0];
+			this.editEventButton = $(this.node).find("div.event").find("button.edit")[0];
+			this.viewEventButton = $(this.node).find("div.event").find("button.view")[0];
+			
+			this.dataModelNode = $(this.node).find("div.datamodel-content")[0];
+			this.clearDataModelLogButton = $(this.node).find("div.datamodel").find("button.clear")[0];
+			this.viewDataModelLogButton = $(this.node).find("div.datamodel").find("button.view")[0];
+			
+			this.initBreakpoints();
+			this.initToolBar();
+//			this.initCurrEvent();
+			this.initDataModel();
+			this.initMessages();
+			
+			// enable tooltips
+	    $(this.node).find("button").tooltip({
+	        placement: 'bottom',
+					container: 'body',
+					delay: { show: 300, hide: 100 }
+	    });
+			
+			$(this.node).resizable({grid: [1, 100000]});
+			$(this.node).draggable({
+				handle: $(this.node).find("div.debug-header")
+			});
+
+			return this.node;
+		},
+		
+		initMessages: function() {
+			var debug = this;
+
+			$(this.clearMessagesButton).prop('disabled', true);
+
+			$(this.node).find('#collapseMessages')
+			.unbind('show.bs.collapse')
+			.unbind('shown.bs.collapse')
+			.on('show.bs.collapse', function () {
+			  $(debug.messagesBadgeNode).html(""); // remove number from badge
+			}).on('shown.bs.collapse', function () {
+				debug.messagesTextarea.scrollTop = debug.messagesTextarea.scrollHeight; // scroll to bottom (won't work when hidden)
+			});
+			
+			$(this.messagesTextarea)
+			.unbind('mouseenter')
+			.unbind('mouseleave')
+			.mouseenter(function () {
+				$(this).addClass("dont-scroll");
+			})
+			.mouseleave(function () {
+				$(this).removeClass("dont-scroll");
+			});
+			
+			$(this.clearMessagesButton)
+			.unbind('mouseenter')
+			.unbind('mouseleave')
+			.unbind('click')
+			.mouseenter(function() {
+				$(this).addClass("btn-warning");
+			}).mouseleave(function() {
+				$(this).removeClass("btn-warning");
+			}).click(function() {
+				debug.messagesTextarea.value = "";
+				$(debug.messagesBadgeNode).html("");
+				$(this).prop('disabled', true);
+				$(this).removeClass("btn-warning");
+				$(this).tooltip("hide");
+				return false;
+			});
+			
+			$(this.textwrapMessagesButton).unbind('click')
+			.click(function() {
+				if ($(debug.messagesTextarea).attr("wrap") == "on") {
+					$(this).removeClass("active");
+					$(debug.messagesTextarea).attr("wrap", "off");
+				} else {
+					$(this).addClass("active");
+					$(debug.messagesTextarea).attr("wrap", "on");
+				}
+				return false;
+			});
+			
+			
+		},
+		
+		initToolBar: function() {
+			var debug = this;
+			
+			this.toolbarNode.innerHTML = '\
+				<div class="btn-group">\
+					<button class="control btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown">\
+						<span class="glyphicon glyphicon-cog"></span>\
+			      <span class="caret"></span>\
+					</button>\
+					<ul class="dropdown-menu">\
+						<li><a class="load-from-url" href="#"><i class="glyphicon glyphicon-import"></i> Load Document</a></li>\
+						<li><a class="save-breakpoints" href="#"><i class="glyphicon glyphicon-floppy-save"></i> Save Breakpoints</a></li>\
+					</ul>\
+				</div>\
+				<div class="btn-group">\
+					<button title="Start Execution" class="start btn btn-default btn-xs"><span class="glyphicon glyphicon-play"></span></button>\
+					<div class="btn-group" data-toggle="buttons-checkbox">\
+						<button title="Pause Execution" class="pause btn btn-default btn-xs"><span class="glyphicon glyphicon-pause"></span></button>\
+					</div>\
+					<button title="Step Execution" class="step btn btn-default btn-xs"><span class="glyphicon glyphicon-step-forward"></span></button>\
+				</div>\
+			'
+			this.controlButtonNode = $(this.toolbarNode).children("div.btn-group").children("button.control")[0];
+			this.controlDropdownNode = $(this.toolbarNode).children("div.btn-group").children("ul.dropdown-menu")[0];
+			this.loadFromURLNode = $(this.toolbarNode).find("a.load-from-url")[0];
+			this.saveBreakpointsNode = $(this.toolbarNode).find("a.save-breakpoints")[0];
+			this.startButtonNode = $(this.toolbarNode).children("div.btn-group").children("button.start")[0];
+			this.pauseButtonNode = $(this.toolbarNode).children("div.btn-group").find("button.pause")[0];
+			this.stepButtonNode = $(this.toolbarNode).children("div.btn-group").children("button.step")[0];
+			this.globalDropDownNode = $(this.toolbarNode).find(".dropdown-menu")[0];
+						
+			$(this.loadFromURLNode).unbind('click').click(function() {
+				debug.showLoadDialog();
+				return false;
+			});
+
+			$(this.saveBreakpointsNode)
+			.unbind('click').click(function() {
+				debug.recentDocuments[debug.scxmlEditor.scxmlURL].breakpoints = [];
+				for (var key in debug.breakpoints) {
+					debug.recentDocuments[debug.scxmlEditor.scxmlURL].breakpoints.push(debug.breakpoints[key].toWireFormat());
+				}
+				localStorage.recentDocuments = JSON.stringify(debug.recentDocuments);
+				$(debug.controlButtonNode).effect('highlight', {color: '#3AA453'}, 600);
+				return false;
+			})
+			.closest("li").addClass("disabled");
+			
+			
+			$(this.startButtonNode).prop('disabled', true);
+			$(this.pauseButtonNode).prop('disabled', true);
+			$(this.stepButtonNode).prop('disabled', true);
+			
+		},
+		
+		showLoadDialog: function() {
+			var debug = this;
+			
+			// do we already have a modal div?
+			$("body").children("div#loadFromURLModal").remove();
+			
+			// load from URL form - modal window
+			this.loadFromURLModalNode = $('\
+			<div class="modal fade" id="loadFromURLModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">\
+				<div class="modal-dialog">\
+					<form action="" id="loadFromURLModalForm">\
+						<div class="modal-content">\
+							<div class="modal-header">\
+								<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>\
+								<h4 class="modal-title" id="myModalLabel">Load SCXML from URL</h4>\
+							</div>\
+							<div class="modal-body">\
+						    <div class="form-group">\
+									<div class="input-group">\
+										<span class="input-group-btn">\
+											<button title="Recent Documents" type="button" class="btn dropdown-toggle" data-toggle="dropdown">\
+												<span class="glyphicon glyphicon-list-alt"></span>\
+											</button>\
+											<ul class="recent-documents dropdown-menu" role="menu" />\
+										</span>\
+										<input id="loadFromURLModalInput" name="scxmlUrl" class="form-control" placeholder="URL of SCXML document">\
+									</div>\
+								</div>\
+							</div>\
+							<div class="modal-footer">\
+								<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>\
+								<button type="submit" class="btn btn-primary">Load</button>\
+							</div>\
+						</div>\
+					</form>\
+				</div>\
+			</div>\
+			');
+
+			this.recentDocumentsNode = $(this.loadFromURLModalNode).find("ul.recent-documents")[0];
+			$(this.recentDocumentsNode).prev().attr('disabled', true);
+
+			this.recentDocuments = {};
+			if (localStorage.recentDocuments) {
+				this.recentDocuments = JSON.parse(localStorage.recentDocuments);
+				for (var key in this.recentDocuments) {
+					if ((key.substring(0, 4) != "http") && (key.substring(0, 4) != "file")) {
+						// no idea, but it's not a document
+						delete this.recentDocuments[key];
+						continue;
+					}
+					var recentURL = key; // not sure, but key is not available in callback
+					// we found a document, enable "recent" button
+					$(this.recentDocumentsNode).prev().attr('disabled', false);
+					
+					var recentDocumentItem = $('\
+						<li><a href="#"><!-- i class="glyphicon glyphicon-floppy-open" style="margin-right: 0.7em" / -->' + key + '<span class="recent-document-features"></span></a></li>\
+					');
+					var recentDocumentFeatures = $(recentDocumentItem).find("span.recent-document-features");
+					$(recentDocumentItem).children("a").click(function() {
+						$(debug.loadFromURLModalNode).find("input#loadFromURLModalInput").val(recentURL);
+						$(debug.recentDocumentsNode).dropdown("toggle");
+						return false;
+					});
+					if ('breakpoints' in this.recentDocuments[key] && this.recentDocuments[key].breakpoints.length > 0) {
+						$(recentDocumentFeatures).append('<i title="Has Breakpoints" class="glyphicon glyphicon-th-list">');
+					}
+					
+					$(this.recentDocumentsNode).append(recentDocumentItem);
+				}
+			}
+
+			$("body").append(this.loadFromURLModalNode);
+			
+			var fromURLValidator = $(this.loadFromURLModalNode).find("form#loadFromURLModalForm").validate({ // initialize the plugin
+				rules: { scxmlUrl: { required: true, url2: true }},
+				highlight: function(element) {
+					$(element).closest('.form-group').removeClass('has-success').addClass('has-error');
+				},
+				success: function(element) {
+					element.text('OK!').addClass('valid').closest('.input-group').removeClass('has-error').addClass('has-success');
+				},
+				submitHandler: function (form) {
+					$(debug.loadFromURLModalNode).modal("hide");
+					return true;
+				}
+			});
+		
+			$(this.loadFromURLModalNode).on('hide.bs.modal', function(e) {
+				if (!fromURLValidator.valid()) {
+					$(debug.loadFromURLModalNode).find(".form-group").removeClass('has-success').removeClass('has-error');
+					$(debug.loadFromURLModalNode).find("input#loadFromURLModalInput").val("");
+				} else {
+					var scxmlURL = $(debug.loadFromURLModalNode).find("input#loadFromURLModalInput").val();
+					if (!(scxmlURL in debug.recentDocuments)) {
+						debug.recentDocuments[scxmlURL] = {};
+					}
+					localStorage.recentDocuments = JSON.stringify(debug.recentDocuments);
+					debug.scxmlEditor.loadURL(scxmlURL);
+				}
+				fromURLValidator.resetForm();
+			});
+		
+			$(this.loadFromURLModalNode).modal();
+		
+		},
+		
+		initDataModel: function() {
+			var debug = this;     
+			
+			$(this.clearDataModelLogButton).prop('disabled', true);
+			$(this.viewDataModelLogButton).prop('disabled', true);
+			
+			// add functionality to buttons
+			$(this.clearDataModelLogButton).mouseenter(function() {
+				$(this).addClass("btn-warning");
+			}).mouseleave(function() {
+				$(this).removeClass("btn-warning");
+			}).click(function() {
+
+				return false;
+			});
+			
+			this.dataModelListingNode = document.createElement('div');
+			
+			this.dataModelEditor = ace.edit(this.dataModelListingNode, {});
+			this.dataModelEditor.getSession().setUseWorker(false); 
+			this.dataModelListingNode.style.fontSize='10px';
+			this.dataModelEditor.setTheme("ace/theme/tomorrow");
+			this.dataModelEditor.getSession().setMode("ace/mode/javascript");
+			this.dataModelEditor.setReadOnly(true);
+			// this.dataModelEditor.getSession().setUseWrapMode(true);
+			this.dataModelEditor.setShowPrintMargin(false);
+			this.dataModelEditor.renderer.setShowGutter(false);
+			// this.dataModelEditor.getSession().setValue(vkbeautify.json(initialContent));
+			$(this.dataModelListingNode).css("height", ((this.dataModelEditor.session.getLength() + 10) * 1.5) + "em");
+
+			$(this.dataModelNode).append(this.dataModelListingNode);
+			$(this.dataModelNode).append('\
+	    <div class="input-group input-group-sm">\
+				<span class="input-group-btn">\
+					<button title="Quick Command" type="button" class="datamodel-suggest btn dropdown-toggle" data-toggle="dropdown">\
+						<span class="glyphicon glyphicon-list-alt"></span>\
+					</button>\
+					<ul class="suggested-commands dropdown-menu" role="menu">\
+						<li><a href="#">_event</a></li>\
+						<li><a href="#">_name</a></li>\
+						<li><a href="#">_sessionid</a></li>\
+						<li><a href="#">_invokers</a></li>\
+						<li><a href="#">_ioprocessors</a></li>\
+						<li><a href="#">_x</a></li>\
+					</ul>\
+				</span>\
+	      <input type="text" class="datamodel-eval form-control">\
+	      <div class="input-group-btn">\
+	        <button title="Evaluate as String" type="button" class="datamodel-eval btn btn-default"><span class="glyphicon glyphicon-play"></span></button>\
+	      </div>\
+	    </div>\
+			');
+			
+			this.dataModelInputNode = $(this.dataModelNode).find("input.datamodel-eval")[0];
+			this.dataModelInputButton = $(this.dataModelNode).find("button.datamodel-eval")[0];
+			this.dataModelSuggestButton = $(this.dataModelNode).find("button.datamodel-suggest")[0];
+			
+			$(this.dataModelSuggestButton).prop('disabled', true);
+			
+			$(this.dataModelNode).find("ul.suggested-commands").find("li")
+			.unbind('click').click(function() {
+				var expression = $(this).children("a").text();
+				$(debug.dataModelInputNode).val(expression);
+				debug.evalOnDataModel(expression);
+				$(this).closest("ul").dropdown('toggle');
+				return false;
+			});
+			
+			$(this.dataModelInputNode)
+			.prop('disabled', true)
+			.unbind('keypress').keypress(function(e) {
+				if (e.which == 13)
+					debug.evalOnDataModel($(this).val());
+			});
+			
+			$(this.dataModelInputButton)
+			.prop('disabled', true)
+			.unbind('click').click(function() {
+				debug.evalOnDataModel($(debug.dataModelInputNode).val());
+				return false;
+			});
+			
+			// $(this.dataModelListingNode).resizable({handles: "n, s"});
+			// $(this.dataModelListingNode).resizable({grid: [100000, 1], alsoResize: $(this.node)});
+			// $(this.dataModelListingNode).unbind('resize').on('resize', function() {
+			// 	debug.dataModelEditor.resize();
+			// });
+		},
+		
+		initBreakpoints: function() {
+			var debug = this;
+
+			$(this.deleteAllBreakpointsButton)
+				.unbind('mouseenter')
+				.unbind('mouseleave')
+				.unbind('click');
+			$(this.deleteAllBreakpointsButton).mouseenter(function() {
+				$(this).addClass("btn-danger");
+			}).mouseleave(function() {
+				$(this).removeClass("btn-danger");
+			}).click(function() {
+				return false;
+			});
+			
+			$(this.deleteAllBreakpointsButton).confirmation({ 
+				singleton: true,
+				container: "body",
+				btnOkClass: "btn btn-danger",
+				btnOkLabel: "Delete All",
+				btnOkIcon: "glyphicon glyphicon-trash",
+				onConfirm: function() {
+					while (debug.breakpoints.length > 0) {
+						debug.removeBreakpoint(debug.breakpoints[0]);
+					}
+				}
+			});
+			
+			$(this.disableBreakpointsButton).unbind('click');
+			$(this.disableBreakpointsButton).click(function() {
+				$(this).toggleClass("btn-primary");
+				if ($(this).hasClass("btn-primary")) {
+					debug.enableAllBreakpoints();
+				} else {
+					debug.disableAllBreakpoints();
+				}
+				return false;
+			});
+
+			$(this.addNewBreakpointsButton).unbind('click');
+			$(this.addNewBreakpointsButton).click(function() {
+				debug.addBreakpoint();
+				return false;
+			});
+
+			this.breakpointNode.innerHTML = '\
+				<table class="table table-hover">\
+				</table>\
+			';
+
+			for (var index in this.breakpoints) {
+				$(this.breakpointNode).children("table").append(this.breakpoints[index].getNode());
+			}
+		},
+		
+		initCurrEvent: function() {
+			var debug = this;
+			
+			$(this.insertEventButton).prop('disabled', true);
+			$(this.editEventButton).prop('disabled', true);
+			$(this.viewEventButton).prop('disabled', true);
+			
+			var initialContent = '';
+			
+			var editor = ace.edit(this.currEventNode, {});
+			editor.getSession().setUseWorker(false); 
+			this.currEventNode.style.fontSize='10px';
+			editor.setTheme("ace/theme/tomorrow");
+			editor.getSession().setMode("ace/mode/javascript");
+			editor.setReadOnly(true);
+			editor.setShowPrintMargin(false);
+			editor.renderer.setShowGutter(false);
+			try {
+				editor.getSession().setValue(vkbeautify.json(initialContent));
+			} catch(e) {
+				editor.getSession().setValue(initialContent);
+			}
+			$(this.currEventNode).css("height", (editor.session.getLength() * 1.5) + "em");
+			
+			this.eventViewModal = $('\
+			<div class="modal fade bs-example-modal-lg" id="eventViewModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">\
+				<div class="modal-dialog modal-lg">\
+					<form action="" id="eventViewModalForm">\
+						<div class="modal-content">\
+							<div class="modal-header">\
+								<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>\
+								<h4 class="modal-title" id="myModalLabel">View / Edit Event</h4>\
+							</div>\
+							<div class="modal-body">\
+								<div class="editor"></div>\
+							</div>\
+							<div class="modal-footer">\
+								<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>\
+								<button type="submit" class="btn btn-primary">Apply</button>\
+							</div>\
+						</div>\
+					</form>\
+				</div>\
+			</div>\
+			');
+			
+			
+			$(this.eventViewModal).modal({
+				show: false
+			});
+
+			// $(this.eventViewModal).find("div.modal-dialog").resizable();
+			// $(this.eventViewModal).find("div.modal-dialog").draggable();
+			
+			$("body").append(this.eventViewModal);
+			
+			// add functionality to buttons
+			$(this.viewEventButton).click(function() {
+				$(debug.eventViewModal).find(".editor");
+
+				var modalEditorNode = $(debug.eventViewModal).find(".editor")[0];
+
+				var modalEditor = ace.edit(modalEditorNode, {});
+				modalEditorNode.style.fontSize='10px';
+				// safari has the cursor somewhat off
+//				modalEditorNode.style.font='inherit!important';
+				modalEditor.setTheme("ace/theme/tomorrow");
+				modalEditor.getSession().setMode("ace/mode/javascript");
+				modalEditor.setReadOnly(false);
+				modalEditor.setShowPrintMargin(false);
+				modalEditor.renderer.setShowGutter(true);
+				modalEditor.getSession().setValue(vkbeautify.json(initialContent));
+				
+				$(modalEditorNode).css("min-height", (editor.session.getLength() * 1.5) + "em");
+				//$(modalEditorNode).css("height", "80%");
+				
+				$(debug.eventViewModal).modal("show");
+				return false;
+			});
+			
+		},
+		
+		log: function(messages) {
+			var self = this;
+			
+			$(this.clearMessagesButton).prop('disabled', false);
+			
+			if (!self.messagesTextarea) {
+				console.log(messages);
+				return;
+			}
+
+			function logSingleMsg(msg) {
+				// only show badge when when collapsed
+				if (!$(self.messagesNode).parent().hasClass("in")) {
+					var bagdeContent = parseInt($(self.messagesBadgeNode).html()) || 0;
+					$(self.messagesBadgeNode).html(bagdeContent + 1);
+				}
+
+				if (typeof(msg) === 'string') {
+					self.messagesTextarea.value += msg.trim() + "\n";
+				} else if (typeof(msg) === 'object') {
+					if ('formatted' in msg) {
+						self.messagesTextarea.value += msg.formatted.trim() + "\n";
+					} else if('message' in msg) {
+						self.messagesTextarea.value += msg.message.trim() + "\n";
+					} else {
+						try {
+							self.messagesTextarea.value += vkbeautify.json(msg) + "\n";
+						} catch(e) {
+							self.messagesTextarea.value += JSON.stringify(msg).trim() + "\n";
+						}
+					}
+				} else {
+					//not sure what to do here
+					self.messagesTextarea.value += msg;
+				}
+			}
+
+			if (messages instanceof Array) {
+				for (var key in messages) {
+					logSingleMsg(messages[key]);
+				}
+			} else {
+				logSingleMsg(messages);
+			}
+			
+			// scroll to bottom
+			if (!$(self.messagesTextarea).hasClass("dont-scroll"))
+				self.messagesTextarea.scrollTop = self.messagesTextarea.scrollHeight;
+		},
+
+		// find a breakpoint by value and return its index
+		findBreakpoint: function(breakpoint) {
+			for (var index in this.breakpoints) {				
+				var currBreakpoint = this.breakpoints[index];
+
+				// $("body").append("<pre>" + JSON.stringify(breakpoint.toWireFormat()) + "</pre><br />");
+				// $("body").append("<pre>" + JSON.stringify(currBreakpoint.toWireFormat()) + "</pre><br />");
+				if (Object.identical(breakpoint.toWireFormat(), currBreakpoint.toWireFormat())) {
+					return index;
+				}
+			}
+			return -1;
+		},
+
+		editBreakpoint: function(breakpoint) {
+			breakpoint.showEditDialog()
+		},
+
+		editedBreakpoint: function(breakpoint, oldData) {
+			// override to update your debugger
+		},
+
+		skipToBreakpoint: function(breakpoint) {
+		},
+
+		addBreakpoint: function(breakpoint) {
+			var debug = this;
+			if (breakpoint) {
+				breakpoint.scxmlEditor = this.scxmlEditor;
+				breakpoint.scxmlDebugger = this;
+				
+				if (this.findBreakpoint(breakpoint) < 0) {
+					// add as new breakpoint
+					this.breakpoints.push(breakpoint);
+					var breakpointNode = breakpoint.getNode();
+					if (!debug.breakpointsEnabled) {
+						$(breakpointNode).find("button.enable").prop('disabled', true);
+						$(breakpointNode).find("button.skipto").prop('disabled', true);
+					}
+					$(this.breakpointNode).children("table").append(breakpointNode);
+				}
+			} else {
+				// show dialog to add a breakpoint
+				var newBreakpoint = new SCXMLEditor.Debugger.Breakpoint({
+					scxmlEditor: this.scxmlEditor,
+					scxmlDebugger: this
+				});
+				debug.editBreakpoint(newBreakpoint);
+			}
+		},
+		
+		removeBreakpoint: function(breakpoint) {
+			var debug = this;
+			var breakPointIndex = this.findBreakpoint(breakpoint);
+			if (breakPointIndex >= 0) {
+				this.breakpoints.splice(breakPointIndex, 1);
+				$(this.breakpointNode).children("table").find("tr").slice(breakPointIndex, breakPointIndex + 1).detach();
+			}
+		},
+
+		highlightBreakpoint: function(breakpoint) {
+			var breakPointIndex = this.findBreakpoint(breakpoint);
+			if (breakPointIndex < 0)
+				return;
+			
+			// open breakpoint collapsible
+			$(this.node).find("div.breakpoints").find("div.panel-collapse").addClass("in");
+			
+			// highlight breakpoint
+			$(this.breakpointNode)
+			.children("table")
+			.find("tr").slice(breakPointIndex, breakPointIndex + 1)
+			.addClass("info");
+		
+		},
+
+		unhighlightAllBreakpoints: function() {
+			$(this.breakpointNode)
+			.children("table")
+			.find("tr").removeClass("info");
+		},
+
+		enableBreakpoint: function(breakpoint) {
+			var breakPointIndex = this.findBreakpoint(breakpoint);
+			if (breakPointIndex < 0)
+				return;
+			
+			$(this.breakpointNode)
+			.children("table")
+			.find("tr").slice(breakPointIndex, breakPointIndex + 1)
+			.find("button.enable").addClass('btn-primary');
+
+			$(this.breakpointNode)
+			.children("table")
+			.find("tr").slice(breakPointIndex, breakPointIndex + 1)
+			.find("button.skipto")
+			.prop('disabled', false);
+			
+		},
+
+		disableBreakpoint: function(breakpoint) {
+			var breakPointIndex = this.findBreakpoint(breakpoint);
+			if (breakPointIndex < 0)
+				return;
+			
+			$(this.breakpointNode)
+			.children("table")
+			.find("tr").slice(breakPointIndex, breakPointIndex + 1)
+			.find("button.enable").removeClass('btn-primary');
+
+			$(this.breakpointNode)
+			.children("table")
+			.find("tr").slice(breakPointIndex, breakPointIndex + 1)
+			.find("button.skipto")
+			.prop('disabled', true);
+		},
+		
+		disableAllBreakpoints: function() {
+			this.breakpointsEnabled = false;
+			$(this.breakpointNode).find("button.enable").prop('disabled', true);
+			$(this.breakpointNode).find("button.skipto").prop('disabled', true);
+		},
+
+		enableAllBreakpoints: function() {
+			this.breakpointsEnabled = true;
+			
+			$(this.breakpointNode).find("button.enable").each(function() {
+				$(this).prop('disabled', false);
+				if ($(this).hasClass("btn-primary")) {
+					$(this).parent().children("button.skipto").prop('disabled', false);
+				}
+			});
+		},
+
+		evalOnDataModel: function() {
+		},
+
+		attachDebug: function(sessionId) {
+		},
+		
+		prepareDebug: function() {
+			this.scxmlText = SCXMLEditor.xmlToString(this.scxmlEditor.scxmlDOM);
+		},		
+		
+		startDebug: function() {
+			this.unhighlightAllBreakpoints();
+		},
+
+		stopDebug: function() {
+			this.unhighlightAllBreakpoints();
+		},
+
+		stepDebug: function() {
+			this.unhighlightAllBreakpoints();
+		},
+		
+	});
+
+
+	SCXMLEditor.Debugger.Breakpoint = Base.extend({
+		constructor: function(params) {
+			$.extend(this, params);
+			this.seqNr = SCXMLEditor.Debugger.Breakpoint.seqNr++;
+		},
+
+		data: {}, // all data describing this breakpoint
+		editNodes: {}, // html nodes of form-groups during editing - needed to retain input - TODO
+
+		breakpointTypes: {
+			"categories": [
+				{ id: "state", label: "States" },
+				{ id: "event", label: "Events" },
+				{ id: "transition", label: "Transitions" },
+				{ id: "executable", label: "Executable Content" },
+				{ id: "invoke", label: "Invokers" },
+				{ id: "configuration", label: "Configuration" },
+			],
+			"types": [
+				{ id: "state-before-enter",
+					label: "Before Entering State", category: "state", 
+					hint: "Stop execution <b>before</b> a given state is <b>entered</b>."
+				},
+				{ id: "state-after-enter",
+					label: "After Entering State", category: "state",
+					hint: "Stops execution <b>after</b> a given state is <b>entered</b>."
+				},
+				{ id: "state-before-exit",
+					label: "Before Exiting State", category: "state",
+					hint: "Stops execution <b>before</b> a given state was <b>exited</b>."
+				},
+				{ id: "state-after-exit",
+					label: "After Exiting State", category: "state",
+					hint: "Stops execution <b>after</b> a given state was <b>exited</b>."
+				},
+				{ id: "event-before",
+					label: "Before Processing Event", category: "event",
+					hint: "Stops execution <b>before</b> a given event is processed."
+				},
+				{ id: "transition-before",
+					label: "Before Taking Transition", category: "transition",
+					hint: "Stops execution <b>before</b> a given transition is taken."
+				},
+				{ id: "transition-after",
+					label: "After Taking Transition", category: "transition",
+					hint: "Stops execution <b>after</b> a given transition was taken."
+				},
+				{ id: "invoker-before-invoke",
+					label: "Before Starting Invoker", category: "invoke", 
+					hint: "Stop execution <b>before</b> an invoker is <b>started</b>."
+				},
+				{ id: "invoker-after-invoke",
+					label: "After Starting Invoker", category: "invoke",
+					hint: "Stops execution <b>after</b> an invoker is <b>started</b>."
+				},
+				{ id: "invoker-before-cancel",
+					label: "Before Cancelling Invoker", category: "invoke", 
+					hint: "Stop execution <b>before</b> an invoker is <b>cancelled</b>."
+				},
+				{ id: "invoker-after-cancel",
+					label: "After Cancelling Invoker", category: "invoke",
+					hint: "Stops execution <b>after</b> an invoker is <b>cancelled</b>."
+				},
+				{ id: "executable-before",
+					label: "Before Executing Content", category: "executable",
+					hint: "Stops <b>before</b> executing content."
+				},
+				{ id: "executable-after",
+					label: "After Executing Content", category: "executable",
+					hint: "Stops <b>after</b> executing content."
+				},
+				{ id: "microstep-before",
+					label: "Before Microstep", category: "configuration",
+					hint: "Stops execution <b>before</b> processing a microstep."
+				},
+				{ id: "microstep-after",
+					label: "After Microstep", category: "configuration",
+					hint: "Stops execution <b>after</b> after a microstep was processed."
+				},
+				{ id: "stable-on",
+					label: "On Stable Configuration", category: "configuration",
+					hint: "Stops execution when the interpreter reached a stable configuration and waits for events."
+				}
+			]
+		},
+		
+		isEnabled: function() {
+			return true;
+		},
+		
+		toWireFormat: function() {
+			var jsonData = jQuery.extend(true, {}, this.data);
+
+			if ('breakpointType' in this.data) {
+				var typeComponents = this.data.breakpointType.split("-");
+				jsonData.subject = typeComponents[0];
+				jsonData.when = typeComponents[1];
+				if (typeComponents.length > 2) {
+					jsonData.action = typeComponents[2];
+				} else {
+					delete jsonData.action;
+				}
+			}
+			delete jsonData.breakpointType;
+
+			return jsonData;
+		},
+				
+		showEditDialog: function() {
+			var breakpoint = this;
+			
+			// do we already have a modal div?
+			$("body").children("div#editBreakpointModal").remove();
+						
+			this.editModalNode = $('\
+			<div class="modal fade" id="editBreakpointModal" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">\
+				<div class="modal-dialog">\
+					<form action="" class="form-horizontal" role="form">\
+						<div class="modal-content">\
+							<div class="modal-header">\
+								<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>\
+								<h4 class="modal-title" id="myModalLabel"></h4>\
+							</div>\
+								<div class="modal-body">\
+									<div class="form-group">\
+										<label for="breakpointType" class="col-sm-2 control-label">Type</label>\
+										<div class="col-sm-10 type-select"></div>\
+									</div>\
+									<div class="col-sm-2"></div><div class="col-sm-10 alert alert-info"></div>\
+								</div>\
+								<div class="modal-footer">\
+									<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>\
+									<button type="submit" class="btn btn-primary">Apply</button>\
+								</div>\
+						</div>\
+					</form>\
+				</div>\
+			</div>\
+			');
+			
+			$(this.editModalNode).find("div.modal-body").find("div.type-select").append(this._typeSelectNode());
+			$("body").append(this.editModalNode);
+			
+			this.editTypeInfoNode = $(this.editModalNode).find("div.alert-info")[0];
+			this.editTypeNode = $(this.editModalNode).find("div.modal-body")[0];
+			
+			var stateNames = this.scxmlEditor.getAllStateIds();
+			
+			var editTypeSelectNode = $(this.editTypeNode).find("div.type-select").children("select");
+			if ('breakpointType' in this.data) {
+				$(editTypeSelectNode).val(this.data.breakpointType);
+				$(this.editModalNode).find("h4.modal-title").text("Edit Breakpoint");
+			} else {
+				$(this.editModalNode).find("h4.modal-title").text("Add Breakpoint");
+			}
+			
+			$(this.editModalNode).find("form").removeData(); // important as closures persist with dom
+			$(this.editModalNode).find("form").validate({
+				debug: true,
+				highlight: function(element) {
+					$(element).closest('.form-group').removeClass('has-success has-warning').addClass('has-error');
+				},
+				success: function(element) {
+					var state = element.closest('.form-group').find("input[name=stateId], input[name=toStateId], input[name=fromStateId]").val();
+					if (state && $.inArray(state, stateNames) < 0) {
+						element.text('Warning: No such state!').addClass('valid').closest('.form-group').removeClass('has-success has-error').addClass('has-warning');
+						return;
+					}
+					element.text('OK!').addClass('valid').closest('.form-group').removeClass('has-error has-warning').addClass('has-success');
+				},
+				submitHandler: function (form) {
+					$(breakpoint.editModalNode).modal("hide");
+					
+					// reset
+					var oldData = jQuery.extend(true, {}, breakpoint.data);
+					breakpoint.data = {};
+					
+					// copy over form fields
+					$(breakpoint.editTypeNode).find("textarea[name], input[name], select[name]").each(function() {
+						var name = $(this).attr("name");
+						var value = $(this).val();
+						if (name.length > 0 && value.length > 0) {
+							breakpoint.data[name] = value;
+						}
+					})
+					console.log(breakpoint.data);
+					if (breakpoint.node) {
+						breakpoint._updateLabelNode();
+						breakpoint._updateConditionNode();
+					}
+					if (oldData.length > 0) {
+						breakpoint.scxmlDebugger.editedBreakpoint(breakpoint, oldData);
+					} else {
+						breakpoint.scxmlDebugger.addBreakpoint(breakpoint);
+					}
+					return true;
+				}
+			});
+
+			$(breakpoint.editTypeNode).children(".form-group").not(':first').remove();
+			$(breakpoint.editTypeNode).children("input[type=hidden]").remove(); // hidden fields
+			
+
+			$(editTypeSelectNode).change(function () {
+				$(breakpoint.editTypeNode).children(".form-group").not(':first').remove();
+				$(breakpoint.editTypeNode).children("input[type=hidden]").remove(); // hidden fields
+				breakpoint._updateEditTypeDOM($(editTypeSelectNode).val());
+			});
+			this._updateEditTypeDOM($(editTypeSelectNode).val());
+			
+			$(this.editModalNode).modal();
+		},
+		
+		_updateEditTypeDOM: function(typeId) {
+			var breakpoint = this;
+			var breakpointType = $.grep(this.breakpointTypes["types"], function(e){ return e.id == typeId; })[0];
+			this.editTypeInfoNode.innerHTML = breakpointType.hint;
+
+			// $(this.editTypeNode).append('\
+			// 	<input type="hidden" name="label" value="' + breakpointType.label + '" />\
+			// ');
+
+			var stateNames = this.scxmlEditor.getAllStateIds();
+
+			switch(true) {
+			case /state-.*/.test(typeId):
+				var editTypeStateFormGroupNode = $('\
+					<div class="form-group">\
+						<label for="stateId" class="col-sm-2 control-label">State</label>\
+				    <div class="col-sm-10">\
+							<input class="form-control" type="text" name="stateId" placeholder="The id of the state"/>\
+						</div>\
+					</div>\
+				');
+				$(this.editTypeNode).append(editTypeStateFormGroupNode);
+				$(editTypeStateFormGroupNode).find("input[name=stateId]")
+					.val('stateId' in breakpoint.data ? breakpoint.data.stateId : "")
+					.typeahead({local: stateNames})
+					.rules('add', 'required');
+				
+				break;
+			case /event-.*/.test(typeId):
+				var editTypeEventFormGroupNode = $('\
+					<div class="form-group">\
+						<label for="eventName" class="col-sm-2 control-label">Event</label>\
+				    <div class="col-sm-10">\
+							<input class="form-control" type="text" name="eventName" placeholder="The name or prefix of the event"/>\
+						</div>\
+					</div>\
+				');
+				$(this.editTypeNode).append(editTypeEventFormGroupNode);
+				$(editTypeEventFormGroupNode).find("input[name=eventName]")
+					.val('eventName' in breakpoint.data ? breakpoint.data.eventName : "")
+					.rules('add', 'required');
+				break;
+			case /transition-.*/.test(typeId):
+				var editTypeTransitionFormGroupNode = $('\
+					<div class="form-group">\
+						<label for="transSource" class="col-sm-2 control-label">From State</label>\
+				    <div class="col-sm-10">\
+							<input class="form-control" type="text" name="transSource" placeholder="The id of the source state"/>\
+						</div>\
+					</div>\
+					<div class="form-group">\
+						<label for="transTarget" class="col-sm-2 control-label">To State</label>\
+				    <div class="col-sm-10">\
+							<input class="form-control" type="text" name="transTarget" placeholder="The id of the destination state"/>\
+						</div>\
+					</div>\
+				');
+				$(this.editTypeNode).append(editTypeTransitionFormGroupNode);
+				$(editTypeTransitionFormGroupNode).find("input[name=transSource]")
+					.val('transSource' in breakpoint.data ? breakpoint.data.transSource : "")
+					.typeahead({local: stateNames});
+				$(editTypeTransitionFormGroupNode).find("input[name=transTarget]")
+					.val('transTarget' in breakpoint.data ? breakpoint.data.transTarget : "")
+					.typeahead({local: stateNames});
+				break
+			case /invoker-.*/.test(typeId):
+				var editTypeInvokerFormGroupNode = $('\
+					<div class="form-group">\
+						<label for="invokeId" class="col-sm-2 control-label">Invoke ID</label>\
+				    <div class="col-sm-10">\
+							<input class="form-control" type="text" name="invokeId" placeholder="The id of the invoker"/>\
+						</div>\
+					</div>\
+					<div class="form-group">\
+						<label for="invokeType" class="col-sm-2 control-label">Invoke Type</label>\
+				    <div class="col-sm-10">\
+							<input class="form-control" type="text" name="invokeType" placeholder="The type of the invoker"/>\
+						</div>\
+					</div>\
+				');
+				$(this.editTypeNode).append(editTypeInvokerFormGroupNode);
+				$(editTypeInvokerFormGroupNode).find("input[name=invokeId]")
+					.val('invokeId' in breakpoint.data ? breakpoint.data.invokeId : "");
+				$(editTypeInvokerFormGroupNode).find("input[name=invokeType]")
+					.val('invokeType' in breakpoint.data ? breakpoint.data.invokeType : "");
+				break
+
+			case /executable-.*/.test(typeId):
+				var editTypeExecutableFormGroupNode = $('\
+					<div class="form-group">\
+						<label for="executableName" class="col-sm-2 control-label">Element Name</label>\
+				    <div class="col-sm-10">\
+							<input class="form-control" type="text" name="executableName" placeholder="The executable\'s element name"/>\
+						</div>\
+					</div>\
+					<div class="form-group">\
+						<label for="executableXPath" class="col-sm-2 control-label">Element XPath</label>\
+				    <div class="col-sm-10">\
+							<input class="form-control" type="text" name="executableXPath" placeholder="The executable\'s XPath expression"/>\
+						</div>\
+					</div>\
+				');
+				$(this.editTypeNode).append(editTypeExecutableFormGroupNode);
+				$(editTypeExecutableFormGroupNode).find("input[name=executableName]")
+					.val('executableName' in breakpoint.data ? breakpoint.data.executableName : "");
+				$(editTypeExecutableFormGroupNode).find("input[name=executableXPath]")
+					.val('executableXPath' in breakpoint.data ? breakpoint.data.executableXPath : "");
+				break;
+			default:
+				break;
+			}
+			
+			var editTypeConditionFormGroupNode = $('\
+				<div class="form-group">\
+					<label for="condition" class="col-sm-2 control-label">Condition</label>\
+			    <div class="col-sm-10">\
+						<textarea class="form-control" rows="4" style="resize:vertical;" name="condition" placeholder="An optional boolean expression evaluated on the datamodel. Breakpoint is only triggered if true." />\
+					</div>\
+				</div>\
+			');
+			$(editTypeConditionFormGroupNode).find("textarea[name=condition]")
+				.val('condition' in breakpoint.data ? breakpoint.data.condition : "")
+
+			$(this.editTypeNode).append(editTypeConditionFormGroupNode);
+		},
+		
+		getNode: function() {
+			var self = this;
+			this.node = $('\
+			<tr>\
+				<td>\
+					<button title="Enable this Breakpoint" class="enable btn btn-default btn-xs btn-primary"><span class="glyphicon glyphicon-ok"></span></button><br />\
+					<button title="Skip to this Breakpoint" class="skipto btn btn-default btn-xs"><span class="glyphicon glyphicon-fast-forward"></span></button>\
+				</td>\
+				<td width="100%">\
+					<span class="breakpoint-label"></span>\
+					<span class="breakpoint-condition"></span>\
+				</td>\
+				<td>\
+					<button title="Edit this Breakpoint" class="edit btn btn-default btn-xs"><span class="glyphicon glyphicon-wrench"></span></button><br />\
+					<button title="Remove this Breakpoint" class="delete btn btn-default btn-xs"><span class="glyphicon glyphicon-trash"></span></button>\
+				</td>\
+			</tr>\
+			');
+			
+			this.labelNode = $(this.node).find("span.breakpoint-label")[0];
+			this.conditionNode = $(this.node).find("span.breakpoint-condition")[0];
+			this.enableButtonNode = $(this.node).find("button.enable")[0];
+			this.skipToButtonNode = $(this.node).find("button.skipto")[0];
+			this.deleteButtonNode = $(this.node).find("button.delete")[0];
+			this.editButtonNode = $(this.node).find("button.edit")[0];
+			
+			$(this.enableButtonNode)
+			.unbind('click')
+			.click(function() {
+				if ($(this).hasClass("btn-primary")) {
+					self.scxmlDebugger.disableBreakpoint(self);
+				} else {
+					self.scxmlDebugger.enableBreakpoint(self);
+				}
+				return false;
+			});
+
+			$(this.deleteButtonNode)
+			.unbind('mouseenter')
+			.unbind('mouseleave')
+			.unbind('click')
+			.mouseenter(function() {
+				$(this).addClass("btn-danger");
+			})
+			.mouseleave(function() {
+				$(this).removeClass("btn-danger");
+			})
+			.click(function() {
+				self.scxmlDebugger.removeBreakpoint(self);
+				return false;
+			});
+
+			$(this.editButtonNode)
+			.unbind('click').click(function() {
+				self.showEditDialog()
+				return false;
+			});
+
+			$(this.skipToButtonNode)
+			.unbind('click').click(function() {
+				self.scxmlDebugger.skipToBreakpoint(self);
+				return false;
+			});
+			
+			this._updateLabelNode();
+			this._updateConditionNode();
+			
+			return this.node;
+		},
+		
+		toDescription: function() {
+			var wireFormat = this.toWireFormat();
+			
+			var breakpointString = '';
+			breakpointString += ('when' in wireFormat ? wireFormat.when + ' ' : '');
+			breakpointString += ('action' in wireFormat ? wireFormat.action + ' ' : '');
+			breakpointString += ('subject' in wireFormat ? wireFormat.subject + ' ' : '');
+
+			breakpointString += (wireFormat.subject === 'state' ? wireFormat.stateId + ' ' : '');
+			breakpointString += (wireFormat.subject === 'event' ? wireFormat.eventName + ' ' : '');
+			if (wireFormat.subject === 'transition') {
+				breakpointString += ('transSource' in wireFormat ? wireFormat.transSource + ' ' : '* ');
+				breakpointString += '&rArr; ';
+				breakpointString += ('transTarget' in wireFormat ? wireFormat.transTarget + ' ' : '* ');
+			}
+			
+			return breakpointString;
+		},
+		
+		_updateLabelNode: function() {
+			this.labelNode.innerHTML = 'Halt ' + this.toDescription();
+		},
+		
+		_updateConditionNode: function() {
+			if (this.data.condition) {
+				this.conditionNode.innerHTML = "<br/>But only when <code>" + this.data.condition + "</code>";
+			} else {
+				this.conditionNode.innerHTML = '';
+			}
+		},
+
+		_typeSelectNode: function() {
+			// establish optgroups for selecting the breakpoint type
+			var optGroups = {};
+			for (var index in this.breakpointTypes.types) {
+				var bp = this.breakpointTypes.types[index];
+				var optGroup = bp.category;
+				if (!(optGroup in optGroups)) optGroups[optGroup] = [];
+				optGroups[optGroup].push(bp);
+			}
+			
+			var breakpointTypeSelectNode = document.createElement('select');
+			breakpointTypeSelectNode.className = 'form-control';
+			$(breakpointTypeSelectNode).attr("name", "breakpointType");
+			
+			for (var optGroup in this.breakpointTypes.categories) {
+				var cat = this.breakpointTypes.categories[optGroup];
+				var optGroupNode = document.createElement('optgroup');
+				$(optGroupNode).attr('label', cat.label);
+				
+				for(var type in optGroups[cat.id]) {
+					var breakpointType = optGroups[cat.id][type];
+					var optionNode = document.createElement('option');
+					$(optionNode).attr('value', breakpointType.id);
+					optionNode.innerHTML = breakpointType.label;
+					$(optionNode).appendTo(optGroupNode);
+				}
+				$(optGroupNode).appendTo(breakpointTypeSelectNode);
+			}
+			
+			return breakpointTypeSelectNode;
+		},
+		
+	});
+	SCXMLEditor.Debugger.Breakpoint.seqNr = 0;
+	
+	SCXMLEditor.Debugger.USCXML = SCXMLEditor.Debugger.extend({
+		constructor: function(params) {
+			this.base(params);
+
+			this.isConnected = false; // we have a connection to the uscxml server
+			this.isPrepared = false; // we uploaded a document
+			this.isRunning = false; // the interpreter on the server is running
+			this.isPaused = false; // the interpreter is running but paused
+			this.hasDOMLoaded = false; // the client has a DOM loaded
+			this.isAttached = false; // we are attached to a server session
+			this.isPolling = false; // we have a unreplied poll request standing
+			this.sessionId = "";
+		},
+
+		_updateDebugControls: function() {
+			// all buttons are disabled per base class
+			$(this.startButtonNode).prop('disabled', true)
+			$(this.pauseButtonNode).prop('disabled', true);
+			$(this.stepButtonNode).prop('disabled', true);
+			
+			var status = "";
+			status += (this.isConnected ? "CON " : "con ");
+			status += (this.isPolling ? "POL " : "pol ");
+			status += (this.isPrepared ? "PRP " : "prp ");
+			status += (this.isRunning ? "RUN " : "run ");
+			status += (this.isPaused ? "PAU " : "pau ");
+			status += (this.hasDOMLoaded ? "DOM " : "dom ");
+			status += (this.isAttached ? "ATC " : "atc ");
+			
+			$(this.statusIndicatorNode).html(status);
+			
+			// some sanity
+			if (!this.isConnected) {
+				$("body").find(".dom").text("");
+				$(this.currentBreakpointNode).html("");
+				this.isPaused = false;
+				this.isRunning = false;
+				this.isAttached = false;
+				this.isPrepared = false;
+			}
+			
+			if (!this.isRunning) {
+				this.isPaused = false;
+				$(this.currentBreakpointNode).html("");
+			}
+			
+			// toggle button icons
+			if (this.isRunning) { // switch play and stop
+				$(this.startButtonNode).children("span.glyphicon").removeClass("glyphicon-play").addClass("glyphicon-stop");
+				$(this.startButtonNode).prop('title', 'Stop Execution');
+			} else {
+				$(this.startButtonNode).children("span.glyphicon").removeClass("glyphicon-stop").addClass("glyphicon-play");
+				$(this.startButtonNode).prop('title', 'Start Execution');
+			}
+
+			if (!this.isPaused) { // switch pause and resume
+				$(this.pauseButtonNode).removeClass("active");
+				$(this.pauseButtonNode).prop('title', 'Pause Execution');
+				this.unhighlightAllBreakpoints();
+				$(this.currentBreakpointNode).html("");
+			} else {
+				$(this.pauseButtonNode).addClass("active");
+				$(this.pauseButtonNode).prop('title', 'Resume Execution');
+			}
+
+			if (this.isConnected && (this.hasDOMLoaded || this.isAttached)) {
+				// are we connected, not running and have a DOM or are attached?
+				if (!this.isAttached) {
+					$(this.startButtonNode).prop('disabled', false);
+				}
+				if (this.isRunning) {
+					$(this.pauseButtonNode).prop('disabled', false);
+					$(this.stepButtonNode).prop('disabled', false);
+				} else {
+					$(this.startButtonNode).prop('disabled', false)
+					$(this.pauseButtonNode).prop('disabled', true);
+					$(this.stepButtonNode).prop('disabled', false);
+				}
+				return;
+			} else {
+				$("body").find(".dom").text("");
+			}
+		},
+
+		loadDOM: function(scxmlDOM) {
+			this.hasDOMLoaded = true;
+			this._updateDebugControls();
+		},
+
+		getNode: function() {
+			this.base();
+			var debug = this;
+			
+			// a new menu item
+			$(this.controlDropdownNode).append('\
+		  	<li role="presentation" class="divider"></li>\
+				<li class="disabled"><a href="#"><i class="glyphicon glyphicon-resize-small"></i> Attach to Instance</a></li>\
+			');
+			
+			// the connect bar
+			$(this.node).find(".debug-header").after('\
+				<div class="panel-body input-group input-group-sm">\
+					<input type="text" class="form-control connect" placeholder="uSCMXL Interpreter URL">\
+					<span class="input-group-btn">\
+						<button title="Connect" class="btn btn-default ladda-button connect" data-spinner-color="#000" data-style="zoom-in">\
+							<span class="ladda-label"><span class="ui-icon ui-icon-unlocked"></span></span></button>\
+					</span>\
+				</div>\
+			');
+			
+			this.connectInputNode = $(this.node).find("input.connect");
+			this.connectButtonNode = $(this.connectInputNode).next().children("button.connect")[0];
+
+			if (this.debuggerURL) {
+				$(this.connectInputNode).val(this.debuggerURL);
+			} else {
+				$(this.connectInputNode).attr("placeholder", "URL of uscxml-debug");
+			}
+			
+			$(this.connectInputNode).focus(function () {
+				$(debug.connectButtonNode)
+				.removeClass("btn-warning")
+				.find("span.ui-icon")
+				.removeClass("ui-icon-alert ui-icon-locked")
+				.addClass("ui-icon-unlocked");
+			});
+			
+			$(this.connectInputNode).unbind('keypress').keypress(function(e) {
+				if (e.which == 13)
+					$(debug.connectButtonNode).trigger('click');
+			});
+
+			
+			$(this.connectButtonNode).unbind("click");
+			$(this.connectButtonNode).click(function() {
+				debug.connectSpinner = Ladda.create(this);
+				debug.connectSpinner.start();
+				if (debug.isConnected) {
+					debug.disconnect();
+				} else {
+					debug.connect($(debug.connectInputNode).val());
+				}
+			});
+
+			// debug controls
+			$(this.startButtonNode)
+			.unbind('click').click(function () {
+				$(this).tooltip("hide");
+				if ($(this).children(".glyphicon").hasClass("glyphicon-play")) {
+					debug.startDebug();
+				} else {
+					debug.stopDebug();
+				}
+			});
+
+			$(this.pauseButtonNode)
+			.unbind('click').click(function() {
+				$(this).tooltip("hide");
+				if (debug.isPaused) {
+					debug.resumeDebug();
+				} else {
+					debug.pauseDebug();
+				}
+			});
+
+			$(this.stepButtonNode)
+			.unbind('click').click(function() {
+				$(this).tooltip("hide");
+				debug.stepDebug();
+			});
+			
+			this._updateDebugControls();
+			
+			return this.node;
+		},
+		
+		_indicateLockedConnection: function() {
+			$(this.connectButtonNode)
+			.removeClass("btn-warning")
+			.find("span.ui-icon")
+			.removeClass("ui-icon-alert ui-icon-unlocked")
+			.addClass("ui-icon-locked");
+			$(this.connectInputNode).attr('disabled', true);
+			$(this.dataModelInputNode).prop('disabled', false);
+			$(this.dataModelInputButton).prop('disabled', false);
+			$(this.dataModelSuggestButton).prop('disabled', false);
+		},
+
+		_indicateFailedConnection: function() {
+			$(this.connectButtonNode)
+			.addClass("btn-warning")
+			.find("span.ui-icon")
+			.removeClass("ui-icon-locked ui-icon-unlocked")
+			.addClass("ui-icon-alert");
+		},
+
+		_indicateUnlockedConnection: function() {
+			$(this.connectButtonNode)
+			.removeClass("btn-warning")
+			.find("span.ui-icon")
+			.removeClass("ui-icon-locked ui-icon-alert")
+			.addClass("ui-icon-unlocked");
+			$(this.connectInputNode).attr('disabled', false);
+			$(this.dataModelInputNode).prop('disabled', true);
+			$(this.dataModelInputButton).prop('disabled', true);
+			$(this.dataModelSuggestButton).prop('disabled', true);
+		},
+		
+		connect: function(debuggerURL) {
+			if (!debuggerURL || debuggerURL.length == 0)
+				return;
+			
+			this.debuggerURL = debuggerURL;
+			
+			var self = this;
+
+			this.requestWithJSON('/debug/connect', {
+				onFailure: function(dataObj, statusString, xhrObj) {
+					self.isConnected = false;
+					self._indicateFailedConnection();
+				},
+				onSuccess: function(dataObj, statusString, xhrObj) {
+					self.isConnected = true;
+					self._indicateLockedConnection();
+
+					self.log("Client successfully connected to " + self.debuggerURL);
+					self.sessionId = dataObj.session;
+					// send all breakpoints when connected
+					if (self.breakpoints.length > 0) {
+						for (var index in self.breakpoints) {
+							self.addBreakpoint(self.breakpoints[index]);
+						}
+					}
+					// register disconnect handler
+					$(window).unload(function() {
+					  self.disconnect();
+					});
+					// update list of sessions from server
+					self.updateServerSessions();
+					// and start long-poller
+					self.pollServer();
+				},
+				onComplete: function(dataObj, statusString) {
+					self.connectSpinner.stop();
+				}
+			});
+		},
+
+		disconnect: function() {
+			if (!this.isConnected)
+				return;
+			var self = this;
+
+			this.requestWithJSON('/debug/disconnect', {
+				async: false,
+				onComplete: function(dataObj, statusString) {
+					self.isConnected = false;
+					self.isPrepared = false;
+					self._indicateUnlockedConnection();
+					self.connectSpinner.stop();
+					
+					// remove all previous sessions
+					$(self.controlDropdownNode).children("li.server-session").remove();
+					self.debuggerURL = '';
+				}
+			});
+		},
+		
+		updateServerSessions: function() {
+			this.base();
+			if (!this.isConnected)
+				return;
+
+			var self = this;
+
+			this.requestWithJSON('/debug/sessions', {
+				onSuccess: function(dataObj, statusString, xhrObj) {
+					$(self.controlButtonNode).effect('highlight', {color: '#4489CA'}, 600);
+
+					// remove all previous sessions
+					$(self.controlDropdownNode).children("li.server-session").remove();
+					for (var key in dataObj.sessions) {
+						$(self.controlDropdownNode).append('\
+							<li class="server-session" \
+								session-url="' + dataObj.sessions[key].source + '"\
+								session-name="' + dataObj.sessions[key].name + '"\
+								session-id="' + dataObj.sessions[key].id + '"\
+							><a href="#"><i class="glyphicon glyphicon-link"></i> ' + dataObj.sessions[key].source + '</a></li>\
+						');
+					}
+					$(self.controlDropdownNode).find("li").unbind('click').click(function() {
+						var session = {
+							sessionId: $(this).attr("session-id"),
+							sessionName: $(this).attr("session-name"),
+							sessionURL: $(this).attr("session-url"),
+						};
+						self.attachDebug(session);
+						
+						$(self.controlDropdownNode).dropdown('toggle');
+						return false;
+					});
+				}
+			});
+		},
+		
+		
+		addBreakpoint: function(breakpoint) {
+			this.base(breakpoint);
+			if (!this.isConnected)
+				return;
+
+			if (!breakpoint) // it's perfectly fine to call this without a breakpoint - will add a new one
+				return;
+				
+			this.requestWithJSON('/debug/breakpoint/add', {
+				data: breakpoint.toWireFormat()
+			});
+		},
+		
+		removeBreakpoint: function(breakpoint) {
+			this.base(breakpoint);
+			if (!this.isConnected)
+				return;
+			this.requestWithJSON('/debug/breakpoint/remove', {
+				data: breakpoint.toWireFormat()
+			});
+		},
+		
+		editedBreakpoint: function(breakpoint, oldData) {
+			this.base(breakpoint, oldData);
+			if (!this.isConnected)
+				return;
+
+			var oldBreakpoint = new SCXMLEditor.Debugger.Breakpoint({ data : oldData });
+			this.requestWithJSON('/debug/breakpoint/remove', {
+				data: oldBreakpoint.toWireFormat()
+			});
+			this.requestWithJSONBlocking('/debug/breakpoint/add', {
+				data: breakpoint.toWireFormat()
+			});
+		},
+		
+		skipToBreakpoint: function(breakpoint) {
+			this.base(breakpoint);
+			if (!this.isConnected)
+				return;
+				
+			this.requestWithJSON('/debug/breakpoint/skipto', {
+				data: breakpoint.toWireFormat()
+			});
+				
+		},
+		
+		enableBreakpoint: function(breakpoint) {
+			this.base(breakpoint);
+			if (!this.isConnected)
+				return;
+			
+			this.requestWithJSON('/debug/breakpoint/enable', {
+				data: breakpoint.toWireFormat()
+			});
+		},
+		
+		disableBreakpoint: function(breakpoint) {
+			this.base(breakpoint);
+			if (!this.isConnected)
+				return;
+			
+			this.requestWithJSON('/debug/breakpoint/disable', {
+				data: breakpoint.toWireFormat()
+			});
+		},
+		
+		enableAllBreakpoints: function() {
+			this.base();
+			if (!this.isConnected)
+				return;
+			
+			this.requestWithJSON('/debug/breakpoint/enable/all');
+		},
+		
+		disableAllBreakpoints: function() {
+			this.base();
+			if (!this.isConnected)
+				return;
+		
+			this.requestWithJSON('/debug/breakpoint/disable/all');
+			
+		},
+		
+		
+		attachDebug: function(session) {
+			this.base();
+			if (!this.isConnected)
+				return;
+			
+			var self = this;
+			
+			var data = {
+				attach: session.sessionId,
+			};
+			
+			this.requestWithJSON('/debug/attach', {
+				data: data,
+				onSuccess: function(dataObj, statusString, xhrObj) {
+					self.isPrepared = true;
+					self.isRunning = true;
+					self.isAttached = true;
+
+					if (self.scxmlEditor.xmlView) {
+						self.scxmlEditor.xmlView.setXML(dataObj.xml)
+						self.scxmlEditor.xmlView.prettyPrint();
+					}
+					
+					// var domText = vkbeautify.xml(dataObj.xml);
+					// $("body").find("pre.dom").text(domText);
+					self.scxmlEditor.setDocumentNameFromURL(session.sessionURL);
+					self._updateDebugControls();
+				}
+			});
+			
+		},
+		
+		prepareDebug: function() {
+			this.base();
+			if (!this.isConnected)
+				return;
+
+			if (this.isAttached)
+				return;
+
+			var self = this;
+
+			var data = {
+				url: this.scxmlEditor.scxmlURL,
+				xml: this.scxmlText
+			};
+			
+			this.requestWithJSON('/debug/prepare', {
+				data: data,
+				onSuccess: function(dataObj, statusString, xhrObj) {
+					self.isPrepared = true;
+				}
+			});
+		},
+		
+		startDebug: function() {
+			this.base();
+			if (!this.isConnected)
+				return;
+
+			if (!this.isPrepared)
+				this.prepareDebug();
+
+			var self = this;
+			
+			this.requestWithJSON('/debug/start', {
+				onSuccess: function(dataObj, statusString, xhrObj) {
+					self.isRunning = true;
+				}
+			});
+		},
+		
+		stopDebug: function() {
+			this.base();
+			if (!this.isConnected)
+				return;
+
+			var self = this;
+			
+			this.requestWithJSON('/debug/stop', {
+				onSuccess: function(dataObj, statusString, xhrObj) {
+					self.isRunning = false;
+					self.isPrepared = false;
+				}
+			});
+		},
+
+		pauseDebug: function() {
+			this.base();
+			if (!this.isConnected)
+				return;
+
+			var self = this;
+
+			this.requestWithJSON('/debug/pause', {
+				onSuccess: function(dataObj, statusString, xhrObj) {
+					self.isPaused = true;
+					self._updateDebugControls();
+				}
+			});
+		},
+
+		resumeDebug: function() {
+			this.base();
+			if (!this.isConnected)
+				return;
+
+			var self = this;
+			
+			this.requestWithJSON('/debug/resume', {
+				onSuccess: function(dataObj, statusString, xhrObj) {
+					self.isPaused = false;
+					self._updateDebugControls();
+				}
+			});
+		},
+
+		stepDebug: function() {
+			this.base();
+			if (!this.isConnected)
+				return;
+
+			if (!this.isPrepared)
+				this.prepareDebug();
+
+			var self = this;
+
+			this.requestWithJSON('/debug/step', {
+				onSuccess: function(dataObj, statusString, xhrObj) {
+					self.isRunning = true;
+					self.isPaused = true;
+					self._updateDebugControls();
+				}
+			});
+		},
+
+		evalOnDataModel: function(expression) {
+			this.base();
+			if (!this.isConnected)
+				return;
+			
+			var self = this;
+			
+			var data = {};
+			data.expression = expression;
+			
+			this.requestWithJSON('/debug/eval', {
+				data: data,
+				onSuccess: function(dataObj, statusString, xhrObj) {
+					var content = JSON.stringify(dataObj.eval);
+					self.dataModelEditor.getSession().setValue(vkbeautify.json(content));
+					
+				},
+			});
+		
+		},
+
+		// server will return 'status' with JSON response, dispatch accordingly
+		requestWithJSON: function(url, params) {
+			var self = this;
+			if (!params)
+				params = {};
+			
+			params.method      = ('method' in params ? params.method : "POST");
+			params.async       = ('async' in params ? params.async : true);
+			params.onSuccess   = ('onSuccess' in params ? params.onSuccess : function() {});
+			params.onFailure   = ('onFailure' in params ? params.onFailure : function(dataObj) { self.log(dataObj); });
+			params.onComplete  = ('onComplete' in params ? params.onComplete : function() {});
+			params.onError     = ('onError' in params ? params.onError : function() {});
+			params.returnType  = ('returnType' in params ? params.returnType : "json");
+			params.sendType    = ('sendType' in params ? params.sendType : "application/json; charset=utf-8");
+			params.data        = ('data' in params ? params.data : {});
+			
+			if (params.sendType.match("^application/json")) {
+				if (this.sessionId.length > 0) // automatically add session
+					params.data.session = this.sessionId;
+				params.data = JSON.stringify(params.data);
+			}
+
+			$.ajax({
+				type: params.method,
+				dataType: params.returnType,
+				async: params.async,
+				data: params.data,
+		    contentType: params.sendType,
+				url: this.debuggerURL + url,
+				success: function (dataObj, statusString, xhrObj) {
+					if ("status" in dataObj && dataObj.status === 'success') {
+						params.onSuccess(dataObj, statusString, xhrObj);
+					} else {
+						params.onFailure(dataObj, statusString, xhrObj);
+					}
+				},
+				error: function(xhrObj, statusString, errorString) {
+					self.log("Error from " + self.debuggerURL + url);
+					self.log(statusString + "\n\t" + errorString);
+					self.log(xhrObj);
+					
+					self.isConnected = false;
+					self._indicateFailedConnection();
+					params.onError(errorString, statusString, xhrObj);
+				},
+				complete: function(xhrObj, statusString) {
+					params.onComplete(xhrObj, statusString);
+					self._updateDebugControls();
+				}
+			});
+		},
+
+		handleBreakpointReturn: function(serverReturn) {
+			var updateViewer = false;
+			if ('qualified' in serverReturn) {
+				var qualifiedBreakpoint = new SCXMLEditor.Debugger.Breakpoint({ data : serverReturn.qualified });
+				var breakpointString = 'Halted ' + qualifiedBreakpoint.toDescription();
+				$(this.currentBreakpointNode).html(breakpointString);
+			
+				if ('xpath' in serverReturn.qualified) {
+					if (this.scxmlEditor.xmlView) {
+						this.scxmlEditor.xmlView.setElementXPath(serverReturn.qualified.xpath);
+					}
+				} else {
+					this.scxmlEditor.xmlView.setElementXPath("");
+				} 
+			}
+			
+			if ('basicStates' in serverReturn) {
+				if (this.scxmlEditor.xmlView) {
+					this.scxmlEditor.xmlView.setActiveStates(serverReturn['basicStates']);
+				}
+			}
+
+			if (this.scxmlEditor.xmlView) {
+				this.scxmlEditor.xmlView.prettyPrint();
+			}
+
+			if ('breakpoint' in serverReturn) {
+				var breakpoint = new SCXMLEditor.Debugger.Breakpoint({ data : serverReturn.breakpoint });
+				this.highlightBreakpoint(breakpoint);
+			}
+			
+		},
+
+		pollServer: function() {
+			this.isPolling = false;
+			this._updateDebugControls();
+
+			if (!this.isConnected)
+				return;
+
+			if (this.sessionId.length == 0)
+				return;
+				
+			var self = this;
+			this.isPolling = true;
+			self._updateDebugControls();
+			
+			$.ajax({
+				type: "POST",
+				dataType: "json",
+				async: true,
+				timeout: 100000000,
+				data: JSON.stringify({session: this.sessionId}),
+				contentType: "application/json",
+				url: this.debuggerURL + '/debug/poll',
+				success: function (dataObj, statusString, xhrObj) {
+					try {
+						if ('status' in dataObj) {
+							if (dataObj.status !== 'success') {
+								self.log("Error from " + self.debuggerURL + "/debug/poll");
+								self.log(dataObj);
+								return;
+							}
+						}
+						if ('replyType' in dataObj) {
+							//self.log("Received " + dataObj.replyType);
+							if (dataObj.replyType === "log") {
+								self.log(dataObj);
+							} else if (dataObj.replyType === "finished") {
+								self.isRunning = false;
+								self.isPrepared = false;
+							} else if (dataObj.replyType === "breakpoint") {
+								self.isPaused = true;
+								self.handleBreakpointReturn(dataObj);
+							} else {
+								self.log("Unhandled reply from /pollServer");
+								self.log(dataObj);
+							}
+						} else {
+							self.log("Untyped reply from /pollServer");
+							self.log(dataObj);
+						}
+					} catch(e) {
+						self.log("Exception when dispatching server push:");
+						self.log(e);
+					}
+					// dispatch server push here
+					self.pollServer();
+				},
+				error: function(xhrObj, statusString, errorString) {
+					if (xhrObj.statusText === "timeout") {
+						self.pollServer(); // just repoll
+						return;
+					}
+
+					self.log("Error from /pollServer");
+					self.log(statusString + "\n\t" + errorString);
+					self.log(xhrObj);
+					
+					self.isConnected = false;
+					self._indicateFailedConnection();
+				},
+				complete: function(xhrObj, statusString) {
+					self._updateDebugControls();
+				}
+			});
+			
+		},
+
+	});
+
+	// see http://nealvs.wordpress.com/2010/07/12/how-to-compare-two-javascript-objects-for-equality/
+	function deepEquals(x, y) {
+		for (var p in y) {
+			if (typeof(y[p]) !== typeof(x[p])) return false;
+			if ((y[p] === null) !== (x[p] === null)) return false;
+			switch (typeof(y[p])) {
+				case 'undefined':
+					if (typeof(x[p]) != 'undefined') return false;
+					break;
+				case 'object':
+					if (y[p] !== null && x[p] !== null && (y[p].constructor.toString() !== x[p].constructor.toString() || !y[p].equals(x[p]))) return false;
+					break;
+				case 'function':
+					if (p != 'equals' && y[p].toString() != x[p].toString()) return false;
+					break;
+				default:
+					if (y[p] !== x[p]) return false;
+			}
+		}
+		return true;
+	}
+
+	$(document).ready(function() {
+		
+				
+		// see http://stackoverflow.com/questions/18754020/bootstrap-3-with-jquery-validation-plugin
+		$.validator.setDefaults({
+		    highlight: function(element) {
+		        $(element).closest('.form-group').addClass('has-error');
+		    },
+		    unhighlight: function(element) {
+		        $(element).closest('.form-group').removeClass('has-error');
+		    },
+		    errorElement: 'span',
+		    errorClass: 'help-block',
+		    errorPlacement: function(error, element) {
+		        if(element.parent('.input-group').length) {
+		            error.insertAfter(element.parent());
+		        } else {
+		            error.insertAfter(element);
+		        }
+		    }
+		});
+		
+		var scxmlEdit = new SCXMLEditor({
+			containerNode: $("#scxml-editor")[0]
+		});
+
+	});
+	
+	</script>
+</head>
+<body>
+	<div id="scxml-editor"></div>
+	<div class="messages"></div>
+	<div class="dom"></pre>
+</body>
+</html>

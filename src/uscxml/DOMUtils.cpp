@@ -25,9 +25,14 @@
 
 namespace uscxml {
 
-std::string DOMUtils::xPathForNode(const Arabica::DOM::Node<std::string>& node) {
+std::string DOMUtils::xPathForNode(const Arabica::DOM::Node<std::string>& node, const std::string& ns) {
 	std::string xPath;
-
+	std::string nsPrefix;
+	
+	if (ns.size() > 0) {
+		nsPrefix = ns + ":";
+	}
+		
 	if (!node || node.getNodeType() != Arabica::DOM::Node_base::ELEMENT_NODE)
 		return xPath;
 
@@ -37,12 +42,16 @@ std::string DOMUtils::xPathForNode(const Arabica::DOM::Node<std::string>& node) 
 		case Arabica::DOM::Node_base::ELEMENT_NODE: {
 			if (HAS_ATTR(curr, "id")) {
 				// we assume ids to be unique and return immediately
-				xPath.insert(0, "//" + TAGNAME(curr) + "[@id=\"" + ATTR(curr, "id") + "\"]");
+				if (ns == "*") {
+					xPath.insert(0, "//*[local-name() = \"" + TAGNAME(curr) + "\"][@id=\"" + ATTR(curr, "id") + "\"]");
+				} else {
+					xPath.insert(0, "//" + nsPrefix + TAGNAME(curr) + "[@id=\"" + ATTR(curr, "id") + "\"]");
+				}
 				return xPath;
 			} else {
 				// check previous siblings to count our index
 				Arabica::DOM::Node<std::string> sibling = curr.getPreviousSibling();
-				int index = 1;
+				int index = 1; // xpath indices start at 1
 				while(sibling) {
 					if (sibling.getNodeType() == Arabica::DOM::Node_base::ELEMENT_NODE) {
 						if (iequals(TAGNAME(sibling), TAGNAME(curr))) {
@@ -51,7 +60,11 @@ std::string DOMUtils::xPathForNode(const Arabica::DOM::Node<std::string>& node) 
 					}
 					sibling = sibling.getPreviousSibling();
 				}
-				xPath.insert(0, "/" + TAGNAME(curr) + "[" + toStr(index) + "]");
+				if (ns == "*") {
+					xPath.insert(0, "/*[local-name() = \"" + TAGNAME(curr) + "\"][" + toStr(index) + "]");
+				} else {
+					xPath.insert(0, "/" + nsPrefix + TAGNAME(curr) + "[" + toStr(index) + "]");
+				}
 			}
 			break;
 		}

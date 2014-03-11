@@ -263,7 +263,7 @@ void BasicHTTPIOProcessor::downloadCompleted(const URL& url) {
 	std::map<std::string, std::pair<URL, SendRequest> >::iterator reqIter = _sendRequests.begin();
 	while(reqIter != _sendRequests.end()) {
 		if (reqIter->second.first == url) {
-			// test 513
+			// test513
 			std::string statusCode = url.getStatusCode();
 			if (statusCode.length() > 0) {
 				std::string statusPrefix = statusCode.substr(0,1);
