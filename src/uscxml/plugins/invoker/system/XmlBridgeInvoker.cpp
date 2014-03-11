@@ -32,6 +32,11 @@ XmlBridgeInvoker::~XmlBridgeInvoker()
 {
 	LOG(INFO) << "Stopping " << _invokeId;
 
+	if (!_reqQueue.empty()) {
+		std::list<request *>::const_iterator reqiter = _reqQueue.begin();
+		for (reqiter; reqiter != _reqQueue.end(); reqiter++)
+			delete (*reqiter);
+	}
 	if (_servinfo != NULL)
 		freeaddrinfo(_servinfo);
 	close(_socketfd);
@@ -96,20 +101,18 @@ Data XmlBridgeInvoker::getDataModelVariables() {
  * @param req La richiesta specificata nell'elemento <send> dell'SCXML
  */
 void XmlBridgeInvoker::send(const SendRequest& req) {
-	SendRequest reqCopy = req;
-	std::string evName = reqCopy.getName();
-	bool iswrite = (evName.c_str()[0] == WRITEOP);
-	std::string evType = evName.substr(1, 3);
+	bool iswrite = (req.name.c_str()[0] == WRITEOP);
+	std::string evType = req.name.substr(1, 3);
 
-	LOG(INFO) << "" << _invokeId << " sending event " << evName;
+	LOG(INFO) << "" << _invokeId << " sending event " << req.name;
 
 	/* I dati inviati dal SCXML all'TIM o al MES sono sempre mappati nella struttura dati 'namelist' dell'evento */
 	/* SCXML -> TIM */
 	if (evType == SCXML2TIM) {
-		if (!reqCopy.namelist.empty()) {
+		if (!req.namelist.empty()) {
 			std::stringstream ss;
-			std::map<std::string, Data>::const_iterator namelistIter = reqCopy.namelist.begin();
-			while(namelistIter != reqCopy.namelist.end()) {
+			std::map<std::string, Data>::const_iterator namelistIter = req.namelist.begin();
+			while(namelistIter != req.namelist.end()) {
 				/* When sending namelist from _datamodel variables, data is interpreted as nodes (data.node) */
 				std::map<std::string, Data>::const_iterator nodesIter = namelistIter->second.compound.begin();
 				while(nodesIter != namelistIter->second.compound.end()) {
@@ -125,8 +128,8 @@ void XmlBridgeInvoker::send(const SendRequest& req) {
 				return; // <<<<<<<<< RETURN HERE!
 			}
 			client(ss.str());
-		} else if (!reqCopy.xml.empty()) {
-			client(reqCopy.xml);
+		} else if (!req.xml.empty()) {
+			client(req.xml);
 		} else {
 			LOG(ERROR) << _invokeId << " cannot create TIM command from send request";
 			buildTIMexception(SCXML_ERROR);
@@ -141,8 +144,8 @@ void XmlBridgeInvoker::send(const SendRequest& req) {
 			/* Extract parsed TIM reply fields */
 			size_t tmpsize = _itemsRead.size();
 			/* When sending namelist from XPath variables, data is interpreted as nodes (data.node) */
-			std::map<std::string, Data>::const_iterator namelistIter = reqCopy.namelist.begin();
-			while(namelistIter != reqCopy.namelist.end()) {
+			std::map<std::string, Data>::const_iterator namelistIter = req.namelist.begin();
+			while(namelistIter != req.namelist.end()) {
 				std::map<std::string, Data>::const_iterator nodesIter = namelistIter->second.compound.begin();
 				while(nodesIter != namelistIter->second.compound.end()) {
 					_itemsRead.push_back(nodesIter->second.node.getNodeValue());
@@ -193,6 +196,7 @@ void XmlBridgeInvoker::send(const SendRequest& req) {
 	 * la richiesta deve essere rimossa dalla lista */
 	{
 		tthread::lock_guard<tthread::mutex> queuelock(queueMUTEX);
+		delete _reqQueue.back();
 		_reqQueue.pop_back();
 		_reqClock.pop_back();
 	}
@@ -236,6 +240,7 @@ bool XmlBridgeInvoker::buildMESreq(uscxml::request *myreq, bool newreq) {
 				 * forzare la connessione al TIM */
 				_reqClock.push_front(0);
 			} else if (_reqQueue.size() > 0) {
+				LOG(INFO) << _invokeId << " queueing request on socket #" << myreq->sock;
 				_reqClock.push_front(std::clock());
 			}
 			_reqQueue.push_front(myreq);
@@ -251,7 +256,7 @@ bool XmlBridgeInvoker::buildMESreq(uscxml::request *myreq, bool newreq) {
 
 	std::stringstream ss;
 	ss << _CMDid << '_' << (_reqQueue.back()->write ? WRITEOP : READOP) << MES2SCXML;
-	LOG(INFO) << "(" << _invokeId << ") sending event " << ss.str();
+	LOG(INFO) << _invokeId << " sending event " << ss.str();
 
 	Event myevent(ss.str(), Event::EXTERNAL);
 
@@ -303,7 +308,7 @@ bool XmlBridgeInvoker::buildMESreq(uscxml::request *myreq, bool newreq) {
  * @param type Lettura/Scrittura
  * @param reply_raw_data Stringa Raw della risposta dal TIM
  */
-void XmlBridgeInvoker::buildTIMreply(const std::string &reply_raw_data)
+void XmlBridgeInvoker::buildTIMreply(const char *reply_raw_data)
 {
 	Arabica::SAX2DOM::Parser<std::string> domParser;
 	Arabica::SAX::CatchErrorHandler<std::string> errorHandler;
@@ -332,6 +337,8 @@ void XmlBridgeInvoker::buildTIMreply(const std::string &reply_raw_data)
 
 	/* I dati inviati dal SCXML all'SCXML sono sempre mappati nella struttura dati 'dom' dell'evento */
 	myevent.dom = domParser.getDocument().getDocumentElement();
+
+	LOG(INFO) << _invokeId << " sending event " << ss.str();
 
 	returnEvent(myevent);
 }
@@ -433,21 +440,16 @@ bool XmlBridgeInvoker::connect2TIM() {
 void XmlBridgeInvoker::client(const std::string &cmdframe) {
 
 	/* controllo se devo riutilizzare l'xml archiviato del TIM o no */
-	if (_reqClock.back() != 0 && ((std::clock() - _reqClock.back()) < (MAXQUEUEDELAY * CLOCKS_PER_SEC))) {
-		LOG(INFO) << _invokeId << " reusing old TIM reply!";
-		if (_reply == NULL) {
+	if (_reqClock.back() != 0 && !_reqQueue.back()->write && !_lastWrite &&
+	    ((std::clock() - _reqClock.back()) < (MAXQUEUEDELAY * CLOCKS_PER_SEC)) ) {
+		if (_reply == NULL || _reply[0] == '\0') {
 			LOG(ERROR) << _invokeId << " empty reply buffer, cannot reuse TIM xml data";
 			buildTIMexception(TIM_ERROR);
 			return;
 		}
-		LOG(INFO) << _invokeId << " reusing old XML data";
-		buildTIMreply(std::string(_reply));
+		LOG(INFO) << _invokeId << " reusing old TIM reply!";
+		buildTIMreply(_reply);
 		return;
-	} else {
-		if (_reply != NULL) {
-			delete _reply;
-			_reply == NULL;
-		}
 	}
 
 	if (cmdframe.length() == 0) {
@@ -489,7 +491,7 @@ void XmlBridgeInvoker::client(const std::string &cmdframe) {
 	LOG(INFO) << _invokeId << " sending cmd to TIM (length=" << cmdframe.length() << "): "
 		   << std::endl << timframe;
 
-	int result = true;
+	bool result = true;
 	int numbytes;
 	while ((numbytes = ::send(_socketfd, timframe.c_str(),
 				  timframe.length(), MSG_NOSIGNAL | MSG_MORE)) != timframe.length()) {
@@ -520,6 +522,8 @@ void XmlBridgeInvoker::client(const std::string &cmdframe) {
 	 */
 	if (result) {
 		size_t replylen = 0;
+		if (_reply[0] != '\0')
+			std::memset(_reply, 0, MAXTIMREPLYSIZE);
 		do {
 			int recvlen;
 			if ((recvlen = recv(_socketfd, _reply + replylen,
@@ -550,10 +554,16 @@ void XmlBridgeInvoker::client(const std::string &cmdframe) {
 			 std::strncmp(&_reply[replylen-8], "</frame>", 8) != 0);
 	}
 
+	if (_reqQueue.back()->write) {
+		_lastWrite == true;
+	} else {
+		_lastWrite == false;
+	}
+
 	if (result) {
 		LOG(INFO) << _invokeId << " received reply from TIM: " << std::endl << _reply;
 		/* This function logs and reports errors internally */
-		buildTIMreply(std::string(_reply));
+		buildTIMreply(_reply);
 	}
 
 	{

@@ -42,6 +42,7 @@ namespace uscxml {
 
 #define MAXTIMCONN		6
 #define MAXQUEUEDELAY		2
+#define MAXQUEUESIZE		5
 
 enum exceptions {
 	TIM_TIMEOUT,
@@ -66,7 +67,7 @@ public:
 	XmlBridgeInvoker() :
 		_reply(NULL), _servinfo(NULL), _socketfd(-1),
 		_itemsRead(), _mesbufferer(MesBufferer::getInstance()),
-		_reqQueue(), _queueSize(5),
+		_reqQueue(), _queueSize(MAXQUEUESIZE), _lastWrite(false),
 		_TIMaddr(DEF_TIMADDR), _TIMport(DEF_TIMPORT) {}
 
 	std::set<std::string> getNames() {
@@ -81,7 +82,7 @@ public:
 	Data getDataModelVariables();
 
 	bool buildMESreq(request *myreq, bool newreq);
-	void buildTIMreply(const std::string &reply_raw_data);
+	void buildTIMreply(const char *reply_raw_data);
 	void buildTIMexception(exceptions type);
 
 	~XmlBridgeInvoker();
@@ -107,6 +108,7 @@ protected:
 
 	std::list<request *> _reqQueue;
 	std::list<std::clock_t> _reqClock;
+	bool _lastWrite;
 
 	tthread::mutex queueMUTEX;
 };
