@@ -63,7 +63,9 @@ class XmlBridgeInvoker : public InvokerImpl {
 public:
 	XmlBridgeInvoker() :
 		_reply(NULL), _servinfo(NULL), _socketfd(-1),
-		_itemsRead(), _mesbufferer(MesBufferer::getInstance()),	_reqQueue() {}
+		_itemsRead(), _mesbufferer(MesBufferer::getInstance()),
+		_reqQueue(), _queueSize(5),
+		_TIMaddr(DEF_TIMADDR), _TIMport(DEF_TIMPORT) {}
 
 	std::set<std::string> getNames() {
 		std::set<std::string> names;

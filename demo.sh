@@ -25,49 +25,49 @@ case "$1" in
     	if [ "$2" -eq "1" ] ; then
 		echo "Write Mode is Not Supported"		
 	else
-		/usr/local/bin/modpoll -0 -1 -t4 -o4 -p $PORT -r56 -c84 $TIM
+		/usr/local/bin/modpoll -0 -1 -t4 -o4 -p $PORT -r76 -c76 $TIM
 	fi
     ;;
 2)  echo  "Sending command $1"
     	if [ "$2" -eq "1" ] ; then
 		echo "Write Mode is Not Supported"		
 	else
-		/usr/local/bin/modpoll -0 -1 -t4 -o4 -p $PORT -r310 -c31 $TIM
+		/usr/local/bin/modpoll -0 -1 -t4 -o4 -p $PORT -r385 -c56 $TIM
 	fi
    ;;
 3)  echo  "Sending command $1"
     	if [ "$2" -eq "1" ] ; then
 		echo "Write Mode is Not Supported"		
 	else
-		/usr/local/bin/modpoll -0 -1 -t4 -o4 -p $PORT -r563 -c114 $TIM
+		/usr/local/bin/modpoll -0 -1 -t4 -o4 -p $PORT -r663 -c114 $TIM
 	fi
    ;;
 4)  echo  "Sending command $1"
     	if [ "$2" -eq "1" ] ; then
 		echo "Write Mode is Not Supported"		
 	else
-		/usr/local/bin/modpoll -0 -1 -t4 -o4 -p $PORT -r943 -c1 $TIM
+		/usr/local/bin/modpoll -0 -1 -t4 -o4 -p $PORT -r1043 -c1 $TIM
 	fi
    ;;
 5)  echo  "Sending command $1"
     	if [ "$2" -eq "1" ] ; then
 		echo "Write Mode is Not Supported"		
 	else
-		/usr/local/bin/modpoll -0 -1 -t4 -o4 -p $PORT -r944 -c23 $TIM
+		/usr/local/bin/modpoll -0 -1 -t4 -o4 -p $PORT -r1044 -c23 $TIM
 	fi
    ;;
 6)  echo  "Sending command $1"
     	if [ "$2" -eq "1" ] ; then
-		/usr/local/bin/modpoll -0 -1 -t4 -o4 -p $PORT -r992 -c1 $TIM 18
+		/usr/local/bin/modpoll -0 -1 -t4 -o4 -p $PORT -r1123 -c1 $TIM 18
 	else
-		/usr/local/bin/modpoll -0 -1 -t4 -o4 -p $PORT -r967 -c29 $TIM
+		/usr/local/bin/modpoll -0 -1 -t4 -o4 -p $PORT -r1067 -c29 $TIM
 	fi
    ;;
 7)  echo  "Sending command $1"
 	if [ "$2" -eq "1" ] ; then
-		/usr/local/bin/modpoll -0 -1 -t4 -o4 -p $PORT -r1297 -c1 $TIM 1
+		/usr/local/bin/modpoll -0 -1 -t4 -o4 -p $PORT -r1459 -c1 $TIM 1
 	else
-		/usr/local/bin/modpoll -0 -1 -t4 -o4 -p $PORT -r1299 -c84 $TIM
+		/usr/local/bin/modpoll -0 -1 -t4 -o4 -p $PORT -r1377 -c84 $TIM
 	fi
    ;;
 8)  echo  "Sending command $1"

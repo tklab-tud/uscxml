@@ -71,8 +71,10 @@ void XmlBridgeInvoker::invoke(const InvokeRequest& req) {
 	/* TODO: check address errors */
 	std::string timaddr = _interpreter->getName();
 	size_t index = timaddr.find(':');
-	_TIMaddr = timaddr.substr(0, index).empty() ? DEF_TIMADDR : timaddr.substr(0, index);
-	_TIMport = timaddr.substr(index + 1).empty() ? DEF_TIMPORT : timaddr.substr(index + 1);
+	if (index != std::string::npos) {
+		_TIMaddr = timaddr.substr(0, index);
+		_TIMport = timaddr.substr(index + 1);
+	}
 
 	/* TODO: get all invokers and check for duplicated ids */
 	_CMDid = atoi(_invokeId.substr(sizeof(INVOKER_TYPE)-1).c_str());
@@ -96,7 +98,7 @@ Data XmlBridgeInvoker::getDataModelVariables() {
 void XmlBridgeInvoker::send(const SendRequest& req) {
 	SendRequest reqCopy = req;
 	std::string evName = reqCopy.getName();
-	bool write = (evName.c_str()[0] == WRITEOP);
+	bool iswrite = (evName.c_str()[0] == WRITEOP);
 	std::string evType = evName.substr(1, 3);
 
 	LOG(INFO) << "" << _invokeId << " sending event " << evName;
@@ -135,7 +137,7 @@ void XmlBridgeInvoker::send(const SendRequest& req) {
 	/* SCXML -> MES */
 	} else if (evType == SCXML2MES_ACK) {
 
-		if (!write) {
+		if (!iswrite) {
 			/* Extract parsed TIM reply fields */
 			size_t tmpsize = _itemsRead.size();
 			/* When sending namelist from XPath variables, data is interpreted as nodes (data.node) */
@@ -149,13 +151,13 @@ void XmlBridgeInvoker::send(const SendRequest& req) {
 				namelistIter++;
 			}
 			if (tmpsize == _itemsRead.size()) {
-				LOG(ERROR) << "(" << _invokeId << ") SCXML have returned 0 items from TIM command";
+				LOG(ERROR) << _invokeId << ": SCXML have parsed 0 items in this iteration!";
 				buildTIMexception(SCXML_ERROR);
 				return; // <<<<<<<<< RETURN HERE!;
 			}
 		}
 
-		if (write) {
+		if (iswrite) {
 			_mesbufferer.bufferMESreplyWRITE(_reqQueue.back()->sock, _CMDid);
 		} else {
 			if (_itemsRead.size() > _reqQueue.back()->indexes.size()) {
@@ -217,38 +219,44 @@ bool XmlBridgeInvoker::buildMESreq(uscxml::request *myreq, bool newreq) {
 	if (newreq && myreq == NULL) {
 		LOG(ERROR) << "NULL request received by " << _invokeId;
 		return false;
-	} else if (!newreq && _reqQueue.empty()) {
-		LOG(ERROR) << _invokeId << " queue is empty!";
-		return false;
-	} else if (newreq && (myreq->sock <= 0 || myreq->len == 0 || (myreq->wdata.size() == 0 && myreq->indexes.size()))) {
+	} else if (newreq && (myreq->sock <= 0 || myreq->len == 0 || (myreq->wdata.empty() && myreq->indexes.empty()) )) {
 		LOG(ERROR) << "Invalid request received by " << _invokeId;
 		return false;
 	}
 
-	if (newreq) {
-		/* verifico se la coda è piena */
+	{
 		tthread::lock_guard<tthread::mutex> queuelock(queueMUTEX);
-		if (_reqQueue.size() >= _queueSize) {
-			LOG(ERROR) << _invokeId << " is currently handling too many requests";
-			return false;
-		} else if (_reqQueue.size() == 0) {
-			_reqIsNew.push_front(true);
-		} else if (_reqQueue.size() > 0) {
-			_reqIsNew.push_front(false);
+		if (newreq) {
+			/* verifico se la coda è piena */
+			if (_reqQueue.size() >= _queueSize) {
+				LOG(ERROR) << _invokeId << " is currently handling too many requests";
+				return false;
+			} else if (_reqQueue.size() == 0) {
+				_reqIsNew.push_front(true);
+			} else if (_reqQueue.size() > 0) {
+				_reqIsNew.push_front(false);
+			}
+			_reqQueue.push_front(myreq);
+		} else {
+			if (_reqQueue.empty()) {
+				LOG(ERROR) << _invokeId << " queue is empty!";
+				return false;
+			}
 		}
-		_reqQueue.push_front(myreq);
 	}
 
 	std::stringstream ss;
-	ss << _CMDid << '_' << (write ? WRITEOP : READOP) << MES2SCXML;
-	LOG(INFO) << "(" << _invokeId << ") Building Event " << ss.str();
+	ss << _CMDid << '_' << (_reqQueue.back()->write ? WRITEOP : READOP) << MES2SCXML;
+	LOG(INFO) << "(" << _invokeId << ") sending event " << ss.str();
 
 	Event myevent(ss.str(), Event::EXTERNAL);
 
 	/* I dati inviati dal MES all'SCXML sono sempre mappati nella struttura dati 'node' dell'evento */
 	/* Nel caso della lettura vado a scrivere gli indici
 	   Nel caso della scrittura vado a scrivere i valori e gli indici */
-	if (write) {
+
+	/* TODO CHECK DATA */
+	if (_reqQueue.back()->write) {
 		/* scrittura */
 		std::list<std::string>::const_iterator valueiter = _reqQueue.back()->wdata.begin();
 		std::list<std::pair<std::string,std::string> >::const_iterator indexiter = _reqQueue.back()->indexes.begin();
@@ -278,6 +286,8 @@ bool XmlBridgeInvoker::buildMESreq(uscxml::request *myreq, bool newreq) {
 	_itemsRead.clear();
 
 	returnEvent(myevent);
+
+	return true;
 }
 
 /** TIM->SCXML */
@@ -425,6 +435,7 @@ void XmlBridgeInvoker::client(const std::string &cmdframe) {
 			buildTIMexception(TIM_ERROR);
 			return;
 		}
+		LOG(INFO) << _invokeId << " reusing old XML data";
 		buildTIMreply(std::string(_reply));
 		return;
 	} else {
@@ -441,15 +452,13 @@ void XmlBridgeInvoker::client(const std::string &cmdframe) {
 	}
 
 	if (_socketfd == -1) {
-		{
-			tthread::lock_guard<tthread::mutex> timconnlock(timconnMUTEX);
+		tthread::lock_guard<tthread::mutex> timconnlock(timconnMUTEX);
+		if (timconnCount >= MAXTIMCONN) {
+			timconnFLAG.wait(timconnMUTEX);
 			if (timconnCount >= MAXTIMCONN) {
-				timconnFLAG.wait(timconnMUTEX);
-				if (timconnCount >= MAXTIMCONN) {
-					LOG(ERROR) << _invokeId << " another invoker have not released the connection properly";
-					buildTIMexception(TIM_ERROR);
-					return;
-				}
+				LOG(ERROR) << _invokeId << " another invoker have not released the connection properly";
+				buildTIMexception(TIM_ERROR);
+				return;
 			}
 		}
 		if (!connect2TIM()) {
@@ -457,10 +466,7 @@ void XmlBridgeInvoker::client(const std::string &cmdframe) {
 			buildTIMexception(TIM_ERROR);
 			return;
 		}
-		{
-			tthread::lock_guard<tthread::mutex> timconnlock(timconnMUTEX);
-			timconnCount++;
-		}
+		timconnCount++;
 	}
 
 	if (_reply == NULL) {
@@ -539,7 +545,7 @@ void XmlBridgeInvoker::client(const std::string &cmdframe) {
 	}
 
 	if (result) {
-		LOG(INFO) << "Received reply from TIM: " << std::endl << _reply;
+		LOG(INFO) << _invokeId << " received reply from TIM: " << std::endl << _reply;
 		/* This function logs and reports errors internally */
 		buildTIMreply(std::string(_reply));
 	}
