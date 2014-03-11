@@ -105,7 +105,7 @@ HTTPServer::HTTPServer(unsigned short port, unsigned short wsPort, SSLConfig* ss
 			LOG(ERROR) << "HTTP server cannot bind to tcp/" << _port;
 		}
 	}
-
+	
 	_wsPort = wsPort;
 	if (_wsPort > 0) {
 		_wsHandle = evws_bind_socket(_evws, _wsPort);

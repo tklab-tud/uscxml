@@ -98,7 +98,7 @@ enum Capabilities {
 
 class USCXML_API InterpreterOptions {
 public:
-	bool useDot;
+	bool withDebugger;
 	bool verbose;
 	bool withHTTP;
 	bool withHTTPS;
@@ -126,7 +126,7 @@ public:
 
 protected:
 	InterpreterOptions() :
-		useDot(false),
+		withDebugger(false),
 		verbose(false),
 		withHTTP(true),
 		withHTTPS(true),
@@ -171,11 +171,18 @@ public:
 		_monitors.erase(monitor);
 	}
 
-	void setBaseURI(std::string baseURI)                     {
-		_baseURI = URL(baseURI);
+	void setSourceURI(std::string sourceURI)                 {
+		_sourceURI = URL(sourceURI);
+
+		URL baseURI(sourceURI);
+		URL::toBaseURL(baseURI);
+		_baseURI = baseURI;
 	}
 	URL getBaseURI()                                         {
 		return _baseURI;
+	}
+	URL getSourceURI()                                       {
+		return _sourceURI;
 	}
 
 	void setCmdLineOptions(std::map<std::string, std::string> params);
@@ -213,6 +220,11 @@ public:
 			return _nameSpaceInfo[ns] + ":";
 		return "";
 	}
+	
+	Arabica::XPath::NodeSet<std::string> getNodeSetForXPath(const std::string& xpathExpr) {
+		return _xpath.evaluate(xpathExpr, _scxml).asNodeSet();
+	}
+	
 	void setNameSpaceInfo(const std::map<std::string, std::string> nameSpaceInfo);
 	std::map<std::string, std::string> getNameSpaceInfo() {
 		return _nameSpaceInfo;
@@ -339,6 +351,7 @@ protected:
 	tthread::recursive_mutex _pluginMutex;
 
 	URL _baseURI;
+	URL _sourceURI;
 	Arabica::DOM::Document<std::string> _document;
 	Arabica::DOM::Element<std::string> _scxml;
 	Arabica::XPath::XPath<std::string> _xpath;
@@ -478,8 +491,11 @@ public:
 		return _impl->removeMonitor(monitor);
 	}
 
-	void setBaseURI(std::string baseURI)                     {
-		return _impl->setBaseURI(baseURI);
+	void setSourceURI(std::string sourceURI)                   {
+		return _impl->setSourceURI(sourceURI);
+	}
+	URL getSourceURI()                                       {
+		return _impl->getSourceURI();
 	}
 	URL getBaseURI()                                         {
 		return _impl->getBaseURI();
@@ -527,7 +543,10 @@ public:
 	std::string getXMLPrefixForNS(const std::string& ns)     {
 		return _impl->getXMLPrefixForNS(ns);
 	}
-
+	Arabica::XPath::NodeSet<std::string> getNodeSetForXPath(const std::string& xpathExpr) {
+		return _impl->getNodeSetForXPath(xpathExpr);
+	}
+	
 	void inline receiveInternal(const Event& event) {
 		return _impl->receiveInternal(event);
 	}
@@ -709,6 +728,9 @@ public:
 	virtual void beforeExitingState(Interpreter interpreter, const Arabica::DOM::Element<std::string>& state) {}
 	virtual void afterExitingState(Interpreter interpreter, const Arabica::DOM::Element<std::string>& state) {}
 
+	virtual void beforeExecutingContent(Interpreter interpreter, const Arabica::DOM::Node<std::string>& content) {}
+	virtual void afterExecutingContent(Interpreter interpreter, const Arabica::DOM::Node<std::string>& content) {}
+	
 	virtual void beforeUninvoking(Interpreter interpreter, const Arabica::DOM::Element<std::string>& invokeElem, const std::string& invokeid) {}
 	virtual void afterUninvoking(Interpreter interpreter, const Arabica::DOM::Element<std::string>& invokeElem, const std::string& invokeid) {}
 

@@ -23,25 +23,30 @@
 
 namespace uscxml {
 
-void DebuggerServlet::pushData(Data pushData) {
+void DebuggerServlet::pushData(boost::shared_ptr<DebugSession> session, Data pushData) {
 	std::cout << "trying to push " << pushData["replyType"].atom << std::endl;
-	_sendQueue.push(pushData);
-	serverPushData();
+	
+	if (!session) {
+		if (_sendQueues.size() > 0) // logging is not aware of its interpreter
+			_sendQueues.begin()->second.push(pushData);
+	} else {
+		_sendQueues[session].push(pushData);
+	}
+	
+	serverPushData(session);
 }
 
-void DebuggerServlet::serverPushData() {
-	tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
-	
-	if (_sendQueue.isEmpty())
+void DebuggerServlet::serverPushData(boost::shared_ptr<DebugSession> session) {
+	if (_sendQueues[session].isEmpty())
 		return;
 	
-	if (!_clientConn)
+	if (!_clientConns[session])
 		return;
 	
-	Data reply = _sendQueue.pop();
+	Data reply = _sendQueues[session].pop();
 	std::cout << "pushing " << reply["replyType"].atom << std::endl;
-	returnData(_clientConn, reply);
-	_clientConn = HTTPServer::Request();
+	returnData(_clientConns[session], reply);
+	_clientConns[session] = HTTPServer::Request();
 }
 
 void DebuggerServlet::returnData(const HTTPServer::Request& request, Data replyData) {
@@ -55,17 +60,6 @@ void DebuggerServlet::returnData(const HTTPServer::Request& request, Data replyD
 	reply.headers["Access-Control-Allow-Origin"] = "*";
 	reply.headers["Content-Type"] = "application/json";
 	HTTPServer::reply(reply);
-}
-	
-void DebuggerServlet::hitBreakpoint(const Interpreter& interpreter,
-																		Data data) {
-	tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
-
-	data.compound["replyType"] = Data("breakpoint", Data::VERBATIM);
-	pushData(data);
-	
-	_resumeCond.wait(_mutex);
-	tthread::this_thread::sleep_for(tthread::chrono::milliseconds(200));
 }
 
 bool DebuggerServlet::isCORS(const HTTPServer::Request& request) {
@@ -101,220 +95,164 @@ bool DebuggerServlet::httpRecvRequest(const HTTPServer::Request& request) {
 	
 	std::cout << request.data["path"] << ": " << request.data["content"] << std::endl;
 	
+	Data replyData;
+	// process request that don't need a session
 	if (false) {
-	} else if (boost::starts_with(request.data["path"].atom, "/poll")) {
-		processPoll(request);
-	} else if (boost::starts_with(request.data["path"].atom, "/connect")) {
+	} else if (boost::starts_with(request.data["path"].atom, "/debug/connect")) {
 		processConnect(request);
-	} else if (boost::starts_with(request.data["path"].atom, "/disconnect")) {
-		processDisconnect(request);
-	} else if (boost::starts_with(request.data["path"].atom, "/sessions")) {
+		return true;
+	} else if (boost::starts_with(request.data["path"].atom, "/debug/sessions")) {
 		processListSessions(request);
-	} else if (boost::starts_with(request.data["path"].atom, "/breakpoint/add")) {
-		processAddBreakPoint(request);
-	} else if (boost::starts_with(request.data["path"].atom, "/breakpoint/remove")) {
-		processRemoveBreakPoint(request);
-	} else if (boost::starts_with(request.data["path"].atom, "/debug/prepare")) {
-		processDebugPrepare(request);
-	} else if (boost::starts_with(request.data["path"].atom, "/debug/start")) {
-		processDebugStart(request);
+		return true;
+	}
+	
+	// get session or return error
+	if (false) {
+	} else if (!request.data["content"].hasKey("session")) {
+		replyData.compound["status"] = Data("failure", Data::VERBATIM);
+		replyData.compound["reason"] = Data("No session given", Data::VERBATIM);
+	} else if (_sessionForId.find(request.data["content"]["session"].atom) == _sessionForId.end()) {
+		replyData.compound["status"] = Data("failure", Data::VERBATIM);
+		replyData.compound["reason"] = Data("No such session", Data::VERBATIM);
+	}
+	if (replyData) {
+		returnData(request, replyData);
+		return true;
+	}
+	
+	boost::shared_ptr<DebugSession> session = _sessionForId[request.data["content"]["session"].atom];
+	
+	if (false) {
+	} else if (boost::starts_with(request.data["path"].atom, "/debug/poll")) {
+		// save long-standing client poll
+		_clientConns[session] = request;
+		serverPushData(session);
+
+	} else if (boost::starts_with(request.data["path"].atom, "/debug/disconnect")) {
+		processDisconnect(request);
+
+	} else if (boost::starts_with(request.data["path"].atom, "/debug/breakpoint/enable/all")) {
+		replyData = session->enableAllBreakPoints();
+	} else if (boost::starts_with(request.data["path"].atom, "/debug/breakpoint/disable/all")) {
+		replyData = session->disableAllBreakPoints();
+	} else if (boost::starts_with(request.data["path"].atom, "/debug/breakpoint/skipto")) {
+		replyData = session->skipToBreakPoint(request.data["content"]);
+	} else if (boost::starts_with(request.data["path"].atom, "/debug/breakpoint/add")) {
+		replyData = session->addBreakPoint(request.data["content"]);
+	} else if (boost::starts_with(request.data["path"].atom, "/debug/breakpoint/remove")) {
+		replyData = session->removeBreakPoint(request.data["content"]);
+	} else if (boost::starts_with(request.data["path"].atom, "/debug/breakpoint/enable")) {
+		replyData = session->enableBreakPoint(request.data["content"]);
+	} else if (boost::starts_with(request.data["path"].atom, "/debug/breakpoint/disable")) {
+		replyData = session->disableBreakPoint(request.data["content"]);
 	} else if (boost::starts_with(request.data["path"].atom, "/debug/stop")) {
-		processDebugStop(request);
+		replyData = session->debugStop(request.data["content"]);
+	} else if (boost::starts_with(request.data["path"].atom, "/debug/prepare")) {
+		replyData = session->debugPrepare(request.data["content"]);
+	} else if (boost::starts_with(request.data["path"].atom, "/debug/attach")) {
+		replyData = session->debugAttach(request.data["content"]);
+	} else if (boost::starts_with(request.data["path"].atom, "/debug/start")) {
+		replyData = session->debugStart(request.data["content"]);
 	} else if (boost::starts_with(request.data["path"].atom, "/debug/step")) {
-		processDebugStep(request);
+		replyData = session->debugStep(request.data["content"]);
 	} else if (boost::starts_with(request.data["path"].atom, "/debug/pause")) {
-		processDebugPause(request);
+		replyData = session->debugPause(request.data["content"]);
 	} else if (boost::starts_with(request.data["path"].atom, "/debug/resume")) {
-		processDebugResume(request);
+		replyData = session->debugResume(request.data["content"]);
 	} else if (boost::starts_with(request.data["path"].atom, "/debug/eval")) {
-		processDebugEval(request);
+		replyData = session->debugEval(request.data["content"]);
 	}
 		
+	if (replyData) {
+		returnData(request, replyData);
+		return true;
+	}
+
 	return true;
 }
-	
-void DebuggerServlet::processPoll(const HTTPServer::Request& request) {
-	tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
-	_clientConn = request;
-	serverPushData();
-}
 
-void DebuggerServlet::processDebugPrepare(const HTTPServer::Request& request) {
-	tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
-
-//	std::cout << "clearing all pushes" << std::endl;
-//	_sendQueue.clear();
-
-	// this will call the destructor if _interpreter already is set
-	_resumeCond.notify_all();
-	_interpreter = Interpreter::fromXML(request.data["content"].atom);
-
-	Data replyData;
-	if (_interpreter) {
-		// register ourself as a monitor
-		_interpreter.addMonitor(this);
-		replyData.compound["status"] = Data("success", Data::VERBATIM);
-	} else {
-		replyData.compound["status"] = Data("failure", Data::VERBATIM);
-	}
-	returnData(request, replyData);
-}
-
-void DebuggerServlet::processDebugStart(const HTTPServer::Request& request) {
-	tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
-	
-	Data replyData;
-	if (_interpreter) {
-		// register ourself as a monitor
-		_interpreter.start();
-		replyData.compound["status"] = Data("success", Data::VERBATIM);
-	} else {
-		replyData.compound["status"] = Data("failure", Data::VERBATIM);
-	}
-	returnData(request, replyData);
-}
-
-void DebuggerServlet::processDebugStop(const HTTPServer::Request& request) {
-//		tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
-
-	stepping(false);
-
-	Data replyData;
-	if (_interpreter) {
-		_interpreter.stop();
-		_resumeCond.notify_all(); // unblock breakpoints
-		_interpreter.join();
-		_interpreter = Interpreter(); // empty interpreter, calls destructor
-		replyData.compound["status"] = Data("success", Data::VERBATIM);
-	} else {
-		replyData.compound["status"] = Data("failure", Data::VERBATIM);
-		replyData.compound["reason"] = Data("Interpreter already stopped", Data::VERBATIM);
-	}
-	returnData(request, replyData);
-}
-
-void DebuggerServlet::processDebugEval(const HTTPServer::Request& request) {
-	Data replyData;
-	if (!_interpreter) {
-		replyData.compound["status"] = Data("failure", Data::VERBATIM);
-		replyData.compound["reason"] = Data("No interpreter running", Data::VERBATIM);
-	} else if (!_interpreter.getDataModel()) {
-		replyData.compound["status"] = Data("failure", Data::VERBATIM);
-		replyData.compound["reason"] = Data("No datamodel available", Data::VERBATIM);
-	} else if (!request.data["content"].hasKey("expression")) {
-		replyData.compound["status"] = Data("failure", Data::VERBATIM);
-		replyData.compound["reason"] = Data("No expression given", Data::VERBATIM);
-	} else {
-		std::string expr = request.data["content"]["expression"].atom;
-		try {
-			replyData.compound["eval"] = _interpreter.getDataModel().getStringAsData(expr);
-		} catch (Event e) {
-			replyData.compound["eval"] = e.data;
-			replyData.compound["eval"].compound["error"] = Data(e.name, Data::VERBATIM);
-		}
-		replyData.compound["status"] = Data("success", Data::VERBATIM);
-	}
-	returnData(request, replyData);
-}
-
-void DebuggerServlet::processDebugStep(const HTTPServer::Request& request) {
-	tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
-
-	stepping(true);
-	_resumeCond.notify_one();
-	
-	Data replyData;
-	if (_interpreter && !_interpreter.isRunning()) {
-		// register ourself as a monitor
-		_interpreter.start();
-		replyData.compound["status"] = Data("success", Data::VERBATIM);
-	} else {
-		replyData.compound["status"] = Data("failure", Data::VERBATIM);
-	}
-	returnData(request, replyData);
-	
-}
-
-void DebuggerServlet::processDebugResume(const HTTPServer::Request& request) {
-	tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
-	
-	stepping(false);
-
-	Data replyData;
-	replyData.compound["status"] = Data("success", Data::VERBATIM);
-	returnData(request, replyData);
-
-	_resumeCond.notify_one();
-}
-
-void DebuggerServlet::processDebugPause(const HTTPServer::Request& request) {
-	tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
-	
-	Data replyData;
-	replyData.compound["status"] = Data("success", Data::VERBATIM);
-	returnData(request, replyData);
-}
-
+// someone connected, create a new session
 void DebuggerServlet::processConnect(const HTTPServer::Request& request) {
 	tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
-	_sessionId = UUID::getUUID();
-	_breakPoints.clear();
-//	_sendQueue.clear();
+	std::string sessionId = UUID::getUUID();
+	
+	_sessionForId[sessionId] = boost::shared_ptr<DebugSession>(new DebugSession());
+	_sessionForId[sessionId]->setDebugger(this);
 	
 	Data replyData;
-	replyData.compound["session"] = Data(_sessionId, Data::VERBATIM);
-	replyData.compound["status"] = Data("success", Data::VERBATIM);
-	returnData(request, replyData);
-}
-
-void DebuggerServlet::processListSessions(const HTTPServer::Request& request) {
-	Data replyData;
-	
-	// TODO: return actual data
-	Data sessionData;
-	sessionData.compound["name"] = Data("Not actually a Session", Data::VERBATIM);
-	sessionData.compound["id"] = Data("23452523-wg23g2g2-234t2g-23g2g", Data::VERBATIM);
-	replyData.compound["sessions"].array.push_back(sessionData);
-	
-	sessionData.compound["name"] = Data("But returned from the server!", Data::VERBATIM);
-	sessionData.compound["id"] = Data("swfgsgfw-g232vqvq-234t2g-23g2g", Data::VERBATIM);
-	replyData.compound["sessions"].array.push_back(sessionData);
-	
+	replyData.compound["session"] = Data(sessionId, Data::VERBATIM);
 	replyData.compound["status"] = Data("success", Data::VERBATIM);
 	returnData(request, replyData);
 }
 
 void DebuggerServlet::processDisconnect(const HTTPServer::Request& request) {
+	tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
+
 	Data replyData;
+
+	if (!request.data["content"].hasKey("session")) {
+		replyData.compound["status"] = Data("failure", Data::VERBATIM);
+		replyData.compound["reason"] = Data("No session given", Data::VERBATIM);
+		returnData(request, replyData);
+	}
+
+	std::string sessionId = request.data["content"]["session"].atom;
+
+	if (_sessionForId.find(sessionId) == _sessionForId.end()) {
+		replyData.compound["status"] = Data("failure", Data::VERBATIM);
+		replyData.compound["reason"] = Data("No such session", Data::VERBATIM);
+	} else {
+		replyData.compound["status"] = Data("success", Data::VERBATIM);
+		detachSession(_sessionForId[sessionId]->getInterpreter());
+		_sessionForId[sessionId]->debugStop(request.data["content"]);
+		_clientConns.erase(_sessionForId[sessionId]);
+		_sendQueues.erase(_sessionForId[sessionId]);
+		_sessionForId.erase(sessionId);
+	}
+	
+	returnData(request, replyData);
+}
+
+void DebuggerServlet::processListSessions(const HTTPServer::Request& request) {
+	Data replyData;
+		
+	std::map<std::string, boost::weak_ptr<InterpreterImpl> > instances = Interpreter::getInstances();
+	for (std::map<std::string, boost::weak_ptr<InterpreterImpl> >::iterator instIter = instances.begin();
+			 instIter != instances.end();
+			 instIter++) {
+		
+		boost::shared_ptr<InterpreterImpl> instance = instIter->second.lock();
+		if (instance) {
+			Data sessionData;
+			sessionData.compound["name"] = Data(instance->getName(), Data::VERBATIM);
+			sessionData.compound["id"] = Data(instance->getSessionId(), Data::VERBATIM);
+			sessionData.compound["source"] = Data(instance->getSourceURI().asString(), Data::VERBATIM);
+			sessionData.compound["xml"].node = instance->getDocument();
+
+			replyData.compound["sessions"].array.push_back(sessionData);
+		}
+	}
+	
 	replyData.compound["status"] = Data("success", Data::VERBATIM);
 	returnData(request, replyData);
 }
 
-void DebuggerServlet::processAddBreakPoint(const HTTPServer::Request& request) {
-	Breakpoint breakPoint(request.data["content"]);
-	Data replyData;
-	if (breakPoint.isValid()) {
-		replyData.compound["status"] = Data("success", Data::VERBATIM);
+void DebuggerServlet::send(google::LogSeverity severity, const char* full_filename,
+                  const char* base_filename, int line,
+                  const struct ::tm* tm_time,
+                  const char* message, size_t message_len) {
+	
+	// _sendQueue is thread-safe, not sure about ToString though
 
-		if (_breakPoints.find(breakPoint) == _breakPoints.end()) {
-			_breakPoints.insert(breakPoint);
-		}
-	} else {
-		replyData.compound["status"] = Data("failure", Data::VERBATIM);
-	}
-	returnData(request, replyData);
-}
-
-void DebuggerServlet::processRemoveBreakPoint(const HTTPServer::Request& request) {
-	Breakpoint breakPoint(request.data["content"]);
-	Data replyData;
-	if (_breakPoints.erase(breakPoint) > 0) {
-		replyData.compound["status"] = Data("success", Data::VERBATIM);
-	} else {
-		replyData.compound["message"] = Data("No such breakpoint", Data::VERBATIM);
-		replyData.compound["status"] = Data("failure", Data::VERBATIM);
-	}
-	returnData(request, replyData);
+	LogMessage msg(severity,
+								 full_filename,
+								 base_filename,
+								 line,
+								 tm_time,
+								 std::string(message, message_len),
+								 ToString(severity, base_filename, line, tm_time, message, message_len));
+	msg.compound["replyType"] = Data("log", Data::VERBATIM);
+	pushData(boost::shared_ptr<DebugSession>(), msg);
 }
 
 

@@ -19,10 +19,12 @@
 
 #include "uscxml/debug/Breakpoint.h"
 #include "uscxml/Interpreter.h"
+#include "uscxml/DOMUtils.h"
 
 namespace uscxml {
 
 Breakpoint::Breakpoint(const Data& data) {
+  enabled = true;
 	subject = UNDEF_SUBJECT;
 	when    = UNDEF_WHEN;
 	action  = UNDEF_ACTION;
@@ -65,7 +67,7 @@ Breakpoint::Breakpoint(const Data& data) {
 			subject = EVENT;
 		} else if (data["subject"].atom == "invoker") {
 			subject = INVOKER;
-		} else if (data["subject"].atom == "exec") {
+		} else if (data["subject"].atom == "executable") {
 			subject = EXECUTABLE;
 		}
 	}
@@ -81,6 +83,12 @@ Breakpoint::Breakpoint(const Data& data) {
 
 	if (data.hasKey("eventName"))
 		eventName = data["eventName"].atom;
+
+	if (data.hasKey("executableName"))
+		executableName = data["executableName"].atom;
+
+	if (data.hasKey("executableXPath"))
+		executableXPath = data["executableXPath"].atom;
 
 	if (data.hasKey("stateId"))
 		stateId = data["stateId"].atom;
@@ -116,7 +124,7 @@ Data Breakpoint::toData() const {
 			data.compound["subject"] = Data("invoker", Data::VERBATIM);
 			break;
 		case EXECUTABLE:
-			data.compound["subject"] = Data("exec", Data::VERBATIM);
+			data.compound["subject"] = Data("executable", Data::VERBATIM);
 			break;
 		default:
 			break;
@@ -162,6 +170,16 @@ Data Breakpoint::toData() const {
 	if (eventName.length() > 0)
 		data.compound["eventName"] = Data(eventName, Data::VERBATIM);
 
+	if (executableName.length() > 0)
+		data.compound["executableName"] = Data(executableName, Data::VERBATIM);
+
+	if (executableXPath.length() > 0) {
+		data.compound["executableXPath"] = Data(executableXPath, Data::VERBATIM);
+	}
+	
+	if (element)
+		data.compound["xpath"] = Data(DOMUtils::xPathForNode(element, "*"), Data::VERBATIM);
+
 	if (stateId.length() > 0)
 		data.compound["stateId"] = Data(stateId, Data::VERBATIM);
 
@@ -177,34 +195,31 @@ Data Breakpoint::toData() const {
 	return data;
 }
 	
-bool Breakpoint::matches(const Breakpoint& other) const {
+bool Breakpoint::matches(Interpreter interpreter, const Breakpoint& other) const {
 	// would we match the given breakpoint?
 
 	if (subject != UNDEF_SUBJECT &&
-			other.subject != UNDEF_SUBJECT &&
 			other.subject != subject)
 		return false; // subject does not match
 	
 	if (when != UNDEF_WHEN &&
-			other.when != UNDEF_WHEN &&
 			other.when != when)
 		return false; // time does not match
 	
 	if (action != UNDEF_ACTION &&
-			other.action != UNDEF_ACTION &&
 			other.action != action)
 		return false; // action does not match
 
 	// when we have a qualifier it has to match
-	if(invokeId.length() > 0 && !InterpreterImpl::nameMatch(invokeId, other.invokeId)) {
+	if(invokeId.length() > 0 && invokeId != other.invokeId) {
 		return false;
 	}
 
-	if(invokeType.length() > 0 && !InterpreterImpl::nameMatch(invokeType, other.invokeType)) {
+	if(invokeType.length() > 0 && invokeType != other.invokeType) {
 		return false;
 	}
 
-	if(stateId.length() > 0 && !InterpreterImpl::nameMatch(stateId, other.stateId)) {
+	if(stateId.length() > 0 && stateId != other.stateId) {
 		return false;
 	}
 
@@ -212,19 +227,39 @@ bool Breakpoint::matches(const Breakpoint& other) const {
 		return false;
 	}
 
-	if(transSource.length() > 0 && !InterpreterImpl::nameMatch(transSource, other.transSource)) {
+	if(executableName.length() > 0 && executableName != other.executableName) {
 		return false;
 	}
 
-	if(transTarget.length() > 0 && !InterpreterImpl::nameMatch(transTarget, other.transTarget)) {
+	if(executableXPath.length()) {
+		Arabica::XPath::NodeSet<std::string> nodes;
+		try {
+			nodes = interpreter.getNodeSetForXPath(executableXPath);
+		} catch (...) {
+			return false;
+		}
+		return Interpreter::isMember(other.element, nodes);
+	}
+
+	if(transSource.length() > 0 && transSource != other.transSource) {
+		return false;
+	}
+
+	if(transTarget.length() > 0 && transTarget != other.transTarget) {
 		return false;
 	}
 	
-	return true;
-}
+	if (condition.length() > 0) {
+		try {
+			DataModel dm = interpreter.getDataModel();
+			if (!dm || !dm.evalAsBool(condition)) {
+				return false;
+			}
+		} catch (...) {
+			return false;
+		}
+	}
 
-	
-bool Breakpoint::isValid() {
 	return true;
 }
 
