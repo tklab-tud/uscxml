@@ -48,23 +48,23 @@ namespace uscxml {
 /**
  * @brief Enum che elenca i tipi di eccezzione che l'invoker può generare
  */
-typedef enum exceptions {
+enum exceptions {
 	TIM_TIMEOUT,        /**< La comunicazione di rete col TIM è andata in timeout */
 	TIM_ERROR,          /**< I dati inviati/ricevuto al/dal TIM hanno generato un errore */
 	SCXML_ERROR         /**< L'SCXML non è correttamente specificato */
-} exceptions_t;
+};
 
 /**
   * @brief Struttura di una richiesta ricevuta e gestita dell'invoker
   */
-typedef struct request {
+struct request {
 	int sock;               /**< Socket TCP lato modbus sul quale la richiesta è pervenuta */
 	unsigned int addr;      /**< Modbus starting address */
 	unsigned int len;       /**< Lunghezza complessiva dei dati richesti via modbus */
 	bool write;             /**< Richiesta in scrittura/lettura */
 	std::list<std::string> wdata;   /**< Lista di stringhe da scrivere nel TIM */
 	std::list<std::pair<std::string,std::string> > indexes; /**< Elenco di indice e nome variabile dei nodi XML della risposta TIM, per ogni field richiesto via modbus */
-} request_t;
+};
 
 /**
  * @brief Implementa un generico USCXML Invoker che gestisce eventi SCXML esterni/interni appartenenti ad un dato commando TIM
@@ -89,9 +89,9 @@ public:
 	void invoke(const InvokeRequest& req);
 	Data getDataModelVariables();
 
-	bool buildMESreq(request_t *myreq, bool newreq);
+	bool buildMESreq(request *myreq, bool newreq);
 	void buildTIMreply(const char *reply_raw_data);
-	void buildException(exceptions_t type);
+	void buildException(exceptions type);
 
 	~XmlBridgeInvoker();
 
@@ -114,7 +114,7 @@ protected:
 	int _socketfd;			/**< Socket descriptor del client TIM */
 	struct addrinfo *_servinfo;	/**< Informazioni di sessione del server TIM */
 
-	std::list<request_t *> _reqQueue;   /**< Lista di richieste arrivate all'invoker. La prima è la più recente, l'ultima è quella gestita attualmente */
+	std::list<request *> _reqQueue;   /**< Lista di richieste arrivate all'invoker. La prima è la più recente, l'ultima è quella gestita attualmente */
 	std::list<std::clock_t> _reqClock;  /**< Lista del tempi di arrivo (espressi in clock di sistema) per tutte le richieste accodate. Le richieste giunte a coda vuota hanno il val. impostato a 0 */
 	bool _lastWrite;                    /**< Indica se l'ultima richiesta gestita era in lettura */
 

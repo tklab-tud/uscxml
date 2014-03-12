@@ -33,8 +33,8 @@ XmlBridgeInvoker::~XmlBridgeInvoker()
 	LOG(INFO) << "Stopping " << _invokeId;
 
 	if (!_reqQueue.empty()) {
-	std::list<request_t *>::const_iterator reqiter;
-	for (reqiter = _reqQueue.begin(); reqiter != _reqQueue.end(); reqiter++)
+		std::list<request *>::const_iterator reqiter;
+		for (reqiter = _reqQueue.begin(); reqiter != _reqQueue.end(); reqiter++)
 			delete (*reqiter);
 	}
 	if (_servinfo != NULL)
@@ -135,7 +135,7 @@ void XmlBridgeInvoker::send(const SendRequest& req) {
 
 		return;  // <<<<<<<<< RETURN HERE!
 
-	/* SCXML -> MES */
+		/* SCXML -> MES */
 	} else if (evType == SCXML2MES_ACK) {
 
 		if (!iswrite) {
@@ -177,7 +177,7 @@ void XmlBridgeInvoker::send(const SendRequest& req) {
 			}
 		}
 
-	/* SCXML -> MES (errore) */
+		/* SCXML -> MES (errore) */
 	} else if (evType == SCXML2MES_ERR) {
 		_mesbufferer.bufferMESerror(_reqQueue.back()->sock, _CMDid);
 	} else {
@@ -192,18 +192,17 @@ void XmlBridgeInvoker::send(const SendRequest& req) {
 	 * classe ModbusIO.
 	 * Appena l'invoker esegue la chiamata di send per un reply o un errore
 	 * la richiesta deve essere rimossa dalla lista */
-	{
-		tthread::lock_guard<tthread::mutex> queuelock(queueMUTEX);
-		delete _reqQueue.back();
-		_reqQueue.pop_back();
-		_reqClock.pop_back();
-	}
+	tthread::lock_guard<tthread::mutex> queuelock(queueMUTEX);
+	delete _reqQueue.back();
+	_reqQueue.pop_back();
+	_reqClock.pop_back();
 
 	/* Quando la richiesta precedente è stata gestita e rimossa
 	   avviamo la macchina a stati con una nuova richiesta
 	   Non rischiamo che la richiesta sia gestita due volte siccome
 	   usciamo dalla macchina a stati con solo una transizione */
 	if (!_reqQueue.empty()) {
+		queuelock.~lock_guard();
 		buildMESreq(NULL, false);
 	}
 }
@@ -215,7 +214,7 @@ void XmlBridgeInvoker::send(const SendRequest& req) {
  * @param myreq     La richiesta in ingresso
  * @param newreq	Indica se si deve analizzare la richiesta presente nel parametro 'myreq' o processare le richieste in coda
  */
-bool XmlBridgeInvoker::buildMESreq(uscxml::request_t *myreq, bool newreq) {
+bool XmlBridgeInvoker::buildMESreq(request *myreq, bool newreq) {
 	/* verifico la richiesta in ingresso */
 	if (newreq && myreq == NULL) {
 		LOG(ERROR) << "NULL request received by " << _invokeId;
@@ -225,29 +224,27 @@ bool XmlBridgeInvoker::buildMESreq(uscxml::request_t *myreq, bool newreq) {
 		return false;
 	}
 
-	{
-		tthread::lock_guard<tthread::mutex> queuelock(queueMUTEX);
-		if (newreq) {
-			/* verifico se la coda è piena */
-			if (_reqQueue.size() >= _queueSize) {
-				LOG(ERROR) << _invokeId << " is currently handling too many requests";
-				return false;
-			} else if (_reqQueue.size() == 0) {
-				/* Se la richiesta è la prima ad essere accodata deve sempre
-				 * forzare la connessione al TIM */
-				_reqClock.push_front(0);
-			} else if (_reqQueue.size() > 0) {
-				LOG(INFO) << _invokeId << " queueing request on socket #" << myreq->sock;
-				_reqClock.push_front(std::clock());
-			}
-			_reqQueue.push_front(myreq);
-		} else {
-			/* Se richiedo di analizzare richieste già esistenti
-			 * si suppone che la coda non sia vuota */
-			if (_reqQueue.empty()) {
-				LOG(ERROR) << _invokeId << " queue is empty!";
-				return false;
-			}
+	tthread::lock_guard<tthread::mutex> queuelock(queueMUTEX);
+	if (newreq) {
+		/* verifico se la coda è piena */
+		if (_reqQueue.size() >= _queueSize) {
+			LOG(ERROR) << _invokeId << " is currently handling too many requests";
+			return false;
+		} else if (_reqQueue.size() == 0) {
+			/* Se la richiesta è la prima ad essere accodata deve sempre
+			 * forzare la connessione al TIM */
+			_reqClock.push_front(0);
+		} else if (_reqQueue.size() > 0) {
+			LOG(INFO) << _invokeId << " queueing request on socket #" << myreq->sock;
+			_reqClock.push_front(std::clock());
+		}
+		_reqQueue.push_front(myreq);
+	} else {
+		/* Se richiedo di analizzare richieste già esistenti
+		 * si suppone che la coda non sia vuota */
+		if (_reqQueue.empty()) {
+			LOG(ERROR) << _invokeId << " queue is empty!";
+			return false;
 		}
 	}
 
@@ -263,12 +260,12 @@ bool XmlBridgeInvoker::buildMESreq(uscxml::request_t *myreq, bool newreq) {
 
 	if (_reqQueue.back()->write) {
 		/* scrittura */
-	std::list<std::string>::const_iterator valueiter;
-	std::list<std::pair<std::string,std::string> >::const_iterator indexiter;
+		std::list<std::string>::const_iterator valueiter;
+		std::list<std::pair<std::string,std::string> >::const_iterator indexiter;
 		myevent.data.node = _interpreter->getDocument().createElement("data");
-	for (valueiter = _reqQueue.back()->wdata.begin(), indexiter = _reqQueue.back()->indexes.begin();
-	     valueiter!= _reqQueue.back()->wdata.end();
-	     valueiter++, indexiter++) {
+		for (valueiter = _reqQueue.back()->wdata.begin(), indexiter = _reqQueue.back()->indexes.begin();
+		     valueiter!= _reqQueue.back()->wdata.end();
+		     valueiter++, indexiter++) {
 			Arabica::DOM::Element<std::string> eventMESElem = _interpreter->getDocument().createElement("value");
 			Arabica::DOM::Text<std::string> textNode = _interpreter->getDocument().createTextNode(*valueiter);
 			eventMESElem.setAttribute("itemi", indexiter->first);
@@ -278,10 +275,10 @@ bool XmlBridgeInvoker::buildMESreq(uscxml::request_t *myreq, bool newreq) {
 		}
 	} else {
 		/* lettura */
-	std::list<std::pair<std::string,std::string> >::const_iterator indexiter;
+		std::list<std::pair<std::string,std::string> >::const_iterator indexiter;
 		myevent.data.node = _interpreter->getDocument().createElement("data");
-	for (indexiter = _reqQueue.back()->indexes.begin();
-	     indexiter!=_reqQueue.back()->indexes.end(); indexiter++) {
+		for (indexiter = _reqQueue.back()->indexes.begin();
+		     indexiter!=_reqQueue.back()->indexes.end(); indexiter++) {
 			Arabica::DOM::Element<std::string> eventMESElem = _interpreter->getDocument().createElement("index");
 			Arabica::DOM::Text<std::string> textNode = _interpreter->getDocument().createTextNode(indexiter->second);
 			eventMESElem.setAttribute("itemi", indexiter->first);
@@ -289,6 +286,7 @@ bool XmlBridgeInvoker::buildMESreq(uscxml::request_t *myreq, bool newreq) {
 			myevent.data.node.appendChild(eventMESElem);
 		}
 	}
+	queuelock.~lock_guard();
 
 	/* elimina le stringhe lette per la richiesta precedente */
 	_itemsRead.clear();
@@ -323,7 +321,11 @@ void XmlBridgeInvoker::buildTIMreply(const char *reply_raw_data)
 	}
 
 	std::stringstream ss;
-	ss << _CMDid << '_' << (_reqQueue.back()->write ? WRITEOP : READOP) << TIM2SCXML;
+	{
+		tthread::lock_guard<tthread::mutex> queuelock(queueMUTEX);
+		ss << _CMDid << '_' << (_reqQueue.back()->write ? WRITEOP : READOP) << TIM2SCXML;
+	}
+
 
 	Event myevent(ss.str(), Event::EXTERNAL);
 	if (!domParser.getDocument().hasChildNodes()) {
@@ -346,7 +348,7 @@ void XmlBridgeInvoker::buildTIMreply(const char *reply_raw_data)
  *
  * @param type Tipo di eccezione
  */
-void XmlBridgeInvoker::buildException(exceptions_t type)
+void XmlBridgeInvoker::buildException(exceptions type)
 {
 	std::stringstream ss;
 	switch(type) {
@@ -436,16 +438,20 @@ bool XmlBridgeInvoker::connect2TIM() {
 void XmlBridgeInvoker::client(const std::string &cmdframe) {
 
 	/* controllo se devo riutilizzare l'xml archiviato del TIM o no */
-	if (_reqClock.back() != 0 && !_reqQueue.back()->write && !_lastWrite &&
-	    ((std::clock() - _reqClock.back()) < (MAXQUEUEDELAY * CLOCKS_PER_SEC)) ) {
-		if (_reply == NULL || _reply[0] == '\0') {
-			LOG(ERROR) << _invokeId << " empty reply buffer, cannot reuse TIM xml data";
-			buildException(TIM_ERROR);
+	{
+		tthread::lock_guard<tthread::mutex> queuelock(queueMUTEX);
+		if (_reqClock.back() != 0 && !_reqQueue.back()->write && !_lastWrite &&
+		    ((std::clock() - _reqClock.back()) < (MAXQUEUEDELAY * CLOCKS_PER_SEC)) ) {
+			queuelock.~lock_guard();
+			if (_reply == NULL || _reply[0] == '\0' || std::strncmp(_reply, "<frame>", 7)) {
+				LOG(ERROR) << _invokeId << " empty reply buffer, cannot reuse TIM xml data";
+				buildException(TIM_ERROR);
+				return;
+			}
+			LOG(INFO) << _invokeId << " reusing old TIM reply!";
+			buildTIMreply(_reply);
 			return;
 		}
-		LOG(INFO) << _invokeId << " reusing old TIM reply!";
-		buildTIMreply(_reply);
-		return;
 	}
 
 	if (cmdframe.length() == 0) {
@@ -485,7 +491,7 @@ void XmlBridgeInvoker::client(const std::string &cmdframe) {
 	std::string timframe = std::string("<frame>") + cmdframe.substr(cmdframe.find('>')+1);
 
 	LOG(INFO) << _invokeId << " sending cmd to TIM (length=" << cmdframe.length() << "): "
-		   << std::endl << timframe;
+		  << std::endl << timframe;
 
 	bool result = true;
 	int numbytes;
@@ -550,10 +556,13 @@ void XmlBridgeInvoker::client(const std::string &cmdframe) {
 			 std::strncmp(&_reply[replylen-8], "</frame>", 8) != 0);
 	}
 
-	if (_reqQueue.back()->write) {
-        _lastWrite = true;
-	} else {
-        _lastWrite = false;
+	{
+		tthread::lock_guard<tthread::mutex> queuelock(queueMUTEX);
+		if (_reqQueue.back()->write) {
+			_lastWrite = true;
+		} else {
+			_lastWrite = false;
+		}
 	}
 
 	if (result) {
