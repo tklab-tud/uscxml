@@ -74,8 +74,8 @@ std::list<Breakpoint> getQualifiedTransBreakpoints(Interpreter interpreter, cons
 		
 		Breakpoint bp = breakpointTemplate; // copy base as template
 		bp.element = transition;
-		bp.transSource = ATTR(source, "id");
-		bp.transTarget = ATTR(target, "id");
+		bp.transSourceId = ATTR(source, "id");
+		bp.transTargetId = ATTR(target, "id");
 		bp.subject = Breakpoint::TRANSITION;
 
 		breakpoints.push_back(bp);

@@ -79,8 +79,8 @@ public:
 	std::string executableXPath;
 	
 	std::string stateId;
-	std::string transSource;
-	std::string transTarget;
+	std::string transSourceId;
+	std::string transTargetId;
 	
 	std::string condition;
 };

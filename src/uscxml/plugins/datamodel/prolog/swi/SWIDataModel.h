@@ -34,6 +34,22 @@ namespace uscxml {
 
 class SWIDataModel : public DataModelImpl {
 public:
+	class SWIEngineLock {
+	public:
+		SWIEngineLock() {
+			isLocked = false;
+			int rc = PL_set_engine(PL_ENGINE_MAIN, NULL);
+			if (rc == PL_ENGINE_SET) {
+				isLocked = true;
+			}
+		}
+		~SWIEngineLock() {
+			if (isLocked)
+				PL_set_engine(NULL, NULL);
+		}
+		bool isLocked;
+	};
+	
 	SWIDataModel();
 	virtual ~SWIDataModel();
 	virtual boost::shared_ptr<DataModelImpl> create(InterpreterImpl* interpreter);
@@ -106,6 +122,7 @@ protected:
 	std::string _plModule;
 	std::string _name;
 	std::string _sessionId;
+	PL_engine_t _engine;
 };
 
 #ifdef BUILD_AS_PLUGINS
