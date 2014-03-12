@@ -535,8 +535,8 @@ size_t DataModelImpl::replaceExpressions(std::string& content) {
 				try {
 					Data data = getStringAsData(expr);
 					if (data.type == Data::INTERPRETED && data.compound.size() > 0) {
-						std::map<std::string, Data>::const_iterator nodesiter = data.compound.begin();
-						for (nodesiter; nodesiter != data.compound.end(); nodesiter++)
+						std::map<std::string, Data>::const_iterator nodesiter;
+						for (nodesiter = data.compound.begin(); nodesiter != data.compound.end(); nodesiter++)
 							ss << nodesiter->second.node.getNodeValue();
 					} else if (data.atom.length() > 0) {
 						ss << data.atom;

@@ -3,10 +3,13 @@
 # Provide custom install_* macros to account for all files
 ##############################################################################
 
+include(CMakeParseArguments)
+
 function(INSTALL_HEADERS)
 	set(options)
 	set(oneValueArgs COMPONENT)
 	set(multiValueArgs HEADERS)
+	cmake_parse_arguments(INSTALL_HEADERS "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 	FOREACH(HEADER ${INSTALL_HEADERS_HEADERS})
 #		message(STATUS "ADDING HEADER ${HEADER}")
 		if (${HEADER} MATCHES "${CMAKE_BINARY_DIR}.*")
@@ -30,6 +33,7 @@ function(INSTALL_FILES)
 	set(options)
 	set(oneValueArgs COMPONENT DESTINATION)
 	set(multiValueArgs FILES)
+	cmake_parse_arguments(INSTALL_FILE "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 	install(FILES ${INSTALL_FILE_FILES} DESTINATION ${INSTALL_FILE_DESTINATION} COMPONENT ${INSTALL_FILE_COMPONENT})
 endfunction()
 
@@ -37,6 +41,7 @@ function(INSTALL_LIBRARY)
 	set(options)
 	set(oneValueArgs COMPONENT)
 	set(multiValueArgs TARGETS)
+	cmake_parse_arguments(INSTALL_LIBRARY "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 	install(TARGETS ${INSTALL_LIBRARY_TARGETS} DESTINATION lib COMPONENT ${INSTALL_LIBRARY_COMPONENT})
 endfunction()
 
@@ -44,6 +49,7 @@ function(INSTALL_EXECUTABLE)
 	set(options)
 	set(oneValueArgs COMPONENT)
 	set(multiValueArgs TARGETS)
+	cmake_parse_arguments(INSTALL_EXECUTABLE "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 	install(
 		TARGETS ${INSTALL_EXECUTABLE_TARGETS} 
 		DESTINATION bin

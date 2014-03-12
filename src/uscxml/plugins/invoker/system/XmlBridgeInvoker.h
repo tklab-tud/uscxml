@@ -36,39 +36,47 @@ namespace uscxml {
 
 #define INVOKER_TYPE		"xmlbridge"
 
-#define MAXTIMREPLYSIZE		20000
-#define DEF_TIMADDR		"127.0.0.1"
-#define DEF_TIMPORT		"3000"
+#define MAXTIMREPLYSIZE		20000           /**< Lunghezza del buffer di ricezione delle risposte TIM */
+#define DEF_TIMADDR		"127.0.0.1"     /**< Indirizzo su cui il sistema TIM è in ascolto */
+#define DEF_TIMPORT		"3000"          /**< Porta su cui il sistema TIM è in ascolto */
 
-#define MAXTIMCONN		6
-#define MAXQUEUEDELAY		2
-#define MAXQUEUESIZE		5
+#define MAXTIMCONN		6   /**< Massimo numero di connessioni che può gestire il sistema TIM */
+#define MAXQUEUEDELAY		2   /**< Tempo massimo per cui una risposta del TIM può essere riutilizzata per le richieste successive */
+#define MAXQUEUESIZE		5   /**< Massimo numero di richiesta che posso accodare per un comando TIM */
+#define MAXTIMCONNDELAY		5
 
-enum exceptions {
-	TIM_TIMEOUT,
-	TIM_ERROR,
-	SCXML_ERROR
-};
+/**
+ * @brief Enum che elenca i tipi di eccezzione che l'invoker può generare
+ */
+typedef enum exceptions {
+	TIM_TIMEOUT,        /**< La comunicazione di rete col TIM è andata in timeout */
+	TIM_ERROR,          /**< I dati inviati/ricevuto al/dal TIM hanno generato un errore */
+	SCXML_ERROR         /**< L'SCXML non è correttamente specificato */
+} exceptions_t;
 
+/**
+  * @brief Struttura di una richiesta ricevuta e gestita dell'invoker
+  */
 typedef struct request {
-	int sock;
-	unsigned int addr;
-	unsigned int len;
-	bool write;
-	std::list<std::string> wdata;
-	std::list<std::pair<std::string,std::string> > indexes;
+	int sock;               /**< Socket TCP lato modbus sul quale la richiesta è pervenuta */
+	unsigned int addr;      /**< Modbus starting address */
+	unsigned int len;       /**< Lunghezza complessiva dei dati richesti via modbus */
+	bool write;             /**< Richiesta in scrittura/lettura */
+	std::list<std::string> wdata;   /**< Lista di stringhe da scrivere nel TIM */
+	std::list<std::pair<std::string,std::string> > indexes; /**< Elenco di indice e nome variabile dei nodi XML della risposta TIM, per ogni field richiesto via modbus */
 } request_t;
 
 /**
- * @brief Implementa un generico USCXML Invoker che gestisce eventi SCXML esterni/interni appartenenti ad un dato datablock
+ * @brief Implementa un generico USCXML Invoker che gestisce eventi SCXML esterni/interni appartenenti ad un dato commando TIM
  */
 class XmlBridgeInvoker : public InvokerImpl {
 public:
 	XmlBridgeInvoker() :
-		_reply(NULL), _servinfo(NULL), _socketfd(-1),
+		_timeoutVal(MAXTIMCONNDELAY), _queueSize(MAXQUEUESIZE),
 		_itemsRead(), _mesbufferer(MesBufferer::getInstance()),
-		_reqQueue(), _queueSize(MAXQUEUESIZE), _lastWrite(false),
-		_TIMaddr(DEF_TIMADDR), _TIMport(DEF_TIMPORT) {}
+		_TIMport(DEF_TIMPORT), _TIMaddr(DEF_TIMADDR),
+		_reply(NULL),  _socketfd(-1), _servinfo(NULL),
+		_reqQueue(), _reqClock(),  _lastWrite(false) {}
 
 	std::set<std::string> getNames() {
 		std::set<std::string> names;
@@ -81,9 +89,9 @@ public:
 	void invoke(const InvokeRequest& req);
 	Data getDataModelVariables();
 
-	bool buildMESreq(request *myreq, bool newreq);
+	bool buildMESreq(request_t *myreq, bool newreq);
 	void buildTIMreply(const char *reply_raw_data);
-	void buildException(exceptions type);
+	void buildException(exceptions_t type);
 
 	~XmlBridgeInvoker();
 
@@ -92,13 +100,13 @@ protected:
 	bool connect2TIM();
 
 	/* FIXED */
-	unsigned int _CMDid;		/** L'ID del comando gestito dall'invoker */
-	unsigned int _timeoutVal;	/** Il massimo tempo di attesa per ricevere una risposta dal TIM per questo comando */
-	unsigned int _queueSize;	/** Massimo numero di richieste parallele accodate per comando */
+	unsigned int _CMDid;		/** L'ID del comando TIM gestito dall'invoker */
+	unsigned int _timeoutVal;	/** Il massimo tempo di attesa per le comunicazioni di rete lato TIM */
+	unsigned int _queueSize;	/** Massimo numero di richieste accodate nell'invoker */
 
-	std::list<std::string> _itemsRead;	/** Lista di elementi estratti dalla risposta del TIM tramite query xpath */
+	std::list<std::string> _itemsRead;	/** Lista di elementi estratti dalla risposta XML del TIM tramite query xpath per un comando di lettura*/
 
-	MesBufferer& _mesbufferer;	/**< Puntatore all'istanze di MesBufferer */
+	MesBufferer& _mesbufferer;	/**< Puntatore all'istanza di MesBufferer */
 
 	std::string _TIMport;		/**< Porta TCP del server TIM */
 	std::string _TIMaddr;		/**< Indirizzo del server TIM */
@@ -106,11 +114,11 @@ protected:
 	int _socketfd;			/**< Socket descriptor del client TIM */
 	struct addrinfo *_servinfo;	/**< Informazioni di sessione del server TIM */
 
-	std::list<request *> _reqQueue;
-	std::list<std::clock_t> _reqClock;
-	bool _lastWrite;
+	std::list<request_t *> _reqQueue;   /**< Lista di richieste arrivate all'invoker. La prima è la più recente, l'ultima è quella gestita attualmente */
+	std::list<std::clock_t> _reqClock;  /**< Lista del tempi di arrivo (espressi in clock di sistema) per tutte le richieste accodate. Le richieste giunte a coda vuota hanno il val. impostato a 0 */
+	bool _lastWrite;                    /**< Indica se l'ultima richiesta gestita era in lettura */
 
-	tthread::mutex queueMUTEX;
+	tthread::mutex queueMUTEX;          /**< Mutex di accesso alla coda delle richieste */
 };
 
 #ifdef BUILD_AS_PLUGINS

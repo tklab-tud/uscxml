@@ -21,20 +21,20 @@ bool connect(pluma::Host& host) {
 }
 #endif
 
-static unsigned int timconnCount = 0;
-static tthread::mutex timconnMUTEX;
-static tthread::condition_variable timconnFLAG;
+static unsigned int timconnCount = 0;   /**< Contatore statico delle connessioni attualmente attive lato TIM */
+static tthread::mutex timconnMUTEX;     /**< Mutex che controlla l'accesso al contatore delle connessioni */
+static tthread::condition_variable timconnFLAG;     /**< Condition variable per sincronizzare l'acquisizione e rilascio di socket lato TIM */
+
 /**
- * @brief Distruttore del client TCP
- *
+ * @brief Distruttore della classe XmlBridgeInvoker
  */
 XmlBridgeInvoker::~XmlBridgeInvoker()
 {
 	LOG(INFO) << "Stopping " << _invokeId;
 
 	if (!_reqQueue.empty()) {
-		std::list<request *>::const_iterator reqiter = _reqQueue.begin();
-		for (reqiter; reqiter != _reqQueue.end(); reqiter++)
+	std::list<request_t *>::const_iterator reqiter;
+	for (reqiter = _reqQueue.begin(); reqiter != _reqQueue.end(); reqiter++)
 			delete (*reqiter);
 	}
 	if (_servinfo != NULL)
@@ -44,7 +44,7 @@ XmlBridgeInvoker::~XmlBridgeInvoker()
 }
 
 /**
- * @brief Crea e Registra un Invoker all'interprete SCXML.
+ * @brief Alloca e Registra un Invoker nell'interprete SCXML.
  *	Metodo eseguito per ogni elemento <invoke> nell'SCXML
  *
  * @param interpreter	L'interprete chiamante
@@ -64,7 +64,6 @@ void XmlBridgeInvoker::invoke(const InvokeRequest& req) {
 
 	if (req.params.find("timeout") == req.params.end()) {
 		LOG(INFO) << _invokeId << " : no timeout param given, assuming 5 seconds";
-		_timeoutVal = 5;
 	} else
 		_timeoutVal = atoi(req.params.find("timeout")->second.atom.c_str());
 
@@ -97,7 +96,6 @@ Data XmlBridgeInvoker::getDataModelVariables() {
 /** SCXML->TIM | SCXML->MES */
 /**
  * @brief Invia dati generati dall'interprete SCXML (valori XPATH) al MES o al TIM
- *	secondo il tipo di richiesta tramite il singleton XmlBridgeInputEvents
  * @param req La richiesta specificata nell'elemento <send> dell'SCXML
  */
 void XmlBridgeInvoker::send(const SendRequest& req) {
@@ -214,11 +212,10 @@ void XmlBridgeInvoker::send(const SendRequest& req) {
 /**
  * @brief Genera un evento per l'interprete SCXML corrispondente ad una richiesta MES
  *
- * @param cmdid Il TIM cmd ID
- * @param write	Indica se si tratta di una richiesta di scrittura
- * @param req_raw_data La lista delle stringhe utilizzate per popolare il comando TIM (se richiesta di scrittura)
+ * @param myreq     La richiesta in ingresso
+ * @param newreq	Indica se si deve analizzare la richiesta presente nel parametro 'myreq' o processare le richieste in coda
  */
-bool XmlBridgeInvoker::buildMESreq(uscxml::request *myreq, bool newreq) {
+bool XmlBridgeInvoker::buildMESreq(uscxml::request_t *myreq, bool newreq) {
 	/* verifico la richiesta in ingresso */
 	if (newreq && myreq == NULL) {
 		LOG(ERROR) << "NULL request received by " << _invokeId;
@@ -266,10 +263,12 @@ bool XmlBridgeInvoker::buildMESreq(uscxml::request *myreq, bool newreq) {
 
 	if (_reqQueue.back()->write) {
 		/* scrittura */
-		std::list<std::string>::const_iterator valueiter = _reqQueue.back()->wdata.begin();
-		std::list<std::pair<std::string,std::string> >::const_iterator indexiter = _reqQueue.back()->indexes.begin();
+	std::list<std::string>::const_iterator valueiter;
+	std::list<std::pair<std::string,std::string> >::const_iterator indexiter;
 		myevent.data.node = _interpreter->getDocument().createElement("data");
-		for (valueiter; valueiter!= _reqQueue.back()->wdata.end(); valueiter++, indexiter++) {
+	for (valueiter = _reqQueue.back()->wdata.begin(), indexiter = _reqQueue.back()->indexes.begin();
+	     valueiter!= _reqQueue.back()->wdata.end();
+	     valueiter++, indexiter++) {
 			Arabica::DOM::Element<std::string> eventMESElem = _interpreter->getDocument().createElement("value");
 			Arabica::DOM::Text<std::string> textNode = _interpreter->getDocument().createTextNode(*valueiter);
 			eventMESElem.setAttribute("itemi", indexiter->first);
@@ -279,9 +278,10 @@ bool XmlBridgeInvoker::buildMESreq(uscxml::request *myreq, bool newreq) {
 		}
 	} else {
 		/* lettura */
-		std::list<std::pair<std::string,std::string> >::const_iterator indexiter = _reqQueue.back()->indexes.begin();
+	std::list<std::pair<std::string,std::string> >::const_iterator indexiter;
 		myevent.data.node = _interpreter->getDocument().createElement("data");
-		for (indexiter; indexiter!=_reqQueue.back()->indexes.end(); indexiter++) {
+	for (indexiter = _reqQueue.back()->indexes.begin();
+	     indexiter!=_reqQueue.back()->indexes.end(); indexiter++) {
 			Arabica::DOM::Element<std::string> eventMESElem = _interpreter->getDocument().createElement("index");
 			Arabica::DOM::Text<std::string> textNode = _interpreter->getDocument().createTextNode(indexiter->second);
 			eventMESElem.setAttribute("itemi", indexiter->first);
@@ -300,12 +300,10 @@ bool XmlBridgeInvoker::buildMESreq(uscxml::request *myreq, bool newreq) {
 
 /** TIM->SCXML */
 /**
- * @brief Effettua il parsing di un frammento XML inviato dal TIM verso il gateway.
+ * @brief Effettua il parsing di una risposta XML inviato dal TIM verso il gateway.
  *	Genera un evento SCXML con la struttura dati risultante
  *
- * @param cmdid Il TIM cmd ID
- * @param type Lettura/Scrittura
- * @param reply_raw_data Stringa Raw della risposta dal TIM
+ * @param reply_raw_data Buffer dati in ricezione dal TIM
  */
 void XmlBridgeInvoker::buildTIMreply(const char *reply_raw_data)
 {
@@ -344,12 +342,11 @@ void XmlBridgeInvoker::buildTIMreply(const char *reply_raw_data)
 
 /** TIM->SCXML */
 /**
- * @brief Segnala all'SCXML che il thread del client TIM ha generato un'eccezione.
+ * @brief Segnala all'SCXML che l'invoker ha generato un'eccezione.
  *
- * @param cmdid Il TIM cmd ID
  * @param type Tipo di eccezione
  */
-void XmlBridgeInvoker::buildException(exceptions type)
+void XmlBridgeInvoker::buildException(exceptions_t type)
 {
 	std::stringstream ss;
 	switch(type) {
@@ -429,12 +426,12 @@ bool XmlBridgeInvoker::connect2TIM() {
 }
 
 /**
- * @brief Invia un comando al TIM. Il comando è ricevuto dall'interprete SCXML.
+ * @brief Invia un messaggio al TIM contenente un comando di scrittura/lettura.
  *	Immediatamente dopo l'invio attende la risposta del TIM.
  *	Invia un'eventuale risposta all'interprete SCXML.
  *	Tutte le operazioni bloccanti sono interrotte da un timeout.
  *
- * @param Puntatore ad all'istanza di TimIO
+ * @param cmdframe Reference alla stringa da inviare al TIM
  */
 void XmlBridgeInvoker::client(const std::string &cmdframe) {
 
