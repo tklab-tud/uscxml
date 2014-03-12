@@ -83,7 +83,7 @@ public:
 
 	bool buildMESreq(request *myreq, bool newreq);
 	void buildTIMreply(const char *reply_raw_data);
-	void buildTIMexception(exceptions type);
+	void buildException(exceptions type);
 
 	~XmlBridgeInvoker();
 

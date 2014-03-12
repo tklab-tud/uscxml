@@ -124,7 +124,7 @@ void XmlBridgeInvoker::send(const SendRequest& req) {
 
 			if (ss.str().empty()) {
 				LOG(ERROR) << _invokeId << ": TIM Frame is empty";
-				buildTIMexception(SCXML_ERROR);
+				buildException(SCXML_ERROR);
 				return; // <<<<<<<<< RETURN HERE!
 			}
 			client(ss.str());
@@ -132,7 +132,7 @@ void XmlBridgeInvoker::send(const SendRequest& req) {
 			client(req.xml);
 		} else {
 			LOG(ERROR) << _invokeId << " cannot create TIM command from send request";
-			buildTIMexception(SCXML_ERROR);
+			buildException(SCXML_ERROR);
 		}
 
 		return;  // <<<<<<<<< RETURN HERE!
@@ -155,7 +155,7 @@ void XmlBridgeInvoker::send(const SendRequest& req) {
 			}
 			if (tmpsize == _itemsRead.size()) {
 				LOG(ERROR) << _invokeId << ": SCXML have parsed 0 items in this iteration!";
-				buildTIMexception(SCXML_ERROR);
+				buildException(SCXML_ERROR);
 				return; // <<<<<<<<< RETURN HERE!;
 			}
 		}
@@ -165,7 +165,7 @@ void XmlBridgeInvoker::send(const SendRequest& req) {
 		} else {
 			if (_itemsRead.size() > _reqQueue.back()->indexes.size()) {
 				LOG(ERROR) << _invokeId << " parsed too many fields!";
-				buildTIMexception(SCXML_ERROR);
+				buildException(SCXML_ERROR);
 				return; // <<<<<<<<< RETURN HERE!
 			} else if (_itemsRead.size() == _reqQueue.back()->indexes.size()) {
 				_mesbufferer.bufferMESreplyREAD(_reqQueue.back()->sock, _CMDid,
@@ -185,7 +185,7 @@ void XmlBridgeInvoker::send(const SendRequest& req) {
 	} else {
 		LOG(ERROR) << "XmlBridgeInvoker: received an unsupported event type from Interpreter, discarding request\n"
 			   << "Propably the event name in the SCXML file is incorrect.";
-		buildTIMexception(SCXML_ERROR);
+		buildException(SCXML_ERROR);
 		return; // <<<<<<<<< RETURN HERE!
 	}
 
@@ -246,7 +246,7 @@ bool XmlBridgeInvoker::buildMESreq(uscxml::request *myreq, bool newreq) {
 			_reqQueue.push_front(myreq);
 		} else {
 			/* Se richiedo di analizzare richieste già esistenti
-			 * si suppone che la coda non sia piena */
+			 * si suppone che la coda non sia vuota */
 			if (_reqQueue.empty()) {
 				LOG(ERROR) << _invokeId << " queue is empty!";
 				return false;
@@ -264,7 +264,6 @@ bool XmlBridgeInvoker::buildMESreq(uscxml::request *myreq, bool newreq) {
 	/* Nel caso della lettura vado a scrivere gli indici
 	   Nel caso della scrittura vado a scrivere i valori e gli indici */
 
-	/* TODO CHECK DATA */
 	if (_reqQueue.back()->write) {
 		/* scrittura */
 		std::list<std::string>::const_iterator valueiter = _reqQueue.back()->wdata.begin();
@@ -321,7 +320,7 @@ void XmlBridgeInvoker::buildTIMreply(const char *reply_raw_data)
 	if (!(domParser.parse(inputSource))) {
 		LOG(ERROR) << "Failed parsing TIM XML reply string for command " << _CMDid;
 		LOG(ERROR) << "Errors " << errorHandler.errors();;
-		buildTIMexception(TIM_ERROR);
+		buildException(TIM_ERROR);
 		return;
 	}
 
@@ -331,7 +330,7 @@ void XmlBridgeInvoker::buildTIMreply(const char *reply_raw_data)
 	Event myevent(ss.str(), Event::EXTERNAL);
 	if (!domParser.getDocument().hasChildNodes()) {
 		LOG(ERROR) << "Failed parsing TIM XML reply. Resulting document has no nodes";
-		buildTIMexception(TIM_ERROR);
+		buildException(TIM_ERROR);
 		return;
 	}
 
@@ -350,7 +349,7 @@ void XmlBridgeInvoker::buildTIMreply(const char *reply_raw_data)
  * @param cmdid Il TIM cmd ID
  * @param type Tipo di eccezione
  */
-void XmlBridgeInvoker::buildTIMexception(exceptions type)
+void XmlBridgeInvoker::buildException(exceptions type)
 {
 	std::stringstream ss;
 	switch(type) {
@@ -444,7 +443,7 @@ void XmlBridgeInvoker::client(const std::string &cmdframe) {
 	    ((std::clock() - _reqClock.back()) < (MAXQUEUEDELAY * CLOCKS_PER_SEC)) ) {
 		if (_reply == NULL || _reply[0] == '\0') {
 			LOG(ERROR) << _invokeId << " empty reply buffer, cannot reuse TIM xml data";
-			buildTIMexception(TIM_ERROR);
+			buildException(TIM_ERROR);
 			return;
 		}
 		LOG(INFO) << _invokeId << " reusing old TIM reply!";
@@ -454,7 +453,7 @@ void XmlBridgeInvoker::client(const std::string &cmdframe) {
 
 	if (cmdframe.length() == 0) {
 		LOG(ERROR) << _invokeId << " TIM client: sending a 0 length message";
-		buildTIMexception(TIM_ERROR);
+		buildException(TIM_ERROR);
 		return;
 	}
 
@@ -465,13 +464,13 @@ void XmlBridgeInvoker::client(const std::string &cmdframe) {
 			timconnFLAG.wait(timconnMUTEX);
 			if (timconnCount >= MAXTIMCONN) {
 				LOG(ERROR) << _invokeId << " another invoker have not released the connection properly";
-				buildTIMexception(TIM_ERROR);
+				buildException(TIM_ERROR);
 				return;
 			}
 		}
 		if (!connect2TIM()) {
 			LOG(ERROR) << "Cannot connect to TIM for sending command";
-			buildTIMexception(TIM_ERROR);
+			buildException(TIM_ERROR);
 			return;
 		}
 		timconnCount++;
@@ -481,7 +480,7 @@ void XmlBridgeInvoker::client(const std::string &cmdframe) {
 		_reply = new char[MAXTIMREPLYSIZE]();
 		if (_reply == NULL) {
 			LOG(ERROR) << "TIM Client: failed to allocate _reply memory";
-			buildTIMexception(TIM_ERROR);
+			buildException(TIM_ERROR);
 			return;
 		}
 	}
@@ -501,18 +500,18 @@ void XmlBridgeInvoker::client(const std::string &cmdframe) {
 			LOG(INFO) << "TCP connection with TCP lost, reconnecting";
 			if (!connect2TIM()) {
 				LOG(ERROR) << "Cannot reconnect to TIM for sending command";
-				buildTIMexception(TIM_ERROR);
+				buildException(TIM_ERROR);
 				result = false;
 				break;
 			}
 			continue;
 		} else if (errno == EAGAIN || errno == EWOULDBLOCK) {
 			LOG(ERROR) << "TIM client: command timeout";
-			buildTIMexception(TIM_TIMEOUT);
+			buildException(TIM_TIMEOUT);
 			result = false;
 			break;
 		}
-		buildTIMexception(TIM_ERROR);
+		buildException(TIM_ERROR);
 		result = false;
 		break;
 	}
@@ -530,22 +529,22 @@ void XmlBridgeInvoker::client(const std::string &cmdframe) {
 					    MAXTIMREPLYSIZE - replylen, 0)) == -1) {
 				if (errno == EAGAIN || errno == EWOULDBLOCK) {
 					PLOG(ERROR) << "TIM client: command timeout";
-					buildTIMexception(TIM_TIMEOUT);
+					buildException(TIM_TIMEOUT);
 					result = false;
 					break;
 				}
 				PLOG(ERROR) << "TIM recv error: client ignoring TIM reply";
-				buildTIMexception(TIM_ERROR);
+				buildException(TIM_ERROR);
 				result = false;
 				break;
 			} else if (recvlen == 0 && errno == 0) {
 				PLOG(ERROR) << "TIM client: received zero-length message";
-				buildTIMexception(TIM_ERROR);
+				buildException(TIM_ERROR);
 				result = false;
 				break;
 			} else if (recvlen == (MAXTIMREPLYSIZE - replylen)) {
 				PLOG(ERROR) << "TIM client: received message too long";
-				buildTIMexception(TIM_ERROR);
+				buildException(TIM_ERROR);
 				result = false;
 				break;
 			}
@@ -555,9 +554,9 @@ void XmlBridgeInvoker::client(const std::string &cmdframe) {
 	}
 
 	if (_reqQueue.back()->write) {
-		_lastWrite == true;
+        _lastWrite = true;
 	} else {
-		_lastWrite == false;
+        _lastWrite = false;
 	}
 
 	if (result) {
