@@ -1844,24 +1844,24 @@
 			case /transition-.*/.test(typeId):
 				var editTypeTransitionFormGroupNode = $('\
 					<div class="form-group">\
-						<label for="transSource" class="col-sm-2 control-label">From State</label>\
+						<label for="transSourceId" class="col-sm-2 control-label">From State</label>\
 				    <div class="col-sm-10">\
-							<input class="form-control" type="text" name="transSource" placeholder="The id of the source state"/>\
+							<input class="form-control" type="text" name="transSourceId" placeholder="The id of the source state"/>\
 						</div>\
 					</div>\
 					<div class="form-group">\
-						<label for="transTarget" class="col-sm-2 control-label">To State</label>\
+						<label for="transTargetId" class="col-sm-2 control-label">To State</label>\
 				    <div class="col-sm-10">\
-							<input class="form-control" type="text" name="transTarget" placeholder="The id of the destination state"/>\
+							<input class="form-control" type="text" name="transTargetId" placeholder="The id of the destination state"/>\
 						</div>\
 					</div>\
 				');
 				$(this.editTypeNode).append(editTypeTransitionFormGroupNode);
-				$(editTypeTransitionFormGroupNode).find("input[name=transSource]")
-					.val('transSource' in breakpoint.data ? breakpoint.data.transSource : "")
+				$(editTypeTransitionFormGroupNode).find("input[name=transSourceId]")
+					.val('transSourceId' in breakpoint.data ? breakpoint.data.transSourceId : "")
 					.typeahead({local: stateNames});
-				$(editTypeTransitionFormGroupNode).find("input[name=transTarget]")
-					.val('transTarget' in breakpoint.data ? breakpoint.data.transTarget : "")
+				$(editTypeTransitionFormGroupNode).find("input[name=transTargetId]")
+					.val('transTargetId' in breakpoint.data ? breakpoint.data.transTargetId : "")
 					.typeahead({local: stateNames});
 				break
 			case /invoker-.*/.test(typeId):
@@ -2006,9 +2006,9 @@
 			breakpointString += (wireFormat.subject === 'state' ? wireFormat.stateId + ' ' : '');
 			breakpointString += (wireFormat.subject === 'event' ? wireFormat.eventName + ' ' : '');
 			if (wireFormat.subject === 'transition') {
-				breakpointString += ('transSource' in wireFormat ? wireFormat.transSource + ' ' : '* ');
+				breakpointString += ('transSourceId' in wireFormat ? wireFormat.transSourceId + ' ' : '* ');
 				breakpointString += '&rArr; ';
-				breakpointString += ('transTarget' in wireFormat ? wireFormat.transTarget + ' ' : '* ');
+				breakpointString += ('transTargetId' in wireFormat ? wireFormat.transTargetId + ' ' : '* ');
 			}
 			
 			return breakpointString;
@@ -2734,6 +2734,7 @@
 								self.isPrepared = false;
 							} else if (dataObj.replyType === "breakpoint") {
 								self.isPaused = true;
+								self.log(dataObj);
 								self.handleBreakpointReturn(dataObj);
 							} else {
 								self.log("Unhandled reply from /pollServer");

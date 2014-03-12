@@ -93,11 +93,11 @@ Breakpoint::Breakpoint(const Data& data) {
 	if (data.hasKey("stateId"))
 		stateId = data["stateId"].atom;
 
-	if (data.hasKey("transSource"))
-		transSource = data["transSource"].atom;
+	if (data.hasKey("transSourceId"))
+		transSourceId = data["transSourceId"].atom;
 
-	if (data.hasKey("transTarget"))
-		transTarget = data["transTarget"].atom;
+	if (data.hasKey("transTargetId"))
+		transTargetId = data["transTargetId"].atom;
 
 }
 
@@ -183,11 +183,11 @@ Data Breakpoint::toData() const {
 	if (stateId.length() > 0)
 		data.compound["stateId"] = Data(stateId, Data::VERBATIM);
 
-	if (transSource.length() > 0)
-		data.compound["transSource"] = Data(transSource, Data::VERBATIM);
+	if (transSourceId.length() > 0)
+		data.compound["transSourceId"] = Data(transSourceId, Data::VERBATIM);
 
-	if (transTarget.length() > 0)
-		data.compound["transTarget"] = Data(transTarget, Data::VERBATIM);
+	if (transTargetId.length() > 0)
+		data.compound["transTargetId"] = Data(transTargetId, Data::VERBATIM);
 
 	if (condition.length() > 0)
 		data.compound["condition"] = Data(condition, Data::VERBATIM);
@@ -241,11 +241,11 @@ bool Breakpoint::matches(Interpreter interpreter, const Breakpoint& other) const
 		return Interpreter::isMember(other.element, nodes);
 	}
 
-	if(transSource.length() > 0 && transSource != other.transSource) {
+	if(transSourceId.length() > 0 && transSourceId != other.transSourceId) {
 		return false;
 	}
 
-	if(transTarget.length() > 0 && transTarget != other.transTarget) {
+	if(transTargetId.length() > 0 && transTargetId != other.transTargetId) {
 		return false;
 	}
 	

@@ -42,16 +42,9 @@ catch (PlException plex) { \
 	e.data.compound["cause"] = (char*)plex; \
 	throw e; \
 } \
- 
-// this might evolve into multi-threaded prolog, but no need for now
-#define SET_PL_CONTEXT \
-_dmPtr = this;
 
 #define PL_MODULE \
 _interpreter.getSessionId().c_str() \
- 
-#define UNSET_PL_ENGINE(dm) \
-PL_set_engine(NULL, NULL);
 
 #define SET_PL_ENGINE(dm) \
 assert(_swiEngines.find(dm) != _swiEngines.end()); \
@@ -116,8 +109,6 @@ boost::shared_ptr<DataModelImpl> SWIDataModel::create(InterpreterImpl* interpret
 			NULL
 		};
 
-		PL_engine_t engine;
-
 		if (!PL_is_initialised(NULL, NULL)) {
 			if(!PL_initialise(argc,av)) {
 				LOG(ERROR) << "Error intializing prolog engine";
@@ -125,7 +116,7 @@ boost::shared_ptr<DataModelImpl> SWIDataModel::create(InterpreterImpl* interpret
 				return boost::shared_ptr<DataModelImpl>();
 			}
 
-			PL_set_engine(PL_ENGINE_CURRENT, &engine);
+			PL_set_engine(PL_ENGINE_CURRENT, &_engine);
 
 			// load SWI XML parser
 			try {
@@ -147,16 +138,16 @@ boost::shared_ptr<DataModelImpl> SWIDataModel::create(InterpreterImpl* interpret
 
 		} else {
 			LOG(WARNING) << "Instantiating more than one SWI prolog datamodel will lead to weird effects as I cannot seperate the environments";
-			engine = PL_create_engine(NULL);
+//			engine = PL_create_engine(NULL);
 		}
 
-		assert(engine);
-		_swiEngines[dm.get()] = engine;
-		_dmPtr = dm.get();
+//		assert(engine);
+//		_swiEngines[dm.get()] = engine;
+//		_dmPtr = dm.get();
 
-		int rc = PL_set_engine(engine, NULL);
-		assert(rc == PL_ENGINE_SET);
-		(void)rc;
+//		int rc = PL_set_engine(engine, NULL);
+//		assert(rc == PL_ENGINE_SET);
+//		(void)rc;
 
 		_plModule = boost::replace_all_copy(interpreter->getSessionId(), "-", "");
 		boost::replace_all(_plModule, "0", "g");
@@ -195,6 +186,7 @@ boost::shared_ptr<DataModelImpl> SWIDataModel::create(InterpreterImpl* interpret
 
 		// the in predicate
 		PlRegister("user", "in", 1, SWIDataModel::inPredicate);
+		PL_set_engine(NULL, NULL);
 		return dm;
 	}
 	RETHROW_PLEX_AS_EVENT;
@@ -243,8 +235,8 @@ void SWIDataModel::initialize() {
 }
 
 void SWIDataModel::setEvent(const Event& event) {
-
-	SET_PL_CONTEXT;
+	SWIEngineLock engineLock;
+	
 	// remove old event
 	try {
 		PlCall("retractall(event(_))");
@@ -430,7 +422,7 @@ void SWIDataModel::assertFromData(const Data& data, const std::string& expr, siz
 #endif
 
 Data SWIDataModel::getStringAsData(const std::string& content) {
-	SET_PL_CONTEXT
+	SWIEngineLock engineLock;
 	try {
 		PlCompound compound(content.c_str());
 		PlCompound orig(content.c_str());
@@ -616,13 +608,13 @@ PlTerm SWIDataModel::dataAsTerm(Data data) {
 }
 
 bool SWIDataModel::validate(const std::string& location, const std::string& schema) {
-	SET_PL_CONTEXT
+	SWIEngineLock engineLock;
 //	std::cout << "SWIDataModel::validate" << std::endl;
 	return true;
 }
 
 uint32_t SWIDataModel::getLength(const std::string& expr) {
-	SET_PL_CONTEXT
+	SWIEngineLock engineLock;
 	try {
 		PlCompound compound(expr.c_str());
 		PlTermv termv(compound.arity());
@@ -642,7 +634,7 @@ void SWIDataModel::setForeach(const std::string& item,
                               const std::string& array,
                               const std::string& index,
                               uint32_t iteration) {
-	SET_PL_CONTEXT
+	SWIEngineLock engineLock;
 	try {
 		PlCompound compound(array.c_str());
 		PlCompound orig(array.c_str());
@@ -673,7 +665,7 @@ void SWIDataModel::setForeach(const std::string& item,
 }
 
 void SWIDataModel::eval(const Element<std::string>& scriptElem, const std::string& expr) {
-	SET_PL_CONTEXT
+	SWIEngineLock engineLock;
 	try {
 		if (scriptElem && HAS_ATTR(scriptElem, "type") && iequals(ATTR(scriptElem, "type"), "query")) {
 			evalAsBool(expr);
@@ -690,7 +682,7 @@ bool SWIDataModel::evalAsBool(const std::string& expr) {
 }
 
 bool SWIDataModel::evalAsBool(const Arabica::DOM::Node<std::string>& node, const std::string& expr) {
-	SET_PL_CONTEXT
+	SWIEngineLock engineLock;
 	try {
 		PlCompound compound(expr.c_str());
 		PlTermv termv(compound.arity());
@@ -705,7 +697,7 @@ bool SWIDataModel::evalAsBool(const Arabica::DOM::Node<std::string>& node, const
 }
 	
 std::string SWIDataModel::evalAsString(const std::string& expr) {
-	SET_PL_CONTEXT
+	SWIEngineLock engineLock;
 	try {
 
 		PlCompound compound(expr.c_str());
@@ -755,7 +747,6 @@ std::string SWIDataModel::evalAsString(const std::string& expr) {
 	
 // this is similar to http://etalis.googlecode.com/svn/eEtalis/src/term.c
 std::map<std::string, PlTerm> SWIDataModel::resolveAtoms(PlTerm& term, PlTerm& orig) {
-	SET_PL_CONTEXT
 	try {
 		std::map<std::string, PlTerm> atoms;
 		switch (orig.type()) {
@@ -788,7 +779,7 @@ std::map<std::string, PlTerm> SWIDataModel::resolveAtoms(PlTerm& term, PlTerm& o
 void SWIDataModel::assign(const Element<std::string>& assignElem,
                           const Node<std::string>& node,
                           const std::string& content) {
-	SET_PL_CONTEXT
+	SWIEngineLock engineLock;
 	try {
 		std::string expr = content;
 		std::string predicate;
