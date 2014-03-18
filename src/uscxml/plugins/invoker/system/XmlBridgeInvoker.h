@@ -90,14 +90,14 @@ public:
 	Data getDataModelVariables();
 
 	bool buildMESreq(request *myreq, bool newreq);
-	void buildTIMreply(const char *reply_raw_data);
-	void buildException(exceptions type);
 
 	~XmlBridgeInvoker();
 
 protected:
 	void client(const std::string &cmdframe);
 	bool connect2TIM();
+	void buildException(exceptions type);
+	void buildTIMreply(const char *reply_raw_data);
 
 	/* FIXED */
 	unsigned int _CMDid;		/** L'ID del comando TIM gestito dall'invoker */

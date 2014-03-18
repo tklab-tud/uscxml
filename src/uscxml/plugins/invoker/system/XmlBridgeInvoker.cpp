@@ -99,14 +99,53 @@ Data XmlBridgeInvoker::getDataModelVariables() {
  * @param req La richiesta specificata nell'elemento <send> dell'SCXML
  */
 void XmlBridgeInvoker::send(const SendRequest& req) {
-	bool iswrite = (req.name.c_str()[0] == WRITEOP);
-	std::string evType = req.name.substr(1, 3);
-
 	LOG(INFO) << "" << _invokeId << " sending event " << req.name;
 
 	/* I dati inviati dal SCXML all'TIM o al MES sono sempre mappati nella struttura dati 'namelist' dell'evento */
+
+	/* Questa routine deve essere ottimizzata per eseguire più velocemente il caso SCXML2MES_ACK in lettura */
+
+	/* SCXML -> MES */
+	if (req.name.substr(1, 3) == SCXML2MES_ACK) {
+		/* READ */
+		if (req.name.c_str()[0] != WRITEOP) {
+			/* Extract parsed TIM reply fields */
+			size_t tmpsize = _itemsRead.size();
+			/* When sending namelist from XPath variables, data is interpreted as nodes (data.node) */
+			std::map<std::string, Data>::const_iterator namelistIter = req.namelist.begin();
+			while(namelistIter != req.namelist.end()) {
+				std::map<std::string, Data>::const_iterator nodesIter = namelistIter->second.compound.begin();
+				while(nodesIter != namelistIter->second.compound.end()) {
+					_itemsRead.push_back(nodesIter->second.node.getNodeValue());
+					nodesIter++;
+				}
+				namelistIter++;
+			}
+			if (tmpsize == _itemsRead.size()) {
+				LOG(ERROR) << _invokeId << ": SCXML have parsed 0 items in this iteration!";
+				buildException(SCXML_ERROR);
+				return; // <<<<<<<<< RETURN HERE!;
+			}
+			if (_itemsRead.size() > _reqQueue.back()->indexes.size()) {
+				LOG(ERROR) << _invokeId << " parsed too many fields!";
+				buildException(SCXML_ERROR);
+				return; // <<<<<<<<< RETURN HERE!
+			} else if (_itemsRead.size() == _reqQueue.back()->indexes.size()) {
+				_mesbufferer.bufferMESreplyREAD(_reqQueue.back()->sock, _CMDid,
+								_reqQueue.back()->addr,
+								_reqQueue.back()->len,
+								_itemsRead);
+			} else {
+				LOG(INFO) << _invokeId << " parsed " << _itemsRead.size() << " fields of "
+					  << _reqQueue.back()->indexes.size() << " requested";
+				return; // <<<<<<<<< RETURN HERE!
+			}
+		/* WRITE */
+		} else {
+			_mesbufferer.bufferMESreplyWRITE(_reqQueue.back()->sock, _CMDid);
+		}
 	/* SCXML -> TIM */
-	if (evType == SCXML2TIM) {
+	} else if (req.name.substr(1, 3) == SCXML2TIM) {
 		if (!req.namelist.empty()) {
 			std::stringstream ss;
 			std::map<std::string, Data>::const_iterator namelistIter = req.namelist.begin();
@@ -135,50 +174,7 @@ void XmlBridgeInvoker::send(const SendRequest& req) {
 
 		return;  // <<<<<<<<< RETURN HERE!
 
-		/* SCXML -> MES */
-	} else if (evType == SCXML2MES_ACK) {
-
-		if (!iswrite) {
-			/* Extract parsed TIM reply fields */
-			size_t tmpsize = _itemsRead.size();
-			/* When sending namelist from XPath variables, data is interpreted as nodes (data.node) */
-			std::map<std::string, Data>::const_iterator namelistIter = req.namelist.begin();
-			while(namelistIter != req.namelist.end()) {
-				std::map<std::string, Data>::const_iterator nodesIter = namelistIter->second.compound.begin();
-				while(nodesIter != namelistIter->second.compound.end()) {
-					_itemsRead.push_back(nodesIter->second.node.getNodeValue());
-					nodesIter++;
-				}
-				namelistIter++;
-			}
-			if (tmpsize == _itemsRead.size()) {
-				LOG(ERROR) << _invokeId << ": SCXML have parsed 0 items in this iteration!";
-				buildException(SCXML_ERROR);
-				return; // <<<<<<<<< RETURN HERE!;
-			}
-		}
-
-		if (iswrite) {
-			_mesbufferer.bufferMESreplyWRITE(_reqQueue.back()->sock, _CMDid);
-		} else {
-			if (_itemsRead.size() > _reqQueue.back()->indexes.size()) {
-				LOG(ERROR) << _invokeId << " parsed too many fields!";
-				buildException(SCXML_ERROR);
-				return; // <<<<<<<<< RETURN HERE!
-			} else if (_itemsRead.size() == _reqQueue.back()->indexes.size()) {
-				_mesbufferer.bufferMESreplyREAD(_reqQueue.back()->sock, _CMDid,
-								_reqQueue.back()->addr,
-								_reqQueue.back()->len,
-								_itemsRead);
-			} else {
-				LOG(INFO) << _invokeId << " parsed " << _itemsRead.size() << " fields of "
-					  << _reqQueue.back()->indexes.size() << " requested";
-				return; // <<<<<<<<< RETURN HERE!
-			}
-		}
-
-		/* SCXML -> MES (errore) */
-	} else if (evType == SCXML2MES_ERR) {
+	} else if (req.name.substr(1, 3) == SCXML2MES_ERR) {
 		_mesbufferer.bufferMESerror(_reqQueue.back()->sock, _CMDid);
 	} else {
 		LOG(ERROR) << "XmlBridgeInvoker: received an unsupported event type from Interpreter, discarding request\n"
@@ -192,17 +188,18 @@ void XmlBridgeInvoker::send(const SendRequest& req) {
 	 * classe ModbusIO.
 	 * Appena l'invoker esegue la chiamata di send per un reply o un errore
 	 * la richiesta deve essere rimossa dalla lista */
-	tthread::lock_guard<tthread::mutex> queuelock(queueMUTEX);
-	delete _reqQueue.back();
-	_reqQueue.pop_back();
-	_reqClock.pop_back();
+	{
+		tthread::lock_guard<tthread::mutex> queuelock(queueMUTEX);
+		delete _reqQueue.back();
+		_reqQueue.pop_back();
+		_reqClock.pop_back();
+	}
 
 	/* Quando la richiesta precedente è stata gestita e rimossa
 	   avviamo la macchina a stati con una nuova richiesta
 	   Non rischiamo che la richiesta sia gestita due volte siccome
 	   usciamo dalla macchina a stati con solo una transizione */
 	if (!_reqQueue.empty()) {
-		queuelock.~lock_guard();
 		buildMESreq(NULL, false);
 	}
 }
@@ -224,69 +221,77 @@ bool XmlBridgeInvoker::buildMESreq(request *myreq, bool newreq) {
 		return false;
 	}
 
-	tthread::lock_guard<tthread::mutex> queuelock(queueMUTEX);
-	if (newreq) {
-		/* verifico se la coda è piena */
-		if (_reqQueue.size() >= _queueSize) {
-			LOG(ERROR) << _invokeId << " is currently handling too many requests";
-			return false;
-		} else if (_reqQueue.size() == 0) {
-			/* Se la richiesta è la prima ad essere accodata deve sempre
-			 * forzare la connessione al TIM */
-			_reqClock.push_front(0);
-		} else if (_reqQueue.size() > 0) {
-			LOG(INFO) << _invokeId << " queueing request on socket #" << myreq->sock;
-			_reqClock.push_front(std::clock());
-		}
-		_reqQueue.push_front(myreq);
-	} else {
-		/* Se richiedo di analizzare richieste già esistenti
-		 * si suppone che la coda non sia vuota */
-		if (_reqQueue.empty()) {
-			LOG(ERROR) << _invokeId << " queue is empty!";
-			return false;
-		}
-	}
 
-	std::stringstream ss;
-	ss << _CMDid << '_' << (_reqQueue.back()->write ? WRITEOP : READOP) << MES2SCXML;
-	LOG(INFO) << _invokeId << " sending event " << ss.str();
-
-	Event myevent(ss.str(), Event::EXTERNAL);
-
-	/* I dati inviati dal MES all'SCXML sono sempre mappati nella struttura dati 'node' dell'evento */
-	/* Nel caso della lettura vado a scrivere gli indici
-	   Nel caso della scrittura vado a scrivere i valori e gli indici */
-
-	if (_reqQueue.back()->write) {
-		/* scrittura */
-		std::list<std::string>::const_iterator valueiter;
-		std::list<std::pair<std::string,std::string> >::const_iterator indexiter;
-		myevent.data.node = _interpreter->getDocument().createElement("data");
-		for (valueiter = _reqQueue.back()->wdata.begin(), indexiter = _reqQueue.back()->indexes.begin();
-		     valueiter!= _reqQueue.back()->wdata.end();
-		     valueiter++, indexiter++) {
-			Arabica::DOM::Element<std::string> eventMESElem = _interpreter->getDocument().createElement("value");
-			Arabica::DOM::Text<std::string> textNode = _interpreter->getDocument().createTextNode(*valueiter);
-			eventMESElem.setAttribute("itemi", indexiter->first);
-			eventMESElem.setAttribute("var", indexiter->second);
-			eventMESElem.appendChild(textNode);
-			myevent.data.node.appendChild(eventMESElem);
-		}
-	} else {
-		/* lettura */
-		std::list<std::pair<std::string,std::string> >::const_iterator indexiter;
-		myevent.data.node = _interpreter->getDocument().createElement("data");
-		for (indexiter = _reqQueue.back()->indexes.begin();
-		     indexiter!=_reqQueue.back()->indexes.end(); indexiter++) {
-			Arabica::DOM::Element<std::string> eventMESElem = _interpreter->getDocument().createElement("index");
-			Arabica::DOM::Text<std::string> textNode = _interpreter->getDocument().createTextNode(indexiter->second);
-			eventMESElem.setAttribute("itemi", indexiter->first);
-			eventMESElem.appendChild(textNode);
-			myevent.data.node.appendChild(eventMESElem);
+	{
+		tthread::lock_guard<tthread::mutex> queuelock(queueMUTEX);
+		if (newreq) {
+			/* verifico se la coda è piena */
+			if (_reqQueue.size() >= _queueSize) {
+				LOG(ERROR) << _invokeId << " is currently handling too many requests";
+				return false;
+			} else if (_reqQueue.size() == 0) {
+				/* Se la richiesta è la prima ad essere accodata deve sempre
+				 * forzare la connessione al TIM */
+				_reqClock.push_front(0);
+			} else if (_reqQueue.size() > 0) {
+				LOG(INFO) << _invokeId << " queueing request on socket #" << myreq->sock;
+				_reqClock.push_front(std::clock());
+			}
+			_reqQueue.push_front(myreq);
+		} else {
+			/* Se richiedo di analizzare richieste già esistenti
+			 * si suppone che la coda non sia vuota */
+			if (_reqQueue.empty()) {
+				LOG(ERROR) << _invokeId << " queue is empty!";
+				return false;
+			}
 		}
 	}
-	queuelock.~lock_guard();
+
+	Event myevent;
+
+	{
+		std::stringstream ss;
+		tthread::lock_guard<tthread::mutex> queuelock(queueMUTEX);
+		ss << _CMDid << '_' << (_reqQueue.back()->write ? WRITEOP : READOP) << MES2SCXML;
+		LOG(INFO) << _invokeId << " sending event " << ss.str();
+		myevent.name = ss.str();
+		myevent.eventType = Event::EXTERNAL;
+		myevent.hideSendId = false;
+
+		/* I dati inviati dal MES all'SCXML sono sempre mappati nella struttura dati 'node' dell'evento */
+		/* Nel caso della lettura vado a scrivere gli indici
+		   Nel caso della scrittura vado a scrivere i valori e gli indici */
+
+		if (_reqQueue.back()->write) {
+			/* scrittura */
+			std::list<std::string>::const_iterator valueiter;
+			std::list<std::pair<std::string,std::string> >::const_iterator indexiter;
+			myevent.data.node = _interpreter->getDocument().createElement("data");
+			for (valueiter = _reqQueue.back()->wdata.begin(), indexiter = _reqQueue.back()->indexes.begin();
+			     valueiter!= _reqQueue.back()->wdata.end();
+			     valueiter++, indexiter++) {
+				Arabica::DOM::Element<std::string> eventMESElem = _interpreter->getDocument().createElement("value");
+				Arabica::DOM::Text<std::string> textNode = _interpreter->getDocument().createTextNode(*valueiter);
+				eventMESElem.setAttribute("itemi", indexiter->first);
+				eventMESElem.setAttribute("var", indexiter->second);
+				eventMESElem.appendChild(textNode);
+				myevent.data.node.appendChild(eventMESElem);
+			}
+		} else {
+			/* lettura */
+			std::list<std::pair<std::string,std::string> >::const_iterator indexiter;
+			myevent.data.node = _interpreter->getDocument().createElement("data");
+			for (indexiter = _reqQueue.back()->indexes.begin();
+			     indexiter!=_reqQueue.back()->indexes.end(); indexiter++) {
+				Arabica::DOM::Element<std::string> eventMESElem = _interpreter->getDocument().createElement("index");
+				Arabica::DOM::Text<std::string> textNode = _interpreter->getDocument().createTextNode(indexiter->second);
+				eventMESElem.setAttribute("itemi", indexiter->first);
+				eventMESElem.appendChild(textNode);
+				myevent.data.node.appendChild(eventMESElem);
+			}
+		}
+	}
 
 	/* elimina le stringhe lette per la richiesta precedente */
 	_itemsRead.clear();
@@ -438,20 +443,22 @@ bool XmlBridgeInvoker::connect2TIM() {
 void XmlBridgeInvoker::client(const std::string &cmdframe) {
 
 	/* controllo se devo riutilizzare l'xml archiviato del TIM o no */
+	bool reuse;
 	{
 		tthread::lock_guard<tthread::mutex> queuelock(queueMUTEX);
-		if (_reqClock.back() != 0 && !_reqQueue.back()->write && !_lastWrite &&
-		    ((std::clock() - _reqClock.back()) < (MAXQUEUEDELAY * CLOCKS_PER_SEC)) ) {
-			queuelock.~lock_guard();
-			if (_reply == NULL || _reply[0] == '\0' || std::strncmp(_reply, "<frame>", 7)) {
-				LOG(ERROR) << _invokeId << " empty reply buffer, cannot reuse TIM xml data";
-				buildException(TIM_ERROR);
-				return;
-			}
-			LOG(INFO) << _invokeId << " reusing old TIM reply!";
-			buildTIMreply(_reply);
-			return;
+		reuse = (_reqClock.back() != 0 && !_reqQueue.back()->write && !_lastWrite &&
+			((std::clock() - _reqClock.back()) < (MAXQUEUEDELAY * CLOCKS_PER_SEC)));
+	}
+
+	if (reuse) {
+		if (_reply == NULL || _reply[0] == '\0' || std::strncmp(_reply, "<frame>", 7)) {
+			LOG(ERROR) << _invokeId << " empty reply buffer, cannot reuse TIM xml data";
+			buildException(TIM_ERROR);
+			return;  // <<<<< Return Here!
 		}
+		LOG(INFO) << _invokeId << " reusing old TIM reply!";
+		buildTIMreply(_reply);
+		return;  // <<<<< Return Here!
 	}
 
 	if (cmdframe.length() == 0) {
