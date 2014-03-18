@@ -921,7 +921,6 @@ void InterpreterImpl::send(const Arabica::DOM::Node<std::string>& element) {
 					_dataModel.replaceExpressions(cleanedName);
 					Data namelistValue = _dataModel.getStringAsData(cleanedName);
 					sendReq.namelist[cleanedName] = namelistValue;
-					sendReq.data.compound[cleanedName] = namelistValue;
 				}
 			} else {
 				LOG(ERROR) << "Namelist attribute at send requires datamodel to be defined";

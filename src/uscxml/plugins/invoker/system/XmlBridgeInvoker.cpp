@@ -99,7 +99,7 @@ Data XmlBridgeInvoker::getDataModelVariables() {
  * @param req La richiesta specificata nell'elemento <send> dell'SCXML
  */
 void XmlBridgeInvoker::send(const SendRequest& req) {
-	LOG(INFO) << "" << _invokeId << " sending event " << req.name;
+	LOG(INFO) << "" << _invokeId << " sending event from SCXML " << req.name;
 
 	/* I dati inviati dal SCXML all'TIM o al MES sono sempre mappati nella struttura dati 'namelist' dell'evento */
 
@@ -114,9 +114,9 @@ void XmlBridgeInvoker::send(const SendRequest& req) {
 			/* When sending namelist from XPath variables, data is interpreted as nodes (data.node) */
 			std::map<std::string, Data>::const_iterator namelistIter = req.namelist.begin();
 			while(namelistIter != req.namelist.end()) {
-				std::map<std::string, Data>::const_iterator nodesIter = namelistIter->second.compound.begin();
-				while(nodesIter != namelistIter->second.compound.end()) {
-					_itemsRead.push_back(nodesIter->second.node.getNodeValue());
+				std::list<Data>::const_iterator nodesIter = namelistIter->second.array.begin();
+				while(nodesIter != namelistIter->second.array.end()) {
+					_itemsRead.push_back(nodesIter->node.getNodeValue());
 					nodesIter++;
 				}
 				namelistIter++;
@@ -151,9 +151,9 @@ void XmlBridgeInvoker::send(const SendRequest& req) {
 			std::map<std::string, Data>::const_iterator namelistIter = req.namelist.begin();
 			while(namelistIter != req.namelist.end()) {
 				/* When sending namelist from _datamodel variables, data is interpreted as nodes (data.node) */
-				std::map<std::string, Data>::const_iterator nodesIter = namelistIter->second.compound.begin();
-				while(nodesIter != namelistIter->second.compound.end()) {
-					ss << nodesIter->second.node.getNodeValue();
+				std::list<Data>::const_iterator nodesIter = namelistIter->second.array.begin();
+				while(nodesIter != namelistIter->second.array.end()) {
+					ss << nodesIter->node.getNodeValue();
 					nodesIter++;
 				}
 				namelistIter++;
@@ -254,7 +254,7 @@ bool XmlBridgeInvoker::buildMESreq(request *myreq, bool newreq) {
 		std::stringstream ss;
 		tthread::lock_guard<tthread::mutex> queuelock(queueMUTEX);
 		ss << _CMDid << '_' << (_reqQueue.back()->write ? WRITEOP : READOP) << MES2SCXML;
-		LOG(INFO) << _invokeId << " sending event " << ss.str();
+		LOG(INFO) << _invokeId << " sending event to SCXML " << ss.str();
 		myevent.name = ss.str();
 		myevent.eventType = Event::EXTERNAL;
 		myevent.hideSendId = false;
@@ -269,8 +269,7 @@ bool XmlBridgeInvoker::buildMESreq(request *myreq, bool newreq) {
 			std::list<std::pair<std::string,std::string> >::const_iterator indexiter;
 			myevent.data.node = _interpreter->getDocument().createElement("data");
 			for (valueiter = _reqQueue.back()->wdata.begin(), indexiter = _reqQueue.back()->indexes.begin();
-			     valueiter!= _reqQueue.back()->wdata.end();
-			     valueiter++, indexiter++) {
+			     valueiter!= _reqQueue.back()->wdata.end(); valueiter++, indexiter++) {
 				Arabica::DOM::Element<std::string> eventMESElem = _interpreter->getDocument().createElement("value");
 				Arabica::DOM::Text<std::string> textNode = _interpreter->getDocument().createTextNode(*valueiter);
 				eventMESElem.setAttribute("itemi", indexiter->first);
@@ -310,17 +309,18 @@ bool XmlBridgeInvoker::buildMESreq(request *myreq, bool newreq) {
  */
 void XmlBridgeInvoker::buildTIMreply(const char *reply_raw_data)
 {
-	Arabica::SAX2DOM::Parser<std::string> domParser;
-	Arabica::SAX::CatchErrorHandler<std::string> errorHandler;
-	domParser.setErrorHandler(errorHandler);
-
-	std::istringstream is(reply_raw_data);
+	std::istringstream iss(reply_raw_data);
 	Arabica::SAX::InputSource<std::string> inputSource;
-	inputSource.setByteStream(is);
+	inputSource.setByteStream(iss);
 
-	if (!(domParser.parse(inputSource))) {
+	if (!(_domParser.parse(inputSource))) {
 		LOG(ERROR) << "Failed parsing TIM XML reply string for command " << _CMDid;
-		LOG(ERROR) << "Errors " << errorHandler.errors();;
+		LOG(ERROR) << "Errors " << _errorHandler.errors();;
+		buildException(TIM_ERROR);
+		return;
+	}
+	if (!_domParser.getDocument().hasChildNodes()) {
+		LOG(ERROR) << "Failed parsing TIM XML reply. Resulting document has no nodes";
 		buildException(TIM_ERROR);
 		return;
 	}
@@ -330,19 +330,11 @@ void XmlBridgeInvoker::buildTIMreply(const char *reply_raw_data)
 		tthread::lock_guard<tthread::mutex> queuelock(queueMUTEX);
 		ss << _CMDid << '_' << (_reqQueue.back()->write ? WRITEOP : READOP) << TIM2SCXML;
 	}
-
-
 	Event myevent(ss.str(), Event::EXTERNAL);
-	if (!domParser.getDocument().hasChildNodes()) {
-		LOG(ERROR) << "Failed parsing TIM XML reply. Resulting document has no nodes";
-		buildException(TIM_ERROR);
-		return;
-	}
-
 	/* I dati inviati dal SCXML all'SCXML sono sempre mappati nella struttura dati 'dom' dell'evento */
-	myevent.dom = domParser.getDocument().getDocumentElement();
+	myevent.setDOM(_domParser.getDocument().getDocumentElement());
 
-	LOG(INFO) << _invokeId << " sending event " << ss.str();
+	LOG(INFO) << _invokeId << " sending event to SCXML " << ss.str();
 
 	returnEvent(myevent);
 }
@@ -480,10 +472,11 @@ void XmlBridgeInvoker::client(const std::string &cmdframe) {
 		}
 		if (!connect2TIM()) {
 			LOG(ERROR) << "Cannot connect to TIM for sending command";
+			_socketfd = -1;
 			buildException(TIM_ERROR);
 			return;
 		}
-		timconnCount++;
+		timconnCount = timconnCount + 1;
 	}
 
 	if (_reply == NULL) {
@@ -585,7 +578,7 @@ void XmlBridgeInvoker::client(const std::string &cmdframe) {
 				LOG(ERROR) << "Error closing socket " << _socketfd;
 			}
 			_socketfd = -1;
-			timconnCount--;
+			timconnCount = timconnCount - 1;
 			timconnFLAG.notify_all();
 		}
 	}

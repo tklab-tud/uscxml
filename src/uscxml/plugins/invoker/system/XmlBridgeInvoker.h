@@ -76,7 +76,10 @@ public:
 		_itemsRead(), _mesbufferer(MesBufferer::getInstance()),
 		_TIMport(DEF_TIMPORT), _TIMaddr(DEF_TIMADDR),
 		_reply(NULL),  _socketfd(-1), _servinfo(NULL),
-		_reqQueue(), _reqClock(),  _lastWrite(false) {}
+		_reqQueue(), _reqClock(),  _lastWrite(false)
+	{
+		_domParser.setErrorHandler(_errorHandler);
+	}
 
 	std::set<std::string> getNames() {
 		std::set<std::string> names;
@@ -105,6 +108,9 @@ protected:
 	unsigned int _queueSize;	/** Massimo numero di richieste accodate nell'invoker */
 
 	std::list<std::string> _itemsRead;	/** Lista di elementi estratti dalla risposta XML del TIM tramite query xpath per un comando di lettura*/
+
+	Arabica::SAX2DOM::Parser<std::string> _domParser;
+	Arabica::SAX::CatchErrorHandler<std::string> _errorHandler;
 
 	MesBufferer& _mesbufferer;	/**< Puntatore all'istanza di MesBufferer */
 

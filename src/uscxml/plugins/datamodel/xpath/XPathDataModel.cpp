@@ -275,17 +275,14 @@ Data XPathDataModel::getStringAsData(const std::string& content) {
 		ss << result.asString();
 		break;
 	case NODE_SET:
-		NodeSet<std::string> ns = result.asNodeSet();
-		for (int i = 0; i < ns.size(); i++) {
-			ss.str("");
-			ss << i;
+		NodeSet<std::string>::const_iterator nodesiter;
+		for (nodesiter = result.asNodeSet().begin(); nodesiter != result.asNodeSet().end(); nodesiter++) {
 			Data tmpdata;
-			tmpdata.node = ns[i];
-			data.compound[ss.str()] = tmpdata;
+			tmpdata.node = *nodesiter;
+			data.array.push_back(tmpdata);
 		}
 		data.type = Data::INTERPRETED;
 		return data;
-		break;
 	}
 
 	data.atom = ss.str();
