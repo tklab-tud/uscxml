@@ -37,9 +37,9 @@
 			</transition>
 		</state>
 		<state id="sent0">
-			<onentry>
-				<send 	event="timeout0" delay="10s"/>
-			</onentry>
+<!--			<onentry>-->
+<!--				<send 	event="timeout0" delay="10s"/>-->
+<!--			</onentry>-->
 			<transition event="0_wREPLY" target="init0">
 				<if cond="$_event/data/frame/data/nestedData[@type='state']/text() = 'ok'">
 					<send 	event="wACK" target="#_xmlbridge0"/>
@@ -83,9 +83,9 @@
 			</transition>
 		</state>
 		<state id="sent1">
-			<onentry>
-				<send 	event="timeout1" delay="10s"/>
-			</onentry>
+<!--			<onentry>-->
+<!--				<send 	event="timeout1" delay="10s"/>-->
+<!--			</onentry>-->
 			<transition event="1_rREPLY"  target="init1">
 				<if cond="$_event/data/frame">
 					<foreach array="$IDX1/index" item="currIDX1">
@@ -124,9 +124,9 @@
 			</transition>
 		</state>
 		<state id="sent2">
-			<onentry>
-				<send 	event="timeout2" delay="10s"/>
-			</onentry>
+<!--			<onentry>-->
+<!--				<send 	event="timeout2" delay="10s"/>-->
+<!--			</onentry>-->
 			<transition event="2_rREPLY"  target="init2">
 				<if cond="$_event/data/frame">
 					<foreach array="$IDX2/index" item="currIDX2">
@@ -165,9 +165,9 @@
 			</transition>
 		</state>
 		<state id="sent3">
-			<onentry>
-				<send 	event="timeout3" delay="10s"/>
-			</onentry>
+<!--			<onentry>-->
+<!--				<send 	event="timeout3" delay="10s"/>-->
+<!--			</onentry>-->
 			<transition event="3_rREPLY"  target="init3">
 				<if cond="$_event/data/frame">
 					<foreach array="$IDX3/index" item="currIDX3">
@@ -202,9 +202,9 @@
 			</transition>
 		</state>
 		<state id="sent4">
-			<onentry>
-				<send 	event="timeout4" delay="10s"/>
-			</onentry>
+<!--			<onentry>-->
+<!--				<send 	event="timeout4" delay="10s"/>-->
+<!--			</onentry>-->
 			<transition event="4_rREPLY"  target="init4">
 				<if cond="$_event/data/frame">
 					<send 	event="rACK"
@@ -241,9 +241,9 @@
 			</transition>
 		</state>
 		<state id="sent5">
-			<onentry>
-				<send 	event="timeout5" delay="10s"/>
-			</onentry>
+<!--			<onentry>-->
+<!--				<send 	event="timeout5" delay="10s"/>-->
+<!--			</onentry>-->
 			<transition event="5_rREPLY"  target="init5">
 				<if cond="$_event/data/frame">
 					<foreach array="$IDX5/index" item="currIDX5">
@@ -296,9 +296,9 @@
 			</transition>
 		</state>
 		<state id="sent6">
-			<onentry>
-				<send 	event="timeout6" delay="10s"/>
-			</onentry>
+<!--			<onentry>-->
+<!--				<send 	event="timeout6" delay="10s"/>-->
+<!--			</onentry>-->
 			<transition event="6_wREPLY" target="init6">
 				<if cond="$_event/data/frame/data/nestedData[@type='state']/text() = 'ok'">
 					<send 	event="wACK" target="#_xmlbridge6"/>
@@ -358,9 +358,9 @@
 			</transition>
 		</state>
 		<state id="sent7">
-			<onentry>
-				<send 	event="timeout7" delay="10s"/>
-			</onentry>
+<!--			<onentry>-->
+<!--				<send 	event="timeout7" delay="10s"/>-->
+<!--			</onentry>-->
 			<transition event="7_wREPLY" target="init7">
 				<if cond="$_event/data/frame/data/nestedData[@type='state']/text() = 'ok'">
 					<send 	event="wACK" target="#_xmlbridge7"/>
@@ -418,9 +418,9 @@
 			</transition>
 		</state>
 		<state id="sent8">
-			<onentry>
-				<send 	event="timeou8" delay="10s"/>
-			</onentry>
+<!--			<onentry>-->
+<!--				<send 	event="timeou8" delay="10s"/>-->
+<!--			</onentry>-->
 			<transition event="8_wREPLY" target="init8">
 				<if cond="$_event/data/frame/data/nestedData[@type='state']/text() = 'ok'">
 					<send 	event="wACK" target="#_xmlbridge8"/>
@@ -475,9 +475,9 @@
 			</transition>
 		</state>
 		<state id="sent9">
-			<onentry>
-				<send 	event="timeou9" delay="10s"/>
-			</onentry>
+<!--			<onentry>-->
+<!--				<send 	event="timeou9" delay="10s"/>-->
+<!--			</onentry>-->
 			<transition event="9_rREPLY"  target="init9">
 				<if cond="$_event/data/frame">
 					<foreach array="$IDX9/index" item="currIDX9">
@@ -516,9 +516,9 @@
 			</transition>
 		</state>
 		<state id="sent10">
-			<onentry>
-				<send 	event="timeou10" delay="10s"/>
-			</onentry>
+<!--			<onentry>-->
+<!--				<send 	event="timeou10" delay="10s"/>-->
+<!--			</onentry>-->
 			<transition event="10_rREPLY"  target="init10">
 				<if cond="$_event/data/frame">
 					<foreach array="$IDX10/index" item="currIDX10">
@@ -569,9 +569,9 @@
 			</transition>
 		</state>
 		<state id="sent11">
-			<onentry>
-				<send 	event="timeou11" delay="10s"/>
-			</onentry>
+<!--			<onentry>-->
+<!--				<send 	event="timeou11" delay="10s"/>-->
+<!--			</onentry>-->
 			<transition event="11_wREPLY" target="init11">
 				<if cond="$_event/data/frame/data/nestedData[@type='state']/text() = 'ok'">
 					<send 	event="wACK" target="#_xmlbridge11"/>

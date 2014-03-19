@@ -11,6 +11,10 @@
 #include <Pluma/Connector.hpp>
 #endif
 
+static unsigned int timconnCount = 0;   /**< Contatore statico delle connessioni attualmente attive lato TIM */
+static tthread::mutex timconnMUTEX;     /**< Mutex che controlla l'accesso al contatore delle connessioni */
+static tthread::condition_variable timconnFLAG;     /**< Condition variable per sincronizzare l'acquisizione e rilascio di socket lato TIM */
+
 namespace uscxml {
 
 #ifdef BUILD_AS_PLUGINS
@@ -20,10 +24,6 @@ bool connect(pluma::Host& host) {
 	return true;
 }
 #endif
-
-static unsigned int timconnCount = 0;   /**< Contatore statico delle connessioni attualmente attive lato TIM */
-static tthread::mutex timconnMUTEX;     /**< Mutex che controlla l'accesso al contatore delle connessioni */
-static tthread::condition_variable timconnFLAG;     /**< Condition variable per sincronizzare l'acquisizione e rilascio di socket lato TIM */
 
 /**
  * @brief Distruttore della classe XmlBridgeInvoker
@@ -125,8 +125,7 @@ void XmlBridgeInvoker::send(const SendRequest& req) {
 				LOG(ERROR) << _invokeId << ": SCXML have parsed 0 items in this iteration!";
 				buildException(SCXML_ERROR);
 				return; // <<<<<<<<< RETURN HERE!;
-			}
-			if (_itemsRead.size() > _reqQueue.back()->indexes.size()) {
+            } else if (_itemsRead.size() > _reqQueue.back()->indexes.size()) {
 				LOG(ERROR) << _invokeId << " parsed too many fields!";
 				buildException(SCXML_ERROR);
 				return; // <<<<<<<<< RETURN HERE!
@@ -135,7 +134,9 @@ void XmlBridgeInvoker::send(const SendRequest& req) {
 								_reqQueue.back()->addr,
 								_reqQueue.back()->len,
 								_itemsRead);
+                _itemsRead.clear();
 			} else {
+                /* It means this is not the last iteration */
 				LOG(INFO) << _invokeId << " parsed " << _itemsRead.size() << " fields of "
 					  << _reqQueue.back()->indexes.size() << " requested";
 				return; // <<<<<<<<< RETURN HERE!
@@ -175,6 +176,7 @@ void XmlBridgeInvoker::send(const SendRequest& req) {
 		return;  // <<<<<<<<< RETURN HERE!
 
 	} else if (req.name.substr(1, 3) == SCXML2MES_ERR) {
+        LOG(INFO) << _invokeId << " error sendid " << req.sendid;
 		_mesbufferer.bufferMESerror(_reqQueue.back()->sock, _CMDid);
 	} else {
 		LOG(ERROR) << "XmlBridgeInvoker: received an unsupported event type from Interpreter, discarding request\n"
