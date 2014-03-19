@@ -11,10 +11,6 @@
 #include <Pluma/Connector.hpp>
 #endif
 
-static unsigned int timconnCount = 0;   /**< Contatore statico delle connessioni attualmente attive lato TIM */
-static tthread::mutex timconnMUTEX;     /**< Mutex che controlla l'accesso al contatore delle connessioni */
-static tthread::condition_variable timconnFLAG;     /**< Condition variable per sincronizzare l'acquisizione e rilascio di socket lato TIM */
-
 namespace uscxml {
 
 #ifdef BUILD_AS_PLUGINS
@@ -24,6 +20,10 @@ bool connect(pluma::Host& host) {
 	return true;
 }
 #endif
+
+unsigned int XmlBridgeInvoker::timconnCount = 0;
+tthread::condition_variable XmlBridgeInvoker::timconnFLAG;
+tthread::mutex XmlBridgeInvoker::timconnMUTEX;
 
 /**
  * @brief Distruttore della classe XmlBridgeInvoker

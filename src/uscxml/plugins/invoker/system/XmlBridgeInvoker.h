@@ -125,6 +125,11 @@ protected:
 	bool _lastWrite;                    /**< Indica se l'ultima richiesta gestita era in lettura */
 
 	tthread::mutex queueMUTEX;          /**< Mutex di accesso alla coda delle richieste */
+
+    static unsigned int timconnCount;               /**< Contatore statico delle connessioni attualmente attive lato TIM */
+    static tthread::mutex timconnMUTEX;                 /**< Mutex che controlla l'accesso al contatore delle connessioni */
+    static tthread::condition_variable timconnFLAG;     /**< Condition variable per sincronizzare l'acquisizione e rilascio di socket lato TIM */
+
 };
 
 #ifdef BUILD_AS_PLUGINS
