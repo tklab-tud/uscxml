@@ -114,9 +114,9 @@ void XmlBridgeInvoker::send(const SendRequest& req) {
 			/* When sending namelist from XPath variables, data is interpreted as nodes (data.node) */
 			std::map<std::string, Data>::const_iterator namelistIter = req.namelist.begin();
 			while(namelistIter != req.namelist.end()) {
-				std::list<Data>::const_iterator nodesIter = namelistIter->second.array.begin();
-				while(nodesIter != namelistIter->second.array.end()) {
-					_itemsRead.push_back(nodesIter->node.getNodeValue());
+                Arabica::XPath::NodeSet<std::string>::const_iterator nodesIter = namelistIter->second.nodes.begin();
+                while(nodesIter != namelistIter->second.nodes.end()) {
+                    _itemsRead.push_back(nodesIter->getNodeValue());
 					nodesIter++;
 				}
 				namelistIter++;
@@ -151,10 +151,10 @@ void XmlBridgeInvoker::send(const SendRequest& req) {
 			std::stringstream ss;
 			std::map<std::string, Data>::const_iterator namelistIter = req.namelist.begin();
 			while(namelistIter != req.namelist.end()) {
-				/* When sending namelist from _datamodel variables, data is interpreted as nodes (data.node) */
-				std::list<Data>::const_iterator nodesIter = namelistIter->second.array.begin();
-				while(nodesIter != namelistIter->second.array.end()) {
-					ss << nodesIter->node.getNodeValue();
+				/* When sending namelist from _datamodel variables, data is interpreted as nodes (data.node) */                
+                Arabica::XPath::NodeSet<std::string>::const_iterator nodesIter = namelistIter->second.nodes.begin();
+                while(nodesIter != namelistIter->second.nodes.end()) {
+                    ss << nodesIter->getNodeValue();
 					nodesIter++;
 				}
 				namelistIter++;
@@ -223,7 +223,6 @@ bool XmlBridgeInvoker::buildMESreq(request *myreq, bool newreq) {
 		return false;
 	}
 
-
 	{
 		tthread::lock_guard<tthread::mutex> queuelock(queueMUTEX);
 		if (newreq) {
@@ -261,7 +260,6 @@ bool XmlBridgeInvoker::buildMESreq(request *myreq, bool newreq) {
 		myevent.eventType = Event::EXTERNAL;
 		myevent.hideSendId = false;
 
-		/* I dati inviati dal MES all'SCXML sono sempre mappati nella struttura dati 'node' dell'evento */
 		/* Nel caso della lettura vado a scrivere gli indici
 		   Nel caso della scrittura vado a scrivere i valori e gli indici */
 
@@ -269,27 +267,19 @@ bool XmlBridgeInvoker::buildMESreq(request *myreq, bool newreq) {
 			/* scrittura */
 			std::list<std::string>::const_iterator valueiter;
 			std::list<std::pair<std::string,std::string> >::const_iterator indexiter;
-			myevent.data.node = _interpreter->getDocument().createElement("data");
 			for (valueiter = _reqQueue.back()->wdata.begin(), indexiter = _reqQueue.back()->indexes.begin();
-			     valueiter!= _reqQueue.back()->wdata.end(); valueiter++, indexiter++) {
-				Arabica::DOM::Element<std::string> eventMESElem = _interpreter->getDocument().createElement("value");
-				Arabica::DOM::Text<std::string> textNode = _interpreter->getDocument().createTextNode(*valueiter);
-				eventMESElem.setAttribute("itemi", indexiter->first);
-				eventMESElem.setAttribute("var", indexiter->second);
-				eventMESElem.appendChild(textNode);
-				myevent.data.node.appendChild(eventMESElem);
+                 valueiter != _reqQueue.back()->wdata.end(), indexiter != _reqQueue.back()->indexes.end();
+                 valueiter++, indexiter++) {
+                myevent.data.array.push_back(Data(*valueiter));
+                myevent.data.mylist.push_back(*indexiter);
 			}
 		} else {
 			/* lettura */
 			std::list<std::pair<std::string,std::string> >::const_iterator indexiter;
-			myevent.data.node = _interpreter->getDocument().createElement("data");
 			for (indexiter = _reqQueue.back()->indexes.begin();
-			     indexiter!=_reqQueue.back()->indexes.end(); indexiter++) {
-				Arabica::DOM::Element<std::string> eventMESElem = _interpreter->getDocument().createElement("index");
-				Arabica::DOM::Text<std::string> textNode = _interpreter->getDocument().createTextNode(indexiter->second);
-				eventMESElem.setAttribute("itemi", indexiter->first);
-				eventMESElem.appendChild(textNode);
-				myevent.data.node.appendChild(eventMESElem);
+                 indexiter!=_reqQueue.back()->indexes.end();
+                 indexiter++) {
+                myevent.data.mylist.push_back(*indexiter);
 			}
 		}
 	}
@@ -315,6 +305,7 @@ void XmlBridgeInvoker::buildTIMreply(const char *reply_raw_data)
 	Arabica::SAX::InputSource<std::string> inputSource;
 	inputSource.setByteStream(iss);
 
+    _domParser.reset();
 	if (!(_domParser.parse(inputSource))) {
 		LOG(ERROR) << "Failed parsing TIM XML reply string for command " << _CMDid;
 		LOG(ERROR) << "Errors " << _errorHandler.errors();;
@@ -334,7 +325,7 @@ void XmlBridgeInvoker::buildTIMreply(const char *reply_raw_data)
 	}
 	Event myevent(ss.str(), Event::EXTERNAL);
 	/* I dati inviati dal SCXML all'SCXML sono sempre mappati nella struttura dati 'dom' dell'evento */
-	myevent.setDOM(_domParser.getDocument().getDocumentElement());
+    myevent.setDOM(_domParser.getDocument().getDocumentElement());
 
 	LOG(INFO) << _invokeId << " sending event to SCXML " << ss.str();
 

@@ -186,9 +186,9 @@ void XPathDataModel::setEvent(const Event& event) {
 				eventNamelistElem.appendChild(eventNamelistText);
 				eventDataElem.appendChild(eventNamelistElem);
 			} else if (namelistIter->second.type == Data::INTERPRETED) {
-				std::map<std::string, Data>::const_iterator nodesIter = namelistIter->second.compound.begin();
-				while(nodesIter != namelistIter->second.compound.end()) {
-					eventDataElem.appendChild(nodesIter->second.node);
+                Arabica::XPath::NodeSet<std::string>::const_iterator nodesIter = namelistIter->second.nodes.begin();
+                while(nodesIter != namelistIter->second.nodes.end()) {
+                    eventDataElem.appendChild(*nodesIter);
 					nodesIter++;
 				}
 			}
@@ -210,26 +210,34 @@ void XPathDataModel::setEvent(const Event& event) {
 		Node<std::string> importedNode = _doc.importNode(event.dom, true);
 		eventDataElem.appendChild(importedNode);
 	}
-	if (event.data.array.size() == 1) {
-		Text<std::string> textNode = _doc.createTextNode(event.data.array.front().atom);
-		eventDataElem.appendChild(textNode);
-	} else if (event.data.array.size() > 1) {
-		std::list<uscxml::Data>::const_iterator ptr;
-		unsigned int i;
-
-		for( i = 0 , ptr = event.data.array.begin() ;
-		     (i < event.data.array.size()) && (ptr != event.data.array.end());
-		     i++ , ptr++ )
-		{
-			Element<std::string> eventMESElem = _doc.createElement("data");
-			Text<std::string> textNode = _doc.createTextNode(ptr->atom);
-			std::stringstream ss;
-			ss << i;
-			eventMESElem.setAttribute("id", ss.str());
-			eventMESElem.appendChild(textNode);
-			eventDataElem.appendChild(eventMESElem);
-		}
-	}
+    if (event.data.mylist.size() > 0) {
+        /* scrittura */
+        if (event.data.array.size() > 0) {
+            std::list<std::pair<std::string,std::string> >::const_iterator indexiter;
+            std::list<Data>::const_iterator valueiter;
+            for (indexiter = event.data.mylist.begin(), valueiter = event.data.array.begin();
+                 indexiter != event.data.mylist.end(), valueiter != event.data.array.end();
+                 indexiter++, valueiter++) {
+                Arabica::DOM::Element<std::string> eventMESElem = _doc.createElement("value");
+                Arabica::DOM::Text<std::string> textNode = _doc.createTextNode(valueiter->atom);
+                eventMESElem.setAttribute("itemi", indexiter->first);
+                eventMESElem.setAttribute("var", indexiter->second);
+                eventMESElem.appendChild(textNode);
+                eventDataElem.appendChild(eventMESElem);
+            }
+        /* lettura */
+        } else {
+            std::list<std::pair<std::string,std::string> >::const_iterator indexiter;
+            for (indexiter = event.data.mylist.begin();
+                 indexiter != event.data.mylist.end(); indexiter++) {
+                Arabica::DOM::Element<std::string> eventMESElem = _doc.createElement("index");
+                Arabica::DOM::Text<std::string> textNode = _doc.createTextNode(indexiter->second);
+                eventMESElem.setAttribute("itemi", indexiter->first);
+                eventMESElem.appendChild(textNode);
+                eventDataElem.appendChild(eventMESElem);
+            }
+        }
+    }
 	if (event.data.node) {
 		for (unsigned int i = 0; i < event.data.node.getChildNodes().getLength(); i++)
 			eventDataElem.appendChild( _doc.importNode(event.data.node.getChildNodes().item(i), true));
@@ -274,13 +282,8 @@ Data XPathDataModel::getStringAsData(const std::string& content) {
 	case STRING:
 		ss << result.asString();
 		break;
-	case NODE_SET:
-		NodeSet<std::string>::const_iterator nodesiter;
-		for (nodesiter = result.asNodeSet().begin(); nodesiter != result.asNodeSet().end(); nodesiter++) {
-			Data tmpdata;
-			tmpdata.node = *nodesiter;
-			data.array.push_back(tmpdata);
-		}
+    case NODE_SET:
+        data.nodes.push_back(result.asNodeSet());
 		data.type = Data::INTERPRETED;
 		return data;
 	}

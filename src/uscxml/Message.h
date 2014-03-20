@@ -28,6 +28,7 @@
 
 #include <DOM/Document.hpp>
 #include <DOM/io/Stream.hpp>
+#include <XPath/XPath.hpp>
 
 #include <boost/shared_ptr.hpp>
 #include <boost/lexical_cast.hpp>
@@ -145,7 +146,7 @@ public:
 			return false;
 		if (other.compound != compound)
 			return false;
-		if (other.node != node)
+        if (other.nodes.size() != nodes.size())
 			return false;
 
 		return true;
@@ -210,9 +211,11 @@ public:
 protected:
 #endif
 
-	Arabica::DOM::Node<std::string> node;
+	Arabica::DOM::Node<std::string> node;    
+	Arabica::XPath::NodeSet<std::string> nodes;
 	std::map<std::string, Data> compound;
 	std::list<Data> array;
+	std::list<std::pair<std::string,std::string> > mylist;
 	std::string atom;
 	boost::shared_ptr<Blob> binary;
 	Type type;
