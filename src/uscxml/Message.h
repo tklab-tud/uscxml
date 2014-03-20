@@ -146,7 +146,7 @@ public:
 			return false;
 		if (other.compound != compound)
 			return false;
-        if (other.nodes.size() != nodes.size())
+		if (other.node != node)
 			return false;
 
 		return true;

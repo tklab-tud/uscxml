@@ -213,7 +213,7 @@ void BasicHTTPIOProcessor::send(const SendRequest& req) {
 	if (req.content.size() > 0) {
 		char* valueCStr = evhttp_encode_uri(req.content.c_str());
 		kvps << kvpSeperator << keyCStr << "=" << valueCStr;
-        free(valueCStr);
+		free(valueCStr);
 		kvpSeperator = "&";
 	} else if (req.dom) {
 		std::stringstream xmlStream;
