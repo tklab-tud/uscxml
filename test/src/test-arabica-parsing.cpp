@@ -14,12 +14,12 @@ using namespace Arabica::DOM;
 
 int main(int argc, char** argv) {
 
+    int age2;
+    std::cin >> age2;
+
     Arabica::SAX2DOM::Parser<std::string> domParser;
     Arabica::SAX::CatchErrorHandler<std::string> errorHandler;
     domParser.setErrorHandler(errorHandler);
-
-    int age2;
-    std::cin >> age2;
 
         for (int j=0; j<100; j++) {
         {
