@@ -120,7 +120,7 @@ protected:
 	int _socketfd;			/**< Socket descriptor del client TIM */
 	struct addrinfo *_servinfo;	/**< Informazioni di sessione del server TIM */
 
-	std::list<const request *> _reqQueue;		/**< Lista di richieste arrivate all'invoker. La prima è la più recente, l'ultima è quella gestita attualmente */
+	std::list<const request *> _reqQueue;	/**< Lista di richieste arrivate all'invoker. La prima è la più recente, l'ultima è quella gestita attualmente */
 	std::list<std::clock_t> _reqClock;	/**< Lista del tempi di arrivo (espressi in clock di sistema) per tutte le richieste accodate. Le richieste giunte a coda vuota hanno il val. impostato a 0 */
 	bool _lastWrite;			/**< Indica se l'ultima richiesta gestita era in lettura */
 
