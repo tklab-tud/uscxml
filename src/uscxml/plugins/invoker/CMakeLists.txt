@@ -79,6 +79,7 @@ endif()
 
 # System invoker to open a native command
 
+if(0)
 file(GLOB_RECURSE SYSTEM_INVOKER
 	system/*.cpp
 	system/*.h
@@ -93,6 +94,7 @@ if (BUILD_AS_PLUGINS)
 	set_target_properties(invoker_system PROPERTIES FOLDER "Plugin Invoker")
 else()
 	list (APPEND USCXML_FILES ${SYSTEM_INVOKER})
+endif()
 endif()
 
 

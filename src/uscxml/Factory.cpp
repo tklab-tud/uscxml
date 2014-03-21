@@ -37,7 +37,9 @@
 //# include "uscxml/plugins/invoker/http/HTTPServletInvoker.h"
 //# include "uscxml/plugins/invoker/heartbeat/HeartbeatInvoker.h"
 //# include "uscxml/plugins/invoker/filesystem/dirmon/DirMonInvoker.h"
+#if 0
 # include "uscxml/plugins/invoker/system/XmlBridgeInvoker.h"
+#endif
 //# include "uscxml/plugins/invoker/xhtml/XHTMLInvoker.h"
 //# include "uscxml/plugins/invoker/imap/IMAPInvoker.h"
 
@@ -310,10 +312,12 @@ Factory::Factory() {
 		registerInvoker(invoker);
 	}
 #endif
+#if 0
 	{
 		XmlBridgeInvoker* invoker = new XmlBridgeInvoker();
 		registerInvoker(invoker);
 	}
+#endif
 	{
 		BasicHTTPIOProcessor* ioProcessor = new BasicHTTPIOProcessor();
 		registerIOProcessor(ioProcessor);

@@ -14,9 +14,13 @@ using namespace Arabica::DOM;
 
 int main(int argc, char** argv) {
 
+    int age2;
+    std::cin >> age2;
+
+    for (int j=0; j<100; j++) {
 	{
 		std::stringstream* ss = new std::stringstream();
-		(*ss) << "<root>\n<![CDATA[\n< \" ' < > &\n]]>\n</root>";
+        (*ss) << "<root>\n<![CDATA[\n< \" ' < > &\n]]>\n</root>";
 		// we need an auto_ptr for arabica to assume ownership
 		std::auto_ptr<std::istream> ssPtr(ss);
 		Arabica::SAX::InputSource<std::string> inputSource(ssPtr);
@@ -34,7 +38,7 @@ int main(int argc, char** argv) {
 	}
 	{
 		Arabica::SAX::InputSource<std::string> inputSource;
-		inputSource.setSystemId("/Users/sradomski/Documents/TK/Code/uscxml/test/samples/uscxml/arabica/test-arabica-parsing.xml");
+        inputSource.setSystemId("/home/sunkiss/_Projects/uscxml/autoware_tim_test.scxml.xml");
 
 		Arabica::SAX2DOM::Parser<std::string> domParser;
 		Arabica::SAX::CatchErrorHandler<std::string> errorHandler;
@@ -45,6 +49,9 @@ int main(int argc, char** argv) {
 			return -1;
 		}
 		std::cout << domParser.getDocument() << std::endl;
-	}
+    }
+    }
 
+    int age;
+    std::cin >> age;
 }
