@@ -114,9 +114,9 @@ void XmlBridgeInvoker::send(const SendRequest& req) {
 			/* When sending namelist from XPath variables, data is interpreted as nodes (data.node) */
 			std::map<std::string, Data>::const_iterator namelistIter = req.namelist.begin();
 			while(namelistIter != req.namelist.end()) {
-                Arabica::XPath::NodeSet<std::string>::const_iterator nodesIter = namelistIter->second.nodes.begin();
-                while(nodesIter != namelistIter->second.nodes.end()) {
-                    _itemsRead.push_back(nodesIter->getNodeValue());
+				Arabica::XPath::NodeSet<std::string>::const_iterator nodesIter = namelistIter->second.nodes.begin();
+				while(nodesIter != namelistIter->second.nodes.end()) {
+					_itemsRead.push_back(nodesIter->getNodeValue());
 					nodesIter++;
 				}
 				namelistIter++;
@@ -125,7 +125,7 @@ void XmlBridgeInvoker::send(const SendRequest& req) {
 				LOG(ERROR) << _invokeId << ": SCXML have parsed 0 items in this iteration!";
 				buildException(SCXML_ERROR);
 				return; // <<<<<<<<< RETURN HERE!;
-            } else if (_itemsRead.size() > _reqQueue.back()->indexes.size()) {
+			} else if (_itemsRead.size() > _reqQueue.back()->indexes.size()) {
 				LOG(ERROR) << _invokeId << " parsed too many fields!";
 				buildException(SCXML_ERROR);
 				return; // <<<<<<<<< RETURN HERE!
@@ -134,27 +134,27 @@ void XmlBridgeInvoker::send(const SendRequest& req) {
 								_reqQueue.back()->addr,
 								_reqQueue.back()->len,
 								_itemsRead);
-                _itemsRead.clear();
+				_itemsRead.clear();
 			} else {
-                /* It means this is not the last iteration */
+				/* It means this is not the last iteration */
 				LOG(INFO) << _invokeId << " parsed " << _itemsRead.size() << " fields of "
 					  << _reqQueue.back()->indexes.size() << " requested";
 				return; // <<<<<<<<< RETURN HERE!
 			}
-		/* WRITE */
+			/* WRITE */
 		} else {
 			_mesbufferer.bufferMESreplyWRITE(_reqQueue.back()->sock, _CMDid);
 		}
-	/* SCXML -> TIM */
+		/* SCXML -> TIM */
 	} else if (req.name.substr(1, 3) == SCXML2TIM) {
 		if (!req.namelist.empty()) {
 			std::stringstream ss;
 			std::map<std::string, Data>::const_iterator namelistIter = req.namelist.begin();
 			while(namelistIter != req.namelist.end()) {
-				/* When sending namelist from _datamodel variables, data is interpreted as nodes (data.node) */                
-                Arabica::XPath::NodeSet<std::string>::const_iterator nodesIter = namelistIter->second.nodes.begin();
-                while(nodesIter != namelistIter->second.nodes.end()) {
-                    ss << nodesIter->getNodeValue();
+				/* When sending namelist from _datamodel variables, data is interpreted as nodes (data.node) */
+				Arabica::XPath::NodeSet<std::string>::const_iterator nodesIter = namelistIter->second.nodes.begin();
+				while(nodesIter != namelistIter->second.nodes.end()) {
+					ss << nodesIter->getNodeValue();
 					nodesIter++;
 				}
 				namelistIter++;
@@ -176,7 +176,7 @@ void XmlBridgeInvoker::send(const SendRequest& req) {
 		return;  // <<<<<<<<< RETURN HERE!
 
 	} else if (req.name.substr(1, 3) == SCXML2MES_ERR) {
-        LOG(INFO) << _invokeId << " error sendid " << req.sendid;
+		LOG(INFO) << _invokeId << " error sendid " << req.sendid;
 		_mesbufferer.bufferMESerror(_reqQueue.back()->sock, _CMDid);
 	} else {
 		LOG(ERROR) << "XmlBridgeInvoker: received an unsupported event type from Interpreter, discarding request\n"
@@ -213,7 +213,7 @@ void XmlBridgeInvoker::send(const SendRequest& req) {
  * @param myreq     La richiesta in ingresso
  * @param newreq	Indica se si deve analizzare la richiesta presente nel parametro 'myreq' o processare le richieste in coda
  */
-bool XmlBridgeInvoker::buildMESreq(request *myreq, bool newreq) {
+bool XmlBridgeInvoker::buildMESreq(const request *myreq, bool newreq) {
 	/* verifico la richiesta in ingresso */
 	if (newreq && myreq == NULL) {
 		LOG(ERROR) << "NULL request received by " << _invokeId;
@@ -268,18 +268,18 @@ bool XmlBridgeInvoker::buildMESreq(request *myreq, bool newreq) {
 			std::list<std::string>::const_iterator valueiter;
 			std::list<std::pair<std::string,std::string> >::const_iterator indexiter;
 			for (valueiter = _reqQueue.back()->wdata.begin(), indexiter = _reqQueue.back()->indexes.begin();
-                 valueiter != _reqQueue.back()->wdata.end(), indexiter != _reqQueue.back()->indexes.end();
-                 valueiter++, indexiter++) {
-                myevent.data.array.push_back(Data(*valueiter));
-                myevent.data.mylist.push_back(*indexiter);
+			     valueiter != _reqQueue.back()->wdata.end(), indexiter != _reqQueue.back()->indexes.end();
+			     valueiter++, indexiter++) {
+				myevent.data.array.push_back(Data(*valueiter));
+				myevent.data.mylist.push_back(*indexiter);
 			}
 		} else {
 			/* lettura */
 			std::list<std::pair<std::string,std::string> >::const_iterator indexiter;
 			for (indexiter = _reqQueue.back()->indexes.begin();
-                 indexiter!=_reqQueue.back()->indexes.end();
-                 indexiter++) {
-                myevent.data.mylist.push_back(*indexiter);
+			     indexiter!=_reqQueue.back()->indexes.end();
+			     indexiter++) {
+				myevent.data.mylist.push_back(*indexiter);
 			}
 		}
 	}
@@ -305,7 +305,7 @@ void XmlBridgeInvoker::buildTIMreply(const char *reply_raw_data)
 	Arabica::SAX::InputSource<std::string> inputSource;
 	inputSource.setByteStream(iss);
 
-    _domParser.reset();
+	_domParser.reset();
 	if (!(_domParser.parse(inputSource))) {
 		LOG(ERROR) << "Failed parsing TIM XML reply string for command " << _CMDid;
 		LOG(ERROR) << "Errors " << _errorHandler.errors();;
@@ -325,7 +325,7 @@ void XmlBridgeInvoker::buildTIMreply(const char *reply_raw_data)
 	}
 	Event myevent(ss.str(), Event::EXTERNAL);
 	/* I dati inviati dal SCXML all'SCXML sono sempre mappati nella struttura dati 'dom' dell'evento */
-    myevent.setDOM(_domParser.getDocument().getDocumentElement());
+	myevent.setDOM(_domParser.getDocument().getDocumentElement());
 
 	LOG(INFO) << _invokeId << " sending event to SCXML " << ss.str();
 
@@ -432,7 +432,7 @@ void XmlBridgeInvoker::client(const std::string &cmdframe) {
 	{
 		tthread::lock_guard<tthread::mutex> queuelock(queueMUTEX);
 		reuse = (_reqClock.back() != 0 && !_reqQueue.back()->write && !_lastWrite &&
-			((std::clock() - _reqClock.back()) < (MAXQUEUEDELAY * CLOCKS_PER_SEC)));
+					     ((std::clock() - _reqClock.back()) < (MAXQUEUEDELAY * CLOCKS_PER_SEC)));
 	}
 
 	if (reuse) {

@@ -43,7 +43,7 @@ namespace uscxml {
 #define MAXTIMCONN		6   /**< Massimo numero di connessioni che può gestire il sistema TIM */
 #define MAXQUEUEDELAY		2   /**< Tempo massimo per cui una risposta del TIM può essere riutilizzata per le richieste successive */
 #define MAXQUEUESIZE		5   /**< Massimo numero di richiesta che posso accodare per un comando TIM */
-#define MAXTIMCONNDELAY		5
+#define MAXTIMCONNDELAY		5   /**< Timeout di default per le chiamate di rete bloccanti su socket TCP lato TIM */
 
 /**
  * @brief Enum che elenca i tipi di eccezzione che l'invoker può generare
@@ -92,7 +92,7 @@ public:
 	void invoke(const InvokeRequest& req);
 	Data getDataModelVariables();
 
-	bool buildMESreq(request *myreq, bool newreq);
+	bool buildMESreq(const request *myreq, bool newreq);
 
 	~XmlBridgeInvoker();
 
@@ -120,15 +120,15 @@ protected:
 	int _socketfd;			/**< Socket descriptor del client TIM */
 	struct addrinfo *_servinfo;	/**< Informazioni di sessione del server TIM */
 
-	std::list<request *> _reqQueue;   /**< Lista di richieste arrivate all'invoker. La prima è la più recente, l'ultima è quella gestita attualmente */
-	std::list<std::clock_t> _reqClock;  /**< Lista del tempi di arrivo (espressi in clock di sistema) per tutte le richieste accodate. Le richieste giunte a coda vuota hanno il val. impostato a 0 */
-	bool _lastWrite;                    /**< Indica se l'ultima richiesta gestita era in lettura */
+	std::list<request *> _reqQueue;		/**< Lista di richieste arrivate all'invoker. La prima è la più recente, l'ultima è quella gestita attualmente */
+	std::list<std::clock_t> _reqClock;	/**< Lista del tempi di arrivo (espressi in clock di sistema) per tutte le richieste accodate. Le richieste giunte a coda vuota hanno il val. impostato a 0 */
+	bool _lastWrite;			/**< Indica se l'ultima richiesta gestita era in lettura */
 
-	tthread::mutex queueMUTEX;          /**< Mutex di accesso alla coda delle richieste */
+	tthread::mutex queueMUTEX;		/**< Mutex di accesso alla coda delle richieste */
 
-    static unsigned int timconnCount;               /**< Contatore statico delle connessioni attualmente attive lato TIM */
-    static tthread::mutex timconnMUTEX;                 /**< Mutex che controlla l'accesso al contatore delle connessioni */
-    static tthread::condition_variable timconnFLAG;     /**< Condition variable per sincronizzare l'acquisizione e rilascio di socket lato TIM */
+	static unsigned int timconnCount;               /**< Contatore statico delle connessioni attualmente attive lato TIM */
+	static tthread::mutex timconnMUTEX;                 /**< Mutex che controlla l'accesso al contatore delle connessioni */
+	static tthread::condition_variable timconnFLAG;     /**< Condition variable per sincronizzare l'acquisizione e rilascio di socket lato TIM */
 
 };
 
