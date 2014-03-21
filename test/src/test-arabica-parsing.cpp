@@ -17,9 +17,10 @@ int main(int argc, char** argv) {
     int age2;
     std::cin >> age2;
 
-    Arabica::SAX2DOM::Parser<std::string> domParser;
-    Arabica::SAX::CatchErrorHandler<std::string> errorHandler;
-    domParser.setErrorHandler(errorHandler);
+    {
+        Arabica::SAX2DOM::Parser<std::string> domParser;
+        Arabica::SAX::CatchErrorHandler<std::string> errorHandler;
+        domParser.setErrorHandler(errorHandler);
 
         for (int j=0; j<100; j++) {
         {
@@ -47,6 +48,7 @@ int main(int argc, char** argv) {
             std::cout << domParser.getDocument() << std::endl;
         }
         }
+    }
 
     int age;
     std::cin >> age;
