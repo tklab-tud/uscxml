@@ -33,7 +33,7 @@ XmlBridgeInvoker::~XmlBridgeInvoker()
 	LOG(INFO) << "Stopping " << _invokeId;
 
 	if (!_reqQueue.empty()) {
-		std::list<request *>::const_iterator reqiter;
+		std::list<const request *>::const_iterator reqiter;
 		for (reqiter = _reqQueue.begin(); reqiter != _reqQueue.end(); reqiter++)
 			delete (*reqiter);
 	}
