@@ -50,8 +50,8 @@ boost::shared_ptr<DataModelImpl> XPathDataModel::create(InterpreterImpl* interpr
 	boost::shared_ptr<XPathDataModel> dm = boost::shared_ptr<XPathDataModel>(new XPathDataModel());
 	dm->_interpreter = interpreter;
 
-	//	dm->_xpath->setVariableCompileTimeResolver(_varCTResolver);
-	//	dm->_xpath->setNamespaceContext(interpreter->getNSContext());
+//	dm->_xpath->setVariableCompileTimeResolver(_varCTResolver);
+//	dm->_xpath->setNamespaceContext(interpreter->getNSContext());
 
 	dm->_funcResolver.setInterpreter(interpreter);
 	dm->_xpath.setNamespaceContext(interpreter->getNSContext());
@@ -299,7 +299,7 @@ bool XPathDataModel::validate(const std::string& location, const std::string& sc
 }
 
 uint32_t XPathDataModel::getLength(const std::string& expr) {
-	//	std::cout << _datamodel << std::endl;
+//	std::cout << _datamodel << std::endl;
 	XPathValue<std::string> result = _xpath.evaluate_expr(expr, _doc);
 	switch(result.type()) {
 	case NUMBER:
@@ -317,10 +317,10 @@ uint32_t XPathDataModel::getLength(const std::string& expr) {
 }
 
 void XPathDataModel::setForeach(const std::string& item,
-				const std::string& array,
-				const std::string& index,
-				uint32_t iteration) {
-	/* resolve the array expression in nodeset (pointers to datamodel) */
+                                const std::string& array,
+                                const std::string& index,
+                                uint32_t iteration) {
+
 	XPathValue<std::string> arrayResult = _xpath.evaluate_expr(array, _doc);
 	assert(arrayResult.type() == NODE_SET);
 
@@ -332,6 +332,7 @@ void XPathDataModel::setForeach(const std::string& item,
 #endif
 
 	assert(arrayResult.asNodeSet().size() >= iteration);
+
 
 	NodeSet<std::string> arrayNodeSet;
 	arrayNodeSet.push_back(arrayResult.asNodeSet()[iteration].cloneNode(true));
@@ -367,9 +368,11 @@ void XPathDataModel::setForeach(const std::string& item,
 		assign(indexResult, indexNodeSet, Element<std::string>());
 	}
 
+
 #if 0
 	std::cout << _datamodel << std::endl << std::endl;
 #endif
+
 
 }
 
@@ -382,7 +385,7 @@ bool XPathDataModel::isValidIdentifier(const std::string& identifier) {
 
 
 void XPathDataModel::eval(const Arabica::DOM::Element<std::string>& scriptElem,
-			  const std::string& expr) {
+                          const std::string& expr) {
 	XPathValue<std::string> result = _xpath.evaluate_expr(expr, _doc);
 }
 
@@ -399,6 +402,7 @@ bool XPathDataModel::evalAsBool(const std::string& expr) {
 }
 
 bool XPathDataModel::evalAsBool(const Arabica::DOM::Node<std::string>& node, const std::string& expr) {
+//	std::cout << std::endl << evalAsString(expr);
 	XPathValue<std::string> result;
 	try {
 		result = _xpath.evaluate_expr(expr, _doc);
@@ -455,8 +459,8 @@ double XPathDataModel::evalAsNumber(const std::string& expr) {
 }
 
 void XPathDataModel::assign(const Element<std::string>& assignElem,
-			    const Node<std::string>& node,
-			    const std::string& content) {
+                            const Node<std::string>& node,
+                            const std::string& content) {
 	std::string location;
 	if (HAS_ATTR(assignElem, "id")) {
 		location = ATTR(assignElem, "id");
@@ -516,13 +520,15 @@ void XPathDataModel::assign(const Element<std::string>& assignElem,
 	} else {
 		LOG(ERROR) << "assign element has no content";
 	}
+
+//	std::cout << _datamodel << std::endl;
 }
 
 void XPathDataModel::assign(const std::string& location, const Data& data) {
 	XPathValue<std::string> locationResult = _xpath.evaluate_expr(location, _doc);
 	NodeSet<std::string> dataNodeSet = dataToNodeSet(data);
 	assign(locationResult, dataNodeSet, Element<std::string>());
-	//	std::cout << _datamodel << std::endl;
+//	std::cout << _datamodel << std::endl;
 }
 
 NodeSet<std::string> XPathDataModel::dataToNodeSet(const Data& data) {
@@ -534,8 +540,8 @@ NodeSet<std::string> XPathDataModel::dataToNodeSet(const Data& data) {
 }
 
 void XPathDataModel::init(const Element<std::string>& dataElem,
-			  const Node<std::string>& node,
-			  const std::string& content) {
+                          const Node<std::string>& node,
+                          const std::string& content) {
 	std::string location;
 	if (HAS_ATTR(dataElem, "id")) {
 		location = ATTR(dataElem, "id");
@@ -580,6 +586,8 @@ void XPathDataModel::init(const Element<std::string>& dataElem,
 		} catch (SyntaxException e) {
 			throw Event("error.execution", Event::PLATFORM);
 		}
+	} else {
+		LOG(ERROR) << "data element has no content";
 	}
 	_datamodel.appendChild(container);
 
@@ -601,8 +609,8 @@ void XPathDataModel::init(const std::string& location, const Data& data) {
 
 
 void XPathDataModel::assign(const XPathValue<std::string>& key,
-			    const XPathValue<std::string>& value,
-			    const Element<std::string>& assignElem) {
+                            const XPathValue<std::string>& value,
+                            const Element<std::string>& assignElem) {
 	switch (key.type()) {
 	case NODE_SET:
 		if (key.asNodeSet().size() == 0) {
@@ -635,8 +643,8 @@ void XPathDataModel::assign(const XPathValue<std::string>& key,
 }
 
 void XPathDataModel::assign(const XPathValue<std::string>& key,
-			    const NodeSet<std::string>& value,
-			    const Element<std::string>& assignElem) {
+                            const NodeSet<std::string>& value,
+                            const Element<std::string>& assignElem) {
 	if (value.size() == 0 || !value[0])
 		return;
 	switch (key.type()) {
@@ -653,8 +661,8 @@ void XPathDataModel::assign(const XPathValue<std::string>& key,
 }
 
 void XPathDataModel::assign(const NodeSet<std::string>& key,
-			    const std::string& value,
-			    const Element<std::string>& assignElem) {
+                            const std::string& value,
+                            const Element<std::string>& assignElem) {
 	if (key.size() == 0)
 		return;
 	for (int i = 0; i < key.size(); i++) {
@@ -695,19 +703,19 @@ void XPathDataModel::assign(const NodeSet<std::string>& key,
 }
 
 void XPathDataModel::assign(const NodeSet<std::string>& key,
-			    const double value,
-			    const Element<std::string>& assignElem) {
+                            const double value,
+                            const Element<std::string>& assignElem) {
 	assign(key, toStr(value), assignElem);
 }
 
 void XPathDataModel::assign(const NodeSet<std::string>& key,
-			    const bool value,
-			    const Element<std::string>& assignElem) {
+                            const bool value,
+                            const Element<std::string>& assignElem) {
 }
 
 void XPathDataModel::assign(const NodeSet<std::string>& key,
-			    const NodeSet<std::string>& value,
-			    const Element<std::string>& assignElem) {
+                            const NodeSet<std::string>& value,
+                            const Element<std::string>& assignElem) {
 	if (key.size() == 0)
 		return;
 	if (value.size() == 0 || !value[0])
@@ -719,16 +727,16 @@ void XPathDataModel::assign(const NodeSet<std::string>& key,
 			assign(Element<std::string>(key[i]), value, assignElem);
 			break;
 		default:
-				//			std::cout << key[i].getNodeType() << std::endl;
-				throw Event("error.execution", Event::PLATFORM);
-				break;
-			}
+//			std::cout << key[i].getNodeType() << std::endl;
+			throw Event("error.execution", Event::PLATFORM);
+			break;
+		}
 	}
 }
 
 void XPathDataModel::assign(const Element<std::string>& key,
-			    const NodeSet<std::string>& value,
-			    const Element<std::string>& assignElem) {
+                            const NodeSet<std::string>& value,
+                            const Element<std::string>& assignElem) {
 	Element<std::string> element(key);
 	if (value.size() == 0 || !value[0])
 		return;
@@ -799,12 +807,12 @@ void XPathDataModel::assign(const Element<std::string>& key,
 
 XPathValue<std::string>
 NodeSetVariableResolver::resolveVariable(const std::string& namepaceUri,
-					 const std::string& name) const {
+        const std::string& name) const {
 	std::map<std::string, NodeSet<std::string> >::const_iterator n = _variables.find(name);
 	if(n == _variables.end()) {
 		throw Event("error.execution");
 	}
-#if 0
+#if VERBOSE
 	std::cout << std::endl << "Getting " << name << ":" << std::endl;
 	for (int i = 0; i < n->second.size(); i++) {
 		std::cout << n->second[i].getNodeType() << " | " << n->second[i] << std::endl;
@@ -815,7 +823,7 @@ NodeSetVariableResolver::resolveVariable(const std::string& namepaceUri,
 }
 
 void NodeSetVariableResolver::setVariable(const std::string& name, const NodeSet<std::string>& value) {
-#if 0
+#if VERBOSE
 	std::cout << std::endl << "Setting " << name << ":" << std::endl;
 	for (int i = 0; i < value.size(); i++) {
 		std::cout << value[i].getNodeType() << " | " << value[i] << std::endl;
@@ -849,13 +857,10 @@ bool NodeSetVariableResolver::isDeclared(const std::string& name) {
 
 XPathFunction<std::string>*
 XPathFunctionResolver::resolveFunction(const std::string& namespace_uri,
-				       const std::string& name,
-				       const std::vector<XPathExpression<std::string> >& argExprs) const {
+                                       const std::string& name,
+                                       const std::vector<XPathExpression<std::string> >& argExprs) const {
 	if (iequals(name, "in")) {
 		return new XPathFunctionIn(1, -1, argExprs, _interpreter);
-	}
-	if (iequals(name, "tokenize")) {
-		return new XPathFunctionIn(2, -1, argExprs, _interpreter);
 	}
 	return _xpathFuncRes.resolveFunction(namespace_uri, name, argExprs);
 }
@@ -863,12 +868,11 @@ XPathFunctionResolver::resolveFunction(const std::string& namespace_uri,
 std::vector<std::pair<std::string, std::string> > XPathFunctionResolver::validNames() const {
 	std::vector<std::pair<std::string, std::string> > names = _xpathFuncRes.validNames();
 	names.push_back(std::make_pair("", "In"));
-	names.push_back(std::make_pair("", "tokenize"));
 	return names;
 }
 
 bool XPathFunctionIn::doEvaluate(const Node<std::string>& context,
-				 const ExecutionContext<std::string>& executionContext) const {
+                                 const ExecutionContext<std::string>& executionContext) const {
 	for (int i = 0; i < argCount(); i++) {
 		XPathValue<std::string> stateName = arg(i, context, executionContext);
 		if (stateName.type() == STRING) {
@@ -878,38 +882,6 @@ bool XPathFunctionIn::doEvaluate(const Node<std::string>& context,
 		}
 	}
 	return true;
-}
-
-Arabica::XPath::NodeSet<std::string> XPathFunctionTokenize::doEvaluate(const Node<std::string>& context,
-								       const ExecutionContext<std::string>& executionContext) const {
-
-	Arabica::XPath::NodeSet<std::string> tokens(true);
-
-	if (argCount() != 2)
-		return tokens;
-
-	XPathValue<std::string> firstArg = arg(1, context, executionContext);
-	if (firstArg.type() != STRING)
-		return tokens;
-
-	std::string mesData = firstArg.asString();
-
-	XPathValue<std::string> secondArg = arg(2, context, executionContext);
-	if (secondArg.type() != STRING)
-		return tokens;
-
-	char delim = secondArg.asString().c_str()[0];
-
-	std::size_t current;
-	std::size_t next = -1;
-	do {
-		current = next + 1;
-		next = mesData.find_first_of(delim, current);
-		tokens.push_back(_interpreter->getDocument().createTextNode(
-					 mesData.substr(current, next - current)));
-	} while (next != std::string::npos);
-
-	return tokens;
 }
 
 }
