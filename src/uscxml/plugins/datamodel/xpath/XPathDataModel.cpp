@@ -246,6 +246,8 @@ void XPathDataModel::setEvent(const Event& event) {
 	eventElem.appendChild(eventDataElem);
 	eventNodeSet.push_back(eventElem);
 
+	_varResolver.setVariable("_event", eventNodeSet);
+
 	// do we need to replace an existing event?
 	Node<std::string> oldEventElem = _datamodel.getFirstChild();
 	while(oldEventElem) {
@@ -257,11 +259,10 @@ void XPathDataModel::setEvent(const Event& event) {
 	}
 
 	if (oldEventElem) {
-		_datamodel.replaceChild(eventElem, oldEventElem);
-	} else {
-		_datamodel.appendChild(eventElem);
+		_datamodel.purgeChild(oldEventElem);
 	}
-	_varResolver.setVariable("_event", eventNodeSet);
+
+	_datamodel.appendChild(eventElem);
 }
 
 Data XPathDataModel::getStringAsData(const std::string& content) {
@@ -337,17 +338,27 @@ void XPathDataModel::setForeach(const std::string& item,
 	NodeSet<std::string> arrayNodeSet;
 	arrayNodeSet.push_back(arrayResult.asNodeSet()[iteration].cloneNode(true));
 
-	if (!isDeclared(item)) {
-		if (!isValidIdentifier(item))
-			throw Event("error.execution", Event::PLATFORM);
-		Element<std::string> container = _doc.createElement("data");
-		container.setAttribute("id", item);
-		container.appendChild(arrayNodeSet[0]);
-		_datamodel.appendChild(container);
-		_varResolver.setVariable(item, arrayNodeSet);
-	} else {
-		_varResolver.setVariable(item, arrayNodeSet);
+	if (!isValidIdentifier(item))
+		throw Event("error.execution", Event::PLATFORM);
+
+	_varResolver.setVariable(item, arrayNodeSet);
+
+	Element<std::string> container = _doc.createElement("data");
+	container.setAttribute("id", item);
+	container.appendChild(arrayNodeSet[0]);
+
+	Node<std::string> oldEventElem = _datamodel.getFirstChild();
+	while(oldEventElem) {
+		if (oldEventElem.getNodeType() == Node_base::ELEMENT_NODE) {
+			if (HAS_ATTR(oldEventElem, "id") && iequals(ATTR(oldEventElem, "id"), item))
+				break;
+		}
+		oldEventElem = oldEventElem.getNextSibling();
 	}
+	if (oldEventElem) {
+		_datamodel.purgeChild(oldEventElem);
+	}
+	_datamodel.appendChild(container);
 
 	if (index.length() > 0) {
 		NodeSet<std::string> indexNodeSet;
