@@ -79,7 +79,7 @@ endif()
 
 # System invoker to open a native command
 
-if(0)
+if(1)
 file(GLOB_RECURSE SYSTEM_INVOKER
 	system/*.cpp
 	system/*.h

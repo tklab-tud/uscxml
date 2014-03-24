@@ -304,6 +304,7 @@ void XmlBridgeInvoker::buildTIMreply(const char *reply_raw_data)
 	std::istringstream iss(reply_raw_data);
 	Arabica::SAX::InputSource<std::string> inputSource;
 	inputSource.setByteStream(iss);
+	inputSource.setEncoding("UTF-8");
 
 	_domParser.reset();
 	if (!(_domParser.parse(inputSource))) {
