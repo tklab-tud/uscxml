@@ -17,6 +17,9 @@
  *  @endcond
  */
 
+#define __STDC_LIMIT_MACROS
+#include <stdint.h>
+
 #include "uscxml/transform/ChartToFSM.h"
 #include <DOM/io/Stream.hpp>
 #include <iostream>
