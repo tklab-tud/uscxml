@@ -56,6 +56,8 @@ void DebuggerServlet::returnData(const HTTPServer::Request& request, Data replyD
 		replyData.compound["status"] = Data("success", Data::VERBATIM);
 	}
 	
+	std::cout << "<- " << replyData << std::endl;
+	
 	reply.content = Data::toJSON(replyData);
 	reply.headers["Access-Control-Allow-Origin"] = "*";
 	reply.headers["Content-Type"] = "application/json";

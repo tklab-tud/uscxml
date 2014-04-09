@@ -25,6 +25,14 @@
 
 namespace uscxml {
 
+	
+bool DOMUtils::attributeIsTrue(const::std::string& value) {
+	return (iequals(value, "on") ||
+					iequals(value, "true") ||
+					iequals(value, "1") ||
+					iequals(value, "yes"));
+}
+
 std::string DOMUtils::xPathForNode(const Arabica::DOM::Node<std::string>& node, const std::string& ns) {
 	std::string xPath;
 	std::string nsPrefix;

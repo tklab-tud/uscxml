@@ -1,0 +1,172 @@
+/** Subset extracted from spin.y by Stefan Radomski 2014                  */
+
+/***** spin: spin.y *****/
+
+/* Copyright (c) 1989-2003 by Lucent Technologies, Bell Laboratories.     */
+/* All Rights Reserved.  This software is for educational purposes only.  */
+/* No guarantee whatsoever is expressed or implied by the distribution of */
+/* this code.  Permission is given to distribute this code provided that  */
+/* this introductory message is not removed and no monies are exchanged.  */
+/* Software written by Gerard J. Holzmann.  For tool documentation see:   */
+/*             http://spinroot.com/                                       */
+/* Send all bug-reports and/or questions to: bugs@spinroot.com            */
+
+%{
+#include "../PromelaParser.h"
+#include "promela.tab.hpp"
+#include <sys/types.h>
+#include <stdarg.h>
+
+#define YYMAXDEPTH	20000	// default is 10000
+#define YYDEBUG		1
+#define YYERROR_VERBOSE 1
+
+extern int promela_lex (PROMELA_STYPE* yylval_param, void* yyscanner);
+
+using namespace uscxml;
+%}
+
+%pure-parser
+%file-prefix "promela"
+%parse-param { uscxml::PromelaParser* ctx }
+%lex-param {void * scanner}
+%parse-param {void * scanner}
+%define api.prefix promela_
+%defines
+
+%union {
+  uscxml::PromelaParserNode* node;
+	char* value;
+}
+
+%error-verbose
+
+
+%type <node> expr pfld varref decl_lst vardcl ivar var_list one_decl
+
+%token  LBRACKET RBRACKET
+%token  <value> LEN
+%token  TYPEDEF MTYPE INLINE RETURN LABEL OF
+%token  GOTO BREAK ELSE SEMI ARROW
+%token  IF FI DO OD FOR SELECT IN SEP DOTDOT
+%token  HIDDEN SHOW ISLOCAL
+%token  <value> CONST TYPE XU			/* val */
+%token  <value> NAME UNAME PNAME INAME		/* sym */
+%token  STRING CLAIM TRACE INIT	LTL	/* sym */
+
+%right	ASGN
+%left OR AND
+%left	BITOR BITXOR BITAND
+%left	EQ NE
+%left	GT LT GE LE
+%left	LSHIFT RSHIFT
+%left	PLUS MINUS 
+%left TIMES DIVIDE MODULO
+%left COMPL
+%right NEG
+%left	DOT
+
+%%
+
+
+/** PROMELA Grammar Rules **/
+
+program	: 
+  decl_lst { 
+    ctx->ast = $1; 
+    ctx->type = PromelaParser::PROMELA_DECL; 
+  }
+  | expr { 
+    ctx->ast = $1; 
+    ctx->type = PromelaParser::PROMELA_EXPR;
+  }
+
+varref	: cmpnd			{}
+	;
+
+pfld	: NAME			{ $$ = ctx->value(yylval.value); }
+	| NAME '[' expr ']' {}
+	;
+
+cmpnd	: pfld			{}
+				sfld			{}
+	;
+
+sfld	: /* empty */		{}
+	| '.' cmpnd %prec DOT	{}
+	;
+
+expr    : LBRACKET expr RBRACKET		{ $$ = $2; }
+	| expr PLUS expr		{ $$ = ctx->binOp(PLUS, $1, $3); }
+	| expr MINUS expr		{ $$ = ctx->binOp(MINUS, $1, $3); }
+	| expr TIMES expr		{ $$ = ctx->binOp(TIMES, $1, $3); }
+	| expr DIVIDE expr		{ $$ = ctx->binOp(DIVIDE, $1, $3); }
+	| expr MODULO expr		{ $$ = ctx->binOp(MODULO, $1, $3); }
+	| expr BITAND expr		{ $$ = ctx->binOp(BITAND, $1, $3); }
+	| expr BITXOR expr		{ $$ = ctx->binOp(BITXOR, $1, $3); }
+	| expr BITOR expr		{ $$ = ctx->binOp(BITOR, $1, $3); }
+	| expr GT expr		{ $$ = ctx->binOp(GT, $1, $3); }
+	| expr LT expr		{ $$ = ctx->binOp(LT, $1, $3); }
+	| expr GE expr		{ $$ = ctx->binOp(GE, $1, $3); }
+	| expr LE expr		{ $$ = ctx->binOp(LE, $1, $3); }
+	| expr EQ expr		{ $$ = ctx->binOp(EQ, $1, $3); }
+	| expr NE expr		{ $$ = ctx->binOp(NE, $1, $3); }
+	| expr AND expr		{ $$ = ctx->binOp(AND, $1, $3); }
+	| expr OR  expr		{ $$ = ctx->binOp(OR, $1, $3); }
+	| expr LSHIFT expr	{ $$ = ctx->binOp(LSHIFT, $1, $3); }
+	| expr RSHIFT expr	{ $$ = ctx->binOp(RSHIFT, $1, $3); }
+	| NEG expr		      { $$ = ctx->uniOp(NEG, $2); }
+	| MINUS expr %prec MINUS	{ $$ = ctx->uniOp(MINUS, $2); }
+
+	| LEN '(' varref ')'	{ $$ = ctx->uniOp(LEN, $3);  }
+	| varref		{  }
+	| CONST 		{ $$ = ctx->value(yylval.value); }
+	;
+
+
+vis	: /* empty */		{ }
+	| HIDDEN		{  }
+	| SHOW			{  }
+	| ISLOCAL		{  }
+	;
+
+one_decl: vis TYPE var_list	{ $$ = ctx->uniOp(ASGN, $3); }
+	| vis UNAME var_list	{ }
+	| vis TYPE ASGN '{' nlst '}' { }
+	;
+
+decl_lst: one_decl       	{ }
+	| one_decl SEMI
+	  decl_lst		{  }
+	;
+
+var_list: ivar           	{ $$ = ctx->uniOp(ASGN, $1); }
+	| ivar ',' var_list	{ $$ = ctx->binOp(ASGN, $1, $3); }
+	;
+
+ivar    : vardcl           	{ $$ = ctx->uniOp(ASGN, $1); }
+	| vardcl ASGN expr   	{ $$ = ctx->binOp(ASGN, $1, $3); }
+	;
+
+vardcl  : NAME  		{ $$ = ctx->value(yylval.value); }
+	| NAME ':' CONST	{ }
+	| NAME '[' const_expr ']'	{ }
+	;
+
+const_expr:	CONST			{ }
+	| '-' const_expr %prec MINUS	{  }
+	| '(' const_expr ')'		{  }
+	| const_expr '+' const_expr	{  }
+	| const_expr '-' const_expr	{  }
+	| const_expr '*' const_expr	{  }
+	| const_expr '/' const_expr	{  }
+	| const_expr '%' const_expr	{  }
+	;
+
+nlst	: NAME			{  }
+	| nlst NAME 		{  }
+	| nlst ','		{  }
+	;
+
+%%
+

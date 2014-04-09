@@ -90,6 +90,10 @@ target_link_libraries(test-url uscxml)
 add_test(test-url ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-url)
 set_target_properties(test-url PROPERTIES FOLDER "Tests")
 
+add_executable(test-promela-parser src/test-promela-parser.cpp)
+target_link_libraries(test-promela-parser uscxml)
+add_test(test-url ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-promela-parser)
+set_target_properties(test-promela-parser PROPERTIES FOLDER "Tests")
 
 add_executable(test-cmdline-parsing src/test-cmdline-parsing.cpp)
 target_link_libraries(test-cmdline-parsing uscxml)
@@ -139,6 +143,7 @@ foreach( W3C_TEST ${W3C_TESTS} )
 	if (NOT TEST_NAME MATCHES ".*sub.*")
 		if (BUILD_TESTS_W3C_ECMA AND TEST_NAME MATCHES "^ecma\\/.*")
 			add_test(${TEST_NAME} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-w3c ${W3C_TEST})
+			set_property(TEST ${TEST_NAME} PROPERTY LABELS ${TEST_NAME})
 #			set_tests_properties(${TEST_NAME} PROPERTIES FAIL_REGULAR_EXPRESSION "TEST FAILED")
 			if (TEST_NAME STREQUAL "ecma/test250.scxml")
 				set_tests_properties(${TEST_NAME} PROPERTIES 
@@ -147,11 +152,23 @@ foreach( W3C_TEST ${W3C_TESTS} )
 				set_tests_properties(${TEST_NAME} PROPERTIES 
 					FAIL_REGULAR_EXPRESSION "error in state")
 			endif()
-			
 		endif()
+		
+		if (BUILD_TESTS_FSM_ECMA AND TEST_NAME MATCHES "^ecma\\/.*")
+			add_test("fsm/${TEST_NAME}" ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-w3c -f ${W3C_TEST})
+			set_property(TEST "fsm/${TEST_NAME}" PROPERTY LABELS "fsm/${TEST_NAME}")
+		endif()
+		
 		if (BUILD_TESTS_W3C_XPATH AND TEST_NAME MATCHES "^xpath\\/.*")
 			add_test(${TEST_NAME} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-w3c ${W3C_TEST})
+			set_property(TEST ${TEST_NAME} PROPERTY LABELS ${TEST_NAME})
 #			set_tests_properties(${TEST_NAME} PROPERTIES FAIL_REGULAR_EXPRESSION "TEST FAILED")
 		endif()
+		
+		if (BUILD_TESTS_FSM_XPATH AND TEST_NAME MATCHES "^xpath\\/.*")
+			add_test("fsm/${TEST_NAME}" ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-w3c -f ${W3C_TEST})
+			set_property(TEST "fsm/${TEST_NAME}" PROPERTY LABELS "fsm/${TEST_NAME}")
+		endif()
+		
 	endif()
 endforeach()

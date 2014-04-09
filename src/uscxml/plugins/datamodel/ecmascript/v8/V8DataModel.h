@@ -80,6 +80,8 @@ public:
 	virtual void init(const std::string& location,
 	                  const Data& data);
 
+	virtual std::string andExpressions(std::list<std::string>);
+
 	virtual Data getStringAsData(const std::string& content);
 	virtual Data getValueAsData(const v8::Handle<v8::Value>& value,
 	                            std::set<v8::Value*>& alreadySeen);

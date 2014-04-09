@@ -438,7 +438,7 @@ v8::Handle<v8::Value> V8DataModel::jsIn(const v8::Arguments& args) {
 	for (unsigned int i = 0; i < args.Length(); i++) {
 		if (args[i]->IsString()) {
 			std::string stateName(*v8::String::AsciiValue(args[i]->ToString()));
-			if (Interpreter::isMember(INSTANCE->_interpreter->getState(stateName), INSTANCE->_interpreter->getConfiguration())) {
+			if (INSTANCE->_interpreter->isInState(stateName)) {
 				continue;
 			}
 		}
@@ -658,6 +658,25 @@ void V8DataModel::init(const std::string& location,
 	}
 }
 
+std::string V8DataModel::andExpressions(std::list<std::string> expressions) {
+	if (expressions.size() == 0)
+		return "";
+	
+	if (expressions.size() == 1)
+		return *(expressions.begin());
+
+	std::ostringstream exprSS;
+	exprSS << "(";
+	std::string conjunction = "";
+	for (std::list<std::string>::const_iterator exprIter = expressions.begin();
+			 exprIter != expressions.end();
+			 exprIter++) {
+		exprSS << conjunction << "(" << *exprIter << ")";
+		conjunction = " && ";
+	}
+	exprSS << ")";
+	return exprSS.str();
+}
 
 v8::Handle<v8::Value> V8DataModel::evalAsValue(const std::string& expr, bool dontThrow) {
 	v8::TryCatch tryCatch;

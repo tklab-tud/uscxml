@@ -48,6 +48,7 @@
 
 /** whether we want some feature */
 #cmakedefine BUILD_DM_PROLOG
+#cmakedefine BUILD_DM_PROMELA
 #cmakedefine BUILD_DM_ECMA
 #cmakedefine BUILD_DM_XPATH
 

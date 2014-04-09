@@ -856,10 +856,11 @@ bool XPathFunctionIn::doEvaluate(const Node<std::string>& context,
 	for (int i = 0; i < argCount(); i++) {
 		XPathValue<std::string> stateName = arg(i, context, executionContext);
 		if (stateName.type() == STRING) {
-			if (!Interpreter::isMember(_interpreter->getState(stateName.asString()), _interpreter->getConfiguration())) {
-				return false;
+			if (_interpreter->isInState(stateName.asString())) {
+				continue;
 			}
 		}
+    return false;
 	}
 	return true;
 }

@@ -1,0 +1,17 @@
+<scxml>
+  <parallel id="s0">
+    <state id="s01">
+      <transition event="foo baz.bar.foo" />
+    </state>
+    <state id="s02">
+      <transition event="foo.bar baz.bar" />
+    </state>
+    <state id="s03">
+      <transition event="foo.bar.baz baz" />
+      <transition event="bax" target="pass" />
+    </state>
+        
+  </parallel>
+  <final id="pass" />
+  <final id="fail" />
+</scxml>

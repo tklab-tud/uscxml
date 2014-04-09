@@ -71,7 +71,8 @@ void USCXMLInvoker::invoke(const InvokeRequest& req) {
 		// we need to import the parent - to support xpath test150
 		Arabica::DOM::Node<std::string> newNode = dom.importNode(req.dom, true);
 		dom.appendChild(newNode);
-		_invokedInterpreter = Interpreter::fromDOM(dom);
+		// TODO: where do we get the namespace from?
+		_invokedInterpreter = Interpreter::fromDOM(dom, std::map<std::string, std::string>());
 	} else if (req.content.size() > 0) {
 		_invokedInterpreter = Interpreter::fromXML(req.content);
 	} else {
@@ -79,9 +80,6 @@ void USCXMLInvoker::invoke(const InvokeRequest& req) {
 	}
 	if (_invokedInterpreter) {
 		DataModel dataModel(_invokedInterpreter.getImpl()->getDataModel());
-		if (dataModel) {
-
-		}
 		_invokedInterpreter.getImpl()->setParentQueue(&_parentQueue);
 		// transfer namespace prefixes
 		_invokedInterpreter.getImpl()->_nsURL = _parentInterpreter->_nsURL;

@@ -131,7 +131,7 @@ bool NULLDataModel::evalAsBool(const Arabica::DOM::Node<std::string>& node, cons
 			stateName = stateExprs[i];
 		}
 
-		if (Interpreter::isMember(_interpreter->getState(stateName), _interpreter->getConfiguration())) {
+		if (_interpreter->isInState(stateName)) {
 			continue;
 		}
 		return false;

@@ -2639,6 +2639,9 @@
 		    contentType: params.sendType,
 				url: this.debuggerURL + url,
 				success: function (dataObj, statusString, xhrObj) {
+					self.log("Received from " + url);
+					self.log(dataObj);
+					
 					if ("status" in dataObj && dataObj.status === 'success') {
 						params.onSuccess(dataObj, statusString, xhrObj);
 					} else {

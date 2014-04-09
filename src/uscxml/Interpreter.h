@@ -238,6 +238,8 @@ public:
 		return _currEvent;
 	}
 
+	virtual bool isInState(const std::string& stateId);
+
 	Arabica::XPath::NodeSet<std::string> getConfiguration()  {
 		tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
 		return _configuration;
@@ -262,8 +264,9 @@ public:
 
 	Arabica::DOM::Node<std::string> getState(const std::string& stateId);
 	Arabica::XPath::NodeSet<std::string> getStates(const std::list<std::string>& stateIds);
+	Arabica::XPath::NodeSet<std::string> getAllStates();
 
-	Arabica::DOM::Document<std::string>& getDocument()       {
+	virtual Arabica::DOM::Document<std::string>& getDocument()       {
 		return _document;
 	}
 
@@ -319,15 +322,17 @@ public:
 	bool isInitial(const Arabica::DOM::Node<std::string>& state);
 	Arabica::XPath::NodeSet<std::string> getInitialStates(Arabica::DOM::Node<std::string> state = Arabica::DOM::Node<std::string>());
 	static Arabica::XPath::NodeSet<std::string> getChildStates(const Arabica::DOM::Node<std::string>& state);
+	static Arabica::XPath::NodeSet<std::string> getChildStates(const Arabica::XPath::NodeSet<std::string>& state);
 	static Arabica::DOM::Node<std::string> getParentState(const Arabica::DOM::Node<std::string>& element);
 	static Arabica::DOM::Node<std::string> getAncestorElement(const Arabica::DOM::Node<std::string>& node, const std::string tagName);
-	Arabica::XPath::NodeSet<std::string> getTargetStates(const Arabica::DOM::Node<std::string>& transition);
-	Arabica::DOM::Node<std::string> getSourceState(const Arabica::DOM::Node<std::string>& transition);
+	virtual Arabica::XPath::NodeSet<std::string> getTargetStates(const Arabica::DOM::Node<std::string>& transition);
+	virtual Arabica::XPath::NodeSet<std::string> getTargetStates(const Arabica::XPath::NodeSet<std::string>& transitions);
+	virtual Arabica::DOM::Node<std::string> getSourceState(const Arabica::DOM::Node<std::string>& transition);
 
 	static Arabica::XPath::NodeSet<std::string> filterChildElements(const std::string& tagname, const Arabica::DOM::Node<std::string>& node);
 	static Arabica::XPath::NodeSet<std::string> filterChildElements(const std::string& tagName, const Arabica::XPath::NodeSet<std::string>& nodeSet);
 	Arabica::DOM::Node<std::string> findLCCA(const Arabica::XPath::NodeSet<std::string>& states);
-	Arabica::XPath::NodeSet<std::string> getProperAncestors(const Arabica::DOM::Node<std::string>& s1, const Arabica::DOM::Node<std::string>& s2);
+	virtual Arabica::XPath::NodeSet<std::string> getProperAncestors(const Arabica::DOM::Node<std::string>& s1, const Arabica::DOM::Node<std::string>& s2);
 
 protected:
 
@@ -342,7 +347,7 @@ protected:
 
 	void normalize(Arabica::DOM::Element<std::string>& scxml);
 	void initializeData(const Arabica::DOM::Element<std::string>& data);
-	void setupIOProcessors();
+	virtual void setupIOProcessors();
 
 	bool _stable;
 	tthread::thread* _thread;
@@ -368,6 +373,7 @@ protected:
 	bool _isInitialized;
 	InterpreterImpl::Binding _binding;
 	Arabica::XPath::NodeSet<std::string> _configuration;
+	Arabica::XPath::NodeSet<std::string> _alreadyEntered;
 	Arabica::XPath::NodeSet<std::string> _statesToInvoke;
 	std::vector<std::string> _userDefinedStartConfiguration;
 	InvokeRequest _invokeReq;
@@ -388,9 +394,9 @@ protected:
 	InterpreterWebSocketServlet* _wsServlet;
 	std::set<InterpreterMonitor*> _monitors;
 
-	void executeContent(const Arabica::DOM::Node<std::string>& content, bool rethrow = false);
-	void executeContent(const Arabica::DOM::NodeList<std::string>& content, bool rethrow = false);
-	void executeContent(const Arabica::XPath::NodeSet<std::string>& content, bool rethrow = false);
+	virtual void executeContent(const Arabica::DOM::Node<std::string>& content, bool rethrow = false);
+	virtual void executeContent(const Arabica::DOM::NodeList<std::string>& content, bool rethrow = false);
+	virtual void executeContent(const Arabica::XPath::NodeSet<std::string>& content, bool rethrow = false);
 
 	void processContentElement(const Arabica::DOM::Node<std::string>& element,
 	                           Arabica::DOM::Node<std::string>& dom,
@@ -402,12 +408,12 @@ protected:
 	                      Arabica::DOM::Node<std::string>& dom,
 	                      std::string& text);
 
-	void send(const Arabica::DOM::Node<std::string>& element);
-	void invoke(const Arabica::DOM::Node<std::string>& element);
-	void cancelInvoke(const Arabica::DOM::Node<std::string>& element);
-	void returnDoneEvent(const Arabica::DOM::Node<std::string>& state);
-	void internalDoneSend(const Arabica::DOM::Node<std::string>& state);
+	virtual void send(const Arabica::DOM::Node<std::string>& element);
+	virtual void invoke(const Arabica::DOM::Node<std::string>& element);
+	virtual void cancelInvoke(const Arabica::DOM::Node<std::string>& element);
+	virtual void internalDoneSend(const Arabica::DOM::Node<std::string>& state);
 	static void delayedSend(void* userdata, std::string eventName);
+	void returnDoneEvent(const Arabica::DOM::Node<std::string>& state);
 
 	bool hasConditionMatch(const Arabica::DOM::Node<std::string>& conditional);
 	bool isInFinalState(const Arabica::DOM::Node<std::string>& state);
@@ -425,7 +431,6 @@ protected:
 	std::map<std::string, IOProcessor> _ioProcessors;
 	std::map<std::string, std::pair<InterpreterImpl*, SendRequest> > _sendIds;
 	std::map<std::string, Invoker> _invokers;
-	std::map<std::string, Invoker> _autoForwardees;
 	std::map<Arabica::DOM::Node<std::string>, ExecutableContent> _executableContent;
 
 	/// TODO: We need to remember to adapt them when the DOM is operated upon
@@ -439,7 +444,8 @@ protected:
 
 class USCXML_API Interpreter {
 public:
-	static Interpreter fromDOM(const Arabica::DOM::Document<std::string>& dom);
+	static Interpreter fromDOM(const Arabica::DOM::Document<std::string>& dom,
+														 const std::map<std::string, std::string>& nameSpaceInfo);
 	static Interpreter fromXML(const std::string& xml);
 	static Interpreter fromURI(const std::string& uri);
 	static Interpreter fromInputSource(Arabica::SAX::InputSource<std::string>& source);
@@ -558,6 +564,10 @@ public:
 		return _impl->getCurrentEvent();
 	}
 
+	bool isInState(const std::string& stateId) {
+		return _impl->isInState(stateId);
+	}
+	
 	Arabica::XPath::NodeSet<std::string> getConfiguration()  {
 		return _impl->getConfiguration();
 	}
@@ -578,6 +588,9 @@ public:
 	}
 	Arabica::XPath::NodeSet<std::string> getStates(const std::list<std::string>& stateIds) {
 		return _impl->getStates(stateIds);
+	}
+	Arabica::XPath::NodeSet<std::string> getAllStates() {
+		return _impl->getAllStates();
 	}
 
 	Arabica::DOM::Document<std::string>& getDocument()       {
@@ -667,6 +680,10 @@ public:
 	static std::list<std::string> tokenizeIdRefs(const std::string& idRefs) {
 		return InterpreterImpl::tokenizeIdRefs(idRefs);
 	}
+	static bool nameMatch(const std::string& transitionEvent, const std::string& event) {
+		return InterpreterImpl::nameMatch(transitionEvent, event);
+	}
+
 	static std::string spaceNormalize(const std::string& text) {
 		return InterpreterImpl::spaceNormalize(text);
 	}
@@ -680,6 +697,9 @@ public:
 	static Arabica::XPath::NodeSet<std::string> getChildStates(const Arabica::DOM::Node<std::string>& state) {
 		return InterpreterImpl::getChildStates(state);
 	}
+	static Arabica::XPath::NodeSet<std::string> getChildStates(const Arabica::XPath::NodeSet<std::string>& state) {
+		return InterpreterImpl::getChildStates(state);
+	}
 	static Arabica::DOM::Node<std::string> getParentState(const Arabica::DOM::Node<std::string>& element) {
 		return InterpreterImpl::getParentState(element);
 	}
@@ -688,6 +708,9 @@ public:
 	}
 	Arabica::XPath::NodeSet<std::string> getTargetStates(const Arabica::DOM::Node<std::string>& transition) {
 		return _impl->getTargetStates(transition);
+	}
+	Arabica::XPath::NodeSet<std::string> getTargetStates(const Arabica::XPath::NodeSet<std::string>& transitions) {
+		return _impl->getTargetStates(transitions);
 	}
 	Arabica::DOM::Node<std::string> getSourceState(const Arabica::DOM::Node<std::string>& transition) {
 		return _impl->getSourceState(transition);
@@ -725,28 +748,25 @@ public:
 	virtual void beforeProcessingEvent(Interpreter interpreter, const Event& event) {}
 	virtual void beforeMicroStep(Interpreter interpreter) {}
 	
-	virtual void beforeExitingState(Interpreter interpreter, const Arabica::DOM::Element<std::string>& state) {}
-	virtual void afterExitingState(Interpreter interpreter, const Arabica::DOM::Element<std::string>& state) {}
-
-	virtual void beforeExecutingContent(Interpreter interpreter, const Arabica::DOM::Node<std::string>& content) {}
-	virtual void afterExecutingContent(Interpreter interpreter, const Arabica::DOM::Node<std::string>& content) {}
+	virtual void beforeExitingState(Interpreter interpreter, const Arabica::DOM::Element<std::string>& state, bool moreComing) {}
+	virtual void afterExitingState(Interpreter interpreter, const Arabica::DOM::Element<std::string>& state, bool moreComing) {}
 	
+	virtual void beforeExecutingContent(Interpreter interpreter, const Arabica::DOM::Element<std::string>& element) {}
+	virtual void afterExecutingContent(Interpreter interpreter, const Arabica::DOM::Element<std::string>& element) {}
+
 	virtual void beforeUninvoking(Interpreter interpreter, const Arabica::DOM::Element<std::string>& invokeElem, const std::string& invokeid) {}
 	virtual void afterUninvoking(Interpreter interpreter, const Arabica::DOM::Element<std::string>& invokeElem, const std::string& invokeid) {}
 
-	virtual void beforeTakingTransition(Interpreter interpreter, const Arabica::DOM::Element<std::string>& transition) {}
-	virtual void afterTakingTransition(Interpreter interpreter, const Arabica::DOM::Element<std::string>& transition) {}
+	virtual void beforeTakingTransition(Interpreter interpreter, const Arabica::DOM::Element<std::string>& transition, bool moreComing) {}
+	virtual void afterTakingTransition(Interpreter interpreter, const Arabica::DOM::Element<std::string>& transition, bool moreComing) {}
 
-	virtual void beforeEnteringState(Interpreter interpreter, const Arabica::DOM::Element<std::string>& state) {}
-	virtual void afterEnteringState(Interpreter interpreter, const Arabica::DOM::Element<std::string>& state) {}
+	virtual void beforeEnteringState(Interpreter interpreter, const Arabica::DOM::Element<std::string>& state, bool moreComing) {}
+	virtual void afterEnteringState(Interpreter interpreter, const Arabica::DOM::Element<std::string>& state, bool moreComing) {}
 	
 	virtual void beforeInvoking(Interpreter interpreter, const Arabica::DOM::Element<std::string>& invokeElem, const std::string& invokeid) {}
 	virtual void afterInvoking(Interpreter interpreter, const Arabica::DOM::Element<std::string>& invokeElem, const std::string& invokeid) {}
 
 	virtual void afterMicroStep(Interpreter interpreter) {}
-
-	virtual void beforeExecutingContent(Interpreter interpreter, const Arabica::DOM::Element<std::string>& element) {}
-	virtual void afterExecutingContent(Interpreter interpreter, const Arabica::DOM::Element<std::string>& element) {}
 
 	virtual void onStableConfiguration(Interpreter interpreter) {}
 	

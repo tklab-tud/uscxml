@@ -79,6 +79,8 @@ public:
 	                  const std::string& content);
 	virtual void init(const std::string& location, const Data& data);
 
+	virtual std::string andExpressions(std::list<std::string>);
+
 protected:
 	Arabica::DOM::JSCDOM* _dom;
 
