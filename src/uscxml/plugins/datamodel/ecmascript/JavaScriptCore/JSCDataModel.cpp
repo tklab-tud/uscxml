@@ -628,6 +628,27 @@ void JSCDataModel::init(const std::string& location, const Data& data) {
 	}
 }
 
+std::string JSCDataModel::andExpressions(std::list<std::string> expressions) {
+
+	if (expressions.size() == 0)
+		return "";
+	
+	if (expressions.size() == 1)
+		return *(expressions.begin());
+	
+	std::ostringstream exprSS;
+	exprSS << "(";
+	std::string conjunction = "";
+	for (std::list<std::string>::const_iterator exprIter = expressions.begin();
+			 exprIter != expressions.end();
+			 exprIter++) {
+		exprSS << conjunction << "(" << *exprIter << ")";
+		conjunction = " && ";
+	}
+	exprSS << ")";
+	return exprSS.str();
+}
+
 void JSCDataModel::handleException(JSValueRef exception) {
 	JSStringRef exceptionStringRef = JSValueToStringCopy(_ctx, exception, NULL);
 	size_t maxSize = JSStringGetMaximumUTF8CStringSize(exceptionStringRef);
@@ -685,7 +706,7 @@ JSValueRef JSCDataModel::jsIn(JSContextRef ctx, JSObjectRef function, JSObjectRe
 			std::string stateName(buffer);
 			free(buffer);
 
-			if (Interpreter::isMember(INSTANCE->_interpreter->getState(stateName), INSTANCE->_interpreter->getConfiguration())) {
+			if (INSTANCE->_interpreter->isInState(stateName)) {
 				continue;
 			}
 		}

@@ -32,6 +32,13 @@ file(GLOB_RECURSE USCXML_DEBUG
 source_group("Interpreter" FILES ${USCXML_DEBUG})
 list (APPEND USCXML_FILES ${USCXML_DEBUG})
 
+file(GLOB_RECURSE USCXML_TRANSFORM
+	transform/*.cpp
+	transform/*.h
+)
+source_group("Interpreter" FILES ${USCXML_TRANSFORM})
+list (APPEND USCXML_FILES ${USCXML_TRANSFORM})
+
 file(GLOB_RECURSE USCXML_INTERPRETERS
 	interpreter/*.cpp
 	interpreter/*.h

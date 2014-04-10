@@ -1,7 +1,7 @@
 #include "uscxml/config.h"
 #include "uscxml/Interpreter.h"
+#include "uscxml/transform/ChartToFSM.h"
 #include "uscxml/DOMUtils.h"
-#include "uscxml/debug/DebuggerServlet.h"
 #include <glog/logging.h>
 
 #ifdef HAS_SIGNAL_H
@@ -112,6 +112,13 @@ void customTerminate() {
 int main(int argc, char** argv) {
 	using namespace uscxml;
 
+	bool verbose = false;
+	bool toFlat = false;
+	bool toPromela = false;
+	std::string pluginPath;
+	std::string inputFile;
+	std::string outputFile;
+	
 #if defined(HAS_SIGNAL_H) && !defined(WIN32)
 	signal(SIGPIPE, SIG_IGN);
 #endif
@@ -120,98 +127,101 @@ int main(int argc, char** argv) {
 	std::set_terminate(customTerminate);
 #endif
 
-	InterpreterOptions options = InterpreterOptions::fromCmdLine(argc, argv);
-	if (!options) {
-		InterpreterOptions::printUsageAndExit(argv[0]);
-	}
-
 	// setup logging
 	google::LogToStderr();
 	google::InitGoogleLogging(argv[0]);
 
-	if (options.pluginPath.length() > 0) {
-		Factory::pluginPath = options.pluginPath;
-	}
-	
-	// setup HTTP server
-	HTTPServer::SSLConfig* sslConf = NULL;
-	if (options.certificate.length() > 0) {
-		sslConf = new HTTPServer::SSLConfig();
-		sslConf->privateKey = options.certificate;
-		sslConf->publicKey = options.certificate;
-		sslConf->port = options.httpsPort;
+	optind = 0;
+	opterr = 0;
 
-	} else if (options.privateKey.length() > 0 && options.publicKey.length() > 0) {
-		sslConf = new HTTPServer::SSLConfig();
-		sslConf->privateKey = options.privateKey;
-		sslConf->publicKey = options.publicKey;
-		sslConf->port = options.httpsPort;
+	struct option longOptions[] = {
+		{"verbose",       no_argument,       0, 'v'},
+		{"to-flat",       no_argument, 0, 'f'},
+		{"to-promela",    no_argument, 0, 's'},
+		{"plugin-path",   required_argument, 0, 'p'},
+		{"input-file",    required_argument, 0, 'i'},
+		{"output-file",    required_argument, 0, 'o'},
+		{"loglevel",      required_argument, 0, 'l'},
+		{0, 0, 0, 0}
+	};
 
-	}
-	HTTPServer::getInstance(options.httpPort, options.wsPort, sslConf);
-
-	DebuggerServlet* debugger;
-	if (options.withDebugger) {
-		debugger = new DebuggerServlet();
-		HTTPServer::getInstance()->registerServlet("/debug", debugger);
-	}
-	
-	// instantiate and configure interpreters
-	std::list<Interpreter> interpreters;
-	std::map<std::string, InterpreterOptions*>::iterator confIter = options.interpreters.begin();
-	while(confIter != options.interpreters.end()) {
-
-		InterpreterOptions* currOptions = confIter->second;
-		std::string documentURL = confIter->first;
-
-		LOG(INFO) << "Processing " << documentURL;
-		Interpreter interpreter = Interpreter::fromURI(documentURL);
-		if (interpreter) {
-			interpreter.setCmdLineOptions(currOptions->additionalParameters);
-			interpreter.setCapabilities(options.getCapabilities());
-
-			if (options.verbose) {
-				VerboseMonitor* vm = new VerboseMonitor();
-				interpreter.addMonitor(vm);
-			}
-			if (options.withDebugger) {
-				interpreter.addMonitor(debugger);
-			}
-
-			interpreters.push_back(interpreter);
-
-		} else {
-			LOG(ERROR) << "Cannot create interpreter from " << documentURL;
+	// parse global options
+	int optionInd = 0;
+	int option;
+	for (;;) {
+		option = getopt_long_only(argc, argv, "+vfs:p:i:o:l:", longOptions, &optionInd);
+		if (option == -1) {
+			break;
 		}
-		confIter++;
-	}
-
-	// start interpreters
-	std::list<Interpreter>::iterator interpreterIter = interpreters.begin();
-	while(interpreterIter != interpreters.end()) {
-		interpreterIter->start();
-		interpreterIter++;
-	}
-
-	bool stillRunning = true;
-	// call from main thread for UI events
-	while(interpreters.size() > 0) {
-		interpreterIter = interpreters.begin();
-		while(interpreterIter != interpreters.end()) {
-			stillRunning = interpreterIter->runOnMainThread(25);
-			if (!stillRunning) {
-				interpreters.erase(interpreterIter++);
-			} else {
-				interpreterIter++;
+		switch(option) {
+				// cases without short option
+			case 0: {
+				break;
 			}
+				// cases with short-hand options
+			case 'v':
+				verbose = true;
+				break;
+			case 'f':
+				toFlat = true;
+				break;
+			case 's':
+				toPromela = true;
+				break;
+			case 'p':
+				pluginPath = optarg;
+				break;
+			case 'i':
+				inputFile = optarg;
+				break;
+			case 'o':
+				outputFile = optarg;
+				break;
+			case 'l':
+				break;
+			case '?': {
+				break;
+			}
+			default:
+				break;
 		}
 	}
 
-	if (options.withDebugger) {
-		// idle and wait for CTRL+C or debugging events
-		while(true)
-			tthread::this_thread::sleep_for(tthread::chrono::seconds(1));
+	// register plugins
+	if (pluginPath.length() > 0) {
+		Factory::pluginPath = pluginPath;
 	}
+
+	// start HTTP server
+	HTTPServer::getInstance(30444, 30445, NULL);
+	
+	Interpreter interpreter;
+	if (inputFile.size() == 0 || inputFile == "-") {
+		LOG(INFO) << "Reading SCXML from STDIN";
+		std::stringstream ss;
+		std::string line;
+		while (std::getline(std::cin, line)) {
+			ss << line;
+		}
+		interpreter = Interpreter::fromXML(ss.str());
+	} else {
+		interpreter = Interpreter::fromURI(inputFile);
+	}
+	if (!interpreter) {
+		LOG(ERROR) << "Cannot create interpreter from " << inputFile;
+		exit(EXIT_FAILURE);
+	}
+	
+	if (toFlat) {
+		std::cout << ChartToFSM::flatten(interpreter.getDocument(), interpreter.getNameSpaceInfo());
+		exit(EXIT_SUCCESS);
+	}
+
+	if (toPromela) {
+		std::cout << ChartToFSM::flatten(interpreter.getDocument(), interpreter.getNameSpaceInfo());
+		exit(EXIT_SUCCESS);
+	}
+	
 	
 	return EXIT_SUCCESS;
 }

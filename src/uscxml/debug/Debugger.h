@@ -55,21 +55,19 @@ public:
 	// InterpreterMonitor
 	virtual void beforeProcessingEvent(Interpreter interpreter, const Event& event);
 	virtual void beforeMicroStep(Interpreter interpreter);
-	virtual void beforeExecutingContent(Interpreter interpreter, const Arabica::DOM::Node<std::string>& content);
-	virtual void afterExecutingContent(Interpreter interpreter, const Arabica::DOM::Node<std::string>& content);
-	virtual void beforeExitingState(Interpreter interpreter, const Arabica::DOM::Element<std::string>& state);
-	virtual void afterExitingState(Interpreter interpreter, const Arabica::DOM::Element<std::string>& state);
+	virtual void beforeExitingState(Interpreter interpreter, const Arabica::DOM::Element<std::string>& state, bool moreComing);
+	virtual void afterExitingState(Interpreter interpreter, const Arabica::DOM::Element<std::string>& state, bool moreComing);
+	virtual void beforeExecutingContent(Interpreter interpreter, const Arabica::DOM::Element<std::string>& element);
+	virtual void afterExecutingContent(Interpreter interpreter, const Arabica::DOM::Element<std::string>& element);
 	virtual void beforeUninvoking(Interpreter interpreter, const Arabica::DOM::Element<std::string>& invokeElem, const std::string& invokeid);
 	virtual void afterUninvoking(Interpreter interpreter, const Arabica::DOM::Element<std::string>& invokeElem, const std::string& invokeid);
-	virtual void beforeTakingTransition(Interpreter interpreter, const Arabica::DOM::Element<std::string>& transition);
-	virtual void afterTakingTransition(Interpreter interpreter, const Arabica::DOM::Element<std::string>& transition);
-	virtual void beforeEnteringState(Interpreter interpreter, const Arabica::DOM::Element<std::string>& state);
-	virtual void afterEnteringState(Interpreter interpreter, const Arabica::DOM::Element<std::string>& state);
+	virtual void beforeTakingTransition(Interpreter interpreter, const Arabica::DOM::Element<std::string>& transition, bool moreComing);
+	virtual void afterTakingTransition(Interpreter interpreter, const Arabica::DOM::Element<std::string>& transition, bool moreComing);
+	virtual void beforeEnteringState(Interpreter interpreter, const Arabica::DOM::Element<std::string>& state, bool moreComing);
+	virtual void afterEnteringState(Interpreter interpreter, const Arabica::DOM::Element<std::string>& state, bool moreComing);
 	virtual void beforeInvoking(Interpreter interpreter, const Arabica::DOM::Element<std::string>& invokeElem, const std::string& invokeid);
 	virtual void afterInvoking(Interpreter interpreter, const Arabica::DOM::Element<std::string>& invokeElem, const std::string& invokeid);
 	virtual void afterMicroStep(Interpreter interpreter);
-	virtual void beforeExecutingContent(Interpreter interpreter, const Arabica::DOM::Element<std::string>& element) {}
-	virtual void afterExecutingContent(Interpreter interpreter, const Arabica::DOM::Element<std::string>& element) {}
 	virtual void onStableConfiguration(Interpreter interpreter);
 	virtual void beforeCompletion(Interpreter interpreter) {}
 	virtual void afterCompletion(Interpreter interpreter);

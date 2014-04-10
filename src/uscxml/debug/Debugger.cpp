@@ -84,28 +84,28 @@ std::list<Breakpoint> getQualifiedTransBreakpoints(Interpreter interpreter, cons
 	return breakpoints;
 }
 
-void Debugger::beforeTakingTransition(Interpreter interpreter, const Arabica::DOM::Element<std::string>& transition) {
+void Debugger::beforeTakingTransition(Interpreter interpreter, const Arabica::DOM::Element<std::string>& transition, bool moreComing) {
 	handleTransition(interpreter, transition, Breakpoint::BEFORE);
 }
-void Debugger::afterTakingTransition(Interpreter interpreter, const Arabica::DOM::Element<std::string>& transition) {
+void Debugger::afterTakingTransition(Interpreter interpreter, const Arabica::DOM::Element<std::string>& transition, bool moreComing) {
 	handleTransition(interpreter, transition, Breakpoint::AFTER);
 }
-void Debugger::beforeExecutingContent(Interpreter interpreter, const Arabica::DOM::Node<std::string>& content) {
+void Debugger::beforeExecutingContent(Interpreter interpreter, const Arabica::DOM::Element<std::string>& content) {
 	handleExecutable(interpreter, Arabica::DOM::Element<std::string>(content), Breakpoint::BEFORE);
 }
-void Debugger::afterExecutingContent(Interpreter interpreter, const Arabica::DOM::Node<std::string>& content) {
+void Debugger::afterExecutingContent(Interpreter interpreter, const Arabica::DOM::Element<std::string>& content) {
 	handleExecutable(interpreter, Arabica::DOM::Element<std::string>(content), Breakpoint::AFTER);
 }
-void Debugger::beforeExitingState(Interpreter interpreter, const Arabica::DOM::Element<std::string>& state) {
+void Debugger::beforeExitingState(Interpreter interpreter, const Arabica::DOM::Element<std::string>& state, bool moreComing) {
 	handleState(interpreter, state, Breakpoint::BEFORE, Breakpoint::EXIT);
 }
-void Debugger::afterExitingState(Interpreter interpreter, const Arabica::DOM::Element<std::string>& state) {
+void Debugger::afterExitingState(Interpreter interpreter, const Arabica::DOM::Element<std::string>& state, bool moreComing) {
 	handleState(interpreter, state, Breakpoint::AFTER, Breakpoint::EXIT);
 }
-void Debugger::beforeEnteringState(Interpreter interpreter, const Arabica::DOM::Element<std::string>& state) {
+void Debugger::beforeEnteringState(Interpreter interpreter, const Arabica::DOM::Element<std::string>& state, bool moreComing) {
 	handleState(interpreter, state, Breakpoint::BEFORE, Breakpoint::ENTER);
 }
-void Debugger::afterEnteringState(Interpreter interpreter, const Arabica::DOM::Element<std::string>& state) {
+void Debugger::afterEnteringState(Interpreter interpreter, const Arabica::DOM::Element<std::string>& state, bool moreComing) {
 	handleState(interpreter, state, Breakpoint::AFTER, Breakpoint::ENTER);
 }
 void Debugger::beforeUninvoking(Interpreter interpreter, const Arabica::DOM::Element<std::string>& invokeElem, const std::string& invokeid) {

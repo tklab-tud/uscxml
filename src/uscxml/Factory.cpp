@@ -102,6 +102,7 @@
 
 #include "uscxml/plugins/datamodel/null/NULLDataModel.h"
 #include "uscxml/plugins/datamodel/xpath/XPathDataModel.h"
+#include "uscxml/plugins/datamodel/promela/PromelaDataModel.h"
 
 
 # include "uscxml/plugins/element/file/FileElement.h"
@@ -254,6 +255,15 @@ Factory::Factory() {
 		SWIDataModel* dataModel = new SWIDataModel();
 		registerDataModel(dataModel);
 	}
+#endif
+
+#if 1
+#if (defined BUILD_DM_PROMELA)
+	{
+		PromelaDataModel* dataModel = new PromelaDataModel();
+		registerDataModel(dataModel);
+	}
+#endif
 #endif
 
 #ifdef BUILD_DM_XPATH

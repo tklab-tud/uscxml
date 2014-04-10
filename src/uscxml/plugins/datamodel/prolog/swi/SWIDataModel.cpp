@@ -196,11 +196,8 @@ foreign_t SWIDataModel::inPredicate(term_t a0, int arity, void* context) {
 	try {
 		char *s;
 		if ( PL_get_atom_chars(a0, &s) ) {
-			NodeSet<std::string> config = _dmPtr->_interpreter->getConfiguration();
-			for (int i = 0; i < config.size(); i++) {
-				if (HAS_ATTR(config[i], "id") && strcmp(ATTR(config[i], "id").c_str(), s) == 0) {
-					return TRUE;
-				}
+			if (_dmPtr->_interpreter->isInState(s)) {
+        return true;
 			}
 		}
 		return FALSE;

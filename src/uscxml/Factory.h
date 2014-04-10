@@ -123,6 +123,14 @@ public:
 		_type = type;
 	}
 
+	void setElement(const Arabica::DOM::Element<std::string>& element) {
+		_element = element;
+	}
+	
+	Arabica::DOM::Element<std::string> getElement() {
+		return _element;
+	}
+
 	virtual Data getDataModelVariables() = 0;
 	virtual void send(const SendRequest& req) = 0;
 
@@ -133,6 +141,7 @@ public:
 
 protected:
 	InterpreterImpl* _interpreter;
+	Arabica::DOM::Element<std::string> _element;
 	std::string _invokeId;
 	std::string _type;
 
@@ -167,6 +176,14 @@ public:
 	}
 	void setType(const std::string& type) {
 		_impl->setType(type);
+	}
+
+	void setElement(const Arabica::DOM::Element<std::string>& element) {
+		_impl->setElement(element);
+	}
+	
+	Arabica::DOM::Element<std::string> getElement() {
+		return _impl->getElement();
 	}
 
 protected:
@@ -299,6 +316,8 @@ public:
 		_interpreter = interpreter;
 	}
 
+	virtual std::string andExpressions(std::list<std::string>) { return ""; }
+	
 	// we need it public for various static functions
 	InterpreterImpl* _interpreter;
 };
@@ -397,6 +416,10 @@ public:
 
 	size_t replaceExpressions(std::string& content) {
 		return _impl->replaceExpressions(content);
+	}
+
+	std::string andExpressions(std::list<std::string> expressions) {
+		return _impl->andExpressions(expressions);
 	}
 
 	virtual void setInterpreter(InterpreterImpl* interpreter) {

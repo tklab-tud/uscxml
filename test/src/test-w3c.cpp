@@ -1,6 +1,7 @@
 #include "uscxml/config.h"
 #include "uscxml/Interpreter.h"
 #include "uscxml/DOMUtils.h"
+#include "uscxml/transform/ChartToFSM.h"
 #include <glog/logging.h>
 #include <boost/algorithm/string.hpp>
 
@@ -20,6 +21,8 @@
 #include "XGetopt.h"
 #endif
 
+static bool withFlattening = false;
+static std::string documentURI;
 
 #ifdef HAS_EXECINFO_H
 void printBacktrace(void** array, int size) {
@@ -87,15 +90,72 @@ void customTerminate() {
 }
 
 class W3CStatusMonitor : public uscxml::InterpreterMonitor {
+	
+	void beforeTakingTransition(uscxml::Interpreter interpreter, const Arabica::DOM::Element<std::string>& transition, bool moreComing) {
+		std::cout << "Transition: " << uscxml::DOMUtils::xPathForNode(transition) << std::endl;
+	}
+
+	void onStableConfiguration(uscxml::Interpreter interpreter) {
+		std::cout << "Config: {";
+		printNodeSet(interpreter.getConfiguration());
+		std::cout << "}" << std::endl;
+	}
+	
+	void beforeProcessingEvent(uscxml::Interpreter interpreter, const uscxml::Event& event) {
+		std::cout << "Event: " << event.name << std::endl;
+	}
+	
+	void beforeExitingState(uscxml::Interpreter interpreter, const Arabica::DOM::Element<std::string>& state, bool moreComing) {
+		exitingStates.push_back(state);
+		if (!moreComing) {
+			std::cout << "Exiting: {";
+			printNodeSet(exitingStates);
+			std::cout << "}" << std::endl;
+			exitingStates = Arabica::XPath::NodeSet<std::string>();
+		}
+	}
+
+	void beforeEnteringState(uscxml::Interpreter interpreter, const Arabica::DOM::Element<std::string>& state, bool moreComing) {
+		enteringStates.push_back(state);
+		if (!moreComing) {
+			std::cout << "Entering: {";
+			printNodeSet(enteringStates);
+			std::cout << "}" << std::endl;
+			enteringStates = Arabica::XPath::NodeSet<std::string>();
+		}
+
+	}
+
+	void printNodeSet(const Arabica::XPath::NodeSet<std::string>& config) {
+		std::string seperator;
+		for (int i = 0; i < config.size(); i++) {
+			std::cout << seperator << ATTR(config[i], "id");
+			seperator = ", ";
+		}
+	}
+	
 	void beforeCompletion(uscxml::Interpreter interpreter) {
 		Arabica::XPath::NodeSet<std::string> config = interpreter.getConfiguration();
-		if (config.size() == 1 && boost::iequals(ATTR(config[0], "id"), "pass")) {
-			std::cout << "TEST SUCCEEDED" << std::endl;
-			exit(EXIT_SUCCESS);
+		if (config.size() == 1) {
+			if (withFlattening) {
+				std::cout << ATTR(config[0], "id") << std::endl;
+				if (boost::starts_with(ATTR(config[0], "id"), "active-pass")) {
+					std::cout << "TEST SUCCEEDED" << std::endl;
+					exit(EXIT_SUCCESS);
+				}
+			} else {
+				if (boost::iequals(ATTR(config[0], "id"), "pass")) {
+					std::cout << "TEST SUCCEEDED" << std::endl;
+					exit(EXIT_SUCCESS);
+				}
+			}
 		}
 		std::cout << "TEST FAILED" << std::endl;
 		exit(EXIT_FAILURE);
 	}
+	
+	Arabica::XPath::NodeSet<std::string> exitingStates;
+	Arabica::XPath::NodeSet<std::string> enteringStates;
 };
 
 int main(int argc, char** argv) {
@@ -116,12 +176,25 @@ int main(int argc, char** argv) {
 	google::InitGoogleLogging(argv[0]);
 	google::LogToStderr();
 
-//  for (int i = 0; i < argc; i++)
-//    std::cout << argv[i] << std::endl;
-//  std::cout << optind << std::endl;
+	
+  for (int i = 1; i < argc; i++) {
+		if (std::string(argv[i]) == "-f") {
+			withFlattening = true;
+		} else {
+			documentURI = argv[i];
+		}
+	}
 
-	LOG(INFO) << "Processing " << argv[1];
-	Interpreter interpreter = Interpreter::fromURI(argv[1]);
+	Interpreter interpreter;
+	LOG(INFO) << "Processing " << documentURI << (withFlattening ? " FSM converted" : "");
+	if (withFlattening) {
+		Interpreter flatInterpreter = Interpreter::fromURI(documentURI);
+		interpreter = Interpreter::fromDOM(ChartToFSM::flatten(flatInterpreter.getDocument(), flatInterpreter.getNameSpaceInfo()), flatInterpreter.getNameSpaceInfo());
+		interpreter.setNameSpaceInfo(interpreter.getNameSpaceInfo());
+	} else {
+		interpreter = Interpreter::fromURI(documentURI);
+	}
+
 	if (interpreter) {
 //		interpreter.setCmdLineOptions(argc, argv);
 //		interpreter->setCapabilities(Interpreter::CAN_NOTHING);

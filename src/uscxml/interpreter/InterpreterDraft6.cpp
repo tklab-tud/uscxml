@@ -54,7 +54,7 @@ void InterpreterDraft6::interpret() {
 			_dataModel = _factory->createDataModel(datamodelName, this);
 			if (!_dataModel) {
 				Event e;
-				e.data.compound["cause"] = Data("Cannot instantiate datamodel");
+				e.data.compound["cause"] = Data("Cannot instantiate datamodel", Data::VERBATIM);
 				throw e;
 			}
 		} else {
@@ -125,7 +125,7 @@ void InterpreterDraft6::interpret() {
 			initialTransitions.push_back(transitionElem);
 
 		} else {
-			// try to get initial transition form initial element
+			// try to get initial transition from initial element
 			initialTransitions = _xpath.evaluate("/" + _xpathPrefix + "initial/" + _xpathPrefix + "transition", _scxml).asNodeSet();
 			if (initialTransitions.size() == 0) {
 				Arabica::XPath::NodeSet<std::string> initialStates;
@@ -212,7 +212,9 @@ void InterpreterDraft6::mainEventLoop() {
 		for (unsigned int i = 0; i < _statesToInvoke.size(); i++) {
 			NodeSet<std::string> invokes = filterChildElements(_xmlNSPrefix + "invoke", _statesToInvoke[i]);
 			for (unsigned int j = 0; j < invokes.size(); j++) {
-				invoke(invokes[j]);
+				if (!HAS_ATTR(invokes[j], "persist") || !DOMUtils::attributeIsTrue(ATTR(invokes[j], "persist"))) {
+					invoke(invokes[j]);
+				}
 			}
 		}
 
@@ -278,6 +280,7 @@ void InterpreterDraft6::mainEventLoop() {
 				LOG(ERROR) << "Syntax error while setting external event:" << std::endl << e << std::endl << _currEvent;
 			}
 		}
+#if 0
 		for (unsigned int i = 0; i < _configuration.size(); i++) {
 			NodeSet<std::string> invokes = filterChildElements(_xmlNSPrefix + "invoke", _configuration[i]);
 			for (unsigned int j = 0; j < invokes.size(); j++) {
@@ -316,6 +319,29 @@ void InterpreterDraft6::mainEventLoop() {
 				}
 			}
 		}
+#else
+		for (std::map<std::string, Invoker>::iterator invokeIter = _invokers.begin();
+				 invokeIter != _invokers.end();
+				 invokeIter++) {
+			if (iequals(invokeIter->first, _currEvent.invokeid)) {
+				Arabica::XPath::NodeSet<std::string> finalizes = filterChildElements(_xmlNSPrefix + "finalize", invokeIter->second.getElement());
+				for (int k = 0; k < finalizes.size(); k++) {
+					Element<std::string> finalizeElem = Element<std::string>(finalizes[k]);
+					executeContent(finalizeElem);
+				}
+			}
+			if (HAS_ATTR(invokeIter->second.getElement(), "autoforward") && DOMUtils::attributeIsTrue(ATTR(invokeIter->second.getElement(), "autoforward"))) {
+				try {
+					// do not autoforward to invokers that send to #_parent from the SCXML IO Processor!
+					// Yes do so, see test229!
+					// if (!boost::equals(_currEvent.getOriginType(), "http://www.w3.org/TR/scxml/#SCXMLEventProcessor"))
+					invokeIter->second.send(_currEvent);
+				} catch(...) {
+					LOG(ERROR) << "Exception caught while sending event to invoker " << invokeIter->first;
+				}
+			}
+		}
+#endif
 		enabledTransitions = selectTransitions(_currEvent.name);
 		if (!enabledTransitions.empty()) {
 			// test 403b
@@ -389,15 +415,16 @@ LOOP:
 		index++;
 	}
 
-#if 0
+	enabledTransitions = filterPreempted(enabledTransitions);
+
+#if 1
 	std::cout << "Enabled transitions: " << std::endl;
 	for (int i = 0; i < enabledTransitions.size(); i++) {
-		std::cout << enabledTransitions[i] << std::endl << "----" << std::endl;
+		std::cout << DOMUtils::xPathForNode(enabledTransitions[i]) << std::endl;
 	}
 	std::cout << std::endl;
 #endif
 
-	enabledTransitions = filterPreempted(enabledTransitions);
 	return enabledTransitions;
 }
 
@@ -507,6 +534,8 @@ LOOP:
 	return filteredTransitions;
 }
 
+
+	
 /**
  * Is t1 preempting t2?
  */
@@ -600,7 +629,7 @@ void InterpreterDraft6::microstep(const Arabica::XPath::NodeSet<std::string>& en
 		// --- MONITOR: beforeTakingTransitions ------------------------------
 		for(monIter_t monIter = _monitors.begin(); monIter != _monitors.end(); monIter++) {
 			try {
-				(*monIter)->beforeTakingTransition(shared_from_this(), transition);
+				(*monIter)->beforeTakingTransition(shared_from_this(), transition, (i + 1 < enabledTransitions.size()));
 			} USCXML_MONITOR_CATCH_BLOCK(beforeTakingTransitions)
 		}
 		
@@ -609,7 +638,7 @@ void InterpreterDraft6::microstep(const Arabica::XPath::NodeSet<std::string>& en
 		// --- MONITOR: afterTakingTransitions ------------------------------
 		for(monIter_t monIter = _monitors.begin(); monIter != _monitors.end(); monIter++) {
 			try {
-				(*monIter)->afterTakingTransition(shared_from_this(), transition);
+				(*monIter)->afterTakingTransition(shared_from_this(), transition, (i + 1 < enabledTransitions.size()));
 			} USCXML_MONITOR_CATCH_BLOCK(afterTakingTransitions)
 		}
 	}
@@ -636,6 +665,7 @@ void InterpreterDraft6::exitInterpreter() {
 			executeContent(onExitElems[j]);
 		}
 		Arabica::XPath::NodeSet<std::string> invokeElems = filterChildElements(_xmlNSPrefix + "invoke", statesToExit[i]);
+		// TODO: we ought to cancel all remaining invokers just to be sure with the persist extension
 		for (int j = 0; j < invokeElems.size(); j++) {
 			cancelInvoke(invokeElems[j]);
 		}
@@ -750,7 +780,7 @@ void InterpreterDraft6::exitStates(const Arabica::XPath::NodeSet<std::string>& e
 		// --- MONITOR: beforeExitingState ------------------------------
 		for(monIter_t monIter = _monitors.begin(); monIter != _monitors.end(); monIter++) {
 			try {
-				(*monIter)->beforeExitingState(shared_from_this(), Element<std::string>(statesToExit[i]));
+				(*monIter)->beforeExitingState(shared_from_this(), Element<std::string>(statesToExit[i]), (i + 1 < statesToExit.size()));
 			} USCXML_MONITOR_CATCH_BLOCK(beforeExitingState)
 		}
 
@@ -763,15 +793,20 @@ void InterpreterDraft6::exitStates(const Arabica::XPath::NodeSet<std::string>& e
 		// --- MONITOR: afterExitingState ------------------------------
 		for(monIter_t monIter = _monitors.begin(); monIter != _monitors.end(); monIter++) {
 			try {
-				(*monIter)->afterExitingState(shared_from_this(), Element<std::string>(statesToExit[i]));
+				(*monIter)->afterExitingState(shared_from_this(), Element<std::string>(statesToExit[i]), (i + 1 < statesToExit.size()));
 			} USCXML_MONITOR_CATCH_BLOCK(afterExitingState)
 		}
 
 		NodeSet<std::string> invokes = filterChildElements(_xmlNSPrefix + "invoke", statesToExit[i]);
 		for (int j = 0; j < invokes.size(); j++) {
 			Element<std::string> invokeElem = (Element<std::string>)invokes[j];
-			cancelInvoke(invokeElem);
+			if (HAS_ATTR(invokeElem, "persist") && DOMUtils::attributeIsTrue(ATTR(invokeElem, "persist"))) {
+				// extension for flattened SCXML documents, we will need an explicit uninvoke element
+			} else {
+				cancelInvoke(invokeElem);
+			}
 		}
+		
 		// remove statesToExit[i] from _configuration - test409
 		tmp.clear();
 		for (int j = 0; j < _configuration.size(); j++) {
@@ -898,16 +933,35 @@ void InterpreterDraft6::enterStates(const Arabica::XPath::NodeSet<std::string>& 
 	for (int i = 0; i < statesToEnter.size(); i++) {
 		Element<std::string> stateElem = (Element<std::string>)statesToEnter[i];
 		
+		// extension for flattened interpreters
+		for (unsigned int k = 0; k < statesToEnter.size(); k++) {
+			NodeSet<std::string> invokes = filterChildElements(_xmlNSPrefix + "invoke", statesToEnter[k]);
+			for (unsigned int j = 0; j < invokes.size(); j++) {
+				if (HAS_ATTR(invokes[j], "persist") && DOMUtils::attributeIsTrue(ATTR(invokes[j], "persist"))) {
+					invoke(invokes[j]);
+				}
+			}
+		}
+
 		// --- MONITOR: beforeEnteringState ------------------------------
 		for(monIter_t monIter = _monitors.begin(); monIter != _monitors.end(); monIter++) {
 			try {
-				(*monIter)->beforeEnteringState(shared_from_this(), stateElem);
+				(*monIter)->beforeEnteringState(shared_from_this(), stateElem, (i + 1 < statesToEnter.size()));
 			} USCXML_MONITOR_CATCH_BLOCK(beforeEnteringState)
+		}
+
+		// extension for flattened SCXML documents, we will need an explicit uninvoke element
+		NodeSet<std::string> uninvokes = filterChildElements(_xmlNSPrefix + "uninvoke", statesToEnter[i]);
+		for (int j = 0; j < uninvokes.size(); j++) {
+			Element<std::string> uninvokeElem = (Element<std::string>)uninvokes[j];
+			cancelInvoke(uninvokeElem);
 		}
 
 		_configuration.push_back(stateElem);
 		_statesToInvoke.push_back(stateElem);
-		if (_binding == LATE && stateElem.getAttribute("isFirstEntry").size() > 0) {
+
+//		if (_binding == LATE && stateElem.getAttribute("isFirstEntry").size() > 0) {
+		if (_binding == LATE && !isMember(stateElem, _alreadyEntered)) {
 			NodeSet<std::string> dataModelElems = filterChildElements(_xmlNSPrefix + "datamodel", stateElem);
 			if(dataModelElems.size() > 0 && _dataModel) {
 				Arabica::XPath::NodeSet<std::string> dataElems = filterChildElements(_xmlNSPrefix + "data", dataModelElems[0]);
@@ -916,7 +970,8 @@ void InterpreterDraft6::enterStates(const Arabica::XPath::NodeSet<std::string>& 
 						initializeData(Element<std::string>(dataElems[j]));
 				}
 			}
-			stateElem.setAttribute("isFirstEntry", "");
+			_alreadyEntered.push_back(stateElem);
+//			stateElem.setAttribute("isFirstEntry", "");
 		}
 		// execute onentry executable content
 		NodeSet<std::string> onEntryElems = filterChildElements(_xmlNSPrefix + "onEntry", stateElem);
@@ -925,7 +980,7 @@ void InterpreterDraft6::enterStates(const Arabica::XPath::NodeSet<std::string>& 
 		// --- MONITOR: afterEnteringState ------------------------------
 		for(monIter_t monIter = _monitors.begin(); monIter != _monitors.end(); monIter++) {
 			try {
-				(*monIter)->afterEnteringState(shared_from_this(), stateElem);
+				(*monIter)->afterEnteringState(shared_from_this(), stateElem, (i + 1 < statesToEnter.size()));
 			} USCXML_MONITOR_CATCH_BLOCK(afterEnteringState)
 		}
 
@@ -936,7 +991,7 @@ void InterpreterDraft6::enterStates(const Arabica::XPath::NodeSet<std::string>& 
 				executeContent(transitions[j]);
 			}
 		}
-
+		
 		if (isFinal(stateElem)) {
 			internalDoneSend(stateElem);
 			Element<std::string> parent = (Element<std::string>)stateElem.getParentNode();

@@ -137,6 +137,31 @@ if (SWI_FOUND AND BUILD_DM_PROLOG)
 	endif()
 endif()
 
+
+# Promela datamodel
+
+if (BUILD_DM_PROMELA)
+	set(USCXML_DATAMODELS "promela ${USCXML_DATAMODELS}")
+	
+	file(GLOB_RECURSE PROMELA_DATAMODEL
+		promela/*.cpp
+		promela/*.c
+		promela/*.h
+	)
+	if (BUILD_AS_PLUGINS)
+		source_group("" FILES PROMELA_DATAMODEL)
+		add_library(
+			datamodel_promela SHARED 
+			${PROMELA_DATAMODEL}
+			"../Plugins.cpp")
+		target_link_libraries(datamodel_promela uscxml)
+		set_target_properties(datamodel_promela PROPERTIES FOLDER "Plugin DataModel")
+	else()
+		list (APPEND USCXML_FILES ${PROMELA_DATAMODEL})
+	endif()
+endif()
+
+
 set(USCXML_INCLUDE_DIRS ${USCXML_INCLUDE_DIRS} PARENT_SCOPE)
 set(USCXML_FILES ${USCXML_FILES} PARENT_SCOPE)
 set(USCXML_DATAMODELS ${USCXML_DATAMODELS} PARENT_SCOPE)

@@ -1,4 +1,5 @@
 <scxml datamodel="java" initial="comparison" binding="late">
+  <!-- unimplemented -->
 	<datamodel>
 		<data id="year" expr="2008" />
 		<data id="CEO" expr="'Mr Big'" />

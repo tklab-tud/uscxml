@@ -11,6 +11,7 @@
 set(CTEST_CUSTOM_TESTS_IGNORE
 	"ecma/test178.scxml"
 	"ecma/test230.scxml"
+	"ecma/test250.scxml"
 	"ecma/test463.scxml"
 	"ecma/test464.scxml"
 	"ecma/test465.scxml"
@@ -40,7 +41,58 @@ set(CTEST_CUSTOM_TESTS_IGNORE
 	"ecma/test547.scxml"
 	"ecma/test555.scxml"
 	"ecma/test568.scxml"
-	
+
+	"fsm/ecma/test178.scxml" # manual test
+	"fsm/ecma/test224.scxml" # automatically generated id has the form stateid.platformid
+	"fsm/ecma/test230.scxml" # manual test
+	# "fsm/ecma/test237.scxml" # test uninvoke
+	# "fsm/ecma/test240.scxml" # nested data was added in top state
+	# "fsm/ecma/test241.scxml" # succeeds with edits form above
+	# "fsm/ecma/test244.scxml" # succeeds with edits form above
+	"fsm/ecma/test250.scxml" # manual test
+
+	# "fsm/ecma/test252.scxml"
+	# "fsm/ecma/test280.scxml"
+	# "fsm/ecma/test294.scxml" # donedata hangs
+	# "fsm/ecma/test298.scxml" #      "
+	"fsm/ecma/test307.scxml" # manual test
+	"fsm/ecma/test324.scxml" # _name can be assigned
+	"fsm/ecma/test329.scxml" # system variables can be modified
+	# "fsm/ecma/test336.scxml" # succeeds with edits form above
+	# "fsm/ecma/test343.scxml"
+	"fsm/ecma/test346.scxml" # change the value of a system variable
+	# "fsm/ecma/test349.scxml" # succeeds with edits form above
+	# "fsm/ecma/test377.scxml" # onexit handler order
+	# "fsm/ecma/test403b.scxml"
+	# "fsm/ecma/test403c.scxml" # problems with event preemption
+	# "fsm/ecma/test404.scxml"
+	# "fsm/ecma/test405.scxml"
+	"fsm/ecma/test409.scxml" # In predicate
+	"fsm/ecma/test411.scxml" # In predicate
+	"fsm/ecma/test415.scxml" # manual test
+	# "fsm/ecma/test422.scxml"
+	"fsm/ecma/test436.scxml"  # In predicate
+	# "fsm/ecma/test488.scxml" # ?
+	# "fsm/ecma/test500.scxml" # succeeds with edits form above
+	# "fsm/ecma/test501.scxml" # succeeds with edits form above
+	# "fsm/ecma/test503.scxml"
+	# "fsm/ecma/test509.scxml" # succeeds with edits form above
+	# "fsm/ecma/test510.scxml" # succeeds with edits form above
+	# "fsm/ecma/test513.scxml" # succeeds with edits form above
+	# "fsm/ecma/test518.scxml" # succeeds with edits form above
+	"fsm/ecma/test519.scxml" # unspecified basichttp format
+	"fsm/ecma/test520.scxml" # unspecified basichttp format
+	# "fsm/ecma/test522.scxml" # succeeds with edits form above
+	# "fsm/ecma/test527.scxml" # ?
+	# "fsm/ecma/test528.scxml" # ?
+	# "fsm/ecma/test529.scxml" # ?
+	"fsm/ecma/test531.scxml" # unspecified basichttp format
+	# "fsm/ecma/test532.scxml" # succeeds with edits form above
+	"fsm/ecma/test534.scxml" # unspecified basichttp format
+	# "fsm/ecma/test542.scxml" # donedata hangs
+	"fsm/ecma/test567.scxml"  # unspecified basichttp format
+	# "fsm/ecma/test569.scxml" # succeeds with edits form above
+	# "fsm/ecma/test570.scxml"
 )
 
 

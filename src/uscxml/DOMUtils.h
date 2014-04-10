@@ -37,6 +37,7 @@ class USCXML_API DOMUtils {
 public:
 	static std::string xPathForNode(const Arabica::DOM::Node<std::string>& node, const std::string& ns = "");
 	static std::list<Arabica::DOM::Node<std::string> > getElementsByType(const Arabica::DOM::Node<std::string>& root, Arabica::DOM::Node_base::Type type);
+	static bool attributeIsTrue(const::std::string& value);
 };
 
 class ScriptEntityResolver : public Arabica::SAX::EntityResolver<std::string> {

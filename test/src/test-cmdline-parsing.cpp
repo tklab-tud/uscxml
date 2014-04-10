@@ -12,7 +12,6 @@ int main(int argc, char** argv) {
 		const char* testArgv[] = {
 			"test-cmdline-parsing",
 			"--verbose",
-			"--dot",
 			"--port=80",
 			"--ssl-port=8080",
 			"--certificate=/foo/bar.pem",
@@ -25,7 +24,6 @@ int main(int argc, char** argv) {
 		};
 		InterpreterOptions options = InterpreterOptions::fromCmdLine(testArgc, (char **)testArgv);
 		assert(options.verbose);
-		assert(options.useDot);
 		assert(options.httpPort == 80);
 		assert(options.httpsPort == 8080);
 		assert(boost::equals(options.certificate, "/foo/bar.pem"));
