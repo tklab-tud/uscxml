@@ -82,21 +82,20 @@ public:
 
 protected:
 
-	struct Token {
-		size_t start;
-		size_t end;
-	};
-
-	Data expressionToAST(const std::string& expr);
-	bool evalAST(const Data ast);
-
-	void assign(bool truth, Data ast);
-
+	void declare(void* ast);
+	int evaluateExpr(void* ast);
+	void evaluateStmnt(void* ast);
+	
+	void setVariable(void* ast, int value);
+	int getVariable(void* ast);
+	
+	int _lastMType;
+	
 	Event _event;
 	std::string _name;
 	std::string _sessionId;
 
-	std::map<std::string, bool> _variables;
+	Data _variables;
 
 };
 

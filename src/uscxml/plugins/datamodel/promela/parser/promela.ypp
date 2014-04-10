@@ -27,6 +27,7 @@ using namespace uscxml;
 %}
 
 %pure-parser
+%debug
 %file-prefix "promela"
 %parse-param { uscxml::PromelaParser* ctx }
 %lex-param {void * scanner}
@@ -41,18 +42,25 @@ using namespace uscxml;
 
 %error-verbose
 
+/* %type <node> expr_lst */
+%type <node> expr pfld varref decl_lst stmnt_lst vardcl ivar var_list one_decl prargs
+%type <node> stmnt Stmnt const_expr nlst vis arg
 
-%type <node> expr pfld varref decl_lst vardcl ivar var_list one_decl
+%token  VAR_ARRAY VARLIST DECL DECLLIST STMNT COLON EXPR NAMELIST
 
-%token  LBRACKET RBRACKET
-%token  <value> LEN
+%token  '(' ')'
+%token  '[' ']'
+%token  '{' '}'
+%token	ASSERT PRINT PRINTM
+%token  <value> LEN STRING
 %token  TYPEDEF MTYPE INLINE RETURN LABEL OF
 %token  GOTO BREAK ELSE SEMI ARROW
 %token  IF FI DO OD FOR SELECT IN SEP DOTDOT
 %token  HIDDEN SHOW ISLOCAL
 %token  <value> CONST TYPE XU			/* val */
 %token  <value> NAME UNAME PNAME INAME		/* sym */
-%token  STRING CLAIM TRACE INIT	LTL	/* sym */
+%token  CLAIM TRACE INIT	LTL	/* sym */
+%token  COMMA
 
 %right	ASGN
 %left OR AND
@@ -62,6 +70,7 @@ using namespace uscxml;
 %left	LSHIFT RSHIFT
 %left	PLUS MINUS 
 %left TIMES DIVIDE MODULO
+%left	INCR DECR
 %left COMPL
 %right NEG
 %left	DOT
@@ -80,11 +89,16 @@ program	:
     ctx->ast = $1; 
     ctx->type = PromelaParser::PROMELA_EXPR;
   }
+  | stmnt_lst { 
+    ctx->ast = $1; 
+    ctx->type = PromelaParser::PROMELA_STMNT;
+  }
+  ;
 
 varref	: cmpnd			{}
 	;
 
-pfld	: NAME			{ $$ = ctx->value(yylval.value); }
+pfld	: NAME			{ $$ = ctx->value(NAME, yylval.value); }
 	| NAME '[' expr ']' {}
 	;
 
@@ -93,80 +107,133 @@ cmpnd	: pfld			{}
 	;
 
 sfld	: /* empty */		{}
-	| '.' cmpnd %prec DOT	{}
+	| DOT cmpnd %prec DOT	{}
 	;
 
-expr    : LBRACKET expr RBRACKET		{ $$ = $2; }
-	| expr PLUS expr		{ $$ = ctx->binOp(PLUS, $1, $3); }
-	| expr MINUS expr		{ $$ = ctx->binOp(MINUS, $1, $3); }
-	| expr TIMES expr		{ $$ = ctx->binOp(TIMES, $1, $3); }
-	| expr DIVIDE expr		{ $$ = ctx->binOp(DIVIDE, $1, $3); }
-	| expr MODULO expr		{ $$ = ctx->binOp(MODULO, $1, $3); }
-	| expr BITAND expr		{ $$ = ctx->binOp(BITAND, $1, $3); }
-	| expr BITXOR expr		{ $$ = ctx->binOp(BITXOR, $1, $3); }
-	| expr BITOR expr		{ $$ = ctx->binOp(BITOR, $1, $3); }
-	| expr GT expr		{ $$ = ctx->binOp(GT, $1, $3); }
-	| expr LT expr		{ $$ = ctx->binOp(LT, $1, $3); }
-	| expr GE expr		{ $$ = ctx->binOp(GE, $1, $3); }
-	| expr LE expr		{ $$ = ctx->binOp(LE, $1, $3); }
-	| expr EQ expr		{ $$ = ctx->binOp(EQ, $1, $3); }
-	| expr NE expr		{ $$ = ctx->binOp(NE, $1, $3); }
-	| expr AND expr		{ $$ = ctx->binOp(AND, $1, $3); }
-	| expr OR  expr		{ $$ = ctx->binOp(OR, $1, $3); }
-	| expr LSHIFT expr	{ $$ = ctx->binOp(LSHIFT, $1, $3); }
-	| expr RSHIFT expr	{ $$ = ctx->binOp(RSHIFT, $1, $3); }
-	| NEG expr		      { $$ = ctx->uniOp(NEG, $2); }
-	| MINUS expr %prec MINUS	{ $$ = ctx->uniOp(MINUS, $2); }
+/*
+expr_lst: expr       	{ $$ = ctx->node(EXPR, 1, $1); }
+  | expr SEMI       	{ $$ = ctx->node(EXPR, 1, $1); }
+	| expr SEMI expr_lst { $$ = ctx->node(EXPR, 2, $1, $3); }
+	;
+*/
 
-	| LEN '(' varref ')'	{ $$ = ctx->uniOp(LEN, $3);  }
+expr    : '(' expr ')'		{ $$ = $2; }
+	| expr PLUS expr		{ $$ = ctx->node(PLUS, 2, $1, $3); }
+	| expr MINUS expr		{ $$ = ctx->node(MINUS, 2, $1, $3); }
+	| expr TIMES expr		{ $$ = ctx->node(TIMES, 2, $1, $3); }
+	| expr DIVIDE expr		{ $$ = ctx->node(DIVIDE, 2, $1, $3); }
+	| expr MODULO expr		{ $$ = ctx->node(MODULO, 2, $1, $3); }
+	| expr BITAND expr		{ $$ = ctx->node(BITAND, 2, $1, $3); }
+	| expr BITXOR expr		{ $$ = ctx->node(BITXOR, 2, $1, $3); }
+	| expr BITOR expr		{ $$ = ctx->node(BITOR, 2, $1, $3); }
+	| expr GT expr		{ $$ = ctx->node(GT, 2, $1, $3); }
+	| expr LT expr		{ $$ = ctx->node(LT, 2, $1, $3); }
+	| expr GE expr		{ $$ = ctx->node(GE, 2, $1, $3); }
+	| expr LE expr		{ $$ = ctx->node(LE, 2, $1, $3); }
+	| expr EQ expr		{ $$ = ctx->node(EQ, 2, $1, $3); }
+	| expr NE expr		{ $$ = ctx->node(NE, 2, $1, $3); }
+	| expr AND expr		{ $$ = ctx->node(AND, 2, $1, $3); }
+	| expr OR  expr		{ $$ = ctx->node(OR, 2, $1, $3); }
+	| expr LSHIFT expr	{ $$ = ctx->node(LSHIFT, 2, $1, $3); }
+	| expr RSHIFT expr	{ $$ = ctx->node(RSHIFT, 2, $1, $3); }
+	| NEG expr		      { $$ = ctx->node(NEG, 1, $2); }
+	| MINUS expr %prec MINUS	{ $$ = ctx->node(MINUS, 1, $2); }
+
+	| LEN '(' varref ')'	{ $$ = ctx->node(LEN, 1, $3);  }
 	| varref		{  }
-	| CONST 		{ $$ = ctx->value(yylval.value); }
+	| CONST 		{ $$ = ctx->value(CONST, yylval.value); }
 	;
 
 
-vis	: /* empty */		{ }
-	| HIDDEN		{  }
-	| SHOW			{  }
-	| ISLOCAL		{  }
+vis	: /* empty */		{ $$ = ctx->node(SHOW, 0); }
+	| HIDDEN		{ $$ = ctx->node(HIDDEN, 0); }
+	| SHOW			{ $$ = ctx->node(SHOW, 0); }
+	| ISLOCAL		{ $$ = ctx->node(ISLOCAL, 0); }
 	;
 
-one_decl: vis TYPE var_list	{ $$ = ctx->uniOp(ASGN, $3); }
-	| vis UNAME var_list	{ }
-	| vis TYPE ASGN '{' nlst '}' { }
+one_decl: vis TYPE var_list	{ $$ = ctx->node(DECL, 3, $1, ctx->value(TYPE, $2), $3); }
+	| vis UNAME var_list	{ $$ = ctx->node(UNAME, 2, $1, $3); }
+	| vis TYPE ASGN '{' nlst '}' { $$ = ctx->node(DECL, 3, $1, ctx->value(TYPE, $2), $5); }
 	;
 
-decl_lst: one_decl       	{ }
-	| one_decl SEMI
-	  decl_lst		{  }
+decl_lst: one_decl            { $$ = $1; }
+  | one_decl SEMI             { $$ = $1; }
+  | one_decl SEMI decl_lst    {
+    $$ = ctx->node(DECLLIST, 1, $1);
+    if($3->type == DECLLIST) {
+      $$->merge($3); delete $3; 
+    } else {
+      $$->push($3);
+    }
+  }
 	;
 
-var_list: ivar           	{ $$ = ctx->uniOp(ASGN, $1); }
-	| ivar ',' var_list	{ $$ = ctx->binOp(ASGN, $1, $3); }
+var_list: ivar           { $$ = ctx->node(VARLIST, 1, $1); }
+	| ivar COMMA var_list	{ $$ = ctx->node(VARLIST, 1, $1); $$->merge($3); delete $3; }
 	;
 
-ivar    : vardcl           	{ $$ = ctx->uniOp(ASGN, $1); }
-	| vardcl ASGN expr   	{ $$ = ctx->binOp(ASGN, $1, $3); }
+ivar    : vardcl           	{ $$ = $1; }
+	| vardcl ASGN expr   	{ $$ = ctx->node(ASGN, 2, $1, $3); }
 	;
 
-vardcl  : NAME  		{ $$ = ctx->value(yylval.value); }
-	| NAME ':' CONST	{ }
-	| NAME '[' const_expr ']'	{ }
+vardcl  : NAME  		{ $$ = ctx->value(NAME, $1); }
+	| NAME COLON CONST	{ $$ = ctx->node(COLON, 2, ctx->value(NAME, $1), ctx->value(CONST, $3)); }
+	| NAME '[' const_expr ']'	{ $$ = ctx->node(VAR_ARRAY, 2, ctx->value(NAME, $1), $3); }
 	;
 
-const_expr:	CONST			{ }
-	| '-' const_expr %prec MINUS	{  }
-	| '(' const_expr ')'		{  }
-	| const_expr '+' const_expr	{  }
-	| const_expr '-' const_expr	{  }
-	| const_expr '*' const_expr	{  }
-	| const_expr '/' const_expr	{  }
-	| const_expr '%' const_expr	{  }
+const_expr:	CONST			{ $$ = ctx->value(CONST, yylval.value); }
+	| MINUS const_expr %prec MINUS	{ $$ = ctx->node(MINUS, 1, $2); }
+	| '(' const_expr ')'		{ $$ = $2; }
+	| const_expr PLUS const_expr	{ $$ = ctx->node(PLUS, 2, $1, $3); }
+	| const_expr MINUS const_expr	{ $$ = ctx->node(MINUS, 2, $1, $3); }
+	| const_expr TIMES const_expr	{ $$ = ctx->node(TIMES, 2, $1, $3); }
+	| const_expr DIVIDE const_expr	{ $$ = ctx->node(DIVIDE, 2, $1, $3); }
+	| const_expr MODULO const_expr	{ $$ = ctx->node(MODULO, 2, $1, $3); }
 	;
 
-nlst	: NAME			{  }
-	| nlst NAME 		{  }
-	| nlst ','		{  }
+nlst	: NAME			{ $$ = ctx->value(NAME, $1); }
+	| nlst NAME 		{ 
+    if ($1->type == NAME) {
+      $$ = ctx->node(NAMELIST, 1, $1);
+      $$->push(ctx->value(NAME, $2));
+    } else {
+      $1->push(ctx->value(NAME, $2));
+    }
+  }
+	| nlst COMMA		{ $$ = $1; }
 	;
+
+stmnt_lst: stmnt       	{ $$ = $1; }
+  | stmnt SEMI         	{ $$ = $1; }
+	| stmnt SEMI stmnt_lst { $$ = ctx->node(STMNT, 2, $1, $3); }
+	;
+
+stmnt	: Stmnt			{ $$ = $1; }
+	;
+
+Stmnt	: varref ASGN expr	{ $$ = ctx->node(ASGN, 2, $1, $3); }
+	| varref INCR		{ $$ = ctx->node(INCR, 1, $1); }
+	| varref DECR		{ $$ = ctx->node(DECR, 1, $1); }
+	| PRINT	'(' STRING prargs ')'		{ $$ = ctx->node(PRINT, 2, ctx->value(STRING, $3), $4); }
+	| PRINTM '(' varref ')'	{ $$ = ctx->node(PRINTM, 1, $3); }
+	| PRINTM '(' CONST ')'	{ $$ = ctx->node(PRINTM, 1, ctx->value(CONST, $3)); }
+	| ASSERT expr    	{  }
+	| expr		{ $$ = $1; }
+	| varref ASGN INAME	{  } '(' args ')' Stmnt			{  }
+	;
+
+args    : /* empty */		{  }
+	| arg			{  }
+	;
+
+prargs  : /* empty */		{ $$ = ctx->value(0, ""); }
+	| COMMA arg		{ $$ = $2; }
+	;
+
+arg     : expr			{ $$ = $1; }
+	| expr COMMA arg		{ $$ = ctx->node(0, 2, $1, $3); }
+	;
+
 
 %%
 

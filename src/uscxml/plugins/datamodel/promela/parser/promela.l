@@ -20,20 +20,24 @@
 
 DIGIT    [0-9]
 ID       [_a-zA-Z][_a-zA-Z0-9]*
+L        [a-zA-Z_]
 
 %%
 
 bit|bool|byte|int|mtype|short|unsigned {
-  //printf("TYPE: %s\n", yytext);
   yylval->value = strdup(yytext);
   return TYPE;
 }
 
 len                        { return LEN; }
 false|skip|true            { yylval->value = strdup(yytext); return CONST; }
+printf                     { return PRINT; }
+printm                     { return PRINTM; }
 
 "!"                        { return NEG; }
 "~"                        { return COMPL; }
+"++"                       { return INCR; }
+"--"                       { return DECR; }
 
 "*"                        { return TIMES; }
 "/"                        { return DIVIDE; }
@@ -62,18 +66,26 @@ false|skip|true            { yylval->value = strdup(yytext); return CONST; }
 "||"                       { return OR; }
 
 "."                        { return DOT; }
+","                        { return COMMA; }
+";"                        { return SEMI; }
 
-"("                        { return LBRACKET; }
-")"                        { return RBRACKET; }
+"("                        { return '('; }
+")"                        { return ')'; }
+
+"["                        { return '['; }
+"]"                        { return ']'; }
+
+"{"                        { return '{'; }
+"}"                        { return '}'; }
 
 "="                        { return ASGN; }
+
+L?\"(\\.|[^\\"])*\"         { yylval->value = strdup(yytext); return(STRING); }
 
 {DIGIT}+                   { yylval->value = strdup(yytext); return CONST; }
 {ID}                       { yylval->value = strdup(yytext); return NAME; }
 
 \'(\\.|[^'])*\'            { }
-
-"{"[^}\n]*"}"     /* eat up one-line comments */
 
 [ \t\n]+          /* eat up whitespace */
 

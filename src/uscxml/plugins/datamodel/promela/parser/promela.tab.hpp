@@ -41,7 +41,7 @@
 #   define PROMELA_DEBUG 0
 #  endif
 # else /* ! defined YYDEBUG */
-#  define PROMELA_DEBUG 0
+#  define PROMELA_DEBUG 1
 # endif /* ! defined YYDEBUG */
 #endif  /* ! defined PROMELA_DEBUG */
 #if PROMELA_DEBUG
@@ -54,66 +54,78 @@ extern int promela_debug;
    /* Put the tokens into the symbol table, so that GDB and other debuggers
       know about them.  */
    enum promela_tokentype {
-     LBRACKET = 258,
-     RBRACKET = 259,
-     LEN = 260,
-     TYPEDEF = 261,
-     MTYPE = 262,
-     INLINE = 263,
-     RETURN = 264,
-     LABEL = 265,
-     OF = 266,
-     GOTO = 267,
-     BREAK = 268,
-     ELSE = 269,
-     SEMI = 270,
-     ARROW = 271,
-     IF = 272,
-     FI = 273,
-     DO = 274,
-     OD = 275,
-     FOR = 276,
-     SELECT = 277,
-     IN = 278,
-     SEP = 279,
-     DOTDOT = 280,
-     HIDDEN = 281,
-     SHOW = 282,
-     ISLOCAL = 283,
-     CONST = 284,
-     TYPE = 285,
-     XU = 286,
-     NAME = 287,
-     UNAME = 288,
-     PNAME = 289,
-     INAME = 290,
-     STRING = 291,
-     CLAIM = 292,
-     TRACE = 293,
-     INIT = 294,
-     LTL = 295,
-     ASGN = 296,
-     AND = 297,
-     OR = 298,
-     BITAND = 299,
-     BITXOR = 300,
-     BITOR = 301,
-     NE = 302,
-     EQ = 303,
-     LE = 304,
-     GE = 305,
-     LT = 306,
-     GT = 307,
-     RSHIFT = 308,
-     LSHIFT = 309,
-     MINUS = 310,
-     PLUS = 311,
-     MODULO = 312,
-     DIVIDE = 313,
-     TIMES = 314,
-     COMPL = 315,
-     NEG = 316,
-     DOT = 317
+     VAR_ARRAY = 258,
+     VARLIST = 259,
+     DECL = 260,
+     DECLLIST = 261,
+     STMNT = 262,
+     COLON = 263,
+     EXPR = 264,
+     NAMELIST = 265,
+     ASSERT = 266,
+     PRINT = 267,
+     PRINTM = 268,
+     LEN = 269,
+     STRING = 270,
+     TYPEDEF = 271,
+     MTYPE = 272,
+     INLINE = 273,
+     RETURN = 274,
+     LABEL = 275,
+     OF = 276,
+     GOTO = 277,
+     BREAK = 278,
+     ELSE = 279,
+     SEMI = 280,
+     ARROW = 281,
+     IF = 282,
+     FI = 283,
+     DO = 284,
+     OD = 285,
+     FOR = 286,
+     SELECT = 287,
+     IN = 288,
+     SEP = 289,
+     DOTDOT = 290,
+     HIDDEN = 291,
+     SHOW = 292,
+     ISLOCAL = 293,
+     CONST = 294,
+     TYPE = 295,
+     XU = 296,
+     NAME = 297,
+     UNAME = 298,
+     PNAME = 299,
+     INAME = 300,
+     CLAIM = 301,
+     TRACE = 302,
+     INIT = 303,
+     LTL = 304,
+     COMMA = 305,
+     ASGN = 306,
+     AND = 307,
+     OR = 308,
+     BITAND = 309,
+     BITXOR = 310,
+     BITOR = 311,
+     NE = 312,
+     EQ = 313,
+     LE = 314,
+     GE = 315,
+     LT = 316,
+     GT = 317,
+     RSHIFT = 318,
+     LSHIFT = 319,
+     MINUS = 320,
+     PLUS = 321,
+     MODULO = 322,
+     DIVIDE = 323,
+     TIMES = 324,
+     DECR = 325,
+     INCR = 326,
+     COMPL = 327,
+     NEG = 328,
+     DOT = 329
    };
 #endif
 
@@ -122,14 +134,14 @@ extern int promela_debug;
 typedef union PROMELA_STYPE
 {
 /* Line 2053 of yacc.c  */
-#line 37 "promela.ypp"
+#line 38 "promela.ypp"
 
   uscxml::PromelaParserNode* node;
 	char* value;
 
 
 /* Line 2053 of yacc.c  */
-#line 133 "promela.tab.hpp"
+#line 145 "promela.tab.hpp"
 } PROMELA_STYPE;
 # define PROMELA_STYPE_IS_TRIVIAL 1
 # define promela_stype PROMELA_STYPE /* obsolescent; will be withdrawn */
