@@ -5,6 +5,8 @@
 #define PROMELA_H_9AB78YB1
 
 #include <stdlib.h>
+#include <stdarg.h>
+
 #include "uscxml/Message.h"
 
 #define GRAMMAR_COMMON(name, uc_name) \
@@ -17,11 +19,39 @@ int promela_##name##_lex_destroy (void*); \
 
 namespace uscxml {
 
+class PromelaParser;
+	
 struct PromelaParserNode {
 	PromelaParserNode() : type(0) {}
 	int type;
 	std::string value;
 	std::list<PromelaParserNode*> operands;
+	
+	void merge(PromelaParserNode* node) {
+		for (std::list<PromelaParserNode*>::iterator iter = node->operands.begin();
+				 iter != node->operands.end(); iter++) {
+			operands.push_back(*iter);
+		}
+	}
+
+	void push(PromelaParserNode* node) {
+		operands.push_back(node);
+	}
+
+	void dump(int indent = 0) {
+		std::string padding;
+		for (int i = 0; i < indent; i++) {
+			padding += "  ";
+		}
+		std::cout << padding << typeToDesc(type) << ": " << value << std::endl;
+		for (std::list<PromelaParserNode*>::iterator iter = operands.begin();
+				 iter != operands.end(); iter++) {
+			(*iter)->dump(indent + 1);
+		}
+	}
+	
+	static std::string typeToDesc(int type);
+
 };
 
 class PromelaParser {
@@ -32,27 +62,26 @@ public:
 		PROMELA_STMNT
 	};
 	
-	PromelaParser(const std::string& expr);
+	static std::string typeToDesc(int type);
+
+	PromelaParser(const std::string& expr, Type expectedType);
 	virtual ~PromelaParser();
 	
-	virtual PromelaParserNode* uniOp(int type, PromelaParserNode* oper) {
+	virtual PromelaParserNode* node(int type, int nrArgs, ...) {
 		PromelaParserNode* newNode = new PromelaParserNode();
 		newNode->type = type;
-		newNode->operands.push_back(oper);
+		va_list ap;
+    va_start(ap, nrArgs);
+    for(int i = 1; i <= nrArgs; i++) {
+			newNode->operands.push_back(va_arg(ap, PromelaParserNode*));
+		}
 		return newNode;
 	}
 
-	virtual PromelaParserNode* binOp(int type, PromelaParserNode* left, PromelaParserNode* right) {
-		PromelaParserNode* newNode = new PromelaParserNode();
-		newNode->type = type;
-		newNode->operands.push_back(left);
-		newNode->operands.push_back(right);
-		return newNode;
-	}
-
-	virtual PromelaParserNode* value(const char* value) {
+	virtual PromelaParserNode* value(int type, const char* value) {
 		PromelaParserNode* newNode = new PromelaParserNode();
 		newNode->value = value;
+		newNode->type = type;
 		return newNode;
 	}
 
@@ -68,23 +97,9 @@ public:
 			std::cout << "Promela Statement" << std::endl;
 			break;
 		}
-		dump(ast);
+		ast->dump();
 	}
 	
-	void dump(PromelaParserNode* node, int indent = 0) {
-		std::string padding;
-		for (int i = 0; i < indent; i++) {
-			padding += "  ";
-		}
-		std::cout << padding << typeToDesc(node->type) << ": " << node->value << std::endl;
-		for (std::list<PromelaParserNode*>::iterator iter = node->operands.begin();
-				 iter != node->operands.end(); iter++) {
-			dump(*iter, indent + 1);
-		}
-	}
-
-	virtual std::string typeToDesc(int type);
-
 	PromelaParserNode* ast;
 	Type type;
 

@@ -12,7 +12,9 @@ There are still a few rough edges though, especially with the plugins and custom
         * Simplified support for [Web Storage](http://www.w3.org/TR/2013/REC-webstorage-20130730/) in document.localStorage
         * Support for binary data via [TypedArrays](https://www.khronos.org/registry/typedarray/specs/latest/) (will not throw exceptions yet)
     * Full [NULL datamodel](https://github.com/tklab-tud/uscxml/tree/master/src/uscxml/plugins/datamodel/null) with required <tt>In</tt> predicate
-    * Early [Prolog datamodel](https://github.com/tklab-tud/uscxml/tree/master/src/uscxml/plugins/datamodel/prolog/swi) using SWI prolog
+    * [Prolog datamodel](https://github.com/tklab-tud/uscxml/tree/master/src/uscxml/plugins/datamodel/prolog/swi) using SWI prolog
+    * Early [Promela datamodel](https://github.com/tklab-tud/uscxml/tree/master/src/uscxml/plugins/datamodel/promela) for use
+      with the [SPIN](http://spinroot.com/spin/whatispin.html) model-checker
     * Rudimentary support for [XPath datamodel](https://github.com/tklab-tud/uscxml/tree/master/src/uscxml/plugins/datamodel/xpath)
 * <b>Invokers</b>
     * <tt>scxml</tt>: Invoke a nested scxml interpreter
@@ -20,6 +22,7 @@ There are still a few rough edges though, especially with the plugins and custom
     * <tt>scenegraph</tt>: Simplified 3D scenegraphs with custom markup
     * <tt>heartbeat</tt>: Periodically sends events
     * <tt>umundo</tt>: Subscribe to channels and publish events
+    * [Many others](https://github.com/tklab-tud/uscxml/tree/master/src/uscxml/plugins/invoker)
 * <b>DOM</b>
     * DOM Core Level 2 + XPath extensions available for ecmascript datamodel
     * Namespace aware to embed custom markup for special invokers

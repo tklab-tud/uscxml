@@ -9,12 +9,16 @@ int promela_lex_init (void**); \
 int promela_lex_destroy (void*); \
 
 void promela_error (uscxml::PromelaParser* ctx, void* yyscanner, const char* err) {
-	std::cout << err << std::endl;
+	uscxml::Event exceptionEvent;
+	exceptionEvent.data.compound["exception"] = uscxml::Data(err, uscxml::Data::VERBATIM);
+	exceptionEvent.name = "error.execution";
+	exceptionEvent.eventType = uscxml::Event::PLATFORM;
+	throw exceptionEvent;
 }
 
 namespace uscxml {
 
-PromelaParser::PromelaParser(const std::string& expr) {
+PromelaParser::PromelaParser(const std::string& expr, Type expectedType) {
 	input_length = expr.length() + 5;  // plus some zero terminators
 	input = (char*) calloc(1, input_length);
 	memcpy(input, expr.c_str(), expr.length());
@@ -23,13 +27,36 @@ PromelaParser::PromelaParser(const std::string& expr) {
 	//	promela_assign_set_extra(ast, &scanner);
 	promela__scan_buffer(input, input_length, scanner);
 	promela_parse(this, scanner);
+	
+	if (type != expectedType) {
+		std::stringstream ss;
+		ss << "Promela syntax type mismatch: Expected " << typeToDesc(expectedType) << " but got " << typeToDesc(type);
+
+		uscxml::Event exceptionEvent;
+		exceptionEvent.data.compound["exception"] = uscxml::Data(ss.str(), uscxml::Data::VERBATIM);
+		exceptionEvent.name = "error.execution";
+		exceptionEvent.eventType = uscxml::Event::PLATFORM;
+		throw exceptionEvent;
+	}
 }
+
 PromelaParser::~PromelaParser() {
 	free(input);
 	promela_lex_destroy(scanner);
 }
 
 std::string PromelaParser::typeToDesc(int type) {
+	switch (type) {
+		case PROMELA_EXPR: return "expression";
+		case PROMELA_DECL: return "declarations";
+		case PROMELA_STMNT: return "statements";
+		default:
+			break;
+	}
+	return "";
+}
+
+std::string PromelaParserNode::typeToDesc(int type) {
 	switch(type) {
 		case PLUS: return "PLUS";
 		case MINUS: return "MINUS";
@@ -51,6 +78,21 @@ std::string PromelaParser::typeToDesc(int type) {
 		case RSHIFT: return "RSHIFT";
 		case NEG: return "NEG";
 		case ASGN: return "ASGN";
+		case INCR: return "INCR";
+		case DECR: return "DECR";
+		case VAR_ARRAY: return "VAR_ARRAY";
+		case DECL: return "DECL";
+		case STMNT: return "STMNT";
+		case TYPE: return "TYPE";
+		case NAME: return "NAME";
+		case CONST: return "CONST";
+		case PRINT: return "PRINT";
+		case SHOW: return "SHOW";
+		case EXPR: return "EXPR";
+		case VARLIST: return "VARLIST";
+		case DECLLIST: return "DECLLIST";
+		case NAMELIST: return "NAMELIST";
+			
 		default:
 			return std::string("UNK(") + toStr(type) + ")";
 	}

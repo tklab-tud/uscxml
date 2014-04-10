@@ -1,8 +1,32 @@
 <scxml datamodel="promela">
   <datamodel>
     <data>
-      bit v1, v2, v3, v4, v5;
+      bool b1;
     </data>
+    <data>
+      bool b2, b3, b4;
+    </data>
+    <data>
+      bool b5, b6 = 3 + 4, b7, b8, b9;
+    </data>
+    <data>
+      bool c1; bool c2; bool c3; bool c4;
+      bool c5; bool c6; bool c7, c8 = 4 + 6, c9;
+    </data>
+    <data>
+      byte state = 1;
+      mtype = {
+        FATAL, NON_FATAL, COMPLETE, INCOMPLETE,
+        red, white, blue
+      }
+    </data>
+    <data>
+      bool busy[3], lazy[4 + 5];
+    </data>
+    <data>
+      bool v3, v2 = 1;
+    </data>
+    
   </datamodel>
   <state id="init">
     <onentry>
@@ -10,7 +34,7 @@
         v2=1; v3=1;
       </script>
     </onentry>
-    <transition target="pass" cond="v2==(v3==v4)">
+    <transition target="pass" cond="v2==v3">
     </transition>
     <transition target="fail" />
   </state>

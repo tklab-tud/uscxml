@@ -27,10 +27,8 @@
 #include <glog/logging.h>
 #include <cctype>
 
-// #include "PromelaAssignParser.h"
-//#include "PromelaExprParser.h"
-// #include "PromelaStmntParser.h"
 #include "PromelaParser.h"
+#include "parser/promela.tab.hpp"
 
 #ifdef BUILD_AS_PLUGINS
 #include <Pluma/Connector.hpp>
@@ -58,6 +56,7 @@ PromelaDataModel::~PromelaDataModel() {
 boost::shared_ptr<DataModelImpl> PromelaDataModel::create(InterpreterImpl* interpreter) {
 	boost::shared_ptr<PromelaDataModel> dm = boost::shared_ptr<PromelaDataModel>(new PromelaDataModel());
 	dm->_interpreter = interpreter;
+	dm->_lastMType = 0;
 	return dm;
 }
 
@@ -92,7 +91,8 @@ void PromelaDataModel::setEvent(const Event& event) {
 }
 
 Data PromelaDataModel::getStringAsData(const std::string& content) {
-	return expressionToAST(content);
+	Data data(content, Data::VERBATIM);
+	return data;
 }
 
 
@@ -112,7 +112,9 @@ void PromelaDataModel::setForeach(const std::string& item,
 }
 
 void PromelaDataModel::eval(const Element<std::string>& scriptElem, const std::string& expr) {
-	expressionToAST(expr);
+	PromelaParser parser(expr, PromelaParser::PROMELA_STMNT);
+	evaluateStmnt(parser.ast);
+//	parser.dump();
 }
 
 bool PromelaDataModel::evalAsBool(const std::string& expr) {
@@ -120,195 +122,167 @@ bool PromelaDataModel::evalAsBool(const std::string& expr) {
 }
 
 bool PromelaDataModel::evalAsBool(const Arabica::DOM::Node<std::string>& node, const std::string& expr) {
-	PromelaParser ast(expr);
-//	std::cout << Data::toJSON(ast) << std::endl;
-	return false;
-	//	return evalAST(expressionToAST(expr));
-}
-
-Data PromelaDataModel::expressionToAST(const std::string& expr) {
-	// see: http://en.wikipedia.org/wiki/Shunting-yard_algorithm (not used, prefix notation for now)
-	Data ast;
-
-	std::string tok_value;
-	std::list<Token> tokens;
-	size_t start = 0;
-
-	for (int i = 0; i < expr.size();) {
-		if (expr[i] == '(' || expr[i] == ')' || expr[i] == '!' || iswspace(expr[i]) || expr[i] == ',' || i + 1 == expr.size()) {
-#if 0
-			std::cout << ":" << expr << std::endl << ":";
-			for (int c = 0; c < expr.size(); c++) {
-				if (c == start) {
-					std::cout << "s";
-				} else if(c == i) {
-					std::cout << "^";
-				} else {
-					std::cout << " ";
-				}
-			}
-			std::cout << std::endl;;
-#endif
-			
-			Token token;
-			if (i > 0 && start < i - 1) {
-				token.start = start;
-				token.end = i;
-
-				if (i + 1 == expr.size() && !(expr[i] == '(' || expr[i] == ')' || expr[i] == '!'))
-					token.end++;
-//				std::cout << expr.substr(token.start, token.end - token.start) << std::endl;
-
-				tokens.push_back(token);
-			}
-			if (expr[i] == '(' || expr[i] == ')' || expr[i] == '!') {
-				token.start = i;
-				token.end = i + 1;
-//				std::cout << expr.substr(token.start, token.end - token.start) << std::endl;
-
-				tokens.push_back(token);
-				i++;
-			}
-			if (expr[i] == ',') {
-				i++;
-			}
-			if (i + 1 == expr.size())
-				break;
-			
-			if (iswspace(expr[i])) {
-				while(iswspace(expr[++i])); // skip remaining whitespaces
-			}
-			start = i;
-		} else {
-			i++;
-		}
-	}
-	
-	std::list<Data*> dataStack;
-	std::list<Token> tokenStack;
-	dataStack.push_back(&ast);
-
-	for (std::list<Token>::iterator tokIter = tokens.begin();
-			 tokIter != tokens.end();
-			 tokIter++) {
-		std::string token = expr.substr(tokIter->start, tokIter->end - tokIter->start);
-//		std::cout << token << std::endl;
-
-		if (false) {
-		} else if (token == "(") {
-			dataStack.back()->type = Data::INTERPRETED;
-		} else if (token == ")") {
-			dataStack.pop_back();
-		} else if (token == "and") {
-			dataStack.back()->array.push_back(Data("", Data::VERBATIM));
-			dataStack.push_back(&(dataStack.back()->array.back().compound["and"]));
-			dataStack.back()->type = Data::VERBATIM;
-			continue;
-		} else if (token == "or") {
-			dataStack.back()->array.push_back(Data("", Data::VERBATIM));
-			dataStack.push_back(&(dataStack.back()->array.back().compound["or"]));
-			dataStack.back()->type = Data::VERBATIM;
-			continue;
-		} else if (token == "!" || token == "not") {
-			dataStack.back()->array.push_back(Data("", Data::VERBATIM));
-			dataStack.push_back(&(dataStack.back()->array.back().compound["not"]));
-			dataStack.back()->type = Data::VERBATIM;
-			continue;
-		} else {
-			// treat everything else as a variable
-			dataStack.back()->array.push_back(Data(token, Data::VERBATIM));
-		}
-
-		// pop back if not bracketed
-		while (dataStack.back()->type == Data::VERBATIM) {
-			dataStack.pop_back();
-		}
-
-	}
-	
-//	std::cout << Data::toJSON(ast) << std::endl << std::endl;
-	
-	return ast;
-}
-
-bool PromelaDataModel::evalAST(const Data ast) {
-	
-#if 0
-	std::cout << "===========" << std::endl;
-	std::cout << Data::toJSON(ast) << std::endl;
-	std::cout << "===========" << std::endl;
-#endif
-	
-	// atomic term
-	if (ast.atom.size() > 0) {
-		// is it the event name? TODO: Use some prefix here!
-		if (InterpreterImpl::nameMatch(ast.atom, _event.name))
-			return true;
-
-		if (_variables.find(ast.atom) != _variables.end()) {
-			return _variables[ast.atom];
-		}
-		return false;
-	}
-
-	const std::list<Data>* arrayPtr = &(ast.array);
-
-	// no operator is implied 'and'
-	std::string op = "and";
-	if (ast.compound.size() > 0) {
-		op = ast.compound.begin()->first;
-		arrayPtr = &(ast.compound.at(op).array);
-	}
-	
-	for (std::list<Data>::const_iterator termIter = arrayPtr->begin();
-			 termIter != arrayPtr->end();
-			 termIter++) {
-		bool result = evalAST(*termIter);
-		if (false) {
-		} else if (op == "and" && !result) {
-			return false;
-		} else if (op == "or" && result) {
-			return true;
-		} else if (op == "not" && result) {
-			return false;
-		}
-	}
-	return true;
+	PromelaParser parser(expr, PromelaParser::PROMELA_EXPR);
+//	parser.dump();
+	return evaluateExpr(parser.ast) > 0;
 }
 	
 std::string PromelaDataModel::evalAsString(const std::string& expr) {
-	return "";
+	return expr;
 }
 
 void PromelaDataModel::assign(const Element<std::string>& assignElem,
                           const Node<std::string>& node,
                           const std::string& content) {
-	Data ast = expressionToAST(content);
-	assign(true, ast);
+	PromelaParser parser(content, PromelaParser::PROMELA_DECL);
+	declare(parser.ast);
+//	parser.dump();
+//	std::cout << Data::toJSON(_variables) << std::endl;
 }
 
-void PromelaDataModel::assign(bool truth, Data ast) {
-	for (std::list<Data>::iterator arrIter = ast.array.begin();
-			 arrIter != ast.array.end();
-			 arrIter++) {
-		if (false) {
-		} else if (arrIter->atom.size() > 0) {
-			// simple atom to true
-			_variables[arrIter->atom] = truth;
-		} else if (arrIter->hasKey("not")) {
-			// for convenience, we support bracketed "nots"
-			assign(false, arrIter->compound["not"]);
-		} else {
-			Event exceptionEvent;
-			exceptionEvent.data.compound["ast"] = ast;
-			exceptionEvent.data.compound["exception"] = Data("Assignments can only contain atoms and negations", Data::VERBATIM);
-			exceptionEvent.name = "error.execution";
-			exceptionEvent.eventType = Event::PLATFORM;
-			throw exceptionEvent;
+void PromelaDataModel::declare(void* ast) {
+	PromelaParserNode* node = (PromelaParserNode*)ast;
+	if (false) {
+	} else if (node->type == DECL) {
+		std::list<PromelaParserNode*>::iterator opIter = node->operands.begin();
+		PromelaParserNode* vis = *opIter++;
+		PromelaParserNode* type = *opIter++;
+		PromelaParserNode* varlist = *opIter++;
+		
+		for (std::list<PromelaParserNode*>::iterator nameIter = varlist->operands.begin();
+				 nameIter != varlist->operands.end();
+				 nameIter++) {
+			Data variable;
+			variable.compound["vis"] = Data(vis->value, Data::VERBATIM);
+			variable.compound["type"] = Data(type->value, Data::VERBATIM);
+
+			if (false) {
+			} else if ((*nameIter)->type == NAME) {
+				// plain variables without initial assignment
+				
+				if (type->value == "mtype") {
+					variable.compound["value"] = Data(_lastMType++, Data::INTERPRETED);
+				} else {
+					variable.compound["value"] = Data(0, Data::INTERPRETED);
+				}
+				_variables.compound[(*nameIter)->value] = variable;
+
+			} else if ((*nameIter)->type == ASGN) {
+				// initially assigned variables
+				
+				std::list<PromelaParserNode*>::iterator opIterAsgn = (*nameIter)->operands.begin();
+				PromelaParserNode* name = *opIterAsgn++;
+				PromelaParserNode* expr = *opIterAsgn++;
+
+				variable.compound["value"] = evaluateExpr(expr);
+
+				assert(opIterAsgn == (*nameIter)->operands.end());
+				_variables.compound[name->value] = variable;
+			} else if ((*nameIter)->type == VAR_ARRAY) {
+				// variable arrays
+				
+				std::list<PromelaParserNode*>::iterator opIterAsgn = (*nameIter)->operands.begin();
+				PromelaParserNode* name = *opIterAsgn++;
+				int size = evaluateExpr(*opIterAsgn++);
+				
+				variable.compound["size"] = size;
+				for (int i = 0; i < size; i++) {
+					variable.compound["value"].array.push_back(Data(0, Data::INTERPRETED));
+				}
+				
+				assert(opIterAsgn == (*nameIter)->operands.end());
+				_variables.compound[name->value] = variable;
+
+			} else {
+				assert(false);
+			}
+		}
+		assert(opIter == node->operands.end());
+	} else if (node->type == DECLLIST) {
+		for (std::list<PromelaParserNode*>::iterator declIter = node->operands.begin();
+				 declIter != node->operands.end();
+				 declIter++) {
+			declare(*declIter);
 		}
 	}
 }
+
+int PromelaDataModel::evaluateExpr(void* ast) {
+	PromelaParserNode* node = (PromelaParserNode*)ast;
+	std::list<PromelaParserNode*>::iterator opIter = node->operands.begin();
+	switch (node->type) {
+		case CONST:
+			return strTo<int>(node->value);
+		case NAME:
+			return getVariable(node);
+		case PLUS:
+			return evaluateExpr(*opIter++) + evaluateExpr(*opIter++);
+		case MINUS:
+			return evaluateExpr(*opIter++) - evaluateExpr(*opIter++);
+		case DIVIDE:
+			return evaluateExpr(*opIter++) / evaluateExpr(*opIter++);
+		case MODULO:
+			return evaluateExpr(*opIter++) % evaluateExpr(*opIter++);
+		case EQ:
+			return evaluateExpr(*opIter++) == evaluateExpr(*opIter++);
+		case LT:
+			return evaluateExpr(*opIter++) < evaluateExpr(*opIter++);
+		case LE:
+			return evaluateExpr(*opIter++) <= evaluateExpr(*opIter++);
+		case GT:
+			return evaluateExpr(*opIter++) > evaluateExpr(*opIter++);
+		case GE:
+			return evaluateExpr(*opIter++) >= evaluateExpr(*opIter++);
+		case TIMES:
+			return evaluateExpr(*opIter++) * evaluateExpr(*opIter++);
+		case LSHIFT:
+			return evaluateExpr(*opIter++) << evaluateExpr(*opIter++);
+		case RSHIFT:
+			return evaluateExpr(*opIter++) >> evaluateExpr(*opIter++);
+		default:
+			assert(false);
+	}
+}
+
+void PromelaDataModel::evaluateStmnt(void* ast) {
+	PromelaParserNode* node = (PromelaParserNode*)ast;
+	std::list<PromelaParserNode*>::iterator opIter = node->operands.begin();
+	switch (node->type) {
+		case ASGN: {
+			PromelaParserNode* name = *opIter++;
+			PromelaParserNode* expr = *opIter++;			
+			setVariable(name, evaluateExpr(expr));
+			break;
+		}
+		case STMNT: {
+			while(opIter != node->operands.end()) {
+				evaluateStmnt(*opIter++);
+			}
+			break;
+		}
+		default:
+			assert(false);
+	}
+}
+
+void PromelaDataModel::setVariable(void* ast, int value) {
+	PromelaParserNode* node = (PromelaParserNode*)ast;
+	_variables.compound[node->value].compound["value"] = Data(value, Data::VERBATIM);
+}
+
+int PromelaDataModel::getVariable(void* ast) {
+	PromelaParserNode* node = (PromelaParserNode*)ast;
 	
+	if (_variables.compound.find(node->value) == _variables.compound.end()) {
+		uscxml::Event exc;
+		exc.data.compound["exception"] = uscxml::Data("No variable " + node->value + " was declared", uscxml::Data::VERBATIM);
+		exc.name = "error.execution";
+		exc.eventType = uscxml::Event::PLATFORM;
+		throw exc;
+	}
+	return strTo<int>(_variables[node->value]["value"]);
+}
+
 void PromelaDataModel::assign(const std::string& location, const Data& data) {
 	// used for e.g. to assign command line parameters
 	std::cout << "Ignoring " << location << " = " << Data::toJSON(data) << std::endl;
@@ -325,7 +299,7 @@ void PromelaDataModel::init(const std::string& location, const Data& data) {
 }
 
 bool PromelaDataModel::isDeclared(const std::string& expr) {
-	return _variables.find(expr) != _variables.end();
+	return _variables.compound.find(expr) != _variables.compound.end();
 }
 
 
