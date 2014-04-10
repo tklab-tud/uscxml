@@ -17,9 +17,6 @@
  *  @endcond
  */
 
-#define __STDC_LIMIT_MACROS
-#include <stdint.h>
-
 #include "uscxml/transform/ChartToFSM.h"
 #include <DOM/io/Stream.hpp>
 #include <iostream>
@@ -27,6 +24,7 @@
 #include <math.h>
 #include <string.h>
 #include <algorithm>
+#include <limits>
 
 namespace uscxml {
 
@@ -302,7 +300,7 @@ static std::list<GlobalTransition*> sortTransitions(std::list<GlobalTransition*>
 					goto NEXT_ITER;
 				}
 				for (int i = t1->firstElemPerLevel.size() - 1; i >= 0 ; i--) {
-					if (t1->firstElemPerLevel[i] == INT32_MAX || t2->firstElemPerLevel[i] == INT32_MAX)
+					if (t1->firstElemPerLevel[i] == std::numeric_limits<int32_t>::max() || t2->firstElemPerLevel[i] == std::numeric_limits<int32_t>::max())
 						break;
 					if (t1->firstElemPerLevel[i] > t2->firstElemPerLevel[i]) {
 //						std::cout << "swapping at " << i << " " << t1->transitionId << " / " << t2->transitionId << std::endl;
@@ -460,7 +458,7 @@ void FlatteningInterpreter::explode() {
 		}
 
 		for (int currDepth = 0; currDepth <= maxDepth; currDepth++) {
-			int lowestOrder = INT32_MAX;
+			int lowestOrder = std::numeric_limits<int32_t>::max();
 			int nrDepth = 0;
 			int prioPerLevel = 0;
 			for (int i = 0; i < transitions.size(); i++) {
