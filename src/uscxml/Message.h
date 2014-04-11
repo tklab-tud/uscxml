@@ -110,23 +110,50 @@ public:
 		return (atom.length() > 0 || !compound.empty() || !array.empty() || binary || node);
 	}
 
+	void merge(const Data& other);
+
 	bool hasKey(const std::string& key) const {
 		return (!compound.empty() && compound.find(key) != compound.end());
 	}
 
-	const Data operator[](const std::string& key) const {
+	Data& operator[](const std::string& key) {
 		return operator[](key.c_str());
 	}
-
-	void merge(const Data& other);
 	
-	const Data operator[](const char* key) const {
+	Data& operator[](const char* key) {
+		return compound[key];
+	}
+
+	Data& operator[](const size_t index) {
+		while(array.size() < index) {
+			array.push_back(Data("", Data::VERBATIM));
+		}
+		std::list<Data>::iterator arrayIter = array.begin();
+		for (int i = 0; i < index; i++, arrayIter++) {}
+		return *arrayIter;
+	}
+
+	const Data at(const std::string& key) const {
+		return at(key.c_str());
+	}
+
+	const Data at(const char* key) const {
 		if (hasKey(key))
 			return compound.at(key);
 		Data data;
 		return data;
 	}
-
+	
+	const Data item(const size_t index) const {
+		if (array.size() < index) {
+			std::list<Data>::const_iterator arrayIter;
+			for (int i = 0; i < index; i++, arrayIter++) {}
+			return *arrayIter;
+		}
+		Data data;
+		return data;
+	}
+	
 	bool operator==(const Data &other) const {
 		if (other.atom.size() != atom.size())
 			return false;

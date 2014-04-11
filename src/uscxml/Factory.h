@@ -318,6 +318,9 @@ public:
 
 	virtual std::string andExpressions(std::list<std::string>) { return ""; }
 	
+	static void throwErrorExecution(const std::string& cause);
+	static void throwErrorPlatform(const std::string& cause);
+	
 	// we need it public for various static functions
 	InterpreterImpl* _interpreter;
 };

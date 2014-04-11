@@ -9,37 +9,44 @@ int promela_lex_init (void**); \
 int promela_lex_destroy (void*); \
 
 void promela_error (uscxml::PromelaParser* ctx, void* yyscanner, const char* err) {
-	uscxml::Event exceptionEvent;
-	exceptionEvent.data.compound["exception"] = uscxml::Data(err, uscxml::Data::VERBATIM);
-	exceptionEvent.name = "error.execution";
-	exceptionEvent.eventType = uscxml::Event::PLATFORM;
-	throw exceptionEvent;
+	uscxml::Event excEvent;
+	excEvent.data.compound["exception"] = uscxml::Data(err, uscxml::Data::VERBATIM);
+	excEvent.name = "error.execution";
+	excEvent.eventType = uscxml::Event::PLATFORM;
+	throw excEvent;
 }
 
 namespace uscxml {
 
-PromelaParser::PromelaParser(const std::string& expr, Type expectedType) {
-	input_length = expr.length() + 5;  // plus some zero terminators
-	input = (char*) calloc(1, input_length);
-	memcpy(input, expr.c_str(), expr.length());
+PromelaParser::PromelaParser(const std::string& expr) {
+	init(expr);
+}
 
-	promela_lex_init(&scanner);
-	//	promela_assign_set_extra(ast, &scanner);
-	promela__scan_buffer(input, input_length, scanner);
-	promela_parse(this, scanner);
-	
+PromelaParser::PromelaParser(const std::string& expr, Type expectedType) {
+	init(expr);
 	if (type != expectedType) {
 		std::stringstream ss;
 		ss << "Promela syntax type mismatch: Expected " << typeToDesc(expectedType) << " but got " << typeToDesc(type);
 
-		uscxml::Event exceptionEvent;
-		exceptionEvent.data.compound["exception"] = uscxml::Data(ss.str(), uscxml::Data::VERBATIM);
-		exceptionEvent.name = "error.execution";
-		exceptionEvent.eventType = uscxml::Event::PLATFORM;
-		throw exceptionEvent;
+		uscxml::Event excEvent;
+		excEvent.data.compound["exception"] = uscxml::Data(ss.str(), uscxml::Data::VERBATIM);
+		excEvent.name = "error.execution";
+		excEvent.eventType = uscxml::Event::PLATFORM;
+		throw excEvent;
 	}
 }
 
+void PromelaParser::init(const std::string& expr) {
+	input_length = expr.length() + 5;  // plus some zero terminators
+	input = (char*) calloc(1, input_length);
+	memcpy(input, expr.c_str(), expr.length());
+	
+	promela_lex_init(&scanner);
+	//	promela_assign_set_extra(ast, &scanner);
+	promela__scan_buffer(input, input_length, scanner);
+	promela_parse(this, scanner);
+}
+	
 PromelaParser::~PromelaParser() {
 	free(input);
 	promela_lex_destroy(scanner);

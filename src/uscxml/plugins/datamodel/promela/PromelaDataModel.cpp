@@ -128,6 +128,9 @@ bool PromelaDataModel::evalAsBool(const Arabica::DOM::Node<std::string>& node, c
 }
 	
 std::string PromelaDataModel::evalAsString(const std::string& expr) {
+	if (isDeclared(expr)) {
+		return Data::toJSON(_variables[expr]);
+	}
 	return expr;
 }
 
@@ -135,12 +138,12 @@ void PromelaDataModel::assign(const Element<std::string>& assignElem,
                           const Node<std::string>& node,
                           const std::string& content) {
 	PromelaParser parser(content, PromelaParser::PROMELA_DECL);
-	declare(parser.ast);
+	evaluateDecl(parser.ast);
 //	parser.dump();
 //	std::cout << Data::toJSON(_variables) << std::endl;
 }
 
-void PromelaDataModel::declare(void* ast) {
+void PromelaDataModel::evaluateDecl(void* ast) {
 	PromelaParserNode* node = (PromelaParserNode*)ast;
 	if (false) {
 	} else if (node->type == DECL) {
@@ -194,7 +197,7 @@ void PromelaDataModel::declare(void* ast) {
 				_variables.compound[name->value] = variable;
 
 			} else {
-				assert(false);
+				throwErrorExecution("Declaring variables via " + PromelaParserNode::typeToDesc((*nameIter)->type) + " not implemented");
 			}
 		}
 		assert(opIter == node->operands.end());
@@ -202,8 +205,10 @@ void PromelaDataModel::declare(void* ast) {
 		for (std::list<PromelaParserNode*>::iterator declIter = node->operands.begin();
 				 declIter != node->operands.end();
 				 declIter++) {
-			declare(*declIter);
+			evaluateDecl(*declIter);
 		}
+	} else {
+		throwErrorExecution("Declaring variables via " + PromelaParserNode::typeToDesc(node->type) + " not implemented");
 	}
 }
 
@@ -214,6 +219,7 @@ int PromelaDataModel::evaluateExpr(void* ast) {
 		case CONST:
 			return strTo<int>(node->value);
 		case NAME:
+		case VAR_ARRAY:
 			return getVariable(node);
 		case PLUS:
 			return evaluateExpr(*opIter++) + evaluateExpr(*opIter++);
@@ -239,9 +245,14 @@ int PromelaDataModel::evaluateExpr(void* ast) {
 			return evaluateExpr(*opIter++) << evaluateExpr(*opIter++);
 		case RSHIFT:
 			return evaluateExpr(*opIter++) >> evaluateExpr(*opIter++);
+		case AND:
+			return evaluateExpr(*opIter++) != 0 && evaluateExpr(*opIter++) != 0;
+		case OR:
+			return evaluateExpr(*opIter++) != 0 || evaluateExpr(*opIter++) != 0;
 		default:
-			assert(false);
+			throwErrorExecution("Support for " + PromelaParserNode::typeToDesc(node->type) + " expressions not implemented");
 	}
+	return 0;
 }
 
 void PromelaDataModel::evaluateStmnt(void* ast) {
@@ -261,26 +272,79 @@ void PromelaDataModel::evaluateStmnt(void* ast) {
 			break;
 		}
 		default:
-			assert(false);
+			throwErrorExecution("No support for " + PromelaParserNode::typeToDesc(node->type) + " statement implemented");
 	}
 }
 
 void PromelaDataModel::setVariable(void* ast, int value) {
 	PromelaParserNode* node = (PromelaParserNode*)ast;
-	_variables.compound[node->value].compound["value"] = Data(value, Data::VERBATIM);
+
+	std::list<PromelaParserNode*>::iterator opIter = node->operands.begin();
+	switch (node->type) {
+		case VAR_ARRAY: {
+			PromelaParserNode* name = *opIter++;
+			PromelaParserNode* expr = *opIter++;
+			int index = evaluateExpr(expr);
+			
+			if (_variables.compound.find(name->value) == _variables.compound.end()) {
+				throwErrorExecution("No variable " + name->value + " was declared");
+			}
+			
+			if (!_variables[name->value].hasKey("size")) {
+				throwErrorExecution("Variable " + name->value + " is no array");
+			}
+
+			if (strTo<int>(_variables[name->value]["size"].atom) <= index) {
+				throwErrorExecution("Index " + toStr(index) + " in array " + name->value + "[" + _variables[name->value]["size"].atom + "] is out of bounds");
+			}
+
+			_variables.compound[name->value].compound["value"][index] = Data(value, Data::VERBATIM);
+			
+			break;
+		}
+		case NAME:
+			_variables.compound[node->value].compound["value"] = Data(value, Data::VERBATIM);
+			break;
+		default:
+			break;
+	}
+	
+//	std::cout << Data::toJSON(_variables) << std::endl;
 }
 
 int PromelaDataModel::getVariable(void* ast) {
 	PromelaParserNode* node = (PromelaParserNode*)ast;
+//	node->dump();
 	
-	if (_variables.compound.find(node->value) == _variables.compound.end()) {
-		uscxml::Event exc;
-		exc.data.compound["exception"] = uscxml::Data("No variable " + node->value + " was declared", uscxml::Data::VERBATIM);
-		exc.name = "error.execution";
-		exc.eventType = uscxml::Event::PLATFORM;
-		throw exc;
+	std::list<PromelaParserNode*>::iterator opIter = node->operands.begin();
+	switch(node->type) {
+		case NAME:
+			if (_variables.compound.find(node->value) == _variables.compound.end()) {
+				throwErrorExecution("No variable " + node->value + " was declared");
+			}
+			return strTo<int>(_variables[node->value]["value"]);
+		case VAR_ARRAY: {
+			PromelaParserNode* name = *opIter++;
+			PromelaParserNode* expr = *opIter++;
+			int index = evaluateExpr(expr);
+
+			if (_variables.compound.find(name->value) == _variables.compound.end()) {
+				throwErrorExecution("No variable " + name->value + " was declared");
+			}
+			
+			if (!_variables[name->value].hasKey("size")) {
+				throwErrorExecution("Variable " + name->value + " is no array");
+			}
+			
+			if (strTo<int>(_variables[name->value]["size"].atom) <= index) {
+				throwErrorExecution("Index " + toStr(index) + " in array " + name->value + "[" + _variables[name->value]["size"].atom + "] is out of bounds");
+			}
+			return _variables.compound[name->value].compound["value"][index];
+		}
+		default:
+			throwErrorExecution("Retrieving value of " + PromelaParserNode::typeToDesc(node->type) + " variable not implemented");
 	}
-	return strTo<int>(_variables[node->value]["value"]);
+	return 0;
 }
 
 void PromelaDataModel::assign(const std::string& location, const Data& data) {

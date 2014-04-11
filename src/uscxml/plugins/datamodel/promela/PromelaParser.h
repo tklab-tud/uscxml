@@ -64,6 +64,7 @@ public:
 	
 	static std::string typeToDesc(int type);
 
+	PromelaParser(const std::string& expr);
 	PromelaParser(const std::string& expr, Type expectedType);
 	virtual ~PromelaParser();
 	
@@ -104,7 +105,9 @@ public:
 	Type type;
 
 protected:
-		
+	
+	void init(const std::string& expr);
+	
 	void* scanner;
 	char* input;
 	size_t input_length;

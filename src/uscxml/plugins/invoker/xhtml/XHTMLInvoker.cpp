@@ -65,8 +65,8 @@ bool XHTMLInvoker::httpRecvRequest(const HTTPServer::Request& req) {
 	tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
 
 	// these are the XHR requests
-	if (iequals(req.data["header"]["X-Requested-With"].atom, "XMLHttpRequest")) {
-		if (iequals(req.data["type"].atom, "get")) {
+	if (iequals(req.data.at("header").at("X-Requested-With").atom, "XMLHttpRequest")) {
+		if (iequals(req.data.at("type").atom, "get")) {
 			// the long-polling GET
 			if (_longPoll) {
 				evhttp_send_error(_longPoll.evhttpReq, 204, NULL);
@@ -84,10 +84,10 @@ bool XHTMLInvoker::httpRecvRequest(const HTTPServer::Request& req) {
 			if (ev.data["header"]["X-SCXML-Name"]) {
 				ev.name = ev.data["header"]["X-SCXML-Name"].atom;
 			} else {
-				ev.name = req.data["type"].atom;
+				ev.name = req.data.at("type").atom;
 			}
 			ev.origin = _invokeId;
-			ev.initContent(req.data["content"].atom);
+			ev.initContent(req.data.at("content").atom);
 			ev.data.compound["Connection"] = req.data;
 			// content is already on ev.raw
 			ev.data.compound["Connection"].compound.erase("content");
@@ -102,7 +102,7 @@ bool XHTMLInvoker::httpRecvRequest(const HTTPServer::Request& req) {
 
 	// initial request for a document
 	if (!req.data["query"] && // no query parameters
-	        iequals(req.data["type"].atom, "get") && // request type is GET
+	        iequals(req.data.at("type").atom, "get") && // request type is GET
 	        req.content.length() == 0) { // no content
 
 		HTTPServer::Reply reply(req);

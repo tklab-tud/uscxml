@@ -82,7 +82,7 @@ public:
 
 protected:
 
-	void declare(void* ast);
+	void evaluateDecl(void* ast);
 	int evaluateExpr(void* ast);
 	void evaluateStmnt(void* ast);
 	

@@ -607,6 +607,23 @@ void EventHandlerImpl::returnEvent(Event& event) {
 	_interpreter->receive(event);
 }
 
+void DataModelImpl::throwErrorExecution(const std::string& cause) {
+	uscxml::Event exc;
+	exc.data.compound["exception"] = uscxml::Data(cause, uscxml::Data::VERBATIM);
+	exc.name = "error.execution";
+	exc.eventType = uscxml::Event::PLATFORM;
+	throw exc;
+}
+
+void DataModelImpl::throwErrorPlatform(const std::string& cause) {
+	uscxml::Event exc;
+	exc.data.compound["exception"] = uscxml::Data(cause, uscxml::Data::VERBATIM);
+	exc.name = "error.platform";
+	exc.eventType = uscxml::Event::PLATFORM;
+	throw exc;
+}
+
+	
 Factory* Factory::_instance = NULL;
 std::string Factory::pluginPath;
 }

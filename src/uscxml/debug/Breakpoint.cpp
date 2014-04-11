@@ -31,73 +31,73 @@ Breakpoint::Breakpoint(const Data& data) {
 
 	if (data.hasKey("when")) {
 		if (false) {
-		} else if (data["when"].atom == "before") {
+		} else if (data.at("when").atom == "before") {
 			when = BEFORE;
-		} else if (data["when"].atom == "after") {
+		} else if (data.at("when").atom == "after") {
 			when = AFTER;
-		} else if (data["when"].atom == "on") {
+		} else if (data.at("when").atom == "on") {
 			when = ON;
 		}
 	}
 
 	if (data.hasKey("action")) {
 		if (false) {
-		} else if (data["action"].atom == "enter") {
+		} else if (data.at("action").atom == "enter") {
 			action = ENTER;
-		} else if (data["action"].atom == "exit") {
+		} else if (data.at("action").atom == "exit") {
 			action = EXIT;
-		} else if (data["action"].atom == "invoke") {
+		} else if (data.at("action").atom == "invoke") {
 			action = INVOKE;
-		} else if (data["action"].atom == "cancel") {
+		} else if (data.at("action").atom == "cancel") {
 			action = UNINVOKE;
 		}
 	}
 
 	if (data.hasKey("subject")) {
 		if (false) {
-		} else if (data["subject"].atom == "state") {
+		} else if (data.at("subject").atom == "state") {
 			subject = STATE;
-		} else if (data["subject"].atom == "transition") {
+		} else if (data.at("subject").atom == "transition") {
 			subject = TRANSITION;
-		} else if (data["subject"].atom == "stable") {
+		} else if (data.at("subject").atom == "stable") {
 			subject = STABLE;
-		} else if (data["subject"].atom == "microstep") {
+		} else if (data.at("subject").atom == "microstep") {
 			subject = MICROSTEP;
-		} else if (data["subject"].atom == "event") {
+		} else if (data.at("subject").atom == "event") {
 			subject = EVENT;
-		} else if (data["subject"].atom == "invoker") {
+		} else if (data.at("subject").atom == "invoker") {
 			subject = INVOKER;
-		} else if (data["subject"].atom == "executable") {
+		} else if (data.at("subject").atom == "executable") {
 			subject = EXECUTABLE;
 		}
 	}
 
 	if (data.hasKey("condition"))
-		condition = data["condition"].atom;
+		condition = data.at("condition").atom;
 
 	if (data.hasKey("invokeId"))
-		invokeId = data["invokeId"].atom;
+		invokeId = data.at("invokeId").atom;
 
 	if (data.hasKey("invokeType"))
-		invokeType = data["invokeType"].atom;
+		invokeType = data.at("invokeType").atom;
 
 	if (data.hasKey("eventName"))
-		eventName = data["eventName"].atom;
+		eventName = data.at("eventName").atom;
 
 	if (data.hasKey("executableName"))
-		executableName = data["executableName"].atom;
+		executableName = data.at("executableName").atom;
 
 	if (data.hasKey("executableXPath"))
-		executableXPath = data["executableXPath"].atom;
+		executableXPath = data.at("executableXPath").atom;
 
 	if (data.hasKey("stateId"))
-		stateId = data["stateId"].atom;
+		stateId = data.at("stateId").atom;
 
 	if (data.hasKey("transSourceId"))
-		transSourceId = data["transSourceId"].atom;
+		transSourceId = data.at("transSourceId").atom;
 
 	if (data.hasKey("transTargetId"))
-		transTargetId = data["transTargetId"].atom;
+		transTargetId = data.at("transTargetId").atom;
 
 }
 

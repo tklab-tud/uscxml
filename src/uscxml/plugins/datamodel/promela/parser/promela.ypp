@@ -98,8 +98,8 @@ program	:
 varref	: cmpnd			{}
 	;
 
-pfld	: NAME			{ $$ = ctx->value(NAME, yylval.value); }
-	| NAME '[' expr ']' {}
+pfld	: NAME			{ $$ = ctx->value(NAME, $1); }
+	| NAME '[' expr ']' { $$ = ctx->node(VAR_ARRAY, 2, ctx->value(NAME, $1), $3); }
 	;
 
 cmpnd	: pfld			{}

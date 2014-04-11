@@ -106,9 +106,9 @@ Data DebugSession::debugPrepare(const Data& data) {
 	_isAttached = false;
 
 	if (data.hasKey("xml")) {
-		_interpreter = Interpreter::fromXML(data["xml"].atom);
+		_interpreter = Interpreter::fromXML(data.at("xml").atom);
 	} else if (data.hasKey("url")) {
-		_interpreter = Interpreter::fromURI(data["url"].atom);
+		_interpreter = Interpreter::fromURI(data.at("url").atom);
 	} else {
 		_interpreter = Interpreter();
 	}
@@ -119,7 +119,7 @@ Data DebugSession::debugPrepare(const Data& data) {
 		_debugger->attachSession(_interpreter, shared_from_this());
 		if (data.hasKey("url")) {
 			// this allows to resolve relative external reources
-			_interpreter.setSourceURI(data["url"].atom);
+			_interpreter.setSourceURI(data.at("url").atom);
 		}
 		replyData.compound["status"] = Data("success", Data::VERBATIM);
 	} else {
@@ -139,7 +139,7 @@ Data DebugSession::debugAttach(const Data& data) {
 		return replyData;
 	}
 	
-	std::string interpreterId = data["attach"].atom;
+	std::string interpreterId = data.at("attach").atom;
 	bool interpreterFound = false;
 	
 	// find interpreter for sessionid
@@ -354,7 +354,7 @@ Data DebugSession::debugEval(const Data& data) {
 		return replyData;
 	}
 
-	std::string expr = data["expression"].atom;
+	std::string expr = data.at("expression").atom;
 	
 	if (!_interpreter) {
 		replyData.compound["status"] = Data("failure", Data::VERBATIM);

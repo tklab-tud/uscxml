@@ -39,6 +39,7 @@ int main(int argc, char** argv) {
 //	expressions.push_back("(a + 1) << b");
 //	expressions.push_back("(b < N)");
 //	expressions.push_back("(mt+1)%MAX;");
+//	expressions.push_back("state[0] = state[3] + 5 * state[3*2/n]");
 	
 	/* statements  */
 //	expressions.push_back("t = Bturn;");

@@ -1671,13 +1671,13 @@ yyreduce:
   case 6:
 /* Line 1787 of yacc.c  */
 #line 101 "promela.ypp"
-    { (yyval.node) = ctx->value(NAME, yylval.value); }
+    { (yyval.node) = ctx->value(NAME, (yyvsp[(1) - (1)].value)); }
     break;
 
   case 7:
 /* Line 1787 of yacc.c  */
 #line 102 "promela.ypp"
-    {}
+    { (yyval.node) = ctx->node(VAR_ARRAY, 2, ctx->value(NAME, (yyvsp[(1) - (4)].value)), (yyvsp[(3) - (4)].node)); }
     break;
 
   case 8:

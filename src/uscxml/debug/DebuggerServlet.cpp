@@ -65,22 +65,22 @@ void DebuggerServlet::returnData(const HTTPServer::Request& request, Data replyD
 }
 
 bool DebuggerServlet::isCORS(const HTTPServer::Request& request) {
-	return (request.data["type"].atom == "options" &&
-					request.data["header"].hasKey("Origin") &&
-					request.data["header"].hasKey("Access-Control-Request-Method"));
+	return (request.data.at("type").atom == "options" &&
+					request.data.at("header").hasKey("Origin") &&
+					request.data.at("header").hasKey("Access-Control-Request-Method"));
 }
 
 void DebuggerServlet::handleCORS(const HTTPServer::Request& request) {
 	HTTPServer::Reply corsReply(request);
-	if (request.data["header"].hasKey("Origin")) {
-		corsReply.headers["Access-Control-Allow-Origin"] = request.data["header"]["Origin"].atom;
+	if (request.data.at("header").hasKey("Origin")) {
+		corsReply.headers["Access-Control-Allow-Origin"] = request.data.at("header").at("Origin").atom;
 	} else {
 		corsReply.headers["Access-Control-Allow-Origin"] = "*";
 	}
-	if (request.data["header"].hasKey("Access-Control-Request-Method"))
-		corsReply.headers["Access-Control-Allow-Methods"] = request.data["header"]["Access-Control-Request-Method"].atom;
-	if (request.data["header"].hasKey("Access-Control-Request-Headers"))
-		corsReply.headers["Access-Control-Allow-Headers"] = request.data["header"]["Access-Control-Request-Headers"].atom;
+	if (request.data.at("header").hasKey("Access-Control-Request-Method"))
+		corsReply.headers["Access-Control-Allow-Methods"] = request.data.at("header").at("Access-Control-Request-Method").atom;
+	if (request.data.at("header").hasKey("Access-Control-Request-Headers"))
+		corsReply.headers["Access-Control-Allow-Headers"] = request.data.at("header").at("Access-Control-Request-Headers").atom;
 	
 	//		std::cout << "CORS!" << std::endl << request << std::endl;
 	HTTPServer::reply(corsReply);
@@ -100,20 +100,20 @@ bool DebuggerServlet::httpRecvRequest(const HTTPServer::Request& request) {
 	Data replyData;
 	// process request that don't need a session
 	if (false) {
-	} else if (boost::starts_with(request.data["path"].atom, "/debug/connect")) {
+	} else if (boost::starts_with(request.data.at("path").atom, "/debug/connect")) {
 		processConnect(request);
 		return true;
-	} else if (boost::starts_with(request.data["path"].atom, "/debug/sessions")) {
+	} else if (boost::starts_with(request.data.at("path").atom, "/debug/sessions")) {
 		processListSessions(request);
 		return true;
 	}
 	
 	// get session or return error
 	if (false) {
-	} else if (!request.data["content"].hasKey("session")) {
+	} else if (!request.data.at("content").hasKey("session")) {
 		replyData.compound["status"] = Data("failure", Data::VERBATIM);
 		replyData.compound["reason"] = Data("No session given", Data::VERBATIM);
-	} else if (_sessionForId.find(request.data["content"]["session"].atom) == _sessionForId.end()) {
+	} else if (_sessionForId.find(request.data.at("content").at("session").atom) == _sessionForId.end()) {
 		replyData.compound["status"] = Data("failure", Data::VERBATIM);
 		replyData.compound["reason"] = Data("No such session", Data::VERBATIM);
 	}
@@ -122,46 +122,46 @@ bool DebuggerServlet::httpRecvRequest(const HTTPServer::Request& request) {
 		return true;
 	}
 	
-	boost::shared_ptr<DebugSession> session = _sessionForId[request.data["content"]["session"].atom];
+	boost::shared_ptr<DebugSession> session = _sessionForId[request.data.at("content").at("session").atom];
 	
 	if (false) {
-	} else if (boost::starts_with(request.data["path"].atom, "/debug/poll")) {
+	} else if (boost::starts_with(request.data.at("path").atom, "/debug/poll")) {
 		// save long-standing client poll
 		_clientConns[session] = request;
 		serverPushData(session);
 
-	} else if (boost::starts_with(request.data["path"].atom, "/debug/disconnect")) {
+	} else if (boost::starts_with(request.data.at("path").atom, "/debug/disconnect")) {
 		processDisconnect(request);
 
-	} else if (boost::starts_with(request.data["path"].atom, "/debug/breakpoint/enable/all")) {
+	} else if (boost::starts_with(request.data.at("path").atom, "/debug/breakpoint/enable/all")) {
 		replyData = session->enableAllBreakPoints();
-	} else if (boost::starts_with(request.data["path"].atom, "/debug/breakpoint/disable/all")) {
+	} else if (boost::starts_with(request.data.at("path").atom, "/debug/breakpoint/disable/all")) {
 		replyData = session->disableAllBreakPoints();
-	} else if (boost::starts_with(request.data["path"].atom, "/debug/breakpoint/skipto")) {
+	} else if (boost::starts_with(request.data.at("path").atom, "/debug/breakpoint/skipto")) {
 		replyData = session->skipToBreakPoint(request.data["content"]);
-	} else if (boost::starts_with(request.data["path"].atom, "/debug/breakpoint/add")) {
+	} else if (boost::starts_with(request.data.at("path").atom, "/debug/breakpoint/add")) {
 		replyData = session->addBreakPoint(request.data["content"]);
-	} else if (boost::starts_with(request.data["path"].atom, "/debug/breakpoint/remove")) {
+	} else if (boost::starts_with(request.data.at("path").atom, "/debug/breakpoint/remove")) {
 		replyData = session->removeBreakPoint(request.data["content"]);
-	} else if (boost::starts_with(request.data["path"].atom, "/debug/breakpoint/enable")) {
+	} else if (boost::starts_with(request.data.at("path").atom, "/debug/breakpoint/enable")) {
 		replyData = session->enableBreakPoint(request.data["content"]);
-	} else if (boost::starts_with(request.data["path"].atom, "/debug/breakpoint/disable")) {
+	} else if (boost::starts_with(request.data.at("path").atom, "/debug/breakpoint/disable")) {
 		replyData = session->disableBreakPoint(request.data["content"]);
-	} else if (boost::starts_with(request.data["path"].atom, "/debug/stop")) {
+	} else if (boost::starts_with(request.data.at("path").atom, "/debug/stop")) {
 		replyData = session->debugStop(request.data["content"]);
-	} else if (boost::starts_with(request.data["path"].atom, "/debug/prepare")) {
+	} else if (boost::starts_with(request.data.at("path").atom, "/debug/prepare")) {
 		replyData = session->debugPrepare(request.data["content"]);
-	} else if (boost::starts_with(request.data["path"].atom, "/debug/attach")) {
+	} else if (boost::starts_with(request.data.at("path").atom, "/debug/attach")) {
 		replyData = session->debugAttach(request.data["content"]);
-	} else if (boost::starts_with(request.data["path"].atom, "/debug/start")) {
+	} else if (boost::starts_with(request.data.at("path").atom, "/debug/start")) {
 		replyData = session->debugStart(request.data["content"]);
-	} else if (boost::starts_with(request.data["path"].atom, "/debug/step")) {
+	} else if (boost::starts_with(request.data.at("path").atom, "/debug/step")) {
 		replyData = session->debugStep(request.data["content"]);
-	} else if (boost::starts_with(request.data["path"].atom, "/debug/pause")) {
+	} else if (boost::starts_with(request.data.at("path").atom, "/debug/pause")) {
 		replyData = session->debugPause(request.data["content"]);
-	} else if (boost::starts_with(request.data["path"].atom, "/debug/resume")) {
+	} else if (boost::starts_with(request.data.at("path").atom, "/debug/resume")) {
 		replyData = session->debugResume(request.data["content"]);
-	} else if (boost::starts_with(request.data["path"].atom, "/debug/eval")) {
+	} else if (boost::starts_with(request.data.at("path").atom, "/debug/eval")) {
 		replyData = session->debugEval(request.data["content"]);
 	}
 		
@@ -192,13 +192,13 @@ void DebuggerServlet::processDisconnect(const HTTPServer::Request& request) {
 
 	Data replyData;
 
-	if (!request.data["content"].hasKey("session")) {
+	if (!request.data.at("content").hasKey("session")) {
 		replyData.compound["status"] = Data("failure", Data::VERBATIM);
 		replyData.compound["reason"] = Data("No session given", Data::VERBATIM);
 		returnData(request, replyData);
 	}
 
-	std::string sessionId = request.data["content"]["session"].atom;
+	std::string sessionId = request.data.at("content").at("session").atom;
 
 	if (_sessionForId.find(sessionId) == _sessionForId.end()) {
 		replyData.compound["status"] = Data("failure", Data::VERBATIM);
