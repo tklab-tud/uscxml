@@ -52,37 +52,37 @@ public:
 protected:
 
 	class IMAPContext {
-		
+
 	public:
 		enum Cmd {
-			// valid in authenticated state
-			IMAP_SELECT,
-			IMAP_EXAMINE,
-			IMAP_CREATE,
-			IMAP_DELETE,
-			IMAP_RENAME,
-			IMAP_SUBSCRIBE,
-			IMAP_UNSUBSCRIBE,
-			IMAP_LIST,
-			IMAP_LSUB,
-			IMAP_STATUS,
-			IMAP_APPEND,
-			// valid in selected state
-			IMAP_CHECK,
-			IMAP_CLOSE,
-			IMAP_EXPUNGE,
-			IMAP_SEARCH,
-			IMAP_FETCH,
-			IMAP_STORE,
-			IMAP_COPY,
-			IMAP_UID,
-			IMAP_XEXTENSION,
+		    // valid in authenticated state
+		    IMAP_SELECT,
+		    IMAP_EXAMINE,
+		    IMAP_CREATE,
+		    IMAP_DELETE,
+		    IMAP_RENAME,
+		    IMAP_SUBSCRIBE,
+		    IMAP_UNSUBSCRIBE,
+		    IMAP_LIST,
+		    IMAP_LSUB,
+		    IMAP_STATUS,
+		    IMAP_APPEND,
+		    // valid in selected state
+		    IMAP_CHECK,
+		    IMAP_CLOSE,
+		    IMAP_EXPUNGE,
+		    IMAP_SEARCH,
+		    IMAP_FETCH,
+		    IMAP_STORE,
+		    IMAP_COPY,
+		    IMAP_UID,
+		    IMAP_XEXTENSION,
 		};
 
 		struct MailboxOp {
 			std::string mailbox;
 		};
-		
+
 		struct Select : MailboxOp {};
 		struct Examine : MailboxOp {};
 		struct Create : MailboxOp {};
@@ -127,12 +127,12 @@ protected:
 		};
 		struct XExtension : UId {};
 
-		
+
 		IMAPContext() : readPtr(0) {}
 
 		void* arguments;
 		Cmd command;
-		
+
 		IMAPInvoker* invoker;
 		SendRequest sendReq;
 		std::stringstream inContent;
@@ -149,7 +149,7 @@ protected:
 	std::string _server;
 
 	static void run(void*);
-	
+
 	tthread::thread* _thread;
 	uscxml::concurrency::BlockingQueue<IMAPContext*> _workQueue;
 	bool _isRunning;

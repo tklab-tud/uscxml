@@ -623,7 +623,7 @@ void DataModelImpl::throwErrorPlatform(const std::string& cause) {
 	throw exc;
 }
 
-	
+
 Factory* Factory::_instance = NULL;
 std::string Factory::pluginPath;
 }

@@ -98,8 +98,8 @@ program	:
 varref	: cmpnd			{}
 	;
 
-pfld	: NAME			{ $$ = ctx->value(NAME, $1); }
-	| NAME '[' expr ']' { $$ = ctx->node(VAR_ARRAY, 2, ctx->value(NAME, $1), $3); }
+pfld	: NAME			{ $$ = ctx->value(NAME, $1); free($1); }
+	| NAME '[' expr ']' { $$ = ctx->node(VAR_ARRAY, 2, ctx->value(NAME, $1), $3); free($1); }
 	;
 
 cmpnd	: pfld			{}
@@ -141,7 +141,7 @@ expr    : '(' expr ')'		{ $$ = $2; }
 
 	| LEN '(' varref ')'	{ $$ = ctx->node(LEN, 1, $3);  }
 	| varref		{  }
-	| CONST 		{ $$ = ctx->value(CONST, yylval.value); }
+	| CONST 		{ $$ = ctx->value(CONST, $1); free($1); }
 	;
 
 
@@ -151,9 +151,9 @@ vis	: /* empty */		{ $$ = ctx->node(SHOW, 0); }
 	| ISLOCAL		{ $$ = ctx->node(ISLOCAL, 0); }
 	;
 
-one_decl: vis TYPE var_list	{ $$ = ctx->node(DECL, 3, $1, ctx->value(TYPE, $2), $3); }
+one_decl: vis TYPE var_list	{ $$ = ctx->node(DECL, 3, $1, ctx->value(TYPE, $2), $3); free($2); }
 	| vis UNAME var_list	{ $$ = ctx->node(UNAME, 2, $1, $3); }
-	| vis TYPE ASGN '{' nlst '}' { $$ = ctx->node(DECL, 3, $1, ctx->value(TYPE, $2), $5); }
+	| vis TYPE ASGN '{' nlst '}' { $$ = ctx->node(DECL, 3, $1, ctx->value(TYPE, $2), $5); free($2); }
 	;
 
 decl_lst: one_decl            { $$ = $1; }
@@ -176,12 +176,12 @@ ivar    : vardcl           	{ $$ = $1; }
 	| vardcl ASGN expr   	{ $$ = ctx->node(ASGN, 2, $1, $3); }
 	;
 
-vardcl  : NAME  		{ $$ = ctx->value(NAME, $1); }
-	| NAME COLON CONST	{ $$ = ctx->node(COLON, 2, ctx->value(NAME, $1), ctx->value(CONST, $3)); }
-	| NAME '[' const_expr ']'	{ $$ = ctx->node(VAR_ARRAY, 2, ctx->value(NAME, $1), $3); }
+vardcl  : NAME  		{ $$ = ctx->value(NAME, $1); free($1); }
+	| NAME COLON CONST	{ $$ = ctx->node(COLON, 2, ctx->value(NAME, $1), ctx->value(CONST, $3)); free($1); free($3); }
+	| NAME '[' const_expr ']'	{ $$ = ctx->node(VAR_ARRAY, 2, ctx->value(NAME, $1), $3); free($1); }
 	;
 
-const_expr:	CONST			{ $$ = ctx->value(CONST, yylval.value); }
+const_expr:	CONST			{ $$ = ctx->value(CONST, $1); free($1); }
 	| MINUS const_expr %prec MINUS	{ $$ = ctx->node(MINUS, 1, $2); }
 	| '(' const_expr ')'		{ $$ = $2; }
 	| const_expr PLUS const_expr	{ $$ = ctx->node(PLUS, 2, $1, $3); }
@@ -191,7 +191,7 @@ const_expr:	CONST			{ $$ = ctx->value(CONST, yylval.value); }
 	| const_expr MODULO const_expr	{ $$ = ctx->node(MODULO, 2, $1, $3); }
 	;
 
-nlst	: NAME			{ $$ = ctx->value(NAME, $1); }
+nlst	: NAME			{ $$ = ctx->value(NAME, $1); free($1); }
 	| nlst NAME 		{ 
     if ($1->type == NAME) {
       $$ = ctx->node(NAMELIST, 1, $1);
@@ -199,6 +199,7 @@ nlst	: NAME			{ $$ = ctx->value(NAME, $1); }
     } else {
       $1->push(ctx->value(NAME, $2));
     }
+    free($2);
   }
 	| nlst COMMA		{ $$ = $1; }
 	;
@@ -214,9 +215,9 @@ stmnt	: Stmnt			{ $$ = $1; }
 Stmnt	: varref ASGN expr	{ $$ = ctx->node(ASGN, 2, $1, $3); }
 	| varref INCR		{ $$ = ctx->node(INCR, 1, $1); }
 	| varref DECR		{ $$ = ctx->node(DECR, 1, $1); }
-	| PRINT	'(' STRING prargs ')'		{ $$ = ctx->node(PRINT, 2, ctx->value(STRING, $3), $4); }
+	| PRINT	'(' STRING prargs ')'		{ $$ = ctx->node(PRINT, 2, ctx->value(STRING, $3), $4); free($3); }
 	| PRINTM '(' varref ')'	{ $$ = ctx->node(PRINTM, 1, $3); }
-	| PRINTM '(' CONST ')'	{ $$ = ctx->node(PRINTM, 1, ctx->value(CONST, $3)); }
+	| PRINTM '(' CONST ')'	{ $$ = ctx->node(PRINTM, 1, ctx->value(CONST, $3)); free($3); }
 	| ASSERT expr    	{  }
 	| expr		{ $$ = $1; }
 	| varref ASGN INAME	{  } '(' args ')' Stmnt			{  }

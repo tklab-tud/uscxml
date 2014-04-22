@@ -1,21 +1,21 @@
 # find_program(XMLLINT xmllint)
 # if (XMLLINT)
-# 	file(GLOB SCXML_FILES samples/uscxml/*.scxml)
+# 	file(GLOB SCXML_FILES uscxml/*.scxml)
 # endif()
 
 if (NOT WIN32)
 	add_executable(test-predicates src/test-predicates.cpp)
 	target_link_libraries(test-predicates uscxml)
-	add_test(test-predicates ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-predicates ${CMAKE_SOURCE_DIR}/test/samples/uscxml/test-predicates.scxml)
+	add_test(test-predicates ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-predicates ${CMAKE_SOURCE_DIR}/test/uscxml/test-predicates.scxml)
 	set_target_properties(test-predicates PROPERTIES FOLDER "Tests")
 endif()
 
-add_test(test-execution ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/uscxml-browser ${CMAKE_SOURCE_DIR}/test/samples/uscxml/test-execution.scxml)
-add_test(test-communication ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/uscxml-browser -t5493 ${CMAKE_SOURCE_DIR}/test/samples/uscxml/test-communication.scxml)
-add_test(test-done-data ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/uscxml-browser ${CMAKE_SOURCE_DIR}/test/samples/uscxml/test-donedata.scxml)
+add_test(test-execution ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/uscxml-browser ${CMAKE_SOURCE_DIR}/test/uscxml/test-execution.scxml)
+add_test(test-communication ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/uscxml-browser -t5493 ${CMAKE_SOURCE_DIR}/test/uscxml/test-communication.scxml)
+add_test(test-done-data ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/uscxml-browser ${CMAKE_SOURCE_DIR}/test/uscxml/test-donedata.scxml)
 
 if (SWI_FOUND)
-	add_test(test-prolog-swi ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/uscxml-browser -t2345 ${CMAKE_SOURCE_DIR}/test/samples/uscxml/test-prolog.scxml)
+	add_test(test-prolog-swi ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/uscxml-browser -t2345 ${CMAKE_SOURCE_DIR}/test/uscxml/test-prolog.scxml)
 endif()
 
 # if (FFMPEG_FOUND)
@@ -26,7 +26,7 @@ endif()
 # endif()
 
 if (V8_FOUND)
-	add_test(test-ecmascript ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/uscxml-browser ${CMAKE_SOURCE_DIR}/test/samples/uscxml/test-ecmascript.scxml)
+	add_test(test-ecmascript ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/uscxml-browser ${CMAKE_SOURCE_DIR}/test/uscxml/test-ecmascript.scxml)
 endif()
 
 if (OPENSCENEGRAPH_FOUND AND OFF)
@@ -40,6 +40,11 @@ target_link_libraries(test-base64 uscxml)
 add_test(test-base64 ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-base64)
 set_target_properties(test-base64 PROPERTIES FOLDER "Tests")
 
+add_executable(test-trie src/test-trie.cpp)
+target_link_libraries(test-trie uscxml)
+add_test(test-trie ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-trie)
+set_target_properties(test-trie PROPERTIES FOLDER "Tests")
+
 add_executable(test-eventdelay src/test-eventdelay.cpp)
 target_link_libraries(test-eventdelay uscxml)
 add_test(test-eventdelay ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-eventdelay)
@@ -52,10 +57,15 @@ if (OFF)
 	set_target_properties(test-dirmon PROPERTIES FOLDER "Tests")
 endif()
 
+add_executable(test-arabica-namespaces src/test-arabica-namespaces.cpp)
+target_link_libraries(test-arabica-namespaces uscxml)
+add_test(test-arabica-namespaces ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-arabica-namespaces ${CMAKE_SOURCE_DIR}/test)
+set_target_properties(test-arabica-namespaces PROPERTIES FOLDER "Tests")
+
 if (NOT WIN32)
 	add_executable(test-arabica-events src/test-arabica-events.cpp)
 	target_link_libraries(test-arabica-events uscxml)
-	add_test(test-arabica-events ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-arabica-events ${CMAKE_SOURCE_DIR}/test/samples/uscxml/arabica/test-arabica-events.xml)
+	add_test(test-arabica-events ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-arabica-events ${CMAKE_SOURCE_DIR}/test/uscxml/arabica/test-arabica-events.xml)
 	set_target_properties(test-arabica-events PROPERTIES FOLDER "Tests")
 
 	add_executable(test-arabica-xpath src/test-arabica-xpath.cpp)
@@ -74,7 +84,7 @@ if (NOT WIN32)
 	# else()
 	# 	target_link_libraries(test-stress uscxml)
 	# endif()
-	# add_test(test-stress ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-stress ${CMAKE_SOURCE_DIR}/test/samples/w3c)
+	# add_test(test-stress ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-stress ${CMAKE_SOURCE_DIR}/test/w3c)
 	# set_target_properties(test-stress PROPERTIES FOLDER "Tests")
 
 	# if (LIBPURPLE_FOUND)
@@ -102,7 +112,7 @@ set_target_properties(test-cmdline-parsing PROPERTIES FOLDER "Tests")
 
 # add_executable(test-initial-config src/test-initial-config.cpp)
 # target_link_libraries(test-initial-config uscxml)
-# add_test(test-url ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-initial-config ${CMAKE_SOURCE_DIR}/test/samples/uscxml/test-initial-config.scxml)
+# add_test(test-url ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-initial-config ${CMAKE_SOURCE_DIR}/test/uscxml/test-initial-config.scxml)
 # set_target_properties(test-initial-config PROPERTIES FOLDER "Tests")
 
 add_executable(test-datamodel src/test-datamodel.cpp)
@@ -134,7 +144,7 @@ target_link_libraries(test-w3c uscxml)
 set_target_properties(test-w3c PROPERTIES FOLDER "Tests")
 
 file(GLOB_RECURSE W3C_TESTS
-	samples/w3c/*.scxml
+	w3c/*.scxml
 )
 
 foreach( W3C_TEST ${W3C_TESTS} )

@@ -105,7 +105,7 @@ HTTPServer::HTTPServer(unsigned short port, unsigned short wsPort, SSLConfig* ss
 			LOG(ERROR) << "HTTP server cannot bind to tcp/" << _port;
 		}
 	}
-	
+
 	_wsPort = wsPort;
 	if (_wsPort > 0) {
 		_wsHandle = evws_bind_socket(_evws, _wsPort);
@@ -443,7 +443,7 @@ void HTTPServer::processByMatchingServlet(const Request& request) {
 		if (servletIter->first.length() == 0) {
 			matches.insert(std::make_pair(servletPath, servletIter->second)); // single servlet at root
 		} else if (iequals(actualPath.substr(0, servletPath.length()), servletPath) && // servlet path is a prefix
-		        iequals(actualPath.substr(servletPath.length(), 1), "/")) {     // and next character is a '/'
+		           iequals(actualPath.substr(servletPath.length(), 1), "/")) {     // and next character is a '/'
 			matches.insert(std::make_pair(servletPath, servletIter->second));
 		}
 		servletIter++;
@@ -530,7 +530,7 @@ void HTTPServer::replyCallback(evutil_socket_t fd, short what, void *arg) {
 	delete(reply);
 }
 
-	
+
 void HTTPServer::wsSend(struct evws_connection *conn, enum evws_opcode opcode, const char *data, uint64_t length) {
 	HTTPServer* INSTANCE = getInstance();
 	WSData* sendCB = new WSData(conn, NULL, opcode, data, length);
@@ -553,10 +553,10 @@ void HTTPServer::wsSendCallback(evutil_socket_t fd, short what, void *arg) {
 			evws_send_data(wsSend->conn, wsSend->opcode, wsSend->data.data(), wsSend->data.length());
 		}
 	}
-	
+
 	delete wsSend;
 }
-	
+
 bool HTTPServer::registerServlet(const std::string& path, HTTPServlet* servlet) {
 	HTTPServer* INSTANCE = getInstance();
 

@@ -73,20 +73,20 @@ void UmundoInvoker::send(const SendRequest& req) {
 	} else {
 		msg.putMeta("event", "umundo");
 	}
-	
+
 	try {
 		Data data = req.data;
-		
+
 		if (!data && req.content.length())
 			data = _interpreter->getDataModel().getStringAsData(req.content);
-			
+
 		if (!data) {
 			LOG(ERROR) << "Cannot transform content to data object per datamodel or no data given";
 			return;
 		}
 
 //		std::cout << Data::toJSON(data) << std::endl;
-		
+
 		std::string type;
 		if (req.params.find("type") != req.params.end()) {
 			// we are supposed to build a typed object

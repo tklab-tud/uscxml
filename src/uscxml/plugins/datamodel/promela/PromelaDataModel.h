@@ -75,22 +75,24 @@ public:
 	virtual bool isDeclared(const std::string& expr);
 
 	virtual Data getStringAsData(const std::string& content);
-	
+
 	virtual std::string evalAsString(const std::string& expr);
 	virtual bool evalAsBool(const Arabica::DOM::Node<std::string>& node, const std::string& expr);
 	virtual bool evalAsBool(const std::string& expr);
+
+	virtual std::string andExpressions(std::list<std::string> expressions);
 
 protected:
 
 	void evaluateDecl(void* ast);
 	int evaluateExpr(void* ast);
 	void evaluateStmnt(void* ast);
-	
+
 	void setVariable(void* ast, int value);
 	int getVariable(void* ast);
-	
+
 	int _lastMType;
-	
+
 	Event _event;
 	std::string _name;
 	std::string _sessionId;

@@ -132,7 +132,7 @@ int main(int argc, char** argv) {
 	if (options.pluginPath.length() > 0) {
 		Factory::pluginPath = options.pluginPath;
 	}
-	
+
 	// setup HTTP server
 	HTTPServer::SSLConfig* sslConf = NULL;
 	if (options.certificate.length() > 0) {
@@ -155,7 +155,7 @@ int main(int argc, char** argv) {
 		debugger = new DebuggerServlet();
 		HTTPServer::getInstance()->registerServlet("/debug", debugger);
 	}
-	
+
 	// instantiate and configure interpreters
 	std::list<Interpreter> interpreters;
 	std::map<std::string, InterpreterOptions*>::iterator confIter = options.interpreters.begin();
@@ -212,6 +212,6 @@ int main(int argc, char** argv) {
 		while(true)
 			tthread::this_thread::sleep_for(tthread::chrono::seconds(1));
 	}
-	
+
 	return EXIT_SUCCESS;
 }

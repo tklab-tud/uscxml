@@ -22,11 +22,11 @@ interface Document : Node {
                                 in boolean deep)
                                       raises(DOMException);
   // Introduced in DOM Level 2:
-  Element            createElementNS(in DOMString namespaceURI, 
+  [Custom] Element   createElementNS(in DOMString namespaceURI, 
                                      in DOMString qualifiedName)
                                       raises(DOMException);
   // Introduced in DOM Level 2:
-  Attr               createAttributeNS(in DOMString namespaceURI, 
+  [Custom] Attr      createAttributeNS(in DOMString namespaceURI, 
                                        in DOMString qualifiedName)
                                       raises(DOMException);
   // Introduced in DOM Level 2:

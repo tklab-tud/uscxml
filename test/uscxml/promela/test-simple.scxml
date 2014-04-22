@@ -1,0 +1,15 @@
+<!-- 
+  Simple example
+  
+  $ uscxml-transform -s -i this_file.scxml > test.pml
+  $ spin -p -l -h test.pml
+-->
+<scxml datamodel="promela">
+  <state id="s0">
+    <onentry>
+      <raise event="foo" />
+    </onentry>
+    <transition event="foo" target="s1" />
+  </state>
+  <state id="s1" final="true" />
+</scxml>

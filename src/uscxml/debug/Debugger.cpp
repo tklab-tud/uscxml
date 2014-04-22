@@ -21,7 +21,7 @@
 #include "uscxml/DOMUtils.h"
 
 namespace uscxml {
-	
+
 void Debugger::afterCompletion(Interpreter interpreter) {
 	boost::shared_ptr<DebugSession> session = getSession(interpreter);
 	if (!session)
@@ -34,44 +34,44 @@ void Debugger::afterCompletion(Interpreter interpreter) {
 
 std::list<Breakpoint> getQualifiedStateBreakpoints(Interpreter interpreter, const Arabica::DOM::Element<std::string>& state, Breakpoint breakpointTemplate) {
 	std::list<Breakpoint> breakpoints;
-		
+
 	Breakpoint bp = breakpointTemplate; // copy base as template
 	bp.stateId = ATTR(state, "id");
 	bp.element = state;
 	bp.subject = Breakpoint::STATE;
 	breakpoints.push_back(bp);
-	
+
 	return breakpoints;
 }
 
 std::list<Breakpoint> getQualifiedInvokeBreakpoints(Interpreter interpreter, const Arabica::DOM::Element<std::string>& invokeElem, const std::string invokeId, Breakpoint breakpointTemplate) {
 	std::list<Breakpoint> breakpoints;
-	
+
 	Breakpoint bp = breakpointTemplate; // copy base as template
 	bp.subject = Breakpoint::INVOKER;
 	bp.element = invokeElem;
 	bp.invokeId = invokeId;
-		
+
 	if (HAS_ATTR(invokeElem, "type")) {
 		bp.invokeType = ATTR(invokeElem, "type");
 	} else if (HAS_ATTR(invokeElem, "typeexpr")) {
 		bp.invokeType = interpreter.getDataModel().evalAsString(ATTR(invokeElem, "typeexpr"));
 	}
-		
+
 	breakpoints.push_back(bp);
-	
+
 	return breakpoints;
 }
 
 std::list<Breakpoint> getQualifiedTransBreakpoints(Interpreter interpreter, const Arabica::DOM::Element<std::string>& transition, Breakpoint breakpointTemplate) {
 	std::list<Breakpoint> breakpoints;
-	
+
 	Arabica::DOM::Element<std::string> source(interpreter.getSourceState(transition));
 	Arabica::XPath::NodeSet<std::string> targets = interpreter.getTargetStates(transition);
 
 	for (int j = 0; j < targets.size(); j++) {
 		Arabica::DOM::Element<std::string> target(targets[j]);
-		
+
 		Breakpoint bp = breakpointTemplate; // copy base as template
 		bp.element = transition;
 		bp.transSourceId = ATTR(source, "id");
@@ -134,14 +134,14 @@ void Debugger::beforeProcessingEvent(Interpreter interpreter, const Event& event
 }
 
 void Debugger::handleExecutable(Interpreter interpreter,
-																const Arabica::DOM::Element<std::string>& execContentElem,
-																Breakpoint::When when) {
+                                const Arabica::DOM::Element<std::string>& execContentElem,
+                                Breakpoint::When when) {
 	if (!interpreter.isRunning())
 		return;
 	boost::shared_ptr<DebugSession> session = getSession(interpreter);
 	if (!session)
 		return;
-	
+
 	std::list<Breakpoint> breakpoints;
 
 	Breakpoint breakpoint;
@@ -150,7 +150,7 @@ void Debugger::handleExecutable(Interpreter interpreter,
 	breakpoint.executableName = execContentElem.getLocalName();
 	breakpoint.subject = Breakpoint::EXECUTABLE;
 	breakpoints.push_back(breakpoint);
-	
+
 	session->checkBreakpoints(breakpoints);
 
 }
@@ -161,19 +161,19 @@ void Debugger::handleEvent(Interpreter interpreter, const Event& event, Breakpoi
 	boost::shared_ptr<DebugSession> session = getSession(interpreter);
 	if (!session)
 		return;
-	
+
 	std::list<Breakpoint> breakpoints;
-	
+
 	Breakpoint breakpoint;
 	breakpoint.when = when;
 	breakpoint.eventName = event.name;
 	breakpoint.subject = Breakpoint::EVENT;
 	breakpoints.push_back(breakpoint);
-	
+
 	session->checkBreakpoints(breakpoints);
 
 }
-	
+
 void Debugger::handleStable(Interpreter interpreter, Breakpoint::When when) {
 	if (!interpreter.isRunning())
 		return;
@@ -187,7 +187,7 @@ void Debugger::handleStable(Interpreter interpreter, Breakpoint::When when) {
 	breakpoint.when = when;
 	breakpoint.subject = Breakpoint::STABLE;
 	breakpoints.push_back(breakpoint);
-	
+
 	session->checkBreakpoints(breakpoints);
 }
 
@@ -199,12 +199,12 @@ void Debugger::handleMicrostep(Interpreter interpreter, Breakpoint::When when) {
 		return;
 
 	std::list<Breakpoint> breakpoints;
-	
+
 	Breakpoint breakpoint;
 	breakpoint.when = when;
 	breakpoint.subject = Breakpoint::MICROSTEP;
 	breakpoints.push_back(breakpoint);
-	
+
 	session->checkBreakpoints(breakpoints);
 }
 

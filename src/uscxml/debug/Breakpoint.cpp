@@ -24,7 +24,7 @@
 namespace uscxml {
 
 Breakpoint::Breakpoint(const Data& data) {
-  enabled = true;
+	enabled = true;
 	subject = UNDEF_SUBJECT;
 	when    = UNDEF_WHEN;
 	action  = UNDEF_ACTION;
@@ -105,60 +105,60 @@ Data Breakpoint::toData() const {
 	Data data;
 
 	switch (subject) {
-		case STATE:
-			data.compound["subject"] = Data("state", Data::VERBATIM);
-			break;
-		case TRANSITION:
-			data.compound["subject"] = Data("transition", Data::VERBATIM);
-			break;
-		case STABLE:
-			data.compound["subject"] = Data("stable", Data::VERBATIM);
-			break;
-		case MICROSTEP:
-			data.compound["subject"] = Data("microstep", Data::VERBATIM);
-			break;
-		case EVENT:
-			data.compound["subject"] = Data("event", Data::VERBATIM);
-			break;
-		case INVOKER:
-			data.compound["subject"] = Data("invoker", Data::VERBATIM);
-			break;
-		case EXECUTABLE:
-			data.compound["subject"] = Data("executable", Data::VERBATIM);
-			break;
-		default:
-			break;
+	case STATE:
+		data.compound["subject"] = Data("state", Data::VERBATIM);
+		break;
+	case TRANSITION:
+		data.compound["subject"] = Data("transition", Data::VERBATIM);
+		break;
+	case STABLE:
+		data.compound["subject"] = Data("stable", Data::VERBATIM);
+		break;
+	case MICROSTEP:
+		data.compound["subject"] = Data("microstep", Data::VERBATIM);
+		break;
+	case EVENT:
+		data.compound["subject"] = Data("event", Data::VERBATIM);
+		break;
+	case INVOKER:
+		data.compound["subject"] = Data("invoker", Data::VERBATIM);
+		break;
+	case EXECUTABLE:
+		data.compound["subject"] = Data("executable", Data::VERBATIM);
+		break;
+	default:
+		break;
 	}
-	
+
 	switch (when) {
-		case AFTER:
-			data.compound["when"] = Data("after", Data::VERBATIM);
-			break;
-		case BEFORE:
-			data.compound["when"] = Data("before", Data::VERBATIM);
-			break;
-		case ON:
-			data.compound["when"] = Data("on", Data::VERBATIM);
-			break;
-		default:
-			break;
+	case AFTER:
+		data.compound["when"] = Data("after", Data::VERBATIM);
+		break;
+	case BEFORE:
+		data.compound["when"] = Data("before", Data::VERBATIM);
+		break;
+	case ON:
+		data.compound["when"] = Data("on", Data::VERBATIM);
+		break;
+	default:
+		break;
 	}
 
 	switch (action) {
-		case ENTER:
-			data.compound["action"] = Data("enter", Data::VERBATIM);
-			break;
-		case EXIT:
-			data.compound["action"] = Data("exit", Data::VERBATIM);
-			break;
-		case INVOKE:
-			data.compound["action"] = Data("invoke", Data::VERBATIM);
-			break;
-		case UNINVOKE:
-			data.compound["action"] = Data("cancel", Data::VERBATIM);
-			break;
-		default:
-			break;
+	case ENTER:
+		data.compound["action"] = Data("enter", Data::VERBATIM);
+		break;
+	case EXIT:
+		data.compound["action"] = Data("exit", Data::VERBATIM);
+		break;
+	case INVOKE:
+		data.compound["action"] = Data("invoke", Data::VERBATIM);
+		break;
+	case UNINVOKE:
+		data.compound["action"] = Data("cancel", Data::VERBATIM);
+		break;
+	default:
+		break;
 	}
 
 	if (invokeId.length() > 0)
@@ -176,7 +176,7 @@ Data Breakpoint::toData() const {
 	if (executableXPath.length() > 0) {
 		data.compound["executableXPath"] = Data(executableXPath, Data::VERBATIM);
 	}
-	
+
 	if (element)
 		data.compound["xpath"] = Data(DOMUtils::xPathForNode(element, "*"), Data::VERBATIM);
 
@@ -194,20 +194,20 @@ Data Breakpoint::toData() const {
 
 	return data;
 }
-	
+
 bool Breakpoint::matches(Interpreter interpreter, const Breakpoint& other) const {
 	// would we match the given breakpoint?
 
 	if (subject != UNDEF_SUBJECT &&
-			other.subject != subject)
+	        other.subject != subject)
 		return false; // subject does not match
-	
+
 	if (when != UNDEF_WHEN &&
-			other.when != when)
+	        other.when != when)
 		return false; // time does not match
-	
+
 	if (action != UNDEF_ACTION &&
-			other.action != action)
+	        other.action != action)
 		return false; // action does not match
 
 	// when we have a qualifier it has to match
@@ -248,7 +248,7 @@ bool Breakpoint::matches(Interpreter interpreter, const Breakpoint& other) const
 	if(transTargetId.length() > 0 && transTargetId != other.transTargetId) {
 		return false;
 	}
-	
+
 	if (condition.length() > 0) {
 		try {
 			DataModel dm = interpreter.getDataModel();

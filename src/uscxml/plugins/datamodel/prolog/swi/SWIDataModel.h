@@ -49,7 +49,7 @@ public:
 		}
 		bool isLocked;
 	};
-	
+
 	SWIDataModel();
 	virtual ~SWIDataModel();
 	virtual boost::shared_ptr<DataModelImpl> create(InterpreterImpl* interpreter);
@@ -94,7 +94,7 @@ public:
 	virtual bool isDeclared(const std::string& expr);
 
 	virtual Data getStringAsData(const std::string& content);
-	
+
 	virtual std::string evalAsString(const std::string& expr);
 	virtual bool evalAsBool(const Arabica::DOM::Node<std::string>& node, const std::string& expr);
 	virtual bool evalAsBool(const std::string& expr);
@@ -108,7 +108,7 @@ protected:
 
 //	virtual std::list<PlCompound> getSolutions(PlCompound compound);
 	virtual std::map<std::string, PlTerm> resolveAtoms(PlTerm& term, PlTerm& orig);
-	
+
 	static int dictCallBack(term_t key, term_t value, int last, void *closure);
 
 	static PL_blob_t blobType;

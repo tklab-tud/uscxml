@@ -23,9 +23,14 @@ namespace Arabica {
 namespace DOM {
 
 V8DOM::V8DOM() {
+	nsInfo = NULL;
+	xpath = NULL;
+	storage = NULL;
 }
 
 V8DOM::~V8DOM() {
+	if (nsInfo)
+		delete(nsInfo);
 	if (xpath)
 		delete(xpath);
 	if (storage)

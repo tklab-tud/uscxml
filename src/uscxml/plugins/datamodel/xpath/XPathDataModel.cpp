@@ -54,7 +54,7 @@ boost::shared_ptr<DataModelImpl> XPathDataModel::create(InterpreterImpl* interpr
 //	dm->_xpath->setNamespaceContext(interpreter->getNSContext());
 
 	dm->_funcResolver.setInterpreter(interpreter);
-	dm->_xpath.setNamespaceContext(interpreter->getNSContext());
+	dm->_xpath.setNamespaceContext(*interpreter->getNameSpaceInfo().nsContext);
 	dm->_xpath.setFunctionResolver(dm->_funcResolver);
 	dm->_xpath.setVariableResolver(dm->_varResolver);
 
@@ -860,7 +860,7 @@ bool XPathFunctionIn::doEvaluate(const Node<std::string>& context,
 				continue;
 			}
 		}
-    return false;
+		return false;
 	}
 	return true;
 }

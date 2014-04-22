@@ -37,10 +37,10 @@ public:
 	class LogMessage : public Data {
 	public:
 		LogMessage(google::LogSeverity severity, const char* full_filename,
-							 const char* base_filename, int line,
-							 const struct ::tm* tm_time,
-							 std::string message, std::string formatted) {
-			
+		           const char* base_filename, int line,
+		           const struct ::tm* tm_time,
+		           std::string message, std::string formatted) {
+
 			compound["severity"] = severity;
 			compound["fullFilename"] = Data(full_filename, Data::VERBATIM);
 			compound["baseFilename"] = Data(base_filename, Data::VERBATIM);
@@ -50,9 +50,9 @@ public:
 			compound["formatted"] = Data(formatted, Data::VERBATIM);
 		}
 	};
-	
+
 	virtual ~DebuggerServlet() {}
-	
+
 	// from Debugger
 	virtual void addBreakpoint(const Breakpoint& breakpoint) {};
 
@@ -85,20 +85,20 @@ public:
 //	void processAddBreakPoint(const HTTPServer::Request& request);
 //	void processRemoveBreakPoint(const HTTPServer::Request& request);
 //	void processPoll(const HTTPServer::Request& request);
-  
+
 	// Logsink
 	virtual void send(google::LogSeverity severity, const char* full_filename,
-										const char* base_filename, int line,
-										const struct ::tm* tm_time,
-										const char* message, size_t message_len);
+	                  const char* base_filename, int line,
+	                  const struct ::tm* tm_time,
+	                  const char* message, size_t message_len);
 
 protected:
 	void serverPushData(boost::shared_ptr<DebugSession>);
 
 	std::string _url;
 	std::map<boost::shared_ptr<DebugSession>, HTTPServer::Request> _clientConns;
-  std::map<boost::shared_ptr<DebugSession>, concurrency::BlockingQueue<Data> > _sendQueues;
-  std::map<std::string, boost::shared_ptr<DebugSession> > _sessionForId;
+	std::map<boost::shared_ptr<DebugSession>, concurrency::BlockingQueue<Data> > _sendQueues;
+	std::map<std::string, boost::shared_ptr<DebugSession> > _sessionForId;
 
 	tthread::recursive_mutex _mutex;
 };

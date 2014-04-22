@@ -108,7 +108,7 @@ public:
 	static void unregisterServlet(WebSocketServlet* servlet);
 
 private:
-	
+
 	class WSData {
 	public:
 		WSData(struct evws_connection *conn_, const char *uri_, enum evws_opcode opcode_, const char *data_, uint64_t length_) {
@@ -147,7 +147,7 @@ private:
 
 	static void httpRecvReqCallback(struct evhttp_request *req, void *callbackData);
 	static void wsRecvReqCallback(struct evws_connection *conn, struct evws_frame *, void *callbackData);
-	
+
 	void processByMatchingServlet(const Request& request);
 	void processByMatchingServlet(evws_connection* conn, const WSFrame& frame);
 

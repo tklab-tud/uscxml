@@ -1,0 +1,21 @@
+<scxml datamodel="promela">
+  <state id="s0">
+    <invoke type="scxml">
+      <!-- 
+        promela-event-source:
+        to.s1
+      -->
+      <content>
+        <scxml>
+          <state id="s0">
+            <onentry>
+              <send target="#_parent" event="to.s1" />
+            </onentry>
+          </state>
+        </scxml>
+      </content>
+    </invoke>
+    <transition event="to.s1" target="s1" />
+  </state>
+  <state id="s1" final="true" />
+</scxml>

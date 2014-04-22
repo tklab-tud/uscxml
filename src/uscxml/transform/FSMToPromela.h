@@ -21,37 +21,90 @@
 #define FSMTOPROMELA_H_RP48RFDJ
 
 #include "uscxml/DOMUtils.h"
+#include "uscxml/util/Trie.h"
+
 #include <DOM/Document.hpp>
 #include <DOM/Node.hpp>
 #include <XPath/XPath.hpp>
 #include <ostream>
 
 namespace uscxml {
+
+class PromelaInline {
+public:
+	enum PromelaInlineType {
+		PROMELA_CODE,
+		PROMELA_EVENT_SOURCE,
+		PROMELA_PROGRESS_LABEL,
+		PROMELA_ACCEPT_LABEL,
+		PROMELA_END_LABEL
+	};
 	
-class FSMToPromela {
+	std::string content;
+	PromelaInlineType type;
+};
+
+class PromelaInlines {
+public:
+	PromelaInlines() : hasProgressLabel(false), hasAcceptLabel(false), hasEndLabel(false), hasEventSource(false), hasCode(false) {}
+	
+	std::list<PromelaInline> inlines;
+	bool hasProgressLabel;
+	bool hasAcceptLabel;
+	bool hasEndLabel;
+	bool hasEventSource;
+	bool hasCode;
+};
+
+struct PromelaEventSource {
+	std::list<std::list<std::string> > sequences;
+	void dump();
+	operator bool() {
+		return sequences.size() > 0;
+	}
+};
+
+class FSMToPromela : public InterpreterDraft6 {
 public:
 	static void writeProgram(std::ostream& stream,
-													 const Arabica::DOM::Document<std::string>& doc,
-													 const std::map<std::string, std::string>& namespaceInfo);
+	                         const Interpreter& interpreter);
 protected:
-	FSMToPromela(const Arabica::DOM::Document<std::string>& doc,
-							 const std::map<std::string, std::string>& namespaceInfo);
-	
+	FSMToPromela();
 	void writeProgram(std::ostream& stream);
-	
-	Arabica::DOM::Document<std::string> _document;
-	Arabica::DOM::Node<std::string> _scxml;
-	
-	Arabica::XPath::XPath<std::string> _xpath;
-	Arabica::XPath::StandardNamespaceContext<std::string> _nsContext;
-	std::string _xmlNSPrefix; // the actual prefix for elements in the xml file
-	std::string _xpathPrefix; // prefix mapped for xpath, "scxml" is _xmlNSPrefix is empty but _nsURL set
-	std::string _nsURL;       // ough to be "http://www.w3.org/2005/07/scxml"
-	std::map<std::string, std::string> _nsToPrefix;
-	std::map<std::string, std::string> _nameSpaceInfo;
 
-};
+	void initNodes();
+
+	void writeEvents(std::ostream& stream);
+	void writeStates(std::ostream& stream);
+	void writeDeclarations(std::ostream& stream);
+	void writeEventSources(std::ostream& stream);
+	void writeEventSource(std::ostream& stream, const std::string& name, const PromelaEventSource& source);
+	void writeExecutableContent(std::ostream& stream, const Arabica::DOM::Node<std::string>& node, int indent = 0);
+	void writeInlineComment(std::ostream& stream, const Arabica::DOM::Node<std::string>& node);
+	void writeFSM(std::ostream& stream);
+	void writeEventDispatching(std::ostream& stream);
+	void writeMain(std::ostream& stream);
 	
+	
+	void writeIfBlock(std::ostream& stream, const Arabica::XPath::NodeSet<std::string>& condChain, int indent = 0);
+	void writeDispatchingBlock(std::ostream& stream, const Arabica::XPath::NodeSet<std::string>& transChain, int indent = 0);
+
+	std::string beautifyIndentation(const std::string& code, int indent = 0);
+		
+	Arabica::XPath::NodeSet<std::string> getTransientContent(const Arabica::DOM::Node<std::string>& state);
+	Arabica::DOM::Node<std::string> getUltimateTarget(const Arabica::DOM::Node<std::string>& transition);
+	PromelaInlines getInlinePromela(const Arabica::XPath::NodeSet<std::string>& elements, bool recurse = false);
+	
+	Trie _eventTrie;
+	Arabica::XPath::NodeSet<std::string> _globalStates;
+	Arabica::DOM::Node<std::string> _startState;
+	std::map<std::string, Arabica::DOM::Node<std::string> > _states;
+	std::map<Arabica::DOM::Node<std::string>, int> _transitions;
+
+	std::map<std::string, PromelaEventSource> _invokers;
+	PromelaEventSource _globalEventSource;
+};
+
 }
 
 #endif /* end of include guard: FSMTOPROMELA_H_RP48RFDJ */

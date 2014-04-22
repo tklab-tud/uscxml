@@ -126,7 +126,7 @@ public:
 	void setElement(const Arabica::DOM::Element<std::string>& element) {
 		_element = element;
 	}
-	
+
 	Arabica::DOM::Element<std::string> getElement() {
 		return _element;
 	}
@@ -181,7 +181,7 @@ public:
 	void setElement(const Arabica::DOM::Element<std::string>& element) {
 		_impl->setElement(element);
 	}
-	
+
 	Arabica::DOM::Element<std::string> getElement() {
 		return _impl->getElement();
 	}
@@ -316,11 +316,13 @@ public:
 		_interpreter = interpreter;
 	}
 
-	virtual std::string andExpressions(std::list<std::string>) { return ""; }
-	
+	virtual std::string andExpressions(std::list<std::string>) {
+		return "";
+	}
+
 	static void throwErrorExecution(const std::string& cause);
 	static void throwErrorPlatform(const std::string& cause);
-	
+
 	// we need it public for various static functions
 	InterpreterImpl* _interpreter;
 };

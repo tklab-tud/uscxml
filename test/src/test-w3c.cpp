@@ -90,7 +90,7 @@ void customTerminate() {
 }
 
 class W3CStatusMonitor : public uscxml::InterpreterMonitor {
-	
+
 	void beforeTakingTransition(uscxml::Interpreter interpreter, const Arabica::DOM::Element<std::string>& transition, bool moreComing) {
 		std::cout << "Transition: " << uscxml::DOMUtils::xPathForNode(transition) << std::endl;
 	}
@@ -100,11 +100,11 @@ class W3CStatusMonitor : public uscxml::InterpreterMonitor {
 		printNodeSet(interpreter.getConfiguration());
 		std::cout << "}" << std::endl;
 	}
-	
+
 	void beforeProcessingEvent(uscxml::Interpreter interpreter, const uscxml::Event& event) {
 		std::cout << "Event: " << event.name << std::endl;
 	}
-	
+
 	void beforeExitingState(uscxml::Interpreter interpreter, const Arabica::DOM::Element<std::string>& state, bool moreComing) {
 		exitingStates.push_back(state);
 		if (!moreComing) {
@@ -133,7 +133,7 @@ class W3CStatusMonitor : public uscxml::InterpreterMonitor {
 			seperator = ", ";
 		}
 	}
-	
+
 	void beforeCompletion(uscxml::Interpreter interpreter) {
 		Arabica::XPath::NodeSet<std::string> config = interpreter.getConfiguration();
 		if (config.size() == 1) {
@@ -153,7 +153,7 @@ class W3CStatusMonitor : public uscxml::InterpreterMonitor {
 		std::cout << "TEST FAILED" << std::endl;
 		exit(EXIT_FAILURE);
 	}
-	
+
 	Arabica::XPath::NodeSet<std::string> exitingStates;
 	Arabica::XPath::NodeSet<std::string> enteringStates;
 };
@@ -176,8 +176,8 @@ int main(int argc, char** argv) {
 	google::InitGoogleLogging(argv[0]);
 	google::LogToStderr();
 
-	
-  for (int i = 1; i < argc; i++) {
+
+	for (int i = 1; i < argc; i++) {
 		if (std::string(argv[i]) == "-f") {
 			withFlattening = true;
 		} else {
@@ -189,7 +189,7 @@ int main(int argc, char** argv) {
 	LOG(INFO) << "Processing " << documentURI << (withFlattening ? " FSM converted" : "");
 	if (withFlattening) {
 		Interpreter flatInterpreter = Interpreter::fromURI(documentURI);
-		interpreter = Interpreter::fromDOM(ChartToFSM::flatten(flatInterpreter.getDocument(), flatInterpreter.getNameSpaceInfo()), flatInterpreter.getNameSpaceInfo());
+		interpreter = Interpreter::fromDOM(ChartToFSM::flatten(flatInterpreter).getDocument(), flatInterpreter.getNameSpaceInfo());
 		interpreter.setNameSpaceInfo(interpreter.getNameSpaceInfo());
 	} else {
 		interpreter = Interpreter::fromURI(documentURI);

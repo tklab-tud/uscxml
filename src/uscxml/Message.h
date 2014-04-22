@@ -71,7 +71,7 @@ public:
 	};
 
 	Data() : type(INTERPRETED) {}
-	
+
 	// TODO: default INTERPRETED is unfortunate
 	Data(const std::string& atom_, Type type_ = INTERPRETED) : atom(atom_), type(type_) {}
 	Data(const char* data, size_t size, const std::string& mimeType, bool adopt = false);
@@ -99,9 +99,9 @@ public:
 	// we will have to drop this constructor as it interferes with operator Data() and entails C++11
 	template <typename T>
 	Data(T value, typename std::enable_if<! std::is_base_of<Data, T>::value>::type* = nullptr)
-	: atom(toStr(value)), type(INTERPRETED) {}
+		: atom(toStr(value)), type(INTERPRETED) {}
 #endif
-	
+
 
 	explicit Data(const Arabica::DOM::Node<std::string>& dom);
 	virtual ~Data() {}
@@ -119,7 +119,7 @@ public:
 	Data& operator[](const std::string& key) {
 		return operator[](key.c_str());
 	}
-	
+
 	Data& operator[](const char* key) {
 		return compound[key];
 	}
@@ -143,7 +143,7 @@ public:
 		Data data;
 		return data;
 	}
-	
+
 	const Data item(const size_t index) const {
 		if (array.size() < index) {
 			std::list<Data>::const_iterator arrayIter;
@@ -153,7 +153,7 @@ public:
 		Data data;
 		return data;
 	}
-	
+
 	bool operator==(const Data &other) const {
 		if (other.atom.size() != atom.size())
 			return false;
