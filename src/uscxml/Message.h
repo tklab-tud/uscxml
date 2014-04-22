@@ -71,7 +71,7 @@ public:
 	};
 
 	Data() : type(INTERPRETED) {}
-	
+
 	// TODO: default INTERPRETED is unfortunate
 	Data(const std::string& atom_, Type type_ = INTERPRETED) : atom(atom_), type(type_) {}
 	Data(const char* data, size_t size, const std::string& mimeType, bool adopt = false);
@@ -99,9 +99,9 @@ public:
 	// we will have to drop this constructor as it interferes with operator Data() and entails C++11
 	template <typename T>
 	Data(T value, typename std::enable_if<! std::is_base_of<Data, T>::value>::type* = nullptr)
-	: atom(toStr(value)), type(INTERPRETED) {}
+		: atom(toStr(value)), type(INTERPRETED) {}
 #endif
-	
+
 
 	explicit Data(const Arabica::DOM::Node<std::string>& dom);
 	virtual ~Data() {}
@@ -110,19 +110,46 @@ public:
 		return (atom.length() > 0 || !compound.empty() || !array.empty() || binary || node);
 	}
 
+	void merge(const Data& other);
+
 	bool hasKey(const std::string& key) const {
 		return (!compound.empty() && compound.find(key) != compound.end());
 	}
 
-	const Data operator[](const std::string& key) const {
+	Data& operator[](const std::string& key) {
 		return operator[](key.c_str());
 	}
 
-	void merge(const Data& other);
-	
-	const Data operator[](const char* key) const {
+	Data& operator[](const char* key) {
+		return compound[key];
+	}
+
+	Data& operator[](const size_t index) {
+		while(array.size() < index) {
+			array.push_back(Data("", Data::VERBATIM));
+		}
+		std::list<Data>::iterator arrayIter = array.begin();
+		for (int i = 0; i < index; i++, arrayIter++) {}
+		return *arrayIter;
+	}
+
+	const Data at(const std::string& key) const {
+		return at(key.c_str());
+	}
+
+	const Data at(const char* key) const {
 		if (hasKey(key))
 			return compound.at(key);
+		Data data;
+		return data;
+	}
+
+	const Data item(const size_t index) const {
+		if (array.size() < index) {
+			std::list<Data>::const_iterator arrayIter;
+			for (int i = 0; i < index; i++, arrayIter++) {}
+			return *arrayIter;
+		}
 		Data data;
 		return data;
 	}

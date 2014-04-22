@@ -42,10 +42,10 @@ catch (PlException plex) { \
 	e.data.compound["cause"] = (char*)plex; \
 	throw e; \
 } \
-
+ 
 #define PL_MODULE \
 _interpreter.getSessionId().c_str() \
-
+ 
 #define SET_PL_ENGINE(dm) \
 assert(_swiEngines.find(dm) != _swiEngines.end()); \
 int rc = PL_set_engine(_swiEngines[dm], NULL); \
@@ -197,7 +197,7 @@ foreign_t SWIDataModel::inPredicate(term_t a0, int arity, void* context) {
 		char *s;
 		if ( PL_get_atom_chars(a0, &s) ) {
 			if (_dmPtr->_interpreter->isInState(s)) {
-        return true;
+				return true;
 			}
 		}
 		return FALSE;
@@ -233,7 +233,7 @@ void SWIDataModel::initialize() {
 
 void SWIDataModel::setEvent(const Event& event) {
 	SWIEngineLock engineLock;
-	
+
 	// remove old event
 	try {
 		PlCall("retractall(event(_))");
@@ -331,7 +331,7 @@ void SWIDataModel::setEvent(const Event& event) {
 void SWIDataModel::assertFromData(const Data& data, const std::string& expr, size_t nesting) {
 	if (data.atom.size() > 0) {
 		// terminal branch, this is where we assert
-		
+
 		std::stringstream ss;
 		ss << expr;
 //		nesting++;
@@ -345,7 +345,7 @@ void SWIDataModel::assertFromData(const Data& data, const std::string& expr, siz
 		for (size_t i = 0; i < nesting; i++) {
 			ss << ")";
 		}
-		
+
 //		std::cout << ss.str() << std::endl;
 		PlCall("assert", PlCompound(ss.str().c_str()));
 		return;
@@ -402,20 +402,20 @@ void SWIDataModel::assertFromData(const Data& data, const std::string& expr, siz
 }
 
 #if 0
-	std::list<PlCompound> SWIDataModel::getSolutions(PlCompound compound) {
-		std::list<PlCompound> solutions;
-		
-		PlTermv termv(compound.arity());
-		for (int i = 0; i < compound.arity(); i++) {
-			termv[i] = compound[i + 1];
-		}
-		PlQuery query(compound.name(), termv);
-		while(query.next_solution()) {
-//			std::cout << (char*)compound << std::endl;
-			solutions.push_back(compound);
-		}
-		return solutions;
+std::list<PlCompound> SWIDataModel::getSolutions(PlCompound compound) {
+	std::list<PlCompound> solutions;
+
+	PlTermv termv(compound.arity());
+	for (int i = 0; i < compound.arity(); i++) {
+		termv[i] = compound[i + 1];
 	}
+	PlQuery query(compound.name(), termv);
+	while(query.next_solution()) {
+//			std::cout << (char*)compound << std::endl;
+		solutions.push_back(compound);
+	}
+	return solutions;
+}
 #endif
 
 Data SWIDataModel::getStringAsData(const std::string& content) {
@@ -424,17 +424,17 @@ Data SWIDataModel::getStringAsData(const std::string& content) {
 		PlCompound compound(content.c_str());
 		PlCompound orig(content.c_str());
 		Data data;
-		
+
 		PlTermv termv(compound.arity());
 		for (int i = 0; i < compound.arity(); i++) {
 			termv[i] = compound[i + 1];
 		}
 		PlQuery query(compound.name(), termv);
-		
+
 		while(query.next_solution()) {
 			std::map<std::string, PlTerm> vars = resolveAtoms(compound, orig);
 			std::map<std::string, PlTerm>::const_iterator varIter = vars.begin();
-			
+
 			while(varIter != vars.end()) {
 				data.merge(termAsData(varIter->second));
 				varIter++;
@@ -455,7 +455,7 @@ Data SWIDataModel::getStringAsData(const std::string& content) {
 }
 
 Data SWIDataModel::termAsData(PlTerm term) {
-	
+
 	Data data;
 //	std::cout << term.name() << (char*)term << std::endl;
 
@@ -692,13 +692,13 @@ bool SWIDataModel::evalAsBool(const Arabica::DOM::Node<std::string>& node, const
 		return false;
 	}
 }
-	
+
 std::string SWIDataModel::evalAsString(const std::string& expr) {
 	SWIEngineLock engineLock;
 	try {
 
 		PlCompound compound(expr.c_str());
-		
+
 		if (strlen(compound.name())) {
 			PlCompound orig(expr.c_str());
 
@@ -741,32 +741,32 @@ std::string SWIDataModel::evalAsString(const std::string& expr) {
 	}
 }
 
-	
+
 // this is similar to http://etalis.googlecode.com/svn/eEtalis/src/term.c
 std::map<std::string, PlTerm> SWIDataModel::resolveAtoms(PlTerm& term, PlTerm& orig) {
 	try {
 		std::map<std::string, PlTerm> atoms;
 		switch (orig.type()) {
-			case PL_VARIABLE: {
-				atoms[(char *)orig] = term;
-				break;
+		case PL_VARIABLE: {
+			atoms[(char *)orig] = term;
+			break;
+		}
+		case PL_ATOM:
+			break;
+		case PL_STRING:
+			break;
+		case PL_INTEGER:
+			break;
+		case PL_TERM:
+			for (int i = 1; i <= orig.arity(); i++) {
+				PlTerm newTerm = term[i];
+				PlTerm newOrig = orig[i];
+				std::map<std::string, PlTerm> result = resolveAtoms(newTerm, newOrig);
+				atoms.insert(result.begin(), result.end());
 			}
-			case PL_ATOM:
-				break;
-			case PL_STRING:
-				break;
-			case PL_INTEGER:
-				break;
-			case PL_TERM:
-				for (int i = 1; i <= orig.arity(); i++) {
-					PlTerm newTerm = term[i];
-					PlTerm newOrig = orig[i];
-					std::map<std::string, PlTerm> result = resolveAtoms(newTerm, newOrig);
-					atoms.insert(result.begin(), result.end());
-				}
-				break;
-			default:
-				LOG(ERROR) << "Resolving variable of unknown type in query solution";
+			break;
+		default:
+			LOG(ERROR) << "Resolving variable of unknown type in query solution";
 		}
 		return atoms;
 	}

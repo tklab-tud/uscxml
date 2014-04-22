@@ -55,8 +55,8 @@ JSStaticFunction JSCDocument::staticFunctions[] = {
 	{ "createEntityReference", createEntityReferenceCallback, kJSPropertyAttributeDontDelete },
 	{ "getElementsByTagName", getElementsByTagNameCallback, kJSPropertyAttributeDontDelete },
 	{ "importNode", importNodeCallback, kJSPropertyAttributeDontDelete },
-	{ "createElementNS", createElementNSCallback, kJSPropertyAttributeDontDelete },
-	{ "createAttributeNS", createAttributeNSCallback, kJSPropertyAttributeDontDelete },
+	{ "createElementNS", createElementNSCustomCallback, kJSPropertyAttributeDontDelete },
+	{ "createAttributeNS", createAttributeNSCustomCallback, kJSPropertyAttributeDontDelete },
 	{ "getElementsByTagNameNS", getElementsByTagNameNSCallback, kJSPropertyAttributeDontDelete },
 	{ "getElementById", getElementByIdCallback, kJSPropertyAttributeDontDelete },
 	{ "evaluate", evaluateCustomCallback, kJSPropertyAttributeDontDelete },
@@ -454,94 +454,6 @@ JSValueRef JSCDocument::importNodeCallback(JSContextRef ctx, JSObjectRef functio
 	}
 
 	JSStringRef exceptionString = JSStringCreateWithUTF8CString("Parameter mismatch while calling importNode");
-	*exception = JSValueMakeString(ctx, exceptionString);
-	JSStringRelease(exceptionString);
-	return JSValueMakeUndefined(ctx);
-}
-
-JSValueRef JSCDocument::createElementNSCallback(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObj, size_t argumentCount, const JSValueRef* arguments, JSValueRef* exception) {
-
-	struct JSCDocumentPrivate* privData = (struct JSCDocumentPrivate*)JSObjectGetPrivate(thisObj);
-
-	if (false) {
-	} else if (argumentCount == 2 &&
-	           JSValueIsString(ctx, arguments[0]) &&
-	           JSValueIsString(ctx, arguments[1])) {
-		JSStringRef stringReflocalNamespaceURI = JSValueToStringCopy(ctx, arguments[0], exception);
-		size_t localNamespaceURIMaxSize = JSStringGetMaximumUTF8CStringSize(stringReflocalNamespaceURI);
-		char* localNamespaceURIBuffer = new char[localNamespaceURIMaxSize];
-		JSStringGetUTF8CString(stringReflocalNamespaceURI, localNamespaceURIBuffer, localNamespaceURIMaxSize);
-		std::string localNamespaceURI(localNamespaceURIBuffer);
-		JSStringRelease(stringReflocalNamespaceURI);
-		free(localNamespaceURIBuffer);
-
-		JSStringRef stringReflocalQualifiedName = JSValueToStringCopy(ctx, arguments[1], exception);
-		size_t localQualifiedNameMaxSize = JSStringGetMaximumUTF8CStringSize(stringReflocalQualifiedName);
-		char* localQualifiedNameBuffer = new char[localQualifiedNameMaxSize];
-		JSStringGetUTF8CString(stringReflocalQualifiedName, localQualifiedNameBuffer, localQualifiedNameMaxSize);
-		std::string localQualifiedName(localQualifiedNameBuffer);
-		JSStringRelease(stringReflocalQualifiedName);
-		free(localQualifiedNameBuffer);
-
-
-		Arabica::DOM::Element<std::string>* retVal = new Arabica::DOM::Element<std::string>(privData->nativeObj->createElementNS(localNamespaceURI, localQualifiedName));
-		JSClassRef retClass = JSCElement::getTmpl();
-
-		struct JSCElement::JSCElementPrivate* retPrivData = new JSCElement::JSCElementPrivate();
-		retPrivData->dom = privData->dom;
-		retPrivData->nativeObj = retVal;
-
-		JSObjectRef retObj = JSObjectMake(ctx, retClass, retPrivData);
-
-		return retObj;
-
-	}
-
-	JSStringRef exceptionString = JSStringCreateWithUTF8CString("Parameter mismatch while calling createElementNS");
-	*exception = JSValueMakeString(ctx, exceptionString);
-	JSStringRelease(exceptionString);
-	return JSValueMakeUndefined(ctx);
-}
-
-JSValueRef JSCDocument::createAttributeNSCallback(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObj, size_t argumentCount, const JSValueRef* arguments, JSValueRef* exception) {
-
-	struct JSCDocumentPrivate* privData = (struct JSCDocumentPrivate*)JSObjectGetPrivate(thisObj);
-
-	if (false) {
-	} else if (argumentCount == 2 &&
-	           JSValueIsString(ctx, arguments[0]) &&
-	           JSValueIsString(ctx, arguments[1])) {
-		JSStringRef stringReflocalNamespaceURI = JSValueToStringCopy(ctx, arguments[0], exception);
-		size_t localNamespaceURIMaxSize = JSStringGetMaximumUTF8CStringSize(stringReflocalNamespaceURI);
-		char* localNamespaceURIBuffer = new char[localNamespaceURIMaxSize];
-		JSStringGetUTF8CString(stringReflocalNamespaceURI, localNamespaceURIBuffer, localNamespaceURIMaxSize);
-		std::string localNamespaceURI(localNamespaceURIBuffer);
-		JSStringRelease(stringReflocalNamespaceURI);
-		free(localNamespaceURIBuffer);
-
-		JSStringRef stringReflocalQualifiedName = JSValueToStringCopy(ctx, arguments[1], exception);
-		size_t localQualifiedNameMaxSize = JSStringGetMaximumUTF8CStringSize(stringReflocalQualifiedName);
-		char* localQualifiedNameBuffer = new char[localQualifiedNameMaxSize];
-		JSStringGetUTF8CString(stringReflocalQualifiedName, localQualifiedNameBuffer, localQualifiedNameMaxSize);
-		std::string localQualifiedName(localQualifiedNameBuffer);
-		JSStringRelease(stringReflocalQualifiedName);
-		free(localQualifiedNameBuffer);
-
-
-		Arabica::DOM::Attr<std::string>* retVal = new Arabica::DOM::Attr<std::string>(privData->nativeObj->createAttributeNS(localNamespaceURI, localQualifiedName));
-		JSClassRef retClass = JSCAttr::getTmpl();
-
-		struct JSCAttr::JSCAttrPrivate* retPrivData = new JSCAttr::JSCAttrPrivate();
-		retPrivData->dom = privData->dom;
-		retPrivData->nativeObj = retVal;
-
-		JSObjectRef retObj = JSObjectMake(ctx, retClass, retPrivData);
-
-		return retObj;
-
-	}
-
-	JSStringRef exceptionString = JSStringCreateWithUTF8CString("Parameter mismatch while calling createAttributeNS");
 	*exception = JSValueMakeString(ctx, exceptionString);
 	JSStringRelease(exceptionString);
 	return JSValueMakeUndefined(ctx);

@@ -138,6 +138,51 @@ protected:
 	{}
 };
 
+class NameSpaceInfo {
+public:
+	NameSpaceInfo() {
+		init(std::map<std::string, std::string>());
+	}
+
+	NameSpaceInfo(const std::map<std::string, std::string>& nsInfo) {
+		init(nsInfo);
+	}
+
+	NameSpaceInfo(const NameSpaceInfo& other) {
+		init(other.nsInfo);
+	}
+
+	virtual ~NameSpaceInfo() {
+		if (nsContext)
+			delete nsContext;
+	}
+
+	NameSpaceInfo& operator=( const NameSpaceInfo& other ) {
+		init(other.nsInfo);
+		return *this;
+	}
+
+	void setPrefix(Arabica::DOM::Element<std::string> element) {
+		if (nsURL.size() > 0)
+			element.setPrefix(nsToPrefix[nsURL]);
+	}
+
+	void setPrefix(Arabica::DOM::Attr<std::string> attribute) {
+		if (nsURL.size() > 0)
+			attribute.setPrefix(nsToPrefix[nsURL]);
+	}
+
+	std::string nsURL;         // ough to be "http://www.w3.org/2005/07/scxml" but maybe empty
+	std::string xpathPrefix;   // prefix mapped for xpath, "scxml" is _xmlNSPrefix is empty but _nsURL set
+	std::string xmlNSPrefix;   // the actual prefix for elements in the xml file
+	Arabica::XPath::StandardNamespaceContext<std::string>* nsContext;
+	std::map<std::string, std::string> nsToPrefix;  // prefixes for a given namespace
+	std::map<std::string, std::string> nsInfo;      // all xmlns mappings
+
+private:
+	void init(const std::map<std::string, std::string>& nsInfo);
+};
+
 class USCXML_API InterpreterImpl : public boost::enable_shared_from_this<InterpreterImpl> {
 public:
 
@@ -149,6 +194,9 @@ public:
 	};
 
 	virtual ~InterpreterImpl();
+
+	void copyTo(InterpreterImpl* other);
+	void copyTo(boost::shared_ptr<InterpreterImpl> other);
 
 	void start();
 	void stop();
@@ -206,28 +254,23 @@ public:
 	Factory* getFactory() {
 		return _factory;
 	}
-	std::string getXPathPrefix()                             {
-		return _xpathPrefix;
-	}
-	std::string getXMLPrefix()                               {
-		return _xmlNSPrefix;
-	}
-	Arabica::XPath::StandardNamespaceContext<std::string>& getNSContext() {
-		return _nsContext;
-	}
-	std::string getXMLPrefixForNS(const std::string& ns)     {
-		if (_nameSpaceInfo.find(ns) != _nameSpaceInfo.end() && _nameSpaceInfo[ns].size())
-			return _nameSpaceInfo[ns] + ":";
-		return "";
-	}
-	
+
 	Arabica::XPath::NodeSet<std::string> getNodeSetForXPath(const std::string& xpathExpr) {
 		return _xpath.evaluate(xpathExpr, _scxml).asNodeSet();
 	}
-	
-	void setNameSpaceInfo(const std::map<std::string, std::string> nameSpaceInfo);
-	std::map<std::string, std::string> getNameSpaceInfo() {
-		return _nameSpaceInfo;
+
+	std::string getXMLPrefixForNS(const std::string& ns) const {
+		if (_nsInfo.nsToPrefix.find(ns) != _nsInfo.nsToPrefix.end() && _nsInfo.nsToPrefix.at(ns).size())
+			return _nsInfo.nsToPrefix.at(ns) + ":";
+		return "";
+	}
+
+	void setNameSpaceInfo(const NameSpaceInfo& nsInfo) {
+		_nsInfo = nsInfo;
+		_xpath.setNamespaceContext(*_nsInfo.nsContext);
+	}
+	NameSpaceInfo getNameSpaceInfo() const {
+		return _nsInfo;
 	}
 
 	void receiveInternal(const Event& event);
@@ -266,7 +309,7 @@ public:
 	Arabica::XPath::NodeSet<std::string> getStates(const std::list<std::string>& stateIds);
 	Arabica::XPath::NodeSet<std::string> getAllStates();
 
-	virtual Arabica::DOM::Document<std::string>& getDocument()       {
+	virtual Arabica::DOM::Document<std::string> getDocument() const {
 		return _document;
 	}
 
@@ -329,8 +372,10 @@ public:
 	virtual Arabica::XPath::NodeSet<std::string> getTargetStates(const Arabica::XPath::NodeSet<std::string>& transitions);
 	virtual Arabica::DOM::Node<std::string> getSourceState(const Arabica::DOM::Node<std::string>& transition);
 
-	static Arabica::XPath::NodeSet<std::string> filterChildElements(const std::string& tagname, const Arabica::DOM::Node<std::string>& node);
-	static Arabica::XPath::NodeSet<std::string> filterChildElements(const std::string& tagName, const Arabica::XPath::NodeSet<std::string>& nodeSet);
+	static Arabica::XPath::NodeSet<std::string> filterChildElements(const std::string& tagname, const Arabica::DOM::Node<std::string>& node, bool recurse = false);
+	static Arabica::XPath::NodeSet<std::string> filterChildElements(const std::string& tagName, const Arabica::XPath::NodeSet<std::string>& nodeSet, bool recurse = false);
+	static Arabica::XPath::NodeSet<std::string> filterChildType(const Arabica::DOM::Node_base::Type type, const Arabica::DOM::Node<std::string>& node, bool recurse = false);
+	static Arabica::XPath::NodeSet<std::string> filterChildType(const Arabica::DOM::Node_base::Type type, const Arabica::XPath::NodeSet<std::string>& nodeSet, bool recurse = false);
 	Arabica::DOM::Node<std::string> findLCCA(const Arabica::XPath::NodeSet<std::string>& states);
 	virtual Arabica::XPath::NodeSet<std::string> getProperAncestors(const Arabica::DOM::Node<std::string>& s1, const Arabica::DOM::Node<std::string>& s2);
 
@@ -360,12 +405,7 @@ protected:
 	Arabica::DOM::Document<std::string> _document;
 	Arabica::DOM::Element<std::string> _scxml;
 	Arabica::XPath::XPath<std::string> _xpath;
-	Arabica::XPath::StandardNamespaceContext<std::string> _nsContext;
-	std::string _xmlNSPrefix; // the actual prefix for elements in the xml file
-	std::string _xpathPrefix; // prefix mapped for xpath, "scxml" is _xmlNSPrefix is empty but _nsURL set
-	std::string _nsURL;       // ough to be "http://www.w3.org/2005/07/scxml"
-	std::map<std::string, std::string> _nsToPrefix;
-	std::map<std::string, std::string> _nameSpaceInfo;
+	NameSpaceInfo _nsInfo;
 
 	bool _running;
 	bool _done;
@@ -445,10 +485,11 @@ protected:
 class USCXML_API Interpreter {
 public:
 	static Interpreter fromDOM(const Arabica::DOM::Document<std::string>& dom,
-														 const std::map<std::string, std::string>& nameSpaceInfo);
+	                           const NameSpaceInfo& nameSpaceInfo);
 	static Interpreter fromXML(const std::string& xml);
 	static Interpreter fromURI(const std::string& uri);
 	static Interpreter fromInputSource(Arabica::SAX::InputSource<std::string>& source);
+	static Interpreter fromClone(const Interpreter& other);
 
 	Interpreter() : _impl() {} // the empty, invalid interpreter
 	Interpreter(boost::shared_ptr<InterpreterImpl> const impl) : _impl(impl) { }
@@ -489,28 +530,32 @@ public:
 		_impl->interpret();
 	};
 
-	void addMonitor(InterpreterMonitor* monitor)             {
+	void addMonitor(InterpreterMonitor* monitor) {
 		return _impl->addMonitor(monitor);
 	}
 
-	void removeMonitor(InterpreterMonitor* monitor)          {
+	void removeMonitor(InterpreterMonitor* monitor) {
 		return _impl->removeMonitor(monitor);
 	}
 
-	void setSourceURI(std::string sourceURI)                   {
+	void setSourceURI(std::string sourceURI) {
 		return _impl->setSourceURI(sourceURI);
 	}
-	URL getSourceURI()                                       {
+	URL getSourceURI() {
 		return _impl->getSourceURI();
 	}
-	URL getBaseURI()                                         {
+	URL getBaseURI() {
 		return _impl->getBaseURI();
 	}
 
-	void setNameSpaceInfo(const std::map<std::string, std::string> namespaceInfo) {
-		_impl->setNameSpaceInfo(namespaceInfo);
+	std::string getXMLPrefixForNS(const std::string& ns) const   {
+		return _impl->getXMLPrefixForNS(ns);
 	}
-	std::map<std::string, std::string> getNameSpaceInfo() {
+
+	void setNameSpaceInfo(const NameSpaceInfo& nsInfo) {
+		_impl->setNameSpaceInfo(nsInfo);
+	}
+	NameSpaceInfo getNameSpaceInfo() const {
 		return _impl->getNameSpaceInfo();
 	}
 
@@ -525,7 +570,7 @@ public:
 		return _impl->getHTTPServlet();
 	}
 
-	DataModel getDataModel()                                 {
+	DataModel getDataModel() {
 		return _impl->getDataModel();
 	}
 	void setParentQueue(uscxml::concurrency::BlockingQueue<SendRequest>* parentQueue) {
@@ -537,26 +582,14 @@ public:
 	Factory* getFactory() {
 		return _impl->getFactory();
 	}
-	std::string getXPathPrefix()                             {
-		return _impl->getXPathPrefix();
-	}
-	std::string getXMLPrefix()                               {
-		return _impl->getXMLPrefix();
-	}
-	Arabica::XPath::StandardNamespaceContext<std::string>& getNSContext() {
-		return _impl->getNSContext();
-	}
-	std::string getXMLPrefixForNS(const std::string& ns)     {
-		return _impl->getXMLPrefixForNS(ns);
-	}
 	Arabica::XPath::NodeSet<std::string> getNodeSetForXPath(const std::string& xpathExpr) {
 		return _impl->getNodeSetForXPath(xpathExpr);
 	}
-	
+
 	void inline receiveInternal(const Event& event) {
 		return _impl->receiveInternal(event);
 	}
-	void receive(const Event& event, bool toFront = false)   {
+	void receive(const Event& event, bool toFront = false) {
 		return _impl->receive(event, toFront);
 	}
 
@@ -567,12 +600,12 @@ public:
 	bool isInState(const std::string& stateId) {
 		return _impl->isInState(stateId);
 	}
-	
-	Arabica::XPath::NodeSet<std::string> getConfiguration()  {
+
+	Arabica::XPath::NodeSet<std::string> getConfiguration() {
 		return _impl->getConfiguration();
 	}
 
-	Arabica::XPath::NodeSet<std::string> getBasicConfiguration()  {
+	Arabica::XPath::NodeSet<std::string> getBasicConfiguration() {
 		return _impl->getBasicConfiguration();
 	}
 
@@ -593,11 +626,11 @@ public:
 		return _impl->getAllStates();
 	}
 
-	Arabica::DOM::Document<std::string>& getDocument()       {
+	Arabica::DOM::Document<std::string> getDocument() const {
 		return _impl->getDocument();
 	}
 
-	void setCapabilities(unsigned int capabilities)          {
+	void setCapabilities(unsigned int capabilities) {
 		return _impl->setCapabilities(capabilities);
 	}
 
@@ -605,13 +638,13 @@ public:
 		return _impl->setName(name);
 	}
 
-	const std::string& getName()                             {
+	const std::string& getName() {
 		return _impl->getName();
 	}
-	const std::string& getSessionId()                        {
+	const std::string& getSessionId() {
 		return _impl->getSessionId();
 	}
-	DelayedEventQueue* getDelayQueue()                       {
+	DelayedEventQueue* getDelayQueue() {
 		return _impl->getDelayQueue();
 	}
 
@@ -716,12 +749,19 @@ public:
 		return _impl->getSourceState(transition);
 	}
 
-	static Arabica::XPath::NodeSet<std::string> filterChildElements(const std::string& tagname, const Arabica::DOM::Node<std::string>& node) {
-		return InterpreterImpl::filterChildElements(tagname, node);
+	static Arabica::XPath::NodeSet<std::string> filterChildElements(const std::string& tagname, const Arabica::DOM::Node<std::string>& node, bool recurse = false) {
+		return InterpreterImpl::filterChildElements(tagname, node, recurse);
 	}
-	static Arabica::XPath::NodeSet<std::string> filterChildElements(const std::string& tagName, const Arabica::XPath::NodeSet<std::string>& nodeSet) {
-		return InterpreterImpl::filterChildElements(tagName, nodeSet);
+	static Arabica::XPath::NodeSet<std::string> filterChildElements(const std::string& tagName, const Arabica::XPath::NodeSet<std::string>& nodeSet, bool recurse = false) {
+		return InterpreterImpl::filterChildElements(tagName, nodeSet, recurse);
 	}
+	static Arabica::XPath::NodeSet<std::string> filterChildType(const Arabica::DOM::Node_base::Type type, const Arabica::DOM::Node<std::string>& node, bool recurse = false) {
+		return InterpreterImpl::filterChildType(type, node, recurse);
+	}
+	static Arabica::XPath::NodeSet<std::string> filterChildType(const Arabica::DOM::Node_base::Type type, const Arabica::XPath::NodeSet<std::string>& nodeSet, bool recurse = false) {
+		return InterpreterImpl::filterChildType(type, nodeSet, recurse);
+	}
+
 	Arabica::DOM::Node<std::string> findLCCA(const Arabica::XPath::NodeSet<std::string>& states) {
 		return _impl->findLCCA(states);
 	}
@@ -729,7 +769,7 @@ public:
 		return _impl->getProperAncestors(s1, s2);
 	}
 
-	boost::shared_ptr<InterpreterImpl> getImpl() {
+	boost::shared_ptr<InterpreterImpl> getImpl() const {
 		return _impl;
 	}
 
@@ -747,10 +787,10 @@ public:
 
 	virtual void beforeProcessingEvent(Interpreter interpreter, const Event& event) {}
 	virtual void beforeMicroStep(Interpreter interpreter) {}
-	
+
 	virtual void beforeExitingState(Interpreter interpreter, const Arabica::DOM::Element<std::string>& state, bool moreComing) {}
 	virtual void afterExitingState(Interpreter interpreter, const Arabica::DOM::Element<std::string>& state, bool moreComing) {}
-	
+
 	virtual void beforeExecutingContent(Interpreter interpreter, const Arabica::DOM::Element<std::string>& element) {}
 	virtual void afterExecutingContent(Interpreter interpreter, const Arabica::DOM::Element<std::string>& element) {}
 
@@ -762,14 +802,14 @@ public:
 
 	virtual void beforeEnteringState(Interpreter interpreter, const Arabica::DOM::Element<std::string>& state, bool moreComing) {}
 	virtual void afterEnteringState(Interpreter interpreter, const Arabica::DOM::Element<std::string>& state, bool moreComing) {}
-	
+
 	virtual void beforeInvoking(Interpreter interpreter, const Arabica::DOM::Element<std::string>& invokeElem, const std::string& invokeid) {}
 	virtual void afterInvoking(Interpreter interpreter, const Arabica::DOM::Element<std::string>& invokeElem, const std::string& invokeid) {}
 
 	virtual void afterMicroStep(Interpreter interpreter) {}
 
 	virtual void onStableConfiguration(Interpreter interpreter) {}
-	
+
 	virtual void beforeCompletion(Interpreter interpreter) {}
 	virtual void afterCompletion(Interpreter interpreter) {}
 

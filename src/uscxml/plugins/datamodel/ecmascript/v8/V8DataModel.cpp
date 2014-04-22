@@ -94,9 +94,9 @@ boost::shared_ptr<DataModelImpl> V8DataModel::create(InterpreterImpl* interprete
 	dm->_dom = new V8DOM();
 //  dom->interpreter = interpreter;
 	dm->_dom->xpath = new XPath<std::string>();
-	dm->_dom->xpath->setNamespaceContext(interpreter->getNSContext());
+	dm->_dom->xpath->setNamespaceContext(*interpreter->getNameSpaceInfo().nsContext);
 	dm->_dom->storage	= new Storage(URL::getResourceDir() + PATH_SEPERATOR + interpreter->getName() + ".storage");
-
+	dm->_dom->nsInfo = new NameSpaceInfo(interpreter->getNameSpaceInfo());
 	// see http://stackoverflow.com/questions/3171418/v8-functiontemplate-class-instance
 
 	// some free functions
@@ -661,7 +661,7 @@ void V8DataModel::init(const std::string& location,
 std::string V8DataModel::andExpressions(std::list<std::string> expressions) {
 	if (expressions.size() == 0)
 		return "";
-	
+
 	if (expressions.size() == 1)
 		return *(expressions.begin());
 
@@ -669,8 +669,8 @@ std::string V8DataModel::andExpressions(std::list<std::string> expressions) {
 	exprSS << "(";
 	std::string conjunction = "";
 	for (std::list<std::string>::const_iterator exprIter = expressions.begin();
-			 exprIter != expressions.end();
-			 exprIter++) {
+	        exprIter != expressions.end();
+	        exprIter++) {
 		exprSS << conjunction << "(" << *exprIter << ")";
 		conjunction = " && ";
 	}

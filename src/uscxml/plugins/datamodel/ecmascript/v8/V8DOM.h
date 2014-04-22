@@ -70,6 +70,7 @@ public:
 //		return v8::External::New(pointer);
 	}
 
+	uscxml::NameSpaceInfo* nsInfo;
 	Arabica::XPath::XPath<std::string>* xpath;
 	uscxml::Storage* storage;
 };

@@ -23,6 +23,7 @@ namespace Arabica {
 namespace DOM {
 
 JSCDOM::JSCDOM() {
+	nsInfo = NULL;
 	xpath = NULL;
 	storage = NULL;
 }

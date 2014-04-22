@@ -24,80 +24,80 @@
 namespace uscxml {
 
 Breakpoint::Breakpoint(const Data& data) {
-  enabled = true;
+	enabled = true;
 	subject = UNDEF_SUBJECT;
 	when    = UNDEF_WHEN;
 	action  = UNDEF_ACTION;
 
 	if (data.hasKey("when")) {
 		if (false) {
-		} else if (data["when"].atom == "before") {
+		} else if (data.at("when").atom == "before") {
 			when = BEFORE;
-		} else if (data["when"].atom == "after") {
+		} else if (data.at("when").atom == "after") {
 			when = AFTER;
-		} else if (data["when"].atom == "on") {
+		} else if (data.at("when").atom == "on") {
 			when = ON;
 		}
 	}
 
 	if (data.hasKey("action")) {
 		if (false) {
-		} else if (data["action"].atom == "enter") {
+		} else if (data.at("action").atom == "enter") {
 			action = ENTER;
-		} else if (data["action"].atom == "exit") {
+		} else if (data.at("action").atom == "exit") {
 			action = EXIT;
-		} else if (data["action"].atom == "invoke") {
+		} else if (data.at("action").atom == "invoke") {
 			action = INVOKE;
-		} else if (data["action"].atom == "cancel") {
+		} else if (data.at("action").atom == "cancel") {
 			action = UNINVOKE;
 		}
 	}
 
 	if (data.hasKey("subject")) {
 		if (false) {
-		} else if (data["subject"].atom == "state") {
+		} else if (data.at("subject").atom == "state") {
 			subject = STATE;
-		} else if (data["subject"].atom == "transition") {
+		} else if (data.at("subject").atom == "transition") {
 			subject = TRANSITION;
-		} else if (data["subject"].atom == "stable") {
+		} else if (data.at("subject").atom == "stable") {
 			subject = STABLE;
-		} else if (data["subject"].atom == "microstep") {
+		} else if (data.at("subject").atom == "microstep") {
 			subject = MICROSTEP;
-		} else if (data["subject"].atom == "event") {
+		} else if (data.at("subject").atom == "event") {
 			subject = EVENT;
-		} else if (data["subject"].atom == "invoker") {
+		} else if (data.at("subject").atom == "invoker") {
 			subject = INVOKER;
-		} else if (data["subject"].atom == "executable") {
+		} else if (data.at("subject").atom == "executable") {
 			subject = EXECUTABLE;
 		}
 	}
 
 	if (data.hasKey("condition"))
-		condition = data["condition"].atom;
+		condition = data.at("condition").atom;
 
 	if (data.hasKey("invokeId"))
-		invokeId = data["invokeId"].atom;
+		invokeId = data.at("invokeId").atom;
 
 	if (data.hasKey("invokeType"))
-		invokeType = data["invokeType"].atom;
+		invokeType = data.at("invokeType").atom;
 
 	if (data.hasKey("eventName"))
-		eventName = data["eventName"].atom;
+		eventName = data.at("eventName").atom;
 
 	if (data.hasKey("executableName"))
-		executableName = data["executableName"].atom;
+		executableName = data.at("executableName").atom;
 
 	if (data.hasKey("executableXPath"))
-		executableXPath = data["executableXPath"].atom;
+		executableXPath = data.at("executableXPath").atom;
 
 	if (data.hasKey("stateId"))
-		stateId = data["stateId"].atom;
+		stateId = data.at("stateId").atom;
 
 	if (data.hasKey("transSourceId"))
-		transSourceId = data["transSourceId"].atom;
+		transSourceId = data.at("transSourceId").atom;
 
 	if (data.hasKey("transTargetId"))
-		transTargetId = data["transTargetId"].atom;
+		transTargetId = data.at("transTargetId").atom;
 
 }
 
@@ -105,60 +105,60 @@ Data Breakpoint::toData() const {
 	Data data;
 
 	switch (subject) {
-		case STATE:
-			data.compound["subject"] = Data("state", Data::VERBATIM);
-			break;
-		case TRANSITION:
-			data.compound["subject"] = Data("transition", Data::VERBATIM);
-			break;
-		case STABLE:
-			data.compound["subject"] = Data("stable", Data::VERBATIM);
-			break;
-		case MICROSTEP:
-			data.compound["subject"] = Data("microstep", Data::VERBATIM);
-			break;
-		case EVENT:
-			data.compound["subject"] = Data("event", Data::VERBATIM);
-			break;
-		case INVOKER:
-			data.compound["subject"] = Data("invoker", Data::VERBATIM);
-			break;
-		case EXECUTABLE:
-			data.compound["subject"] = Data("executable", Data::VERBATIM);
-			break;
-		default:
-			break;
+	case STATE:
+		data.compound["subject"] = Data("state", Data::VERBATIM);
+		break;
+	case TRANSITION:
+		data.compound["subject"] = Data("transition", Data::VERBATIM);
+		break;
+	case STABLE:
+		data.compound["subject"] = Data("stable", Data::VERBATIM);
+		break;
+	case MICROSTEP:
+		data.compound["subject"] = Data("microstep", Data::VERBATIM);
+		break;
+	case EVENT:
+		data.compound["subject"] = Data("event", Data::VERBATIM);
+		break;
+	case INVOKER:
+		data.compound["subject"] = Data("invoker", Data::VERBATIM);
+		break;
+	case EXECUTABLE:
+		data.compound["subject"] = Data("executable", Data::VERBATIM);
+		break;
+	default:
+		break;
 	}
-	
+
 	switch (when) {
-		case AFTER:
-			data.compound["when"] = Data("after", Data::VERBATIM);
-			break;
-		case BEFORE:
-			data.compound["when"] = Data("before", Data::VERBATIM);
-			break;
-		case ON:
-			data.compound["when"] = Data("on", Data::VERBATIM);
-			break;
-		default:
-			break;
+	case AFTER:
+		data.compound["when"] = Data("after", Data::VERBATIM);
+		break;
+	case BEFORE:
+		data.compound["when"] = Data("before", Data::VERBATIM);
+		break;
+	case ON:
+		data.compound["when"] = Data("on", Data::VERBATIM);
+		break;
+	default:
+		break;
 	}
 
 	switch (action) {
-		case ENTER:
-			data.compound["action"] = Data("enter", Data::VERBATIM);
-			break;
-		case EXIT:
-			data.compound["action"] = Data("exit", Data::VERBATIM);
-			break;
-		case INVOKE:
-			data.compound["action"] = Data("invoke", Data::VERBATIM);
-			break;
-		case UNINVOKE:
-			data.compound["action"] = Data("cancel", Data::VERBATIM);
-			break;
-		default:
-			break;
+	case ENTER:
+		data.compound["action"] = Data("enter", Data::VERBATIM);
+		break;
+	case EXIT:
+		data.compound["action"] = Data("exit", Data::VERBATIM);
+		break;
+	case INVOKE:
+		data.compound["action"] = Data("invoke", Data::VERBATIM);
+		break;
+	case UNINVOKE:
+		data.compound["action"] = Data("cancel", Data::VERBATIM);
+		break;
+	default:
+		break;
 	}
 
 	if (invokeId.length() > 0)
@@ -176,7 +176,7 @@ Data Breakpoint::toData() const {
 	if (executableXPath.length() > 0) {
 		data.compound["executableXPath"] = Data(executableXPath, Data::VERBATIM);
 	}
-	
+
 	if (element)
 		data.compound["xpath"] = Data(DOMUtils::xPathForNode(element, "*"), Data::VERBATIM);
 
@@ -194,20 +194,20 @@ Data Breakpoint::toData() const {
 
 	return data;
 }
-	
+
 bool Breakpoint::matches(Interpreter interpreter, const Breakpoint& other) const {
 	// would we match the given breakpoint?
 
 	if (subject != UNDEF_SUBJECT &&
-			other.subject != subject)
+	        other.subject != subject)
 		return false; // subject does not match
-	
+
 	if (when != UNDEF_WHEN &&
-			other.when != when)
+	        other.when != when)
 		return false; // time does not match
-	
+
 	if (action != UNDEF_ACTION &&
-			other.action != action)
+	        other.action != action)
 		return false; // action does not match
 
 	// when we have a qualifier it has to match
@@ -248,7 +248,7 @@ bool Breakpoint::matches(Interpreter interpreter, const Breakpoint& other) const
 	if(transTargetId.length() > 0 && transTargetId != other.transTargetId) {
 		return false;
 	}
-	
+
 	if (condition.length() > 0) {
 		try {
 			DataModel dm = interpreter.getDataModel();

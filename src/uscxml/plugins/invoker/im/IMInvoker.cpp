@@ -721,7 +721,7 @@ void IMInvoker::send(void *userdata, const std::string event) {
 		if (ctx->sendReq.content.length() > 0)
 			purple_conv_im_send(purple_conversation_get_im_data(conv), ctx->sendReq.content.c_str());
 #endif
-		
+
 #if 0
 		if (data.binary) {
 			PurpleConnection *gc = purple_account_get_connection(ctx->instance->_account);
@@ -770,7 +770,7 @@ void IMInvoker::send(void *userdata, const std::string event) {
 #else
 		purple_account_add_buddy(ctx->instance->_account, buddy);
 #endif
-		
+
 	} else if (iequals(ctx->sendReq.name, "im.buddy.remove")) {
 		std::string buddyName;
 		Event::getParam(ctx->sendReq.params, "name", buddyName);

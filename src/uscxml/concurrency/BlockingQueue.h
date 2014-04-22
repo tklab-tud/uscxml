@@ -61,7 +61,7 @@ public:
 		tthread::lock_guard<tthread::mutex> lock(_mutex);
 		_queue.clear();
 	}
-	
+
 	virtual bool isEmpty() {
 		tthread::lock_guard<tthread::mutex> lock(_mutex);
 		return _queue.empty();

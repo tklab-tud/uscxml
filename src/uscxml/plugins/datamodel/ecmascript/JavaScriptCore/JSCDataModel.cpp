@@ -125,8 +125,9 @@ boost::shared_ptr<DataModelImpl> JSCDataModel::create(InterpreterImpl* interpret
 
 	dm->_dom = new JSCDOM();
 	dm->_dom->xpath = new XPath<std::string>();
-	dm->_dom->xpath->setNamespaceContext(interpreter->getNSContext());
+	dm->_dom->xpath->setNamespaceContext(*interpreter->getNameSpaceInfo().nsContext);
 	dm->_dom->storage	= new Storage(URL::getResourceDir() + PATH_SEPERATOR + interpreter->getName() + ".storage");
+	dm->_dom->nsInfo	= new NameSpaceInfo(interpreter->getNameSpaceInfo());
 
 	// introduce global functions as objects for private data
 	JSClassRef jsInClassRef = JSClassCreate(&jsInClassDef);
@@ -632,16 +633,16 @@ std::string JSCDataModel::andExpressions(std::list<std::string> expressions) {
 
 	if (expressions.size() == 0)
 		return "";
-	
+
 	if (expressions.size() == 1)
 		return *(expressions.begin());
-	
+
 	std::ostringstream exprSS;
 	exprSS << "(";
 	std::string conjunction = "";
 	for (std::list<std::string>::const_iterator exprIter = expressions.begin();
-			 exprIter != expressions.end();
-			 exprIter++) {
+	        exprIter != expressions.end();
+	        exprIter++) {
 		exprSS << conjunction << "(" << *exprIter << ")";
 		conjunction = " && ";
 	}

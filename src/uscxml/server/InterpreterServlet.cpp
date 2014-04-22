@@ -155,23 +155,23 @@ void InterpreterWebSocketServlet::send(const SendRequest& req) {
 		if (false) {
 		} else if (req.data.binary) {
 			HTTPServer::wsSend(_requests[req.target],
-												 EVWS_BINARY_FRAME,
-												 req.data.binary->data,
-												 req.data.binary->size);
+			                   EVWS_BINARY_FRAME,
+			                   req.data.binary->data,
+			                   req.data.binary->size);
 		} else if (req.data.node) {
 			std::stringstream ssXML;
 			ssXML << req.data.node;
 			std::string data = ssXML.str();
 			HTTPServer::wsSend(_requests[req.target],
-												 EVWS_TEXT_FRAME,
-												 data.c_str(),
-												 data.length());
+			                   EVWS_TEXT_FRAME,
+			                   data.c_str(),
+			                   data.length());
 		} else if (req.data) {
 			std::string data = Data::toJSON(req.data);
 			HTTPServer::wsSend(_requests[req.target],
-												 EVWS_TEXT_FRAME,
-												 data.c_str(),
-												 data.length());
+			                   EVWS_TEXT_FRAME,
+			                   data.c_str(),
+			                   data.length());
 		} else {
 			LOG(WARNING) << "Not sure what to make off content given to send on websocket!";
 		}
@@ -180,23 +180,23 @@ void InterpreterWebSocketServlet::send(const SendRequest& req) {
 		if (false) {
 		} else if (req.data.binary) {
 			HTTPServer::wsBroadcast(req.target.c_str(),
-															EVWS_BINARY_FRAME,
-															req.data.binary->data,
-															req.data.binary->size);
+			                        EVWS_BINARY_FRAME,
+			                        req.data.binary->data,
+			                        req.data.binary->size);
 		} else if (req.data.node) {
 			std::stringstream ssXML;
 			ssXML << req.data.node;
 			std::string data = ssXML.str();
 			HTTPServer::wsBroadcast(req.target.c_str(),
-															EVWS_TEXT_FRAME,
-															data.c_str(),
-															data.length());
+			                        EVWS_TEXT_FRAME,
+			                        data.c_str(),
+			                        data.length());
 		} else if (req.data) {
 			std::string data = Data::toJSON(req.data);
 			HTTPServer::wsBroadcast(req.target.c_str(),
-															EVWS_TEXT_FRAME,
-															data.c_str(),
-															data.length());
+			                        EVWS_TEXT_FRAME,
+			                        data.c_str(),
+			                        data.length());
 		} else {
 			LOG(WARNING) << "Not sure what to make off content given to broadcast on websocket!";
 		}

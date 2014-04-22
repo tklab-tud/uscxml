@@ -38,7 +38,7 @@ void InterpreterDraft6::interpret() {
 		if (!_scxml) {
 			return;
 		}
-	//  dump();
+		//  dump();
 
 		// just make sure we have a session id
 		assert(_sessionId.length() > 0);
@@ -75,17 +75,17 @@ void InterpreterDraft6::interpret() {
 
 		if (_dataModel && _binding == EARLY) {
 			// initialize all data elements
-			NodeSet<std::string> dataElems = _xpath.evaluate("//" + _xpathPrefix + "data", _scxml).asNodeSet();
+			NodeSet<std::string> dataElems = _xpath.evaluate("//" + _nsInfo.xpathPrefix + "data", _scxml).asNodeSet();
 			for (unsigned int i = 0; i < dataElems.size(); i++) {
 				// do not process data elements of nested documents from invokers
-				if (!getAncestorElement(dataElems[i], _xmlNSPrefix + "invoke"))
+				if (!getAncestorElement(dataElems[i], _nsInfo.xmlNSPrefix + "invoke"))
 					if (dataElems[i].getNodeType() == Node_base::ELEMENT_NODE) {
 						initializeData(Element<std::string>(dataElems[i]));
 					}
 			}
 		} else if(_dataModel) {
 			// initialize current data elements
-			NodeSet<std::string> topDataElems = filterChildElements(_xmlNSPrefix + "data", filterChildElements(_xmlNSPrefix + "datamodel", _scxml));
+			NodeSet<std::string> topDataElems = filterChildElements(_nsInfo.xmlNSPrefix + "data", filterChildElements(_nsInfo.xmlNSPrefix + "datamodel", _scxml));
 			for (unsigned int i = 0; i < topDataElems.size(); i++) {
 				if (topDataElems[i].getNodeType() == Node_base::ELEMENT_NODE)
 					initializeData(Element<std::string>(topDataElems[i]));
@@ -93,7 +93,7 @@ void InterpreterDraft6::interpret() {
 		}
 
 		// executeGlobalScriptElements
-		NodeSet<std::string> globalScriptElems = filterChildElements(_xmlNSPrefix + "script", _scxml);
+		NodeSet<std::string> globalScriptElems = filterChildElements(_nsInfo.xmlNSPrefix + "script", _scxml);
 		for (unsigned int i = 0; i < globalScriptElems.size(); i++) {
 			if (_dataModel) {
 				executeContent(globalScriptElems[i]);
@@ -104,7 +104,9 @@ void InterpreterDraft6::interpret() {
 
 		if (_userDefinedStartConfiguration.size() > 0) {
 			// we emulate entering a given configuration by creating a pseudo deep history
-			Element<std::string> initHistory = _document.createElementNS(_nsURL, "history");
+			Element<std::string> initHistory = _document.createElementNS(_nsInfo.nsURL, "history");
+			_nsInfo.setPrefix(initHistory);
+
 			initHistory.setAttribute("id", UUID::getUUID());
 			initHistory.setAttribute("type", "deep");
 			_scxml.insertBefore(initHistory, _scxml.getFirstChild());
@@ -116,9 +118,13 @@ void InterpreterDraft6::interpret() {
 			}
 			_historyValue[histId] = histStates;
 
-			Element<std::string> initialElem = _document.createElementNS(_nsURL, "initial");
+			Element<std::string> initialElem = _document.createElementNS(_nsInfo.nsURL, "initial");
+			_nsInfo.setPrefix(initialElem);
+
 			initialElem.setAttribute("generated", "true");
-			Element<std::string> transitionElem = _document.createElementNS(_nsURL, "transition");
+			Element<std::string> transitionElem = _document.createElementNS(_nsInfo.nsURL, "transition");
+			_nsInfo.setPrefix(transitionElem);
+
 			transitionElem.setAttribute("target", histId);
 			initialElem.appendChild(transitionElem);
 			_scxml.appendChild(initialElem);
@@ -126,16 +132,20 @@ void InterpreterDraft6::interpret() {
 
 		} else {
 			// try to get initial transition from initial element
-			initialTransitions = _xpath.evaluate("/" + _xpathPrefix + "initial/" + _xpathPrefix + "transition", _scxml).asNodeSet();
+			initialTransitions = _xpath.evaluate("/" + _nsInfo.xpathPrefix + "initial/" + _nsInfo.xpathPrefix + "transition", _scxml).asNodeSet();
 			if (initialTransitions.size() == 0) {
 				Arabica::XPath::NodeSet<std::string> initialStates;
 				// fetch per draft
 				initialStates = getInitialStates();
 				assert(initialStates.size() > 0);
 				for (int i = 0; i < initialStates.size(); i++) {
-					Element<std::string> initialElem = _document.createElementNS(_nsURL, "initial");
+					Element<std::string> initialElem = _document.createElementNS(_nsInfo.nsURL, "initial");
+					_nsInfo.setPrefix(initialElem);
+
 					initialElem.setAttribute("generated", "true");
-					Element<std::string> transitionElem = _document.createElementNS(_nsURL, "transition");
+					Element<std::string> transitionElem = _document.createElementNS(_nsInfo.nsURL, "transition");
+					_nsInfo.setPrefix(transitionElem);
+
 					transitionElem.setAttribute("target", ATTR(initialStates[i], "id"));
 					initialElem.appendChild(transitionElem);
 					_scxml.appendChild(initialElem);
@@ -147,9 +157,9 @@ void InterpreterDraft6::interpret() {
 		assert(initialTransitions.size() > 0);
 
 		enterStates(initialTransitions);
-	//	_mutex.unlock();
+		//	_mutex.unlock();
 
-	//  assert(hasLegalConfiguration());
+		//  assert(hasLegalConfiguration());
 		mainEventLoop();
 	} catch (boost::bad_weak_ptr e) {
 		LOG(ERROR) << "Unclean shutdown " << std::endl << std::endl;
@@ -178,7 +188,7 @@ void InterpreterDraft6::mainEventLoop() {
 			}
 			std::cout << std::endl;
 #endif
-			
+
 			enabledTransitions = selectEventlessTransitions();
 			if (enabledTransitions.size() == 0) {
 				if (_internalQueue.size() == 0) {
@@ -189,12 +199,13 @@ void InterpreterDraft6::mainEventLoop() {
 #if VERBOSE
 					std::cout << "Received internal event " << _currEvent.name << std::endl;
 #endif
-					
+
 					// --- MONITOR: beforeProcessingEvent ------------------------------
 					for(monIter_t monIter = _monitors.begin(); monIter != _monitors.end(); monIter++) {
 						try {
 							(*monIter)->beforeProcessingEvent(shared_from_this(), _currEvent);
-						} USCXML_MONITOR_CATCH_BLOCK(beforeProcessingEvent)
+						}
+						USCXML_MONITOR_CATCH_BLOCK(beforeProcessingEvent)
 					}
 
 					if (_dataModel)
@@ -210,7 +221,7 @@ void InterpreterDraft6::mainEventLoop() {
 		}
 
 		for (unsigned int i = 0; i < _statesToInvoke.size(); i++) {
-			NodeSet<std::string> invokes = filterChildElements(_xmlNSPrefix + "invoke", _statesToInvoke[i]);
+			NodeSet<std::string> invokes = filterChildElements(_nsInfo.xmlNSPrefix + "invoke", _statesToInvoke[i]);
 			for (unsigned int j = 0; j < invokes.size(); j++) {
 				if (!HAS_ATTR(invokes[j], "persist") || !DOMUtils::attributeIsTrue(ATTR(invokes[j], "persist"))) {
 					invoke(invokes[j]);
@@ -240,9 +251,10 @@ void InterpreterDraft6::mainEventLoop() {
 		for(monIter_t monIter = _monitors.begin(); monIter != _monitors.end(); monIter++) {
 			try {
 				(*monIter)->onStableConfiguration(shared_from_this());
-			} USCXML_MONITOR_CATCH_BLOCK(onStableConfiguration)
+			}
+			USCXML_MONITOR_CATCH_BLOCK(onStableConfiguration)
 		}
-		
+
 //    }
 
 		_mutex.unlock();
@@ -267,7 +279,8 @@ void InterpreterDraft6::mainEventLoop() {
 		for(monIter_t monIter = _monitors.begin(); monIter != _monitors.end(); monIter++) {
 			try {
 				(*monIter)->beforeProcessingEvent(shared_from_this(), _currEvent);
-			} USCXML_MONITOR_CATCH_BLOCK(beforeProcessingEvent)
+			}
+			USCXML_MONITOR_CATCH_BLOCK(beforeProcessingEvent)
 		}
 
 		if (_dataModel && iequals(_currEvent.name, "cancel.invoke." + _sessionId))
@@ -321,10 +334,10 @@ void InterpreterDraft6::mainEventLoop() {
 		}
 #else
 		for (std::map<std::string, Invoker>::iterator invokeIter = _invokers.begin();
-				 invokeIter != _invokers.end();
-				 invokeIter++) {
+		        invokeIter != _invokers.end();
+		        invokeIter++) {
 			if (iequals(invokeIter->first, _currEvent.invokeid)) {
-				Arabica::XPath::NodeSet<std::string> finalizes = filterChildElements(_xmlNSPrefix + "finalize", invokeIter->second.getElement());
+				Arabica::XPath::NodeSet<std::string> finalizes = filterChildElements(_nsInfo.xmlNSPrefix + "finalize", invokeIter->second.getElement());
 				for (int k = 0; k < finalizes.size(); k++) {
 					Element<std::string> finalizeElem = Element<std::string>(finalizes[k]);
 					executeContent(finalizeElem);
@@ -355,7 +368,8 @@ EXIT_INTERPRETER:
 	for(monIter_t monIter = _monitors.begin(); monIter != _monitors.end(); monIter++) {
 		try {
 			(*monIter)->beforeCompletion(shared_from_this());
-		} USCXML_MONITOR_CATCH_BLOCK(beforeCompletion)
+		}
+		USCXML_MONITOR_CATCH_BLOCK(beforeCompletion)
 	}
 
 	exitInterpreter();
@@ -371,7 +385,8 @@ EXIT_INTERPRETER:
 	for(monIter_t monIter = _monitors.begin(); monIter != _monitors.end(); monIter++) {
 		try {
 			(*monIter)->afterCompletion(shared_from_this());
-		} USCXML_MONITOR_CATCH_BLOCK(afterCompletion)
+		}
+		USCXML_MONITOR_CATCH_BLOCK(afterCompletion)
 	}
 
 }
@@ -397,7 +412,7 @@ Arabica::XPath::NodeSet<std::string> InterpreterDraft6::selectTransitions(const 
 	unsigned int index = 0;
 	while(states.size() > index) {
 		bool foundTransition = false;
-		NodeSet<std::string> transitions = filterChildElements(_xmlNSPrefix + "transition", states[index]);
+		NodeSet<std::string> transitions = filterChildElements(_nsInfo.xmlNSPrefix + "transition", states[index]);
 		for (unsigned int k = 0; k < transitions.size(); k++) {
 			if (isEnabledTransition(transitions[k], event)) {
 				enabledTransitions.push_back(transitions[k]);
@@ -475,7 +490,7 @@ Arabica::XPath::NodeSet<std::string> InterpreterDraft6::selectEventlessTransitio
 	unsigned int index = 0;
 	while(states.size() > index) {
 		bool foundTransition = false;
-		NodeSet<std::string> transitions = filterChildElements(_xmlNSPrefix + "transition", states[index]);
+		NodeSet<std::string> transitions = filterChildElements(_nsInfo.xmlNSPrefix + "transition", states[index]);
 		for (unsigned int k = 0; k < transitions.size(); k++) {
 			if (!HAS_ATTR(transitions[k], "event") && hasConditionMatch(transitions[k])) {
 				enabledTransitions.push_back(transitions[k]);
@@ -535,7 +550,7 @@ LOOP:
 }
 
 
-	
+
 /**
  * Is t1 preempting t2?
  */
@@ -617,11 +632,12 @@ void InterpreterDraft6::microstep(const Arabica::XPath::NodeSet<std::string>& en
 	for(monIter_t monIter = _monitors.begin(); monIter != _monitors.end(); monIter++) {
 		try {
 			(*monIter)->beforeMicroStep(shared_from_this());
-		} USCXML_MONITOR_CATCH_BLOCK(beforeMicroStep)
+		}
+		USCXML_MONITOR_CATCH_BLOCK(beforeMicroStep)
 	}
 
 	exitStates(enabledTransitions);
-	
+
 	monIter_t monIter;
 	for (int i = 0; i < enabledTransitions.size(); i++) {
 		Element<std::string> transition(enabledTransitions[i]);
@@ -630,26 +646,29 @@ void InterpreterDraft6::microstep(const Arabica::XPath::NodeSet<std::string>& en
 		for(monIter_t monIter = _monitors.begin(); monIter != _monitors.end(); monIter++) {
 			try {
 				(*monIter)->beforeTakingTransition(shared_from_this(), transition, (i + 1 < enabledTransitions.size()));
-			} USCXML_MONITOR_CATCH_BLOCK(beforeTakingTransitions)
+			}
+			USCXML_MONITOR_CATCH_BLOCK(beforeTakingTransitions)
 		}
-		
+
 		executeContent(transition);
-		
+
 		// --- MONITOR: afterTakingTransitions ------------------------------
 		for(monIter_t monIter = _monitors.begin(); monIter != _monitors.end(); monIter++) {
 			try {
 				(*monIter)->afterTakingTransition(shared_from_this(), transition, (i + 1 < enabledTransitions.size()));
-			} USCXML_MONITOR_CATCH_BLOCK(afterTakingTransitions)
+			}
+			USCXML_MONITOR_CATCH_BLOCK(afterTakingTransitions)
 		}
 	}
 
 	enterStates(enabledTransitions);
-	
+
 	// --- MONITOR: afterMicroStep ------------------------------
 	for(monIter_t monIter = _monitors.begin(); monIter != _monitors.end(); monIter++) {
 		try {
 			(*monIter)->afterMicroStep(shared_from_this());
-		} USCXML_MONITOR_CATCH_BLOCK(afterMicroStep)
+		}
+		USCXML_MONITOR_CATCH_BLOCK(afterMicroStep)
 	}
 
 }
@@ -660,11 +679,11 @@ void InterpreterDraft6::exitInterpreter() {
 	statesToExit.sort();
 
 	for (int i = 0; i < statesToExit.size(); i++) {
-		Arabica::XPath::NodeSet<std::string> onExitElems = filterChildElements(_xmlNSPrefix + "onexit", statesToExit[i]);
+		Arabica::XPath::NodeSet<std::string> onExitElems = filterChildElements(_nsInfo.xmlNSPrefix + "onexit", statesToExit[i]);
 		for (int j = 0; j < onExitElems.size(); j++) {
 			executeContent(onExitElems[j]);
 		}
-		Arabica::XPath::NodeSet<std::string> invokeElems = filterChildElements(_xmlNSPrefix + "invoke", statesToExit[i]);
+		Arabica::XPath::NodeSet<std::string> invokeElems = filterChildElements(_nsInfo.xmlNSPrefix + "invoke", statesToExit[i]);
 		// TODO: we ought to cancel all remaining invokers just to be sure with the persist extension
 		for (int j = 0; j < invokeElems.size(); j++) {
 			cancelInvoke(invokeElems[j]);
@@ -750,7 +769,7 @@ void InterpreterDraft6::exitStates(const Arabica::XPath::NodeSet<std::string>& e
 #endif
 
 	for (int i = 0; i < statesToExit.size(); i++) {
-		NodeSet<std::string> histories = filterChildElements(_xmlNSPrefix + "history", statesToExit[i]);
+		NodeSet<std::string> histories = filterChildElements(_nsInfo.xmlNSPrefix + "history", statesToExit[i]);
 		for (int j = 0; j < histories.size(); j++) {
 			Element<std::string> historyElem = (Element<std::string>)histories[j];
 			std::string historyType = (historyElem.hasAttribute("type") ? historyElem.getAttribute("type") : "shallow");
@@ -781,23 +800,25 @@ void InterpreterDraft6::exitStates(const Arabica::XPath::NodeSet<std::string>& e
 		for(monIter_t monIter = _monitors.begin(); monIter != _monitors.end(); monIter++) {
 			try {
 				(*monIter)->beforeExitingState(shared_from_this(), Element<std::string>(statesToExit[i]), (i + 1 < statesToExit.size()));
-			} USCXML_MONITOR_CATCH_BLOCK(beforeExitingState)
+			}
+			USCXML_MONITOR_CATCH_BLOCK(beforeExitingState)
 		}
 
-		NodeSet<std::string> onExits = filterChildElements(_xmlNSPrefix + "onExit", statesToExit[i]);
+		NodeSet<std::string> onExits = filterChildElements(_nsInfo.xmlNSPrefix + "onExit", statesToExit[i]);
 		for (int j = 0; j < onExits.size(); j++) {
 			Element<std::string> onExitElem = (Element<std::string>)onExits[j];
 			executeContent(onExitElem);
 		}
-		
+
 		// --- MONITOR: afterExitingState ------------------------------
 		for(monIter_t monIter = _monitors.begin(); monIter != _monitors.end(); monIter++) {
 			try {
 				(*monIter)->afterExitingState(shared_from_this(), Element<std::string>(statesToExit[i]), (i + 1 < statesToExit.size()));
-			} USCXML_MONITOR_CATCH_BLOCK(afterExitingState)
+			}
+			USCXML_MONITOR_CATCH_BLOCK(afterExitingState)
 		}
 
-		NodeSet<std::string> invokes = filterChildElements(_xmlNSPrefix + "invoke", statesToExit[i]);
+		NodeSet<std::string> invokes = filterChildElements(_nsInfo.xmlNSPrefix + "invoke", statesToExit[i]);
 		for (int j = 0; j < invokes.size(); j++) {
 			Element<std::string> invokeElem = (Element<std::string>)invokes[j];
 			if (HAS_ATTR(invokeElem, "persist") && DOMUtils::attributeIsTrue(ATTR(invokeElem, "persist"))) {
@@ -806,7 +827,7 @@ void InterpreterDraft6::exitStates(const Arabica::XPath::NodeSet<std::string>& e
 				cancelInvoke(invokeElem);
 			}
 		}
-		
+
 		// remove statesToExit[i] from _configuration - test409
 		tmp.clear();
 		for (int j = 0; j < _configuration.size(); j++) {
@@ -932,10 +953,10 @@ void InterpreterDraft6::enterStates(const Arabica::XPath::NodeSet<std::string>& 
 
 	for (int i = 0; i < statesToEnter.size(); i++) {
 		Element<std::string> stateElem = (Element<std::string>)statesToEnter[i];
-		
+
 		// extension for flattened interpreters
 		for (unsigned int k = 0; k < statesToEnter.size(); k++) {
-			NodeSet<std::string> invokes = filterChildElements(_xmlNSPrefix + "invoke", statesToEnter[k]);
+			NodeSet<std::string> invokes = filterChildElements(_nsInfo.xmlNSPrefix + "invoke", statesToEnter[k]);
 			for (unsigned int j = 0; j < invokes.size(); j++) {
 				if (HAS_ATTR(invokes[j], "persist") && DOMUtils::attributeIsTrue(ATTR(invokes[j], "persist"))) {
 					invoke(invokes[j]);
@@ -947,11 +968,12 @@ void InterpreterDraft6::enterStates(const Arabica::XPath::NodeSet<std::string>& 
 		for(monIter_t monIter = _monitors.begin(); monIter != _monitors.end(); monIter++) {
 			try {
 				(*monIter)->beforeEnteringState(shared_from_this(), stateElem, (i + 1 < statesToEnter.size()));
-			} USCXML_MONITOR_CATCH_BLOCK(beforeEnteringState)
+			}
+			USCXML_MONITOR_CATCH_BLOCK(beforeEnteringState)
 		}
 
 		// extension for flattened SCXML documents, we will need an explicit uninvoke element
-		NodeSet<std::string> uninvokes = filterChildElements(_xmlNSPrefix + "uninvoke", statesToEnter[i]);
+		NodeSet<std::string> uninvokes = filterChildElements(_nsInfo.xmlNSPrefix + "uninvoke", statesToEnter[i]);
 		for (int j = 0; j < uninvokes.size(); j++) {
 			Element<std::string> uninvokeElem = (Element<std::string>)uninvokes[j];
 			cancelInvoke(uninvokeElem);
@@ -962,9 +984,9 @@ void InterpreterDraft6::enterStates(const Arabica::XPath::NodeSet<std::string>& 
 
 //		if (_binding == LATE && stateElem.getAttribute("isFirstEntry").size() > 0) {
 		if (_binding == LATE && !isMember(stateElem, _alreadyEntered)) {
-			NodeSet<std::string> dataModelElems = filterChildElements(_xmlNSPrefix + "datamodel", stateElem);
+			NodeSet<std::string> dataModelElems = filterChildElements(_nsInfo.xmlNSPrefix + "datamodel", stateElem);
 			if(dataModelElems.size() > 0 && _dataModel) {
-				Arabica::XPath::NodeSet<std::string> dataElems = filterChildElements(_xmlNSPrefix + "data", dataModelElems[0]);
+				Arabica::XPath::NodeSet<std::string> dataElems = filterChildElements(_nsInfo.xmlNSPrefix + "data", dataModelElems[0]);
 				for (int j = 0; j < dataElems.size(); j++) {
 					if (dataElems[j].getNodeType() == Node_base::ELEMENT_NODE)
 						initializeData(Element<std::string>(dataElems[j]));
@@ -974,24 +996,25 @@ void InterpreterDraft6::enterStates(const Arabica::XPath::NodeSet<std::string>& 
 //			stateElem.setAttribute("isFirstEntry", "");
 		}
 		// execute onentry executable content
-		NodeSet<std::string> onEntryElems = filterChildElements(_xmlNSPrefix + "onEntry", stateElem);
+		NodeSet<std::string> onEntryElems = filterChildElements(_nsInfo.xmlNSPrefix + "onEntry", stateElem);
 		executeContent(onEntryElems, false);
 
 		// --- MONITOR: afterEnteringState ------------------------------
 		for(monIter_t monIter = _monitors.begin(); monIter != _monitors.end(); monIter++) {
 			try {
 				(*monIter)->afterEnteringState(shared_from_this(), stateElem, (i + 1 < statesToEnter.size()));
-			} USCXML_MONITOR_CATCH_BLOCK(afterEnteringState)
+			}
+			USCXML_MONITOR_CATCH_BLOCK(afterEnteringState)
 		}
 
 		if (isMember(stateElem, statesForDefaultEntry)) {
 			// execute initial transition content for compound states
-			Arabica::XPath::NodeSet<std::string> transitions = _xpath.evaluate("" + _xpathPrefix + "initial/" + _xpathPrefix + "transition", stateElem).asNodeSet();
+			Arabica::XPath::NodeSet<std::string> transitions = _xpath.evaluate("" + _nsInfo.xpathPrefix + "initial/" + _nsInfo.xpathPrefix + "transition", stateElem).asNodeSet();
 			for (int j = 0; j < transitions.size(); j++) {
 				executeContent(transitions[j]);
 			}
 		}
-		
+
 		if (isFinal(stateElem)) {
 			internalDoneSend(stateElem);
 			Element<std::string> parent = (Element<std::string>)stateElem.getParentNode();
@@ -1059,7 +1082,7 @@ void InterpreterDraft6::addStatesToEnter(const Node<std::string>& state,
 				}
 			}
 		} else {
-			NodeSet<std::string> transitions = filterChildElements(_xmlNSPrefix + "transition", state);
+			NodeSet<std::string> transitions = filterChildElements(_nsInfo.xmlNSPrefix + "transition", state);
 			for (int i = 0; i < transitions.size(); i++) {
 				NodeSet<std::string> targets = getTargetStates(transitions[i]);
 				for (int j = 0; j < targets.size(); j++) {

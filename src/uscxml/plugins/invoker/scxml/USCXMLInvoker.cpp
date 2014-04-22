@@ -82,15 +82,7 @@ void USCXMLInvoker::invoke(const InvokeRequest& req) {
 		DataModel dataModel(_invokedInterpreter.getImpl()->getDataModel());
 		_invokedInterpreter.getImpl()->setParentQueue(&_parentQueue);
 		// transfer namespace prefixes
-		_invokedInterpreter.getImpl()->_nsURL = _parentInterpreter->_nsURL;
-		_invokedInterpreter.getImpl()->_xpathPrefix = _parentInterpreter->_xpathPrefix;
-		_invokedInterpreter.getImpl()->_nsToPrefix = _parentInterpreter->_nsToPrefix;
-		std::map<std::string, std::string>::iterator nsIter =  _parentInterpreter->_nsToPrefix.begin();
-		while(nsIter != _parentInterpreter->_nsToPrefix.end()) {
-			_invokedInterpreter.getImpl()->_nsContext.addNamespaceDeclaration(nsIter->first, nsIter->second);
-			nsIter++;
-		}
-		_invokedInterpreter.getImpl()->_xmlNSPrefix = _parentInterpreter->_xmlNSPrefix;
+		_invokedInterpreter.setNameSpaceInfo(_parentInterpreter->getNameSpaceInfo());
 		_invokedInterpreter.getImpl()->_sessionId = req.invokeid;
 
 		/// test240 assumes that invoke request params will carry over to the datamodel

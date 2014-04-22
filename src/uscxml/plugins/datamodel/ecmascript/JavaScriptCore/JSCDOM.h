@@ -49,6 +49,7 @@ public:
 	JSCDOM();
 	virtual ~JSCDOM();
 	uscxml::Storage* storage;
+	uscxml::NameSpaceInfo* nsInfo;
 	Arabica::XPath::XPath<std::string>* xpath;
 
 };

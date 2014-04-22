@@ -1,3 +1,22 @@
+/**
+ *  @file
+ *  @author     2012-2014 Stefan Radomski (stefan.radomski@cs.tu-darmstadt.de)
+ *  @copyright  Simplified BSD
+ *
+ *  @cond
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the FreeBSD license as published by the FreeBSD
+ *  project.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ *  You should have received a copy of the FreeBSD license along with this
+ *  program. If not, see <http://www.opensource.org/licenses/bsd-license>.
+ *  @endcond
+ */
+
 // bison -v -d promela-expr.ypp && flex promela-expr.l
 // bison promela-expr.ypp && flex promela-expr.l
 
@@ -9,102 +28,56 @@
 
 #include "uscxml/Message.h"
 
-#define GRAMMAR_COMMON(name, uc_name) \
-struct yy_buffer_state; \
-typedef yy_buffer_state *YY_BUFFER_STATE; \
-extern YY_BUFFER_STATE promela_##name##__scan_buffer(char *, size_t, void*); \
-extern int promela_##name##_lex (PROMELA_##uc_name##_STYPE* yylval_param, void* yyscanner); \
-int promela_##name##_lex_init (void**); \
-int promela_##name##_lex_destroy (void*); \
-
 namespace uscxml {
 
 class PromelaParser;
-	
+
 struct PromelaParserNode {
 	PromelaParserNode() : type(0) {}
+	virtual ~PromelaParserNode();
+
+	void merge(PromelaParserNode* node);
+	void push(PromelaParserNode* node);
+	void dump(int indent = 0);
+
+	static std::string typeToDesc(int type);
+
 	int type;
 	std::string value;
 	std::list<PromelaParserNode*> operands;
-	
-	void merge(PromelaParserNode* node) {
-		for (std::list<PromelaParserNode*>::iterator iter = node->operands.begin();
-				 iter != node->operands.end(); iter++) {
-			operands.push_back(*iter);
-		}
-	}
-
-	void push(PromelaParserNode* node) {
-		operands.push_back(node);
-	}
-
-	void dump(int indent = 0) {
-		std::string padding;
-		for (int i = 0; i < indent; i++) {
-			padding += "  ";
-		}
-		std::cout << padding << typeToDesc(type) << ": " << value << std::endl;
-		for (std::list<PromelaParserNode*>::iterator iter = operands.begin();
-				 iter != operands.end(); iter++) {
-			(*iter)->dump(indent + 1);
-		}
-	}
-	
-	static std::string typeToDesc(int type);
 
 };
 
 class PromelaParser {
 public:
 	enum Type {
-		PROMELA_EXPR,
-		PROMELA_DECL,
-		PROMELA_STMNT
+	    PROMELA_EXPR,
+	    PROMELA_DECL,
+	    PROMELA_STMNT
 	};
-	
+
 	static std::string typeToDesc(int type);
 
+	PromelaParser(const std::string& expr);
 	PromelaParser(const std::string& expr, Type expectedType);
 	virtual ~PromelaParser();
-	
-	virtual PromelaParserNode* node(int type, int nrArgs, ...) {
-		PromelaParserNode* newNode = new PromelaParserNode();
-		newNode->type = type;
-		va_list ap;
-    va_start(ap, nrArgs);
-    for(int i = 1; i <= nrArgs; i++) {
-			newNode->operands.push_back(va_arg(ap, PromelaParserNode*));
-		}
-		return newNode;
-	}
 
-	virtual PromelaParserNode* value(int type, const char* value) {
-		PromelaParserNode* newNode = new PromelaParserNode();
-		newNode->value = value;
-		newNode->type = type;
-		return newNode;
-	}
+	virtual PromelaParserNode* node(int type, int nrArgs, ...);
+	virtual PromelaParserNode* value(int type, const char* value);
+	void dump();
 
-	void dump() {
-		switch (type) {
-		case PROMELA_EXPR:
-			std::cout << "Promela Expression" << std::endl;
-			break;
-		case PROMELA_DECL:
-			std::cout << "Promela Declarations" << std::endl;
-			break;
-		case PROMELA_STMNT:
-			std::cout << "Promela Statement" << std::endl;
-			break;
-		}
-		ast->dump();
-	}
-	
+
 	PromelaParserNode* ast;
 	Type type;
 
+	Event pendingException;
+
 protected:
-		
+
+	void init(const std::string& expr);
+	void destroy();
+
+	void* buffer;
 	void* scanner;
 	char* input;
 	size_t input_length;

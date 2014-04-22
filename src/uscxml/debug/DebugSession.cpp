@@ -21,16 +21,16 @@
 #include "uscxml/debug/Debugger.h"
 
 namespace uscxml {
-	
+
 void DebugSession::checkBreakpoints(const std::list<Breakpoint> qualifiedBreakpoints) {
 	std::list<Breakpoint>::const_iterator qualifiedBreakpointIter = qualifiedBreakpoints.begin();
 
 	if (!_breakpointsEnabled)
 		return;
-	
+
 	while(qualifiedBreakpointIter != qualifiedBreakpoints.end()) {
 		const Breakpoint& qualifiedBreakpoint = *qualifiedBreakpointIter++;
-	
+
 		// check if one of the user-supplied breakpoints match
 		bool userBreakpointMatched = false;
 		Data replyData;
@@ -44,7 +44,7 @@ void DebugSession::checkBreakpoints(const std::list<Breakpoint> qualifiedBreakpo
 			}
 			continue;
 		}
-		
+
 		std::set<Breakpoint>::const_iterator breakpointIter = _breakPoints.begin();
 		while(breakpointIter != _breakPoints.end()) {
 			const Breakpoint& breakpoint = *breakpointIter++;
@@ -52,10 +52,10 @@ void DebugSession::checkBreakpoints(const std::list<Breakpoint> qualifiedBreakpo
 				continue;
 			if (breakpoint.matches(_interpreter, qualifiedBreakpoint)) {
 				// do we have a condition?
-				
+
 				replyData.compound["breakpoint"] = breakpoint.toData();
 				replyData.compound["qualified"] = qualifiedBreakpoint.toData();
-			
+
 				userBreakpointMatched = true;
 				breakExecution(replyData);
 			}
@@ -70,7 +70,7 @@ void DebugSession::checkBreakpoints(const std::list<Breakpoint> qualifiedBreakpo
 
 void DebugSession::breakExecution(Data replyData) {
 	tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
-	
+
 	Arabica::XPath::NodeSet<std::string> basicConf = _interpreter.getBasicConfiguration();
 	for (int i = 0; i < basicConf.size(); i++) {
 		Arabica::DOM::Element<std::string> element = Arabica::DOM::Element<std::string>(basicConf[i]);
@@ -94,7 +94,7 @@ void DebugSession::breakExecution(Data replyData) {
 
 Data DebugSession::debugPrepare(const Data& data) {
 	Data replyData;
-		
+
 	if (!data.hasKey("xml") && !data.hasKey("url")) {
 		replyData.compound["status"] = Data("failure", Data::VERBATIM);
 		replyData.compound["reason"] = Data("No XML or URL given", Data::VERBATIM);
@@ -102,24 +102,24 @@ Data DebugSession::debugPrepare(const Data& data) {
 	}
 
 	debugStop(data);
-	
+
 	_isAttached = false;
 
 	if (data.hasKey("xml")) {
-		_interpreter = Interpreter::fromXML(data["xml"].atom);
+		_interpreter = Interpreter::fromXML(data.at("xml").atom);
 	} else if (data.hasKey("url")) {
-		_interpreter = Interpreter::fromURI(data["url"].atom);
+		_interpreter = Interpreter::fromURI(data.at("url").atom);
 	} else {
 		_interpreter = Interpreter();
 	}
-	
+
 	if (_interpreter) {
 		// register ourself as a monitor
 		_interpreter.addMonitor(_debugger);
 		_debugger->attachSession(_interpreter, shared_from_this());
 		if (data.hasKey("url")) {
 			// this allows to resolve relative external reources
-			_interpreter.setSourceURI(data["url"].atom);
+			_interpreter.setSourceURI(data.at("url").atom);
 		}
 		replyData.compound["status"] = Data("success", Data::VERBATIM);
 	} else {
@@ -132,22 +132,22 @@ Data DebugSession::debugPrepare(const Data& data) {
 Data DebugSession::debugAttach(const Data& data) {
 	Data replyData;
 	_isAttached = true;
-	
+
 	if (!data.hasKey("attach")) {
 		replyData.compound["status"] = Data("failure", Data::VERBATIM);
 		replyData.compound["reason"] = Data("No id to attach to given", Data::VERBATIM);
 		return replyData;
 	}
-	
-	std::string interpreterId = data["attach"].atom;
+
+	std::string interpreterId = data.at("attach").atom;
 	bool interpreterFound = false;
-	
+
 	// find interpreter for sessionid
 	std::map<std::string, boost::weak_ptr<InterpreterImpl> > instances = Interpreter::getInstances();
 	for (std::map<std::string, boost::weak_ptr<InterpreterImpl> >::iterator instIter = instances.begin();
-			 instIter != instances.end();
-			 instIter++) {
-		
+	        instIter != instances.end();
+	        instIter++) {
+
 		boost::shared_ptr<InterpreterImpl> instance = instIter->second.lock();
 		if (instance && instance->getSessionId() == interpreterId) {
 			_interpreter = instance;
@@ -156,7 +156,7 @@ Data DebugSession::debugAttach(const Data& data) {
 			break;
 		}
 	}
-	
+
 	if (!interpreterFound) {
 		replyData.compound["status"] = Data("failure", Data::VERBATIM);
 		replyData.compound["reason"] = Data("No interpreter with given id found", Data::VERBATIM);
@@ -179,7 +179,7 @@ Data DebugSession::debugDetach(const Data& data) {
 
 Data DebugSession::debugStart(const Data& data) {
 	Data replyData;
-	
+
 	if (_isAttached) {
 		replyData.compound["reason"] = Data("Already started when attached", Data::VERBATIM);
 		replyData.compound["status"] = Data("failure", Data::VERBATIM);
@@ -201,7 +201,7 @@ Data DebugSession::debugStop(const Data& data) {
 		// detach from old intepreter
 		_debugger->detachSession(_interpreter);
 	}
-	
+
 	if (_interpreter && !_isAttached)
 		_interpreter.stop();
 	// unblock
@@ -212,16 +212,16 @@ Data DebugSession::debugStop(const Data& data) {
 
 	// calls destructor
 	_interpreter = Interpreter();
-	
+
 	return replyData;
 }
-	
+
 Data DebugSession::debugStep(const Data& data) {
 	tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
-	
+
 	stepping(true);
 	_resumeCond.notify_one();
-	
+
 	Data replyData;
 	if (_interpreter) {
 		// register ourself as a monitor
@@ -233,19 +233,19 @@ Data DebugSession::debugStep(const Data& data) {
 	}
 	return replyData;
 }
-	
+
 Data DebugSession::debugResume(const Data& data) {
 	tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
-	
+
 	stepping(false);
-	
+
 	Data replyData;
 	replyData.compound["status"] = Data("success", Data::VERBATIM);
-	
+
 	_resumeCond.notify_one();
 	return replyData;
 }
-	
+
 
 Data DebugSession::debugPause(const Data& data) {
 	tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
@@ -261,12 +261,12 @@ Data DebugSession::debugPause(const Data& data) {
 
 Data DebugSession::skipToBreakPoint(const Data& data) {
 	tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
-	
+
 	_skipTo = Breakpoint(data);
-	
+
 	Data replyData;
 	replyData.compound["status"] = Data("success", Data::VERBATIM);
-	
+
 	_resumeCond.notify_one();
 	return replyData;
 }
@@ -278,7 +278,7 @@ Data DebugSession::addBreakPoint(const Data& data) {
 	if (_breakPoints.find(breakpoint) == _breakPoints.end()) {
 		_breakPoints.insert(breakpoint);
 		replyData.compound["status"] = Data("success", Data::VERBATIM);
-		
+
 	} else {
 		replyData.compound["reason"] = Data("Breakpoint already exists", Data::VERBATIM);
 		replyData.compound["status"] = Data("failure", Data::VERBATIM);
@@ -316,7 +316,7 @@ Data DebugSession::enableBreakPoint(const Data& data) {
 }
 Data DebugSession::disableBreakPoint(const Data& data) {
 	Breakpoint breakpoint(data);
-	
+
 	Data replyData;
 	if (_breakPoints.find(breakpoint) != _breakPoints.end()) {
 		_breakPoints.find(breakpoint)->enabled = false;
@@ -325,7 +325,7 @@ Data DebugSession::disableBreakPoint(const Data& data) {
 		replyData.compound["reason"] = Data("No such breakpoint", Data::VERBATIM);
 		replyData.compound["status"] = Data("failure", Data::VERBATIM);
 	}
-	
+
 	return replyData;
 }
 Data DebugSession::enableAllBreakPoints() {
@@ -338,24 +338,24 @@ Data DebugSession::enableAllBreakPoints() {
 }
 Data DebugSession::disableAllBreakPoints() {
 	Data replyData;
-	
+
 	_breakpointsEnabled = false;
 	replyData.compound["status"] = Data("success", Data::VERBATIM);
-	
+
 	return replyData;
 }
 
 Data DebugSession::debugEval(const Data& data) {
 	Data replyData;
-	
+
 	if (!data.hasKey("expression")) {
 		replyData.compound["status"] = Data("failure", Data::VERBATIM);
 		replyData.compound["reason"] = Data("No expression given", Data::VERBATIM);
 		return replyData;
 	}
 
-	std::string expr = data["expression"].atom;
-	
+	std::string expr = data.at("expression").atom;
+
 	if (!_interpreter) {
 		replyData.compound["status"] = Data("failure", Data::VERBATIM);
 		replyData.compound["reason"] = Data("No interpreter running", Data::VERBATIM);
@@ -374,5 +374,5 @@ Data DebugSession::debugEval(const Data& data) {
 	return replyData;
 }
 
-	
+
 }

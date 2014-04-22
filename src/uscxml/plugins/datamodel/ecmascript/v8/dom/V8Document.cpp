@@ -368,64 +368,6 @@ v8::Handle<v8::Value> V8Document::importNodeCallback(const v8::Arguments& args) 
 	return v8::Undefined();
 }
 
-v8::Handle<v8::Value> V8Document::createElementNSCallback(const v8::Arguments& args) {
-
-	v8::Local<v8::Object> self = args.Holder();
-	struct V8DocumentPrivate* privData = V8DOM::toClassPtr<V8DocumentPrivate >(self->GetInternalField(0));
-	if (false) {
-	} else if (args.Length() == 2 &&
-	           args[0]->IsString() &&
-	           args[1]->IsString()) {
-		v8::String::AsciiValue localNamespaceURI(args[0]);
-		v8::String::AsciiValue localQualifiedName(args[1]);
-
-		Arabica::DOM::Element<std::string>* retVal = new Arabica::DOM::Element<std::string>(privData->nativeObj->createElementNS(*localNamespaceURI, *localQualifiedName));
-		v8::Handle<v8::Function> retCtor = V8Element::getTmpl()->GetFunction();
-		v8::Persistent<v8::Object> retObj = v8::Persistent<v8::Object>::New(retCtor->NewInstance());
-
-		struct V8Element::V8ElementPrivate* retPrivData = new V8Element::V8ElementPrivate();
-		retPrivData->dom = privData->dom;
-		retPrivData->nativeObj = retVal;
-
-		retObj->SetInternalField(0, V8DOM::toExternal(retPrivData));
-
-		retObj.MakeWeak(0, V8Element::jsDestructor);
-		return retObj;
-
-	}
-	throw V8Exception("Parameter mismatch while calling createElementNS");
-	return v8::Undefined();
-}
-
-v8::Handle<v8::Value> V8Document::createAttributeNSCallback(const v8::Arguments& args) {
-
-	v8::Local<v8::Object> self = args.Holder();
-	struct V8DocumentPrivate* privData = V8DOM::toClassPtr<V8DocumentPrivate >(self->GetInternalField(0));
-	if (false) {
-	} else if (args.Length() == 2 &&
-	           args[0]->IsString() &&
-	           args[1]->IsString()) {
-		v8::String::AsciiValue localNamespaceURI(args[0]);
-		v8::String::AsciiValue localQualifiedName(args[1]);
-
-		Arabica::DOM::Attr<std::string>* retVal = new Arabica::DOM::Attr<std::string>(privData->nativeObj->createAttributeNS(*localNamespaceURI, *localQualifiedName));
-		v8::Handle<v8::Function> retCtor = V8Attr::getTmpl()->GetFunction();
-		v8::Persistent<v8::Object> retObj = v8::Persistent<v8::Object>::New(retCtor->NewInstance());
-
-		struct V8Attr::V8AttrPrivate* retPrivData = new V8Attr::V8AttrPrivate();
-		retPrivData->dom = privData->dom;
-		retPrivData->nativeObj = retVal;
-
-		retObj->SetInternalField(0, V8DOM::toExternal(retPrivData));
-
-		retObj.MakeWeak(0, V8Attr::jsDestructor);
-		return retObj;
-
-	}
-	throw V8Exception("Parameter mismatch while calling createAttributeNS");
-	return v8::Undefined();
-}
-
 v8::Handle<v8::Value> V8Document::getElementsByTagNameNSCallback(const v8::Arguments& args) {
 
 	v8::Local<v8::Object> self = args.Holder();

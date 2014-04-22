@@ -37,21 +37,21 @@ public:
 
 	GlobalState() {}
 	GlobalState(const Arabica::XPath::NodeSet<std::string>& activeStates,
-							const Arabica::XPath::NodeSet<std::string>& alreadyEnteredStates, // we need to remember for binding=late
-							const std::map<std::string, Arabica::XPath::NodeSet<std::string> >& historyStates);
-		
+	            const Arabica::XPath::NodeSet<std::string>& alreadyEnteredStates, // we need to remember for binding=late
+	            const std::map<std::string, Arabica::XPath::NodeSet<std::string> >& historyStates);
+
 	Arabica::XPath::NodeSet<std::string> activeStates;
 	Arabica::XPath::NodeSet<std::string> alreadyEnteredStates;
 	std::map<std::string, Arabica::XPath::NodeSet<std::string> > historyStates;
-	
+
 	std::map<std::string, GlobalTransition*> incoming;
 	std::map<std::string, GlobalTransition*> outgoing;
 	std::string stateId;
-	
+
 	bool isFinal;
 };
 
-	
+
 class GlobalTransition {
 public:
 	class Action {
@@ -64,24 +64,24 @@ public:
 		Arabica::DOM::Node<std::string> invoke;
 		Arabica::DOM::Node<std::string> uninvoke;
 	};
-	
+
 	GlobalTransition(const Arabica::XPath::NodeSet<std::string>& transitions, DataModel dataModel);
-	
+
 	bool isValid; // constructor will determine, calling code will delete if not
 	bool isEventless; // whether or not all our transitions are eventless
 	bool isTargetless; // whether or not all our transitions are eventless
 	bool isSubset; // there is a superset to this set
-	
+
 	std::vector<long> firstElemPerLevel;
 	std::vector<long> nrElemPerLevel;
 	std::vector<long> prioPerLevel;
-	
+
 	Arabica::XPath::NodeSet<std::string> transitions; // constituting transitions
 
 	std::list<std::string> eventNames; // the list of longest event names that will enable this set
 	std::string eventDesc; // space-seperated eventnames for convenience
 	std::string condition; // conjunction of all the set's conditions
-	
+
 	// executable content we gathered when we took the transition
 	std::list<Action> actions;
 
@@ -90,19 +90,21 @@ public:
 
 	Arabica::XPath::NodeSet<std::string> invoke;
 	Arabica::XPath::NodeSet<std::string> uninvoke;
-	
+
 	std::string transitionId;
 	std::string source;
 	std::string destination;
-	
+
 protected:
-	std::list<std::string> getCommonEvents(const Arabica::XPath::NodeSet<std::string>& transitions);	
+	std::list<std::string> getCommonEvents(const Arabica::XPath::NodeSet<std::string>& transitions);
 };
-	
+
 class FlatteningInterpreter : public InterpreterDraft6, public InterpreterMonitor {
 public:
 	FlatteningInterpreter(const Arabica::DOM::Document<std::string>& doc);
-	Arabica::DOM::Document<std::string>& getDocument(); // overwrite to return flat FSM
+	virtual ~FlatteningInterpreter();
+
+	Arabica::DOM::Document<std::string> getDocument() const; // overwrite to return flat FSM
 	void interpret();
 
 protected:
@@ -131,22 +133,22 @@ protected:
 	void weightTransitions();
 	void createDocument();
 
-	Arabica::DOM::Node<std::string> globalStateToNode(GlobalState* globalState, const std::string& xmlNs);
-	Arabica::DOM::Node<std::string> globalTransitionToNode(GlobalTransition* globalTransition, const std::string& xmlNs);
+	Arabica::DOM::Node<std::string> globalStateToNode(GlobalState* globalState);
+	Arabica::DOM::Node<std::string> globalTransitionToNode(GlobalTransition* globalTransition);
 
 	GlobalState* _start;
 	GlobalTransition* _currGlobalTransition;
-	
+
 	int maxDepth;
 	int maxOrder;
-	
+
 	Arabica::DOM::Document<std::string> _flatDoc;
 	std::map<std::string, GlobalState*> _globalConf;
 };
-	
+
 class ChartToFSM {
 public:
-	static Arabica::DOM::Document<std::string> flatten(const Arabica::DOM::Document<std::string>& doc, const std::map<std::string, std::string>& nameSpaceInfo);
+	static Interpreter flatten(const Interpreter& other);
 };
 
 }

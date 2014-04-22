@@ -122,11 +122,11 @@ bool BasicHTTPIOProcessor::httpRecvRequest(const HTTPServer::Request& req) {
 	 */
 
 	// this will call the const subscript operator
-	if (req.data["content"]["_scxmleventname"]) {
-		reqEvent.name = req.data["content"]["_scxmleventname"].atom;
+	if (req.data.at("content").hasKey("_scxmleventname")) {
+		reqEvent.name = req.data.at("content").at("_scxmleventname").atom;
 	}
-	if (req.data["content"]["content"]) {
-		reqEvent.content = req.data["content"]["content"].atom;
+	if (req.data.at("content").hasKey("content")) {
+		reqEvent.content = req.data.at("content").at("content").atom;
 	}
 
 	// check whether we can parse it as XML

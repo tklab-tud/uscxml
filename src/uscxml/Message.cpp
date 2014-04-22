@@ -225,7 +225,9 @@ Arabica::DOM::Document<std::string> Data::toDocument() {
 	scxmlMsg.setAttribute("version", "1.0");
 
 	if (compound.size() > 0 || array.size() > 0) {
-		Arabica::DOM::Element<std::string> payloadElem = document.createElementNS("http://www.w3.org/2005/07/scxml", "scxml:payload");
+		Arabica::DOM::Element<std::string> payloadElem = document.createElementNS("http://www.w3.org/2005/07/scxml", "payload");
+		payloadElem.setPrefix("scxml");
+
 		scxmlMsg.appendChild(payloadElem);
 
 		// we do not support nested attibutes
@@ -233,7 +235,9 @@ Arabica::DOM::Document<std::string> Data::toDocument() {
 			std::map<std::string, Data>::iterator compoundIter = compound.begin();
 			while(compoundIter != compound.end()) {
 				if (compoundIter->second.atom.size() > 0) {
-					Arabica::DOM::Element<std::string> propertyElem = document.createElementNS("http://www.w3.org/2005/07/scxml", "scxml:property");
+					Arabica::DOM::Element<std::string> propertyElem = document.createElementNS("http://www.w3.org/2005/07/scxml", "property");
+					propertyElem.setPrefix("scxml");
+
 					propertyElem.setAttribute("name", compoundIter->first);
 					Arabica::DOM::Text<std::string> textElem = document.createTextNode(compoundIter->second.atom);
 					propertyElem.appendChild(textElem);
@@ -299,7 +303,9 @@ Arabica::DOM::Document<std::string> SendRequest::toDocument() {
 	if (params.size() > 0 || namelist.size() > 0) {
 		Arabica::DOM::NodeList<std::string> payload = scxmlMsg.getElementsByTagName("scxml:payload");
 		if (payload.getLength() == 0) {
-			Arabica::DOM::Element<std::string> payloadElem = document.createElementNS("http://www.w3.org/2005/07/scxml", "scxml:payload");
+			Arabica::DOM::Element<std::string> payloadElem = document.createElementNS("http://www.w3.org/2005/07/scxml", "payload");
+			payloadElem.setPrefix("scxml");
+
 			scxmlMsg.appendChild(payloadElem);
 		}
 		Arabica::DOM::Node<std::string> payloadElem = scxmlMsg.getElementsByTagName("scxml:payload").item(0);
@@ -307,7 +313,9 @@ Arabica::DOM::Document<std::string> SendRequest::toDocument() {
 		// add parameters
 		std::multimap<std::string, Data>::iterator paramIter = params.begin();
 		while(paramIter != params.end()) {
-			Arabica::DOM::Element<std::string> propertyElem = document.createElementNS("http://www.w3.org/2005/07/scxml", "scxml:property");
+			Arabica::DOM::Element<std::string> propertyElem = document.createElementNS("http://www.w3.org/2005/07/scxml", "property");
+			propertyElem.setPrefix("scxml");
+
 			propertyElem.setAttribute("name", paramIter->first);
 			// this is simplified - Data might be more elaborate than a simple string atom
 			Arabica::DOM::Text<std::string> textElem = document.createTextNode(paramIter->second.atom);
@@ -319,7 +327,9 @@ Arabica::DOM::Document<std::string> SendRequest::toDocument() {
 		// add namelist elements
 		std::map<std::string, Data>::iterator namelistIter = namelist.begin();
 		while(namelistIter != namelist.end()) {
-			Arabica::DOM::Element<std::string> propertyElem = document.createElementNS("http://www.w3.org/2005/07/scxml", "scxml:property");
+			Arabica::DOM::Element<std::string> propertyElem = document.createElementNS("http://www.w3.org/2005/07/scxml", "property");
+			propertyElem.setPrefix("scxml");
+
 			propertyElem.setAttribute("name", namelistIter->first);
 			// this is simplified - Data might be more elaborate than a simple string atom
 			Arabica::DOM::Text<std::string> textElem = document.createTextNode(namelistIter->second.atom);

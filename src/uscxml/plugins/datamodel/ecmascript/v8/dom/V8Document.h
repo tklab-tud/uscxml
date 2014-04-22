@@ -51,8 +51,8 @@ public:
 	static v8::Handle<v8::Value> createEntityReferenceCallback(const v8::Arguments&);
 	static v8::Handle<v8::Value> getElementsByTagNameCallback(const v8::Arguments&);
 	static v8::Handle<v8::Value> importNodeCallback(const v8::Arguments&);
-	static v8::Handle<v8::Value> createElementNSCallback(const v8::Arguments&);
-	static v8::Handle<v8::Value> createAttributeNSCallback(const v8::Arguments&);
+	static v8::Handle<v8::Value> createElementNSCustomCallback(const v8::Arguments&);
+	static v8::Handle<v8::Value> createAttributeNSCustomCallback(const v8::Arguments&);
 	static v8::Handle<v8::Value> getElementsByTagNameNSCallback(const v8::Arguments&);
 	static v8::Handle<v8::Value> getElementByIdCallback(const v8::Arguments&);
 	static v8::Handle<v8::Value> evaluateCustomCallback(const v8::Arguments&);
@@ -105,9 +105,9 @@ public:
 			prototype->Set(v8::String::NewSymbol("importNode"),
 			               v8::FunctionTemplate::New(V8Document::importNodeCallback, v8::Undefined()), static_cast<v8::PropertyAttribute>(v8::DontDelete));
 			prototype->Set(v8::String::NewSymbol("createElementNS"),
-			               v8::FunctionTemplate::New(V8Document::createElementNSCallback, v8::Undefined()), static_cast<v8::PropertyAttribute>(v8::DontDelete));
+			               v8::FunctionTemplate::New(V8Document::createElementNSCustomCallback, v8::Undefined()), static_cast<v8::PropertyAttribute>(v8::DontDelete));
 			prototype->Set(v8::String::NewSymbol("createAttributeNS"),
-			               v8::FunctionTemplate::New(V8Document::createAttributeNSCallback, v8::Undefined()), static_cast<v8::PropertyAttribute>(v8::DontDelete));
+			               v8::FunctionTemplate::New(V8Document::createAttributeNSCustomCallback, v8::Undefined()), static_cast<v8::PropertyAttribute>(v8::DontDelete));
 			prototype->Set(v8::String::NewSymbol("getElementsByTagNameNS"),
 			               v8::FunctionTemplate::New(V8Document::getElementsByTagNameNSCallback, v8::Undefined()), static_cast<v8::PropertyAttribute>(v8::DontDelete));
 			prototype->Set(v8::String::NewSymbol("getElementById"),

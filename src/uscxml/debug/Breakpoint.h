@@ -27,61 +27,61 @@ namespace uscxml {
 
 class USCXML_API Breakpoint {
 public:
-		
+
 	enum When {
-		UNDEF_WHEN, AFTER, BEFORE, ON
+	    UNDEF_WHEN, AFTER, BEFORE, ON
 	};
-	
+
 	enum Subject {
-		UNDEF_SUBJECT, STATE, TRANSITION, STABLE, MICROSTEP, EVENT, INVOKER, EXECUTABLE
+	    UNDEF_SUBJECT, STATE, TRANSITION, STABLE, MICROSTEP, EVENT, INVOKER, EXECUTABLE
 	};
-	
+
 	enum Action {
-		UNDEF_ACTION, ENTER, EXIT, INVOKE, UNINVOKE
+	    UNDEF_ACTION, ENTER, EXIT, INVOKE, UNINVOKE
 	};
-	
+
 	Breakpoint() {
 		subject = UNDEF_SUBJECT;
 		when    = UNDEF_WHEN;
 		action  = UNDEF_ACTION;
 	}
 	Breakpoint(const Data& data);
-	
+
 	// would we match the given breakpoint as well?
 	bool matches(Interpreter interpreter, const Breakpoint& other) const;
-		
+
 	Data toData() const;
-	
+
 	bool operator<(const Breakpoint& other) const {
 		return (toData() < other.toData());
 	}
-	
+
 	operator bool() {
 		return (subject != UNDEF_SUBJECT ||
-						when    != UNDEF_WHEN ||
-						action  != UNDEF_ACTION);
+		        when    != UNDEF_WHEN ||
+		        action  != UNDEF_ACTION);
 	}
-	
+
 	mutable bool enabled;
-	
+
 	When when;
 	Subject subject;
 	Action action;
 
 	Arabica::DOM::Element<std::string> element;
-	
+
 	std::string invokeId;
 	std::string invokeType;
 
 	std::string eventName;
-	
+
 	std::string executableName;
 	std::string executableXPath;
-	
+
 	std::string stateId;
 	std::string transSourceId;
 	std::string transTargetId;
-	
+
 	std::string condition;
 };
 

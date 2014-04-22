@@ -24,15 +24,15 @@
 #include "uscxml/Interpreter.h"
 #include "uscxml/debug/Breakpoint.h"
 #include "uscxml/debug/DebugSession.h"
-	
+
 namespace uscxml {
-	
+
 class USCXML_API Debugger : public InterpreterMonitor {
 public:
 	Debugger() {
 	}
 	virtual ~Debugger() {}
-  
+
 	virtual void attachSession(Interpreter interpreter, boost::shared_ptr<DebugSession> session) {
 		tthread::lock_guard<tthread::recursive_mutex> lock(_sessionMutex);
 		_sessionForInterpreter[interpreter] = session;
@@ -42,16 +42,16 @@ public:
 		tthread::lock_guard<tthread::recursive_mutex> lock(_sessionMutex);
 		_sessionForInterpreter.erase(interpreter);
 	}
-	
+
 	virtual boost::shared_ptr<DebugSession> getSession(Interpreter interpreter) {
 		tthread::lock_guard<tthread::recursive_mutex> lock(_sessionMutex);
 		if (_sessionForInterpreter.find(interpreter) != _sessionForInterpreter.end())
 			return _sessionForInterpreter[interpreter];
 		return boost::shared_ptr<DebugSession>();
 	}
-	
+
 	virtual void pushData(boost::shared_ptr<DebugSession> session, Data pushData) = 0;
-		
+
 	// InterpreterMonitor
 	virtual void beforeProcessingEvent(Interpreter interpreter, const Event& event);
 	virtual void beforeMicroStep(Interpreter interpreter);
@@ -73,28 +73,28 @@ public:
 	virtual void afterCompletion(Interpreter interpreter);
 
 protected:
-  
+
 	void handleTransition(Interpreter interpreter,
-												const Arabica::DOM::Element<std::string>& transition,
-												Breakpoint::When when);
+	                      const Arabica::DOM::Element<std::string>& transition,
+	                      Breakpoint::When when);
 	void handleState(Interpreter interpreter,
-									 const Arabica::DOM::Element<std::string>& state,
-									 Breakpoint::When when,
-									 Breakpoint::Action action);
+	                 const Arabica::DOM::Element<std::string>& state,
+	                 Breakpoint::When when,
+	                 Breakpoint::Action action);
 	void handleInvoke(Interpreter interpreter,
-										const Arabica::DOM::Element<std::string>& invokeElem,
-										const std::string& invokeId,
-										Breakpoint::When when,
-										Breakpoint::Action action);
+	                  const Arabica::DOM::Element<std::string>& invokeElem,
+	                  const std::string& invokeId,
+	                  Breakpoint::When when,
+	                  Breakpoint::Action action);
 	void handleExecutable(Interpreter interpreter,
-												const Arabica::DOM::Element<std::string>& execContentElem,
-												Breakpoint::When when);
+	                      const Arabica::DOM::Element<std::string>& execContentElem,
+	                      Breakpoint::When when);
 	void handleStable(Interpreter interpreter, Breakpoint::When when);
 	void handleMicrostep(Interpreter interpreter, Breakpoint::When when);
 	void handleEvent(Interpreter interpreter, const Event& event, Breakpoint::When when);
 
 	tthread::recursive_mutex _sessionMutex;
-  std::map<Interpreter, boost::shared_ptr<DebugSession> > _sessionForInterpreter;
+	std::map<Interpreter, boost::shared_ptr<DebugSession> > _sessionForInterpreter;
 };
 
 }

@@ -1,8 +1,10 @@
 #include "uscxml/config.h"
 #include "uscxml/Interpreter.h"
 #include "uscxml/transform/ChartToFSM.h"
+#include "uscxml/transform/FSMToPromela.h"
 #include "uscxml/DOMUtils.h"
 #include <glog/logging.h>
+#include <fstream>
 
 #ifdef HAS_SIGNAL_H
 #include <signal.h>
@@ -22,7 +24,7 @@ class VerboseMonitor : public uscxml::InterpreterMonitor {
 	}
 
 	void beforeProcessingEvent(uscxml::Interpreter interpreter, const uscxml::Event& event) {
-		std::cout << "Event: " << event.name << std::endl;
+		std::cerr << "Event: " << event.name << std::endl;
 	}
 
 	void beforeCompletion(uscxml::Interpreter interpreter) {
@@ -31,12 +33,12 @@ class VerboseMonitor : public uscxml::InterpreterMonitor {
 
 	void printConfig(const Arabica::XPath::NodeSet<std::string>& config) {
 		std::string seperator;
-		std::cout << "Config: {";
+		std::cerr << "Config: {";
 		for (int i = 0; i < config.size(); i++) {
-			std::cout << seperator << ATTR(config[i], "id");
+			std::cerr << seperator << ATTR(config[i], "id");
 			seperator = ", ";
 		}
-		std::cout << "}" << std::endl;
+		std::cerr << "}" << std::endl;
 	}
 };
 
@@ -109,6 +111,33 @@ void customTerminate() {
 }
 #endif
 
+void printUsageAndExit(const char* progName) {
+	// remove path from program name
+	std::string progStr(progName);
+	if (progStr.find_last_of(PATH_SEPERATOR) != std::string::npos) {
+		progStr = progStr.substr(progStr.find_last_of(PATH_SEPERATOR) + 1, progStr.length() - (progStr.find_last_of(PATH_SEPERATOR) + 1));
+	}
+
+	printf("%s version " USCXML_VERSION " (" CMAKE_BUILD_TYPE " build - " CMAKE_COMPILER_STRING ")\n", progStr.c_str());
+	printf("Usage\n");
+	printf("\t%s", progStr.c_str());
+	printf(" [-fs] [-v] [-lN]");
+#ifdef BUILD_AS_PLUGINS
+	printf(" [-p pluginPath]");
+#endif
+	printf(" [-i URL] [-o FILE]");
+	printf("\n");
+	printf("Options\n");
+	printf("\t-f        : flatten to state-machine\n");
+	printf("\t-s        : convert to spin/promela program\n");
+	printf("\t-v        : be verbose\n");
+	printf("\t-lN       : Set loglevel to N\n");
+	printf("\t-i URL    : Input file (defaults to STDIN)\n");
+	printf("\t-o FILE   : Output file (defaults to STDOUT)\n");
+	printf("\n");
+	exit(1);
+}
+
 int main(int argc, char** argv) {
 	using namespace uscxml;
 
@@ -118,7 +147,7 @@ int main(int argc, char** argv) {
 	std::string pluginPath;
 	std::string inputFile;
 	std::string outputFile;
-	
+
 #if defined(HAS_SIGNAL_H) && !defined(WIN32)
 	signal(SIGPIPE, SIG_IGN);
 #endif
@@ -149,42 +178,46 @@ int main(int argc, char** argv) {
 	int optionInd = 0;
 	int option;
 	for (;;) {
-		option = getopt_long_only(argc, argv, "+vfs:p:i:o:l:", longOptions, &optionInd);
+		option = getopt_long_only(argc, argv, "+vfsp:i:o:l:", longOptions, &optionInd);
 		if (option == -1) {
 			break;
 		}
 		switch(option) {
-				// cases without short option
-			case 0: {
-				break;
-			}
-				// cases with short-hand options
-			case 'v':
-				verbose = true;
-				break;
-			case 'f':
-				toFlat = true;
-				break;
-			case 's':
-				toPromela = true;
-				break;
-			case 'p':
-				pluginPath = optarg;
-				break;
-			case 'i':
-				inputFile = optarg;
-				break;
-			case 'o':
-				outputFile = optarg;
-				break;
-			case 'l':
-				break;
-			case '?': {
-				break;
-			}
-			default:
-				break;
+			// cases without short option
+		case 0: {
+			break;
 		}
+		// cases with short-hand options
+		case 'v':
+			verbose = true;
+			break;
+		case 'f':
+			toFlat = true;
+			break;
+		case 's':
+			toPromela = true;
+			break;
+		case 'p':
+			pluginPath = optarg;
+			break;
+		case 'i':
+			inputFile = optarg;
+			break;
+		case 'o':
+			outputFile = optarg;
+			break;
+		case 'l':
+			break;
+		case '?': {
+			break;
+		}
+		default:
+			break;
+		}
+	}
+
+	if (!toPromela && !toFlat) {
+		printUsageAndExit(argv[0]);
 	}
 
 	// register plugins
@@ -194,7 +227,7 @@ int main(int argc, char** argv) {
 
 	// start HTTP server
 	HTTPServer::getInstance(30444, 30445, NULL);
-	
+
 	Interpreter interpreter;
 	if (inputFile.size() == 0 || inputFile == "-") {
 		LOG(INFO) << "Reading SCXML from STDIN";
@@ -211,17 +244,26 @@ int main(int argc, char** argv) {
 		LOG(ERROR) << "Cannot create interpreter from " << inputFile;
 		exit(EXIT_FAILURE);
 	}
-	
-	if (toFlat) {
-		std::cout << ChartToFSM::flatten(interpreter.getDocument(), interpreter.getNameSpaceInfo());
+
+	if (toPromela) {
+		Interpreter flatInterpreter = ChartToFSM::flatten(interpreter);
+
+		if (outputFile.size() == 0 || outputFile == "-") {
+			FSMToPromela::writeProgram(std::cout, flatInterpreter);
+		} else {
+			std::ofstream outStream;
+			outStream.open(outputFile.c_str());
+			FSMToPromela::writeProgram(outStream, flatInterpreter);
+			outStream.close();
+		}
 		exit(EXIT_SUCCESS);
 	}
 
-	if (toPromela) {
-		std::cout << ChartToFSM::flatten(interpreter.getDocument(), interpreter.getNameSpaceInfo());
+	if (toFlat) {
+		std::cout << ChartToFSM::flatten(interpreter).getDocument();
 		exit(EXIT_SUCCESS);
 	}
-	
-	
+
+
 	return EXIT_SUCCESS;
 }

@@ -27,7 +27,7 @@
 namespace uscxml {
 
 class Debugger;
-	
+
 class USCXML_API DebugSession : public boost::enable_shared_from_this<DebugSession> {
 public:
 	DebugSession() {
@@ -37,13 +37,13 @@ public:
 		_markedForDeletion = false;
 		_debugger = NULL;
 	}
-	
+
 	void stepping(bool enable) {
 		_isStepping = enable;
 	}
-	
+
 	void checkBreakpoints(const std::list<Breakpoint> qualifiedBreakpoints);
-	
+
 	Data debugPrepare(const Data& data);
 	Data debugAttach(const Data& data);
 	Data debugDetach(const Data& data);
@@ -60,26 +60,26 @@ public:
 	Data enableAllBreakPoints();
 	Data disableAllBreakPoints();
 	Data debugEval(const Data& data);
-	
+
 	void setDebugger(Debugger* debugger) {
 		_debugger = debugger;
 	}
-	
+
 	Interpreter getInterpreter() {
 		return _interpreter;
 	}
-	
+
 	void markForDeletion(bool mark) {
 		_markedForDeletion = mark;
 	}
-	
+
 protected:
 	void breakExecution(Data replyData);
 
 	bool _isStepping;
 	bool _isAttached;
 	bool _breakpointsEnabled;
-	
+
 	tthread::condition_variable _resumeCond;
 	tthread::recursive_mutex _runMutex;
 	tthread::recursive_mutex _mutex;
@@ -89,7 +89,7 @@ protected:
 	Interpreter _interpreter;
 	std::set<Breakpoint> _breakPoints;
 	Breakpoint _skipTo;
-	
+
 };
 
 
