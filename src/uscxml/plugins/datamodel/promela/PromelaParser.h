@@ -66,7 +66,7 @@ public:
 	virtual PromelaParserNode* value(int type, const char* value);
 	void dump();
 
-	
+
 	PromelaParserNode* ast;
 	Type type;
 

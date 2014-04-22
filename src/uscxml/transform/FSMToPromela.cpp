@@ -88,7 +88,7 @@ Node<std::string> FSMToPromela::getUltimateTarget(const Arabica::DOM::Node<std::
 		currState = _states[ATTR(transitions[0], "target")];
 	}
 }
-	
+
 void FSMToPromela::writeInlineComment(std::ostream& stream, const Arabica::DOM::Node<std::string>& node) {
 	if (node.getNodeType() != Node_base::COMMENT_NODE)
 		return;
@@ -114,7 +114,7 @@ void FSMToPromela::writeExecutableContent(std::ostream& stream, const Arabica::D
 	for (int i = 0; i < indent; i++) {
 		padding += "  ";
 	}
-	
+
 	if (node.getNodeType() == Node_base::COMMENT_NODE) {
 		std::string comment = node.getNodeValue();
 		boost::trim(comment);
@@ -132,7 +132,7 @@ void FSMToPromela::writeExecutableContent(std::ostream& stream, const Arabica::D
 		stream << padding << "skip;" << std::endl;
 		stream << beautifyIndentation(inlinePromela.str(), indent) << std::endl;
 	}
-	
+
 	if (node.getNodeType() != Node_base::ELEMENT_NODE)
 		return;
 
@@ -152,7 +152,7 @@ void FSMToPromela::writeExecutableContent(std::ostream& stream, const Arabica::D
 		}
 	} else if(TAGNAME(node) == "transition") {
 		stream << "t" << _transitions[node] << ":" << std::endl;
-		
+
 		// check for special promela labels
 		PromelaInlines promInls = getInlinePromela(getTransientContent(_states[ATTR(node, "target")]), true);
 
@@ -162,11 +162,11 @@ void FSMToPromela::writeExecutableContent(std::ostream& stream, const Arabica::D
 			stream << padding << "endLabelT" << _transitions[node] << ":" << std::endl;
 		if (promInls.hasProgressLabel)
 			stream << padding << "progressLabelT" << _transitions[node] << ":" << std::endl;
-		
+
 		stream << padding << "atomic {" << std::endl;
 		writeExecutableContent(stream, _states[ATTR(node, "target")], indent+1);
 		stream << padding << "  skip;" << std::endl;
-		
+
 		Node<std::string> newState = getUltimateTarget(node);
 		for (int i = 0; i < _globalStates.size(); i++) {
 			if (newState != _globalStates[i])
@@ -180,23 +180,23 @@ void FSMToPromela::writeExecutableContent(std::ostream& stream, const Arabica::D
 		} else {
 			stream << padding << "goto nextStep;" << std::endl;
 		}
-		
+
 	} else if(TAGNAME(node) == "onentry" || TAGNAME(node) == "onexit") {
 		Arabica::DOM::Node<std::string> child = node.getFirstChild();
 		while(child) {
 			writeExecutableContent(stream, child, indent);
 			child = child.getNextSibling();
 		}
-		
+
 	} else if(TAGNAME(node) == "script") {
 		NodeSet<std::string> scriptText = filterChildType(Node_base::TEXT_NODE, node, true);
 		for (int i = 0; i < scriptText.size(); i++) {
 			stream << beautifyIndentation(scriptText[i].getNodeValue(), indent) << std::endl;
 		}
-		
+
 	} else if(TAGNAME(node) == "log") {
 		// ignore
-		
+
 	} else if(TAGNAME(node) == "foreach") {
 		if (HAS_ATTR(node, "index"))
 			stream << padding << ATTR(node, "index") << " = 0;" << std::endl;
@@ -217,7 +217,7 @@ void FSMToPromela::writeExecutableContent(std::ostream& stream, const Arabica::D
 		condChain.push_back(filterChildElements(_nsInfo.xmlNSPrefix + "else", node));
 
 		writeIfBlock(stream, condChain, indent);
-		
+
 	} else if(TAGNAME(node) == "raise") {
 		TrieNode* trieNode = _eventTrie.getNodeWithPrefix(ATTR(node, "event"));
 		stream << padding << "iQ!e" << trieNode->identifier << ";" << std::endl;
@@ -294,16 +294,16 @@ PromelaInlines FSMToPromela::getInlinePromela(const Arabica::XPath::NodeSet<std:
 	}
 	return prom;
 }
-	
+
 void FSMToPromela::writeIfBlock(std::ostream& stream, const Arabica::XPath::NodeSet<std::string>& condChain, int indent) {
 	if (condChain.size() == 0)
 		return;
-	
+
 	std::string padding;
 	for (int i = 0; i < indent; i++) {
 		padding += "  ";
 	}
-	
+
 	bool noNext = condChain.size() == 1;
 	bool nextIsElse = false;
 	if (condChain.size() > 1) {
@@ -311,13 +311,13 @@ void FSMToPromela::writeIfBlock(std::ostream& stream, const Arabica::XPath::Node
 			nextIsElse = true;
 		}
 	}
-	
+
 	Node<std::string> ifNode = condChain[0];
-	
+
 	stream << padding << "if" << std::endl;
 	// we need to nest the elseifs to resolve promela if semantics
 	stream << padding << ":: (" << ATTR(ifNode, "cond") << ") -> {" << std::endl;
-	
+
 	Arabica::DOM::Node<std::string> child;
 	if (TAGNAME(ifNode) == "if") {
 		child = ifNode.getFirstChild();
@@ -348,7 +348,7 @@ void FSMToPromela::writeIfBlock(std::ostream& stream, const Arabica::XPath::Node
 		stream << "skip;" << std::endl;
 	} else {
 		stream << "{" << std::endl;
-		
+
 		Arabica::XPath::NodeSet<std::string> cdrCondChain;
 		for (int i = 1; i < condChain.size(); i++) {
 			cdrCondChain.push_back(condChain[i]);
@@ -357,7 +357,7 @@ void FSMToPromela::writeIfBlock(std::ostream& stream, const Arabica::XPath::Node
 		stream << padding << "}" << std::endl;
 
 	}
-	
+
 	stream << padding << "fi;" << std::endl;
 
 }
@@ -371,7 +371,7 @@ std::string FSMToPromela::beautifyIndentation(const std::string& code, int inden
 
 	// remove topmost indentation from every line and reindent
 	std::stringstream beautifiedSS;
-	
+
 	std::string initialIndent;
 	bool gotIndent = false;
 	bool isFirstLine = true;
@@ -389,12 +389,12 @@ std::string FSMToPromela::beautifyIndentation(const std::string& code, int inden
 			isFirstLine = false;
 		}
 	}
-	
+
 	return beautifiedSS.str();
 }
-	
+
 void FSMToPromela::writeDeclarations(std::ostream& stream) {
-	
+
 	// get all data elements
 	NodeSet<std::string> datas = _xpath.evaluate("//" + _nsInfo.xpathPrefix + "data", _scxml).asNodeSet();
 	NodeSet<std::string> dataText = filterChildType(Node_base::TEXT_NODE, datas, true);
@@ -405,7 +405,7 @@ void FSMToPromela::writeDeclarations(std::ostream& stream) {
 		Node<std::string> data = dataText[i];
 		stream << beautifyIndentation(data.getNodeValue()) << std::endl;
 	}
-	
+
 	stream << std::endl;
 	stream << "// global variables" << std::endl;
 	stream << "int e;                   /* current event */" << std::endl;
@@ -417,7 +417,7 @@ void FSMToPromela::writeDeclarations(std::ostream& stream) {
 	stream << "// event sources" << std::endl;
 	if (_globalEventSource)
 		stream << "bool globalEventSourceDone;" << std::endl;
-	
+
 	std::map<std::string, PromelaEventSource>::iterator invIter = _invokers.begin();
 	while(invIter != _invokers.end()) {
 		stream << "bool " << invIter->first << "EventSourceDone;" << std::endl;
@@ -467,10 +467,10 @@ void FSMToPromela::writeEventSource(std::ostream& stream, const std::string& nam
 	stream << "}" << std::endl;
 }
 
-	
+
 void FSMToPromela::writeFSM(std::ostream& stream) {
 	NodeSet<std::string> transitions;
-	
+
 	stream << "proctype step() {" << std::endl;
 	// write initial transition
 	transitions = filterChildElements(_nsInfo.xmlNSPrefix + "transition", _startState);
@@ -486,10 +486,10 @@ void FSMToPromela::writeFSM(std::ostream& stream) {
 			writeExecutableContent(stream, transitions[j], 1);
 		}
 	}
-	
+
 	stream << std::endl;
 	stream << "nextStep: /* pop an event */" << std::endl;
-  stream << "  if" << std::endl;
+	stream << "  if" << std::endl;
 	stream << "  :: len(iQ) != 0 -> iQ ? e /* from internal queue */" << std::endl;
 	stream << "  :: else -> eQ ? e         /* from external queue */" << std::endl;
 	stream << "  fi;" << std::endl;
@@ -497,22 +497,22 @@ void FSMToPromela::writeFSM(std::ostream& stream) {
 	stream << "  if" << std::endl;
 
 	writeEventDispatching(stream);
-	
+
 	stream << "  :: else -> goto nextStep;" << std::endl;
-  stream << "  fi;" << std::endl;
-  stream << "terminate: skip;" << std::endl;
-	
+	stream << "  fi;" << std::endl;
+	stream << "terminate: skip;" << std::endl;
+
 	// stop all event sources
 	if (_globalEventSource)
 		stream << "  globalEventSourceDone = 1;" << std::endl;
-	
+
 	std::map<std::string, PromelaEventSource>::iterator invIter = _invokers.begin();
 	while(invIter != _invokers.end()) {
 		stream << "  " << invIter->first << "EventSourceDone = 1;" << std::endl;
 		invIter++;
 	}
 
-	
+
 	stream << "}" << std::endl;
 }
 
@@ -533,15 +533,15 @@ void FSMToPromela::writeEventDispatching(std::ostream& stream) {
 void FSMToPromela::writeDispatchingBlock(std::ostream& stream, const Arabica::XPath::NodeSet<std::string>& transChain, int indent) {
 	if (transChain.size() == 0)
 		return;
-		
+
 	std::string padding;
 	for (int i = 0; i < indent; i++) {
 		padding += "  ";
 	}
-	
+
 	stream << padding << "if" << std::endl;
 	stream << padding << ":: ((0";
-	
+
 	Node<std::string> currTrans = transChain[0];
 	std::string eventDesc = ATTR(currTrans, "event");
 	if (boost::ends_with(eventDesc, "*"))
@@ -553,21 +553,21 @@ void FSMToPromela::writeDispatchingBlock(std::ostream& stream, const Arabica::XP
 		stream << " || 1";
 	} else {
 		std::list<TrieNode*> trieNodes = _eventTrie.getWordsWithPrefix(eventDesc);
-		
+
 		std::list<TrieNode*>::iterator trieIter = trieNodes.begin();
 		while(trieIter != trieNodes.end()) {
 			stream << " || e == e" << (*trieIter)->identifier;
 			trieIter++;
 		}
 	}
-	
+
 	stream << ") && ";
 	stream << (HAS_ATTR(currTrans, "cond") ? ATTR(currTrans, "cond") : "1");
 	stream << ") -> goto t" << _transitions[currTrans] << ";" << std::endl;
-;
+	;
 
 	stream << padding << ":: else {" << std::endl;
-	
+
 	Arabica::XPath::NodeSet<std::string> cdrTransChain;
 	for (int i = 1; i < transChain.size(); i++) {
 		cdrTransChain.push_back(transChain[i]);
@@ -669,7 +669,7 @@ void FSMToPromela::initNodes() {
 			eventSource->sequences.push_back(currSeq);
 		}
 	}
-	
+
 	// enumerate transitions
 	NodeSet<std::string> transitions = filterChildElements(_nsInfo.xmlNSPrefix + "transition", _scxml, true);
 	int index = 0;

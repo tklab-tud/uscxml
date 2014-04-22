@@ -33,13 +33,13 @@ namespace uscxml {
 class PromelaInline {
 public:
 	enum PromelaInlineType {
-		PROMELA_CODE,
-		PROMELA_EVENT_SOURCE,
-		PROMELA_PROGRESS_LABEL,
-		PROMELA_ACCEPT_LABEL,
-		PROMELA_END_LABEL
+	    PROMELA_CODE,
+	    PROMELA_EVENT_SOURCE,
+	    PROMELA_PROGRESS_LABEL,
+	    PROMELA_ACCEPT_LABEL,
+	    PROMELA_END_LABEL
 	};
-	
+
 	std::string content;
 	PromelaInlineType type;
 };
@@ -47,7 +47,7 @@ public:
 class PromelaInlines {
 public:
 	PromelaInlines() : hasProgressLabel(false), hasAcceptLabel(false), hasEndLabel(false), hasEventSource(false), hasCode(false) {}
-	
+
 	std::list<PromelaInline> inlines;
 	bool hasProgressLabel;
 	bool hasAcceptLabel;
@@ -84,17 +84,17 @@ protected:
 	void writeFSM(std::ostream& stream);
 	void writeEventDispatching(std::ostream& stream);
 	void writeMain(std::ostream& stream);
-	
-	
+
+
 	void writeIfBlock(std::ostream& stream, const Arabica::XPath::NodeSet<std::string>& condChain, int indent = 0);
 	void writeDispatchingBlock(std::ostream& stream, const Arabica::XPath::NodeSet<std::string>& transChain, int indent = 0);
 
 	std::string beautifyIndentation(const std::string& code, int indent = 0);
-		
+
 	Arabica::XPath::NodeSet<std::string> getTransientContent(const Arabica::DOM::Node<std::string>& state);
 	Arabica::DOM::Node<std::string> getUltimateTarget(const Arabica::DOM::Node<std::string>& transition);
 	PromelaInlines getInlinePromela(const Arabica::XPath::NodeSet<std::string>& elements, bool recurse = false);
-	
+
 	Trie _eventTrie;
 	Arabica::XPath::NodeSet<std::string> _globalStates;
 	Arabica::DOM::Node<std::string> _startState;

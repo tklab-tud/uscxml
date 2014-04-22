@@ -122,7 +122,7 @@ void PromelaDataModel::setForeach(const std::string& item,
 	PromelaParser arrayParser(ss.str(), PromelaParser::PROMELA_EXPR);
 
 	setVariable(itemParser.ast, getVariable(arrayParser.ast));
-	
+
 	if (index.length() > 0) {
 		PromelaParser indexParser(index, PromelaParser::PROMELA_EXPR);
 		setVariable(indexParser.ast, iteration);
