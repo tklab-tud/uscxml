@@ -1,8 +1,10 @@
+#define protected public
 #include "uscxml/URL.h"
 #include "uscxml/Message.h"
 #include "uscxml/Interpreter.h"
 #include "uscxml/plugins/datamodel/promela/PromelaDataModel.h"
 #include "uscxml/plugins/datamodel/promela/PromelaParser.h"
+#include "uscxml/transform/FSMToPromela.h"
 
 #include <assert.h>
 #include <boost/algorithm/string.hpp>
@@ -13,7 +15,162 @@ using namespace boost;
 
 extern int promela_debug;
 
-int main(int argc, char** argv) {
+void testInlinePromela() {
+	{
+		std::string test = "\
+		#promela-inline:\n \
+		This is foo!\
+		";
+		PromelaInlines prmInls = FSMToPromela::getInlinePromela(test);
+		assert(prmInls.acceptLabels == 0 &&
+		       prmInls.codes == 1 &&
+		       prmInls.customEventSources == 0 &&
+		       prmInls.endLabels == 0 &&
+		       prmInls.eventSources == 0 &&
+		       prmInls.progressLabels == 0);
+		assert(prmInls.inlines.size() == 1);
+		assert(prmInls.inlines.front().type == PromelaInline::PROMELA_CODE);
+		assert(boost::trim_copy(prmInls.inlines.front().content) == "This is foo!");
+	}
+
+	{
+		std::string test = "#promela-progress";
+		PromelaInlines prmInls = FSMToPromela::getInlinePromela(test);
+		assert(prmInls.acceptLabels == 0 &&
+		       prmInls.codes == 0 &&
+		       prmInls.customEventSources == 0 &&
+		       prmInls.endLabels == 0 &&
+		       prmInls.eventSources == 0 &&
+		       prmInls.progressLabels == 1);
+		assert(prmInls.inlines.size() == 1);
+		assert(prmInls.inlines.front().type == PromelaInline::PROMELA_PROGRESS_LABEL);
+	}
+
+	{
+		std::string test = "#promela-accept and then some";
+		PromelaInlines prmInls = FSMToPromela::getInlinePromela(test);
+		assert(prmInls.acceptLabels == 1 &&
+		       prmInls.codes == 0 &&
+		       prmInls.customEventSources == 0 &&
+		       prmInls.endLabels == 0 &&
+		       prmInls.eventSources == 0 &&
+		       prmInls.progressLabels == 0);
+		assert(prmInls.inlines.size() == 1);
+		assert(prmInls.inlines.front().type == PromelaInline::PROMELA_ACCEPT_LABEL);
+	}
+
+	{
+		std::string test = "#promela-end and then some";
+		PromelaInlines prmInls = FSMToPromela::getInlinePromela(test);
+		assert(prmInls.acceptLabels == 0 &&
+		       prmInls.codes == 0 &&
+		       prmInls.customEventSources == 0 &&
+		       prmInls.endLabels == 1 &&
+		       prmInls.eventSources == 0 &&
+		       prmInls.progressLabels == 0);
+		assert(prmInls.inlines.size() == 1);
+		assert(prmInls.inlines.front().type == PromelaInline::PROMELA_END_LABEL);
+	}
+
+	{
+		std::string test = "\
+		#promela-event-source:\n \
+		This is foo!\
+		";
+		PromelaInlines prmInls = FSMToPromela::getInlinePromela(test);
+		assert(prmInls.acceptLabels == 0 &&
+		       prmInls.codes == 0 &&
+		       prmInls.customEventSources == 0 &&
+		       prmInls.endLabels == 0 &&
+		       prmInls.eventSources == 1 &&
+		       prmInls.progressLabels == 0);
+		assert(prmInls.inlines.size() == 1);
+		assert(prmInls.inlines.front().type == PromelaInline::PROMELA_EVENT_SOURCE);
+		assert(prmInls.inlines.front().sequences.size() == 1);
+		std::list<std::list<std::string> >::iterator seqsIter = prmInls.inlines.front().sequences.begin();
+		std::list<std::string>::iterator seqIter = seqsIter->begin();
+		assert(*seqIter++ == "This");
+		assert(*seqIter++ == "is");
+		assert(*seqIter++ == "foo!");
+		assert(seqIter == seqsIter->end());
+		seqsIter++;
+		assert(seqsIter == prmInls.inlines.front().sequences.end());
+	}
+
+	{
+		std::string test = "\
+		#promela-event-source:\n \
+		This is foo!\n \
+		This is bar!\n \
+		";
+		PromelaInlines prmInls = FSMToPromela::getInlinePromela(test);
+		assert(prmInls.acceptLabels == 0 &&
+		       prmInls.codes == 0 &&
+		       prmInls.customEventSources == 0 &&
+		       prmInls.endLabels == 0 &&
+		       prmInls.eventSources == 1 &&
+		       prmInls.progressLabels == 0);
+		assert(prmInls.inlines.size() == 1);
+		assert(prmInls.inlines.front().type == PromelaInline::PROMELA_EVENT_SOURCE);
+		assert(prmInls.inlines.front().sequences.size() == 2);
+		std::list<std::list<std::string> >::iterator seqsIter = prmInls.inlines.front().sequences.begin();
+		std::list<std::string>::iterator seqIter = seqsIter->begin();
+		assert(*seqIter++ == "This");
+		assert(*seqIter++ == "is");
+		assert(*seqIter++ == "foo!");
+		assert(seqIter == seqsIter->end());
+		seqsIter++;
+		seqIter = seqsIter->begin();
+		assert(*seqIter++ == "This");
+		assert(*seqIter++ == "is");
+		assert(*seqIter++ == "bar!");
+		assert(seqIter == seqsIter->end());
+		seqsIter++;
+		assert(seqsIter == prmInls.inlines.front().sequences.end());
+	}
+
+	{
+		std::string test = "\
+		#promela-event-source-custom:\n \
+		This is foo!\
+		";
+		PromelaInlines prmInls = FSMToPromela::getInlinePromela(test);
+		assert(prmInls.acceptLabels == 0 &&
+		       prmInls.codes == 0 &&
+		       prmInls.customEventSources == 1 &&
+		       prmInls.endLabels == 0 &&
+		       prmInls.eventSources == 0 &&
+		       prmInls.progressLabels == 0);
+		assert(prmInls.inlines.size() == 1);
+		assert(prmInls.inlines.front().type == PromelaInline::PROMELA_EVENT_SOURCE_CUSTOM);
+		assert(prmInls.inlines.front().sequences.size() == 0);
+		assert(boost::trim_copy(prmInls.inlines.front().content) == "This is foo!");
+	}
+
+	{
+		std::string test = "\
+		#promela-event-source-custom:\n \
+		This is foo! \n\
+		#promela-progress\
+		";
+		PromelaInlines prmInls = FSMToPromela::getInlinePromela(test);
+		assert(prmInls.acceptLabels == 0 &&
+		       prmInls.codes == 0 &&
+		       prmInls.customEventSources == 1 &&
+		       prmInls.endLabels == 0 &&
+		       prmInls.eventSources == 0 &&
+		       prmInls.progressLabels == 1);
+		assert(prmInls.inlines.size() == 2);
+		assert(prmInls.inlines.front().type == PromelaInline::PROMELA_EVENT_SOURCE_CUSTOM);
+		assert(prmInls.inlines.front().sequences.size() == 0);
+		assert(boost::trim_copy(prmInls.inlines.front().content) == "This is foo!");
+	}
+
+	exit(0);
+}
+
+void testPromelaParser() {
+
 	promela_debug = 0;
 
 	std::list<std::string> expressions;
@@ -54,16 +211,21 @@ int main(int argc, char** argv) {
 	expressions.push_back("assert(count == 0 || count == 1)");
 	expressions.push_back("busy[4 - 3] = 1;");
 
-	while(true)
-		for (std::list<std::string>::iterator exprIter = expressions.begin();
-		        exprIter != expressions.end();
-		        exprIter++) {
-			try {
-				std::cout << std::endl << "'" << *exprIter << "':" << std::endl;
-				PromelaParser ast(*exprIter);
-				ast.dump();
-			} catch (Event e) {
-				std::cerr << e << std::endl;
-			}
+	for (std::list<std::string>::iterator exprIter = expressions.begin();
+	        exprIter != expressions.end();
+	        exprIter++) {
+		try {
+			std::cout << std::endl << "'" << *exprIter << "':" << std::endl;
+			PromelaParser ast(*exprIter);
+			ast.dump();
+		} catch (Event e) {
+			std::cerr << e << std::endl;
 		}
+	}
+
+}
+
+int main(int argc, char** argv) {
+	testInlinePromela();
+	testPromelaParser();
 }

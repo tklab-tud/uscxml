@@ -42,6 +42,148 @@ void FSMToPromela::writeProgram(std::ostream& stream,
 FSMToPromela::FSMToPromela() : _eventTrie(".") {
 }
 
+void PromelaEventSource::writeStartEventSources(std::ostream& stream, int indent) {
+	std::string padding;
+	for (int i = 0; i < indent; i++) {
+		padding += "  ";
+	}
+
+	std::list<PromelaInline>::iterator sourceIter = eventSources.inlines.begin();
+	int i = 0;
+	while(sourceIter != eventSources.inlines.end()) {
+		if (sourceIter->type != PromelaInline::PROMELA_EVENT_SOURCE_CUSTOM && sourceIter->type != PromelaInline::PROMELA_EVENT_SOURCE) {
+			sourceIter++;
+			continue;
+		}
+		std::string sourceName = name + "_"+ toStr(i);
+		stream << padding << "run " << sourceName << "EventSource();" << std::endl;
+
+		i++;
+		sourceIter++;
+	}
+
+}
+
+void PromelaEventSource::writeStopEventSources(std::ostream& stream, int indent) {
+	std::string padding;
+	for (int i = 0; i < indent; i++) {
+		padding += "  ";
+	}
+
+	std::list<PromelaInline>::iterator sourceIter = eventSources.inlines.begin();
+	int i = 0;
+	while(sourceIter != eventSources.inlines.end()) {
+		if (sourceIter->type != PromelaInline::PROMELA_EVENT_SOURCE_CUSTOM && sourceIter->type != PromelaInline::PROMELA_EVENT_SOURCE) {
+			sourceIter++;
+			continue;
+		}
+		std::string sourceName = name + "_"+ toStr(i);
+		stream << padding << sourceName << "EventSourceDone = 1;" << std::endl;
+
+		i++;
+		sourceIter++;
+	}
+
+}
+
+void PromelaEventSource::writeDeclarations(std::ostream& stream, int indent) {
+	std::string padding;
+	for (int i = 0; i < indent; i++) {
+		padding += "  ";
+	}
+
+	std::list<PromelaInline>::iterator sourceIter = eventSources.inlines.begin();
+	int i = 0;
+	while(sourceIter != eventSources.inlines.end()) {
+		if (sourceIter->type != PromelaInline::PROMELA_EVENT_SOURCE_CUSTOM && sourceIter->type != PromelaInline::PROMELA_EVENT_SOURCE) {
+			sourceIter++;
+			continue;
+		}
+		std::string sourceName = name + "_"+ toStr(i);
+		stream << "bool " << sourceName << "EventSourceDone = 0;" << std::endl;
+
+		i++;
+		sourceIter++;
+	}
+}
+
+void PromelaEventSource::writeEventSource(std::ostream& stream) {
+
+	std::list<PromelaInline>::iterator sourceIter = eventSources.inlines.begin();
+	int i = 0;
+	while(sourceIter != eventSources.inlines.end()) {
+		if (sourceIter->type != PromelaInline::PROMELA_EVENT_SOURCE_CUSTOM && sourceIter->type != PromelaInline::PROMELA_EVENT_SOURCE) {
+			sourceIter++;
+			continue;
+		}
+
+		std::string sourceName = name + "_"+ toStr(i);
+
+		stream << "proctype " << sourceName << "EventSource() {" << std::endl;
+		stream << "  " << sourceName << "EventSourceDone = 0;" << std::endl;
+		stream << "  " << sourceName << "NewEvent:" << std::endl;
+		stream << "  " << "if" << std::endl;
+		stream << "  " << ":: " << sourceName << "EventSourceDone -> skip;" << std::endl;
+		stream << "  " << ":: else { " << std::endl;
+
+		if (sourceIter->type == PromelaInline::PROMELA_EVENT_SOURCE_CUSTOM) {
+			std::string content = sourceIter->content;
+
+			boost::replace_all(content, "#REDO#", sourceName + "NewEvent");
+			boost::replace_all(content, "#DONE#", sourceName + "Done");
+
+			std::list<TrieNode*> eventNames = trie->getChildsWithWords(trie->getNodeWithPrefix(""));
+			std::list<TrieNode*>::iterator eventNameIter = eventNames.begin();
+			while(eventNameIter != eventNames.end()) {
+				boost::replace_all(content, "#" + (*eventNameIter)->value + "#", "e" + toStr((*eventNameIter)->identifier));
+				eventNameIter++;
+			}
+
+			stream << FSMToPromela::beautifyIndentation(content, 2) << std::endl;
+
+		} else {
+			stream << "  " << "  if" << std::endl;
+//			stream << "  " << "  :: 1 -> " << "goto " << sourceName << "NewEvent;" << std::endl;
+
+			std::list<std::list<std::string> >::const_iterator seqIter = sourceIter->sequences.begin();
+			while(seqIter != sourceIter->sequences.end()) {
+				stream << "    " << ":: ";
+				std::list<std::string>::const_iterator evIter = seqIter->begin();
+				while(evIter != seqIter->end()) {
+					TrieNode* node = trie->getNodeWithPrefix(*evIter);
+					stream << "eQ!" << node->identifier << "; ";
+					evIter++;
+				}
+				stream << "goto " << sourceName << "NewEvent;" << std::endl;
+				seqIter++;
+			}
+
+			stream << "  " << "  fi;" << std::endl;
+		}
+
+		stream << "  " << "}" << std::endl;
+		stream << "  " << "fi;" << std::endl;
+		stream << sourceName << "Done:" << " skip;" << std::endl;
+		stream << "}" << std::endl;
+
+		i++;
+		sourceIter++;
+	}
+}
+
+PromelaEventSource::PromelaEventSource() {
+	type = PROMELA_EVENT_SOURCE_INVALID;
+	trie = NULL;
+}
+
+PromelaEventSource::PromelaEventSource(const PromelaInlines& sources, const Arabica::DOM::Node<std::string>& parent) {
+	type = PROMELA_EVENT_SOURCE_INVALID;
+	trie = NULL;
+
+	eventSources = sources;
+	container = parent;
+}
+
 void FSMToPromela::writeEvents(std::ostream& stream) {
 	std::list<TrieNode*> eventNames = _eventTrie.getWordsWithPrefix("");
 	std::list<TrieNode*>::iterator eventIter = eventNames.begin();
@@ -156,11 +298,11 @@ void FSMToPromela::writeExecutableContent(std::ostream& stream, const Arabica::D
 		// check for special promela labels
 		PromelaInlines promInls = getInlinePromela(getTransientContent(_states[ATTR(node, "target")]), true);
 
-		if (promInls.hasAcceptLabel)
+		if (promInls.acceptLabels > 0)
 			stream << padding << "acceptLabelT" << _transitions[node] << ":" << std::endl;
-		if (promInls.hasEndLabel)
+		if (promInls.endLabels > 0)
 			stream << padding << "endLabelT" << _transitions[node] << ":" << std::endl;
-		if (promInls.hasProgressLabel)
+		if (promInls.progressLabels > 0)
 			stream << padding << "progressLabelT" << _transitions[node] << ":" << std::endl;
 
 		stream << padding << "atomic {" << std::endl;
@@ -221,8 +363,14 @@ void FSMToPromela::writeExecutableContent(std::ostream& stream, const Arabica::D
 	} else if(TAGNAME(node) == "raise") {
 		TrieNode* trieNode = _eventTrie.getNodeWithPrefix(ATTR(node, "event"));
 		stream << padding << "iQ!e" << trieNode->identifier << ";" << std::endl;
+	} else if(TAGNAME(node) == "send") {
+		if (!HAS_ATTR(node, "target")) {
+			// this is for our external queue
+			TrieNode* trieNode = _eventTrie.getNodeWithPrefix(ATTR(node, "event"));
+			stream << padding << "tmpQ!e" << trieNode->identifier << ";" << std::endl;
+		}
 	} else if(TAGNAME(node) == "invoke") {
-		stream << padding << "run " << ATTR(node, "invokeid") << "EventSource();" << std::endl;
+		_invokers[ATTR(node, "invokeid")].writeStartEventSources(stream, indent);
 	} else if(TAGNAME(node) == "uninvoke") {
 		stream << padding << ATTR(node, "invokeid") << "EventSourceDone" << "= 1;" << std::endl;
 	} else {
@@ -233,66 +381,94 @@ void FSMToPromela::writeExecutableContent(std::ostream& stream, const Arabica::D
 
 }
 
-PromelaInlines FSMToPromela::getInlinePromela(const Arabica::XPath::NodeSet<std::string>& elements, bool recurse) {
+PromelaInlines FSMToPromela::getInlinePromela(const std::string& content) {
 	PromelaInlines prom;
 
-	if (elements.size() == 0)
-		return prom;
+	std::stringstream ssLine(content);
+	std::string line;
+
+	bool isInPromelaCode = false;
+	bool isInPromelaEventSource = false;
+	PromelaInline promInl;
+
+	while(std::getline(ssLine, line)) {
+		std::string trimLine = boost::trim_copy(line);
+		if (trimLine.length() == 0)
+			continue;
+		if (boost::starts_with(trimLine, "#promela")) {
+			if (isInPromelaCode || isInPromelaEventSource) {
+				prom.inlines.push_back(promInl);
+				isInPromelaCode = false;
+				isInPromelaEventSource = false;
+			}
+			promInl = PromelaInline();
+		}
+
+		if (false) {
+		} else if (boost::starts_with(trimLine, "#promela-progress")) {
+			prom.progressLabels++;
+			promInl.type = PromelaInline::PROMELA_PROGRESS_LABEL;
+			promInl.content = line;
+			prom.inlines.push_back(promInl);
+		} else if (boost::starts_with(trimLine, "#promela-accept")) {
+			prom.acceptLabels++;
+			promInl.type = PromelaInline::PROMELA_ACCEPT_LABEL;
+			promInl.content = line;
+			prom.inlines.push_back(promInl);
+		} else if (boost::starts_with(trimLine, "#promela-end")) {
+			prom.endLabels++;
+			promInl.type = PromelaInline::PROMELA_END_LABEL;
+			promInl.content = line;
+			prom.inlines.push_back(promInl);
+		} else if (boost::starts_with(trimLine, "#promela-inline")) {
+			prom.codes++;
+			isInPromelaCode = true;
+			promInl.type = PromelaInline::PROMELA_CODE;
+		} else if (boost::starts_with(trimLine, "#promela-event-source-custom")) {
+			prom.customEventSources++;
+			isInPromelaCode = true;
+			promInl.type = PromelaInline::PROMELA_EVENT_SOURCE_CUSTOM;
+		} else if (boost::starts_with(trimLine, "#promela-event-source")) {
+			prom.eventSources++;
+			isInPromelaEventSource = true;
+			promInl.type = PromelaInline::PROMELA_EVENT_SOURCE;
+		} else if (isInPromelaCode) {
+			promInl.content += line;
+			promInl.content += "\n";
+		} else if (isInPromelaEventSource) {
+			std::list<std::string> seq;
+			std::stringstream ssToken(trimLine);
+			std::string token;
+			while(std::getline(ssToken, token, ' ')) {
+				if (token.length() == 0)
+					continue;
+				seq.push_back(token);
+			}
+			promInl.sequences.push_back(seq);
+		}
+	}
+	// inline code ends with comment
+	if (isInPromelaCode || isInPromelaEventSource) {
+		prom.inlines.push_back(promInl);
+	}
+
+	return prom;
+}
+
+PromelaInlines FSMToPromela::getInlinePromela(const Arabica::DOM::Node<std::string>& node) {
+	if (node.getNodeType() != Node_base::COMMENT_NODE)
+		return getInlinePromela(std::string());
+	return getInlinePromela(node.getNodeValue());
+}
+
+PromelaInlines FSMToPromela::getInlinePromela(const Arabica::XPath::NodeSet<std::string>& elements, bool recurse) {
+	PromelaInlines allPromInls;
 
 	Arabica::XPath::NodeSet<std::string> comments = filterChildType(Node_base::COMMENT_NODE, elements, recurse);
 	for (int i = 0; i < comments.size(); i++) {
-		std::stringstream ssLine(comments[i].getNodeValue());
-		std::string line;
-
-		bool isInPromelaCode = false;
-		PromelaInline promInl;
-
-		while(std::getline(ssLine, line)) {
-			std::string trimLine = boost::trim_copy(line);
-			if (line.length() == 0)
-				continue;
-			if (false) {
-			} else if (boost::starts_with(trimLine, "promela-progress")) {
-				prom.hasProgressLabel = true;
-				if (isInPromelaCode) {
-					prom.inlines.push_back(promInl);
-					isInPromelaCode = false;
-				}
-				promInl.type = PromelaInline::PROMELA_PROGRESS_LABEL;
-				promInl.content = line;
-				prom.inlines.push_back(promInl);
-			} else if (boost::starts_with(trimLine, "promela-accept")) {
-				prom.hasAcceptLabel = true;
-				if (isInPromelaCode) {
-					prom.inlines.push_back(promInl);
-					isInPromelaCode = false;
-				}
-				promInl.type = PromelaInline::PROMELA_ACCEPT_LABEL;
-				promInl.content = line;
-				prom.inlines.push_back(promInl);
-			} else if (boost::starts_with(trimLine, "promela-end")) {
-				prom.hasEndLabel = true;
-				if (isInPromelaCode) {
-					prom.inlines.push_back(promInl);
-					isInPromelaCode = false;
-				}
-				promInl.type = PromelaInline::PROMELA_END_LABEL;
-				promInl.content = line;
-				prom.inlines.push_back(promInl);
-			} else if (boost::starts_with(trimLine, "promela-inline")) {
-				prom.hasCode = true;
-				isInPromelaCode = true;
-				promInl.type = PromelaInline::PROMELA_CODE;
-			} else if (isInPromelaCode) {
-				promInl.content += line;
-			}
-		}
-		// inline code ends with comment
-		if (isInPromelaCode) {
-			prom.inlines.push_back(promInl);
-		}
+		allPromInls.merge(getInlinePromela(comments[i]));
 	}
-	return prom;
+	return allPromInls;
 }
 
 void FSMToPromela::writeIfBlock(std::ostream& stream, const Arabica::XPath::NodeSet<std::string>& condChain, int indent) {
@@ -410,61 +586,39 @@ void FSMToPromela::writeDeclarations(std::ostream& stream) {
 	stream << "// global variables" << std::endl;
 	stream << "int e;                   /* current event */" << std::endl;
 	stream << "int s;                   /* current state */" << std::endl;
-	stream << "chan iQ = [100] of {int} /* internal queue */" << std::endl;
-	stream << "chan eQ = [100] of {int} /* external queue */" << std::endl;
+	stream << "chan iQ   = [100] of {int} /* internal queue */" << std::endl;
+	stream << "chan eQ   = [100] of {int} /* external queue */" << std::endl;
+	stream << "chan tmpQ = [100] of {int} /* temporary queue for external events in transitions */" << std::endl;
+	stream << "int tmpQItem;" << std::endl;
 
 	stream << std::endl;
 	stream << "// event sources" << std::endl;
-	if (_globalEventSource)
-		stream << "bool globalEventSourceDone;" << std::endl;
+
+	if (_globalEventSource) {
+		_globalEventSource.writeDeclarations(stream);
+	}
 
 	std::map<std::string, PromelaEventSource>::iterator invIter = _invokers.begin();
 	while(invIter != _invokers.end()) {
-		stream << "bool " << invIter->first << "EventSourceDone;" << std::endl;
-		stream << std::endl;
+		invIter->second.writeDeclarations(stream);
 		invIter++;
 	}
 
 }
 
 void FSMToPromela::writeEventSources(std::ostream& stream) {
-	if (_globalEventSource)
-		writeEventSource(stream, "global", _globalEventSource);
+	std::list<PromelaInline>::iterator inlineIter;
+
+	if (_globalEventSource) {
+		_globalEventSource.writeEventSource(stream);
+	}
 
 	std::map<std::string, PromelaEventSource>::iterator invIter = _invokers.begin();
 	while(invIter != _invokers.end()) {
-		writeEventSource(stream, invIter->first, invIter->second);
+		invIter->second.writeEventSource(stream);
 		invIter++;
 	}
 
-}
-
-void FSMToPromela::writeEventSource(std::ostream& stream, const std::string& name, const PromelaEventSource& source) {
-	stream << "proctype " << name << "EventSource() {" << std::endl;
-	stream << "  " << name << "EventSourceDone = 0;" << std::endl;
-	stream << "  " << name << "NewEvent:" << std::endl;
-	stream << "  " << "if" << std::endl;
-	stream << "  " << ":: " << name << "EventSourceDone -> skip;" << std::endl;
-	stream << "  " << ":: else { " << std::endl;
-	stream << "  " << "  if" << std::endl;
-	stream << "  " << "  :: 1 -> " << "goto " << name << "NewEvent;" << std::endl;
-
-	std::list<std::list<std::string> >::const_iterator seqIter = source.sequences.begin();
-	while(seqIter != source.sequences.end()) {
-		stream << "    " << ":: ";
-		std::list<std::string>::const_iterator evIter = seqIter->begin();
-		while(evIter != seqIter->end()) {
-			TrieNode* node = _eventTrie.getNodeWithPrefix(*evIter);
-			stream << "eQ!" << node->identifier << "; ";
-			evIter++;
-		}
-		stream << "goto " << name << "NewEvent;" << std::endl;
-		seqIter++;
-	}
-	stream << "  " << "  fi" << std::endl;
-	stream << "  " << "}" << std::endl;
-	stream << "  " << "fi" << std::endl;
-	stream << "}" << std::endl;
 }
 
 
@@ -488,7 +642,14 @@ void FSMToPromela::writeFSM(std::ostream& stream) {
 	}
 
 	stream << std::endl;
-	stream << "nextStep: /* pop an event */" << std::endl;
+	stream << "nextStep:" << std::endl;
+	stream << "  // push send events to external queue" << std::endl;
+	stream << "  if" << std::endl;
+	stream << "  :: len(tmpQ) != 0 -> { tmpQ?e; eQ!e }" << std::endl;
+	stream << "  :: else -> skip;" << std::endl;
+	stream << "  fi;" << std::endl << std::endl;
+
+	stream << "  /* pop an event */" << std::endl;
 	stream << "  if" << std::endl;
 	stream << "  :: len(iQ) != 0 -> iQ ? e /* from internal queue */" << std::endl;
 	stream << "  :: else -> eQ ? e         /* from external queue */" << std::endl;
@@ -504,14 +665,13 @@ void FSMToPromela::writeFSM(std::ostream& stream) {
 
 	// stop all event sources
 	if (_globalEventSource)
-		stream << "  globalEventSourceDone = 1;" << std::endl;
+		_globalEventSource.writeStopEventSources(stream, 1);
 
 	std::map<std::string, PromelaEventSource>::iterator invIter = _invokers.begin();
 	while(invIter != _invokers.end()) {
-		stream << "  " << invIter->first << "EventSourceDone = 1;" << std::endl;
+		invIter->second.writeStopEventSources(stream, 1);
 		invIter++;
 	}
-
 
 	stream << "}" << std::endl;
 }
@@ -584,7 +744,7 @@ void FSMToPromela::writeMain(std::ostream& stream) {
 	stream << std::endl;
 	stream << "init {" << std::endl;
 	if (_globalEventSource)
-		stream << "  run globalEventSource();" << std::endl;
+		_globalEventSource.writeStartEventSources(stream, 1);
 	stream << "  run step();" << std::endl;
 	stream << "}" << std::endl;
 
@@ -626,47 +786,28 @@ void FSMToPromela::initNodes() {
 	// external event names from comments
 	NodeSet<std::string> promelaEventSourceComments;
 	NodeSet<std::string> invokers = _xpath.evaluate("//" + _nsInfo.xpathPrefix + "invoke", _scxml).asNodeSet();
-	promelaEventSourceComments.push_back(filterChildType(Node_base::COMMENT_NODE, invokers, true)); // comments in invoke elements
+	promelaEventSourceComments.push_back(filterChildType(Node_base::COMMENT_NODE, invokers, false)); // comments in invoke elements
 	promelaEventSourceComments.push_back(filterChildType(Node_base::COMMENT_NODE, _scxml, false)); // comments in scxml element
 
 	for (int i = 0; i < promelaEventSourceComments.size(); i++) {
-		std::string comment = promelaEventSourceComments[i].getNodeValue();
-		boost::trim(comment);
-		if (!boost::starts_with(comment, "promela-event-source:"))
-			continue;
-		PromelaEventSource* eventSource = NULL;
-		if (false) {
-		} else if (TAGNAME(promelaEventSourceComments[i].getParentNode()) == "scxml") {
-			eventSource = &_globalEventSource;
+		PromelaInlines promInls = getInlinePromela(promelaEventSourceComments[i]);
+		PromelaEventSource promES(promInls, promelaEventSourceComments[i].getParentNode());
+
+		if (TAGNAME(promelaEventSourceComments[i].getParentNode()) == "scxml") {
+			promES.type = PromelaEventSource::PROMELA_EVENT_SOURCE_GLOBAL;
+			promES.trie = &_eventTrie;
+			promES.name = "global";
+			_globalEventSource = promES;
 		} else if (TAGNAME(promelaEventSourceComments[i].getParentNode()) == "invoke") {
 			if (!HAS_ATTR(promelaEventSourceComments[i].getParentNode(), "invokeid")) {
 				Element<std::string> invoker = Element<std::string>(promelaEventSourceComments[i].getParentNode());
 				invoker.setAttribute("invokeid", "invoker" + toStr(_invokers.size()));
 			}
 			std::string invokeId = ATTR(promelaEventSourceComments[i].getParentNode(), "invokeid");
-			eventSource = &_invokers[invokeId];
-		} else {
-			assert(false);
-		}
-		if (!eventSource)
-			continue;
-		std::stringstream ssLine(comment);
-		std::string line;
-		std::getline(ssLine, line); // consume first line
-		while(std::getline(ssLine, line)) {
-			if (line.length() == 0)
-				continue;
-			std::list<std::string> currSeq;
-
-			std::stringstream ssToken(line);
-			std::string token;
-			while(std::getline(ssToken, token, ' ')) {
-				if (token.length() == 0)
-					continue;
-				currSeq.push_back(token);
-				_eventTrie.addWord(token);
-			}
-			eventSource->sequences.push_back(currSeq);
+			promES.type = PromelaEventSource::PROMELA_EVENT_SOURCE_INVOKER;
+			promES.trie = &_eventTrie;
+			promES.name = invokeId;
+			_invokers[invokeId] = promES;
 		}
 	}
 
@@ -678,7 +819,7 @@ void FSMToPromela::initNodes() {
 	}
 }
 
-void PromelaEventSource::dump() {
+void PromelaInline::dump() {
 	std::list<std::list<std::string> >::iterator outerIter = sequences.begin();
 	while(outerIter != sequences.end()) {
 		std::list<std::string>::iterator innerIter = outerIter->begin();
