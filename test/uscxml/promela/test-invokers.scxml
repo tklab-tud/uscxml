@@ -2,8 +2,10 @@
   <state id="s0">
     <invoke type="scxml">
       <!-- 
-        promela-event-source:
-        to.s1
+      #promela-event-source-custom:
+        if
+        :: 1 -> eQ!#to.s1#; goto #DONE#; // end this invoker
+        fi;
       -->
       <content>
         <scxml>
@@ -17,5 +19,11 @@
     </invoke>
     <transition event="to.s1" target="s1" />
   </state>
-  <state id="s1" final="true" />
+  <state id="s1">
+    <onentry>
+      <send event="to.s2" />
+    </onentry>
+    <transition event="to.s2" target="s2" />
+  </state>
+  <state id="s2" final="true" />
 </scxml>
