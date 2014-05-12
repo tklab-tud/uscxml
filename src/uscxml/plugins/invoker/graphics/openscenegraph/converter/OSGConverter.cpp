@@ -342,7 +342,7 @@ void OSGConverter::process(const SendRequest& req) {
 
 		viewer.getCameraManipulator()->setByMatrix(osg::Matrix::lookAt(osg::Vec3d(0,0,bs.radius() * (-3.4 * zoom)),  // eye
 		        (osg::Vec3d)bs.center(),           // center
-		        osg::Vec3d(0,1,0)));               // up
+		        osg::Vec3d(0,0,1)));               // up
 
 		osg::Image *image = new osg::Image();
 		camera->attach(osg::Camera::COLOR_BUFFER0, image);

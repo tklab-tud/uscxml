@@ -432,7 +432,7 @@ LOOP:
 
 	enabledTransitions = filterPreempted(enabledTransitions);
 
-#if 1
+#if 0
 	std::cout << "Enabled transitions: " << std::endl;
 	for (int i = 0; i < enabledTransitions.size(); i++) {
 		std::cout << DOMUtils::xPathForNode(enabledTransitions[i]) << std::endl;
