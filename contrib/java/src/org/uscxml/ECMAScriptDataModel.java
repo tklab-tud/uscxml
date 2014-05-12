@@ -1,23 +1,30 @@
-package org.uscxml.tests;
+package org.uscxml;
 
-import org.uscxml.Data;
-import org.uscxml.DataNative;
-import org.uscxml.Event;
-import org.uscxml.Factory;
-import org.uscxml.Interpreter;
-import org.uscxml.JavaDataModel;
-import org.uscxml.StringSet;
+import org.mozilla.javascript.Context;
+import org.mozilla.javascript.Scriptable;
 
 
-public class TestDataModel extends JavaDataModel {
+public class ECMAScriptDataModel extends JavaDataModel {
+	protected Context ctx;
+	protected Scriptable scope;
 	
 	@Override
 	public JavaDataModel create(Interpreter interpreter) {
 		/**
 		 * Called when an SCXML interpreter wants an instance of this datamodel
+		 * Be careful to instantiate attributes of instance returned and not *this*
 		 */
 		System.out.println("create");
-		return new TestDataModel();
+		ECMAScriptDataModel newDM = new ECMAScriptDataModel();
+
+		newDM.ctx = Context.enter();
+        try {
+        	newDM.scope = newDM.ctx.initStandardObjects();
+        } catch(Exception e) {
+            System.err.println(e);
+        }
+
+		return newDM;
 	}
 
 	@Override
@@ -28,7 +35,7 @@ public class TestDataModel extends JavaDataModel {
 		 */
 		System.out.println("getNames");
 		StringSet ss = new StringSet();
-		ss.insert("java");
+		ss.insert("ecmascript");
 		return ss;
 	}
 
@@ -59,6 +66,9 @@ public class TestDataModel extends JavaDataModel {
 		 */
 		System.out.println("getStringAsData " + content);
 		Data data = new Data();
+		
+		// TODO: populate data object
+		
 		return Data.toNative(data);
 	}
 
@@ -69,7 +79,9 @@ public class TestDataModel extends JavaDataModel {
 		 * array, used by foreach element.
 		 */
 		System.out.println("getLength " + expr);
-		return 0;
+		
+        Object result = ctx.evaluateString(scope, expr, "uscxml", 1, null);
+        return (long) Context.toNumber(result);
 	}
 
 	@Override
@@ -80,6 +92,8 @@ public class TestDataModel extends JavaDataModel {
 		 * from array.
 		 */
 		System.out.println("setForeach " + item + " " + index + " " + iteration);
+		
+		
 	}
 
 	@Override
@@ -89,6 +103,9 @@ public class TestDataModel extends JavaDataModel {
 		 * This is used foremost with script elements.
 		 */
 		System.out.println("eval " + scriptElem + " " + expr);
+		
+        ctx.evaluateString(scope, expr, "uscxml", 1, null);
+
 	}
 
 	@Override
@@ -97,7 +114,9 @@ public class TestDataModel extends JavaDataModel {
 		 * Evaluate the expression as a string e.g. for the log element. 
 		 */
 		System.out.println("evalAsString " + expr);
-		return "";
+
+        Object result = ctx.evaluateString(scope, expr, "uscxml", 1, null);
+        return Context.toString(result);
 	}
 
 	@Override
@@ -107,7 +126,9 @@ public class TestDataModel extends JavaDataModel {
 		 * if and transition elements.
 		 */
 		System.out.println("evalAsBool " + expr);
-		return true;
+
+        Object result = ctx.evaluateString(scope, expr, "uscxml", 1, null);
+        return Context.toBoolean(result);
 	}
 
 	@Override
@@ -118,7 +139,9 @@ public class TestDataModel extends JavaDataModel {
 		 * a location from assign is declared.
 		 */
 		System.out.println("isDeclared " + expr);
-		return true;
+		
+		Object x = scope.get(expr, scope);
+        return x != Scriptable.NOT_FOUND;
 	}
 
 	@Override
@@ -127,6 +150,9 @@ public class TestDataModel extends JavaDataModel {
 		 * Called when we pass data elements.
 		 */
 		System.out.println("init " + dataElem + " " + location + " " + content);
+		
+		String expr = location + "=" + content;
+        ctx.evaluateString(scope, expr, "uscxml", 1, null);
 	}
 
 	@Override
@@ -135,25 +161,9 @@ public class TestDataModel extends JavaDataModel {
 		 * Called when we evaluate assign elements
 		 */
 		System.out.println("assign " + assignElem + " " + location + " " + content);
-	}
-
-	/**
-	 * @param args
-	 */
-	public static void main(String[] args) {
-		// load JNI library from build directory
-		System.load("/Users/sradomski/Documents/TK/Code/uscxml/build/cli/lib/libuscxmlNativeJava64.jnilib");
 		
-		// register java datamodel at factory
-		TestDataModel datamodel = new TestDataModel(); 
-		Factory.getInstance().registerDataModel(datamodel);
-		
-		// instantiate interpreter with document from file
-		Interpreter interpreter = Interpreter.fromURI("/Users/sradomski/Documents/TK/Code/uscxml/test/uscxml/java/test-java-datamodel.scxml");
-
-		// wait until interpreter has finished
-		while(true)
-			interpreter.interpret();
+		String expr = location + "=" + content;
+        ctx.evaluateString(scope, expr, "uscxml", 1, null);
 	}
 
 }

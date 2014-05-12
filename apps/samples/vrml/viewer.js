@@ -141,13 +141,18 @@ function VRMLViewer(element, params) {
     });
   }
 
-  this.refreshServer = function(server) {
-    self.serverURL = server;
+  this.setServer = function(serverURL) {
+    if (!serverURL || serverURL == self.serverURL) {
+      // nothing to do
+      return;
+    }
+    
+    self.serverURL = serverURL;
     if (self.fileStandby) { self.fileStandby.show(); }
     
     self.xhr.get({
       // The URL to request
-      url: server,
+      url: serverURL,
       handleAs:"json",
       headers:{"X-Requested-With":null},
       error: function(result) {
@@ -211,6 +216,10 @@ function VRMLViewer(element, params) {
       }
     });
   };
+
+  this.setModel = function(imagePath) {
+    self.imagePath = imagePath;
+  }
 
   this.setPose = function(imagePath, pose, serverURL) {
     if (serverURL && serverURL != self.serverURL) {

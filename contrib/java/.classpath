@@ -6,5 +6,6 @@
 	<classpathentry kind="src" path="applications"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/umundo"/>
+	<classpathentry kind="lib" path="src/js.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
