@@ -54,11 +54,13 @@ public:
 		return "";
 	}
 	virtual bool evalAsBool(const std::string& expr) {
-		return false;
+		return evalAsBool("", expr);
 	}
 
 	virtual bool evalAsBool(const Arabica::DOM::Node<std::string>& node, const std::string& expr) {
-		return false;
+		std::ostringstream ssNode;
+		ssNode << node;
+		return evalAsBool(ssNode.str(), expr);
 	}
 
 	virtual bool isDeclared(const std::string& expr) {
@@ -73,6 +75,7 @@ public:
 		if (assignElem.hasAttribute("location")) {
 			location = assignElem.getAttribute("location");
 		}
+		
 		std::ostringstream ssAssign;
 		ssAssign << assignElem;
 		std::string tmp;
@@ -80,10 +83,12 @@ public:
 			std::ostringstream ssContent;
 			ssContent << node;
 			tmp = ssContent.str();
+		} else if (assignElem.hasAttribute("expr")) {
+			tmp = assignElem.getAttribute("expr");
 		} else {
 			tmp = content;
 		}
-		assign(location, ssAssign.str(), tmp);
+		assign(ssAssign.str(), location, tmp);
 	}
 
 	virtual void assign(const std::string& location, const Data& data) {
@@ -108,10 +113,12 @@ public:
 			std::ostringstream ssContent;
 			ssContent << node;
 			tmp = ssContent.str();
+		} else if (dataElem.hasAttribute("expr")) {
+			tmp = dataElem.getAttribute("expr");
 		} else {
 			tmp = content;
 		}
-		init(location, ssData.str(), tmp);
+		init(ssData.str(), location, tmp);
 	}
 
 	virtual void init(const std::string& location, const Data& data) {
@@ -119,6 +126,7 @@ public:
 	}
 
 	// these functions are exposed to java
+	virtual bool evalAsBool(const std::string& elem, const std::string& content) { return false; }
 	virtual void init(const std::string& dataElem, const std::string& location, const std::string& content) {}
 	virtual void assign(const std::string& assignElem, const std::string& location, const std::string& content) {}
 	virtual void eval(const std::string& scriptElem, const std::string& expr) {}
