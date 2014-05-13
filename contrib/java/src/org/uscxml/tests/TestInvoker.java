@@ -10,7 +10,6 @@ import org.uscxml.JavaInvoker;
 import org.uscxml.SendRequest;
 import org.uscxml.StringSet;
 
-
 public class TestInvoker extends JavaInvoker {
 
 	@Override
@@ -38,7 +37,7 @@ public class TestInvoker extends JavaInvoker {
 
 		System.out.println(req.getData());
 		System.out.println(req.getXML());
-		
+
 		Event ev = new Event();
 		ev.setName("foo");
 		returnEvent(ev);
@@ -54,12 +53,13 @@ public class TestInvoker extends JavaInvoker {
 	 */
 	public static void main(String[] args) {
 		System.load("/Users/sradomski/Documents/TK/Code/uscxml/build/cli/lib/libuscxmlNativeJava64_d.jnilib");
-		
-		TestInvoker invoker = new TestInvoker(); 
+
+		TestInvoker invoker = new TestInvoker();
 		Factory.getInstance().registerInvoker(invoker);
-		
-		Interpreter interpreter = Interpreter.fromURI("/Users/sradomski/Documents/TK/Code/uscxml/test/samples/uscxml/test-java-invoker.scxml");
-		while(true)
+
+		Interpreter interpreter = Interpreter
+				.fromURI("/Users/sradomski/Documents/TK/Code/uscxml/test/samples/uscxml/test-java-invoker.scxml");
+		while (true)
 			interpreter.interpret();
 	}
 

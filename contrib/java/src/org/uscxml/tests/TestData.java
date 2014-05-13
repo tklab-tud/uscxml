@@ -4,7 +4,7 @@ import org.uscxml.Data;
 import org.uscxml.DataNative;
 
 public class TestData {
-	
+
 	public static void main(String[] args) {
 		System.load("/Users/sradomski/Documents/TK/Code/uscxml/build/cli/lib/libuscxmlNativeJava64_d.jnilib");
 		{

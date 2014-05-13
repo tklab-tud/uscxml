@@ -74,7 +74,7 @@ public class Data {
 				nativeDataList.add(toNative(item));
 			}
 			nativeData.setArray(nativeDataList);
-		} else {
+		} else if (data.atom != null) {
 			nativeData.setAtom(data.atom);
 			if (data.type == Type.INTERPRETED) {
 				nativeData.setType(DataNative.Type.INTERPRETED);
