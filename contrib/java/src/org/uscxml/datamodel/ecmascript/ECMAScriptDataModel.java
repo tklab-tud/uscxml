@@ -79,7 +79,8 @@ public class ECMAScriptDataModel extends JavaDataModel {
 		newDM.ctx = Context.enter();
 		try {
 			newDM.scope = newDM.ctx.initStandardObjects();
-//            ScriptableObject.defineClass(newDM.scope, ECMAEvent.class);
+//          ScriptableObject.defineClass(newDM.scope, ECMAEvent.class);
+//          ScriptableObject.defineClass(newDM.scope, ECMAEventScriptable.class);
 		} catch (Exception e) {
 			System.err.println(e);
 		}
@@ -114,20 +115,21 @@ public class ECMAScriptDataModel extends JavaDataModel {
 		 * datamodel.
 		 */
 
+		Data data = new Data(event.getData());
+		
 //		Object[] args = { event };
 //        Scriptable ecmaEvent = ctx.newObject(scope, "Event", args);
 
+//		ECMAEvent ecmaEvent = new ECMAEvent(event);
+//		NativeJavaObject njo = new NativeJavaObject(scope, ecmaEvent, ECMAEvent.class, true);
+
 		ECMAEvent ecmaEvent = new ECMAEvent(event);
-		NativeJavaObject njo = new NativeJavaObject(scope, ecmaEvent, ECMAEvent.class, true);
-		
-//		for (Object key : njo.getIds()) {
+
+//		for (Object key : ecmaEvent.getIds()) {
 //			System.out.println(key);
 //		}
 		
-		scope.put("_event", scope, njo);
-		Data data = new Data(getStringAsData("_event"));
-		
-//		System.out.println(data);
+		scope.put("_event", scope, ecmaEvent);
 	}
 
 	@Override

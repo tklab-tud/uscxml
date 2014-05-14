@@ -16,19 +16,19 @@ public class TestW3CECMA {
 		ECMAScriptDataModel datamodel = new ECMAScriptDataModel();
 		Factory.getInstance().registerDataModel(datamodel);
 
-    	Interpreter interpreter = Interpreter.fromURI("/Users/sradomski/Documents/TK/Code/uscxml/test/w3c/ecma/test176.scxml");
-    	interpreter.interpret();
-    	System.exit(0);
+//    	Interpreter interpreter = Interpreter.fromURI("/Users/sradomski/Documents/TK/Code/uscxml/test/w3c/ecma/test176.scxml");
+//    	interpreter.interpret();
+//    	System.exit(0);
 		
-//		File dir = new File(testDir);
-//		File[] filesList = dir.listFiles();
-//		for (File file : filesList) {
-//		    if (file.isFile() && file.getName().endsWith(".scxml")) {
-//		    	System.out.println("### " + file.getName() + " #####");
-//		    	Interpreter interpreter = Interpreter.fromURI(file.getAbsolutePath());
-//		    	interpreter.interpret();
-//		    }
-//		}
+		File dir = new File(testDir);
+		File[] filesList = dir.listFiles();
+		for (File file : filesList) {
+		    if (file.isFile() && file.getName().endsWith(".scxml")) {
+		    	System.out.println("### " + file.getName() + " #####");
+		    	Interpreter interpreter = Interpreter.fromURI(file.getAbsolutePath());
+		    	interpreter.interpret();
+		    }
+		}
 
 	}
 
