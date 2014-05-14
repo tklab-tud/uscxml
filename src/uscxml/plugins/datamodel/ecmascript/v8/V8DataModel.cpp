@@ -94,7 +94,7 @@ boost::shared_ptr<DataModelImpl> V8DataModel::create(InterpreterImpl* interprete
 	dm->_dom = new V8DOM();
 //  dom->interpreter = interpreter;
 	dm->_dom->xpath = new XPath<std::string>();
-	dm->_dom->xpath->setNamespaceContext(*interpreter->getNameSpaceInfo().nsContext);
+	dm->_dom->xpath->setNamespaceContext(*interpreter->getNameSpaceInfo().getNSContext());
 	dm->_dom->storage	= new Storage(URL::getResourceDir() + PATH_SEPERATOR + interpreter->getName() + ".storage");
 	dm->_dom->nsInfo = new NameSpaceInfo(interpreter->getNameSpaceInfo());
 	// see http://stackoverflow.com/questions/3171418/v8-functiontemplate-class-instance
