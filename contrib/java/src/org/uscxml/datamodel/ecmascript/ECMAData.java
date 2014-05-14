@@ -1,68 +1,53 @@
 package org.uscxml.datamodel.ecmascript;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.mozilla.javascript.Scriptable;
 import org.uscxml.Data;
-import org.uscxml.Event;
-import org.uscxml.ParamPair;
-import org.uscxml.ParamPairVector;
 
-public class ECMAEvent implements Scriptable {
+public class ECMAData implements Scriptable {
 
-	protected Event event;
+	protected Data data;
     protected Scriptable parent;
     protected Scriptable prototype;
 
-    protected Map<String, Object> members = new HashMap<String, Object>();
-    
-	public ECMAEvent(Event event) {
-		this.event = event;
-		
-		Data data = new Data(event.getData());
-		
-		// insert params into event.data
-		ParamPairVector ppv = event.getParamPairs();
-		for (int i = 0; i < ppv.size(); i++) {
-			ParamPair pp = ppv.get(i);
-			data.compound.put(pp.getFirst(), new Data(pp.getSecond()));
-		}
-
-		members.put("type", event.getEventType().toString());
-		members.put("data", new ECMAData(data));
-		members.put("sendid", event.getSendId());
-		members.put("origin", event.getOrigin());
-		members.put("originType", event.getOriginType());
-		// add others as necessary
-		
+	public ECMAData(Data data) {
+		this.data = data;
 	}
 
 	@Override
 	public String getClassName() {
-		return "Event";
+		return "Data";
 	}
 
+	public Object unwrap(Data data) {
+		if (data.atom.length() > 0) {
+			return data.atom;
+		}
+		return new ECMAData(data);
+		
+	}
+	
 	@Override
 	public Object get(String name, Scriptable start) {
-		if (members.containsKey(name))
-			return members.get(name);
-        return NOT_FOUND;
+		if (data.compound.containsKey(name))
+			return unwrap(data.compound.get(name));
+		return NOT_FOUND;
 	}
 
 	@Override
 	public Object get(int index, Scriptable start) {
-        return NOT_FOUND;
+		if (data.array.size() > index)
+			return unwrap(data.array.get(index));
+		return NOT_FOUND;
 	}
 
 	@Override
 	public boolean has(String name, Scriptable start) {
-        return (members.containsKey(name));
+		return data.compound.containsKey(name);
 	}
 
 	@Override
 	public boolean has(int index, Scriptable start) {
-		return false;
+		return data.array.size() > index;
 	}
 
 	@Override
@@ -98,17 +83,17 @@ public class ECMAEvent implements Scriptable {
 
 	@Override
 	public void setParentScope(Scriptable parent) {
-		this.parent = parent;
+		this.parent = parent;		
 	}
 
 	@Override
 	public Object[] getIds() {
-		return members.keySet().toArray();
+		return data.compound.keySet().toArray();
 	}
 
 	@Override
 	public Object getDefaultValue(Class<?> hint) {
-        return "[object Event]";
+        return "[object Data]";
 	}
 
 	@Override
@@ -119,7 +104,6 @@ public class ECMAEvent implements Scriptable {
                 return true;
             proto = proto.getPrototype();
         }
-
         return false;
 	}
 

@@ -96,6 +96,8 @@ using namespace Arabica::DOM;
 
 %template(DataList) std::list<uscxml::Data>;
 %template(StringSet) std::set<std::string>;
+%template(ParamPair) std::pair<std::string, uscxml::Data>;
+%template(ParamPairVector) std::vector<std::pair<std::string, uscxml::Data> >;
 
 %rename Data DataNative;
 # %typemap(jstype) uscxml::Data "Data"
@@ -108,6 +110,23 @@ using namespace Arabica::DOM;
 
 %feature("director") uscxml::JavaInvoker;
 %feature("director") uscxml::JavaDataModel;
+
+// translate param multimap to Map<String, List<Data> >
+%rename(getParamsNative) uscxml::Event::getParams();
+%javamethodmodifiers uscxml::Event::getParams() "private";
+
+%extend uscxml::Event {
+	std::vector<std::pair<std::string, Data> > getParamPairs() {
+		std::vector<std::pair<std::string, Data> > pairs;
+    std::multimap<std::string, Data>::iterator paramPairIter = self->getParams().begin();
+		while(paramPairIter != self->getParams().end()) {
+			pairs.push_back(*paramPairIter);
+			paramPairIter++;
+		}
+		return pairs;
+	}
+};
+
 
 // Provide an iterable interface for maps
 // http://stackoverflow.com/questions/9465856/no-iterator-for-java-when-using-swig-with-cs-stdmap
