@@ -1,7 +1,11 @@
 package org.uscxml.datamodel.ecmascript;
 
+import java.lang.reflect.Method;
+
 import org.mozilla.javascript.Callable;
 import org.mozilla.javascript.Context;
+import org.mozilla.javascript.EvaluatorException;
+import org.mozilla.javascript.FunctionObject;
 import org.mozilla.javascript.NativeJSON;
 import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.ScriptableObject;
@@ -16,6 +20,8 @@ import org.uscxml.StringVector;
 
 public class ECMAScriptDataModel extends JavaDataModel {
 
+	public static boolean debug = true;
+	
 	private class NullCallable implements Callable {
 		@Override
 		public Object call(Context context, Scriptable scope,
@@ -26,6 +32,7 @@ public class ECMAScriptDataModel extends JavaDataModel {
 
 	public Context ctx;
 	public Scriptable scope;
+	public Interpreter interpreter;
 
 	public Data getScriptableAsData(Object object) {
 		Data data = new Data();
@@ -65,6 +72,10 @@ public class ECMAScriptDataModel extends JavaDataModel {
 		throw new UnsupportedOperationException("Not implemented");
 	}
 
+	public static boolean jsIn(String stateName) {
+		return true;
+	}
+
 	@Override
 	public JavaDataModel create(Interpreter interpreter) {
 		/**
@@ -72,19 +83,58 @@ public class ECMAScriptDataModel extends JavaDataModel {
 		 * Be careful to instantiate attributes of instance returned and not
 		 * *this*
 		 */
+		
 		ECMAScriptDataModel newDM = new ECMAScriptDataModel();
+		newDM.interpreter = interpreter;
 		newDM.ctx = Context.enter();
 
-		Data ioProcs = new Data();
-		StringVector keys = interpreter.getIOProcessorKeys();
-		for (int i = 0; i < keys.size(); i++) {
-			ioProcs.compound.put(keys.get(i), new Data(interpreter.getIOProcessors().get(keys.get(i)).getDataModelVariables()));
-		}
-		
 		try {
 			newDM.scope = newDM.ctx.initStandardObjects();
-			newDM.scope.put("_ioprocessors", newDM.scope, new ECMAData(ioProcs));
 		} catch (Exception e) {
+			System.err.println(e);
+		}
+
+		newDM.scope.put("_name", newDM.scope, interpreter.getName());
+		newDM.scope.put("_sessionid", newDM.scope, interpreter.getSessionId());
+
+		// ioProcessors
+		{
+			Data ioProcs = new Data();
+			StringVector keys = interpreter.getIOProcessorKeys();
+			for (int i = 0; i < keys.size(); i++) {
+				ioProcs.compound.put(keys.get(i), new Data(interpreter
+						.getIOProcessors().get(keys.get(i))
+						.getDataModelVariables()));
+			}
+			newDM.scope
+					.put("_ioprocessors", newDM.scope, new ECMAData(ioProcs));
+		}
+
+		// invokers
+		{
+			Data invokers = new Data();
+			StringVector keys = interpreter.getInvokerKeys();
+			for (int i = 0; i < keys.size(); i++) {
+				invokers.compound.put(keys.get(i), new Data(interpreter
+						.getInvokers().get(keys.get(i))
+						.getDataModelVariables()));
+			}
+			newDM.scope
+					.put("_ioprocessors", newDM.scope, new ECMAData(invokers));
+		}
+		
+		// In predicate (not working as static is required) see:
+		// http://stackoverflow.com/questions/3441947/how-do-i-call-a-method-of-a-java-instance-from-javascript/16479685#16479685
+		try {
+			Class[] parameters = new Class[] { String.class };
+			Method inMethod = ECMAScriptDataModel.class.getMethod("jsIn",
+					parameters);
+			FunctionObject inFunc = new FunctionObject("In", inMethod,
+					newDM.scope);
+			newDM.scope.put("In", newDM.scope, inFunc);
+		} catch (SecurityException e) {
+			System.err.println(e);
+		} catch (NoSuchMethodException e) {
 			System.err.println(e);
 		}
 
@@ -113,16 +163,24 @@ public class ECMAScriptDataModel extends JavaDataModel {
 
 	@Override
 	public void setEvent(Event event) {
+		if (debug) {
+			System.out.println(interpreter.getName() + " setEvent");
+		}
+		
 		/**
 		 * Make the current event available as the variable _event in the
 		 * datamodel.
 		 */
-		ECMAEvent ecmaEvent = new ECMAEvent(event);		
+		ECMAEvent ecmaEvent = new ECMAEvent(event);
 		scope.put("_event", scope, ecmaEvent);
 	}
 
 	@Override
 	public DataNative getStringAsData(String content) {
+		if (debug) {
+			System.out.println(interpreter.getName() + " getStringAsData");
+		}
+
 		/**
 		 * Evaluate the string as a value expression and transform it into a
 		 * JSON-like Data structure
@@ -139,8 +197,9 @@ public class ECMAScriptDataModel extends JavaDataModel {
 				return Data.toNative(getScriptableAsData(json));
 			}
 		} catch (org.mozilla.javascript.EcmaError e) {
+			System.err.println(e);
 		}
-		
+
 		// is it a function call or variable?
 		Object x = ctx.evaluateString(scope, content, "uscxml", 0, null);
 		if (x == Undefined.instance) {
@@ -153,6 +212,10 @@ public class ECMAScriptDataModel extends JavaDataModel {
 
 	@Override
 	public long getLength(String expr) {
+		if (debug) {
+			System.out.println(interpreter.getName() + " getLength");
+		}
+
 		/**
 		 * Return the length of the expression if it were an array, used by
 		 * foreach element.
@@ -173,6 +236,10 @@ public class ECMAScriptDataModel extends JavaDataModel {
 	@Override
 	public void setForeach(String item, String array, String index,
 			long iteration) {
+		if (debug) {
+			System.out.println(interpreter.getName() + " setForeach");
+		}
+
 		/**
 		 * Prepare an iteration of the foreach element, by setting the variable
 		 * in index to the current iteration and setting the variable in item to
@@ -191,7 +258,7 @@ public class ECMAScriptDataModel extends JavaDataModel {
 							"uscxml", 1, null);
 				}
 			} else {
-				// we ought to throw a error.execution
+				handleException("");
 			}
 
 		} catch (ClassCastException e) {
@@ -201,6 +268,10 @@ public class ECMAScriptDataModel extends JavaDataModel {
 
 	@Override
 	public void eval(String scriptElem, String expr) {
+		if (debug) {
+			System.out.println(interpreter.getName() + " eval");
+		}
+
 		/**
 		 * Evaluate the given expression in the datamodel. This is used foremost
 		 * with script elements.
@@ -211,15 +282,36 @@ public class ECMAScriptDataModel extends JavaDataModel {
 
 	@Override
 	public String evalAsString(String expr) {
+		if (debug) {
+			System.out.println(interpreter.getName() + " evalAsString: " + expr);
+		}
+
 		/**
 		 * Evaluate the expression as a string e.g. for the log element.
 		 */
-		Object result = ctx.evaluateString(scope, expr, "uscxml", 1, null);
-		return Context.toString(result);
+		if (!ctx.stringIsCompilableUnit(expr)) {
+			handleException("");
+			return "";
+		}
+		try {
+			Object result = ctx.evaluateString(scope, expr, "uscxml", 1, null);
+			return Context.toString(result);
+		} catch (IllegalStateException e) {
+			System.err.println(e);
+			handleException("");
+		} catch (EvaluatorException e) {
+			System.err.println(e);
+			handleException("");
+		}
+		return "";
 	}
 
 	@Override
 	public boolean evalAsBool(String elem, String expr) {
+		if (debug) {
+			System.out.println(interpreter.getName() + " evalAsBool");
+		}
+
 		/**
 		 * Evaluate the expression as a boolean for cond attributes in if and
 		 * transition elements.
@@ -230,6 +322,10 @@ public class ECMAScriptDataModel extends JavaDataModel {
 
 	@Override
 	public boolean isDeclared(String expr) {
+		if (debug) {
+			System.out.println(interpreter.getName() + " isDeclared");
+		}
+
 		/**
 		 * The interpreter is supposed to raise an error if we assign to an
 		 * undeclared variable. This method is used to check whether a location
@@ -241,6 +337,10 @@ public class ECMAScriptDataModel extends JavaDataModel {
 
 	@Override
 	public void init(String dataElem, String location, String content) {
+		if (debug) {
+			System.out.println(interpreter.getName() + " init");
+		}
+
 		/**
 		 * Called when we pass data elements.
 		 */
@@ -267,6 +367,10 @@ public class ECMAScriptDataModel extends JavaDataModel {
 
 	@Override
 	public void assign(String assignElem, String location, String content) {
+		if (debug) {
+			System.out.println(interpreter.getName() + " assign");
+		}
+
 		/**
 		 * Called when we evaluate assign elements
 		 */
@@ -279,7 +383,14 @@ public class ECMAScriptDataModel extends JavaDataModel {
 		}
 
 		String expr = location + "=" + content;
-		ctx.evaluateString(scope, expr, "uscxml", 1, null);		
+		ctx.evaluateString(scope, expr, "uscxml", 1, null);
 	}
 
+	public void handleException(String cause) {
+		Event exceptionEvent = new Event();
+		exceptionEvent.setName("error.execution");
+		exceptionEvent.setEventType(Event.Type.PLATFORM);
+
+		interpreter.receiveInternal(exceptionEvent);
+	}
 }
