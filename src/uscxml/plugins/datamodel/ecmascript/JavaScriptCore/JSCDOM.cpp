@@ -29,10 +29,13 @@ JSCDOM::JSCDOM() {
 }
 
 JSCDOM::~JSCDOM() {
+	if (nsInfo)
+		delete(nsInfo);
 	if (xpath)
 		delete(xpath);
 	if (storage)
 		delete(storage);
+
 }
 
 }

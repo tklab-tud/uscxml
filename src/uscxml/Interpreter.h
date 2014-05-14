@@ -98,6 +98,18 @@ enum Capabilities {
 
 class USCXML_API InterpreterOptions {
 public:
+	InterpreterOptions() :
+		withDebugger(false),
+		verbose(false),
+		withHTTP(true),
+		withHTTPS(true),
+		withWS(true),
+		logLevel(0),
+		httpPort(0),
+		httpsPort(0),
+		wsPort(0)
+	{}
+	
 	bool withDebugger;
 	bool verbose;
 	bool withHTTP;
@@ -124,31 +136,19 @@ public:
 	static InterpreterOptions fromCmdLine(int argc, char** argv);
 	unsigned int getCapabilities();
 
-protected:
-	InterpreterOptions() :
-		withDebugger(false),
-		verbose(false),
-		withHTTP(true),
-		withHTTPS(true),
-		withWS(true),
-		logLevel(0),
-		httpPort(0),
-		httpsPort(0),
-		wsPort(0)
-	{}
 };
 
 class NameSpaceInfo {
 public:
-	NameSpaceInfo() {
+	NameSpaceInfo() : nsContext(NULL) {
 		init(std::map<std::string, std::string>());
 	}
 
-	NameSpaceInfo(const std::map<std::string, std::string>& nsInfo) {
+	NameSpaceInfo(const std::map<std::string, std::string>& nsInfo) : nsContext(NULL) {
 		init(nsInfo);
 	}
 
-	NameSpaceInfo(const NameSpaceInfo& other) {
+	NameSpaceInfo(const NameSpaceInfo& other) : nsContext(NULL) {
 		init(other.nsInfo);
 	}
 
@@ -172,14 +172,19 @@ public:
 			attribute.setPrefix(nsToPrefix[nsURL]);
 	}
 
+	const Arabica::XPath::StandardNamespaceContext<std::string>* getNSContext() {
+		return nsContext;
+	}
+	
 	std::string nsURL;         // ough to be "http://www.w3.org/2005/07/scxml" but maybe empty
 	std::string xpathPrefix;   // prefix mapped for xpath, "scxml" is _xmlNSPrefix is empty but _nsURL set
 	std::string xmlNSPrefix;   // the actual prefix for elements in the xml file
-	Arabica::XPath::StandardNamespaceContext<std::string>* nsContext;
 	std::map<std::string, std::string> nsToPrefix;  // prefixes for a given namespace
 	std::map<std::string, std::string> nsInfo;      // all xmlns mappings
 
 private:
+	Arabica::XPath::StandardNamespaceContext<std::string>* nsContext;
+
 	void init(const std::map<std::string, std::string>& nsInfo);
 };
 
@@ -267,7 +272,7 @@ public:
 
 	void setNameSpaceInfo(const NameSpaceInfo& nsInfo) {
 		_nsInfo = nsInfo;
-		_xpath.setNamespaceContext(*_nsInfo.nsContext);
+		_xpath.setNamespaceContext(*_nsInfo.getNSContext());
 	}
 	NameSpaceInfo getNameSpaceInfo() const {
 		return _nsInfo;

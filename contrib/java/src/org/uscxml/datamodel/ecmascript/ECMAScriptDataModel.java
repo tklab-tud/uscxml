@@ -3,7 +3,6 @@ package org.uscxml.datamodel.ecmascript;
 import org.mozilla.javascript.Callable;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.NativeJSON;
-import org.mozilla.javascript.NativeJavaObject;
 import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.ScriptableObject;
 import org.mozilla.javascript.Undefined;
@@ -13,6 +12,7 @@ import org.uscxml.Event;
 import org.uscxml.Interpreter;
 import org.uscxml.JavaDataModel;
 import org.uscxml.StringSet;
+import org.uscxml.StringVector;
 
 public class ECMAScriptDataModel extends JavaDataModel {
 
@@ -34,7 +34,6 @@ public class ECMAScriptDataModel extends JavaDataModel {
 		try {
 			s = (Scriptable) object;
 			String className = s.getClassName(); // ECMA class name
-//			System.out.println("Scriptable: " + className);
 			if (className.toLowerCase().equals("object")) {
 				ScriptableObject obj = (ScriptableObject) Context.toObject(s,
 						scope);
@@ -63,7 +62,6 @@ public class ECMAScriptDataModel extends JavaDataModel {
 	}
 
 	public ScriptableObject getDataAsScriptable(Data data) {
-		// TODO!
 		throw new UnsupportedOperationException("Not implemented");
 	}
 
@@ -75,12 +73,17 @@ public class ECMAScriptDataModel extends JavaDataModel {
 		 * *this*
 		 */
 		ECMAScriptDataModel newDM = new ECMAScriptDataModel();
-
 		newDM.ctx = Context.enter();
+
+		Data ioProcs = new Data();
+		StringVector keys = interpreter.getIOProcessorKeys();
+		for (int i = 0; i < keys.size(); i++) {
+			ioProcs.compound.put(keys.get(i), new Data(interpreter.getIOProcessors().get(keys.get(i)).getDataModelVariables()));
+		}
+		
 		try {
 			newDM.scope = newDM.ctx.initStandardObjects();
-//          ScriptableObject.defineClass(newDM.scope, ECMAEvent.class);
-//          ScriptableObject.defineClass(newDM.scope, ECMAEventScriptable.class);
+			newDM.scope.put("_ioprocessors", newDM.scope, new ECMAData(ioProcs));
 		} catch (Exception e) {
 			System.err.println(e);
 		}
@@ -114,21 +117,7 @@ public class ECMAScriptDataModel extends JavaDataModel {
 		 * Make the current event available as the variable _event in the
 		 * datamodel.
 		 */
-
-		Data data = new Data(event.getData());
-		
-//		Object[] args = { event };
-//        Scriptable ecmaEvent = ctx.newObject(scope, "Event", args);
-
-//		ECMAEvent ecmaEvent = new ECMAEvent(event);
-//		NativeJavaObject njo = new NativeJavaObject(scope, ecmaEvent, ECMAEvent.class, true);
-
-		ECMAEvent ecmaEvent = new ECMAEvent(event);
-
-//		for (Object key : ecmaEvent.getIds()) {
-//			System.out.println(key);
-//		}
-		
+		ECMAEvent ecmaEvent = new ECMAEvent(event);		
 		scope.put("_event", scope, ecmaEvent);
 	}
 

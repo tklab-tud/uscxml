@@ -240,6 +240,8 @@ DONE_PARSING_CMD:
 void NameSpaceInfo::init(const std::map<std::string, std::string>& namespaceInfo) {
 	nsInfo = namespaceInfo;
 	nsURL = "";
+	if (nsContext)
+		delete nsContext;
 	nsContext = new Arabica::XPath::StandardNamespaceContext<std::string>();
 
 	std::map<std::string, std::string>::const_iterator nsIter = namespaceInfo.begin();
@@ -462,7 +464,12 @@ void InterpreterImpl::setName(const std::string& name) {
 }
 
 InterpreterImpl::~InterpreterImpl() {
-	_running = false;
+	{
+		// make sure we are done with setting up with early abort
+		tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
+		_running = false;
+	}
+//	std::cout << "stopped " << this << std::endl;
 //	tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
 	if (_thread) {
 		if (_thread->get_id() != tthread::this_thread::get_id()) {
@@ -554,8 +561,8 @@ void InterpreterImpl::init() {
 			_scxml = (Arabica::DOM::Element<std::string>)scxmls.item(0);
 
 			// setup xpath and check that it works
-			if (_nsInfo.nsContext != NULL)
-				_xpath.setNamespaceContext(*_nsInfo.nsContext);
+			if (_nsInfo.getNSContext() != NULL)
+				_xpath.setNamespaceContext(*_nsInfo.getNSContext());
 
 			if (_name.length() == 0)
 				_name = (HAS_ATTR(_scxml, "name") ? ATTR(_scxml, "name") : UUID::getUUID());

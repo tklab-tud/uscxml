@@ -144,6 +144,13 @@ int main(int argc, char** argv) {
 		}
 	}
 
+#if 1
+	while(true) {
+		Interpreter interpreter = Interpreter::fromURI("/Users/sradomski/Documents/TK/Code/uscxml/test/w3c/ecma/test235.scxml");
+		interpreter.interpret();
+	}
+#else
+	
 	DirectoryWatch* watcher = new DirectoryWatch(argv[optind], true);
 	watcher->updateEntries(true);
 	std::map<std::string, struct stat> entries = watcher->getAllEntries();
@@ -180,5 +187,6 @@ int main(int argc, char** argv) {
 	}
 
 	delete watcher;
+#endif
 	return EXIT_SUCCESS;
 }
