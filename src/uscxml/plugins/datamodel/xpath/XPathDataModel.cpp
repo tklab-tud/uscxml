@@ -54,7 +54,7 @@ boost::shared_ptr<DataModelImpl> XPathDataModel::create(InterpreterImpl* interpr
 //	dm->_xpath->setNamespaceContext(interpreter->getNSContext());
 
 	dm->_funcResolver.setInterpreter(interpreter);
-	dm->_xpath.setNamespaceContext(*interpreter->getNameSpaceInfo().nsContext);
+	dm->_xpath.setNamespaceContext(*interpreter->getNameSpaceInfo().getNSContext());
 	dm->_xpath.setFunctionResolver(dm->_funcResolver);
 	dm->_xpath.setVariableResolver(dm->_varResolver);
 

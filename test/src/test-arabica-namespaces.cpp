@@ -93,7 +93,7 @@ static void validateRootFoo(std::pair<Document<std::string>, NameSpaceInfo>& par
 	Document<std::string> document = parsed.first;
 
 	Node<std::string> root = document.getDocumentElement();
-	_xpath.setNamespaceContext(*nsInfo.nsContext);
+	_xpath.setNamespaceContext(*nsInfo.getNSContext());
 
 	assert(TAGNAME(root) == nsInfo.xmlNSPrefix + "root");
 	assert(LOCALNAME(root) == "root");
@@ -117,7 +117,7 @@ static void validateRootFooBar(std::pair<Document<std::string>, NameSpaceInfo>& 
 	Document<std::string> document = parsed.first;
 
 	Node<std::string> root = document.getDocumentElement();
-	_xpath.setNamespaceContext(*nsInfo.nsContext);
+	_xpath.setNamespaceContext(*nsInfo.getNSContext());
 
 	NodeSet<std::string> barsFiltered = Interpreter::filterChildElements(nsInfo.xmlNSPrefix + "bar", root);
 	assert(barsFiltered.size() == 3);
@@ -139,7 +139,7 @@ static void validateRootFooBarBaz(std::pair<Document<std::string>, NameSpaceInfo
 	Document<std::string> document = parsed.first;
 
 	Node<std::string> root = document.getDocumentElement();
-	_xpath.setNamespaceContext(*nsInfo.nsContext);
+	_xpath.setNamespaceContext(*nsInfo.getNSContext());
 
 	assert(TAGNAME(root) == nsInfo.xmlNSPrefix + "root");
 	assert(LOCALNAME(root) == "root");

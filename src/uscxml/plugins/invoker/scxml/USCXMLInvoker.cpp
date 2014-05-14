@@ -41,6 +41,9 @@ USCXMLInvoker::USCXMLInvoker() : _cancelled(false) {
 
 USCXMLInvoker::~USCXMLInvoker() {
 	_cancelled = true;
+	Event event;
+	event.name = "unblock.and.die";
+	_invokedInterpreter.receive(event);
 };
 
 boost::shared_ptr<InvokerImpl> USCXMLInvoker::create(InterpreterImpl* interpreter) {

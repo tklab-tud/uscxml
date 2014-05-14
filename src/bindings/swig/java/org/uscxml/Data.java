@@ -30,8 +30,9 @@ public class Data {
 	public Data(DataNative nativeData) {
 		if (!nativeData.getCompound().empty()) {
 			// data is a key value compound
-			for(String key : nativeData.getCompound()) {
-				this.compound.put(key, new Data(nativeData.getCompound().get(key)));
+			StringVector keys = nativeData.getCompundKeys();
+			for(int i = 0; i < keys.size(); i++) {
+				this.compound.put(keys.get(i), new Data(nativeData.getCompound().get(keys.get(i))));
 			}
 		} else if (!nativeData.getArray().isEmpty()) {
 			// data is an array

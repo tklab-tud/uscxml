@@ -69,6 +69,10 @@ void InterpreterDraft6::interpret() {
 		}
 
 		_running = true;
+#if VERBOSE
+		std::cout << "running " << this << std::endl;
+#endif
+
 		_binding = (HAS_ATTR(_scxml, "binding") && iequals(ATTR(_scxml, "binding"), "late") ? LATE : EARLY);
 
 		// @TODO: Reread http://www.w3.org/TR/scxml/#DataBinding
@@ -270,6 +274,11 @@ void InterpreterDraft6::mainEventLoop() {
 		_currEvent = _externalQueue.pop();
 #if VERBOSE
 		std::cout << "Received externalEvent event " << _currEvent.name << std::endl;
+		if (_running && _currEvent.name == "unblock.and.die") {
+			std::cout << "Still running " << this << std::endl;
+		} else {
+			std::cout << "Aborting " << this << std::endl;
+		}
 #endif
 		_currEvent.eventType = Event::EXTERNAL; // make sure it is set to external
 		if (!_running)

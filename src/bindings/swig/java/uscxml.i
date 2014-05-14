@@ -95,9 +95,12 @@ using namespace Arabica::DOM;
 %ignore uscxml::Event::toDocument();
 
 %template(DataList) std::list<uscxml::Data>;
+%template(DataMap) std::map<std::string, uscxml::Data>;
 %template(StringSet) std::set<std::string>;
+%template(StringVector) std::vector<std::string>;
 %template(ParamPair) std::pair<std::string, uscxml::Data>;
 %template(ParamPairVector) std::vector<std::pair<std::string, uscxml::Data> >;
+%template(IOProcMap) std::map<std::string, uscxml::IOProcessor>;
 
 %rename Data DataNative;
 # %typemap(jstype) uscxml::Data "Data"
@@ -127,52 +130,30 @@ using namespace Arabica::DOM;
 	}
 };
 
+%extend uscxml::Interpreter {
+	std::vector<std::string> getIOProcessorKeys() {
+		std::vector<std::string> keys;
+    std::map<std::string, IOProcessor>::const_iterator iter = self->getIOProcessors().begin();
+		while(iter != self->getIOProcessors().end()) {
+			keys.push_back(iter->first);
+			iter++;
+		}
+		return keys;
+	}
+};
 
-// Provide an iterable interface for maps
-// http://stackoverflow.com/questions/9465856/no-iterator-for-java-when-using-swig-with-cs-stdmap
+%extend uscxml::Data {
+	std::vector<std::string> getCompundKeys() {
+		std::vector<std::string> keys;
+    std::map<std::string, Data>::const_iterator iter = self->compound.begin();
+		while(iter != self->compound.end()) {
+			keys.push_back(iter->first);
+			iter++;
+		}
+		return keys;
+	}
+};
 
-%typemap(javainterfaces) MapKeyIterator "java.util.Iterator<String>"
-%typemap(javacode) MapKeyIterator %{
-  public void remove() throws UnsupportedOperationException {
-    throw new UnsupportedOperationException();
-  }
-
-  public String next() throws java.util.NoSuchElementException {
-    if (!hasNext()) {
-      throw new java.util.NoSuchElementException();
-    }
-    return nextImpl();
-  }
-%}
-
-%javamethodmodifiers MapKeyIterator::nextImpl "private";
-%inline %{
-  struct MapKeyIterator {
-    typedef std::map<std::string, Data> map_t;
-    MapKeyIterator(const map_t& m) : it(m.begin()), map(m) {}
-    bool hasNext() const {
-      return it != map.end();
-    }
-
-    const std::string nextImpl() {
-      const std::pair<std::string, Data>& ret = *it++;
-      return ret.first;
-    }
-  private:
-    map_t::const_iterator it;
-    const map_t& map;    
-  };
-%}
-%typemap(javainterfaces) std::map<std::string, Data> "Iterable<String>"
-
-%newobject std::map<std::string, uscxml::Data>::iterator() const;
-%extend std::map<std::string, uscxml::Data> {
-  MapKeyIterator *iterator() const {
-    return new MapKeyIterator(*$self);
-  }
-}
-
-%template(DataMap) std::map<std::string, uscxml::Data>;
 
 
 //***********************************************
