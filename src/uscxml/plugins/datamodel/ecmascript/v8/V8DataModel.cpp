@@ -712,7 +712,7 @@ void V8DataModel::throwExceptionEvent(const v8::TryCatch& tryCatch) {
 
 		std::string sourceLine(*v8::String::AsciiValue(message->GetSourceLine()));
 		size_t startpos = sourceLine.find_first_not_of(" \t");
-		if(std::string::npos != startpos) // removoe leading white space
+		if(std::string::npos != startpos) // remove leading white space
 			sourceLine = sourceLine.substr(startpos);
 
 		exceptionEvent.data.compound["sourceline"] = Data(sourceLine, Data::VERBATIM);

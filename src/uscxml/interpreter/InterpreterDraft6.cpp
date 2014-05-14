@@ -23,6 +23,8 @@
 #include "uscxml/UUID.h"
 #include "uscxml/DOMUtils.h"
 
+#define VERBOSE 0
+
 namespace uscxml {
 
 using namespace Arabica::XPath;
@@ -185,7 +187,7 @@ void InterpreterDraft6::mainEventLoop() {
 		// Here we handle eventless transitions and transitions
 		// triggered by internal events until machine is stable
 		while(_running && !_stable) {
-#if 0
+#if VERBOSE
 			std::cout << "Configuration: ";
 			for (int i = 0; i < _configuration.size(); i++) {
 				std::cout << ATTR(_configuration[i], "id") << ", ";

@@ -20,10 +20,10 @@ public class TestW3CECMA {
 
 //		while(true) {
 //	    	System.out.println("### test235 #####");
-//			Interpreter interpreter = Interpreter.fromURI("/Users/sradomski/Documents/TK/Code/uscxml/test/w3c/ecma/test235.scxml");
+//			Interpreter interpreter = Interpreter.fromURI("/Users/sradomski/Documents/TK/Code/uscxml/test/w3c/ecma/test144.scxml");
 //			interpreter.interpret();
 //		}
-//		
+		
 		File dir = new File(testDir);
 		File[] filesList = dir.listFiles();
 		for (File file : filesList) {

@@ -101,6 +101,7 @@ using namespace Arabica::DOM;
 %template(ParamPair) std::pair<std::string, uscxml::Data>;
 %template(ParamPairVector) std::vector<std::pair<std::string, uscxml::Data> >;
 %template(IOProcMap) std::map<std::string, uscxml::IOProcessor>;
+%template(InvokerMap) std::map<std::string, uscxml::Invoker>;
 
 %rename Data DataNative;
 # %typemap(jstype) uscxml::Data "Data"
@@ -140,6 +141,17 @@ using namespace Arabica::DOM;
 		}
 		return keys;
 	}
+
+	std::vector<std::string> getInvokerKeys() {
+		std::vector<std::string> keys;
+    std::map<std::string, Invoker>::const_iterator iter = self->getInvokers().begin();
+		while(iter != self->getInvokers().end()) {
+			keys.push_back(iter->first);
+			iter++;
+		}
+		return keys;
+	}
+
 };
 
 %extend uscxml::Data {

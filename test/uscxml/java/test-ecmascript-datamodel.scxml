@@ -1,4 +1,4 @@
-<scxml datamodel="java" initial="comparison" binding="late">
+<scxml datamodel="ecmascript" initial="comparison" binding="late">
   <!-- unimplemented -->
 	<datamodel>
 		<data id="year" expr="2008" />

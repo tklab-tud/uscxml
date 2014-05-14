@@ -6,7 +6,7 @@ import org.uscxml.DataNative;
 public class TestData {
 
 	public static void main(String[] args) {
-		System.load("/Users/sradomski/Documents/TK/Code/uscxml/build/cli/lib/libuscxmlNativeJava64_d.jnilib");
+		System.load("/Users/sradomski/Documents/TK/Code/uscxml/build/cli/lib/libuscxmlNativeJava64.jnilib");
 		{
 			Data data = Data.fromJSON("[1,2,3,4,5]");
 			DataNative nData2 = Data.toNative(data);

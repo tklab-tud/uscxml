@@ -12,12 +12,13 @@ public:
 	JavaDataModel();
 	virtual ~JavaDataModel();
 
-	virtual JavaDataModel* create(Interpreter interpreter) {
+	virtual JavaDataModel* create(const Interpreter& interpreter) {
 		return new JavaDataModel();
 	}
 
 	virtual boost::shared_ptr<DataModelImpl> create(InterpreterImpl* interpreter) {
-		return boost::shared_ptr<DataModelImpl>(create(interpreter->shared_from_this()));
+		_interpreter = interpreter->shared_from_this();
+		return boost::shared_ptr<DataModelImpl>(create(_interpreter));
 	}
 	virtual std::set<std::string> getNames() {
 		return std::set<std::string>();
@@ -131,6 +132,8 @@ public:
 	virtual void assign(const std::string& assignElem, const std::string& location, const std::string& content) {}
 	virtual void eval(const std::string& scriptElem, const std::string& expr) {}
 
+private:
+	Interpreter _interpreter;
 };
 
 }
