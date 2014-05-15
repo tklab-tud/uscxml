@@ -275,7 +275,7 @@ void SWIDataModel::setEvent(const Event& event) {
 			dataInitStr << "load_xml_file('" << domUrl.asLocalFile(".pl") << "', XML), copy_term(XML,DATA), assert(event(data(DATA)))";
 			PlCall(dataInitStr.str().c_str());
 		} else if (event.content.size() > 0) {
-			PlCall("assert", PlCompound("event", PlCompound("data", PlString(Interpreter::spaceNormalize(event.content).c_str()))));
+			PlCall("assert", PlCompound("event", PlCompound("data", PlString(InterpreterImpl::spaceNormalize(event.content).c_str()))));
 		} else if (event.data) {
 			assertFromData(event.data, "event(data(", 2);
 		}

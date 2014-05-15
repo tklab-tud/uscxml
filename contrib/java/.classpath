@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="src" path="java"/>
 	<classpathentry kind="src" path="uscxml"/>
-	<classpathentry kind="src" path="bindings"/>
-	<classpathentry kind="src" path="applications"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/umundo"/>
-	<classpathentry kind="lib" path="src/js.jar"/>
+	<classpathentry kind="lib" path="/Users/sradomski/Documents/TK/Code/rhino1_7R4/build/rhino1_7R4/js.jar" sourcepath="/Users/sradomski/Documents/TK/Code/rhino1_7R4/src"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

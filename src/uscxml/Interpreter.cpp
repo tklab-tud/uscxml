@@ -292,9 +292,11 @@ InterpreterImpl::InterpreterImpl() {
 	_running = false;
 	_destroyed = false;
 	_done = true;
+	_stable = false;
 	_isInitialized = false;
 	_httpServlet = NULL;
 	_factory = NULL;
+	_sessionId = UUID::getUUID();
 	_capabilities = CAN_BASIC_HTTP | CAN_GENERIC_HTTP;
 	_domEventListener._interpreter = this;
 
@@ -389,7 +391,7 @@ Interpreter Interpreter::fromInputSource(Arabica::SAX::InputSource<std::string>&
 	if (parser.parse(source) && parser.getDocument() && parser.getDocument().hasChildNodes()) {
 		interpreterImpl->setNameSpaceInfo(parser.nameSpace);
 		interpreterImpl->_document = parser.getDocument();
-		interpreterImpl->init();
+//		interpreterImpl->init();
 		interpreter = Interpreter(interpreterImpl);
 		_instances[interpreterImpl->getSessionId()] = interpreterImpl;
 	} else {
@@ -473,6 +475,7 @@ InterpreterImpl::~InterpreterImpl() {
 //	tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
 	if (_thread) {
 		if (_thread->get_id() != tthread::this_thread::get_id()) {
+
 			// unblock event queue
 			Event event;
 			event.name = "unblock.and.die";
@@ -488,8 +491,6 @@ InterpreterImpl::~InterpreterImpl() {
 	if (_sendQueue)
 		delete _sendQueue;
 
-//	if (_httpServlet)
-//		delete _httpServlet;
 }
 
 void InterpreterImpl::start() {
@@ -550,52 +551,116 @@ bool InterpreterImpl::runOnMainThread(int fps, bool blocking) {
 }
 
 void InterpreterImpl::init() {
-	if (_document) {
-		NodeList<std::string> scxmls;
-		if (_nsInfo.nsURL.size() == 0) {
-			scxmls = _document.getElementsByTagName("scxml");
-		} else {
-			scxmls = _document.getElementsByTagNameNS(_nsInfo.nsURL, "scxml");
-		}
-		if (scxmls.getLength() > 0) {
-			_scxml = (Arabica::DOM::Element<std::string>)scxmls.item(0);
-
-			// setup xpath and check that it works
-			if (_nsInfo.getNSContext() != NULL)
-				_xpath.setNamespaceContext(*_nsInfo.getNSContext());
-
-			if (_name.length() == 0)
-				_name = (HAS_ATTR(_scxml, "name") ? ATTR(_scxml, "name") : UUID::getUUID());
-
-			normalize(_scxml);
-
-			// setup event queue for delayed send
-			_sendQueue = new DelayedEventQueue();
-			_sendQueue->start();
-
-			// register for dom events to manage cached states
-			Arabica::DOM::Events::EventTarget<std::string> eventTarget(_scxml);
-			eventTarget.addEventListener("DOMNodeInserted", _domEventListener, true);
-			eventTarget.addEventListener("DOMNodeRemoved", _domEventListener, true);
-			eventTarget.addEventListener("DOMSubtreeModified", _domEventListener, true);
-
-			if (_factory == NULL)
-				_factory = Factory::getInstance();
-
-		} else {
-			LOG(ERROR) << "Cannot find SCXML element" << std::endl;
-			_done = true;
-			return;
-		}
-	} else {
+	if (!_document) {
 		LOG(ERROR) << "Interpreter has no DOM at all!" << std::endl;
 		_done = true;
+		return;
 	}
+	
+	// find scxml element
+	NodeList<std::string> scxmls;
+	if (_nsInfo.nsURL.size() == 0) {
+		scxmls = _document.getElementsByTagName("scxml");
+	} else {
+		scxmls = _document.getElementsByTagNameNS(_nsInfo.nsURL, "scxml");
+	}
+	
+	if (scxmls.getLength() > 0) {
+		_scxml = (Arabica::DOM::Element<std::string>)scxmls.item(0);
 
+		// setup xpath and check that it works
+		if (_nsInfo.getNSContext() != NULL)
+			_xpath.setNamespaceContext(*_nsInfo.getNSContext());
+
+		if (_name.length() == 0)
+			_name = (HAS_ATTR(_scxml, "name") ? ATTR(_scxml, "name") : UUID::getUUID());
+
+		// normalize document
+		normalize(_scxml);
+
+		// setup event queue for delayed send
+		_sendQueue = new DelayedEventQueue();
+		_sendQueue->start();
+
+		// register for dom events to manage cached states
+		Arabica::DOM::Events::EventTarget<std::string> eventTarget(_scxml);
+		eventTarget.addEventListener("DOMNodeInserted", _domEventListener, true);
+		eventTarget.addEventListener("DOMNodeRemoved", _domEventListener, true);
+		eventTarget.addEventListener("DOMSubtreeModified", _domEventListener, true);
+
+		if (_factory == NULL)
+			_factory = Factory::getInstance();
+
+	} else {
+		LOG(ERROR) << "Cannot find SCXML element" << std::endl;
+		_done = true;
+		return;
+	}
+	
 	if (_sessionId.length() == 0)
 		_sessionId = UUID::getUUID();
 
+	
+	setupIOProcessors();
+	
+	std::string datamodelName;
+	if (HAS_ATTR(_scxml, "datamodel")) {
+		datamodelName = ATTR(_scxml, "datamodel");
+	} else if (HAS_ATTR(_scxml, "profile")) {// SCION SCXML uses profile to specify datamodel
+		datamodelName = ATTR(_scxml, "profile");
+	}
+	
+	if(datamodelName.length() > 0) {
+		_dataModel = _factory->createDataModel(datamodelName, this);
+		if (!_dataModel) {
+			Event e;
+			e.data.compound["cause"] = Data("Cannot instantiate datamodel", Data::VERBATIM);
+			throw e;
+		}
+	} else {
+		_dataModel = _factory->createDataModel("null", this);
+	}
+	
+	_dataModel.assign("_x.args", _cmdLineOptions);
+	
+	_running = true;
+#if VERBOSE
+	std::cout << "running " << this << std::endl;
+#endif
+	
+	_binding = (HAS_ATTR(_scxml, "binding") && iequals(ATTR(_scxml, "binding"), "late") ? LATE : EARLY);
+	
+	// @TODO: Reread http://www.w3.org/TR/scxml/#DataBinding
+	
+	if (_binding == EARLY) {
+		// initialize all data elements
+		NodeSet<std::string> dataElems = _xpath.evaluate("//" + _nsInfo.xpathPrefix + "data", _scxml).asNodeSet();
+		for (unsigned int i = 0; i < dataElems.size(); i++) {
+			// do not process data elements of nested documents from invokers
+			if (!getAncestorElement(dataElems[i], _nsInfo.xmlNSPrefix + "invoke"))
+				if (dataElems[i].getNodeType() == Node_base::ELEMENT_NODE) {
+					initializeData(Element<std::string>(dataElems[i]));
+				}
+		}
+	} else {
+		// initialize current data elements
+		NodeSet<std::string> topDataElems = filterChildElements(_nsInfo.xmlNSPrefix + "data", filterChildElements(_nsInfo.xmlNSPrefix + "datamodel", _scxml));
+		for (unsigned int i = 0; i < topDataElems.size(); i++) {
+			if (topDataElems[i].getNodeType() == Node_base::ELEMENT_NODE)
+				initializeData(Element<std::string>(topDataElems[i]));
+		}
+	}
+	
+	// executeGlobalScriptElements
+	NodeSet<std::string> globalScriptElems = filterChildElements(_nsInfo.xmlNSPrefix + "script", _scxml);
+	for (unsigned int i = 0; i < globalScriptElems.size(); i++) {
+		if (_dataModel) {
+			executeContent(globalScriptElems[i]);
+		}
+	}
+
 	_isInitialized = true;
+	_stable = false;
 }
 
 /**
@@ -641,11 +706,13 @@ void InterpreterImpl::initializeData(const Element<std::string>& data) {
 void InterpreterImpl::normalize(Arabica::DOM::Element<std::string>& scxml) {
 	// TODO: Resolve XML includes
 
-	// make sure every state has an id and set isFirstEntry to true (replaced by _alreadyEntered NodeSet)
-	Arabica::XPath::NodeSet<std::string> states = _xpath.evaluate("//" + _nsInfo.xpathPrefix + "state", _scxml).asNodeSet();
+	// make sure every state has an id
+	Arabica::XPath::NodeSet<std::string> states;
+	states.push_back(_xpath.evaluate("//" + _nsInfo.xpathPrefix + "state", _scxml).asNodeSet());
+	states.push_back(_xpath.evaluate("//" + _nsInfo.xpathPrefix + "final", _scxml).asNodeSet());
+	states.push_back(_xpath.evaluate("//" + _nsInfo.xpathPrefix + "history", _scxml).asNodeSet());
 	for (int i = 0; i < states.size(); i++) {
 		Arabica::DOM::Element<std::string> stateElem = Arabica::DOM::Element<std::string>(states[i]);
-//		stateElem.setAttribute("isFirstEntry", "true");
 		if (!stateElem.hasAttribute("id")) {
 			stateElem.setAttribute("id", UUID::getUUID());
 		}
@@ -658,45 +725,25 @@ void InterpreterImpl::normalize(Arabica::DOM::Element<std::string>& scxml) {
 		if (!invokeElem.hasAttribute("id") && !invokeElem.hasAttribute("idlocation")) {
 			invokeElem.setAttribute("id", UUID::getUUID());
 		}
-//    // make sure every finalize element contained has the invoke id as an attribute
-//    Arabica::XPath::NodeSet<std::string> finalizes = _xpath.evaluate("" + _xpathPrefix + "finalize", invokeElem).asNodeSet();
-//    for (int j = 0; j < finalizes.size(); j++) {
-//      Arabica::DOM::Element<std::string> finalizeElem = Arabica::DOM::Element<std::string>(finalizes[j]);
-//      finalizeElem.setAttribute("invokeid", invokeElem.getAttribute("id"));
-//    }
-	}
-
-	Arabica::XPath::NodeSet<std::string> finals = _xpath.evaluate("//" + _nsInfo.xpathPrefix + "final", _scxml).asNodeSet();
-	for (int i = 0; i < finals.size(); i++) {
-		Arabica::DOM::Element<std::string> finalElem = Arabica::DOM::Element<std::string>(finals[i]);
-//		finalElem.setAttribute("isFirstEntry", "true");
-		if (!finalElem.hasAttribute("id")) {
-			finalElem.setAttribute("id", UUID::getUUID());
-		}
-	}
-
-	Arabica::XPath::NodeSet<std::string> histories = _xpath.evaluate("//" + _nsInfo.xpathPrefix + "history", _scxml).asNodeSet();
-	for (int i = 0; i < histories.size(); i++) {
-		Arabica::DOM::Element<std::string> historyElem = Arabica::DOM::Element<std::string>(histories[i]);
-		if (!historyElem.hasAttribute("id")) {
-			historyElem.setAttribute("id", UUID::getUUID());
-		}
 	}
 
 	if (!scxml.hasAttribute("id")) {
 		scxml.setAttribute("id", UUID::getUUID());
 	}
-
 }
 
 void InterpreterImpl::receiveInternal(const Event& event) {
-//	std::cout << _name << " receiveInternal: " << event.name << std::endl;
+#if VERBOSE
+	std::cout << _name << " receiveInternal: " << event.name << std::endl;
+#endif
 	_internalQueue.push_back(event);
 //	_condVar.notify_all();
 }
 
 void InterpreterImpl::receive(const Event& event, bool toFront)   {
-//	std::cout << _name << " receive: " << event.name << std::endl;
+#if VERBOSE
+	std::cout << _name << " receive: " << event.name << std::endl;
+#endif
 	if (toFront) {
 		_externalQueue.push_front(event);
 	} else {
@@ -1562,11 +1609,16 @@ void InterpreterImpl::executeContent(const Arabica::DOM::Node<std::string>& cont
 		if (_dataModel) {
 			if (HAS_ATTR(content, "src")) {
 				URL scriptUrl(ATTR(content, "src"));
-				if (!scriptUrl.toAbsolute(_baseURI)) {
+				if (!scriptUrl.isAbsolute() && !_baseURI) {
 					LOG(ERROR) << "script element has relative URI " << ATTR(content, "src") <<  " with no base URI set for interpreter";
 					return;
 				}
 
+				if (!scriptUrl.toAbsolute(_baseURI)) {
+					LOG(ERROR) << "Failed to convert relative script URI " << ATTR(content, "src") << " to absolute with base URI " << _baseURI.asString();
+					return;
+				}
+				
 				std::stringstream srcContent;
 				try {
 					if (_cachedURLs.find(scriptUrl.asString()) != _cachedURLs.end() && false) {
@@ -2434,7 +2486,7 @@ void InterpreterImpl::DOMEventListener::handleEvent(Arabica::DOM::Events::Event<
 	if (event.getType().compare("DOMAttrModified") == 0) // we do not care about attributes
 		return;
 	Node<std::string> target = Arabica::DOM::Node<std::string>(event.getTarget());
-	NodeSet<std::string> childs = Interpreter::filterChildElements(_interpreter->_nsInfo.xmlNSPrefix + "state", target);
+	NodeSet<std::string> childs = InterpreterImpl::filterChildElements(_interpreter->_nsInfo.xmlNSPrefix + "state", target);
 	for (int i = 0; i < childs.size(); i++) {
 		if (HAS_ATTR(childs[i], "id")) {
 			_interpreter->_cachedStates.erase(ATTR(childs[i], "id"));

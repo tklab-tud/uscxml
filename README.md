@@ -107,6 +107,19 @@ or return immediately. You will have to call this method every now and then if y
     Interpreter scxml = Interpreter::fromXML("<scxml><final id="exit"/></scxml>");
     scxml.interpret(); // blocking
 
+When using blocking interpretation, it is assumed that it is running on the main thread and
+it will call <tt>runOnMainThread</tt> between stable configurations.
+
+### Interleaved Interpretation with inline SCXML
+    Interpreter scxml = Interpreter::fromXML("<scxml><final id="exit"/></scxml>");
+    InterpreterState state;
+    do {
+      state = interpreter.step(true); // boolean argument causes blocking or not
+    } while(state > 0)
+
+Using <tt>step</tt>, you can run a single macrostep of the interpreter and interleave
+interpretation with the rest of your code.
+
 ### Callbacks for an Interpreter
 
 You can register an <tt>InterpreterMonitor</tt> prior to start in order to receive

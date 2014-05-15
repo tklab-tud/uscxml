@@ -230,7 +230,7 @@ void JSCDataModel::setEvent(const Event& event) {
 				handleException(exception);
 		} else {
 			JSStringRef propName = JSStringCreateWithUTF8CString("data");
-			JSStringRef contentStr = JSStringCreateWithUTF8CString(Interpreter::spaceNormalize(event.content).c_str());
+			JSStringRef contentStr = JSStringCreateWithUTF8CString(InterpreterImpl::spaceNormalize(event.content).c_str());
 			JSObjectSetProperty(_ctx, eventObj, propName, JSValueMakeString(_ctx, contentStr), 0, &exception);
 			JSStringRelease(propName);
 			JSStringRelease(contentStr);
@@ -566,7 +566,7 @@ void JSCDataModel::assign(const Element<std::string>& assignElem,
 		try {
 			evalAsValue(key + " = " + content);
 		} catch (...) {
-			evalAsValue(key + " = " + "\"" + Interpreter::spaceNormalize(content) + "\"");
+			evalAsValue(key + " = " + "\"" + InterpreterImpl::spaceNormalize(content) + "\"");
 		}
 	} else {
 		JSObjectSetProperty(_ctx, JSContextGetGlobalObject(_ctx), JSStringCreateWithUTF8CString(key.c_str()), JSValueMakeUndefined(_ctx), 0, &exception);

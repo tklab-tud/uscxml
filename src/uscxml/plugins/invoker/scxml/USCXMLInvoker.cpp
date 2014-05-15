@@ -43,7 +43,8 @@ USCXMLInvoker::~USCXMLInvoker() {
 	_cancelled = true;
 	Event event;
 	event.name = "unblock.and.die";
-	_invokedInterpreter.receive(event);
+	if (_invokedInterpreter)
+		_invokedInterpreter.receive(event);
 };
 
 boost::shared_ptr<InvokerImpl> USCXMLInvoker::create(InterpreterImpl* interpreter) {
@@ -84,6 +85,7 @@ void USCXMLInvoker::invoke(const InvokeRequest& req) {
 	if (_invokedInterpreter) {
 		DataModel dataModel(_invokedInterpreter.getImpl()->getDataModel());
 		_invokedInterpreter.getImpl()->setParentQueue(&_parentQueue);
+
 		// transfer namespace prefixes
 		_invokedInterpreter.setNameSpaceInfo(_parentInterpreter->getNameSpaceInfo());
 		_invokedInterpreter.getImpl()->_sessionId = req.invokeid;
@@ -92,7 +94,6 @@ void USCXMLInvoker::invoke(const InvokeRequest& req) {
 		_invokedInterpreter.getImpl()->setInvokeRequest(req);
 
 		_invokedInterpreter.start();
-//		tthread::this_thread::sleep_for(tthread::chrono::seconds(1));
 	} else {
 		/// test 530
 		_parentInterpreter->receive(Event("done.invoke." + _invokeId, Event::PLATFORM));

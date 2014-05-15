@@ -188,6 +188,16 @@ private:
 	void init(const std::map<std::string, std::string>& nsInfo);
 };
 
+// values larger than 0 indicate that you ought to step again
+enum InterpreterState {
+	FINISHED       = 0,  // machine reached a final configuration
+	INIT_FAILED    = -1,  // could not initialize interpreter
+	INTERRUPTED    = -2,  // machine was interrupted
+	NOTHING_TODO   = 4,   // when non-blocking returns nothing to do
+	PROCESSED      = 8,  // an event was processed
+	INITIALIZED    = 16   // initial stable configuration was assumed
+};
+	
 class USCXML_API InterpreterImpl : public boost::enable_shared_from_this<InterpreterImpl> {
 public:
 
@@ -214,7 +224,8 @@ public:
 	}
 
 	/// This one ought to be pure, but SWIG will generate gibberish if it is
-	virtual void interpret() {};
+	virtual void interpret() = 0;
+	virtual InterpreterState step(bool blocking = false) = 0;
 
 	void addMonitor(InterpreterMonitor* monitor)             {
 		_monitors.insert(monitor);
@@ -535,6 +546,10 @@ public:
 		_impl->interpret();
 	};
 
+	InterpreterState step(bool blocking = false) {
+		return _impl->step(blocking);
+	};
+
 	void addMonitor(InterpreterMonitor* monitor) {
 		return _impl->addMonitor(monitor);
 	}
@@ -684,6 +699,7 @@ public:
 		return _impl->isLegalConfiguration(config);
 	}
 
+#if 0
 	static bool isState(const Arabica::DOM::Node<std::string>& state) {
 		return InterpreterImpl::isState(state);
 	}
@@ -773,6 +789,7 @@ public:
 	Arabica::XPath::NodeSet<std::string> getProperAncestors(const Arabica::DOM::Node<std::string>& s1, const Arabica::DOM::Node<std::string>& s2) {
 		return _impl->getProperAncestors(s1, s2);
 	}
+#endif
 
 	boost::shared_ptr<InterpreterImpl> getImpl() const {
 		return _impl;

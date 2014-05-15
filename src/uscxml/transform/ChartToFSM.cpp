@@ -902,7 +902,7 @@ GlobalState::GlobalState(const Arabica::XPath::NodeSet<std::string>& activeState
 	std::ostringstream idSS;
 	idSS << "active-";
 	for (int i = 0; i < activeStates.size(); i++) {
-		if (!Interpreter::isFinal(activeStates[i]))
+		if (!InterpreterImpl::isFinal(activeStates[i]))
 			isFinal = false;
 		idSS << ATTR(activeStates[i], "id") << "-";
 	}
@@ -1043,7 +1043,7 @@ std::list<std::string> GlobalTransition::getCommonEvents(const NodeSet<std::stri
 
 	for (int i = 0; i < transitions.size(); i++) {
 		// for every transition
-		std::list<std::string> eventNames = Interpreter::tokenizeIdRefs(ATTR(transitions[i], "event"));
+		std::list<std::string> eventNames = InterpreterImpl::tokenizeIdRefs(ATTR(transitions[i], "event"));
 
 		for (std::list<std::string>::iterator eventNameIter = eventNames.begin();
 		        eventNameIter != eventNames.end();
@@ -1062,7 +1062,7 @@ std::list<std::string> GlobalTransition::getCommonEvents(const NodeSet<std::stri
 				// check if token would activate all other transitions
 				if (i == j)
 					continue;
-				if (!Interpreter::nameMatch(ATTR(transitions[j], "event"), eventName)) {
+				if (!InterpreterImpl::nameMatch(ATTR(transitions[j], "event"), eventName)) {
 					isMatching = false;
 					break;
 				}
@@ -1080,7 +1080,7 @@ std::list<std::string> GlobalTransition::getCommonEvents(const NodeSet<std::stri
 		for (std::list<std::string>::iterator innerEventNameIter = prefixes.begin();
 		        innerEventNameIter != prefixes.end();
 		        innerEventNameIter++) {
-			if (!iequals(*outerEventNameIter, *innerEventNameIter) && Interpreter::nameMatch(*outerEventNameIter, *innerEventNameIter)) {
+			if (!iequals(*outerEventNameIter, *innerEventNameIter) && InterpreterImpl::nameMatch(*outerEventNameIter, *innerEventNameIter)) {
 				goto IS_PREFIX;
 			}
 		}

@@ -236,7 +236,7 @@ void V8DataModel::setEvent(const Event& event) {
 		if (json) {
 			eventObj->Set(v8::String::New("data"), getDataAsValue(json));
 		} else {
-			eventObj->Set(v8::String::New("data"), v8::String::New(Interpreter::spaceNormalize(event.content).c_str()));
+			eventObj->Set(v8::String::New("data"), v8::String::New(InterpreterImpl::spaceNormalize(event.content).c_str()));
 		}
 	} else {
 		// _event.data is KVP
@@ -603,7 +603,7 @@ void V8DataModel::assign(const Element<std::string>& assignElem,
 		try {
 			evalAsValue(key + " = " + content);
 		} catch (...) {
-			evalAsValue(key + " = " + "\"" + Interpreter::spaceNormalize(content) + "\"");
+			evalAsValue(key + " = " + "\"" + InterpreterImpl::spaceNormalize(content) + "\"");
 		}
 	} else {
 		global->Set(v8::String::New(key.c_str()), v8::Undefined());
