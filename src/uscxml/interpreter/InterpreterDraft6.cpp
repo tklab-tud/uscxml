@@ -31,152 +31,321 @@ using namespace Arabica::XPath;
 using namespace Arabica::DOM;
 
 // see: http://www.w3.org/TR/scxml/#AlgorithmforSCXMLInterpretation
+	
 void InterpreterDraft6::interpret() {
+	InterpreterState state;
+	while(true) {
+		state = step(true);
+		
+		switch (state) {
+			case uscxml::INIT_FAILED:
+			case uscxml::FINISHED:
+			case uscxml::INTERRUPTED:
+				// return as we finished
+				return;
+			case uscxml::NOTHING_TODO:
+				// die as this can never happen with a blocking call
+				assert(false);
+			case uscxml::INITIALIZED:
+			case uscxml::PROCESSED:
+				
+				// process invokers on main thread
+				if(_thread == NULL) {
+					runOnMainThread(200);
+				}
+
+				// process next step
+				break;
+		}
+	}
+}
+
+// setup / fetch the documents initial transitions
+NodeSet<std::string> InterpreterDraft6::getDocumentInitialTransitions() {
+	NodeSet<std::string> initialTransitions;
+	
+	if (_userDefinedStartConfiguration.size() > 0) {
+		// we emulate entering a given configuration by creating a pseudo deep history
+		Element<std::string> initHistory = _document.createElementNS(_nsInfo.nsURL, "history");
+		_nsInfo.setPrefix(initHistory);
+		
+		initHistory.setAttribute("id", UUID::getUUID());
+		initHistory.setAttribute("type", "deep");
+		_scxml.insertBefore(initHistory, _scxml.getFirstChild());
+		
+		std::string histId = ATTR(initHistory, "id");
+		NodeSet<std::string> histStates;
+		for (int i = 0; i < _userDefinedStartConfiguration.size(); i++) {
+			histStates.push_back(getState(_userDefinedStartConfiguration[i]));
+		}
+		_historyValue[histId] = histStates;
+		
+		Element<std::string> initialElem = _document.createElementNS(_nsInfo.nsURL, "initial");
+		_nsInfo.setPrefix(initialElem);
+		
+		initialElem.setAttribute("generated", "true");
+		Element<std::string> transitionElem = _document.createElementNS(_nsInfo.nsURL, "transition");
+		_nsInfo.setPrefix(transitionElem);
+		
+		transitionElem.setAttribute("target", histId);
+		initialElem.appendChild(transitionElem);
+		_scxml.appendChild(initialElem);
+		initialTransitions.push_back(transitionElem);
+		
+	} else {
+		// try to get initial transition from initial element
+		initialTransitions = _xpath.evaluate("/" + _nsInfo.xpathPrefix + "initial/" + _nsInfo.xpathPrefix + "transition", _scxml).asNodeSet();
+		if (initialTransitions.size() == 0) {
+			Arabica::XPath::NodeSet<std::string> initialStates;
+			// fetch per draft
+			initialStates = getInitialStates();
+			assert(initialStates.size() > 0);
+			for (int i = 0; i < initialStates.size(); i++) {
+				Element<std::string> initialElem = _document.createElementNS(_nsInfo.nsURL, "initial");
+				_nsInfo.setPrefix(initialElem);
+				
+				initialElem.setAttribute("generated", "true");
+				Element<std::string> transitionElem = _document.createElementNS(_nsInfo.nsURL, "transition");
+				_nsInfo.setPrefix(transitionElem);
+				
+				transitionElem.setAttribute("target", ATTR(initialStates[i], "id"));
+				initialElem.appendChild(transitionElem);
+				_scxml.appendChild(initialElem);
+				initialTransitions.push_back(transitionElem);
+			}
+		}
+	}
+	return initialTransitions;
+}
+	
+// a macrostep
+InterpreterState InterpreterDraft6::step(bool blocking) {
 	try {
-		tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
+
+		monIter_t monIter;
+		NodeSet<std::string> enabledTransitions;
+		
+		// setup document and interpreter
 		if (!_isInitialized)
 			init();
-
-		if (!_scxml) {
-			return;
+		
+		// if we failed return false
+		if (!_isInitialized)
+			return INIT_FAILED;
+		
+		// run initial transitions
+		if (!_stable) {
+			stabilize();
+			// we might only need a single step
+			if (!_running)
+				goto EXIT_INTERPRETER;
+			return INITIALIZED;
 		}
-		//  dump();
-
-		// just make sure we have a session id
-		assert(_sessionId.length() > 0);
-
-		setupIOProcessors();
-
-		std::string datamodelName;
-		if (datamodelName.length() == 0 && HAS_ATTR(_scxml, "datamodel"))
-			datamodelName = ATTR(_scxml, "datamodel");
-		if (datamodelName.length() == 0 && HAS_ATTR(_scxml, "profile")) // SCION SCXML uses profile to specify datamodel
-			datamodelName = ATTR(_scxml, "profile");
-		if(datamodelName.length() > 0) {
-			_dataModel = _factory->createDataModel(datamodelName, this);
-			if (!_dataModel) {
-				Event e;
-				e.data.compound["cause"] = Data("Cannot instantiate datamodel", Data::VERBATIM);
-				throw e;
+		
+		if (!_running)
+			return FINISHED;
+		
+		// read an external event and react
+		if (blocking) {
+			// wait until an event becomes available
+			while(_externalQueue.isEmpty()) {
+				_condVar.wait(_mutex);
 			}
 		} else {
-			_dataModel = _factory->createDataModel("null", this);
+			// return immediately if external queue is empty
+			if (_externalQueue.isEmpty())
+				return NOTHING_TODO;
 		}
-		if(datamodelName.length() > 0  && !_dataModel) {
-			LOG(ERROR) << "No datamodel for " << datamodelName << " registered";
-		}
+		_currEvent = _externalQueue.pop();
 
-		if (_dataModel) {
-			_dataModel.assign("_x.args", _cmdLineOptions);
-		}
-
-		_running = true;
-#if VERBOSE
-		std::cout << "running " << this << std::endl;
-#endif
-
-		_binding = (HAS_ATTR(_scxml, "binding") && iequals(ATTR(_scxml, "binding"), "late") ? LATE : EARLY);
-
-		// @TODO: Reread http://www.w3.org/TR/scxml/#DataBinding
-
-		if (_dataModel && _binding == EARLY) {
-			// initialize all data elements
-			NodeSet<std::string> dataElems = _xpath.evaluate("//" + _nsInfo.xpathPrefix + "data", _scxml).asNodeSet();
-			for (unsigned int i = 0; i < dataElems.size(); i++) {
-				// do not process data elements of nested documents from invokers
-				if (!getAncestorElement(dataElems[i], _nsInfo.xmlNSPrefix + "invoke"))
-					if (dataElems[i].getNodeType() == Node_base::ELEMENT_NODE) {
-						initializeData(Element<std::string>(dataElems[i]));
-					}
-			}
-		} else if(_dataModel) {
-			// initialize current data elements
-			NodeSet<std::string> topDataElems = filterChildElements(_nsInfo.xmlNSPrefix + "data", filterChildElements(_nsInfo.xmlNSPrefix + "datamodel", _scxml));
-			for (unsigned int i = 0; i < topDataElems.size(); i++) {
-				if (topDataElems[i].getNodeType() == Node_base::ELEMENT_NODE)
-					initializeData(Element<std::string>(topDataElems[i]));
-			}
-		}
-
-		// executeGlobalScriptElements
-		NodeSet<std::string> globalScriptElems = filterChildElements(_nsInfo.xmlNSPrefix + "script", _scxml);
-		for (unsigned int i = 0; i < globalScriptElems.size(); i++) {
-			if (_dataModel) {
-				executeContent(globalScriptElems[i]);
-			}
-		}
-
-		NodeSet<std::string> initialTransitions;
-
-		if (_userDefinedStartConfiguration.size() > 0) {
-			// we emulate entering a given configuration by creating a pseudo deep history
-			Element<std::string> initHistory = _document.createElementNS(_nsInfo.nsURL, "history");
-			_nsInfo.setPrefix(initHistory);
-
-			initHistory.setAttribute("id", UUID::getUUID());
-			initHistory.setAttribute("type", "deep");
-			_scxml.insertBefore(initHistory, _scxml.getFirstChild());
-
-			std::string histId = ATTR(initHistory, "id");
-			NodeSet<std::string> histStates;
-			for (int i = 0; i < _userDefinedStartConfiguration.size(); i++) {
-				histStates.push_back(getState(_userDefinedStartConfiguration[i]));
-			}
-			_historyValue[histId] = histStates;
-
-			Element<std::string> initialElem = _document.createElementNS(_nsInfo.nsURL, "initial");
-			_nsInfo.setPrefix(initialElem);
-
-			initialElem.setAttribute("generated", "true");
-			Element<std::string> transitionElem = _document.createElementNS(_nsInfo.nsURL, "transition");
-			_nsInfo.setPrefix(transitionElem);
-
-			transitionElem.setAttribute("target", histId);
-			initialElem.appendChild(transitionElem);
-			_scxml.appendChild(initialElem);
-			initialTransitions.push_back(transitionElem);
-
+	#if VERBOSE
+		std::cout << "Received externalEvent event " << _currEvent.name << std::endl;
+		if (_running && _currEvent.name == "unblock.and.die") {
+			std::cout << "Still running " << this << std::endl;
 		} else {
-			// try to get initial transition from initial element
-			initialTransitions = _xpath.evaluate("/" + _nsInfo.xpathPrefix + "initial/" + _nsInfo.xpathPrefix + "transition", _scxml).asNodeSet();
-			if (initialTransitions.size() == 0) {
-				Arabica::XPath::NodeSet<std::string> initialStates;
-				// fetch per draft
-				initialStates = getInitialStates();
-				assert(initialStates.size() > 0);
-				for (int i = 0; i < initialStates.size(); i++) {
-					Element<std::string> initialElem = _document.createElementNS(_nsInfo.nsURL, "initial");
-					_nsInfo.setPrefix(initialElem);
+			std::cout << "Aborting " << this << std::endl;
+		}
+	#endif
+		_currEvent.eventType = Event::EXTERNAL; // make sure it is set to external
 
-					initialElem.setAttribute("generated", "true");
-					Element<std::string> transitionElem = _document.createElementNS(_nsInfo.nsURL, "transition");
-					_nsInfo.setPrefix(transitionElem);
+		// when we were blocking on destructor invocation
+		if (!_running) {
+			goto EXIT_INTERPRETER;
+			return INTERRUPTED;
+		}
+		// --- MONITOR: beforeProcessingEvent ------------------------------
+		for(monIter_t monIter = _monitors.begin(); monIter != _monitors.end(); monIter++) {
+			try {
+				(*monIter)->beforeProcessingEvent(shared_from_this(), _currEvent);
+			}
+			USCXML_MONITOR_CATCH_BLOCK(beforeProcessingEvent)
+		}
+		
+		if (iequals(_currEvent.name, "cancel.invoke." + _sessionId))
+			return INTERRUPTED;
+		
+		try {
+			_dataModel.setEvent(_currEvent);
+		} catch (Event e) {
+			LOG(ERROR) << "Syntax error while setting external event:" << std::endl << e << std::endl << _currEvent;
+		}
 
-					transitionElem.setAttribute("target", ATTR(initialStates[i], "id"));
-					initialElem.appendChild(transitionElem);
-					_scxml.appendChild(initialElem);
-					initialTransitions.push_back(transitionElem);
+		for (std::map<std::string, Invoker>::iterator invokeIter = _invokers.begin();
+				 invokeIter != _invokers.end();
+				 invokeIter++) {
+			if (iequals(invokeIter->first, _currEvent.invokeid)) {
+				Arabica::XPath::NodeSet<std::string> finalizes = filterChildElements(_nsInfo.xmlNSPrefix + "finalize", invokeIter->second.getElement());
+				for (int k = 0; k < finalizes.size(); k++) {
+					Element<std::string> finalizeElem = Element<std::string>(finalizes[k]);
+					executeContent(finalizeElem);
+				}
+			}
+			if (HAS_ATTR(invokeIter->second.getElement(), "autoforward") && DOMUtils::attributeIsTrue(ATTR(invokeIter->second.getElement(), "autoforward"))) {
+				try {
+					// do not autoforward to invokers that send to #_parent from the SCXML IO Processor!
+					// Yes do so, see test229!
+					// if (!boost::equals(_currEvent.getOriginType(), "http://www.w3.org/TR/scxml/#SCXMLEventProcessor"))
+					invokeIter->second.send(_currEvent);
+				} catch(...) {
+					LOG(ERROR) << "Exception caught while sending event to invoker " << invokeIter->first;
 				}
 			}
 		}
 
-		assert(initialTransitions.size() > 0);
+		
+		// run internal processing until we reach a stable configuration again
+		enabledTransitions = selectTransitions(_currEvent.name);
+		if (!enabledTransitions.empty()) {
+			// test 403b
+			enabledTransitions.to_document_order();
+			microstep(enabledTransitions);
+		}
 
-		enterStates(initialTransitions);
-		//	_mutex.unlock();
+		stabilize();
+		return PROCESSED;
+		
+	EXIT_INTERPRETER:
+		if (!_running) {
+			// --- MONITOR: beforeCompletion ------------------------------
+			for(monIter_t monIter = _monitors.begin(); monIter != _monitors.end(); monIter++) {
+				try {
+					(*monIter)->beforeCompletion(shared_from_this());
+				}
+				USCXML_MONITOR_CATCH_BLOCK(beforeCompletion)
+			}
+			
+			exitInterpreter();
+			if (_sendQueue) {
+				std::map<std::string, std::pair<InterpreterImpl*, SendRequest> >::iterator sendIter = _sendIds.begin();
+				while(sendIter != _sendIds.end()) {
+					_sendQueue->cancelEvent(sendIter->first);
+					sendIter++;
+				}
+			}
+			
+			// --- MONITOR: afterCompletion ------------------------------
+			for(monIter_t monIter = _monitors.begin(); monIter != _monitors.end(); monIter++) {
+				try {
+					(*monIter)->afterCompletion(shared_from_this());
+				}
+				USCXML_MONITOR_CATCH_BLOCK(afterCompletion)
+			}
+			return FINISHED;
+		}
+		
+		assert(hasLegalConfiguration());
+		_mutex.unlock();
 
-		//  assert(hasLegalConfiguration());
-		mainEventLoop();
+		// remove datamodel
+		if(_dataModel)
+			_dataModel = DataModel();
+
+		return PROCESSED;
+		
 	} catch (boost::bad_weak_ptr e) {
 		LOG(ERROR) << "Unclean shutdown " << std::endl << std::endl;
+		return INTERRUPTED;
 	}
+	
 	// set datamodel to null from this thread
 	if(_dataModel)
 		_dataModel = DataModel();
 
 }
 
+// process transitions until we are in a stable configuration again
+void InterpreterDraft6::stabilize() {
 
+	monIter_t monIter;
+	NodeSet<std::string> enabledTransitions;
+	_stable = false;
+	
+	if (_configuration.size() == 0) {
+		// goto initial configuration
+		NodeSet<std::string> initialTransitions = getDocumentInitialTransitions();
+		assert(initialTransitions.size() > 0);
+		enterStates(initialTransitions);
+	}
+	
+	do { // process microsteps for enabled transitions until there are no more left
+
+		enabledTransitions = selectEventlessTransitions();
+		
+		if (enabledTransitions.size() == 0) {
+			if (_internalQueue.size() == 0) {
+				_stable = true;
+			} else {
+				_currEvent = _internalQueue.front();
+				_internalQueue.pop_front();
+#if VERBOSE
+				std::cout << "Received internal event " << _currEvent.name << std::endl;
+#endif
+				
+				// --- MONITOR: beforeProcessingEvent ------------------------------
+				for(monIter_t monIter = _monitors.begin(); monIter != _monitors.end(); monIter++) {
+					try {
+						(*monIter)->beforeProcessingEvent(shared_from_this(), _currEvent);
+					}
+					USCXML_MONITOR_CATCH_BLOCK(beforeProcessingEvent)
+				}
+				
+				if (_dataModel)
+					_dataModel.setEvent(_currEvent);
+				enabledTransitions = selectTransitions(_currEvent.name);
+			}
+		}
+		
+		if (!enabledTransitions.empty()) {
+			// test 403b
+			enabledTransitions.to_document_order();
+			microstep(enabledTransitions);
+		}
+	} while(!_internalQueue.empty() || !_stable);
+	
+	monIter = _monitors.begin();
+	
+	// --- MONITOR: onStableConfiguration ------------------------------
+	for(monIter_t monIter = _monitors.begin(); monIter != _monitors.end(); monIter++) {
+		try {
+			(*monIter)->onStableConfiguration(shared_from_this());
+		}
+		USCXML_MONITOR_CATCH_BLOCK(onStableConfiguration)
+	}
+
+	// when we reach a stable configuration, invoke
+	for (unsigned int i = 0; i < _statesToInvoke.size(); i++) {
+		NodeSet<std::string> invokes = filterChildElements(_nsInfo.xmlNSPrefix + "invoke", _statesToInvoke[i]);
+		for (unsigned int j = 0; j < invokes.size(); j++) {
+			if (!HAS_ATTR(invokes[j], "persist") || !DOMUtils::attributeIsTrue(ATTR(invokes[j], "persist"))) {
+				invoke(invokes[j]);
+			}
+		}
+	}
+	_statesToInvoke = NodeSet<std::string>();
+
+}
+
+#if 0
 void InterpreterDraft6::mainEventLoop() {
 	monIter_t monIter;
 
@@ -234,24 +403,15 @@ void InterpreterDraft6::mainEventLoop() {
 				}
 			}
 		}
-
 		_statesToInvoke = NodeSet<std::string>();
+
 		if (!_internalQueue.empty())
 			continue;
 
 		// assume that we have a legal configuration as soon as the internal queue is empty
 		assert(hasLegalConfiguration());
 
-#if 0
-		std::cout << "Configuration: ";
-		for (int i = 0; i < _configuration.size(); i++) {
-			std::cout << ATTR(_configuration[i], "id") << ", ";
-		}
-		std::cout << std::endl;
-#endif
-
 		monIter = _monitors.begin();
-//    if (!_sendQueue || _sendQueue->isEmpty()) {
 
 		// --- MONITOR: onStableConfiguration ------------------------------
 		for(monIter_t monIter = _monitors.begin(); monIter != _monitors.end(); monIter++) {
@@ -261,9 +421,8 @@ void InterpreterDraft6::mainEventLoop() {
 			USCXML_MONITOR_CATCH_BLOCK(onStableConfiguration)
 		}
 
-//    }
-
 		_mutex.unlock();
+		
 		// whenever we have a stable configuration, run the mainThread hooks with 200fps
 		while(_externalQueue.isEmpty() && _thread == NULL) {
 			runOnMainThread(200);
@@ -304,46 +463,6 @@ void InterpreterDraft6::mainEventLoop() {
 				LOG(ERROR) << "Syntax error while setting external event:" << std::endl << e << std::endl << _currEvent;
 			}
 		}
-#if 0
-		for (unsigned int i = 0; i < _configuration.size(); i++) {
-			NodeSet<std::string> invokes = filterChildElements(_xmlNSPrefix + "invoke", _configuration[i]);
-			for (unsigned int j = 0; j < invokes.size(); j++) {
-				Element<std::string> invokeElem = (Element<std::string>)invokes[j];
-				std::string invokeId;
-				if (HAS_ATTR(invokeElem, "id")) {
-					invokeId = ATTR(invokeElem, "id");
-				} else {
-					if (HAS_ATTR(invokeElem, "idlocation") && _dataModel) {
-						try {
-							invokeId = _dataModel.evalAsString(ATTR(invokeElem, "idlocation"));
-						} catch(Event e) {
-							LOG(ERROR) << "Syntax error while assigning idlocation from invoke:" << std::endl << e << std::endl;
-						}
-					}
-				}
-				std::string autoForward = invokeElem.getAttribute("autoforward");
-				if (iequals(invokeId, _currEvent.invokeid)) {
-
-					Arabica::XPath::NodeSet<std::string> finalizes = filterChildElements(_xmlNSPrefix + "finalize", invokeElem);
-					for (int k = 0; k < finalizes.size(); k++) {
-						Element<std::string> finalizeElem = Element<std::string>(finalizes[k]);
-						executeContent(finalizeElem);
-					}
-
-				}
-				if (iequals(autoForward, "true")) {
-					try {
-						// do not autoforward to invokers that send to #_parent from the SCXML IO Processor!
-						// Yes do so, see test229!
-						// if (!boost::equals(_currEvent.getOriginType(), "http://www.w3.org/TR/scxml/#SCXMLEventProcessor"))
-						_invokers[invokeId].send(_currEvent);
-					} catch(...) {
-						LOG(ERROR) << "Exception caught while sending event to invoker " << invokeId;
-					}
-				}
-			}
-		}
-#else
 		for (std::map<std::string, Invoker>::iterator invokeIter = _invokers.begin();
 		        invokeIter != _invokers.end();
 		        invokeIter++) {
@@ -365,7 +484,6 @@ void InterpreterDraft6::mainEventLoop() {
 				}
 			}
 		}
-#endif
 		enabledTransitions = selectTransitions(_currEvent.name);
 		if (!enabledTransitions.empty()) {
 			// test 403b
@@ -401,7 +519,8 @@ EXIT_INTERPRETER:
 	}
 
 }
-
+#endif
+	
 Arabica::XPath::NodeSet<std::string> InterpreterDraft6::selectTransitions(const std::string& event) {
 	Arabica::XPath::NodeSet<std::string> enabledTransitions;
 
@@ -627,7 +746,7 @@ NEXT_ANCESTOR:
 }
 
 void InterpreterDraft6::microstep(const Arabica::XPath::NodeSet<std::string>& enabledTransitions) {
-#if 0
+#if VERBOSE
 	std::cout << "Transitions: ";
 	for (int i = 0; i < enabledTransitions.size(); i++) {
 		std::cout << ((Element<std::string>)getSourceState(enabledTransitions[i])).getAttribute("id") << " -> " << std::endl;
@@ -685,6 +804,9 @@ void InterpreterDraft6::microstep(const Arabica::XPath::NodeSet<std::string>& en
 }
 
 void InterpreterDraft6::exitInterpreter() {
+#if VERBOSE
+	std::cout << "Exiting interpreter " << _name << std::endl;
+#endif
 	NodeSet<std::string> statesToExit = _configuration;
 	statesToExit.forward(false);
 	statesToExit.sort();
@@ -712,7 +834,7 @@ void InterpreterDraft6::exitStates(const Arabica::XPath::NodeSet<std::string>& e
 	monIter_t monIter;
 
 #if VERBOSE
-	std::cout << "Enabled exit transitions: " << std::endl;
+	std::cout << _name << ": Enabled exit transitions: " << std::endl;
 	for (int i = 0; i < enabledTransitions.size(); i++) {
 		std::cout << enabledTransitions[i] << std::endl;
 	}
@@ -741,7 +863,7 @@ void InterpreterDraft6::exitStates(const Arabica::XPath::NodeSet<std::string>& e
 				tmpStates.push_back(source);
 				tmpStates.insert(tmpStates.end(), tStates.begin(), tStates.end());
 #if VERBOSE
-				std::cout << "tmpStates: ";
+				std::cout << _name << ": tmpStates: ";
 				for (int i = 0; i < tmpStates.size(); i++) {
 					std::cout << ATTR(tmpStates[i], "id") << ", ";
 				}
@@ -750,7 +872,7 @@ void InterpreterDraft6::exitStates(const Arabica::XPath::NodeSet<std::string>& e
 				ancestor = findLCCA(tmpStates);
 			}
 #if VERBOSE
-			std::cout << "Ancestor: " << ATTR(ancestor, "id") << std::endl;;
+			std::cout << _name << ": Ancestor: " << ATTR(ancestor, "id") << std::endl;;
 #endif
 			for (int j = 0; j < _configuration.size(); j++) {
 				if (isDescendant(_configuration[j], ancestor))
@@ -772,7 +894,7 @@ void InterpreterDraft6::exitStates(const Arabica::XPath::NodeSet<std::string>& e
 	statesToExit.sort();
 
 #if VERBOSE
-	std::cout << "States to exit: ";
+	std::cout << _name << ": States to exit: ";
 	for (int i = 0; i < statesToExit.size(); i++) {
 		std::cout << LOCALNAME(statesToExit[i]) << ":" << ATTR(statesToExit[i], "id") << ", ";
 	}
@@ -795,8 +917,8 @@ void InterpreterDraft6::exitStates(const Arabica::XPath::NodeSet<std::string>& e
 				}
 			}
 			_historyValue[historyElem.getAttribute("id")] = historyNodes;
-#if 0
-			std::cout << "History node " << ATTR(historyElem, "id") << " contains: ";
+#if VERBOSE
+			std::cout << _name << ": History node " << ATTR(historyElem, "id") << " contains: ";
 			for (int i = 0; i < historyNodes.size(); i++) {
 				std::cout << ATTR(historyNodes[i], "id") << ", ";
 			}
@@ -857,9 +979,9 @@ void InterpreterDraft6::enterStates(const Arabica::XPath::NodeSet<std::string>& 
 	monIter_t monIter;
 
 #if VERBOSE
-	std::cout << "Enabled enter transitions: " << std::endl;
+	std::cout << _name << ": Enabled enter transitions: " << std::endl;
 	for (int i = 0; i < enabledTransitions.size(); i++) {
-		std::cout << enabledTransitions[i] << std::endl;
+		std::cout << "\t" << enabledTransitions[i] << std::endl;
 	}
 	std::cout << std::endl;
 #endif
@@ -871,7 +993,7 @@ void InterpreterDraft6::enterStates(const Arabica::XPath::NodeSet<std::string>& 
 			NodeSet<std::string> tStates = getTargetStates(transition);
 
 #if VERBOSE
-			std::cout << "Target States: ";
+			std::cout << _name << ": Target States: ";
 			for (int i = 0; i < tStates.size(); i++) {
 				std::cout << ATTR(tStates[i], "id") << ", ";
 			}
@@ -881,7 +1003,7 @@ void InterpreterDraft6::enterStates(const Arabica::XPath::NodeSet<std::string>& 
 			Node<std::string> ancestor;
 			Node<std::string> source = getSourceState(transition);
 #if VERBOSE
-			std::cout << "Source States: " << ATTR(source, "id") << std::endl;
+			std::cout << _name << ": Source States: " << ATTR(source, "id") << std::endl;
 #endif
 			assert(source);
 
@@ -905,7 +1027,7 @@ void InterpreterDraft6::enterStates(const Arabica::XPath::NodeSet<std::string>& 
 			}
 
 #if VERBOSE
-			std::cout << "Ancestor: " << ATTR(ancestor, "id") << std::endl;
+			std::cout << _name << ": Ancestor: " << ATTR(ancestor, "id") << std::endl;
 #endif
 
 			for (int j = 0; j < tStates.size(); j++) {
@@ -913,7 +1035,7 @@ void InterpreterDraft6::enterStates(const Arabica::XPath::NodeSet<std::string>& 
 			}
 
 #if VERBOSE
-			std::cout << "States to enter: ";
+			std::cout << _name << ": States to enter: ";
 			for (int i = 0; i < statesToEnter.size(); i++) {
 				std::cout << LOCALNAME(statesToEnter[i]) << ":" << ATTR(statesToEnter[i], "id") << ", ";
 			}
@@ -924,7 +1046,7 @@ void InterpreterDraft6::enterStates(const Arabica::XPath::NodeSet<std::string>& 
 				NodeSet<std::string> ancestors = getProperAncestors(tStates[j], ancestor);
 
 #if VERBOSE
-				std::cout << "Proper Ancestors of " << ATTR(tStates[j], "id") << " and " << ATTR(ancestor, "id") << ": ";
+				std::cout << _name << ": Proper Ancestors of " << ATTR(tStates[j], "id") << " and " << ATTR(ancestor, "id") << ": ";
 				for (int i = 0; i < ancestors.size(); i++) {
 					std::cout << ATTR(ancestors[i], "id") << ", ";
 				}
@@ -955,7 +1077,7 @@ void InterpreterDraft6::enterStates(const Arabica::XPath::NodeSet<std::string>& 
 	statesToEnter.to_document_order();
 
 #if VERBOSE
-	std::cout << "States to enter: ";
+	std::cout << _name << ": States to enter: ";
 	for (int i = 0; i < statesToEnter.size(); i++) {
 		std::cout << ATTR(statesToEnter[i], "id") << ", ";
 	}

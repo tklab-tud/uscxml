@@ -66,8 +66,8 @@ std::list<Breakpoint> getQualifiedInvokeBreakpoints(Interpreter interpreter, con
 std::list<Breakpoint> getQualifiedTransBreakpoints(Interpreter interpreter, const Arabica::DOM::Element<std::string>& transition, Breakpoint breakpointTemplate) {
 	std::list<Breakpoint> breakpoints;
 
-	Arabica::DOM::Element<std::string> source(interpreter.getSourceState(transition));
-	Arabica::XPath::NodeSet<std::string> targets = interpreter.getTargetStates(transition);
+	Arabica::DOM::Element<std::string> source(interpreter.getImpl()->getSourceState(transition));
+	Arabica::XPath::NodeSet<std::string> targets = interpreter.getImpl()->getTargetStates(transition);
 
 	for (int j = 0; j < targets.size(); j++) {
 		Arabica::DOM::Element<std::string> target(targets[j]);

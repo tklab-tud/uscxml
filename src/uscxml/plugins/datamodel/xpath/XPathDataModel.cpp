@@ -195,7 +195,7 @@ void XPathDataModel::setEvent(const Event& event) {
 	}
 
 	if (event.content.size() > 0) {
-		Text<std::string> textNode = _doc.createTextNode(Interpreter::spaceNormalize(event.content).c_str());
+		Text<std::string> textNode = _doc.createTextNode(InterpreterImpl::spaceNormalize(event.content).c_str());
 		eventDataElem.appendChild(textNode);
 	}
 	if (event.dom) {
@@ -501,7 +501,7 @@ void XPathDataModel::assign(const Element<std::string>& assignElem,
 		}
 		assign(key, nodeSet, assignElem);
 	} else if (content.length() > 0) {
-		Text<std::string> textNode = _doc.createTextNode(Interpreter::spaceNormalize(content));
+		Text<std::string> textNode = _doc.createTextNode(InterpreterImpl::spaceNormalize(content));
 		nodeSet.push_back(textNode);
 		assign(key, nodeSet, assignElem);
 	} else if (HAS_ATTR(assignElem, "expr")) {

@@ -110,7 +110,7 @@ void SCXMLDotWriter::writeStateElement(std::ostream& os, const Arabica::DOM::Ele
 		return;
 	_knownIds.insert(elemId);
 
-	bool subgraph = Interpreter::isCompound(elem) || Interpreter::isParallel(elem);
+	bool subgraph = InterpreterImpl::isCompound(elem) || InterpreterImpl::isParallel(elem);
 	if (subgraph) {
 		_indentation++;
 		os << getPrefix() << "subgraph \"cluster_" << elemId << "\" {" << std::endl;
@@ -122,11 +122,11 @@ void SCXMLDotWriter::writeStateElement(std::ostream& os, const Arabica::DOM::Ele
 	os << "label=<<b>State</b><br />" << nameForNode(elem) << ">,";
 
 	// is the state initial?
-	if (_interpreter.isInitial(elem))
+	if (_interpreter.getImpl()->isInitial(elem))
 		os << "style=filled, fillcolor=lightgrey, ";
 
 	// is this state final?
-	if (_interpreter.isFinal(elem))
+	if (_interpreter.getImpl()->isFinal(elem))
 		os << "shape=doublecircle,";
 
 	// is the current state in the basic configuration?
@@ -176,7 +176,7 @@ void SCXMLDotWriter::writeStateElement(std::ostream& os, const Arabica::DOM::Ele
 				os << "]" << std::endl;
 			}
 		}
-		if (Interpreter::isState(childElems.item(i))) {
+		if (InterpreterImpl::isState(childElems.item(i))) {
 			writeStateElement(os, (Arabica::DOM::Element<std::string>)childElems.item(i));
 		}
 		if (childElems.item(i).getNodeType() == Node_base::ELEMENT_NODE && iequals(TAGNAME(childElems.item(i)), "initial")) {
@@ -200,7 +200,7 @@ void SCXMLDotWriter::writeStateElement(std::ostream& os, const Arabica::DOM::Ele
 void SCXMLDotWriter::writeTransitionElement(std::ostream& os, const Arabica::DOM::Element<std::string>& elem) {
 	std::string elemId = idForNode(elem);
 
-	Arabica::XPath::NodeSet<std::string> targetStates = _interpreter.getTargetStates(elem);
+	Arabica::XPath::NodeSet<std::string> targetStates = _interpreter.getImpl()->getTargetStates(elem);
 
 	bool active = (elem == _transition);
 
@@ -256,7 +256,7 @@ std::string SCXMLDotWriter::getDetailedLabel(const Arabica::DOM::Element<std::st
 		if (childElems.item(i).getNodeType() != Node_base::ELEMENT_NODE)
 			continue;
 
-		if (Interpreter::isState(childElems.item(i)) ||
+		if (InterpreterImpl::isState(childElems.item(i)) ||
 		        iequals(TAGNAME(childElems.item(i)), "transition") ||
 		        iequals(TAGNAME(childElems.item(i)), "initial") ||
 		        false)

@@ -16,24 +16,24 @@ int main(int argc, char** argv) {
 	assert(interpreter);
 
 	Node<std::string> atomicState = interpreter.getState("atomic");
-	assert(Interpreter::isAtomic(atomicState));
-	assert(!Interpreter::isParallel(atomicState));
-	assert(!Interpreter::isCompound(atomicState));
+	assert(InterpreterImpl::isAtomic(atomicState));
+	assert(!InterpreterImpl::isParallel(atomicState));
+	assert(!InterpreterImpl::isCompound(atomicState));
 
 	Node<std::string> compoundState = interpreter.getState("compound");
-	assert(!Interpreter::isAtomic(compoundState));
-	assert(!Interpreter::isParallel(compoundState));
-	assert(Interpreter::isCompound(compoundState));
+	assert(!InterpreterImpl::isAtomic(compoundState));
+	assert(!InterpreterImpl::isParallel(compoundState));
+	assert(InterpreterImpl::isCompound(compoundState));
 
 	Node<std::string> parallelState = interpreter.getState("parallel");
-	assert(!Interpreter::isAtomic(parallelState));
-	assert(Interpreter::isParallel(parallelState));
-	assert(!Interpreter::isCompound(parallelState)); // parallel states are not compound!
+	assert(!InterpreterImpl::isAtomic(parallelState));
+	assert(InterpreterImpl::isParallel(parallelState));
+	assert(!InterpreterImpl::isCompound(parallelState)); // parallel states are not compound!
 
-	NodeSet<std::string> initialState = interpreter.getInitialStates();
+	NodeSet<std::string> initialState = interpreter.getImpl()->getInitialStates();
 	assert(initialState[0] == atomicState);
 
-	NodeSet<std::string> childs = interpreter.getChildStates(compoundState);
+	NodeSet<std::string> childs = interpreter.getImpl()->getChildStates(compoundState);
 	Node<std::string> compoundChild1 = interpreter.getState("compoundChild1");
 	Node<std::string> compoundChild2 = interpreter.getState("compoundChild2");
 	assert(childs.size() > 0);
@@ -41,39 +41,39 @@ int main(int argc, char** argv) {
 	assert(Interpreter::isMember(compoundChild2, childs));
 	assert(!Interpreter::isMember(compoundState, childs));
 
-	assert(Interpreter::isDescendant(compoundChild1, compoundState));
+	assert(InterpreterImpl::isDescendant(compoundChild1, compoundState));
 
 	{
 		std::string idrefs("id1");
-		std::list<std::string> tokenizedIdrefs = Interpreter::tokenizeIdRefs(idrefs);
+		std::list<std::string> tokenizedIdrefs = InterpreterImpl::tokenizeIdRefs(idrefs);
 		assert(tokenizedIdrefs.size() == 1);
 		assert(tokenizedIdrefs.front().compare("id1") == 0);
 	}
 
 	{
 		std::string idrefs(" id1");
-		std::list<std::string> tokenizedIdrefs = Interpreter::tokenizeIdRefs(idrefs);
+		std::list<std::string> tokenizedIdrefs = InterpreterImpl::tokenizeIdRefs(idrefs);
 		assert(tokenizedIdrefs.size() == 1);
 		assert(tokenizedIdrefs.front().compare("id1") == 0);
 	}
 
 	{
 		std::string idrefs(" id1 ");
-		std::list<std::string> tokenizedIdrefs = Interpreter::tokenizeIdRefs(idrefs);
+		std::list<std::string> tokenizedIdrefs = InterpreterImpl::tokenizeIdRefs(idrefs);
 		assert(tokenizedIdrefs.size() == 1);
 		assert(tokenizedIdrefs.front().compare("id1") == 0);
 	}
 
 	{
 		std::string idrefs(" \tid1\n ");
-		std::list<std::string> tokenizedIdrefs = Interpreter::tokenizeIdRefs(idrefs);
+		std::list<std::string> tokenizedIdrefs = InterpreterImpl::tokenizeIdRefs(idrefs);
 		assert(tokenizedIdrefs.size() == 1);
 		assert(tokenizedIdrefs.front().compare("id1") == 0);
 	}
 
 	{
 		std::string idrefs("id1 id2 id3");
-		std::list<std::string> tokenizedIdrefs = Interpreter::tokenizeIdRefs(idrefs);
+		std::list<std::string> tokenizedIdrefs = InterpreterImpl::tokenizeIdRefs(idrefs);
 		assert(tokenizedIdrefs.size() == 3);
 		assert(tokenizedIdrefs.front().compare("id1") == 0);
 		tokenizedIdrefs.pop_front();
@@ -84,7 +84,7 @@ int main(int argc, char** argv) {
 
 	{
 		std::string idrefs("\t  id1 \nid2\n\n id3\t");
-		std::list<std::string> tokenizedIdrefs = Interpreter::tokenizeIdRefs(idrefs);
+		std::list<std::string> tokenizedIdrefs = InterpreterImpl::tokenizeIdRefs(idrefs);
 		assert(tokenizedIdrefs.size() == 3);
 		assert(tokenizedIdrefs.front().compare("id1") == 0);
 		tokenizedIdrefs.pop_front();
@@ -95,7 +95,7 @@ int main(int argc, char** argv) {
 
 	{
 		std::string idrefs("id1 \nid2  \tid3");
-		std::list<std::string> tokenizedIdrefs = Interpreter::tokenizeIdRefs(idrefs);
+		std::list<std::string> tokenizedIdrefs = InterpreterImpl::tokenizeIdRefs(idrefs);
 		assert(tokenizedIdrefs.size() == 3);
 		assert(tokenizedIdrefs.front().compare("id1") == 0);
 		tokenizedIdrefs.pop_front();

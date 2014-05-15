@@ -26,6 +26,11 @@
 			<location>/Users/sradomski/Documents/TK/Code/uscxml/src/bindings/swig/java</location>
 		</link>
 		<link>
+			<name>java</name>
+			<type>2</type>
+			<location>/Users/sradomski/Documents/TK/Code/uscxml/src/bindings/swig/java</location>
+		</link>
+		<link>
 			<name>uscxml</name>
 			<type>2</type>
 			<location>/Users/sradomski/Documents/TK/Code/uscxml/build/cli/src/bindings/swig/java</location>

@@ -27,7 +27,8 @@ namespace uscxml {
 class InterpreterDraft6 : public InterpreterImpl {
 protected:
 	void interpret();
-	void mainEventLoop();
+	InterpreterState step(bool blocking);
+	void stabilize();
 
 	void microstep(const Arabica::XPath::NodeSet<std::string>& enabledTransitions);
 	void enterStates(const Arabica::XPath::NodeSet<std::string>& enabledTransitions);
@@ -43,6 +44,8 @@ protected:
 	Arabica::XPath::NodeSet<std::string> filterPreempted(const Arabica::XPath::NodeSet<std::string>& enabledTransitions);
 	bool isPreemptingTransition(const Arabica::DOM::Node<std::string>& t1, const Arabica::DOM::Node<std::string>& t2);
 	bool isEnabledTransition(const Arabica::DOM::Node<std::string>& transition, const std::string& event);
+
+	Arabica::XPath::NodeSet<std::string> getDocumentInitialTransitions();
 
 	bool isCrossingBounds(const Arabica::DOM::Node<std::string>& transition);
 	bool isWithinParallel(const Arabica::DOM::Node<std::string>& transition);

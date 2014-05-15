@@ -78,7 +78,7 @@ void RespondElement::enterElement(const Arabica::DOM::Node<std::string>& node) {
 	httpReply.status = strTo<int>(statusStr);;
 
 	// extract the content
-	Arabica::XPath::NodeSet<std::string> contents = Interpreter::filterChildElements(_interpreter->getXMLPrefixForNS(getNamespace()) + "content", node);
+	Arabica::XPath::NodeSet<std::string> contents = InterpreterImpl::filterChildElements(_interpreter->getXMLPrefixForNS(getNamespace()) + "content", node);
 	if (contents.size() > 0) {
 		if (HAS_ATTR(contents[0], "expr")) { // -- content is evaluated string from datamodel ------
 			if (_interpreter->getDataModel()) {
@@ -141,7 +141,7 @@ void RespondElement::enterElement(const Arabica::DOM::Node<std::string>& node) {
 	}
 
 	// process headers
-	Arabica::XPath::NodeSet<std::string> headers = Interpreter::filterChildElements(_interpreter->getXMLPrefixForNS(getNamespace()) + "header", node);
+	Arabica::XPath::NodeSet<std::string> headers = InterpreterImpl::filterChildElements(_interpreter->getXMLPrefixForNS(getNamespace()) + "header", node);
 	for (int i = 0; i < headers.size(); i++) {
 		std::string name;
 		if (HAS_ATTR(headers[i], "name")) {

@@ -97,7 +97,7 @@ static void validateRootFoo(std::pair<Document<std::string>, NameSpaceInfo>& par
 
 	assert(TAGNAME(root) == nsInfo.xmlNSPrefix + "root");
 	assert(LOCALNAME(root) == "root");
-	NodeSet<std::string> foosFiltered = Interpreter::filterChildElements(nsInfo.xmlNSPrefix + "foo", root);
+	NodeSet<std::string> foosFiltered = InterpreterImpl::filterChildElements(nsInfo.xmlNSPrefix + "foo", root);
 	assert(foosFiltered.size() == 3);
 	NodeSet<std::string> foosXPath = _xpath.evaluate("//" + nsInfo.xpathPrefix + "foo", root).asNodeSet();
 	assert(foosXPath.size() == 3);
@@ -119,7 +119,7 @@ static void validateRootFooBar(std::pair<Document<std::string>, NameSpaceInfo>& 
 	Node<std::string> root = document.getDocumentElement();
 	_xpath.setNamespaceContext(*nsInfo.getNSContext());
 
-	NodeSet<std::string> barsFiltered = Interpreter::filterChildElements(nsInfo.xmlNSPrefix + "bar", root);
+	NodeSet<std::string> barsFiltered = InterpreterImpl::filterChildElements(nsInfo.xmlNSPrefix + "bar", root);
 	assert(barsFiltered.size() == 3);
 	NodeSet<std::string> barsXPath = _xpath.evaluate("//" + nsInfo.xpathPrefix + "bar", root).asNodeSet();
 	assert(barsXPath.size() == 3);
@@ -144,7 +144,7 @@ static void validateRootFooBarBaz(std::pair<Document<std::string>, NameSpaceInfo
 	assert(TAGNAME(root) == nsInfo.xmlNSPrefix + "root");
 	assert(LOCALNAME(root) == "root");
 
-	NodeSet<std::string> bazsFiltered = Interpreter::filterChildElements(nsInfo.xmlNSPrefix + "baz", root);
+	NodeSet<std::string> bazsFiltered = InterpreterImpl::filterChildElements(nsInfo.xmlNSPrefix + "baz", root);
 	assert(bazsFiltered.size() == 3);
 	NodeSet<std::string> bazsXPath = _xpath.evaluate("//" + nsInfo.xpathPrefix + "baz", root).asNodeSet();
 	assert(bazsXPath.size() == 3);
