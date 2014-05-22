@@ -26,48 +26,48 @@ L        [a-zA-Z_]
 
 bit|bool|byte|int|mtype|short|unsigned {
   yylval->value = strdup(yytext);
-  return TYPE;
+  return PML_TYPE;
 }
 
-len                        { return LEN; }
-false|skip|true            { yylval->value = strdup(yytext); return CONST; }
-printf                     { return PRINT; }
-printm                     { return PRINTM; }
+len                        { return PML_LEN; }
+false|skip|true            { yylval->value = strdup(yytext); return PML_CONST; }
+printf                     { return PML_PRINT; }
+printm                     { return PML_PRINTM; }
 
-"!"                        { return NEG; }
-"~"                        { return COMPL; }
-"++"                       { return INCR; }
-"--"                       { return DECR; }
+"!"                        { return PML_NEG; }
+"~"                        { return PML_COMPL; }
+"++"                       { return PML_INCR; }
+"--"                       { return PML_DECR; }
 
-"*"                        { return TIMES; }
-"/"                        { return DIVIDE; }
-"%"                        { return MODULO; }
+"*"                        { return PML_TIMES; }
+"/"                        { return PML_DIVIDE; }
+"%"                        { return PML_MODULO; }
 
-"+"                        { return PLUS; }
-"-"                        { return MINUS; }
+"+"                        { return PML_PLUS; }
+"-"                        { return PML_MINUS; }
 
-"<<"                       { return LSHIFT; }
-">>"                       { return RSHIFT; }
+"<<"                       { return PML_LSHIFT; }
+">>"                       { return PML_RSHIFT; }
 
-"<="                       { return LE; }
-">="                       { return GE; }
-"<"                        { return LT; }
-">"                        { return GT; }
+"<="                       { return PML_LE; }
+">="                       { return PML_GE; }
+"<"                        { return PML_LT; }
+">"                        { return PML_GT; }
 
-"!="                       { return NE; }
-"=="                       { return EQ; }
+"!="                       { return PML_NE; }
+"=="                       { return PML_EQ; }
 
-"&"                        { return BITAND; }
-"^"                        { return BITXOR; }
-"|"                        { return BITOR; }
+"&"                        { return PML_BITAND; }
+"^"                        { return PML_BITXOR; }
+"|"                        { return PML_BITOR; }
 
 
-"&&"                       { return AND; }
-"||"                       { return OR; }
+"&&"                       { return PML_AND; }
+"||"                       { return PML_OR; }
 
-"."                        { return DOT; }
-","                        { return COMMA; }
-";"                        { return SEMI; }
+"."                        { return PML_DOT; }
+","                        { return PML_COMMA; }
+";"                        { return PML_SEMI; }
 
 "("                        { return '('; }
 ")"                        { return ')'; }
@@ -78,12 +78,12 @@ printm                     { return PRINTM; }
 "{"                        { return '{'; }
 "}"                        { return '}'; }
 
-"="                        { return ASGN; }
+"="                        { return PML_ASGN; }
 
-L?\"(\\.|[^\\"])*\"         { yylval->value = strdup(yytext); return(STRING); }
+L?\"(\\.|[^\\"])*\"         { yylval->value = strdup(yytext); return(PML_STRING); }
 
-{DIGIT}+                   { yylval->value = strdup(yytext); return CONST; }
-{ID}                       { yylval->value = strdup(yytext); return NAME; }
+{DIGIT}+                   { yylval->value = strdup(yytext); return PML_CONST; }
+{ID}                       { yylval->value = strdup(yytext); return PML_NAME; }
 
 \'(\\.|[^'])*\'            { }
 

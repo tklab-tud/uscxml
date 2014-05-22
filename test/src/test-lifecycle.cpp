@@ -100,7 +100,7 @@ int main(int argc, char** argv) {
 	google::InitGoogleLogging(argv[0]);
 	google::LogToStderr();
 	
-	Interpreter interpreter = Interpreter::fromURI("/Users/sradomski/Documents/TK/Code/uscxml/test/w3c/ecma/test530.scxml");
+	Interpreter interpreter = Interpreter::fromURI("/Users/sradomski/Documents/TK/Code/uscxml/test/w3c/ecma/test207.scxml");
 	InterpreterState state;
 	do {
 		state = interpreter.step(true);

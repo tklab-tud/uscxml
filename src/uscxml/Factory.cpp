@@ -49,7 +49,7 @@
 //# include "uscxml/plugins/ioprocessor/modality/MMIHTTPIOProcessor.h"
 #endif
 
-# ifdef UMUNDO_FOUND
+# if (defined UMUNDO_FOUND && defined PROTOBUF_FOUND)
 #   include "uscxml/plugins/invoker/umundo/UmundoInvoker.h"
 //#   include "uscxml/plugins/invoker/vxml/VoiceXMLInvoker.h"
 #endif
@@ -165,7 +165,7 @@ Factory::Factory() {
 	}
 #else
 #if 1
-#ifdef UMUNDO_FOUND
+# if (defined UMUNDO_FOUND && defined PROTOBUF_FOUND)
 	{
 		UmundoInvoker* invoker = new UmundoInvoker();
 		registerInvoker(invoker);

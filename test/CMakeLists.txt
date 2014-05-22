@@ -57,17 +57,17 @@ if (OFF)
 	set_target_properties(test-dirmon PROPERTIES FOLDER "Tests")
 endif()
 
-add_executable(test-arabica-namespaces src/test-arabica-namespaces.cpp)
-target_link_libraries(test-arabica-namespaces uscxml)
-add_test(test-arabica-namespaces ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-arabica-namespaces ${CMAKE_SOURCE_DIR}/test)
-set_target_properties(test-arabica-namespaces PROPERTIES FOLDER "Tests")
-
 add_executable(test-lifecycle src/test-lifecycle.cpp)
 target_link_libraries(test-lifecycle uscxml)
 add_test(test-lifecycle ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-arabica-namespaces)
 set_target_properties(test-lifecycle PROPERTIES FOLDER "Tests")
 
 if (NOT WIN32)
+	add_executable(test-arabica-namespaces src/test-arabica-namespaces.cpp)
+	target_link_libraries(test-arabica-namespaces uscxml)
+	add_test(test-arabica-namespaces ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-arabica-namespaces ${CMAKE_SOURCE_DIR}/test)
+	set_target_properties(test-arabica-namespaces PROPERTIES FOLDER "Tests")
+	
 	add_executable(test-arabica-events src/test-arabica-events.cpp)
 	target_link_libraries(test-arabica-events uscxml)
 	add_test(test-arabica-events ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-arabica-events ${CMAKE_SOURCE_DIR}/test/uscxml/arabica/test-arabica-events.xml)

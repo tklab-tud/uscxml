@@ -1034,7 +1034,7 @@ int MilesSessionInvoker::video_transmitter(struct miles_video_grabber_context *g
 	}
 	gettimeofday(&now, 0);
 	tbf = 100000 / grabber->frame_rate;
-	if (elapsed_time(&last_time, &now) < tbf)
+	if (miles_elapsed_time(&last_time, &now) < tbf)
 		return 0;
 
 	last_time = now;
