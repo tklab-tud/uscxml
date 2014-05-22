@@ -34,7 +34,7 @@ extern "C" {
 #include "miles/session.h"
 #include "miles/image.h"
 #include "miles/list.h"
-	long elapsed_time(struct timeval *before, struct timeval *after);
+	long miles_elapsed_time(struct timeval *before, struct timeval *after);
 }
 #ifdef BUILD_AS_PLUGINS
 #include "uscxml/plugins/Plugins.h"

@@ -25,8 +25,8 @@ parsed = cloneDocument(parsed);\
 insertBaz(parsed);\
 std::cout << parsed.first << std::endl;\
 validateRootFooBarBaz(parsed);\
-assert(Interpreter::filterChildElements(origNS.xmlNSPrefix + "bar", origDoc.getDocumentElement()).size() == 3);\
-assert(Interpreter::filterChildElements(origNS.xmlNSPrefix + "baz", origDoc.getDocumentElement()).size() == 0);
+assert(InterpreterImpl::filterChildElements(origNS.xmlNSPrefix + "bar", origDoc.getDocumentElement()).size() == 3);\
+assert(InterpreterImpl::filterChildElements(origNS.xmlNSPrefix + "baz", origDoc.getDocumentElement()).size() == 0);
 
 
 /**

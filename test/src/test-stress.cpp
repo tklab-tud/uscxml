@@ -144,7 +144,7 @@ int main(int argc, char** argv) {
 		}
 	}
 
-#if 1
+#if 0
 	while(true) {
 		Interpreter interpreter = Interpreter::fromURI("/Users/sradomski/Documents/TK/Code/uscxml/test/w3c/ecma/test235.scxml");
 		interpreter.interpret();

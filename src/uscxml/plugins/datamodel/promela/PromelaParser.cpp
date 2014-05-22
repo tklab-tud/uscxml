@@ -171,73 +171,73 @@ void PromelaParserNode::dump(int indent) {
 
 std::string PromelaParserNode::typeToDesc(int type) {
 	switch(type) {
-	case PLUS:
+	case PML_PLUS:
 		return "PLUS";
-	case MINUS:
+	case PML_MINUS:
 		return "MINUS";
-	case TIMES:
+	case PML_TIMES:
 		return "TIMES";
-	case DIVIDE:
+	case PML_DIVIDE:
 		return "DIVIDE";
-	case MODULO:
+	case PML_MODULO:
 		return "MODULO";
-	case BITAND:
+	case PML_BITAND:
 		return "BITAND";
-	case BITXOR:
+	case PML_BITXOR:
 		return "BITXOR";
-	case BITOR:
+	case PML_BITOR:
 		return "BITOR";
-	case GT:
+	case PML_GT:
 		return "GT";
-	case LT:
+	case PML_LT:
 		return "LT";
-	case GE:
+	case PML_GE:
 		return "GE";
-	case LE:
+	case PML_LE:
 		return "LE";
-	case EQ:
+	case PML_EQ:
 		return "EQ";
-	case NE:
+	case PML_NE:
 		return "NE";
-	case AND:
+	case PML_AND:
 		return "AND";
-	case OR:
+	case PML_OR:
 		return "OR";
-	case LSHIFT:
+	case PML_LSHIFT:
 		return "LSHIFT";
-	case RSHIFT:
+	case PML_RSHIFT:
 		return "RSHIFT";
-	case NEG:
+	case PML_NEG:
 		return "NEG";
-	case ASGN:
+	case PML_ASGN:
 		return "ASGN";
-	case INCR:
+	case PML_INCR:
 		return "INCR";
-	case DECR:
+	case PML_DECR:
 		return "DECR";
-	case VAR_ARRAY:
+	case PML_VAR_ARRAY:
 		return "VAR_ARRAY";
-	case DECL:
+	case PML_DECL:
 		return "DECL";
-	case STMNT:
+	case PML_STMNT:
 		return "STMNT";
-	case TYPE:
+	case PML_TYPE:
 		return "TYPE";
-	case NAME:
+	case PML_NAME:
 		return "NAME";
-	case CONST:
+	case PML_CONST:
 		return "CONST";
-	case PRINT:
+	case PML_PRINT:
 		return "PRINT";
-	case SHOW:
+	case PML_SHOW:
 		return "SHOW";
-	case EXPR:
+	case PML_EXPR:
 		return "EXPR";
-	case VARLIST:
+	case PML_VARLIST:
 		return "VARLIST";
-	case DECLLIST:
+	case PML_DECLLIST:
 		return "DECLLIST";
-	case NAMELIST:
+	case PML_NAMELIST:
 		return "NAMELIST";
 
 	default:

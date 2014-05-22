@@ -274,12 +274,18 @@ endif()
 
 # UMUNDO invoker 
 
-if (UMUNDO_FOUND)
+if (UMUNDO_FOUND AND PROTOBUF_FOUND)
 	set(USCXML_INVOKERS "umundo ${USCXML_INVOKERS}")
-	file(GLOB_RECURSE UMUNDO_INVOKER 
-		umundo/*.cpp 
-		umundo/*.cc 
-		umundo/*.h)
+	set(UMUNDO_INVOKER 
+		${CMAKE_CURRENT_SOURCE_DIR}/umundo/UmundoInvoker.cpp 
+		${CMAKE_CURRENT_SOURCE_DIR}/umundo/UmundoInvoker.h
+	)
+	if (PROTOBUF_FOUND)
+		list(APPEND UMUNDO_INVOKER
+			${CMAKE_CURRENT_SOURCE_DIR}/umundo/JSON.pb.cc
+			${CMAKE_CURRENT_SOURCE_DIR}/umundo/JSON.pb.h
+		)
+	endif()
 	if (BUILD_AS_PLUGINS)
 		source_group("" FILES ${UMUNDO_INVOKER})
 #		message(FATAL_ERROR "UMUNDO_LIBRARIES: ${UMUNDO_LIBRARIES}")
@@ -288,9 +294,12 @@ if (UMUNDO_FOUND)
 			${UMUNDO_INVOKER}
 			"../Plugins.cpp")
 		target_link_libraries(invoker_umundo uscxml 
-		optimized ${PROTOBUF_LIBRARY}
-		debug ${PROTOBUF_LIBRARY_DEBUG}
-		${UMUNDO_LIBRARIES})
+			${UMUNDO_LIBRARIES})
+		if (PROTOBUF_FOUND)
+			target_link_libraries(invoker_umundo
+			optimized ${PROTOBUF_LIBRARY}
+			debug ${PROTOBUF_LIBRARY_DEBUG})
+		endif()
 		set_target_properties(invoker_umundo PROPERTIES FOLDER "Plugin Invoker")
 	else()
 		list (APPEND USCXML_FILES ${UMUNDO_INVOKER})

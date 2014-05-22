@@ -165,7 +165,7 @@ void PromelaDataModel::assign(const Element<std::string>& assignElem,
 void PromelaDataModel::evaluateDecl(void* ast) {
 	PromelaParserNode* node = (PromelaParserNode*)ast;
 	if (false) {
-	} else if (node->type == DECL) {
+	} else if (node->type == PML_DECL) {
 		std::list<PromelaParserNode*>::iterator opIter = node->operands.begin();
 		PromelaParserNode* vis = *opIter++;
 		PromelaParserNode* type = *opIter++;
@@ -179,7 +179,7 @@ void PromelaDataModel::evaluateDecl(void* ast) {
 			variable.compound["type"] = Data(type->value, Data::VERBATIM);
 
 			if (false) {
-			} else if ((*nameIter)->type == NAME) {
+			} else if ((*nameIter)->type == PML_NAME) {
 				// plain variables without initial assignment
 
 				if (type->value == "mtype") {
@@ -189,7 +189,7 @@ void PromelaDataModel::evaluateDecl(void* ast) {
 				}
 				_variables.compound[(*nameIter)->value] = variable;
 
-			} else if ((*nameIter)->type == ASGN) {
+			} else if ((*nameIter)->type == PML_ASGN) {
 				// initially assigned variables
 
 				std::list<PromelaParserNode*>::iterator opIterAsgn = (*nameIter)->operands.begin();
@@ -200,7 +200,7 @@ void PromelaDataModel::evaluateDecl(void* ast) {
 
 				assert(opIterAsgn == (*nameIter)->operands.end());
 				_variables.compound[name->value] = variable;
-			} else if ((*nameIter)->type == VAR_ARRAY) {
+			} else if ((*nameIter)->type == PML_VAR_ARRAY) {
 				// variable arrays
 
 				std::list<PromelaParserNode*>::iterator opIterAsgn = (*nameIter)->operands.begin();
@@ -220,7 +220,7 @@ void PromelaDataModel::evaluateDecl(void* ast) {
 			}
 		}
 		assert(opIter == node->operands.end());
-	} else if (node->type == DECLLIST) {
+	} else if (node->type == PML_DECLLIST) {
 		for (std::list<PromelaParserNode*>::iterator declIter = node->operands.begin();
 		        declIter != node->operands.end();
 		        declIter++) {
@@ -235,38 +235,38 @@ int PromelaDataModel::evaluateExpr(void* ast) {
 	PromelaParserNode* node = (PromelaParserNode*)ast;
 	std::list<PromelaParserNode*>::iterator opIter = node->operands.begin();
 	switch (node->type) {
-	case CONST:
+	case PML_CONST:
 		return strTo<int>(node->value);
-	case NAME:
-	case VAR_ARRAY:
+	case PML_NAME:
+	case PML_VAR_ARRAY:
 		return getVariable(node);
-	case PLUS:
+	case PML_PLUS:
 		return evaluateExpr(*opIter++) + evaluateExpr(*opIter++);
-	case MINUS:
+	case PML_MINUS:
 		return evaluateExpr(*opIter++) - evaluateExpr(*opIter++);
-	case DIVIDE:
+	case PML_DIVIDE:
 		return evaluateExpr(*opIter++) / evaluateExpr(*opIter++);
-	case MODULO:
+	case PML_MODULO:
 		return evaluateExpr(*opIter++) % evaluateExpr(*opIter++);
-	case EQ:
+	case PML_EQ:
 		return evaluateExpr(*opIter++) == evaluateExpr(*opIter++);
-	case LT:
+	case PML_LT:
 		return evaluateExpr(*opIter++) < evaluateExpr(*opIter++);
-	case LE:
+	case PML_LE:
 		return evaluateExpr(*opIter++) <= evaluateExpr(*opIter++);
-	case GT:
+	case PML_GT:
 		return evaluateExpr(*opIter++) > evaluateExpr(*opIter++);
-	case GE:
+	case PML_GE:
 		return evaluateExpr(*opIter++) >= evaluateExpr(*opIter++);
-	case TIMES:
+	case PML_TIMES:
 		return evaluateExpr(*opIter++) * evaluateExpr(*opIter++);
-	case LSHIFT:
+	case PML_LSHIFT:
 		return evaluateExpr(*opIter++) << evaluateExpr(*opIter++);
-	case RSHIFT:
+	case PML_RSHIFT:
 		return evaluateExpr(*opIter++) >> evaluateExpr(*opIter++);
-	case AND:
+	case PML_AND:
 		return evaluateExpr(*opIter++) != 0 && evaluateExpr(*opIter++) != 0;
-	case OR:
+	case PML_OR:
 		return evaluateExpr(*opIter++) != 0 || evaluateExpr(*opIter++) != 0;
 	default:
 		throwErrorExecution("Support for " + PromelaParserNode::typeToDesc(node->type) + " expressions not implemented");
@@ -278,13 +278,13 @@ void PromelaDataModel::evaluateStmnt(void* ast) {
 	PromelaParserNode* node = (PromelaParserNode*)ast;
 	std::list<PromelaParserNode*>::iterator opIter = node->operands.begin();
 	switch (node->type) {
-	case ASGN: {
+	case PML_ASGN: {
 		PromelaParserNode* name = *opIter++;
 		PromelaParserNode* expr = *opIter++;
 		setVariable(name, evaluateExpr(expr));
 		break;
 	}
-	case STMNT: {
+	case PML_STMNT: {
 		while(opIter != node->operands.end()) {
 			evaluateStmnt(*opIter++);
 		}
@@ -300,7 +300,7 @@ void PromelaDataModel::setVariable(void* ast, int value) {
 
 	std::list<PromelaParserNode*>::iterator opIter = node->operands.begin();
 	switch (node->type) {
-	case VAR_ARRAY: {
+	case PML_VAR_ARRAY: {
 		PromelaParserNode* name = *opIter++;
 		PromelaParserNode* expr = *opIter++;
 		int index = evaluateExpr(expr);
@@ -321,7 +321,7 @@ void PromelaDataModel::setVariable(void* ast, int value) {
 
 		break;
 	}
-	case NAME:
+	case PML_NAME:
 		_variables.compound[node->value].compound["value"] = Data(value, Data::VERBATIM);
 		break;
 	default:
@@ -337,7 +337,7 @@ int PromelaDataModel::getVariable(void* ast) {
 
 	std::list<PromelaParserNode*>::iterator opIter = node->operands.begin();
 	switch(node->type) {
-	case NAME:
+	case PML_NAME:
 		if (_variables.compound.find(node->value) == _variables.compound.end()) {
 			throwErrorExecution("No variable " + node->value + " was declared");
 		}
@@ -345,7 +345,7 @@ int PromelaDataModel::getVariable(void* ast) {
 			throwErrorExecution("Type error: Variable " + node->value + " is an array");
 		}
 		return strTo<int>(_variables[node->value]["value"].atom);
-	case VAR_ARRAY: {
+	case PML_VAR_ARRAY: {
 		PromelaParserNode* name = *opIter++;
 		PromelaParserNode* expr = *opIter++;
 		int index = evaluateExpr(expr);

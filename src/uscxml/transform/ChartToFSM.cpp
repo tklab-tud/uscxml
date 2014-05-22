@@ -26,6 +26,7 @@
 #include <math.h>
 #include <string.h>
 #include <algorithm>
+#undef max
 #include <limits>
 
 namespace uscxml {
@@ -499,7 +500,7 @@ void FlatteningInterpreter::explode() {
 				int order = strTo<int>(ATTR(transitions[i], "order"));
 				if (order < lowestOrder)
 					lowestOrder = order;
-				prioPerLevel += pow(maxOrder, maxOrder - order);
+				prioPerLevel += pow(static_cast<double>(maxOrder), maxOrder - order);
 			}
 			transition->nrElemPerLevel.push_back(nrDepth);
 			transition->firstElemPerLevel.push_back(lowestOrder);
