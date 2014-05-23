@@ -276,7 +276,7 @@ void SWIDataModel::setEvent(const Event& event) {
 			PlCall(dataInitStr.str().c_str());
 		} else if (event.content.size() > 0) {
 			PlCall("assert", PlCompound("event", PlCompound("data", PlString(InterpreterImpl::spaceNormalize(event.content).c_str()))));
-		} else if (event.data) {
+		} else if (!event.data.empty()) {
 			assertFromData(event.data, "event(data(", 2);
 		}
 
@@ -817,7 +817,7 @@ void SWIDataModel::assign(const Element<std::string>& assignElem,
 					PlCall("retractall", PlCompound(predicate.c_str(), 1));
 				dataInitStr << "load_xml_file('" << domUrl.asLocalFile(".pl") << "', XML), copy_term(XML,DATA), " << callAssert << "(" << predicate << "(DATA))";
 				PlCall(dataInitStr.str().c_str());
-			} else if (json) {
+			} else if (!json.empty()) {
 				std::stringstream dataInitStr;
 				if (iequals(type, "retract"))
 					PlCall("retractall", PlCompound(predicate.c_str(), 1));

@@ -109,7 +109,7 @@ if (EXPECT_FOUND AND TCL_FOUND)
 			invoker_expect SHARED 
 			${EXPECT_INVOKER}
 			"../Plugins.cpp")
-		target_link_libraries(invoker_expect uscxml)
+		target_link_libraries(invoker_expect uscxml ${EXPECT_LIBRARY} ${TCL_LIBRARY})
 		set_target_properties(invoker_expect PROPERTIES FOLDER "Plugin Invoker")
 	else()
 		list (APPEND USCXML_FILES ${EXPECT_INVOKER})

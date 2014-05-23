@@ -106,8 +106,15 @@ public:
 	explicit Data(const Arabica::DOM::Node<std::string>& dom);
 	virtual ~Data() {}
 
-	operator bool() const {
-		return (atom.length() > 0 || !compound.empty() || !array.empty() || binary || node);
+	bool empty() const {
+		bool hasContent = (atom.length() > 0 || !compound.empty() || !array.empty() || binary || node);
+		return !hasContent;
+	}
+
+	bool operator<(const Data& other) const {
+		std::string thisJSON = Data::toJSON(*this);
+		std::string otherJSON = Data::toJSON(other);
+		return (thisJSON < otherJSON);
 	}
 
 	void merge(const Data& other);
@@ -120,8 +127,16 @@ public:
 		return operator[](key.c_str());
 	}
 
+	const Data& operator[](const std::string& key) const {
+		return operator[](key.c_str());
+	}
+
 	Data& operator[](const char* key) {
 		return compound[key];
+	}
+
+	const Data& operator[](const char* key) const {
+		return compound.at(key);
 	}
 
 	Data& operator[](const size_t index) {

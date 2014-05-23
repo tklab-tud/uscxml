@@ -24,7 +24,7 @@
 namespace uscxml {
 
 void DebuggerServlet::pushData(boost::shared_ptr<DebugSession> session, Data pushData) {
-	std::cout << "trying to push " << pushData["replyType"].atom << std::endl;
+	std::cout << "trying to push " << pushData.at("replyType").atom << std::endl;
 
 	if (!session) {
 		if (_sendQueues.size() > 0) // logging is not aware of its interpreter
@@ -44,7 +44,7 @@ void DebuggerServlet::serverPushData(boost::shared_ptr<DebugSession> session) {
 		return;
 
 	Data reply = _sendQueues[session].pop();
-	std::cout << "pushing " << reply["replyType"].atom << std::endl;
+	std::cout << "pushing " << reply.at("replyType").atom << std::endl;
 	returnData(_clientConns[session], reply);
 	_clientConns[session] = HTTPServer::Request();
 }
@@ -117,7 +117,7 @@ bool DebuggerServlet::httpRecvRequest(const HTTPServer::Request& request) {
 		replyData.compound["status"] = Data("failure", Data::VERBATIM);
 		replyData.compound["reason"] = Data("No such session", Data::VERBATIM);
 	}
-	if (replyData) {
+	if (!replyData.empty()) {
 		returnData(request, replyData);
 		return true;
 	}
@@ -165,7 +165,7 @@ bool DebuggerServlet::httpRecvRequest(const HTTPServer::Request& request) {
 		replyData = session->debugEval(request.data["content"]);
 	}
 
-	if (replyData) {
+	if (!replyData.empty()) {
 		returnData(request, replyData);
 		return true;
 	}

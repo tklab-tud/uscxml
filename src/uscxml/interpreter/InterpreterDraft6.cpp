@@ -121,7 +121,8 @@ NodeSet<std::string> InterpreterDraft6::getDocumentInitialTransitions() {
 // a macrostep
 InterpreterState InterpreterDraft6::step(bool blocking) {
 	try {
-
+		tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
+		
 		monIter_t monIter;
 		NodeSet<std::string> enabledTransitions;
 		
@@ -147,6 +148,7 @@ InterpreterState InterpreterDraft6::step(bool blocking) {
 		
 		// read an external event and react
 		if (blocking) {
+			
 			// wait until an event becomes available
 			while(_externalQueue.isEmpty()) {
 				_condVar.wait(_mutex);

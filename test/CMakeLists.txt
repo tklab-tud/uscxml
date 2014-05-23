@@ -140,7 +140,7 @@ set_target_properties(test-datamodel PROPERTIES FOLDER "Tests")
 if (EXPECT_FOUND AND TCL_FOUND)
 	add_executable(test-expect 
 		src/test-expect.cpp)
-		target_link_libraries(test-expect uscxml)
+		target_link_libraries(test-expect uscxml ${EXPECT_LIBRARY} ${TCL_LIBRARY})
 	set_target_properties(test-expect PROPERTIES FOLDER "Tests")
 endif()
 

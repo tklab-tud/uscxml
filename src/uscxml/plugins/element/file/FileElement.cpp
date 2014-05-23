@@ -223,7 +223,7 @@ void FileElement::enterElement(const Arabica::DOM::Node<std::string>& node) {
 		case JSON: {
 			Data json = Data::fromJSON(fileContents);
 			free(fileContents);
-			if (!json) {
+			if (json.empty()) {
 				LOG(ERROR) << "Cannot parse contents of " << _filepath << " as JSON";
 				return;
 			}

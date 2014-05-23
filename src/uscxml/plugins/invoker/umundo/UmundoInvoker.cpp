@@ -77,10 +77,10 @@ void UmundoInvoker::send(const SendRequest& req) {
 	try {
 		Data data = req.data;
 
-		if (!data && req.content.length())
+		if (data.empty() && req.content.length())
 			data = _interpreter->getDataModel().getStringAsData(req.content);
 
-		if (!data) {
+		if (data.empty()) {
 			LOG(ERROR) << "Cannot transform content to data object per datamodel or no data given";
 			return;
 		}

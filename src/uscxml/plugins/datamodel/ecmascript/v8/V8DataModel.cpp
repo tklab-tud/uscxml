@@ -233,7 +233,7 @@ void V8DataModel::setEvent(const Event& event) {
 	} else if (event.content.length() > 0) {
 		// _event.data is a string or JSON
 		Data json = Data::fromJSON(event.content);
-		if (json) {
+		if (!json.empty()) {
 			eventObj->Set(v8::String::New("data"), getDataAsValue(json));
 		} else {
 			eventObj->Set(v8::String::New("data"), v8::String::New(InterpreterImpl::spaceNormalize(event.content).c_str()));
@@ -255,7 +255,7 @@ void V8DataModel::setEvent(const Event& event) {
 				nameListIter++;
 			}
 		}
-		if (eventCopy.data) {
+		if (!eventCopy.data.empty()) {
 //			std::cout << Data::toJSON(eventCopy.data);
 			eventObj->Set(v8::String::New("data"), getDataAsValue(eventCopy.data)); // set data part of _event
 		} else {
