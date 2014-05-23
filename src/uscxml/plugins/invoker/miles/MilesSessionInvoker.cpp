@@ -974,7 +974,7 @@ void MilesSessionInvoker::rtp_audio_receiver(struct miles_rtp_session *rtp_sessi
 
 	/* Poll RTP socket, read all available RTP packets */
 	while (1) {
-		n = miles_net_poll_socket(rtp_session->socket);
+		n = miles_net_wait_socket(rtp_session->socket, 10);
 		if(n<=0) return;
 
 		/* Read RTP data */
