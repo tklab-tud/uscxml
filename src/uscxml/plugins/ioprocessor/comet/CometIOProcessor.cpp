@@ -82,7 +82,7 @@ void CometIOProcessor::reply(const SendRequest& req, const HTTPServer::Request& 
 		ss << req.dom;
 		reply.content = ss.str();
 		reply.headers["Content-Type"] = "application/xml";
-	} else if (req.data) {
+	} else if (!req.data.empty()) {
 		reply.content = Data::toJSON(req.data);
 		reply.headers["Content-Type"] = "application/json";
 	} else if (req.content.length() > 0) {

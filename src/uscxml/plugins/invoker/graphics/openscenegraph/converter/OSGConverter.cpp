@@ -394,7 +394,7 @@ void OSGConverter::reportSuccess(const SendRequest& req, const Data& content) {
 		event.name = "convert";
 	event.name += ".success";
 
-	if (content)
+	if (!content.empty())
 		event.data.compound["content"] = content;
 	returnEvent(event);
 }

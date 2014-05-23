@@ -222,7 +222,7 @@ void JSCDataModel::setEvent(const Event& event) {
 	} else if (event.content.length() > 0) {
 		// _event.data is a string or JSON
 		Data json = Data::fromJSON(event.content);
-		if (json) {
+		if (!json.empty()) {
 			JSStringRef propName = JSStringCreateWithUTF8CString("data");
 			JSObjectSetProperty(_ctx, eventObj, propName, getDataAsValue(json), 0, &exception);
 			JSStringRelease(propName);
@@ -255,7 +255,7 @@ void JSCDataModel::setEvent(const Event& event) {
 				nameListIter++;
 			}
 		}
-		if (eventCopy.data > 0) {
+		if (!eventCopy.data.empty()) {
 			JSStringRef propName = JSStringCreateWithUTF8CString("data");
 			JSObjectSetProperty(_ctx, eventObj, propName, getDataAsValue(eventCopy.data), 0, &exception);
 			JSStringRelease(propName);

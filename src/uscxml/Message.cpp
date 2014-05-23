@@ -488,7 +488,7 @@ Data Data::fromJSON(const std::string& jsonString) {
 void Event::initContent(const std::string& content) {
 	// try to parse as JSON
 	Data json = Data::fromJSON(content);
-	if (json) {
+	if (!json.empty()) {
 		data = json;
 		return;
 	}

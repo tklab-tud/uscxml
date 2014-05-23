@@ -222,7 +222,7 @@ void BasicHTTPIOProcessor::send(const SendRequest& req) {
 		kvps << kvpSeperator << keyCStr << "=" << valueCStr;
 		free(valueCStr);
 		kvpSeperator = "&";
-	} else if (req.data) {
+	} else if (!req.data.empty()) {
 		char* valueCStr = NULL;
 		if (req.data.atom.length() || req.data.array.size() || req.data.compound.size()) {
 			valueCStr = evhttp_encode_uri(Data::toJSON(req.data).c_str());

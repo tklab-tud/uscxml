@@ -12,6 +12,177 @@
 using namespace uscxml;
 using namespace boost;
 
+class TestData {
+public:
+	enum Type {
+		VERBATIM,
+		INTERPRETED,
+	};
+	
+	TestData() : type(INTERPRETED) {}
+	
+	// TODO: default INTERPRETED is unfortunate
+	TestData(const std::string& atom_, Type type_ = INTERPRETED) : atom(atom_), type(type_) {}
+	TestData(const char* data, size_t size, const std::string& mimeType, bool adopt = false);
+	
+	// convenience constructors
+	TestData(short atom_) : atom(toStr(atom_)), type(INTERPRETED) {}
+	TestData(int atom_) : atom(toStr(atom_)), type(INTERPRETED) {}
+	TestData(unsigned int atom_) : atom(toStr(atom_)), type(INTERPRETED) {}
+	TestData(long atom_) : atom(toStr(atom_)), type(INTERPRETED) {}
+	TestData(unsigned long atom_) : atom(toStr(atom_)), type(INTERPRETED) {}
+	TestData(float atom_) : atom(toStr(atom_)), type(INTERPRETED) {}
+	TestData(double atom_) : atom(toStr(atom_)), type(INTERPRETED) {}
+	TestData(bool atom_) : type(INTERPRETED) {
+		if (atom_) {
+			atom = "true";
+		} else {
+			atom = "false";
+		}
+	}
+	
+	template <typename T> TestData(T value, Type type_) : atom(toStr(value)), type(type_) {}
+	
+#if 0
+	// constructor for arbitrary types, skip if type is subclass though (C++11)
+	// we will have to drop this constructor as it interferes with operator Data() and entails C++11
+	template <typename T>
+	Data(T value, typename std::enable_if<! std::is_base_of<Data, T>::value>::type* = nullptr)
+	: atom(toStr(value)), type(INTERPRETED) {}
+#endif
+	
+	
+	explicit TestData(const Arabica::DOM::Node<std::string>& dom);
+	virtual ~TestData() {}
+	
+	explicit operator bool() const {
+		return (atom.length() > 0 || !compound.empty() || !array.empty() || binary || node);
+	}
+		
+	bool hasKey(const std::string& key) const {
+		return (!compound.empty() && compound.find(key) != compound.end());
+	}
+	
+	TestData& operator[](const std::string& key) {
+		return operator[](key.c_str());
+	}
+	
+	TestData& operator[](const char* key) {
+		return compound[key];
+	}
+	
+	TestData& operator[](const size_t index) {
+		while(array.size() < index) {
+			array.push_back(TestData("", TestData::VERBATIM));
+		}
+		std::list<TestData>::iterator arrayIter = array.begin();
+		for (int i = 0; i < index; i++, arrayIter++) {}
+		return *arrayIter;
+	}
+	
+	const TestData at(const std::string& key) const {
+		return at(key.c_str());
+	}
+	
+	const TestData at(const char* key) const {
+		if (hasKey(key))
+			return compound.at(key);
+		TestData data;
+		return data;
+	}
+	
+	const TestData item(const size_t index) const {
+		if (array.size() < index) {
+			std::list<TestData>::const_iterator arrayIter;
+			for (int i = 0; i < index; i++, arrayIter++) {}
+			return *arrayIter;
+		}
+		TestData data;
+		return data;
+	}
+	
+	bool operator==(const TestData &other) const {
+		if (other.atom.size() != atom.size())
+			return false;
+		if (other.type != type)
+			return false;
+		if (other.binary != binary)
+			return false;
+		if (other.array.size() != array.size())
+			return false;
+		if (other.compound.size() != compound.size())
+			return false;
+		
+		if (other.atom != atom)
+			return false;
+		if (other.array != array)
+			return false;
+		if (other.compound != compound)
+			return false;
+		if (other.node != node)
+			return false;
+		
+		return true;
+	}
+	
+	bool operator!=(const TestData &other) const {
+		return !(*this == other);
+	}
+	
+	operator std::string() const {
+		return atom;
+	}
+	
+	operator std::map<std::string, TestData>() {
+		return compound;
+	}
+	
+	operator std::list<TestData>() {
+		return array;
+	}
+		
+	std::map<std::string, TestData> getCompound() {
+		return compound;
+	}
+	void setCompound(const std::map<std::string, TestData>& compound) {
+		this->compound = compound;
+	}
+	
+	std::list<TestData> getArray() {
+		return array;
+	}
+	void setArray(const std::list<TestData>& array) {
+		this->array = array;
+	}
+	
+	std::string getAtom() {
+		return atom;
+	}
+	void setAtom(const std::string& atom) {
+		this->atom = atom;
+	}
+	
+	Type getType() {
+		return type;
+	}
+	void setType(const Type type) {
+		this->type = type;
+	}
+	
+	Arabica::DOM::Node<std::string> node;
+	std::map<std::string, TestData> compound;
+	std::list<TestData> array;
+	std::string atom;
+	boost::shared_ptr<Blob> binary;
+	Type type;
+	
+};
+
+
+
+void testConstData(const TestData& data) {
+//	std::cout << data.at("foo") << std::endl;
+}
 
 int main(int argc, char** argv) {
 #ifdef _WIN32
@@ -19,6 +190,14 @@ int main(int argc, char** argv) {
 	WSAStartup(MAKEWORD(2, 2), &wsaData);
 #endif
 
+	{
+		TestData data;
+		data["foo"] = "bar";
+		testConstData(data);
+//		std::cout << data << std::endl;
+	}
+	exit(0);
+	
 	Interpreter interpreter = Interpreter::fromXML("<scxml></scxml>");
 	DataModel dm(Factory::getInstance()->createDataModel("ecmascript", interpreter.getImpl().get()));
 	dm.evalAsString("var foo = 12");

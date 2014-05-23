@@ -55,13 +55,13 @@ bool InterpreterHTTPServlet::httpRecvRequest(const HTTPServer::Request& req) {
 	event.name = "http." + event.data.compound["type"].atom;
 	event.origin = toStr((uintptr_t)req.evhttpReq);
 
-	if (event.data.compound["content"]) {
+	if (!event.data.compound["content"].empty()) {
 		if (event.data.compound["content"].compound.size() > 0) {
 			std::map<std::string, Data>::iterator compoundIter = event.data.compound["content"].compound.begin();
 			while(compoundIter != event.data.compound["content"].compound.end()) {
 //				std::cout << compoundIter->second.atom << std::endl;
 				Data json = Data::fromJSON(compoundIter->second.atom);
-				if (json) {
+				if (!json.empty()) {
 //					std::cout << Data::toJSON(json) << std::endl;
 					compoundIter->second = json;
 				}
@@ -119,12 +119,12 @@ bool InterpreterWebSocketServlet::wsRecvRequest(struct evws_connection *conn, co
 	event.name = "ws." + event.data.compound["type"].atom;
 	event.origin = toStr((uintptr_t)conn);
 
-	if (event.data.compound["type"].atom.compare("text") == 0 && event.data.compound["content"]) {
+	if (event.data.compound["type"].atom.compare("text") == 0 && !event.data.compound["content"].empty()) {
 		if (event.data.compound["content"].compound.size() > 0) {
 			std::map<std::string, Data>::iterator compoundIter = event.data.compound["content"].compound.begin();
 			while(compoundIter != event.data.compound["content"].compound.end()) {
 				Data json = Data::fromJSON(compoundIter->second.atom);
-				if (json) {
+				if (!json.empty()) {
 					compoundIter->second = json;
 				}
 				compoundIter++;
@@ -145,7 +145,7 @@ Data InterpreterWebSocketServlet::getDataModelVariables() {
 
 void InterpreterWebSocketServlet::send(const SendRequest& req) {
 
-	if (!req.data) {
+	if (req.data.empty()) {
 		LOG(WARNING) << "No content given to send on websocket!";
 		return;
 	}
@@ -166,7 +166,7 @@ void InterpreterWebSocketServlet::send(const SendRequest& req) {
 			                   EVWS_TEXT_FRAME,
 			                   data.c_str(),
 			                   data.length());
-		} else if (req.data) {
+		} else if (!req.data.empty()) {
 			std::string data = Data::toJSON(req.data);
 			HTTPServer::wsSend(_requests[req.target],
 			                   EVWS_TEXT_FRAME,
@@ -191,7 +191,7 @@ void InterpreterWebSocketServlet::send(const SendRequest& req) {
 			                        EVWS_TEXT_FRAME,
 			                        data.c_str(),
 			                        data.length());
-		} else if (req.data) {
+		} else if (!req.data.empty()) {
 			std::string data = Data::toJSON(req.data);
 			HTTPServer::wsBroadcast(req.target.c_str(),
 			                        EVWS_TEXT_FRAME,

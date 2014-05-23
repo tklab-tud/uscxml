@@ -250,7 +250,7 @@ void FFMPEGInvoker::process(const SendRequest& req) {
 
 	Data image;
 	Event::getParam(req.params, "frame", image);
-	if (!image) {
+	if (image.empty()) {
 		return;
 	}
 

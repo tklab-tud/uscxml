@@ -81,7 +81,7 @@ bool XHTMLInvoker::httpRecvRequest(const HTTPServer::Request& req) {
 		} else {
 			// a POST request
 			Event ev(req);
-			if (ev.data["header"]["X-SCXML-Name"]) {
+			if (ev.data["header"].hasKey("X-SCXML-Name")) {
 				ev.name = ev.data["header"]["X-SCXML-Name"].atom;
 			} else {
 				ev.name = req.data.at("type").atom;
@@ -101,7 +101,7 @@ bool XHTMLInvoker::httpRecvRequest(const HTTPServer::Request& req) {
 	}
 
 	// initial request for a document
-	if (!req.data["query"] && // no query parameters
+	if (!req.data.hasKey("query") && // no query parameters
 	        iequals(req.data.at("type").atom, "get") && // request type is GET
 	        req.content.length() == 0) { // no content
 
@@ -113,7 +113,7 @@ bool XHTMLInvoker::httpRecvRequest(const HTTPServer::Request& req) {
 //			ss << _invokeReq.getFirstDOMElement();
 			ss << _invokeReq.dom;
 			content = ss.str();
-		} else if(_invokeReq.data) {
+		} else if(!_invokeReq.data.empty()) {
 			ss << _invokeReq.data;
 			content = ss.str();
 		} else if (_invokeReq.content.length() > 0) {
@@ -163,7 +163,7 @@ void XHTMLInvoker::send(const SendRequest& req) {
 	SendRequest reqCopy(req);
 	_interpreter->getDataModel().replaceExpressions(reqCopy.content);
 	Data json = Data::fromJSON(reqCopy.content);
-	if (json) {
+	if (!json.empty()) {
 		reqCopy.data = json;
 	}
 
@@ -195,7 +195,7 @@ void XHTMLInvoker::reply(const SendRequest& req, const HTTPServer::Request& long
 		ss << req.dom;
 		reply.content = ss.str();
 		reply.headers["Content-Type"] = "application/xml";
-	} else if (req.data) {
+	} else if (!req.data.empty()) {
 		reply.content = Data::toJSON(req.data);
 		reply.headers["Content-Type"] = "application/json";
 	} else if (req.content.length() > 0) {
