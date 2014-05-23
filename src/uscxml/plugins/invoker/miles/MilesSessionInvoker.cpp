@@ -629,7 +629,7 @@ void MilesSessionInvoker::processAudio() {
 		if(audio_dev_playback)
 			miles_audio_device_close(MILES_AUDIO_IO_OPENAL, audio_dev_playback, 0);
 		if(audio_dev)
-			miles_audio_device_close(MILES_AUDIO_IO_OPENAL, audio_dev_playback, 1);
+			miles_audio_device_close(MILES_AUDIO_IO_OPENAL, audio_dev, 1);
 		miles_audio_codec_destroy_encoder(audio_encoder);
 		audio_available = 0;
 		sendaudio_enabled = 0;
