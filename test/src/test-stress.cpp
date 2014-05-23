@@ -134,7 +134,7 @@ int main(int argc, char** argv) {
 			google::InitGoogleLogging(optarg);
 			break;
 		case 'p':
-			uscxml::Factory::pluginPath = optarg;
+			uscxml::Factory::setDefaultPluginPath(optarg);
 			break;
 		case '?':
 			break;

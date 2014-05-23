@@ -474,8 +474,10 @@ if (MILES_FOUND)
 			${MILES_LIBRARIES}
 			${OPENAL_LIBRARY}
 			${JPEG_LIBRARIES}
-			${ICONV_LIBRARIES}
 			uscxml)
+			if (ICONV_FOUND)
+				target_link_libraries(invoker_miles ${ICONV_LIBRARIES})
+			endif()
 		set_target_properties(invoker_miles PROPERTIES FOLDER "Plugin Invoker")
 	else()
   	list (APPEND USCXML_FILES ${MILES_INVOKER})

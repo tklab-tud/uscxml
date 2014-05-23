@@ -130,7 +130,7 @@ int main(int argc, char** argv) {
 	google::InitGoogleLogging(argv[0]);
 
 	if (options.pluginPath.length() > 0) {
-		Factory::pluginPath = options.pluginPath;
+		Factory::setDefaultPluginPath(options.pluginPath);
 	}
 
 	// setup HTTP server

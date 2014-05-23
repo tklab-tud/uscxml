@@ -107,6 +107,9 @@ set_target_properties(test-url PROPERTIES FOLDER "Tests")
 
 add_executable(test-promela-parser src/test-promela-parser.cpp)
 target_link_libraries(test-promela-parser uscxml)
+if (BUILD_AS_PLUGINS)
+	target_link_libraries(test-promela-parser datamodel_promela)
+endif()
 add_test(test-url ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-promela-parser)
 set_target_properties(test-promela-parser PROPERTIES FOLDER "Tests")
 

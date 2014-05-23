@@ -222,7 +222,7 @@ int main(int argc, char** argv) {
 
 	// register plugins
 	if (pluginPath.length() > 0) {
-		Factory::pluginPath = pluginPath;
+		Factory::setDefaultPluginPath(pluginPath);
 	}
 
 	// start HTTP server
