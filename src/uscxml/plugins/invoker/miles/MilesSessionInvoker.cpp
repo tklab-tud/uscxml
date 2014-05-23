@@ -729,6 +729,7 @@ int MilesSessionInvoker::setup_video_grabber() {
 		}
 	}
 	grabber_description = miles_video_grabber_get_description(supported_video_grabbers[use_grabber]);
+	printf("Using video grabber %s\n", grabber_description->name);
 	video_grabber = miles_video_grabber_create_context(supported_video_grabbers[use_grabber]);
 	video_grabber->width = 320;
 	video_grabber->height = 240;
@@ -749,7 +750,7 @@ int MilesSessionInvoker::setup_video_grabber() {
 	video_encoder->width = video_grabber->width = 320;
 	video_encoder->height = video_grabber->height = 240;
 	video_encoder->qfactor = 50;
-	video_encoder->input_format = video_grabber->image_format;
+	//video_encoder->input_format = MILES_IMAGE_RGB; //video_grabber->image_format;
 	int rv = miles_video_codec_setup_encoder(video_encoder);
 	if (!rv) {
 		LOG(ERROR) << "Could not setup video encoder";
