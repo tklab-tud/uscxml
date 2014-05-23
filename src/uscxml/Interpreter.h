@@ -138,7 +138,7 @@ public:
 
 };
 
-class NameSpaceInfo {
+class USCXML_API NameSpaceInfo {
 public:
 	NameSpaceInfo() : nsContext(NULL) {
 		init(std::map<std::string, std::string>());

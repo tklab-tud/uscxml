@@ -104,9 +104,12 @@ void InterpreterOptions::printUsageAndExit(const char* progName) {
 	printf(" \\\n\t\t[URLN [--disable-http] [--optionN=valueN --optionM=valueM]]");
 	printf("\n");
 	printf("Options\n");
+#ifdef BUILD_AS_PLUGINS
+	printf("\t-p        : path to the uSCXML plugins (or export USCXML_PLUGIN_PATH)\n");
+#endif
 	printf("\t-v        : be verbose\n");
 	printf("\t-d        : enable debugging via HTTP\n");
-	printf("\t-lN       : Set loglevel to N\n");
+	printf("\t-lN       : set loglevel to N\n");
 	printf("\t-tN       : port for HTTP server\n");
 	printf("\t-sN       : port for HTTPS server\n");
 	printf("\t-wN       : port for WebSocket server\n");

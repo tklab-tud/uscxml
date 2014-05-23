@@ -126,19 +126,33 @@ namespace uscxml {
 Factory::Factory(Factory* parentFactory) : _parentFactory(parentFactory) {
 }
 
-Factory::Factory() {
-	_parentFactory = NULL;
+Factory::Factory(const std::string& pluginPath, Factory* parentFactory) : _parentFactory(parentFactory), _pluginPath(pluginPath) {
+	registerPlugins();
+}
+	
+Factory::Factory(const std::string& pluginPath) : _parentFactory(NULL), _pluginPath(pluginPath) {
+	registerPlugins();
+}
+
+void Factory::setDefaultPluginPath(const std::string& path) {
+	_defaultPluginPath = path;
+}
+std::string Factory::getDefaultPluginPath() {
+	return _defaultPluginPath;
+}
+
+void Factory::registerPlugins() {
 #ifdef BUILD_AS_PLUGINS
-	if (pluginPath.length() == 0) {
+	if (_pluginPath.length() == 0) {
 		// try to read USCXML_PLUGIN_PATH environment variable
-		pluginPath = (getenv("USCXML_PLUGIN_PATH") != NULL ? getenv("USCXML_PLUGIN_PATH") : "");
+		_pluginPath = (getenv("USCXML_PLUGIN_PATH") != NULL ? getenv("USCXML_PLUGIN_PATH") : "");
 	}
-	if (pluginPath.length() > 0) {
+	if (_pluginPath.length() > 0) {
 		pluma.acceptProviderType<InvokerImplProvider>();
 		pluma.acceptProviderType<IOProcessorImplProvider>();
 		pluma.acceptProviderType<DataModelImplProvider>();
 		pluma.acceptProviderType<ExecutableContentImplProvider>();
-		pluma.loadFromFolder(pluginPath);
+		pluma.loadFromFolder(_pluginPath);
 
 		std::vector<InvokerImplProvider*> invokerProviders;
 		pluma.getProviders(invokerProviders);
@@ -164,6 +178,9 @@ Factory::Factory() {
 		LOG(WARNING) << "No path to plugins known, export USCXML_PLUGIN_PATH or pass path as parameter";
 	}
 #else
+	if (_pluginPath.length() > 0)
+		LOG(WARNING) << "Plugin path is given, but uscxml is compiled without support";
+
 #if 1
 # if (defined UMUNDO_FOUND && defined PROTOBUF_FOUND)
 	{
@@ -573,7 +590,7 @@ size_t DataModelImpl::replaceExpressions(std::string& content) {
 
 Factory* Factory::getInstance() {
 	if (_instance == NULL) {
-		_instance = new Factory();
+		_instance = new Factory(Factory::_defaultPluginPath);
 	}
 	return _instance;
 }
@@ -625,5 +642,5 @@ void DataModelImpl::throwErrorPlatform(const std::string& cause) {
 
 
 Factory* Factory::_instance = NULL;
-std::string Factory::pluginPath;
+std::string Factory::_defaultPluginPath;
 }

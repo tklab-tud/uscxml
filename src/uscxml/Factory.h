@@ -23,6 +23,7 @@
 #include "uscxml/Common.h"
 #include "uscxml/Message.h"
 #include "uscxml/Convenience.h"
+#include <string.h>
 
 #ifdef BUILD_AS_PLUGINS
 #include "Pluma/Pluma.hpp"
@@ -438,6 +439,7 @@ protected:
 class USCXML_API Factory {
 public:
 	Factory(Factory* parentFactory);
+	Factory(const std::string& pluginPath, Factory* parentFactory);
 
 	void registerIOProcessor(IOProcessorImpl* ioProcessor);
 	void registerDataModel(DataModelImpl* dataModel);
@@ -453,6 +455,9 @@ public:
 
 	static Factory* getInstance();
 
+	static void setDefaultPluginPath(const std::string& path);
+	static std::string getDefaultPluginPath();
+
 	std::map<std::string, DataModelImpl*> _dataModels;
 	std::map<std::string, std::string> _dataModelAliases;
 	std::map<std::string, IOProcessorImpl*> _ioProcessors;
@@ -461,17 +466,19 @@ public:
 	std::map<std::string, std::string> _invokerAliases;
 	std::map<std::pair<std::string, std::string>, ExecutableContentImpl*> _executableContent;
 
-	static std::string pluginPath;
-
 protected:
 #ifdef BUILD_AS_PLUGINS
 	pluma::Pluma pluma;
 #endif
 
-	Factory();
+	void registerPlugins();
+	
+	Factory(const std::string&);
 	~Factory();
 	Factory* _parentFactory;
+	std::string _pluginPath;
 	static Factory* _instance;
+	static std::string _defaultPluginPath;
 
 };
 
