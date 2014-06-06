@@ -1,5 +1,7 @@
 function VRMLViewer(element, params) {
 
+  console.log(params);
+
   // private attributes
   var self = this;
   var batchChanges = false;
