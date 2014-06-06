@@ -40,10 +40,10 @@ public:
 	virtual ~FFMPEGInvoker();
 	virtual boost::shared_ptr<InvokerImpl> create(InterpreterImpl* interpreter);
 
-	virtual std::set<std::string> getNames() {
-		std::set<std::string> names;
-		names.insert("ffmpeg");
-		names.insert("http://uscxml.tk.informatik.tu-darmstadt.de/#ffmpeg");
+	virtual std::list<std::string> getNames() {
+		std::list<std::string> names;
+		names.push_back("ffmpeg");
+		names.push_back("http://uscxml.tk.informatik.tu-darmstadt.de/#ffmpeg");
 		return names;
 	}
 

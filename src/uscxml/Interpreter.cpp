@@ -2300,8 +2300,8 @@ void InterpreterImpl::setupIOProcessors() {
 		}
 
 		// register aliases
-		std::set<std::string> names = _ioProcessors[ioProcIter->first].getNames();
-		std::set<std::string>::iterator nameIter = names.begin();
+		std::list<std::string> names = _ioProcessors[ioProcIter->first].getNames();
+		std::list<std::string>::iterator nameIter = names.begin();
 		while(nameIter != names.end()) {
 			if (!boost::equal(*nameIter, ioProcIter->first))
 				_ioProcessors[*nameIter] = _ioProcessors[ioProcIter->first];

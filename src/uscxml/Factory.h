@@ -112,7 +112,7 @@ class USCXML_API EventHandlerImpl {
 public:
 	virtual ~EventHandlerImpl() {}
 
-	virtual std::set<std::string> getNames() = 0;
+	virtual std::list<std::string> getNames() = 0;
 
 	virtual void setInterpreter(InterpreterImpl* interpreter) {
 		_interpreter = interpreter;
@@ -155,7 +155,7 @@ public:
 	EventHandler(const EventHandler& other) : _impl(other._impl) { }
 	virtual ~EventHandler() {};
 
-	virtual std::set<std::string> getNames()   {
+	virtual std::list<std::string> getNames()   {
 		return _impl->getNames();
 	}
 
@@ -273,7 +273,7 @@ class USCXML_API DataModelImpl {
 public:
 	virtual ~DataModelImpl() {}
 	virtual boost::shared_ptr<DataModelImpl> create(InterpreterImpl* interpreter) = 0;
-	virtual std::set<std::string> getNames() = 0;
+	virtual std::list<std::string> getNames() = 0;
 
 	virtual bool validate(const std::string& location, const std::string& schema) = 0;
 	virtual void setEvent(const Event& event) = 0;
@@ -352,7 +352,7 @@ public:
 		return *this;
 	}
 
-	virtual std::set<std::string> getNames() {
+	virtual std::list<std::string> getNames() {
 		return _impl->getNames();
 	}
 
@@ -453,6 +453,8 @@ public:
 
 	std::map<std::string, IOProcessorImpl*> getIOProcessors();
 
+	void listComponents();
+	
 	static Factory* getInstance();
 
 	static void setDefaultPluginPath(const std::string& path);

@@ -40,11 +40,6 @@ target_link_libraries(test-base64 uscxml)
 add_test(test-base64 ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-base64)
 set_target_properties(test-base64 PROPERTIES FOLDER "Tests")
 
-add_executable(test-trie src/test-trie.cpp)
-target_link_libraries(test-trie uscxml)
-add_test(test-trie ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-trie)
-set_target_properties(test-trie PROPERTIES FOLDER "Tests")
-
 add_executable(test-eventdelay src/test-eventdelay.cpp)
 target_link_libraries(test-eventdelay uscxml)
 add_test(test-eventdelay ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-eventdelay)
@@ -63,6 +58,11 @@ add_test(test-lifecycle ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-arabica-namespace
 set_target_properties(test-lifecycle PROPERTIES FOLDER "Tests")
 
 if (NOT WIN32)
+	add_executable(test-trie src/test-trie.cpp)
+	target_link_libraries(test-trie uscxml)
+	add_test(test-trie ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-trie)
+	set_target_properties(test-trie PROPERTIES FOLDER "Tests")
+	
 	add_executable(test-arabica-namespaces src/test-arabica-namespaces.cpp)
 	target_link_libraries(test-arabica-namespaces uscxml)
 	add_test(test-arabica-namespaces ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-arabica-namespaces ${CMAKE_SOURCE_DIR}/test)
@@ -98,20 +98,21 @@ if (NOT WIN32)
 	# 	add_test(test-instant-messaging ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-instant-messaging)
 	# 	set_target_properties(test-instant-messaging PROPERTIES FOLDER "Tests")
 	# endif()
+
+	add_executable(test-promela-parser src/test-promela-parser.cpp)
+	target_link_libraries(test-promela-parser uscxml)
+	if (BUILD_AS_PLUGINS)
+		target_link_libraries(test-promela-parser datamodel_promela)
+	endif()
+	add_test(test-url ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-promela-parser)
+	set_target_properties(test-promela-parser PROPERTIES FOLDER "Tests")
+
 endif()
 
 add_executable(test-url src/test-url.cpp)
 target_link_libraries(test-url uscxml)
 add_test(test-url ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-url)
 set_target_properties(test-url PROPERTIES FOLDER "Tests")
-
-add_executable(test-promela-parser src/test-promela-parser.cpp)
-target_link_libraries(test-promela-parser uscxml)
-if (BUILD_AS_PLUGINS)
-	target_link_libraries(test-promela-parser datamodel_promela)
-endif()
-add_test(test-url ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-promela-parser)
-set_target_properties(test-promela-parser PROPERTIES FOLDER "Tests")
 
 add_executable(test-cmdline-parsing src/test-cmdline-parsing.cpp)
 target_link_libraries(test-cmdline-parsing uscxml)

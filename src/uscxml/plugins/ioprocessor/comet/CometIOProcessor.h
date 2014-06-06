@@ -37,10 +37,10 @@ public:
 	virtual ~CometIOProcessor();
 	virtual boost::shared_ptr<IOProcessorImpl> create(uscxml::InterpreterImpl* interpreter);
 
-	virtual std::set<std::string> getNames() {
-		std::set<std::string> names;
-		names.insert("comet");
-		names.insert("http://www.w3.org/TR/scxml/#CometEventProcessor");
+	virtual std::list<std::string> getNames() {
+		std::list<std::string> names;
+		names.push_back("comet");
+		names.push_back("http://www.w3.org/TR/scxml/#CometEventProcessor");
 		return names;
 	}
 

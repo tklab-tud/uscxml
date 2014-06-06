@@ -20,13 +20,14 @@
 #ifndef TRIE_H_UZMQRBO5
 #define TRIE_H_UZMQRBO5
 
+#include "uscxml/Common.h"
 #include <string>
 #include <map>
 #include <list>
 
 namespace uscxml {
 
-struct TrieNode {
+struct USCXML_API TrieNode {
 	TrieNode();
 	virtual ~TrieNode();
 
@@ -37,7 +38,7 @@ struct TrieNode {
 	void dump(int indent = 0);
 };
 
-struct Trie {
+struct USCXML_API Trie {
 	Trie();
 	Trie(const std::string& seperator);
 	virtual ~Trie();

@@ -34,10 +34,10 @@ public:
 	virtual ~HeartbeatInvoker();
 	virtual boost::shared_ptr<InvokerImpl> create(InterpreterImpl* interpreter);
 
-	virtual std::set<std::string> getNames() {
-		std::set<std::string> names;
-		names.insert("heartbeat");
-		names.insert("http://uscxml.tk.informatik.tu-darmstadt.de/#heartbeat");
+	virtual std::list<std::string> getNames() {
+		std::list<std::string> names;
+		names.push_back("heartbeat");
+		names.push_back("http://uscxml.tk.informatik.tu-darmstadt.de/#heartbeat");
 		return names;
 	}
 

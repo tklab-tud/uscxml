@@ -55,10 +55,10 @@ public:
 	virtual ~BasicHTTPIOProcessor();
 	virtual boost::shared_ptr<IOProcessorImpl> create(uscxml::InterpreterImpl* interpreter);
 
-	virtual std::set<std::string> getNames() {
-		std::set<std::string> names;
-		names.insert("basichttp");
-		names.insert("http://www.w3.org/TR/scxml/#BasicHTTPEventProcessor");
+	virtual std::list<std::string> getNames() {
+		std::list<std::string> names;
+		names.push_back("basichttp");
+		names.push_back("http://www.w3.org/TR/scxml/#BasicHTTPEventProcessor");
 		return names;
 	}
 
@@ -86,8 +86,11 @@ protected:
 	std::map<std::string, std::pair<URL, SendRequest> > _sendRequests;
 };
 
-#ifdef BUILD_AS_PLUGINS
+// do not implement pluma plugins if we build an inherited plugin
+#ifdef ioprocessor_basichttp_EXPORTS
+#	ifdef BUILD_AS_PLUGINS
 PLUMA_INHERIT_PROVIDER(BasicHTTPIOProcessor, IOProcessorImpl);
+#	endif
 #endif
 
 }

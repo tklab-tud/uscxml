@@ -43,11 +43,11 @@ public:
 	virtual ~UmundoInvoker();
 	virtual boost::shared_ptr<InvokerImpl> create(InterpreterImpl* interpreter);
 
-	virtual std::set<std::string> getNames() {
-		std::set<std::string> names;
-		names.insert("umundo");
-		names.insert("http://umundo.tk.informatik.tu-darmstadt.de/");
-		names.insert("http://umundo.tk.informatik.tu-darmstadt.de");
+	virtual std::list<std::string> getNames() {
+		std::list<std::string> names;
+		names.push_back("umundo");
+		names.push_back("http://umundo.tk.informatik.tu-darmstadt.de/");
+		names.push_back("http://umundo.tk.informatik.tu-darmstadt.de");
 		return names;
 	}
 

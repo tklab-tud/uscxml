@@ -179,6 +179,7 @@ tthread::recursive_mutex HTTPServer::_instanceMutex;
 HTTPServer* HTTPServer::getInstance(unsigned short port, unsigned short wsPort, SSLConfig* sslConf) {
 //	tthread::lock_guard<tthread::recursive_mutex> lock(_instanceMutex);
 	if (_instance == NULL) {
+		std::cout << "Instantiating new HTTPServer" << std::endl;
 #ifdef _WIN32
 		WSADATA wsaData;
 		WSAStartup(MAKEWORD(2, 2), &wsaData);
@@ -561,7 +562,7 @@ bool HTTPServer::registerServlet(const std::string& path, HTTPServlet* servlet) 
 	HTTPServer* INSTANCE = getInstance();
 
 	if (!INSTANCE->_httpHandle)
-		return true;
+		return true; // this is the culprit!
 
 	tthread::lock_guard<tthread::recursive_mutex> lock(INSTANCE->_mutex);
 

@@ -233,13 +233,17 @@ if (CMAKE_CROSSCOMPILING)
 	OPTION(ENABLE_COTIRE "Enable compile time reduction techniques" OFF)
 else()
 	OPTION(BUILD_SHARED_LIBS "Build shared libraries" ON)
+endif()
+
+if (${CMAKE_CXX_COMPILER_ID} STREQUAL "MSVC")
+	OPTION(ENABLE_COTIRE "Enable compile time reduction techniques" OFF)
+else()
 	OPTION(ENABLE_COTIRE "Enable compile time reduction techniques" ON)
 endif()
 
 if (NOT BUILD_SHARED_LIBS)
 	add_definitions("-DUSCXML_STATIC")
 endif()
-
 
 #
 # BUILD_PREFER_PREBUILT_LIBS:
@@ -264,6 +268,7 @@ include_directories(${USCXML_PREBUILT_LIBRARY_PATH}/include)
 #message(STATUS "Searching for prebuilt libraries in: ${CMAKE_FIND_ROOT_PATH}")
 
 if (WIN32)
+	set(BUILD_SHARED_LIBS OFF)
 	include_directories(${PROJECT_SOURCE_DIR}/contrib/src/getopt)
 	include_directories(${PROJECT_SOURCE_DIR}/contrib/src/inttypes)
 endif()
@@ -379,20 +384,23 @@ elseif (${CMAKE_CXX_COMPILER_ID} STREQUAL "MSVC")
 	endforeach()
 
 	# use static MSVCRT
-	# foreach(FLAGS 
-	# 	CMAKE_C_FLAGS_DEBUG
-	# 	CMAKE_C_FLAGS_MINSIZEREL
-	# 	CMAKE_C_FLAGS_RELEASE
-	# 	CMAKE_C_FLAGS_RELWITHDEBINFO
-	# 	CMAKE_CXX_FLAGS_DEBUG
-	# 	CMAKE_CXX_FLAGS_MINSIZEREL
-	# 	CMAKE_CXX_FLAGS_RELEASE
-	# 	CMAKE_CXX_FLAGS_RELWITHDEBINFO)
-	# 	if(${FLAGS} MATCHES "/MD")
-	# 		string(REGEX REPLACE "/MD" "/MT" ${FLAGS} "${${FLAGS}}")
-	# 	endif()
-	# endforeach()
-	
+	# if (NOT BUILD_AS_PLUGINS)
+	# 	foreach(FLAGS 
+	# 		CMAKE_C_FLAGS
+	# 		CMAKE_CXX_FLAGS
+	# 		CMAKE_C_FLAGS_DEBUG
+	# 		CMAKE_C_FLAGS_MINSIZEREL
+	# 		CMAKE_C_FLAGS_RELEASE
+	# 		CMAKE_C_FLAGS_RELWITHDEBINFO
+	# 		CMAKE_CXX_FLAGS_DEBUG
+	# 		CMAKE_CXX_FLAGS_MINSIZEREL
+	# 		CMAKE_CXX_FLAGS_RELEASE
+	# 		CMAKE_CXX_FLAGS_RELWITHDEBINFO)
+	# 		if(${FLAGS} MATCHES "/MD")
+	# 			string(REGEX REPLACE "/MD" "/MT" ${FLAGS} "${${FLAGS}}")
+	# 		endif()
+	# 	endforeach()
+	# endif()
 	
 elseif (${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-parentheses-equality")
@@ -494,12 +502,13 @@ endif()
 set( CMAKE_RUNTIME_OUTPUT_DIRECTORY "${OUTPUT_DIR}/bin" )
 set( CMAKE_LIBRARY_OUTPUT_DIRECTORY "${OUTPUT_DIR}/lib" )
 set( CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${OUTPUT_DIR}/lib" )
-foreach( OUTPUT_CONFIG ${CMAKE_CONFIGURATION_TYPES} )
-    string( TOUPPER ${OUTPUT_CONFIG} OUTPUT_CONFIG )
-    set( CMAKE_RUNTIME_OUTPUT_DIRECTORY_${OUTPUT_CONFIG} "${OUTPUT_DIR}/bin" )
-    set( CMAKE_LIBRARY_OUTPUT_DIRECTORY_${OUTPUT_CONFIG} "${OUTPUT_DIR}/lib" )
-    set( CMAKE_ARCHIVE_OUTPUT_DIRECTORY_${OUTPUT_CONFIG} "${OUTPUT_DIR}/lib" )
-endforeach()
+# do not override configuration specific outputs
+# foreach( OUTPUT_CONFIG ${CMAKE_CONFIGURATION_TYPES} )
+#     string( TOUPPER ${OUTPUT_CONFIG} OUTPUT_CONFIG )
+#     set( CMAKE_RUNTIME_OUTPUT_DIRECTORY_${OUTPUT_CONFIG} "${OUTPUT_DIR}/bin" )
+#     set( CMAKE_LIBRARY_OUTPUT_DIRECTORY_${OUTPUT_CONFIG} "${OUTPUT_DIR}/lib" )
+#     set( CMAKE_ARCHIVE_OUTPUT_DIRECTORY_${OUTPUT_CONFIG} "${OUTPUT_DIR}/lib" )
+# endforeach()
 
 OPTION(BUILD_AS_PLUGINS "Build invokers, ioprocessors and datamodels as plugins" OFF)
 
@@ -770,24 +779,22 @@ endif()
 set(CMAKE_FIND_LIBRARY_SUFFIXES ${CMAKE_FIND_LIBRARY_SUFFIXES_ORIG})
 
 set(CMAKE_FIND_FRAMEWORK "FIRST")
-if (NOT WIN32)
-	find_package(OpenAL)
+find_package(OpenAL)
+if (OPENAL_FOUND)
+	list (APPEND USCXML_INCLUDE_DIRS ${OPENAL_INCLUDE_DIR})
+	if (APPLE OR IOS)
+		list (APPEND USCXML_OPT_LIBS ${OPENAL_LIBRARY}/OpenAL)
+	else()
+		list (APPEND USCXML_OPT_LIBS ${OPENAL_LIBRARY})
+	endif()
+else()
+	find_package(OpenALKCAT)
 	if (OPENAL_FOUND)
 		list (APPEND USCXML_INCLUDE_DIRS ${OPENAL_INCLUDE_DIR})
-		if (APPLE OR IOS)
-			list (APPEND USCXML_OPT_LIBS ${OPENAL_LIBRARY}/OpenAL)
-		else()
-			list (APPEND USCXML_OPT_LIBS ${OPENAL_LIBRARY})
-		endif()
-	else()
-		find_package(OpenALKCAT)
-		if (OPENAL_FOUND)
-			list (APPEND USCXML_INCLUDE_DIRS ${OPENAL_INCLUDE_DIR})
-			list (APPEND USCXML_OPT_LIBS ${OPENAL_LIBRARY})
-		endif()
+		list (APPEND USCXML_OPT_LIBS ${OPENAL_LIBRARY})
 	endif()
-	set(CMAKE_FIND_FRAMEWORK "LAST")
 endif()
+set(CMAKE_FIND_FRAMEWORK "LAST")
 
 if (NOT AUDIOTOOLBOX_FOUND)
 	set(CMAKE_FIND_LIBRARY_SUFFIXES ${CMAKE_FIND_LIBRARY_SUFFIXES_SHARED})
@@ -855,6 +862,7 @@ include_directories(${USCXML_INCLUDE_DIRS})
 add_subdirectory(src/uscxml)
 if (WIN32)
 	list(APPEND USCXML_FILES "${PROJECT_SOURCE_DIR}/contrib/src/getopt/getopt.c")
+#	SET_SOURCE_FILES_PROPERTIES( ${PROJECT_SOURCE_DIR}/contrib/src/getopt/getopt.c PROPERTIES LANGUAGE CXX )
 endif()
 
 if (UNIX AND NOT APPLE)
@@ -921,7 +929,9 @@ endforeach()
 
 # add compile time reducer
 # see https://github.com/sakra/cotire
-include(cotire)
+if (ENABLE_COTIRE)
+	include(cotire)
+endif()
 
 # build library
 if (BUILD_AS_PLUGINS)
@@ -935,28 +945,41 @@ else()
 	target_link_libraries(uscxml ${USCXML_OPT_LIBS} ${USCXML_CORE_LIBS})
 endif()
 if (NOT CMAKE_CROSSCOMPILING)
-	set_target_properties(uscxml PROPERTIES COTIRE_CXX_PREFIX_HEADER_INIT "src/uscxml/pch.h")
-	set_target_properties(uscxml PROPERTIES COTIRE_ADD_UNITY_BUILD FALSE)
 	if (ENABLE_COTIRE)
+		set_target_properties(uscxml PROPERTIES COTIRE_CXX_PREFIX_HEADER_INIT "src/uscxml/pch.h")
+		set_target_properties(uscxml PROPERTIES COTIRE_ADD_UNITY_BUILD FALSE)
 		cotire(uscxml)
 	endif()
 endif()
 
 if (NOT CMAKE_CROSSCOMPILING)
-	add_executable(uscxml-browser apps/uscxml-browser.cpp)
+	if (WIN32)
+		add_executable(uscxml-browser apps/uscxml-browser.cpp ${PROJECT_SOURCE_DIR}/contrib/src/getopt/getopt.c)
+	else()
+		add_executable(uscxml-browser apps/uscxml-browser.cpp)
+	endif()
 	target_link_libraries(uscxml-browser uscxml)
 	
+	
 	if (NOT CMAKE_CROSSCOMPILING)
-		set_target_properties(uscxml-browser PROPERTIES COTIRE_ADD_UNITY_BUILD FALSE)
+		if (ENABLE_COTIRE)
+			set_target_properties(uscxml-browser PROPERTIES COTIRE_ADD_UNITY_BUILD FALSE)
+		endif()
 #		cotire(uscxml-browser)
 	endif()
 	set_target_properties(uscxml-browser PROPERTIES FOLDER "Apps")
 	install_executable(TARGETS uscxml-browser COMPONENT tools)
 
-	add_executable(uscxml-transform apps/uscxml-transform.cpp)
+	if (WIN32)
+		add_executable(uscxml-transform apps/uscxml-transform.cpp ${PROJECT_SOURCE_DIR}/contrib/src/getopt/getopt.c)
+	else()
+		add_executable(uscxml-transform apps/uscxml-transform.cpp)
+	endif()
 	target_link_libraries(uscxml-transform uscxml)
 	if (NOT CMAKE_CROSSCOMPILING)
-		set_target_properties(uscxml-transform PROPERTIES COTIRE_ADD_UNITY_BUILD FALSE)
+		if (ENABLE_COTIRE)
+			set_target_properties(uscxml-transform PROPERTIES COTIRE_ADD_UNITY_BUILD FALSE)
+		endif()
 	endif()
 	set_target_properties(uscxml-transform PROPERTIES FOLDER "Apps")
 	install_executable(TARGETS uscxml-transform COMPONENT tools)
@@ -1086,6 +1109,10 @@ if (BUILD_PREFER_PREBUILT_LIBS)
 else()
 	message(STATUS "  Preferring dependent libraries . : installed on system")
 endif()
+
+string(TOUPPER ${CMAKE_BUILD_TYPE} CMAKE_BUILD_TYPE_UC)
+message(STATUS "  CXX Flags : " ${CMAKE_CXX_FLAGS} " " ${CMAKE_CXX_FLAGS_${CMAKE_BUILD_TYPE_UC}})
+message(STATUS "  C   Flags : " ${CMAKE_C_FLAGS} " " ${CMAKE_C_FLAGS_${CMAKE_BUILD_TYPE_UC}})
 
 STRING(REGEX REPLACE "${CMAKE_BINARY_DIR}" "BUILD_DIR" REL_CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
 STRING(REGEX REPLACE "${CMAKE_SOURCE_DIR}" "SOURCE_DIR" REL_CMAKE_LIBRARY_OUTPUT_DIRECTORY ${REL_CMAKE_LIBRARY_OUTPUT_DIRECTORY})

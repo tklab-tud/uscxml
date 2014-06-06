@@ -49,12 +49,14 @@
 
 namespace uscxml {
 
-#ifdef BUILD_AS_PLUGINS
+#ifndef ioprocessor_scxml_EXPORTS
+#	ifdef BUILD_AS_PLUGINS
 PLUMA_CONNECTOR
 bool pluginConnect(pluma::Host& host) {
 	host.add( new BasicHTTPIOProcessorProvider() );
 	return true;
 }
+#	endif
 #endif
 
 // see http://www.w3.org/TR/scxml/#BasicHTTPEventProcessor

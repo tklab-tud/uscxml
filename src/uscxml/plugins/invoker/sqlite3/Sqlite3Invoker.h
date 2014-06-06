@@ -34,10 +34,10 @@ public:
 	virtual ~Sqlite3Invoker();
 	virtual boost::shared_ptr<InvokerImpl> create(InterpreterImpl* interpreter);
 
-	virtual std::set<std::string> getNames() {
-		std::set<std::string> names;
-		names.insert("sqlite3");
-		names.insert("http://uscxml.tk.informatik.tu-darmstadt.de/#sqlite3");
+	virtual std::list<std::string> getNames() {
+		std::list<std::string> names;
+		names.push_back("sqlite3");
+		names.push_back("http://uscxml.tk.informatik.tu-darmstadt.de/#sqlite3");
 		return names;
 	}
 

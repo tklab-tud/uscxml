@@ -72,11 +72,11 @@ public:
 	virtual ~IMInvoker();
 	virtual boost::shared_ptr<InvokerImpl> create(InterpreterImpl* interpreter);
 
-	virtual std::set<std::string> getNames() {
-		std::set<std::string> names;
-		names.insert("im");
-		names.insert("instant-messaging");
-		names.insert("http://uscxml.tk.informatik.tu-darmstadt.de/#instant-messaging");
+	virtual std::list<std::string> getNames() {
+		std::list<std::string> names;
+		names.push_back("im");
+		names.push_back("instant-messaging");
+		names.push_back("http://uscxml.tk.informatik.tu-darmstadt.de/#instant-messaging");
 		return names;
 	}
 

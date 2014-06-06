@@ -97,11 +97,11 @@ public:
 	virtual ~DirMonInvoker();
 	virtual boost::shared_ptr<InvokerImpl> create(InterpreterImpl* interpreter);
 
-	virtual std::set<std::string> getNames() {
-		std::set<std::string> names;
-		names.insert("dirmon");
-		names.insert("DirectoryMonitor");
-		names.insert("http://uscxml.tk.informatik.tu-darmstadt.de/#dirmon");
+	virtual std::list<std::string> getNames() {
+		std::list<std::string> names;
+		names.push_back("dirmon");
+		names.push_back("DirectoryMonitor");
+		names.push_back("http://uscxml.tk.informatik.tu-darmstadt.de/#dirmon");
 		return names;
 	}
 

@@ -47,12 +47,12 @@ public:
 	USCXMLInvoker();
 	virtual ~USCXMLInvoker();
 	virtual boost::shared_ptr<InvokerImpl> create(InterpreterImpl* interpreter);
-	virtual std::set<std::string> getNames() {
-		std::set<std::string> names;
-		names.insert("scxml");
-		names.insert("uscxml");
-		names.insert("http://www.w3.org/TR/scxml");
-		names.insert("http://www.w3.org/TR/scxml/");
+	virtual std::list<std::string> getNames() {
+		std::list<std::string> names;
+		names.push_back("scxml");
+		names.push_back("uscxml");
+		names.push_back("http://www.w3.org/TR/scxml");
+		names.push_back("http://www.w3.org/TR/scxml/");
 		return names;
 	}
 

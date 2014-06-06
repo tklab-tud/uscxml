@@ -44,10 +44,10 @@ public:
 	virtual ~SampleIOProcessor();
 	virtual boost::shared_ptr<IOProcessorImpl> create(uscxml::InterpreterImpl* interpreter);
 
-	virtual std::set<std::string> getNames() {
-		std::set<std::string> names;
-		names.insert("sample");
-		names.insert("http://www.w3.org/TR/scxml/#SampleEventProcessor");
+	virtual std::list<std::string> getNames() {
+		std::list<std::string> names;
+		names.push_back("sample");
+		names.push_back("http://www.w3.org/TR/scxml/#SampleEventProcessor");
 		return names;
 	}
 
