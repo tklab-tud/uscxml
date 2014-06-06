@@ -1,24 +1,32 @@
 // Define the namespace
-var eu_smartvorex_femkit_ui_modelviewer = eu_smartvorex_femkit_ui_modelviewer || {};
+// var eu_smartvorex_femkit_ui_modelviewer = eu_smartvorex_femkit_ui_modelviewer || {};
 
-eu_smartvorex_femkit_ui_modelviewer.VRMLViewer = function (element, params) {
-
-  console.log(params);
+// eu_smartvorex_femkit_ui_modelviewer.VRMLViewer = function (element, params) {
+VRMLViewer = function (element, params) {
+	element.innerHTML = "<div name='vrmlviewer'/>";
+	
+  this.updatePose = function(pose) {
+	     console.log("Updating pose.");
+	     console.log("Pose = " + JSON.stringify(pose, null, 4));
+       if (!pose.width) pose.width = self.pose.width;
+       if (!pose.height) pose.height = self.pose.height;
+       // this.setScene(this.imagePath, this.imageFormat, pose, this.serverURL);
+  };
 
   // private attributes
   var self = this;
   var batchChanges = false;
   var webGLManipulatorsSetup = false;
+  var currWebGLModel = "";
   
   // private instanceId
-  // if (!VRMLViewer.instances)
-  //   VRMLViewer.instances = 0;
-  // this.instanceId = VRMLViewer.instances++;
-  
-  // private instanceId
-  if (!eu_smartvorex_femkit_ui_modelviewer.VRMLViewer.instances)
-    eu_smartvorex_femkit_ui_modelviewer.VRMLViewer.instances = 0;
-  this.instanceId = eu_smartvorex_femkit_ui_modelviewer.VRMLViewer.instances++;
+  // if (!eu_smartvorex_femkit_ui_modelviewer.VRMLViewer.instances)
+  //   eu_smartvorex_femkit_ui_modelviewer.VRMLViewer.instances = 0;
+  // this.instanceId = eu_smartvorex_femkit_ui_modelviewer.VRMLViewer.instances++;
+
+  if (!VRMLViewer.instances)
+    VRMLViewer.instances = 0;
+  this.instanceId = VRMLViewer.instances++;
   
   // public attribute defaults
   this.width       = 450;
@@ -33,10 +41,8 @@ eu_smartvorex_femkit_ui_modelviewer.VRMLViewer = function (element, params) {
       x: 0,
       y: 0,
       z: 0,
-      width: false,
-      height: false,
       autorotate: false,
-    }
+    };
     this.pose = pose;
   }
   
@@ -45,16 +51,16 @@ eu_smartvorex_femkit_ui_modelviewer.VRMLViewer = function (element, params) {
   this.enableWebGL = true;
   this.enableSceneshots = false;
   this.enableDraggables = false;
-  this.enablePosePublishing = true;
   this.treeNavigationStyle = true;
   this.listNavigationStyle = true;
   this.listDirectory = "";
 
-  this.serverURL = "localhost:8082";
-  this.webSocketURL = "localhost:8083";
+  this.serverURL = "localhost:8080";
   this.imagePath = "";
   this.imageFormat = ".png";
   this.resRoot = "";
+  
+  osg.setNotifyLevel(osg.ERROR);
   
   // copy over values from constructor arguments
   if (params) {
@@ -72,13 +78,6 @@ eu_smartvorex_femkit_ui_modelviewer.VRMLViewer = function (element, params) {
   if (!self.pose.height)
     self.pose.height = self.height;
 
-  this.hasWebSockets = ("WebSocket" in window);
-  
-  if (self.enablePosePublishing && !self.hasWebSockets) {
-    console.log("Your browser does not support WebSockets, deactivating pose publishing");
-    self.enablePosePublishing = false;
-  }
-  
   var hasWebGL = function() {
     try {
       if (!window.WebGLRenderingContext) {
@@ -96,39 +95,17 @@ eu_smartvorex_femkit_ui_modelviewer.VRMLViewer = function (element, params) {
       return false;
     }
     return false;
-  }
-  self.hasWebGL = hasWebGL();
+  };
   
   if (self.enableWebGL && !hasWebGL()) {
-    console.log("Your browser does not support WebGL, falling back to sceneshots");
+    console.log("Your browser does no support WebGL, falling back to sceneshots");
     self.enableWebGL = false;
     self.enableSceneshots = true;
   }
   
-  // see http://stackoverflow.com/questions/4810841/how-can-i-pretty-print-json-using-javascript
-  function syntaxHighlight(json) {
-      if (typeof json != 'string') {
-           json = JSON.stringify(json, undefined, 2);
-      }
-      json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-      return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
-          var cls = 'number';
-          if (/^"/.test(match)) {
-              if (/:$/.test(match)) {
-                  cls = 'key';
-              } else {
-                  cls = 'string';
-              }
-          } else if (/true|false/.test(match)) {
-              cls = 'boolean';
-          } else if (/null/.test(match)) {
-              cls = 'null';
-          }
-          return '<span class="' + cls + '">' + match + '</span>';
-      });
-  }
-  
-  // normalize parameters
+  /**
+   * normalize given parameters
+   */
   var normalizeParams = function() {
     // make sure server url begins with protocol and does *not* ends in /
     if (!self.serverURL.substring(0, 7) == "http://" && 
@@ -149,14 +126,18 @@ eu_smartvorex_femkit_ui_modelviewer.VRMLViewer = function (element, params) {
   
     if (!self.imageFormat.substring(0, 1) !== ".")
       self.imageFormat = "." + self.imageFormat;    
-  }
+  };
   normalizeParams();
-  
+
+  /**
+   * Fetch a remote WebGL model and return a future for it
+   */
   var getWebGLModel = function(url) {
+    console.log("Loading " + url);
     if (self.webGLStandby) { self.webGLStandby.show(); }
     var defer = osgDB.Promise.defer();
     var node = new osg.MatrixTransform();
-    //node.setMatrix(osg.Matrix.makeRotate(-Math.PI/2, 1,0,0, []));
+    // node.setMatrix(osg.Matrix.makeRotate(-Math.PI/2, 1,0,0, []));
     var loadModel = function(url) {
       osg.log("loading " + url);
       var req = new XMLHttpRequest();
@@ -165,23 +146,36 @@ eu_smartvorex_femkit_ui_modelviewer.VRMLViewer = function (element, params) {
         if (req.readyState == 4) {
           if(req.status == 200) {
             osgDB.Promise.when(osgDB.parseSceneGraph(JSON.parse(req.responseText))).then(function(child) {
-              node.setMatrix(osg.Matrix.makeRotate(Math.PI/2.0, 1,0,0,[]));
+
+              console.log("Loaded " + url);
+
+              var rotate = [];
+              osg.Matrix.makeIdentity(rotate);
+              // osg.Matrix.preMult(rotate, osg.Matrix.makeRotate(Math.PI/2.0, 1,0,0,[]));
+              // osg.Matrix.preMult(rotate, osg.Matrix.makeRotate(Math.PI, 0,1,0,[]));
+              
+              node.setMatrix(rotate);
               node.addChild(child);
               defer.resolve(node);
               osg.log("success " + url);
+              
             });
+            if (self.webGLStandby) { self.webGLStandby.hide(); }
           } else {
             osg.log("error " + url);            
+            if (self.webGLStandby) { self.webGLStandby.hide(); }
           }
-          if (self.webGLStandby) { self.webGLStandby.hide(); }
         }
       };
       req.send(null);
     };
     loadModel(url);
     return defer.promise;
-  }
+  };
 
+  /**
+   * Concatenate pose as query string
+   */
   var urlSuffixForPose = function(pose) {
     var queryString =
     '?width=' + pose.width + 
@@ -197,7 +191,16 @@ eu_smartvorex_femkit_ui_modelviewer.VRMLViewer = function (element, params) {
     return queryString;
   };
 
+  /**
+   * Get relative position of two elements
+   */
   var moverRelativeTo = function(mover, container) {
+    // see http://stackoverflow.com/questions/288699/get-the-position-of-a-div-span-tag
+    var absolutePosition = function(el) {
+      for (var lx=0, ly=0; el != null; lx += el.offsetLeft, ly += el.offsetTop, el = el.offsetParent);
+      return {x: lx,y: ly};
+    };
+
     var containerPos = absolutePosition(container);
     return {
       x: mover.x - containerPos.x, 
@@ -205,37 +208,59 @@ eu_smartvorex_femkit_ui_modelviewer.VRMLViewer = function (element, params) {
     };
   };
 
-  // see http://stackoverflow.com/questions/288699/get-the-position-of-a-div-span-tag
-  var absolutePosition = function(el) {
-    for (var lx=0, ly=0; el != null; lx += el.offsetLeft, ly += el.offsetTop, el = el.offsetParent);
-    return {x: lx,y: ly};
-  };
+  var eulerToMatrix = function(pitch, roll, yaw) {
+  	// see http://www.flipcode.com/documents/matrfaq.html#Q36
+    var m = osg.Matrix.makeIdentity([]);
+    
+    var A = Math.cos(pitch);
+    var B = Math.sin(pitch);
+    var C = Math.cos(roll);
+    var D = Math.sin(roll);
+    var E = Math.cos(yaw);
+    var F = Math.sin(yaw);
+    var AD = A * D;
+    var BD = B * D;
+    
+    osg.Matrix.setRow(m, 0,  (C * E),            (-C * F),          (-D),      0);
+    osg.Matrix.setRow(m, 1,  (-BD * E + A * F),  (BD * F + A * E),  (-B * C),  0);
+    osg.Matrix.setRow(m, 2,  (AD * E + B * F),   (-AD * F + B * E), (A * C),   0);
+    osg.Matrix.setRow(m, 3,  0,                  0,                 0,         1);
+   
+    return m;
+  }
 
-  // update the scene
-  this.updateScene = function() {
-    if (self.serverURL && self.imagePath && !self.batchChanges) {
-      console.log(self.serverURL + self.imagePath + self.imageFormat + urlSuffixForPose(self.pose));
-      if (self.enableWebGL) {
-        osgDB.Promise.when(getWebGLModel(self.serverURL + self.imagePath + '.osgjs')).then(function(model) {       
-          self.webGLViewer.setSceneData(model);
-          if (!webGLManipulatorsSetup) {
-            self.webGLViewer.setupManipulator(new osgGA.OrbitManipulator(), false);
-            self.webGLViewer.getManipulator().computeHomePosition();  
-          }
-          webGLManipulatorsSetup = true;
-      	});
-      } 
-      if (self.enableSceneshots) {
-        self.imgElem.src = self.serverURL + self.imagePath + self.imageFormat + urlSuffixForPose(self.pose);
-        if (self.enableMovies && self.movieAddButton) {
-          // we are showing an image, activate movie controls
-          self.movieAddButton.domNode.style.display = "";
-          self.movieDropDown.domNode.style.display = "";
-        }
-      }
+  var matrixToEuler = function(m) {
+  	// see: http://www.flipcode.com/documents/matrfaq.html#Q37
+    var angleX = 0;
+    var angleZ = 0;
+    var D = -1 * Math.asin(osg.Matrix.get(m,0,2));        /* Calculate Y-axis angle */
+    var angleY = D;
+    var C = Math.cos(angleY);
+    
+    /* Gimbal lock? */
+    if (Math.abs(C) > 0.005) {
+      var tr_x =  osg.Matrix.get(m,2,2) / C;           /* No, so get X-axis angle */
+      var tr_y = -1 * osg.Matrix.get(m,1,2)  / C;
+      angleX  = Math.atan2( tr_y, tr_x );
+      tr_x =  osg.Matrix.get(m,0,0) / C;                  /* Get Z-axis angle */
+      tr_y = -1 * osg.Matrix.get(m,0,1) / C;
+      angleZ  = Math.atan2( tr_y, tr_x );
+    } else {
+      /* Gimball lock has occurred */
+      angleX = 0;                      /* Set X-axis angle to zero */
+      var tr_x = osg.Matrix.get(m,1,1);                 /* And calculate Z-axis angle */
+      var tr_y = osg.Matrix.get(m,1,0);
+      angleZ = Math.atan2( tr_y, tr_x );
     }
-  };
-
+    
+    /* Clamp all angles to range */
+    return {
+      pitch: angleX % (2 * 3.14159),
+      roll: angleY % (2 * 3.14159),
+      yaw: angleZ % (2 * 3.14159)
+    };
+  }
+  
   // get list of supported ffmpeg codecs from server
   this.populateMovieCodecs = function(server, selectElem) {
     self.xhr.get({
@@ -263,17 +288,20 @@ eu_smartvorex_femkit_ui_modelviewer.VRMLViewer = function (element, params) {
               codec !== "y41p" && 
               codec !== "yuv4")
             continue;
-          //console.log(codec);
+          // console.log(codec);
           selectElem.options.push({ label: result.video[codec].longName, value: codec });              
           if (codec === "mpeg4")
             selectElem.options[selectElem.options.length - 1].selected = true;
         }
       }
     });
-  }
+  };
 
   // update list of vrml files from server
   this.refreshServer = function(server, params) {
+    if (!self.listNavigationStyle && !self.treeNavigationStyle)
+    return;
+    
     self.serverURL = server;
     if (!params)
       params = {};
@@ -307,7 +335,7 @@ eu_smartvorex_femkit_ui_modelviewer.VRMLViewer = function (element, params) {
         }
       },
       load: function(result) {
-//        self.localStorage.put("vrmlServer", self.serverURL, null);
+// self.localStorage.put("vrmlServer", self.serverURL, null);
         if (self.browseButton) { self.browseButton.setAttribute('label', 'Refresh'); }
         if (self.fileStandby) { self.fileStandby.hide(); }
 
@@ -359,36 +387,130 @@ eu_smartvorex_femkit_ui_modelviewer.VRMLViewer = function (element, params) {
           }
           self.fileListSelect.startup();
         }
-        //self.updateScene();
+        // self.updateScene();
       }
     });
   };
 
-  this.setPose = function(imagePath, imageFormat, pose, serverURL) {
+  this.getPose = function() {
+    if (self.webGLViewer && self.webGLViewer.getSceneData()) {
+      var rotate = [];
+      osg.Matrix.makeIdentity(rotate);
+      
+      osg.Matrix.preMult(rotate, osg.Matrix.makeRotate(Math.PI/2.0, 1,0,0,[]));
+      osg.Matrix.preMult(rotate, osg.Matrix.makeRotate(Math.PI, 0,1,0,[]));
+      osg.Matrix.postMult(self.webGLViewer.getSceneData().getMatrix(), rotate);
+      
+      var pose = matrixToEuler(rotate);
+      return pose;
+    } else {
+      return {
+        pitch: self.pose.pitch,
+        roll: self.pose.roll,
+        yaw: self.pose.yaw,
+      }
+    }
+  }
+  
+  this.setPose = function(pose) {
+    this.setScene(self.imagePath, self.imageFormat, pose, self.serverURL);
+  }
+  
+  this.setScene = function(imagePath, imageFormat, pose, serverURL) {
+
     if (serverURL && serverURL != self.serverURL) {
       self.refreshServer(serverURL);
     }
+        
     self.imagePath = imagePath;
     self.imageFormat = imageFormat;
-    self.pose = pose;
 
-    var pitch = (pose.pitch % (2 * 3.14159) + 0.5) * 100;
-    var roll = (pose.roll % (2 * 3.14159) + 0.5) * 100;
-    var yaw = (pose.yaw % (2 * 3.14159) + 0.5) * 100;
-        
-    var x = ((pose.x / 100) + 0.5) * 100;
-    var y = ((pose.y / 100) + 0.5) * 100;
+    for (var key in pose) {
+      self.pose[key] = pose[key];
+    }
 
-    var zoom = (((pose.zoom - 1) / 3) + 0.5) * 100;
+    self.pose.pitch = (2 * 3.14159 + self.pose.pitch) % (2 * 3.14159);
+    self.pose.roll = (2 * 3.14159 + self.pose.roll) % (2 * 3.14159);
+    self.pose.yaw = (2 * 3.14159 + self.pose.yaw) % (2 * 3.14159);
 
-    self.pitchRollHandlerElem.parentNode.style.right = pitch + "%";
-    self.pitchRollHandlerElem.parentNode.style.top = roll + "%";
-    self.yawZoomHandlerElem.parentNode.style.right = yaw + "%";
-    self.yawZoomHandlerElem.parentNode.style.top = zoom + "%";
-    self.xyHandlerElem.parentNode.style.right = x + "%";
-    self.xyHandlerElem.parentNode.style.top = y + "%";
+    var pitch = (self.pose.pitch / (2 * 3.14159) + 0.5) * 100;
+    var roll = (self.pose.roll / (2 * 3.14159) + 0.5) * 100;
+    var yaw = (self.pose.yaw / (2 * 3.14159) + 0.5) * 100;
+    var x = ((self.pose.x / 100) + 0.5) * 100;
+    var y = ((self.pose.y / 100) + 0.5) * 100;
+    var zoom = (((self.pose.zoom - 1) / 3) + 0.5) * 100;
+
+    // console.log("pitch: " + pitch);
+
+    if (self.pitchRollHandlerElem) self.pitchRollHandlerElem.parentNode.style.right = pitch + "%";
+    if (self.pitchRollHandlerElem) self.pitchRollHandlerElem.parentNode.style.top = roll + "%";
+    if (self.yawZoomHandlerElem) self.yawZoomHandlerElem.parentNode.style.right = yaw + "%";
+    if (self.yawZoomHandlerElem) self.yawZoomHandlerElem.parentNode.style.top = zoom + "%";
+    if (self.xyHandlerElem) self.xyHandlerElem.parentNode.style.right = x + "%";
+    if (self.xyHandlerElem) self.xyHandlerElem.parentNode.style.top = y + "%";
     
     self.updateScene();
+  };
+
+  // update the scene
+  this.updateScene = function() {
+    if (self.serverURL && self.imagePath && !self.batchChanges) {
+      // console.log(self.serverURL + self.imagePath + self.imageFormat + urlSuffixForPose(self.pose));
+
+      if (self.enableWebGL) {
+        var setWebGLPose = function() {
+          
+          // reset camera controls
+          self.webGLViewer.getManipulator().reset();
+          self.webGLViewer.getManipulator().computeHomePosition();  
+
+          var bs = self.webGLViewer.getSceneData().getBound();
+          var zoom = 1; //self.pose.zoom || 10;
+          var eye = [0, 0, bs.radius() * (1.9 * zoom)];
+          // var center = bs.center();
+          // var up = [1,1,0];
+          
+          self.webGLViewer.getManipulator().setEyePosition(eye);
+          
+          // var poseMatrix = eulerToMatrix(self.pose.pitch, self.pose.yaw, -1 * self.pose.roll);
+          var poseMatrix = eulerToMatrix(self.pose.pitch * -1, self.pose.roll * -1, self.pose.yaw);
+          
+          var rotate = [];
+          osg.Matrix.makeIdentity(rotate);
+          // osg.Matrix.preMult(rotate, osg.Matrix.makeRotate(Math.PI/2.0, 1,0,0,[]));
+          // osg.Matrix.preMult(rotate, osg.Matrix.makeRotate(Math.PI, 0,1,0,[]));
+          osg.Matrix.postMult(poseMatrix, rotate);
+
+          // osg.Matrix.preMult(rotate, poseMatrix);
+          self.webGLViewer.getSceneData().setMatrix(rotate);
+          
+        }
+        
+        if (self.imagePath != currWebGLModel) {
+          currWebGLModel = self.imagePath;
+          osgDB.Promise.when(getWebGLModel(self.serverURL + self.imagePath + '.osgjs')).then(function(model) {       
+            self.webGLViewer.setSceneData(model);
+            if (!webGLManipulatorsSetup) {
+              self.webGLViewer.setupManipulator(new osgGA.OrbitManipulator(), false);
+              self.webGLViewer.getManipulator().computeHomePosition();  
+            }
+            webGLManipulatorsSetup = true;
+            setWebGLPose();
+          });
+        }
+        if (self.webGLViewer && currWebGLModel == self.imagePath && self.webGLViewer.getSceneData()) {
+          setWebGLPose();
+        }
+      } 
+      if (self.enableSceneshots) {
+        self.imgElem.src = self.serverURL + self.imagePath + self.imageFormat + urlSuffixForPose(self.pose);
+        if (self.enableMovies && self.movieAddButton) {
+          // we are showing an image, activate movie controls
+          self.movieAddButton.domNode.style.display = "";
+          self.movieDropDown.domNode.style.display = "";
+        }
+      }
+    }
   };
 
   require(["dojo/dom-construct", 
@@ -540,17 +662,7 @@ eu_smartvorex_femkit_ui_modelviewer.VRMLViewer = function (element, params) {
             self.canvasElem.style.height = self.height;
             self.canvasElem.width = self.width;
             self.canvasElem.height = self.height;
-            
-            // osgDB.Promise.when(getWebGLModel('http://localhost:8081/vrml/cranehook/cranehook_bad_convergence/HARD_MP_VAL_013.osgjs')).then(function(model) {
-            //   self.webGLViewer = new osgViewer.Viewer(self.canvasElem, {antialias : true, alpha: true });
-            //   self.webGLViewer.init();
-            //   self.webGLViewer.getCamera().setClearColor([0.0, 0.0, 0.0, 0.0]);
-            //   self.webGLViewer.setSceneData(model);
-            //   self.webGLViewer.setupManipulator();
-            //   self.webGLViewer.getManipulator().computeHomePosition();  
-            //   self.webGLViewer.run();
-            // });
-            
+                        
             if (self.webGLViewer === undefined) {
               self.webGLViewer = new osgViewer.Viewer(self.canvasElem, {antialias : true, alpha: true });
               self.webGLViewer.init();
@@ -565,7 +677,7 @@ eu_smartvorex_femkit_ui_modelviewer.VRMLViewer = function (element, params) {
             // show elements
             array.forEach(dojo.query(".webGL", element), function(entry, i) {
               entry.style.display = "inline";
-            })
+            });
           } else {
             if (self.webGLViewer) {
               self.webGLViewer.stop();
@@ -573,9 +685,9 @@ eu_smartvorex_femkit_ui_modelviewer.VRMLViewer = function (element, params) {
             // hide elements
             array.forEach(dojo.query(".webGL", element), function(entry, i) {
               entry.style.display = "none";
-            })
+            });
           }
-        }
+        };
         activateWebGL(self.enableWebGL);
 
         var activateScreenshot = function(enable) {
@@ -588,13 +700,13 @@ eu_smartvorex_femkit_ui_modelviewer.VRMLViewer = function (element, params) {
               entry.style.display = "none";
             });
           }
-        }
+        };
         activateScreenshot(self.enableSceneshots);
+        
         
         /**
          * === POSE MANIPULATION AND RESET ====================
          */
-
          self.resetButtonElem = dojo.query("button.resetButton", element)[0];
          self.resetButton = new Button({
            label: "Reset",
@@ -610,12 +722,12 @@ eu_smartvorex_femkit_ui_modelviewer.VRMLViewer = function (element, params) {
              self.pose.yaw = 0;
              self.pose.zoom = 1;
 
-             self.xyHandler.node.style.left = 0;
-             self.xyHandler.node.style.top = 0;
-             self.pitchRollHandler.node.style.left = 0;
-             self.pitchRollHandler.node.style.top = 0;
-             self.yawZoomHandler.node.style.left = 0;
-             self.yawZoomHandler.node.style.top = 0;
+             if (self.xyHandler) self.xyHandler.node.style.left = 0;
+             if (self.xyHandler) self.xyHandler.node.style.top = 0;
+             if (self.pitchRollHandler) self.pitchRollHandler.node.style.left = 0;
+             if (self.pitchRollHandler) self.pitchRollHandler.node.style.top = 0;
+             if (self.yawZoomHandler) self.yawZoomHandler.node.style.left = 0;
+             if (self.yawZoomHandler) self.yawZoomHandler.node.style.top = 0;
 
              self.updateScene();
            }
@@ -735,15 +847,15 @@ eu_smartvorex_femkit_ui_modelviewer.VRMLViewer = function (element, params) {
             // show all draggables
             array.forEach(dojo.query(".draggable", element), function(entry, i) {
               entry.style.display = "inline";
-            })
+            });
             
           } else {
             // show all draggables
             array.forEach(dojo.query(".draggable", element), function(entry, i) {
               entry.style.display = "none";
-            })
+            });
           }
-        }
+        };
         activateDraggables(self.enableDraggables);
         
         /**
@@ -777,15 +889,16 @@ eu_smartvorex_femkit_ui_modelviewer.VRMLViewer = function (element, params) {
             
             array.forEach(dojo.query(".dndHandler", element), function(entry, i) {
               entry.style.display = "inline";
-            })
+            });
             
           } else {
             array.forEach(dojo.query(".dndHandler", element), function(entry, i) {
               entry.style.display = "none";
-            })
+            });
             
           }
-        }
+        };
+        
         activateDND(self.enableDND);
         
         /**
@@ -846,10 +959,10 @@ eu_smartvorex_femkit_ui_modelviewer.VRMLViewer = function (element, params) {
                   var allItems = self.fileListStore.query();
                   var foundAt = 0;
                   for (var i = 0; i < allItems.total; i++) {
-                    //console.log(self.serverURL + self.imagePath + " === " + allItems[i].url);
+                    // console.log(self.serverURL + self.imagePath + " === " + allItems[i].url);
                     if (self.serverURL + self.imagePath === allItems[i].url) {
                       foundAt = i;
-                      break
+                      break;
                     }
                   }
                   if (foundAt + 1 < allItems.total) {
@@ -867,7 +980,7 @@ eu_smartvorex_femkit_ui_modelviewer.VRMLViewer = function (element, params) {
               entry.style.display = "none";
             });
           }
-        }
+        };
         activateListNavigation(self.listNavigationStyle);
         
         var activateTreeNavigation = function(enable) {
@@ -919,7 +1032,6 @@ eu_smartvorex_femkit_ui_modelviewer.VRMLViewer = function (element, params) {
                       return { backgroundImage: "url('" + self.serverURL + item.url + self.imageFormat + "?width=16&height=16')"};
                     }
                   }
-                  //return {backgroundImage: "url('" + item.url + "?width=16&height=16')"};
               });
           
               self.filesDropDownElem = dojo.query("td.filesDropDown", element)[0];
@@ -973,318 +1085,269 @@ eu_smartvorex_femkit_ui_modelviewer.VRMLViewer = function (element, params) {
               entry.style.display = "none";
             });
           }
-        }
+        };
+        
         activateTreeNavigation(self.treeNavigationStyle);
-        
-        if (self.serverURL) {
-          self.refreshServer(self.serverURL);
-          self.updateScene();
-        }
-
-
-        /**
-         * === Pose Publishing ====================
-         */
-        
-        var activatePosePublishing = function(enable) {
-          if (enable && self.hasWebSockets) {
-            self.poseWebSocket = new WebSocket(self.webSocketURL);
-            
-            self.poseWebSocket.onopen = function(evt) {
-              foo = 0;
-              function publishPose() {
-                foo++;
-                var viewMatrix = self.webGLViewer.getCamera().getViewMatrix();
-                var roundMatrix = [];
-                for (var i = 0; i < 16; i++) {
-                  roundMatrix[i] = viewMatrix[i].toFixed(5);
-                  if (roundMatrix[i] == -0.0) roundMatrix[i] = 0.0;
-                }
-                self.poseWebSocket.send(JSON.stringify(roundMatrix));
-                self.messageBox.innerHTML = "<pre>SEND" + syntaxHighlight(roundMatrix) + "</pre>";
-                // self.poseWebSocket.send(foo);
-                // self.messageBox.innerHTML = "<pre>SEND" + foo + "</pre>";
-                if (self.enablePosePublishing) {
-                  setTimeout(publishPose, 200);
-                }
-              }
-              self.messageBox.innerHTML = "<pre>Starting</pre>";
-              publishPose();
-            };
-            self.poseWebSocket.onclose = function(evt) {
-            };
-            self.poseWebSocket.onmessage = function(evt) {
-              var result = JSON.parse(evt.data);
-             self.messageBox.innerHTML = "<pre>RCVD" + syntaxHighlight(JSON.parse(result.data.content)) + "</pre>";
-            };
-            self.poseWebSocket.onerror = function(evt) {
-            };
-          } else {
-            
-          }
-        }
-        activatePosePublishing(self.enablePosePublishing);
         
         /**
          * === MOVIE DROPDOWN ====================
          */
         
-        if (self.enableMovies) {
-          self.movieDropDownElem = dojo.query("div.movieDropDown", element)[0];
-          self.movieAddButtonElem = dojo.query("button.movieAddButton", element)[0];
+        var activateMovies = function(enable) {
+          if (enable) {
+            self.movieDropDownElem = dojo.query("div.movieDropDown", element)[0];
+            self.movieAddButtonElem = dojo.query("button.movieAddButton", element)[0];
 
-          self.movieDropDownContent = domConst.toDom(
-            '<div style="overflow: auto; max-height: 420px;"> \
-              <table><tr class="movieFormatLengthRow" /></tr><tr class="movieWidthHeightLengthRow" /></table> \
-              <div class=\"dndArea\" /> \
-            </div>'
-          );
+            self.movieDropDownContent = domConst.toDom(
+              '<div style="overflow: auto; max-height: 420px;"> \
+                <table><tr class="movieFormatLengthRow" /></tr><tr class="movieWidthHeightLengthRow" /></table> \
+                <div class=\"dndArea\" /> \
+              </div>'
+            );
         
-          self.movieFormatLengthRowElem = dojo.query("tr.movieFormatLengthRow", self.movieDropDownContent)[0];
-          self.movieWidthHeightLengthRowElem = dojo.query("tr.movieWidthHeightLengthRow", self.movieDropDownContent)[0];
-          self.movieDnDArea = dojo.query("div.dndArea", self.movieDropDownContent)[0];
+            self.movieFormatLengthRowElem = dojo.query("tr.movieFormatLengthRow", self.movieDropDownContent)[0];
+            self.movieWidthHeightLengthRowElem = dojo.query("tr.movieWidthHeightLengthRow", self.movieDropDownContent)[0];
+            self.movieDnDArea = dojo.query("div.dndArea", self.movieDropDownContent)[0];
         
-          self.createMovieThumb = function(item, mode) {
-            if (mode == 'avatar') {
-               // when dragged 
-               var avatar = dojo.create( 'div', { innerHTML: item.data });
-               var avatarPose = dojo.clone(self.pose);
-               avatarPose.width = 60;
-               avatarPose.height = 60;
-               var avatarImgUrl = urlSuffixForPose(avatarPose);
-               avatar.innerHTML = '<img src=' + self.imagePath + self.imageFormat + avatarImgUrl + ' /> ';
-               item.srcEcc = "VRMLViewer";
-               item.iconPoseUrl = self.imagePath + avatarImgUrl;
-               item.imagePath = self.imagePath;
-               item.serverURL = self.serverURL;
-               item.pose = avatarPose;
-               return {node: avatar, data: item, type: item.type};
-            } else {
+            self.createMovieThumb = function(item, mode) {
+              if (mode == 'avatar') {
+                 // when dragged
+                 var avatar = dojo.create( 'div', { innerHTML: item.data });
+                 var avatarPose = dojo.clone(self.pose);
+                 avatarPose.width = 60;
+                 avatarPose.height = 60;
+                 var avatarImgUrl = urlSuffixForPose(avatarPose);
+                 avatar.innerHTML = '<img src=' + self.imagePath + self.imageFormat + avatarImgUrl + ' /> ';
+                 item.srcEcc = "VRMLViewer";
+                 item.iconPoseUrl = self.imagePath + avatarImgUrl;
+                 item.imagePath = self.imagePath;
+                 item.serverURL = self.serverURL;
+                 item.pose = avatarPose;
+                 return {node: avatar, data: item, type: item.type};
+              } else {
             
-              // when added to list
-              var thumb = domConst.toDom("\
-                <div>\
-                  <table><tr><td>\
-                    <img class=\"movieThumb\"/>\
-                    <img class=\"removeThumb\" style=\"vertical-align: top; margin: -3px 0px 0px -8px; width: 20px; height: 20px;\"/>\
-                  </td><td align=\"left\">\
-                    <table><tr>\
-                      <td>Frame:</td><td><div class=\"relFrameLength\"/></td>\
-                      <td><div class=\"fillInSeries\" \></td>\
-                    </tr><tr>\
-                      <td>Transition:</td><td><div class=\"relTransitionLength\"/></td>\
-                    </tr></table>\
-                  </td></tr></table>\
-                </div>\
-              ");
-              thumb = dojo.query("div", thumb)[0];
+                // when added to list
+                var thumb = domConst.toDom("\
+                  <div>\
+                    <table><tr><td>\
+                      <img class=\"movieThumb\"/>\
+                      <img class=\"removeThumb\" style=\"vertical-align: top; margin: -3px 0px 0px -8px; width: 20px; height: 20px;\"/>\
+                    </td><td align=\"left\">\
+                      <table><tr>\
+                        <td>Frame:</td><td><div class=\"relFrameLength\"/></td>\
+                        <td><div class=\"fillInSeries\" \></td>\
+                      </tr><tr>\
+                        <td>Transition:</td><td><div class=\"relTransitionLength\"/></td>\
+                      </tr></table>\
+                    </td></tr></table>\
+                  </div>\
+                ");
+                thumb = dojo.query("div", thumb)[0];
             
-              var thumbImgElem = dojo.query("img.movieThumb", thumb)[0];
-              var removeImgElem = dojo.query("img.removeThumb", thumb)[0];
-              var relFrameLengthElem = dojo.query("div.relFrameLength", thumb)[0];
-              var relTransitionLengthElem = dojo.query("div.relTransitionLength", thumb)[0];
-              var fillInSeriesElem = dojo.query("div.fillInSeries", thumb)[0];
+                var thumbImgElem = dojo.query("img.movieThumb", thumb)[0];
+                var removeImgElem = dojo.query("img.removeThumb", thumb)[0];
+                var relFrameLengthElem = dojo.query("div.relFrameLength", thumb)[0];
+                var relTransitionLengthElem = dojo.query("div.relTransitionLength", thumb)[0];
+                var fillInSeriesElem = dojo.query("div.fillInSeries", thumb)[0];
             
-              item.getThisAndNeighborsFromDnD = function() {
-                var thisAndNeighbors = {};
+                item.getThisAndNeighborsFromDnD = function() {
+                  var thisAndNeighbors = {};
+                  self.addToMovieHandler.forInItems(function(obj, key, ctx) {
+                    if (obj.data === item) {
+                      thisAndNeighbors.this = { key: key, obj: obj };
+                    } else {
+                      thisAndNeighbors.before = { key: key, obj: obj };
+                    }
+                    if (thisAndNeighbors.this) {
+                      thisAndNeighbors.after = { key: key, obj: obj };
+                      return thisAndNeighbors;
+                    }
+                  });
+                  return thisAndNeighbors;
+                };
+            
+                item.relFrameLengthSlider = new HorizontalSlider({ 
+                  value: 50,
+                  title: "Relative Duration of Frame",
+                  style: "width:150px;"
+                }, relFrameLengthElem);
+
+                item.relTransitionLengthSlider = new HorizontalSlider({ 
+                  value: 100,
+                  title: "Relative Duration of Transition",
+                  style: "width:150px;"
+                }, relTransitionLengthElem);
+            
+                removeImgElem.onclick = function() {
+                  var thisItem = item.getThisAndNeighborsFromDnD();
+                  if (thisItem.this) {
+                    // haha - what a mess!
+                    self.addToMovieHandler.selectNone();
+                    self.addToMovieHandler.selection[thisItem.this.key] = thisItem.this.obj;
+                    self.addToMovieHandler.deleteSelectedNodes();
+                  }
+                  // disable create button if this was the last one
+                  if (!thisItem.after || !thisItem.before) {
+                    self.movieCreateButton.setAttribute('disabled', true);
+                  }
+                }
+            
+                item.fillInSeriesButton = new Button({ 
+                  label: "Insert Series",
+                  style: "display: none;",
+                  onClick: function(){
+                    alert("foo");
+                  }
+                }, fillInSeriesElem);
+            
+                removeImgElem.src = self.resRoot + "img/close.png";
+            
+                var thumbPose = dojo.clone(self.pose);
+                thumbPose.width = self.pose.width / 10;
+                thumbPose.height = self.pose.height / 10;
+                var thumbImgUrl = urlSuffixForPose(thumbPose);
+            
+                thumbImgElem.src = self.serverURL + self.imagePath + self.imageFormat + thumbImgUrl;
+                // removeImgElem.src = self.resRoot + 'img/close.png';
+                        
+                item.srcEcc = "VRMLViewer";
+                item.iconPoseUrl = self.imagePath + thumbImgUrl;
+                item.imagePath = self.imagePath;
+                item.serverURL = self.serverURL;
+                item.pose = thumbPose;
+            
+                return {node: thumb, data: item, type: item.type};
+              }
+            };
+
+            self.addToMovieHandler = new Source(self.movieDnDArea, {copyOnly: true, creator: self.createMovieThumb});
+
+            self.movieFormatSelection = new Selector({
+              name: "movieFormat",
+              style: "width: 320px",
+              options: []
+            });
+            self.populateMovieCodecs(self.serverURL + '/movie/codecs', self.movieFormatSelection);
+
+            self.movieFormatLengthRowElem.appendChild(dojo.create('td', { innerHTML: 'Format:'} ));
+            self.movieFormatLengthRowElem.appendChild(dojo.create('td', { colspan: "2"}));
+            self.movieFormatLengthRowElem.lastChild.appendChild(self.movieFormatSelection.domNode);
+        
+            self.movieHeightSpinner = new NumberSpinner({
+              value: 400,
+              smallDelta: 1,
+              style: "width: 60px",
+              constraints: { min:40, places:0 },
+            });
+        
+            self.movieWidthSpinner = new NumberSpinner({
+              value: 600,
+              smallDelta: 1,
+              style: "width: 60px",
+              constraints: { min:40, places:0 },
+            });
+
+            self.movieCreateButton = new Button({
+              label: "Create",
+              disabled: true,
+              onClick: function(){
+                        
+                var form = document.createElement("form");
+
+                form.setAttribute("method", "post");
+                form.setAttribute("action", self.serverURL + "/movie");
+
+                var submitData = {};
+                submitData.frames = [];
+                submitData.movieLength = self.movieDurationSpinner.value;
+                submitData.format = self.movieFormatSelection.value;
+                submitData.width = self.movieWidthSpinner.value;
+                submitData.height = self.movieHeightSpinner.value;
+            
                 self.addToMovieHandler.forInItems(function(obj, key, ctx) {
-                  if (obj.data === item) {
-                    thisAndNeighbors.this = { key: key, obj: obj };
-                  } else {
-                    thisAndNeighbors.before = { key: key, obj: obj };
+                  var jsonData = {
+                    iconPoseUrl: obj.data.iconPoseUrl,
+                    imagePath: obj.data.imagePath,
+                    serverURL: obj.data.serverURL,
+                    pose: obj.data.pose,
+                    relFrameLength: obj.data.relFrameLengthSlider.value,
+                    relTransitionLength: obj.data.relTransitionLengthSlider.value,
                   }
-                  if (thisAndNeighbors.this) {
-                    thisAndNeighbors.after = { key: key, obj: obj };
-                    return thisAndNeighbors;
-                  }
+                  submitData.frames.push(jsonData);
                 });
-                return thisAndNeighbors;
-              };
-            
-              item.relFrameLengthSlider = new HorizontalSlider({ 
-                value: 50,
-                title: "Relative Duration of Frame",
-                style: "width:150px;"
-              }, relFrameLengthElem);
 
-              item.relTransitionLengthSlider = new HorizontalSlider({ 
-                value: 100,
-                title: "Relative Duration of Transition",
-                style: "width:150px;"
-              }, relTransitionLengthElem);
-            
-              removeImgElem.onclick = function() {
-                var thisItem = item.getThisAndNeighborsFromDnD();
-                if (thisItem.this) {
-                  // haha - what a mess!
-                  self.addToMovieHandler.selectNone();
-                  self.addToMovieHandler.selection[thisItem.this.key] = thisItem.this.obj;
-                  self.addToMovieHandler.deleteSelectedNodes();
-                }
-                // disable create button if this was the last one
-                if (!thisItem.after || !thisItem.before) {
-                  self.movieCreateButton.setAttribute('disabled', true);
-                }
-              }
-            
-              item.fillInSeriesButton = new Button({ 
-                label: "Insert Series",
-                style: "display: none;",
-                onClick: function(){
-                  alert("foo");
-                }
-              }, fillInSeriesElem);
-            
-              removeImgElem.src = self.resRoot + "img/close.png";
-            
-              var thumbPose = dojo.clone(self.pose);
-              thumbPose.width = self.pose.width / 10;
-              thumbPose.height = self.pose.height / 10;
-              var thumbImgUrl = urlSuffixForPose(thumbPose);
-            
-              thumbImgElem.src = self.serverURL + self.imagePath + self.imageFormat + thumbImgUrl;
-              // removeImgElem.src = self.resRoot + 'img/close.png';
+                var hiddenField = document.createElement("input");
+                hiddenField.setAttribute("type", "hidden");
+                hiddenField.setAttribute("name", "data");
+                hiddenField.setAttribute("value", JSON.stringify(submitData));
+
+                form.appendChild(hiddenField);
                         
-              item.srcEcc = "VRMLViewer";
-              item.iconPoseUrl = self.imagePath + thumbImgUrl;
-              item.imagePath = self.imagePath;
-              item.serverURL = self.serverURL;
-              item.pose = thumbPose;
-            
-              return {node: thumb, data: item, type: item.type};
-            }
-          };
-
-          self.addToMovieHandler = new Source(self.movieDnDArea, {copyOnly: true, creator: self.createMovieThumb});
-
-          self.movieFormatSelection = new Selector({
-            name: "movieFormat",
-            style: "width: 320px",
-            options: []
-          });
-          self.populateMovieCodecs(self.serverURL + '/movie/codecs', self.movieFormatSelection);
-
-          self.movieFormatLengthRowElem.appendChild(dojo.create('td', { innerHTML: 'Format:'} ));
-          self.movieFormatLengthRowElem.appendChild(dojo.create('td', { colspan: "2"}));
-          self.movieFormatLengthRowElem.lastChild.appendChild(self.movieFormatSelection.domNode);
-        
-          self.movieHeightSpinner = new NumberSpinner({
-            value: 400,
-            smallDelta: 1,
-            style: "width: 60px",
-            constraints: { min:40, places:0 },
-          });
-        
-          self.movieWidthSpinner = new NumberSpinner({
-            value: 600,
-            smallDelta: 1,
-            style: "width: 60px",
-            constraints: { min:40, places:0 },
-          });
-
-          self.movieCreateButton = new Button({
-            label: "Create",
-            disabled: true,
-            onClick: function(){
-                        
-              var form = document.createElement("form");
-
-              form.setAttribute("method", "post");
-              form.setAttribute("action", self.serverURL + "/movie");
-
-              var submitData = {};
-              submitData.frames = [];
-              submitData.movieLength = self.movieDurationSpinner.value;
-              submitData.format = self.movieFormatSelection.value;
-              submitData.width = self.movieWidthSpinner.value;
-              submitData.height = self.movieHeightSpinner.value;
-            
-              self.addToMovieHandler.forInItems(function(obj, key, ctx) {
-                var jsonData = {
-                  iconPoseUrl: obj.data.iconPoseUrl,
-                  imagePath: obj.data.imagePath,
-                  serverURL: obj.data.serverURL,
-                  pose: obj.data.pose,
-                  relFrameLength: obj.data.relFrameLengthSlider.value,
-                  relTransitionLength: obj.data.relTransitionLengthSlider.value,
-                }
-                submitData.frames.push(jsonData);
-              });
-
-              var hiddenField = document.createElement("input");
-              hiddenField.setAttribute("type", "hidden");
-              hiddenField.setAttribute("name", "data");
-              hiddenField.setAttribute("value", JSON.stringify(submitData));
-
-              form.appendChild(hiddenField);
-            
-              // this will not save the returned binary file
-              // self.xhr.post({
-              //   form: form,
-              //   load: function(data){
-              //     alert("asd");
-              //   }
-              // });
-            
-              document.body.appendChild(form);
-              form.submit();
-              document.body.removeChild(form);
-            }
-          });
-
-          self.movieDurationSpinner = new NumberSpinner({
-            value: 10,
-            smallDelta: 1,
-            style: "width: 40px",
-            constraints: { min:0, places:0 },
-          });
-
-          // append format duration cell
-          self.movieWidthHeightLengthRowElem.appendChild(dojo.create('td', { innerHTML: 'Size:'} ));
-          var movieDimensionCell = dojo.create('td');
-          movieDimensionCell.appendChild(self.movieWidthSpinner.domNode);
-          movieDimensionCell.appendChild(dojo.create('span', { innerHTML: "x"} ));
-          movieDimensionCell.appendChild(self.movieHeightSpinner.domNode);
-          movieDimensionCell.appendChild(self.movieDurationSpinner.domNode);
-          movieDimensionCell.appendChild(dojo.create('span', { innerHTML: "sec"} ));        
-          self.movieWidthHeightLengthRowElem.appendChild(movieDimensionCell);
-
-          self.movieWidthHeightLengthRowElem.appendChild(dojo.create('td', { align: "right"}));
-          self.movieWidthHeightLengthRowElem.lastChild.appendChild(self.movieCreateButton.domNode);
-
-
-          self.movieToolTip = new TooltipDialog({ content:self.movieDropDownContent });
-          self.movieDropDown = new DropDownButton({ 
-            label: "Movie", 
-            style: "display: none;",
-            dropDown: self.movieToolTip });
-          self.movieDropDownElem.appendChild(self.movieDropDown.domNode);
-
-          self.movieAddButton = new Button({
-            label: "+",
-            style: "margin-left: -10px; display: none;",
-            onClick: function(){
-              if (self.movieFormatSelection.options.length == 0) {
-                self.populateMovieCodecs(self.serverURL + '/movie/codecs', self.movieFormatSelection);
+                document.body.appendChild(form);
+                form.submit();
+                document.body.removeChild(form);
               }
-              // we could pass item.data here to creator
-              self.addToMovieHandler.insertNodes(false, [ { } ]);
-              self.movieCreateButton.setAttribute('disabled', false);
+            });
+
+            self.movieDurationSpinner = new NumberSpinner({
+              value: 10,
+              smallDelta: 1,
+              style: "width: 40px",
+              constraints: { min:0, places:0 },
+            });
+
+            // append format duration cell
+            self.movieWidthHeightLengthRowElem.appendChild(dojo.create('td', { innerHTML: 'Size:'} ));
+            var movieDimensionCell = dojo.create('td');
+            movieDimensionCell.appendChild(self.movieWidthSpinner.domNode);
+            movieDimensionCell.appendChild(dojo.create('span', { innerHTML: "x"} ));
+            movieDimensionCell.appendChild(self.movieHeightSpinner.domNode);
+            movieDimensionCell.appendChild(self.movieDurationSpinner.domNode);
+            movieDimensionCell.appendChild(dojo.create('span', { innerHTML: "sec"} ));        
+            self.movieWidthHeightLengthRowElem.appendChild(movieDimensionCell);
+
+            self.movieWidthHeightLengthRowElem.appendChild(dojo.create('td', { align: "right"}));
+            self.movieWidthHeightLengthRowElem.lastChild.appendChild(self.movieCreateButton.domNode);
+
+
+            self.movieToolTip = new TooltipDialog({ content:self.movieDropDownContent });
+            self.movieDropDown = new DropDownButton({ 
+              label: "Movie", 
+              style: "display: none;",
+              dropDown: self.movieToolTip });
+            self.movieDropDownElem.appendChild(self.movieDropDown.domNode);
+
+            self.movieAddButton = new Button({
+              label: "+",
+              style: "margin-left: -10px; display: none;",
+              onClick: function(){
+                if (self.movieFormatSelection.options.length == 0) {
+                  self.populateMovieCodecs(self.serverURL + '/movie/codecs', self.movieFormatSelection);
+                }
+                // we could pass item.data here to creator
+                self.addToMovieHandler.insertNodes(false, [ { } ]);
+                self.movieCreateButton.setAttribute('disabled', false);
             
-            }
-          }, self.movieAddButtonElem);
-        } else {
-          // remove movie controls
-          var movieControls = dojo.query("td.movieControls", element)[0];
-          movieControls.parentNode.removeChild(movieControls);
+              }
+            }, self.movieAddButtonElem);
+          } else {
+            // remove movie controls
+            var movieControls = dojo.query("td.movieControls", element)[0];
+            movieControls.parentNode.removeChild(movieControls);
+          }
         }
-
+        activateMovies(self.enableMovies);
+        
         // do we have parameters for the initial pose?
         if(self.params && self.params.pose)
-          self.setPose(self.params.imagePath, self.params.pose, self.params.serverURL);
+          self.setScene(self.params.imagePath, self.params.pose, self.params.serverURL);
+
+        if (self.serverURL) {
+          self.refreshServer(self.serverURL);
+          self.updateScene();
+        }
 
       });
     });
 
-
-}
+};

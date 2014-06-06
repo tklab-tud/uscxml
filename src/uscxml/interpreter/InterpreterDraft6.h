@@ -24,7 +24,7 @@
 
 namespace uscxml {
 
-class InterpreterDraft6 : public InterpreterImpl {
+class USCXML_API InterpreterDraft6 : public InterpreterImpl {
 protected:
 	void interpret();
 	InterpreterState step(bool blocking);

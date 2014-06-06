@@ -43,9 +43,9 @@ public:
 	virtual ~V8DataModel();
 	virtual boost::shared_ptr<DataModelImpl> create(InterpreterImpl* interpreter);
 
-	virtual std::set<std::string> getNames() {
-		std::set<std::string> names;
-		names.insert("ecmascript");
+	virtual std::list<std::string> getNames() {
+		std::list<std::string> names;
+		names.push_back("ecmascript");
 		return names;
 	}
 

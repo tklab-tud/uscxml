@@ -36,12 +36,12 @@ public:
 	virtual ~OSGConverter();
 	virtual boost::shared_ptr<InvokerImpl> create(InterpreterImpl* interpreter);
 
-	virtual std::set<std::string> getNames() {
-		std::set<std::string> names;
-		names.insert("osgconverter");
-		names.insert("osgconvert");
-		names.insert("http://uscxml.tk.informatik.tu-darmstadt.de/#osgconverter");
-		names.insert("http://uscxml.tk.informatik.tu-darmstadt.de/#osgconvert");
+	virtual std::list<std::string> getNames() {
+		std::list<std::string> names;
+		names.push_back("osgconverter");
+		names.push_back("osgconvert");
+		names.push_back("http://uscxml.tk.informatik.tu-darmstadt.de/#osgconverter");
+		names.push_back("http://uscxml.tk.informatik.tu-darmstadt.de/#osgconvert");
 		return names;
 	}
 

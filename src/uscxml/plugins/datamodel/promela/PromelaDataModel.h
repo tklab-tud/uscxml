@@ -35,9 +35,9 @@ public:
 	virtual ~PromelaDataModel();
 	virtual boost::shared_ptr<DataModelImpl> create(InterpreterImpl* interpreter);
 
-	virtual std::set<std::string> getNames() {
-		std::set<std::string> names;
-		names.insert("promela");
+	virtual std::list<std::string> getNames() {
+		std::list<std::string> names;
+		names.push_back("promela");
 		return names;
 	}
 

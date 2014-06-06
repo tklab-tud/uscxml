@@ -32,7 +32,7 @@ namespace uscxml {
 class GlobalState;
 class GlobalTransition;
 
-class GlobalState {
+class USCXML_API GlobalState {
 public:
 
 	GlobalState() {}
@@ -52,7 +52,7 @@ public:
 };
 
 
-class GlobalTransition {
+class USCXML_API GlobalTransition {
 public:
 	class Action {
 	public:
@@ -99,7 +99,7 @@ protected:
 	std::list<std::string> getCommonEvents(const Arabica::XPath::NodeSet<std::string>& transitions);
 };
 
-class FlatteningInterpreter : public InterpreterDraft6, public InterpreterMonitor {
+class USCXML_API FlatteningInterpreter : public InterpreterDraft6, public InterpreterMonitor {
 public:
 	FlatteningInterpreter(const Arabica::DOM::Document<std::string>& doc);
 	virtual ~FlatteningInterpreter();
@@ -146,7 +146,7 @@ protected:
 	std::map<std::string, GlobalState*> _globalConf;
 };
 
-class ChartToFSM {
+class USCXML_API ChartToFSM {
 public:
 	static Interpreter flatten(const Interpreter& other);
 };

@@ -35,10 +35,10 @@ public:
 	virtual ~HTTPServletInvoker();
 	virtual boost::shared_ptr<InvokerImpl> create(InterpreterImpl* interpreter);
 
-	virtual std::set<std::string> getNames() {
-		std::set<std::string> names;
-		names.insert("httpservlet");
-		names.insert("http://uscxml.tk.informatik.tu-darmstadt.de/#httpserver");
+	virtual std::list<std::string> getNames() {
+		std::list<std::string> names;
+		names.push_back("httpservlet");
+		names.push_back("http://uscxml.tk.informatik.tu-darmstadt.de/#httpserver");
 		return names;
 	}
 

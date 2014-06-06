@@ -121,9 +121,6 @@ int main(int argc, char** argv) {
 #endif
 
 	InterpreterOptions options = InterpreterOptions::fromCmdLine(argc, argv);
-	if (!options) {
-		InterpreterOptions::printUsageAndExit(argv[0]);
-	}
 
 	// setup logging
 	google::LogToStderr();
@@ -131,6 +128,13 @@ int main(int argc, char** argv) {
 
 	if (options.pluginPath.length() > 0) {
 		Factory::setDefaultPluginPath(options.pluginPath);
+	}
+
+	if (options.verbose) {
+		Factory::getInstance()->listComponents();
+	}
+	if (!options) {
+		InterpreterOptions::printUsageAndExit(argv[0]);
 	}
 
 	// setup HTTP server
@@ -149,7 +153,7 @@ int main(int argc, char** argv) {
 
 	}
 	HTTPServer::getInstance(options.httpPort, options.wsPort, sslConf);
-
+	
 	DebuggerServlet* debugger;
 	if (options.withDebugger) {
 		debugger = new DebuggerServlet();

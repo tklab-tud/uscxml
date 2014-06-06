@@ -37,10 +37,10 @@ public:
 	virtual ~IMAPInvoker();
 	virtual boost::shared_ptr<InvokerImpl> create(InterpreterImpl* interpreter);
 
-	virtual std::set<std::string> getNames() {
-		std::set<std::string> names;
-		names.insert("imap");
-		names.insert("http://uscxml.tk.informatik.tu-darmstadt.de/#imap");
+	virtual std::list<std::string> getNames() {
+		std::list<std::string> names;
+		names.push_back("imap");
+		names.push_back("http://uscxml.tk.informatik.tu-darmstadt.de/#imap");
 		return names;
 	}
 

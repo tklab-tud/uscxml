@@ -12,8 +12,8 @@ public:
 	JavaInvoker();
 	virtual ~JavaInvoker();
 
-	virtual std::set<std::string> getNames() {
-		return std::set<std::string>();
+	virtual std::list<std::string> getNames() {
+		return std::list<std::string>();
 	};
 
 	virtual Data getDataModelVariables() {

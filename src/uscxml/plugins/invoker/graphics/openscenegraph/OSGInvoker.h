@@ -44,11 +44,11 @@ public:
 	virtual ~OSGInvoker();
 	virtual boost::shared_ptr<InvokerImpl> create(InterpreterImpl* interpreter);
 
-	virtual std::set<std::string> getNames() {
-		std::set<std::string> names;
-		names.insert("3d");
-		names.insert("scenegraph");
-		names.insert("http://uscxml.tk.informatik.tu-darmstadt.de/#3d");
+	virtual std::list<std::string> getNames() {
+		std::list<std::string> names;
+		names.push_back("3d");
+		names.push_back("scenegraph");
+		names.push_back("http://uscxml.tk.informatik.tu-darmstadt.de/#3d");
 		return names;
 	}
 

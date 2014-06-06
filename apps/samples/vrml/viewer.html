@@ -79,62 +79,62 @@
          enableSceneshots: false,
          enableDraggables: false,
          enablePosePublishing: true,
-         listNavigationStyle: false,
-         treeNavigationStyle: false,
-         listDirectory: "/cranehook/cranehook_bad_convergence",
-         imagePath: "/cranehook/cranehook_bad_convergence/HARD_MP_VAL_001",
+         listNavigationStyle: true,
+         treeNavigationStyle: true,
+         listDirectory: "res_mp",
+         imagePath: "res_mp/RES_MP_VAL_074",
          imageFormat: "png",
-         serverURL: "http://epikur.local:8008/vrml/",
+         serverURL: "http://femkit.smartvortex.eu:8086/vrml/",
         });
 
-        var viewer2 = new VRMLViewer("scene2", {
-         pose: {
-           pitch       : 0,
-           roll        : 0,
-           yaw         : 0,
-           zoom        : 1,
-           x           : 0,
-           y           : 0,
-           z           : 0,
-           autorotate  : true
-         },
-         height: 300,
-         width: 400,
-         enableMovies: false,
-         enableDND: false,
-         enableWebGL: false,
-         enableSceneshots: true,
-         enableDraggables: false,
-         enablePosePublishing: true,
-         listNavigationStyle: false,
-         treeNavigationStyle: false,
-         listDirectory: "/cranehook/cranehook_bad_convergence",
-         imagePath: "/cranehook/cranehook_bad_convergence/HARD_MP_VAL_000",
-         imageFormat: "png",
-         serverURL: "http://epikur.local:8008/vrml/",
-        });
+        // var viewer2 = new VRMLViewer("scene2", {
+        //  pose: {
+        //    pitch       : 0,
+        //    roll        : 0,
+        //    yaw         : 0,
+        //    zoom        : 1,
+        //    x           : 0,
+        //    y           : 0,
+        //    z           : 0,
+        //    autorotate  : true
+        //  },
+        //  height: 300,
+        //  width: 400,
+        //  enableMovies: false,
+        //  enableDND: false,
+        //  enableWebGL: false,
+        //  enableSceneshots: true,
+        //  enableDraggables: false,
+        //  enablePosePublishing: true,
+        //  listNavigationStyle: false,
+        //  treeNavigationStyle: false,
+        //  listDirectory: "/cranehook/cranehook_bad_convergence",
+        //  imagePath: "/cranehook/cranehook_bad_convergence/HARD_MP_VAL_000",
+        //  imageFormat: "png",
+        //  serverURL: "http://femkit.smartvortex.eu:8086/vrml/",
+        // });
 
-				setTimeout(function() {
-				  setInterval(function(){ 
-						var pose1 = viewer1.getPose();
-						var pose2 = viewer2.getPose();
-						console.log("Pose1 - pitch: " + pose1.pitch + ", roll: " + pose1.roll + ", yaw: " + pose1.yaw);
-						console.log("Pose2 - pitch: " + pose2.pitch + ", roll: " + pose2.roll + ", yaw: " + pose2.yaw);
-
-						pose1.pitch += 0.1;
-						pose2.pitch += 0.1;
-
-						pose1.roll += 0.2;
-						pose2.roll += 0.2;
-						
-						pose1.yaw += 0.4;
-						pose2.yaw += 0.4;
-
-						viewer1.setPose(pose2);
-						viewer2.setPose(pose2);
-			  					
-				  }, 400);
-				}, 1000);
+        // setTimeout(function() {
+        //   setInterval(function(){ 
+        //     var pose1 = viewer1.getPose();
+        //     var pose2 = viewer2.getPose();
+        //     console.log("Pose1 - pitch: " + pose1.pitch + ", roll: " + pose1.roll + ", yaw: " + pose1.yaw);
+        //     console.log("Pose2 - pitch: " + pose2.pitch + ", roll: " + pose2.roll + ", yaw: " + pose2.yaw);
+        // 
+        //     pose1.pitch += 0.1;
+        //     pose2.pitch += 0.1;
+        // 
+        //     pose1.roll += 0.2;
+        //     pose2.roll += 0.2;
+        //     
+        //     pose1.yaw += 0.4;
+        //     pose2.yaw += 0.4;
+        // 
+        //     viewer1.setPose(pose2);
+        //     viewer2.setPose(pose2);
+        //                   
+        //   }, 400);
+        // }, 1000);
 			});
 			
 			

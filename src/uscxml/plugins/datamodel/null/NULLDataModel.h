@@ -40,9 +40,9 @@ public:
 	virtual ~NULLDataModel();
 	virtual boost::shared_ptr<DataModelImpl> create(InterpreterImpl* interpreter);
 
-	virtual std::set<std::string> getNames() {
-		std::set<std::string> names;
-		names.insert("null");
+	virtual std::list<std::string> getNames() {
+		std::list<std::string> names;
+		names.push_back("null");
 		return names;
 	}
 

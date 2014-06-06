@@ -34,10 +34,10 @@ public:
 	virtual ~XHTMLInvoker();
 	virtual boost::shared_ptr<InvokerImpl> create(InterpreterImpl* interpreter);
 
-	virtual std::set<std::string> getNames() {
-		std::set<std::string> names;
-		names.insert("xhtml");
-		names.insert("http://www.w3.org/1999/xhtml");
+	virtual std::list<std::string> getNames() {
+		std::list<std::string> names;
+		names.push_back("xhtml");
+		names.push_back("http://www.w3.org/1999/xhtml");
 		return names;
 	}
 

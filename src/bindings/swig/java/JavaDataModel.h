@@ -20,8 +20,8 @@ public:
 		_interpreter = interpreter->shared_from_this();
 		return boost::shared_ptr<DataModelImpl>(create(_interpreter));
 	}
-	virtual std::set<std::string> getNames() {
-		return std::set<std::string>();
+	virtual std::list<std::string> getNames() {
+		return std::list<std::string>();
 	};
 
 	virtual bool validate(const std::string& location, const std::string& schema) {

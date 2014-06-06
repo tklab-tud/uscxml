@@ -34,10 +34,10 @@ public:
 	virtual ~SystemInvoker();
 	virtual boost::shared_ptr<InvokerImpl> create(InterpreterImpl* interpreter);
 
-	virtual std::set<std::string> getNames() {
-		std::set<std::string> names;
-		names.insert("system");
-		names.insert("http://uscxml.tk.informatik.tu-darmstadt.de/#system");
+	virtual std::list<std::string> getNames() {
+		std::list<std::string> names;
+		names.push_back("system");
+		names.push_back("http://uscxml.tk.informatik.tu-darmstadt.de/#system");
 		return names;
 	}
 

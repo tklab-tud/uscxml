@@ -31,7 +31,7 @@
 
 namespace uscxml {
 
-class PromelaInline {
+class USCXML_API PromelaInline {
 public:
 	PromelaInline() : type(PROMELA_NIL) {}
 
@@ -57,7 +57,7 @@ public:
 	PromelaInlineType type;
 };
 
-class PromelaInlines {
+class USCXML_API PromelaInlines {
 public:
 	PromelaInlines() : progressLabels(0), acceptLabels(0), endLabels(0), eventSources(0), customEventSources(0), codes(0) {}
 
@@ -84,7 +84,7 @@ public:
 	int codes;
 };
 
-class PromelaEventSource {
+class USCXML_API PromelaEventSource {
 public:
 
 	enum PromelaEventSourceType {
@@ -112,7 +112,7 @@ public:
 	Trie* trie;
 };
 
-class FSMToPromela : public InterpreterDraft6 {
+class USCXML_API FSMToPromela : public InterpreterDraft6 {
 public:
 	static void writeProgram(std::ostream& stream,
 	                         const Interpreter& interpreter);

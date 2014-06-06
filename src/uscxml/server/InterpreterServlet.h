@@ -35,10 +35,10 @@ public:
 
 	virtual boost::shared_ptr<IOProcessorImpl> create(InterpreterImpl* interpreter);
 
-	virtual std::set<std::string> getNames() {
-		std::set<std::string> names;
-		names.insert("http");
-		names.insert("http://www.w3.org/TR/scxml/#HTTPEventProcessor");
+	virtual std::list<std::string> getNames() {
+		std::list<std::string> names;
+		names.push_back("http");
+		names.push_back("http://www.w3.org/TR/scxml/#HTTPEventProcessor");
 		return names;
 	}
 
@@ -86,10 +86,10 @@ public:
 
 	virtual boost::shared_ptr<IOProcessorImpl> create(InterpreterImpl* interpreter);
 
-	virtual std::set<std::string> getNames() {
-		std::set<std::string> names;
-		names.insert("websocket");
-		names.insert("http://www.w3.org/TR/scxml/#WebSocketEventProcessor");
+	virtual std::list<std::string> getNames() {
+		std::list<std::string> names;
+		names.push_back("websocket");
+		names.push_back("http://www.w3.org/TR/scxml/#WebSocketEventProcessor");
 		return names;
 	}
 

@@ -61,11 +61,11 @@ public:
 	virtual ~OpenALInvoker();
 	virtual boost::shared_ptr<InvokerImpl> create(InterpreterImpl* interpreter);
 
-	virtual std::set<std::string> getNames() {
-		std::set<std::string> names;
-		names.insert("openal");
-		names.insert("spatial-audio");
-		names.insert("http://uscxml.tk.informatik.tu-darmstadt.de/#openal");
+	virtual std::list<std::string> getNames() {
+		std::list<std::string> names;
+		names.push_back("openal");
+		names.push_back("spatial-audio");
+		names.push_back("http://uscxml.tk.informatik.tu-darmstadt.de/#openal");
 		return names;
 	}
 

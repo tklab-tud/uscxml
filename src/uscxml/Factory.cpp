@@ -143,6 +143,16 @@ std::string Factory::getDefaultPluginPath() {
 
 void Factory::registerPlugins() {
 #ifdef BUILD_AS_PLUGINS
+	// these are part of core
+	{
+		InterpreterHTTPServlet* ioProcessor = new InterpreterHTTPServlet();
+		registerIOProcessor(ioProcessor);
+	}
+	{
+		InterpreterWebSocketServlet* ioProcessor = new InterpreterWebSocketServlet();
+		registerIOProcessor(ioProcessor);
+	}
+
 	if (_pluginPath.length() == 0) {
 		// try to read USCXML_PLUGIN_PATH environment variable
 		_pluginPath = (getenv("USCXML_PLUGIN_PATH") != NULL ? getenv("USCXML_PLUGIN_PATH") : "");
@@ -174,6 +184,14 @@ void Factory::registerPlugins() {
 			DataModelImpl* dataModel = (*it)->create();
 			registerDataModel(dataModel);
 		}
+
+		std::vector<ExecutableContentImplProvider*> execContentProviders;
+		pluma.getProviders(execContentProviders);
+		for (std::vector<ExecutableContentImplProvider*>::iterator it = execContentProviders.begin() ; it != execContentProviders.end() ; ++it) {
+			ExecutableContentImpl* execContent = (*it)->create();
+			registerExecutableContent(execContent);
+		}
+
 	} else {
 		LOG(WARNING) << "No path to plugins known, export USCXML_PLUGIN_PATH or pass path as parameter";
 	}
@@ -197,7 +215,6 @@ void Factory::registerPlugins() {
 
 #ifdef MILES_FOUND
 	{
-		// eats 8MB of RAM!
 		MilesSessionInvoker* invoker = new MilesSessionInvoker();
 		registerInvoker(invoker);
 	}
@@ -382,9 +399,56 @@ Factory::~Factory() {
 #endif
 }
 
+#define LIST_COMPONENTS(type, name) \
+std::map<std::string, type*>::iterator iter = name.begin(); \
+while(iter != name.end()) { \
+	std::list<std::string> names = iter->second->getNames(); \
+	std::list<std::string>::iterator nameIter = names.begin(); \
+	if (nameIter != names.end()) { \
+		std::cout << "\t" << *nameIter; \
+		nameIter++; \
+		std::string seperator = ""; \
+		if (nameIter != names.end()) { \
+			std::cout << "\t("; \
+			while(nameIter != names.end()) { \
+				std::cout << seperator << *nameIter; \
+				seperator = ", "; \
+				nameIter++; \
+			} \
+			std::cout << ")"; \
+		} \
+		std::cout << std::endl; \
+	} \
+	iter++; \
+}
+
+	
+void Factory::listComponents() {
+	{
+		std::cout << "Available Datamodels:" << std::endl;
+		LIST_COMPONENTS(DataModelImpl, _dataModels);
+	}
+	{
+		std::cout << "Available Invokers:" << std::endl;
+		LIST_COMPONENTS(InvokerImpl, _invokers);
+	}
+	{
+		std::cout << "Available I/O Processors:" << std::endl;
+		LIST_COMPONENTS(IOProcessorImpl, _ioProcessors);
+	}
+	{
+		std::cout << "Available Elements:" << std::endl;
+		std::map<std::pair<std::string, std::string>, ExecutableContentImpl*>::iterator iter = _executableContent.begin();
+		while(iter != _executableContent.end()) {
+			std::cout << "\t" << iter->second->getNamespace() << " / " << iter->second->getLocalName() << std::endl;
+			iter++;
+		}
+	}
+}
+	
 void Factory::registerIOProcessor(IOProcessorImpl* ioProcessor) {
-	std::set<std::string> names = ioProcessor->getNames();
-	std::set<std::string>::iterator nameIter = names.begin();
+	std::list<std::string> names = ioProcessor->getNames();
+	std::list<std::string>::iterator nameIter = names.begin();
 	if (nameIter != names.end()) {
 		std::string canonicalName = *nameIter;
 		_ioProcessors[canonicalName] = ioProcessor;
@@ -396,8 +460,8 @@ void Factory::registerIOProcessor(IOProcessorImpl* ioProcessor) {
 }
 
 void Factory::registerDataModel(DataModelImpl* dataModel) {
-	std::set<std::string> names = dataModel->getNames();
-	std::set<std::string>::iterator nameIter = names.begin();
+	std::list<std::string> names = dataModel->getNames();
+	std::list<std::string>::iterator nameIter = names.begin();
 	if (nameIter != names.end()) {
 		std::string canonicalName = *nameIter;
 		_dataModels[canonicalName] = dataModel;
@@ -409,8 +473,8 @@ void Factory::registerDataModel(DataModelImpl* dataModel) {
 }
 
 void Factory::registerInvoker(InvokerImpl* invoker) {
-	std::set<std::string> names = invoker->getNames();
-	std::set<std::string>::iterator nameIter = names.begin();
+	std::list<std::string> names = invoker->getNames();
+	std::list<std::string>::iterator nameIter = names.begin();
 	if (nameIter != names.end()) {
 		std::string canonicalName = *nameIter;
 		_invokers[canonicalName] = invoker;
