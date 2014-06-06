@@ -1,4 +1,7 @@
-function VRMLViewer(element, params) {
+// Define the namespace
+var eu_smartvorex_femkit_ui_modelviewer = eu_smartvorex_femkit_ui_modelviewer || {};
+
+eu_smartvorex_femkit_ui_modelviewer.VRMLViewer = function (element, params) {
 
   console.log(params);
 
@@ -8,9 +11,14 @@ function VRMLViewer(element, params) {
   var webGLManipulatorsSetup = false;
   
   // private instanceId
-  if (!VRMLViewer.instances)
-    VRMLViewer.instances = 0;
-  this.instanceId = VRMLViewer.instances++;
+  // if (!VRMLViewer.instances)
+  //   VRMLViewer.instances = 0;
+  // this.instanceId = VRMLViewer.instances++;
+  
+  // private instanceId
+  if (!eu_smartvorex_femkit_ui_modelviewer.VRMLViewer.instances)
+    eu_smartvorex_femkit_ui_modelviewer.VRMLViewer.instances = 0;
+  this.instanceId = eu_smartvorex_femkit_ui_modelviewer.VRMLViewer.instances++;
   
   // public attribute defaults
   this.width       = 450;
