@@ -36,9 +36,9 @@ namespace uscxml {
 			
 			// IOProcessorImpl
 			virtual boost::shared_ptr<IOProcessorImpl> create(InterpreterImpl* interpreter);
-			virtual std::set<std::string> getNames() {
-				std::set<std::string> names;
-				names.insert("mmi.event");
+			virtual std::list<std::string> getNames() {
+				std::list<std::string> names;
+				names.push_back("mmi.event");
 				return names;
 			}
 			virtual Data getDataModelVariables();

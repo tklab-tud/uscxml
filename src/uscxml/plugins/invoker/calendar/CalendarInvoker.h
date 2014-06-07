@@ -59,8 +59,8 @@ public:
 
 	virtual std::list<std::string> getNames() {
 		std::list<std::string> names;
-		names.insert("calendar");
-		names.insert("http://uscxml.tk.informatik.tu-darmstadt.de/#calendar");
+		names.push_back("calendar");
+		names.push_back("http://uscxml.tk.informatik.tu-darmstadt.de/#calendar");
 		return names;
 	}
 
