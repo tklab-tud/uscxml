@@ -39,8 +39,8 @@ public:
 	virtual ~VoiceXMLInvoker();
 	virtual boost::shared_ptr<InvokerImpl> create(InterpreterImpl* interpreter);
 
-	virtual std::set<std::string> getNames() {
-		std::set<std::string> names;
+	virtual std::list<std::string> getNames() {
+		std::list<std::string> names;
 		names.insert("vxml");
 		names.insert("voicexml");
 		names.insert("http://www.w3.org/TR/voicexml21/");

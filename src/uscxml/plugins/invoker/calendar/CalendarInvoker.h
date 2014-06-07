@@ -57,8 +57,8 @@ public:
 	virtual ~CalendarInvoker();
 	virtual boost::shared_ptr<InvokerImpl> create(InterpreterImpl* interpreter);
 
-	virtual std::set<std::string> getNames() {
-		std::set<std::string> names;
+	virtual std::list<std::string> getNames() {
+		std::list<std::string> names;
 		names.insert("calendar");
 		names.insert("http://uscxml.tk.informatik.tu-darmstadt.de/#calendar");
 		return names;
