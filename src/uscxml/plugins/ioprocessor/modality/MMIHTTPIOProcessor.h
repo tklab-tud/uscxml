@@ -42,8 +42,8 @@ public:
 	virtual ~MMIHTTPIOProcessor();
 	virtual boost::shared_ptr<IOProcessorImpl> create(uscxml::InterpreterImpl* interpreter);
 
-	virtual std::set<std::string> getNames() {
-		std::set<std::string> names;
+	virtual std::list<std::string> getNames() {
+		std::list<std::string> names;
 		names.insert("mmihttp");
 		names.insert("http://www.w3.org/TR/mmi-arch/#HTTPTransport");
 		return names;
