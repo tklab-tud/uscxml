@@ -26,7 +26,7 @@ the transtitions.   --><scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf
       </finalize>
       </invoke>
       
-  <transition event="childToParent" cond="" target="pass"/>
+  <transition event="childToParent" cond="Var1==2" target="pass"/>
   <transition event="*" target="fail"/>
 </state>   
  

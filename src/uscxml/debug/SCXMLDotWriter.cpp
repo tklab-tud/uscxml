@@ -130,13 +130,13 @@ void SCXMLDotWriter::writeStateElement(std::ostream& os, const Arabica::DOM::Ele
 		os << "shape=doublecircle,";
 
 	// is the current state in the basic configuration?
-	if (_interpreter.isMember(elem, _interpreter.getBasicConfiguration()))
+	if (InterpreterImpl::isMember(elem, _interpreter.getBasicConfiguration()))
 		os << "color=red, penwidth=3,";
 
 	// is the current state a target state?
 #if 0
 	for (int i = 0; i < _transitions.size(); i++) {
-		if (_interpreter.isMember(elem, _interpreter.getTargetStates(_transitions[i]))) {
+		if (InterpreterImpl::isMember(elem, _interpreter.getTargetStates(_transitions[i]))) {
 			os << "color=red, penwidth=3,";
 			break;
 		}

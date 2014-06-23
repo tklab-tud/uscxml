@@ -11,7 +11,7 @@ it was raised second  -->
   <onentry>
      <send event="foo"/>
      <!-- assigning to a non-existent location should raise an error -->
-    <assign conf:location="1" conf:expr="2"/>
+    <assign conf:invalidLocation="" conf:expr="2"/>
     </onentry>
 
     

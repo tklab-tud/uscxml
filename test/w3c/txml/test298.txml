@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<!-- refence a non-existent data model location in param in donedata and see that the right error is raised -->
+<!-- reference a non-existent data model location in param in donedata and see that the right error is raised -->
 
 <scxml version="1.0" xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" conf:datamodel="" initial="s0">
  <datamodel>
@@ -7,6 +7,10 @@
     </datamodel>   
      
  <state id="s0" initial="s01">
+ 	<onentry>
+ 		<send event="timeout" delay="1s"/>
+ 		</onentry>
+ 		
     <transition event="error.execution" conf:targetpass=""/>
        <transition event="*" conf:targetfail=""/>
 
@@ -15,7 +19,7 @@
    </state>
    <final id="s02">
      <donedata>
-      <param conf:name="3" conf:location="2"/>
+      <param conf:name="3" conf:invalidLocation=""/>
       </donedata>
      </final>
  </state>

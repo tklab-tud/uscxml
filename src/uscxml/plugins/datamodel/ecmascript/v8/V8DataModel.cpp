@@ -228,6 +228,12 @@ void V8DataModel::setEvent(const Event& event) {
 	eventObj->SetInternalField(0, V8DOM::toExternal(privData));
 	eventObj.MakeWeak(0, V8SCXMLEvent::jsDestructor);
 
+	if (event.raw.size() == 0) {
+		std::stringstream ssRaw;
+		ssRaw << event;
+		privData->nativeObj->raw = ssRaw.str();
+	}
+
 	if (event.dom) {
 		eventObj->Set(v8::String::New("data"), getNodeAsValue(event.dom));
 	} else if (event.content.length() > 0) {
@@ -593,6 +599,17 @@ void V8DataModel::assign(const Element<std::string>& assignElem,
 		key = ATTR(assignElem, "location");
 	}
 	if (key.length() == 0)
+		throw Event("error.execution", Event::PLATFORM);
+
+	if (key.compare("_sessionid") == 0) // test 322
+		throw Event("error.execution", Event::PLATFORM);
+	if (key.compare("_name") == 0)
+		throw Event("error.execution", Event::PLATFORM);
+	if (key.compare("_ioprocessors") == 0)  // test 326
+		throw Event("error.execution", Event::PLATFORM);
+	if (key.compare("_invokers") == 0)
+		throw Event("error.execution", Event::PLATFORM);
+	if (key.compare("_event") == 0)
 		throw Event("error.execution", Event::PLATFORM);
 
 	if (HAS_ATTR(assignElem, "expr")) {

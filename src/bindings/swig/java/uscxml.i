@@ -9,10 +9,10 @@
 
 %include <stl.i>
 %include <std_map.i>
-%include "std_string.i"
+%include <std_string.i>
 %include <inttypes.i>
-%include "stl_set.i"
-%include "stl_list.i"
+%include "../stl_set.i"
+%include "../stl_list.i"
 
 
 %include <boost_shared_ptr.i>
@@ -59,14 +59,14 @@ typedef uscxml::SendRequest SendRequest;
 //#include <DOM/Attr.hpp>
 //#include <DOM/Text.hpp>
 
-#include "JavaInvoker.h"
-#include "JavaDataModel.h"
+#include "../wrapped/WrappedInvoker.h"
+#include "../wrapped/WrappedDataModel.h"
 
 using namespace uscxml;
 using namespace Arabica::DOM;
 
-#include "JavaInvoker.cpp"
-#include "JavaDataModel.cpp"
+#include "../wrapped/WrappedInvoker.cpp"
+#include "../wrapped/WrappedDataModel.cpp"
 
 %}
 
@@ -78,14 +78,14 @@ using namespace Arabica::DOM;
 
 %ignore uscxml::Interpreter::getDelayQueue();
 
-%ignore uscxml::JavaInvoker::create(InterpreterImpl*);
+%ignore uscxml::WrappedInvoker::create(InterpreterImpl*);
 
-%ignore uscxml::JavaDataModel::create(InterpreterImpl*);
-%ignore uscxml::JavaDataModel::init(const Arabica::DOM::Element<std::string>&, const Arabica::DOM::Document<std::string>&, const std::string&);
-%ignore uscxml::JavaDataModel::init(const std::string&, const Data&);
-%ignore uscxml::JavaDataModel::assign(const Arabica::DOM::Element<std::string>&, const Arabica::DOM::Document<std::string>&, const std::string&);
-%ignore uscxml::JavaDataModel::assign(const std::string&, const Data&);
-%ignore uscxml::JavaDataModel::eval(const Arabica::DOM::Element<std::string>&, const std::string&);
+%ignore uscxml::WrappedDataModel::create(InterpreterImpl*);
+%ignore uscxml::WrappedDataModel::init(const Arabica::DOM::Element<std::string>&, const Arabica::DOM::Document<std::string>&, const std::string&);
+%ignore uscxml::WrappedDataModel::init(const std::string&, const Data&);
+%ignore uscxml::WrappedDataModel::assign(const Arabica::DOM::Element<std::string>&, const Arabica::DOM::Document<std::string>&, const std::string&);
+%ignore uscxml::WrappedDataModel::assign(const std::string&, const Data&);
+%ignore uscxml::WrappedDataModel::eval(const Arabica::DOM::Element<std::string>&, const std::string&);
 
 %ignore uscxml::Event::Event(const Arabica::DOM::Node<std::string>&);
 %ignore uscxml::Event::getStrippedDOM;
@@ -104,16 +104,9 @@ using namespace Arabica::DOM;
 %template(InvokerMap) std::map<std::string, uscxml::Invoker>;
 
 %rename Data DataNative;
-# %typemap(jstype) uscxml::Data "Data"
-# %typemap(javaout) uscxml::Data {
-# 	return new Data(new DataNative($jnicall, $owner));
-# }
 
-# %typemap(javadirectorin) uscxml::Data "new Data($jniinput)"
-# %typemap(javadirectorout) uscxml::Data "new Data($jniinput)"
-
-%feature("director") uscxml::JavaInvoker;
-%feature("director") uscxml::JavaDataModel;
+%feature("director") uscxml::WrappedInvoker;
+%feature("director") uscxml::WrappedDataModel;
 
 // translate param multimap to Map<String, List<Data> >
 %rename(getParamsNative) uscxml::Event::getParams();
@@ -184,8 +177,8 @@ using namespace Arabica::DOM;
 # %include <DOM/Attr.hpp>
 # %include <DOM/Text.hpp>
 
-%include "JavaInvoker.h"
-%include "JavaDataModel.h"
+%include "../wrapped/WrappedInvoker.h"
+%include "../wrapped/WrappedDataModel.h"
 
 # %template(XMLDocument) Arabica::DOM::Document<std::string>;
 # %template(XMLNode) Arabica::DOM::Node<std::string>;

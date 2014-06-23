@@ -24,6 +24,8 @@
 #include "uscxml/Interpreter.h"
 #include <glog/logging.h>
 
+#include "uscxml/plugins/datamodel/null/NULLDataModel.h"
+
 // see http://nadeausoftware.com/articles/2012/01/c_c_tip_how_use_compiler_predefined_macros_detect_operating_system
 
 #ifdef BUILD_AS_PLUGINS
@@ -100,7 +102,6 @@
 #   include "uscxml/plugins/datamodel/prolog/swi/SWIDataModel.h"
 # endif
 
-#include "uscxml/plugins/datamodel/null/NULLDataModel.h"
 #include "uscxml/plugins/datamodel/xpath/XPathDataModel.h"
 #include "uscxml/plugins/datamodel/promela/PromelaDataModel.h"
 
@@ -142,8 +143,6 @@ std::string Factory::getDefaultPluginPath() {
 }
 
 void Factory::registerPlugins() {
-#ifdef BUILD_AS_PLUGINS
-	// these are part of core
 	{
 		InterpreterHTTPServlet* ioProcessor = new InterpreterHTTPServlet();
 		registerIOProcessor(ioProcessor);
@@ -152,6 +151,13 @@ void Factory::registerPlugins() {
 		InterpreterWebSocketServlet* ioProcessor = new InterpreterWebSocketServlet();
 		registerIOProcessor(ioProcessor);
 	}
+	{
+		NULLDataModel* dataModel = new NULLDataModel();
+		registerDataModel(dataModel);
+	}
+
+#ifdef BUILD_AS_PLUGINS
+	// these are part of core
 
 	if (_pluginPath.length() == 0) {
 		// try to read USCXML_PLUGIN_PATH environment variable
@@ -291,13 +297,11 @@ void Factory::registerPlugins() {
 	}
 #endif
 
-#if 1
 #if (defined BUILD_DM_PROMELA)
 	{
 		PromelaDataModel* dataModel = new PromelaDataModel();
 		registerDataModel(dataModel);
 	}
-#endif
 #endif
 
 #ifdef BUILD_DM_XPATH
@@ -323,10 +327,6 @@ void Factory::registerPlugins() {
 #endif
 
 	// these are always available
-	{
-		NULLDataModel* dataModel = new NULLDataModel();
-		registerDataModel(dataModel);
-	}
 #if 1
 	{
 		XHTMLInvoker* invoker = new XHTMLInvoker();
@@ -690,7 +690,7 @@ void EventHandlerImpl::returnEvent(Event& event) {
 
 void DataModelImpl::throwErrorExecution(const std::string& cause) {
 	uscxml::Event exc;
-	exc.data.compound["exception"] = uscxml::Data(cause, uscxml::Data::VERBATIM);
+	exc.data.compound["cause"] = uscxml::Data(cause, uscxml::Data::VERBATIM);
 	exc.name = "error.execution";
 	exc.eventType = uscxml::Event::PLATFORM;
 	throw exc;
@@ -698,7 +698,7 @@ void DataModelImpl::throwErrorExecution(const std::string& cause) {
 
 void DataModelImpl::throwErrorPlatform(const std::string& cause) {
 	uscxml::Event exc;
-	exc.data.compound["exception"] = uscxml::Data(cause, uscxml::Data::VERBATIM);
+	exc.data.compound["cause"] = uscxml::Data(cause, uscxml::Data::VERBATIM);
 	exc.name = "error.platform";
 	exc.eventType = uscxml::Event::PLATFORM;
 	throw exc;

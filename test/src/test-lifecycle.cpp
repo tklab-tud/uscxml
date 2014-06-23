@@ -99,31 +99,176 @@ int main(int argc, char** argv) {
 		
 	google::InitGoogleLogging(argv[0]);
 	google::LogToStderr();
-	
-	Interpreter interpreter = Interpreter::fromURI("/Users/sradomski/Documents/TK/Code/uscxml/test/w3c/ecma/test207.scxml");
 	InterpreterState state;
-	do {
-		state = interpreter.step(true);
-		switch (state) {
-			case uscxml::FINISHED:
-				std::cout << "FINISHED" << std::endl;
-				break;
-			case uscxml::INIT_FAILED:
-				std::cout << "INIT_FAILED" << std::endl;
-				break;
-			case uscxml::NOTHING_TODO:
-				std::cout << "NOTHING_TODO" << std::endl;
-				break;
-			case uscxml::INTERRUPTED:
-				std::cout << "INTERRUPTED" << std::endl;
-				break;
-			case uscxml::PROCESSED:
-				std::cout << "PROCESSED" << std::endl;
-				break;
-			default:
-				break;
-		}
-	} while(state != FINISHED);
+
+	if (1) {
+		// syntactic xml parse error
+		const char* xml = "<invalid>";
+		Interpreter interpreter = Interpreter::fromXML(xml);
+		state = interpreter.getState();
+		assert(!interpreter);
+		assert(state == uscxml::InterpreterState::USCXML_FAULTED);
+		std::cout << interpreter.getState() << std::endl;
+	}
+
+	if (1) {
+		// semantic xml parse error
+		const char* xml = "<invalid />";
+		Interpreter interpreter = Interpreter::fromXML(xml);
+		state = interpreter.getState();
+		assert(state == uscxml::InterpreterState::USCXML_INSTANTIATED);
+		
+		assert(interpreter.step() == uscxml::InterpreterState::USCXML_FAULTED);
+		std::cout << interpreter.getState() << std::endl;
+	}
+
+	if (1) {
+		// single macrostep, multiple runs
+		const char* xml =
+		"<scxml>"
+		"	<state id=\"start\">"
+		"		<transition target=\"done\" />"
+		" </state>"
+		" <final id=\"done\" />"
+		"</scxml>";
+
+		Interpreter interpreter = Interpreter::fromXML(xml);
+		assert(interpreter.getState() == uscxml::InterpreterState::USCXML_INSTANTIATED);
+		assert(interpreter.step() == uscxml::InterpreterState::USCXML_MICROSTEPPED);
+		assert(interpreter.step() == uscxml::InterpreterState::USCXML_FINISHED);
+		interpreter.reset();
+		assert(interpreter.getState() == uscxml::InterpreterState::USCXML_INSTANTIATED);
+		assert(interpreter.step() == uscxml::InterpreterState::USCXML_MICROSTEPPED);
+		assert(interpreter.step() == uscxml::InterpreterState::USCXML_FINISHED);
+		interpreter.reset();
+		assert(interpreter.getState() == uscxml::InterpreterState::USCXML_INSTANTIATED);
+		assert(interpreter.step() == uscxml::InterpreterState::USCXML_MICROSTEPPED);
+		assert(interpreter.step() == uscxml::InterpreterState::USCXML_FINISHED);
+		interpreter.reset();
+		assert(interpreter.getState() == uscxml::InterpreterState::USCXML_INSTANTIATED);
+		assert(interpreter.step() == uscxml::InterpreterState::USCXML_MICROSTEPPED);
+		assert(interpreter.step() == uscxml::InterpreterState::USCXML_FINISHED);
+	}
+
+	if (1) {
+		// two microsteps
+		const char* xml =
+		"<scxml>"
+		"	<state id=\"start\">"
+		"		<transition target=\"s2\" />"
+		" </state>"
+		"	<state id=\"s2\">"
+		"		<transition target=\"done\" />"
+		" </state>"
+		" <final id=\"done\" />"
+		"</scxml>";
+		
+		Interpreter interpreter = Interpreter::fromXML(xml);
+		
+		assert(interpreter.getState() == uscxml::InterpreterState::USCXML_INSTANTIATED);
+		assert(interpreter.step() == uscxml::InterpreterState::USCXML_MICROSTEPPED);
+		assert(interpreter.step() == uscxml::InterpreterState::USCXML_MICROSTEPPED);
+		assert(interpreter.step() == uscxml::InterpreterState::USCXML_FINISHED);
+	}
+
+	if (0) {
+		// macrostep in between
+		const char* xml =
+		"<scxml>"
+		"	<state id=\"start\">"
+		"		<onentry>"
+		"			<send event=\"continue\" delay=\"2s\"/>"
+		"		</onentry>"
+		"		<transition target=\"s2\" event=\"continue\" />"
+		" </state>"
+		"	<state id=\"s2\">"
+		"		<transition target=\"done\" />"
+		" </state>"
+		" <final id=\"done\" />"
+		"</scxml>";
+		
+		Interpreter interpreter = Interpreter::fromXML(xml);
+		
+		assert(interpreter.getState() == uscxml::InterpreterState::USCXML_INSTANTIATED);
+		assert(interpreter.step() == uscxml::InterpreterState::USCXML_IDLE);
+		assert(interpreter.step(true) == uscxml::InterpreterState::USCXML_MACROSTEPPED);
+		assert(interpreter.step() == uscxml::InterpreterState::USCXML_MICROSTEPPED);
+		assert(interpreter.step() == uscxml::InterpreterState::USCXML_FINISHED);
+		interpreter.reset();
+		assert(interpreter.getState() == uscxml::InterpreterState::USCXML_INSTANTIATED);
+		assert(interpreter.step() == uscxml::InterpreterState::USCXML_IDLE);
+		assert(interpreter.step(true) == uscxml::InterpreterState::USCXML_MACROSTEPPED);
+		assert(interpreter.step() == uscxml::InterpreterState::USCXML_MICROSTEPPED);
+		assert(interpreter.step() == uscxml::InterpreterState::USCXML_FINISHED);
+	}
+
+	if (1) {
+		// macrostep in between, external event
+		const char* xml =
+		"<scxml>"
+		"	<state id=\"start\">"
+		"		<transition target=\"s2\" event=\"continue\" />"
+		" </state>"
+		"	<state id=\"s2\">"
+		"		<transition target=\"done\" />"
+		" </state>"
+		" <final id=\"done\" />"
+		"</scxml>";
+		
+		Interpreter interpreter = Interpreter::fromXML(xml);
+		
+		assert(interpreter.getState() == uscxml::InterpreterState::USCXML_INSTANTIATED);
+		assert(interpreter.step() == uscxml::InterpreterState::USCXML_IDLE);
+		interpreter.receive(Event("continue"));
+		assert(interpreter.step(true) == uscxml::InterpreterState::USCXML_MACROSTEPPED);
+		assert(interpreter.step() == uscxml::InterpreterState::USCXML_MICROSTEPPED);
+		assert(interpreter.step() == uscxml::InterpreterState::USCXML_FINISHED);
+		interpreter.reset();
+		assert(interpreter.getState() == uscxml::InterpreterState::USCXML_INSTANTIATED);
+		assert(interpreter.step() == uscxml::InterpreterState::USCXML_IDLE);
+		interpreter.receive(Event("continue"));
+		assert(interpreter.step(true) == uscxml::InterpreterState::USCXML_MACROSTEPPED);
+		assert(interpreter.step() == uscxml::InterpreterState::USCXML_MICROSTEPPED);
+		assert(interpreter.step() == uscxml::InterpreterState::USCXML_FINISHED);
+	}
+
+	if (1) {
+		// macrostep in between, external event
+		const char* xml =
+		"<scxml>"
+		"	<state id=\"start\">"
+		"		<transition target=\"s2\" event=\"continue\" />"
+		" </state>"
+		"	<state id=\"s2\">"
+		"		<transition target=\"done\" />"
+		" </state>"
+		" <final id=\"done\" />"
+		"</scxml>";
+		
+		Interpreter interpreter = Interpreter::fromXML(xml);
+		interpreter.start();
+		// assume interpreter is started
+		assert(interpreter.getState() & InterpreterState::USCXML_THREAD_STARTED);
+		tthread::this_thread::sleep_for(tthread::chrono::milliseconds(100));
+		
+		// assume it is started and running
+		std::cout << interpreter.getState() << std::endl;
+		
+		assert(interpreter.getState() & InterpreterState::USCXML_THREAD_STARTED);
+		assert(interpreter.getState() & InterpreterState::USCXML_THREAD_RUNNING);
+		assert(interpreter.getState() & InterpreterState::USCXML_IDLE);
+
+		interpreter.receive(Event("continue"));
+		tthread::this_thread::sleep_for(tthread::chrono::milliseconds(200));
+
+		std::cout << interpreter.getState() << std::endl;
+		int state = interpreter.getState();
+		assert(state & InterpreterState::USCXML_FINISHED);
+		assert(!(state & InterpreterState::USCXML_THREAD_STARTED));
+		assert(!(state & InterpreterState::USCXML_THREAD_RUNNING));
+
+	}
+
 	
 	return EXIT_SUCCESS;
 }

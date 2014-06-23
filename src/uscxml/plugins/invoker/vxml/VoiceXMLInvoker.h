@@ -41,9 +41,9 @@ public:
 
 	virtual std::list<std::string> getNames() {
 		std::list<std::string> names;
-		names.insert("vxml");
-		names.insert("voicexml");
-		names.insert("http://www.w3.org/TR/voicexml21/");
+		names.push_back("vxml");
+		names.push_back("voicexml");
+		names.push_back("http://www.w3.org/TR/voicexml21/");
 		return names;
 	}
 

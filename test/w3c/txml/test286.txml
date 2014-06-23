@@ -9,7 +9,7 @@ where no error is raised -->
      
  <state id="s0">
    <onentry>
-   <assign conf:location="1" conf:expr="1"/>
+   <assign conf:invalidLocation="" conf:expr="1"/>
    <raise event="foo"/>
    </onentry>
    

@@ -40,7 +40,7 @@ and that correct values are used --><scxml xmlns="http://www.w3.org/2005/07/scxm
       <content>foo</content>
       </send>
      </onentry>
-  <transition event="event2" cond="_event.data === 'foo'" target="pass"/>
+  <transition event="event2" cond="_event.data == 'foo'" target="pass"/>
   <transition event="*" target="fail"/>
 
 </state>

@@ -1,5 +1,5 @@
-#ifndef JAVAINVOKER_H_WDV9B5F6
-#define JAVAINVOKER_H_WDV9B5F6
+#ifndef WRAPPEDINVOKER_H_F9725D47
+#define WRAPPEDINVOKER_H_F9725D47
 
 #include "../../../uscxml/Message.h"
 #include "../../../uscxml/Factory.h"
@@ -7,10 +7,10 @@
 
 namespace uscxml {
 
-class JavaInvoker : public InvokerImpl {
+class WrappedInvoker : public InvokerImpl {
 public:
-	JavaInvoker();
-	virtual ~JavaInvoker();
+	WrappedInvoker();
+	virtual ~WrappedInvoker();
 
 	virtual std::list<std::string> getNames() {
 		return std::list<std::string>();
@@ -24,8 +24,8 @@ public:
 	virtual void send(const SendRequest& req) {}
 	virtual void invoke(const InvokeRequest& req) {}
 
-	virtual JavaInvoker* create(Interpreter interpreter) {
-		return new JavaInvoker();
+	virtual WrappedInvoker* create(Interpreter interpreter) {
+		return new WrappedInvoker();
 	}
 
 	virtual boost::shared_ptr<InvokerImpl> create(InterpreterImpl* interpreter) {
@@ -36,4 +36,4 @@ public:
 
 }
 
-#endif /* end of include guard: JAVAINVOKER_H_WDV9B5F6 */
+#endif /* end of include guard: WRAPPEDINVOKER_H_F9725D47 */

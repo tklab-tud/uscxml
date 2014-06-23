@@ -428,6 +428,31 @@ public:
 #endif
 	}
 
+	template <class _mutexT>
+	inline void wait_for(_mutexT &aMutex, unsigned int ms) {
+#if defined(_TTHREAD_WIN32_)
+		// Increment number of waiters
+		EnterCriticalSection(&mWaitersCountLock);
+		++ mWaitersCount;
+		LeaveCriticalSection(&mWaitersCountLock);
+		
+		// Release the mutex while waiting for the condition (will decrease
+		// the number of waiters when done)...
+		aMutex.unlock();
+		_wait(ms);
+		aMutex.lock();
+#else
+		struct timeval tv;
+		gettimeofday(&tv, NULL);
+		
+		struct timespec ts;
+		ts.tv_sec = tv.tv_sec + (ms / 1000);
+		ts.tv_nsec = (tv.tv_usec * 1000); // convert tv microseconds to nanoseconds
+		ts.tv_nsec += (ms % 1000) * 1000000; // add millisecond part of wait time
+		pthread_cond_timedwait(&mHandle, &aMutex.mHandle, &ts);
+#endif
+	}
+
 	/// Notify one thread that is waiting for the condition.
 	/// If at least one thread is blocked waiting for this condition variable,
 	/// one will be woken up.

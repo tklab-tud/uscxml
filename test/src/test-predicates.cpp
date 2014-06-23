@@ -15,17 +15,17 @@ int main(int argc, char** argv) {
 	Interpreter interpreter = Interpreter::fromURI(argv[1]);
 	assert(interpreter);
 
-	Node<std::string> atomicState = interpreter.getState("atomic");
+	Node<std::string> atomicState = interpreter.getImpl()->getState("atomic");
 	assert(InterpreterImpl::isAtomic(atomicState));
 	assert(!InterpreterImpl::isParallel(atomicState));
 	assert(!InterpreterImpl::isCompound(atomicState));
 
-	Node<std::string> compoundState = interpreter.getState("compound");
+	Node<std::string> compoundState = interpreter.getImpl()->getState("compound");
 	assert(!InterpreterImpl::isAtomic(compoundState));
 	assert(!InterpreterImpl::isParallel(compoundState));
 	assert(InterpreterImpl::isCompound(compoundState));
 
-	Node<std::string> parallelState = interpreter.getState("parallel");
+	Node<std::string> parallelState = interpreter.getImpl()->getState("parallel");
 	assert(!InterpreterImpl::isAtomic(parallelState));
 	assert(InterpreterImpl::isParallel(parallelState));
 	assert(!InterpreterImpl::isCompound(parallelState)); // parallel states are not compound!
@@ -34,12 +34,12 @@ int main(int argc, char** argv) {
 	assert(initialState[0] == atomicState);
 
 	NodeSet<std::string> childs = interpreter.getImpl()->getChildStates(compoundState);
-	Node<std::string> compoundChild1 = interpreter.getState("compoundChild1");
-	Node<std::string> compoundChild2 = interpreter.getState("compoundChild2");
+	Node<std::string> compoundChild1 = interpreter.getImpl()->getState("compoundChild1");
+	Node<std::string> compoundChild2 = interpreter.getImpl()->getState("compoundChild2");
 	assert(childs.size() > 0);
-	assert(Interpreter::isMember(compoundChild1, childs));
-	assert(Interpreter::isMember(compoundChild2, childs));
-	assert(!Interpreter::isMember(compoundState, childs));
+	assert(InterpreterImpl::isMember(compoundChild1, childs));
+	assert(InterpreterImpl::isMember(compoundChild2, childs));
+	assert(!InterpreterImpl::isMember(compoundState, childs));
 
 	assert(InterpreterImpl::isDescendant(compoundChild1, compoundState));
 

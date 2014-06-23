@@ -2,7 +2,7 @@
 
 <!-- check that the required fields are present in both internal and external events -->
 
-<scxml initial="s0" conf:datamodel=""  name="machineName" xmlns:conf="http://www.w3.org/2005/scxml-conformance">
+<scxml initial="s0" conf:datamodel=""  name="machineName" xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance">
      
  <state id="s0">
    <onentry>

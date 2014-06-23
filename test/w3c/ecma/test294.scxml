@@ -24,7 +24,7 @@ that content inside donedata sets the full value of the event.data field --><scx
  
  <state id="s1" initial="s11">
     
-   <transition event="done.state.s1" cond="_event.data === 'foo'" target="pass">
+   <transition event="done.state.s1" cond="_event.data == 'foo'" target="pass">
      </transition>
      
       <transition event="done.state.s1" target="fail">

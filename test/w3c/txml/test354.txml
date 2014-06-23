@@ -13,12 +13,12 @@ and that correct values are used -->
 <state id="s0">
    <onentry>
      <send delay="5s" event="timeout"/>
-    <send event="event1" type="http://www.w3.org/TR/scxml/#SCXMLEventProcessor" namelist="Var1"> 
+    <send event="event1" type="http://www.w3.org/TR/scxml/#SCXMLEventProcessor" conf:namelist="1"> 
       <param name="param1" conf:expr="2"/>
       </send> 
      </onentry>
   <transition event="event1" target="s1">
-    <assign conf:location="2" conf:eventDataNamelistValue="Var1"/>
+    <assign conf:location="2" conf:eventDataNamelistValue="1"/>
     <assign conf:location="3" conf:eventDataParamValue="param1"/>
     </transition>
   <transition event="*" conf:targetfail="">
@@ -44,7 +44,7 @@ and that correct values are used -->
       <content>foo</content>
       </send>
      </onentry>
-  <transition event="event2" conf:eventdataVal="foo" conf:targetpass=""/>
+  <transition event="event2" conf:eventdataVal="'foo'" conf:targetpass=""/>
   <transition event="*" conf:targetfail=""/>
 
 </state>

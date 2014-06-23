@@ -27,7 +27,7 @@ that content inside donedata sets the full value of the event.data field -->
  
  <state id="s1" initial="s11">
     
-   <transition event="done.state.s1"  conf:eventdataVal="foo" conf:targetpass="">
+   <transition event="done.state.s1"  conf:eventdataVal="'foo'" conf:targetpass="">
      </transition>
      
       <transition event="done.state.s1"  conf:targetfail="">

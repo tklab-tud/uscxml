@@ -4,7 +4,7 @@ where no error is raised --><scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns
      
  <state id="s0">
    <onentry>
-   <assign location="Var1" expr="1"/>
+   <assign location="foo.bar.baz " expr="1"/>
    <raise event="foo"/>
    </onentry>
    

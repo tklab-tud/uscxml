@@ -26,15 +26,16 @@ namespace uscxml {
 
 class USCXML_API InterpreterDraft6 : public InterpreterImpl {
 protected:
-	void interpret();
-	InterpreterState step(bool blocking);
+	InterpreterState interpret();
+	InterpreterState step(int blocking);
 	void stabilize();
 
 	void microstep(const Arabica::XPath::NodeSet<std::string>& enabledTransitions);
 	void enterStates(const Arabica::XPath::NodeSet<std::string>& enabledTransitions);
 	void addStatesToEnter(const Arabica::DOM::Node<std::string>& state,
 	                      Arabica::XPath::NodeSet<std::string>& statesToEnter,
-	                      Arabica::XPath::NodeSet<std::string>& statesForDefaultEntry);
+	                      Arabica::XPath::NodeSet<std::string>& statesForDefaultEntry,
+												Arabica::XPath::NodeSet<std::string>& defaultHistoryContent);
 
 	void exitStates(const Arabica::XPath::NodeSet<std::string>& enabledTransitions);
 	void exitInterpreter();

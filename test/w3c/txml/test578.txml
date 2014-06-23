@@ -9,7 +9,7 @@
 <state id="s0">
    <onentry>
     <send event="foo">
-    <content>{ productName : "bar", size : 27 }</content>
+    <content>{ "productName" : "bar", "size" : 27 }</content>
     </send>
   </onentry>
   <transition event="foo" cond="_event.data.productName == 'bar'"

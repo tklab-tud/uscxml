@@ -60,32 +60,51 @@
     <script type="text/javascript">
 
 			require(["dojo/domReady!", "dojo"], function(dom, dojo) {
-        var viewer1 = new VRMLViewer("scene1", {
-         pose: {
-           pitch       : 0,
-           roll        : 0,
-           yaw         : 0,
-           zoom        : 1,
-           x           : 0,
-           y           : 0,
-           z           : 0,
-           autorotate  : true
-         },
-         height: 300,
-         width: 400,
-         enableMovies: false,
-         enableDND: false,
-         enableWebGL: true,
-         enableSceneshots: false,
-         enableDraggables: false,
-         enablePosePublishing: true,
-         listNavigationStyle: true,
-         treeNavigationStyle: true,
-         listDirectory: "res_mp",
-         imagePath: "res_mp/RES_MP_VAL_074",
-         imageFormat: "png",
-         serverURL: "http://femkit.smartvortex.eu:8086/vrml/",
+        // var viewer1 = new VRMLViewer("scene1", {
+        //  pose: {
+        //    pitch       : 0,
+        //    roll        : 0,
+        //    yaw         : 0,
+        //    zoom        : 1,
+        //    x           : 0,
+        //    y           : 0,
+        //    z           : 0,
+        //    autorotate  : true
+        //  },
+        //  height: 300,
+        //  width: 400,
+        //  enableMovies: false,
+        //  enableDND: false,
+        //  enableWebGL: true,
+        //  enableSceneshots: false,
+        //  enableDraggables: false,
+        //  enablePosePublishing: true,
+        //  listNavigationStyle: true,
+        //  treeNavigationStyle: true,
+        //  listDirectory: "10975/57",
+        //  imagePath: "10975/57/latest",
+        //  imageFormat: "png",
+        //  serverURL: "http://femkit.smartvortex.eu:8086/vrml/",
+        // });
+
+        var vrmlViewer = new VRMLViewer("scene1", {
+          resRoot: "/img/tridi/",
+          enableMovies: false,
+          enableDND: false,
+          enableWebGL: true,
+          enableSceneshots: false,
+          enableDraggables: false,
+          listNavigationStyle: true,
+          treeNavigationStyle: true,
+          width: 550,
+          height: 550,
+          imagePath: "/10975/56/latest",
+          imageFormat: "png",
+          listDirectory: "/10975/56",
+          serverURL: "http://femkit.smartvortex.eu:8086/vrml",
         });
+
+        // http://femkit.smartvortex.eu:8086/vrml/10975/57/latest.osgjs
 
         // var viewer2 = new VRMLViewer("scene2", {
         //  pose: {

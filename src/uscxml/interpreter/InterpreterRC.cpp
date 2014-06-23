@@ -45,15 +45,12 @@ procedure interpret(doc):
     enterStates([doc.initial.transition])
     mainEventLoop()
  */
-void InterpreterRC::interpret() {
+InterpreterState InterpreterRC::interpret() {
 	try {
 		tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
 		if (!_isInitialized)
 			init();
 
-		if (!_scxml) {
-			return;
-		}
 		//  dump();
 
 		// just make sure we have a session id
@@ -84,7 +81,6 @@ void InterpreterRC::interpret() {
 			_dataModel.assign("_x.args", _cmdLineOptions);
 		}
 
-		_running = true;
 		_binding = (HAS_ATTR(_scxml, "binding") && iequals(ATTR(_scxml, "binding"), "late") ? LATE : EARLY);
 
 		// @TODO: Reread http://www.w3.org/TR/scxml/#DataBinding
@@ -184,6 +180,7 @@ void InterpreterRC::interpret() {
 	if(_dataModel)
 		_dataModel = DataModel();
 
+	return _state;
 }
 
 /**
@@ -237,7 +234,6 @@ procedure mainEventLoop():
     exitInterpreter()
  */
 void InterpreterRC::mainEventLoop() {
-	monIter_t monIter;
 
 	while(_running) {
 		NodeSet<std::string> enabledTransitions;
@@ -255,13 +251,7 @@ void InterpreterRC::mainEventLoop() {
 					_currEvent = _internalQueue.front();
 					_internalQueue.pop_front();
 
-					// --- MONITOR: beforeProcessingEvent ------------------------------
-					for(monIter_t monIter = _monitors.begin(); monIter != _monitors.end(); monIter++) {
-						try {
-							(*monIter)->beforeProcessingEvent(shared_from_this(), _currEvent);
-						}
-						USCXML_MONITOR_CATCH_BLOCK(beforeProcessingEvent)
-					}
+					USCXML_MONITOR_CALLBACK2(beforeProcessingEvent, _currEvent)
 
 					if (_dataModel)
 						_dataModel.setEvent(_currEvent);
@@ -299,16 +289,9 @@ void InterpreterRC::mainEventLoop() {
 		}
 		assert(hasLegalConfiguration());
 
-		monIter = _monitors.begin();
 		//    if (!_sendQueue || _sendQueue->isEmpty()) {
 
-		// --- MONITOR: onStableConfiguration ------------------------------
-		for(monIter_t monIter = _monitors.begin(); monIter != _monitors.end(); monIter++) {
-			try {
-				(*monIter)->onStableConfiguration(shared_from_this());
-			}
-			USCXML_MONITOR_CATCH_BLOCK(onStableConfiguration)
-		}
+		USCXML_MONITOR_CALLBACK(onStableConfiguration)
 
 		//    }
 
@@ -334,13 +317,7 @@ void InterpreterRC::mainEventLoop() {
 		if (!_running)
 			goto EXIT_INTERPRETER;
 
-		// --- MONITOR: beforeProcessingEvent ------------------------------
-		for(monIter_t monIter = _monitors.begin(); monIter != _monitors.end(); monIter++) {
-			try {
-				(*monIter)->beforeProcessingEvent(shared_from_this(), _currEvent);
-			}
-			USCXML_MONITOR_CATCH_BLOCK(beforeProcessingEvent)
-		}
+		USCXML_MONITOR_CALLBACK2(beforeProcessingEvent, _currEvent)
 
 		if (_dataModel && iequals(_currEvent.name, "cancel.invoke." + _sessionId))
 			break;
@@ -399,13 +376,7 @@ void InterpreterRC::mainEventLoop() {
 	}
 
 EXIT_INTERPRETER:
-	// --- MONITOR: beforeCompletion ------------------------------
-	for(monIter_t monIter = _monitors.begin(); monIter != _monitors.end(); monIter++) {
-		try {
-			(*monIter)->beforeCompletion(shared_from_this());
-		}
-		USCXML_MONITOR_CATCH_BLOCK(beforeCompletion)
-	}
+	USCXML_MONITOR_CALLBACK(beforeCompletion)
 
 	exitInterpreter();
 	if (_sendQueue) {
@@ -416,13 +387,7 @@ EXIT_INTERPRETER:
 		}
 	}
 
-	// --- MONITOR: afterCompletion ------------------------------
-	for(monIter_t monIter = _monitors.begin(); monIter != _monitors.end(); monIter++) {
-		try {
-			(*monIter)->afterCompletion(shared_from_this());
-		}
-		USCXML_MONITOR_CATCH_BLOCK(afterCompletion)
-	}
+	USCXML_MONITOR_CALLBACK(afterCompletion)
 
 }
 
@@ -670,48 +635,23 @@ procedure microstep(enabledTransitions):
  */
 void InterpreterRC::microstep(const Arabica::XPath::NodeSet<std::string>& enabledTransitions) {
 
-	// --- MONITOR: beforeMicroStep ------------------------------
-	for(monIter_t monIter = _monitors.begin(); monIter != _monitors.end(); monIter++) {
-		try {
-			(*monIter)->beforeMicroStep(shared_from_this());
-		}
-		USCXML_MONITOR_CATCH_BLOCK(beforeMicroStep)
-	}
+	USCXML_MONITOR_CALLBACK(beforeMicroStep)
 
 	exitStates(enabledTransitions);
 
-	monIter_t monIter;
 	for (int i = 0; i < enabledTransitions.size(); i++) {
 		Element<std::string> transition(enabledTransitions[i]);
 
-		// --- MONITOR: beforeTakingTransitions ------------------------------
-		for(monIter_t monIter = _monitors.begin(); monIter != _monitors.end(); monIter++) {
-			try {
-				(*monIter)->beforeTakingTransition(shared_from_this(), transition, (i + 1 < enabledTransitions.size()));
-			}
-			USCXML_MONITOR_CATCH_BLOCK(beforeTakingTransitions)
-		}
+		USCXML_MONITOR_CALLBACK3(beforeTakingTransition, transition, (i + 1 < enabledTransitions.size()))
 
 		executeContent(transition);
 
-		// --- MONITOR: afterTakingTransitions ------------------------------
-		for(monIter_t monIter = _monitors.begin(); monIter != _monitors.end(); monIter++) {
-			try {
-				(*monIter)->afterTakingTransition(shared_from_this(), transition, (i + 1 < enabledTransitions.size()));
-			}
-			USCXML_MONITOR_CATCH_BLOCK(afterTakingTransitions)
-		}
+		USCXML_MONITOR_CALLBACK3(afterTakingTransition, transition, (i + 1 < enabledTransitions.size()))
 	}
 
 	enterStates(enabledTransitions);
 
-	// --- MONITOR: afterMicroStep ------------------------------
-	for(monIter_t monIter = _monitors.begin(); monIter != _monitors.end(); monIter++) {
-		try {
-			(*monIter)->afterMicroStep(shared_from_this());
-		}
-		USCXML_MONITOR_CATCH_BLOCK(afterMicroStep)
-	}
+	USCXML_MONITOR_CALLBACK(afterMicroStep)
 }
 
 
@@ -736,7 +676,6 @@ procedure exitStates(enabledTransitions):
        configuration.delete(s)
  */
 void InterpreterRC::exitStates(const Arabica::XPath::NodeSet<std::string>& enabledTransitions) {
-	monIter_t monIter;
 	NodeSet<std::string> statesToExit = computeExitSet(enabledTransitions);
 
 	// remove statesToExit from _statesToInvoke
@@ -772,13 +711,7 @@ void InterpreterRC::exitStates(const Arabica::XPath::NodeSet<std::string>& enabl
 	}
 
 	for (int i = 0; i < statesToExit.size(); i++) {
-		// --- MONITOR: beforeExitingState ------------------------------
-		for(monIter_t monIter = _monitors.begin(); monIter != _monitors.end(); monIter++) {
-			try {
-				(*monIter)->beforeExitingState(shared_from_this(), Element<std::string>(statesToExit[i]), (i + 1 < statesToExit.size()));
-			}
-			USCXML_MONITOR_CATCH_BLOCK(beforeExitingState)
-		}
+		USCXML_MONITOR_CALLBACK3(beforeExitingState, Element<std::string>(statesToExit[i]), (i + 1 < statesToExit.size()))
 
 		NodeSet<std::string> onExits = filterChildElements(_nsInfo.xmlNSPrefix + "onExit", statesToExit[i]);
 		for (int j = 0; j < onExits.size(); j++) {
@@ -786,13 +719,7 @@ void InterpreterRC::exitStates(const Arabica::XPath::NodeSet<std::string>& enabl
 			executeContent(onExitElem);
 		}
 
-		// --- MONITOR: afterExitingState ------------------------------
-		for(monIter_t monIter = _monitors.begin(); monIter != _monitors.end(); monIter++) {
-			try {
-				(*monIter)->afterExitingState(shared_from_this(), Element<std::string>(statesToExit[i]), (i + 1 < statesToExit.size()));
-			}
-			USCXML_MONITOR_CATCH_BLOCK(afterExitingState)
-		}
+		USCXML_MONITOR_CALLBACK3(afterExitingState, Element<std::string>(statesToExit[i]), (i + 1 < statesToExit.size()))
 
 		NodeSet<std::string> invokes = filterChildElements(_nsInfo.xmlNSPrefix + "invoke", statesToExit[i]);
 		for (int j = 0; j < invokes.size(); j++) {
@@ -888,7 +815,6 @@ void InterpreterRC::enterStates(const Arabica::XPath::NodeSet<std::string>& enab
 	NodeSet<std::string> statesForDefaultEntry;
 	// initialize the temporary table for default content in history states
 	std::map<std::string, Arabica::DOM::Node<std::string> > defaultHistoryContent;
-	monIter_t monIter;
 
 	computeEntrySet(enabledTransitions, statesToEnter, statesForDefaultEntry, defaultHistoryContent);
 	statesToEnter.to_document_order();
@@ -896,13 +822,7 @@ void InterpreterRC::enterStates(const Arabica::XPath::NodeSet<std::string>& enab
 	for (int i = 0; i < statesToEnter.size(); i++) {
 		Element<std::string> s = (Element<std::string>)statesToEnter[i];
 
-		// --- MONITOR: beforeEnteringState ------------------------------
-		for(monIter_t monIter = _monitors.begin(); monIter != _monitors.end(); monIter++) {
-			try {
-				(*monIter)->beforeEnteringState(shared_from_this(), s, (i + 1 < statesToEnter.size()));
-			}
-			USCXML_MONITOR_CATCH_BLOCK(beforeEnteringState)
-		}
+		USCXML_MONITOR_CALLBACK3(beforeEnteringState, s, i + 1 < statesToEnter.size())
 
 		_configuration.push_back(s);
 		_statesToInvoke.push_back(s);
@@ -924,13 +844,7 @@ void InterpreterRC::enterStates(const Arabica::XPath::NodeSet<std::string>& enab
 		NodeSet<std::string> onEntryElems = filterChildElements(_nsInfo.xmlNSPrefix + "onEntry", s);
 		executeContent(onEntryElems, false);
 
-		// --- MONITOR: afterEnteringState ------------------------------
-		for(monIter_t monIter = _monitors.begin(); monIter != _monitors.end(); monIter++) {
-			try {
-				(*monIter)->afterEnteringState(shared_from_this(), s, (i + 1 < statesToEnter.size()));
-			}
-			USCXML_MONITOR_CATCH_BLOCK(afterEnteringState)
-		}
+		USCXML_MONITOR_CALLBACK3(afterEnteringState, s, i + 1 < statesToEnter.size())
 
 		if (isMember(s, statesForDefaultEntry)) {
 			// execute initial transition content for compound states
@@ -961,7 +875,7 @@ void InterpreterRC::enterStates(const Arabica::XPath::NodeSet<std::string>& enab
 			internalDoneSend(s);
 			if (parentIsScxmlState(s)) {
 				_running = false;
-				_done = true;
+				_topLevelFinalReached = true;
 			} else {
 				Element<std::string> parent = (Element<std::string>)s.getParentNode();
 				Element<std::string> grandParent = (Element<std::string>)parent.getParentNode();

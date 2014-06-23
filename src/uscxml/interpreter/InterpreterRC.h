@@ -25,7 +25,7 @@
 namespace uscxml {
 
 class InterpreterRC : public InterpreterImpl {
-	void interpret();
+	InterpreterState interpret();
 	void mainEventLoop();
 	void exitInterpreter();
 
@@ -77,6 +77,8 @@ class InterpreterRC : public InterpreterImpl {
 	bool isDescendant(const Arabica::DOM::Node<std::string>& state1, const Arabica::DOM::Node<std::string>& state2);
 	Arabica::XPath::NodeSet<std::string> getChildStates(const Arabica::DOM::Node<std::string>& state);
 #endif
+
+	bool _running;
 
 };
 

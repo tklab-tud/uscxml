@@ -6,7 +6,7 @@
      
  <state id="s0" initial="s01">
     
-   <transition event="done.state.s0"  conf:eventdataVal="foo" conf:targetpass="">
+   <transition event="done.state.s0"  conf:eventdataVal="'foo'" conf:targetpass="">
      </transition>
      
       <transition event="done.state.s0"  conf:targetfail="">

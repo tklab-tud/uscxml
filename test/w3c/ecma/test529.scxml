@@ -3,7 +3,7 @@
      
  <state id="s0" initial="s01">
     
-   <transition event="done.state.s0" cond="_event.data === '21'" target="pass">
+   <transition event="done.state.s0" cond="_event.data == 21" target="pass">
      </transition>
      
       <transition event="done.state.s0" target="fail">

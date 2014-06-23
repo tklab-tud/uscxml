@@ -14,7 +14,7 @@ are pulled off the internal queue in order, and that prefix matching works on th
    <!-- the first internal event.  The error will be the second, and event2 will be the third -->
       <raise event="event1"/>
      <!-- assigning to a non-existent location should raise an error -->
-    <assign location="Var1" expr="2"/> 
+    <assign location="foo.bar.baz " expr="2"/> 
    </onentry>
        
   <transition event="event1" target="s02">

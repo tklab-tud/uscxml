@@ -44,8 +44,8 @@ public:
 
 	virtual std::list<std::string> getNames() {
 		std::list<std::string> names;
-		names.insert("mmihttp");
-		names.insert("http://www.w3.org/TR/mmi-arch/#HTTPTransport");
+		names.push_back("mmihttp");
+		names.push_back("http://www.w3.org/TR/mmi-arch/#HTTPTransport");
 		return names;
 	}
 

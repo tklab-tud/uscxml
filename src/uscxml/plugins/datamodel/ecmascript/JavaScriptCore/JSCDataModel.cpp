@@ -212,6 +212,12 @@ void JSCDataModel::setEvent(const Event& event) {
 
 	JSValueRef exception = NULL;
 
+	if (event.raw.size() == 0) {
+		std::stringstream ssRaw;
+		ssRaw << event;
+		privData->nativeObj->raw = ssRaw.str();
+	}
+		
 	if (event.dom) {
 		JSStringRef propName = JSStringCreateWithUTF8CString("data");
 		JSObjectSetProperty(_ctx, eventObj, propName, getNodeAsValue(event.dom), 0, &exception);
@@ -554,6 +560,8 @@ void JSCDataModel::assign(const Element<std::string>& assignElem,
 	if (key.compare("_ioprocessors") == 0)  // test 326
 		throw Event("error.execution", Event::PLATFORM);
 	if (key.compare("_invokers") == 0)
+		throw Event("error.execution", Event::PLATFORM);
+	if (key.compare("_event") == 0)
 		throw Event("error.execution", Event::PLATFORM);
 
 	if (HAS_ATTR(assignElem, "expr")) {

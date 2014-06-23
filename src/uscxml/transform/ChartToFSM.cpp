@@ -101,7 +101,7 @@ Document<std::string> FlatteningInterpreter::getDocument() const {
 	return _flatDoc;
 }
 
-void FlatteningInterpreter::interpret() {
+InterpreterState FlatteningInterpreter::interpret() {
 
 	init();
 	setupIOProcessors();
@@ -177,6 +177,7 @@ void FlatteningInterpreter::interpret() {
 #endif
 
 	createDocument();
+	return _state;
 }
 
 void FlatteningInterpreter::executeContent(const Arabica::DOM::Node<std::string>& content, bool rethrow) {

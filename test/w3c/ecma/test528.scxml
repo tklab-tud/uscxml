@@ -6,7 +6,6 @@
    <transition event="error.execution" target="s1"/>
    <transition event="done.state.s0" target="fail"/>     
 
-      <transition event="done.state.s0" target="fail"/>
 
    <state id="s01">
    <transition target="s02"/>
