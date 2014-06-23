@@ -69,25 +69,14 @@ if (BUILD_DM_ECMA)
 endif()
 
 
-# NULL datamodel
+# NULL datamodel (not useful as plugin)
 
 set(USCXML_DATAMODELS "null ${USCXML_DATAMODELS}")
 file(GLOB NULL_DATAMODEL
 	null/*.cpp
 	null/*.h
 )
-if (BUILD_AS_PLUGINS)
-	source_group("" FILES ${NULL_DATAMODEL})
-	add_library(datamodel_null SHARED ${NULL_DATAMODEL} "../Plugins.cpp")
-	target_link_libraries(datamodel_null uscxml)
-	set_target_properties(datamodel_null PROPERTIES FOLDER "Plugin DataModel")
-	set_target_properties(datamodel_null PROPERTIES COMPILE_FLAGS "-DPLUMA_EXPORTS")
-	set_target_properties(datamodel_null PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${OUTPUT_DIR}/lib")
-	
-	
-else()
-	list (APPEND USCXML_FILES ${NULL_DATAMODEL})
-endif()
+list (APPEND USCXML_FILES ${NULL_DATAMODEL})
 
 
 # XPath datamodel

@@ -3,7 +3,8 @@
 
 <state id="s0">
   <onentry>
-   <assign location="$Var1" expr="1"/>
+  	<send event="timeout" delay="1s"/>
+   <assign location="foo.bar.baz " expr="1"/>
    </onentry>
    <transition event="error.execution" target="pass"/> 
    <transition event=".*" target="fail"/>

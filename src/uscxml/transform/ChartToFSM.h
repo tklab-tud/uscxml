@@ -105,7 +105,7 @@ public:
 	virtual ~FlatteningInterpreter();
 
 	Arabica::DOM::Document<std::string> getDocument() const; // overwrite to return flat FSM
-	void interpret();
+	InterpreterState interpret();
 
 protected:
 	// gather executable content per microstep

@@ -673,6 +673,29 @@ std::ostream& operator<< (std::ostream& os, const Event& event) {
 		os << indent << "  origin: " << event.origin << std::endl;
 	if (event.origintype.size() > 0)
 		os << indent << "  origintype: " << event.origintype << std::endl;
+	if (event.params.size() > 0) {
+		std::multimap<std::string, Data>::const_iterator paramIter = event.params.begin();
+		os << indent << "  params:" << std::endl;
+		_dataIndentation++;
+		while(paramIter != event.params.end()) {
+			os << indent << "    " << paramIter->first << ": ";
+			os << indent << paramIter->second << std::endl;
+			paramIter++;
+		}
+		_dataIndentation--;
+	}
+	if (event.namelist.size() > 0) {
+		std::map<std::string, Data>::const_iterator namelistIter = event.namelist.begin();
+		os << indent << "  namelist:" << std::endl;
+		_dataIndentation++;
+		while(namelistIter != event.namelist.end()) {
+			os << indent << "    " << namelistIter->first << ": ";
+			os << indent << namelistIter->second << std::endl;
+			namelistIter++;
+		}
+		_dataIndentation--;
+
+	}
 	_dataIndentation++;
 	os << indent << "  data: " << event.data << std::endl;
 	_dataIndentation--;

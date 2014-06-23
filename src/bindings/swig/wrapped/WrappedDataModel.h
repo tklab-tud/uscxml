@@ -1,5 +1,5 @@
-#ifndef JAVADataModel_H_7U446XJQ
-#define JAVADataModel_H_7U446XJQ
+#ifndef WRAPPEDDATAMODEL_H_DBAAD6AF
+#define WRAPPEDDATAMODEL_H_DBAAD6AF
 
 #include "../../../uscxml/Message.h"
 #include "../../../uscxml/Factory.h"
@@ -7,13 +7,13 @@
 
 namespace uscxml {
 
-class JavaDataModel : public DataModelImpl {
+class WrappedDataModel : public DataModelImpl {
 public:
-	JavaDataModel();
-	virtual ~JavaDataModel();
+	WrappedDataModel();
+	virtual ~WrappedDataModel();
 
-	virtual JavaDataModel* create(const Interpreter& interpreter) {
-		return new JavaDataModel();
+	virtual WrappedDataModel* create(const Interpreter& interpreter) {
+		return new WrappedDataModel();
 	}
 
 	virtual boost::shared_ptr<DataModelImpl> create(InterpreterImpl* interpreter) {
@@ -96,8 +96,6 @@ public:
 		init("", location, Data::toJSON(data));
 	}
 
-	// this is assign the function exposed to java
-
 	virtual void init(const Arabica::DOM::Element<std::string>& dataElem,
 	                  const Arabica::DOM::Node<std::string>& node,
 	                  const std::string& content) {
@@ -126,7 +124,6 @@ public:
 		init("", location, Data::toJSON(data));
 	}
 
-	// these functions are exposed to java
 	virtual bool evalAsBool(const std::string& elem, const std::string& content) { return false; }
 	virtual void init(const std::string& dataElem, const std::string& location, const std::string& content) {}
 	virtual void assign(const std::string& assignElem, const std::string& location, const std::string& content) {}
@@ -138,4 +135,4 @@ private:
 
 }
 
-#endif /* end of include guard: JAVADataModel_H_7U446XJQ */
+#endif /* end of include guard: WRAPPEDDATAMODEL_H_DBAAD6AF */

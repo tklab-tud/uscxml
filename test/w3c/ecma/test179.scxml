@@ -8,7 +8,7 @@
    </send>
     </onentry>
     
-  <transition event="event1" cond="_event.data === '123'" target="pass"/>
+  <transition event="event1" cond="_event.data == 123" target="pass"/>
   <transition event="*" target="fail"/>
  </state>
    

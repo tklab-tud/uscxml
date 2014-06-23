@@ -7,7 +7,7 @@ it was raised second  --><scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:co
   <onentry>
      <send event="foo"/>
      <!-- assigning to a non-existent location should raise an error -->
-    <assign location="$Var1" expr="2"/>
+    <assign location="foo.bar.baz " expr="2"/>
     </onentry>
 
     

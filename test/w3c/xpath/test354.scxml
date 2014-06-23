@@ -9,12 +9,12 @@ and that correct values are used --><scxml xmlns="http://www.w3.org/2005/07/scxm
 <state id="s0">
    <onentry>
      <send delay="5s" event="timeout"/>
-    <send event="event1" type="http://www.w3.org/TR/scxml/#SCXMLEventProcessor" namelist="Var1"> 
+    <send event="event1" type="http://www.w3.org/TR/scxml/#SCXMLEventProcessor" namelist="$Var1"> 
       <param name="param1" expr="2"/>
       </send> 
      </onentry>
   <transition event="event1" target="s1">
-    <assign location="$Var2" expr="$_event/data/data[@id='Var1']/data/text()"/>
+    <assign location="$Var2" expr="$_event/data/data[@id=Var'1']/data/text()"/>
     <assign location="$Var3" expr="$_event/data/data[@id='param1']/text()"/>
     </transition>
   <transition event="*" target="fail">

@@ -238,7 +238,7 @@ bool Breakpoint::matches(Interpreter interpreter, const Breakpoint& other) const
 		} catch (...) {
 			return false;
 		}
-		return Interpreter::isMember(other.element, nodes);
+		return InterpreterImpl::isMember(other.element, nodes);
 	}
 
 	if(transSourceId.length() > 0 && transSourceId != other.transSourceId) {

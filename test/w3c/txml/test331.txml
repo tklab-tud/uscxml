@@ -26,7 +26,7 @@
 <state id="s2">
    <onentry>
    <!-- this will generate an error, which is a platform event -->
-     <assign conf:location="2" conf:expr="1"/>
+     <assign conf:invalidLocation="" conf:expr="1"/>
    </onentry>
    <transition event="error"  target="s3">
      <assign conf:location="1" conf:eventType=""/>
@@ -56,7 +56,7 @@
   </state>
    
     
-   <final xmlns="http://www.w3.org/2005/07/scxml" id="pass"><onentry><log label="Outcome" expr="'pass'"/></onentry></final>
-   <final xmlns="http://www.w3.org/2005/07/scxml" id="fail"><onentry><log label="Outcome" expr="'fail'"/></onentry></final>
+  <conf:pass/>
+  <conf:fail/>
      
 </scxml>

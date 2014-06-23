@@ -271,6 +271,30 @@ if (LIBICAL_FOUND)
 endif()
 
 
+# webrtc invoker
+
+if (LIBJINGLE_FOUND)
+	set(USCXML_INVOKERS "webrtc ${USCXML_INVOKERS}")
+	file(GLOB_RECURSE WEBRTC_INVOKER
+		webrtc/*.cpp
+		webrtc/*.h
+	)
+	if (BUILD_AS_PLUGINS)
+		source_group("" FILES ${WEBRTC_INVOKER})
+		add_library(
+			invoker_webrtc SHARED 
+			${WEBRTC_INVOKER}
+			"../Plugins.cpp")
+		target_link_libraries(invoker_webrtc uscxml ${LIBJINGLE_LIBRARIES})
+		set_target_properties(invoker_webrtc PROPERTIES FOLDER "Plugin Invoker")
+		set_target_properties(invoker_webrtc PROPERTIES COMPILE_FLAGS "-DPLUMA_EXPORTS")
+		set_target_properties(invoker_webrtc PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${OUTPUT_DIR}/lib")
+	else()
+		list (APPEND USCXML_FILES ${WEBRTC_INVOKER})
+	endif()
+endif()
+
+
 # location invoker
 
 if (CORELOCATION_LIBRARY AND OFF)

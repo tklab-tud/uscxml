@@ -18,7 +18,7 @@ are pulled off the internal queue in order, and that prefix matching works on th
    <!-- the first internal event.  The error will be the second, and event2 will be the third -->
       <raise event="event1"/>
      <!-- assigning to a non-existent location should raise an error -->
-    <assign conf:location="1" conf:expr="2"/> 
+    <assign conf:invalidLocation="" conf:expr="2"/> 
    </onentry>
        
   <transition  event="event1" target="s02">

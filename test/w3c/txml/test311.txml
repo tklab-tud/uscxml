@@ -8,7 +8,8 @@ xmlns:conf="http://www.w3.org/2005/scxml-conformance" initial="s0">
 
 <state id="s0">
   <onentry>
-   <assign conf:location="1" conf:expr="1"/>
+  	<send event="timeout" delay="1s"/>
+   <assign conf:invalidLocation="" conf:expr="1"/>
    </onentry>
    <transition event="error.execution" conf:targetpass=""/> 
    <transition event=".*" conf:targetfail=""/>

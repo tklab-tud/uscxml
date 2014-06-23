@@ -1,6 +1,6 @@
 /**
  *  @file
- *  @author     2012-2013 Stefan Radomski (stefan.radomski@cs.tu-darmstadt.de)
+ *  @author     2012-2014 Stefan Radomski (stefan.radomski@cs.tu-darmstadt.de)
  *  @copyright  Simplified BSD
  *
  *  @cond

@@ -30,7 +30,7 @@ the transtitions.   -->
       </finalize>
       </invoke>
       
-  <transition event="childToParent" conf:idVal="1 2" conf:targetpass=""/>
+  <transition event="childToParent" conf:idVal="1=2" conf:targetpass=""/>
   <transition event="*" conf:targetfail=""/>
 </state>   
  

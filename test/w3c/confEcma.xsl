@@ -66,6 +66,11 @@
 	<xsl:attribute name="location">Var<xsl:value-of select="." /></xsl:attribute>
 </xsl:template>
 
+<!-- names an invalid location for <assign>, etc. -->
+<xsl:template match="//@conf:invalidLocation">
+	<xsl:attribute name="location">foo.bar.baz </xsl:attribute>
+</xsl:template>
+
 <!-- uses system var as location for <assign>, etc. -->
 <xsl:template match="//@conf:systemVarLocation">
 	<xsl:attribute name="location"><xsl:value-of select="." /></xsl:attribute>
@@ -210,7 +215,7 @@
 </xsl:template>
 <!-- returns the value of a KVP specified by <param> from  _event.data  -->
 <xsl:template match="//@conf:eventDataNamelistValue">
-	<xsl:attribute name="expr">_event.data.<xsl:value-of select="."/></xsl:attribute>
+	<xsl:attribute name="expr">_event.data.Var<xsl:value-of select="."/></xsl:attribute>
 </xsl:template>
 
 <!-- returns the location of the scxml event i/o processor -->
@@ -412,7 +417,7 @@ is the second argument -->
 <!-- return true if event.data field matches the specified value -->
 
 <xsl:template match="//@conf:eventdataVal">
-	<xsl:attribute name="cond">_event.data === '<xsl:value-of select="."/>'</xsl:attribute>
+	<xsl:attribute name="cond">_event.data == <xsl:value-of select="."/></xsl:attribute>
 </xsl:template>
 
 <xsl:template match="//@conf:emptyEventData">

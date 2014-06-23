@@ -279,6 +279,16 @@ public:
 		return this < &other;
 	}
 
+	bool operator==(const Event& other) const     {
+		return (this->name == other.name &&
+						this->sendid == other.sendid &&
+						this->invokeid == other.invokeid &&
+						this->data == other.data);
+	}
+	bool operator!=(const Event& other) const     {
+		return !(*this == other);
+	}
+
 	std::string getName() {
 		return name;
 	}

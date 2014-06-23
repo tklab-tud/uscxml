@@ -80,7 +80,7 @@ public class Data {
 			if (data.type == Type.INTERPRETED) {
 				nativeData.setType(DataNative.Type.INTERPRETED);
 			} else {
-				nativeData.setType(DataNative.Type.VERBATIM);				
+				nativeData.setType(DataNative.Type.VERBATIM);
 			}
 		}
 		return nativeData;

@@ -719,6 +719,18 @@ if (LIBICAL_FOUND)
 endif()
 set(CMAKE_FIND_LIBRARY_SUFFIXES ${CMAKE_FIND_LIBRARY_SUFFIXES_ORIG})
 
+set(CMAKE_FIND_LIBRARY_SUFFIXES ${CMAKE_FIND_LIBRARY_SUFFIXES_SHARED})
+if (NOT DEFINED ENV{LIBJINGLE_ROOT_DIR})
+	set(ENV{LIBJINGLE_ROOT_DIR} "/Users/sradomski/Documents/TK/Code/webrtc-work/trunk")
+endif()
+
+find_package(LIBJINGLE)
+if (LIBJINGLE_FOUND)
+	include_directories (${LIBJINGLE_INCLUDE_DIRS})
+	list (APPEND USCXML_OPT_LIBS ${LIBJINGLE_LIBRARIES})
+endif()
+set(CMAKE_FIND_LIBRARY_SUFFIXES ${CMAKE_FIND_LIBRARY_SUFFIXES_ORIG})
+
 find_package(Expect)
 find_package(TCL)
 if (EXPECT_FOUND AND TCL_FOUND)
@@ -1004,9 +1016,7 @@ if (NOT CMAKE_CROSSCOMPILING)
 		add_subdirectory(test)
 	endif()
 	
-	if (NOT WIN32)
-		add_subdirectory(src/bindings)
-	endif()
+	add_subdirectory(src/bindings)
 endif()
 
 
