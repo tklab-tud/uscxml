@@ -134,7 +134,7 @@ bool BasicHTTPIOProcessor::httpRecvRequest(const HTTPServer::Request& req) {
 	if (req.data.hasKey("content")) {
 		const Data& data = req.data["content"];
 		for(std::map<std::string, Data>::const_iterator compIter = data.compound.begin();
-				compIter!= data.compound.end(); compIter++) {
+		        compIter!= data.compound.end(); compIter++) {
 			if (compIter->first == "_scxmleventname") {
 				reqEvent.name = compIter->second.atom;
 			} else if (compIter->first == "content") {
@@ -144,7 +144,7 @@ bool BasicHTTPIOProcessor::httpRecvRequest(const HTTPServer::Request& req) {
 			}
 		}
 	}
-	
+
 	// check whether we can parse it as XML
 	if (reqEvent.content.length() > 0) {
 		NameSpacingParser parser = NameSpacingParser::fromXML(reqEvent.content);

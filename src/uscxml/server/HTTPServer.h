@@ -85,9 +85,9 @@ public:
 	};
 
 	enum ServerType {
-	    HTTPS,
-	    HTTP,
-	    WebSockets
+		HTTPS,
+		HTTP,
+		WebSockets
 	};
 
 	static HTTPServer* getInstance(unsigned short port, unsigned short wsPort, SSLConfig* sslConf = NULL);

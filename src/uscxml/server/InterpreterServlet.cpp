@@ -23,6 +23,10 @@
 
 namespace uscxml {
 
+InterpreterHTTPServlet::~InterpreterHTTPServlet() {
+	HTTPServer::unregisterServlet(this);
+}
+
 InterpreterHTTPServlet::InterpreterHTTPServlet(InterpreterImpl* interpreter) {
 	_interpreter = interpreter;
 
@@ -85,7 +89,9 @@ void InterpreterHTTPServlet::send(const SendRequest& req) {
 	LOG(ERROR) << "send not supported by http iorprocessor, use the fetch element";
 }
 
-
+InterpreterWebSocketServlet::~InterpreterWebSocketServlet() {
+	HTTPServer::unregisterServlet(this);
+}
 
 InterpreterWebSocketServlet::InterpreterWebSocketServlet(InterpreterImpl* interpreter) {
 	_interpreter = interpreter;

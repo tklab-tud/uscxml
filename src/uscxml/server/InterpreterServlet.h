@@ -31,7 +31,7 @@ class InterpreterHTTPServlet : public HTTPServlet, public IOProcessorImpl {
 public:
 	InterpreterHTTPServlet() {};
 	InterpreterHTTPServlet(InterpreterImpl* interpreter);
-	virtual ~InterpreterHTTPServlet() {}
+	virtual ~InterpreterHTTPServlet();
 
 	virtual boost::shared_ptr<IOProcessorImpl> create(InterpreterImpl* interpreter);
 
@@ -82,7 +82,7 @@ class InterpreterWebSocketServlet : public WebSocketServlet, public IOProcessorI
 public:
 	InterpreterWebSocketServlet() {};
 	InterpreterWebSocketServlet(InterpreterImpl* interpreter);
-	virtual ~InterpreterWebSocketServlet() {}
+	virtual ~InterpreterWebSocketServlet();
 
 	virtual boost::shared_ptr<IOProcessorImpl> create(InterpreterImpl* interpreter);
 

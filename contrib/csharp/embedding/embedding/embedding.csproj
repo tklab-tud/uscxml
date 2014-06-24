@@ -23,6 +23,12 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <EnvironmentVariables>
+      <EnvironmentVariables>
+        <Variable name="DYLD_FALLBACK_LIBRARY_PATH" value="/Users/sradomski/Documents/TK/Code/uscxml/build/cli/lib/csharp" />
+        <Variable name="MONO_LOG_LEVEL" value="debug" />
+      </EnvironmentVariables>
+    </EnvironmentVariables>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
     <PlatformTarget>x86</PlatformTarget>
@@ -42,7 +48,7 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
     <Reference Include="uscxmlCSharp">
-      <HintPath>C:\Users\sradomski\Desktop\build\lib\uscxmlCSharp.dll</HintPath>
+      <HintPath>..\..\..\..\build\cli\lib\uscxmlCSharp.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>

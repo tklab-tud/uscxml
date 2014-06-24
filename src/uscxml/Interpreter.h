@@ -59,7 +59,7 @@ catch (Event e) { \
 if (_state == InterpreterState::USCXML_DESTROYED) { \
 	throw boost::bad_weak_ptr(); \
 } \
-
+ 
 
 #define USCXML_MONITOR_CALLBACK(callback)\
 for(monIter_t monIter = _monitors.begin(); monIter != _monitors.end(); monIter++) { \
@@ -116,9 +116,9 @@ public:
 };
 
 enum Capabilities {
-    CAN_NOTHING = 0,
-    CAN_BASIC_HTTP = 1,
-    CAN_GENERIC_HTTP = 2,
+	CAN_NOTHING = 0,
+	CAN_BASIC_HTTP = 1,
+	CAN_GENERIC_HTTP = 2,
 };
 
 class USCXML_API InterpreterOptions {
@@ -132,9 +132,9 @@ public:
 		logLevel(0),
 		httpPort(0),
 		httpsPort(0),
-		wsPort(0)
-	{}
-	
+		wsPort(0) {
+	}
+
 	bool withDebugger;
 	bool verbose;
 	bool withHTTP;
@@ -206,7 +206,7 @@ public:
 	const Arabica::XPath::StandardNamespaceContext<std::string>* getNSContext() {
 		return nsContext;
 	}
-	
+
 	std::string nsURL;         // ough to be "http://www.w3.org/2005/07/scxml" but maybe empty
 	std::string xpathPrefix;   // prefix mapped for xpath, "scxml" is _xmlNSPrefix is empty but _nsURL set
 	std::string xmlNSPrefix;   // the actual prefix for elements in the xml file
@@ -235,12 +235,12 @@ struct USCXML_API InterpreterState {
 		USCXML_THREAD_RUNNING        = 0x0100,   //
 		USCXML_THREAD_STARTED        = 0x0200,   //
 	};
-	
+
 	enum BitMask {
 		USCXML_THREAD_MASK = 0xff00,
 		USCXML_INTERPRETER_MASK = 0x00ff,
 	};
-	
+
 	bool operator==(const InterpreterState& other) const     {
 		return state == other.state && msg == other.msg;
 	}
@@ -251,16 +251,16 @@ struct USCXML_API InterpreterState {
 	operator int() {
 		return (int)(state | thread);
 	}
-		
+
 	Event getMessage() {
 		return msg;
 	}
-	
+
 	static std::string stateToString(int32_t state);
-	
+
 	friend USCXML_API std::ostream& operator<< (std::ostream& os, const InterpreterState& interpreterState);
 	friend USCXML_API class InterpreterImpl;
-	
+
 protected:
 	int32_t thread;
 	State state;
@@ -275,8 +275,8 @@ public:
 	typedef std::set<InterpreterMonitor*>::iterator monIter_t;
 
 	enum Binding {
-	    EARLY = 0,
-	    LATE = 1
+		EARLY = 0,
+		LATE = 1
 	};
 
 	virtual ~InterpreterImpl();
@@ -284,9 +284,13 @@ public:
 	void copyTo(InterpreterImpl* other);
 	void copyTo(boost::shared_ptr<InterpreterImpl> other);
 
-	// TODO: Look into that pure virtual issue and make these abstract!
-	virtual InterpreterState interpret() { return _state; } ///< Start interpreter blockingly
-	virtual InterpreterState step(int waitForMS = 0) { return _state; }; ///< Perform a single step
+	// TODO: We need to move the destructor to the implementations to make these pure virtual
+	virtual InterpreterState interpret() {
+		return _state;    ///< Start interpreter blockingly
+	}
+	virtual InterpreterState step(int waitForMS = 0) {
+		return _state;
+	}; ///< Perform a single step
 
 	void start(); ///< Start interpretation in a thread
 	void stop(); ///< Stop interpreter thread
@@ -295,7 +299,7 @@ public:
 	bool isRunning();
 
 	InterpreterState getInterpreterState();
-	
+
 	void addMonitor(InterpreterMonitor* monitor)             {
 		_monitors.insert(monitor);
 	}
@@ -330,11 +334,11 @@ public:
 	DataModel getDataModel()                                 {
 		return _dataModel;
 	}
-	
+
 	void setParentQueue(uscxml::concurrency::BlockingQueue<SendRequest>* parentQueue) {
 		_parentQueue = parentQueue;
 	}
-	
+
 	void setFactory(Factory* factory) {
 		_factory = factory;
 	}
@@ -438,7 +442,7 @@ public:
 	Arabica::DOM::Node<std::string> getState(const std::string& stateId);
 	Arabica::XPath::NodeSet<std::string> getStates(const std::list<std::string>& stateIds);
 	Arabica::XPath::NodeSet<std::string> getAllStates();
-	
+
 	Arabica::XPath::NodeSet<std::string> getInitialStates(Arabica::DOM::Node<std::string> state = Arabica::DOM::Node<std::string>());
 	static Arabica::XPath::NodeSet<std::string> getChildStates(const Arabica::DOM::Node<std::string>& state);
 	static Arabica::XPath::NodeSet<std::string> getChildStates(const Arabica::XPath::NodeSet<std::string>& state);
@@ -480,7 +484,7 @@ protected:
 	void setInterpreterState(InterpreterState::State newState, const std::string& error);
 	void setInterpreterState(InterpreterState::State newState, const Event& error);
 	void setInterpreterState(InterpreterState::State newState);
-	
+
 	bool _stable;
 	tthread::thread* _thread;
 	tthread::recursive_mutex _mutex;
@@ -526,7 +530,7 @@ protected:
 	std::string _name;
 	std::string _sessionId;
 	unsigned int _capabilities;
-	
+
 	Data _cmdLineOptions;
 
 	virtual void executeContent(const Arabica::DOM::Node<std::string>& content, bool rethrow = false);
@@ -585,8 +589,8 @@ public:
 
 	operator bool() const {
 		return (_impl &&
-						_impl->_state != InterpreterState::USCXML_FAULTED &&
-						_impl->_state != InterpreterState::USCXML_DESTROYED);
+		        _impl->_state != InterpreterState::USCXML_FAULTED &&
+		        _impl->_state != InterpreterState::USCXML_DESTROYED);
 	}
 	bool operator< (const Interpreter& other) const     {
 		return _impl < other._impl;
@@ -605,7 +609,7 @@ public:
 	void reset() {
 		return _impl->reset();
 	}
-	
+
 	void start() {
 		return _impl->start();
 	}
@@ -636,7 +640,7 @@ public:
 	InterpreterState getState() {
 		return _impl->getInterpreterState();
 	}
-	
+
 	void addMonitor(InterpreterMonitor* monitor) {
 		return _impl->addMonitor(monitor);
 	}
@@ -779,7 +783,7 @@ public:
 	static std::map<std::string, boost::weak_ptr<InterpreterImpl> > getInstances();
 
 protected:
-	
+
 	void setInvokeRequest(const InvokeRequest& req) {
 		return _impl->setInvokeRequest(req);
 	}

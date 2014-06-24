@@ -31,27 +31,27 @@ using namespace Arabica::XPath;
 using namespace Arabica::DOM;
 
 // see: http://www.w3.org/TR/scxml/#AlgorithmforSCXMLInterpretation
-	
+
 InterpreterState InterpreterDraft6::interpret() {
 	InterpreterState state;
 	while(true) {
 		state = step(-1);
-		
-		switch (state & InterpreterState::USCXML_INTERPRETER_MASK) {
-			case uscxml::InterpreterState::USCXML_FAULTED:
-			case uscxml::InterpreterState::USCXML_FINISHED:
-			case uscxml::InterpreterState::USCXML_DESTROYED:
-				// return as we finished
-				return state;
-			default:
-				
-				// process invokers on main thread
-				if(_thread == NULL) {
-					runOnMainThread(200);
-				}
 
-				// process next step
-				break;
+		switch (state & InterpreterState::USCXML_INTERPRETER_MASK) {
+		case uscxml::InterpreterState::USCXML_FAULTED:
+		case uscxml::InterpreterState::USCXML_FINISHED:
+		case uscxml::InterpreterState::USCXML_DESTROYED:
+			// return as we finished
+			return state;
+		default:
+
+			// process invokers on main thread
+			if(_thread == NULL) {
+				runOnMainThread(200);
+			}
+
+			// process next step
+			break;
 		}
 	}
 	return state;
@@ -60,35 +60,35 @@ InterpreterState InterpreterDraft6::interpret() {
 // setup / fetch the documents initial transitions
 NodeSet<std::string> InterpreterDraft6::getDocumentInitialTransitions() {
 	NodeSet<std::string> initialTransitions;
-	
+
 	if (_userDefinedStartConfiguration.size() > 0) {
 		// we emulate entering a given configuration by creating a pseudo deep history
 		Element<std::string> initHistory = _document.createElementNS(_nsInfo.nsURL, "history");
 		_nsInfo.setPrefix(initHistory);
-		
+
 		initHistory.setAttribute("id", UUID::getUUID());
 		initHistory.setAttribute("type", "deep");
 		_scxml.insertBefore(initHistory, _scxml.getFirstChild());
-		
+
 		std::string histId = ATTR(initHistory, "id");
 		NodeSet<std::string> histStates;
 		for (int i = 0; i < _userDefinedStartConfiguration.size(); i++) {
 			histStates.push_back(getState(_userDefinedStartConfiguration[i]));
 		}
 		_historyValue[histId] = histStates;
-		
+
 		Element<std::string> initialElem = _document.createElementNS(_nsInfo.nsURL, "initial");
 		_nsInfo.setPrefix(initialElem);
-		
+
 		initialElem.setAttribute("generated", "true");
 		Element<std::string> transitionElem = _document.createElementNS(_nsInfo.nsURL, "transition");
 		_nsInfo.setPrefix(transitionElem);
-		
+
 		transitionElem.setAttribute("target", histId);
 		initialElem.appendChild(transitionElem);
 		_scxml.appendChild(initialElem);
 		initialTransitions.push_back(transitionElem);
-		
+
 	} else {
 		// try to get initial transition from initial element
 		initialTransitions = _xpath.evaluate("/" + _nsInfo.xpathPrefix + "initial/" + _nsInfo.xpathPrefix + "transition", _scxml).asNodeSet();
@@ -100,11 +100,11 @@ NodeSet<std::string> InterpreterDraft6::getDocumentInitialTransitions() {
 			for (int i = 0; i < initialStates.size(); i++) {
 				Element<std::string> initialElem = _document.createElementNS(_nsInfo.nsURL, "initial");
 				_nsInfo.setPrefix(initialElem);
-				
+
 				initialElem.setAttribute("generated", "true");
 				Element<std::string> transitionElem = _document.createElementNS(_nsInfo.nsURL, "transition");
 				_nsInfo.setPrefix(transitionElem);
-				
+
 				transitionElem.setAttribute("target", ATTR(initialStates[i], "id"));
 				initialElem.appendChild(transitionElem);
 				_scxml.appendChild(initialElem);
@@ -118,20 +118,20 @@ NodeSet<std::string> InterpreterDraft6::getDocumentInitialTransitions() {
 InterpreterState InterpreterDraft6::step(int waitForMS = 0) {
 	try {
 		tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
-		
+
 		if (_state & InterpreterState::USCXML_FINISHED ||
-				_state & InterpreterState::USCXML_FAULTED ||
-				_state & InterpreterState::USCXML_DESTROYED) {
+		        _state & InterpreterState::USCXML_FAULTED ||
+		        _state & InterpreterState::USCXML_DESTROYED) {
 			return _state;
 		}
-		
+
 		NodeSet<std::string> enabledTransitions;
-		
+
 		// setup document and interpreter
 		if (!_isInitialized) {
 			init(); // will throw
 		}
-		
+
 		if (_configuration.size() == 0) {
 			// goto initial configuration
 			NodeSet<std::string> initialTransitions = getDocumentInitialTransitions();
@@ -140,14 +140,14 @@ InterpreterState InterpreterDraft6::step(int waitForMS = 0) {
 		}
 
 		_stable = false;
-		
+
 		// are there spontaneous transitions?
 		enabledTransitions = selectEventlessTransitions();
 		if (!enabledTransitions.empty()) {
 			// test 403b
 			enabledTransitions.to_document_order();
 			microstep(enabledTransitions);
-			
+
 			setInterpreterState(InterpreterState::USCXML_MICROSTEPPED);
 			return _state;
 		}
@@ -160,9 +160,9 @@ InterpreterState InterpreterDraft6::step(int waitForMS = 0) {
 		if (!_internalQueue.empty()) {
 			_currEvent = _internalQueue.front();
 			_internalQueue.pop_front();
-			
+
 			USCXML_MONITOR_CALLBACK2(beforeProcessingEvent, _currEvent)
-			
+
 			if (_dataModel)
 				_dataModel.setEvent(_currEvent);
 			enabledTransitions = selectTransitions(_currEvent.name);
@@ -172,7 +172,7 @@ InterpreterState InterpreterDraft6::step(int waitForMS = 0) {
 				enabledTransitions.to_document_order();
 				microstep(enabledTransitions);
 			}
-			
+
 			// test 319 - even if we do not enable transitions, consider it a microstep
 			setInterpreterState(InterpreterState::USCXML_MICROSTEPPED);
 			return _state;
@@ -209,7 +209,7 @@ InterpreterState InterpreterDraft6::step(int waitForMS = 0) {
 					_condVar.wait(_mutex);
 				}
 			}
-			
+
 			if (waitForMS > 0) {
 				// wait given number of milliseconds max
 				uint64_t now = tthread::chrono::system_clock::now();
@@ -219,14 +219,14 @@ InterpreterState InterpreterDraft6::step(int waitForMS = 0) {
 					now = tthread::chrono::system_clock::now();
 				}
 			}
-			
+
 			if (_externalQueue.isEmpty()) {
 				return _state;
 			}
-			
+
 			setInterpreterState(InterpreterState::USCXML_MACROSTEPPED);
 		}
-		
+
 		_currEvent = _externalQueue.pop();
 		_currEvent.eventType = Event::EXTERNAL; // make sure it is set to external
 
@@ -234,11 +234,11 @@ InterpreterState InterpreterDraft6::step(int waitForMS = 0) {
 			goto EXIT_INTERPRETER;
 
 		USCXML_MONITOR_CALLBACK2(beforeProcessingEvent, _currEvent)
-		
+
 		if (iequals(_currEvent.name, "cancel.invoke." + _sessionId)) {
 			goto EXIT_INTERPRETER;
 		}
-		
+
 		try {
 			_dataModel.setEvent(_currEvent);
 		} catch (Event e) {
@@ -246,7 +246,7 @@ InterpreterState InterpreterDraft6::step(int waitForMS = 0) {
 		}
 
 		finalizeAndAutoForwardCurrentEvent();
-		
+
 		// run internal processing until we reach a stable configuration again
 		enabledTransitions = selectTransitions(_currEvent.name);
 		if (!enabledTransitions.empty()) {
@@ -257,12 +257,12 @@ InterpreterState InterpreterDraft6::step(int waitForMS = 0) {
 
 		if (_topLevelFinalReached)
 			goto EXIT_INTERPRETER;
-		
+
 		return _state;
 
-	EXIT_INTERPRETER:
+EXIT_INTERPRETER:
 		USCXML_MONITOR_CALLBACK(beforeCompletion)
-		
+
 		exitInterpreter();
 		if (_sendQueue) {
 			std::map<std::string, std::pair<InterpreterImpl*, SendRequest> >::iterator sendIter = _sendIds.begin();
@@ -271,9 +271,9 @@ InterpreterState InterpreterDraft6::step(int waitForMS = 0) {
 				sendIter++;
 			}
 		}
-		
+
 		USCXML_MONITOR_CALLBACK(afterCompletion)
-		
+
 //		assert(hasLegalConfiguration());
 		_mutex.unlock();
 
@@ -286,13 +286,13 @@ InterpreterState InterpreterDraft6::step(int waitForMS = 0) {
 	} catch (Event e) {
 		setInterpreterState(InterpreterState::USCXML_FAULTED, e);
 		return _state;
-		
+
 	} catch (boost::bad_weak_ptr e) {
 		LOG(ERROR) << "Unclean shutdown " << std::endl << std::endl;
 		setInterpreterState(InterpreterState::USCXML_DESTROYED);
 		return _state;
 	}
-	
+
 	// set datamodel to null from this thread
 	if(_dataModel)
 		_dataModel = DataModel();
@@ -304,18 +304,18 @@ void InterpreterDraft6::stabilize() {
 
 	NodeSet<std::string> enabledTransitions;
 	_stable = false;
-	
+
 	if (_configuration.size() == 0) {
 		// goto initial configuration
 		NodeSet<std::string> initialTransitions = getDocumentInitialTransitions();
 		assert(initialTransitions.size() > 0);
 		enterStates(initialTransitions);
 	}
-	
+
 	do { // process microsteps for enabled transitions until there are no more left
 
 		enabledTransitions = selectEventlessTransitions();
-		
+
 		if (enabledTransitions.size() == 0) {
 			if (_internalQueue.size() == 0) {
 				_stable = true;
@@ -325,22 +325,22 @@ void InterpreterDraft6::stabilize() {
 #if VERBOSE
 				std::cout << "Received internal event " << _currEvent.name << std::endl;
 #endif
-				
+
 				USCXML_MONITOR_CALLBACK2(beforeProcessingEvent, _currEvent)
-				
+
 				if (_dataModel)
 					_dataModel.setEvent(_currEvent);
 				enabledTransitions = selectTransitions(_currEvent.name);
 			}
 		}
-		
+
 		if (!enabledTransitions.empty()) {
 			// test 403b
 			enabledTransitions.to_document_order();
 			microstep(enabledTransitions);
 		}
 	} while(!_internalQueue.empty() || !_stable);
-		
+
 	USCXML_MONITOR_CALLBACK(onStableConfiguration)
 
 	// when we reach a stable configuration, invoke
@@ -418,7 +418,7 @@ void InterpreterDraft6::mainEventLoop() {
 		USCXML_MONITOR_CALLBACK(onStableConfiguration)
 
 		_mutex.unlock();
-		
+
 		// whenever we have a stable configuration, run the mainThread hooks with 200fps
 		while(_externalQueue.isEmpty() && _thread == NULL) {
 			runOnMainThread(200);
@@ -498,7 +498,7 @@ EXIT_INTERPRETER:
 
 }
 #endif
-	
+
 Arabica::XPath::NodeSet<std::string> InterpreterDraft6::selectTransitions(const std::string& event) {
 	Arabica::XPath::NodeSet<std::string> enabledTransitions;
 
@@ -814,7 +814,7 @@ void InterpreterDraft6::exitStates(const Arabica::XPath::NodeSet<std::string>& e
 				NodeSet<std::string> tmpStates;
 				tmpStates.push_back(source);
 				tmpStates.insert(tmpStates.end(), tStates.begin(), tStates.end());
-#if 1
+#if 0
 				std::cout << _name << ": tmpStates: ";
 				for (int i = 0; i < tmpStates.size(); i++) {
 					std::cout << ATTR(tmpStates[i], "id") << ", ";
@@ -823,7 +823,7 @@ void InterpreterDraft6::exitStates(const Arabica::XPath::NodeSet<std::string>& e
 #endif
 				ancestor = findLCCA(tmpStates);
 			}
-#if 1
+#if 0
 			std::cout << _name << ": Ancestor: " << ATTR(ancestor, "id") << std::endl;;
 #endif
 			for (int j = 0; j < _configuration.size(); j++) {
@@ -1117,9 +1117,9 @@ void InterpreterDraft6::enterStates(const Arabica::XPath::NodeSet<std::string>& 
 }
 
 void InterpreterDraft6::addStatesToEnter(const Node<std::string>& state,
-																				 Arabica::XPath::NodeSet<std::string>& statesToEnter,
-																				 Arabica::XPath::NodeSet<std::string>& statesForDefaultEntry,
-																				 Arabica::XPath::NodeSet<std::string>& defaultHistoryContent) {
+        Arabica::XPath::NodeSet<std::string>& statesToEnter,
+        Arabica::XPath::NodeSet<std::string>& statesForDefaultEntry,
+        Arabica::XPath::NodeSet<std::string>& defaultHistoryContent) {
 	std::string stateId = ((Element<std::string>)state).getAttribute("id");
 
 #if VERBOSE

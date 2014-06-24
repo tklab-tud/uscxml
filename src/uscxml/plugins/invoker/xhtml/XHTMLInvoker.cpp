@@ -52,6 +52,7 @@ XHTMLInvoker::XHTMLInvoker() {
 }
 
 XHTMLInvoker::~XHTMLInvoker() {
+	HTTPServer::unregisterServlet(this);
 };
 
 boost::shared_ptr<InvokerImpl> XHTMLInvoker::create(InterpreterImpl* interpreter) {
@@ -210,11 +211,15 @@ void XHTMLInvoker::reply(const SendRequest& req, const HTTPServer::Request& long
 }
 
 void XHTMLInvoker::cancel(const std::string sendId) {
+	HTTPServer::unregisterServlet(this);
 }
 
 void XHTMLInvoker::invoke(const InvokeRequest& req) {
 	_invokeReq = req;
 	HTTPServer::registerServlet(_interpreter->getName() + "/" + req.invokeid + ".html", this);
+	if (_url.size() == 0) {
+		returnErrorExecution("No HTTP server running");
+	}
 #if __APPLE__
 #	if TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR
 #	else

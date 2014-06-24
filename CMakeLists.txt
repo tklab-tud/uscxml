@@ -1,5 +1,16 @@
 cmake_minimum_required(VERSION 2.8.4)
 
+cmake_policy(PUSH)
+if(POLICY CMP0042)
+	cmake_policy(SET CMP0042 OLD)
+endif()
+if(POLICY CMP0045)
+	cmake_policy(SET CMP0045 OLD)
+endif()
+if(POLICY CMP0046)
+	cmake_policy(SET CMP0046 OLD)
+endif()
+
 # specify USCXML version
 SET(USCXML_VERSION_MAJOR "0")
 SET(USCXML_VERSION_MINOR "1")
@@ -117,6 +128,8 @@ if (CMAKE_CROSSCOMPILING)
 else()
 	if (WIN32 AND 64BIT_HOST)
 		SET(USCXML_PLATFORM_ID "${CMAKE_SYSTEM_NAME_LC}-${CMAKE_SYSTEM_PROCESSOR}_64")
+	elseif (APPLE)
+		SET(USCXML_PLATFORM_ID "${CMAKE_SYSTEM_NAME_LC}-i386")
 	else()
 		SET(USCXML_PLATFORM_ID "${CMAKE_SYSTEM_NAME_LC}-${CMAKE_SYSTEM_PROCESSOR}")
 	endif()
@@ -418,11 +431,14 @@ endif()
 
 set(CMAKE_COMPILER_STRING "${CMAKE_CXX_COMPILER_ID} ${CMAKE_CXX_COMPILER_VERSION}")
 
+if (APPLE)
+#	set(CMAKE_OSX_ARCHITECTURES "i386;x86_64")
+endif()
+
 # see http://www.mail-archive.com/cmake@cmake.org/msg23240.html
 if (APPLE AND MACOSX_VERSION VERSION_LESS "10.9")
 	# figure out what to do with Mavericks (10.9) later
 #	add_definitions("-D_DARWIN_UNLIMITED_SELECT")
-#	set(CMAKE_OSX_ARCHITECTURES "x86_64;i386")
 	# support leopard and above
 	set(CMAKE_OSX_DEPLOYMENT_TARGET 10.6)
 	foreach(FLAGS CMAKE_C_FLAGS CMAKE_CXX_FLAGS CMAKE_EXE_LINKER_FLAGS CMAKE_SHARED_LINKER_FLAGS CMAKE_MODULE_LINKER_FLAGS)
@@ -681,6 +697,11 @@ endif()
 set(CMAKE_FIND_LIBRARY_SUFFIXES ${CMAKE_FIND_LIBRARY_SUFFIXES_SHARED})
 find_package(SWI)
 if (SWI_FOUND)
+	if (SWI_CPP_INCLUDE_DIR)
+		include_directories(${SWI_CPP_INCLUDE_DIR})
+	else()
+		include_directories(${PROJECT_SOURCE_DIR}/contrib/src/swi-pl)
+	endif()
 	include_directories(${SWI_INCLUDE_DIR})	
 	if (BUILD_PREFER_STATIC_LIBRARIES)
 		find_package(GMP)
@@ -1140,6 +1161,8 @@ message(STATUS "  Binaries will end up in ........ : " ${REL_CMAKE_RUNTIME_OUTPU
 
 # see contrib/cmake/CPackUSCXML.cmake
 include(contrib/cmake/CPackUSCXML.cmake)
+
+cmake_policy(POP)
 
 # This must always be last!
 include(CPack)

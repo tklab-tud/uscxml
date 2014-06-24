@@ -51,9 +51,9 @@ struct PromelaParserNode {
 class PromelaParser {
 public:
 	enum Type {
-	    PROMELA_EXPR,
-	    PROMELA_DECL,
-	    PROMELA_STMNT
+		PROMELA_EXPR,
+		PROMELA_DECL,
+		PROMELA_STMNT
 	};
 
 	static std::string typeToDesc(int type);

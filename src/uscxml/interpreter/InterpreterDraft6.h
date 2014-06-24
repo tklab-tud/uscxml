@@ -25,9 +25,12 @@
 namespace uscxml {
 
 class USCXML_API InterpreterDraft6 : public InterpreterImpl {
+public:
+	virtual ~InterpreterDraft6() {};
+
 protected:
-	InterpreterState interpret();
-	InterpreterState step(int blocking);
+	virtual InterpreterState interpret();
+	virtual InterpreterState step(int blocking);
 	void stabilize();
 
 	void microstep(const Arabica::XPath::NodeSet<std::string>& enabledTransitions);
@@ -35,7 +38,7 @@ protected:
 	void addStatesToEnter(const Arabica::DOM::Node<std::string>& state,
 	                      Arabica::XPath::NodeSet<std::string>& statesToEnter,
 	                      Arabica::XPath::NodeSet<std::string>& statesForDefaultEntry,
-												Arabica::XPath::NodeSet<std::string>& defaultHistoryContent);
+	                      Arabica::XPath::NodeSet<std::string>& defaultHistoryContent);
 
 	void exitStates(const Arabica::XPath::NodeSet<std::string>& enabledTransitions);
 	void exitInterpreter();

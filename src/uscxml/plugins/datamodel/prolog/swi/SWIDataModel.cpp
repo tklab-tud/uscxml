@@ -143,7 +143,7 @@ boost::shared_ptr<DataModelImpl> SWIDataModel::create(InterpreterImpl* interpret
 
 //		assert(engine);
 //		_swiEngines[dm.get()] = engine;
-//		_dmPtr = dm.get();
+		_dmPtr = dm.get();
 
 //		int rc = PL_set_engine(engine, NULL);
 //		assert(rc == PL_ENGINE_SET);

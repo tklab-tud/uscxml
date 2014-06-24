@@ -217,7 +217,7 @@ void JSCDataModel::setEvent(const Event& event) {
 		ssRaw << event;
 		privData->nativeObj->raw = ssRaw.str();
 	}
-		
+
 	if (event.dom) {
 		JSStringRef propName = JSStringCreateWithUTF8CString("data");
 		JSObjectSetProperty(_ctx, eventObj, propName, getNodeAsValue(event.dom), 0, &exception);

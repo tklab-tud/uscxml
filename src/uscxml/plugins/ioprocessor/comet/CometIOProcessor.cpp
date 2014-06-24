@@ -42,6 +42,7 @@ CometIOProcessor::CometIOProcessor() {
 }
 
 CometIOProcessor::~CometIOProcessor() {
+	HTTPServer::unregisterServlet(this);
 }
 
 boost::shared_ptr<IOProcessorImpl> CometIOProcessor::create(InterpreterImpl* interpreter) {

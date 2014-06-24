@@ -143,14 +143,14 @@ x.ull = 0x0123456789abcdef; // may need special suffix for ULL.
 */
 
 enum endianness {
-    little_endian,
-    big_endian,
-    network_endian = big_endian,
+	little_endian,
+	big_endian,
+	network_endian = big_endian,
 
 #if defined(BOOST_LITTLE_ENDIAN)
-    host_endian = little_endian
+	host_endian = little_endian
 #elif defined(BOOST_BIG_ENDIAN)
-    host_endian = big_endian
+	host_endian = big_endian
 #else
 #error "unable to determine system endianness"
 #endif

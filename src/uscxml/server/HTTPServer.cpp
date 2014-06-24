@@ -596,6 +596,20 @@ bool HTTPServer::registerServlet(const std::string& path, HTTPServlet* servlet) 
 	return true;
 }
 
+void HTTPServer::unregisterServlet(HTTPServlet* servlet) {
+	HTTPServer* INSTANCE = getInstance();
+	tthread::lock_guard<tthread::recursive_mutex> lock(INSTANCE->_mutex);
+	http_servlet_iter_t servletIter = INSTANCE->_httpServlets.begin();
+	while(servletIter != INSTANCE->_httpServlets.end()) {
+		if (servletIter->second == servlet) {
+			evhttp_del_cb(INSTANCE->_http, std::string("/" + servletIter->first).c_str());
+			INSTANCE->_httpServlets.erase(servletIter);
+			break;
+		}
+		servletIter++;
+	}
+}
+
 bool HTTPServer::registerServlet(const std::string& path, WebSocketServlet* servlet) {
 	HTTPServer* INSTANCE = getInstance();
 
@@ -636,6 +650,20 @@ bool HTTPServer::registerServlet(const std::string& path, WebSocketServlet* serv
 	return true;
 }
 
+void HTTPServer::unregisterServlet(WebSocketServlet* servlet) {
+	HTTPServer* INSTANCE = getInstance();
+	tthread::lock_guard<tthread::recursive_mutex> lock(INSTANCE->_mutex);
+	ws_servlet_iter_t servletIter = INSTANCE->_wsServlets.begin();
+	while(servletIter != INSTANCE->_wsServlets.end()) {
+		if (servletIter->second == servlet) {
+			evhttp_del_cb(INSTANCE->_http, std::string("/" + servletIter->first).c_str());
+			INSTANCE->_wsServlets.erase(servletIter);
+			break;
+		}
+		servletIter++;
+	}
+}
+
 std::string HTTPServer::getBaseURL(ServerType type) {
 	HTTPServer* INSTANCE = getInstance();
 	std::stringstream servletURL;
@@ -656,20 +684,6 @@ std::string HTTPServer::getBaseURL(ServerType type) {
 		break;
 	}
 	return servletURL.str();
-}
-
-void HTTPServer::unregisterServlet(HTTPServlet* servlet) {
-	HTTPServer* INSTANCE = getInstance();
-	tthread::lock_guard<tthread::recursive_mutex> lock(INSTANCE->_mutex);
-	http_servlet_iter_t servletIter = INSTANCE->_httpServlets.begin();
-	while(servletIter != INSTANCE->_httpServlets.end()) {
-		if (servletIter->second == servlet) {
-			evhttp_del_cb(INSTANCE->_http, std::string("/" + servletIter->first).c_str());
-			INSTANCE->_httpServlets.erase(servletIter);
-			break;
-		}
-		servletIter++;
-	}
 }
 
 void HTTPServer::start() {

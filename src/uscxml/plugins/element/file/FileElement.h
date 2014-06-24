@@ -32,16 +32,16 @@ namespace uscxml {
 class FileElement : public ExecutableContentImpl {
 public:
 	enum Operation {
-	    READ,
-	    WRITE,
-	    APPEND
+		READ,
+		WRITE,
+		APPEND
 	};
 
 	enum Type {
-	    XML,
-	    JSON,
-	    TEXT,
-	    BINARY
+		XML,
+		JSON,
+		TEXT,
+		BINARY
 	};
 
 	FileElement() {

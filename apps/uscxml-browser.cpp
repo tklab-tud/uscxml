@@ -153,7 +153,7 @@ int main(int argc, char** argv) {
 
 	}
 	HTTPServer::getInstance(options.httpPort, options.wsPort, sslConf);
-	
+
 	DebuggerServlet* debugger;
 	if (options.withDebugger) {
 		debugger = new DebuggerServlet();
