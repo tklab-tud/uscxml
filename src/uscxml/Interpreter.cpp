@@ -310,7 +310,7 @@ void NameSpaceInfo::init(const std::map<std::string, std::string>& namespaceInfo
 		nsIter++;
 	}
 }
-	
+
 std::map<std::string, boost::weak_ptr<InterpreterImpl> > Interpreter::_instances;
 tthread::recursive_mutex Interpreter::_instanceMutex;
 
@@ -558,15 +558,15 @@ void InterpreterImpl::run(void* instance) {
 		InterpreterState state;
 		while(interpreter->_state.thread & InterpreterState::USCXML_THREAD_STARTED) {
 			state = interpreter->step(-1);
-			
+
 			switch (state & InterpreterState::USCXML_INTERPRETER_MASK) {
-				case uscxml::InterpreterState::USCXML_FAULTED:
-				case uscxml::InterpreterState::USCXML_FINISHED:
-				case uscxml::InterpreterState::USCXML_DESTROYED:
-					// return as we finished
-					goto DONE_THREAD;
-				default:
-					break;
+			case uscxml::InterpreterState::USCXML_FAULTED:
+			case uscxml::InterpreterState::USCXML_FINISHED:
+			case uscxml::InterpreterState::USCXML_DESTROYED:
+				// return as we finished
+				goto DONE_THREAD;
+			default:
+				break;
 			}
 		}
 	} catch (Event e) {
@@ -595,51 +595,51 @@ void InterpreterImpl::setInterpreterState(InterpreterState::State newState, cons
 	e.data.compound["cause"] = Data(error, Data::VERBATIM);
 	setInterpreterState(newState, e);
 }
-	
+
 void InterpreterImpl::setInterpreterState(InterpreterState::State newState, const Event& error) {
 	switch (_state) {
-		case InterpreterState::USCXML_INSTANTIATED:
-			if (VALID_FROM_INSTANTIATED(newState))
-				break;
-			assert(false);
+	case InterpreterState::USCXML_INSTANTIATED:
+		if (VALID_FROM_INSTANTIATED(newState))
 			break;
-		case InterpreterState::USCXML_FAULTED:
-			if (VALID_FROM_FAULTED(newState))
-				break;
-			assert(false);
+		assert(false);
+		break;
+	case InterpreterState::USCXML_FAULTED:
+		if (VALID_FROM_FAULTED(newState))
 			break;
-		case InterpreterState::USCXML_MICROSTEPPED:
-			if (VALID_FROM_MICROSTEPPED(newState))
-				break;
-			assert(false);
+		assert(false);
+		break;
+	case InterpreterState::USCXML_MICROSTEPPED:
+		if (VALID_FROM_MICROSTEPPED(newState))
 			break;
-		case InterpreterState::USCXML_MACROSTEPPED:
-			if (VALID_FROM_MACROSTEPPED(newState))
-				break;
-			assert(false);
+		assert(false);
+		break;
+	case InterpreterState::USCXML_MACROSTEPPED:
+		if (VALID_FROM_MACROSTEPPED(newState))
 			break;
-		case InterpreterState::USCXML_IDLE:
-			if (VALID_FROM_IDLE(newState))
-				break;
-			assert(false);
+		assert(false);
+		break;
+	case InterpreterState::USCXML_IDLE:
+		if (VALID_FROM_IDLE(newState))
 			break;
-		case InterpreterState::USCXML_FINISHED:
-			if (VALID_FROM_FINISHED(newState))
-				break;
-			assert(false);
+		assert(false);
+		break;
+	case InterpreterState::USCXML_FINISHED:
+		if (VALID_FROM_FINISHED(newState))
 			break;
-		case InterpreterState::USCXML_DESTROYED:
-			assert(false);
-			break;
-			
-		default:
-			break;
+		assert(false);
+		break;
+	case InterpreterState::USCXML_DESTROYED:
+		assert(false);
+		break;
+
+	default:
+		break;
 	}
-	
+
 	_state.state = newState;
 	_state.msg = error;
 }
-	
+
 bool InterpreterImpl::runOnMainThread(int fps, bool blocking) {
 	tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
 	if (_state == InterpreterState::USCXML_FINISHED || _state == InterpreterState::USCXML_FAULTED || _state == InterpreterState::USCXML_DESTROYED)
@@ -676,7 +676,7 @@ bool InterpreterImpl::runOnMainThread(int fps, bool blocking) {
 
 void InterpreterImpl::reset() {
 	tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
-	
+
 	_externalQueue.clear();
 	_internalQueue.clear();
 	_historyValue.clear();
@@ -685,14 +685,14 @@ void InterpreterImpl::reset() {
 	_configuration = NodeSet<std::string>();
 	_topLevelFinalReached = false;
 	_isInitialized = false;
-	
+
 	setInterpreterState(InterpreterState::USCXML_INSTANTIATED);
 }
 
 void InterpreterImpl::setupAndNormalizeDOM() {
 	if (_domIsSetup)
 		return;
-	
+
 	if (!_document) {
 		Event error("error.platform");
 		error.data.compound["cause"] = Data("Interpreter has no DOM", Data::VERBATIM);
@@ -720,7 +720,7 @@ void InterpreterImpl::setupAndNormalizeDOM() {
 
 	// normalize document
 	// TODO: Resolve XML includes
-	
+
 	// make sure every state has an id
 	Arabica::XPath::NodeSet<std::string> states;
 	states.push_back(_xpath.evaluate("//" + _nsInfo.xpathPrefix + "state", _scxml).asNodeSet());
@@ -732,7 +732,7 @@ void InterpreterImpl::setupAndNormalizeDOM() {
 			stateElem.setAttribute("id", UUID::getUUID());
 		}
 	}
-	
+
 	// make sure every invoke has an idlocation or id
 	Arabica::XPath::NodeSet<std::string> invokes = _xpath.evaluate("//" + _nsInfo.xpathPrefix + "invoke", _scxml).asNodeSet();
 	for (int i = 0; i < invokes.size(); i++) {
@@ -741,7 +741,7 @@ void InterpreterImpl::setupAndNormalizeDOM() {
 			invokeElem.setAttribute("id", UUID::getUUID());
 		}
 	}
-	
+
 	// add an id to the scxml element
 	if (!_scxml.hasAttribute("id")) {
 		_scxml.setAttribute("id", UUID::getUUID());
@@ -754,7 +754,7 @@ void InterpreterImpl::setupAndNormalizeDOM() {
 	eventTarget.addEventListener("DOMSubtreeModified", _domEventListener, true);
 
 }
-	
+
 void InterpreterImpl::init() {
 	// make sure we have a factory if none was set before
 	if (_factory == NULL)
@@ -762,7 +762,7 @@ void InterpreterImpl::init() {
 
 	// setup and normalize DOM
 	setupAndNormalizeDOM();
-	
+
 	// get our name or generate as UUID
 	if (_name.length() == 0)
 		_name = (HAS_ATTR(_scxml, "name") ? ATTR(_scxml, "name") : UUID::getUUID());
@@ -775,7 +775,7 @@ void InterpreterImpl::init() {
 
 	// start io processoes
 	setupIOProcessors();
-	
+
 	// instantiate datamodel
 	if (HAS_ATTR(_scxml, "datamodel")) {
 		_dataModel = _factory->createDataModel(ATTR(_scxml, "datamodel"), this);
@@ -787,18 +787,18 @@ void InterpreterImpl::init() {
 	} else {
 		_dataModel = _factory->createDataModel("null", this);
 	}
-		
+
 	_dataModel.assign("_x.args", _cmdLineOptions);
-	
+
 //	_running = true;
 #if VERBOSE
 	std::cout << "running " << this << std::endl;
 #endif
-	
+
 	_binding = (HAS_ATTR(_scxml, "binding") && iequals(ATTR(_scxml, "binding"), "late") ? LATE : EARLY);
-	
+
 	// @TODO: Reread http://www.w3.org/TR/scxml/#DataBinding
-	
+
 	if (_binding == EARLY) {
 		// initialize all data elements
 		NodeSet<std::string> dataElems = _xpath.evaluate("//" + _nsInfo.xpathPrefix + "data", _scxml).asNodeSet();
@@ -817,7 +817,7 @@ void InterpreterImpl::init() {
 				initializeData(Element<std::string>(topDataElems[i]));
 		}
 	}
-	
+
 	// executeGlobalScriptElements
 	NodeSet<std::string> globalScriptElems = filterChildElements(_nsInfo.xmlNSPrefix + "script", _scxml);
 	for (unsigned int i = 0; i < globalScriptElems.size(); i++) {
@@ -1722,7 +1722,7 @@ void InterpreterImpl::executeContent(const Arabica::DOM::Node<std::string>& cont
 					LOG(ERROR) << "Failed to convert relative script URI " << ATTR(content, "src") << " to absolute with base URI " << _baseURI.asString();
 					return;
 				}
-				
+
 				std::stringstream srcContent;
 				try {
 					if (_cachedURLs.find(scriptUrl.asString()) != _cachedURLs.end() && false) {
@@ -1819,8 +1819,8 @@ void InterpreterImpl::executeContent(const Arabica::DOM::Node<std::string>& cont
 
 void InterpreterImpl::finalizeAndAutoForwardCurrentEvent() {
 	for (std::map<std::string, Invoker>::iterator invokeIter = _invokers.begin();
-			 invokeIter != _invokers.end();
-			 invokeIter++) {
+	        invokeIter != _invokers.end();
+	        invokeIter++) {
 		if (iequals(invokeIter->first, _currEvent.invokeid)) {
 			Arabica::XPath::NodeSet<std::string> finalizes = filterChildElements(_nsInfo.xmlNSPrefix + "finalize", invokeIter->second.getElement());
 			for (int k = 0; k < finalizes.size(); k++) {
@@ -2626,14 +2626,30 @@ std::string InterpreterState::stateToString(int32_t state) {
 	std::stringstream ss;
 
 	switch(state & USCXML_INTERPRETER_MASK) {
-		case USCXML_INSTANTIATED:   ss << "INSTANTIATED"; break;
-		case USCXML_FAULTED:        ss << "FAULTED"; break;
-		case USCXML_MICROSTEPPED:   ss << "MICROSTEPPED"; break;
-		case USCXML_MACROSTEPPED:   ss << "MACROSTEPPED"; break;
-		case USCXML_IDLE:           ss << "IDLE"; break;
-		case USCXML_FINISHED:       ss << "FINISHED"; break;
-		case USCXML_DESTROYED:      ss << "DESTROYED"; break;
-		default: ss << "INVALID"; break;
+	case USCXML_INSTANTIATED:
+		ss << "INSTANTIATED";
+		break;
+	case USCXML_FAULTED:
+		ss << "FAULTED";
+		break;
+	case USCXML_MICROSTEPPED:
+		ss << "MICROSTEPPED";
+		break;
+	case USCXML_MACROSTEPPED:
+		ss << "MACROSTEPPED";
+		break;
+	case USCXML_IDLE:
+		ss << "IDLE";
+		break;
+	case USCXML_FINISHED:
+		ss << "FINISHED";
+		break;
+	case USCXML_DESTROYED:
+		ss << "DESTROYED";
+		break;
+	default:
+		ss << "INVALID";
+		break;
 	}
 
 	if (state & USCXML_THREAD_STARTED) {
@@ -2646,7 +2662,7 @@ std::string InterpreterState::stateToString(int32_t state) {
 	} else {
 		ss << ", " << "JOINED";
 	}
-		
+
 	return ss.str();
 }
 

@@ -435,7 +435,7 @@ public:
 		EnterCriticalSection(&mWaitersCountLock);
 		++ mWaitersCount;
 		LeaveCriticalSection(&mWaitersCountLock);
-		
+
 		// Release the mutex while waiting for the condition (will decrease
 		// the number of waiters when done)...
 		aMutex.unlock();
@@ -444,7 +444,7 @@ public:
 #else
 		struct timeval tv;
 		gettimeofday(&tv, NULL);
-		
+
 		struct timespec ts;
 		ts.tv_sec = tv.tv_sec + (ms / 1000);
 		ts.tv_nsec = (tv.tv_usec * 1000); // convert tv microseconds to nanoseconds

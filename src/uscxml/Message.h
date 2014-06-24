@@ -66,8 +66,8 @@ public:
 class USCXML_API Data {
 public:
 	enum Type {
-	    VERBATIM,
-	    INTERPRETED,
+		VERBATIM,
+		INTERPRETED,
 	};
 
 	Data() : type(INTERPRETED) {}
@@ -267,9 +267,9 @@ protected:
 class USCXML_API Event {
 public:
 	enum Type {
-	    INTERNAL = 1,
-	    EXTERNAL = 2,
-	    PLATFORM = 3
+		INTERNAL = 1,
+		EXTERNAL = 2,
+		PLATFORM = 3
 	};
 
 	Event() : eventType(INTERNAL), hideSendId(false) {}
@@ -281,9 +281,9 @@ public:
 
 	bool operator==(const Event& other) const     {
 		return (this->name == other.name &&
-						this->sendid == other.sendid &&
-						this->invokeid == other.invokeid &&
-						this->data == other.data);
+		        this->sendid == other.sendid &&
+		        this->invokeid == other.invokeid &&
+		        this->data == other.data);
 	}
 	bool operator!=(const Event& other) const     {
 		return !(*this == other);

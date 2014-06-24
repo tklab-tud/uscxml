@@ -61,6 +61,7 @@ SCXMLIOProcessor::SCXMLIOProcessor() {
 }
 
 SCXMLIOProcessor::~SCXMLIOProcessor() {
+	HTTPServer::unregisterServlet(this);
 }
 
 

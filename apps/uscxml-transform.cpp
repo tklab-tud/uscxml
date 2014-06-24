@@ -183,7 +183,7 @@ int main(int argc, char** argv) {
 			break;
 		}
 		switch(option) {
-			// cases without short option
+		// cases without short option
 		case 0: {
 			break;
 		}

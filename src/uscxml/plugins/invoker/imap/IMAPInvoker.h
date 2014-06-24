@@ -55,28 +55,28 @@ protected:
 
 	public:
 		enum Cmd {
-		    // valid in authenticated state
-		    IMAP_SELECT,
-		    IMAP_EXAMINE,
-		    IMAP_CREATE,
-		    IMAP_DELETE,
-		    IMAP_RENAME,
-		    IMAP_SUBSCRIBE,
-		    IMAP_UNSUBSCRIBE,
-		    IMAP_LIST,
-		    IMAP_LSUB,
-		    IMAP_STATUS,
-		    IMAP_APPEND,
-		    // valid in selected state
-		    IMAP_CHECK,
-		    IMAP_CLOSE,
-		    IMAP_EXPUNGE,
-		    IMAP_SEARCH,
-		    IMAP_FETCH,
-		    IMAP_STORE,
-		    IMAP_COPY,
-		    IMAP_UID,
-		    IMAP_XEXTENSION,
+			// valid in authenticated state
+			IMAP_SELECT,
+			IMAP_EXAMINE,
+			IMAP_CREATE,
+			IMAP_DELETE,
+			IMAP_RENAME,
+			IMAP_SUBSCRIBE,
+			IMAP_UNSUBSCRIBE,
+			IMAP_LIST,
+			IMAP_LSUB,
+			IMAP_STATUS,
+			IMAP_APPEND,
+			// valid in selected state
+			IMAP_CHECK,
+			IMAP_CLOSE,
+			IMAP_EXPUNGE,
+			IMAP_SEARCH,
+			IMAP_FETCH,
+			IMAP_STORE,
+			IMAP_COPY,
+			IMAP_UID,
+			IMAP_XEXTENSION,
 		};
 
 		struct MailboxOp {

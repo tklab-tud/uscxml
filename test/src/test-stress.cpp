@@ -124,6 +124,7 @@ int main(int argc, char** argv) {
 	google::InitGoogleLogging(argv[0]);
 	google::LogToStderr();
 
+	HTTPServer::getInstance(8088, 8089);
 #ifndef _WIN32
 	opterr = 0;
 #endif
@@ -150,7 +151,7 @@ int main(int argc, char** argv) {
 		interpreter.interpret();
 	}
 #else
-	
+
 	DirectoryWatch* watcher = new DirectoryWatch(argv[optind], true);
 	watcher->updateEntries(true);
 	std::map<std::string, struct stat> entries = watcher->getAllEntries();

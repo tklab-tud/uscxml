@@ -76,7 +76,7 @@ public:
 		if (assignElem.hasAttribute("location")) {
 			location = assignElem.getAttribute("location");
 		}
-		
+
 		std::ostringstream ssAssign;
 		ssAssign << assignElem;
 		std::string tmp;
@@ -124,7 +124,9 @@ public:
 		init("", location, Data::toJSON(data));
 	}
 
-	virtual bool evalAsBool(const std::string& elem, const std::string& content) { return false; }
+	virtual bool evalAsBool(const std::string& elem, const std::string& content) {
+		return false;
+	}
 	virtual void init(const std::string& dataElem, const std::string& location, const std::string& content) {}
 	virtual void assign(const std::string& assignElem, const std::string& location, const std::string& content) {}
 	virtual void eval(const std::string& scriptElem, const std::string& expr) {}

@@ -447,14 +447,14 @@ void MilesSessionInvoker::processEventThumbnail(const std::string& origin, const
 		returnEvent(ev);
 		return;
 	}
-	
+
 	_imageSeq++;
 	if (_imageSeq > 4)
 		_imageSeq = 1;
-	
+
 	std::stringstream testImageName;
 	testImageName << "test" << _imageSeq << ".jpeg";
-	
+
 	URL imageURL(testImageName.str());
 	imageURL.toAbsolute(_interpreter->getBaseURI());
 	std::stringstream ssImage;

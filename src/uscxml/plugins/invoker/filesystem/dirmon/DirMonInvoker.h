@@ -36,10 +36,10 @@ class DirectoryWatchMonitor;
 class DirectoryWatch {
 public:
 	enum Action {
-	    ADDED = 1,
-	    MODIFIED = 2,
-	    DELETED = 4,
-	    EXISTING = 8
+		ADDED = 1,
+		MODIFIED = 2,
+		DELETED = 4,
+		EXISTING = 8
 	};
 
 	DirectoryWatch(const std::string& dir, bool recurse = false) : _dir(dir), _recurse(recurse), _lastChecked(0) {}

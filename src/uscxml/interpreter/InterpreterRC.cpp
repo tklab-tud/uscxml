@@ -927,7 +927,7 @@ void InterpreterRC::computeEntrySet(const Arabica::XPath::NodeSet<std::string>& 
 		}
 	}
 
-#if 1
+#if 0
 	std::cout << "before addDescendantStatesToEnter: ";
 	for (int i = 0; i < statesToEnter.size(); i++) {
 		std::cout << ATTR(statesToEnter[i], "id") << " ";
@@ -941,7 +941,7 @@ void InterpreterRC::computeEntrySet(const Arabica::XPath::NodeSet<std::string>& 
 		addDescendantStatesToEnter(tmp[i],statesToEnter,statesForDefaultEntry, defaultHistoryContent);
 	}
 
-#if 1
+#if 0
 	std::cout << "after addDescendantStatesToEnter: ";
 	for (int i = 0; i < statesToEnter.size(); i++) {
 		std::cout << ATTR(statesToEnter[i], "id") << " ";
@@ -959,7 +959,7 @@ void InterpreterRC::computeEntrySet(const Arabica::XPath::NodeSet<std::string>& 
 		}
 	}
 
-#if 1
+#if 0
 	std::cout << "after addAncestorStatesToEnter: ";
 	for (int i = 0; i < statesToEnter.size(); i++) {
 		std::cout << ATTR(statesToEnter[i], "id") << " ";

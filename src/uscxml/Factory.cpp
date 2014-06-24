@@ -130,7 +130,7 @@ Factory::Factory(Factory* parentFactory) : _parentFactory(parentFactory) {
 Factory::Factory(const std::string& pluginPath, Factory* parentFactory) : _parentFactory(parentFactory), _pluginPath(pluginPath) {
 	registerPlugins();
 }
-	
+
 Factory::Factory(const std::string& pluginPath) : _parentFactory(NULL), _pluginPath(pluginPath) {
 	registerPlugins();
 }
@@ -365,14 +365,6 @@ void Factory::registerPlugins() {
 		registerIOProcessor(ioProcessor);
 	}
 	{
-		InterpreterHTTPServlet* ioProcessor = new InterpreterHTTPServlet();
-		registerIOProcessor(ioProcessor);
-	}
-	{
-		InterpreterWebSocketServlet* ioProcessor = new InterpreterWebSocketServlet();
-		registerIOProcessor(ioProcessor);
-	}
-	{
 		FetchElement* element = new FetchElement();
 		registerExecutableContent(element);
 	}
@@ -422,7 +414,7 @@ while(iter != name.end()) { \
 	iter++; \
 }
 
-	
+
 void Factory::listComponents() {
 	{
 		std::cout << "Available Datamodels:" << std::endl;
@@ -445,7 +437,7 @@ void Factory::listComponents() {
 		}
 	}
 }
-	
+
 void Factory::registerIOProcessor(IOProcessorImpl* ioProcessor) {
 	std::list<std::string> names = ioProcessor->getNames();
 	std::list<std::string>::iterator nameIter = names.begin();

@@ -454,7 +454,7 @@ public:
 	std::map<std::string, IOProcessorImpl*> getIOProcessors();
 
 	void listComponents();
-	
+
 	static Factory* getInstance();
 
 	static void setDefaultPluginPath(const std::string& path);
@@ -474,7 +474,7 @@ protected:
 #endif
 
 	void registerPlugins();
-	
+
 	Factory(const std::string&);
 	~Factory();
 	Factory* _parentFactory;
