@@ -14,11 +14,11 @@ import org.uscxml.Data;
 import org.uscxml.DataNative;
 import org.uscxml.Event;
 import org.uscxml.Interpreter;
-import org.uscxml.JavaDataModel;
-import org.uscxml.StringSet;
+import org.uscxml.StringList;
 import org.uscxml.StringVector;
+import org.uscxml.WrappedDataModel;
 
-public class ECMAScriptDataModel extends JavaDataModel {
+public class ECMAScriptDataModel extends WrappedDataModel {
 
 	public static boolean debug = true;
 	
@@ -77,7 +77,7 @@ public class ECMAScriptDataModel extends JavaDataModel {
 	}
 
 	@Override
-	public JavaDataModel create(Interpreter interpreter) {
+	public WrappedDataModel create(Interpreter interpreter) {
 		/**
 		 * Called when an SCXML interpreter wants an instance of this datamodel
 		 * Be careful to instantiate attributes of instance returned and not
@@ -142,13 +142,13 @@ public class ECMAScriptDataModel extends JavaDataModel {
 	}
 
 	@Override
-	public StringSet getNames() {
+	public StringList getNames() {
 		/**
 		 * Register with the following names for the datamodel attribute at the
 		 * scxml element. <scxml datamodel="one of these">
 		 */
-		StringSet ss = new StringSet();
-		ss.insert("ecmascript");
+		StringList ss = new StringList();
+		ss.add("ecmascript");
 		return ss;
 	}
 

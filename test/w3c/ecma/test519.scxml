@@ -10,7 +10,7 @@
      </onentry>
      
      <!-- if other end sends us back this event, we succeed -->
-  <transition event="test" cond="_event.raw.search(/Varparam1=1/) !== -1" target="pass"/>
+  <transition event="test" cond="_event.raw.search(param1=1) !== -1" target="pass"/>
   <transition event="*" target="fail"/>
  </state>
   

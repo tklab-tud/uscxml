@@ -261,7 +261,9 @@ public:
 		return _impl->pathComponents();
 	}
 	const std::string asString() const {
-		return _impl->asString();
+		if (_impl)
+			return _impl->asString();
+		return "";
 	}
 
 	static std::string tmpDir();

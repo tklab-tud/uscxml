@@ -2,7 +2,7 @@
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug|x86" />
   <MonoDevelop.Ide.Workbench ActiveDocument="embedding/Program.cs">
     <Files>
-      <File FileName="embedding/Program.cs" Line="31" Column="1" />
+      <File FileName="embedding/Program.cs" Line="16" Column="40" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>

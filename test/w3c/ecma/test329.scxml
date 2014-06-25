@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?><!-- test that none of the system variables can be modified --><scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" initial="s0" version="1.0" datamodel="ecmascript" name="machineName">
-	<script src="http://uscxml.tk.informatik.tu-darmstadt.de/scripts/dump.js" />
    <datamodel>
      <data id="Var1"/>
      <data id="Var2"/>

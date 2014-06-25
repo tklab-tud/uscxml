@@ -59,6 +59,8 @@ if (DMCS_EXECUTABLE OR CSC_EXECUTABLE)
 	# build managed code part
 	if (CSC_EXECUTABLE)
 		ADD_CUSTOM_TARGET(csharp
+			COMMAND ${CMAKE_COMMAND} -E 
+				copy ${CMAKE_CURRENT_SOURCE_DIR}/org/uscxml/InterpreterException.cs ${PROJECT_BINARY_DIR}/src/bindings/swig/csharp/org/uscxml
 			COMMAND ${CSC_EXECUTABLE}
 				/target:library
 				/out:${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/uscxmlCSharp.dll
@@ -67,6 +69,8 @@ if (DMCS_EXECUTABLE OR CSC_EXECUTABLE)
 			COMMENT "Creating umundoCSharp.dll for C# ...")
 	else()
 		ADD_CUSTOM_TARGET(csharp
+			COMMAND ${CMAKE_COMMAND} -E 
+				copy ${CMAKE_CURRENT_SOURCE_DIR}/org/uscxml/InterpreterException.cs ${PROJECT_BINARY_DIR}/src/bindings/swig/csharp/org/uscxml
 			COMMAND ${DMCS_EXECUTABLE}
 				-target:library
 				/out:${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/uscxmlCSharp.dll

@@ -17,11 +17,11 @@
  *  @endcond
  */
 
-#include "WrappedInvoker.h"
+#include "WrappedExecutableContent.h"
 
 namespace uscxml {
 
-WrappedInvoker::WrappedInvoker() {}
-WrappedInvoker::~WrappedInvoker() {}
+WrappedExecutableContent::WrappedExecutableContent() {}
+WrappedExecutableContent::~WrappedExecutableContent() {}
 
 }
