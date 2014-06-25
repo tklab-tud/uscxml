@@ -315,11 +315,11 @@ public:
 		URL::toBaseURL(baseURI);
 		_baseURI = baseURI;
 	}
-	URL getBaseURI()                                         {
-		return _baseURI;
+	std::string getBaseURI()                                         {
+		return _baseURI.asString();
 	}
-	URL getSourceURI()                                       {
-		return _sourceURI;
+	std::string getSourceURI()                                       {
+		return _sourceURI.asString();
 	}
 
 	void setCmdLineOptions(std::map<std::string, std::string> params);
@@ -652,10 +652,10 @@ public:
 	void setSourceURI(std::string sourceURI) {
 		return _impl->setSourceURI(sourceURI);
 	}
-	URL getSourceURI() {
+	std::string getSourceURI() {
 		return _impl->getSourceURI();
 	}
-	URL getBaseURI() {
+	std::string getBaseURI() {
 		return _impl->getBaseURI();
 	}
 

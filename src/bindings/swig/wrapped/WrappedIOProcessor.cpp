@@ -17,11 +17,11 @@
  *  @endcond
  */
 
-#include "WrappedInvoker.h"
+#include "WrappedIOProcessor.h"
 
 namespace uscxml {
 
-WrappedInvoker::WrappedInvoker() {}
-WrappedInvoker::~WrappedInvoker() {}
+WrappedIOProcessor::WrappedIOProcessor() {}
+WrappedIOProcessor::~WrappedIOProcessor() {}
 
 }

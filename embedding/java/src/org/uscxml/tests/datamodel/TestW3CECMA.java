@@ -1,10 +1,11 @@
-package org.uscxml.tests;
+package org.uscxml.tests.datamodel;
 
 import java.io.File;
 
 import org.uscxml.Capabilities;
 import org.uscxml.Factory;
 import org.uscxml.Interpreter;
+import org.uscxml.InterpreterException;
 import org.uscxml.InterpreterOptions;
 import org.uscxml.datamodel.ecmascript.ECMAScriptDataModel;
 
@@ -12,7 +13,7 @@ public class TestW3CECMA {
 
 	public static String testDir = "/Users/sradomski/Documents/TK/Code/uscxml/test/w3c/ecma";
 	
-	public static void main(String[] args) {
+	public static void main(String[] args) throws InterpreterException {
 		System.load("/Users/sradomski/Documents/TK/Code/uscxml/build/cli/lib/libuscxmlNativeJava64.jnilib");
 
 		ECMAScriptDataModel datamodel = new ECMAScriptDataModel();

@@ -9,7 +9,7 @@
      </onentry>
      
      <!-- if other end sends us back this event, we succeed -->
-  <transition event="test" cond="_event.raw.search(/Var_scxmleventname=test/) !== -1" target="pass"/>
+  <transition event="test" cond="_event.raw.search('_scxmleventname=test') !== -1" target="pass"/>
   <transition event="*" target="fail"/>
  </state>
   

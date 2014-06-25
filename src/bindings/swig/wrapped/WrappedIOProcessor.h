@@ -17,8 +17,8 @@
  *  @endcond
  */
 
-#ifndef WRAPPEDINVOKER_H_F9725D47
-#define WRAPPEDINVOKER_H_F9725D47
+#ifndef WRAPPEDIOPROCESSOR_H_AE98064A
+#define WRAPPEDIOPROCESSOR_H_AE98064A
 
 #include "../../../uscxml/Message.h"
 #include "../../../uscxml/Factory.h"
@@ -26,11 +26,19 @@
 
 namespace uscxml {
 
-class WrappedInvoker : public InvokerImpl {
+class WrappedIOProcessor : public IOProcessorImpl {
 public:
-	WrappedInvoker();
-	virtual ~WrappedInvoker();
+	WrappedIOProcessor();
+	virtual ~WrappedIOProcessor();
 
+	virtual WrappedIOProcessor* create(const Interpreter& interpreter) {
+		return new WrappedIOProcessor();
+	}
+
+	virtual boost::shared_ptr<IOProcessorImpl> create(InterpreterImpl* interpreter) {
+		_interpreter = interpreter->shared_from_this();
+		return boost::shared_ptr<IOProcessorImpl>(create(_interpreter));
+	}
 	virtual std::list<std::string> getNames() {
 		return std::list<std::string>();
 	};
@@ -39,20 +47,16 @@ public:
 		Data data;
 		return data;
 	}
-
-	virtual void send(const SendRequest& req) {}
-	virtual void invoke(const InvokeRequest& req) {}
-
-	virtual WrappedInvoker* create(Interpreter interpreter) {
-		return new WrappedInvoker();
+	
+	virtual void send(const SendRequest& req) {
+		
 	}
-
-	virtual boost::shared_ptr<InvokerImpl> create(InterpreterImpl* interpreter) {
-		return boost::shared_ptr<InvokerImpl>(create(interpreter->shared_from_this()));
-	}
-
+	
+private:
+	Interpreter _interpreter;
 };
 
 }
 
-#endif /* end of include guard: WRAPPEDINVOKER_H_F9725D47 */
+
+#endif /* end of include guard: WRAPPEDIOPROCESSOR_H_AE98064A */

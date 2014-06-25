@@ -421,7 +421,7 @@ public:
 		// Release the mutex while waiting for the condition (will decrease
 		// the number of waiters when done)...
 		aMutex.unlock();
-		_wait();
+		_wait(0);
 		aMutex.lock();
 #else
 		pthread_cond_wait(&mHandle, &aMutex.mHandle);
@@ -483,7 +483,7 @@ public:
 
 private:
 #if defined(_TTHREAD_WIN32_)
-	void _wait();
+	void _wait(unsigned int ms);
 	HANDLE mEvents[2];                  ///< Signal and broadcast event HANDLEs.
 	unsigned int mWaitersCount;         ///< Count of the number of waiters.
 	CRITICAL_SECTION mWaitersCountLock; ///< Serialize access to mWaitersCount.

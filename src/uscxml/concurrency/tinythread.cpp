@@ -85,10 +85,27 @@ condition_variable::~condition_variable() {
 #endif
 
 #if defined(_TTHREAD_WIN32_)
-void condition_variable::_wait() {
+void condition_variable::_wait(unsigned int ms) {
+	if (ms <= 0)
+		ms = INFINITE;
 	// Wait for either event to become signaled due to notify_one() or
 	// notify_all() being called
-	int result = WaitForMultipleObjects(2, mEvents, FALSE, INFINITE);
+	int result = WaitForMultipleObjects(2, mEvents, FALSE, ms);
+	if (result == WAIT_FAILED) {
+		LPVOID lpMsgBuf;
+		FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER |
+		              FORMAT_MESSAGE_FROM_SYSTEM |
+		              FORMAT_MESSAGE_IGNORE_INSERTS,
+		              NULL,
+		              GetLastError(),
+		              MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), // Default language
+		              (LPTSTR) &lpMsgBuf,
+		              0,
+		              NULL);
+//		UM_LOG_ERR("%s", lpMsgBuf);
+		LocalFree(lpMsgBuf);
+
+	}
 
 	// Check if we are the last waiter
 	EnterCriticalSection(&mWaitersCountLock);

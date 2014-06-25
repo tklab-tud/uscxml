@@ -674,7 +674,7 @@ the basic http tests.  In the case of python, we have to import the regexp modul
 <!-- returns true if _event/raw contains the param with the specified value -->
 <xsl:template match="//@conf:eventNamedParamHasValue">
  <xsl:attribute name="cond"><xsl:analyze-string select="." regex="(\S+)(\s+)(\S+)">
- <xsl:matching-substring>_event.raw.search(/Var<xsl:value-of select="regex-group(1)"/>=<xsl:value-of select="regex-group(3)"/>/) !== -1</xsl:matching-substring></xsl:analyze-string></xsl:attribute>
+ <xsl:matching-substring>_event.raw.search(<xsl:value-of select="regex-group(1)"/>=<xsl:value-of select="regex-group(3)"/>) !== -1</xsl:matching-substring></xsl:analyze-string></xsl:attribute>
 </xsl:template>
 
 <xsl:template match="//@conf:messageBodyEquals">

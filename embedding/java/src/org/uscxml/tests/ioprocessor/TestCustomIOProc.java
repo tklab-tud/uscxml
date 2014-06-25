@@ -1,21 +1,20 @@
-package org.uscxml.tests;
+package org.uscxml.tests.ioprocessor;
 
 import org.uscxml.Data;
 import org.uscxml.DataNative;
-import org.uscxml.Event;
 import org.uscxml.Factory;
 import org.uscxml.Interpreter;
-import org.uscxml.InvokeRequest;
-import org.uscxml.JavaInvoker;
+import org.uscxml.InterpreterException;
 import org.uscxml.SendRequest;
-import org.uscxml.StringSet;
+import org.uscxml.StringList;
+import org.uscxml.WrappedIOProcessor;
 
-public class TestInvoker extends JavaInvoker {
+public class TestCustomIOProc extends WrappedIOProcessor {
 
 	@Override
-	public StringSet getNames() {
-		StringSet ss = new StringSet();
-		ss.insert("java");
+	public StringList getNames() {
+		StringList ss = new StringList();
+		ss.add("java");
 		return ss;
 	}
 
@@ -32,30 +31,19 @@ public class TestInvoker extends JavaInvoker {
 	}
 
 	@Override
-	public void invoke(InvokeRequest req) {
-		System.out.println("invoke");
-
-		System.out.println(req.getData());
-		System.out.println(req.getXML());
-
-		Event ev = new Event();
-		ev.setName("foo");
-		returnEvent(ev);
-	}
-
-	@Override
-	public JavaInvoker create(Interpreter interpreter) {
-		return new TestInvoker();
+	public WrappedIOProcessor create(Interpreter interpreter) {
+		return new TestCustomIOProc();
 	}
 
 	/**
 	 * @param args
+	 * @throws InterpreterException 
 	 */
-	public static void main(String[] args) {
+	public static void main(String[] args) throws InterpreterException {
 		System.load("/Users/sradomski/Documents/TK/Code/uscxml/build/cli/lib/libuscxmlNativeJava64_d.jnilib");
 
-		TestInvoker invoker = new TestInvoker();
-		Factory.getInstance().registerInvoker(invoker);
+		TestCustomIOProc ioproc = new TestCustomIOProc();
+		Factory.getInstance().registerIOProcessor(ioproc);
 
 		Interpreter interpreter = Interpreter
 				.fromURI("/Users/sradomski/Documents/TK/Code/uscxml/test/samples/uscxml/test-java-invoker.scxml");

@@ -82,13 +82,20 @@
 
 #define VALID_FROM_IDLE(newState) ( \
 	newState == InterpreterState::USCXML_DESTROYED || \
-	newState == InterpreterState::USCXML_MICROSTEPPED \
+	newState == InterpreterState::USCXML_MICROSTEPPED || \
+	newState == InterpreterState::USCXML_MACROSTEPPED \
 )
 
 #define VALID_FROM_FINISHED(newState) ( \
 	newState == InterpreterState::USCXML_DESTROYED || \
 	newState == InterpreterState::USCXML_INSTANTIATED \
 )
+
+#define THROW_ERROR_PLATFORM(msg) \
+	Event e; \
+	e.name = "error.platform"; \
+	e.data.compound["cause"] = Data(msg, Data::VERBATIM); \
+	throw e; \
 
 
 /// macro to catch exceptions in executeContent
@@ -378,8 +385,7 @@ Interpreter Interpreter::fromURI(const std::string& uri) {
 	URL absUrl(uri);
 	if (!absUrl.isAbsolute()) {
 		if (!absUrl.toAbsoluteCwd()) {
-			LOG(ERROR) << "Given URL is not absolute or does not have file schema";
-			return Interpreter();
+			THROW_ERROR_PLATFORM("Given URL is not absolute or does not have file schema");
 		}
 	}
 
@@ -401,8 +407,7 @@ Interpreter Interpreter::fromURI(const std::string& uri) {
 		std::stringstream ss;
 		ss << absUrl;
 		if (absUrl.downloadFailed()) {
-			LOG(ERROR) << "Downloading SCXML document from " << absUrl << " failed";
-			return interpreter;
+			THROW_ERROR_PLATFORM("Downloading SCXML document from " + absUrl.asString() + " failed");
 		}
 		interpreter = fromXML(ss.str());
 	}
@@ -412,7 +417,7 @@ Interpreter Interpreter::fromURI(const std::string& uri) {
 		interpreter._impl->_baseURI = URL::asBaseURL(absUrl);
 		interpreter._impl->_sourceURI = absUrl;
 	} else {
-		LOG(ERROR) << "Cannot create interpreter from URI '" << absUrl.asString() << "'";
+		THROW_ERROR_PLATFORM("Cannot create interpreter from URI " + absUrl.asString() + "'");
 	}
 	return interpreter;
 }
@@ -439,8 +444,12 @@ Interpreter Interpreter::fromInputSource(Arabica::SAX::InputSource<std::string>&
 		interpreterImpl->setNameSpaceInfo(parser.nameSpace);
 		interpreterImpl->_document = parser.getDocument();
 	} else {
-//		assert(parser.errorsReported());
-		interpreterImpl->setInterpreterState(InterpreterState::USCXML_FAULTED, parser.errors());
+		if (parser.errorsReported()) {
+			THROW_ERROR_PLATFORM(parser.errors())
+		} else {
+			THROW_ERROR_PLATFORM("Failed to create interpreter");
+//			interpreterImpl->setInterpreterState(InterpreterState::USCXML_FAULTED, parser.errors());
+		}
 	}
 	return interpreter;
 }

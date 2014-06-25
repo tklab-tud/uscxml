@@ -1,12 +1,13 @@
-package org.uscxml.tests;
+package org.uscxml.tests.datamodel;
 
 import org.uscxml.Factory;
 import org.uscxml.Interpreter;
+import org.uscxml.InterpreterException;
 import org.uscxml.datamodel.ecmascript.ECMAScriptDataModel;
 
 public class TestJavaScriptDataModel {
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws InterpreterException {
 		// load JNI library from build directory
 		System.load("/Users/sradomski/Documents/TK/Code/uscxml/build/cli/lib/libuscxmlNativeJava64.jnilib");
 

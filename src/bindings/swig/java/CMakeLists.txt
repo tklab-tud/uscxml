@@ -33,3 +33,42 @@ set_target_properties(uscxmlNativeJava PROPERTIES COMPILE_FLAGS "-DSWIG")
 
 swig_link_libraries(uscxmlNativeJava uscxml)
 set(USCXML_LANGUAGE_BINDINGS ${USCXML_LANGUAGE_BINDINGS} PARENT_SCOPE)
+
+FIND_PROGRAM(ANT_EXECUTABLE ant PATHS $ENV{ANT_HOME}/bin ENV PATH )
+if (ANT_EXECUTABLE)
+	set(JAR_EXCLUDE_DEBUG OFF)
+	set(JAR_EXCLUDE_JNI OFF)
+	
+	# include all the JNI libraries prepared from DIST_PREPARE builds on the various desktop platforms
+	if (DIST_PREPARE)
+		if (CMAKE_CROSSCOMPILING)
+			if (ANDROID)
+				find_program(PROTOBUF_PROTOC_EXECUTABLE NAMES protoc protoc.exe)
+				set(JAR_EXCLUDE_JNI ON) # JNI inside jar not allowed with Android
+				SET(JAR_JNI_ROOT_PATH ${PROJECT_SOURCE_DIR}/package/cross-compiled/android)
+			else()
+				SET(JAR_JNI_ROOT_PATH ${PROJECT_SOURCE_DIR}/package/cross-compiled/${CMAKE_CROSSCOMPILING_TARGET_LC})
+			endif()
+		else()
+			SET(JAR_JNI_ROOT_PATH ${PROJECT_SOURCE_DIR}/package)
+		endif()
+	else()
+		# when not preparing a distribution, just put the jar into the libs
+		SET(JAR_JNI_ROOT_PATH ${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
+	endif()
+	
+	ADD_CUSTOM_TARGET(java
+		COMMAND ${ANT_EXECUTABLE}
+		-Dlib.dir=${JAR_JNI_ROOT_PATH}
+		-Dsrc.dir=${PROJECT_SOURCE_DIR}
+		-Dbuild.dir=${PROJECT_BINARY_DIR}
+		-Dbuild.type=${CMAKE_BUILD_TYPE}
+		-Dexclude.debug=${JAR_EXCLUDE_DEBUG}
+		-Dexclude.jni=${JAR_EXCLUDE_JNI}
+		-f build-java.xml
+		WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/contrib/java
+		COMMENT "Creating the jar ...")
+	
+else()
+	message(STATUS "Could not find ant binary - will not build jars")
+endif()
