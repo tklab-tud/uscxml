@@ -145,6 +145,10 @@ control-flow upon various events in the Interpreter.
 This will cause the interpreter to invoke the callbacks from the monitor whenever the corresponding
 internal phase is reached.
 
+## Embedding uSCXML
+
+There are bindings for Java and C# with some examples in the <tt>embedding</tt> directory.
+
 ## Extending uSCXML
 
 The uSCXML interpreter can be extended by introducing new
