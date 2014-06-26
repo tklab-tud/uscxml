@@ -17,18 +17,19 @@ namespace embedding
         {
 
             /*
-             * Make sure this path contains the umundoNativeCSharp.dll!
+             * Make sure this path contains the uscxmlNativeCSharp.dll!
              */
             if (System.Environment.Is64BitProcess)
             {
-                SetDllDirectory("C:\\Users\\sradomski\\Desktop\\build\\lib\\csharp64");
+                SetDllDirectory("C:\\Users\\sradomski\\Desktop\\build\\uscxml64\\lib\\csharp");
             }
             else
             {
-                SetDllDirectory("C:\\Users\\sradomski\\Desktop\\build\\lib\\csharp");
+                SetDllDirectory("C:\\Users\\sradomski\\Desktop\\build\\uscxml\\lib\\csharp");
             }
 
-            Interpreter interpreter = Interpreter.fromXML("<scxml><state id=\"foo\"/></scxml>");
+            Interpreter interpreter = Interpreter.fromXML("<scxml><state id=\"foo\" final=\"true\" /></scxml>");
+            interpreter.addMonitor(new TestInterpreterMonitor());
             interpreter.interpret();
         }
     }

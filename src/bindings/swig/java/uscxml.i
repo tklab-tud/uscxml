@@ -10,7 +10,6 @@
 %include "../stl_set.i"
 %include "../stl_list.i"
 
-
 %include <boost_shared_ptr.i>
 
 typedef uscxml::Data Data;
@@ -22,6 +21,7 @@ typedef uscxml::SendRequest SendRequest;
 %feature("director") uscxml::WrappedDataModel;
 %feature("director") uscxml::WrappedIOProcessor;
 %feature("director") uscxml::WrappedExecutableContent;
+%feature("director") uscxml::WrappedInterpreterMonitor;
 
 // disable warning related to unknown base class
 #pragma SWIG nowarn=401
@@ -49,6 +49,7 @@ typedef uscxml::SendRequest SendRequest;
 #include "../wrapped/WrappedDataModel.h"
 #include "../wrapped/WrappedExecutableContent.h"
 #include "../wrapped/WrappedIOProcessor.h"
+#include "../wrapped/WrappedInterpreterMonitor.h"
 
 using namespace uscxml;
 using namespace Arabica::DOM;
@@ -57,6 +58,7 @@ using namespace Arabica::DOM;
 #include "../wrapped/WrappedDataModel.cpp"
 #include "../wrapped/WrappedExecutableContent.cpp"
 #include "../wrapped/WrappedIOProcessor.cpp"
+#include "../wrapped/WrappedInterpreterMonitor.cpp"
 
 %}
 
@@ -86,10 +88,6 @@ WRAP_THROW_EXCEPTION(uscxml::Interpreter::interpret);
 
 %rename Data DataNative;
 
-// translate param multimap to Map<String, List<Data> >
-%rename(getParamsNative) uscxml::Event::getParams();
-%javamethodmodifiers uscxml::Event::getParams() "private";
-
 %include "../uscxml_beautify.i"
 
 
@@ -107,6 +105,7 @@ WRAP_THROW_EXCEPTION(uscxml::Interpreter::interpret);
 %include "../wrapped/WrappedDataModel.h"
 %include "../wrapped/WrappedExecutableContent.h"
 %include "../wrapped/WrappedIOProcessor.h"
+%include "../wrapped/WrappedInterpreterMonitor.h"
 
 
 %template(DataList) std::list<uscxml::Data>;

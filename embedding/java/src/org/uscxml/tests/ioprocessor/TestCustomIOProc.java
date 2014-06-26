@@ -3,13 +3,13 @@ package org.uscxml.tests.ioprocessor;
 import org.uscxml.Data;
 import org.uscxml.DataNative;
 import org.uscxml.Factory;
+import org.uscxml.IOProcessor;
 import org.uscxml.Interpreter;
 import org.uscxml.InterpreterException;
 import org.uscxml.SendRequest;
 import org.uscxml.StringList;
-import org.uscxml.WrappedIOProcessor;
 
-public class TestCustomIOProc extends WrappedIOProcessor {
+public class TestCustomIOProc extends IOProcessor {
 
 	@Override
 	public StringList getNames() {
@@ -31,7 +31,7 @@ public class TestCustomIOProc extends WrappedIOProcessor {
 	}
 
 	@Override
-	public WrappedIOProcessor create(Interpreter interpreter) {
+	public IOProcessor create(Interpreter interpreter) {
 		return new TestCustomIOProc();
 	}
 
@@ -47,6 +47,7 @@ public class TestCustomIOProc extends WrappedIOProcessor {
 
 		Interpreter interpreter = Interpreter
 				.fromURI("/Users/sradomski/Documents/TK/Code/uscxml/test/samples/uscxml/test-java-invoker.scxml");
+		
 		while (true)
 			interpreter.interpret();
 	}

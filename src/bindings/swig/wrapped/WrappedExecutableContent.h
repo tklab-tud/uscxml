@@ -39,11 +39,11 @@ public:
 		_interpreter = interpreter->shared_from_this();
 		return boost::shared_ptr<ExecutableContentImpl>(create(_interpreter));
 	}
-	
+
 	virtual std::string getLocalName() {
 		return "";
 	}
-	
+
 	virtual std::string getNamespace() {
 		return "http://www.w3.org/2005/07/scxml";
 	}
@@ -57,7 +57,7 @@ public:
 	virtual void exitElement(const Arabica::DOM::Node<std::string>& node) {
 		std::ostringstream ssElement;
 		ssElement << node;
-		exitElement(ssElement.str());		
+		exitElement(ssElement.str());
 	}
 
 	virtual bool processChildren() {
@@ -65,15 +65,11 @@ public:
 	}
 
 	virtual void enterElement(const std::string& node) {
-		
+
 	}
 
 	virtual void exitElement(const std::string& node) {
-		
-	}
 
-	void croak() throw(Event) {
-		
 	}
 
 private:

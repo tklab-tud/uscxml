@@ -7,12 +7,11 @@ import org.uscxml.Factory;
 import org.uscxml.Interpreter;
 import org.uscxml.InterpreterException;
 import org.uscxml.InvokeRequest;
-import org.uscxml.StringList;
-import org.uscxml.WrappedInvoker;
+import org.uscxml.Invoker;
 import org.uscxml.SendRequest;
-import org.uscxml.StringSet;
+import org.uscxml.StringList;
 
-public class TestCustomInvoker extends WrappedInvoker {
+public class TestCustomInvoker extends Invoker {
 
 	@Override
 	public StringList getNames() {
@@ -46,7 +45,7 @@ public class TestCustomInvoker extends WrappedInvoker {
 	}
 
 	@Override
-	public WrappedInvoker create(Interpreter interpreter) {
+	public Invoker create(Interpreter interpreter) {
 		return new TestCustomInvoker();
 	}
 

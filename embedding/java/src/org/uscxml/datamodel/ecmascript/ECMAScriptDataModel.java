@@ -11,14 +11,14 @@ import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.ScriptableObject;
 import org.mozilla.javascript.Undefined;
 import org.uscxml.Data;
+import org.uscxml.DataModel;
 import org.uscxml.DataNative;
 import org.uscxml.Event;
 import org.uscxml.Interpreter;
 import org.uscxml.StringList;
 import org.uscxml.StringVector;
-import org.uscxml.WrappedDataModel;
 
-public class ECMAScriptDataModel extends WrappedDataModel {
+public class ECMAScriptDataModel extends DataModel {
 
 	public static boolean debug = true;
 	
@@ -77,7 +77,7 @@ public class ECMAScriptDataModel extends WrappedDataModel {
 	}
 
 	@Override
-	public WrappedDataModel create(Interpreter interpreter) {
+	public DataModel create(Interpreter interpreter) {
 		/**
 		 * Called when an SCXML interpreter wants an instance of this datamodel
 		 * Be careful to instantiate attributes of instance returned and not

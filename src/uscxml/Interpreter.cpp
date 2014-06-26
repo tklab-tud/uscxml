@@ -96,7 +96,7 @@
 	e.name = "error.platform"; \
 	e.data.compound["cause"] = Data(msg, Data::VERBATIM); \
 	throw e; \
-
+ 
 
 /// macro to catch exceptions in executeContent
 #define CATCH_AND_DISTRIBUTE(msg) \
@@ -556,7 +556,7 @@ void InterpreterImpl::join() {
 
 bool InterpreterImpl::isRunning() {
 	//		return _running || !_topLevelFinalReached;
-	return _state.thread & InterpreterState::USCXML_THREAD_RUNNING;
+	return (_state.thread & InterpreterState::USCXML_THREAD_RUNNING) > 0;
 }
 
 void InterpreterImpl::run(void* instance) {
