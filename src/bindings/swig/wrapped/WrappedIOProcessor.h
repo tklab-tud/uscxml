@@ -47,11 +47,11 @@ public:
 		Data data;
 		return data;
 	}
-	
+
 	virtual void send(const SendRequest& req) {
-		
+
 	}
-	
+
 private:
 	Interpreter _interpreter;
 };

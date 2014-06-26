@@ -5,9 +5,9 @@ import org.uscxml.Event;
 import org.uscxml.Factory;
 import org.uscxml.Interpreter;
 import org.uscxml.InterpreterException;
-import org.uscxml.WrappedExecutableContent;
+import org.uscxml.ExecutableContent;
 
-public class TestCustomExecContent extends WrappedExecutableContent {
+public class TestCustomExecContent extends ExecutableContent {
 
 	static int instanceId = 0;
 	public int id = 0;
@@ -43,7 +43,7 @@ public class TestCustomExecContent extends WrappedExecutableContent {
 	}
 
 	@Override
-	public WrappedExecutableContent create(Interpreter interpreter) {
+	public ExecutableContent create(Interpreter interpreter) {
 		return new TestCustomExecContent();
 	}
 

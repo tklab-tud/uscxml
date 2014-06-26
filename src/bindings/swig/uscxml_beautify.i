@@ -1,3 +1,14 @@
+%rename(NativeDataModel) DataModel;
+%rename(DataModel) WrappedDataModel;
+%rename(NativeExecutableContent) ExecutableContent;
+%rename(ExecutableContent) WrappedExecutableContent;
+%rename(NativeInvoker) Invoker;
+%rename(Invoker) WrappedInvoker;
+%rename(NativeIOProcessor) IOProcessor;
+%rename(IOProcessor) WrappedIOProcessor;
+%rename(NativeInterpreterMonitor) InterpreterMonitor;
+%rename(InterpreterMonitor) WrappedInterpreterMonitor;
+
 %extend uscxml::Event {
 	std::vector<std::pair<std::string, Data> > getParamPairs() {
 		std::vector<std::pair<std::string, Data> > pairs;

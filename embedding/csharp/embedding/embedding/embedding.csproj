@@ -47,13 +47,19 @@
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
-    <Reference Include="uscxmlCSharp">
-      <HintPath>..\..\..\..\build\cli\lib\uscxmlCSharp.dll</HintPath>
+    <Reference Include="uscxmlCSharp, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>C:\Users\sradomski\Desktop\build\uscxml\lib\uscxmlCSharp.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="TestExecutableContent.cs" />
+    <Compile Include="TestInterpreterMonitor.cs" />
+    <Compile Include="TestIOProc.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TestDataModel.cs" />
+    <Compile Include="TestInvoker.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

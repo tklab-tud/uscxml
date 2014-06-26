@@ -325,6 +325,7 @@ public:
 	static void throwErrorPlatform(const std::string& cause);
 
 	// we need it public for various static functions
+protected:
 	InterpreterImpl* _interpreter;
 };
 
@@ -460,6 +461,7 @@ public:
 	static void setDefaultPluginPath(const std::string& path);
 	static std::string getDefaultPluginPath();
 
+protected:
 	std::map<std::string, DataModelImpl*> _dataModels;
 	std::map<std::string, std::string> _dataModelAliases;
 	std::map<std::string, IOProcessorImpl*> _ioProcessors;
@@ -468,7 +470,6 @@ public:
 	std::map<std::string, std::string> _invokerAliases;
 	std::map<std::pair<std::string, std::string>, ExecutableContentImpl*> _executableContent;
 
-protected:
 #ifdef BUILD_AS_PLUGINS
 	pluma::Pluma pluma;
 #endif

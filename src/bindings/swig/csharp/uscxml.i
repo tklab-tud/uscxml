@@ -3,9 +3,6 @@
 // provide a macro for the header files
 #define SWIGIMPORTED 1
 
-// import swig typemaps
-//%include <inttypes.i>
-
 %include <stl.i>
 %include <std_map.i>
 %include <std_string.i>
@@ -24,6 +21,7 @@ typedef uscxml::SendRequest SendRequest;
 %feature("director") uscxml::WrappedDataModel;
 %feature("director") uscxml::WrappedIOProcessor;
 %feature("director") uscxml::WrappedExecutableContent;
+%feature("director") uscxml::WrappedInterpreterMonitor;
 
 // disable warning related to unknown base class
 #pragma SWIG nowarn=401
@@ -31,9 +29,6 @@ typedef uscxml::SendRequest SendRequest;
 #pragma SWIG nowarn=302
 
 %csconst(1);
-
-# %shared_ptr(uscxml::dom::Element);
-# %shared_ptr(uscxml::dom::Executable);
 
 %rename(equals) operator==; 
 %rename(isValid) operator bool;
@@ -47,19 +42,14 @@ typedef uscxml::SendRequest SendRequest;
 
 #include "../../../uscxml/Message.h"
 #include "../../../uscxml/Factory.h"
-#include "../../../uscxml/concurrency/BlockingQueue.h"
 #include "../../../uscxml/Interpreter.h"
-
-//#include <DOM/Document.hpp>
-//#include <DOM/Node.hpp>
-//#include <DOM/Element.hpp>
-//#include <DOM/Attr.hpp>
-//#include <DOM/Text.hpp>
+#include "../../../uscxml/concurrency/BlockingQueue.h"
 
 #include "../wrapped/WrappedInvoker.h"
 #include "../wrapped/WrappedDataModel.h"
 #include "../wrapped/WrappedExecutableContent.h"
 #include "../wrapped/WrappedIOProcessor.h"
+#include "../wrapped/WrappedInterpreterMonitor.h"
 
 using namespace uscxml;
 using namespace Arabica::DOM;
@@ -68,6 +58,7 @@ using namespace Arabica::DOM;
 #include "../wrapped/WrappedDataModel.cpp"
 #include "../wrapped/WrappedExecutableContent.cpp"
 #include "../wrapped/WrappedIOProcessor.cpp"
+#include "../wrapped/WrappedInterpreterMonitor.cpp"
 
 %}
 
@@ -136,10 +127,6 @@ WRAP_THROW_EXCEPTION(uscxml::Interpreter::interpret);
 
 %rename Data DataNative;
 
-// translate param multimap to Map<String, List<Data> >
-%rename(getParamsNative) uscxml::Event::getParams();
-%csmethodmodifiers uscxml::Event::getParams() "private";
-
 %include "../uscxml_beautify.i"
 
 
@@ -157,6 +144,7 @@ WRAP_THROW_EXCEPTION(uscxml::Interpreter::interpret);
 %include "../wrapped/WrappedDataModel.h"
 %include "../wrapped/WrappedExecutableContent.h"
 %include "../wrapped/WrappedIOProcessor.h"
+%include "../wrapped/WrappedInterpreterMonitor.h"
 
 
 %template(DataList) std::list<uscxml::Data>;

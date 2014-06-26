@@ -43,6 +43,10 @@ public:
 		return std::list<std::string>();
 	};
 
+	virtual std::string andExpressions(std::list<std::string>) {
+		return "";
+	}
+
 	virtual bool validate(const std::string& location, const std::string& schema) {
 		return true;
 	}
