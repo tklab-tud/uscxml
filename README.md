@@ -47,29 +47,10 @@ uSCXML still fails the following ecmascript tests:
 <table>
 	<tr><th>Test#</th><th>Status</th><th>Description</th><th>Comment</th></tr>
 	<tr>
-		<td><tt><a href="https://github.com/tklab-tud/uscxml/blob/master/test/samples/w3c/ecma/test329.scxml">329</a></tt></td>
+		<td><tt><a href="https://github.com/tklab-tud/uscxml/blob/master/test/w3c/ecma/test579.scxml">579</a></tt></td>
 		<td><tt>Failed</tt></td>
-		<td>"test that none of the system variables can be modified"</td>
-		<td>uSCXML allows writing to <tt>_event</tt>. This is very useful to have a scope 
-			that vanishes when processing an event is finished. I raised the issue on the ML and it might make it into a later draft</td>
-	</tr>
-	<tr>
-		<td><tt><a href="https://github.com/tklab-tud/uscxml/blob/master/test/samples/w3c/ecma/test346.scxml">346</a></tt></td>
-		<td><tt>Failed</tt></td>
-		<td>"test that any attempt to change the value of a system variable causes error.execution to be raised"</td>
-		<td>Same issue as above: we allow writing to <tt>_event</tt>.</td>
-	</tr>
-	<tr>
-		<td>
-			<tt>
-				<a href="https://github.com/tklab-tud/uscxml/blob/master/test/samples/w3c/ecma/test519.scxml">519</a>
-				<a href="https://github.com/tklab-tud/uscxml/blob/master/test/samples/w3c/ecma/test520.scxml">520</a>
-				<a href="https://github.com/tklab-tud/uscxml/blob/master/test/samples/w3c/ecma/test531.scxml">531</a>
-				<a href="https://github.com/tklab-tud/uscxml/blob/master/test/samples/w3c/ecma/test534.scxml">534</a>
-			</tt></td>
-		<td><tt>Failed</tt></td>
-		<td></td>
-		<td>Tests contain non-standard ECMAScript.</td>
+		<td>"Before the parent state has been visited for the first time, if a transition is executed that takes the history state as its target, the SCXML processor MUST execute any executable content in the transition after the parent state's onentry content and any content in a possible initial transition."</td>
+		<td>Functionality was recently added and is not yet supported.</td>
 	</tr>
 </table>
 
@@ -91,7 +72,7 @@ objects of <tt>uscxml::Interpreter</tt>.
 
 ### Non-Blocking Interpretation with SCXML from URL
     Interpreter scxml = Interpreter::fromURL("http://www.example.com/fancy.scxml");
-    scxml.start(); // non-blocking
+    scxml.start(); // non-blocking in own thread
 
 There are some cases, i.e. with graphical invokers, where the main thread is <emph>required</emph> in order
 to react to UI events. You will have to deligate control flow from the main thread into the interpreter
@@ -126,15 +107,15 @@ You can register an <tt>InterpreterMonitor</tt> prior to start in order to recei
 control-flow upon various events in the Interpreter.
 
     class StatusMonitor : public uscxml::InterpreterMonitor {
-    	void onStableConfiguration(Interpreter) {}
-    	void beforeCompletion(Interpreter) {}
-    	void afterCompletion(Interpreter) {}
-    	void beforeMicroStep(Interpreter) {}
-    	void beforeTakingTransitions(Interpreter, const Arabica::XPath::NodeSet<std::string>&) {}
-    	void beforeEnteringStates(Interpreter, const Arabica::XPath::NodeSet<std::string>&) {}
-    	void afterEnteringStates(Interpreter) {}
-    	void beforeExitingStates(Interpreter, const Arabica::XPath::NodeSet<std::string>&) {}
-    	void afterExitingStates(Interpreter) {}
+    	void onStableConfiguration(...)
+    	void beforeCompletion(...)
+    	void afterCompletion(...)
+    	void beforeMicroStep(...)
+    	void beforeTakingTransitions(...)
+    	void beforeEnteringStates(...)
+    	void afterEnteringStates(...)
+    	void beforeExitingStates(...)
+    	void afterExitingStates(...)
     };
 
     StatusMonitor statMon;

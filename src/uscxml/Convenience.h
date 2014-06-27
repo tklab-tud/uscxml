@@ -22,6 +22,7 @@
 
 #include <inttypes.h>
 #include <boost/detail/endian.hpp>
+#include <boost/lexical_cast.hpp>
 
 namespace uscxml {
 inline bool isnan(double x) {

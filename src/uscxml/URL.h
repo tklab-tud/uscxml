@@ -23,14 +23,13 @@
 #include <curl/curl.h>
 #include <string>
 #include <iostream>
-#include <sstream>
 #include <map>
 #include <vector>
 #include <set>
-#include "Message.h"
+
+#include "uscxml/messages/Data.h"
 #include <boost/shared_ptr.hpp>
 #include <boost/enable_shared_from_this.hpp>
-#include <sys/stat.h>
 
 #include "uscxml/concurrency/tinythread.h"
 

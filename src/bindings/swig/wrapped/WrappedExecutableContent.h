@@ -20,6 +20,13 @@
 #ifndef WRAPPEDEXECUTABLECONTENT_H_F690F480
 #define WRAPPEDEXECUTABLECONTENT_H_F690F480
 
+#include <vector>
+#include <ostream>
+#include <string>
+
+#include <DOM/Document.hpp>
+#include <DOM/io/Stream.hpp>
+
 #include "../../../uscxml/Message.h"
 #include "../../../uscxml/Factory.h"
 #include "../../../uscxml/Interpreter.h"

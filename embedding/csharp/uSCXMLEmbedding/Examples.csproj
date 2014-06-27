@@ -5,11 +5,11 @@
     <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
     <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{75E5EE93-513B-45DA-AD50-64C570AAD0C0}</ProjectGuid>
+    <ProjectGuid>{A186DC8C-0655-49D4-A1DB-3C23A24DAA5E}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>embedding</RootNamespace>
-    <AssemblyName>embedding</AssemblyName>
+    <RootNamespace>uSCXMLEmbedding</RootNamespace>
+    <AssemblyName>uSCXMLEmbedding</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <TargetFrameworkProfile>Client</TargetFrameworkProfile>
     <FileAlignment>512</FileAlignment>
@@ -23,12 +23,6 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <EnvironmentVariables>
-      <EnvironmentVariables>
-        <Variable name="DYLD_FALLBACK_LIBRARY_PATH" value="/Users/sradomski/Documents/TK/Code/uscxml/build/cli/lib/csharp" />
-        <Variable name="MONO_LOG_LEVEL" value="debug" />
-      </EnvironmentVariables>
-    </EnvironmentVariables>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
     <PlatformTarget>x86</PlatformTarget>
@@ -47,19 +41,18 @@
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
-    <Reference Include="uscxmlCSharp, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
+    <Reference Include="uscxmlCSharp">
       <HintPath>C:\Users\sradomski\Desktop\build\uscxml\lib\uscxmlCSharp.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="TestExecutableContent.cs" />
-    <Compile Include="TestInterpreterMonitor.cs" />
-    <Compile Include="TestIOProc.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="TestDataModel.cs" />
-    <Compile Include="TestInvoker.cs" />
+    <Compile Include="Extensions\SampleDataModel.cs" />
+    <Compile Include="Extensions\SampleExecutableContent.cs" />
+    <Compile Include="Extensions\SampleInterpreterMonitor.cs" />
+    <Compile Include="Extensions\SampleInvoker.cs" />
+    <Compile Include="Extensions\SampleIOProc.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

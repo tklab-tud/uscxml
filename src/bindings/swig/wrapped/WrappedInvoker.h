@@ -20,6 +20,14 @@
 #ifndef WRAPPEDINVOKER_H_F9725D47
 #define WRAPPEDINVOKER_H_F9725D47
 
+#include <vector>
+#include <list>
+#include <ostream>
+#include <string>
+
+#include <DOM/Document.hpp>
+#include <DOM/io/Stream.hpp>
+
 #include "../../../uscxml/Message.h"
 #include "../../../uscxml/Factory.h"
 #include "../../../uscxml/Interpreter.h"

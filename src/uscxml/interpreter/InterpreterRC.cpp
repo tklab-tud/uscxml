@@ -19,6 +19,9 @@
 
 #include "InterpreterRC.h"
 
+#include "uscxml/Factory.h"
+#include "uscxml/concurrency/eventqueue/DelayedEventQueue.h"
+
 #include <glog/logging.h>
 #include "uscxml/UUID.h"
 #include "uscxml/DOMUtils.h"
@@ -114,7 +117,7 @@ InterpreterState InterpreterRC::interpret() {
 
 		NodeSet<std::string> initialTransitions;
 
-		if (_userDefinedStartConfiguration.size() > 0) {
+		if (_startConfiguration.size() > 0) {
 			// we emulate entering a given configuration by creating a pseudo deep history
 			Element<std::string> initHistory = _document.createElementNS(_nsInfo.nsURL, "history");
 			_nsInfo.setPrefix(initHistory);
@@ -125,8 +128,8 @@ InterpreterState InterpreterRC::interpret() {
 
 			std::string histId = ATTR(initHistory, "id");
 			NodeSet<std::string> histStates;
-			for (int i = 0; i < _userDefinedStartConfiguration.size(); i++) {
-				histStates.push_back(getState(_userDefinedStartConfiguration[i]));
+			for (std::list<std::string>::const_iterator stateIter = _startConfiguration.begin(); stateIter != _startConfiguration.end(); stateIter++) {
+				histStates.push_back(getState(*stateIter));
 			}
 			_historyValue[histId] = histStates;
 

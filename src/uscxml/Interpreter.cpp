@@ -25,22 +25,30 @@
 #include "uscxml/DOMUtils.h"
 #include "uscxml/transform/ChartToFSM.h" // only for testing
 
+#include "getopt.h"
+
 #include "uscxml/plugins/invoker/http/HTTPServletInvoker.h"
+#include "uscxml/server/InterpreterServlet.h"
+#include "uscxml/concurrency/eventqueue/DelayedEventQueue.h"
 
 #include <DOM/Simple/DOMImplementation.hpp>
 #include <SAX/helpers/InputSourceResolver.hpp>
+#include <DOM/io/Stream.hpp>
 
 #include <boost/lexical_cast.hpp>
 #include <boost/tokenizer.hpp>
 #include <boost/algorithm/string.hpp>
 
 #include <glog/logging.h>
+#include <iostream>
+#include <io/uri.hpp>
 
 #include <assert.h>
 #include <algorithm>
 
 #include "uscxml/interpreter/InterpreterDraft6.h"
 #include "uscxml/interpreter/InterpreterRC.h"
+#include "uscxml/Factory.h"
 
 #if 1
 #define INTERPRETER_IMPL InterpreterDraft6
@@ -52,43 +60,42 @@
 
 /// valid interpreter state transitions
 #define VALID_FROM_INSTANTIATED(newState) ( \
-	newState == InterpreterState::USCXML_FAULTED || \
-	newState == InterpreterState::USCXML_MICROSTEPPED || \
-	newState == InterpreterState::USCXML_DESTROYED\
+	newState == USCXML_MICROSTEPPED || \
+	newState == USCXML_DESTROYED\
 )
 
 #define VALID_FROM_FAULTED(newState) ( \
-	newState == InterpreterState::USCXML_DESTROYED\
+	newState == USCXML_DESTROYED\
 )
 
 #define VALID_FROM_INITIALIZED(newState) ( \
-	newState == InterpreterState::USCXML_MICROSTEPPED || \
-	newState == InterpreterState::USCXML_FINISHED \
+	newState == USCXML_MICROSTEPPED || \
+	newState == USCXML_FINISHED \
 )
 
 #define VALID_FROM_MICROSTEPPED(newState) ( \
-	newState == InterpreterState::USCXML_DESTROYED || \
-	newState == InterpreterState::USCXML_MACROSTEPPED || \
-	newState == InterpreterState::USCXML_MICROSTEPPED || \
-	newState == InterpreterState::USCXML_FINISHED \
+	newState == USCXML_DESTROYED || \
+	newState == USCXML_MACROSTEPPED || \
+	newState == USCXML_MICROSTEPPED || \
+	newState == USCXML_FINISHED \
 )
 
 #define VALID_FROM_MACROSTEPPED(newState) ( \
-	newState == InterpreterState::USCXML_DESTROYED || \
-	newState == InterpreterState::USCXML_MICROSTEPPED || \
-	newState == InterpreterState::USCXML_IDLE || \
-	newState == InterpreterState::USCXML_FINISHED \
+	newState == USCXML_DESTROYED || \
+	newState == USCXML_MICROSTEPPED || \
+	newState == USCXML_IDLE || \
+	newState == USCXML_FINISHED \
 )
 
 #define VALID_FROM_IDLE(newState) ( \
-	newState == InterpreterState::USCXML_DESTROYED || \
-	newState == InterpreterState::USCXML_MICROSTEPPED || \
-	newState == InterpreterState::USCXML_MACROSTEPPED \
+	newState == USCXML_DESTROYED || \
+	newState == USCXML_MICROSTEPPED || \
+	newState == USCXML_MACROSTEPPED \
 )
 
 #define VALID_FROM_FINISHED(newState) ( \
-	newState == InterpreterState::USCXML_DESTROYED || \
-	newState == InterpreterState::USCXML_INSTANTIATED \
+	newState == USCXML_DESTROYED || \
+	newState == USCXML_INSTANTIATED \
 )
 
 #define THROW_ERROR_PLATFORM(msg) \
@@ -336,10 +343,12 @@ std::map<std::string, boost::weak_ptr<InterpreterImpl> > Interpreter::getInstanc
 
 
 InterpreterImpl::InterpreterImpl() {
-	_state.state = InterpreterState::USCXML_INSTANTIATED;
-	_state.thread = 0;
+	_state = USCXML_INSTANTIATED;
+
 	_lastRunOnMainThread = 0;
 	_thread = NULL;
+	_isStarted = false;
+	_isRunning = false;
 	_sendQueue = NULL;
 	_parentQueue = NULL;
 	_topLevelFinalReached = false;
@@ -448,7 +457,7 @@ Interpreter Interpreter::fromInputSource(Arabica::SAX::InputSource<std::string>&
 			THROW_ERROR_PLATFORM(parser.errors())
 		} else {
 			THROW_ERROR_PLATFORM("Failed to create interpreter");
-//			interpreterImpl->setInterpreterState(InterpreterState::USCXML_FAULTED, parser.errors());
+//			interpreterImpl->setInterpreterState(USCXML_FAULTED, parser.errors());
 		}
 	}
 	return interpreter;
@@ -531,7 +540,7 @@ InterpreterImpl::~InterpreterImpl() {
 			delete(_thread);
 		} else {
 			// this can happen with a shared_from_this at an interpretermonitor
-			setInterpreterState(InterpreterState::USCXML_DESTROYED);
+			setInterpreterState(USCXML_DESTROYED);
 		}
 	}
 	join();
@@ -541,12 +550,12 @@ InterpreterImpl::~InterpreterImpl() {
 }
 
 void InterpreterImpl::start() {
-	_state.thread |= InterpreterState::USCXML_THREAD_STARTED;
+	_isStarted = true;
 	_thread = new tthread::thread(InterpreterImpl::run, this);
 }
 
 void InterpreterImpl::stop() {
-	_state.thread &= ~InterpreterState::USCXML_THREAD_STARTED;
+	_isStarted = false;
 }
 
 void InterpreterImpl::join() {
@@ -555,23 +564,21 @@ void InterpreterImpl::join() {
 };
 
 bool InterpreterImpl::isRunning() {
-	//		return _running || !_topLevelFinalReached;
-	return (_state.thread & InterpreterState::USCXML_THREAD_RUNNING) > 0;
+	return _isRunning && !_topLevelFinalReached;
 }
 
 void InterpreterImpl::run(void* instance) {
 	InterpreterImpl* interpreter = ((InterpreterImpl*)instance);
-	interpreter->_state.thread |= InterpreterState::USCXML_THREAD_RUNNING;
+	interpreter->_isRunning = true;
 
 	try {
 		InterpreterState state;
-		while(interpreter->_state.thread & InterpreterState::USCXML_THREAD_STARTED) {
+		while(interpreter->_isStarted) {
 			state = interpreter->step(-1);
 
-			switch (state & InterpreterState::USCXML_INTERPRETER_MASK) {
-			case uscxml::InterpreterState::USCXML_FAULTED:
-			case uscxml::InterpreterState::USCXML_FINISHED:
-			case uscxml::InterpreterState::USCXML_DESTROYED:
+			switch (state) {
+			case uscxml::USCXML_FINISHED:
+			case uscxml::USCXML_DESTROYED:
 				// return as we finished
 				goto DONE_THREAD;
 			default:
@@ -586,58 +593,42 @@ void InterpreterImpl::run(void* instance) {
 		LOG(ERROR) << "InterpreterImpl::run catched unknown exception";
 	}
 DONE_THREAD:
-	((InterpreterImpl*)instance)->_state.thread &= ~InterpreterState::USCXML_THREAD_RUNNING;
-	((InterpreterImpl*)instance)->_state.thread &= ~InterpreterState::USCXML_THREAD_STARTED;
+	((InterpreterImpl*)instance)->_isRunning = false;
+	((InterpreterImpl*)instance)->_isStarted = false;
 }
 
 InterpreterState InterpreterImpl::getInterpreterState() {
 	return _state;
 }
 
-void InterpreterImpl::setInterpreterState(InterpreterState::State newState) {
-	setInterpreterState(newState, Event());
-}
-
-void InterpreterImpl::setInterpreterState(InterpreterState::State newState, const std::string& error) {
-	Event e;
-	e.name = "error.platform";
-	e.data.compound["cause"] = Data(error, Data::VERBATIM);
-	setInterpreterState(newState, e);
-}
-
-void InterpreterImpl::setInterpreterState(InterpreterState::State newState, const Event& error) {
+void InterpreterImpl::setInterpreterState(InterpreterState newState) {
 	switch (_state) {
-	case InterpreterState::USCXML_INSTANTIATED:
+	case USCXML_INSTANTIATED:
 		if (VALID_FROM_INSTANTIATED(newState))
 			break;
 		assert(false);
 		break;
-	case InterpreterState::USCXML_FAULTED:
-		if (VALID_FROM_FAULTED(newState))
-			break;
-		assert(false);
-		break;
-	case InterpreterState::USCXML_MICROSTEPPED:
+	case USCXML_MICROSTEPPED:
 		if (VALID_FROM_MICROSTEPPED(newState))
 			break;
 		assert(false);
 		break;
-	case InterpreterState::USCXML_MACROSTEPPED:
+	case USCXML_MACROSTEPPED:
 		if (VALID_FROM_MACROSTEPPED(newState))
 			break;
 		assert(false);
 		break;
-	case InterpreterState::USCXML_IDLE:
+	case USCXML_IDLE:
 		if (VALID_FROM_IDLE(newState))
 			break;
 		assert(false);
 		break;
-	case InterpreterState::USCXML_FINISHED:
+	case USCXML_FINISHED:
 		if (VALID_FROM_FINISHED(newState))
 			break;
 		assert(false);
 		break;
-	case InterpreterState::USCXML_DESTROYED:
+	case USCXML_DESTROYED:
 		assert(false);
 		break;
 
@@ -645,13 +636,11 @@ void InterpreterImpl::setInterpreterState(InterpreterState::State newState, cons
 		break;
 	}
 
-	_state.state = newState;
-	_state.msg = error;
+	_state = newState;
 }
 
 bool InterpreterImpl::runOnMainThread(int fps, bool blocking) {
-	tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
-	if (_state == InterpreterState::USCXML_FINISHED || _state == InterpreterState::USCXML_FAULTED || _state == InterpreterState::USCXML_DESTROYED)
+	if (_state == USCXML_FINISHED || _state == USCXML_DESTROYED || !_isStarted)
 		return false;
 
 	if (fps > 0) {
@@ -665,6 +654,7 @@ bool InterpreterImpl::runOnMainThread(int fps, bool blocking) {
 		}
 	}
 
+	tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
 	_lastRunOnMainThread = tthread::timeStamp();
 
 	{
@@ -695,7 +685,7 @@ void InterpreterImpl::reset() {
 	_topLevelFinalReached = false;
 	_isInitialized = false;
 
-	setInterpreterState(InterpreterState::USCXML_INSTANTIATED);
+	setInterpreterState(USCXML_INSTANTIATED);
 }
 
 void InterpreterImpl::setupAndNormalizeDOM() {
@@ -2475,12 +2465,12 @@ bool InterpreterImpl::hasLegalConfiguration() {
 	return isLegalConfiguration(_configuration);
 }
 
-bool InterpreterImpl::isLegalConfiguration(const std::vector<std::string>& config) {
+bool InterpreterImpl::isLegalConfiguration(const std::list<std::string>& config) {
 	NodeSet<std::string> states;
-	for (int i = 0; i < config.size(); i++) {
-		Node<std::string> state = getState(config[i]);
+	for (std::list<std::string>::const_iterator confIter = config.begin(); confIter != config.end(); confIter++) {
+		Node<std::string> state = getState(*confIter);
 		if (!state) {
-			LOG(INFO) << "No state with id '" << config[i] << "'";
+			LOG(INFO) << "No state with id '" << *confIter << "'";
 			return false;
 		}
 		states.push_back(state);
@@ -2626,20 +2616,16 @@ void InterpreterImpl::DOMEventListener::handleEvent(Arabica::DOM::Events::Event<
 }
 
 std::ostream& operator<< (std::ostream& os, const InterpreterState& interpreterState) {
-	os << "[" << InterpreterState::stateToString(interpreterState.state) << "]:" << std::endl;
-	os << interpreterState.msg;
+	os << "[" << InterpreterImpl::stateToString(interpreterState) << "]" << std::endl;
 	return os;
 }
 
-std::string InterpreterState::stateToString(int32_t state) {
+std::string InterpreterImpl::stateToString(InterpreterState state) {
 	std::stringstream ss;
 
-	switch(state & USCXML_INTERPRETER_MASK) {
+	switch(state) {
 	case USCXML_INSTANTIATED:
 		ss << "INSTANTIATED";
-		break;
-	case USCXML_FAULTED:
-		ss << "FAULTED";
 		break;
 	case USCXML_MICROSTEPPED:
 		ss << "MICROSTEPPED";
@@ -2659,17 +2645,6 @@ std::string InterpreterState::stateToString(int32_t state) {
 	default:
 		ss << "INVALID";
 		break;
-	}
-
-	if (state & USCXML_THREAD_STARTED) {
-		ss << ", " << "STARTED";
-	} else {
-		ss << ", " << "STOPPED";
-	}
-	if (state & USCXML_THREAD_RUNNING) {
-		ss << ", " << "RUNNING";
-	} else {
-		ss << ", " << "JOINED";
 	}
 
 	return ss.str();

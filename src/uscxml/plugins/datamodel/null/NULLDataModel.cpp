@@ -112,23 +112,23 @@ bool NULLDataModel::evalAsBool(const Arabica::DOM::Node<std::string>& node, cons
 
 	// split at comma
 	std::stringstream ss(trimmedExpr.substr(start, end - start));
-	std::vector<std::string> stateExprs;
+	std::list<std::string> stateExprs;
 	std::string item;
 	while(std::getline(ss, item, ',')) {
 		stateExprs.push_back(item);
 	}
 
-	for (unsigned int i = 0; i < stateExprs.size(); i++) {
+	for (std::list<std::string>::const_iterator stateIter = stateExprs.begin(); stateIter != stateExprs.end(); stateIter++) {
 		// remove ticks
-		size_t start = stateExprs[i].find_first_of("'");
-		size_t end = stateExprs[i].find_last_of("'");
+		size_t start = stateIter->find_first_of("'");
+		size_t end = stateIter->find_last_of("'");
 
 		std::string stateName;
 		if (start != std::string::npos && end != std::string::npos && start < end) {
 			start++;
-			stateName = stateExprs[i].substr(start, end - start);
+			stateName = stateIter->substr(start, end - start);
 		} else {
-			stateName = stateExprs[i];
+			stateName = *stateIter;
 		}
 
 		if (_interpreter->isInState(stateName)) {

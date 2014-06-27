@@ -1,7 +1,7 @@
 #
 # robots.txt for http://www.w3.org/
 #
-# $Id: robots.txt,v 1.66 2012/07/17 21:30:56 gerald Exp $
+# $Id: robots.txt,v 1.67 2014-06-25 13:06:01 ddavis Exp $
 #
 
 # For use by search.w3.org
@@ -93,4 +93,4 @@ Disallow: /2004/01/pp-impl
 Disallow: /Consortium/supporters
 Disallow: /2007/08/pyRdfa/
 Disallow: /WAI/PF/comments/
-
+Disallow: /participate/conferences.xml

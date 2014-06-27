@@ -20,6 +20,8 @@
 #include "PromelaParser.h"
 #include "parser/promela.tab.hpp"
 
+#include <iostream>
+
 struct yy_buffer_state;
 typedef yy_buffer_state *YY_BUFFER_STATE;
 extern YY_BUFFER_STATE promela__scan_buffer(char *, size_t, void*);

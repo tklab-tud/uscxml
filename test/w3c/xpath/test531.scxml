@@ -6,7 +6,7 @@ of the raised event. --><scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:con
   <onentry>
     <send event="timeout" delay="3s"/>
     <send targetexpr="$_ioprocessors/processor[@name=&#34;http://www.w3.org/TR/scxml/#BasicHTTPEventProcessor&#34;]/location/text()" type="http://www.w3.org/TR/scxml/#BasicHTTPEventProcessor">
-      <content>_scxmleventname=test</content>
+      <param name="_scxmleventname" expr="'test'"/>
       </send>  
      </onentry>
      

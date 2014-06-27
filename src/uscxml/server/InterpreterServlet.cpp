@@ -20,6 +20,7 @@
 #include "InterpreterServlet.h"
 #include "uscxml/Interpreter.h"
 #include <glog/logging.h>
+#include <DOM/io/Stream.hpp>
 
 namespace uscxml {
 

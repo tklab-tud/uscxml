@@ -74,7 +74,7 @@ int main(int argc, char** argv) {
 	{
 		Interpreter interpreter = Interpreter::fromURI("/Users/sradomski/Desktop/application_small.scxml");
 		assert(interpreter);
-		std::vector<std::string> states;
+		std::list<std::string> states;
 		states.push_back("b");
 		interpreter.setConfiguration(states);
 		interpreter.interpret();

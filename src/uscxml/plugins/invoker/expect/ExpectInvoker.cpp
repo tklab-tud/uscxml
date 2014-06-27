@@ -20,6 +20,8 @@
 #include "ExpectInvoker.h"
 #include <glog/logging.h>
 
+#include "uscxml/concurrency/eventqueue/DelayedEventQueue.h"
+
 #ifdef BUILD_AS_PLUGINS
 #include <Pluma/Connector.hpp>
 #endif

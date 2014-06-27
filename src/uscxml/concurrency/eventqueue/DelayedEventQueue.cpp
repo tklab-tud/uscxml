@@ -17,12 +17,13 @@
  *  @endcond
  */
 
-#include "uscxml/Message.h"
 #include "DelayedEventQueue.h"
+#include "uscxml/messages/Event.h"
+
 #include <glog/logging.h>
-#include <assert.h>
+
 #include <event2/event.h>
-#include <sstream>
+#include "event2/thread.h"
 
 namespace uscxml {
 

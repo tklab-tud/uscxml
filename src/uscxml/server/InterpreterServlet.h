@@ -21,11 +21,12 @@
 #define INTERPRETERSERVLET_H_XQLWNMH4
 
 #include "HTTPServer.h"
-#include "uscxml/Factory.h"
+#include "uscxml/messages/SendRequest.h"  // for SendRequest
+#include "uscxml/plugins/IOProcessor.h"  // for IOProcessorImpl
 
 namespace uscxml {
 
-class Interpreter;
+class InterpreterImpl;
 
 class InterpreterHTTPServlet : public HTTPServlet, public IOProcessorImpl {
 public:

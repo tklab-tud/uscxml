@@ -18,6 +18,7 @@
  */
 
 #include "uscxml/debug/DebuggerServlet.h"
+#include "uscxml/debug/DebugSession.h"
 #include "uscxml/UUID.h"
 #include <boost/algorithm/string.hpp>
 

@@ -20,6 +20,8 @@
 #include <boost/algorithm/string.hpp>
 
 #include "CalendarInvoker.h"
+#include "uscxml/concurrency/eventqueue/DelayedEventQueue.h"
+
 #include <glog/logging.h>
 
 #ifdef BUILD_AS_PLUGINS

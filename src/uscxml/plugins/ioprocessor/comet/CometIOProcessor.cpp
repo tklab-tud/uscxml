@@ -22,6 +22,7 @@
 #include "uscxml/Message.h"
 #include <iostream>
 
+#include <DOM/io/Stream.hpp>
 #include <string.h>
 
 #ifdef BUILD_AS_PLUGINS

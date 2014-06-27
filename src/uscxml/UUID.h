@@ -21,10 +21,8 @@
 #define UUID_H_8X65R2EI
 
 #include "uscxml/Common.h"
-#include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_generators.hpp>
-#include <boost/uuid/uuid_io.hpp>
-#include <ostream>
+#include <string>
 
 namespace uscxml {
 

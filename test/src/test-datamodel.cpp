@@ -1,6 +1,7 @@
 #include "uscxml/URL.h"
 #include "uscxml/Message.h"
 #include "uscxml/Interpreter.h"
+#include "uscxml/Factory.h"
 #include "uscxml/server/HTTPServer.h"
 
 #include <SAX/helpers/InputSourceResolver.hpp>

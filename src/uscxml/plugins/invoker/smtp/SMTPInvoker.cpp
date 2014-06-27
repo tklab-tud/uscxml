@@ -26,6 +26,7 @@
 
 #include <boost/algorithm/string.hpp>
 #include "uscxml/UUID.h"
+#include "uscxml/messages/Blob.h"
 
 namespace uscxml {
 

@@ -22,31 +22,31 @@
 
 // this has to be the first include or MSVC will run amok
 #include "uscxml/Common.h"
-#include "getopt.h"
 
-#include "uscxml/URL.h"
-
+#include <iostream> // arabica xpath uses cerr without iostream
 #include <boost/shared_ptr.hpp>
-#include <iostream>
 #include <set>
 #include <map>
 
 #include <XPath/XPath.hpp>
 #include <DOM/Document.hpp>
-#include <io/uri.hpp>
 
 #include <DOM/SAX2DOM/SAX2DOM.hpp>
 #include <SAX/helpers/CatchErrorHandler.hpp>
 #include <DOM/Events/EventTarget.hpp>
 #include <DOM/Events/EventListener.hpp>
 
-#include "uscxml/concurrency/tinythread.h"
-#include "uscxml/concurrency/eventqueue/DelayedEventQueue.h"
 #include "uscxml/concurrency/BlockingQueue.h"
-#include "uscxml/Message.h"
-#include "uscxml/Factory.h"
+#include "uscxml/messages/Data.h"
+#include "uscxml/messages/SendRequest.h"
+#include "uscxml/URL.h"
 
-#include "uscxml/server/InterpreterServlet.h"
+#include "uscxml/plugins/DataModel.h"
+#include "uscxml/plugins/IOProcessor.h"
+#include "uscxml/plugins/Invoker.h"
+#include "uscxml/plugins/ExecutableContent.h"
+
+
 
 #define USCXML_MONITOR_CATCH(callback) \
 catch (Event e) { \
@@ -56,7 +56,7 @@ catch (Event e) { \
 } catch (...) { \
 	LOG(ERROR) << "An exception occured when calling " #callback " on monitors"; \
 } \
-if (_state == InterpreterState::USCXML_DESTROYED) { \
+if (_state == USCXML_DESTROYED) { \
 	throw boost::bad_weak_ptr(); \
 } \
  
@@ -89,31 +89,10 @@ namespace uscxml {
 
 class HTTPServletInvoker;
 class InterpreterMonitor;
-
-class USCXML_API NumAttr {
-public:
-	NumAttr(const std::string& str) {
-		size_t valueStart = str.find_first_of("0123456789.");
-		if (valueStart != std::string::npos) {
-			size_t valueEnd = str.find_last_of("0123456789.");
-			if (valueEnd != std::string::npos) {
-				value = str.substr(valueStart, (valueEnd - valueStart) + 1);
-				size_t unitStart = str.find_first_not_of(" \t", valueEnd + 1);
-				if (unitStart != std::string::npos) {
-					size_t unitEnd = str.find_last_of(" \t");
-					if (unitEnd != std::string::npos && unitEnd > unitStart) {
-						unit = str.substr(unitStart, unitEnd - unitStart);
-					} else {
-						unit = str.substr(unitStart, str.length() - unitStart);
-					}
-				}
-			}
-		}
-	}
-
-	std::string value;
-	std::string unit;
-};
+class InterpreterHTTPServlet;
+class InterpreterWebSocketServlet;
+class Factory;
+class DelayedEventQueue;
 
 enum Capabilities {
 	CAN_NOTHING = 0,
@@ -219,53 +198,15 @@ private:
 	void init(const std::map<std::string, std::string>& nsInfo);
 };
 
-struct USCXML_API InterpreterState {
-	// see: http://stackoverflow.com/questions/18591924/how-to-use-bitmask
-	enum State {
-		USCXML_DESTROYED      = 0x0001,  //
-		USCXML_INSTANTIATED   = 0x0002,  // nothing really, just instantiated
-		USCXML_MICROSTEPPED   = 0x0004,  //
-		USCXML_MACROSTEPPED   = 0x0008,  //
-		USCXML_IDLE           = 0x0010,  //
-		USCXML_FAULTED        = 0x0020,  // something went very wrong
-		USCXML_FINISHED       = 0x0040,  // machine reached a final configuration
-	};
-
-	enum ThreadState {
-		USCXML_THREAD_RUNNING        = 0x0100,   //
-		USCXML_THREAD_STARTED        = 0x0200,   //
-	};
-
-	enum BitMask {
-		USCXML_THREAD_MASK = 0xff00,
-		USCXML_INTERPRETER_MASK = 0x00ff,
-	};
-
-	bool operator==(const InterpreterState& other) const     {
-		return state == other.state && msg == other.msg;
-	}
-	bool operator!=(const InterpreterState& other) const     {
-		return !(*this == other);
-	}
-
-	operator int() {
-		return (int)(state | thread);
-	}
-
-	Event getMessage() {
-		return msg;
-	}
-
-	static std::string stateToString(int32_t state);
-
-	friend USCXML_API std::ostream& operator<< (std::ostream& os, const InterpreterState& interpreterState);
-	friend USCXML_API class InterpreterImpl;
-
-protected:
-	int32_t thread;
-	State state;
-	Event msg;
+enum InterpreterState {
+	USCXML_DESTROYED      = -2,  ///< destructor ran - users should never see this one
+	USCXML_FINISHED       = -1,  ///< machine reached a final configuration and is done
+	USCXML_IDLE           = 0,   ///< stable configuration and queues empty
+	USCXML_INSTANTIATED   = 1,   ///< nothing really, just instantiated
+	USCXML_MICROSTEPPED   = 2,   ///< processed one transition set
+	USCXML_MACROSTEPPED   = 4,   ///< processed all transition sets and reached a stable configuration
 };
+
 
 USCXML_API std::ostream& operator<< (std::ostream& os, const InterpreterState& interpreterState);
 
@@ -383,8 +324,8 @@ public:
 		return basicConfig;
 	}
 
-	void setInitalConfiguration(const std::vector<std::string>& states) {
-		_userDefinedStartConfiguration = states;
+	void setInitalConfiguration(const std::list<std::string>& states) {
+		_startConfiguration = states;
 	}
 	void setInvokeRequest(const InvokeRequest& req) {
 		_invokeReq = req;
@@ -424,7 +365,7 @@ public:
 
 	bool hasLegalConfiguration();
 	bool isLegalConfiguration(const Arabica::XPath::NodeSet<std::string>&);
-	bool isLegalConfiguration(const std::vector<std::string>&);
+	bool isLegalConfiguration(const std::list<std::string>&);
 
 	static bool isState(const Arabica::DOM::Node<std::string>& state);
 	static bool isPseudoState(const Arabica::DOM::Node<std::string>& state);
@@ -438,6 +379,8 @@ public:
 	static bool isDescendant(const Arabica::DOM::Node<std::string>& s1, const Arabica::DOM::Node<std::string>& s2);
 	bool isInEmbeddedDocument(const Arabica::DOM::Node<std::string>& node);
 	bool isInitial(const Arabica::DOM::Node<std::string>& state);
+
+	static std::string stateToString(InterpreterState state);
 
 	Arabica::DOM::Node<std::string> getState(const std::string& stateId);
 	Arabica::XPath::NodeSet<std::string> getStates(const std::list<std::string>& stateIds);
@@ -481,9 +424,7 @@ protected:
 	void initializeData(const Arabica::DOM::Element<std::string>& data);
 	void finalizeAndAutoForwardCurrentEvent();
 
-	void setInterpreterState(InterpreterState::State newState, const std::string& error);
-	void setInterpreterState(InterpreterState::State newState, const Event& error);
-	void setInterpreterState(InterpreterState::State newState);
+	void setInterpreterState(InterpreterState newState);
 
 	bool _stable;
 	tthread::thread* _thread;
@@ -503,11 +444,14 @@ protected:
 	bool _isInitialized;
 	bool _domIsSetup;
 
+	bool _isStarted;
+	bool _isRunning;
+
 	InterpreterImpl::Binding _binding;
 	Arabica::XPath::NodeSet<std::string> _configuration;
 	Arabica::XPath::NodeSet<std::string> _alreadyEntered;
 	Arabica::XPath::NodeSet<std::string> _statesToInvoke;
-	std::vector<std::string> _userDefinedStartConfiguration;
+	std::list<std::string> _startConfiguration;
 	InvokeRequest _invokeReq;
 
 	DataModel _dataModel;
@@ -588,9 +532,7 @@ public:
 	virtual ~Interpreter() {};
 
 	operator bool() const {
-		return (_impl &&
-		        _impl->_state != InterpreterState::USCXML_FAULTED &&
-		        _impl->_state != InterpreterState::USCXML_DESTROYED);
+		return (_impl && _impl->_state != USCXML_DESTROYED);
 	}
 	bool operator< (const Interpreter& other) const     {
 		return _impl < other._impl;
@@ -716,7 +658,7 @@ public:
 		return _impl->getBasicConfiguration();
 	}
 
-	void setInitalConfiguration(const std::vector<std::string>& states) {
+	void setInitalConfiguration(const std::list<std::string>& states) {
 		return _impl->setInitalConfiguration(states);
 	}
 
@@ -772,7 +714,7 @@ public:
 		return _impl->isLegalConfiguration(config);
 	}
 
-	bool isLegalConfiguration(const std::vector<std::string>& config) {
+	bool isLegalConfiguration(const std::list<std::string>& config) {
 		return _impl->isLegalConfiguration(config);
 	}
 

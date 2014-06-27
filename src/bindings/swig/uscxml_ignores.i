@@ -93,6 +93,7 @@
 %ignore uscxml::DataModel::DataModel(const DataModel&);
 %ignore uscxml::DataModel::eval(const Arabica::DOM::Element<std::string>&, const std::string&);
 %ignore uscxml::DataModel::evalAsBool(const Arabica::DOM::Node<std::string>&, const std::string&);
+%ignore uscxml::DataModel::evalAsBool(const std::string&);
 %ignore uscxml::DataModel::throwErrorExecution(const std::string&);
 %ignore uscxml::DataModel::throwErrorPlatform(const std::string&);
 %ignore uscxml::DataModel::init(const Arabica::DOM::Element<std::string>&, const Arabica::DOM::Document<std::string>&, const std::string&);
@@ -174,9 +175,11 @@
 %ignore uscxml::Event::getFirstDOMElement;
 %ignore uscxml::Event::dom;
 %ignore uscxml::Event::getDOM();
+%ignore uscxml::Event::setDOM(const Arabica::DOM::Node<std::string>&);
 %ignore uscxml::Event::setDOM(const Arabica::DOM::Document<std::string>&);
 %ignore uscxml::Event::toDocument();
 %ignore uscxml::Event::getParams();
+%ignore uscxml::Event::getParam;
 
 // Data
 

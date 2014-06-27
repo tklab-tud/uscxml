@@ -101,6 +101,18 @@ WRAP_THROW_EXCEPTION(uscxml::Interpreter::interpret);
 %include "../../../uscxml/Interpreter.h"
 %include "../../../uscxml/concurrency/BlockingQueue.h"
 
+%include "../../../uscxml/messages/Blob.h"
+%include "../../../uscxml/messages/Data.h"
+%include "../../../uscxml/messages/Event.h"
+%include "../../../uscxml/messages/InvokeRequest.h"
+%include "../../../uscxml/messages/SendRequest.h"
+
+%include "../../../uscxml/plugins/DataModel.h"
+%include "../../../uscxml/plugins/EventHandler.h"
+%include "../../../uscxml/plugins/ExecutableContent.h"
+%include "../../../uscxml/plugins/Invoker.h"
+%include "../../../uscxml/plugins/IOProcessor.h"
+
 %include "../wrapped/WrappedInvoker.h"
 %include "../wrapped/WrappedDataModel.h"
 %include "../wrapped/WrappedExecutableContent.h"

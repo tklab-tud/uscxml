@@ -9,8 +9,10 @@
       </send>  
      </onentry>
      
-     <!-- if other end sends us back this event, we succeed -->
-  <transition event="HTTP.POST" cond="contains($_event/raw, this is some content)" target="pass"/>
+     <!-- if other end sends us back this event, we succeed.  Test for two common
+     ways of encoding -->
+  <transition event="HTTP.POST" cond="contains($_event/raw, this+is+some+content)" target="pass"/>
+  <transition event="HTTP.POST" cond="contains($_event/raw, this%20is%20some%20content)" target="pass"/>
   <transition event="*" target="fail"/>
  </state>
   

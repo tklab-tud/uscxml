@@ -1,6 +1,10 @@
 #include "uscxml/config.h"
 #include "uscxml/Interpreter.h"
 #include "uscxml/DOMUtils.h"
+
+#include "uscxml/Factory.h"
+#include "uscxml/server/HTTPServer.h"
+
 #include "uscxml/transform/ChartToFSM.h"
 #include <glog/logging.h>
 #include <boost/algorithm/string.hpp>

@@ -6,7 +6,7 @@ using org.uscxml;
 
 namespace embedding
 {
-    class TestExecutableContent : ExecutableContent
+    class SampleExecutableContent : ExecutableContent
     {
         public override string getLocalName()
         {
@@ -25,7 +25,7 @@ namespace embedding
 
         public override ExecutableContent create(Interpreter interpreter) 
         {
-            return new TestExecutableContent();
+            return new SampleExecutableContent();
         }
 
 

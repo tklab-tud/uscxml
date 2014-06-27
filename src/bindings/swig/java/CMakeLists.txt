@@ -69,6 +69,7 @@ if (ANT_EXECUTABLE)
 		WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/contrib/java
 		COMMENT "Creating the jar ...")
 	
+	set_target_properties(java PROPERTIES FOLDER "Bindings")
 else()
 	message(STATUS "Could not find ant binary - will not build jars")
 endif()
