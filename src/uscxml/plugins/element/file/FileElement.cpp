@@ -22,6 +22,7 @@
 #include <stdio.h>
 #include <vector>
 #include <boost/algorithm/string.hpp>
+#include "uscxml/messages/Blob.h"
 
 #include "uscxml/DOMUtils.h"
 

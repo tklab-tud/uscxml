@@ -18,6 +18,7 @@
  */
 
 #include "InterpreterDraft6.h"
+#include "uscxml/concurrency/eventqueue/DelayedEventQueue.h"
 
 #include <glog/logging.h>
 #include "uscxml/UUID.h"
@@ -37,10 +38,9 @@ InterpreterState InterpreterDraft6::interpret() {
 	while(true) {
 		state = step(-1);
 
-		switch (state & InterpreterState::USCXML_INTERPRETER_MASK) {
-		case uscxml::InterpreterState::USCXML_FAULTED:
-		case uscxml::InterpreterState::USCXML_FINISHED:
-		case uscxml::InterpreterState::USCXML_DESTROYED:
+		switch (state) {
+		case uscxml::USCXML_FINISHED:
+		case uscxml::USCXML_DESTROYED:
 			// return as we finished
 			return state;
 		default:
@@ -61,7 +61,7 @@ InterpreterState InterpreterDraft6::interpret() {
 NodeSet<std::string> InterpreterDraft6::getDocumentInitialTransitions() {
 	NodeSet<std::string> initialTransitions;
 
-	if (_userDefinedStartConfiguration.size() > 0) {
+	if (_startConfiguration.size() > 0) {
 		// we emulate entering a given configuration by creating a pseudo deep history
 		Element<std::string> initHistory = _document.createElementNS(_nsInfo.nsURL, "history");
 		_nsInfo.setPrefix(initHistory);
@@ -72,8 +72,8 @@ NodeSet<std::string> InterpreterDraft6::getDocumentInitialTransitions() {
 
 		std::string histId = ATTR(initHistory, "id");
 		NodeSet<std::string> histStates;
-		for (int i = 0; i < _userDefinedStartConfiguration.size(); i++) {
-			histStates.push_back(getState(_userDefinedStartConfiguration[i]));
+		for (std::list<std::string>::const_iterator stateIter = _startConfiguration.begin(); stateIter != _startConfiguration.end(); stateIter++) {
+			histStates.push_back(getState(*stateIter));
 		}
 		_historyValue[histId] = histStates;
 
@@ -119,9 +119,7 @@ InterpreterState InterpreterDraft6::step(int waitForMS = 0) {
 	try {
 		tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
 
-		if (_state & InterpreterState::USCXML_FINISHED ||
-		        _state & InterpreterState::USCXML_FAULTED ||
-		        _state & InterpreterState::USCXML_DESTROYED) {
+		if (_state == USCXML_FINISHED || _state == USCXML_DESTROYED) {
 			return _state;
 		}
 
@@ -148,7 +146,7 @@ InterpreterState InterpreterDraft6::step(int waitForMS = 0) {
 			enabledTransitions.to_document_order();
 			microstep(enabledTransitions);
 
-			setInterpreterState(InterpreterState::USCXML_MICROSTEPPED);
+			setInterpreterState(USCXML_MICROSTEPPED);
 			return _state;
 		}
 
@@ -174,19 +172,19 @@ InterpreterState InterpreterDraft6::step(int waitForMS = 0) {
 			}
 
 			// test 319 - even if we do not enable transitions, consider it a microstep
-			setInterpreterState(InterpreterState::USCXML_MICROSTEPPED);
+			setInterpreterState(USCXML_MICROSTEPPED);
 			return _state;
 
 		} else {
 			_stable = true;
 		}
 		// even if we did nothing - count as microstep
-		setInterpreterState(InterpreterState::USCXML_MICROSTEPPED);
+		setInterpreterState(USCXML_MICROSTEPPED);
 
 		if (_topLevelFinalReached)
 			goto EXIT_INTERPRETER;
 
-		setInterpreterState(InterpreterState::USCXML_MACROSTEPPED);
+		setInterpreterState(USCXML_MACROSTEPPED);
 		USCXML_MONITOR_CALLBACK(onStableConfiguration)
 
 		// when we reach a stable configuration, invoke
@@ -201,7 +199,7 @@ InterpreterState InterpreterDraft6::step(int waitForMS = 0) {
 		_statesToInvoke = NodeSet<std::string>();
 
 		if (_externalQueue.isEmpty()) {
-			setInterpreterState(InterpreterState::USCXML_IDLE);
+			setInterpreterState(USCXML_IDLE);
 
 			if (waitForMS < 0) {
 				// wait blockingly for an event forever
@@ -224,7 +222,7 @@ InterpreterState InterpreterDraft6::step(int waitForMS = 0) {
 				return _state;
 			}
 
-			setInterpreterState(InterpreterState::USCXML_MACROSTEPPED);
+			setInterpreterState(USCXML_MACROSTEPPED);
 		}
 
 		_currEvent = _externalQueue.pop();
@@ -281,15 +279,11 @@ EXIT_INTERPRETER:
 		if(_dataModel)
 			_dataModel = DataModel();
 
-		setInterpreterState(InterpreterState::USCXML_FINISHED);
+		setInterpreterState(USCXML_FINISHED);
 		return _state;
-	} catch (Event e) {
-		setInterpreterState(InterpreterState::USCXML_FAULTED, e);
-		return _state;
-
 	} catch (boost::bad_weak_ptr e) {
 		LOG(ERROR) << "Unclean shutdown " << std::endl << std::endl;
-		setInterpreterState(InterpreterState::USCXML_DESTROYED);
+		setInterpreterState(USCXML_DESTROYED);
 		return _state;
 	}
 

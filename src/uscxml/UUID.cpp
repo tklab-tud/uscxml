@@ -19,6 +19,7 @@
 
 #include "UUID.h"
 #include <sstream>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace uscxml {
 boost::uuids::random_generator UUID::uuidGen;

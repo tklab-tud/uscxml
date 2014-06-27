@@ -21,11 +21,9 @@
 #define DEBUGGERSERVLET_H_ATUMDA3G
 
 #include "uscxml/Common.h"
-#include "getopt.h"
 #include <glog/logging.h>
 
 #include "uscxml/server/HTTPServer.h"
-#include "uscxml/Interpreter.h"
 
 #include "uscxml/debug/Debugger.h"
 #include "uscxml/concurrency/tinythread.h"

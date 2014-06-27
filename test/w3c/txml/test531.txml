@@ -8,7 +8,7 @@ of the raised event. -->
   <onentry>
     <send event="timeout" delay="3s"/>
     <send   conf:basicHTTPAccessURITarget="" type="http://www.w3.org/TR/scxml/#BasicHTTPEventProcessor">
-      <content>_scxmleventname=test</content>
+      <param name="_scxmleventname" conf:quoteExpr="test"/>
       </send>  
      </onentry>
      

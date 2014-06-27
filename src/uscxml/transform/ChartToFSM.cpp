@@ -18,6 +18,8 @@
  */
 
 #include "uscxml/transform/ChartToFSM.h"
+#include "uscxml/Factory.h"
+
 #include <DOM/io/Stream.hpp>
 #include <glog/logging.h>
 

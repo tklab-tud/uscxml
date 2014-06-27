@@ -1,5 +1,8 @@
 #include "uscxml/config.h"
 #include "uscxml/Interpreter.h"
+#include "uscxml/Factory.h"
+#include "uscxml/server/HTTPServer.h"
+
 #include <glog/logging.h>
 
 #include "uscxml/plugins/invoker/filesystem/dirmon/DirMonInvoker.h"

@@ -358,6 +358,8 @@ if(${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
 	if(GCC_VERSION VERSION_EQUAL 4.7 OR GCC_VERSION VERSION_GREATER 4.7)
 		# when compiling as C++11, narrowing is a warning but older compilers complain about the option
 		add_definitions(-Wno-narrowing)
+		# recent gcc started to complain about unused globals
+		add_definitions(-Wno-unused-variable)
 	endif()
 
 	if(GCC_VERSION VERSION_EQUAL 4.8 OR GCC_VERSION VERSION_GREATER 4.8)
@@ -946,6 +948,8 @@ foreach( FILE ${USCXML_FILES} )
 
 	elseif (${FILE} MATCHES ".*\\/debug\\/.*")
 		source_group("Interpreter\\debug" FILES ${FILE})
+	elseif (${FILE} MATCHES ".*\\/plugins\\/.*")
+		source_group("Interpreter\\plugins" FILES ${FILE})
 	elseif (${FILE} MATCHES ".*\\/transform\\/.*")
 		source_group("Interpreter\\transform" FILES ${FILE})
 	elseif (${FILE} MATCHES ".*\\/util\\/.*")
@@ -954,6 +958,8 @@ foreach( FILE ${USCXML_FILES} )
 		source_group("Interpreter\\concurrency" FILES ${FILE})
 	elseif (${FILE} MATCHES ".*\\/server\\/.*")
 		source_group("Interpreter\\server" FILES ${FILE})
+	elseif (${FILE} MATCHES ".*\\/messages\\/.*")
+		source_group("Interpreter\\messages" FILES ${FILE})
 
 	else ()
 		source_group(Interpreter FILES ${FILE})

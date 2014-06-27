@@ -21,6 +21,7 @@
 #define XHTMLINVOKER_H_W09J90F0
 
 #include <uscxml/Interpreter.h>
+#include "uscxml/server/HTTPServer.h"
 
 #ifdef BUILD_AS_PLUGINS
 #include "uscxml/plugins/Plugins.h"

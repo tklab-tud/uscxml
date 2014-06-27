@@ -20,6 +20,8 @@
 #include <boost/algorithm/string.hpp>
 
 #include "FFMPEGInvoker.h"
+#include "uscxml/messages/Blob.h"
+
 #include <glog/logging.h>
 
 #include <libavutil/imgutils.h>

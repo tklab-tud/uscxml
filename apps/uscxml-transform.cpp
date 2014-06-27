@@ -5,6 +5,11 @@
 #include "uscxml/DOMUtils.h"
 #include <glog/logging.h>
 #include <fstream>
+#include <iostream>
+
+#include "uscxml/Factory.h"
+#include "uscxml/server/HTTPServer.h"
+#include "getopt.h"
 
 #ifdef HAS_SIGNAL_H
 #include <signal.h>

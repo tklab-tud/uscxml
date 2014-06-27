@@ -21,6 +21,8 @@
 #include "URL.h"
 #include "UUID.h"
 
+#include <sys/stat.h>
+
 #include "uscxml/config.h"
 #include <fstream>
 #include <boost/lexical_cast.hpp>
@@ -38,6 +40,8 @@
 #include <sys/types.h>
 #include <pwd.h>
 #endif
+
+#include "uscxml/messages/Event.h"
 
 #include <cstdlib> // mkstemp
 #ifdef HAS_UNISTD_H

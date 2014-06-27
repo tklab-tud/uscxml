@@ -20,6 +20,13 @@
 #ifndef WRAPPEDINTERPRETERMONITOR_H_F5C83A0D
 #define WRAPPEDINTERPRETERMONITOR_H_F5C83A0D
 
+#include <vector>
+#include <list>
+#include <ostream>
+#include <string>
+
+#include <DOM/Document.hpp>
+#include <DOM/io/Stream.hpp>
 
 #include "../../../uscxml/Message.h"
 #include "../../../uscxml/Factory.h"

@@ -4,6 +4,9 @@
 #include "uscxml/debug/DebuggerServlet.h"
 #include <glog/logging.h>
 
+#include "uscxml/Factory.h"
+#include "uscxml/server/HTTPServer.h"
+
 #ifdef HAS_SIGNAL_H
 #include <signal.h>
 #endif

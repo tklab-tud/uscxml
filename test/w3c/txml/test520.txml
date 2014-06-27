@@ -11,8 +11,10 @@
       </send>  
      </onentry>
      
-     <!-- if other end sends us back this event, we succeed -->
-  <transition event="HTTP.POST" conf:messageBodyEquals="this is some content" conf:targetpass=""/>
+     <!-- if other end sends us back this event, we succeed.  Test for two common
+     ways of encoding -->
+  <transition event="HTTP.POST" conf:messageBodyEquals="this+is+some+content" conf:targetpass=""/>
+  <transition event="HTTP.POST" conf:messageBodyEquals="this%20is%20some%20content" conf:targetpass=""/>
   <transition event="*" conf:targetfail=""/>
  </state>
   

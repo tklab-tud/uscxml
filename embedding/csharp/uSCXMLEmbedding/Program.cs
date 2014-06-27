@@ -28,8 +28,8 @@ namespace embedding
                 SetDllDirectory("C:\\Users\\sradomski\\Desktop\\build\\uscxml\\lib\\csharp");
             }
 
-            Interpreter interpreter = Interpreter.fromXML("<scxml><state id=\"foo\" final=\"true\" /></scxml>");
-            interpreter.addMonitor(new TestInterpreterMonitor());
+            Interpreter interpreter = Interpreter.fromXML("<scxml><state id=\"f oo\" final=\"true\" /></scxml>");
+            interpreter.addMonitor(new SampleInterpreterMonitor());
             interpreter.interpret();
         }
     }

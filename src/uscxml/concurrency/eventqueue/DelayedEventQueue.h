@@ -22,15 +22,15 @@
 
 #include "uscxml/concurrency/tinythread.h"
 
-#include <event2/thread.h>
-#include <event2/http.h>
+
+#include "uscxml/Common.h"
+#include "event2/util.h"                // for evutil_socket_t
 #include <event2/event.h>
 
 #include <inttypes.h>
 
 #include <map>
 #include <string>
-#include <iostream>
 
 namespace uscxml {
 

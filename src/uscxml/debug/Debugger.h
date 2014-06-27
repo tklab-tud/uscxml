@@ -20,12 +20,14 @@
 #ifndef DEBUGGERMONITOR_H_Z050WPFH
 #define DEBUGGERMONITOR_H_Z050WPFH
 
-#include "uscxml/Message.h"
+#include "uscxml/messages/Data.h"       // for Data
+#include "uscxml/messages/Event.h"      // for Event
 #include "uscxml/Interpreter.h"
 #include "uscxml/debug/Breakpoint.h"
-#include "uscxml/debug/DebugSession.h"
 
 namespace uscxml {
+
+class DebugSession;
 
 class USCXML_API Debugger : public InterpreterMonitor {
 public:

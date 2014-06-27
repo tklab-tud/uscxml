@@ -25,6 +25,13 @@ file(GLOB_RECURSE USCXML_CONCURRENCY
 source_group("Interpreter" FILES ${USCXML_CONCURRENCY})
 list (APPEND USCXML_FILES ${USCXML_CONCURRENCY})
 
+file(GLOB_RECURSE USCXML_MESSAGES
+	messages/*.cpp
+	messages/*.h
+)
+source_group("Interpreter" FILES ${USCXML_MESSAGES})
+list (APPEND USCXML_FILES ${USCXML_MESSAGES})
+
 file(GLOB_RECURSE USCXML_DEBUG
 	debug/*.cpp
 	debug/*.h
@@ -62,6 +69,16 @@ file(GLOB USCXML_CORE
 )
 source_group("Interpreter" FILES ${USCXML_CORE})
 list (APPEND USCXML_FILES ${USCXML_CORE})
+
+file(GLOB USCXML_PLUGINS
+	plugins/DataModel.h
+	plugins/EventHandler.h
+	plugins/ExecutableContent.h
+	plugins/Invoker.h
+	plugins/IOProcessor.h
+)
+source_group("Interpreter" FILES ${USCXML_PLUGINS})
+list (APPEND USCXML_FILES ${USCXML_PLUGINS})
 
 if (BUILD_AS_PLUGINS)
 	list (APPEND USCXML_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/plugins)

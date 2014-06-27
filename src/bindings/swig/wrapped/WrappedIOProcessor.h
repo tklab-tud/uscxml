@@ -20,6 +20,14 @@
 #ifndef WRAPPEDIOPROCESSOR_H_AE98064A
 #define WRAPPEDIOPROCESSOR_H_AE98064A
 
+#include <vector>
+#include <list>
+#include <ostream>
+#include <string>
+
+#include <DOM/Document.hpp>
+#include <DOM/io/Stream.hpp>
+
 #include "../../../uscxml/Message.h"
 #include "../../../uscxml/Factory.h"
 #include "../../../uscxml/Interpreter.h"

@@ -20,8 +20,15 @@
 #ifndef WRAPPEDDATAMODEL_H_DBAAD6AF
 #define WRAPPEDDATAMODEL_H_DBAAD6AF
 
-#include "../../../uscxml/Message.h"
-#include "../../../uscxml/Factory.h"
+#include <vector>
+#include <list>
+#include <ostream>
+#include <string>
+
+#include <DOM/Document.hpp>
+#include <DOM/io/Stream.hpp>
+
+#include "../../../uscxml/plugins/DataModel.h"
 #include "../../../uscxml/Interpreter.h"
 
 namespace uscxml {

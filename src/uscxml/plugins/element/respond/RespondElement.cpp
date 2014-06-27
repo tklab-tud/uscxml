@@ -19,6 +19,7 @@
 
 #include "RespondElement.h"
 #include "uscxml/plugins/invoker/http/HTTPServletInvoker.h"
+#include "uscxml/server/InterpreterServlet.h"
 #include "uscxml/DOMUtils.h"
 #include <glog/logging.h>
 

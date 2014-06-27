@@ -21,6 +21,7 @@
 #define HEARTBEATINVOKER_H_W09J90F0
 
 #include <uscxml/Interpreter.h>
+#include "uscxml/concurrency/eventqueue/DelayedEventQueue.h"
 
 #ifdef BUILD_AS_PLUGINS
 #include "uscxml/plugins/Plugins.h"

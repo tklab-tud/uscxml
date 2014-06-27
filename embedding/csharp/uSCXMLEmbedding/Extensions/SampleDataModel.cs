@@ -6,11 +6,11 @@ using org.uscxml;
 
 namespace EmbeddedDataModel
 {
-    class TestDataModel : DataModel
+    class SampleDataModel : DataModel
     {
         public override DataModel create(Interpreter interpreter)
         {
-            return new TestDataModel();
+            return new SampleDataModel();
         }
 
         public override void eval(string scriptElem, string expr)
