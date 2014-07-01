@@ -10,3 +10,8 @@ find ./www.w3.org -name "*.txml" -exec cp {} ./txml \;
 find ./www.w3.org -name "*.txt" -exec cp {} ./txml \;
 find ./www.w3.org -name "*.xsl" -exec cp {} . \;
 rm -rf www.w3.org
+
+sed -ie "s/<xsl:attribute name=\"delayexpr\">Var<xsl:value-of select=\".\" \/><\/xsl:attribute>/<xsl:attribute name=\"delayexpr\">(Var<xsl:value-of select=\".\" \/>.slice(0, - 1)) * 50 + 'ms'<\/xsl:attribute>/" confEcma.xsl
+sed -ie "s/<xsl:attribute name=\"delayexpr\">'<xsl:value-of select=\".\"\/>s'<\/xsl:attribute>/<xsl:attribute name=\"delayexpr\">'<xsl:value-of select=\". * 50\"\/>ms'<\/xsl:attribute>/" confEcma.xsl
+
+rm confEcma.xsle

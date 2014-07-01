@@ -19,8 +19,8 @@ public class ECMAData implements Scriptable {
 	}
 
 	public Object unwrap(Data data) {
-		if (data.atom.length() > 0) {
-			return data.atom;
+		if (data.getAtom().length() > 0) {
+			return data.getAtom();
 		}
 		return new ECMAData(data);
 		
@@ -28,26 +28,26 @@ public class ECMAData implements Scriptable {
 	
 	@Override
 	public Object get(String name, Scriptable start) {
-		if (data.compound.containsKey(name))
-			return unwrap(data.compound.get(name));
+		if (data.hasKey(name))
+			return unwrap(data.at(name));
 		return NOT_FOUND;
 	}
 
 	@Override
 	public Object get(int index, Scriptable start) {
-		if (data.array.size() > index)
-			return unwrap(data.array.get(index));
+		if (data.getArray().size() > index)
+			return unwrap(data.item(index));
 		return NOT_FOUND;
 	}
 
 	@Override
 	public boolean has(String name, Scriptable start) {
-		return data.compound.containsKey(name);
+		return data.hasKey(name);
 	}
 
 	@Override
 	public boolean has(int index, Scriptable start) {
-		return data.array.size() > index;
+		return data.getArray().size() > index;
 	}
 
 	@Override
@@ -88,7 +88,7 @@ public class ECMAData implements Scriptable {
 
 	@Override
 	public Object[] getIds() {
-		return data.compound.keySet().toArray();
+		return data.getCompound().keySet().toArray();
 	}
 
 	@Override

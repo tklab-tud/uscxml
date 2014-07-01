@@ -1,7 +1,6 @@
 package org.uscxml.tests.invoker;
 
 import org.uscxml.Data;
-import org.uscxml.DataNative;
 import org.uscxml.Event;
 import org.uscxml.Factory;
 import org.uscxml.Interpreter;
@@ -21,27 +20,29 @@ public class TestCustomInvoker extends Invoker {
 	}
 
 	@Override
-	public DataNative getDataModelVariables() {
+	public Data getDataModelVariables() {
 		Data data = new Data();
-		data.array.add(new Data("foo", Data.Type.VERBATIM));
-		return Data.toNative(data);
+		return data;
 	}
 
 	@Override
 	public void send(SendRequest req) {
-		System.out.println("send");
+		System.out.println(req);
+		if ("foo".equals(req.getName()))
+			returnEvent(new Event("received2"), true); // enqueue an external event
 	}
 
 	@Override
 	public void invoke(InvokeRequest req) {
-		System.out.println("invoke");
+		System.out.println(req);
+		if ("Some string content".equals(req.getContent())) {
+			returnEvent(new Event("received1"), true); // enqueue an external event
+		}
+	}
 
-		System.out.println(req.getData());
-		System.out.println(req.getXML());
-
-		Event ev = new Event();
-		ev.setName("foo");
-		returnEvent(ev);
+	@Override
+	public void uninvoke() {
+		System.out.println("uninvoke");
 	}
 
 	@Override
@@ -54,15 +55,35 @@ public class TestCustomInvoker extends Invoker {
 	 * @throws InterpreterException 
 	 */
 	public static void main(String[] args) throws InterpreterException {
-		System.load("/Users/sradomski/Documents/TK/Code/uscxml/build/cli/lib/libuscxmlNativeJava64_d.jnilib");
+		System.load("/Users/sradomski/Documents/TK/Code/uscxml/build/cli/lib/libuscxmlNativeJava64.jnilib");
 
 		TestCustomInvoker invoker = new TestCustomInvoker();
+		// just register prototype at global factory
 		Factory.getInstance().registerInvoker(invoker);
 
-		Interpreter interpreter = Interpreter
-				.fromURI("/Users/sradomski/Documents/TK/Code/uscxml/test/samples/uscxml/test-java-invoker.scxml");
-		while (true)
-			interpreter.interpret();
+		String xml = 
+		"<scxml>" +
+		"  <state id=\"s1\">" +
+		"    <invoke type=\"java\" id=\"javainvoker1\">" +
+		"    	<content>Some string content</content>" +
+		"    </invoke>" +
+		"    <invoke type=\"java\" id=\"javainvoker2\" />" +
+		"    <state id=\"s11\">" +
+		"    	<transition event=\"received1\" target=\"s12\" />" +		
+		"    </state>" +
+		"    <state id=\"s12\">" +
+		"		<onentry>" +
+		"			<send target=\"#_javainvoker2\" event=\"foo\" />" +
+		"		</onentry>" +
+		"    	<transition event=\"received2\" target=\"done\" />" +		
+		"    </state>" +
+		"  </state>" +
+		"  <final id=\"done\" />" +
+		"</scxml>";
+
+		// parse and interpret
+		Interpreter interpreter = Interpreter.fromXML(xml);
+		interpreter.interpret();
 	}
 
 }

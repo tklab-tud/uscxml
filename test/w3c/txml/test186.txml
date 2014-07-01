@@ -11,7 +11,7 @@ in the interval.)  If var2 ends up == 1, we pass.  Otherwise we fail  -->
   
 <state id="s0">
   <onentry>
-   <send event="event1" delay="2s">
+   <send event="event1" conf:delay="1">
      <param name="aParam" conf:varExpr="1"/>
      </send>
    <assign conf:location="1" conf:expr="2"/>

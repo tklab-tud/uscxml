@@ -21,3 +21,7 @@ package/windows*
 
 /package/*
 contrib/prebuilt/include/*
+
+/embedding/csharp/uSCXMLEmbedding/bin/
+
+/embedding/csharp/uSCXMLEmbedding/obj/

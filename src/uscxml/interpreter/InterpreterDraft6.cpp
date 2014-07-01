@@ -135,21 +135,23 @@ InterpreterState InterpreterDraft6::step(int waitForMS = 0) {
 			NodeSet<std::string> initialTransitions = getDocumentInitialTransitions();
 			assert(initialTransitions.size() > 0);
 			enterStates(initialTransitions);
+			setInterpreterState(USCXML_MICROSTEPPED);
 		}
-
-		_stable = false;
 
 		// are there spontaneous transitions?
-		enabledTransitions = selectEventlessTransitions();
-		if (!enabledTransitions.empty()) {
-			// test 403b
-			enabledTransitions.to_document_order();
-			microstep(enabledTransitions);
+		if (!_stable) {
+			enabledTransitions = selectEventlessTransitions();
+			if (!enabledTransitions.empty()) {
+				// test 403b
+				enabledTransitions.to_document_order();
+				microstep(enabledTransitions);
 
-			setInterpreterState(USCXML_MICROSTEPPED);
-			return _state;
+				setInterpreterState(USCXML_MICROSTEPPED);
+				return _state;
+			}
+			_stable = true;
 		}
-
+		
 		// test415
 		if (_topLevelFinalReached)
 			goto EXIT_INTERPRETER;
@@ -158,6 +160,7 @@ InterpreterState InterpreterDraft6::step(int waitForMS = 0) {
 		if (!_internalQueue.empty()) {
 			_currEvent = _internalQueue.front();
 			_internalQueue.pop_front();
+			_stable = false;
 
 			USCXML_MONITOR_CALLBACK2(beforeProcessingEvent, _currEvent)
 
@@ -178,14 +181,15 @@ InterpreterState InterpreterDraft6::step(int waitForMS = 0) {
 		} else {
 			_stable = true;
 		}
-		// even if we did nothing - count as microstep
-		setInterpreterState(USCXML_MICROSTEPPED);
+
+		if (_state != USCXML_MACROSTEPPED && _state != USCXML_IDLE)
+			USCXML_MONITOR_CALLBACK(onStableConfiguration)
+
+		setInterpreterState(USCXML_MACROSTEPPED);
 
 		if (_topLevelFinalReached)
 			goto EXIT_INTERPRETER;
 
-		setInterpreterState(USCXML_MACROSTEPPED);
-		USCXML_MONITOR_CALLBACK(onStableConfiguration)
 
 		// when we reach a stable configuration, invoke
 		for (unsigned int i = 0; i < _statesToInvoke.size(); i++) {
@@ -227,7 +231,8 @@ InterpreterState InterpreterDraft6::step(int waitForMS = 0) {
 
 		_currEvent = _externalQueue.pop();
 		_currEvent.eventType = Event::EXTERNAL; // make sure it is set to external
-
+		_stable = false;
+		
 		if (_topLevelFinalReached)
 			goto EXIT_INTERPRETER;
 
@@ -349,149 +354,6 @@ void InterpreterDraft6::stabilize() {
 	_statesToInvoke = NodeSet<std::string>();
 
 }
-
-#if 0
-void InterpreterDraft6::mainEventLoop() {
-
-	while(_running) {
-		NodeSet<std::string> enabledTransitions;
-		_stable = false;
-
-		// Here we handle eventless transitions and transitions
-		// triggered by internal events until machine is stable
-		while(_running && !_stable) {
-#if VERBOSE
-			std::cout << "Configuration: ";
-			for (int i = 0; i < _configuration.size(); i++) {
-				std::cout << ATTR(_configuration[i], "id") << ", ";
-			}
-			std::cout << std::endl;
-#endif
-
-			enabledTransitions = selectEventlessTransitions();
-			if (enabledTransitions.size() == 0) {
-				if (_internalQueue.size() == 0) {
-					_stable = true;
-				} else {
-					_currEvent = _internalQueue.front();
-					_internalQueue.pop_front();
-#if VERBOSE
-					std::cout << "Received internal event " << _currEvent.name << std::endl;
-#endif
-
-					USCXML_MONITOR_CALLBACK(beforeProcessingEvent)
-
-					if (_dataModel)
-						_dataModel.setEvent(_currEvent);
-					enabledTransitions = selectTransitions(_currEvent.name);
-				}
-			}
-			if (!enabledTransitions.empty()) {
-				// test 403b
-				enabledTransitions.to_document_order();
-				microstep(enabledTransitions);
-			}
-		}
-
-		for (unsigned int i = 0; i < _statesToInvoke.size(); i++) {
-			NodeSet<std::string> invokes = filterChildElements(_nsInfo.xmlNSPrefix + "invoke", _statesToInvoke[i]);
-			for (unsigned int j = 0; j < invokes.size(); j++) {
-				if (!HAS_ATTR(invokes[j], "persist") || !DOMUtils::attributeIsTrue(ATTR(invokes[j], "persist"))) {
-					invoke(invokes[j]);
-				}
-			}
-		}
-		_statesToInvoke = NodeSet<std::string>();
-
-		if (!_internalQueue.empty())
-			continue;
-
-		// assume that we have a legal configuration as soon as the internal queue is empty
-		assert(hasLegalConfiguration());
-
-		USCXML_MONITOR_CALLBACK(onStableConfiguration)
-
-		_mutex.unlock();
-
-		// whenever we have a stable configuration, run the mainThread hooks with 200fps
-		while(_externalQueue.isEmpty() && _thread == NULL) {
-			runOnMainThread(200);
-		}
-		_mutex.lock();
-
-		while(_externalQueue.isEmpty()) {
-			_condVar.wait(_mutex);
-		}
-		_currEvent = _externalQueue.pop();
-#if VERBOSE
-		std::cout << "Received externalEvent event " << _currEvent.name << std::endl;
-		if (_running && _currEvent.name == "unblock.and.die") {
-			std::cout << "Still running " << this << std::endl;
-		} else {
-			std::cout << "Aborting " << this << std::endl;
-		}
-#endif
-		_currEvent.eventType = Event::EXTERNAL; // make sure it is set to external
-		if (!_running)
-			goto EXIT_INTERPRETER;
-
-		USCXML_MONITOR_CALLBACK(beforeProcessingEvent)
-
-		if (_dataModel && iequals(_currEvent.name, "cancel.invoke." + _sessionId))
-			break;
-
-		if (_dataModel) {
-			try {
-				_dataModel.setEvent(_currEvent);
-			} catch (Event e) {
-				LOG(ERROR) << "Syntax error while setting external event:" << std::endl << e << std::endl << _currEvent;
-			}
-		}
-		for (std::map<std::string, Invoker>::iterator invokeIter = _invokers.begin();
-		        invokeIter != _invokers.end();
-		        invokeIter++) {
-			if (iequals(invokeIter->first, _currEvent.invokeid)) {
-				Arabica::XPath::NodeSet<std::string> finalizes = filterChildElements(_nsInfo.xmlNSPrefix + "finalize", invokeIter->second.getElement());
-				for (int k = 0; k < finalizes.size(); k++) {
-					Element<std::string> finalizeElem = Element<std::string>(finalizes[k]);
-					executeContent(finalizeElem);
-				}
-			}
-			if (HAS_ATTR(invokeIter->second.getElement(), "autoforward") && DOMUtils::attributeIsTrue(ATTR(invokeIter->second.getElement(), "autoforward"))) {
-				try {
-					// do not autoforward to invokers that send to #_parent from the SCXML IO Processor!
-					// Yes do so, see test229!
-					// if (!boost::equals(_currEvent.getOriginType(), "http://www.w3.org/TR/scxml/#SCXMLEventProcessor"))
-					invokeIter->second.send(_currEvent);
-				} catch(...) {
-					LOG(ERROR) << "Exception caught while sending event to invoker " << invokeIter->first;
-				}
-			}
-		}
-		enabledTransitions = selectTransitions(_currEvent.name);
-		if (!enabledTransitions.empty()) {
-			// test 403b
-			enabledTransitions.to_document_order();
-			microstep(enabledTransitions);
-		}
-	}
-
-EXIT_INTERPRETER:
-	USCXML_MONITOR_CALLBACK(beforeCompletion)
-
-	exitInterpreter();
-	if (_sendQueue) {
-		std::map<std::string, std::pair<InterpreterImpl*, SendRequest> >::iterator sendIter = _sendIds.begin();
-		while(sendIter != _sendIds.end()) {
-			_sendQueue->cancelEvent(sendIter->first);
-			sendIter++;
-		}
-	}
-
-	USCXML_MONITOR_CALLBACK(afterCompletion)
-
-}
-#endif
 
 Arabica::XPath::NodeSet<std::string> InterpreterDraft6::selectTransitions(const std::string& event) {
 	Arabica::XPath::NodeSet<std::string> enabledTransitions;

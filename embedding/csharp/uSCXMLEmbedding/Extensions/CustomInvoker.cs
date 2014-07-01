@@ -4,18 +4,18 @@ using System.Linq;
 using System.Text;
 using org.uscxml;
 
-namespace EmbeddedInvoker
+namespace embedding
 {
-    class SampleInvoker : Invoker
+    class CustomInvoker : Invoker
     {
         public override Invoker create(Interpreter interpreter)
         {
-            return new SampleInvoker();
+            return new CustomInvoker();
         }
 
-        public override DataNative getDataModelVariables()
+        public override Data getDataModelVariables()
         {
-            DataNative data = new DataNative();
+            Data data = new Data();
             return data;
         }
 

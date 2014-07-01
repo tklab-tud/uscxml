@@ -1,13 +1,12 @@
 package org.uscxml.datamodel.ecmascript;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.mozilla.javascript.Scriptable;
 import org.uscxml.Data;
 import org.uscxml.Event;
-import org.uscxml.ParamPair;
-import org.uscxml.ParamPairVector;
 
 public class ECMAEvent implements Scriptable {
 
@@ -19,17 +18,17 @@ public class ECMAEvent implements Scriptable {
     
 	public ECMAEvent(Event event) {
 		this.event = event;
-		
-		Data data = new Data(event.getData());
-		
-		// insert params into event.data
-		ParamPairVector ppv = event.getParamPairs();
-		for (int i = 0; i < ppv.size(); i++) {
-			ParamPair pp = ppv.get(i);
-			data.compound.put(pp.getFirst(), new Data(pp.getSecond()));
+
+		// copy event params to data
+		Data data = event.getData();
+		Map<String, List<Data>> params = event.getParams();
+		for (String key : params.keySet()) {
+			for (Data param : params.get(key)) {
+				data.put(key, param);
+			}
 		}
 
-		members.put("type", event.getEventType().toString());
+		members.put("type", event.getEventType());
 		members.put("data", new ECMAData(data));
 		members.put("sendid", event.getSendId());
 		members.put("origin", event.getOrigin());

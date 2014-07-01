@@ -10,9 +10,9 @@ event1 will be raised first.  Succeed if event1 occurs before event2, otherwise 
   
 <state id="s0">
   <onentry>
-   <assign conf:location="1" conf:quoteExpr="3s"/>
-   <send conf:delayExpr="1" event="event2"/>
-   <send delay="1s" event="event1"/>
+   <assign conf:location="1" conf:quoteExpr="1s"/>
+   <send conf:delayFromVar="1" event="event2"/>
+   <send conf:delay=".5" event="event1"/>
     </onentry>
     
   <transition event="event1"  target="s1"/>

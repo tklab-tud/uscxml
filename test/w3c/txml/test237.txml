@@ -10,7 +10,7 @@ the time timeout2 fires, success   -->
      
 <state id="s0">
   <onentry>
-    <send event="timeout1" delay="1s"/>
+    <send event="timeout1" conf:delay="1"/>
     </onentry>
   <invoke type="http://www.w3.org/TR/scxml/">
     <content>
@@ -18,7 +18,7 @@ the time timeout2 fires, success   -->
          <scxml initial="sub0" version="1.0" conf:datamodel=""  xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance">
            <state id="sub0">
             <onentry>
-              <send event="timeout" delay="2s"/>
+              <send event="timeout" conf:delay="2"/>
                 </onentry>
                <transition event="timeout" target="subFinal"/>
                 </state>   
@@ -33,7 +33,7 @@ the time timeout2 fires, success   -->
 
 <state id="s1">
     <onentry>
-    <send event="timeout2" delay="2s"/>
+    <send event="timeout2" conf:delay="1.5"/>
     </onentry>
   <!-- here we should NOT get done.invoke -->
   <transition event="done.invoke" conf:targetfail=""/>

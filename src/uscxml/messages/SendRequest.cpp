@@ -103,7 +103,7 @@ std::ostream& operator<< (std::ostream& os, const SendRequest& sendReq) {
 
 	if (sendReq.delayMs > 0)
 		os<< indent  << "  delay: " << sendReq.delayMs << std::endl;
-
+#if 0
 	if (sendReq.namelist.size() > 0) {
 		os << indent << "  namelist: " << std::endl;
 		SendRequest::namelist_t::const_iterator namelistIter = sendReq.namelist.begin();
@@ -124,7 +124,7 @@ std::ostream& operator<< (std::ostream& os, const SendRequest& sendReq) {
 
 	if (sendReq.content.size() > 0)
 		os << indent << "  content: " << sendReq.content << std::endl;
-
+#endif
 	_dataIndentation++;
 	os << (Event)sendReq;
 	_dataIndentation--;

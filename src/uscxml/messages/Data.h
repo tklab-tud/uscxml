@@ -141,6 +141,14 @@ public:
 		return data;
 	}
 
+	void put(std::string key, const Data& data) {
+		compound[key] = data;
+	}
+
+	void put(size_t index, const Data& data) {
+		this[index] = data;
+	}
+
 	bool operator==(const Data &other) const {
 		if (other.atom.size() != atom.size())
 			return false;

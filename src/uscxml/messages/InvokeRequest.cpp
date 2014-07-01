@@ -60,6 +60,7 @@ std::ostream& operator<< (std::ostream& os, const InvokeRequest& invokeReq) {
 	if (invokeReq.src.size() > 0)
 		os<< indent  << "  src: " << invokeReq.src << std::endl;
 
+#if 0
 	if (invokeReq.namelist.size() > 0) {
 		os << indent << "  namelist: " << std::endl;
 		InvokeRequest::namelist_t::const_iterator namelistIter = invokeReq.namelist.begin();
@@ -80,6 +81,7 @@ std::ostream& operator<< (std::ostream& os, const InvokeRequest& invokeReq) {
 
 	if (invokeReq.content.size() > 0)
 		os << indent << "  content: " << invokeReq.content << std::endl;
+#endif
 
 	_dataIndentation++;
 	os << (Event)invokeReq;

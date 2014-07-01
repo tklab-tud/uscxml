@@ -46,6 +46,11 @@
 #include "uscxml/plugins/Invoker.h"
 #include "uscxml/plugins/ExecutableContent.h"
 
+#define ERROR_PLATFORM_THROW(msg) \
+	Event e; \
+	e.name = "error.platform"; \
+	e.data.compound["cause"] = Data(msg, Data::VERBATIM); \
+	throw e; \
 
 
 #define USCXML_MONITOR_CATCH(callback) \

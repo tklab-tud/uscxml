@@ -18,7 +18,7 @@ parent state has been visited and exited, the default history content must not b
 		 	</transition>
 		 	</initial>
   <onentry>
-  	<send delay="2s" event="timeout"/>
+  	<send conf:delay="1" event="timeout"/>
     <raise event="event1"/>
     </onentry>
   <onexit>

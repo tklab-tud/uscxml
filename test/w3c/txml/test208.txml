@@ -8,8 +8,8 @@ we get event1 or an error first, cancel didn't work and we fail.  -->
    
 <state id="s0">
   <onentry>
-   <send  id="foo" event="event1" delay="1s"/>
-   <send event="event2" delay="5s"/>
+   <send  id="foo" event="event1" conf:delay="1"/>
+   <send event="event2" conf:delay="1.5"/>
    <cancel sendid="foo"/>
     </onentry>
 

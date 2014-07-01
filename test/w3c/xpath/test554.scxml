@@ -5,7 +5,7 @@ before the timer goes off.  --><scxml xmlns="http://www.w3.org/2005/07/scxml" xm
      
 <state id="s0">
   <onentry>
-    <send event="timer" delay="2s"/>
+    <send event="timer" delayexpr="'1s'"/>
     </onentry>
     
   <!-- namelist references an undeclared variable -->

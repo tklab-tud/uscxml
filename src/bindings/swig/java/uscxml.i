@@ -12,10 +12,19 @@
 
 %include <boost_shared_ptr.i>
 
+// these are needed at least for the templates to work
 typedef uscxml::Data Data;
 typedef uscxml::Event Event;
 typedef uscxml::InvokeRequest InvokeRequest;
 typedef uscxml::SendRequest SendRequest;
+typedef uscxml::Invoker Invoker;
+typedef uscxml::IOProcessor IOProcessor;
+typedef uscxml::DataModel DataModel;
+typedef uscxml::ExecutableContent ExecutableContent;
+typedef uscxml::InvokerImpl InvokerImpl;
+typedef uscxml::IOProcessorImpl IOProcessorImpl;
+typedef uscxml::DataModelImpl DataModelImpl;
+typedef uscxml::ExecutableContentImpl ExecutableContentImpl;
 
 %feature("director") uscxml::WrappedInvoker;
 %feature("director") uscxml::WrappedDataModel;
@@ -32,7 +41,6 @@ typedef uscxml::SendRequest SendRequest;
 
 %rename(equals) operator==; 
 %rename(isValid) operator bool;
-
 
 //**************************************************
 // This ends up in the generated wrapper code
@@ -54,6 +62,7 @@ typedef uscxml::SendRequest SendRequest;
 using namespace uscxml;
 using namespace Arabica::DOM;
 
+// the wrapped* C++ classes get rid of DOM nodes and provide more easily wrapped base classes
 #include "../wrapped/WrappedInvoker.cpp"
 #include "../wrapped/WrappedDataModel.cpp"
 #include "../wrapped/WrappedExecutableContent.cpp"
@@ -86,9 +95,200 @@ WRAP_THROW_EXCEPTION(uscxml::Interpreter::interpret);
 
 %include "../uscxml_ignores.i"
 
-%rename Data DataNative;
+// see http://swig.org/Doc2.0/Java.html#Java_date_marshalling
+%define BEAUTIFY_NATIVE( MATCH, WRAPPER, NATIVE )
+
+%rename WRAPPER NATIVE;
+
+%typemap(jstype) const MATCH & "WRAPPER"
+%typemap(jstype) MATCH "WRAPPER"
+
+%typemap(javain,
+         pre="    NATIVE temp$javainput = $javainput.toNative();", 
+         pgcppname="temp$javainput") const MATCH &
+         "$javaclassname.getCPtr(temp$javainput)"
+
+ %typemap(javain,
+          pre="    NATIVE temp$javainput = $javainput.toNative();", 
+          pgcppname="temp$javainput") MATCH
+          "$javaclassname.getCPtr(temp$javainput)"
+
+%typemap(javaout) const MATCH & {
+    NATIVE nativeData = new NATIVE($jnicall, $owner);
+    return new WRAPPER(nativeData);
+}
+
+%typemap(javaout) MATCH {
+    NATIVE nativeData = new NATIVE($jnicall, $owner);
+    return new WRAPPER(nativeData);
+}
+
+%typemap(javadirectorout) MATCH "NATIVE.getCPtr($javacall.toNative())"
+
+%typemap(javadirectorin) MATCH "WRAPPER.fromNative(new NATIVE($jniinput, false))";
+%typemap(javadirectorin) const MATCH & "WRAPPER.fromNative(new NATIVE($jniinput, false))";
+
+%typemap(directorin,descriptor="L/org/uscxml/"##"WRAPPER;") const MATCH & "*(MATCH **)&$input = (MATCH *) &$1;"
+
+%typemap(directorout) MATCH ($&1_type argp)
+%{ argp = *($&1_ltype*)&$input;
+   if (!argp) {
+     SWIG_JavaThrowException(jenv, SWIG_JavaNullPointerException, "Unexpected null return for type $1_type");
+     return $null;
+   }
+   $result = *argp; %}
+
+%enddef
+
+/*
+// not used as it will not work for directors :(
+BEAUTIFY_NATIVE(uscxml::Data, Data, DataNative);
+BEAUTIFY_NATIVE(uscxml::Event, Event, EventNative);
+BEAUTIFY_NATIVE(uscxml::SendRequest, SendRequest, SendRequestNative);
+BEAUTIFY_NATIVE(uscxml::InvokeRequest, InvokeRequest, InvokeRequestNative);
+*/
+
+
+//***********************************************
+// Beautify important classes
+//***********************************************
 
 %include "../uscxml_beautify.i"
+
+
+%rename(getCompoundNative) uscxml::Data::getCompound();
+%rename(getArrayNative) uscxml::Data::getArray();
+%rename(setCompoundNative) uscxml::Data::setCompound(const std::map<std::string, Data>&);
+%rename(setArrayNative) uscxml::Data::setArray(const std::list<Data>&);
+%javamethodmodifiers uscxml::Data::getCompound() "private";
+%javamethodmodifiers uscxml::Data::getArray() "private";
+%javamethodmodifiers uscxml::Data::setCompound(const std::map<std::string, Data>&) "private";
+%javamethodmodifiers uscxml::Data::setArray(const std::list<Data>&) "private";
+%javamethodmodifiers uscxml::Data::getCompoundKeys() "private";
+
+%typemap(javaimports) uscxml::Data %{
+import java.util.Map;
+import java.util.HashMap;
+import java.util.List;
+import java.util.LinkedList;
+%}
+
+%typemap(javacode) uscxml::Data %{
+	public Data(Map<String, Data> compound) {
+		this(uscxmlNativeJavaJNI.new_Data__SWIG_0(), true);
+		setCompound(compound);
+	}
+
+	public Data(List<Data> array) {
+		this(uscxmlNativeJavaJNI.new_Data__SWIG_0(), true);
+		setArray(array);
+	}
+	
+	public Map<String, Data> getCompound() {
+		Map<String, Data> compound = new HashMap<String, Data>();
+		DataMap dataMap = getCompoundNative();
+		StringVector dataMapKeys = getCompoundKeys();
+		for (int i = 0; i < dataMapKeys.size(); i++) {
+			compound.put(dataMapKeys.get(i), dataMap.get(dataMapKeys.get(i)));
+		}
+		return compound;
+	}
+	
+	public void setCompound(Map<String, Data> compound) {
+		DataMap dataMap = new DataMap();
+		for (String key : compound.keySet()) {
+			dataMap.set(key, compound.get(key));
+		}
+		setCompoundNative(dataMap);
+	}
+	
+	public List<Data> getArray() {
+		List<Data> array = new LinkedList<Data>();
+		DataList dataList = getArrayNative();
+		for (int i = 0; i < dataList.size(); i++) {
+			array.add(dataList.get(i));
+		}
+		return array;		
+	}
+	
+	public void setArray(List<Data> array) {
+		DataList dataList = new DataList();
+		for (Data data : array) {
+			dataList.add(data);
+		}
+		setArrayNative(dataList);
+	}
+		
+%}
+
+%rename(getNameListNative) uscxml::Event::getNameList();
+%rename(getParamstNative) uscxml::Event::getParams();
+%rename(setNameListNative) uscxml::Event::setNameList(const std::map<std::string, Data>&);
+%rename(setParamsNative) uscxml::Event::setParams(const std::multimap<std::string, Data>&);
+%javamethodmodifiers uscxml::Event::getNameList() "private";
+%javamethodmodifiers uscxml::Event::getNameListKeys() "private";
+%javamethodmodifiers uscxml::Event::getParams() "private";
+%javamethodmodifiers uscxml::Event::setNameList(const std::map<std::string, Data>&) "private";
+%javamethodmodifiers uscxml::Event::setParams(const std::multimap<std::string, Data>&) "private";
+
+%typemap(javaimports) uscxml::Event %{
+import java.util.Map;
+import java.util.HashMap;
+import java.util.List;
+import java.util.LinkedList;
+%}
+
+%typemap(javacode) uscxml::Event %{
+	public Map<String, List<Data>> getParams() {
+		Map<String, List<Data>> params = new HashMap<String, List<Data>>();
+		ParamMap paramMap = getParamMap();
+		StringVector paramMapKeys = getParamMapKeys();
+	
+		for (int i = 0; i < paramMapKeys.size(); i++) {
+			String key = paramMapKeys.get(i);
+			DataList dataList = paramMap.get(key);
+		
+			for (int j = 0; j < dataList.size(); j++) {
+				Data data = dataList.get(j);
+				if (!params.containsKey(key))
+					params.put(key, new LinkedList<Data>());
+				params.get(key).add(data);
+			}
+		}
+		return params;
+	}
+	
+	public void setParams(Map<String, List<Data>> params) {
+		ParamMap paramMap = new ParamMap();
+		for (String key : params.keySet()) {
+			DataList datalist = new DataList();
+			for (Data data : params.get(key)) {
+				datalist.add(data);
+			}
+			paramMap.set(key, datalist);
+		}
+		setParamMap(paramMap);
+	}
+	
+	public Map<String, Data> getNameList() {
+		Map<String, Data> namelist = new HashMap<String, Data>();
+		StringVector nameMapKeys = getNameListKeys();
+		DataMap nameMap = getNameListNative();
+		
+		for (int i = 0; i < nameMapKeys.size(); i++) {
+			namelist.put(nameMapKeys.get(i), nameMap.get(nameMapKeys.get(i)));
+		}
+		return namelist;
+	}
+
+	public void setNameList(Map<String, Data> namelist) {
+		DataMap nameListMap = new DataMap();
+		for (String key : namelist.keySet()) {
+			nameListMap.set(key, namelist.get(key));
+		}
+		setNameListNative(nameListMap);
+	}
+%}
 
 
 //***********************************************
@@ -125,8 +325,7 @@ WRAP_THROW_EXCEPTION(uscxml::Interpreter::interpret);
 %template(StringSet) std::set<std::string>;
 %template(StringVector) std::vector<std::string>;
 %template(StringList) std::list<std::string>;
-%template(ParamPair) std::pair<std::string, uscxml::Data>;
-%template(ParamPairVector) std::vector<std::pair<std::string, uscxml::Data> >;
-%template(IOProcMap) std::map<std::string, uscxml::IOProcessor>;
-%template(InvokerMap) std::map<std::string, uscxml::Invoker>;
+%template(ParamMap) std::map<std::string, std::list<uscxml::Data> >;
+%template(IOProcMap) std::map<std::string, IOProcessor>;
+%template(InvokerMap) std::map<std::string, Invoker>;
 %template(ParentQueue) uscxml::concurrency::BlockingQueue<uscxml::SendRequest>;

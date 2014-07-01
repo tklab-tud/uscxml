@@ -6,8 +6,8 @@ delayed event1.  Thus we get event2 first and pass.  If we get event1 or an erro
    
 <state id="s0">
   <onentry>
-   <send id="foo" event="event1" delay="1s"/>
-   <send event="event2" delay="5s"/>
+   <send id="foo" event="event1" delayexpr="'50ms'"/>
+   <send event="event2" delayexpr="'75ms'"/>
    <assign location="Var1" expr="'foo'"/>
    <cancel sendidexpr="Var1"/>
     </onentry>

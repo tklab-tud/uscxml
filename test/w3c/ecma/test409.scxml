@@ -5,7 +5,7 @@ be raised.  Therefore the timeout should fire to indicate success   --><scxml xm
      
 <state id="s0" initial="s01">
   <onentry>
-    <send event="timeout" delay="1s"/>
+    <send event="timeout" delayexpr="'50ms'"/>
     </onentry>
   
   <transition event="timeout" target="pass"/> 

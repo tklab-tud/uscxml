@@ -6,7 +6,7 @@ parent session, should not receive childToParent. If it does, we fail.  Otherwis
   
 <state id="s0">
     <onentry>
-      <send event="timeout" delay="10s"/>
+      <send event="timeout" delayexpr="'1s'"/>
       </onentry>
     <invoke type="scxml">
     <content>
@@ -14,7 +14,7 @@ parent session, should not receive childToParent. If it does, we fail.  Otherwis
          <scxml initial="sub0" version="1.0" datamodel="xpath">
            <state id="sub0">
               <onentry>
-                <send event="childToParent" target="#_parent" delay="1s"/>
+                <send event="childToParent" target="#_parent" delayexpr="'.5s'"/>
             </onentry>
           <transition target="subFinal"/>
           </state>

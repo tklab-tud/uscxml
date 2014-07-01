@@ -9,7 +9,7 @@ be raised.  Therefore the timeout should fire to indicate success   -->
      
 <state id="s0" initial="s01">
   <onentry>
-    <send event="timeout" delay="1s"/>
+    <send event="timeout" conf:delay="1"/>
     </onentry>
   
   <transition event="timeout" conf:targetpass=""/> 

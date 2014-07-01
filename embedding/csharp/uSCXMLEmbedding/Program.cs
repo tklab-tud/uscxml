@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 
 namespace embedding
@@ -12,6 +13,34 @@ namespace embedding
     {
         [DllImport("kernel32.dll", CharSet = CharSet.Auto)]
         private static extern void SetDllDirectory(string lpPathName);
+
+        static bool testLifecycle() {
+            // try to instantiate an interpreter with a parse error
+            try
+            {
+                Interpreter interpreter = Interpreter.fromXML("<invalid");
+                Debug.Assert(false);
+            }
+            catch (InterpreterException e) {
+                Console.Write(e.Message);
+            }
+
+            // try to instantiate an interpreter with invalid XML (no scxml element)
+            try
+            {
+                Interpreter interpreter = Interpreter.fromXML("<invalid />");
+                Debug.Assert(interpreter.getState() == InterpreterState.USCXML_INSTANTIATED);
+                InterpreterState state = interpreter.step();
+
+                Debug.Assert(false);
+            }
+            catch (InterpreterException e)
+            {
+                Console.Write(e.Message);
+            }
+
+            return true;
+        }
 
         static void Main(string[] args)
         {
@@ -28,9 +57,8 @@ namespace embedding
                 SetDllDirectory("C:\\Users\\sradomski\\Desktop\\build\\uscxml\\lib\\csharp");
             }
 
-            Interpreter interpreter = Interpreter.fromXML("<scxml><state id=\"f oo\" final=\"true\" /></scxml>");
-            interpreter.addMonitor(new SampleInterpreterMonitor());
-            interpreter.interpret();
+            testLifecycle();
+            Console.ReadKey();
         }
     }
 }

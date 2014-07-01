@@ -7,9 +7,9 @@ event1 will be raised first.  Succeed if event1 occurs before event2, otherwise 
   
 <state id="s0">
   <onentry>
-   <assign location="$Var1" expr="'3s'"/>
+   <assign location="$Var1" expr="'1s'"/>
    <send delayexpr="$Var1" event="event2"/>
-   <send delay="1s" event="event1"/>
+   <send delayexpr="'.5s'" event="event1"/>
     </onentry>
     
   <transition event="event1" target="s1"/>

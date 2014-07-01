@@ -9,7 +9,7 @@ of <send>'s args causes an error..  -->
 <state id="s0">
   <onentry>
    <!-- timeout event -->
-   <send event="timeout" delay="3s"/>
+   <send event="timeout" conf:delay="1"/>
    <!-- include a non-existing var in the namelist -->
    <send event="event1" conf:namelist="2"/> 
     </onentry>

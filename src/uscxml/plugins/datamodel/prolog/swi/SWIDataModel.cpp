@@ -37,10 +37,7 @@ extern "C" {
 }
 #define RETHROW_PLEX_AS_EVENT \
 catch (PlException plex) { \
-	Event e; \
-	e.name = "error.execution"; \
-	e.data.compound["cause"] = (char*)plex; \
-	throw e; \
+	ERROR_EXECUTION_THROW((char*)plex); \
 } \
  
 #define PL_MODULE \
@@ -733,10 +730,7 @@ std::string SWIDataModel::evalAsString(const std::string& expr) {
 		if (term.type() == PL_ATOM || term.type() == PL_CHARS || term.type() == PL_STRING) {
 			return std::string(term);
 		} else {
-			Event e;
-			e.name = "error.execution";
-			e.data.compound["cause"] = (char*)plex;
-			throw e;
+			ERROR_EXECUTION_THROW((char*)plex);
 		}
 	}
 }
