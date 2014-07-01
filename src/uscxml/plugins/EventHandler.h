@@ -62,9 +62,9 @@ public:
 	virtual void send(const SendRequest& req) = 0;
 
 	virtual void runOnMainThread() {};
-	void returnEvent(Event& event);
+	void returnEvent(Event& event, bool external = false);
 	void returnErrorExecution(const std::string&);
-	void returnErrorPlatform(const std::string&);
+	void returnErrorCommunication(const std::string&);
 
 protected:
 	InterpreterImpl* _interpreter;

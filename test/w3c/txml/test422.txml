@@ -13,7 +13,7 @@ in s11. So we should receive invokeS1, invokeS12, but not invokeS12.  Furthermor
 	</datamodel>
  <state id="s1" initial="s11">
  	 <onentry>
- 	 	<send event="timeout" delay="5s"/>
+ 	 	<send event="timeout" conf:delay="2"/>
  	 	</onentry>
  	   <transition event="invokeS1 invokeS12">
  	   	<conf:incrementID id="1"/>

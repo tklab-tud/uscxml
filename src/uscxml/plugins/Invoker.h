@@ -33,6 +33,7 @@ class USCXML_API InvokerImpl : public EventHandlerImpl {
 public:
 	virtual ~InvokerImpl() {}
 	virtual void invoke(const InvokeRequest& req) = 0;
+	virtual void uninvoke() {}
 	virtual boost::shared_ptr<InvokerImpl> create(InterpreterImpl* interpreter) = 0;
 };
 
@@ -63,6 +64,10 @@ public:
 
 	virtual void invoke(InvokeRequest& req)     {
 		_impl->invoke(req);
+	}
+
+	virtual void uninvoke()     {
+		_impl->uninvoke();
 	}
 
 protected:

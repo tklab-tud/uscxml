@@ -46,6 +46,7 @@ public:
 		_interpreter = interpreter->shared_from_this();
 		return boost::shared_ptr<DataModelImpl>(create(_interpreter));
 	}
+
 	virtual std::list<std::string> getNames() {
 		return std::list<std::string>();
 	};

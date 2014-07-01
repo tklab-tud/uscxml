@@ -9,7 +9,7 @@ events after the done.invoke.  Hence timeout indicates success   -->
      
 <state id="s0">
   <onentry>
-    <send event="timeout" delay="2s"/>
+    <send event="timeout" conf:delay="2"/>
     </onentry>
   <invoke type="http://www.w3.org/TR/scxml/">
     <content>

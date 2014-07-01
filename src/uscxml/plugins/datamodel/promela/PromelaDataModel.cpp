@@ -100,11 +100,11 @@ bool PromelaDataModel::validate(const std::string& location, const std::string& 
 
 uint32_t PromelaDataModel::getLength(const std::string& expr) {
 	if (!isDeclared(expr)) {
-		throwErrorExecution("Variable " + expr + " was not declared");
+		ERROR_EXECUTION_THROW("Variable '" + expr + "' was not declared");
 	}
 
 	if (!_variables[expr].hasKey("size")) {
-		throwErrorExecution("Variable " + expr + " is no array");
+		ERROR_EXECUTION_THROW("Variable '" + expr + "' is no array");
 	}
 
 	return strTo<int>(_variables[expr]["size"].atom);
@@ -216,7 +216,7 @@ void PromelaDataModel::evaluateDecl(void* ast) {
 				_variables.compound[name->value] = variable;
 
 			} else {
-				throwErrorExecution("Declaring variables via " + PromelaParserNode::typeToDesc((*nameIter)->type) + " not implemented");
+				ERROR_EXECUTION_THROW("Declaring variables via " + PromelaParserNode::typeToDesc((*nameIter)->type) + " not implemented");
 			}
 		}
 		assert(opIter == node->operands.end());
@@ -227,7 +227,7 @@ void PromelaDataModel::evaluateDecl(void* ast) {
 			evaluateDecl(*declIter);
 		}
 	} else {
-		throwErrorExecution("Declaring variables via " + PromelaParserNode::typeToDesc(node->type) + " not implemented");
+		ERROR_EXECUTION_THROW("Declaring variables via " + PromelaParserNode::typeToDesc(node->type) + " not implemented");
 	}
 }
 
@@ -269,7 +269,7 @@ int PromelaDataModel::evaluateExpr(void* ast) {
 	case PML_OR:
 		return evaluateExpr(*opIter++) != 0 || evaluateExpr(*opIter++) != 0;
 	default:
-		throwErrorExecution("Support for " + PromelaParserNode::typeToDesc(node->type) + " expressions not implemented");
+		ERROR_EXECUTION_THROW("Support for " + PromelaParserNode::typeToDesc(node->type) + " expressions not implemented");
 	}
 	return 0;
 }
@@ -291,7 +291,7 @@ void PromelaDataModel::evaluateStmnt(void* ast) {
 		break;
 	}
 	default:
-		throwErrorExecution("No support for " + PromelaParserNode::typeToDesc(node->type) + " statement implemented");
+		ERROR_EXECUTION_THROW("No support for " + PromelaParserNode::typeToDesc(node->type) + " statement implemented");
 	}
 }
 
@@ -306,15 +306,15 @@ void PromelaDataModel::setVariable(void* ast, int value) {
 		int index = evaluateExpr(expr);
 
 		if (_variables.compound.find(name->value) == _variables.compound.end()) {
-			throwErrorExecution("No variable " + name->value + " was declared");
+			ERROR_EXECUTION_THROW("No variable " + name->value + " was declared");
 		}
 
 		if (!_variables[name->value].hasKey("size")) {
-			throwErrorExecution("Variable " + name->value + " is no array");
+			ERROR_EXECUTION_THROW("Variable " + name->value + " is no array");
 		}
 
 		if (strTo<int>(_variables[name->value]["size"].atom) <= index) {
-			throwErrorExecution("Index " + toStr(index) + " in array " + name->value + "[" + _variables[name->value]["size"].atom + "] is out of bounds");
+			ERROR_EXECUTION_THROW("Index " + toStr(index) + " in array " + name->value + "[" + _variables[name->value]["size"].atom + "] is out of bounds");
 		}
 
 		_variables.compound[name->value].compound["value"][index] = Data(value, Data::VERBATIM);
@@ -339,10 +339,10 @@ int PromelaDataModel::getVariable(void* ast) {
 	switch(node->type) {
 	case PML_NAME:
 		if (_variables.compound.find(node->value) == _variables.compound.end()) {
-			throwErrorExecution("No variable " + node->value + " was declared");
+			ERROR_EXECUTION_THROW("No variable " + node->value + " was declared");
 		}
 		if (_variables[node->value].compound.find("size") != _variables[node->value].compound.end()) {
-			throwErrorExecution("Type error: Variable " + node->value + " is an array");
+			ERROR_EXECUTION_THROW("Type error: Variable " + node->value + " is an array");
 		}
 		return strTo<int>(_variables[node->value]["value"].atom);
 	case PML_VAR_ARRAY: {
@@ -351,20 +351,20 @@ int PromelaDataModel::getVariable(void* ast) {
 		int index = evaluateExpr(expr);
 
 		if (_variables.compound.find(name->value) == _variables.compound.end()) {
-			throwErrorExecution("No variable " + name->value + " was declared");
+			ERROR_EXECUTION_THROW("No variable " + name->value + " was declared");
 		}
 
 		if (!_variables[name->value].hasKey("size")) {
-			throwErrorExecution("Variable " + name->value + " is no array");
+			ERROR_EXECUTION_THROW("Variable " + name->value + " is no array");
 		}
 
 		if (strTo<int>(_variables[name->value]["size"].atom) <= index) {
-			throwErrorExecution("Index " + toStr(index) + " in array " + name->value + "[" + _variables[name->value]["size"].atom + "] is out of bounds");
+			ERROR_EXECUTION_THROW("Index " + toStr(index) + " in array " + name->value + "[" + _variables[name->value]["size"].atom + "] is out of bounds");
 		}
 		return strTo<int>(_variables.compound[name->value].compound["value"][index].atom);
 	}
 	default:
-		throwErrorExecution("Retrieving value of " + PromelaParserNode::typeToDesc(node->type) + " variable not implemented");
+		ERROR_EXECUTION_THROW("Retrieving value of " + PromelaParserNode::typeToDesc(node->type) + " variable not implemented");
 	}
 	return 0;
 }

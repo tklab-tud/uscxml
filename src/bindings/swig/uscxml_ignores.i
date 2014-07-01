@@ -21,7 +21,6 @@
 %ignore uscxml::EventHandler::getElement;
 %ignore uscxml::EventHandler::runOnMainThread;
 
-
 %ignore uscxml::NameSpaceInfo::NameSpaceInfo(const std::map<std::string, std::string>&);
 %ignore uscxml::NameSpaceInfo::NameSpaceInfo(const NameSpaceInfo&);
 %ignore uscxml::NameSpaceInfo::setPrefix(Arabica::DOM::Element<std::string>);
@@ -180,6 +179,11 @@
 %ignore uscxml::Event::toDocument();
 %ignore uscxml::Event::getParams();
 %ignore uscxml::Event::getParam;
+%ignore uscxml::Event::setParams;
+
+%ignore uscxml::SendRequest::fromXML;
+%ignore uscxml::InvokeRequest::fromXML;
+
 
 // Data
 

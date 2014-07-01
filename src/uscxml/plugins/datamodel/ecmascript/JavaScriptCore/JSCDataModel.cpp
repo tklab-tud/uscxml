@@ -452,12 +452,7 @@ uint32_t JSCDataModel::getLength(const std::string& expr) {
 	result = evalAsValue("(" + expr + ").length");
 	JSType type = JSValueGetType(_ctx, result);
 	if (type == kJSTypeNull || type == kJSTypeUndefined) {
-		Event exceptionEvent;
-		exceptionEvent.data.compound["exception"] = Data("'" + expr + "' does not evaluate to an array.", Data::VERBATIM);
-		exceptionEvent.name = "error.execution";
-		exceptionEvent.eventType = Event::PLATFORM;
-
-		throw(exceptionEvent);
+		ERROR_EXECUTION_THROW("'" + expr + "' does not evaluate to an array.");
 	}
 
 	JSValueRef exception = NULL;
@@ -549,20 +544,20 @@ void JSCDataModel::assign(const Element<std::string>& assignElem,
 	} else if (HAS_ATTR(assignElem, "location")) {
 		key = ATTR(assignElem, "location");
 	}
-	if (key.length() == 0)
-		throw Event("error.execution", Event::PLATFORM);
-
+	if (key.length() == 0) {
+		ERROR_EXECUTION_THROW("Assign element has neither id nor location");
+	}
 	// flags on attribute are ignored?
 	if (key.compare("_sessionid") == 0) // test 322
-		throw Event("error.execution", Event::PLATFORM);
+		ERROR_EXECUTION_THROW("Cannot assign to _sessionId");
 	if (key.compare("_name") == 0)
-		throw Event("error.execution", Event::PLATFORM);
+		ERROR_EXECUTION_THROW("Cannot assign to _name");
 	if (key.compare("_ioprocessors") == 0)  // test 326
-		throw Event("error.execution", Event::PLATFORM);
+		ERROR_EXECUTION_THROW("Cannot assign to _ioprocessors");
 	if (key.compare("_invokers") == 0)
-		throw Event("error.execution", Event::PLATFORM);
+		ERROR_EXECUTION_THROW("Cannot assign to _invokers");
 	if (key.compare("_event") == 0)
-		throw Event("error.execution", Event::PLATFORM);
+		ERROR_EXECUTION_THROW("Cannot assign to _event");
 
 	if (HAS_ATTR(assignElem, "expr")) {
 		evalAsValue(key + " = " + ATTR(assignElem, "expr"));
@@ -666,13 +661,7 @@ void JSCDataModel::handleException(JSValueRef exception) {
 	JSStringRelease(exceptionStringRef);
 	std::string exceptionMsg(buffer);
 
-	Event exceptionEvent;
-	exceptionEvent.data.compound["exception"] = Data(exceptionMsg, Data::VERBATIM);
-	exceptionEvent.name = "error.execution";
-	exceptionEvent.eventType = Event::PLATFORM;
-
-	throw(exceptionEvent);
-
+	ERROR_EXECUTION_THROW(exceptionMsg);
 }
 
 JSValueRef JSCDataModel::jsPrint(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef* exception) {

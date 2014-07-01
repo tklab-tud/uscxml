@@ -155,6 +155,8 @@ std::ostream& operator<< (std::ostream& os, const Event& event) {
 		os << indent << "  origin: " << event.origin << std::endl;
 	if (event.origintype.size() > 0)
 		os << indent << "  origintype: " << event.origintype << std::endl;
+	if (event.content.size() > 0)
+		os << indent << "  content: '" << event.content << "'" << std::endl;
 	if (event.params.size() > 0) {
 		std::multimap<std::string, Data>::const_iterator paramIter = event.params.begin();
 		os << indent << "  params:" << std::endl;

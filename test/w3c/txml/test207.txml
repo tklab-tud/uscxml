@@ -10,7 +10,7 @@ raised in another session, but the spec doesn't define any way to refer to an ev
    
 <state id="s0" initial="s01">
   <onentry>
-    <send event="timeout" delay="10s"/>
+    <send event="timeout" conf:delay="2"/>
     </onentry>
   <invoke type="scxml">
     <content>
@@ -22,8 +22,8 @@ raised in another session, but the spec doesn't define any way to refer to an ev
          <scxml initial="sub0" version="1.0" conf:datamodel=""  xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance">
            <state id="sub0">
             <onentry>
-             <send event="event1" id="foo" delay="3s"/>
-              <send event="event2" delay="5s"/>
+             <send event="event1" id="foo" conf:delay="1"/>
+              <send event="event2" conf:delay="1.5"/>
               <send target="#_parent" event="childToParent"/>
               </onentry>
  

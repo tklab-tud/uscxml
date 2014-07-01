@@ -129,10 +129,10 @@ void SCXMLIOProcessor::send(const SendRequest& req) {
 			boost::shared_ptr<InterpreterImpl> other = instances[sessionId].lock();
 			other->receive(reqCopy);
 		} else {
-			LOG(ERROR) << "Can not send to scxml session " << sessionId << " - not known" << std::endl;
-			Event error("error.communication", Event::PLATFORM);
+			ERROR_COMMUNICATION(error, "Can not send to scxml session " + sessionId + " - not known");
 			error.sendid = reqCopy.sendid;
 			_interpreter->receiveInternal(error);
+
 		}
 	} else if (iequals(reqCopy.target, "#_parent")) {
 		/**
@@ -143,8 +143,7 @@ void SCXMLIOProcessor::send(const SendRequest& req) {
 		if (_interpreter->_parentQueue != NULL) {
 			_interpreter->_parentQueue->push(reqCopy);
 		} else {
-			LOG(ERROR) << "Can not send to parent, we were not invoked" << std::endl;
-			Event error("error.communication", Event::PLATFORM);
+			ERROR_COMMUNICATION(error, "Can not send to parent, we were not invoked or no parent queue is set");
 			error.sendid = reqCopy.sendid;
 			_interpreter->receiveInternal(error);
 		}
@@ -167,8 +166,7 @@ void SCXMLIOProcessor::send(const SendRequest& req) {
 				LOG(ERROR) << "Exception caught while sending event to invoker " << invokeId;
 			}
 		} else {
-			LOG(ERROR) << "Can not send to invoked component '" << invokeId << "', no such invokeId" << std::endl;
-			Event error("error.communication", Event::PLATFORM);
+			ERROR_COMMUNICATION(error, "Can not send to invoked component '" + invokeId + "', no such invokeId");
 			error.sendid = reqCopy.sendid;
 			_interpreter->receiveInternal(error);
 		}
@@ -177,8 +175,7 @@ void SCXMLIOProcessor::send(const SendRequest& req) {
 		if (target.isAbsolute()) {
 			BasicHTTPIOProcessor::send(reqCopy);
 		} else {
-			LOG(ERROR) << "Not sure what to make of the target '" << reqCopy.target << "' - raising error" << std::endl;
-			Event error("error.execution", Event::PLATFORM);
+			ERROR_EXECUTION(error, "Not sure what to make of the target '" + reqCopy.target + "' - raising error");
 			error.sendid = reqCopy.sendid;
 			// test 159 still fails
 //			_interpreter->receiveInternal(error);

@@ -6,7 +6,7 @@ using org.uscxml;
 
 namespace embedding
 {
-    class SampleInterpreterMonitor : InterpreterMonitor
+    class CustomInterpreterMonitor : InterpreterMonitor
     {
         public override void afterCompletion(Interpreter interpreter) { }
         public override void afterMicroStep(Interpreter interpreter) { }

@@ -41,18 +41,19 @@
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
-    <Reference Include="uscxmlCSharp">
+    <Reference Include="uscxmlCSharp, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>C:\Users\sradomski\Desktop\build\uscxml\lib\uscxmlCSharp.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Extensions\SampleDataModel.cs" />
-    <Compile Include="Extensions\SampleExecutableContent.cs" />
-    <Compile Include="Extensions\SampleInterpreterMonitor.cs" />
-    <Compile Include="Extensions\SampleInvoker.cs" />
-    <Compile Include="Extensions\SampleIOProc.cs" />
+    <Compile Include="Extensions\CustomDataModel.cs" />
+    <Compile Include="Extensions\CustomExecutableContent.cs" />
+    <Compile Include="Extensions\CustomInterpreterMonitor.cs" />
+    <Compile Include="Extensions\CustomInvoker.cs" />
+    <Compile Include="Extensions\CustomIOProc.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

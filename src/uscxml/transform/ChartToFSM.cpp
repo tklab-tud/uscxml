@@ -972,9 +972,7 @@ GlobalTransition::GlobalTransition(const Arabica::XPath::NodeSet<std::string>& t
 
 	for (int i = 0; i < transitions.size(); i++) {
 		if (HAS_ATTR(transitions[i], "eventexpr")) {
-			Event e("error.execution", Event::PLATFORM);
-			e.data.compound["cause"] = "Cannot flatten document with eventexpr attributes";
-			throw e;
+			ERROR_EXECUTION_THROW("Cannot flatten document with eventexpr attributes");
 		}
 		if (HAS_ATTR(transitions[i], "event")) {
 			foundWithEvent = true;

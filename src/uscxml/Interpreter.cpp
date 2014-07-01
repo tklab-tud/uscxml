@@ -83,6 +83,7 @@
 #define VALID_FROM_MACROSTEPPED(newState) ( \
 	newState == USCXML_DESTROYED || \
 	newState == USCXML_MICROSTEPPED || \
+	newState == USCXML_MACROSTEPPED || \
 	newState == USCXML_IDLE || \
 	newState == USCXML_FINISHED \
 )
@@ -96,14 +97,7 @@
 #define VALID_FROM_FINISHED(newState) ( \
 	newState == USCXML_DESTROYED || \
 	newState == USCXML_INSTANTIATED \
-)
-
-#define THROW_ERROR_PLATFORM(msg) \
-	Event e; \
-	e.name = "error.platform"; \
-	e.data.compound["cause"] = Data(msg, Data::VERBATIM); \
-	throw e; \
- 
+) 
 
 /// macro to catch exceptions in executeContent
 #define CATCH_AND_DISTRIBUTE(msg) \
@@ -113,6 +107,7 @@ catch (Event e) {\
 		throw(e);\
 	} else {\
 		e.name = "error.execution";\
+		e.data.compound["cause"] = uscxml::Data(msg, uscxml::Data::VERBATIM); \
 		e.eventType = Event::PLATFORM;\
 		receiveInternal(e);\
 	}\
@@ -120,11 +115,14 @@ catch (Event e) {\
 
 #define CATCH_AND_DISTRIBUTE2(msg, node) \
 catch (Event e) {\
-	LOG(ERROR) << msg << " " << DOMUtils::xPathForNode(node) << ":" << std::endl << e << std::endl;\
+	std::string xpathPos = DOMUtils::xPathForNode(node); \
+	LOG(ERROR) << msg << " " << xpathPos << ":" << std::endl << e << std::endl;\
 	if (rethrow) {\
 		throw(e);\
 	} else {\
 		e.name = "error.execution";\
+		e.data.compound["cause"] = uscxml::Data(msg, uscxml::Data::VERBATIM); \
+		e.data.compound["xpath"] = uscxml::Data(xpathPos, uscxml::Data::VERBATIM); \
 		e.eventType = Event::PLATFORM;\
 		e.dom = node;\
 		receiveInternal(e);\
@@ -394,7 +392,7 @@ Interpreter Interpreter::fromURI(const std::string& uri) {
 	URL absUrl(uri);
 	if (!absUrl.isAbsolute()) {
 		if (!absUrl.toAbsoluteCwd()) {
-			THROW_ERROR_PLATFORM("Given URL is not absolute or does not have file schema");
+			ERROR_COMMUNICATION_THROW("URL is not absolute or does not have file schema");
 		}
 	}
 
@@ -416,7 +414,7 @@ Interpreter Interpreter::fromURI(const std::string& uri) {
 		std::stringstream ss;
 		ss << absUrl;
 		if (absUrl.downloadFailed()) {
-			THROW_ERROR_PLATFORM("Downloading SCXML document from " + absUrl.asString() + " failed");
+			ERROR_COMMUNICATION_THROW("Downloading SCXML document from '" + absUrl.asString() + "' failed");
 		}
 		interpreter = fromXML(ss.str());
 	}
@@ -426,7 +424,7 @@ Interpreter Interpreter::fromURI(const std::string& uri) {
 		interpreter._impl->_baseURI = URL::asBaseURL(absUrl);
 		interpreter._impl->_sourceURI = absUrl;
 	} else {
-		THROW_ERROR_PLATFORM("Cannot create interpreter from URI " + absUrl.asString() + "'");
+		ERROR_PLATFORM_THROW("Cannot create interpreter from URI '" + absUrl.asString() + "'");
 	}
 	return interpreter;
 }
@@ -454,9 +452,9 @@ Interpreter Interpreter::fromInputSource(Arabica::SAX::InputSource<std::string>&
 		interpreterImpl->_document = parser.getDocument();
 	} else {
 		if (parser.errorsReported()) {
-			THROW_ERROR_PLATFORM(parser.errors())
+			ERROR_PLATFORM_THROW(parser.errors())
 		} else {
-			THROW_ERROR_PLATFORM("Failed to create interpreter");
+			ERROR_PLATFORM_THROW("Failed to create interpreter");
 //			interpreterImpl->setInterpreterState(USCXML_FAULTED, parser.errors());
 		}
 	}
@@ -680,11 +678,13 @@ void InterpreterImpl::reset() {
 	_internalQueue.clear();
 	_historyValue.clear();
 
+	_currEvent = Event();
 	_alreadyEntered = NodeSet<std::string>();
 	_configuration = NodeSet<std::string>();
 	_topLevelFinalReached = false;
 	_isInitialized = false;
-
+	_stable = false;
+	
 	setInterpreterState(USCXML_INSTANTIATED);
 }
 
@@ -693,9 +693,7 @@ void InterpreterImpl::setupAndNormalizeDOM() {
 		return;
 
 	if (!_document) {
-		Event error("error.platform");
-		error.data.compound["cause"] = Data("Interpreter has no DOM", Data::VERBATIM);
-		throw error;
+		ERROR_PLATFORM_THROW("Interpreter has no DOM");
 	}
 
 	// find scxml element
@@ -707,9 +705,7 @@ void InterpreterImpl::setupAndNormalizeDOM() {
 	}
 
 	if (scxmls.getLength() == 0) {
-		Event error("error.platform");
-		error.data.compound["cause"] = Data("Cannot find SCXML element in DOM", Data::VERBATIM);
-		throw error;
+		ERROR_PLATFORM_THROW("Cannot find SCXML element in DOM");
 	}
 
 	_scxml = (Arabica::DOM::Element<std::string>)scxmls.item(0);
@@ -777,12 +773,8 @@ void InterpreterImpl::init() {
 
 	// instantiate datamodel
 	if (HAS_ATTR(_scxml, "datamodel")) {
+		// might throw
 		_dataModel = _factory->createDataModel(ATTR(_scxml, "datamodel"), this);
-		if (!_dataModel) {
-			Event e;
-			e.data.compound["cause"] = Data("Cannot instantiate datamodel", Data::VERBATIM);
-			throw e;
-		}
 	} else {
 		_dataModel = _factory->createDataModel("null", this);
 	}
@@ -1264,9 +1256,8 @@ void InterpreterImpl::delayedSend(void* userdata, std::string eventName) {
 		 * If the SCXML Processor does not support the type that is specified, it
 		 * must place the event error.execution on the internal event queue.
 		 */
-		Event exceptionEvent("error.execution", Event::PLATFORM);
-//			exceptionEvent.sendid = sendReq.sendid;
-		INSTANCE->receiveInternal(exceptionEvent);
+		ERROR_EXECUTION(exc, "Unsupported type '" + sendReq.type + "' with send element");
+		INSTANCE->receiveInternal(exc);
 	}
 
 	assert(INSTANCE->_sendIds.find(sendReq.sendid) != INSTANCE->_sendIds.end());
@@ -1372,7 +1363,12 @@ void InterpreterImpl::invoke(const Arabica::DOM::Node<std::string>& element) {
 		if (invokeReq.type.size() == 0)
 			invokeReq.type = "http://www.w3.org/TR/scxml/";
 
-		Invoker invoker(_factory->createInvoker(invokeReq.type, this));
+		Invoker invoker;
+		try {
+			invoker = _factory->createInvoker(invokeReq.type, this);
+		} catch (Event e) {
+			receiveInternal(e);
+		}
 		if (invoker) {
 			tthread::lock_guard<tthread::recursive_mutex> lock(_pluginMutex);
 			try {
@@ -1439,7 +1435,7 @@ void InterpreterImpl::cancelInvoke(const Arabica::DOM::Node<std::string>& elemen
 		}
 
 		USCXML_MONITOR_CALLBACK3(beforeUninvoking, Element<std::string>(element), invokeId)
-
+		_invokers[invokeId].uninvoke();
 		_invokers.erase(invokeId);
 
 		USCXML_MONITOR_CALLBACK3(beforeUninvoking, Element<std::string>(element), invokeId)
@@ -1689,8 +1685,7 @@ void InterpreterImpl::executeContent(const Arabica::DOM::Node<std::string>& cont
 			try {
 				if (!_dataModel.isDeclared(ATTR(content, "location"))) {
 					// test 286, 331
-					LOG(ERROR) << "Assigning to undeclared location '" << ATTR(content, "location") << "' not allowed." << std::endl;
-					throw Event("error.execution", Event::PLATFORM);
+					ERROR_EXECUTION_THROW("Assigning to undeclared location '" + ATTR(content, "location") + "' not allowed.");
 				} else {
 					Node<std::string> dom;
 					std::string text;
@@ -1745,7 +1740,7 @@ void InterpreterImpl::executeContent(const Arabica::DOM::Node<std::string>& cont
 				try {
 					_dataModel.eval((Element<std::string>)content, srcContent.str());
 				}
-				CATCH_AND_DISTRIBUTE("Syntax error while executing script element from '" << ATTR(content, "src") << "':")
+				CATCH_AND_DISTRIBUTE("Syntax error while executing script element from '" + ATTR(content, "src") + "':")
 			} else {
 				if (content.hasChildNodes()) {
 					// search for the text node with the actual script
@@ -1791,16 +1786,9 @@ void InterpreterImpl::executeContent(const Arabica::DOM::Node<std::string>& cont
 		// --- Custom Executable Content
 		ExecutableContent execContent;
 		if (_executableContent.find(content) == _executableContent.end()) {
-			execContent = _factory->createExecutableContent(content.getLocalName(), content.getNamespaceURI(), this);
-			if (!execContent) {
-				LOG(ERROR) << "No custom executable content known for element '"
-				           << content.getLocalName() << "' in namespace '" << content.getNamespaceURI() << "'";
-				return;
-			}
-			_executableContent[content] = execContent;
-		} else {
-			execContent = _executableContent[content];
+			_executableContent[content] = _factory->createExecutableContent(content.getLocalName(), content.getNamespaceURI(), this);
 		}
+		execContent = _executableContent[content];
 
 		execContent.enterElement(content);
 		if (execContent.processChildren()) {
@@ -2005,13 +1993,8 @@ Arabica::DOM::Node<std::string> InterpreterImpl::getState(const std::string& sta
 	if (target.size() > 0)
 		goto FOUND;
 
-	LOG(ERROR) << "No state with id " << stateId << " found!";
 	{
-		Event ev;
-		ev.name = "error.execution";
-		ev.eventType = Event::PLATFORM;
-		ev.data.compound["cause"] = Data("No state with id " + stateId + " found", Data::VERBATIM);
-		throw ev;
+		ERROR_EXECUTION_THROW("No state with id '" + stateId + "' found");
 	}
 FOUND:
 	if (target.size() > 0) {
@@ -2403,6 +2386,7 @@ void InterpreterImpl::setupIOProcessors() {
 			continue;
 		}
 
+		// this might throw error.execution
 		_ioProcessors[ioProcIter->first] = _factory->createIOProcessor(ioProcIter->first, this);
 		_ioProcessors[ioProcIter->first].setType(ioProcIter->first);
 		_ioProcessors[ioProcIter->first].setInterpreter(this);

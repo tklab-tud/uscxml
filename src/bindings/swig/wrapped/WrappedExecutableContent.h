@@ -72,11 +72,9 @@ public:
 	}
 
 	virtual void enterElement(const std::string& node) {
-
 	}
 
 	virtual void exitElement(const std::string& node) {
-
 	}
 
 private:

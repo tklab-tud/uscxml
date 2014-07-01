@@ -6,16 +6,16 @@ using org.uscxml;
 
 namespace embedding
 {
-    class SampleIOProc : IOProcessor
+    class CustomIOProc : IOProcessor
     {
         public override IOProcessor create(Interpreter interpreter)
         {
-            return new SampleIOProc();
+            return new CustomIOProc();
         }
 
-        public override DataNative getDataModelVariables()
+        public override Data getDataModelVariables()
         {
-            DataNative data = new DataNative();
+            Data data = new Data();
             return data;
         }
 

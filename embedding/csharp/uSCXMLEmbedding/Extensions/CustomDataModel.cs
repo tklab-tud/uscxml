@@ -4,13 +4,13 @@ using System.Linq;
 using System.Text;
 using org.uscxml;
 
-namespace EmbeddedDataModel
+namespace embedding
 {
-    class SampleDataModel : DataModel
+    class CustomDataModel : DataModel
     {
         public override DataModel create(Interpreter interpreter)
         {
-            return new SampleDataModel();
+            return new CustomDataModel();
         }
 
         public override void eval(string scriptElem, string expr)
@@ -54,10 +54,9 @@ namespace EmbeddedDataModel
             return names;
         }
 
-        public override DataNative getStringAsData(string content)
+        public override Data getStringAsData(string content)
         {
-            // DataNative ought to be wrapped by a Data.cs class - used to carry JSONesque structures
-            DataNative data = new DataNative();
+            Data data = new Data();
             return data;
         }
 

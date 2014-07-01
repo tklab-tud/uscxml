@@ -22,6 +22,56 @@
 
 #include "uscxml/messages/Data.h"
 
+#define ERROR_EXECUTION(identifier, cause) \
+	uscxml::Event identifier; \
+	identifier.data.compound["cause"] = uscxml::Data(cause, uscxml::Data::VERBATIM); \
+	identifier.name = "error.execution"; \
+	identifier.eventType = uscxml::Event::PLATFORM;
+
+#define ERROR_EXECUTION2(identifier, cause, node) \
+	uscxml::Event identifier; \
+	identifier.data.compound["cause"] = uscxml::Data(cause, uscxml::Data::VERBATIM); \
+	identifier.name = "error.execution"; \
+	identifier.data.compound["xpath"] = uscxml::Data(DOMUtils::xPathForNode(node), uscxml::Data::VERBATIM); \
+	identifier.eventType = uscxml::Event::PLATFORM;
+
+#define ERROR_COMMUNICATION(identifier, cause) \
+	uscxml::Event identifier; \
+	identifier.data.compound["cause"] = uscxml::Data(cause, uscxml::Data::VERBATIM); \
+	identifier.name = "error.communication"; \
+	identifier.eventType = uscxml::Event::PLATFORM;
+
+#define ERROR_COMMUNICATION2(identifier, cause, node) \
+	uscxml::Event identifier; \
+	identifier.data.compound["cause"] = uscxml::Data(cause, uscxml::Data::VERBATIM); \
+	identifier.name = "error.communication"; \
+	identifier.data.compound["xpath"] = uscxml::Data(DOMUtils::xPathForNode(node), uscxml::Data::VERBATIM); \
+	identifier.eventType = uscxml::Event::PLATFORM;
+
+#define ERROR_EXECUTION_THROW(cause) \
+{\
+	ERROR_EXECUTION(exc, cause); \
+	throw exc;\
+}
+
+#define ERROR_EXECUTION_THROW2(cause, node) \
+{\
+	ERROR_EXECUTION2(exc, cause, node); \
+	throw exc;\
+}
+
+#define ERROR_COMMUNICATION_THROW(cause) \
+{\
+	ERROR_COMMUNICATION(exc, cause); \
+	throw exc;\
+}
+
+#define ERROR_COMMUNICATION_THROW2(cause, node) \
+{\
+	ERROR_COMMUNICATION(exc, cause, node); \
+	throw exc;\
+}
+
 namespace uscxml {
 
 class USCXML_API Event {
@@ -143,6 +193,13 @@ public:
 	}
 	std::multimap<std::string, Data>& getParams() {
 		return params;
+	}
+
+	void setNameList(const std::map<std::string, Data>& nameList) {
+		this->namelist = nameList;
+	}
+	void setParams(const std::multimap<std::string, Data>& params) {
+		this->params = params;
 	}
 
 	typedef std::multimap<std::string, Data> params_t;

@@ -296,9 +296,7 @@ uint32_t XPathDataModel::getLength(const std::string& expr) {
 		return result.asNodeSet().size();
 		break;
 	default:
-		Event exceptionEvent("error.execution", Event::PLATFORM);
-		exceptionEvent.data.compound["exception"] = Data("'" + expr + "' does not evaluate to an array.", Data::VERBATIM);
-		throw(exceptionEvent);
+		ERROR_EXECUTION_THROW("'" + expr + "' does not evaluate to an array.");
 	}
 	return 0;
 }
@@ -326,7 +324,7 @@ void XPathDataModel::setForeach(const std::string& item,
 
 	if (!isDeclared(item)) {
 		if (!isValidIdentifier(item))
-			throw Event("error.execution", Event::PLATFORM);
+			ERROR_EXECUTION_THROW("Expression '" + item + "' not a valid identifier.");
 		Element<std::string> container = _doc.createElement("data");
 		container.setAttribute("id", item);
 		container.appendChild(arrayResult.asNodeSet()[iteration].cloneNode(true));
@@ -400,9 +398,9 @@ bool XPathDataModel::evalAsBool(const Arabica::DOM::Node<std::string>& node, con
 	try {
 		result = _xpath.evaluate_expr(expr, _doc);
 	} catch(SyntaxException e) {
-		throw Event("error.execution", Event::PLATFORM);
+		ERROR_EXECUTION_THROW(e.what());
 	} catch(std::runtime_error e) {
-		throw Event("error.execution", Event::PLATFORM);
+		ERROR_EXECUTION_THROW(e.what());
 	}
 	return result.asBool();
 }
@@ -413,9 +411,9 @@ std::string XPathDataModel::evalAsString(const std::string& expr) {
 	try {
 		result = _xpath.evaluate_expr(expr, _doc);
 	} catch(SyntaxException e) {
-		throw Event("error.execution", Event::PLATFORM);
+		ERROR_EXECUTION_THROW(e.what());
 	} catch(std::runtime_error e) {
-		throw Event("error.execution", Event::PLATFORM);
+		ERROR_EXECUTION_THROW(e.what());
 	}
 	switch (result.type()) {
 	case STRING:
@@ -440,7 +438,7 @@ std::string XPathDataModel::evalAsString(const std::string& expr) {
 		break;
 	}
 	case ANY:
-		throw Event("error.execution", Event::PLATFORM);
+		ERROR_EXECUTION_THROW("Type ANY not supported to evaluate as string");
 		break;
 	}
 	return "undefined";
@@ -472,13 +470,13 @@ void XPathDataModel::assign(const Element<std::string>& assignElem,
 			for (int i = 0; i < key.asNodeSet().size(); i++) {
 				Node<std::string> node = key.asNodeSet()[i];
 				if (node == _varResolver.resolveVariable("", "_ioprocessors").asNodeSet()[0])
-					throw Event("error.execution", Event::PLATFORM);
+					ERROR_EXECUTION_THROW("Cannot assign _ioProcessors");
 				if (node == _varResolver.resolveVariable("", "_sessionid").asNodeSet()[0])
-					throw Event("error.execution", Event::PLATFORM);
+					ERROR_EXECUTION_THROW("Cannot assign _sessionid");
 				if (node == _varResolver.resolveVariable("", "_name").asNodeSet()[0])
-					throw Event("error.execution", Event::PLATFORM);
+					ERROR_EXECUTION_THROW("Cannot assign _name");
 				if (node == _varResolver.resolveVariable("", "_event").asNodeSet()[0])
-					throw Event("error.execution", Event::PLATFORM);
+					ERROR_EXECUTION_THROW("Cannot assign _event");
 			}
 		} catch (Event e) {}
 	}
@@ -570,11 +568,11 @@ void XPathDataModel::init(const Element<std::string>& dataElem,
 			}
 			case Arabica::XPath::BOOL:
 			case ANY:
-				throw Event("error.execution", Event::PLATFORM);
+				ERROR_EXECUTION_THROW("expr evaluates to type ANY");
 			}
 			_datamodel.appendChild(container);
 		} catch (SyntaxException e) {
-			throw Event("error.execution", Event::PLATFORM);
+			ERROR_EXECUTION_THROW(e.what());
 		}
 	} else {
 		LOG(ERROR) << "data element has no content";
@@ -595,7 +593,7 @@ void XPathDataModel::assign(const XPathValue<std::string>& key,
 	switch (key.type()) {
 	case NODE_SET:
 		if (key.asNodeSet().size() == 0) {
-			throw Event("error.execution", Event::PLATFORM);
+			ERROR_EXECUTION_THROW("key for assign is empty nodeset");
 		}
 		switch (value.type()) {
 		case STRING:
@@ -611,14 +609,14 @@ void XPathDataModel::assign(const XPathValue<std::string>& key,
 			assign(key.asNodeSet(), value.asNodeSet(), assignElem);
 			break;
 		case ANY:
-			throw Event("error.execution", Event::PLATFORM);
+			ERROR_EXECUTION_THROW("Type ANY as key for assign not supported");
 		}
 		break;
 	case STRING:
 	case Arabica::XPath::BOOL:
 	case NUMBER:
 	case ANY:
-		throw Event("error.execution", Event::PLATFORM);
+		ERROR_EXECUTION_THROW("Type ANY as key for assign not supported")
 		break;
 	}
 }
@@ -637,7 +635,7 @@ void XPathDataModel::assign(const XPathValue<std::string>& key,
 	case Arabica::XPath::BOOL:
 	case NUMBER:
 	case ANY:
-		throw Event("error.execution", Event::PLATFORM);
+		ERROR_EXECUTION_THROW("Type ANY as key for assign not supported")
 	}
 }
 
@@ -665,7 +663,7 @@ void XPathDataModel::assign(const NodeSet<std::string>& key,
 				// addattribute: Add an attribute with the name specified by 'attr'
 				// and value specified by 'expr' to the node specified by 'location'.
 				if (!HAS_ATTR(assignElem, "attr"))
-					throw Event("error.execution", Event::PLATFORM);
+					ERROR_EXECUTION_THROW("Assign element is missing 'attr'")
 				element.setAttribute(ATTR(assignElem, "attr"), value);
 			} else {
 				/// test 547
@@ -677,7 +675,7 @@ void XPathDataModel::assign(const NodeSet<std::string>& key,
 			break;
 		}
 		default:
-			throw Event("error.execution", Event::PLATFORM);
+			ERROR_EXECUTION_THROW("Unsupported node type with assign");
 			break;
 		}
 	}
@@ -709,7 +707,7 @@ void XPathDataModel::assign(const NodeSet<std::string>& key,
 		break;
 		default:
 //			std::cout << key[i].getNodeType() << std::endl;
-			throw Event("error.execution", Event::PLATFORM);
+			ERROR_EXECUTION_THROW("Unsupported node type for assign");
 			break;
 		}
 	}
@@ -740,7 +738,7 @@ void XPathDataModel::assign(const Element<std::string>& key,
 		// node specified by 'location', keeping the same parent.
 		Node<std::string> parent = element.getParentNode();
 		if (!parent)
-			throw Event("error.execution", Event::PLATFORM);
+			ERROR_EXECUTION_THROW("Node has no parent");
 		for (int i = 0; i < value.size(); i++) {
 			Node<std::string> importedNode = (value[i].getOwnerDocument() == _doc ? value[i].cloneNode(true) : _doc.importNode(value[i], true));
 			parent.insertBefore(importedNode, element);
@@ -750,7 +748,7 @@ void XPathDataModel::assign(const Element<std::string>& key,
 		// specified by 'location', keeping the same parent.
 		Node<std::string> parent = element.getParentNode();
 		if (!parent)
-			throw Event("error.execution", Event::PLATFORM);
+			ERROR_EXECUTION_THROW("Node has no parent");
 		for (int i = value.size(); i; i--) {
 			Node<std::string> importedNode = (value[i-1].getOwnerDocument() == _doc ? value[i-1].cloneNode(true) : _doc.importNode(value[i-1], true));
 			Node<std::string> nextSibling = element.getNextSibling();
@@ -764,16 +762,16 @@ void XPathDataModel::assign(const Element<std::string>& key,
 		// replace: Replace the node specified by 'location' by the value specified by 'expr'.
 		Node<std::string> parent = element.getParentNode();
 		if (!parent)
-			throw Event("error.execution", Event::PLATFORM);
+			ERROR_EXECUTION_THROW("Node has no parent");
 		if (value.size() != 1)
-			throw Event("error.execution", Event::PLATFORM);
+			ERROR_EXECUTION_THROW("Value not singular");
 		Node<std::string> importedNode = (value[0].getOwnerDocument() == _doc ? value[0].cloneNode(true) : _doc.importNode(value[0], true));
 		parent.replaceChild(importedNode, element);
 	} else if (assignElem && HAS_ATTR(assignElem, "type") && iequals(ATTR(assignElem, "type"), "delete")) {
 		// delete: Delete the node specified by 'location'. ('expr' is ignored.).
 		Node<std::string> parent = element.getParentNode();
 		if (!parent)
-			throw Event("error.execution", Event::PLATFORM);
+			ERROR_EXECUTION_THROW("Node has no parent");
 		parent.removeChild(element);
 	} else {
 		// replacechildren: Replace all the children at 'location' with the value specified by 'expr'.
@@ -791,7 +789,7 @@ NodeSetVariableResolver::resolveVariable(const std::string& namepaceUri,
         const std::string& name) const {
 	std::map<std::string, NodeSet<std::string> >::const_iterator n = _variables.find(name);
 	if(n == _variables.end()) {
-		throw Event("error.execution");
+		ERROR_EXECUTION_THROW("No varable named '" + name + "'");
 	}
 #if VERBOSE
 	std::cout << std::endl << "Getting " << name << ":" << std::endl;

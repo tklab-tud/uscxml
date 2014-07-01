@@ -12,10 +12,19 @@
 
 %include <boost_shared_ptr.i>
 
+// these are needed at least for the templates to work
 typedef uscxml::Data Data;
 typedef uscxml::Event Event;
 typedef uscxml::InvokeRequest InvokeRequest;
 typedef uscxml::SendRequest SendRequest;
+typedef uscxml::Invoker Invoker;
+typedef uscxml::IOProcessor IOProcessor;
+typedef uscxml::DataModel DataModel;
+typedef uscxml::ExecutableContent ExecutableContent;
+typedef uscxml::InvokerImpl InvokerImpl;
+typedef uscxml::IOProcessorImpl IOProcessorImpl;
+typedef uscxml::DataModelImpl DataModelImpl;
+typedef uscxml::ExecutableContentImpl ExecutableContentImpl;
 
 %feature("director") uscxml::WrappedInvoker;
 %feature("director") uscxml::WrappedDataModel;
@@ -54,6 +63,7 @@ typedef uscxml::SendRequest SendRequest;
 using namespace uscxml;
 using namespace Arabica::DOM;
 
+// the wrapped* C++ classes get rid of DOM nodes and provide more easily wrapped base classes
 #include "../wrapped/WrappedInvoker.cpp"
 #include "../wrapped/WrappedDataModel.cpp"
 #include "../wrapped/WrappedExecutableContent.cpp"
@@ -125,10 +135,138 @@ WRAP_THROW_EXCEPTION(uscxml::Interpreter::interpret);
 
 %include "../uscxml_ignores.i"
 
-%rename Data DataNative;
+//***********************************************
+// Beautify important classes
+//***********************************************
 
 %include "../uscxml_beautify.i"
 
+
+%rename(getCompoundNative) uscxml::Data::getCompound();
+%rename(getArrayNative) uscxml::Data::getArray();
+%rename(setCompoundNative) uscxml::Data::setCompound(const std::map<std::string, Data>&);
+%rename(setArrayNative) uscxml::Data::setArray(const std::list<Data>&);
+%csmethodmodifiers uscxml::Data::getCompound() "private";
+%csmethodmodifiers uscxml::Data::getArray() "private";
+%csmethodmodifiers uscxml::Data::setCompound(const std::map<std::string, Data>&) "private";
+%csmethodmodifiers uscxml::Data::setArray(const std::list<Data>&) "private";
+%csmethodmodifiers uscxml::Data::getCompoundKeys() "private";
+
+%typemap(csimports) uscxml::Data %{
+using System;
+using System.Collections.Generic;
+using System.Runtime.InteropServices;
+%}
+
+%typemap(cscode) uscxml::Data %{
+	public Data(List<Data> arr) : this() {
+		setArray(arr);
+	}
+
+	public Data(Dictionary<string, Data> compound) : this() {
+		setCompound(compound);
+	}
+
+	public Dictionary<string, Data> getCompound() {
+		Dictionary<string, Data> compound = new Dictionary<string, Data>();
+		DataMap dataMap = getCompoundNative();
+		StringVector dataMapKeys = getCompoundKeys();
+		for (int i = 0; i < dataMapKeys.Count; i++) {
+			compound[dataMapKeys[i]] = dataMap[dataMapKeys[i]];
+		}
+		return compound;
+	}
+
+	public void setCompound(Dictionary<string, Data> compound) { 
+		DataMap dataMap = new DataMap();
+		foreach(KeyValuePair<string, Data> entry in compound) {
+			dataMap.Add(entry);
+		}
+		setCompoundNative(dataMap);
+	}
+
+	public List<Data> getArray() {
+		List<Data> arr = new List<Data>();
+		DataList dataList = getArrayNative();
+		for (int i = 0; i < dataList.size(); i++) {
+			arr.Add(dataList.get(i));
+		}
+		return arr;
+	}
+
+	public void setArray(List<Data> arr) {
+		DataList dataList = new DataList();
+		foreach (Data data in arr) {
+			dataList.add(data);
+		}
+		setArrayNative(dataList);
+	}
+		
+%}
+
+%rename(getNameListNative) uscxml::Event::getNameList();
+%rename(getParamsNative) uscxml::Event::getParams();
+%rename(setNameListNative) uscxml::Event::setNameList(const std::map<std::string, Data>&);
+%rename(setParamsNative) uscxml::Event::setParams(const std::multimap<std::string, Data>&);
+%csmethodmodifiers uscxml::Event::getNameList() "private";
+%csmethodmodifiers uscxml::Event::getNameListKeys() "private";
+%csmethodmodifiers uscxml::Event::getParams() "private";
+%csmethodmodifiers uscxml::Event::setNameList(const std::map<std::string, Data>&) "private";
+%csmethodmodifiers uscxml::Event::setParams(const std::multimap<std::string, Data>&) "private";
+
+%typemap(csimports) uscxml::Event %{
+	using System;
+	using System.Collections.Generic;
+	using System.Runtime.InteropServices;
+%}
+
+%typemap(cscode) uscxml::Event %{
+	public Dictionary<string, List<Data> > getParams() { 
+		Dictionary<string, List<Data>> parameters = new Dictionary<string, List<Data>>();
+		ParamMap paramMap = getParamMap();
+
+		foreach (KeyValuePair<string, DataList> entry in paramMap) {
+			DataList dataList = entry.Value;
+			List<Data> paramList = new List<Data>();
+			for (int i = 0; i < dataList.size(); i++) {
+				Data data = dataList.get(i);
+				paramList.Add(data);
+			}
+			parameters.Add(entry.Key, paramList);
+		}
+		return parameters;
+	}
+
+	public void setParams(Dictionary<string, List<Data>> parameters) { 
+		ParamMap paramMap = new ParamMap();
+		foreach(KeyValuePair<string, List<Data>> entry in parameters) {
+			DataList dataList = new DataList();
+			foreach (Data data in entry.Value) {
+				dataList.add(data);
+			}
+			paramMap.Add(entry.Key, dataList);
+		}
+		setParamMap(paramMap);
+	}
+
+	public Dictionary<string, Data> getNameList() {
+		Dictionary<string, Data> nameList = new Dictionary<string, Data>();
+		DataMap nameListMap = getNameListNative();
+		StringVector nameListMapKeys = getNameListKeys();
+		for (int i = 0; i < nameListMapKeys.Count; i++) {
+			nameList[nameListMapKeys[i]] = nameListMap[nameListMapKeys[i]];
+		}
+		return nameList;
+	}
+
+	public void setNameList(Dictionary<string, Data> nameList) {
+		DataMap dataMap = new DataMap();
+		foreach (KeyValuePair<string, Data> entry in nameList) {
+			dataMap.Add(entry);
+		}
+		setNameListNative(dataMap);
+	}
+%}
 
 //***********************************************
 // Parse the header file to generate wrappers
@@ -164,8 +302,7 @@ WRAP_THROW_EXCEPTION(uscxml::Interpreter::interpret);
 %template(StringSet) std::set<std::string>;
 %template(StringVector) std::vector<std::string>;
 %template(StringList) std::list<std::string>;
-%template(ParamPair) std::pair<std::string, uscxml::Data>;
-%template(ParamPairVector) std::vector<std::pair<std::string, uscxml::Data> >;
-%template(IOProcMap) std::map<std::string, uscxml::IOProcessor>;
-%template(InvokerMap) std::map<std::string, uscxml::Invoker>;
+%template(ParamMap) std::map<std::string, std::list<uscxml::Data> >;
+%template(IOProcMap) std::map<std::string, IOProcessor>;
+%template(InvokerMap) std::map<std::string, Invoker>;
 %template(ParentQueue) uscxml::concurrency::BlockingQueue<uscxml::SendRequest>;

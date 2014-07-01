@@ -19,6 +19,7 @@
 
 #include "PromelaParser.h"
 #include "parser/promela.tab.hpp"
+#include "uscxml/messages/Event.h"
 
 #include <iostream>
 
@@ -35,10 +36,7 @@ int promela_lex_destroy (void*);
 
 void promela_error (uscxml::PromelaParser* ctx, void* yyscanner, const char* err) {
 	// mark as pending exception as we cannot throw from constructor and have the destructor called
-	uscxml::Event excEvent;
-	excEvent.data.compound["exception"] = uscxml::Data(err, uscxml::Data::VERBATIM);
-	excEvent.name = "error.execution";
-	excEvent.eventType = uscxml::Event::PLATFORM;
+	ERROR_EXECUTION(excEvent, err);
 	ctx->pendingException = excEvent;
 }
 
@@ -53,12 +51,7 @@ PromelaParser::PromelaParser(const std::string& expr, Type expectedType) {
 	if (type != expectedType) {
 		std::stringstream ss;
 		ss << "Promela syntax type mismatch: Expected " << typeToDesc(expectedType) << " but got " << typeToDesc(type);
-
-		uscxml::Event excEvent;
-		excEvent.data.compound["exception"] = uscxml::Data(ss.str(), uscxml::Data::VERBATIM);
-		excEvent.name = "error.execution";
-		excEvent.eventType = uscxml::Event::PLATFORM;
-		throw excEvent;
+		ERROR_EXECUTION_THROW(ss.str());
 	}
 }
 

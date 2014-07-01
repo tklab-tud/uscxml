@@ -9,7 +9,7 @@ before the timer goes off.  -->
      
 <state id="s0">
   <onentry>
-    <send event="timer" delay="2s"/>
+    <send event="timer" conf:delay="1"/>
     </onentry>
     
   <!-- namelist references an undeclared variable -->

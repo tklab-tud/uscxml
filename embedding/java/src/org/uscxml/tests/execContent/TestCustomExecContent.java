@@ -1,11 +1,9 @@
 package org.uscxml.tests.execContent;
 
-import org.uscxml.Data;
-import org.uscxml.Event;
+import org.uscxml.ExecutableContent;
 import org.uscxml.Factory;
 import org.uscxml.Interpreter;
 import org.uscxml.InterpreterException;
-import org.uscxml.ExecutableContent;
 
 public class TestCustomExecContent extends ExecutableContent {
 

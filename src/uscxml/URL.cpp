@@ -364,19 +364,19 @@ const void URLImpl::download(bool blocking) {
 			_condVar.wait(_mutex); // wait for notification
 		}
 		if (_hasFailed) {
-			Event exception;
-			exception.name = "error.communication";
-			exception.data = URL(shared_from_this());
+			ERROR_COMMUNICATION(exc, _error);
+			exc.data = URL(shared_from_this());
 			if (_error.length() > 0)
-				exception.data.compound["reason"] = Data(_error, Data::VERBATIM);
-			throw exception;
+				exc.data.compound["cause"] = Data(_error, Data::VERBATIM);
+			throw exc;
 		}
 		if (iequals(scheme(), "http")) {
 			if (_statusCode.size() > 0 && boost::lexical_cast<int>(_statusCode) > 400) {
-				Event exception;
-				exception.name = "error.communication";
-				exception.data = URL(shared_from_this());
-				throw exception;
+				ERROR_COMMUNICATION(exc, _error);
+				exc.data = URL(shared_from_this());
+				if (_error.length() > 0)
+					exc.data.compound["cause"] = Data(_error, Data::VERBATIM);
+				throw exc;
 			}
 		}
 	}

@@ -7,7 +7,7 @@
  <state id="s0">
   <onentry>
     <send event="externalEvent1"/>
-    <send event="externalEvent2" delay="1s"/>
+    <send event="externalEvent2" conf:delay="1"/>
     <raise event="internalEvent"/>
     </onentry>
     <!-- in this state we should process only internalEvent -->

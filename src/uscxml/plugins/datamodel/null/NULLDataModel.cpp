@@ -65,7 +65,10 @@ void NULLDataModel::setEvent(const Event& event) {
 }
 
 Data NULLDataModel::getStringAsData(const std::string& content) {
-	Data data;
+	Data data = Data::fromJSON(content);
+	if (data.empty()) {
+		data = Data(content, Data::VERBATIM);
+	}
 	return data;
 }
 

@@ -50,6 +50,7 @@ public:
 
 	virtual void send(const SendRequest& req) {}
 	virtual void invoke(const InvokeRequest& req) {}
+	virtual void uninvoke() {}
 
 	virtual WrappedInvoker* create(Interpreter interpreter) {
 		return new WrappedInvoker();

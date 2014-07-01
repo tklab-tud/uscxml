@@ -12,7 +12,6 @@ import org.mozilla.javascript.ScriptableObject;
 import org.mozilla.javascript.Undefined;
 import org.uscxml.Data;
 import org.uscxml.DataModel;
-import org.uscxml.DataNative;
 import org.uscxml.Event;
 import org.uscxml.Interpreter;
 import org.uscxml.StringList;
@@ -45,20 +44,20 @@ public class ECMAScriptDataModel extends DataModel {
 				ScriptableObject obj = (ScriptableObject) Context.toObject(s,
 						scope);
 				for (Object key : obj.getIds()) {
-					data.compound.put(Context.toString(key),
+					data.put(Context.toString(key),
 							getScriptableAsData(obj.get(key)));
 				}
 			}
 		} catch (ClassCastException e) {
 			if (object instanceof Boolean) {
-				data.atom = (Context.toBoolean(object) ? "true" : "false");
-				data.type = Data.Type.INTERPRETED;
+				data.setAtom(Context.toBoolean(object) ? "true" : "false");
+				data.setType(Data.Type.INTERPRETED);
 			} else if (object instanceof String) {
-				data.atom = (String) object;
-				data.type = Data.Type.VERBATIM;
+				data.setAtom((String) object);
+				data.setType(Data.Type.VERBATIM);
 			} else if (object instanceof Integer) {
-				data.atom = ((Integer) object).toString();
-				data.type = Data.Type.INTERPRETED;
+				data.setAtom(((Integer) object).toString());
+				data.setType(Data.Type.INTERPRETED);
 			} else {
 				throw new RuntimeException("Unhandled ECMA type "
 						+ object.getClass().getName());
@@ -102,9 +101,9 @@ public class ECMAScriptDataModel extends DataModel {
 			Data ioProcs = new Data();
 			StringVector keys = interpreter.getIOProcessorKeys();
 			for (int i = 0; i < keys.size(); i++) {
-				ioProcs.compound.put(keys.get(i), new Data(interpreter
+				ioProcs.put(keys.get(i), interpreter
 						.getIOProcessors().get(keys.get(i))
-						.getDataModelVariables()));
+						.getDataModelVariables());
 			}
 			newDM.scope
 					.put("_ioprocessors", newDM.scope, new ECMAData(ioProcs));
@@ -115,9 +114,9 @@ public class ECMAScriptDataModel extends DataModel {
 			Data invokers = new Data();
 			StringVector keys = interpreter.getInvokerKeys();
 			for (int i = 0; i < keys.size(); i++) {
-				invokers.compound.put(keys.get(i), new Data(interpreter
+				invokers.put(keys.get(i), interpreter
 						.getInvokers().get(keys.get(i))
-						.getDataModelVariables()));
+						.getDataModelVariables());
 			}
 			newDM.scope
 					.put("_ioprocessors", newDM.scope, new ECMAData(invokers));
@@ -176,7 +175,7 @@ public class ECMAScriptDataModel extends DataModel {
 	}
 
 	@Override
-	public DataNative getStringAsData(String content) {
+	public Data getStringAsData(String content) {
 		if (debug) {
 			System.out.println(interpreter.getName() + " getStringAsData");
 		}
@@ -186,7 +185,7 @@ public class ECMAScriptDataModel extends DataModel {
 		 * JSON-like Data structure
 		 */
 		if (content.length() == 0) {
-			return Data.toNative(new Data());
+			return new Data();
 		}
 
 		// is it a json expression?
@@ -194,7 +193,7 @@ public class ECMAScriptDataModel extends DataModel {
 			Object json = NativeJSON.parse(ctx, scope, content,
 					new NullCallable());
 			if (json != NativeJSON.NOT_FOUND) {
-				return Data.toNative(getScriptableAsData(json));
+				return getScriptableAsData(json);
 			}
 		} catch (org.mozilla.javascript.EcmaError e) {
 			System.err.println(e);
@@ -207,7 +206,7 @@ public class ECMAScriptDataModel extends DataModel {
 			x = ctx.evaluateString(scope, '"' + content + '"', "uscxml", 0,
 					null);
 		}
-		return Data.toNative(getScriptableAsData(x));
+		return getScriptableAsData(x);
 	}
 
 	@Override

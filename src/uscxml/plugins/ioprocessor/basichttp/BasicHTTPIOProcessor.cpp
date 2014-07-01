@@ -157,7 +157,7 @@ bool BasicHTTPIOProcessor::httpRecvRequest(const HTTPServer::Request& req) {
 	if (reqEvent.name.length() == 0)
 		reqEvent.name = "http." + req.data.compound.at("type").atom;
 
-	returnEvent(reqEvent);
+	returnEvent(reqEvent, true);
 	evhttp_send_reply(req.evhttpReq, 200, "OK", NULL);
 	return true;
 }
@@ -287,7 +287,7 @@ void BasicHTTPIOProcessor::downloadCompleted(const URL& url) {
 				Event event;
 				event.data = url;
 				event.name = "HTTP." + statusPrefix + "." + statusRest;
-				returnEvent(event);
+//				returnEvent(event);
 			}
 			_sendRequests.erase(reqIter);
 			return;

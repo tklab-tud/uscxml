@@ -516,7 +516,7 @@ boost::shared_ptr<InvokerImpl> Factory::createInvoker(const std::string& type, I
 	if (_parentFactory) {
 		return _parentFactory->createInvoker(type, interpreter);
 	} else {
-		LOG(ERROR) << "No " << type << " Invoker known";
+		ERROR_EXECUTION_THROW("No Invoker named '" + type + "' known");
 	}
 
 	return boost::shared_ptr<InvokerImpl>();
@@ -538,7 +538,7 @@ boost::shared_ptr<DataModelImpl> Factory::createDataModel(const std::string& typ
 	if (_parentFactory) {
 		return _parentFactory->createDataModel(type, interpreter);
 	} else {
-		LOG(ERROR) << "No " << type << " Datamodel known";
+		ERROR_EXECUTION_THROW("No Datamodel name '" + type + "' known");
 	}
 
 	return boost::shared_ptr<DataModelImpl>();
@@ -559,7 +559,7 @@ boost::shared_ptr<IOProcessorImpl> Factory::createIOProcessor(const std::string&
 	if (_parentFactory) {
 		return _parentFactory->createIOProcessor(type, interpreter);
 	} else {
-		LOG(ERROR) << "No " << type << " IOProcessor known";
+		ERROR_EXECUTION_THROW("No IOProcessor named '" + type + "' known");
 	}
 
 	return boost::shared_ptr<IOProcessorImpl>();
@@ -578,7 +578,7 @@ boost::shared_ptr<ExecutableContentImpl> Factory::createExecutableContent(const 
 	if (_parentFactory) {
 		return _parentFactory->createExecutableContent(localName, nameSpace, interpreter);
 	} else {
-		LOG(ERROR) << "Executable content " << localName << " in " << actualNameSpace << " not available in factory";
+		ERROR_EXECUTION_THROW("No Executable content name '" + localName + "' in namespace '" + actualNameSpace + "' known");
 	}
 
 	return boost::shared_ptr<ExecutableContentImpl>();
@@ -654,50 +654,31 @@ Factory* Factory::getInstance() {
 }
 
 void EventHandlerImpl::returnErrorExecution(const std::string& cause) {
-	Event exceptionEvent;
-	exceptionEvent.data.compound["exception"] = Data(cause, Data::VERBATIM);
-	exceptionEvent.name = "error.execution";
-	exceptionEvent.eventType = Event::PLATFORM;
-	returnEvent(exceptionEvent);
+	ERROR_EXECUTION(exc, cause);
+	returnEvent(exc);
 }
 
-void EventHandlerImpl::returnErrorPlatform(const std::string& cause) {
-	Event exceptionEvent;
-	exceptionEvent.data.compound["exception"] = Data(cause, Data::VERBATIM);
-	exceptionEvent.name = "error.platform";
-	exceptionEvent.eventType = Event::PLATFORM;
-	returnEvent(exceptionEvent);
+void EventHandlerImpl::returnErrorCommunication(const std::string& cause) {
+	ERROR_COMMUNICATION(exc, cause);
+	returnEvent(exc);
 }
 
-void EventHandlerImpl::returnEvent(Event& event) {
+void EventHandlerImpl::returnEvent(Event& event, bool external) {
 	if (event.invokeid.length() == 0)
 		event.invokeid = _invokeId;
 	if (event.eventType == 0)
-		event.eventType = Event::EXTERNAL;
+		event.eventType = (external ? Event::EXTERNAL : Event::INTERNAL);
 	if (event.origin.length() == 0)
 		event.origin = "#_" + _invokeId;
 	if (event.origintype.length() == 0)
 		event.origintype = _type;
-
-	_interpreter->receive(event);
+	
+	if (external) {
+		_interpreter->receive(event);
+	} else {
+		_interpreter->receiveInternal(event);
+	}
 }
-
-void DataModelImpl::throwErrorExecution(const std::string& cause) {
-	uscxml::Event exc;
-	exc.data.compound["cause"] = uscxml::Data(cause, uscxml::Data::VERBATIM);
-	exc.name = "error.execution";
-	exc.eventType = uscxml::Event::PLATFORM;
-	throw exc;
-}
-
-void DataModelImpl::throwErrorPlatform(const std::string& cause) {
-	uscxml::Event exc;
-	exc.data.compound["cause"] = uscxml::Data(cause, uscxml::Data::VERBATIM);
-	exc.name = "error.platform";
-	exc.eventType = uscxml::Event::PLATFORM;
-	throw exc;
-}
-
 
 Factory* Factory::_instance = NULL;
 std::string Factory::_defaultPluginPath;
