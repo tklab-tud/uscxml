@@ -15,12 +15,12 @@ namespace embedding
 
         public override void enterElement(string node)
         {
-            
+            Console.WriteLine("enterElement " + node);
         }
 
         public override void exitElement(string node)
         {
-            
+            Console.WriteLine("exitElement " + node);
         }
 
         public override ExecutableContent create(Interpreter interpreter) 
