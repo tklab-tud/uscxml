@@ -10,7 +10,9 @@ namespace embedding
     {
         public override DataModel create(Interpreter interpreter)
         {
-            return new CustomDataModel();
+            CustomDataModel dm = new CustomDataModel();
+            dm.swigCMemOwn = false;
+            return dm;
         }
 
         public override void eval(string scriptElem, string expr)

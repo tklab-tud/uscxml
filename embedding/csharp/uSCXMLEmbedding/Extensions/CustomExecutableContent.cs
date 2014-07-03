@@ -25,7 +25,9 @@ namespace embedding
 
         public override ExecutableContent create(Interpreter interpreter) 
         {
-            return new CustomExecutableContent();
+            CustomExecutableContent execContent = new CustomExecutableContent();
+            execContent.swigCMemOwn = false;
+            return execContent;
         }
 
 

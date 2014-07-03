@@ -10,8 +10,8 @@ of <send>'s args causes an error..  -->
   <onentry>
    <!-- timeout event -->
    <send event="timeout" conf:delay="1"/>
-   <!-- include a non-existing var in the namelist -->
-   <send event="event1" conf:namelist="2"/> 
+   <!-- generate an invalid namelist -->
+   <send event="event1" conf:invalidNamelist=""/> 
     </onentry>
  
  <!-- if we get the timeout before event1, we assume that event1 hasn't been sent

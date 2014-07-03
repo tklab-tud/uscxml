@@ -97,15 +97,15 @@
 #define VALID_FROM_FINISHED(newState) ( \
 	newState == USCXML_DESTROYED || \
 	newState == USCXML_INSTANTIATED \
-) 
+)
 
 /// macro to catch exceptions in executeContent
 #define CATCH_AND_DISTRIBUTE(msg) \
 catch (Event e) {\
-	LOG(ERROR) << msg << std::endl << e << std::endl;\
 	if (rethrow) {\
 		throw(e);\
 	} else {\
+		LOG(ERROR) << msg << std::endl << e << std::endl;\
 		e.name = "error.execution";\
 		e.data.compound["cause"] = uscxml::Data(msg, uscxml::Data::VERBATIM); \
 		e.eventType = Event::PLATFORM;\
@@ -116,10 +116,10 @@ catch (Event e) {\
 #define CATCH_AND_DISTRIBUTE2(msg, node) \
 catch (Event e) {\
 	std::string xpathPos = DOMUtils::xPathForNode(node); \
-	LOG(ERROR) << msg << " " << xpathPos << ":" << std::endl << e << std::endl;\
 	if (rethrow) {\
 		throw(e);\
 	} else {\
+		LOG(ERROR) << msg << " " << xpathPos << ":" << std::endl << e << std::endl;\
 		e.name = "error.execution";\
 		e.data.compound["cause"] = uscxml::Data(msg, uscxml::Data::VERBATIM); \
 		e.data.compound["xpath"] = uscxml::Data(xpathPos, uscxml::Data::VERBATIM); \
@@ -684,7 +684,7 @@ void InterpreterImpl::reset() {
 	_topLevelFinalReached = false;
 	_isInitialized = false;
 	_stable = false;
-	
+
 	setInterpreterState(USCXML_INSTANTIATED);
 }
 
@@ -1162,15 +1162,16 @@ void InterpreterImpl::send(const Arabica::DOM::Node<std::string>& element) {
 	try {
 		// namelist
 		if (HAS_ATTR(element, "namelist")) {
-			if (_dataModel) {
-				std::list<std::string> names = tokenizeIdRefs(ATTR(element, "namelist"));
-				for (std::list<std::string>::const_iterator nameIter = names.begin(); nameIter != names.end(); nameIter++) {
-					Data namelistValue = _dataModel.getStringAsData(*nameIter);
-					sendReq.namelist[*nameIter] = namelistValue;
-					sendReq.data.compound[*nameIter] = namelistValue;
+			std::list<std::string> names = tokenizeIdRefs(ATTR(element, "namelist"));
+			for (std::list<std::string>::const_iterator nameIter = names.begin(); nameIter != names.end(); nameIter++) {
+				if (!_dataModel.isDeclared(*nameIter)) {
+					LOG(ERROR) << "Error in send element " << DOMUtils::xPathForNode(element) << " namelist:" << std::endl << "'" << *nameIter << "' is not declared" << std::endl;
+					ERROR_EXECUTION2(err, "Location expression '" + *nameIter + "' in namelist is invalid", element);
+					return;
 				}
-			} else {
-				LOG(ERROR) << "Namelist attribute at send requires datamodel to be defined";
+				Data namelistValue = _dataModel.getStringAsData(*nameIter);
+				sendReq.namelist[*nameIter] = namelistValue;
+				sendReq.data.compound[*nameIter] = namelistValue;
 			}
 		}
 	} catch (Event e) {

@@ -13,7 +13,9 @@ namespace embedding
     {
         public override Invoker create(Interpreter interpreter)
         {
-            return new CustomInvoker();
+            CustomInvoker invoker = new CustomInvoker();
+            invoker.swigCMemOwn = false;
+            return invoker;
         }
 
         public override Data getDataModelVariables()
@@ -31,20 +33,20 @@ namespace embedding
 
         public override void invoke(InvokeRequest req)
         {
+            Console.WriteLine(req);
+            // send in s1.onentry
+            if ("Some string content" == req.getContent())
+            {
+                returnEvent(new Event("received1"), true);
+                return;
+            }
         }
 
         public override void send(SendRequest req)
         {
             Console.WriteLine(req);
-            // send in s1.onentry
-            if ("This is some content!" == req.getContent())
-            {
-                returnEvent(new Event("received1"));
-                return;
-            }
             // send in s2.onentry
-            if (req.getParams().ContainsKey("foo")
-                    && "bar" == (req.getParams()["foo"][0].getAtom()))
+            if (req.getName() == "foo")
             {
                 returnEvent(new Event("received2"));
                 return;

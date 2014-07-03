@@ -129,7 +129,7 @@ class SequenceCheckingMonitor : public InterpreterMonitor {
 	virtual void beforeMicroStep(Interpreter interpreter) {
 		CHECK_CALLBACK_TYPE(USCXML_BEFOREMICROSTEP);
 	}
-	
+
 	virtual void beforeExitingState(Interpreter interpreter, const Arabica::DOM::Element<std::string>& state, bool moreComing) {
 		if (!moreComing)
 			CHECK_CALLBACK_TYPE(USCXML_BEFOREEXITINGSTATE);
@@ -138,21 +138,21 @@ class SequenceCheckingMonitor : public InterpreterMonitor {
 		if (!moreComing)
 			CHECK_CALLBACK_TYPE(USCXML_AFTEREXITINGSTATE);
 	}
-	
+
 	virtual void beforeExecutingContent(Interpreter interpreter, const Arabica::DOM::Element<std::string>& element) {
 		CHECK_CALLBACK_TYPE(USCXML_BEFOREEXECUTINGCONTENT);
 	}
 	virtual void afterExecutingContent(Interpreter interpreter, const Arabica::DOM::Element<std::string>& element) {
 		CHECK_CALLBACK_TYPE(USCXML_AFTEREXECUTINGCONTENT);
 	}
-	
+
 	virtual void beforeUninvoking(Interpreter interpreter, const Arabica::DOM::Element<std::string>& invokeElem, const std::string& invokeid) {
 		CHECK_CALLBACK_TYPE(USCXML_BEFOREUNINVOKING);
 	}
 	virtual void afterUninvoking(Interpreter interpreter, const Arabica::DOM::Element<std::string>& invokeElem, const std::string& invokeid) {
 		CHECK_CALLBACK_TYPE(USCXML_AFTERUNINVOKING);
 	}
-	
+
 	virtual void beforeTakingTransition(Interpreter interpreter, const Arabica::DOM::Element<std::string>& transition, bool moreComing) {
 		if (!moreComing)
 			CHECK_CALLBACK_TYPE(USCXML_BEFORETAKINGTRANSITION);
@@ -161,7 +161,7 @@ class SequenceCheckingMonitor : public InterpreterMonitor {
 		if (!moreComing)
 			CHECK_CALLBACK_TYPE(USCXML_AFTERTAKINGTRANSITION);
 	}
-	
+
 	virtual void beforeEnteringState(Interpreter interpreter, const Arabica::DOM::Element<std::string>& state, bool moreComing) {
 		if (!moreComing)
 			CHECK_CALLBACK_TYPE(USCXML_BEFOREENTERINGSTATE);
@@ -170,22 +170,22 @@ class SequenceCheckingMonitor : public InterpreterMonitor {
 		if (!moreComing)
 			CHECK_CALLBACK_TYPE(USCXML_AFTERENTERINGSTATE);
 	}
-	
+
 	virtual void beforeInvoking(Interpreter interpreter, const Arabica::DOM::Element<std::string>& invokeElem, const std::string& invokeid) {
 		CHECK_CALLBACK_TYPE(USCXML_BEFOREINVOKING);
 	}
 	virtual void afterInvoking(Interpreter interpreter, const Arabica::DOM::Element<std::string>& invokeElem, const std::string& invokeid) {
 		CHECK_CALLBACK_TYPE(USCXML_AFTERINVOKING);
 	}
-	
+
 	virtual void afterMicroStep(Interpreter interpreter) {
 		CHECK_CALLBACK_TYPE(USCXML_AFTERMICROSTEP);
 	}
-	
+
 	virtual void onStableConfiguration(Interpreter interpreter) {
 		CHECK_CALLBACK_TYPE(USCXML_ONSTABLECONFIGURATION);
 	}
-	
+
 	virtual void beforeCompletion(Interpreter interpreter) {
 		CHECK_CALLBACK_TYPE(USCXML_BEFORECOMPLETION);
 	}
@@ -208,7 +208,7 @@ int main(int argc, char** argv) {
 	google::LogToStderr();
 
 	SequenceCheckingMonitor* mon = new SequenceCheckingMonitor();
-	
+
 	int iterations = 1;
 
 	while(iterations--) {
@@ -241,12 +241,12 @@ int main(int argc, char** argv) {
 			// request unknown datamodel
 			try {
 				const char* xml =
-				"<scxml datamodel=\"invalid\">"
-				"	<state id=\"start\">"
-				"		<transition target=\"done\" />"
-				" </state>"
-				" <final id=\"done\" />"
-				"</scxml>";
+				    "<scxml datamodel=\"invalid\">"
+				    "	<state id=\"start\">"
+				    "		<transition target=\"done\" />"
+				    " </state>"
+				    " <final id=\"done\" />"
+				    "</scxml>";
 				Interpreter interpreter = Interpreter::fromXML(xml);
 				interpreter.addMonitor(mon);
 				assert(interpreter.getState() == USCXML_INSTANTIATED);
@@ -260,22 +260,22 @@ int main(int argc, char** argv) {
 		if (1) {
 			// two microsteps
 			const char* xml =
-			"<scxml>"
-			"	<state id=\"start\">"
-			"		<transition target=\"s2\" />"
-			" </state>"
-			"	<state id=\"s2\">"
-			"		<transition target=\"done\" />"
-			" </state>"
-			" <final id=\"done\" />"
-			"</scxml>";
-			
+			    "<scxml>"
+			    "	<state id=\"start\">"
+			    "		<transition target=\"s2\" />"
+			    " </state>"
+			    "	<state id=\"s2\">"
+			    "		<transition target=\"done\" />"
+			    " </state>"
+			    " <final id=\"done\" />"
+			    "</scxml>";
+
 			Interpreter interpreter = Interpreter::fromXML(xml);
 			interpreter.addMonitor(mon);
 
 			callBackSeq.push_back(USCXML_BEFOREENTERINGSTATE);
 			callBackSeq.push_back(USCXML_AFTERENTERINGSTATE);
-			
+
 			callBackSeq.push_back(USCXML_BEFOREMICROSTEP);
 			callBackSeq.push_back(USCXML_BEFOREEXITINGSTATE);
 			callBackSeq.push_back(USCXML_AFTEREXITINGSTATE);
@@ -295,31 +295,31 @@ int main(int argc, char** argv) {
 			callBackSeq.push_back(USCXML_AFTERMICROSTEP);
 
 			callBackSeq.push_back(USCXML_BEFORECOMPLETION);
-			callBackSeq.push_back(USCXML_AFTERCOMPLETION);			
-			
+			callBackSeq.push_back(USCXML_AFTERCOMPLETION);
+
 			assert(interpreter.getState() == USCXML_INSTANTIATED);
 			assert(interpreter.step() == USCXML_MICROSTEPPED);
 			assert(interpreter.step() == USCXML_MICROSTEPPED);
 			assert(interpreter.step() == USCXML_FINISHED);
 			assert(callBackSeq.empty());
 		}
-		
+
 		if (1) {
 			// single macrostep, multiple runs
 			const char* xml =
-			"<scxml>"
-			"	<state id=\"start\">"
-			"		<transition target=\"done\" />"
-			" </state>"
-			" <final id=\"done\" />"
-			"</scxml>";
-			
+			    "<scxml>"
+			    "	<state id=\"start\">"
+			    "		<transition target=\"done\" />"
+			    " </state>"
+			    " <final id=\"done\" />"
+			    "</scxml>";
+
 			Interpreter interpreter = Interpreter::fromXML(xml);
 			interpreter.addMonitor(mon);
 
 			callBackSeq.push_back(USCXML_BEFOREENTERINGSTATE);
 			callBackSeq.push_back(USCXML_AFTERENTERINGSTATE);
-			
+
 			callBackSeq.push_back(USCXML_BEFOREMICROSTEP);
 			callBackSeq.push_back(USCXML_BEFOREEXITINGSTATE);
 			callBackSeq.push_back(USCXML_AFTEREXITINGSTATE);
@@ -328,10 +328,10 @@ int main(int argc, char** argv) {
 			callBackSeq.push_back(USCXML_BEFOREENTERINGSTATE);
 			callBackSeq.push_back(USCXML_AFTERENTERINGSTATE);
 			callBackSeq.push_back(USCXML_AFTERMICROSTEP);
-						
+
 			callBackSeq.push_back(USCXML_BEFORECOMPLETION);
 			callBackSeq.push_back(USCXML_AFTERCOMPLETION);
-			
+
 			assert(interpreter.getState() == USCXML_INSTANTIATED);
 			assert(interpreter.step() == USCXML_MICROSTEPPED);
 			assert(interpreter.step() == USCXML_FINISHED);
@@ -339,7 +339,7 @@ int main(int argc, char** argv) {
 
 			callBackSeq.push_back(USCXML_BEFOREENTERINGSTATE);
 			callBackSeq.push_back(USCXML_AFTERENTERINGSTATE);
-			
+
 			callBackSeq.push_back(USCXML_BEFOREMICROSTEP);
 			callBackSeq.push_back(USCXML_BEFOREEXITINGSTATE);
 			callBackSeq.push_back(USCXML_AFTEREXITINGSTATE);
@@ -348,7 +348,7 @@ int main(int argc, char** argv) {
 			callBackSeq.push_back(USCXML_BEFOREENTERINGSTATE);
 			callBackSeq.push_back(USCXML_AFTERENTERINGSTATE);
 			callBackSeq.push_back(USCXML_AFTERMICROSTEP);
-						
+
 			callBackSeq.push_back(USCXML_BEFORECOMPLETION);
 			callBackSeq.push_back(USCXML_AFTERCOMPLETION);
 
@@ -356,23 +356,23 @@ int main(int argc, char** argv) {
 			assert(interpreter.step() == USCXML_MICROSTEPPED);
 			assert(interpreter.step() == USCXML_FINISHED);
 		}
-		
+
 		if (1) {
 			// macrostep in between
 			const char* xml =
-			"<scxml>"
-			"	<state id=\"start\">"
-			"		<onentry>"
-			"			<send event=\"continue\" delay=\"2s\"/>"
-			"		</onentry>"
-			"		<transition target=\"s2\" event=\"continue\" />"
-			" </state>"
-			"	<state id=\"s2\">"
-			"		<transition target=\"done\" />"
-			" </state>"
-			" <final id=\"done\" />"
-			"</scxml>";
-			
+			    "<scxml>"
+			    "	<state id=\"start\">"
+			    "		<onentry>"
+			    "			<send event=\"continue\" delay=\"2s\"/>"
+			    "		</onentry>"
+			    "		<transition target=\"s2\" event=\"continue\" />"
+			    " </state>"
+			    "	<state id=\"s2\">"
+			    "		<transition target=\"done\" />"
+			    " </state>"
+			    " <final id=\"done\" />"
+			    "</scxml>";
+
 			Interpreter interpreter = Interpreter::fromXML(xml);
 			interpreter.addMonitor(mon);
 
@@ -410,7 +410,7 @@ int main(int argc, char** argv) {
 			assert(interpreter.step() == USCXML_MICROSTEPPED);
 			assert(interpreter.step() == USCXML_FINISHED);
 		}
-		
+
 #if 0
 
 

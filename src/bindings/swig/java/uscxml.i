@@ -36,6 +36,8 @@ typedef uscxml::ExecutableContentImpl ExecutableContentImpl;
 #pragma SWIG nowarn=401
 // do not warn when we override symbols via extend
 #pragma SWIG nowarn=302
+// do not warn when ignoring overrided method
+#pragma SWIG nowarn=516
 
 %javaconst(1);
 
@@ -92,6 +94,21 @@ WRAP_THROW_EXCEPTION(uscxml::Interpreter::fromURI);
 WRAP_THROW_EXCEPTION(uscxml::Interpreter::step);
 WRAP_THROW_EXCEPTION(uscxml::Interpreter::interpret);
 
+
+%define WRAP_TO_STRING( CLASSNAME )
+%extend CLASSNAME {
+	virtual std::string toString() {
+		std::stringstream ss;
+		ss << *self;
+		return ss.str();
+	}
+};
+%enddef
+
+WRAP_TO_STRING(uscxml::Event);
+WRAP_TO_STRING(uscxml::Data);
+WRAP_TO_STRING(uscxml::SendRequest);
+WRAP_TO_STRING(uscxml::InvokeRequest);
 
 %include "../uscxml_ignores.i"
 
@@ -153,8 +170,48 @@ BEAUTIFY_NATIVE(uscxml::InvokeRequest, InvokeRequest, InvokeRequestNative);
 // Beautify important classes
 //***********************************************
 
+%javamethodmodifiers uscxml::Event::getParamMap() "private";
+%javamethodmodifiers uscxml::Event::getParamMapKeys() "private";
+%javamethodmodifiers uscxml::Event::setParamMap(const std::map<std::string, std::list<uscxml::Data> >&) "private";
+%javamethodmodifiers uscxml::Event::getNameListKeys() "private";
+%javamethodmodifiers uscxml::Interpreter::getIOProcessorKeys() "private";
+%javamethodmodifiers uscxml::Interpreter::getInvokerKeys() "private";
+%javamethodmodifiers uscxml::Interpreter::getInvokers() "private";
+%javamethodmodifiers uscxml::Interpreter::getIOProcessors() "private";
+%javamethodmodifiers uscxml::Data::getCompoundKeys() "private";
+
 %include "../uscxml_beautify.i"
 
+
+%typemap(javaimports) uscxml::Interpreter %{
+import java.util.Map;
+import java.util.HashMap;
+import java.util.List;
+import java.util.LinkedList;
+%}
+
+%typemap(javacode) uscxml::Interpreter %{
+	public Map<String, NativeIOProcessor> getIOProcessors() {
+		Map<String, NativeIOProcessor> ioProcs = new HashMap<String, NativeIOProcessor>();
+		StringVector keys = getIOProcessorKeys();
+		IOProcMap ioProcMap = getIOProcessorsNative();
+		for (int i = 0; i < keys.size(); i++) {
+			ioProcs.put(keys.get(i), ioProcMap.get(keys.get(i)));
+		}
+		return ioProcs;
+	}
+
+	public Map<String, NativeInvoker> getInvokers() {
+		Map<String, NativeInvoker> invokers = new HashMap<String, NativeInvoker>();
+		StringVector keys = getInvokerKeys();
+		InvokerMap invokerMap = getInvokersNative();
+		for (int i = 0; i < keys.size(); i++) {
+			invokers.put(keys.get(i), invokerMap.get(keys.get(i)));
+		}
+		return invokers;
+	}
+	
+%}
 
 %rename(getCompoundNative) uscxml::Data::getCompound();
 %rename(getArrayNative) uscxml::Data::getArray();

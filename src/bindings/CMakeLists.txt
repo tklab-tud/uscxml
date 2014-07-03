@@ -12,6 +12,8 @@ if (WIN32)
 	endif()
 
 	LIST(APPEND CMAKE_PROGRAM_PATH "C:/Program Files/swig") # swig.exe
+	LIST(APPEND CMAKE_PROGRAM_PATH "C:/Program Files (x86)/swig") # swig.exe
+	
 endif()
 LIST(APPEND CMAKE_PROGRAM_PATH $ENV{SWIG_DIR})
 
@@ -23,6 +25,9 @@ if (SWIG_FOUND)
 		INCLUDE(${SWIG_USE_FILE})
 		add_subdirectory(swig/java)
 		add_subdirectory(swig/csharp)
+		if(SWIG_VERSION VERSION_LESS 3.0.0)
+			message(STATUS "SWIG version > 3.0 is recommended, found ${SWIG_VERSION}")
+		endif()
 	else()
 		message(STATUS "SWIG version 2.0.5 is required, found ${SWIG_VERSION} - skipping java wrapper generation")
 	endif()

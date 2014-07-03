@@ -47,6 +47,18 @@ uSCXML still fails the following ecmascript tests:
 <table>
 	<tr><th>Test#</th><th>Status</th><th>Description</th><th>Comment</th></tr>
 	<tr>
+		<td><tt><a href="https://github.com/tklab-tud/uscxml/blob/master/test/w3c/ecma/test553.scxml">553</a></tt></td>
+		<td><tt>Failed</tt></td>
+		<td>"test that the processor does not dispatch the event if evaluation of &lt;send>'s args causes an error."</td>
+		<td>We cannot correctly identify <emph>location expressions</emph> (valid LHS) for ecmascript. Send is performed anyway.</td>
+	</tr>
+	<tr>
+		<td><tt><a href="https://github.com/tklab-tud/uscxml/blob/master/test/w3c/ecma/test554.scxml">554</a></tt></td>
+		<td><tt>Failed</tt></td>
+		<td>"test that if the evaluation of &lt;invoke>'s args causes an error, the invocation is cancelled."</td>
+		<td>We cannot correctly identify <emph>location expressions</emph> (valid LHS) for ecmascript. Invoke is performed anyway.</td>
+	</tr>
+	<tr>
 		<td><tt><a href="https://github.com/tklab-tud/uscxml/blob/master/test/w3c/ecma/test579.scxml">579</a></tt></td>
 		<td><tt>Failed</tt></td>
 		<td>"Before the parent state has been visited for the first time, if a transition is executed that takes the history state as its target, the SCXML processor MUST execute any executable content in the transition after the parent state's onentry content and any content in a possible initial transition."</td>
@@ -128,7 +140,12 @@ internal phase is reached.
 
 ## Embedding uSCXML
 
-There are bindings for Java and C# with some examples in the <tt>embedding</tt> directory.
+There are bindings for Java and C# with some examples in the <tt>embedding</tt> directory. The bindings consist of
+two parts each (i) the C++ uscxml interpreter compiled as a loadable module for the target language and (ii) a target
+language specific module (uscxml.jar / uscxmlCSharp.dll) with the wrapper classes. The first one is loaded by the 
+target language (System.loadLibrary / SetDLLDirectory) while the second is to be included in your actual project.
+Have a look at the examples in <tt>embedding</tt> and adapt the paths to reflect your setup. See the [build 
+instructions](https://github.com/tklab-tud/uscxml/blob/master/docs/BUILDING.md) for details on how to build these.
 
 ## Extending uSCXML
 

@@ -26,7 +26,7 @@ namespace uscxml {
 
 class USCXML_API SendRequest : public Event {
 public:
-	SendRequest() {}
+	SendRequest() : delayMs(0) {}
 	SendRequest(Event event) : Event(event) {}
 
 	std::string getTarget() {

@@ -41,10 +41,10 @@ and that correct values are used -->
    <onentry>
      <send delay="5s" event="timeout"/>
     <send  event="event2"> 
-      <content>foo</content>
+      <content><conf:someInlineVal/></content>
       </send>
      </onentry>
-  <transition event="event2" conf:eventdataVal="'foo'" conf:targetpass=""/>
+  <transition event="event2" conf:eventdataSomeVal="" conf:targetpass=""/>
   <transition event="*" conf:targetfail=""/>
 
 </state>

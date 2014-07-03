@@ -12,8 +12,8 @@ before the timer goes off.  -->
     <send event="timer" conf:delay="1"/>
     </onentry>
     
-  <!-- namelist references an undeclared variable -->
-   <invoke type="http://www.w3.org/TR/scxml/" conf:namelist="2">
+  <!-- reference an invalid namelist -->
+   <invoke type="http://www.w3.org/TR/scxml/" conf:invalidNamelist="">
       <content>
        <scxml initial="subFinal" version="1.0" conf:datamodel=""  xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance">
              <final id="subFinal"/>

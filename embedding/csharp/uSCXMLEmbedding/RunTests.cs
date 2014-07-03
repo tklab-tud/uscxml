@@ -29,14 +29,19 @@ namespace embedding
                 SetDllDirectory("C:\\Users\\sradomski\\Desktop\\build\\uscxml\\lib\\csharp");
             }
 
-            testLifeCycle();
-            testExecutableContent();
-            testIOProcessor();
-            testInvoker();
+            int i = 1;
+            while (i-- > 0)
+            {
+                testLifeCycle();
+                testExecutableContent();
+                testIOProcessor();
+                testInvoker();
+            }
             Console.ReadKey();
         }
 
         public static void testInvoker() {
+            Console.WriteLine("testInvoker");
             CustomInvoker invoker = new CustomInvoker();
             // just register prototype at global factory
             Factory.getInstance().registerInvoker(invoker);
@@ -47,13 +52,15 @@ namespace embedding
             "    <invoke type=\"custom\" id=\"custominvoker1\">" +
             "    	<content>Some string content</content>" +
             "    </invoke>" +
-            "    <invoke type=\"java\" id=\"custominvoker2\" />" +
+            "    <invoke type=\"custom\" id=\"custominvoker2\" />" +
             "    <state id=\"s11\">" +
-            "    	<transition event=\"received1\" target=\"s12\" />" +
+            "    	<transition event=\"received1\" target=\"s12\">" +
+            "       </transition>" +
             "    </state>" +
             "    <state id=\"s12\">" +
             "		<onentry>" +
             "			<send target=\"#_custominvoker2\" event=\"foo\" />" +
+            "           <log label=\"label\" expr=\"foo\" />" +
             "		</onentry>" +
             "    	<transition event=\"received2\" target=\"done\" />" +
             "    </state>" +
@@ -69,6 +76,7 @@ namespace embedding
 
         public static void testIOProcessor()
         {
+            Console.WriteLine("testIOProcessor");
             CustomIOProc ioproc = new CustomIOProc();
             // just register prototype at global factory
             Factory.getInstance().registerIOProcessor(ioproc);
@@ -77,7 +85,7 @@ namespace embedding
             "<scxml>" +
             "  <state id=\"s1\">" +
             "    <onentry>" +
-            "      <send type=\"java\">" +
+            "      <send type=\"custom\">" +
             "        <content>This is some content!</content>" +
             "      </send>" +
             "    </onentry>" +
@@ -85,7 +93,7 @@ namespace embedding
             "  </state>" +
             "  <state id=\"s2\">" +
             "    <onentry>" +
-            "      <send type=\"java\">" +
+            "      <send type=\"custom\">" +
             "        <param name=\"foo\" expr=\"bar\" />" +
             "      </send>" +
             "    </onentry>" +
@@ -93,7 +101,7 @@ namespace embedding
             "  </state>" +
             "  <state id=\"s3\">" +
             "    <onentry>" +
-            "      <send type=\"java\">" +
+            "      <send type=\"custom\">" +
             "        <content>" +
             "        <this><is><xml/></is></this>" +
             "        </content>" +
@@ -112,6 +120,7 @@ namespace embedding
 
         public static void testExecutableContent()
         {
+            Console.WriteLine("testExecutableContent");
             CustomExecutableContent execContent = new CustomExecutableContent();
             Factory.getInstance().registerExecutableContent(execContent);
 
@@ -119,12 +128,12 @@ namespace embedding
                             "<scxml>\n" +
                             "  <state id=\"s0\">\n" +
                             "    <onentry>\n" +
-                            "      <custom foo=\"bar\">\n" +
+                            "      <!-- custom foo=\"bar\">\n" +
                             "        <something></something>\n" +
                             "      </custom>\n" +
                             "      <custom foo=\"bar\">\n" +
                             "        <something></something>\n" +
-                            "      </custom>\n" +
+                            "      </custom -->\n" +
                             "    </onentry>\n" +
                             "    <transition target=\"exit\" />" +
                             "  </state>\n" +
@@ -132,10 +141,12 @@ namespace embedding
                             "</scxml>\n"
                     );
             interpreter.interpret();
+            interpreter.Dispose();
         }
 
         public static void testLifeCycle()
         {
+            Console.WriteLine("testLifeCycle");
             // syntactic xml parse error -> throws
             try
             {
@@ -145,7 +156,7 @@ namespace embedding
             }
             catch (InterpreterException e)
             {
-                Console.WriteLine(e);
+//                Console.WriteLine(e);
             }
 
             // semantic xml parse error -> throws
@@ -159,7 +170,7 @@ namespace embedding
             }
             catch (InterpreterException e)
             {
-                Console.WriteLine(e);
+//                Console.WriteLine(e);
             }
 
             // request unknown datamodel
@@ -179,7 +190,7 @@ namespace embedding
             }
             catch (InterpreterException e)
             {
-                Console.WriteLine(e);
+//                Console.WriteLine(e);
             }
 
 

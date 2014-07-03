@@ -9,34 +9,10 @@
 %rename(NativeInterpreterMonitor) InterpreterMonitor;
 %rename(InterpreterMonitor) WrappedInterpreterMonitor;
 
-%extend uscxml::Event {	
-/*		std::vector<std::pair<std::string, uscxml::Data> > getParamPairs() {
-			std::vector<std::pair<std::string, Data> > pairs;
-	    std::multimap<std::string, Data>::iterator paramPairIter = self->getParams().begin();
-			while(paramPairIter != self->getParams().end()) {
-				pairs.push_back(*paramPairIter);
-				paramPairIter++;
-			}
-			return pairs;
-		}
+%rename(getInvokersNative) uscxml::Interpreter::getInvokers();
+%rename(getIOProcessorsNative) uscxml::Interpreter::getIOProcessors();
 
-		void setParamPairs(const std::vector<std::pair<std::string, uscxml::Data> >& pairs) {
-			std::multimap<std::string, Data> params;
-			std::vector<std::pair<std::string, Data> >::const_iterator pairIter = pairs.begin();
-			while(pairIter != pairs.end()) {
-				params.insert(std::make_pair(pairIter->first, pairIter->second));
-				pairIter++;
-			}
-			self->setParams(params);
-		}
-*/
-	
-	std::string toString() {
-		std::stringstream ss;
-		ss << *self;
-		return ss.str();
-	}
-	
+%extend uscxml::Event {	
 	std::map<std::string, std::list<uscxml::Data> > getParamMap() {
 		std::map<std::string, std::list<uscxml::Data> > paramMap;
     std::multimap<std::string, Data>::const_iterator paramPairIter = self->getParams().begin();
@@ -127,12 +103,6 @@
 };
 
 %extend uscxml::Data {
-	std::string toString() {
-		std::stringstream ss;
-		ss << *self;
-		return ss.str();
-	}
-	
 	std::vector<std::string> getCompoundKeys() {
 		std::vector<std::string> keys;
     std::map<std::string, Data>::const_iterator iter = self->compound.begin();
@@ -141,21 +111,5 @@
 			iter++;
 		}
 		return keys;
-	}
-};
-
-%extend uscxml::SendRequest {
-	std::string toString() {
-		std::stringstream ss;
-		ss << *self;
-		return ss.str();
-	}
-};
-
-%extend uscxml::InvokeRequest {
-	std::string toString() {
-		std::stringstream ss;
-		ss << *self;
-		return ss.str();
 	}
 };

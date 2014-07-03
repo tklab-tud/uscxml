@@ -14,7 +14,7 @@
    </state>
    <final id="s02">
      <donedata>
-      <param location="Varfoo" name="someParam"/>
+      <param location="foo.bar.baz " name="someParam"/>
       </donedata>
      </final>
   </state>

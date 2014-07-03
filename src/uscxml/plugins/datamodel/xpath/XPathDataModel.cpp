@@ -663,7 +663,7 @@ void XPathDataModel::assign(const NodeSet<std::string>& key,
 				// addattribute: Add an attribute with the name specified by 'attr'
 				// and value specified by 'expr' to the node specified by 'location'.
 				if (!HAS_ATTR(assignElem, "attr"))
-					ERROR_EXECUTION_THROW("Assign element is missing 'attr'")
+					ERROR_EXECUTION_THROW("Assign element is missing 'attr'");
 				element.setAttribute(ATTR(assignElem, "attr"), value);
 			} else {
 				/// test 547
