@@ -54,7 +54,7 @@ endif()
 
 add_executable(test-lifecycle src/test-lifecycle.cpp)
 target_link_libraries(test-lifecycle uscxml)
-add_test(test-lifecycle ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-arabica-namespaces)
+add_test(test-lifecycle ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-lifecycle)
 set_target_properties(test-lifecycle PROPERTIES FOLDER "Tests")
 
 if (NOT WIN32)
@@ -116,8 +116,8 @@ set_target_properties(test-url PROPERTIES FOLDER "Tests")
 
 add_executable(test-cmdline-parsing src/test-cmdline-parsing.cpp)
 target_link_libraries(test-cmdline-parsing uscxml)
-add_test(test-cmdline-parsing ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-cmdline-parsing)
-set_target_properties(test-cmdline-parsing PROPERTIES FOLDER "Tests")
+# add_test(test-cmdline-parsing ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-cmdline-parsing)
+# set_target_properties(test-cmdline-parsing PROPERTIES FOLDER "Tests")
 
 # add_executable(test-initial-config src/test-initial-config.cpp)
 # target_link_libraries(test-initial-config uscxml)
