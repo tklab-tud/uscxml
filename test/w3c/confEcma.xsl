@@ -275,7 +275,7 @@ events which cause the test to fail.  The default value provided here is pretty 
 
 <!-- this produces a reference to an invalid namelist, i.e. on that should cause an error -->
 <xsl:template match="//@conf:invalidNamelist">
-	<xsl:attribute name="namelist">"foo"</xsl:attribute>
+	<xsl:attribute name="namelist">&#34;foo</xsl:attribute>
 </xsl:template>
 
 

@@ -5,7 +5,7 @@ of <send>'s args causes an error..  --><scxml xmlns="http://www.w3.org/2005/07/s
 <state id="s0">
   <onentry>
    <!-- timeout event -->
-   <send event="timeout" delayexpr="'500ms'"/>
+   <send event="timeout" delayexpr="'50ms'"/>
    <!-- generate an invalid namelist -->
    <send event="event1" namelist="&#34;foo"/> 
     </onentry>

@@ -1,9 +1,0 @@
-<scxml>
-	<state id="atomic" />
-	<state id="compound">
-		<state id="compoundChild1" />
-		<state id="compoundChild2" />
-	</state>
-	<parallel id="parallel">
-	</parallel>
-</scxml>

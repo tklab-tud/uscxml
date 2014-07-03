@@ -324,7 +324,7 @@ If we find one of those binaries (and SWIG obviously), we will enable the langua
 Again, if you used plain Makefiles, you will get everything you need via:
 
 	$ make && make csharp
-	$ $ find lib -type f -iname *csharp*
+	$ find lib -type f -iname *csharp*
 	lib/csharp/libuscxmlNativeCSharp.so
 	lib/uscxmlCSharp.dll
 
