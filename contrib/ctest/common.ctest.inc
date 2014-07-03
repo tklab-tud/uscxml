@@ -134,8 +134,16 @@ if (CTEST_TOOLCHAIN)
 else()
 	set(CTEST_BUILD_TARGET "")
 endif()
+
 ctest_build()                     # build custom target that depends on all the actual tests
-ctest_test()                      # run tests
+if (NOT "${USCXML_EXCLUDE_LABEL_REGEX}" STREQUAL "")
+	ctest_test(EXCLUDE_LABEL ${USCXML_EXCLUDE_LABEL_REGEX})
+elseif(NOT "${USCXML_INCLUDE_LABEL_REGEX}" STREQUAL "")
+	ctest_test(INCLUDE_LABEL ${USCXML_INCLUDE_LABEL_REGEX})
+else()
+	ctest_test()
+endif()
+
 
 if(CTEST_COVERAGE_COMMAND)
   ctest_coverage()
