@@ -8,13 +8,17 @@ set(CTEST_BUILD_CONFIGURATION "Debug")
 set(CTEST_BUILD_NAME "${CMAKE_SYSTEM}")
 
 set(RETAIN_BUILD_DIR OFF)
-include("tests/plugins.ctest")
+include("tests/general.ctest")
 include("common.ctest.inc")
 
-set(RETAIN_BUILD_DIR OFF)
+set(RETAIN_BUILD_DIR ON)
 include("tests/ecma.ctest")
 include("common.ctest.inc")
 
-set(RETAIN_BUILD_DIR OFF)
+set(RETAIN_BUILD_DIR ON)
 include("tests/xpath.ctest")
+include("common.ctest.inc")
+
+set(RETAIN_BUILD_DIR OFF)
+include("tests/plugins-ecma.ctest")
 include("common.ctest.inc")
