@@ -457,6 +457,22 @@ bool V8DataModel::validate(const std::string& location, const std::string& schem
 	return true;
 }
 
+bool V8DataModel::isLocation(const std::string& expr) {
+	v8::Locker locker;
+	v8::HandleScope handleScope;
+	v8::TryCatch tryCatch;
+	v8::Context::Scope contextScope(_contexts.back());
+
+	v8::Handle<v8::String> source = v8::String::New((expr + "++").c_str());
+	v8::Handle<v8::Script> script = v8::Script::Compile(source);
+
+	if (script.IsEmpty() || tryCatch.HasCaught()) {
+		return false;
+	}
+
+	return true;
+}
+
 uint32_t V8DataModel::getLength(const std::string& expr) {
 	v8::Locker locker;
 	v8::HandleScope handleScope;
@@ -468,7 +484,7 @@ uint32_t V8DataModel::getLength(const std::string& expr) {
 
 	Event exceptionEvent;
 	exceptionEvent.name = "error.execution";
-	exceptionEvent.data.compound["exception"] = Data("'" + expr + "' does not evaluate to an array.", Data::VERBATIM);
+	exceptionEvent.data.compound["cause"] = Data("'" + expr + "' does not evaluate to an array.", Data::VERBATIM);
 
 	throw(exceptionEvent);
 }
@@ -720,7 +736,7 @@ void V8DataModel::throwExceptionEvent(const v8::TryCatch& tryCatch) {
 	exceptionEvent.eventType = Event::PLATFORM;
 
 	std::string exceptionString(*v8::String::AsciiValue(tryCatch.Exception()));
-	exceptionEvent.data.compound["exception"] = Data(exceptionString, Data::VERBATIM);;
+	exceptionEvent.data.compound["cause"] = Data(exceptionString, Data::VERBATIM);;
 
 	v8::Handle<v8::Message> message = tryCatch.Message();
 	if (!message.IsEmpty()) {

@@ -585,8 +585,8 @@ void InterpreterImpl::run(void* instance) {
 		}
 	} catch (Event e) {
 		LOG(ERROR) << e;
-	} catch(boost::bad_lexical_cast e) {
-		LOG(ERROR) << "InterpreterImpl::run catched exception: " << e.what();
+	} catch(std::exception e) {
+		LOG(ERROR) << "InterpreterImpl::run catched an exception: " << e.what() << std::endl << "Unclean shutdown";
 	} catch (...) {
 		LOG(ERROR) << "InterpreterImpl::run catched unknown exception";
 	}
@@ -1164,9 +1164,10 @@ void InterpreterImpl::send(const Arabica::DOM::Node<std::string>& element) {
 		if (HAS_ATTR(element, "namelist")) {
 			std::list<std::string> names = tokenizeIdRefs(ATTR(element, "namelist"));
 			for (std::list<std::string>::const_iterator nameIter = names.begin(); nameIter != names.end(); nameIter++) {
-				if (!_dataModel.isDeclared(*nameIter)) {
-					LOG(ERROR) << "Error in send element " << DOMUtils::xPathForNode(element) << " namelist:" << std::endl << "'" << *nameIter << "' is not declared" << std::endl;
+				if (!_dataModel.isLocation(*nameIter)) {
+					LOG(ERROR) << "Error in send element " << DOMUtils::xPathForNode(element) << " namelist:" << std::endl << "'" << *nameIter << "' is not a location expression" << std::endl;
 					ERROR_EXECUTION2(err, "Location expression '" + *nameIter + "' in namelist is invalid", element);
+					receiveInternal(err);
 					return;
 				}
 				Data namelistValue = _dataModel.getStringAsData(*nameIter);
@@ -1200,6 +1201,7 @@ void InterpreterImpl::send(const Arabica::DOM::Node<std::string>& element) {
 				} catch (Event e) {
 					e.name = "error.execution";
 					receiveInternal(e);
+					return;
 				}
 				// set as content if it's only an atom
 				if (sendReq.data.atom.length() > 0) {
@@ -1311,7 +1313,15 @@ void InterpreterImpl::invoke(const Arabica::DOM::Node<std::string>& element) {
 		if (HAS_ATTR(element, "namelist")) {
 			std::list<std::string> names = tokenizeIdRefs(ATTR(element, "namelist"));
 			for (std::list<std::string>::const_iterator nameIter = names.begin(); nameIter != names.end(); nameIter++) {
-				invokeReq.namelist[*nameIter] = _dataModel.evalAsString(*nameIter);
+				if (!_dataModel.isLocation(*nameIter)) {
+					LOG(ERROR) << "Error in send element " << DOMUtils::xPathForNode(element) << " namelist:" << std::endl << "'" << *nameIter << "' is not a location expression" << std::endl;
+					ERROR_EXECUTION2(err, "Location expression '" + *nameIter + "' in namelist is invalid", element);
+					receiveInternal(err);
+					return;
+				}
+				Data namelistValue = _dataModel.getStringAsData(*nameIter);
+				invokeReq.namelist[*nameIter] = namelistValue;
+				invokeReq.data.compound[*nameIter] = namelistValue;
 			}
 		}
 

@@ -285,6 +285,10 @@ bool XPathDataModel::validate(const std::string& location, const std::string& sc
 	return true;
 }
 
+bool XPathDataModel::isLocation(const std::string& expr) {
+	return true;
+}
+
 uint32_t XPathDataModel::getLength(const std::string& expr) {
 //	std::cout << _datamodel << std::endl;
 	XPathValue<std::string> result = _xpath.evaluate_expr(expr, _doc);

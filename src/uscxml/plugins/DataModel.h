@@ -41,6 +41,7 @@ public:
 	virtual std::list<std::string> getNames() = 0;
 
 	virtual bool validate(const std::string& location, const std::string& schema) = 0;
+	virtual bool isLocation(const std::string& expr) = 0;
 	virtual void setEvent(const Event& event) = 0;
 	virtual Data getStringAsData(const std::string& content) = 0;
 
@@ -121,6 +122,10 @@ public:
 	virtual bool validate(const std::string& location, const std::string& schema) {
 		return _impl->validate(location, schema);
 	}
+	virtual bool isLocation(const std::string& expr) {
+		return _impl->isLocation(expr);
+	}
+
 	virtual void setEvent(const Event& event) {
 		return _impl->setEvent(event);
 	}

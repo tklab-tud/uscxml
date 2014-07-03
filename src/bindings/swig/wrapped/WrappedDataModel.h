@@ -99,6 +99,10 @@ public:
 		return false;
 	}
 
+	virtual bool isLocation(const std::string& expr) {
+		return true;
+	}
+
 	virtual void assign(const Arabica::DOM::Element<std::string>& assignElem,
 	                    const Arabica::DOM::Node<std::string>& node,
 	                    const std::string& content) {

@@ -49,6 +49,7 @@ public:
 	}
 
 	virtual bool validate(const std::string& location, const std::string& schema);
+	virtual bool isLocation(const std::string& expr);
 	virtual void setEvent(const Event& event);
 	virtual Data getStringAsData(const std::string& content);
 
