@@ -68,6 +68,7 @@ public:
 	virtual void registerIOProcessor(const std::string& name, const IOProcessor& ioprocessor);
 
 	virtual bool validate(const std::string& location, const std::string& schema);
+	virtual bool isLocation(const std::string& expr);
 
 	virtual uint32_t getLength(const std::string& expr);
 	virtual void setForeach(const std::string& item,

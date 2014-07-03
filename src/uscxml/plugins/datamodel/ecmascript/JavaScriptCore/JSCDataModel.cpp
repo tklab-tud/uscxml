@@ -482,6 +482,19 @@ void JSCDataModel::setForeach(const std::string& item,
 	}
 }
 
+bool JSCDataModel::isLocation(const std::string& expr) {
+	JSStringRef scriptJS = JSStringCreateWithUTF8CString((expr + "++").c_str());
+	JSValueRef exception = NULL;
+	bool valid = JSCheckScriptSyntax(_ctx, scriptJS, NULL, 0, &exception);
+	JSStringRelease(scriptJS);
+
+	if (exception || !valid) {
+		return false;
+	}
+	return true;
+}
+
+
 bool JSCDataModel::isDeclared(const std::string& expr) {
 	JSStringRef scriptJS = JSStringCreateWithUTF8CString(expr.c_str());
 	JSValueRef exception = NULL;

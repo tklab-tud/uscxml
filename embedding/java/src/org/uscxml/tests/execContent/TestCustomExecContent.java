@@ -42,7 +42,9 @@ public class TestCustomExecContent extends ExecutableContent {
 
 	@Override
 	public ExecutableContent create(Interpreter interpreter) {
-		return new TestCustomExecContent();
+		TestCustomExecContent execContent = new TestCustomExecContent();
+		execContent.swigReleaseOwnership();
+		return execContent;
 	}
 
 	/**

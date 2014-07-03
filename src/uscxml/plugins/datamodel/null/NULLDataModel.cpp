@@ -76,6 +76,10 @@ bool NULLDataModel::validate(const std::string& location, const std::string& sch
 	return true;
 }
 
+bool NULLDataModel::isLocation(const std::string& expr) {
+	return true;
+}
+
 uint32_t NULLDataModel::getLength(const std::string& expr) {
 	return 0;
 }

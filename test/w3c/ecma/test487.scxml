@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?><!-- test illegal assignment.  error.execution should be raised.  --><scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" initial="s0" datamodel="ecmascript" version="1.0">
 <datamodel>
-  <data id="Var1" expr="return"/>
+  <data id="Var1"/>
   </datamodel>
      
 <state id="s0">
   <onentry>
+  	<assign location="Var1" expr="return"/>
    <raise event="event"/>
    </onentry>
    

@@ -1,6 +1,7 @@
 package org.uscxml.datamodel.ecmascript;
 
 import java.lang.reflect.Method;
+import java.util.Map;
 
 import org.mozilla.javascript.Callable;
 import org.mozilla.javascript.Context;
@@ -14,8 +15,9 @@ import org.uscxml.Data;
 import org.uscxml.DataModel;
 import org.uscxml.Event;
 import org.uscxml.Interpreter;
+import org.uscxml.NativeIOProcessor;
+import org.uscxml.NativeInvoker;
 import org.uscxml.StringList;
-import org.uscxml.StringVector;
 
 public class ECMAScriptDataModel extends DataModel {
 
@@ -84,6 +86,7 @@ public class ECMAScriptDataModel extends DataModel {
 		 */
 		
 		ECMAScriptDataModel newDM = new ECMAScriptDataModel();
+		newDM.swigReleaseOwnership();
 		newDM.interpreter = interpreter;
 		newDM.ctx = Context.enter();
 
@@ -99,11 +102,9 @@ public class ECMAScriptDataModel extends DataModel {
 		// ioProcessors
 		{
 			Data ioProcs = new Data();
-			StringVector keys = interpreter.getIOProcessorKeys();
-			for (int i = 0; i < keys.size(); i++) {
-				ioProcs.put(keys.get(i), interpreter
-						.getIOProcessors().get(keys.get(i))
-						.getDataModelVariables());
+			Map<String, NativeIOProcessor> ioProcNatives = interpreter.getIOProcessors();
+			for (String key : ioProcNatives.keySet()) {
+				ioProcs.put(key, ioProcNatives.get(key).getDataModelVariables());
 			}
 			newDM.scope
 					.put("_ioprocessors", newDM.scope, new ECMAData(ioProcs));
@@ -112,11 +113,9 @@ public class ECMAScriptDataModel extends DataModel {
 		// invokers
 		{
 			Data invokers = new Data();
-			StringVector keys = interpreter.getInvokerKeys();
-			for (int i = 0; i < keys.size(); i++) {
-				invokers.put(keys.get(i), interpreter
-						.getInvokers().get(keys.get(i))
-						.getDataModelVariables());
+			Map<String, NativeInvoker> invokersNatives = interpreter.getInvokers();
+			for (String key : invokersNatives.keySet()) {
+				invokers.put(key, invokersNatives.get(key).getDataModelVariables());
 			}
 			newDM.scope
 					.put("_ioprocessors", newDM.scope, new ECMAData(invokers));

@@ -285,6 +285,10 @@ bool XPathDataModel::validate(const std::string& location, const std::string& sc
 	return true;
 }
 
+bool XPathDataModel::isLocation(const std::string& expr) {
+	return true;
+}
+
 uint32_t XPathDataModel::getLength(const std::string& expr) {
 //	std::cout << _datamodel << std::endl;
 	XPathValue<std::string> result = _xpath.evaluate_expr(expr, _doc);
@@ -663,7 +667,7 @@ void XPathDataModel::assign(const NodeSet<std::string>& key,
 				// addattribute: Add an attribute with the name specified by 'attr'
 				// and value specified by 'expr' to the node specified by 'location'.
 				if (!HAS_ATTR(assignElem, "attr"))
-					ERROR_EXECUTION_THROW("Assign element is missing 'attr'")
+					ERROR_EXECUTION_THROW("Assign element is missing 'attr'");
 				element.setAttribute(ATTR(assignElem, "attr"), value);
 			} else {
 				/// test 547

@@ -151,7 +151,7 @@ InterpreterState InterpreterDraft6::step(int waitForMS = 0) {
 			}
 			_stable = true;
 		}
-		
+
 		// test415
 		if (_topLevelFinalReached)
 			goto EXIT_INTERPRETER;
@@ -185,7 +185,7 @@ InterpreterState InterpreterDraft6::step(int waitForMS = 0) {
 		if (_state != USCXML_MACROSTEPPED && _state != USCXML_IDLE)
 			USCXML_MONITOR_CALLBACK(onStableConfiguration)
 
-		setInterpreterState(USCXML_MACROSTEPPED);
+			setInterpreterState(USCXML_MACROSTEPPED);
 
 		if (_topLevelFinalReached)
 			goto EXIT_INTERPRETER;
@@ -232,7 +232,7 @@ InterpreterState InterpreterDraft6::step(int waitForMS = 0) {
 		_currEvent = _externalQueue.pop();
 		_currEvent.eventType = Event::EXTERNAL; // make sure it is set to external
 		_stable = false;
-		
+
 		if (_topLevelFinalReached)
 			goto EXIT_INTERPRETER;
 

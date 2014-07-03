@@ -165,7 +165,7 @@
 	<content xmlns="http://www.w3.org/2005/07/scxml">foo</content>
 </xsl:template>
 
-
+<xsl:template match="//conf:someInlineVal">123</xsl:template>
 
 <!-- this returns something that is guaranteed not to be the ID of the current session -->
 <xsl:template match="//@conf:invalidSessionID">
@@ -272,6 +272,12 @@ events which cause the test to fail.  The default value provided here is pretty 
 <xsl:template match="//@conf:namelist">
 	<xsl:attribute name="namelist">Var<xsl:value-of select="." /></xsl:attribute>
 </xsl:template>
+
+<!-- this produces a reference to an invalid namelist, i.e. on that should cause an error -->
+<xsl:template match="//@conf:invalidNamelist">
+	<xsl:attribute name="namelist">"foo"</xsl:attribute>
+</xsl:template>
+
 
 
 
@@ -380,6 +386,10 @@ events which cause the test to fail.  The default value provided here is pretty 
 	</xsl:attribute>
 </xsl:template> 
 
+<!-- test that the specified var has the value specified by <conf:someInlineVal> -->
+<xsl:template match="//@conf:idSomeVal">
+	<xsl:attribute name="cond">Var<xsl:value-of select="." /> == 123</xsl:attribute>
+</xsl:template>
 
 <!-- test that the event's name fieldhas the value specified -->
 <xsl:template match="//@conf:eventNameVal">
@@ -426,6 +436,11 @@ is the second argument -->
 
 <xsl:template match="//@conf:eventdataVal">
 	<xsl:attribute name="cond">_event.data == <xsl:value-of select="."/></xsl:attribute>
+</xsl:template>
+
+<!-- test that _event.data is set to the value specified by <conf:someInlineVal> -->
+<xsl:template match="//@conf:eventdataSomeVal">
+	<xsl:attribute name="cond">_event.data == 123</xsl:attribute>
 </xsl:template>
 
 <xsl:template match="//@conf:emptyEventData">

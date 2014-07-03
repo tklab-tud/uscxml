@@ -607,6 +607,10 @@ bool SWIDataModel::validate(const std::string& location, const std::string& sche
 	return true;
 }
 
+bool SWIDataModel::isLocation(const std::string& expr) {
+	return true;
+}
+
 uint32_t SWIDataModel::getLength(const std::string& expr) {
 	SWIEngineLock engineLock;
 	try {

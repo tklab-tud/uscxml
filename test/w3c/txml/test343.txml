@@ -17,7 +17,7 @@
    </state>
    <final id="s02">
      <donedata>
-      <param conf:location="foo" name="someParam"/>
+      <param conf:invalidLocation="foo" name="someParam"/>
       </donedata>
      </final>
   </state>

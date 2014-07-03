@@ -672,7 +672,7 @@ void EventHandlerImpl::returnEvent(Event& event, bool external) {
 		event.origin = "#_" + _invokeId;
 	if (event.origintype.length() == 0)
 		event.origintype = _type;
-	
+
 	if (external) {
 		_interpreter->receive(event);
 	} else {

@@ -47,7 +47,9 @@ public class TestCustomInvoker extends Invoker {
 
 	@Override
 	public Invoker create(Interpreter interpreter) {
-		return new TestCustomInvoker();
+		TestCustomInvoker invoker = new TestCustomInvoker();
+		invoker.swigReleaseOwnership();
+		return invoker;
 	}
 
 	/**
@@ -73,6 +75,7 @@ public class TestCustomInvoker extends Invoker {
 		"    </state>" +
 		"    <state id=\"s12\">" +
 		"		<onentry>" +
+        "           <log label=\"label\" expr=\"foo\" />" +
 		"			<send target=\"#_javainvoker2\" event=\"foo\" />" +
 		"		</onentry>" +
 		"    	<transition event=\"received2\" target=\"done\" />" +		

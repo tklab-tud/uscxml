@@ -12,19 +12,27 @@ essentially the same on every platform:
 in <tt>&lt;USCXML_SRC&gt;/build/</tt>.
 4. Run cmake (or ccmake / CMake-GUI) to create the files required by your actual build-system.
 5. Use your actual build-system or development environment to build uscxml.
-6. Read the SCXML draft and have a look at the tests to get started.
+6. Optionally build the [language bindings](#language-bindings) to embed the SCXML interpreter in another language.
+7. Read the SCXML draft and have a look at the tests to get started.
 
 If you want to build for another IDE or build-system, just create a new
-*out-of-source* build directory and start over with cmake. To get an idea of
+*out-of-source* build directory and start over with CMake. To get an idea of
 supported IDEs and build-environments on your platform, type <tt>cmake --help</tt>
 or run the CMake-GUI and look for the *Generators* section at the end of the
 output. Default on Unices is Makefiles.
+
+<b>Note:</b> If you plan to use Eclipse CDT, you cannot have a build directory anywhere under 
+the source directory - just create the build directory anywhere else. This only applies to the Eclipse CDT
+project generator.
+
+<b>Note:</b> You cannot build the language bindings with the Visual Studio project as it croaks when calling SWIG,
+just have another build directory with the "NMake Makefiles" project generator.
 
 # Build Dependencies
 
 Overview of the uscxml dependencies. See the [Platform Notes](#platform-notes) for details.
 
-<b>Note:</b> We download pre-compiled versions of most dependencies at cmake configure-time. If you want
+<b>Note:</b> We download pre-compiled versions of most dependencies at CMake configure-time. If you want
 to provide you own libraries, remove them from <tt>&lt;USCXML_SRC&gt;/contrib/prebuilt/</tt> and provide
 your own.
 
@@ -36,11 +44,15 @@ your own.
 			<td>>=&nbsp;2.8.6</td>
 			<td>The build-system used for uscxml.</td></tr>
 		<tr>
+			<td><a href="http://www.swig.org">SWIG</a><br />optional</td>
+			<td>>=&nbsp;2.0.6</td>
+			<td>Generates language bindings to embed uSCXML in other target languages.</td></tr>
+		<tr>
 			<td><a href="http://libevent.org">libevent</a><br />pre-compiled</td>
 			<td>>=&nbsp;2.1.x</td>
 			<td>Event queues with callbacks and the HTTP server.</td></tr>
 		<tr>
-			<td><a href="http://curl.haxx.se">curl</a><br />required</td>
+			<td><a href="http://curl.haxx.se">curl</a><br />pre-compiled / required</td>
 			<td>>=&nbsp;7.29.0</td>
 			<td>URL downloads.</td></tr>
 		<tr>
@@ -110,7 +122,7 @@ This section will detail the preparation of the respective platforms to ultimate
 
 ## Mac OSX
 
-You will have to install <tt>cmake</tt> via Macports:
+You will have to install <tt>CMake</tt> via Macports:
 
 	sudo port install cmake
 
@@ -126,9 +138,9 @@ Just download the source and invoke CMake to create Makefiles or a Xcode project
 	-- Build files have been written to: .../build/cli
 	$ make
 
-You can test whether everything works by starting the mmi-browser with a test.scxml file:
+You can test whether everything works by starting the uscxml-browser with a test.scxml file:
 
-	$ ./bin/mmi-browser ../../test/samples/uscxml/test-ecmascript.scxml
+	$ ./bin/uscxml-browser ../../test/uscxml/test-ecmascript.scxml
 
 ### Xcode
 
@@ -157,7 +169,7 @@ This would be all distributions based on Debian, like Ubuntu, Linux Mint and the
 	$ sudo apt-get install libxml2-dev libcurl4-openssl-dev
 
 There may still be packages missing due to the set of dependencies among packages
-in the various distributons. Try to run cmake and resolve dependencies until you
+in the various distributons. Try to run CMake and resolve dependencies until you
 are satisfied.
 
 ### Preparing *yum based* distributions
@@ -214,34 +226,28 @@ Instructions are a literal copy of building uscxml for MacOSX on the console fro
 	-- Build files have been written to: .../build/cli
 	$ make
 
-You can test whether everything works by starting the mmi-browser with a test.scxml file:
+You can test whether everything works by starting the uscxml-browser with a test.scxml file:
 
-	$ ./bin/mmi-browser ../../test/samples/uscxml/test-ecmascript.scxml
+	$ ./bin/uscxml-browser ../../test/uscxml/test-ecmascript.scxml
 
 ### Eclipse CDT
 
 <b>Note:</b> Eclipse does not like the project to be a subdirectory in the source.
 You have to choose your build directory with the generated project accordingly.
 
-	$ mkdir -p build/uscxml/eclipse && cd build/uscxml/eclipse
+	$ mkdir -p ~/Desktop/build/uscxml/eclipse && cd ~/Desktop/build/uscxml/eclipse
 	$ cmake -G "Eclipse CDT4 - Unix Makefiles" <USCXML_SRCDIR>
 	[...]
 	-- Build files have been written to: .../build/uscxml/eclipse
 
 Now open Eclipse CDT and import the out-of-source directory as an existing project into workspace, leaving the "Copy projects
 into workspace" checkbox unchecked. There are some more [detailed instruction](http://www.cmake.org/Wiki/Eclipse_CDT4_Generator) available
-in the cmake wiki as well.
-
-### Compiling Dependencies
-
-If the packages in your distribution are too old, you will have to compile current
-binaries. This applies especially for SWI and CMake as they *need* to be rather
-current. Have a look at the build dependencies above for minimum versions.
+in the CMake wiki as well.
 
 ## Windows
 
-Building from source on windows is somewhat more involved and instructions are necessarily in prose form. These instructions were
-created using Windows 7 and MS Visual Studio 2010.
+Building from source on windows is somewhat more involved and instructions are necessarily in prose form. These 
+instructions were created using Windows 7 and MS Visual Studio 2010.
 
 ### Prepare compilation
 
@@ -262,3 +268,93 @@ Just open it up to continue in your IDE.
 <b>Note:</b> We only tested with the MSVC compiler. You can try to compile
 with MinGW but you would have to build all the dependent libraries as well.
 
+<b>Note:</b> We do no provide prebuilt dependencies for MSVC18.x (Visual Studio 2012 / 2013). 
+You can still use the bindings for C#, but not the native C++ libraries.
+
+## Language Bindings
+
+In order to build any language bindings, you will need to have SWIG and the development kit of your target language
+installed. The set of available language bindings is printed at the end of the CMake invocation:
+
+	$ cmake <USCXML_SRC>
+	...
+	--   Available custom elements ...... : respond file postpone fetch 
+	--   Available language bindings .... : csharp java
+	-- General information:
+	...
+
+### Java
+
+We are relying on CMake's [FindJNI.CMake](http://www.cmake.org/cmake/help/v2.8.12/cmake.html#module:FindJNI) module 
+to find the JNI headers and respective libraries. On unices, it's easiest to check whether <tt>jni.h</tt> is available 
+in <tt>JAVA_HOME</tt>:
+
+	$ find $JAVA_HOME -name jni.h
+	/usr/lib/jvm/java-7-openjdk-i386/include/jni.h
+
+In addition, you will need apache's <tt>ant</tt> in the path or in <tt>$ENV{ANT_HOME}/bin</tt>:
+
+	$ ant -version
+	Apache Ant(TM) version 1.8.2 compiled on September 22 2011
+
+If both of these are given, you ought to get <tt>java</tt> as an available language binding and a new target called
+<tt>java</tt> for your build system. If you used plain Makefiles (default on unices), you will get everything you need via:
+
+	$ make && make java
+	$ ls lib/*.jnilib lib/*.jar
+	lib/libuscxmlNativeJava64.jnilib lib/uscxml.jar
+
+The <tt>uscxml.jar</tt> is to be added to your project's classpath, while the <tt>libuscxmlNativeJava64.jnilib</tt> 
+(or .so, .dll) needs to be loaded <b>once</b> via <tt>System.load()</tt> before you can use native objects.
+
+### CSharp
+
+For the CSharp bindings, we need to find either <tt>csc.exe</tt> from the Microsoft.NET framework or <tt>dmcs</tt> 
+from the mono project. We search the following places for these:
+
+	$ENV{CSC_HOME}; $ENV{DMCS_HOME}
+	"C:/Windows/Microsoft.NET/Framework/v3.5"
+	"C:/Windows/Microsoft.NET/Framework/v4.0.30319"
+
+If we find one of those binaries (and SWIG obviously), we will enable the language bindings.
+
+	$ which dmcs
+	/opt/local/bin/dmcs
+
+Again, if you used plain Makefiles, you will get everything you need via:
+
+	$ make && make csharp
+	$ $ find lib -type f -iname *csharp*
+	lib/csharp/libuscxmlNativeCSharp.so
+	lib/uscxmlCSharp.dll
+
+The <tt>libuscxmlNativeCSharp.so</tt> has to be available to your C# runtime, either by installing it in 
+<tt>/usr/local/lib</tt> or (preferred) by using <tt>LD_PRELOAD</tt> or <tt>SetDllDirectory</tt>. See the
+embedding examples. The <tt>uscxmlCSharp.dll</tt> contains the managed code portion and needs to be added
+to your C# project as a reference.
+
+<b>Note:</b> You cannot use uSCXML with Xamarin Studio / Mono on Mac out of the box, as they <emph>still</emph> 
+have no 64Bit support. The last Macintosh without 64Bit support was the (late 2006) Mac Mini with an Intel Core Duo.
+
+### Important Note for Windows
+
+You cannot use CMake projects generated for Visual Studio to build the target language specific part of the
+various bindings - you have to use <tt>nmake</tt> at a command prompt. Open a <tt>Visual Studio [x64 Win64] 
+Command Prompt (2010)</tt> and type:
+
+	> cd c:\path\to\build\dir
+	> cmake -G"NMake Makefiles" c:\path\to\uscxml\source
+	...
+	> nmake && nmake csharp && nmake java
+	...
+
+## About 32/64Bit Support
+
+We do support both, 32 and 64Bit for Linux and Windows. On Macintosh, most prebuilt dependencies are compiled as 
+universal binaries with 32/64Bit but we build 64Bit binaries exclusively. The reason is that e.g. <tt>curl</tt>
+cannot be compiled as a universal binary as its header files make assumptions about the bit-depth of an int.
+Furthermore, most libraries used by invokers and provided by brew or Macports will be 64Bit only and fail to link.
+
+If you feel adventurous, you can uncomment <tt>set(CMAKE_OSX_ARCHITECTURES "i386;x86_64")</tt> in the topmost
+<tt>CMakeLists.txt</tt> and fight your way through the linker errors.
+ 

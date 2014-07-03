@@ -89,6 +89,7 @@ public class TestCustomIOProc extends IOProcessor {
 	public IOProcessor create(Interpreter interpreter) {
 		TestCustomIOProc ioProc = new TestCustomIOProc();
 		ioProc.interpreter = interpreter;
+		ioProc.swigReleaseOwnership();
 		return ioProc;
 	}
 
@@ -102,7 +103,7 @@ public class TestCustomIOProc extends IOProcessor {
 		TestCustomIOProc ioproc = new TestCustomIOProc();
 		// just register prototype at global factory
 		Factory.getInstance().registerIOProcessor(ioproc);
-
+		
 		String xml = 
 		"<scxml>" +
 		"  <state id=\"s1\">" +

@@ -98,6 +98,10 @@ bool PromelaDataModel::validate(const std::string& location, const std::string& 
 	return true;
 }
 
+bool PromelaDataModel::isLocation(const std::string& expr) {
+	return true;
+}
+
 uint32_t PromelaDataModel::getLength(const std::string& expr) {
 	if (!isDeclared(expr)) {
 		ERROR_EXECUTION_THROW("Variable '" + expr + "' was not declared");

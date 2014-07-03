@@ -36,6 +36,8 @@ typedef uscxml::ExecutableContentImpl ExecutableContentImpl;
 #pragma SWIG nowarn=401
 // do not warn when we override symbols via extend
 #pragma SWIG nowarn=302
+// do not warn when ignoring overrided method
+#pragma SWIG nowarn=516
 
 %csconst(1);
 
@@ -133,13 +135,68 @@ WRAP_THROW_EXCEPTION(uscxml::Interpreter::step);
 WRAP_THROW_EXCEPTION(uscxml::Interpreter::interpret);
 
 
+%define WRAP_TO_STRING( CLASSNAME )
+%csmethodmodifiers CLASSNAME::ToString() "public override";
+%extend CLASSNAME {	
+	virtual std::string ToString() {
+		std::stringstream ss;
+		ss << *self;
+		return ss.str();
+	}
+};
+%enddef
+
+WRAP_TO_STRING(uscxml::Event);
+WRAP_TO_STRING(uscxml::Data);
+WRAP_TO_STRING(uscxml::SendRequest);
+WRAP_TO_STRING(uscxml::InvokeRequest);
+
 %include "../uscxml_ignores.i"
 
 //***********************************************
 // Beautify important classes
 //***********************************************
 
+%csmethodmodifiers uscxml::Event::getParamMap() "private";
+%csmethodmodifiers uscxml::Event::getParamMapKeys() "private";
+%csmethodmodifiers uscxml::Event::setParamMap(const std::map<std::string, std::list<uscxml::Data> >&) "private";
+%csmethodmodifiers uscxml::Event::getNameListKeys() "private";
+%csmethodmodifiers uscxml::Interpreter::getIOProcessorKeys() "private";
+%csmethodmodifiers uscxml::Interpreter::getInvokerKeys() "private";
+%csmethodmodifiers uscxml::Interpreter::getInvokers() "private";
+%csmethodmodifiers uscxml::Interpreter::getIOProcessors() "private";
+%csmethodmodifiers uscxml::Data::getCompoundKeys() "private";
+
 %include "../uscxml_beautify.i"
+
+%typemap(csimports) uscxml::Interpreter %{
+using System;
+using System.Collections.Generic;
+using System.Runtime.InteropServices;
+%}
+
+%typemap(cscode) uscxml::Interpreter %{
+	public Dictionary<string, NativeIOProcessor> getIOProcessors() {
+		Dictionary<string, NativeIOProcessor> ioProcs = new Dictionary<string, NativeIOProcessor>();
+		StringVector keys = getIOProcessorKeys();
+		IOProcMap ioProcMap = getIOProcessorsNative();
+		for (int i = 0; i < keys.Count; i++) {
+			ioProcs[keys[i]] = ioProcMap[keys[i]];
+		}
+		return ioProcs;
+	}
+	
+	public Dictionary<string, NativeInvoker> getInvokers() {
+		Dictionary<string, NativeInvoker> invokers = new Dictionary<string, NativeInvoker>();
+		StringVector keys = getInvokerKeys();
+		InvokerMap invokerMap = getInvokersNative();
+		for (int i = 0; i < keys.Count; i++) {
+			invokers[keys[i]] = invokerMap[keys[i]];
+		}
+		return invokers;
+	}
+	
+%}
 
 
 %rename(getCompoundNative) uscxml::Data::getCompound();

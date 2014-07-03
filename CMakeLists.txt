@@ -149,8 +149,8 @@ if(CMAKE_CROSSCOMPILING)
 		SET(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM "BOTH")
 		SET(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE "BOTH")
 		SET(USCXML_PREBUILT_LIBRARY_PATH "${PROJECT_SOURCE_DIR}/contrib/prebuilt/android/${ANDROID_ABI}")
-		LIST(APPEND CMAKE_FIND_ROOT_PATH "/usr/local/bin") # this is needed to find swig
-		LIST(APPEND CMAKE_FIND_ROOT_PATH "/opt/local/bin") # this is needed to find protoc
+		LIST(APPEND CMAKE_PREFIX_PATH "/usr/local/bin") # this is needed to find swig
+		LIST(APPEND CMAKE_PREFIX_PATH "/opt/local/bin") # this is needed to find protoc
 	endif ()
 else ()
 	# SET(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM "BOTH")
@@ -265,19 +265,20 @@ endif()
 if (CMAKE_CROSSCOMPILING)
 	# always prefer prebuilt libraries for cross-compiling
 	OPTION(BUILD_PREFER_PREBUILT_LIBS "Search libraries in contrib/prebuilt first" ON)
-	SET(CMAKE_FIND_ROOT_PATH "${USCXML_PREBUILT_LIBRARY_PATH};${USCXML_PREBUILT_HEADER_PATH};${CMAKE_FIND_ROOT_PATH}")
+	SET(CMAKE_PREFIX_PATH "${USCXML_PREBUILT_LIBRARY_PATH};${USCXML_PREBUILT_HEADER_PATH};${CMAKE_PREFIX_PATH}")
 else()
 	OPTION(BUILD_PREFER_PREBUILT_LIBS "Search libraries in contrib/prebuilt first" ON)
 	if (BUILD_PREFER_PREBUILT_LIBS)
 		# for everything, we start our search in contrib/prebuilt
-		SET(CMAKE_FIND_ROOT_PATH "${USCXML_PREBUILT_LIBRARY_PATH};${USCXML_PREBUILT_HEADER_PATH};${CMAKE_FIND_ROOT_PATH}")
+		SET(CMAKE_PREFIX_PATH "${USCXML_PREBUILT_LIBRARY_PATH};${USCXML_PREBUILT_HEADER_PATH};${CMAKE_PREFIX_PATH}")
 	else()
 		# using this trick, we search paths from find_* before CMAKE_FIND_ROOT_PATH as '/' is prepended first
-		SET(CMAKE_FIND_ROOT_PATH "/;${CMAKE_FIND_ROOT_PATH};${USCXML_PREBUILT_LIBRARY_PATH};${USCXML_PREBUILT_HEADER_PATH}")
+		SET(CMAKE_PREFIX_PATH "/;${CMAKE_PREFIX_PATH};${USCXML_PREBUILT_LIBRARY_PATH};${USCXML_PREBUILT_HEADER_PATH}")
 	endif()
 endif()
 include_directories(${USCXML_PREBUILT_LIBRARY_PATH}/include)
 
+#set(CMAKE_PREFIX_PATH ${CMAKE_FIND_ROOT_PATH})
 #message(STATUS "Searching for prebuilt libraries in: ${CMAKE_FIND_ROOT_PATH}")
 
 if (WIN32)
@@ -351,6 +352,7 @@ if(${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
 	add_definitions(-Wall)
 #	add_definitions(-Wno-parentheses-equality)
 	add_definitions(-Wno-attributes)
+	add_definitions(-Wno-unused-variable)
 
 	# we cannot tread warning as error with the "narrowing problem"
 	# add_definitions(-Werror)
@@ -358,8 +360,6 @@ if(${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
 	if(GCC_VERSION VERSION_EQUAL 4.7 OR GCC_VERSION VERSION_GREATER 4.7)
 		# when compiling as C++11, narrowing is a warning but older compilers complain about the option
 		add_definitions(-Wno-narrowing)
-		# recent gcc started to complain about unused globals
-		add_definitions(-Wno-unused-variable)
 	endif()
 
 	if(GCC_VERSION VERSION_EQUAL 4.8 OR GCC_VERSION VERSION_GREATER 4.8)

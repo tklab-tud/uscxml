@@ -51,7 +51,7 @@
 	e.name = "error.platform"; \
 	e.data.compound["cause"] = Data(msg, Data::VERBATIM); \
 	throw e; \
-
+ 
 
 #define USCXML_MONITOR_CATCH(callback) \
 catch (Event e) { \
