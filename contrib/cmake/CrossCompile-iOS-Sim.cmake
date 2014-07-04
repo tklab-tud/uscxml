@@ -2,9 +2,7 @@
 # build$ cmake .. -DCMAKE_TOOLCHAIN_FILE=../contrib/cmake/CrossCompile-iOS-Sim.cmake
 
 SET(CMAKE_SYSTEM_NAME Generic)
-if ("$ENV{IOS_SDK_VERSION}" STREQUAL "")
-  SET(CMAKE_SYSTEM_VERSION 6.1)
-else()
+if (NOT "$ENV{IOS_SDK_VERSION}" STREQUAL "")
 	SET(CMAKE_SYSTEM_VERSION $ENV{IOS_SDK_VERSION})
 endif()
 SET(CMAKE_SYSTEM_PROCESSOR i386)
@@ -12,6 +10,7 @@ SET(CMAKE_SYSTEM_PROCESSOR i386)
 SET(ARCHS "-arch i386")
 SET(CMAKE_CROSSCOMPILING_TARGET IOS)
 SET(CMAKE_OSX_ARCHITECTURES "i386")
+SET(IOS_MINPHONE_OS "4.3")
 SET(IOS ON)
 SET(IOSSIM ON)
 SET(UNIX ON)
@@ -44,6 +43,10 @@ if (IOS6_OR_LATER)
   # we have to use clang - llvm will choke on those __has_feature macros?
   SET (CMAKE_C_COMPILER "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang")
   SET (CMAKE_CXX_COMPILER "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang++")
+	SET (CMAKE_AR "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ar" CACHE FILEPATH "" FORCE)
+	SET (CMAKE_LINKER "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ld" CACHE FILEPATH "" FORCE)
+	SET (CMAKE_NM "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/nm" CACHE FILEPATH "" FORCE)
+	SET (CMAKE_STRIP "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/strip" CACHE FILEPATH "" FORCE)
 
 	if ($ENV{MACOSX_DEPLOYMENT_TARGET})
 		message(FATAL_ERROR "llvm will croak with MACOSX_DEPLOYMENT_TARGET environment variable set when building for ios - unset MACOSX_DEPLOYMENT_TARGET")
@@ -68,15 +71,16 @@ set(CMAKE_SYSTEM_FRAMEWORK_PATH
   /System/Library/Frameworks)
 
 # force compiler and linker flags
-SET(CMAKE_C_LINK_FLAGS ${ARCHS})
-SET(CMAKE_CXX_LINK_FLAGS ${ARCHS})
-SET(CMAKE_C_LINK_FLAGS "${CMAKE_C_LINK_FLAGS} --sysroot=${SDKROOT}")
-SET(CMAKE_CXX_LINK_FLAGS "${CMAKE_C_LINK_FLAGS} --sysroot=${SDKROOT}")
+SET(CMAKE_C_LINK_FLAGS "${ARCHS} --sysroot=${SDKROOT} -miphoneos-version-min=${IOS_MINPHONE_OS}")
+SET(CMAKE_CXX_LINK_FLAGS "${ARCHS} --sysroot=${SDKROOT} -miphoneos-version-min=${IOS_MINPHONE_OS}")
+# SET(CMAKE_C_LINK_FLAGS "${CMAKE_C_LINK_FLAGS} --sysroot=${SDKROOT}")
+# SET(CMAKE_CXX_LINK_FLAGS "${CMAKE_C_LINK_FLAGS} --sysroot=${SDKROOT}")
 
 # SET(CMAKE_C_FLAGS ${ARCHS}) # C_FLAGS wont stick, use ADD_DEFINITIONS instead
 # SET(CMAKE_CXX_FLAGS ${ARCHS})
 ADD_DEFINITIONS(${ARCHS})
 ADD_DEFINITIONS("--sysroot=${SDKROOT}")
+ADD_DEFINITIONS("-miphoneos-version-min=${IOS_MINPHONE_OS}")
 
 # ios headers
 INCLUDE_DIRECTORIES(SYSTEM "${SDKROOT}/usr/include")

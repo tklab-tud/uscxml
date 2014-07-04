@@ -2,6 +2,29 @@
 
 [![Build Status](https://travis-ci.org/sradomski/uscxml.png?branch=master)](https://travis-ci.org/sradomski/uscxml)
 
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**
+
+  - [General](#general)
+    - [Test Reports](#test-reports)
+    - [License](#license)
+    - [Download](#download)
+  - [Usage](#usage)
+    - [Non-Blocking Interpretation with SCXML from URL](#non-blocking-interpretation-with-scxml-from-url)
+    - [Blocking Interpretation with inline SCXML](#blocking-interpretation-with-inline-scxml)
+    - [Interleaved Interpretation with inline SCXML](#interleaved-interpretation-with-inline-scxml)
+    - [Callbacks for an Interpreter](#callbacks-for-an-interpreter)
+  - [Advanced Topics](#advanced-topics)
+    - [Embedding uSCXML](#embedding-uscxml)
+    - [Extending uSCXML](#extending-uscxml)
+    - [uSCXML on iOS](#uscxml-on-ios)
+- [Acknowledgments](#acknowledgments)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
+## General
+
 uSCXML is a SCXML interpreter written in C/C++. It is mostly feature-complete and to a large extend
 [standards compliant](https://github.com/tklab-tud/uscxml#test-reports).
 It runs on <b>Linux</b>, <b>Windows</b> and <b>MacOSX</b>, each 32- as well as 64Bits as well as <b>iOS</b>.
@@ -36,7 +59,7 @@ There are still a few rough edges though, especially with the plugins and custom
     * PHP module for apache and cli interpreter
     * Java bindings
 
-## Test Reports
+### Test Reports
 
 * We continuously run the [W3C IRP tests](http://www.w3.org/Voice/2013/scxml-irp/) for SCXML. 
 * Have a look at the [result](http://uscxml.tk.informatik.tu-darmstadt.de/cdash/index.php?project=uscxml) for the various platforms.
@@ -63,13 +86,13 @@ uSCXML still fails the following ecmascript tests:
 	</tr>
 </table>
 
-## License 
+### License 
 
 uSCXML itself is distributed under the Simplified BSD license as in, do not sue us and do
 not misrepresent authorship. Please have a look at the licenses of the [libraries we depend
 upon](https://github.com/tklab-tud/uscxml/blob/master/docs/BUILDING.md#build-dependencies) as well.
 
-## Download
+### Download
 
 We do not yet feature installers. Please download the source and have a look at the [build
 instructions](https://github.com/tklab-tud/uscxml/blob/master/docs/BUILDING.md).
@@ -135,16 +158,22 @@ control-flow upon various events in the Interpreter.
 This will cause the interpreter to invoke the callbacks from the monitor whenever the corresponding
 internal phase is reached.
 
-## Embedding uSCXML
+## Advanced Topics
+
+### Embedding uSCXML
 
 There are bindings for Java and C# with some examples in the <tt>embedding</tt> directory. The bindings consist of
-two parts each (i) the C++ uscxml interpreter compiled as a loadable module for the target language and (ii) a target
-language specific module (uscxml.jar / uscxmlCSharp.dll) with the wrapper classes. The first one is loaded by the 
-target language (System.loadLibrary / SetDLLDirectory) while the second is to be included in your actual project.
-Have a look at the examples in <tt>embedding</tt> and adapt the paths to reflect your setup. See the [build 
-instructions](https://github.com/tklab-tud/uscxml/blob/master/docs/BUILDING.md) for details on how to build these.
+two parts each 
 
-## Extending uSCXML
+1. The C++ uscxml interpreter compiled as a loadable module for the target language and 
+2. A target language specific module (uscxml.jar / uscxmlCSharp.dll) with the wrapper classes. 
+
+The first one is loaded by the target language (System.loadLibrary / SetDLLDirectory) while the second is to be
+included in your actual project. Have a look at the examples in <tt>embedding</tt> and adapt the paths to reflect
+your setup. See the [build instructions](https://github.com/tklab-tud/uscxml/blob/master/docs/BUILDING.md) for
+details on how to build these.
+
+### Extending uSCXML
 
 The uSCXML interpreter can be extended by introducing new
 
