@@ -48,7 +48,6 @@ void load_orig_throw_code() {
 	orig_cxa_throw = (cxa_throw_type) dlsym(RTLD_NEXT, "__cxa_throw");
 }
 
-#if 0
 extern "C"
 void __cxa_throw (void *thrown_exception, void *pvtinfo, void (*dest)(void *)) {
 	std::cerr << __FUNCTION__ << " will throw exception from " << std::endl;
