@@ -6,19 +6,18 @@
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 **Table of Contents**
 
-  - [General](#general)
+- [General](#general)
     - [Test Reports](#test-reports)
     - [License](#license)
     - [Download](#download)
-  - [Usage](#usage)
+- [Usage](#usage)
     - [Non-Blocking Interpretation with SCXML from URL](#non-blocking-interpretation-with-scxml-from-url)
     - [Blocking Interpretation with inline SCXML](#blocking-interpretation-with-inline-scxml)
     - [Interleaved Interpretation with inline SCXML](#interleaved-interpretation-with-inline-scxml)
     - [Callbacks for an Interpreter](#callbacks-for-an-interpreter)
-  - [Advanced Topics](#advanced-topics)
+- [Advanced Topics](#advanced-topics)
     - [Embedding uSCXML](#embedding-uscxml)
     - [Extending uSCXML](#extending-uscxml)
-    - [uSCXML on iOS](#uscxml-on-ios)
 - [Acknowledgments](#acknowledgments)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
@@ -26,9 +25,10 @@
 ## General
 
 uSCXML is a SCXML interpreter written in C/C++. It is mostly feature-complete and to a large extend
-[standards compliant](https://github.com/tklab-tud/uscxml#test-reports).
+[standards compliant](#test-reports).
 It runs on <b>Linux</b>, <b>Windows</b> and <b>MacOSX</b>, each 32- as well as 64Bits as well as <b>iOS</b>.
-There are still a few rough edges though, especially with the plugins and custom extensions.
+I consider it to be rather stable with regards to memory leaks and general segmentation faults. There were / are 
+deployments of uSCXML running for up to four month (before someone restarted the server) without any issues.
 
 * <b>Datamodels</b>
     * Full [ECMAScript datamodel](https://github.com/tklab-tud/uscxml/tree/master/src/uscxml/plugins/datamodel/ecmascript) using Google's v8 (and JavaScriptCore on MacOSX and iOS)
