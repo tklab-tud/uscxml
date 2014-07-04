@@ -618,15 +618,15 @@ void V8DataModel::assign(const Element<std::string>& assignElem,
 		throw Event("error.execution", Event::PLATFORM);
 
 	if (key.compare("_sessionid") == 0) // test 322
-		throw Event("error.execution", Event::PLATFORM);
+		ERROR_EXECUTION_THROW("Cannot assign to _sessionId");
 	if (key.compare("_name") == 0)
-		throw Event("error.execution", Event::PLATFORM);
+		ERROR_EXECUTION_THROW("Cannot assign to _name");
 	if (key.compare("_ioprocessors") == 0)  // test 326
-		throw Event("error.execution", Event::PLATFORM);
+		ERROR_EXECUTION_THROW("Cannot assign to _ioprocessors");
 	if (key.compare("_invokers") == 0)
-		throw Event("error.execution", Event::PLATFORM);
+		ERROR_EXECUTION_THROW("Cannot assign to _invokers");
 	if (key.compare("_event") == 0)
-		throw Event("error.execution", Event::PLATFORM);
+		ERROR_EXECUTION_THROW("Cannot assign to _event");
 
 	if (HAS_ATTR(assignElem, "expr")) {
 		evalAsValue(key + " = " + ATTR(assignElem, "expr"));

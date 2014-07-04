@@ -39,6 +39,7 @@ void printBacktrace(void** array, int size) {
 }
 
 #ifdef HAS_DLFCN_H
+#if 0 // deactivated as we use exceptions to signal errors now
 // see https://gist.github.com/nkuln/2020860
 typedef void (*cxa_throw_type)(void *, void *, void (*) (void *));
 cxa_throw_type orig_cxa_throw = 0;
@@ -47,6 +48,7 @@ void load_orig_throw_code() {
 	orig_cxa_throw = (cxa_throw_type) dlsym(RTLD_NEXT, "__cxa_throw");
 }
 
+#if 0
 extern "C"
 void __cxa_throw (void *thrown_exception, void *pvtinfo, void (*dest)(void *)) {
 	std::cerr << __FUNCTION__ << " will throw exception from " << std::endl;
@@ -58,6 +60,7 @@ void __cxa_throw (void *thrown_exception, void *pvtinfo, void (*dest)(void *)) {
 	printBacktrace(array, size);
 	orig_cxa_throw(thrown_exception, pvtinfo, dest);
 }
+#endif
 #endif
 #endif
 
