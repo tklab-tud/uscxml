@@ -8,14 +8,20 @@
 unset MACOSX_DEPLOYMENT_TARGET
 
 # be ridiculously conservative with regard to ios features
-export IPHONEOS_DEPLOYMENT_TARGET="1.0"
+
+if [ -z "${IPHONEOS_DEPLOYMENT_TARGET+xxx}" ]; then
+	export IPHONEOS_DEPLOYMENT_TARGET="1.0"
+fi
+
+if [ -z "${IOS_SDK_VERSION+xxx}" ]; then
+	export IOS_SDK_VERSION=7.1
+fi
 
 # exit on error
 set -e
 
 ME=`basename $0`
 DIR="$( cd "$( dirname "$0" )" && pwd )"
-SDK_VER="6.1"
 CWD=`pwd`
 BUILD_DIR="/tmp/build-uscxml-ios"
 
@@ -24,22 +30,21 @@ BUILD_DIR="/tmp/build-uscxml-ios"
 #
 # Build device with older SDK for old architectures
 #
-export IOS_SDK_VERSION=5.1
-
-mkdir -p ${BUILD_DIR}/device-${IOS_SDK_VERSION}-debug &> /dev/null
-cd ${BUILD_DIR}/device-${IOS_SDK_VERSION}-debug
-cmake ${DIR}/../../ -DCMAKE_TOOLCHAIN_FILE=${DIR}/../cmake/CrossCompile-iOS.cmake -DDIST_PREPARE=ON -DCMAKE_BUILD_TYPE=Debug
-make -j4
-
-mkdir -p ${BUILD_DIR}/device-${IOS_SDK_VERSION}-release &> /dev/null
-cd ${BUILD_DIR}/device-${IOS_SDK_VERSION}-release
-cmake ${DIR}/../../ -DCMAKE_TOOLCHAIN_FILE=${DIR}/../cmake/CrossCompile-iOS.cmake -DDIST_PREPARE=ON -DCMAKE_BUILD_TYPE=Release
-make -j4
+# export IOS_SDK_VERSION=5.1
+#
+# mkdir -p ${BUILD_DIR}/device-${IOS_SDK_VERSION}-debug &> /dev/null
+# cd ${BUILD_DIR}/device-${IOS_SDK_VERSION}-debug
+# cmake ${DIR}/../../ -DCMAKE_TOOLCHAIN_FILE=${DIR}/../cmake/CrossCompile-iOS.cmake -DDIST_PREPARE=ON -DCMAKE_BUILD_TYPE=Debug
+# make -j4
+#
+# mkdir -p ${BUILD_DIR}/device-${IOS_SDK_VERSION}-release &> /dev/null
+# cd ${BUILD_DIR}/device-${IOS_SDK_VERSION}-release
+# cmake ${DIR}/../../ -DCMAKE_TOOLCHAIN_FILE=${DIR}/../cmake/CrossCompile-iOS.cmake -DDIST_PREPARE=ON -DCMAKE_BUILD_TYPE=Release
+# make -j4
 
 #
-# Build device with current SDK
+# Build device and sim with current SDK
 #
-export IOS_SDK_VERSION=6.1
 
 mkdir -p ${BUILD_DIR}/device-${IOS_SDK_VERSION}-debug &> /dev/null
 cd ${BUILD_DIR}/device-${IOS_SDK_VERSION}-debug

@@ -2,9 +2,7 @@
 # build$ cmake .. -DCMAKE_TOOLCHAIN_FILE=../contrib/cmake/CrossCompile-iOS.cmake
 
 SET(CMAKE_SYSTEM_NAME Generic)
-if ("$ENV{IOS_SDK_VERSION}" STREQUAL "")
-  SET(CMAKE_SYSTEM_VERSION 6.1)
-else()
+if (NOT "$ENV{IOS_SDK_VERSION}" STREQUAL "")
 	SET(CMAKE_SYSTEM_VERSION $ENV{IOS_SDK_VERSION})
 endif()
 SET(CMAKE_SYSTEM_PROCESSOR arm)
@@ -31,29 +29,42 @@ else()
 	SET(DEVROOT "/Developer/Platforms/iPhoneOS.platform/Developer")
 endif()
 
+set(IOS6_OR_LATER OFF)
+if (${CMAKE_SYSTEM_VERSION} VERSION_EQUAL "5.0" OR ${CMAKE_SYSTEM_VERSION} VERSION_GREATER "5.0")
+  SET(CMAKE_OSX_ARCHITECTURES armv6 armv7)
+  SET(ARCHS "-arch armv6 -arch armv7")
+endif()
+
 if (${CMAKE_SYSTEM_VERSION} VERSION_EQUAL "6.0" OR ${CMAKE_SYSTEM_VERSION} VERSION_GREATER "6.0")
   set(IOS6_OR_LATER ON)
-else()
-  set(IOS6_OR_LATER OFF)
+  SET(CMAKE_OSX_ARCHITECTURES armv7 armv7s)
+  SET(ARCHS "-arch armv7 -arch armv7s")
+endif()
+
+if (${CMAKE_SYSTEM_VERSION} VERSION_EQUAL "7.0" OR ${CMAKE_SYSTEM_VERSION} VERSION_GREATER "7.0")
+  set(IOS6_OR_LATER ON)
+  SET(CMAKE_OSX_ARCHITECTURES armv7 armv7s)
+  SET(ARCHS "-arch armv7 -arch armv7s")
+  # SET(CMAKE_OSX_ARCHITECTURES armv7 armv7s arm64)
+  # SET(ARCHS "-arch armv7 -arch armv7s -arch arm64")
 endif()
 
 if (IOS6_OR_LATER)
   # no armv6 support in ios6 - armv7s was added, but we did no compile our dependencies for it
-  SET(CMAKE_OSX_ARCHITECTURES armv7 armv7s)
-  SET(ARCHS "-arch armv7 -arch armv7s")
 
   # we have to use clang - llvm will choke on those __has_feature macros?
   SET (CMAKE_C_COMPILER "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang")
   SET (CMAKE_CXX_COMPILER "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang++")
+	SET (CMAKE_AR "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ar" CACHE FILEPATH "" FORCE)
+	SET (CMAKE_LINKER "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ld" CACHE FILEPATH "" FORCE)
+	SET (CMAKE_NM "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/nm" CACHE FILEPATH "" FORCE)
+	SET (CMAKE_STRIP "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/strip" CACHE FILEPATH "" FORCE)
 
 	if ($ENV{MACOSX_DEPLOYMENT_TARGET})
 		message(FATAL_ERROR "llvm will croak with MACOSX_DEPLOYMENT_TARGET environment variable set when building for ios - unset MACOSX_DEPLOYMENT_TARGET")
 	endif()
 
 else()
-  SET(CMAKE_OSX_ARCHITECTURES armv6 armv7)
-  SET(ARCHS "-arch armv6 -arch armv7")
-
   SET (CMAKE_C_COMPILER "${DEVROOT}/usr/bin/gcc")
   SET (CMAKE_CXX_COMPILER "${DEVROOT}/usr/bin/g++")
 

@@ -1,9 +1,30 @@
 # Building from Source
 
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**
+
+- [General](#general)
+- [Build Dependencies](#build-dependencies)
+- [Platform Notes](#platform-notes)
+    - [Mac OSX](#mac-osx)
+    - [Linux](#linux)
+    - [Windows](#windows)
+    - [iOS](#ios)
+- [Language Bindings](#language-bindings)
+    - [Java](#java)
+    - [CSharp](#csharp)
+    - [Important Note for Windows](#important-note-for-windows)
+- [About 32/64Bit Support](#about-3264bit-support)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
+## General
+
 The source code is built using CMake, the process of building uscxml is
 essentially the same on every platform:
 
-1. Read the <b>[Platform Notes](#platform-notes)</b> below to prepare your system.
+1. Read the <b>[Platform Notes](#platforn-notes)</b> below to prepare your system.
 2. Checkout uscxml into a convenient directory:
 
 	<tt>git clone git://github.com/tklab-tud/uscxml.git</tt>
@@ -28,7 +49,7 @@ project generator.
 <b>Note:</b> You cannot build the language bindings with the Visual Studio project as it croaks when calling SWIG,
 just have another build directory with the "NMake Makefiles" project generator.
 
-# Build Dependencies
+## Build Dependencies
 
 Overview of the uscxml dependencies. See the [Platform Notes](#platform-notes) for details.
 
@@ -110,15 +131,15 @@ your own.
 
 	<tr>
 	<td rowspan="1"><b>Windows</b></td>
-		<td bgcolor="#ffffdd"><a href="http://www.microsoft.com/visualstudio/en-us">Visual&nbsp;Studio&nbsp;10</a><br />required</td>
+		<td<a href="http://www.microsoft.com/visualstudio/en-us">Visual&nbsp;Studio&nbsp;10</a><br />required</td>
 		<td>v10 pro works</td>
 		<td>As a student, you can get your version through MSAA.</td></tr>
 	</tr>
 </table>
 
-# Platform Notes
+## Platform Notes
 
-This section will detail the preparation of the respective platforms to ultimately compile uscxml.
+The following sections will detail the preparation of the respective platforms to ultimately compile uscxml.
 
 ## Mac OSX
 
@@ -182,7 +203,7 @@ This would be all distributions based on Redhat, e.g. Fedora.
 	# uscxml required dependencies
 	$ sudo yum install xml2-devel libcurl-devel
 
-#### Fedora 20
+### Fedora 20
 
 Here is a complete walk-through to get uscxml running on Fedora 20, starting with the net installer.
 
@@ -270,6 +291,31 @@ with MinGW but you would have to build all the dependent libraries as well.
 
 <b>Note:</b> We do no provide prebuilt dependencies for MSVC18.x (Visual Studio 2012 / 2013). 
 You can still use the bindings for C#, but not the native C++ libraries.
+
+## iOS
+
+We provide prebuilts and CMake toolchain files for iOS and the iOS simulator. The easiest way to get iOS binaries is
+to run:
+
+	$ pwd
+	<USCXML_SRC>
+	$ ./contrib/build-scripts/build-uscxml-ios.sh
+
+This will build uSCXML with the latest iOS SDK that is installed on your system. If you prefer an older SDK, you can
+<tt>export IOS_SDK_VERSION=6.1</tt> but you have to make sure it's actually installed. Have a look at the build
+script and the toolchain files at <tt>contrib/cmake/CrossCompile-*</tt> if you run into issues.
+
+The build script above will build a universal binary for simulator and device, both in release and debug configuration.
+If you just want a specific configuration for e.g. the simulator, you can invoke CMake yourself:
+
+	$ pwd
+	<USCXML_SRC>
+	$ mkdir build/iossim && cd build/iossim
+	$ cmake -DCMAKE_TOOLCHAIN_FILE=../../contrib/cmake/CrossCompile-iOS-Sim.cmake ../..
+	$ make -j4 
+
+<b>Note</b>: We did not compile the prebuilts for iOS with 64Bit yet. As such, you will not get binaries build for
+arm64. The main culprit is, again, curl which assumes the size of an int to be the same as at its configure time.
 
 ## Language Bindings
 
