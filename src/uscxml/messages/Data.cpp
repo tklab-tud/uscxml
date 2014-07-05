@@ -35,8 +35,8 @@ extern "C" {
 
 namespace uscxml {
 
-Data::Data(const char* _data, size_t _size, const std::string& mimeType, bool adopt) {
-	binary = boost::shared_ptr<Blob>(new Blob((void*)_data, _size, mimeType, adopt));
+Data::Data(const char* data, size_t size, const std::string& mimeType, bool adopt) {
+	binary = boost::shared_ptr<Blob>(new Blob(data, size, mimeType, adopt));
 }
 
 void Data::merge(const Data& other) {

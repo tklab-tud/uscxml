@@ -45,26 +45,26 @@ public:
 	Data() : type(INTERPRETED) {}
 
 	// TODO: default INTERPRETED is unfortunate
-	Data(const std::string& atom_, Type type_ = INTERPRETED) : atom(atom_), type(type_) {}
+	Data(const std::string& atom, Type type = INTERPRETED) : atom(atom), type(type) {}
 	Data(const char* data, size_t size, const std::string& mimeType, bool adopt = false);
 
 	// convenience constructors
-	Data(short atom_) : atom(toStr(atom_)), type(INTERPRETED) {}
-	Data(int atom_) : atom(toStr(atom_)), type(INTERPRETED) {}
-	Data(unsigned int atom_) : atom(toStr(atom_)), type(INTERPRETED) {}
-	Data(long atom_) : atom(toStr(atom_)), type(INTERPRETED) {}
-	Data(unsigned long atom_) : atom(toStr(atom_)), type(INTERPRETED) {}
-	Data(float atom_) : atom(toStr(atom_)), type(INTERPRETED) {}
-	Data(double atom_) : atom(toStr(atom_)), type(INTERPRETED) {}
-	Data(bool atom_) : type(INTERPRETED) {
-		if (atom_) {
+	Data(short atom) : atom(toStr(atom)), type(INTERPRETED) {}
+	Data(int atom) : atom(toStr(atom)), type(INTERPRETED) {}
+	Data(unsigned int atom) : atom(toStr(atom)), type(INTERPRETED) {}
+	Data(long atom) : atom(toStr(atom)), type(INTERPRETED) {}
+	Data(unsigned long atom) : atom(toStr(atom)), type(INTERPRETED) {}
+	Data(float atom) : atom(toStr(atom)), type(INTERPRETED) {}
+	Data(double atom) : atom(toStr(atom)), type(INTERPRETED) {}
+	Data(bool atom) : type(INTERPRETED) {
+		if (atom) {
 			atom = "true";
 		} else {
 			atom = "false";
 		}
 	}
 
-	template <typename T> Data(T value, Type type_) : atom(toStr(value)), type(type_) {}
+	template <typename T> Data(T value, Type type) : atom(toStr(value)), type(type) {}
 
 #if 0
 	// constructor for arbitrary types, skip if type is subclass though (C++11)

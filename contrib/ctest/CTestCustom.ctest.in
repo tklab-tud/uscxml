@@ -62,6 +62,8 @@ set(CTEST_CUSTOM_TESTS_IGNORE
 	"fsm/ecma/test531.scxml" # unspecified basichttp format
 	"fsm/ecma/test534.scxml" # unspecified basichttp format
 	"fsm/ecma/test567.scxml"  # unspecified basichttp format
+	
+	"xpath/test580.scxml" # hangs
 )
 
 

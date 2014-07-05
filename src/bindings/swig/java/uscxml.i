@@ -112,6 +112,7 @@ WRAP_TO_STRING(uscxml::InvokeRequest);
 
 %include "../uscxml_ignores.i"
 
+#if 0
 // see http://swig.org/Doc2.0/Java.html#Java_date_marshalling
 %define BEAUTIFY_NATIVE( MATCH, WRAPPER, NATIVE )
 
@@ -164,6 +165,24 @@ BEAUTIFY_NATIVE(uscxml::Event, Event, EventNative);
 BEAUTIFY_NATIVE(uscxml::SendRequest, SendRequest, SendRequestNative);
 BEAUTIFY_NATIVE(uscxml::InvokeRequest, InvokeRequest, InvokeRequestNative);
 */
+#endif
+
+// bytearray for Blob::data
+// see: http://stackoverflow.com/questions/9934059/swig-technique-to-wrap-unsigned-binary-data
+
+%apply (char *STRING, size_t LENGTH) { (const char* data, size_t size) };
+
+%typemap(jni) char* getData "jbyteArray"
+%typemap(jtype) char* getData "byte[]"
+%typemap(jstype) char* getData "byte[]"
+%typemap(javaout) char* getData {
+  return $jnicall;
+}
+
+%typemap(out) char* getData {
+  $result = JCALL1(NewByteArray, jenv, ((uscxml::Blob const *)arg1)->getSize());
+  JCALL4(SetByteArrayRegion, jenv, $result, 0, ((uscxml::Blob const *)arg1)->getSize(), (jbyte *)$1);
+}
 
 
 //***********************************************
@@ -179,6 +198,9 @@ BEAUTIFY_NATIVE(uscxml::InvokeRequest, InvokeRequest, InvokeRequestNative);
 %javamethodmodifiers uscxml::Interpreter::getInvokers() "private";
 %javamethodmodifiers uscxml::Interpreter::getIOProcessors() "private";
 %javamethodmodifiers uscxml::Data::getCompoundKeys() "private";
+
+%javamethodmodifiers uscxml::Blob::setData(const char* data, size_t length) "private";
+%javamethodmodifiers uscxml::Blob::setMimeType(const std::string& mimeType) "private";
 
 %include "../uscxml_beautify.i"
 
@@ -231,6 +253,10 @@ import java.util.LinkedList;
 %}
 
 %typemap(javacode) uscxml::Data %{
+	public Data(byte[] data, String mimeType) {
+		
+	}
+	
 	public Data(Map<String, Data> compound) {
 		this(uscxmlNativeJavaJNI.new_Data__SWIG_0(), true);
 		setCompound(compound);

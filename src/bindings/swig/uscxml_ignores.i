@@ -189,6 +189,14 @@
 
 %ignore uscxml::Data::toDocument;
 %ignore uscxml::Data::Data(const Arabica::DOM::Node<std::string>&);
+%ignore uscxml::Data::Data(const char* data, size_t size, const std::string& mimeType, bool adopt);
+%ignore uscxml::Data::Data(const char* data, size_t size, const std::string& mimeType);
+
+// Blob
+
+%ignore uscxml::Blob::Blob(size_t size);
+%ignore uscxml::Blob::Blob(const char* data, size_t size, const std::string& mimeType, bool adopt);
+
 
 %ignore operator!=;
 %ignore operator<;

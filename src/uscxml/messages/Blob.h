@@ -30,15 +30,32 @@ class USCXML_API Blob {
 public:
 	~Blob();
 	Blob(size_t size);
-	Blob(void* data, size_t size, const std::string& mimeType, bool adopt = false);
+	Blob(const char* data, size_t size, const std::string& mimeType, bool adopt = false);
+
+	std::string base64();
+	std::string md5();
+	Blob* fromBase64(const std::string base64);
+	
+	char* getData() const {
+		return data;
+	}
+	
+	size_t getSize() const {
+		return size;
+	}
+	
+	std::string getMimeType() const {
+		return mimeType;
+	}
+	
+#ifdef SWIGIMPORTED
+protected:
+#endif
+
 	char* data;
 	size_t size;
 	std::string mimeType;
 
-	std::string base64();
-
-	std::string md5();
-	Blob* fromBase64(const std::string base64);
 
 };
 

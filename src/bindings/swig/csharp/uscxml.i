@@ -157,6 +157,41 @@ WRAP_TO_STRING(uscxml::InvokeRequest);
 // Beautify important classes
 //***********************************************
 
+
+// byte[] signature for Blob get/setData
+// see http://permalink.gmane.org/gmane.comp.programming.swig/5804
+
+%csmethodmodifiers uscxml::Blob::Blob(const char* data, size_t size, const std::string& mimeType) "private";
+%typemap(cscode) uscxml::Blob %{
+  public Blob(byte[] data, string mimeType) : this(uscxmlNativeCSharpPINVOKE.new_Blob(data, (uint)data.Length, mimeType), true) {
+    if (uscxmlNativeCSharpPINVOKE.SWIGPendingException.Pending) throw uscxmlNativeCSharpPINVOKE.SWIGPendingException.Retrieve();
+  }
+%}
+
+%typemap(imtype, out="System.IntPtr") const char *data "byte[]"
+%typemap(cstype) const char *data "byte[]"
+%typemap(in) const char *data %{ $1 = ($1_ltype)$input; %}
+%typemap(csin) const char *data "$csinput"
+
+%typemap(imtype, out="System.IntPtr") char* getData "byte[]"
+%typemap(cstype) char* getData "byte[]"
+
+%typemap(csout) char* getData %{
+	{
+    byte[] ret = new byte[this.getSize()];
+    System.IntPtr data = $imcall;
+    System.Runtime.InteropServices.Marshal.Copy(data, ret, 0, (int)this.getSize());
+    return ret;
+  }
+%}
+
+// make sure we do not get the default with SWIG_csharp_string_callback
+%typemap(out) char* getData {
+  $result = (char *)result;
+}
+
+
+
 %csmethodmodifiers uscxml::Event::getParamMap() "private";
 %csmethodmodifiers uscxml::Event::getParamMapKeys() "private";
 %csmethodmodifiers uscxml::Event::setParamMap(const std::map<std::string, std::list<uscxml::Data> >&) "private";
