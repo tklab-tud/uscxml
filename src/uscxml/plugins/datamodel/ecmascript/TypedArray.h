@@ -51,7 +51,7 @@ public:
 	 * be allocated an exception is raised.
 	 */
 	ArrayBuffer(unsigned long length);
-	ArrayBuffer(boost::shared_ptr<Blob>);
+	ArrayBuffer(const Blob&);
 
 	/**
 	 * The length of the ArrayBuffer in bytes, as fixed at construction time.
@@ -78,42 +78,42 @@ public:
 	}
 	operator bool();
 	bool operator== (const ArrayBuffer& other) {
-		return other._buffer == _buffer;
+		return other._blob == _blob;
 	}
 //	unsigned char get(unsigned long index) {
 //		if (index >= getLength())
 //			return 0;
 //		unsigned char retVal;
-//		memcpy(&retVal, _buffer->_data + index * sizeof(unsigned char), sizeof(unsigned char));
+//		memcpy(&retVal, _blob->_data + index * sizeof(unsigned char), sizeof(unsigned char));
 //		return retVal;
 //	}
 //
 //	void set(unsigned long index, unsigned char value) {
-//		memcpy(_buffer->_data + index * sizeof(unsigned char), &value, sizeof(unsigned char));
+//		memcpy(_blob->_data + index * sizeof(unsigned char), &value, sizeof(unsigned char));
 //	}
 
 	// non-standard extension
-	std::string md5() {
-		return _buffer->md5();
+	std::string md5() const {
+		return _blob.md5();
 	}
 
 	// non-standard extension
-	std::string base64() {
-		return _buffer->base64();
+	std::string base64() const {
+		return _blob.base64();
 	}
 
-	std::string getMimeType() {
-		if (_buffer)
-			return _buffer->mimeType;
+	std::string getMimeType() const {
+		if (_blob)
+			return _blob.getMimeType();
 		return "";
 	}
 
 	void setMimeType(const std::string& mimeType) {
-		if (_buffer)
-			_buffer->mimeType = mimeType;
+		if (_blob)
+			_blob.setMimeType(mimeType);
 	}
 
-	boost::shared_ptr<Blob> _buffer;
+	Blob _blob;
 };
 
 class ArrayBufferView {
@@ -139,7 +139,7 @@ public:
 	virtual unsigned long getByteLength() = 0;
 	virtual unsigned long getLength() = 0;
 protected:
-	boost::shared_ptr<Blob> _buffer;
+	Blob _blob;
 	unsigned long _start;
 	unsigned long _end;
 };
@@ -239,36 +239,36 @@ public:
 		_start = byteOffset / sizeof(S);
 		_end = _start + length;
 
-		if (_end > buffer->_buffer->size / sizeof(S))
+		if (_end > buffer->_blob._impl->size / sizeof(S))
 			return;
 
-		_buffer = buffer->_buffer;
+		_blob = buffer->_blob;
 	}
 	TypedArray(uscxml::ArrayBuffer* buffer, unsigned long byteOffset) {
 		if (byteOffset % sizeof(S))
 			return;
 
 		_start = byteOffset / sizeof(S);
-		_end = buffer->_buffer->size / sizeof(S);
-		_buffer = buffer->_buffer;
+		_end = buffer->_blob._impl->size / sizeof(S);
+		_blob = buffer->_blob;
 	}
 	TypedArray(uscxml::ArrayBuffer* buffer) {
 		_start = 0;
-		_end = (buffer->_buffer->size) / sizeof(S);
-		_buffer = buffer->_buffer;
+		_end = (buffer->_blob._impl->size) / sizeof(S);
+		_blob = buffer->_blob;
 	}
 
-	TypedArray(boost::shared_ptr<Blob> buffer, unsigned long byteOffset, unsigned long length) {
+	TypedArray(Blob blob, unsigned long byteOffset, unsigned long length) {
 		if (byteOffset % sizeof(S))
 			return;
 
 		_start = byteOffset / sizeof(S);
 		_end = _start + length;
 
-		if (_end > buffer->size / sizeof(S))
+		if (_end > blob._impl->size / sizeof(S))
 			return;
 
-		_buffer = buffer;
+		_blob = blob;
 	}
 
 	/**
@@ -281,7 +281,7 @@ public:
 	TypedArray(unsigned long length) {
 		_start = 0;
 		_end = length;
-		_buffer = boost::shared_ptr<Blob>(new Blob(length * sizeof(S)));
+		_blob = Blob(length * sizeof(S));
 	}
 
 	/**
@@ -294,13 +294,13 @@ public:
 	TypedArray(std::vector<T> data) {
 		_start = 0;
 		_end = data.size();
-		_buffer = boost::shared_ptr<Blob>(new Blob(data.size() * sizeof(S)));
+		_blob = Blob(data.size() * sizeof(S));
 		set(data, 0);
 	}
 	TypedArray(TypedArray* other) {
 		_start = other->_start;
 		_end = other->_end;
-		_buffer = other->_buffer;
+		_blob = other->_blob;
 	}
 
 	/**
@@ -311,7 +311,7 @@ public:
 		if (index >= getLength())
 			return static_cast<T>(0);
 		S retVal;
-		memcpy(&retVal, _buffer->data + (_start + index) * sizeof(S), sizeof(S));
+		memcpy(&retVal, _blob._impl->data + (_start + index) * sizeof(S), sizeof(S));
 		return retVal;
 	}
 
@@ -320,7 +320,7 @@ public:
 	 * Sets the element at the given numeric index to the given value.
 	 */
 	void set(unsigned long index, T value) {
-		memcpy(_buffer->data + (_start + index) * sizeof(S), &value, sizeof(S));
+		memcpy(_blob._impl->data + (_start + index) * sizeof(S), &value, sizeof(S));
 	}
 
 	/**
@@ -336,15 +336,15 @@ public:
 	 * current TypedArray, an exception is raised.
 	 */
 	void set(TypedArray<T, S>* value, unsigned long offset) {
-		if (!_buffer)
+		if (!_blob)
 			return;
-		if (offset * sizeof(S) + value->getByteLength() > _buffer->size)
+		if (offset * sizeof(S) + value->getByteLength() > _blob._impl->size)
 			return;
 
 		unsigned long otherOffset = value->_start * sizeof(S);
 
 		// will this work if we use the same buffer?
-		memcpy(_buffer->data + (_start + offset) * sizeof(S), value->_buffer->data + otherOffset, value->getByteLength());
+		memcpy(_blob._impl->data + (_start + offset) * sizeof(S), value->_blob._impl->data + otherOffset, value->getByteLength());
 	}
 
 	void set(TypedArray<T, S>* value) {
@@ -364,13 +364,13 @@ public:
 	 * current TypedArray, an exception is raised.
 	 */
 	void set(std::vector<T> data, unsigned long offset) {
-		if (!_buffer)
+		if (!_blob)
 			return;
 		if (data.size() + offset > _end)
 			return;
 
 		if (sizeof(T) == sizeof(S)) {
-			memcpy(_buffer->data + offset, (void*)&data[0], data.size() * sizeof(S));
+			memcpy(_blob._impl->data + offset, (void*)&data[0], data.size() * sizeof(S));
 		} else {
 			S* buffer = (S*)malloc(data.size() * sizeof(S));
 			typename std::vector<T>::const_iterator dataIter = data.begin();
@@ -380,7 +380,7 @@ public:
 				dataIter++;
 				i++;
 			}
-			memcpy(_buffer->data + offset, buffer, data.size() * sizeof(S));
+			memcpy(_blob._impl->data + offset, buffer, data.size() * sizeof(S));
 			free (buffer);
 		}
 	}
@@ -403,7 +403,7 @@ public:
 	 * method is invoked.
 	 */
 	TypedArray* subarray(long begin, long end) {
-		if (!_buffer)
+		if (!_blob)
 			return NULL;
 		unsigned int length = getLength();
 		unsigned int realBegin = (begin + length) % length;
@@ -414,29 +414,29 @@ public:
 		if (realEnd < realBegin)
 			return NULL;
 
-		return new TypedArray<T, S>(_buffer, realBegin * sizeof(S), realEnd - realBegin);
+		return new TypedArray<T, S>(_blob, realBegin * sizeof(S), realEnd - realBegin);
 	}
 
 	TypedArray* subarray(long begin) {
-		if (!_buffer)
+		if (!_blob)
 			return NULL;
 		return subarray(begin, getLength());
 	}
 
 	unsigned long getLength() {
-		if (!_buffer)
+		if (!_blob)
 			return 0;
 		return _end - _start;
 	}
 
 	unsigned long getByteLength() {
-		if (!_buffer)
+		if (!_blob)
 			return 0;
 		return (_end - _start) * sizeof(S);
 	}
 
 	unsigned long getByteOffset() {
-		if (!_buffer)
+		if (!_blob)
 			return 0;
 		return _start * sizeof(S);
 	}

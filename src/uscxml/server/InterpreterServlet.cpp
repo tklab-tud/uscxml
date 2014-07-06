@@ -163,8 +163,8 @@ void InterpreterWebSocketServlet::send(const SendRequest& req) {
 		} else if (req.data.binary) {
 			HTTPServer::wsSend(_requests[req.target],
 			                   EVWS_BINARY_FRAME,
-			                   req.data.binary->data,
-			                   req.data.binary->size);
+			                   req.data.binary.getData(),
+			                   req.data.binary.getSize());
 		} else if (req.data.node) {
 			std::stringstream ssXML;
 			ssXML << req.data.node;
@@ -188,8 +188,8 @@ void InterpreterWebSocketServlet::send(const SendRequest& req) {
 		} else if (req.data.binary) {
 			HTTPServer::wsBroadcast(req.target.c_str(),
 			                        EVWS_BINARY_FRAME,
-			                        req.data.binary->data,
-			                        req.data.binary->size);
+			                        req.data.binary.getData(),
+			                        req.data.binary.getSize());
 		} else if (req.data.node) {
 			std::stringstream ssXML;
 			ssXML << req.data.node;

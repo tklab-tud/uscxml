@@ -24,27 +24,27 @@
 
 namespace uscxml {
 
-Blob::~Blob() {
+BlobImpl::~BlobImpl() {
 	free(data);
 }
 
-std::string Blob::md5() {
+std::string BlobImpl::md5() const {
 	return uscxml::md5(data, size);
 }
 
-Blob* Blob::fromBase64(const std::string base64) {
+BlobImpl* BlobImpl::fromBase64(const std::string base64, const std::string& mimeType) {
 	std::string decoded = base64Decode(base64);
-	return new Blob(decoded.c_str(), decoded.length(), mimeType);
+	return new BlobImpl(decoded.c_str(), decoded.length(), mimeType);
 }
 
-Blob::Blob(size_t _size) {
+BlobImpl::BlobImpl(size_t _size) {
 	data = (char*)malloc(_size);
 	memset(data, 0, _size);
 	size = _size;
 	mimeType = "application/octet-stream";
 }
 
-Blob::Blob(const char* _data, size_t _size, const std::string& _mimeType, bool adopt) {
+BlobImpl::BlobImpl(const char* _data, size_t _size, const std::string& _mimeType, bool adopt) {
 	if (adopt) {
 		data = (char*)_data;
 	} else {
@@ -54,8 +54,8 @@ Blob::Blob(const char* _data, size_t _size, const std::string& _mimeType, bool a
 	mimeType = _mimeType;
 	size = _size;
 }
-	
-std::string Blob::base64() {
+
+std::string BlobImpl::base64() const {
 	return base64Encode((char* const)data, size);
 }
 

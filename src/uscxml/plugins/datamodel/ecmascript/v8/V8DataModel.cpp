@@ -328,7 +328,7 @@ Data V8DataModel::getValueAsData(const v8::Handle<v8::Value>& value, std::set<v8
 	} else if (value->IsObject()) {
 		if (V8ArrayBuffer::hasInstance(value)) {
 			uscxml::V8ArrayBuffer::V8ArrayBufferPrivate* privObj = V8DOM::toClassPtr<V8ArrayBuffer::V8ArrayBufferPrivate >(value->ToObject()->GetInternalField(0));
-			data.binary = privObj->nativeObj->_buffer;
+			data.binary = privObj->nativeObj->_blob;
 			return data;
 		}
 		if (V8Node::hasInstance(value)) {

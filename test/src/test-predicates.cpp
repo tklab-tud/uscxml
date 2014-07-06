@@ -10,16 +10,16 @@ int main(int argc, char** argv) {
 		using namespace Arabica::XPath;
 
 		const char* xml =
-		"<scxml>"
-		"  <state id=\"atomic\" />"
-		"  <state id=\"compound\">"
-		"    <state id=\"compoundChild1\" />"
-		"    <state id=\"compoundChild2\" />"
-		"  </state>"
-		"  <parallel id=\"parallel\">"
-		"  </parallel>"
-		"</scxml>";
-		
+		    "<scxml>"
+		    "  <state id=\"atomic\" />"
+		    "  <state id=\"compound\">"
+		    "    <state id=\"compoundChild1\" />"
+		    "    <state id=\"compoundChild2\" />"
+		    "  </state>"
+		    "  <parallel id=\"parallel\">"
+		    "  </parallel>"
+		    "</scxml>";
+
 		Interpreter interpreter = Interpreter::fromXML(xml);
 		assert(interpreter);
 		interpreter.getImpl()->init();

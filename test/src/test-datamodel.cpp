@@ -20,6 +20,23 @@ int main(int argc, char** argv) {
 	WSAStartup(MAKEWORD(2, 2), &wsaData);
 #endif
 
+	{
+		char* testData = (char*)malloc(1024);
+		for (int i = 0; i < 1024; i++) {
+			testData[i] = (char)i;
+		}
+
+		Data data(testData, 1024, "", false);
+		Blob blob = data.getBinary();
+		char* otherData = blob.getData();
+
+		for (int i = 0; i < 1024; i++) {
+			assert(testData[i] == otherData[i]);
+		}
+
+		exit(0);
+	}
+
 	Interpreter interpreter = Interpreter::fromXML("<scxml></scxml>");
 	DataModel dm(Factory::getInstance()->createDataModel("ecmascript", interpreter.getImpl().get()));
 	dm.evalAsString("var foo = 12");

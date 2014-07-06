@@ -101,8 +101,8 @@ void SMTPInvoker::getAttachments(std::list<Data> list, std::list<Data>& attachme
 			Data att = data;
 
 			if (!att.hasKey("mimetype")) {
-				if (att["data"].binary && att["data"].binary->mimeType.size() > 0) {
-					att.compound["mimetype"] = Data(att["data"].binary->mimeType, Data::VERBATIM);
+				if (att["data"].binary && att["data"].binary.getMimeType().size() > 0) {
+					att.compound["mimetype"] = Data(att["data"].binary.getMimeType(), Data::VERBATIM);
 				} else {
 					att.compound["mimetype"] = Data("text/plain", Data::VERBATIM);
 				}
@@ -127,8 +127,8 @@ void SMTPInvoker::getAttachments(std::list<Data> list, std::list<Data>& attachme
 
 			att.compound["data"].binary = data.binary;
 
-			if (data.binary->mimeType.size() > 0) {
-				att.compound["mimetype"] = Data(attachments.back()["data"].binary->mimeType, Data::VERBATIM);
+			if (data.binary.getMimeType().size() > 0) {
+				att.compound["mimetype"] = Data(attachments.back()["data"].binary.getMimeType(), Data::VERBATIM);
 			} else {
 				att.compound["mimetype"] = Data("application/octet-stream", Data::VERBATIM);
 			}
@@ -271,7 +271,7 @@ void SMTPInvoker::send(const SendRequest& req) {
 				if (attIter->compound["data"].binary) {
 					contentSS << "Content-Transfer-Encoding: base64";
 					contentSS << "\n\n";
-					contentSS << attIter->compound["data"].binary->base64();
+					contentSS << attIter->compound["data"].binary.base64();
 				} else {
 					contentSS << "Content-Transfer-Encoding: 7Bit";
 					contentSS << "\n\n";

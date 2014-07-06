@@ -99,8 +99,8 @@ void FileElement::enterElement(const Arabica::DOM::Node<std::string>& node) {
 		} else {
 			Data data = _interpreter->getDataModel().getStringAsData(ATTR(node, "contentexpr"));
 			if (data.binary) {
-				content = data.binary->data;
-				contentSize = data.binary->size;
+				content = data.binary.getData();
+				contentSize = data.binary.getSize();
 			} else if (data.atom.length() > 0) {
 				contentStr = data.atom;
 			}

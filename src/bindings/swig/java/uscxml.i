@@ -13,6 +13,7 @@
 %include <boost_shared_ptr.i>
 
 // these are needed at least for the templates to work
+typedef uscxml::Blob Blob;
 typedef uscxml::Data Data;
 typedef uscxml::Event Event;
 typedef uscxml::InvokeRequest InvokeRequest;
@@ -184,7 +185,6 @@ BEAUTIFY_NATIVE(uscxml::InvokeRequest, InvokeRequest, InvokeRequestNative);
   JCALL4(SetByteArrayRegion, jenv, $result, 0, ((uscxml::Blob const *)arg1)->getSize(), (jbyte *)$1);
 }
 
-
 //***********************************************
 // Beautify important classes
 //***********************************************
@@ -254,7 +254,8 @@ import java.util.LinkedList;
 
 %typemap(javacode) uscxml::Data %{
 	public Data(byte[] data, String mimeType) {
-		
+		this(uscxmlNativeJavaJNI.new_Data__SWIG_0(), true);
+		setBinary(new Blob(data, mimeType));
 	}
 	
 	public Data(Map<String, Data> compound) {

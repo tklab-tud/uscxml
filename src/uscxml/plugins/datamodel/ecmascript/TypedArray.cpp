@@ -23,51 +23,51 @@
 
 #define DATAVIEW_TYPED_GET(type) \
 type retVal;\
-if (index + _start + sizeof(type) > _buffer->size)\
+if (index + _start + sizeof(type) > _blob._impl->size)\
 	return 0;\
-memcpy(&retVal, _buffer->data + (_start + index), sizeof(type));
+memcpy(&retVal, _blob._impl->data + (_start + index), sizeof(type));
 
 #define DATAVIEW_TYPED_SET(type) \
-if (index + _start + sizeof(type) > _buffer->size)\
+if (index + _start + sizeof(type) > _blob._impl->size)\
 	return;\
-memcpy(_buffer->data + (_start + index), &value, sizeof(type));
+memcpy(_blob._impl->data + (_start + index), &value, sizeof(type));
 
 namespace uscxml {
 
 ArrayBuffer::ArrayBuffer(unsigned long length) {
-	_buffer = boost::shared_ptr<Blob>(new Blob(length));
+	_blob = Blob(length);
 }
 
-ArrayBuffer::ArrayBuffer(boost::shared_ptr<Blob> buffer) : _buffer(buffer) {
+ArrayBuffer::ArrayBuffer(const Blob& blob) : _blob(blob) {
 }
 
 ArrayBuffer::ArrayBuffer(void* data, unsigned int size) {
-	_buffer = boost::shared_ptr<Blob>(new Blob((const char*)data, size, "application/octet-stream"));
+	_blob = Blob((const char*)data, size, "application/octet-stream");
 }
 
 unsigned long ArrayBuffer::getByteLength() {
-	if (!_buffer)
+	if (!_blob)
 		return 0;
-	return _buffer->size;
+	return _blob._impl->size;
 }
 
 ArrayBuffer ArrayBuffer::slice(long begin, long end) {
-	if (!_buffer) {
+	if (!_blob) {
 		return ArrayBuffer(0);
 	}
-	unsigned int realBegin = (begin + _buffer->size) % _buffer->size;
-	unsigned int realEnd = (end + _buffer->size) % _buffer->size;
+	unsigned int realBegin = (begin + _blob._impl->size) % _blob._impl->size;
+	unsigned int realEnd = (end + _blob._impl->size) % _blob._impl->size;
 	if (realEnd < realBegin) {
 		return ArrayBuffer(0);
 	}
 
 	ArrayBuffer arrBuffer(realEnd - realBegin);
-	memcpy(arrBuffer._buffer->data, _buffer->data + realBegin, realEnd - realBegin);
+	memcpy(arrBuffer._blob._impl->data, _blob._impl->data + realBegin, realEnd - realBegin);
 	return arrBuffer;
 }
 
 ArrayBuffer ArrayBuffer::slice(long begin) {
-	return slice(begin, _buffer->size);
+	return slice(begin, _blob._impl->size);
 }
 
 bool ArrayBuffer::isView(void*) {
@@ -75,35 +75,35 @@ bool ArrayBuffer::isView(void*) {
 }
 
 ArrayBuffer::operator bool() {
-	return _buffer;
+	return _blob;
 }
 
 ArrayBuffer ArrayBufferView::getBuffer() {
-	return ArrayBuffer(_buffer);
+	return ArrayBuffer(_blob);
 }
 
 DataView::DataView(ArrayBuffer* buffer, unsigned long byteOffset, unsigned long byteLength) {
 	_start = byteOffset;
-	if (_start > buffer->_buffer->size)
+	if (_start > buffer->_blob._impl->size)
 		return;
 	_end = _start + byteLength;
-	if (_end > buffer->_buffer->size)
+	if (_end > buffer->_blob._impl->size)
 		return;
-	_buffer = buffer->_buffer;
+	_blob = buffer->_blob;
 }
 
 DataView::DataView(ArrayBuffer* buffer , unsigned long byteOffset) {
 	_start = byteOffset;
-	_end = buffer->_buffer->size;
-	if (_start > buffer->_buffer->size)
+	_end = buffer->_blob._impl->size;
+	if (_start > buffer->_blob._impl->size)
 		return;
-	_buffer = buffer->_buffer;
+	_blob = buffer->_blob;
 }
 
 DataView::DataView(ArrayBuffer* buffer) {
 	_start = 0;
-	_end = (buffer->_buffer->size);
-	_buffer = buffer->_buffer;
+	_end = (buffer->_blob._impl->size);
+	_blob = buffer->_blob;
 }
 
 unsigned long DataView::getByteOffset() {

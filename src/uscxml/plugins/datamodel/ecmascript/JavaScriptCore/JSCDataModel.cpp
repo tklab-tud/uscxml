@@ -394,7 +394,7 @@ Data JSCDataModel::getValueAsData(const JSValueRef value) {
 		if (JSValueIsObjectOfClass(_ctx, value, JSCArrayBuffer::getTmpl())) {
 			// binary data
 			JSCArrayBuffer::JSCArrayBufferPrivate* privObj = (JSCArrayBuffer::JSCArrayBufferPrivate*)JSObjectGetPrivate(objValue);
-			data.binary = privObj->nativeObj->_buffer;
+			data.binary = privObj->nativeObj->_blob;
 			return data;
 		} else if (JSValueIsObjectOfClass(_ctx, value, JSCNode::getTmpl())) {
 			// dom node
@@ -403,6 +403,7 @@ Data JSCDataModel::getValueAsData(const JSValueRef value) {
 			return data;
 		}
 		std::set<std::string> propertySet;
+
 		JSPropertyNameArrayRef properties = JSObjectCopyPropertyNames(_ctx, objValue);
 		size_t paramCount = JSPropertyNameArrayGetCount(properties);
 		bool isArray = true;

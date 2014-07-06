@@ -92,7 +92,7 @@ protected:
 
 	AVStream* addStream(EncodingContext* ctx, AVFormatContext *oc, AVCodec **codec, enum AVCodecID codec_id);
 	void openVideo(EncodingContext* ctx, AVFormatContext *oc, AVCodec *codec, AVStream *st);
-	void writeVideoFrame(EncodingContext* ctx, AVFormatContext *oc, AVStream *st, boost::shared_ptr<Blob> image);
+	void writeVideoFrame(EncodingContext* ctx, AVFormatContext *oc, AVStream *st, Blob image);
 	void closeVideo(EncodingContext* ctx, AVFormatContext *oc, AVStream *st);
 
 	static void run(void*);

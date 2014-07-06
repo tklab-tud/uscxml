@@ -1,6 +1,7 @@
 %ignore uscxml::NumAttr;
 %ignore uscxml::SCXMLParser;
 %ignore uscxml::InterpreterImpl;
+%ignore uscxml::BlobImpl;
 #if 0
 %ignore uscxml::EventHandlerImpl;
 #endif
@@ -196,6 +197,7 @@
 
 %ignore uscxml::Blob::Blob(size_t size);
 %ignore uscxml::Blob::Blob(const char* data, size_t size, const std::string& mimeType, bool adopt);
+%ignore uscxml::Blob::Blob(const boost::shared_ptr<BlobImpl>);
 
 
 %ignore operator!=;

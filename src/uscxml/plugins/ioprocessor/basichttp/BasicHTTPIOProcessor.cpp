@@ -247,7 +247,7 @@ void BasicHTTPIOProcessor::send(const SendRequest& req) {
 			xmlStream << req.data.node;
 			valueCStr = evhttp_encode_uri(xmlStream.str().c_str());
 		} else if(req.data.binary) {
-			valueCStr = evhttp_encode_uri(req.data.binary->base64().c_str());
+			valueCStr = evhttp_encode_uri(req.data.binary.base64().c_str());
 		}
 		if (valueCStr != NULL) {
 			kvps << kvpSeperator << keyCStr << "=" << valueCStr;

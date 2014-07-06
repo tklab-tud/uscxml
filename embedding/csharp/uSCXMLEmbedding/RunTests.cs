@@ -32,12 +32,41 @@ namespace embedding
             int i = 1;
             while (i-- > 0)
             {
+                testData();
                 testLifeCycle();
                 testExecutableContent();
                 testIOProcessor();
                 testInvoker();
             }
             Console.ReadKey();
+        }
+
+        public static void testData() { 
+            byte[] origData = new byte[1024];
+			for (int i = 0; i < origData.Length; i++) {
+				origData[i] = (byte)i;
+			}
+			
+			{
+				
+                Blob blob = new Blob(origData, "application/octet-stream");
+				Debug.Assert(origData.Length == blob.getSize());
+
+				for (int i = 0; i < origData.Length; i++) {
+					Debug.Assert(origData[i] == blob.getData()[i]);
+				}
+			}
+			
+			Data data = new Data(origData, "application/octet-stream");
+			Blob blob2 = data.getBinary();
+			
+			byte[] newData = blob2.getData();
+			
+			if (newData.Length == origData.Length);
+			for (int i = 0; i < origData.Length; i++) {
+                Debug.Assert(newData[i] == origData[i]);
+			}
+
         }
 
         public static void testInvoker() {

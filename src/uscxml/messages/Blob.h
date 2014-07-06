@@ -21,33 +21,38 @@
 #define BLOB_H_E1B6D2C3
 
 #include <string>
+#include <boost/shared_ptr.hpp>
 
 #include "uscxml/Common.h"
 
 namespace uscxml {
 
-class USCXML_API Blob {
+class USCXML_API BlobImpl {
 public:
-	~Blob();
-	Blob(size_t size);
-	Blob(const char* data, size_t size, const std::string& mimeType, bool adopt = false);
+	BlobImpl(size_t size);
+	BlobImpl(const char* data, size_t size, const std::string& mimeType, bool adopt = false);
+	virtual ~BlobImpl();
 
-	std::string base64();
-	std::string md5();
-	Blob* fromBase64(const std::string base64);
-	
+	std::string base64() const;
+	std::string md5() const;
+	static BlobImpl* fromBase64(const std::string base64, const std::string& mimeType);
+
 	char* getData() const {
 		return data;
 	}
-	
+
 	size_t getSize() const {
 		return size;
 	}
-	
+
 	std::string getMimeType() const {
 		return mimeType;
 	}
-	
+
+	void setMimeType(const std::string& mimeType) {
+		this->mimeType = mimeType;
+	}
+
 #ifdef SWIGIMPORTED
 protected:
 #endif
@@ -55,7 +60,71 @@ protected:
 	char* data;
 	size_t size;
 	std::string mimeType;
+};
 
+class USCXML_API Blob {
+public:
+
+	Blob() : _impl() {}
+	Blob(const boost::shared_ptr<BlobImpl> impl) : _impl(impl) { }
+	Blob(const Blob& other) : _impl(other._impl) { }
+	Blob(size_t size) : _impl(boost::shared_ptr<BlobImpl>(new BlobImpl(size))) {}
+	Blob(const char* data,
+	     size_t size,
+	     const std::string& mimeType = "application/octet-stream",
+	     bool adopt = false) :
+		_impl(boost::shared_ptr<BlobImpl>(new BlobImpl(data, size, mimeType, adopt))) {}
+	virtual ~Blob() {};
+
+	operator bool()                    const     {
+		return _impl;
+	}
+	bool operator< (const Blob& other) const     {
+		return _impl < other._impl;
+	}
+	bool operator==(const Blob& other) const     {
+		return _impl == other._impl;
+	}
+	bool operator!=(const Blob& other) const     {
+		return _impl != other._impl;
+	}
+	Blob& operator= (const Blob& other)          {
+		_impl = other._impl;
+		return *this;
+	}
+
+	static Blob fromBase64(const std::string base64, const std::string& mimeType = "application/octet-stream") {
+		return Blob(boost::shared_ptr<BlobImpl>(BlobImpl::fromBase64(base64, mimeType)));
+	}
+
+	std::string base64() const {
+		return _impl->base64();
+	}
+
+	std::string md5() const {
+		return _impl->md5();
+	}
+
+	char* getData() const {
+		return _impl->getData();
+	}
+
+	size_t getSize() const {
+		return _impl->getSize();
+	}
+
+	std::string getMimeType() const {
+		return _impl->getMimeType();
+	}
+
+	void setMimeType(const std::string& mimeType) {
+		_impl->setMimeType(mimeType);
+	}
+
+#ifdef SWIGIMPORTED
+protected:
+#endif
+	boost::shared_ptr<BlobImpl> _impl;
 
 };
 

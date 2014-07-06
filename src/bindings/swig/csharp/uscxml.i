@@ -13,6 +13,7 @@
 %include <boost_shared_ptr.i>
 
 // these are needed at least for the templates to work
+typedef uscxml::Blob Blob;
 typedef uscxml::Data Data;
 typedef uscxml::Event Event;
 typedef uscxml::InvokeRequest InvokeRequest;
@@ -161,11 +162,16 @@ WRAP_TO_STRING(uscxml::InvokeRequest);
 // byte[] signature for Blob get/setData
 // see http://permalink.gmane.org/gmane.comp.programming.swig/5804
 
+%csmethodmodifiers uscxml::Blob::setData(const char* data, size_t length) "private";
+%csmethodmodifiers uscxml::Blob::setMimeType(const std::string& mimeType) "private";
 %csmethodmodifiers uscxml::Blob::Blob(const char* data, size_t size, const std::string& mimeType) "private";
+%csmethodmodifiers uscxml::Blob::Blob(const char* data, size_t size) "private";
+
 %typemap(cscode) uscxml::Blob %{
-  public Blob(byte[] data, string mimeType) : this(uscxmlNativeCSharpPINVOKE.new_Blob(data, (uint)data.Length, mimeType), true) {
+  public Blob(byte[] data, string mimeType) : this(uscxmlNativeCSharpPINVOKE.new_Blob__SWIG_2(data, (uint)data.Length, mimeType), true) {
     if (uscxmlNativeCSharpPINVOKE.SWIGPendingException.Pending) throw uscxmlNativeCSharpPINVOKE.SWIGPendingException.Retrieve();
   }
+	
 %}
 
 %typemap(imtype, out="System.IntPtr") const char *data "byte[]"
@@ -251,6 +257,10 @@ using System.Runtime.InteropServices;
 %}
 
 %typemap(cscode) uscxml::Data %{
+	public Data(byte[] data, String mimeType) : this() {
+		setBinary(new Blob(data, mimeType));
+	}
+
 	public Data(List<Data> arr) : this() {
 		setArray(arr);
 	}

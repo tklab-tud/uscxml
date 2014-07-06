@@ -27,11 +27,10 @@
 
 #include "uscxml/Common.h"
 #include "uscxml/Convenience.h"
+#include "uscxml/messages/Blob.h"
 #include <DOM/Document.hpp>
 
 namespace uscxml {
-
-class Blob;
 
 static int _dataIndentation = 1;
 
@@ -220,13 +219,19 @@ public:
 		this->atom = atom;
 	}
 
+	Blob getBinary() {
+		return this->binary;
+	}
+	void setBinary(const Blob& binary) {
+		this->binary = binary;
+	}
+
 	Type getType() {
 		return type;
 	}
 	void setType(const Type type) {
 		this->type = type;
 	}
-
 
 #ifdef SWIGIMPORTED
 protected:
@@ -236,7 +241,7 @@ protected:
 	std::map<std::string, Data> compound;
 	std::list<Data> array;
 	std::string atom;
-	boost::shared_ptr<Blob> binary;
+	Blob binary;
 	Type type;
 
 protected:

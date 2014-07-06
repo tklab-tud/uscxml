@@ -1,6 +1,7 @@
 package org.uscxml.tests;
 
 import org.uscxml.Blob;
+import org.uscxml.BlobImpl;
 import org.uscxml.Data;
 
 public class TestData {
@@ -17,8 +18,33 @@ public class TestData {
 		}
 		
 		{
-			byte binData[] = new byte[1024];
-			Data data = new Data(binData, "application/octet-stream");
+			byte origData[] = new byte[1024];
+			for (int i = 0; i < origData.length; i++) {
+				origData[i] = (byte)i;
+			}
+			
+			{
+				Blob blob = new Blob(origData, "application/octet-stream");
+				if (origData.length != blob.getSize()) throw new RuntimeException("Blob does not match");
+
+				for (int i = 0; i < origData.length; i++) {
+					if (origData[i] != blob.getData()[i])
+						throw new RuntimeException("Blob mismatch at " + i);
+				}
+			}
+			
+			Data data = new Data(origData, "application/octet-stream");
+			Blob blob = data.getBinary();
+			System.out.println(blob.getSize());
+			
+			byte newData[] = blob.getData();
+			
+			if (newData.length != origData.length) throw new RuntimeException("Arrays length does not match");
+			for (int i = 0; i < origData.length; i++) {
+				if (newData[i] != origData[i])
+					throw new RuntimeException("Mismatch at " + i);
+			}
+			
 		}
 		
 	}

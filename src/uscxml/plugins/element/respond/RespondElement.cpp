@@ -89,8 +89,8 @@ void RespondElement::enterElement(const Arabica::DOM::Node<std::string>& node) {
 						httpReply.content = contentData.atom;
 						httpReply.headers["Content-Type"] = "text/plain";
 					} else if (contentData.binary) {
-						httpReply.content = std::string(contentData.binary->data, contentData.binary->size);
-						httpReply.headers["Content-Type"] = contentData.binary->mimeType;
+						httpReply.content = std::string(contentData.binary.getData(), contentData.binary.getSize());
+						httpReply.headers["Content-Type"] = contentData.binary.getMimeType();
 					} else if (contentData.node) {
 						std::stringstream ss;
 						ss << contentData.node;
