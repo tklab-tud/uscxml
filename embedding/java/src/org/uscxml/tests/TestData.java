@@ -1,7 +1,7 @@
 package org.uscxml.tests;
 
+import org.uscxml.Blob;
 import org.uscxml.Data;
-import org.uscxml.Event;
 
 public class TestData {
 
@@ -14,6 +14,11 @@ public class TestData {
 		{
 			Data data = Data.fromJSON("{ \"foo\": \"bar\", \"faz\": 12 }");
 			System.out.println(data);
+		}
+		
+		{
+			byte binData[] = new byte[1024];
+			Data data = new Data(binData, "application/octet-stream");
 		}
 		
 	}
