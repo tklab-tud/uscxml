@@ -159,8 +159,9 @@ internal phase is reached.
 
 ### Embedding uSCXML
 
-There are bindings for Java and C# with some examples in the <tt>embedding</tt> directory. The bindings consist of
-two parts each 
+There are bindings for [Java](https://github.com/tklab-tud/uscxml/tree/master/embedding/java) and 
+[C#](https://github.com/tklab-tud/uscxml/tree/master/embedding/csharp) with some examples in the 
+<tt>embedding</tt> directory. The bindings consist of two parts each 
 
 1. The C++ uscxml interpreter compiled as a loadable module for the target language and 
 2. A target language specific module (uscxml.jar / uscxmlCSharp.dll) with the wrapper classes. 

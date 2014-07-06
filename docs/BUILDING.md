@@ -315,7 +315,7 @@ If you just want a specific configuration for e.g. the simulator, you can invoke
 	$ make -j4 
 
 <b>Note</b>: We did not compile the prebuilts for iOS with 64Bit yet. As such, you will not get binaries build for
-arm64. The main culprit is, again, curl which assumes the size of an int to be the same as at its configure time.
+arm64. The main culprit is, again, curl which assumes the size of an int to be the identical.
 
 ## Language Bindings
 
@@ -398,8 +398,8 @@ Command Prompt (2010)</tt> and type:
 
 We do support both, 32 and 64Bit for Linux and Windows. On Macintosh, most prebuilt dependencies are compiled as 
 universal binaries with 32/64Bit but we build 64Bit binaries exclusively. The reason is that e.g. <tt>curl</tt>
-cannot be compiled as a universal binary as its header files make assumptions about the bit-depth of an int.
-Furthermore, most libraries used by invokers and provided by brew or Macports will be 64Bit only and fail to link.
+cannot be compiled as a universal binary as its header files make assumptions about the size of an int.
+Furthermore, most libraries used by invokers are provided by brew or Macports will be 64Bit only and fail to link.
 
 If you feel adventurous, you can uncomment <tt>set(CMAKE_OSX_ARCHITECTURES "i386;x86_64")</tt> in the topmost
 <tt>CMakeLists.txt</tt> and fight your way through the linker errors.
