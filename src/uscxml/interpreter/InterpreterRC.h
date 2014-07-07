@@ -33,7 +33,7 @@ class InterpreterRC : public InterpreterImpl {
 
 	Arabica::XPath::NodeSet<std::string> selectEventlessTransitions();
 	Arabica::XPath::NodeSet<std::string> selectTransitions(const std::string& event);
-	bool isEnabledTransition(const Arabica::DOM::Node<std::string>& transition, const std::string& event);
+	bool isEnabledTransition(const Arabica::DOM::Element<std::string>& transition, const std::string& event);
 	bool hasIntersection(const Arabica::XPath::NodeSet<std::string>& nodeSet1, const Arabica::XPath::NodeSet<std::string>& nodeSet2);
 
 	void enterStates(const Arabica::XPath::NodeSet<std::string>& enabledTransitions);
@@ -52,7 +52,7 @@ class InterpreterRC : public InterpreterImpl {
 	                     std::map<std::string, Arabica::DOM::Node<std::string> > defaultHistoryContent);
 
 	Arabica::XPath::NodeSet<std::string> removeConflictingTransitions(const Arabica::XPath::NodeSet<std::string>& enabledTransitions);
-	Arabica::DOM::Node<std::string> getTransitionDomain(const Arabica::DOM::Node<std::string>& transition);
+	Arabica::DOM::Node<std::string> getTransitionDomain(const Arabica::DOM::Element<std::string>& transition);
 
 	void addDescendantStatesToEnter(const Arabica::DOM::Node<std::string>& state,
 	                                Arabica::XPath::NodeSet<std::string>& statesToEnter,
@@ -71,7 +71,7 @@ class InterpreterRC : public InterpreterImpl {
 	Arabica::XPath::NodeSet<std::string> getProperAncestors(const Arabica::DOM::Node<std::string>& s1,
 	        const Arabica::DOM::Node<std::string>& s2);
 
-	Arabica::XPath::NodeSet<std::string> getTargetStates(const Arabica::DOM::Node<std::string>& transition);
+	Arabica::XPath::NodeSet<std::string> getTargetStates(const Arabica::DOM::Element<std::string>& transition);
 
 #if 0
 	bool isDescendant(const Arabica::DOM::Node<std::string>& state1, const Arabica::DOM::Node<std::string>& state2);

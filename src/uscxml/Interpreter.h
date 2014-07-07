@@ -323,7 +323,7 @@ public:
 		tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
 		Arabica::XPath::NodeSet<std::string> basicConfig;
 		for (int i = 0; i < _configuration.size(); i++) {
-			if (isAtomic(_configuration[i]))
+			if (isAtomic(Arabica::DOM::Element<std::string>(_configuration[i])))
 				basicConfig.push_back(_configuration[i]);
 		}
 		return basicConfig;
@@ -372,33 +372,33 @@ public:
 	bool isLegalConfiguration(const Arabica::XPath::NodeSet<std::string>&);
 	bool isLegalConfiguration(const std::list<std::string>&);
 
-	static bool isState(const Arabica::DOM::Node<std::string>& state);
-	static bool isPseudoState(const Arabica::DOM::Node<std::string>& state);
-	static bool isTransitionTarget(const Arabica::DOM::Node<std::string>& elem);
-	static bool isTargetless(const Arabica::DOM::Node<std::string>& transition);
-	static bool isAtomic(const Arabica::DOM::Node<std::string>& state);
-	static bool isFinal(const Arabica::DOM::Node<std::string>& state);
-	static bool isHistory(const Arabica::DOM::Node<std::string>& state);
-	static bool isParallel(const Arabica::DOM::Node<std::string>& state);
-	static bool isCompound(const Arabica::DOM::Node<std::string>& state);
+	static bool isState(const Arabica::DOM::Element<std::string>& state);
+	static bool isPseudoState(const Arabica::DOM::Element<std::string>& state);
+	static bool isTransitionTarget(const Arabica::DOM::Element<std::string>& elem);
+	static bool isTargetless(const Arabica::DOM::Element<std::string>& transition);
+	static bool isAtomic(const Arabica::DOM::Element<std::string>& state);
+	static bool isFinal(const Arabica::DOM::Element<std::string>& state);
+	static bool isHistory(const Arabica::DOM::Element<std::string>& state);
+	static bool isParallel(const Arabica::DOM::Element<std::string>& state);
+	static bool isCompound(const Arabica::DOM::Element<std::string>& state);
 	static bool isDescendant(const Arabica::DOM::Node<std::string>& s1, const Arabica::DOM::Node<std::string>& s2);
 	bool isInEmbeddedDocument(const Arabica::DOM::Node<std::string>& node);
-	bool isInitial(const Arabica::DOM::Node<std::string>& state);
+	bool isInitial(const Arabica::DOM::Element<std::string>& state);
 
 	static std::string stateToString(InterpreterState state);
 
-	Arabica::DOM::Node<std::string> getState(const std::string& stateId);
+	Arabica::DOM::Element<std::string> getState(const std::string& stateId);
 	Arabica::XPath::NodeSet<std::string> getStates(const std::list<std::string>& stateIds);
 	Arabica::XPath::NodeSet<std::string> getAllStates();
 
-	Arabica::XPath::NodeSet<std::string> getInitialStates(Arabica::DOM::Node<std::string> state = Arabica::DOM::Node<std::string>());
+	Arabica::XPath::NodeSet<std::string> getInitialStates(Arabica::DOM::Element<std::string> state = Arabica::DOM::Element<std::string>());
 	static Arabica::XPath::NodeSet<std::string> getChildStates(const Arabica::DOM::Node<std::string>& state);
 	static Arabica::XPath::NodeSet<std::string> getChildStates(const Arabica::XPath::NodeSet<std::string>& state);
-	static Arabica::DOM::Node<std::string> getParentState(const Arabica::DOM::Node<std::string>& element);
+	static Arabica::DOM::Element<std::string> getParentState(const Arabica::DOM::Node<std::string>& element);
 	static Arabica::DOM::Node<std::string> getAncestorElement(const Arabica::DOM::Node<std::string>& node, const std::string tagName);
-	virtual Arabica::XPath::NodeSet<std::string> getTargetStates(const Arabica::DOM::Node<std::string>& transition);
+	virtual Arabica::XPath::NodeSet<std::string> getTargetStates(const Arabica::DOM::Element<std::string>& transition);
 	virtual Arabica::XPath::NodeSet<std::string> getTargetStates(const Arabica::XPath::NodeSet<std::string>& transitions);
-	virtual Arabica::DOM::Node<std::string> getSourceState(const Arabica::DOM::Node<std::string>& transition);
+	virtual Arabica::DOM::Node<std::string> getSourceState(const Arabica::DOM::Element<std::string>& transition);
 
 	static Arabica::XPath::NodeSet<std::string> filterChildElements(const std::string& tagname, const Arabica::DOM::Node<std::string>& node, bool recurse = false);
 	static Arabica::XPath::NodeSet<std::string> filterChildElements(const std::string& tagName, const Arabica::XPath::NodeSet<std::string>& nodeSet, bool recurse = false);
@@ -482,7 +482,7 @@ protected:
 
 	Data _cmdLineOptions;
 
-	virtual void executeContent(const Arabica::DOM::Node<std::string>& content, bool rethrow = false);
+	virtual void executeContent(const Arabica::DOM::Element<std::string>& content, bool rethrow = false);
 	virtual void executeContent(const Arabica::DOM::NodeList<std::string>& content, bool rethrow = false);
 	virtual void executeContent(const Arabica::XPath::NodeSet<std::string>& content, bool rethrow = false);
 
@@ -499,13 +499,13 @@ protected:
 	virtual void send(const Arabica::DOM::Node<std::string>& element);
 	virtual void invoke(const Arabica::DOM::Node<std::string>& element);
 	virtual void cancelInvoke(const Arabica::DOM::Node<std::string>& element);
-	virtual void internalDoneSend(const Arabica::DOM::Node<std::string>& state);
+	virtual void internalDoneSend(const Arabica::DOM::Element<std::string>& state);
 	static void delayedSend(void* userdata, std::string eventName);
 	void returnDoneEvent(const Arabica::DOM::Node<std::string>& state);
 
-	bool hasConditionMatch(const Arabica::DOM::Node<std::string>& conditional);
-	bool isInFinalState(const Arabica::DOM::Node<std::string>& state);
-	bool parentIsScxmlState(const Arabica::DOM::Node<std::string>& state);
+	bool hasConditionMatch(const Arabica::DOM::Element<std::string>& conditional);
+	bool isInFinalState(const Arabica::DOM::Element<std::string>& state);
+	bool parentIsScxmlState(const Arabica::DOM::Element<std::string>& state);
 
 	IOProcessor getIOProcessor(const std::string& type);
 
@@ -515,7 +515,7 @@ protected:
 	std::map<Arabica::DOM::Node<std::string>, ExecutableContent> _executableContent;
 
 	/// TODO: We need to adapt them when the DOM is operated upon
-	std::map<std::string, Arabica::DOM::Node<std::string> > _cachedStates;
+	std::map<std::string, Arabica::DOM::Element<std::string> > _cachedStates;
 	std::map<std::string, URL> _cachedURLs;
 
 	friend class USCXMLInvoker;

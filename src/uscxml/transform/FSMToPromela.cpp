@@ -317,7 +317,7 @@ void FSMToPromela::writeExecutableContent(std::ostream& stream, const Arabica::D
 		}
 
 		stream << padding << "}" << std::endl;
-		if (isFinal(newState)) {
+		if (isFinal(Element<std::string>(newState))) {
 			stream << padding << "goto terminate;" << std::endl;
 		} else {
 			stream << padding << "goto nextStep;" << std::endl;

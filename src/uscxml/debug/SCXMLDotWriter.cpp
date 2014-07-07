@@ -176,7 +176,7 @@ void SCXMLDotWriter::writeStateElement(std::ostream& os, const Arabica::DOM::Ele
 				os << "]" << std::endl;
 			}
 		}
-		if (InterpreterImpl::isState(childElems.item(i))) {
+		if (InterpreterImpl::isState(Element<std::string>(childElems.item(i)))) {
 			writeStateElement(os, (Arabica::DOM::Element<std::string>)childElems.item(i));
 		}
 		if (childElems.item(i).getNodeType() == Node_base::ELEMENT_NODE && iequals(TAGNAME(childElems.item(i)), "initial")) {
@@ -256,7 +256,7 @@ std::string SCXMLDotWriter::getDetailedLabel(const Arabica::DOM::Element<std::st
 		if (childElems.item(i).getNodeType() != Node_base::ELEMENT_NODE)
 			continue;
 
-		if (InterpreterImpl::isState(childElems.item(i)) ||
+		if (InterpreterImpl::isState(Element<std::string>(childElems.item(i))) ||
 		        iequals(TAGNAME(childElems.item(i)), "transition") ||
 		        iequals(TAGNAME(childElems.item(i)), "initial") ||
 		        false)

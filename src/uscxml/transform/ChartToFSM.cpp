@@ -182,7 +182,7 @@ InterpreterState FlatteningInterpreter::interpret() {
 	return _state;
 }
 
-void FlatteningInterpreter::executeContent(const Arabica::DOM::Node<std::string>& content, bool rethrow) {
+void FlatteningInterpreter::executeContent(const Arabica::DOM::Element<std::string>& content, bool rethrow) {
 //	std::cout << content << std::endl;
 	GlobalTransition::Action action;
 
@@ -199,19 +199,6 @@ void FlatteningInterpreter::executeContent(const Arabica::DOM::Node<std::string>
 	_currGlobalTransition->actions.push_back(action);
 }
 
-void FlatteningInterpreter::executeContent(const Arabica::DOM::NodeList<std::string>& content, bool rethrow) {
-	for (int i = 0; i < content.getLength(); i++) {
-		executeContent(content.item(i));
-	}
-	assert(false);
-}
-
-void FlatteningInterpreter::executeContent(const Arabica::XPath::NodeSet<std::string>& content, bool rethrow) {
-	for (int i = 0; i < content.size(); i++) {
-		executeContent(content[i]);
-	}
-}
-
 void FlatteningInterpreter::invoke(const Arabica::DOM::Node<std::string>& element) {
 	GlobalTransition::Action action;
 	action.invoke = element;
@@ -226,10 +213,8 @@ void FlatteningInterpreter::cancelInvoke(const Arabica::DOM::Node<std::string>& 
 	_currGlobalTransition->uninvoke.push_back(element);
 }
 
-void FlatteningInterpreter::internalDoneSend(const Arabica::DOM::Node<std::string>& state) {
+void FlatteningInterpreter::internalDoneSend(const Arabica::DOM::Element<std::string>& state) {
 
-	if (!isState(state))
-		return;
 	Arabica::DOM::Element<std::string> stateElem = (Arabica::DOM::Element<std::string>)state;
 
 //	if (parentIsScxmlState(state))
@@ -906,7 +891,7 @@ GlobalState::GlobalState(const Arabica::XPath::NodeSet<std::string>& activeState
 	std::ostringstream idSS;
 	idSS << "active-";
 	for (int i = 0; i < activeStates.size(); i++) {
-		if (!InterpreterImpl::isFinal(activeStates[i]))
+		if (!InterpreterImpl::isFinal(Element<std::string>(activeStates[i])))
 			isFinal = false;
 		idSS << ATTR(activeStates[i], "id") << "-";
 	}

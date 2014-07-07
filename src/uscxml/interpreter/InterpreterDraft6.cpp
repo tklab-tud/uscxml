@@ -360,7 +360,7 @@ Arabica::XPath::NodeSet<std::string> InterpreterDraft6::selectTransitions(const 
 
 	NodeSet<std::string> states;
 	for (unsigned int i = 0; i < _configuration.size(); i++) {
-		if (isAtomic(_configuration[i]))
+		if (isAtomic(Element<std::string>(_configuration[i])))
 			states.push_back(_configuration[i]);
 	}
 	states.to_document_order();
@@ -378,7 +378,7 @@ Arabica::XPath::NodeSet<std::string> InterpreterDraft6::selectTransitions(const 
 		bool foundTransition = false;
 		NodeSet<std::string> transitions = filterChildElements(_nsInfo.xmlNSPrefix + "transition", states[index]);
 		for (unsigned int k = 0; k < transitions.size(); k++) {
-			if (isEnabledTransition(transitions[k], event)) {
+			if (isEnabledTransition(Element<std::string>(transitions[k]), event)) {
 				enabledTransitions.push_back(transitions[k]);
 				foundTransition = true;
 				goto LOOP;
@@ -407,7 +407,7 @@ LOOP:
 	return enabledTransitions;
 }
 
-bool InterpreterDraft6::isEnabledTransition(const Node<std::string>& transition, const std::string& event) {
+bool InterpreterDraft6::isEnabledTransition(const Element<std::string>& transition, const std::string& event) {
 	std::string eventName;
 	if (HAS_ATTR(transition, "event")) {
 		eventName = ATTR(transition, "event");
@@ -438,7 +438,7 @@ Arabica::XPath::NodeSet<std::string> InterpreterDraft6::selectEventlessTransitio
 
 	NodeSet<std::string> states;
 	for (unsigned int i = 0; i < _configuration.size(); i++) {
-		if (isAtomic(_configuration[i]))
+		if (isAtomic(Element<std::string>(_configuration[i])))
 			states.push_back(_configuration[i]);
 	}
 	states.to_document_order();
@@ -456,7 +456,8 @@ Arabica::XPath::NodeSet<std::string> InterpreterDraft6::selectEventlessTransitio
 		bool foundTransition = false;
 		NodeSet<std::string> transitions = filterChildElements(_nsInfo.xmlNSPrefix + "transition", states[index]);
 		for (unsigned int k = 0; k < transitions.size(); k++) {
-			if (!HAS_ATTR(transitions[k], "event") && hasConditionMatch(transitions[k])) {
+			Element<std::string> transElem(transitions[k]);
+			if (!HAS_ATTR(transElem, "event") && hasConditionMatch(transElem)) {
 				enabledTransitions.push_back(transitions[k]);
 				foundTransition = true;
 				goto LOOP;
@@ -487,12 +488,12 @@ LOOP:
 Arabica::XPath::NodeSet<std::string> InterpreterDraft6::filterPreempted(const Arabica::XPath::NodeSet<std::string>& enabledTransitions) {
 	Arabica::XPath::NodeSet<std::string> filteredTransitions;
 	for (unsigned int i = 0; i < enabledTransitions.size(); i++) {
-		Node<std::string> t = enabledTransitions[i];
+		Element<std::string> t(enabledTransitions[i]);
 		if (!isTargetless(t)) {
 			for (unsigned int j = 0; j < filteredTransitions.size(); j++) {
 				if (j == i)
 					continue;
-				Node<std::string> t2 = filteredTransitions[j];
+				Element<std::string> t2(filteredTransitions[j]);
 				if (isPreemptingTransition(t2, t)) {
 #if 0
 					std::cout << "#####" << std::endl << "Transition " << std::endl
@@ -518,7 +519,7 @@ LOOP:
 /**
  * Is t1 preempting t2?
  */
-bool InterpreterDraft6::isPreemptingTransition(const Node<std::string>& t1, const Node<std::string>& t2) {
+bool InterpreterDraft6::isPreemptingTransition(const Element<std::string>& t1, const Element<std::string>& t2) {
 	assert(t1);
 	assert(t2);
 
@@ -538,13 +539,13 @@ bool InterpreterDraft6::isPreemptingTransition(const Node<std::string>& t1, cons
 	return false;
 }
 
-bool InterpreterDraft6::isCrossingBounds(const Node<std::string>& transition) {
+bool InterpreterDraft6::isCrossingBounds(const Element<std::string>& transition) {
 	if (!isTargetless(transition) && !isWithinParallel(transition))
 		return true;
 	return false;
 }
 
-bool InterpreterDraft6::isWithinParallel(const Node<std::string>& transition) {
+bool InterpreterDraft6::isWithinParallel(const Element<std::string>& transition) {
 	if (isTargetless(transition))
 		return false;
 
@@ -565,7 +566,7 @@ Node<std::string> InterpreterDraft6::findLCPA(const Arabica::XPath::NodeSet<std:
 	Arabica::XPath::NodeSet<std::string> ancestors = getProperAncestors(states[0], Node<std::string>());
 	Node<std::string> ancestor;
 	for (int i = 0; i < ancestors.size(); i++) {
-		if (!isParallel(ancestors[i]))
+		if (!isParallel(Element<std::string>(ancestors[i])))
 			continue;
 		for (int j = 0; j < states.size(); j++) {
 			if (!isDescendant(states[j], ancestors[i]) && (states[j] != ancestors[i]))
@@ -623,14 +624,15 @@ void InterpreterDraft6::exitInterpreter() {
 	for (int i = 0; i < statesToExit.size(); i++) {
 		Arabica::XPath::NodeSet<std::string> onExitElems = filterChildElements(_nsInfo.xmlNSPrefix + "onexit", statesToExit[i]);
 		for (int j = 0; j < onExitElems.size(); j++) {
-			executeContent(onExitElems[j]);
+			executeContent(Element<std::string>(onExitElems[j]));
 		}
 		Arabica::XPath::NodeSet<std::string> invokeElems = filterChildElements(_nsInfo.xmlNSPrefix + "invoke", statesToExit[i]);
 		// TODO: we ought to cancel all remaining invokers just to be sure with the persist extension
 		for (int j = 0; j < invokeElems.size(); j++) {
 			cancelInvoke(invokeElems[j]);
 		}
-		if (isFinal(statesToExit[i]) && parentIsScxmlState(statesToExit[i])) {
+		Element<std::string> stateElem(statesToExit[i]);
+		if (isFinal(stateElem) && parentIsScxmlState(stateElem)) {
 			returnDoneEvent(statesToExit[i]);
 		}
 	}
@@ -664,7 +666,7 @@ void InterpreterDraft6::exitStates(const Arabica::XPath::NodeSet<std::string>& e
 					break;
 				}
 			}
-			if (isInternal && allDescendants && isCompound(source)) {
+			if (isInternal && allDescendants && isCompound(Element<std::string>(source))) {
 				ancestor = source;
 			} else {
 				NodeSet<std::string> tmpStates;
@@ -717,7 +719,7 @@ void InterpreterDraft6::exitStates(const Arabica::XPath::NodeSet<std::string>& e
 			NodeSet<std::string> historyNodes;
 			for (int k = 0; k < _configuration.size(); k++) {
 				if (iequals(historyType, "deep")) {
-					if (isAtomic(_configuration[k]) && isDescendant(_configuration[k], statesToExit[i]))
+					if (isAtomic(Element<std::string>(_configuration[k])) && isDescendant(_configuration[k], statesToExit[i]))
 						historyNodes.push_back(_configuration[k]);
 				} else {
 					if (_configuration[k].getParentNode() == statesToExit[i])
@@ -812,7 +814,7 @@ void InterpreterDraft6::enterStates(const Arabica::XPath::NodeSet<std::string>& 
 				}
 			}
 			if (iequals(transitionType, "internal") &&
-			        isCompound(source) &&
+			        isCompound(Element<std::string>(source)) &&
 			        allDescendants) {
 				ancestor = source;
 			} else {
@@ -828,7 +830,7 @@ void InterpreterDraft6::enterStates(const Arabica::XPath::NodeSet<std::string>& 
 #endif
 
 			for (int j = 0; j < tStates.size(); j++) {
-				addStatesToEnter(tStates[j], statesToEnter, statesForDefaultEntry, defaultHistoryContent);
+				addStatesToEnter(Element<std::string>(tStates[j]), statesToEnter, statesForDefaultEntry, defaultHistoryContent);
 			}
 
 #if VERBOSE
@@ -852,7 +854,7 @@ void InterpreterDraft6::enterStates(const Arabica::XPath::NodeSet<std::string>& 
 
 				for (int k = 0; k < ancestors.size(); k++) {
 					statesToEnter.push_back(ancestors[k]);
-					if(isParallel(ancestors[k])) {
+					if(isParallel(Element<std::string>(ancestors[k]))) {
 						NodeSet<std::string> childs = getChildStates(ancestors[k]);
 						for (int l = 0; l < childs.size(); l++) {
 							bool someIsDescendant = false;
@@ -863,7 +865,7 @@ void InterpreterDraft6::enterStates(const Arabica::XPath::NodeSet<std::string>& 
 								}
 							}
 							if (!someIsDescendant) {
-								addStatesToEnter(childs[l], statesToEnter, statesForDefaultEntry, defaultHistoryContent);
+								addStatesToEnter(Element<std::string>(childs[l]), statesToEnter, statesForDefaultEntry, defaultHistoryContent);
 							}
 						}
 					}
@@ -929,7 +931,7 @@ void InterpreterDraft6::enterStates(const Arabica::XPath::NodeSet<std::string>& 
 			// execute initial transition content for compound states
 			Arabica::XPath::NodeSet<std::string> transitions = _xpath.evaluate("" + _nsInfo.xpathPrefix + "initial/" + _nsInfo.xpathPrefix + "transition", stateElem).asNodeSet();
 			for (int j = 0; j < transitions.size(); j++) {
-				executeContent(transitions[j]);
+				executeContent(Element<std::string>(transitions[j]));
 			}
 		}
 
@@ -945,21 +947,23 @@ void InterpreterDraft6::enterStates(const Arabica::XPath::NodeSet<std::string>& 
 #endif
 		if (isFinal(stateElem)) {
 			internalDoneSend(stateElem);
-			Element<std::string> parent = (Element<std::string>)stateElem.getParentNode();
-
-			if (isParallel(parent.getParentNode())) {
+			Node<std::string> parent = stateElem.getParentNode();
+			
+			if (parent.getNodeType() == Node_base::ELEMENT_NODE &&
+					parent.getParentNode().getNodeType() == Node_base::ELEMENT_NODE &&
+					isParallel(Element<std::string>(parent.getParentNode()))) {
 				Element<std::string> grandParent = (Element<std::string>)parent.getParentNode();
 
 				Arabica::XPath::NodeSet<std::string> childs = getChildStates(grandParent);
 				bool inFinalState = true;
 				for (int j = 0; j < childs.size(); j++) {
-					if (!isInFinalState(childs[j])) {
+					if (!isInFinalState(Element<std::string>(childs[j]))) {
 						inFinalState = false;
 						break;
 					}
 				}
 				if (inFinalState) {
-					internalDoneSend(parent);
+					internalDoneSend(Element<std::string>(parent));
 				}
 			}
 		}
@@ -972,7 +976,7 @@ void InterpreterDraft6::enterStates(const Arabica::XPath::NodeSet<std::string>& 
 	}
 }
 
-void InterpreterDraft6::addStatesToEnter(const Node<std::string>& state,
+void InterpreterDraft6::addStatesToEnter(const Element<std::string>& state,
         Arabica::XPath::NodeSet<std::string>& statesToEnter,
         Arabica::XPath::NodeSet<std::string>& statesForDefaultEntry,
         Arabica::XPath::NodeSet<std::string>& defaultHistoryContent) {
@@ -994,7 +998,7 @@ void InterpreterDraft6::addStatesToEnter(const Node<std::string>& state,
 #endif
 
 			for (int i = 0; i < historyValue.size(); i++) {
-				addStatesToEnter(historyValue[i], statesToEnter, statesForDefaultEntry, defaultHistoryContent);
+				addStatesToEnter(Element<std::string>(historyValue[i]), statesToEnter, statesForDefaultEntry, defaultHistoryContent);
 				NodeSet<std::string> ancestors = getProperAncestors(historyValue[i], state);
 
 #if VERBOSE
@@ -1013,9 +1017,9 @@ void InterpreterDraft6::addStatesToEnter(const Node<std::string>& state,
 			defaultHistoryContent.push_back(getParentState(state));
 			NodeSet<std::string> transitions = filterChildElements(_nsInfo.xmlNSPrefix + "transition", state);
 			for (int i = 0; i < transitions.size(); i++) {
-				NodeSet<std::string> targets = getTargetStates(transitions[i]);
+				NodeSet<std::string> targets = getTargetStates(Element<std::string>(transitions[i]));
 				for (int j = 0; j < targets.size(); j++) {
-					addStatesToEnter(targets[j], statesToEnter, statesForDefaultEntry, defaultHistoryContent);
+					addStatesToEnter(Element<std::string>(targets[j]), statesToEnter, statesForDefaultEntry, defaultHistoryContent);
 
 					// Modifications from chris nuernberger
 					NodeSet<std::string> ancestors = getProperAncestors(targets[j], state);
@@ -1032,7 +1036,7 @@ void InterpreterDraft6::addStatesToEnter(const Node<std::string>& state,
 
 			NodeSet<std::string> tStates = getInitialStates(state);
 			for (int i = 0; i < tStates.size(); i++) {
-				addStatesToEnter(tStates[i], statesToEnter, statesForDefaultEntry, defaultHistoryContent);
+				addStatesToEnter(Element<std::string>(tStates[i]), statesToEnter, statesForDefaultEntry, defaultHistoryContent);
 			}
 
 			//			addStatesToEnter(getInitialState(state), statesToEnter, statesForDefaultEntry);
@@ -1041,7 +1045,7 @@ void InterpreterDraft6::addStatesToEnter(const Node<std::string>& state,
 		} else if(isParallel(state)) {
 			NodeSet<std::string> childStates = getChildStates(state);
 			for (int i = 0; i < childStates.size(); i++) {
-				addStatesToEnter(childStates[i], statesToEnter, statesForDefaultEntry, defaultHistoryContent);
+				addStatesToEnter(Element<std::string>(childStates[i]), statesToEnter, statesForDefaultEntry, defaultHistoryContent);
 			}
 		}
 	}

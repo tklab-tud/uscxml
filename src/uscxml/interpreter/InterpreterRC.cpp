@@ -111,7 +111,7 @@ InterpreterState InterpreterRC::interpret() {
 		NodeSet<std::string> globalScriptElems = filterChildElements(_nsInfo.xmlNSPrefix + "script", _scxml);
 		for (unsigned int i = 0; i < globalScriptElems.size(); i++) {
 			if (_dataModel) {
-				executeContent(globalScriptElems[i]);
+				executeContent(Element<std::string>(globalScriptElems[i]));
 			}
 		}
 
@@ -414,14 +414,15 @@ void InterpreterRC::exitInterpreter() {
 	for (int i = 0; i < statesToExit.size(); i++) {
 		Arabica::XPath::NodeSet<std::string> onExitElems = filterChildElements(_nsInfo.xmlNSPrefix + "onexit", statesToExit[i]);
 		for (int j = 0; j < onExitElems.size(); j++) {
-			executeContent(onExitElems[j]);
+			executeContent(Element<std::string>(onExitElems[j]));
 		}
 		Arabica::XPath::NodeSet<std::string> invokeElems = filterChildElements(_nsInfo.xmlNSPrefix + "invoke", statesToExit[i]);
 		for (int j = 0; j < invokeElems.size(); j++) {
 			cancelInvoke(invokeElems[j]);
 		}
-		if (isFinal(statesToExit[i]) && parentIsScxmlState(statesToExit[i])) {
-			returnDoneEvent(statesToExit[i]);
+		Element<std::string> stateElem(statesToExit[i]);
+		if (isFinal(stateElem) && parentIsScxmlState(stateElem)) {
+			returnDoneEvent(stateElem);
 		}
 	}
 	_configuration = NodeSet<std::string>();
@@ -445,7 +446,7 @@ Arabica::XPath::NodeSet<std::string> InterpreterRC::selectEventlessTransitions()
 
 	NodeSet<std::string> atomicStates;
 	for (unsigned int i = 0; i < _configuration.size(); i++) {
-		if (isAtomic(_configuration[i]))
+		if (isAtomic(Element<std::string>(_configuration[i])))
 			atomicStates.push_back(_configuration[i]);
 	}
 	atomicStates.to_document_order();
@@ -459,7 +460,8 @@ Arabica::XPath::NodeSet<std::string> InterpreterRC::selectEventlessTransitions()
 			const Node<std::string>& ancestor = withAncestors[i];
 			NodeSet<std::string> transitions = filterChildElements(_nsInfo.xmlNSPrefix + "transition", ancestor);
 			for (unsigned int k = 0; k < transitions.size(); k++) {
-				if (!HAS_ATTR(transitions[k], "event") && hasConditionMatch(transitions[k])) {
+				Element<std::string> transElem(transitions[k]);
+				if (!HAS_ATTR(transElem, "event") && hasConditionMatch(transElem)) {
 					enabledTransitions.push_back(transitions[k]);
 					goto BREAK_LOOP;
 				}
@@ -491,7 +493,7 @@ Arabica::XPath::NodeSet<std::string> InterpreterRC::selectTransitions(const std:
 
 	NodeSet<std::string> atomicStates;
 	for (unsigned int i = 0; i < _configuration.size(); i++) {
-		if (isAtomic(_configuration[i]))
+		if (isAtomic(Element<std::string>(_configuration[i])))
 			atomicStates.push_back(_configuration[i]);
 	}
 	atomicStates.to_document_order();
@@ -512,7 +514,7 @@ Arabica::XPath::NodeSet<std::string> InterpreterRC::selectTransitions(const std:
 			const Node<std::string>& ancestor = withAncestors[j];
 			NodeSet<std::string> transitions = filterChildElements(_nsInfo.xmlNSPrefix + "transition", ancestor);
 			for (unsigned int k = 0; k < transitions.size(); k++) {
-				if (isEnabledTransition(transitions[k], event)) {
+				if (isEnabledTransition(Element<std::string>(transitions[k]), event)) {
 					enabledTransitions.push_back(transitions[k]);
 					goto BREAK_LOOP;
 				}
@@ -535,7 +537,7 @@ BREAK_LOOP:
 	return enabledTransitions;
 }
 
-bool InterpreterRC::isEnabledTransition(const Node<std::string>& transition, const std::string& event) {
+bool InterpreterRC::isEnabledTransition(const Element<std::string>& transition, const std::string& event) {
 	std::string eventName;
 	if (HAS_ATTR(transition, "event")) {
 		eventName = ATTR(transition, "event");
@@ -587,12 +589,12 @@ Arabica::XPath::NodeSet<std::string> InterpreterRC::removeConflictingTransitions
 	Arabica::XPath::NodeSet<std::string> filteredTransitions;
 
 	for (unsigned int i = 0; i < enabledTransitions.size(); i++) {
-		const Node<std::string>& t1 = enabledTransitions[i];
+		Element<std::string> t1(enabledTransitions[i]);
 		bool t1Preempted = false;
 		Arabica::XPath::NodeSet<std::string> transitionsToRemove;
 
 		for (unsigned int j = 0; j < filteredTransitions.size(); j++) {
-			const Node<std::string>& t2 = enabledTransitions[j];
+			Element<std::string> t2(enabledTransitions[j]);
 			if (hasIntersection(computeExitSet(t1), computeExitSet(t2))) {
 				if (isDescendant(getSourceState(t1), getSourceState(t2))) {
 					transitionsToRemove.push_back(t2);
@@ -702,7 +704,7 @@ void InterpreterRC::exitStates(const Arabica::XPath::NodeSet<std::string>& enabl
 			NodeSet<std::string> historyNodes;
 			for (int k = 0; k < _configuration.size(); k++) {
 				if (iequals(historyType, "deep")) {
-					if (isAtomic(_configuration[k]) && isDescendant(_configuration[k], statesToExit[i]))
+					if (isAtomic(Element<std::string>(_configuration[k])) && isDescendant(_configuration[k], statesToExit[i]))
 						historyNodes.push_back(_configuration[k]);
 				} else {
 					if (_configuration[k].getParentNode() == statesToExit[i])
@@ -757,7 +759,7 @@ function computeExitSet(transitions)
 Arabica::XPath::NodeSet<std::string> InterpreterRC::computeExitSet(const Arabica::XPath::NodeSet<std::string>& transitions) {
 	NodeSet<std::string> statesToExit;
 	for (unsigned int i = 0; i < transitions.size(); i++) {
-		const Node<std::string>& t = transitions[i];
+		Element<std::string> t(transitions[i]);
 		if (isTargetless(t))
 			continue;
 		Arabica::DOM::Node<std::string> domain = getTransitionDomain(t);
@@ -852,12 +854,10 @@ void InterpreterRC::enterStates(const Arabica::XPath::NodeSet<std::string>& enab
 		if (isMember(s, statesForDefaultEntry)) {
 			// execute initial transition content for compound states
 			Arabica::XPath::NodeSet<std::string> transitions = _xpath.evaluate("" + _nsInfo.xpathPrefix + "initial/" + _nsInfo.xpathPrefix + "transition", s).asNodeSet();
-			for (int j = 0; j < transitions.size(); j++) {
-				executeContent(transitions[j]);
-			}
+			executeContent(transitions);
 		}
 		if (defaultHistoryContent.find(ATTR(s, "id")) != defaultHistoryContent.end()) {
-			executeContent(defaultHistoryContent[ATTR(s, "id")]);
+			executeContent(Element<std::string>(defaultHistoryContent[ATTR(s, "id")]));
 		}
 
 		/**
@@ -920,7 +920,7 @@ void InterpreterRC::computeEntrySet(const Arabica::XPath::NodeSet<std::string>& 
                                     NodeSet<std::string>& statesForDefaultEntry,
                                     std::map<std::string, Arabica::DOM::Node<std::string> > defaultHistoryContent) {
 	for (int i = 0; i < transitions.size(); i++) {
-		const Node<std::string>& t = transitions[i];
+		Element<std::string> t(transitions[i]);
 
 		NodeSet<std::string> targets = getTargetStates(t);
 		for (int j = 0; j < targets.size(); j++) {
@@ -1010,7 +1010,7 @@ void InterpreterRC::addDescendantStatesToEnter(const Arabica::DOM::Node<std::str
         Arabica::XPath::NodeSet<std::string>& statesToEnter,
         Arabica::XPath::NodeSet<std::string>& statesForDefaultEntry,
         std::map<std::string, Arabica::DOM::Node<std::string> > defaultHistoryContent) {
-	if (isHistory(state)) {
+	if (isHistory(Element<std::string>(state))) {
 		std::string stateId = ATTR(state, "id");
 		if (_historyValue.find(stateId) != _historyValue.end()) {
 			const Arabica::XPath::NodeSet<std::string>& historyValue = _historyValue[stateId];
@@ -1028,7 +1028,7 @@ void InterpreterRC::addDescendantStatesToEnter(const Arabica::DOM::Node<std::str
 				LOG(ERROR) << "Only one transition allowed in history";
 			}
 			for (int i = 0; i < transitions.size(); i++) {
-				NodeSet<std::string> targets = getTargetStates(transitions[i]);
+				NodeSet<std::string> targets = getTargetStates(Element<std::string>(transitions[i]));
 				for (int j = 0; j < targets.size(); j++) {
 					const Node<std::string>& s = targets[i];
 					addDescendantStatesToEnter(s,statesToEnter,statesForDefaultEntry, defaultHistoryContent);
@@ -1040,15 +1040,15 @@ void InterpreterRC::addDescendantStatesToEnter(const Arabica::DOM::Node<std::str
 		if (!isMember(state, statesToEnter)) // adding an existing element invalidates old reference
 			statesToEnter.push_back(state);
 
-		if (isCompound(state)) {
+		if (isCompound(Element<std::string>(state))) {
 			statesForDefaultEntry.push_back(state);
-			NodeSet<std::string> targets = getInitialStates(state);
+			NodeSet<std::string> targets = getInitialStates(Element<std::string>(state));
 			for (int i = 0; i < targets.size(); i++) {
 				const Node<std::string>& s = targets[i];
 				addDescendantStatesToEnter(s,statesToEnter,statesForDefaultEntry, defaultHistoryContent);
 				addAncestorStatesToEnter(s, getParentState(s), statesToEnter, statesForDefaultEntry, defaultHistoryContent);
 			}
-		} else if(isParallel(state)) {
+		} else if(isParallel(Element<std::string>(state))) {
 			// if state is a parallel state, recursively call addStatesToEnter on any of its child
 			// states that don't already have a descendant on statesToEnter.
 			NodeSet<std::string> childStates = getChildStates(state);
@@ -1087,7 +1087,7 @@ void InterpreterRC::addAncestorStatesToEnter(const Arabica::DOM::Node<std::strin
 	for (int i = 0; i < ancestors.size(); i++) {
 		const Node<std::string>& anc = ancestors[i];
 		statesToEnter.push_back(anc);
-		if (isParallel(anc)) {
+		if (isParallel(Element<std::string>(anc))) {
 			NodeSet<std::string> childStates = getChildStates(anc);
 			for (int j = 0; j < childStates.size(); j++) {
 				const Node<std::string>& child = childStates[j];
@@ -1115,13 +1115,13 @@ function isInFinalState(s):
         return false
 */
 bool InterpreterRC::isInFinalState(const Arabica::DOM::Node<std::string>& state) {
-	if (isCompound(state)) {
+	if (isCompound(Element<std::string>(state))) {
 		Arabica::XPath::NodeSet<std::string> childs = getChildStates(state);
 		for (int i = 0; i < childs.size(); i++) {
-			if (isFinal(childs[i]) && isMember(childs[i], _configuration))
+			if (isFinal(Element<std::string>(childs[i])) && isMember(childs[i], _configuration))
 				return true;
 		}
-	} else if (isParallel(state)) {
+	} else if (isParallel(Element<std::string>(state))) {
 		Arabica::XPath::NodeSet<std::string> childs = getChildStates(state);
 		for (int i = 0; i < childs.size(); i++) {
 			if (!isInFinalState(childs[i]))
@@ -1143,7 +1143,7 @@ function getTransitionDomain(t)
   else:
       return findLCCA([t.source].append(tstates))
  */
-Arabica::DOM::Node<std::string> InterpreterRC::getTransitionDomain(const Arabica::DOM::Node<std::string>& transition) {
+Arabica::DOM::Node<std::string> InterpreterRC::getTransitionDomain(const Arabica::DOM::Element<std::string>& transition) {
 	NodeSet<std::string> tStates = getTargetStates(transition);
 	Node<std::string> source = getSourceState(transition);
 
@@ -1156,7 +1156,7 @@ Arabica::DOM::Node<std::string> InterpreterRC::getTransitionDomain(const Arabica
 	}
 	std::string transitionType = (HAS_ATTR(transition, "type") ? ATTR(transition, "type") : "external");
 
-	if (iequals(transitionType, "internal") && isCompound(source)) {
+	if (iequals(transitionType, "internal") && isCompound(Element<std::string>(source))) {
 		for (int i = 0; i < tStates.size(); i++) {
 			const Node<std::string>& s = tStates[i];
 			if (!isDescendant(s, source))
@@ -1184,7 +1184,7 @@ Arabica::DOM::Node<std::string> InterpreterRC::findLCCA(const Arabica::XPath::No
 	//	ancestors.push_back(states[0]); // state[0] may already be the ancestor - bug in W3C spec?
 	Arabica::DOM::Node<std::string> ancestor;
 	for (int i = 0; i < ancestors.size(); i++) {
-		if (!isCompound(ancestors[i]))
+		if (!isCompound(Element<std::string>(ancestors[i])))
 			continue;
 		for (int j = 0; j < states.size(); j++) {
 			if (!isDescendant(states[j], ancestors[i]) && (states[j] != ancestors[i]))
@@ -1215,7 +1215,7 @@ NEXT_ANCESTOR:
 Arabica::XPath::NodeSet<std::string> InterpreterRC::getProperAncestors(const Arabica::DOM::Node<std::string>& state1, const Arabica::DOM::Node<std::string>& state2) {
 	NodeSet<std::string> ancestors;
 
-	if (!state1 || !isState(state1))
+	if (!state1 || !isState(Element<std::string>(state1)))
 		return ancestors;
 
 	if (!state2) {
@@ -1225,7 +1225,7 @@ Arabica::XPath::NodeSet<std::string> InterpreterRC::getProperAncestors(const Ara
 		 including the <scxml> element).
 		 */
 		Arabica::DOM::Node<std::string> parent = state1.getParentNode();
-		while(parent && isState(parent)) {
+		while(parent && isState(Element<std::string>(parent))) {
 			ancestors.push_back(parent);
 			parent = parent.getParentNode();
 		}
@@ -1245,14 +1245,14 @@ Arabica::XPath::NodeSet<std::string> InterpreterRC::getProperAncestors(const Ara
 	 of state1, up to but not including state2.
 	 */
 	Arabica::DOM::Node<std::string> parent = state1.getParentNode();
-	while(parent && isState(parent) && parent != state2) {
+	while(parent && isState(Element<std::string>(parent)) && parent != state2) {
 		ancestors.push_back(parent);
 		parent = parent.getParentNode();
 	}
 	return ancestors;
 }
 
-NodeSet<std::string> InterpreterRC::getTargetStates(const Arabica::DOM::Node<std::string>& transition) {
+NodeSet<std::string> InterpreterRC::getTargetStates(const Arabica::DOM::Element<std::string>& transition) {
 	NodeSet<std::string> targetStates;
 
 	std::string targetId = ((Arabica::DOM::Element<std::string>)transition).getAttribute("target");

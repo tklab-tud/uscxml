@@ -67,10 +67,10 @@ uSCXML still fails the following ecmascript tests:
 <table>
 	<tr><th>Test#</th><th>Status</th><th>Description</th><th>Comment</th></tr>
 	<tr>
-		<td><tt>
-			<a href="https://github.com/tklab-tud/uscxml/blob/master/test/w3c/ecma/test326.scxml">326</a> /
-			<a href="https://github.com/tklab-tud/uscxml/blob/master/test/w3c/ecma/test326.scxml">329</a>
-		</tt></td>
+		<td>
+			<tt><a href="https://github.com/tklab-tud/uscxml/blob/master/test/w3c/ecma/test326.scxml">326</a></tt> /
+			<tt><a href="https://github.com/tklab-tud/uscxml/blob/master/test/w3c/ecma/test326.scxml">329</a></tt>
+		</td>
 		<td><tt>Failed for v8</tt></td>
 		<td>"test that _ioprocessors stays bound till the session ends" / "test that none of the system variables can be modified"</td>
 		<td>The v8 implementation will return a new <tt>_ioprocessor</tt> object for each access.</td>
