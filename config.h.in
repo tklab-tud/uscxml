@@ -51,6 +51,7 @@
 #cmakedefine BUILD_DM_PROMELA
 #cmakedefine BUILD_DM_ECMA
 #cmakedefine BUILD_DM_XPATH
+#cmakedefine BUILD_DM_LUA
 
 /** Optional libraries we found */
 #cmakedefine UMUNDO_FOUND
@@ -63,6 +64,7 @@
 #cmakedefine LIBICAL_FOUND
 #cmakedefine SWI_FOUND
 #cmakedefine FFMPEG_FOUND
+#cmakedefine LUA_FOUND
 #cmakedefine OPENSCENEGRAPH_FOUND
 #cmakedefine PROTOBUF_FOUND
 #cmakedefine CORELOCATION_FOUND

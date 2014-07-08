@@ -1,0 +1,61 @@
+<?xml version="1.0" standalone="no"?>
+<!-- test that only finalize markup in the invoking state runs.  the first invoked process will
+return 2 in _event.data.aParam, while second invoked process sleeps without returning any events. 
+Only the first finalize should execute.  So when we get to s1 var1 should have value 2 but 
+var2 should still be set to 1  -->
+<scxml xmlns="http://www.w3.org/2005/07/scxml" initial="p0" version="1.0" datamodel="lua">
+  <datamodel>
+    <data expr="1" id="testvar1"/>
+    <data expr="1" id="testvar2"/>
+  </datamodel>
+  <parallel id="p0">
+    <onentry>
+      <send event="timeout" delay="3s"/>
+    </onentry>
+    <transition event="timeout" target="fail"/>
+    <state id="p01">
+      <invoke type="http://www.w3.org/TR/scxml/">
+        <content>
+          <scxml version="1.0" initial="subFinal1" datamodel="lua">
+            <final id="subFinal1">
+              <onentry>
+                <send target="#_parent" event="childToParent">
+                  <param name="aParam" expr="2"/>
+                </send>
+              </onentry>
+            </final>
+          </scxml>
+        </content>
+        <finalize>
+          <assign expr="_event.data.aParam" location="testvar1"/>
+        </finalize>
+      </invoke>
+      <transition event="childToParent" target="s1" cond="testvar1 == 2"/>
+      <transition event="childToParent" target="fail"/>
+    </state>
+    <state id="p02">
+      <invoke type="http://www.w3.org/TR/scxml/">
+        <content>
+          <scxml version="1.0" initial="sub0" datamodel="lua">
+            <state id="sub0">
+              <onentry>
+                <send event="timeout" delay="2s"/>
+              </onentry>
+              <transition event="timeout" target="subFinal2"/>
+            </state>
+            <final id="subFinal2"/>
+          </scxml>
+        </content>
+        <finalize>
+          <assign expr="_event.data.aParam" location="testvar2"/>
+        </finalize>
+      </invoke>
+    </state>
+  </parallel>
+  <state id="s1">
+    <transition cond="testvar2 == 1" target="pass"/>
+    <transition target="fail"/>
+  </state>
+  <final id="pass"/>
+  <final id="fail"/>
+</scxml>

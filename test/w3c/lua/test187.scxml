@@ -1,0 +1,30 @@
+<?xml version="1.0" standalone="no"?>
+<!-- we test that delayed <send> is not sent if the sending session terminates.  In this case,
+a subscript is invoked which sends the event childToParent delayed by 1 second, and then terminates.  The
+parent session, should not receive childToParent. If it does, we fail.  Otherwise the 
+10 sec timer expires and we pass -->
+<scxml xmlns="http://www.w3.org/2005/07/scxml" initial="s0" version="1.0" datamodel="lua">
+  <state id="s0">
+    <onentry>
+      <send event="timeout" delay="100ms"/>
+    </onentry>
+    <invoke type="scxml">
+      <content>
+        <!-- exit before the delayed send can execute -->
+        <scxml initial="sub0" version="1.0" datamodel="lua">
+          <state id="sub0">
+            <onentry>
+              <send event="childToParent" target="#_parent" delay="0ms"/>
+            </onentry>
+            <transition target="subFinal"/>
+          </state>
+          <final id="subFinal"/>
+        </scxml>
+      </content>
+    </invoke>
+    <transition event="childToParent" target="fail"/>
+    <transition event="timeout" target="pass"/>
+  </state>
+  <final id="pass"/>
+  <final id="fail"/>
+</scxml>

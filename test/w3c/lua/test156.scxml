@@ -1,0 +1,23 @@
+<?xml version="1.0" standalone="no"?>
+<!-- test that an error causes the foreach to stop execution.  The second piece of executable content
+should cause an error, so var1 should be incremented only once -->
+<scxml xmlns="http://www.w3.org/2005/07/scxml" initial="s0" version="1.0" datamodel="lua">
+  <datamodel>
+    <data expr="0" id="testvar1"/>
+    <data id="testvar2"/>
+    <data id="testvar3">{1,2,3}</data>
+  </datamodel>
+  <state id="s0">
+    <onentry>
+      <foreach array="testvar3" item="testvar2">
+        <assign location="testvar1" expr="testvar1+1"/>
+        <!-- assign an illegal value to a non-existent var -->
+        <assign expr="!" location="testvar5"/>
+      </foreach>
+    </onentry>
+    <transition cond="testvar1 == 1" target="pass"/>
+    <transition target="fail"/>
+  </state>
+  <final id="pass"/>
+  <final id="fail"/>
+</scxml>

@@ -1,0 +1,32 @@
+<?xml version="1.0" standalone="no"?>
+<!-- test that foreach goes over the array in the right order.  since the array contains 1 2 3, we compare the current 
+value with the previous value, which is stored in var1. The current value should always be larger.  If
+it ever isn't, set Var4 to 0, indicating failure -->
+<scxml xmlns="http://www.w3.org/2005/07/scxml" initial="s0" version="1.0" datamodel="lua">
+  <datamodel>
+    <data expr="0" id="testvar1"/>
+    <!-- contains the previous value -->
+    <data id="testvar2"/>
+    <!-- the item which will contain the current value -->
+    <data id="testvar3">{1,2,3}</data>
+    <data expr="1" id="testvar4"/>
+    <!-- 1 if success, 0 if failure -->
+  </datamodel>
+  <state id="s0">
+    <onentry>
+      <foreach array="testvar3" item="testvar2">
+        <if cond="testvar1 &lt; testvar2">
+          <assign expr="testvar2" location="testvar1"/>
+          <else/>
+          <!-- values are out of order, record failure -->
+          <assign expr="0" location="testvar4"/>
+        </if>
+      </foreach>
+    </onentry>
+    <!-- check that var1 has its original value  -->
+    <transition cond="testvar4 == 0" target="fail"/>
+    <transition target="pass"/>
+  </state>
+  <final id="pass"/>
+  <final id="fail"/>
+</scxml>

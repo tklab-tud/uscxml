@@ -1,0 +1,12 @@
+<?xml version="1.0" standalone="no"?>
+<!-- test that default initial state is first in document order.  If we enter s0 first we succeed, if s1, failure. -->
+<scxml xmlns="http://www.w3.org/2005/07/scxml" version="1.0" datamodel="lua">
+  <state id="s0">
+    <transition target="pass"/>
+  </state>
+  <state id="s1">
+    <transition target="fail"/>
+  </state>
+  <final id="pass"/>
+  <final id="fail"/>
+</scxml>

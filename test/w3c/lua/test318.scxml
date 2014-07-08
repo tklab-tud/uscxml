@@ -1,0 +1,24 @@
+<?xml version="1.0" standalone="no"?>
+<!-- test that _event stays bound during the onexit and entry into the next state -->
+<scxml xmlns="http://www.w3.org/2005/07/scxml" initial="s0" version="1.0" name="machineName" datamodel="lua">
+  <datamodel>
+    <data id="testvar1"/>
+  </datamodel>
+  <state id="s0">
+    <onentry>
+      <raise event="foo"/>
+    </onentry>
+    <transition event="foo" target="s1"/>
+  </state>
+  <state id="s1">
+    <onentry>
+      <raise event="bar"/>
+      <!-- _event should still be bound to 'foo' at this point -->
+      <assign expr="_event.name" location="testvar1"/>
+    </onentry>
+    <transition cond="testvar1 == 'foo'" target="pass"/>
+    <transition target="fail"/>
+  </state>
+  <final id="pass"/>
+  <final id="fail"/>
+</scxml>

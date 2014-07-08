@@ -1,0 +1,22 @@
+<?xml version="1.0" standalone="no"?>
+<!-- test that <foreach> does a shallow copy, so that modifying the array does not change
+the iteration behavior. -->
+<scxml xmlns="http://www.w3.org/2005/07/scxml" version="1.0" datamodel="lua">
+  <datamodel>
+    <data id="testvar1">{1,2,3}</data>
+    <data expr="0" id="testvar2"/>
+    <!-- counts the number of iterations -->
+  </datamodel>
+  <state id="s0">
+    <onentry>
+      <foreach array="testvar1" item="testvar3">
+        <assign location="testvar1" expr="(function() local t2={}; for i=1,#testvar1 do t2[i]=testvar1[i] end t2[#t2+1]=4 return t2 end)()"/>
+        <assign location="testvar2" expr="testvar2+1"/>
+      </foreach>
+    </onentry>
+    <transition cond="testvar2 == 3" target="pass"/>
+    <transition target="fail"/>
+  </state>
+  <final id="pass"/>
+  <final id="fail"/>
+</scxml>

@@ -1,0 +1,26 @@
+<?xml version="1.0" standalone="no"?>
+<!-- test that sendid is present in error events triggered by send errors -->
+<scxml xmlns="http://www.w3.org/2005/07/scxml" version="1.0" initial="s0" name="machineName" datamodel="lua">
+  <datamodel>
+    <data id="testvar1"/>
+    <data id="testvar2"/>
+  </datamodel>
+  <state id="s0">
+    <onentry>
+      <!-- this will raise an error and also store the sendid in var1 -->
+      <send event="foo" idlocation="'testvar1'" target="xxxxxxxxx"/>
+    </onentry>
+    <transition event="error" target="s1">
+      <!-- get the sendid out of the error event -->
+      <assign expr="_event.sendid" location="testvar2"/>
+    </transition>
+    <transition event="*" target="fail"/>
+  </state>
+  <state id="s1">
+    <!-- make sure that the sendid in the error event matches the one generated when send executed -->
+    <transition cond="testvar1==testvar2" target="pass"/>
+    <transition target="fail"/>
+  </state>
+  <final id="pass"/>
+  <final id="fail"/>
+</scxml>

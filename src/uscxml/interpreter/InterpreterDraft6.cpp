@@ -948,10 +948,10 @@ void InterpreterDraft6::enterStates(const Arabica::XPath::NodeSet<std::string>& 
 		if (isFinal(stateElem)) {
 			internalDoneSend(stateElem);
 			Node<std::string> parent = stateElem.getParentNode();
-			
+
 			if (parent.getNodeType() == Node_base::ELEMENT_NODE &&
-					parent.getParentNode().getNodeType() == Node_base::ELEMENT_NODE &&
-					isParallel(Element<std::string>(parent.getParentNode()))) {
+			        parent.getParentNode().getNodeType() == Node_base::ELEMENT_NODE &&
+			        isParallel(Element<std::string>(parent.getParentNode()))) {
 				Element<std::string> grandParent = (Element<std::string>)parent.getParentNode();
 
 				Arabica::XPath::NodeSet<std::string> childs = getChildStates(grandParent);

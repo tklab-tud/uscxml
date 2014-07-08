@@ -1,0 +1,13 @@
+<?xml version="1.0" standalone="no"?>
+<!-- test that _sessionid is bound on startup -->
+<scxml xmlns="http://www.w3.org/2005/07/scxml" initial="s0" version="1.0" name="machineName" datamodel="lua">
+  <datamodel>
+    <data expr="_sessionid" id="testvar1"/>
+  </datamodel>
+  <state id="s0">
+    <transition cond="testvar1 ~= nil" target="pass"/>
+    <transition cond="true" target="fail"/>
+  </state>
+  <final id="pass"/>
+  <final id="fail"/>
+</scxml>

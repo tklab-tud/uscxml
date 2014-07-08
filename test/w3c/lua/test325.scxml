@@ -1,0 +1,15 @@
+<?xml version="1.0" standalone="no"?>
+<!-- test that _ioprocessors is bound at startup.  I'm not sure how to test for a set value or
+how to test that the entries in it do represent I/O processors, since the set that each implementation
+supports may be different.  Suggestions welcome -->
+<scxml xmlns="http://www.w3.org/2005/07/scxml" initial="s0" version="1.0" name="machineName" datamodel="lua">
+  <datamodel>
+    <data expr="_ioprocessors" id="testvar1"/>
+  </datamodel>
+  <state id="s0">
+    <transition cond="testvar1 ~= nil" target="pass"/>
+    <transition target="fail"/>
+  </state>
+  <final id="pass"/>
+  <final id="fail"/>
+</scxml>

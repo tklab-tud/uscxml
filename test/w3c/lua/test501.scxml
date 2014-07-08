@@ -1,0 +1,17 @@
+<?xml version="1.0" standalone="no"?>
+<!-- test that the location entry for the SCXML Event I/O processor can be used as the target for an event -->
+<scxml xmlns="http://www.w3.org/2005/07/scxml" initial="s0" version="1.0" datamodel="lua">
+  <datamodel>
+    <data expr="FIXME" id="testvar1"/>
+  </datamodel>
+  <state id="s0">
+    <onentry>
+      <send event="foo" targetexpr="testvar1"/>
+      <send event="timeout" delay="2s"/>
+    </onentry>
+    <transition event="foo" target="pass"/>
+    <transition event="*" target="fail"/>
+  </state>
+  <final id="pass"/>
+  <final id="fail"/>
+</scxml>

@@ -1,0 +1,20 @@
+<?xml version="1.0" standalone="no"?>
+<!-- check that the required fields are present in both internal and external events -->
+<scxml xmlns="http://www.w3.org/2005/07/scxml" initial="s0" name="machineName" datamodel="lua">
+  <state id="s0">
+    <onentry>
+      <raise event="foo"/>
+    </onentry>
+    <transition event="foo" target="s1" cond="_event.name~=nil and _event.type~=nil and _event.sendid~=nil and _event.origin~=nil and _event.invokeid~=nil"/>
+    <transition event="*" target="fail"/>
+  </state>
+  <state id="s1">
+    <onentry>
+      <send event="foo"/>
+    </onentry>
+    <transition event="foo" cond="_event.name~=nil and _event.type~=nil and _event.sendid~=nil and _event.origin~=nil and _event.invokeid~=nil" target="pass"/>
+    <transition event="*" target="fail"/>
+  </state>
+  <final id="pass"/>
+  <final id="fail"/>
+</scxml>

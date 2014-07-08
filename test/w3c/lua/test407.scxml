@@ -1,0 +1,19 @@
+<?xml version="1.0" standalone="no"?>
+<!-- a simple test that onexit handlers work. var1 should be incremented when we leave s0 -->
+<scxml xmlns="http://www.w3.org/2005/07/scxml" initial="s0" version="1.0" datamodel="lua">
+  <datamodel>
+    <data expr="0" id="testvar1"/>
+  </datamodel>
+  <state id="s0">
+    <onexit>
+      <assign location="testvar1" expr="testvar1+1"/>
+    </onexit>
+    <transition target="s1"/>
+  </state>
+  <state id="s1">
+    <transition cond="testvar1 == 1" target="pass"/>
+    <transition target="fail"/>
+  </state>
+  <final id="pass"/>
+  <final id="fail"/>
+</scxml>

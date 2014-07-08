@@ -1,0 +1,24 @@
+<?xml version="1.0" standalone="no"?>
+<!-- reference a non-existent data model location in param in donedata and see that the right error is raised -->
+<scxml xmlns="http://www.w3.org/2005/07/scxml" version="1.0" initial="s0" datamodel="lua">
+  <datamodel>
+    <data expr="0" id="testvar1"/>
+  </datamodel>
+  <state id="s0" initial="s01">
+    <onentry>
+      <send event="timeout" delay="1s"/>
+    </onentry>
+    <transition event="error.execution" target="pass"/>
+    <transition event="*" target="fail"/>
+    <state id="s01">
+      <transition target="s02"/>
+    </state>
+    <final id="s02">
+      <donedata>
+        <param location="" name="testvar3"/>
+      </donedata>
+    </final>
+  </state>
+  <final id="pass"/>
+  <final id="fail"/>
+</scxml>

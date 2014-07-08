@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- test that an expression that cannot be interpreted as a boolean is treated as false -->
+<scxml xmlns="http://www.w3.org/2005/07/scxml" version="1.0" initial="s0" datamodel="lua">
+  <state id="s0">
+    <transition cond="@@@@@@@@@@@@@@@@" target="fail"/>
+    <transition target="pass"/>
+  </state>
+  <final id="pass"/>
+  <final id="fail"/>
+</scxml>

@@ -1,0 +1,48 @@
+<?xml version="1.0" standalone="no"?>
+<!-- test that an internal transition whose targets are not proper descendants of its source state
+behaves like an external transition -->
+<scxml xmlns="http://www.w3.org/2005/07/scxml" initial="s1" version="1.0" datamodel="lua">
+  <datamodel>
+    <data expr="0" id="testvar1"/>
+    <!-- how often we have exited s2 -->
+    <data expr="0" id="testvar2"/>
+    <!-- how often we have exited s21 -->
+    <data expr="0" id="testvar3"/>
+    <!-- how often the transition for foo has been taken -->
+  </datamodel>
+  <state id="s1">
+    <onentry>
+      <raise event="foo"/>
+      <raise event="bar"/>
+    </onentry>
+    <transition target="s2"/>
+  </state>
+  <state id="s2" initial="s21">
+    <onexit>
+      <assign location="testvar1" expr="testvar1+1"/>
+    </onexit>
+    <transition event="foo" type="internal" target="s2">
+      <assign location="testvar3" expr="testvar3+1"/>
+    </transition>
+    <!-- make sure the transition on foo was actually taken -->
+    <transition event="bar" target="s3" cond="testvar3 == 1"/>
+    <transition event="bar" target="fail"/>
+    <state id="s21">
+      <onexit>
+        <assign location="testvar2" expr="testvar2+1"/>
+      </onexit>
+    </state>
+  </state>
+  <state id="s3">
+    <!-- make sure that s2 was exited twice -->
+    <transition target="s4" cond="testvar1 == 2"/>
+    <transition target="fail"/>
+  </state>
+  <state id="s4">
+    <!-- make sure that s21 was exited twice -->
+    <transition cond="testvar2 == 2" target="pass"/>
+    <transition target="fail"/>
+  </state>
+  <final id="pass"/>
+  <final id="fail"/>
+</scxml>

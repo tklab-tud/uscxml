@@ -1,0 +1,24 @@
+<?xml version="1.0" standalone="no"?>
+<!-- test that platform creates undound variable if we assign an illegal value to it.  Thus
+ we can assign to it later in state s1.  -->
+<scxml xmlns="http://www.w3.org/2005/07/scxml" initial="s0" version="1.0" datamodel="lua">
+  <datamodel>
+    <data expr="!" id="testvar1"/>
+  </datamodel>
+  <state id="s0">
+    <onentry>
+      <raise event="foo"/>
+    </onentry>
+    <transition event="error.execution" target="s1" cond="testvar1==nil"/>
+    <transition event="*" target="fail"/>
+  </state>
+  <state id="s1">
+    <onentry>
+      <assign expr="1" location="testvar1"/>
+    </onentry>
+    <transition cond="testvar1 == 1" target="pass"/>
+    <transition target="fail"/>
+  </state>
+  <final id="pass"/>
+  <final id="fail"/>
+</scxml>

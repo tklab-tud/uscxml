@@ -2250,8 +2250,8 @@ NodeSet<std::string> InterpreterImpl::getProperAncestors(const Arabica::DOM::Nod
 			if (iequals(TAGNAME(nodeElem), _nsInfo.xmlNSPrefix + "scxml")) // do not return scxml root itself - this is somewhat ill-defined
 				break;
 			if (!iequals(TAGNAME(nodeElem), _nsInfo.xmlNSPrefix + "parallel") &&
-					!iequals(TAGNAME(nodeElem), _nsInfo.xmlNSPrefix + "state") &&
-					!iequals(TAGNAME(nodeElem), _nsInfo.xmlNSPrefix + "scxml"))
+			        !iequals(TAGNAME(nodeElem), _nsInfo.xmlNSPrefix + "state") &&
+			        !iequals(TAGNAME(nodeElem), _nsInfo.xmlNSPrefix + "scxml"))
 				break;
 			if (node == s2)
 				break;

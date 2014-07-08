@@ -1,0 +1,34 @@
+<?xml version="1.0" standalone="no"?>
+<!-- the assertion that errors are 'like any other event' is pretty broad, but we can check that they
+are pulled off the internal queue in order, and that prefix matching works on them.  -->
+<scxml xmlns="http://www.w3.org/2005/07/scxml" initial="s0" version="1.0" datamodel="lua">
+  <state id="s0" initial="s01">
+    <onentry>
+      <!-- catch the failure case -->
+      <send event="timeout" delay="1s"/>
+    </onentry>
+    <transition event="timeout" target="fail"/>
+    <state id="s01">
+      <onentry>
+        <!-- the first internal event.  The error will be the second, and event2 will be the third -->
+        <raise event="event1"/>
+        <!-- assigning to a non-existent location should raise an error -->
+        <assign expr="2" location=""/>
+      </onentry>
+      <transition event="event1" target="s02">
+        <raise event="event2"/>
+      </transition>
+      <transition event="*" target="fail"/>
+    </state>
+    <state id="s02">
+      <transition event="error" target="s03"/>
+      <transition event="*" target="fail"/>
+    </state>
+    <state id="s03">
+      <transition event="event2" target="pass"/>
+      <transition event="*" target="fail"/>
+    </state>
+  </state>
+  <final id="pass"/>
+  <final id="fail"/>
+</scxml>

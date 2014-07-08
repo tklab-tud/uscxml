@@ -1,0 +1,29 @@
+<?xml version="1.0" standalone="no"?>
+<!-- test that that any content in the message other than _scxmleventname is used to populate
+_event.data.  -->
+<scxml xmlns="http://www.w3.org/2005/07/scxml" initial="s0" version="1.0" datamodel="lua">
+  <datamodel>
+    <data expr="2" id="testvar1"/>
+  </datamodel>
+  <state id="s0">
+    <onentry>
+      <send event="timeout" delay="3s"/>
+      <!-- in this case, 'test' will be placed in _scxmleventname.  The <param> should
+ be used to populate _event.data -->
+      <send event="test" type="http://www.w3.org/TR/scxml/#BasicHTTPEventProcessor" targetexpr="FIXME">
+        <param name="param1" expr="2"/>
+      </send>
+    </onentry>
+    <!-- if we get this event, we succeed -->
+    <transition event="test" target="s1">
+      <assign expr="_event.data.param1" location="testvar1"/>
+    </transition>
+    <transition event="*" target="fail"/>
+  </state>
+  <state id="s1">
+    <transition cond="testvar1 == 2" target="pass"/>
+    <transition target="fail"/>
+  </state>
+  <final id="pass"/>
+  <final id="fail"/>
+</scxml>

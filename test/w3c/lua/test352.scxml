@@ -1,0 +1,24 @@
+<?xml version="1.0" standalone="no"?>
+<!-- test the origintype is 'http://www.w3.org/TR/scxml/#SCXMLEventProcessor' -->
+<scxml xmlns="http://www.w3.org/2005/07/scxml" initial="s0" version="1.0" datamodel="lua">
+  <datamodel>
+    <data id="testvar1"/>
+  </datamodel>
+  <state id="s0">
+    <onentry>
+      <send delay="5s" event="timeout"/>
+      <send type="http://www.w3.org/TR/scxml/#SCXMLEventProcessor" event="s0Event"/>
+    </onentry>
+    <transition event="s0Event" target="s1">
+      <assign expr="_event.origintype" location="testvar1"/>
+    </transition>
+    <transition event="*" target="fail">
+    </transition>
+  </state>
+  <state id="s1">
+    <transition cond="testvar1 == 'http://www.w3.org/TR/scxml/#SCXMLEventProcessor'" target="pass"/>
+    <transition target="fail"/>
+  </state>
+  <final id="pass"/>
+  <final id="fail"/>
+</scxml>

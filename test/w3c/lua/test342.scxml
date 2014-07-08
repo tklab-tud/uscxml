@@ -1,0 +1,23 @@
+<?xml version="1.0" standalone="no"?>
+<!-- test that eventexpr works and sets the name field of the resulting event -->
+<scxml xmlns="http://www.w3.org/2005/07/scxml" initial="s0" version="1.0" name="machineName" datamodel="lua">
+  <datamodel>
+    <data expr="'foo'" id="testvar1"/>
+    <data id="testvar2"/>
+  </datamodel>
+  <state id="s0">
+    <onentry>
+      <send eventexpr="testvar1"/>
+    </onentry>
+    <transition event="foo" target="s1">
+      <assign expr="_event.name" location="testvar2"/>
+    </transition>
+    <transition event="*" target="fail"/>
+  </state>
+  <state id="s1">
+    <transition cond="testvar1==testvar2" target="pass"/>
+    <transition target="fail"/>
+  </state>
+  <final id="pass"/>
+  <final id="fail"/>
+</scxml>

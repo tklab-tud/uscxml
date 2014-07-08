@@ -1,0 +1,32 @@
+<?xml version="1.0" standalone="no"?>
+<!-- test that non-existent datamodel values are not set.  Var2 is not defined in 
+invoked child's datamodel.  It will will return success if its Var2 remains unbound, failure otherwise.  -->
+<scxml xmlns="http://www.w3.org/2005/07/scxml" initial="s0" version="1.0" datamodel="lua">
+  <datamodel>
+    <data expr="3" id="testvar2"/>
+  </datamodel>
+  <state id="s0">
+    <onentry>
+      <send event="timeout" delay="2s"/>
+    </onentry>
+    <invoke type="http://www.w3.org/TR/scxml/" namelist="testvar2">
+      <content>
+        <scxml initial="sub0" version="1.0" datamodel="lua">
+          <state id="sub0">
+            <transition target="subFinal" cond="testvar2 ~= nil">
+              <send target="#_parent" event="failure"/>
+            </transition>
+            <transition target="subFinal">
+              <send target="#_parent" event="success"/>
+            </transition>
+          </state>
+          <final id="subFinal"/>
+        </scxml>
+      </content>
+    </invoke>
+    <transition event="success" target="pass"/>
+    <transition event="*" target="fail"/>
+  </state>
+  <final id="pass"/>
+  <final id="fail"/>
+</scxml>

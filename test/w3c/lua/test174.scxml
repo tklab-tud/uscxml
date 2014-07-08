@@ -1,0 +1,18 @@
+<?xml version="1.0" standalone="no"?>
+<!-- we test that typeexpr uses the current value of var1, not its initial value
+(If it uses the initial value, it will generate an error.  If it uses the current value, event1 will be raised  -->
+<scxml xmlns="http://www.w3.org/2005/07/scxml" initial="s0" version="1.0" datamodel="lua">
+  <datamodel>
+    <data expr="27" id="testvar1"/>
+  </datamodel>
+  <state id="s0">
+    <onentry>
+      <assign expr="'http://www.w3.org/TR/scxml/#SCXMLEventProcessor'" location="testvar1"/>
+      <send event="event1" typeexpr="testvar1"/>
+    </onentry>
+    <transition event="event1" target="pass"/>
+    <transition event="*" target="fail"/>
+  </state>
+  <final id="pass"/>
+  <final id="fail"/>
+</scxml>

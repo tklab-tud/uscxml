@@ -1,0 +1,17 @@
+<?xml version="1.0" standalone="no"?>
+<!-- test that that namelist values get encoded as POST parameters.  -->
+<scxml xmlns="http://www.w3.org/2005/07/scxml" initial="s0" version="1.0" datamodel="lua">
+  <datamodel>
+    <data expr="2" id="testvar1"/>
+  </datamodel>
+  <state id="s0">
+    <onentry>
+      <send event="timeout" delay="30s"/>
+      <send event="test" type="http://www.w3.org/TR/scxml/#BasicHTTPEventProcessor" namelist="testvar1" targetexpr="FIXME"/>
+    </onentry>
+    <transition event="test" cond="_event.data.testvar1==2" target="pass"/>
+    <transition event="*" target="fail"/>
+  </state>
+  <final id="pass"/>
+  <final id="fail"/>
+</scxml>

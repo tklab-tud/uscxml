@@ -1,0 +1,20 @@
+<?xml version="1.0" standalone="no"?>
+<!-- test that each onentry handler is a separate block.  The <send> of event1 will cause an error but
+ the increment to var1 should happen anyways -->
+<scxml xmlns="http://www.w3.org/2005/07/scxml" version="1.0" datamodel="lua">
+  <datamodel>
+    <data expr="1" id="testvar1"/>
+  </datamodel>
+  <state id="s0">
+    <onentry>
+      <send event="event1" target="xxxxxxxxx"/>
+    </onentry>
+    <onentry>
+      <assign location="testvar1" expr="testvar1+1"/>
+    </onentry>
+    <transition cond="testvar1 == 2" target="pass"/>
+    <transition target="fail"/>
+  </state>
+  <final id="pass"/>
+  <final id="fail"/>
+</scxml>

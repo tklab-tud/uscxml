@@ -1,0 +1,16 @@
+<?xml version="1.0" standalone="no"?>
+<!-- a simple test that a legal value may be assigned to a valid data model location -->
+<scxml xmlns="http://www.w3.org/2005/07/scxml" version="1.0" initial="s0" datamodel="lua">
+  <datamodel>
+    <data expr="0" id="testvar1"/>
+  </datamodel>
+  <state id="s0">
+    <onentry>
+      <assign expr="1" location="testvar1"/>
+    </onentry>
+    <transition cond="testvar1 == 1" target="pass"/>
+    <transition target="fail"/>
+  </state>
+  <final id="pass"/>
+  <final id="fail"/>
+</scxml>

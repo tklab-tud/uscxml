@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- this is a manual test. The processor is allowed to reject this doc, but if it executes it with its illegal
+expression, it must raise an error -->
+<scxml xmlns="http://www.w3.org/2005/07/scxml" version="1.0" initial="s0" datamodel="lua">
+  <datamodel>
+    <data expr="1" id="testvar1"/>
+  </datamodel>
+  <state id="s0">
+    <onentry>
+      <assign expr="!" location="testvar1"/>
+      <raise event="foo"/>
+    </onentry>
+    <transition event="error.execution" target="pass"/>
+    <transition event=".*" target="fail"/>
+  </state>
+  <final id="pass"/>
+  <final id="fail"/>
+</scxml>

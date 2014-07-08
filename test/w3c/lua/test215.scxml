@@ -1,0 +1,27 @@
+<?xml version="1.0" standalone="no"?>
+<!-- we test that typexpr is evaluated at runtime.  If the original value of var1 is used, the invocation
+will fail (test215sub1.scxml is not of type 'foo', even if the platform supports foo as a type).  If
+the runtime value is used, the invocation will succeed -->
+<scxml xmlns="http://www.w3.org/2005/07/scxml" initial="s0" version="1.0" datamodel="lua">
+  <datamodel>
+    <data expr="'foo'" id="testvar1"/>
+  </datamodel>
+  <state id="s0">
+    <onentry>
+      <send event="timeout" delay="5s"/>
+      <assign expr="'http://www.w3.org/TR/scxml/'" location="testvar1"/>
+    </onentry>
+    <invoke typeexpr="testvar1">
+      <content>
+        <!-- when invoked, terminate returning done.invoke. This proves that the invocation succeeded.   -->
+        <scxml initial="subFinal" version="1.0" datamodel="lua">
+          <final id="subFinal"/>
+        </scxml>
+      </content>
+    </invoke>
+    <transition event="done.invoke" target="pass"/>
+    <transition event="*" target="fail"/>
+  </state>
+  <final id="pass"/>
+  <final id="fail"/>
+</scxml>

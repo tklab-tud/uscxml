@@ -1,0 +1,17 @@
+<?xml version="1.0" standalone="no"?>
+<!-- we test that eventexpr uses the current value of var1, not its initial value  -->
+<scxml xmlns="http://www.w3.org/2005/07/scxml" initial="s0" version="1.0" datamodel="lua">
+  <datamodel>
+    <data expr="'event1'" id="testvar1"/>
+  </datamodel>
+  <state id="s0">
+    <onentry>
+      <assign expr="'event2'" location="testvar1"/>
+      <send eventexpr="testvar1"/>
+    </onentry>
+    <transition event="event2" target="pass"/>
+    <transition event="*" target="fail"/>
+  </state>
+  <final id="pass"/>
+  <final id="fail"/>
+</scxml>

@@ -1,0 +1,20 @@
+<?xml version="1.0" standalone="no"?>
+<!-- we test that sendidexpr works with cancel.  If it takes the most recent value of var1, it should cancel 
+delayed event1.  Thus we get event2 first and pass.  If we get event1 or an error first, cancel didn't work and we fail.  -->
+<scxml xmlns="http://www.w3.org/2005/07/scxml" initial="s0" version="1.0" datamodel="lua">
+  <datamodel>
+    <data expr="'bar'" id="testvar1"/>
+  </datamodel>
+  <state id="s0">
+    <onentry>
+      <send id="foo" event="event1" delay="100ms"/>
+      <send event="event2" delay="100ms"/>
+      <assign expr="'foo'" location="testvar1"/>
+      <cancel sendidexpr="testvar1"/>
+    </onentry>
+    <transition event="event2" target="pass"/>
+    <transition event="*" target="fail"/>
+  </state>
+  <final id="pass"/>
+  <final id="fail"/>
+</scxml>

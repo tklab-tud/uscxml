@@ -79,6 +79,30 @@ file(GLOB NULL_DATAMODEL
 list (APPEND USCXML_FILES ${NULL_DATAMODEL})
 
 
+# Lua datamodel
+
+if (BUILD_DM_LUA AND LUA_FOUND)
+	set(USCXML_DATAMODELS "lua ${USCXML_DATAMODELS}")
+	file(GLOB LUA_DATAMODEL
+		lua/*.cpp
+		lua/*.h
+	)
+	if (BUILD_AS_PLUGINS)
+		source_group("" FILES ${LUA_DATAMODEL})
+		add_library(datamodel_lua SHARED ${LUA_DATAMODEL} "../Plugins.cpp")
+		target_link_libraries(datamodel_lua 
+			uscxml
+			${LUA_LIBRARIES}
+		)
+		set_target_properties(datamodel_lua PROPERTIES FOLDER "Plugin DataModel")
+		set_target_properties(datamodel_lua PROPERTIES COMPILE_FLAGS "-DPLUMA_EXPORTS")
+		set_target_properties(datamodel_lua PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${OUTPUT_DIR}/lib")
+	else()
+		list (APPEND USCXML_FILES ${LUA_DATAMODEL})
+	endif()
+endif()
+
+
 # XPath datamodel
 
 if (BUILD_DM_XPATH)

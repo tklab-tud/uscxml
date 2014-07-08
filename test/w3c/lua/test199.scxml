@@ -1,0 +1,14 @@
+<?xml version="1.0" standalone="no"?>
+<!-- we test that using an invalid send type results in error.execution -->
+<scxml xmlns="http://www.w3.org/2005/07/scxml" initial="s0" version="1.0" datamodel="lua">
+  <state id="s0">
+    <onentry>
+      <send event="event1" type="27"/>
+      <send event="timeout"/>
+    </onentry>
+    <transition event="error.execution" target="pass"/>
+    <transition event="*" target="fail"/>
+  </state>
+  <final id="pass"/>
+  <final id="fail"/>
+</scxml>

@@ -1,0 +1,19 @@
+<?xml version="1.0" standalone="no"?>
+<!-- test that xml content in send is place as XML under event/data -->
+<scxml xmlns="http://www.w3.org/2005/07/scxml" name="scxmltest" initial="s0" version="1.0" datamodel="xpath">
+  <state id="s0">
+    <onentry>
+      <send event="someevent">
+        <content>
+          <foo>
+            <bar>3</bar>
+          </foo>
+        </content>
+      </send>
+    </onentry>
+    <transition event="*" cond="$_event/data/foo/bar = 3" target="pass"/>
+    <transition event="*" target="fail"/>
+  </state>
+  <final id="pass"/>
+  <final id="fail"/>
+</scxml>

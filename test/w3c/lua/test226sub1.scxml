@@ -1,0 +1,14 @@
+<?xml version="1.0" standalone="no"?>
+<!-- when invoked, if var1 has a value notify parent. Then terminate.   -->
+<scxml xmlns="http://www.w3.org/2005/07/scxml" initial="s0" version="1.0" datamodel="lua">
+  <datamodel>
+    <data id="testvar1"/>
+  </datamodel>
+  <state id="s0">
+    <transition target="final" cond="testvar1 ~= nil">
+      <send target="#_parent" event="varBound"/>
+    </transition>
+    <transition target="final"/>
+  </state>
+  <final id="final"/>
+</scxml>

@@ -1,0 +1,23 @@
+<?xml version="1.0" standalone="no"?>
+<!-- test that neither if clause executes, so that bat is the only event raised. -->
+<scxml xmlns="http://www.w3.org/2005/07/scxml" initial="s0" version="1.0" datamodel="lua">
+  <datamodel>
+    <data expr="0" id="testvar1"/>
+  </datamodel>
+  <state id="s0">
+    <onentry>
+      <if cond="false">
+        <raise event="foo"/>
+        <assign location="testvar1" expr="testvar1+1"/>
+        <elseif cond="false"/>
+        <raise event="bar"/>
+        <assign location="testvar1" expr="testvar1+1"/>
+      </if>
+      <raise event="bat"/>
+    </onentry>
+    <transition event="bat" cond="testvar1 == 0" target="pass"/>
+    <transition event="*" target="fail"/>
+  </state>
+  <final id="pass"/>
+  <final id="fail"/>
+</scxml>

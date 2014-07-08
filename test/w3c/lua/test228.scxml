@@ -1,0 +1,29 @@
+<?xml version="1.0" standalone="no"?>
+<!-- test that the invokeid is included in events returned from the invoked process.   -->
+<scxml xmlns="http://www.w3.org/2005/07/scxml" initial="s0" version="1.0" datamodel="lua">
+  <datamodel>
+    <data id="testvar1"/>
+  </datamodel>
+  <state id="s0">
+    <onentry>
+      <send event="timeout" delay="3s"/>
+    </onentry>
+    <invoke type="http://www.w3.org/TR/scxml/" id="foo">
+      <content>
+        <scxml initial="subFinal" version="1.0" datamodel="lua">
+          <final id="subFinal"/>
+        </scxml>
+      </content>
+    </invoke>
+    <transition event="done.invoke" target="s1">
+      <assign expr="_event.invokeid" location="testvar1"/>
+    </transition>
+    <transition event="*" target="fail"/>
+  </state>
+  <state id="s1">
+    <transition cond="testvar1 == 'foo'" target="pass"/>
+    <transition target="fail"/>
+  </state>
+  <final id="pass"/>
+  <final id="fail"/>
+</scxml>

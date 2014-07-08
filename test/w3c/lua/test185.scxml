@@ -1,0 +1,19 @@
+<?xml version="1.0" standalone="no"?>
+<!-- we test that <send> respects the delay specification.  If it does, event1 arrives before event2
+ and we pass.  Otherwise we fail  -->
+<scxml xmlns="http://www.w3.org/2005/07/scxml" initial="s0" version="1.0" datamodel="lua">
+  <state id="s0">
+    <onentry>
+      <send event="event2" delay="100ms"/>
+      <send event="event1"/>
+    </onentry>
+    <transition event="event1" target="s1"/>
+    <transition event="*" target="fail"/>
+  </state>
+  <state id="s1">
+    <transition event="event2" target="pass"/>
+    <transition event="*" target="fail"/>
+  </state>
+  <final id="pass"/>
+  <final id="fail"/>
+</scxml>

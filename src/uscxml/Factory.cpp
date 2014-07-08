@@ -104,6 +104,10 @@
 #   include "uscxml/plugins/datamodel/prolog/swi/SWIDataModel.h"
 # endif
 
+# ifdef LUA_FOUND
+#   include "uscxml/plugins/datamodel/lua/LuaDataModel.h"
+# endif
+
 #include "uscxml/plugins/datamodel/xpath/XPathDataModel.h"
 #include "uscxml/plugins/datamodel/promela/PromelaDataModel.h"
 
@@ -295,6 +299,13 @@ void Factory::registerPlugins() {
 #if (defined SWI_FOUND && defined BUILD_DM_PROLOG)
 	{
 		SWIDataModel* dataModel = new SWIDataModel();
+		registerDataModel(dataModel);
+	}
+#endif
+
+#if (defined LUA_FOUND && defined BUILD_DM_LUA)
+	{
+		LuaDataModel* dataModel = new LuaDataModel();
 		registerDataModel(dataModel);
 	}
 #endif

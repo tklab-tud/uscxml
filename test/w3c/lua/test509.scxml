@@ -1,0 +1,16 @@
+<?xml version="1.0" standalone="no"?>
+<!-- test that Basic HTTP Event I/O processor uses POST method and that it can receive messages
+at the accessURI -->
+<scxml xmlns="http://www.w3.org/2005/07/scxml" initial="s0" version="1.0" datamodel="lua">
+  <state id="s0">
+    <onentry>
+      <send event="timeout" delay="30s"/>
+      <send event="test" type="http://www.w3.org/TR/scxml/#BasicHTTPEventProcessor" targetexpr="FIXME"/>
+    </onentry>
+    <!-- if the event was send by http and we get it, we succeed -->
+    <transition event="test" cond="_event.httpmethod=='POST'" target="pass"/>
+    <transition event="*" target="fail"/>
+  </state>
+  <final id="pass"/>
+  <final id="fail"/>
+</scxml>

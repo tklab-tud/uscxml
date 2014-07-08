@@ -1,0 +1,19 @@
+<?xml version="1.0" standalone="no"?>
+<!-- test that that <content> gets sent as the body of the message.  -->
+<scxml xmlns="http://www.w3.org/2005/07/scxml" initial="s0" version="1.0" datamodel="lua">
+  <state id="s0">
+    <onentry>
+      <send event="timeout" delay="30s"/>
+      <send type="http://www.w3.org/TR/scxml/#BasicHTTPEventProcessor" targetexpr="FIXME">
+        <content>this is some content</content>
+      </send>
+    </onentry>
+    <!-- if other end sends us back this event, we succeed.  Test for two common
+     ways of encoding -->
+    <transition event="HTTP.POST" cond="_event.httpresponse=='this+is+some+content'" target="pass"/>
+    <transition event="HTTP.POST" cond="_event.httpresponse=='this%20is%20some%20content'" target="pass"/>
+    <transition event="*" target="fail"/>
+  </state>
+  <final id="pass"/>
+  <final id="fail"/>
+</scxml>

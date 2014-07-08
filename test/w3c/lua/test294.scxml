@@ -1,0 +1,38 @@
+<?xml version="1.0" standalone="no"?>
+<!-- test that a param inside donedata ends up in the data field of the done event and
+that content inside donedata sets the full value of the event.data field -->
+<scxml xmlns="http://www.w3.org/2005/07/scxml" version="1.0" initial="s0" datamodel="lua">
+  <datamodel>
+    <data expr="0" id="testvar1"/>
+  </datamodel>
+  <state id="s0" initial="s01">
+    <transition event="done.state.s0" target="s1" cond="_event.data['testvar1'] == 1">
+     </transition>
+    <transition event="done.state.s0" target="fail">
+     </transition>
+    <state id="s01">
+      <transition target="s02"/>
+    </state>
+    <final id="s02">
+      <donedata>
+        <param expr="1" name="testvar1"/>
+      </donedata>
+    </final>
+  </state>
+  <state id="s1" initial="s11">
+    <transition event="done.state.s1" cond="_event.data == 'foo'" target="pass">
+     </transition>
+    <transition event="done.state.s1" target="fail">
+     </transition>
+    <state id="s11">
+      <transition target="s12"/>
+    </state>
+    <final id="s12">
+      <donedata>
+        <content expr="'foo'"/>
+      </donedata>
+    </final>
+  </state>
+  <final id="pass"/>
+  <final id="fail"/>
+</scxml>

@@ -1,0 +1,35 @@
+<?xml version="1.0" standalone="no"?>
+<!-- test that a targetless transition does not exit and reenter its source state -->
+<scxml xmlns="http://www.w3.org/2005/07/scxml" initial="s1" version="1.0" datamodel="lua">
+  <datamodel>
+    <data expr="0" id="testvar1"/>
+    <!-- how often we have exited s2 -->
+    <data expr="0" id="testvar2"/>
+    <!-- how often the targetless transition in s2 has been executed -->
+  </datamodel>
+  <state id="s1">
+    <onentry>
+      <raise event="foo"/>
+      <raise event="bar"/>
+    </onentry>
+    <transition target="s2"/>
+  </state>
+  <state id="s2">
+    <onexit>
+      <assign location="testvar1" expr="testvar1+1"/>
+    </onexit>
+    <transition event="foo">
+      <assign location="testvar2" expr="testvar2+1"/>
+    </transition>
+    <!-- make sure the transition on foo was actually taken -->
+    <transition event="bar" target="s3" cond="testvar2 == 1"/>
+    <transition event="bar" target="fail"/>
+  </state>
+  <state id="s3">
+    <!-- make sure that s2 was exited only once -->
+    <transition cond="testvar1 == 1" target="pass"/>
+    <transition target="fail"/>
+  </state>
+  <final id="pass"/>
+  <final id="fail"/>
+</scxml>

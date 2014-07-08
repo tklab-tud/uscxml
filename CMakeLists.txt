@@ -315,6 +315,7 @@ OPTION(BUILD_DM_ECMA "Build with ECMAScript datamodel" ON)
 OPTION(BUILD_DM_XPATH "Build with XPath datamodel" ON)
 OPTION(BUILD_DM_PROLOG "Build with Prolog datamodel" ON)
 OPTION(BUILD_DM_PROMELA "Build with Promela datamodel" ON)
+OPTION(BUILD_DM_LUA "Build with Lua datamodel" ON)
 
 # a dummy target to depend on the targets needed for tests, see:
 # http://stackoverflow.com/questions/733475/cmake-ctest-make-test-doesnt-build-tests
@@ -686,6 +687,16 @@ else()
 endif()
 
 
+set(CMAKE_FIND_LIBRARY_SUFFIXES ${CMAKE_FIND_LIBRARY_SUFFIXES_SHARED})
+find_package(Lua)
+if (LUA_FOUND)
+	include_directories (${LUA_INCLUDE_DIR})
+	include_directories(${PROJECT_SOURCE_DIR}/contrib/src/LuaBridge)
+	list (APPEND USCXML_OPT_LIBS ${LUA_LIBRARIES})
+endif()
+set(CMAKE_FIND_LIBRARY_SUFFIXES ${CMAKE_FIND_LIBRARY_SUFFIXES_ORIG})
+
+
 find_package(OpenSSL)
 if (OPENSSL_FOUND)
 	set(OPENSSL_HAS_ELIPTIC_CURVES OFF)
@@ -932,6 +943,8 @@ foreach( FILE ${USCXML_FILES} )
 		source_group("Datamodel\\Promela" FILES ${FILE})
 	elseif (${PATH} MATCHES ".*datamodel\\/xpath.*")
 		source_group("Datamodel\\XPath" FILES ${FILE})
+	elseif (${PATH} MATCHES ".*datamodel\\/lua.*")
+		source_group("Datamodel\\Lua" FILES ${FILE})
 	elseif (${PATH} MATCHES ".*datamodel\\/null.*")
 		source_group("Datamodel\\NULL" FILES ${FILE})
 	

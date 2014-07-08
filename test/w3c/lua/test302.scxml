@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- test that a script is evaluated at load time.  <conf:script> shoudl assign the value 1 to 
+Var1.  Hence, if script is evaluated at download time, Var1 has a value in the initial state s0.
+This test is valid only for datamodels that support scripting -->
+<scxml xmlns="http://www.w3.org/2005/07/scxml" version="1.0" initial="s0" datamodel="lua">
+  <script>testvar1 = 1</script>
+  <state id="s0">
+    <transition cond="testvar1 == 1" target="pass"/>
+    <transition target="fail"/>
+  </state>
+  <final id="pass"/>
+  <final id="fail"/>
+</scxml>

@@ -1,0 +1,6 @@
+<scxml datamodel="lua" name="lua-test">
+  <state id="s1">
+		<transition cond="In('s1')" target="end" />
+	</state>
+  <state id="end" final="true" />
+</scxml>

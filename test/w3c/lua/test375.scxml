@@ -1,0 +1,20 @@
+<?xml version="1.0" standalone="no"?>
+<!-- test that onentry handlers are executed in document order.  event1 should be raised before event2 -->
+<scxml xmlns="http://www.w3.org/2005/07/scxml" version="1.0" datamodel="lua">
+  <state id="s0">
+    <onentry>
+      <raise event="event1"/>
+    </onentry>
+    <onentry>
+      <raise event="event2"/>
+    </onentry>
+    <transition event="event1" target="s1"/>
+    <transition event="*" target="fail"/>
+  </state>
+  <state id="s1">
+    <transition event="event2" target="pass"/>
+    <transition event="*" target="fail"/>
+  </state>
+  <final id="pass"/>
+  <final id="fail"/>
+</scxml>

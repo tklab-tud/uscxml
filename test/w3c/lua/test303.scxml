@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- to test that scripts are run as part of executable content, we check that it changes the value of a var at the
+right point. This test is valid only for datamodels that support scripting -->
+<scxml xmlns="http://www.w3.org/2005/07/scxml" version="1.0" initial="s0" datamodel="lua">
+  <datamodel>
+    <data expr="0" id="testvar1"/>
+  </datamodel>
+  <state id="s0">
+    <onentry>
+      <assign expr="2" location="testvar1"/>
+      <script>testvar1 = 1</script>
+    </onentry>
+    <transition cond="testvar1 == 1" target="pass"/>
+    <transition target="fail"/>
+  </state>
+  <final id="pass"/>
+  <final id="fail"/>
+</scxml>

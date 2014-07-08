@@ -1,0 +1,71 @@
+<?xml version="1.0" standalone="no"?>
+<!-- test that an external transition exits all states up the the LCCA -->
+<scxml xmlns="http://www.w3.org/2005/07/scxml" initial="s1" version="1.0" datamodel="lua">
+  <datamodel>
+    <data expr="0" id="testvar1"/>
+    <!-- how often we have exited p -->
+    <data expr="0" id="testvar2"/>
+    <!-- how often we have exited ps1 -->
+    <data expr="0" id="testvar3"/>
+    <!-- how often we have exited ps2 -->
+    <data expr="0" id="testvar4"/>
+    <!-- how often the transition for foo has been taken -->
+    <data expr="0" id="testvar5"/>
+    <!-- how often we have exited s2  -->
+  </datamodel>
+  <state id="s1">
+    <onentry>
+      <raise event="foo"/>
+      <raise event="bar"/>
+    </onentry>
+    <transition target="p"/>
+  </state>
+  <state id="s2">
+    <onexit>
+      <assign location="testvar5" expr="testvar5+1"/>
+    </onexit>
+    <parallel id="p">
+      <onexit>
+        <assign location="testvar1" expr="testvar1+1"/>
+      </onexit>
+      <transition event="foo" target="ps1">
+        <assign location="testvar4" expr="testvar4+1"/>
+      </transition>
+      <!-- make sure the transition on foo was actually taken -->
+      <transition event="bar" target="s3" cond="testvar4 == 1"/>
+      <transition event="bar" target="fail"/>
+      <state id="ps1">
+        <onexit>
+          <assign location="testvar2" expr="testvar2+1"/>
+        </onexit>
+      </state>
+      <state id="ps2">
+        <onexit>
+          <assign location="testvar3" expr="testvar3+1"/>
+        </onexit>
+      </state>
+    </parallel>
+  </state>
+  <state id="s3">
+    <!-- make sure that p was exited twice -->
+    <transition target="s4" cond="testvar1 == 2"/>
+    <transition target="fail"/>
+  </state>
+  <state id="s4">
+    <!-- make sure that ps1 was exited twice -->
+    <transition target="s5" cond="testvar2 == 2"/>
+    <transition target="fail"/>
+  </state>
+  <state id="s5">
+    <!-- make sure that ps2 was exited twice -->
+    <transition target="s6" cond="testvar3 == 2"/>
+    <transition target="fail"/>
+  </state>
+  <state id="s6">
+    <!-- make sure that s1 was exited once -->
+    <transition cond="testvar5 == 1" target="pass"/>
+    <transition target="fail"/>
+  </state>
+  <final id="pass"/>
+  <final id="fail"/>
+</scxml>

@@ -1,0 +1,67 @@
+<?xml version="1.0" standalone="no"?>
+<!-- test that the scxml event processor is used in both directions.  If child process uses the 
+scxml event i/o processor to communicate with us, send it an event.  It will send back success if
+this process uses the scxml processor to send the message to it, otherwise failure.  For this test we allow 
+'scxml' as an alternative to the full url.   -->
+<scxml xmlns="http://www.w3.org/2005/07/scxml" initial="s0" version="1.0" datamodel="lua">
+  <datamodel>
+    <data id="testvar1"/>
+  </datamodel>
+  <state id="s0" initial="s01">
+    <onentry>
+      <send event="timeout" delay="2s"/>
+    </onentry>
+    <transition event="timeout" target="fail"/>
+    <invoke type="scxml" id="foo">
+      <content>
+        <!-- inform parent we're running then wait for it to send us an event.  If it uses the scxml event i/o
+             processor to do so, return success, otherwise return failure.   -->
+        <scxml initial="sub0" version="1.0" datamodel="lua">
+          <datamodel>
+            <data id="testvar2"/>
+          </datamodel>
+          <state id="sub0">
+            <onentry>
+              <send target="#_parent" event="childRunning"/>
+            </onentry>
+            <transition event="parentToChild" target="sub1">
+              <assign expr="_event.origintype" location="testvar2"/>
+            </transition>
+          </state>
+          <state id="sub1">
+            <transition target="subFinal" cond="testvar2 == 'http://www.w3.org/TR/scxml/#SCXMLEventProcessor'">
+              <send target="#_parent" event="success"/>
+            </transition>
+            <transition target="subFinal" cond="testvar2 == 'scxml'">
+              <send target="#_parent" event="success"/>
+            </transition>
+            <transition target="subFinal">
+              <send target="#_parent" event="failure"/>
+            </transition>
+          </state>
+          <final id="subFinal"/>
+        </scxml>
+      </content>
+    </invoke>
+    <state id="s01">
+      <transition event="childRunning" target="s02">
+        <assign expr="_event.origintype" location="testvar1"/>
+      </transition>
+    </state>
+    <state id="s02">
+      <transition target="s03" cond="testvar1 == 'http://www.w3.org/TR/scxml/#SCXMLEventProcessor'">
+        <send target="#_foo" event="parentToChild"/>
+      </transition>
+      <transition target="s03" cond="testvar1 == 'scxml'">
+        <send target="#_foo" event="parentToChild"/>
+      </transition>
+      <transition target="fail"/>
+    </state>
+    <state id="s03">
+      <transition event="success" target="pass"/>
+      <transition event="fail" target="fail"/>
+    </state>
+  </state>
+  <final id="pass"/>
+  <final id="fail"/>
+</scxml>

@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<scxml xmlns="http://www.w3.org/2005/07/scxml" version="1.0" initial="s0" name="machineName" datamodel="lua">
+  <!-- test that _event.type is set correctly for internal, platform, and external events -->
+  <datamodel>
+    <data id="testvar1"/>
+  </datamodel>
+  <state id="s0">
+    <onentry>
+      <!-- internal event -->
+      <raise event="foo"/>
+    </onentry>
+    <transition event="foo" target="s1">
+      <assign expr="_event.type" location="testvar1"/>
+    </transition>
+    <transition event="*" target="fail"/>
+  </state>
+  <state id="s1">
+    <transition target="s2" cond="testvar1 == 'internal'"/>
+    <transition target="fail"/>
+  </state>
+  <state id="s2">
+    <onentry>
+      <!-- this will generate an error, which is a platform event -->
+      <assign expr="1" location=""/>
+    </onentry>
+    <transition event="error" target="s3">
+      <assign expr="_event.type" location="testvar1"/>
+    </transition>
+    <transition event="*" target="fail"/>
+  </state>
+  <state id="s3">
+    <transition target="s4" cond="testvar1 == 'platform'"/>
+    <transition target="fail"/>
+  </state>
+  <state id="s4">
+    <onentry>
+      <!-- external event -->
+      <send event="foo"/>
+    </onentry>
+    <transition event="foo" target="s5">
+      <assign expr="_event.type" location="testvar1"/>
+    </transition>
+    <transition event="*" target="fail"/>
+  </state>
+  <state id="s5">
+    <transition cond="testvar1 == 'external'" target="pass"/>
+    <transition target="fail"/>
+  </state>
+  <final id="pass"/>
+  <final id="fail"/>
+</scxml>
