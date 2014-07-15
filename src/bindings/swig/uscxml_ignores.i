@@ -38,7 +38,7 @@
 %ignore uscxml::Interpreter::Interpreter(const boost::shared_ptr<InterpreterImpl>);
 %ignore uscxml::Interpreter::Interpreter(const Interpreter&);
 %ignore uscxml::Interpreter::getDelayQueue();
-%ignore uscxml::Interpreter::fromURI(const URI&);
+%ignore uscxml::Interpreter::fromURI(const URL&);
 %ignore uscxml::Interpreter::fromDOM;
 %ignore uscxml::Interpreter::fromClone;
 %ignore uscxml::Interpreter::start();

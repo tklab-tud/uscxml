@@ -52,13 +52,17 @@ public:
 	virtual void invoke(const InvokeRequest& req) {}
 	virtual void uninvoke() {}
 
-	virtual WrappedInvoker* create(Interpreter interpreter) {
+	virtual WrappedInvoker* create(const Interpreter& interpreter) {
 		return new WrappedInvoker();
 	}
 
 	virtual boost::shared_ptr<InvokerImpl> create(InterpreterImpl* interpreter) {
-		return boost::shared_ptr<InvokerImpl>(create(interpreter->shared_from_this()));
+		_interpreter = interpreter->shared_from_this();
+		return boost::shared_ptr<InvokerImpl>(create(_interpreter));
 	}
+
+private:
+	Interpreter _interpreter;
 
 };
 

@@ -1,7 +1,6 @@
 package org.uscxml.tests;
 
 import org.uscxml.Blob;
-import org.uscxml.BlobImpl;
 import org.uscxml.Data;
 
 public class TestData {

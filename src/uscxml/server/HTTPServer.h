@@ -134,7 +134,7 @@ private:
 	};
 
 	HTTPServer(unsigned short port, unsigned short wsPort, SSLConfig* sslConf = NULL);
-	~HTTPServer();
+	virtual ~HTTPServer();
 
 	void start();
 	void stop();
@@ -191,6 +191,7 @@ private:
 
 class USCXML_API HTTPServlet {
 public:
+	virtual ~HTTPServlet() {}
 	virtual bool httpRecvRequest(const HTTPServer::Request& request) = 0;
 	virtual void setURL(const std::string& url) = 0; /// Called by the server with the actual URL
 	virtual bool canAdaptPath() {
@@ -200,6 +201,7 @@ public:
 
 class USCXML_API WebSocketServlet {
 public:
+	virtual ~WebSocketServlet() {}
 	virtual bool wsRecvRequest(struct evws_connection *conn, const HTTPServer::WSFrame& frame) = 0;
 	virtual void setURL(const std::string& url) = 0; /// Called by the server with the actual URL
 	virtual bool canAdaptPath() {

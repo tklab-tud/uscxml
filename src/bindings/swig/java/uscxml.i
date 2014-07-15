@@ -55,6 +55,8 @@ typedef uscxml::ExecutableContentImpl ExecutableContentImpl;
 #include "../../../uscxml/Factory.h"
 #include "../../../uscxml/Interpreter.h"
 #include "../../../uscxml/concurrency/BlockingQueue.h"
+#include "../../../uscxml/server/HTTPServer.h"
+#include "../../../uscxml/debug/DebuggerServlet.h"
 
 #include "../wrapped/WrappedInvoker.h"
 #include "../wrapped/WrappedDataModel.h"
@@ -210,9 +212,14 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
 import java.util.LinkedList;
+import java.net.URL;
 %}
 
 %typemap(javacode) uscxml::Interpreter %{
+  public static Interpreter fromURI(URL uri) throws org.uscxml.InterpreterException {
+    return Interpreter.fromURI(uri.toString());
+  }
+	
 	public Map<String, NativeIOProcessor> getIOProcessors() {
 		Map<String, NativeIOProcessor> ioProcs = new HashMap<String, NativeIOProcessor>();
 		StringVector keys = getIOProcessorKeys();
@@ -384,6 +391,8 @@ import java.util.LinkedList;
 %include "../../../uscxml/Message.h"
 %include "../../../uscxml/Interpreter.h"
 %include "../../../uscxml/concurrency/BlockingQueue.h"
+%include "../../../uscxml/server/HTTPServer.h"
+%include "../../../uscxml/debug/DebuggerServlet.h"
 
 %include "../../../uscxml/messages/Blob.h"
 %include "../../../uscxml/messages/Data.h"
