@@ -8,11 +8,6 @@ else()
 	message(STATUS "No JNI libraries found - not building Java wrappers")
 	return()
 endif()
-FIND_PROGRAM(ANT_EXECUTABLE ant PATHS $ENV{ANT_HOME}/bin ENV PATH )
-if (NOT ANT_EXECUTABLE)
-	message(STATUS "No apache ant found - not building Java wrappers")
-	return()
-endif()
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
@@ -25,8 +20,6 @@ SET_SOURCE_FILES_PROPERTIES(uscxml.i PROPERTIES SWIG_FLAGS "-w473;-package;${USC
 SET_SOURCE_FILES_PROPERTIES(uscxml.i PROPERTIES CPLUSPLUS ON)
 SET(CMAKE_SWIG_OUTDIR "${CMAKE_CURRENT_BINARY_DIR}/${USCXML_JAVA_DIR}")
 
-set(USCXML_LANGUAGE_BINDINGS "java ${USCXML_LANGUAGE_BINDINGS}")
-
 SWIG_ADD_MODULE(uscxmlNativeJava java uscxml.i)
 foreach(JNI_LIBRARY ${JNI_LIBRARIES})
 	if (NOT ${JNI_LIBRARY} MATCHES ".*jawt.*")
@@ -37,9 +30,10 @@ set_target_properties(uscxmlNativeJava PROPERTIES FOLDER "Bindings")
 set_target_properties(uscxmlNativeJava PROPERTIES COMPILE_FLAGS "-DSWIG")
 
 swig_link_libraries(uscxmlNativeJava uscxml)
-set(USCXML_LANGUAGE_BINDINGS ${USCXML_LANGUAGE_BINDINGS} PARENT_SCOPE)
 
 if (ANT_EXECUTABLE)
+	set(USCXML_LANGUAGE_BINDINGS "java ${USCXML_LANGUAGE_BINDINGS}")
+	
 	set(JAR_EXCLUDE_DEBUG OFF)
 	set(JAR_EXCLUDE_JNI OFF)
 	
@@ -77,3 +71,5 @@ if (ANT_EXECUTABLE)
 else()
 	message(STATUS "Could not find ant binary - will not build jars")
 endif()
+
+set(USCXML_LANGUAGE_BINDINGS ${USCXML_LANGUAGE_BINDINGS} PARENT_SCOPE)
