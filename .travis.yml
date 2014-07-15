@@ -11,6 +11,6 @@ before_install:
  - sudo apt-get install -qq expect-dev
  - sudo apt-get install -qq libprotobuf-dev libprotoc-dev
  - sudo apt-get install -qq swi-prolog
- - wget http://uscxml.tk.informatik.tu-darmstadt.de
+ - wget http://uscxml.tk.informatik.tu-darmstadt.de || true
  
 script: mkdir build && cd build && cmake .. && make
