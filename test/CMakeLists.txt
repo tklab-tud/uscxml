@@ -188,6 +188,12 @@ foreach( W3C_TEST ${W3C_TESTS} )
 			add_test("fsm/${TEST_NAME}" ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-w3c -f ${W3C_TEST})
 			set_property(TEST "fsm/${TEST_NAME}" PROPERTY LABELS "fsm/${TEST_NAME}")
 		endif()
+
+		if (BUILD_DM_LUA AND LUA_FOUND AND BUILD_TESTS_W3C_LUA AND TEST_NAME MATCHES "^lua\\/.*")
+			add_test(${TEST_NAME} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-w3c ${W3C_TEST})
+			set_property(TEST ${TEST_NAME} PROPERTY LABELS ${TEST_NAME})
+#			set_tests_properties(${TEST_NAME} PROPERTIES FAIL_REGULAR_EXPRESSION "TEST FAILED")
+		endif()
 		
 	endif()
 endforeach()

@@ -26,6 +26,9 @@
 #include <fstream>
 #include <set>
 
+#undef max
+#include <limits>
+
 namespace uscxml {
 
 class Interpreter;
@@ -54,10 +57,28 @@ class Interpreter;
 class USCXML_API SCXMLDotWriter : public InterpreterMonitor {
 public:
 
+	struct StateAnchor {
+		StateAnchor() : depth(std::numeric_limits<int32_t>::max()) {}
+		Arabica::DOM::Element<std::string> element;
+		uint32_t depth;
+	};
+
 	struct ElemDetails {
 		std::string name;
 		std::string details;
 		std::string content;
+	};
+
+	struct DotState {
+		DotState() : isBorder(false) {}
+		Arabica::DOM::Element<std::string> node;
+		std::multimap<std::string, Arabica::DOM::Element<std::string> > targets; // key is remote node, transition is element
+		std::multimap<std::string, Arabica::DOM::Element<std::string> > events; // key is event name, value is transitions that react
+
+		bool isBorder;
+		std::set<std::string> childs;
+		std::set<std::string> initialchilds;
+		typedef std::multimap<std::string, Arabica::DOM::Element<std::string> > mmap_s_e_t;
 	};
 
 	SCXMLDotWriter();
@@ -65,12 +86,23 @@ public:
 
 	virtual void onStableConfiguration(Interpreter interpreter);
 	virtual void afterCompletion(Interpreter interpreter);
-	virtual void beforeTakingTransition(Interpreter interpreter, const Arabica::DOM::Element<std::string>& transition);
+	virtual void beforeTakingTransition(Interpreter interpreter, const Arabica::DOM::Element<std::string>& transition, bool moreComing);
 	virtual void beforeMicroStep(Interpreter interpreter);
 
 	static void toDot(const std::string& filename,
 	                  Interpreter interpreter,
+	                  const Arabica::DOM::Element<std::string>& transition = Arabica::DOM::Element<std::string>()) {
+		std::list<SCXMLDotWriter::StateAnchor> emptyAnchors = std::list<SCXMLDotWriter::StateAnchor>();
+		toDot(filename, interpreter, emptyAnchors, transition);
+	}
+
+
+	static void toDot(const std::string& filename,
+	                  Interpreter interpreter,
+	                  const std::list<SCXMLDotWriter::StateAnchor>& stateAnchors,
 	                  const Arabica::DOM::Element<std::string>& transition = Arabica::DOM::Element<std::string>());
+
+	void writeTo(std::ostream& os);
 
 	std::string getDetailedLabel(const Arabica::DOM::Element<std::string>& elem, int indentation = 0);
 	std::string colorForIndent(int indent);
@@ -80,23 +112,31 @@ public:
 	std::string getPrefix();
 
 	static std::string dotEscape(const std::string& text);
+	static std::string portEscape(const std::string& text);
 
 protected:
 
 	SCXMLDotWriter(Interpreter interpreter,
+	               const std::list<SCXMLDotWriter::StateAnchor>& stateAnchors,
 	               const Arabica::DOM::Element<std::string>& transition);
 
-	void writeSCXMLElement(std::ostream& os, const Arabica::DOM::Element<std::string>& elem);
-	void writeStateElement(std::ostream& os, const Arabica::DOM::Element<std::string>& elem);
-	void writeTransitionElement(std::ostream& os, const Arabica::DOM::Element<std::string>& elem);
+	void assembleGraph(const Arabica::DOM::Element<std::string>& start, uint32_t depth = std::numeric_limits<int32_t>::max());
+	void writeStateElement(std::ostream& os, const DotState& elem);
+	void writeUnknownNode(std::ostream& os, const std::string& targetId);
 
 	int _iteration;
 	std::set<std::string> _knownIds;
+	std::set<std::string> _unknownNodes;
 	int _indentation;
+
+	std::map<std::string, DotState> _graph;
 
 	// these are only set in ephemeral instances per monitor call
 	Arabica::DOM::Element<std::string> _transition;
 	Interpreter _interpreter;
+	std::string _xmlNSPrefix;
+	std::list<StateAnchor> _anchors;
+	std::map<std::string, std::string> _histories;
 };
 
 }

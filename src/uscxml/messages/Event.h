@@ -99,35 +99,35 @@ public:
 		return !(*this == other);
 	}
 
-	std::string getName() {
+	std::string getName() const {
 		return name;
 	}
 	void setName(const std::string& name) {
 		this->name = name;
 	}
 
-	Type getEventType() {
+	Type getEventType() const {
 		return eventType;
 	}
 	void setEventType(const Type type) {
 		this->eventType = type;
 	}
 
-	std::string getOrigin() {
+	std::string getOrigin() const {
 		return origin;
 	}
 	void setOrigin(const std::string& origin) {
 		this->origin = origin;
 	}
 
-	std::string getOriginType() {
+	std::string getOriginType() const {
 		return origintype;
 	}
 	void setOriginType(const std::string& originType) {
 		this->origintype = originType;
 	}
 
-	Arabica::DOM::Node<std::string> getDOM() {
+	Arabica::DOM::Node<std::string> getDOM() const {
 		return dom;
 	}
 	void setDOM(const Arabica::DOM::Node<std::string>& dom) {
@@ -140,42 +140,42 @@ public:
 //	static Arabica::DOM::Node<std::string> getFirstDOMElement(const Arabica::DOM::Document<std::string> dom);
 //	static Arabica::DOM::Document<std::string> getStrippedDOM(const Arabica::DOM::Document<std::string> dom);
 
-	std::string getRaw() {
+	std::string getRaw() const {
 		return raw;
 	}
 	void setRaw(const std::string& raw) {
 		this->raw = raw;
 	}
 
-	std::string getContent() {
+	std::string getContent() const {
 		return content;
 	}
 	void setContent(const std::string& content) {
 		this->content = content;
 	}
 
-	std::string getXML() {
+	std::string getXML() const {
 		return xml;
 	}
 	void setXML(const std::string& xml) {
 		this->xml = xml;
 	}
 
-	std::string getSendId() {
+	std::string getSendId() const {
 		return sendid;
 	}
 	void setSendId(const std::string& sendId) {
 		this->sendid = sendId;
 	}
 
-	std::string getInvokeId() {
+	std::string getInvokeId() const {
 		return invokeid;
 	}
 	void setInvokeId(const std::string& invokeId) {
 		this->invokeid = invokeId;
 	}
 
-	Data getData() {
+	Data getData() const {
 		return data;
 	}
 	void setData(const Data& data) {

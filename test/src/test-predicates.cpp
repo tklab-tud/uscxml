@@ -24,17 +24,17 @@ int main(int argc, char** argv) {
 		assert(interpreter);
 		interpreter.getImpl()->init();
 
-		Node<std::string> atomicState = interpreter.getImpl()->getState("atomic");
+		Element<std::string> atomicState = interpreter.getImpl()->getState("atomic");
 		assert(InterpreterImpl::isAtomic(atomicState));
 		assert(!InterpreterImpl::isParallel(atomicState));
 		assert(!InterpreterImpl::isCompound(atomicState));
 
-		Node<std::string> compoundState = interpreter.getImpl()->getState("compound");
+		Element<std::string> compoundState = interpreter.getImpl()->getState("compound");
 		assert(!InterpreterImpl::isAtomic(compoundState));
 		assert(!InterpreterImpl::isParallel(compoundState));
 		assert(InterpreterImpl::isCompound(compoundState));
 
-		Node<std::string> parallelState = interpreter.getImpl()->getState("parallel");
+		Element<std::string> parallelState = interpreter.getImpl()->getState("parallel");
 		assert(!InterpreterImpl::isAtomic(parallelState));
 		assert(InterpreterImpl::isParallel(parallelState));
 		assert(!InterpreterImpl::isCompound(parallelState)); // parallel states are not compound!

@@ -350,6 +350,12 @@ const std::string URLImpl::getInContent(bool forceReload) {
 	return _rawInContent.str();
 }
 
+const std::string URLImpl::file()     const {
+	if (_pathComponents.size() > 0 && !boost::ends_with(path(), "/")) {
+		return _pathComponents[_pathComponents.size() - 1];
+	}
+}
+
 const void URLImpl::download(bool blocking) {
 	tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
 

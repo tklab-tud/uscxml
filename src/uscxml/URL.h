@@ -80,6 +80,7 @@ public:
 	const std::string path()     const {
 		return _uri.path();
 	}
+	const std::string file()     const;
 	const std::vector<std::string> pathComponents() const {
 		return _pathComponents;
 	}
@@ -259,6 +260,10 @@ public:
 	const std::vector<std::string> pathComponents() const {
 		return _impl->pathComponents();
 	}
+	const std::string file()     const {
+		return _impl->file();
+	}
+
 	const std::string asString() const {
 		if (_impl)
 			return _impl->asString();

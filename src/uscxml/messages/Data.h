@@ -212,7 +212,7 @@ public:
 		this->array = array;
 	}
 
-	std::string getAtom() {
+	std::string getAtom() const {
 		return atom;
 	}
 	void setAtom(const std::string& atom) {

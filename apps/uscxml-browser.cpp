@@ -167,11 +167,10 @@ int main(int argc, char** argv) {
 
 	// instantiate and configure interpreters
 	std::list<Interpreter> interpreters;
-	std::map<std::string, InterpreterOptions*>::iterator confIter = options.interpreters.begin();
-	while(confIter != options.interpreters.end()) {
+	for(int i = 0; i < options.interpreters.size(); i++) {
 
-		InterpreterOptions* currOptions = confIter->second;
-		std::string documentURL = confIter->first;
+		InterpreterOptions* currOptions = options.interpreters[0].second;
+		std::string documentURL = options.interpreters[0].first;
 
 		LOG(INFO) << "Processing " << documentURL;
 		Interpreter interpreter = Interpreter::fromURI(documentURL);
@@ -192,7 +191,6 @@ int main(int argc, char** argv) {
 		} else {
 			LOG(ERROR) << "Cannot create interpreter from " << documentURL;
 		}
-		confIter++;
 	}
 
 	// start interpreters

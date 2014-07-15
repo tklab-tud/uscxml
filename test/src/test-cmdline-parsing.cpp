@@ -47,7 +47,7 @@ int main(int argc, char** argv) {
 		assert(options);
 		assert(options.verbose);
 		assert(options.interpreters.size() == 1);
-		assert(options.interpreters.find("/foo/bar.scxml") != options.interpreters.end());
+		assert(options.interpreters.front().first == "/foo/bar.scxml");
 	}
 
 	if (true) {
@@ -66,12 +66,13 @@ int main(int argc, char** argv) {
 		assert(options);
 		assert(options.httpPort == 80);
 		assert(options.interpreters.size() == 3);
-		assert(options.interpreters.find("/foo/bar1.scxml") != options.interpreters.end());
-		assert(options.interpreters.find("/foo/bar2.scxml") != options.interpreters.end());
-		assert(options.interpreters.find("/foo/bar3.scxml") != options.interpreters.end());
-		assert(!options.interpreters["/foo/bar1.scxml"]->withHTTP);
-		assert(options.interpreters["/foo/bar2.scxml"]->withHTTP);
-		assert(!options.interpreters["/foo/bar3.scxml"]->withHTTP);
+		assert(options.interpreters[0].first == "/foo/bar1.scxml");
+		assert(options.interpreters[1].first == "/foo/bar2.scxml");
+		assert(options.interpreters[2].first == "/foo/bar3.scxml");
+
+		assert(!options.interpreters[0].second->withHTTP);
+		assert(options.interpreters[1].second->withHTTP);
+		assert(!options.interpreters[2].second->withHTTP);
 	}
 
 	if (true) {
@@ -88,9 +89,12 @@ int main(int argc, char** argv) {
 		assert(options);
 		assert(options.httpPort == 80);
 		assert(options.interpreters.size() == 1);
-		assert(options.interpreters.find("/foo/bar1.scxml") != options.interpreters.end());
-		assert(options.interpreters["/foo/bar1.scxml"]->additionalParameters.find("vrml-path") != options.interpreters["/foo/bar1.scxml"]->additionalParameters.end());
-		assert(options.interpreters["/foo/bar1.scxml"]->additionalParameters.find("tmp-path") != options.interpreters["/foo/bar1.scxml"]->additionalParameters.end());
+		assert(options.interpreters[0].first == "/foo/bar1.scxml");
+
+		assert(options.interpreters[0].second->additionalParameters.find("vrml-path")
+		       != options.interpreters[0].second->additionalParameters.end());
+		assert(options.interpreters[0].second->additionalParameters.find("tmp-path")
+		       != options.interpreters[0].second->additionalParameters.end());
 	}
 
 	return EXIT_SUCCESS;

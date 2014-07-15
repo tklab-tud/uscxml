@@ -132,7 +132,7 @@ public:
 	std::string certificate;
 	std::string privateKey;
 	std::string publicKey;
-	std::map<std::string, InterpreterOptions*> interpreters;
+	std::vector<std::pair<std::string, InterpreterOptions*> > interpreters;
 	std::map<std::string, std::string> additionalParameters;
 
 	std::string error;
@@ -423,7 +423,7 @@ protected:
 
 	InterpreterImpl();
 	void init();
-	void setupAndNormalizeDOM();
+	void setupDOM();
 	virtual void setupIOProcessors();
 
 	void initializeData(const Arabica::DOM::Element<std::string>& data);
@@ -529,6 +529,7 @@ public:
 	                           const NameSpaceInfo& nameSpaceInfo);
 	static Interpreter fromXML(const std::string& xml);
 	static Interpreter fromURI(const std::string& uri);
+	static Interpreter fromURI(const URL& uri);
 	static Interpreter fromClone(const Interpreter& other);
 
 	Interpreter() : _impl() {} // the empty, invalid interpreter

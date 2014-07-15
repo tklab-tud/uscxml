@@ -210,8 +210,9 @@ InterpreterOptions InterpreterOptions::fromCmdLine(int argc, char** argv) {
 				goto DONE_PARSING_CMD;
 
 			std::string url = argv[optind];
-			options.interpreters[url] = new InterpreterOptions();
-			currOptions = options.interpreters[url];
+
+			options.interpreters.push_back(std::make_pair(url, new InterpreterOptions()));
+			currOptions = options.interpreters.back().second;
 
 			argc -= optind;
 			argv += optind;
@@ -369,9 +370,9 @@ Interpreter Interpreter::fromDOM(const Arabica::DOM::Document<std::string>& dom,
 	tthread::lock_guard<tthread::recursive_mutex> lock(_instanceMutex);
 	boost::shared_ptr<INTERPRETER_IMPL> interpreterImpl = boost::shared_ptr<INTERPRETER_IMPL>(new INTERPRETER_IMPL);
 	Interpreter interpreter(interpreterImpl);
-	interpreterImpl->_document = dom;
 	interpreterImpl->setNameSpaceInfo(nameSpaceInfo);
 	interpreterImpl->_document = dom;
+	interpreterImpl->setupDOM();
 
 //	interpreterImpl->init();
 	_instances[interpreterImpl->getSessionId()] = interpreterImpl;
@@ -389,7 +390,12 @@ Interpreter Interpreter::fromXML(const std::string& xml) {
 }
 
 Interpreter Interpreter::fromURI(const std::string& uri) {
-	URL absUrl(uri);
+	URL url(uri);
+	return fromURI(url);
+}
+
+Interpreter Interpreter::fromURI(const URL& uri) {
+	URL absUrl = uri;
 	if (!absUrl.isAbsolute()) {
 		if (!absUrl.toAbsoluteCwd()) {
 			ERROR_COMMUNICATION_THROW("URL is not absolute or does not have file schema");
@@ -450,6 +456,7 @@ Interpreter Interpreter::fromInputSource(Arabica::SAX::InputSource<std::string>&
 	if (parser.parse(source) && parser.getDocument() && parser.getDocument().hasChildNodes()) {
 		interpreterImpl->setNameSpaceInfo(parser.nameSpace);
 		interpreterImpl->_document = parser.getDocument();
+		interpreterImpl->setupDOM();
 	} else {
 		if (parser.errorsReported()) {
 			ERROR_PLATFORM_THROW(parser.errors())
@@ -483,7 +490,7 @@ void InterpreterImpl::copyTo(InterpreterImpl* other) {
 		if (parser.parse(inputSource) && parser.getDocument() && parser.getDocument().hasChildNodes()) {
 			other->setNameSpaceInfo(parser.nameSpace);
 			other->_document = parser.getDocument();
-			other->init();
+			other->setupDOM();
 		} else {
 			if (parser.errorsReported()) {
 				LOG(ERROR) << parser.errors();
@@ -505,7 +512,7 @@ void InterpreterImpl::copyTo(InterpreterImpl* other) {
 		other->_document = clonedDocument;
 
 		other->setNameSpaceInfo(_nsInfo);
-		other->init();
+		other->setupDOM();
 #endif
 	}
 }
@@ -688,7 +695,7 @@ void InterpreterImpl::reset() {
 	setInterpreterState(USCXML_INSTANTIATED);
 }
 
-void InterpreterImpl::setupAndNormalizeDOM() {
+void InterpreterImpl::setupDOM() {
 	if (_domIsSetup)
 		return;
 
@@ -748,6 +755,7 @@ void InterpreterImpl::setupAndNormalizeDOM() {
 	eventTarget.addEventListener("DOMNodeRemoved", _domEventListener, true);
 	eventTarget.addEventListener("DOMSubtreeModified", _domEventListener, true);
 
+	_domIsSetup = true;
 }
 
 void InterpreterImpl::init() {
@@ -756,7 +764,7 @@ void InterpreterImpl::init() {
 		_factory = Factory::getInstance();
 
 	// setup and normalize DOM
-	setupAndNormalizeDOM();
+	setupDOM();
 
 	// get our name or generate as UUID
 	if (_name.length() == 0)
@@ -2326,7 +2334,11 @@ bool InterpreterImpl::isInitial(const Arabica::DOM::Element<std::string>& state)
 	if (!isState(state))
 		return false;
 
-	Arabica::DOM::Element<std::string> parent = (Element<std::string>)state.getParentNode();
+	Arabica::DOM::Node<std::string> parentNode = state.getParentNode();
+	if (parentNode.getNodeType() != Node_base::ELEMENT_NODE)
+		return false;
+
+	Arabica::DOM::Element<std::string> parent = (Element<std::string>)parentNode;
 	if (!isState(parent))
 		return true; // scxml element
 

@@ -150,8 +150,5 @@ std::string NULLDataModel::evalAsString(const std::string& expr) {
 	return expr;
 }
 
-double NULLDataModel::evalAsNumber(const std::string& expr) {
-	return 0;
-}
 
 }

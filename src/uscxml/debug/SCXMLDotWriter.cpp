@@ -32,9 +32,30 @@ SCXMLDotWriter::SCXMLDotWriter() {
 	_indentation = 0;
 }
 
-SCXMLDotWriter::SCXMLDotWriter(Interpreter interpreter, const Arabica::DOM::Element<std::string>& transition) {
+SCXMLDotWriter::SCXMLDotWriter(Interpreter interpreter,
+                               const std::list<SCXMLDotWriter::StateAnchor>& stateAnchors,
+                               const Arabica::DOM::Element<std::string>& transition) {
 	_interpreter = interpreter;
+	_xmlNSPrefix = _interpreter.getNameSpaceInfo().xmlNSPrefix;
 	_transition = transition;
+	_anchors = stateAnchors;
+
+	if (_anchors.size() == 0) {
+		NodeList<std::string > scxmlElems = interpreter.getDocument().getElementsByTagName("scxml");
+
+		StateAnchor anchor;
+		anchor.element = (Arabica::DOM::Element<std::string>)scxmlElems.item(0);
+		_anchors.push_back(anchor);
+	}
+
+	for (std::list<StateAnchor>::iterator anchIter = _anchors.begin(); anchIter != _anchors.end(); anchIter++) {
+		if (!anchIter->element) {
+			NodeList<std::string > scxmlElems = interpreter.getDocument().getElementsByTagName("scxml");
+			anchIter->element = (Arabica::DOM::Element<std::string>)scxmlElems.item(0);
+		}
+		assembleGraph(anchIter->element, anchIter->depth);
+	}
+
 	_iteration = 0;
 	_indentation = 0;
 }
@@ -61,7 +82,9 @@ void SCXMLDotWriter::beforeMicroStep(Interpreter interpreter) {
 //	toDot(fileSS.str(), interpreter);
 }
 
-void SCXMLDotWriter::beforeTakingTransition(Interpreter interpreter, const Arabica::DOM::Element<std::string>& transition) {
+void SCXMLDotWriter::beforeTakingTransition(Interpreter interpreter,
+        const Arabica::DOM::Element<std::string>& transition,
+        bool moreComing) {
 	std::ostringstream fileSS;
 	fileSS << interpreter.getName() << "." << std::setw(6) << std::setfill('0') << _iteration++ << ".dot";
 	toDot(fileSS.str(), interpreter, transition);
@@ -74,162 +97,350 @@ std::string SCXMLDotWriter::getPrefix() {
 	return prefix;
 }
 
-void SCXMLDotWriter::toDot(const std::string& filename, Interpreter interpreter, const Arabica::DOM::Element<std::string>& transition) {
+void SCXMLDotWriter::writeTo(std::ostream& os) {
+	os << "digraph {" << std::endl;
+	os << "  rankdir=TB;" << std::endl;
+	os << "  fontsize=10;" << std::endl;
+	//		outfile << "  splines=ortho;" << std::endl;
+	//		outfile << "  splines=false;" << std::endl;
+	//		outfile << "  nodesep=1.0;" << std::endl;
+
+	_indentation++;
+	for (std::list<SCXMLDotWriter::StateAnchor>::iterator anchIter = _anchors.begin();
+	        anchIter != _anchors.end(); anchIter++) {
+		writeStateElement(os, _graph[idForNode(anchIter->element)]);
+	}
+	_indentation--;
+
+
+	os << "}" << std::endl;
+
+}
+
+void SCXMLDotWriter::toDot(const std::string& filename,
+                           Interpreter interpreter,
+                           const std::list<SCXMLDotWriter::StateAnchor>& stateAnchors,
+                           const Arabica::DOM::Element<std::string>& transition) {
+
 	std::ofstream outfile(filename.c_str());
-	NodeList<std::string > scxmlElems = interpreter.getDocument().getElementsByTagName("scxml");
-	SCXMLDotWriter writer(interpreter, transition);
-	if (scxmlElems.getLength() > 0) {
-		writer._indentation++;
-		outfile << "digraph {" << std::endl;
-		outfile << "rankdir=TB; fontsize=10;" << std::endl;
-		writer.writeSCXMLElement(outfile, (Arabica::DOM::Element<std::string>)scxmlElems.item(0));
-		writer._indentation--;
-		outfile << "}" << std::endl;
+	SCXMLDotWriter writer(interpreter, stateAnchors, transition);
+	writer.writeTo(outfile);
+
+}
+
+void SCXMLDotWriter::assembleGraph(const Arabica::DOM::Element<std::string>& state, uint32_t depth) {
+	std::string nodeId = idForNode(state);
+
+	// been here
+	if (_graph.find(nodeId) != _graph.end())
+		return;
+
+	if (depth == 0) {
+		_graph[nodeId].isBorder = true;
 	}
 
-}
+	if (ATTR(state, "id") == "WiFiOff") {
+		assert(true);
+	}
 
-void SCXMLDotWriter::writeSCXMLElement(std::ostream& os, const Arabica::DOM::Element<std::string>& elem) {
-	writeStateElement(os, elem);
+	_graph[nodeId].node = state;
 
-//  std::string elemId = idForNode(elem);
-//  os << getPrefix() << "subgraph \"cluster" << elemId.substr(1, elemId.length() - 1) << " {" << std::endl;
-//  _indentation++;
-//  os << getPrefix() << "label=\"" << nameForNode(elem) << "\"" << std::endl;
-//  writeStateElement(os, (Arabica::DOM::Element<std::string>)_interpreter->getInitialState());
-//  os << getPrefix() << "} " << std::endl;
-
-}
-
-void SCXMLDotWriter::writeStateElement(std::ostream& os, const Arabica::DOM::Element<std::string>& elem) {
-
-	std::string elemId = idForNode(elem);
-	NodeList<std::string > childElems = elem.getChildNodes();
-
-	if (_knownIds.find(elemId) != _knownIds.end())
+	if (depth == 0)
 		return;
-	_knownIds.insert(elemId);
 
-	bool subgraph = InterpreterImpl::isCompound(elem) || InterpreterImpl::isParallel(elem);
+	Arabica::XPath::NodeSet<std::string> childElems = InterpreterImpl::filterChildType(Arabica::DOM::Node_base::ELEMENT_NODE, state);
+	for (int i = 0; i < childElems.size(); i++) {
+		Arabica::DOM::Element<std::string> childElem(childElems[i]);
+
+		if (iequals(TAGNAME(childElem), "history")) {
+			_histories[ATTR(childElem, "id")] = ATTR(state, "id") + ":" + ATTR(childElem, "id");
+		}
+
+		if (iequals(TAGNAME(childElem), "transition")) {
+			Arabica::XPath::NodeSet<std::string> targetStates = _interpreter.getImpl()->getTargetStates(childElem);
+			for (int j = 0; j < targetStates.size(); j++) {
+				std::string remoteNodeId = idForNode(targetStates[j]);
+				_graph[nodeId].targets.insert(std::make_pair(remoteNodeId, childElem));
+
+				// recurse along the transition targets
+				assembleGraph((Arabica::DOM::Element<std::string>)targetStates[j], depth - 1);
+			}
+			if (targetStates.size() == 0)
+				_graph[nodeId].targets.insert(std::make_pair(nodeId, childElem));
+
+			std::list<std::string> eventNames;
+			if (HAS_ATTR(childElem, "event"))
+				eventNames = InterpreterImpl::tokenizeIdRefs(ATTR(childElem, "event"));
+			if (eventNames.size() == 0)
+				_graph[nodeId].events.insert(std::make_pair("", childElem));
+			for (std::list<std::string>::iterator evIter = eventNames.begin(); evIter != eventNames.end(); evIter++) {
+				_graph[nodeId].events.insert(std::make_pair(*evIter, childElem));
+			}
+		}
+
+		if (InterpreterImpl::isState(Element<std::string>(childElem))) {
+			// add to initial states if it is initial
+			if (_interpreter.getImpl()->isInitial(Element<std::string>(childElem))) {
+				_graph[nodeId].initialchilds.insert(idForNode(childElem));
+			} else if (_interpreter.getImpl()->isParallel(Element<std::string>(state))) {
+				_graph[nodeId].initialchilds.insert(idForNode(childElem));
+			}
+			// in any case, it is a child state
+			_graph[nodeId].childs.insert(idForNode(childElem));
+
+			// recurse
+			assembleGraph(childElem, depth - 1);
+		}
+
+
+	}
+}
+
+void SCXMLDotWriter::writeStateElement(std::ostream& os, const DotState& state) {
+	const Arabica::DOM::Element<std::string>& stateElem = state.node;
+	std::string stateId = idForNode(stateElem);
+
+	if (_knownIds.find(stateId) != _knownIds.end())
+		return;
+	_knownIds.insert(stateId);
+
+	bool subgraph = InterpreterImpl::isCompound(stateElem) || InterpreterImpl::isParallel(stateElem);
 	if (subgraph) {
 		_indentation++;
-		os << getPrefix() << "subgraph \"cluster_" << elemId << "\" {" << std::endl;
-		os << getPrefix() << "label=\"" << nameForNode(elem) << "\\l\"" << std::endl;
+		os << std::endl;
+		os << getPrefix() << "subgraph \"cluster_" << stateId << "\" {" << std::endl;
+		_indentation++;
+		os << getPrefix() << "fontsize=14" << std::endl;
+		os << getPrefix() << "label=<<b>";
+		if (InterpreterImpl::isCompound(stateElem)) {
+			os << "Compound: ";
+		} else {
+			os << "Parallel: ";
+		}
+		os << nameForNode(stateElem) << "</b>>" << std::endl;
+//		os << getPrefix() << "rank=\"same\"" << std::endl;
+		os << getPrefix() << "labeljust=l" << std::endl;
+//		os << getPrefix() << "ranksep=\"equally\"" << std::endl;
+
 	}
 
-	os << getPrefix() << "\"" << elemId << "\"[";
-	os << "fontsize=10,";
-	os << "label=<<b>State</b><br />" << nameForNode(elem) << ">,";
+	os << std::endl;
+	os << getPrefix() << "\"" << stateId << "\" [" << std::endl;
+	_indentation++;
 
-	// is the state initial?
-	if (_interpreter.getImpl()->isInitial(elem))
-		os << "style=filled, fillcolor=lightgrey, ";
-
-	// is this state final?
-	if (_interpreter.getImpl()->isFinal(elem))
-		os << "shape=doublecircle,";
+	os << getPrefix() << "fontsize=10," << std::endl;
+	os << getPrefix() << "shape=plaintext," << std::endl;
 
 	// is the current state in the basic configuration?
-	if (InterpreterImpl::isMember(elem, _interpreter.getBasicConfiguration()))
-		os << "color=red, penwidth=3,";
+	if (InterpreterImpl::isMember(stateElem, _interpreter.getBasicConfiguration()))
+		os << getPrefix() << "color=red, penwidth=3," << std::endl;
 
-	// is the current state a target state?
-#if 0
-	for (int i = 0; i < _transitions.size(); i++) {
-		if (InterpreterImpl::isMember(elem, _interpreter.getTargetStates(_transitions[i]))) {
-			os << "color=red, penwidth=3,";
-			break;
-		}
+	// is the current state in the basic configuration?
+	if (state.isBorder)
+		os << getPrefix() << "color=blue," << std::endl;
+
+	// is this state final?
+	if (_interpreter.getImpl()->isFinal(stateElem)) {
+		os << getPrefix() << "shape=doublecircle," << std::endl;
+		os << getPrefix() << "color=black," << std::endl;
+		os << getPrefix() << "penwidth=2," << std::endl;
+		os << getPrefix() << "label=<" << nameForNode(stateElem) << ">" << std::endl;
+		_indentation--;
+		os << getPrefix() << "];" << std::endl;
+		return;
+	}
+
+	// is the state initial?
+	bool isInitial = _interpreter.getImpl()->isInitial(stateElem);
+//	if (isInitial)
+//		os << getPrefix() << "style=filled, fillcolor=lightgrey, " << std::endl;
+
+	DotState::mmap_s_e_t::const_iterator destIterF, destIterB;
+	std::list<std::string> outPorts; // count unique keys
+#if PER_EVENT_TRANS
+	// count unique event names
+	for(DotState::mmap_s_e_t::const_iterator it = state.events.begin(), end = state.events.end();
+	        it != end;
+	        it = state.events.upper_bound(it->first)) {
+		outPorts.push_back(it->first);
+	}
+#else
+	// count unique adjecent nodes
+	for(DotState::mmap_s_e_t::const_iterator it = state.targets.begin(), end = state.targets.end();
+	        it != end;
+	        it = state.targets.upper_bound(it->first)) {
+		outPorts.push_back(it->first);
 	}
 #endif
 
-	os << "];" << std::endl;
+	os << getPrefix() << "label = < " << std::endl;
 
-	std::string details = getDetailedLabel(elem);
-//  std::cout << details << std::endl;
+	/*
+		<table cellborder="1" border="0" cellspacing="0" cellpadding="2" style="rounded">
+			<tr><td port="name" rowspan="4"><b>step</b></td></tr>
+			<tr><td port="foo.error.port" align="right">foo.error.port</td></tr>
+			<tr><td port="bar" align="right">bar</td></tr>
+			<tr><td port="baz" align="right">baz</td></tr>
+		</table>
+	 */
 
-	if (details.size() > 0) {
-		os << getPrefix() << "\"" << elemId << "Exec\"[";
-		os << "fontsize=8,";
-		os << "shape=box,";
-		os << "color=grey,";
-		os << "label=<" << details << ">";
-		os << "]" << std::endl;
-		os << getPrefix() << "\"" << elemId << "\" -> \"" << elemId << "Exec\" [arrowhead=none, color=grey]" << std::endl;
+	std::string details = getDetailedLabel(stateElem);
+
+	os << "<table " << (isInitial ? "bgcolor=\"orange\" " : "") << "cellborder=\"1\" border=\"0\" cellspacing=\"0\" cellpadding=\"2\" >" << std::endl;
+	os << "  <tr><td port=\"__name\" rowspan=\"" << outPorts.size() + 1 << "\"><b>" << nameForNode(stateElem) << "</b></td></tr>" << std::endl;
+	for(std::list<std::string>::iterator nameIter = outPorts.begin(); nameIter != outPorts.end(); nameIter++) {
+#ifdef PER_EVENT_TRANS
+		os << "  <tr><td port=\"" << portEscape(*nameIter) << "\" align=\"right\">" << *nameIter << "</td></tr>" << std::endl;
+#else
+		// gather all events that activate the transition
+		std::string portName = *nameIter;
+
+//		std::cout << ATTR(stateElem, "id") << std::endl;
+
+		if (ATTR(stateElem, "id") == "ConfirmQuit") {
+			assert(true);
+		}
+
+		std::multimap<std::string, std::string> eventConds; // event to condition
+		std::pair <DotState::mmap_s_e_t::const_iterator, DotState::mmap_s_e_t::const_iterator> targetKeyRange = state.targets.equal_range(portName);
+		for (destIterB = targetKeyRange.first;  destIterB != targetKeyRange.second;  ++destIterB) {
+			const Arabica::DOM::Element<std::string>& transElem = destIterB->second;
+			std::list<std::string> eventNames = InterpreterImpl::tokenizeIdRefs(ATTR(transElem, "event"));
+			for (std::list<std::string>::iterator eventIter = eventNames.begin(); eventIter != eventNames.end(); eventIter++) {
+				eventConds.insert(std::make_pair(*eventIter, ATTR(transElem, "cond")));
+			}
+			if (eventNames.size() == 0) {
+				// spontaneous transition
+				eventConds.insert(std::make_pair("&#8709;", ATTR(transElem, "cond")));
+			}
+		}
+
+		typedef std::multimap<std::string, std::string>::iterator condIter_t;
+		std::stringstream outPortSS;
+		outPortSS << "<b>" << portName << "</b><br align=\"right\" />";
+
+		std::string opener = "{";
+		std::string closer;
+		std::string seperator;
+		condIter_t iterA, iterB;
+		for(iterA = eventConds.begin(); iterA != eventConds.end(); iterA = iterB) {
+			std::string eventName = iterA->first;
+			bool hasCondition = false;
+
+			std::pair <condIter_t, condIter_t> condRange = eventConds.equal_range(eventName);
+			for (iterB = condRange.first;  iterB != condRange.second;  ++iterB) {
+				hasCondition = true;
+			}
+
+			outPortSS << opener << seperator << eventName << (hasCondition ? "" : "");
+			seperator = ", ";
+			opener = "";
+			closer = "}";
+		}
+		outPortSS << closer;
+
+		os << "  <tr><td port=\"" << portEscape(portName) << "\" align=\"right\">" << outPortSS.str() << "</td></tr>" << std::endl;
+
+#endif
 	}
 
-//  NodeList<std::string > childElems = elem.getChildNodes();
-//  for (int i = 0; i < childElems.getLength(); i++) {
-//    if (Interpreter::isState(childElems.item(i))) {
-//      writeStateElement(os, (Arabica::DOM::Element<std::string>)childElems.item(i));
-//    }
-//  }
+	if (details.size() > 0) {
+		os << "  <tr><td colspan=\"" << (outPorts.size() == 0 ? 1 : 2) << "\">" << std::endl;
+		os << details << std::endl;
+		os << "  </td></tr>" << std::endl;
+	}
 
-	for (int i = 0; i < childElems.getLength(); i++) {
-		if (childElems.item(i).getNodeType() == Node_base::ELEMENT_NODE && iequals(TAGNAME(childElems.item(i)), "transition")) {
-			writeTransitionElement(os, (Arabica::DOM::Element<std::string>)childElems.item(i));
-			bool active = (childElems.item(i) == _transition);
-			os << getPrefix() << "\"" << elemId << "\" -> \"" << idForNode(childElems.item(i)) << "\" [arrowhead=none" << std::endl;
-			if (active) {
-				os << ", penwidth=3, color=red]" << std::endl;
-			} else {
-				os << "]" << std::endl;
-			}
-		}
-		if (InterpreterImpl::isState(Element<std::string>(childElems.item(i)))) {
-			writeStateElement(os, (Arabica::DOM::Element<std::string>)childElems.item(i));
-		}
-		if (childElems.item(i).getNodeType() == Node_base::ELEMENT_NODE && iequals(TAGNAME(childElems.item(i)), "initial")) {
-			NodeList<std::string > grandChildElems = childElems.item(i).getChildNodes();
-			for (int j = 0; j < grandChildElems.getLength(); j++) {
-				if (grandChildElems.item(j).getNodeType() == Node_base::ELEMENT_NODE && iequals(TAGNAME(grandChildElems.item(j)), "transition")) {
-					writeTransitionElement(os, (Arabica::DOM::Element<std::string>)grandChildElems.item(j));
-					os << getPrefix() << "\"" << elemId << "\" -> \"" << idForNode(grandChildElems.item(j)) << "\"" << std::endl;
-				}
-			}
-		}
+	Arabica::XPath::NodeSet<std::string> histories = InterpreterImpl::filterChildElements(_xmlNSPrefix + "history", stateElem);
+	for (int i = 0; i < histories.size(); i++) {
+		os << "  <tr><td port=\"" << ATTR(histories[i], "id") << "\" colspan=\"" << (outPorts.size() == 0 ? 1 : 2) << "\"><b>history: </b>" << ATTR(histories[i], "id") << "</td></tr>" << std::endl;
+
+	}
+
+	os << "</table>" << std::endl << getPrefix() << ">" << std::endl;
+
+	_indentation--;
+	os << getPrefix() << "];" << std::endl;
+
+	// always display childs up to the desired depth
+	for (std::set<std::string>::iterator childIter = state.childs.begin(); childIter != state.childs.end(); childIter++) {
+		if (_graph.find(*childIter) != _graph.end())
+			writeStateElement(os, _graph[*childIter]);
 	}
 
 	if (subgraph) {
 		_indentation--;
 		os << getPrefix() << "} " << std::endl;
+		_indentation--;
 	}
 
-}
+#if 1
+	std::string initialEdgeStyle = "style=\"dashed\", color=\"black\"";
+	std::string transitionEdgeStyle = "color=black";
 
-void SCXMLDotWriter::writeTransitionElement(std::ostream& os, const Arabica::DOM::Element<std::string>& elem) {
-	std::string elemId = idForNode(elem);
-
-	Arabica::XPath::NodeSet<std::string> targetStates = _interpreter.getImpl()->getTargetStates(elem);
-
-	bool active = (elem == _transition);
-
-	std::string label;
-	os << getPrefix() << "\"" << elemId << "\"[";
-	if (active) {
-		os << "color=red, penwidth=3, ";
-	}
-	os << "fontsize=10,";
-	os << "shape=box,";
-	os << "label=<<b>Transition</b><br align=\"left\" />";
-	if (HAS_ATTR(elem, "event"))
-		os << "event: " << ATTR(elem, "event");
-	if (HAS_ATTR(elem, "cond"))
-		os << "cond: " << dotEscape(ATTR(elem, "cond"));
-	if (!HAS_ATTR(elem, "cond") && !HAS_ATTR(elem, "event"))
-		os << "unconditional";
-	os << ">";
-	os << "]" << std::endl;
-
-	for (int i = 0; i < targetStates.size(); i++) {
-		os << getPrefix() << "\"" << elemId << "\" -> \"" << idForNode(targetStates[i]) << "\"";
-		if (active) {
-			os << " [penwidth=3, color=red]" << std::endl;
+	for (std::set<std::string>::iterator initIter = state.initialchilds.begin(); initIter != state.initialchilds.end(); initIter++) {
+		std::string destId = *initIter;
+		if (_histories.find(destId) != _histories.end()) {
+			os << getPrefix() << stateId << ":__name -> " << _histories[destId] << " [" << initialEdgeStyle << "]" << std::endl;
+		} else if(InterpreterImpl::isFinal(_graph[destId].node)) {
+			os << getPrefix() << stateId << ":__name -> " << destId << ":__name:nw [" << initialEdgeStyle << "]" << std::endl;
 		} else {
-			os << std::endl;
+			os << getPrefix() << stateId << ":__name -> " << destId << ":__name:nw [" << initialEdgeStyle << "]" << std::endl;
 		}
-		writeStateElement(os, (Arabica::DOM::Element<std::string>)targetStates[i]);
 	}
+
+#if PER_EVENT_TRANS
+	// iterate all events and make connections
+	DotState::mmap_s_e_t::const_iterator destIterF, destIterB;
+	for(destIterF = state.events.begin(); destIterF != state.events.end(); destIterF = destIterB) {
+		std::string eventName = destIterF->first;
+
+		// all these react to the same event
+		std::pair <DotState::mmap_s_e_t::const_iterator,DotState::mmap_s_e_t::const_iterator> keyRange = state.events.equal_range(eventName);
+		for (destIterB = keyRange.first;  destIterB != keyRange.second;  ++destIterB) {
+			const Arabica::DOM::Element<std::string>& transElem = destIterB->second;
+			Arabica::XPath::NodeSet<std::string> targetStates = _interpreter.getImpl()->getTargetStates(transElem);
+			for (int i = 0; i < targetStates.size(); i++) {
+				std::string destId = idForNode(targetStates[i]);
+				if (_histories.find(destId) != _histories.end()) {
+					os << getPrefix() << "" << stateId << ":\"" << portEscape(eventName) << "\" -> " << _histories[destId] << " [" << transitionEdgeStyle << "]" << std::endl;
+				} else if(InterpreterImpl::isFinal(_graph[destId].node)) {
+					os << getPrefix() << stateId << ":\"" << portEscape(eventName) << "\" -> " << destId << " [" << transitionEdgeStyle << "]" << std::endl;
+				} else {
+					os << getPrefix() << "" << stateId << ":\"" << portEscape(eventName) << "\" -> " << destId << ":__name [" << transitionEdgeStyle << "]" << std::endl;
+				}
+			}
+		}
+	}
+#else
+	// iterate all *targets* and make connections
+	for(destIterF = state.targets.begin(); destIterF != state.targets.end(); destIterF = destIterB) {
+		std::string eventName = destIterF->first;
+
+		// all these react to the same event
+		std::pair <DotState::mmap_s_e_t::const_iterator,DotState::mmap_s_e_t::const_iterator> keyRange = state.targets.equal_range(eventName);
+		std::set<Arabica::DOM::Element<std::string> > targetSet;
+		for (destIterB = keyRange.first;  destIterB != keyRange.second;  ++destIterB) {
+			const Arabica::DOM::Element<std::string>& transElem = destIterB->second;
+			Arabica::XPath::NodeSet<std::string> targetStates = _interpreter.getImpl()->getTargetStates(transElem);
+			for (int i = 0; i < targetStates.size(); i++) {
+				targetSet.insert(Arabica::DOM::Element<std::string>(targetStates[i]));
+			}
+		}
+		for (std::set<Arabica::DOM::Element<std::string> >::iterator stateIter = targetSet.begin(); stateIter != targetSet.end(); stateIter++) {
+			std::string destId = idForNode(*stateIter);
+			if (_histories.find(destId) != _histories.end()) {
+				os << getPrefix() << "" << stateId << ":\"" << portEscape(eventName) << "\" -> " << _histories[destId] << " [" << transitionEdgeStyle << "]" << std::endl;
+			} else if(InterpreterImpl::isFinal(_graph[destId].node)) {
+				os << getPrefix() << stateId << ":\"" << portEscape(eventName) << "\" -> " << destId << " [" << transitionEdgeStyle << "]" << std::endl;
+			} else {
+				os << getPrefix() << "" << stateId << ":\"" << portEscape(eventName) << "\" -> " << destId << ":__name [" << transitionEdgeStyle << "]" << std::endl;
+			}
+			writeStateElement(os, _graph[destId]);
+		}
+	}
+#endif
+
+#endif
 
 }
 
@@ -264,6 +475,10 @@ std::string SCXMLDotWriter::getDetailedLabel(const Arabica::DOM::Element<std::st
 
 		struct ElemDetails details;
 		details.name = "<b>" + TAGNAME(childElems.item(i)) + ":</b>";
+
+		if (iequals(TAGNAME(childElems.item(i)), "history")) {
+			continue;
+		}
 
 		// provide details for special elements here
 
@@ -311,6 +526,8 @@ std::string SCXMLDotWriter::getDetailedLabel(const Arabica::DOM::Element<std::st
 
 		// send ---------
 		if (iequals(TAGNAME(childElems.item(i)), "send")) {
+			if (HAS_ATTR(childElems.item(i), "id"))
+				details.name += "<br />id = " + ATTR(childElems.item(i), "id");
 			if (HAS_ATTR(childElems.item(i), "type"))
 				details.name += "<br />type = " + ATTR(childElems.item(i), "type");
 			if (HAS_ATTR(childElems.item(i), "typeexpr"))
@@ -327,6 +544,12 @@ std::string SCXMLDotWriter::getDetailedLabel(const Arabica::DOM::Element<std::st
 				details.name += "<br />delay = " + ATTR(childElems.item(i), "delay");
 			if (HAS_ATTR(childElems.item(i), "delayexpr"))
 				details.name += "<br />delay = " + ATTR(childElems.item(i), "delayexpr");
+		}
+
+		// cancel ---------
+		if (iequals(TAGNAME(childElems.item(i)), "cancel")) {
+			if (HAS_ATTR(childElems.item(i), "sendid"))
+				details.name += " " + ATTR(childElems.item(i), "sendid");
 		}
 
 		// script ---------
@@ -381,7 +604,7 @@ std::string SCXMLDotWriter::getDetailedLabel(const Arabica::DOM::Element<std::st
 	std::stringstream ssContent;
 
 	if (content.size() > 0) {
-		ssContent << "<table cellspacing=\"2\" cellpadding=\"0\" border=\"0\">";
+		ssContent << "<table cellspacing=\"2\" cellpadding=\"0\" border=\"0\" bgcolor=\"#" << colorForIndent(indentation + 1) << "\">";
 
 		std::list<struct ElemDetails>::iterator contentIter = content.begin();
 		while(contentIter != content.end()) {
@@ -402,6 +625,13 @@ std::string SCXMLDotWriter::getDetailedLabel(const Arabica::DOM::Element<std::st
 		ssContent << "</table>";
 	}
 	return ssContent.str();
+}
+
+std::string SCXMLDotWriter::portEscape(const std::string& text) {
+	std::string escaped(text);
+	boost::replace_all(escaped, ".", "-");
+
+	return escaped;
 }
 
 std::string SCXMLDotWriter::dotEscape(const std::string& text) {
@@ -429,10 +659,12 @@ std::string SCXMLDotWriter::nameForNode(const Arabica::DOM::Node<std::string>& n
 	std::string elemName;
 	if (node.getNodeType() == Node_base::ELEMENT_NODE) {
 		Arabica::DOM::Element<std::string> elem = (Arabica::DOM::Element<std::string>)node;
+		if (InterpreterImpl::isParallel(elem))
+			elemName += "<i>Parallel</i><br />";
 		if (elem.hasAttribute("name")) {
-			elemName = elem.getAttribute("name");
+			elemName += elem.getAttribute("name");
 		} else if (elem.hasAttribute("id")) {
-			elemName = elem.getAttribute("id");
+			elemName += elem.getAttribute("id");
 		}
 	}
 	if (elemName.size() == 0)

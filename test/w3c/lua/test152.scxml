@@ -23,7 +23,7 @@ not being executed. -->
   <state id="s1">
     <onentry>
       <!-- illegal item, legal array -->
-      <foreach array="testvar5" index="testvar3" item="_no">
+      <foreach array="testvar5" index="testvar3" item="!_no">
         <assign location="testvar1" expr="testvar1+1"/>
       </foreach>
       <raise event="bar"/>
