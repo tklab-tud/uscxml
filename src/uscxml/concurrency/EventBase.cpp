@@ -27,7 +27,7 @@ tthread::recursive_mutex EventBase::_instanceMutex;
 boost::shared_ptr<EventBase> EventBase::get(const std::string& name) {
 	tthread::lock_guard<tthread::recursive_mutex> lock(_instanceMutex);
 
-	std::map<std::string, boost::weak_ptr<EventBase> >::const_iterator instIter = _eventBases.begin();
+	std::map<std::string, boost::weak_ptr<EventBase> >::iterator instIter = _eventBases.begin();
 	while(instIter != _eventBases.end()) {
 		if (!instIter->second.lock()) {
 			_eventBases.erase(instIter++);
