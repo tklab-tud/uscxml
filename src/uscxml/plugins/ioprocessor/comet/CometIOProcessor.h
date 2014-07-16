@@ -20,7 +20,7 @@
 #ifndef COMETIOPROCESSOR_H_2CUY93KU
 #define COMETIOPROCESSOR_H_2CUY93KU
 
-#include "uscxml/concurrency/eventqueue/DelayedEventQueue.h"
+#include "uscxml/concurrency/DelayedEventQueue.h"
 #include "uscxml/server/HTTPServer.h"
 #include "uscxml/Interpreter.h"
 #include "uscxml/Factory.h"

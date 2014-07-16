@@ -1,4 +1,4 @@
-#include "uscxml/concurrency/eventqueue/DelayedEventQueue.h"
+#include "uscxml/concurrency/DelayedEventQueue.h"
 #include <iostream>
 
 int eventCalled = 0;

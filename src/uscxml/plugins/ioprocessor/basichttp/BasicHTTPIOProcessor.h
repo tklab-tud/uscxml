@@ -35,7 +35,7 @@ extern "C" {
 #	define USCXML_PLUGIN_API
 #endif
 
-#include "uscxml/concurrency/eventqueue/DelayedEventQueue.h"
+#include "uscxml/concurrency/DelayedEventQueue.h"
 #include "uscxml/server/HTTPServer.h"
 #include "uscxml/Interpreter.h"
 #include "uscxml/Factory.h"

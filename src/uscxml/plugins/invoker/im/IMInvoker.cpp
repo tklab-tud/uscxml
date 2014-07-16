@@ -23,7 +23,7 @@
 #include "uscxml/DOMUtils.h"
 #include <boost/algorithm/string.hpp>
 
-#include "uscxml/concurrency/eventqueue/DelayedEventQueue.h"
+#include "uscxml/concurrency/DelayedEventQueue.h"
 
 #ifdef BUILD_AS_PLUGINS
 #include <Pluma/Connector.hpp>

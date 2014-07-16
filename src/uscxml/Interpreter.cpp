@@ -29,7 +29,7 @@
 
 #include "uscxml/plugins/invoker/http/HTTPServletInvoker.h"
 #include "uscxml/server/InterpreterServlet.h"
-#include "uscxml/concurrency/eventqueue/DelayedEventQueue.h"
+#include "uscxml/concurrency/DelayedEventQueue.h"
 
 #include <DOM/Simple/DOMImplementation.hpp>
 #include <SAX/helpers/InputSourceResolver.hpp>

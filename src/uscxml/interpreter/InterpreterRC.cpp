@@ -20,7 +20,7 @@
 #include "InterpreterRC.h"
 
 #include "uscxml/Factory.h"
-#include "uscxml/concurrency/eventqueue/DelayedEventQueue.h"
+#include "uscxml/concurrency/DelayedEventQueue.h"
 
 #include <glog/logging.h>
 #include "uscxml/UUID.h"

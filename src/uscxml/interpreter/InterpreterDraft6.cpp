@@ -18,7 +18,7 @@
  */
 
 #include "InterpreterDraft6.h"
-#include "uscxml/concurrency/eventqueue/DelayedEventQueue.h"
+#include "uscxml/concurrency/DelayedEventQueue.h"
 
 #include <glog/logging.h>
 #include "uscxml/UUID.h"

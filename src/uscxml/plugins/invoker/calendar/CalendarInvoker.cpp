@@ -20,7 +20,7 @@
 #include <boost/algorithm/string.hpp>
 
 #include "CalendarInvoker.h"
-#include "uscxml/concurrency/eventqueue/DelayedEventQueue.h"
+#include "uscxml/concurrency/DelayedEventQueue.h"
 
 #include <glog/logging.h>
 

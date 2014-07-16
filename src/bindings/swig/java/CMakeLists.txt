@@ -31,6 +31,7 @@ set_target_properties(uscxmlNativeJava PROPERTIES COMPILE_FLAGS "-DSWIG")
 
 swig_link_libraries(uscxmlNativeJava uscxml)
 
+FIND_PROGRAM(ANT_EXECUTABLE ant PATHS $ENV{ANT_HOME}/bin ENV PATH )
 if (ANT_EXECUTABLE)
 	set(USCXML_LANGUAGE_BINDINGS "java ${USCXML_LANGUAGE_BINDINGS}")
 	
