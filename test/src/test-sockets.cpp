@@ -1,6 +1,7 @@
 #include "uscxml/config.h"
 #include "uscxml/server/Socket.h"
 #include <iostream>
+#include <stdexcept>
 
 #include <event2/event.h>
 #include "event2/thread.h"
