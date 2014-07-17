@@ -31,6 +31,7 @@
 #else
 #	include <netinet/in.h> /* For sockaddr_in */
 #endif
+#include <cerrno>
 
 #include "uscxml/concurrency/tinythread.h"  // for recursive_mutex, etc
 
