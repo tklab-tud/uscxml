@@ -161,41 +161,44 @@ int main(int argc, char** argv) {
 	HTTPServer::getInstance(30444, 30445, NULL);
 
 	Interpreter interpreter;
-	if (inputFile.size() == 0 || inputFile == "-") {
-		LOG(INFO) << "Reading SCXML from STDIN";
-		std::stringstream ss;
-		std::string line;
-		while (std::getline(std::cin, line)) {
-			ss << line;
-		}
-		interpreter = Interpreter::fromXML(ss.str());
-	} else {
-		interpreter = Interpreter::fromURI(inputFile);
-	}
-	if (!interpreter) {
-		LOG(ERROR) << "Cannot create interpreter from " << inputFile;
-		exit(EXIT_FAILURE);
-	}
-
-	if (toPromela) {
-		Interpreter flatInterpreter = ChartToFSM::flatten(interpreter);
-
-		if (outputFile.size() == 0 || outputFile == "-") {
-			FSMToPromela::writeProgram(std::cout, flatInterpreter);
+	try {
+		if (inputFile.size() == 0 || inputFile == "-") {
+			LOG(INFO) << "Reading SCXML from STDIN";
+			std::stringstream ss;
+			std::string line;
+			while (std::getline(std::cin, line)) {
+				ss << line;
+			}
+			interpreter = Interpreter::fromXML(ss.str());
 		} else {
-			std::ofstream outStream;
-			outStream.open(outputFile.c_str());
-			FSMToPromela::writeProgram(outStream, flatInterpreter);
-			outStream.close();
+			interpreter = Interpreter::fromURI(inputFile);
 		}
-		exit(EXIT_SUCCESS);
-	}
+		if (!interpreter) {
+			LOG(ERROR) << "Cannot create interpreter from " << inputFile;
+			exit(EXIT_FAILURE);
+		}
 
-	if (toFlat) {
-		std::cout << ChartToFSM::flatten(interpreter).getDocument();
-		exit(EXIT_SUCCESS);
-	}
+		if (toPromela) {
+			Interpreter flatInterpreter = ChartToFSM::flatten(interpreter);
 
+			if (outputFile.size() == 0 || outputFile == "-") {
+				FSMToPromela::writeProgram(std::cout, flatInterpreter);
+			} else {
+				std::ofstream outStream;
+				outStream.open(outputFile.c_str());
+				FSMToPromela::writeProgram(outStream, flatInterpreter);
+				outStream.close();
+			}
+			exit(EXIT_SUCCESS);
+		}
+
+		if (toFlat) {
+			std::cout << ChartToFSM::flatten(interpreter).getDocument();
+			exit(EXIT_SUCCESS);
+		}
+	} catch (Event e) {
+		std::cout << e << std::endl;
+	}
 
 	return EXIT_SUCCESS;
 }

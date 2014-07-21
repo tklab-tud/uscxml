@@ -24,7 +24,7 @@
 #include <DOM/SAX2DOM/SAX2DOM.hpp>
 #include <SAX/helpers/InputSourceResolver.hpp>
 
-#include <uscxml/NameSpacingParser.h>
+#include <uscxml/DOMUtils.h>
 
 #include <boost/algorithm/string.hpp>
 
@@ -109,7 +109,7 @@ Arabica::DOM::Node<std::string> MMIEvent::getEventNode(Arabica::DOM::Node<std::s
 Arabica::DOM::Document<std::string> MMIEvent::toXML() const {
 	Arabica::DOM::DOMImplementation<std::string> domFactory = Arabica::SimpleDOM::DOMImplementation<std::string>::getDOMImplementation();
 	Document<std::string> doc = domFactory.createDocument(nameSpace, "", 0);
-	Element<std::string> mmiElem = doc.createElementNS(nameSpace, "mmi");
+//	Element<std::string> mmiElem = doc.createElementNS(nameSpace, "mmi");
 	Element<std::string> msgElem = doc.createElementNS(nameSpace, tagName);
 	msgElem.setAttributeNS(nameSpace, "Source", source);
 	msgElem.setAttributeNS(nameSpace, "Target", target);
@@ -136,8 +136,9 @@ Arabica::DOM::Document<std::string> MMIEvent::toXML() const {
 		msgElem.appendChild(dataElem);
 	}
 
-	mmiElem.appendChild(msgElem);
-	doc.appendChild(mmiElem);
+//	mmiElem.appendChild(msgElem);
+//	doc.appendChild(mmiElem);
+	doc.appendChild(msgElem);
 	return doc;
 }
 

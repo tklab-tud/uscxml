@@ -31,4 +31,40 @@ std::string UUID::getUUID() {
 	return os.str();
 }
 
+bool UUID::isUUID(const std::string& uuid) {
+	if (uuid.size() != 36)
+		return false;
+	
+	if (uuid[8] != '-' || uuid[13] != '-' || uuid[18] != '-' || uuid[23] != '-')
+		return false;
+	
+	for (int i = 0; i < 36; i++) {
+		if (i == 8 || i == 13 || i == 18 || i ==23)
+			continue;
+		
+		char c = uuid[i];
+		if (c == 'a' ||
+				c == 'b' ||
+				c == 'c' ||
+				c == 'd' ||
+				c == 'e' ||
+				c == 'f' ||
+				c == '0' ||
+				c == '1' ||
+				c == '2' ||
+				c == '3' ||
+				c == '4' ||
+				c == '5' ||
+				c == '6' ||
+				c == '7' ||
+				c == '8' ||
+				c == '9') {
+			continue;
+		} else {
+			return false;
+		}
+	}
+	return true;
+}
+
 }

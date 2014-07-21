@@ -2345,6 +2345,9 @@ bool InterpreterImpl::isInitial(const Arabica::DOM::Element<std::string>& state)
 	if (isMember(state, getInitialStates(parent)))
 		return true; // every nested node
 
+	if (isParallel(parent))
+		return true;
+	
 	return false;
 }
 

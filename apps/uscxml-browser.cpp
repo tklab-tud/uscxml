@@ -173,52 +173,60 @@ int main(int argc, char** argv) {
 		std::string documentURL = options.interpreters[0].first;
 
 		LOG(INFO) << "Processing " << documentURL;
-		Interpreter interpreter = Interpreter::fromURI(documentURL);
-		if (interpreter) {
-			interpreter.setCmdLineOptions(currOptions->additionalParameters);
-			interpreter.setCapabilities(options.getCapabilities());
 
-			if (options.verbose) {
-				VerboseMonitor* vm = new VerboseMonitor();
-				interpreter.addMonitor(vm);
+		try {
+			Interpreter interpreter = Interpreter::fromURI(documentURL);
+			if (interpreter) {
+				interpreter.setCmdLineOptions(currOptions->additionalParameters);
+				interpreter.setCapabilities(options.getCapabilities());
+
+				if (options.verbose) {
+					VerboseMonitor* vm = new VerboseMonitor();
+					interpreter.addMonitor(vm);
+				}
+				if (options.withDebugger) {
+					interpreter.addMonitor(debugger);
+				}
+
+				interpreters.push_back(interpreter);
+
+			} else {
+				LOG(ERROR) << "Cannot create interpreter from " << documentURL;
 			}
-			if (options.withDebugger) {
-				interpreter.addMonitor(debugger);
-			}
-
-			interpreters.push_back(interpreter);
-
-		} else {
-			LOG(ERROR) << "Cannot create interpreter from " << documentURL;
+		} catch (Event e) {
+			std::cout << e << std::endl;
 		}
 	}
 
 	// start interpreters
-	std::list<Interpreter>::iterator interpreterIter = interpreters.begin();
-	while(interpreterIter != interpreters.end()) {
-		interpreterIter->start();
-		interpreterIter++;
-	}
-
-	bool stillRunning = true;
-	// call from main thread for UI events
-	while(interpreters.size() > 0) {
-		interpreterIter = interpreters.begin();
+	try {
+		std::list<Interpreter>::iterator interpreterIter = interpreters.begin();
 		while(interpreterIter != interpreters.end()) {
-			stillRunning = interpreterIter->runOnMainThread(25);
-			if (!stillRunning) {
-				interpreters.erase(interpreterIter++);
-			} else {
-				interpreterIter++;
+			interpreterIter->start();
+			interpreterIter++;
+		}
+
+		bool stillRunning = true;
+		// call from main thread for UI events
+		while(interpreters.size() > 0) {
+			interpreterIter = interpreters.begin();
+			while(interpreterIter != interpreters.end()) {
+				stillRunning = interpreterIter->runOnMainThread(25);
+				if (!stillRunning) {
+					interpreters.erase(interpreterIter++);
+				} else {
+					interpreterIter++;
+				}
 			}
 		}
-	}
 
-	if (options.withDebugger) {
-		// idle and wait for CTRL+C or debugging events
-		while(true)
-			tthread::this_thread::sleep_for(tthread::chrono::seconds(1));
+		if (options.withDebugger) {
+			// idle and wait for CTRL+C or debugging events
+			while(true)
+				tthread::this_thread::sleep_for(tthread::chrono::seconds(1));
+		}
+	} catch (Event e) {
+		std::cout << e << std::endl;
 	}
-
 	return EXIT_SUCCESS;
 }

@@ -57,10 +57,23 @@ class Interpreter;
 class USCXML_API SCXMLDotWriter : public InterpreterMonitor {
 public:
 
+	enum PortType {
+		PORT_TARGET,
+		PORT_EVENT,
+		PORT_TRANSITION
+	};
+
 	struct StateAnchor {
-		StateAnchor() : depth(std::numeric_limits<int32_t>::max()) {}
+		StateAnchor() : childDepth(-1), transDepth(-1), type(PORT_TARGET) {}
 		Arabica::DOM::Element<std::string> element;
-		uint32_t depth;
+		int32_t childDepth;
+		int32_t transDepth;
+		
+		PortType type;
+		
+		operator bool() const {
+			return childDepth != -1 || transDepth != -1 || element;
+		}
 	};
 
 	struct ElemDetails {
@@ -70,17 +83,45 @@ public:
 	};
 
 	struct DotState {
-		DotState() : isBorder(false) {}
+		DotState() : isBorder(false), portType(PORT_TARGET) {}
 		Arabica::DOM::Element<std::string> node;
+		Arabica::XPath::NodeSet<std::string> transitions;
 		std::multimap<std::string, Arabica::DOM::Element<std::string> > targets; // key is remote node, transition is element
 		std::multimap<std::string, Arabica::DOM::Element<std::string> > events; // key is event name, value is transitions that react
 
 		bool isBorder;
+		PortType portType;
+
 		std::set<std::string> childs;
 		std::set<std::string> initialchilds;
+		
 		typedef std::multimap<std::string, Arabica::DOM::Element<std::string> > mmap_s_e_t;
 	};
 
+	enum EdgeType {
+		EDGE_INITAL,
+		EDGE_TRANSIION,
+		EDGE_SPONTANEOUS
+	};
+
+	struct DotEdge {
+		DotEdge() : type(EDGE_TRANSIION) {}
+		DotEdge(const std::string& from, const std::string& to) : type(EDGE_TRANSIION), from(from), to(to) {
+		}
+		
+		bool operator< (const DotEdge& other) const {
+			return from + fromPort + to + toPort > other.from + other.fromPort + other.to + other.toPort;
+		}
+
+		EdgeType type;
+		std::string from;
+		std::string fromCompass;
+		std::string fromPort;
+		std::string to;
+		std::string toPort;
+		std::string toCompass;
+	};
+	
 	SCXMLDotWriter();
 	~SCXMLDotWriter();
 
@@ -120,8 +161,15 @@ protected:
 	               const std::list<SCXMLDotWriter::StateAnchor>& stateAnchors,
 	               const Arabica::DOM::Element<std::string>& transition);
 
-	void assembleGraph(const Arabica::DOM::Element<std::string>& start, uint32_t depth = std::numeric_limits<int32_t>::max());
-	void writeStateElement(std::ostream& os, const DotState& elem);
+	void assembleGraph(const Arabica::DOM::Element<std::string>& start,
+										 int32_t childDepth = std::numeric_limits<int32_t>::max(),
+										 int32_t transDepth = std::numeric_limits<int32_t>::max());
+	void writeStateElement(std::ostream& os, const Arabica::DOM::Element<std::string>& state);
+	
+	void writePerTransitionPorts(std::ostream& os, const std::list<std::string>& outPorts, const DotState& dotState);
+	void writePerEventPorts(std::ostream& os, const std::list<std::string>& outPorts, const DotState& dotState);
+	void writePerTargetPorts(std::ostream& os, const std::list<std::string>& outPorts, const DotState& dotState);
+	
 	void writeUnknownNode(std::ostream& os, const std::string& targetId);
 
 	int _iteration;
@@ -130,13 +178,18 @@ protected:
 	int _indentation;
 
 	std::map<std::string, DotState> _graph;
-
+	std::set<DotEdge> _edges;
+	
 	// these are only set in ephemeral instances per monitor call
 	Arabica::DOM::Element<std::string> _transition;
+	Arabica::DOM::Element<std::string> _scxml;
 	Interpreter _interpreter;
 	std::string _xmlNSPrefix;
 	std::list<StateAnchor> _anchors;
-	std::map<std::string, std::string> _histories;
+	std::map<std::string, DotEdge> _histories;
+	
+	PortType _portType;
+
 };
 
 }

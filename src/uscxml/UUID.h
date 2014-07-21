@@ -29,6 +29,7 @@ namespace uscxml {
 class USCXML_API UUID {
 public:
 	static std::string getUUID();
+	static bool isUUID(const std::string& uuid);
 	static boost::uuids::random_generator uuidGen;
 };
 
