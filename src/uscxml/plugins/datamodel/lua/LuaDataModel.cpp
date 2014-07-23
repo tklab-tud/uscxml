@@ -48,6 +48,10 @@ LuaDataModel::LuaDataModel() {
 	_luaState = NULL;
 }
 
+static int luaInspect(lua_State * l) {
+	return 0;
+}
+
 static int luaInFunction(lua_State * l) {
 	luabridge::LuaRef ref = luabridge::getGlobal(l, "__interpreter");
 	InterpreterImpl* interpreter = ref.cast<InterpreterImpl*>();
@@ -151,6 +155,7 @@ static luabridge::LuaRef getDataAsLua(lua_State* _luaState, const Data& data) {
 			luaData[compoundIter->first] = getDataAsLua(_luaState, compoundIter->second);
 			compoundIter++;
 		}
+		luaData["inspect"] = luaInspect;
 		return luaData;
 	}
 	if (data.array.size() > 0) {
@@ -161,6 +166,7 @@ static luabridge::LuaRef getDataAsLua(lua_State* _luaState, const Data& data) {
 			luaData[index++] = getDataAsLua(_luaState, *arrayIter);
 			arrayIter++;
 		}
+		luaData["inspect"] = luaInspect;
 		return luaData;
 	}
 	if (data.atom.size() > 0) {
@@ -170,7 +176,15 @@ static luabridge::LuaRef getDataAsLua(lua_State* _luaState, const Data& data) {
 			break;
 		}
 		case Data::INTERPRETED: {
-			luaData = data.atom; // not sure
+			if (isNumeric(data.atom.c_str(), 10)) {
+				if (data.atom.find(".") != std::string::npos) {
+					luaData = strTo<double>(data.atom);
+				} else {
+					luaData = strTo<long>(data.atom);
+				}
+			} else {
+				luaData = data.atom;
+			}
 		}
 		}
 		return luaData;
@@ -190,6 +204,7 @@ void LuaDataModel::setEvent(const Event& event) {
 	luaEvent["content"] = event.content;
 	luaEvent["invokeId"] = event.invokeid;
 	luaEvent["sendId"] = event.sendid;
+	luaEvent["inspect"] = luaInspect;
 
 	switch (event.eventType) {
 	case Event::INTERNAL:
@@ -214,7 +229,15 @@ void LuaDataModel::setEvent(const Event& event) {
 		if (!json.empty()) {
 			luaEvent["data"] = getDataAsLua(_luaState, json);
 		} else {
-			luaEvent["data"] = InterpreterImpl::spaceNormalize(event.content);
+			// test179
+			std::string trimmed = boost::trim_copy(event.content);
+			if ((boost::starts_with(trimmed, "'") && boost::ends_with(trimmed, "'")) ||
+			        (boost::starts_with(trimmed, "\"") && boost::ends_with(trimmed, "\""))) {
+				luaEvent["data"] = InterpreterImpl::spaceNormalize(event.content);
+			} else {
+				Data tmp(event.content, Data::INTERPRETED);
+				luaEvent["data"] = getDataAsLua(_luaState, tmp);
+			}
 		}
 	} else {
 		// _event.data is KVP
@@ -254,15 +277,11 @@ Data LuaDataModel::getStringAsData(const std::string& content) {
 			trimmedExpr = "return(" + trimmedExpr + ");";
 		}
 
-		int preStack = lua_gettop(_luaState);
-		eval(Arabica::DOM::Element<std::string>(), trimmedExpr);
-		int postStack = lua_gettop(_luaState);
-		int retVals = postStack - preStack;
+		int retVals = luaEval(Arabica::DOM::Element<std::string>(), trimmedExpr);
 		if (retVals == 1) {
 			data = getLuaAsData(luabridge::LuaRef::fromStack(_luaState, -1));
 		}
-		postStack = lua_gettop(_luaState);
-		lua_pop(_luaState, postStack - preStack);
+		lua_pop(_luaState, retVals);
 
 	}
 	return data;
@@ -280,17 +299,11 @@ uint32_t LuaDataModel::getLength(const std::string& expr) {
 	// we need the result of the expression on the lua stack -> has to "return"!
 	std::string trimmedExpr = boost::trim_copy(expr);
 
-//  luabridge::LuaRef val = luabridge::getGlobal(_luaState, expr.c_str());
-//	std::cout << val.tostring() << std::endl;
-
 	if (!boost::starts_with(trimmedExpr, "return")) {
 		trimmedExpr = "return(#" + trimmedExpr + ")";
 	}
 
-	int preStack = lua_gettop(_luaState);
-	eval(Arabica::DOM::Element<std::string>(), trimmedExpr);
-	int postStack = lua_gettop(_luaState);
-	int retVals = postStack - preStack;
+	int retVals = luaEval(Arabica::DOM::Element<std::string>(), trimmedExpr);
 
 	if (retVals == 1 && lua_isnumber(_luaState, -1)) {
 		int result = lua_tointeger(_luaState, -1);
@@ -311,18 +324,13 @@ void LuaDataModel::setForeach(const std::string& item,
 
 	const luabridge::LuaRef& arrRef = luabridge::getGlobal(_luaState, array.c_str());
 	if (arrRef.isTable()) {
-		int preStack = lua_gettop(_luaState);
 
 		// trigger syntax error for invalid items
-		eval(Arabica::DOM::Element<std::string>(), "return(" + item + ");");
-		int postStack = lua_gettop(_luaState);
-		lua_pop(_luaState, postStack - preStack);
+		int retVals = luaEval(Arabica::DOM::Element<std::string>(), "return(" + item + ");");
+		lua_pop(_luaState, retVals);
 
 		const luabridge::LuaRef& val = arrRef[iteration];
 		luabridge::setGlobal(_luaState, val, item.c_str());
-
-//		luabridge::LuaRef retVal = luabridge::getGlobal(_luaState, item.c_str());
-//		std::cout << retVal.tostring() << std::endl;
 
 		if (index.length() > 0) {
 			// assign iteration element to index
@@ -333,12 +341,20 @@ void LuaDataModel::setForeach(const std::string& item,
 
 void LuaDataModel::eval(const Arabica::DOM::Element<std::string>& scriptElem,
                         const std::string& expr) {
+	luaEval(scriptElem, expr);
+}
+
+int LuaDataModel::luaEval(const Arabica::DOM::Element<std::string>& scriptElem,
+                          const std::string& expr) {
+	int preStack = lua_gettop(_luaState);
 	int error = luaL_loadstring(_luaState, expr.c_str()) || lua_pcall(_luaState, 0, LUA_MULTRET, 0);
 	if (error) {
 		std::string errMsg = lua_tostring(_luaState, -1);
 		lua_pop(_luaState, 1);  /* pop error message from the stack */
 		ERROR_EXECUTION_THROW(errMsg);
 	}
+	int postStack = lua_gettop(_luaState);
+	return postStack - preStack;
 }
 
 bool LuaDataModel::isDeclared(const std::string& expr) {
@@ -378,10 +394,10 @@ void LuaDataModel::assign(const Arabica::DOM::Element<std::string>& assignElem,
 //	luabridge::LuaRef val = luabridge::getGlobal(_luaState, key.c_str());
 //	std::cout << val.tostring() << std::endl;
 
-	int preStack = lua_gettop(_luaState);
+	int retVals = 0;
 
 	if (HAS_ATTR(assignElem, "expr")) {
-		eval(Arabica::DOM::Element<std::string>(), key + " = " + ATTR(assignElem, "expr") + ";");
+		retVals = luaEval(Arabica::DOM::Element<std::string>(), key + " = " + ATTR(assignElem, "expr") + ";");
 	} else if (node) {
 		ERROR_EXECUTION_THROW("Cannot assign xml nodes in lua datamodel");
 	} else if (content.size() > 0) {
@@ -397,13 +413,10 @@ void LuaDataModel::assign(const Arabica::DOM::Element<std::string>& assignElem,
 //	val = luabridge::getGlobal(_luaState, key.c_str());
 //	std::cout << val.tostring() << std::endl;
 
-	int postStack = lua_gettop(_luaState);
-	int retVals = postStack - preStack;
-
 }
 
 void LuaDataModel::assign(const std::string& location, const Data& data) {
-	std::cout << "assign" << std::endl;
+	luabridge::setGlobal(_luaState, getDataAsLua(_luaState, data), location.c_str());
 }
 
 void LuaDataModel::init(const Arabica::DOM::Element<std::string>& dataElem,
@@ -413,7 +426,7 @@ void LuaDataModel::init(const Arabica::DOM::Element<std::string>& dataElem,
 }
 
 void LuaDataModel::init(const std::string& location, const Data& data) {
-	std::cout << "init" << std::endl;
+	assign(location, data);
 }
 
 /**
@@ -429,10 +442,7 @@ bool LuaDataModel::evalAsBool(const Arabica::DOM::Node<std::string>& node, const
 		trimmedExpr = "return(" + trimmedExpr + ");";
 	}
 
-	int preStack = lua_gettop(_luaState);
-	eval(Arabica::DOM::Element<std::string>(), trimmedExpr);
-	int postStack = lua_gettop(_luaState);
-	int retVals = postStack - preStack;
+	int retVals = luaEval(Arabica::DOM::Element<std::string>(), trimmedExpr);
 
 	if (retVals == 1 && lua_isboolean(_luaState, -1)) {
 		bool result = lua_toboolean(_luaState, -1);
@@ -450,10 +460,7 @@ std::string LuaDataModel::evalAsString(const std::string& expr) {
 		trimmedExpr = "return(" + trimmedExpr + ")";
 	}
 
-	int preStack = lua_gettop(_luaState);
-	eval(Arabica::DOM::Element<std::string>(), trimmedExpr);
-	int postStack = lua_gettop(_luaState);
-	int retVals = postStack - preStack;
+	int retVals = luaEval(Arabica::DOM::Element<std::string>(), trimmedExpr);
 
 	if (retVals == 1 && lua_isstring(_luaState, -1)) {
 		std::string result = lua_tostring(_luaState, -1);

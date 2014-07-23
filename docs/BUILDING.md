@@ -15,6 +15,7 @@
     - [Java](#java)
     - [CSharp](#csharp)
     - [Important Note for Windows](#important-note-for-windows)
+- [Optional Functionality](#optional-functionality)
 - [About 32/64Bit Support](#about-3264bit-support)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
@@ -393,6 +394,26 @@ Command Prompt (2010)</tt> and type:
 	...
 	> nmake && nmake csharp && nmake java
 	...
+
+## Optional Functionality
+
+At configure time, CMake will search for various libraries and conditionally compile only the part of uSCXML for
+which libraries have been found. On unices, it is straight forward to add libraries and - if you installed them to
+their default location - CMake will usually pick them up. On Windows, however, the process is more complicated.
+While we try to search in the locations where the various installers saved the header files and libraries, there are
+some of distributed only as an archive.
+
+If you want to give CMake the best chance of picking up these libraries, put them into the <emph>platform prebuilt path</emph>.
+This path is located in <tt>&lt;USCXML_SRC>/contrib/prebuilt/&lt;PLATFORM>/&lt;COMPILER></tt>. For Windows 32bit, 
+with MSVC this path is <tt>&lt;USCXML_SRC>/contrib/prebuilt/windows-x86/msvc</tt>.
+
+For instance, in order to enable the <tt>lua</tt> datamodel on windows, download the static lua libraries and save 
+the dll in <tt>&lt;PREBUILT>/lib/lua52.lib</tt> and the header files directly in <tt>&lt;PREBUILT>/include/</tt>. 
+When you run CMake for the first time, it will automatically create these paths for you.
+
+<b>Note:</b> Actually, we would have to differentiate the various MSVC versions as well: v16 (VS2010) and v18 (VS2012/13)
+employ a different application binary interface (ABI). This is approach is taken e.g. in uMundo with <tt>msvc16</tt> 
+vs <tt>msvc18</tt>, but not yet realized for uSCXML.
 
 ## About 32/64Bit Support
 

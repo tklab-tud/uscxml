@@ -13,11 +13,11 @@ inspection.) -->
         <param expr="3" name="testvar1"/>
       </send>
     </onentry>
-    <transition event="event1" target="final">
+    <transition event="event1" target="pass">
       <log label="_event " expr="_event:inspect(true)"/>
     </transition>
     <transition event="*" target="fail"/>
   </state>
-  <final id="final"/>
+  <final id="pass"/>
   <final id="fail"/>
 </scxml>

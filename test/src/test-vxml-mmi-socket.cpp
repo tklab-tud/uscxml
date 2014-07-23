@@ -52,21 +52,21 @@ int main(int argc, char** argv) {
 
 //	TestClient client(PF_INET, SOCK_STREAM, 0);
 //	client.connect("epikur.local", 4343);
-	
+
 	StartRequest startReq;
 	startReq.source = "undefined.source";
 	startReq.target = "epikur.local:4343";
 	startReq.requestId = "131234141234";
 	startReq.data =
-		"<vxml xmlns=\"http://www.w3.org/2001/vxml\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" version=\"2.1\" xml:lang=\"en\""
-		"xsi:schematicLocation=\"http://www.w3.org/2001/vxml http://www.w3.org/TR/voicexml20/vxml.xsd\">"
-		"	<prompt>Goodbye!</prompt>"
-		"</vxml>";
+	    "<vxml xmlns=\"http://www.w3.org/2001/vxml\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" version=\"2.1\" xml:lang=\"en\""
+	    "xsi:schematicLocation=\"http://www.w3.org/2001/vxml http://www.w3.org/TR/voicexml20/vxml.xsd\">"
+	    "	<prompt>Goodbye!</prompt>"
+	    "</vxml>";
 
 	Arabica::DOM::Document<std::string> reqXML = startReq.toXML();
 	std::stringstream xmlSS;
 	xmlSS << reqXML;
 	std::cout << reqXML;
-	
+
 //	client.write(xmlSS.str().data(), xmlSS.str().size());
 }

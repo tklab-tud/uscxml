@@ -68,9 +68,9 @@ public:
 		Arabica::DOM::Element<std::string> element;
 		int32_t childDepth;
 		int32_t transDepth;
-		
+
 		PortType type;
-		
+
 		operator bool() const {
 			return childDepth != -1 || transDepth != -1 || element;
 		}
@@ -94,7 +94,7 @@ public:
 
 		std::set<std::string> childs;
 		std::set<std::string> initialchilds;
-		
+
 		typedef std::multimap<std::string, Arabica::DOM::Element<std::string> > mmap_s_e_t;
 	};
 
@@ -108,7 +108,7 @@ public:
 		DotEdge() : type(EDGE_TRANSIION) {}
 		DotEdge(const std::string& from, const std::string& to) : type(EDGE_TRANSIION), from(from), to(to) {
 		}
-		
+
 		bool operator< (const DotEdge& other) const {
 			return from + fromPort + to + toPort > other.from + other.fromPort + other.to + other.toPort;
 		}
@@ -121,7 +121,7 @@ public:
 		std::string toPort;
 		std::string toCompass;
 	};
-	
+
 	SCXMLDotWriter();
 	~SCXMLDotWriter();
 
@@ -162,14 +162,14 @@ protected:
 	               const Arabica::DOM::Element<std::string>& transition);
 
 	void assembleGraph(const Arabica::DOM::Element<std::string>& start,
-										 int32_t childDepth = std::numeric_limits<int32_t>::max(),
-										 int32_t transDepth = std::numeric_limits<int32_t>::max());
+	                   int32_t childDepth = std::numeric_limits<int32_t>::max(),
+	                   int32_t transDepth = std::numeric_limits<int32_t>::max());
 	void writeStateElement(std::ostream& os, const Arabica::DOM::Element<std::string>& state);
-	
+
 	void writePerTransitionPorts(std::ostream& os, const std::list<std::string>& outPorts, const DotState& dotState);
 	void writePerEventPorts(std::ostream& os, const std::list<std::string>& outPorts, const DotState& dotState);
 	void writePerTargetPorts(std::ostream& os, const std::list<std::string>& outPorts, const DotState& dotState);
-	
+
 	void writeUnknownNode(std::ostream& os, const std::string& targetId);
 
 	int _iteration;
@@ -179,7 +179,7 @@ protected:
 
 	std::map<std::string, DotState> _graph;
 	std::set<DotEdge> _edges;
-	
+
 	// these are only set in ephemeral instances per monitor call
 	Arabica::DOM::Element<std::string> _transition;
 	Arabica::DOM::Element<std::string> _scxml;
@@ -187,7 +187,7 @@ protected:
 	std::string _xmlNSPrefix;
 	std::list<StateAnchor> _anchors;
 	std::map<std::string, DotEdge> _histories;
-	
+
 	PortType _portType;
 
 };

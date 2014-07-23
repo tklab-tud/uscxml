@@ -87,16 +87,8 @@ public:
 
 protected:
 
-	static int luaEventData(lua_State * l);
-	static int luaEventOrigin(lua_State * l);
-	static int luaEventOriginType(lua_State * l);
-	static int luaEventRaw(lua_State * l);
-	static int luaEventXML(lua_State * l);
-	static int luaEventName(lua_State * l);
-	static int luaEventContent(lua_State * l);
-	static int luaEventSendId(lua_State * l);
-	static int luaEventInvokeId(lua_State * l);
-	static int luaEventDestructor(lua_State * l);
+	virtual int luaEval(const Arabica::DOM::Element<std::string>& scriptElem,
+	                    const std::string& expr);
 
 	lua_State* _luaState;
 };

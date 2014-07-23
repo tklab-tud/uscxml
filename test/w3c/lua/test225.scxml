@@ -9,14 +9,14 @@
     <onentry>
       <send event="timeout" delay="1s"/>
     </onentry>
-    <invoke type="http://www.w3.org/TR/scxml/" idlocation="'testvar1'">
+    <invoke type="http://www.w3.org/TR/scxml/" idlocation="testvar1">
       <content>
         <scxml initial="subFinal1" version="1.0" datamodel="lua">
           <final id="subFinal1"/>
         </scxml>
       </content>
     </invoke>
-    <invoke type="http://www.w3.org/TR/scxml/" idlocation="'testvar2'">
+    <invoke type="http://www.w3.org/TR/scxml/" idlocation="testvar2">
       <content>
         <scxml initial="subFinal2" version="1.0" datamodel="lua">
           <final id="subFinal2"/>

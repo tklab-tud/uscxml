@@ -3,6 +3,7 @@
 #include "uscxml/DOMUtils.h"
 #include "uscxml/debug/SCXMLDotWriter.h"
 #include <glog/logging.h>
+#include "getopt.h"
 
 #include "uscxml/Factory.h"
 #include <boost/algorithm/string.hpp>
@@ -67,7 +68,7 @@ int main(int argc, char** argv) {
 	google::LogToStderr();
 	google::InitGoogleLogging(argv[0]);
 
-	
+
 	if (argc < 2)
 		printUsageAndExit(argv[0]);
 
@@ -77,25 +78,30 @@ int main(int argc, char** argv) {
 	int option;
 	while ((option = getopt(argc, argv, "d:t:")) != -1) {
 		switch(option) {
-			case 'd': currAnchor.childDepth = strTo<int32_t>(optarg); break;
-			case 't': currAnchor.transDepth = strTo<int32_t>(optarg); break;
-			case 'e': {
-				std::string edgeType(optarg);
-				if (edgeType == "target") {
-					currAnchor.type = SCXMLDotWriter::PORT_TARGET;
-				} else if (edgeType == "event") {
-					currAnchor.type = SCXMLDotWriter::PORT_EVENT;
-				} else if (edgeType == "transition") {
-					currAnchor.type = SCXMLDotWriter::PORT_TRANSITION;
-				} else {
-					printUsageAndExit(argv[0]);
-				}
-				break;
+		case 'd':
+			currAnchor.childDepth = strTo<int32_t>(optarg);
+			break;
+		case 't':
+			currAnchor.transDepth = strTo<int32_t>(optarg);
+			break;
+		case 'e': {
+			std::string edgeType(optarg);
+			if (edgeType == "target") {
+				currAnchor.type = SCXMLDotWriter::PORT_TARGET;
+			} else if (edgeType == "event") {
+				currAnchor.type = SCXMLDotWriter::PORT_EVENT;
+			} else if (edgeType == "transition") {
+				currAnchor.type = SCXMLDotWriter::PORT_TRANSITION;
+			} else {
+				printUsageAndExit(argv[0]);
 			}
-			default: break;
+			break;
+		}
+		default:
+			break;
 		}
 	}
-	
+
 	if (currAnchor)
 		stateAnchors.push_back(currAnchor);
 
@@ -104,14 +110,19 @@ int main(int argc, char** argv) {
 		URL inputFile(argv[optind]);
 		Interpreter interpreter = Interpreter::fromURI(inputFile);
 		optind++;
-		
+
 		while(optind < argc) {
 			// are
 			while ((option = getopt(argc, argv, "d:t:")) != -1) {
 				switch(option) {
-					case 'd': currAnchor.childDepth = strTo<int32_t>(optarg); break;
-					case 't': currAnchor.transDepth = strTo<int32_t>(optarg); break;
-					default: break;
+				case 'd':
+					currAnchor.childDepth = strTo<int32_t>(optarg);
+					break;
+				case 't':
+					currAnchor.transDepth = strTo<int32_t>(optarg);
+					break;
+				default:
+					break;
 				}
 			}
 			if (argc > optind) {
@@ -120,14 +131,14 @@ int main(int argc, char** argv) {
 			} else {
 				printUsageAndExit(argv[0]);
 			}
-			
+
 			if (currAnchor) {
 				stateAnchors.push_back(currAnchor);
 			}
-			
+
 			currAnchor = SCXMLDotWriter::StateAnchor();
 		}
-		
+
 		std::string outName = inputFile.file() + ".dot";
 		SCXMLDotWriter::toDot(outName, interpreter, stateAnchors);
 

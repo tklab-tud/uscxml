@@ -2347,7 +2347,7 @@ bool InterpreterImpl::isInitial(const Arabica::DOM::Element<std::string>& state)
 
 	if (isParallel(parent))
 		return true;
-	
+
 	return false;
 }
 

@@ -33,8 +33,9 @@ even in C# and Java. It runs on <b>Linux</b>, <b>Windows</b> and <b>Mac OSX</b>,
         * Support for binary data via [TypedArrays](https://www.khronos.org/registry/typedarray/specs/latest/) (will not throw exceptions yet)
     * Full [NULL datamodel](https://github.com/tklab-tud/uscxml/tree/master/src/uscxml/plugins/datamodel/null) with required <tt>In</tt> predicate
     * [Prolog datamodel](https://github.com/tklab-tud/uscxml/tree/master/src/uscxml/plugins/datamodel/prolog/swi) using SWI prolog
-    * Early [Promela datamodel](https://github.com/tklab-tud/uscxml/tree/master/src/uscxml/plugins/datamodel/promela) for use
+    * Experimental [Promela datamodel](https://github.com/tklab-tud/uscxml/tree/master/src/uscxml/plugins/datamodel/promela) for use
       with the [SPIN](http://spinroot.com/spin/whatispin.html) model-checker
+    * Early support for a [Lua datamodel](https://github.com/tklab-tud/uscxml/tree/master/src/uscxml/plugins/datamodel/lua)
     * Rudimentary support for [XPath datamodel](https://github.com/tklab-tud/uscxml/tree/master/src/uscxml/plugins/datamodel/xpath)
 * <b>Invokers</b>
     * <tt>scxml</tt>: Invoke a nested scxml interpreter
@@ -68,10 +69,12 @@ uSCXML still fails the following ecmascript tests:
 	<tr><th>Test#</th><th>Status</th><th>Description</th><th>Comment</th></tr>
 	<tr>
 		<td>
-			<tt><a href="https://github.com/tklab-tud/uscxml/blob/master/test/w3c/ecma/test326.scxml">326</a></tt> /
-			<tt><a href="https://github.com/tklab-tud/uscxml/blob/master/test/w3c/ecma/test326.scxml">329</a></tt>
+			<tt>
+				<a href="https://github.com/tklab-tud/uscxml/blob/master/test/w3c/ecma/test326.scxml">326</a> /
+				<a href="https://github.com/tklab-tud/uscxml/blob/master/test/w3c/ecma/test326.scxml">329</a>
+			</tt>
 		</td>
-		<td><tt>Failed for v8</tt></td>
+		<td><tt>Fail for v8</tt></td>
 		<td>"test that _ioprocessors stays bound till the session ends" / "test that none of the system variables can be modified"</td>
 		<td>The v8 implementation will return a new <tt>_ioprocessor</tt> object for each access.</td>
 	</tr>

@@ -7,7 +7,7 @@ var1 has a value and we pass.  Otherwise we fail  -->
   </datamodel>
   <state id="s0">
     <onentry>
-      <send event="event1" idlocation="'testvar1'"/>
+      <send event="event1" idlocation="testvar1"/>
     </onentry>
     <transition cond="testvar1 ~= nil" target="pass"/>
     <transition target="fail"/>
