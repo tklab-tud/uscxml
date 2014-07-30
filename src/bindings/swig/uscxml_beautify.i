@@ -60,6 +60,14 @@
 
 %extend uscxml::Interpreter {
 	
+	void addIOProcessor(uscxml::WrappedIOProcessor* ioProc) {
+		self->addIOProcessor(boost::shared_ptr<IOProcessorImpl>(ioProc));
+	}
+
+	void setDataModel(WrappedDataModel* dataModel) {
+		self->setDataModel(boost::shared_ptr<DataModelImpl>(dataModel));
+	}
+	
 	std::vector<std::string> getBasicConfiguration() {
 		Arabica::XPath::NodeSet<std::string> nativeConfig = self->getBasicConfiguration();
 		std::vector<std::string> config;

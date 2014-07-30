@@ -46,7 +46,6 @@ public class ConsoleFrame extends Frame {
 				+ " <final id=\"quit\" />"
 				+ "</scxml>");
 
-
 		perInterpreter.put(interpreter, this);
 		
 		Thread intrerpreterThread = new Thread(new Runnable() {
