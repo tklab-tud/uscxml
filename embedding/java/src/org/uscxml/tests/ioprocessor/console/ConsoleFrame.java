@@ -14,7 +14,7 @@ import org.uscxml.InterpreterException;
 public class ConsoleFrame extends Frame {
 	
 	private static final long serialVersionUID = 3682378173372160680L;
-	public static Map<Interpreter, Frame> perInterpreter = new HashMap<Interpreter, Frame>();
+	private ConsoleIOProc ioProc;
 	
 	public ConsoleFrame() throws InterpreterException {
         super("Input Frame");
@@ -46,7 +46,8 @@ public class ConsoleFrame extends Frame {
 				+ " <final id=\"quit\" />"
 				+ "</scxml>");
 
-		perInterpreter.put(interpreter, this);
+		ioProc = new ConsoleIOProc(this);
+		interpreter.addIOProcessor(ioProc);
 		
 		Thread intrerpreterThread = new Thread(new Runnable() {
 			@Override
@@ -64,11 +65,7 @@ public class ConsoleFrame extends Frame {
 	}
 	
 	public static void main(String[] args) throws InterpreterException {
-		System.load("/Users/sradomski/Documents/TK/Code/uscxml/build/cli/lib/libuscxmlNativeJava64.jnilib");
-
-		ConsoleIOProc ioProc = new ConsoleIOProc();
-		Factory.getInstance().registerIOProcessor(ioProc);
-		
+		System.load("/Users/sradomski/Documents/TK/Code/uscxml/build/cli/lib/libuscxmlNativeJava64.jnilib");		
 		ConsoleFrame frame = new ConsoleFrame();
 		
 	}

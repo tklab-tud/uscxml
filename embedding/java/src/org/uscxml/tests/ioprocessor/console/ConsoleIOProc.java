@@ -1,31 +1,22 @@
 package org.uscxml.tests.ioprocessor.console;
 
+import java.awt.Frame;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 
 import org.uscxml.Data;
 import org.uscxml.Event;
 import org.uscxml.IOProcessor;
-import org.uscxml.Interpreter;
 import org.uscxml.SendRequest;
 import org.uscxml.StringList;
 
 public class ConsoleIOProc extends IOProcessor implements KeyListener {
 	
-	/**  IOProcessor */
-	@Override
-	public IOProcessor create(Interpreter interpreter) {
-		ConsoleIOProc ioProc = new ConsoleIOProc();
-		ioProc.swigReleaseOwnership();	
-
-		if (ConsoleFrame.perInterpreter.containsKey(interpreter)) {
-			ConsoleFrame.perInterpreter.get(interpreter).addKeyListener(ioProc);
-		} else {
-			System.err.println("No data for interpreter specific instances");
-		}
-		return ioProc;
+	public ConsoleIOProc(Frame frame) {
+		super();
+		frame.addKeyListener(this);
 	}
-
+	
 	/**  IOProcessor */
 	@Override
 	public StringList getNames() {
