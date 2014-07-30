@@ -269,7 +269,7 @@ Data XPathDataModel::getStringAsData(const std::string& content) {
 			std::string idx = ss.str();
 			ss.str("");
 			ss << ns[i];
-			data.compound[idx] = Data(ss.str());
+			data.compound[idx] = Data(ss.str(), Data::INTERPRETED);
 		}
 		data.type = Data::INTERPRETED;
 		return data;

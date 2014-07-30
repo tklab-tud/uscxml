@@ -196,7 +196,7 @@ int main(int argc, char** argv) {
 	if (withFlattening) {
 		Interpreter flatInterpreter = Interpreter::fromURI(documentURI);
 		interpreter = Interpreter::fromDOM(ChartToFSM::flatten(flatInterpreter).getDocument(), flatInterpreter.getNameSpaceInfo());
-		interpreter.setNameSpaceInfo(interpreter.getNameSpaceInfo());
+		interpreter.setSourceURI(flatInterpreter.getSourceURI());
 	} else {
 		interpreter = Interpreter::fromURI(documentURI);
 	}

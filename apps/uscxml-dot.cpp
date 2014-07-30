@@ -39,29 +39,6 @@ void printUsageAndExit(const char* progName) {
 
 int currOpt = 1;
 
-int32_t consumeNumericOption(int argc, char** argv, const std::string& name, int32_t defaultVal) {
-	std::string test = argv[currOpt];
-	if (boost::starts_with(test, std::string("-") + name)) {
-		int value = 0;
-		if (test.size() > 2) {
-			// no space before value
-			value = strTo<int>(test.substr(2, test.size() - 2));
-		} else {
-			// space before value
-			if (argc > currOpt) {
-				std::string tmp = argv[++currOpt];
-				value = strTo<int>(tmp);
-			} else {
-				printUsageAndExit(argv[0]);
-			}
-		}
-		currOpt++;
-		return value;
-	}
-
-	return defaultVal;
-}
-
 int main(int argc, char** argv) {
 
 	// setup logging
@@ -73,25 +50,26 @@ int main(int argc, char** argv) {
 		printUsageAndExit(argv[0]);
 
 	std::list<SCXMLDotWriter::StateAnchor> stateAnchors;
+	SCXMLDotWriter::StateAnchor rootAnchor;
 	SCXMLDotWriter::StateAnchor currAnchor;
 
 	int option;
-	while ((option = getopt(argc, argv, "d:t:")) != -1) {
+	while ((option = getopt(argc, argv, "d:t:e:")) != -1) {
 		switch(option) {
 		case 'd':
-			currAnchor.childDepth = strTo<int32_t>(optarg);
+			rootAnchor.childDepth = strTo<int32_t>(optarg);
 			break;
 		case 't':
-			currAnchor.transDepth = strTo<int32_t>(optarg);
+			rootAnchor.transDepth = strTo<int32_t>(optarg);
 			break;
 		case 'e': {
 			std::string edgeType(optarg);
 			if (edgeType == "target") {
-				currAnchor.type = SCXMLDotWriter::PORT_TARGET;
+				rootAnchor.type = SCXMLDotWriter::PORT_TARGET;
 			} else if (edgeType == "event") {
-				currAnchor.type = SCXMLDotWriter::PORT_EVENT;
+				rootAnchor.type = SCXMLDotWriter::PORT_EVENT;
 			} else if (edgeType == "transition") {
-				currAnchor.type = SCXMLDotWriter::PORT_TRANSITION;
+				rootAnchor.type = SCXMLDotWriter::PORT_TRANSITION;
 			} else {
 				printUsageAndExit(argv[0]);
 			}
@@ -102,8 +80,8 @@ int main(int argc, char** argv) {
 		}
 	}
 
-	if (currAnchor)
-		stateAnchors.push_back(currAnchor);
+	if (rootAnchor)
+		stateAnchors.push_back(rootAnchor);
 
 	try {
 		// current option has to be the interpreter's name
@@ -133,13 +111,20 @@ int main(int argc, char** argv) {
 			}
 
 			if (currAnchor) {
+				currAnchor.type = rootAnchor.type;
 				stateAnchors.push_back(currAnchor);
 			}
 
 			currAnchor = SCXMLDotWriter::StateAnchor();
 		}
 
-		std::string outName = inputFile.file() + ".dot";
+		std::string outName;
+		if (boost::starts_with("file", inputFile.scheme())) {
+			outName = inputFile.path() + ".dot";
+		} else {
+			outName = inputFile.file() + ".dot";
+		}
+
 		SCXMLDotWriter::toDot(outName, interpreter, stateAnchors);
 
 	} catch(Event e) {

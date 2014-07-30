@@ -277,10 +277,6 @@ public:
 		return _httpServlet;
 	}
 
-	DataModel getDataModel()                                 {
-		return _dataModel;
-	}
-
 	void setParentQueue(uscxml::concurrency::BlockingQueue<SendRequest>* parentQueue) {
 		_parentQueue = parentQueue;
 	}
@@ -356,8 +352,29 @@ public:
 		return _sendQueue;
 	}
 
+	void addIOProcessor(IOProcessor ioProc)   {
+		std::list<std::string> names = ioProc.getNames();
+
+		std::list<std::string>::iterator nameIter = names.begin();
+		while(nameIter != names.end()) {
+			_ioProcessors[*nameIter] = ioProc;
+			_ioProcessors[*nameIter].setType(names.front());
+			_ioProcessors[*nameIter].setInterpreter(this);
+
+			nameIter++;
+		}
+	}
+
 	const std::map<std::string, IOProcessor>& getIOProcessors() {
 		return _ioProcessors;
+	}
+
+	void setDataModel(const DataModel& dataModel)            {
+		_userSuppliedDataModel = true;
+		_dataModel = dataModel;
+	}
+	DataModel getDataModel()                                 {
+		return _dataModel;
 	}
 
 	const std::map<std::string, Invoker>& getInvokers() {
@@ -407,7 +424,7 @@ public:
 
 	static std::list<std::string> tokenizeIdRefs(const std::string& idRefs);
 	static std::string spaceNormalize(const std::string& text);
-	static bool nameMatch(const std::string& transitionEvent, const std::string& event);
+	static bool nameMatch(const std::string& eventDescs, const std::string& event);
 	Arabica::DOM::Node<std::string> findLCCA(const Arabica::XPath::NodeSet<std::string>& states);
 	virtual Arabica::XPath::NodeSet<std::string> getProperAncestors(const Arabica::DOM::Node<std::string>& s1, const Arabica::DOM::Node<std::string>& s2);
 
@@ -448,6 +465,7 @@ protected:
 	bool _topLevelFinalReached;
 	bool _isInitialized;
 	bool _domIsSetup;
+	bool _userSuppliedDataModel;
 
 	bool _isStarted;
 	bool _isRunning;
@@ -625,9 +643,25 @@ public:
 		return _impl->getHTTPServlet();
 	}
 
+	void setDataModel(const DataModel& dataModel) {
+		_impl->setDataModel(dataModel);
+	}
 	DataModel getDataModel() {
 		return _impl->getDataModel();
 	}
+
+	void addIOProcessor(IOProcessor ioProc) {
+		_impl->addIOProcessor(ioProc);
+	}
+	const std::map<std::string, IOProcessor>& getIOProcessors() {
+		return _impl->getIOProcessors();
+	}
+
+	const std::map<std::string, Invoker>& getInvokers() {
+		return _impl->getInvokers();
+	}
+
+
 	void setParentQueue(uscxml::concurrency::BlockingQueue<SendRequest>* parentQueue) {
 		return _impl->setParentQueue(parentQueue);
 	}
@@ -698,14 +732,6 @@ public:
 	}
 	DelayedEventQueue* getDelayQueue() {
 		return _impl->getDelayQueue();
-	}
-
-	const std::map<std::string, IOProcessor>& getIOProcessors() {
-		return _impl->getIOProcessors();
-	}
-
-	const std::map<std::string, Invoker>& getInvokers() {
-		return _impl->getInvokers();
 	}
 
 	bool runOnMainThread(int fps, bool blocking = true) {

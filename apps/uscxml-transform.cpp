@@ -193,7 +193,14 @@ int main(int argc, char** argv) {
 		}
 
 		if (toFlat) {
-			std::cout << ChartToFSM::flatten(interpreter).getDocument();
+			if (outputFile.size() == 0 || outputFile == "-") {
+				std::cout << ChartToFSM::flatten(interpreter).getDocument();
+			} else {
+				std::ofstream outStream;
+				outStream.open(outputFile.c_str());
+				outStream << ChartToFSM::flatten(interpreter).getDocument();
+				outStream.close();
+			}
 			exit(EXIT_SUCCESS);
 		}
 	} catch (Event e) {

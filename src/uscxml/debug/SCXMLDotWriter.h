@@ -64,7 +64,7 @@ public:
 	};
 
 	struct StateAnchor {
-		StateAnchor() : childDepth(-1), transDepth(-1), type(PORT_TARGET) {}
+		StateAnchor() : childDepth(std::numeric_limits<int32_t>::max()), transDepth(std::numeric_limits<int32_t>::max()), type(PORT_TARGET) {}
 		Arabica::DOM::Element<std::string> element;
 		int32_t childDepth;
 		int32_t transDepth;
@@ -166,9 +166,9 @@ protected:
 	                   int32_t transDepth = std::numeric_limits<int32_t>::max());
 	void writeStateElement(std::ostream& os, const Arabica::DOM::Element<std::string>& state);
 
-	void writePerTransitionPorts(std::ostream& os, const std::list<std::string>& outPorts, const DotState& dotState);
-	void writePerEventPorts(std::ostream& os, const std::list<std::string>& outPorts, const DotState& dotState);
-	void writePerTargetPorts(std::ostream& os, const std::list<std::string>& outPorts, const DotState& dotState);
+	void writePerTransitionPorts(std::ostream& os, const DotState& dotState, int stateLines = 0);
+	void writePerEventPorts(std::ostream& os, const DotState& dotState, int stateLines = 0);
+	void writePerTargetPorts(std::ostream& os, const DotState& dotState, int stateLines = 0);
 
 	void writeUnknownNode(std::ostream& os, const std::string& targetId);
 
@@ -184,6 +184,8 @@ protected:
 	Arabica::DOM::Element<std::string> _transition;
 	Arabica::DOM::Element<std::string> _scxml;
 	Interpreter _interpreter;
+	bool _isFlat;
+
 	std::string _xmlNSPrefix;
 	std::list<StateAnchor> _anchors;
 	std::map<std::string, DotEdge> _histories;

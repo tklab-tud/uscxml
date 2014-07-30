@@ -402,7 +402,7 @@ bool UmundoInvoker::protobufToData(Data& data, const google::protobuf::Message& 
 		case google::protobuf::FieldDescriptor::TYPE_DOUBLE:
 			if (fieldDesc->is_repeated()) {
 				for (int j = 0; j < reflect->FieldSize(msg, fieldDesc); j++) {
-					data.compound[key].array.push_back(Data(toStr(reflect->GetRepeatedDouble(msg, fieldDesc, j))));
+					data.compound[key].array.push_back(Data(toStr(reflect->GetRepeatedDouble(msg, fieldDesc, j)), Data::INTERPRETED));
 				}
 			} else {
 				data.compound[key].atom = toStr(reflect->GetDouble(msg, fieldDesc));
@@ -423,7 +423,7 @@ bool UmundoInvoker::protobufToData(Data& data, const google::protobuf::Message& 
 		case google::protobuf::FieldDescriptor::TYPE_UINT32:
 			if (fieldDesc->is_repeated()) {
 				for (int j = 0; j < reflect->FieldSize(msg, fieldDesc); j++) {
-					data.compound[key].array.push_back(Data(toStr(reflect->GetRepeatedUInt32(msg, fieldDesc, j))));
+					data.compound[key].array.push_back(Data(toStr(reflect->GetRepeatedUInt32(msg, fieldDesc, j)), Data::INTERPRETED));
 				}
 			} else {
 				data.compound[key].atom = toStr(reflect->GetUInt32(msg, fieldDesc));
@@ -433,7 +433,7 @@ bool UmundoInvoker::protobufToData(Data& data, const google::protobuf::Message& 
 		case google::protobuf::FieldDescriptor::TYPE_UINT64:
 			if (fieldDesc->is_repeated()) {
 				for (int j = 0; j < reflect->FieldSize(msg, fieldDesc); j++) {
-					data.compound[key].array.push_back(Data(toStr(reflect->GetRepeatedUInt64(msg, fieldDesc, j))));
+					data.compound[key].array.push_back(Data(toStr(reflect->GetRepeatedUInt64(msg, fieldDesc, j)), Data::INTERPRETED));
 				}
 			} else {
 				data.compound[key].atom = toStr(reflect->GetUInt64(msg, fieldDesc));
@@ -442,7 +442,7 @@ bool UmundoInvoker::protobufToData(Data& data, const google::protobuf::Message& 
 		case google::protobuf::FieldDescriptor::TYPE_FLOAT:
 			if (fieldDesc->is_repeated()) {
 				for (int j = 0; j < reflect->FieldSize(msg, fieldDesc); j++) {
-					data.compound[key].array.push_back(Data(toStr(reflect->GetRepeatedFloat(msg, fieldDesc, j))));
+					data.compound[key].array.push_back(Data(toStr(reflect->GetRepeatedFloat(msg, fieldDesc, j)), Data::INTERPRETED));
 				}
 			} else {
 				data.compound[key].atom = toStr(reflect->GetFloat(msg, fieldDesc));
@@ -456,7 +456,7 @@ bool UmundoInvoker::protobufToData(Data& data, const google::protobuf::Message& 
 		case google::protobuf::FieldDescriptor::TYPE_SFIXED32:
 			if (fieldDesc->is_repeated()) {
 				for (int j = 0; j < reflect->FieldSize(msg, fieldDesc); j++) {
-					data.compound[key].array.push_back(Data(toStr(reflect->GetRepeatedInt32(msg, fieldDesc, j))));
+					data.compound[key].array.push_back(Data(toStr(reflect->GetRepeatedInt32(msg, fieldDesc, j)), Data::INTERPRETED));
 				}
 			} else {
 				data.compound[key].atom = toStr(reflect->GetInt32(msg, fieldDesc));
@@ -467,7 +467,7 @@ bool UmundoInvoker::protobufToData(Data& data, const google::protobuf::Message& 
 		case google::protobuf::FieldDescriptor::TYPE_SFIXED64:
 			if (fieldDesc->is_repeated()) {
 				for (int j = 0; j < reflect->FieldSize(msg, fieldDesc); j++) {
-					data.compound[key].array.push_back(Data(toStr(reflect->GetRepeatedInt64(msg, fieldDesc, j))));
+					data.compound[key].array.push_back(Data(toStr(reflect->GetRepeatedInt64(msg, fieldDesc, j)), Data::INTERPRETED));
 				}
 			} else {
 				data.compound[key].atom = toStr(reflect->GetInt64(msg, fieldDesc));

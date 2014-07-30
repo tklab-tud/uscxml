@@ -62,9 +62,72 @@ Interpreter ChartToFSM::flatten(const Interpreter& other) {
 	return flat;
 }
 
+uint64_t ChartToFSM::stateMachineComplexity(const Arabica::DOM::Element<std::string>& root) {
+	Complexity complexity = calculateStateMachineComplexity(root);
+	uint64_t value = complexity.value;
+	for (std::list<uint64_t>::const_iterator histIter = complexity.history.begin(); histIter != complexity.history.end(); histIter++) {
+		value *= *histIter;
+	}
+
+	return value;
+}
+
+ChartToFSM::Complexity ChartToFSM::calculateStateMachineComplexity(const Arabica::DOM::Element<std::string>& root) {
+	Complexity complexity;
+
+	bool hasFlatHistory = false;
+	bool hasDeepHistory = false;
+
+	Arabica::DOM::NodeList<std::string> childElems = root.getChildNodes();
+	for (int i = 0; i < childElems.getLength(); i++) {
+		if (childElems.item(i).getNodeType() != Node_base::ELEMENT_NODE)
+			continue;
+		Element<std::string> childElem = Element<std::string>(childElems.item(i));
+		if (InterpreterImpl::isHistory(childElem)) {
+			if (HAS_ATTR(childElem, "type") && ATTR(childElem, "type") == "deep") {
+				hasDeepHistory = true;
+			} else {
+				hasFlatHistory = true;
+			}
+		}
+	}
+
+	if (InterpreterImpl::isCompound(root) || TAGNAME(root) == "scxml") {
+		// compounds can be in any of the child state -> add
+		NodeSet<std::string> childs = InterpreterImpl::getChildStates(root);
+		for (int i = 0; i < childs.size(); i++) {
+			complexity += calculateStateMachineComplexity(Element<std::string>(childs[i]));
+		}
+		if (hasFlatHistory) {
+			complexity.history.push_back(childs.size());
+		}
+		if (hasDeepHistory) {
+			complexity.history.push_back(complexity.value);
+		}
+	} else if (InterpreterImpl::isParallel(root)) {
+		// parallels are in all states -> multiply
+		NodeSet<std::string> childs = InterpreterImpl::getChildStates(root);
+		complexity.value = 1;
+		for (int i = 0; i < childs.size(); i++) {
+			complexity *= calculateStateMachineComplexity(Element<std::string>(childs[i]));
+		}
+		if (hasDeepHistory) {
+			complexity.history.push_back(complexity.value);
+		}
+
+	} else if (InterpreterImpl::isAtomic(root)) {
+		return 1;
+	}
+
+	return complexity;
+}
+
 
 FlatteningInterpreter::FlatteningInterpreter(const Document<std::string>& doc) {
 
+	_perfProcessed = 0;
+	_perfTotal = 0;
+	_lastTimeStamp = tthread::chrono::system_clock::now();
 	_currGlobalTransition = NULL;
 
 	// just copy given doc into _document an create _flatDoc for the FSM
@@ -107,6 +170,9 @@ InterpreterState FlatteningInterpreter::interpret() {
 
 	init();
 	setupIOProcessors();
+
+	uint64_t complexity = ChartToFSM::stateMachineComplexity(_scxml) + 1;
+	std::cout << "Approximate Complexity: " << complexity << std::endl;
 
 	// initialize the datamodel
 	std::string datamodelName;
@@ -179,11 +245,23 @@ InterpreterState FlatteningInterpreter::interpret() {
 #endif
 
 	createDocument();
+
+	NodeSet<std::string> elements = InterpreterImpl::filterChildType(Node_base::ELEMENT_NODE, _scxml, true);
+	uint64_t nrStates = 0;
+	for (int i = 0; i < elements.size(); i++) {
+		Element<std::string> stateElem = Element<std::string>(elements[i]);
+		if (isState(stateElem) && !HAS_ATTR(stateElem, "transient"))
+			nrStates++;
+	}
+
+	std::cout << "Actual Complexity: " << nrStates << std::endl;
 	return _state;
 }
 
 void FlatteningInterpreter::executeContent(const Arabica::DOM::Element<std::string>& content, bool rethrow) {
 //	std::cout << content << std::endl;
+//	std::cout << TAGNAME(content) << std::endl;
+
 	GlobalTransition::Action action;
 
 	if (false) {
@@ -193,8 +271,8 @@ void FlatteningInterpreter::executeContent(const Arabica::DOM::Element<std::stri
 		action.onExit = content;
 	} else if (TAGNAME(content) == "onentry") {
 		action.onExit = content;
-	} else {
-		assert(false);
+	} else { // e.g. global script elements
+		return;
 	}
 	_currGlobalTransition->actions.push_back(action);
 }
@@ -216,9 +294,8 @@ void FlatteningInterpreter::cancelInvoke(const Arabica::DOM::Node<std::string>& 
 void FlatteningInterpreter::internalDoneSend(const Arabica::DOM::Element<std::string>& state) {
 
 	Arabica::DOM::Element<std::string> stateElem = (Arabica::DOM::Element<std::string>)state;
-
-//	if (parentIsScxmlState(state))
-//		return;
+	if (parentIsScxmlState(state))
+		return;
 
 //	std::cout << "internalDoneSend: " << state << std::endl;
 
@@ -269,7 +346,26 @@ static bool isSuperset(const GlobalTransition* t1, const GlobalTransition* t2) {
 	return isSuperset;
 }
 
-static NodeSet<std::string> filterChildEnabled(const NodeSet<std::string>& transitions) {
+static bool filterSameState(const NodeSet<std::string>& transitions) {
+	NodeSet<std::string> filteredTransitions;
+	for (unsigned int i = 0; i < transitions.size(); i++) {
+		Node<std::string> t1 = transitions[i];
+		Node<std::string> p1 = InterpreterImpl::getParentState(t1);
+
+		for (unsigned int j = 0; j < transitions.size(); j++) {
+			if (i == j)
+				continue;
+			Node<std::string> t2 = transitions[j];
+			Node<std::string> p2 = InterpreterImpl::getParentState(t2);
+
+			if (p1 == p2)
+				return false;
+		}
+	}
+	return true;
+}
+
+static bool filterChildEnabled(const NodeSet<std::string>& transitions) {
 	// drop any transition that is already enabled by a child
 	NodeSet<std::string> filteredTransitions;
 	for (unsigned int i = 0; i < transitions.size(); i++) {
@@ -280,24 +376,22 @@ static NodeSet<std::string> filterChildEnabled(const NodeSet<std::string>& trans
 				continue;
 			Node<std::string> t2 = transitions[j];
 			Node<std::string> p2 = InterpreterImpl::getParentState(t2);
-//			p2 = p2.getParentNode();
+			p2 = p2.getParentNode(); // TODO: think about again!
 			while(p2) {
 				if (p1 == p2) {
 					std::string eventDesc1 = ATTR(t1, "event");
 					std::string eventDesc2 = ATTR(t2, "event");
 					if (InterpreterImpl::nameMatch(eventDesc1, eventDesc2)) {
-//						std::cout << "Dropping " << t1 << std::endl << "for " << t2 << std::endl;
-						goto SKIP_TRANSITION;
+						return false;
 					}
 				}
 				p2 = p2.getParentNode();
 			}
 		}
 		filteredTransitions.push_back(t1);
-SKIP_TRANSITION:
 		;
 	}
-	return filteredTransitions;
+	return true;
 }
 
 static std::list<GlobalTransition*> sortTransitions(std::list<GlobalTransition*> list) {
@@ -371,6 +465,8 @@ void FlatteningInterpreter::explode() {
 		return; // we have already been here
 	}
 	_globalConf[globalState->stateId] = globalState;
+
+	assert(isLegalConfiguration(configuration));
 
 	// get all transition elements from states in the current configuration
 	NodeSet<std::string> allTransitions = filterChildElements(_nsInfo.xmlNSPrefix + "transition", configuration);
@@ -448,12 +544,30 @@ void FlatteningInterpreter::explode() {
 			break;
 
 		NodeSet<std::string> transitions;
+//		std::cout << globalState->stateId << " [" << nrElements << "]: " << std::endl;
 		for (int i = 1; i <= k; i++) {
+//			std::cout << stack[i] - 1 << ", ";
 			transitions.push_back(allTransitions[stack[i] - 1]);
 		}
+//		std::cout << std::endl;
+
+		_perfTotal++;
+		_perfProcessed++;
+
+		if (tthread::chrono::system_clock::now() - _lastTimeStamp > 1000) {
+			_lastTimeStamp = tthread::chrono::system_clock::now();
+//			std::cout << globalState->stateId << " [" << nrElements << "]: " << std::endl;
+			std::cout << _perfTotal << " [" << _perfProcessed << "/sec]" << std::endl;
+			_perfProcessed = 0;
+		}
+
+		// remove transitions in the same state
+		if(!filterSameState(transitions))
+			continue;
 
 		// remove those transitions with a child transition
-		transitions = filterChildEnabled(transitions);
+		if(!filterChildEnabled(transitions))
+			continue;
 
 		// reduce to conflict-free subset
 		transitions = filterPreempted(transitions);
@@ -541,6 +655,13 @@ NEXT_DEPTH:
 
 		_currGlobalTransition = *transListIter;
 		microstep((*transListIter)->transitions);
+		if (!isLegalConfiguration(_configuration)) {
+			std::cout << "invalid configuration from " << globalState->stateId << std::endl;
+			for (int i = 0; i < (*transListIter)->transitions.size(); i++) {
+				std::cout << (*transListIter)->transitions[i] << std::endl;
+			}
+			assert(false);
+		}
 		explode();
 
 		// reset state for next transition set
@@ -906,7 +1027,7 @@ GlobalState::GlobalState(const Arabica::XPath::NodeSet<std::string>& activeState
 	        histIter != historyStates.end();
 	        histIter++) {
 		const Arabica::XPath::NodeSet<std::string>& histStates = histIter->second;
-		idSS << "history-";
+		idSS << "history--";
 		idSS << histIter->first << "-";
 		for (int i = 0; i < histStates.size(); i++) {
 			idSS << ATTR(histStates[i], "id") << "-";

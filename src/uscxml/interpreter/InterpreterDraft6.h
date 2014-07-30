@@ -55,6 +55,7 @@ protected:
 	bool isWithinParallel(const Arabica::DOM::Element<std::string>& transition);
 	Arabica::DOM::Node<std::string> findLCPA(const Arabica::XPath::NodeSet<std::string>& states);
 
+	std::map<Arabica::DOM::Element<std::string>, bool> _transWithinParallel; // this is costly to calculate
 };
 
 }

@@ -26,7 +26,7 @@
 #include <DOM/Node.hpp>
 #include <XPath/XPath.hpp>
 #include <ostream>
-
+#include <list>
 
 namespace uscxml {
 class GlobalState;
@@ -137,6 +137,10 @@ protected:
 	GlobalState* _start;
 	GlobalTransition* _currGlobalTransition;
 
+	uint64_t _perfProcessed;
+	uint64_t _perfTotal;
+	uint64_t _lastTimeStamp;
+
 	int maxDepth;
 	int maxOrder;
 
@@ -147,6 +151,32 @@ protected:
 class USCXML_API ChartToFSM {
 public:
 	static Interpreter flatten(const Interpreter& other);
+	static uint64_t stateMachineComplexity(const Arabica::DOM::Element<std::string>& root);
+
+protected:
+	class USCXML_API Complexity {
+	public:
+		Complexity() : value(0) {}
+		Complexity(uint64_t value) : value(value) {}
+
+		Complexity& operator+=(const Complexity& rhs) {
+			value += rhs.value;
+			history.insert(history.end(), rhs.history.begin(), rhs.history.end());
+			return *this;
+		}
+
+		Complexity& operator*=(const Complexity& rhs) {
+			value *= rhs.value;
+			history.insert(history.end(), rhs.history.begin(), rhs.history.end());
+			return *this;
+		}
+
+		uint64_t value;
+		std::list<uint64_t> history;
+	};
+
+	static Complexity calculateStateMachineComplexity(const Arabica::DOM::Element<std::string>& root);
+
 };
 
 }

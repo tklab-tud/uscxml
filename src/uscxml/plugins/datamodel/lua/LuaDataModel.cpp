@@ -44,12 +44,63 @@ bool pluginConnect(pluma::Host& host) {
 }
 #endif
 
-LuaDataModel::LuaDataModel() {
-	_luaState = NULL;
-}
-
 static int luaInspect(lua_State * l) {
 	return 0;
+}
+
+static luabridge::LuaRef getDataAsLua(lua_State* _luaState, const Data& data) {
+	luabridge::LuaRef luaData (_luaState);
+
+	if (data.node) {
+		ERROR_EXECUTION_THROW("No DOM support in Lua datamodel");
+	}
+	if (data.compound.size() > 0) {
+		luaData = luabridge::newTable(_luaState);
+		std::map<std::string, Data>::const_iterator compoundIter = data.compound.begin();
+		while(compoundIter != data.compound.end()) {
+			luaData[compoundIter->first] = getDataAsLua(_luaState, compoundIter->second);
+			compoundIter++;
+		}
+		luaData["inspect"] = luaInspect;
+		return luaData;
+	}
+	if (data.array.size() > 0) {
+		luaData = luabridge::newTable(_luaState);
+		std::list<Data>::const_iterator arrayIter = data.array.begin();
+		uint32_t index = 0;
+		while(arrayIter != data.array.end()) {
+			luaData[index++] = getDataAsLua(_luaState, *arrayIter);
+			arrayIter++;
+		}
+		luaData["inspect"] = luaInspect;
+		return luaData;
+	}
+	if (data.atom.size() > 0) {
+		switch (data.type) {
+		case Data::VERBATIM: {
+//				luaData = "\"" + data.atom + "\"";
+			luaData = data.atom;
+			break;
+		}
+		case Data::INTERPRETED: {
+			if (isNumeric(data.atom.c_str(), 10)) {
+				if (data.atom.find(".") != std::string::npos) {
+					luaData = strTo<double>(data.atom);
+				} else {
+					luaData = strTo<long>(data.atom);
+				}
+			} else {
+				luaData = data.atom;
+			}
+		}
+		}
+		return luaData;
+	}
+	return luaData;
+}
+
+LuaDataModel::LuaDataModel() {
+	_luaState = NULL;
 }
 
 static int luaInFunction(lua_State * l) {
@@ -78,23 +129,22 @@ boost::shared_ptr<DataModelImpl> LuaDataModel::create(InterpreterImpl* interpret
 	luaL_openlibs(dm->_luaState);
 
 	luabridge::getGlobalNamespace(dm->_luaState).beginClass<InterpreterImpl>("Interpreter").endClass();
+	luabridge::setGlobal(dm->_luaState, dm->_interpreter, "__interpreter");
+
 	luabridge::getGlobalNamespace(dm->_luaState).addCFunction("In", luaInFunction);
 
-//	luabridge::getGlobalNamespace(dm->_luaState)
-//	.beginClass <uscxml::Event> ("Event")
-//		.addProperty("name", &uscxml::Event::getName)
-//		.addProperty("raw", &uscxml::Event::getRaw)
-//		.addProperty("data", &uscxml::Event::getData)
-//		.addProperty("xml", &uscxml::Event::getXML)
-//		.addProperty("eventType", &uscxml::Event::getEventType)
-//		.addProperty("origin", &uscxml::Event::getOrigin)
-//		.addProperty("originType", &uscxml::Event::getOriginType)
-//		.addProperty("content", &uscxml::Event::getContent)
-//		.addProperty("invokeId", &uscxml::Event::getInvokeId)
-//		.addProperty("sendId", &uscxml::Event::getSendId)
-//	.endClass ();
+	luabridge::LuaRef ioProcTable = luabridge::newTable(dm->_luaState);
 
-	luabridge::setGlobal(dm->_luaState, dm->_interpreter, "__interpreter");
+	std::map<std::string, IOProcessor>::const_iterator ioProcIter = dm->_interpreter->getIOProcessors().begin();
+	while(ioProcIter != dm->_interpreter->getIOProcessors().end()) {
+		Data ioProcData = ioProcIter->second.getDataModelVariables();
+		ioProcTable[ioProcIter->first] = getDataAsLua(dm->_luaState, ioProcData);
+		ioProcIter++;
+	}
+	luabridge::setGlobal(dm->_luaState, ioProcTable, "_ioprocessors");
+
+	luabridge::setGlobal(dm->_luaState, dm->_interpreter->getName(), "_name");
+	luabridge::setGlobal(dm->_luaState, dm->_interpreter->getSessionId(), "_sessionid");
 
 	return dm;
 }
@@ -140,56 +190,6 @@ static Data getLuaAsData(const luabridge::LuaRef& lua) {
 		}
 	}
 	return data;
-}
-
-static luabridge::LuaRef getDataAsLua(lua_State* _luaState, const Data& data) {
-	luabridge::LuaRef luaData (_luaState);
-
-	if (data.node) {
-		ERROR_EXECUTION_THROW("No DOM support in Lua datamodel");
-	}
-	if (data.compound.size() > 0) {
-		luaData = luabridge::newTable(_luaState);
-		std::map<std::string, Data>::const_iterator compoundIter = data.compound.begin();
-		while(compoundIter != data.compound.end()) {
-			luaData[compoundIter->first] = getDataAsLua(_luaState, compoundIter->second);
-			compoundIter++;
-		}
-		luaData["inspect"] = luaInspect;
-		return luaData;
-	}
-	if (data.array.size() > 0) {
-		luaData = luabridge::newTable(_luaState);
-		std::list<Data>::const_iterator arrayIter = data.array.begin();
-		uint32_t index = 0;
-		while(arrayIter != data.array.end()) {
-			luaData[index++] = getDataAsLua(_luaState, *arrayIter);
-			arrayIter++;
-		}
-		luaData["inspect"] = luaInspect;
-		return luaData;
-	}
-	if (data.atom.size() > 0) {
-		switch (data.type) {
-		case Data::VERBATIM: {
-			luaData = "\"" + data.atom + "\"";
-			break;
-		}
-		case Data::INTERPRETED: {
-			if (isNumeric(data.atom.c_str(), 10)) {
-				if (data.atom.find(".") != std::string::npos) {
-					luaData = strTo<double>(data.atom);
-				} else {
-					luaData = strTo<long>(data.atom);
-				}
-			} else {
-				luaData = data.atom;
-			}
-		}
-		}
-		return luaData;
-	}
-	return luaData;
 }
 
 void LuaDataModel::setEvent(const Event& event) {
@@ -469,6 +469,17 @@ std::string LuaDataModel::evalAsString(const std::string& expr) {
 	}
 	lua_pop(_luaState, retVals);
 	return "";
+}
+
+std::string LuaDataModel::andExpressions(std::list<std::string> exprs) {
+	std::stringstream exprSS;
+	std::list<std::string>::const_iterator listIter;
+	std::string andExpr;
+	for (listIter = exprs.begin(); listIter != exprs.end(); listIter++) {
+		exprSS << andExpr << *listIter;
+		andExpr = " && ";
+	}
+	return exprSS.str();
 }
 
 

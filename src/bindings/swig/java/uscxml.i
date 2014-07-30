@@ -42,7 +42,7 @@ typedef uscxml::ExecutableContentImpl ExecutableContentImpl;
 
 %javaconst(1);
 
-%rename(equals) operator==; 
+%rename(equals) operator==; // signature is wrong, still useful
 %rename(isValid) operator bool;
 
 //**************************************************
@@ -98,6 +98,15 @@ WRAP_THROW_EXCEPTION(uscxml::Interpreter::step);
 WRAP_THROW_EXCEPTION(uscxml::Interpreter::interpret);
 
 
+%define WRAP_HASHCODE( CLASSNAME )
+%extend CLASSNAME {
+	virtual int hashCode() {
+/*		std::cout << "Calc hashcode as " << (int)(size_t)self->getImpl().get() << std::endl << std::flush;*/
+		return (int)(size_t)self->getImpl().get();
+	}
+};
+%enddef
+
 %define WRAP_TO_STRING( CLASSNAME )
 %extend CLASSNAME {
 	virtual std::string toString() {
@@ -112,6 +121,8 @@ WRAP_TO_STRING(uscxml::Event);
 WRAP_TO_STRING(uscxml::Data);
 WRAP_TO_STRING(uscxml::SendRequest);
 WRAP_TO_STRING(uscxml::InvokeRequest);
+
+WRAP_HASHCODE(uscxml::Interpreter);
 
 %include "../uscxml_ignores.i"
 
@@ -240,6 +251,13 @@ import java.net.URL;
 		return invokers;
 	}
 	
+	@Override
+	public boolean equals(Object other) {
+		if (other instanceof Interpreter) {
+			return equals((Interpreter)other);
+		}
+		return hashCode() == other.hashCode();
+	}
 %}
 
 %rename(getCompoundNative) uscxml::Data::getCompound();

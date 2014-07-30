@@ -20,6 +20,7 @@
 #include "uscxml/Common.h"
 #include "uscxml/UUID.h"
 #include "SCXMLDotWriter.h"
+#include "../transform/FlatStateIdentifier.h"
 #include "uscxml/DOMUtils.h"
 #include <boost/algorithm/string.hpp> // replace_all
 #include <iomanip>
@@ -44,6 +45,7 @@ SCXMLDotWriter::SCXMLDotWriter(Interpreter interpreter,
 
 	NodeList<std::string > scxmlElems = interpreter.getDocument().getElementsByTagName("scxml");
 	_scxml = (Element<std::string>)scxmlElems.item(0);
+	_isFlat = HAS_ATTR(_scxml, "flat") && DOMUtils::attributeIsTrue(ATTR(_scxml, "flat"));
 
 	if (_anchors.size() == 0) {
 		StateAnchor anchor;
@@ -275,7 +277,7 @@ void SCXMLDotWriter::writeStateElement(std::ostream& os, const Element<std::stri
 		os << getPrefix() << "subgraph \"cluster_" << stateId << "\" {" << std::endl;
 		_indentation++;
 		os << getPrefix() << "fontsize=14" << std::endl;
-		os << getPrefix() << "label=<<b>" << nameForNode(stateElem) << "</b>>" << std::endl;
+		os << getPrefix() << "label=<" << nameForNode(stateElem) << ">" << std::endl;
 		//		os << getPrefix() << "rank=\"same\"" << std::endl;
 		os << getPrefix() << "labeljust=l" << std::endl;
 
@@ -312,7 +314,7 @@ void SCXMLDotWriter::writeStateElement(std::ostream& os, const Element<std::stri
 			os << getPrefix() << "shape=doublecircle," << std::endl;
 			os << getPrefix() << "color=black," << std::endl;
 			os << getPrefix() << "penwidth=2," << std::endl;
-			os << getPrefix() << "label=<" << nameForNode(stateElem) << ">" << std::endl;
+			os << getPrefix() << "label=< <table cellborder=\"0\" border=\"0\"><tr><td balign=\"left\">" << nameForNode(stateElem) << "</td></tr></table>>" << std::endl;
 			_indentation--;
 			os << getPrefix() << "];" << std::endl;
 
@@ -325,27 +327,30 @@ void SCXMLDotWriter::writeStateElement(std::ostream& os, const Element<std::stri
 		//		os << getPrefix() << "style=filled, fillcolor=lightgrey, " << std::endl;
 
 		DotState::mmap_s_e_t::const_iterator destIterF, destIterB;
-		std::list<std::string> outPorts; // count unique keys
+		//std::list<std::string> outPorts; // count unique keys
+
+		int nrOutPorts = 0;
 
 		switch (dotState.portType) {
 		case PORT_TARGET: // outports are per target
 			for(DotState::mmap_s_e_t::const_iterator it = dotState.targets.begin(), end = dotState.targets.end();
 			        it != end;
 			        it = dotState.targets.upper_bound(it->first)) {
-				outPorts.push_back(it->first);
+				nrOutPorts++;
 			}
 			break;
 		case PORT_EVENT: // outports are per event
 			for(DotState::mmap_s_e_t::const_iterator it = dotState.events.begin(), end = dotState.events.end();
 			        it != end;
 			        it = dotState.events.upper_bound(it->first)) {
-				outPorts.push_back(it->first);
+				nrOutPorts++;
 			}
 			break;
 		case PORT_TRANSITION:
-			for (int i = 0; i < dotState.transitions.size(); i++) {
-				outPorts.push_back(idForNode(dotState.transitions[i]));
-			}
+			nrOutPorts = dotState.transitions.size();
+//			for (int i = 0; i < dotState.transitions.size(); i++) {
+//				outPorts.push_back(idForNode(dotState.transitions[i]));
+//			}
 			break;
 		}
 
@@ -361,26 +366,34 @@ void SCXMLDotWriter::writeStateElement(std::ostream& os, const Element<std::stri
 		 */
 
 		std::string details = getDetailedLabel(stateElem);
+		std::string stateLabel = nameForNode(stateElem);
+		int stateLines = 0;
 
-		os << "<table " << (isInitial ? "bgcolor=\"orange\" " : "") << "cellborder=\"1\" border=\"0\" cellspacing=\"0\" cellpadding=\"2\" >" << std::endl;
-		os << "  <tr><td port=\"__name\" rowspan=\"" << outPorts.size() + 1 << "\"><b>" << nameForNode(stateElem) << "</b></td></tr>" << std::endl;
+		std::string::size_type start = 0;
+		while ((start = stateLabel.find("<br", start)) != std::string::npos) {
+			++stateLines;
+			start += 3;
+		}
+
+		os << "<table " << (isInitial ? "bgcolor=\"orange\" " : "") << "valign=\"top\" align=\"left\" cellborder=\"1\" border=\"0\" cellspacing=\"0\" cellpadding=\"5\" >" << std::endl;
+		os << "  <tr><td port=\"__name\" balign=\"left\" valign=\"top\" align=\"left\" rowspan=\"" << nrOutPorts + 1 << "\">" << stateLabel << "</td></tr>" << std::endl;
 
 		switch (dotState.portType) {
 		case PORT_TARGET: // outports are per target
-			writePerTargetPorts(os, outPorts, dotState);
+			writePerTargetPorts(os, dotState, stateLines);
 			break;
 		case PORT_EVENT: // outports are per event
-			writePerEventPorts(os, outPorts, dotState);
+			writePerEventPorts(os, dotState, stateLines);
 			break;
 		case PORT_TRANSITION:
-			writePerTransitionPorts(os, outPorts, dotState);
+			writePerTransitionPorts(os, dotState, stateLines);
 			break;
 		}
 
 
 		// write details of the state
 		if (details.size() > 0) {
-			os << "  <tr><td colspan=\"" << (outPorts.size() == 0 ? 1 : 2) << "\">" << std::endl;
+			os << "  <tr><td balign=\"left\" colspan=\"" << (nrOutPorts == 0 ? 1 : 2) << "\">" << std::endl;
 			os << details << std::endl;
 			os << "  </td></tr>" << std::endl;
 		}
@@ -388,7 +401,7 @@ void SCXMLDotWriter::writeStateElement(std::ostream& os, const Element<std::stri
 		// write history states
 		NodeSet<std::string> histories = InterpreterImpl::filterChildElements(_xmlNSPrefix + "history", stateElem);
 		for (int i = 0; i < histories.size(); i++) {
-			os << "  <tr><td port=\"" << ATTR(histories[i], "id") << "\" colspan=\"" << (outPorts.size() == 0 ? 1 : 2) << "\"><b>history: </b>" << ATTR(histories[i], "id") << "</td></tr>" << std::endl;
+			os << "  <tr><td port=\"" << ATTR(histories[i], "id") << "\" balign=\"left\" colspan=\"" << (nrOutPorts == 0 ? 1 : 2) << "\"><b>history: </b>" << ATTR(histories[i], "id") << "</td></tr>" << std::endl;
 
 		}
 
@@ -423,76 +436,92 @@ void SCXMLDotWriter::writeStateElement(std::ostream& os, const Element<std::stri
 	}
 }
 
-void SCXMLDotWriter::writePerTransitionPorts(std::ostream& os, const std::list<std::string>& outPorts, const DotState& dotState) {
+void SCXMLDotWriter::writePerTransitionPorts(std::ostream& os, const DotState& dotState, int stateLines) {
 	// TODO: Not implemented
 }
 
-void SCXMLDotWriter::writePerEventPorts(std::ostream& os, const std::list<std::string>& outPorts, const DotState& dotState) {
-	// TODO: Not implemented
+void SCXMLDotWriter::writePerEventPorts(std::ostream& os, const DotState& dotState, int stateLines) {
+	// std::multimap<std::string, Arabica::DOM::Element<std::string> > events; // key is event name, value is transitions that react
 
-	// outports contain event names
 	std::string stateId = idForNode(dotState.node);
 	DotState::mmap_s_e_t::const_iterator destIterF, destIterB;
 
-	for(std::list<std::string>::const_iterator nameIter = outPorts.begin(); nameIter != outPorts.end(); nameIter++) {
-		os << "  <tr><td port=\"" << portEscape(*nameIter) << "\" align=\"right\">" << *nameIter << "</td></tr>" << std::endl;
+	for(DotState::mmap_s_e_t::const_iterator it = dotState.events.begin(), end = dotState.events.end();
+	        it != end;
+	        it = dotState.events.upper_bound(it->first)) {
+		os << "  <tr><td port=\"" << portEscape(it->first) << "\" align=\"right\">" << it->first << "</td></tr>" << std::endl;
 	}
+
 }
 
-void SCXMLDotWriter::writePerTargetPorts(std::ostream& os, const std::list<std::string>& outPorts, const DotState& dotState) {
-	// outports contain remote node ids
-	std::string stateId = idForNode(dotState.node);
-	DotState::mmap_s_e_t::const_iterator destIterF, destIterB;
+void SCXMLDotWriter::writePerTargetPorts(std::ostream& os, const DotState& dotState, int stateLines) {
+	// std::multimap<std::string, Arabica::DOM::Element<std::string> > targets; // key is remote node, transition is element
 
-	for(std::list<std::string>::const_iterator nameIter = outPorts.begin(); nameIter != outPorts.end(); nameIter++) {
+	int nrOutports = 0;
+	std::string stateId = idForNode(dotState.node);
+
+	typedef DotState::mmap_s_e_t iter_t;
+
+	// we need to count outports first for vertical padding
+	for(iter_t::const_iterator targetIter = dotState.targets.begin(), end = dotState.targets.end();
+	        targetIter != end;
+	        targetIter = dotState.targets.upper_bound(targetIter->first)) {
+		nrOutports++;
+	}
+
+	for(iter_t::const_iterator targetIter = dotState.targets.begin(), end = dotState.targets.end();
+	        targetIter != end;
+	        targetIter = dotState.targets.upper_bound(targetIter->first)) {
 
 		// gather all events that activate the transition
-		std::string portName = *nameIter;
-		DotEdge edge(stateId, portName);
-		edge.fromPort = portName;
+		std::string targetId = targetIter->first;
 
-		std::multimap<std::string, std::string> eventConds; // event to condition
-		std::pair <DotState::mmap_s_e_t::const_iterator, DotState::mmap_s_e_t::const_iterator> targetKeyRange = dotState.targets.equal_range(portName);
-		for (destIterB = targetKeyRange.first;  destIterB != targetKeyRange.second;  ++destIterB) {
-			const Element<std::string>& transElem = destIterB->second;
-			std::list<std::string> eventNames = InterpreterImpl::tokenizeIdRefs(ATTR(transElem, "event"));
-			for (std::list<std::string>::iterator eventIter = eventNames.begin(); eventIter != eventNames.end(); eventIter++) {
-				eventConds.insert(std::make_pair(*eventIter, ATTR(transElem, "cond")));
-			}
-			if (eventNames.size() == 0) {
+		std::set<std::string> eventNames;
+
+		DotEdge edge(stateId, targetId);
+		edge.fromPort = targetId;
+
+		std::pair <iter_t::const_iterator, iter_t::const_iterator> targetKeyRange = dotState.targets.equal_range(targetId);
+		for (iter_t::const_iterator transIter = targetKeyRange.first; transIter != targetKeyRange.second;  ++transIter) {
+			const Element<std::string>& transElem = transIter->second;
+
+			std::list<std::string> events = InterpreterImpl::tokenizeIdRefs(ATTR(transElem, "event"));
+			eventNames.insert(events.begin(), events.end());
+
+			if (events.size() == 0) {
 				// spontaneous transition
-				eventConds.insert(std::make_pair("&#35;", ATTR(transElem, "cond")));
+				eventNames.insert("&#35;");
 				edge.type = EDGE_SPONTANEOUS;
 			}
 		}
-		if (_graph.find(portName) != _graph.end())
+
+		if (_graph.find(targetId) != _graph.end())
 			_edges.insert(edge);
 
-		typedef std::multimap<std::string, std::string>::iterator condIter_t;
 		std::stringstream outPortSS;
-		outPortSS << "<b>" << portName << "</b><br align=\"right\" />";
+		outPortSS << (_isFlat ? FlatStateIdentifier::toHTMLLabel(targetId) : "<b>" + targetId + "</b>" );
 
-		std::string opener = "{";
-		std::string closer;
-		std::string seperator;
-		condIter_t iterA, iterB;
-		for(iterA = eventConds.begin(); iterA != eventConds.end(); iterA = iterB) {
-			std::string eventName = iterA->first;
-			bool hasCondition = false;
-
-			std::pair <condIter_t, condIter_t> condRange = eventConds.equal_range(eventName);
-			for (iterB = condRange.first;  iterB != condRange.second;  ++iterB) {
-				hasCondition = true;
-			}
-
-			outPortSS << opener << seperator << eventName << (hasCondition ? "" : "");
-			seperator = ", ";
-			opener = "";
-			closer = "}";
+		if (_isFlat) {
+			outPortSS << "<br /><b>events: </b>{";
+		} else {
+			outPortSS << "<br />{";
 		}
-		outPortSS << closer;
 
-		os << "  <tr><td port=\"" << portEscape(portName) << "\" align=\"right\">" << outPortSS.str() << "</td></tr>" << std::endl;
+		std::string seperator;
+		for (std::set<std::string>::const_iterator eventIter = eventNames.begin(); eventIter != eventNames.end(); eventIter++) {
+			outPortSS << seperator << *eventIter << std::endl;
+			seperator = ", ";
+		}
+		outPortSS << "}";
+
+		if (nrOutports == 1) {
+			int missing = stateLines - nrOutports;
+			while (_isFlat && missing-- >= 1) {
+				outPortSS << "<br /> ";
+			}
+		}
+
+		os << "  <tr><td port=\"" << portEscape(targetId) << "\" balign=\"left\" align=\"left\">" << outPortSS.str() << "</td></tr>" << std::endl;
 
 	}
 }
@@ -689,7 +718,6 @@ std::string SCXMLDotWriter::getDetailedLabel(const Element<std::string>& elem, i
 std::string SCXMLDotWriter::portEscape(const std::string& text) {
 	std::string escaped(text);
 	boost::replace_all(escaped, ".", "-");
-
 	return text;
 }
 
@@ -719,7 +747,16 @@ std::string SCXMLDotWriter::nameForNode(const Node<std::string>& node) {
 	if (node.getNodeType() == Node_base::ELEMENT_NODE) {
 		Element<std::string> elem = (Element<std::string>)node;
 
-		if (false) {
+		if (InterpreterImpl::isFinal(elem) && _isFlat) {
+			// ignore visited and history with final elements
+			FlatStateIdentifier flatId(elem.getAttribute("id"));
+			return "<b>" + flatId.active.front() + "</b>";
+		}
+
+		if (elem.hasAttribute("id") && _isFlat) {
+			elemName = FlatStateIdentifier::toHTMLLabel(elem.getAttribute("id"));
+			if (elemName.size() > 0)
+				return elemName;
 		} else if (elem.getTagName() == "scxml") {
 			if (elem.hasAttribute("name") && !UUID::isUUID(elem.getAttribute("name"))) {
 				elemName += elem.getAttribute("name");
@@ -734,10 +771,11 @@ std::string SCXMLDotWriter::nameForNode(const Node<std::string>& node) {
 			elemName += elem.getAttribute("id");
 		}
 	}
+
 	if (elemName.size() == 0)
 		elemName = boost::lexical_cast<std::string>(node.getLocalName());
 
-	return elemName;
+	return "<b>" + elemName + "</b>";
 
 }
 
@@ -747,6 +785,13 @@ std::string SCXMLDotWriter::idForNode(const Node<std::string>& node) {
 	// try to get the id as the name or id attribute
 	if (node.getNodeType() == Node_base::ELEMENT_NODE) {
 		Element<std::string> elem = (Element<std::string>)node;
+
+		if (InterpreterImpl::isFinal(elem) && _isFlat) {
+			// ignore visited and history with final elements
+			FlatStateIdentifier flatId(elem.getAttribute("id"));
+			return flatId.activeId();
+		}
+
 		if (elem.hasAttribute("name")) {
 			elemId = elem.getAttribute("name");
 		} else if (elem.hasAttribute("id")) {
@@ -774,9 +819,6 @@ std::string SCXMLDotWriter::idForNode(const Node<std::string>& node) {
 		} while ((tmpParent = tmpParent.getParentNode()));
 //    elemId = ssElemId.str();
 	}
-
-	std::replace(elemId.begin(), elemId.end(), '-', '_');
-
 	return elemId;
 }
 

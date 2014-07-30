@@ -42,7 +42,7 @@
 
 #define EVAL_PARAM_EXPR(param, expr, key) \
 if (param.find(key) == param.end() && param.find(expr) != param.end() && _interpreter->getDataModel()) \
-  param.insert(std::make_pair(key, _interpreter->getDataModel().evalAsString(param.find(expr)->second.atom)));
+  param.insert(std::make_pair(key, Data(_interpreter->getDataModel().evalAsString(param.find(expr)->second.atom), Data::INTERPRETED)));
 
 #define CAST_PARAM(param, var, key, type) \
 if (param.find(key) != param.end()) { \

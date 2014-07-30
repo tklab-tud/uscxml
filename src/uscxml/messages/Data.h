@@ -44,7 +44,7 @@ public:
 	Data() : type(INTERPRETED) {}
 
 	// TODO: default INTERPRETED is unfortunate
-	Data(const std::string& atom, Type type = INTERPRETED) : atom(atom), type(type) {}
+	Data(const std::string& atom, Type type) : atom(atom), type(type) {}
 	Data(const char* data, size_t size, const std::string& mimeType, bool adopt = false);
 
 	// convenience constructors
@@ -57,9 +57,9 @@ public:
 	Data(double atom) : atom(toStr(atom)), type(INTERPRETED) {}
 	Data(bool atom) : type(INTERPRETED) {
 		if (atom) {
-			atom = "true";
+			this->atom = "true";
 		} else {
-			atom = "false";
+			this->atom = "false";
 		}
 	}
 
@@ -67,7 +67,7 @@ public:
 
 #if 0
 	// constructor for arbitrary types, skip if type is subclass though (C++11)
-	// we will have to drop this constructor as it interferes with operator Data() and entails C++11
+	// we will have to drop this constructor as it interferes with operator Data() and requires C++11
 	template <typename T>
 	Data(T value, typename std::enable_if<! std::is_base_of<Data, T>::value>::type* = nullptr)
 		: atom(toStr(value)), type(INTERPRETED) {}

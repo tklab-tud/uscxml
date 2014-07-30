@@ -85,6 +85,8 @@ public:
 	virtual std::string evalAsString(const std::string& expr);
 	virtual bool evalAsBool(const Arabica::DOM::Node<std::string>& node, const std::string& expr);
 
+	virtual std::string andExpressions(std::list<std::string>);
+
 protected:
 
 	virtual int luaEval(const Arabica::DOM::Element<std::string>& scriptElem,

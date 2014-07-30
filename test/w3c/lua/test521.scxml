@@ -6,7 +6,7 @@ the error event, we succeed.  Otherwise we eventually timeout and fail.  -->
   <state id="s0">
     <onentry>
       <!-- should cause an error -->
-      <send event="event2" target="FIXME"/>
+      <send event="event2" targetexpr="#_scxml_foo"/>
       <!-- this will get added to the external event queue after the error has been raised -->
       <send event="timeout"/>
     </onentry>

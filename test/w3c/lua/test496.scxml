@@ -2,7 +2,7 @@
 <scxml xmlns="http://www.w3.org/2005/07/scxml" initial="s0" version="1.0" datamodel="lua">
   <state id="s0">
     <onentry>
-      <send type="http://www.w3.org/TR/scxml/#SCXMLEventProcessor" event="event" target="FIXME"/>
+      <send type="http://www.w3.org/TR/scxml/#SCXMLEventProcessor" event="event" target="#_scxml_foo"/>
       <raise event="foo"/>
     </onentry>
     <transition event="error.communication" target="pass"/>

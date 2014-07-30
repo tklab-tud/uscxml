@@ -7,7 +7,7 @@
   <state id="s0">
     <onentry>
       <send event="timeout" delay="30s"/>
-      <send event="test" type="http://www.w3.org/TR/scxml/#BasicHTTPEventProcessor" namelist="testvar1" targetexpr="FIXME"/>
+      <send event="test" type="http://www.w3.org/TR/scxml/#BasicHTTPEventProcessor" namelist="testvar1" targetexpr="_ioprocessors.basichttp.location"/>
     </onentry>
     <transition event="test" cond="_event.data.testvar1==2" target="pass"/>
     <transition event="*" target="fail"/>

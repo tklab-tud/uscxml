@@ -474,16 +474,17 @@ void JSCDataModel::setForeach(const std::string& item,
 	// assign array element to item
 	std::stringstream ss;
 	ss << array << "[" << iteration << "]";
-	assign(item, ss.str());
+	assign(item, Data(ss.str(), Data::INTERPRETED));
 	if (index.length() > 0) {
 		// assign iteration element to index
 		std::stringstream ss;
 		ss << iteration;
-		assign(index, ss.str());
+		assign(index, Data(ss.str(), Data::INTERPRETED));
 	}
 }
 
 bool JSCDataModel::isLocation(const std::string& expr) {
+	// location needs to be RHS and ++ is only valid for RHS
 	JSStringRef scriptJS = JSStringCreateWithUTF8CString((expr + "++").c_str());
 	JSValueRef exception = NULL;
 	bool valid = JSCheckScriptSyntax(_ctx, scriptJS, NULL, 0, &exception);

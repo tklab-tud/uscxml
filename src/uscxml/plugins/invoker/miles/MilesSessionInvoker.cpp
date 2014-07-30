@@ -282,7 +282,7 @@ void MilesSessionInvoker::send(const SendRequest& req) {
 void MilesSessionInvoker::processEventStart(const std::string& origin, const std::string& userid, const std::string& reflector, const std::string& session) {
 
 	Event ev;
-	ev.data.compound["origin"] = origin;
+	ev.data.compound["origin"] = Data(origin, Data::INTERPRETED);
 	//std::cout << req;
 	if(num_connected>0) {
 		num_connected++;
@@ -383,7 +383,7 @@ void MilesSessionInvoker::processEventStart(const std::string& origin, const std
 
 void MilesSessionInvoker::processEventStop(const std::string& origin) {
 	Event ev;
-	ev.data.compound["origin"] = origin;
+	ev.data.compound["origin"] = Data(origin, Data::INTERPRETED);
 
 	if(num_connected==0) {
 		LOG(ERROR) << "not connected";
@@ -419,7 +419,7 @@ void MilesSessionInvoker::processEventStop(const std::string& origin) {
 void MilesSessionInvoker::processEventParticipants(const std::string& origin) {
 
 	Event ev;
-	ev.data.compound["origin"] = origin;
+	ev.data.compound["origin"] = Data(origin, Data::INTERPRETED);
 	if(num_connected==0) {
 		LOG(ERROR) << "not connected";
 		ev.name = "participants.error";
@@ -440,7 +440,7 @@ void MilesSessionInvoker::processEventParticipants(const std::string& origin) {
 
 void MilesSessionInvoker::processEventThumbnail(const std::string& origin, const std::string& userid) {
 	Event ev;
-	ev.data.compound["origin"] = origin;
+	ev.data.compound["origin"] = Data(origin, Data::INTERPRETED);
 	if(num_connected==0) {
 		LOG(ERROR) << "not connected";
 		ev.name = "thumbnail.error";
@@ -496,52 +496,52 @@ void MilesSessionInvoker::processEventThumbnail(const std::string& origin, const
 void MilesSessionInvoker::processEventVideoOn(const std::string& origin, const std::string& userid) {
 	Event ev;
 	ev.name = "videoon.reply";
-	ev.data.compound["origin"] = origin;
+	ev.data.compound["origin"] = Data(origin, Data::INTERPRETED);
 	returnEvent(ev);
 }
 void MilesSessionInvoker::processEventVideoOff(const std::string& origin, const std::string& userid) {
 	Event ev;
 	ev.name = "videooff.reply";
-	ev.data.compound["origin"] = origin;
+	ev.data.compound["origin"] = Data(origin, Data::INTERPRETED);
 	returnEvent(ev);
 }
 void MilesSessionInvoker::processEventAudioOn(const std::string& origin, const std::string& userid) {
 	Event ev;
 	ev.name = "audioon.reply";
-	ev.data.compound["origin"] = origin;
+	ev.data.compound["origin"] = Data(origin, Data::INTERPRETED);
 	returnEvent(ev);
 }
 void MilesSessionInvoker::processEventAudioOff(const std::string& origin, const std::string& userid) {
 	Event ev;
 	ev.name = "audiooff.reply";
-	ev.data.compound["origin"] = origin;
+	ev.data.compound["origin"] = Data(origin, Data::INTERPRETED);
 	returnEvent(ev);
 }
 void MilesSessionInvoker::processEventSendVideo(const std::string& origin, size_t width, size_t height, size_t framerate, const std::string& compression) {
 	Event ev;
 	ev.name = "sendvideo.reply";
-	ev.data.compound["origin"] = origin;
+	ev.data.compound["origin"] = Data(origin, Data::INTERPRETED);
 	sendvideo_enabled = 1;
 	returnEvent(ev);
 }
 void MilesSessionInvoker::processEventSendVideoOff(const std::string& origin) {
 	Event ev;
 	ev.name = "sendvideooff.reply";
-	ev.data.compound["origin"] = origin;
+	ev.data.compound["origin"] = Data(origin, Data::INTERPRETED);
 	returnEvent(ev);
 	sendvideo_enabled = 0;
 }
 void MilesSessionInvoker::processEventSendAudio(const std::string& origin, const std::string& encoding) {
 	Event ev;
 	ev.name = "sendaudio.reply";
-	ev.data.compound["origin"] = origin;
+	ev.data.compound["origin"] = Data(origin, Data::INTERPRETED);
 	returnEvent(ev);
 	sendaudio_enabled = 1;
 }
 void MilesSessionInvoker::processEventSendAudioOff(const std::string& origin) {
 	Event ev;
 	ev.name = "sendaudiooff.reply";
-	ev.data.compound["origin"] = origin;
+	ev.data.compound["origin"] = Data(origin, Data::INTERPRETED);
 	returnEvent(ev);
 	sendaudio_enabled = 0;
 }
@@ -552,7 +552,7 @@ void MilesSessionInvoker::processEventPostText(const std::string& origin, const 
 	int n, length;
 	Event ev;
 
-	ev.data.compound["origin"] = origin;
+	ev.data.compound["origin"] = Data(origin, Data::INTERPRETED);
 	if(num_connected==0) {
 		LOG(ERROR) << "not connected";
 		ev.name = "posttext.error";
@@ -574,7 +574,7 @@ void MilesSessionInvoker::processEventPostText(const std::string& origin, const 
 
 void MilesSessionInvoker::processEventGetText(const std::string& origin) {
 	Event ev;
-	ev.data.compound["origin"] = origin;
+	ev.data.compound["origin"] = Data(origin, Data::INTERPRETED);
 	if(num_connected==0) {
 		LOG(ERROR) << "not connected";
 		ev.name = "gettext.error";

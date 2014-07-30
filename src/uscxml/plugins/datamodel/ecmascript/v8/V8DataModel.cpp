@@ -499,12 +499,12 @@ void V8DataModel::setForeach(const std::string& item,
 	// assign array element to item
 	std::stringstream ss;
 	ss << array << "[" << iteration << "]";
-	assign(item, ss.str());
+	assign(item, Data(ss.str(), Data::INTERPRETED));
 	if (index.length() > 0) {
 		// assign iteration element to index
 		std::stringstream ss;
 		ss << iteration;
-		assign(index, ss.str());
+		assign(index, Data(ss.str(), Data::INTERPRETED));
 	}
 }
 
@@ -753,7 +753,7 @@ void V8DataModel::throwExceptionEvent(const v8::TryCatch& tryCatch) {
 		std::stringstream ssLineNumber;
 		int lineNumber = message->GetLineNumber();
 		ssLineNumber << lineNumber;
-		exceptionEvent.data.compound["linenumber"] = Data(ssLineNumber.str());
+		exceptionEvent.data.compound["linenumber"] = Data(ssLineNumber.str(), Data::INTERPRETED);
 
 		int startColumn = message->GetStartColumn();
 		int endColumn = message->GetEndColumn();

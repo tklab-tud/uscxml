@@ -84,10 +84,10 @@ Data DirMonInvoker::getDataModelVariables() {
 	std::map<std::string, struct stat> entries = _watcher->getAllEntries();
 	std::map<std::string, struct stat>::iterator entryIter = entries.begin();
 	while(entryIter != entries.end()) {
-		data.compound["file"].compound[entryIter->first].compound["mtime"] = toStr(entryIter->second.st_mtime);
-		data.compound["file"].compound[entryIter->first].compound["ctime"] = toStr(entryIter->second.st_mtime);
-		data.compound["file"].compound[entryIter->first].compound["atime"] = toStr(entryIter->second.st_mtime);
-		data.compound["file"].compound[entryIter->first].compound["size"] = toStr(entryIter->second.st_mtime);
+		data.compound["file"].compound[entryIter->first].compound["mtime"] = Data(toStr(entryIter->second.st_mtime), Data::INTERPRETED);
+		data.compound["file"].compound[entryIter->first].compound["ctime"] = Data(toStr(entryIter->second.st_mtime), Data::INTERPRETED);
+		data.compound["file"].compound[entryIter->first].compound["atime"] = Data(toStr(entryIter->second.st_mtime), Data::INTERPRETED);
+		data.compound["file"].compound[entryIter->first].compound["size"] = Data(toStr(entryIter->second.st_mtime), Data::INTERPRETED);
 		entryIter++;
 	}
 
@@ -252,10 +252,10 @@ void DirMonInvoker::handleChanges(DirectoryWatch::Action action, const std::stri
 	}
 
 	if (action != DirectoryWatch::DELETED) {
-		event.data.compound["file"].compound["mtime"] = toStr(fileStat.st_mtime);
-		event.data.compound["file"].compound["ctime"] = toStr(fileStat.st_ctime);
-		event.data.compound["file"].compound["atime"] = toStr(fileStat.st_atime);
-		event.data.compound["file"].compound["size"]  = toStr(fileStat.st_size);
+		event.data.compound["file"].compound["mtime"] = Data(toStr(fileStat.st_mtime), Data::INTERPRETED);
+		event.data.compound["file"].compound["ctime"] = Data(toStr(fileStat.st_ctime), Data::INTERPRETED);
+		event.data.compound["file"].compound["atime"] = Data(toStr(fileStat.st_atime), Data::INTERPRETED);
+		event.data.compound["file"].compound["size"]  = Data(toStr(fileStat.st_size), Data::INTERPRETED);
 	}
 
 	event.data.compound["file"].compound["name"] = Data(basename, Data::VERBATIM);

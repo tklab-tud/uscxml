@@ -5,10 +5,10 @@ at the accessURI -->
   <state id="s0">
     <onentry>
       <send event="timeout" delay="30s"/>
-      <send event="test" type="http://www.w3.org/TR/scxml/#BasicHTTPEventProcessor" targetexpr="FIXME"/>
+      <send event="test" type="http://www.w3.org/TR/scxml/#BasicHTTPEventProcessor" targetexpr="_ioprocessors.basichttp.location"/>
     </onentry>
     <!-- if the event was send by http and we get it, we succeed -->
-    <transition event="test" cond="_event.httpmethod=='POST'" target="pass"/>
+    <transition event="test" cond="_event.name=='http.post'" target="pass"/>
     <transition event="*" target="fail"/>
   </state>
   <final id="pass"/>

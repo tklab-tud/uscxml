@@ -5,7 +5,7 @@ as the name of the resulting event. -->
   <state id="s0">
     <onentry>
       <send event="timeout" delay="3s"/>
-      <send type="http://www.w3.org/TR/scxml/#BasicHTTPEventProcessor" targetexpr="FIXME">
+      <send type="http://www.w3.org/TR/scxml/#BasicHTTPEventProcessor" targetexpr="_ioprocessors.basichttp.location">
         <!-- this content will be ignored, but it's here to make sure we have a message body -->
         <content>some content</content>
       </send>

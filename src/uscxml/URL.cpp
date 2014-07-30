@@ -179,7 +179,7 @@ URLImpl::operator Data() const {
 	data.compound["host"] = Data(_uri.host(), Data::VERBATIM);
 	data.compound["scheme"] = Data(_uri.scheme(), Data::VERBATIM);
 	data.compound["path"] = Data(_uri.path(), Data::VERBATIM);
-	data.compound["port"] = Data(_uri.port());
+	data.compound["port"] = Data(_uri.port(), Data::INTERPRETED);
 	data.compound["isAbsolute"] = Data(_uri.is_absolute());
 	if (_statusCode.length() > 0)
 		data.compound["statusCode"] = Data(_statusCode, Data::VERBATIM);

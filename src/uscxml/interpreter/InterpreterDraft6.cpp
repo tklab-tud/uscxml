@@ -138,6 +138,15 @@ InterpreterState InterpreterDraft6::step(int waitForMS = 0) {
 			setInterpreterState(USCXML_MICROSTEPPED);
 		}
 
+		if (!isLegalConfiguration(_configuration)) {
+			std:: cout << "Illegal configuration: {";
+			for (int i = 0; i < _configuration.size(); i++) {
+				std::cout << ATTR(_configuration[i], "id") << ", " << std::endl;
+			}
+			std:: cout << "}" << std::endl;
+		}
+		assert(isLegalConfiguration(_configuration));
+
 		// are there spontaneous transitions?
 		if (!_stable) {
 			enabledTransitions = selectEventlessTransitions();
@@ -164,8 +173,7 @@ InterpreterState InterpreterDraft6::step(int waitForMS = 0) {
 
 			USCXML_MONITOR_CALLBACK2(beforeProcessingEvent, _currEvent)
 
-			if (_dataModel)
-				_dataModel.setEvent(_currEvent);
+			_dataModel.setEvent(_currEvent);
 			enabledTransitions = selectTransitions(_currEvent.name);
 
 			if (!enabledTransitions.empty()) {
@@ -281,7 +289,7 @@ EXIT_INTERPRETER:
 		_mutex.unlock();
 
 		// remove datamodel
-		if(_dataModel)
+		if(!_userSuppliedDataModel)
 			_dataModel = DataModel();
 
 		setInterpreterState(USCXML_FINISHED);
@@ -375,16 +383,14 @@ Arabica::XPath::NodeSet<std::string> InterpreterDraft6::selectTransitions(const 
 
 	unsigned int index = 0;
 	while(states.size() > index) {
-		bool foundTransition = false;
 		NodeSet<std::string> transitions = filterChildElements(_nsInfo.xmlNSPrefix + "transition", states[index]);
 		for (unsigned int k = 0; k < transitions.size(); k++) {
 			if (isEnabledTransition(Element<std::string>(transitions[k]), event)) {
 				enabledTransitions.push_back(transitions[k]);
-				foundTransition = true;
 				goto LOOP;
 			}
 		}
-		if (!foundTransition) {
+		{
 			Node<std::string> parent = states[index].getParentNode();
 			if (parent) {
 				states.push_back(parent);
@@ -549,6 +555,9 @@ bool InterpreterDraft6::isWithinParallel(const Element<std::string>& transition)
 	if (isTargetless(transition))
 		return false;
 
+	if (_transWithinParallel.find(transition) != _transWithinParallel.end())
+		return _transWithinParallel[transition];
+
 	Node<std::string> source;
 	if (HAS_ATTR(transition, "type") && iequals(ATTR(transition, "type"), "internal")) {
 		source = getSourceState(transition);
@@ -559,7 +568,10 @@ bool InterpreterDraft6::isWithinParallel(const Element<std::string>& transition)
 	targets.push_back(source);
 
 	Node<std::string> lcpa = findLCPA(targets);
-	return lcpa;
+	_transWithinParallel[transition] = lcpa;
+
+	return _transWithinParallel[transition];
+
 }
 
 Node<std::string> InterpreterDraft6::findLCPA(const Arabica::XPath::NodeSet<std::string>& states) {

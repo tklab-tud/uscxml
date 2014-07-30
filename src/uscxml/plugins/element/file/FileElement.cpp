@@ -184,10 +184,10 @@ void FileElement::enterElement(const Arabica::DOM::Node<std::string>& node) {
 
 		event.data.compound["file"].compound["name"] = Data(filename, Data::VERBATIM);
 		event.data.compound["file"].compound["path"] = Data(_filepath, Data::VERBATIM);
-		event.data.compound["file"].compound["mtime"] = toStr(fileStat.st_mtime);
-		event.data.compound["file"].compound["ctime"] = toStr(fileStat.st_ctime);
-		event.data.compound["file"].compound["atime"] = toStr(fileStat.st_atime);
-		event.data.compound["file"].compound["size"]  = toStr(fileStat.st_size);
+		event.data.compound["file"].compound["mtime"] = Data(toStr(fileStat.st_mtime), Data::INTERPRETED);
+		event.data.compound["file"].compound["ctime"] = Data(toStr(fileStat.st_ctime), Data::INTERPRETED);
+		event.data.compound["file"].compound["atime"] = Data(toStr(fileStat.st_atime), Data::INTERPRETED);
+		event.data.compound["file"].compound["size"]  = Data(toStr(fileStat.st_size), Data::INTERPRETED);
 
 
 		FILE *fp;
