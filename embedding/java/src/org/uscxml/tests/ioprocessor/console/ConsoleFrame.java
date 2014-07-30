@@ -29,10 +29,13 @@ public class ConsoleFrame extends Frame {
 			    + "	<script src=\"http://uscxml.tk.informatik.tu-darmstadt.de/scripts/dump.js\" />"
 			    + " <script>var charSeq = \"\";</script>"
 				+ "	<state id=\"idle\">"
+				+ "   <transition event=\"error\" target=\"quit\" />"
 				+ "   <transition event=\"key.released\" cond=\"_event.data.keyChar == 10\">"
-				+ "		<log expr=\"charSeq\" />"
+				+ "     <send type=\"console\">"
+				+ "       <param name=\"foo\" expr=\"charSeq\" />"
+				+ "     </send>"
 				+ "     <script>"
-				+ "       charSeq = \"\";"
+				+ "       charSeq = \"\"; // reset string"
 				+ "     </script>"
 				+ "   </transition>"
 				+ "   <transition event=\"*\">"
@@ -40,6 +43,7 @@ public class ConsoleFrame extends Frame {
 				+ "     <script>charSeq += String.fromCharCode(_event.data.keyChar);</script>"
 				+ "   </transition>"
 				+ "	</state>"
+				+ " <final id=\"quit\" />"
 				+ "</scxml>");
 
 

@@ -17,7 +17,7 @@ public class ConsoleIOProc extends IOProcessor implements KeyListener {
 	public IOProcessor create(Interpreter interpreter) {
 		ConsoleIOProc ioProc = new ConsoleIOProc();
 		ioProc.swigReleaseOwnership();	
-				
+
 		if (ConsoleFrame.perInterpreter.containsKey(interpreter)) {
 			ConsoleFrame.perInterpreter.get(interpreter).addKeyListener(ioProc);
 		} else {

@@ -2500,7 +2500,7 @@ void InterpreterImpl::setupIOProcessors() {
 		std::list<std::string>::iterator nameIter = names.begin();
 		while(nameIter != names.end()) {
 			// do not override
-			if (!boost::equal(*nameIter, ioProcIter->first) && _ioProcessors.find(*nameIter) != _ioProcessors.end())
+			if (!boost::equal(*nameIter, ioProcIter->first) && _ioProcessors.find(*nameIter) == _ioProcessors.end())
 				_ioProcessors[*nameIter] = _ioProcessors[ioProcIter->first];
 			nameIter++;
 		}
