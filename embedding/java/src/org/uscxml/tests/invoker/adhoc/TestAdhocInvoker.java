@@ -1,8 +1,7 @@
-package org.uscxml.tests.invoker;
+package org.uscxml.tests.invoker.adhoc;
 
 import org.uscxml.Data;
 import org.uscxml.Event;
-import org.uscxml.Factory;
 import org.uscxml.Interpreter;
 import org.uscxml.InterpreterException;
 import org.uscxml.InvokeRequest;
@@ -10,7 +9,7 @@ import org.uscxml.Invoker;
 import org.uscxml.SendRequest;
 import org.uscxml.StringList;
 
-public class TestCustomInvoker extends Invoker {
+public class TestAdhocInvoker extends Invoker {
 
 	@Override
 	public StringList getNames() {
@@ -45,23 +44,12 @@ public class TestCustomInvoker extends Invoker {
 		System.out.println("uninvoke");
 	}
 
-	@Override
-	public Invoker create(Interpreter interpreter) {
-		TestCustomInvoker invoker = new TestCustomInvoker();
-		invoker.swigReleaseOwnership();
-		return invoker;
-	}
-
 	/**
 	 * @param args
 	 * @throws InterpreterException 
 	 */
 	public static void main(String[] args) throws InterpreterException {
 		System.load("/Users/sradomski/Documents/TK/Code/uscxml/build/cli/lib/libuscxmlNativeJava64.jnilib");
-
-		TestCustomInvoker invoker = new TestCustomInvoker();
-		// just register prototype at global factory
-		Factory.getInstance().registerInvoker(invoker);
 
 		String xml = 
 		"<scxml>" +
@@ -84,9 +72,15 @@ public class TestCustomInvoker extends Invoker {
 		"  <final id=\"done\" />" +
 		"</scxml>";
 
+		TestAdhocInvoker javainvoker1 = new TestAdhocInvoker();
+		TestAdhocInvoker javainvoker2 = new TestAdhocInvoker();
+
 		// parse and interpret
 		Interpreter interpreter = Interpreter.fromXML(xml);
+		interpreter.setInvoker("javainvoker1", javainvoker1);
+		interpreter.setInvoker("javainvoker2", javainvoker2);
 		interpreter.interpret();
+		
 	}
 
 }

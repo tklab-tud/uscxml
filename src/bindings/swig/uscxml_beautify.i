@@ -67,6 +67,10 @@
 	void setDataModel(WrappedDataModel* dataModel) {
 		self->setDataModel(boost::shared_ptr<DataModelImpl>(dataModel));
 	}
+
+	void setInvoker(const std::string invokeId, uscxml::WrappedInvoker* invoker) {
+		self->setInvoker(invokeId, boost::shared_ptr<InvokerImpl>(invoker));
+	}
 	
 	std::vector<std::string> getBasicConfiguration() {
 		Arabica::XPath::NodeSet<std::string> nativeConfig = self->getBasicConfiguration();

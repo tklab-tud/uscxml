@@ -60,6 +60,7 @@ public:
 	virtual void send(const SendRequest& req);
 	virtual void cancel(const std::string sendId);
 	virtual void invoke(const InvokeRequest& req);
+	virtual void uninvoke();
 
 protected:
 	bool _cancelled;

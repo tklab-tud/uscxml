@@ -1385,19 +1385,29 @@ void InterpreterImpl::invoke(const Arabica::DOM::Node<std::string>& element) {
 			invokeReq.type = "http://www.w3.org/TR/scxml/";
 
 		Invoker invoker;
-		try {
-			invoker = _factory->createInvoker(invokeReq.type, this);
-		} catch (Event e) {
-			receiveInternal(e);
+		// is there such an invoker already?
+		if (_invokers.find(invokeReq.invokeid) != _invokers.end()) {
+			invoker = _invokers[invokeReq.invokeid];
+		} else {
+			try {
+				invoker = _factory->createInvoker(invokeReq.type, this);
+				invoker.setInvokeId(invokeReq.invokeid);
+				invoker.setInterpreter(this);
+				_invokers[invokeReq.invokeid] = invoker;
+			} catch (Event e) {
+				receiveInternal(e);
+			}
 		}
 		if (invoker) {
 			tthread::lock_guard<tthread::recursive_mutex> lock(_pluginMutex);
 			try {
-				invoker.setInvokeId(invokeReq.invokeid);
-				invoker.setType(invokeReq.type);
-				invoker.setInterpreter(this);
-				invoker.setElement(Element<std::string>(element));
-				_invokers[invokeReq.invokeid] = invoker;
+				
+				if (!invoker.getElement())
+					invoker.setElement(Element<std::string>(element));
+
+				if (invoker.getType().size() == 0)
+					invoker.setType(invokeReq.type);
+
 				try {
 
 					USCXML_MONITOR_CALLBACK3(beforeInvoking, Arabica::DOM::Element<std::string>(element), invokeReq.invokeid);
@@ -1453,7 +1463,13 @@ void InterpreterImpl::cancelInvoke(const Arabica::DOM::Node<std::string>& elemen
 
 		USCXML_MONITOR_CALLBACK3(beforeUninvoking, Element<std::string>(element), invokeId)
 		_invokers[invokeId].uninvoke();
-		_invokers.erase(invokeId);
+		
+		/**
+		 * This should not be necessary. Most invokers have their "clean-up" code in their
+		 * destructor and not their uninvoke method - we need to refactor them all!
+		 */
+		if (_dontDestructOnUninvoke.find(invokeId) == _dontDestructOnUninvoke.end())
+			_invokers.erase(invokeId);
 
 		USCXML_MONITOR_CALLBACK3(beforeUninvoking, Element<std::string>(element), invokeId)
 

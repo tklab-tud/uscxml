@@ -40,12 +40,16 @@ USCXMLInvoker::USCXMLInvoker() : _cancelled(false) {
 
 
 USCXMLInvoker::~USCXMLInvoker() {
+};
+
+void USCXMLInvoker::uninvoke() {
 	_cancelled = true;
 	Event event;
 	event.name = "unblock.and.die";
 	if (_invokedInterpreter)
 		_invokedInterpreter.receive(event);
-};
+
+}
 
 boost::shared_ptr<InvokerImpl> USCXMLInvoker::create(InterpreterImpl* interpreter) {
 	boost::shared_ptr<USCXMLInvoker> invoker = boost::shared_ptr<USCXMLInvoker>(new USCXMLInvoker());
@@ -67,6 +71,7 @@ void USCXMLInvoker::cancel(const std::string sendId) {
 }
 
 void USCXMLInvoker::invoke(const InvokeRequest& req) {
+	_cancelled = false;
 	if (req.src.length() > 0) {
 		_invokedInterpreter = Interpreter::fromURI(req.src);
 	} else if (req.dom) {

@@ -364,7 +364,7 @@ public:
 			nameIter++;
 		}
 	}
-
+	
 	const std::map<std::string, IOProcessor>& getIOProcessors() {
 		return _ioProcessors;
 	}
@@ -377,6 +377,13 @@ public:
 		return _dataModel;
 	}
 
+	void setInvoker(const std::string& invokeId, Invoker invoker) {
+		_dontDestructOnUninvoke.insert(invokeId);
+		_invokers[invokeId] = invoker;
+		_invokers[invokeId].setInterpreter(this);
+		_invokers[invokeId].setInvokeId(invokeId);
+	}
+	
 	const std::map<std::string, Invoker>& getInvokers() {
 		return _invokers;
 	}
@@ -466,7 +473,8 @@ protected:
 	bool _isInitialized;
 	bool _domIsSetup;
 	bool _userSuppliedDataModel;
-
+	std::set<std::string> _dontDestructOnUninvoke;
+	
 	bool _isStarted;
 	bool _isRunning;
 
@@ -657,6 +665,9 @@ public:
 		return _impl->getIOProcessors();
 	}
 
+	void setInvoker(const std::string& invokeId, Invoker invoker) {
+		_impl->setInvoker(invokeId, invoker);
+	}
 	const std::map<std::string, Invoker>& getInvokers() {
 		return _impl->getInvokers();
 	}

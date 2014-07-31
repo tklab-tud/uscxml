@@ -1,4 +1,4 @@
-package org.uscxml.tests.ioprocessor;
+package org.uscxml.tests.ioprocessor.factory;
 
 import java.io.IOException;
 import java.io.StringReader;

@@ -1,4 +1,4 @@
-package org.uscxml.tests.ioprocessor.console;
+package org.uscxml.tests.ioprocessor.adhoc.console;
 
 import java.awt.Frame;
 import java.awt.event.KeyEvent;

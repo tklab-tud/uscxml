@@ -47,6 +47,7 @@
 %ignore uscxml::Interpreter::setCmdLineOptions(std::map<std::string, std::string>);
 %ignore uscxml::Interpreter::setDataModel(const DataModel& dataModel);
 %ignore uscxml::Interpreter::addIOProcessor(IOProcessor ioProc);
+%ignore uscxml::Interpreter::setInvoker(const std::string& invokeId, Invoker invoker);
 %ignore uscxml::Interpreter::getDocument;
 %ignore uscxml::Interpreter::getImpl;
 %ignore uscxml::Interpreter::runOnMainThread;

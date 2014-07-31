@@ -49,7 +49,10 @@ public:
 	void setType(const std::string& type) {
 		_type = type;
 	}
-
+	std::string getType() {
+		return _type;
+	}
+	
 	void setElement(const Arabica::DOM::Element<std::string>& element) {
 		_element = element;
 	}
@@ -101,8 +104,12 @@ public:
 	void setInvokeId(const std::string& invokeId) {
 		_impl->setInvokeId(invokeId);
 	}
+	
 	void setType(const std::string& type) {
 		_impl->setType(type);
+	}
+	std::string getType() {
+		return _impl->getType();
 	}
 
 	void setElement(const Arabica::DOM::Element<std::string>& element) {
