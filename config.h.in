@@ -47,6 +47,7 @@
 #cmakedefine SWI_BINARY "@SWI_BINARY@"
 
 /** whether we want some feature */
+#cmakedefine BUILD_MINIMAL
 #cmakedefine BUILD_DM_PROLOG
 #cmakedefine BUILD_DM_PROMELA
 #cmakedefine BUILD_DM_ECMA

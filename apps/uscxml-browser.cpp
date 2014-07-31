@@ -1,7 +1,10 @@
 #include "uscxml/config.h"
 #include "uscxml/Interpreter.h"
 #include "uscxml/DOMUtils.h"
-#include "uscxml/debug/DebuggerServlet.h"
+
+#ifndef BUILD_MINIMAL
+#	include "uscxml/debug/DebuggerServlet.h"
+#endif
 #include <glog/logging.h>
 
 #include "uscxml/Factory.h"
@@ -159,11 +162,13 @@ int main(int argc, char** argv) {
 	}
 	HTTPServer::getInstance(options.httpPort, options.wsPort, sslConf);
 
+#ifndef BUILD_MINIMAL
 	DebuggerServlet* debugger;
 	if (options.withDebugger) {
 		debugger = new DebuggerServlet();
 		HTTPServer::getInstance()->registerServlet("/debug", debugger);
 	}
+#endif
 
 	// instantiate and configure interpreters
 	std::list<Interpreter> interpreters;
@@ -184,9 +189,12 @@ int main(int argc, char** argv) {
 					VerboseMonitor* vm = new VerboseMonitor();
 					interpreter.addMonitor(vm);
 				}
+
+#ifndef BUILD_MINIMAL
 				if (options.withDebugger) {
 					interpreter.addMonitor(debugger);
 				}
+#endif
 
 				interpreters.push_back(interpreter);
 
@@ -220,11 +228,13 @@ int main(int argc, char** argv) {
 			}
 		}
 
+#ifndef BUILD_MINIMAL
 		if (options.withDebugger) {
 			// idle and wait for CTRL+C or debugging events
 			while(true)
 				tthread::this_thread::sleep_for(tthread::chrono::seconds(1));
 		}
+#endif
 	} catch (Event e) {
 		std::cout << e << std::endl;
 	}

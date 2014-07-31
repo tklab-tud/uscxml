@@ -364,7 +364,7 @@ public:
 			nameIter++;
 		}
 	}
-	
+
 	const std::map<std::string, IOProcessor>& getIOProcessors() {
 		return _ioProcessors;
 	}
@@ -383,7 +383,7 @@ public:
 		_invokers[invokeId].setInterpreter(this);
 		_invokers[invokeId].setInvokeId(invokeId);
 	}
-	
+
 	const std::map<std::string, Invoker>& getInvokers() {
 		return _invokers;
 	}
@@ -474,7 +474,7 @@ protected:
 	bool _domIsSetup;
 	bool _userSuppliedDataModel;
 	std::set<std::string> _dontDestructOnUninvoke;
-	
+
 	bool _isStarted;
 	bool _isRunning;
 

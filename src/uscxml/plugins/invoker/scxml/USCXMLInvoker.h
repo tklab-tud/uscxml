@@ -56,6 +56,10 @@ public:
 		return names;
 	}
 
+	virtual bool deleteOnUninvoke() {
+		return false;
+	}
+
 	virtual Data getDataModelVariables();
 	virtual void send(const SendRequest& req);
 	virtual void cancel(const std::string sendId);

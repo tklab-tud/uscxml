@@ -34,6 +34,11 @@ public:
 	virtual ~InvokerImpl() {}
 	virtual void invoke(const InvokeRequest& req) = 0;
 	virtual void uninvoke() {}
+
+	virtual bool deleteOnUninvoke() {
+		return true;
+	}
+
 	virtual boost::shared_ptr<InvokerImpl> create(InterpreterImpl* interpreter) = 0;
 };
 
@@ -68,6 +73,10 @@ public:
 
 	virtual void uninvoke()     {
 		_impl->uninvoke();
+	}
+
+	virtual bool deleteOnUninvoke() {
+		return _impl->deleteOnUninvoke();
 	}
 
 protected:

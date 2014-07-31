@@ -1401,7 +1401,7 @@ void InterpreterImpl::invoke(const Arabica::DOM::Node<std::string>& element) {
 		if (invoker) {
 			tthread::lock_guard<tthread::recursive_mutex> lock(_pluginMutex);
 			try {
-				
+
 				if (!invoker.getElement())
 					invoker.setElement(Element<std::string>(element));
 
@@ -1463,12 +1463,12 @@ void InterpreterImpl::cancelInvoke(const Arabica::DOM::Node<std::string>& elemen
 
 		USCXML_MONITOR_CALLBACK3(beforeUninvoking, Element<std::string>(element), invokeId)
 		_invokers[invokeId].uninvoke();
-		
+
 		/**
 		 * This should not be necessary. Most invokers have their "clean-up" code in their
 		 * destructor and not their uninvoke method - we need to refactor them all!
 		 */
-		if (_dontDestructOnUninvoke.find(invokeId) == _dontDestructOnUninvoke.end())
+		if (_invokers[invokeId].deleteOnUninvoke())
 			_invokers.erase(invokeId);
 
 		USCXML_MONITOR_CALLBACK3(beforeUninvoking, Element<std::string>(element), invokeId)

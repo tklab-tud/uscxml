@@ -52,6 +52,10 @@ public:
 	virtual void invoke(const InvokeRequest& req) {}
 	virtual void uninvoke() {}
 
+	virtual bool deleteOnUninvoke() {
+		return false;
+	}
+
 	virtual WrappedInvoker* create(const Interpreter& interpreter) {
 		return new WrappedInvoker();
 	}

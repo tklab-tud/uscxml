@@ -57,7 +57,7 @@ typedef uscxml::ExecutableContentImpl ExecutableContentImpl;
 #include "../../../uscxml/Interpreter.h"
 #include "../../../uscxml/concurrency/BlockingQueue.h"
 #include "../../../uscxml/server/HTTPServer.h"
-#include "../../../uscxml/debug/DebuggerServlet.h"
+//#include "../../../uscxml/debug/DebuggerServlet.h"
 
 #include "../wrapped/WrappedInvoker.h"
 #include "../wrapped/WrappedDataModel.h"
@@ -382,7 +382,7 @@ using System.Runtime.InteropServices;
 %include "../../../uscxml/Interpreter.h"
 %include "../../../uscxml/concurrency/BlockingQueue.h"
 %include "../../../uscxml/server/HTTPServer.h"
-%include "../../../uscxml/debug/DebuggerServlet.h"
+//%include "../../../uscxml/debug/DebuggerServlet.h"
 
 %include "../../../uscxml/messages/Blob.h"
 %include "../../../uscxml/messages/Data.h"

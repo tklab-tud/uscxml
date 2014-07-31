@@ -32,19 +32,21 @@ file(GLOB_RECURSE USCXML_MESSAGES
 source_group("Interpreter" FILES ${USCXML_MESSAGES})
 list (APPEND USCXML_FILES ${USCXML_MESSAGES})
 
-file(GLOB_RECURSE USCXML_DEBUG
-	debug/*.cpp
-	debug/*.h
-)
-source_group("Interpreter" FILES ${USCXML_DEBUG})
-list (APPEND USCXML_FILES ${USCXML_DEBUG})
+if (NOT BUILD_MINIMAL)
+	file(GLOB_RECURSE USCXML_DEBUG
+		debug/*.cpp
+		debug/*.h
+	)
+	source_group("Interpreter" FILES ${USCXML_DEBUG})
+	list (APPEND USCXML_FILES ${USCXML_DEBUG})
 
-file(GLOB_RECURSE USCXML_TRANSFORM
-	transform/*.cpp
-	transform/*.h
-)
-source_group("Interpreter" FILES ${USCXML_TRANSFORM})
-list (APPEND USCXML_FILES ${USCXML_TRANSFORM})
+	file(GLOB_RECURSE USCXML_TRANSFORM
+		transform/*.cpp
+		transform/*.h
+	)
+	source_group("Interpreter" FILES ${USCXML_TRANSFORM})
+	list (APPEND USCXML_FILES ${USCXML_TRANSFORM})
+endif()
 
 file(GLOB_RECURSE USCXML_INTERPRETERS
 	interpreter/*.cpp

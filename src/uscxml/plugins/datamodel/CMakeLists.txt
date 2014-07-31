@@ -30,7 +30,8 @@ if (BUILD_DM_ECMA)
 			list (APPEND USCXML_FILES ${JSC_DOM})
 			list (APPEND USCXML_OPT_LIBS ${JSC_LIBRARY})
 		endif()
-	else()
+		
+	elseif(V8_FOUND)
 
 	# GOOGLE V8 ecmascript datamodel
 		set(USCXML_DATAMODELS "ecmascript(V8) ${USCXML_DATAMODELS}")
@@ -81,7 +82,7 @@ list (APPEND USCXML_FILES ${NULL_DATAMODEL})
 
 # Lua datamodel
 
-if (BUILD_DM_LUA AND LUA_FOUND)
+if (BUILD_DM_LUA AND LUA_FOUND AND NOT BUILD_MINIMAL)
 	set(USCXML_DATAMODELS "lua ${USCXML_DATAMODELS}")
 	file(GLOB LUA_DATAMODEL
 		lua/*.cpp
@@ -105,7 +106,7 @@ endif()
 
 # XPath datamodel
 
-if (BUILD_DM_XPATH)
+if (BUILD_DM_XPATH AND NOT BUILD_MINIMAL)
 	set(USCXML_DATAMODELS "xpath ${USCXML_DATAMODELS}")
 	file(GLOB XPATH_DATAMODEL
 		xpath/*.cpp
@@ -125,7 +126,7 @@ endif()
 
 # SWI PROLOG datamodel
 
-if (SWI_FOUND AND BUILD_DM_PROLOG)
+if (SWI_FOUND AND BUILD_DM_PROLOG AND NOT BUILD_MINIMAL)
 	set(USCXML_DATAMODELS "prolog ${USCXML_DATAMODELS}")
 	
 	configure_file(${CMAKE_CURRENT_SOURCE_DIR}/prolog/swi/SWIConfig.h.in ${CMAKE_BINARY_DIR}/uscxml/SWIConfig.h)
@@ -164,7 +165,7 @@ endif()
 
 # Promela datamodel
 
-if (BUILD_DM_PROMELA)
+if (BUILD_DM_PROMELA AND NOT BUILD_MINIMAL)
 	set(USCXML_DATAMODELS "promela ${USCXML_DATAMODELS}")
 	
 	file(GLOB_RECURSE PROMELA_DATAMODEL

@@ -35,19 +35,32 @@
 #else
 
 # include "uscxml/plugins/ioprocessor/basichttp/BasicHTTPIOProcessor.h"
-# include "uscxml/plugins/ioprocessor/comet/CometIOProcessor.h"
 # include "uscxml/plugins/ioprocessor/scxml/SCXMLIOProcessor.h"
 # include "uscxml/plugins/invoker/scxml/USCXMLInvoker.h"
-# include "uscxml/plugins/invoker/http/HTTPServletInvoker.h"
-# include "uscxml/plugins/invoker/heartbeat/HeartbeatInvoker.h"
-# include "uscxml/plugins/invoker/filesystem/dirmon/DirMonInvoker.h"
-# include "uscxml/plugins/invoker/system/SystemInvoker.h"
-# include "uscxml/plugins/invoker/xhtml/XHTMLInvoker.h"
-# include "uscxml/plugins/invoker/imap/IMAPInvoker.h"
 
-# ifdef CURL_HAS_SMTP
-#   include "uscxml/plugins/invoker/smtp/SMTPInvoker.h"
-# endif
+#	ifndef BUILD_MINIMAL
+#		include "uscxml/plugins/invoker/imap/IMAPInvoker.h"
+#		ifdef CURL_HAS_SMTP
+#			include "uscxml/plugins/invoker/smtp/SMTPInvoker.h"
+#		endif
+#		include "uscxml/plugins/invoker/xhtml/XHTMLInvoker.h"
+#		include "uscxml/plugins/invoker/filesystem/dirmon/DirMonInvoker.h"
+#		include "uscxml/plugins/invoker/system/SystemInvoker.h"
+#		include "uscxml/plugins/invoker/http/HTTPServletInvoker.h"
+#		include "uscxml/plugins/invoker/heartbeat/HeartbeatInvoker.h"
+
+#		include "uscxml/plugins/datamodel/xpath/XPathDataModel.h"
+#		include "uscxml/plugins/datamodel/promela/PromelaDataModel.h"
+
+#		include "uscxml/plugins/element/file/FileElement.h"
+#		include "uscxml/plugins/element/fetch/FetchElement.h"
+#		include "uscxml/plugins/element/respond/RespondElement.h"
+#		include "uscxml/plugins/element/postpone/PostponeElement.h"
+
+#		include "uscxml/plugins/ioprocessor/comet/CometIOProcessor.h"
+
+#	endif
+
 
 #ifdef PROTOBUF_FOUND
 //# include "uscxml/plugins/ioprocessor/modality/MMIHTTPIOProcessor.h"
@@ -107,15 +120,6 @@
 # ifdef LUA_FOUND
 #   include "uscxml/plugins/datamodel/lua/LuaDataModel.h"
 # endif
-
-#include "uscxml/plugins/datamodel/xpath/XPathDataModel.h"
-#include "uscxml/plugins/datamodel/promela/PromelaDataModel.h"
-
-
-# include "uscxml/plugins/element/file/FileElement.h"
-# include "uscxml/plugins/element/fetch/FetchElement.h"
-# include "uscxml/plugins/element/respond/RespondElement.h"
-# include "uscxml/plugins/element/postpone/PostponeElement.h"
 
 # if 0
 #		include "uscxml/plugins/element/mmi/MMIEvents.h"
@@ -211,7 +215,8 @@ void Factory::registerPlugins() {
 	if (_pluginPath.length() > 0)
 		LOG(WARNING) << "Plugin path is given, but uscxml is compiled without support";
 
-#if 1
+#ifndef BUILD_MINIMAL
+
 # if (defined UMUNDO_FOUND && defined PROTOBUF_FOUND)
 	{
 		UmundoInvoker* invoker = new UmundoInvoker();
@@ -222,7 +227,6 @@ void Factory::registerPlugins() {
 		VoiceXMLInvoker* invoker = new VoiceXMLInvoker();
 		registerInvoker(invoker);
 	}
-#endif
 #endif
 
 #ifdef MILES_FOUND
@@ -339,18 +343,14 @@ void Factory::registerPlugins() {
 	}
 #endif
 
-	// these are always available
-#if 1
+
+	// these are always available when not building minimal
 	{
 		XHTMLInvoker* invoker = new XHTMLInvoker();
 		registerInvoker(invoker);
 	}
 	{
 		IMAPInvoker* invoker = new IMAPInvoker();
-		registerInvoker(invoker);
-	}
-	{
-		USCXMLInvoker* invoker = new USCXMLInvoker();
 		registerInvoker(invoker);
 	}
 	{
@@ -370,14 +370,6 @@ void Factory::registerPlugins() {
 		registerInvoker(invoker);
 	}
 	{
-		BasicHTTPIOProcessor* ioProcessor = new BasicHTTPIOProcessor();
-		registerIOProcessor(ioProcessor);
-	}
-	{
-		SCXMLIOProcessor* ioProcessor = new SCXMLIOProcessor();
-		registerIOProcessor(ioProcessor);
-	}
-	{
 		FetchElement* element = new FetchElement();
 		registerExecutableContent(element);
 	}
@@ -395,6 +387,22 @@ void Factory::registerPlugins() {
 	}
 
 #endif
+
+	{
+		USCXMLInvoker* invoker = new USCXMLInvoker();
+		registerInvoker(invoker);
+	}
+
+	{
+		BasicHTTPIOProcessor* ioProcessor = new BasicHTTPIOProcessor();
+		registerIOProcessor(ioProcessor);
+	}
+
+	{
+		SCXMLIOProcessor* ioProcessor = new SCXMLIOProcessor();
+		registerIOProcessor(ioProcessor);
+	}
+
 #endif
 }
 
