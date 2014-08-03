@@ -47,7 +47,7 @@
 #include <algorithm>
 
 #include "uscxml/interpreter/InterpreterDraft6.h"
-#include "uscxml/interpreter/InterpreterRC.h"
+//#include "uscxml/interpreter/InterpreterRC.h"
 #include "uscxml/Factory.h"
 
 #if 1
