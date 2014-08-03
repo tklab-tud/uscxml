@@ -541,10 +541,10 @@ bool V8DataModel::isDeclared(const std::string& expr) {
 }
 
 bool V8DataModel::evalAsBool(const std::string& expr) {
-	return evalAsBool(Arabica::DOM::Node<std::string>(), expr);
+	return evalAsBool(Arabica::DOM::Element<std::string>(), expr);
 }
 
-bool V8DataModel::evalAsBool(const Arabica::DOM::Node<std::string>& node, const std::string& expr) {
+bool V8DataModel::evalAsBool(const Arabica::DOM::Element<std::string>& node, const std::string& expr) {
 	v8::Locker locker;
 	v8::HandleScope handleScope;
 	v8::Context::Scope contextScope(_contexts.back());
