@@ -83,7 +83,7 @@ public:
 	virtual void eval(const Arabica::DOM::Element<std::string>& scriptElem,
 	                  const std::string& expr);
 	virtual std::string evalAsString(const std::string& expr);
-	virtual bool evalAsBool(const Arabica::DOM::Node<std::string>& node, const std::string& expr);
+	virtual bool evalAsBool(const Arabica::DOM::Element<std::string>& node, const std::string& expr);
 
 	virtual std::string andExpressions(std::list<std::string>);
 

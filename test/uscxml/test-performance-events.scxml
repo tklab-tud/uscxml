@@ -1,0 +1,28 @@
+<scxml datamodel="ecmascript">
+	<datamodel>
+		<data id="iterations">100000</data>
+		<data id="test">
+			{
+				string: 'bar',
+				integer: 12,
+				float: 234243.2342
+			}
+		</data>
+	</datamodel>
+	<state id="start">
+		<transition target="loop" />
+	</state>
+	<state id="loop">
+		<onentry>
+			<raise event="continue">
+				<content>
+					this is space normalized!
+				</content>
+			</raise>
+			<script>iterations--;</script>
+		</onentry>
+		<transition event="continue" cond="iterations > 0" target="start" />
+		<transition cond="iterations == 0" target="final" />
+	</state>
+	<final id="final" />
+</scxml>

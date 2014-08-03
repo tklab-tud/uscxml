@@ -80,7 +80,7 @@ void FetchElement::downloadFailed(const URL& url, int errorCode) {
 
 }
 
-void FetchElement::enterElement(const Arabica::DOM::Node<std::string>& node) {
+void FetchElement::enterElement(const Arabica::DOM::Element<std::string>& node) {
 	if (!HAS_ATTR(node, "target") && !HAS_ATTR(node, "targetexpr")) {
 		LOG(ERROR) << "Fetch element requires target or targetexpr";
 		return;
@@ -123,7 +123,7 @@ void FetchElement::enterElement(const Arabica::DOM::Node<std::string>& node) {
 
 }
 
-void FetchElement::exitElement(const Arabica::DOM::Node<std::string>& node) {
+void FetchElement::exitElement(const Arabica::DOM::Element<std::string>& node) {
 
 }
 

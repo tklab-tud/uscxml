@@ -26,11 +26,17 @@
 #include <SAX/helpers/CatchErrorHandler.hpp>
 #include <DOM/io/Stream.hpp> // operator<< for nodes
 
-#define TAGNAME(elem) ((Arabica::DOM::Element<std::string>)elem).getTagName()
-#define LOCALNAME(elem) ((Arabica::DOM::Element<std::string>)elem).getLocalName()
-#define ATTR(elem, attr) ((Arabica::DOM::Element<std::string>)elem).getAttribute(attr)
-#define ATTR_NODE(elem, attr) ((Arabica::DOM::Element<std::string>)elem).getAttributeNode(attr)
-#define HAS_ATTR(elem, attr) ((Arabica::DOM::Element<std::string>)elem).hasAttribute(attr)
+#define TAGNAME_CAST(elem) ((Arabica::DOM::Element<std::string>)elem).getTagName()
+#define LOCALNAME_CAST(elem) ((Arabica::DOM::Element<std::string>)elem).getLocalName()
+#define ATTR_CAST(elem, attr) ((Arabica::DOM::Element<std::string>)elem).getAttribute(attr)
+#define ATTR_NODE_CAST(elem, attr) ((Arabica::DOM::Element<std::string>)elem).getAttributeNode(attr)
+#define HAS_ATTR_CAST(elem, attr) ((Arabica::DOM::Element<std::string>)elem).hasAttribute(attr)
+
+#define TAGNAME(elem) elem.getTagName()
+#define LOCALNAME(elem) elem.getLocalName()
+#define ATTR(elem, attr) elem.getAttribute(attr)
+#define ATTR_NODE(elem, attr) elem.getAttributeNode(attr)
+#define HAS_ATTR(elem, attr) elem.hasAttribute(attr)
 
 namespace uscxml {
 

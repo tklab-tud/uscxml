@@ -46,8 +46,8 @@ public:
 		return false;
 	}
 
-	void enterElement(const Arabica::DOM::Node<std::string>& node);
-	void exitElement(const Arabica::DOM::Node<std::string>& node);
+	void enterElement(const Arabica::DOM::Element<std::string>& node);
+	void exitElement(const Arabica::DOM::Element<std::string>& node);
 	void downloadCompleted(const URL& url);
 	void downloadFailed(const URL& url, int errorCode);
 

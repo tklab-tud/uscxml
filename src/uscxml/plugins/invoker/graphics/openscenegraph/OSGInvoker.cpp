@@ -66,9 +66,9 @@ bool pluginConnect(pluma::Host& host) {
 #endif
 
 #define OSG_TAG_HANDLE(tagName, procFunc) \
-} else if (iequals(LOCALNAME(childs.item(i)), tagName) && \
+} else if (iequals(LOCALNAME(childElem), tagName) && \
 	validChildren.find(tagName) != validChildren.end()) { \
-		procFunc(childs.item(i));\
+		procFunc(childElem);\
  
 
 OSGInvoker::OSGInvoker() {
@@ -167,7 +167,7 @@ void OSGInvoker::handleEvent(Arabica::DOM::Events::Event<std::string>& event) {
 	}
 }
 
-void OSGInvoker::processDisplay(const Arabica::DOM::Node<std::string>& element) {
+void OSGInvoker::processDisplay(const Arabica::DOM::Element<std::string>& element) {
 //  std::cout << element << std::endl;
 
 	if (_displays.find(element) == _displays.end()) {
@@ -188,7 +188,7 @@ void OSGInvoker::processDisplay(const Arabica::DOM::Node<std::string>& element) 
 	}
 }
 
-void OSGInvoker::processViewport(const Arabica::DOM::Node<std::string>& element) {
+void OSGInvoker::processViewport(const Arabica::DOM::Element<std::string>& element) {
 	if (_displays.find(element.getParentNode()) == _displays.end())
 		return;
 
@@ -236,7 +236,7 @@ void OSGInvoker::processViewport(const Arabica::DOM::Node<std::string>& element)
 void OSGInvoker::processCamera(const Arabica::DOM::Node<std::string>& element) {}
 void OSGInvoker::updateCamera(osg::ref_ptr<osg::Node> node, Arabica::DOM::Events::Event<std::string>& event) {}
 
-void OSGInvoker::processTranslation(const Arabica::DOM::Node<std::string>& element) {
+void OSGInvoker::processTranslation(const Arabica::DOM::Element<std::string>& element) {
 	assert(_nodes.find(element.getParentNode()) != _nodes.end());
 	osg::ref_ptr<osg::Node> node = _nodes[element.getParentNode()];
 
@@ -269,7 +269,7 @@ void OSGInvoker::processTranslation(const Arabica::DOM::Node<std::string>& eleme
 	processChildren(validChilds, element);
 }
 
-void OSGInvoker::processRotation(const Arabica::DOM::Node<std::string>& element) {
+void OSGInvoker::processRotation(const Arabica::DOM::Element<std::string>& element) {
 	assert(_nodes.find(element.getParentNode()) != _nodes.end());
 	osg::ref_ptr<osg::Node> node = _nodes[element.getParentNode()];
 
@@ -296,12 +296,12 @@ void OSGInvoker::updateRotation(osg::ref_ptr<osg::Node> node, Arabica::DOM::Even
 	osg::ref_ptr<osg::MatrixTransform> transform = static_cast<osg::MatrixTransform*>(node->asTransform());
 	if (false) {
 	} else if (iequals(event.getType(), "DOMAttrModified")) {
-		osg::Matrix rotation = rotationFromElement(Arabica::DOM::Node<std::string>(event.getTarget()));
+		osg::Matrix rotation = rotationFromElement(Arabica::DOM::Element<std::string>(Arabica::DOM::Node<std::string>(event.getTarget())));
 		transform->setMatrix(rotation);
 	}
 }
 
-osg::Matrix OSGInvoker::rotationFromElement(const Arabica::DOM::Node<std::string>& element) {
+osg::Matrix OSGInvoker::rotationFromElement(const Arabica::DOM::Element<std::string>& element) {
 	double pitch = 0, roll = 0, yaw = 0;
 	if (HAS_ATTR(element, "pitch")) {
 		NumAttr pitchAttr = NumAttr(ATTR(element, "pitch"));
@@ -342,7 +342,7 @@ osg::Matrix OSGInvoker::rotationFromElement(const Arabica::DOM::Node<std::string
 	return rotation;
 }
 
-void OSGInvoker::processScale(const Arabica::DOM::Node<std::string>& element) {
+void OSGInvoker::processScale(const Arabica::DOM::Element<std::string>& element) {
 	assert(_nodes.find(element.getParentNode()) != _nodes.end());
 	osg::ref_ptr<osg::Node> node = _nodes[element.getParentNode()];
 
@@ -375,7 +375,7 @@ void OSGInvoker::processScale(const Arabica::DOM::Node<std::string>& element) {
 	processChildren(validChilds, element);
 }
 
-void OSGInvoker::processNode(const Arabica::DOM::Node<std::string>& element) {
+void OSGInvoker::processNode(const Arabica::DOM::Element<std::string>& element) {
 	_nodes_t::iterator nodeIter = _nodes.find(element.getParentNode());
 	assert(nodeIter != _nodes.end());
 
@@ -407,7 +407,7 @@ void OSGInvoker::processNode(const Arabica::DOM::Node<std::string>& element) {
 	}
 }
 
-void OSGInvoker::processSphere(const Arabica::DOM::Node<std::string>& element) {
+void OSGInvoker::processSphere(const Arabica::DOM::Element<std::string>& element) {
 	assert(_nodes.find(element.getParentNode()) != _nodes.end());
 	osg::ref_ptr<osg::Node> parent = _nodes[element.getParentNode()];
 
@@ -434,7 +434,7 @@ void OSGInvoker::processSphere(const Arabica::DOM::Node<std::string>& element) {
 void OSGInvoker::updateSphere(osg::ref_ptr<osg::Node> node, Arabica::DOM::Events::Event<std::string>& event) {
 }
 
-void OSGInvoker::processBox(const Arabica::DOM::Node<std::string>& element) {
+void OSGInvoker::processBox(const Arabica::DOM::Element<std::string>& element) {
 	assert(_nodes.find(element.getParentNode()) != _nodes.end());
 	osg::ref_ptr<osg::Node> parent = _nodes[element.getParentNode()];
 
@@ -462,7 +462,7 @@ void OSGInvoker::processBox(const Arabica::DOM::Node<std::string>& element) {
 }
 void OSGInvoker::updateBox(osg::ref_ptr<osg::Node> node, Arabica::DOM::Events::Event<std::string>& event) {
 }
-void OSGInvoker::processCapsule(const Arabica::DOM::Node<std::string>& element) {
+void OSGInvoker::processCapsule(const Arabica::DOM::Element<std::string>& element) {
 	assert(_nodes.find(element.getParentNode()) != _nodes.end());
 	osg::ref_ptr<osg::Node> parent = _nodes[element.getParentNode()];
 
@@ -487,7 +487,7 @@ void OSGInvoker::processCapsule(const Arabica::DOM::Node<std::string>& element) 
 void OSGInvoker::updateCapsule(osg::ref_ptr<osg::Node> node, Arabica::DOM::Events::Event<std::string>& event) {
 }
 
-void OSGInvoker::processCone(const Arabica::DOM::Node<std::string>& element) {
+void OSGInvoker::processCone(const Arabica::DOM::Element<std::string>& element) {
 	assert(_nodes.find(element.getParentNode()) != _nodes.end());
 	osg::ref_ptr<osg::Node> parent = _nodes[element.getParentNode()];
 
@@ -514,7 +514,7 @@ void OSGInvoker::processCone(const Arabica::DOM::Node<std::string>& element) {
 void OSGInvoker::updateCone(osg::ref_ptr<osg::Node> node, Arabica::DOM::Events::Event<std::string>& event) {
 }
 
-void OSGInvoker::processCylinder(const Arabica::DOM::Node<std::string>& element) {
+void OSGInvoker::processCylinder(const Arabica::DOM::Element<std::string>& element) {
 	assert(_nodes.find(element.getParentNode()) != _nodes.end());
 	osg::ref_ptr<osg::Node> parent = _nodes[element.getParentNode()];
 
@@ -541,7 +541,7 @@ void OSGInvoker::processCylinder(const Arabica::DOM::Node<std::string>& element)
 void OSGInvoker::updateCylinder(osg::ref_ptr<osg::Node> node, Arabica::DOM::Events::Event<std::string>& event) {
 }
 
-osg::Vec4 OSGInvoker::getColor(const Arabica::DOM::Node<std::string>& element, const std::string& attr, bool& valid) {
+osg::Vec4 OSGInvoker::getColor(const Arabica::DOM::Element<std::string>& element, const std::string& attr, bool& valid) {
 	if (HAS_ATTR(element, attr)) {
 		std::string color = ATTR(element, attr);
 
@@ -576,7 +576,7 @@ osg::Vec4 OSGInvoker::getColor(const Arabica::DOM::Node<std::string>& element, c
 	return osg::Vec4();
 }
 
-osg::ref_ptr<osg::Material> OSGInvoker::getMaterial(const Arabica::DOM::Node<std::string>& element) {
+osg::ref_ptr<osg::Material> OSGInvoker::getMaterial(const Arabica::DOM::Element<std::string>& element) {
 
 	osg::ref_ptr<osg::Material> nodeMat;
 
@@ -630,6 +630,7 @@ void OSGInvoker::processChildren(const std::set<std::string>& validChildren, con
 	for (int i = 0; i < childs.getLength(); ++i) {
 		if (childs.item(i).getNodeType() != Arabica::DOM::Node_base::ELEMENT_NODE)
 			continue;
+		Arabica::DOM::Element<std::string> childElem = Arabica::DOM::Element<std::string>(childs.item(i));
 		if (false) {
 			OSG_TAG_HANDLE("node", processNode);
 			OSG_TAG_HANDLE("translation", processTranslation);
@@ -644,12 +645,12 @@ void OSGInvoker::processChildren(const std::set<std::string>& validChildren, con
 			OSG_TAG_HANDLE("capsule", processCapsule);
 			OSG_TAG_HANDLE("cylinder", processCylinder);
 		} else {
-			LOG(INFO) << "Unknown XML element " << TAGNAME(childs.item(i));
+			LOG(INFO) << "Unknown XML element " << TAGNAME(childElem);
 		}
 	}
 }
 
-void OSGInvoker::getViewport(const Arabica::DOM::Node<std::string>& element,
+void OSGInvoker::getViewport(const Arabica::DOM::Element<std::string>& element,
                              unsigned int& x,
                              unsigned int& y,
                              unsigned int& width,
@@ -659,7 +660,7 @@ void OSGInvoker::getViewport(const Arabica::DOM::Node<std::string>& element,
 
 }
 
-void OSGInvoker::getViewport(const Arabica::DOM::Node<std::string>& element,
+void OSGInvoker::getViewport(const Arabica::DOM::Element<std::string>& element,
                              unsigned int& x,
                              unsigned int& y,
                              unsigned int& width,
@@ -674,7 +675,7 @@ void OSGInvoker::getViewport(const Arabica::DOM::Node<std::string>& element,
 	getViewport(element, x, y, width, height, fullWidth, fullHeight);
 }
 
-void OSGInvoker::getViewport(const Arabica::DOM::Node<std::string>& element,
+void OSGInvoker::getViewport(const Arabica::DOM::Element<std::string>& element,
                              unsigned int& x,
                              unsigned int& y,
                              unsigned int& width,

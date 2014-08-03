@@ -61,58 +61,58 @@ public:
 	virtual void runOnMainThread();
 
 protected:
-	void processDisplay(const Arabica::DOM::Node<std::string>& element);
+	void processDisplay(const Arabica::DOM::Element<std::string>& element);
 	void updateDisplay(osg::ref_ptr<osg::Node> node, Arabica::DOM::Events::Event<std::string>& event);
-	void processViewport(const Arabica::DOM::Node<std::string>& element);
+	void processViewport(const Arabica::DOM::Element<std::string>& element);
 	void updateViewport(osg::ref_ptr<osg::Node> node, Arabica::DOM::Events::Event<std::string>& event);
 	void processCamera(const Arabica::DOM::Node<std::string>& element);
 	void updateCamera(osg::ref_ptr<osg::Node> node, Arabica::DOM::Events::Event<std::string>& event);
 
-	void processTranslation(const Arabica::DOM::Node<std::string>& element);
+	void processTranslation(const Arabica::DOM::Element<std::string>& element);
 	void updateTranslation(osg::ref_ptr<osg::Node> node, Arabica::DOM::Events::Event<std::string>& event);
 
-	void processRotation(const Arabica::DOM::Node<std::string>& element);
+	void processRotation(const Arabica::DOM::Element<std::string>& element);
 	void updateRotation(osg::ref_ptr<osg::Node> node, Arabica::DOM::Events::Event<std::string>& event);
-	static osg::Matrix rotationFromElement(const Arabica::DOM::Node<std::string>& element);
+	static osg::Matrix rotationFromElement(const Arabica::DOM::Element<std::string>& element);
 
-	void processScale(const Arabica::DOM::Node<std::string>& element);
+	void processScale(const Arabica::DOM::Element<std::string>& element);
 	void updateScale(osg::ref_ptr<osg::Node> node, Arabica::DOM::Events::Event<std::string>& event);
 
-	void processNode(const Arabica::DOM::Node<std::string>& element);
+	void processNode(const Arabica::DOM::Element<std::string>& element);
 	void updateNode(osg::ref_ptr<osg::Node> node, Arabica::DOM::Events::Event<std::string>& event);
 
-	void processSphere(const Arabica::DOM::Node<std::string>& element);
+	void processSphere(const Arabica::DOM::Element<std::string>& element);
 	void updateSphere(osg::ref_ptr<osg::Node> node, Arabica::DOM::Events::Event<std::string>& event);
-	void processBox(const Arabica::DOM::Node<std::string>& element);
+	void processBox(const Arabica::DOM::Element<std::string>& element);
 	void updateBox(osg::ref_ptr<osg::Node> node, Arabica::DOM::Events::Event<std::string>& event);
-	void processCapsule(const Arabica::DOM::Node<std::string>& element);
+	void processCapsule(const Arabica::DOM::Element<std::string>& element);
 	void updateCapsule(osg::ref_ptr<osg::Node> node, Arabica::DOM::Events::Event<std::string>& event);
-	void processCone(const Arabica::DOM::Node<std::string>& element);
+	void processCone(const Arabica::DOM::Element<std::string>& element);
 	void updateCone(osg::ref_ptr<osg::Node> node, Arabica::DOM::Events::Event<std::string>& event);
-	void processCylinder(const Arabica::DOM::Node<std::string>& element);
+	void processCylinder(const Arabica::DOM::Element<std::string>& element);
 	void updateCylinder(osg::ref_ptr<osg::Node> node, Arabica::DOM::Events::Event<std::string>& event);
 
-	osg::Vec4 getColor(const Arabica::DOM::Node<std::string>& element, const std::string& attr, bool& valid);
-	osg::ref_ptr<osg::Material> getMaterial(const Arabica::DOM::Node<std::string>& element);
+	osg::Vec4 getColor(const Arabica::DOM::Element<std::string>& element, const std::string& attr, bool& valid);
+	osg::ref_ptr<osg::Material> getMaterial(const Arabica::DOM::Element<std::string>& element);
 	osg::Vec4 parseVec4(const std::string& coeffs, int& number);
 
 	void processChildren(const std::set<std::string>& validChildren, const Arabica::DOM::Node<std::string>& element);
 
-	void getViewport(const Arabica::DOM::Node<std::string>& element,
+	void getViewport(const Arabica::DOM::Element<std::string>& element,
 	                 unsigned int& x,
 	                 unsigned int& y,
 	                 unsigned int& width,
 	                 unsigned int& height,
 	                 int& screenId);
 
-	void getViewport(const Arabica::DOM::Node<std::string>& element,
+	void getViewport(const Arabica::DOM::Element<std::string>& element,
 	                 unsigned int& x,
 	                 unsigned int& y,
 	                 unsigned int& width,
 	                 unsigned int& height,
 	                 CompositeDisplay* display);
 
-	void getViewport(const Arabica::DOM::Node<std::string>& element,
+	void getViewport(const Arabica::DOM::Element<std::string>& element,
 	                 unsigned int& x,
 	                 unsigned int& y,
 	                 unsigned int& width,

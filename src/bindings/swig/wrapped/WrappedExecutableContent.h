@@ -55,13 +55,13 @@ public:
 		return "http://www.w3.org/2005/07/scxml";
 	}
 
-	virtual void enterElement(const Arabica::DOM::Node<std::string>& node) {
+	virtual void enterElement(const Arabica::DOM::Element<std::string>& node) {
 		std::ostringstream ssElement;
 		ssElement << node;
 		enterElement(ssElement.str());
 	}
 
-	virtual void exitElement(const Arabica::DOM::Node<std::string>& node) {
+	virtual void exitElement(const Arabica::DOM::Element<std::string>& node) {
 		std::ostringstream ssElement;
 		ssElement << node;
 		exitElement(ssElement.str());

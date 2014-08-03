@@ -435,7 +435,7 @@ void LuaDataModel::init(const std::string& location, const Data& data) {
  * The predicate must return 'true' if and only if that state is in the current
  * state configuration.
  */
-bool LuaDataModel::evalAsBool(const Arabica::DOM::Node<std::string>& node, const std::string& expr) {
+bool LuaDataModel::evalAsBool(const Arabica::DOM::Element<std::string>& node, const std::string& expr) {
 	// we need the result of the expression on the lua stack -> has to "return"!
 	std::string trimmedExpr = boost::trim_copy(expr);
 	if (!boost::starts_with(trimmedExpr, "return")) {

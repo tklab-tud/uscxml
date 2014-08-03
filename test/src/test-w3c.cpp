@@ -135,7 +135,7 @@ class W3CStatusMonitor : public uscxml::InterpreterMonitor {
 	void printNodeSet(const Arabica::XPath::NodeSet<std::string>& config) {
 		std::string seperator;
 		for (int i = 0; i < config.size(); i++) {
-			std::cout << seperator << ATTR(config[i], "id");
+			std::cout << seperator << ATTR_CAST(config[i], "id");
 			seperator = ", ";
 		}
 	}
@@ -144,13 +144,13 @@ class W3CStatusMonitor : public uscxml::InterpreterMonitor {
 		Arabica::XPath::NodeSet<std::string> config = interpreter.getConfiguration();
 		if (config.size() == 1) {
 			if (withFlattening) {
-				std::cout << ATTR(config[0], "id") << std::endl;
-				if (boost::starts_with(ATTR(config[0], "id"), "active-pass")) {
+				std::cout << ATTR_CAST(config[0], "id") << std::endl;
+				if (boost::starts_with(ATTR_CAST(config[0], "id"), "active-pass")) {
 					std::cout << "TEST SUCCEEDED" << std::endl;
 					exit(EXIT_SUCCESS);
 				}
 			} else {
-				if (boost::iequals(ATTR(config[0], "id"), "pass")) {
+				if (boost::iequals(ATTR_CAST(config[0], "id"), "pass")) {
 					std::cout << "TEST SUCCEEDED" << std::endl;
 					exit(EXIT_SUCCESS);
 				}

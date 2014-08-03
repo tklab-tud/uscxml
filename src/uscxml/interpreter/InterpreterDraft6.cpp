@@ -105,7 +105,7 @@ NodeSet<std::string> InterpreterDraft6::getDocumentInitialTransitions() {
 				Element<std::string> transitionElem = _document.createElementNS(_nsInfo.nsURL, "transition");
 				_nsInfo.setPrefix(transitionElem);
 
-				transitionElem.setAttribute("target", ATTR(initialStates[i], "id"));
+				transitionElem.setAttribute("target", ATTR_CAST(initialStates[i], "id"));
 				initialElem.appendChild(transitionElem);
 				_scxml.appendChild(initialElem);
 				initialTransitions.push_back(transitionElem);
@@ -138,13 +138,6 @@ InterpreterState InterpreterDraft6::step(int waitForMS = 0) {
 			setInterpreterState(USCXML_MICROSTEPPED);
 		}
 
-		if (!isLegalConfiguration(_configuration)) {
-			std:: cout << "Illegal configuration: {";
-			for (int i = 0; i < _configuration.size(); i++) {
-				std::cout << ATTR(_configuration[i], "id") << ", " << std::endl;
-			}
-			std:: cout << "}" << std::endl;
-		}
 		assert(isLegalConfiguration(_configuration));
 
 		// are there spontaneous transitions?
@@ -203,8 +196,9 @@ InterpreterState InterpreterDraft6::step(int waitForMS = 0) {
 		for (unsigned int i = 0; i < _statesToInvoke.size(); i++) {
 			NodeSet<std::string> invokes = filterChildElements(_nsInfo.xmlNSPrefix + "invoke", _statesToInvoke[i]);
 			for (unsigned int j = 0; j < invokes.size(); j++) {
-				if (!HAS_ATTR(invokes[j], "persist") || !DOMUtils::attributeIsTrue(ATTR(invokes[j], "persist"))) {
-					invoke(invokes[j]);
+				Element<std::string> invokeElem = Element<std::string>(invokes[j]);
+				if (!HAS_ATTR(invokeElem, "persist") || !DOMUtils::attributeIsTrue(ATTR(invokeElem, "persist"))) {
+					invoke(invokeElem);
 				}
 			}
 		}
@@ -354,8 +348,9 @@ void InterpreterDraft6::stabilize() {
 	for (unsigned int i = 0; i < _statesToInvoke.size(); i++) {
 		NodeSet<std::string> invokes = filterChildElements(_nsInfo.xmlNSPrefix + "invoke", _statesToInvoke[i]);
 		for (unsigned int j = 0; j < invokes.size(); j++) {
-			if (!HAS_ATTR(invokes[j], "persist") || !DOMUtils::attributeIsTrue(ATTR(invokes[j], "persist"))) {
-				invoke(invokes[j]);
+			Element<std::string> invokeElem = Element<std::string>(invokes[j]);
+			if (!HAS_ATTR(invokeElem, "persist") || !DOMUtils::attributeIsTrue(ATTR(invokeElem, "persist"))) {
+				invoke(invokeElem);
 			}
 		}
 	}
@@ -641,7 +636,7 @@ void InterpreterDraft6::exitInterpreter() {
 		Arabica::XPath::NodeSet<std::string> invokeElems = filterChildElements(_nsInfo.xmlNSPrefix + "invoke", statesToExit[i]);
 		// TODO: we ought to cancel all remaining invokers just to be sure with the persist extension
 		for (int j = 0; j < invokeElems.size(); j++) {
-			cancelInvoke(invokeElems[j]);
+			cancelInvoke(Element<std::string>(invokeElems[j]));
 		}
 		Element<std::string> stateElem(statesToExit[i]);
 		if (isFinal(stateElem) && parentIsScxmlState(stateElem)) {
@@ -902,8 +897,9 @@ void InterpreterDraft6::enterStates(const Arabica::XPath::NodeSet<std::string>& 
 		for (unsigned int k = 0; k < statesToEnter.size(); k++) {
 			NodeSet<std::string> invokes = filterChildElements(_nsInfo.xmlNSPrefix + "invoke", statesToEnter[k]);
 			for (unsigned int j = 0; j < invokes.size(); j++) {
-				if (HAS_ATTR(invokes[j], "persist") && DOMUtils::attributeIsTrue(ATTR(invokes[j], "persist"))) {
-					invoke(invokes[j]);
+				Element<std::string> invokeElem = Element<std::string>(invokes[j]);
+				if (HAS_ATTR(invokeElem, "persist") && DOMUtils::attributeIsTrue(ATTR(invokeElem, "persist"))) {
+					invoke(invokeElem);
 				}
 			}
 		}
@@ -1060,6 +1056,21 @@ void InterpreterDraft6::addStatesToEnter(const Element<std::string>& state,
 				addStatesToEnter(Element<std::string>(childStates[i]), statesToEnter, statesForDefaultEntry, defaultHistoryContent);
 			}
 		}
+	}
+}
+
+void InterpreterDraft6::handleDOMEvent(Arabica::DOM::Events::Event<std::string>& event) {
+	InterpreterImpl::handleDOMEvent(event);
+
+	// remove modified states from cache
+	if (event.getType().compare("DOMAttrModified") == 0) // we do not care about attributes
+		return;
+	Node<std::string> target = Arabica::DOM::Node<std::string>(event.getTarget());
+	NodeSet<std::string> transitions = InterpreterImpl::filterChildElements(_nsInfo.xmlNSPrefix + "transition", target);
+	for (int i = 0; i < transitions.size(); i++) {
+		const Element<std::string> transElem = Element<std::string>(transitions[i]);
+		if (_transWithinParallel.find(transElem) != _transWithinParallel.end())
+			_transWithinParallel.erase(transElem);
 	}
 }
 

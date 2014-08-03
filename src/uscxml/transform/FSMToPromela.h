@@ -129,7 +129,7 @@ protected:
 	void writeStates(std::ostream& stream);
 	void writeDeclarations(std::ostream& stream);
 	void writeEventSources(std::ostream& stream);
-	void writeExecutableContent(std::ostream& stream, const Arabica::DOM::Node<std::string>& node, int indent = 0);
+	void writeExecutableContent(std::ostream& stream, const Arabica::DOM::Element<std::string>& node, int indent = 0);
 	void writeInlineComment(std::ostream& stream, const Arabica::DOM::Node<std::string>& node);
 	void writeFSM(std::ostream& stream);
 	void writeEventDispatching(std::ostream& stream);
@@ -138,8 +138,8 @@ protected:
 	void writeIfBlock(std::ostream& stream, const Arabica::XPath::NodeSet<std::string>& condChain, int indent = 0);
 	void writeDispatchingBlock(std::ostream& stream, const Arabica::XPath::NodeSet<std::string>& transChain, int indent = 0);
 
-	Arabica::XPath::NodeSet<std::string> getTransientContent(const Arabica::DOM::Node<std::string>& state);
-	Arabica::DOM::Node<std::string> getUltimateTarget(const Arabica::DOM::Node<std::string>& transition);
+	Arabica::XPath::NodeSet<std::string> getTransientContent(const Arabica::DOM::Element<std::string>& state);
+	Arabica::DOM::Node<std::string> getUltimateTarget(const Arabica::DOM::Element<std::string>& transition);
 
 	static PromelaInlines getInlinePromela(const std::string&);
 	static PromelaInlines getInlinePromela(const Arabica::XPath::NodeSet<std::string>& elements, bool recurse = false);
@@ -148,8 +148,8 @@ protected:
 	Trie _eventTrie;
 	Arabica::XPath::NodeSet<std::string> _globalStates;
 	Arabica::DOM::Node<std::string> _startState;
-	std::map<std::string, Arabica::DOM::Node<std::string> > _states;
-	std::map<Arabica::DOM::Node<std::string>, int> _transitions;
+	std::map<std::string, Arabica::DOM::Element<std::string> > _states;
+	std::map<Arabica::DOM::Element<std::string>, int> _transitions;
 
 	std::map<std::string, PromelaEventSource> _invokers;
 	PromelaEventSource _globalEventSource;

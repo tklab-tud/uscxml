@@ -129,10 +129,10 @@ public:
 
 		std::list<std::string> targets;
 		for (int i = 0; i < targetStates.size(); i++) {
-			targets.push_back(ATTR(targetStates[i], "id"));
+			targets.push_back(ATTR_CAST(targetStates[i], "id"));
 		}
 
-		beforeTakingTransition(interpreter, DOMUtils::xPathForNode(transition), ATTR(sourceState, "id"), targets, ss.str(), moreComing);
+		beforeTakingTransition(interpreter, DOMUtils::xPathForNode(transition), ATTR_CAST(sourceState, "id"), targets, ss.str(), moreComing);
 	}
 	virtual void beforeTakingTransition(Interpreter interpreter,
 	                                    const std::string& xpath,
@@ -152,10 +152,10 @@ public:
 
 		std::list<std::string> targets;
 		for (int i = 0; i < targetStates.size(); i++) {
-			targets.push_back(ATTR(targetStates[i], "id"));
+			targets.push_back(ATTR_CAST(targetStates[i], "id"));
 		}
 
-		afterTakingTransition(interpreter, DOMUtils::xPathForNode(transition), ATTR(sourceState, "id"), targets, ss.str(), moreComing);
+		afterTakingTransition(interpreter, DOMUtils::xPathForNode(transition), ATTR_CAST(sourceState, "id"), targets, ss.str(), moreComing);
 	}
 	virtual void afterTakingTransition(Interpreter interpreter,
 	                                   const std::string& xpath,

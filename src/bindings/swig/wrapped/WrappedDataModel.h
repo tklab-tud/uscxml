@@ -89,7 +89,7 @@ public:
 		return evalAsBool("", expr);
 	}
 
-	virtual bool evalAsBool(const Arabica::DOM::Node<std::string>& node, const std::string& expr) {
+	virtual bool evalAsBool(const Arabica::DOM::Element<std::string>& node, const std::string& expr) {
 		std::ostringstream ssNode;
 		ssNode << node;
 		return evalAsBool(ssNode.str(), expr);

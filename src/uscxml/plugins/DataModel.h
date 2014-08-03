@@ -61,10 +61,10 @@ public:
 
 	virtual std::string evalAsString(const std::string& expr) = 0;
 
-	virtual bool evalAsBool(const Arabica::DOM::Node<std::string>& scriptNode,
+	virtual bool evalAsBool(const Arabica::DOM::Element<std::string>& scriptNode,
 	                        const std::string& expr) = 0;
 	virtual bool evalAsBool(const std::string& expr) {
-		return evalAsBool(Arabica::DOM::Node<std::string>(), expr);
+		return evalAsBool(Arabica::DOM::Element<std::string>(), expr);
 	}
 
 	virtual bool isDeclared(const std::string& expr) = 0;
@@ -150,7 +150,7 @@ public:
 	virtual bool evalAsBool(const std::string& expr) {
 		return _impl->evalAsBool(expr);
 	}
-	virtual bool evalAsBool(const Arabica::DOM::Node<std::string>& scriptNode,
+	virtual bool evalAsBool(const Arabica::DOM::Element<std::string>& scriptNode,
 	                        const std::string& expr) {
 		return _impl->evalAsBool(scriptNode, expr);
 	}

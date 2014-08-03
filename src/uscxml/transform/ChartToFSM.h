@@ -56,13 +56,13 @@ class USCXML_API GlobalTransition {
 public:
 	class Action {
 	public:
-		Arabica::DOM::Node<std::string> onEntry;
-		Arabica::DOM::Node<std::string> onExit;
-		Arabica::DOM::Node<std::string> transition;
-		Arabica::DOM::Node<std::string> entered;
-		Arabica::DOM::Node<std::string> exited;
-		Arabica::DOM::Node<std::string> invoke;
-		Arabica::DOM::Node<std::string> uninvoke;
+		Arabica::DOM::Element<std::string> onEntry;
+		Arabica::DOM::Element<std::string> onExit;
+		Arabica::DOM::Element<std::string> transition;
+		Arabica::DOM::Element<std::string> entered;
+		Arabica::DOM::Element<std::string> exited;
+		Arabica::DOM::Element<std::string> invoke;
+		Arabica::DOM::Element<std::string> uninvoke;
 	};
 
 	GlobalTransition(const Arabica::XPath::NodeSet<std::string>& transitions, DataModel dataModel);
@@ -112,11 +112,11 @@ protected:
 	void executeContent(const Arabica::DOM::Element<std::string>& content, bool rethrow = false);
 
 	// invoke and uninvoke
-	virtual void invoke(const Arabica::DOM::Node<std::string>& element);
-	virtual void cancelInvoke(const Arabica::DOM::Node<std::string>& element);
+	virtual void invoke(const Arabica::DOM::Element<std::string>& element);
+	virtual void cancelInvoke(const Arabica::DOM::Element<std::string>& element);
 
 	// override to do nothing
-	void send(const Arabica::DOM::Node<std::string>& element) {}
+	void send(const Arabica::DOM::Element<std::string>& element) {}
 	void internalDoneSend(const Arabica::DOM::Element<std::string>& state);
 
 	// InterpreterMonitor

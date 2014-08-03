@@ -44,8 +44,8 @@ public:
 	virtual std::string getNamespace() {
 		return "http://www.w3.org/2005/07/scxml";    ///< The namespace of the element.
 	}
-	virtual void enterElement(const Arabica::DOM::Node<std::string>& node) = 0; ///< Invoked when entering the element as part of evaluating executable content.
-	virtual void exitElement(const Arabica::DOM::Node<std::string>& node) = 0; ///< Invoked when exiting the element as part of evaluating executable content.
+	virtual void enterElement(const Arabica::DOM::Element<std::string>& node) = 0; ///< Invoked when entering the element as part of evaluating executable content.
+	virtual void exitElement(const Arabica::DOM::Element<std::string>& node) = 0; ///< Invoked when exiting the element as part of evaluating executable content.
 	virtual bool processChildren() = 0; ///< Whether or not the interpreter should process this elements children.
 
 protected:
@@ -86,10 +86,10 @@ public:
 	std::string getNamespace() {
 		return _impl->getNamespace();
 	}
-	void enterElement(const Arabica::DOM::Node<std::string>& node) {
+	void enterElement(const Arabica::DOM::Element<std::string>& node) {
 		return _impl->enterElement(node);
 	}
-	void exitElement(const Arabica::DOM::Node<std::string>& node) {
+	void exitElement(const Arabica::DOM::Element<std::string>& node) {
 		return _impl->exitElement(node);
 	}
 	bool processChildren() {

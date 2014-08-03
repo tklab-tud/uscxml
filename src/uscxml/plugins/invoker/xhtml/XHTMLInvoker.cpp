@@ -186,11 +186,12 @@ void XHTMLInvoker::reply(const SendRequest& req, const HTTPServer::Request& long
 		std::stringstream ss;
 //		Arabica::DOM::Node<std::string> content = req.dom.getDocumentElement();
 		Arabica::DOM::Node<std::string> content = req.dom;
-		if (content && iequals(content.getLocalName(), "content")) {
-			reply.headers["X-SCXML-Type"] = (HAS_ATTR(content, "type") ? ATTR(content, "type") : "replacechildren");
-			reply.headers["X-SCXML-XPath"] = (HAS_ATTR(content, "xpath") ? ATTR(content, "xpath") : "/html/body");
-			if (HAS_ATTR(content, "attr"))
-				reply.headers["X-SCXML-Attr"] = ATTR(content, "attr");
+		if (content && content.getNodeType() == Arabica::DOM::Node_base::ELEMENT_NODE && iequals(content.getLocalName(), "content")) {
+			Arabica::DOM::Element<std::string> contentElem = Arabica::DOM::Element<std::string>(content);
+			reply.headers["X-SCXML-Type"] = (HAS_ATTR(contentElem, "type") ? ATTR(contentElem, "type") : "replacechildren");
+			reply.headers["X-SCXML-XPath"] = (HAS_ATTR(contentElem, "xpath") ? ATTR(contentElem, "xpath") : "/html/body");
+			if (HAS_ATTR(contentElem, "attr"))
+				reply.headers["X-SCXML-Attr"] = ATTR(contentElem, "attr");
 		}
 //		ss << req.getFirstDOMElement();
 		ss << req.dom;

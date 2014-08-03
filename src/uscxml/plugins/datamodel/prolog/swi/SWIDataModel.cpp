@@ -676,10 +676,10 @@ void SWIDataModel::eval(const Element<std::string>& scriptElem, const std::strin
 }
 
 bool SWIDataModel::evalAsBool(const std::string& expr) {
-	return evalAsBool(Arabica::DOM::Node<std::string>(), expr);
+	return evalAsBool(Arabica::DOM::Element<std::string>(), expr);
 }
 
-bool SWIDataModel::evalAsBool(const Arabica::DOM::Node<std::string>& node, const std::string& expr) {
+bool SWIDataModel::evalAsBool(const Arabica::DOM::Element<std::string>& node, const std::string& expr) {
 	SWIEngineLock engineLock;
 	try {
 		PlCompound compound(expr.c_str());

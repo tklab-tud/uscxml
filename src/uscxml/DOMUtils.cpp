@@ -48,12 +48,13 @@ std::string DOMUtils::xPathForNode(const Arabica::DOM::Node<std::string>& node, 
 	while(curr) {
 		switch (curr.getNodeType()) {
 		case Arabica::DOM::Node_base::ELEMENT_NODE: {
-			if (HAS_ATTR(curr, "id")) {
+			Arabica::DOM::Element<std::string> elem = Arabica::DOM::Element<std::string>(curr);
+			if (HAS_ATTR(elem, "id")) {
 				// we assume ids to be unique and return immediately
 				if (ns == "*") {
-					xPath.insert(0, "//*[local-name() = \"" + TAGNAME(curr) + "\"][@id=\"" + ATTR(curr, "id") + "\"]");
+					xPath.insert(0, "//*[local-name() = \"" + TAGNAME(elem) + "\"][@id=\"" + ATTR(elem, "id") + "\"]");
 				} else {
-					xPath.insert(0, "//" + nsPrefix + TAGNAME(curr) + "[@id=\"" + ATTR(curr, "id") + "\"]");
+					xPath.insert(0, "//" + nsPrefix + TAGNAME(elem) + "[@id=\"" + ATTR(elem, "id") + "\"]");
 				}
 				return xPath;
 			} else {
@@ -62,16 +63,16 @@ std::string DOMUtils::xPathForNode(const Arabica::DOM::Node<std::string>& node, 
 				int index = 1; // xpath indices start at 1
 				while(sibling) {
 					if (sibling.getNodeType() == Arabica::DOM::Node_base::ELEMENT_NODE) {
-						if (iequals(TAGNAME(sibling), TAGNAME(curr))) {
+						if (iequals(TAGNAME_CAST(sibling), TAGNAME(elem))) {
 							index++;
 						}
 					}
 					sibling = sibling.getPreviousSibling();
 				}
 				if (ns == "*") {
-					xPath.insert(0, "/*[local-name() = \"" + TAGNAME(curr) + "\"][" + toStr(index) + "]");
+					xPath.insert(0, "/*[local-name() = \"" + TAGNAME(elem) + "\"][" + toStr(index) + "]");
 				} else {
-					xPath.insert(0, "/" + nsPrefix + TAGNAME(curr) + "[" + toStr(index) + "]");
+					xPath.insert(0, "/" + nsPrefix + TAGNAME(elem) + "[" + toStr(index) + "]");
 				}
 			}
 			break;

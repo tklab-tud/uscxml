@@ -48,7 +48,7 @@ boost::shared_ptr<ExecutableContentImpl> FileElement::create(InterpreterImpl* in
 FileElement::~FileElement() {
 }
 
-void FileElement::enterElement(const Arabica::DOM::Node<std::string>& node) {
+void FileElement::enterElement(const Arabica::DOM::Element<std::string>& node) {
 	if (!HAS_ATTR(node, "url") && !HAS_ATTR(node, "urlexpr")) {
 		LOG(ERROR) << "File element requires url or urlexpr";
 		return;
@@ -251,7 +251,7 @@ void FileElement::enterElement(const Arabica::DOM::Node<std::string>& node) {
 
 }
 
-void FileElement::exitElement(const Arabica::DOM::Node<std::string>& node) {
+void FileElement::exitElement(const Arabica::DOM::Element<std::string>& node) {
 
 }
 

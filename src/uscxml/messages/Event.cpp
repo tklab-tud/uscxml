@@ -121,8 +121,8 @@ Event Event::fromXML(const std::string& xmlString) {
 				Arabica::DOM::NodeList<std::string> properties = payloadElem.getElementsByTagName("scxml:property");
 				if (properties.getLength() > 0) {
 					for (int i = 0; i < properties.getLength(); i++) {
-						if (HAS_ATTR(properties.item(i), "name")) {
-							std::string key = ATTR(properties.item(i), "name");
+						if (HAS_ATTR_CAST(properties.item(i), "name")) {
+							std::string key = ATTR_CAST(properties.item(i), "name");
 							std::string value;
 							Arabica::DOM::NodeList<std::string> childs = properties.item(i).getChildNodes();
 							for (int j = 0; j < childs.getLength(); j++) {

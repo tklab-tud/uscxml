@@ -141,10 +141,10 @@ void PromelaDataModel::eval(const Element<std::string>& scriptElem, const std::s
 }
 
 bool PromelaDataModel::evalAsBool(const std::string& expr) {
-	return evalAsBool(Arabica::DOM::Node<std::string>(), expr);
+	return evalAsBool(Arabica::DOM::Element<std::string>(), expr);
 }
 
-bool PromelaDataModel::evalAsBool(const Arabica::DOM::Node<std::string>& node, const std::string& expr) {
+bool PromelaDataModel::evalAsBool(const Arabica::DOM::Element<std::string>& node, const std::string& expr) {
 	PromelaParser parser(expr, PromelaParser::PROMELA_EXPR);
 //	parser.dump();
 	return evaluateExpr(parser.ast) > 0;

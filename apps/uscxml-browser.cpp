@@ -39,7 +39,7 @@ class VerboseMonitor : public uscxml::InterpreterMonitor {
 		std::string seperator;
 		std::cout << "Config: {";
 		for (int i = 0; i < config.size(); i++) {
-			std::cout << seperator << ATTR(config[i], "id");
+			std::cout << seperator << ATTR_CAST(config[i], "id");
 			seperator = ", ";
 		}
 		std::cout << "}" << std::endl;

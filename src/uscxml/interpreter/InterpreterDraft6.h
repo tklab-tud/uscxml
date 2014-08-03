@@ -56,6 +56,9 @@ protected:
 	Arabica::DOM::Node<std::string> findLCPA(const Arabica::XPath::NodeSet<std::string>& states);
 
 	std::map<Arabica::DOM::Element<std::string>, bool> _transWithinParallel; // this is costly to calculate
+
+	virtual void handleDOMEvent(Arabica::DOM::Events::Event<std::string>& event);
+
 };
 
 }

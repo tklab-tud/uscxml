@@ -216,7 +216,7 @@ InterpreterState FlatteningInterpreter::interpret() {
 		initialElem.setAttribute("generated", "true");
 		Element<std::string> transitionElem = _document.createElementNS(_nsInfo.nsURL, "transition");
 		_nsInfo.setPrefix(transitionElem);
-		transitionElem.setAttribute("target", ATTR(initialStates[i], "id"));
+		transitionElem.setAttribute("target", ATTR_CAST(initialStates[i], "id"));
 		initialElem.appendChild(transitionElem);
 		_scxml.appendChild(initialElem);
 		initialTransitions.push_back(transitionElem);
@@ -277,14 +277,14 @@ void FlatteningInterpreter::executeContent(const Arabica::DOM::Element<std::stri
 	_currGlobalTransition->actions.push_back(action);
 }
 
-void FlatteningInterpreter::invoke(const Arabica::DOM::Node<std::string>& element) {
+void FlatteningInterpreter::invoke(const Arabica::DOM::Element<std::string>& element) {
 	GlobalTransition::Action action;
 	action.invoke = element;
 	_currGlobalTransition->actions.push_back(action);
 	_currGlobalTransition->invoke.push_back(element);
 }
 
-void FlatteningInterpreter::cancelInvoke(const Arabica::DOM::Node<std::string>& element) {
+void FlatteningInterpreter::cancelInvoke(const Arabica::DOM::Element<std::string>& element) {
 	GlobalTransition::Action action;
 	action.uninvoke = element;
 	_currGlobalTransition->actions.push_back(action);
@@ -323,7 +323,7 @@ void FlatteningInterpreter::internalDoneSend(const Arabica::DOM::Element<std::st
 		}
 	}
 
-	raise.setAttribute("event", "done.state." + ATTR(stateElem.getParentNode(), "id")); // parent?!
+	raise.setAttribute("event", "done.state." + ATTR_CAST(stateElem.getParentNode(), "id")); // parent?!
 
 	GlobalTransition::Action action;
 	action.onEntry = onentry;
@@ -379,8 +379,8 @@ static bool filterChildEnabled(const NodeSet<std::string>& transitions) {
 			p2 = p2.getParentNode(); // TODO: think about again!
 			while(p2) {
 				if (p1 == p2) {
-					std::string eventDesc1 = ATTR(t1, "event");
-					std::string eventDesc2 = ATTR(t2, "event");
+					std::string eventDesc1 = ATTR_CAST(t1, "event");
+					std::string eventDesc2 = ATTR_CAST(t2, "event");
 					if (InterpreterImpl::nameMatch(eventDesc1, eventDesc2)) {
 						return false;
 					}
@@ -453,7 +453,7 @@ void FlatteningInterpreter::explode() {
 		for (unsigned int i = 0; i < _statesToInvoke.size(); i++) {
 			NodeSet<std::string> invokes = filterChildElements(_nsInfo.xmlNSPrefix + "invoke", _statesToInvoke[i]);
 			for (unsigned int j = 0; j < invokes.size(); j++) {
-				invoke(invokes[j]);
+				invoke(Element<std::string>(invokes[j]));
 			}
 		}
 		_statesToInvoke = NodeSet<std::string>();
@@ -595,11 +595,11 @@ void FlatteningInterpreter::explode() {
 			int nrDepth = 0;
 			int prioPerLevel = 0;
 			for (int i = 0; i < transitions.size(); i++) {
-				int depth = strTo<int>(ATTR(transitions[i], "depth"));
+				int depth = strTo<int>(ATTR_CAST(transitions[i], "depth"));
 				if (depth != currDepth)
 					continue;
 				nrDepth++;
-				int order = strTo<int>(ATTR(transitions[i], "order"));
+				int order = strTo<int>(ATTR_CAST(transitions[i], "order"));
 				if (order < lowestOrder)
 					lowestOrder = order;
 				prioPerLevel += pow(static_cast<double>(maxOrder), maxOrder - order);
@@ -673,7 +673,7 @@ NEXT_DEPTH:
 }
 
 void FlatteningInterpreter::createDocument() {
-	Node<std::string> _origSCXML = _scxml;
+	Element<std::string> _origSCXML = _scxml;
 
 	_scxml = _flatDoc.createElementNS(_nsInfo.nsURL, "scxml");
 	_nsInfo.setPrefix(_scxml);
@@ -952,10 +952,11 @@ void FlatteningInterpreter::labelTransitions() {
 	Arabica::XPath::NodeSet<std::string> states = getAllStates();
 	states.push_back(_scxml);
 	for (int i = 0; i < states.size(); i++) {
-		std::string stateId = ATTR(states[i], "id");
-		NodeSet<std::string> transitions = filterChildElements(_nsInfo.xmlNSPrefix + "transition", states[i]);
+		Arabica::DOM::Element<std::string> stateElem = Arabica::DOM::Element<std::string>(states[i]);
+		std::string stateId = ATTR(stateElem, "id");
+		NodeSet<std::string> transitions = filterChildElements(_nsInfo.xmlNSPrefix + "transition", stateElem);
 		// some transitions are in the inital elements
-		NodeSet<std::string> initials = filterChildElements(_nsInfo.xmlNSPrefix + "initial", states[i]);
+		NodeSet<std::string> initials = filterChildElements(_nsInfo.xmlNSPrefix + "initial", stateElem);
 		transitions.push_back(filterChildElements(_nsInfo.xmlNSPrefix + "transition", initials));
 		for (int j = 0; j < transitions.size(); j++) {
 			Element<std::string> transition = Element<std::string>(transitions[j]);
@@ -1014,12 +1015,12 @@ GlobalState::GlobalState(const Arabica::XPath::NodeSet<std::string>& activeState
 	for (int i = 0; i < activeStates.size(); i++) {
 		if (!InterpreterImpl::isFinal(Element<std::string>(activeStates[i])))
 			isFinal = false;
-		idSS << ATTR(activeStates[i], "id") << "-";
+		idSS << ATTR_CAST(activeStates[i], "id") << "-";
 	}
 	idSS << ";";
 	idSS << "entered-";
 	for (int i = 0; i < alreadyEnteredStates.size(); i++) {
-		idSS << ATTR(alreadyEnteredStates[i], "id") << "-";
+		idSS << ATTR_CAST(alreadyEnteredStates[i], "id") << "-";
 	}
 	idSS << ";";
 
@@ -1030,7 +1031,7 @@ GlobalState::GlobalState(const Arabica::XPath::NodeSet<std::string>& activeState
 		idSS << "history--";
 		idSS << histIter->first << "-";
 		for (int i = 0; i < histStates.size(); i++) {
-			idSS << ATTR(histStates[i], "id") << "-";
+			idSS << ATTR_CAST(histStates[i], "id") << "-";
 		}
 	}
 
@@ -1053,13 +1054,14 @@ GlobalTransition::GlobalTransition(const Arabica::XPath::NodeSet<std::string>& t
 	std::list<std::string> conditions;
 	std::ostringstream setId; // also build id for subset
 	for (int i = 0; i < transitions.size(); i++) {
+		Arabica::DOM::Element<std::string> transElem = Arabica::DOM::Element<std::string>(transitions[i]);
 		// get a unique string for the transition - we assume it is sorted
-		assert(HAS_ATTR(transitions[i], "id"));
-		setId << ATTR(transitions[i], "id") << "-";
+		assert(HAS_ATTR(transElem, "id"));
+		setId << ATTR(transElem, "id") << "-";
 
 		// gather conditions while we are iterating anyway
-		if (HAS_ATTR(transitions[i], "cond")) {
-			conditions.push_back(ATTR(transitions[i], "cond"));
+		if (HAS_ATTR(transElem, "cond")) {
+			conditions.push_back(ATTR(transElem, "cond"));
 		}
 	}
 	transitionId = setId.str();
@@ -1077,10 +1079,11 @@ GlobalTransition::GlobalTransition(const Arabica::XPath::NodeSet<std::string>& t
 	bool foundTargetLess = false;
 
 	for (int i = 0; i < transitions.size(); i++) {
-		if (HAS_ATTR(transitions[i], "eventexpr")) {
+		Arabica::DOM::Element<std::string> transElem = Arabica::DOM::Element<std::string>(transitions[i]);
+		if (HAS_ATTR(transElem, "eventexpr")) {
 			ERROR_EXECUTION_THROW("Cannot flatten document with eventexpr attributes");
 		}
-		if (HAS_ATTR(transitions[i], "event")) {
+		if (HAS_ATTR(transElem, "event")) {
 			foundWithEvent = true;
 			if (foundEventLess)
 				break;
@@ -1089,7 +1092,7 @@ GlobalTransition::GlobalTransition(const Arabica::XPath::NodeSet<std::string>& t
 			if (foundWithEvent)
 				break;
 		}
-		if (HAS_ATTR(transitions[i], "target")) {
+		if (HAS_ATTR(transElem, "target")) {
 			foundWithTarget = true;
 			if (foundTargetLess)
 				break;
@@ -1151,7 +1154,7 @@ std::list<std::string> GlobalTransition::getCommonEvents(const NodeSet<std::stri
 
 	for (int i = 0; i < transitions.size(); i++) {
 		// for every transition
-		std::list<std::string> eventNames = InterpreterImpl::tokenizeIdRefs(ATTR(transitions[i], "event"));
+		std::list<std::string> eventNames = InterpreterImpl::tokenizeIdRefs(ATTR_CAST(transitions[i], "event"));
 
 		for (std::list<std::string>::iterator eventNameIter = eventNames.begin();
 		        eventNameIter != eventNames.end();
@@ -1170,7 +1173,7 @@ std::list<std::string> GlobalTransition::getCommonEvents(const NodeSet<std::stri
 				// check if token would activate all other transitions
 				if (i == j)
 					continue;
-				if (!InterpreterImpl::nameMatch(ATTR(transitions[j], "event"), eventName)) {
+				if (!InterpreterImpl::nameMatch(ATTR_CAST(transitions[j], "event"), eventName)) {
 					isMatching = false;
 					break;
 				}

@@ -44,7 +44,7 @@ boost::shared_ptr<ExecutableContentImpl> PostponeElement::create(InterpreterImpl
 	return invoker;
 }
 
-void PostponeElement::enterElement(const Arabica::DOM::Node<std::string>& node) {
+void PostponeElement::enterElement(const Arabica::DOM::Element<std::string>& node) {
 	if (!_interpreter->getDataModel()) {
 		LOG(ERROR) << "Postpone element requires a datamodel";
 		return;
@@ -116,7 +116,7 @@ void PostponeElement::enterElement(const Arabica::DOM::Node<std::string>& node) 
 	Resubmitter::postpone(currEvent, until, 0, chained, _interpreter);
 }
 
-void PostponeElement::exitElement(const Arabica::DOM::Node<std::string>& node) {
+void PostponeElement::exitElement(const Arabica::DOM::Element<std::string>& node) {
 }
 
 void PostponeElement::Resubmitter::postpone(const Event& event, std::string until, uint64_t timeout, bool chained, InterpreterImpl* interpreter) {

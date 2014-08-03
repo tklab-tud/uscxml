@@ -97,7 +97,7 @@ Data::Data(const Arabica::DOM::Node<std::string>& dom) {
 			std::string key;
 			switch (child.getNodeType()) {
 			case Arabica::DOM::Node_base::ELEMENT_NODE:
-				key = TAGNAME(child);
+				key = TAGNAME_CAST(child);
 				break;
 			case Arabica::DOM::Node_base::ATTRIBUTE_NODE:
 				key = ((Arabica::DOM::Attr<std::string>)child).getName();

@@ -401,7 +401,7 @@ void SCXMLDotWriter::writeStateElement(std::ostream& os, const Element<std::stri
 		// write history states
 		NodeSet<std::string> histories = InterpreterImpl::filterChildElements(_xmlNSPrefix + "history", stateElem);
 		for (int i = 0; i < histories.size(); i++) {
-			os << "  <tr><td port=\"" << ATTR(histories[i], "id") << "\" balign=\"left\" colspan=\"" << (nrOutPorts == 0 ? 1 : 2) << "\"><b>history: </b>" << ATTR(histories[i], "id") << "</td></tr>" << std::endl;
+			os << "  <tr><td port=\"" << ATTR_CAST(histories[i], "id") << "\" balign=\"left\" colspan=\"" << (nrOutPorts == 0 ? 1 : 2) << "\"><b>history: </b>" << ATTR_CAST(histories[i], "id") << "</td></tr>" << std::endl;
 
 		}
 
@@ -548,41 +548,42 @@ std::string SCXMLDotWriter::getDetailedLabel(const Element<std::string>& elem, i
 	for (int i = 0; i < childElems.getLength(); i++) {
 		if (childElems.item(i).getNodeType() != Node_base::ELEMENT_NODE)
 			continue;
+		Element<std::string> elem = Element<std::string>(childElems.item(i));
 
-		if (InterpreterImpl::isState(Element<std::string>(childElems.item(i))) ||
-		        iequals(TAGNAME(childElems.item(i)), "transition") ||
-		        iequals(TAGNAME(childElems.item(i)), "initial") ||
+		if (InterpreterImpl::isState(elem) ||
+		        iequals(TAGNAME(elem), "transition") ||
+		        iequals(TAGNAME(elem), "initial") ||
 		        false)
 			continue;
 
 		struct ElemDetails details;
-		details.name = "<b>" + TAGNAME(childElems.item(i)) + ":</b>";
+		details.name = "<b>" + TAGNAME(elem) + ":</b>";
 
-		if (iequals(TAGNAME(childElems.item(i)), "history")) {
+		if (iequals(TAGNAME(elem), "history")) {
 			continue;
 		}
 
 		// provide details for special elements here
 
 		// param ---------
-		if (iequals(TAGNAME(childElems.item(i)), "param")) {
-			if (HAS_ATTR(childElems.item(i), "name"))
-				details.name += " " + ATTR(childElems.item(i), "name") + " = ";
-			if (HAS_ATTR(childElems.item(i), "expr"))
-				details.name += ATTR(childElems.item(i), "expr");
-			if (HAS_ATTR(childElems.item(i), "location"))
-				details.name += ATTR(childElems.item(i), "location");
+		if (iequals(TAGNAME(elem), "param")) {
+			if (HAS_ATTR(elem, "name"))
+				details.name += " " + ATTR(elem, "name") + " = ";
+			if (HAS_ATTR(elem, "expr"))
+				details.name += ATTR(elem, "expr");
+			if (HAS_ATTR(elem, "location"))
+				details.name += ATTR(elem, "location");
 		}
 
 		// data ---------
-		if (iequals(TAGNAME(childElems.item(i)), "data")) {
-			if (HAS_ATTR(childElems.item(i), "id"))
-				details.name += " " + ATTR(childElems.item(i), "id");
-			if (HAS_ATTR(childElems.item(i), "src"))
-				details.name += ATTR(childElems.item(i), "src");
-			if (HAS_ATTR(childElems.item(i), "expr"))
-				details.name += " = " + ATTR(childElems.item(i), "expr");
-			NodeList<std::string > grandChildElems = childElems.item(i).getChildNodes();
+		if (iequals(TAGNAME(elem), "data")) {
+			if (HAS_ATTR(elem, "id"))
+				details.name += " " + ATTR(elem, "id");
+			if (HAS_ATTR(elem, "src"))
+				details.name += ATTR(elem, "src");
+			if (HAS_ATTR(elem, "expr"))
+				details.name += " = " + ATTR(elem, "expr");
+			NodeList<std::string > grandChildElems = elem.getChildNodes();
 			for (int j = 0; j < grandChildElems.getLength(); j++) {
 				if (grandChildElems.item(j).getNodeType() == Node_base::TEXT_NODE) {
 					details.name += dotEscape(grandChildElems.item(j).getNodeValue());
@@ -591,60 +592,60 @@ std::string SCXMLDotWriter::getDetailedLabel(const Element<std::string>& elem, i
 		}
 
 		// invoke ---------
-		if (iequals(TAGNAME(childElems.item(i)), "invoke")) {
-			if (HAS_ATTR(childElems.item(i), "type"))
-				details.name += "<br />type = " + ATTR(childElems.item(i), "type");
-			if (HAS_ATTR(childElems.item(i), "typeexpr"))
-				details.name += "<br />type = " + ATTR(childElems.item(i), "typeexpr");
-			if (HAS_ATTR(childElems.item(i), "src"))
-				details.name += "<br />src = " + ATTR(childElems.item(i), "src");
-			if (HAS_ATTR(childElems.item(i), "srcexpr"))
-				details.name += "<br />src = " + ATTR(childElems.item(i), "srcexpr");
-			if (HAS_ATTR(childElems.item(i), "id"))
-				details.name += "<br />id = " + ATTR(childElems.item(i), "id");
-			if (HAS_ATTR(childElems.item(i), "idlocation"))
-				details.name += "<br />id = " + ATTR(childElems.item(i), "idlocation");
+		if (iequals(TAGNAME(elem), "invoke")) {
+			if (HAS_ATTR(elem, "type"))
+				details.name += "<br />type = " + ATTR(elem, "type");
+			if (HAS_ATTR(elem, "typeexpr"))
+				details.name += "<br />type = " + ATTR(elem, "typeexpr");
+			if (HAS_ATTR(elem, "src"))
+				details.name += "<br />src = " + ATTR(elem, "src");
+			if (HAS_ATTR(elem, "srcexpr"))
+				details.name += "<br />src = " + ATTR(elem, "srcexpr");
+			if (HAS_ATTR(elem, "id"))
+				details.name += "<br />id = " + ATTR(elem, "id");
+			if (HAS_ATTR(elem, "idlocation"))
+				details.name += "<br />id = " + ATTR(elem, "idlocation");
 		}
 
 		// send ---------
-		if (iequals(TAGNAME(childElems.item(i)), "raise")) {
-			if (HAS_ATTR(childElems.item(i), "event "))
-				details.name += "<br />event = " + ATTR(childElems.item(i), "event");
+		if (iequals(TAGNAME(elem), "raise")) {
+			if (HAS_ATTR(elem, "event "))
+				details.name += "<br />event = " + ATTR(elem, "event");
 		}
 
 		// send ---------
-		if (iequals(TAGNAME(childElems.item(i)), "send")) {
-			if (HAS_ATTR(childElems.item(i), "id"))
-				details.name += "<br />id = " + ATTR(childElems.item(i), "id");
-			if (HAS_ATTR(childElems.item(i), "type"))
-				details.name += "<br />type = " + ATTR(childElems.item(i), "type");
-			if (HAS_ATTR(childElems.item(i), "typeexpr"))
-				details.name += "<br />type = " + ATTR(childElems.item(i), "typeexpr");
-			if (HAS_ATTR(childElems.item(i), "event"))
-				details.name += "<br />event = " + ATTR(childElems.item(i), "event");
-			if (HAS_ATTR(childElems.item(i), "eventexpr"))
-				details.name += "<br />event = " + ATTR(childElems.item(i), "eventexpr");
-			if (HAS_ATTR(childElems.item(i), "target"))
-				details.name += "<br />target = " + ATTR(childElems.item(i), "target");
-			if (HAS_ATTR(childElems.item(i), "targetexpr"))
-				details.name += "<br />target = " + ATTR(childElems.item(i), "targetexpr");
-			if (HAS_ATTR(childElems.item(i), "delay"))
-				details.name += "<br />delay = " + ATTR(childElems.item(i), "delay");
-			if (HAS_ATTR(childElems.item(i), "delayexpr"))
-				details.name += "<br />delay = " + ATTR(childElems.item(i), "delayexpr");
+		if (iequals(TAGNAME(elem), "send")) {
+			if (HAS_ATTR(elem, "id"))
+				details.name += "<br />id = " + ATTR(elem, "id");
+			if (HAS_ATTR(elem, "type"))
+				details.name += "<br />type = " + ATTR(elem, "type");
+			if (HAS_ATTR(elem, "typeexpr"))
+				details.name += "<br />type = " + ATTR(elem, "typeexpr");
+			if (HAS_ATTR(elem, "event"))
+				details.name += "<br />event = " + ATTR(elem, "event");
+			if (HAS_ATTR(elem, "eventexpr"))
+				details.name += "<br />event = " + ATTR(elem, "eventexpr");
+			if (HAS_ATTR(elem, "target"))
+				details.name += "<br />target = " + ATTR(elem, "target");
+			if (HAS_ATTR(elem, "targetexpr"))
+				details.name += "<br />target = " + ATTR(elem, "targetexpr");
+			if (HAS_ATTR(elem, "delay"))
+				details.name += "<br />delay = " + ATTR(elem, "delay");
+			if (HAS_ATTR(elem, "delayexpr"))
+				details.name += "<br />delay = " + ATTR(elem, "delayexpr");
 		}
 
 		// cancel ---------
-		if (iequals(TAGNAME(childElems.item(i)), "cancel")) {
-			if (HAS_ATTR(childElems.item(i), "sendid"))
-				details.name += " " + ATTR(childElems.item(i), "sendid");
+		if (iequals(TAGNAME(elem), "cancel")) {
+			if (HAS_ATTR(elem, "sendid"))
+				details.name += " " + ATTR(elem, "sendid");
 		}
 
 		// script ---------
-		if (iequals(TAGNAME(childElems.item(i)), "script")) {
+		if (iequals(TAGNAME(elem), "script")) {
 			details.name += " ";
-			if (HAS_ATTR(childElems.item(i), "src"))
-				details.name += ATTR(childElems.item(i), "src");
+			if (HAS_ATTR(elem, "src"))
+				details.name += ATTR(elem, "src");
 			NodeList<std::string > grandChildElems = childElems.item(i).getChildNodes();
 			for (int j = 0; j < grandChildElems.getLength(); j++) {
 				if (grandChildElems.item(j).getNodeType() == Node_base::TEXT_NODE) {
@@ -654,34 +655,34 @@ std::string SCXMLDotWriter::getDetailedLabel(const Element<std::string>& elem, i
 		}
 
 		// if ---------
-		if (iequals(TAGNAME(childElems.item(i)), "if")) {
-			if (HAS_ATTR(childElems.item(i), "cond"))
-				details.name += " cond = " + dotEscape(ATTR(childElems.item(i), "cond"));
+		if (iequals(TAGNAME(elem), "if")) {
+			if (HAS_ATTR(elem, "cond"))
+				details.name += " cond = " + dotEscape(ATTR(elem, "cond"));
 		}
 
 		// elseif ---------
-		if (iequals(TAGNAME(childElems.item(i)), "elseif")) {
-			if (HAS_ATTR(childElems.item(i), "cond"))
-				details.name += " cond = " + dotEscape(ATTR(childElems.item(i), "cond"));
+		if (iequals(TAGNAME(elem), "elseif")) {
+			if (HAS_ATTR(elem, "cond"))
+				details.name += " cond = " + dotEscape(ATTR(elem, "cond"));
 		}
 
 		// log ---------
-		if (iequals(TAGNAME(childElems.item(i)), "log")) {
+		if (iequals(TAGNAME(elem), "log")) {
 			details.name += " ";
-			if (HAS_ATTR(childElems.item(i), "label"))
-				details.name += ATTR(childElems.item(i), "label") + " = ";
-			if (HAS_ATTR(childElems.item(i), "expr"))
-				details.name += ATTR(childElems.item(i), "expr");
+			if (HAS_ATTR(elem, "label"))
+				details.name += ATTR(elem, "label") + " = ";
+			if (HAS_ATTR(elem, "expr"))
+				details.name += ATTR(elem, "expr");
 		}
 
 		// foreach ---------
-		if (iequals(TAGNAME(childElems.item(i)), "foreach")) {
-			if (HAS_ATTR(childElems.item(i), "item"))
-				details.name += "<br />&nbsp;&nbsp;item = " + ATTR(childElems.item(i), "item");
-			if (HAS_ATTR(childElems.item(i), "array"))
-				details.name += "<br />&nbsp;&nbsp;array = " + ATTR(childElems.item(i), "array");
-			if (HAS_ATTR(childElems.item(i), "index"))
-				details.name += "<br />&nbsp;&nbsp;index = " + ATTR(childElems.item(i), "index");
+		if (iequals(TAGNAME(elem), "foreach")) {
+			if (HAS_ATTR(elem, "item"))
+				details.name += "<br />&nbsp;&nbsp;item = " + ATTR(elem, "item");
+			if (HAS_ATTR(elem, "array"))
+				details.name += "<br />&nbsp;&nbsp;array = " + ATTR(elem, "array");
+			if (HAS_ATTR(elem, "index"))
+				details.name += "<br />&nbsp;&nbsp;index = " + ATTR(elem, "index");
 		}
 
 		// recurse
@@ -814,7 +815,7 @@ std::string SCXMLDotWriter::idForNode(const Node<std::string>& node) {
 				index++;
 
 			std::stringstream ssElemId;
-			ssElemId << TAGNAME(tmpParent) << index << ".";
+			ssElemId << TAGNAME_CAST(tmpParent) << index << ".";
 			elemId = ssElemId.str() + elemId;
 		} while ((tmpParent = tmpParent.getParentNode()));
 //    elemId = ssElemId.str();

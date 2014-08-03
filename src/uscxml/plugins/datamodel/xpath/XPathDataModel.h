@@ -123,7 +123,7 @@ public:
 
 	virtual std::string evalAsString(const std::string& expr);
 	virtual bool evalAsBool(const std::string& expr);
-	virtual bool evalAsBool(const Arabica::DOM::Node<std::string>& node, const std::string& expr);
+	virtual bool evalAsBool(const Arabica::DOM::Element<std::string>& node, const std::string& expr);
 	virtual double evalAsNumber(const std::string& expr);
 
 protected:

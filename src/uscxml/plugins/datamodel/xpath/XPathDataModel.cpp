@@ -229,7 +229,7 @@ void XPathDataModel::setEvent(const Event& event) {
 	Node<std::string> oldEventElem = _datamodel.getFirstChild();
 	while(oldEventElem) {
 		if (oldEventElem.getNodeType() == Node_base::ELEMENT_NODE) {
-			if (HAS_ATTR(oldEventElem, "id") && iequals(ATTR(oldEventElem, "id"), "_event"))
+			if (HAS_ATTR_CAST(oldEventElem, "id") && iequals(ATTR_CAST(oldEventElem, "id"), "_event"))
 				break;
 		}
 		oldEventElem = oldEventElem.getNextSibling();
@@ -393,10 +393,10 @@ bool XPathDataModel::isDeclared(const std::string& expr) {
 }
 
 bool XPathDataModel::evalAsBool(const std::string& expr) {
-	return evalAsBool(Arabica::DOM::Node<std::string>(), expr);
+	return evalAsBool(Arabica::DOM::Element<std::string>(), expr);
 }
 
-bool XPathDataModel::evalAsBool(const Arabica::DOM::Node<std::string>& node, const std::string& expr) {
+bool XPathDataModel::evalAsBool(const Arabica::DOM::Element<std::string>& node, const std::string& expr) {
 //	std::cout << std::endl << evalAsString(expr);
 	XPathValue<std::string> result;
 	try {

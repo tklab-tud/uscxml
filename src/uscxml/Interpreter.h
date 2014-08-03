@@ -435,6 +435,8 @@ public:
 	Arabica::DOM::Node<std::string> findLCCA(const Arabica::XPath::NodeSet<std::string>& states);
 	virtual Arabica::XPath::NodeSet<std::string> getProperAncestors(const Arabica::DOM::Node<std::string>& s1, const Arabica::DOM::Node<std::string>& s2);
 
+	virtual void handleDOMEvent(Arabica::DOM::Events::Event<std::string>& event);
+
 protected:
 
 	static void run(void*); // static method for thread to run
@@ -512,19 +514,19 @@ protected:
 	virtual void executeContent(const Arabica::DOM::NodeList<std::string>& content, bool rethrow = false);
 	virtual void executeContent(const Arabica::XPath::NodeSet<std::string>& content, bool rethrow = false);
 
-	void processContentElement(const Arabica::DOM::Node<std::string>& element,
+	void processContentElement(const Arabica::DOM::Element<std::string>& element,
 	                           Arabica::DOM::Node<std::string>& dom,
 	                           std::string& text,
 	                           std::string& expr);
-	void processParamChilds(const Arabica::DOM::Node<std::string>& element,
+	void processParamChilds(const Arabica::DOM::Element<std::string>& element,
 	                        std::multimap<std::string, Data>& params);
-	void processDOMorText(const Arabica::DOM::Node<std::string>& element,
+	void processDOMorText(const Arabica::DOM::Element<std::string>& element,
 	                      Arabica::DOM::Node<std::string>& dom,
 	                      std::string& text);
 
-	virtual void send(const Arabica::DOM::Node<std::string>& element);
-	virtual void invoke(const Arabica::DOM::Node<std::string>& element);
-	virtual void cancelInvoke(const Arabica::DOM::Node<std::string>& element);
+	virtual void send(const Arabica::DOM::Element<std::string>& element);
+	virtual void invoke(const Arabica::DOM::Element<std::string>& element);
+	virtual void cancelInvoke(const Arabica::DOM::Element<std::string>& element);
 	virtual void internalDoneSend(const Arabica::DOM::Element<std::string>& state);
 	static void delayedSend(void* userdata, std::string eventName);
 	void returnDoneEvent(const Arabica::DOM::Node<std::string>& state);
@@ -540,7 +542,8 @@ protected:
 	std::map<std::string, Invoker> _invokers;
 	std::map<Arabica::DOM::Node<std::string>, ExecutableContent> _executableContent;
 
-	/// TODO: We need to adapt them when the DOM is operated upon
+	std::map<std::pair<Arabica::DOM::Node<std::string>, Arabica::DOM::Node<std::string> >, Arabica::XPath::NodeSet<std::string> >  _cachedProperAncestors;
+	std::map<Arabica::DOM::Element<std::string>, Arabica::XPath::NodeSet<std::string> > _cachedTargets;
 	std::map<std::string, Arabica::DOM::Element<std::string> > _cachedStates;
 	std::map<std::string, URL> _cachedURLs;
 

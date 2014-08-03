@@ -199,14 +199,14 @@ void FSMToPromela::writeStates(std::ostream& stream) {
 	stream << "// state name identifiers" << std::endl;
 	for (int i = 0; i < _globalStates.size(); i++) {
 		stream << "#define " << "s" << i << " " << i;
-		stream << " // from \"" << ATTR(_globalStates[i], "id") << "\"" << std::endl;
+		stream << " // from \"" << ATTR_CAST(_globalStates[i], "id") << "\"" << std::endl;
 	}
 
 }
 
-Arabica::XPath::NodeSet<std::string> FSMToPromela::getTransientContent(const Arabica::DOM::Node<std::string>& state) {
+Arabica::XPath::NodeSet<std::string> FSMToPromela::getTransientContent(const Arabica::DOM::Element<std::string>& state) {
 	Arabica::XPath::NodeSet<std::string> content;
-	Arabica::DOM::Node<std::string> currState = state;
+	Arabica::DOM::Element<std::string> currState = state;
 	for (;;) {
 		if (!HAS_ATTR(currState, "transient") || !DOMUtils::attributeIsTrue(ATTR(currState, "transient")))
 			break;
@@ -214,20 +214,20 @@ Arabica::XPath::NodeSet<std::string> FSMToPromela::getTransientContent(const Ara
 		content.push_back(filterChildElements(_nsInfo.xmlNSPrefix + "onentry", currState));
 		content.push_back(filterChildElements(_nsInfo.xmlNSPrefix + "onexit", currState));
 		NodeSet<std::string> transitions = filterChildElements(_nsInfo.xmlNSPrefix + "transition", currState);
-		currState = _states[ATTR(transitions[0], "target")];
+		currState = _states[ATTR_CAST(transitions[0], "target")];
 	}
 
 	return content;
 }
 
-Node<std::string> FSMToPromela::getUltimateTarget(const Arabica::DOM::Node<std::string>& transition) {
-	Arabica::DOM::Node<std::string> currState = _states[ATTR(transition, "target")];
+Node<std::string> FSMToPromela::getUltimateTarget(const Arabica::DOM::Element<std::string>& transition) {
+	Arabica::DOM::Element<std::string> currState = _states[ATTR_CAST(transition, "target")];
 
 	for (;;) {
 		if (!HAS_ATTR(currState, "transient") || !DOMUtils::attributeIsTrue(ATTR(currState, "transient")))
 			return currState;
 		NodeSet<std::string> transitions = filterChildElements(_nsInfo.xmlNSPrefix + "transition", currState);
-		currState = _states[ATTR(transitions[0], "target")];
+		currState = _states[ATTR_CAST(transitions[0], "target")];
 	}
 }
 
@@ -250,7 +250,7 @@ void FSMToPromela::writeInlineComment(std::ostream& stream, const Arabica::DOM::
 	}
 }
 
-void FSMToPromela::writeExecutableContent(std::ostream& stream, const Arabica::DOM::Node<std::string>& node, int indent) {
+void FSMToPromela::writeExecutableContent(std::ostream& stream, const Arabica::DOM::Element<std::string>& node, int indent) {
 
 	std::string padding;
 	for (int i = 0; i < indent; i++) {
@@ -283,12 +283,12 @@ void FSMToPromela::writeExecutableContent(std::ostream& stream, const Arabica::D
 		if (HAS_ATTR(node, "transient") && DOMUtils::attributeIsTrue(ATTR(node, "transient"))) {
 			Arabica::XPath::NodeSet<std::string> execContent = getTransientContent(node);
 			for (int i = 0; i < execContent.size(); i++) {
-				writeExecutableContent(stream, execContent[i], indent);
+				writeExecutableContent(stream, Arabica::DOM::Element<std::string>(execContent[i]), indent);
 			}
 		} else {
 			Arabica::DOM::Node<std::string> child = node.getFirstChild();
 			while(child) {
-				writeExecutableContent(stream, child, indent);
+				writeExecutableContent(stream, Arabica::DOM::Element<std::string>(child), indent);
 				child = child.getNextSibling();
 			}
 		}
@@ -326,7 +326,7 @@ void FSMToPromela::writeExecutableContent(std::ostream& stream, const Arabica::D
 	} else if(TAGNAME(node) == "onentry" || TAGNAME(node) == "onexit") {
 		Arabica::DOM::Node<std::string> child = node.getFirstChild();
 		while(child) {
-			writeExecutableContent(stream, child, indent);
+			writeExecutableContent(stream, Arabica::DOM::Element<std::string>(child), indent);
 			child = child.getNextSibling();
 		}
 
@@ -345,7 +345,7 @@ void FSMToPromela::writeExecutableContent(std::ostream& stream, const Arabica::D
 		stream << padding << "for (" << ATTR(node, "item") << " in " << ATTR(node, "array") << ") {" << std::endl;
 		Arabica::DOM::Node<std::string> child = node.getFirstChild();
 		while(child) {
-			writeExecutableContent(stream, child, indent + 1);
+			writeExecutableContent(stream, Arabica::DOM::Element<std::string>(child), indent + 1);
 			child = child.getNextSibling();
 		}
 		if (HAS_ATTR(node, "index"))
@@ -483,22 +483,22 @@ void FSMToPromela::writeIfBlock(std::ostream& stream, const Arabica::XPath::Node
 	bool noNext = condChain.size() == 1;
 	bool nextIsElse = false;
 	if (condChain.size() > 1) {
-		if (TAGNAME(condChain[1]) == "else") {
+		if (TAGNAME_CAST(condChain[1]) == "else") {
 			nextIsElse = true;
 		}
 	}
 
-	Node<std::string> ifNode = condChain[0];
+	Element<std::string> ifNode = Element<std::string>(condChain[0]);
 
 	stream << padding << "if" << std::endl;
 	// we need to nest the elseifs to resolve promela if semantics
 	stream << padding << ":: (" << ATTR(ifNode, "cond") << ") -> {" << std::endl;
 
-	Arabica::DOM::Node<std::string> child;
+	Arabica::DOM::Element<std::string> child;
 	if (TAGNAME(ifNode) == "if") {
-		child = ifNode.getFirstChild();
+		child = Arabica::DOM::Element<std::string>(ifNode.getFirstChild());
 	} else {
-		child = ifNode.getNextSibling();
+		child = Arabica::DOM::Element<std::string>(ifNode.getNextSibling());
 	}
 	while(child) {
 		if (child.getNodeType() == Node_base::ELEMENT_NODE) {
@@ -506,17 +506,17 @@ void FSMToPromela::writeIfBlock(std::ostream& stream, const Arabica::XPath::Node
 				break;
 		}
 		writeExecutableContent(stream, child, indent + 1);
-		child = child.getNextSibling();
+		child = Arabica::DOM::Element<std::string>(child.getNextSibling());
 	}
 	stream << padding << "}" << std::endl;
 	stream << padding << ":: else -> ";
 
 	if (nextIsElse) {
-		child = condChain[1].getNextSibling();
+		child = Arabica::DOM::Element<std::string>(condChain[1].getNextSibling());
 		stream << "{" << std::endl;
 		while(child) {
 			writeExecutableContent(stream, child, indent + 1);
-			child = child.getNextSibling();
+			child = Arabica::DOM::Element<std::string>(child.getNextSibling());
 		}
 		stream << padding << "}" << std::endl;
 
@@ -630,14 +630,14 @@ void FSMToPromela::writeFSM(std::ostream& stream) {
 	transitions = filterChildElements(_nsInfo.xmlNSPrefix + "transition", _startState);
 	assert(transitions.size() == 1);
 	stream << "  // transition's executable content" << std::endl;
-	writeExecutableContent(stream, transitions[0], 1);
+	writeExecutableContent(stream, Arabica::DOM::Element<std::string>(transitions[0]), 1);
 
 	for (int i = 0; i < _globalStates.size(); i++) {
 		if (_globalStates[i] == _startState)
 			continue;
 		NodeSet<std::string> transitions = filterChildElements(_nsInfo.xmlNSPrefix + "transition", _globalStates[i]);
 		for (int j = 0; j < transitions.size(); j++) {
-			writeExecutableContent(stream, transitions[j], 1);
+			writeExecutableContent(stream, Arabica::DOM::Element<std::string>(transitions[j]), 1);
 		}
 	}
 
@@ -702,7 +702,7 @@ void FSMToPromela::writeDispatchingBlock(std::ostream& stream, const Arabica::XP
 	stream << padding << "if" << std::endl;
 	stream << padding << ":: ((0";
 
-	Node<std::string> currTrans = transChain[0];
+	Element<std::string> currTrans = Element<std::string>(transChain[0]);
 	std::string eventDesc = ATTR(currTrans, "event");
 	if (boost::ends_with(eventDesc, "*"))
 		eventDesc = eventDesc.substr(0, eventDesc.size() - 1);
@@ -754,8 +754,8 @@ void FSMToPromela::initNodes() {
 	// get all states
 	NodeSet<std::string> states = filterChildElements(_nsInfo.xmlNSPrefix + "state", _scxml);
 	for (int i = 0; i < states.size(); i++) {
-		_states[ATTR(states[i], "id")] = states[i];
-		if (HAS_ATTR(states[i], "transient") && DOMUtils::attributeIsTrue(ATTR(states[i], "transient")))
+		_states[ATTR_CAST(states[i], "id")] = Element<std::string>(states[i]);
+		if (HAS_ATTR_CAST(states[i], "transient") && DOMUtils::attributeIsTrue(ATTR_CAST(states[i], "transient")))
 			continue;
 		_globalStates.push_back(states[i]);
 	}
@@ -768,8 +768,8 @@ void FSMToPromela::initNodes() {
 	internalEventNames.push_back(_xpath.evaluate("//" + _nsInfo.xpathPrefix + "send", _scxml).asNodeSet());
 
 	for (int i = 0; i < internalEventNames.size(); i++) {
-		if (HAS_ATTR(internalEventNames[i], "event")) {
-			std::string eventNames = ATTR(internalEventNames[i], "event");
+		if (HAS_ATTR_CAST(internalEventNames[i], "event")) {
+			std::string eventNames = ATTR_CAST(internalEventNames[i], "event");
 			std::list<std::string> events = tokenizeIdRefs(eventNames);
 			for (std::list<std::string>::iterator eventIter = events.begin();
 			        eventIter != events.end(); eventIter++) {
@@ -793,17 +793,17 @@ void FSMToPromela::initNodes() {
 		PromelaInlines promInls = getInlinePromela(promelaEventSourceComments[i]);
 		PromelaEventSource promES(promInls, promelaEventSourceComments[i].getParentNode());
 
-		if (TAGNAME(promelaEventSourceComments[i].getParentNode()) == "scxml") {
+		if (TAGNAME_CAST(promelaEventSourceComments[i].getParentNode()) == "scxml") {
 			promES.type = PromelaEventSource::PROMELA_EVENT_SOURCE_GLOBAL;
 			promES.trie = &_eventTrie;
 			promES.name = "global";
 			_globalEventSource = promES;
-		} else if (TAGNAME(promelaEventSourceComments[i].getParentNode()) == "invoke") {
-			if (!HAS_ATTR(promelaEventSourceComments[i].getParentNode(), "invokeid")) {
+		} else if (TAGNAME_CAST(promelaEventSourceComments[i].getParentNode()) == "invoke") {
+			if (!HAS_ATTR_CAST(promelaEventSourceComments[i].getParentNode(), "invokeid")) {
 				Element<std::string> invoker = Element<std::string>(promelaEventSourceComments[i].getParentNode());
 				invoker.setAttribute("invokeid", "invoker" + toStr(_invokers.size()));
 			}
-			std::string invokeId = ATTR(promelaEventSourceComments[i].getParentNode(), "invokeid");
+			std::string invokeId = ATTR_CAST(promelaEventSourceComments[i].getParentNode(), "invokeid");
 			promES.type = PromelaEventSource::PROMELA_EVENT_SOURCE_INVOKER;
 			promES.trie = &_eventTrie;
 			promES.name = invokeId;
@@ -815,7 +815,7 @@ void FSMToPromela::initNodes() {
 	NodeSet<std::string> transitions = filterChildElements(_nsInfo.xmlNSPrefix + "transition", _scxml, true);
 	int index = 0;
 	for (int i = 0; i < transitions.size(); i++) {
-		_transitions[transitions[i]] = index++;
+		_transitions[Element<std::string>(transitions[i])] = index++;
 	}
 }
 

@@ -161,7 +161,7 @@ InterpreterState InterpreterRC::interpret() {
 					Element<std::string> transitionElem = _document.createElementNS(_nsInfo.nsURL, "transition");
 					_nsInfo.setPrefix(transitionElem);
 
-					transitionElem.setAttribute("target", ATTR(initialStates[i], "id"));
+					transitionElem.setAttribute("target", ATTR_CAST(initialStates[i], "id"));
 					initialElem.appendChild(transitionElem);
 					_scxml.appendChild(initialElem);
 					initialTransitions.push_back(transitionElem);
@@ -286,7 +286,7 @@ void InterpreterRC::mainEventLoop() {
 		if (!hasLegalConfiguration()) {
 			std::cout << "Illegal configuration!" << std::endl;
 			for (unsigned int j = 0; j < _configuration.size(); j++) {
-				std::cout << ATTR(_configuration[j], "id") << " ";
+				std::cout << ATTR_CAST(_configuration[j], "id") << " ";
 			}
 			std::cout << std::endl;
 		}
