@@ -64,7 +64,7 @@
 		self->addIOProcessor(boost::shared_ptr<IOProcessorImpl>(ioProc));
 	}
 
-	void setDataModel(WrappedDataModel* dataModel) {
+	void setDataModel(uscxml::WrappedDataModel* dataModel) {
 		self->setDataModel(boost::shared_ptr<DataModelImpl>(dataModel));
 	}
 

@@ -11,10 +11,6 @@
     - [License](#license)
     - [Download](#download)
 - [Usage](#usage)
-    - [Non-Blocking Interpretation with SCXML from URL](#non-blocking-interpretation-with-scxml-from-url)
-    - [Blocking Interpretation with inline SCXML](#blocking-interpretation-with-inline-scxml)
-    - [Interleaved Interpretation with inline SCXML](#interleaved-interpretation-with-inline-scxml)
-    - [Callbacks for an Interpreter](#callbacks-for-an-interpreter)
 - [Advanced Topics](#advanced-topics)
     - [Embedding uSCXML](#embedding-uscxml)
     - [Extending uSCXML](#extending-uscxml)
@@ -190,6 +186,38 @@ The basic approach to extend the interpreter is the same in all cases:
     1. You can register at the global Factory Singleton via <tt>Factory::register*(prototypeInstance)</tt>
     2. Or provide a new Factory instance to selected interpreters as an in-between.
 3. Write an interpreter using your new functionality.
+
+<b>Note:</b> Within the language bindings, you will have to inherit the base classes without the <tt>Impl</tt>
+suffix. Have a look at the examples in <tt>embedding/<tt> for examples.
+
+#### Ad-hoc Extensions
+
+Sometimes, it is more suited to provide an interpreter with an already instantiated extension (e.g. an
+IOProcessor with an existing connection). In this case, it is somewhat awkward to register a prototype and
+have all initialization in its <tt>create(Interpreter interpreter)</tt> method. While you can still dispatch
+over the interpreter instance and access information from some global Interpreter->Data map, there is a
+more straight-forward approach, e.g. in Java:
+
+    Interpreter interpreter = Intepreter.fromURI(uri);
+    AdhocIOProcessor ioProc = new AdhocIOProcessor(Whatever youLike);
+    ioProc.setParameter1(something);
+    interpreter.addIOProcessor(ioProc);
+
+This will cause the interpreter to use the given instance for all send requests targeting one of the types 
+returned by <tt>ioProc.getNames()</tt> and not instantiate an instance via the factory. The instance can
+deliver events into the interpreter via <tt>returnEvent(Event e, boolean toExternalQueue)</tt>. The same 
+approach can be used for invokers:
+
+    Interpreter interpreter = Intepreter.fromURI(uri);
+    TestAdhocInvoker invoker1 = new TestAdhocInvoker(Whatever youLike);
+    invoker1.setParameter1(something);
+    interpreter.setInvoker("invokeId", invoker1);
+
+This will cause the interpreter to use the given instance for a given <tt>invokeId</tt> and not instantiate via
+the factory. Similarly, datamodels can be registered via <tt>interpreter.setDataModel(DataModel dm)</tt>.
+
+<b>Note:</b> Providing ad-hoc extensions is only supported before the interpreter is started. If you change
+instances with a running interpreter, the behavior is undefined.
 
 # Acknowledgments
 
