@@ -20,57 +20,161 @@
 #ifndef FLATSTATEIDENTIFIER_H_E9534AF9
 #define FLATSTATEIDENTIFIER_H_E9534AF9
 
+#include "uscxml/Common.h"
+#include "uscxml/DOMUtils.h"
+
+#include <XPath/XPath.hpp>
 
 #include <sstream>
 #include <string>
 #include <list>
 #include <map>
 
+#include <boost/algorithm/string.hpp>
+
 namespace uscxml {
 
 class USCXML_API FlatStateIdentifier {
 public:
-	FlatStateIdentifier(const std::string& identifier) {
+	FlatStateIdentifier(const Arabica::XPath::NodeSet<std::string>& activeStates,
+											const Arabica::XPath::NodeSet<std::string>& alreadyEnteredStates,
+											const std::map<std::string, Arabica::XPath::NodeSet<std::string> >& historyStates) {
+		for (int i = 0; i < activeStates.size(); i++) {
+			active.push_back(ATTR_CAST(activeStates[i], "id"));
+		}
+
+		for (int i = 0; i < alreadyEnteredStates.size(); i++) {
+			visited.push_back(ATTR_CAST(alreadyEnteredStates[i], "id"));
+		}
+
+		std::map<std::string, Arabica::XPath::NodeSet<std::string> >::const_iterator histIter;
+		for (histIter = historyStates.begin(); histIter != historyStates.end(); histIter++) {
+			for (int i = 0; i < histIter->second.size(); i++) {
+				histories[histIter->first].push_back(ATTR_CAST(histIter->second[i], "id"));
+			}
+		}
+		
+		initStateId();
+	}
+	
+	
+	FlatStateIdentifier(const std::list<std::string>& active,
+											const std::list<std::string>& visited,
+											const std::map<std::string, std::list<std::string> >& histories) : active(active), visited(visited), histories(histories) {
+		initStateId();
+	}
+	
+	FlatStateIdentifier(const std::string& identifier) : stateId(identifier) {
 		std::string parsedName;
 		// parse unique state identifier
 		std::stringstream elemNameSS(identifier);
 		std::string section;
 		while(std::getline(elemNameSS, section, ';')) {
-			if (boost::starts_with(section, "active-")) {
-				std::stringstream stateSS(section.substr(7));
+			if (boost::starts_with(section, "active:{")) {
+				// active:{s0,s1,s2}
+				std::stringstream stateSS(section.substr(8, section.size() - 9));
 				std::string state;
-				while(std::getline(stateSS, state, '-')) {
+				while(std::getline(stateSS, state, ',')) {
 					if (state.length() > 0) {
 						active.push_back(state);
 					}
 				}
-			} else if (boost::starts_with(section, "entered-")) {
-				std::stringstream stateSS(section.substr(8));
+			} else if (boost::starts_with(section, "entered:{")) {
+				// entered:{s0,s1,s2}
+				std::stringstream stateSS(section.substr(9, section.size() - 10));
 				std::string state;
-				while(std::getline(stateSS, state, '-')) {
+				while(std::getline(stateSS, state, ',')) {
 					if (state.length() > 0) {
 						visited.push_back(state);
 					}
 				}
-			} else if (boost::starts_with(section, "history-")) {
-				std::stringstream stateSS(section.substr(8));
+			} else if (boost::starts_with(section, "history:{")) {
+				// history:{h0:{s1,s2},h1:{s2,s3}}
+				std::string histEntries(section.substr(9, section.length() - 10));
+
 				std::string state;
-				std::string history;
-				while(std::getline(stateSS, state, '-')) {
-					if (state.length() > 0) {
-						if (history.size() == 0) {
-							history = state;
-						} else {
-							histories[history].push_back(state);
-						}
-					} else {
-						history = "";
+				size_t start = 0;
+				size_t history = 0;
+				
+				while((history = histEntries.find(":", start)) != std::string::npos) {
+					std::string histName = histEntries.substr(start, history - start);
+					history++;
+					
+					size_t end = histEntries.find("}", start);
+					if (end == std::string::npos)
+						continue;
+					
+					std::stringstream stateSS(histEntries.substr(history + 1, end - history - 1));
+					std::string state;
+					while(std::getline(stateSS, state, ',')) {
+						histories[histName].push_back(state);
 					}
+					
+					start = end + 2;
 				}
 			}
 		}
 	}
 
+	const std::string& getStateId() {
+		return stateId;
+	}
+	
+	const std::list<std::string>& getActive() {
+		return active;
+	}
+
+	const std::list<std::string>& getVisited() {
+		return visited;
+	}
+
+	const std::map<std::string, std::list<std::string> > & getHistory() {
+		return histories;
+	}
+
+protected:
+	std::list<std::string> active;
+	std::list<std::string> visited;
+	std::map<std::string, std::list<std::string> > histories;
+	std::string stateId;
+
+	void initStateId() {
+		std::stringstream stateIdSS;
+		
+		std::string seperator;
+		stateIdSS << "active:{";
+		for (std::list<std::string>::const_iterator actIter = active.begin(); actIter != active.end(); actIter++) {
+			stateIdSS << seperator << *actIter;
+			seperator = ",";
+		}
+		stateIdSS << "};";
+		
+		seperator = "";
+		stateIdSS << "entered:{";
+		for (std::list<std::string>::const_iterator visitIter = visited.begin(); visitIter != visited.end(); visitIter++) {
+			stateIdSS << seperator << *visitIter;
+			seperator = ",";
+		}
+		stateIdSS << "};";
+		
+		seperator = "";
+		stateIdSS << "history:{";
+		for (std::map<std::string, std::list<std::string> >::const_iterator histIter = histories.begin(); histIter != histories.end(); histIter++) {
+			stateIdSS << seperator << histIter->first << ":{";
+			seperator = ",";
+			std::string itemSeperator;
+			for (std::list<std::string>::const_iterator histItemIter = histIter->second.begin(); histItemIter != histIter->second.end(); histItemIter++) {
+				stateIdSS << itemSeperator << *histItemIter;
+				itemSeperator = ",";
+			}
+			stateIdSS << "}";
+		}
+		stateIdSS << "}";
+		
+		stateId = stateIdSS.str();
+	}
+	
+#if 0
 	std::string activeId() {
 		std::stringstream activeSS;
 		activeSS << "active-";
@@ -80,74 +184,8 @@ public:
 		return activeSS.str();
 	}
 
-	std::list<std::string> active;
-	std::list<std::string> visited;
-	std::map<std::string, std::list<std::string> > histories;
-
-	static std::string toHTMLLabel(const std::string& identifier, int minRows = 0) {
-		FlatStateIdentifier flatId(identifier);
-
-		std::list<std::string>::const_iterator listIter;
-		std::stringstream labelSS;
-		std::string seperator;
-
-//		labelSS << "<table valign=\"top\" align=\"left\" cellborder=\"0\" border=\"0\" cellspacing=\"0\" cellpadding=\"2\">";
-//		labelSS << "<tr>";
-//		labelSS << "<td balign=\"left\" align=\"left\" valign=\"top\">";
-
-		labelSS << "<b>active: </b>";
-		labelSS << "{";
-		for (listIter = flatId.active.begin(); listIter != flatId.active.end(); listIter++) {
-			labelSS << seperator << *listIter;
-			seperator = ", ";
-		}
-		labelSS << "}";
-
-		if (flatId.visited.size() > 0) {
-			minRows--;
-
-			labelSS << "<br /><b>init: </b>";
-
-			labelSS << "{";
-			seperator = "";
-			for (listIter = flatId.visited.begin(); listIter != flatId.visited.end(); listIter++) {
-				labelSS << seperator << *listIter;
-				seperator = ", ";
-			}
-			labelSS << "}";
-		}
-
-#if 1
-		if (flatId.histories.size() > 0) {
-			minRows--;
-
-			seperator = "";
-			std::string histSeperator = "<br />     ";
-
-			labelSS << "<br /><b>history: </b>";
-
-			std::map<std::string, std::list<std::string> >::const_iterator histIter;
-			for (histIter = flatId.histories.begin(); histIter != flatId.histories.end(); histIter++) {
-				labelSS << histSeperator << histIter->first << ": {";
-
-				for (listIter = histIter->second.begin(); listIter != histIter->second.end(); listIter++) {
-					labelSS << seperator << *listIter;
-					seperator = ", ";
-				}
-				labelSS << "}";
-				seperator = "";
-			}
-		}
 #endif
-//		while(minRows-- > 0)
-//			labelSS << "<tr><td valign=\"top\"></td></tr>"; // eat up rest of space
-//
-//		labelSS << "</td>";
-//		labelSS << "</tr>";
-//		labelSS << "</table>";
-		return labelSS.str();
-	}
-
+	
 };
 
 }

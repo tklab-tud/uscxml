@@ -228,6 +228,7 @@ void Factory::registerPlugins() {
 		registerInvoker(invoker);
 	}
 #endif
+#endif
 
 #ifdef MILES_FOUND
 	{
@@ -333,7 +334,6 @@ void Factory::registerPlugins() {
 		// MMIHTTPIOProcessor* ioProcessor = new MMIHTTPIOProcessor();
 		// registerIOProcessor(ioProcessor);
 	}
-#endif
 #endif
 
 #ifdef CURL_HAS_SMTP

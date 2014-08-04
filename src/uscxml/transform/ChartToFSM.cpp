@@ -18,6 +18,7 @@
  */
 
 #include "uscxml/transform/ChartToFSM.h"
+#include "uscxml/transform/FlatStateIdentifier.h"
 #include "uscxml/Factory.h"
 
 #include <DOM/io/Stream.hpp>
@@ -1009,33 +1010,8 @@ GlobalState::GlobalState(const Arabica::XPath::NodeSet<std::string>& activeState
 		historyIter->second.to_document_order();
 	}
 
-	// create a unique identifier for a global configuration
-	std::ostringstream idSS;
-	idSS << "active-";
-	for (int i = 0; i < activeStates.size(); i++) {
-		if (!InterpreterImpl::isFinal(Element<std::string>(activeStates[i])))
-			isFinal = false;
-		idSS << ATTR_CAST(activeStates[i], "id") << "-";
-	}
-	idSS << ";";
-	idSS << "entered-";
-	for (int i = 0; i < alreadyEnteredStates.size(); i++) {
-		idSS << ATTR_CAST(alreadyEnteredStates[i], "id") << "-";
-	}
-	idSS << ";";
-
-	for(std::map<std::string, Arabica::XPath::NodeSet<std::string> >::const_iterator histIter = historyStates.begin();
-	        histIter != historyStates.end();
-	        histIter++) {
-		const Arabica::XPath::NodeSet<std::string>& histStates = histIter->second;
-		idSS << "history--";
-		idSS << histIter->first << "-";
-		for (int i = 0; i < histStates.size(); i++) {
-			idSS << ATTR_CAST(histStates[i], "id") << "-";
-		}
-	}
-
-	stateId = idSS.str();
+	FlatStateIdentifier flatStateId(activeStates, alreadyEnteredStates, historyStates);
+	stateId = flatStateId.getStateId();
 }
 
 GlobalTransition::GlobalTransition(const Arabica::XPath::NodeSet<std::string>& transitionSet, DataModel dataModel) {

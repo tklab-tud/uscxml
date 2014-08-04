@@ -130,6 +130,8 @@ public:
 	virtual void beforeTakingTransition(Interpreter interpreter, const Arabica::DOM::Element<std::string>& transition, bool moreComing);
 	virtual void beforeMicroStep(Interpreter interpreter);
 
+	static std::string htmlLabelForId(const std::string& stateId, int minRows = 0);
+	
 	static void toDot(const std::string& filename,
 	                  Interpreter interpreter,
 	                  const Arabica::DOM::Element<std::string>& transition = Arabica::DOM::Element<std::string>()) {

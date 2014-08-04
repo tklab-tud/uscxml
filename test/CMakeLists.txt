@@ -45,6 +45,10 @@ target_link_libraries(test-eventdelay uscxml)
 add_test(test-eventdelay ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-eventdelay)
 set_target_properties(test-eventdelay PROPERTIES FOLDER "Tests")
 
+add_executable(test-flat-stateid src/test-flat-stateid.cpp)
+add_test(test-flat-stateid ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-flat-stateid)
+set_target_properties(test-flat-stateid PROPERTIES FOLDER "Tests")
+
 if (OFF)
 	add_executable(test-dirmon src/test-dirmon.cpp)
 	target_link_libraries(test-dirmon uscxml)
