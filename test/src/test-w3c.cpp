@@ -145,7 +145,7 @@ class W3CStatusMonitor : public uscxml::InterpreterMonitor {
 		if (config.size() == 1) {
 			if (withFlattening) {
 				std::cout << ATTR_CAST(config[0], "id") << std::endl;
-				if (boost::starts_with(ATTR_CAST(config[0], "id"), "active-pass")) {
+				if (boost::starts_with(ATTR_CAST(config[0], "id"), "active:{pass")) {
 					std::cout << "TEST SUCCEEDED" << std::endl;
 					exit(EXIT_SUCCESS);
 				}

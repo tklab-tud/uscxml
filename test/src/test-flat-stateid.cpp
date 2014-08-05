@@ -5,7 +5,7 @@ int main(int argc, char** argv) {
 	std::list<std::string>::const_iterator listIter;
 
 	{
-		std::string stateId = "active:{};entered:{};history:{}";
+		std::string stateId = "active:{}";
 		uscxml::FlatStateIdentifier flat1(stateId);
 		assert(flat1.getActive().size() == 0);
 		assert(flat1.getVisited().size() == 0);
@@ -16,7 +16,7 @@ int main(int argc, char** argv) {
 	}
 
 	{
-		std::string stateId = "active:{s1};entered:{s1,s2};history:{}";
+		std::string stateId = "active:{s1};entered:{s1,s2}";
 		uscxml::FlatStateIdentifier flat1(stateId);
 		assert(flat1.getActive().size() == 1);
 		assert(flat1.getVisited().size() == 2);

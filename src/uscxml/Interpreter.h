@@ -443,6 +443,7 @@ protected:
 
 	class DOMEventListener : public Arabica::DOM::Events::EventListener<std::string> {
 	public:
+		DOMEventListener() : _interpreter(NULL) {}
 		void handleEvent(Arabica::DOM::Events::Event<std::string>& event);
 		InterpreterImpl* _interpreter;
 	};

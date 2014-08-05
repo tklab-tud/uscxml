@@ -142,34 +142,39 @@ protected:
 		std::stringstream stateIdSS;
 		
 		std::string seperator;
+		
 		stateIdSS << "active:{";
 		for (std::list<std::string>::const_iterator actIter = active.begin(); actIter != active.end(); actIter++) {
 			stateIdSS << seperator << *actIter;
 			seperator = ",";
 		}
-		stateIdSS << "};";
+		stateIdSS << "}";
 		
-		seperator = "";
-		stateIdSS << "entered:{";
-		for (std::list<std::string>::const_iterator visitIter = visited.begin(); visitIter != visited.end(); visitIter++) {
-			stateIdSS << seperator << *visitIter;
-			seperator = ",";
-		}
-		stateIdSS << "};";
-		
-		seperator = "";
-		stateIdSS << "history:{";
-		for (std::map<std::string, std::list<std::string> >::const_iterator histIter = histories.begin(); histIter != histories.end(); histIter++) {
-			stateIdSS << seperator << histIter->first << ":{";
-			seperator = ",";
-			std::string itemSeperator;
-			for (std::list<std::string>::const_iterator histItemIter = histIter->second.begin(); histItemIter != histIter->second.end(); histItemIter++) {
-				stateIdSS << itemSeperator << *histItemIter;
-				itemSeperator = ",";
+		if (visited.size() > 0) {
+			seperator = "";
+			stateIdSS << ";entered:{";
+			for (std::list<std::string>::const_iterator visitIter = visited.begin(); visitIter != visited.end(); visitIter++) {
+				stateIdSS << seperator << *visitIter;
+				seperator = ",";
 			}
 			stateIdSS << "}";
 		}
-		stateIdSS << "}";
+		
+		if (histories.size() > 0) {
+			seperator = "";
+			stateIdSS << ";history:{";
+			for (std::map<std::string, std::list<std::string> >::const_iterator histIter = histories.begin(); histIter != histories.end(); histIter++) {
+				stateIdSS << seperator << histIter->first << ":{";
+				seperator = ",";
+				std::string itemSeperator;
+				for (std::list<std::string>::const_iterator histItemIter = histIter->second.begin(); histItemIter != histIter->second.end(); histItemIter++) {
+					stateIdSS << itemSeperator << *histItemIter;
+					itemSeperator = ",";
+				}
+				stateIdSS << "}";
+			}
+			stateIdSS << "}";
+		}
 		
 		stateId = stateIdSS.str();
 	}

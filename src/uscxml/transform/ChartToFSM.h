@@ -38,7 +38,8 @@ public:
 	GlobalState() {}
 	GlobalState(const Arabica::XPath::NodeSet<std::string>& activeStates,
 	            const Arabica::XPath::NodeSet<std::string>& alreadyEnteredStates, // we need to remember for binding=late
-	            const std::map<std::string, Arabica::XPath::NodeSet<std::string> >& historyStates);
+	            const std::map<std::string, Arabica::XPath::NodeSet<std::string> >& historyStates,
+							const std::string& xmlNSPrefix);
 
 	Arabica::XPath::NodeSet<std::string> activeStates;
 	Arabica::XPath::NodeSet<std::string> alreadyEnteredStates;
@@ -48,6 +49,9 @@ public:
 	std::map<std::string, GlobalTransition*> outgoing;
 	std::string stateId;
 
+	static int gIndex;
+	
+	int index;
 	bool isFinal;
 };
 

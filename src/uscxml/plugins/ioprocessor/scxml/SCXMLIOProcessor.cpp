@@ -162,6 +162,8 @@ void SCXMLIOProcessor::send(const SendRequest& req) {
 			} catch(Event e) {
 				// Is this the right thing to do?
 				_interpreter->receive(e);
+			} catch (const std::exception &e) {
+				LOG(ERROR) << "Exception caught while sending event to invoker " << invokeId << ": " << e.what();
 			} catch(...) {
 				LOG(ERROR) << "Exception caught while sending event to invoker " << invokeId;
 			}

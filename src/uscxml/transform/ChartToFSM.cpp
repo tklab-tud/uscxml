@@ -19,6 +19,7 @@
 
 #include "uscxml/transform/ChartToFSM.h"
 #include "uscxml/transform/FlatStateIdentifier.h"
+#include "uscxml/Convenience.h"
 #include "uscxml/Factory.h"
 
 #include <DOM/io/Stream.hpp>
@@ -202,9 +203,11 @@ InterpreterState FlatteningInterpreter::interpret() {
 	_currGlobalTransition = NULL;
 
 	// very first state
-	_start = new GlobalState(_configuration, _alreadyEntered, _historyValue);
+	GlobalState::gIndex = 0;
+	_start = new GlobalState(_configuration, _alreadyEntered, _historyValue, _nsInfo.xmlNSPrefix);
 	_globalConf[_start->stateId] = _start;
-
+	_globalConf[_start->stateId]->index = GlobalState::gIndex++;
+	
 	NodeSet<std::string> initialTransitions;
 
 	// enter initial configuration
@@ -246,13 +249,16 @@ InterpreterState FlatteningInterpreter::interpret() {
 #endif
 
 	createDocument();
-
+	
 	NodeSet<std::string> elements = InterpreterImpl::filterChildType(Node_base::ELEMENT_NODE, _scxml, true);
 	uint64_t nrStates = 0;
 	for (int i = 0; i < elements.size(); i++) {
-		Element<std::string> stateElem = Element<std::string>(elements[i]);
-		if (isState(stateElem) && !HAS_ATTR(stateElem, "transient"))
+		Element<std::string> elem = Element<std::string>(elements[i]);
+		if (isState(elem) && !HAS_ATTR(elem, "transient"))
 			nrStates++;
+		if (elem.getLocalName() == "transition" && elem.hasAttribute("id")) {
+			elem.removeAttribute("id");
+		}
 	}
 
 	std::cout << "Actual Complexity: " << nrStates << std::endl;
@@ -442,7 +448,7 @@ void FlatteningInterpreter::explode() {
 	std::map<std::string, Arabica::XPath::NodeSet<std::string> > historyValue = _historyValue;
 
 	// create current state from global configuration
-	GlobalState* globalState = new GlobalState(configuration, alreadyEntered, historyValue);
+	GlobalState* globalState = new GlobalState(configuration, alreadyEntered, historyValue, _nsInfo.xmlNSPrefix);
 
 	// remember that the last transition lead here
 	if (_currGlobalTransition) {
@@ -465,10 +471,14 @@ void FlatteningInterpreter::explode() {
 		delete globalState;
 		return; // we have already been here
 	}
+	
 	_globalConf[globalState->stateId] = globalState;
-
+	_globalConf[globalState->stateId]->index = GlobalState::gIndex++;
 	assert(isLegalConfiguration(configuration));
 
+	if(_globalConf[globalState->stateId]->isFinal)
+		return; // done in this branch
+	
 	// get all transition elements from states in the current configuration
 	NodeSet<std::string> allTransitions = filterChildElements(_nsInfo.xmlNSPrefix + "transition", configuration);
 
@@ -673,6 +683,10 @@ NEXT_DEPTH:
 	}
 }
 
+static bool sortStatesByIndex(const std::pair<std::string,GlobalState*>& s1, const std::pair<std::string,GlobalState*>& s2) {
+	return s1.second->index < s2.second->index;
+}
+
 void FlatteningInterpreter::createDocument() {
 	Element<std::string> _origSCXML = _scxml;
 
@@ -720,8 +734,12 @@ void FlatteningInterpreter::createDocument() {
 		_scxml.appendChild(imported);
 	}
 
-	for (std::map<std::string, GlobalState*>::iterator confIter = _globalConf.begin();
-	        confIter != _globalConf.end();
+	std::vector<std::pair<std::string,GlobalState*> > sortedStates;
+	sortedStates.insert(sortedStates.begin(), _globalConf.begin(), _globalConf.end());
+	std::sort(sortedStates.begin(), sortedStates.end(), sortStatesByIndex);
+	
+	for (std::vector<std::pair<std::string,GlobalState*> >::iterator confIter = sortedStates.begin();
+	        confIter != sortedStates.end();
 	        confIter++) {
 		Node<std::string> state = globalStateToNode(confIter->second);
 		_scxml.appendChild(state);
@@ -738,6 +756,8 @@ Node<std::string> FlatteningInterpreter::globalStateToNode(GlobalState* globalSt
 
 	if (globalState->isFinal)
 		state.setAttribute("final", "true");
+
+//	state.setAttribute("index", toStr(globalState->index));
 
 	std::list<GlobalTransition*> transitionList;
 	for (std::map<std::string, GlobalTransition*>::iterator outIter = globalState->outgoing.begin();
@@ -985,22 +1005,27 @@ void FlatteningInterpreter::beforeEnteringState(Interpreter interpreter, const A
 void FlatteningInterpreter::beforeTakingTransition(Interpreter interpreter, const Arabica::DOM::Element<std::string>& transition, bool moreComing) {
 }
 
-
+int GlobalState::gIndex = 0;
 GlobalState::GlobalState(const Arabica::XPath::NodeSet<std::string>& activeStates_,
                          const Arabica::XPath::NodeSet<std::string>& alreadyEnteredStates_, // we need to remember for binding=late
-                         const std::map<std::string, Arabica::XPath::NodeSet<std::string> >& historyStates_) {
+                         const std::map<std::string, Arabica::XPath::NodeSet<std::string> >& historyStates_,
+												 const std::string& xmlNSPrefix) {
 
 	// make copies and sort
 	activeStates = activeStates_;
 	alreadyEnteredStates = alreadyEnteredStates_;
 	historyStates = historyStates_;
-	isFinal = true; // is set to false if we contain a non-final state
+	isFinal = false;
 
-	// start state is not final
-	if (activeStates.size() == 0) {
-		isFinal = false;
+	for(int i = 0; i < activeStates.size(); i++) {
+		Arabica::DOM::Element<std::string> state = Arabica::DOM::Element<std::string>(activeStates[i]);
+		Arabica::DOM::Element<std::string> parentElem = (Arabica::DOM::Element<std::string>)state.getParentNode();
+		if(InterpreterImpl::isFinal(state) && iequals(parentElem.getTagName(), xmlNSPrefix + "scxml")) {
+			isFinal = true;
+			break;
+		}
 	}
-
+	
 	// sort configuration
 	activeStates.to_document_order();
 	alreadyEnteredStates.to_document_order();

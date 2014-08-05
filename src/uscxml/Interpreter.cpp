@@ -23,6 +23,7 @@
 #include "uscxml/URL.h"
 #include "uscxml/UUID.h"
 #include "uscxml/DOMUtils.h"
+#include "uscxml/transform/FlatStateIdentifier.h"
 #include "uscxml/transform/ChartToFSM.h" // only for testing
 
 #include "getopt.h"
@@ -371,8 +372,20 @@ Interpreter Interpreter::fromDOM(const Arabica::DOM::Document<std::string>& dom,
 	tthread::lock_guard<tthread::recursive_mutex> lock(_instanceMutex);
 	boost::shared_ptr<INTERPRETER_IMPL> interpreterImpl = boost::shared_ptr<INTERPRETER_IMPL>(new INTERPRETER_IMPL);
 	Interpreter interpreter(interpreterImpl);
+	
+	// *copy* the given DOM to get rid of event listeners
+	
+	DOMImplementation<std::string> domFactory = Arabica::SimpleDOM::DOMImplementation<std::string>::getDOMImplementation();
+	interpreterImpl->_document = domFactory.createDocument(dom.getNamespaceURI(), "", 0);
+	
+	Node<std::string> child = dom.getFirstChild();
+	while (child) {
+		Node<std::string> newNode = interpreterImpl->_document.importNode(child, true);
+		interpreterImpl->_document.appendChild(newNode);
+		child = child.getNextSibling();
+	}
+	
 	interpreterImpl->setNameSpaceInfo(nameSpaceInfo);
-	interpreterImpl->_document = dom;
 	interpreterImpl->setupDOM();
 
 //	interpreterImpl->init();
@@ -759,7 +772,6 @@ void InterpreterImpl::setupDOM() {
 	eventTarget.addEventListener("DOMNodeInserted", _domEventListener, true);
 	eventTarget.addEventListener("DOMNodeRemoved", _domEventListener, true);
 	eventTarget.addEventListener("DOMSubtreeModified", _domEventListener, true);
-
 	_domIsSetup = true;
 }
 
@@ -1262,6 +1274,8 @@ void InterpreterImpl::delayedSend(void* userdata, std::string eventName) {
 			ioProc.send(sendReq);
 		} catch(Event e) {
 			throw e;
+		} catch (const std::exception &e) {
+			LOG(ERROR) << "Exception caught while sending event to ioprocessor " << sendReq.type << ":" << e.what();
 		} catch(...) {
 			LOG(ERROR) << "Exception caught while sending event to ioprocessor " << sendReq.type;
 		}
@@ -1425,11 +1439,15 @@ void InterpreterImpl::invoke(const Arabica::DOM::Element<std::string>& element) 
 
 				} catch(boost::bad_lexical_cast e) {
 					LOG(ERROR) << "Exception caught while sending invoke request to invoker " << invokeReq.invokeid << ": " << e.what();
+				} catch (const std::exception &e) {
+					LOG(ERROR) << "Unknown exception caught while sending invoke request to invoker " << invokeReq.invokeid << ": " << e.what();
 				} catch(...) {
 					LOG(ERROR) << "Unknown exception caught while sending invoke request to invoker " << invokeReq.invokeid;
 				}
 				try {
 //						_dataModel.assign("_invokers['" + invokeReq.invokeid + "']", invoker.getDataModelVariables());
+				} catch (const std::exception &e) {
+					LOG(ERROR) << "Exception caught while assigning datamodel variables from invoker " << invokeReq.invokeid << ": " << e.what();
 				} catch(...) {
 					LOG(ERROR) << "Exception caught while assigning datamodel variables from invoker " << invokeReq.invokeid;
 				}
@@ -1906,6 +1924,8 @@ void InterpreterImpl::finalizeAndAutoForwardCurrentEvent() {
 				// Yes do so, see test229!
 				// if (!boost::equals(_currEvent.getOriginType(), "http://www.w3.org/TR/scxml/#SCXMLEventProcessor"))
 				invokeIter->second.send(_currEvent);
+			} catch (const std::exception &e) {
+				LOG(ERROR) << "Exception caught while sending event to invoker " << invokeIter->first << ": " << e.what();
 			} catch(...) {
 				LOG(ERROR) << "Exception caught while sending event to invoker " << invokeIter->first;
 			}
@@ -2718,18 +2738,10 @@ bool InterpreterImpl::isInState(const std::string& stateId) {
 		// extension for flattened SCXML documents
 		if (_configuration.size() > 0 && HAS_ATTR_CAST(_configuration[0], "id")) {
 			// all states are encoded in the current statename
-			std::string encStateList = ATTR_CAST(_configuration[0], "id");
-			size_t startActive = encStateList.find_first_of("-");
-			size_t endActive = encStateList.find_first_of(";");
-			encStateList = encStateList.substr(startActive, endActive - startActive);
-			std::stringstream ss(encStateList);
-			std::string unencodedStateId;
-			while(std::getline(ss, unencodedStateId, '-')) {
-				if (unencodedStateId.length() == 0)
-					continue;
-				if (iequals(unencodedStateId, stateId)) {
+			FlatStateIdentifier flatId(ATTR_CAST(_configuration[0], "id"));
+			for (std::list<std::string>::const_iterator iter = flatId.getActive().begin(); iter != flatId.getActive().end(); iter++) {
+				if (iequals(stateId, *iter))
 					return true;
-				}
 			}
 		}
 		return false;
@@ -2765,7 +2777,8 @@ void InterpreterImpl::handleDOMEvent(Arabica::DOM::Events::Event<std::string>& e
 }
 
 void InterpreterImpl::DOMEventListener::handleEvent(Arabica::DOM::Events::Event<std::string>& event) {
-	_interpreter->handleDOMEvent(event);
+	if (_interpreter)
+		_interpreter->handleDOMEvent(event);
 }
 
 std::ostream& operator<< (std::ostream& os, const InterpreterState& interpreterState) {
