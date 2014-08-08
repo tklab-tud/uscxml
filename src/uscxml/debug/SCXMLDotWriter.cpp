@@ -124,26 +124,26 @@ void SCXMLDotWriter::writeTo(std::ostream& os) {
 				continue;
 		}
 
-		os << getPrefix() << "\"" << edgeIter->from << "\"";
+		os << getPrefix() << "\"" << portEscape(edgeIter->from) << "\"";
 		if (edgeIter->fromPort.size() > 0) {
-			os << std::string(":\"") + edgeIter->fromPort + "\":e";
+			os << std::string(":\"") + portEscape(edgeIter->fromPort) + "\":e";
 		} else {
 			os << ":__name";
 		}
 		os << " -> ";
 
 		if (_histories.find(edgeIter->to) != _histories.end()) {
-			os << getPrefix() << "\"" << _histories.find(edgeIter->to)->second.to << "\"";
+			os << getPrefix() << "\"" << portEscape(_histories.find(edgeIter->to)->second.to) << "\"";
 			if (_histories.find(edgeIter->to)->second.toPort.size() > 0) {
-				os << std::string(":\"") + _histories.find(edgeIter->to)->second.toPort + "\"";
+				os << std::string(":\"") + portEscape(_histories.find(edgeIter->to)->second.toPort) + "\"";
 			} else {
 				os << ":__name";
 			}
 
 		} else {
-			os << getPrefix() << "\"" << edgeIter->to << "\"";
+			os << getPrefix() << "\"" << portEscape(edgeIter->to) << "\"";
 			if (edgeIter->toPort.size() > 0) {
-				os << std::string(":\"") + edgeIter->toPort + "\"";
+				os << std::string(":\"") + portEscape(edgeIter->toPort) + "\"";
 			} else {
 				os << ":__name";
 			}
@@ -274,7 +274,7 @@ void SCXMLDotWriter::writeStateElement(std::ostream& os, const Element<std::stri
 	if (subgraph) {
 		_indentation++;
 		os << std::endl;
-		os << getPrefix() << "subgraph \"cluster_" << stateId << "\" {" << std::endl;
+		os << getPrefix() << "subgraph \"cluster_" << portEscape(stateId) << "\" {" << std::endl;
 		_indentation++;
 		os << getPrefix() << "fontsize=14" << std::endl;
 		os << getPrefix() << "label=<" << nameForNode(stateElem) << ">" << std::endl;
@@ -294,7 +294,7 @@ void SCXMLDotWriter::writeStateElement(std::ostream& os, const Element<std::stri
 		// is this a subgraph?
 
 		os << std::endl;
-		os << getPrefix() << "\"" << stateId << "\" [" << std::endl;
+		os << getPrefix() << "\"" << portEscape(stateId) << "\" [" << std::endl;
 		_indentation++;
 
 		os << getPrefix() << "fontsize=10," << std::endl;
@@ -401,7 +401,7 @@ void SCXMLDotWriter::writeStateElement(std::ostream& os, const Element<std::stri
 		// write history states
 		NodeSet<std::string> histories = InterpreterImpl::filterChildElements(_xmlNSPrefix + "history", stateElem);
 		for (int i = 0; i < histories.size(); i++) {
-			os << "  <tr><td port=\"" << ATTR_CAST(histories[i], "id") << "\" balign=\"left\" colspan=\"" << (nrOutPorts == 0 ? 1 : 2) << "\"><b>history: </b>" << ATTR_CAST(histories[i], "id") << "</td></tr>" << std::endl;
+			os << "  <tr><td port=\"" << portEscape(ATTR_CAST(histories[i], "id")) << "\" balign=\"left\" colspan=\"" << (nrOutPorts == 0 ? 1 : 2) << "\"><b>history: </b>" << ATTR_CAST(histories[i], "id") << "</td></tr>" << std::endl;
 
 		}
 
@@ -772,7 +772,10 @@ std::string SCXMLDotWriter::getDetailedLabel(const Element<std::string>& elem, i
 std::string SCXMLDotWriter::portEscape(const std::string& text) {
 	std::string escaped(text);
 	boost::replace_all(escaped, ".", "-");
-	return text;
+	boost::replace_all(escaped, "{", "-");
+	boost::replace_all(escaped, "}", "-");
+	boost::replace_all(escaped, ":", "-");
+	return escaped;
 }
 
 std::string SCXMLDotWriter::dotEscape(const std::string& text) {
@@ -840,17 +843,17 @@ std::string SCXMLDotWriter::idForNode(const Node<std::string>& node) {
 	if (node.getNodeType() == Node_base::ELEMENT_NODE) {
 		Element<std::string> elem = (Element<std::string>)node;
 
-		if (InterpreterImpl::isFinal(elem) && _isFlat) {
-			// ignore visited and history with final elements
-			FlatStateIdentifier flatId(elem.getAttribute("id"));
-
-			std::stringstream activeSS;
-			activeSS << "active-";
-			for (std::list<std::string>::const_iterator activeIter = flatId.getActive().begin(); activeIter != flatId.getActive().end(); activeIter++) {
-				activeSS << *activeIter << "-";
-			}
-			return activeSS.str();
-		}
+//		if (InterpreterImpl::isFinal(elem) && _isFlat) {
+//			// ignore visited and history with final elements
+//			FlatStateIdentifier flatId(elem.getAttribute("id"));
+//
+//			std::stringstream activeSS;
+//			activeSS << "active-";
+//			for (std::list<std::string>::const_iterator activeIter = flatId.getActive().begin(); activeIter != flatId.getActive().end(); activeIter++) {
+//				activeSS << *activeIter << "-";
+//			}
+//			return activeSS.str();
+//		}
 
 		if (elem.hasAttribute("name")) {
 			elemId = elem.getAttribute("name");

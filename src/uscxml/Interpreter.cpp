@@ -2648,24 +2648,16 @@ bool InterpreterImpl::isLegalConfiguration(const std::list<std::string>& config)
  */
 bool InterpreterImpl::isLegalConfiguration(const NodeSet<std::string>& config) {
 
-#if VERBOSE
-	std::cout << "Checking whether {";
-	std::string seperator;
-	for (int i = 0; i < config.size(); i++) {
-		std::cout << seperator << ATTR(config[i], "id");
-		seperator = ", ";
-	}
-	std::cout << "} is legal" << std::endl;
-#endif
-
 	// The configuration contains exactly one child of the <scxml> element.
 	NodeSet<std::string> scxmlChilds = getChildStates(_scxml);
-	bool foundScxmlChild = false;
+	Node<std::string> foundScxmlChild;
 	for (int i = 0; i < scxmlChilds.size(); i++) {
 		if (isMember(scxmlChilds[i], config)) {
-			if (foundScxmlChild)
+			if (foundScxmlChild) {
+				LOG(ERROR) << "Invalid configuration: Multiple childs of scxml root are active '" << ATTR_CAST(foundScxmlChild, "id") << "' and '" << ATTR_CAST(scxmlChilds[i], "id") << "'";
 				return false;
-			foundScxmlChild = true;
+			}
+			foundScxmlChild = scxmlChilds[i];
 		}
 	}
 	if (!foundScxmlChild)
@@ -2679,8 +2671,10 @@ bool InterpreterImpl::isLegalConfiguration(const NodeSet<std::string>& config) {
 			break;
 		}
 	}
-	if (!foundAtomicState)
+	if (!foundAtomicState) {
+		LOG(ERROR) << "Invalid configuration: No atomic state is active";
 		return false;
+	}
 
 	// When the configuration contains an atomic state, it contains all of its <state> and <parallel> ancestors.
 	for (int i = 0; i < config.size(); i++) {
@@ -2690,8 +2684,10 @@ bool InterpreterImpl::isLegalConfiguration(const NodeSet<std::string>& config) {
 				if (isState(Element<std::string>(parent)) &&
 				        (iequals(LOCALNAME(parent), "state") ||
 				         iequals(LOCALNAME(parent), "parallel"))) {
-					if (!isMember(parent, config))
+					if (!isMember(parent, config)) {
+						LOG(ERROR) << "Invalid configuration: atomic state '" << ATTR_CAST(config[i], "id") << "' is active, but parent '" << ATTR_CAST(parent, "id") << "' is not";
 						return false;
+					}
 				}
 			}
 		}
@@ -2701,19 +2697,24 @@ bool InterpreterImpl::isLegalConfiguration(const NodeSet<std::string>& config) {
 	for (int i = 0; i < config.size(); i++) {
 		Element<std::string> configElem(config[i]);
 		if (!isAtomic(configElem) && !isParallel(configElem)) {
-			bool foundChildState = false;
+			Node<std::string> foundChildState;
 			//std::cout << config[i] << std::endl;
 			NodeSet<std::string> childs = getChildStates(config[i]);
 			for (int j = 0; j < childs.size(); j++) {
 				//std::cout << childs[j] << std::endl;
 				if (isMember(childs[j], config)) {
-					if (foundChildState)
+					if (foundChildState) {
+						LOG(ERROR) << "Invalid configuration: Multiple childs of compound '" << ATTR_CAST(config[i], "id")
+						           << "' are active '" << ATTR_CAST(foundChildState, "id") << "' and '" << ATTR_CAST(childs[j], "id") << "'";
 						return false;
-					foundChildState = true;
+					}
+					foundChildState = childs[j];
 				}
 			}
-			if (!foundChildState)
+			if (!foundChildState) {
+				LOG(ERROR) << "Invalid configuration: No childs of compound '" << ATTR_CAST(config[i], "id") << "' are active";
 				return false;
+			}
 		}
 	}
 
@@ -2723,6 +2724,7 @@ bool InterpreterImpl::isLegalConfiguration(const NodeSet<std::string>& config) {
 			NodeSet<std::string> childs = getChildStates(config[i]);
 			for (int j = 0; j < childs.size(); j++) {
 				if (!isMember(childs[j], config) && !isHistory(Element<std::string>(childs[j]))) {
+					LOG(ERROR) << "Invalid configuration: Not all children of parallel '" << ATTR_CAST(config[i], "id") << "' are active i.e. '" << ATTR_CAST(childs[j], "id") << "' is not";
 					return false;
 				}
 			}

@@ -206,7 +206,7 @@ InterpreterState FlatteningInterpreter::interpret() {
 	GlobalState::gIndex = 0;
 	_start = new GlobalState(_configuration, _alreadyEntered, _historyValue, _nsInfo.xmlNSPrefix);
 	_globalConf[_start->stateId] = _start;
-	_globalConf[_start->stateId]->index = GlobalState::gIndex++;
+	_globalConf[_start->stateId]->index = toStr(GlobalState::gIndex++);
 	
 	NodeSet<std::string> initialTransitions;
 
@@ -473,7 +473,7 @@ void FlatteningInterpreter::explode() {
 	}
 	
 	_globalConf[globalState->stateId] = globalState;
-	_globalConf[globalState->stateId]->index = GlobalState::gIndex++;
+	_globalConf[globalState->stateId]->index = toStr(GlobalState::gIndex++);
 	assert(isLegalConfiguration(configuration));
 
 	if(_globalConf[globalState->stateId]->isFinal)
@@ -568,7 +568,10 @@ void FlatteningInterpreter::explode() {
 		if (tthread::chrono::system_clock::now() - _lastTimeStamp > 1000) {
 			_lastTimeStamp = tthread::chrono::system_clock::now();
 //			std::cout << globalState->stateId << " [" << nrElements << "]: " << std::endl;
-			std::cout << _perfTotal << " [" << _perfProcessed << "/sec]" << std::endl;
+			std::cout << "States: " << _globalConf.size() << " - ";
+			std::cout << "Tested: " << _perfTotal << " [" << _perfProcessed << "/sec] - ";
+			std::cout << "Current Complexity: 2**" << nrElements << " = " << pow(2.0, static_cast<double>(nrElements));
+			std::cout << std::endl;
 			_perfProcessed = 0;
 		}
 
@@ -667,10 +670,16 @@ NEXT_DEPTH:
 		_currGlobalTransition = *transListIter;
 		microstep((*transListIter)->transitions);
 		if (!isLegalConfiguration(_configuration)) {
-			std::cout << "invalid configuration from " << globalState->stateId << std::endl;
+			FlatStateIdentifier fromState(configuration, alreadyEntered, historyValue);
+			FlatStateIdentifier toState(_configuration, _alreadyEntered, _historyValue);
+			std::cerr << "invalid configuration after transition " << std::endl
+				<< "from \t" << fromState.getStateId() << std::endl
+				<< "to   \t" << toState.getStateId() << std::endl
+			  << "via ------" << std::endl;
 			for (int i = 0; i < (*transListIter)->transitions.size(); i++) {
-				std::cout << (*transListIter)->transitions[i] << std::endl;
+				std::cerr << (*transListIter)->transitions[i] << std::endl;
 			}
+			std::cerr << "----------" << std::endl;
 			assert(false);
 		}
 		explode();
@@ -752,12 +761,11 @@ Node<std::string> FlatteningInterpreter::globalStateToNode(GlobalState* globalSt
 	Element<std::string> state = _flatDoc.createElementNS(_nsInfo.nsURL, "state");
 	_nsInfo.setPrefix(state);
 
+	state.setAttribute("ref", globalState->index);
 	state.setAttribute("id", globalState->stateId);
 
 	if (globalState->isFinal)
 		state.setAttribute("final", "true");
-
-//	state.setAttribute("index", toStr(globalState->index));
 
 	std::list<GlobalTransition*> transitionList;
 	for (std::map<std::string, GlobalTransition*>::iterator outIter = globalState->outgoing.begin();
@@ -769,10 +777,13 @@ Node<std::string> FlatteningInterpreter::globalStateToNode(GlobalState* globalSt
 	transitionList = sortTransitions(transitionList);
 
 //	std::cout << "/////////////////" << std::endl;
+	size_t index = 0;
 	for (std::list<GlobalTransition*>::iterator outIter = transitionList.begin();
 	        outIter != transitionList.end();
 	        outIter++) {
+		(*outIter)->index = globalState->index + ":" + toStr(index);
 		state.appendChild(globalTransitionToNode(*outIter));
+		index++;
 	}
 //	std::cout << "/////////////////" << std::endl;
 
@@ -785,6 +796,8 @@ Node<std::string> FlatteningInterpreter::globalStateToNode(GlobalState* globalSt
 Node<std::string> FlatteningInterpreter::globalTransitionToNode(GlobalTransition* globalTransition) {
 	Element<std::string> transition = _flatDoc.createElementNS(_nsInfo.nsURL, "transition");
 	_nsInfo.setPrefix(transition);
+
+//	transition.setAttribute("ref", globalTransition->index);
 
 	if (!globalTransition->isEventless) {
 		transition.setAttribute("event", globalTransition->eventDesc);
@@ -822,7 +835,6 @@ Node<std::string> FlatteningInterpreter::globalTransitionToNode(GlobalTransition
 	transition.setAttribute("prioPerLevel", nrSS.str());
 #endif
 
-	transition.setAttribute("id", globalTransition->transitionId);
 
 //	std::cout << " firstPerLevel:" << feSS.str() << " " << globalTransition->transitionId << std::endl;
 //	std::cout << "event: " << globalTransition->eventDesc << " firstPerLevel:" << feSS.str() << " numberPerLevel:" << nrSS.str() << " prioPerLevel:" << prSS.str() << " " << globalTransition->transitionId << std::endl;

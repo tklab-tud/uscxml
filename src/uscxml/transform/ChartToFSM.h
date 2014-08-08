@@ -51,7 +51,7 @@ public:
 
 	static int gIndex;
 	
-	int index;
+	std::string index;
 	bool isFinal;
 };
 
@@ -99,6 +99,7 @@ public:
 	std::string source;
 	std::string destination;
 
+	std::string index;
 protected:
 	std::list<std::string> getCommonEvents(const Arabica::XPath::NodeSet<std::string>& transitions);
 };
