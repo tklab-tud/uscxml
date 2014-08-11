@@ -31,7 +31,8 @@
 namespace uscxml {
 class GlobalState;
 class GlobalTransition;
-
+class FlatteningInterpreter;
+	
 class USCXML_API GlobalState {
 public:
 
@@ -69,7 +70,7 @@ public:
 		Arabica::DOM::Element<std::string> uninvoke;
 	};
 
-	GlobalTransition(const Arabica::XPath::NodeSet<std::string>& transitions, DataModel dataModel);
+	GlobalTransition(const Arabica::XPath::NodeSet<std::string>& transitions, DataModel dataModel, FlatteningInterpreter* flattener);
 
 	bool isValid; // constructor will determine, calling code will delete if not
 	bool isEventless; // whether or not all our transitions are eventless
@@ -100,6 +101,10 @@ public:
 	std::string destination;
 
 	std::string index;
+	FlatteningInterpreter* interpreter;
+	
+	bool operator< (const GlobalTransition& other) const;
+	
 protected:
 	std::list<std::string> getCommonEvents(const Arabica::XPath::NodeSet<std::string>& transitions);
 };
@@ -111,6 +116,8 @@ public:
 
 	Arabica::DOM::Document<std::string> getDocument() const; // overwrite to return flat FSM
 	InterpreterState interpret();
+
+	std::list<Arabica::DOM::Element<std::string> > indexedTransitions;
 
 protected:
 	// gather executable content per microstep
@@ -136,7 +143,10 @@ protected:
 	void weightTransitions();
 	void createDocument();
 
-	Arabica::DOM::Node<std::string> globalStateToNode(GlobalState* globalState);
+	void indexTransitions(const Arabica::DOM::Element<std::string>& root);
+	std::list<GlobalTransition*> sortTransitions(std::list<GlobalTransition*> list);
+
+	void appendGlobalStateNode(GlobalState* globalState);
 	Arabica::DOM::Node<std::string> globalTransitionToNode(GlobalTransition* globalTransition);
 
 	GlobalState* _start;
@@ -149,6 +159,8 @@ protected:
 	int maxDepth;
 	int maxOrder;
 
+	size_t _lastTransientStateId;
+	
 	Arabica::DOM::Document<std::string> _flatDoc;
 	std::map<std::string, GlobalState*> _globalConf;
 };

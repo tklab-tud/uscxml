@@ -19,11 +19,10 @@ aParam in event1 is 2 so that var2 gets set to 2, success, otherwise failure  --
     <transition event="*" target="fail"/>
   </state>
   <state id="s1">
-		<onentry>
-			<log label="asdfasdf" expr="testvar2" />
-			<log label="123123" expr="_event.data.aParam" />
-			
-		</onentry>
+    <onentry>
+      <log label="asdfasdf" expr="testvar2"/>
+      <log label="123123" expr="_event.data.aParam"/>
+    </onentry>
     <transition cond="testvar2 == 2" target="pass"/>
     <transition target="fail"/>
   </state>

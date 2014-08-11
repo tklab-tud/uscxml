@@ -21,6 +21,7 @@
 #define FLATSTATEIDENTIFIER_H_E9534AF9
 
 #include "uscxml/Common.h"
+#include "uscxml/Convenience.h"
 #include "uscxml/DOMUtils.h"
 
 #include <XPath/XPath.hpp>
@@ -44,7 +45,18 @@ public:
 		}
 
 		for (int i = 0; i < alreadyEnteredStates.size(); i++) {
-			visited.push_back(ATTR_CAST(alreadyEnteredStates[i], "id"));
+			const Arabica::DOM::NodeList<std::string>& children = alreadyEnteredStates[i].getChildNodes();
+			bool isRelevant = false;
+			for (int j = 0; j < children.getLength(); j++) {
+				if (children.item(j).getNodeType() != Arabica::DOM::Node_base::ELEMENT_NODE)
+					continue;
+				if (iequals(LOCALNAME_CAST(children.item(j)), "data") || iequals(LOCALNAME_CAST(children.item(j)), "datamodel")) {
+					isRelevant = true;
+					break;
+				}
+			}
+			if (isRelevant)
+				visited.push_back(ATTR_CAST(alreadyEnteredStates[i], "id"));
 		}
 
 		std::map<std::string, Arabica::XPath::NodeSet<std::string> >::const_iterator histIter;
@@ -79,7 +91,7 @@ public:
 						active.push_back(state);
 					}
 				}
-			} else if (boost::starts_with(section, "entered:{")) {
+			} else if (boost::starts_with(section, "visited:{")) {
 				// entered:{s0,s1,s2}
 				std::stringstream stateSS(section.substr(9, section.size() - 10));
 				std::string state;
@@ -152,7 +164,7 @@ protected:
 		
 		if (visited.size() > 0) {
 			seperator = "";
-			stateIdSS << ";entered:{";
+			stateIdSS << ";visited:{";
 			for (std::list<std::string>::const_iterator visitIter = visited.begin(); visitIter != visited.end(); visitIter++) {
 				stateIdSS << seperator << *visitIter;
 				seperator = ",";

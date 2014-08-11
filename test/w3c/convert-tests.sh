@@ -24,3 +24,11 @@ cp txml/*.txt xpath/
 
 find ./ecma -type f -exec grep -Ili 'datamodel="xpath"' {} \; |xargs rm -fv
 find ./xpath -type f -exec grep -Ili 'datamodel="ecmascript"' {} \; |xargs rm -fv
+
+SCXMLS=`find . -type f -name '*.scxml'`
+for SCXML in $SCXMLS
+do
+	mv $SCXML $SCXML.unformatted.xml
+	xmllint --format $SCXML.unformatted.xml > $SCXML
+	rm $SCXML.unformatted.xml
+done

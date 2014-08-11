@@ -131,7 +131,8 @@ FlatteningInterpreter::FlatteningInterpreter(const Document<std::string>& doc) {
 	_perfTotal = 0;
 	_lastTimeStamp = tthread::chrono::system_clock::now();
 	_currGlobalTransition = NULL;
-
+	_lastTransientStateId = 0;
+	
 	// just copy given doc into _document an create _flatDoc for the FSM
 	DOMImplementation<std::string> domFactory = Arabica::SimpleDOM::DOMImplementation<std::string>::getDOMImplementation();
 	_document = domFactory.createDocument(doc.getNamespaceURI(), "", 0);
@@ -227,10 +228,11 @@ InterpreterState FlatteningInterpreter::interpret() {
 	}
 	labelTransitions();
 	weightTransitions();
-
+	indexTransitions(_scxml);
+	
 //	std::cout << _scxml << std::endl;
 
-	GlobalTransition* globalTransition = new GlobalTransition(initialTransitions, _dataModel);
+	GlobalTransition* globalTransition = new GlobalTransition(initialTransitions, _dataModel, this);
 	_start->outgoing[globalTransition->transitionId] = globalTransition;
 	globalTransition->source = _start->stateId;
 	_currGlobalTransition = globalTransition;
@@ -401,44 +403,38 @@ static bool filterChildEnabled(const NodeSet<std::string>& transitions) {
 	return true;
 }
 
-static std::list<GlobalTransition*> sortTransitions(std::list<GlobalTransition*> list) {
-	bool stable = false;
-	while(!stable) {
-		for (std::list<GlobalTransition*>::iterator outerIter = list.begin();
-		        outerIter != list.end();
-		        outerIter++) {
-			for (std::list<GlobalTransition*>::iterator innerIter = outerIter;
-			        innerIter != list.end();
-			        innerIter++) {
-				GlobalTransition* t1 = *outerIter;
-				GlobalTransition* t2 = *innerIter;
 
-				if (isSuperset(t1, t2)) {
-//					std::cout << "swapping " << t1->transitionId << " / " << t2->transitionId << std::endl;
-					std::swap(*innerIter, *outerIter);
-					goto NEXT_ITER;
-				}
-				for (int i = t1->firstElemPerLevel.size() - 1; i >= 0 ; i--) {
-					if (t1->firstElemPerLevel[i] == std::numeric_limits<int32_t>::max() || t2->firstElemPerLevel[i] == std::numeric_limits<int32_t>::max())
-						break;
-					if (t1->firstElemPerLevel[i] > t2->firstElemPerLevel[i]) {
-//						std::cout << "swapping at " << i << " " << t1->transitionId << " / " << t2->transitionId << std::endl;
-						std::swap(*innerIter, *outerIter);
-						goto NEXT_ITER;
-					} else {
-						break;
-					}
-				}
-			}
-		}
-		stable = true;
-NEXT_ITER:
-		;
+void FlatteningInterpreter::indexTransitions(const Arabica::DOM::Element<std::string>& root) {
+	// breadth first traversal of transitions
+	Arabica::XPath::NodeSet<std::string> levelTransitions = filterChildElements(_nsInfo.xmlNSPrefix + "transition", root);
+	for (int i = levelTransitions.size() - 1; i >= 0; i--) {
+		indexedTransitions.push_back(Element<std::string>(levelTransitions[i]));
 	}
-	return list;
+	
+	Arabica::XPath::NodeSet<std::string> nextLevel = filterChildType(Arabica::DOM::Node_base::ELEMENT_NODE, root);
+	for (int i = nextLevel.size() - 1; i >= 0; i--) {
+		Element<std::string> stateElem = Element<std::string>(nextLevel[i]);
+		if (isState(stateElem))
+			indexTransitions(stateElem);
+	}
+
 }
 
-
+bool GlobalTransition::operator< (const GlobalTransition& other) const {
+	const std::list<Arabica::DOM::Element<std::string> >& indexedTransitions = interpreter->indexedTransitions;
+	for (std::list<Element<std::string> >::const_reverse_iterator transIter = indexedTransitions.rbegin(); transIter != indexedTransitions.rend(); transIter++) {
+		const Element<std::string>& refTrans = *transIter;
+		
+		if (InterpreterImpl::isMember(refTrans, transitions) && !InterpreterImpl::isMember(refTrans, other.transitions)) {
+			return true;
+		}
+		if (!InterpreterImpl::isMember(refTrans, transitions) && InterpreterImpl::isMember(refTrans, other.transitions)) {
+			return false;
+		}
+	}
+	return true; // actually, they are equal
+}
+	
 
 void FlatteningInterpreter::explode() {
 
@@ -590,7 +586,7 @@ void FlatteningInterpreter::explode() {
 		assert(transitions.size() > 0);
 
 		// create a GlobalTransition object from the set
-		GlobalTransition* transition = new GlobalTransition(transitions, _dataModel);
+		GlobalTransition* transition = new GlobalTransition(transitions, _dataModel, this);
 		if (!transition->isValid) {
 			// this set of transitions can not be enabled together
 			delete transition;
@@ -747,17 +743,72 @@ void FlatteningInterpreter::createDocument() {
 	sortedStates.insert(sortedStates.begin(), _globalConf.begin(), _globalConf.end());
 	std::sort(sortedStates.begin(), sortedStates.end(), sortStatesByIndex);
 	
+	int index = 0;
+	for (std::list<Element<std::string> >::reverse_iterator transIter = indexedTransitions.rbegin(); transIter != indexedTransitions.rend(); transIter++) {
+		const Element<std::string>& refTrans = *transIter;
+		std::cout << index++ << ": " << refTrans << std::endl;
+	}
+	std::cout << std::endl;
+	
 	for (std::vector<std::pair<std::string,GlobalState*> >::iterator confIter = sortedStates.begin();
 	        confIter != sortedStates.end();
 	        confIter++) {
-		Node<std::string> state = globalStateToNode(confIter->second);
-		_scxml.appendChild(state);
+		appendGlobalStateNode(confIter->second);
 	}
 //	exit(0);
 
 }
 
-Node<std::string> FlatteningInterpreter::globalStateToNode(GlobalState* globalState) {
+
+template <typename T> bool PtrComp(const T * const & a, const T * const & b)
+{
+	return *a < *b;
+}
+
+
+bool isRedundantSubset (GlobalTransition* first, GlobalTransition* second) {
+	if (isSuperset(second, first)) {
+//		std::cout << second->transitions.size() << " / " << first->transitions.size() << std::endl;
+		for (int i = 0; i < first->transitions.size(); i++) {
+			if (!InterpreterImpl::isMember(first->transitions[i], second->transitions)) {
+				if (HAS_ATTR_CAST(first->transitions[i], "cond")) {
+					return false; // second can't be removed
+				}
+			}
+		}
+		return true; // remove second
+	}
+	return false; //second can't be removed
+}
+
+std::list<GlobalTransition*> filterRedundantSubset(std::list<GlobalTransition*> list) {
+		
+	for (std::list<GlobalTransition*>::iterator outerIter = list.begin();
+			 outerIter != list.end();
+			 outerIter++) {
+		for (std::list<GlobalTransition*>::iterator innerIter = outerIter;
+				 innerIter != list.end();
+				 innerIter++) {
+			
+			if (innerIter == outerIter)
+				continue;
+			
+			GlobalTransition* t1 = *outerIter;
+			GlobalTransition* t2 = *innerIter;
+
+			if (isRedundantSubset(t1, t2)) {
+				list.erase(outerIter++);
+			} else if (isRedundantSubset(t2, t1)) {
+				list.erase(innerIter++);
+			}
+			
+		}
+	}
+
+	return list;
+}
+
+void FlatteningInterpreter::appendGlobalStateNode(GlobalState* globalState) {
 	Element<std::string> state = _flatDoc.createElementNS(_nsInfo.nsURL, "state");
 	_nsInfo.setPrefix(state);
 
@@ -774,9 +825,15 @@ Node<std::string> FlatteningInterpreter::globalStateToNode(GlobalState* globalSt
 		transitionList.push_back(outIter->second);
 	}
 
-	transitionList = sortTransitions(transitionList);
+//	transitionList = sortTransitions(transitionList);
+	transitionList.sort(PtrComp<GlobalTransition>);
+	transitionList.unique(isRedundantSubset);
+	// unique is not quite like what we need, but it was a start
+	transitionList = filterRedundantSubset(transitionList);
 
-//	std::cout << "/////////////////" << std::endl;
+	// apend here, for transient state chains to trail the state
+	_scxml.appendChild(state);
+
 	size_t index = 0;
 	for (std::list<GlobalTransition*>::iterator outIter = transitionList.begin();
 	        outIter != transitionList.end();
@@ -785,9 +842,6 @@ Node<std::string> FlatteningInterpreter::globalStateToNode(GlobalState* globalSt
 		state.appendChild(globalTransitionToNode(*outIter));
 		index++;
 	}
-//	std::cout << "/////////////////" << std::endl;
-
-	return state;
 }
 
 /**
@@ -799,6 +853,26 @@ Node<std::string> FlatteningInterpreter::globalTransitionToNode(GlobalTransition
 
 //	transition.setAttribute("ref", globalTransition->index);
 
+#if 1
+	std::string members;
+	int index = 0;
+	std::string seperator;
+	for (std::list<Element<std::string> >::reverse_iterator transIter = indexedTransitions.rbegin(); transIter != indexedTransitions.rend(); transIter++) {
+		const Element<std::string>& refTrans = *transIter;
+		if (isMember(refTrans, globalTransition->transitions)) {
+			members += seperator + toStr(index);
+		} else {
+			members += seperator;
+			for (int i = 0; i < toStr(index).size(); i++) {
+				members += " ";
+			}
+		}
+		seperator = " ";
+		index++;
+	}
+	transition.setAttribute("members", members);
+#endif
+	
 	if (!globalTransition->isEventless) {
 		transition.setAttribute("event", globalTransition->eventDesc);
 	}
@@ -931,7 +1005,8 @@ Node<std::string> FlatteningInterpreter::globalTransitionToNode(GlobalTransition
 	if (transientStateChain.size() > 0) {
 		for (int i = 0; i < transientStateChain.size(); i++) {
 			Element<std::string> transientStateElem = Element<std::string>(transientStateChain[i]);
-			transientStateElem.setAttribute("id", "transient-" + globalTransition->transitionId + "-" + globalTransition->source + "-" + toStr(i));
+//			transientStateElem.setAttribute("id", "transient-" + globalTransition->transitionId + "-" + globalTransition->source + "-" + toStr(i));
+			transientStateElem.setAttribute("id", globalTransition->destination + "-via-" + toStr(_lastTransientStateId++));
 
 			Element<std::string> exitTransition = _flatDoc.createElementNS(_nsInfo.nsURL, "transition");
 			_nsInfo.setPrefix(exitTransition);
@@ -939,7 +1014,8 @@ Node<std::string> FlatteningInterpreter::globalTransitionToNode(GlobalTransition
 			if (i == transientStateChain.size() - 1) {
 				exitTransition.setAttribute("target", globalTransition->destination);
 			} else {
-				exitTransition.setAttribute("target", "transient-" + globalTransition->transitionId + "-" + globalTransition->source + "-" + toStr(i + 1));
+//				exitTransition.setAttribute("target", "transient-" + globalTransition->transitionId + "-" + globalTransition->source + "-" + toStr(i + 1));
+				exitTransition.setAttribute("target", globalTransition->destination + "-via-" + toStr(_lastTransientStateId));
 			}
 			transientStateElem.appendChild(exitTransition);
 
@@ -1051,7 +1127,8 @@ GlobalState::GlobalState(const Arabica::XPath::NodeSet<std::string>& activeState
 	stateId = flatStateId.getStateId();
 }
 
-GlobalTransition::GlobalTransition(const Arabica::XPath::NodeSet<std::string>& transitionSet, DataModel dataModel) {
+GlobalTransition::GlobalTransition(const Arabica::XPath::NodeSet<std::string>& transitionSet, DataModel dataModel, FlatteningInterpreter* flattener) {
+	interpreter = flattener;
 	transitions = transitionSet;
 	isValid = true;
 	isEventless = true;

@@ -916,7 +916,6 @@ void InterpreterDraft6::enterStates(const Arabica::XPath::NodeSet<std::string>& 
 		_configuration.push_back(stateElem);
 		_statesToInvoke.push_back(stateElem);
 
-//		if (_binding == LATE && stateElem.getAttribute("isFirstEntry").size() > 0) {
 		if (_binding == LATE && !isMember(stateElem, _alreadyEntered)) {
 			NodeSet<std::string> dataModelElems = filterChildElements(_nsInfo.xmlNSPrefix + "datamodel", stateElem);
 			if(dataModelElems.size() > 0 && _dataModel) {
@@ -927,7 +926,6 @@ void InterpreterDraft6::enterStates(const Arabica::XPath::NodeSet<std::string>& 
 				}
 			}
 			_alreadyEntered.push_back(stateElem);
-//			stateElem.setAttribute("isFirstEntry", "");
 		}
 		// execute onentry executable content
 		NodeSet<std::string> onEntryElems = filterChildElements(_nsInfo.xmlNSPrefix + "onEntry", stateElem);

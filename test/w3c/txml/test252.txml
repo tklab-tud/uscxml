@@ -9,7 +9,7 @@ timeout indicates success.   -->
      
 <state id="s0" initial="s01">
   <onentry>
-    <send event="timeout" delay="2s"/>
+    <send event="timeout" conf:delay="1"/>
     </onentry>
     
     <transition event="timeout" conf:targetpass=""/>
@@ -26,7 +26,7 @@ timeout indicates success.   -->
          <scxml initial="sub0" version="1.0" conf:datamodel=""  xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance">
               <state id="sub0">
              <onentry>
-             <send event="timeout" delay="2s"/>
+             <send event="timeout" conf:delay=".5"/>
              </onentry> 
             <transition event="timeout" target="subFinal"/>
                <onexit>
