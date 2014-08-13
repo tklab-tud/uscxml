@@ -19,10 +19,24 @@
 
 #include "VoiceXMLInvoker.h"
 #include <glog/logging.h>
+#include "uscxml/UUID.h"
+
+#include <DOM/io/Stream.hpp>
 
 #ifdef BUILD_AS_PLUGINS
 #include <Pluma/Connector.hpp>
 #endif
+
+#define ISSUE_REQUEST(name) {\
+	Arabica::DOM::Document<std::string> name##XML = name.toXML(true);\
+	name##XML.getDocumentElement().setPrefix("mmi");\
+	std::stringstream name##XMLSS;\
+	name##XMLSS << name##XML;\
+	URL name##URL(target);\
+	name##URL.setOutContent(name##XMLSS.str());\
+	name##URL.addOutHeader("Content-type", "application/xml");\
+	name##URL.download(false);\
+}
 
 namespace uscxml {
 
@@ -43,20 +57,15 @@ VoiceXMLInvoker::~VoiceXMLInvoker() {
 boost::shared_ptr<InvokerImpl> VoiceXMLInvoker::create(InterpreterImpl* interpreter) {
 	boost::shared_ptr<VoiceXMLInvoker> invoker = boost::shared_ptr<VoiceXMLInvoker>(new VoiceXMLInvoker());
 	invoker->_interpreter = interpreter;
-	invoker->_pub = umundo::TypedPublisher("mmi:jvoicexml");
-	invoker->_sub = umundo::TypedSubscriber("mmi:jvoicexml");
-
-	invoker->_pub.registerType("LifeCycleEvent", new ::LifeCycleEvent());
-
-
-	invoker->_node.addPublisher(invoker->_pub);
-	invoker->_node.addSubscriber(invoker->_sub);
-
 	return invoker;
 }
 
-void VoiceXMLInvoker::receive(void* object, umundo::Message* msg) {
-	std::cout << msg->getMeta("um.s11n.type") << std::endl;
+bool VoiceXMLInvoker::httpRecvRequest(const HTTPServer::Request& request) {
+	return true;
+}
+
+void VoiceXMLInvoker::setURL(const std::string& url) {
+	_url = url;
 }
 
 Data VoiceXMLInvoker::getDataModelVariables() {
@@ -65,33 +74,43 @@ Data VoiceXMLInvoker::getDataModelVariables() {
 }
 
 void VoiceXMLInvoker::send(const SendRequest& req) {
-	StartRequest start;
-	std::stringstream domSS;
-//	if (req.dom) {
-//		// hack until jVoiceXML supports XML
-//		std::cout << req.dom;
-//		Arabica::DOM::NodeList<std::string> prompts = req.dom.getElementsByTagName("vxml:prompt");
-//		for (int i = 0; i < prompts.getLength(); i++) {
-//			if (prompts.item(i).hasChildNodes()) {
-//				domSS << prompts.item(i).getFirstChild().getNodeValue() << ".";
-//			}
-//		}
-//	}
-//	domSS << req.getFirstDOMElement();
-	domSS << req.dom;
-	start.content = domSS.str();
-	_interpreter->getDataModel().replaceExpressions(start.content);
-
-	start.requestId = "asdf";
-	start.source = "asdf";
-	start.target = "umundo://mmi/jvoicexml";
-	::LifeCycleEvent lce = MMIProtoBridge::toProto(start);
-	_pub.sendObj("LifeCycleEvent", &lce);
 }
 
 void VoiceXMLInvoker::invoke(const InvokeRequest& req) {
-	_pub.waitForSubscribers(1);
+	HTTPServer::getInstance()->registerServlet(req.invokeid, this);
+	
+	std::string target;
+	Event::getParam(req.params, "target", target);
+	
+	NewContextRequest newCtxReq;
+	newCtxReq.source = _url;
+	newCtxReq.target = target;
+	newCtxReq.requestId = uscxml::UUID::getUUID();
+	ISSUE_REQUEST(newCtxReq);
 
+	_isRunning = true;
+	_thread = new tthread::thread(VoiceXMLInvoker::run, this);
+
+}
+
+void VoiceXMLInvoker::run(void* instance) {
+	VoiceXMLInvoker* INSTANCE = (VoiceXMLInvoker*)instance;
+	while(true) {
+		SendRequest req = INSTANCE->_workQueue.pop();
+		if (INSTANCE->_isRunning) {
+			INSTANCE->process(req);
+		} else {
+			return;
+		}
+	}
+}
+
+void VoiceXMLInvoker::process(SendRequest& ctx) {
+	
+}
+	
+void VoiceXMLInvoker::uninvoke() {
+	HTTPServer::getInstance()->unregisterServlet(this);
 }
 
 }

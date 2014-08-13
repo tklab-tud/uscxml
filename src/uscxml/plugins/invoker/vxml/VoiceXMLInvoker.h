@@ -21,11 +21,10 @@
 #define VOICEXMLINVOKER_H_W09J90F0
 
 #include <uscxml/Interpreter.h>
-#include <uscxml/plugins/ioprocessor/modality/MMIMessages.h>
-#include <uscxml/plugins/ioprocessor/modality/MMIProtoBridge.h>
+#include <uscxml/messages/MMIMessages.h>
+#include "uscxml/server/HTTPServer.h"
 
-#include <umundo/core.h>
-#include <umundo/s11n.h>
+// #include <uscxml/plugins/ioprocessor/modality/MMIProtoBridge.h>
 
 #ifdef BUILD_AS_PLUGINS
 #include "uscxml/plugins/Plugins.h"
@@ -33,7 +32,7 @@
 
 namespace uscxml {
 
-class VoiceXMLInvoker : public InvokerImpl, public umundo::TypedReceiver {
+class VoiceXMLInvoker : public InvokerImpl, public HTTPServlet {
 public:
 	VoiceXMLInvoker();
 	virtual ~VoiceXMLInvoker();
@@ -47,17 +46,23 @@ public:
 		return names;
 	}
 
-	virtual void receive(void* object, umundo::Message* msg);
-
+	bool httpRecvRequest(const HTTPServer::Request& request);
+	void setURL(const std::string& url);
+	
 	virtual Data getDataModelVariables();
 	virtual void send(const SendRequest& req);
 	virtual void invoke(const InvokeRequest& req);
+	virtual void uninvoke();
 
+	static void run(void*);
+	void process(SendRequest& ctx);
 
 protected:
-	umundo::Node _node;
-	umundo::TypedPublisher _pub;
-	umundo::TypedSubscriber _sub;
+	std::string _url;
+	
+	tthread::thread* _thread;
+	concurrency::BlockingQueue<SendRequest> _workQueue;
+	bool _isRunning;
 };
 
 #ifdef BUILD_AS_PLUGINS

@@ -1,5 +1,4 @@
 #include "uscxml/config.h"
-#include "uscxml/server/Socket.h"
 #include "uscxml/UUID.h"
 #include <iostream>
 #include <stdexcept>
@@ -16,14 +15,12 @@
 #include "uscxml/server/HTTPServer.h"
 #include "uscxml/URL.h"
 #include "uscxml/concurrency/tinythread.h"
-#include "uscxml/plugins/ioprocessor/modality/MMIMessages.h"
+#include "uscxml/messages/MMIMessages.h"
 #include <DOM/io/Stream.hpp>
 
 #ifdef _WIN32
 #include "XGetopt.h"
 #endif
-
-#include "uscxml/plugins/ioprocessor/modality/MMIMessages.cpp"
 
 #define ISSUE_REQUEST(name) {\
 	Arabica::DOM::Document<std::string> name##XML = name.toXML(true);\
@@ -31,7 +28,7 @@
 	std::stringstream name##XMLSS;\
 	name##XMLSS << name##XML;\
 	URL name##URL(target);\
-	std::cout << name##XMLSS.str();\
+	std::cout << "SEND:" << std::endl << name##XMLSS.str() << std::flush;\
 	name##URL.setOutContent(name##XMLSS.str());\
 	name##URL.addOutHeader("Content-type", "application/xml");\
 	name##URL.download(false);\
@@ -50,6 +47,7 @@ std::string context;
 class MMIServlet : public HTTPServlet {
 public:
 	bool httpRecvRequest(const HTTPServer::Request& request) {
+		std::cout << "RCVD:" << std::endl << request << std::flush;
 		tthread::lock_guard<tthread::mutex> lock(Mutex);
 		
 		const Arabica::DOM::Document<std::string>& doc = request.data.at("content").node.getOwnerDocument();

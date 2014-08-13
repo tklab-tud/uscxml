@@ -58,6 +58,7 @@
 #		include "uscxml/plugins/element/postpone/PostponeElement.h"
 
 #		include "uscxml/plugins/ioprocessor/comet/CometIOProcessor.h"
+#   include "uscxml/plugins/invoker/vxml/VoiceXMLInvoker.h"
 
 #	endif
 
@@ -68,7 +69,6 @@
 
 # if (defined UMUNDO_FOUND && defined PROTOBUF_FOUND)
 #   include "uscxml/plugins/invoker/umundo/UmundoInvoker.h"
-//#   include "uscxml/plugins/invoker/vxml/VoiceXMLInvoker.h"
 #endif
 
 # ifdef OPENSCENEGRAPH_FOUND
@@ -369,6 +369,11 @@ void Factory::registerPlugins() {
 		SystemInvoker* invoker = new SystemInvoker();
 		registerInvoker(invoker);
 	}
+	{
+		VoiceXMLInvoker* invoker = new VoiceXMLInvoker();
+		registerInvoker(invoker);
+	}
+	
 	{
 		FetchElement* element = new FetchElement();
 		registerExecutableContent(element);

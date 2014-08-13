@@ -12,10 +12,9 @@
 #endif
 
 #include "uscxml/concurrency/tinythread.h"
-#include "uscxml/plugins/ioprocessor/modality/MMIMessages.h"
+#include "uscxml/messages/MMIMessages.h"
 #include <DOM/io/Stream.hpp>
 
-#include "uscxml/plugins/ioprocessor/modality/MMIMessages.cpp"
 
 
 using namespace uscxml;

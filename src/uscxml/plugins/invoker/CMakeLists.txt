@@ -550,27 +550,23 @@ if (NOT BUILD_MINIMAL)
 	endif()
 
 
-	# VoiceXML modality components
-
-	if (UMUNDO_FOUND AND OFF)
-		set(USCXML_INVOKERS "vxml ${USCXML_INVOKERS}")
-		file(GLOB_RECURSE VXML_INVOKER
-			vxml/*.cpp
-			vxml/*.h
-		)
-		if (BUILD_AS_PLUGINS)
-			source_group("" FILES ${VXML_INVOKER})
-			add_library(
-				invoker_voicexml SHARED 
-				${VXML_INVOKER}
-				"../Plugins.cpp")
-			target_link_libraries(invoker_voicexml uscxml)
-			set_target_properties(invoker_voicexml PROPERTIES FOLDER "Plugin Invoker")
-			set_target_properties(invoker_voicexml PROPERTIES COMPILE_FLAGS "-DPLUMA_EXPORTS")
-			set_target_properties(invoker_voicexml PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${OUTPUT_DIR}/lib")
-		else()
-			list (APPEND USCXML_FILES ${VXML_INVOKER})
-		endif()
+	set(USCXML_INVOKERS "vxml ${USCXML_INVOKERS}")
+	file(GLOB_RECURSE VXML_INVOKER
+		vxml/*.cpp
+		vxml/*.h
+	)
+	if (BUILD_AS_PLUGINS)
+		source_group("" FILES ${VXML_INVOKER})
+		add_library(
+			invoker_voicexml SHARED 
+			${VXML_INVOKER}
+			"../Plugins.cpp")
+		target_link_libraries(invoker_voicexml uscxml)
+		set_target_properties(invoker_voicexml PROPERTIES FOLDER "Plugin Invoker")
+		set_target_properties(invoker_voicexml PROPERTIES COMPILE_FLAGS "-DPLUMA_EXPORTS")
+		set_target_properties(invoker_voicexml PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${OUTPUT_DIR}/lib")
+	else()
+		list (APPEND USCXML_FILES ${VXML_INVOKER})
 	endif()
 
 endif() # BUILD_MINIMAL

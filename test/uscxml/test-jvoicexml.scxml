@@ -2,56 +2,50 @@
 	     xmlns:vxml="http://www.w3.org/2001/vxml" 
 	     datamodel="ecmascript">
 	<script src="http://uscxml.tk.informatik.tu-darmstadt.de/scripts/dump.js" />
+	
 	<state id="start">
 		<invoke type="heartbeat">
-			<param name="interval" expr="'4s'" />
+			<param name="interval" expr="'5s'" />
 		</invoke>
-		
-		<invoke type="vxml" id="vxml">
-			<finalize>
-				<script>
-					dump(_event);
-				</script>
-			</finalize>
-		</invoke>
-		
-		<onentry>
-			<log expr="'Starting!!'" />
-		</onentry>
+
+		<state id="vxmlHello">
+			<invoke type="vxml" id="vxml">
+				<param name="target" expr="'http://localhost:9090/mmi'" />
+				<finalize>
+					<script>dump(_event);</script>
+				</finalize>
+				
+				<content>
+					<vxml:vxml version="2.1" xml:lang="en" 
+						xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+						xsi:schematicLocation="http://www.w3.org/2001/vxml http://www.w3.org/TR/voicexml20/vxml.xsd">
+						<vxml:form id="say_hello">
+							<vxml:block>
+								Hello World!
+								<vxml:goto next="#say_goodbye" />
+							</vxml:block>
+						</vxml:form>
+						<vxml:form id="say_goodbye">
+							<vxml:block>
+								<vxml:prompt>Goodbye!</vxml:prompt>
+							</vxml:block>
+						</vxml:form>
+					</vxml:vxml>
+				</content>
+			</invoke>
+			
+			<transition event="heartbeat" target="idle" />
+		</state>
 		
 		<state id="idle">
 			<onentry>
 				<log expr="'Idling!'" />
 			</onentry>
 			
-			<transition event="heartbeat.4s" target="vxmlHello">
+			<transition event="heartbeat" target="vxmlHello">
 				<log expr="'Foo!'" />
 			</transition>
 		</state>
 		
-		<state id="vxmlHello">
-			<onentry>
-				<send target="#_vxml">
-					<content>
-						<vxml:vxml version="2.1" xml:lang="en" 
-							xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-							xsi:schematicLocation="http://www.w3.org/2001/vxml http://www.w3.org/TR/voicexml20/vxml.xsd">
-							<vxml:form id="say_hello">
-								<vxml:block>
-									Hello World!
-									<vxml:goto next="#say_goodbye" />
-								</vxml:block>
-							</vxml:form>
-							<vxml:form id="say_goodbye">
-								<vxml:block>
-									<vxml:prompt>Goodbye!</vxml:prompt>
-								</vxml:block>
-							</vxml:form>
-						</vxml:vxml>
-					</content>
-				</send>
-			</onentry>
-			<transition target="idle" />
-		</state>
 	</state>
 </scxml>
