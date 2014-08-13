@@ -103,14 +103,14 @@ protected:
 class USCXML_API PacketServerSocket : public ServerSocket {
 public:
 	PacketServerSocket(int domain, int type, int protocol, const std::string& sep) : ServerSocket(domain, type, protocol), _sep(sep) {}
-	virtual ~PacketServerSocket() {}
+	virtual ~PacketServerSocket();
 
 	void readCallback(const char* data, size_t size, Connection& conn);
 	virtual void readCallback(const std::string& packet, Connection& conn) = 0;
 
 protected:
 	std::string _sep;
-	std::map<Connection, std::stringstream> _fragments;
+	std::map<Connection, std::stringstream*> _fragments;
 };
 	
 class USCXML_API ClientSocket : public Socket {

@@ -87,7 +87,7 @@ int main(int argc, char** argv) {
 		client.write(contentSS.str());
 
 		while(packetSeq != iterations)
-			usleep(10000);
+			tthread::this_thread::sleep_for(tthread::chrono::milliseconds(20));
 	}
 
 	if (1) {
@@ -105,7 +105,7 @@ int main(int argc, char** argv) {
 		}
 
 		while(packetSeq != iterations)
-			usleep(10000);
+			tthread::this_thread::sleep_for(tthread::chrono::milliseconds(20));
 	}
 	
 	exit(0);

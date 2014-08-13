@@ -62,6 +62,16 @@ add_test(test-lifecycle ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-lifecycle)
 set_target_properties(test-lifecycle PROPERTIES FOLDER "Tests")
 
 if (NOT WIN32)
+	add_executable(test-vxml-mmi-socket src/test-vxml-mmi-socket.cpp)
+	target_link_libraries(test-vxml-mmi-socket uscxml)
+	# add_test(test-datamodel ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-sockets)
+	set_target_properties(test-vxml-mmi-socket PROPERTIES FOLDER "Tests")
+	
+	add_executable(test-vxml-mmi-http src/test-vxml-mmi-http.cpp)
+	target_link_libraries(test-vxml-mmi-http uscxml)
+	# add_test(test-datamodel ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-sockets)
+	set_target_properties(test-vxml-mmi-http PROPERTIES FOLDER "Tests")
+	
 	add_executable(test-trie src/test-trie.cpp)
 	target_link_libraries(test-trie uscxml)
 	add_test(test-trie ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-trie)
@@ -141,15 +151,6 @@ target_link_libraries(test-sockets uscxml)
 # add_test(test-datamodel ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-sockets)
 set_target_properties(test-sockets PROPERTIES FOLDER "Tests")
 
-add_executable(test-vxml-mmi-socket src/test-vxml-mmi-socket.cpp)
-target_link_libraries(test-vxml-mmi-socket uscxml)
-# add_test(test-datamodel ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-sockets)
-set_target_properties(test-vxml-mmi-socket PROPERTIES FOLDER "Tests")
-
-add_executable(test-vxml-mmi-http src/test-vxml-mmi-http.cpp)
-target_link_libraries(test-vxml-mmi-http uscxml)
-# add_test(test-datamodel ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-sockets)
-set_target_properties(test-vxml-mmi-http PROPERTIES FOLDER "Tests")
 
 # if (NOT WIN32)
 # 	add_executable(test-mmi src/test-mmi.cpp)

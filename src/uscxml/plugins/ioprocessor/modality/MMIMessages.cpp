@@ -160,7 +160,7 @@ Arabica::DOM::Document<std::string> ContentRequest::toXML(bool encapsulateInMMI)
 	Element<std::string> msgElem = Element<std::string>(doc.getDocumentElement().getFirstChild());
 
 	if (contentURL.href.size() > 0) {
-		Element<std::string> contentURLElem = doc.createElementNS(nameSpace, "contentURL");
+		Element<std::string> contentURLElem = doc.createElementNS(nameSpace, "ContentURL");
 		contentURLElem.setAttributeNS(nameSpace, "href", contentURL.href);
 		contentURLElem.setAttributeNS(nameSpace, "fetchtimeout", contentURL.fetchTimeout);
 		contentURLElem.setAttributeNS(nameSpace, "max-age", contentURL.maxAge);

@@ -19,6 +19,7 @@
 
 #include "Socket.h"
 
+#include "uscxml/Common.h"             // for Data, Event
 #include "uscxml/Message.h"             // for Data, Event
 #include "uscxml/config.h"              // for OPENSSL_FOUND
 
@@ -46,14 +47,6 @@ Socket::Socket(int domain, int type, int protocol) {
 
 	if (_socketFD == -1)
 		throw std::runtime_error(std::string("socket: ") + strerror(errno));
-#ifndef WIN32
-	{
-		int one = 1;
-		if (setsockopt(_socketFD, SOL_SOCKET, SO_REUSEADDR, &one, sizeof(one)) != 0) {
-			throw std::runtime_error(std::string("setsockopt: ") + strerror(errno));
-		}
-	}
-#endif
 
 }
 
@@ -300,16 +293,25 @@ void ServerSocket::listen(const std::string& address, int port) {
 	setupSockAddr(address, port);
 	bind();
 
-	int reuseaddr_on = 1;
-	setsockopt(_socketFD, SOL_SOCKET, SO_REUSEADDR, &reuseaddr_on, sizeof(reuseaddr_on));
+	int one = 1;
+	if (setsockopt(_socketFD, SOL_SOCKET, SO_REUSEADDR, (const char*)&one, sizeof(one)) != 0) {
+		throw std::runtime_error(std::string("setsockopt: ") + strerror(errno));
+	}
 
+#ifndef _WIN32
 	int flags = fcntl(_socketFD, F_GETFL);
 	if (flags >= 0) {
 		flags |= O_NONBLOCK;
 		if (fcntl(_socketFD, F_SETFL, flags) < 0) {
-			// could not set to non-blocj
+			// could not set to non-block
 		}
 	}
+#else
+	unsigned long on = 1;
+	if (ioctlsocket(_socketFD, FIONBIO, &on) != 0) {
+		// could not set to non-block
+	}
+#endif
 
 	_listenerEvent = event_new(_base->base, _socketFD, EV_READ|EV_PERSIST, acceptCallback, (void*)this);
 	/*XXX check it */
@@ -353,13 +355,24 @@ void ServerSocket::Connection::reply(const char* data, size_t size) {
 	bufferevent_write(bufferEvent, data, size);
 }
 
+PacketServerSocket::~PacketServerSocket() {
+	for(std::map<Connection, std::stringstream*>::iterator fragIter = _fragments.begin();
+			fragIter != _fragments.end();
+			fragIter++) {
+		delete fragIter->second;
+	}
+}
+
 void PacketServerSocket::readCallback(const char* data, size_t size, Connection& conn) {
-	std::stringstream& fragment = _fragments[conn];
-	fragment << std::string(data, size);
+	if  (_fragments.find(conn) == _fragments.end())
+		_fragments[conn] = new std::stringstream();
+	
+	std::stringstream* fragment = _fragments[conn];
+	*fragment << std::string(data, size);
 	
 	size_t startPos = 0;
 	size_t endPos;
-	const std::string& buffer = fragment.str();
+	const std::string& buffer = fragment->str();
 	while((endPos = buffer.find(_sep, startPos)) != std::string::npos) {
 //		std::cout << ">" << buffer.substr(startPos, endPos - startPos) << "<" << std::endl;
 		readCallback(buffer.substr(startPos, endPos - startPos), conn);
@@ -367,9 +380,9 @@ void PacketServerSocket::readCallback(const char* data, size_t size, Connection&
 	}
 	if (startPos != 0 && startPos < buffer.size() + 1) {
 		std::string rest = buffer.substr(startPos);
-		fragment.str(std::string());
-		fragment.clear();
-		fragment << rest;
+		fragment->str(std::string());
+		fragment->clear();
+		*fragment << rest;
 	}
 }
 

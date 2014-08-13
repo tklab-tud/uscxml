@@ -31,9 +31,10 @@
 	std::stringstream name##XMLSS;\
 	name##XMLSS << name##XML;\
 	URL name##URL(target);\
+	std::cout << name##XMLSS.str();\
 	name##URL.setOutContent(name##XMLSS.str());\
 	name##URL.addOutHeader("Content-type", "application/xml");\
-	name##URL.download(true);\
+	name##URL.download(false);\
 }
 
 using namespace uscxml;
@@ -44,25 +45,34 @@ std::map<std::string, MMIEvent*> Replies;
 tthread::condition_variable Cond;
 tthread::mutex Mutex;
 
+std::string context;
+
 class MMIServlet : public HTTPServlet {
 public:
 	bool httpRecvRequest(const HTTPServer::Request& request) {
 		tthread::lock_guard<tthread::mutex> lock(Mutex);
 		
-		NameSpacingParser parser = NameSpacingParser::fromXML(request.content);
-		switch(MMIEvent::getType(parser.getDocument().getDocumentElement())) {
+		const Arabica::DOM::Document<std::string>& doc = request.data.at("content").node.getOwnerDocument();
+//		NameSpacingParser parser = NameSpacingParser::fromXML(request.content);
+		switch(MMIEvent::getType(doc.getDocumentElement())) {
 			case MMIEvent::NEWCONTEXTRESPONSE: {
-				NewContextResponse* resp = new NewContextResponse(NewContextResponse::fromXML(parser.getDocument().getDocumentElement()));
+				NewContextResponse* resp = new NewContextResponse(NewContextResponse::fromXML(doc.getDocumentElement()));
+				context = resp->context;
 				Replies[resp->requestId] = resp;
+				break;
 			}
 			case MMIEvent::STARTRESPONSE: {
-				StartResponse* resp = new StartResponse(StartResponse::fromXML(parser.getDocument().getDocumentElement()));
+				StartResponse* resp = new StartResponse(StartResponse::fromXML(doc.getDocumentElement()));
 				Replies[resp->requestId] = resp;
 			}
 			default: ;
 		}
 		
 		Cond.notify_all();
+		
+		HTTPServer::Reply reply(request);
+		HTTPServer::reply(reply);
+		
 		return true;
 	}
 	void setURL(const std::string& url) {
@@ -135,7 +145,7 @@ int main(int argc, char** argv) {
 		NewContextRequest newCtxReq;
 		newCtxReq.source = source;
 		newCtxReq.target = target;
-		newCtxReq.requestId = UUID::getUUID();
+		newCtxReq.requestId = uscxml::UUID::getUUID();
 			
 		Requests[newCtxReq.requestId] = &newCtxReq;
 		ISSUE_REQUEST(newCtxReq);
@@ -144,9 +154,10 @@ int main(int argc, char** argv) {
 			Cond.wait(Mutex);
 			
 		StartRequest startReq;
+		startReq.context = context;
 		startReq.source = source;
 		startReq.target = target;
-		startReq.requestId = UUID::getUUID();
+		startReq.requestId = uscxml::UUID::getUUID();
 		startReq.contentURL.href = document;
 		//"https://raw.githubusercontent.com/Roland-Taizun-Azhar/TaskAssistance-Project/master/WebContent/hello.vxml";
 		
