@@ -20,7 +20,7 @@ if [ ! -f event.c ]; then
 	exit
 fi
 
-rm lib*.a
+#rm lib*.a
 
 if [ -f Makefile ]; then
   make clean

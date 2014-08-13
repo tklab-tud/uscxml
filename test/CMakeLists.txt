@@ -146,6 +146,11 @@ target_link_libraries(test-vxml-mmi-socket uscxml)
 # add_test(test-datamodel ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-sockets)
 set_target_properties(test-vxml-mmi-socket PROPERTIES FOLDER "Tests")
 
+add_executable(test-vxml-mmi-http src/test-vxml-mmi-http.cpp)
+target_link_libraries(test-vxml-mmi-http uscxml)
+# add_test(test-datamodel ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-sockets)
+set_target_properties(test-vxml-mmi-http PROPERTIES FOLDER "Tests")
+
 # if (NOT WIN32)
 # 	add_executable(test-mmi src/test-mmi.cpp)
 # 	target_link_libraries(test-mmi uscxml)

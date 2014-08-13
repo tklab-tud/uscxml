@@ -341,6 +341,7 @@ void URLImpl::setRequestType(const std::string& requestType) {
 
 void URLImpl::setOutContent(const std::string& content) {
 	_outContent = content;
+	_requestType = "POST";
 }
 
 const std::string URLImpl::getInContent(bool forceReload) {
@@ -602,15 +603,17 @@ void URLFetcher::fetchURL(URL& url) {
 			struct curl_slist* headers = NULL;
 			std::map<std::string, std::string>::iterator paramIter = url._impl->_outHeader.begin();
 			while(paramIter != url._impl->_outHeader.end()) {
-				char* key = curl_easy_escape(handle, paramIter->first.c_str(), paramIter->first.length());
-				char* value = curl_easy_escape(handle, paramIter->second.c_str(), paramIter->second.length());
+//				char* key = curl_easy_escape(handle, paramIter->first.c_str(), paramIter->first.length());
+//				char* value = curl_easy_escape(handle, paramIter->second.c_str(), paramIter->second.length());
+
+				const char* value = paramIter->second.c_str();
 
 				char* header = (char*)malloc(paramIter->first.size() + strlen(value) + 3);
 				sprintf(header,"%s: %s", paramIter->first.c_str(), value);
 				headers = curl_slist_append(headers, header);
 
-				curl_free(key);
-				curl_free(value);
+//				curl_free(key);
+//				curl_free(value);
 				paramIter++;
 			}
 

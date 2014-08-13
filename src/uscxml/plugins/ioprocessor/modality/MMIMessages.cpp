@@ -34,6 +34,19 @@
 	(element.hasAttributeNS(nameSpace, #name) ? element.getAttributeNS(nameSpace, #name) : "") \
 )
 
+#define FIND_EVENT_NODE(node)\
+while (node) {\
+	if (node.getNodeType() == Node_base::ELEMENT_NODE) {\
+		if (boost::iequals(node.getLocalName(), "MMI")) {\
+			node = node.getFirstChild();\
+			continue;\
+		} else {\
+			break;\
+		}\
+	}\
+	node = node.getNextSibling();\
+}\
+
 
 namespace uscxml {
 
@@ -42,9 +55,21 @@ using namespace Arabica::DOM;
 std::string MMIEvent::nameSpace = "http://www.w3.org/2008/04/mmi-arch";
 
 MMIEvent::Type MMIEvent::getType(Arabica::DOM::Node<std::string> node) {
-	if (!node)
+	if (!node || node.getNodeType() != Arabica::DOM::Node_base::ELEMENT_NODE)
 		return INVALID;
 
+	// MMI container?
+	if (boost::iequals(node.getLocalName(), "MMI")) {
+		node = node.getFirstChild();
+		if (!node)
+			return INVALID;
+		while(node.getNodeType() != Arabica::DOM::Node_base::ELEMENT_NODE) {
+			node = node.getNextSibling();
+			if (!node)
+				return INVALID;
+		}
+	}
+	
 	if (boost::iequals(node.getLocalName(), "NEWCONTEXTREQUEST"))
 		return NEWCONTEXTREQUEST;
 	if (boost::iequals(node.getLocalName(), "NEWCONTEXTRESPONSE"))
@@ -84,32 +109,9 @@ MMIEvent::Type MMIEvent::getType(Arabica::DOM::Node<std::string> node) {
 	return INVALID;
 }
 
-Arabica::DOM::Node<std::string> MMIEvent::getEventNode(Arabica::DOM::Node<std::string> node) {
-	if (!node)
-		return node;
-
-	if (node.getNodeType() == Node_base::DOCUMENT_NODE)
-		node = Arabica::DOM::Document<std::string>(node).getDocumentElement();
-
-	// get the first element
-	while (node && node.getNodeType() != Node_base::ELEMENT_NODE) {
-		node = node.getNextSibling();
-	}
-	// get the contained message
-	if (node && getType(node) == INVALID) {
-		node = node.getFirstChild();
-		while (node && node.getNodeType() != Node_base::ELEMENT_NODE && getType(node) == INVALID) {
-			node = node.getNextSibling();
-		}
-	}
-	return node;
-}
-
-
-Arabica::DOM::Document<std::string> MMIEvent::toXML() const {
+Arabica::DOM::Document<std::string> MMIEvent::toXML(bool encapsulateInMMI) const {
 	Arabica::DOM::DOMImplementation<std::string> domFactory = Arabica::SimpleDOM::DOMImplementation<std::string>::getDOMImplementation();
 	Document<std::string> doc = domFactory.createDocument(nameSpace, "", 0);
-//	Element<std::string> mmiElem = doc.createElementNS(nameSpace, "mmi");
 	Element<std::string> msgElem = doc.createElementNS(nameSpace, tagName);
 	msgElem.setAttributeNS(nameSpace, "Source", source);
 	msgElem.setAttributeNS(nameSpace, "Target", target);
@@ -136,21 +138,25 @@ Arabica::DOM::Document<std::string> MMIEvent::toXML() const {
 		msgElem.appendChild(dataElem);
 	}
 
-//	mmiElem.appendChild(msgElem);
-//	doc.appendChild(mmiElem);
-	doc.appendChild(msgElem);
+	if (encapsulateInMMI) {
+		Element<std::string> mmiElem = doc.createElementNS(nameSpace, "mmi");
+		mmiElem.appendChild(msgElem);
+		doc.appendChild(mmiElem);
+	} else {
+		doc.appendChild(msgElem);
+	}
 	return doc;
 }
 
-Arabica::DOM::Document<std::string> ContextualizedRequest::toXML() const {
-	Document<std::string> doc = MMIEvent::toXML();
+Arabica::DOM::Document<std::string> ContextualizedRequest::toXML(bool encapsulateInMMI) const {
+	Document<std::string> doc = MMIEvent::toXML(encapsulateInMMI);
 	Element<std::string> msgElem = Element<std::string>(doc.getDocumentElement().getFirstChild());
 	msgElem.setAttributeNS(nameSpace, "Context", context);
 	return doc;
 }
 
-Arabica::DOM::Document<std::string> ContentRequest::toXML() const {
-	Document<std::string> doc = ContextualizedRequest::toXML();
+Arabica::DOM::Document<std::string> ContentRequest::toXML(bool encapsulateInMMI) const {
+	Document<std::string> doc = ContextualizedRequest::toXML(encapsulateInMMI);
 	Element<std::string> msgElem = Element<std::string>(doc.getDocumentElement().getFirstChild());
 
 	if (contentURL.href.size() > 0) {
@@ -185,15 +191,15 @@ Arabica::DOM::Document<std::string> ContentRequest::toXML() const {
 	return doc;
 }
 
-Arabica::DOM::Document<std::string> ExtensionNotification::toXML() const {
-	Document<std::string> doc = ContextualizedRequest::toXML();
+Arabica::DOM::Document<std::string> ExtensionNotification::toXML(bool encapsulateInMMI) const {
+	Document<std::string> doc = ContextualizedRequest::toXML(encapsulateInMMI);
 	Element<std::string> msgElem = Element<std::string>(doc.getDocumentElement().getFirstChild());
 	msgElem.setAttributeNS(nameSpace, "Name", name);
 	return doc;
 }
 
-Arabica::DOM::Document<std::string> StatusResponse::toXML() const {
-	Document<std::string> doc = ContextualizedRequest::toXML();
+Arabica::DOM::Document<std::string> StatusResponse::toXML(bool encapsulateInMMI) const {
+	Document<std::string> doc = ContextualizedRequest::toXML(encapsulateInMMI);
 	Element<std::string> msgElem = Element<std::string>(doc.getDocumentElement().getFirstChild());
 	if (status == ALIVE) {
 		msgElem.setAttributeNS(nameSpace, "Status", "alive");
@@ -207,8 +213,8 @@ Arabica::DOM::Document<std::string> StatusResponse::toXML() const {
 	return doc;
 }
 
-Arabica::DOM::Document<std::string> StatusInfoResponse::toXML() const {
-	Document<std::string> doc = StatusResponse::toXML();
+Arabica::DOM::Document<std::string> StatusInfoResponse::toXML(bool encapsulateInMMI) const {
+	Document<std::string> doc = StatusResponse::toXML(encapsulateInMMI);
 	Element<std::string> msgElem = Element<std::string>(doc.getDocumentElement().getFirstChild());
 
 	Element<std::string> statusInfoElem = doc.createElementNS(nameSpace, "StatusInfo");
@@ -219,8 +225,8 @@ Arabica::DOM::Document<std::string> StatusInfoResponse::toXML() const {
 	return doc;
 }
 
-Arabica::DOM::Document<std::string> StatusRequest::toXML() const {
-	Document<std::string> doc = ContextualizedRequest::toXML();
+Arabica::DOM::Document<std::string> StatusRequest::toXML(bool encapsulateInMMI) const {
+	Document<std::string> doc = ContextualizedRequest::toXML(encapsulateInMMI);
 	Element<std::string> msgElem = Element<std::string>(doc.getDocumentElement().getFirstChild());
 
 	if (automaticUpdate) {
@@ -234,11 +240,8 @@ Arabica::DOM::Document<std::string> StatusRequest::toXML() const {
 
 MMIEvent MMIEvent::fromXML(Arabica::DOM::Node<std::string> node, InterpreterImpl* interpreter) {
 	MMIEvent msg;
-	while (node) {
-		if (node.getNodeType() == Node_base::ELEMENT_NODE)
-			break;
-		node = node.getNextSibling();
-	}
+	FIND_EVENT_NODE(node);
+
 	Element<std::string> msgElem(node);
 	msg.source = STRING_ATTR_OR_EXPR(msgElem, Source);
 	msg.target = STRING_ATTR_OR_EXPR(msgElem, Target);
@@ -281,11 +284,8 @@ MMIEvent::operator Event() const {
 
 ContextualizedRequest ContextualizedRequest::fromXML(Arabica::DOM::Node<std::string> node, InterpreterImpl* interpreter) {
 	ContextualizedRequest msg(MMIEvent::fromXML(node, interpreter));
-	while (node) {
-		if (node.getNodeType() == Node_base::ELEMENT_NODE)
-			break;
-		node = node.getNextSibling();
-	}
+	FIND_EVENT_NODE(node);
+
 	Element<std::string> msgElem(node);
 	msg.context = STRING_ATTR_OR_EXPR(msgElem, Context);
 	return msg;
@@ -300,11 +300,8 @@ ContextualizedRequest::operator Event() const {
 
 ContentRequest ContentRequest::fromXML(Arabica::DOM::Node<std::string> node, InterpreterImpl* interpreter) {
 	ContentRequest msg(ContextualizedRequest::fromXML(node, interpreter));
-	while (node) {
-		if (node.getNodeType() == Node_base::ELEMENT_NODE)
-			break;
-		node = node.getNextSibling();
-	}
+	FIND_EVENT_NODE(node);
+
 	Element<std::string> msgElem(node);
 	Element<std::string> contentElem;
 
@@ -344,11 +341,8 @@ ContentRequest ContentRequest::fromXML(Arabica::DOM::Node<std::string> node, Int
 
 ExtensionNotification ExtensionNotification::fromXML(Arabica::DOM::Node<std::string> node, InterpreterImpl* interpreter) {
 	ExtensionNotification msg(ContextualizedRequest::fromXML(node, interpreter));
-	while (node) {
-		if (node.getNodeType() == Node_base::ELEMENT_NODE)
-			break;
-		node = node.getNextSibling();
-	}
+	FIND_EVENT_NODE(node);
+
 	Element<std::string> msgElem(node);
 	msg.name = STRING_ATTR_OR_EXPR(msgElem, Name);
 	msg.type = EXTENSIONNOTIFICATION;
@@ -367,11 +361,8 @@ ExtensionNotification::operator Event() const {
 
 StatusResponse StatusResponse::fromXML(Arabica::DOM::Node<std::string> node, InterpreterImpl* interpreter) {
 	StatusResponse msg(ContextualizedRequest::fromXML(node, interpreter));
-	while (node) {
-		if (node.getNodeType() == Node_base::ELEMENT_NODE)
-			break;
-		node = node.getNextSibling();
-	}
+	FIND_EVENT_NODE(node);
+
 	Element<std::string> msgElem(node);
 	std::string status = STRING_ATTR_OR_EXPR(msgElem, Status);
 
@@ -390,11 +381,8 @@ StatusResponse StatusResponse::fromXML(Arabica::DOM::Node<std::string> node, Int
 
 StatusInfoResponse StatusInfoResponse::fromXML(Arabica::DOM::Node<std::string> node, InterpreterImpl* interpreter) {
 	StatusInfoResponse msg(StatusResponse::fromXML(node, interpreter));
-	while (node) {
-		if (node.getNodeType() == Node_base::ELEMENT_NODE)
-			break;
-		node = node.getNextSibling();
-	}
+	FIND_EVENT_NODE(node);
+
 	Element<std::string> msgElem(node);
 	Element<std::string> statusInfoElem;
 
@@ -424,11 +412,8 @@ StatusInfoResponse StatusInfoResponse::fromXML(Arabica::DOM::Node<std::string> n
 
 StatusRequest StatusRequest::fromXML(Arabica::DOM::Node<std::string> node, InterpreterImpl* interpreter) {
 	StatusRequest msg(ContextualizedRequest::fromXML(node, interpreter));
-	while (node) {
-		if (node.getNodeType() == Node_base::ELEMENT_NODE)
-			break;
-		node = node.getNextSibling();
-	}
+	FIND_EVENT_NODE(node);
+
 	Element<std::string> msgElem(node);
 	std::string autoUpdate = STRING_ATTR_OR_EXPR(msgElem, RequestAutomaticUpdate);
 

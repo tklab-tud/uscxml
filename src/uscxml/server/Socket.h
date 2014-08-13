@@ -23,6 +23,7 @@
 #include "uscxml/Common.h"              // for USCXML_API
 #include "uscxml/concurrency/EventBase.h"
 #include <string>
+#include <sstream>
 #include <map>
 #include <set>
 
@@ -49,6 +50,7 @@ public:
 	virtual ~Socket();
 
 	void setBlockSizeRead(size_t size);
+	static void parseAddress(const std::string& address, std::string& protocol, std::string& hostName, uint16_t& port);
 
 protected:
 
@@ -67,6 +69,10 @@ class USCXML_API ServerSocket : public Socket {
 public:
 	class Connection {
 	public:
+		bool operator<(const Connection& other) const {
+			return bufferEvent < other.bufferEvent;
+		}
+
 		struct bufferevent* bufferEvent;
 		int fd;
 
@@ -77,6 +83,7 @@ public:
 	virtual ~ServerSocket();
 
 	void listen(const std::string& address, int port);
+	void listen(const std::string& address);
 	virtual void readCallback(const char* data, size_t size, Connection& conn) {};
 
 
@@ -93,6 +100,19 @@ protected:
 
 };
 
+class USCXML_API PacketServerSocket : public ServerSocket {
+public:
+	PacketServerSocket(int domain, int type, int protocol, const std::string& sep) : ServerSocket(domain, type, protocol), _sep(sep) {}
+	virtual ~PacketServerSocket() {}
+
+	void readCallback(const char* data, size_t size, Connection& conn);
+	virtual void readCallback(const std::string& packet, Connection& conn) = 0;
+
+protected:
+	std::string _sep;
+	std::map<Connection, std::stringstream> _fragments;
+};
+	
 class USCXML_API ClientSocket : public Socket {
 public:
 	ClientSocket(int domain, int type, int protocol);
@@ -100,6 +120,8 @@ public:
 
 	virtual void readCallback(const char* data, size_t size) {};
 	void connect(const std::string& address, int port);
+	void connect(const std::string& address);
+	int write(const std::string& data);
 	int write(const char* data, size_t size);
 
 

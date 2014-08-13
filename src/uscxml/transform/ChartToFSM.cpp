@@ -163,9 +163,9 @@ FlatteningInterpreter::~FlatteningInterpreter() {
 }
 
 Document<std::string> FlatteningInterpreter::getDocument() const {
-//	std::cout << "######################" << std::endl;
-//	std::cout << _flatDoc << std::endl;
-//	std::cout << "######################" << std::endl;
+//	std::cerr << "######################" << std::endl;
+//	std::cerr << _flatDoc << std::endl;
+//	std::cerr << "######################" << std::endl;
 	return _flatDoc;
 }
 
@@ -175,7 +175,7 @@ InterpreterState FlatteningInterpreter::interpret() {
 	setupIOProcessors();
 
 	uint64_t complexity = ChartToFSM::stateMachineComplexity(_scxml) + 1;
-	std::cout << "Approximate Complexity: " << complexity << std::endl;
+	std::cerr << "Approximate Complexity: " << complexity << std::endl;
 
 	// initialize the datamodel
 	std::string datamodelName;
@@ -227,10 +227,10 @@ InterpreterState FlatteningInterpreter::interpret() {
 		initialTransitions.push_back(transitionElem);
 	}
 	labelTransitions();
-	weightTransitions();
+//	weightTransitions();
 	indexTransitions(_scxml);
 	
-//	std::cout << _scxml << std::endl;
+//	std::cerr << _scxml << std::endl;
 
 	GlobalTransition* globalTransition = new GlobalTransition(initialTransitions, _dataModel, this);
 	_start->outgoing[globalTransition->transitionId] = globalTransition;
@@ -245,9 +245,9 @@ InterpreterState FlatteningInterpreter::interpret() {
 	for(std::map<std::string, GlobalState*>::iterator globalConfIter = _globalConf.begin();
 	        globalConfIter != _globalConf.end();
 	        globalConfIter++) {
-		std::cout << globalConfIter->first << std::endl;
+		std::cerr << globalConfIter->first << std::endl;
 	}
-	std::cout << _globalConf.size() << std::endl;
+	std::cerr << _globalConf.size() << std::endl;
 #endif
 
 	createDocument();
@@ -263,13 +263,13 @@ InterpreterState FlatteningInterpreter::interpret() {
 		}
 	}
 
-	std::cout << "Actual Complexity: " << nrStates << std::endl;
+	std::cerr << "Actual Complexity: " << nrStates << std::endl;
 	return _state;
 }
 
 void FlatteningInterpreter::executeContent(const Arabica::DOM::Element<std::string>& content, bool rethrow) {
-//	std::cout << content << std::endl;
-//	std::cout << TAGNAME(content) << std::endl;
+//	std::cerr << content << std::endl;
+//	std::cerr << TAGNAME(content) << std::endl;
 
 	GlobalTransition::Action action;
 
@@ -306,7 +306,7 @@ void FlatteningInterpreter::internalDoneSend(const Arabica::DOM::Element<std::st
 	if (parentIsScxmlState(state))
 		return;
 
-//	std::cout << "internalDoneSend: " << state << std::endl;
+//	std::cerr << "internalDoneSend: " << state << std::endl;
 
 	// create onentry with a raise element
 	Element<std::string> onentry = _flatDoc.createElementNS(_nsInfo.nsURL, "onentry");
@@ -551,23 +551,23 @@ void FlatteningInterpreter::explode() {
 			break;
 
 		NodeSet<std::string> transitions;
-//		std::cout << globalState->stateId << " [" << nrElements << "]: " << std::endl;
+//		std::cerr << globalState->stateId << " [" << nrElements << "]: " << std::endl;
 		for (int i = 1; i <= k; i++) {
-//			std::cout << stack[i] - 1 << ", ";
+//			std::cerr << stack[i] - 1 << ", ";
 			transitions.push_back(allTransitions[stack[i] - 1]);
 		}
-//		std::cout << std::endl;
+//		std::cerr << std::endl;
 
 		_perfTotal++;
 		_perfProcessed++;
 
 		if (tthread::chrono::system_clock::now() - _lastTimeStamp > 1000) {
 			_lastTimeStamp = tthread::chrono::system_clock::now();
-//			std::cout << globalState->stateId << " [" << nrElements << "]: " << std::endl;
-			std::cout << "States: " << _globalConf.size() << " - ";
-			std::cout << "Tested: " << _perfTotal << " [" << _perfProcessed << "/sec] - ";
-			std::cout << "Current Complexity: 2**" << nrElements << " = " << pow(2.0, static_cast<double>(nrElements));
-			std::cout << std::endl;
+//			std::cerr << globalState->stateId << " [" << nrElements << "]: " << std::endl;
+			std::cerr << "States: " << _globalConf.size() << " - ";
+			std::cerr << "Tested: " << _perfTotal << " [" << _perfProcessed << "/sec] - ";
+			std::cerr << "Current Complexity: 2**" << nrElements << " = " << pow(2.0, static_cast<double>(nrElements));
+			std::cerr << std::endl;
 			_perfProcessed = 0;
 		}
 
@@ -595,11 +595,12 @@ void FlatteningInterpreter::explode() {
 
 		// two combinations might have projected onto the same conflict-free set
 		if (transitionSets.find(transition->transitionId) != transitionSets.end()) {
-//			std::cout << "skipping as projected onto existing conflict-free subset" << std::endl;
+//			std::cerr << "skipping as projected onto existing conflict-free subset" << std::endl;
 			delete transition;
 			continue;
 		}
 
+#if 0
 		for (int currDepth = 0; currDepth <= maxDepth; currDepth++) {
 			int lowestOrder = std::numeric_limits<int32_t>::max();
 			int nrDepth = 0;
@@ -618,7 +619,7 @@ void FlatteningInterpreter::explode() {
 			transition->firstElemPerLevel.push_back(lowestOrder);
 			transition->prioPerLevel.push_back(prioPerLevel);
 		}
-
+#endif
 #if 0
 		// calculate priority
 		transition->priority = 0;
@@ -643,7 +644,7 @@ NEXT_DEPTH:
 		}
 #endif
 		// remember this conflict-free set
-//		std::cout << "New conflict-free subset: " << transition->transitionId << ":" << transition->eventDesc << std::endl;
+//		std::cerr << "New conflict-free subset: " << transition->transitionId << ":" << transition->eventDesc << std::endl;
 		transitionSets[transition->transitionId] = transition;
 	}
 
@@ -746,9 +747,9 @@ void FlatteningInterpreter::createDocument() {
 	int index = 0;
 	for (std::list<Element<std::string> >::reverse_iterator transIter = indexedTransitions.rbegin(); transIter != indexedTransitions.rend(); transIter++) {
 		const Element<std::string>& refTrans = *transIter;
-		std::cout << index++ << ": " << refTrans << std::endl;
+		std::cerr << index++ << ": " << refTrans << std::endl;
 	}
-	std::cout << std::endl;
+	std::cerr << std::endl;
 	
 	for (std::vector<std::pair<std::string,GlobalState*> >::iterator confIter = sortedStates.begin();
 	        confIter != sortedStates.end();
@@ -766,9 +767,11 @@ template <typename T> bool PtrComp(const T * const & a, const T * const & b)
 }
 
 
-bool isRedundantSubset (GlobalTransition* first, GlobalTransition* second) {
+/**
+ * subset only removes transitions without cond -> superset will always be enabled
+ */
+bool hasUnconditionalSuperset (GlobalTransition* first, GlobalTransition* second) {
 	if (isSuperset(second, first)) {
-//		std::cout << second->transitions.size() << " / " << first->transitions.size() << std::endl;
 		for (int i = 0; i < first->transitions.size(); i++) {
 			if (!InterpreterImpl::isMember(first->transitions[i], second->transitions)) {
 				if (HAS_ATTR_CAST(first->transitions[i], "cond")) {
@@ -781,7 +784,16 @@ bool isRedundantSubset (GlobalTransition* first, GlobalTransition* second) {
 	return false; //second can't be removed
 }
 
-std::list<GlobalTransition*> filterRedundantSubset(std::list<GlobalTransition*> list) {
+bool hasEarlierUnconditionalMatch(GlobalTransition* first, GlobalTransition* second) {
+	if (first->eventDesc == second->eventDesc) {
+		if (first->condition.size() == 0)
+			return true;
+	}
+	return false;
+}
+
+// for some reason, unique is not quite up to the task
+std::list<GlobalTransition*> reapplyUniquePredicates(std::list<GlobalTransition*> list) {
 		
 	for (std::list<GlobalTransition*>::iterator outerIter = list.begin();
 			 outerIter != list.end();
@@ -796,12 +808,17 @@ std::list<GlobalTransition*> filterRedundantSubset(std::list<GlobalTransition*> 
 			GlobalTransition* t1 = *outerIter;
 			GlobalTransition* t2 = *innerIter;
 
-			if (isRedundantSubset(t1, t2)) {
+			if (hasUnconditionalSuperset(t1, t2)) {
 				list.erase(outerIter++);
-			} else if (isRedundantSubset(t2, t1)) {
+				continue;
+			} else if (hasUnconditionalSuperset(t2, t1)) {
 				list.erase(innerIter++);
+				continue;
 			}
-			
+			if (hasEarlierUnconditionalMatch(t1, t2)) {
+				list.erase(innerIter++);
+				continue;
+			}
 		}
 	}
 
@@ -827,9 +844,10 @@ void FlatteningInterpreter::appendGlobalStateNode(GlobalState* globalState) {
 
 //	transitionList = sortTransitions(transitionList);
 	transitionList.sort(PtrComp<GlobalTransition>);
-	transitionList.unique(isRedundantSubset);
+	transitionList.unique(hasUnconditionalSuperset);
+	transitionList.unique(hasEarlierUnconditionalMatch);
 	// unique is not quite like what we need, but it was a start
-	transitionList = filterRedundantSubset(transitionList);
+	transitionList = reapplyUniquePredicates(transitionList);
 
 	// apend here, for transient state chains to trail the state
 	_scxml.appendChild(state);
@@ -854,23 +872,7 @@ Node<std::string> FlatteningInterpreter::globalTransitionToNode(GlobalTransition
 //	transition.setAttribute("ref", globalTransition->index);
 
 #if 1
-	std::string members;
-	int index = 0;
-	std::string seperator;
-	for (std::list<Element<std::string> >::reverse_iterator transIter = indexedTransitions.rbegin(); transIter != indexedTransitions.rend(); transIter++) {
-		const Element<std::string>& refTrans = *transIter;
-		if (isMember(refTrans, globalTransition->transitions)) {
-			members += seperator + toStr(index);
-		} else {
-			members += seperator;
-			for (int i = 0; i < toStr(index).size(); i++) {
-				members += " ";
-			}
-		}
-		seperator = " ";
-		index++;
-	}
-	transition.setAttribute("members", members);
+	transition.setAttribute("members", globalTransition->members);
 #endif
 	
 	if (!globalTransition->isEventless) {
@@ -910,9 +912,9 @@ Node<std::string> FlatteningInterpreter::globalTransitionToNode(GlobalTransition
 #endif
 
 
-//	std::cout << " firstPerLevel:" << feSS.str() << " " << globalTransition->transitionId << std::endl;
-//	std::cout << "event: " << globalTransition->eventDesc << " firstPerLevel:" << feSS.str() << " numberPerLevel:" << nrSS.str() << " prioPerLevel:" << prSS.str() << " " << globalTransition->transitionId << std::endl;
-//	std::cout << globalTransition->transitionId << std::endl;
+//	std::cerr << " firstPerLevel:" << feSS.str() << " " << globalTransition->transitionId << std::endl;
+//	std::cerr << "event: " << globalTransition->eventDesc << " firstPerLevel:" << feSS.str() << " numberPerLevel:" << nrSS.str() << " prioPerLevel:" << prSS.str() << " " << globalTransition->transitionId << std::endl;
+//	std::cerr << globalTransition->transitionId << std::endl;
 
 	NodeSet<std::string> transientStateChain;
 
@@ -1031,6 +1033,7 @@ Node<std::string> FlatteningInterpreter::globalTransitionToNode(GlobalTransition
 	return transition;
 }
 
+#if 0
 void FlatteningInterpreter::weightTransitions() {
 	maxDepth = 0;
 	maxOrder = 0;
@@ -1055,6 +1058,7 @@ void FlatteningInterpreter::weightTransitions() {
 		states = getChildStates(states);
 	}
 }
+#endif
 
 void FlatteningInterpreter::labelTransitions() {
 	// put a unique id on each transition
@@ -1134,11 +1138,11 @@ GlobalTransition::GlobalTransition(const Arabica::XPath::NodeSet<std::string>& t
 	isEventless = true;
 
 #if 0
-	std::cout << "################" << std::endl;
+	std::cerr << "################" << std::endl;
 	for (int i = 0; i < transitions.size(); i++) {
-		std::cout << transitions[i] << std::endl;
+		std::cerr << transitions[i] << std::endl;
 	}
-	std::cout << "################" << std::endl;
+	std::cerr << "################" << std::endl;
 #endif
 
 	std::list<std::string> conditions;
@@ -1155,6 +1159,22 @@ GlobalTransition::GlobalTransition(const Arabica::XPath::NodeSet<std::string>& t
 		}
 	}
 	transitionId = setId.str();
+
+	int index = 0;
+	std::string seperator;
+	for (std::list<Element<std::string> >::iterator transIter = interpreter->indexedTransitions.begin(); transIter != interpreter->indexedTransitions.end(); transIter++) {
+		const Element<std::string>& refTrans = *transIter;
+		if (InterpreterImpl::isMember(refTrans, transitions)) {
+			members += seperator + toStr(index);
+		} else {
+			members += seperator;
+			for (int i = 0; i < toStr(index).size(); i++) {
+				members += " ";
+			}
+		}
+		seperator = " ";
+		index++;
+	}
 
 	/**
 	 * Can these events event occur together? They can't if:
@@ -1230,11 +1250,13 @@ GlobalTransition::GlobalTransition(const Arabica::XPath::NodeSet<std::string>& t
 			eventDesc = "*";
 	}
 
-	if (conditions.size() > 0) {
+	if (conditions.size() > 1) {
 		condition = dataModel.andExpressions(conditions);
 		if (condition.size() == 0) {
 			LOG(ERROR) << "Datamodel does not support to conjungate expressions!" << std::endl;
 		}
+	} else if (conditions.size() == 1) {
+		condition = conditions.front();
 	}
 }
 

@@ -77,15 +77,16 @@ public:
 	bool isTargetless; // whether or not all our transitions are eventless
 	bool isSubset; // there is a superset to this set
 
-	std::vector<long> firstElemPerLevel;
-	std::vector<long> nrElemPerLevel;
-	std::vector<long> prioPerLevel;
+//	std::vector<long> firstElemPerLevel;
+//	std::vector<long> nrElemPerLevel;
+//	std::vector<long> prioPerLevel;
 
 	Arabica::XPath::NodeSet<std::string> transitions; // constituting transitions
 
 	std::list<std::string> eventNames; // the list of longest event names that will enable this set
 	std::string eventDesc; // space-seperated eventnames for convenience
 	std::string condition; // conjunction of all the set's conditions
+	std::string members; // a convenience string listing all constituting transitions
 
 	// executable content we gathered when we took the transition
 	std::list<Action> actions;
@@ -140,7 +141,7 @@ protected:
 
 	void explode();
 	void labelTransitions();
-	void weightTransitions();
+//	void weightTransitions();
 	void createDocument();
 
 	void indexTransitions(const Arabica::DOM::Element<std::string>& root);

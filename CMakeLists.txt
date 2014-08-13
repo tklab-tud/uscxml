@@ -14,7 +14,7 @@ endif()
 # specify USCXML version
 SET(USCXML_VERSION_MAJOR "0")
 SET(USCXML_VERSION_MINOR "3")
-SET(USCXML_VERSION_PATCH "0")
+SET(USCXML_VERSION_PATCH "1")
 SET(USCXML_VERSION ${USCXML_VERSION_MAJOR}.${USCXML_VERSION_MINOR}.${USCXML_VERSION_PATCH})
 
 # build type has to be set before the project definition4
@@ -164,7 +164,7 @@ else ()
 	endif()
 endif()
 
-SET(USCXML_LIBRARY_HOST_URL_PREFIX "http://uscxml.mintwerk.de/prebuilt" CACHE STRING "The root path of an URL where to look for prebuilt libraries.")
+SET(USCXML_LIBRARY_HOST_URL_PREFIX "http://uscxml.tk.informatik.tu-darmstadt.de/prebuilt" CACHE STRING "The root path of an URL where to look for prebuilt libraries.")
 
 if (CMAKE_CROSSCOMPILING)
 	if (IOS)
@@ -238,7 +238,8 @@ if (NOT EXISTS ${USCXML_PREBUILT_LIBRARY_PATH})
 		)
 		file(WRITE ${PROJECT_SOURCE_DIR}/contrib/prebuilt/${USCXML_PLATFORM_ID}/VERSION.txt "${USCXML_VERSION}")
 	else()
-		message("Downloading prebuilt libraries failed with ${STATUS_STRING} - maybe this platform is not supported?")
+		message("Downloading prebuilt libraries failed with ${STATUS_STRING}")
+		message("Provide prebuilts in ${PROJECT_SOURCE_DIR}/contrib/prebuilt/${USCXML_PLATFORM_ID}/")
 	endif()
 endif()
 

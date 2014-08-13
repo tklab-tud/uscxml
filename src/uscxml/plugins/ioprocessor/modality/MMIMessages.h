@@ -51,9 +51,8 @@ public:
 	};
 
 	static Type getType(Arabica::DOM::Node<std::string> node);
-	static Arabica::DOM::Node<std::string> getEventNode(Arabica::DOM::Node<std::string> node);
 
-	virtual Arabica::DOM::Document<std::string> toXML() const;
+	virtual Arabica::DOM::Document<std::string> toXML(bool encapsulateInMMI = false) const;
 	static MMIEvent fromXML(Arabica::DOM::Node<std::string> node,
 	                        InterpreterImpl* interpreter = NULL);
 
@@ -107,7 +106,7 @@ public:
 
 class ContextualizedRequest : public MMIEvent {
 public:
-	virtual Arabica::DOM::Document<std::string> toXML() const;
+	virtual Arabica::DOM::Document<std::string> toXML(bool encapsulateInMMI = false) const;
 	static ContextualizedRequest fromXML(Arabica::DOM::Node<std::string> node,
 	                                     InterpreterImpl* interpreter = NULL);
 	operator Event() const;
@@ -207,7 +206,7 @@ public:
 		tagName = "StatusRequest";
 		type = STARTREQUEST;
 	}
-	virtual Arabica::DOM::Document<std::string> toXML() const;
+	virtual Arabica::DOM::Document<std::string> toXML(bool encapsulateInMMI = false) const;
 	static StatusRequest fromXML(Arabica::DOM::Node<std::string> node,
 	                             InterpreterImpl* interpreter = NULL);
 	operator Event() const;
@@ -224,7 +223,7 @@ public:
 		std::string fetchTimeout;
 	};
 
-	virtual Arabica::DOM::Document<std::string> toXML() const;
+	virtual Arabica::DOM::Document<std::string> toXML(bool encapsulateInMMI = false) const;
 	static ContentRequest fromXML(Arabica::DOM::Node<std::string> node,
 	                              InterpreterImpl* interpreter = NULL);
 	operator Event() const;
@@ -284,7 +283,7 @@ public:
 		tagName = "ExtensionNotification";
 		type = EXTENSIONNOTIFICATION;
 	}
-	virtual Arabica::DOM::Document<std::string> toXML() const;
+	virtual Arabica::DOM::Document<std::string> toXML(bool encapsulateInMMI = false) const;
 	static ExtensionNotification fromXML(Arabica::DOM::Node<std::string> node,
 	                                     InterpreterImpl* interpreter = NULL);
 	operator Event() const;
@@ -307,7 +306,7 @@ public:
 		tagName = "StatusResponse";
 		type = STATUSRESPONSE;
 	}
-	virtual Arabica::DOM::Document<std::string> toXML() const;
+	virtual Arabica::DOM::Document<std::string> toXML(bool encapsulateInMMI = false) const;
 	static StatusResponse fromXML(Arabica::DOM::Node<std::string> node,
 	                              InterpreterImpl* interpreter = NULL);
 	Status status;
@@ -317,7 +316,7 @@ protected:
 
 class StatusInfoResponse : public StatusResponse {
 public:
-	virtual Arabica::DOM::Document<std::string> toXML() const;
+	virtual Arabica::DOM::Document<std::string> toXML(bool encapsulateInMMI = false) const;
 	StatusInfoResponse(const StatusResponse& father) : StatusResponse(father) {}
 	static StatusInfoResponse fromXML(Arabica::DOM::Node<std::string> node,
 	                                  InterpreterImpl* interpreter = NULL);

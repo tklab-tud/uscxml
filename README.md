@@ -21,7 +21,7 @@
 ## General
 
 uSCXML is a SCXML interpreter written in C/C++. It is [standards compliant](#test-reports) and [easily extended](#extending-uscxml)
-even in C# and Java. It runs on <b>Linux</b>, <b>Windows</b> and <b>Mac OSX</b>, each 32- as well as 64Bits as well as <b>iOS</b>.
+even in C# and Java. It runs on <b>Linux</b>, <b>Windows</b>, <b>Raspberry Pi</b> and <b>Mac OSX</b>, each 32- as well as 64Bits as well as <b>iOS</b>.
 
 * <b>Datamodels</b>
     * Full [ECMAScript datamodel](https://github.com/tklab-tud/uscxml/tree/master/src/uscxml/plugins/datamodel/ecmascript) using Google's v8 (and JavaScriptCore on MacOSX and iOS)
