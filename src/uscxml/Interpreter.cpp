@@ -1195,7 +1195,7 @@ void InterpreterImpl::send(const Arabica::DOM::Element<std::string>& element) {
 				}
 				Data namelistValue = _dataModel.getStringAsData(*nameIter);
 				sendReq.namelist[*nameIter] = namelistValue;
-				sendReq.data.compound[*nameIter] = namelistValue;
+				sendReq.data.compound[*nameIter] = namelistValue; // this is questionable
 			}
 		}
 	} catch (Event e) {

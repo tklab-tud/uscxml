@@ -34,6 +34,12 @@ namespace uscxml {
 
 class VoiceXMLInvoker : public InvokerImpl, public HTTPServlet {
 public:
+	enum ComponentState {
+		MMI_IDLE,
+		MMI_PAUSED,
+		MMI_RUNNING
+	};
+	
 	VoiceXMLInvoker();
 	virtual ~VoiceXMLInvoker();
 	virtual boost::shared_ptr<InvokerImpl> create(InterpreterImpl* interpreter);
@@ -46,6 +52,10 @@ public:
 		return names;
 	}
 
+	bool deleteOnUninvoke() {
+		return false;
+	}
+	
 	bool httpRecvRequest(const HTTPServer::Request& request);
 	void setURL(const std::string& url);
 	
@@ -59,8 +69,16 @@ public:
 
 protected:
 	std::string _url;
+	std::string _context;
+	std::string _target;
+	
+	InvokeRequest _invokeReq;
+	
+	ComponentState _compState;
 	
 	tthread::thread* _thread;
+	tthread::condition_variable _cond;
+	tthread::mutex _mutex;
 	concurrency::BlockingQueue<SendRequest> _workQueue;
 	bool _isRunning;
 };

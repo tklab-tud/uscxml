@@ -9,7 +9,10 @@
 		</invoke>
 
 		<state id="vxmlHello">
-			<invoke type="vxml" id="vxml">
+			<invoke src="https://raw.githubusercontent.com/Roland-Taizun-Azhar/TaskAssistance-Project/master/WebContent/hello.vxml" type="vxml" id="vxml">
+				<param name="target" expr="'http://localhost:9090/mmi'" />
+			</invoke>
+			<!--invoke type="vxml" id="vxml">
 				<param name="target" expr="'http://localhost:9090/mmi'" />
 				<finalize>
 					<script>dump(_event);</script>
@@ -32,9 +35,9 @@
 						</vxml:form>
 					</vxml:vxml>
 				</content>
-			</invoke>
+			</invoke-->
 			
-			<transition event="heartbeat" target="idle" />
+			<!-- <transition event="heartbeat" target="idle" /> -->
 		</state>
 		
 		<state id="idle">

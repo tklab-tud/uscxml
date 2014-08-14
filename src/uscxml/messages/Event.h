@@ -204,8 +204,8 @@ public:
 
 	typedef std::multimap<std::string, Data> params_t;
 	typedef std::map<std::string, Data> namelist_t;
-
-	static bool getParam(params_t params, const std::string& name, Data& target) {
+		
+	static bool getParam(const params_t& params, const std::string& name, Data& target) {
 		if (params.find(name) != params.end()) {
 			target = params.find(name)->second;
 			return true;
@@ -213,9 +213,9 @@ public:
 		return false;
 	}
 
-	static bool getParam(params_t params, const std::string& name, std::list<Data>& target) {
+	static bool getParam(const params_t& params, const std::string& name, std::list<Data>& target) {
 		if (params.find(name) != params.end()) {
-			std::pair<params_t::iterator, params_t::iterator> rangeIter = params.equal_range(name);
+			std::pair<params_t::const_iterator, params_t::const_iterator> rangeIter = params.equal_range(name);
 			while(rangeIter.first != rangeIter.second) {
 				target.push_back(rangeIter.first->second);
 				rangeIter.first++;
@@ -225,7 +225,7 @@ public:
 		return false;
 	}
 
-	template <typename T> static bool getParam(params_t params, const std::string& name, T& target) {
+	template <typename T> static bool getParam(const params_t& params, const std::string& name, T& target) {
 		if (params.find(name) != params.end()) {
 			target = boost::lexical_cast<T>(params.find(name)->second.atom);
 			return true;
@@ -233,7 +233,7 @@ public:
 		return false;
 	}
 
-	static bool getParam(params_t params, const std::string& name, bool& target) {
+	static bool getParam(const params_t& params, const std::string& name, bool& target) {
 		if (params.find(name) != params.end()) {
 			target = true;
 			if (iequals(params.find(name)->second.atom, "false")) {
@@ -250,9 +250,9 @@ public:
 		return false;
 	}
 
-	template <typename T> static bool getParam(params_t params, const std::string& name, std::list<T>& target) {
+	template <typename T> static bool getParam(const params_t& params, const std::string& name, std::list<T>& target) {
 		if (params.find(name) != params.end()) {
-			std::pair<params_t::iterator, params_t::iterator> rangeIter = params.equal_range(name);
+			std::pair<params_t::const_iterator, params_t::const_iterator> rangeIter = params.equal_range(name);
 			while(rangeIter.first != rangeIter.second) {
 				target.push_back(boost::lexical_cast<T>(rangeIter.first->second.atom));
 				rangeIter.first++;

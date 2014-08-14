@@ -164,6 +164,8 @@ int main(int argc, char** argv) {
 
 		while(Replies.find(startReq.requestId) == Replies.end())
 			Cond.wait(Mutex);
+
+		tthread::this_thread::sleep_for(tthread::chrono::seconds(5));
 	} catch (Event e) {
 		std::cout << e << std::endl;
 	} catch (std::exception e) {

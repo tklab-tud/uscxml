@@ -119,22 +119,13 @@ Arabica::DOM::Document<std::string> MMIEvent::toXML(bool encapsulateInMMI) const
 
 	if (data.size() > 0) {
 		Element<std::string> dataElem = doc.createElementNS(nameSpace, "Data");
-
-		// try to parse content
-		std::stringstream* ss = new std::stringstream();
-		(*ss) << data;
-		std::auto_ptr<std::istream> ssPtr(ss);
-		Arabica::SAX::InputSource<std::string> inputSource;
-		inputSource.setByteStream(ssPtr);
-
-		NameSpacingParser parser;
-		if(parser.parse(inputSource)) {
-			Node<std::string> importedNode = doc.importNode(parser.getDocument().getDocumentElement(), true);
-			dataElem.appendChild(importedNode);
-		} else {
-			Text<std::string> textElem = doc.createTextNode(data);
-			dataElem.appendChild(textElem);
-		}
+		Text<std::string> textElem = doc.createTextNode(data);
+		dataElem.appendChild(textElem);
+		msgElem.appendChild(dataElem);
+	} else if (dataDOM) {
+		Element<std::string> dataElem = doc.createElementNS(nameSpace, "Data");
+		Node<std::string> importNode = doc.importNode(dataDOM, true);
+		dataElem.appendChild(importNode);
 		msgElem.appendChild(dataElem);
 	}
 
@@ -165,28 +156,16 @@ Arabica::DOM::Document<std::string> ContentRequest::toXML(bool encapsulateInMMI)
 		contentURLElem.setAttributeNS(nameSpace, "fetchtimeout", contentURL.fetchTimeout);
 		contentURLElem.setAttributeNS(nameSpace, "max-age", contentURL.maxAge);
 		msgElem.appendChild(contentURLElem);
-	}
-
-	if (content.size() > 0) {
-		Element<std::string> contentElem = doc.createElementNS(nameSpace, "content");
-
-		// try to parse content
-		std::stringstream* ss = new std::stringstream();
-		(*ss) << content;
-		std::auto_ptr<std::istream> ssPtr(ss);
-		Arabica::SAX::InputSource<std::string> inputSource;
-		inputSource.setByteStream(ssPtr);
-
-		Arabica::SAX2DOM::Parser<std::string> parser;
-		if(parser.parse(inputSource)) {
-			Node<std::string> importedNode = doc.importNode(parser.getDocument().getDocumentElement(), true);
-			contentElem.appendChild(importedNode);
-		} else {
-			Text<std::string> textElem = doc.createTextNode(content);
-			contentElem.appendChild(textElem);
-		}
+	} else if (contentDOM) {
+		Element<std::string> contentElem = doc.createElementNS(nameSpace, "Content");
+		Node<std::string> importNode = doc.importNode(contentDOM, true);
+		contentElem.appendChild(importNode);
 		msgElem.appendChild(contentElem);
-
+	} else if (content.size() > 0) {
+		Element<std::string> contentElem = doc.createElementNS(nameSpace, "Content");
+		Text<std::string> textElem = doc.createTextNode(content);
+		contentElem.appendChild(textElem);
+		msgElem.appendChild(contentElem);
 	}
 	return doc;
 }
@@ -259,12 +238,15 @@ MMIEvent MMIEvent::fromXML(Arabica::DOM::Node<std::string> node, InterpreterImpl
 		node = node.getNextSibling();
 	}
 
-	if (dataElem && boost::iequals(dataElem.getLocalName(), "data")) {
-		std::stringstream ss;
+	if (dataElem && boost::iequals(dataElem.getLocalName(), "data") && dataElem.getFirstChild()) {
 		node = dataElem.getFirstChild();
-		if (node)
+		if (node.getNodeType() == Arabica::DOM::Node_base::ELEMENT_NODE) {
+			msg.dataDOM = node;
+		} else {
+			std::stringstream ss;
 			ss << node;
-		msg.data = ss.str();
+			msg.data = ss.str();
+		}
 	}
 
 	return msg;
@@ -374,6 +356,8 @@ StatusResponse StatusResponse::fromXML(Arabica::DOM::Node<std::string> node, Int
 		msg.status = FAILURE;
 	} else if(boost::iequals(status, "SUCCESS")) {
 		msg.status = SUCCESS;
+	} else {
+		msg.status = INVALID;
 	}
 	msg.type = STATUSRESPONSE;
 	return msg;

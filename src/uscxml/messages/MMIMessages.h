@@ -62,6 +62,7 @@ public:
 	std::string source;
 	std::string target;
 	std::string data;
+	Arabica::DOM::Node<std::string> dataDOM;
 	std::string requestId;
 	std::string tagName;
 	Type type;
@@ -228,6 +229,7 @@ public:
 	                              InterpreterImpl* interpreter = NULL);
 	operator Event() const;
 	std::string content;
+	Arabica::DOM::Node<std::string> contentDOM;
 	ContentURL contentURL;
 protected:
 	ContentRequest() {}
@@ -296,15 +298,17 @@ protected:
 class StatusResponse : public ContextualizedRequest {
 public:
 	enum Status {
-		ALIVE = 0,
-		DEAD = 1,
-		SUCCESS = 2,
-		FAILURE = 3
+		INVALID = 0,
+		ALIVE = 1,
+		DEAD = 2,
+		SUCCESS = 3,
+		FAILURE = 4
 	};
 
 	StatusResponse() {
 		tagName = "StatusResponse";
 		type = STATUSRESPONSE;
+		status = INVALID;
 	}
 	virtual Arabica::DOM::Document<std::string> toXML(bool encapsulateInMMI = false) const;
 	static StatusResponse fromXML(Arabica::DOM::Node<std::string> node,
