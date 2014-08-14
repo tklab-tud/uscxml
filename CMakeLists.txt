@@ -689,7 +689,7 @@ endif()
 
 OPTION(DISABLE_JSC "Ignore JavaScriptCore" OFF)
 if (NOT DISABLE_JSC AND NOT DISABLE_ALL AND NOT V8_FOUND)
-	find_package(JSC REQUIRED)
+	find_package(JSC)
 	if (JSC_FOUND)
 		if (NOT APPLE)
 			include_directories(${JSC_INCLUDE_DIR})
