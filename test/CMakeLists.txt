@@ -152,12 +152,12 @@ target_link_libraries(test-sockets uscxml)
 set_target_properties(test-sockets PROPERTIES FOLDER "Tests")
 
 
-# if (NOT WIN32)
-# 	add_executable(test-mmi src/test-mmi.cpp)
-# 	target_link_libraries(test-mmi uscxml)
-# 	add_test(test-url ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-mmi)
-# 	set_target_properties(test-mmi PROPERTIES FOLDER "Tests")
-# endif()
+if (NOT WIN32)
+	add_executable(test-mmi src/test-mmi.cpp)
+	target_link_libraries(test-mmi uscxml)
+	add_test(test-mmi ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-mmi)
+	set_target_properties(test-mmi PROPERTIES FOLDER "Tests")
+endif()
 
 # add_executable(test-curl-multi-api src/test-curl-multi-api.cpp)
 # target_link_libraries(test-curl-multi-api uscxml)

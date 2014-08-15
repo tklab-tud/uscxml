@@ -182,8 +182,6 @@ public:
 		this->data = data;
 	}
 
-	void initContent(const std::string& content);
-
 	static Event fromXML(const std::string& xmlString);
 	Arabica::DOM::Document<std::string> toDocument();
 	std::string toXMLString();

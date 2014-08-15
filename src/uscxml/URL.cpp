@@ -565,6 +565,12 @@ void URLFetcher::fetchURL(URL& url) {
 //		(curlError = curl_easy_setopt(handle, CURLOPT_NOSIGNAL, 1)) == CURLE_OK ||
 //		LOG(ERROR) << "Cannot set curl to ignore signals: " << curl_easy_strerror(curlError);
 
+//		(curlError = curl_easy_setopt(handle, CURLOPT_FORBID_REUSE, 1)) == CURLE_OK ||
+//		LOG(ERROR) << "Cannot force noreuse: " << curl_easy_strerror(curlError);
+
+		(curlError = curl_easy_setopt(handle, CURLOPT_VERBOSE, 1)) == CURLE_OK ||
+		LOG(ERROR) << "Cannot set verbose: " << curl_easy_strerror(curlError);
+
 		(curlError = curl_easy_setopt(handle, CURLOPT_WRITEDATA, url._impl.get())) == CURLE_OK ||
 		LOG(ERROR) << "Cannot register this as write userdata: " << curl_easy_strerror(curlError);
 
@@ -580,7 +586,7 @@ void URLFetcher::fetchURL(URL& url) {
 		(curlError = curl_easy_setopt(handle, CURLOPT_SSL_VERIFYPEER, false)) == CURLE_OK ||
 		LOG(ERROR) << "Cannot forfeit peer verification: " << curl_easy_strerror(curlError);
 
-		(curlError = curl_easy_setopt(handle, CURLOPT_USERAGENT, "curl/7.31.0")) == CURLE_OK ||
+		(curlError = curl_easy_setopt(handle, CURLOPT_USERAGENT, "uscxml/0.3.3")) == CURLE_OK ||
 		LOG(ERROR) << "Cannot set our user agent string: " << curl_easy_strerror(curlError);
 
 		(curlError = curl_easy_setopt(handle, CURLOPT_FOLLOWLOCATION, true)) == CURLE_OK ||

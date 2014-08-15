@@ -28,6 +28,30 @@
 
 #include <boost/algorithm/string.hpp>
 
+#define TO_EVENT_OPERATOR(type, name, base)\
+type::operator Event() const { \
+	Event ev = base::operator Event();\
+	ev.setName(name);\
+	if (representation == MMI_AS_XML) \
+		ev.setDOM(toXML());\
+	return ev;\
+}
+
+#define FIND_MSG_ELEM(elem, doc) \
+Element<std::string> elem; \
+if (encapsulateInMMI) { \
+	elem = Element<std::string>(doc.getDocumentElement().getFirstChild()); \
+} else { \
+	elem = Element<std::string>(doc.getDocumentElement()); \
+}
+
+#define FROM_XML(clazz, enumType, base) \
+clazz clazz::fromXML(Arabica::DOM::Node<std::string> node, InterpreterImpl* interpreter) { \
+	clazz event = base::fromXML(node, interpreter); \
+	event.type = enumType; \
+	return event; \
+}
+
 #define STRING_ATTR_OR_EXPR(element, name)\
 (element.hasAttributeNS(nameSpace, "name##Expr") && interpreter ? \
 	interpreter->getDataModel().evalAsString(element.getAttributeNS(nameSpace, "name##Expr")) : \
@@ -35,6 +59,8 @@
 )
 
 #define FIND_EVENT_NODE(node)\
+if (node.getNodeType() == Node_base::DOCUMENT_NODE) \
+	node = node.getFirstChild(); \
 while (node) {\
 	if (node.getNodeType() == Node_base::ELEMENT_NODE) {\
 		if (boost::iequals(node.getLocalName(), "MMI")) {\
@@ -117,15 +143,15 @@ Arabica::DOM::Document<std::string> MMIEvent::toXML(bool encapsulateInMMI) const
 	msgElem.setAttributeNS(nameSpace, "Target", target);
 	msgElem.setAttributeNS(nameSpace, "RequestID", requestId);
 
-	if (data.size() > 0) {
-		Element<std::string> dataElem = doc.createElementNS(nameSpace, "Data");
-		Text<std::string> textElem = doc.createTextNode(data);
-		dataElem.appendChild(textElem);
-		msgElem.appendChild(dataElem);
-	} else if (dataDOM) {
+	if (dataDOM) {
 		Element<std::string> dataElem = doc.createElementNS(nameSpace, "Data");
 		Node<std::string> importNode = doc.importNode(dataDOM, true);
 		dataElem.appendChild(importNode);
+		msgElem.appendChild(dataElem);
+	}	else if (data.size() > 0) {
+		Element<std::string> dataElem = doc.createElementNS(nameSpace, "Data");
+		Text<std::string> textElem = doc.createTextNode(data);
+		dataElem.appendChild(textElem);
 		msgElem.appendChild(dataElem);
 	}
 
@@ -139,16 +165,9 @@ Arabica::DOM::Document<std::string> MMIEvent::toXML(bool encapsulateInMMI) const
 	return doc;
 }
 
-Arabica::DOM::Document<std::string> ContextualizedRequest::toXML(bool encapsulateInMMI) const {
-	Document<std::string> doc = MMIEvent::toXML(encapsulateInMMI);
-	Element<std::string> msgElem = Element<std::string>(doc.getDocumentElement().getFirstChild());
-	msgElem.setAttributeNS(nameSpace, "Context", context);
-	return doc;
-}
-
 Arabica::DOM::Document<std::string> ContentRequest::toXML(bool encapsulateInMMI) const {
 	Document<std::string> doc = ContextualizedRequest::toXML(encapsulateInMMI);
-	Element<std::string> msgElem = Element<std::string>(doc.getDocumentElement().getFirstChild());
+	FIND_MSG_ELEM(msgElem, doc);
 
 	if (contentURL.href.size() > 0) {
 		Element<std::string> contentURLElem = doc.createElementNS(nameSpace, "ContentURL");
@@ -170,16 +189,23 @@ Arabica::DOM::Document<std::string> ContentRequest::toXML(bool encapsulateInMMI)
 	return doc;
 }
 
+Arabica::DOM::Document<std::string> ContextualizedRequest::toXML(bool encapsulateInMMI) const {
+	Document<std::string> doc = MMIEvent::toXML(encapsulateInMMI);
+	FIND_MSG_ELEM(msgElem, doc);
+	msgElem.setAttributeNS(nameSpace, "Context", context);
+	return doc;
+}
+
 Arabica::DOM::Document<std::string> ExtensionNotification::toXML(bool encapsulateInMMI) const {
 	Document<std::string> doc = ContextualizedRequest::toXML(encapsulateInMMI);
-	Element<std::string> msgElem = Element<std::string>(doc.getDocumentElement().getFirstChild());
+	FIND_MSG_ELEM(msgElem, doc);
 	msgElem.setAttributeNS(nameSpace, "Name", name);
 	return doc;
 }
 
 Arabica::DOM::Document<std::string> StatusResponse::toXML(bool encapsulateInMMI) const {
 	Document<std::string> doc = ContextualizedRequest::toXML(encapsulateInMMI);
-	Element<std::string> msgElem = Element<std::string>(doc.getDocumentElement().getFirstChild());
+	FIND_MSG_ELEM(msgElem, doc);
 	if (status == ALIVE) {
 		msgElem.setAttributeNS(nameSpace, "Status", "alive");
 	} else if(status == DEAD) {
@@ -194,7 +220,7 @@ Arabica::DOM::Document<std::string> StatusResponse::toXML(bool encapsulateInMMI)
 
 Arabica::DOM::Document<std::string> StatusInfoResponse::toXML(bool encapsulateInMMI) const {
 	Document<std::string> doc = StatusResponse::toXML(encapsulateInMMI);
-	Element<std::string> msgElem = Element<std::string>(doc.getDocumentElement().getFirstChild());
+	FIND_MSG_ELEM(msgElem, doc);
 
 	Element<std::string> statusInfoElem = doc.createElementNS(nameSpace, "StatusInfo");
 	Text<std::string> statusInfoText = doc.createTextNode(statusInfo);
@@ -206,7 +232,7 @@ Arabica::DOM::Document<std::string> StatusInfoResponse::toXML(bool encapsulateIn
 
 Arabica::DOM::Document<std::string> StatusRequest::toXML(bool encapsulateInMMI) const {
 	Document<std::string> doc = ContextualizedRequest::toXML(encapsulateInMMI);
-	Element<std::string> msgElem = Element<std::string>(doc.getDocumentElement().getFirstChild());
+	FIND_MSG_ELEM(msgElem, doc);
 
 	if (automaticUpdate) {
 		msgElem.setAttributeNS(nameSpace, "RequestAutomaticUpdate", "true");
@@ -217,18 +243,22 @@ Arabica::DOM::Document<std::string> StatusRequest::toXML(bool encapsulateInMMI) 
 	return doc;
 }
 
+	
+
 MMIEvent MMIEvent::fromXML(Arabica::DOM::Node<std::string> node, InterpreterImpl* interpreter) {
 	MMIEvent msg;
+
 	FIND_EVENT_NODE(node);
 
 	Element<std::string> msgElem(node);
 	msg.source = STRING_ATTR_OR_EXPR(msgElem, Source);
 	msg.target = STRING_ATTR_OR_EXPR(msgElem, Target);
-//	msg.data = STRING_ATTR_OR_EXPR(msgElem, Data);
 	msg.requestId = STRING_ATTR_OR_EXPR(msgElem, RequestID);
 	msg.tagName = msgElem.getLocalName();
 
 	Element<std::string> dataElem;
+	
+	// search for data element
 	node = msgElem.getFirstChild();
 	while (node) {
 		if (node.getNodeType() == Node_base::ELEMENT_NODE)
@@ -239,46 +269,59 @@ MMIEvent MMIEvent::fromXML(Arabica::DOM::Node<std::string> node, InterpreterImpl
 	}
 
 	if (dataElem && boost::iequals(dataElem.getLocalName(), "data") && dataElem.getFirstChild()) {
-		node = dataElem.getFirstChild();
-		if (node.getNodeType() == Arabica::DOM::Node_base::ELEMENT_NODE) {
-			msg.dataDOM = node;
-		} else {
-			std::stringstream ss;
-			ss << node;
-			msg.data = ss.str();
+		Arabica::DOM::Node<std::string> dataChild = dataElem.getFirstChild();
+		std::stringstream ss;
+
+		while (dataChild) {
+			if (dataChild.getNodeType() == Arabica::DOM::Node_base::ELEMENT_NODE)
+				msg.dataDOM = dataChild;
+			ss << dataChild;
+			dataChild = dataChild.getNextSibling();
 		}
+		msg.data = ss.str();
 	}
 
 	return msg;
 }
 
-MMIEvent::operator Event() const {
-	Event ev;
-	ev.setOriginType("mmi.event");
-	ev.setOrigin(source);
-	ev.setRaw(data);
-	ev.setSendId(requestId);
-	if (data.length() > 0) {
-		ev.initContent(data);
-	}
-	return ev;
-}
+FROM_XML(NewContextRequest,    NEWCONTEXTREQUEST,    MMIEvent)
+
+FROM_XML(PauseRequest,         PAUSEREQUEST,         ContextualizedRequest)
+FROM_XML(ResumeRequest,        RESUMEREQUEST,        ContextualizedRequest)
+FROM_XML(ClearContextRequest,  CLEARCONTEXTREQUEST,  ContextualizedRequest)
+FROM_XML(CancelRequest,        CANCELREQUEST,        ContextualizedRequest)
+
+FROM_XML(PrepareRequest,       PREPAREREQUEST,       ContentRequest)
+FROM_XML(StartRequest,         STARTREQUEST,         ContentRequest)
+
+FROM_XML(PrepareResponse,      PREPARERESPONSE,      StatusInfoResponse)
+FROM_XML(StartResponse,        STARTRESPONSE,        StatusInfoResponse)
+FROM_XML(CancelResponse,       CANCELRESPONSE,       StatusInfoResponse)
+FROM_XML(PauseResponse,        PAUSERESPONSE,        StatusInfoResponse)
+FROM_XML(ResumeResponse,       RESUMERESPONSE,       StatusInfoResponse)
+FROM_XML(ClearContextResponse, CLEARCONTEXTRESPONSE, StatusInfoResponse)
+FROM_XML(NewContextResponse,   NEWCONTEXTRESPONSE,   StatusInfoResponse)
+FROM_XML(DoneNotification,     DONENOTIFICATION,     StatusInfoResponse)
+
 
 ContextualizedRequest ContextualizedRequest::fromXML(Arabica::DOM::Node<std::string> node, InterpreterImpl* interpreter) {
 	ContextualizedRequest msg(MMIEvent::fromXML(node, interpreter));
 	FIND_EVENT_NODE(node);
-
+	
 	Element<std::string> msgElem(node);
 	msg.context = STRING_ATTR_OR_EXPR(msgElem, Context);
 	return msg;
 }
 
-ContextualizedRequest::operator Event() const {
-	Event ev = MMIEvent::operator Event();
-	// do we want to represent the context? It's the interpreters name already
-	return ev;
+ExtensionNotification ExtensionNotification::fromXML(Arabica::DOM::Node<std::string> node, InterpreterImpl* interpreter) {
+	ExtensionNotification msg(ContextualizedRequest::fromXML(node, interpreter));
+	FIND_EVENT_NODE(node);
+	
+	Element<std::string> msgElem(node);
+	msg.name = STRING_ATTR_OR_EXPR(msgElem, Name);
+	msg.type = EXTENSIONNOTIFICATION;
+	return msg;
 }
-
 
 ContentRequest ContentRequest::fromXML(Arabica::DOM::Node<std::string> node, InterpreterImpl* interpreter) {
 	ContentRequest msg(ContextualizedRequest::fromXML(node, interpreter));
@@ -300,16 +343,17 @@ ContentRequest ContentRequest::fromXML(Arabica::DOM::Node<std::string> node, Int
 
 	if (contentElem) {
 		if(boost::iequals(contentElem.getLocalName(), "content")) {
+			Arabica::DOM::Node<std::string> contentChild = contentElem.getFirstChild();
 			std::stringstream ss;
-			node = contentElem.getFirstChild();
-			while (node) {
-				if (node.getNodeType() == Node_base::ELEMENT_NODE) {
-					ss << node;
-					break;
-				}
-				node = node.getNextSibling();
+			
+			while (contentChild) {
+				if (contentChild.getNodeType() == Arabica::DOM::Node_base::ELEMENT_NODE)
+					msg.contentDOM = contentChild;
+				ss << contentChild;
+				contentChild = contentChild.getNextSibling();
 			}
 			msg.content = ss.str();
+			
 		} else if(boost::iequals(contentElem.getLocalName(), "contentURL")) {
 			msg.contentURL.href = STRING_ATTR_OR_EXPR(contentElem, href);
 			msg.contentURL.maxAge = STRING_ATTR_OR_EXPR(contentElem, max-age);
@@ -319,26 +363,6 @@ ContentRequest ContentRequest::fromXML(Arabica::DOM::Node<std::string> node, Int
 
 	//msg.content = msgElem.getAttributeNS(nameSpace, "Context");
 	return msg;
-}
-
-ExtensionNotification ExtensionNotification::fromXML(Arabica::DOM::Node<std::string> node, InterpreterImpl* interpreter) {
-	ExtensionNotification msg(ContextualizedRequest::fromXML(node, interpreter));
-	FIND_EVENT_NODE(node);
-
-	Element<std::string> msgElem(node);
-	msg.name = STRING_ATTR_OR_EXPR(msgElem, Name);
-	msg.type = EXTENSIONNOTIFICATION;
-	return msg;
-}
-
-ExtensionNotification::operator Event() const {
-	Event ev = ContextualizedRequest::operator Event();
-	if (name.length() > 0) {
-		ev.setName("mmi.extensionnotification." + name);
-	} else {
-		ev.setName("mmi.extensionnotification");
-	}
-	return ev;
 }
 
 StatusResponse StatusResponse::fromXML(Arabica::DOM::Node<std::string> node, InterpreterImpl* interpreter) {
@@ -415,6 +439,109 @@ StatusRequest StatusRequest::fromXML(Arabica::DOM::Node<std::string> node, Inter
 	msg.type = STATUSREQUEST;
 	return msg;
 }
+
+	
+
+#ifdef MMI_WITH_OPERATOR_EVENT
+	
+	TO_EVENT_OPERATOR(NewContextRequest,    "mmi.request.newcontext",    MMIEvent);
+	TO_EVENT_OPERATOR(PauseRequest,         "mmi.request.pause",         ContextualizedRequest);
+	TO_EVENT_OPERATOR(ResumeRequest,        "mmi.request.resume",        ContextualizedRequest);
+	TO_EVENT_OPERATOR(CancelRequest,        "mmi.request.cancel",        ContextualizedRequest);
+	TO_EVENT_OPERATOR(ClearContextRequest,  "mmi.request.clearcontext",  ContextualizedRequest);
+	TO_EVENT_OPERATOR(StatusRequest,        "mmi.request.status",        ContextualizedRequest);
+	
+	TO_EVENT_OPERATOR(PrepareRequest,       "mmi.request.prepare",       ContentRequest);
+	TO_EVENT_OPERATOR(StartRequest,         "mmi.request.start",         ContentRequest);
+	
+	TO_EVENT_OPERATOR(PrepareResponse,      "mmi.response.prepare",      StatusInfoResponse);
+	TO_EVENT_OPERATOR(StartResponse,        "mmi.response.start",        StatusInfoResponse);
+	TO_EVENT_OPERATOR(CancelResponse,       "mmi.response.cancel",       StatusInfoResponse);
+	TO_EVENT_OPERATOR(PauseResponse,        "mmi.response.pause",        StatusInfoResponse);
+	TO_EVENT_OPERATOR(ResumeResponse,       "mmi.response.resume",       StatusInfoResponse);
+	TO_EVENT_OPERATOR(ClearContextResponse, "mmi.response.clearcontext", StatusInfoResponse);
+	TO_EVENT_OPERATOR(NewContextResponse,   "mmi.response.newcontext",   StatusInfoResponse);
+	TO_EVENT_OPERATOR(DoneNotification,     "mmi.notification.done",     StatusInfoResponse);
+
+	
+	MMIEvent::operator Event() const {
+		Event ev;
+		ev.setOriginType("mmi.event");
+		ev.setOrigin(source);
+		
+		if (representation == MMI_AS_DATA) {
+			if (dataDOM) {
+				ev.data.node = dataDOM;
+			} else {
+				ev.data = Data::fromJSON(data);
+				if (ev.data.empty()) {
+					ev.content = data;
+				}
+			}
+		}
+		return ev;
+	}
+	
+	ContextualizedRequest::operator Event() const {
+		Event ev = MMIEvent::operator Event();
+		// do we want to represent the context? It's the interpreters name already
+		return ev;
+	}
+
+	ExtensionNotification::operator Event() const {
+		Event ev = ContextualizedRequest::operator Event();
+		if (name.length() > 0) {
+			ev.setName(name);
+		} else {
+			ev.setName("mmi.notification.extension");
+		}
+		return ev;
+	}
+
+	ContentRequest::operator Event() const {
+		Event ev = ContextualizedRequest::operator Event();
+		if (representation == MMI_AS_DATA) {
+			if (content.length() > 0)
+				ev.data.compound["content"] = Data(content, Data::VERBATIM);
+			if (contentURL.fetchTimeout.length() > 0)
+				ev.data.compound["contentURL"].compound["fetchTimeout"] = Data(contentURL.fetchTimeout, Data::VERBATIM);
+			if (contentURL.href.length() > 0)
+				ev.data.compound["contentURL"].compound["href"] = Data(contentURL.href, Data::VERBATIM);
+			if (contentURL.maxAge.length() > 0)
+				ev.data.compound["contentURL"].compound["maxAge"] = Data(contentURL.maxAge, Data::VERBATIM);
+		}
+		return ev;
+	}
+
+	StatusResponse::operator Event() const {
+		Event ev = ContextualizedRequest::operator Event();
+		ev.setName("mmi.response.status");
+
+		if (representation == MMI_AS_DATA) {
+			switch (status) {
+				case ALIVE:
+					ev.data.compound["status"] = Data("alive", Data::VERBATIM);
+					break;
+				case DEAD:
+					ev.data.compound["status"] = Data("dead", Data::VERBATIM);
+					break;
+				case SUCCESS:
+					ev.data.compound["status"] = Data("success", Data::VERBATIM);
+					break;
+				case FAILURE:
+					ev.data.compound["status"] = Data("failure", Data::VERBATIM);
+					break;
+				default:
+					ev.data.compound["status"] = Data("invalid", Data::VERBATIM);
+			}
+		} else {
+			ev.dom = toXML();
+		}
+		
+		return ev;
+	}
+
+#endif
 
 
 }

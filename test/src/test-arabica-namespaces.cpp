@@ -95,8 +95,8 @@ static void validateRootFoo(std::pair<Document<std::string>, NameSpaceInfo>& par
 	Node<std::string> root = document.getDocumentElement();
 	_xpath.setNamespaceContext(*nsInfo.getNSContext());
 
-	assert(TAGNAME(root) == nsInfo.xmlNSPrefix + "root");
-	assert(LOCALNAME(root) == "root");
+	assert(TAGNAME_CAST(root) == nsInfo.xmlNSPrefix + "root");
+	assert(LOCALNAME_CAST(root) == "root");
 	NodeSet<std::string> foosFiltered = InterpreterImpl::filterChildElements(nsInfo.xmlNSPrefix + "foo", root);
 	assert(foosFiltered.size() == 3);
 	NodeSet<std::string> foosXPath = _xpath.evaluate("//" + nsInfo.xpathPrefix + "foo", root).asNodeSet();
@@ -104,8 +104,8 @@ static void validateRootFoo(std::pair<Document<std::string>, NameSpaceInfo>& par
 
 	for (int i = 0; i < 3; i++) {
 		assert(foosFiltered[i] == foosXPath[i]);
-		assert(TAGNAME(foosFiltered[i]) == nsInfo.xmlNSPrefix + "foo");
-		assert(LOCALNAME(foosFiltered[i]) == "foo");
+		assert(TAGNAME_CAST(foosFiltered[i]) == nsInfo.xmlNSPrefix + "foo");
+		assert(LOCALNAME_CAST(foosFiltered[i]) == "foo");
 	}
 
 }
@@ -126,8 +126,8 @@ static void validateRootFooBar(std::pair<Document<std::string>, NameSpaceInfo>& 
 
 	for (int i = 0; i < 3; i++) {
 		assert(barsFiltered[i] == barsXPath[i]);
-		assert(TAGNAME(barsFiltered[i]) == nsInfo.xmlNSPrefix + "bar");
-		assert(LOCALNAME(barsFiltered[i]) == "bar");
+		assert(TAGNAME_CAST(barsFiltered[i]) == nsInfo.xmlNSPrefix + "bar");
+		assert(LOCALNAME_CAST(barsFiltered[i]) == "bar");
 	}
 
 }
@@ -141,8 +141,8 @@ static void validateRootFooBarBaz(std::pair<Document<std::string>, NameSpaceInfo
 	Node<std::string> root = document.getDocumentElement();
 	_xpath.setNamespaceContext(*nsInfo.getNSContext());
 
-	assert(TAGNAME(root) == nsInfo.xmlNSPrefix + "root");
-	assert(LOCALNAME(root) == "root");
+	assert(TAGNAME_CAST(root) == nsInfo.xmlNSPrefix + "root");
+	assert(LOCALNAME_CAST(root) == "root");
 
 	NodeSet<std::string> bazsFiltered = InterpreterImpl::filterChildElements(nsInfo.xmlNSPrefix + "baz", root);
 	assert(bazsFiltered.size() == 3);
@@ -151,8 +151,8 @@ static void validateRootFooBarBaz(std::pair<Document<std::string>, NameSpaceInfo
 
 	for (int i = 0; i < 3; i++) {
 		assert(bazsFiltered[i] == bazsXPath[i]);
-		assert(TAGNAME(bazsFiltered[i]) == nsInfo.xmlNSPrefix + "baz");
-		assert(LOCALNAME(bazsFiltered[i]) == "baz");
+		assert(TAGNAME_CAST(bazsFiltered[i]) == nsInfo.xmlNSPrefix + "baz");
+		assert(LOCALNAME_CAST(bazsFiltered[i]) == "baz");
 	}
 
 }

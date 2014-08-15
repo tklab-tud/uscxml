@@ -88,7 +88,17 @@ bool XHTMLInvoker::httpRecvRequest(const HTTPServer::Request& req) {
 				ev.name = req.data.at("type").atom;
 			}
 			ev.origin = _invokeId;
-			ev.initContent(req.data.at("content").atom);
+			
+			// initialize data
+			ev.data = Data::fromJSON(req.data.at("content").atom);
+			if (ev.data.empty()) {
+				if (req.dom) {
+					ev.dom = req.dom;
+				} else {
+					ev.content = req.content;
+				}
+			}
+			
 			ev.data.compound["Connection"] = req.data;
 			// content is already on ev.raw
 			ev.data.compound["Connection"].compound.erase("content");

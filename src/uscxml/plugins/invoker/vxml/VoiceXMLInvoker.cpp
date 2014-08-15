@@ -27,7 +27,7 @@
 #include <Pluma/Connector.hpp>
 #endif
 
-#define ISSUE_REQUEST(name) {\
+#define ISSUE_REQUEST(name, block) {\
 	Arabica::DOM::Document<std::string> name##XML = name.toXML(true);\
 	name##XML.getDocumentElement().setPrefix("mmi");\
 	std::stringstream name##XMLSS;\
@@ -36,7 +36,7 @@
 	std::cout << "SEND: " << name##XMLSS.str() << std::endl; \
 	name##URL.setOutContent(name##XMLSS.str());\
 	name##URL.addOutHeader("Content-type", "application/xml");\
-	name##URL.download(false);\
+	name##URL.download(block);\
 }
 
 namespace uscxml {
@@ -72,7 +72,7 @@ bool VoiceXMLInvoker::httpRecvRequest(const HTTPServer::Request& request) {
 	}
 	
 	const Arabica::DOM::Node<std::string>& node = request.data.at("content").node;
-	std::cout << "RCVD: " << node << std::endl;
+//	std::cout << "RCVD: " << node << std::endl;
 
 	switch(MMIEvent::getType(node)) {
 		case MMIEvent::NEWCONTEXTRESPONSE: {
@@ -95,7 +95,7 @@ bool VoiceXMLInvoker::httpRecvRequest(const HTTPServer::Request& request) {
 					std::stringstream contentSS;
 					startReq.contentDOM = _invokeReq.dom;
 				}
-				ISSUE_REQUEST(startReq);
+				ISSUE_REQUEST(startReq, false);
 
 			} else {
 				// already got a context!
@@ -113,20 +113,26 @@ bool VoiceXMLInvoker::httpRecvRequest(const HTTPServer::Request& request) {
 			_compState = MMI_IDLE;
 			break;
 		}
-	
-		case MMIEvent::EXTENSIONNOTIFICATION: {
-			ExtensionNotification resp = ExtensionNotification::fromXML(node);
-			Event ev;
-			ev.name = "mmi.extensionnotification";
-			if (resp.dataDOM) {
-				ev.dom = resp.dataDOM;
-			} else if(resp.data.size() > 0) {
-				ev.data = Data::fromJSON(resp.data); // try to parse as JSON
-				if (ev.data.empty()) {
-					ev.content = resp.data;
+
+		case MMIEvent::STATUSRESPONSE: {
+			StatusResponse resp = StatusResponse::fromXML(node);
+			switch (resp.status) {
+				case StatusResponse::DEAD:
+					_compState = MMI_DEAD;
+				case StatusResponse::FAILURE: {
+					Event ev = resp;
+					returnEvent(ev);
+					break;
 				}
+				default:
+					break;
 			}
-			returnEvent(ev);
+			break;
+		}
+
+		case MMIEvent::EXTENSIONNOTIFICATION: {
+			Event resp = ExtensionNotification::fromXML(node);
+			returnEvent(resp);
 		}
 			
 		default:
@@ -169,7 +175,7 @@ void VoiceXMLInvoker::invoke(const InvokeRequest& req) {
 	newCtxReq.source = _url;
 	newCtxReq.target = _target;
 	newCtxReq.requestId = uscxml::UUID::getUUID();
-	ISSUE_REQUEST(newCtxReq);
+	ISSUE_REQUEST(newCtxReq, false);
 
 	_isRunning = true;
 	_thread = new tthread::thread(VoiceXMLInvoker::run, this);
@@ -182,11 +188,12 @@ void VoiceXMLInvoker::uninvoke() {
 	clrCtxReq.source = _url;
 	clrCtxReq.target = _target;
 	clrCtxReq.requestId = uscxml::UUID::getUUID();
-	ISSUE_REQUEST(clrCtxReq);
+	ISSUE_REQUEST(clrCtxReq, false);
 
 	if (_isRunning)
 		_isRunning = false;
 	
+	// unblock queue
 	SendRequest req;
 	_workQueue.push(req);
 	
@@ -222,8 +229,12 @@ void VoiceXMLInvoker::process(SendRequest& req) {
 		return;
 	}
 	
+	if (_compState != MMI_RUNNING)
+		// remote component is not running
+		return;
+	
 	// dispatch over send request
-
+	// Is there something special to do here?
 	
 	// if we did nothing else, send as ExtensionNotification
 	ExtensionNotification extNotif;
@@ -251,8 +262,7 @@ void VoiceXMLInvoker::process(SendRequest& req) {
 		extNotif.data = Data::toJSON(req.data);
 	}
 	
-	ISSUE_REQUEST(extNotif);
-
+	ISSUE_REQUEST(extNotif, false);
 }
 	
 }

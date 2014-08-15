@@ -37,7 +37,8 @@ public:
 	enum ComponentState {
 		MMI_IDLE,
 		MMI_PAUSED,
-		MMI_RUNNING
+		MMI_RUNNING,
+		MMI_DEAD
 	};
 	
 	VoiceXMLInvoker();

@@ -66,6 +66,30 @@ if (BUILD_DM_ECMA)
 				list (APPEND USCXML_FILES ${V8_DOM})
 			endif()
 		endif()
+	elseif(SPIDERMONKEY_FOUND)
+		set(USCXML_DATAMODELS "ecmascript(SpiderMonkey) ${USCXML_DATAMODELS}")
+		# set(ENV{V8_SRC} ${CMAKE_SOURCE_DIR}/../v8)
+		file(GLOB SPIDERMONKEY_DATAMODEL
+			ecmascript/SpiderMonkey/*.cpp
+			ecmascript/SpiderMonkey/*.h
+			ecmascript/*.cpp
+			ecmascript/*.h
+		)
+
+		if (BUILD_AS_PLUGINS)
+			source_group("SpiderMonkey" FILES ${SPIDERMONKEY_DATAMODEL})
+
+			add_library(
+				datamodel_spidermonkey SHARED 
+				${SPIDERMONKEY_DATAMODEL}
+			"../Plugins.cpp")
+			target_link_libraries(datamodel_spidermonkey uscxml ${SPIDERMONKEY_LIBRARY})
+			set_target_properties(datamodel_spidermonkey PROPERTIES FOLDER "Plugin DataModel")
+			set_target_properties(datamodel_spidermonkey PROPERTIES COMPILE_FLAGS "-DPLUMA_EXPORTS")
+			set_target_properties(datamodel_spidermonkey PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${OUTPUT_DIR}/lib")
+		else()
+			list (APPEND USCXML_FILES ${SPIDERMONKEY_DATAMODEL})
+		endif()
 	endif()
 endif()
 

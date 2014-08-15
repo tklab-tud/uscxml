@@ -22,7 +22,7 @@
 #include "XGetopt.h"
 #endif
 
-#define ISSUE_REQUEST(name) {\
+#define ISSUE_REQUEST(name, block) {\
 	Arabica::DOM::Document<std::string> name##XML = name.toXML(true);\
 	name##XML.getDocumentElement().setPrefix("mmi");\
 	std::stringstream name##XMLSS;\
@@ -31,7 +31,8 @@
 	std::cout << "SEND:" << std::endl << name##XMLSS.str() << std::flush;\
 	name##URL.setOutContent(name##XMLSS.str());\
 	name##URL.addOutHeader("Content-type", "application/xml");\
-	name##URL.download(false);\
+	name##URL.download(block);\
+	std::cout << "OK" << std::endl << std::flush;\
 }
 
 using namespace uscxml;
@@ -144,9 +145,10 @@ int main(int argc, char** argv) {
 		newCtxReq.source = source;
 		newCtxReq.target = target;
 		newCtxReq.requestId = uscxml::UUID::getUUID();
-			
+
 		Requests[newCtxReq.requestId] = &newCtxReq;
-		ISSUE_REQUEST(newCtxReq);
+		
+		ISSUE_REQUEST(newCtxReq, false);
 
 		while(Replies.find(newCtxReq.requestId) == Replies.end())
 			Cond.wait(Mutex);
@@ -160,7 +162,7 @@ int main(int argc, char** argv) {
 		//"https://raw.githubusercontent.com/Roland-Taizun-Azhar/TaskAssistance-Project/master/WebContent/hello.vxml";
 		
 		Requests[startReq.requestId] = &startReq;
-		ISSUE_REQUEST(startReq);
+		ISSUE_REQUEST(startReq, false);
 
 		while(Replies.find(startReq.requestId) == Replies.end())
 			Cond.wait(Mutex);
