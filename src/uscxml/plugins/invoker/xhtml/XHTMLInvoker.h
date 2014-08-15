@@ -57,11 +57,11 @@ public:
 
 protected:
 	HTTPServer::Request _longPoll;
-	std::deque<SendRequest> _outQueue;
+	std::deque<HTTPServer::Reply> _outQueue;
 
 	tthread::recursive_mutex _mutex;
 	InvokeRequest _invokeReq;
-	IOProcessor _ioProc;
+
 	std::string _url;
 };
 

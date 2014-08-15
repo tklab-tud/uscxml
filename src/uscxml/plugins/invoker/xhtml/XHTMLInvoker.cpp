@@ -58,7 +58,6 @@ XHTMLInvoker::~XHTMLInvoker() {
 boost::shared_ptr<InvokerImpl> XHTMLInvoker::create(InterpreterImpl* interpreter) {
 	boost::shared_ptr<XHTMLInvoker> invoker = boost::shared_ptr<XHTMLInvoker>(new XHTMLInvoker());
 	invoker->_interpreter = interpreter;
-//	_ioProc = interpreter->getFactory()->createIOProcessor("comet", interpreter);
 	return invoker;
 }
 
@@ -68,95 +67,107 @@ bool XHTMLInvoker::httpRecvRequest(const HTTPServer::Request& req) {
 	// these are the XHR requests
 	if (iequals(req.data.at("header").at("X-Requested-With").atom, "XMLHttpRequest")) {
 		if (iequals(req.data.at("type").atom, "get")) {
-			// the long-polling GET
+			// this is the incoming the long-polling GET
 			if (_longPoll) {
+				// cancel old longPoller
 				evhttp_send_error(_longPoll.evhttpReq, 204, NULL);
 				_longPoll.evhttpReq = NULL;
 			}
+			
 			_longPoll = req;
 			if (!_outQueue.empty()) {
-				send(_outQueue.front());
+				// do we have some send requests pending?
+				HTTPServer::Reply reply =_outQueue.front();
+				reply.setRequest(_longPoll);
+				HTTPServer::reply(reply);
 				_outQueue.pop_front();
+				_longPoll.evhttpReq = NULL;
 			}
 			return true;
+			
 		} else {
-			// a POST request
+			// an incomping event per POST request
 			Event ev(req);
 			if (ev.data["header"].hasKey("X-SCXML-Name")) {
 				ev.name = ev.data["header"]["X-SCXML-Name"].atom;
 			} else {
 				ev.name = req.data.at("type").atom;
 			}
-			ev.origin = _invokeId;
 			
 			// initialize data
-			ev.data = Data::fromJSON(req.data.at("content").atom);
-			if (ev.data.empty()) {
-				if (req.dom) {
-					ev.dom = req.dom;
-				} else {
-					ev.content = req.content;
-				}
-			}
+			ev.data = req.data.at("content");
+			ev.eventType = Event::EXTERNAL;
 			
-			ev.data.compound["Connection"] = req.data;
-			// content is already on ev.raw
-			ev.data.compound["Connection"].compound.erase("content");
-
 			HTTPServer::Reply reply(req);
 			HTTPServer::reply(reply);
-
-			returnEvent(ev);
+			
+			returnEvent(ev, true);
 			return true;
 		}
 	}
 
 	// initial request for a document
 	if (!req.data.hasKey("query") && // no query parameters
-	        iequals(req.data.at("type").atom, "get") && // request type is GET
-	        req.content.length() == 0) { // no content
-
+			iequals(req.data.at("type").atom, "get") && // request type is GET
+			req.content.length() == 0) { // no content
+		
+		// send template to establish long polling
 		HTTPServer::Reply reply(req);
 
-		std::string content;
-		std::stringstream ss;
-		if (_invokeReq.dom) {
-//			ss << _invokeReq.getFirstDOMElement();
-			ss << _invokeReq.dom;
-			content = ss.str();
-		} else if(!_invokeReq.data.empty()) {
-			ss << _invokeReq.data;
-			content = ss.str();
-		} else if (_invokeReq.content.length() > 0) {
-			content = _invokeReq.content;
-		} else {
-			URL templateURL("templates/xhtml-invoker.html");
-			templateURL.toAbsolute(_interpreter->getBaseURI());
-			templateURL.download(true);
-			content = templateURL.getInContent();
+		// _invokeReq.content will contain the actual content as we needed to replace expressions in the interpreter thread
+		
+		if (!_invokeReq.data.empty()) {
+			// just reply with given data as json, this time and for ever
+			reply.content = _invokeReq.content;
+			reply.headers["Content-type"] = "application/json";
+			HTTPServer::reply(reply);
+			return true;
+			
+		} else if (_invokeReq.dom) {
+			// there is some XML given with the content
+			if (HAS_ATTR_CAST(_invokeReq.dom, "type")) {
+				// it's special XML to send per Comet later on, default to sending template and enqueue
+				_longPoll.evhttpReq = NULL;
+				_outQueue = std::deque<HTTPServer::Reply>();
+				
+				HTTPServer::Reply reply;
+				reply.content = _invokeReq.content;
+				reply.headers["Content-type"] = "application/xml";
+				_outQueue.push_back(reply);
+
+				// no return here - we wan to send the template below
+				
+			} else {
+				// it's plain XML now and forever
+				reply.content = _invokeReq.content;
+				reply.headers["Content-type"] = "application/xml";
+				HTTPServer::reply(reply);
+				return true;
+			}
+		} else if (_invokeReq.content.size() > 0) {
+			
+			// just reply as text this time and for ever
+			reply.content = _invokeReq.content;
+			reply.headers["Content-type"] = "text/plain";
+			HTTPServer::reply(reply);
+			return true;
 		}
 
-		std::cout << content;
+		/*
+		 * Return our template to establish a two way communication via comet
+		 * If we want to replace expressions in the temaplte, we have to do it in invoke()
+		 * for thread safety of the datamodel.
+		 */
+		
+		// this file is generated from template/xhtml-invoker.xhtml via xxd
+		#include "template/xhtml-invoker.inc.h"
 
-		_interpreter->getDataModel().replaceExpressions(content);
-		reply.content = content;
-
-		// application/xhtml+xml
-		reply.headers["Content-Type"] = "text/html; charset=utf-8";
-//		reply.headers["Content-Type"] = "application/xhtml+xml; charset=utf-8";
-
-		// aggressive caching in IE will return all XHR get requests instantenously with the template otherwise
+		// aggressive caching in IE will return all XHR get requests instantenously otherwise
 		reply.headers["Cache-Control"] = "no-cache";
-//		reply.headers["Cache-Control"] = "max-age=3600";
+		reply.headers["Content-Type"] = "text/html; charset=utf-8";
 
+		reply.content = std::string((const char*)template_xhtml_invoker_html, template_xhtml_invoker_html_len);
 		HTTPServer::reply(reply);
-
-		// queue invoke request for initial html
-		_longPoll.evhttpReq = NULL;
-		_outQueue = std::deque<SendRequest>();
-		SendRequest sendReq(_invokeReq);
-		send(sendReq);
-
 		return true;
 	}
 
@@ -171,43 +182,29 @@ Data XHTMLInvoker::getDataModelVariables() {
 
 void XHTMLInvoker::send(const SendRequest& req) {
 	tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
-	SendRequest reqCopy(req);
-	_interpreter->getDataModel().replaceExpressions(reqCopy.content);
-	Data json = Data::fromJSON(reqCopy.content);
-	if (!json.empty()) {
-		reqCopy.data = json;
-	}
 
-	if (!_longPoll) {
-		_outQueue.push_back(reqCopy);
-		return;
-	}
-	reply(reqCopy, _longPoll);
-	_longPoll.evhttpReq = NULL;
-}
-
-void XHTMLInvoker::reply(const SendRequest& req, const HTTPServer::Request& longPoll) {
-	HTTPServer::Reply reply(longPoll);
-
-	// is there JSON in the content?
-	std::string content = req.content;
-
+	HTTPServer::Reply reply;
+	
 	if (req.dom) {
+		// XML
 		std::stringstream ss;
-//		Arabica::DOM::Node<std::string> content = req.dom.getDocumentElement();
-		Arabica::DOM::Node<std::string> content = req.dom;
-		if (content && content.getNodeType() == Arabica::DOM::Node_base::ELEMENT_NODE && iequals(content.getLocalName(), "content")) {
-			Arabica::DOM::Element<std::string> contentElem = Arabica::DOM::Element<std::string>(content);
-			reply.headers["X-SCXML-Type"] = (HAS_ATTR(contentElem, "type") ? ATTR(contentElem, "type") : "replacechildren");
-			reply.headers["X-SCXML-XPath"] = (HAS_ATTR(contentElem, "xpath") ? ATTR(contentElem, "xpath") : "/html/body");
+		if (req.dom.getNodeType() == Arabica::DOM::Node_base::ELEMENT_NODE) {
+			Arabica::DOM::Element<std::string> contentElem = Arabica::DOM::Element<std::string>(req.dom);
+
+			if (HAS_ATTR(contentElem, "type"))
+				reply.headers["X-SCXML-Type"] = ATTR(contentElem, "type");
+			if (HAS_ATTR(contentElem, "xpath"))
+				reply.headers["X-SCXML-XPath"] = ATTR(contentElem, "xpath");
 			if (HAS_ATTR(contentElem, "attr"))
 				reply.headers["X-SCXML-Attr"] = ATTR(contentElem, "attr");
 		}
-//		ss << req.getFirstDOMElement();
+		
 		ss << req.dom;
 		reply.content = ss.str();
 		reply.headers["Content-Type"] = "application/xml";
+		
 	} else if (!req.data.empty()) {
+		// JSON
 		reply.content = Data::toJSON(req.data);
 		reply.headers["Content-Type"] = "application/json";
 	} else if (req.content.length() > 0) {
@@ -215,21 +212,47 @@ void XHTMLInvoker::reply(const SendRequest& req, const HTTPServer::Request& long
 		reply.headers["Content-Type"] = "text/plain";
 	}
 
-	if (req.params.find("Content-Type") != req.params.end())
-		reply.headers["Content-Type"] = req.params.find("Content-Type")->first;
+	// TODO: Params to set variables?
+	
+	_interpreter->getDataModel().replaceExpressions(reply.content);
 
+	if (!_longPoll) {
+		_outQueue.push_back(reply);
+		return;
+	}
+	reply.setRequest(_longPoll);
 	HTTPServer::reply(reply);
+	_longPoll.evhttpReq = NULL;
 }
-
+	
 void XHTMLInvoker::cancel(const std::string sendId) {
 	HTTPServer::unregisterServlet(this);
 }
 
 void XHTMLInvoker::invoke(const InvokeRequest& req) {
 	_invokeReq = req;
-	HTTPServer::registerServlet(_interpreter->getName() + "/" + req.invokeid + ".html", this);
-	if (_url.size() == 0) {
-		returnErrorExecution("No HTTP server running");
+	
+	// make sure _invokeReq.content contains correct and substituted string
+	if (!_invokeReq.data.empty()) {
+		_invokeReq.content = Data::toJSON(_invokeReq.data);
+	} else if (_invokeReq.dom) {
+		std::stringstream ss;
+		ss << _invokeReq.dom;
+		_invokeReq.content = ss.str();
+	}
+	_interpreter->getDataModel().replaceExpressions(_invokeReq.content);
+
+	std::string browserURL;
+	if (req.src.size() > 0) {
+		// no src given, send browser off to some remote url
+		browserURL = req.src;
+	} else {
+		// invoke to talk to us
+		HTTPServer::registerServlet(_interpreter->getName() + "/" + req.invokeid + ".html", this);
+		if (_url.size() == 0) {
+			returnErrorExecution("No HTTP server running");
+		}
+		browserURL = _url.c_str();
 	}
 #if __APPLE__
 #	if TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR
@@ -237,28 +260,31 @@ void XHTMLInvoker::invoke(const InvokeRequest& req) {
 	// see http://stackoverflow.com/questions/4177744/c-osx-open-default-browser
 	CFURLRef url = CFURLCreateWithBytes (
 	                   NULL,                        // allocator
-	                   (UInt8*)_url.c_str(),     // URLBytes
-	                   _url.length(),            // length
+	                   (UInt8*)browserURL.c_str(),     // URLBytes
+	                   browserURL.length(),            // length
 	                   kCFStringEncodingASCII,      // encoding
 	                   NULL                         // baseURL
 	               );
-	LSOpenCFURLRef(url,0);
-	CFRelease(url);
-	return;
+	if (LSOpenCFURLRef(url,0) == errSecSuccess) {
+		if (url)
+			CFRelease(url);
+		return;
+	}
 #	endif
 #endif
 #ifdef _WIN32
 // see http://support.microsoft.com/kb/224816
-	ShellExecute(NULL, "open", _url.c_str(), NULL, NULL, SW_SHOWNORMAL);
+	ShellExecute(NULL, "open", browserURL.c_str(), NULL, NULL, SW_SHOWNORMAL);
 	return;
 #endif
 #ifdef HAS_XDG_OPEN
 	std::string systemCmd;
 	systemCmd = "xdg-open ";
-	systemCmd += _url;
-	system(systemCmd.c_str());
-	return;
+	systemCmd += browserURL;
+	if (system(systemCmd.c_str()) >= 0)
+		return;
 #endif
+	LOG(ERROR) << "Could not open a HTML browser, access '" << browserURL << "' yourself.";
 }
 
 }

@@ -568,8 +568,8 @@ void URLFetcher::fetchURL(URL& url) {
 //		(curlError = curl_easy_setopt(handle, CURLOPT_FORBID_REUSE, 1)) == CURLE_OK ||
 //		LOG(ERROR) << "Cannot force noreuse: " << curl_easy_strerror(curlError);
 
-		(curlError = curl_easy_setopt(handle, CURLOPT_VERBOSE, 1)) == CURLE_OK ||
-		LOG(ERROR) << "Cannot set verbose: " << curl_easy_strerror(curlError);
+//		(curlError = curl_easy_setopt(handle, CURLOPT_VERBOSE, 1)) == CURLE_OK ||
+//		LOG(ERROR) << "Cannot set verbose: " << curl_easy_strerror(curlError);
 
 		(curlError = curl_easy_setopt(handle, CURLOPT_WRITEDATA, url._impl.get())) == CURLE_OK ||
 		LOG(ERROR) << "Cannot register this as write userdata: " << curl_easy_strerror(curlError);

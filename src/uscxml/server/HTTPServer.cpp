@@ -408,7 +408,10 @@ void HTTPServer::httpRecvReqCallback(struct evhttp_request *req, void *callbackD
 			}
 			request.data.compound["content"].atom.clear();
 		} else if (iequals(contentType.substr(0, 16), "application/json")) {
-			request.data.compound["content"] = Data::fromJSON(request.data.compound["content"].atom);
+			Data json = Data::fromJSON(request.data.compound["content"].atom);
+			if (!json.empty()) {
+				request.data.compound["content"] = json;
+			}
 		} else if (iequals(contentType.substr(0, 15), "application/xml")) {
 			NameSpacingParser parser = NameSpacingParser::fromXML(request.data.compound["content"].atom);
 			if (parser.errorsReported()) {

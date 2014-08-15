@@ -87,7 +87,7 @@ if (NOT BUILD_MINIMAL)
 	file(GLOB_RECURSE XHTML_INVOKER
 		xhtml/*.cpp
 		xhtml/*.h
-	)
+	)	
 	if (BUILD_AS_PLUGINS)
 		source_group("" FILES ${XHTML_INVOKER})
 		add_library(

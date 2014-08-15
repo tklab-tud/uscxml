@@ -1106,6 +1106,25 @@ if (ENABLE_COTIRE)
 	include(cotire)
 endif()
 
+#
+# We cannot do this in subdirs?!
+#
+
+if (NOT BUILD_MINIMAL)
+	# include html template in source file
+	find_program(XXD_BINARY xxd)
+	if (XXD_BINARY)
+		add_custom_command(
+			OUTPUT  ${CMAKE_SOURCE_DIR}/src/uscxml/plugins/invoker/xhtml/template/xhtml-invoker.inc.h
+			COMMAND ${XXD_BINARY} -i template/xhtml-invoker.html template/xhtml-invoker.inc.h
+		  DEPENDS ${CMAKE_SOURCE_DIR}/src/uscxml/plugins/invoker/xhtml/template/xhtml-invoker.html
+			WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/src/uscxml/plugins/invoker/xhtml
+			COMMENT "Running xxd on uscxml/plugins/invoker/xhtml/template/xhtml-invoker.html"
+		)
+		LIST(APPEND USCXML_FILES ${CMAKE_SOURCE_DIR}/src/uscxml/plugins/invoker/xhtml/template/xhtml-invoker.inc.h)
+	endif()
+endif()
+
 # build library
 if (BUILD_AS_PLUGINS)
 	add_library(uscxml ${USCXML_FILES})

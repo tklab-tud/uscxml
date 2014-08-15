@@ -71,7 +71,14 @@ public:
 
 	class Reply {
 	public:
+		Reply() : status(200), type("get"), evhttpReq(NULL) {}
 		Reply(Request req) : status(200), type(req.data.compound["type"].atom), evhttpReq(req.evhttpReq) {}
+
+		void setRequest(Request req) {
+			type = req.data.compound["type"].atom;
+			evhttpReq = req.evhttpReq;
+		}
+		
 		int status;
 		std::string type;
 		std::map<std::string, std::string> headers;
