@@ -48,11 +48,25 @@ static int luaInspect(lua_State * l) {
 	return 0;
 }
 
+bool _luaHasXMLParser = false;
+	
 static luabridge::LuaRef getDataAsLua(lua_State* _luaState, const Data& data) {
 	luabridge::LuaRef luaData (_luaState);
 
 	if (data.node) {
-		ERROR_EXECUTION_THROW("No DOM support in Lua datamodel");
+		if (_luaHasXMLParser) {
+			const luabridge::LuaRef& luaLom = luabridge::getGlobal(_luaState, "lxp.lom");
+			const luabridge::LuaRef& luaLomParse = luaLom["parse"];
+			assert(luaLomParse.isFunction());
+			std::stringstream luaXMLSS;
+			luaXMLSS << data.node;
+			try {
+				luaData = luaLomParse(luaXMLSS.str());
+			} catch (luabridge::LuaException e) {
+				LOG(ERROR) << e.what();
+			}
+			return luaData;
+		}
 	}
 	if (data.compound.size() > 0) {
 		luaData = luabridge::newTable(_luaState);
@@ -128,6 +142,19 @@ boost::shared_ptr<DataModelImpl> LuaDataModel::create(InterpreterImpl* interpret
 	dm->_luaState = luaL_newstate();
 	luaL_openlibs(dm->_luaState);
 
+	try {
+		const luabridge::LuaRef& requireFunc = luabridge::getGlobal(dm->_luaState, "require");
+		const luabridge::LuaRef& resultLxp = requireFunc("lxp");
+		const luabridge::LuaRef& resultLxpLOM = requireFunc("lxp.lom");
+		if (resultLxp && resultLxpLOM) {
+			_luaHasXMLParser = true;
+			luabridge::setGlobal(dm->_luaState, resultLxp, "lxp");
+			luabridge::setGlobal(dm->_luaState, resultLxpLOM, "lxp.lom");
+		}
+	} catch (luabridge::LuaException e) {
+		LOG(ERROR) << e.what();
+	}
+	
 	luabridge::getGlobalNamespace(dm->_luaState).beginClass<InterpreterImpl>("Interpreter").endClass();
 	luabridge::setGlobal(dm->_luaState, dm->_interpreter, "__interpreter");
 
@@ -222,7 +249,20 @@ void LuaDataModel::setEvent(const Event& event) {
 	}
 
 	if (event.dom) {
-		ERROR_EXECUTION_THROW("No DOM support in Lua datamodel");
+		if (_luaHasXMLParser) {
+			const luabridge::LuaRef& luaLom = luabridge::getGlobal(_luaState, "lxp.lom");
+			const luabridge::LuaRef& luaLomParse = luaLom["parse"];
+			assert(luaLomParse.isFunction());
+			std::stringstream luaXMLSS;
+			luaXMLSS << event.dom;
+			try {
+				luaEvent["data"] = luaLomParse(luaXMLSS.str());
+			} catch (luabridge::LuaException e) {
+				LOG(ERROR) << e.what();
+			}
+		} else {
+			ERROR_EXECUTION_THROW("No DOM support in Lua datamodel");
+		}
 	} else if (event.content.length() > 0) {
 		// _event.data is a string or JSON
 		Data json = Data::fromJSON(event.content);

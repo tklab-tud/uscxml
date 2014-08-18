@@ -108,8 +108,15 @@
 					// use token until we have a context
 					self.cometPoll.open("GET", self.server + (self.query ? "?" + self.query : ""));
 					self.cometPoll.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
-					self.cometPoll.setRequestHeader("Connection", "close");
+					// self.cometPoll.setRequestHeader("Connection", "close");
 					self.cometPoll.send(null);
+				};
+				
+				this.disconnect = function() {
+					self.xhr.open("POST", self.server + (self.query ? "?" + self.query : ""), false);
+					self.xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+					self.xhr.setRequestHeader('X-SCXML-Name', "done.invoke");
+					self.xhr.send(NULL);
 				};
 				
 				this.post = function(name, data, contentType) {
@@ -226,6 +233,11 @@
 				});
 				scxml.longpoll();
 				_parent = scxml;
+
+				window.onbeforeunload = function (e) {
+					scxml.disconnect();
+					// return 'You have unsaved changes!';
+				};
 			});
 		</script>
 

@@ -113,7 +113,11 @@
 
 	<state id="arbitraryURL">
 		<!-- simply open some arbitrary URL, we cannot communicate with these -->
-		<invoke src="http://www.heise.de" type="xhtml" id="xhtml1" />
+		<invoke src="http://www.heise.de" type="xhtml" id="xhtml1">
+			<finalize>
+				<script>dump(_event);</script>
+			</finalize>
+		</invoke>
 		<onentry>
 			<!-- we need a delayed send for this to be a stable configuration for the invoker -->
 			<send event="continue" delay="10ms" />

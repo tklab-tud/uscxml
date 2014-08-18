@@ -75,7 +75,7 @@ public:
 
 
 	explicit Data(const Arabica::DOM::Node<std::string>& dom);
-	virtual ~Data() {}
+	~Data() {}
 
 	bool empty() const {
 		bool hasContent = (atom.length() > 0 || !compound.empty() || !array.empty() || binary || node);

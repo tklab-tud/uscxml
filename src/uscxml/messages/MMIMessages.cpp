@@ -17,6 +17,8 @@
  *  @endcond
  */
 
+#include <string> // MSVC will croak with operator+ on strings if this is not first
+
 #include "MMIMessages.h"
 
 #include <DOM/Simple/DOMImplementation.hpp>

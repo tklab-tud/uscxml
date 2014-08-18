@@ -1,6 +1,17 @@
 <scxml datamodel="lua" name="lua-test">
   <state id="s1">
-		<transition cond="In('s1')" target="end" />
+		<onentry>
+			<send event="withXML">
+				<content>
+					<some>
+						<adhoc>
+							<markup />
+						</adhoc>
+					</some>
+				</content>
+			</send>			
+		</onentry>
+		<transition event="withXML" cond="In('s1')" target="end" />
 	</state>
   <state id="end" final="true" />
 </scxml>
