@@ -566,7 +566,6 @@ bool HTTPServer::registerServlet(const std::string& path, HTTPServlet* servlet) 
 	HTTPServer* INSTANCE = getInstance();
 
 	if (!INSTANCE->_httpHandle) {
-		LOG(ERROR) << "Registering a servlet at '" << path << "' with no HTTPServer running, did you forget to specify a port?";
 		return true; // this is the culprit!
 	}
 

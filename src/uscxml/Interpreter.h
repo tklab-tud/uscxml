@@ -114,9 +114,9 @@ public:
 		withHTTPS(true),
 		withWS(true),
 		logLevel(0),
-		httpPort(0),
-		httpsPort(0),
-		wsPort(0) {
+		httpPort(5080),
+		httpsPort(5443),
+		wsPort(5081) {
 	}
 
 	bool withDebugger;

@@ -1,6 +1,6 @@
 if (NOT APPLE)
 	FIND_PATH(JSC_INCLUDE_DIR JavaScriptCore/JavaScriptCore.h
-	  PATH_SUFFIXES webkitgtk-1.0
+	  PATH_SUFFIXES webkitgtk-1.0 webkitgtk-3.0
 	  PATHS
 	  /usr/local
 	  /usr

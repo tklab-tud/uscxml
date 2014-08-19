@@ -49,6 +49,7 @@ static int luaInspect(lua_State * l) {
 }
 
 bool _luaHasXMLParser = false;
+
 	
 static luabridge::LuaRef getDataAsLua(lua_State* _luaState, const Data& data) {
 	luabridge::LuaRef luaData (_luaState);
@@ -63,7 +64,7 @@ static luabridge::LuaRef getDataAsLua(lua_State* _luaState, const Data& data) {
 			try {
 				luaData = luaLomParse(luaXMLSS.str());
 			} catch (luabridge::LuaException e) {
-				LOG(ERROR) << e.what();
+				ERROR_EXECUTION_THROW(e.what());
 			}
 			return luaData;
 		}
@@ -152,7 +153,7 @@ boost::shared_ptr<DataModelImpl> LuaDataModel::create(InterpreterImpl* interpret
 			luabridge::setGlobal(dm->_luaState, resultLxpLOM, "lxp.lom");
 		}
 	} catch (luabridge::LuaException e) {
-		LOG(ERROR) << e.what();
+		LOG(INFO) << e.what();
 	}
 	
 	luabridge::getGlobalNamespace(dm->_luaState).beginClass<InterpreterImpl>("Interpreter").endClass();
@@ -258,7 +259,7 @@ void LuaDataModel::setEvent(const Event& event) {
 			try {
 				luaEvent["data"] = luaLomParse(luaXMLSS.str());
 			} catch (luabridge::LuaException e) {
-				LOG(ERROR) << e.what();
+				ERROR_EXECUTION_THROW(e.what());
 			}
 		} else {
 			ERROR_EXECUTION_THROW("No DOM support in Lua datamodel");
