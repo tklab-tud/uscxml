@@ -11,6 +11,7 @@
     - [Linux](#linux)
     - [Windows](#windows)
     - [iOS](#ios)
+    - [Raspberry Pi](#raspberry-pi)
 - [Language Bindings](#language-bindings)
     - [Java](#java)
     - [CSharp](#csharp)
@@ -317,6 +318,38 @@ If you just want a specific configuration for e.g. the simulator, you can invoke
 
 <b>Note</b>: We did not compile the prebuilts for iOS with 64Bit yet. As such, you will not get binaries build for
 arm64. The main culprit is, again, curl which assumes the size of an int to be the identical.
+
+## Raspberry Pi
+
+To compile uSCXML on Raspberry Pi you will need to, at a minimum, install the following packages. This assumes that
+you run Raspberry, the Debian variant.
+
+	$ sudo apt-get install cmake libxml2-dev libcurl4-gnutls-dev
+
+Now you can compile uSCXML like on any other platform:
+
+	$ git clone --depth 1 https://github.com/tklab-tud/uscxml.git
+	$ mkdir -p uscxml/build/raspberry && cd uscxml/build/raspberry
+	$ cmake ../..
+	$ make
+
+If you want an ECMAScript datamodel or LUA, you will need to install additional packages:
+
+	# additional datamodels: ECMAScript, LUA, Prolog
+	$ sudo apt-get install libjavascriptcoregtk-3.0-dev liblua5.2-dev swi-prolog-nox   
+
+	# additional invokers
+	$ sudo apt-get install libical-dev libpurple-dev libopenal-dev libsndfile1-dev libopenscenegraph-dev
+
+Lastly, to get the language bindings install SWIG and the developer kits of the respective language. Older Java
+versions will work as well (>= 1.5), just make sure <tt>JAVA_HOME</tt> is set correctly.
+
+	# language bindings: Java, CSharp
+	$ sudo apt-get install swig ant oracle-java8-jdk mono-mcs
+	$ echo $JAVA_HOME
+	/usr/lib/jvm/jdk-8-oracle-arm-vfp-hflt
+
+<b>Note:</b> The version of the V8 JavaScript engine in Raspbian is not compatible with uSCXML.
 
 ## Language Bindings
 

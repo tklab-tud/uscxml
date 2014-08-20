@@ -53,6 +53,7 @@ public:
 	Data(unsigned int atom) : atom(toStr(atom)), type(INTERPRETED) {}
 	Data(long atom) : atom(toStr(atom)), type(INTERPRETED) {}
 	Data(unsigned long atom) : atom(toStr(atom)), type(INTERPRETED) {}
+	Data(long long int atom) : atom(toStr(atom)), type(INTERPRETED) {}
 	Data(float atom) : atom(toStr(atom)), type(INTERPRETED) {}
 	Data(double atom) : atom(toStr(atom)), type(INTERPRETED) {}
 	Data(bool atom) : type(INTERPRETED) {
