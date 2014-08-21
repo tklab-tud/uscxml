@@ -56,6 +56,9 @@
 %ignore uscxml::Interpreter::isLegalConfiguration(const Arabica::XPath::NodeSet<std::string>&);
 %ignore uscxml::Interpreter::getInstances();
 
+// InterpreterIssues
+%ignore uscxml::InterpreterIssue::node;
+
 // InterpreterMonitor
 
 %ignore uscxml::InterpreterMonitor::beforeExitingState(Interpreter, const Arabica::DOM::Element<std::string>&, bool);

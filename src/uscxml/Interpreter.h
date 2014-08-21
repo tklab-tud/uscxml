@@ -110,6 +110,7 @@ public:
 	InterpreterOptions() :
 		withDebugger(false),
 		verbose(false),
+		checking(false),
 		withHTTP(true),
 		withHTTPS(true),
 		withWS(true),
@@ -121,6 +122,7 @@ public:
 
 	bool withDebugger;
 	bool verbose;
+	bool checking;
 	bool withHTTP;
 	bool withHTTPS;
 	bool withWS;

@@ -14,18 +14,16 @@ public class TestValidation {
 			String xml =
 			"<scxml datamodel=\"ecmascript\">" +
 			"	<state id=\"start\">" +
-			"		<transition target=\"done\" cond=\"%sf\" />" +
+			"		<transition target=\"don\" cond=\"%sf\" />" +
 			" </state>" +
-			" <final id=\"done\" />" +
+			" <final />" +
 			"</scxml>"; 
 			Interpreter interpreter = Interpreter.fromXML(xml);
 			IssueList issues = interpreter.validate();
 			for (int i = 0; i < issues.size(); i++) {
 				System.out.println(issues.get(i));
 			}
-			
-			throw new RuntimeException("");
-			
+						
 		} catch (InterpreterException e) {
 			System.err.println(e);
 		}

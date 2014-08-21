@@ -162,6 +162,7 @@ void InterpreterOptions::printUsageAndExit(const char* progName) {
 	printf("\t-p        : path to the uSCXML plugins (or export USCXML_PLUGIN_PATH)\n");
 #endif
 	printf("\t-v        : be verbose\n");
+	printf("\t-c        : perform some sanity checks on the state-chart\n");
 	printf("\t-d        : enable debugging via HTTP\n");
 	printf("\t-lN       : set loglevel to N\n");
 	printf("\t-tN       : port for HTTP server\n");
@@ -183,12 +184,13 @@ InterpreterOptions InterpreterOptions::fromCmdLine(int argc, char** argv) {
 	InterpreterOptions options;
 	optind = 0;
 	struct option longOptions[] = {
+		{"check",         no_argument,       0, 'c'},
 		{"verbose",       no_argument,       0, 'v'},
 		{"debug",         no_argument,       0, 'd'},
 		{"port",          required_argument, 0, 't'},
 		{"ssl-port",      required_argument, 0, 's'},
 		{"ws-port",       required_argument, 0, 'w'},
-		{"certificate",   required_argument, 0, 'c'},
+		{"certificate",   required_argument, 0, 0},
 		{"private-key",   required_argument, 0, 0},
 		{"public-key",    required_argument, 0, 0},
 		{"plugin-path",   required_argument, 0, 'p'},
@@ -204,7 +206,7 @@ InterpreterOptions InterpreterOptions::fromCmdLine(int argc, char** argv) {
 	int optionInd = 0;
 	int option;
 	for (;;) {
-		option = getopt_long_only(argc, argv, "+vdt:s:w:c:p:l:", longOptions, &optionInd);
+		option = getopt_long_only(argc, argv, "+vcdt:s:w:p:l:", longOptions, &optionInd);
 		if (option == -1) {
 			if (optind == argc)
 				// we are done with parsing
@@ -230,6 +232,8 @@ InterpreterOptions InterpreterOptions::fromCmdLine(int argc, char** argv) {
 				currOptions->withHTTP = false;
 			} else if (boost::equals(longOptions[optionInd].name, "private-key")) {
 				currOptions->privateKey = optarg;
+			} else if (boost::equals(longOptions[optionInd].name, "certificate")) {
+				currOptions->certificate = optarg;
 			} else if (boost::equals(longOptions[optionInd].name, "public-key")) {
 				currOptions->publicKey = optarg;
 			}
@@ -246,7 +250,7 @@ InterpreterOptions InterpreterOptions::fromCmdLine(int argc, char** argv) {
 			currOptions->withDebugger = true;
 			break;
 		case 'c':
-			currOptions->certificate = optarg;
+			currOptions->checking = true;
 			break;
 		case 't':
 			currOptions->httpPort = strTo<unsigned short>(optarg);
@@ -710,7 +714,8 @@ void InterpreterImpl::reset() {
 }
 
 InterpreterIssue::InterpreterIssue(const std::string& msg, Arabica::DOM::Node<std::string> node, IssueSeverity severity) : message(msg), node(node), severity(severity) {
-	xPath = DOMUtils::xPathForNode(node);
+	if (node)
+		xPath = DOMUtils::xPathForNode(node);
 }
 
 std::list<InterpreterIssue> InterpreterImpl::validate() {
@@ -722,40 +727,85 @@ std::list<InterpreterIssue> InterpreterImpl::validate() {
 	std::list<InterpreterIssue> issues;
 
 	if (!_scxml) {
-		InterpreterIssue issue("No SCXML element to be found", _document.getDocumentElement(), InterpreterIssue::USCXML_ISSUE_FATAL);
+		InterpreterIssue issue("No SCXML element to be found", Node<std::string>(), InterpreterIssue::USCXML_ISSUE_FATAL);
 		issues.push_back(issue);
 		return issues;
 	}
 
 	_cachedStates.clear();
-	
-	NodeSet<std::string> allStates;
-	allStates.push_back(filterChildElements(_nsInfo.xmlNSPrefix + "state", _scxml, true));
-	allStates.push_back(filterChildElements(_nsInfo.xmlNSPrefix + "parallel", _scxml, true));
-	allStates.push_back(filterChildElements(_nsInfo.xmlNSPrefix + "history", _scxml, true));
-	allStates.push_back(filterChildElements(_nsInfo.xmlNSPrefix + "final", _scxml, true));
 
+	NodeSet<std::string> scxmls = filterChildElements(_nsInfo.xmlNSPrefix + "scxml", _scxml, true);
+	scxmls.push_back(_scxml);
+	
+	NodeSet<std::string> states = filterChildElements(_nsInfo.xmlNSPrefix + "state", _scxml, true);
+	NodeSet<std::string> parallels = filterChildElements(_nsInfo.xmlNSPrefix + "parallel", _scxml, true);
+	NodeSet<std::string> transitions = filterChildElements(_nsInfo.xmlNSPrefix + "transition", _scxml, true);
+	NodeSet<std::string> initials = filterChildElements(_nsInfo.xmlNSPrefix + "initial", _scxml, true);
+	NodeSet<std::string> finals = filterChildElements(_nsInfo.xmlNSPrefix + "final", _scxml, true);
+	NodeSet<std::string> onEntries = filterChildElements(_nsInfo.xmlNSPrefix + "onentry", _scxml, true);
+	NodeSet<std::string> onExits = filterChildElements(_nsInfo.xmlNSPrefix + "onexit", _scxml, true);
+	NodeSet<std::string> histories = filterChildElements(_nsInfo.xmlNSPrefix + "history", _scxml, true);
+	
+	NodeSet<std::string> raises = filterChildElements(_nsInfo.xmlNSPrefix + "raise", _scxml, true);
+	NodeSet<std::string> ifs = filterChildElements(_nsInfo.xmlNSPrefix + "if", _scxml, true);
+	NodeSet<std::string> elseIfs = filterChildElements(_nsInfo.xmlNSPrefix + "elseif", _scxml, true);
+	NodeSet<std::string> elses = filterChildElements(_nsInfo.xmlNSPrefix + "else", _scxml, true);
+	NodeSet<std::string> foreachs = filterChildElements(_nsInfo.xmlNSPrefix + "foreach", _scxml, true);
+	NodeSet<std::string> logs = filterChildElements(_nsInfo.xmlNSPrefix + "log", _scxml, true);
+
+	NodeSet<std::string> dataModels = filterChildElements(_nsInfo.xmlNSPrefix + "datamodel", _scxml, true);
+	NodeSet<std::string> datas = filterChildElements(_nsInfo.xmlNSPrefix + "data", _scxml, true);
+	NodeSet<std::string> assigns = filterChildElements(_nsInfo.xmlNSPrefix + "assign", _scxml, true);
+	NodeSet<std::string> doneDatas = filterChildElements(_nsInfo.xmlNSPrefix + "donedata", _scxml, true);
+	NodeSet<std::string> contents = filterChildElements(_nsInfo.xmlNSPrefix + "content", _scxml, true);
+	NodeSet<std::string> params = filterChildElements(_nsInfo.xmlNSPrefix + "param", _scxml, true);
+	NodeSet<std::string> scripts = filterChildElements(_nsInfo.xmlNSPrefix + "script", _scxml, true);
+
+	NodeSet<std::string> sends = filterChildElements(_nsInfo.xmlNSPrefix + "send", _scxml, true);
+	NodeSet<std::string> cancels = filterChildElements(_nsInfo.xmlNSPrefix + "cancel", _scxml, true);
+	NodeSet<std::string> invokes = filterChildElements(_nsInfo.xmlNSPrefix + "invoke", _scxml, true);
+	NodeSet<std::string> finalizes = filterChildElements(_nsInfo.xmlNSPrefix + "finalize", _scxml, true);
+
+	NodeSet<std::string> allStates;
+	allStates.push_back(states);
+	allStates.push_back(parallels);
+	allStates.push_back(histories);
+	allStates.push_back(finals);
+
+	NodeSet<std::string> allExecContents;
+	allExecContents.push_back(raises);
+	allExecContents.push_back(ifs);
+	allExecContents.push_back(elseIfs);
+	allExecContents.push_back(elses);
+	allExecContents.push_back(foreachs);
+	allExecContents.push_back(logs);
+	allExecContents.push_back(sends);
+	allExecContents.push_back(assigns);
+	allExecContents.push_back(scripts);
+	allExecContents.push_back(cancels);
+	
+	
 	for (int i = 0; i < allStates.size(); i++) {
 		Element<std::string> state = Element<std::string>(allStates[i]);
 
+		if (isMember(state, finals) && !HAS_ATTR(state, "id")) // id is not required for finals
+			continue;
+		
 		// check for existance of id attribute
 		if (!HAS_ATTR(state, "id")) {
-			InterpreterIssue issue("State has no 'id' attribute", state, InterpreterIssue::USCXML_ISSUE_FATAL);
-			issues.push_back(issue);
+			issues.push_back(InterpreterIssue("State has no 'id' attribute", state, InterpreterIssue::USCXML_ISSUE_FATAL));
 			continue;
 		}
 		std::string stateId = ATTR(state, "id");
 
 		// check for uniqueness of id attribute
 		if (_cachedStates.find(stateId) != _cachedStates.end()) {
-			InterpreterIssue issue("Duplicate state with id '" + stateId + "'", state, InterpreterIssue::USCXML_ISSUE_FATAL);
-			issues.push_back(issue);
+			issues.push_back(InterpreterIssue("Duplicate state with id '" + stateId + "'", state, InterpreterIssue::USCXML_ISSUE_FATAL));
 			continue;
 		}
 		_cachedStates[ATTR(state, "id")] = state;
 	}
-	
-	NodeSet<std::string> transitions = filterChildElements(_nsInfo.xmlNSPrefix + "transition", _scxml, true);
+		
 	for (int i = 0; i < transitions.size(); i++) {
 		Element<std::string> transition = Element<std::string>(transitions[i]);
 		
@@ -763,27 +813,68 @@ std::list<InterpreterIssue> InterpreterImpl::validate() {
 		std::list<std::string> targetIds = InterpreterImpl::tokenizeIdRefs(ATTR(transition, "target"));
 		for (std::list<std::string>::iterator targetIter = targetIds.begin(); targetIter != targetIds.end(); targetIter++) {
 			if (_cachedStates.find(*targetIter) == _cachedStates.end()) {
-				InterpreterIssue issue("Transition has non-existant target state with id '" + *targetIter + "'", transition, InterpreterIssue::USCXML_ISSUE_FATAL);
-				issues.push_back(issue);
+				issues.push_back(InterpreterIssue("Transition has non-existant target state with id '" + *targetIter + "'", transition, InterpreterIssue::USCXML_ISSUE_FATAL));
 				continue;
 			}
 		}
-
-		// check for redundancy of transition
-		// TODO
 	}
 	
+	// check for redundancy of transition
+	for (int i = 0; i < allStates.size(); i++) {
+		Element<std::string> state = Element<std::string>(allStates[i]);
+		NodeSet<std::string> transitions = filterChildElements(_nsInfo.xmlNSPrefix + "transition", state, false);
+
+		transitions.to_document_order();
+		
+		for (int j = 1; j < transitions.size(); j++) {
+			Element<std::string> transition = Element<std::string>(transitions[j]);
+			for (int k = 0; k < j; k++) {
+				Element<std::string> earlierTransition = Element<std::string>(transitions[k]);
+
+				// will the earlier transition always be enabled when the later is?
+				if (!HAS_ATTR(earlierTransition, "cond")) {
+					// earlier transition has no condition -> check event descriptor
+					if (!HAS_ATTR(earlierTransition, "event")) {
+						// earlier transition is eventless
+						issues.push_back(InterpreterIssue("Transition can never be optimally enabled", transition, InterpreterIssue::USCXML_ISSUE_INFO));
+						goto NEXT_TRANSITION;
+						
+					} else if (HAS_ATTR(transition, "event")) {
+						// does the earlier transition match all our events?
+						std::list<std::string> events = InterpreterImpl::tokenizeIdRefs(ATTR(transition, "event"));
+
+						bool allMatched = true;
+						for (std::list<std::string>::iterator eventIter = events.begin(); eventIter != events.end(); eventIter++) {
+							if (!nameMatch(ATTR(earlierTransition, "event"), *eventIter)) {
+								allMatched = false;
+								break;
+							}
+						}
+						
+						if (allMatched) {
+							issues.push_back(InterpreterIssue("Transition can never be optimally enabled", transition, InterpreterIssue::USCXML_ISSUE_INFO));
+							goto NEXT_TRANSITION;
+						}
+					}
+				}
+			}
+		NEXT_TRANSITION:;
+		}
+	}
+
 	// check for valid initial attribute
 	{
-		allStates.push_back(_scxml);
-		for (int i = 0; i < allStates.size(); i++) {
-			Element<std::string> state = Element<std::string>(allStates[i]);
+		NodeSet<std::string> withInitialAttr;
+		withInitialAttr.push_back(allStates);
+		withInitialAttr.push_back(_scxml);
+
+		for (int i = 0; i < withInitialAttr.size(); i++) {
+			Element<std::string> state = Element<std::string>(withInitialAttr[i]);
 			if (HAS_ATTR(state, "initial")) {
 				std::list<std::string> intials = InterpreterImpl::tokenizeIdRefs(ATTR(state, "initial"));
 				for (std::list<std::string>::iterator initIter = intials.begin(); initIter != intials.end(); initIter++) {
 					if (_cachedStates.find(*initIter) == _cachedStates.end()) {
-						InterpreterIssue issue("Initial attribute has invalid target state with id '" + *initIter + "'", state, InterpreterIssue::USCXML_ISSUE_FATAL);
-						issues.push_back(issue);
+						issues.push_back(InterpreterIssue("Initial attribute has invalid target state with id '" + *initIter + "'", state, InterpreterIssue::USCXML_ISSUE_FATAL));
 						continue;
 					}
 				}
@@ -793,12 +884,10 @@ std::list<InterpreterIssue> InterpreterImpl::validate() {
 	
 	// check that all invokers exists
 	{
-		NodeSet<std::string> invokes = filterChildElements(_nsInfo.xmlNSPrefix + "invoke", _scxml, true);
 		for (int i = 0; i < invokes.size(); i++) {
 			Element<std::string> invoke = Element<std::string>(invokes[i]);
 			if (HAS_ATTR(invoke, "type") && !_factory->hasInvoker(ATTR(invoke, "type"))) {
-				InterpreterIssue issue("Invoke with unknown type '" + ATTR(invoke, "type") + "'", invoke, InterpreterIssue::USCXML_ISSUE_FATAL);
-				issues.push_back(issue);
+				issues.push_back(InterpreterIssue("Invoke with unknown type '" + ATTR(invoke, "type") + "'", invoke, InterpreterIssue::USCXML_ISSUE_FATAL));
 				continue;
 			}
 		}
@@ -806,12 +895,89 @@ std::list<InterpreterIssue> InterpreterImpl::validate() {
 	
 	// check that all io processors exists
 	{
-		NodeSet<std::string> sends = filterChildElements(_nsInfo.xmlNSPrefix + "send", _scxml, true);
 		for (int i = 0; i < sends.size(); i++) {
 			Element<std::string> send = Element<std::string>(sends[i]);
 			if (HAS_ATTR(send, "type") && !_factory->hasIOProcessor(ATTR(send, "type"))) {
-				InterpreterIssue issue("Send to unknown IO Processor '" + ATTR(send, "type") + "'", send, InterpreterIssue::USCXML_ISSUE_FATAL);
-				issues.push_back(issue);
+				issues.push_back(InterpreterIssue("Send to unknown IO Processor '" + ATTR(send, "type") + "'", send, InterpreterIssue::USCXML_ISSUE_FATAL));
+				continue;
+			}
+		}
+	}
+		
+	// check that all custom executable content is known
+	{
+		NodeSet<std::string> allExecContentContainers;
+		allExecContentContainers.push_back(onEntries);
+		allExecContentContainers.push_back(onExits);
+		allExecContentContainers.push_back(transitions);
+		allExecContentContainers.push_back(finalizes);
+		
+		for (int i = 0; i < allExecContentContainers.size(); i++) {
+			Element<std::string> block = Element<std::string>(allExecContentContainers[i]);
+			NodeSet<std::string> execContents = filterChildType(Node_base::ELEMENT_NODE, block);
+			for (int j = 0; j < execContents.size(); j++) {
+				Element<std::string> execContent = Element<std::string>(execContents[j]);
+				// SCXML specific executable content, always available
+				if (isMember(execContent, allExecContents)) {
+					continue;
+				}
+				if (!_factory->hasExecutableContent(execContent.getLocalName(), execContent.getNamespaceURI())) {
+					issues.push_back(InterpreterIssue("Executable content element '" + execContent.getLocalName() + "' in namespace '" + execContent.getNamespaceURI() + "' unknown", execContent, InterpreterIssue::USCXML_ISSUE_FATAL));
+					continue;
+				}
+			}
+		}
+	}
+
+	// check that all SCXML elements are in valid containers
+	
+	// check that all states are in states
+	{
+		NodeSet<std::string> validStateParents;
+		validStateParents.push_back(allStates);
+		validStateParents.push_back(scxmls);
+		
+		for (int i = 0; i < allStates.size(); i++) {
+			Element<std::string> state = Element<std::string>(allStates[i]);
+			if (!state.getParentNode() || state.getParentNode().getNodeType() != Node_base::ELEMENT_NODE) {
+				issues.push_back(InterpreterIssue("State's parent node is no element", state, InterpreterIssue::USCXML_ISSUE_INFO));
+				continue;
+			}
+			
+			Element<std::string> parent = Element<std::string>(state.getParentNode());
+			if (!isMember(parent, validStateParents)) {
+				issues.push_back(InterpreterIssue("State has invalid parent element", state, InterpreterIssue::USCXML_ISSUE_INFO));
+				continue;
+			}
+		}
+	}
+	
+	// check that all executable content is in a executable content container
+	{
+		NodeSet<std::string> validExecContentParents;
+		validExecContentParents.push_back(transitions);
+		validExecContentParents.push_back(onExits);
+		validExecContentParents.push_back(onEntries);
+
+		for (int i = 0; i < allExecContents.size(); i++) {
+			Element<std::string> execContent = Element<std::string>(allExecContents[i]);
+			if (!execContent.getParentNode() || execContent.getParentNode().getNodeType() != Node_base::ELEMENT_NODE) {
+				issues.push_back(InterpreterIssue("Executable content's parent node is no element", execContent, InterpreterIssue::USCXML_ISSUE_INFO));
+				continue;
+			}
+
+			Node<std::string> parent = execContent.getParentNode();
+			if (parent == _scxml && isMember(execContent, scripts))
+				continue;
+			
+			while(parent && parent.getNodeType() == Node_base::ELEMENT_NODE) {
+				if (isMember(parent, validExecContentParents)) {
+					break;
+				}
+				parent = parent.getParentNode();
+			}
+			if (!parent) {
+				issues.push_back(InterpreterIssue("Executable content is not in a valid parent", execContent, InterpreterIssue::USCXML_ISSUE_INFO));
 				continue;
 			}
 		}
@@ -820,69 +986,28 @@ std::list<InterpreterIssue> InterpreterImpl::validate() {
 	// check that the datamodel is known
 	if (HAS_ATTR(_scxml, "datamodel")) {
 		if (!_factory->hasDataModel(ATTR(_scxml, "datamodel"))) {
-			InterpreterIssue issue("SCXML document requires unknown datamodel '" + ATTR(_scxml, "datamodel") + "'", _scxml, InterpreterIssue::USCXML_ISSUE_FATAL);
-			issues.push_back(issue);
+			issues.push_back(InterpreterIssue("SCXML document requires unknown datamodel '" + ATTR(_scxml, "datamodel") + "'", _scxml, InterpreterIssue::USCXML_ISSUE_FATAL));
+			
+			// we cannot even check the rest as we require a datamodel
+			return issues;
 		}
 	}
 
-	
+	bool instantiatedDataModel = false;
 	// instantiate datamodel if not explicitly set
 	if (!_dataModel) {
 		if (HAS_ATTR(_scxml, "datamodel")) {
 			// might throw
 			_dataModel = _factory->createDataModel(ATTR(_scxml, "datamodel"), this);
+			instantiatedDataModel = true;
 		} else {
 			_dataModel = _factory->createDataModel("null", this);
 		}
 	}
 
-	
-	// check that all custom executable content is known
-	{
-		NodeSet<std::string> allExecContents;
-		allExecContents.push_back(filterChildElements(_nsInfo.xmlNSPrefix + "onentry", _scxml, true));
-		allExecContents.push_back(filterChildElements(_nsInfo.xmlNSPrefix + "onexit", _scxml, true));
-		allExecContents.push_back(filterChildElements(_nsInfo.xmlNSPrefix + "transition", _scxml, true));
-		allExecContents.push_back(filterChildElements(_nsInfo.xmlNSPrefix + "finalize", _scxml, true));
-
-		for (int i = 0; i < allExecContents.size(); i++) {
-			Element<std::string> block = Element<std::string>(allExecContents[i]);
-			NodeSet<std::string> execContents = filterChildType(Node_base::ELEMENT_NODE, block);
-			for (int j = 0; j < execContents.size(); j++) {
-				Element<std::string> execContent = Element<std::string>(execContents[j]);
-				// SCXML specific executable content, always available
-				if (iequals(TAGNAME(execContent), _nsInfo.xmlNSPrefix + "onentry") ||
-						iequals(TAGNAME(execContent), _nsInfo.xmlNSPrefix + "onexit") ||
-						iequals(TAGNAME(execContent), _nsInfo.xmlNSPrefix + "transition") ||
-						iequals(TAGNAME(execContent), _nsInfo.xmlNSPrefix + "finalize") ||
-						iequals(TAGNAME(execContent), _nsInfo.xmlNSPrefix + "raise") ||
-						iequals(TAGNAME(execContent), _nsInfo.xmlNSPrefix + "if") ||
-						iequals(TAGNAME(execContent), _nsInfo.xmlNSPrefix + "elseif") ||
-						iequals(TAGNAME(execContent), _nsInfo.xmlNSPrefix + "else") ||
-						iequals(TAGNAME(execContent), _nsInfo.xmlNSPrefix + "foreach") ||
-						iequals(TAGNAME(execContent), _nsInfo.xmlNSPrefix + "log") ||
-						iequals(TAGNAME(execContent), _nsInfo.xmlNSPrefix + "assign") ||
-						iequals(TAGNAME(execContent), _nsInfo.xmlNSPrefix + "validate") ||
-						iequals(TAGNAME(execContent), _nsInfo.xmlNSPrefix + "script") ||
-						iequals(TAGNAME(execContent), _nsInfo.xmlNSPrefix + "send") ||
-						iequals(TAGNAME(execContent), _nsInfo.xmlNSPrefix + "cancel") ||
-						iequals(TAGNAME(execContent), _nsInfo.xmlNSPrefix + "invoke") ||
-						false)
-				{
-					continue;
-				}
-				if (!_factory->hasExecutableContent(execContent.getLocalName(), execContent.getNamespaceURI())) {
-					InterpreterIssue issue("Executable content element '" + execContent.getLocalName() + "' in namespace '" + execContent.getNamespaceURI() + "' unknown", _scxml, InterpreterIssue::USCXML_ISSUE_FATAL);
-					issues.push_back(issue);
-					continue;
-				}
-			}
-		}
-	}
-	
+		
 	// test all scripts for valid syntax
 	{
-		NodeSet<std::string> scripts = filterChildElements(_nsInfo.xmlNSPrefix + "script", _scxml, true);
 		for (int i = 0; i < scripts.size(); i++) {
 			Element<std::string> script = Element<std::string>(scripts[i]);
 			
@@ -895,8 +1020,7 @@ std::list<InterpreterIssue> InterpreterImpl::validate() {
 				}
 				
 				if (!_dataModel.isValidSyntax(scriptContent)) {
-					InterpreterIssue issue("Syntax error in script", script, InterpreterIssue::USCXML_ISSUE_WARNING);
-					issues.push_back(issue);
+					issues.push_back(InterpreterIssue("Syntax error in script", script, InterpreterIssue::USCXML_ISSUE_WARNING));
 				}
 			}
 		}
@@ -906,15 +1030,14 @@ std::list<InterpreterIssue> InterpreterImpl::validate() {
 	{
 		NodeSet<std::string> withCondAttrs;
 		withCondAttrs.push_back(transitions);
-		withCondAttrs.push_back(filterChildElements(_nsInfo.xmlNSPrefix + "if", _scxml, true));
-		withCondAttrs.push_back(filterChildElements(_nsInfo.xmlNSPrefix + "elseif", _scxml, true));
+		withCondAttrs.push_back(ifs);
+		withCondAttrs.push_back(elseIfs);
 		
 		for (int i = 0; i < withCondAttrs.size(); i++) {
 			Element<std::string> condAttr = Element<std::string>(withCondAttrs[i]);
 			if (HAS_ATTR(condAttr, "cond")) {
 				if (!_dataModel.isValidSyntax(ATTR(condAttr, "cond"))) {
-					InterpreterIssue issue("Syntax error in cond attribute", condAttr, InterpreterIssue::USCXML_ISSUE_WARNING);
-					issues.push_back(issue);
+					issues.push_back(InterpreterIssue("Syntax error in cond attribute", condAttr, InterpreterIssue::USCXML_ISSUE_WARNING));
 					continue;
 				}
 			}
@@ -923,89 +1046,77 @@ std::list<InterpreterIssue> InterpreterImpl::validate() {
 	
 	{
 		NodeSet<std::string> withExprAttrs;
-		withExprAttrs.push_back(filterChildElements(_nsInfo.xmlNSPrefix + "log", _scxml, true));
-		withExprAttrs.push_back(filterChildElements(_nsInfo.xmlNSPrefix + "data", _scxml, true));
-		withExprAttrs.push_back(filterChildElements(_nsInfo.xmlNSPrefix + "assign", _scxml, true));
-		withExprAttrs.push_back(filterChildElements(_nsInfo.xmlNSPrefix + "content", _scxml, true));
-		withExprAttrs.push_back(filterChildElements(_nsInfo.xmlNSPrefix + "param", _scxml, true));
+		withExprAttrs.push_back(logs);
+		withExprAttrs.push_back(datas);
+		withExprAttrs.push_back(assigns);
+		withExprAttrs.push_back(contents);
+		withExprAttrs.push_back(params);
 		
 		for (int i = 0; i < withExprAttrs.size(); i++) {
 			Element<std::string> withExprAttr = Element<std::string>(withExprAttrs[i]);
 			if (HAS_ATTR(withExprAttr, "expr")) {
-				if (!_dataModel.isValidSyntax(ATTR(withExprAttr, "expr"))) {
-					InterpreterIssue issue("Syntax error in expr attribute", withExprAttr, InterpreterIssue::USCXML_ISSUE_WARNING);
-					issues.push_back(issue);
-					continue;
+				if (isMember(withExprAttr, datas) || isMember(withExprAttr, assigns)) {
+					if (!_dataModel.isValidSyntax("foo = " + ATTR(withExprAttr, "expr"))) { // TODO: this is ECMAScripty!
+						issues.push_back(InterpreterIssue("Syntax error in expr attribute", withExprAttr, InterpreterIssue::USCXML_ISSUE_WARNING));
+						continue;
+					}
+				} else {
+					if (!_dataModel.isValidSyntax(ATTR(withExprAttr, "expr"))) {
+						issues.push_back(InterpreterIssue("Syntax error in expr attribute", withExprAttr, InterpreterIssue::USCXML_ISSUE_WARNING));
+						continue;
+					}
 				}
 			}
 		}
 	}
 	
 	{
-		NodeSet<std::string> foreachs = filterChildElements(_nsInfo.xmlNSPrefix + "foreach", _scxml, true);
 		for (int i = 0; i < foreachs.size(); i++) {
 			Element<std::string> foreach = Element<std::string>(foreachs[i]);
 			if (HAS_ATTR(foreach, "array")) {
 				if (!_dataModel.isValidSyntax(ATTR(foreach, "array"))) {
-					InterpreterIssue issue("Syntax error in array attribute", foreach, InterpreterIssue::USCXML_ISSUE_WARNING);
-					issues.push_back(issue);
-					continue;
+					issues.push_back(InterpreterIssue("Syntax error in array attribute", foreach, InterpreterIssue::USCXML_ISSUE_WARNING));
 				}
 			}
 			if (HAS_ATTR(foreach, "item")) {
 				if (!_dataModel.isValidSyntax(ATTR(foreach, "item"))) {
-					InterpreterIssue issue("Syntax error in item attribute", foreach, InterpreterIssue::USCXML_ISSUE_WARNING);
-					issues.push_back(issue);
-					continue;
+					issues.push_back(InterpreterIssue("Syntax error in item attribute", foreach, InterpreterIssue::USCXML_ISSUE_WARNING));
 				}
 			}
 			if (HAS_ATTR(foreach, "index")) {
 				if (!_dataModel.isValidSyntax(ATTR(foreach, "index"))) {
-					InterpreterIssue issue("Syntax error in index attribute", foreach, InterpreterIssue::USCXML_ISSUE_WARNING);
-					issues.push_back(issue);
-					continue;
+					issues.push_back(InterpreterIssue("Syntax error in index attribute", foreach, InterpreterIssue::USCXML_ISSUE_WARNING));
 				}
 			}
 		}
 	}
 	
 	{
-		NodeSet<std::string> sends = filterChildElements(_nsInfo.xmlNSPrefix + "send", _scxml, true);
 		for (int i = 0; i < sends.size(); i++) {
 			Element<std::string> send = Element<std::string>(sends[i]);
 			if (HAS_ATTR(send, "eventexpr")) {
 				if (!_dataModel.isValidSyntax(ATTR(send, "eventexpr"))) {
-					InterpreterIssue issue("Syntax error in eventexpr attribute", send, InterpreterIssue::USCXML_ISSUE_WARNING);
-					issues.push_back(issue);
-					continue;
+					issues.push_back(InterpreterIssue("Syntax error in eventexpr attribute", send, InterpreterIssue::USCXML_ISSUE_WARNING));
 				}
 			}
 			if (HAS_ATTR(send, "targetexpr")) {
 				if (!_dataModel.isValidSyntax(ATTR(send, "targetexpr"))) {
-					InterpreterIssue issue("Syntax error in targetexpr attribute", send, InterpreterIssue::USCXML_ISSUE_WARNING);
-					issues.push_back(issue);
-					continue;
+					issues.push_back(InterpreterIssue("Syntax error in targetexpr attribute", send, InterpreterIssue::USCXML_ISSUE_WARNING));
 				}
 			}
 			if (HAS_ATTR(send, "typeexpr")) {
 				if (!_dataModel.isValidSyntax(ATTR(send, "typeexpr"))) {
-					InterpreterIssue issue("Syntax error in typeexpr attribute", send, InterpreterIssue::USCXML_ISSUE_WARNING);
-					issues.push_back(issue);
-					continue;
+					issues.push_back(InterpreterIssue("Syntax error in typeexpr attribute", send, InterpreterIssue::USCXML_ISSUE_WARNING));
 				}
 			}
 			if (HAS_ATTR(send, "idlocation")) {
 				if (!_dataModel.isValidSyntax(ATTR(send, "idlocation"))) {
-					InterpreterIssue issue("Syntax error in idlocation attribute", send, InterpreterIssue::USCXML_ISSUE_WARNING);
-					issues.push_back(issue);
-					continue;
+					issues.push_back(InterpreterIssue("Syntax error in idlocation attribute", send, InterpreterIssue::USCXML_ISSUE_WARNING));
 				}
 			}
 			if (HAS_ATTR(send, "delayexpr")) {
 				if (!_dataModel.isValidSyntax(ATTR(send, "delayexpr"))) {
-					InterpreterIssue issue("Syntax error in delayexpr attribute", send, InterpreterIssue::USCXML_ISSUE_WARNING);
-					issues.push_back(issue);
-					continue;
+					issues.push_back(InterpreterIssue("Syntax error in delayexpr attribute", send, InterpreterIssue::USCXML_ISSUE_WARNING));
 				}
 			}
 		}
@@ -1013,27 +1124,23 @@ std::list<InterpreterIssue> InterpreterImpl::validate() {
 	}
 	
 	{
-		NodeSet<std::string> invokes = filterChildElements(_nsInfo.xmlNSPrefix + "invoke", _scxml, true);
 		for (int i = 0; i < invokes.size(); i++) {
 			Element<std::string> invoke = Element<std::string>(invokes[i]);
 			if (HAS_ATTR(invoke, "typeexpr")) {
 				if (!_dataModel.isValidSyntax(ATTR(invoke, "typeexpr"))) {
-					InterpreterIssue issue("Syntax error in typeexpr attribute", invoke, InterpreterIssue::USCXML_ISSUE_WARNING);
-					issues.push_back(issue);
+					issues.push_back(InterpreterIssue("Syntax error in typeexpr attribute", invoke, InterpreterIssue::USCXML_ISSUE_WARNING));
 					continue;
 				}
 			}
 			if (HAS_ATTR(invoke, "srcexpr")) {
 				if (!_dataModel.isValidSyntax(ATTR(invoke, "srcexpr"))) {
-					InterpreterIssue issue("Syntax error in srcexpr attribute", invoke, InterpreterIssue::USCXML_ISSUE_WARNING);
-					issues.push_back(issue);
+					issues.push_back(InterpreterIssue("Syntax error in srcexpr attribute", invoke, InterpreterIssue::USCXML_ISSUE_WARNING));
 					continue;
 				}
 			}
 			if (HAS_ATTR(invoke, "idlocation")) {
 				if (!_dataModel.isValidSyntax(ATTR(invoke, "idlocation"))) {
-					InterpreterIssue issue("Syntax error in idlocation attribute", invoke, InterpreterIssue::USCXML_ISSUE_WARNING);
-					issues.push_back(issue);
+					issues.push_back(InterpreterIssue("Syntax error in idlocation attribute", invoke, InterpreterIssue::USCXML_ISSUE_WARNING));
 					continue;
 				}
 			}
@@ -1041,19 +1148,20 @@ std::list<InterpreterIssue> InterpreterImpl::validate() {
 	}
 
 	{
-		NodeSet<std::string> cancels = filterChildElements(_nsInfo.xmlNSPrefix + "cancel", _scxml, true);
 		for (int i = 0; i < cancels.size(); i++) {
 			Element<std::string> cancel = Element<std::string>(cancels[i]);
 			if (HAS_ATTR(cancel, "sendidexpr")) {
 				if (!_dataModel.isValidSyntax(ATTR(cancel, "sendidexpr"))) {
-					InterpreterIssue issue("Syntax error in sendidexpr attribute", cancel, InterpreterIssue::USCXML_ISSUE_WARNING);
-					issues.push_back(issue);
+					issues.push_back(InterpreterIssue("Syntax error in sendidexpr attribute", cancel, InterpreterIssue::USCXML_ISSUE_WARNING));
 					continue;
 				}
 			}
 		}
 	}
 
+	if (instantiatedDataModel)
+		_dataModel = DataModel();
+	
 	return issues;
 }
 
@@ -1073,7 +1181,7 @@ std::ostream& operator<< (std::ostream& os, const InterpreterIssue& issue) {
 	}
 	
 	if (issue.xPath.size() > 0) {
-		os << " at " << issue.xPath << ": ";
+		os << "at " << issue.xPath << ": ";
 	} else {
 		os << ": ";
 	}

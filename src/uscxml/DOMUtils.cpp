@@ -18,6 +18,7 @@
  */
 
 #include <uscxml/Common.h>
+#include "uscxml/UUID.h"
 #include "uscxml/DOMUtils.h"
 #include <uscxml/Convenience.h>
 #include <glog/logging.h>
@@ -49,7 +50,7 @@ std::string DOMUtils::xPathForNode(const Arabica::DOM::Node<std::string>& node, 
 		switch (curr.getNodeType()) {
 		case Arabica::DOM::Node_base::ELEMENT_NODE: {
 			Arabica::DOM::Element<std::string> elem = Arabica::DOM::Element<std::string>(curr);
-			if (HAS_ATTR(elem, "id")) {
+			if (HAS_ATTR(elem, "id") && !UUID::isUUID(ATTR(elem, "id"))) {
 				// we assume ids to be unique and return immediately
 				if (ns == "*") {
 					xPath.insert(0, "//*[local-name() = \"" + TAGNAME(elem) + "\"][@id=\"" + ATTR(elem, "id") + "\"]");

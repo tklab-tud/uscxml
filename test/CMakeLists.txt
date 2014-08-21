@@ -61,6 +61,11 @@ target_link_libraries(test-lifecycle uscxml)
 add_test(test-lifecycle ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-lifecycle)
 set_target_properties(test-lifecycle PROPERTIES FOLDER "Tests")
 
+add_executable(test-issue-reporting src/test-issue-reporting.cpp)
+target_link_libraries(test-issue-reporting uscxml)
+add_test(test-issue-reporting ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-issue-reporting)
+set_target_properties(test-issue-reporting PROPERTIES FOLDER "Tests")
+
 if (NOT WIN32)
 	add_executable(test-vxml-mmi-socket src/test-vxml-mmi-socket.cpp)
 	target_link_libraries(test-vxml-mmi-socket uscxml)

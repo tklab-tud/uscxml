@@ -216,29 +216,6 @@ int main(int argc, char** argv) {
 		if (1) {
 			// syntactic xml parse error
 			try {
-				const char* xml =
-				"<scxml datamodel=\"ecmascript\">"
-				"	<state id=\"start\">"
-				"		<transition target=\"done\" cond=\"%sf\" />"
-				" </state>"
-				" <final id=\"done\" />"
-				"</scxml>";
-				Interpreter interpreter = Interpreter::fromXML(xml);
-				std::list<InterpreterIssue> issues = interpreter.validate();
-				
-				for (std::list<InterpreterIssue>::iterator issueIter = issues.begin(); issueIter != issues.end(); issueIter++) {
-					std::cout << *issueIter << std::endl;
-				}
-				
-			} catch (Event& e) {
-				std::cout << e;
-			}
-		}
-
-		
-		if (1) {
-			// syntactic xml parse error
-			try {
 				const char* xml = "<invalid";
 				Interpreter interpreter = Interpreter::fromXML(xml);
 				assert(false);
