@@ -114,6 +114,10 @@
 
 };
 
+%{
+	#include <glog/logging.h>
+%}
+
 %extend uscxml::Data {
 	std::vector<std::string> getCompoundKeys() {
 		std::vector<std::string> keys;
@@ -123,5 +127,23 @@
 			iter++;
 		}
 		return keys;
+	}
+	
+	std::string getXML() {
+		if (!self->node)
+			return "";
+			
+		std::stringstream ss;
+		ss << self->node;
+		return ss.str();
+	}
+	
+	void setXML(const std::string& xml) {
+		NameSpacingParser parser = NameSpacingParser::fromXML(xml);
+		if (!parser.errorsReported()) {
+			self->node = parser.getDocument();
+		} else {
+			LOG(ERROR) << "Cannot parse message as XML: " << parser.errors();
+		}
 	}
 };

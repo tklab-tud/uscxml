@@ -78,7 +78,7 @@ if (DMCS_EXECUTABLE OR CSC_EXECUTABLE)
 			COMMENT "Creating umundoCSharp.dll for Mono ...")
 	endif()
 	
-	add_dependencies(csharp umundoNativeCSharp)
+	add_dependencies(csharp uscxmlNativeCSharp)
 	if (BUILD_TESTS)
 		add_dependencies(ALL_TESTS csharp)
 	endif()

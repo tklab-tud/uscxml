@@ -189,6 +189,12 @@
 %ignore uscxml::SendRequest::fromXML;
 %ignore uscxml::InvokeRequest::fromXML;
 
+// HTTPServer
+
+%ignore uscxml::HTTPServer::wsSend;
+%ignore uscxml::HTTPServer::wsBroadcast;
+%ignore uscxml::HTTPServer::reply;
+
 
 // Data
 

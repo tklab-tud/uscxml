@@ -2,13 +2,17 @@ cmake_minimum_required(VERSION 2.8.4)
 
 cmake_policy(PUSH)
 if(POLICY CMP0042)
-	cmake_policy(SET CMP0042 OLD)
+	# new behavior defaults to ON for MACOSX_RPATH
+	cmake_policy(SET CMP0042 NEW)
 endif()
 if(POLICY CMP0045)
+	# Error on non-existent target in get_target_property, 
+	# set to old as we actually use it to check for specific targets
 	cmake_policy(SET CMP0045 OLD)
 endif()
 if(POLICY CMP0046)
-	cmake_policy(SET CMP0046 OLD)
+	# Error on non-existent dependency in add_dependencies
+	cmake_policy(SET CMP0046 NEW)
 endif()
 
 # specify USCXML version

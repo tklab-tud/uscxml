@@ -10,7 +10,7 @@
     - [Test Reports](#test-reports)
     - [License](#license)
     - [Download](#download)
-- [Usage](#usage)
+- [Getting Started](#getting-started)
 - [Advanced Topics](#advanced-topics)
     - [Embedding uSCXML](#embedding-uscxml)
     - [Extending uSCXML](#extending-uscxml)
@@ -18,6 +18,11 @@
 - [Acknowledgments](#acknowledgments)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
+#### Related Documents
+
+- [Building form Source](docs/BUILDING.md)
+- [Developer Overview](docs/OVERVIEW.md)
 
 ## General
 
@@ -94,7 +99,7 @@ upon](https://github.com/tklab-tud/uscxml/blob/master/docs/BUILDING.md#build-dep
 We do not yet feature installers. Please download the source and have a look at the [build
 instructions](https://github.com/tklab-tud/uscxml/blob/master/docs/BUILDING.md).
 
-## Usage
+## Getting Started
 
 In order to use the interpreter, you need to <tt>#include "uscxml/Interpreter.h"</tt> and instantiate
 objects of <tt>uscxml::Interpreter</tt>.

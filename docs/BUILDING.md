@@ -336,7 +336,7 @@ Now you can compile uSCXML like on any other platform:
 If you want an ECMAScript datamodel or LUA, you will need to install additional packages:
 
 	# additional datamodels: ECMAScript, LUA, Prolog
-	$ sudo apt-get install libjavascriptcoregtk-3.0-dev liblua5.2-dev swi-prolog-nox   
+	$ sudo apt-get install libjavascriptcoregtk-3.0-dev liblua5.2-dev swi-prolog-nox
 
 	# additional invokers
 	$ sudo apt-get install libical-dev libpurple-dev libopenal-dev libsndfile1-dev libopenscenegraph-dev

@@ -32,6 +32,7 @@ ssh ${USCXML_PREBUILT_HOST} mkdir -p ${USCXML_PREBUILT_PATH}/${VERSION}
 
 PLATFORMS=`find . -maxdepth 1 -type d -regex ./[^\.].*`
 #PLATFORMS="linux-x86_64"
+PLATFORMS="linux-armv6l"
 #PLATFORMS="darwin-i386"
 #PLATFORMS="windows-x86"
 for FILE in ${PLATFORMS}; do

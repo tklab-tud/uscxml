@@ -445,14 +445,17 @@ void Factory::listComponents() {
 	{
 		std::cout << "Available Datamodels:" << std::endl;
 		LIST_COMPONENTS(DataModelImpl, _dataModels);
+		std::cout << std::endl;
 	}
 	{
 		std::cout << "Available Invokers:" << std::endl;
 		LIST_COMPONENTS(InvokerImpl, _invokers);
+		std::cout << std::endl;
 	}
 	{
 		std::cout << "Available I/O Processors:" << std::endl;
 		LIST_COMPONENTS(IOProcessorImpl, _ioProcessors);
+		std::cout << std::endl;
 	}
 	{
 		std::cout << "Available Elements:" << std::endl;
@@ -461,6 +464,7 @@ void Factory::listComponents() {
 			std::cout << "\t" << iter->second->getNamespace() << " / " << iter->second->getLocalName() << std::endl;
 			iter++;
 		}
+		std::cout << std::endl;
 	}
 }
 
