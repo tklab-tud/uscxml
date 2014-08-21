@@ -121,6 +121,7 @@ WRAP_TO_STRING(uscxml::Event);
 WRAP_TO_STRING(uscxml::Data);
 WRAP_TO_STRING(uscxml::SendRequest);
 WRAP_TO_STRING(uscxml::InvokeRequest);
+WRAP_TO_STRING(uscxml::InterpreterIssue);
 
 WRAP_HASHCODE(uscxml::Interpreter);
 
@@ -431,6 +432,7 @@ import java.util.LinkedList;
 %include "../wrapped/WrappedInterpreterMonitor.h"
 
 
+%template(IssueList) std::list<uscxml::InterpreterIssue>;
 %template(DataList) std::list<uscxml::Data>;
 %template(DataMap) std::map<std::string, uscxml::Data>;
 %template(StringSet) std::set<std::string>;

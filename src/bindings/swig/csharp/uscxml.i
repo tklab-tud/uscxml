@@ -153,6 +153,7 @@ WRAP_TO_STRING(uscxml::Event);
 WRAP_TO_STRING(uscxml::Data);
 WRAP_TO_STRING(uscxml::SendRequest);
 WRAP_TO_STRING(uscxml::InvokeRequest);
+WRAP_TO_STRING(uscxml::InterpreterIssue);
 
 %include "../uscxml_ignores.i"
 
@@ -403,6 +404,7 @@ using System.Runtime.InteropServices;
 %include "../wrapped/WrappedInterpreterMonitor.h"
 
 
+%template(IssueList) std::list<uscxml::InterpreterIssue>;
 %template(DataList) std::list<uscxml::Data>;
 %template(DataMap) std::map<std::string, uscxml::Data>;
 %template(StringSet) std::set<std::string>;

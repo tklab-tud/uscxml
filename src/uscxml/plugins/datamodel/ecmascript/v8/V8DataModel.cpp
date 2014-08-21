@@ -458,12 +458,17 @@ bool V8DataModel::validate(const std::string& location, const std::string& schem
 }
 
 bool V8DataModel::isLocation(const std::string& expr) {
+	// location needs to be RHS and ++ is only valid for RHS
+	return isValidSyntax(expr + "++");
+}
+
+bool V8DataModel::isValidSyntax(const std::string& expr) {
 	v8::Locker locker;
 	v8::HandleScope handleScope;
 	v8::TryCatch tryCatch;
 	v8::Context::Scope contextScope(_contexts.back());
 
-	v8::Handle<v8::String> source = v8::String::New((expr + "++").c_str());
+	v8::Handle<v8::String> source = v8::String::New(expr.c_str());
 	v8::Handle<v8::Script> script = v8::Script::Compile(source);
 
 	if (script.IsEmpty() || tryCatch.HasCaught()) {

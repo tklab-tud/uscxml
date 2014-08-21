@@ -336,6 +336,10 @@ bool LuaDataModel::isLocation(const std::string& expr) {
 	return true;
 }
 
+bool LuaDataModel::isValidSyntax(const std::string& expr) {
+	return true;
+}
+
 uint32_t LuaDataModel::getLength(const std::string& expr) {
 	// we need the result of the expression on the lua stack -> has to "return"!
 	std::string trimmedExpr = boost::trim_copy(expr);

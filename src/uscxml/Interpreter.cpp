@@ -709,6 +709,378 @@ void InterpreterImpl::reset() {
 	setInterpreterState(USCXML_INSTANTIATED);
 }
 
+InterpreterIssue::InterpreterIssue(const std::string& msg, Arabica::DOM::Node<std::string> node, IssueSeverity severity) : message(msg), node(node), severity(severity) {
+	xPath = DOMUtils::xPathForNode(node);
+}
+
+std::list<InterpreterIssue> InterpreterImpl::validate() {
+	// some things we need to prepare first
+	if (_factory == NULL)
+		_factory = Factory::getInstance();
+	setupDOM();
+	
+	std::list<InterpreterIssue> issues;
+
+	if (!_scxml) {
+		InterpreterIssue issue("No SCXML element to be found", _document.getDocumentElement(), InterpreterIssue::USCXML_ISSUE_FATAL);
+		issues.push_back(issue);
+		return issues;
+	}
+
+	_cachedStates.clear();
+	
+	NodeSet<std::string> allStates;
+	allStates.push_back(filterChildElements(_nsInfo.xmlNSPrefix + "state", _scxml, true));
+	allStates.push_back(filterChildElements(_nsInfo.xmlNSPrefix + "parallel", _scxml, true));
+	allStates.push_back(filterChildElements(_nsInfo.xmlNSPrefix + "history", _scxml, true));
+	allStates.push_back(filterChildElements(_nsInfo.xmlNSPrefix + "final", _scxml, true));
+
+	for (int i = 0; i < allStates.size(); i++) {
+		Element<std::string> state = Element<std::string>(allStates[i]);
+
+		// check for existance of id attribute
+		if (!HAS_ATTR(state, "id")) {
+			InterpreterIssue issue("State has no 'id' attribute", state, InterpreterIssue::USCXML_ISSUE_FATAL);
+			issues.push_back(issue);
+			continue;
+		}
+		std::string stateId = ATTR(state, "id");
+
+		// check for uniqueness of id attribute
+		if (_cachedStates.find(stateId) != _cachedStates.end()) {
+			InterpreterIssue issue("Duplicate state with id '" + stateId + "'", state, InterpreterIssue::USCXML_ISSUE_FATAL);
+			issues.push_back(issue);
+			continue;
+		}
+		_cachedStates[ATTR(state, "id")] = state;
+	}
+	
+	NodeSet<std::string> transitions = filterChildElements(_nsInfo.xmlNSPrefix + "transition", _scxml, true);
+	for (int i = 0; i < transitions.size(); i++) {
+		Element<std::string> transition = Element<std::string>(transitions[i]);
+		
+		// check for valid target
+		std::list<std::string> targetIds = InterpreterImpl::tokenizeIdRefs(ATTR(transition, "target"));
+		for (std::list<std::string>::iterator targetIter = targetIds.begin(); targetIter != targetIds.end(); targetIter++) {
+			if (_cachedStates.find(*targetIter) == _cachedStates.end()) {
+				InterpreterIssue issue("Transition has non-existant target state with id '" + *targetIter + "'", transition, InterpreterIssue::USCXML_ISSUE_FATAL);
+				issues.push_back(issue);
+				continue;
+			}
+		}
+
+		// check for redundancy of transition
+		// TODO
+	}
+	
+	// check for valid initial attribute
+	{
+		allStates.push_back(_scxml);
+		for (int i = 0; i < allStates.size(); i++) {
+			Element<std::string> state = Element<std::string>(allStates[i]);
+			if (HAS_ATTR(state, "initial")) {
+				std::list<std::string> intials = InterpreterImpl::tokenizeIdRefs(ATTR(state, "initial"));
+				for (std::list<std::string>::iterator initIter = intials.begin(); initIter != intials.end(); initIter++) {
+					if (_cachedStates.find(*initIter) == _cachedStates.end()) {
+						InterpreterIssue issue("Initial attribute has invalid target state with id '" + *initIter + "'", state, InterpreterIssue::USCXML_ISSUE_FATAL);
+						issues.push_back(issue);
+						continue;
+					}
+				}
+			}
+		}
+	}
+	
+	// check that all invokers exists
+	{
+		NodeSet<std::string> invokes = filterChildElements(_nsInfo.xmlNSPrefix + "invoke", _scxml, true);
+		for (int i = 0; i < invokes.size(); i++) {
+			Element<std::string> invoke = Element<std::string>(invokes[i]);
+			if (HAS_ATTR(invoke, "type") && !_factory->hasInvoker(ATTR(invoke, "type"))) {
+				InterpreterIssue issue("Invoke with unknown type '" + ATTR(invoke, "type") + "'", invoke, InterpreterIssue::USCXML_ISSUE_FATAL);
+				issues.push_back(issue);
+				continue;
+			}
+		}
+	}
+	
+	// check that all io processors exists
+	{
+		NodeSet<std::string> sends = filterChildElements(_nsInfo.xmlNSPrefix + "send", _scxml, true);
+		for (int i = 0; i < sends.size(); i++) {
+			Element<std::string> send = Element<std::string>(sends[i]);
+			if (HAS_ATTR(send, "type") && !_factory->hasIOProcessor(ATTR(send, "type"))) {
+				InterpreterIssue issue("Send to unknown IO Processor '" + ATTR(send, "type") + "'", send, InterpreterIssue::USCXML_ISSUE_FATAL);
+				issues.push_back(issue);
+				continue;
+			}
+		}
+	}
+	
+	// check that the datamodel is known
+	if (HAS_ATTR(_scxml, "datamodel")) {
+		if (!_factory->hasDataModel(ATTR(_scxml, "datamodel"))) {
+			InterpreterIssue issue("SCXML document requires unknown datamodel '" + ATTR(_scxml, "datamodel") + "'", _scxml, InterpreterIssue::USCXML_ISSUE_FATAL);
+			issues.push_back(issue);
+		}
+	}
+
+	
+	// instantiate datamodel if not explicitly set
+	if (!_dataModel) {
+		if (HAS_ATTR(_scxml, "datamodel")) {
+			// might throw
+			_dataModel = _factory->createDataModel(ATTR(_scxml, "datamodel"), this);
+		} else {
+			_dataModel = _factory->createDataModel("null", this);
+		}
+	}
+
+	
+	// check that all custom executable content is known
+	{
+		NodeSet<std::string> allExecContents;
+		allExecContents.push_back(filterChildElements(_nsInfo.xmlNSPrefix + "onentry", _scxml, true));
+		allExecContents.push_back(filterChildElements(_nsInfo.xmlNSPrefix + "onexit", _scxml, true));
+		allExecContents.push_back(filterChildElements(_nsInfo.xmlNSPrefix + "transition", _scxml, true));
+		allExecContents.push_back(filterChildElements(_nsInfo.xmlNSPrefix + "finalize", _scxml, true));
+
+		for (int i = 0; i < allExecContents.size(); i++) {
+			Element<std::string> block = Element<std::string>(allExecContents[i]);
+			NodeSet<std::string> execContents = filterChildType(Node_base::ELEMENT_NODE, block);
+			for (int j = 0; j < execContents.size(); j++) {
+				Element<std::string> execContent = Element<std::string>(execContents[j]);
+				// SCXML specific executable content, always available
+				if (iequals(TAGNAME(execContent), _nsInfo.xmlNSPrefix + "onentry") ||
+						iequals(TAGNAME(execContent), _nsInfo.xmlNSPrefix + "onexit") ||
+						iequals(TAGNAME(execContent), _nsInfo.xmlNSPrefix + "transition") ||
+						iequals(TAGNAME(execContent), _nsInfo.xmlNSPrefix + "finalize") ||
+						iequals(TAGNAME(execContent), _nsInfo.xmlNSPrefix + "raise") ||
+						iequals(TAGNAME(execContent), _nsInfo.xmlNSPrefix + "if") ||
+						iequals(TAGNAME(execContent), _nsInfo.xmlNSPrefix + "elseif") ||
+						iequals(TAGNAME(execContent), _nsInfo.xmlNSPrefix + "else") ||
+						iequals(TAGNAME(execContent), _nsInfo.xmlNSPrefix + "foreach") ||
+						iequals(TAGNAME(execContent), _nsInfo.xmlNSPrefix + "log") ||
+						iequals(TAGNAME(execContent), _nsInfo.xmlNSPrefix + "assign") ||
+						iequals(TAGNAME(execContent), _nsInfo.xmlNSPrefix + "validate") ||
+						iequals(TAGNAME(execContent), _nsInfo.xmlNSPrefix + "script") ||
+						iequals(TAGNAME(execContent), _nsInfo.xmlNSPrefix + "send") ||
+						iequals(TAGNAME(execContent), _nsInfo.xmlNSPrefix + "cancel") ||
+						iequals(TAGNAME(execContent), _nsInfo.xmlNSPrefix + "invoke") ||
+						false)
+				{
+					continue;
+				}
+				if (!_factory->hasExecutableContent(execContent.getLocalName(), execContent.getNamespaceURI())) {
+					InterpreterIssue issue("Executable content element '" + execContent.getLocalName() + "' in namespace '" + execContent.getNamespaceURI() + "' unknown", _scxml, InterpreterIssue::USCXML_ISSUE_FATAL);
+					issues.push_back(issue);
+					continue;
+				}
+			}
+		}
+	}
+	
+	// test all scripts for valid syntax
+	{
+		NodeSet<std::string> scripts = filterChildElements(_nsInfo.xmlNSPrefix + "script", _scxml, true);
+		for (int i = 0; i < scripts.size(); i++) {
+			Element<std::string> script = Element<std::string>(scripts[i]);
+			
+			if (script.hasChildNodes()) {
+				// search for the text node with the actual script
+				std::string scriptContent;
+				for (Node<std::string> child = script.getFirstChild(); child; child = child.getNextSibling()) {
+					if (child.getNodeType() == Node_base::TEXT_NODE || child.getNodeType() == Node_base::CDATA_SECTION_NODE)
+						scriptContent += child.getNodeValue();
+				}
+				
+				if (!_dataModel.isValidSyntax(scriptContent)) {
+					InterpreterIssue issue("Syntax error in script", script, InterpreterIssue::USCXML_ISSUE_WARNING);
+					issues.push_back(issue);
+				}
+			}
+		}
+	}
+	
+	// test the various attributes with datamodel expressions for valid syntax
+	{
+		NodeSet<std::string> withCondAttrs;
+		withCondAttrs.push_back(transitions);
+		withCondAttrs.push_back(filterChildElements(_nsInfo.xmlNSPrefix + "if", _scxml, true));
+		withCondAttrs.push_back(filterChildElements(_nsInfo.xmlNSPrefix + "elseif", _scxml, true));
+		
+		for (int i = 0; i < withCondAttrs.size(); i++) {
+			Element<std::string> condAttr = Element<std::string>(withCondAttrs[i]);
+			if (HAS_ATTR(condAttr, "cond")) {
+				if (!_dataModel.isValidSyntax(ATTR(condAttr, "cond"))) {
+					InterpreterIssue issue("Syntax error in cond attribute", condAttr, InterpreterIssue::USCXML_ISSUE_WARNING);
+					issues.push_back(issue);
+					continue;
+				}
+			}
+		}
+	}
+	
+	{
+		NodeSet<std::string> withExprAttrs;
+		withExprAttrs.push_back(filterChildElements(_nsInfo.xmlNSPrefix + "log", _scxml, true));
+		withExprAttrs.push_back(filterChildElements(_nsInfo.xmlNSPrefix + "data", _scxml, true));
+		withExprAttrs.push_back(filterChildElements(_nsInfo.xmlNSPrefix + "assign", _scxml, true));
+		withExprAttrs.push_back(filterChildElements(_nsInfo.xmlNSPrefix + "content", _scxml, true));
+		withExprAttrs.push_back(filterChildElements(_nsInfo.xmlNSPrefix + "param", _scxml, true));
+		
+		for (int i = 0; i < withExprAttrs.size(); i++) {
+			Element<std::string> withExprAttr = Element<std::string>(withExprAttrs[i]);
+			if (HAS_ATTR(withExprAttr, "expr")) {
+				if (!_dataModel.isValidSyntax(ATTR(withExprAttr, "expr"))) {
+					InterpreterIssue issue("Syntax error in expr attribute", withExprAttr, InterpreterIssue::USCXML_ISSUE_WARNING);
+					issues.push_back(issue);
+					continue;
+				}
+			}
+		}
+	}
+	
+	{
+		NodeSet<std::string> foreachs = filterChildElements(_nsInfo.xmlNSPrefix + "foreach", _scxml, true);
+		for (int i = 0; i < foreachs.size(); i++) {
+			Element<std::string> foreach = Element<std::string>(foreachs[i]);
+			if (HAS_ATTR(foreach, "array")) {
+				if (!_dataModel.isValidSyntax(ATTR(foreach, "array"))) {
+					InterpreterIssue issue("Syntax error in array attribute", foreach, InterpreterIssue::USCXML_ISSUE_WARNING);
+					issues.push_back(issue);
+					continue;
+				}
+			}
+			if (HAS_ATTR(foreach, "item")) {
+				if (!_dataModel.isValidSyntax(ATTR(foreach, "item"))) {
+					InterpreterIssue issue("Syntax error in item attribute", foreach, InterpreterIssue::USCXML_ISSUE_WARNING);
+					issues.push_back(issue);
+					continue;
+				}
+			}
+			if (HAS_ATTR(foreach, "index")) {
+				if (!_dataModel.isValidSyntax(ATTR(foreach, "index"))) {
+					InterpreterIssue issue("Syntax error in index attribute", foreach, InterpreterIssue::USCXML_ISSUE_WARNING);
+					issues.push_back(issue);
+					continue;
+				}
+			}
+		}
+	}
+	
+	{
+		NodeSet<std::string> sends = filterChildElements(_nsInfo.xmlNSPrefix + "send", _scxml, true);
+		for (int i = 0; i < sends.size(); i++) {
+			Element<std::string> send = Element<std::string>(sends[i]);
+			if (HAS_ATTR(send, "eventexpr")) {
+				if (!_dataModel.isValidSyntax(ATTR(send, "eventexpr"))) {
+					InterpreterIssue issue("Syntax error in eventexpr attribute", send, InterpreterIssue::USCXML_ISSUE_WARNING);
+					issues.push_back(issue);
+					continue;
+				}
+			}
+			if (HAS_ATTR(send, "targetexpr")) {
+				if (!_dataModel.isValidSyntax(ATTR(send, "targetexpr"))) {
+					InterpreterIssue issue("Syntax error in targetexpr attribute", send, InterpreterIssue::USCXML_ISSUE_WARNING);
+					issues.push_back(issue);
+					continue;
+				}
+			}
+			if (HAS_ATTR(send, "typeexpr")) {
+				if (!_dataModel.isValidSyntax(ATTR(send, "typeexpr"))) {
+					InterpreterIssue issue("Syntax error in typeexpr attribute", send, InterpreterIssue::USCXML_ISSUE_WARNING);
+					issues.push_back(issue);
+					continue;
+				}
+			}
+			if (HAS_ATTR(send, "idlocation")) {
+				if (!_dataModel.isValidSyntax(ATTR(send, "idlocation"))) {
+					InterpreterIssue issue("Syntax error in idlocation attribute", send, InterpreterIssue::USCXML_ISSUE_WARNING);
+					issues.push_back(issue);
+					continue;
+				}
+			}
+			if (HAS_ATTR(send, "delayexpr")) {
+				if (!_dataModel.isValidSyntax(ATTR(send, "delayexpr"))) {
+					InterpreterIssue issue("Syntax error in delayexpr attribute", send, InterpreterIssue::USCXML_ISSUE_WARNING);
+					issues.push_back(issue);
+					continue;
+				}
+			}
+		}
+
+	}
+	
+	{
+		NodeSet<std::string> invokes = filterChildElements(_nsInfo.xmlNSPrefix + "invoke", _scxml, true);
+		for (int i = 0; i < invokes.size(); i++) {
+			Element<std::string> invoke = Element<std::string>(invokes[i]);
+			if (HAS_ATTR(invoke, "typeexpr")) {
+				if (!_dataModel.isValidSyntax(ATTR(invoke, "typeexpr"))) {
+					InterpreterIssue issue("Syntax error in typeexpr attribute", invoke, InterpreterIssue::USCXML_ISSUE_WARNING);
+					issues.push_back(issue);
+					continue;
+				}
+			}
+			if (HAS_ATTR(invoke, "srcexpr")) {
+				if (!_dataModel.isValidSyntax(ATTR(invoke, "srcexpr"))) {
+					InterpreterIssue issue("Syntax error in srcexpr attribute", invoke, InterpreterIssue::USCXML_ISSUE_WARNING);
+					issues.push_back(issue);
+					continue;
+				}
+			}
+			if (HAS_ATTR(invoke, "idlocation")) {
+				if (!_dataModel.isValidSyntax(ATTR(invoke, "idlocation"))) {
+					InterpreterIssue issue("Syntax error in idlocation attribute", invoke, InterpreterIssue::USCXML_ISSUE_WARNING);
+					issues.push_back(issue);
+					continue;
+				}
+			}
+		}
+	}
+
+	{
+		NodeSet<std::string> cancels = filterChildElements(_nsInfo.xmlNSPrefix + "cancel", _scxml, true);
+		for (int i = 0; i < cancels.size(); i++) {
+			Element<std::string> cancel = Element<std::string>(cancels[i]);
+			if (HAS_ATTR(cancel, "sendidexpr")) {
+				if (!_dataModel.isValidSyntax(ATTR(cancel, "sendidexpr"))) {
+					InterpreterIssue issue("Syntax error in sendidexpr attribute", cancel, InterpreterIssue::USCXML_ISSUE_WARNING);
+					issues.push_back(issue);
+					continue;
+				}
+			}
+		}
+	}
+
+	return issues;
+}
+
+std::ostream& operator<< (std::ostream& os, const InterpreterIssue& issue) {
+	switch (issue.severity) {
+		case InterpreterIssue::USCXML_ISSUE_FATAL:
+			os << "Issue (FATAL) ";
+			break;
+		case InterpreterIssue::USCXML_ISSUE_WARNING:
+			os << "Issue (WARNING) ";
+			break;
+		case InterpreterIssue::USCXML_ISSUE_INFO:
+			os << "Issue (INFO) ";
+			break;
+		default:
+			break;
+	}
+	
+	if (issue.xPath.size() > 0) {
+		os << " at " << issue.xPath << ": ";
+	} else {
+		os << ": ";
+	}
+	os << issue.message;
+	return os;
+}
+
 void InterpreterImpl::setupDOM() {
 	if (_domIsSetup)
 		return;
@@ -718,19 +1090,21 @@ void InterpreterImpl::setupDOM() {
 	}
 
 	// find scxml element
-	NodeList<std::string> scxmls;
-	if (_nsInfo.nsURL.size() == 0) {
-		scxmls = _document.getElementsByTagName("scxml");
-	} else {
-		scxmls = _document.getElementsByTagNameNS(_nsInfo.nsURL, "scxml");
+	if (!_scxml) {
+		NodeList<std::string> scxmls;
+		if (_nsInfo.nsURL.size() == 0) {
+			scxmls = _document.getElementsByTagName("scxml");
+		} else {
+			scxmls = _document.getElementsByTagNameNS(_nsInfo.nsURL, "scxml");
+		}
+
+		if (scxmls.getLength() == 0) {
+			ERROR_PLATFORM_THROW("Cannot find SCXML element in DOM");
+		}
+
+		_scxml = (Arabica::DOM::Element<std::string>)scxmls.item(0);
 	}
-
-	if (scxmls.getLength() == 0) {
-		ERROR_PLATFORM_THROW("Cannot find SCXML element in DOM");
-	}
-
-	_scxml = (Arabica::DOM::Element<std::string>)scxmls.item(0);
-
+	
 	if (_nsInfo.getNSContext() != NULL)
 		_xpath.setNamespaceContext(*_nsInfo.getNSContext());
 

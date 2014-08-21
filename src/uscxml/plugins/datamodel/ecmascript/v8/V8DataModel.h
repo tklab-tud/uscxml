@@ -54,6 +54,7 @@ public:
 
 	virtual bool validate(const std::string& location, const std::string& schema);
 	virtual bool isLocation(const std::string& expr);
+	virtual bool isValidSyntax(const std::string& expr);
 
 	virtual uint32_t getLength(const std::string& expr);
 	virtual void setForeach(const std::string& item,

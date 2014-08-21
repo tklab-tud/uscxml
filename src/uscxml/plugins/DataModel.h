@@ -42,6 +42,9 @@ public:
 
 	virtual bool validate(const std::string& location, const std::string& schema) = 0;
 	virtual bool isLocation(const std::string& expr) = 0;
+	virtual bool isValidSyntax(const std::string& expr) {
+		return true; // overwrite when datamodel supports it
+	}
 	virtual void setEvent(const Event& event) = 0;
 	virtual Data getStringAsData(const std::string& content) = 0;
 
@@ -124,6 +127,9 @@ public:
 	}
 	virtual bool isLocation(const std::string& expr) {
 		return _impl->isLocation(expr);
+	}
+	virtual bool isValidSyntax(const std::string& expr) {
+		return _impl->isValidSyntax(expr);
 	}
 
 	virtual void setEvent(const Event& event) {

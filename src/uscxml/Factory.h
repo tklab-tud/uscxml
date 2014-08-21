@@ -59,6 +59,11 @@ public:
 	boost::shared_ptr<InvokerImpl> createInvoker(const std::string& type, InterpreterImpl* interpreter);
 	boost::shared_ptr<ExecutableContentImpl> createExecutableContent(const std::string& localName, const std::string& nameSpace, InterpreterImpl* interpreter);
 
+	bool hasDataModel(const std::string& type);
+	bool hasIOProcessor(const std::string& type);
+	bool hasInvoker(const std::string& type);
+	bool hasExecutableContent(const std::string& localName, const std::string& nameSpace);
+	
 	std::map<std::string, IOProcessorImpl*> getIOProcessors();
 
 	void listComponents();

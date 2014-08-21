@@ -528,6 +528,15 @@ std::map<std::string, IOProcessorImpl*> Factory::getIOProcessors() {
 	return ioProcs;
 }
 
+bool Factory::hasInvoker(const std::string& type) {
+	if (_invokerAliases.find(type) != _invokerAliases.end()) {
+		return true;
+	} else if(_parentFactory) {
+		return _parentFactory->hasInvoker(type);
+	}
+	return false;
+}
+	
 boost::shared_ptr<InvokerImpl> Factory::createInvoker(const std::string& type, InterpreterImpl* interpreter) {
 
 	// do we have this type ourself?
@@ -548,6 +557,16 @@ boost::shared_ptr<InvokerImpl> Factory::createInvoker(const std::string& type, I
 	}
 
 	return boost::shared_ptr<InvokerImpl>();
+}
+
+
+bool Factory::hasDataModel(const std::string& type) {
+	if (_dataModelAliases.find(type) != _dataModelAliases.end()) {
+		return true;
+	} else if(_parentFactory) {
+		return _parentFactory->hasDataModel(type);
+	}
+	return false;
 }
 
 boost::shared_ptr<DataModelImpl> Factory::createDataModel(const std::string& type, InterpreterImpl* interpreter) {
@@ -572,6 +591,16 @@ boost::shared_ptr<DataModelImpl> Factory::createDataModel(const std::string& typ
 	return boost::shared_ptr<DataModelImpl>();
 }
 
+	
+bool Factory::hasIOProcessor(const std::string& type) {
+	if (_ioProcessorAliases.find(type) != _ioProcessorAliases.end()) {
+		return true;
+	} else if(_parentFactory) {
+		return _parentFactory->hasIOProcessor(type);
+	}
+	return false;
+}
+
 boost::shared_ptr<IOProcessorImpl> Factory::createIOProcessor(const std::string& type, InterpreterImpl* interpreter) {
 	// do we have this type ourself?
 	if (_ioProcessorAliases.find(type) != _ioProcessorAliases.end()) {
@@ -591,6 +620,16 @@ boost::shared_ptr<IOProcessorImpl> Factory::createIOProcessor(const std::string&
 	}
 
 	return boost::shared_ptr<IOProcessorImpl>();
+}
+
+bool Factory::hasExecutableContent(const std::string& localName, const std::string& nameSpace) {
+	std::string actualNameSpace = (nameSpace.length() == 0 ? "http://www.w3.org/2005/07/scxml" : nameSpace);
+	if (_executableContent.find(std::make_pair(localName, actualNameSpace)) != _executableContent.end()) {
+		return true;
+	} else if(_parentFactory) {
+		return _parentFactory->hasExecutableContent(localName, nameSpace);
+	}
+	return false;
 }
 
 boost::shared_ptr<ExecutableContentImpl> Factory::createExecutableContent(const std::string& localName, const std::string& nameSpace, InterpreterImpl* interpreter) {

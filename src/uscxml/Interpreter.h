@@ -211,9 +211,25 @@ enum InterpreterState {
 	USCXML_MICROSTEPPED   = 2,   ///< processed one transition set
 	USCXML_MACROSTEPPED   = 4,   ///< processed all transition sets and reached a stable configuration
 };
-
-
 USCXML_API std::ostream& operator<< (std::ostream& os, const InterpreterState& interpreterState);
+
+class USCXML_API InterpreterIssue {
+public:
+	enum IssueSeverity {
+		USCXML_ISSUE_FATAL,
+		USCXML_ISSUE_WARNING,
+		USCXML_ISSUE_INFO
+	};
+	
+	InterpreterIssue(const std::string& msg, Arabica::DOM::Node<std::string> node, IssueSeverity severity);
+	
+	std::string xPath;
+	std::string message;
+	Arabica::DOM::Node<std::string> node;
+	IssueSeverity severity;
+};
+USCXML_API std::ostream& operator<< (std::ostream& os, const InterpreterIssue& issue);
+
 
 class USCXML_API InterpreterImpl : public boost::enable_shared_from_this<InterpreterImpl> {
 public:
@@ -453,6 +469,8 @@ protected:
 	void setupDOM();
 	virtual void setupIOProcessors();
 
+	std::list<InterpreterIssue> validate();
+
 	void initializeData(const Arabica::DOM::Element<std::string>& data);
 	void finalizeAndAutoForwardCurrentEvent();
 
@@ -615,6 +633,10 @@ public:
 		return _impl->step(0);
 	};
 
+	std::list<InterpreterIssue> validate() {
+		return _impl->validate();
+	}
+	
 	InterpreterState getState() {
 		return _impl->getInterpreterState();
 	}
