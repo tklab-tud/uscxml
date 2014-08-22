@@ -22,8 +22,11 @@
 #include "uscxml/Common.h"
 #include "LuaDataModel.h"
 
+// disable forcing to bool performance warning
+#pragma warning(push)
+#pragma warning(disable : 4800)
 #include "LuaBridge.h"
-//#include "RefCountedPtr.h"
+#pragma warning(pop)
 
 #include "uscxml/DOMUtils.h"
 
@@ -136,7 +139,6 @@ static int luaInFunction(lua_State * l) {
 	return 1;
 }
 
-
 boost::shared_ptr<DataModelImpl> LuaDataModel::create(InterpreterImpl* interpreter) {
 	boost::shared_ptr<LuaDataModel> dm = boost::shared_ptr<LuaDataModel>(new LuaDataModel());
 	dm->_interpreter = interpreter;
@@ -147,7 +149,9 @@ boost::shared_ptr<DataModelImpl> LuaDataModel::create(InterpreterImpl* interpret
 		const luabridge::LuaRef& requireFunc = luabridge::getGlobal(dm->_luaState, "require");
 		const luabridge::LuaRef& resultLxp = requireFunc("lxp");
 		const luabridge::LuaRef& resultLxpLOM = requireFunc("lxp.lom");
-		if (resultLxp && resultLxpLOM) {
+
+		// MSVC compiler bug with implicit cast operators, see comments in LuaRef class
+		if ((bool)resultLxp && (bool)resultLxpLOM) {
 			_luaHasXMLParser = true;
 			luabridge::setGlobal(dm->_luaState, resultLxp, "lxp");
 			luabridge::setGlobal(dm->_luaState, resultLxpLOM, "lxp.lom");

@@ -784,6 +784,96 @@ std::list<InterpreterIssue> InterpreterImpl::validate() {
 	allExecContents.push_back(scripts);
 	allExecContents.push_back(cancels);
 	
+	NodeSet<std::string> allElements;
+	allElements.push_back(allStates);
+	allElements.push_back(allExecContents);
+	allElements.push_back(transitions);
+	allElements.push_back(initials);
+	allElements.push_back(onEntries);
+	allElements.push_back(onExits);
+	allElements.push_back(dataModels);
+	allElements.push_back(datas);
+	allElements.push_back(doneDatas);
+	allElements.push_back(contents);
+	allElements.push_back(params);
+	allElements.push_back(invokes);
+	allElements.push_back(finalizes);
+	
+
+	std::set<std::string> execContentSet;
+	execContentSet.insert("raise");
+	execContentSet.insert("if");
+	execContentSet.insert("elseif");
+	execContentSet.insert("else");
+	execContentSet.insert("foreach");
+	execContentSet.insert("log");
+	execContentSet.insert("send");
+	execContentSet.insert("assign");
+	execContentSet.insert("script");
+	execContentSet.insert("cancel");
+	
+	std::map<std::string, std::set<std::string> > validChildren;
+	validChildren["scxml"].insert("state");
+	validChildren["scxml"].insert("parallel");
+	validChildren["scxml"].insert("final");
+	validChildren["scxml"].insert("datamodel");
+	validChildren["scxml"].insert("script");
+	
+	validChildren["state"].insert("onentry");
+	validChildren["state"].insert("onexit");
+	validChildren["state"].insert("transition");
+	validChildren["state"].insert("initial");
+	validChildren["state"].insert("state");
+	validChildren["state"].insert("parallel");
+	validChildren["state"].insert("final");
+	validChildren["state"].insert("history");
+	validChildren["state"].insert("datamodel");
+	validChildren["state"].insert("invoke");
+
+	validChildren["parallel"].insert("onentry");
+	validChildren["parallel"].insert("onexit");
+	validChildren["parallel"].insert("transition");
+	validChildren["parallel"].insert("state");
+	validChildren["parallel"].insert("parallel");
+	validChildren["parallel"].insert("history");
+	validChildren["parallel"].insert("datamodel");
+	validChildren["parallel"].insert("invoke");
+
+	validChildren["transition"] = execContentSet;
+	validChildren["onentry"] = execContentSet;
+	validChildren["onexit"] = execContentSet;
+	validChildren["finalize"] = execContentSet;
+
+	validChildren["if"] = execContentSet;
+	validChildren["elseif"] = execContentSet;
+	validChildren["else"] = execContentSet;
+	validChildren["foreach"] = execContentSet;
+
+	validChildren["initial"].insert("transition");
+	validChildren["history"].insert("transition");
+
+	validChildren["final"].insert("onentry");
+	validChildren["final"].insert("onexit");
+	validChildren["final"].insert("donedata");
+
+	validChildren["datamodel"].insert("data");
+
+	validChildren["donedata"].insert("content");
+	validChildren["donedata"].insert("param");
+
+	validChildren["send"].insert("content");
+	validChildren["send"].insert("param");
+
+	validChildren["invoke"].insert("content");
+	validChildren["invoke"].insert("param");
+	validChildren["invoke"].insert("finalize");
+
+	std::map<std::string, std::set<std::string> > validParents;
+	for (std::map<std::string, std::set<std::string> >::iterator parentIter = validChildren.begin(); parentIter != validChildren.end(); parentIter++) {
+		for (std::set<std::string>::iterator childIter = parentIter->second.begin(); childIter != parentIter->second.end(); childIter++) {
+			validParents[*childIter].insert(parentIter->first);
+		}
+	}
 	
 	for (int i = 0; i < allStates.size(); i++) {
 		Element<std::string> state = Element<std::string>(allStates[i]);
@@ -929,59 +1019,26 @@ std::list<InterpreterIssue> InterpreterImpl::validate() {
 		}
 	}
 
-	// check that all SCXML elements are in valid containers
-	
-	// check that all states are in states
+	// check that all SCXML elements have valid parents
 	{
-		NodeSet<std::string> validStateParents;
-		validStateParents.push_back(allStates);
-		validStateParents.push_back(scxmls);
-		
-		for (int i = 0; i < allStates.size(); i++) {
-			Element<std::string> state = Element<std::string>(allStates[i]);
-			if (!state.getParentNode() || state.getParentNode().getNodeType() != Node_base::ELEMENT_NODE) {
-				issues.push_back(InterpreterIssue("State's parent node is no element", state, InterpreterIssue::USCXML_ISSUE_INFO));
+		for (int i = 0; i < allElements.size(); i++) {
+			Element<std::string> element = Element<std::string>(allElements[i]);
+			std::string localName = LOCALNAME(element);
+			if (!element.getParentNode() || element.getParentNode().getNodeType() != Node_base::ELEMENT_NODE) {
+				issues.push_back(InterpreterIssue("Parent of " + localName + " is no element", element, InterpreterIssue::USCXML_ISSUE_INFO));
 				continue;
 			}
 			
-			Element<std::string> parent = Element<std::string>(state.getParentNode());
-			if (!isMember(parent, validStateParents)) {
-				issues.push_back(InterpreterIssue("State has invalid parent element", state, InterpreterIssue::USCXML_ISSUE_INFO));
+			Element<std::string> parent = Element<std::string>(element.getParentNode());
+			std::string parentName = LOCALNAME(parent);
+
+			if (validParents[localName].find(parentName) == validParents[localName].end()) {
+				issues.push_back(InterpreterIssue("Element " + parentName + " can be no parent of " + localName, element, InterpreterIssue::USCXML_ISSUE_INFO));
 				continue;
 			}
 		}
 	}
 	
-	// check that all executable content is in a executable content container
-	{
-		NodeSet<std::string> validExecContentParents;
-		validExecContentParents.push_back(transitions);
-		validExecContentParents.push_back(onExits);
-		validExecContentParents.push_back(onEntries);
-
-		for (int i = 0; i < allExecContents.size(); i++) {
-			Element<std::string> execContent = Element<std::string>(allExecContents[i]);
-			if (!execContent.getParentNode() || execContent.getParentNode().getNodeType() != Node_base::ELEMENT_NODE) {
-				issues.push_back(InterpreterIssue("Executable content's parent node is no element", execContent, InterpreterIssue::USCXML_ISSUE_INFO));
-				continue;
-			}
-
-			Node<std::string> parent = execContent.getParentNode();
-			if (parent == _scxml && isMember(execContent, scripts))
-				continue;
-			
-			while(parent && parent.getNodeType() == Node_base::ELEMENT_NODE) {
-				if (isMember(parent, validExecContentParents)) {
-					break;
-				}
-				parent = parent.getParentNode();
-			}
-			if (!parent) {
-				issues.push_back(InterpreterIssue("Executable content is not in a valid parent", execContent, InterpreterIssue::USCXML_ISSUE_INFO));
-				continue;
-			}
-		}
-	}
 	
 	// check that the datamodel is known
 	if (HAS_ATTR(_scxml, "datamodel")) {

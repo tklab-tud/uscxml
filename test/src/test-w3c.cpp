@@ -202,6 +202,14 @@ int main(int argc, char** argv) {
 	}
 
 	if (interpreter) {
+//		std::list<InterpreterIssue> issues = interpreter.validate();
+//		if (issues.size() > 0) {
+//			for (std::list<InterpreterIssue>::iterator issueIter = issues.begin(); issueIter != issues.end(); issueIter++) {
+//				std::cout << *issueIter << std::endl;
+//			}
+//			exit(EXIT_FAILURE);
+//		}
+
 //		interpreter.setCmdLineOptions(argc, argv);
 //		interpreter->setCapabilities(Interpreter::CAN_NOTHING);
 //		interpreter->setCapabilities(Interpreter::CAN_BASIC_HTTP | Interpreter::CAN_GENERIC_HTTP);
