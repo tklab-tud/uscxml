@@ -27,6 +27,41 @@ int main(int argc, char** argv) {
 	while(iterations--) {
 
 		if (1) {
+			// Unreachable states
+			
+			const char* xml =
+			"<scxml datamodel=\"ecmascript\">"
+			"	<state id=\"foo\">"
+			"		<parallel id=\"foz\">"
+			"			<state id=\"s0\" />"
+			"			<state id=\"s1\" />"
+			"			<state id=\"s2\" />"
+			"		</parallel>"
+			" </state>"
+			"	<state id=\"bar\" />"
+			"</scxml>";
+			
+			std::set<std::string> issueLocations = issueLocationsForXML(xml);
+			assert(issueLocations.find("//state[@id=\"bar\"]") != issueLocations.end());
+			assert(issueLocations.size() == 1);
+		}
+
+		if (1) {
+			// Invalid parents
+			
+			const char* xml =
+			"<scxml datamodel=\"ecmascript\">"
+			"		<onentry>"
+			"			<cancel sendidexpr=\"foo\" />"
+			"		</onentry>"
+			"</scxml>";
+			
+			std::set<std::string> issueLocations = issueLocationsForXML(xml);
+			assert(issueLocations.find("/scxml[1]/onentry[1]") != issueLocations.end());
+			assert(issueLocations.size() == 1);
+		}
+
+		if (1) {
 			// State has no 'id' attribute
 			const char* xml =
 			"<scxml datamodel=\"ecmascript\">"
@@ -309,6 +344,7 @@ int main(int argc, char** argv) {
 			assert(issueLocations.find("//state[@id=\"start\"]/onentry[1]/cancel[1]") != issueLocations.end());
 			assert(issueLocations.size() == 1);
 		}
+
 
 	}
 

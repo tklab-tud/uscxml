@@ -39,6 +39,7 @@
 #include "uscxml/concurrency/BlockingQueue.h"
 #include "uscxml/messages/Data.h"
 #include "uscxml/messages/SendRequest.h"
+#include "uscxml/debug/InterpreterIssue.h"
 #include "uscxml/URL.h"
 
 #include "uscxml/plugins/DataModel.h"
@@ -214,24 +215,6 @@ enum InterpreterState {
 	USCXML_MACROSTEPPED   = 4,   ///< processed all transition sets and reached a stable configuration
 };
 USCXML_API std::ostream& operator<< (std::ostream& os, const InterpreterState& interpreterState);
-
-class USCXML_API InterpreterIssue {
-public:
-	enum IssueSeverity {
-		USCXML_ISSUE_FATAL,
-		USCXML_ISSUE_WARNING,
-		USCXML_ISSUE_INFO
-	};
-	
-	InterpreterIssue(const std::string& msg, Arabica::DOM::Node<std::string> node, IssueSeverity severity);
-	
-	std::string xPath;
-	std::string message;
-	Arabica::DOM::Node<std::string> node;
-	IssueSeverity severity;
-};
-USCXML_API std::ostream& operator<< (std::ostream& os, const InterpreterIssue& issue);
-
 
 class USCXML_API InterpreterImpl : public boost::enable_shared_from_this<InterpreterImpl> {
 public:
@@ -571,6 +554,8 @@ protected:
 	friend class USCXMLInvoker;
 	friend class SCXMLIOProcessor;
 	friend class Interpreter;
+	friend class InterpreterIssue;
+
 };
 
 class USCXML_API Interpreter {
