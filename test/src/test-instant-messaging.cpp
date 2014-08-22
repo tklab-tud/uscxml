@@ -268,7 +268,7 @@ int main(int argc, char *argv[]) {
 	account = purple_account_new("uscxml@localhost", "prpl-jabber");
 
 	/* Get the password for the account */
-	purple_account_set_password(account, "password", NULL, NULL);
+	purple_account_set_password(account, "password");
 
 	/* It's necessary to enable the account first. */
 	purple_account_set_enabled(account, UI_ID, TRUE);

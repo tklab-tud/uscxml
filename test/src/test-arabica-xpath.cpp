@@ -194,7 +194,7 @@ int main(int argc, char** argv) {
 		assert(SA::construct_from_utf8("root") == result.asString());
 	} // testLocalNameFn1
 
-	{
+	if (0) {
 		using namespace Arabica::XPath;
 		Arabica::DOM::DocumentFragment<std::string> frag = document_.createDocumentFragment();
 		frag.appendChild(document_.createElement("foo"));
@@ -205,7 +205,7 @@ int main(int argc, char** argv) {
 		svr.setVariable("fruit", ns);
 		parser.setVariableResolver(svr);
 
-		XPathValue<string_type, string_adaptor> result = parser.evaluate(SA::construct_from_utf8("local-name($fruit/foo) = 'foo'"), document_);
+		XPathValue<string_type, string_adaptor> result = parser.evaluate(SA::construct_from_utf8("local-name($fruit/foo) == 'foo'"), document_);
 		std::cout << result.asBool() << std::endl;
 	}
 

@@ -8,7 +8,7 @@ int main(int argc, char** argv) {
 	using namespace uscxml;
 
 	if (true) {
-		int testArgc = 11;
+		int testArgc = 10;
 		const char* testArgv[] = {
 			"test-cmdline-parsing",
 			"--verbose",

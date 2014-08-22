@@ -95,6 +95,8 @@ void customTerminate() {
 	abort();
 }
 
+int retCode = EXIT_FAILURE;
+
 class W3CStatusMonitor : public uscxml::InterpreterMonitor {
 
 	void beforeTakingTransition(uscxml::Interpreter interpreter, const Arabica::DOM::Element<std::string>& transition, bool moreComing) {
@@ -147,17 +149,16 @@ class W3CStatusMonitor : public uscxml::InterpreterMonitor {
 				std::cout << ATTR_CAST(config[0], "id") << std::endl;
 				if (boost::starts_with(ATTR_CAST(config[0], "id"), "active:{pass")) {
 					std::cout << "TEST SUCCEEDED" << std::endl;
-					exit(EXIT_SUCCESS);
+					retCode = EXIT_SUCCESS;
 				}
 			} else {
 				if (boost::iequals(ATTR_CAST(config[0], "id"), "pass")) {
 					std::cout << "TEST SUCCEEDED" << std::endl;
-					exit(EXIT_SUCCESS);
+					retCode = EXIT_SUCCESS;
 				}
 			}
 		}
 		std::cout << "TEST FAILED" << std::endl;
-		exit(EXIT_FAILURE);
 	}
 
 	Arabica::XPath::NodeSet<std::string> exitingStates;
@@ -224,5 +225,5 @@ int main(int argc, char** argv) {
 		while(interpreter.runOnMainThread(25));
 	}
 
-	return EXIT_SUCCESS;
+	return retCode;
 }

@@ -341,6 +341,16 @@ bool LuaDataModel::isLocation(const std::string& expr) {
 }
 
 bool LuaDataModel::isValidSyntax(const std::string& expr) {
+	int preStack = lua_gettop(_luaState);
+	int err = luaL_loadstring (_luaState, expr.c_str());
+
+	// clean stack again
+	lua_pop(_luaState, lua_gettop(_luaState) - preStack);
+
+	
+	if (err == LUA_ERRSYNTAX)
+		return false;
+
 	return true;
 }
 

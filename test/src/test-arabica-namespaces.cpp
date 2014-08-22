@@ -33,7 +33,6 @@ assert(InterpreterImpl::filterChildElements(origNS.xmlNSPrefix + "baz", origDoc.
  Test DOM manipulations and document cloning with different namespace scenarios
  */
 
-static std::string testPath;
 static Arabica::XPath::XPath<std::string> _xpath;
 
 std::pair<Document<std::string>, NameSpaceInfo> parse(const std::string xmlString) {
@@ -158,12 +157,6 @@ static void validateRootFooBarBaz(std::pair<Document<std::string>, NameSpaceInfo
 }
 
 int main(int argc, char** argv) {
-
-	if (argc < 2) {
-		std::cerr << "Expected path to the tests as first argument";
-		exit(EXIT_FAILURE);
-	}
-	testPath = argv[1];
 
 	// No namespaces at all
 	{

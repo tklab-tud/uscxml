@@ -26,6 +26,7 @@ typedef uscxml::InvokerImpl InvokerImpl;
 typedef uscxml::IOProcessorImpl IOProcessorImpl;
 typedef uscxml::DataModelImpl DataModelImpl;
 typedef uscxml::ExecutableContentImpl ExecutableContentImpl;
+typedef uscxml::InterpreterIssue InterpreterIssue;
 
 %feature("director") uscxml::WrappedInvoker;
 %feature("director") uscxml::WrappedDataModel;
@@ -384,6 +385,7 @@ using System.Runtime.InteropServices;
 %include "../../../uscxml/concurrency/BlockingQueue.h"
 %include "../../../uscxml/server/HTTPServer.h"
 //%include "../../../uscxml/debug/DebuggerServlet.h"
+%include "../../../uscxml/debug/InterpreterIssue.h"
 
 %include "../../../uscxml/messages/Blob.h"
 %include "../../../uscxml/messages/Data.h"
