@@ -17,11 +17,11 @@ endif()
 
 # specify USCXML version
 SET(USCXML_VERSION_MAJOR "0")
-SET(USCXML_VERSION_MINOR "3")
-SET(USCXML_VERSION_PATCH "1")
+SET(USCXML_VERSION_MINOR "4")
+SET(USCXML_VERSION_PATCH "0")
 SET(USCXML_VERSION ${USCXML_VERSION_MAJOR}.${USCXML_VERSION_MINOR}.${USCXML_VERSION_PATCH})
 
-# build type has to be set before the project definition4
+# build type has to be set before the project definition
 SET(BUILD_TYPE_HELP "Choose the type of build, options are: None(CMAKE_CXX_FLAGS or CMAKE_C_FLAGS used) Debug, Release, RelWithDebInfo, MinSizeRel.")
 IF(DEFINED CMAKE_BUILD_TYPE)
    SET(CMAKE_BUILD_TYPE ${CMAKE_BUILD_TYPE} CACHE STRING ${BUILD_TYPE_HELP})
@@ -43,6 +43,9 @@ include("${CMAKE_MODULE_PATH}/BinaryExists.cmake")
 if (${CMAKE_SYSTEM_PROCESSOR} STREQUAL "AMD64")
   set(CMAKE_SYSTEM_PROCESSOR "x86")
 endif()
+if (${CMAKE_SYSTEM_PROCESSOR} STREQUAL "x86_64")
+  set(CMAKE_SYSTEM_PROCESSOR "x86")
+endif()
 
 # use folders in the IDEs for the various targets (e.g. Library, Testing, Tools ..)
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
@@ -50,6 +53,10 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 # lower case version of system name and compiler for library paths
 string(TOLOWER ${CMAKE_SYSTEM_NAME} CMAKE_SYSTEM_NAME_LC)
 string(TOLOWER ${CMAKE_CXX_COMPILER_ID} CMAKE_CXX_COMPILER_ID_LC)
+
+if (WIN32)
+	set(CMAKE_CXX_COMPILER_ID_LC ${CMAKE_CXX_COMPILER_ID_LC}${MSVC_VERSION})
+endif()
 
 ############################################################
 # Search paths for cross compiling and prebuilds
@@ -64,7 +71,7 @@ endif()
 # is this a 64Bit host?
 if(CMAKE_SIZEOF_VOID_P EQUAL 8)
 	set(64BIT_HOST ON)
-	set(64BIT_LIB_POSTFIX 64)
+	set(64BIT_SUFFIX "_64")
 	# additional library paths to be searched
 	set(FIND_LIBRARY_USE_LIB64_PATHS ON)
 # 	LIST(APPEND CMAKE_FIND_ROOT_PATH "/usr/local/lib64")
@@ -72,6 +79,7 @@ if(CMAKE_SIZEOF_VOID_P EQUAL 8)
 endif()
 
 if (APPLE)
+	set(LIBCPP_NAME "libstdc++") # before mavericks
 	# get MacOSX version
 	execute_process(COMMAND /usr/bin/sw_vers -productVersion
 		OUTPUT_VARIABLE MACOSX_VERSION
@@ -86,6 +94,7 @@ if (APPLE)
 			MACOSX_VERSION_PATCH)
 	endif()
 	if (MACOSX_VERSION VERSION_GREATER "10.8.99")
+		set(LIBCPP_NAME "libc++") # mavericks
 		# LIST(APPEND CMAKE_FIND_ROOT_PATH ${CMAKE_OSX_SYSROOT})
 		# make sure that we find libxml2 here first
 		set(CMAKE_FIND_ROOT_PATH ${CMAKE_OSX_SYSROOT} ${CMAKE_FIND_ROOT_PATH})
@@ -120,93 +129,83 @@ endif()
 # http://www.vtk.org/Wiki/CMake_Cross_Compiling#Searching_and_finding_external_software
 #
 
+
+#
+# determine platform id
+#
 SET(USCXML_PLATFORM_ID)
+if (CMAKE_SYSTEM_NAME_LC)
+	set(USCXML_PLATFORM_ID ${CMAKE_SYSTEM_NAME_LC})
+else()
+	set(USCXML_PLATFORM_ID "unknown")
+endif()
+
+if (CMAKE_SYSTEM_PROCESSOR)
+	set(USCXML_PLATFORM_ID "${USCXML_PLATFORM_ID}-${CMAKE_SYSTEM_PROCESSOR}${64BIT_SUFFIX}")
+else()
+	set(USCXML_PLATFORM_ID "unknown")
+endif()
+
+if (CMAKE_CXX_COMPILER_ID_LC)
+	set(USCXML_PLATFORM_ID "${USCXML_PLATFORM_ID}-${CMAKE_CXX_COMPILER_ID_LC}")
+endif()
+
+if (LIBCPP_NAME)
+	set(USCXML_PLATFORM_ID "${USCXML_PLATFORM_ID}-${LIBCPP_NAME}")
+endif()
+
+# handle cross compiles
 if (CMAKE_CROSSCOMPILING)
 	if (IOS)
-		SET(USCXML_PLATFORM_ID "ios")
+		SET(USCXML_PLATFORM_ID "ios-arm-clang")
+		SET(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY "ONLY")
 	elseif (ANDROID)
-		SET(USCXML_PLATFORM_ID "android")
-	else()
-		SET(USCXML_PLATFORM_ID "${CMAKE_SYSTEM_NAME_LC}-${CMAKE_SYSTEM_PROCESSOR}_64")
-	endif()
-else()
-	if (WIN32 AND 64BIT_HOST)
-		SET(USCXML_PLATFORM_ID "${CMAKE_SYSTEM_NAME_LC}-${CMAKE_SYSTEM_PROCESSOR}_64")
-	elseif (APPLE)
-		SET(USCXML_PLATFORM_ID "${CMAKE_SYSTEM_NAME_LC}-i386")
-	else()
-		SET(USCXML_PLATFORM_ID "${CMAKE_SYSTEM_NAME_LC}-${CMAKE_SYSTEM_PROCESSOR}")
+		# handle mips, x86 and arm
+		SET(USCXML_PLATFORM_ID "android-${ANDROID_ABI}")
+		
+		SET(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY "ONLY") # we need both to find jni - we don't?
+		SET(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM "BOTH")
+		SET(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE "BOTH")
+		
+		LIST(APPEND CMAKE_PREFIX_PATH "/usr/local/bin") # this is needed to find swig
+		LIST(APPEND CMAKE_PREFIX_PATH "/opt/local/bin") # this is needed to find protoc
 	endif()
 endif()
 
 SET(USCXML_PREBUILT_LIBRARY_PATH)
-SET(USCXML_PREBUILT_HEADER_PATH "${PROJECT_SOURCE_DIR}/contrib/prebuilt")
+SET(USCXML_PREBUILT_HEADER_PATH  "${PROJECT_SOURCE_DIR}/contrib/prebuilt")
+SET(USCXML_PREBUILT_LIBRARY_PATH "${PROJECT_SOURCE_DIR}/contrib/prebuilt/${USCXML_PLATFORM_ID}")
 
-# search roots for libraries
-if(CMAKE_CROSSCOMPILING)
-	SET(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE "ONLY")
-	if (IOS)
-		SET(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY "ONLY")
-		SET(USCXML_PREBUILT_LIBRARY_PATH "${PROJECT_SOURCE_DIR}/contrib/prebuilt/ios/${CMAKE_SYSTEM_VERSION}")
-		SET(USCXML_PREBUILT_LIBRARY_PATH "${PROJECT_SOURCE_DIR}/contrib/prebuilt/ios/")
-	elseif (ANDROID)
-		SET(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY "ONLY") # we need both to find jni - we don't?
-		SET(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM "BOTH")
-		SET(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE "BOTH")
-		SET(USCXML_PREBUILT_LIBRARY_PATH "${PROJECT_SOURCE_DIR}/contrib/prebuilt/android/${ANDROID_ABI}")
-		LIST(APPEND CMAKE_PREFIX_PATH "/usr/local/bin") # this is needed to find swig
-		LIST(APPEND CMAKE_PREFIX_PATH "/opt/local/bin") # this is needed to find protoc
-	endif ()
-else ()
-	# SET(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM "BOTH")
-	# SET(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE "BOTH")
-	# SET(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY "BOTH")
-	if (APPLE)
-		SET(USCXML_PREBUILT_LIBRARY_PATH "${PROJECT_SOURCE_DIR}/contrib/prebuilt/${USCXML_PLATFORM_ID}/${MACOSX_VERSION_MAJOR}.${MACOSX_VERSION_MINOR}/${CMAKE_CXX_COMPILER_ID_LC}")
-	else()
-		SET(USCXML_PREBUILT_LIBRARY_PATH "${PROJECT_SOURCE_DIR}/contrib/prebuilt/${USCXML_PLATFORM_ID}/${CMAKE_CXX_COMPILER_ID_LC}")
-	endif()
-endif()
+SET(USCXML_LIBRARY_HOST_URL_PREFIX "http://uscxml.tk.informatik.tu-darmstadt.de/prebuilt" CACHE STRING "The root path of an URL where to look for prebuilt libraries." FORCE)
+SET(USCXML_LIBRARY_ARCHIVE_NAME "uscxml-prebuilt-${USCXML_PLATFORM_ID}.tgz")
 
-SET(USCXML_LIBRARY_HOST_URL_PREFIX "http://uscxml.tk.informatik.tu-darmstadt.de/prebuilt" CACHE STRING "The root path of an URL where to look for prebuilt libraries.")
+#
+# Download platform independent headers
+#
 
-if (CMAKE_CROSSCOMPILING)
-	if (IOS)
-		SET(USCXML_LIBRARY_ARCHIVE_NAME uscxml-prebuilt-ios.tgz)
-	elseif(ANDROID)
-		SET(USCXML_LIBRARY_ARCHIVE_NAME uscxml-prebuilt-android.tgz)
-	else()
-	endif()
-else()
-	SET(USCXML_LIBRARY_ARCHIVE_NAME uscxml-prebuilt-${USCXML_PLATFORM_ID}.tgz)
-endif()
-
-
+# delete if too old or unversioned
 if (EXISTS "${PROJECT_SOURCE_DIR}/contrib/prebuilt/include/VERSION.txt")
 	file (STRINGS "${PROJECT_SOURCE_DIR}/contrib/prebuilt/include/VERSION.txt" PREBUILT_INCUDES_VERSION)
 endif()
 if (NOT "${USCXML_VERSION}" VERSION_EQUAL "${PREBUILT_INCUDES_VERSION}")
-	message(STATUS "Prebuilt headers unversioned, too old or non-existant - downloading (again)")
+	message(STATUS "Prebuilt headers unversioned, too old or non-existent - deleting and downloading again")
 	execute_process(
 		COMMAND ${CMAKE_COMMAND} -E remove_directory ${PROJECT_SOURCE_DIR}/contrib/prebuilt/include
 	)
 endif()
 
-if (EXISTS "${PROJECT_SOURCE_DIR}/contrib/prebuilt/${USCXML_PLATFORM_ID}/VERSION.txt")
-	file (STRINGS "${PROJECT_SOURCE_DIR}/contrib/prebuilt/${USCXML_PLATFORM_ID}/VERSION.txt" PREBUILT_LIBRARIES_VERSION)
-endif()
-if (NOT "${USCXML_VERSION}" VERSION_EQUAL "${PREBUILT_LIBRARIES_VERSION}")
-	message(STATUS "Prebuilt libraries unversioned, too old or non-existant - downloading (again)")
-	execute_process(
-		COMMAND ${CMAKE_COMMAND} -E remove_directory ${PROJECT_SOURCE_DIR}/contrib/prebuilt/${USCXML_PLATFORM_ID}
-	)
-endif()
-
+# download if not existing
 if (NOT EXISTS ${PROJECT_SOURCE_DIR}/contrib/prebuilt/include)
-	message(STATUS "Downloading header files: ${USCXML_LIBRARY_HOST_URL_PREFIX}/${USCXML_VERSION}/include.tgz")
-	file(DOWNLOAD ${USCXML_LIBRARY_HOST_URL_PREFIX}/${USCXML_VERSION}/include.tgz
-		${PROJECT_SOURCE_DIR}/contrib/prebuilt/include.tgz
-		INACTIVITY_TIMEOUT 60 STATUS DOWNLOAD_STATUS SHOW_PROGRESS)
+	message(STATUS "Downloading ${USCXML_LIBRARY_HOST_URL_PREFIX}/${USCXML_VERSION}/include.tgz")
+
+	file(
+		DOWNLOAD 
+			${USCXML_LIBRARY_HOST_URL_PREFIX}/${USCXML_VERSION}/include.tgz
+			${PROJECT_SOURCE_DIR}/contrib/prebuilt/include.tgz
+		INACTIVITY_TIMEOUT 60 
+		STATUS DOWNLOAD_STATUS 
+		SHOW_PROGRESS)
+		
 	list(GET DOWNLOAD_STATUS 0 STATUS_CODE)
 	list(GET DOWNLOAD_STATUS 1 STATUS_STRING)
 	if(STATUS_CODE EQUAL 0)
@@ -220,30 +219,64 @@ if (NOT EXISTS ${PROJECT_SOURCE_DIR}/contrib/prebuilt/include)
 		)
 		file(WRITE ${PROJECT_SOURCE_DIR}/contrib/prebuilt/include/VERSION.txt "${USCXML_VERSION}")
 	else()
-		message("Downloading header files failed with ${STATUS_STRING}")
+		message(FATAL_ERROR "\nDownloading header files\nFAILED with ${STATUS_STRING} (${STATUS_CODE}) \nThis should not happen, retry?")
 	endif()
 endif()
 
+#
+# Download platform dependent headers and libraries
+#
+
+# only delete if too old
+if (EXISTS "${PROJECT_SOURCE_DIR}/contrib/prebuilt/${USCXML_PLATFORM_ID}/VERSION.txt")
+	file (STRINGS "${PROJECT_SOURCE_DIR}/contrib/prebuilt/${USCXML_PLATFORM_ID}/VERSION.txt" PREBUILT_LIBRARIES_VERSION)
+	if (NOT "${USCXML_VERSION}" VERSION_EQUAL "${PREBUILT_LIBRARIES_VERSION}")
+		message(STATUS "Prebuilt libraries unversioned, too old or non-existent - deleting and downloading again")
+		execute_process(
+			COMMAND ${CMAKE_COMMAND} -E remove_directory ${PROJECT_SOURCE_DIR}/contrib/prebuilt/${USCXML_PLATFORM_ID}
+		)
+	endif()
+endif()
+
+
 if (NOT EXISTS ${USCXML_PREBUILT_LIBRARY_PATH})
-	message(STATUS "Downloading prebuilt libraries: ${USCXML_LIBRARY_HOST_URL_PREFIX}/${USCXML_VERSION}/${USCXML_LIBRARY_ARCHIVE_NAME}")
-	file(DOWNLOAD ${USCXML_LIBRARY_HOST_URL_PREFIX}/${USCXML_VERSION}/${USCXML_LIBRARY_ARCHIVE_NAME}
-		${PROJECT_SOURCE_DIR}/contrib/prebuilt/${USCXML_LIBRARY_ARCHIVE_NAME}
-		INACTIVITY_TIMEOUT 60 STATUS DOWNLOAD_STATUS SHOW_PROGRESS)
+	message(STATUS "Cannot find prebuilt libraries in ${USCXML_PREBUILT_LIBRARY_PATH}")
+	message(STATUS "Trying to download ${USCXML_LIBRARY_HOST_URL_PREFIX}/${USCXML_VERSION}/${USCXML_LIBRARY_ARCHIVE_NAME}")
+	file(
+		DOWNLOAD 
+			${USCXML_LIBRARY_HOST_URL_PREFIX}/${USCXML_VERSION}/${USCXML_LIBRARY_ARCHIVE_NAME}
+			${PROJECT_SOURCE_DIR}/contrib/prebuilt/${USCXML_LIBRARY_ARCHIVE_NAME}
+		INACTIVITY_TIMEOUT 60 
+		STATUS DOWNLOAD_STATUS 
+		SHOW_PROGRESS)
+	
 	list(GET DOWNLOAD_STATUS 0 STATUS_CODE)
 	list(GET DOWNLOAD_STATUS 1 STATUS_STRING)
 	if(STATUS_CODE EQUAL 0)
+		# everything worked out fine! - create dir, unpack and delete
+		file(MAKE_DIRECTORY ${PROJECT_SOURCE_DIR}/contrib/prebuilt/${USCXML_PLATFORM_ID})
 		execute_process(
 			COMMAND ${CMAKE_COMMAND} -E tar xzf ${PROJECT_SOURCE_DIR}/contrib/prebuilt/${USCXML_LIBRARY_ARCHIVE_NAME}
-			WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/contrib/prebuilt/
+			WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/contrib/prebuilt/${USCXML_PLATFORM_ID}
 		)
 		execute_process(
 			COMMAND ${CMAKE_COMMAND} -E remove ${PROJECT_SOURCE_DIR}/contrib/prebuilt/${USCXML_LIBRARY_ARCHIVE_NAME}
 			WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/contrib/prebuilt/
 		)
 		file(WRITE ${PROJECT_SOURCE_DIR}/contrib/prebuilt/${USCXML_PLATFORM_ID}/VERSION.txt "${USCXML_VERSION}")
+	elseif(
+		NOT STATUS_CODE EQUAL 19 AND   # FTP: Invalid file / file not found
+		NOT STATUS_CODE EQUAL 22)      # HTTP: HTTP response code
+		# server was unreachable, do not create dir to retry
+		message(FATAL_ERROR "\nDownloading prebuilt libraries\nFAILED with ${STATUS_STRING} (${STATUS_CODE}) \nThis should not happen, retry?")
 	else()
-		message("Downloading prebuilt libraries failed with ${STATUS_STRING}")
-		message("Provide prebuilts in ${PROJECT_SOURCE_DIR}/contrib/prebuilt/${USCXML_PLATFORM_ID}/")
+		# we did not know the file, create dir for manual libs
+		file(MAKE_DIRECTORY ${PROJECT_SOURCE_DIR}/contrib/prebuilt/${USCXML_PLATFORM_ID})
+		execute_process(
+			COMMAND ${CMAKE_COMMAND} -E remove ${PROJECT_SOURCE_DIR}/contrib/prebuilt/${USCXML_LIBRARY_ARCHIVE_NAME}
+			WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/contrib/prebuilt/
+		)
+		message(FATAL_ERROR "\nPlatform is not supported!\nProvide headers and libraries in\n${PROJECT_SOURCE_DIR}/contrib/prebuilt/${USCXML_PLATFORM_ID}/")
 	endif()
 endif()
 
@@ -1293,7 +1326,7 @@ if (BUILD_SHARED_LIBS AND BUILD_BINDINGS)
 endif()
 
 message(STATUS "General information:")
-message(STATUS "  Build type ..................... : ${CMAKE_BUILD_TYPE} for ${USCXML_PLATFORM_ID}")
+message(STATUS "  Build type ..................... : ${CMAKE_BUILD_TYPE} for ${USCXML_PLATFORM_ID} (${CMAKE_CXX_COMPILER_ID_LC})")
 if (BUILD_SHARED_LIBS)
 	if (BUILD_AS_PLUGINS)
 		message(STATUS "  Building library as ............ : SHARED with plugins")
