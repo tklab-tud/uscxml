@@ -217,6 +217,7 @@ public:
 	                           const std::string& invokeid,
 	                           const std::string& element) {}
 
+	virtual void reportIssue(Interpreter interpreter, InterpreterIssue issue) {}
 };
 
 }
