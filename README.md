@@ -211,7 +211,7 @@ more straight-forward approach, e.g. in Java:
 
 This will cause the interpreter to use the given instance for all send requests targeting one of the types 
 returned by <tt>ioProc.getNames()</tt> and not instantiate an instance via the factory. The instance can
-deliver events into the interpreter via <tt>returnEvent(Event e, boolean toExternalQueue)</tt>. The same 
+deliver events into the interpreter via <tt>returnEvent(Event e, boolean toInternalQueue = false)</tt>. The same 
 approach can be used for invokers:
 
     Interpreter interpreter = Intepreter.fromURI(uri);

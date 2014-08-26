@@ -37,7 +37,7 @@ namespace embedding
             // send in s1.onentry
             if ("Some string content" == req.getContent())
             {
-                returnEvent(new Event("received1"), true);
+                returnEvent(new Event("received1"));
                 return;
             }
         }

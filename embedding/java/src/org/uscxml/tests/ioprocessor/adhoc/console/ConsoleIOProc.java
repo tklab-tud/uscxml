@@ -45,7 +45,7 @@ public class ConsoleIOProc extends IOProcessor implements KeyListener {
 	public void keyPressed(KeyEvent e) {
 		Event evt = new Event("key.pressed");
 		evt.setData(keyEventToData(e));
-		returnEvent(evt, true);
+		returnEvent(evt);
 	}
 
 	/**  KeyListener */
@@ -53,7 +53,7 @@ public class ConsoleIOProc extends IOProcessor implements KeyListener {
 	public void keyReleased(KeyEvent e) {
 		Event evt = new Event("key.released");
 		evt.setData(keyEventToData(e));
-		returnEvent(evt, true);
+		returnEvent(evt);
 	}
 
 	/**  KeyListener */
@@ -61,7 +61,7 @@ public class ConsoleIOProc extends IOProcessor implements KeyListener {
 	public void keyTyped(KeyEvent e) {
 		Event evt = new Event("key.typed");
 		evt.setData(keyEventToData(e));
-		returnEvent(evt, true);
+		returnEvent(evt);
 	}
 	
 	static Data keyEventToData(KeyEvent e) {

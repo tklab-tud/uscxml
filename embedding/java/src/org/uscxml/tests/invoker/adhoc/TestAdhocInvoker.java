@@ -35,7 +35,7 @@ public class TestAdhocInvoker extends Invoker {
 	public void invoke(InvokeRequest req) {
 		System.out.println(req);
 		if ("Some string content".equals(req.getContent())) {
-			returnEvent(new Event("received1"), true); // enqueue an external event
+			returnEvent(new Event("received1")); // enqueue an external event
 		}
 	}
 

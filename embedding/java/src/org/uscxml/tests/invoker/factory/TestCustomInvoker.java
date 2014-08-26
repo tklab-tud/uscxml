@@ -29,14 +29,14 @@ public class TestCustomInvoker extends Invoker {
 	public void send(SendRequest req) {
 		System.out.println(req);
 		if ("foo".equals(req.getName()))
-			returnEvent(new Event("received2"), true); // enqueue an external event
+			returnEvent(new Event("received2")); // enqueue an external event
 	}
 
 	@Override
 	public void invoke(InvokeRequest req) {
 		System.out.println(req);
 		if ("Some string content".equals(req.getContent())) {
-			returnEvent(new Event("received1"), true); // enqueue an external event
+			returnEvent(new Event("received1")); // enqueue an external event
 		}
 	}
 
