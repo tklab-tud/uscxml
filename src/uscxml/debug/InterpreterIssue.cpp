@@ -407,7 +407,19 @@ std::list<InterpreterIssue> InterpreterIssue::forInterpreter(InterpreterImpl* in
 		for (int i = 0; i < invokes.size(); i++) {
 			Element<std::string> invoke = Element<std::string>(invokes[i]);
 			if (HAS_ATTR(invoke, "type") && !_factory->hasInvoker(ATTR(invoke, "type"))) {
-				issues.push_back(InterpreterIssue("Invoke with unknown type '" + ATTR(invoke, "type") + "'", invoke, InterpreterIssue::USCXML_ISSUE_FATAL));
+				// unknown at factory - adhoc extension?
+				if (HAS_ATTR(invoke, "id") && interpreter->_invokers.find(ATTR(invoke, "id")) != interpreter->_invokers.end())
+					continue; // not an issue
+				
+				IssueSeverity severity;
+				if (HAS_ATTR(invoke, "idlocation")) {
+					// we might still resolve at runtime
+					severity = InterpreterIssue::USCXML_ISSUE_WARNING;
+				} else {
+					// fatality!
+					severity = InterpreterIssue::USCXML_ISSUE_FATAL;
+				}
+				issues.push_back(InterpreterIssue("Invoke with unknown type '" + ATTR(invoke, "type") + "'", invoke, severity));
 				continue;
 			}
 		}
@@ -418,6 +430,9 @@ std::list<InterpreterIssue> InterpreterIssue::forInterpreter(InterpreterImpl* in
 		for (int i = 0; i < sends.size(); i++) {
 			Element<std::string> send = Element<std::string>(sends[i]);
 			if (HAS_ATTR(send, "type") && !_factory->hasIOProcessor(ATTR(send, "type"))) {
+				if (interpreter->_ioProcessors.find(ATTR(send, "type")) != interpreter->_ioProcessors.end())
+					continue; // not an issue, available ad-hoc
+
 				issues.push_back(InterpreterIssue("Send to unknown IO Processor '" + ATTR(send, "type") + "'", send, InterpreterIssue::USCXML_ISSUE_FATAL));
 				continue;
 			}
@@ -470,16 +485,18 @@ std::list<InterpreterIssue> InterpreterIssue::forInterpreter(InterpreterImpl* in
 	}
 
 
-	// check that the datamodel is known
-	if (HAS_ATTR(_scxml, "datamodel")) {
-		if (!_factory->hasDataModel(ATTR(_scxml, "datamodel"))) {
-			issues.push_back(InterpreterIssue("SCXML document requires unknown datamodel '" + ATTR(_scxml, "datamodel") + "'", _scxml, InterpreterIssue::USCXML_ISSUE_FATAL));
-		
-			// we cannot even check the rest as we require a datamodel
-			return issues;
+	// check that the datamodel is known if not already instantiated
+	if (!interpreter->_dataModel) {
+		if (HAS_ATTR(_scxml, "datamodel")) {
+			if (!_factory->hasDataModel(ATTR(_scxml, "datamodel"))) {
+				issues.push_back(InterpreterIssue("SCXML document requires unknown datamodel '" + ATTR(_scxml, "datamodel") + "'", _scxml, InterpreterIssue::USCXML_ISSUE_FATAL));
+			
+				// we cannot even check the rest as we require a datamodel
+				return issues;
+			}
 		}
 	}
-
+	
 	bool instantiatedDataModel = false;
 	// instantiate datamodel if not explicitly set
 	if (!_dataModel) {

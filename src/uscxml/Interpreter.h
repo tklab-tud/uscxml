@@ -517,7 +517,8 @@ protected:
 	InterpreterHTTPServlet* _httpServlet;
 	InterpreterWebSocketServlet* _wsServlet;
 	std::set<InterpreterMonitor*> _monitors;
-
+	std::set<std::string> _microstepConfigurations;
+	
 	long _lastRunOnMainThread;
 	std::string _name;
 	std::string _sessionId;
@@ -836,6 +837,8 @@ public:
 	virtual void beforeCompletion(Interpreter interpreter) {}
 	virtual void afterCompletion(Interpreter interpreter) {}
 
+	virtual void reportIssue(Interpreter interpreter, const InterpreterIssue& issue) {}
+	
 };
 
 }

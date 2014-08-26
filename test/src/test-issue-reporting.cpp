@@ -17,6 +17,15 @@ std::set<std::string> issueLocationsForXML(const std::string xml) {
 	return issueLocations;
 }
 
+size_t runtimeIssues;
+class IssueMonitor : public InterpreterMonitor {
+public:
+	IssueMonitor() { runtimeIssues = 0; }
+	void reportIssue(Interpreter interpreter, const InterpreterIssue& issue) {
+		runtimeIssues++;
+	}
+};
+
 int main(int argc, char** argv) {
 
 	google::InitGoogleLogging(argv[0]);
@@ -25,6 +34,29 @@ int main(int argc, char** argv) {
 	int iterations = 1;
 
 	while(iterations--) {
+
+		if (1) {
+			// Potential endless loop
+			
+			const char* xml =
+			"<scxml datamodel=\"ecmascript\">"
+			"	<datamodel><data id=\"counter\" expr=\"5\" /></datamodel>"
+			"	<state id=\"foo\">"
+			"		<onentry><script>counter--;</script></onentry>"
+			"		<transition target=\"foo\" cond=\"counter > 0\" />"
+			"		<transition target=\"bar\" cond=\"counter == 0\" />"
+			" </state>"
+			"	<state id=\"bar\" final=\"true\" />"
+			"</scxml>";
+			
+			IssueMonitor monitor;
+			Interpreter interpreter = Interpreter::fromXML(xml);
+			interpreter.addMonitor(&monitor);
+			interpreter.interpret();
+			
+			// first reiteration is not counted as it might be valid when raising internal errors
+			assert(runtimeIssues == 3);
+		}
 
 		if (1) {
 			// Unreachable states

@@ -768,6 +768,17 @@ InterpreterState InterpreterImpl::step(int waitForMS) {
 				microstep(enabledTransitions);
 				
 				setInterpreterState(USCXML_MICROSTEPPED);
+				
+				// check whether we run in cycles
+				FlatStateIdentifier flat(_configuration, _alreadyEntered, _historyValue);
+				if (_microstepConfigurations.find(flat.getStateId()) != _microstepConfigurations.end()) {
+					USCXML_MONITOR_CALLBACK2(reportIssue,
+																	 InterpreterIssue("Reentering during microstep " + flat.getFlatActive() + " - possible endless loop",
+																										Arabica::DOM::Node<std::string>(),
+																										InterpreterIssue::USCXML_ISSUE_WARNING));
+				}
+				_microstepConfigurations.insert(flat.getStateId());
+
 				return _state;
 			}
 			_stable = true;
@@ -800,6 +811,7 @@ InterpreterState InterpreterImpl::step(int waitForMS) {
 			
 		} else {
 			_stable = true;
+			_microstepConfigurations.clear();
 		}
 		
 		if (_state != USCXML_MACROSTEPPED && _state != USCXML_IDLE)
@@ -953,6 +965,8 @@ void InterpreterImpl::stabilize() {
 		assert(initialTransitions.size() > 0);
 		enterStates(initialTransitions);
 	}
+
+	std::set<std::string> configurationsSeen;
 	
 	do { // process microsteps for enabled transitions until there are no more left
 		

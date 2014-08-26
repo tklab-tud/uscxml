@@ -33,8 +33,8 @@ namespace uscxml {
 using namespace Arabica::XPath;
 using namespace Arabica::DOM;
 
+#ifdef VERBOSE
 size_t padding = 0;
-
 std::string getPadding() {
 	std::string pad = "";
 	for (int i = 0; i < padding; i++) {
@@ -42,7 +42,8 @@ std::string getPadding() {
 	}
 	return pad;
 }
-
+#endif
+	
 Arabica::XPath::NodeSet<std::string> InterpreterRC::removeConflictingTransitions(const Arabica::XPath::NodeSet<std::string>& enabledTransitions) {
 	Arabica::XPath::NodeSet<std::string> filteredTransitions;
 

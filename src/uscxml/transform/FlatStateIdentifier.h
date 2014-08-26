@@ -135,57 +135,79 @@ public:
 	const std::list<std::string>& getActive() {
 		return active;
 	}
+	const std::string& getFlatActive() {
+		return flatActive;
+	}
 
 	const std::list<std::string>& getVisited() {
 		return visited;
 	}
+	const std::string& getFlatVisited() {
+		return flatVisited;
+	}
 
 	const std::map<std::string, std::list<std::string> > & getHistory() {
 		return histories;
+	}
+	const std::string& getFlatHistory() {
+		return flatHistories;
 	}
 
 protected:
 	std::list<std::string> active;
 	std::list<std::string> visited;
 	std::map<std::string, std::list<std::string> > histories;
+	
+	std::string flatActive;
+	std::string flatVisited;
+	std::string flatHistories;
+	
 	std::string stateId;
 
 	void initStateId() {
 		std::stringstream stateIdSS;
-		
 		std::string seperator;
 		
-		stateIdSS << "active:{";
+		std::stringstream flatActiveSS;
+		flatActiveSS << "active:{";
 		for (std::list<std::string>::const_iterator actIter = active.begin(); actIter != active.end(); actIter++) {
-			stateIdSS << seperator << *actIter;
+			flatActiveSS << seperator << *actIter;
 			seperator = ",";
 		}
-		stateIdSS << "}";
+		flatActiveSS << "}";
+		flatActive = flatActiveSS.str();
+		stateIdSS << flatActive;
 		
 		if (visited.size() > 0) {
+			std::stringstream flatVisitedSS;
 			seperator = "";
-			stateIdSS << ";visited:{";
+			flatVisitedSS << "visited:{";
 			for (std::list<std::string>::const_iterator visitIter = visited.begin(); visitIter != visited.end(); visitIter++) {
-				stateIdSS << seperator << *visitIter;
+				flatVisitedSS << seperator << *visitIter;
 				seperator = ",";
 			}
-			stateIdSS << "}";
+			flatVisitedSS << "}";
+			flatVisited = flatVisitedSS.str();
+			stateIdSS << ";" << flatVisited;
 		}
 		
 		if (histories.size() > 0) {
+			std::stringstream flatHistorySS;
 			seperator = "";
-			stateIdSS << ";history:{";
+			flatHistorySS << "history:{";
 			for (std::map<std::string, std::list<std::string> >::const_iterator histIter = histories.begin(); histIter != histories.end(); histIter++) {
-				stateIdSS << seperator << histIter->first << ":{";
+				flatHistorySS << seperator << histIter->first << ":{";
 				seperator = ",";
 				std::string itemSeperator;
 				for (std::list<std::string>::const_iterator histItemIter = histIter->second.begin(); histItemIter != histIter->second.end(); histItemIter++) {
-					stateIdSS << itemSeperator << *histItemIter;
+					flatHistorySS << itemSeperator << *histItemIter;
 					itemSeperator = ",";
 				}
-				stateIdSS << "}";
+				flatHistorySS << "}";
 			}
-			stateIdSS << "}";
+			flatHistorySS << "}";
+			flatHistories = flatHistorySS.str();
+			stateIdSS << ";" << flatHistories;
 		}
 		
 		stateId = stateIdSS.str();

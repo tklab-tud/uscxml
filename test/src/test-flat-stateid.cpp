@@ -16,7 +16,7 @@ int main(int argc, char** argv) {
 	}
 
 	{
-		std::string stateId = "active:{s1};entered:{s1,s2}";
+		std::string stateId = "active:{s1};visited:{s1,s2}";
 		uscxml::FlatStateIdentifier flat1(stateId);
 		assert(flat1.getActive().size() == 1);
 		assert(flat1.getVisited().size() == 2);
@@ -28,7 +28,7 @@ int main(int argc, char** argv) {
 
 	{
 		
-		std::string stateId = "active:{s0,s1,s2};entered:{s0,s1,s2};history:{h0:{s1,s2},h1:{s2,s3}}";
+		std::string stateId = "active:{s0,s1,s2};visited:{s0,s1,s2};history:{h0:{s1,s2},h1:{s2,s3}}";
 		uscxml::FlatStateIdentifier flat1(stateId);
 		
 		listIter = flat1.getActive().begin();
