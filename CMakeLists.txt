@@ -74,6 +74,7 @@ endif()
 # is this a 64Bit host?
 if(CMAKE_SIZEOF_VOID_P EQUAL 8)
 	set(64BIT_HOST ON)
+	set(64BIT_LIB_POSTFIX 64)
 	set(64BIT_SUFFIX "_64")
 	# additional library paths to be searched
 	set(FIND_LIBRARY_USE_LIB64_PATHS ON)
