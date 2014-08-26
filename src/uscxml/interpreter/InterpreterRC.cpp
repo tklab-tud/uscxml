@@ -26,6 +26,8 @@
 #include "uscxml/UUID.h"
 #include "uscxml/DOMUtils.h"
 
+#define VERBOSE 0
+
 namespace uscxml {
 
 using namespace Arabica::XPath;
@@ -170,7 +172,7 @@ Arabica::XPath::NodeSet<std::string> InterpreterRC::computeExitSet(const Arabica
 			}
 		}
 	}
-#if 0
+#if VERBOSE
 	std::cout << "computeExitSet: ";
 	for (int i = 0; i < statesToExit.size(); i++) {
 		std::cout << ATTR(statesToExit[i], "id") << " ";
@@ -272,7 +274,7 @@ void InterpreterRC::computeEntrySet(const Arabica::XPath::NodeSet<std::string>& 
 		
 		NodeSet<std::string> targets = getTargetStates(t);
 		
-#if 1
+#if VERBOSE
 		std::cout << "computeEntrySet: ";
 		for (int i = 0; i < targets.size(); i++) {
 			std::cout << ATTR_CAST(targets[i], "id") << " ";
@@ -291,7 +293,7 @@ void InterpreterRC::computeEntrySet(const Arabica::XPath::NodeSet<std::string>& 
 			addDescendantStatesToEnter(s,statesToEnter,statesForDefaultEntry, defaultHistoryContent);
 		}
 		
-#if 1
+#if VERBOSE
 		std::cout << "after addDescendantStatesToEnter: ";
 		for (int i = 0; i < statesToEnter.size(); i++) {
 			std::cout << ATTR_CAST(statesToEnter[i], "id") << " ";
@@ -307,7 +309,7 @@ void InterpreterRC::computeEntrySet(const Arabica::XPath::NodeSet<std::string>& 
 			addAncestorStatesToEnter(s, ancestor, statesToEnter, statesForDefaultEntry, defaultHistoryContent);
 		}
 
-#if 1
+#if VERBOSE
 		std::cout << "after addAncestorStatesToEnter: ";
 		for (int i = 0; i < statesToEnter.size(); i++) {
 			std::cout << ATTR_CAST(statesToEnter[i], "id") << " ";
@@ -327,13 +329,15 @@ void InterpreterRC::computeEntrySet(const Arabica::XPath::NodeSet<std::string>& 
 		NodeSet<std::string> targets = getTargetStates(t);
 		for (int j = 0; j < targets.size(); j++) {
 			if (!isMember(targets[j], statesToEnter)) {
+#if VERBOSE
 				std::cout << "adding: " << ATTR_CAST(anc, "id") << std::endl;
+#endif
 				statesToEnter.push_back(targets[j]);
 			}
 		}
 	}
 
-#if 1
+#if VERBOSE
 	std::cout << "before addDescendantStatesToEnter: ";
 	for (int i = 0; i < statesToEnter.size(); i++) {
 		std::cout << ATTR_CAST(statesToEnter[i], "id") << " ";
@@ -347,7 +351,7 @@ void InterpreterRC::computeEntrySet(const Arabica::XPath::NodeSet<std::string>& 
 		addDescendantStatesToEnter(tmp[i],statesToEnter,statesForDefaultEntry, defaultHistoryContent);
 	}
 
-#if 1
+#if VERBOSE
 	std::cout << "after addDescendantStatesToEnter: ";
 	for (int i = 0; i < statesToEnter.size(); i++) {
 		std::cout << ATTR_CAST(statesToEnter[i], "id") << " ";
@@ -365,7 +369,7 @@ void InterpreterRC::computeEntrySet(const Arabica::XPath::NodeSet<std::string>& 
 		}
 	}
 
-#if 1
+#if VERBOSE
 	std::cout << "after addAncestorStatesToEnter: ";
 	for (int i = 0; i < statesToEnter.size(); i++) {
 		std::cout << ATTR_CAST(statesToEnter[i], "id") << " ";
@@ -413,9 +417,11 @@ void InterpreterRC::addDescendantStatesToEnter(const Arabica::DOM::Element<std::
         Arabica::XPath::NodeSet<std::string>& statesForDefaultEntry,
         std::map<std::string, Arabica::DOM::Node<std::string> > defaultHistoryContent) {
 
+#if VERBOSE
 	std::cout << getPadding() << "addDescendantStatesToEnter: " << ATTR(state, "id") << std::endl;
 	padding++;
-
+#endif
+	
 	if (isHistory(state)) {
 		
 		std::string stateId = ATTR(state, "id");
@@ -446,7 +452,9 @@ void InterpreterRC::addDescendantStatesToEnter(const Arabica::DOM::Element<std::
 	} else {
 		
 		if (!isMember(state, statesToEnter)) { // adding an existing element invalidates old reference
+#if VERBOSE
 			std::cout << getPadding() << "adding: " << ATTR_CAST(state, "id") << std::endl;
+#endif
 			statesToEnter.push_back(state);
 		}
 
@@ -492,13 +500,17 @@ void InterpreterRC::addAncestorStatesToEnter(const Arabica::DOM::Element<std::st
         Arabica::XPath::NodeSet<std::string>& statesForDefaultEntry,
         std::map<std::string, Arabica::DOM::Node<std::string> > defaultHistoryContent) {
 
+#if VERBOSE
 	std::cout << getPadding() << "addAncestorStatesToEnter: " << ATTR(state, "id") << " - " << ATTR(ancestor, "id")  << std::endl;
 	padding++;
-
+#endif
+	
 	NodeSet<std::string> ancestors = getProperAncestors(state, ancestor);
 	for (int i = 0; i < ancestors.size(); i++) {
 		const Node<std::string>& anc = ancestors[i];
+#if VERBOSE
 		std::cout << getPadding() << "adding: " << ATTR_CAST(anc, "id") << std::endl;
+#endif
 		statesToEnter.push_back(anc);
 		if (isParallel(Element<std::string>(anc))) {
 			NodeSet<std::string> childStates = getChildStates(anc);
@@ -550,7 +562,7 @@ BREAK_LOOP:
 	NodeSet<std::string> tStates = getTargetStates(transition);
 	Node<std::string> source = getSourceState(transition);
 
-#if 0
+#if VERBOSE
 	std::cout << "getTransitionDomain: " << std::endl << transition << std::endl;
 #endif
 

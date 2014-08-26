@@ -745,7 +745,7 @@ InterpreterState InterpreterImpl::step(int waitForMS) {
 			// goto initial configuration
 			NodeSet<std::string> initialTransitions = getDocumentInitialTransitions();
 			assert(initialTransitions.size() > 0);
-#if 1
+#if VERBOSE
 			std::cout << _name << ": initialTransitions: " << std::endl;
 			for (int i = 0; i < initialTransitions.size(); i++) {
 				std::cout << initialTransitions[i] << std::endl;
@@ -1042,7 +1042,7 @@ Arabica::XPath::NodeSet<std::string> InterpreterImpl::selectEventlessTransitions
 	}
 	states.to_document_order();
 	
-#if 0
+#if VERBOSE
 	std::cout << "Atomic States: ";
 	for (int i = 0; i < atomicStates.size(); i++) {
 		std::cout << ATTR(atomicStates[i], "id") << ", ";
@@ -1072,7 +1072,7 @@ Arabica::XPath::NodeSet<std::string> InterpreterImpl::selectEventlessTransitions
 		index++;
 	}
 	
-#if 0
+#if VERBOSE
 	std::cout << "Enabled eventless transitions: " << std::endl;
 	for (int i = 0; i < enabledTransitions.size(); i++) {
 		std::cout << enabledTransitions[i] << std::endl << "----" << std::endl;
@@ -2231,7 +2231,7 @@ void InterpreterImpl::executeContent(const Arabica::DOM::Element<std::string>& c
 	} else if (iequals(TAGNAME(content), _nsInfo.xmlNSPrefix + "if")) {
 		// --- IF / ELSEIF / ELSE --------------
 		Arabica::DOM::Element<std::string> ifElem = (Arabica::DOM::Element<std::string>)content;
-#if 0
+#if VERBOSE
 		if (HAS_ATTR(ifElem, "cond"))
 			std::cout << ATTR(ifElem, "cond") << std::endl;
 #endif
@@ -2550,7 +2550,7 @@ Arabica::DOM::Node<std::string> InterpreterImpl::getAncestorElement(const Arabic
 */
 
 Arabica::DOM::Node<std::string> InterpreterImpl::findLCCA(const Arabica::XPath::NodeSet<std::string>& states) {
-#if 0
+#if VERBOSE
 	std::cout << "findLCCA: ";
 	for (int i = 0; i < states.size(); i++) {
 		std::cout << ATTR(states[i], "id") << " - " << TAGNAME(states[i]) << ", ";
@@ -2565,7 +2565,7 @@ Arabica::DOM::Node<std::string> InterpreterImpl::findLCCA(const Arabica::XPath::
 		if (!isCompound(Element<std::string>(ancestors[i])))
 			continue;
 		for (int j = 0; j < states.size(); j++) {
-#if 0
+#if VERBOSE
 			std::cout << "Checking " << TAGNAME(states[j]) << " and " << TAGNAME(ancestors[i]) << std::endl;
 #endif
 			if (!isDescendant(states[j], ancestors[i]) && (states[j] != ancestors[i]))
@@ -2581,7 +2581,7 @@ NEXT_ANCESTOR:
 	if (!ancestor)
 		ancestor = _scxml;
 	assert(ancestor);
-#if 0
+#if VERBOSE
 	std::cout << " -> " << ATTR(ancestor, "id") << " " << ancestor.getLocalName() << std::endl;
 #endif
 	return ancestor;
