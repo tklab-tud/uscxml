@@ -29,11 +29,7 @@ public:
 	virtual ~InterpreterDraft6() {};
 
 protected:
-	virtual InterpreterState interpret();
-	virtual InterpreterState step(int blocking);
-	void stabilize();
 
-	void microstep(const Arabica::XPath::NodeSet<std::string>& enabledTransitions);
 	void enterStates(const Arabica::XPath::NodeSet<std::string>& enabledTransitions);
 	void addStatesToEnter(const Arabica::DOM::Element<std::string>& state,
 	                      Arabica::XPath::NodeSet<std::string>& statesToEnter,
@@ -41,15 +37,9 @@ protected:
 	                      Arabica::XPath::NodeSet<std::string>& defaultHistoryContent);
 
 	void exitStates(const Arabica::XPath::NodeSet<std::string>& enabledTransitions);
-	void exitInterpreter();
 
-	Arabica::XPath::NodeSet<std::string> selectEventlessTransitions();
-	Arabica::XPath::NodeSet<std::string> selectTransitions(const std::string& event);
-	Arabica::XPath::NodeSet<std::string> filterPreempted(const Arabica::XPath::NodeSet<std::string>& enabledTransitions);
+	Arabica::XPath::NodeSet<std::string> removeConflictingTransitions(const Arabica::XPath::NodeSet<std::string>& enabledTransitions);
 	bool isPreemptingTransition(const Arabica::DOM::Element<std::string>& t1, const Arabica::DOM::Element<std::string>& t2);
-	bool isEnabledTransition(const Arabica::DOM::Element<std::string>& transition, const std::string& event);
-
-	Arabica::XPath::NodeSet<std::string> getDocumentInitialTransitions();
 
 	bool isCrossingBounds(const Arabica::DOM::Element<std::string>& transition);
 	bool isWithinParallel(const Arabica::DOM::Element<std::string>& transition);

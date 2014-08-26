@@ -232,12 +232,8 @@ public:
 	void copyTo(boost::shared_ptr<InterpreterImpl> other);
 
 	// TODO: We need to move the destructor to the implementations to make these pure virtual
-	virtual InterpreterState interpret() {
-		return _state;    ///< Start interpreter blockingly
-	}
-	virtual InterpreterState step(int waitForMS = 0) {
-		return _state;
-	}; ///< Perform a single step
+	virtual InterpreterState interpret();
+	virtual InterpreterState step(int waitForMS = 0);
 
 	void start(); ///< Start interpretation in a thread
 	void stop(); ///< Stop interpreter thread
@@ -416,6 +412,7 @@ public:
 	Arabica::XPath::NodeSet<std::string> getStates(const std::list<std::string>& stateIds);
 	Arabica::XPath::NodeSet<std::string> getAllStates();
 
+	Arabica::XPath::NodeSet<std::string> getDocumentInitialTransitions();
 	Arabica::XPath::NodeSet<std::string> getInitialStates(Arabica::DOM::Element<std::string> state = Arabica::DOM::Element<std::string>());
 	static Arabica::XPath::NodeSet<std::string> getChildStates(const Arabica::DOM::Node<std::string>& state);
 	static Arabica::XPath::NodeSet<std::string> getChildStates(const Arabica::XPath::NodeSet<std::string>& state);
@@ -458,6 +455,13 @@ protected:
 
 	void initializeData(const Arabica::DOM::Element<std::string>& data);
 	void finalizeAndAutoForwardCurrentEvent();
+	void stabilize();
+	void microstep(const Arabica::XPath::NodeSet<std::string>& enabledTransitions);
+	void exitInterpreter();
+
+	virtual Arabica::XPath::NodeSet<std::string> selectEventlessTransitions();
+	virtual Arabica::XPath::NodeSet<std::string> selectTransitions(const std::string& event);
+	virtual bool isEnabledTransition(const Arabica::DOM::Element<std::string>& transition, const std::string& event);
 
 	void setInterpreterState(InterpreterState newState);
 
@@ -466,6 +470,13 @@ protected:
 	tthread::recursive_mutex _mutex;
 	tthread::condition_variable _condVar;
 	tthread::recursive_mutex _pluginMutex;
+
+	// to be overwritten by implementations - these ought to be pure, but impl destructor runs first
+	virtual void enterStates(const Arabica::XPath::NodeSet<std::string>& enabledTransitions) {}
+	virtual void exitStates(const Arabica::XPath::NodeSet<std::string>& enabledTransitions) {}
+	virtual Arabica::XPath::NodeSet<std::string> removeConflictingTransitions(const Arabica::XPath::NodeSet<std::string>& enabledTransitions) {
+		return enabledTransitions;
+	}
 
 	InterpreterState _state;
 	URL _baseURI;

@@ -580,7 +580,7 @@ void FlatteningInterpreter::explode() {
 			continue;
 
 		// reduce to conflict-free subset
-		transitions = filterPreempted(transitions);
+		transitions = removeConflictingTransitions(transitions);
 
 		// algorithm can never reduce to empty set
 		assert(transitions.size() > 0);

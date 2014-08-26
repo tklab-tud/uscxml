@@ -150,11 +150,13 @@ class W3CStatusMonitor : public uscxml::InterpreterMonitor {
 				if (boost::starts_with(ATTR_CAST(config[0], "id"), "active:{pass")) {
 					std::cout << "TEST SUCCEEDED" << std::endl;
 					retCode = EXIT_SUCCESS;
+					return;
 				}
 			} else {
 				if (boost::iequals(ATTR_CAST(config[0], "id"), "pass")) {
 					std::cout << "TEST SUCCEEDED" << std::endl;
 					retCode = EXIT_SUCCESS;
+					return;
 				}
 			}
 		}

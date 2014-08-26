@@ -85,7 +85,7 @@ list (APPEND USCXML_FILES ${USCXML_PLUGINS})
 if (BUILD_AS_PLUGINS)
 	list (APPEND USCXML_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/plugins)
 	file(GLOB PLUMA
-		plugins/Pluma/*.cpp 
+		plugins/Pluma/*.cpp
 		plugins/Pluma/*.h
 		plugins/*.cpp 
 		plugins/*.h

@@ -25,19 +25,11 @@
 namespace uscxml {
 
 class InterpreterRC : public InterpreterImpl {
-	InterpreterState interpret();
-	void mainEventLoop();
-	void exitInterpreter();
-
-	void microstep(const Arabica::XPath::NodeSet<std::string>& enabledTransitions);
-
-	Arabica::XPath::NodeSet<std::string> selectEventlessTransitions();
-	Arabica::XPath::NodeSet<std::string> selectTransitions(const std::string& event);
-	bool isEnabledTransition(const Arabica::DOM::Element<std::string>& transition, const std::string& event);
-	bool hasIntersection(const Arabica::XPath::NodeSet<std::string>& nodeSet1, const Arabica::XPath::NodeSet<std::string>& nodeSet2);
-
 	void enterStates(const Arabica::XPath::NodeSet<std::string>& enabledTransitions);
 	void exitStates(const Arabica::XPath::NodeSet<std::string>& enabledTransitions);
+	Arabica::XPath::NodeSet<std::string> removeConflictingTransitions(const Arabica::XPath::NodeSet<std::string>& enabledTransitions);
+
+	bool hasIntersection(const Arabica::XPath::NodeSet<std::string>& nodeSet1, const Arabica::XPath::NodeSet<std::string>& nodeSet2);
 
 	Arabica::XPath::NodeSet<std::string> computeExitSet(const Arabica::XPath::NodeSet<std::string>& transitions);
 	Arabica::XPath::NodeSet<std::string> computeExitSet(const Arabica::DOM::Node<std::string>& transition);
@@ -51,34 +43,19 @@ class InterpreterRC : public InterpreterImpl {
 	                     Arabica::XPath::NodeSet<std::string>& statesForDefaultEntry,
 	                     std::map<std::string, Arabica::DOM::Node<std::string> > defaultHistoryContent);
 
-	Arabica::XPath::NodeSet<std::string> removeConflictingTransitions(const Arabica::XPath::NodeSet<std::string>& enabledTransitions);
 	Arabica::DOM::Node<std::string> getTransitionDomain(const Arabica::DOM::Element<std::string>& transition);
+	Arabica::XPath::NodeSet<std::string> getEffectiveTargetStates(const Arabica::DOM::Element<std::string>& transition);
 
-	void addDescendantStatesToEnter(const Arabica::DOM::Node<std::string>& state,
+	void addDescendantStatesToEnter(const Arabica::DOM::Element<std::string>& state,
 	                                Arabica::XPath::NodeSet<std::string>& statesToEnter,
 	                                Arabica::XPath::NodeSet<std::string>& statesForDefaultEntry,
 	                                std::map<std::string, Arabica::DOM::Node<std::string> > defaultHistoryContent);
 
-	void addAncestorStatesToEnter(const Arabica::DOM::Node<std::string>& state,
-	                              const Arabica::DOM::Node<std::string>& ancestor,
+	void addAncestorStatesToEnter(const Arabica::DOM::Element<std::string>& state,
+	                              const Arabica::DOM::Element<std::string>& ancestor,
 	                              Arabica::XPath::NodeSet<std::string>& statesToEnter,
 	                              Arabica::XPath::NodeSet<std::string>& statesForDefaultEntry,
 	                              std::map<std::string, Arabica::DOM::Node<std::string> > defaultHistoryContent);
-
-	bool isInFinalState(const Arabica::DOM::Node<std::string>& state);
-	Arabica::DOM::Node<std::string> findLCCA(const Arabica::XPath::NodeSet<std::string>& states);
-
-	Arabica::XPath::NodeSet<std::string> getProperAncestors(const Arabica::DOM::Node<std::string>& s1,
-	        const Arabica::DOM::Node<std::string>& s2);
-
-	Arabica::XPath::NodeSet<std::string> getTargetStates(const Arabica::DOM::Element<std::string>& transition);
-
-#if 0
-	bool isDescendant(const Arabica::DOM::Node<std::string>& state1, const Arabica::DOM::Node<std::string>& state2);
-	Arabica::XPath::NodeSet<std::string> getChildStates(const Arabica::DOM::Node<std::string>& state);
-#endif
-
-	bool _running;
 
 };
 

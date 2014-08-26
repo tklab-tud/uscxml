@@ -10,7 +10,8 @@ set -e
 ME=`basename $0`
 DIR="$( cd "$( dirname "$0" )" && pwd )" 
 CPUARCH=`uname -m`
-DEST_DIR="${DIR}/../prebuilt/linux-${CPUARCH}/gnu"
+PLATFORM_ID=`${DIR}/platform-id-linux.sh`
+DEST_DIR="${DIR}/../prebuilt/${PLATFORM_ID}"
 PWD=`pwd`
 
 if [ ! -f src/v8.h ]; then

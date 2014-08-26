@@ -730,20 +730,20 @@ void EventHandlerImpl::returnErrorCommunication(const std::string& cause) {
 	returnEvent(exc);
 }
 
-void EventHandlerImpl::returnEvent(Event& event, bool external) {
+void EventHandlerImpl::returnEvent(Event& event, bool internal) {
 	if (event.invokeid.length() == 0)
 		event.invokeid = _invokeId;
 	if (event.eventType == 0)
-		event.eventType = (external ? Event::EXTERNAL : Event::INTERNAL);
+		event.eventType = (internal ? Event::INTERNAL : Event::EXTERNAL);
 	if (event.origin.length() == 0)
 		event.origin = "#_" + _invokeId;
 	if (event.origintype.length() == 0)
 		event.origintype = _type;
 
-	if (external) {
-		_interpreter->receive(event);
-	} else {
+	if (internal) {
 		_interpreter->receiveInternal(event);
+	} else {
+		_interpreter->receive(event);
 	}
 }
 

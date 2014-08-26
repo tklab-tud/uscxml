@@ -65,16 +65,17 @@ public:
 	virtual void send(const SendRequest& req) = 0;
 
 	virtual void runOnMainThread() {};
-	void returnEvent(Event& event, bool external = false);
 	void returnErrorExecution(const std::string&);
 	void returnErrorCommunication(const std::string&);
+	void returnEvent(Event& event, bool internal = false);
 
 protected:
 	InterpreterImpl* _interpreter;
 	Arabica::DOM::Element<std::string> _element;
 	std::string _invokeId;
 	std::string _type;
-
+	
+	
 };
 
 class USCXML_API EventHandler {

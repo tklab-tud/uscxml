@@ -98,7 +98,7 @@ void HeartbeatInvoker::invoke(const InvokeRequest& req) {
 
 void HeartbeatInvoker::dispatch(void* instance, std::string name) {
 	HeartbeatInvoker* invoker = (HeartbeatInvoker*)instance;
-	invoker->returnEvent(invoker->_event, true);
+	invoker->returnEvent(invoker->_event);
 }
 
 HeartbeatDispatcher* HeartbeatDispatcher::_instance = NULL;

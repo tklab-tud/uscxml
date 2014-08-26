@@ -191,6 +191,7 @@ int main(int argc, char** argv) {
 
 				}
 				
+				interpreter.setCmdLineOptions(options.additionalParameters);
 				interpreter.setCmdLineOptions(currOptions->additionalParameters);
 				interpreter.setCapabilities(options.getCapabilities());
 

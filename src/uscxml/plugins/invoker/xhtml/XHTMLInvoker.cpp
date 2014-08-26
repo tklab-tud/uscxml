@@ -101,7 +101,7 @@ bool XHTMLInvoker::httpRecvRequest(const HTTPServer::Request& req) {
 			HTTPServer::Reply reply(req);
 			HTTPServer::reply(reply);
 			
-			returnEvent(ev, true);
+			returnEvent(ev);
 			return true;
 		}
 	}

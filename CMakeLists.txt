@@ -1329,7 +1329,7 @@ if (BUILD_SHARED_LIBS AND BUILD_BINDINGS)
 endif()
 
 message(STATUS "General information:")
-message(STATUS "  Build type ..................... : ${CMAKE_BUILD_TYPE} for ${USCXML_PLATFORM_ID} (${CMAKE_CXX_COMPILER_ID_LC})")
+message(STATUS "  Build type ..................... : ${CMAKE_BUILD_TYPE} for ${USCXML_PLATFORM_ID}")
 if (BUILD_SHARED_LIBS)
 	if (BUILD_AS_PLUGINS)
 		message(STATUS "  Building library as ............ : SHARED with plugins")

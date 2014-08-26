@@ -12,38 +12,9 @@ set(CTEST_CUSTOM_TESTS_IGNORE
 	"ecma/test178.scxml" # Manual - PASSED
 	"ecma/test230.scxml" # Manual - PASSED
 	"ecma/test250.scxml" # Manual - PASSED
+	"ecma/test301.scxml" # Manual - PASSED
 	"ecma/test307.scxml" # Manual - PASSED
 	"ecma/test415.scxml" # Manual - PASSED
-	"ecma/test463.scxml" # XPath hardcoded
-	"ecma/test464.scxml" # XPath hardcoded
-	"ecma/test465.scxml" # XPath hardcoded
-	"ecma/test466.scxml" # XPath hardcoded
-	"ecma/test467.scxml" # XPath hardcoded
-	"ecma/test468.scxml" # XPath hardcoded
-	"ecma/test469.scxml" # XPath hardcoded
-	"ecma/test470.scxml" # XPath hardcoded
-	"ecma/test473.scxml" # XPath hardcoded
-	"ecma/test474.scxml" # XPath hardcoded
-	"ecma/test475.scxml" # XPath hardcoded
-	"ecma/test476.scxml" # XPath hardcoded
-	"ecma/test477.scxml" # XPath hardcoded
-	"ecma/test478.scxml" # XPath hardcoded
-	"ecma/test479.scxml" # XPath hardcoded
-	"ecma/test480.scxml" # XPath hardcoded
-	"ecma/test481.scxml" # XPath hardcoded
-	"ecma/test482.scxml" # XPath hardcoded
-	"ecma/test483.scxml" # XPath hardcoded
-	"ecma/test537.scxml" # XPath hardcoded
-	"ecma/test539.scxml" # XPath hardcoded
-	"ecma/test540.scxml" # XPath hardcoded
-	"ecma/test542.scxml" # XPath hardcoded
-	"ecma/test543.scxml" # XPath hardcoded
-	"ecma/test544.scxml" # XPath hardcoded
-	"ecma/test545.scxml" # XPath hardcoded
-	"ecma/test546.scxml" # XPath hardcoded
-	"ecma/test547.scxml" # XPath hardcoded
-	"ecma/test555.scxml" # XPath hardcoded
-	"ecma/test568.scxml" # XPath hardcoded
 
 	"fsm/ecma/test178.scxml" # manual test
 	"fsm/ecma/test224.scxml" # automatically generated id has the form stateid.platformid

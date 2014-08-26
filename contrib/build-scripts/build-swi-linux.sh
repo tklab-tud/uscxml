@@ -11,7 +11,8 @@ ME=`basename $0`
 DIR="$( cd "$( dirname "$0" )" && pwd )" 
 CPUARCH=`uname -m`
 #DEST_DIR="${DIR}/../prebuilt/linux-${CPUARCH}/gnu"
-DEST_DIR="/home/sradomski/Desktop"
+PLATFORM_ID=`${DIR}/platform-id-linux.sh`
+DEST_DIR="${DIR}/../prebuilt/${PLATFORM_ID}"
 VERSION=`cat VERSION`
 
 if [ ! -f src/pl-main.c ]; then

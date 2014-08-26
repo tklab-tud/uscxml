@@ -157,7 +157,7 @@ bool BasicHTTPIOProcessor::httpRecvRequest(const HTTPServer::Request& req) {
 	if (reqEvent.name.length() == 0)
 		reqEvent.name = "http." + req.data.compound.at("type").atom;
 
-	returnEvent(reqEvent, true);
+	returnEvent(reqEvent);
 	evhttp_send_reply(req.evhttpReq, 200, "OK", NULL);
 	return true;
 }
