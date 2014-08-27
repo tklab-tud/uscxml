@@ -76,15 +76,9 @@ uSCXML still fails the following ecmascript tests:
 				<a href="https://github.com/tklab-tud/uscxml/blob/master/test/w3c/ecma/test326.scxml">329</a>
 			</tt>
 		</td>
-		<td><tt>Fail for v8</tt></td>
+		<td><tt>Fails for v8</tt></td>
 		<td>"test that _ioprocessors stays bound till the session ends" / "test that none of the system variables can be modified"</td>
-		<td>The v8 implementation will return a new <tt>_ioprocessor</tt> object for each access.</td>
-	</tr>
-	<tr>
-		<td><tt><a href="https://github.com/tklab-tud/uscxml/blob/master/test/w3c/ecma/test579.scxml">579</a></tt></td>
-		<td><tt>Failed</tt></td>
-		<td>"Before the parent state has been visited for the first time, if a transition is executed that takes the history state as its target, the SCXML processor MUST execute any executable content in the transition after the parent state's onentry content and any content in a possible initial transition."</td>
-		<td>Functionality was recently added and is not yet supported.</td>
+		<td>The v8 implementation will return a new <tt>_ioprocessor</tt> object for each access, thus test for equality fails.</td>
 	</tr>
 </table>
 
