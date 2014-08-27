@@ -49,7 +49,7 @@
 
 #include "uscxml/Factory.h"
 
-#if 1
+#if 0
 #	define INTERPRETER_IMPL InterpreterDraft6
 #	include "uscxml/interpreter/InterpreterDraft6.h"
 #else
@@ -1055,15 +1055,7 @@ Arabica::XPath::NodeSet<std::string> InterpreterImpl::selectEventlessTransitions
 			states.push_back(_configuration[i]);
 	}
 	states.to_document_order();
-	
-#if VERBOSE
-	std::cout << "Atomic States: ";
-	for (int i = 0; i < atomicStates.size(); i++) {
-		std::cout << ATTR(atomicStates[i], "id") << ", ";
-	}
-	std::cout << std::endl;
-#endif
-	
+		
 	unsigned int index = 0;
 	while(states.size() > index) {
 		bool foundTransition = false;
@@ -2564,39 +2556,41 @@ Arabica::DOM::Node<std::string> InterpreterImpl::getAncestorElement(const Arabic
 */
 
 Arabica::DOM::Node<std::string> InterpreterImpl::findLCCA(const Arabica::XPath::NodeSet<std::string>& states) {
-#if VERBOSE
+#if VERBOSE_FIND_LCCA
 	std::cout << "findLCCA: ";
 	for (int i = 0; i < states.size(); i++) {
-		std::cout << ATTR(states[i], "id") << " - " << TAGNAME(states[i]) << ", ";
+		std::cout << ATTR_CAST(states[i], "id") << ", ";
 	}
 	std::cout << std::endl << std::flush;
 #endif
-
+	
 	Arabica::XPath::NodeSet<std::string> ancestors = getProperAncestors(states[0], Arabica::DOM::Node<std::string>());
-//	ancestors.push_back(states[0]); // state[0] may already be the ancestor - bug in W3C spec?
 	Arabica::DOM::Node<std::string> ancestor;
+	
 	for (int i = 0; i < ancestors.size(); i++) {
 		if (!isCompound(Element<std::string>(ancestors[i])))
 			continue;
 		for (int j = 0; j < states.size(); j++) {
-#if VERBOSE
-			std::cout << "Checking " << TAGNAME(states[j]) << " and " << TAGNAME(ancestors[i]) << std::endl;
+			
+#if VERBOSE_FIND_LCCA
+			std::cout << "Checking " << ATTR_CAST(states[j], "id") << " and " << ATTR_CAST(ancestors[i], "id") << std::endl;
 #endif
-			if (!isDescendant(states[j], ancestors[i]) && (states[j] != ancestors[i]))
+			
+			if (!isDescendant(states[j], ancestors[i]))
 				goto NEXT_ANCESTOR;
 		}
 		ancestor = ancestors[i];
 		break;
-NEXT_ANCESTOR:
+	NEXT_ANCESTOR:
 		;
 	}
-
+	
 	// take uppermost root as ancestor
 	if (!ancestor)
 		ancestor = _scxml;
 	assert(ancestor);
-#if VERBOSE
-	std::cout << " -> " << ATTR(ancestor, "id") << " " << ancestor.getLocalName() << std::endl;
+#if VERBOSE_FIND_LCCA
+	std::cout << " -> " << ATTR_CAST(ancestor, "id") << " " << ancestor.getLocalName() << std::endl;
 #endif
 	return ancestor;
 }
@@ -3192,8 +3186,11 @@ bool InterpreterImpl::isLegalConfiguration(const NodeSet<std::string>& config) {
 			foundScxmlChild = scxmlChilds[i];
 		}
 	}
-	if (!foundScxmlChild)
+	if (!foundScxmlChild) {
+		LOG(ERROR) << "Invalid configuration: No childs of scxml root are active";
+
 		return false;
+	}
 
 	// The configuration contains one or more atomic states.
 	bool foundAtomicState = false;
@@ -3208,6 +3205,16 @@ bool InterpreterImpl::isLegalConfiguration(const NodeSet<std::string>& config) {
 		return false;
 	}
 
+	// the configuration contains no history pseudo-states
+	for (int i = 0; i < config.size(); i++) {
+		if (isHistory(Element<std::string>(config[i]))) {
+			LOG(ERROR) << "Invalid configuration: history state " << ATTR_CAST(config[i], "id") << " is active";
+			return false;
+		}
+	}
+
+	
+	
 	// When the configuration contains an atomic state, it contains all of its <state> and <parallel> ancestors.
 	for (int i = 0; i < config.size(); i++) {
 		if (isAtomic(Element<std::string>(config[i]))) {

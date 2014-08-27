@@ -37,11 +37,11 @@ class InterpreterRC : public InterpreterImpl {
 	void computeEntrySet(const Arabica::XPath::NodeSet<std::string>& transitions,
 	                     Arabica::XPath::NodeSet<std::string>& statesToEnter,
 	                     Arabica::XPath::NodeSet<std::string>& statesForDefaultEntry,
-	                     std::map<std::string, Arabica::DOM::Node<std::string> > defaultHistoryContent);
+	                     std::map<std::string, Arabica::DOM::Node<std::string> >& defaultHistoryContent);
 	void computeEntrySet(const Arabica::DOM::Node<std::string>& transition,
 	                     Arabica::XPath::NodeSet<std::string>& statesToEnter,
 	                     Arabica::XPath::NodeSet<std::string>& statesForDefaultEntry,
-	                     std::map<std::string, Arabica::DOM::Node<std::string> > defaultHistoryContent);
+	                     std::map<std::string, Arabica::DOM::Node<std::string> >& defaultHistoryContent);
 
 	Arabica::DOM::Node<std::string> getTransitionDomain(const Arabica::DOM::Element<std::string>& transition);
 	Arabica::XPath::NodeSet<std::string> getEffectiveTargetStates(const Arabica::DOM::Element<std::string>& transition);
@@ -49,13 +49,13 @@ class InterpreterRC : public InterpreterImpl {
 	void addDescendantStatesToEnter(const Arabica::DOM::Element<std::string>& state,
 	                                Arabica::XPath::NodeSet<std::string>& statesToEnter,
 	                                Arabica::XPath::NodeSet<std::string>& statesForDefaultEntry,
-	                                std::map<std::string, Arabica::DOM::Node<std::string> > defaultHistoryContent);
+	                                std::map<std::string, Arabica::DOM::Node<std::string> >& defaultHistoryContent);
 
 	void addAncestorStatesToEnter(const Arabica::DOM::Element<std::string>& state,
 	                              const Arabica::DOM::Element<std::string>& ancestor,
 	                              Arabica::XPath::NodeSet<std::string>& statesToEnter,
 	                              Arabica::XPath::NodeSet<std::string>& statesForDefaultEntry,
-	                              std::map<std::string, Arabica::DOM::Node<std::string> > defaultHistoryContent);
+	                              std::map<std::string, Arabica::DOM::Node<std::string> >& defaultHistoryContent);
 
 };
 
