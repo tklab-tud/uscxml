@@ -63,24 +63,7 @@ even in C# and Java. It runs on <b>Linux</b>, <b>Windows</b>, <b>Raspberry Pi</b
 
 * We continuously run the [W3C IRP tests](http://www.w3.org/Voice/2013/scxml-irp/) for SCXML. 
 * Have a look at the [result](http://uscxml.tk.informatik.tu-darmstadt.de/cdash/index.php?project=uscxml) for the various platforms.
-* The manual and XPath specific tests are [excluded](https://github.com/tklab-tud/uscxml/blob/master/contrib/ctest/CTestCustom.ctest.in).
-
-uSCXML still fails the following ecmascript tests:
-
-<table>
-	<tr><th>Test#</th><th>Status</th><th>Description</th><th>Comment</th></tr>
-	<tr>
-		<td>
-			<tt>
-				<a href="https://github.com/tklab-tud/uscxml/blob/master/test/w3c/ecma/test326.scxml">326</a> /
-				<a href="https://github.com/tklab-tud/uscxml/blob/master/test/w3c/ecma/test326.scxml">329</a>
-			</tt>
-		</td>
-		<td><tt>Fails for v8</tt></td>
-		<td>"test that _ioprocessors stays bound till the session ends" / "test that none of the system variables can be modified"</td>
-		<td>The v8 implementation will return a new <tt>_ioprocessor</tt> object for each access, thus test for equality fails.</td>
-	</tr>
-</table>
+* The manual and XPath specific tests are [excluded](https://github.com/tklab-tud/uscxml/blob/master/test/ctest/CTestCustom.ctest.in).
 
 ### License 
 

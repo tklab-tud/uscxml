@@ -13,4 +13,4 @@ before_install:
  - sudo apt-get install -qq swi-prolog
  - wget http://uscxml.tk.informatik.tu-darmstadt.de || true
  
-script: mkdir build && cd build && cmake .. && make
+script: mkdir build && cd build && cmake .. && make && ctest

@@ -1,0 +1,79 @@
+#!/bin/bash
+
+set -e
+ME=`basename $0`
+TEST_DIR="$( cd "$( dirname "$0" )" && pwd )"
+TESTS="$( cd $TEST_DIR/tests && pwd)"
+HOSTS="$( cd $TEST_DIR/hosts && pwd)"
+HOSTNAME="$( hostname )"
+LOCK_DIR=/tmp/uscxml-build.lock
+TESTFILE=$HOSTS/$HOSTNAME.ctest
+
+# cron has its own path, try to find ctest
+if [ ! -n "${CTEST:+x}" ]; then
+	for SEARCH_PATH in "/usr/bin" "/usr/local/bin" "/opt/local/bin"
+	do
+		if [ -e $SEARCH_PATH/ctest ]; then
+			CTEST=$SEARCH_PATH/ctest
+			export CTEST
+			break
+		fi
+	done
+fi
+if [ ! -e "${CTEST}" ]; then
+	echo "Error: Could not find CTEST, set the CTEST environment variable."
+	exit;	
+fi
+
+if [ ! -n "${CTEST_SUBMIT_TYPE:+x}" ]; then
+	CTEST_SUBMIT_TYPE="Experimental"
+	export CTEST_SUBMIT_TYPE
+fi
+
+# Try to find uscxml source if not given in USCXML_SOURCE_DIR
+if [ ! -n "${USCXML_SOURCE_DIR:+x}" ]; then
+	# assume that this file is in ${USCXML_SOURCE_DIR}/contrib/ctest 
+	# and use the directory two levels above.
+	USCXML_SOURCE_DIR="$( cd $TEST_DIR/../.. && pwd)"
+	export USCXML_SOURCE_DIR
+fi
+
+
+# is there a CMakeLists.txt file within?
+if [ ! -e ${USCXML_SOURCE_DIR}/CMakeLists.txt ]; then
+	echo "Error: Could not find uscxml in ${USCXML_SOURCE_DIR}, set the USCXML_SOURCE_DIR environment variable."
+	exit;
+fi
+
+if [ ! -e $TESTFILE ]; then
+	echo "Warning: No tests for $HOSTNAME in $TESTFILE - defaulting."
+	TESTFILE=$HOSTS/default.make.ctest
+fi
+
+#
+# Try to acquire the build lock
+#
+while true; do
+	if mkdir "$LOCK_DIR"; then
+		trap 'rm -rf "$LOCK_DIR"' 0    # remove directory when script finishes
+		break
+	else
+		echo "Could not get build lock - waiting"
+		sleep 10
+	fi
+done
+
+if [ "$CTEST_SUBMIT_TYPE" = "Continuous" ]; then
+	cd $USCXML_SOURCE_DIR
+	#git clean -f -d # careful - destructive!
+	GIT_SYNC=`git pull`
+	if [ "$GIT_SYNC" = "Already up-to-date." ]; then
+#		echo "Not running continuous tests, already up-to-date"
+		exit
+	else
+		echo $GIT_SYNC
+	fi
+fi
+
+cd $TEST_DIR
+nice $CTEST -VV --timeout 20 -S $TESTFILE -DHOSTNAME=$HOSTNAME

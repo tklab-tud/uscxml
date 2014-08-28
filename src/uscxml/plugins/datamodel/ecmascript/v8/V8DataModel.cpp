@@ -17,6 +17,11 @@
  *  @endcond
  */
 
+/*
+ * Later v8 changed API considerably, have a look at the node.js(!) documentatio for an overview:
+ * http://strongloop.com/strongblog/node-js-v0-12-c-apis-breaking/
+ */
+
 #include "uscxml/Common.h"
 #include "uscxml/config.h"
 #include "V8DataModel.h"
@@ -72,7 +77,7 @@ bool pluginConnect(pluma::Host& host) {
 }
 #endif
 
-V8DataModel::V8DataModel() {
+V8DataModel::V8DataModel() : _ioProcessorsAreSet(false), _invokersAreSet(false) {
 //  _contexts.push_back(v8::Context::New());
 }
 
@@ -170,15 +175,18 @@ void V8DataModel::setWithException(v8::Local<v8::String> property, v8::Local<v8:
 v8::Handle<v8::Value> V8DataModel::getIOProcessors(v8::Local<v8::String> property, const v8::AccessorInfo& info) {
 	V8DataModel* dataModel = V8DOM::toClassPtr<V8DataModel>(info.Data());
 
-	dataModel->_ioProcessors = v8::Persistent<v8::Object>::New(v8::Object::New());
-	//v8::Handle<v8::Object> ioProcessorObj = v8::Object::New();
-	std::map<std::string, IOProcessor> ioProcessors = dataModel->_interpreter->getIOProcessors();
-	std::map<std::string, IOProcessor>::const_iterator ioProcIter = ioProcessors.begin();
-	while(ioProcIter != ioProcessors.end()) {
-//			std::cout << ioProcIter->first << std::endl;
-		dataModel->_ioProcessors->Set(v8::String::New(ioProcIter->first.c_str()),
-		                              dataModel->getDataAsValue(ioProcIter->second.getDataModelVariables()));
-		ioProcIter++;
+	if (!dataModel->_ioProcessorsAreSet) {
+		dataModel->_ioProcessors = v8::Persistent<v8::Object>::New(v8::Object::New());
+		//v8::Handle<v8::Object> ioProcessorObj = v8::Object::New();
+		std::map<std::string, IOProcessor> ioProcessors = dataModel->_interpreter->getIOProcessors();
+		std::map<std::string, IOProcessor>::const_iterator ioProcIter = ioProcessors.begin();
+		while(ioProcIter != ioProcessors.end()) {
+	//			std::cout << ioProcIter->first << std::endl;
+			dataModel->_ioProcessors->Set(v8::String::New(ioProcIter->first.c_str()),
+																		dataModel->getDataAsValue(ioProcIter->second.getDataModelVariables()));
+			ioProcIter++;
+		}
+		dataModel->_ioProcessorsAreSet = true;
 	}
 	return dataModel->_ioProcessors;
 }
@@ -186,15 +194,19 @@ v8::Handle<v8::Value> V8DataModel::getIOProcessors(v8::Local<v8::String> propert
 v8::Handle<v8::Value> V8DataModel::getInvokers(v8::Local<v8::String> property, const v8::AccessorInfo& info) {
 	V8DataModel* dataModel = V8DOM::toClassPtr<V8DataModel>(info.Data());
 
-	dataModel->_invokers = v8::Persistent<v8::Object>::New(v8::Object::New());
-	//v8::Handle<v8::Object> ioProcessorObj = v8::Object::New();
-	std::map<std::string, Invoker> invokers = dataModel->_interpreter->getInvokers();
-	std::map<std::string, Invoker>::const_iterator invokerIter = invokers.begin();
-	while(invokerIter != invokers.end()) {
-		//			std::cout << ioProcIter->first << std::endl;
-		dataModel->_invokers->Set(v8::String::New(invokerIter->first.c_str()),
-		                          dataModel->getDataAsValue(invokerIter->second.getDataModelVariables()));
-		invokerIter++;
+	if (!dataModel->_invokersAreSet) {
+		dataModel->_invokers = v8::Persistent<v8::Object>::New(v8::Object::New());
+		//v8::Handle<v8::Object> ioProcessorObj = v8::Object::New();
+		std::map<std::string, Invoker> invokers = dataModel->_interpreter->getInvokers();
+		std::map<std::string, Invoker>::const_iterator invokerIter = invokers.begin();
+		while(invokerIter != invokers.end()) {
+			//			std::cout << ioProcIter->first << std::endl;
+			dataModel->_invokers->Set(v8::String::New(invokerIter->first.c_str()),
+																dataModel->getDataAsValue(invokerIter->second.getDataModelVariables()));
+			invokerIter++;
+		}
+		dataModel->_invokersAreSet = true;
+
 	}
 	return dataModel->_invokers;
 }
