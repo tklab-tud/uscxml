@@ -13,87 +13,13 @@
 #include <signal.h>
 #endif
 
-#ifdef HAS_EXECINFO_H
-#include <execinfo.h>
-#endif
-
-#ifdef HAS_DLFCN_H
-#include <dlfcn.h>
-#endif
-
 #ifdef _WIN32
 #include "XGetopt.h"
 #endif
 
 static bool withFlattening = false;
+static double delayFactor = 1;
 static std::string documentURI;
-
-#ifdef HAS_EXECINFO_H
-void printBacktrace(void** array, int size) {
-	char** messages = backtrace_symbols(array, size);
-	for (int i = 0; i < size && messages != NULL; ++i) {
-		std::cerr << "\t" << messages[i] << std::endl;
-	}
-	std::cerr << std::endl;
-	free(messages);
-}
-
-#ifdef HAS_DLFCN_H
-#if 0 // deactivated as we use exceptions to signal errors now
-// see https://gist.github.com/nkuln/2020860
-typedef void (*cxa_throw_type)(void *, void *, void (*) (void *));
-cxa_throw_type orig_cxa_throw = 0;
-
-void load_orig_throw_code() {
-	orig_cxa_throw = (cxa_throw_type) dlsym(RTLD_NEXT, "__cxa_throw");
-}
-
-extern "C"
-void __cxa_throw (void *thrown_exception, void *pvtinfo, void (*dest)(void *)) {
-	std::cerr << __FUNCTION__ << " will throw exception from " << std::endl;
-	if (orig_cxa_throw == 0)
-		load_orig_throw_code();
-
-	void *array[50];
-	size_t size = backtrace(array, 50);
-	printBacktrace(array, size);
-	orig_cxa_throw(thrown_exception, pvtinfo, dest);
-}
-#endif
-#endif
-#endif
-
-
-// see http://stackoverflow.com/questions/2443135/how-do-i-find-where-an-exception-was-thrown-in-c
-void customTerminate() {
-	static bool tried_throw = false;
-	try {
-		// try once to re-throw currently active exception
-		if (!tried_throw) {
-			throw;
-			tried_throw = true;
-		} else {
-			tried_throw = false;
-		};
-	} catch (const std::exception &e) {
-		std::cerr << __FUNCTION__ << " caught unhandled exception. what(): "
-		          << e.what() << std::endl;
-	} catch (const uscxml::Event &e) {
-		std::cerr << __FUNCTION__ << " caught unhandled exception. Event: "
-		          << e << std::endl;
-	} catch (...) {
-		std::cerr << __FUNCTION__ << " caught unknown/unhandled exception."
-		          << std::endl;
-	}
-
-#ifdef HAS_EXECINFO_H
-	void * array[50];
-	int size = backtrace(array, 50);
-
-	printBacktrace(array, size);
-#endif
-	abort();
-}
 
 int retCode = EXIT_FAILURE;
 
@@ -170,62 +96,93 @@ class W3CStatusMonitor : public uscxml::InterpreterMonitor {
 int main(int argc, char** argv) {
 	using namespace uscxml;
 
-	std::set_terminate(customTerminate);
+	try {
+	
+	#if defined(HAS_SIGNAL_H) && !defined(WIN32)
+		signal(SIGPIPE, SIG_IGN);
+	#endif
 
-#if defined(HAS_SIGNAL_H) && !defined(WIN32)
-	signal(SIGPIPE, SIG_IGN);
-#endif
-
-	if (argc < 2) {
-		exit(EXIT_FAILURE);
-	}
-
-	HTTPServer::getInstance(32954, 32955, NULL); // bind to some random tcp sockets for ioprocessor tests
-
-	google::InitGoogleLogging(argv[0]);
-	google::LogToStderr();
-
-
-	for (int i = 1; i < argc; i++) {
-		if (std::string(argv[i]) == "-f") {
-			withFlattening = true;
-		} else {
-			documentURI = argv[i];
+		if (argc < 2) {
+			exit(EXIT_FAILURE);
 		}
+
+		HTTPServer::getInstance(32954, 32955, NULL); // bind to some random tcp sockets for ioprocessor tests
+
+		google::InitGoogleLogging(argv[0]);
+		google::LogToStderr();
+
+		char* dfEnv = getenv("USCXML_DELAY_FACTOR");
+		if (dfEnv) {
+			delayFactor = strTo<double>(dfEnv);
+		}
+		
+		int option;
+		while ((option = getopt(argc, argv, "fd:")) != -1) {
+			switch(option) {
+				case 'f':
+					withFlattening = true;
+					break;
+				case 'd':
+					delayFactor = strTo<double>(optarg);
+					break;
+				default:
+					break;
+			}
+		}
+
+		documentURI = argv[optind];
+		
+		Interpreter interpreter;
+		LOG(INFO) << "Processing " << documentURI << (withFlattening ? " FSM converted" : "") << (delayFactor ? "" : " with delays *= " + toStr(delayFactor));
+		if (withFlattening) {
+			Interpreter flatInterpreter = Interpreter::fromURI(documentURI);
+			interpreter = Interpreter::fromDOM(ChartToFSM::flatten(flatInterpreter).getDocument(), flatInterpreter.getNameSpaceInfo());
+			interpreter.setSourceURI(flatInterpreter.getSourceURI());
+		} else {
+			interpreter = Interpreter::fromURI(documentURI);
+		}
+
+		if (delayFactor != 1) {
+			Arabica::DOM::Document<std::string> document = interpreter.getDocument();
+			Arabica::DOM::Element<std::string> root = document.getDocumentElement();
+			Arabica::XPath::NodeSet<std::string> sends = InterpreterImpl::filterChildElements(interpreter.getNameSpaceInfo().xmlNSPrefix + "send", root, true);
+			
+			for (int i = 0; i < sends.size(); i++) {
+				Arabica::DOM::Element<std::string> send = Arabica::DOM::Element<std::string>(sends[i]);
+				if (HAS_ATTR(send, "delay")) {
+					NumAttr delay(ATTR(send, "delay"));
+					int value = strTo<int>(delay.value);
+					if (delay.unit == "s")
+						value *= 1000;
+					value *= delayFactor;
+					send.setAttribute("delay", toStr(value) + "ms");
+					std::cout << ATTR(send, "delay") << std::endl;
+				} else if (HAS_ATTR(send, "delayexpr")) {
+					std::string delayExpr = ATTR(send, "delayexpr");
+					send.setAttribute("delayexpr",
+														"(" + delayExpr + ".indexOf('ms', " + delayExpr + ".length - 2) !== -1 ? "
+														"(" + delayExpr + ".slice(0,-2) * " + toStr(delayFactor) + ") + \"ms\" : "
+														"(" + delayExpr + ".slice(0,-1) * 1000 * " + toStr(delayFactor) + ") + \"ms\")");
+					std::cout << ATTR(send, "delayexpr") << std::endl;
+				}
+			}
+			std::list<InterpreterIssue> issues = interpreter.validate();
+			for (std::list<InterpreterIssue>::iterator issueIter = issues.begin(); issueIter != issues.end(); issueIter++) {
+				std::cout << *issueIter << std::endl;
+			}
+		}
+		
+		if (interpreter) {
+			W3CStatusMonitor* vm = new W3CStatusMonitor();
+			interpreter.addMonitor(vm);
+
+			interpreter.start();
+			while(interpreter.runOnMainThread(25));
+		}
+	} catch(Event e) {
+		std::cout << e << std::endl;
+	} catch(std::exception e) {
+		std::cout << e.what() << std::endl;
 	}
-
-	Interpreter interpreter;
-	LOG(INFO) << "Processing " << documentURI << (withFlattening ? " FSM converted" : "");
-	if (withFlattening) {
-		Interpreter flatInterpreter = Interpreter::fromURI(documentURI);
-		interpreter = Interpreter::fromDOM(ChartToFSM::flatten(flatInterpreter).getDocument(), flatInterpreter.getNameSpaceInfo());
-		interpreter.setSourceURI(flatInterpreter.getSourceURI());
-	} else {
-		interpreter = Interpreter::fromURI(documentURI);
-	}
-
-	if (interpreter) {
-//		std::list<InterpreterIssue> issues = interpreter.validate();
-//		if (issues.size() > 0) {
-//			for (std::list<InterpreterIssue>::iterator issueIter = issues.begin(); issueIter != issues.end(); issueIter++) {
-//				std::cout << *issueIter << std::endl;
-//			}
-//			exit(EXIT_FAILURE);
-//		}
-
-//		interpreter.setCmdLineOptions(argc, argv);
-//		interpreter->setCapabilities(Interpreter::CAN_NOTHING);
-//		interpreter->setCapabilities(Interpreter::CAN_BASIC_HTTP | Interpreter::CAN_GENERIC_HTTP);
-
-		W3CStatusMonitor* vm = new W3CStatusMonitor();
-		interpreter.addMonitor(vm);
-
-//		if (interpreter.getDataModel().getNames().find("ecmascript") != interpreter.getDataModel().getNames().end()) {
-//		}
-
-		interpreter.start();
-		while(interpreter.runOnMainThread(25));
-	}
-
 	return retCode;
 }

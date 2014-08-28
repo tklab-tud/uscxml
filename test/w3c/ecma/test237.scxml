@@ -6,7 +6,7 @@ the time timeout2 fires, success   -->
 <scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" initial="s0" version="1.0" datamodel="ecmascript">
   <state id="s0">
     <onentry>
-      <send event="timeout1" delayexpr="'50ms'"/>
+      <send event="timeout1" delayexpr="'1s'"/>
     </onentry>
     <invoke type="http://www.w3.org/TR/scxml/">
       <content>
@@ -14,7 +14,7 @@ the time timeout2 fires, success   -->
         <scxml initial="sub0" version="1.0" datamodel="ecmascript">
           <state id="sub0">
             <onentry>
-              <send event="timeout" delayexpr="'100ms'"/>
+              <send event="timeout" delayexpr="'2s'"/>
             </onentry>
             <transition event="timeout" target="subFinal"/>
           </state>
@@ -26,7 +26,7 @@ the time timeout2 fires, success   -->
   </state>
   <state id="s1">
     <onentry>
-      <send event="timeout2" delayexpr="'75ms'"/>
+      <send event="timeout2" delayexpr="'1.5s'"/>
     </onentry>
     <!-- here we should NOT get done.invoke -->
     <transition event="done.invoke" target="fail"/>

@@ -12,7 +12,7 @@ in s11. So we should receive invokeS1, invokeS12, but not invokeS12.  Furthermor
   </datamodel>
   <state id="s1" initial="s11">
     <onentry>
-      <send event="timeout" delayexpr="'100ms'"/>
+      <send event="timeout" delayexpr="'2s'"/>
     </onentry>
     <transition event="invokeS1 invokeS12">
       <assign location="Var1" expr="Var1 + 1"/>

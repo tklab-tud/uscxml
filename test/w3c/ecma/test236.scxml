@@ -5,7 +5,7 @@ events after the done.invoke.  Hence timeout indicates success   -->
 <scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" initial="s0" version="1.0" datamodel="ecmascript">
   <state id="s0">
     <onentry>
-      <send event="timeout" delayexpr="'100ms'"/>
+      <send event="timeout" delayexpr="'2s'"/>
     </onentry>
     <invoke type="http://www.w3.org/TR/scxml/">
       <content>

@@ -1701,8 +1701,7 @@ void InterpreterImpl::send(const Arabica::DOM::Element<std::string>& element) {
 			if (iequals(delayAttr.unit, "ms")) {
 				sendReq.delayMs = strTo<uint32_t>(delayAttr.value);
 			} else if (iequals(delayAttr.unit, "s")) {
-				sendReq.delayMs = strTo<uint32_t>(delayAttr.value);
-				sendReq.delayMs *= 1000;
+				sendReq.delayMs = strTo<double>(delayAttr.value) * 1000;
 			} else {
 				LOG(ERROR) << "Cannot make sense of delay value " << delay << ": does not end in 's' or 'ms'";
 			}
@@ -1711,7 +1710,7 @@ void InterpreterImpl::send(const Arabica::DOM::Element<std::string>& element) {
 		LOG(ERROR) << "Syntax error in send element " << DOMUtils::xPathForNode(element) << " delayexpr:" << std::endl << e << std::endl;
 		return;
 	}
-
+	
 	try {
 		// namelist
 		if (HAS_ATTR(element, "namelist")) {

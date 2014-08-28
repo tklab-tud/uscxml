@@ -9,7 +9,7 @@ in the interval.)  If var2 ends up == 1, we pass.  Otherwise we fail  -->
   </datamodel>
   <state id="s0">
     <onentry>
-      <send event="event1" delayexpr="'50ms'">
+      <send event="event1" delayexpr="'1s'">
         <param name="aParam" expr="Var1"/>
       </send>
       <assign location="Var1" expr="2"/>

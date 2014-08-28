@@ -244,13 +244,13 @@
 
 <!-- delayexpr takes the value of the specified variable -->
 <xsl:template match="//@conf:delayFromVar">
-	<xsl:attribute name="delayexpr">(Var<xsl:value-of select="." />.slice(0, - 1)) * 50 + 'ms'</xsl:attribute>
+	<xsl:attribute name="delayexpr">Var<xsl:value-of select="." /></xsl:attribute>
 </xsl:template>
 
 <!-- computes a delayexpr based on the value passed in.  this lets platforms determine how long to delay timeout
 events which cause the test to fail.  The default value provided here is pretty long -->
 <xsl:template match="//@conf:delay">
-	<xsl:attribute name="delayexpr">'<xsl:value-of select=". * 50"/>ms'</xsl:attribute>
+	<xsl:attribute name="delayexpr">'<xsl:value-of select="."/>s'</xsl:attribute>
 </xsl:template>
 
 <!--  the specified variable is used as idlocation -->

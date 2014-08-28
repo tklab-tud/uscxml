@@ -9,8 +9,8 @@ event1 will be raised first.  Succeed if event1 occurs before event2, otherwise 
   <state id="s0">
     <onentry>
       <assign location="Var1" expr="'1s'"/>
-      <send delayexpr="(Var1.slice(0, - 1)) * 50 + 'ms'" event="event2"/>
-      <send delayexpr="'25ms'" event="event1"/>
+      <send delayexpr="Var1" event="event2"/>
+      <send delayexpr="'.5s'" event="event1"/>
     </onentry>
     <transition event="event1" target="s1"/>
     <transition event="event2" target="fail"/>

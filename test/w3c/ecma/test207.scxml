@@ -6,7 +6,7 @@ raised in another session, but the spec doesn't define any way to refer to an ev
 <scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" initial="s0" version="1.0" datamodel="ecmascript">
   <state id="s0" initial="s01">
     <onentry>
-      <send event="timeout" delayexpr="'100ms'"/>
+      <send event="timeout" delayexpr="'2s'"/>
     </onentry>
     <invoke type="scxml">
       <content>
@@ -16,8 +16,8 @@ raised in another session, but the spec doesn't define any way to refer to an ev
         <scxml initial="sub0" version="1.0" datamodel="ecmascript">
           <state id="sub0">
             <onentry>
-              <send event="event1" id="foo" delayexpr="'50ms'"/>
-              <send event="event2" delayexpr="'75ms'"/>
+              <send event="event1" id="foo" delayexpr="'1s'"/>
+              <send event="event2" delayexpr="'1.5s'"/>
               <send target="#_parent" event="childToParent"/>
             </onentry>
             <transition event="event1" target="subFinal">
