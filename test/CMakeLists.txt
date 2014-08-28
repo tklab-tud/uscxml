@@ -24,17 +24,17 @@ if (NOT WIN32)
 	USCXML_TEST_COMPILE(NAME test-arabica-events LABEL general/test-arabica-events FILES src/test-arabica-events.cpp
 		ARGS ${CMAKE_CURRENT_SOURCE_DIR}/uscxml/arabica/test-arabica-events.xml)
 	USCXML_TEST_COMPILE(NAME test-arabica-parsing LABEL general/test-arabica-parsing FILES src/test-arabica-parsing.cpp)
+	USCXML_TEST_COMPILE(NAME test-promela-parser LABEL general/test-promela-parser FILES src/test-promela-parser.cpp)
+	USCXML_TEST_COMPILE(BUILD_ONLY NAME test-stress LABEL general/test-stress FILES src/test-stress.cpp)
 endif()
 
 if (APPLE)
 	USCXML_TEST_COMPILE(BUILD_ONLY NAME test-dirmon LABEL general/test-dirmon FILES src/test-dirmon.cpp)
 endif()
 
-USCXML_TEST_COMPILE(BUILD_ONLY NAME test-stress LABEL general/test-stress FILES src/test-stress.cpp)
 USCXML_TEST_COMPILE(BUILD_ONLY NAME test-sockets LABEL general/test-sockets FILES src/test-sockets.cpp)
 
 USCXML_TEST_COMPILE(NAME test-url LABEL general/test-url FILES src/test-url.cpp)
-USCXML_TEST_COMPILE(NAME test-promela-parser LABEL general/test-promela-parser FILES src/test-promela-parser.cpp)
 USCXML_TEST_COMPILE(NAME test-base64 LABEL general/test-base64 FILES src/test-base64.cpp)
 USCXML_TEST_COMPILE(NAME test-eventdelay LABEL general/test-eventdelay FILES src/test-eventdelay.cpp)
 USCXML_TEST_COMPILE(NAME test-flat-stateid LABEL general/test-flat-stateid FILES src/test-flat-stateid.cpp)
