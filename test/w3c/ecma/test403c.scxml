@@ -17,20 +17,20 @@
         <transition event="event2"/>
       </state>
       <state id="p0s2">
-        <transition event="event1" target="p0s1">
+        <transition event="event1" target="p0s1" this="1">
           <raise event="event2"/>
         </transition>
       </state>
       <state id="p0s3">
         <!-- this transition should be blocked by the one in p0s2-->
-        <transition event="event1" target="fail"/>
+        <transition event="event1" target="fail" this="2"/>
         <!-- this transition will preempt the one that p0s2 inherits
    from an ancestor  -->
         <transition event="event2" target="s1"/>
       </state>
       <state id="p0s4">
         <!-- this transition never gets preempted, should fire twice -->
-        <transition event="*">
+        <transition event="*" this="3">
           <assign location="Var1" expr="Var1 + 1"/>
         </transition>
       </state>

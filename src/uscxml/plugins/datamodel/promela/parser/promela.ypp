@@ -43,8 +43,8 @@ using namespace uscxml;
 %error-verbose
 
 /* %type <node> expr_lst */
-%type <node> expr pfld varref decl_lst stmnt_lst vardcl ivar var_list one_decl prargs
-%type <node> stmnt Stmnt const_expr nlst vis arg
+%type <node> expr pfld sfld varref decl_lst stmnt_lst vardcl ivar var_list one_decl prargs utype cmpnd
+%type <node> stmnt Stmnt const_expr nlst vis arg 
 
 %token  PML_VAR_ARRAY PML_VARLIST PML_DECL PML_DECLLIST PML_STMNT PML_COLON PML_EXPR PML_NAMELIST
 
@@ -73,7 +73,7 @@ using namespace uscxml;
 %left	PML_INCR PML_DECR
 %left PML_COMPL
 %right PML_NEG
-%left	PML_DOT
+%left	PML_DOT PML_CMPND
 
 %%
 
@@ -95,19 +95,30 @@ program	:
   }
   ;
 
-varref	: cmpnd			{}
+varref	: cmpnd			{ $$ = $1; }
 	;
 
 pfld	: PML_NAME			{ $$ = ctx->value(PML_NAME, $1); free($1); }
 	| PML_NAME '[' expr ']' { $$ = ctx->node(PML_VAR_ARRAY, 2, ctx->value(PML_NAME, $1), $3); free($1); }
 	;
 
-cmpnd	: pfld			{}
-				sfld			{}
+cmpnd	: pfld
+				sfld	{ 
+					if ($2 != NULL) {
+						if ($2->type == PML_CMPND) {
+							$$ = ctx->node(PML_CMPND, 1, $1);
+							$$->merge($2); delete $2;
+						} else {
+							$$ = ctx->node(PML_CMPND, 2, $1, $2);
+						}
+					} else {
+						$$ = $1;
+					}
+				}
 	;
 
-sfld	: /* empty */		{}
-	| PML_DOT cmpnd %prec PML_DOT	{}
+sfld	: /* empty */		{ $$ = NULL; }
+	| PML_DOT cmpnd %prec PML_DOT	{ $$ = $2; }
 	;
 
 /*
@@ -140,8 +151,11 @@ expr    : '(' expr ')'		{ $$ = $2; }
 	| PML_MINUS expr %prec PML_MINUS	{ $$ = ctx->node(PML_MINUS, 1, $2); }
 
 	| PML_LEN '(' varref ')'	{ $$ = ctx->node(PML_LEN, 1, $3);  }
-	| varref		{  }
+	| varref		{ $$ = $1; }
 	| PML_CONST 		{ $$ = ctx->value(PML_CONST, $1); free($1); }
+	| PML_STRING 		{ 
+		/* Non standard promela for string literals */ 
+		$$ = ctx->value(PML_STRING, $1); free($1); }
 	;
 
 
@@ -154,6 +168,10 @@ vis	: /* empty */		{ $$ = ctx->node(PML_SHOW, 0); }
 one_decl: vis PML_TYPE var_list	{ $$ = ctx->node(PML_DECL, 3, $1, ctx->value(PML_TYPE, $2), $3); free($2); }
 	| vis PML_UNAME var_list	{ $$ = ctx->node(PML_UNAME, 2, $1, $3); }
 	| vis PML_TYPE PML_ASGN '{' nlst '}' { $$ = ctx->node(PML_DECL, 3, $1, ctx->value(PML_TYPE, $2), $5); free($2); }
+	| vis utype { $$ = $2; }
+	;
+
+utype	: PML_TYPEDEF PML_NAME '{' decl_lst '}' { $$ = ctx->node(PML_TYPEDEF, 2, ctx->value(PML_NAME, $2), $4); }
 	;
 
 decl_lst: one_decl            { $$ = $1; }
@@ -218,7 +236,7 @@ Stmnt	: varref PML_ASGN expr	{ $$ = ctx->node(PML_ASGN, 2, $1, $3); }
 	| PML_PRINT	'(' PML_STRING prargs ')'		{ $$ = ctx->node(PML_PRINT, 2, ctx->value(PML_STRING, $3), $4); free($3); }
 	| PML_PRINTM '(' varref ')'	{ $$ = ctx->node(PML_PRINTM, 1, $3); }
 	| PML_PRINTM '(' PML_CONST ')'	{ $$ = ctx->node(PML_PRINTM, 1, ctx->value(PML_CONST, $3)); free($3); }
-	| PML_ASSERT expr    	{  }
+	| PML_ASSERT expr    	{ $$ = ctx->node(PML_ASSERT, 1, $2); }
 	| expr		{ $$ = $1; }
 	| varref PML_ASGN PML_INAME	{  } '(' args ')' Stmnt			{  }
 	;

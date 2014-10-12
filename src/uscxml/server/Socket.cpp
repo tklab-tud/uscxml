@@ -92,7 +92,7 @@ void Socket::parseAddress(const std::string& address, std::string& protocol, std
 		protocol = "tcp";
 		protEnd = 0;
 	}
-	
+
 	size_t hostEnd = address.find(":", protEnd);
 	if (hostEnd != std::string::npos) {
 		hostName = address.substr(protEnd, hostEnd - protEnd);
@@ -109,7 +109,7 @@ void Socket::parseAddress(const std::string& address, std::string& protocol, std
 	}
 }
 
-	
+
 ClientSocket::ClientSocket(int domain, int type, int protocol) : Socket(domain, type, protocol), _clientEvent(NULL) {
 }
 
@@ -149,7 +149,7 @@ void ClientSocket::connect(const std::string& address) {
 	parseAddress(address, _prot, _address, _port);
 	connect(_address, _port);
 }
-	
+
 void ClientSocket::connect(const std::string& address, int port) {
 //	tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
 
@@ -166,7 +166,7 @@ void ClientSocket::connect(const std::string& address, int port) {
 int ClientSocket::write(const std::string& data) {
 	return write(data.data(), data.size());
 }
-	
+
 int ClientSocket::write(const char* data, size_t size) {
 //	tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
 	bufferevent_write(_clientEvent, data, size);
@@ -182,7 +182,7 @@ void ClientSocket::readCallback(struct bufferevent *bev, void *ctx) {
 	char* data = (char*)malloc(instance->_blockSizeRead);
 
 	input = bufferevent_get_input(bev);
-	
+
 	while((n = evbuffer_remove(input, data, instance->_blockSizeRead)) > 0) {
 		instance->readCallback(data, n);
 	}
@@ -357,8 +357,8 @@ void ServerSocket::Connection::reply(const char* data, size_t size) {
 
 PacketServerSocket::~PacketServerSocket() {
 	for(std::map<Connection, std::stringstream*>::iterator fragIter = _fragments.begin();
-			fragIter != _fragments.end();
-			fragIter++) {
+	        fragIter != _fragments.end();
+	        fragIter++) {
 		delete fragIter->second;
 	}
 }
@@ -366,10 +366,10 @@ PacketServerSocket::~PacketServerSocket() {
 void PacketServerSocket::readCallback(const char* data, size_t size, Connection& conn) {
 	if  (_fragments.find(conn) == _fragments.end())
 		_fragments[conn] = new std::stringstream();
-	
+
 	std::stringstream* fragment = _fragments[conn];
 	*fragment << std::string(data, size);
-	
+
 	size_t startPos = 0;
 	size_t endPos;
 	const std::string& buffer = fragment->str();

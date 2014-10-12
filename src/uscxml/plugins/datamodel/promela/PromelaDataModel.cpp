@@ -34,6 +34,12 @@
 #include <Pluma/Connector.hpp>
 #endif
 
+#define INVALID_ASSIGNMENT(name) \
+name.compare("_sessionid") == 0 || \
+name.compare("_name") == 0 || \
+name.compare("_ioprocessors") == 0 || \
+name.compare("_event") == 0
+
 namespace uscxml {
 
 using namespace Arabica::XPath;
@@ -56,19 +62,34 @@ PromelaDataModel::~PromelaDataModel() {
 boost::shared_ptr<DataModelImpl> PromelaDataModel::create(InterpreterImpl* interpreter) {
 	boost::shared_ptr<PromelaDataModel> dm = boost::shared_ptr<PromelaDataModel>(new PromelaDataModel());
 	dm->_interpreter = interpreter;
+
+	// session id
+	Data sessionId;
+	sessionId.compound["type"] = Data("string", Data::VERBATIM);
+	sessionId.compound["value"] = Data(interpreter->getSessionId(), Data::VERBATIM);
+	dm->_variables["_sessionid"] = sessionId;
+
+	// name
+	Data name;
+	name.compound["type"] = Data("string", Data::VERBATIM);
+	name.compound["value"] = Data(interpreter->getName(), Data::VERBATIM);
+	dm->_variables["_name"] = name;
+
+	// ioprocessors
+	Data ioProcs;
+	ioProcs.compound["type"] = Data("compound", Data::VERBATIM);
+
+	std::map<std::string, IOProcessor> ioProcessors = interpreter->getIOProcessors();
+	for (std::map<std::string, IOProcessor>::iterator iter = ioProcessors.begin(); iter != ioProcessors.end(); iter++) {
+		ioProcs.compound["value"].compound[iter->first] = iter->second.getDataModelVariables();
+	}
+	dm->_variables["_ioprocessors"] = ioProcs;
+
 	dm->_lastMType = 0;
 	return dm;
 }
 
 void PromelaDataModel::registerIOProcessor(const std::string& name, const IOProcessor& ioprocessor) {
-}
-
-void PromelaDataModel::setSessionId(const std::string& sessionId) {
-	_sessionId = sessionId;
-}
-
-void PromelaDataModel::setName(const std::string& name) {
-	_name = name;
 }
 
 void PromelaDataModel::pushContext() {
@@ -79,17 +100,105 @@ void PromelaDataModel::popContext() {
 //	std::cout << "PromelaDataModel::popContext" << std::endl;
 }
 
-void PromelaDataModel::initialize() {
-//	std::cout << "PromelaDataModel::initialize" << std::endl;
+void PromelaDataModel::setEvent(const Event& event) {
+	Data variable;
+	variable.compound["type"] = Data("compound", Data::VERBATIM);
+	variable.compound["value"].compound["name"] = Data(event.name, Data::VERBATIM);
+	variable.compound["value"].compound["origin"] = Data(event.origin, Data::VERBATIM);
+	variable.compound["value"].compound["origintype"] = Data(event.origintype, Data::VERBATIM);
+	variable.compound["value"].compound["invokeid"] = Data(event.invokeid, Data::VERBATIM);
+	if (event.hideSendId) {
+		variable.compound["value"].compound["sendid"] = Data("", Data::VERBATIM);
+	} else {
+		variable.compound["value"].compound["sendid"] = Data(event.sendid, Data::VERBATIM);
+	}
+	switch (event.eventType) {
+	case Event::PLATFORM:
+		variable.compound["value"].compound["type"] = Data("platform", Data::VERBATIM);
+		break;
+	case Event::INTERNAL:
+		variable.compound["value"].compound["type"] = Data("internal", Data::VERBATIM);
+		break;
+	case Event::EXTERNAL:
+		variable.compound["value"].compound["type"] = Data("external", Data::VERBATIM);
+		break;
+	default:
+		variable.compound["value"].compound["type"] = Data("invalid", Data::VERBATIM);
+		break;
+	}
+
+	if (event.dom) {
+		// no support
+	} else if (event.content.length() > 0) {
+		// _event.data is a string or JSON
+		Data json = Data::fromJSON(event.content);
+		if (!json.empty()) {
+			variable.compound["value"].compound["data"] = json;
+		} else {
+			if (isNumeric(event.content.c_str(), 10)) {
+				variable.compound["value"].compound["data"] = Data(event.content, Data::INTERPRETED);
+			} else {
+				variable.compound["value"].compound["data"] = Data(InterpreterImpl::spaceNormalize(event.content), Data::VERBATIM);
+			}
+		}
+	} else {
+		// _event.data is KVP
+		if (!event.data.empty()) {
+			variable.compound["value"].compound["data"] = event.data;
+		} else {
+			// test 343 / test 488
+			variable.compound["value"].compound["data"];
+		}
+
+		for (Event::params_t::const_iterator start = event.params.begin(), end = event.params.end();
+		        start != end; start = event.params.upper_bound(start->first)) {
+			// only set first param key
+			if (isNumeric(start->second.atom.c_str(), 10)) {
+				variable.compound["value"].compound["data"].compound[start->first] = strTo<int>(start->second.atom);
+			} else {
+				variable.compound["value"].compound["data"].compound[start->first] = start->second;
+			}
+		}
+
+		for (Event::namelist_t::const_iterator iter = event.namelist.begin(); iter != event.namelist.end(); iter++) {
+			if (isNumeric(iter->second.atom.c_str(), 10)) {
+				variable.compound["value"].compound["data"].compound[iter->first] = strTo<int>(iter->second.atom);
+			} else {
+				variable.compound["value"].compound["data"].compound[iter->first] = iter->second;
+			}
+		}
+	}
+
+	// iterate all data elements and adapt type for int if atom is integer
+	adaptType(variable.compound["value"].compound["data"]);
+
+	_variables["_event"] = variable;
 }
 
-void PromelaDataModel::setEvent(const Event& event) {
-	_event = event;
+void PromelaDataModel::adaptType(Data& data) {
+	if (data.atom.length() > 0 && isInteger(data.atom.c_str(), 10)) {
+		data.type = Data::INTERPRETED;
+		return;
+	}
+
+	if (data.array.size() > 0) {
+		for (std::list<Data>::iterator iter = data.array.begin(); iter != data.array.end(); iter++) {
+			adaptType(*iter);
+		}
+		return;
+	}
+
+	if (data.compound.size() > 0) {
+		for (std::map<std::string, Data>::iterator iter = data.compound.begin(); iter != data.compound.end(); iter++) {
+			adaptType(iter->second);
+		}
+		return;
+	}
+
 }
 
 Data PromelaDataModel::getStringAsData(const std::string& content) {
-	Data data(content, Data::VERBATIM);
-	return data;
+	return evaluateExpr(content);
 }
 
 
@@ -122,20 +231,23 @@ void PromelaDataModel::setForeach(const std::string& item,
 	std::stringstream ss;
 	ss << array << "[" << iteration << "]";
 
-	PromelaParser itemParser(item, PromelaParser::PROMELA_EXPR);
-	PromelaParser arrayParser(ss.str(), PromelaParser::PROMELA_EXPR);
+	PromelaParser itemParser(item, 1, PromelaParser::PROMELA_EXPR);
+	if (itemParser.ast->type != PML_NAME)
+		ERROR_EXECUTION_THROW("Expression '" + item + "' is no valid item");
+
+	PromelaParser arrayParser(ss.str(), 1, PromelaParser::PROMELA_EXPR);
 
 	setVariable(itemParser.ast, getVariable(arrayParser.ast));
 
 	if (index.length() > 0) {
-		PromelaParser indexParser(index, PromelaParser::PROMELA_EXPR);
+		PromelaParser indexParser(index, 1, PromelaParser::PROMELA_EXPR);
 		setVariable(indexParser.ast, iteration);
 	}
 
 }
 
 void PromelaDataModel::eval(const Element<std::string>& scriptElem, const std::string& expr) {
-	PromelaParser parser(expr, PromelaParser::PROMELA_STMNT);
+	PromelaParser parser(expr, 1, PromelaParser::PROMELA_STMNT);
 	evaluateStmnt(parser.ast);
 //	parser.dump();
 }
@@ -145,25 +257,89 @@ bool PromelaDataModel::evalAsBool(const std::string& expr) {
 }
 
 bool PromelaDataModel::evalAsBool(const Arabica::DOM::Element<std::string>& node, const std::string& expr) {
-	PromelaParser parser(expr, PromelaParser::PROMELA_EXPR);
+	PromelaParser parser(expr, 1, PromelaParser::PROMELA_EXPR);
 //	parser.dump();
-	return evaluateExpr(parser.ast) > 0;
+	Data tmp = evaluateExpr(parser.ast);
+
+	if (tmp.atom.compare("false") == 0)
+		return false;
+	if (tmp.atom.compare("0") == 0)
+		return false;
+	return true;
 }
 
 std::string PromelaDataModel::evalAsString(const std::string& expr) {
-	if (isDeclared(expr)) {
-		return Data::toJSON(_variables[expr]);
-	}
-	return expr;
+	PromelaParser parser(expr);
+	return evaluateExpr(parser.ast);
 }
 
 void PromelaDataModel::assign(const Element<std::string>& assignElem,
                               const Node<std::string>& node,
                               const std::string& content) {
-	PromelaParser parser(content, PromelaParser::PROMELA_DECL);
-	evaluateDecl(parser.ast);
+	std::string expr;
+	std::string key;
+	std::string value;
+
+	if (node) {
+		ERROR_EXECUTION_THROW("Assigning DOM node to variable is not supported");
+	}
+
+	if (HAS_ATTR(assignElem, "id")) {
+		key = ATTR(assignElem, "id");
+	} else if (HAS_ATTR(assignElem, "location")) {
+		key = ATTR(assignElem, "location");
+	}
+
+	if (HAS_ATTR(assignElem, "expr")) {
+		if (key.length() == 0) {
+			ERROR_EXECUTION_THROW("Assign element has neither id nor location");
+		}
+		value = ATTR(assignElem, "expr");
+	} else {
+		value = content;
+	}
+
+	if (key.length() > 0) {
+		PromelaParser parser(key);
+
+		// declaration is an array?
+		if (parser.ast->operands.size() > 0 &&
+		        parser.ast->operands.back()->operands.size() > 0 &&
+		        parser.ast->operands.back()->operands.back()->type == PML_VAR_ARRAY) {
+			evaluateDecl(parser.ast);
+			expr = content;
+		} else if (value.length() > 0) {
+			expr = key + " = " + value + ";";
+		} else {
+			// declaration
+			expr = key + ";";
+		}
+	} else {
+		expr = content;
+	}
+
+	PromelaParser parser(expr, 2, PromelaParser::PROMELA_DECL, PromelaParser::PROMELA_STMNT);
+	if (parser.type == PromelaParser::PROMELA_DECL)
+		evaluateDecl(parser.ast);
+	if (parser.type == PromelaParser::PROMELA_STMNT)
+		evaluateStmnt(parser.ast);
 //	parser.dump();
 //	std::cout << Data::toJSON(_variables) << std::endl;
+}
+
+void PromelaDataModel::evaluateDecl(const std::string& expr) {
+	PromelaParser parser(expr, 1, PromelaParser::PROMELA_DECL);
+	evaluateDecl(parser.ast);
+}
+
+Data PromelaDataModel::evaluateExpr(const std::string& expr) {
+	PromelaParser parser(expr, 1, PromelaParser::PROMELA_EXPR);
+	return evaluateExpr(parser.ast);
+}
+
+void PromelaDataModel::evaluateStmnt(const std::string& expr) {
+	PromelaParser parser(expr, 1, PromelaParser::PROMELA_STMNT);
+	evaluateStmnt(parser.ast);
 }
 
 void PromelaDataModel::evaluateDecl(void* ast) {
@@ -209,7 +385,7 @@ void PromelaDataModel::evaluateDecl(void* ast) {
 
 				std::list<PromelaParserNode*>::iterator opIterAsgn = (*nameIter)->operands.begin();
 				PromelaParserNode* name = *opIterAsgn++;
-				int size = evaluateExpr(*opIterAsgn++);
+				int size = dataToInt(evaluateExpr(*opIterAsgn++));
 
 				variable.compound["size"] = size;
 				for (int i = 0; i < size; i++) {
@@ -235,43 +411,115 @@ void PromelaDataModel::evaluateDecl(void* ast) {
 	}
 }
 
-int PromelaDataModel::evaluateExpr(void* ast) {
+int PromelaDataModel::dataToInt(const Data& data) {
+	if (data.type != Data::INTERPRETED)
+		ERROR_EXECUTION_THROW("Operand is not integer");
+	int value = strTo<int>(data.atom);
+	if (data.atom.compare(toStr(value)) != 0)
+		ERROR_EXECUTION_THROW("Operand is not integer");
+	return value;
+}
+
+bool PromelaDataModel::dataToBool(const Data& data) {
+	if (data.atom.size() == 0) // empty string or undefined
+		return false;
+
+	if (data.type == Data::VERBATIM) {
+		// non-empty string is true
+		return true;
+	} else {
+		if (data.atom.compare("true") == 0) {
+			// boolean true is true
+			return true;
+		} else if (data.atom.compare("false") == 0) {
+			return false;
+		} else if (dataToInt(data) != 0) {
+			return true; // non zero values are true
+		}
+	}
+	return false;
+}
+
+Data PromelaDataModel::evaluateExpr(void* ast) {
 	PromelaParserNode* node = (PromelaParserNode*)ast;
 	std::list<PromelaParserNode*>::iterator opIter = node->operands.begin();
 	switch (node->type) {
 	case PML_CONST:
+		if (iequals(node->value, "false"))
+			return Data(false);
+		if (iequals(node->value, "true"))
+			return Data(true);
 		return strTo<int>(node->value);
 	case PML_NAME:
 	case PML_VAR_ARRAY:
+	case PML_CMPND:
 		return getVariable(node);
+	case PML_STRING: {
+		std::string stripped = node->value.substr(1, node->value.size() - 2);
+		return Data(stripped, Data::VERBATIM);
+	}
 	case PML_PLUS:
-		return evaluateExpr(*opIter++) + evaluateExpr(*opIter++);
+		return dataToInt(evaluateExpr(*opIter++)) + dataToInt(evaluateExpr(*opIter++));
 	case PML_MINUS:
-		return evaluateExpr(*opIter++) - evaluateExpr(*opIter++);
+		return dataToInt(evaluateExpr(*opIter++)) - dataToInt(evaluateExpr(*opIter++));
 	case PML_DIVIDE:
-		return evaluateExpr(*opIter++) / evaluateExpr(*opIter++);
+		return dataToInt(evaluateExpr(*opIter++)) / dataToInt(evaluateExpr(*opIter++));
 	case PML_MODULO:
-		return evaluateExpr(*opIter++) % evaluateExpr(*opIter++);
-	case PML_EQ:
-		return evaluateExpr(*opIter++) == evaluateExpr(*opIter++);
+		return dataToInt(evaluateExpr(*opIter++)) % dataToInt(evaluateExpr(*opIter++));
+	case PML_EQ: {
+		PromelaParserNode* lhs = *opIter++;
+		PromelaParserNode* rhs = *opIter++;
+
+		Data left = evaluateExpr(lhs);
+		Data right = evaluateExpr(rhs);
+
+		if (left == right) // overloaded operator==
+			return Data(true);
+
+		// literal strings or strings in variables
+		if ((lhs->type == PML_STRING || rhs->type == PML_STRING)
+		        || (left.type == Data::VERBATIM && right.type == Data::VERBATIM)) {
+			return (left.atom.compare(right.atom) == 0 ? Data(true) : Data(false));
+		}
+		return dataToInt(left) == dataToInt(right);
+	}
+	case PML_NEG:
+		return !dataToBool(evaluateExpr(*opIter++));
 	case PML_LT:
-		return evaluateExpr(*opIter++) < evaluateExpr(*opIter++);
+		return dataToInt(evaluateExpr(*opIter++)) < dataToInt(evaluateExpr(*opIter++));
 	case PML_LE:
-		return evaluateExpr(*opIter++) <= evaluateExpr(*opIter++);
+		return dataToInt(evaluateExpr(*opIter++)) <= dataToInt(evaluateExpr(*opIter++));
 	case PML_GT:
-		return evaluateExpr(*opIter++) > evaluateExpr(*opIter++);
+		return dataToInt(evaluateExpr(*opIter++)) > dataToInt(evaluateExpr(*opIter++));
 	case PML_GE:
-		return evaluateExpr(*opIter++) >= evaluateExpr(*opIter++);
+		return dataToInt(evaluateExpr(*opIter++)) >= dataToInt(evaluateExpr(*opIter++));
 	case PML_TIMES:
-		return evaluateExpr(*opIter++) * evaluateExpr(*opIter++);
+		return dataToInt(evaluateExpr(*opIter++)) * dataToInt(evaluateExpr(*opIter++));
 	case PML_LSHIFT:
-		return evaluateExpr(*opIter++) << evaluateExpr(*opIter++);
+		return dataToInt(evaluateExpr(*opIter++)) << dataToInt(evaluateExpr(*opIter++));
 	case PML_RSHIFT:
-		return evaluateExpr(*opIter++) >> evaluateExpr(*opIter++);
+		return dataToInt(evaluateExpr(*opIter++)) >> dataToInt(evaluateExpr(*opIter++));
 	case PML_AND:
-		return evaluateExpr(*opIter++) != 0 && evaluateExpr(*opIter++) != 0;
-	case PML_OR:
-		return evaluateExpr(*opIter++) != 0 || evaluateExpr(*opIter++) != 0;
+	case PML_OR: {
+		PromelaParserNode* lhs = *opIter++;
+		PromelaParserNode* rhs = *opIter++;
+
+		std::cout << "-----" << std::endl;
+		lhs->dump();
+		rhs->dump();
+
+		Data left = evaluateExpr(lhs);
+		Data right = evaluateExpr(rhs);
+
+		bool truthLeft = dataToBool(left);
+		bool truthRight = dataToBool(right);
+
+		if (node->type == PML_AND) {
+			return truthLeft && truthRight;
+		} else {
+			return truthLeft || truthRight;
+		}
+	}
 	default:
 		ERROR_EXECUTION_THROW("Support for " + PromelaParserNode::typeToDesc(node->type) + " expressions not implemented");
 	}
@@ -299,7 +547,7 @@ void PromelaDataModel::evaluateStmnt(void* ast) {
 	}
 }
 
-void PromelaDataModel::setVariable(void* ast, int value) {
+void PromelaDataModel::setVariable(void* ast, Data value) {
 	PromelaParserNode* node = (PromelaParserNode*)ast;
 
 	std::list<PromelaParserNode*>::iterator opIter = node->operands.begin();
@@ -307,7 +555,12 @@ void PromelaDataModel::setVariable(void* ast, int value) {
 	case PML_VAR_ARRAY: {
 		PromelaParserNode* name = *opIter++;
 		PromelaParserNode* expr = *opIter++;
-		int index = evaluateExpr(expr);
+
+		if (INVALID_ASSIGNMENT(name->value)) {
+			ERROR_EXECUTION_THROW("Cannot assign to " + name->value);
+		}
+
+		int index = dataToInt(evaluateExpr(expr));
 
 		if (_variables.compound.find(name->value) == _variables.compound.end()) {
 			ERROR_EXECUTION_THROW("No variable " + name->value + " was declared");
@@ -321,12 +574,15 @@ void PromelaDataModel::setVariable(void* ast, int value) {
 			ERROR_EXECUTION_THROW("Index " + toStr(index) + " in array " + name->value + "[" + _variables[name->value]["size"].atom + "] is out of bounds");
 		}
 
-		_variables.compound[name->value].compound["value"][index] = Data(value, Data::VERBATIM);
+		_variables.compound[name->value].compound["value"][index] = value;
 
 		break;
 	}
 	case PML_NAME:
-		_variables.compound[node->value].compound["value"] = Data(value, Data::VERBATIM);
+		if (INVALID_ASSIGNMENT(node->value)) {
+			ERROR_EXECUTION_THROW("Cannot assign to " + node->value);
+		}
+		_variables.compound[node->value].compound["value"] = value;
 		break;
 	default:
 		break;
@@ -335,7 +591,7 @@ void PromelaDataModel::setVariable(void* ast, int value) {
 //	std::cout << Data::toJSON(_variables) << std::endl;
 }
 
-int PromelaDataModel::getVariable(void* ast) {
+Data PromelaDataModel::getVariable(void* ast) {
 	PromelaParserNode* node = (PromelaParserNode*)ast;
 //	node->dump();
 
@@ -345,14 +601,14 @@ int PromelaDataModel::getVariable(void* ast) {
 		if (_variables.compound.find(node->value) == _variables.compound.end()) {
 			ERROR_EXECUTION_THROW("No variable " + node->value + " was declared");
 		}
-		if (_variables[node->value].compound.find("size") != _variables[node->value].compound.end()) {
-			ERROR_EXECUTION_THROW("Type error: Variable " + node->value + " is an array");
-		}
-		return strTo<int>(_variables[node->value]["value"].atom);
+//		if (_variables[node->value].compound.find("size") != _variables[node->value].compound.end()) {
+//			ERROR_EXECUTION_THROW("Type error: Variable " + node->value + " is an array");
+//		}
+		return _variables[node->value]["value"];
 	case PML_VAR_ARRAY: {
 		PromelaParserNode* name = *opIter++;
 		PromelaParserNode* expr = *opIter++;
-		int index = evaluateExpr(expr);
+		int index = dataToInt(evaluateExpr(expr));
 
 		if (_variables.compound.find(name->value) == _variables.compound.end()) {
 			ERROR_EXECUTION_THROW("No variable " + name->value + " was declared");
@@ -365,7 +621,54 @@ int PromelaDataModel::getVariable(void* ast) {
 		if (strTo<int>(_variables[name->value]["size"].atom) <= index) {
 			ERROR_EXECUTION_THROW("Index " + toStr(index) + " in array " + name->value + "[" + _variables[name->value]["size"].atom + "] is out of bounds");
 		}
-		return strTo<int>(_variables.compound[name->value].compound["value"][index].atom);
+		return _variables.compound[name->value].compound["value"][index];
+	}
+	case PML_CMPND: {
+//		node->dump();
+//		std::cout << Data::toJSON(_variables["_event"]);
+
+		std::stringstream idPath;
+		PromelaParserNode* name = *opIter++;
+
+		// special case for _x variables
+		if (name->value.compare("_x") == 0) {
+			PromelaParserNode* what = *opIter++;
+
+			if (what->type == PML_VAR_ARRAY) {
+				if (what->operands.size() == 2) {
+					std::string arrName = what->operands.front()->value;
+					std::string index = what->operands.back()->value;
+
+					if (what->operands.back()->type == PML_STRING) {
+						index = index.substr(1, index.size() - 2); // remove quotes
+					}
+
+					if (arrName.compare("states") == 0) {
+						return Data(_interpreter->isInState(index));
+					}
+				}
+			}
+			ERROR_EXECUTION_THROW("No variable " + name->value + " was declared");
+		}
+
+		if (_variables.compound.find(name->value) == _variables.compound.end()) {
+			ERROR_EXECUTION_THROW("No variable " + name->value + " was declared");
+		}
+
+		Data currData = _variables.compound[name->value]["value"];
+		idPath << name->value;
+		while(opIter != node->operands.end()) {
+			std::string key = (*opIter)->value;
+			idPath << "." << key;
+			if (currData.compound.find(key) == currData.compound.end()) {
+				ERROR_EXECUTION_THROW("No variable " + idPath.str() + " was declared");
+			}
+			Data tmp = currData.compound[key];
+			currData = tmp;
+
+			opIter++;
+		}
+		return currData;
 	}
 	default:
 		ERROR_EXECUTION_THROW("Retrieving value of " + PromelaParserNode::typeToDesc(node->type) + " variable not implemented");
@@ -395,14 +698,35 @@ std::string PromelaDataModel::andExpressions(std::list<std::string> expressions)
 }
 
 void PromelaDataModel::assign(const std::string& location, const Data& data) {
-	// used for e.g. to assign command line parameters
-	std::cout << "Ignoring " << location << " = " << Data::toJSON(data) << std::endl;
+	// used for e.g. to assign command line parameters and idlocation
+	PromelaParser parser(location);
+	setVariable(parser.ast, data);
 }
 
 void PromelaDataModel::init(const Element<std::string>& dataElem,
                             const Node<std::string>& node,
                             const std::string& content) {
 	// from <datamodel>
+	if (HAS_ATTR(dataElem, "id")) {
+		Element<std::string> dataElemCopy = dataElem;
+		std::string identifier = ATTR(dataElem, "id");
+		std::string type = (HAS_ATTR(dataElem, "type") ? ATTR(dataElem, "type") : "int");
+		std::string arrSize;
+
+		size_t bracketPos = type.find("[");
+		if (bracketPos != std::string::npos) {
+			arrSize = type.substr(bracketPos, type.length() - bracketPos);
+			type = type.substr(0, bracketPos);
+		}
+
+		dataElemCopy.setAttribute("id", type + " " + identifier + arrSize);
+
+		assign(dataElemCopy, node, content);
+		dataElemCopy.setAttribute("id", identifier);
+
+		return;
+	}
+
 	assign(dataElem, node, content);
 }
 void PromelaDataModel::init(const std::string& location, const Data& data) {
@@ -410,6 +734,10 @@ void PromelaDataModel::init(const std::string& location, const Data& data) {
 }
 
 bool PromelaDataModel::isDeclared(const std::string& expr) {
+	PromelaParser parser(expr);
+	if (parser.ast->type == PML_VAR_ARRAY)
+		return _variables.compound.find(parser.ast->operands.front()->value) != _variables.compound.end();
+
 	return _variables.compound.find(expr) != _variables.compound.end();
 }
 

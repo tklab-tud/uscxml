@@ -125,7 +125,8 @@ extern int promela_debug;
      PML_INCR = 326,
      PML_COMPL = 327,
      PML_NEG = 328,
-     PML_DOT = 329
+     PML_CMPND = 329,
+     PML_DOT = 330
    };
 #endif
 
@@ -141,7 +142,7 @@ typedef union PROMELA_STYPE
 
 
 /* Line 2053 of yacc.c  */
-#line 145 "promela.tab.hpp"
+#line 146 "promela.tab.hpp"
 } PROMELA_STYPE;
 # define PROMELA_STYPE_IS_TRIVIAL 1
 # define promela_stype PROMELA_STYPE /* obsolescent; will be withdrawn */

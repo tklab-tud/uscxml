@@ -23,18 +23,18 @@ bool testAddressParsing() {
 	std::string protocol;
 	std::string hostName;
 	uint16_t port;
-	
+
 	{
 		Socket::parseAddress("4343", protocol, hostName, port);
 		assert(protocol == "tcp");
 		assert(hostName	== "127.0.0.1");
 		assert(port	== 4343);
-		
+
 		Socket::parseAddress("localhost:4343", protocol, hostName, port);
 		assert(protocol == "tcp");
 		assert(hostName	== "localhost");
 		assert(port	== 4343);
-		
+
 		Socket::parseAddress("tcp://localhost:4343", protocol, hostName, port);
 		assert(protocol == "tcp");
 		assert(hostName	== "localhost");
@@ -52,16 +52,16 @@ bool testMMIEvents() {
 
 		Arabica::DOM::Document<std::string> newCtxReqXML1 = newCtxReq.toXML();
 		Arabica::DOM::Document<std::string> newCtxReqXML2 = newCtxReq.toXML(true);
-		
+
 //		std::cout << newCtxReqXML1 << std::endl;
 //		std::cout << newCtxReqXML2 << std::endl;
-		
+
 		NewContextRequest newCtxReq1 = NewContextRequest::fromXML(newCtxReqXML1.getDocumentElement());
 		NewContextRequest newCtxReq2 = NewContextRequest::fromXML(newCtxReqXML2.getDocumentElement());
-		
+
 		assert(MMIEvent::getType(newCtxReqXML1.getDocumentElement()) == MMIEvent::NEWCONTEXTREQUEST);
 		assert(MMIEvent::getType(newCtxReqXML2.getDocumentElement()) == MMIEvent::NEWCONTEXTREQUEST);
-		
+
 		assert(newCtxReq1.source == "localhost:3434");
 		assert(newCtxReq2.source == "localhost:3434");
 		assert(newCtxReq1.target == "localhost:1212");
@@ -109,28 +109,28 @@ int main(int argc, char** argv) {
 #endif
 	testAddressParsing();
 	testMMIEvents();
-	
+
 //	TestClient client(PF_INET, SOCK_STREAM, 0);
 //	client.connect("epikur.local", 4343);
 	std::string target = "localhost:4343";
 	std::string source = "localhost:4344";
-	
+
 	TestServer server(PF_INET, SOCK_STREAM, 0);
 	server.listen(source);
-	
+
 //	while(true)
 //		sleep(1000);
-	
+
 	TestClient client(PF_INET, SOCK_STREAM, 0);
 	client.connect(source);
-	
+
 	NewContextRequest newCtxReq;
 	newCtxReq.source = source;
 	newCtxReq.target = target;
 	newCtxReq.requestId = UUID::getUUID();
-	
+
 	_requests[newCtxReq.requestId] = &newCtxReq;
-	
+
 	Arabica::DOM::Document<std::string> newCtxReqXML = newCtxReq.toXML(true);
 	std::stringstream newCtxReqXMLSS;
 	newCtxReqXMLSS << newCtxReqXML;
@@ -141,7 +141,7 @@ int main(int argc, char** argv) {
 //		client.write(newCtxReqXMLSS.str().data(), newCtxReqXMLSS.str().size());
 //		client.write("\0", 1);
 	}
-	
+
 	while(true)
 		sleep(1000);
 

@@ -40,7 +40,7 @@ public:
 		MMI_RUNNING,
 		MMI_DEAD
 	};
-	
+
 	VoiceXMLInvoker();
 	virtual ~VoiceXMLInvoker();
 	virtual boost::shared_ptr<InvokerImpl> create(InterpreterImpl* interpreter);
@@ -56,10 +56,10 @@ public:
 	bool deleteOnUninvoke() {
 		return false;
 	}
-	
+
 	bool httpRecvRequest(const HTTPServer::Request& request);
 	void setURL(const std::string& url);
-	
+
 	virtual Data getDataModelVariables();
 	virtual void send(const SendRequest& req);
 	virtual void invoke(const InvokeRequest& req);
@@ -72,11 +72,11 @@ protected:
 	std::string _url;
 	std::string _context;
 	std::string _target;
-	
+
 	InvokeRequest _invokeReq;
-	
+
 	ComponentState _compState;
-	
+
 	tthread::thread* _thread;
 	tthread::condition_variable _cond;
 	tthread::mutex _mutex;

@@ -68,6 +68,8 @@ add_test(test-execution ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/uscxml-browser ${CMAKE
 add_test(test-communication ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/uscxml-browser -t5493 ${CMAKE_SOURCE_DIR}/test/uscxml/test-communication.scxml)
 add_test(test-done-data ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/uscxml-browser ${CMAKE_SOURCE_DIR}/test/uscxml/test-donedata.scxml)
 
+find_program(SPIN spin)
+find_program(GCC gcc)
 
 if (NOT BUILD_MINIMAL)
 	add_executable(test-w3c src/test-w3c.cpp)
@@ -114,6 +116,30 @@ if (NOT BUILD_MINIMAL)
 			if (BUILD_DM_LUA AND LUA_FOUND AND BUILD_TESTS_W3C_LUA AND TEST_NAME MATCHES "^lua\\/.*")
 				add_test(${TEST_NAME} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-w3c ${W3C_TEST})
 				set_property(TEST ${TEST_NAME} PROPERTY LABELS ${TEST_NAME})
+	#			set_tests_properties(${TEST_NAME} PROPERTIES FAIL_REGULAR_EXPRESSION "TEST FAILED")
+			endif()
+		
+			if (BUILD_DM_PROMELA AND BUILD_TESTS_W3C_PROMELA AND TEST_NAME MATCHES "^promela\\/.*")
+				add_test(${TEST_NAME} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-w3c ${W3C_TEST})
+				set_property(TEST ${TEST_NAME} PROPERTY LABELS ${TEST_NAME})
+	#			set_tests_properties(${TEST_NAME} PROPERTIES FAIL_REGULAR_EXPRESSION "TEST FAILED")
+			endif()
+		
+			if (GCC AND SPIN AND BUILD_DM_PROMELA AND BUILD_TESTS_W3C_PROMELA AND TEST_NAME MATCHES "^promela\\/.*")
+
+				add_test(NAME "spin/${TEST_NAME}"
+				    COMMAND ${CMAKE_COMMAND}
+							-DOUTDIR:FILEPATH=${CMAKE_CURRENT_BINARY_DIR}
+							-DTESTFILE:FILEPATH=${W3C_TEST}
+							-DUSCXML_TRANSFORM_BIN:FILEPATH=${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/uscxml-transform
+							-DSPIN_BIN:FILEPATH=${SPIN}
+							-DGCC_BIN:FILEPATH=${GCC}
+							-P ${CMAKE_CURRENT_SOURCE_DIR}/w3c/run_promela_test.cmake)
+				set_property(TEST "spin/${TEST_NAME}" PROPERTY LABELS "spin/${TEST_NAME}")
+				set_tests_properties("spin/${TEST_NAME}" PROPERTIES PASS_REGULAR_EXPRESSION "depth reached [0-9]+, errors: 0")
+				set_tests_properties("spin/${TEST_NAME}" PROPERTIES FAIL_REGULAR_EXPRESSION "depth reached [0-9]+, errors: [1-9]+")
+
+				set_tests_properties(${TEST_NAME} PROPERTIES DEPENDS uscxml-transform)
 	#			set_tests_properties(${TEST_NAME} PROPERTIES FAIL_REGULAR_EXPRESSION "TEST FAILED")
 			endif()
 		

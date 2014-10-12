@@ -73,7 +73,7 @@ bool XHTMLInvoker::httpRecvRequest(const HTTPServer::Request& req) {
 				evhttp_send_error(_longPoll.evhttpReq, 204, NULL);
 				_longPoll.evhttpReq = NULL;
 			}
-			
+
 			_longPoll = req;
 			if (!_outQueue.empty()) {
 				// do we have some send requests pending?
@@ -84,7 +84,7 @@ bool XHTMLInvoker::httpRecvRequest(const HTTPServer::Request& req) {
 				_longPoll.evhttpReq = NULL;
 			}
 			return true;
-			
+
 		} else {
 			// an incomping event per POST request
 			Event ev(req);
@@ -93,14 +93,14 @@ bool XHTMLInvoker::httpRecvRequest(const HTTPServer::Request& req) {
 			} else {
 				ev.name = req.data.at("type").atom;
 			}
-			
+
 			// initialize data
 			ev.data = req.data.at("content");
 			ev.eventType = Event::EXTERNAL;
-			
+
 			HTTPServer::Reply reply(req);
 			HTTPServer::reply(reply);
-			
+
 			returnEvent(ev);
 			return true;
 		}
@@ -108,35 +108,35 @@ bool XHTMLInvoker::httpRecvRequest(const HTTPServer::Request& req) {
 
 	// initial request for a document
 	if (!req.data.hasKey("query") && // no query parameters
-			iequals(req.data.at("type").atom, "get") && // request type is GET
-			req.content.length() == 0) { // no content
-		
+	        iequals(req.data.at("type").atom, "get") && // request type is GET
+	        req.content.length() == 0) { // no content
+
 		// send template to establish long polling
 		HTTPServer::Reply reply(req);
 
 		// _invokeReq.content will contain the actual content as we needed to replace expressions in the interpreter thread
-		
+
 		if (!_invokeReq.data.empty()) {
 			// just reply with given data as json, this time and for ever
 			reply.content = _invokeReq.content;
 			reply.headers["Content-type"] = "application/json";
 			HTTPServer::reply(reply);
 			return true;
-			
+
 		} else if (_invokeReq.dom) {
 			// there is some XML given with the content
 			if (HAS_ATTR_CAST(_invokeReq.dom, "type")) {
 				// it's special XML to send per Comet later on, default to sending template and enqueue
 				_longPoll.evhttpReq = NULL;
 				_outQueue = std::deque<HTTPServer::Reply>();
-				
+
 				HTTPServer::Reply reply;
 				reply.content = _invokeReq.content;
 				reply.headers["Content-type"] = "application/xml";
 				_outQueue.push_back(reply);
 
 				// no return here - we wan to send the template below
-				
+
 			} else {
 				// it's plain XML now and forever
 				reply.content = _invokeReq.content;
@@ -145,7 +145,7 @@ bool XHTMLInvoker::httpRecvRequest(const HTTPServer::Request& req) {
 				return true;
 			}
 		} else if (_invokeReq.content.size() > 0) {
-			
+
 			// just reply as text this time and for ever
 			reply.content = _invokeReq.content;
 			reply.headers["Content-type"] = "text/plain";
@@ -158,9 +158,9 @@ bool XHTMLInvoker::httpRecvRequest(const HTTPServer::Request& req) {
 		 * If we want to replace expressions in the temaplte, we have to do it in invoke()
 		 * for thread safety of the datamodel.
 		 */
-		
+
 		// this file is generated from template/xhtml-invoker.xhtml via xxd
-		#include "template/xhtml-invoker.inc.h"
+#include "template/xhtml-invoker.inc.h"
 
 		// aggressive caching in IE will return all XHR get requests instantenously otherwise
 		reply.headers["Cache-Control"] = "no-cache";
@@ -184,7 +184,7 @@ void XHTMLInvoker::send(const SendRequest& req) {
 	tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
 
 	HTTPServer::Reply reply;
-	
+
 	if (req.dom) {
 		// XML
 		std::stringstream ss;
@@ -198,11 +198,11 @@ void XHTMLInvoker::send(const SendRequest& req) {
 			if (HAS_ATTR(contentElem, "attr"))
 				reply.headers["X-SCXML-Attr"] = ATTR(contentElem, "attr");
 		}
-		
+
 		ss << req.dom;
 		reply.content = ss.str();
 		reply.headers["Content-Type"] = "application/xml";
-		
+
 	} else if (!req.data.empty()) {
 		// JSON
 		reply.content = Data::toJSON(req.data);
@@ -213,7 +213,7 @@ void XHTMLInvoker::send(const SendRequest& req) {
 	}
 
 	// TODO: Params to set variables?
-	
+
 	_interpreter->getDataModel().replaceExpressions(reply.content);
 
 	if (!_longPoll) {
@@ -224,14 +224,14 @@ void XHTMLInvoker::send(const SendRequest& req) {
 	HTTPServer::reply(reply);
 	_longPoll.evhttpReq = NULL;
 }
-	
+
 void XHTMLInvoker::cancel(const std::string sendId) {
 	HTTPServer::unregisterServlet(this);
 }
 
 void XHTMLInvoker::invoke(const InvokeRequest& req) {
 	_invokeReq = req;
-	
+
 	// make sure _invokeReq.content contains correct and substituted string
 	if (!_invokeReq.data.empty()) {
 		_invokeReq.content = Data::toJSON(_invokeReq.data);

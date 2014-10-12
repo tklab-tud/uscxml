@@ -27,7 +27,7 @@
 namespace uscxml {
 
 class InterpreterImpl;
-	
+
 class USCXML_API InterpreterIssue {
 public:
 	enum IssueSeverity {
@@ -35,14 +35,14 @@ public:
 		USCXML_ISSUE_WARNING,
 		USCXML_ISSUE_INFO
 	};
-	
+
 	InterpreterIssue(const std::string& msg, Arabica::DOM::Node<std::string> node, IssueSeverity severity);
 
 	std::string xPath;
 	std::string message;
 	Arabica::DOM::Node<std::string> node;
 	IssueSeverity severity;
-	
+
 private:
 	static std::list<InterpreterIssue> forInterpreter(InterpreterImpl* interpreter);
 	friend class InterpreterImpl;

@@ -115,7 +115,7 @@ HTTPServer::HTTPServer(unsigned short port, unsigned short wsPort, SSLConfig* ss
 			LOG(ERROR) << "WebSocket server cannot bind to tcp/" << _wsPort;
 		}
 	}
-	
+
 #if (defined EVENT_SSL_FOUND && defined OPENSSL_FOUND && defined OPENSSL_HAS_ELIPTIC_CURVES)
 	// have another look here https://github.com/ppelleti/https-example/blob/master/https-server.c
 	_sslHandle = NULL;

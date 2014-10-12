@@ -91,7 +91,7 @@ public:
 protected:
 
 	JSObject* _global;
-	
+
 	JSContext* _jsCtx;
 	static JSRuntime* _jsRuntime;
 };

@@ -25,6 +25,7 @@
 namespace uscxml {
 
 class InterpreterRC : public InterpreterImpl {
+protected:
 	void enterStates(const Arabica::XPath::NodeSet<std::string>& enabledTransitions);
 	void exitStates(const Arabica::XPath::NodeSet<std::string>& enabledTransitions);
 	Arabica::XPath::NodeSet<std::string> removeConflictingTransitions(const Arabica::XPath::NodeSet<std::string>& enabledTransitions);

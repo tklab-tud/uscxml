@@ -202,7 +202,7 @@ public:
 
 	typedef std::multimap<std::string, Data> params_t;
 	typedef std::map<std::string, Data> namelist_t;
-		
+
 	static bool getParam(const params_t& params, const std::string& name, Data& target) {
 		if (params.find(name) != params.end()) {
 			target = params.find(name)->second;

@@ -349,6 +349,8 @@ else()
 	OPTION(BUILD_TESTS_W3C_ECMA "Create W3C ECMAScript tests" ON)
 	OPTION(BUILD_TESTS_W3C_XPATH "Create W3C XPath tests" ON)
 	OPTION(BUILD_TESTS_W3C_LUA "Create W3C Lua tests" ON)
+	OPTION(BUILD_TESTS_W3C_PROMELA "Create W3C Promela tests" ON)
+	
 	OPTION(BUILD_TESTS_FSM_ECMA "Create FSM converted W3C ECMAScript tests" OFF)
 	OPTION(BUILD_TESTS_FSM_XPATH "Create FSM converted W3C XPath tests" OFF)
 endif()

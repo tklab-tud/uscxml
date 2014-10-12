@@ -98,10 +98,10 @@ int main(int argc, char** argv) {
 	using namespace uscxml;
 
 	try {
-	
-	#if defined(HAS_SIGNAL_H) && !defined(WIN32)
+
+#if defined(HAS_SIGNAL_H) && !defined(WIN32)
 		signal(SIGPIPE, SIG_IGN);
-	#endif
+#endif
 
 		if (argc < 2) {
 			exit(EXIT_FAILURE);
@@ -116,23 +116,23 @@ int main(int argc, char** argv) {
 		if (dfEnv) {
 			delayFactor = strTo<double>(dfEnv);
 		}
-		
+
 		int option;
 		while ((option = getopt(argc, argv, "fd:")) != -1) {
 			switch(option) {
-				case 'f':
-					withFlattening = true;
-					break;
-				case 'd':
-					delayFactor = strTo<double>(optarg);
-					break;
-				default:
-					break;
+			case 'f':
+				withFlattening = true;
+				break;
+			case 'd':
+				delayFactor = strTo<double>(optarg);
+				break;
+			default:
+				break;
 			}
 		}
 
 		documentURI = argv[optind];
-		
+
 		Interpreter interpreter;
 		LOG(INFO) << "Processing " << documentURI << (withFlattening ? " FSM converted" : "") << (delayFactor ? "" : " with delays *= " + toStr(delayFactor));
 		if (withFlattening) {
@@ -147,7 +147,7 @@ int main(int argc, char** argv) {
 			Arabica::DOM::Document<std::string> document = interpreter.getDocument();
 			Arabica::DOM::Element<std::string> root = document.getDocumentElement();
 			Arabica::XPath::NodeSet<std::string> sends = InterpreterImpl::filterChildElements(interpreter.getNameSpaceInfo().xmlNSPrefix + "send", root, true);
-			
+
 			for (int i = 0; i < sends.size(); i++) {
 				Arabica::DOM::Element<std::string> send = Arabica::DOM::Element<std::string>(sends[i]);
 				if (HAS_ATTR(send, "delay")) {
@@ -161,9 +161,9 @@ int main(int argc, char** argv) {
 				} else if (HAS_ATTR(send, "delayexpr")) {
 					std::string delayExpr = ATTR(send, "delayexpr");
 					send.setAttribute("delayexpr",
-														"(" + delayExpr + ".indexOf('ms', " + delayExpr + ".length - 2) !== -1 ? "
-														"(" + delayExpr + ".slice(0,-2) * " + toStr(delayFactor) + ") + \"ms\" : "
-														"(" + delayExpr + ".slice(0,-1) * 1000 * " + toStr(delayFactor) + ") + \"ms\")");
+					                  "(" + delayExpr + ".indexOf('ms', " + delayExpr + ".length - 2) !== -1 ? "
+					                  "(" + delayExpr + ".slice(0,-2) * " + toStr(delayFactor) + ") + \"ms\" : "
+					                  "(" + delayExpr + ".slice(0,-1) * 1000 * " + toStr(delayFactor) + ") + \"ms\")");
 					std::cout << ATTR(send, "delayexpr") << std::endl;
 				}
 			}
@@ -172,7 +172,7 @@ int main(int argc, char** argv) {
 				std::cout << *issueIter << std::endl;
 			}
 		}
-		
+
 		if (interpreter) {
 			W3CStatusMonitor* vm = new W3CStatusMonitor();
 			interpreter.addMonitor(vm);

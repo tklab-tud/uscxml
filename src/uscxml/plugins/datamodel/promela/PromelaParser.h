@@ -17,14 +17,14 @@
  *  @endcond
  */
 
-// bison -v -d promela-expr.ypp && flex promela-expr.l
-// bison promela-expr.ypp && flex promela-expr.l
+// bison -v promela.ypp && flex promela.l
 
 #ifndef PROMELA_H_9AB78YB1
 #define PROMELA_H_9AB78YB1
 
 #include <stdlib.h>
-#include <stdarg.h>
+//#include <stdarg.h>
+#include <cstdarg>
 
 #include "uscxml/Message.h"
 
@@ -59,13 +59,14 @@ public:
 	static std::string typeToDesc(int type);
 
 	PromelaParser(const std::string& expr);
-	PromelaParser(const std::string& expr, Type expectedType);
+	PromelaParser(const std::string& expr, int nrArgs, ...);
 	virtual ~PromelaParser();
 
 	virtual PromelaParserNode* node(int type, int nrArgs, ...);
 	virtual PromelaParserNode* value(int type, const char* value);
 	void dump();
 
+	int parseInCompound;
 
 	PromelaParserNode* ast;
 	Type type;

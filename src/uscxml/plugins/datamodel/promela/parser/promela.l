@@ -24,7 +24,9 @@ L        [a-zA-Z_]
 
 %%
 
-bit|bool|byte|int|mtype|short|unsigned {
+\/\*([^*]|\*[^/])*\*+\/    /* multiline comments */
+
+bit|bool|byte|int|mtype|short|unsigned|string {
   yylval->value = strdup(yytext);
   return PML_TYPE;
 }
@@ -33,6 +35,8 @@ len                        { return PML_LEN; }
 false|skip|true            { yylval->value = strdup(yytext); return PML_CONST; }
 printf                     { return PML_PRINT; }
 printm                     { return PML_PRINTM; }
+typedef                    { return PML_TYPEDEF; }
+assert                     { return PML_ASSERT; }
 
 "!"                        { return PML_NEG; }
 "~"                        { return PML_COMPL; }
@@ -80,13 +84,18 @@ printm                     { return PML_PRINTM; }
 
 "="                        { return PML_ASGN; }
 
-L?\"(\\.|[^\\"])*\"         { yylval->value = strdup(yytext); return(PML_STRING); }
+L?\"(\\.|[^\\"])*\"        { yylval->value = strdup(yytext); return(PML_STRING); }
+
+
+L?'(\\.|[^\'])*\'          { 
+  /* Non PROMELA extension for single quoted string literals */
+  yylval->value = strdup(yytext); return(PML_STRING); 
+} 
 
 {DIGIT}+                   { yylval->value = strdup(yytext); return PML_CONST; }
 {ID}                       { yylval->value = strdup(yytext); return PML_NAME; }
 
-\'(\\.|[^'])*\'            { }
+[ \t\n]+                   /* eat up whitespace */
 
-[ \t\n]+          /* eat up whitespace */
 
 .                          { /*printf( "Unrecognized character: %s\n", yytext ); */ }

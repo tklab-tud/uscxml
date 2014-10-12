@@ -74,8 +74,8 @@ protected:
 	Arabica::DOM::Element<std::string> _element;
 	std::string _invokeId;
 	std::string _type;
-	
-	
+
+
 };
 
 class USCXML_API EventHandler {

@@ -50,6 +50,12 @@ inline bool isNumeric( const char* pszInput, int nNumberBase) {
 	return (input.find_first_not_of(base.substr(0, nNumberBase + 2)) == std::string::npos);
 }
 
+inline bool isInteger( const char* pszInput, int nNumberBase) {
+	std::string base = "-0123456789ABCDEF";
+	std::string input = pszInput;
+	return (input.find_first_not_of(base.substr(0, nNumberBase + 1)) == std::string::npos);
+}
+
 inline bool iequals(const std::string& a, const std::string& b) {
 	// this impementation beats boost::iequals 2700ms vs 2100ms for test-performance.scxml - we don't care for non-ascii yet
 	unsigned int size = a.size();

@@ -50,28 +50,29 @@ public:
 	bool httpRecvRequest(const HTTPServer::Request& request) {
 		std::cout << "RCVD:" << std::endl << request << std::flush;
 		tthread::lock_guard<tthread::mutex> lock(Mutex);
-		
+
 		const Arabica::DOM::Document<std::string>& doc = request.data.at("content").node.getOwnerDocument();
 //		NameSpacingParser parser = NameSpacingParser::fromXML(request.content);
 		switch(MMIEvent::getType(doc.getDocumentElement())) {
-			case MMIEvent::NEWCONTEXTRESPONSE: {
-				NewContextResponse* resp = new NewContextResponse(NewContextResponse::fromXML(doc.getDocumentElement()));
-				context = resp->context;
-				Replies[resp->requestId] = resp;
-				break;
-			}
-			case MMIEvent::STARTRESPONSE: {
-				StartResponse* resp = new StartResponse(StartResponse::fromXML(doc.getDocumentElement()));
-				Replies[resp->requestId] = resp;
-			}
-			default: ;
+		case MMIEvent::NEWCONTEXTRESPONSE: {
+			NewContextResponse* resp = new NewContextResponse(NewContextResponse::fromXML(doc.getDocumentElement()));
+			context = resp->context;
+			Replies[resp->requestId] = resp;
+			break;
 		}
-		
+		case MMIEvent::STARTRESPONSE: {
+			StartResponse* resp = new StartResponse(StartResponse::fromXML(doc.getDocumentElement()));
+			Replies[resp->requestId] = resp;
+		}
+		default:
+			;
+		}
+
 		Cond.notify_all();
-		
+
 		HTTPServer::Reply reply(request);
 		HTTPServer::reply(reply);
-		
+
 		return true;
 	}
 	void setURL(const std::string& url) {
@@ -86,7 +87,7 @@ void printUsageAndExit(const char* progName) {
 	if (progStr.find_last_of(PATH_SEPERATOR) != std::string::npos) {
 		progStr = progStr.substr(progStr.find_last_of(PATH_SEPERATOR) + 1, progStr.length() - (progStr.find_last_of(PATH_SEPERATOR) + 1));
 	}
-	
+
 	printf("%s version " USCXML_VERSION " (" CMAKE_BUILD_TYPE " build - " CMAKE_COMPILER_STRING ")\n", progStr.c_str());
 	printf("Usage\n");
 	printf("\t%s", progStr.c_str());
@@ -105,26 +106,26 @@ int main(int argc, char** argv) {
 
 		std::string target;
 		std::string document;
-		
+
 		if (argc < 2)
 			printUsageAndExit(argv[0]);
 
 		int option;
 		while ((option = getopt(argc, argv, "t:")) != -1) {
 			switch(option) {
-				case 't':
-					target = optarg;
-					break;
-				default:
-					printUsageAndExit(argv[0]);
+			case 't':
+				target = optarg;
+				break;
+			default:
+				printUsageAndExit(argv[0]);
 			}
 		}
-		
+
 		if (argc < optind)
 			printUsageAndExit(argv[0]);
-			
+
 		document = argv[optind];
-		
+
 		if (!boost::starts_with(document, "http"))
 			document = "http://" + document;
 
@@ -134,11 +135,11 @@ int main(int argc, char** argv) {
 		// target = "http://130.83.163.167:9090/mmi";
 		// target = "http://localhost:9090/mmi";
 
-		
+
 		MMIServlet servlet;
 		HTTPServer::getInstance(4344, 0);
 		HTTPServer::getInstance()->registerServlet("/mmi", &servlet);
-		
+
 		std::string source = servlet.url;
 
 		NewContextRequest newCtxReq;
@@ -147,12 +148,12 @@ int main(int argc, char** argv) {
 		newCtxReq.requestId = uscxml::UUID::getUUID();
 
 		Requests[newCtxReq.requestId] = &newCtxReq;
-		
+
 		ISSUE_REQUEST(newCtxReq, false);
 
 		while(Replies.find(newCtxReq.requestId) == Replies.end())
 			Cond.wait(Mutex);
-			
+
 		StartRequest startReq;
 		startReq.context = context;
 		startReq.source = source;
@@ -160,7 +161,7 @@ int main(int argc, char** argv) {
 		startReq.requestId = uscxml::UUID::getUUID();
 		startReq.contentURL.href = document;
 		//"https://raw.githubusercontent.com/Roland-Taizun-Azhar/TaskAssistance-Project/master/WebContent/hello.vxml";
-		
+
 		Requests[startReq.requestId] = &startReq;
 		ISSUE_REQUEST(startReq, false);
 
@@ -173,6 +174,6 @@ int main(int argc, char** argv) {
 	} catch (std::exception e) {
 		std::cout << e.what() << std::endl;
 	}
-	
-	
+
+
 }

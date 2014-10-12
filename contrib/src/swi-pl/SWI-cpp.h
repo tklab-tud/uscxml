@@ -25,6 +25,12 @@
 #ifndef _SWI_CPP_H
 #define _SWI_CPP_H
 
+#ifdef SWI_REINTERPRET_FOREIGN
+#	define PL_FOREIGN_TO_FUNCTION(f) reinterpret_cast<void (*)()>(f)
+#else
+#	define PL_FOREIGN_TO_FUNCTION(f) (void *)f
+#endif
+
 #include <SWI-Prolog.h>
 #include <string.h>
 #ifndef __APPLE__
@@ -466,23 +472,23 @@ public:
 
   PlRegister(const char *module, const char *name, int arity,
 	    foreign_t (f)(term_t t0, int a, control_t ctx))
-  { PL_register_foreign_in_module(module, name, arity, (void *)f, PL_FA_VARARGS);
+  { PL_register_foreign_in_module(module, name, arity, PL_FOREIGN_TO_FUNCTION(f), PL_FA_VARARGS);
   }
 
   PlRegister(const char *module, const char *name, foreign_t (*f)(PlTerm a0))
-  { PL_register_foreign_in_module(module, name, 1, (void *)f, 0);
+  { PL_register_foreign_in_module(module, name, 1, PL_FOREIGN_TO_FUNCTION(f), 0);
   }
   PlRegister(const char *module, const char *name, foreign_t (*f)(PlTerm a0, PlTerm a1))
-  { PL_register_foreign_in_module(module, name, 2, (void *)f, 0);
+  { PL_register_foreign_in_module(module, name, 2, PL_FOREIGN_TO_FUNCTION(f), 0);
   }
   PlRegister(const char *module, const char *name, foreign_t (*f)(PlTerm a0, PlTerm a1, PlTerm a2))
-  { PL_register_foreign_in_module(module, name, 3, (void *)f, 0);
+  { PL_register_foreign_in_module(module, name, 3, PL_FOREIGN_TO_FUNCTION(f), 0);
   }
 
   // for non-deterministic calls
   PlRegister(const char *module, const char *name, int arity,
              foreign_t (f)(term_t t0, int a, control_t ctx), short flags)
-  { PL_register_foreign_in_module(module, name, arity, (void *)f, flags);
+  { PL_register_foreign_in_module(module, name, arity, PL_FOREIGN_TO_FUNCTION(f), flags);
   }
 
 };

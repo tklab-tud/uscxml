@@ -21,10 +21,11 @@
 #define SWIDATAMODEL_H_KN8TWG0V
 
 #include "uscxml/Interpreter.h"
+#include "uscxml/SWIConfig.h"
+
 #include <list>
 #include <SWI-cpp.h>
 
-#include "uscxml/SWIConfig.h"
 
 #ifdef BUILD_AS_PLUGINS
 #include "uscxml/plugins/Plugins.h"

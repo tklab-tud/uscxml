@@ -36,7 +36,7 @@ InterpreterIssue::InterpreterIssue(const std::string& msg, Arabica::DOM::Node<st
 	if (node)
 		xPath = DOMUtils::xPathForNode(node);
 }
-	
+
 // find all elements in the SCXML namespace in one traversal
 void assembleNodeSets(const std::string nsPrefix, const Node<std::string>& node, std::map<std::string, NodeSet<std::string> >& sets) {
 	NodeList<std::string> childs = node.getChildNodes();
@@ -60,10 +60,10 @@ NodeSet<std::string> getReachableStates(const Node<std::string>& scxml, Interpre
 	reachable.push_back(scxml);
 
 	bool hasChanges = true;
-	
+
 	while (hasChanges) {
 		// iterate initials and transitions until stable
-		
+
 		hasChanges = false;
 		// reachable per initial attribute or document order - size will increase as we append new states
 		for (int i = 0; i < reachable.size(); i++) {
@@ -81,7 +81,7 @@ NodeSet<std::string> getReachableStates(const Node<std::string>& scxml, Interpre
 			} catch (Event e) {
 			}
 		}
-		
+
 		// reachable per target attribute in transitions
 		for (int i = 0; i < reachable.size(); i++) {
 			Element<std::string> state = Element<std::string>(reachable[i]);
@@ -102,7 +102,7 @@ NodeSet<std::string> getReachableStates(const Node<std::string>& scxml, Interpre
 			}
 		}
 	}
-	
+
 	// reachable via a reachable child state
 	for (int i = 0; i < reachable.size(); i++) {
 		Element<std::string> state = Element<std::string>(reachable[i]);
@@ -121,17 +121,17 @@ NodeSet<std::string> getReachableStates(const Node<std::string>& scxml, Interpre
 			}
 		}
 	}
-		
+
 	return reachable;
 }
 
-	
+
 std::list<InterpreterIssue> InterpreterIssue::forInterpreter(InterpreterImpl* interpreter) {
 	// some things we need to prepare first
 	if (interpreter->_factory == NULL)
 		interpreter->_factory = Factory::getInstance();
 	interpreter->setupDOM();
-	
+
 	std::list<InterpreterIssue> issues;
 
 	if (!interpreter->_scxml) {
@@ -141,23 +141,23 @@ std::list<InterpreterIssue> InterpreterIssue::forInterpreter(InterpreterImpl* in
 	}
 
 	std::map<std::string, Arabica::DOM::Element<std::string> > seenStates;
-	
+
 	// get some aliases
 	Element<std::string>& _scxml = interpreter->_scxml;
 	NameSpaceInfo& _nsInfo = interpreter->_nsInfo;
 	Factory* _factory = interpreter->_factory;
 	DataModel& _dataModel = interpreter->_dataModel;
-	
-	
+
+
 	std::map<std::string, NodeSet<std::string> > nodeSets;
 	assembleNodeSets(_nsInfo.xmlNSPrefix, _scxml, nodeSets);
-	
-	
+
+
 	NodeSet<std::string> scxmls = nodeSets["scxml"];
 	scxmls.push_back(_scxml);
 
 	NodeSet<std::string> reachable = getReachableStates(_scxml, interpreter, _nsInfo.xmlNSPrefix);
-	
+
 	NodeSet<std::string>& states = nodeSets["state"];
 	NodeSet<std::string>& parallels = nodeSets["parallel"];
 	NodeSet<std::string>& transitions = nodeSets["transition"];
@@ -298,13 +298,13 @@ std::list<InterpreterIssue> InterpreterIssue::forInterpreter(InterpreterImpl* in
 		}
 	}
 
-	
+
 	for (int i = 0; i < allStates.size(); i++) {
 		Element<std::string> state = Element<std::string>(allStates[i]);
-		
+
 		if (InterpreterImpl::isMember(state, finals) && !HAS_ATTR(state, "id")) // id is not required for finals
 			continue;
-	
+
 		// check for existance of id attribute
 		if (!HAS_ATTR(state, "id")) {
 			issues.push_back(InterpreterIssue("State has no 'id' attribute", state, InterpreterIssue::USCXML_ISSUE_FATAL));
@@ -317,7 +317,7 @@ std::list<InterpreterIssue> InterpreterIssue::forInterpreter(InterpreterImpl* in
 		}
 
 
-		
+
 		// check for uniqueness of id attribute
 		if (seenStates.find(stateId) != seenStates.end()) {
 			issues.push_back(InterpreterIssue("Duplicate state with id '" + stateId + "'", state, InterpreterIssue::USCXML_ISSUE_FATAL));
@@ -325,10 +325,10 @@ std::list<InterpreterIssue> InterpreterIssue::forInterpreter(InterpreterImpl* in
 		}
 		seenStates[ATTR(state, "id")] = state;
 	}
-	
+
 	for (int i = 0; i < transitions.size(); i++) {
 		Element<std::string> transition = Element<std::string>(transitions[i]);
-	
+
 		// check for valid target
 		std::list<std::string> targetIds = InterpreterImpl::tokenizeIdRefs(ATTR(transition, "target"));
 		for (std::list<std::string>::iterator targetIter = targetIds.begin(); targetIter != targetIds.end(); targetIter++) {
@@ -345,7 +345,7 @@ std::list<InterpreterIssue> InterpreterIssue::forInterpreter(InterpreterImpl* in
 		NodeSet<std::string> transitions = InterpreterImpl::filterChildElements(_nsInfo.xmlNSPrefix + "transition", state, false);
 
 		transitions.to_document_order();
-	
+
 		for (int j = 1; j < transitions.size(); j++) {
 			Element<std::string> transition = Element<std::string>(transitions[j]);
 			for (int k = 0; k < j; k++) {
@@ -358,7 +358,7 @@ std::list<InterpreterIssue> InterpreterIssue::forInterpreter(InterpreterImpl* in
 						// earlier transition is eventless
 						issues.push_back(InterpreterIssue("Transition can never be optimally enabled", transition, InterpreterIssue::USCXML_ISSUE_INFO));
 						goto NEXT_TRANSITION;
-					
+
 					} else if (HAS_ATTR(transition, "event")) {
 						// does the earlier transition match all our events?
 						std::list<std::string> events = InterpreterImpl::tokenizeIdRefs(ATTR(transition, "event"));
@@ -370,7 +370,7 @@ std::list<InterpreterIssue> InterpreterIssue::forInterpreter(InterpreterImpl* in
 								break;
 							}
 						}
-					
+
 						if (allMatched) {
 							issues.push_back(InterpreterIssue("Transition can never be optimally enabled", transition, InterpreterIssue::USCXML_ISSUE_INFO));
 							goto NEXT_TRANSITION;
@@ -378,7 +378,8 @@ std::list<InterpreterIssue> InterpreterIssue::forInterpreter(InterpreterImpl* in
 					}
 				}
 			}
-		NEXT_TRANSITION:;
+NEXT_TRANSITION:
+			;
 		}
 	}
 
@@ -410,7 +411,7 @@ std::list<InterpreterIssue> InterpreterIssue::forInterpreter(InterpreterImpl* in
 				// unknown at factory - adhoc extension?
 				if (HAS_ATTR(invoke, "id") && interpreter->_invokers.find(ATTR(invoke, "id")) != interpreter->_invokers.end())
 					continue; // not an issue
-				
+
 				IssueSeverity severity;
 				if (HAS_ATTR(invoke, "idlocation")) {
 					// we might still resolve at runtime
@@ -438,7 +439,7 @@ std::list<InterpreterIssue> InterpreterIssue::forInterpreter(InterpreterImpl* in
 			}
 		}
 	}
-	
+
 	// check that all custom executable content is known
 	{
 		NodeSet<std::string> allExecContentContainers;
@@ -446,7 +447,7 @@ std::list<InterpreterIssue> InterpreterIssue::forInterpreter(InterpreterImpl* in
 		allExecContentContainers.push_back(onExits);
 		allExecContentContainers.push_back(transitions);
 		allExecContentContainers.push_back(finalizes);
-	
+
 		for (int i = 0; i < allExecContentContainers.size(); i++) {
 			Element<std::string> block = Element<std::string>(allExecContentContainers[i]);
 			NodeSet<std::string> execContents = InterpreterImpl::filterChildType(Node_base::ELEMENT_NODE, block);
@@ -473,7 +474,7 @@ std::list<InterpreterIssue> InterpreterIssue::forInterpreter(InterpreterImpl* in
 				issues.push_back(InterpreterIssue("Parent of " + localName + " is no element", element, InterpreterIssue::USCXML_ISSUE_WARNING));
 				continue;
 			}
-		
+
 			Element<std::string> parent = Element<std::string>(element.getParentNode());
 			std::string parentName = LOCALNAME(parent);
 
@@ -490,13 +491,13 @@ std::list<InterpreterIssue> InterpreterIssue::forInterpreter(InterpreterImpl* in
 		if (HAS_ATTR(_scxml, "datamodel")) {
 			if (!_factory->hasDataModel(ATTR(_scxml, "datamodel"))) {
 				issues.push_back(InterpreterIssue("SCXML document requires unknown datamodel '" + ATTR(_scxml, "datamodel") + "'", _scxml, InterpreterIssue::USCXML_ISSUE_FATAL));
-			
+
 				// we cannot even check the rest as we require a datamodel
 				return issues;
 			}
 		}
 	}
-	
+
 	bool instantiatedDataModel = false;
 	// instantiate datamodel if not explicitly set
 	if (!_dataModel) {
@@ -509,12 +510,12 @@ std::list<InterpreterIssue> InterpreterIssue::forInterpreter(InterpreterImpl* in
 		}
 	}
 
-	
+
 	// test all scripts for valid syntax
 	{
 		for (int i = 0; i < scripts.size(); i++) {
 			Element<std::string> script = Element<std::string>(scripts[i]);
-		
+
 			if (script.hasChildNodes()) {
 				// search for the text node with the actual script
 				std::string scriptContent;
@@ -522,7 +523,7 @@ std::list<InterpreterIssue> InterpreterIssue::forInterpreter(InterpreterImpl* in
 					if (child.getNodeType() == Node_base::TEXT_NODE || child.getNodeType() == Node_base::CDATA_SECTION_NODE)
 						scriptContent += child.getNodeValue();
 				}
-			
+
 				if (!_dataModel.isValidSyntax(scriptContent)) {
 					issues.push_back(InterpreterIssue("Syntax error in script", script, InterpreterIssue::USCXML_ISSUE_WARNING));
 				}
@@ -536,7 +537,7 @@ std::list<InterpreterIssue> InterpreterIssue::forInterpreter(InterpreterImpl* in
 		withCondAttrs.push_back(transitions);
 		withCondAttrs.push_back(ifs);
 		withCondAttrs.push_back(elseIfs);
-	
+
 		for (int i = 0; i < withCondAttrs.size(); i++) {
 			Element<std::string> condAttr = Element<std::string>(withCondAttrs[i]);
 			if (HAS_ATTR(condAttr, "cond")) {
@@ -555,7 +556,7 @@ std::list<InterpreterIssue> InterpreterIssue::forInterpreter(InterpreterImpl* in
 		withExprAttrs.push_back(assigns);
 		withExprAttrs.push_back(contents);
 		withExprAttrs.push_back(params);
-	
+
 		for (int i = 0; i < withExprAttrs.size(); i++) {
 			Element<std::string> withExprAttr = Element<std::string>(withExprAttrs[i]);
 			if (HAS_ATTR(withExprAttr, "expr")) {

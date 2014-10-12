@@ -21,7 +21,7 @@
 #define CHARTTOFSM_H_IOKPYEBY
 
 #include "uscxml/DOMUtils.h"
-#include "uscxml/interpreter/InterpreterDraft6.h"
+#include "uscxml/interpreter/InterpreterRC.h"
 #include <DOM/Document.hpp>
 #include <DOM/Node.hpp>
 #include <XPath/XPath.hpp>
@@ -32,7 +32,7 @@ namespace uscxml {
 class GlobalState;
 class GlobalTransition;
 class FlatteningInterpreter;
-	
+
 class USCXML_API GlobalState {
 public:
 
@@ -40,7 +40,7 @@ public:
 	GlobalState(const Arabica::XPath::NodeSet<std::string>& activeStates,
 	            const Arabica::XPath::NodeSet<std::string>& alreadyEnteredStates, // we need to remember for binding=late
 	            const std::map<std::string, Arabica::XPath::NodeSet<std::string> >& historyStates,
-							const std::string& xmlNSPrefix);
+	            const std::string& xmlNSPrefix);
 
 	Arabica::XPath::NodeSet<std::string> activeStates;
 	Arabica::XPath::NodeSet<std::string> alreadyEnteredStates;
@@ -51,7 +51,7 @@ public:
 	std::string stateId;
 
 	static int gIndex;
-	
+
 	std::string index;
 	bool isFinal;
 };
@@ -103,14 +103,14 @@ public:
 
 	std::string index;
 	FlatteningInterpreter* interpreter;
-	
+
 	bool operator< (const GlobalTransition& other) const;
-	
+
 protected:
 	std::list<std::string> getCommonEvents(const Arabica::XPath::NodeSet<std::string>& transitions);
 };
 
-class USCXML_API FlatteningInterpreter : public InterpreterDraft6, public InterpreterMonitor {
+class USCXML_API FlatteningInterpreter : public InterpreterRC, public InterpreterMonitor {
 public:
 	FlatteningInterpreter(const Arabica::DOM::Document<std::string>& doc);
 	virtual ~FlatteningInterpreter();
@@ -161,7 +161,7 @@ protected:
 	int maxOrder;
 
 	size_t _lastTransientStateId;
-	
+
 	Arabica::DOM::Document<std::string> _flatDoc;
 	std::map<std::string, GlobalState*> _globalConf;
 };

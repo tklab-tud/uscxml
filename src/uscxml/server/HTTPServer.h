@@ -78,7 +78,7 @@ public:
 			type = req.data.compound["type"].atom;
 			evhttpReq = req.evhttpReq;
 		}
-		
+
 		int status;
 		std::string type;
 		std::map<std::string, std::string> headers;

@@ -53,7 +53,9 @@ if (SWI_FOUND)
 	FIND_PROGRAM(SWI_BINARY swipl)
 	
 	FIND_PATH(SWI_CPP_INCLUDE_DIR SWI-cpp.h
-	  PATHS ${SWI_INCLUDE_DIRS}
+	  PATHS 
+		${SWI_INCLUDE_DIRS}
+		${PROJECT_SOURCE_DIR}/contrib/src/swi-pl
 	)
 
 else()
@@ -136,7 +138,9 @@ else()
 	  PATH_SUFFIXES 
 			packages/cpp 
 			lib/swipl-${SWI_VERSION}/include
-	  PATHS ${SWI_SEARCH_PATHS}
+	  PATHS 
+			${SWI_SEARCH_PATHS}
+			${PROJECT_SOURCE_DIR}/contrib/src/swi-pl
 	)
 
 	#message("SWI_CPP_INCLUDE_DIR: ${SWI_CPP_INCLUDE_DIR}")
@@ -186,14 +190,22 @@ endif()
 #message(FATAL_ERROR "SWI_BINARY: ${SWI_BINARY} / SWI_LIBRARY_RELEASE: ${SWI_LIBRARY_RELEASE} / SWI_LIBRARY_DEBUG: ${SWI_LIBRARY_DEBUG} / SWI_INCLUDE_DIR: ${SWI_INCLUDE_DIR} / SWI_CPP_INCLUDE_DIR: ${SWI_CPP_INCLUDE_DIR}")
 
 INCLUDE(FindPackageHandleStandardArgs)
-FIND_PACKAGE_HANDLE_STANDARD_ARGS(SWI DEFAULT_MSG SWI_LIBRARY SWI_BINARY SWI_INCLUDE_DIR)
+FIND_PACKAGE_HANDLE_STANDARD_ARGS(SWI DEFAULT_MSG SWI_LIBRARY SWI_BINARY SWI_INCLUDE_DIR SWI_CPP_INCLUDE_DIR)
 
 
 if (SWI_FOUND)
 	include(CheckCXXSourceCompiles)
 	
-	set(CMAKE_REQUIRED_INCLUDES ${SWI_INCLUDE_DIR})
+	set(CMAKE_REQUIRED_INCLUDES ${SWI_INCLUDE_DIR} ${SWI_CPP_INCLUDE_DIR})
+	
 	set(CMAKE_REQUIRED_LIBRARIES ${SWI_LIBRARY})
+
+	# check for new reinterpret_cast<void (*)()>(f) for foreign functions with in SWI 7.x and above
+	check_cxx_source_compiles("
+		#include <SWI-cpp.h>
+		int main(){
+	  }
+	" SWI_REINTERPRET_FOREIGN)
 
 	check_cxx_source_compiles("
 		#include <SWI-Prolog.h>

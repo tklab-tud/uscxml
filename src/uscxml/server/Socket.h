@@ -112,7 +112,7 @@ protected:
 	std::string _sep;
 	std::map<Connection, std::stringstream*> _fragments;
 };
-	
+
 class USCXML_API ClientSocket : public Socket {
 public:
 	ClientSocket(int domain, int type, int protocol);

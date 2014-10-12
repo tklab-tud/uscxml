@@ -32,7 +32,8 @@ struct USCXML_API TrieNode {
 	virtual ~TrieNode();
 
 	bool hasWord;
-	int identifier;
+	int index;
+	std::string identifier;
 	std::string value;
 	std::map<std::string, TrieNode*> childs;
 	void dump(int indent = 0);
@@ -45,6 +46,7 @@ struct USCXML_API Trie {
 
 	void addWord(const std::string& word);
 	size_t getNextToken(const std::string& word, size_t offset, std::string& token);
+	std::string escapeWord(const std::string& word);
 
 	TrieNode* getNodeWithPrefix(const std::string& prefix);
 	std::list<TrieNode*> getWordsWithPrefix(const std::string& prefix);
@@ -53,7 +55,7 @@ struct USCXML_API Trie {
 
 	TrieNode* root;
 	std::string seperator;
-	int lastIdentifier;
+	int lastIndex;
 };
 
 }

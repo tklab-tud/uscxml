@@ -182,7 +182,7 @@ int main(int argc, char** argv) {
 		try {
 			Interpreter interpreter = Interpreter::fromURI(documentURL);
 			if (interpreter) {
-				
+
 				if (options.checking) {
 					std::list<InterpreterIssue> issues = interpreter.validate();
 					for (std::list<InterpreterIssue>::iterator issueIter = issues.begin(); issueIter != issues.end(); issueIter++) {
@@ -190,7 +190,7 @@ int main(int argc, char** argv) {
 					}
 
 				}
-				
+
 				interpreter.setCmdLineOptions(options.additionalParameters);
 				interpreter.setCmdLineOptions(currOptions->additionalParameters);
 				interpreter.setCapabilities(options.getCapabilities());

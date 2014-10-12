@@ -165,8 +165,6 @@ void testInlinePromela() {
 		assert(prmInls.inlines.front().sequences.size() == 0);
 		assert(boost::trim_copy(prmInls.inlines.front().content) == "This is foo!");
 	}
-
-	exit(0);
 }
 
 void testPromelaParser() {
@@ -188,6 +186,18 @@ void testPromelaParser() {
 	expressions.push_back("bool busy[3];");
 	expressions.push_back("bool busy[3], us[4];");
 	expressions.push_back("mtype = {\nred, white, blue,\nabort, accept, ack, sync_ack, close, connect,\ncreate, data, eof, open, reject, sync, transfer,\nFATAL, NON_FATAL, COMPLETE\n}");
+	expressions.push_back("typedef D { short f; byte  g }; ");
+	expressions.push_back("x = 1");
+	expressions.push_back("x = foo.bar[2].baz; ");
+	expressions.push_back("_event.data[1].aParam.key1.key2[1].key3.key4");
+	expressions.push_back("_event.data.aParam");
+	expressions.push_back("_event.data");
+	expressions.push_back("_event");
+	expressions.push_back("states");
+	expressions.push_back("states[1]");
+	expressions.push_back("_x.states[1]");
+	expressions.push_back("_x.states[1].foo");
+	expressions.push_back("_event.data[1].aParam.key1.key2[1].key3.key4");
 
 	/* expressions  */
 	expressions.push_back("i+1");
@@ -203,8 +213,8 @@ void testPromelaParser() {
 	expressions.push_back("c++");
 	expressions.push_back("state = state - 1");
 	expressions.push_back("printf(\"hello world\\n\")");
-	expressions.push_back("printf(\"result %d: %d\n\", id, res, foo, bar)");
-	expressions.push_back("printf(\"x = %d\n\", x)");
+	expressions.push_back("printf(\"result %d: %d\\n\", id, res, foo, bar)");
+	expressions.push_back("printf(\"x = %d\\n\", x)");
 	expressions.push_back("(n <= 1)");
 	expressions.push_back("res = (a*a+b)/2*a;");
 	expressions.push_back("assert(0)	/* a forced stop, (Chapter 6) */");

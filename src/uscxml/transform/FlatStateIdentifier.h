@@ -37,9 +37,14 @@ namespace uscxml {
 
 class USCXML_API FlatStateIdentifier {
 public:
+
+	operator bool() const {
+		return stateId.length() > 0;
+	}
+
 	FlatStateIdentifier(const Arabica::XPath::NodeSet<std::string>& activeStates,
-											const Arabica::XPath::NodeSet<std::string>& alreadyEnteredStates,
-											const std::map<std::string, Arabica::XPath::NodeSet<std::string> >& historyStates) {
+	                    const Arabica::XPath::NodeSet<std::string>& alreadyEnteredStates,
+	                    const std::map<std::string, Arabica::XPath::NodeSet<std::string> >& historyStates) {
 		for (int i = 0; i < activeStates.size(); i++) {
 			active.push_back(ATTR_CAST(activeStates[i], "id"));
 		}
@@ -65,17 +70,24 @@ public:
 				histories[histIter->first].push_back(ATTR_CAST(histIter->second[i], "id"));
 			}
 		}
-		
+
 		initStateId();
 	}
-	
-	
+
+
 	FlatStateIdentifier(const std::list<std::string>& active,
-											const std::list<std::string>& visited,
-											const std::map<std::string, std::list<std::string> >& histories) : active(active), visited(visited), histories(histories) {
+	                    const std::list<std::string>& visited,
+	                    const std::map<std::string, std::list<std::string> >& histories) : active(active), visited(visited), histories(histories) {
 		initStateId();
 	}
-	
+
+	static std::string toStateId(const std::list<std::string> active,
+	                             const std::list<std::string> visited = std::list<std::string>(),
+	                             const std::map<std::string, std::list<std::string> > histories = std::map<std::string, std::list<std::string> >()) {
+		FlatStateIdentifier tmp(active, visited, histories);
+		return tmp.getStateId();
+	}
+
 	FlatStateIdentifier(const std::string& identifier) : stateId(identifier) {
 		std::string parsedName;
 		// parse unique state identifier
@@ -87,6 +99,10 @@ public:
 				std::stringstream stateSS(section.substr(8, section.size() - 9));
 				std::string state;
 				while(std::getline(stateSS, state, ',')) {
+					size_t closingBracketPos = state.find("}");
+					if (closingBracketPos != std::string::npos) {
+						state = state.substr(0, closingBracketPos);
+					}
 					if (state.length() > 0) {
 						active.push_back(state);
 					}
@@ -96,6 +112,10 @@ public:
 				std::stringstream stateSS(section.substr(9, section.size() - 10));
 				std::string state;
 				while(std::getline(stateSS, state, ',')) {
+					size_t closingBracketPos = state.find("}");
+					if (closingBracketPos != std::string::npos) {
+						state = state.substr(0, closingBracketPos);
+					}
 					if (state.length() > 0) {
 						visited.push_back(state);
 					}
@@ -107,31 +127,36 @@ public:
 				std::string state;
 				size_t start = 0;
 				size_t history = 0;
-				
+
 				while((history = histEntries.find(":", start)) != std::string::npos) {
 					std::string histName = histEntries.substr(start, history - start);
 					history++;
-					
+
 					size_t end = histEntries.find("}", start);
 					if (end == std::string::npos)
 						continue;
-					
+
 					std::stringstream stateSS(histEntries.substr(history + 1, end - history - 1));
 					std::string state;
 					while(std::getline(stateSS, state, ',')) {
+						size_t closingBracketPos = state.find("}");
+						if (closingBracketPos != std::string::npos) {
+							state = state.substr(0, closingBracketPos);
+						}
 						histories[histName].push_back(state);
 					}
-					
+
 					start = end + 2;
 				}
 			}
 		}
+		initStateId();
 	}
 
 	const std::string& getStateId() {
 		return stateId;
 	}
-	
+
 	const std::list<std::string>& getActive() {
 		return active;
 	}
@@ -157,17 +182,17 @@ protected:
 	std::list<std::string> active;
 	std::list<std::string> visited;
 	std::map<std::string, std::list<std::string> > histories;
-	
+
 	std::string flatActive;
 	std::string flatVisited;
 	std::string flatHistories;
-	
+
 	std::string stateId;
 
 	void initStateId() {
 		std::stringstream stateIdSS;
 		std::string seperator;
-		
+
 		std::stringstream flatActiveSS;
 		flatActiveSS << "active:{";
 		for (std::list<std::string>::const_iterator actIter = active.begin(); actIter != active.end(); actIter++) {
@@ -177,7 +202,7 @@ protected:
 		flatActiveSS << "}";
 		flatActive = flatActiveSS.str();
 		stateIdSS << flatActive;
-		
+
 		if (visited.size() > 0) {
 			std::stringstream flatVisitedSS;
 			seperator = "";
@@ -190,7 +215,7 @@ protected:
 			flatVisited = flatVisitedSS.str();
 			stateIdSS << ";" << flatVisited;
 		}
-		
+
 		if (histories.size() > 0) {
 			std::stringstream flatHistorySS;
 			seperator = "";
@@ -209,10 +234,10 @@ protected:
 			flatHistories = flatHistorySS.str();
 			stateIdSS << ";" << flatHistories;
 		}
-		
+
 		stateId = stateIdSS.str();
 	}
-	
+
 #if 0
 	std::string activeId() {
 		std::stringstream activeSS;
@@ -224,7 +249,7 @@ protected:
 	}
 
 #endif
-	
+
 };
 
 }

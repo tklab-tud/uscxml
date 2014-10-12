@@ -74,7 +74,7 @@ while (node) {\
 	}\
 	node = node.getNextSibling();\
 }\
-
+ 
 
 namespace uscxml {
 
@@ -97,7 +97,7 @@ MMIEvent::Type MMIEvent::getType(Arabica::DOM::Node<std::string> node) {
 				return INVALID;
 		}
 	}
-	
+
 	if (boost::iequals(node.getLocalName(), "NEWCONTEXTREQUEST"))
 		return NEWCONTEXTREQUEST;
 	if (boost::iequals(node.getLocalName(), "NEWCONTEXTRESPONSE"))
@@ -245,7 +245,7 @@ Arabica::DOM::Document<std::string> StatusRequest::toXML(bool encapsulateInMMI) 
 	return doc;
 }
 
-	
+
 
 MMIEvent MMIEvent::fromXML(Arabica::DOM::Node<std::string> node, InterpreterImpl* interpreter) {
 	MMIEvent msg;
@@ -259,7 +259,7 @@ MMIEvent MMIEvent::fromXML(Arabica::DOM::Node<std::string> node, InterpreterImpl
 	msg.tagName = msgElem.getLocalName();
 
 	Element<std::string> dataElem;
-	
+
 	// search for data element
 	node = msgElem.getFirstChild();
 	while (node) {
@@ -309,7 +309,7 @@ FROM_XML(DoneNotification,     DONENOTIFICATION,     StatusInfoResponse)
 ContextualizedRequest ContextualizedRequest::fromXML(Arabica::DOM::Node<std::string> node, InterpreterImpl* interpreter) {
 	ContextualizedRequest msg(MMIEvent::fromXML(node, interpreter));
 	FIND_EVENT_NODE(node);
-	
+
 	Element<std::string> msgElem(node);
 	msg.context = STRING_ATTR_OR_EXPR(msgElem, Context);
 	return msg;
@@ -318,7 +318,7 @@ ContextualizedRequest ContextualizedRequest::fromXML(Arabica::DOM::Node<std::str
 ExtensionNotification ExtensionNotification::fromXML(Arabica::DOM::Node<std::string> node, InterpreterImpl* interpreter) {
 	ExtensionNotification msg(ContextualizedRequest::fromXML(node, interpreter));
 	FIND_EVENT_NODE(node);
-	
+
 	Element<std::string> msgElem(node);
 	msg.name = STRING_ATTR_OR_EXPR(msgElem, Name);
 	msg.type = EXTENSIONNOTIFICATION;
@@ -347,7 +347,7 @@ ContentRequest ContentRequest::fromXML(Arabica::DOM::Node<std::string> node, Int
 		if(boost::iequals(contentElem.getLocalName(), "content")) {
 			Arabica::DOM::Node<std::string> contentChild = contentElem.getFirstChild();
 			std::stringstream ss;
-			
+
 			while (contentChild) {
 				if (contentChild.getNodeType() == Arabica::DOM::Node_base::ELEMENT_NODE)
 					msg.contentDOM = contentChild;
@@ -355,7 +355,7 @@ ContentRequest ContentRequest::fromXML(Arabica::DOM::Node<std::string> node, Int
 				contentChild = contentChild.getNextSibling();
 			}
 			msg.content = ss.str();
-			
+
 		} else if(boost::iequals(contentElem.getLocalName(), "contentURL")) {
 			msg.contentURL.href = STRING_ATTR_OR_EXPR(contentElem, href);
 			msg.contentURL.maxAge = STRING_ATTR_OR_EXPR(contentElem, max-age);
@@ -442,106 +442,106 @@ StatusRequest StatusRequest::fromXML(Arabica::DOM::Node<std::string> node, Inter
 	return msg;
 }
 
-	
+
 
 #ifdef MMI_WITH_OPERATOR_EVENT
-	
-	TO_EVENT_OPERATOR(NewContextRequest,    "mmi.request.newcontext",    MMIEvent);
-	TO_EVENT_OPERATOR(PauseRequest,         "mmi.request.pause",         ContextualizedRequest);
-	TO_EVENT_OPERATOR(ResumeRequest,        "mmi.request.resume",        ContextualizedRequest);
-	TO_EVENT_OPERATOR(CancelRequest,        "mmi.request.cancel",        ContextualizedRequest);
-	TO_EVENT_OPERATOR(ClearContextRequest,  "mmi.request.clearcontext",  ContextualizedRequest);
-	TO_EVENT_OPERATOR(StatusRequest,        "mmi.request.status",        ContextualizedRequest);
-	
-	TO_EVENT_OPERATOR(PrepareRequest,       "mmi.request.prepare",       ContentRequest);
-	TO_EVENT_OPERATOR(StartRequest,         "mmi.request.start",         ContentRequest);
-	
-	TO_EVENT_OPERATOR(PrepareResponse,      "mmi.response.prepare",      StatusInfoResponse);
-	TO_EVENT_OPERATOR(StartResponse,        "mmi.response.start",        StatusInfoResponse);
-	TO_EVENT_OPERATOR(CancelResponse,       "mmi.response.cancel",       StatusInfoResponse);
-	TO_EVENT_OPERATOR(PauseResponse,        "mmi.response.pause",        StatusInfoResponse);
-	TO_EVENT_OPERATOR(ResumeResponse,       "mmi.response.resume",       StatusInfoResponse);
-	TO_EVENT_OPERATOR(ClearContextResponse, "mmi.response.clearcontext", StatusInfoResponse);
-	TO_EVENT_OPERATOR(NewContextResponse,   "mmi.response.newcontext",   StatusInfoResponse);
-	TO_EVENT_OPERATOR(DoneNotification,     "mmi.notification.done",     StatusInfoResponse);
 
-	
-	MMIEvent::operator Event() const {
-		Event ev;
-		ev.setOriginType("mmi.event");
-		ev.setOrigin(source);
-		
-		if (representation == MMI_AS_DATA) {
-			if (dataDOM) {
-				ev.data.node = dataDOM;
-			} else {
-				ev.data = Data::fromJSON(data);
-				if (ev.data.empty()) {
-					ev.content = data;
-				}
+TO_EVENT_OPERATOR(NewContextRequest,    "mmi.request.newcontext",    MMIEvent);
+TO_EVENT_OPERATOR(PauseRequest,         "mmi.request.pause",         ContextualizedRequest);
+TO_EVENT_OPERATOR(ResumeRequest,        "mmi.request.resume",        ContextualizedRequest);
+TO_EVENT_OPERATOR(CancelRequest,        "mmi.request.cancel",        ContextualizedRequest);
+TO_EVENT_OPERATOR(ClearContextRequest,  "mmi.request.clearcontext",  ContextualizedRequest);
+TO_EVENT_OPERATOR(StatusRequest,        "mmi.request.status",        ContextualizedRequest);
+
+TO_EVENT_OPERATOR(PrepareRequest,       "mmi.request.prepare",       ContentRequest);
+TO_EVENT_OPERATOR(StartRequest,         "mmi.request.start",         ContentRequest);
+
+TO_EVENT_OPERATOR(PrepareResponse,      "mmi.response.prepare",      StatusInfoResponse);
+TO_EVENT_OPERATOR(StartResponse,        "mmi.response.start",        StatusInfoResponse);
+TO_EVENT_OPERATOR(CancelResponse,       "mmi.response.cancel",       StatusInfoResponse);
+TO_EVENT_OPERATOR(PauseResponse,        "mmi.response.pause",        StatusInfoResponse);
+TO_EVENT_OPERATOR(ResumeResponse,       "mmi.response.resume",       StatusInfoResponse);
+TO_EVENT_OPERATOR(ClearContextResponse, "mmi.response.clearcontext", StatusInfoResponse);
+TO_EVENT_OPERATOR(NewContextResponse,   "mmi.response.newcontext",   StatusInfoResponse);
+TO_EVENT_OPERATOR(DoneNotification,     "mmi.notification.done",     StatusInfoResponse);
+
+
+MMIEvent::operator Event() const {
+	Event ev;
+	ev.setOriginType("mmi.event");
+	ev.setOrigin(source);
+
+	if (representation == MMI_AS_DATA) {
+		if (dataDOM) {
+			ev.data.node = dataDOM;
+		} else {
+			ev.data = Data::fromJSON(data);
+			if (ev.data.empty()) {
+				ev.content = data;
 			}
 		}
-		return ev;
 	}
-	
-	ContextualizedRequest::operator Event() const {
-		Event ev = MMIEvent::operator Event();
-		// do we want to represent the context? It's the interpreters name already
-		return ev;
-	}
+	return ev;
+}
 
-	ExtensionNotification::operator Event() const {
-		Event ev = ContextualizedRequest::operator Event();
-		if (name.length() > 0) {
-			ev.setName(name);
-		} else {
-			ev.setName("mmi.notification.extension");
+ContextualizedRequest::operator Event() const {
+	Event ev = MMIEvent::operator Event();
+	// do we want to represent the context? It's the interpreters name already
+	return ev;
+}
+
+ExtensionNotification::operator Event() const {
+	Event ev = ContextualizedRequest::operator Event();
+	if (name.length() > 0) {
+		ev.setName(name);
+	} else {
+		ev.setName("mmi.notification.extension");
+	}
+	return ev;
+}
+
+ContentRequest::operator Event() const {
+	Event ev = ContextualizedRequest::operator Event();
+	if (representation == MMI_AS_DATA) {
+		if (content.length() > 0)
+			ev.data.compound["content"] = Data(content, Data::VERBATIM);
+		if (contentURL.fetchTimeout.length() > 0)
+			ev.data.compound["contentURL"].compound["fetchTimeout"] = Data(contentURL.fetchTimeout, Data::VERBATIM);
+		if (contentURL.href.length() > 0)
+			ev.data.compound["contentURL"].compound["href"] = Data(contentURL.href, Data::VERBATIM);
+		if (contentURL.maxAge.length() > 0)
+			ev.data.compound["contentURL"].compound["maxAge"] = Data(contentURL.maxAge, Data::VERBATIM);
+	}
+	return ev;
+}
+
+StatusResponse::operator Event() const {
+	Event ev = ContextualizedRequest::operator Event();
+	ev.setName("mmi.response.status");
+
+	if (representation == MMI_AS_DATA) {
+		switch (status) {
+		case ALIVE:
+			ev.data.compound["status"] = Data("alive", Data::VERBATIM);
+			break;
+		case DEAD:
+			ev.data.compound["status"] = Data("dead", Data::VERBATIM);
+			break;
+		case SUCCESS:
+			ev.data.compound["status"] = Data("success", Data::VERBATIM);
+			break;
+		case FAILURE:
+			ev.data.compound["status"] = Data("failure", Data::VERBATIM);
+			break;
+		default:
+			ev.data.compound["status"] = Data("invalid", Data::VERBATIM);
 		}
-		return ev;
+	} else {
+		ev.dom = toXML();
 	}
 
-	ContentRequest::operator Event() const {
-		Event ev = ContextualizedRequest::operator Event();
-		if (representation == MMI_AS_DATA) {
-			if (content.length() > 0)
-				ev.data.compound["content"] = Data(content, Data::VERBATIM);
-			if (contentURL.fetchTimeout.length() > 0)
-				ev.data.compound["contentURL"].compound["fetchTimeout"] = Data(contentURL.fetchTimeout, Data::VERBATIM);
-			if (contentURL.href.length() > 0)
-				ev.data.compound["contentURL"].compound["href"] = Data(contentURL.href, Data::VERBATIM);
-			if (contentURL.maxAge.length() > 0)
-				ev.data.compound["contentURL"].compound["maxAge"] = Data(contentURL.maxAge, Data::VERBATIM);
-		}
-		return ev;
-	}
-
-	StatusResponse::operator Event() const {
-		Event ev = ContextualizedRequest::operator Event();
-		ev.setName("mmi.response.status");
-
-		if (representation == MMI_AS_DATA) {
-			switch (status) {
-				case ALIVE:
-					ev.data.compound["status"] = Data("alive", Data::VERBATIM);
-					break;
-				case DEAD:
-					ev.data.compound["status"] = Data("dead", Data::VERBATIM);
-					break;
-				case SUCCESS:
-					ev.data.compound["status"] = Data("success", Data::VERBATIM);
-					break;
-				case FAILURE:
-					ev.data.compound["status"] = Data("failure", Data::VERBATIM);
-					break;
-				default:
-					ev.data.compound["status"] = Data("invalid", Data::VERBATIM);
-			}
-		} else {
-			ev.dom = toXML();
-		}
-		
-		return ev;
-	}
+	return ev;
+}
 
 #endif
 

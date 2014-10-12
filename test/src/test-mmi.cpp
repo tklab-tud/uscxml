@@ -30,14 +30,14 @@ int main(int argc, char** argv) {
 		// --- NewContextRequest
 		std::stringstream ss;
 		ss << "<mmi:mmi xmlns:mmi=\"http://www.w3.org/2008/04/mmi-arch\" version=\"1.0\"><mmi:NewContextRequest mmi:Source=\"someURI\" mmi:Target=\"someOtherURI\" mmi:RequestID=\"request-1\"></mmi:NewContextRequest></mmi:mmi>";
-		
+
 		NewContextRequest msg = NewContextRequest::fromXML(xmlToDoc(ss.str()));
 		assert(boost::iequals(msg.tagName, "NewContextRequest"));
 		assert(boost::iequals(msg.source, "someURI"));
 		assert(boost::iequals(msg.target, "someOtherURI"));
 		assert(boost::iequals(msg.requestId, "request-1"));
 		assert(boost::iequals(msg.data, ""));
-		
+
 		NewContextRequest msg2 = NewContextRequest::fromXML(msg.toXML());
 		assert(boost::iequals(msg2.tagName, "NewContextRequest"));
 		assert(boost::iequals(msg2.source, "someURI"));
@@ -50,7 +50,7 @@ int main(int argc, char** argv) {
 		xml1SS << msg.toXML();
 		xml2SS << msg2.toXML();
 		assert(xml1SS.str() == xml2SS.str());
-		
+
 		Event ev = msg;
 		assert(ev.name == "mmi.request.newcontext");
 		assert(ev.origin == msg.source);
@@ -143,7 +143,7 @@ int main(int argc, char** argv) {
 		assert(boost::iequals(msg.requestId, "request-1"));
 		assert(boost::iequals(msg.context, "URI-1"));
 		assert(msg.contentDOM);
-		
+
 		PrepareRequest msg2 = PrepareRequest::fromXML(msg.toXML());
 		assert(boost::iequals(msg2.tagName, "PrepareRequest"));
 		assert(boost::iequals(msg2.source, "someURI"));
@@ -270,29 +270,29 @@ int main(int argc, char** argv) {
 		assert(boost::iequals(msg.target, "someOtherURI"));
 		assert(boost::iequals(msg.requestId, "request-1"));
 		assert(boost::iequals(msg.context, "URI-1"));
-		
+
 		StartRequest msg2 = StartRequest::fromXML(msg.toXML());
 		assert(boost::iequals(msg2.tagName, "StartRequest"));
 		assert(boost::iequals(msg2.source, "someURI"));
 		assert(boost::iequals(msg2.target, "someOtherURI"));
 		assert(boost::iequals(msg2.requestId, "request-1"));
 		assert(boost::iequals(msg2.context, "URI-1"));
-		
+
 		std::stringstream xml1SS;
 		std::stringstream xml2SS;
 		xml1SS << msg.toXML();
 		xml2SS << msg2.toXML();
 		assert(xml1SS.str() == xml2SS.str());
-		
+
 		Event ev = msg;
 		assert(ev.name == "mmi.request.start");
 		assert(ev.data.compound["foo"] == 12);
 		assert(ev.origin == msg.source);
-		
+
 	}
 
-	
-	
+
+
 	{
 		// --- StartResponse
 		std::stringstream ss;
@@ -516,7 +516,7 @@ int main(int argc, char** argv) {
 		Event ev = msg;
 		assert(ev.name == "mmi.response.pause");
 		assert(ev.origin == msg.source);
-		
+
 	}
 
 	{
@@ -624,7 +624,7 @@ int main(int argc, char** argv) {
 		assert(boost::iequals(msg.requestId, "request-1"));
 		assert(boost::iequals(msg.context, "someURI"));
 		assert(boost::iequals(msg.name, "appEvent"));
-		
+
 		ExtensionNotification msg2 = ExtensionNotification::fromXML(msg.toXML());
 		assert(boost::iequals(msg2.tagName, "ExtensionNotification"));
 		assert(boost::iequals(msg2.source, "someURI"));
@@ -632,18 +632,18 @@ int main(int argc, char** argv) {
 		assert(boost::iequals(msg2.requestId, "request-1"));
 		assert(boost::iequals(msg2.context, "someURI"));
 		assert(boost::iequals(msg2.name, "appEvent"));
-		
+
 		std::stringstream xml1SS;
 		std::stringstream xml2SS;
 		xml1SS << msg.toXML();
 		xml2SS << msg2.toXML();
 		assert(xml1SS.str() == xml2SS.str());
-		
+
 		Event ev = msg;
 		assert(ev.name == "appEvent");
 		assert(ev.data.compound["foo"] == 12);
 		assert(ev.origin == msg.source);
-		
+
 	}
 
 	{

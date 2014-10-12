@@ -65,17 +65,17 @@ public:
 	// conversion operator
 	operator Event() const;
 #endif
-	
+
 	std::string source;
 	std::string target;
 	std::string data;
 	Arabica::DOM::Node<std::string> dataDOM;
 	std::string requestId;
-	
+
 	std::string tagName;
 	Type type;
 	RepresentationType representation;
-	
+
 	static std::string nameSpace;
 
 protected:
@@ -94,7 +94,7 @@ public:
 #ifdef MMI_WITH_OPERATOR_EVENT
 	operator Event() const;
 #endif
-	
+
 	std::string token; ///< special token for server-less modality components
 };
 
@@ -102,11 +102,11 @@ class ContextualizedRequest : public MMIEvent {
 public:
 	virtual Arabica::DOM::Document<std::string> toXML(bool encapsulateInMMI = true) const;
 	static ContextualizedRequest fromXML(Arabica::DOM::Node<std::string> node, InterpreterImpl* interpreter = NULL);
-	
+
 #ifdef MMI_WITH_OPERATOR_EVENT
 	operator Event() const;
 #endif
-	
+
 	std::string context;
 protected:
 	ContextualizedRequest() {}
@@ -121,11 +121,11 @@ public:
 	}
 	PauseRequest(const ContextualizedRequest& father) : ContextualizedRequest(father) {}
 	static PauseRequest fromXML(Arabica::DOM::Node<std::string> node, InterpreterImpl* interpreter = NULL);
-	
+
 #ifdef MMI_WITH_OPERATOR_EVENT
 	operator Event() const;
 #endif
-	
+
 };
 class ResumeRequest : public ContextualizedRequest {
 public:
@@ -135,11 +135,11 @@ public:
 	}
 	ResumeRequest(const ContextualizedRequest& father) : ContextualizedRequest(father) {}
 	static ResumeRequest fromXML(Arabica::DOM::Node<std::string> node, InterpreterImpl* interpreter = NULL);
-	
+
 #ifdef MMI_WITH_OPERATOR_EVENT
 	operator Event() const;
 #endif
-	
+
 };
 class CancelRequest : public ContextualizedRequest {
 public:
@@ -149,7 +149,7 @@ public:
 	}
 	CancelRequest(const ContextualizedRequest& father) : ContextualizedRequest(father) {}
 	static CancelRequest fromXML(Arabica::DOM::Node<std::string> node, InterpreterImpl* interpreter = NULL);
-	
+
 #ifdef MMI_WITH_OPERATOR_EVENT
 	operator Event() const;
 #endif
@@ -167,7 +167,7 @@ public:
 #ifdef MMI_WITH_OPERATOR_EVENT
 	operator Event() const;
 #endif
-	
+
 };
 class StatusRequest : public ContextualizedRequest {
 public:
@@ -181,7 +181,7 @@ public:
 #ifdef MMI_WITH_OPERATOR_EVENT
 	operator Event() const;
 #endif
-	
+
 	bool automaticUpdate;
 protected:
 	StatusRequest(const ContextualizedRequest& father) : ContextualizedRequest(father) {}
@@ -201,7 +201,7 @@ public:
 #ifdef MMI_WITH_OPERATOR_EVENT
 	operator Event() const;
 #endif
-	
+
 	std::string content;
 	Arabica::DOM::Node<std::string> contentDOM;
 	ContentURL contentURL;
@@ -251,7 +251,7 @@ public:
 #ifdef MMI_WITH_OPERATOR_EVENT
 	operator Event() const;
 #endif
-	
+
 	std::string name;
 protected:
 	ExtensionNotification(const ContextualizedRequest& father) : ContextualizedRequest(father) {}
@@ -275,7 +275,7 @@ public:
 	}
 	virtual Arabica::DOM::Document<std::string> toXML(bool encapsulateInMMI = true) const;
 	static StatusResponse fromXML(Arabica::DOM::Node<std::string> node, InterpreterImpl* interpreter = NULL);
-	
+
 #ifdef MMI_WITH_OPERATOR_EVENT
 	operator Event() const;
 #endif
@@ -303,11 +303,11 @@ public:
 	}
 	PrepareResponse(const StatusInfoResponse& father) : StatusInfoResponse(father) {}
 	static PrepareResponse fromXML(Arabica::DOM::Node<std::string> node, InterpreterImpl* interpreter = NULL);
-	
+
 #ifdef MMI_WITH_OPERATOR_EVENT
 	operator Event() const;
 #endif
-	
+
 };
 
 class StartResponse : public StatusInfoResponse {
@@ -318,7 +318,7 @@ public:
 	}
 	StartResponse(const StatusInfoResponse& father) : StatusInfoResponse(father) {}
 	static StartResponse fromXML(Arabica::DOM::Node<std::string> node, InterpreterImpl* interpreter = NULL);
-	
+
 #ifdef MMI_WITH_OPERATOR_EVENT
 	operator Event() const;
 #endif
@@ -332,7 +332,7 @@ public:
 	}
 	CancelResponse(const StatusInfoResponse& father) : StatusInfoResponse(father) {}
 	static CancelResponse fromXML(Arabica::DOM::Node<std::string> node, InterpreterImpl* interpreter = NULL);
-	
+
 #ifdef MMI_WITH_OPERATOR_EVENT
 	operator Event() const;
 #endif
@@ -346,7 +346,7 @@ public:
 	}
 	PauseResponse(const StatusInfoResponse& father) : StatusInfoResponse(father) {}
 	static PauseResponse fromXML(Arabica::DOM::Node<std::string> node, InterpreterImpl* interpreter = NULL);
-	
+
 #ifdef MMI_WITH_OPERATOR_EVENT
 	operator Event() const;
 #endif
@@ -360,7 +360,7 @@ public:
 	}
 	ResumeResponse(const StatusInfoResponse& father) : StatusInfoResponse(father) {}
 	static ResumeResponse fromXML(Arabica::DOM::Node<std::string> node, InterpreterImpl* interpreter = NULL);
-	
+
 #ifdef MMI_WITH_OPERATOR_EVENT
 	operator Event() const;
 #endif
@@ -402,7 +402,7 @@ public:
 	}
 	DoneNotification(const StatusInfoResponse& father) : StatusInfoResponse(father) {}
 	static DoneNotification fromXML(Arabica::DOM::Node<std::string> node, InterpreterImpl* interpreter = NULL);
-	
+
 #ifdef MMI_WITH_OPERATOR_EVENT
 	operator Event() const;
 #endif

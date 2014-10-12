@@ -41,9 +41,6 @@ public:
 		return names;
 	}
 
-	virtual void initialize();
-	virtual void setSessionId(const std::string& sessionId);
-	virtual void setName(const std::string& name);
 	virtual void setEvent(const Event& event);
 
 	virtual void registerIOProcessor(const std::string& name, const IOProcessor& ioprocessor);
@@ -85,12 +82,21 @@ public:
 
 protected:
 
+	int dataToInt(const Data& data);
+	bool dataToBool(const Data& data);
+
 	void evaluateDecl(void* ast);
-	int evaluateExpr(void* ast);
+	Data evaluateExpr(void* ast);
 	void evaluateStmnt(void* ast);
 
-	void setVariable(void* ast, int value);
-	int getVariable(void* ast);
+	void evaluateDecl(const std::string& expr);
+	Data evaluateExpr(const std::string& expr);
+	void evaluateStmnt(const std::string& expr);
+
+	void setVariable(void* ast, Data value);
+	Data getVariable(void* ast);
+
+	void adaptType(Data& data);
 
 	int _lastMType;
 

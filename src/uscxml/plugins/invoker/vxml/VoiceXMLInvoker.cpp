@@ -70,76 +70,76 @@ bool VoiceXMLInvoker::httpRecvRequest(const HTTPServer::Request& request) {
 		reply.status = 500;
 		HTTPServer::reply(reply);
 	}
-	
+
 	const Arabica::DOM::Node<std::string>& node = request.data.at("content").node;
 //	std::cout << "RCVD: " << node << std::endl;
 
 	switch(MMIEvent::getType(node)) {
-		case MMIEvent::NEWCONTEXTRESPONSE: {
-			NewContextResponse resp = NewContextResponse::fromXML(node);
-			if (_context.size() == 0) {
-				_compState = MMI_IDLE;
-				_context = resp.context;
-				
-				StartRequest startReq;
-				startReq.context = _context;
-				startReq.source = _url;
-				startReq.target = _target;
-				startReq.requestId = uscxml::UUID::getUUID();
-
-				if (_invokeReq.src.size() > 0) {
-					startReq.contentURL.href = _invokeReq.src;
-				} else if(_invokeReq.content.size()) {
-					startReq.content = _invokeReq.content;
-				} else if(_invokeReq.dom) {
-					std::stringstream contentSS;
-					startReq.contentDOM = _invokeReq.dom;
-				}
-				ISSUE_REQUEST(startReq, false);
-
-			} else {
-				// already got a context!
-			}
-			break;
-		}
-		case MMIEvent::STARTRESPONSE: {
-			StartResponse resp = StartResponse::fromXML(node);
-			_compState = MMI_RUNNING;
-			break;
-		}
-
-		case MMIEvent::DONENOTIFICATION: {
-			DoneNotification resp = DoneNotification::fromXML(node);
+	case MMIEvent::NEWCONTEXTRESPONSE: {
+		NewContextResponse resp = NewContextResponse::fromXML(node);
+		if (_context.size() == 0) {
 			_compState = MMI_IDLE;
-			break;
-		}
+			_context = resp.context;
 
-		case MMIEvent::STATUSRESPONSE: {
-			StatusResponse resp = StatusResponse::fromXML(node);
-			switch (resp.status) {
-				case StatusResponse::DEAD:
-					_compState = MMI_DEAD;
-				case StatusResponse::FAILURE: {
-					Event ev = resp;
-					returnEvent(ev);
-					break;
-				}
-				default:
-					break;
+			StartRequest startReq;
+			startReq.context = _context;
+			startReq.source = _url;
+			startReq.target = _target;
+			startReq.requestId = uscxml::UUID::getUUID();
+
+			if (_invokeReq.src.size() > 0) {
+				startReq.contentURL.href = _invokeReq.src;
+			} else if(_invokeReq.content.size()) {
+				startReq.content = _invokeReq.content;
+			} else if(_invokeReq.dom) {
+				std::stringstream contentSS;
+				startReq.contentDOM = _invokeReq.dom;
 			}
+			ISSUE_REQUEST(startReq, false);
+
+		} else {
+			// already got a context!
+		}
+		break;
+	}
+	case MMIEvent::STARTRESPONSE: {
+		StartResponse resp = StartResponse::fromXML(node);
+		_compState = MMI_RUNNING;
+		break;
+	}
+
+	case MMIEvent::DONENOTIFICATION: {
+		DoneNotification resp = DoneNotification::fromXML(node);
+		_compState = MMI_IDLE;
+		break;
+	}
+
+	case MMIEvent::STATUSRESPONSE: {
+		StatusResponse resp = StatusResponse::fromXML(node);
+		switch (resp.status) {
+		case StatusResponse::DEAD:
+			_compState = MMI_DEAD;
+		case StatusResponse::FAILURE: {
+			Event ev = resp;
+			returnEvent(ev);
 			break;
 		}
-
-		case MMIEvent::EXTENSIONNOTIFICATION: {
-			Event resp = ExtensionNotification::fromXML(node);
-			returnEvent(resp);
-		}
-			
 		default:
 			break;
+		}
+		break;
 	}
-	
-	
+
+	case MMIEvent::EXTENSIONNOTIFICATION: {
+		Event resp = ExtensionNotification::fromXML(node);
+		returnEvent(resp);
+	}
+
+	default:
+		break;
+	}
+
+
 	HTTPServer::Reply reply(request);
 	HTTPServer::reply(reply);
 	return true;
@@ -147,6 +147,7 @@ bool VoiceXMLInvoker::httpRecvRequest(const HTTPServer::Request& request) {
 
 void VoiceXMLInvoker::setURL(const std::string& url) {
 	_url = url;
+//	boost::replace_first(_url, "epikur-2.local", "178.4.230.252");
 }
 
 Data VoiceXMLInvoker::getDataModelVariables() {
@@ -162,15 +163,15 @@ void VoiceXMLInvoker::invoke(const InvokeRequest& req) {
 	tthread::lock_guard<tthread::mutex> lock(_mutex);
 
 	HTTPServer::getInstance()->registerServlet(req.invokeid, this);
-	
+
 	Event::getParam(req.params, "target", _target);
 	if (_target.size() == 0) {
 		LOG(ERROR) << "No target parameter given!";
 		return;
 	}
-	
+
 	_invokeReq = req;
-	
+
 	NewContextRequest newCtxReq;
 	newCtxReq.source = _url;
 	newCtxReq.target = _target;
@@ -183,7 +184,7 @@ void VoiceXMLInvoker::invoke(const InvokeRequest& req) {
 }
 
 void VoiceXMLInvoker::uninvoke() {
-	
+
 	ClearContextRequest clrCtxReq;
 	clrCtxReq.source = _url;
 	clrCtxReq.target = _target;
@@ -192,11 +193,11 @@ void VoiceXMLInvoker::uninvoke() {
 
 	if (_isRunning)
 		_isRunning = false;
-	
+
 	// unblock queue
 	SendRequest req;
 	_workQueue.push(req);
-	
+
 	if (_thread) {
 		_thread->join();
 		delete _thread;
@@ -223,19 +224,19 @@ void VoiceXMLInvoker::process(SendRequest& req) {
 	tthread::lock_guard<tthread::mutex> lock(_mutex);
 	while(_context.size() == 0 && _isRunning)
 		_cond.wait_for(_mutex, 200);
-	
+
 	if (_context.size() == 0) {
 		// we never acquired a context
 		return;
 	}
-	
+
 	if (_compState != MMI_RUNNING)
 		// remote component is not running
 		return;
-	
+
 	// dispatch over send request
 	// Is there something special to do here?
-	
+
 	// if we did nothing else, send as ExtensionNotification
 	ExtensionNotification extNotif;
 	extNotif.context = _context;
@@ -253,7 +254,7 @@ void VoiceXMLInvoker::process(SendRequest& req) {
 			Event::getParam(req.params, it->first, req.data.compound[it->first]);
 		}
 	}
-	
+
 	if (req.dom) {
 		extNotif.dataDOM = req.dom;
 	} else if (req.content.size() > 0) {
@@ -261,8 +262,8 @@ void VoiceXMLInvoker::process(SendRequest& req) {
 	} else if (!req.data.empty()) {
 		extNotif.data = Data::toJSON(req.data);
 	}
-	
+
 	ISSUE_REQUEST(extNotif, false);
 }
-	
+
 }

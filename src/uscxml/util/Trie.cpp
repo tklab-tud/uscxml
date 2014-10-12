@@ -19,17 +19,18 @@
 
 #include "Trie.h"
 #include <iostream>
+#include <boost/algorithm/string.hpp>
 
 namespace uscxml {
 
 Trie::Trie() {
 	root = new TrieNode();
-	lastIdentifier = 0;
+	lastIndex = 0;
 }
 
 Trie::Trie(const std::string& seperator) : seperator(seperator) {
 	root = new TrieNode();
-	lastIdentifier = 0;
+	lastIndex = 0;
 }
 
 Trie::~Trie() {
@@ -67,6 +68,12 @@ size_t Trie::getNextToken(const std::string& word, size_t offset, std::string& t
 	return offset + 1;
 }
 
+std::string Trie::escapeWord(const std::string& word) {
+	std::string identifier = word;
+	boost::replace_all(identifier, ".", "_");
+	return identifier;
+}
+
 void Trie::addWord(const std::string& word) {
 	TrieNode* currNode = root;
 
@@ -86,8 +93,9 @@ void Trie::addWord(const std::string& word) {
 			break;
 	}
 	if (!currNode->hasWord) {
-		currNode->identifier = lastIdentifier++;
+		currNode->index = lastIndex++;
 		currNode->value = word;
+		currNode->identifier = escapeWord(word);
 		currNode->hasWord = true;
 	}
 }

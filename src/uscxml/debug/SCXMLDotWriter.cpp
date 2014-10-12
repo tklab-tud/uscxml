@@ -456,11 +456,11 @@ void SCXMLDotWriter::writePerEventPorts(std::ostream& os, const DotState& dotSta
 
 std::string SCXMLDotWriter::htmlLabelForId(const std::string& stateId, int minRows) {
 	FlatStateIdentifier flatId(stateId);
-	
+
 	std::list<std::string>::const_iterator listIter;
 	std::stringstream labelSS;
 	std::string seperator;
-	
+
 	labelSS << "<b>active: </b>";
 	labelSS << "{";
 	for (listIter = flatId.getActive().begin(); listIter != flatId.getActive().end(); listIter++) {
@@ -468,12 +468,12 @@ std::string SCXMLDotWriter::htmlLabelForId(const std::string& stateId, int minRo
 		seperator = ", ";
 	}
 	labelSS << "}";
-	
+
 	if (flatId.getVisited().size() > 0) {
 		minRows--;
-		
+
 		labelSS << "<br /><b>init: </b>";
-		
+
 		labelSS << "{";
 		seperator = "";
 		for (listIter = flatId.getVisited().begin(); listIter != flatId.getVisited().end(); listIter++) {
@@ -482,19 +482,19 @@ std::string SCXMLDotWriter::htmlLabelForId(const std::string& stateId, int minRo
 		}
 		labelSS << "}";
 	}
-	
+
 	if (flatId.getHistory().size() > 0) {
 		minRows--;
-		
+
 		seperator = "";
 		std::string histSeperator = "<br />     ";
-		
+
 		labelSS << "<br /><b>history: </b>";
-		
+
 		std::map<std::string, std::list<std::string> >::const_iterator histIter;
 		for (histIter = flatId.getHistory().begin(); histIter != flatId.getHistory().end(); histIter++) {
 			labelSS << histSeperator << histIter->first << ": {";
-			
+
 			for (listIter = histIter->second.begin(); listIter != histIter->second.end(); listIter++) {
 				labelSS << seperator << *listIter;
 				seperator = ", ";
@@ -506,7 +506,7 @@ std::string SCXMLDotWriter::htmlLabelForId(const std::string& stateId, int minRo
 	return labelSS.str();
 }
 
-	
+
 void SCXMLDotWriter::writePerTargetPorts(std::ostream& os, const DotState& dotState, int stateLines) {
 	// std::multimap<std::string, Arabica::DOM::Element<std::string> > targets; // key is remote node, transition is element
 

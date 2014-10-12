@@ -63,7 +63,7 @@ public:
 	bool hasIOProcessor(const std::string& type);
 	bool hasInvoker(const std::string& type);
 	bool hasExecutableContent(const std::string& localName, const std::string& nameSpace);
-	
+
 	std::map<std::string, IOProcessorImpl*> getIOProcessors();
 
 	void listComponents();

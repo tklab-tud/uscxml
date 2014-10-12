@@ -49,7 +49,7 @@ int main(int argc, char** argv) {
 #endif
 
 	HTTPServer::getInstance(8099, 8100);
-	
+
 	std::string exeName = argv[0];
 	exeName = exeName.substr(exeName.find_last_of("\\/") + 1);
 

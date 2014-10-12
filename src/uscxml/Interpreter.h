@@ -518,7 +518,7 @@ protected:
 	InterpreterWebSocketServlet* _wsServlet;
 	std::set<InterpreterMonitor*> _monitors;
 	std::set<std::string> _microstepConfigurations;
-	
+
 	long _lastRunOnMainThread;
 	std::string _name;
 	std::string _sessionId;
@@ -635,7 +635,7 @@ public:
 	std::list<InterpreterIssue> validate() {
 		return _impl->validate();
 	}
-	
+
 	InterpreterState getState() {
 		return _impl->getInterpreterState();
 	}
@@ -838,7 +838,7 @@ public:
 	virtual void afterCompletion(Interpreter interpreter) {}
 
 	virtual void reportIssue(Interpreter interpreter, const InterpreterIssue& issue) {}
-	
+
 };
 
 }

@@ -373,7 +373,7 @@ void Factory::registerPlugins() {
 		VoiceXMLInvoker* invoker = new VoiceXMLInvoker();
 		registerInvoker(invoker);
 	}
-	
+
 	{
 		FetchElement* element = new FetchElement();
 		registerExecutableContent(element);
@@ -536,7 +536,7 @@ bool Factory::hasInvoker(const std::string& type) {
 	}
 	return false;
 }
-	
+
 boost::shared_ptr<InvokerImpl> Factory::createInvoker(const std::string& type, InterpreterImpl* interpreter) {
 
 	// do we have this type ourself?
@@ -591,7 +591,7 @@ boost::shared_ptr<DataModelImpl> Factory::createDataModel(const std::string& typ
 	return boost::shared_ptr<DataModelImpl>();
 }
 
-	
+
 bool Factory::hasIOProcessor(const std::string& type) {
 	if (_ioProcessorAliases.find(type) != _ioProcessorAliases.end()) {
 		return true;
@@ -735,7 +735,7 @@ void EventHandlerImpl::returnEvent(Event& event, bool internal) {
 		event.invokeid = _invokeId;
 	if (event.eventType == 0)
 		event.eventType = (internal ? Event::INTERNAL : Event::EXTERNAL);
-	if (event.origin.length() == 0)
+	if (event.origin.length() == 0 && _invokeId.length() > 0)
 		event.origin = "#_" + _invokeId;
 	if (event.origintype.length() == 0)
 		event.origintype = _type;

@@ -46,17 +46,32 @@ PromelaParser::PromelaParser(const std::string& expr) {
 	init(expr);
 }
 
-PromelaParser::PromelaParser(const std::string& expr, Type expectedType) {
+PromelaParser::PromelaParser(const std::string& expr, int nrArgs, ...) {
 	init(expr);
-	if (type != expectedType) {
-		std::stringstream ss;
-		ss << "Promela syntax type mismatch: Expected " << typeToDesc(expectedType) << " but got " << typeToDesc(type);
-		ERROR_EXECUTION_THROW(ss.str());
+
+	if (nrArgs == 0)
+		return;
+
+	std::stringstream errSS;
+	std::string seperator;
+	errSS << "Promela syntax type mismatch: Expected {";
+
+	va_list ap;
+	va_start(ap, nrArgs);
+	for(int i = 1; i <= nrArgs; i++) {
+		int expectedType = va_arg(ap, int);
+		if (type == expectedType)
+			return;
+		errSS << seperator << typeToDesc(expectedType);
+		seperator = ", ";
 	}
+	errSS << "} but got " << typeToDesc(type);
+	ERROR_EXECUTION_THROW(errSS.str());
 }
 
 void PromelaParser::init(const std::string& expr) {
 	ast = NULL;
+	parseInCompound = 0;
 	input_length = expr.length() + 2;  // plus some zero terminators
 	input = (char*) calloc(1, input_length);
 	memcpy(input, expr.c_str(), expr.length());
@@ -69,6 +84,7 @@ void PromelaParser::init(const std::string& expr) {
 	if (pendingException.name.size() > 0) {
 		// parsing failed in promela_error
 		destroy();
+		pendingException.data.compound["code"] = Data(expr, Data::VERBATIM);
 		throw pendingException;
 	}
 }
@@ -234,6 +250,14 @@ std::string PromelaParserNode::typeToDesc(int type) {
 		return "DECLLIST";
 	case PML_NAMELIST:
 		return "NAMELIST";
+	case PML_STRING:
+		return "STRING";
+	case PML_TYPEDEF:
+		return "TYPEDEF";
+	case PML_CMPND:
+		return "CMPND";
+	case PML_ASSERT:
+		return "ASSERT";
 
 	default:
 		return std::string("UNK(") + toStr(type) + ")";

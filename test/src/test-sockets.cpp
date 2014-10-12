@@ -74,10 +74,10 @@ int main(int argc, char** argv) {
 //		LogServer server(PF_INET, SOCK_STREAM, 0);
 		server.listen("*", 1235);
 		server.setBlockSizeRead(1);
-		
+
 		TestClient client(PF_INET, SOCK_STREAM, 0);
 		client.connect("127.0.0.1", 1235);
-		
+
 		int iterations = 1000;
 		std::stringstream contentSS;
 		for (int i = 0; i < iterations; i++) {
@@ -94,7 +94,7 @@ int main(int argc, char** argv) {
 		packetSeq = 0;
 		CountingPacketServer server(PF_INET, SOCK_STREAM, 0, std::string("\0", 1));
 		server.listen("*", 1235);
-		
+
 		TestClient client(PF_INET, SOCK_STREAM, 0);
 		client.connect("127.0.0.1", 1235);
 
@@ -107,9 +107,9 @@ int main(int argc, char** argv) {
 		while(packetSeq != iterations)
 			tthread::this_thread::sleep_for(tthread::chrono::milliseconds(20));
 	}
-	
+
 	exit(0);
-	
+
 	if (1) {
 		// start server socket and connect
 		int iterations = 100;

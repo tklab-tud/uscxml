@@ -493,13 +493,13 @@ bool JSCDataModel::isValidSyntax(const std::string& expr) {
 	JSValueRef exception = NULL;
 	bool valid = JSCheckScriptSyntax(_ctx, scriptJS, NULL, 0, &exception);
 	JSStringRelease(scriptJS);
-	
+
 	if (exception || !valid) {
 		return false;
 	}
 	return true;
 }
-	
+
 bool JSCDataModel::isDeclared(const std::string& expr) {
 	JSStringRef scriptJS = JSStringCreateWithUTF8CString(expr.c_str());
 	JSValueRef exception = NULL;

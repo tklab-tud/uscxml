@@ -53,7 +53,7 @@ static int luaInspect(lua_State * l) {
 
 bool _luaHasXMLParser = false;
 
-	
+
 static luabridge::LuaRef getDataAsLua(lua_State* _luaState, const Data& data) {
 	luabridge::LuaRef luaData (_luaState);
 
@@ -159,7 +159,7 @@ boost::shared_ptr<DataModelImpl> LuaDataModel::create(InterpreterImpl* interpret
 	} catch (luabridge::LuaException e) {
 		LOG(INFO) << e.what();
 	}
-	
+
 	luabridge::getGlobalNamespace(dm->_luaState).beginClass<InterpreterImpl>("Interpreter").endClass();
 	luabridge::setGlobal(dm->_luaState, dm->_interpreter, "__interpreter");
 
@@ -347,7 +347,7 @@ bool LuaDataModel::isValidSyntax(const std::string& expr) {
 	// clean stack again
 	lua_pop(_luaState, lua_gettop(_luaState) - preStack);
 
-	
+
 	if (err == LUA_ERRSYNTAX)
 		return false;
 

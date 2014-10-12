@@ -181,9 +181,9 @@ v8::Handle<v8::Value> V8DataModel::getIOProcessors(v8::Local<v8::String> propert
 		std::map<std::string, IOProcessor> ioProcessors = dataModel->_interpreter->getIOProcessors();
 		std::map<std::string, IOProcessor>::const_iterator ioProcIter = ioProcessors.begin();
 		while(ioProcIter != ioProcessors.end()) {
-	//			std::cout << ioProcIter->first << std::endl;
+			//			std::cout << ioProcIter->first << std::endl;
 			dataModel->_ioProcessors->Set(v8::String::New(ioProcIter->first.c_str()),
-																		dataModel->getDataAsValue(ioProcIter->second.getDataModelVariables()));
+			                              dataModel->getDataAsValue(ioProcIter->second.getDataModelVariables()));
 			ioProcIter++;
 		}
 		dataModel->_ioProcessorsAreSet = true;
@@ -202,7 +202,7 @@ v8::Handle<v8::Value> V8DataModel::getInvokers(v8::Local<v8::String> property, c
 		while(invokerIter != invokers.end()) {
 			//			std::cout << ioProcIter->first << std::endl;
 			dataModel->_invokers->Set(v8::String::New(invokerIter->first.c_str()),
-																dataModel->getDataAsValue(invokerIter->second.getDataModelVariables()));
+			                          dataModel->getDataAsValue(invokerIter->second.getDataModelVariables()));
 			invokerIter++;
 		}
 		dataModel->_invokersAreSet = true;
