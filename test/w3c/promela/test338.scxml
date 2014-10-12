@@ -3,8 +3,8 @@
 case where the invoke doesn't work correctly -->
 <scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" initial="s0" version="1.0" datamodel="promela">
   <datamodel>
-    <data id="Var1" type="string"/>
-    <data id="Var2" type="string"/>
+    <data id="Var1" type="int"/>
+    <data id="Var2" type="int"/>
   </datamodel>
   <state id="s0">
     <onentry>

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" version="1.0" initial="s0" binding="late">
+<scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" datamodel="ecmascript" version="1.0" initial="s0" binding="late">
   <!-- with binding=late, in s0 we access a variable that isn't created until we get to s1.  Then in s1
 we access a non-existent substructure of a variable.  We use log tags to report the values that both operations
 yield, and whether there are errors.  This is a manual test, since the tester must report whether the output

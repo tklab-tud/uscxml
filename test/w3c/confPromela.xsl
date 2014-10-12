@@ -503,8 +503,8 @@ is the second argument -->
 	<xsl:attribute name="cond">return</xsl:attribute>
 </xsl:template>
 
-<!-- true if id has a value -->
-<xsl:template match="//@conf:isBound[//conf:array123]" priority="5">
+<!-- true if id has a value / need to be this specific 150, 151 vs 551 -->
+<xsl:template match="//@conf:isBound[//*:state[@id='s1']/*:datamodel/*:data/conf:array123]" priority="5">
 	<xsl:attribute name="cond">Var<xsl:value-of select="." />[1]</xsl:attribute>
 </xsl:template>
 

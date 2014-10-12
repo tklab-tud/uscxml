@@ -5,7 +5,7 @@ timeout indicates success.   -->
 <scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" initial="s0" version="1.0" datamodel="promela">
   <state id="s0" initial="s01">
     <onentry>
-      <send event="timeout" delayexpr="'1s'"/>
+      <send event="timeout" delay="2s"/>
     </onentry>
     <transition event="timeout" target="pass"/>
     <transition event="childToParent" target="fail"/>
@@ -19,7 +19,7 @@ timeout indicates success.   -->
           <scxml initial="sub0" version="1.0" datamodel="promela">
             <state id="sub0">
               <onentry>
-                <send event="timeout" delayexpr="'.5s'"/>
+                <send event="timeout" delay="2s"/>
               </onentry>
               <transition event="timeout" target="subFinal"/>
               <onexit>

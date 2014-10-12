@@ -24,6 +24,7 @@ set(CTEST_CUSTOM_TESTS_IGNORE
 	"fsm/ecma/test307.scxml" # manual test
 	"fsm/ecma/test415.scxml" # manual test
 	
+	"xpath/test388.scxml" # hangs
 	"xpath/test580.scxml" # hangs
   
   "promela/test178.scxml" # manual test
@@ -135,6 +136,7 @@ set(CTEST_CUSTOM_TESTS_IGNORE
   "spin/promela/test343.scxml" # test that illegal <param> produces error.execution
   "spin/promela/test347.scxml" # nested SCXML document with bidirectional SCXML ioprocessor
   "spin/promela/test351.scxml" # timeout with delay
+  "spin/promela/test352.scxml" # timeout with delay
   "spin/promela/test342.scxml" # timeout with delay
   "spin/promela/test388.scxml" # timeout with delay
   "spin/promela/test399.scxml" # timeout with delay
