@@ -4,7 +4,7 @@
 #include "uscxml/Interpreter.h"
 #include "uscxml/plugins/datamodel/promela/PromelaDataModel.h"
 #include "uscxml/plugins/datamodel/promela/PromelaParser.h"
-#include "uscxml/transform/FSMToPromela.h"
+#include "uscxml/transform/ChartToPromela.h"
 
 #include <assert.h>
 #include <boost/algorithm/string.hpp>
@@ -21,7 +21,7 @@ void testInlinePromela() {
 		#promela-inline:\n \
 		This is foo!\
 		";
-		PromelaInlines prmInls = FSMToPromela::getInlinePromela(test);
+		PromelaInlines prmInls = ChartToPromela::getInlinePromela(test);
 		assert(prmInls.acceptLabels == 0 &&
 		       prmInls.codes == 1 &&
 		       prmInls.customEventSources == 0 &&
@@ -35,7 +35,7 @@ void testInlinePromela() {
 
 	{
 		std::string test = "#promela-progress";
-		PromelaInlines prmInls = FSMToPromela::getInlinePromela(test);
+		PromelaInlines prmInls = ChartToPromela::getInlinePromela(test);
 		assert(prmInls.acceptLabels == 0 &&
 		       prmInls.codes == 0 &&
 		       prmInls.customEventSources == 0 &&
@@ -48,7 +48,7 @@ void testInlinePromela() {
 
 	{
 		std::string test = "#promela-accept and then some";
-		PromelaInlines prmInls = FSMToPromela::getInlinePromela(test);
+		PromelaInlines prmInls = ChartToPromela::getInlinePromela(test);
 		assert(prmInls.acceptLabels == 1 &&
 		       prmInls.codes == 0 &&
 		       prmInls.customEventSources == 0 &&
@@ -61,7 +61,7 @@ void testInlinePromela() {
 
 	{
 		std::string test = "#promela-end and then some";
-		PromelaInlines prmInls = FSMToPromela::getInlinePromela(test);
+		PromelaInlines prmInls = ChartToPromela::getInlinePromela(test);
 		assert(prmInls.acceptLabels == 0 &&
 		       prmInls.codes == 0 &&
 		       prmInls.customEventSources == 0 &&
@@ -77,7 +77,7 @@ void testInlinePromela() {
 		#promela-event-source:\n \
 		This is foo!\
 		";
-		PromelaInlines prmInls = FSMToPromela::getInlinePromela(test);
+		PromelaInlines prmInls = ChartToPromela::getInlinePromela(test);
 		assert(prmInls.acceptLabels == 0 &&
 		       prmInls.codes == 0 &&
 		       prmInls.customEventSources == 0 &&
@@ -103,7 +103,7 @@ void testInlinePromela() {
 		This is foo!\n \
 		This is bar!\n \
 		";
-		PromelaInlines prmInls = FSMToPromela::getInlinePromela(test);
+		PromelaInlines prmInls = ChartToPromela::getInlinePromela(test);
 		assert(prmInls.acceptLabels == 0 &&
 		       prmInls.codes == 0 &&
 		       prmInls.customEventSources == 0 &&
@@ -134,7 +134,7 @@ void testInlinePromela() {
 		#promela-event-source-custom:\n \
 		This is foo!\
 		";
-		PromelaInlines prmInls = FSMToPromela::getInlinePromela(test);
+		PromelaInlines prmInls = ChartToPromela::getInlinePromela(test);
 		assert(prmInls.acceptLabels == 0 &&
 		       prmInls.codes == 0 &&
 		       prmInls.customEventSources == 1 &&
@@ -153,7 +153,7 @@ void testInlinePromela() {
 		This is foo! \n\
 		#promela-progress\
 		";
-		PromelaInlines prmInls = FSMToPromela::getInlinePromela(test);
+		PromelaInlines prmInls = ChartToPromela::getInlinePromela(test);
 		assert(prmInls.acceptLabels == 0 &&
 		       prmInls.codes == 0 &&
 		       prmInls.customEventSources == 1 &&

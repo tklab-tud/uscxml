@@ -88,6 +88,13 @@ public:
 		return tmp.getStateId();
 	}
 
+	static std::string toStateId(const Arabica::XPath::NodeSet<std::string> activeStates,
+															 const Arabica::XPath::NodeSet<std::string> alreadyEnteredStates = Arabica::XPath::NodeSet<std::string>(),
+															 const std::map<std::string, Arabica::XPath::NodeSet<std::string> > historyStates = std::map<std::string, Arabica::XPath::NodeSet<std::string> >()) {
+		FlatStateIdentifier tmp(activeStates, alreadyEnteredStates, historyStates);
+		return tmp.getStateId();
+	}
+
 	FlatStateIdentifier(const std::string& identifier) : stateId(identifier) {
 		std::string parsedName;
 		// parse unique state identifier

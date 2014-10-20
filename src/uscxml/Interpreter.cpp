@@ -487,56 +487,44 @@ Interpreter Interpreter::fromInputSource(Arabica::SAX::InputSource<std::string>&
 }
 
 Interpreter Interpreter::fromClone(const Interpreter& other) {
-	boost::shared_ptr<INTERPRETER_IMPL> interpreterImpl = boost::shared_ptr<INTERPRETER_IMPL>(new INTERPRETER_IMPL);
+	tthread::lock_guard<tthread::recursive_mutex> lock(_instanceMutex);
 
-	other.getImpl()->copyTo(interpreterImpl);
+	boost::shared_ptr<INTERPRETER_IMPL> interpreterImpl = boost::shared_ptr<INTERPRETER_IMPL>(new INTERPRETER_IMPL);
+	interpreterImpl->cloneFrom(other.getImpl());
 	Interpreter interpreter(interpreterImpl);
+
+	_instances[interpreterImpl->getSessionId()] = interpreterImpl;
 	return interpreter;
 }
 
-void InterpreterImpl::copyTo(InterpreterImpl* other) {
-	if (getDocument()) {
-#if 0
-		std::stringstream* ss = new std::stringstream();
-		(*ss) << getDocument();
-		// we need an auto_ptr for arabica to assume ownership
-		std::auto_ptr<std::istream> ssPtr(ss);
-		Arabica::SAX::InputSource<std::string> inputSource;
-		inputSource.setByteStream(ssPtr);
+void InterpreterImpl::writeTo(std::ostream& stream) {
+	stream << getDocument();
+}
 
-		NameSpacingParser parser;
-		if (parser.parse(inputSource) && parser.getDocument() && parser.getDocument().hasChildNodes()) {
-			other->setNameSpaceInfo(parser.nameSpace);
-			other->_document = parser.getDocument();
-			other->setupDOM();
-		} else {
-			if (parser.errorsReported()) {
-				LOG(ERROR) << parser.errors();
-			}
-		}
-
-#else
-		Arabica::DOM::Document<std::string> clonedDocument;
+void InterpreterImpl::cloneFrom(InterpreterImpl* other) {
+	if (other->getDocument()) {
+		const Arabica::DOM::Document<std::string>& otherDoc = other->_document;
 		DOMImplementation<std::string> domFactory = Arabica::SimpleDOM::DOMImplementation<std::string>::getDOMImplementation();
-		clonedDocument = domFactory.createDocument(getDocument().getNamespaceURI(), "", 0);
+		_document = domFactory.createDocument(otherDoc.getNamespaceURI(), "", 0);
 
-		Node<std::string> child = getDocument().getFirstChild();
+		Node<std::string> child = otherDoc.getFirstChild();
 		while (child) {
-			Node<std::string> newNode = clonedDocument.importNode(child, true);
-			clonedDocument.appendChild(newNode);
+			Node<std::string> newNode = _document.importNode(child, true);
+			_document.appendChild(newNode);
 			child = child.getNextSibling();
 		}
 
-		other->_document = clonedDocument;
+		setNameSpaceInfo(other->_nsInfo);
+		
+		_baseURI = other->_baseURI;
+		_sourceURI = other->_sourceURI;
 
-		other->setNameSpaceInfo(_nsInfo);
-		other->setupDOM();
-#endif
+		setupDOM();
 	}
 }
 
-void InterpreterImpl::copyTo(boost::shared_ptr<InterpreterImpl> other) {
-	copyTo(other.get());
+void InterpreterImpl::cloneFrom(boost::shared_ptr<InterpreterImpl> other) {
+	cloneFrom(other.get());
 }
 
 void InterpreterImpl::setName(const std::string& name) {

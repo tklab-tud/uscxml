@@ -18,7 +18,7 @@
  */
 
 #include "uscxml/transform/ChartToFSM.h"
-#include "uscxml/transform/FSMToCPP.h"
+#include "uscxml/transform/ChartToCPP.h"
 #include <DOM/io/Stream.hpp>
 #include <iostream>
 #include "uscxml/UUID.h"
@@ -31,17 +31,17 @@ namespace uscxml {
 using namespace Arabica::DOM;
 using namespace Arabica::XPath;
 
-void FSMToCPP::writeProgram(std::ostream& stream,
+void ChartToCPP::writeProgram(std::ostream& stream,
                             const Interpreter& interpreter) {
-	FSMToCPP promelaWriter;
-	interpreter.getImpl()->copyTo(&promelaWriter);
+	ChartToCPP promelaWriter;
+	promelaWriter.cloneFrom(interpreter.getImpl());
 	promelaWriter.writeProgram(stream);
 }
 
-FSMToCPP::FSMToCPP() : _eventTrie(".") {
+ChartToCPP::ChartToCPP() : _eventTrie(".") {
 }
 
-void FSMToCPP::writeEvents(std::ostream& stream) {
+void ChartToCPP::writeEvents(std::ostream& stream) {
 	std::list<TrieNode*> eventNames = _eventTrie.getWordsWithPrefix("");
 	std::list<TrieNode*>::iterator eventIter = eventNames.begin();
 	stream << "// event name identifiers" << std::endl;
@@ -52,7 +52,7 @@ void FSMToCPP::writeEvents(std::ostream& stream) {
 	}
 }
 
-void FSMToCPP::writeStates(std::ostream& stream) {
+void ChartToCPP::writeStates(std::ostream& stream) {
 	stream << "// state name identifiers" << std::endl;
 	for (int i = 0; i < _globalStates.size(); i++) {
 		stream << "#define " << "s" << i << " " << i;
@@ -61,7 +61,7 @@ void FSMToCPP::writeStates(std::ostream& stream) {
 
 }
 
-Arabica::XPath::NodeSet<std::string> FSMToCPP::getTransientContent(const Arabica::DOM::Element<std::string>& state) {
+Arabica::XPath::NodeSet<std::string> ChartToCPP::getTransientContent(const Arabica::DOM::Element<std::string>& state) {
 	Arabica::XPath::NodeSet<std::string> content;
 	Arabica::DOM::Element<std::string> currState = state;
 	for (;;) {
@@ -77,7 +77,7 @@ Arabica::XPath::NodeSet<std::string> FSMToCPP::getTransientContent(const Arabica
 	return content;
 }
 
-Node<std::string> FSMToCPP::getUltimateTarget(const Arabica::DOM::Element<std::string>& transition) {
+Node<std::string> ChartToCPP::getUltimateTarget(const Arabica::DOM::Element<std::string>& transition) {
 	Arabica::DOM::Element<std::string> currState = _states[ATTR(transition, "target")];
 
 	for (;;) {
@@ -88,7 +88,7 @@ Node<std::string> FSMToCPP::getUltimateTarget(const Arabica::DOM::Element<std::s
 	}
 }
 
-void FSMToCPP::writeInlineComment(std::ostream& stream, const Arabica::DOM::Element<std::string>& node) {
+void ChartToCPP::writeInlineComment(std::ostream& stream, const Arabica::DOM::Element<std::string>& node) {
 	if (node.getNodeType() != Node_base::COMMENT_NODE)
 		return;
 
@@ -107,7 +107,7 @@ void FSMToCPP::writeInlineComment(std::ostream& stream, const Arabica::DOM::Elem
 	}
 }
 
-void FSMToCPP::writeExecutableContent(std::ostream& stream, const Arabica::DOM::Element<std::string>& node, int indent) {
+void ChartToCPP::writeExecutableContent(std::ostream& stream, const Arabica::DOM::Element<std::string>& node, int indent) {
 
 	std::string padding;
 	for (int i = 0; i < indent; i++) {
@@ -227,7 +227,7 @@ void FSMToCPP::writeExecutableContent(std::ostream& stream, const Arabica::DOM::
 
 }
 
-void FSMToCPP::writeIfBlock(std::ostream& stream, const Arabica::XPath::NodeSet<std::string>& condChain, int indent) {
+void ChartToCPP::writeIfBlock(std::ostream& stream, const Arabica::XPath::NodeSet<std::string>& condChain, int indent) {
 	if (condChain.size() == 0)
 		return;
 
@@ -294,7 +294,7 @@ void FSMToCPP::writeIfBlock(std::ostream& stream, const Arabica::XPath::NodeSet<
 
 }
 
-std::string FSMToCPP::beautifyIndentation(const std::string& code, int indent) {
+std::string ChartToCPP::beautifyIndentation(const std::string& code, int indent) {
 
 	std::string padding;
 	for (int i = 0; i < indent; i++) {
@@ -325,7 +325,7 @@ std::string FSMToCPP::beautifyIndentation(const std::string& code, int indent) {
 	return beautifiedSS.str();
 }
 
-void FSMToCPP::writeDeclarations(std::ostream& stream) {
+void ChartToCPP::writeDeclarations(std::ostream& stream) {
 
 	// get all data elements
 	NodeSet<std::string> datas = _xpath.evaluate("//" + _nsInfo.xpathPrefix + "data", _scxml).asNodeSet();
@@ -352,7 +352,7 @@ void FSMToCPP::writeDeclarations(std::ostream& stream) {
 
 }
 
-void FSMToCPP::writeFSM(std::ostream& stream) {
+void ChartToCPP::writeFSM(std::ostream& stream) {
 	NodeSet<std::string> transitions;
 
 	stream << "proctype step() {" << std::endl;
@@ -397,7 +397,7 @@ void FSMToCPP::writeFSM(std::ostream& stream) {
 	stream << "}" << std::endl;
 }
 
-void FSMToCPP::writeEventDispatching(std::ostream& stream) {
+void ChartToCPP::writeEventDispatching(std::ostream& stream) {
 	for (int i = 0; i < _globalStates.size(); i++) {
 		if (_globalStates[i] == _startState)
 			continue;
@@ -411,7 +411,7 @@ void FSMToCPP::writeEventDispatching(std::ostream& stream) {
 	}
 }
 
-void FSMToCPP::writeDispatchingBlock(std::ostream& stream, const Arabica::XPath::NodeSet<std::string>& transChain, int indent) {
+void ChartToCPP::writeDispatchingBlock(std::ostream& stream, const Arabica::XPath::NodeSet<std::string>& transChain, int indent) {
 	if (transChain.size() == 0)
 		return;
 
@@ -461,7 +461,7 @@ void FSMToCPP::writeDispatchingBlock(std::ostream& stream, const Arabica::XPath:
 }
 
 
-void FSMToCPP::writeMain(std::ostream& stream) {
+void ChartToCPP::writeMain(std::ostream& stream) {
 	stream << std::endl;
 	stream << "init {" << std::endl;
 	stream << "  run step();" << std::endl;
@@ -469,7 +469,7 @@ void FSMToCPP::writeMain(std::ostream& stream) {
 
 }
 
-void FSMToCPP::initNodes() {
+void ChartToCPP::initNodes() {
 	// get all states
 	NodeSet<std::string> states = filterChildElements(_nsInfo.xmlNSPrefix + "state", _scxml);
 	for (int i = 0; i < states.size(); i++) {
@@ -511,7 +511,7 @@ void FSMToCPP::initNodes() {
 	}
 }
 
-void FSMToCPP::writeProgram(std::ostream& stream) {
+void ChartToCPP::writeProgram(std::ostream& stream) {
 
 	if (!HAS_ATTR(_scxml, "flat") || !DOMUtils::attributeIsTrue(ATTR(_scxml, "flat"))) {
 		LOG(ERROR) << "Given SCXML document was not flattened";

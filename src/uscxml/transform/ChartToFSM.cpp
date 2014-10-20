@@ -33,6 +33,26 @@
 #undef max
 #include <limits>
 
+#define DUMP_STATS(nrTrans) \
+uint64_t now = tthread::chrono::system_clock::now(); \
+if (now - _lastTimeStamp > 1000) { \
+	std::cerr << "T: " << _perfTransTotal << " [" << _perfTransProcessed << "/sec]"; \
+	if (nrTrans > 0) { \
+		std::cerr << " - 2**" << nrTrans << " = " << pow(2.0, static_cast<double>(nrTrans)); \
+	} \
+	std::cerr << std::endl; \
+	std::cerr << "S: " << _globalConf.size() << " [" << _perfStatesProcessed << "/sec]" << std::endl; \
+	std::cerr << "C: " << _perfStatesCachedTotal << " [" << _perfStatesCachedProcessed << "/sec]" << std::endl; \
+	std::cerr << "X: " << _perfStatesSkippedTotal << " [" << _perfStatesSkippedProcessed << "/sec]" << std::endl; \
+	std::cerr << std::endl; \
+	_perfTransProcessed = 0; \
+	_perfStatesProcessed = 0; \
+	_perfStatesCachedProcessed = 0; \
+	_perfStatesSkippedProcessed = 0; \
+	_lastTimeStamp = now; \
+}
+
+
 #define DUMP_TRANSSET(where) \
 {\
 std::cout << std::endl;\
@@ -41,26 +61,13 @@ std::cout << "** " << transitions.size() << " ** " << where << std::endl;\
 		std::cout << transitions[m] << std::endl;\
 	}\
 }
+
 namespace uscxml {
 
 
 using namespace Arabica::DOM;
 using namespace Arabica::XPath;
 
-#define CREATE_TRANSIENT_STATE_WITH_CHILDS(stateId) \
-if (childs.size() > 0) { \
-	Element<std::string> transientState = _flatDoc.createElementNS(_nsInfo.nsURL, "state"); \
-	_nsInfo.setPrefix(transientState);\
-	transientState.setAttribute("transient", "true"); \
-	if (stateId.length() > 0) \
-		transientState.setAttribute("id", stateId); \
-	for (int i = 0; i < childs.size(); i++) { \
-		Node<std::string> imported = _flatDoc.importNode(childs[i], true); \
-		transientState.appendChild(imported); \
-	} \
-	transientStateChain.push_back(transientState); \
-} \
-childs = NodeSet<std::string>();
 
 #define DETAIL_EXEC_CONTENT(field, actPtr) \
 std::cerr << " " << #field << " / " << TAGNAME_CAST(actPtr->field) << " ("; \
@@ -71,19 +78,7 @@ for (int i = 0; i < contents.size(); i++) { \
 std::cerr << ")";
 
 
-Interpreter ChartToFSM::flatten(const Interpreter& other) {
-
-	// instantiate a new InterpreterImpl to do the flattening
-	boost::shared_ptr<InterpreterImpl> flattener = boost::shared_ptr<InterpreterImpl>(new FlatteningInterpreter(other.getDocument()));
-	flattener->setNameSpaceInfo(other.getNameSpaceInfo());
-	flattener->interpret();
-
-	// clone the flattener implementation to a new interpreter
-	Interpreter flat = Interpreter::fromClone(flattener);
-	return flat;
-}
-
-uint64_t ChartToFSM::stateMachineComplexity(const Arabica::DOM::Element<std::string>& root) {
+uint64_t Complexity::stateMachineComplexity(const Arabica::DOM::Element<std::string>& root) {
 	Complexity complexity = calculateStateMachineComplexity(root);
 	uint64_t value = complexity.value;
 	for (std::list<uint64_t>::const_iterator histIter = complexity.history.begin(); histIter != complexity.history.end(); histIter++) {
@@ -93,7 +88,7 @@ uint64_t ChartToFSM::stateMachineComplexity(const Arabica::DOM::Element<std::str
 	return value;
 }
 
-ChartToFSM::Complexity ChartToFSM::calculateStateMachineComplexity(const Arabica::DOM::Element<std::string>& root) {
+Complexity Complexity::calculateStateMachineComplexity(const Arabica::DOM::Element<std::string>& root) {
 	Complexity complexity;
 
 	bool hasFlatHistory = false;
@@ -144,56 +139,66 @@ ChartToFSM::Complexity ChartToFSM::calculateStateMachineComplexity(const Arabica
 }
 
 
-FlatteningInterpreter::FlatteningInterpreter(const Document<std::string>& doc) {
+ChartToFSM::ChartToFSM(const Interpreter& other) {
 
-	_perfProcessed = 0;
-	_perfTotal = 0;
+	cloneFrom(other.getImpl());
+	
 	_lastTimeStamp = tthread::chrono::system_clock::now();
+	_perfTransProcessed = 0;
+	_perfTransTotal = 0;
+	_perfStatesProcessed = 0;
+	_perfStatesSkippedProcessed = 0;
+	_perfStatesSkippedTotal = 0;
+	_perfStatesCachedProcessed = 0;
+	_perfStatesCachedTotal = 0;
+	
+	_start = NULL;
 	_currGlobalTransition = NULL;
 	_lastTransientStateId = 0;
 
-	// just copy given doc into _document an create _flatDoc for the FSM
+	_lastStateIndex = 0;
+	_lastTransIndex = 0;
+	
+	// create a _flatDoc for the FSM
 	DOMImplementation<std::string> domFactory = Arabica::SimpleDOM::DOMImplementation<std::string>::getDOMImplementation();
-	_document = domFactory.createDocument(doc.getNamespaceURI(), "", 0);
-	_flatDoc = domFactory.createDocument(doc.getNamespaceURI(), "", 0);
-
-	Node<std::string> child = doc.getFirstChild();
-	while (child) {
-		Node<std::string> newNode = _document.importNode(child, true);
-		_document.appendChild(newNode);
-		child = child.getNextSibling();
-	}
+	_flatDoc = domFactory.createDocument(other.getDocument().getNamespaceURI(), "", 0);
 
 	addMonitor(this);
 }
 
-FlatteningInterpreter::~FlatteningInterpreter() {
+ChartToFSM::~ChartToFSM() {
 	std::map<std::string, GlobalState*>::iterator confIter = _globalConf.begin();
 	while(confIter != _globalConf.end()) {
-		std::map<std::string, GlobalTransition*>::iterator transIter = confIter->second->outgoing.begin();
-		while (transIter != confIter->second->outgoing.end()) {
-			delete transIter->second;
+		std::list<GlobalTransition*>::iterator transIter = confIter->second->sortedOutgoing.begin();
+		while (transIter != confIter->second->sortedOutgoing.end()) {
+			delete *transIter;
 			transIter++;
 		}
 		delete confIter->second;
 		confIter++;
 	}
+	
+	// tear down caches
+	Arabica::XPath::NodeSet<std::string> allTransitions = filterChildElements(_nsInfo.xmlNSPrefix + "transition", _scxml, true);
+	for (int i = 0; i < allTransitions.size(); i++) {
+		_transParents.erase(allTransitions[i]);
+	}
 
 }
 
-Document<std::string> FlatteningInterpreter::getDocument() const {
+Document<std::string> ChartToFSM::getDocument() const {
 //	std::cerr << "######################" << std::endl;
 //	std::cerr << _flatDoc << std::endl;
 //	std::cerr << "######################" << std::endl;
 	return _flatDoc;
 }
 
-InterpreterState FlatteningInterpreter::interpret() {
+InterpreterState ChartToFSM::interpret() {
 
 	init();
 	setupIOProcessors();
 
-	uint64_t complexity = ChartToFSM::stateMachineComplexity(_scxml) + 1;
+	uint64_t complexity = Complexity::stateMachineComplexity(_scxml) + 1;
 	std::cerr << "Approximate Complexity: " << complexity << std::endl;
 
 	// initialize the datamodel
@@ -216,6 +221,16 @@ InterpreterState FlatteningInterpreter::interpret() {
 		LOG(ERROR) << "No datamodel for " << datamodelName << " registered";
 	}
 
+	// setup caches
+	{
+		Arabica::XPath::NodeSet<std::string> allTransitions = filterChildElements(_nsInfo.xmlNSPrefix + "transition", _scxml, true);
+		indexedTransitions.reserve(allTransitions.size());
+		for (int i = 0; i < allTransitions.size(); i++) {
+			_transParents[allTransitions[i]] = InterpreterImpl::getParentState(allTransitions[i]);
+		}
+	}
+
+	
 	_binding = (HAS_ATTR(_scxml, "binding") && iequals(ATTR(_scxml, "binding"), "late") ? LATE : EARLY);
 
 	// set invokeid for all invokers to parent state if none given
@@ -229,10 +244,9 @@ InterpreterState FlatteningInterpreter::interpret() {
 	_currGlobalTransition = NULL;
 
 	// very first state
-	GlobalState::gIndex = 0;
-	_start = new GlobalState(_configuration, _alreadyEntered, _historyValue, _nsInfo.xmlNSPrefix);
+	_start = new GlobalState(_configuration, _alreadyEntered, _historyValue, _nsInfo.xmlNSPrefix, this);
 	_globalConf[_start->stateId] = _start;
-	_globalConf[_start->stateId]->index = toStr(GlobalState::gIndex++);
+	_globalConf[_start->stateId]->index = _lastStateIndex++;
 
 	NodeSet<std::string> initialTransitions;
 
@@ -255,14 +269,47 @@ InterpreterState FlatteningInterpreter::interpret() {
 //	weightTransitions();
 	indexTransitions(_scxml);
 
+	// reverse indices for most prior to be in front
+	std::reverse(indexedTransitions.begin(), indexedTransitions.end());
+	
+	// add initial transitions as least prior
+	for (int i = 0; i < initialTransitions.size() ; i++) {
+		indexedTransitions.push_back(Element<std::string>(initialTransitions[i]));
+	}
+
+	// set index attribute for transitions
+	for (int i = 0; i < indexedTransitions.size(); i++) {
+		indexedTransitions[i].setAttribute("index", toStr(i));
+	}
+
+//	int lastTransIndex = indexedTransitions.size();
+//	for (int i = 0; i < initialTransitions.size() ; i++, lastTransIndex++) {
+//		indexedTransitions[i].setAttribute("index", toStr(indexedTransitions.size() - 1 - i));
+//	}
+
+	// gather and set index attribute o states
+	NodeSet<std::string> allStates = getAllStates();
+	allStates.to_document_order();
+	
+	indexedStates.resize(allStates.size());
+	for (int i = 0; i < allStates.size(); i++) {
+		Element<std::string> state = Element<std::string>(allStates[i]);
+		state.setAttribute("index", toStr(i));
+		indexedStates[i] = state;
+	}
+
 //	std::cerr << _scxml << std::endl;
 
 	GlobalTransition* globalTransition = new GlobalTransition(initialTransitions, _dataModel, this);
-	_start->outgoing[globalTransition->transitionId] = globalTransition;
+	globalTransition->index = _lastTransIndex++;
+
+	_start->sortedOutgoing.push_back(globalTransition);
 	globalTransition->source = _start->stateId;
 	_currGlobalTransition = globalTransition;
 
 	enterStates(initialTransitions);
+	globalTransition->destination = FlatStateIdentifier::toStateId(_configuration);
+	
 	explode();
 
 #if 0
@@ -275,9 +322,6 @@ InterpreterState FlatteningInterpreter::interpret() {
 	std::cerr << _globalConf.size() << std::endl;
 #endif
 
-	createDocument();
-
-//	std::cout << _scxml << std::endl;
 
 	NodeSet<std::string> elements = InterpreterImpl::filterChildType(Node_base::ELEMENT_NODE, _scxml, true);
 	uint64_t nrStates = 0;
@@ -294,14 +338,14 @@ InterpreterState FlatteningInterpreter::interpret() {
 	return _state;
 }
 
-void FlatteningInterpreter::executeContent(const Arabica::DOM::Element<std::string>& content, bool rethrow) {
+void ChartToFSM::executeContent(const Arabica::DOM::Element<std::string>& content, bool rethrow) {
 //	std::cerr << content << std::endl;
 //	std::cerr << TAGNAME(content) << std::endl;
 
 	GlobalTransition::Action action;
 
 	if (false) {
-	} else if (TAGNAME(content) == "transition") {
+	} else if (TAGNAME(content) == "transition" && content.hasChildNodes()) {
 		action.transition = content;
 	} else if (TAGNAME(content) == "onexit") {
 		action.onExit = content;
@@ -313,23 +357,24 @@ void FlatteningInterpreter::executeContent(const Arabica::DOM::Element<std::stri
 		return;
 	}
 	_currGlobalTransition->actions.push_back(action);
+	_currGlobalTransition->hasExecutableContent = true;
 }
 
-void FlatteningInterpreter::invoke(const Arabica::DOM::Element<std::string>& element) {
+void ChartToFSM::invoke(const Arabica::DOM::Element<std::string>& element) {
 	GlobalTransition::Action action;
 	action.invoke = element;
 	_currGlobalTransition->actions.push_back(action);
-	_currGlobalTransition->invoke.push_back(element);
+	_currGlobalTransition->hasExecutableContent = true;
 }
 
-void FlatteningInterpreter::cancelInvoke(const Arabica::DOM::Element<std::string>& element) {
+void ChartToFSM::cancelInvoke(const Arabica::DOM::Element<std::string>& element) {
 	GlobalTransition::Action action;
 	action.uninvoke = element;
 	_currGlobalTransition->actions.push_back(action);
-	_currGlobalTransition->uninvoke.push_back(element);
+	_currGlobalTransition->hasExecutableContent = true;
 }
 
-void FlatteningInterpreter::internalDoneSend(const Arabica::DOM::Element<std::string>& state) {
+void ChartToFSM::internalDoneSend(const Arabica::DOM::Element<std::string>& state) {
 
 	Arabica::DOM::Element<std::string> stateElem = (Arabica::DOM::Element<std::string>)state;
 	if (parentIsScxmlState(state))
@@ -367,34 +412,38 @@ void FlatteningInterpreter::internalDoneSend(const Arabica::DOM::Element<std::st
 	action.onEntry = onentry;
 
 	_currGlobalTransition->actions.push_back(action);
+	_currGlobalTransition->hasExecutableContent = true;
 
 }
 
 static bool isSuperset(const GlobalTransition* t1, const GlobalTransition* t2) {
 	bool isSuperset = true;
 
-	if (t1->transitions.size() >= t2->transitions.size())
+	if (t1->transitionRefs.size() >= t2->transitionRefs.size())
 		return false;
 
-	for (int i = 0; i < t1->transitions.size(); i++) {
-		if (!InterpreterImpl::isMember(t1->transitions[i], t2->transitions)) {
+	NodeSet<std::string> t1Trans = t1->getTransitions();
+	NodeSet<std::string> t2Trans = t2->getTransitions();
+	
+	for (int i = 0; i < t1Trans.size(); i++) {
+		if (!InterpreterImpl::isMember(t1Trans[i], t2Trans)) {
 			isSuperset = false;
 		}
 	}
 	return isSuperset;
 }
 
-static bool filterSameState(const NodeSet<std::string>& transitions) {
-	NodeSet<std::string> filteredTransitions;
-	for (unsigned int i = 0; i < transitions.size(); i++) {
-		Node<std::string> t1 = transitions[i];
-		Node<std::string> p1 = InterpreterImpl::getParentState(t1);
+// return false if two transitions have the same source
+std::map<Arabica::DOM::Node<std::string>, Arabica::DOM::Node<std::string> > ChartToFSM::_transParents;
+bool ChartToFSM::filterSameState(const NodeSet<std::string>& transitions) {
 
-		for (unsigned int j = 0; j < transitions.size(); j++) {
-			if (i == j)
-				continue;
-			Node<std::string> t2 = transitions[j];
-			Node<std::string> p2 = InterpreterImpl::getParentState(t2);
+	for (unsigned int i = 0; i < transitions.size(); i++) {
+		Node<std::string> p1 = _transParents[transitions[i]];
+
+		for (unsigned int j = i + 1; j < transitions.size(); j++) {
+//			if (i == j)
+//				continue;
+			Node<std::string> p2 = _transParents[transitions[j]];
 
 			if (p1 == p2)
 				return false;
@@ -433,7 +482,7 @@ static bool filterChildEnabled(const NodeSet<std::string>& transitions) {
 }
 
 
-void FlatteningInterpreter::indexTransitions(const Arabica::DOM::Element<std::string>& root) {
+void ChartToFSM::indexTransitions(const Arabica::DOM::Element<std::string>& root) {
 	// breadth first traversal of transitions
 	Arabica::XPath::NodeSet<std::string> levelTransitions = filterChildElements(_nsInfo.xmlNSPrefix + "transition", root);
 	for (int i = levelTransitions.size() - 1; i >= 0; i--) {
@@ -450,323 +499,22 @@ void FlatteningInterpreter::indexTransitions(const Arabica::DOM::Element<std::st
 }
 
 bool GlobalTransition::operator< (const GlobalTransition& other) const {
-	const std::list<Arabica::DOM::Element<std::string> >& indexedTransitions = interpreter->indexedTransitions;
-	for (std::list<Element<std::string> >::const_reverse_iterator transIter = indexedTransitions.rbegin(); transIter != indexedTransitions.rend(); transIter++) {
+	const std::vector<Arabica::DOM::Element<std::string> >& indexedTransitions = interpreter->indexedTransitions;
+	NodeSet<std::string> transitions = getTransitions();
+	
+	for (std::vector<Element<std::string> >::const_iterator transIter = indexedTransitions.begin(); transIter != indexedTransitions.end(); transIter++) {
 		const Element<std::string>& refTrans = *transIter;
+		NodeSet<std::string> otherTransitions = other.getTransitions();
 
-		if (InterpreterImpl::isMember(refTrans, transitions) && !InterpreterImpl::isMember(refTrans, other.transitions)) {
+		if (InterpreterImpl::isMember(refTrans, transitions) && !InterpreterImpl::isMember(refTrans, otherTransitions)) {
 			return true;
 		}
-		if (!InterpreterImpl::isMember(refTrans, transitions) && InterpreterImpl::isMember(refTrans, other.transitions)) {
+		if (!InterpreterImpl::isMember(refTrans, transitions) && InterpreterImpl::isMember(refTrans, otherTransitions)) {
 			return false;
 		}
 	}
 	return true; // actually, they are equal
 }
-
-
-void FlatteningInterpreter::explode() {
-
-	// save global configuration elements to restore after recursive explode
-	Arabica::XPath::NodeSet<std::string> configuration = _configuration;
-	Arabica::XPath::NodeSet<std::string> alreadyEntered = _alreadyEntered;
-	std::map<std::string, Arabica::XPath::NodeSet<std::string> > historyValue = _historyValue;
-
-	// create current state from global configuration
-	GlobalState* globalState = new GlobalState(configuration, alreadyEntered, historyValue, _nsInfo.xmlNSPrefix);
-
-	// remember that the last transition lead here
-	if (_currGlobalTransition) {
-		_currGlobalTransition->destination = globalState->stateId;
-		globalState->incoming[_currGlobalTransition->transitionId] = _currGlobalTransition;
-
-//		if (!_currGlobalTransition->isEventless) {
-		// if it was an eventful transition, add all invokers
-		for (unsigned int i = 0; i < _statesToInvoke.size(); i++) {
-			NodeSet<std::string> invokes = filterChildElements(_nsInfo.xmlNSPrefix + "invoke", _statesToInvoke[i]);
-			for (unsigned int j = 0; j < invokes.size(); j++) {
-				invoke(Element<std::string>(invokes[j]));
-			}
-		}
-		_statesToInvoke = NodeSet<std::string>();
-//		}
-	}
-
-	if (_globalConf.find(globalState->stateId) != _globalConf.end()) {
-		delete globalState;
-		return; // we have already been here
-	}
-
-	_globalConf[globalState->stateId] = globalState;
-	_globalConf[globalState->stateId]->index = toStr(GlobalState::gIndex++);
-//	assert(isLegalConfiguration(configuration));
-
-	if(_globalConf[globalState->stateId]->isFinal)
-		return; // done in this branch
-
-	// get all transition elements from states in the current configuration
-	NodeSet<std::string> allTransitions = filterChildElements(_nsInfo.xmlNSPrefix + "transition", configuration);
-
-	/**
-	 * From http://www.w3.org/TR/scxml/#SelectingTransitions
-	 *
-	 * A transition T is enabled by named event E in atomic state S if
-	 *   a) T's source state is S or an ancestor of S
-	 *   b) T matches E's name
-	 *   c) T lacks a 'cond' attribute or its 'cond' attribute evaluates to "true"
-	 *
-	 * A transition is enabled by NULL in atomic state S if
-	 *   a) T lacks an 'event' attribute
-	 *   b) T's source state is S or an ancestor of S
-	 *   c) T lacks an 'cond' attribute or its 'cond' attribute evaluates to "true"
-	 *
-	 * The _source state_ of a transition is the <state> or <parallel> element that it occurs in.
-	 * The _target state(s)_ of the transition is the state or set of states specified by its 'target' attribute.
-	 * The _complete target_ set of a transition consists of all the states that will be active after the transition is taken.
-	 *
-	 * A transition T is optimally enabled by event E in atomic state S if
-	 *   a) T is enabled by E in S
-	 *   b) no transition that precedes T in document order in T's source state is enabled by E in S
-	 *   c) no transition is enabled by E in S in any descendant of T's source state.
-	 *
-	 * Two transitions T1 and T2 conflict in state configuration C if their exit sets in C have a non-null intersection.
-	 *   let transitions T1 and T2 conflict:
-	 *     T1 is optimally enabled in atomic state S1
-	 *     T2 is optimally enabled in atomic state S2
-	 *     S1 and S2 are both active
-	 *   T1 has a higher priority than T2 if:
-	 *     a) T1's source state is a descendant of T2's source state, or
-	 *     b) S1 precedes S2 in document order
-	 *
-	 * The _optimal transition set_ enabled by event E in state configuration C is
-	 * the largest set of transitions such that:
-	 *   a) each transition in the set is optimally enabled by E in an atomic state in C
-	 *   b) no transition conflicts with another transition in the set
-	 *   c) there is no optimally enabled transition outside the set that has a higher priority than some member of the set
-	 *
-	 * A _microstep_ consists of the execution of the transitions in an optimal enabled transition set
-	 *
-	 * A _macrostep_ is a series of one or more microsteps ending in a configuration
-	 * where the internal event queue is empty and no transitions are enabled by NULL
-	 */
-
-
-	if (allTransitions.size() == 0)
-		return; // no transitions
-
-	int nrElements = allTransitions.size();
-	int k = 0;
-	int* stack = (int*)malloc((nrElements + 1) * sizeof(int));
-	memset(stack, 0, (nrElements + 1) * sizeof(int));
-
-	// subset of powerset we already processed
-	std::map<std::string, GlobalTransition*> transitionSets;
-
-	while(1) {
-		// create the power set of all potential transitions - this is expensive!
-		// see: http://www.programminglogic.com/powerset-algorithm-in-c/
-
-		if (stack[k] < nrElements) {
-			stack[k+1] = stack[k] + 1;
-			k++;
-		}
-
-		else {
-			stack[k-1]++;
-			k--;
-		}
-
-		if (k==0)
-			break;
-
-		NodeSet<std::string> transitions;
-//		std::cerr << globalState->stateId << " [" << nrElements << "]: " << std::endl;
-		for (int i = 1; i <= k; i++) {
-//			std::cerr << stack[i] - 1 << ", ";
-			transitions.push_back(allTransitions[stack[i] - 1]);
-		}
-//		std::cerr << std::endl;
-
-//		transitions.push_back(allTransitions[0]);
-//		transitions.push_back(allTransitions[4]);
-//		transitions.push_back(allTransitions[5]);
-//		transitions.push_back(allTransitions[7]);
-
-		bool dump = false;
-
-//		if (k == 4 && stack[1] == 1 && stack[2] == 5 && stack[3] == 6 && stack[4] == 8) {
-//			dump = true;
-//		}
-
-		if (dump) DUMP_TRANSSET("at start");
-
-		_perfTotal++;
-		_perfProcessed++;
-
-		if (tthread::chrono::system_clock::now() - _lastTimeStamp > 1000) {
-			_lastTimeStamp = tthread::chrono::system_clock::now();
-//			std::cerr << globalState->stateId << " [" << nrElements << "]: " << std::endl;
-			std::cerr << "States: " << _globalConf.size() << " - ";
-			std::cerr << "Tested: " << _perfTotal << " [" << _perfProcessed << "/sec] - ";
-			std::cerr << "Current Complexity: 2**" << nrElements << " = " << pow(2.0, static_cast<double>(nrElements));
-			std::cerr << std::endl;
-			_perfProcessed = 0;
-		}
-
-		// remove transitions in the same state
-		if(!filterSameState(transitions))
-			continue;
-		if (dump) DUMP_TRANSSET("after same state filtered");
-
-		// remove those transitions with a child transition
-		if(!filterChildEnabled(transitions))
-			continue;
-		if (dump) DUMP_TRANSSET("after child enabled filtered");
-
-		// reduce to conflict-free subset
-		// transitions.to_document_order();
-		transitions = removeConflictingTransitions(transitions);
-		if (dump) DUMP_TRANSSET("after conflicting filtered");
-
-		// algorithm can never reduce to empty set
-		assert(transitions.size() > 0);
-
-		// create a GlobalTransition object from the set
-		GlobalTransition* transition = new GlobalTransition(transitions, _dataModel, this);
-		if (!transition->isValid) {
-			// this set of transitions can not be enabled together
-			delete transition;
-			continue;
-		}
-
-		// two combinations might have projected onto the same conflict-free set
-		if (transitionSets.find(transition->transitionId) != transitionSets.end()) {
-//			std::cerr << "skipping as projected onto existing conflict-free subset" << std::endl;
-			delete transition;
-			continue;
-		}
-
-		// remember this conflict-free set
-//		std::cerr << "New conflict-free subset: " << transition->transitionId << ":" << transition->eventDesc << std::endl;
-		transitionSets[transition->transitionId] = transition;
-	}
-
-	// TODO: reduce and sort transition sets
-	std::list<GlobalTransition*> transitionList;
-	for(std::map<std::string, GlobalTransition*>::iterator transSetIter = transitionSets.begin();
-	        transSetIter != transitionSets.end();
-	        transSetIter++) {
-		transitionList.push_back(transSetIter->second);
-	}
-
-	for(std::list<GlobalTransition*>::iterator transListIter = transitionList.begin();
-	        transListIter != transitionList.end();
-	        transListIter++) {
-
-		// add transition set to current global state
-		globalState->outgoing[(*transListIter)->transitionId] = *transListIter;
-		(*transListIter)->source = globalState->stateId;
-
-		_currGlobalTransition = *transListIter;
-		microstep((*transListIter)->transitions);
-//		if (!isLegalConfiguration(_configuration)) {
-//			FlatStateIdentifier fromState(configuration, alreadyEntered, historyValue);
-//			FlatStateIdentifier toState(_configuration, _alreadyEntered, _historyValue);
-//			std::cerr << "invalid configuration after transition " << std::endl
-//			          << "from \t" << fromState.getStateId() << std::endl
-//			          << "to   \t" << toState.getStateId() << std::endl
-//			          << "via ------" << std::endl;
-//			for (int i = 0; i < (*transListIter)->transitions.size(); i++) {
-//				std::cerr << (*transListIter)->transitions[i] << std::endl;
-//			}
-//			std::cerr << "----------" << std::endl;
-//			assert(false);
-//		}
-		explode();
-
-		// reset state for next transition set
-		_configuration = configuration;
-		_alreadyEntered = alreadyEntered;
-		_historyValue = historyValue;
-
-	}
-}
-
-static bool sortStatesByIndex(const std::pair<std::string,GlobalState*>& s1, const std::pair<std::string,GlobalState*>& s2) {
-	return s1.second->index < s2.second->index;
-}
-
-void FlatteningInterpreter::createDocument() {
-	Element<std::string> _origSCXML = _scxml;
-
-	_scxml = _flatDoc.createElementNS(_nsInfo.nsURL, "scxml");
-	_nsInfo.setPrefix(_scxml);
-
-	_scxml.setAttribute("flat", "true");
-	_flatDoc.appendChild(_scxml);
-
-	if (HAS_ATTR(_origSCXML, "datamodel")) {
-		_scxml.setAttribute("datamodel", ATTR(_origSCXML, "datamodel"));
-	}
-
-	if (HAS_ATTR(_origSCXML, "name")) {
-		_scxml.setAttribute("name", ATTR(_origSCXML, "name"));
-	}
-
-	if (HAS_ATTR(_origSCXML, "binding")) {
-		_scxml.setAttribute("binding", ATTR(_origSCXML, "binding"));
-	}
-
-	_scxml.setAttribute("initial", _start->stateId);
-
-	NodeSet<std::string> datas;
-	if (_binding == InterpreterImpl::LATE) {
-		// with late binding, just copy direct datamodel childs
-		datas = filterChildElements(_nsInfo.xmlNSPrefix + "datamodel", _origSCXML);
-	} else {
-		// with early binding, copy all datamodel elements into scxml element
-		datas = _xpath.evaluate("//" + _nsInfo.xpathPrefix + "datamodel", _origSCXML).asNodeSet();
-	}
-	for (int i = 0; i < datas.size(); i++) {
-		if (isInEmbeddedDocument(datas[i]))
-			continue; // nested document
-		Node<std::string> imported = _flatDoc.importNode(datas[i], true);
-		_scxml.appendChild(imported);
-	}
-
-
-	NodeSet<std::string> scripts = filterChildElements(_nsInfo.xmlNSPrefix + "script", _origSCXML);
-	for (int i = 0; i < scripts.size(); i++) {
-		Node<std::string> imported = _flatDoc.importNode(scripts[i], true);
-		_scxml.appendChild(imported);
-	}
-
-	NodeSet<std::string> comments = filterChildType(Node_base::COMMENT_NODE, _origSCXML);
-	for (int i = 0; i < comments.size(); i++) {
-		Node<std::string> imported = _flatDoc.importNode(comments[i], true);
-		_scxml.appendChild(imported);
-	}
-
-	std::vector<std::pair<std::string,GlobalState*> > sortedStates;
-	sortedStates.insert(sortedStates.begin(), _globalConf.begin(), _globalConf.end());
-	std::sort(sortedStates.begin(), sortedStates.end(), sortStatesByIndex);
-
-	int index = 0;
-	for (std::list<Element<std::string> >::reverse_iterator transIter = indexedTransitions.rbegin(); transIter != indexedTransitions.rend(); transIter++) {
-		const Element<std::string>& refTrans = *transIter;
-		std::cerr << index++ << ": " << refTrans << std::endl;
-	}
-	std::cerr << std::endl;
-
-	for (std::vector<std::pair<std::string,GlobalState*> >::iterator confIter = sortedStates.begin();
-	        confIter != sortedStates.end();
-	        confIter++) {
-		appendGlobalStateNode(confIter->second);
-	}
-//	exit(0);
-
-}
-
 
 template <typename T> bool PtrComp(const T * const & a, const T * const & b) {
 	return *a < *b;
@@ -777,10 +525,14 @@ template <typename T> bool PtrComp(const T * const & a, const T * const & b) {
  * subset only removes transitions without cond -> superset will always be enabled
  */
 bool hasUnconditionalSuperset (GlobalTransition* first, GlobalTransition* second) {
+
+	NodeSet<std::string> firstTransitions = first->getTransitions();
+	NodeSet<std::string> secondTransitions = first->getTransitions();
+	
 	if (isSuperset(second, first)) {
-		for (int i = 0; i < first->transitions.size(); i++) {
-			if (!InterpreterImpl::isMember(first->transitions[i], second->transitions)) {
-				if (HAS_ATTR_CAST(first->transitions[i], "cond")) {
+		for (int i = 0; i < firstTransitions.size(); i++) {
+			if (!InterpreterImpl::isMember(firstTransitions[i], secondTransitions)) {
+				if (HAS_ATTR_CAST(firstTransitions[i], "cond")) {
 					return false; // second can't be removed
 				}
 			}
@@ -800,20 +552,20 @@ bool hasEarlierUnconditionalMatch(GlobalTransition* first, GlobalTransition* sec
 
 // for some reason, unique is not quite up to the task
 std::list<GlobalTransition*> reapplyUniquePredicates(std::list<GlobalTransition*> list) {
-
+	
 	for (std::list<GlobalTransition*>::iterator outerIter = list.begin();
-	        outerIter != list.end();
-	        outerIter++) {
+			 outerIter != list.end();
+			 outerIter++) {
 		for (std::list<GlobalTransition*>::iterator innerIter = outerIter;
-		        innerIter != list.end();
-		        innerIter++) {
-
+				 innerIter != list.end();
+				 innerIter++) {
+			
 			if (innerIter == outerIter)
 				continue;
-
+			
 			GlobalTransition* t1 = *outerIter;
 			GlobalTransition* t2 = *innerIter;
-
+			
 			if (hasUnconditionalSuperset(t1, t2)) {
 				list.erase(outerIter++);
 				continue;
@@ -827,258 +579,236 @@ std::list<GlobalTransition*> reapplyUniquePredicates(std::list<GlobalTransition*
 			}
 		}
 	}
-
+	
 	return list;
 }
 
-void FlatteningInterpreter::appendGlobalStateNode(GlobalState* globalState) {
-	Element<std::string> state = _flatDoc.createElementNS(_nsInfo.nsURL, "state");
-	_nsInfo.setPrefix(state);
+void ChartToFSM::getPotentialTransitionsForConf(const Arabica::XPath::NodeSet<std::string>& conf, std::map<std::string, GlobalTransition*>& outMap) {
+	// get all transition elements from states in the current configuration
+	NodeSet<std::string> allTransitions = filterChildElements(_nsInfo.xmlNSPrefix + "transition", conf);
+	
+	if (allTransitions.size() == 0)
+		return; // no transitions
+	
+	int nrElements = allTransitions.size();
+	int k = 0;
+	int* stack = (int*)malloc((nrElements + 1) * sizeof(int));
+	memset(stack, 0, (nrElements + 1) * sizeof(int));
+	
+	while(1) {
+		// create the power set of all potential transitions - this is expensive!
+		// see: http://www.programminglogic.com/powerset-algorithm-in-c/
+		
+		if (stack[k] < nrElements) {
+			stack[k+1] = stack[k] + 1;
+			k++;
+		}
+		
+		else {
+			stack[k-1]++;
+			k--;
+		}
+		
+		if (k==0)
+			break;
+		
+		NodeSet<std::string> transitions;
+		//		std::cerr << globalState->stateId << " [" << nrElements << "]: " << std::endl;
+		for (int i = 1; i <= k; i++) {
+			//			std::cerr << stack[i] - 1 << ", ";
+			transitions.push_back(allTransitions[stack[i] - 1]);
+		}
+		//		std::cerr << std::endl;
+		
+		//		transitions.push_back(allTransitions[0]);
+		//		transitions.push_back(allTransitions[4]);
+		//		transitions.push_back(allTransitions[5]);
+		//		transitions.push_back(allTransitions[7]);
+		
+		bool dump = false;
+		
+		//		if (k == 4 && stack[1] == 1 && stack[2] == 5 && stack[3] == 6 && stack[4] == 8) {
+		//			dump = true;
+		//		}
+		
+		if (dump) DUMP_TRANSSET("at start");
+		
+		_perfTransTotal++;
+		_perfTransProcessed++;
+		
+		DUMP_STATS(nrElements);
+		
+		// remove transitions in the same state
+		if(!filterSameState(transitions))
+			continue;
+		if (dump) DUMP_TRANSSET("after same state filtered");
+		
+		// remove those transitions with a child transition
+		if(!filterChildEnabled(transitions))
+			continue;
+		if (dump) DUMP_TRANSSET("after child enabled filtered");
+		
+		// reduce to conflict-free subset
+		// transitions.to_document_order();
+		transitions = removeConflictingTransitions(transitions);
+		if (dump) DUMP_TRANSSET("after conflicting filtered");
+		
+		// algorithm can never reduce to empty set
+		assert(transitions.size() > 0);
+		
+		// create a GlobalTransition object from the set
+		GlobalTransition* transition = new GlobalTransition(transitions, _dataModel, this);
+		if (!transition->isValid) {
+			// this set of transitions can not be enabled together
+			delete transition;
+			continue;
+		}
+		transition->index = _lastTransIndex++;
 
-	state.setAttribute("ref", globalState->index);
-	state.setAttribute("id", globalState->stateId);
-
-	if (globalState->isFinal)
-		state.setAttribute("final", "true");
-
-	std::list<GlobalTransition*> transitionList;
-	for (std::map<std::string, GlobalTransition*>::iterator outIter = globalState->outgoing.begin();
-	        outIter != globalState->outgoing.end();
-	        outIter++) {
-		transitionList.push_back(outIter->second);
+		// two combinations might have projected onto the same conflict-free set
+		if (outMap.find(transition->transitionId) != outMap.end()) {
+			//			std::cerr << "skipping as projected onto existing conflict-free subset" << std::endl;
+			delete transition;
+			continue;
+		}
+		
+		// remember this conflict-free set
+		//		std::cerr << "New conflict-free subset: " << transition->transitionId << ":" << transition->eventDesc << std::endl;
+		outMap[transition->transitionId] = transition;
 	}
-
-//	transitionList = sortTransitions(transitionList);
-	transitionList.sort(PtrComp<GlobalTransition>);
-	transitionList.unique(hasUnconditionalSuperset);
-	transitionList.unique(hasEarlierUnconditionalMatch);
-	// unique is not quite like what we need, but it was a start
-	transitionList = reapplyUniquePredicates(transitionList);
-
-	// apend here, for transient state chains to trail the state
-	_scxml.appendChild(state);
-
-	size_t index = 0;
-	for (std::list<GlobalTransition*>::iterator outIter = transitionList.begin();
-	        outIter != transitionList.end();
-	        outIter++) {
-		(*outIter)->index = globalState->index + ":" + toStr(index);
-		state.appendChild(globalTransitionToNode(*outIter));
-		index++;
-	}
+	return;
 }
+	
+void ChartToFSM::explode() {
 
-/**
- * Creates transient states for executable content as a side-effect
- */
-Node<std::string> FlatteningInterpreter::globalTransitionToNode(GlobalTransition* globalTransition) {
-	Element<std::string> transition = _flatDoc.createElementNS(_nsInfo.nsURL, "transition");
-	_nsInfo.setPrefix(transition);
-
-//	transition.setAttribute("ref", globalTransition->index);
-
-#if 1
-	transition.setAttribute("members", globalTransition->members);
-#endif
-	//	transition.setAttribute("priority", toStr(globalTransition->priority));
-
-	if (!globalTransition->isEventless) {
-		transition.setAttribute("event", globalTransition->eventDesc);
+	std::list<GlobalState*> statesRemaining;
+	statesRemaining.push_back(new GlobalState(_configuration, _alreadyEntered, _historyValue, _nsInfo.xmlNSPrefix, this));
+	
+	// add all invokers for initial transition
+	for (unsigned int i = 0; i < _statesToInvoke.size(); i++) {
+		NodeSet<std::string> invokes = filterChildElements(_nsInfo.xmlNSPrefix + "invoke", _statesToInvoke[i]);
+		for (unsigned int j = 0; j < invokes.size(); j++) {
+			invoke(Element<std::string>(invokes[j]));
+		}
 	}
+	_statesToInvoke = NodeSet<std::string>();
 
-	if (globalTransition->condition.size() > 0) {
-		transition.setAttribute("cond", globalTransition->condition);
-	}
+	/**
+	 We need this to be a recursion in order not to exhaust the stack
+	 */
+	
+	// append new global states and pop from front
+	while(statesRemaining.size() > 0) {
+		DUMP_STATS(0);
+		
+		GlobalState* globalState = statesRemaining.front();
+		statesRemaining.pop_front();
+		
+		// used to be conditionalized, we will just assum
+		assert(_currGlobalTransition);
 
-	if (globalTransition->destination.size() > 0) {
-		transition.setAttribute("final-target", globalTransition->destination);
-	}
-
-	NodeSet<std::string> transientStateChain;
-
-	// current active state set
-	FlatStateIdentifier flatId(globalTransition->source);
-	std::list<std::string> currActiveStates = flatId.getActive();
-
-//	std::cerr << "From " << globalTransition->source << " to " << globalTransition->destination << ":" << std::endl;
-
-	// gather content for new transient state
-	NodeSet<std::string> childs;
-	// iterate all actions taken during the transition
-	for (std::list<GlobalTransition::Action>::iterator actionIter = globalTransition->actions.begin();
-	        actionIter != globalTransition->actions.end();
-	        actionIter++) {
-
-		if (actionIter->transition) {
-//			DETAIL_EXEC_CONTENT(transition, actionIter);
-
-			Element<std::string> onexit = _flatDoc.createElementNS(_nsInfo.nsURL, "onexit");
-			_nsInfo.setPrefix(onexit);
-			Node<std::string> child = actionIter->transition.getFirstChild();
-			while(child) {
-				Node<std::string> imported = _flatDoc.importNode(child, true);
-				onexit.appendChild(imported);
-				child = child.getNextSibling();
-			}
-			// only append if there is something done
-			if (onexit.hasChildNodes())
-				childs.push_back(onexit);
-
-			continue;
+		if (_globalConf.find(globalState->stateId) != _globalConf.end()) {
+			delete globalState;
+			_perfStatesSkippedTotal++;
+			_perfStatesSkippedProcessed++;
+			continue; // we have already been here
 		}
 
-		if (actionIter->onExit) {
-//			DETAIL_EXEC_CONTENT(onExit, actionIter);
+		_perfStatesProcessed++;
 
-			childs.push_back(actionIter->onExit);
-			continue;
+		_configuration = globalState->getActiveStates();
+		_alreadyEntered = globalState->getAlreadyEnteredStates();
+		_historyValue = globalState->getHistoryStates();
+
+		// remember as global configuration
+		_globalConf[globalState->stateId] = globalState;
+		_globalConf[globalState->stateId]->index = _lastStateIndex++;
+		
+		if(_globalConf[globalState->stateId]->isFinal)
+			continue; // done in this branch
+
+		if (_transPerActiveConf.find(globalState->activeId) != _transPerActiveConf.end()) {
+			// we already know these transition sets, just copy over
+			std::list<GlobalTransition*>::iterator sortTransIter = _transPerActiveConf[globalState->activeId]->sortedOutgoing.begin();
+			while(sortTransIter != _transPerActiveConf[globalState->activeId]->sortedOutgoing.end()) {
+				globalState->sortedOutgoing.push_back(new GlobalTransition(**sortTransIter)); // copy constructor
+				globalState->sortedOutgoing.back()->index = _lastTransIndex++;
+				sortTransIter++;
+			}
+			_perfStatesCachedTotal++;
+			_perfStatesCachedProcessed++;
+
+		} else {
+			// we need to calculate the potential optimal transition sets
+			std::map<std::string, GlobalTransition*> transitionSets;
+			getPotentialTransitionsForConf(refsToStates(globalState->activeStatesRefs), transitionSets);
+
+			// TODO: reduce and sort transition sets
+			for(std::map<std::string, GlobalTransition*>::iterator transSetIter = transitionSets.begin();
+					transSetIter != transitionSets.end();
+					transSetIter++) {
+				globalState->sortedOutgoing.push_back(transSetIter->second);
+			}
+			
+			globalState->sortedOutgoing.sort(PtrComp<GlobalTransition>);
+			globalState->sortedOutgoing.unique(hasUnconditionalSuperset);
+			globalState->sortedOutgoing.unique(hasEarlierUnconditionalMatch);
+			// unique is not quite like what we need, but it was a start
+			globalState->sortedOutgoing = reapplyUniquePredicates(globalState->sortedOutgoing);
+			
+			_transPerActiveConf[globalState->activeId] = globalState;
 		}
+		
+		// append resulting new states
+		for(std::list<GlobalTransition*>::iterator transListIter = globalState->sortedOutgoing.begin();
+				transListIter != globalState->sortedOutgoing.end();
+				transListIter++) {
+			
+			(*transListIter)->source = globalState->stateId;
+			_currGlobalTransition = *transListIter;
 
-		if (actionIter->onEntry) {
-//			DETAIL_EXEC_CONTENT(onEntry, actionIter);
-
-			childs.push_back(actionIter->onEntry);
-			continue;
-		}
-
-		if (actionIter->invoke) {
-//			DETAIL_EXEC_CONTENT(invoke, actionIter);
-			if (!globalTransition->isTargetless) {
-//				CREATE_TRANSIENT_STATE_WITH_CHILDS(FlatStateIdentifier::toStateId(currActiveStates));
-			}
-			Element<std::string> invokeElem = Element<std::string>(actionIter->invoke);
-			invokeElem.setAttribute("persist", "true");
-			childs.push_back(invokeElem);
-			continue;
-		}
-
-		if (actionIter->uninvoke) {
-//			DETAIL_EXEC_CONTENT(uninvoke, actionIter);
-			Element<std::string> uninvokeElem = _flatDoc.createElementNS(_nsInfo.nsURL, "uninvoke");
-			_nsInfo.setPrefix(uninvokeElem);
-
-			if (HAS_ATTR(actionIter->uninvoke, "type")) {
-				uninvokeElem.setAttribute("type", ATTR(actionIter->uninvoke, "type"));
-			}
-			if (HAS_ATTR(actionIter->uninvoke, "typeexpr")) {
-				uninvokeElem.setAttribute("typeexpr", ATTR(actionIter->uninvoke, "typeexpr"));
-			}
-			if (HAS_ATTR(actionIter->uninvoke, "id")) {
-				uninvokeElem.setAttribute("id", ATTR(actionIter->uninvoke, "id"));
-			}
-			if (HAS_ATTR(actionIter->uninvoke, "idlocation")) {
-				uninvokeElem.setAttribute("idlocation", ATTR(actionIter->uninvoke, "idlocation"));
-			}
-			childs.push_back(uninvokeElem);
-			continue;
-		}
-
-		if (actionIter->exited) {
-//			std::cerr << " exited(" << ATTR_CAST(actionIter->exited, "id") << ")";
-			currActiveStates.remove(ATTR_CAST(actionIter->exited, "id"));
-			if (childs.size() > 0) {
-				CREATE_TRANSIENT_STATE_WITH_CHILDS(FlatStateIdentifier::toStateId(currActiveStates)); // create a new transient state to update its id
-			}
-		}
-
-		if (actionIter->entered) {
-//			std::cerr << " entered(" << ATTR_CAST(actionIter->entered, "id") << ")";
-			if (childs.size() > 0)
-				CREATE_TRANSIENT_STATE_WITH_CHILDS(FlatStateIdentifier::toStateId(currActiveStates)); // create a new transient state to update its id
-			currActiveStates.push_back(ATTR_CAST(actionIter->entered, "id"));
-
-			// we entered a new child - check if it has a datamodel and we entered for the first time
-			if (_binding == InterpreterImpl::LATE) {
-				NodeSet<std::string> datamodel = filterChildElements(_nsInfo.xmlNSPrefix + "datamodel", actionIter->entered);
-				if (datamodel.size() > 0 && !isMember(actionIter->entered, _globalConf[globalTransition->source]->alreadyEnteredStates)) {
-					childs.push_back(datamodel);
+			microstep(refsToTransitions((*transListIter)->transitionRefs));
+			statesRemaining.push_back(new GlobalState(_configuration, _alreadyEntered, _historyValue, _nsInfo.xmlNSPrefix, this));
+			
+			// add all invokers
+			for (unsigned int i = 0; i < _statesToInvoke.size(); i++) {
+				NodeSet<std::string> invokes = filterChildElements(_nsInfo.xmlNSPrefix + "invoke", _statesToInvoke[i]);
+				for (unsigned int j = 0; j < invokes.size(); j++) {
+					invoke(Element<std::string>(invokes[j]));
 				}
 			}
-		}
-		if (!globalTransition->isTargetless) {
-//			CREATE_TRANSIENT_STATE_WITH_CHILDS(FlatStateIdentifier::toStateId(currActiveStates))
+			_statesToInvoke = NodeSet<std::string>();
+
+			// remember that the last transition lead here
+			(*transListIter)->destination = statesRemaining.back()->stateId;
+
+			// reset state for next transition set
+			_configuration = globalState->getActiveStates();
+			_alreadyEntered = globalState->getAlreadyEnteredStates();
+			_historyValue = globalState->getHistoryStates();
 		}
 	}
 
-//	std::cerr << std::endl;
-
-//	if (globalTransition->isTargetless) {
-//		for (int i = 0; i < childs.size(); i++) {
-//			Node<std::string> imported = _flatDoc.importNode(childs[i], true);
-//			transition.appendChild(imported);
-//			//			CREATE_TRANSIENT_STATE_WITH_CHILDS(FlatStateIdentifier::toStateId(currActiveStates))
-//		}
-//		return transition;
-//	}
-
-	CREATE_TRANSIENT_STATE_WITH_CHILDS(FlatStateIdentifier::toStateId(currActiveStates))
-
-	if (transientStateChain.size() > 0) {
-		Element<std::string> prevExitTransitionElem;
-
-		for (int i = 0; i < transientStateChain.size(); i++) {
-			Element<std::string> transientStateElem = Element<std::string>(transientStateChain[i]);
-			transientStateElem.setAttribute("id", transientStateElem.getAttribute("id") + "-via-" + toStr(_lastTransientStateId++));
-
-			Element<std::string> exitTransition = _flatDoc.createElementNS(_nsInfo.nsURL, "transition");
-			_nsInfo.setPrefix(exitTransition);
-
-			if (prevExitTransitionElem) {
-				// point previous to this one
-				prevExitTransitionElem.setAttribute("target", transientStateElem.getAttribute("id"));
-			} else {
-				// update globalTransition->source target
-			}
-
-			transientStateElem.appendChild(exitTransition);
-			prevExitTransitionElem = exitTransition;
-
-			if (i == 0)
-				transition.setAttribute("target", transientStateElem.getAttribute("id"));
-
-			_scxml.appendChild(transientStateElem);
-		}
-
-		// last one points to actual target
-		assert(prevExitTransitionElem);
-		prevExitTransitionElem.setAttribute("target", globalTransition->destination);
-
-	} else {
-		transition.setAttribute("target", globalTransition->destination);
-	}
-
-	assert(HAS_ATTR_CAST(transition, "target"));
-	return transition;
 }
 
-#if 0
-void FlatteningInterpreter::weightTransitions() {
-	maxDepth = 0;
-	maxOrder = 0;
-
-	int depth = 0;
-	Arabica::XPath::NodeSet<std::string> states = getChildStates(_scxml);
-	while(states.size() > 0) {
-		NodeSet<std::string> transitions = filterChildElements(_nsInfo.xmlNSPrefix + "transition", states);
-		NodeSet<std::string> initials = filterChildElements(_nsInfo.xmlNSPrefix + "initial", states);
-		transitions.push_back(filterChildElements(_nsInfo.xmlNSPrefix + "transition", initials));
-
-		for (int j = 0; j < transitions.size(); j++) {
-			if (depth > maxDepth)
-				maxDepth = depth;
-			if (j > maxOrder)
-				maxOrder = j;
-			Element<std::string> transition = Element<std::string>(transitions[j]);
-			transition.setAttribute("depth", toStr(depth));
-			transition.setAttribute("order", toStr(j));
-		}
-		depth++;
-		states = getChildStates(states);
+Arabica::XPath::NodeSet<std::string> ChartToFSM::refsToStates(const std::set<int>& stateRefs) {
+	NodeSet<std::string> states;
+	for (std::set<int>::const_iterator stateIter = stateRefs.begin(); stateIter != stateRefs.end(); stateIter++) {
+		states.push_back(indexedStates[*stateIter]);
 	}
+	return states;
 }
-#endif
 
-void FlatteningInterpreter::labelTransitions() {
+Arabica::XPath::NodeSet<std::string> ChartToFSM::refsToTransitions(const std::set<int>& transRefs) {
+	NodeSet<std::string> transitions;
+	for (std::set<int>::const_iterator transIter = transRefs.begin(); transIter != transRefs.end(); transIter++) {
+		transitions.push_back(indexedTransitions[*transIter]);
+	}
+	return transitions;
+}
+
+
+void ChartToFSM::labelTransitions() {
 	// put a unique id on each transition
 	Arabica::XPath::NodeSet<std::string> states = getAllStates();
 	states.push_back(_scxml);
@@ -1096,39 +826,50 @@ void FlatteningInterpreter::labelTransitions() {
 	}
 }
 
-void FlatteningInterpreter::beforeMicroStep(Interpreter interpreter) {
+void ChartToFSM::beforeMicroStep(Interpreter interpreter) {
 }
-void FlatteningInterpreter::onStableConfiguration(Interpreter interpreter) {
+void ChartToFSM::onStableConfiguration(Interpreter interpreter) {
 }
-void FlatteningInterpreter::beforeExitingState(Interpreter interpreter, const Arabica::DOM::Element<std::string>& state, bool moreComing) {
+void ChartToFSM::beforeExitingState(Interpreter interpreter, const Arabica::DOM::Element<std::string>& state, bool moreComing) {
 	GlobalTransition::Action action;
 	action.exited = state;
 	_currGlobalTransition->actions.push_back(action);
-	_currGlobalTransition->exited.push_back(state);
 }
-void FlatteningInterpreter::beforeEnteringState(Interpreter interpreter, const Arabica::DOM::Element<std::string>& state, bool moreComing) {
+void ChartToFSM::beforeEnteringState(Interpreter interpreter, const Arabica::DOM::Element<std::string>& state, bool moreComing) {
 	GlobalTransition::Action action;
 	action.entered = state;
 	_currGlobalTransition->actions.push_back(action);
-	_currGlobalTransition->entered.push_back(state);
 }
-void FlatteningInterpreter::beforeTakingTransition(Interpreter interpreter, const Arabica::DOM::Element<std::string>& transition, bool moreComing) {
+void ChartToFSM::beforeTakingTransition(Interpreter interpreter, const Arabica::DOM::Element<std::string>& transition, bool moreComing) {
 }
 
-int GlobalState::gIndex = 0;
 GlobalState::GlobalState(const Arabica::XPath::NodeSet<std::string>& activeStates_,
                          const Arabica::XPath::NodeSet<std::string>& alreadyEnteredStates_, // we need to remember for binding=late
                          const std::map<std::string, Arabica::XPath::NodeSet<std::string> >& historyStates_,
-                         const std::string& xmlNSPrefix) {
+                         const std::string& xmlNSPrefix,
+												 ChartToFSM* flattener) {
+	interpreter = flattener;
+	
+	// take references
+	for (int i = 0; i < activeStates_.size(); i++) {
+		activeStatesRefs.insert(strTo<int>(ATTR_CAST(activeStates_[i], "index")));
+	}
 
-	// make copies and sort
-	activeStates = activeStates_;
-	alreadyEnteredStates = alreadyEnteredStates_;
-	historyStates = historyStates_;
+	for (int i = 0; i < alreadyEnteredStates_.size(); i++) {
+		alreadyEnteredStatesRefs.insert(strTo<int>(ATTR_CAST(alreadyEnteredStates_[i], "index")));
+	}
+
+	for (std::map<std::string, Arabica::XPath::NodeSet<std::string> >::const_iterator histIter = historyStates_.begin(); histIter != historyStates_.end(); histIter++) {
+		for (int i = 0; i < histIter->second.size(); i++) {
+			historyStatesRefs[histIter->first].insert(strTo<int>(ATTR_CAST(histIter->second[i], "index")));
+		}
+	}
+
 	isFinal = false;
 
-	for(int i = 0; i < activeStates.size(); i++) {
-		Arabica::DOM::Element<std::string> state = Arabica::DOM::Element<std::string>(activeStates[i]);
+	// is state this final?
+	for(int i = 0; i < activeStates_.size(); i++) {
+		Arabica::DOM::Element<std::string> state = Arabica::DOM::Element<std::string>(activeStates_[i]);
 		Arabica::DOM::Element<std::string> parentElem = (Arabica::DOM::Element<std::string>)state.getParentNode();
 		if(InterpreterImpl::isFinal(state) && iequals(parentElem.getTagName(), xmlNSPrefix + "scxml")) {
 			isFinal = true;
@@ -1136,25 +877,30 @@ GlobalState::GlobalState(const Arabica::XPath::NodeSet<std::string>& activeState
 		}
 	}
 
-	// sort configuration
-	activeStates.to_document_order();
-	alreadyEnteredStates.to_document_order();
-	for(std::map<std::string, Arabica::XPath::NodeSet<std::string> >::iterator historyIter = historyStates.begin();
-	        historyIter != historyStates.end();
-	        historyIter++) {
-		historyIter->second.to_document_order();
-	}
-
-	FlatStateIdentifier flatStateId(activeStates, alreadyEnteredStates, historyStates);
+	FlatStateIdentifier flatStateId(getActiveStates(), getAlreadyEnteredStates(), getHistoryStates());
 	stateId = flatStateId.getStateId();
+	activeId = flatStateId.getFlatActive();
 }
 
-GlobalTransition::GlobalTransition(const Arabica::XPath::NodeSet<std::string>& transitionSet, DataModel dataModel, FlatteningInterpreter* flattener) {
+GlobalTransition::GlobalTransition(const Arabica::XPath::NodeSet<std::string>& transitionSet, DataModel dataModel, ChartToFSM* flattener) {
 	interpreter = flattener;
-	transitions = transitionSet;
+	
+	for (int i = 0; i < transitionSet.size(); i++) {
+		transitionRefs.insert(strTo<int>(ATTR_CAST(transitionSet[i], "index")));
+	}
+
+	std::ostringstream setId; // also build id for subset
+	std::string seperator = "";
+	for (std::set<int>::iterator transIter = transitionRefs.begin(); transIter != transitionRefs.end(); transIter++) {
+		setId << seperator << *transIter;
+		seperator = "-";
+	}
+	transitionId = setId.str();
+
+	hasExecutableContent = false;
 	isValid = true;
 	isEventless = true;
-
+	
 #if 0
 	std::cerr << "################" << std::endl;
 	for (int i = 0; i < transitions.size(); i++) {
@@ -1163,39 +909,7 @@ GlobalTransition::GlobalTransition(const Arabica::XPath::NodeSet<std::string>& t
 	std::cerr << "################" << std::endl;
 #endif
 
-	std::list<std::string> conditions;
-	std::ostringstream setId; // also build id for subset
-	for (int i = 0; i < transitions.size(); i++) {
-		Arabica::DOM::Element<std::string> transElem = Arabica::DOM::Element<std::string>(transitions[i]);
-		// get a unique string for the transition - we assume it is sorted
-		assert(HAS_ATTR(transElem, "id"));
-		setId << ATTR(transElem, "id") << "-";
-
-		// gather conditions while we are iterating anyway
-		if (HAS_ATTR(transElem, "cond")) {
-			conditions.push_back(ATTR(transElem, "cond"));
-		}
-	}
-	transitionId = setId.str();
-
-	int index = 0;
-	std::string seperator;
-	for (std::list<Element<std::string> >::iterator transIter = interpreter->indexedTransitions.begin(); transIter != interpreter->indexedTransitions.end(); transIter++) {
-		const Element<std::string>& refTrans = *transIter;
-		if (InterpreterImpl::isMember(refTrans, transitions)) {
-			members += seperator + toStr(index);
-		} else {
-			members += seperator;
-			for (int i = 0; i < toStr(index).size(); i++) {
-				members += " ";
-			}
-		}
-		seperator = " ";
-		index++;
-	}
-
-//	if (members == "        4   6 7    ")
-//		std::cout << "asdfadf";
+	// first establish whether this is a valid set
 
 	/**
 	 * Can these events event occur together? They can't if:
@@ -1209,8 +923,8 @@ GlobalTransition::GlobalTransition(const Arabica::XPath::NodeSet<std::string>& t
 	bool foundWithTarget = false;
 	bool foundTargetLess = false;
 
-	for (int i = 0; i < transitions.size(); i++) {
-		Arabica::DOM::Element<std::string> transElem = Arabica::DOM::Element<std::string>(transitions[i]);
+	for (int i = 0; i < transitionSet.size(); i++) {
+		Arabica::DOM::Element<std::string> transElem = Arabica::DOM::Element<std::string>(transitionSet[i]);
 		if (HAS_ATTR(transElem, "eventexpr")) {
 			ERROR_EXECUTION_THROW("Cannot flatten document with eventexpr attributes");
 		}
@@ -1253,7 +967,7 @@ GlobalTransition::GlobalTransition(const Arabica::XPath::NodeSet<std::string>& t
 	// is there a set of event names that would enable this conflict-free transition set?
 	if (foundWithEvent) {
 		// get the set of longest event descriptors that will enable this transition set
-		eventNames = getCommonEvents(transitions);
+		eventNames = getCommonEvents(transitionSet);
 		if (eventNames.size() == 0) {
 //			LOG(INFO) << "No event will activate this conflict-free subset" << std::endl;
 			isValid = false;
@@ -1271,6 +985,35 @@ GlobalTransition::GlobalTransition(const Arabica::XPath::NodeSet<std::string>& t
 			eventDesc = "*";
 	}
 
+	// extract conditions
+	std::list<std::string> conditions;
+	for (int i = 0; i < transitionSet.size(); i++) {
+		Arabica::DOM::Element<std::string> transElem = Arabica::DOM::Element<std::string>(transitionSet[i]);
+		// gather conditions while we are iterating anyway
+		if (HAS_ATTR(transElem, "cond")) {
+			conditions.push_back(ATTR(transElem, "cond"));
+		}
+	}
+	
+	int index = 0;
+	seperator = "";
+	for (std::vector<Element<std::string> >::iterator transIter = interpreter->indexedTransitions.begin(); transIter != interpreter->indexedTransitions.end(); transIter++) {
+		const Element<std::string>& refTrans = *transIter;
+		if (InterpreterImpl::isMember(refTrans, transitionSet)) {
+			members += seperator + toStr(index);
+		} else {
+			members += seperator;
+			for (int i = 0; i < toStr(index).size(); i++) {
+				members += " ";
+			}
+		}
+		seperator = " ";
+		index++;
+	}
+	
+	//	if (members == "        4   6 7    ")
+	//		std::cout << "asdfadf";
+
 	if (conditions.size() > 1) {
 		condition = dataModel.andExpressions(conditions);
 		if (condition.size() == 0) {
@@ -1279,6 +1022,27 @@ GlobalTransition::GlobalTransition(const Arabica::XPath::NodeSet<std::string>& t
 	} else if (conditions.size() == 1) {
 		condition = conditions.front();
 	}
+}
+
+Arabica::XPath::NodeSet<std::string> GlobalState::getActiveStates() {
+	return interpreter->refsToStates(activeStatesRefs);
+}
+
+Arabica::XPath::NodeSet<std::string> GlobalState::getAlreadyEnteredStates() {
+	return interpreter->refsToStates(alreadyEnteredStatesRefs);
+}
+
+std::map<std::string, Arabica::XPath::NodeSet<std::string> > GlobalState::getHistoryStates() {
+	std::map<std::string, Arabica::XPath::NodeSet<std::string> > historyValue;
+	for (std::map<std::string, std::set<int> >::iterator histIter = historyStatesRefs.begin(); histIter != historyStatesRefs.end(); histIter++) {
+		historyValue[histIter->first] = interpreter->refsToStates(histIter->second);
+	}
+	return historyValue;
+}
+
+	
+Arabica::XPath::NodeSet<std::string> GlobalTransition::getTransitions() const {
+	return interpreter->refsToTransitions(transitionRefs);
 }
 
 std::list<std::string> GlobalTransition::getCommonEvents(const NodeSet<std::string>& transitions) {

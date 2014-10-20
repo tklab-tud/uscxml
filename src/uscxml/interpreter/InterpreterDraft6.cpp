@@ -553,7 +553,7 @@ void InterpreterDraft6::handleDOMEvent(Arabica::DOM::Events::Event<std::string>&
 	if (event.getType().compare("DOMAttrModified") == 0) // we do not care about attributes
 		return;
 	Node<std::string> target = Arabica::DOM::Node<std::string>(event.getTarget());
-	NodeSet<std::string> transitions = InterpreterImpl::filterChildElements(_nsInfo.xmlNSPrefix + "transition", target);
+	NodeSet<std::string> transitions = InterpreterImpl::filterChildElements(_nsInfo.xmlNSPrefix + "transition", target, true);
 	for (int i = 0; i < transitions.size(); i++) {
 		const Element<std::string> transElem = Element<std::string>(transitions[i]);
 		if (_transWithinParallel.find(transElem) != _transWithinParallel.end())

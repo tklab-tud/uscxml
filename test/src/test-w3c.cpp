@@ -5,7 +5,7 @@
 #include "uscxml/Factory.h"
 #include "uscxml/server/HTTPServer.h"
 
-#include "uscxml/transform/ChartToFSM.h"
+#include "uscxml/transform/ChartToFlatSCXML.h"
 #include <glog/logging.h>
 #include <boost/algorithm/string.hpp>
 
@@ -136,9 +136,10 @@ int main(int argc, char** argv) {
 		Interpreter interpreter;
 		LOG(INFO) << "Processing " << documentURI << (withFlattening ? " FSM converted" : "") << (delayFactor ? "" : " with delays *= " + toStr(delayFactor));
 		if (withFlattening) {
-			Interpreter flatInterpreter = Interpreter::fromURI(documentURI);
-			interpreter = Interpreter::fromDOM(ChartToFSM::flatten(flatInterpreter).getDocument(), flatInterpreter.getNameSpaceInfo());
-			interpreter.setSourceURI(flatInterpreter.getSourceURI());
+			interpreter = Interpreter::fromURI(documentURI);
+			Transformer flattener = ChartToFlatSCXML::transform(interpreter);
+			interpreter = flattener;
+//			std::cout << interpreter.getDocument() << std::endl;
 		} else {
 			interpreter = Interpreter::fromURI(documentURI);
 		}

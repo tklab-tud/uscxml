@@ -181,6 +181,7 @@ function computeExitSet(transitions)
    return statesToExit
 */
 Arabica::XPath::NodeSet<std::string> InterpreterRC::computeExitSet(const Arabica::XPath::NodeSet<std::string>& transitions) {
+	
 	NodeSet<std::string> statesToExit;
 	for (unsigned int i = 0; i < transitions.size(); i++) {
 		Element<std::string> t(transitions[i]);
@@ -203,13 +204,21 @@ Arabica::XPath::NodeSet<std::string> InterpreterRC::computeExitSet(const Arabica
 	}
 	std::cout << std::endl;
 #endif
+	
 	return statesToExit;
 }
 
 Arabica::XPath::NodeSet<std::string> InterpreterRC::computeExitSet(const Arabica::DOM::Node<std::string>& transition) {
+	if (_exitSet.find(transition) != _exitSet.end()) // speed up removeConflicting
+		return _exitSet[transition];
+
 	Arabica::XPath::NodeSet<std::string> transitions;
 	transitions.push_back(transition);
-	return computeExitSet(transitions);
+	
+	Arabica::XPath::NodeSet<std::string> exitSet = computeExitSet(transitions);
+	_exitSet[transition] = exitSet;
+	
+	return exitSet;
 }
 
 void InterpreterRC::enterStates(const Arabica::XPath::NodeSet<std::string>& enabledTransitions) {
@@ -622,4 +631,16 @@ BREAK_LOOP:
 	return findLCCA(states);
 }
 
+void InterpreterRC::handleDOMEvent(Arabica::DOM::Events::Event<std::string>& event) {
+	InterpreterImpl::handleDOMEvent(event);
+	
+	if (event.getType().compare("DOMAttrModified") == 0) // we do not care about attributes
+		return;
+
+//	Node<std::string> target = Arabica::DOM::Node<std::string>(event.getTarget());
+//	NodeSet<std::string> transitions = InterpreterImpl::filterChildElements(_nsInfo.xmlNSPrefix + "transition", target, true);
+//	if (transitions.size() > 0)
+	_exitSet.clear();
+	
+}
 }

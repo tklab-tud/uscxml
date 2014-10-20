@@ -228,9 +228,10 @@ public:
 
 	virtual ~InterpreterImpl();
 
-	void copyTo(InterpreterImpl* other);
-	void copyTo(boost::shared_ptr<InterpreterImpl> other);
-
+	void cloneFrom(InterpreterImpl* other);
+	void cloneFrom(boost::shared_ptr<InterpreterImpl> other);
+	virtual void writeTo(std::ostream& stream);
+	
 	// TODO: We need to move the destructor to the implementations to make these pure virtual
 	virtual InterpreterState interpret();
 	virtual InterpreterState step(int waitForMS = 0);
@@ -599,6 +600,10 @@ public:
 	Interpreter& operator= (const Interpreter& other)   {
 		_impl = other._impl;
 		return *this;
+	}
+
+	virtual void writeTo(std::ostream& stream) {
+		return _impl->writeTo(stream);
 	}
 
 	void reset() {

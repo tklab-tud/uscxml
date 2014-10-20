@@ -57,7 +57,10 @@ protected:
 	                              Arabica::XPath::NodeSet<std::string>& statesToEnter,
 	                              Arabica::XPath::NodeSet<std::string>& statesForDefaultEntry,
 	                              std::map<std::string, Arabica::DOM::Node<std::string> >& defaultHistoryContent);
+	virtual void handleDOMEvent(Arabica::DOM::Events::Event<std::string>& event);
 
+private:
+	std::map<Arabica::DOM::Node<std::string>, Arabica::XPath::NodeSet<std::string> > _exitSet;
 };
 
 }

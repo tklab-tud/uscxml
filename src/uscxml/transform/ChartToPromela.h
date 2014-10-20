@@ -17,9 +17,11 @@
  *  @endcond
  */
 
-#ifndef FSMTOPROMELA_H_RP48RFDJ
-#define FSMTOPROMELA_H_RP48RFDJ
+#ifndef CHARTTOPROMELA_H_RP48RFDJ
+#define CHARTTOPROMELA_H_RP48RFDJ
 
+#include "Transformer.h"
+#include "ChartToFSM.h"
 #include "uscxml/interpreter/InterpreterDraft6.h"
 #include "uscxml/DOMUtils.h"
 #include "uscxml/util/Trie.h"
@@ -88,10 +90,12 @@ class USCXML_API PromelaCodeAnalyzer {
 public:
 	class PromelaTypedef {
 	public:
-		PromelaTypedef() : arraySize(0) {}
+		PromelaTypedef() : arraySize(0), minValue(0), maxValue(0) {}
 		std::string name;
 		std::string type;
 		size_t arraySize;
+		size_t minValue;
+		size_t maxValue;
 		std::map<std::string, PromelaTypedef> types;
 
 		bool operator==(const PromelaTypedef& other) const {
@@ -106,10 +110,11 @@ public:
 	void addCode(const std::string& code);
 	void addEvent(const std::string& eventName);
 	void addState(const std::string& stateName);
+	void addOrigState(const std::string& stateName);
 	void addLiteral(const std::string& stateName, int forceIndex = -1);
 
 	bool usesComplexEventStruct() {
-		return _typeDefs.types.find("_event") != _typeDefs.types.end();
+		return _typeDefs.types.find("_event") != _typeDefs.types.end() && _typeDefs.types["_event"].types.size() > 0;
 	}
 	bool usesEventField(const std::string& fieldName) {
 		if (usesComplexEventStruct() && _typeDefs.types["_event"].types.find(fieldName) != _typeDefs.types["_event"].types.end())
@@ -126,7 +131,6 @@ public:
 
 	std::string macroForLiteral(const std::string& literal);
 	int indexForLiteral(const std::string& literal);
-	int arrayIndexForOrigState(const std::string& stateName);
 
 	std::set<std::string> getLiterals() {
 		return _strLiterals;
@@ -144,11 +148,6 @@ public:
 		return _origStateIndex;
 	}
 
-	std::list<std::string>& getOrigStates(const std::string& state) {
-		if (_origStateMap.find(state) == _origStateMap.end())
-			throw std::runtime_error("No original states known for " + state);
-		return _origStateMap[state];
-	}
 
 	Trie& getTrie() {
 		return _eventTrie;
@@ -156,7 +155,7 @@ public:
 
 	std::string replaceLiterals(const std::string code);
 
-	PromelaTypedef getTypes() {
+	PromelaTypedef& getTypes() {
 		return _typeDefs;
 	}
 
@@ -170,7 +169,6 @@ protected:
 	std::map<std::string, int> _origStateIndex;         // state enumeration for original states
 
 	std::map<std::string, int> _states;
-	std::map<std::string, std::list<std::string> > _origStateMap;  // states from the original state chart
 	std::map<std::string, int> _events;
 
 	PromelaTypedef _typeDefs;
@@ -214,18 +212,22 @@ public:
 	PromelaCodeAnalyzer* analyzer;
 };
 
-class USCXML_API FSMToPromela : public InterpreterDraft6 {
+class USCXML_API ChartToPromela : public TransformerImpl, public ChartToFSM {
 public:
-	static void writeProgram(std::ostream& stream,
-	                         const Interpreter& interpreter);
+
+	virtual ~ChartToPromela() {}
+	static Transformer transform(const Interpreter& other);
+	
+	void writeTo(std::ostream& stream);
+	
+protected:
+	ChartToPromela(const Interpreter& other) : TransformerImpl(), ChartToFSM(other) {}
+
+	void initNodes();
 
 	static std::string beautifyIndentation(const std::string& code, int indent = 0);
 
-protected:
-	FSMToPromela();
 	void writeProgram(std::ostream& stream);
-
-	void initNodes();
 
 	void writeEvents(std::ostream& stream);
 	void writeStates(std::ostream& stream);
@@ -234,6 +236,7 @@ protected:
 	void writeStrings(std::ostream& stream);
 	void writeDeclarations(std::ostream& stream);
 	void writeEventSources(std::ostream& stream);
+	void writeTransition(std::ostream& stream, const GlobalTransition* transition, int indent = 0);
 	void writeExecutableContent(std::ostream& stream, const Arabica::DOM::Node<std::string>& node, int indent = 0);
 	void writeInlineComment(std::ostream& stream, const Arabica::DOM::Node<std::string>& node);
 	void writeFSM(std::ostream& stream);
@@ -241,32 +244,36 @@ protected:
 	void writeMain(std::ostream& stream);
 
 	void writeIfBlock(std::ostream& stream, const Arabica::XPath::NodeSet<std::string>& condChain, int indent = 0);
-	void writeDispatchingBlock(std::ostream& stream, const Arabica::XPath::NodeSet<std::string>& transChain, int indent = 0);
+	void writeDispatchingBlock(std::ostream& stream, std::list<GlobalTransition*>, int indent = 0);
 
 	Arabica::XPath::NodeSet<std::string> getTransientContent(const Arabica::DOM::Element<std::string>& state, const std::string& source = "");
-	Arabica::DOM::Node<std::string> getUltimateTarget(const Arabica::DOM::Element<std::string>& transition);
+	//Arabica::DOM::Node<std::string> getUltimateTarget(const Arabica::DOM::Element<std::string>& transition);
 
 	static PromelaInlines getInlinePromela(const std::string&);
 	static PromelaInlines getInlinePromela(const Arabica::XPath::NodeSet<std::string>& elements, bool recurse = false);
 	static PromelaInlines getInlinePromela(const Arabica::DOM::Node<std::string>& elements);
 
+	static std::string declForRange(const std::string& identifier, long minValue, long maxValue, bool nativeOnly = false);
+	
 //	std::string replaceStringsInExpression(const std::string& expr);
 
 	std::string sanitizeCode(const std::string& code);
 
-	Arabica::XPath::NodeSet<std::string> _globalStates;
-	Arabica::DOM::Node<std::string> _startState;
-	std::map<std::string, Arabica::DOM::Element<std::string> > _states;
-	std::map<Arabica::DOM::Element<std::string>, int> _transitions;
+//	Arabica::XPath::NodeSet<std::string> _globalStates;
+//	Arabica::DOM::Node<std::string> _startState;
+//	std::map<std::string, Arabica::DOM::Element<std::string> > _states;
+//	std::map<Arabica::DOM::Element<std::string>, int> _transitions;
 
-	std::list<std::string> _varInitializers;
+	std::list<std::string> _varInitializers; // pending initializations for arrays
 
 	PromelaCodeAnalyzer _analyzer;
 
 	std::map<std::string, PromelaEventSource> _invokers;
 	PromelaEventSource _globalEventSource;
+	
+	friend class PromelaEventSource;
 };
 
 }
 
-#endif /* end of include guard: FSMTOPROMELA_H_RP48RFDJ */
+#endif /* end of include guard: CHARTTOPROMELA_H_RP48RFDJ */

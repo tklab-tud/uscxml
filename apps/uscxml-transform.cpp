@@ -1,7 +1,7 @@
 #include "uscxml/config.h"
 #include "uscxml/Interpreter.h"
-#include "uscxml/transform/ChartToFSM.h"
-#include "uscxml/transform/FSMToPromela.h"
+#include "uscxml/transform/ChartToFlatSCXML.h"
+#include "uscxml/transform/ChartToPromela.h"
 #include "uscxml/DOMUtils.h"
 #include <glog/logging.h>
 #include <fstream>
@@ -57,15 +57,15 @@ void printUsageAndExit(const char* progName) {
 	printf("%s version " USCXML_VERSION " (" CMAKE_BUILD_TYPE " build - " CMAKE_COMPILER_STRING ")\n", progStr.c_str());
 	printf("Usage\n");
 	printf("\t%s", progStr.c_str());
-	printf(" [-fs] [-v] [-lN]");
+	printf(" [-t pml|flat] [-v] [-lN]");
 #ifdef BUILD_AS_PLUGINS
 	printf(" [-p pluginPath]");
 #endif
 	printf(" [-i URL] [-o FILE]");
 	printf("\n");
 	printf("Options\n");
-	printf("\t-f        : flatten to state-machine\n");
-	printf("\t-s        : convert to spin/promela program\n");
+	printf("\t-t flat   : flatten to SCXML state-machine\n");
+	printf("\t-t pml    : convert to spin/promela program\n");
 	printf("\t-v        : be verbose\n");
 	printf("\t-lN       : Set loglevel to N\n");
 	printf("\t-i URL    : Input file (defaults to STDIN)\n");
@@ -78,8 +78,7 @@ int main(int argc, char** argv) {
 	using namespace uscxml;
 
 	bool verbose = false;
-	bool toFlat = false;
-	bool toPromela = false;
+	std::string outType;
 	std::string pluginPath;
 	std::string inputFile;
 	std::string outputFile;
@@ -97,8 +96,7 @@ int main(int argc, char** argv) {
 
 	struct option longOptions[] = {
 		{"verbose",       no_argument,       0, 'v'},
-		{"to-flat",       no_argument, 0, 'f'},
-		{"to-promela",    no_argument, 0, 's'},
+		{"type",          required_argument, 0, 't'},
 		{"plugin-path",   required_argument, 0, 'p'},
 		{"input-file",    required_argument, 0, 'i'},
 		{"output-file",    required_argument, 0, 'o'},
@@ -110,7 +108,7 @@ int main(int argc, char** argv) {
 	int optionInd = 0;
 	int option;
 	for (;;) {
-		option = getopt_long_only(argc, argv, "+vfsp:i:o:l:", longOptions, &optionInd);
+		option = getopt_long_only(argc, argv, "+vp:t:i:o:l:", longOptions, &optionInd);
 		if (option == -1) {
 			break;
 		}
@@ -123,11 +121,8 @@ int main(int argc, char** argv) {
 		case 'v':
 			verbose = true;
 			break;
-		case 'f':
-			toFlat = true;
-			break;
-		case 's':
-			toPromela = true;
+		case 't':
+			outType = optarg;
 			break;
 		case 'p':
 			pluginPath = optarg;
@@ -148,9 +143,19 @@ int main(int argc, char** argv) {
 		}
 	}
 
-	if (!toPromela && !toFlat) {
-		printUsageAndExit(argv[0]);
+	if (outType.length() == 0 && outputFile.length() > 0) {
+		// try to get type from outfile extension
+		size_t dotPos = outputFile.find_last_of(".");
+		if (dotPos != std::string::npos) {
+			outType= outputFile.substr(dotPos + 1);
+		}
 	}
+	
+	if (outType.length() == 0)
+		printUsageAndExit(argv[0]);
+
+	if (outType != "flat" && outType != "scxml" && outType != "pml")
+		printUsageAndExit(argv[0]);
 
 	// register plugins
 	if (pluginPath.length() > 0) {
@@ -178,27 +183,37 @@ int main(int argc, char** argv) {
 			exit(EXIT_FAILURE);
 		}
 
-		if (toPromela) {
-			Interpreter flatInterpreter = ChartToFSM::flatten(interpreter);
-
+		if (outType == "pml") {
 			if (outputFile.size() == 0 || outputFile == "-") {
-				FSMToPromela::writeProgram(std::cout, flatInterpreter);
+				ChartToPromela::transform(interpreter).writeTo(std::cout);
 			} else {
 				std::ofstream outStream;
 				outStream.open(outputFile.c_str());
-				FSMToPromela::writeProgram(outStream, flatInterpreter);
+				ChartToPromela::transform(interpreter).writeTo(outStream);
 				outStream.close();
 			}
 			exit(EXIT_SUCCESS);
+
+//			Interpreter flatInterpreter = ChartToPromela::transform(interpreter);
+//
+//			if (outputFile.size() == 0 || outputFile == "-") {
+//				ChartToPromela::writeProgram(std::cout, flatInterpreter);
+//			} else {
+//				std::ofstream outStream;
+//				outStream.open(outputFile.c_str());
+//				ChartToPromela::writeProgram(outStream, flatInterpreter);
+//				outStream.close();
+//			}
+//			exit(EXIT_SUCCESS);
 		}
 
-		if (toFlat) {
+		if (outType == "scxml" || outType == "flat") {
 			if (outputFile.size() == 0 || outputFile == "-") {
-				std::cout << ChartToFSM::flatten(interpreter).getDocument();
+				ChartToFlatSCXML::transform(interpreter).writeTo(std::cout);
 			} else {
 				std::ofstream outStream;
 				outStream.open(outputFile.c_str());
-				outStream << ChartToFSM::flatten(interpreter).getDocument();
+				ChartToFlatSCXML::transform(interpreter).writeTo(outStream);
 				outStream.close();
 			}
 			exit(EXIT_SUCCESS);

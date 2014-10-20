@@ -31,7 +31,7 @@
 
 namespace uscxml {
 
-class USCXML_API FSMToCPP : public InterpreterDraft6 {
+class USCXML_API ChartToCPP : public InterpreterDraft6 {
 public:
 	static void writeProgram(std::ostream& stream,
 	                         const Interpreter& interpreter);
@@ -39,7 +39,7 @@ public:
 	static std::string beautifyIndentation(const std::string& code, int indent = 0);
 
 protected:
-	FSMToCPP();
+	ChartToCPP();
 	void writeProgram(std::ostream& stream);
 
 	void initNodes();

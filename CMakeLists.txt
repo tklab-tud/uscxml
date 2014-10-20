@@ -351,7 +351,7 @@ else()
 	OPTION(BUILD_TESTS_W3C_LUA "Create W3C Lua tests" ON)
 	OPTION(BUILD_TESTS_W3C_PROMELA "Create W3C Promela tests" ON)
 	
-	OPTION(BUILD_TESTS_FSM_ECMA "Create FSM converted W3C ECMAScript tests" OFF)
+	OPTION(BUILD_TESTS_FSM_ECMA "Create FSM converted W3C ECMAScript tests" ON)
 	OPTION(BUILD_TESTS_FSM_XPATH "Create FSM converted W3C XPath tests" OFF)
 endif()
 OPTION(ENABLE_GCOV "Compile with gcov support" OFF)
@@ -377,6 +377,7 @@ OPTION(DIST_PREPARE "Put libraries into the lib folder of the source tree" OFF)
 set(USCXML_CORE_LIBS)
 set(USCXML_OPT_LIBS)
 set(USCXML_FILES)
+set(USCXML_TRANSFORM_FILES)
 set(USCXML_INCLUDE_DIRS)
 
 # some compiler flags
@@ -1082,9 +1083,11 @@ endif()
 # Binaries and tests
 ############################################################
 
+set(ALL_SOURCE_FILES ${USCXML_FILES} ${USCXML_TRANSFORM_FILES})
 list(SORT USCXML_FILES)
-# we cannot use source groups in sub directories!
-foreach( FILE ${USCXML_FILES} )
+list(SORT USCXML_TRANSFORM_FILES)
+# we cannot define source groups in sub directories!
+foreach( FILE ${ALL_SOURCE_FILES} )
 	get_filename_component(PATH ${FILE} PATH)
 	
 	if (${PATH} MATCHES ".*datamodel\\/ecmascript.*")
@@ -1127,7 +1130,7 @@ foreach( FILE ${USCXML_FILES} )
 	elseif (${FILE} MATCHES ".*\\/plugins\\/.*")
 		source_group("Interpreter\\plugins" FILES ${FILE})
 	elseif (${FILE} MATCHES ".*\\/transform\\/.*")
-		source_group("Interpreter\\transform" FILES ${FILE})
+		# source_group("Interpreter\\transform" FILES ${FILE})
 	elseif (${FILE} MATCHES ".*\\/util\\/.*")
 		source_group("Interpreter\\util" FILES ${FILE})
 	elseif (${FILE} MATCHES ".*\\/concurrency\\/.*")
@@ -1180,6 +1183,12 @@ else()
 endif()
 INSTALL_LIBRARY(TARGETS uscxml COMPONENT library)
 
+add_library(uscxml_transform ${USCXML_TRANSFORM_FILES})
+target_link_libraries(uscxml_transform uscxml)
+set_target_properties(uscxml_transform PROPERTIES PROJECT_LABEL "transform" FOLDER "uscxml")
+
+INSTALL_LIBRARY(TARGETS uscxml_transform COMPONENT library)
+
 if (NOT CMAKE_CROSSCOMPILING)
 	if (ENABLE_COTIRE)
 		set_target_properties(uscxml PROPERTIES COTIRE_CXX_PREFIX_HEADER_INIT "src/uscxml/pch.h")
@@ -1212,7 +1221,7 @@ if (NOT CMAKE_CROSSCOMPILING)
 		else()
 			add_executable(uscxml-transform apps/uscxml-transform.cpp)
 		endif()
-		target_link_libraries(uscxml-transform uscxml)
+		target_link_libraries(uscxml-transform uscxml uscxml_transform)
 		if (NOT CMAKE_CROSSCOMPILING)
 			if (ENABLE_COTIRE)
 				set_target_properties(uscxml-transform PROPERTIES COTIRE_ADD_UNITY_BUILD FALSE)

@@ -25,6 +25,7 @@ if (NOT WIN32)
 		ARGS ${CMAKE_CURRENT_SOURCE_DIR}/uscxml/arabica/test-arabica-events.xml)
 	USCXML_TEST_COMPILE(NAME test-arabica-parsing LABEL general/test-arabica-parsing FILES src/test-arabica-parsing.cpp)
 	USCXML_TEST_COMPILE(NAME test-promela-parser LABEL general/test-promela-parser FILES src/test-promela-parser.cpp)
+	target_link_libraries(test-promela-parser uscxml_transform)
 	USCXML_TEST_COMPILE(BUILD_ONLY NAME test-stress LABEL general/test-stress FILES src/test-stress.cpp)
 endif()
 
@@ -73,7 +74,7 @@ find_program(GCC gcc)
 
 if (NOT BUILD_MINIMAL)
 	add_executable(test-w3c src/test-w3c.cpp)
-	target_link_libraries(test-w3c uscxml)
+	target_link_libraries(test-w3c uscxml uscxml_transform)
 	set_target_properties(test-w3c PROPERTIES FOLDER "Tests")
 
 	file(GLOB_RECURSE W3C_TESTS
