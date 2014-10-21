@@ -49,7 +49,9 @@ if (now - _lastTimeStamp > 1000) { \
 	std::cerr << "X: " << _perfStatesSkippedTotal << " [" << _perfStatesSkippedProcessed << "/sec]" << std::endl; \
 	std::cerr << "Q: " << (_maxEventRaisedChain == UNDECIDABLE ? "UNK" : toStr(_maxEventRaisedChain)) << " / " << (_maxEventSentChain == UNDECIDABLE ? "UNK" : toStr(_maxEventSentChain)) << std::endl; \
 	std::cerr << _perfTransTotal << ", " << _perfTransProcessed << ", " << _globalConf.size() << ", " << _perfStatesProcessed << ", " << _perfStatesCachedTotal << ", " << _perfStatesCachedProcessed << ", "; \
-	std::cerr  << _perfStatesSkippedTotal << ", " << _perfStatesSkippedProcessed << ", " << _maxEventRaisedChain << ", " << _maxEventSentChain << std::endl; \
+	std::cerr  << _perfStatesSkippedTotal << ", " << _perfStatesSkippedProcessed << ", "; \
+	std::cerr << (_maxEventRaisedChain == UNDECIDABLE ? "UNK" : toStr(_maxEventRaisedChain)) << ", "; \
+	std::cerr << (_maxEventSentChain == UNDECIDABLE ? "UNK" : toStr(_maxEventSentChain)) << std::endl; \
 	std::cerr << std::endl; \
 	_perfTransProcessed = 0; \
 	_perfStatesProcessed = 0; \
@@ -210,7 +212,7 @@ InterpreterState ChartToFSM::interpret() {
 	uint64_t complexity = Complexity::stateMachineComplexity(_scxml) + 1;
 	std::cerr << "Approximate Complexity: " << complexity << std::endl;
 
-	if (complexity > 1000 && false) {
+	if (complexity > 1000) {
 		_skipEventChainCalculations = true;
 		_maxEventRaisedChain = UNDECIDABLE;
 		_maxEventSentChain = UNDECIDABLE;
@@ -372,7 +374,7 @@ void ChartToFSM::executeContent(const Arabica::DOM::Element<std::string>& conten
 	}
 
 	if (!_skipEventChainCalculations &&
-			(_maxEventRaisedChain == UNDECIDABLE || _maxEventSentChain == UNDECIDABLE)) {
+			(_maxEventRaisedChain != UNDECIDABLE || _maxEventSentChain != UNDECIDABLE)) {
 		assert(content.hasAttribute("raise") && content.hasAttribute("send"));
 
 		std::string raiseAttr = content.getAttribute("raise");
@@ -445,7 +447,7 @@ void ChartToFSM::internalDoneSend(const Arabica::DOM::Element<std::string>& stat
 
 	_currGlobalTransition->actions.push_back(action);
 	if (!_skipEventChainCalculations &&
-			(_maxEventRaisedChain == UNDECIDABLE || _maxEventSentChain == UNDECIDABLE))
+			(_maxEventRaisedChain != UNDECIDABLE || _maxEventSentChain != UNDECIDABLE))
 		_currGlobalTransition->eventsRaised++;
 	_currGlobalTransition->hasExecutableContent = true;
 
@@ -799,7 +801,7 @@ void ChartToFSM::explode() {
 		if (_globalConf.find(globalState->stateId) != _globalConf.end()) {
 			if (_currGlobalTransition->isEventless &&
 					!_skipEventChainCalculations &&
-					(_maxEventRaisedChain == UNDECIDABLE || _maxEventSentChain == UNDECIDABLE)) {
+					(_maxEventRaisedChain != UNDECIDABLE || _maxEventSentChain != UNDECIDABLE)) {
 				// we arrived via a spontaneaous transition, do we need to update?
 				updateRaisedAndSendChains(_globalConf[globalState->stateId], _currGlobalTransition, std::set<GlobalTransition*>());
 			}
@@ -870,7 +872,7 @@ void ChartToFSM::explode() {
 			// if outgoing transition is spontaneous, add number of events to chain
 			if (outgoingTrans->isEventless &&
 					!_skipEventChainCalculations &&
-					(_maxEventRaisedChain == UNDECIDABLE || _maxEventSentChain == UNDECIDABLE)) {
+					(_maxEventRaisedChain != UNDECIDABLE || _maxEventSentChain != UNDECIDABLE)) {
 				outgoingTrans->eventsChainRaised = MIN(incomingTrans->eventsChainRaised + outgoingTrans->eventsRaised, UNDECIDABLE);
 				outgoingTrans->eventsChainSent = MIN(incomingTrans->eventsChainSent + outgoingTrans->eventsSent, UNDECIDABLE);
 
