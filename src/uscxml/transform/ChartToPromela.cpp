@@ -33,6 +33,7 @@
 #define MSG_QUEUE_LENGTH 5
 #define MAX_MACRO_CHARS 64
 #define MIN_COMMENT_PADDING 60
+#define MAX(X,Y) ((X) > (Y) ? (X) : (Y))
 
 #define BIT_WIDTH(number) (number > 1 ? (int)ceil(log((double)number) / log((double)2.0)) : 1)
 #define LENGTH_FOR_NUMBER(input, output) \
@@ -230,7 +231,6 @@ void PromelaCodeAnalyzer::addCode(const std::string& code) {
 			break;
 		}
 		case PML_ASGN:
-//			node->dump();
 			if (node->operands.back()->type == PML_CONST) {
 				hasValue = true;
 				if (isInteger(node->operands.back()->value.c_str(), 10)) {
@@ -239,6 +239,8 @@ void PromelaCodeAnalyzer::addCode(const std::string& code) {
 			}
 			if (node->operands.front()->type == PML_CMPND)
 				node = node->operands.front();
+			if (node->operands.front()->type != PML_NAME)
+				break; // this will skip array assignments
 		case PML_CMPND: {
 			std::string nameOfType;
 			std::list<PromelaParserNode*>::iterator opIter = node->operands.begin();
@@ -1506,21 +1508,21 @@ void ChartToPromela::writeStrings(std::ostream& stream) {
 void ChartToPromela::writeDeclarations(std::ostream& stream) {
 
 	stream << "/* global variables */" << std::endl;
-
+	
 	if (_analyzer.usesComplexEventStruct()) {
 		// event is defined with the typedefs
 		stream << "_event_t _event;            /* current state */" << std::endl;
 		stream << "unsigned s : " << BIT_WIDTH(_globalConf.size() + 1) << ";            /* current state */" << std::endl;
-		stream << "chan iQ   = [" << MSG_QUEUE_LENGTH << "] of {_event_t}  /* internal queue */" << std::endl;
-		stream << "chan eQ   = [" << MSG_QUEUE_LENGTH << "] of {_event_t}  /* external queue */" << std::endl;
-		stream << "chan tmpQ = [" << MSG_QUEUE_LENGTH << "] of {_event_t}  /* temporary queue for external events in transitions */" << std::endl;
+		stream << "chan iQ   = [" << MAX(_internalQueueLength, 1) << "] of {_event_t}  /* internal queue */" << std::endl;
+		stream << "chan eQ   = [" << _externalQueueLength + 1 << "] of {_event_t}  /* external queue */" << std::endl;
+		stream << "chan tmpQ = [" << MAX(_externalQueueLength, 1) << "] of {_event_t}  /* temporary queue for external events in transitions */" << std::endl;
 		stream << "hidden _event_t tmpQItem;" << std::endl;
 	} else {
 		stream << "unsigned _event : " << BIT_WIDTH(_analyzer.getEvents().size() + 1) << ";                /* current event */" << std::endl;
 		stream << "unsigned s : " << BIT_WIDTH(_globalConf.size() + 1) << ";            /* current state */" << std::endl;
-		stream << "chan iQ   = [" << MSG_QUEUE_LENGTH << "] of {int}  /* internal queue */" << std::endl;
-		stream << "chan eQ   = [" << MSG_QUEUE_LENGTH << "] of {int}  /* external queue */" << std::endl;
-		stream << "chan tmpQ = [" << MSG_QUEUE_LENGTH << "] of {int}  /* temporary queue for external events in transitions */" << std::endl;
+		stream << "chan iQ   = [" << MAX(_internalQueueLength, 1) << "] of {int}  /* internal queue */" << std::endl;
+		stream << "chan eQ   = [" << _externalQueueLength + 1 << "] of {int}  /* external queue */" << std::endl;
+		stream << "chan tmpQ = [" << MAX(_externalQueueLength, 1) << "] of {int}  /* temporary queue for external events in transitions */" << std::endl;
 		stream << "hidden unsigned tmpQItem : " << BIT_WIDTH(_analyzer.getEvents().size() + 1) << ";" << std::endl;
 	}
 	stream << "bool eventLess = true;       /* whether to process event-less only n this step */" << std::endl;
@@ -1873,7 +1875,10 @@ void ChartToPromela::writeMain(std::ostream& stream) {
 
 
 void ChartToPromela::initNodes() {
-		
+	
+	_internalQueueLength = getMinInternalQueueLength(MSG_QUEUE_LENGTH);
+	_externalQueueLength = getMinExternalQueueLength(MSG_QUEUE_LENGTH);
+
 	// get all states
 	NodeSet<std::string> states = getAllStates();
 	for (int i = 0; i < states.size(); i++) {

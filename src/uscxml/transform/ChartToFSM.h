@@ -109,6 +109,13 @@ public:
 	bool isSubset; // there is a superset to this set
 	bool hasExecutableContent;
 	
+	uint32_t eventsRaised; // internal events this transition will raise
+	uint32_t eventsSent; // external events this transition will send
+	uint32_t eventsChainRaised; // maximum number of internal events raised when taking this transition in a chain
+	uint32_t eventsChainSent; // maximum number of external events raised when taking this transition in a chain
+	
+	std::set<int> startTransitionRefs; // indices of eventful transitions that might trigger this transition
+	
 	std::set<int> transitionRefs; // indizes of constituting transitions
 	Arabica::XPath::NodeSet<std::string> getTransitions() const;
 	
@@ -170,9 +177,16 @@ protected:
 
 	void explode();
 	void getPotentialTransitionsForConf(const Arabica::XPath::NodeSet<std::string>& conf, std::map<std::string, GlobalTransition*>& outMap);
-	void labelTransitions();
+//	void labelTransitions();
 
 	void indexTransitions(const Arabica::DOM::Element<std::string>& root);
+	void annotateRaiseAndSend(const Arabica::DOM::Element<std::string>& root);
+	bool hasForeachInBetween(const Arabica::DOM::Node<std::string>& ancestor, const Arabica::DOM::Node<std::string>& child);
+	void updateRaisedAndSendChains(GlobalState* state, GlobalTransition* source, std::set<GlobalTransition*> visited);
+
+	uint32_t getMinInternalQueueLength(uint32_t defaultVal);
+	uint32_t getMinExternalQueueLength(uint32_t defaultVal);
+	
 	std::list<GlobalTransition*> sortTransitions(std::list<GlobalTransition*> list);
 
 	// we need this static as we use it in a sort function
@@ -193,6 +207,10 @@ protected:
 	size_t _lastStateIndex;
 	size_t _lastTransIndex;
 
+	size_t _maxEventSentChain;
+	size_t _maxEventRaisedChain;
+	size_t _doneEventRaiseTolerance;
+	
 	GlobalState* _start;
 	GlobalTransition* _currGlobalTransition;
 	Arabica::DOM::Document<std::string> _flatDoc;

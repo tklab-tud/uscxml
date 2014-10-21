@@ -33,6 +33,9 @@
 #undef max
 #include <limits>
 
+#define UNDECIDABLE 2147483647
+#define MIN(X,Y) ((X) < (Y) ? (X) : (Y))
+
 #define DUMP_STATS(nrTrans) \
 uint64_t now = tthread::chrono::system_clock::now(); \
 if (now - _lastTimeStamp > 1000) { \
@@ -44,6 +47,8 @@ if (now - _lastTimeStamp > 1000) { \
 	std::cerr << "S: " << _globalConf.size() << " [" << _perfStatesProcessed << "/sec]" << std::endl; \
 	std::cerr << "C: " << _perfStatesCachedTotal << " [" << _perfStatesCachedProcessed << "/sec]" << std::endl; \
 	std::cerr << "X: " << _perfStatesSkippedTotal << " [" << _perfStatesSkippedProcessed << "/sec]" << std::endl; \
+	std::cerr << _perfTransTotal << ", " << _perfTransProcessed << ", " << _globalConf.size() << ", " << _perfStatesProcessed << ", "; \
+	std::cerr <<_perfStatesCachedTotal << ", " << _perfStatesCachedProcessed << ", " << _perfStatesSkippedTotal << ", " << _perfStatesSkippedProcessed << std::endl; \
 	std::cerr << std::endl; \
 	_perfTransProcessed = 0; \
 	_perfStatesProcessed = 0; \
@@ -159,6 +164,10 @@ ChartToFSM::ChartToFSM(const Interpreter& other) {
 	_lastStateIndex = 0;
 	_lastTransIndex = 0;
 	
+	_maxEventSentChain = 0;
+	_maxEventRaisedChain = 0;
+	_doneEventRaiseTolerance = 0;
+	
 	// create a _flatDoc for the FSM
 	DOMImplementation<std::string> domFactory = Arabica::SimpleDOM::DOMImplementation<std::string>::getDOMImplementation();
 	_flatDoc = domFactory.createDocument(other.getDocument().getNamespaceURI(), "", 0);
@@ -187,9 +196,6 @@ ChartToFSM::~ChartToFSM() {
 }
 
 Document<std::string> ChartToFSM::getDocument() const {
-//	std::cerr << "######################" << std::endl;
-//	std::cerr << _flatDoc << std::endl;
-//	std::cerr << "######################" << std::endl;
 	return _flatDoc;
 }
 
@@ -265,8 +271,11 @@ InterpreterState ChartToFSM::interpret() {
 		_scxml.appendChild(initialElem);
 		initialTransitions.push_back(transitionElem);
 	}
-	labelTransitions();
-//	weightTransitions();
+	
+	annotateRaiseAndSend(_scxml);
+	
+//	std::cout << _scxml << std::endl;
+	
 	indexTransitions(_scxml);
 
 	// reverse indices for most prior to be in front
@@ -294,6 +303,12 @@ InterpreterState ChartToFSM::interpret() {
 	indexedStates.resize(allStates.size());
 	for (int i = 0; i < allStates.size(); i++) {
 		Element<std::string> state = Element<std::string>(allStates[i]);
+
+		// while we are iterating, determine deepest nested level
+		size_t nrAncs = getProperAncestors(state, _scxml).size();
+		if (_doneEventRaiseTolerance < nrAncs)
+			_doneEventRaiseTolerance  = nrAncs;
+
 		state.setAttribute("index", toStr(i));
 		indexedStates[i] = state;
 	}
@@ -322,19 +337,9 @@ InterpreterState ChartToFSM::interpret() {
 	std::cerr << _globalConf.size() << std::endl;
 #endif
 
-
-	NodeSet<std::string> elements = InterpreterImpl::filterChildType(Node_base::ELEMENT_NODE, _scxml, true);
-	uint64_t nrStates = 0;
-	for (int i = 0; i < elements.size(); i++) {
-		Element<std::string> elem = Element<std::string>(elements[i]);
-		if (isState(elem) && !HAS_ATTR(elem, "transient"))
-			nrStates++;
-		if (elem.getLocalName() == "transition" && elem.hasAttribute("id")) {
-			elem.removeAttribute("id");
-		}
-	}
-
-	std::cerr << "Actual Complexity: " << nrStates << std::endl;
+	std::cerr << "Actual Complexity: " << _globalConf.size() << std::endl;
+	std::cerr << "Internal Queue: " << _maxEventRaisedChain << std::endl;
+	std::cerr << "External Queue: " << _maxEventSentChain << std::endl;
 	return _state;
 }
 
@@ -356,6 +361,19 @@ void ChartToFSM::executeContent(const Arabica::DOM::Element<std::string>& conten
 	} else { // e.g. global script elements
 		return;
 	}
+	assert(content.hasAttribute("raise") && content.hasAttribute("send"));
+
+	std::string raiseAttr = content.getAttribute("raise");
+	std::string sendAttr = content.getAttribute("send");
+	
+	_currGlobalTransition->eventsRaised = (raiseAttr == "-1" ? UNDECIDABLE : _currGlobalTransition->eventsRaised + strTo<uint32_t>(raiseAttr));
+	_currGlobalTransition->eventsSent = (sendAttr == "-1" ? UNDECIDABLE : _currGlobalTransition->eventsSent + strTo<uint32_t>(sendAttr));
+	
+	if (_currGlobalTransition->eventsRaised > _maxEventRaisedChain)
+		_maxEventRaisedChain = _currGlobalTransition->eventsRaised;
+	if (_currGlobalTransition->eventsSent > _maxEventSentChain)
+		_maxEventSentChain = _currGlobalTransition->eventsSent;
+
 	_currGlobalTransition->actions.push_back(action);
 	_currGlobalTransition->hasExecutableContent = true;
 }
@@ -375,8 +393,9 @@ void ChartToFSM::cancelInvoke(const Arabica::DOM::Element<std::string>& element)
 }
 
 void ChartToFSM::internalDoneSend(const Arabica::DOM::Element<std::string>& state) {
+	if (!isState(state))
+		return;
 
-	Arabica::DOM::Element<std::string> stateElem = (Arabica::DOM::Element<std::string>)state;
 	if (parentIsScxmlState(state))
 		return;
 
@@ -391,7 +410,7 @@ void ChartToFSM::internalDoneSend(const Arabica::DOM::Element<std::string>& stat
 
 	onentry.appendChild(raise);
 
-	Arabica::XPath::NodeSet<std::string> doneDatas = filterChildElements(_nsInfo.xmlNSPrefix + "donedata", stateElem);
+	Arabica::XPath::NodeSet<std::string> doneDatas = filterChildElements(_nsInfo.xmlNSPrefix + "donedata", state);
 	if (doneDatas.size() > 0) {
 		Arabica::DOM::Node<std::string> doneData = doneDatas[0];
 		Arabica::XPath::NodeSet<std::string> contents = filterChildElements(_nsInfo.xmlNSPrefix + "content", doneDatas[0]);
@@ -406,12 +425,13 @@ void ChartToFSM::internalDoneSend(const Arabica::DOM::Element<std::string>& stat
 		}
 	}
 
-	raise.setAttribute("event", "done.state." + ATTR_CAST(stateElem.getParentNode(), "id")); // parent?!
+	raise.setAttribute("event", "done.state." + ATTR_CAST(state.getParentNode(), "id")); // parent?!
 
 	GlobalTransition::Action action;
 	action.onEntry = onentry;
 
 	_currGlobalTransition->actions.push_back(action);
+	_currGlobalTransition->eventsRaised++;
 	_currGlobalTransition->hasExecutableContent = true;
 
 }
@@ -481,11 +501,65 @@ static bool filterChildEnabled(const NodeSet<std::string>& transitions) {
 	return true;
 }
 
+bool ChartToFSM::hasForeachInBetween(const Arabica::DOM::Node<std::string>& ancestor, const Arabica::DOM::Node<std::string>& child) {
+	if (!ancestor || !child)
+		return false;
+	
+	Node<std::string> currChild = child;
+	while(currChild != ancestor) {
+		if (!currChild.getParentNode())
+			return false;
+		if (TAGNAME_CAST(currChild) == "foreach")
+			return true;
+		currChild = currChild.getParentNode();
+	}
+	return false;
+}
+
+void ChartToFSM::annotateRaiseAndSend(const Arabica::DOM::Element<std::string>& root) {
+	NodeSet<std::string> execContent;
+	execContent.push_back(filterChildElements(_nsInfo.xmlNSPrefix + "transition", _scxml, true));
+	execContent.push_back(filterChildElements(_nsInfo.xmlNSPrefix + "onentry", _scxml, true));
+	execContent.push_back(filterChildElements(_nsInfo.xmlNSPrefix + "onexit", _scxml, true));
+	for (int i = 0; i < execContent.size(); i++) {
+		Element<std::string> execContentElem(execContent[i]);
+
+		int nrRaise = 0;
+		NodeSet<std::string> raise = filterChildElements(_nsInfo.xmlNSPrefix + "raise", execContent[i], true);
+		for (int j = 0; j < raise.size(); j++) {
+			if (hasForeachInBetween(execContent[i], raise[j])) {
+				execContentElem.setAttribute("raise", "-1");
+				goto DONE_COUNT_RAISE;
+			} else {
+				nrRaise++;
+			}
+		}
+		execContentElem.setAttribute("raise", toStr(nrRaise));
+
+	DONE_COUNT_RAISE:
+		
+		int nrSend = 0;
+		NodeSet<std::string> sends = filterChildElements(_nsInfo.xmlNSPrefix + "send", execContent[i], true);
+		for (int j = 0; j < sends.size(); j++) {
+			if (hasForeachInBetween(execContent[i], sends[j])) {
+				execContentElem.setAttribute("send", "-1");
+				goto DONE_COUNT_SEND;
+			} else {
+				nrSend++;
+			}
+		}
+		execContentElem.setAttribute("send", toStr(nrSend));
+
+	DONE_COUNT_SEND:
+		;
+	}
+}
 
 void ChartToFSM::indexTransitions(const Arabica::DOM::Element<std::string>& root) {
 	// breadth first traversal of transitions
 	Arabica::XPath::NodeSet<std::string> levelTransitions = filterChildElements(_nsInfo.xmlNSPrefix + "transition", root);
 	for (int i = levelTransitions.size() - 1; i >= 0; i--) {
+		// push into index starting with least prior
 		indexedTransitions.push_back(Element<std::string>(levelTransitions[i]));
 	}
 
@@ -495,7 +569,6 @@ void ChartToFSM::indexTransitions(const Arabica::DOM::Element<std::string>& root
 		if (isState(stateElem))
 			indexTransitions(stateElem);
 	}
-
 }
 
 bool GlobalTransition::operator< (const GlobalTransition& other) const {
@@ -681,8 +754,8 @@ void ChartToFSM::getPotentialTransitionsForConf(const Arabica::XPath::NodeSet<st
 	
 void ChartToFSM::explode() {
 
-	std::list<GlobalState*> statesRemaining;
-	statesRemaining.push_back(new GlobalState(_configuration, _alreadyEntered, _historyValue, _nsInfo.xmlNSPrefix, this));
+	std::list<std::pair<GlobalTransition*, GlobalState*> > statesRemaining;
+	statesRemaining.push_back(std::make_pair(_currGlobalTransition, new GlobalState(_configuration, _alreadyEntered, _historyValue, _nsInfo.xmlNSPrefix, this)));
 	
 	// add all invokers for initial transition
 	for (unsigned int i = 0; i < _statesToInvoke.size(); i++) {
@@ -701,13 +774,18 @@ void ChartToFSM::explode() {
 	while(statesRemaining.size() > 0) {
 		DUMP_STATS(0);
 		
-		GlobalState* globalState = statesRemaining.front();
+		GlobalState* globalState = statesRemaining.front().second;
+		_currGlobalTransition = statesRemaining.front().first;
 		statesRemaining.pop_front();
 		
-		// used to be conditionalized, we will just assum
+		// used to be conditionalized, we will just assume
 		assert(_currGlobalTransition);
 
 		if (_globalConf.find(globalState->stateId) != _globalConf.end()) {
+			if (_currGlobalTransition->isEventless) {
+				// we arrived via a spontaneaous transition, do we need to update?
+				updateRaisedAndSendChains(_globalConf[globalState->stateId], _currGlobalTransition, std::set<GlobalTransition*>());
+			}
 			delete globalState;
 			_perfStatesSkippedTotal++;
 			_perfStatesSkippedProcessed++;
@@ -759,16 +837,32 @@ void ChartToFSM::explode() {
 			_transPerActiveConf[globalState->activeId] = globalState;
 		}
 		
-		// append resulting new states
-		for(std::list<GlobalTransition*>::iterator transListIter = globalState->sortedOutgoing.begin();
-				transListIter != globalState->sortedOutgoing.end();
-				transListIter++) {
+		// take every transition set and append resulting new state
+		for(std::list<GlobalTransition*>::iterator transIter = globalState->sortedOutgoing.begin();
+				transIter != globalState->sortedOutgoing.end();
+				transIter++) {
 			
-			(*transListIter)->source = globalState->stateId;
-			_currGlobalTransition = *transListIter;
+			GlobalTransition* incomingTrans = _currGlobalTransition;
+			GlobalTransition* outgoingTrans = *transIter;
+			
+			outgoingTrans->source = globalState->stateId;
+			_currGlobalTransition = outgoingTrans;
 
-			microstep(refsToTransitions((*transListIter)->transitionRefs));
-			statesRemaining.push_back(new GlobalState(_configuration, _alreadyEntered, _historyValue, _nsInfo.xmlNSPrefix, this));
+			microstep(refsToTransitions(outgoingTrans->transitionRefs));
+
+			// if outgoing transition is spontaneous, add number of events to chain
+			if (outgoingTrans->isEventless) {
+				outgoingTrans->eventsChainRaised = MIN(incomingTrans->eventsChainRaised + outgoingTrans->eventsRaised, UNDECIDABLE);
+				outgoingTrans->eventsChainSent = MIN(incomingTrans->eventsChainSent + outgoingTrans->eventsSent, UNDECIDABLE);
+
+				if (outgoingTrans->eventsChainRaised > _maxEventRaisedChain)
+					_maxEventRaisedChain = outgoingTrans->eventsChainRaised;
+				if (outgoingTrans->eventsChainSent > _maxEventSentChain)
+					_maxEventSentChain = outgoingTrans->eventsChainSent;
+
+			}
+
+			statesRemaining.push_back(std::make_pair(outgoingTrans, new GlobalState(_configuration, _alreadyEntered, _historyValue, _nsInfo.xmlNSPrefix, this)));
 			
 			// add all invokers
 			for (unsigned int i = 0; i < _statesToInvoke.size(); i++) {
@@ -780,7 +874,7 @@ void ChartToFSM::explode() {
 			_statesToInvoke = NodeSet<std::string>();
 
 			// remember that the last transition lead here
-			(*transListIter)->destination = statesRemaining.back()->stateId;
+			outgoingTrans->destination = statesRemaining.back().second->stateId;
 
 			// reset state for next transition set
 			_configuration = globalState->getActiveStates();
@@ -789,6 +883,69 @@ void ChartToFSM::explode() {
 		}
 	}
 
+}
+
+void ChartToFSM::updateRaisedAndSendChains(GlobalState* state, GlobalTransition* source, std::set<GlobalTransition*> visited) {
+	for (std::list<GlobalTransition*>::iterator transIter = state->sortedOutgoing.begin(); transIter != state->sortedOutgoing.end(); transIter++) {
+		GlobalTransition* transition = *transIter;
+		
+		if (!transition->isEventless)
+			continue; // we do not care for eventful transitions
+		
+		// source leads to spontaneous transition -> update event chains
+		bool eventChainsNeedUpdated = false;
+		
+		if (visited.find(transition) != visited.end()) {
+			// potential spontaneous transition cycle!
+			if (transition->eventsChainRaised > 0)
+				_maxEventRaisedChain = UNDECIDABLE;
+			if (transition->eventsChainSent > 0)
+				_maxEventSentChain = UNDECIDABLE;
+			return;
+		}
+		
+		// UNDECIDABLE means "undecidable / endless"
+		
+		// will source increase our event chain?
+		if (transition->eventsChainRaised != UNDECIDABLE &&
+				transition->eventsChainRaised < source->eventsChainRaised + transition->eventsRaised) {
+			// taking transition after source causes more events in chain
+			transition->eventsChainRaised = MIN(source->eventsChainRaised + transition->eventsRaised, UNDECIDABLE);
+			eventChainsNeedUpdated = true;
+		}
+		if (transition->eventsChainSent != UNDECIDABLE &&
+				transition->eventsChainSent < source->eventsChainSent + transition->eventsSent) {
+			// taking transition after source causes more events in chain
+			transition->eventsChainSent = MIN(source->eventsChainSent + transition->eventsSent, UNDECIDABLE);
+			eventChainsNeedUpdated = true;
+		}
+
+		if (eventChainsNeedUpdated &&
+				transition->destination.length() > 0 &&
+				_globalConf.find(transition->destination) != _globalConf.end()) {
+
+			visited.insert(transition);
+			// iterate all spontaneous transitions in destination and update event chains
+			updateRaisedAndSendChains(_globalConf[transition->destination], transition, visited);
+		}
+		
+		if (transition->eventsChainRaised > _maxEventRaisedChain)
+			_maxEventRaisedChain = transition->eventsChainRaised;
+		if (transition->eventsChainSent > _maxEventSentChain)
+			_maxEventSentChain = transition->eventsChainSent;
+	}
+}
+
+uint32_t ChartToFSM::getMinInternalQueueLength(uint32_t defaultVal) {
+	if (_maxEventRaisedChain != UNDECIDABLE)
+		return _maxEventRaisedChain + _doneEventRaiseTolerance;
+	return defaultVal;
+}
+
+uint32_t ChartToFSM::getMinExternalQueueLength(uint32_t defaultVal) {
+	if (_maxEventSentChain != UNDECIDABLE)
+		return _maxEventSentChain;
+	return defaultVal;
 }
 
 Arabica::XPath::NodeSet<std::string> ChartToFSM::refsToStates(const std::set<int>& stateRefs) {
@@ -807,7 +964,7 @@ Arabica::XPath::NodeSet<std::string> ChartToFSM::refsToTransitions(const std::se
 	return transitions;
 }
 
-
+#if 0
 void ChartToFSM::labelTransitions() {
 	// put a unique id on each transition
 	Arabica::XPath::NodeSet<std::string> states = getAllStates();
@@ -825,7 +982,8 @@ void ChartToFSM::labelTransitions() {
 		}
 	}
 }
-
+#endif
+	
 void ChartToFSM::beforeMicroStep(Interpreter interpreter) {
 }
 void ChartToFSM::onStableConfiguration(Interpreter interpreter) {
@@ -884,6 +1042,11 @@ GlobalState::GlobalState(const Arabica::XPath::NodeSet<std::string>& activeState
 
 GlobalTransition::GlobalTransition(const Arabica::XPath::NodeSet<std::string>& transitionSet, DataModel dataModel, ChartToFSM* flattener) {
 	interpreter = flattener;
+	
+	eventsRaised = 0;
+	eventsSent = 0;
+	eventsChainRaised = 0;
+	eventsChainSent = 0;
 	
 	for (int i = 0; i < transitionSet.size(); i++) {
 		transitionRefs.insert(strTo<int>(ATTR_CAST(transitionSet[i], "index")));

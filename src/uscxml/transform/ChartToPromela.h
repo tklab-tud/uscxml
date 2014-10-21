@@ -252,7 +252,7 @@ protected:
 	static PromelaInlines getInlinePromela(const std::string&);
 	static PromelaInlines getInlinePromela(const Arabica::XPath::NodeSet<std::string>& elements, bool recurse = false);
 	static PromelaInlines getInlinePromela(const Arabica::DOM::Node<std::string>& elements);
-
+	
 	static std::string declForRange(const std::string& identifier, long minValue, long maxValue, bool nativeOnly = false);
 	
 //	std::string replaceStringsInExpression(const std::string& expr);
@@ -268,6 +268,9 @@ protected:
 
 	PromelaCodeAnalyzer _analyzer;
 
+	uint32_t _externalQueueLength;
+	uint32_t _internalQueueLength;
+	
 	std::map<std::string, PromelaEventSource> _invokers;
 	PromelaEventSource _globalEventSource;
 	
