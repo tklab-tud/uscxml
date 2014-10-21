@@ -207,6 +207,7 @@ protected:
 	size_t _lastStateIndex;
 	size_t _lastTransIndex;
 
+	bool _skipEventChainCalculations;
 	size_t _maxEventSentChain;
 	size_t _maxEventRaisedChain;
 	size_t _doneEventRaiseTolerance;

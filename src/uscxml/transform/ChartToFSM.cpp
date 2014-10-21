@@ -47,8 +47,9 @@ if (now - _lastTimeStamp > 1000) { \
 	std::cerr << "S: " << _globalConf.size() << " [" << _perfStatesProcessed << "/sec]" << std::endl; \
 	std::cerr << "C: " << _perfStatesCachedTotal << " [" << _perfStatesCachedProcessed << "/sec]" << std::endl; \
 	std::cerr << "X: " << _perfStatesSkippedTotal << " [" << _perfStatesSkippedProcessed << "/sec]" << std::endl; \
-	std::cerr << _perfTransTotal << ", " << _perfTransProcessed << ", " << _globalConf.size() << ", " << _perfStatesProcessed << ", "; \
-	std::cerr <<_perfStatesCachedTotal << ", " << _perfStatesCachedProcessed << ", " << _perfStatesSkippedTotal << ", " << _perfStatesSkippedProcessed << std::endl; \
+	std::cerr << "Q: " << (_maxEventRaisedChain == UNDECIDABLE ? "UNK" : toStr(_maxEventRaisedChain)) << " / " << (_maxEventSentChain == UNDECIDABLE ? "UNK" : toStr(_maxEventSentChain)) << std::endl; \
+	std::cerr << _perfTransTotal << ", " << _perfTransProcessed << ", " << _globalConf.size() << ", " << _perfStatesProcessed << ", " << _perfStatesCachedTotal << ", " << _perfStatesCachedProcessed << ", "; \
+	std::cerr  << _perfStatesSkippedTotal << ", " << _perfStatesSkippedProcessed << ", " << _maxEventRaisedChain << ", " << _maxEventSentChain << std::endl; \
 	std::cerr << std::endl; \
 	_perfTransProcessed = 0; \
 	_perfStatesProcessed = 0; \
@@ -57,6 +58,7 @@ if (now - _lastTimeStamp > 1000) { \
 	_lastTimeStamp = now; \
 }
 
+//std::cerr << "Q: " << (_maxEventRaisedChain == UNDECIDABLE ? "UNK" : toStr(_maxEventRaisedChain)) << " / " << (_maxEventSentChain == UNDECIDABLE ? "UNK" : toStr(_maxEventSentChain)) << std::endl;
 
 #define DUMP_TRANSSET(where) \
 {\
@@ -167,6 +169,7 @@ ChartToFSM::ChartToFSM(const Interpreter& other) {
 	_maxEventSentChain = 0;
 	_maxEventRaisedChain = 0;
 	_doneEventRaiseTolerance = 0;
+	_skipEventChainCalculations = false;
 	
 	// create a _flatDoc for the FSM
 	DOMImplementation<std::string> domFactory = Arabica::SimpleDOM::DOMImplementation<std::string>::getDOMImplementation();
@@ -207,6 +210,11 @@ InterpreterState ChartToFSM::interpret() {
 	uint64_t complexity = Complexity::stateMachineComplexity(_scxml) + 1;
 	std::cerr << "Approximate Complexity: " << complexity << std::endl;
 
+	if (complexity > 1000 && false) {
+		_skipEventChainCalculations = true;
+		_maxEventRaisedChain = UNDECIDABLE;
+		_maxEventSentChain = UNDECIDABLE;
+	}
 	// initialize the datamodel
 	std::string datamodelName;
 	if (datamodelName.length() == 0 && HAS_ATTR(_scxml, "datamodel"))
@@ -272,7 +280,8 @@ InterpreterState ChartToFSM::interpret() {
 		initialTransitions.push_back(transitionElem);
 	}
 	
-	annotateRaiseAndSend(_scxml);
+	if (!_skipEventChainCalculations)
+		annotateRaiseAndSend(_scxml);
 	
 //	std::cout << _scxml << std::endl;
 	
@@ -361,19 +370,23 @@ void ChartToFSM::executeContent(const Arabica::DOM::Element<std::string>& conten
 	} else { // e.g. global script elements
 		return;
 	}
-	assert(content.hasAttribute("raise") && content.hasAttribute("send"));
 
-	std::string raiseAttr = content.getAttribute("raise");
-	std::string sendAttr = content.getAttribute("send");
-	
-	_currGlobalTransition->eventsRaised = (raiseAttr == "-1" ? UNDECIDABLE : _currGlobalTransition->eventsRaised + strTo<uint32_t>(raiseAttr));
-	_currGlobalTransition->eventsSent = (sendAttr == "-1" ? UNDECIDABLE : _currGlobalTransition->eventsSent + strTo<uint32_t>(sendAttr));
-	
-	if (_currGlobalTransition->eventsRaised > _maxEventRaisedChain)
-		_maxEventRaisedChain = _currGlobalTransition->eventsRaised;
-	if (_currGlobalTransition->eventsSent > _maxEventSentChain)
-		_maxEventSentChain = _currGlobalTransition->eventsSent;
+	if (!_skipEventChainCalculations &&
+			(_maxEventRaisedChain == UNDECIDABLE || _maxEventSentChain == UNDECIDABLE)) {
+		assert(content.hasAttribute("raise") && content.hasAttribute("send"));
 
+		std::string raiseAttr = content.getAttribute("raise");
+		std::string sendAttr = content.getAttribute("send");
+		
+		_currGlobalTransition->eventsRaised = (raiseAttr == "-1" ? UNDECIDABLE : _currGlobalTransition->eventsRaised + strTo<uint32_t>(raiseAttr));
+		_currGlobalTransition->eventsSent = (sendAttr == "-1" ? UNDECIDABLE : _currGlobalTransition->eventsSent + strTo<uint32_t>(sendAttr));
+		
+		if (_currGlobalTransition->eventsRaised > _maxEventRaisedChain)
+			_maxEventRaisedChain = _currGlobalTransition->eventsRaised;
+		if (_currGlobalTransition->eventsSent > _maxEventSentChain)
+			_maxEventSentChain = _currGlobalTransition->eventsSent;
+	}
+	
 	_currGlobalTransition->actions.push_back(action);
 	_currGlobalTransition->hasExecutableContent = true;
 }
@@ -431,7 +444,9 @@ void ChartToFSM::internalDoneSend(const Arabica::DOM::Element<std::string>& stat
 	action.onEntry = onentry;
 
 	_currGlobalTransition->actions.push_back(action);
-	_currGlobalTransition->eventsRaised++;
+	if (!_skipEventChainCalculations &&
+			(_maxEventRaisedChain == UNDECIDABLE || _maxEventSentChain == UNDECIDABLE))
+		_currGlobalTransition->eventsRaised++;
 	_currGlobalTransition->hasExecutableContent = true;
 
 }
@@ -782,7 +797,9 @@ void ChartToFSM::explode() {
 		assert(_currGlobalTransition);
 
 		if (_globalConf.find(globalState->stateId) != _globalConf.end()) {
-			if (_currGlobalTransition->isEventless) {
+			if (_currGlobalTransition->isEventless &&
+					!_skipEventChainCalculations &&
+					(_maxEventRaisedChain == UNDECIDABLE || _maxEventSentChain == UNDECIDABLE)) {
 				// we arrived via a spontaneaous transition, do we need to update?
 				updateRaisedAndSendChains(_globalConf[globalState->stateId], _currGlobalTransition, std::set<GlobalTransition*>());
 			}
@@ -851,7 +868,9 @@ void ChartToFSM::explode() {
 			microstep(refsToTransitions(outgoingTrans->transitionRefs));
 
 			// if outgoing transition is spontaneous, add number of events to chain
-			if (outgoingTrans->isEventless) {
+			if (outgoingTrans->isEventless &&
+					!_skipEventChainCalculations &&
+					(_maxEventRaisedChain == UNDECIDABLE || _maxEventSentChain == UNDECIDABLE)) {
 				outgoingTrans->eventsChainRaised = MIN(incomingTrans->eventsChainRaised + outgoingTrans->eventsRaised, UNDECIDABLE);
 				outgoingTrans->eventsChainSent = MIN(incomingTrans->eventsChainSent + outgoingTrans->eventsSent, UNDECIDABLE);
 
