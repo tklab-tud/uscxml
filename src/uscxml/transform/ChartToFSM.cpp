@@ -39,24 +39,27 @@
 #define DUMP_STATS(nrTrans) \
 uint64_t now = tthread::chrono::system_clock::now(); \
 if (now - _lastTimeStamp > 1000) { \
-	std::cerr << "T: " << _perfTransTotal << " [" << _perfTransProcessed << "/sec]"; \
+	std::cerr << "## Transition: " << _perfTransUsed << " / " << _perfTransTotal << " [" << _perfTransProcessed << "/sec]"; \
 	if (nrTrans > 0) { \
 		std::cerr << " - 2**" << nrTrans << " = " << pow(2.0, static_cast<double>(nrTrans)); \
 	} \
 	std::cerr << std::endl; \
-	std::cerr << "S: " << _globalConf.size() << " [" << _perfStatesProcessed << "/sec]" << std::endl; \
-	std::cerr << "C: " << _perfStatesCachedTotal << " [" << _perfStatesCachedProcessed << "/sec]" << std::endl; \
-	std::cerr << "X: " << _perfStatesSkippedTotal << " [" << _perfStatesSkippedProcessed << "/sec]" << std::endl; \
-	std::cerr << "Q: " << (_maxEventRaisedChain == UNDECIDABLE ? "UNK" : toStr(_maxEventRaisedChain)) << " / " << (_maxEventSentChain == UNDECIDABLE ? "UNK" : toStr(_maxEventSentChain)) << std::endl; \
-	std::cerr << _perfTransTotal << ", " << _perfTransProcessed << ", " << _globalConf.size() << ", " << _perfStatesProcessed << ", " << _perfStatesCachedTotal << ", " << _perfStatesCachedProcessed << ", "; \
-	std::cerr  << _perfStatesSkippedTotal << ", " << _perfStatesSkippedProcessed << ", "; \
-	std::cerr << (_maxEventRaisedChain == UNDECIDABLE ? "UNK" : toStr(_maxEventRaisedChain)) << ", "; \
-	std::cerr << (_maxEventSentChain == UNDECIDABLE ? "UNK" : toStr(_maxEventSentChain)) << std::endl; \
+	std::cerr << "## State     : " << _globalConf.size() << " [" << _perfStatesProcessed << "/sec]" << std::endl; \
+	std::cerr << "## Microstep : " << _perfMicroStepTotal << " [" << _perfMicroStepProcessed << "/sec]" << std::endl; \
+	std::cerr << "## Cached    : " << _perfStatesCachedTotal << " [" << _perfStatesCachedProcessed << "/sec]" << std::endl; \
+	std::cerr << "## Skipped   : " << _perfStatesSkippedTotal << " [" << _perfStatesSkippedProcessed << "/sec]" << std::endl; \
+	std::cerr << "## Queues    : " << (_maxEventRaisedChain == UNDECIDABLE ? "UNK" : toStr(_maxEventRaisedChain)) << " / " << (_maxEventSentChain == UNDECIDABLE ? "UNK" : toStr(_maxEventSentChain)) << std::endl; \
+	std::cerr << _perfTransUsed << ", " << _perfTransTotal << ", " << _perfTransProcessed << ", "; \
+	std::cerr << _globalConf.size() << ", " << _perfStatesProcessed << ", "; \
+	std::cerr << _perfMicroStepTotal << ", " << _perfMicroStepProcessed << ", "; \
+	std::cerr << _perfStatesCachedTotal << ", " << _perfStatesCachedProcessed << ", " << _perfStatesSkippedTotal << ", " << _perfStatesSkippedProcessed << ", "; \
+	std::cerr << (_maxEventRaisedChain == UNDECIDABLE ? "UNK" : toStr(_maxEventRaisedChain)) << ", " << (_maxEventSentChain == UNDECIDABLE ? "UNK" : toStr(_maxEventSentChain)) << std::endl; \
 	std::cerr << std::endl; \
 	_perfTransProcessed = 0; \
 	_perfStatesProcessed = 0; \
 	_perfStatesCachedProcessed = 0; \
 	_perfStatesSkippedProcessed = 0; \
+	_perfMicroStepProcessed = 0; \
 	_lastTimeStamp = now; \
 }
 
@@ -155,12 +158,15 @@ ChartToFSM::ChartToFSM(const Interpreter& other) {
 	_lastTimeStamp = tthread::chrono::system_clock::now();
 	_perfTransProcessed = 0;
 	_perfTransTotal = 0;
+	_perfTransUsed = 0;
 	_perfStatesProcessed = 0;
 	_perfStatesSkippedProcessed = 0;
 	_perfStatesSkippedTotal = 0;
 	_perfStatesCachedProcessed = 0;
 	_perfStatesCachedTotal = 0;
-	
+	_perfMicroStepProcessed = 0;
+	_perfMicroStepTotal = 0;
+
 	_start = NULL;
 	_currGlobalTransition = NULL;
 	_lastTransientStateId = 0;
@@ -360,8 +366,18 @@ void ChartToFSM::executeContent(const Arabica::DOM::Element<std::string>& conten
 
 	GlobalTransition::Action action;
 
+	NodeList<std::string> childs = content.getChildNodes();
+	for (unsigned int i = 0; i < childs.getLength(); i++) {
+		Node_base::Type type = childs.item(i).getNodeType();
+		if (type == Node_base::ELEMENT_NODE || type == Node_base::COMMENT_NODE || type == Node_base::TEXT_NODE) {
+			goto HAS_VALID_CHILDREN;
+		}
+	}
+	return;
+	
+HAS_VALID_CHILDREN:
 	if (false) {
-	} else if (TAGNAME(content) == "transition" && content.hasChildNodes()) {
+	} else if (TAGNAME(content) == "transition") {
 		action.transition = content;
 	} else if (TAGNAME(content) == "onexit") {
 		action.onExit = content;
@@ -753,7 +769,6 @@ void ChartToFSM::getPotentialTransitionsForConf(const Arabica::XPath::NodeSet<st
 			delete transition;
 			continue;
 		}
-		transition->index = _lastTransIndex++;
 
 		// two combinations might have projected onto the same conflict-free set
 		if (outMap.find(transition->transitionId) != outMap.end()) {
@@ -761,6 +776,9 @@ void ChartToFSM::getPotentialTransitionsForConf(const Arabica::XPath::NodeSet<st
 			delete transition;
 			continue;
 		}
+
+		transition->index = _lastTransIndex++;
+		_perfTransUsed++;
 		
 		// remember this conflict-free set
 		//		std::cerr << "New conflict-free subset: " << transition->transitionId << ":" << transition->eventDesc << std::endl;
@@ -830,6 +848,7 @@ void ChartToFSM::explode() {
 			while(sortTransIter != _transPerActiveConf[globalState->activeId]->sortedOutgoing.end()) {
 				globalState->sortedOutgoing.push_back(new GlobalTransition(**sortTransIter)); // copy constructor
 				globalState->sortedOutgoing.back()->index = _lastTransIndex++;
+				_perfTransUsed++;
 				sortTransIter++;
 			}
 			_perfStatesCachedTotal++;
@@ -868,6 +887,10 @@ void ChartToFSM::explode() {
 			_currGlobalTransition = outgoingTrans;
 
 			microstep(refsToTransitions(outgoingTrans->transitionRefs));
+			assert(isLegalConfiguration(_configuration));
+			
+			_perfMicroStepProcessed++;
+			_perfMicroStepTotal++;
 
 			// if outgoing transition is spontaneous, add number of events to chain
 			if (outgoingTrans->isEventless &&

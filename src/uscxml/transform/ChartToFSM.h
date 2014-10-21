@@ -196,11 +196,14 @@ protected:
 
 	uint64_t _perfTransProcessed;
 	uint64_t _perfTransTotal;
+	uint64_t _perfTransUsed;
 	uint64_t _perfStatesProcessed;
 	uint64_t _perfStatesSkippedProcessed;
 	uint64_t _perfStatesSkippedTotal;
 	uint64_t _perfStatesCachedProcessed;
 	uint64_t _perfStatesCachedTotal;
+	uint64_t _perfMicroStepProcessed;
+	uint64_t _perfMicroStepTotal;
 	uint64_t _lastTimeStamp;
 
 	size_t _lastTransientStateId;

@@ -279,8 +279,8 @@ void PromelaCodeAnalyzer::addCode(const std::string& code) {
 						// break fall through from ASGN
 						break;
 					}
-					node->dump();
-					assert(false);
+//					node->dump();
+//					assert(false);
 					break;
 				}
 
@@ -1664,12 +1664,14 @@ void ChartToPromela::writeFSM(std::ostream& stream) {
 	// write initial transition
 //	transitions = filterChildElements(_nsInfo.xmlNSPrefix + "transition", _startState);
 //	assert(transitions.size() == 1);
-	stream << "  /* transition's executable content */" << std::endl;
 
+	stream << "  /* transition to initial state */" << std::endl;
 	assert(_start->sortedOutgoing.size() == 1);
 	// initial transition has to be first one for control flow at start
 	writeTransition(stream, _start->sortedOutgoing.front(), 1);
+	stream << std::endl;
 	
+	stream << "  /* transition's executable content */" << std::endl;
 	// every other transition
 	for (std::map<std::string, GlobalState*>::iterator stateIter = _globalConf.begin(); stateIter != _globalConf.end(); stateIter++) {
 		for (std::list<GlobalTransition*>::iterator transIter = stateIter->second->sortedOutgoing.begin(); transIter != stateIter->second->sortedOutgoing.end(); transIter++) {
@@ -1886,7 +1888,7 @@ void ChartToPromela::initNodes() {
 			continue;
 		Element<std::string> stateElem(states[i]);
 		_analyzer.addOrigState(ATTR(stateElem, "id"));
-		if (isCompound(stateElem) || isParallel(stateElem)) {
+		if ((isCompound(stateElem) || isParallel(stateElem)) && !parentIsScxmlState(stateElem)) {
 			_analyzer.addEvent("done.state." + ATTR(stateElem, "id"));
 		}
 	}
