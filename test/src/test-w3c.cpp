@@ -107,10 +107,10 @@ int main(int argc, char** argv) {
 			exit(EXIT_FAILURE);
 		}
 
-		HTTPServer::getInstance(32954, 32955, NULL); // bind to some random tcp sockets for ioprocessor tests
-
 		google::InitGoogleLogging(argv[0]);
 		google::LogToStderr();
+
+		HTTPServer::getInstance(32954, 32955, NULL); // bind to some random tcp sockets for ioprocessor tests
 
 		char* dfEnv = getenv("USCXML_DELAY_FACTOR");
 		if (dfEnv) {
