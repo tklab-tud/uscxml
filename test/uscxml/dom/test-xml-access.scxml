@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<scxml datamodel="ecmascript">
+	<script src="http://uscxml.tk.informatik.tu-darmstadt.de/scripts/dump.js"/>
+	<datamodel>
+		<data id="cmplx1" src="TestData.json"/>
+		<data id="cmplx2" src="TestData.xml"/>
+	</datamodel>
+	<state id="s1">
+		<onentry>
+			<log label="cmplx1" expr="cmplx1.name"/>
+			<log label="cmplx1" expr="cmplx1.price"/>
+			<script>dump(cmplx1)</script>
+
+			<log label="cmplx2" expr="cmplx2.getAttribute('importance')"/>
+			<script>
+				var node = document.evaluate('//to', cmplx2).asString();
+				dump(node);
+			</script>
+		</onentry>
+		<transition target="done"/>
+	</state>
+	<final id="done"/>
+</scxml>
