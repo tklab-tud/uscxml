@@ -58,10 +58,10 @@ public class TestDataModelAccess {
 			"  </datamodel>" +
 			"  <state id=\"s1\">" +
 			"    <onentry>" +
-			"      <!-- BUG script>" +
+			"      <script>" +
 			"        var node = document.evaluate('//to', cmplx2);" +
-			"        dump(node);" +
-			"      </script -->" +
+			"        dump(node.asString());" +
+			"      </script>" +
 			"      <log label=\"cmplx1\" expr=\"cmplx1.name\" />" +
 	        "      <log label=\"cmplx1\" expr=\"cmplx1.price\" />" +
 	        "      <script>dump(cmplx1)</script>" +
