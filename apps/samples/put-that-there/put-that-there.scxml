@@ -34,7 +34,7 @@
 		<state id="main">
 			
 			<transition event="http" target="main" type="internal" 
-				cond="_event.data.path	Component[1] === 'basichttp' &amp;&amp; 
+				cond="_event.data.pathComponent[1] === 'basichttp' &amp;&amp; 
 							_event.data.pathComponent[2] === 'query'" >
 				<!-- a request for /ptt/basichttp/query -->
 				<script>dump(_event);</script>
