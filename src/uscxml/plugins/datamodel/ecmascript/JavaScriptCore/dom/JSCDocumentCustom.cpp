@@ -24,6 +24,7 @@
 #include "JSCXPathResult.h"
 #include "JSCNode.h"
 #include <XPath/XPath.hpp>
+#include <DOM/io/Stream.hpp>
 
 namespace Arabica {
 namespace DOM {
@@ -93,7 +94,13 @@ JSValueRef JSCDocument::evaluateCustomCallback(JSContextRef ctx, JSObjectRef fun
 				return JSValueMakeUndefined(ctx);
 			}
 
-			Arabica::DOM::Node<std::string>* localContextNode = (Arabica::DOM::Node<std::string>*)JSObjectGetPrivate(JSValueToObject(ctx, arguments[1], NULL));
+//			Arabica::DOM::Node<std::string>* localContextNode = (Arabica::DOM::Node<std::string>*)JSObjectGetPrivate(JSValueToObject(ctx, arguments[1], NULL));
+			JSCNode::JSCNodePrivate* otherNodePrivate = (JSCNode::JSCNodePrivate*)JSObjectGetPrivate(JSValueToObject(ctx, arguments[1], NULL));
+			Arabica::DOM::Node<std::string>* localContextNode = otherNodePrivate->nativeObj;
+
+//			std::cout << *localContextNode << std::endl;
+//			std::cout << ">>" << privData->dom->xpath->evaluate("//note/@importance", *localContextNode).asString() << "<<" << std::endl;
+
 			retVal = new XPath::XPathValue<std::string>(privData->dom->xpath->evaluate(localXPath, *localContextNode));
 		} else {
 			retVal = new XPath::XPathValue<std::string>(privData->dom->xpath->evaluate(localXPath, *privData->nativeObj));

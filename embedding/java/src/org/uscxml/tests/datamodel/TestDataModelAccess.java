@@ -18,18 +18,23 @@ public class TestDataModelAccess {
 			"    <data id=\"cmplx1\"><![CDATA[" +
 			"      { foo: \"bar\", baz: 12 }" +
 			"	 ]]></data>" +
+			"    <data id=\"cmplx2\">" +
+			"      <inline><xml foo=\"sdfasdf\"/></inline>" +
+			"    </data>" +
 			"  </datamodel>" +
 			"  <state id=\"s1\">" +
 			"    <onentry>" +
 	        "      <log label=\"cmplx1\" expr=\"cmplx1.foo\" />" +
 	        "      <log label=\"cmplx1\" expr=\"cmplx1.baz\" />" +
 	        "      <script>dump(cmplx1)</script>" +
-			"    </onentry>" +
+	        "" +
+	        "      <log label=\"cmplx2\" expr=\"document.evaluate('//xml/@foo').asString()\" />" +
+	        "    </onentry>" +
 			"    <transition target=\"done\" />" +		
 			"  </state>" +
 			"  <final id=\"done\" />" +
 			"</scxml>";
-	
+				
 			Interpreter interpreter = Interpreter.fromXML(xml);
 			InterpreterState state;
 			do {

@@ -59,7 +59,8 @@ v8::Handle<v8::Value> V8Document::evaluateCustomCallback(const v8::Arguments& ar
 	XPath::XPathValue<std::string>* retVal;
 	try {
 		if (args.Length() > 1) {
-			Arabica::DOM::Node<std::string>* localContextNode = V8DOM::toClassPtr<Arabica::DOM::Node<std::string> >(args[1]->ToObject()->GetInternalField(0));
+			V8Node::V8NodePrivate* otherNodePrivate = V8DOM::toClassPtr<V8Node::V8NodePrivate>(args[1]->ToObject()->GetInternalField(0));
+			Arabica::DOM::Node<std::string>* localContextNode = otherNodePrivate->nativeObj;
 			retVal = new XPath::XPathValue<std::string>(privData->dom->xpath->evaluate(*localExpression, *localContextNode));
 		} else {
 			retVal = new XPath::XPathValue<std::string>(privData->dom->xpath->evaluate(*localExpression, *privData->nativeObj));
