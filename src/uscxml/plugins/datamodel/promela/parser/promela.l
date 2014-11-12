@@ -34,7 +34,6 @@ bit|bool|byte|int|mtype|short|unsigned|string {
 len                        { return PML_LEN; }
 false|skip|true            { yylval->value = strdup(yytext); return PML_CONST; }
 printf                     { return PML_PRINT; }
-printm                     { return PML_PRINTM; }
 typedef                    { return PML_TYPEDEF; }
 assert                     { return PML_ASSERT; }
 

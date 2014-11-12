@@ -15,6 +15,7 @@ set(CTEST_CUSTOM_TESTS_IGNORE
 	"ecma/test301.scxml" # Manual - PASSED
 	"ecma/test307.scxml" # Manual - PASSED
 	"ecma/test415.scxml" # Manual - PASSED
+  # "ecma/test513.txt" # Manual - PASSED
 
 	"fsm/ecma/test178.scxml" # manual test
   # "fsm/ecma/test224.scxml" # automatically generated id has the form stateid.platformid
@@ -42,7 +43,6 @@ set(CTEST_CUSTOM_TESTS_IGNORE
 # "promela/test337.scxml" # no typeof or "defined" operator in promela
   "promela/test350.scxml" # string concatenation
   "promela/test415.scxml" # manual test
-  "promela/test436.scxml" # In(s) -> _x.states[s] prevents completion as NULL dm is hardcoded
   "promela/test509.scxml" # string operation contains
   "promela/test518.scxml" # string operation contains
   "promela/test519.scxml" # string operation contains
@@ -155,6 +155,7 @@ set(CTEST_CUSTOM_TESTS_IGNORE
   "spin/promela/test552.scxml" # initialize data from file
   "spin/promela/test567.scxml" # uses _ioprocessors.basichttp.location
   "spin/promela/test577.scxml" # send without target for basichttp
+  "spin/promela/test579.scxml" # timeout with delay
   "spin/promela/test580.scxml" # timeout with delay
   
   

@@ -33,6 +33,8 @@
 
 namespace uscxml {
 
+class PromelaCodeAnalyzer;
+	
 class USCXML_API PromelaInline {
 public:
 	PromelaInline() : type(PROMELA_NIL) {}
@@ -54,36 +56,69 @@ public:
 	};
 
 	std::string content;
-	std::list<std::list<std::string> > sequences;
-
 	PromelaInlineType type;
+};
+
+class USCXML_API PromelaEventSource {
+public:
+	
+	enum PromelaEventSourceType {
+		PROMELA_EVENT_SOURCE_INVALID,
+		PROMELA_EVENT_SOURCE_INVOKER,
+		PROMELA_EVENT_SOURCE_GLOBAL,
+	};
+	
+	PromelaEventSource();
+	PromelaEventSource(const PromelaInline& source, uint32_t externalQueueLength = 0);
+	
+	void writeStart(std::ostream& stream, int indent = 0);
+	void writeStop(std::ostream& stream, int indent = 0);
+	void writeDeclarations(std::ostream& stream, int indent = 0);
+	void writeBody(std::ostream& stream);
+	
+	operator bool() {
+		return type != PROMELA_EVENT_SOURCE_INVALID;
+	}
+	
+	PromelaInline source;
+	std::string name;
+	uint32_t externalQueueLength;
+	
+	Arabica::DOM::Node<std::string> container;
+	std::list<std::list<std::string> > sequences;
+	PromelaEventSourceType type;
+	PromelaCodeAnalyzer* analyzer;
 };
 
 class USCXML_API PromelaInlines {
 public:
-	PromelaInlines() : progressLabels(0), acceptLabels(0), endLabels(0), eventSources(0), customEventSources(0), codes(0) {}
+	
+	static PromelaInlines fromNodeSet(const Arabica::XPath::NodeSet<std::string>& node, bool recurse = false);
+	static PromelaInlines fromNode(const Arabica::DOM::Node<std::string>& node);
+	static PromelaInlines fromString(const std::string& text);
+	
+	PromelaInlines(const std::string& text, const Arabica::DOM::Node<std::string>& node);
+	PromelaInlines();
 
 	void merge(const PromelaInlines& other) {
-		inlines.insert(inlines.end(), other.inlines.begin(), other.inlines.end());
-		progressLabels += other.progressLabels;
-		acceptLabels += other.acceptLabels;
-		endLabels += other.endLabels;
-		eventSources += other.eventSources;
-		customEventSources += other.customEventSources;
-		codes += other.codes;
+		code.insert(code.end(), other.code.begin(), other.code.end());
+		nrProgressLabels += other.nrProgressLabels;
+		nrAcceptLabels += other.nrAcceptLabels;
+		nrEndLabels += other.nrEndLabels;
+		nrEventSources += other.nrEventSources;
+		nrCodes += other.nrCodes;
 	}
 
 	operator bool() {
-		return inlines.size() > 0;
+		return code.size() > 0;
 	}
 
-	std::list<PromelaInline> inlines;
-	int progressLabels;
-	int acceptLabels;
-	int endLabels;
-	int eventSources;
-	int customEventSources;
-	int codes;
+	std::list<PromelaInline> code;
+	int nrProgressLabels;
+	int nrAcceptLabels;
+	int nrEndLabels;
+	int nrEventSources;
+	int nrCodes;
 };
 
 class USCXML_API PromelaCodeAnalyzer {
@@ -184,34 +219,44 @@ private:
 	bool _usesPlatformVars;
 };
 
-class USCXML_API PromelaEventSource {
+class ExecContentSeqItem {
 public:
-
-	enum PromelaEventSourceType {
-		PROMELA_EVENT_SOURCE_INVALID,
-		PROMELA_EVENT_SOURCE_INVOKER,
-		PROMELA_EVENT_SOURCE_GLOBAL,
+	enum ExecContentType {
+		EXEC_CONTENT_ALL_BUT,
+		EXEC_CONTENT_ONLY_FOR,
+		EXEC_CONTENT_EVERY
 	};
 
-	PromelaEventSource();
-	PromelaEventSource(const PromelaInlines& sources, const Arabica::DOM::Node<std::string>& parent);
-
-	void writeStartEventSources(std::ostream& stream, int indent = 0);
-	void writeStopEventSources(std::ostream& stream, int indent = 0);
-	void writeDeclarations(std::ostream& stream, int indent = 0);
-	void writeEventSource(std::ostream& stream);
-
-	operator bool() {
-		return type != PROMELA_EVENT_SOURCE_INVALID;
+	ExecContentSeqItem(ExecContentType type, const std::set<GlobalTransition*>& transitions, const GlobalTransition::Action& action)
+	: type(type), transitions(transitions), action(action) {}
+	ExecContentSeqItem(ExecContentType type, GlobalTransition* transition, const GlobalTransition::Action& action)
+	: type(type), action(action) {
+		transitions.insert(transition);
 	}
-
-	std::string name;
-	PromelaInlines eventSources;
-	Arabica::DOM::Node<std::string> container;
-	PromelaEventSourceType type;
-	PromelaCodeAnalyzer* analyzer;
+	
+	ExecContentType type;
+	std::set<GlobalTransition*> transitions;
+	GlobalTransition::Action action;
 };
 
+class HistoryTransitionClass {
+public:
+	HistoryTransitionClass(GlobalTransition* transition);
+	HistoryTransitionClass(const std::string& from, const std::string& to);
+	
+	void init(const std::string& from, const std::string& to);
+	
+	std::map<std::string, std::set<std::string> > toRemember;
+	std::map<std::string, std::set<std::string> > toKeep;
+	std::map<std::string, std::set<std::string> > toForget;
+	
+	std::set<GlobalTransition*> members;
+
+
+	void merge(const HistoryTransitionClass& other);
+	bool matches(const HistoryTransitionClass& other);
+};
+	
 class USCXML_API ChartToPromela : public TransformerImpl, public ChartToFSM {
 public:
 
@@ -232,11 +277,17 @@ protected:
 	void writeEvents(std::ostream& stream);
 	void writeStates(std::ostream& stream);
 	void writeStateMap(std::ostream& stream);
+	void writeHistoryArrays(std::ostream& stream);
 	void writeTypeDefs(std::ostream& stream);
 	void writeStrings(std::ostream& stream);
 	void writeDeclarations(std::ostream& stream);
 	void writeEventSources(std::ostream& stream);
-	void writeTransition(std::ostream& stream, const GlobalTransition* transition, int indent = 0);
+	void writeTransition(std::ostream& stream, GlobalTransition* transition, int indent = 0);
+	std::string conditionalizeForHist(const std::set<GlobalTransition*>& transitions, int indent = 0);
+	std::string conditionalizeForHist(GlobalTransition* transition, int indent = 0);
+	void writeHistoryAssignments(std::ostream& stream, GlobalTransition* transition, int indent = 0);
+	void writeTransitionClosure(std::ostream& stream, GlobalTransition* transition, GlobalState* state, int indent = 0);
+
 	void writeExecutableContent(std::ostream& stream, const Arabica::DOM::Node<std::string>& node, int indent = 0);
 	void writeInlineComment(std::ostream& stream, const Arabica::DOM::Node<std::string>& node);
 	void writeFSM(std::ostream& stream);
@@ -248,13 +299,10 @@ protected:
 
 	Arabica::XPath::NodeSet<std::string> getTransientContent(const Arabica::DOM::Element<std::string>& state, const std::string& source = "");
 	//Arabica::DOM::Node<std::string> getUltimateTarget(const Arabica::DOM::Element<std::string>& transition);
-
-	static PromelaInlines getInlinePromela(const std::string&);
-	static PromelaInlines getInlinePromela(const Arabica::XPath::NodeSet<std::string>& elements, bool recurse = false);
-	static PromelaInlines getInlinePromela(const Arabica::DOM::Node<std::string>& elements);
 	
 	static std::string declForRange(const std::string& identifier, long minValue, long maxValue, bool nativeOnly = false);
-	
+	static std::string conditionForHistoryTransition(const GlobalTransition* transition);
+
 //	std::string replaceStringsInExpression(const std::string& expr);
 
 	std::string sanitizeCode(const std::string& code);
@@ -274,6 +322,8 @@ protected:
 	std::map<std::string, PromelaEventSource> _invokers;
 	PromelaEventSource _globalEventSource;
 	
+	std::map<std::string, std::map<std::string, size_t> > _historyMembers; // ids of all history states
+
 	friend class PromelaEventSource;
 };
 

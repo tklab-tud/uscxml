@@ -256,9 +256,22 @@
 					</send>
 				<else />
 					<!-- There is no such model -->
-					<respond status="404" to="_event.origin">
-						<header name="Connection" value="close" />
-					</respond>
+                                        <send target="#_osgvonvert.toClient">
+                                                <param name="source" expr="'/scratch/vrml/404.wrl'" />
+                                                <param name="format" expr="_event['fileStruct'].ext" />
+                                                <param name="pitch" expr="_event.fileStruct.pitch" />
+                                                <param name="roll" expr="_event.fileStruct.roll" />
+                                                <param name="yaw" expr="_event.fileStruct.yaw" />
+                                                <param name="zoom" expr="_event.fileStruct.zoom" />
+                                                <param name="x" expr="_event.fileStruct.x" />
+                                                <param name="y" expr="_event.fileStruct.y" />
+                                                <param name="z" expr="_event.fileStruct.z" />
+                                                <param name="width" expr="_event.fileStruct.width" />
+                                                <param name="height" expr="_event.fileStruct.height" />
+                                                <param name="autorotate" expr="_event.fileStruct.autorotate" />
+                                                <param name="context" expr="_event.origin" />
+                                        </send>
+
 				</if>
 			</transition>
 

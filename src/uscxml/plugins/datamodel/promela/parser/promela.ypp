@@ -234,15 +234,10 @@ Stmnt	: varref PML_ASGN expr	{ $$ = ctx->node(PML_ASGN, 2, $1, $3); }
 	| varref PML_INCR		{ $$ = ctx->node(PML_INCR, 1, $1); }
 	| varref PML_DECR		{ $$ = ctx->node(PML_DECR, 1, $1); }
 	| PML_PRINT	'(' PML_STRING prargs ')'		{ $$ = ctx->node(PML_PRINT, 2, ctx->value(PML_STRING, $3), $4); free($3); }
-	| PML_PRINTM '(' varref ')'	{ $$ = ctx->node(PML_PRINTM, 1, $3); }
-	| PML_PRINTM '(' PML_CONST ')'	{ $$ = ctx->node(PML_PRINTM, 1, ctx->value(PML_CONST, $3)); free($3); }
+	| PML_PRINT '(' varref ')'	{ $$ = ctx->node(PML_PRINT, 1, $3); }
+	| PML_PRINT '(' PML_CONST ')'	{ $$ = ctx->node(PML_PRINT, 1, ctx->value(PML_CONST, $3)); free($3); }
 	| PML_ASSERT expr    	{ $$ = ctx->node(PML_ASSERT, 1, $2); }
 	| expr		{ $$ = $1; }
-	| varref PML_ASGN PML_INAME	{  } '(' args ')' Stmnt			{  }
-	;
-
-args    : /* empty */		{  }
-	| arg			{  }
 	;
 
 prargs  : /* empty */		{ $$ = ctx->value(0, ""); }

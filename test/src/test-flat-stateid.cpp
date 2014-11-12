@@ -1,7 +1,9 @@
 #include "uscxml/transform/FlatStateIdentifier.h"
+#include "uscxml/transform/ChartToPromela.h"
 #include <cassert>
 
 int main(int argc, char** argv) {
+
 	std::list<std::string>::const_iterator listIter;
 
 	{
@@ -54,4 +56,31 @@ int main(int argc, char** argv) {
 		uscxml::FlatStateIdentifier flat2(flat1.getActive(), flat1.getVisited(), flat1.getHistory());
 		assert(flat2.getStateId() == stateId);
 	}
+
+	{
+		uscxml::HistoryTransitionClass histClass1("history:{h0:{s1, s4, s6}}", "history:{h0:{s0, s6}}");
+
+		// these will match
+		uscxml::HistoryTransitionClass histClass1Match1("history:{h0:{s1, s2, s3}}", "history:{h0:{s0}}");
+		assert(histClass1.matches(histClass1Match1));
+		
+		histClass1.merge(histClass1Match1);
+		assert(histClass1.toRemember.at("h0").find("s0") != histClass1.toRemember.at("h0").end());
+		assert(histClass1.toRemember.at("h0").size() == 1);
+		
+		assert(histClass1.toForget.at("h0").find("s1") != histClass1.toForget.at("h0").end());
+		assert(histClass1.toForget.at("h0").find("s2") != histClass1.toForget.at("h0").end());
+		assert(histClass1.toForget.at("h0").find("s3") != histClass1.toForget.at("h0").end());
+
+		uscxml::HistoryTransitionClass histClass1NoMatch1("history:{h0:{s0}}", "history:{h0:{s1}}");
+		assert(!histClass1.matches(histClass1NoMatch1));
+
+		uscxml::HistoryTransitionClass histClass1NoMatch2("history:{h0:{s1, s2, s3}}", "history:{h0:{s4}}");
+		assert(!histClass1.matches(histClass1NoMatch2));
+
+		uscxml::HistoryTransitionClass histClass1NoMatch3("history:{h0:{s1, s2, s6}}", "history:{h0:{s0}}");
+		assert(!histClass1.matches(histClass1NoMatch3));
+
+	}
+
 }

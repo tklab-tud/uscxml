@@ -50,6 +50,54 @@
 for (int indentIndex = start; indentIndex < cols; indentIndex++) \
 	stream << " ";
 
+#define DIFF_MAPS(base, compare, result) \
+{ \
+	histIter_t baseIter = base.begin(); \
+	while(baseIter != base.end()) { \
+		if (compare.find(baseIter->first) == compare.end()) { \
+			result[baseIter->first] = baseIter->second; \
+		} else { \
+			histMemberIter_t baseMemberIter = baseIter->second.begin(); \
+			while(baseMemberIter != baseIter->second.end()) { \
+				if (compare.at(baseIter->first).find(*baseMemberIter) == compare.at(baseIter->first).end()) { \
+					result[baseIter->first].insert(*baseMemberIter); \
+				} \
+				baseMemberIter++; \
+			} \
+		} \
+		baseIter++; \
+	} \
+}
+
+#define INTERSECT_MAPS(base, compare, result) \
+{ \
+	histIter_t baseIter = base.begin(); \
+	while(baseIter != base.end()) { \
+		if (compare.find(baseIter->first) != compare.end()) { \
+			histMemberIter_t baseMemberIter = baseIter->second.begin(); \
+			while(baseMemberIter != baseIter->second.end()) { \
+				if (compare.at(baseIter->first).find(*baseMemberIter) != compare.at(baseIter->first).end()) { \
+					result[baseIter->first].insert(*baseMemberIter); \
+				} \
+				baseMemberIter++; \
+			} \
+		} \
+		baseIter++; \
+	} \
+}
+
+#define PRETTY_PRINT_LIST(stream, var) \
+{ \
+	std::list<std::string>::const_iterator listIter = var.begin(); \
+	std::string sep;\
+	while(listIter != var.end()) { \
+		stream << sep << *listIter; \
+		sep = ", "; \
+		listIter++; \
+	} \
+}
+
+
 namespace uscxml {
 
 using namespace Arabica::DOM;
@@ -63,48 +111,21 @@ void ChartToPromela::writeTo(std::ostream& stream) {
 	writeProgram(stream);
 }
 
-void PromelaEventSource::writeStartEventSources(std::ostream& stream, int indent) {
+void PromelaEventSource::writeStart(std::ostream& stream, int indent) {
 	std::string padding;
 	for (int i = 0; i < indent; i++) {
 		padding += "  ";
 	}
-
-	std::list<PromelaInline>::iterator sourceIter = eventSources.inlines.begin();
-	int i = 0;
-	while(sourceIter != eventSources.inlines.end()) {
-		if (sourceIter->type != PromelaInline::PROMELA_EVENT_SOURCE_CUSTOM && sourceIter->type != PromelaInline::PROMELA_EVENT_SOURCE) {
-			sourceIter++;
-			continue;
-		}
-		std::string sourceName = name + "_"+ toStr(i);
-		stream << padding << "run " << sourceName << "EventSource();" << std::endl;
-
-		i++;
-		sourceIter++;
-	}
-
+	stream << padding << "run " << name << "EventSource();" << std::endl;
 }
 
-void PromelaEventSource::writeStopEventSources(std::ostream& stream, int indent) {
+void PromelaEventSource::writeStop(std::ostream& stream, int indent) {
 	std::string padding;
 	for (int i = 0; i < indent; i++) {
 		padding += "  ";
 	}
 
-	std::list<PromelaInline>::iterator sourceIter = eventSources.inlines.begin();
-	int i = 0;
-	while(sourceIter != eventSources.inlines.end()) {
-		if (sourceIter->type != PromelaInline::PROMELA_EVENT_SOURCE_CUSTOM && sourceIter->type != PromelaInline::PROMELA_EVENT_SOURCE) {
-			sourceIter++;
-			continue;
-		}
-		std::string sourceName = name + "_"+ toStr(i);
-		stream << padding << sourceName << "EventSourceDone = 1;" << std::endl;
-
-		i++;
-		sourceIter++;
-	}
-
+	stream << padding << name << "EventSourceDone = 1;" << std::endl;
 }
 
 void PromelaEventSource::writeDeclarations(std::ostream& stream, int indent) {
@@ -112,86 +133,138 @@ void PromelaEventSource::writeDeclarations(std::ostream& stream, int indent) {
 	for (int i = 0; i < indent; i++) {
 		padding += "  ";
 	}
-
-	std::list<PromelaInline>::iterator sourceIter = eventSources.inlines.begin();
-	int i = 0;
-	while(sourceIter != eventSources.inlines.end()) {
-		if (sourceIter->type != PromelaInline::PROMELA_EVENT_SOURCE_CUSTOM && sourceIter->type != PromelaInline::PROMELA_EVENT_SOURCE) {
-			sourceIter++;
-			continue;
-		}
-		std::string sourceName = name + "_"+ toStr(i);
-		stream << "bool " << sourceName << "EventSourceDone = 0;" << std::endl;
-
-		i++;
-		sourceIter++;
-	}
+	stream << "bool " << name << "EventSourceDone = 0;" << std::endl;
+	
 }
 
-void PromelaEventSource::writeEventSource(std::ostream& stream) {
+void PromelaEventSource::writeBody(std::ostream& stream) {
 
-	std::list<PromelaInline>::iterator sourceIter = eventSources.inlines.begin();
-	int i = 0;
-	while(sourceIter != eventSources.inlines.end()) {
-		if (sourceIter->type != PromelaInline::PROMELA_EVENT_SOURCE_CUSTOM && sourceIter->type != PromelaInline::PROMELA_EVENT_SOURCE) {
-			sourceIter++;
-			continue;
-		}
-
-		std::string sourceName = name + "_"+ toStr(i);
-
-		stream << "proctype " << sourceName << "EventSource() {" << std::endl;
-		stream << "  " << sourceName << "EventSourceDone = 0;" << std::endl;
-		stream << "  " << sourceName << "NewEvent:" << std::endl;
-		stream << "  " << "if" << std::endl;
-		stream << "  " << ":: " << sourceName << "EventSourceDone -> skip;" << std::endl;
-		stream << "  " << ":: else { " << std::endl;
-
-		Trie& trie = analyzer->getTrie();
-
-		if (sourceIter->type == PromelaInline::PROMELA_EVENT_SOURCE_CUSTOM) {
-			std::string content = sourceIter->content;
-
-			boost::replace_all(content, "#REDO#", sourceName + "NewEvent");
-			boost::replace_all(content, "#DONE#", sourceName + "Done");
-
-			std::list<TrieNode*> eventNames = trie.getChildsWithWords(trie.getNodeWithPrefix(""));
-			std::list<TrieNode*>::iterator eventNameIter = eventNames.begin();
-			while(eventNameIter != eventNames.end()) {
-				boost::replace_all(content, "#" + (*eventNameIter)->value + "#", (*eventNameIter)->identifier);
-				eventNameIter++;
-			}
-
-			stream << ChartToPromela::beautifyIndentation(content, 2) << std::endl;
-
-		} else {
-			stream << "  " << "  if" << std::endl;
-//			stream << "  " << "  :: 1 -> " << "goto " << sourceName << "NewEvent;" << std::endl;
-
-			std::list<std::list<std::string> >::const_iterator seqIter = sourceIter->sequences.begin();
-			while(seqIter != sourceIter->sequences.end()) {
-				stream << "    " << ":: ";
-				std::list<std::string>::const_iterator evIter = seqIter->begin();
-				while(evIter != seqIter->end()) {
-					TrieNode* node = trie.getNodeWithPrefix(*evIter);
-					stream << "eQ!" << node->identifier << "; ";
-					evIter++;
-				}
-				stream << "goto " << sourceName << "NewEvent;" << std::endl;
-				seqIter++;
-			}
-
-			stream << "  " << "  fi;" << std::endl;
-		}
-
-		stream << "  " << "}" << std::endl;
-		stream << "  " << "fi;" << std::endl;
-		stream << sourceName << "Done:" << " skip;" << std::endl;
-		stream << "}" << std::endl;
-
-		i++;
-		sourceIter++;
+	stream << "proctype " << name << "EventSource() {" << std::endl;
+	stream << "  " << name << "EventSourceDone = 0;" << std::endl;
+	if (analyzer->usesComplexEventStruct()) {
+		stream << "  _event_t tmpEvent;" << std::endl;
 	}
+	stream << "  " << name << "NewEvent:" << std::endl;
+	stream << "  " << "if" << std::endl;
+	stream << "  " << ":: " << name << "EventSourceDone -> skip;" << std::endl;
+	stream << "  " << ":: " << "len(eQ) <= " << externalQueueLength << " -> skip;" << std::endl;
+	stream << "  " << ":: else { " << std::endl;
+
+	Trie& trie = analyzer->getTrie();
+	if (source.type == PromelaInline::PROMELA_EVENT_SOURCE_CUSTOM) {
+		// custom event source
+		std::string content = source.content;
+
+		boost::replace_all(content, "#REDO#", name + "NewEvent");
+		boost::replace_all(content, "#DONE#", name + "Done");
+
+		std::list<TrieNode*> eventNames = trie.getChildsWithWords(trie.getNodeWithPrefix(""));
+		std::list<TrieNode*>::iterator eventNameIter = eventNames.begin();
+		while(eventNameIter != eventNames.end()) {
+			boost::replace_all(content, "#" + (*eventNameIter)->value + "#", (*eventNameIter)->identifier);
+			eventNameIter++;
+		}
+
+		stream << ChartToPromela::beautifyIndentation(content, 2) << std::endl;
+	} else {
+		// standard event source
+		stream << "  " << "  if" << std::endl;
+//		stream << "  " << "  :: 1 -> " << "goto " << sourceName << "NewEvent;" << std::endl;
+
+		std::list<std::list<std::string> >::const_iterator seqIter = sequences.begin();
+		while(seqIter != sequences.end()) {
+			stream << "    " << ":: skip -> { ";
+			std::list<std::string>::const_iterator evIter = seqIter->begin();
+			while(evIter != seqIter->end()) {
+				TrieNode* node = trie.getNodeWithPrefix(*evIter);
+				if (!node) {
+					std::cerr << "Event " << *evIter << " defined in event source but never used in transitions" << std::endl;
+					evIter++;
+					continue;
+				}
+				if (analyzer->usesComplexEventStruct()) {
+					stream << "tmpEvent.name = " << analyzer->macroForLiteral(node->value) << "; eQ!tmpEvent; ";
+				} else {
+					stream << "eQ!" << analyzer->macroForLiteral(node->value) << "; ";
+				}
+				evIter++;
+			}
+			stream << "goto " << name << "NewEvent;";
+			stream << " }" << std::endl;
+			seqIter++;
+		}
+
+		stream << "  " << "  fi;" << std::endl;
+	}
+
+	stream << "  " << "}" << std::endl;
+	stream << "  " << "fi;" << std::endl;
+	stream << name << "Done:" << " skip;" << std::endl;
+	stream << "}" << std::endl;
+
+	
+//	std::list<PromelaInline>::iterator sourceIter = eventSources.inlines.begin();
+//	int i = 0;
+//	while(sourceIter != eventSources.inlines.end()) {
+//		if (sourceIter->type != PromelaInline::PROMELA_EVENT_SOURCE_CUSTOM && sourceIter->type != PromelaInline::PROMELA_EVENT_SOURCE) {
+//			sourceIter++;
+//			continue;
+//		}
+//
+//		std::string sourceName = name + "_"+ toStr(i);
+//
+//		stream << "proctype " << sourceName << "EventSource() {" << std::endl;
+//		stream << "  " << sourceName << "EventSourceDone = 0;" << std::endl;
+//		stream << "  " << sourceName << "NewEvent:" << std::endl;
+//		stream << "  " << "if" << std::endl;
+//		stream << "  " << ":: " << sourceName << "EventSourceDone -> skip;" << std::endl;
+//		stream << "  " << ":: else { " << std::endl;
+//
+//		Trie& trie = analyzer->getTrie();
+//
+//		if (sourceIter->type == PromelaInline::PROMELA_EVENT_SOURCE_CUSTOM) {
+//			std::string content = sourceIter->content;
+//
+//			boost::replace_all(content, "#REDO#", sourceName + "NewEvent");
+//			boost::replace_all(content, "#DONE#", sourceName + "Done");
+//
+//			std::list<TrieNode*> eventNames = trie.getChildsWithWords(trie.getNodeWithPrefix(""));
+//			std::list<TrieNode*>::iterator eventNameIter = eventNames.begin();
+//			while(eventNameIter != eventNames.end()) {
+//				boost::replace_all(content, "#" + (*eventNameIter)->value + "#", (*eventNameIter)->identifier);
+//				eventNameIter++;
+//			}
+//
+//			stream << ChartToPromela::beautifyIndentation(content, 2) << std::endl;
+//
+//		} else {
+//			stream << "  " << "  if" << std::endl;
+////			stream << "  " << "  :: 1 -> " << "goto " << sourceName << "NewEvent;" << std::endl;
+//
+//			std::list<std::list<std::string> >::const_iterator seqIter = sourceIter->sequences.begin();
+//			while(seqIter != sourceIter->sequences.end()) {
+//				stream << "    " << ":: ";
+//				std::list<std::string>::const_iterator evIter = seqIter->begin();
+//				while(evIter != seqIter->end()) {
+//					TrieNode* node = trie.getNodeWithPrefix(*evIter);
+//					stream << "eQ!" << node->identifier << "; ";
+//					evIter++;
+//				}
+//				stream << "goto " << sourceName << "NewEvent;" << std::endl;
+//				seqIter++;
+//			}
+//
+//			stream << "  " << "  fi;" << std::endl;
+//		}
+//
+//		stream << "  " << "}" << std::endl;
+//		stream << "  " << "fi;" << std::endl;
+//		stream << sourceName << "Done:" << " skip;" << std::endl;
+//		stream << "}" << std::endl;
+//
+//		i++;
+//		sourceIter++;
+//	}
 }
 
 PromelaEventSource::PromelaEventSource() {
@@ -199,12 +272,34 @@ PromelaEventSource::PromelaEventSource() {
 	analyzer = NULL;
 }
 
-PromelaEventSource::PromelaEventSource(const PromelaInlines& sources, const Arabica::DOM::Node<std::string>& parent) {
+PromelaEventSource::PromelaEventSource(const PromelaInline& source, uint32_t eQueueLength) {
 	type = PROMELA_EVENT_SOURCE_INVALID;
 	analyzer = NULL;
+	externalQueueLength = eQueueLength;
+	
+	this->source = source;
+	
+	if (source.type == PromelaInline::PROMELA_EVENT_SOURCE) {
+		std::stringstream ssLines(source.content);
+		std::string line;
+		while(std::getline(ssLines, line)) {
+			boost::trim(line);
+			if (line.length() == 0)
+				continue;
+			if (boost::starts_with(line, "//"))
+				continue;
 
-	eventSources = sources;
-	container = parent;
+			std::list<std::string> seq;
+			std::stringstream ssToken(line);
+			std::string token;
+			while(std::getline(ssToken, token, ' ')) {
+				if (token.length() == 0)
+					continue;
+				seq.push_back(token);
+			}
+			sequences.push_back(seq);
+		}
+	}
 }
 
 void PromelaCodeAnalyzer::addCode(const std::string& code) {
@@ -347,31 +442,7 @@ void PromelaCodeAnalyzer::addState(const std::string& stateName) {
 		return;
 
 	createMacroName(stateName);
-
-#if 0
-//	addLiteral(stateName);
-//	_states[stateName] = enumerateLiteral(stateName);
-	if (_origStateMap.find(stateName) == _origStateMap.end()) {
-		FlatStateIdentifier flatId(stateName);
-		_origStateMap[stateName] = flatId.getActive();
-		for (std::list<std::string>::iterator origIter = _origStateMap[stateName].begin(); origIter != _origStateMap[stateName].end(); origIter++) {
-			//addLiteral(*origIter); // add original state names as string literals
-			if (_origStateIndex.find(*origIter) == _origStateIndex.end()) {
-				_origStateIndex[*origIter] = _lastStateIndex++;
-				createMacroName(*origIter);
-			}
-		}
-	}
-#endif
 }
-
-#if 0
-int PromelaCodeAnalyzer::arrayIndexForOrigState(const std::string& stateName) {
-	if (_origStateIndex.find(stateName) == _origStateIndex.end())
-		throw std::runtime_error("No original state " + stateName + " known");
-	return _origStateIndex[stateName];
-}
-#endif
 
 void PromelaCodeAnalyzer::addLiteral(const std::string& literal, int forceIndex) {
 	if (boost::starts_with(literal, "'"))
@@ -394,7 +465,7 @@ int PromelaCodeAnalyzer::enumerateLiteral(const std::string& literal, int forceI
 	if (_strIndex.find(literal) != _strIndex.end())
 		return _strIndex[literal];
 
-	_strIndex[literal] = ++_lastStrIndex;
+	_strIndex[literal] = _lastStrIndex++;
 	return _lastStrIndex + 1;
 }
 
@@ -428,7 +499,11 @@ std::string PromelaCodeAnalyzer::createMacroName(const std::string& literal) {
 		}
 	}
 	macroName = tmp;
-
+	if(macroName.length() < 1)
+		macroName = "_EMPTY_STRING";
+	if(macroName.length() < 2 && macroName[0] == '_')
+		macroName = "_WEIRD_CHARS";
+	
 	unsigned int index = 2;
 	while (_macroNameSet.find(macroName) != _macroNameSet.end()) {
 		std::string suffix = toStr(index);
@@ -501,8 +576,8 @@ void ChartToPromela::writeEvents(std::ostream& stream) {
 void ChartToPromela::writeStates(std::ostream& stream) {
 	stream << "/* state name identifiers */" << std::endl;
 	
-	std::map<std::string, GlobalState*>::iterator stateIter = _globalConf.begin();
-	while(stateIter != _globalConf.end()) {
+	std::map<std::string, GlobalState*>::iterator stateIter = _activeConf.begin();
+	while(stateIter != _activeConf.end()) {
 		stream << "#define " << "s" << stateIter->second->index << " " << stateIter->second->index;
 		stream << " /* from \"" << stateIter->first << "\" */" << std::endl;
 		stateIter++;
@@ -534,6 +609,23 @@ void ChartToPromela::writeStateMap(std::ostream& stream) {
 //	}
 }
 
+void ChartToPromela::writeHistoryArrays(std::ostream& stream) {
+	stream << "/* history assignments */" << std::endl;
+	std::map<std::string, std::map<std::string, size_t> >::iterator histNameIter = _historyMembers.begin();
+	while(histNameIter != _historyMembers.end()) {
+		stream << "bool _hist_" << boost::to_lower_copy(histNameIter->first) << "[" << histNameIter->second.size() << "];";
+
+		stream << " /* ";
+		std::map<std::string, size_t>::iterator histMemberIter = histNameIter->second.begin();
+		while(histMemberIter != histNameIter->second.end()) {
+			stream << " " << histMemberIter->second << ":" << histMemberIter->first;
+			histMemberIter++;
+		}
+		stream << " */" << std::endl;
+		histNameIter++;
+	}
+}
+	
 void ChartToPromela::writeTypeDefs(std::ostream& stream) {
 	stream << "/* typedefs */" << std::endl;
 	PromelaCodeAnalyzer::PromelaTypedef typeDefs = _analyzer.getTypes();
@@ -622,75 +714,6 @@ std::string ChartToPromela::declForRange(const std::string& identifier, long min
 	}
 }
 
-	
-#if 0
-Arabica::XPath::NodeSet<std::string> ChartToPromela::getTransientContent(const Arabica::DOM::Element<std::string>& state, const std::string& source) {
-	Arabica::XPath::NodeSet<std::string> content;
-	Arabica::DOM::Element<std::string> currState = state;
-	FlatStateIdentifier prevFlatId(source);
-	for (;;) {
-		if (_analyzer.usesInPredicate()) {
-			// insert state assignments into executable content
-
-			std::stringstream stateSetPromela;
-			stateSetPromela << "#promela-inline " << std::endl;
-			FlatStateIdentifier currFlatId(ATTR(currState, "id"));
-			stateSetPromela << "  /* from " << prevFlatId.getFlatActive() << " to " << currFlatId.getFlatActive() << " */" << std::endl;
-
-			// add all that are missing from prevFlatId
-			std::map<std::string, int> allOrigStates = _analyzer.getOrigStates();
-			for (std::map<std::string, int>::iterator allOrigIter = allOrigStates.begin(); allOrigIter != allOrigStates.end(); allOrigIter++) {
-				if (std::find(currFlatId.getActive().begin(), currFlatId.getActive().end(), allOrigIter->first) != currFlatId.getActive().end() &&
-				        std::find(prevFlatId.getActive().begin(), prevFlatId.getActive().end(), allOrigIter->first) == prevFlatId.getActive().end()) {
-					// active now but not previously
-					stateSetPromela << "  _x.states[" << _analyzer.macroForLiteral(allOrigIter->first) << "] = true; " << std::endl;
-				} else if (std::find(currFlatId.getActive().begin(), currFlatId.getActive().end(), allOrigIter->first) == currFlatId.getActive().end() &&
-				           std::find(prevFlatId.getActive().begin(), prevFlatId.getActive().end(), allOrigIter->first) != prevFlatId.getActive().end()) {
-					// previously active but not now
-					stateSetPromela << "  _x.states[" << _analyzer.macroForLiteral(allOrigIter->first) << "] = false; " << std::endl;
-				}
-			}
-			Comment<std::string> comment = _document.createComment(stateSetPromela.str());
-			_document.importNode(comment, true);
-			currState.insertBefore(comment, currState.getFirstChild());
-			prevFlatId = currFlatId;
-		}
-
-		content.push_back(filterChildType(Node_base::COMMENT_NODE, currState));
-		if (_analyzer.usesInPredicate()) assert(content.size() > 0);
-
-		if (!HAS_ATTR(currState, "transient") || !DOMUtils::attributeIsTrue(ATTR(currState, "transient"))) {
-			// breaking here causes final state assignment to be written
-			break;
-		}
-
-		content.push_back(filterChildElements(_nsInfo.xmlNSPrefix + "invoke", currState));
-		content.push_back(filterChildElements(_nsInfo.xmlNSPrefix + "onentry", currState));
-		content.push_back(filterChildElements(_nsInfo.xmlNSPrefix + "onexit", currState));
-
-		NodeSet<std::string> transitions = filterChildElements(_nsInfo.xmlNSPrefix + "transition", currState);
-		currState = _states[ATTR_CAST(transitions[0], "target")];
-	}
-	return content;
-}
-#endif
-	
-#if 0
-Node<std::string> ChartToPromela::getUltimateTarget(const Arabica::DOM::Element<std::string>& transition) {
-	if (!HAS_ATTR(transition, "target")) {
-		return transition.getParentNode();
-	}
-
-	Arabica::DOM::Element<std::string> currState = _states[ATTR_CAST(transition, "target")];
-
-	for (;;) {
-		if (!HAS_ATTR(currState, "transient") || !DOMUtils::attributeIsTrue(ATTR(currState, "transient")))
-			return currState;
-		NodeSet<std::string> transitions = filterChildElements(_nsInfo.xmlNSPrefix + "transition", currState);
-		currState = _states[ATTR_CAST(transitions[0], "target")];
-	}
-}
-#endif
 
 void ChartToPromela::writeInlineComment(std::ostream& stream, const Arabica::DOM::Node<std::string>& node) {
 	if (node.getNodeType() != Node_base::COMMENT_NODE)
@@ -711,96 +734,584 @@ void ChartToPromela::writeInlineComment(std::ostream& stream, const Arabica::DOM
 	}
 }
 
-void ChartToPromela::writeTransition(std::ostream& stream, const GlobalTransition* transition, int indent) {
+std::string ChartToPromela::conditionForHistoryTransition(const GlobalTransition* transition) {
+	FlatStateIdentifier flatSource(transition->source);
+	FlatStateIdentifier flatTarget(transition->destination);
+	std::string condition;
+	
+	return condition;
+}
+
+std::string ChartToPromela::conditionalizeForHist(GlobalTransition* transition, int indent) {
+	std::set<GlobalTransition*> transitions;
+	transitions.insert(transition);
+	return conditionalizeForHist(transitions);
+}
+	
+std::string ChartToPromela::conditionalizeForHist(const std::set<GlobalTransition*>& transitions, int indent) {
+	std::stringstream condition;
+	std::string memberSep;
+	
+	std::set<std::map<std::string, std::list<std::string> > > histSeen;
+	
+	for (std::set<GlobalTransition*>::const_iterator transIter = transitions.begin(); transIter != transitions.end(); transIter++) {
+		if ((*transIter)->histTargets.size() == 0) // there are no history transitions in here!
+			continue;
+		
+		std::map<std::string, std::list<std::string> > relevantHist;
+		std::map<std::string, std::list<std::string> > currentHist;
+		FlatStateIdentifier flatSource((*transIter)->source);
+		currentHist = flatSource.getHistory();
+		
+		std::set<std::string>::iterator histTargetIter = (*transIter)->histTargets.begin();
+		while(histTargetIter != (*transIter)->histTargets.end()) {
+			if (currentHist.find(*histTargetIter) != currentHist.end()) {
+				relevantHist[*histTargetIter] = currentHist[*histTargetIter];
+			}
+			histTargetIter++;
+		}
+		if (relevantHist.size() == 0)
+			continue;
+		
+		if (histSeen.find(relevantHist) != histSeen.end())
+			continue;
+		histSeen.insert(relevantHist);
+		
+		std::string itemSep;
+		std::map<std::string, std::list<std::string> >::iterator relevanthistIter = relevantHist.begin();
+
+		if (relevantHist.size() > 0)
+			condition << memberSep;
+		
+		while(relevanthistIter != relevantHist.end()) {
+			std::list<std::string>::iterator histItemIter = relevanthistIter->second.begin();
+			while(histItemIter != relevanthistIter->second.end()) {
+				assert(_historyMembers.find(relevanthistIter->first) != _historyMembers.end());
+				assert(_historyMembers[relevanthistIter->first].find(*histItemIter) != _historyMembers[relevanthistIter->first].end());
+				condition << itemSep << "_hist_" << boost::to_lower_copy(_analyzer.macroForLiteral(relevanthistIter->first)) << "[" << _historyMembers[relevanthistIter->first][*histItemIter] << "]";
+				itemSep = " && ";
+				histItemIter++;
+			}
+			relevanthistIter++;
+		}
+
+		if (relevantHist.size() > 0)
+			memberSep = " || ";
+
+	}
+	if (condition.str().size() > 0)
+		return "(" + condition.str() + ")";
+	return "";
+}
+	
+void ChartToPromela::writeTransition(std::ostream& stream, GlobalTransition* transition, int indent) {
 	std::string padding;
 	for (int i = 0; i < indent; i++) {
 		padding += "  ";
 	}
 
-	stream << "t" << transition->index << ":";
-	int digits = 0;
-	LENGTH_FOR_NUMBER(transition->index, digits);
-	
-	INDENT_MIN(stream, 2 + digits, MIN_COMMENT_PADDING);
-	stream << " /* from state " << transition->source << " */" << std::endl;
+	stream << std::endl << "t" << transition->index << ": /* ######################## " << std::endl;
+	stream << "   from state: ";
+	FlatStateIdentifier flatActiveSource(transition->source);
+	PRETTY_PRINT_LIST(stream, flatActiveSource.getActive());
+	stream << std::endl;
+	stream << "     on event: " << (transition->eventDesc.size() > 0 ? transition->eventDesc : "SPONTANEOUS") << std::endl;
+	stream << "############################### */" << std::endl;
+	stream << std::endl;
 
 	stream << padding << "atomic {" << std::endl;
+	padding += "  ";
 	indent++;
 	
+	// iterators of history transitions executable content
+	std::map<GlobalTransition*, std::pair<GlobalTransition::Action::iter_t, GlobalTransition::Action::iter_t> > actionIters;
+	std::map<GlobalTransition*, std::set<GlobalTransition::Action> > actionsInTransition;
+	
+	typedef std::map<GlobalTransition*, std::pair<GlobalTransition::Action::iter_t, GlobalTransition::Action::iter_t> > actionIters_t;
+	
+	std::list<GlobalTransition*>::const_iterator histIter = transition->historyTrans.begin();
+	while(histIter != transition->historyTrans.end()) {
+		actionIters.insert(std::make_pair((*histIter), std::make_pair((*histIter)->actions.begin(), (*histIter)->actions.end())));
+		// add history transitions actions to the set
+		std::copy((*histIter)->actions.begin(), (*histIter)->actions.end(), std::inserter(actionsInTransition[*histIter], actionsInTransition[*histIter].begin()));
+		histIter++;
+	}
+	std::copy(transition->actions.begin(), transition->actions.end(), std::inserter(actionsInTransition[transition], actionsInTransition[transition].begin()));
+	
+	
+//	GlobalTransition::Action action;
+	std::set<GlobalTransition*> allBut;
+	std::list<ExecContentSeqItem> ecSeq;
+	
 	for (std::list<GlobalTransition::Action>::const_iterator actionIter = transition->actions.begin(); actionIter != transition->actions.end(); actionIter++) {
-		if (actionIter->transition) {
+		// for every executable content in base transition
+		const GlobalTransition::Action& baseAction = *actionIter;
+		allBut.clear();
+		
+		for (actionIters_t::iterator histActionIter = actionIters.begin(); histActionIter != actionIters.end(); histActionIter++) {
+			// iterate every history transition
+			GlobalTransition* histTrans = histActionIter->first;
+			GlobalTransition::Action& histAction = *(histActionIter->second.first);
+
+			// is the current action identical?
+			if (baseAction != histAction) {
+				// executable content differs - will given executable content appear later in history?
+				if (actionsInTransition[histTrans].find(baseAction) != actionsInTransition[histTrans].end()) {
+					// yes -> write all exec content exclusive to this history transition until base executable content
+					while(baseAction != *(histActionIter->second.first)) {
+						histAction = *(histActionIter->second.first);
+						ecSeq.push_back(ExecContentSeqItem(ExecContentSeqItem::EXEC_CONTENT_ONLY_FOR, histTrans, histAction));
+						actionsInTransition[histTrans].erase(histAction);
+						histActionIter->second.first++;
+					}
+				} else {
+					// no -> exclude this history transition
+					allBut.insert(histTrans);
+				}
+			} else {
+				// that's great, they are equal, just increase iterator
+				histActionIter->second.first++;
+			}
+		}
+		
+		if (allBut.empty()) {
+			// everyone has the current actionIter one behind the base action
+			ecSeq.push_back(ExecContentSeqItem(ExecContentSeqItem::EXEC_CONTENT_EVERY, NULL, baseAction));
+		} else {
+			// everyone but some have this content
+			ecSeq.push_back(ExecContentSeqItem(ExecContentSeqItem::EXEC_CONTENT_ALL_BUT, allBut, baseAction));
+		}
+	}
+	
+	// see what remains in history transitions and add as exclusive
+	for (actionIters_t::iterator histActionIter = actionIters.begin(); histActionIter != actionIters.end(); histActionIter++) {
+		GlobalTransition* histTrans = histActionIter->first;
+
+		while(histActionIter->second.first != histActionIter->second.second) {
+			GlobalTransition::Action& histAction = *(histActionIter->second.first);
+			ecSeq.push_back(ExecContentSeqItem(ExecContentSeqItem::EXEC_CONTENT_ONLY_FOR, histTrans, histAction));
+			histActionIter->second.first++;
+		}
+	}
+
+	bool isConditionalized = false;
+	bool wroteHistoryAssignments = false;
+	std::set<GlobalTransition*> condSet;
+	
+	for (std::list<ExecContentSeqItem>::const_iterator ecIter = ecSeq.begin(); ecIter != ecSeq.end(); ecIter++) {
+		const GlobalTransition::Action& action = ecIter->action;
+
+		if (action.exited) {
+			// first onexit handler writes history assignments
+			if (!wroteHistoryAssignments) {
+				writeHistoryAssignments(stream, transition, indent);
+				wroteHistoryAssignments = true;
+			}
+		}
+		
+		if (!_analyzer.usesInPredicate() && (action.entered || action.exited)) {
+			continue;
+		}
+		
+		if (ecIter->type == ExecContentSeqItem::EXEC_CONTENT_ONLY_FOR) {
+			assert(!wroteHistoryAssignments); // we need to move assignments after dispatching?
+			if (condSet != ecIter->transitions) {
+				stream << padding << "if" << std::endl;
+				stream << padding << ":: " << conditionalizeForHist(ecIter->transitions) << " -> {" << std::endl;
+				padding += "  ";
+				indent++;
+				isConditionalized = true;
+				condSet = ecIter->transitions;
+			}
+		} else if (ecIter->type == ExecContentSeqItem::EXEC_CONTENT_ALL_BUT) {
+			assert(!wroteHistoryAssignments); // we need to move assignments after dispatching?
+			if (condSet != ecIter->transitions) {
+				stream << padding << "if" << std::endl;
+				stream << padding << ":: " << conditionalizeForHist(ecIter->transitions) << " -> skip;" << std::endl;
+				stream << padding << ":: else -> {" << std::endl;
+				padding += "  ";
+				indent++;
+				isConditionalized = true;
+				condSet = ecIter->transitions;
+			}
+		} else {
+			isConditionalized = false;
+			condSet.clear();
+		}
+
+		if (action.exited) {
+			// we left a state
+			stream << padding << "_x.states[" << _analyzer.macroForLiteral(ATTR(action.exited, "id")) << "] = false; " << std::endl;
+			continue;
+		}
+		
+		if (action.entered) {
+			// we entered a state
+			stream << padding << "_x.states[" << _analyzer.macroForLiteral(ATTR(action.entered, "id")) << "] = true; " << std::endl;
+			continue;
+		}
+
+		if (action.transition) {
 			// this is executable content from a transition
-			writeExecutableContent(stream, actionIter->transition, indent);
+			writeExecutableContent(stream, action.transition, indent);
 			continue;
 		}
 		
-		if (actionIter->onExit) {
+		if (action.onExit) {
 			// executable content from an onexit element
-			writeExecutableContent(stream, actionIter->onExit, indent);
+			writeExecutableContent(stream, action.onExit, indent);
 			continue;
 		}
 		
-		if (actionIter->onEntry) {
+		if (action.onEntry) {
 			// executable content from an onentry element
-			writeExecutableContent(stream, actionIter->onEntry, indent);
+			writeExecutableContent(stream, action.onEntry, indent);
 			continue;
 		}
 		
-		if (actionIter->invoke) {
+		if (action.invoke) {
 			// an invoke element
 			continue;
 		}
 		
-		if (actionIter->uninvoke) {
+		if (action.uninvoke) {
 			// an invoke element to uninvoke
 			continue;
 		}
 		
-		if (actionIter->exited) {
-			// we left a state
-			if (_analyzer.usesInPredicate()) {
-				stream << padding << "_x.states[" << _analyzer.macroForLiteral(ATTR(actionIter->exited, "id")) << "] = false; " << std::endl;
+		if (isConditionalized) {
+			padding = padding.substr(2);
+			indent--;
+			if (ecIter->type == ExecContentSeqItem::EXEC_CONTENT_ALL_BUT) {
+				stream << padding << "}" << std::endl;
+				stream << padding << "fi" << std::endl;
+			} else if(ecIter->type == ExecContentSeqItem::EXEC_CONTENT_ONLY_FOR) {
+				stream << padding << "}" << std::endl;
+				stream << padding << ":: else -> skip;" << std::endl;
+				stream << padding << "fi;" << std::endl;
 			}
-			continue;
-		}
-		
-		if (actionIter->entered) {
-			// we entered a state
-			if (_analyzer.usesInPredicate()) {
-				stream << padding << "_x.states[" << _analyzer.macroForLiteral(ATTR(actionIter->entered, "id")) << "] = true; " << std::endl;
-			}
-			continue;
 		}
 	}
 	
-	GlobalState* newState = _globalConf[transition->destination];
-	assert(newState != NULL);
-	
-	stream << padding << "  s = s" << newState->index << ";";
-	LENGTH_FOR_NUMBER(newState->index, digits);
-	INDENT_MIN(stream, 10 + digits, MIN_COMMENT_PADDING);
-	
-	stream << " /* to state " << transition->destination << " */" << std::endl;
+	if (!wroteHistoryAssignments) {
+		writeHistoryAssignments(stream, transition, indent);
+		wroteHistoryAssignments = true;
+	}
 
-	
-	if (newState->isFinal) {
-		stream << padding << "  goto terminate;";
-		INDENT_MIN(stream, padding.length() + 14, MIN_COMMENT_PADDING);
-		stream << "/* final state */" << std::endl;
-	} else if (transition->isEventless) {
-		stream << padding << "  goto nextTransition;";
-		INDENT_MIN(stream, padding.length() + 19, MIN_COMMENT_PADDING);
-		stream << "/* spontaneous transition, check for more transitions */" << std::endl;
-	} else {
-		stream << padding << "  eventLess = true;" << std::endl;
-		stream << padding << "  goto nextTransition;";
-		INDENT_MIN(stream, padding.length() + 21, MIN_COMMENT_PADDING);
-		stream << "/* ordinary transition, check for spontaneous transitions */" << std::endl;
+	// write new state assignment and goto dispatching
+	GlobalState* origNewState = NULL;
+
+	// sort history transitions by new active state
+	std::map<GlobalState*, std::set<GlobalTransition*> > histTargets;
+	histIter = transition->historyTrans.begin();
+	while(histIter != transition->historyTrans.end()) {
+		origNewState = _activeConf[(*histIter)->activeDestination];
+		assert(origNewState != NULL);
+		histTargets[origNewState].insert(*histIter);
+		histIter++;
 	}
+
+	origNewState = _activeConf[transition->activeDestination];
+	bool hasHistoryTarget = false;
+	
+	for (std::map<GlobalState*, std::set<GlobalTransition*> >::const_iterator histTargetIter = histTargets.begin(); histTargetIter != histTargets.end(); histTargetIter++) {
+		GlobalState* histNewState = histTargetIter->first;
+		if (histNewState == origNewState)
+			continue;
+		stream << padding << "if" << std::endl;
+		stream << padding << "::" << conditionalizeForHist(histTargetIter->second) << " -> {" << std::endl;
+		stream << std::endl << "/* via hist ";
+		FlatStateIdentifier flatActiveDest(histNewState->activeId);
+		PRETTY_PRINT_LIST(stream, flatActiveDest.getActive());
+		stream << "*/" << std::endl;
+
+		stream << padding << "  s = s" << histNewState->index << ";" << std::endl;
+		
+		writeTransitionClosure(stream, *histTargetIter->second.begin(), histNewState, indent + 1); // is this correct for everyone in set?
+
+		stream << padding << "}" << std::endl;
+		hasHistoryTarget = true;
+	}
+	
+	if (hasHistoryTarget) {
+		stream << padding << ":: else {" << std::endl;
+		padding += "  ";
+		indent++;
+	}
+	
+	origNewState = _activeConf[transition->activeDestination];
+	assert(origNewState != NULL);
+	
+	
+	stream << std::endl << "/* to state ";
+	FlatStateIdentifier flatActiveDest(transition->activeDestination);
+	PRETTY_PRINT_LIST(stream, flatActiveDest.getActive());
+	stream <<  " */" << std::endl;
+	
+	stream << padding << "s = s" << origNewState->index << ";" << std::endl;
+
+	writeTransitionClosure(stream, transition, origNewState, indent);
+
+	if (hasHistoryTarget) {
+		padding = padding.substr(2);
+		indent--;
+		stream << padding << "}" << std::endl;
+		stream << padding << "fi;" << std::endl;
+	}
+	
+	padding = padding.substr(2);
 	stream << padding << "}" << std::endl;
 
 }
+
+void ChartToPromela::writeHistoryAssignments(std::ostream& stream, GlobalTransition* transition, int indent) {
+	std::string padding;
+	for (int i = 0; i < indent; i++) {
+		padding += "  ";
+	}
 	
+	// GlobalState to *changed* history configuration
+	std::list<HistoryTransitionClass> histClasses;
+
+	std::set<GlobalTransition*> allTrans;
+	allTrans.insert(transition);
+	allTrans.insert(transition->historyTrans.begin(), transition->historyTrans.end());
+	
+	// iterate all transitions
+	std::set<GlobalTransition*>::iterator transIter = allTrans.begin();
+	while(transIter != allTrans.end()) {
+		histClasses.push_back(HistoryTransitionClass(*transIter));
+		transIter++;
+	}
+	
+	// nothing to do here
+	if (histClasses.size() == 0)
+		return;
+	
+//	std::cout << histClasses.size() << " / ";
+	
+	// now sort into equivalence classes
+	std::list<HistoryTransitionClass>::iterator outerHistClassIter = histClasses.begin();
+	std::list<HistoryTransitionClass>::iterator innerHistClassIter = histClasses.begin();
+	while(outerHistClassIter != histClasses.end()) {
+		HistoryTransitionClass& outerClass = *outerHistClassIter;
+
+		// iterate inner iter for every outer iter and see if we can merge
+		innerHistClassIter = outerHistClassIter;
+		innerHistClassIter++;
+		
+		while(innerHistClassIter != histClasses.end()) {
+			// can we merge the inner class into the outer one?
+			HistoryTransitionClass& innerClass = *innerHistClassIter;
+			
+			if (outerClass.matches(innerClass)) {
+				outerClass.merge(innerClass);
+				histClasses.erase(innerHistClassIter);
+			}
+			
+			innerHistClassIter++;
+		}
+		outerHistClassIter++;
+	}
+//	std::cout << histClasses.size() << std::endl;
+
+	bool preambelWritten = false;
+	std::list<HistoryTransitionClass>::iterator histClassIter = histClasses.begin();
+	std::list<HistoryTransitionClass>::iterator defaultHistClassIter = histClasses.end();
+	size_t nrMembers = 0;
+	while(histClassIter != histClasses.end() || defaultHistClassIter != histClasses.end()) {
+
+		// remember iterator position with default transition
+		if (histClassIter == histClasses.end() && defaultHistClassIter != histClasses.end()) {
+			histClassIter = defaultHistClassIter;
+		} else if (histClassIter->members.find(transition) != histClassIter->members.end()) {
+			defaultHistClassIter = histClassIter;
+			histClassIter++;
+			continue;
+		}
+
+		nrMembers += histClassIter->members.size();
+
+		if (!preambelWritten && histClasses.size() > 1) {
+			stream << padding << "if" << std::endl;
+			preambelWritten = true;
+		}
+
+		if (histClasses.size() > 1) {
+			stream << padding << "::" << conditionalizeForHist(histClassIter->members) << " {" << std::endl;
+		}
+
+		{
+			std::map<std::string, std::set<std::string> >::iterator forgetIter = histClassIter->toForget.begin();
+			while(forgetIter != histClassIter->toForget.end()) {
+				std::set<std::string>::iterator forgetMemberIter = forgetIter->second.begin();
+				while(forgetMemberIter != forgetIter->second.end()) {
+					stream << padding << "_hist_" << boost::to_lower_copy(_analyzer.macroForLiteral(forgetIter->first));
+					stream << "[" << _historyMembers[forgetIter->first][*forgetMemberIter] << "] = 0;";
+					stream << " \t/* " << *forgetMemberIter << " */" << std::endl;
+					forgetMemberIter++;
+				}
+				forgetIter++;
+			}
+		}
+		
+		{
+			std::map<std::string, std::set<std::string> >::iterator rememberIter = histClassIter->toRemember.begin();
+			while(rememberIter != histClassIter->toRemember.end()) {
+				std::set<std::string>::iterator rememberMemberIter = rememberIter->second.begin();
+				while(rememberMemberIter != rememberIter->second.end()) {
+					stream << padding << "_hist_" << boost::to_lower_copy(_analyzer.macroForLiteral(rememberIter->first));
+					stream << "[" << _historyMembers[rememberIter->first][*rememberMemberIter] << "] = 1;";
+					stream << " \t/* " << *rememberMemberIter << " */" << std::endl;
+					rememberMemberIter++;
+				}
+				rememberIter++;
+			}
+		}
+
+		if (histClasses.size() > 1) {
+			stream << padding << "}" << std::endl;
+		}
+
+		if (histClassIter == defaultHistClassIter) {
+			break;
+		}
+		
+		histClassIter++;
+	}
+	assert(nrMembers == allTrans.size());
+	
+}
+
+HistoryTransitionClass::HistoryTransitionClass(GlobalTransition* transition) {
+	members.insert(transition);
+	init(transition->source, transition->destination);
+}
+
+HistoryTransitionClass::HistoryTransitionClass(const std::string& from, const std::string& to) {
+	init(from, to);
+}
+
+void HistoryTransitionClass::init(const std::string& from, const std::string& to) {
+	FlatStateIdentifier flatSource(from);
+	FlatStateIdentifier flatTarget(to);
+	
+	std::map<std::string, std::set<std::string> > activeBefore = flatSource.getHistorySets();
+	std::map<std::string, std::set<std::string> > activeAfter = flatTarget.getHistorySets();
+	
+	std::map<std::string, std::set<std::string> >::const_iterator targetHistIter = activeAfter.begin();
+	while(targetHistIter != activeAfter.end()) {
+		// for every history state in target, see if it existed in source
+		if (activeBefore.find(targetHistIter->first) == activeBefore.end()) {
+			// this target history did not exist source -> every item is changed
+			std::set<std::string>::const_iterator histMemberIter = activeAfter.at(targetHistIter->first).begin();
+			while(histMemberIter != activeAfter.at(targetHistIter->first).end()) {
+				toRemember[targetHistIter->first].insert(*histMemberIter);
+				histMemberIter++;
+			}
+		} else {
+			// this target *did* already exist, but was it equally assigned?
+			std::set<std::string>::const_iterator sourceHistMemberIter = activeBefore.at(targetHistIter->first).begin();
+			while(sourceHistMemberIter != activeBefore.at(targetHistIter->first).end()) {
+				// iterate every item in source and try to find it in target
+				if (targetHistIter->second.find(*sourceHistMemberIter) == targetHistIter->second.end()) {
+					// no, source is no longer in target
+					toForget[targetHistIter->first].insert(*sourceHistMemberIter);
+				} else {
+					toKeep[targetHistIter->first].insert(*sourceHistMemberIter);
+				}
+				sourceHistMemberIter++;
+			}
+			
+			std::set<std::string>::const_iterator targetHistMemberIter = activeAfter.at(targetHistIter->first).begin();
+			while(targetHistMemberIter != activeAfter.at(targetHistIter->first).end()) {
+				// iterate member of target history and see if it is new
+				if (activeBefore.at(targetHistIter->first).find(*targetHistMemberIter) == activeBefore.at(targetHistIter->first).end()) {
+					// not found -> new assignment
+					toRemember[targetHistIter->first].insert(*targetHistMemberIter);
+				}
+				targetHistMemberIter++;
+			}
+		}
+		targetHistIter++;
+	}
+}
+	
+bool HistoryTransitionClass::matches(const HistoryTransitionClass& other) {
+
+	/* does the given transition match this one?:
+	 1. everything remembered has to be remembered as well or already enabled
+	 2. everything forgot has to be forgotten as well or already disabled
+	 and vice versa
+	 */
+	
+	std::map<std::string, std::set<std::string> > tmp;
+	
+	typedef std::map<std::string, std::set<std::string> >::const_iterator histIter_t;
+	typedef std::set<std::string>::const_iterator histMemberIter_t;
+	
+	// we will remember these - will the other try to forget them?
+	INTERSECT_MAPS(toRemember, other.toForget, tmp);
+	if (tmp.size() > 0)
+		return false;
+
+	// we will keep these - will the other try to forget them?
+	INTERSECT_MAPS(toKeep, other.toForget, tmp);
+	if (tmp.size() > 0)
+		return false;
+
+	// we will forget these - will the other try to keep or even remember?
+	INTERSECT_MAPS(toForget, other.toKeep, tmp);
+	if (tmp.size() > 0)
+		return false;
+	INTERSECT_MAPS(toForget, other.toRemember, tmp);
+	if (tmp.size() > 0)
+		return false;
+
+	return true;
+}
+
+void HistoryTransitionClass::merge(const HistoryTransitionClass& other) {
+	members.insert(other.members.begin(), other.members.end());
+	
+	std::map<std::string, std::set<std::string> >::const_iterator histIter;
+	
+	histIter = other.toRemember.begin();
+	while(histIter != other.toRemember.end()) {
+		toRemember[histIter->first].insert(histIter->second.begin(), histIter->second.end());
+		histIter++;
+	}
+
+	histIter = other.toForget.begin();
+	while(histIter != other.toForget.end()) {
+		toForget[histIter->first].insert(histIter->second.begin(), histIter->second.end());
+		histIter++;
+	}
+
+	histIter = other.toKeep.begin();
+	while(histIter != other.toKeep.end()) {
+		toKeep[histIter->first].insert(histIter->second.begin(), histIter->second.end());
+		histIter++;
+	}
+
+}
+	
+void ChartToPromela::writeTransitionClosure(std::ostream& stream, GlobalTransition* transition, GlobalState* state, int indent) {
+	std::string padding;
+	for (int i = 0; i < indent; i++) {
+		padding += "  ";
+	}
+
+	if (state->isFinal) {
+		stream << padding << "goto terminate;" << std::endl;
+	} else {
+		if (!transition->isEventless) {
+			stream << padding << "spontaneous = true;" << std::endl;
+		}
+		stream << padding << "goto microStep;" << std::endl;
+	}
+}
+
 void ChartToPromela::writeExecutableContent(std::ostream& stream, const Arabica::DOM::Node<std::string>& node, int indent) {
 	if (!node)
 		return;
@@ -812,7 +1323,7 @@ void ChartToPromela::writeExecutableContent(std::ostream& stream, const Arabica:
 
 	if (node.getNodeType() == Node_base::COMMENT_NODE) {
 		// we cannot have labels in an atomic block, just process inline promela
-		PromelaInlines promInls = getInlinePromela(boost::trim_copy(node.getNodeValue()));
+		PromelaInlines promInls = PromelaInlines::fromNode(node);
 		//		TODO!
 		//		if (promInls) {
 		//		stream << padding << "skip;" << std::endl;
@@ -983,7 +1494,7 @@ void ChartToPromela::writeExecutableContent(std::ostream& stream, const Arabica:
 			}
 		}
 	} else if(TAGNAME(nodeElem) == "invoke") {
-		_invokers[ATTR(nodeElem, "invokeid")].writeStartEventSources(stream, indent);
+		_invokers[ATTR(nodeElem, "invokeid")].writeStart(stream, indent);
 	} else if(TAGNAME(nodeElem) == "uninvoke") {
 		stream << padding << ATTR(nodeElem, "invokeid") << "EventSourceDone" << "= 1;" << std::endl;
 	} else if(TAGNAME(nodeElem) == "cancel") {
@@ -993,322 +1504,37 @@ void ChartToPromela::writeExecutableContent(std::ostream& stream, const Arabica:
 		assert(false);
 	}
 }
-
-#if 0
-void ChartToPromela::writeExecutableContent(std::ostream& stream, const Arabica::DOM::Node<std::string>& node, int indent) {
-
-//	std::cout << std::endl << node << std::endl;
-	if (!node)
-		return;
-
-	std::string padding;
-	for (int i = 0; i < indent; i++) {
-		padding += "  ";
-	}
-
-//	std::cerr << node << std::endl;
-
-	if (node.getNodeType() == Node_base::COMMENT_NODE) {
-		// we cannot have labels in an atomic block, just process inline promela
-		std::string comment = node.getNodeValue();
-		boost::trim(comment);
-		std::stringstream inlinePromela;
-		if (!boost::starts_with(comment, "#promela-inline"))
-			return;
-		std::stringstream ssLine(comment);
-		std::string line;
-		std::getline(ssLine, line); // consume first line
-		while(std::getline(ssLine, line)) {
-			if (line.length() == 0)
-				continue;
-			inlinePromela << line << std::endl;
-		}
-		stream << padding << "skip;" << std::endl;
-		stream << beautifyIndentation(inlinePromela.str(), indent) << std::endl;
-	}
-
-	if (node.getNodeType() != Node_base::ELEMENT_NODE)
-		return;
-
-	Arabica::DOM::Element<std::string> nodeElem = Arabica::DOM::Element<std::string>(node);
-
-	if (false) {
-//	} else if(TAGNAME(nodeElem) == "state") {
-//		if (HAS_ATTR(nodeElem, "transient") && DOMUtils::attributeIsTrue(ATTR(nodeElem, "transient"))) {
-//			Arabica::XPath::NodeSet<std::string> execContent = getTransientContent(nodeElem);
-//			for (int i = 0; i < execContent.size(); i++) {
-//				writeExecutableContent(stream, execContent[i], indent);
-//			}
-//		}
-	} else if(TAGNAME(nodeElem) == "transition") {
-		stream << "t" << _transitions[nodeElem] << ":";
-
-		int number = _transitions[nodeElem];
-		int digits = 0;
-		do {
-			number /= 10;
-			digits++;
-		} while (number != 0);
-
-		INDENT_MIN(stream, 2 + digits, MIN_COMMENT_PADDING);
-
-		Node<std::string> source = node.getParentNode();
-		stream << " /* from state " << ATTR_CAST(source, "id") << " */" << std::endl;
-
-		// gather all executable content
-		NodeSet<std::string> execContent = getTransientContent(_states[ATTR(nodeElem, "target")], ATTR_CAST(source, "id"));
-
-		// check for special promela labels
-		if (HAS_ATTR(nodeElem, "target")) {
-			PromelaInlines promInls = getInlinePromela(execContent, true);
-
-			if (promInls.acceptLabels > 0)
-				stream << padding << "acceptLabelT" << _transitions[nodeElem] << ":" << std::endl;
-			if (promInls.endLabels > 0)
-				stream << padding << "endLabelT" << _transitions[nodeElem] << ":" << std::endl;
-			if (promInls.progressLabels > 0)
-				stream << padding << "progressLabelT" << _transitions[nodeElem] << ":" << std::endl;
-		}
-
-		stream << padding << "atomic {" << std::endl;
-//		writeExecutableContent(stream, _states[ATTR(nodeElem, "target")], indent+1);
-		for (int i = 0; i < execContent.size(); i++) {
-			writeExecutableContent(stream, execContent[i], indent+1);
-		}
-		stream << padding << "  skip;" << std::endl;
-
-		Node<std::string> newState = getUltimateTarget(nodeElem);
-		for (int i = 0; i < _globalStates.size(); i++) {
-			if (newState != _globalStates[i])
-				continue;
-
-			std::string stateId = ATTR_CAST(_globalStates[i], "id");
-
-			stream << padding << "  s = s" << i << ";";
-
-			int number = i;
-			int digits = 0;
-			do {
-				number /= 10;
-				digits++;
-			} while (number != 0);
-
-			INDENT_MIN(stream, 10 + digits, MIN_COMMENT_PADDING);
-
-			stream << " /* to state " << stateId << " */" << std::endl;
-
-//			if (_analyzer.usesInPredicate()) {
-//				FlatStateIdentifier flatId(stateId);
-//				std::map<std::string, int> allOrigStates = _analyzer.getOrigStates();
-//				for (std::map<std::string, int>::iterator allOrigIter = allOrigStates.begin(); allOrigIter != allOrigStates.end(); allOrigIter++) {
-//					stream << padding << "  _x.states[" << _analyzer.macroForLiteral(allOrigIter->first) << "] = ";
-//					if (std::find(flatId.getActive().begin(), flatId.getActive().end(), allOrigIter->first) != flatId.getActive().end()) {
-//						stream << "true;" << std::endl;
-//					} else {
-//						stream << "false;" << std::endl;
-//					}
-//				}
-//			}
-
-		}
-
-		stream << padding << "}" << std::endl;
-		if (isFinal(Element<std::string>(newState))) {
-			stream << padding << "goto terminate;";
-			INDENT_MIN(stream, padding.length() + 14, MIN_COMMENT_PADDING);
-			stream << "/* final state */" << std::endl;
-		} else if (!HAS_ATTR_CAST(node, "event")) {
-			stream << padding << "goto nextTransition;";
-			INDENT_MIN(stream, padding.length() + 19, MIN_COMMENT_PADDING);
-			stream << "/* spontaneous transition, check for more transitions */" << std::endl;
-		} else {
-			stream << padding << "eventLess = true;" << std::endl;
-			stream << padding << "goto nextTransition;";
-			INDENT_MIN(stream, padding.length() + 21, MIN_COMMENT_PADDING);
-			stream << "/* ordinary transition, check for spontaneous transitions */" << std::endl;
-		}
-
-	} else if(TAGNAME(nodeElem) == "onentry" || TAGNAME(nodeElem) == "onexit") {
-		Arabica::DOM::Node<std::string> child = node.getFirstChild();
-		while(child) {
-//			std::cerr << node << std::endl;
-			if (child.getNodeType() == Node_base::TEXT_NODE) {
-				if (boost::trim_copy(child.getNodeValue()).length() > 0)
-					stream << beautifyIndentation(_analyzer.replaceLiterals(child.getNodeValue()), indent) << std::endl;
-			}
-			if (child.getNodeType() == Node_base::ELEMENT_NODE) {
-				writeExecutableContent(stream, child, indent);
-			}
-			child = child.getNextSibling();
-		}
-
-	} else if(TAGNAME(nodeElem) == "script") {
-		NodeSet<std::string> scriptText = filterChildType(Node_base::TEXT_NODE, node, true);
-		for (int i = 0; i < scriptText.size(); i++) {
-			stream << _analyzer.replaceLiterals(beautifyIndentation(scriptText[i].getNodeValue(), indent)) << std::endl;
-		}
-
-	} else if(TAGNAME(nodeElem) == "log") {
-		std::string label = (HAS_ATTR(nodeElem, "label") ? ATTR(nodeElem, "label") : "");
-		std::string expr = (HAS_ATTR(nodeElem, "expr") ? ATTR(nodeElem, "expr") : "");
-		std::string trimmedExpr = boost::trim_copy(expr);
-		bool isStringLiteral = (boost::starts_with(trimmedExpr, "\"") || boost::starts_with(trimmedExpr, "'"));
-
-		std::string formatString;
-		std::string varString;
-		std::string seperator;
-
-		if (label.size() > 0) {
-			formatString += label + ": ";
-		}
-
-		if (isStringLiteral) {
-			formatString += expr;
-		} else {
-			formatString += "%d";
-			varString += seperator + expr;
-		}
-
-		if (varString.length() > 0) {
-			stream << padding << "printf(\"" + formatString + "\", " + varString + ");" << std::endl;
-		} else {
-			stream << padding << "printf(\"" + formatString + "\");" << std::endl;
-		}
-
-	} else if(TAGNAME(nodeElem) == "foreach") {
-		stream << padding << "for (" << (HAS_ATTR(nodeElem, "index") ? ATTR(nodeElem, "index") : "_index") << " in " << ATTR(nodeElem, "array") << ") {" << std::endl;
-		if (HAS_ATTR(nodeElem, "item")) {
-			stream << padding << "  " << ATTR(nodeElem, "item") << " = " << ATTR(nodeElem, "array") << "[" << (HAS_ATTR(nodeElem, "index") ? ATTR(nodeElem, "index") : "_index") << "];" << std::endl;
-		}
-		Arabica::DOM::Node<std::string> child = node.getFirstChild();
-		while(child) {
-			writeExecutableContent(stream, child, indent + 1);
-			child = child.getNextSibling();
-		}
-		if (HAS_ATTR(nodeElem, "index"))
-			stream << padding << "  " << ATTR(nodeElem, "index") << "++;" << std::endl;
-		stream << padding << "}" << std::endl;
-
-	} else if(TAGNAME(nodeElem) == "if") {
-		NodeSet<std::string> condChain;
-		condChain.push_back(node);
-		condChain.push_back(filterChildElements(_nsInfo.xmlNSPrefix + "elseif", node));
-		condChain.push_back(filterChildElements(_nsInfo.xmlNSPrefix + "else", node));
-
-		writeIfBlock(stream, condChain, indent);
-
-	} else if(TAGNAME(nodeElem) == "assign") {
-		if (HAS_ATTR(nodeElem, "location")) {
-			stream << padding << ATTR(nodeElem, "location") << " = ";
-		}
-		if (HAS_ATTR(nodeElem, "expr")) {
-			stream << _analyzer.replaceLiterals(ATTR(nodeElem, "expr")) << ";" << std::endl;
-		} else {
-			NodeSet<std::string> assignTexts = filterChildType(Node_base::TEXT_NODE, nodeElem, true);
-			if (assignTexts.size() > 0) {
-				stream << _analyzer.replaceLiterals(boost::trim_copy(assignTexts[0].getNodeValue())) << ";" << std::endl;
-			}
-		}
-	} else if(TAGNAME(nodeElem) == "send" || TAGNAME(nodeElem) == "raise") {
-		std::string targetQueue;
-		if (TAGNAME(nodeElem) == "raise") {
-			targetQueue = "iQ!";
-		} else if (!HAS_ATTR(nodeElem, "target")) {
-			targetQueue = "tmpQ!";
-		} else if (ATTR(nodeElem, "target").compare("#_internal") == 0) {
-			targetQueue = "iQ!";
-		}
-		if (targetQueue.length() > 0) {
-			// this is for our external queue
-			std::string event;
-
-			if (HAS_ATTR(nodeElem, "event")) {
-				event = _analyzer.macroForLiteral(ATTR(nodeElem, "event"));
-			} else if (HAS_ATTR(nodeElem, "eventexpr")) {
-				event = ATTR(nodeElem, "eventexpr");
-			}
-			if (_analyzer.usesComplexEventStruct()) {
-				stream << padding << "{" << std::endl;
-				stream << padding << "  _event_t tmpEvent;" << std::endl;
-				stream << padding << "  tmpEvent.name = " << event << ";" << std::endl;
-
-				if (HAS_ATTR(nodeElem, "idlocation")) {
-					stream << padding << "  /* idlocation */" << std::endl;
-					stream << padding << "  _lastSendId = _lastSendId + 1;" << std::endl;
-					stream << padding << "  " << ATTR(nodeElem, "idlocation") << " = _lastSendId;" << std::endl;
-					stream << padding << "  tmpEvent.sendid = _lastSendId;" << std::endl;
-					stream << padding << "  if" << std::endl;
-					stream << padding << "  :: _lastSendId == 2147483647 -> _lastSendId = 0;" << std::endl;
-					stream << padding << "  :: timeout -> skip;" << std::endl;
-					stream << padding << "  fi;" << std::endl;
-				} else if (HAS_ATTR(nodeElem, "id")) {
-					stream << padding << "  tmpEvent.sendid = " << _analyzer.macroForLiteral(ATTR(nodeElem, "id")) << ";" << std::endl;
-				}
-
-				if (_analyzer.usesEventField("origintype") && targetQueue.compare("iQ!") != 0) {
-					stream << padding << "  tmpEvent.origintype = " << _analyzer.macroForLiteral("http://www.w3.org/TR/scxml/#SCXMLEventProcessor") << ";" << std::endl;
-				}
-
-				if (_analyzer.usesEventField("type")) {
-					std::string eventType = (targetQueue.compare("iQ!") == 0 ? _analyzer.macroForLiteral("internal") : _analyzer.macroForLiteral("external"));
-					stream << padding << "  tmpEvent.type = " << eventType << ";" << std::endl;
-				}
-
-				NodeSet<std::string> sendParams = filterChildElements(_nsInfo.xmlNSPrefix + "param", nodeElem);
-				NodeSet<std::string> sendContents = filterChildElements(_nsInfo.xmlNSPrefix + "content", nodeElem);
-				std::string sendNameList = ATTR(nodeElem, "namelist");
-				if (sendParams.size() > 0) {
-					for (int i = 0; i < sendParams.size(); i++) {
-						Element<std::string> paramElem = Element<std::string>(sendParams[i]);
-						stream << padding << "  tmpEvent.data." << ATTR(paramElem, "name") << " = " << ATTR(paramElem, "expr")  << ";" << std::endl;
-					}
-				}
-				if (sendNameList.size() > 0) {
-					std::list<std::string> nameListIds = tokenizeIdRefs(sendNameList);
-					std::list<std::string>::iterator nameIter = nameListIds.begin();
-					while(nameIter != nameListIds.end()) {
-						stream << padding << "  tmpEvent.data." << *nameIter << " = " << *nameIter << ";" << std::endl;
-						nameIter++;
-					}
-				}
-
-				if (sendParams.size() == 0 && sendNameList.size() == 0 && sendContents.size() > 0) {
-					Element<std::string> contentElem = Element<std::string>(sendContents[0]);
-					if (contentElem.hasChildNodes() && contentElem.getFirstChild().getNodeType() == Node_base::TEXT_NODE) {
-						stream << padding << "  tmpEvent.data = " << spaceNormalize(contentElem.getFirstChild().getNodeValue()) << ";" << std::endl;
-					} else if (HAS_ATTR(contentElem, "expr")) {
-						stream << padding << "  tmpEvent.data = " << _analyzer.replaceLiterals(ATTR(contentElem, "expr")) << ";" << std::endl;
-					}
-				}
-				stream << padding << "  " << targetQueue << "tmpEvent;" << std::endl;
-				stream << padding << "}" << std::endl;
-			} else {
-				stream << padding << targetQueue << event << ";" << std::endl;
-			}
-		}
-	} else if(TAGNAME(nodeElem) == "invoke") {
-		_invokers[ATTR(nodeElem, "invokeid")].writeStartEventSources(stream, indent);
-	} else if(TAGNAME(nodeElem) == "uninvoke") {
-		stream << padding << ATTR(nodeElem, "invokeid") << "EventSourceDone" << "= 1;" << std::endl;
-	} else if(TAGNAME(nodeElem) == "cancel") {
-		// noop
-	} else {
-
-		std::cerr << "'" << TAGNAME(nodeElem) << "'" << std::endl << nodeElem << std::endl;
-		assert(false);
-	}
-
-}
-#endif
 	
-PromelaInlines ChartToPromela::getInlinePromela(const std::string& content) {
-	PromelaInlines prom;
+PromelaInlines PromelaInlines::fromNodeSet(const NodeSet<std::string>& node, bool recurse) {
+	PromelaInlines allPromInls;
+	Arabica::XPath::NodeSet<std::string> comments = InterpreterImpl::filterChildType(Node_base::COMMENT_NODE, node, recurse);
+	for (int i = 0; i < comments.size(); i++) {
+		allPromInls.merge(PromelaInlines::fromNode(comments[i]));
+	}
+	return allPromInls;
+	
+}
+
+PromelaInlines PromelaInlines::fromNode(const Arabica::DOM::Node<std::string>& node) {
+	if (node.getNodeType() != Node_base::COMMENT_NODE && node.getNodeType() != Node_base::TEXT_NODE)
+		return PromelaInlines();
+	return PromelaInlines(node.getNodeValue(), node);
+}
+
+	PromelaInlines PromelaInlines::fromString(const std::string& text) {
+	return PromelaInlines(text, Arabica::DOM::Node<std::string>());
+}
+
+PromelaInlines::PromelaInlines() : nrProgressLabels(0), nrAcceptLabels(0), nrEndLabels(0), nrEventSources(0), nrCodes(0) {
+}
+
+PromelaInlines::PromelaInlines(const std::string& content, const Arabica::DOM::Node<std::string>& node)
+		: nrProgressLabels(0), nrAcceptLabels(0), nrEndLabels(0), nrEventSources(0), nrCodes(0) {
 
 	std::stringstream ssLine(content);
 	std::string line;
 
 	bool isInPromelaCode = false;
-	bool isInPromelaEventSource = false;
 	PromelaInline promInl;
 
 	while(std::getline(ssLine, line)) {
@@ -1316,79 +1542,54 @@ PromelaInlines ChartToPromela::getInlinePromela(const std::string& content) {
 		if (trimLine.length() == 0)
 			continue;
 		if (boost::starts_with(trimLine, "#promela")) {
-			if (isInPromelaCode || isInPromelaEventSource) {
-				prom.inlines.push_back(promInl);
+			if (isInPromelaCode) {
+				code.push_back(promInl);
 				isInPromelaCode = false;
-				isInPromelaEventSource = false;
 			}
 			promInl = PromelaInline();
 		}
 
 		if (false) {
 		} else if (boost::starts_with(trimLine, "#promela-progress")) {
-			prom.progressLabels++;
+			nrProgressLabels++;
 			promInl.type = PromelaInline::PROMELA_PROGRESS_LABEL;
 			promInl.content = line;
-			prom.inlines.push_back(promInl);
+			code.push_back(promInl);
 		} else if (boost::starts_with(trimLine, "#promela-accept")) {
-			prom.acceptLabels++;
+			nrAcceptLabels++;
 			promInl.type = PromelaInline::PROMELA_ACCEPT_LABEL;
 			promInl.content = line;
-			prom.inlines.push_back(promInl);
+			code.push_back(promInl);
 		} else if (boost::starts_with(trimLine, "#promela-end")) {
-			prom.endLabels++;
+			nrEndLabels++;
 			promInl.type = PromelaInline::PROMELA_END_LABEL;
 			promInl.content = line;
-			prom.inlines.push_back(promInl);
+			code.push_back(promInl);
 		} else if (boost::starts_with(trimLine, "#promela-inline")) {
-			prom.codes++;
+			nrCodes++;
 			isInPromelaCode = true;
 			promInl.type = PromelaInline::PROMELA_CODE;
 		} else if (boost::starts_with(trimLine, "#promela-event-source-custom")) {
-			prom.customEventSources++;
+			nrEventSources++;
 			isInPromelaCode = true;
 			promInl.type = PromelaInline::PROMELA_EVENT_SOURCE_CUSTOM;
 		} else if (boost::starts_with(trimLine, "#promela-event-source")) {
-			prom.eventSources++;
-			isInPromelaEventSource = true;
+			nrEventSources++;
+			isInPromelaCode = true;
 			promInl.type = PromelaInline::PROMELA_EVENT_SOURCE;
 		} else if (isInPromelaCode) {
 			promInl.content += line;
 			promInl.content += "\n";
-		} else if (isInPromelaEventSource) {
-			std::list<std::string> seq;
-			std::stringstream ssToken(trimLine);
-			std::string token;
-			while(std::getline(ssToken, token, ' ')) {
-				if (token.length() == 0)
-					continue;
-				seq.push_back(token);
-			}
-			promInl.sequences.push_back(seq);
 		}
 	}
 	// inline code ends with comment
-	if (isInPromelaCode || isInPromelaEventSource) {
-		prom.inlines.push_back(promInl);
+	if (isInPromelaCode) {
+		code.push_back(promInl);
 	}
+			
+	// iterate inlinesFound and classify
+//			PromelaEventSource promES; // TODO! use this
 
-	return prom;
-}
-
-PromelaInlines ChartToPromela::getInlinePromela(const Arabica::DOM::Node<std::string>& node) {
-	if (node.getNodeType() != Node_base::COMMENT_NODE)
-		return getInlinePromela(std::string());
-	return getInlinePromela(node.getNodeValue());
-}
-
-PromelaInlines ChartToPromela::getInlinePromela(const Arabica::XPath::NodeSet<std::string>& elements, bool recurse) {
-	PromelaInlines allPromInls;
-
-	Arabica::XPath::NodeSet<std::string> comments = filterChildType(Node_base::COMMENT_NODE, elements, recurse);
-	for (int i = 0; i < comments.size(); i++) {
-		allPromInls.merge(getInlinePromela(comments[i]));
-	}
-	return allPromInls;
 }
 
 void ChartToPromela::writeIfBlock(std::ostream& stream, const Arabica::XPath::NodeSet<std::string>& condChain, int indent) {
@@ -1454,7 +1655,6 @@ void ChartToPromela::writeIfBlock(std::ostream& stream, const Arabica::XPath::No
 		}
 		writeIfBlock(stream, cdrCondChain, indent + 1);
 		stream << padding << "}" << std::endl;
-
 	}
 
 	stream << padding << "fi;" << std::endl;
@@ -1512,20 +1712,20 @@ void ChartToPromela::writeDeclarations(std::ostream& stream) {
 	if (_analyzer.usesComplexEventStruct()) {
 		// event is defined with the typedefs
 		stream << "_event_t _event;            /* current state */" << std::endl;
-		stream << "unsigned s : " << BIT_WIDTH(_globalConf.size() + 1) << ";            /* current state */" << std::endl;
+		stream << "unsigned s : " << BIT_WIDTH(_activeConf.size() + 1) << ";            /* current state */" << std::endl;
 		stream << "chan iQ   = [" << MAX(_internalQueueLength, 1) << "] of {_event_t}  /* internal queue */" << std::endl;
 		stream << "chan eQ   = [" << _externalQueueLength + 1 << "] of {_event_t}  /* external queue */" << std::endl;
 		stream << "chan tmpQ = [" << MAX(_externalQueueLength, 1) << "] of {_event_t}  /* temporary queue for external events in transitions */" << std::endl;
 		stream << "hidden _event_t tmpQItem;" << std::endl;
 	} else {
 		stream << "unsigned _event : " << BIT_WIDTH(_analyzer.getEvents().size() + 1) << ";                /* current event */" << std::endl;
-		stream << "unsigned s : " << BIT_WIDTH(_globalConf.size() + 1) << ";            /* current state */" << std::endl;
+		stream << "unsigned s : " << BIT_WIDTH(_activeConf.size() + 1) << ";            /* current state */" << std::endl;
 		stream << "chan iQ   = [" << MAX(_internalQueueLength, 1) << "] of {int}  /* internal queue */" << std::endl;
 		stream << "chan eQ   = [" << _externalQueueLength + 1 << "] of {int}  /* external queue */" << std::endl;
 		stream << "chan tmpQ = [" << MAX(_externalQueueLength, 1) << "] of {int}  /* temporary queue for external events in transitions */" << std::endl;
 		stream << "hidden unsigned tmpQItem : " << BIT_WIDTH(_analyzer.getEvents().size() + 1) << ";" << std::endl;
 	}
-	stream << "bool eventLess = true;       /* whether to process event-less only n this step */" << std::endl;
+	stream << "bool spontaneous = true;       /* whether to process event-less only n this step */" << std::endl;
 	stream << "hidden int _index;                  /* helper for indexless foreach loops */" << std::endl;
 
 	if (_analyzer.getTypes().types.find("_ioprocessors") != _analyzer.getTypes().types.end()) {
@@ -1540,7 +1740,7 @@ void ChartToPromela::writeDeclarations(std::ostream& stream) {
 //		stream << "_x_t _x;" << std::endl;
 //	}
 
-	stream << std::endl;
+	stream << std::endl << std::endl;
 
 	// get all data elements
 	NodeSet<std::string> datas = _xpath.evaluate("//" + _nsInfo.xpathPrefix + "data", _scxml).asNodeSet();
@@ -1647,12 +1847,12 @@ void ChartToPromela::writeEventSources(std::ostream& stream) {
 	std::list<PromelaInline>::iterator inlineIter;
 
 	if (_globalEventSource) {
-		_globalEventSource.writeEventSource(stream);
+		_globalEventSource.writeBody(stream);
 	}
 
 	std::map<std::string, PromelaEventSource>::iterator invIter = _invokers.begin();
 	while(invIter != _invokers.end()) {
-		invIter->second.writeEventSource(stream);
+		invIter->second.writeBody(stream);
 		invIter++;
 	}
 }
@@ -1665,27 +1865,27 @@ void ChartToPromela::writeFSM(std::ostream& stream) {
 //	transitions = filterChildElements(_nsInfo.xmlNSPrefix + "transition", _startState);
 //	assert(transitions.size() == 1);
 
-	stream << "  /* transition to initial state */" << std::endl;
+	stream << "/* transition to initial state */" << std::endl;
 	assert(_start->sortedOutgoing.size() == 1);
 	// initial transition has to be first one for control flow at start
 	writeTransition(stream, _start->sortedOutgoing.front(), 1);
 	stream << std::endl;
 	
-	stream << "  /* transition's executable content */" << std::endl;
 	// every other transition
-	for (std::map<std::string, GlobalState*>::iterator stateIter = _globalConf.begin(); stateIter != _globalConf.end(); stateIter++) {
+	for (std::map<std::string, GlobalState*>::iterator stateIter = _activeConf.begin(); stateIter != _activeConf.end(); stateIter++) {
 		for (std::list<GlobalTransition*>::iterator transIter = stateIter->second->sortedOutgoing.begin(); transIter != stateIter->second->sortedOutgoing.end(); transIter++) {
 			// don't write initial transition
 			if (_start->sortedOutgoing.front() == *transIter)
 				continue;
-			// don't write trivial transitions
-			if ((*transIter)->hasExecutableContent)
+			// don't write trivial or history transitions
+			if ((*transIter)->historyBase == NULL) // TODO!
+//				if ((*transIter)->hasExecutableContent && (*transIter)->historyBase == NULL)
 				writeTransition(stream, *transIter, 1);
 		}
 	}
 
 	stream << std::endl;
-	stream << "nextStep:" << std::endl;
+	stream << "macroStep:" << std::endl;
 	stream << "  /* push send events to external queue */" << std::endl;
 	stream << "  if" << std::endl;
 	stream << "  :: len(tmpQ) != 0 -> { tmpQ?_event; eQ!_event }" << std::endl;
@@ -1697,23 +1897,24 @@ void ChartToPromela::writeFSM(std::ostream& stream) {
 	stream << "  :: len(iQ) != 0 -> iQ ? _event   /* from internal queue */" << std::endl;
 	stream << "  :: else -> eQ ? _event           /* from external queue */" << std::endl;
 	stream << "  fi;" << std::endl << std::endl;
+	stream << "microStep:" << std::endl;
 	stream << "  /* event dispatching per state */" << std::endl;
-	stream << "nextTransition:" << std::endl;
 	stream << "  if" << std::endl;
 
 	writeEventDispatching(stream);
 
-	stream << "  :: else -> assert(false);   /* this is an error as we dispatched all valid states */" << std::endl;
+	stream << "/* this is an error as we dispatched all valid states */" << std::endl;
+	stream << "  :: else -> assert(false);" << std::endl;
 	stream << "  fi;" << std::endl;
 	stream << "terminate: skip;" << std::endl;
 
 	// stop all event sources
 	if (_globalEventSource)
-		_globalEventSource.writeStopEventSources(stream, 1);
+		_globalEventSource.writeStop(stream, 1);
 
 	std::map<std::string, PromelaEventSource>::iterator invIter = _invokers.begin();
 	while(invIter != _invokers.end()) {
-		invIter->second.writeStopEventSources(stream, 1);
+		invIter->second.writeStop(stream, 1);
 		invIter++;
 	}
 
@@ -1721,23 +1922,26 @@ void ChartToPromela::writeFSM(std::ostream& stream) {
 }
 
 void ChartToPromela::writeEventDispatching(std::ostream& stream) {
-	for (std::map<std::string, GlobalState*>::iterator stateIter = _globalConf.begin(); stateIter != _globalConf.end(); stateIter++) {
+	for (std::map<std::string, GlobalState*>::iterator stateIter = _activeConf.begin(); stateIter != _activeConf.end(); stateIter++) {
 //		if (_globalStates[i] == _startState)
 //			continue;
 
+		// do not write state with history - we only iterate pure active
+//		if (stateIter->second->historyStatesRefs.size() > 0)
+//			continue;
+		
 		const std::string& stateId = stateIter->first;
 		const GlobalState* state = stateIter->second;
 		
-		int digits = 0;
-		LENGTH_FOR_NUMBER(state->index, digits);
-		stream << "  :: (s == s" << state->index << ") -> {";
+		stream << std::endl << "/* ### current state ";
+		FlatStateIdentifier flatActiveSource(stateId);
+		PRETTY_PRINT_LIST(stream, flatActiveSource.getActive());
+		stream << " ######################## */" << std::endl;
 
-		INDENT_MIN(stream, 18 + digits, MIN_COMMENT_PADDING);
-
-		stream << " /* from state " << stateId << " */" << std::endl;
+		stream << "  :: (s == s" << state->index << ") -> {" << std::endl;
 
 		writeDispatchingBlock(stream, state->sortedOutgoing, 2);
-//		stream << "    goto nextStep;";
+//		stream << "    goto macroStep;";
 		stream << "  }" << std::endl;
 	}
 }
@@ -1749,29 +1953,26 @@ void ChartToPromela::writeDispatchingBlock(std::ostream& stream, std::list<Globa
 	}
 
 	if (transitions.size() == 0) {
-		stream << padding << "eventLess = false;" << std::endl;
-		stream << padding << "goto nextStep;";
-		INDENT_MIN(stream, padding.size() + 13, MIN_COMMENT_PADDING);
 		stream << "/* no transition applicable */" << std::endl;
+		stream << padding << "spontaneous = false;" << std::endl;
+		stream << padding << "goto macroStep;" << std::endl;
 		return;
 	}
 
 
 	GlobalTransition* currTrans = transitions.front();
 	transitions.pop_front();
-	std::stringstream tmpSS;
 
-	tmpSS << padding << "if" << std::endl;
-	size_t lineStart = tmpSS.tellp();
+	stream << padding << "if" << std::endl;
 
 	if (currTrans->condition.size() > 0) {
-		tmpSS << padding << ":: ((";
+		stream << padding << ":: ((";
 	} else {
-		tmpSS << padding << ":: (";
+		stream << padding << ":: (";
 	}
 
 	if (currTrans->isEventless) {
-		tmpSS << "eventLess";
+		stream << "spontaneous";
 	} else {
 		std::string eventDescs = currTrans->eventDesc;
 
@@ -1792,64 +1993,57 @@ void ChartToPromela::writeDispatchingBlock(std::ostream& stream, std::list<Globa
 		}
 
 		if (eventPrefixes.size() > 0) {
-			tmpSS << "!eventLess && ";
+			stream << "!spontaneous && ";
 		} else {
-			tmpSS << "!eventLess";
+			stream << "!spontaneous";
 		}
 
 		std::string seperator;
 		std::set<std::string>::iterator eventIter = eventPrefixes.begin();
 		while(eventIter != eventPrefixes.end()) {
 			if (_analyzer.usesComplexEventStruct()) {
-				tmpSS << seperator << "_event.name == " << _analyzer.macroForLiteral(*eventIter);
+				stream << seperator << "_event.name == " << _analyzer.macroForLiteral(*eventIter);
 			} else {
-				tmpSS << seperator << "_event == " << _analyzer.macroForLiteral(*eventIter);
+				stream << seperator << "_event == " << _analyzer.macroForLiteral(*eventIter);
 			}
 			seperator = " || ";
 			eventIter++;
 		}
 	}
 
-	tmpSS << ")";
+	stream << ")";
 	if (currTrans->condition.size() > 0) {
-		tmpSS << " && " + _analyzer.replaceLiterals(currTrans->condition) + ")";
+		stream << " && " + _analyzer.replaceLiterals(currTrans->condition) + ")";
 	}
-	if (currTrans->hasExecutableContent) {
-		tmpSS << " -> goto t" << currTrans->index << ";";
-		size_t lineEnd = tmpSS.tellp();
-		size_t lineLength = lineEnd - lineStart;
+	if (currTrans->hasExecutableContent || currTrans->historyTrans.size() > 0) {
+		stream << " -> { " << std::endl;
+
+		stream << "/* transition to ";
+		FlatStateIdentifier flatActiveSource(currTrans->activeDestination);
+		PRETTY_PRINT_LIST(stream, flatActiveSource.getActive());
+		stream << " */" << std::endl;
 		
-		for (int i = lineLength; i < MIN_COMMENT_PADDING; i++)
-			tmpSS << " ";
-		
-		tmpSS << " /* transition to " << currTrans->destination << " */" << std::endl;
+		stream << padding << "  goto t" << currTrans->index << ";" << std::endl;
+		stream << padding << "}" << std::endl;
+
 	} else {
 		
-		tmpSS << " -> {" << std::endl;
-		GlobalState* newState = _globalConf[currTrans->destination];
+		stream << " -> {" << std::endl;
+		GlobalState* newState = _activeConf[currTrans->activeDestination];
 		assert(newState != NULL);
-		tmpSS << padding << "  s = s" << newState->index << ";" << std::endl;
 
-		if (newState->isFinal) {
-			tmpSS << padding << "  goto terminate;";
-			INDENT_MIN(tmpSS, padding.length() + 14, MIN_COMMENT_PADDING);
-			tmpSS << "/* final state */" << std::endl;
-		} else if (currTrans->isEventless) {
-			tmpSS << padding << "  goto nextTransition;";
-			INDENT_MIN(tmpSS, padding.length() + 19, MIN_COMMENT_PADDING);
-			tmpSS << "/* spontaneous transition, check for more transitions */" << std::endl;
-		} else {
-			tmpSS << padding << "  eventLess = true;" << std::endl;
-			tmpSS << padding << "  goto nextTransition;";
-			INDENT_MIN(tmpSS, padding.length() + 21, MIN_COMMENT_PADDING);
-			tmpSS << "/* ordinary transition, check for spontaneous transitions */" << std::endl;
-		}
+		stream << "/* new state ";
+		FlatStateIdentifier flatActiveDest(currTrans->activeDestination);
+		PRETTY_PRINT_LIST(stream, flatActiveDest.getActive());
+		stream <<  " */" << std::endl;
 
-		tmpSS << padding << "}" << std::endl;
+		stream << padding << "  s = s" << newState->index << ";" << std::endl;
+
+		writeTransitionClosure(stream, currTrans, newState, indent + 1);
+		stream << padding << "}" << std::endl;
 	}
-	stream << tmpSS.str();
 
-	stream << padding << ":: else {" << std::endl;
+	stream << padding << ":: else -> {" << std::endl;
 
 	writeDispatchingBlock(stream, transitions, indent + 1);
 
@@ -1869,7 +2063,7 @@ void ChartToPromela::writeMain(std::ostream& stream) {
 		stream << std::endl;
 	}
 	if (_globalEventSource)
-		_globalEventSource.writeStartEventSources(stream, 1);
+		_globalEventSource.writeStart(stream, 1);
 	stream << "  run step();" << std::endl;
 	stream << "}" << std::endl;
 
@@ -1888,9 +2082,24 @@ void ChartToPromela::initNodes() {
 			continue;
 		Element<std::string> stateElem(states[i]);
 		_analyzer.addOrigState(ATTR(stateElem, "id"));
-		if ((isCompound(stateElem) || isParallel(stateElem)) && !parentIsScxmlState(stateElem)) {
+		if (isCompound(stateElem) || isParallel(stateElem)) {
 			_analyzer.addEvent("done.state." + ATTR(stateElem, "id"));
 		}
+	}
+	
+	// gather all potential members per history
+	std::map<std::string, Arabica::DOM::Element<std::string> >::iterator histIter = _historyTargets.begin();
+	while(histIter != _historyTargets.end()) {
+		NodeSet<std::string> histStatesMembers;
+		bool isDeep = (HAS_ATTR_CAST(histIter->second, "type") && ATTR_CAST(histIter->second, "type") == "deep");
+		histStatesMembers.push_back(filterChildElements(_nsInfo.xmlNSPrefix + "state", histIter->second.getParentNode(), isDeep));
+		histStatesMembers.push_back(filterChildElements(_nsInfo.xmlNSPrefix + "parallel", histIter->second.getParentNode(), isDeep));
+		histStatesMembers.push_back(filterChildElements(_nsInfo.xmlNSPrefix + "final", histIter->second.getParentNode(), isDeep));
+
+		for (int i = 0; i < histStatesMembers.size(); i++) {
+			_historyMembers[histIter->first].insert(std::make_pair(ATTR_CAST(histStatesMembers[i], "id"), i));
+		}
+		histIter++;
 	}
 	
 	// initialize event trie with all events that might occur
@@ -1938,42 +2147,38 @@ void ChartToPromela::initNodes() {
 
 	}
 	
-	// external event names from comments
+	// external event names from comments and event sources
 	NodeSet<std::string> promelaEventSourceComments;
 	NodeSet<std::string> invokers = _xpath.evaluate("//" + _nsInfo.xpathPrefix + "invoke", _scxml).asNodeSet();
 	promelaEventSourceComments.push_back(filterChildType(Node_base::COMMENT_NODE, invokers, false)); // comments in invoke elements
 	promelaEventSourceComments.push_back(filterChildType(Node_base::COMMENT_NODE, _scxml, false)); // comments in scxml element
 
 	for (int i = 0; i < promelaEventSourceComments.size(); i++) {
-		PromelaInlines promInls = getInlinePromela(promelaEventSourceComments[i]);
-		PromelaEventSource promES(promInls, promelaEventSourceComments[i].getParentNode());
+		PromelaInlines promInls = PromelaInlines::fromNode(promelaEventSourceComments[i]);
+		
+		for (	std::list<PromelaInline>::iterator promIter = promInls.code.begin(); promIter != promInls.code.end(); promIter++) {
+			if (promIter->type == PromelaInline::PROMELA_EVENT_SOURCE || promIter->type == PromelaInline::PROMELA_EVENT_SOURCE_CUSTOM) {
+				PromelaEventSource promES(*promIter, _externalQueueLength);
+				if (TAGNAME_CAST(promelaEventSourceComments[i].getParentNode()) == "scxml") {
+					promES.type = PromelaEventSource::PROMELA_EVENT_SOURCE_GLOBAL;
+					promES.name = "global";
+					promES.analyzer = &_analyzer;
+					_globalEventSource = promES;
+				} else {
+					if (!HAS_ATTR_CAST(promelaEventSourceComments[i].getParentNode(), "invokeid")) {
+						Element<std::string> invoker = Element<std::string>(promelaEventSourceComments[i].getParentNode());
+						invoker.setAttribute("invokeid", "invoker" + toStr(_invokers.size())); // if there is no invokeid, enumerate
+					}
+					std::string invokeId = ATTR_CAST(promelaEventSourceComments[i].getParentNode(), "invokeid");
 
-		if (TAGNAME_CAST(promelaEventSourceComments[i].getParentNode()) == "scxml") {
-			promES.type = PromelaEventSource::PROMELA_EVENT_SOURCE_GLOBAL;
-			promES.analyzer = &_analyzer;
-			promES.name = "global";
-			_globalEventSource = promES;
-		} else if (TAGNAME_CAST(promelaEventSourceComments[i].getParentNode()) == "invoke") {
-			if (!HAS_ATTR_CAST(promelaEventSourceComments[i].getParentNode(), "invokeid")) {
-				Element<std::string> invoker = Element<std::string>(promelaEventSourceComments[i].getParentNode());
-				invoker.setAttribute("invokeid", "invoker" + toStr(_invokers.size()));
+					promES.type = PromelaEventSource::PROMELA_EVENT_SOURCE_INVOKER;
+					promES.name = invokeId;
+					promES.analyzer = &_analyzer;
+					_invokers[invokeId] = promES;
+				}
 			}
-			std::string invokeId = ATTR_CAST(promelaEventSourceComments[i].getParentNode(), "invokeid");
-			promES.type = PromelaEventSource::PROMELA_EVENT_SOURCE_INVOKER;
-			promES.analyzer = &_analyzer;
-			promES.name = invokeId;
-			_invokers[invokeId] = promES;
 		}
 	}
-
-#if 0
-	// enumerate transitions
-	NodeSet<std::string> transitions = filterChildElements(_nsInfo.xmlNSPrefix + "transition", _scxml, true);
-	int index = 0;
-	for (int i = 0; i < transitions.size(); i++) {
-		_transitions[Element<std::string>(transitions[i])] = index++;
-	}
-#endif
 	
 	// add platform variables as string literals
 	_analyzer.addLiteral("_sessionid");
@@ -1986,8 +2191,9 @@ void ChartToPromela::initNodes() {
 	NodeSet<std::string> contents = filterChildElements(_nsInfo.xmlNSPrefix + "content", _scxml, true);
 	for (int i = 0; i < contents.size(); i++) {
 		Element<std::string> contentElem = Element<std::string>(contents[i]);
-		if (contentElem.hasChildNodes() && contentElem.getFirstChild().getNodeType() == Node_base::TEXT_NODE) {
-			_analyzer.addLiteral(spaceNormalize(contentElem.getFirstChild().getNodeValue()));
+		if (contentElem.hasChildNodes() && contentElem.getFirstChild().getNodeType() == Node_base::TEXT_NODE && contentElem.getChildNodes().getLength() == 1) {
+			std::string content = contentElem.getFirstChild().getNodeValue();
+			_analyzer.addLiteral(spaceNormalize(content));
 		}
 	}
 
@@ -2072,16 +2278,16 @@ std::string ChartToPromela::sanitizeCode(const std::string& code) {
 }
 
 void PromelaInline::dump() {
-	std::list<std::list<std::string> >::iterator outerIter = sequences.begin();
-	while(outerIter != sequences.end()) {
-		std::list<std::string>::iterator innerIter = outerIter->begin();
-		while(innerIter != outerIter->end()) {
-			std::cout << *innerIter << " ";
-			innerIter++;
-		}
-		std::cout << std::endl;
-		outerIter++;
-	}
+//	std::list<std::list<std::string> >::iterator outerIter = sequences.begin();
+//	while(outerIter != sequences.end()) {
+//		std::list<std::string>::iterator innerIter = outerIter->begin();
+//		while(innerIter != outerIter->end()) {
+//			std::cout << *innerIter << " ";
+//			innerIter++;
+//		}
+//		std::cout << std::endl;
+//		outerIter++;
+//	}
 }
 
 void ChartToPromela::writeProgram(std::ostream& stream) {
@@ -2112,6 +2318,10 @@ void ChartToPromela::writeProgram(std::ostream& stream) {
 		writeStateMap(stream);
 		stream << std::endl;
 	}
+	if (_historyMembers.size() > 0) {
+		writeHistoryArrays(stream);
+		stream << std::endl;
+	}
 	writeTypeDefs(stream);
 	stream << std::endl;
 	writeStrings(stream);
@@ -2129,7 +2339,7 @@ void ChartToPromela::writeProgram(std::ostream& stream) {
 	std::stringstream acceptingStates;
 	std::string seperator;
 	
-	for (std::map<std::string, GlobalState*>::iterator stateIter = _globalConf.begin(); stateIter != _globalConf.end(); stateIter++) {
+	for (std::map<std::string, GlobalState*>::iterator stateIter = _activeConf.begin(); stateIter != _activeConf.end(); stateIter++) {
 		FlatStateIdentifier flatId(stateIter->first);
 		if (std::find(flatId.getActive().begin(), flatId.getActive().end(), "pass") != flatId.getActive().end()) {
 			acceptingStates << seperator << "s == s" << stateIter->second->index;
@@ -2139,15 +2349,6 @@ void ChartToPromela::writeProgram(std::ostream& stream) {
 	if (acceptingStates.str().size() > 0) {
 		stream << "ltl { eventually (" << acceptingStates.str() << ") }" << std::endl;
 	}
-
-//	if (_states.find("active:{pass}") != _states.end()) {
-//		for (int i = 0; i < _globalStates.size(); i++) {
-//			if (_states["active:{pass}"] != _globalStates[i])
-//				continue;
-//			stream << "ltl { eventually (s == s" << i << ") }";
-//			break;
-//		}
-//	}
 }
 
 }

@@ -34,6 +34,7 @@ find ./ecma -type f -exec grep -Ili 'datamodel="xpath"' {} \; |xargs rm -fv
 find ./xpath -type f -exec grep -Ili 'datamodel="ecmascript"' {} \; |xargs rm -fv
 find ./promela -type f -exec grep -Ili 'datamodel="xpath"' {} \; |xargs rm -fv
 find ./promela -type f -exec grep -Ili 'datamodel="ecmascript"' {} \; |xargs rm -fv
+find ./promela -type f -exec grep -Ili 'datamodel="null"' {} \; |xargs rm -fv
 
 # format all SCXML files
 SCXMLS=`find . -type f -name '*.scxml'`

@@ -110,6 +110,7 @@ public:
 					if (closingBracketPos != std::string::npos) {
 						state = state.substr(0, closingBracketPos);
 					}
+					boost::trim(state);
 					if (state.length() > 0) {
 						active.push_back(state);
 					}
@@ -123,6 +124,7 @@ public:
 					if (closingBracketPos != std::string::npos) {
 						state = state.substr(0, closingBracketPos);
 					}
+					boost::trim(state);
 					if (state.length() > 0) {
 						visited.push_back(state);
 					}
@@ -150,7 +152,11 @@ public:
 						if (closingBracketPos != std::string::npos) {
 							state = state.substr(0, closingBracketPos);
 						}
-						histories[histName].push_back(state);
+						boost::trim(state);
+						if (state.length() > 0) {
+							histories[histName].push_back(state);
+						}
+
 					}
 
 					start = end + 2;
@@ -171,6 +177,10 @@ public:
 		return flatActive;
 	}
 
+	const std::string& getFlatHistory() {
+		return flatHistories;
+	}
+
 	const std::list<std::string>& getVisited() {
 		return visited;
 	}
@@ -181,8 +191,15 @@ public:
 	const std::map<std::string, std::list<std::string> > & getHistory() {
 		return histories;
 	}
-	const std::string& getFlatHistory() {
-		return flatHistories;
+
+	const std::map<std::string, std::set<std::string> > getHistorySets() {
+		std::map<std::string, std::set<std::string> > histSet;
+		std::map<std::string, std::list<std::string> >::const_iterator histIter = histories.begin();
+		while(histIter != histories.end()) {
+			histSet[histIter->first].insert(histIter->second.begin(), histIter->second.end());
+			histIter++;
+		}
+		return histSet;
 	}
 
 protected:

@@ -21,55 +21,52 @@ void testInlinePromela() {
 		#promela-inline:\n \
 		This is foo!\
 		";
-		PromelaInlines prmInls = ChartToPromela::getInlinePromela(test);
-		assert(prmInls.acceptLabels == 0 &&
-		       prmInls.codes == 1 &&
-		       prmInls.customEventSources == 0 &&
-		       prmInls.endLabels == 0 &&
-		       prmInls.eventSources == 0 &&
-		       prmInls.progressLabels == 0);
-		assert(prmInls.inlines.size() == 1);
-		assert(prmInls.inlines.front().type == PromelaInline::PROMELA_CODE);
-		assert(boost::trim_copy(prmInls.inlines.front().content) == "This is foo!");
+		PromelaInlines prmInls = PromelaInlines::fromString(test);
+		assert(prmInls.nrAcceptLabels == 0 &&
+		       prmInls.nrCodes == 1 &&
+		       prmInls.nrEventSources == 0 &&
+					 prmInls.nrEndLabels == 0 &&
+					 prmInls.nrAcceptLabels == 0 &&
+		       prmInls.nrProgressLabels == 0);
+		assert(prmInls.code.size() == 1);
+		assert(prmInls.code.front().type == PromelaInline::PROMELA_CODE);
+		assert(boost::trim_copy(prmInls.code.front().content) == "This is foo!");
 	}
 
 	{
 		std::string test = "#promela-progress";
-		PromelaInlines prmInls = ChartToPromela::getInlinePromela(test);
-		assert(prmInls.acceptLabels == 0 &&
-		       prmInls.codes == 0 &&
-		       prmInls.customEventSources == 0 &&
-		       prmInls.endLabels == 0 &&
-		       prmInls.eventSources == 0 &&
-		       prmInls.progressLabels == 1);
-		assert(prmInls.inlines.size() == 1);
-		assert(prmInls.inlines.front().type == PromelaInline::PROMELA_PROGRESS_LABEL);
+		PromelaInlines prmInls = PromelaInlines::fromString(test);
+		assert(prmInls.nrAcceptLabels == 0 &&
+		       prmInls.nrCodes == 0 &&
+		       prmInls.nrEventSources == 0 &&
+		       prmInls.nrEndLabels == 0 &&
+		       prmInls.nrProgressLabels == 1);
+		assert(prmInls.code.size() == 1);
+		assert(prmInls.code.front().type == PromelaInline::PROMELA_PROGRESS_LABEL);
 	}
 
 	{
 		std::string test = "#promela-accept and then some";
-		PromelaInlines prmInls = ChartToPromela::getInlinePromela(test);
-		assert(prmInls.acceptLabels == 1 &&
-		       prmInls.codes == 0 &&
-		       prmInls.customEventSources == 0 &&
-		       prmInls.endLabels == 0 &&
-		       prmInls.eventSources == 0 &&
-		       prmInls.progressLabels == 0);
-		assert(prmInls.inlines.size() == 1);
-		assert(prmInls.inlines.front().type == PromelaInline::PROMELA_ACCEPT_LABEL);
+		PromelaInlines prmInls = PromelaInlines::fromString(test);
+		assert(prmInls.nrAcceptLabels == 1 &&
+		       prmInls.nrCodes == 0 &&
+		       prmInls.nrEventSources == 0 &&
+		       prmInls.nrEndLabels == 0 &&
+		       prmInls.nrProgressLabels == 0);
+		assert(prmInls.code.size() == 1);
+		assert(prmInls.code.front().type == PromelaInline::PROMELA_ACCEPT_LABEL);
 	}
 
 	{
 		std::string test = "#promela-end and then some";
-		PromelaInlines prmInls = ChartToPromela::getInlinePromela(test);
-		assert(prmInls.acceptLabels == 0 &&
-		       prmInls.codes == 0 &&
-		       prmInls.customEventSources == 0 &&
-		       prmInls.endLabels == 1 &&
-		       prmInls.eventSources == 0 &&
-		       prmInls.progressLabels == 0);
-		assert(prmInls.inlines.size() == 1);
-		assert(prmInls.inlines.front().type == PromelaInline::PROMELA_END_LABEL);
+		PromelaInlines prmInls = PromelaInlines::fromString(test);
+		assert(prmInls.nrAcceptLabels == 0 &&
+		       prmInls.nrCodes == 0 &&
+		       prmInls.nrEventSources == 0 &&
+		       prmInls.nrEndLabels == 1 &&
+		       prmInls.nrProgressLabels == 0);
+		assert(prmInls.code.size() == 1);
+		assert(prmInls.code.front().type == PromelaInline::PROMELA_END_LABEL);
 	}
 
 	{
@@ -77,24 +74,25 @@ void testInlinePromela() {
 		#promela-event-source:\n \
 		This is foo!\
 		";
-		PromelaInlines prmInls = ChartToPromela::getInlinePromela(test);
-		assert(prmInls.acceptLabels == 0 &&
-		       prmInls.codes == 0 &&
-		       prmInls.customEventSources == 0 &&
-		       prmInls.endLabels == 0 &&
-		       prmInls.eventSources == 1 &&
-		       prmInls.progressLabels == 0);
-		assert(prmInls.inlines.size() == 1);
-		assert(prmInls.inlines.front().type == PromelaInline::PROMELA_EVENT_SOURCE);
-		assert(prmInls.inlines.front().sequences.size() == 1);
-		std::list<std::list<std::string> >::iterator seqsIter = prmInls.inlines.front().sequences.begin();
+		PromelaInlines prmInls = PromelaInlines::fromString(test);
+		assert(prmInls.nrAcceptLabels == 0 &&
+		       prmInls.nrCodes == 0 &&
+		       prmInls.nrEventSources == 1 &&
+		       prmInls.nrEndLabels == 0 &&
+		       prmInls.nrProgressLabels == 0);
+		assert(prmInls.code.size() == 1);
+		assert(prmInls.code.front().type == PromelaInline::PROMELA_EVENT_SOURCE);
+
+		PromelaEventSource pmlES(prmInls.code.front());
+		assert(pmlES.sequences.size() == 1);
+		std::list<std::list<std::string> >::iterator seqsIter = pmlES.sequences.begin();
 		std::list<std::string>::iterator seqIter = seqsIter->begin();
 		assert(*seqIter++ == "This");
 		assert(*seqIter++ == "is");
 		assert(*seqIter++ == "foo!");
 		assert(seqIter == seqsIter->end());
 		seqsIter++;
-		assert(seqsIter == prmInls.inlines.front().sequences.end());
+		assert(seqsIter == pmlES.sequences.end());
 	}
 
 	{
@@ -103,17 +101,19 @@ void testInlinePromela() {
 		This is foo!\n \
 		This is bar!\n \
 		";
-		PromelaInlines prmInls = ChartToPromela::getInlinePromela(test);
-		assert(prmInls.acceptLabels == 0 &&
-		       prmInls.codes == 0 &&
-		       prmInls.customEventSources == 0 &&
-		       prmInls.endLabels == 0 &&
-		       prmInls.eventSources == 1 &&
-		       prmInls.progressLabels == 0);
-		assert(prmInls.inlines.size() == 1);
-		assert(prmInls.inlines.front().type == PromelaInline::PROMELA_EVENT_SOURCE);
-		assert(prmInls.inlines.front().sequences.size() == 2);
-		std::list<std::list<std::string> >::iterator seqsIter = prmInls.inlines.front().sequences.begin();
+		PromelaInlines prmInls = PromelaInlines::fromString(test);
+		assert(prmInls.nrAcceptLabels == 0 &&
+		       prmInls.nrCodes == 0 &&
+		       prmInls.nrEventSources == 1 &&
+		       prmInls.nrEndLabels == 0 &&
+		       prmInls.nrProgressLabels == 0);
+		assert(prmInls.code.size() == 1);
+		assert(prmInls.code.front().type == PromelaInline::PROMELA_EVENT_SOURCE);
+
+		PromelaEventSource pmlES(prmInls.code.front());
+
+		assert(pmlES.sequences.size() == 2);
+		std::list<std::list<std::string> >::iterator seqsIter = pmlES.sequences.begin();
 		std::list<std::string>::iterator seqIter = seqsIter->begin();
 		assert(*seqIter++ == "This");
 		assert(*seqIter++ == "is");
@@ -126,7 +126,7 @@ void testInlinePromela() {
 		assert(*seqIter++ == "bar!");
 		assert(seqIter == seqsIter->end());
 		seqsIter++;
-		assert(seqsIter == prmInls.inlines.front().sequences.end());
+		assert(seqsIter == pmlES.sequences.end());
 	}
 
 	{
@@ -134,17 +134,19 @@ void testInlinePromela() {
 		#promela-event-source-custom:\n \
 		This is foo!\
 		";
-		PromelaInlines prmInls = ChartToPromela::getInlinePromela(test);
-		assert(prmInls.acceptLabels == 0 &&
-		       prmInls.codes == 0 &&
-		       prmInls.customEventSources == 1 &&
-		       prmInls.endLabels == 0 &&
-		       prmInls.eventSources == 0 &&
-		       prmInls.progressLabels == 0);
-		assert(prmInls.inlines.size() == 1);
-		assert(prmInls.inlines.front().type == PromelaInline::PROMELA_EVENT_SOURCE_CUSTOM);
-		assert(prmInls.inlines.front().sequences.size() == 0);
-		assert(boost::trim_copy(prmInls.inlines.front().content) == "This is foo!");
+		PromelaInlines prmInls = PromelaInlines::fromString(test);
+		assert(prmInls.nrAcceptLabels == 0 &&
+					 prmInls.nrCodes == 0 &&
+					 prmInls.nrEventSources == 1 &&
+					 prmInls.nrEndLabels == 0 &&
+					 prmInls.nrProgressLabels == 0);
+		assert(prmInls.code.size() == 1);
+		assert(prmInls.code.front().type == PromelaInline::PROMELA_EVENT_SOURCE_CUSTOM);
+		
+		PromelaEventSource pmlES(prmInls.code.front());
+
+		assert(pmlES.sequences.size() == 0);
+		assert(boost::trim_copy(pmlES.source.content) == "This is foo!");
 	}
 
 	{
@@ -153,17 +155,19 @@ void testInlinePromela() {
 		This is foo! \n\
 		#promela-progress\
 		";
-		PromelaInlines prmInls = ChartToPromela::getInlinePromela(test);
-		assert(prmInls.acceptLabels == 0 &&
-		       prmInls.codes == 0 &&
-		       prmInls.customEventSources == 1 &&
-		       prmInls.endLabels == 0 &&
-		       prmInls.eventSources == 0 &&
-		       prmInls.progressLabels == 1);
-		assert(prmInls.inlines.size() == 2);
-		assert(prmInls.inlines.front().type == PromelaInline::PROMELA_EVENT_SOURCE_CUSTOM);
-		assert(prmInls.inlines.front().sequences.size() == 0);
-		assert(boost::trim_copy(prmInls.inlines.front().content) == "This is foo!");
+		PromelaInlines prmInls = PromelaInlines::fromString(test);
+		assert(prmInls.nrAcceptLabels == 0 &&
+					 prmInls.nrCodes == 0 &&
+					 prmInls.nrEventSources == 1 &&
+					 prmInls.nrEndLabels == 0 &&
+					 prmInls.nrProgressLabels == 1);
+		assert(prmInls.code.size() == 2);
+		assert(prmInls.code.front().type == PromelaInline::PROMELA_EVENT_SOURCE_CUSTOM);
+
+		PromelaEventSource pmlES(prmInls.code.front());
+
+		assert(pmlES.sequences.size() == 0);
+		assert(boost::trim_copy(pmlES.source.content) == "This is foo!");
 	}
 }
 

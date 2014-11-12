@@ -35,27 +35,38 @@ class ChartToFSM;
 
 class USCXML_API Complexity {
 public:
-	Complexity() : value(0) {}
-	Complexity(uint64_t value) : value(value) {}
+	
+	enum Variant {
+		IGNORE_NOTHING,
+		IGNORE_HISTORY,
+		IGNORE_NESTED_DATA,
+		IGNORE_HISTORY_AND_NESTED_DATA,
+	};
+	
+	Complexity() : value(0), nestedData(0) {}
+	Complexity(uint64_t value) : value(value), nestedData(0) {}
 	
 	Complexity& operator+=(const Complexity& rhs) {
 		value += rhs.value;
+		nestedData += rhs.nestedData;
 		history.insert(history.end(), rhs.history.begin(), rhs.history.end());
 		return *this;
 	}
 	
 	Complexity& operator*=(const Complexity& rhs) {
 		value *= rhs.value;
+		nestedData += rhs.nestedData;
 		history.insert(history.end(), rhs.history.begin(), rhs.history.end());
 		return *this;
 	}
 	
-	static uint64_t stateMachineComplexity(const Arabica::DOM::Element<std::string>& root);
+	static uint64_t stateMachineComplexity(const Arabica::DOM::Element<std::string>& root, Complexity::Variant variant = IGNORE_NOTHING);
 
 protected:
 	static Complexity calculateStateMachineComplexity(const Arabica::DOM::Element<std::string>& root);
 
 	uint64_t value;
+	uint64_t nestedData;
 	std::list<uint64_t> history;
 };
 
@@ -92,6 +103,33 @@ class USCXML_API GlobalTransition {
 public:
 	class Action {
 	public:
+		bool operator<(const Action& other) const {
+			if (onEntry < other.onEntry)
+				return onEntry < other.onEntry;
+			if (onExit < other.onExit)
+				return onExit < other.onExit;
+			if (transition < other.transition)
+				return transition < other.transition;
+			if (entered < other.entered)
+				return entered < other.entered;
+			if (exited < other.exited)
+				return exited < other.exited;
+			if (invoke < other.invoke)
+				return invoke < other.invoke;
+			if (uninvoke < other.uninvoke)
+				return uninvoke < other.uninvoke;
+			return false;
+		}
+
+		bool operator==(const Action& other) const {
+			return !(other < *this) && !(*this < other);
+		}
+		bool operator!=(const Action& other) const {
+			return !operator==(other);
+		}
+		
+		typedef std::list<GlobalTransition::Action>::iterator iter_t;
+		
 		Arabica::DOM::Element<std::string> onEntry;
 		Arabica::DOM::Element<std::string> onExit;
 		Arabica::DOM::Element<std::string> transition;
@@ -99,10 +137,12 @@ public:
 		Arabica::DOM::Element<std::string> exited;
 		Arabica::DOM::Element<std::string> invoke;
 		Arabica::DOM::Element<std::string> uninvoke;
+		
 	};
 
 	GlobalTransition(const Arabica::XPath::NodeSet<std::string>& transitions, DataModel dataModel, ChartToFSM* flattener);
-
+	static GlobalTransition* copyWithoutExecContent(GlobalTransition* other);
+	
 	bool isValid; // constructor will determine, calling code will delete if not
 	bool isEventless; // whether or not all our transitions are eventless
 	bool isTargetless; // whether or not all our transitions are eventless
@@ -130,6 +170,11 @@ public:
 	std::string transitionId;
 	std::string source;
 	std::string destination;
+	std::string activeDestination;
+
+	GlobalTransition* historyBase; // we have a base transition that left our source with no history (-> we are a history transition)
+	std::list<GlobalTransition*> historyTrans; // transitions from the same source but different histories
+	std::set<std::string> histTargets; // constituting targets to history states
 
 	long index;
 	ChartToFSM* interpreter;
@@ -219,7 +264,8 @@ protected:
 	GlobalTransition* _currGlobalTransition;
 	Arabica::DOM::Document<std::string> _flatDoc;
 	std::map<std::string, GlobalState*> _globalConf;
-	std::map<std::string, GlobalState*> _transPerActiveConf; // potentially enabled transition sets per active configuration
+	std::map<std::string, GlobalState*> _activeConf; // potentially enabled transition sets per active configuration
+	std::map<std::string, Arabica::DOM::Element<std::string> > _historyTargets; // ids of all history states
 	
 	friend class GlobalTransition;
 	friend class GlobalState;

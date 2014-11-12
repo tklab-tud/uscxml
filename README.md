@@ -29,16 +29,16 @@
 uSCXML is a SCXML interpreter written in C/C++. It is [standards compliant](#test-reports) and [easily extended](#extending-uscxml)
 even in C# and Java. It runs on <b>Linux</b>, <b>Windows</b>, <b>Raspberry Pi</b> and <b>Mac OSX</b>, each 32- as well as 64Bits as well as <b>iOS</b>.
 
-* <b>Datamodels</b>
-    * Full [ECMAScript datamodel](https://github.com/tklab-tud/uscxml/tree/master/src/uscxml/plugins/datamodel/ecmascript) using Google's v8 (and JavaScriptCore on MacOSX and iOS)
+* <b>Data Models</b>
+    * Full [ECMAScript data model](https://github.com/tklab-tud/uscxml/tree/master/src/uscxml/plugins/datamodel/ecmascript) using Google's v8 (and JavaScriptCore on MacOSX and iOS)
         * Simplified support for [Web Storage](http://www.w3.org/TR/2013/REC-webstorage-20130730/) in document.localStorage
         * Support for binary data via [TypedArrays](https://www.khronos.org/registry/typedarray/specs/latest/) (will not throw exceptions yet)
-    * Full [NULL datamodel](https://github.com/tklab-tud/uscxml/tree/master/src/uscxml/plugins/datamodel/null) with required <tt>In</tt> predicate
-    * [Prolog datamodel](https://github.com/tklab-tud/uscxml/tree/master/src/uscxml/plugins/datamodel/prolog/swi) using SWI prolog
-    * Experimental [Promela datamodel](https://github.com/tklab-tud/uscxml/tree/master/src/uscxml/plugins/datamodel/promela) for use
+    * Full [NULL data model](https://github.com/tklab-tud/uscxml/tree/master/src/uscxml/plugins/datamodel/null) with required <tt>In</tt> predicate
+    * [Prolog data model](https://github.com/tklab-tud/uscxml/tree/master/src/uscxml/plugins/datamodel/prolog/swi) using SWI prolog
+    * Experimental [Promela data model](https://github.com/tklab-tud/uscxml/tree/master/src/uscxml/plugins/datamodel/promela) for use
       with the [SPIN](http://spinroot.com/spin/whatispin.html) model-checker
-    * Early support for a [Lua datamodel](https://github.com/tklab-tud/uscxml/tree/master/src/uscxml/plugins/datamodel/lua)
-    * Rudimentary support for [XPath datamodel](https://github.com/tklab-tud/uscxml/tree/master/src/uscxml/plugins/datamodel/xpath)
+    * Early support for a [Lua data model](https://github.com/tklab-tud/uscxml/tree/master/src/uscxml/plugins/datamodel/lua)
+    * Rudimentary support for [XPath data model](https://github.com/tklab-tud/uscxml/tree/master/src/uscxml/plugins/datamodel/xpath)
 * <b>Invokers</b>
     * <tt>scxml</tt>: Invoke a nested scxml interpreter
     * <tt>dirmon</tt>: Watches a directory for changes to files
@@ -47,17 +47,18 @@ even in C# and Java. It runs on <b>Linux</b>, <b>Windows</b>, <b>Raspberry Pi</b
     * <tt>umundo</tt>: Subscribe to channels and publish events
     * [Many others](https://github.com/tklab-tud/uscxml/tree/master/src/uscxml/plugins/invoker)
 * <b>DOM</b>
-    * DOM Core Level 2 + XPath extensions available for ecmascript datamodel
+    * DOM Core Level 2 + XPath extensions available for ecmascript data model
     * Namespace aware to embed custom markup for special invokers
 * <b>Communication</b>
-    * Features the standard basichttp io-processor
-    * Features the required SCXML io-processor
-    * <b>No</b> DOM io-processor
+    * Features the standard basichttp I/O processor
+    * Features the required SCXML I/O processor
+    * <b>No</b> DOM I/O processor
     * Early support for [WebSockets](http://datatracker.ietf.org/doc/rfc6455/)
     * Can actually respond to HTTP requests with data via &lt;response>
 * <b>Language Bindings</b>
-    * PHP module for apache and cli interpreter
     * Java bindings
+    * C# bindings
+    * PHP module for apache and cli interpreter (discontinued)
 
 ### Test Reports
 
@@ -157,7 +158,7 @@ details on how to build these.
 
 The uSCXML interpreter can be extended by introducing new
 
-1. DataModels as embedded scripting languages (e.g. ECMAScript, Prolog and XPath)
+1. Data models as embedded scripting languages (e.g. ECMAScript, Prolog and XPath)
 2. Invokers to represent external components that deliver and accept events (e.g. iCal, SceneGraph, DirectoryMonitor)
 3. I/O-Processors to provide communication with external systems (e.g. BasicHTTP, SCXML).
 4. Elements for Executable Content (e.g. &lt;respond>, &lt;fetch>, &lt;postpone>).
@@ -197,7 +198,7 @@ approach can be used for invokers:
     interpreter.setInvoker("invokeId", invoker1);
 
 This will cause the interpreter to use the given instance for a given <tt>invokeId</tt> and not instantiate via
-the factory. Similarly, datamodels can be registered via <tt>interpreter.setDataModel(DataModel dm)</tt>.
+the factory. Similarly, data models can be registered via <tt>interpreter.setDataModel(DataModel dm)</tt>.
 
 <b>Note:</b> Providing ad-hoc extensions is only supported before the interpreter is started. If you change
 instances with a running interpreter, the behavior is undefined.
@@ -241,13 +242,13 @@ itself is written in a subset of C++99 and ought to compile just fine.
 ## UTF8 support
 
 Currently, we use <tt>std::string</tt> to represent all strings. This is not a problem as e.g. the ECMAScript
-datamodels will just interpret these as character arrays and handle Unicode respectively. Though it is a problem if
+data models will just interpret these as character arrays and handle Unicode respectively. Though it is a problem if
 you like to use non-ASCII characters e.g. in the <tt>id</tt> attribute of states.
 
 ## Performance
 
-The performance of uSCXML depends on many things like the employed datamodel and the platform it runs on. Using a
-MacBook Pro with an Intel i7 @2.4Ghz and the ECMAScript datamodel (<tt>test/uscxml/test-performance.scxml</tt>), we
+The performance of uSCXML depends on many things like the employed data model and the platform it runs on. Using a
+MacBook Pro with an Intel i7 @2.4Ghz and the ECMAScript data model (<tt>test/uscxml/test-performance.scxml</tt>), we
 achieve about 20.000 events/sec. On a Raspberry Pi, however, only 350 events/sec are achieved.
 
 If performance ought to be increased further, the first place to look would be most likely the employed DOM
