@@ -21,6 +21,9 @@
 
 namespace uscxml {
 
+WrappedDataModelExtension::WrappedDataModelExtension() {}
+WrappedDataModelExtension::~WrappedDataModelExtension() {}
+
 WrappedDataModel::WrappedDataModel() {}
 WrappedDataModel::~WrappedDataModel() {}
 

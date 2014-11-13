@@ -33,6 +33,17 @@
 namespace uscxml {
 
 class InterpreterImpl;
+class DataModelImpl;
+
+class USCXML_API DataModelExtension {
+public:
+	DataModelExtension() : dm(NULL) {}
+	virtual ~DataModelExtension() {}
+	virtual std::string provides() = 0;
+	virtual Data getValueOf(const std::string& member) = 0;
+	virtual void setValueOf(const std::string& member, const Data& data) = 0;
+	DataModelImpl* dm;
+};
 
 class USCXML_API DataModelImpl {
 public:
@@ -86,6 +97,8 @@ public:
 		_interpreter = interpreter;
 	}
 
+	virtual void addExtension(DataModelExtension* ext) {}
+	
 	virtual std::string andExpressions(std::list<std::string>) {
 		return "";
 	}
@@ -96,6 +109,7 @@ protected:
 
 class USCXML_API DataModel {
 public:
+	
 	DataModel() : _impl() {}
 	DataModel(const boost::shared_ptr<DataModelImpl> impl) : _impl(impl) { }
 	DataModel(const DataModel& other) : _impl(other._impl) { }
@@ -205,6 +219,10 @@ public:
 		_impl->setInterpreter(interpreter);
 	}
 
+	virtual void addExtension(DataModelExtension* ext) {
+		_impl->addExtension(ext);
+	}
+	
 protected:
 	boost::shared_ptr<DataModelImpl> _impl;
 };

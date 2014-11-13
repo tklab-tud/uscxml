@@ -21,6 +21,7 @@ typedef uscxml::SendRequest SendRequest;
 typedef uscxml::Invoker Invoker;
 typedef uscxml::IOProcessor IOProcessor;
 typedef uscxml::DataModel DataModel;
+typedef uscxml::DataModelExtension DataModelExtension;
 typedef uscxml::ExecutableContent ExecutableContent;
 typedef uscxml::InvokerImpl InvokerImpl;
 typedef uscxml::IOProcessorImpl IOProcessorImpl;
@@ -30,6 +31,7 @@ typedef uscxml::InterpreterIssue InterpreterIssue;
 
 %feature("director") uscxml::WrappedInvoker;
 %feature("director") uscxml::WrappedDataModel;
+%feature("director") uscxml::WrappedDataModelExtension;
 %feature("director") uscxml::WrappedIOProcessor;
 %feature("director") uscxml::WrappedExecutableContent;
 %feature("director") uscxml::WrappedInterpreterMonitor;

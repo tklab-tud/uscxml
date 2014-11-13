@@ -554,15 +554,19 @@ URLFetcher::URLFetcher() {
 	bool unsupported = false;
 	CURLcode curlError;
 	
-	char* envProxy = getenv("USCXML_PROXY"); // e.g. 'socks5://bob:marley@localhost:12345'
+	/*
+		see http://curl.haxx.se/libcurl/c/CURLOPT_PROXY.html
+		e.g. 'socks5://bob:marley@localhost:12345'
+	 */
+	char* envProxy = getenv("USCXML_PROXY");
 	
 	// exposed just in case
 	char* envProxyTransferMode = getenv("USCXML_PROXY_TRANSFER_MODE");
 	char* envProxyAuth = getenv("USCXML_PROXYAUTH");
-//	char* envProxyHeader = getenv("USCXML_PROXYHEADER");
+//	char* envProxyHeader = getenv("USCXML_PROXYHEADER"); // not available in older curl
 	char* envProxyPassword = getenv("USCXML_PROXYPASSWORD");
 	char* envProxyPort = getenv("USCXML_PROXYPORT");
-//	char* envProxyType = getenv("USCXML_PROXYTYPE");
+//	char* envProxyType = getenv("USCXML_PROXYTYPE"); // takes an int, have another look if needed
 	char* envProxyUsername = getenv("USCXML_PROXYUSERNAME");
 	char* envProxyUserPwd = getenv("USCXML_PROXYUSERPWD");
 

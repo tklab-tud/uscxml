@@ -85,6 +85,77 @@ JSCDataModel::~JSCDataModel() {
 		JSGlobalContextRelease(_ctx);
 }
 
+void JSCDataModel::addExtension(DataModelExtension* ext) {
+	if (_extensions.find(ext) != _extensions.end())
+		return;
+	
+	ext->dm = this;
+	_extensions.insert(ext);
+	
+	JSObjectRef currScope = JSContextGetGlobalObject(_ctx);
+	std::list<std::string> locPath = InterpreterImpl::tokenize(ext->provides(), '.');
+	std::list<std::string>::iterator locIter = locPath.begin();
+	while(true) {
+		std::string pathComp = *locIter;
+		JSStringRef pathCompJS = JSStringCreateWithUTF8CString(pathComp.c_str());
+
+		if (++locIter != locPath.end()) {
+			// just another intermediate step
+			if (!JSObjectHasProperty(_ctx, currScope, pathCompJS)) {
+				JSObjectSetProperty(_ctx, currScope, pathCompJS, JSObjectMake(_ctx, NULL, NULL), kJSPropertyAttributeNone, NULL);
+			}
+			JSValueRef newScope = JSObjectGetProperty(_ctx, currScope, pathCompJS, NULL);
+			JSStringRelease(pathCompJS);
+
+			
+			if (JSValueIsObject(_ctx, newScope)) {
+				currScope = JSValueToObject(_ctx, newScope, NULL);
+			} else {
+				JSStringRelease(pathCompJS);
+				throw "adsf";
+			}
+		} else {
+			// this is the function!
+			JSClassRef jsExtensionClassRef = JSClassCreate(&jsExtensionClassDef);
+			JSObjectRef jsExtFuncObj = JSObjectMake(_ctx, jsExtensionClassRef, ext);
+			JSObjectSetProperty(_ctx, currScope, pathCompJS, jsExtFuncObj, kJSPropertyAttributeNone, NULL);
+
+			JSStringRelease(pathCompJS);
+			break;
+		}
+	}
+}
+
+JSValueRef JSCDataModel::jsExtension(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef* exception) {
+	DataModelExtension* extension = (DataModelExtension*)JSObjectGetPrivate(function);
+	
+	JSStringRef memberRef;
+	std::string memberName;
+	
+	if (argumentCount > 0 && JSValueIsString(ctx, arguments[0])) {
+		memberRef = JSValueToStringCopy(ctx, arguments[0], exception);
+		size_t maxSize = JSStringGetMaximumUTF8CStringSize(memberRef);
+		char* buffer = new char[maxSize];
+		JSStringGetUTF8CString(memberRef, buffer, maxSize);
+		JSStringRelease(memberRef);
+		memberName = buffer;
+		free(buffer);
+	}
+
+	if (argumentCount > 1) {
+		// setter
+		Data data = ((JSCDataModel*)(extension->dm))->getValueAsData(arguments[1]);
+		extension->setValueOf(memberName, data);
+		return JSValueMakeNull(ctx);
+	}
+	if (argumentCount == 1) {
+		// getter
+		return ((JSCDataModel*)(extension->dm))->getDataAsValue(extension->getValueOf(memberName));
+	}
+
+	return JSValueMakeNull(ctx);
+}
+
 #if 0
 typedef struct {
 	int                                 version; /* current (and only) version is 0 */
@@ -113,6 +184,7 @@ typedef struct {
 // functions need to be objects to hold private data in JSC
 JSClassDefinition JSCDataModel::jsInClassDef = { 0, 0, "In", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, jsIn, 0, 0, 0 };
 JSClassDefinition JSCDataModel::jsPrintClassDef = { 0, 0, "print", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, jsPrint, 0, 0, 0 };
+JSClassDefinition JSCDataModel::jsExtensionClassDef = { 0, 0, "Extension", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, jsExtension, 0, 0, 0 };
 
 JSClassDefinition JSCDataModel::jsIOProcessorsClassDef = { 0, 0, "ioProcessors", 0, 0, 0, 0, 0, jsIOProcessorHasProp, jsIOProcessorGetProp, 0, 0, jsIOProcessorListProps, 0, 0, 0, 0 };
 JSClassDefinition JSCDataModel::jsInvokersClassDef = { 0, 0, "invokers", 0, 0, 0, 0, 0, jsInvokerHasProp, jsInvokerGetProp, 0, 0, jsInvokerListProps, 0, 0, 0, 0 };

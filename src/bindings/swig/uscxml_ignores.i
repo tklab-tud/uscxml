@@ -136,6 +136,7 @@
 %ignore uscxml::WrappedDataModel::eval(const Arabica::DOM::Element<std::string>&, const std::string&);
 %ignore uscxml::WrappedDataModel::evalAsBool(const Arabica::DOM::Node<std::string>&, const std::string&);
 
+%ignore uscxml::DataModelExtension::dm;
 
 // Executable Content
 

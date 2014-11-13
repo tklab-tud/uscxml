@@ -33,8 +33,18 @@
 
 namespace uscxml {
 
+class WrappedDataModelExtension : public DataModelExtension {
+public:
+	WrappedDataModelExtension();
+	virtual ~WrappedDataModelExtension();
+	virtual std::string provides() { return ""; }
+	virtual Data getValueOf(const std::string& member) { return Data(); }
+	virtual void setValueOf(const std::string& member, const Data& data) { }
+};
+
 class WrappedDataModel : public DataModelImpl {
 public:
+		
 	WrappedDataModel();
 	virtual ~WrappedDataModel();
 

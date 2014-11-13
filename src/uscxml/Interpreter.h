@@ -375,6 +375,10 @@ public:
 		return _dataModel;
 	}
 
+	void addDataModelExtension(DataModelExtension* ext) {
+		_dataModelExtensions.insert(ext);
+	}
+	
 	void setInvoker(const std::string& invokeId, Invoker invoker) {
 		_dontDestructOnUninvoke.insert(invokeId);
 		_invokers[invokeId] = invoker;
@@ -428,7 +432,11 @@ public:
 	static Arabica::XPath::NodeSet<std::string> filterChildType(const Arabica::DOM::Node_base::Type type, const Arabica::DOM::Node<std::string>& node, bool recurse = false);
 	static Arabica::XPath::NodeSet<std::string> filterChildType(const Arabica::DOM::Node_base::Type type, const Arabica::XPath::NodeSet<std::string>& nodeSet, bool recurse = false);
 
-	static std::list<std::string> tokenizeIdRefs(const std::string& idRefs);
+	static std::list<std::string> tokenizeIdRefs(const std::string& idRefs) {
+		return tokenize(idRefs);
+	}
+	static std::list<std::string> tokenize(const std::string& line, const char seperator = ' ');
+	
 	static std::string spaceNormalize(const std::string& text);
 	static bool nameMatch(const std::string& eventDescs, const std::string& event);
 	Arabica::DOM::Node<std::string> findLCCA(const Arabica::XPath::NodeSet<std::string>& states);
@@ -558,7 +566,8 @@ protected:
 	std::map<std::string, std::pair<InterpreterImpl*, SendRequest> > _sendIds;
 	std::map<std::string, Invoker> _invokers;
 	std::map<Arabica::DOM::Node<std::string>, ExecutableContent> _executableContent;
-
+	std::set<DataModelExtension*> _dataModelExtensions;
+	
 	std::map<std::pair<Arabica::DOM::Node<std::string>, Arabica::DOM::Node<std::string> >, Arabica::XPath::NodeSet<std::string> >  _cachedProperAncestors;
 	std::map<Arabica::DOM::Element<std::string>, Arabica::XPath::NodeSet<std::string> > _cachedTargets;
 	std::map<std::string, Arabica::DOM::Element<std::string> > _cachedStates;
@@ -700,6 +709,10 @@ public:
 	}
 	const std::map<std::string, Invoker>& getInvokers() {
 		return _impl->getInvokers();
+	}
+
+	void addDataModelExtension(DataModelExtension* ext) {
+		_impl->addDataModelExtension(ext);
 	}
 
 

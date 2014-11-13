@@ -42,6 +42,8 @@ public:
 	virtual ~JSCDataModel();
 	virtual boost::shared_ptr<DataModelImpl> create(InterpreterImpl* interpreter);
 
+	virtual void addExtension(DataModelExtension* ext);
+
 	virtual std::list<std::string> getNames() {
 		std::list<std::string> names;
 		names.push_back("ecmascript");
@@ -91,6 +93,8 @@ protected:
 	static JSValueRef jsIn(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef* exception);
 	static JSClassDefinition jsPrintClassDef;
 	static JSValueRef jsPrint(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef* exception);
+	static JSClassDefinition jsExtensionClassDef;
+	static JSValueRef jsExtension(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef* exception);
 
 	static JSClassDefinition jsIOProcessorsClassDef;
 	static bool jsIOProcessorHasProp(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName);
@@ -101,7 +105,7 @@ protected:
 	static bool jsInvokerHasProp(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName);
 	static JSValueRef jsInvokerGetProp(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef* exception);
 	static void jsInvokerListProps(JSContextRef ctx, JSObjectRef object, JSPropertyNameAccumulatorRef propertyNames);
-
+	
 	JSValueRef getNodeAsValue(const Arabica::DOM::Node<std::string>& node);
 	JSValueRef getDataAsValue(const Data& data);
 	Data getValueAsData(const JSValueRef value);
@@ -112,6 +116,8 @@ protected:
 	std::string _sessionId;
 	std::string _name;
 
+	std::set<DataModelExtension*> _extensions;
+	
 	Event _event;
 	JSGlobalContextRef _ctx;
 };

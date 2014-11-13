@@ -1321,6 +1321,9 @@ void InterpreterImpl::init() {
 		if (HAS_ATTR(_scxml, "datamodel")) {
 			// might throw
 			_dataModel = _factory->createDataModel(ATTR(_scxml, "datamodel"), this);
+			for (std::set<DataModelExtension*>::iterator extIter = _dataModelExtensions.begin(); extIter != _dataModelExtensions.end(); extIter++) {
+				_dataModel.addExtension(*extIter);
+			}
 		} else {
 			_dataModel = _factory->createDataModel("null", this);
 		}
@@ -2020,8 +2023,6 @@ void InterpreterImpl::cancelInvoke(const Arabica::DOM::Element<std::string>& ele
 	//receiveInternal(Event("done.invoke." + invokeId, Event::PLATFORM));
 }
 
-#if 1
-
 // see: http://www.w3.org/TR/scxml/#EventDescriptors
 bool InterpreterImpl::nameMatch(const std::string& eventDescs, const std::string& eventName) {
 	if(eventDescs.length() == 0 || eventName.length() == 0)
@@ -2074,50 +2075,6 @@ NEXT_DESC:
 	return false;
 }
 
-#else
-// see: http://www.w3.org/TR/scxml/#EventDescriptors
-bool InterpreterImpl::nameMatch(const std::string& transitionEvent, const std::string& event) {
-	if(transitionEvent.length() == 0 || event.length() == 0)
-		return false;
-
-	// naive case of single descriptor and exact match
-	if (iequals(transitionEvent, event))
-		return true;
-
-	boost::char_separator<char> sep(" ");
-	boost::tokenizer<boost::char_separator<char> > tokens(transitionEvent, sep);
-	boost::tokenizer<boost::char_separator<char> >::iterator tokenIter = tokens.begin();
-
-	while(tokenIter != tokens.end()) {
-		std::string eventDesc(*tokenIter++);
-
-		// remove optional trailing .* for CCXML compatibility
-		if (eventDesc.find("*", eventDesc.size() - 1) != std::string::npos)
-			eventDesc = eventDesc.substr(0, eventDesc.size() - 1);
-		if (eventDesc.find(".", eventDesc.size() - 1) != std::string::npos)
-			eventDesc = eventDesc.substr(0, eventDesc.size() - 1);
-
-		// was eventDesc the * wildcard
-		if (eventDesc.size() == 0)
-			return true;
-
-		// are they already equal?
-		if (iequals(eventDesc, event))
-			return true;
-
-		// eventDesc has to be a real prefix of event now and therefore shorter
-		if (eventDesc.size() >= event.size())
-			continue;
-
-		// it is a prefix of the event name and event continues with .something
-		if (boost::istarts_with(event, eventDesc))
-//		if (eventDesc.compare(event.substr(0, eventDesc.size())) == 0)
-			if (event.find(".", eventDesc.size()) == eventDesc.size())
-				return true;
-	}
-	return false;
-}
-#endif
 
 bool InterpreterImpl::hasConditionMatch(const Arabica::DOM::Element<std::string>& conditional) {
 	if (HAS_ATTR(conditional, "cond") && ATTR(conditional, "cond").length() > 0) {
@@ -2754,43 +2711,24 @@ NodeSet<std::string> InterpreterImpl::getTargetStates(const Arabica::XPath::Node
 	return targets;
 }
 
-std::list<std::string> InterpreterImpl::tokenizeIdRefs(const std::string& idRefs) {
-	std::list<std::string> ids;
+std::list<std::string> InterpreterImpl::tokenize(const std::string& line, const char sep) {
+	std::list<std::string> tokens;
 
 	// appr. 3x faster than stringstream
 	size_t start = 0;
-	for (int i = 0; i < idRefs.size(); i++) {
-		if (isspace(idRefs[i])) {
+	for (int i = 0; i < line.size(); i++) {
+		if (line[i] == sep) {
 			if (i > 0 && start < i) {
-				ids.push_back(idRefs.substr(start, i - start));
+				tokens.push_back(line.substr(start, i - start));
 			}
-			while(isspace(idRefs[++i])); // skip whitespaces
+			while(line[++i] == sep); // skip multiple occurences of seperator
 			start = i;
-		} else if (i + 1 == idRefs.size()) {
-			ids.push_back(idRefs.substr(start, i + 1 - start));
+		} else if (i + 1 == line.size()) {
+			tokens.push_back(line.substr(start, i + 1 - start));
 		}
 	}
 
-
-#if 0
-	if (idRefs.length() > 0) {
-		std::istringstream iss(idRefs);
-
-		std::copy(std::istream_iterator<std::string>(iss),
-		          std::istream_iterator<std::string>(),
-		          std::back_inserter<std::vector<std::string> >(ids));
-	}
-#endif
-
-#if 0
-	// this version is somewhat fatser than the one above
-	std::stringstream ss (idRefs);
-	std::string item;
-	while(ss >> item)
-		ids.push_back(item);
-#endif
-
-	return ids;
+	return tokens;
 }
 
 std::string InterpreterImpl::spaceNormalize(const std::string& text) {
