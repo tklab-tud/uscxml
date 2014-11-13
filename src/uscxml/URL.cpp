@@ -559,10 +559,10 @@ URLFetcher::URLFetcher() {
 	// exposed just in case
 	char* envProxyTransferMode = getenv("USCXML_PROXY_TRANSFER_MODE");
 	char* envProxyAuth = getenv("USCXML_PROXYAUTH");
-	char* envProxyHeader = getenv("USCXML_PROXYHEADER"); // unsupported below
+//	char* envProxyHeader = getenv("USCXML_PROXYHEADER");
 	char* envProxyPassword = getenv("USCXML_PROXYPASSWORD");
 	char* envProxyPort = getenv("USCXML_PROXYPORT");
-	char* envProxyType = getenv("USCXML_PROXYTYPE"); // unsupported below
+//	char* envProxyType = getenv("USCXML_PROXYTYPE");
 	char* envProxyUsername = getenv("USCXML_PROXYUSERNAME");
 	char* envProxyUserPwd = getenv("USCXML_PROXYUSERPWD");
 
@@ -583,11 +583,13 @@ URLFetcher::URLFetcher() {
 		(curlError = curl_easy_setopt(_multiHandle, CURLOPT_PROXYAUTH, envProxyAuth)) == CURLE_OK ||
 		LOG(ERROR) << "Cannot set curl proxy authentication: " << curl_easy_strerror(curlError);
 	
+#if 0
 	/* This points to a linked list of headers used for proxy requests only,
 	 struct curl_slist kind */
 	if (envProxyHeader && unsupported)
 		(curlError = curl_easy_setopt(_multiHandle, CURLOPT_PROXYHEADER, envProxyHeader)) == CURLE_OK ||
 		LOG(ERROR) << "Cannot set curl proxy header: " << curl_easy_strerror(curlError);
+#endif
 	
 	/* "name" and "pwd" to use with Proxy when fetching. */
 	if (envProxyUsername)
@@ -603,11 +605,13 @@ URLFetcher::URLFetcher() {
 		(curlError = curl_easy_setopt(_multiHandle, CURLOPT_PROXYPORT, envProxyPort)) == CURLE_OK ||
 		LOG(ERROR) << "Cannot set curl proxy port: " << curl_easy_strerror(curlError);
 	
+#if 0
 	/* indicates type of proxy. accepted values are CURLPROXY_HTTP (default),
 	 CURLPROXY_SOCKS4, CURLPROXY_SOCKS4A and CURLPROXY_SOCKS5. */
 	if (envProxyType && unsupported)
 		(curlError = curl_easy_setopt(_multiHandle, CURLOPT_PROXYTYPE, envProxyType)) == CURLE_OK ||
 		LOG(ERROR) << "Cannot set curl proxy type: " << curl_easy_strerror(curlError);
+#endif
 	
 	/* "user:password" to use with proxy. */
 	if (envProxyUserPwd)
