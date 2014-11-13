@@ -539,6 +539,81 @@ std::ostream & operator<<(std::ostream & stream, const URL& url) {
 URLFetcher::URLFetcher() {
 	_isStarted = false;
 	_multiHandle = curl_multi_init();
+	
+	// read proxy information from environment
+//	CURLOPT_PROXY;
+//	CURLOPT_PROXY_TRANSFER_MODE;
+//	CURLOPT_PROXYAUTH;
+//	CURLOPT_PROXYHEADER;
+//	CURLOPT_PROXYPASSWORD;
+//	CURLOPT_PROXYPORT;
+//	CURLOPT_PROXYTYPE;
+//	CURLOPT_PROXYUSERNAME;
+//	CURLOPT_PROXYUSERPWD;
+	
+	bool unsupported = false;
+	CURLcode curlError;
+	
+	char* envProxy = getenv("USCXML_PROXY"); // e.g. 'socks5://bob:marley@localhost:12345'
+	
+	// exposed just in case
+	char* envProxyTransferMode = getenv("USCXML_PROXY_TRANSFER_MODE");
+	char* envProxyAuth = getenv("USCXML_PROXYAUTH");
+	char* envProxyHeader = getenv("USCXML_PROXYHEADER"); // unsupported below
+	char* envProxyPassword = getenv("USCXML_PROXYPASSWORD");
+	char* envProxyPort = getenv("USCXML_PROXYPORT");
+	char* envProxyType = getenv("USCXML_PROXYTYPE"); // unsupported below
+	char* envProxyUsername = getenv("USCXML_PROXYUSERNAME");
+	char* envProxyUserPwd = getenv("USCXML_PROXYUSERPWD");
+
+	/* Name of proxy to use. */
+	if (envProxy)
+		(curlError = curl_easy_setopt(_multiHandle, CURLOPT_PROXY, envProxy)) == CURLE_OK ||
+		LOG(ERROR) << "Cannot set curl proxy: " << curl_easy_strerror(curlError);
+	
+	/* set transfer mode (;type=<a|i>) when doing FTP via an HTTP proxy */
+	if (envProxyTransferMode)
+		(curlError = curl_easy_setopt(_multiHandle, CURLOPT_PROXY_TRANSFER_MODE, envProxyTransferMode)) == CURLE_OK ||
+		LOG(ERROR) << "Cannot set curl proxy transfer mode: " << curl_easy_strerror(curlError);
+
+	/* Set this to a bitmask value to enable the particular authentications
+	 methods you like. Use this in combination with CURLOPT_PROXYUSERPWD.
+	 Note that setting multiple bits may cause extra network round-trips. */
+	if (envProxyAuth)
+		(curlError = curl_easy_setopt(_multiHandle, CURLOPT_PROXYAUTH, envProxyAuth)) == CURLE_OK ||
+		LOG(ERROR) << "Cannot set curl proxy authentication: " << curl_easy_strerror(curlError);
+	
+	/* This points to a linked list of headers used for proxy requests only,
+	 struct curl_slist kind */
+	if (envProxyHeader && unsupported)
+		(curlError = curl_easy_setopt(_multiHandle, CURLOPT_PROXYHEADER, envProxyHeader)) == CURLE_OK ||
+		LOG(ERROR) << "Cannot set curl proxy header: " << curl_easy_strerror(curlError);
+	
+	/* "name" and "pwd" to use with Proxy when fetching. */
+	if (envProxyUsername)
+		(curlError = curl_easy_setopt(_multiHandle, CURLOPT_PROXYUSERNAME, envProxyUsername)) == CURLE_OK ||
+		LOG(ERROR) << "Cannot set curl proxy username: " << curl_easy_strerror(curlError);
+	if (envProxyPassword)
+		(curlError = curl_easy_setopt(_multiHandle, CURLOPT_PROXYPASSWORD, envProxyPassword)) == CURLE_OK ||
+		LOG(ERROR) << "Cannot set curl proxy password: " << curl_easy_strerror(curlError);
+	
+	/* Port of the proxy, can be set in the proxy string as well with:
+	 "[host]:[port]" */
+	if (envProxyPort)
+		(curlError = curl_easy_setopt(_multiHandle, CURLOPT_PROXYPORT, envProxyPort)) == CURLE_OK ||
+		LOG(ERROR) << "Cannot set curl proxy port: " << curl_easy_strerror(curlError);
+	
+	/* indicates type of proxy. accepted values are CURLPROXY_HTTP (default),
+	 CURLPROXY_SOCKS4, CURLPROXY_SOCKS4A and CURLPROXY_SOCKS5. */
+	if (envProxyType && unsupported)
+		(curlError = curl_easy_setopt(_multiHandle, CURLOPT_PROXYTYPE, envProxyType)) == CURLE_OK ||
+		LOG(ERROR) << "Cannot set curl proxy type: " << curl_easy_strerror(curlError);
+	
+	/* "user:password" to use with proxy. */
+	if (envProxyUserPwd)
+		(curlError = curl_easy_setopt(_multiHandle, CURLOPT_PROXYUSERPWD, envProxyUserPwd)) == CURLE_OK ||
+		LOG(ERROR) << "Cannot set curl proxy user password: " << curl_easy_strerror(curlError);
+	
 	start();
 }
 

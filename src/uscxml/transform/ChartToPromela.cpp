@@ -2267,6 +2267,21 @@ void ChartToPromela::initNodes() {
 		_analyzer.addCode(*codeIter);
 	}
 
+	// add all namelist entries to the _event structure
+	{
+		NodeSet<std::string> withNamelist;
+		withNamelist.push_back(filterChildElements(_nsInfo.xmlNSPrefix + "send", _scxml, true));
+		withNamelist.push_back(filterChildElements(_nsInfo.xmlNSPrefix + "invoke", _scxml, true));
+		for (int i = 0; i < withNamelist.size(); i++) {
+			if (HAS_ATTR_CAST(withNamelist[i], "namelist")) {
+				std::string namelist = ATTR_CAST(withNamelist[i], "namelist");
+				std::list<std::string> names = tokenizeIdRefs(namelist);
+				for (std::list<std::string>::iterator nameIter = names.begin(); nameIter != names.end(); nameIter++) {
+					_analyzer.addCode("_event.data." + *nameIter + " = 0;"); // introduce for _event_t typedef
+				}
+			}
+		}
+	}
 }
 
 std::string ChartToPromela::sanitizeCode(const std::string& code) {
