@@ -97,8 +97,7 @@ public:
 		_interpreter = interpreter;
 	}
 
-	virtual void addExtension(DataModelExtension* ext) {}
-	
+	virtual void addExtension(DataModelExtension* ext);
 	virtual std::string andExpressions(std::list<std::string>) {
 		return "";
 	}

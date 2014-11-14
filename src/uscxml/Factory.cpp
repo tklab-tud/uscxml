@@ -652,6 +652,10 @@ boost::shared_ptr<ExecutableContentImpl> Factory::createExecutableContent(const 
 
 }
 
+void DataModelImpl::addExtension(DataModelExtension* ext) {
+	ERROR_EXECUTION_THROW("DataModel does not support extensions");
+}
+
 size_t DataModelImpl::replaceExpressions(std::string& content) {
 	std::stringstream ss;
 	size_t replacements = 0;

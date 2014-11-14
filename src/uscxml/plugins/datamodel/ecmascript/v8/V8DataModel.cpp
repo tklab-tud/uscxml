@@ -90,6 +90,69 @@ V8DataModel::~V8DataModel() {
 		delete _dom;
 }
 
+void V8DataModel::addExtension(DataModelExtension* ext) {
+	if (_extensions.find(ext) != _extensions.end())
+		return;
+	
+	ext->dm = this;
+	_extensions.insert(ext);
+
+	v8::Locker locker;
+	v8::HandleScope scope;
+	v8::Context::Scope contextScope(_contexts.front());
+	v8::Handle<v8::Object> currScope = _contexts.front()->Global();
+
+	std::list<std::string> locPath = InterpreterImpl::tokenize(ext->provides(), '.');
+	std::list<std::string>::iterator locIter = locPath.begin();
+	while(true) {
+		std::string pathComp = *locIter;
+		v8::Local<v8::String> pathCompJS = v8::String::New(locIter->c_str());
+		
+		if (++locIter != locPath.end()) {
+			// just another intermediate step
+			if (!currScope->Has(pathCompJS)) {
+				currScope->Set(pathCompJS, v8::Object::New());
+			}
+			
+			v8::Local<v8::Value> newScope = currScope->Get(pathCompJS);
+			if (newScope->IsObject()) {
+				currScope = newScope->ToObject();
+			} else {
+				throw "Cannot add datamodel extension in non-object";
+			}
+		} else {
+			// this is the function!
+			currScope->Set(pathCompJS, v8::FunctionTemplate::New(jsExtension, v8::External::New(reinterpret_cast<void*>(ext)))->GetFunction(), v8::ReadOnly);
+			break;
+		}
+	}
+}
+
+v8::Handle<v8::Value> V8DataModel::jsExtension(const v8::Arguments& args) {
+	DataModelExtension* extension = static_cast<DataModelExtension*>(v8::External::Unwrap(args.Data()));
+
+	v8::Local<v8::String> memberJS;
+	std::string memberName;
+	
+	if (args.Length() > 0 && args[0]->IsString()) {
+		memberJS = args[0]->ToString();
+		memberName = *v8::String::AsciiValue(memberJS);
+	}
+	
+	if (args.Length() > 1) {
+		// setter
+		Data data = ((V8DataModel*)(extension->dm))->getValueAsData(args[1]);
+		extension->setValueOf(memberName, data);
+		return v8::Undefined();
+	}
+	
+	if (args.Length() == 1) {
+		// getter
+		return ((V8DataModel*)(extension->dm))->getDataAsValue(extension->getValueOf(memberName));
+	}
+	return v8::Undefined();
+}
+
 boost::shared_ptr<DataModelImpl> V8DataModel::create(InterpreterImpl* interpreter) {
 	boost::shared_ptr<V8DataModel> dm = boost::shared_ptr<V8DataModel>(new V8DataModel());
 	dm->_interpreter = interpreter;

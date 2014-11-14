@@ -96,6 +96,9 @@ public:
 	virtual bool evalAsBool(const std::string& expr);
 	virtual double evalAsNumber(const std::string& expr);
 
+	virtual void addExtension(DataModelExtension* ext);
+
+	static v8::Handle<v8::Value> jsExtension(const v8::Arguments& args);
 	static v8::Handle<v8::Value> jsIn(const v8::Arguments& args);
 	static v8::Handle<v8::Value> jsPrint(const v8::Arguments& args);
 
@@ -118,6 +121,7 @@ protected:
 	v8::Handle<v8::Value> getNodeAsValue(const Arabica::DOM::Node<std::string>& node);
 	void throwExceptionEvent(const v8::TryCatch& tryCatch);
 
+	std::set<DataModelExtension*> _extensions;
 };
 
 #ifdef BUILD_AS_PLUGINS

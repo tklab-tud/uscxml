@@ -112,7 +112,7 @@ void JSCDataModel::addExtension(DataModelExtension* ext) {
 				currScope = JSValueToObject(_ctx, newScope, NULL);
 			} else {
 				JSStringRelease(pathCompJS);
-				throw "adsf";
+				throw "Cannot add datamodel extension in non-object";
 			}
 		} else {
 			// this is the function!
