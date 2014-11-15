@@ -231,13 +231,15 @@ public:
 		return URL(impl);
 	}
 
+	void dump();
+	
 	void addMonitor(URLMonitor* monitor)    {
 		_impl->addMonitor(monitor);
 	}
 	void removeMonitor(URLMonitor* monitor) {
 		_impl->removeMonitor(monitor);
 	}
-
+	
 	bool downloadFailed() {
 		return _impl->downloadFailed();
 	}

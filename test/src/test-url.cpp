@@ -3,6 +3,8 @@
 #include "uscxml/Interpreter.h"
 #include "uscxml/server/HTTPServer.h"
 
+#include "uscxml/config.h"
+
 #include <SAX/helpers/InputSourceResolver.hpp>
 
 #include <assert.h>
@@ -42,16 +44,98 @@ bool canResolve(const std::string& url) {
 	}
 }
 
+void testFileURLs() {
+
+	// absolute
+	std::list<URL> absURLs;
+	{
+		// with explicit file schema
+		absURLs.push_back(URL("file:///"));
+		absURLs.push_back(URL("file:/"));
+
+		// platform specific
+		absURLs.push_back(URL("file:/Z:/Windows/workspace/uscxml/bin/com/carmeq/scxml/test-xml-access.xml"));
+		absURLs.push_back(URL("file:/C:/Windows/config.sys"));
+		absURLs.push_back(URL("file:/Macintosh%20HD/fileURLs/text.txt"));
+		absURLs.push_back(URL("file:/fileURLs/text.txt"));
+
+		// usual filesystem paths
+		absURLs.push_back(URL("C:\\Windows\\sradomski\\Desktop\\foo.txt"));
+//		absURLs.push_back(URL("C:\\Windows\\Some Spaces\\index.txt"));
+//		absURLs.push_back(URL("C:/Windows/Some Spaces/index.txt"));
+//		absURLs.push_back(URL("/Users/sradomski/Desktop/"));
+//		absURLs.push_back(URL("/Users/sradomski/Desktop/foo.txt"));
+	}
+	
+	std::list<URL> absWithHostURLs;
+	{
+		absWithHostURLs.push_back(URL("file://hostname/"));
+		absWithHostURLs.push_back(URL("file://localhost/"));
+		absWithHostURLs.push_back(URL("file://C:/config.sys"));
+		absWithHostURLs.push_back(URL("file://config.sys"));
+		absWithHostURLs.push_back(URL("file://config.sys"));
+		absWithHostURLs.push_back(URL("file://Macintosh%20HD/fileURLs/text.txt"));
+		absWithHostURLs.push_back(URL("file://fileURLs/text.txt"));
+		absWithHostURLs.push_back(URL("file://Desktop/workspace/uscxml/bin/com/carmeq/scxml/test-xml-access.xml"));
+		absWithHostURLs.push_back(URL("file://Windows\\sradomski\\Desktop\\foo.txt"));
+
+	}
+	// relative URLs
+	std::list<URL> relURLs;
+	
+	{
+		relURLs.push_back(URL("file"));
+		relURLs.push_back(URL("file:"));
+		relURLs.push_back(URL("file://"));
+		
+		// platform specific
+		relURLs.push_back(URL("file:Macintosh%20HD/fileURLs/text.txt"));
+		relURLs.push_back(URL("file:fileURLs/text.txt"));
+		relURLs.push_back(URL("file:Document/Text.foo"));
+		
+		// usual filesystem paths
+		relURLs.push_back(URL("Users\\sradomski\\Desktop\\foo.txt"));
+		relURLs.push_back(URL("Document\\Some Spaces\\index.txt"));
+		relURLs.push_back(URL("Document/Some Spaces/index.txt"));
+		relURLs.push_back(URL("Users/sradomski/Desktop/"));
+		relURLs.push_back(URL("Users/sradomski/Desktop/foo.txt"));
+	}
+
+	for (std::list<URL>::iterator absIter = absURLs.begin(); absIter != absURLs.end(); absIter++) {
+		absIter->dump();
+		assert(absIter->isAbsolute());
+		assert(absIter->scheme() == "file");
+		assert(absIter->host() == "");
+	}
+
+	for (std::list<URL>::iterator relIter = relURLs.begin(); relIter != relURLs.end(); relIter++) {
+		assert(!relIter->isAbsolute());
+	}
+	
+	for (std::list<URL>::iterator absIter = absURLs.begin(); absIter != absURLs.end(); absIter++) {
+		for (std::list<URL>::iterator relIter = relURLs.begin(); relIter != relURLs.end(); relIter++) {
+			URL relURL(*relIter);
+			relURL.toAbsolute(*absIter);
+			assert(relURL.isAbsolute());
+		}
+	}
+
+}
+
 int main(int argc, char** argv) {
 #ifdef _WIN32
 	WSADATA wsaData;
 	WSAStartup(MAKEWORD(2, 2), &wsaData);
 #endif
 
+	// some URLs from http://www-archive.mozilla.org/quality/networking/testing/filetests.html
+
 	HTTPServer::getInstance(8099, 8100);
 
 	std::string exeName = argv[0];
 	exeName = exeName.substr(exeName.find_last_of("\\/") + 1);
+
+	testFileURLs();
 
 	{
 		try {
@@ -171,6 +255,7 @@ int main(int argc, char** argv) {
 		content << url;
 	}
 
+#ifndef _WIN32
 	{
 		URL url("https://raw.github.com/tklab-tud/uscxml/master/test/samples/uscxml/test-ecmascript.scxml");
 		std::cout << url.asString() << std::endl;
@@ -179,17 +264,8 @@ int main(int argc, char** argv) {
 		std::stringstream content;
 		content << url;
 	}
-
-	{
-		URL url("file:Document/Text.foo");
-		std::cout << url.asString() << std::endl;
-		assert(!url.isAbsolute());
-		assert(iequals(url.scheme(), "file"));
-		assert(iequals(url.host(), ""));
-		assert(iequals(url.port(), "0"));
-		assert(iequals(url.path(), "Document/Text.foo"));
-		assert(iequals(url.asString(), "file:Document/Text.foo"));
-	}
+#endif
+	
 	{
 		URL url("test/index.html");
 		assert(iequals(url.scheme(), ""));
@@ -197,24 +273,12 @@ int main(int argc, char** argv) {
 		assert(iequals(url.scheme(), "file"));
 		std::cout << url.asString() << std::endl;
 	}
-	{
-		URL url("C:\\Document\\Some Spaces\\index.txt");
-		assert(url.isAbsolute());
-		assert(iequals(url.scheme(), "file"));
-		std::cout << url.asString() << std::endl;
-	}
+
 	{
 		URL url = URL::toLocalFile("this is quite some content!", "txt");
 		std::cout << url.asLocalFile("txt");
 		assert(url.isAbsolute());
 		assert(iequals(url.scheme(), "file"));
-	}
-	{
-		URL url("C:\\Document\\Some Spaces\\index.txt");
-		assert(iequals(url.pathComponents()[0], "C:"));
-		assert(iequals(url.pathComponents()[1], "Document"));
-		assert(iequals(url.pathComponents()[2], "Some Spaces"));
-		assert(iequals(url.pathComponents()[3], "index.txt"));
 	}
 
 }

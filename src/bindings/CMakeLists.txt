@@ -11,8 +11,9 @@ if (WIN32)
 		LIST(APPEND CMAKE_PROGRAM_PATH "${PROJECT_BINARY_DIR}/../../swig/")
 	endif()
 
-	LIST(APPEND CMAKE_PROGRAM_PATH "C:/Program Files/swig") # swig.exe
-	LIST(APPEND CMAKE_PROGRAM_PATH "C:/Program Files (x86)/swig") # swig.exe
+	file(GLOB POTENTIAL_SWIG "C:/Program Files/swig*" "C:/Program Files (x86)/swig*")
+	LIST(APPEND CMAKE_PROGRAM_PATH ${POTENTIAL_SWIG}) # swig.exe
+	# message(FATAL_ERROR "POTENTIAL_SWIG: ${POTENTIAL_SWIG}")
 	
 endif()
 LIST(APPEND CMAKE_PROGRAM_PATH $ENV{SWIG_DIR})
@@ -29,7 +30,7 @@ if (SWIG_FOUND)
 			message(STATUS "SWIG version > 3.0 is recommended, found ${SWIG_VERSION}")
 		endif()
 	else()
-		message(STATUS "SWIG version 2.0.5 is required, found ${SWIG_VERSION} - skipping java wrapper generation")
+		message(STATUS "SWIG version 2.0.5 is required, found ${SWIG_VERSION} - skipping wrapper generation")
 	endif()
 else()
 	message(STATUS "SWIG not found - skipping wrapper generation")

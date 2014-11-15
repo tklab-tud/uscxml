@@ -407,13 +407,9 @@ Interpreter Interpreter::fromXML(const std::string& xml) {
 	return fromInputSource(inputSource);
 }
 
-Interpreter Interpreter::fromURI(const std::string& uri) {
-	URL url(uri);
-	return fromURI(url);
-}
 
-Interpreter Interpreter::fromURI(const URL& uri) {
-	URL absUrl = uri;
+Interpreter Interpreter::fromURI(const std::string& uri) {
+	URL absUrl(uri);
 	if (!absUrl.isAbsolute()) {
 		if (!absUrl.toAbsoluteCwd()) {
 			ERROR_COMMUNICATION_THROW("URL is not absolute or does not have file schema");
@@ -426,15 +422,8 @@ Interpreter Interpreter::fromURI(const URL& uri) {
 		Arabica::SAX::InputSource<std::string> inputSource;
 		inputSource.setSystemId(absUrl.asString());
 		interpreter = fromInputSource(inputSource);
-#if 0
-	} else if (iequals(absUrl.scheme(), "http")) {
-		// handle http per arabica - this will not follow redirects
-		Arabica::SAX::InputSource<std::string> inputSource;
-		inputSource.setSystemId(absUrl.asString());
-		interpreter = fromInputSource(inputSource);
-#endif
 	} else {
-		// use curl for everything else
+		// use curl for everything !file - even for http as arabica won't follow redirects
 		std::stringstream ss;
 		ss << absUrl;
 		if (absUrl.downloadFailed()) {
@@ -547,14 +536,14 @@ InterpreterImpl::~InterpreterImpl() {
 			event.name = "unblock.and.die";
 			receive(event);
 
-			_thread->join();
-			delete(_thread);
 		} else {
 			// this can happen with a shared_from_this at an interpretermonitor
 			setInterpreterState(USCXML_DESTROYED);
 		}
+		_thread->join();
+		delete(_thread);
 	}
-	join();
+
 	if (_sendQueue)
 		delete _sendQueue;
 
@@ -1153,8 +1142,8 @@ bool InterpreterImpl::runOnMainThread(int fps, bool blocking) {
 		return false;
 
 	if (fps > 0) {
-		uint64_t nextRun = _lastRunOnMainThread + (1000 / fps);
-		if (blocking) {
+		if (blocking && _lastRunOnMainThread > 0) {
+			uint64_t nextRun = _lastRunOnMainThread + (1000 / fps);
 			while(nextRun > tthread::timeStamp()) {
 				tthread::this_thread::sleep_for(tthread::chrono::milliseconds(nextRun - tthread::timeStamp()));
 			}

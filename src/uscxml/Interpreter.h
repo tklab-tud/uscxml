@@ -586,7 +586,6 @@ public:
 	                           const NameSpaceInfo& nameSpaceInfo);
 	static Interpreter fromXML(const std::string& xml);
 	static Interpreter fromURI(const std::string& uri);
-	static Interpreter fromURI(const URL& uri);
 	static Interpreter fromClone(const Interpreter& other);
 
 	Interpreter() : _impl() {} // the empty, invalid interpreter

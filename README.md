@@ -96,6 +96,10 @@ This will perform a single iteration on the invoked components with a maximum of
 or return immediately. You will have to call this method every now and then if you are using e.g. the
 <tt>scenegraph</tt> invoker.
 
+<b>Note:</b> Running the interpreter in its own thread via <tt>start</tt> is not exposed into the 
+language bindings. Just use the threading concepts native to your language to call <tt>step</tt> or 
+<tt>interpret</tt> as outlined below.
+
 ### Blocking Interpretation with inline SCXML
     Interpreter scxml = Interpreter::fromXML("<scxml><final id="exit"/></scxml>");
     scxml.interpret(); // blocking
@@ -107,11 +111,13 @@ it will call <tt>runOnMainThread</tt> between stable configurations.
     Interpreter scxml = Interpreter::fromXML("<scxml><final id="exit"/></scxml>");
     InterpreterState state;
     do {
-      state = interpreter.step(true); // boolean argument causes blocking or not
-    } while(state > 0)
+      state = interpreter.step(ms);
+    } while(state != InterpreterState::USCXML_FINISHED)
 
 Using <tt>step</tt>, you can run a single macrostep of the interpreter and interleave
-interpretation with the rest of your code.
+interpretation with the rest of your code. The <tt>step</tt> function will take an optional integer as
+the time in milliseconds it will block and wait if no more events are available, default is to block
+indefinitely until an event arrives or the interpreter finished.
 
 ### Callbacks for an Interpreter
 

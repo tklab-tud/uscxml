@@ -52,6 +52,21 @@
 
 namespace uscxml {
 
+void URL::dump() {
+	std::cout << ">>>" << asString() << "<<< ";
+	std::cout << (isAbsolute() ? "absolute" : "relative") << std::endl;
+	std::cout << "[scheme]" << scheme();
+	std::cout << "[host]" << host();
+	std::cout << "[port]" << port();
+	std::cout << "[path]" << path();
+	std::cout << "[file]" << file() << std::endl;
+	std::cout << "[segmts " << pathComponents().size() << "]: ";
+	for (int i = 0; i < pathComponents().size(); i++) {
+		std::cout << pathComponents()[i] << ", ";
+	}
+	std::cout << std::endl << std::endl;
+}
+	
 std::string URL::tmpDir() {
 	// try hard to find a temporary directory
 	const char* tmpDir = NULL;
@@ -157,7 +172,12 @@ std::string URL::getResourceDir() {
 }
 #endif
 
-URLImpl::URLImpl(const std::string& url) : _handle(NULL), _uri(url), _isDownloaded(false), _hasFailed(false) {
+URLImpl::URLImpl(const std::string& url) : _handle(NULL), _isDownloaded(false), _hasFailed(false) {
+	if (url[0] == '/') {
+		_uri = Arabica::io::URI("file://" + url);
+	} else {
+		_uri = Arabica::io::URI(url);
+	}
 	std::stringstream ss(_uri.path());
 	std::string item;
 	while(std::getline(ss, item, '/')) {
@@ -472,8 +492,11 @@ const bool URLImpl::toAbsolute(const std::string& baseUrl) {
 		return true;
 
 	std::string uriStr = _uri.as_string();
+//	std::cout << "## bas # " << baseUrl << std::endl;
+//	std::cout << "## rel # " << _uri.as_string() << std::endl;
+
 #ifdef _WIN32
-	if (baseUrl.find("file://") == 0) {
+	if (baseUrl.find("file://") == 0 && false) {
 		_uri = Arabica::io::URI("file:///" + baseUrl.substr(7), _uri.as_string());
 	} else {
 		_uri = Arabica::io::URI(baseUrl, _uri.as_string());
@@ -481,6 +504,7 @@ const bool URLImpl::toAbsolute(const std::string& baseUrl) {
 #else
 	_uri = Arabica::io::URI(baseUrl, _uri.as_string());
 #endif
+//	std::cout << "## abs # " << _uri.as_string() << std::endl;
 
 	if (!_uri.is_absolute())
 		return false;
