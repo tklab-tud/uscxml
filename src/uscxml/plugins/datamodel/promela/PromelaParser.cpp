@@ -30,11 +30,12 @@ void promela__delete_buffer(YY_BUFFER_STATE, void*);
 YY_BUFFER_STATE promela__scan_string (const char * yystr , void*);
 
 
-extern int promela_lex (PROMELA_STYPE* yylval_param, void* yyscanner);
+extern int promela_lex (PROMELA_STYPE* yylval_param, PROMELA_LTYPE* yylloc_param, void* yyscanner);
 int promela_lex_init (void**);
 int promela_lex_destroy (void*);
 
-void promela_error (uscxml::PromelaParser* ctx, void* yyscanner, const char* err) {
+void promela_error (void* yylloc_param, uscxml::PromelaParser* ctx, void* yyscanner, const char* err) {
+	PROMELA_LTYPE* yylloc = (PROMELA_LTYPE*)yylloc_param;
 	// mark as pending exception as we cannot throw from constructor and have the destructor called
 	ERROR_EXECUTION(excEvent, err);
 	ctx->pendingException = excEvent;
@@ -120,26 +121,41 @@ PromelaParserNode::~PromelaParserNode() {
 		delete operands.front();
 		operands.pop_front();
 	}
+	if (loc)
+		free(loc);
 }
 
 PromelaParserNode* PromelaParser::node(int type, int nrArgs, ...) {
 	PromelaParserNode* newNode = new PromelaParserNode();
+	
 	newNode->type = type;
 	va_list ap;
 	va_start(ap, nrArgs);
 	for(int i = 1; i <= nrArgs; i++) {
 		newNode->operands.push_back(va_arg(ap, PromelaParserNode*));
+		newNode->operands.back()->parent = newNode;
 	}
 	return newNode;
 }
 
-PromelaParserNode* PromelaParser::value(int type, const char* value) {
+PromelaParserNode* PromelaParser::value(int type, void* location, const char* value) {
 	PromelaParserNode* newNode = new PromelaParserNode();
+
+	if (location) {
+		PROMELA_LTYPE* location_param = (PROMELA_LTYPE*)location;
+		newNode->loc = (PromelaParserNode::Location*)malloc(sizeof(PromelaParserNode::Location));
+		newNode->loc->firstCol = location_param->first_column;
+		newNode->loc->firstLine = location_param->first_line;
+		newNode->loc->lastCol = location_param->last_column;
+		newNode->loc->lastLine = location_param->last_line;
+	}
+
 	newNode->value = value;
 	newNode->type = type;
 	return newNode;
 }
 
+	
 void PromelaParser::dump() {
 	switch (type) {
 	case PROMELA_EXPR:
@@ -160,11 +176,13 @@ void PromelaParserNode::merge(PromelaParserNode* node) {
 	for (std::list<PromelaParserNode*>::iterator iter = node->operands.begin();
 	        iter != node->operands.end(); iter++) {
 		operands.push_back(*iter);
+		(*iter)->parent = this;
 	}
 	node->operands.clear();
 }
 
 void PromelaParserNode::push(PromelaParserNode* node) {
+	node->parent = this;
 	operands.push_back(node);
 }
 
@@ -173,7 +191,11 @@ void PromelaParserNode::dump(int indent) {
 	for (int i = 0; i < indent; i++) {
 		padding += "  ";
 	}
-	std::cout << padding << typeToDesc(type) << ": " << value << std::endl;
+	std::cout << padding << typeToDesc(type) << ": " << value;
+	if (loc != NULL) {
+		std::cout << " (" << loc->firstLine << ":" << loc->firstCol << ")-(" << loc->lastLine << ":" << loc->lastCol << ")";
+	}
+	std::cout << std::endl;
 	for (std::list<PromelaParserNode*>::iterator iter = operands.begin();
 	        iter != operands.end(); iter++) {
 		(*iter)->dump(indent + 1);

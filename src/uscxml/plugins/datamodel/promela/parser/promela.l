@@ -2,6 +2,7 @@
 /* see: http://spinroot.com/spin/Man/operators.html */
 
 
+%option yylineno
 %option reentrant
 %option bison-bridge
 %option prefix="promela_"
@@ -9,12 +10,28 @@
 %option noyywrap
 %option debug 
 %option never-interactive nounistd
+%option bison-locations
 
 %{
   
 #include "../PromelaParser.h"
 #include "promela.tab.hpp"
 #define YYSTYPE PROMELA_STYPE
+#define YYLTYPE PROMELA_LTYPE
+#define YY_USER_INIT \
+  yycolumn = yylloc->first_line = yylloc->first_column = 0; \
+  yylineno = yylloc->last_line = yylloc->last_column = 0; \
+
+//int yycolumn = 1;
+
+#define YY_USER_ACTION \
+{ \
+  yylloc->first_line = yylineno; \
+  yylloc->first_column = yycolumn; \
+  yylloc->last_column = yycolumn + yyleng; \
+  yylloc->last_line = yylineno; \
+  yycolumn = yycolumn + yyleng; \
+}
 
 %}
 

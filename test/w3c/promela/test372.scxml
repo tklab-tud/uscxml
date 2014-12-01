@@ -7,7 +7,7 @@ Var1 should be set to 2 (but not 3) by the time the event is raised -->
   </datamodel>
   <state id="s0" initial="s0final">
     <onentry>
-      <send event="timeout" delay="1s"/>
+      <send xmlns:scxml="http://www.w3.org/2005/07/scxml" delay="1000" event="timeout"/>
     </onentry>
     <transition event="done.state.s0" cond="Var1==2" target="pass"/>
     <transition event="*" target="fail"/>

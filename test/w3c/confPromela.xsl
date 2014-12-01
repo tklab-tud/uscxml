@@ -53,6 +53,11 @@
 
 <!-- creates id for <data> element, etc. -->
 <!-- xsl:template match="//scxml:data[conf:array123]" -->
+<xsl:template match="//@conf:id[../@conf:quoteExpr[.='0s']]" priority="6">
+	<xsl:attribute name="id">Var<xsl:value-of select="." /></xsl:attribute>
+	<xsl:attribute name="type">int</xsl:attribute>
+</xsl:template>
+
 <xsl:template match="//@conf:id[../conf:array123]" priority="5">
 	<xsl:attribute name="id">Var<xsl:value-of select="." /></xsl:attribute>
 	<xsl:attribute name="type">int[3]</xsl:attribute>
@@ -99,7 +104,37 @@
 	<xsl:attribute name="location"><xsl:value-of select="." /></xsl:attribute>
 </xsl:template>
 
+<xsl:template match="//scxml:send[@delay='1s'][@event='timeout1']" priority="6">
+	<send xmlns="http://www.w3.org/2005/07/scxml" delay="1000" event="timeout"/>
+</xsl:template>
 
+<xsl:template match="//scxml:send[@delay='1s'][@event='timeout2']" priority="6">
+	<send xmlns="http://www.w3.org/2005/07/scxml" delay="1000" event="timeout"/>
+</xsl:template>
+
+<xsl:template match="//scxml:send[@delay='1s'][@event='timeout3']" priority="6">
+	<send xmlns="http://www.w3.org/2005/07/scxml" delay="1000" event="timeout"/>
+</xsl:template>
+
+<xsl:template match="//scxml:send[@delay='1s'][@event='timeout']" priority="6">
+	<send xmlns="http://www.w3.org/2005/07/scxml" delay="1000" event="timeout"/>
+</xsl:template>
+
+<xsl:template match="//scxml:send[@delay='2s'][@event='timeout']" priority="6">
+	<send xmlns="http://www.w3.org/2005/07/scxml" delay="2000" event="timeout"/>
+</xsl:template>
+
+<xsl:template match="//scxml:send[@delay='3s'][@event='timeout']" priority="6">
+	<send xmlns="http://www.w3.org/2005/07/scxml" delay="3000" event="timeout"/>
+</xsl:template>
+
+<xsl:template match="//scxml:send[@delay='5s'][@event='timeout']" priority="6">
+	<send xmlns="http://www.w3.org/2005/07/scxml" delay="5000" event="timeout"/>
+</xsl:template>
+
+<xsl:template match="//scxml:send[@delay='20s'][@event='timeout']" priority="6">
+	<send xmlns="http://www.w3.org/2005/07/scxml" delay="20000" event="timeout"/>
+</xsl:template>
 
 
 <!-- expr is evaluated -->
@@ -113,6 +148,14 @@
 </xsl:template>
 
 <!-- expr is quoted -->
+<xsl:template match="//@conf:quoteExpr[.='1s']" priority="5">
+	<xsl:attribute name="expr">1000</xsl:attribute>
+</xsl:template>
+
+<xsl:template match="//@conf:quoteExpr[.='0s']" priority="4">
+	<xsl:attribute name="expr">0</xsl:attribute>
+</xsl:template>
+
 <xsl:template match="//@conf:quoteExpr">
 	<xsl:attribute name="expr">'<xsl:value-of select="." />'</xsl:attribute>
 </xsl:template>
@@ -273,7 +316,7 @@
 <!-- computes a delayexpr based on the value passed in.  this lets platforms determine how long to delay timeout
 events which cause the test to fail.  The default value provided here is pretty long -->
 <xsl:template match="//@conf:delay">
-	<xsl:attribute name="delayexpr">'<xsl:value-of select="."/>s'</xsl:attribute>
+	<xsl:attribute name="delayexpr"><xsl:value-of select=". * 1000"/></xsl:attribute>
 </xsl:template>
 
 <!--  the specified variable is used as idlocation -->

@@ -4,7 +4,7 @@ and before the onentry handler of the child states.  Event1, event2, and event3 
 <scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" initial="s0" version="1.0" datamodel="promela">
   <state id="s0" initial="s01">
     <onentry>
-      <send event="timeout" delay="1s"/>
+      <send xmlns:scxml="http://www.w3.org/2005/07/scxml" delay="1000" event="timeout"/>
     </onentry>
     <transition event="timeout" target="fail"/>
     <transition event="event1" target="fail"/>

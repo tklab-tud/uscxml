@@ -118,7 +118,7 @@ public class ECMAScriptDataModel extends DataModel {
 				invokers.put(key, invokersNatives.get(key).getDataModelVariables());
 			}
 			newDM.scope
-					.put("_ioprocessors", newDM.scope, new ECMAData(invokers));
+					.put("_invokers", newDM.scope, new ECMAData(invokers));
 		}
 		
 		// In predicate (not working as static is required) see:

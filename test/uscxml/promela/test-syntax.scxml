@@ -44,6 +44,16 @@
     
   </datamodel>
   <state id="init">
+		<invoke type="xhtml" id="xhtml1" src="resources/gui.xhtml">
+		  <!-- #promela-event-source:
+		    foo.bar
+		    foo.baz foo.foo
+		    error.communication 
+		    error.platform 
+		    err.foo
+		  -->
+		</invoke>
+		
     <invoke type="scxml">
       <!--
         promela-event-source:
@@ -58,7 +68,7 @@
     </invoke>
     <onentry>
       <!--
-        promela-inline:
+        #promela-inline:
         progress: skip;
       -->
       <raise event="foo.bar" />

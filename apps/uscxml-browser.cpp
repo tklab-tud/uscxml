@@ -28,7 +28,17 @@ class VerboseMonitor : public uscxml::InterpreterMonitor {
 	}
 
 	void beforeProcessingEvent(uscxml::Interpreter interpreter, const uscxml::Event& event) {
-		std::cout << "Event: " << event.name << std::endl;
+		switch (event.eventType) {
+			case uscxml::Event::INTERNAL:
+				std::cout << "Internal Event: " << event.name << std::endl;
+				break;
+			case uscxml::Event::EXTERNAL:
+				std::cout << "External Event: " << event.name << std::endl;
+				break;
+			case uscxml::Event::PLATFORM:
+				std::cout << "Platform Event: " << event.name << std::endl;
+				break;
+		}
 	}
 
 	void beforeCompletion(uscxml::Interpreter interpreter) {

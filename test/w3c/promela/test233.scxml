@@ -8,7 +8,7 @@ the transtitions.   -->
   </datamodel>
   <state id="s0">
     <onentry>
-      <send event="timeout" delay="3s"/>
+      <send xmlns:scxml="http://www.w3.org/2005/07/scxml" delay="3000" event="timeout"/>
     </onentry>
     <invoke type="http://www.w3.org/TR/scxml/">
       <content>

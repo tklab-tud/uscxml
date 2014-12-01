@@ -10,7 +10,7 @@ var2 should still be set to 1  -->
   </datamodel>
   <parallel id="p0">
     <onentry>
-      <send event="timeout" delay="3s"/>
+      <send xmlns:scxml="http://www.w3.org/2005/07/scxml" delay="3000" event="timeout"/>
     </onentry>
     <transition event="timeout" target="fail"/>
     <state id="p01">
@@ -39,7 +39,7 @@ var2 should still be set to 1  -->
           <scxml version="1.0" initial="sub0" datamodel="promela">
             <state id="sub0">
               <onentry>
-                <send event="timeout" delay="2s"/>
+                <send xmlns:scxml="http://www.w3.org/2005/07/scxml" delay="2000" event="timeout"/>
               </onentry>
               <transition event="timeout" target="subFinal2"/>
             </state>

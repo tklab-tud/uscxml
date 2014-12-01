@@ -171,10 +171,19 @@ void testInlinePromela() {
 	}
 }
 
+void checkTokenLocations(const std::string& expr, PromelaParserNode* ast) {
+	if (ast->loc != NULL) {
+		assert(expr.substr(ast->loc->firstCol, ast->loc->lastCol - ast->loc->firstCol) == ast->value);
+	}
+	for (std::list<PromelaParserNode*>::iterator opIter = ast->operands.begin(); opIter != ast->operands.end(); opIter++) {
+		checkTokenLocations(expr, *opIter);
+	}
+}
+
 void testPromelaParser() {
 
 	promela_debug = 0;
-
+#if 1
 	std::list<std::string> expressions;
 	/* declarations  */
 	expressions.push_back("bool b1");
@@ -202,7 +211,9 @@ void testPromelaParser() {
 	expressions.push_back("_x.states[1]");
 	expressions.push_back("_x.states[1].foo");
 	expressions.push_back("_event.data[1].aParam.key1.key2[1].key3.key4");
+	expressions.push_back("\n\n\n\n    int foo = 3;\n\nint bar = 5;");
 
+	
 	/* expressions  */
 	expressions.push_back("i+1");
 	expressions.push_back("(x == false || t == Bturn);");
@@ -232,10 +243,13 @@ void testPromelaParser() {
 			std::cout << std::endl << "'" << *exprIter << "':" << std::endl;
 			PromelaParser ast(*exprIter);
 			ast.dump();
+			if (!boost::contains(*exprIter, "\n"))
+				checkTokenLocations(*exprIter, ast.ast);
 		} catch (Event e) {
 			std::cerr << e << std::endl;
 		}
 	}
+#endif
 
 }
 

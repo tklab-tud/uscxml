@@ -12,7 +12,7 @@ if(CMD_RESULT)
 	message(FATAL_ERROR "Error running ${SPIN_BIN}: ${CMD_RESULT}")
 endif()
 
-execute_process(COMMAND ${GCC_BIN} -DMEMLIM=1024 -O2 -DXUSAFE -w -o ${OUTDIR}/pan ${OUTDIR}/pan.c RESULT_VARIABLE CMD_RESULT)
+execute_process(COMMAND ${GCC_BIN} -DMEMLIM=1024 -DVECTORSZ=2048 -O2 -DXUSAFE -w -o ${OUTDIR}/pan ${OUTDIR}/pan.c RESULT_VARIABLE CMD_RESULT)
 if(CMD_RESULT)
 	message(FATAL_ERROR "Error running ${GCC_BIN}: ${CMD_RESULT}")
 endif()

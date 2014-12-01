@@ -5,7 +5,7 @@ of <send>'s args causes an error..  -->
   <state id="s0">
     <onentry>
       <!-- timeout event -->
-      <send event="timeout" delayexpr="'1s'"/>
+      <send event="timeout" delayexpr="1000"/>
       <!-- generate an invalid namelist -->
       <send event="event1" namelist="&quot;foo"/>
     </onentry>

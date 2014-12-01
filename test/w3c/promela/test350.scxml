@@ -9,7 +9,7 @@ able to send an event to itself using its own session ID as the target -->
   <state id="s0">
     <onentry>
       <assign xmlns:scxml="http://www.w3.org/2005/07/scxml" location="Var1" expr="Var1 + Var2"/>
-      <send delay="5s" event="timeout"/>
+      <send xmlns:scxml="http://www.w3.org/2005/07/scxml" delay="5000" event="timeout"/>
       <send type="http://www.w3.org/TR/scxml/#SCXMLEventProcessor" targetexpr="Var1" event="s0Event"/>
     </onentry>
     <transition event="s0Event" target="pass"/>

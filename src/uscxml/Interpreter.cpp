@@ -1682,6 +1682,8 @@ void InterpreterImpl::send(const Arabica::DOM::Element<std::string>& element) {
 				sendReq.delayMs = strTo<uint32_t>(delayAttr.value);
 			} else if (iequals(delayAttr.unit, "s")) {
 				sendReq.delayMs = strTo<double>(delayAttr.value) * 1000;
+			} else if (delayAttr.unit.length() == 0) { // unit less delay is interpreted as milliseconds
+				sendReq.delayMs = strTo<uint32_t>(delayAttr.value);
 			} else {
 				LOG(ERROR) << "Cannot make sense of delay value " << delay << ": does not end in 's' or 'ms'";
 			}
@@ -1784,7 +1786,7 @@ void InterpreterImpl::delayedSend(void* userdata, std::string eventName) {
 		} catch(Event e) {
 			throw e;
 		} catch (const std::exception &e) {
-			LOG(ERROR) << "Exception caught while sending event to ioprocessor " << sendReq.type << ":" << e.what();
+			LOG(ERROR) << "Exception caught while sending event to ioprocessor " << sendReq.type << ": '" << e.what() << "'";
 		} catch(...) {
 			LOG(ERROR) << "Exception caught while sending event to ioprocessor " << sendReq.type;
 		}
@@ -2790,13 +2792,11 @@ NodeSet<std::string> InterpreterImpl::filterChildElements(const std::string& tag
 	return filteredChildElems;
 }
 
+	
 NodeSet<std::string> InterpreterImpl::filterChildType(const Node_base::Type type, const NodeSet<std::string>& nodeSet, bool recurse) {
 	NodeSet<std::string> filteredChildType;
 	for (unsigned int i = 0; i < nodeSet.size(); i++) {
-		if (nodeSet[i].getNodeType() == type)
-			filteredChildType.push_back(nodeSet[i]);
-		if (recurse)
-			filteredChildType.push_back(filterChildType(type, nodeSet[i], recurse));
+		filteredChildType.push_back(filterChildType(type, nodeSet[i], recurse));
 	}
 	return filteredChildType;
 }

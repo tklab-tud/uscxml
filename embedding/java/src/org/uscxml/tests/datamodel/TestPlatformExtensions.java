@@ -8,7 +8,7 @@ import org.uscxml.InterpreterState;
 
 public class TestPlatformExtensions extends DataModelExtension {
 
-	/* Currently only with ECMAScript via JavaScriptCore! */
+	/* Currently only with ECMAScript datamodels! */
 	
 	@Override
 	public String provides() {

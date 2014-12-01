@@ -34,6 +34,8 @@
 namespace uscxml {
 
 class PromelaCodeAnalyzer;
+class ChartToPromela;
+class PromelaParserNode;
 	
 class USCXML_API PromelaInline {
 public:
@@ -69,7 +71,7 @@ public:
 	};
 	
 	PromelaEventSource();
-	PromelaEventSource(const PromelaInline& source, uint32_t externalQueueLength = 0);
+	PromelaEventSource(const PromelaInline& source, PromelaCodeAnalyzer* analyzer = NULL, uint32_t externalQueueLength = 0);
 	
 	void writeStart(std::ostream& stream, int indent = 0);
 	void writeStop(std::ostream& stream, int indent = 0);
@@ -83,6 +85,7 @@ public:
 	PromelaInline source;
 	std::string name;
 	uint32_t externalQueueLength;
+	uint32_t longestSequence;
 	
 	Arabica::DOM::Node<std::string> container;
 	std::list<std::list<std::string> > sequences;
@@ -132,7 +135,8 @@ public:
 		size_t minValue;
 		size_t maxValue;
 		std::map<std::string, PromelaTypedef> types;
-
+		std::set<ChartToPromela*> occurrences;
+		
 		bool operator==(const PromelaTypedef& other) const {
 			return name == other.name;
 		}
@@ -142,7 +146,7 @@ public:
 	PromelaCodeAnalyzer() : _eventTrie("."), _lastStrIndex(1), _lastStateIndex(0), _lastEventIndex(1), _usesInPredicate(false), _usesPlatformVars(false) {
 	}
 
-	void addCode(const std::string& code);
+	void addCode(const std::string& code, ChartToPromela* interpreter);
 	void addEvent(const std::string& eventName);
 	void addState(const std::string& stateName);
 	void addOrigState(const std::string& stateName);
@@ -153,6 +157,14 @@ public:
 	}
 	bool usesEventField(const std::string& fieldName) {
 		if (usesComplexEventStruct() && _typeDefs.types["_event"].types.find(fieldName) != _typeDefs.types["_event"].types.end())
+			return true;
+		return false;
+	}
+
+	bool usesEventDataField(const std::string& fieldName) {
+		if (usesComplexEventStruct() &&
+				_typeDefs.types["_event"].types.find("data") != _typeDefs.types["_event"].types.end() &&
+				_typeDefs.types["_event"].types["data"].types.find(fieldName) != _typeDefs.types["_event"].types["data"].types.end())
 			return true;
 		return false;
 	}
@@ -188,7 +200,10 @@ public:
 		return _eventTrie;
 	}
 
-	std::string replaceLiterals(const std::string code);
+	std::string adaptCode(const std::string& code, const std::string& prefix);
+
+	static std::string prefixIdentifiers(const std::string& expr, const std::string& prefix);
+	static std::list<std::pair<size_t, size_t> > getTokenPositions(const std::string& expr, int type, PromelaParserNode* ast);
 
 	PromelaTypedef& getTypes() {
 		return _typeDefs;
@@ -205,9 +220,8 @@ protected:
 
 	std::map<std::string, int> _states;
 	std::map<std::string, int> _events;
-
+	
 	PromelaTypedef _typeDefs;
-
 	Trie _eventTrie;
 
 private:
@@ -260,13 +274,13 @@ public:
 class USCXML_API ChartToPromela : public TransformerImpl, public ChartToFSM {
 public:
 
-	virtual ~ChartToPromela() {}
+	virtual ~ChartToPromela();
 	static Transformer transform(const Interpreter& other);
 	
 	void writeTo(std::ostream& stream);
 	
 protected:
-	ChartToPromela(const Interpreter& other) : TransformerImpl(), ChartToFSM(other) {}
+	ChartToPromela(const Interpreter& other) : TransformerImpl(), ChartToFSM(other), _analyzer(NULL), _machinesAll(NULL), _parent(NULL), _parentTopMost(NULL), _machinesAllPerId(NULL), _prefix("MAIN_") {}
 
 	void initNodes();
 
@@ -297,6 +311,10 @@ protected:
 	void writeIfBlock(std::ostream& stream, const Arabica::XPath::NodeSet<std::string>& condChain, int indent = 0);
 	void writeDispatchingBlock(std::ostream& stream, std::list<GlobalTransition*>, int indent = 0);
 
+	void writeStartInvoker(std::ostream& stream, const Arabica::DOM::Node<std::string>& node, ChartToPromela* invoker, int indent = 0);
+	void writeRemovePendingEventsFromInvoker(std::ostream& stream, ChartToPromela* invoker, int indent = 0, bool atomic = true);
+	void writeCancelWithIdOrExpr(std::ostream& stream, const Arabica::DOM::Element<std::string>& cancel, ChartToPromela* invoker, int indent = 0);
+	
 	Arabica::XPath::NodeSet<std::string> getTransientContent(const Arabica::DOM::Element<std::string>& state, const std::string& source = "");
 	//Arabica::DOM::Node<std::string> getUltimateTarget(const Arabica::DOM::Element<std::string>& transition);
 	
@@ -314,7 +332,7 @@ protected:
 
 	std::list<std::string> _varInitializers; // pending initializations for arrays
 
-	PromelaCodeAnalyzer _analyzer;
+	PromelaCodeAnalyzer* _analyzer;
 
 	uint32_t _externalQueueLength;
 	uint32_t _internalQueueLength;
@@ -323,7 +341,19 @@ protected:
 	PromelaEventSource _globalEventSource;
 	
 	std::map<std::string, std::map<std::string, size_t> > _historyMembers; // ids of all history states
-
+	std::set<std::string> _dataModelVars;
+	
+	Arabica::DOM::Node<std::string> _finalize;
+	std::map<Arabica::DOM::Node<std::string>, ChartToPromela*> _machines;
+	std::map<Arabica::DOM::Node<std::string>, ChartToPromela*>* _machinesAll;
+	ChartToPromela* _parent; // our invoking interpreter
+	ChartToPromela* _parentTopMost;
+	
+	std::map<std::string, Arabica::DOM::Node<std::string> > _machinesPerId;
+	std::map<std::string, Arabica::DOM::Node<std::string> >* _machinesAllPerId;
+	std::string _prefix; // our prefix in case of nested SCXML documents
+	std::string _invokerid;
+	
 	friend class PromelaEventSource;
 };
 

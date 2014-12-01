@@ -168,6 +168,7 @@ The uSCXML interpreter can be extended by introducing new
 2. Invokers to represent external components that deliver and accept events (e.g. iCal, SceneGraph, DirectoryMonitor)
 3. I/O-Processors to provide communication with external systems (e.g. BasicHTTP, SCXML).
 4. Elements for Executable Content (e.g. &lt;respond>, &lt;fetch>, &lt;postpone>).
+5. Data model extionsions to establish callbacks from the data model into the host language.
 
 The basic approach to extend the interpreter is the same in all cases:
 
@@ -180,6 +181,16 @@ The basic approach to extend the interpreter is the same in all cases:
 <b>Note:</b> Within the language bindings, you will have to inherit the base classes without the <tt>Impl</tt>
 suffix. Have a look at the examples in <tt>embedding</tt> for examples.
 
+<!--
+| Extension | Owned By | Remarks |
+| ----------|----------|---------|
+| <tt>DataModel</tt> | Interpreter | Register whole new classes via <tt>Factory::registerDataModel</tt>, ad-hoc data models for a specific interpreter instance via <tt>interpreter.setDataModel</tt>.    |
+| <tt>DataModelExtension</tt>  | User        |      |
+| <tt>Invoker</tt>   | Interpreter |      |
+| <tt>IOProcessor</tt>        | Interpreter |      |
+| <tt>ExecutableContent</tt>   | Interpreter |      |
+| <tt>InterpreterMonitor</tt>  | User        |      |
+-->
 #### Ad-hoc Extensions
 
 Sometimes, it is more suited to provide an interpreter with an already instantiated extension (e.g. an

@@ -6,7 +6,7 @@
   </datamodel>
   <parallel id="p1">
     <onentry>
-      <send delay="2s" event="timeout"/>
+      <send xmlns:scxml="http://www.w3.org/2005/07/scxml" delay="2000" event="timeout"/>
     </onentry>
     <state id="s0">
       <transition cond="_x.states['sh1']" target="fail"/>

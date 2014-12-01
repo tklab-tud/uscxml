@@ -92,6 +92,7 @@ public:
 	std::string stateId;
 	std::string activeId;
 
+	long activeIndex;
 	long index;
 	bool isFinal;
 	
@@ -253,6 +254,7 @@ protected:
 
 	size_t _lastTransientStateId;
 	size_t _lastStateIndex;
+	size_t _lastActiveIndex;
 	size_t _lastTransIndex;
 
 	bool _skipEventChainCalculations;

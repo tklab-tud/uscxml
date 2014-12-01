@@ -8,7 +8,7 @@ the runtime value is used, the invocation will succeed -->
   </datamodel>
   <state id="s0">
     <onentry>
-      <send event="timeout" delay="5s"/>
+      <send xmlns:scxml="http://www.w3.org/2005/07/scxml" delay="5000" event="timeout"/>
       <assign location="Var1" expr="'http://www.w3.org/TR/scxml/'"/>
     </onentry>
     <invoke typeexpr="Var1">

@@ -135,7 +135,7 @@ extern int promela_debug;
 typedef union PROMELA_STYPE
 {
 /* Line 2053 of yacc.c  */
-#line 38 "promela.ypp"
+#line 39 "promela.ypp"
 
   uscxml::PromelaParserNode* node;
 	char* value;
@@ -147,6 +147,19 @@ typedef union PROMELA_STYPE
 # define PROMELA_STYPE_IS_TRIVIAL 1
 # define promela_stype PROMELA_STYPE /* obsolescent; will be withdrawn */
 # define PROMELA_STYPE_IS_DECLARED 1
+#endif
+
+#if ! defined PROMELA_LTYPE && ! defined PROMELA_LTYPE_IS_DECLARED
+typedef struct PROMELA_LTYPE
+{
+  int first_line;
+  int first_column;
+  int last_line;
+  int last_column;
+} PROMELA_LTYPE;
+# define promela_ltype PROMELA_LTYPE /* obsolescent; will be withdrawn */
+# define PROMELA_LTYPE_IS_DECLARED 1
+# define PROMELA_LTYPE_IS_TRIVIAL 1
 #endif
 
 

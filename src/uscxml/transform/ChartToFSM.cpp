@@ -200,6 +200,7 @@ ChartToFSM::ChartToFSM(const Interpreter& other) {
 	_lastTransientStateId = 0;
 
 	_lastStateIndex = 0;
+	_lastActiveIndex = 0;
 	_lastTransIndex = 0;
 	
 	_maxEventSentChain = 0;
@@ -880,7 +881,12 @@ void ChartToFSM::explode() {
 		_globalConf[globalState->stateId]->index = _lastStateIndex++;
 		
 		if(_globalConf[globalState->stateId]->isFinal) {
-			_activeConf[globalState->activeId] = globalState; // remember as active configuration
+			if (_activeConf.find(globalState->activeId) == _activeConf.end()) {
+				assert(globalState->activeIndex == -1);
+				globalState->activeIndex = _lastActiveIndex++;
+				_activeConf[globalState->activeId] = globalState; // remember as active configuration
+				exitInterpreter();
+			}
 			continue; // done in this branch
 		}
 
@@ -914,6 +920,9 @@ void ChartToFSM::explode() {
 			// unique is not quite like what we need, but it was a start
 			globalState->sortedOutgoing = reapplyUniquePredicates(globalState->sortedOutgoing);
 			
+			assert(_activeConf.find(globalState->activeId) == _activeConf.end());
+			assert(globalState->activeIndex == -1);
+			globalState->activeIndex = _lastActiveIndex++;
 			_activeConf[globalState->activeId] = globalState;
 		}
 		
@@ -1049,26 +1058,6 @@ Arabica::XPath::NodeSet<std::string> ChartToFSM::refsToTransitions(const std::se
 	}
 	return transitions;
 }
-
-#if 0
-void ChartToFSM::labelTransitions() {
-	// put a unique id on each transition
-	Arabica::XPath::NodeSet<std::string> states = getAllStates();
-	states.push_back(_scxml);
-	for (int i = 0; i < states.size(); i++) {
-		Arabica::DOM::Element<std::string> stateElem = Arabica::DOM::Element<std::string>(states[i]);
-		std::string stateId = ATTR(stateElem, "id");
-		NodeSet<std::string> transitions = filterChildElements(_nsInfo.xmlNSPrefix + "transition", stateElem);
-		// some transitions are in the inital elements
-		NodeSet<std::string> initials = filterChildElements(_nsInfo.xmlNSPrefix + "initial", stateElem);
-		transitions.push_back(filterChildElements(_nsInfo.xmlNSPrefix + "transition", initials));
-		for (int j = 0; j < transitions.size(); j++) {
-			Element<std::string> transition = Element<std::string>(transitions[j]);
-			transition.setAttribute("id", stateId + ":"+ toStr(j + 1));
-		}
-	}
-}
-#endif
 	
 void ChartToFSM::beforeMicroStep(Interpreter interpreter) {
 }
@@ -1093,7 +1082,8 @@ GlobalState::GlobalState(const Arabica::XPath::NodeSet<std::string>& activeState
                          const std::string& xmlNSPrefix,
 												 ChartToFSM* flattener) {
 	interpreter = flattener;
-	
+	activeIndex = -1;
+
 	// take references
 	for (int i = 0; i < activeStates_.size(); i++) {
 		activeStatesRefs.insert(strTo<int>(ATTR_CAST(activeStates_[i], "index")));

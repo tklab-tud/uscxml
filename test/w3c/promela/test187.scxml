@@ -6,7 +6,7 @@ parent session, should not receive childToParent. If it does, we fail.  Otherwis
 <scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" initial="s0" version="1.0" datamodel="promela">
   <state id="s0">
     <onentry>
-      <send event="timeout" delayexpr="'1s'"/>
+      <send event="timeout" delayexpr="1000"/>
     </onentry>
     <invoke type="scxml">
       <content>
@@ -14,7 +14,7 @@ parent session, should not receive childToParent. If it does, we fail.  Otherwis
         <scxml initial="sub0" version="1.0" datamodel="promela">
           <state id="sub0">
             <onentry>
-              <send event="childToParent" target="#_parent" delayexpr="'.5s'"/>
+              <send event="childToParent" target="#_parent" delayexpr="500"/>
             </onentry>
             <transition target="subFinal"/>
           </state>

@@ -562,6 +562,7 @@ std::ostream & operator<<(std::ostream & stream, const URL& url) {
 
 URLFetcher::URLFetcher() {
 	_isStarted = false;
+	_envProxy = NULL;
 	_multiHandle = curl_multi_init();
 	
 	// read proxy information from environment
@@ -575,15 +576,16 @@ URLFetcher::URLFetcher() {
 //	CURLOPT_PROXYUSERNAME;
 //	CURLOPT_PROXYUSERPWD;
 	
-	bool unsupported = false;
-	CURLcode curlError;
-	
 	/*
 		see http://curl.haxx.se/libcurl/c/CURLOPT_PROXY.html
 		e.g. 'socks5://bob:marley@localhost:12345'
 	 */
-	char* envProxy = getenv("USCXML_PROXY");
+	_envProxy = getenv("USCXML_PROXY");
 	
+#if 0
+	bool unsupported = false;
+	CURLcode curlError;
+
 	// exposed just in case
 	char* envProxyTransferMode = getenv("USCXML_PROXY_TRANSFER_MODE");
 	char* envProxyAuth = getenv("USCXML_PROXYAUTH");
@@ -645,7 +647,8 @@ URLFetcher::URLFetcher() {
 	if (envProxyUserPwd)
 		(curlError = curl_easy_setopt(_multiHandle, CURLOPT_PROXYUSERPWD, envProxyUserPwd)) == CURLE_OK ||
 		LOG(ERROR) << "Cannot set curl proxy user password: " << curl_easy_strerror(curlError);
-	
+#endif
+
 	start();
 }
 
@@ -693,11 +696,15 @@ void URLFetcher::fetchURL(URL& url) {
 		(curlError = curl_easy_setopt(handle, CURLOPT_SSL_VERIFYPEER, false)) == CURLE_OK ||
 		LOG(ERROR) << "Cannot forfeit peer verification: " << curl_easy_strerror(curlError);
 
-		(curlError = curl_easy_setopt(handle, CURLOPT_USERAGENT, "uscxml/0.3.3")) == CURLE_OK ||
+		(curlError = curl_easy_setopt(handle, CURLOPT_USERAGENT, "uscxml/" USCXML_VERSION)) == CURLE_OK ||
 		LOG(ERROR) << "Cannot set our user agent string: " << curl_easy_strerror(curlError);
 
 		(curlError = curl_easy_setopt(handle, CURLOPT_FOLLOWLOCATION, true)) == CURLE_OK ||
 		LOG(ERROR) << "Cannot enable follow redirects: " << curl_easy_strerror(curlError);
+
+		if (instance->_envProxy)
+			(curlError = curl_easy_setopt(handle, CURLOPT_PROXY, instance->_envProxy)) == CURLE_OK ||
+			LOG(ERROR) << "Cannot set curl proxy: " << curl_easy_strerror(curlError);
 
 		if (iequals(url._impl->_requestType, "post")) {
 

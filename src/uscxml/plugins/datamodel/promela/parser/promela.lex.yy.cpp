@@ -230,7 +230,20 @@ typedef size_t yy_size_t;
 #define EOB_ACT_END_OF_FILE 1
 #define EOB_ACT_LAST_MATCH 2
 
-    #define YY_LESS_LINENO(n)
+    /* Note: We specifically omit the test for yy_rule_can_match_eol because it requires
+     *       access to the local variable yy_act. Since yyless() is a macro, it would break
+     *       existing scanners that call yyless() from OUTSIDE promela_lex. 
+     *       One obvious solution it to make yy_act a global. I tried that, and saw
+     *       a 5% performance hit in a non-yylineno scanner, because yy_act is
+     *       normally declared as a register variable-- so it is not worth it.
+     */
+    #define  YY_LESS_LINENO(n) \
+            do { \
+                yy_size_t yyl;\
+                for ( yyl = n; yyl < yyleng; ++yyl )\
+                    if ( yytext[yyl] == '\n' )\
+                        --yylineno;\
+            }while(0)
     
 /* Return all but the first "n" matched characters back to the input stream. */
 #define yyless(n) \
@@ -594,13 +607,20 @@ static yyconst flex_int16_t yy_chk[221] =
       123,  123,  123,  123,  123,  123,  123,  123,  123,  123
     } ;
 
+/* Table of booleans, true if rule could match eol. */
+static yyconst flex_int32_t yy_rule_can_match_eol[47] =
+    {   0,
+1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+    1, 1, 0, 0, 1, 0, 0,     };
+
 static yyconst flex_int16_t yy_rule_linenum[46] =
     {   0,
-       27,   29,   34,   35,   36,   37,   38,   40,   41,   42,
-       43,   45,   46,   47,   49,   50,   52,   53,   55,   56,
-       57,   58,   60,   61,   63,   64,   65,   68,   69,   71,
-       72,   73,   75,   76,   78,   79,   81,   82,   84,   86,
-       89,   94,   95,   97,  100
+       44,   46,   51,   52,   53,   54,   55,   57,   58,   59,
+       60,   62,   63,   64,   66,   67,   69,   70,   72,   73,
+       74,   75,   77,   78,   80,   81,   82,   85,   86,   88,
+       89,   90,   92,   93,   95,   96,   98,   99,  101,  103,
+      106,  111,  112,  114,  117
     } ;
 
 /* The intent behind this definition is that it'll catch
@@ -614,13 +634,28 @@ static yyconst flex_int16_t yy_rule_linenum[46] =
 /* see: http://www.phpcompiler.org/articles/reentrantparser.html */
 /* see: http://spinroot.com/spin/Man/operators.html */
 #define YY_NO_UNISTD_H 1
-#line 14 "promela.l"
+#line 16 "promela.l"
   
 #include "../PromelaParser.h"
 #include "promela.tab.hpp"
 #define YYSTYPE PROMELA_STYPE
+#define YYLTYPE PROMELA_LTYPE
+#define YY_USER_INIT \
+  yycolumn = yylloc->first_line = yylloc->first_column = 0; \
+  yylineno = yylloc->last_line = yylloc->last_column = 0; \
 
-#line 624 "promela.lex.yy.cpp"
+//int yycolumn = 1;
+
+#define YY_USER_ACTION \
+{ \
+  yylloc->first_line = yylineno; \
+  yylloc->first_column = yycolumn; \
+  yylloc->last_column = yycolumn + yyleng; \
+  yylloc->last_line = yylineno; \
+  yycolumn = yycolumn + yyleng; \
+}
+
+#line 659 "promela.lex.yy.cpp"
 
 #define INITIAL 0
 
@@ -677,6 +712,8 @@ struct yyguts_t
 
     YYSTYPE * yylval_r;
 
+    YYLTYPE * yylloc_r;
+
     }; /* end struct yyguts_t */
 
 /* %if-c-only */
@@ -690,6 +727,8 @@ static int yy_init_globals (yyscan_t yyscanner );
     /* This must go here because YYSTYPE and YYLTYPE are included
      * from bison output in section 1.*/
     #    define yylval yyg->yylval_r
+    
+    #    define yylloc yyg->yylloc_r
     
 int promela_lex_init (yyscan_t* scanner);
 
@@ -734,6 +773,10 @@ YYSTYPE * promela_get_lval (yyscan_t yyscanner );
 
 void promela_set_lval (YYSTYPE * yylval_param ,yyscan_t yyscanner );
 
+       YYLTYPE *promela_get_lloc (yyscan_t yyscanner );
+    
+        void promela_set_lloc (YYLTYPE * yylloc_param ,yyscan_t yyscanner );
+    
 /* %endif */
 
 /* Macros after this point can all be overridden by user definitions in
@@ -881,10 +924,10 @@ static int input (yyscan_t yyscanner );
 /* %if-c-only Standard (non-C++) definition */
 
 extern int promela_lex \
-               (YYSTYPE * yylval_param ,yyscan_t yyscanner);
+               (YYSTYPE * yylval_param,YYLTYPE * yylloc_param ,yyscan_t yyscanner);
 
 #define YY_DECL int promela_lex \
-               (YYSTYPE * yylval_param , yyscan_t yyscanner)
+               (YYSTYPE * yylval_param, YYLTYPE * yylloc_param , yyscan_t yyscanner)
 /* %endif */
 /* %if-c++-only C++ definition */
 /* %endif */
@@ -918,12 +961,14 @@ YY_DECL
     struct yyguts_t * yyg = (struct yyguts_t*)yyscanner;
 
 /* %% [7.0] user's declarations go here */
-#line 25 "promela.l"
+#line 42 "promela.l"
 
 
-#line 925 "promela.lex.yy.cpp"
+#line 968 "promela.lex.yy.cpp"
 
     yylval = yylval_param;
+
+    yylloc = yylloc_param;
 
 	if ( !yyg->yy_init )
 		{
@@ -1004,6 +1049,18 @@ yy_find_action:
 
 /* %% [11.0] code for yylineno update goes here */
 
+		if ( yy_act != YY_END_OF_BUFFER && yy_rule_can_match_eol[yy_act] )
+			{
+			yy_size_t yyl;
+			for ( yyl = 0; yyl < yyleng; ++yyl )
+				if ( yytext[yyl] == '\n' )
+					   
+    do{ yylineno++;
+        yycolumn=0;
+    }while(0)
+;
+			}
+
 do_action:	/* This label is used only to access EOF actions. */
 
 /* %% [12.0] debug code goes here */
@@ -1036,12 +1093,12 @@ do_action:	/* This label is used only to access EOF actions. */
 case 1:
 /* rule 1 can match eol */
 YY_RULE_SETUP
-#line 27 "promela.l"
+#line 44 "promela.l"
 /* multiline comments */
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
-#line 29 "promela.l"
+#line 46 "promela.l"
 {
   yylval->value = strdup(yytext);
   return PML_TYPE;
@@ -1049,199 +1106,199 @@ YY_RULE_SETUP
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 34 "promela.l"
+#line 51 "promela.l"
 { return PML_LEN; }
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 35 "promela.l"
+#line 52 "promela.l"
 { yylval->value = strdup(yytext); return PML_CONST; }
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 36 "promela.l"
+#line 53 "promela.l"
 { return PML_PRINT; }
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 37 "promela.l"
+#line 54 "promela.l"
 { return PML_TYPEDEF; }
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 38 "promela.l"
+#line 55 "promela.l"
 { return PML_ASSERT; }
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 40 "promela.l"
+#line 57 "promela.l"
 { return PML_NEG; }
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 41 "promela.l"
+#line 58 "promela.l"
 { return PML_COMPL; }
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 42 "promela.l"
+#line 59 "promela.l"
 { return PML_INCR; }
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 43 "promela.l"
+#line 60 "promela.l"
 { return PML_DECR; }
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 45 "promela.l"
+#line 62 "promela.l"
 { return PML_TIMES; }
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 46 "promela.l"
+#line 63 "promela.l"
 { return PML_DIVIDE; }
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 47 "promela.l"
+#line 64 "promela.l"
 { return PML_MODULO; }
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 49 "promela.l"
+#line 66 "promela.l"
 { return PML_PLUS; }
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 50 "promela.l"
+#line 67 "promela.l"
 { return PML_MINUS; }
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 52 "promela.l"
+#line 69 "promela.l"
 { return PML_LSHIFT; }
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 53 "promela.l"
+#line 70 "promela.l"
 { return PML_RSHIFT; }
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
-#line 55 "promela.l"
+#line 72 "promela.l"
 { return PML_LE; }
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
-#line 56 "promela.l"
+#line 73 "promela.l"
 { return PML_GE; }
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
-#line 57 "promela.l"
+#line 74 "promela.l"
 { return PML_LT; }
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
-#line 58 "promela.l"
+#line 75 "promela.l"
 { return PML_GT; }
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
-#line 60 "promela.l"
+#line 77 "promela.l"
 { return PML_NE; }
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
-#line 61 "promela.l"
+#line 78 "promela.l"
 { return PML_EQ; }
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
-#line 63 "promela.l"
+#line 80 "promela.l"
 { return PML_BITAND; }
 	YY_BREAK
 case 26:
 YY_RULE_SETUP
-#line 64 "promela.l"
+#line 81 "promela.l"
 { return PML_BITXOR; }
 	YY_BREAK
 case 27:
 YY_RULE_SETUP
-#line 65 "promela.l"
+#line 82 "promela.l"
 { return PML_BITOR; }
 	YY_BREAK
 case 28:
 YY_RULE_SETUP
-#line 68 "promela.l"
+#line 85 "promela.l"
 { return PML_AND; }
 	YY_BREAK
 case 29:
 YY_RULE_SETUP
-#line 69 "promela.l"
+#line 86 "promela.l"
 { return PML_OR; }
 	YY_BREAK
 case 30:
 YY_RULE_SETUP
-#line 71 "promela.l"
+#line 88 "promela.l"
 { return PML_DOT; }
 	YY_BREAK
 case 31:
 YY_RULE_SETUP
-#line 72 "promela.l"
+#line 89 "promela.l"
 { return PML_COMMA; }
 	YY_BREAK
 case 32:
 YY_RULE_SETUP
-#line 73 "promela.l"
+#line 90 "promela.l"
 { return PML_SEMI; }
 	YY_BREAK
 case 33:
 YY_RULE_SETUP
-#line 75 "promela.l"
+#line 92 "promela.l"
 { return '('; }
 	YY_BREAK
 case 34:
 YY_RULE_SETUP
-#line 76 "promela.l"
+#line 93 "promela.l"
 { return ')'; }
 	YY_BREAK
 case 35:
 YY_RULE_SETUP
-#line 78 "promela.l"
+#line 95 "promela.l"
 { return '['; }
 	YY_BREAK
 case 36:
 YY_RULE_SETUP
-#line 79 "promela.l"
+#line 96 "promela.l"
 { return ']'; }
 	YY_BREAK
 case 37:
 YY_RULE_SETUP
-#line 81 "promela.l"
+#line 98 "promela.l"
 { return '{'; }
 	YY_BREAK
 case 38:
 YY_RULE_SETUP
-#line 82 "promela.l"
+#line 99 "promela.l"
 { return '}'; }
 	YY_BREAK
 case 39:
 YY_RULE_SETUP
-#line 84 "promela.l"
+#line 101 "promela.l"
 { return PML_ASGN; }
 	YY_BREAK
 case 40:
 /* rule 40 can match eol */
 YY_RULE_SETUP
-#line 86 "promela.l"
+#line 103 "promela.l"
 { yylval->value = strdup(yytext); return(PML_STRING); }
 	YY_BREAK
 case 41:
 /* rule 41 can match eol */
 YY_RULE_SETUP
-#line 89 "promela.l"
+#line 106 "promela.l"
 { 
   /* Non PROMELA extension for single quoted string literals */
   yylval->value = strdup(yytext); return(PML_STRING); 
@@ -1249,31 +1306,31 @@ YY_RULE_SETUP
 	YY_BREAK
 case 42:
 YY_RULE_SETUP
-#line 94 "promela.l"
+#line 111 "promela.l"
 { yylval->value = strdup(yytext); return PML_CONST; }
 	YY_BREAK
 case 43:
 YY_RULE_SETUP
-#line 95 "promela.l"
+#line 112 "promela.l"
 { yylval->value = strdup(yytext); return PML_NAME; }
 	YY_BREAK
 case 44:
 /* rule 44 can match eol */
 YY_RULE_SETUP
-#line 97 "promela.l"
+#line 114 "promela.l"
 /* eat up whitespace */
 	YY_BREAK
 case 45:
 YY_RULE_SETUP
-#line 100 "promela.l"
+#line 117 "promela.l"
 { /*printf( "Unrecognized character: %s\n", yytext ); */ }
 	YY_BREAK
 case 46:
 YY_RULE_SETUP
-#line 101 "promela.l"
+#line 118 "promela.l"
 ECHO;
 	YY_BREAK
-#line 1277 "promela.lex.yy.cpp"
+#line 1334 "promela.lex.yy.cpp"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -1672,6 +1729,10 @@ static int yy_get_next_buffer (yyscan_t yyscanner)
 
 /* %% [18.0] update yylineno here */
 
+    if ( c == '\n' ){
+        --yylineno;
+    }
+
 	yyg->yytext_ptr = yy_bp;
 	yyg->yy_hold_char = *yy_cp;
 	yyg->yy_c_buf_p = yy_cp;
@@ -1756,6 +1817,12 @@ static int yy_get_next_buffer (yyscan_t yyscanner)
 	yyg->yy_hold_char = *++yyg->yy_c_buf_p;
 
 /* %% [19.0] update BOL and yylineno */
+	if ( c == '\n' )
+		   
+    do{ yylineno++;
+        yycolumn=0;
+    }while(0)
+;
 
 	return c;
 }
@@ -2387,6 +2454,18 @@ void promela_set_lval (YYSTYPE *  yylval_param , yyscan_t yyscanner)
     yylval = yylval_param;
 }
 
+YYLTYPE *promela_get_lloc  (yyscan_t yyscanner)
+{
+    struct yyguts_t * yyg = (struct yyguts_t*)yyscanner;
+    return yylloc;
+}
+    
+void promela_set_lloc (YYLTYPE *  yylloc_param , yyscan_t yyscanner)
+{
+    struct yyguts_t * yyg = (struct yyguts_t*)yyscanner;
+    yylloc = yylloc_param;
+}
+    
 /* %endif */
 
 /* User-visible API */
@@ -2577,4 +2656,4 @@ void promela_free (void * ptr , yyscan_t yyscanner)
 
 /* %ok-for-header */
 
-#line 101 "promela.l"
+#line 118 "promela.l"

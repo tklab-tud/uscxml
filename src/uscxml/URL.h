@@ -283,6 +283,10 @@ public:
 		return _impl->operator Data();
 	}
 
+	operator std::string() const {
+		return asString();
+	}
+	
 protected:
 	void downloadStarted() {
 		return _impl->downloadStarted();
@@ -322,6 +326,7 @@ protected:
 
 	std::map<CURL*, URL> _handlesToURLs;
 	CURLM* _multiHandle;
+	char* _envProxy;
 };
 
 USCXML_API std::ostream& operator<< (std::ostream &stream, const URL& p);

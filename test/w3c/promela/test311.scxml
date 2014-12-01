@@ -3,7 +3,7 @@
 <scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" version="1.0" datamodel="promela" initial="s0">
   <state id="s0">
     <onentry>
-      <send event="timeout" delay="1s"/>
+      <send xmlns:scxml="http://www.w3.org/2005/07/scxml" delay="1000" event="timeout"/>
       <assign location="foo.bar.baz " expr="1"/>
     </onentry>
     <transition event="error.execution" target="pass"/>

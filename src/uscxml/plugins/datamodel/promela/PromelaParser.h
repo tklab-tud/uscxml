@@ -32,8 +32,16 @@ namespace uscxml {
 
 class PromelaParser;
 
-struct PromelaParserNode {
-	PromelaParserNode() : type(0) {}
+class PromelaParserNode {
+public:
+	struct Location {
+		int firstLine;
+		int firstCol;
+		int lastLine;
+		int lastCol;
+	};
+	
+	PromelaParserNode() : type(0), parent(NULL), loc(NULL) {}
 	virtual ~PromelaParserNode();
 
 	void merge(PromelaParserNode* node);
@@ -45,7 +53,8 @@ struct PromelaParserNode {
 	int type;
 	std::string value;
 	std::list<PromelaParserNode*> operands;
-
+	PromelaParserNode* parent;
+	Location* loc;
 };
 
 class PromelaParser {
@@ -58,12 +67,13 @@ public:
 
 	static std::string typeToDesc(int type);
 
+	PromelaParser() : ast(NULL) {}
 	PromelaParser(const std::string& expr);
 	PromelaParser(const std::string& expr, int nrArgs, ...);
 	virtual ~PromelaParser();
 
 	virtual PromelaParserNode* node(int type, int nrArgs, ...);
-	virtual PromelaParserNode* value(int type, const char* value);
+	virtual PromelaParserNode* value(int type, void* location, const char* value);
 	void dump();
 
 	int parseInCompound;
@@ -86,6 +96,6 @@ protected:
 
 }
 
-void promela_error (uscxml::PromelaParser* ctx, void* yyscanner, const char* err);
+void promela_error (void* yylloc_param, uscxml::PromelaParser* ctx, void* yyscanner, const char* err);
 
 #endif /* end of include guard: PROMELA_H_9AB78YB1 */

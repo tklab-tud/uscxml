@@ -5,7 +5,7 @@ are pulled off the internal queue in order, and that prefix matching works on th
   <state id="s0" initial="s01">
     <onentry>
       <!-- catch the failure case -->
-      <send event="timeout" delay="1s"/>
+      <send xmlns:scxml="http://www.w3.org/2005/07/scxml" delay="1000" event="timeout"/>
     </onentry>
     <transition event="timeout" target="fail"/>
     <state id="s01">

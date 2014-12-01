@@ -60,6 +60,7 @@
 
 /* Substitute the type names.  */
 #define YYSTYPE         PROMELA_STYPE
+#define YYLTYPE         PROMELA_LTYPE
 /* Substitute the variable and function names.  */
 #define yyparse         promela_parse
 #define yylex           promela_lex
@@ -68,6 +69,7 @@
 #define yychar          promela_char
 #define yydebug         promela_debug
 #define yynerrs         promela_nerrs
+#define yylloc          promela_lloc
 
 /* Copy the first part of user declarations.  */
 /* Line 371 of yacc.c  */
@@ -82,12 +84,12 @@
 #define YYDEBUG		1
 #define YYERROR_VERBOSE 1
 
-extern int promela_lex (PROMELA_STYPE* yylval_param, void* yyscanner);
+extern int promela_lex (PROMELA_STYPE* yylval_param, PROMELA_LTYPE* yylloc_param, void* yyscanner);
 
 using namespace uscxml;
 
 /* Line 371 of yacc.c  */
-#line 91 "promela.tab.cpp"
+#line 93 "promela.tab.cpp"
 
 # ifndef YY_NULL
 #  if defined __cplusplus && 201103L <= __cplusplus
@@ -212,18 +214,31 @@ extern int promela_debug;
 typedef union PROMELA_STYPE
 {
 /* Line 387 of yacc.c  */
-#line 38 "promela.ypp"
+#line 39 "promela.ypp"
 
   uscxml::PromelaParserNode* node;
 	char* value;
 
 
 /* Line 387 of yacc.c  */
-#line 223 "promela.tab.cpp"
+#line 225 "promela.tab.cpp"
 } PROMELA_STYPE;
 # define PROMELA_STYPE_IS_TRIVIAL 1
 # define promela_stype PROMELA_STYPE /* obsolescent; will be withdrawn */
 # define PROMELA_STYPE_IS_DECLARED 1
+#endif
+
+#if ! defined PROMELA_LTYPE && ! defined PROMELA_LTYPE_IS_DECLARED
+typedef struct PROMELA_LTYPE
+{
+  int first_line;
+  int first_column;
+  int last_line;
+  int last_column;
+} PROMELA_LTYPE;
+# define promela_ltype PROMELA_LTYPE /* obsolescent; will be withdrawn */
+# define PROMELA_LTYPE_IS_DECLARED 1
+# define PROMELA_LTYPE_IS_TRIVIAL 1
 #endif
 
 
@@ -246,7 +261,7 @@ int promela_parse ();
 /* Copy the second part of user declarations.  */
 
 /* Line 390 of yacc.c  */
-#line 250 "promela.tab.cpp"
+#line 265 "promela.tab.cpp"
 
 #ifdef short
 # undef short
@@ -414,13 +429,15 @@ void free (void *); /* INFRINGES ON USER NAME SPACE */
 
 #if (! defined yyoverflow \
      && (! defined __cplusplus \
-	 || (defined PROMELA_STYPE_IS_TRIVIAL && PROMELA_STYPE_IS_TRIVIAL)))
+	 || (defined PROMELA_LTYPE_IS_TRIVIAL && PROMELA_LTYPE_IS_TRIVIAL \
+	     && defined PROMELA_STYPE_IS_TRIVIAL && PROMELA_STYPE_IS_TRIVIAL)))
 
 /* A type that is properly aligned for any stack member.  */
 union yyalloc
 {
   yytype_int16 yyss_alloc;
   YYSTYPE yyvs_alloc;
+  YYLTYPE yyls_alloc;
 };
 
 /* The size of the maximum gap between one aligned stack and the next.  */
@@ -429,8 +446,8 @@ union yyalloc
 /* The size of an array large to enough to hold all stacks, each with
    N elements.  */
 # define YYSTACK_BYTES(N) \
-     ((N) * (sizeof (yytype_int16) + sizeof (YYSTYPE)) \
-      + YYSTACK_GAP_MAXIMUM)
+     ((N) * (sizeof (yytype_int16) + sizeof (YYSTYPE) + sizeof (YYLTYPE)) \
+      + 2 * YYSTACK_GAP_MAXIMUM)
 
 # define YYCOPY_NEEDED 1
 
@@ -583,15 +600,15 @@ static const yytype_int8 yyrhs[] =
 /* YYRLINE[YYN] -- source line where rule number YYN was defined.  */
 static const yytype_uint8 yyrline[] =
 {
-       0,    84,    84,    88,    92,    98,   101,   102,   105,   120,
-     121,   131,   132,   133,   134,   135,   136,   137,   138,   139,
-     140,   141,   142,   143,   144,   145,   146,   147,   148,   149,
-     150,   151,   153,   154,   155,   156,   162,   163,   164,   165,
-     168,   169,   170,   171,   174,   177,   178,   179,   189,   190,
-     193,   194,   197,   198,   199,   202,   203,   204,   205,   206,
-     207,   208,   209,   212,   213,   222,   225,   226,   227,   230,
-     233,   234,   235,   236,   237,   238,   239,   240,   243,   244,
-     247,   248
+       0,    85,    85,    89,    93,    99,   102,   103,   106,   121,
+     122,   132,   133,   134,   135,   136,   137,   138,   139,   140,
+     141,   142,   143,   144,   145,   146,   147,   148,   149,   150,
+     151,   152,   154,   155,   156,   157,   163,   164,   165,   166,
+     169,   170,   171,   172,   175,   178,   179,   180,   190,   191,
+     194,   195,   198,   199,   200,   203,   204,   205,   206,   207,
+     208,   209,   210,   213,   214,   223,   226,   227,   228,   231,
+     234,   235,   236,   237,   238,   239,   240,   241,   244,   245,
+     248,   249
 };
 #endif
 
@@ -862,7 +879,7 @@ do                                                              \
     }                                                           \
   else                                                          \
     {                                                           \
-      yyerror (ctx, scanner, YY_("syntax error: cannot back up")); \
+      yyerror (&yylloc, ctx, scanner, YY_("syntax error: cannot back up")); \
       YYERROR;							\
     }								\
 while (YYID (0))
@@ -872,17 +889,90 @@ while (YYID (0))
 #define YYERRCODE	256
 
 
-/* This macro is provided for backward compatibility. */
+/* YYLLOC_DEFAULT -- Set CURRENT to span from RHS[1] to RHS[N].
+   If N is 0, then set CURRENT to the empty location which ends
+   the previous symbol: RHS[0] (always defined).  */
+
+#ifndef YYLLOC_DEFAULT
+# define YYLLOC_DEFAULT(Current, Rhs, N)                                \
+    do                                                                  \
+      if (YYID (N))                                                     \
+        {                                                               \
+          (Current).first_line   = YYRHSLOC (Rhs, 1).first_line;        \
+          (Current).first_column = YYRHSLOC (Rhs, 1).first_column;      \
+          (Current).last_line    = YYRHSLOC (Rhs, N).last_line;         \
+          (Current).last_column  = YYRHSLOC (Rhs, N).last_column;       \
+        }                                                               \
+      else                                                              \
+        {                                                               \
+          (Current).first_line   = (Current).last_line   =              \
+            YYRHSLOC (Rhs, 0).last_line;                                \
+          (Current).first_column = (Current).last_column =              \
+            YYRHSLOC (Rhs, 0).last_column;                              \
+        }                                                               \
+    while (YYID (0))
+#endif
+
+#define YYRHSLOC(Rhs, K) ((Rhs)[K])
+
+
+/* YY_LOCATION_PRINT -- Print the location on the stream.
+   This macro was not mandated originally: define only if we know
+   we won't break user code: when these are the locations we know.  */
+
 #ifndef YY_LOCATION_PRINT
-# define YY_LOCATION_PRINT(File, Loc) ((void) 0)
+# if defined PROMELA_LTYPE_IS_TRIVIAL && PROMELA_LTYPE_IS_TRIVIAL
+
+/* Print *YYLOCP on YYO.  Private, do not rely on its existence. */
+
+__attribute__((__unused__))
+#if (defined __STDC__ || defined __C99__FUNC__ \
+     || defined __cplusplus || defined _MSC_VER)
+static unsigned
+yy_location_print_ (FILE *yyo, YYLTYPE const * const yylocp)
+#else
+static unsigned
+yy_location_print_ (yyo, yylocp)
+    FILE *yyo;
+    YYLTYPE const * const yylocp;
+#endif
+{
+  unsigned res = 0;
+  int end_col = 0 != yylocp->last_column ? yylocp->last_column - 1 : 0;
+  if (0 <= yylocp->first_line)
+    {
+      res += fprintf (yyo, "%d", yylocp->first_line);
+      if (0 <= yylocp->first_column)
+        res += fprintf (yyo, ".%d", yylocp->first_column);
+    }
+  if (0 <= yylocp->last_line)
+    {
+      if (yylocp->first_line < yylocp->last_line)
+        {
+          res += fprintf (yyo, "-%d", yylocp->last_line);
+          if (0 <= end_col)
+            res += fprintf (yyo, ".%d", end_col);
+        }
+      else if (0 <= end_col && yylocp->first_column < end_col)
+        res += fprintf (yyo, "-%d", end_col);
+    }
+  return res;
+ }
+
+#  define YY_LOCATION_PRINT(File, Loc)          \
+  yy_location_print_ (File, &(Loc))
+
+# else
+#  define YY_LOCATION_PRINT(File, Loc) ((void) 0)
+# endif
 #endif
 
 
 /* YYLEX -- calling `yylex' with the right arguments.  */
 #ifdef YYLEX_PARAM
-# define YYLEX yylex (&yylval, YYLEX_PARAM)
+# define YYLEX yylex (&yylval, &yylloc, YYLEX_PARAM)
 #else
-# define YYLEX yylex (&yylval, scanner)
+# define YYLEX yylex (&yylval, &yylloc, scanner)
 #endif
 
 /* Enable debugging if requested.  */
@@ -905,7 +995,7 @@ do {									  \
     {									  \
       YYFPRINTF (stderr, "%s ", Title);					  \
       yy_symbol_print (stderr,						  \
-		  Type, Value, ctx, scanner); \
+		  Type, Value, Location, ctx, scanner); \
       YYFPRINTF (stderr, "\n");						  \
     }									  \
 } while (YYID (0))
@@ -919,13 +1009,14 @@ do {									  \
 #if (defined __STDC__ || defined __C99__FUNC__ \
      || defined __cplusplus || defined _MSC_VER)
 static void
-yy_symbol_value_print (FILE *yyoutput, int yytype, YYSTYPE const * const yyvaluep, uscxml::PromelaParser* ctx, void * scanner)
+yy_symbol_value_print (FILE *yyoutput, int yytype, YYSTYPE const * const yyvaluep, YYLTYPE const * const yylocationp, uscxml::PromelaParser* ctx, void * scanner)
 #else
 static void
-yy_symbol_value_print (yyoutput, yytype, yyvaluep, ctx, scanner)
+yy_symbol_value_print (yyoutput, yytype, yyvaluep, yylocationp, ctx, scanner)
     FILE *yyoutput;
     int yytype;
     YYSTYPE const * const yyvaluep;
+    YYLTYPE const * const yylocationp;
     uscxml::PromelaParser* ctx;
     void * scanner;
 #endif
@@ -934,6 +1025,7 @@ yy_symbol_value_print (yyoutput, yytype, yyvaluep, ctx, scanner)
   YYUSE (yyo);
   if (!yyvaluep)
     return;
+  YYUSE (yylocationp);
   YYUSE (ctx);
   YYUSE (scanner);
 # ifdef YYPRINT
@@ -953,13 +1045,14 @@ yy_symbol_value_print (yyoutput, yytype, yyvaluep, ctx, scanner)
 #if (defined __STDC__ || defined __C99__FUNC__ \
      || defined __cplusplus || defined _MSC_VER)
 static void
-yy_symbol_print (FILE *yyoutput, int yytype, YYSTYPE const * const yyvaluep, uscxml::PromelaParser* ctx, void * scanner)
+yy_symbol_print (FILE *yyoutput, int yytype, YYSTYPE const * const yyvaluep, YYLTYPE const * const yylocationp, uscxml::PromelaParser* ctx, void * scanner)
 #else
 static void
-yy_symbol_print (yyoutput, yytype, yyvaluep, ctx, scanner)
+yy_symbol_print (yyoutput, yytype, yyvaluep, yylocationp, ctx, scanner)
     FILE *yyoutput;
     int yytype;
     YYSTYPE const * const yyvaluep;
+    YYLTYPE const * const yylocationp;
     uscxml::PromelaParser* ctx;
     void * scanner;
 #endif
@@ -969,7 +1062,9 @@ yy_symbol_print (yyoutput, yytype, yyvaluep, ctx, scanner)
   else
     YYFPRINTF (yyoutput, "nterm %s (", yytname[yytype]);
 
-  yy_symbol_value_print (yyoutput, yytype, yyvaluep, ctx, scanner);
+  YY_LOCATION_PRINT (yyoutput, *yylocationp);
+  YYFPRINTF (yyoutput, ": ");
+  yy_symbol_value_print (yyoutput, yytype, yyvaluep, yylocationp, ctx, scanner);
   YYFPRINTF (yyoutput, ")");
 }
 
@@ -1012,11 +1107,12 @@ do {								\
 #if (defined __STDC__ || defined __C99__FUNC__ \
      || defined __cplusplus || defined _MSC_VER)
 static void
-yy_reduce_print (YYSTYPE *yyvsp, int yyrule, uscxml::PromelaParser* ctx, void * scanner)
+yy_reduce_print (YYSTYPE *yyvsp, YYLTYPE *yylsp, int yyrule, uscxml::PromelaParser* ctx, void * scanner)
 #else
 static void
-yy_reduce_print (yyvsp, yyrule, ctx, scanner)
+yy_reduce_print (yyvsp, yylsp, yyrule, ctx, scanner)
     YYSTYPE *yyvsp;
+    YYLTYPE *yylsp;
     int yyrule;
     uscxml::PromelaParser* ctx;
     void * scanner;
@@ -1033,7 +1129,7 @@ yy_reduce_print (yyvsp, yyrule, ctx, scanner)
       YYFPRINTF (stderr, "   $%d = ", yyi + 1);
       yy_symbol_print (stderr, yyrhs[yyprhs[yyrule] + yyi],
 		       &(yyvsp[(yyi + 1) - (yynrhs)])
-		       		       , ctx, scanner);
+		       , &(yylsp[(yyi + 1) - (yynrhs)])		       , ctx, scanner);
       YYFPRINTF (stderr, "\n");
     }
 }
@@ -1041,7 +1137,7 @@ yy_reduce_print (yyvsp, yyrule, ctx, scanner)
 # define YY_REDUCE_PRINT(Rule)		\
 do {					\
   if (yydebug)				\
-    yy_reduce_print (yyvsp, Rule, ctx, scanner); \
+    yy_reduce_print (yyvsp, yylsp, Rule, ctx, scanner); \
 } while (YYID (0))
 
 /* Nonzero means print parse trace.  It is left uninitialized so that
@@ -1321,18 +1417,20 @@ yysyntax_error (YYSIZE_T *yymsg_alloc, char **yymsg,
 #if (defined __STDC__ || defined __C99__FUNC__ \
      || defined __cplusplus || defined _MSC_VER)
 static void
-yydestruct (const char *yymsg, int yytype, YYSTYPE *yyvaluep, uscxml::PromelaParser* ctx, void * scanner)
+yydestruct (const char *yymsg, int yytype, YYSTYPE *yyvaluep, YYLTYPE *yylocationp, uscxml::PromelaParser* ctx, void * scanner)
 #else
 static void
-yydestruct (yymsg, yytype, yyvaluep, ctx, scanner)
+yydestruct (yymsg, yytype, yyvaluep, yylocationp, ctx, scanner)
     const char *yymsg;
     int yytype;
     YYSTYPE *yyvaluep;
+    YYLTYPE *yylocationp;
     uscxml::PromelaParser* ctx;
     void * scanner;
 #endif
 {
   YYUSE (yyvaluep);
+  YYUSE (yylocationp);
   YYUSE (ctx);
   YYUSE (scanner);
 
@@ -1391,6 +1489,11 @@ int yychar;
 static YYSTYPE yyval_default;
 # define YY_INITIAL_VALUE(Value) = Value
 #endif
+static YYLTYPE yyloc_default
+# if defined PROMELA_LTYPE_IS_TRIVIAL && PROMELA_LTYPE_IS_TRIVIAL
+  = { 1, 1, 1, 1 }
+# endif
+;
 #ifndef YY_IGNORE_MAYBE_UNINITIALIZED_BEGIN
 # define YY_IGNORE_MAYBE_UNINITIALIZED_BEGIN
 # define YY_IGNORE_MAYBE_UNINITIALIZED_END
@@ -1402,6 +1505,10 @@ static YYSTYPE yyval_default;
 /* The semantic value of the lookahead symbol.  */
 YYSTYPE yylval YY_INITIAL_VALUE(yyval_default);
 
+/* Location data for the lookahead symbol.  */
+YYLTYPE yylloc = yyloc_default;
+
+
     /* Number of syntax errors so far.  */
     int yynerrs;
 
@@ -1412,6 +1519,7 @@ YYSTYPE yylval YY_INITIAL_VALUE(yyval_default);
     /* The stacks and their tools:
        `yyss': related to states.
        `yyvs': related to semantic values.
+       `yyls': related to locations.
 
        Refer to the stacks through separate pointers, to allow yyoverflow
        to reallocate them elsewhere.  */
@@ -1426,6 +1534,14 @@ YYSTYPE yylval YY_INITIAL_VALUE(yyval_default);
     YYSTYPE *yyvs;
     YYSTYPE *yyvsp;
 
+    /* The location stack.  */
+    YYLTYPE yylsa[YYINITDEPTH];
+    YYLTYPE *yyls;
+    YYLTYPE *yylsp;
+
+    /* The locations where the error started and ended.  */
+    YYLTYPE yyerror_range[3];
+
     YYSIZE_T yystacksize;
 
   int yyn;
@@ -1435,6 +1551,7 @@ YYSTYPE yylval YY_INITIAL_VALUE(yyval_default);
   /* The variables used to return semantic value and location from the
      action routines.  */
   YYSTYPE yyval;
+  YYLTYPE yyloc;
 
 #if YYERROR_VERBOSE
   /* Buffer for error messages, and its allocated size.  */
@@ -1443,7 +1560,7 @@ YYSTYPE yylval YY_INITIAL_VALUE(yyval_default);
   YYSIZE_T yymsg_alloc = sizeof yymsgbuf;
 #endif
 
-#define YYPOPSTACK(N)   (yyvsp -= (N), yyssp -= (N))
+#define YYPOPSTACK(N)   (yyvsp -= (N), yyssp -= (N), yylsp -= (N))
 
   /* The number of symbols on the RHS of the reduced rule.
      Keep to zero when no symbol should be popped.  */
@@ -1451,6 +1568,7 @@ YYSTYPE yylval YY_INITIAL_VALUE(yyval_default);
 
   yyssp = yyss = yyssa;
   yyvsp = yyvs = yyvsa;
+  yylsp = yyls = yylsa;
   yystacksize = YYINITDEPTH;
 
   YYDPRINTF ((stderr, "Starting parse\n"));
@@ -1459,6 +1577,7 @@ YYSTYPE yylval YY_INITIAL_VALUE(yyval_default);
   yyerrstatus = 0;
   yynerrs = 0;
   yychar = YYEMPTY; /* Cause a token to be read.  */
+  yylsp[0] = yylloc;
   goto yysetstate;
 
 /*------------------------------------------------------------.
@@ -1484,6 +1603,7 @@ YYSTYPE yylval YY_INITIAL_VALUE(yyval_default);
 	   memory.  */
 	YYSTYPE *yyvs1 = yyvs;
 	yytype_int16 *yyss1 = yyss;
+	YYLTYPE *yyls1 = yyls;
 
 	/* Each stack pointer address is followed by the size of the
 	   data in use in that stack, in bytes.  This used to be a
@@ -1492,8 +1612,10 @@ YYSTYPE yylval YY_INITIAL_VALUE(yyval_default);
 	yyoverflow (YY_("memory exhausted"),
 		    &yyss1, yysize * sizeof (*yyssp),
 		    &yyvs1, yysize * sizeof (*yyvsp),
+		    &yyls1, yysize * sizeof (*yylsp),
 		    &yystacksize);
 
+	yyls = yyls1;
 	yyss = yyss1;
 	yyvs = yyvs1;
       }
@@ -1516,6 +1638,7 @@ YYSTYPE yylval YY_INITIAL_VALUE(yyval_default);
 	  goto yyexhaustedlab;
 	YYSTACK_RELOCATE (yyss_alloc, yyss);
 	YYSTACK_RELOCATE (yyvs_alloc, yyvs);
+	YYSTACK_RELOCATE (yyls_alloc, yyls);
 #  undef YYSTACK_RELOCATE
 	if (yyss1 != yyssa)
 	  YYSTACK_FREE (yyss1);
@@ -1525,6 +1648,7 @@ YYSTYPE yylval YY_INITIAL_VALUE(yyval_default);
 
       yyssp = yyss + yysize - 1;
       yyvsp = yyvs + yysize - 1;
+      yylsp = yyls + yysize - 1;
 
       YYDPRINTF ((stderr, "Stack size increased to %lu\n",
 		  (unsigned long int) yystacksize));
@@ -1602,7 +1726,7 @@ yybackup:
   YY_IGNORE_MAYBE_UNINITIALIZED_BEGIN
   *++yyvsp = yylval;
   YY_IGNORE_MAYBE_UNINITIALIZED_END
-
+  *++yylsp = yylloc;
   goto yynewstate;
 
 
@@ -1633,13 +1757,14 @@ yyreduce:
      GCC warning that YYVAL may be used uninitialized.  */
   yyval = yyvsp[1-yylen];
 
-
+  /* Default location.  */
+  YYLLOC_DEFAULT (yyloc, (yylsp - yylen), yylen);
   YY_REDUCE_PRINT (yyn);
   switch (yyn)
     {
         case 2:
 /* Line 1787 of yacc.c  */
-#line 84 "promela.ypp"
+#line 85 "promela.ypp"
     { 
     ctx->ast = (yyvsp[(1) - (1)].node); 
     ctx->type = PromelaParser::PROMELA_DECL; 
@@ -1648,7 +1773,7 @@ yyreduce:
 
   case 3:
 /* Line 1787 of yacc.c  */
-#line 88 "promela.ypp"
+#line 89 "promela.ypp"
     { 
     ctx->ast = (yyvsp[(1) - (1)].node); 
     ctx->type = PromelaParser::PROMELA_EXPR;
@@ -1657,7 +1782,7 @@ yyreduce:
 
   case 4:
 /* Line 1787 of yacc.c  */
-#line 92 "promela.ypp"
+#line 93 "promela.ypp"
     { 
     ctx->ast = (yyvsp[(1) - (1)].node); 
     ctx->type = PromelaParser::PROMELA_STMNT;
@@ -1666,25 +1791,25 @@ yyreduce:
 
   case 5:
 /* Line 1787 of yacc.c  */
-#line 98 "promela.ypp"
+#line 99 "promela.ypp"
     { (yyval.node) = (yyvsp[(1) - (1)].node); }
     break;
 
   case 6:
 /* Line 1787 of yacc.c  */
-#line 101 "promela.ypp"
-    { (yyval.node) = ctx->value(PML_NAME, (yyvsp[(1) - (1)].value)); free((yyvsp[(1) - (1)].value)); }
+#line 102 "promela.ypp"
+    { (yyval.node) = ctx->value(PML_NAME, (void*)&((yylsp[(1) - (1)])), (yyvsp[(1) - (1)].value)); free((yyvsp[(1) - (1)].value)); }
     break;
 
   case 7:
 /* Line 1787 of yacc.c  */
-#line 102 "promela.ypp"
-    { (yyval.node) = ctx->node(PML_VAR_ARRAY, 2, ctx->value(PML_NAME, (yyvsp[(1) - (4)].value)), (yyvsp[(3) - (4)].node)); free((yyvsp[(1) - (4)].value)); }
+#line 103 "promela.ypp"
+    { (yyval.node) = ctx->node(PML_VAR_ARRAY, 2, ctx->value(PML_NAME, (void*)&((yylsp[(1) - (4)])), (yyvsp[(1) - (4)].value)), (yyvsp[(3) - (4)].node)); free((yyvsp[(1) - (4)].value)); }
     break;
 
   case 8:
 /* Line 1787 of yacc.c  */
-#line 106 "promela.ypp"
+#line 107 "promela.ypp"
     { 
 					if ((yyvsp[(2) - (2)].node) != NULL) {
 						if ((yyvsp[(2) - (2)].node)->type == PML_CMPND) {
@@ -1701,237 +1826,237 @@ yyreduce:
 
   case 9:
 /* Line 1787 of yacc.c  */
-#line 120 "promela.ypp"
+#line 121 "promela.ypp"
     { (yyval.node) = NULL; }
     break;
 
   case 10:
 /* Line 1787 of yacc.c  */
-#line 121 "promela.ypp"
+#line 122 "promela.ypp"
     { (yyval.node) = (yyvsp[(2) - (2)].node); }
     break;
 
   case 11:
 /* Line 1787 of yacc.c  */
-#line 131 "promela.ypp"
+#line 132 "promela.ypp"
     { (yyval.node) = (yyvsp[(2) - (3)].node); }
     break;
 
   case 12:
 /* Line 1787 of yacc.c  */
-#line 132 "promela.ypp"
+#line 133 "promela.ypp"
     { (yyval.node) = ctx->node(PML_PLUS, 2, (yyvsp[(1) - (3)].node), (yyvsp[(3) - (3)].node)); }
     break;
 
   case 13:
 /* Line 1787 of yacc.c  */
-#line 133 "promela.ypp"
+#line 134 "promela.ypp"
     { (yyval.node) = ctx->node(PML_MINUS, 2, (yyvsp[(1) - (3)].node), (yyvsp[(3) - (3)].node)); }
     break;
 
   case 14:
 /* Line 1787 of yacc.c  */
-#line 134 "promela.ypp"
+#line 135 "promela.ypp"
     { (yyval.node) = ctx->node(PML_TIMES, 2, (yyvsp[(1) - (3)].node), (yyvsp[(3) - (3)].node)); }
     break;
 
   case 15:
 /* Line 1787 of yacc.c  */
-#line 135 "promela.ypp"
+#line 136 "promela.ypp"
     { (yyval.node) = ctx->node(PML_DIVIDE, 2, (yyvsp[(1) - (3)].node), (yyvsp[(3) - (3)].node)); }
     break;
 
   case 16:
 /* Line 1787 of yacc.c  */
-#line 136 "promela.ypp"
+#line 137 "promela.ypp"
     { (yyval.node) = ctx->node(PML_MODULO, 2, (yyvsp[(1) - (3)].node), (yyvsp[(3) - (3)].node)); }
     break;
 
   case 17:
 /* Line 1787 of yacc.c  */
-#line 137 "promela.ypp"
+#line 138 "promela.ypp"
     { (yyval.node) = ctx->node(PML_BITAND, 2, (yyvsp[(1) - (3)].node), (yyvsp[(3) - (3)].node)); }
     break;
 
   case 18:
 /* Line 1787 of yacc.c  */
-#line 138 "promela.ypp"
+#line 139 "promela.ypp"
     { (yyval.node) = ctx->node(PML_BITXOR, 2, (yyvsp[(1) - (3)].node), (yyvsp[(3) - (3)].node)); }
     break;
 
   case 19:
 /* Line 1787 of yacc.c  */
-#line 139 "promela.ypp"
+#line 140 "promela.ypp"
     { (yyval.node) = ctx->node(PML_BITOR, 2, (yyvsp[(1) - (3)].node), (yyvsp[(3) - (3)].node)); }
     break;
 
   case 20:
 /* Line 1787 of yacc.c  */
-#line 140 "promela.ypp"
+#line 141 "promela.ypp"
     { (yyval.node) = ctx->node(PML_GT, 2, (yyvsp[(1) - (3)].node), (yyvsp[(3) - (3)].node)); }
     break;
 
   case 21:
 /* Line 1787 of yacc.c  */
-#line 141 "promela.ypp"
+#line 142 "promela.ypp"
     { (yyval.node) = ctx->node(PML_LT, 2, (yyvsp[(1) - (3)].node), (yyvsp[(3) - (3)].node)); }
     break;
 
   case 22:
 /* Line 1787 of yacc.c  */
-#line 142 "promela.ypp"
+#line 143 "promela.ypp"
     { (yyval.node) = ctx->node(PML_GE, 2, (yyvsp[(1) - (3)].node), (yyvsp[(3) - (3)].node)); }
     break;
 
   case 23:
 /* Line 1787 of yacc.c  */
-#line 143 "promela.ypp"
+#line 144 "promela.ypp"
     { (yyval.node) = ctx->node(PML_LE, 2, (yyvsp[(1) - (3)].node), (yyvsp[(3) - (3)].node)); }
     break;
 
   case 24:
 /* Line 1787 of yacc.c  */
-#line 144 "promela.ypp"
+#line 145 "promela.ypp"
     { (yyval.node) = ctx->node(PML_EQ, 2, (yyvsp[(1) - (3)].node), (yyvsp[(3) - (3)].node)); }
     break;
 
   case 25:
 /* Line 1787 of yacc.c  */
-#line 145 "promela.ypp"
+#line 146 "promela.ypp"
     { (yyval.node) = ctx->node(PML_NE, 2, (yyvsp[(1) - (3)].node), (yyvsp[(3) - (3)].node)); }
     break;
 
   case 26:
 /* Line 1787 of yacc.c  */
-#line 146 "promela.ypp"
+#line 147 "promela.ypp"
     { (yyval.node) = ctx->node(PML_AND, 2, (yyvsp[(1) - (3)].node), (yyvsp[(3) - (3)].node)); }
     break;
 
   case 27:
 /* Line 1787 of yacc.c  */
-#line 147 "promela.ypp"
+#line 148 "promela.ypp"
     { (yyval.node) = ctx->node(PML_OR, 2, (yyvsp[(1) - (3)].node), (yyvsp[(3) - (3)].node)); }
     break;
 
   case 28:
 /* Line 1787 of yacc.c  */
-#line 148 "promela.ypp"
+#line 149 "promela.ypp"
     { (yyval.node) = ctx->node(PML_LSHIFT, 2, (yyvsp[(1) - (3)].node), (yyvsp[(3) - (3)].node)); }
     break;
 
   case 29:
 /* Line 1787 of yacc.c  */
-#line 149 "promela.ypp"
+#line 150 "promela.ypp"
     { (yyval.node) = ctx->node(PML_RSHIFT, 2, (yyvsp[(1) - (3)].node), (yyvsp[(3) - (3)].node)); }
     break;
 
   case 30:
 /* Line 1787 of yacc.c  */
-#line 150 "promela.ypp"
+#line 151 "promela.ypp"
     { (yyval.node) = ctx->node(PML_NEG, 1, (yyvsp[(2) - (2)].node)); }
     break;
 
   case 31:
 /* Line 1787 of yacc.c  */
-#line 151 "promela.ypp"
+#line 152 "promela.ypp"
     { (yyval.node) = ctx->node(PML_MINUS, 1, (yyvsp[(2) - (2)].node)); }
     break;
 
   case 32:
 /* Line 1787 of yacc.c  */
-#line 153 "promela.ypp"
+#line 154 "promela.ypp"
     { (yyval.node) = ctx->node(PML_LEN, 1, (yyvsp[(3) - (4)].node));  }
     break;
 
   case 33:
 /* Line 1787 of yacc.c  */
-#line 154 "promela.ypp"
+#line 155 "promela.ypp"
     { (yyval.node) = (yyvsp[(1) - (1)].node); }
     break;
 
   case 34:
 /* Line 1787 of yacc.c  */
-#line 155 "promela.ypp"
-    { (yyval.node) = ctx->value(PML_CONST, (yyvsp[(1) - (1)].value)); free((yyvsp[(1) - (1)].value)); }
+#line 156 "promela.ypp"
+    { (yyval.node) = ctx->value(PML_CONST, (void*)&((yylsp[(1) - (1)])), (yyvsp[(1) - (1)].value)); free((yyvsp[(1) - (1)].value)); }
     break;
 
   case 35:
 /* Line 1787 of yacc.c  */
-#line 156 "promela.ypp"
+#line 157 "promela.ypp"
     { 
 		/* Non standard promela for string literals */ 
-		(yyval.node) = ctx->value(PML_STRING, (yyvsp[(1) - (1)].value)); free((yyvsp[(1) - (1)].value)); }
+		(yyval.node) = ctx->value(PML_STRING, (void*)&((yylsp[(1) - (1)])), (yyvsp[(1) - (1)].value)); free((yyvsp[(1) - (1)].value)); }
     break;
 
   case 36:
 /* Line 1787 of yacc.c  */
-#line 162 "promela.ypp"
+#line 163 "promela.ypp"
     { (yyval.node) = ctx->node(PML_SHOW, 0); }
     break;
 
   case 37:
 /* Line 1787 of yacc.c  */
-#line 163 "promela.ypp"
+#line 164 "promela.ypp"
     { (yyval.node) = ctx->node(PML_HIDDEN, 0); }
     break;
 
   case 38:
 /* Line 1787 of yacc.c  */
-#line 164 "promela.ypp"
+#line 165 "promela.ypp"
     { (yyval.node) = ctx->node(PML_SHOW, 0); }
     break;
 
   case 39:
 /* Line 1787 of yacc.c  */
-#line 165 "promela.ypp"
+#line 166 "promela.ypp"
     { (yyval.node) = ctx->node(PML_ISLOCAL, 0); }
     break;
 
   case 40:
 /* Line 1787 of yacc.c  */
-#line 168 "promela.ypp"
-    { (yyval.node) = ctx->node(PML_DECL, 3, (yyvsp[(1) - (3)].node), ctx->value(PML_TYPE, (yyvsp[(2) - (3)].value)), (yyvsp[(3) - (3)].node)); free((yyvsp[(2) - (3)].value)); }
+#line 169 "promela.ypp"
+    { (yyval.node) = ctx->node(PML_DECL, 3, (yyvsp[(1) - (3)].node), ctx->value(PML_TYPE, (void*)&((yylsp[(2) - (3)])), (yyvsp[(2) - (3)].value)), (yyvsp[(3) - (3)].node)); free((yyvsp[(2) - (3)].value)); }
     break;
 
   case 41:
 /* Line 1787 of yacc.c  */
-#line 169 "promela.ypp"
+#line 170 "promela.ypp"
     { (yyval.node) = ctx->node(PML_UNAME, 2, (yyvsp[(1) - (3)].node), (yyvsp[(3) - (3)].node)); }
     break;
 
   case 42:
 /* Line 1787 of yacc.c  */
-#line 170 "promela.ypp"
-    { (yyval.node) = ctx->node(PML_DECL, 3, (yyvsp[(1) - (6)].node), ctx->value(PML_TYPE, (yyvsp[(2) - (6)].value)), (yyvsp[(5) - (6)].node)); free((yyvsp[(2) - (6)].value)); }
+#line 171 "promela.ypp"
+    { (yyval.node) = ctx->node(PML_DECL, 3, (yyvsp[(1) - (6)].node), ctx->value(PML_TYPE, (void*)&((yylsp[(2) - (6)])), (yyvsp[(2) - (6)].value)), (yyvsp[(5) - (6)].node)); free((yyvsp[(2) - (6)].value)); }
     break;
 
   case 43:
 /* Line 1787 of yacc.c  */
-#line 171 "promela.ypp"
+#line 172 "promela.ypp"
     { (yyval.node) = (yyvsp[(2) - (2)].node); }
     break;
 
   case 44:
 /* Line 1787 of yacc.c  */
-#line 174 "promela.ypp"
-    { (yyval.node) = ctx->node(PML_TYPEDEF, 2, ctx->value(PML_NAME, (yyvsp[(2) - (5)].value)), (yyvsp[(4) - (5)].node)); }
+#line 175 "promela.ypp"
+    { (yyval.node) = ctx->node(PML_TYPEDEF, 2, ctx->value(PML_NAME, (void*)&((yylsp[(2) - (5)])), (yyvsp[(2) - (5)].value)), (yyvsp[(4) - (5)].node)); }
     break;
 
   case 45:
 /* Line 1787 of yacc.c  */
-#line 177 "promela.ypp"
+#line 178 "promela.ypp"
     { (yyval.node) = (yyvsp[(1) - (1)].node); }
     break;
 
   case 46:
 /* Line 1787 of yacc.c  */
-#line 178 "promela.ypp"
+#line 179 "promela.ypp"
     { (yyval.node) = (yyvsp[(1) - (2)].node); }
     break;
 
   case 47:
 /* Line 1787 of yacc.c  */
-#line 179 "promela.ypp"
+#line 180 "promela.ypp"
     {
     (yyval.node) = ctx->node(PML_DECLLIST, 1, (yyvsp[(1) - (3)].node));
     if((yyvsp[(3) - (3)].node)->type == PML_DECLLIST) {
@@ -1944,109 +2069,109 @@ yyreduce:
 
   case 48:
 /* Line 1787 of yacc.c  */
-#line 189 "promela.ypp"
+#line 190 "promela.ypp"
     { (yyval.node) = ctx->node(PML_VARLIST, 1, (yyvsp[(1) - (1)].node)); }
     break;
 
   case 49:
 /* Line 1787 of yacc.c  */
-#line 190 "promela.ypp"
+#line 191 "promela.ypp"
     { (yyval.node) = ctx->node(PML_VARLIST, 1, (yyvsp[(1) - (3)].node)); (yyval.node)->merge((yyvsp[(3) - (3)].node)); delete (yyvsp[(3) - (3)].node); }
     break;
 
   case 50:
 /* Line 1787 of yacc.c  */
-#line 193 "promela.ypp"
+#line 194 "promela.ypp"
     { (yyval.node) = (yyvsp[(1) - (1)].node); }
     break;
 
   case 51:
 /* Line 1787 of yacc.c  */
-#line 194 "promela.ypp"
+#line 195 "promela.ypp"
     { (yyval.node) = ctx->node(PML_ASGN, 2, (yyvsp[(1) - (3)].node), (yyvsp[(3) - (3)].node)); }
     break;
 
   case 52:
 /* Line 1787 of yacc.c  */
-#line 197 "promela.ypp"
-    { (yyval.node) = ctx->value(PML_NAME, (yyvsp[(1) - (1)].value)); free((yyvsp[(1) - (1)].value)); }
+#line 198 "promela.ypp"
+    { (yyval.node) = ctx->value(PML_NAME, (void*)&((yylsp[(1) - (1)])), (yyvsp[(1) - (1)].value)); free((yyvsp[(1) - (1)].value)); }
     break;
 
   case 53:
 /* Line 1787 of yacc.c  */
-#line 198 "promela.ypp"
-    { (yyval.node) = ctx->node(PML_COLON, 2, ctx->value(PML_NAME, (yyvsp[(1) - (3)].value)), ctx->value(PML_CONST, (yyvsp[(3) - (3)].value))); free((yyvsp[(1) - (3)].value)); free((yyvsp[(3) - (3)].value)); }
+#line 199 "promela.ypp"
+    { (yyval.node) = ctx->node(PML_COLON, 2, ctx->value(PML_NAME, (void*)&((yylsp[(1) - (3)])), (yyvsp[(1) - (3)].value)), ctx->value(PML_CONST, (void*)&((yylsp[(3) - (3)])), (yyvsp[(3) - (3)].value))); free((yyvsp[(1) - (3)].value)); free((yyvsp[(3) - (3)].value)); }
     break;
 
   case 54:
 /* Line 1787 of yacc.c  */
-#line 199 "promela.ypp"
-    { (yyval.node) = ctx->node(PML_VAR_ARRAY, 2, ctx->value(PML_NAME, (yyvsp[(1) - (4)].value)), (yyvsp[(3) - (4)].node)); free((yyvsp[(1) - (4)].value)); }
+#line 200 "promela.ypp"
+    { (yyval.node) = ctx->node(PML_VAR_ARRAY, 2, ctx->value(PML_NAME, (void*)&((yylsp[(1) - (4)])), (yyvsp[(1) - (4)].value)), (yyvsp[(3) - (4)].node)); free((yyvsp[(1) - (4)].value)); }
     break;
 
   case 55:
 /* Line 1787 of yacc.c  */
-#line 202 "promela.ypp"
-    { (yyval.node) = ctx->value(PML_CONST, (yyvsp[(1) - (1)].value)); free((yyvsp[(1) - (1)].value)); }
+#line 203 "promela.ypp"
+    { (yyval.node) = ctx->value(PML_CONST, (void*)&((yylsp[(1) - (1)])), (yyvsp[(1) - (1)].value)); free((yyvsp[(1) - (1)].value)); }
     break;
 
   case 56:
 /* Line 1787 of yacc.c  */
-#line 203 "promela.ypp"
+#line 204 "promela.ypp"
     { (yyval.node) = ctx->node(PML_MINUS, 1, (yyvsp[(2) - (2)].node)); }
     break;
 
   case 57:
 /* Line 1787 of yacc.c  */
-#line 204 "promela.ypp"
+#line 205 "promela.ypp"
     { (yyval.node) = (yyvsp[(2) - (3)].node); }
     break;
 
   case 58:
 /* Line 1787 of yacc.c  */
-#line 205 "promela.ypp"
+#line 206 "promela.ypp"
     { (yyval.node) = ctx->node(PML_PLUS, 2, (yyvsp[(1) - (3)].node), (yyvsp[(3) - (3)].node)); }
     break;
 
   case 59:
 /* Line 1787 of yacc.c  */
-#line 206 "promela.ypp"
+#line 207 "promela.ypp"
     { (yyval.node) = ctx->node(PML_MINUS, 2, (yyvsp[(1) - (3)].node), (yyvsp[(3) - (3)].node)); }
     break;
 
   case 60:
 /* Line 1787 of yacc.c  */
-#line 207 "promela.ypp"
+#line 208 "promela.ypp"
     { (yyval.node) = ctx->node(PML_TIMES, 2, (yyvsp[(1) - (3)].node), (yyvsp[(3) - (3)].node)); }
     break;
 
   case 61:
 /* Line 1787 of yacc.c  */
-#line 208 "promela.ypp"
+#line 209 "promela.ypp"
     { (yyval.node) = ctx->node(PML_DIVIDE, 2, (yyvsp[(1) - (3)].node), (yyvsp[(3) - (3)].node)); }
     break;
 
   case 62:
 /* Line 1787 of yacc.c  */
-#line 209 "promela.ypp"
+#line 210 "promela.ypp"
     { (yyval.node) = ctx->node(PML_MODULO, 2, (yyvsp[(1) - (3)].node), (yyvsp[(3) - (3)].node)); }
     break;
 
   case 63:
 /* Line 1787 of yacc.c  */
-#line 212 "promela.ypp"
-    { (yyval.node) = ctx->value(PML_NAME, (yyvsp[(1) - (1)].value)); free((yyvsp[(1) - (1)].value)); }
+#line 213 "promela.ypp"
+    { (yyval.node) = ctx->value(PML_NAME, (void*)&((yylsp[(1) - (1)])), (yyvsp[(1) - (1)].value)); free((yyvsp[(1) - (1)].value)); }
     break;
 
   case 64:
 /* Line 1787 of yacc.c  */
-#line 213 "promela.ypp"
+#line 214 "promela.ypp"
     { 
     if ((yyvsp[(1) - (2)].node)->type == PML_NAME) {
       (yyval.node) = ctx->node(PML_NAMELIST, 1, (yyvsp[(1) - (2)].node));
-      (yyval.node)->push(ctx->value(PML_NAME, (yyvsp[(2) - (2)].value)));
+      (yyval.node)->push(ctx->value(PML_NAME, (void*)&((yylsp[(2) - (2)])), (yyvsp[(2) - (2)].value)));
     } else {
-      (yyvsp[(1) - (2)].node)->push(ctx->value(PML_NAME, (yyvsp[(2) - (2)].value)));
+      (yyvsp[(1) - (2)].node)->push(ctx->value(PML_NAME, (void*)&((yylsp[(2) - (2)])), (yyvsp[(2) - (2)].value)));
     }
     free((yyvsp[(2) - (2)].value));
   }
@@ -2054,109 +2179,109 @@ yyreduce:
 
   case 65:
 /* Line 1787 of yacc.c  */
-#line 222 "promela.ypp"
+#line 223 "promela.ypp"
     { (yyval.node) = (yyvsp[(1) - (2)].node); }
     break;
 
   case 66:
 /* Line 1787 of yacc.c  */
-#line 225 "promela.ypp"
+#line 226 "promela.ypp"
     { (yyval.node) = (yyvsp[(1) - (1)].node); }
     break;
 
   case 67:
 /* Line 1787 of yacc.c  */
-#line 226 "promela.ypp"
+#line 227 "promela.ypp"
     { (yyval.node) = (yyvsp[(1) - (2)].node); }
     break;
 
   case 68:
 /* Line 1787 of yacc.c  */
-#line 227 "promela.ypp"
+#line 228 "promela.ypp"
     { (yyval.node) = ctx->node(PML_STMNT, 2, (yyvsp[(1) - (3)].node), (yyvsp[(3) - (3)].node)); }
     break;
 
   case 69:
 /* Line 1787 of yacc.c  */
-#line 230 "promela.ypp"
+#line 231 "promela.ypp"
     { (yyval.node) = (yyvsp[(1) - (1)].node); }
     break;
 
   case 70:
 /* Line 1787 of yacc.c  */
-#line 233 "promela.ypp"
+#line 234 "promela.ypp"
     { (yyval.node) = ctx->node(PML_ASGN, 2, (yyvsp[(1) - (3)].node), (yyvsp[(3) - (3)].node)); }
     break;
 
   case 71:
 /* Line 1787 of yacc.c  */
-#line 234 "promela.ypp"
+#line 235 "promela.ypp"
     { (yyval.node) = ctx->node(PML_INCR, 1, (yyvsp[(1) - (2)].node)); }
     break;
 
   case 72:
 /* Line 1787 of yacc.c  */
-#line 235 "promela.ypp"
+#line 236 "promela.ypp"
     { (yyval.node) = ctx->node(PML_DECR, 1, (yyvsp[(1) - (2)].node)); }
     break;
 
   case 73:
 /* Line 1787 of yacc.c  */
-#line 236 "promela.ypp"
-    { (yyval.node) = ctx->node(PML_PRINT, 2, ctx->value(PML_STRING, (yyvsp[(3) - (5)].value)), (yyvsp[(4) - (5)].node)); free((yyvsp[(3) - (5)].value)); }
+#line 237 "promela.ypp"
+    { (yyval.node) = ctx->node(PML_PRINT, 2, ctx->value(PML_STRING, (void*)&((yylsp[(3) - (5)])), (yyvsp[(3) - (5)].value)), (yyvsp[(4) - (5)].node)); free((yyvsp[(3) - (5)].value)); }
     break;
 
   case 74:
 /* Line 1787 of yacc.c  */
-#line 237 "promela.ypp"
+#line 238 "promela.ypp"
     { (yyval.node) = ctx->node(PML_PRINT, 1, (yyvsp[(3) - (4)].node)); }
     break;
 
   case 75:
 /* Line 1787 of yacc.c  */
-#line 238 "promela.ypp"
-    { (yyval.node) = ctx->node(PML_PRINT, 1, ctx->value(PML_CONST, (yyvsp[(3) - (4)].value))); free((yyvsp[(3) - (4)].value)); }
+#line 239 "promela.ypp"
+    { (yyval.node) = ctx->node(PML_PRINT, 1, ctx->value(PML_CONST, (void*)&((yylsp[(3) - (4)])), (yyvsp[(3) - (4)].value))); free((yyvsp[(3) - (4)].value)); }
     break;
 
   case 76:
 /* Line 1787 of yacc.c  */
-#line 239 "promela.ypp"
+#line 240 "promela.ypp"
     { (yyval.node) = ctx->node(PML_ASSERT, 1, (yyvsp[(2) - (2)].node)); }
     break;
 
   case 77:
 /* Line 1787 of yacc.c  */
-#line 240 "promela.ypp"
+#line 241 "promela.ypp"
     { (yyval.node) = (yyvsp[(1) - (1)].node); }
     break;
 
   case 78:
 /* Line 1787 of yacc.c  */
-#line 243 "promela.ypp"
-    { (yyval.node) = ctx->value(0, ""); }
+#line 244 "promela.ypp"
+    { (yyval.node) = ctx->value(0, NULL, ""); }
     break;
 
   case 79:
 /* Line 1787 of yacc.c  */
-#line 244 "promela.ypp"
+#line 245 "promela.ypp"
     { (yyval.node) = (yyvsp[(2) - (2)].node); }
     break;
 
   case 80:
 /* Line 1787 of yacc.c  */
-#line 247 "promela.ypp"
+#line 248 "promela.ypp"
     { (yyval.node) = (yyvsp[(1) - (1)].node); }
     break;
 
   case 81:
 /* Line 1787 of yacc.c  */
-#line 248 "promela.ypp"
+#line 249 "promela.ypp"
     { (yyval.node) = ctx->node(0, 2, (yyvsp[(1) - (3)].node), (yyvsp[(3) - (3)].node)); }
     break;
 
 
 /* Line 1787 of yacc.c  */
-#line 2160 "promela.tab.cpp"
+#line 2285 "promela.tab.cpp"
       default: break;
     }
   /* User semantic actions sometimes alter yychar, and that requires
@@ -2177,6 +2302,7 @@ yyreduce:
   YY_STACK_PRINT (yyss, yyssp);
 
   *++yyvsp = yyval;
+  *++yylsp = yyloc;
 
   /* Now `shift' the result of the reduction.  Determine what state
      that goes to, based on the state we popped back to and the rule
@@ -2206,7 +2332,7 @@ yyerrlab:
     {
       ++yynerrs;
 #if ! YYERROR_VERBOSE
-      yyerror (ctx, scanner, YY_("syntax error"));
+      yyerror (&yylloc, ctx, scanner, YY_("syntax error"));
 #else
 # define YYSYNTAX_ERROR yysyntax_error (&yymsg_alloc, &yymsg, \
                                         yyssp, yytoken)
@@ -2233,7 +2359,7 @@ yyerrlab:
                 yymsgp = yymsg;
               }
           }
-        yyerror (ctx, scanner, yymsgp);
+        yyerror (&yylloc, ctx, scanner, yymsgp);
         if (yysyntax_error_status == 2)
           goto yyexhaustedlab;
       }
@@ -2241,7 +2367,7 @@ yyerrlab:
 #endif
     }
 
-
+  yyerror_range[1] = yylloc;
 
   if (yyerrstatus == 3)
     {
@@ -2257,7 +2383,7 @@ yyerrlab:
       else
 	{
 	  yydestruct ("Error: discarding",
-		      yytoken, &yylval, ctx, scanner);
+		      yytoken, &yylval, &yylloc, ctx, scanner);
 	  yychar = YYEMPTY;
 	}
     }
@@ -2278,6 +2404,7 @@ yyerrorlab:
   if (/*CONSTCOND*/ 0)
      goto yyerrorlab;
 
+  yyerror_range[1] = yylsp[1-yylen];
   /* Do not reclaim the symbols of the rule which action triggered
      this YYERROR.  */
   YYPOPSTACK (yylen);
@@ -2311,9 +2438,9 @@ yyerrlab1:
       if (yyssp == yyss)
 	YYABORT;
 
-
+      yyerror_range[1] = *yylsp;
       yydestruct ("Error: popping",
-		  yystos[yystate], yyvsp, ctx, scanner);
+		  yystos[yystate], yyvsp, yylsp, ctx, scanner);
       YYPOPSTACK (1);
       yystate = *yyssp;
       YY_STACK_PRINT (yyss, yyssp);
@@ -2323,6 +2450,11 @@ yyerrlab1:
   *++yyvsp = yylval;
   YY_IGNORE_MAYBE_UNINITIALIZED_END
 
+  yyerror_range[2] = yylloc;
+  /* Using YYLLOC is tempting, but would change the location of
+     the lookahead.  YYLOC is available though.  */
+  YYLLOC_DEFAULT (yyloc, yyerror_range, 2);
+  *++yylsp = yyloc;
 
   /* Shift the error token.  */
   YY_SYMBOL_PRINT ("Shifting", yystos[yyn], yyvsp, yylsp);
@@ -2350,7 +2482,7 @@ yyabortlab:
 | yyexhaustedlab -- memory exhaustion comes here.  |
 `-------------------------------------------------*/
 yyexhaustedlab:
-  yyerror (ctx, scanner, YY_("memory exhausted"));
+  yyerror (&yylloc, ctx, scanner, YY_("memory exhausted"));
   yyresult = 2;
   /* Fall through.  */
 #endif
@@ -2362,7 +2494,7 @@ yyreturn:
          user semantic actions for why this is necessary.  */
       yytoken = YYTRANSLATE (yychar);
       yydestruct ("Cleanup: discarding lookahead",
-                  yytoken, &yylval, ctx, scanner);
+                  yytoken, &yylval, &yylloc, ctx, scanner);
     }
   /* Do not reclaim the symbols of the rule which action triggered
      this YYABORT or YYACCEPT.  */
@@ -2371,7 +2503,7 @@ yyreturn:
   while (yyssp != yyss)
     {
       yydestruct ("Cleanup: popping",
-		  yystos[*yyssp], yyvsp, ctx, scanner);
+		  yystos[*yyssp], yyvsp, yylsp, ctx, scanner);
       YYPOPSTACK (1);
     }
 #ifndef yyoverflow
@@ -2388,6 +2520,6 @@ yyreturn:
 
 
 /* Line 2050 of yacc.c  */
-#line 252 "promela.ypp"
+#line 253 "promela.ypp"
 
 

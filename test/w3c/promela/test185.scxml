@@ -4,7 +4,7 @@
 <scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" initial="s0" version="1.0" datamodel="promela">
   <state id="s0">
     <onentry>
-      <send event="event2" delayexpr="'1s'"/>
+      <send event="event2" delayexpr="1000"/>
       <send event="event1"/>
     </onentry>
     <transition event="event1" target="s1"/>
