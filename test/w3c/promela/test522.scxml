@@ -4,7 +4,7 @@ to send a message to the processor -->
 <scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" initial="s0" datamodel="promela" version="1.0">
   <state id="s0">
     <onentry>
-      <send event="timeout" delay="30s"/>
+      <send event="timeout" delay="30000"/>
       <send event="test" type="http://www.w3.org/TR/scxml/#BasicHTTPEventProcessor" targetexpr="_ioprocessors.basichttp.location"/>
     </onentry>
     <!-- the event we receive should be called 'test', but that's not actually

@@ -1566,7 +1566,7 @@ void ChartToPromela::writeExecutableContent(std::ostream& stream, const Arabica:
 		
 	} else if(TAGNAME(nodeElem) == "log") {
 		std::string label = (HAS_ATTR(nodeElem, "label") ? ATTR(nodeElem, "label") : "");
-		std::string expr = (HAS_ATTR(nodeElem, "expr") ? ATTR(nodeElem, "expr") : "");
+		std::string expr = (HAS_ATTR(nodeElem, "expr") ? ADAPT_SRC(ATTR(nodeElem, "expr")) : "");
 		std::string trimmedExpr = boost::trim_copy(expr);
 		bool isStringLiteral = (boost::starts_with(trimmedExpr, "\"") || boost::starts_with(trimmedExpr, "'"));
 		
@@ -2034,7 +2034,7 @@ void ChartToPromela::writeDeclarations(std::ostream& stream) {
 	}
 	
 	stream << "hidden int " << _prefix << "_index;             /* helper for indexless foreach loops */" << std::endl;
-	stream << "hidden int " << _prefix << "_pid;               /* the process id running this machine */" << std::endl;
+	stream << "hidden int " << _prefix << "procid;             /* the process id running this machine */" << std::endl;
 	stream << "bool " << _prefix << "spontaneous;              /* whether to take spontaneous transitions */" << std::endl;
 	stream << "bool " << _prefix << "done;                     /* is the state machine stopped? */" << std::endl;
 	stream << "bool " << _prefix << "canceled;                 /* is the state machine canceled? */" << std::endl;
@@ -2078,6 +2078,11 @@ void ChartToPromela::writeDeclarations(std::ostream& stream) {
 		
 		std::string identifier = (HAS_ATTR_CAST(data, "id") ? ATTR_CAST(data, "id") : "");
 		std::string expression = (HAS_ATTR_CAST(data, "expr") ? ATTR_CAST(data, "expr") : "");
+		if (expression.size() == 0 && HAS_ATTR_CAST(data, "src")) {
+			URL dataSrc(ATTR_CAST(data, "src"));
+			dataSrc.toAbsolute(_baseURI);
+			expression = dataSrc.getInContent();
+		}
 		std::string type = boost::trim_copy(HAS_ATTR_CAST(data, "type") ? ATTR_CAST(data, "type") : "");
 		
 		_dataModelVars.insert(identifier);
@@ -2220,11 +2225,11 @@ void ChartToPromela::writeStartInvoker(std::ostream& stream, const Arabica::DOM:
 void ChartToPromela::writeFSM(std::ostream& stream) {
 	NodeSet<std::string> transitions;
 
-	stream << "proctype " << _prefix << "run() {" << std::endl;
+	stream << "proctype " << (_prefix.size() == 0 ? "machine_" : _prefix) << "run() {" << std::endl;
 	stream << "  " << _prefix << "done = false;" << std::endl;
 	stream << "  " << _prefix << "canceled = false;" << std::endl;
 	stream << "  " << _prefix << "spontaneous = true;" << std::endl;
-	stream << "  " << _prefix << "_pid = _pid;" << std::endl;
+	stream << "  " << _prefix << "procid = _pid;" << std::endl;
 	// write initial transition
 //	transitions = filterChildElements(_nsInfo.xmlNSPrefix + "transition", _startState);
 //	assert(transitions.size() == 1);
@@ -2301,7 +2306,7 @@ void ChartToPromela::writeFSM(std::ostream& stream) {
 				stream << "        if" << std::endl;
 				stream << "        :: (tmpE.delay < lowestDelay || lowestDelay == 0) -> {" << std::endl;
 				stream << "          lowestDelay = tmpE.delay;" << std::endl;
-				stream << "          nextPid = " << queueIter->second->_prefix << "_pid;" << std::endl;
+				stream << "          nextPid = " << queueIter->second->_prefix << "procid;" << std::endl;
 				stream << "        }" << std::endl;
 				stream << "        :: else -> skip;" << std::endl;
 				stream << "        fi;" << std::endl;
@@ -2627,7 +2632,7 @@ void ChartToPromela::writeMain(std::ostream& stream) {
 	}
 	if (_globalEventSource)
 		_globalEventSource.writeStart(stream, 1);
-	stream << "  run " << _prefix << "run() priority 10;" << std::endl;
+	stream << "  run " << (_prefix.size() == 0 ? "machine_" : _prefix) << "run() priority 10;" << std::endl;
 	stream << "}" << std::endl;
 
 }
@@ -2717,6 +2722,10 @@ void ChartToPromela::initNodes() {
 				
 //				std::cout << invokes[i] << std::endl;
 				
+				// we found machines but have no prefix
+				if (_prefix.length() == 0)
+					_prefix = "MAIN_";
+
 				_machines[invokes[i]] = new ChartToPromela(nested);
 				_machines[invokes[i]]->_analyzer = _analyzer;
 				_machines[invokes[i]]->_parent = this;

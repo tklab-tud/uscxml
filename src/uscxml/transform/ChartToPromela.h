@@ -280,7 +280,7 @@ public:
 	void writeTo(std::ostream& stream);
 	
 protected:
-	ChartToPromela(const Interpreter& other) : TransformerImpl(), ChartToFSM(other), _analyzer(NULL), _machinesAll(NULL), _parent(NULL), _parentTopMost(NULL), _machinesAllPerId(NULL), _prefix("MAIN_") {}
+	ChartToPromela(const Interpreter& other) : TransformerImpl(), ChartToFSM(other), _analyzer(NULL), _machinesAll(NULL), _parent(NULL), _parentTopMost(NULL), _machinesAllPerId(NULL) {}
 
 	void initNodes();
 

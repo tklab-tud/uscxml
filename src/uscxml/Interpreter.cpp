@@ -1805,6 +1805,7 @@ void InterpreterImpl::delayedSend(void* userdata, std::string eventName) {
 
 void InterpreterImpl::invoke(const Arabica::DOM::Element<std::string>& element) {
 	InvokeRequest invokeReq;
+	invokeReq.elem = element;
 	invokeReq.Event::eventType = Event::EXTERNAL;
 	try {
 		// type

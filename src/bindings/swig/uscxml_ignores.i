@@ -192,6 +192,7 @@
 
 %ignore uscxml::SendRequest::fromXML;
 %ignore uscxml::InvokeRequest::fromXML;
+%ignore uscxml::InvokeRequest::elem;
 
 // HTTPServer
 

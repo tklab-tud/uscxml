@@ -19,6 +19,7 @@
 
 #include "USCXMLInvoker.h"
 #include <glog/logging.h>
+#include "uscxml/DOMUtils.h"
 
 #ifdef BUILD_AS_PLUGINS
 #include <Pluma/Connector.hpp>
@@ -88,6 +89,10 @@ void USCXMLInvoker::invoke(const InvokeRequest& req) {
 		LOG(ERROR) << "Cannot invoke nested SCXML interpreter, neither src attribute nor content nor DOM is given";
 	}
 	if (_invokedInterpreter) {
+		if (req.elem && HAS_ATTR(req.elem, "initial")) {
+			_invokedInterpreter.setInitalConfiguration(InterpreterImpl::tokenize(ATTR(req.elem, "initial")));
+		}
+		
 		DataModel dataModel(_invokedInterpreter.getImpl()->getDataModel());
 		_invokedInterpreter.getImpl()->setParentQueue(&_parentQueue);
 

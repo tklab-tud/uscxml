@@ -63,8 +63,6 @@ set(CTEST_CUSTOM_TESTS_IGNORE
   "spin/promela/test151.scxml" # test that foreach causes a new variable to be declared
   "spin/promela/test152.scxml" # test that an illegal array or item value causes error.execution
   "spin/promela/test156.scxml" # test that an error causes the foreach to stop execution
-  # "spin/promela/test172.scxml" # targetexpr _internal - can we support?
-  "spin/promela/test224.scxml" # string operation startWith
   "spin/promela/test224.scxml" # string operation startWith
   "spin/promela/test277.scxml" # platform creates unbound variable if we assign an illegal value to it
   "spin/promela/test280.scxml" # late data binding / undeclared variable
@@ -84,7 +82,6 @@ set(CTEST_CUSTOM_TESTS_IGNORE
   "spin/promela/test325.scxml" # assignment from _ioprocessor
   "spin/promela/test326.scxml" # assignment from _ioprocessor
   "spin/promela/test329.scxml" # test that none of the system variables can be modified
-  "spin/promela/test331.scxml" # assigment to a non-declared var
   "spin/promela/test344.scxml" # 'return' as a cond
   "spin/promela/test346.scxml" # assignment to system variables
   "spin/promela/test350.scxml" # string concatenation
@@ -101,33 +98,29 @@ set(CTEST_CUSTOM_TESTS_IGNORE
   "spin/promela/test525.scxml" # assumes unbound arrays
   "spin/promela/test530.scxml" # assigns DOM node to variable
   "spin/promela/test534.scxml" # string operation contains
-  
+
   # fail for semantics
   "spin/promela/test159.scxml" # error raised causes all subsequent elements to be skipped
   "spin/promela/test178.scxml" # manual test with two identical params - failed
   "spin/promela/test194.scxml" # illegal target for send
   "spin/promela/test199.scxml" # invalid send type
-  "spin/promela/test207.scxml" # delay / cancel / nested SCXML
   "spin/promela/test215.scxml" # nested SCXML document with typeexpr at invoke
   "spin/promela/test216.scxml" # nested SCXML document with srcexpr at invoke
   "spin/promela/test230.scxml" # nested SCXML document with manual test
   "spin/promela/test298.scxml" # non-existent data model location
-  "spin/promela/test332.scxml" # sendid is present in error events
-  "spin/promela/test338.scxml" # test that invokeid is set correctly
+  "spin/promela/test331.scxml" # tests _error.type via 'error.execution'
+  "spin/promela/test332.scxml" # tests _error.sendid via 'error.execution'
   "spin/promela/test343.scxml" # test that illegal <param> produces error.execution
   "spin/promela/test488.scxml" # illegal expr in <param> produces error.execution
   "spin/promela/test496.scxml" # tests error.communication with illegal target
   "spin/promela/test500.scxml" # uses _ioprocessors.scxml.location
-  "spin/promela/test510.scxml" # uses _ioprocessors.basichttp.location
+  "spin/promela/test513.txt"   # pure manual wget
   "spin/promela/test521.scxml" # tests error.communication with illegal target
-  "spin/promela/test522.scxml" # uses _ioprocessors.basichttp.location
   "spin/promela/test528.scxml" # illegal 'expr' produces error.execution
   "spin/promela/test531.scxml" # uses _ioprocessors.basichttp.location
   "spin/promela/test532.scxml" # uses _ioprocessors.basichttp.location
-  "spin/promela/test552.scxml" # initialize data from file
   "spin/promela/test553.scxml" # error in namelist
   "spin/promela/test554.scxml" # evaluation of <invoke>'s args causes an error
-  "spin/promela/test567.scxml" # uses _ioprocessors.basichttp.location
   "spin/promela/test577.scxml" # send without target for basichttp
   
   

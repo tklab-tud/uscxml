@@ -136,6 +136,10 @@
 	<send xmlns="http://www.w3.org/2005/07/scxml" delay="20000" event="timeout"/>
 </xsl:template>
 
+<xsl:template match="//scxml:send[@delay='30s'][@event='timeout']" priority="6">
+	<send xmlns="http://www.w3.org/2005/07/scxml" delay="30000" event="timeout"/>
+</xsl:template>
+
 
 <!-- expr is evaluated -->
 <xsl:template match="//@conf:expr">
