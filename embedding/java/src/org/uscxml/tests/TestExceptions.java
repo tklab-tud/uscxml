@@ -18,13 +18,13 @@ public class TestExceptions {
 
 		if (false) {
 			// datamodel not available before first step -> dies with segfault
-			Interpreter interpreter = Interpreter.fromXML(xml);
+			Interpreter interpreter = Interpreter.fromXML(xml, "");
 			System.out.println(interpreter.getDataModel().evalAsString("'FOO'"));
 		}
 
 		if (false) {
 			// datamodel is available but syntactic ecmascript exception is not propagated
-			Interpreter interpreter = Interpreter.fromXML(xml);
+			Interpreter interpreter = Interpreter.fromXML(xml, "");
 			interpreter.step();
 			System.out.println(interpreter.getDataModel().evalAsString("'FOO' / qwer"));
 		}

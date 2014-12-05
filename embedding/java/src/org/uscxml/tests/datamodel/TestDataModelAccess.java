@@ -35,7 +35,7 @@ public class TestDataModelAccess {
 			"  <final id=\"done\" />" +
 			"</scxml>";
 				
-			Interpreter interpreter = Interpreter.fromXML(xml);
+			Interpreter interpreter = Interpreter.fromXML(xml, "");
 			InterpreterState state;
 			do {
 				state = interpreter.step();
@@ -71,7 +71,7 @@ public class TestDataModelAccess {
 			"  <final id=\"done\" />" +
 			"</scxml>";
 				
-			Interpreter interpreter = Interpreter.fromXML(xml);
+			Interpreter interpreter = Interpreter.fromXML(xml, "");
 			interpreter.setSourceURI(TestDataModelAccess.class.getResource("").toString());
 			InterpreterState state;
 			do {

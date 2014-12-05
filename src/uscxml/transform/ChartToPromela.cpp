@@ -2041,6 +2041,7 @@ void ChartToPromela::writeDeclarations(std::ostream& stream) {
 
 	if (_analyzer->getTypes().types.find("_ioprocessors") != _analyzer->getTypes().types.end()) {
 		stream << "hidden _ioprocessors_t " << _prefix << "_ioprocessors;" << std::endl;
+		_varInitializers.push_front("_ioprocessors.scxml.location = " + (_invokerid.size() > 0 ? _analyzer->macroForLiteral(_invokerid) : "1") + ";");
 	}
 	
 	if (_prefix.size() == 0 || _prefix == "MAIN_") {
@@ -2110,21 +2111,17 @@ void ChartToPromela::writeDeclarations(std::ostream& stream) {
 				type = type.substr(0, bracketPos);
 			}
 			std::string decl = type + " " + _prefix + identifier + arrSize;
+			stream << decl << ";" << std::endl;
 			
 			if (arrSize.length() > 0) {
-				stream << decl << ";" << std::endl;
 				_varInitializers.push_back(value);
 			} else {
-				stream << decl;
 				if (expression.length() > 0) {
 					// id and expr given
-					stream << " = " << ADAPT_SRC(boost::trim_copy(expression)) << ";" << std::endl;
+					_varInitializers.push_back(identifier + " = " + boost::trim_copy(expression) + ";");
 				} else if (value.length() > 0) {
 					// id and text content given
-					stream << " = " << ADAPT_SRC(value) << ";" << std::endl;
-				} else {
-					// only id given
-					stream << ";" << std::endl;
+					_varInitializers.push_back(identifier + " = " + value + ";");
 				}
 			}
 		} else if (value.length() > 0) {
@@ -2625,7 +2622,7 @@ void ChartToPromela::writeMain(std::ostream& stream) {
 	if (_varInitializers.size() > 0) {
 		std::list<std::string>::iterator initIter = _varInitializers.begin();
 		while(initIter != _varInitializers.end()) {
-			stream << ADAPT_SRC(beautifyIndentation(*initIter));
+			stream << ADAPT_SRC(beautifyIndentation(*initIter)) << std::endl;
 			initIter++;
 		}
 		stream << std::endl;
@@ -2717,7 +2714,7 @@ void ChartToPromela::initNodes() {
 					Node<std::string> importRoot = nestedDoc.importNode(nestedRoot[0], true);
 					nestedDoc.appendChild(importRoot);
 					
-					nested = Interpreter::fromDOM(nestedDoc, _nsInfo);
+					nested = Interpreter::fromDOM(nestedDoc, _nsInfo, _sourceURI);
 				}
 				
 //				std::cout << invokes[i] << std::endl;

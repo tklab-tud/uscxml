@@ -40,7 +40,7 @@ public class TestCustomMonitor extends InterpreterMonitor {
 		"</scxml>";
 
 		// parse and interpret
-		Interpreter interpreter = Interpreter.fromXML(xml);
+		Interpreter interpreter = Interpreter.fromXML(xml, "");
 		
 		TestCustomMonitor monitor = new TestCustomMonitor();
 		interpreter.addMonitor(monitor);

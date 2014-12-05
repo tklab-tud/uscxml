@@ -52,7 +52,7 @@ int main(int argc, char** argv) {
 
 	}
 
-	Interpreter interpreter = Interpreter::fromXML("<scxml></scxml>");
+	Interpreter interpreter = Interpreter::fromXML("<scxml></scxml>", "");
 	DataModel dm(Factory::getInstance()->createDataModel("ecmascript", interpreter.getImpl().get()));
 	dm.evalAsString("var foo = 12");
 
@@ -513,7 +513,7 @@ int main(int argc, char** argv) {
 		"</scxml>";
 
 		TestDataModelExtension ext;
-		Interpreter interpreter = Interpreter::fromXML(xml);
+		Interpreter interpreter = Interpreter::fromXML(xml, "");
 		interpreter.addDataModelExtension(&ext);
 
 		InterpreterState state;

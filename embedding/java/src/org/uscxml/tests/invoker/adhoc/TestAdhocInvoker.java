@@ -76,7 +76,7 @@ public class TestAdhocInvoker extends Invoker {
 		TestAdhocInvoker javainvoker2 = new TestAdhocInvoker();
 
 		// parse and interpret
-		Interpreter interpreter = Interpreter.fromXML(xml);
+		Interpreter interpreter = Interpreter.fromXML(xml, "");
 		interpreter.setInvoker("javainvoker1", javainvoker1);
 		interpreter.setInvoker("javainvoker2", javainvoker2);
 		interpreter.interpret();

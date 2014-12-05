@@ -20,7 +20,7 @@ int main(int argc, char** argv) {
 		    "  </parallel>"
 		    "</scxml>";
 
-		Interpreter interpreter = Interpreter::fromXML(xml);
+		Interpreter interpreter = Interpreter::fromXML(xml, "");
 		assert(interpreter);
 		interpreter.getImpl()->init();
 

@@ -174,7 +174,9 @@ int main(int argc, char** argv) {
 			while (std::getline(std::cin, line)) {
 				ss << line;
 			}
-			interpreter = Interpreter::fromXML(ss.str());
+			URL tmp("anonymous.scxml");
+			tmp.toAbsoluteCwd();
+			interpreter = Interpreter::fromXML(ss.str(), tmp);
 		} else {
 			interpreter = Interpreter::fromURI(inputFile);
 		}

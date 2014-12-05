@@ -44,7 +44,7 @@ public class TestPlatformExtensions extends DataModelExtension {
 		"  <final id=\"done\" />" +
 		"</scxml>";
 
-		Interpreter interpreter = Interpreter.fromXML(xml);
+		Interpreter interpreter = Interpreter.fromXML(xml, "");
 		interpreter.addDataModelExtension(ext);
 
 		InterpreterState state;

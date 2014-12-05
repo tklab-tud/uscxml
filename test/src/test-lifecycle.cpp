@@ -217,7 +217,7 @@ int main(int argc, char** argv) {
 			// syntactic xml parse error
 			try {
 				const char* xml = "<invalid";
-				Interpreter interpreter = Interpreter::fromXML(xml);
+				Interpreter interpreter = Interpreter::fromXML(xml, "");
 				assert(false);
 			} catch (Event& e) {
 				std::cout << e;
@@ -228,7 +228,7 @@ int main(int argc, char** argv) {
 			// semantic xml parse error
 			try {
 				const char* xml = "<invalid />";
-				Interpreter interpreter = Interpreter::fromXML(xml);
+				Interpreter interpreter = Interpreter::fromXML(xml, "");
 				interpreter.addMonitor(mon);
 				assert(interpreter.getState() == USCXML_INSTANTIATED);
 				interpreter.step();
@@ -248,7 +248,7 @@ int main(int argc, char** argv) {
 				    " </state>"
 				    " <final id=\"done\" />"
 				    "</scxml>";
-				Interpreter interpreter = Interpreter::fromXML(xml);
+				Interpreter interpreter = Interpreter::fromXML(xml, "");
 				interpreter.addMonitor(mon);
 				assert(interpreter.getState() == USCXML_INSTANTIATED);
 				interpreter.step();
@@ -271,7 +271,7 @@ int main(int argc, char** argv) {
 			    " <final id=\"done\" />"
 			    "</scxml>";
 
-			Interpreter interpreter = Interpreter::fromXML(xml);
+			Interpreter interpreter = Interpreter::fromXML(xml, "");
 			interpreter.addMonitor(mon);
 
 			callBackSeq.push_back(USCXML_BEFOREENTERINGSTATE);
@@ -315,7 +315,7 @@ int main(int argc, char** argv) {
 			    " <final id=\"done\" />"
 			    "</scxml>";
 
-			Interpreter interpreter = Interpreter::fromXML(xml);
+			Interpreter interpreter = Interpreter::fromXML(xml, "");
 			interpreter.addMonitor(mon);
 
 			callBackSeq.push_back(USCXML_BEFOREENTERINGSTATE);
@@ -374,7 +374,7 @@ int main(int argc, char** argv) {
 			    " <final id=\"done\" />"
 			    "</scxml>";
 
-			Interpreter interpreter = Interpreter::fromXML(xml);
+			Interpreter interpreter = Interpreter::fromXML(xml, "");
 			interpreter.addMonitor(mon);
 
 			callBackSeq.push_back(USCXML_BEFOREENTERINGSTATE);

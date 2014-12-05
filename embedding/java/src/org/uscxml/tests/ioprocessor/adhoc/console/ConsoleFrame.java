@@ -43,7 +43,7 @@ public class ConsoleFrame extends Frame {
 						+ "   </transition>"
 						+ "	</state>"
 						+ " <final id=\"quit\" />"
-						+ "</scxml>");
+						+ "</scxml>", "");
 
 		/**
 		 *  ConsoleIOProc will register as a keyboard listener and send events to the interpreter.

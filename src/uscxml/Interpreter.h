@@ -458,6 +458,7 @@ protected:
 	InterpreterImpl();
 	void init();
 	void setupDOM();
+	void resolveXIncludes();
 	virtual void setupIOProcessors();
 
 	std::list<InterpreterIssue> validate();
@@ -583,8 +584,10 @@ protected:
 class USCXML_API Interpreter {
 public:
 	static Interpreter fromDOM(const Arabica::DOM::Document<std::string>& dom,
-	                           const NameSpaceInfo& nameSpaceInfo);
-	static Interpreter fromXML(const std::string& xml);
+	                           const NameSpaceInfo& nameSpaceInfo,
+														 const std::string& sourceURI);
+	static Interpreter fromXML(const std::string& xml,
+														 const std::string& sourceURI);
 	static Interpreter fromURI(const std::string& uri);
 	static Interpreter fromClone(const Interpreter& other);
 
@@ -815,7 +818,7 @@ protected:
 		return _impl->setInvokeRequest(req);
 	}
 
-	static Interpreter fromInputSource(Arabica::SAX::InputSource<std::string>& source);
+	static Interpreter fromInputSource(Arabica::SAX::InputSource<std::string>& source, const std::string& sourceUri);
 
 	boost::shared_ptr<InterpreterImpl> _impl;
 	static std::map<std::string, boost::weak_ptr<InterpreterImpl> > _instances;

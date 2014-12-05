@@ -18,7 +18,7 @@ public class TestValidation {
 			" </state>" +
 			" <final />" +
 			"</scxml>"; 
-			Interpreter interpreter = Interpreter.fromXML(xml);
+			Interpreter interpreter = Interpreter.fromXML(xml, "");
 			IssueList issues = interpreter.validate();
 			for (int i = 0; i < issues.size(); i++) {
 				System.out.println(issues.get(i));

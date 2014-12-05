@@ -5,7 +5,7 @@
 using namespace uscxml;
 
 std::set<std::string> issueLocationsForXML(const std::string xml) {
-	Interpreter interpreter = Interpreter::fromXML(xml);
+	Interpreter interpreter = Interpreter::fromXML(xml, "");
 	std::list<InterpreterIssue> issues = interpreter.validate();
 
 	std::set<std::string> issueLocations;
@@ -52,7 +52,7 @@ int main(int argc, char** argv) {
 			    "</scxml>";
 
 			IssueMonitor monitor;
-			Interpreter interpreter = Interpreter::fromXML(xml);
+			Interpreter interpreter = Interpreter::fromXML(xml, "");
 			interpreter.addMonitor(&monitor);
 			interpreter.interpret();
 

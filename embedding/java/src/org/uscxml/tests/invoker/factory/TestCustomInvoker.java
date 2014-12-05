@@ -85,7 +85,7 @@ public class TestCustomInvoker extends Invoker {
 		"</scxml>";
 
 		// parse and interpret
-		Interpreter interpreter = Interpreter.fromXML(xml);
+		Interpreter interpreter = Interpreter.fromXML(xml, "");
 		interpreter.interpret();
 	}
 

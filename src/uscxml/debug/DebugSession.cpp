@@ -106,7 +106,7 @@ Data DebugSession::debugPrepare(const Data& data) {
 	_isAttached = false;
 
 	if (data.hasKey("xml")) {
-		_interpreter = Interpreter::fromXML(data.at("xml").atom);
+		_interpreter = Interpreter::fromXML(data.at("xml").atom, "");
 	} else if (data.hasKey("url")) {
 		_interpreter = Interpreter::fromURI(data.at("url").atom);
 	} else {

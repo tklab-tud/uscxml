@@ -372,7 +372,7 @@ InterpreterImpl::InterpreterImpl() {
 #endif
 }
 
-Interpreter Interpreter::fromDOM(const Arabica::DOM::Document<std::string>& dom, const NameSpaceInfo& nameSpaceInfo) {
+Interpreter Interpreter::fromDOM(const Arabica::DOM::Document<std::string>& dom, const NameSpaceInfo& nameSpaceInfo, const std::string& sourceURI) {
 	tthread::lock_guard<tthread::recursive_mutex> lock(_instanceMutex);
 	boost::shared_ptr<INTERPRETER_IMPL> interpreterImpl = boost::shared_ptr<INTERPRETER_IMPL>(new INTERPRETER_IMPL);
 	Interpreter interpreter(interpreterImpl);
@@ -397,14 +397,14 @@ Interpreter Interpreter::fromDOM(const Arabica::DOM::Document<std::string>& dom,
 	return interpreter;
 }
 
-Interpreter Interpreter::fromXML(const std::string& xml) {
+Interpreter Interpreter::fromXML(const std::string& xml, const std::string& sourceURI) {
 	std::stringstream* ss = new std::stringstream();
 	(*ss) << xml;
 	// we need an auto_ptr for arabica to assume ownership
 	std::auto_ptr<std::istream> ssPtr(ss);
 	Arabica::SAX::InputSource<std::string> inputSource;
 	inputSource.setByteStream(ssPtr);
-	return fromInputSource(inputSource);
+	return fromInputSource(inputSource, sourceURI);
 }
 
 
@@ -421,7 +421,7 @@ Interpreter Interpreter::fromURI(const std::string& uri) {
 	if (iequals(absUrl.scheme(), "file")) {
 		Arabica::SAX::InputSource<std::string> inputSource;
 		inputSource.setSystemId(absUrl.asString());
-		interpreter = fromInputSource(inputSource);
+		interpreter = fromInputSource(inputSource, absUrl);
 	} else {
 		// use curl for everything !file - even for http as arabica won't follow redirects
 		std::stringstream ss;
@@ -429,20 +429,17 @@ Interpreter Interpreter::fromURI(const std::string& uri) {
 		if (absUrl.downloadFailed()) {
 			ERROR_COMMUNICATION_THROW("Downloading SCXML document from '" + absUrl.asString() + "' failed");
 		}
-		interpreter = fromXML(ss.str());
+		interpreter = fromXML(ss.str(), absUrl);
 	}
 
 	// try to establish URI root for relative src attributes in document
-	if (interpreter) {
-		interpreter._impl->_baseURI = URL::asBaseURL(absUrl);
-		interpreter._impl->_sourceURI = absUrl;
-	} else {
+	if (!interpreter) {
 		ERROR_PLATFORM_THROW("Cannot create interpreter from URI '" + absUrl.asString() + "'");
 	}
 	return interpreter;
 }
 
-Interpreter Interpreter::fromInputSource(Arabica::SAX::InputSource<std::string>& source) {
+Interpreter Interpreter::fromInputSource(Arabica::SAX::InputSource<std::string>& source, const std::string& sourceUri) {
 	tthread::lock_guard<tthread::recursive_mutex> lock(_instanceMutex);
 
 	// remove old instances
@@ -463,6 +460,9 @@ Interpreter Interpreter::fromInputSource(Arabica::SAX::InputSource<std::string>&
 	if (parser.parse(source) && parser.getDocument() && parser.getDocument().hasChildNodes()) {
 		interpreterImpl->setNameSpaceInfo(parser.nameSpace);
 		interpreterImpl->_document = parser.getDocument();
+		interpreterImpl->_baseURI = URL::asBaseURL(sourceUri);
+		interpreterImpl->_sourceURI = sourceUri;
+
 		interpreterImpl->setupDOM();
 	} else {
 		if (parser.errorsReported()) {
@@ -1224,6 +1224,8 @@ void InterpreterImpl::setupDOM() {
 		ERROR_PLATFORM_THROW("Interpreter has no DOM");
 	}
 
+	resolveXIncludes();
+	
 	// find scxml element
 	if (!_scxml) {
 		NodeList<std::string> scxmls;
@@ -1284,6 +1286,34 @@ void InterpreterImpl::setupDOM() {
 	_domIsSetup = true;
 }
 
+void InterpreterImpl::resolveXIncludes() {
+	std::string xIncludeNS = _nsInfo.getXMLPrefixForNS("http://www.w3.org/2001/XInclude");
+	if (xIncludeNS.size() > 0) {
+		Arabica::XPath::NodeSet<std::string> xincludes = _xpath.evaluate("//" + xIncludeNS + "include", _document.getDocumentElement()).asNodeSet();
+		for (int i = 0; i < xincludes.size(); i++) {
+			if (HAS_ATTR_CAST(xincludes[i], "href")) {
+				URL src(ATTR_CAST(xincludes[i], "href"));
+				if (!src.isAbsolute()) {
+					if (!src.toAbsolute(_baseURI)) {
+						LOG(ERROR) << "Cannot resolve relative URL '" << ATTR_CAST(xincludes[i], "href") << "' to absolute URL via base URL '" << _baseURI << "'";
+						continue;
+					}
+				}
+				NameSpacingParser xiParser = NameSpacingParser::fromXML(src.getInContent());
+				if (xiParser.errorsReported()) {
+					ERROR_PLATFORM_THROW(xiParser.errors());
+				} else {
+					// import DOM
+					Node<std::string> imported = _document.importNode(xiParser.getDocument().getDocumentElement(), true);
+					xincludes[i].getParentNode().insertBefore(imported, xincludes[i]);
+					xincludes[i].getParentNode().removeChild(xincludes[i]);
+				}
+			}
+		}
+	}
+
+}
+	
 void InterpreterImpl::init() {
 	// make sure we have a factory if none was set before
 	if (_factory == NULL)

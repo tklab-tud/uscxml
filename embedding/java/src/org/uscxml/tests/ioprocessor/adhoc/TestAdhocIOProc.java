@@ -134,7 +134,7 @@ public class TestAdhocIOProc extends IOProcessor {
 		TestAdhocIOProc ioProc = new TestAdhocIOProc();
 
 		// parse and interpret
-		Interpreter interpreter = Interpreter.fromXML(xml);
+		Interpreter interpreter = Interpreter.fromXML(xml, "");
 		interpreter.addIOProcessor(ioProc);
 		interpreter.interpret();
 	}

@@ -1,0 +1,9 @@
+<scxml xmlns:xi="http://www.w3.org/2001/XInclude">
+	<xi:include href="included.scxml" />
+	<final id="fail">
+		<onentry><log expr="FAIL!" /></onentry>
+	</final>
+	<final id="pass">
+		<onentry><log expr="PASS!" /></onentry>
+	</final>
+</scxml>

@@ -72,7 +72,7 @@ public class TestCustomExecContent extends ExecutableContent {
 						"    <transition target=\"exit\" />" +
 						"  </state>\n" +
 						"  <final id=\"exit\" />" +
-						"</scxml>\n"
+						"</scxml>\n", ""
 				);
 		interpreter.interpret();
 		Thread.sleep(1000);

@@ -11,7 +11,7 @@ public class TestLifecycle {
 		// syntactic xml parse error -> throws
 		try {
 			String xml = "<invalid";
-			Interpreter interpreter = Interpreter.fromXML(xml);
+			Interpreter interpreter = Interpreter.fromXML(xml, "");
 			throw new RuntimeException("");
 		} catch (InterpreterException e) {
 			System.err.println(e);
@@ -20,7 +20,7 @@ public class TestLifecycle {
 		// semantic xml parse error -> throws
 		try {
 			String xml = "<invalid />";
-			Interpreter interpreter = Interpreter.fromXML(xml);
+			Interpreter interpreter = Interpreter.fromXML(xml, "");
 			if (interpreter.getState() != InterpreterState.USCXML_INSTANTIATED) throw new RuntimeException("");
 			interpreter.step();
 			throw new RuntimeException("");
@@ -37,7 +37,7 @@ public class TestLifecycle {
 			" </state>" +
 			" <final id=\"done\" />" +
 			"</scxml>"; 
-			Interpreter interpreter = Interpreter.fromXML(xml);
+			Interpreter interpreter = Interpreter.fromXML(xml, "");
 			if (interpreter.getState() != InterpreterState.USCXML_INSTANTIATED)  throw new RuntimeException("");
 			interpreter.step();
 			throw new RuntimeException("");
@@ -59,7 +59,7 @@ public class TestLifecycle {
 			" <final id=\"done\" />" +
 			"</scxml>";
 			
-			Interpreter interpreter = Interpreter.fromXML(xml);
+			Interpreter interpreter = Interpreter.fromXML(xml, "");
 
 			if (interpreter.getState() != InterpreterState.USCXML_INSTANTIATED) throw new RuntimeException("");
 			if (interpreter.step() != InterpreterState.USCXML_MICROSTEPPED) throw new RuntimeException("");
@@ -80,7 +80,7 @@ public class TestLifecycle {
 			" <final id=\"done\" />" +
 			"</scxml>";
 			
-			Interpreter interpreter = Interpreter.fromXML(xml);
+			Interpreter interpreter = Interpreter.fromXML(xml, "");
 			if (interpreter.getState() != InterpreterState.USCXML_INSTANTIATED) throw new RuntimeException("");
 			if (interpreter.step() != InterpreterState.USCXML_MICROSTEPPED) throw new RuntimeException("");
 			if (interpreter.step() != InterpreterState.USCXML_FINISHED) throw new RuntimeException("");
@@ -110,7 +110,7 @@ public class TestLifecycle {
 			" <final id=\"done\" />" +
 			"</scxml>";
 			
-			Interpreter interpreter = Interpreter.fromXML(xml);
+			Interpreter interpreter = Interpreter.fromXML(xml, "");
 			if (interpreter.getState() != InterpreterState.USCXML_INSTANTIATED) throw new RuntimeException("");
 			if (interpreter.step() != InterpreterState.USCXML_IDLE) throw new RuntimeException("");
 			if (interpreter.step(true) != InterpreterState.USCXML_MACROSTEPPED) throw new RuntimeException("");

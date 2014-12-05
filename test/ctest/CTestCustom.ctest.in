@@ -104,7 +104,6 @@ set(CTEST_CUSTOM_TESTS_IGNORE
   "spin/promela/test178.scxml" # manual test with two identical params - failed
   "spin/promela/test194.scxml" # illegal target for send
   "spin/promela/test199.scxml" # invalid send type
-  "spin/promela/test215.scxml" # nested SCXML document with typeexpr at invoke
   "spin/promela/test216.scxml" # nested SCXML document with srcexpr at invoke
   "spin/promela/test230.scxml" # nested SCXML document with manual test
   "spin/promela/test298.scxml" # non-existent data model location
@@ -113,7 +112,6 @@ set(CTEST_CUSTOM_TESTS_IGNORE
   "spin/promela/test343.scxml" # test that illegal <param> produces error.execution
   "spin/promela/test488.scxml" # illegal expr in <param> produces error.execution
   "spin/promela/test496.scxml" # tests error.communication with illegal target
-  "spin/promela/test500.scxml" # uses _ioprocessors.scxml.location
   "spin/promela/test513.txt"   # pure manual wget
   "spin/promela/test521.scxml" # tests error.communication with illegal target
   "spin/promela/test528.scxml" # illegal 'expr' produces error.execution

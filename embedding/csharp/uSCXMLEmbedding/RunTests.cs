@@ -98,7 +98,7 @@ namespace embedding
             "</scxml>";
 
             // parse and interpret
-            Interpreter interpreter = Interpreter.fromXML(xml);
+            Interpreter interpreter = Interpreter.fromXML(xml, "");
             interpreter.interpret();
 
         }
@@ -142,7 +142,7 @@ namespace embedding
             "</scxml>";
 
             // parse and interpret
-            Interpreter interpreter = Interpreter.fromXML(xml);
+            Interpreter interpreter = Interpreter.fromXML(xml, "");
             interpreter.interpret();
 
         }
@@ -167,7 +167,7 @@ namespace embedding
                             "    <transition target=\"exit\" />" +
                             "  </state>\n" +
                             "  <final id=\"exit\" />" +
-                            "</scxml>\n"
+                            "</scxml>\n", ""
                     );
             interpreter.interpret();
             interpreter.Dispose();
@@ -180,7 +180,7 @@ namespace embedding
             try
             {
                 String xml = "<invalid";
-                Interpreter interpreter = Interpreter.fromXML(xml);
+                Interpreter interpreter = Interpreter.fromXML(xml, "");
                 Debug.Assert(false);
             }
             catch (InterpreterException e)
@@ -192,7 +192,7 @@ namespace embedding
             try
             {
                 String xml = "<invalid />";
-                Interpreter interpreter = Interpreter.fromXML(xml);
+                Interpreter interpreter = Interpreter.fromXML(xml, "");
                 Debug.Assert(interpreter.getState() == InterpreterState.USCXML_INSTANTIATED);
                 interpreter.step();
                 Debug.Assert(false);
@@ -212,7 +212,7 @@ namespace embedding
                 " </state>" +
                 " <final id=\"done\" />" +
                 "</scxml>";
-                Interpreter interpreter = Interpreter.fromXML(xml);
+                Interpreter interpreter = Interpreter.fromXML(xml, "");
                 Debug.Assert(interpreter.getState() == InterpreterState.USCXML_INSTANTIATED);
                 interpreter.step();
                 Debug.Assert(false);
@@ -237,7 +237,7 @@ namespace embedding
                 " <final id=\"done\" />" +
                 "</scxml>";
 
-                Interpreter interpreter = Interpreter.fromXML(xml);
+                Interpreter interpreter = Interpreter.fromXML(xml, "");
 
                 Debug.Assert(interpreter.getState() == InterpreterState.USCXML_INSTANTIATED);
                 Debug.Assert(interpreter.step() == InterpreterState.USCXML_MICROSTEPPED);
@@ -262,7 +262,7 @@ namespace embedding
                 " <final id=\"done\" />" +
                 "</scxml>";
 
-                Interpreter interpreter = Interpreter.fromXML(xml);
+                Interpreter interpreter = Interpreter.fromXML(xml, "");
                 Debug.Assert(interpreter.getState() == InterpreterState.USCXML_INSTANTIATED);
                 Debug.Assert(interpreter.step() == InterpreterState.USCXML_MICROSTEPPED);
                 Debug.Assert(interpreter.step() == InterpreterState.USCXML_FINISHED);
@@ -296,7 +296,7 @@ namespace embedding
                 " <final id=\"done\" />" +
                 "</scxml>";
 
-                Interpreter interpreter = Interpreter.fromXML(xml);
+                Interpreter interpreter = Interpreter.fromXML(xml, "");
                 Debug.Assert(interpreter.getState() == InterpreterState.USCXML_INSTANTIATED);
                 Debug.Assert(interpreter.step() == InterpreterState.USCXML_IDLE);
                 Debug.Assert(interpreter.step(true) == InterpreterState.USCXML_MACROSTEPPED);
