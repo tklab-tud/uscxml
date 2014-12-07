@@ -1,0 +1,5 @@
+<state id="foo" 
+	xmlns:xi="http://www.w3.org/2001/XInclude" >
+	<!-- include from file -->
+	<xi:include href="test-recursive-include.include" />
+</state>

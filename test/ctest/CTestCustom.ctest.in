@@ -34,21 +34,18 @@ set(CTEST_CUSTOM_TESTS_IGNORE
   
   
   ### Ignore for PROMELA datamodel
-  "promela/test178.scxml" # manual test
+  "promela/test178.scxml" # two identical params in _event.raw - failed
+  "promela/test230.scxml" # autoforwarded events are identical - passed
+  "promela/test250.scxml" # no onexit in cancelled invoker - passed
+  "promela/test301.scxml" # reject invalid script - passed
+  "promela/test307.scxml" # declare variable via script - failed
+  "promela/test415.scxml" # terminate on toplevel final - passed
+  # "promela/test513.txt" # manual test
+  
   "promela/test190.scxml" # string concatenation
   "promela/test224.scxml" # string operation startWith
-  "promela/test230.scxml" # manual test
-  "promela/test250.scxml" # manual test
-  "promela/test277.scxml" # no runtime checks for undeclared variables
   "promela/test280.scxml" # no runtime checks for undeclared variables
-  "promela/test301.scxml" # manual test
-  "promela/test307.scxml" # manual test
-#  "promela/test330.scxml" # no "defined" operator in promela
-# "promela/test333.scxml" # no typeof or "defined" operator in promela
-# "promela/test335.scxml" # no typeof or "defined" operator in promela
-# "promela/test337.scxml" # no typeof or "defined" operator in promela
   "promela/test350.scxml" # string concatenation
-  "promela/test415.scxml" # manual test
   "promela/test509.scxml" # string operation contains
   "promela/test518.scxml" # string operation contains
   "promela/test519.scxml" # string operation contains
@@ -57,7 +54,18 @@ set(CTEST_CUSTOM_TESTS_IGNORE
   "promela/test530.scxml" # assigns DOM node to variable
   "promela/test534.scxml" # string operation contains
   
+  
   ### Ignore for PROMELA model checking
+
+  # manual tests
+  "spin/promela/test178.scxml" # two identical params in _event.raw - failed
+  "spin/promela/test230.scxml" # autoforwarded events are identical - passed
+  "spin/promela/test250.scxml" # no onexit in cancelled invoker - passed
+  "spin/promela/test301.scxml" # reject invalid script - passed
+  "spin/promela/test307.scxml" # declare variable via script - failed
+  "spin/promela/test415.scxml" # terminate on toplevel final - passed
+  # "spin/promela/test513.txt" # manual test
+
   # fail for syntax
   "spin/promela/test150.scxml" # test that foreach causes a new variable to be declared
   "spin/promela/test151.scxml" # test that foreach causes a new variable to be declared
@@ -68,10 +76,8 @@ set(CTEST_CUSTOM_TESTS_IGNORE
   "spin/promela/test280.scxml" # late data binding / undeclared variable
   "spin/promela/test286.scxml" # assignment to a non-declared var causes an error
   "spin/promela/test294.scxml" # mixed types for event.data via donedata
-  "spin/promela/test301.scxml" # manual test
   "spin/promela/test302.scxml" # variable not declared
   "spin/promela/test304.scxml" # variable not declared
-  "spin/promela/test307.scxml" # manual test
   "spin/promela/test309.scxml" # 'return' as an invalid boolean expression ought to eval to false
   "spin/promela/test311.scxml" # assignment to a non-declared var
   "spin/promela/test312.scxml" # assignment of 'return'
@@ -88,7 +94,6 @@ set(CTEST_CUSTOM_TESTS_IGNORE
   "spin/promela/test354.scxml" # mixed types for event.data
   "spin/promela/test401.scxml" # variable not declared
   "spin/promela/test402.scxml" # variable not declared
-  "spin/promela/test415.scxml" # manual test
   "spin/promela/test436.scxml" # In(s) -> _x.states[s] prevents completion as NULL dm is hardcoded
   "spin/promela/test487.scxml" # assignment of 'return'
   "spin/promela/test509.scxml" # string operation contains
@@ -101,18 +106,15 @@ set(CTEST_CUSTOM_TESTS_IGNORE
 
   # fail for semantics
   "spin/promela/test159.scxml" # error raised causes all subsequent elements to be skipped
-  "spin/promela/test178.scxml" # manual test with two identical params - failed
   "spin/promela/test194.scxml" # illegal target for send
   "spin/promela/test199.scxml" # invalid send type
   "spin/promela/test216.scxml" # nested SCXML document with srcexpr at invoke
-  "spin/promela/test230.scxml" # nested SCXML document with manual test
   "spin/promela/test298.scxml" # non-existent data model location
   "spin/promela/test331.scxml" # tests _error.type via 'error.execution'
   "spin/promela/test332.scxml" # tests _error.sendid via 'error.execution'
   "spin/promela/test343.scxml" # test that illegal <param> produces error.execution
   "spin/promela/test488.scxml" # illegal expr in <param> produces error.execution
   "spin/promela/test496.scxml" # tests error.communication with illegal target
-  "spin/promela/test513.txt"   # pure manual wget
   "spin/promela/test521.scxml" # tests error.communication with illegal target
   "spin/promela/test528.scxml" # illegal 'expr' produces error.execution
   "spin/promela/test531.scxml" # uses _ioprocessors.basichttp.location

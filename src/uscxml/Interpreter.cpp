@@ -1148,6 +1148,7 @@ bool InterpreterImpl::runOnMainThread(int fps, bool blocking) {
 				tthread::this_thread::sleep_for(tthread::chrono::milliseconds(nextRun - tthread::timeStamp()));
 			}
 		} else {
+			_lastRunOnMainThread = tthread::timeStamp();
 			return true;
 		}
 	}
@@ -1246,7 +1247,6 @@ void InterpreterImpl::setupDOM() {
 		_xpath.setNamespaceContext(*_nsInfo.getNSContext());
 
 	// normalize document
-	// TODO: Resolve XML includes
 
 #if 0
 	// make sure every state has an id
@@ -1288,30 +1288,139 @@ void InterpreterImpl::setupDOM() {
 
 void InterpreterImpl::resolveXIncludes() {
 	std::string xIncludeNS = _nsInfo.getXMLPrefixForNS("http://www.w3.org/2001/XInclude");
-	if (xIncludeNS.size() > 0) {
-		Arabica::XPath::NodeSet<std::string> xincludes = _xpath.evaluate("//" + xIncludeNS + "include", _document.getDocumentElement()).asNodeSet();
-		for (int i = 0; i < xincludes.size(); i++) {
-			if (HAS_ATTR_CAST(xincludes[i], "href")) {
-				URL src(ATTR_CAST(xincludes[i], "href"));
-				if (!src.isAbsolute()) {
-					if (!src.toAbsolute(_baseURI)) {
-						LOG(ERROR) << "Cannot resolve relative URL '" << ATTR_CAST(xincludes[i], "href") << "' to absolute URL via base URL '" << _baseURI << "'";
-						continue;
-					}
-				}
-				NameSpacingParser xiParser = NameSpacingParser::fromXML(src.getInContent());
-				if (xiParser.errorsReported()) {
-					ERROR_PLATFORM_THROW(xiParser.errors());
-				} else {
-					// import DOM
-					Node<std::string> imported = _document.importNode(xiParser.getDocument().getDocumentElement(), true);
-					xincludes[i].getParentNode().insertBefore(imported, xincludes[i]);
-					xincludes[i].getParentNode().removeChild(xincludes[i]);
-				}
+	
+	// no element in namespace for xinclude, don't bother searching
+	if (xIncludeNS.size() == 0)
+		return;
+
+	std::map<std::string, std::string> mergedNs = _nsInfo.nsInfo;
+
+	std::list<std::string> includeChain;
+	includeChain.push_back(_sourceURI);
+
+	Arabica::XPath::NodeSet<std::string> xincludes = _xpath.evaluate("//" + xIncludeNS + "include", _document.getDocumentElement()).asNodeSet();
+	for (int i = 0; i < xincludes.size(); i++) {
+		// recursively resolve includes
+		resolveXIncludes(includeChain, mergedNs, xIncludeNS, Element<std::string>(xincludes[i]));
+	}
+	
+	// update NameSpaceInfo and reinit xpath resolver
+	_nsInfo = NameSpaceInfo(mergedNs);
+	_xpath.setNamespaceContext(*_nsInfo.getNSContext());
+
+}
+
+void InterpreterImpl::resolveXIncludes(std::list<std::string> includeChain, std::map<std::string, std::string>& mergedNS, const std::string& xIncludeNS, Arabica::DOM::Element<std::string> xinclude) {
+	NodeSet<std::string> newNodes;
+	if (HAS_ATTR(xinclude, "href")) {
+		URL src(ATTR(xinclude, "href"));
+		if (!src.isAbsolute()) {
+			if (!src.toAbsolute(_baseURI)) {
+				LOG(ERROR) << "Cannot resolve relative URL '" << ATTR(xinclude, "href") << "' to absolute URL via base URL '" << _baseURI << "', trying xi:fallback";
+				goto TRY_WITH_FALLBACK;
 			}
 		}
-	}
+		
+		if (std::find(includeChain.begin(), includeChain.end(), src.asString()) != includeChain.end()) {
+			std::stringstream incErr;
+			incErr << ("Ignoring recursive inclusion of '" + src.asString() + " via:") << std::endl;
+			for (std::list<std::string>::iterator incIter = includeChain.begin(); incIter != includeChain.end(); incIter++) {
+				incErr << "  " << *incIter << std::endl;
+			}
+			LOG(ERROR) << incErr.str();
+			return;
+		}
+		includeChain.push_back(src.asString());
+		
+		if (HAS_ATTR(xinclude, "accept")) {
+			src.addOutHeader("Accept", ATTR_CAST(xinclude, "accept"));
+		}
 
+		if (HAS_ATTR(xinclude, "accept-language")) {
+			src.addOutHeader("Accept-Language", ATTR_CAST(xinclude, "accept-language"));
+		}
+
+		std::string includedContent;
+		try {
+			includedContent = src.getInContent();
+		} catch (Event e) {
+			goto TRY_WITH_FALLBACK;
+		}
+		
+		if (HAS_ATTR(xinclude, "parse") && iequals(ATTR(xinclude, "parse"), "text")) {
+			// parse as text
+			Text<std::string> textNode = _document.createTextNode(includedContent);
+			xinclude.getParentNode().insertBefore(textNode, xinclude);
+			goto REMOVE_AND_RECURSE;
+		} else {
+			// parse as XML
+			NameSpacingParser xiParser = NameSpacingParser::fromXML(includedContent);
+			if (xiParser.errorsReported()) {
+				ERROR_PLATFORM_THROW(xiParser.errors());
+			} else {
+				// scxml namespace prefixed and non-profixed
+				if (mergedNS.find("http://www.w3.org/2005/07/scxml") != mergedNS.end() && xiParser.nameSpace.find("http://www.w3.org/2005/07/scxml") == xiParser.nameSpace.end()) {
+					LOG(WARNING) << ("Warning for '" + DOMUtils::xPathForNode(xinclude) + "': root document maps SCXML namespace to prefix '" + mergedNS["http://www.w3.org/2005/07/scxml"] + "', included document does not specify SCXML namespace at all");
+				}
+				if (mergedNS.find("http://www.w3.org/2005/07/scxml") == mergedNS.end() && xiParser.nameSpace.find("http://www.w3.org/2005/07/scxml") != xiParser.nameSpace.end()) {
+					LOG(ERROR) << ("Error for '" + DOMUtils::xPathForNode(xinclude) + "': root document uses implicit SCXML namespace without prefix, included document does map it to prefix '" + xiParser.nameSpace["http://www.w3.org/2005/07/scxml"] + "', trying xi:fallback");
+					goto TRY_WITH_FALLBACK;
+					
+				}
+
+				// merge namespaces to prefix mappings
+				for (std::map<std::string, std::string>::iterator nsIter = xiParser.nameSpace.begin(); nsIter != xiParser.nameSpace.end(); nsIter++) {
+
+					// same nsURL but different prefix
+					if (mergedNS.find(nsIter->first) != mergedNS.end() && mergedNS[nsIter->first] != nsIter->second) {
+						LOG(ERROR) << ("Error for '" + DOMUtils::xPathForNode(xinclude) + "': Cannot map namespace '" + nsIter->first + "' to prefix '" + nsIter->second + "', it is already mapped to prefix '" + mergedNS[nsIter->first] + "', trying xi:fallback");
+						goto TRY_WITH_FALLBACK;
+					}
+					
+					// same prefix but different nsURL
+					for (std::map<std::string, std::string>::iterator currIter = mergedNS.begin(); currIter != mergedNS.end(); currIter++) {
+						if (currIter->second == nsIter->second && currIter->first != nsIter->first) {
+							LOG(ERROR) << ("Error for '" + DOMUtils::xPathForNode(xinclude) + "': Cannot assign prefix '" + nsIter->second + "' to namespace '" + nsIter->first + "' it is already a prefix for '" + currIter->first + "', trying xi:fallback");
+							goto TRY_WITH_FALLBACK;
+						}
+					}
+					mergedNS[nsIter->first] = nsIter->second;
+				}
+				
+				// import DOM
+				Node<std::string> imported = _document.importNode(xiParser.getDocument().getDocumentElement(), true);
+				newNodes.push_back(imported);
+				xinclude.getParentNode().insertBefore(imported, xinclude);
+				goto REMOVE_AND_RECURSE;
+			}
+		}
+	} else {
+		LOG(ERROR) << "No href attribute for xi:xinclude at '" << DOMUtils::xPathForNode(xinclude) << "', trying xi:fallback";
+		goto TRY_WITH_FALLBACK;
+	}
+TRY_WITH_FALLBACK:
+	{
+		NodeSet<std::string> fallbacks = filterChildElements(xIncludeNS + "fallback", xinclude);
+		if (fallbacks.size() > 0) {
+			LOG(WARNING) << "Using xi:fallback for '" << DOMUtils::xPathForNode(xinclude) << "'";
+			// move the fallbacks children in place
+			NodeList<std::string> fallbackChildren = fallbacks[0].getChildNodes();
+			while (fallbacks[0].getChildNodes().getLength() > 0) {
+				newNodes.push_back(fallbackChildren.item(0));
+				xinclude.getParentNode().insertBefore(fallbackChildren.item(0), xinclude);
+			}
+		} else {
+			LOG(WARNING) << "No xi:fallback found for '" << DOMUtils::xPathForNode(xinclude) << "', document most likely incomplete";
+		}
+	}
+REMOVE_AND_RECURSE:
+	xinclude.getParentNode().removeChild(xinclude);
+	for (int i = 0; i < newNodes.size(); i++) {
+		Arabica::XPath::NodeSet<std::string> xincludes = filterChildElements(xIncludeNS + "include", newNodes[i], true);
+		for (int j = 0; j < xincludes.size(); j++) {
+			resolveXIncludes(includeChain, mergedNS, xIncludeNS, Element<std::string>(xincludes[j]));
+		}
+	}
 }
 	
 void InterpreterImpl::init() {

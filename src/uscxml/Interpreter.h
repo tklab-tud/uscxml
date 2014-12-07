@@ -459,6 +459,7 @@ protected:
 	void init();
 	void setupDOM();
 	void resolveXIncludes();
+	void resolveXIncludes(std::list<std::string> includeChain, std::map<std::string, std::string>& mergedNS, const std::string& xIncludeNS, Arabica::DOM::Element<std::string> xinclude);
 	virtual void setupIOProcessors();
 
 	std::list<InterpreterIssue> validate();

@@ -1,0 +1,25 @@
+<scxml xmlns:xi="http://www.w3.org/2001/XInclude">
+	<!-- include from file -->
+	<xi:include href="text-xinclude-simple.included" />
+	<state id="s0">
+		<transition target="fail" />
+	</state>
+	<state id="s1">
+		<!-- force fallback via invalid url -->
+		<xi:include href="included.invalid">
+			<xi:fallback>
+				<transition target="s2" />
+			</xi:fallback>
+		</xi:include>
+		<transition target="fail" />
+	</state>
+	<state id="s2">
+		<transition target="pass" />
+	</state>
+	<final id="fail">
+		<onentry><log expr="FAIL!" /></onentry>
+	</final>
+	<final id="pass">
+		<onentry><log expr="PASS!" /></onentry>
+	</final>
+</scxml>

@@ -1,0 +1,15 @@
+<!-- include is recursive -> error -->
+<scxml 
+	xmlns:xi="http://www.w3.org/2001/XInclude">
+	<!-- include from file -->
+	<xi:include href="test-recursive-include.include" />
+	<state id="s0">
+		<transition target="fail" />
+	</state>
+	<final id="fail">
+		<onentry><log expr="FAIL!" /></onentry>
+	</final>
+	<final id="pass">
+		<onentry><log expr="PASS!" /></onentry>
+	</final>
+</scxml>

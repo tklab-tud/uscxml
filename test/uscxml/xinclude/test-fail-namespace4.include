@@ -1,0 +1,3 @@
+<scxml:state id="start" xmlns:scxml="http://www.w3.org/2005/07/scxml">
+	<scxml:transition target="pass" />
+</scxml:state>

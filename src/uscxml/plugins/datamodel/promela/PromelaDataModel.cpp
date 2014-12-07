@@ -375,8 +375,14 @@ void PromelaDataModel::evaluateDecl(void* ast) {
 				std::list<PromelaParserNode*>::iterator opIterAsgn = (*nameIter)->operands.begin();
 				PromelaParserNode* name = *opIterAsgn++;
 				PromelaParserNode* expr = *opIterAsgn++;
-
-				variable.compound["value"] = evaluateExpr(expr);
+				
+				try {
+					variable.compound["value"] = evaluateExpr(expr);
+				} catch(uscxml::Event e) {
+					// test277, declare and throw
+					_variables.compound[name->value] = variable;
+					throw e;
+				}
 
 				assert(opIterAsgn == (*nameIter)->operands.end());
 				_variables.compound[name->value] = variable;

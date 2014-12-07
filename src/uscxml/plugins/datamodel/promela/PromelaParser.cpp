@@ -38,6 +38,15 @@ void promela_error (void* yylloc_param, uscxml::PromelaParser* ctx, void* yyscan
 	PROMELA_LTYPE* yylloc = (PROMELA_LTYPE*)yylloc_param;
 	// mark as pending exception as we cannot throw from constructor and have the destructor called
 	ERROR_EXECUTION(excEvent, err);
+	excEvent.data.compound["line"] = uscxml::Data(yylloc->first_line, uscxml::Data::VERBATIM);
+	excEvent.data.compound["col"] = uscxml::Data(yylloc->first_column, uscxml::Data::VERBATIM);
+
+	std::stringstream ssUnderline;
+	for (int i = 0; i < yylloc->first_column; i++)
+		ssUnderline << " ";
+	ssUnderline << "^";
+	excEvent.data.compound["sourcemark"] = uscxml::Data(ssUnderline.str(), uscxml::Data::VERBATIM);
+
 	ctx->pendingException = excEvent;
 }
 
@@ -85,7 +94,7 @@ void PromelaParser::init(const std::string& expr) {
 	if (pendingException.name.size() > 0) {
 		// parsing failed in promela_error
 		destroy();
-		pendingException.data.compound["code"] = Data(expr, Data::VERBATIM);
+		pendingException.data.compound["sourceline"] = Data(expr, Data::VERBATIM);
 		throw pendingException;
 	}
 }
