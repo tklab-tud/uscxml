@@ -308,22 +308,22 @@ void NameSpaceInfo::init(const std::map<std::string, std::string>& namespaceInfo
 
 	std::map<std::string, std::string>::const_iterator nsIter = namespaceInfo.begin();
 	while(nsIter != namespaceInfo.end()) {
-		std::string uri = nsIter->first;
+		std::string url = nsIter->first;
 		std::string prefix = nsIter->second;
-		if (iequals(uri, "http://www.w3.org/2005/07/scxml")) {
-			nsURL = uri;
+		if (iequals(url, "http://www.w3.org/2005/07/scxml")) {
+			nsURL = url;
 			if (prefix.size() == 0) {
 				xpathPrefix = "scxml:";
-				nsContext->addNamespaceDeclaration(uri, "scxml");
+				nsContext->addNamespaceDeclaration(url, "scxml");
 			} else {
 				xpathPrefix = prefix + ":";
 				xmlNSPrefix = xpathPrefix;
-				nsContext->addNamespaceDeclaration(uri, prefix);
-				nsToPrefix[uri] = prefix;
+				nsContext->addNamespaceDeclaration(url, prefix);
+				nsToPrefix[url] = prefix;
 			}
 		} else {
-			nsContext->addNamespaceDeclaration(uri, prefix);
-			nsToPrefix[uri] = prefix;
+			nsContext->addNamespaceDeclaration(url, prefix);
+			nsToPrefix[url] = prefix;
 		}
 		nsIter++;
 	}
@@ -372,7 +372,7 @@ InterpreterImpl::InterpreterImpl() {
 #endif
 }
 
-Interpreter Interpreter::fromDOM(const Arabica::DOM::Document<std::string>& dom, const NameSpaceInfo& nameSpaceInfo, const std::string& sourceURI) {
+Interpreter Interpreter::fromDOM(const Arabica::DOM::Document<std::string>& dom, const NameSpaceInfo& nameSpaceInfo, const std::string& sourceURL) {
 	tthread::lock_guard<tthread::recursive_mutex> lock(_instanceMutex);
 	boost::shared_ptr<INTERPRETER_IMPL> interpreterImpl = boost::shared_ptr<INTERPRETER_IMPL>(new INTERPRETER_IMPL);
 	Interpreter interpreter(interpreterImpl);
@@ -397,19 +397,19 @@ Interpreter Interpreter::fromDOM(const Arabica::DOM::Document<std::string>& dom,
 	return interpreter;
 }
 
-Interpreter Interpreter::fromXML(const std::string& xml, const std::string& sourceURI) {
+Interpreter Interpreter::fromXML(const std::string& xml, const std::string& sourceURL) {
 	std::stringstream* ss = new std::stringstream();
 	(*ss) << xml;
 	// we need an auto_ptr for arabica to assume ownership
 	std::auto_ptr<std::istream> ssPtr(ss);
 	Arabica::SAX::InputSource<std::string> inputSource;
 	inputSource.setByteStream(ssPtr);
-	return fromInputSource(inputSource, sourceURI);
+	return fromInputSource(inputSource, sourceURL);
 }
 
 
-Interpreter Interpreter::fromURI(const std::string& uri) {
-	URL absUrl(uri);
+Interpreter Interpreter::fromURL(const std::string& url) {
+	URL absUrl(url);
 	if (!absUrl.isAbsolute()) {
 		if (!absUrl.toAbsoluteCwd()) {
 			ERROR_COMMUNICATION_THROW("URL is not absolute or does not have file schema");
@@ -432,14 +432,14 @@ Interpreter Interpreter::fromURI(const std::string& uri) {
 		interpreter = fromXML(ss.str(), absUrl);
 	}
 
-	// try to establish URI root for relative src attributes in document
+	// try to establish URL root for relative src attributes in document
 	if (!interpreter) {
-		ERROR_PLATFORM_THROW("Cannot create interpreter from URI '" + absUrl.asString() + "'");
+		ERROR_PLATFORM_THROW("Cannot create interpreter from URL '" + absUrl.asString() + "'");
 	}
 	return interpreter;
 }
 
-Interpreter Interpreter::fromInputSource(Arabica::SAX::InputSource<std::string>& source, const std::string& sourceUri) {
+Interpreter Interpreter::fromInputSource(Arabica::SAX::InputSource<std::string>& source, const std::string& sourceURL) {
 	tthread::lock_guard<tthread::recursive_mutex> lock(_instanceMutex);
 
 	// remove old instances
@@ -460,8 +460,7 @@ Interpreter Interpreter::fromInputSource(Arabica::SAX::InputSource<std::string>&
 	if (parser.parse(source) && parser.getDocument() && parser.getDocument().hasChildNodes()) {
 		interpreterImpl->setNameSpaceInfo(parser.nameSpace);
 		interpreterImpl->_document = parser.getDocument();
-		interpreterImpl->_baseURI = URL::asBaseURL(sourceUri);
-		interpreterImpl->_sourceURI = sourceUri;
+		interpreterImpl->_sourceURL = sourceURL;
 
 		interpreterImpl->setupDOM();
 	} else {
@@ -505,8 +504,8 @@ void InterpreterImpl::cloneFrom(InterpreterImpl* other) {
 
 		setNameSpaceInfo(other->_nsInfo);
 		
-		_baseURI = other->_baseURI;
-		_sourceURI = other->_sourceURI;
+		_baseURL = other->_baseURL;
+		_sourceURL = other->_sourceURL;
 
 		setupDOM();
 	}
@@ -734,7 +733,7 @@ InterpreterState InterpreterImpl::step(int waitForMS) {
 			setInterpreterState(USCXML_MICROSTEPPED);
 		}
 
-		assert(isLegalConfiguration(_configuration));
+		//assert(isLegalConfiguration(_configuration));
 
 		// are there spontaneous transitions?
 		if (!_stable) {
@@ -1241,6 +1240,7 @@ void InterpreterImpl::setupDOM() {
 		}
 
 		_scxml = (Arabica::DOM::Element<std::string>)scxmls.item(0);
+		_baseURL[_scxml] = URL::asBaseURL(_sourceURL);
 	}
 
 	if (_nsInfo.getNSContext() != NULL)
@@ -1296,12 +1296,12 @@ void InterpreterImpl::resolveXIncludes() {
 	std::map<std::string, std::string> mergedNs = _nsInfo.nsInfo;
 
 	std::list<std::string> includeChain;
-	includeChain.push_back(_sourceURI);
+	includeChain.push_back(_sourceURL);
 
 	Arabica::XPath::NodeSet<std::string> xincludes = _xpath.evaluate("//" + xIncludeNS + "include", _document.getDocumentElement()).asNodeSet();
 	for (int i = 0; i < xincludes.size(); i++) {
 		// recursively resolve includes
-		resolveXIncludes(includeChain, mergedNs, xIncludeNS, Element<std::string>(xincludes[i]));
+		resolveXIncludes(includeChain, mergedNs, xIncludeNS, URL::asBaseURL(_sourceURL), Element<std::string>(xincludes[i]));
 	}
 	
 	// update NameSpaceInfo and reinit xpath resolver
@@ -1310,13 +1310,19 @@ void InterpreterImpl::resolveXIncludes() {
 
 }
 
-void InterpreterImpl::resolveXIncludes(std::list<std::string> includeChain, std::map<std::string, std::string>& mergedNS, const std::string& xIncludeNS, Arabica::DOM::Element<std::string> xinclude) {
+void InterpreterImpl::resolveXIncludes(std::list<std::string> includeChain,
+																			 std::map<std::string, std::string>& mergedNS,
+																			 const std::string& xIncludeNS,
+																			 const URL& baseURL,
+																			 const Arabica::DOM::Element<std::string>& xinclude) {
+	URL src = baseURL;
 	NodeSet<std::string> newNodes;
+
 	if (HAS_ATTR(xinclude, "href")) {
-		URL src(ATTR(xinclude, "href"));
+		src = URL(ATTR(xinclude, "href"));
 		if (!src.isAbsolute()) {
-			if (!src.toAbsolute(_baseURI)) {
-				LOG(ERROR) << "Cannot resolve relative URL '" << ATTR(xinclude, "href") << "' to absolute URL via base URL '" << _baseURI << "', trying xi:fallback";
+			if (!src.toAbsolute(baseURL)) {
+				LOG(ERROR) << "Cannot resolve relative URL '" << ATTR(xinclude, "href") << "' to absolute URL via base URL '" << baseURL << "', trying xi:fallback";
 				goto TRY_WITH_FALLBACK;
 			}
 		}
@@ -1416,9 +1422,10 @@ TRY_WITH_FALLBACK:
 REMOVE_AND_RECURSE:
 	xinclude.getParentNode().removeChild(xinclude);
 	for (int i = 0; i < newNodes.size(); i++) {
+		_baseURL[newNodes[i]] = URL::asBaseURL(src);
 		Arabica::XPath::NodeSet<std::string> xincludes = filterChildElements(xIncludeNS + "include", newNodes[i], true);
 		for (int j = 0; j < xincludes.size(); j++) {
-			resolveXIncludes(includeChain, mergedNS, xIncludeNS, Element<std::string>(xincludes[j]));
+			resolveXIncludes(includeChain, mergedNS, xIncludeNS, URL::asBaseURL(src), Element<std::string>(xincludes[j]));
 		}
 	}
 }
@@ -1609,8 +1616,8 @@ void InterpreterImpl::processDOMorText(const Arabica::DOM::Element<std::string>&
 	        (HAS_ATTR(element, "srcexpr"))) {
 		std::stringstream srcContent;
 		URL sourceURL(HAS_ATTR(element, "srcexpr") ? _dataModel.evalAsString(ATTR(element, "srcexpr")) : ATTR(element, "src"));
-		if (!sourceURL.toAbsolute(_baseURI)) {
-			LOG(ERROR) << LOCALNAME(element) << " element has relative src or srcexpr URI with no baseURI set.";
+		if (!sourceURL.toAbsolute(getBaseURLForNode(element))) {
+			LOG(ERROR) << LOCALNAME(element) << " element has relative src or srcexpr URL with no baseURL set.";
 			return;
 		}
 		if (_cachedURLs.find(sourceURL.asString()) != _cachedURLs.end() && false) {
@@ -1735,6 +1742,7 @@ void InterpreterImpl::send(const Arabica::DOM::Element<std::string>& element) {
 	SendRequest sendReq;
 	// test 331
 	sendReq.Event::eventType = Event::EXTERNAL;
+	sendReq.elem = element;
 	try {
 		// event
 		if (HAS_ATTR(element, "eventexpr")) {
@@ -1962,12 +1970,12 @@ void InterpreterImpl::invoke(const Arabica::DOM::Element<std::string>& element) 
 			source = ATTR(element, "src");
 		}
 		if (source.length() > 0) {
-			URL srcURI(source);
-			if (!srcURI.toAbsolute(_baseURI)) {
-				LOG(ERROR) << "invoke element has relative src URI with no baseURI set.";
+			URL srcURL(source);
+			if (!srcURL.toAbsolute(getBaseURLForNode(element))) {
+				LOG(ERROR) << "invoke element has relative src URL with no baseURL set.";
 				return;
 			}
-			invokeReq.src = srcURI.asString();
+			invokeReq.src = srcURL.asString();
 		}
 
 		// id
@@ -2419,13 +2427,9 @@ void InterpreterImpl::executeContent(const Arabica::DOM::Element<std::string>& c
 		// --- SCRIPT --------------------------
 		if (HAS_ATTR(content, "src")) {
 			URL scriptUrl(ATTR(content, "src"));
-			if (!scriptUrl.isAbsolute() && !_baseURI) {
-				LOG(ERROR) << "script element has relative URI " << ATTR(content, "src") <<  " with no base URI set for interpreter";
-				return;
-			}
 
-			if (!scriptUrl.toAbsolute(_baseURI)) {
-				LOG(ERROR) << "Failed to convert relative script URI " << ATTR(content, "src") << " to absolute with base URI " << _baseURI.asString();
+			if (!scriptUrl.toAbsolute(getBaseURLForNode(content))) {
+				LOG(ERROR) << "Failed to convert relative script URL " << ATTR(content, "src") << " to absolute with base URL " << getBaseURLForNode(content);
 				return;
 			}
 
@@ -3358,6 +3362,20 @@ bool InterpreterImpl::isInState(const std::string& stateId) {
 		}
 	}
 	return false;
+}
+
+const URL& InterpreterImpl::getBaseURLForNode(const Arabica::DOM::Node<std::string>& node) {
+	Arabica::DOM::Node<std::string> currNode = node;
+	while(currNode) {
+		if (_baseURL.find(currNode) != _baseURL.end()) {
+			// speed-up subsequent lookups
+			_baseURL[node] = _baseURL[currNode];
+			// return baseurl
+			return _baseURL[currNode];
+		}
+		currNode = currNode.getParentNode();
+	}
+	return _baseURL[_scxml];
 }
 
 void InterpreterImpl::handleDOMEvent(Arabica::DOM::Events::Event<std::string>& event) {

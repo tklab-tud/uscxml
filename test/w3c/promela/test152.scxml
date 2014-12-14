@@ -8,11 +8,7 @@ not being executed. -->
     <data id="Var3" type="int"/>
     <data id="Var4" type="int" expr="7"/>
     <data id="Var5" type="int[3]">
-    
-  Var5[0] = 1;
-  Var5[1] = 2;
-  Var5[2] = 3;
-
+    [1,2,3]
     </data>
   </datamodel>
   <state id="s0">

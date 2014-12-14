@@ -112,7 +112,7 @@ void FetchElement::enterElement(const Arabica::DOM::Element<std::string>& node) 
 
 	_targetUrl = URL(_target);
 	if (!_targetUrl.isAbsolute()) {
-		if (!_targetUrl.toAbsolute(_interpreter->getBaseURI())) {
+		if (!_targetUrl.toAbsolute(_interpreter->getBaseURL(node))) {
 			LOG(ERROR) << "Cannot transform " << _target << " into absolute URL";
 			return;
 		}

@@ -394,7 +394,7 @@ void OSGInvoker::processNode(const Arabica::DOM::Element<std::string>& element) 
 			}
 
 			URL srcURI(filename);
-			if (!srcURI.toAbsolute(_interpreter->getBaseURI())) {
+			if (!srcURI.toAbsolute(_interpreter->getBaseURL(element))) {
 				LOG(ERROR) << "invoke element has relative src URI with no baseURI set.";
 				return;
 			}

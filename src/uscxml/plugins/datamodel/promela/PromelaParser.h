@@ -82,7 +82,10 @@ public:
 	Type type;
 
 	Event pendingException;
-
+	operator bool() const {
+		return ast != NULL;
+	}
+	
 protected:
 
 	void init(const std::string& expr);

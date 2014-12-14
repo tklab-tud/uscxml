@@ -6,11 +6,7 @@ test that it will use an existing var if it does exist. -->
     <data id="Var1" type="int"/>
     <data id="Var2" type="int"/>
     <data id="Var3" type="int[3]">
-    
-  Var3[0] = 1;
-  Var3[1] = 2;
-  Var3[2] = 3;
-
+    [1,2,3]
     </data>
   </datamodel>
   <state id="s0">

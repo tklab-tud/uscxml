@@ -108,7 +108,7 @@ Data DebugSession::debugPrepare(const Data& data) {
 	if (data.hasKey("xml")) {
 		_interpreter = Interpreter::fromXML(data.at("xml").atom, "");
 	} else if (data.hasKey("url")) {
-		_interpreter = Interpreter::fromURI(data.at("url").atom);
+		_interpreter = Interpreter::fromURL(data.at("url").atom);
 	} else {
 		_interpreter = Interpreter();
 	}
@@ -119,7 +119,7 @@ Data DebugSession::debugPrepare(const Data& data) {
 		_debugger->attachSession(_interpreter, shared_from_this());
 		if (data.hasKey("url")) {
 			// this allows to resolve relative external reources
-			_interpreter.setSourceURI(data.at("url").atom);
+			_interpreter.setSourceURL(data.at("url").atom);
 		}
 		replyData.compound["status"] = Data("success", Data::VERBATIM);
 	} else {

@@ -190,7 +190,7 @@ int main(int argc, char** argv) {
 		LOG(INFO) << "Processing " << documentURL;
 
 		try {
-			Interpreter interpreter = Interpreter::fromURI(documentURL);
+			Interpreter interpreter = Interpreter::fromURL(documentURL);
 			if (interpreter) {
 
 				if (options.checking) {

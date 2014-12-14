@@ -15,7 +15,7 @@ public class TestVoiceXMLInvoker {
 		HTTPServer http = HTTPServer.getInstance(5080, 5081);
 		
 		URL jVoiceXMLDoc = new URL(new URL("file:"), "../../test/uscxml/test-jvoicexml.scxml");
-		Interpreter interpreter = Interpreter.fromURI(jVoiceXMLDoc);
+		Interpreter interpreter = Interpreter.fromURL(jVoiceXMLDoc);
 		interpreter.interpret();
 	}
 

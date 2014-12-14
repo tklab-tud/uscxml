@@ -14,6 +14,10 @@ if(POLICY CMP0046)
 	# Error on non-existent dependency in add_dependencies
 	cmake_policy(SET CMP0046 NEW)
 endif()
+if(POLICY CMP0054)
+	# Escape variables in if
+	cmake_policy(SET CMP0054 OLD)
+endif()
 
 # specify USCXML version
 SET(USCXML_VERSION_MAJOR "0")

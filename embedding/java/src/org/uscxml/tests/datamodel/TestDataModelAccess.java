@@ -72,7 +72,7 @@ public class TestDataModelAccess {
 			"</scxml>";
 				
 			Interpreter interpreter = Interpreter.fromXML(xml, "");
-			interpreter.setSourceURI(TestDataModelAccess.class.getResource("").toString());
+			interpreter.setSourceURL(TestDataModelAccess.class.getResource("").toString());
 			InterpreterState state;
 			do {
 				state = interpreter.step();

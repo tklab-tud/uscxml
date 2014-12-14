@@ -38,7 +38,7 @@
 %ignore uscxml::Interpreter::Interpreter(const boost::shared_ptr<InterpreterImpl>);
 %ignore uscxml::Interpreter::Interpreter(const Interpreter&);
 %ignore uscxml::Interpreter::getDelayQueue();
-%ignore uscxml::Interpreter::fromURI(const URL&);
+%ignore uscxml::Interpreter::fromURL(const URL&);
 %ignore uscxml::Interpreter::fromDOM;
 %ignore uscxml::Interpreter::fromClone;
 %ignore uscxml::Interpreter::start();
@@ -51,6 +51,7 @@
 %ignore uscxml::Interpreter::getDocument;
 %ignore uscxml::Interpreter::getImpl;
 %ignore uscxml::Interpreter::runOnMainThread;
+%ignore uscxml::Interpreter::getBaseURL(const Arabica::DOM::Node<std::string>&);
 %ignore uscxml::Interpreter::getHTTPServlet();
 %ignore uscxml::Interpreter::getNodeSetForXPath(const std::string&);
 %ignore uscxml::Interpreter::isLegalConfiguration(const Arabica::XPath::NodeSet<std::string>&);

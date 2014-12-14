@@ -6,11 +6,7 @@ should cause an error, so var1 should be incremented only once -->
     <data id="Var1" type="int" expr="0"/>
     <data id="Var2" type="int"/>
     <data id="Var3" type="int[3]">
-  
-  Var3[0] = 1;
-  Var3[1] = 2;
-  Var3[2] = 3;
-
+  [1,2,3]
   </data>
   </datamodel>
   <state id="s0">

@@ -30,7 +30,7 @@ public class TestW3CECMA {
 		for (File file : filesList) {
 		    if (file.isFile() && file.getName().endsWith(".scxml")) {
 		    	System.out.println("### " + file.getName() + " #####");
-		    	Interpreter interpreter = Interpreter.fromURI(file.getAbsolutePath());
+		    	Interpreter interpreter = Interpreter.fromURL(file.getAbsolutePath());
 		    	interpreter.setCapabilities(1);
 		    	interpreter.interpret();
 		    }

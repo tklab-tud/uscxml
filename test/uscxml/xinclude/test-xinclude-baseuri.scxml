@@ -1,0 +1,13 @@
+<scxml xmlns:xi="http://www.w3.org/2001/XInclude" datamodel="ecmascript">
+	<!-- include from file -->
+	<xi:include href="baseuri/test-xinclude-baseuri1.include" />
+	<state id="s1">
+		<transition target="fail" />
+	</state>
+	<final id="fail">
+		<onentry><log expr="'FAIL!'" /></onentry>
+	</final>
+	<final id="pass">
+		<onentry><log expr="'PASS!'" /></onentry>
+	</final>
+</scxml>

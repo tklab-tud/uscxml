@@ -8,11 +8,7 @@
   <state id="s1">
     <datamodel>
       <data id="Var1" type="int[3]">
-     
-  Var1[0] = 1;
-  Var1[1] = 2;
-  Var1[2] = 3;
-
+     [1,2,3]
      </data>
     </datamodel>
   </state>

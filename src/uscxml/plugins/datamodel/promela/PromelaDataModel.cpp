@@ -276,7 +276,6 @@ std::string PromelaDataModel::evalAsString(const std::string& expr) {
 void PromelaDataModel::assign(const Element<std::string>& assignElem,
                               const Node<std::string>& node,
                               const std::string& content) {
-	std::string expr;
 	std::string key;
 	std::string value;
 
@@ -299,32 +298,18 @@ void PromelaDataModel::assign(const Element<std::string>& assignElem,
 		value = content;
 	}
 
-	if (key.length() > 0) {
-		PromelaParser parser(key);
-
-		// declaration is an array?
-		if (parser.ast->operands.size() > 0 &&
-		        parser.ast->operands.back()->operands.size() > 0 &&
-		        parser.ast->operands.back()->operands.back()->type == PML_VAR_ARRAY) {
-			evaluateDecl(parser.ast);
-			expr = content;
-		} else if (value.length() > 0) {
-			expr = key + " = " + value + ";";
-		} else {
-			// declaration
-			expr = key + ";";
-		}
+	if (value.length() == 0)
+		return;
+	
+	Data json = Data::fromJSON(value);
+	if (!json.empty()) {
+		// simply assign from json to key
+		assign(key, json);
 	} else {
-		expr = content;
-	}
-
-	PromelaParser parser(expr, 2, PromelaParser::PROMELA_DECL, PromelaParser::PROMELA_STMNT);
-	if (parser.type == PromelaParser::PROMELA_DECL)
-		evaluateDecl(parser.ast);
-	if (parser.type == PromelaParser::PROMELA_STMNT)
+		std::string expr = key + " = " + value;
+		PromelaParser parser(expr, 1, PromelaParser::PROMELA_STMNT);
 		evaluateStmnt(parser.ast);
-//	parser.dump();
-//	std::cout << Data::toJSON(_variables) << std::endl;
+	}
 }
 
 void PromelaDataModel::evaluateDecl(const std::string& expr) {
@@ -510,9 +495,9 @@ Data PromelaDataModel::evaluateExpr(void* ast) {
 		PromelaParserNode* lhs = *opIter++;
 		PromelaParserNode* rhs = *opIter++;
 
-		std::cout << "-----" << std::endl;
-		lhs->dump();
-		rhs->dump();
+//		std::cout << "-----" << std::endl;
+//		lhs->dump();
+//		rhs->dump();
 
 		Data left = evaluateExpr(lhs);
 		Data right = evaluateExpr(rhs);
@@ -548,7 +533,18 @@ void PromelaDataModel::evaluateStmnt(void* ast) {
 		}
 		break;
 	}
+	case PML_INCR: {
+		PromelaParserNode* name = *opIter++;
+		setVariable(name, strTo<long>(getVariable(name)) + 1);
+		break;
+	}
+	case PML_DECR: {
+		PromelaParserNode* name = *opIter++;
+		setVariable(name, strTo<long>(getVariable(name)) - 1);
+		break;
+	}
 	default:
+		node->dump();
 		ERROR_EXECUTION_THROW("No support for " + PromelaParserNode::typeToDesc(node->type) + " statement implemented");
 	}
 }
@@ -714,7 +710,6 @@ void PromelaDataModel::init(const Element<std::string>& dataElem,
                             const std::string& content) {
 	// from <datamodel>
 	if (HAS_ATTR(dataElem, "id")) {
-		Element<std::string> dataElemCopy = dataElem;
 		std::string identifier = ATTR(dataElem, "id");
 		std::string type = (HAS_ATTR(dataElem, "type") ? ATTR(dataElem, "type") : "int");
 		std::string arrSize;
@@ -725,14 +720,11 @@ void PromelaDataModel::init(const Element<std::string>& dataElem,
 			type = type.substr(0, bracketPos);
 		}
 
-		dataElemCopy.setAttribute("id", type + " " + identifier + arrSize);
-
-		assign(dataElemCopy, node, content);
-		dataElemCopy.setAttribute("id", identifier);
-
-		return;
+		std::string expr = type + " " + identifier + arrSize;
+		PromelaParser parser(expr, 1, PromelaParser::PROMELA_DECL);
+		evaluateDecl(parser.ast);
+		
 	}
-
 	assign(dataElem, node, content);
 }
 void PromelaDataModel::init(const std::string& location, const Data& data) {

@@ -252,18 +252,33 @@ public:
 		_monitors.erase(monitor);
 	}
 
-	void setSourceURI(std::string sourceURI)                 {
-		_sourceURI = URL(sourceURI);
+	void setSourceURL(std::string sourceURL)                 {
+		_sourceURL = URL(sourceURL);
+		if (_scxml) {
+			URL baseURL(sourceURL);
+			URL::toBaseURL(baseURL);
+			_baseURL[_scxml] = baseURL;
+		}
+	}
+	
+	std::string getSourceURL()                                       {
+		return _sourceURL.asString();
+	}
 
-		URL baseURI(sourceURI);
-		URL::toBaseURL(baseURI);
-		_baseURI = baseURI;
+	std::string getBaseURL()                                       {
+		return getBaseURLForNode(_scxml);
 	}
-	std::string getBaseURI()                                         {
-		return _baseURI.asString();
+
+	std::string getBaseURL(const Arabica::DOM::Node<std::string>& refNode)                                       {
+		return getBaseURLForNode(refNode);
 	}
-	std::string getSourceURI()                                       {
-		return _sourceURI.asString();
+
+	std::string getBaseURL(const std::string& xpathExpr)                                       {
+		Arabica::XPath::NodeSet<std::string> roots = _xpath.evaluate(xpathExpr, _scxml).asNodeSet();
+		if (roots.size() > 0) {
+			return getBaseURLForNode(roots[0]);
+		}
+		return "";
 	}
 
 	void setCmdLineOptions(std::map<std::string, std::string> params);
@@ -459,7 +474,11 @@ protected:
 	void init();
 	void setupDOM();
 	void resolveXIncludes();
-	void resolveXIncludes(std::list<std::string> includeChain, std::map<std::string, std::string>& mergedNS, const std::string& xIncludeNS, Arabica::DOM::Element<std::string> xinclude);
+	void resolveXIncludes(std::list<std::string> includeChain,
+												std::map<std::string, std::string>& mergedNS,
+												const std::string& xIncludeNS,
+												const URL& baseURL,
+												const Arabica::DOM::Element<std::string>& xinclude);
 	virtual void setupIOProcessors();
 
 	std::list<InterpreterIssue> validate();
@@ -473,7 +492,7 @@ protected:
 	virtual Arabica::XPath::NodeSet<std::string> selectEventlessTransitions();
 	virtual Arabica::XPath::NodeSet<std::string> selectTransitions(const std::string& event);
 	virtual bool isEnabledTransition(const Arabica::DOM::Element<std::string>& transition, const std::string& event);
-
+	
 	void setInterpreterState(InterpreterState newState);
 
 	bool _stable;
@@ -490,8 +509,9 @@ protected:
 	}
 
 	InterpreterState _state;
-	URL _baseURI;
-	URL _sourceURI;
+
+	URL _sourceURL;
+	std::map<Arabica::DOM::Node<std::string>, URL> _baseURL; // with xi:include, we might have different base URLs
 	Arabica::DOM::Document<std::string> _document;
 	Arabica::DOM::Element<std::string> _scxml;
 	Arabica::XPath::XPath<std::string> _xpath;
@@ -563,7 +583,8 @@ protected:
 	bool parentIsScxmlState(const Arabica::DOM::Element<std::string>& state);
 
 	IOProcessor getIOProcessor(const std::string& type);
-
+	const URL& getBaseURLForNode(const Arabica::DOM::Node<std::string>& node);
+	
 	std::map<std::string, IOProcessor> _ioProcessors;
 	std::map<std::string, std::pair<InterpreterImpl*, SendRequest> > _sendIds;
 	std::map<std::string, Invoker> _invokers;
@@ -586,10 +607,10 @@ class USCXML_API Interpreter {
 public:
 	static Interpreter fromDOM(const Arabica::DOM::Document<std::string>& dom,
 	                           const NameSpaceInfo& nameSpaceInfo,
-														 const std::string& sourceURI);
+														 const std::string& sourceURL);
 	static Interpreter fromXML(const std::string& xml,
-														 const std::string& sourceURI);
-	static Interpreter fromURI(const std::string& uri);
+														 const std::string& sourceURL);
+	static Interpreter fromURL(const std::string& URL);
 	static Interpreter fromClone(const Interpreter& other);
 
 	Interpreter() : _impl() {} // the empty, invalid interpreter
@@ -665,14 +686,21 @@ public:
 		return _impl->removeMonitor(monitor);
 	}
 
-	void setSourceURI(std::string sourceURI) {
-		return _impl->setSourceURI(sourceURI);
+	void setSourceURL(std::string sourceURL) {
+		return _impl->setSourceURL(sourceURL);
 	}
-	std::string getSourceURI() {
-		return _impl->getSourceURI();
+	std::string getSourceURL() {
+		return _impl->getSourceURL();
 	}
-	std::string getBaseURI() {
-		return _impl->getBaseURI();
+
+	std::string getBaseURL() {
+		return _impl->getBaseURL();
+	}
+	std::string getBaseURL(const std::string& xpathExpr) {
+		return _impl->getBaseURL(xpathExpr);
+	}
+	std::string getBaseURL(const Arabica::DOM::Node<std::string>& refNode) {
+		return _impl->getBaseURL(refNode);
 	}
 
 	void setNameSpaceInfo(const NameSpaceInfo& nsInfo) {
@@ -819,7 +847,7 @@ protected:
 		return _impl->setInvokeRequest(req);
 	}
 
-	static Interpreter fromInputSource(Arabica::SAX::InputSource<std::string>& source, const std::string& sourceUri);
+	static Interpreter fromInputSource(Arabica::SAX::InputSource<std::string>& source, const std::string& sourceURL);
 
 	boost::shared_ptr<InterpreterImpl> _impl;
 	static std::map<std::string, boost::weak_ptr<InterpreterImpl> > _instances;

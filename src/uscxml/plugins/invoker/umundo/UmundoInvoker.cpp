@@ -187,11 +187,11 @@ void UmundoInvoker::invoke(const InvokeRequest& req) {
 	std::list<std::string>::const_iterator typeIter = type.begin();
 	while(typeIter != type.end()) {
 		URL typeURI(*typeIter);
-		if (typeURI.toAbsolute(_interpreter->getBaseURI())) {
+		if (typeURI.toAbsolute(_interpreter->getBaseURL(req.elem))) {
 			std::string filename = typeURI.asLocalFile(".proto");
 			umundo::PBSerializer::addProto(filename);
 		} else {
-			LOG(ERROR) << "umundo invoker has relative type src but nor baseURI set with interpreter.";
+			LOG(ERROR) << "umundo invoker has relative type src but no baseURI set with interpreter.";
 		}
 		typeIter++;
 	}
@@ -202,7 +202,7 @@ void UmundoInvoker::invoke(const InvokeRequest& req) {
 	std::list<std::string>::const_iterator typesIter = types.begin();
 	while(typesIter != types.end()) {
 		URL typeURI(*typesIter);
-		if (typeURI.toAbsolute(_interpreter->getBaseURI())) {
+		if (typeURI.toAbsolute(_interpreter->getBaseURL(req.elem))) {
 			umundo::PBSerializer::addProto(typeURI.path());
 		} else {
 			LOG(ERROR) << "invoke element has relative src URI with no baseURI set.";

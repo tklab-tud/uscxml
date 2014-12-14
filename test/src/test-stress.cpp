@@ -172,7 +172,7 @@ int main(int argc, char** argv) {
 		lastTransitionAt = time(NULL);
 
 		LOG(INFO) << "Processing " << entryIter->first;
-		Interpreter interpreter = Interpreter::fromURI(std::string(argv[optind]) + PATH_SEPERATOR + entryIter->first);
+		Interpreter interpreter = Interpreter::fromURL(std::string(argv[optind]) + PATH_SEPERATOR + entryIter->first);
 		if (interpreter) {
 //			interpreter.setCmdLineOptions(argc, argv);
 

@@ -60,6 +60,7 @@ protected:
 	std::string target;
 	std::string type;
 	uint32_t delayMs;
+	Arabica::DOM::Element<std::string> elem;
 
 	friend USCXML_API std::ostream& operator<< (std::ostream& os, const SendRequest& sendReq);
 

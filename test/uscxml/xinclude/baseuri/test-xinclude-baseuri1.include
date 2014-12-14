@@ -1,0 +1,6 @@
+<state id="s0" xmlns:xi="http://www.w3.org/2001/XInclude">
+	<onentry>
+		<script src="test-xinclude-script.include" />	
+	</onentry>
+	<xi:include href="test-xinclude-baseuri2.include" />
+</state>

@@ -138,7 +138,7 @@ void DirMonInvoker::invoke(const InvokeRequest& req) {
 	while(dirIter != req.params.upper_bound("dir")) {
 		// this is simplified - Data might be more elaborate than a simple string atom
 		URL url(dirIter->second.atom);
-		if (!url.toAbsolute(_interpreter->getBaseURI()) || !iequals(url.scheme(), "file")) {
+		if (!url.toAbsolute(_interpreter->getBaseURL(req.elem)) || !iequals(url.scheme(), "file")) {
 			LOG(ERROR) << "Given directory '" << dirIter->second << "' cannot be transformed to absolute path";
 		} else {
 			_dir = url.path();

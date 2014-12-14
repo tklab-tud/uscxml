@@ -94,7 +94,7 @@ void OpenALInvoker::send(const SendRequest& req) {
 		}
 
 		URL srcURL = req.params.find("src")->second.atom;
-		if (!srcURL.toAbsolute(_interpreter->getBaseURI())) {
+		if (!srcURL.toAbsolute(_interpreter->getBaseURL(req.elem))) {
 			LOG(ERROR) << "src URL " << req.params.find("src")->second << " is relative with no base URI set for interpreter";
 			return;
 		}

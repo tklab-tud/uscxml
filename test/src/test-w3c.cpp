@@ -136,12 +136,12 @@ int main(int argc, char** argv) {
 		Interpreter interpreter;
 		LOG(INFO) << "Processing " << documentURI << (withFlattening ? " FSM converted" : "") << (delayFactor ? "" : " with delays *= " + toStr(delayFactor));
 		if (withFlattening) {
-			interpreter = Interpreter::fromURI(documentURI);
+			interpreter = Interpreter::fromURL(documentURI);
 			Transformer flattener = ChartToFlatSCXML::transform(interpreter);
 			interpreter = flattener;
 //			std::cout << interpreter.getDocument() << std::endl;
 		} else {
-			interpreter = Interpreter::fromURI(documentURI);
+			interpreter = Interpreter::fromURL(documentURI);
 		}
 
 		if (delayFactor != 1) {

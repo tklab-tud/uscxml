@@ -96,7 +96,7 @@ using namespace Arabica::DOM;
 %enddef
 
 WRAP_THROW_EXCEPTION(uscxml::Interpreter::fromXML);
-WRAP_THROW_EXCEPTION(uscxml::Interpreter::fromURI);
+WRAP_THROW_EXCEPTION(uscxml::Interpreter::fromURL);
 WRAP_THROW_EXCEPTION(uscxml::Interpreter::step);
 WRAP_THROW_EXCEPTION(uscxml::Interpreter::interpret);
 
@@ -231,8 +231,8 @@ import java.net.URL;
 %}
 
 %typemap(javacode) uscxml::Interpreter %{
-  public static Interpreter fromURI(URL uri) throws org.uscxml.InterpreterException {
-    return Interpreter.fromURI(uri.toString());
+  public static Interpreter fromURL(URL uri) throws org.uscxml.InterpreterException {
+    return Interpreter.fromURL(uri.toString());
   }
 	
 	public Map<String, NativeIOProcessor> getIOProcessors() {

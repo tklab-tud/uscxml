@@ -308,10 +308,11 @@ PromelaEventSource::PromelaEventSource(const PromelaInline& source, PromelaCodeA
 		}
 	}
 }
-
+	
 void PromelaCodeAnalyzer::addCode(const std::string& code, ChartToPromela* interpreter) {
 	PromelaParser parser(code);
-
+//	parser.dump();
+	
 	// find all strings
 	std::list<PromelaParserNode*> astNodes;
 	astNodes.push_back(parser.ast);
@@ -338,6 +339,10 @@ void PromelaCodeAnalyzer::addCode(const std::string& code, ChartToPromela* inter
 				if (isInteger(node->operands.back()->value.c_str(), 10)) {
 					assignedValue = strTo<int>(node->operands.back()->value);
 				}
+			}
+			if (node->operands.back()->type == PML_STRING) {
+				// remember strings for later
+				astNodes.push_back(node->operands.back());
 			}
 			if (node->operands.front()->type == PML_CMPND)
 				node = node->operands.front();
@@ -414,6 +419,11 @@ void PromelaCodeAnalyzer::addCode(const std::string& code, ChartToPromela* inter
 			_typeDefs.types[node->value].occurrences.insert(interpreter);
 			_typeDefs.types[node->value].minValue = 0;
 			_typeDefs.types[node->value].maxValue = 1;
+			// test325
+			if (node->value.compare("_ioprocessors") == 0) {
+				addCode("_ioprocessors.scxml.location", interpreter);
+			}
+
 			break;
 		}
 
@@ -766,6 +776,7 @@ void ChartToPromela::writeTypeDefs(std::ostream& stream) {
 
 	for (std::list<PromelaCodeAnalyzer::PromelaTypedef>::reverse_iterator rIter = individualDefs.rbegin(); rIter != individualDefs.rend(); rIter++) {
 		PromelaCodeAnalyzer::PromelaTypedef currDef = *rIter;
+
 		if (currDef.types.size() == 0 || currDef.name.size() == 0)
 			continue;
 
@@ -1614,17 +1625,10 @@ void ChartToPromela::writeExecutableContent(std::ostream& stream, const Arabica:
 		writeIfBlock(stream, condChain, indent);
 		
 	} else if(TAGNAME(nodeElem) == "assign") {
-		if (HAS_ATTR(nodeElem, "location")) {
-			stream << padding << _prefix << ATTR(nodeElem, "location") << " = ";
-		}
-		if (HAS_ATTR(nodeElem, "expr")) {
-			stream << ADAPT_SRC(ATTR(nodeElem, "expr")) << ";" << std::endl;
-		} else {
-			NodeSet<std::string> assignTexts = filterChildType(Node_base::TEXT_NODE, nodeElem, true);
-			if (assignTexts.size() > 0) {
-				stream << ADAPT_SRC(boost::trim_copy(assignTexts[0].getNodeValue())) << ";" << std::endl;
-			}
-		}
+		NodeSet<std::string> assignTexts = filterChildType(Node_base::TEXT_NODE, nodeElem, true);
+		assert(assignTexts.size() > 0);
+		stream << ADAPT_SRC(boost::trim_copy(assignTexts[0].getNodeValue())) << std::endl;
+		
 	} else if(TAGNAME(nodeElem) == "send" || TAGNAME(nodeElem) == "raise") {
 		std::string targetQueue;
 		if (TAGNAME(nodeElem) == "raise") {
@@ -2066,11 +2070,14 @@ void ChartToPromela::writeDeclarations(std::ostream& stream) {
 
 	// get all data elements
 	NodeSet<std::string> datas = _xpath.evaluate("//" + _nsInfo.xpathPrefix + "data", _scxml).asNodeSet();
-	//	NodeSet<std::string> dataText = filterChildType(Node_base::TEXT_NODE, datas, true);
 	
 	// write their text content
-	stream << "/* datamodel variables for " << _prefix << " */" << std::endl;
+	stream << "/* data model variables" << (_prefix.size() > 0 ? " for " + _prefix : "") << " */" << std::endl;
 	std::set<std::string> processedIdentifiers;
+	
+	// automatic types
+	PromelaCodeAnalyzer::PromelaTypedef allTypes = _analyzer->getTypes();
+
 	for (int i = 0; i < datas.size(); i++) {
 		
 		Node<std::string> data = datas[i];
@@ -2078,23 +2085,37 @@ void ChartToPromela::writeDeclarations(std::ostream& stream) {
 			continue;
 		
 		std::string identifier = (HAS_ATTR_CAST(data, "id") ? ATTR_CAST(data, "id") : "");
-		std::string expression = (HAS_ATTR_CAST(data, "expr") ? ATTR_CAST(data, "expr") : "");
-		if (expression.size() == 0 && HAS_ATTR_CAST(data, "src")) {
-			URL dataSrc(ATTR_CAST(data, "src"));
-			dataSrc.toAbsolute(_baseURI);
-			expression = dataSrc.getInContent();
-		}
 		std::string type = boost::trim_copy(HAS_ATTR_CAST(data, "type") ? ATTR_CAST(data, "type") : "");
 		
 		_dataModelVars.insert(identifier);
 		if (processedIdentifiers.find(identifier) != processedIdentifiers.end())
 			continue;
+		
 		processedIdentifiers.insert(identifier);
 		
 		if (boost::starts_with(type, "string")) {
 			type = "int" + type.substr(6, type.length() - 6);
 		}
+		
+		if (type.length() == 0 || type == "auto") {
+			if (allTypes.types.find(identifier) != allTypes.types.end()) {
+				type = allTypes.types[identifier].name;
+			} else {
+				LOG(ERROR) << "Automatic or no type for '" << identifier << "' but no type resolved";
+				continue;
+			}
+		}
+		
 		std::string arrSize;
+		size_t bracketPos = type.find("[");
+		if (bracketPos != std::string::npos) {
+			arrSize = type.substr(bracketPos, type.length() - bracketPos);
+			type = type.substr(0, bracketPos);
+		}
+		std::string decl = type + " " + _prefix + identifier + arrSize;
+		stream << decl << ";" << std::endl;
+
+#if 0
 		
 		NodeSet<std::string> dataText = filterChildType(Node_base::TEXT_NODE, data, true);
 		std::string value;
@@ -2128,9 +2149,11 @@ void ChartToPromela::writeDeclarations(std::ostream& stream) {
 			// no id but text content given
 			stream << beautifyIndentation(value) << std::endl;
 		}
+#endif
 	}
 	
-	PromelaCodeAnalyzer::PromelaTypedef allTypes = _analyzer->getTypes();
+	
+	// implicit and dynamic types
 	std::map<std::string, PromelaCodeAnalyzer::PromelaTypedef>::iterator typeIter = allTypes.types.begin();
 	while(typeIter != allTypes.types.end()) {
 		if (typeIter->second.occurrences.find(this) == typeIter->second.occurrences.end()) {
@@ -2230,6 +2253,13 @@ void ChartToPromela::writeFSM(std::ostream& stream) {
 	// write initial transition
 //	transitions = filterChildElements(_nsInfo.xmlNSPrefix + "transition", _startState);
 //	assert(transitions.size() == 1);
+
+	stream << std::endl << "/* global scripts */" << std::endl;
+	NodeSet<std::string> scripts = filterChildElements(_nsInfo.xmlNSPrefix + "script", _scxml, false);
+	for (int i = 0; i < scripts.size(); i++) {
+		writeExecutableContent(stream, scripts[i], 1);
+	}
+	stream << std::endl;
 
 	stream << "/* transition to initial state */" << std::endl;
 	assert(_start->sortedOutgoing.size() == 1);
@@ -2620,9 +2650,10 @@ void ChartToPromela::writeMain(std::ostream& stream) {
 	stream << std::endl;
 	stream << "init {" << std::endl;
 	if (_varInitializers.size() > 0) {
+		stream << "/* initialize data model variables */" << std::endl;
 		std::list<std::string>::iterator initIter = _varInitializers.begin();
 		while(initIter != _varInitializers.end()) {
-			stream << ADAPT_SRC(beautifyIndentation(*initIter)) << std::endl;
+			stream << ADAPT_SRC(beautifyIndentation(*initIter, 1)) << std::endl;
 			initIter++;
 		}
 		stream << std::endl;
@@ -2700,8 +2731,8 @@ void ChartToPromela::initNodes() {
 				Interpreter nested;
 				if (HAS_ATTR_CAST(invokes[i], "src")) {
 					URL absUrl(ATTR_CAST(invokes[i], "src"));
-					absUrl.toAbsolute(_baseURI);
-					nested = Interpreter::fromURI(absUrl);
+					absUrl.toAbsolute(_baseURL[_scxml]);
+					nested = Interpreter::fromURL(absUrl);
 
 				} else {
 					NodeSet<std::string> nestedContent = InterpreterImpl::filterChildElements(_nsInfo.xmlNSPrefix + "content", invokes[i]);
@@ -2714,7 +2745,7 @@ void ChartToPromela::initNodes() {
 					Node<std::string> importRoot = nestedDoc.importNode(nestedRoot[0], true);
 					nestedDoc.appendChild(importRoot);
 					
-					nested = Interpreter::fromDOM(nestedDoc, _nsInfo, _sourceURI);
+					nested = Interpreter::fromDOM(nestedDoc, _nsInfo, _sourceURL);
 				}
 				
 //				std::cout << invokes[i] << std::endl;
@@ -2784,6 +2815,69 @@ void ChartToPromela::initNodes() {
 		}
 	}
 
+	// transform data / assign json into PROMELA statements
+	{
+		NodeSet<std::string> asgn;
+		asgn.push_back(filterChildElements(_nsInfo.xmlNSPrefix + "data", _scxml, true));
+		asgn.push_back(filterChildElements(_nsInfo.xmlNSPrefix + "assign", _scxml, true));
+
+		for (int i = 0; i < asgn.size(); i++) {
+			if (isInEmbeddedDocument(asgn[i]))
+				continue;
+			
+			Element<std::string> asgnElem(asgn[i]);
+			
+			std::string key;
+			if (HAS_ATTR(asgnElem, "id")) {
+				key = ATTR(asgnElem, "id");
+			} else if (HAS_ATTR(asgnElem, "location")) {
+				key = ATTR(asgnElem, "location");
+			}
+			
+			if (key.length() == 0)
+				continue;
+			
+			std::string value;
+			if (HAS_ATTR(asgnElem, "expr")) {
+				value = ATTR(asgnElem, "expr");
+			} else if (HAS_ATTR(asgnElem, "src")) {
+				URL absUrl(ATTR_CAST(asgnElem, "src"));
+				absUrl.toAbsolute(_baseURL[_scxml]);
+				value = absUrl.getInContent();
+			} else {
+				NodeSet<std::string> textChilds = filterChildType(Node_base::TEXT_NODE, asgnElem);
+				if (textChilds.size() > 0) {
+					for (int j = 0; j < textChilds.size(); j++) {
+						value += textChilds[j].getNodeValue();
+					}
+				}
+			}
+			
+			boost::trim(value);
+			if (value.size() == 0)
+				continue;
+			
+			// remove all children, we will replae by suitable promela statements
+			while(asgnElem.hasChildNodes())
+				asgnElem.removeChild(asgnElem.getFirstChild());
+			
+			std::string newValue;
+			Data json = Data::fromJSON(value);
+			if (!json.empty()) {
+				newValue = dataToAssignments(key, json);
+			} else {
+				newValue = key + " = " + value + ";";
+			}
+			newValue = sanitizeCode(newValue);
+			_analyzer->addCode(newValue, this);
+			
+			if (asgnElem.getLocalName() == "data")
+				_varInitializers.push_back(newValue);
+			Text<std::string> newText = _document.createTextNode(newValue);
+			asgnElem.insertBefore(newText, Node<std::string>());
+		}
+	}
+	
 	// do we need sendid / invokeid?
 	{
 		NodeSet<std::string> invokes = filterChildElements(_nsInfo.xmlNSPrefix + "invoke", _scxml, true);
@@ -2926,7 +3020,7 @@ void ChartToPromela::initNodes() {
 	{
 		NodeSet<std::string> withText;
 		withText.push_back(filterChildElements(_nsInfo.xmlNSPrefix + "script", _scxml, true));
-		withText.push_back(filterChildElements(_nsInfo.xmlNSPrefix + "data", _scxml, true));
+//		withText.push_back(filterChildElements(_nsInfo.xmlNSPrefix + "data", _scxml, true));
 		for (int i = 0; i < withText.size(); i++) {
 			NodeSet<std::string> texts = filterChildType(Node_base::TEXT_NODE, withText[i], true);
 			for (int j = 0; j < texts.size(); j++) {
@@ -2937,6 +3031,17 @@ void ChartToPromela::initNodes() {
 					elem.setNodeValue(code);
 					allCode.insert(code);
 				}
+			}
+		}
+	}
+	{
+		NodeSet<std::string> foreachs = filterChildElements(_nsInfo.xmlNSPrefix + "foreach", _scxml, true);
+		for (int i = 0; i < foreachs.size(); i++) {
+			if (HAS_ATTR_CAST(foreachs[i], "index")) {
+				allCode.insert(ATTR_CAST(foreachs[i], "index"));
+			}
+			if (HAS_ATTR_CAST(foreachs[i], "item")) {
+				allCode.insert(ATTR_CAST(foreachs[i], "item"));
 			}
 		}
 	}
@@ -2959,6 +3064,25 @@ void ChartToPromela::initNodes() {
 			}
 		}
 	}
+}
+
+	
+std::string ChartToPromela::dataToAssignments(const std::string& prefix, const Data& data) {
+	std::stringstream retVal;
+	if (data.atom.size() > 0) {
+		retVal << prefix << " = " << data.atom << ";" << std::endl;
+	} else if (data.compound.size() > 0) {
+		for (std::map<std::string, Data>::const_iterator cIter = data.compound.begin(); cIter != data.compound.end(); cIter++) {
+			retVal << dataToAssignments(prefix + "." + cIter->first, cIter->second);
+		}
+	} else if (data.array.size() > 0) {
+		size_t index = 0;
+		for(std::list<Data>::const_iterator aIter = data.array.begin(); aIter != data.array.end(); aIter++) {
+			retVal << dataToAssignments(prefix + "[" + toStr(index) + "]", *aIter);
+			index++;
+		}
+	}
+	return retVal.str();
 }
 
 std::string ChartToPromela::sanitizeCode(const std::string& code) {
@@ -2999,6 +3123,9 @@ void ChartToPromela::writeProgram(std::ostream& stream) {
 	}
 
 //	std::cerr << _scxml << std::endl;
+
+	stream << "/* " << _sourceURL.asString() << " */" << std::endl;
+	stream << std::endl;
 
 	initNodes();
 

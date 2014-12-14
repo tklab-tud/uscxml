@@ -324,7 +324,8 @@ protected:
 //	std::string replaceStringsInExpression(const std::string& expr);
 
 	std::string sanitizeCode(const std::string& code);
-
+	std::string dataToAssignments(const std::string& prefix, const Data& data);
+	
 //	Arabica::XPath::NodeSet<std::string> _globalStates;
 //	Arabica::DOM::Node<std::string> _startState;
 //	std::map<std::string, Arabica::DOM::Element<std::string> > _states;

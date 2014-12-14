@@ -17,7 +17,7 @@ public class TestJavaScriptDataModel {
 
 		// instantiate interpreter with document from file
 		Interpreter interpreter = Interpreter
-				.fromURI("/Users/sradomski/Documents/TK/Code/uscxml/test/uscxml/java/test-ecmascript-datamodel.scxml");
+				.fromURL("/Users/sradomski/Documents/TK/Code/uscxml/test/uscxml/java/test-ecmascript-datamodel.scxml");
 
 		// wait until interpreter has finished
 		while (true)

@@ -638,11 +638,13 @@ is the second argument -->
 
 <!-- foreach -->
 <!-- this should produce an array containing 1 2 3 in that order -->
-<xsl:template match="//conf:array123">
+<xsl:template match="//conf:array123">[1,2,3]</xsl:template>
+
+<!-- xsl:template match="//conf:array123">
   Var<xsl:value-of select="../@conf:id" />[0] = 1;
   Var<xsl:value-of select="../@conf:id" />[1] = 2;
   Var<xsl:value-of select="../@conf:id" />[2] = 3;
-</xsl:template>
+</xsl:template -->
 
 <!-- this uses the value of the indicated variable as the 'array' attribute -->
 <xsl:template match="//@conf:arrayVar">

@@ -67,8 +67,8 @@ set(CTEST_CUSTOM_TESTS_IGNORE
   # "spin/promela/test513.txt" # manual test
 
   # fail for syntax
-  "spin/promela/test150.scxml" # test that foreach causes a new variable to be declared
-  "spin/promela/test151.scxml" # test that foreach causes a new variable to be declared
+# "spin/promela/test150.scxml" # test that foreach causes a new variable to be declared
+# "spin/promela/test151.scxml" # test that foreach causes a new variable to be declared
   "spin/promela/test152.scxml" # test that an illegal array or item value causes error.execution
   "spin/promela/test156.scxml" # test that an error causes the foreach to stop execution
   "spin/promela/test224.scxml" # string operation startWith
@@ -76,8 +76,8 @@ set(CTEST_CUSTOM_TESTS_IGNORE
   "spin/promela/test280.scxml" # late data binding / undeclared variable
   "spin/promela/test286.scxml" # assignment to a non-declared var causes an error
   "spin/promela/test294.scxml" # mixed types for event.data via donedata
-  "spin/promela/test302.scxml" # variable not declared
-  "spin/promela/test304.scxml" # variable not declared
+#  "spin/promela/test302.scxml" # variable not declared
+#  "spin/promela/test304.scxml" # variable not declared
   "spin/promela/test309.scxml" # 'return' as an invalid boolean expression ought to eval to false
   "spin/promela/test311.scxml" # assignment to a non-declared var
   "spin/promela/test312.scxml" # assignment of 'return'

@@ -178,7 +178,7 @@ int main(int argc, char** argv) {
 			tmp.toAbsoluteCwd();
 			interpreter = Interpreter::fromXML(ss.str(), tmp);
 		} else {
-			interpreter = Interpreter::fromURI(inputFile);
+			interpreter = Interpreter::fromURL(inputFile);
 		}
 		if (!interpreter) {
 			LOG(ERROR) << "Cannot create interpreter from " << inputFile;

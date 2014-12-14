@@ -9,11 +9,7 @@ it ever isn't, set Var4 to 0, indicating failure -->
     <data id="Var2" type="int"/>
     <!-- the item which will contain the current value -->
     <data id="Var3" type="int[3]">
-    
-  Var3[0] = 1;
-  Var3[1] = 2;
-  Var3[2] = 3;
-
+    [1,2,3]
     </data>
     <data id="Var4" type="int" expr="1"/>
     <!-- 1 if success, 0 if failure -->

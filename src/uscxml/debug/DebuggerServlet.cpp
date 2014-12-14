@@ -229,7 +229,7 @@ void DebuggerServlet::processListSessions(const HTTPServer::Request& request) {
 			Data sessionData;
 			sessionData.compound["name"] = Data(instance->getName(), Data::VERBATIM);
 			sessionData.compound["id"] = Data(instance->getSessionId(), Data::VERBATIM);
-			sessionData.compound["source"] = Data(instance->getSourceURI(), Data::VERBATIM);
+			sessionData.compound["source"] = Data(instance->getSourceURL(), Data::VERBATIM);
 			sessionData.compound["xml"].node = instance->getDocument();
 
 			replyData.compound["sessions"].array.push_back(sessionData);

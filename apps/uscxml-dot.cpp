@@ -86,7 +86,7 @@ int main(int argc, char** argv) {
 	try {
 		// current option has to be the interpreter's name
 		URL inputFile(argv[optind]);
-		Interpreter interpreter = Interpreter::fromURI(inputFile.asString());
+		Interpreter interpreter = Interpreter::fromURL(inputFile.asString());
 		optind++;
 
 		while(optind < argc) {

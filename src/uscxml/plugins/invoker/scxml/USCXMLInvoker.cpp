@@ -74,7 +74,7 @@ void USCXMLInvoker::cancel(const std::string sendId) {
 void USCXMLInvoker::invoke(const InvokeRequest& req) {
 	_cancelled = false;
 	if (req.src.length() > 0) {
-		_invokedInterpreter = Interpreter::fromURI(req.src);
+		_invokedInterpreter = Interpreter::fromURL(req.src);
 	} else if (req.dom) {
 		Arabica::DOM::DOMImplementation<std::string> domFactory = Arabica::SimpleDOM::DOMImplementation<std::string>::getDOMImplementation();
 		Arabica::DOM::Document<std::string> dom = domFactory.createDocument(req.dom.getNamespaceURI(), "", 0);
@@ -82,9 +82,9 @@ void USCXMLInvoker::invoke(const InvokeRequest& req) {
 		Arabica::DOM::Node<std::string> newNode = dom.importNode(req.dom, true);
 		dom.appendChild(newNode);
 		// TODO: where do we get the namespace from?
-		_invokedInterpreter = Interpreter::fromDOM(dom, _interpreter->getNameSpaceInfo(), _interpreter->getSourceURI());
+		_invokedInterpreter = Interpreter::fromDOM(dom, _interpreter->getNameSpaceInfo(), _interpreter->getSourceURL());
 	} else if (req.content.size() > 0) {
-		_invokedInterpreter = Interpreter::fromXML(req.content, _interpreter->getSourceURI());
+		_invokedInterpreter = Interpreter::fromXML(req.content, _interpreter->getSourceURL());
 	} else {
 		LOG(ERROR) << "Cannot invoke nested SCXML interpreter, neither src attribute nor content nor DOM is given";
 	}
