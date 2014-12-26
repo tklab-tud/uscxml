@@ -56,6 +56,7 @@
 %ignore uscxml::Interpreter::getNodeSetForXPath(const std::string&);
 %ignore uscxml::Interpreter::isLegalConfiguration(const Arabica::XPath::NodeSet<std::string>&);
 %ignore uscxml::Interpreter::getInstances();
+%ignore uscxml::Interpreter::addInstance;
 
 // InterpreterIssues
 %ignore uscxml::InterpreterIssue::node;

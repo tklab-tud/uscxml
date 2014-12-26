@@ -310,6 +310,12 @@ std::list<InterpreterIssue> InterpreterIssue::forInterpreter(InterpreterImpl* in
 			issues.push_back(InterpreterIssue("State has no 'id' attribute", state, InterpreterIssue::USCXML_ISSUE_FATAL));
 			continue;
 		}
+
+		if (ATTR(state, "id").size() == 0) {
+			issues.push_back(InterpreterIssue("State has empty 'id' attribute", state, InterpreterIssue::USCXML_ISSUE_FATAL));
+			continue;
+		}
+
 		std::string stateId = ATTR(state, "id");
 
 		if (!InterpreterImpl::isMember(state, reachable)) {
@@ -331,6 +337,10 @@ std::list<InterpreterIssue> InterpreterIssue::forInterpreter(InterpreterImpl* in
 
 		// check for valid target
 		std::list<std::string> targetIds = InterpreterImpl::tokenizeIdRefs(ATTR(transition, "target"));
+		if (targetIds.size() == 0) {
+			issues.push_back(InterpreterIssue("Transition has empty target state list", transition, InterpreterIssue::USCXML_ISSUE_FATAL));
+		}
+		
 		for (std::list<std::string>::iterator targetIter = targetIds.begin(); targetIter != targetIds.end(); targetIter++) {
 			if (seenStates.find(*targetIter) == seenStates.end()) {
 				issues.push_back(InterpreterIssue("Transition has non-existant target state with id '" + *targetIter + "'", transition, InterpreterIssue::USCXML_ISSUE_FATAL));

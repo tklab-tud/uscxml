@@ -74,6 +74,7 @@ class USCXML_API GlobalState {
 public:
 
 	GlobalState() {}
+	GlobalState(const Arabica::DOM::Node<std::string>& globalState);
 	GlobalState(const Arabica::XPath::NodeSet<std::string>& activeStates,
 	            const Arabica::XPath::NodeSet<std::string>& alreadyEnteredStates, // we need to remember for binding=late
 	            const std::map<std::string, Arabica::XPath::NodeSet<std::string> >& historyStates,
@@ -84,10 +85,6 @@ public:
 	std::set<int> alreadyEnteredStatesRefs;
 	std::map<std::string, std::set<int> > historyStatesRefs;
 	
-	Arabica::XPath::NodeSet<std::string> getActiveStates();
-	Arabica::XPath::NodeSet<std::string> getAlreadyEnteredStates();
-	std::map<std::string, Arabica::XPath::NodeSet<std::string> > getHistoryStates();
-	
 	std::list<GlobalTransition*> sortedOutgoing;
 	std::string stateId;
 	std::string activeId;
@@ -97,6 +94,12 @@ public:
 	bool isFinal;
 	
 	ChartToFSM* interpreter;
+	
+	Arabica::XPath::NodeSet<std::string> getActiveStates();
+	Arabica::XPath::NodeSet<std::string> getAlreadyEnteredStates();
+	std::map<std::string, Arabica::XPath::NodeSet<std::string> > getHistoryStates();
+
+//	friend class ChartToFSM;
 };
 
 
@@ -197,6 +200,16 @@ protected:
 	Arabica::DOM::Document<std::string> getDocument() const; // overwrite to return flat FSM
 	InterpreterState interpret();
 	
+	GlobalState* _start;
+	Arabica::DOM::Document<std::string> _flatDoc;
+	std::map<std::string, GlobalState*> _globalConf;
+	std::map<std::string, GlobalState*> _activeConf; // potentially enabled transition sets per active configuration
+	std::map<std::string, Arabica::DOM::Element<std::string> > _historyTargets; // ids of all history states
+
+	uint32_t getMinInternalQueueLength(uint32_t defaultVal);
+	uint32_t getMinExternalQueueLength(uint32_t defaultVal);
+
+private:
 	Arabica::XPath::NodeSet<std::string> refsToStates(const std::set<int>&);
 	Arabica::XPath::NodeSet<std::string> refsToTransitions(const std::set<int>&);
 	
@@ -230,8 +243,7 @@ protected:
 	bool hasForeachInBetween(const Arabica::DOM::Node<std::string>& ancestor, const Arabica::DOM::Node<std::string>& child);
 	void updateRaisedAndSendChains(GlobalState* state, GlobalTransition* source, std::set<GlobalTransition*> visited);
 
-	uint32_t getMinInternalQueueLength(uint32_t defaultVal);
-	uint32_t getMinExternalQueueLength(uint32_t defaultVal);
+	void reassembleFromFlat();
 	
 	std::list<GlobalTransition*> sortTransitions(std::list<GlobalTransition*> list);
 
@@ -257,17 +269,14 @@ protected:
 	size_t _lastActiveIndex;
 	size_t _lastTransIndex;
 
+	bool _alreadyFlat;
+
 	bool _skipEventChainCalculations;
 	size_t _maxEventSentChain;
 	size_t _maxEventRaisedChain;
 	size_t _doneEventRaiseTolerance;
 	
-	GlobalState* _start;
 	GlobalTransition* _currGlobalTransition;
-	Arabica::DOM::Document<std::string> _flatDoc;
-	std::map<std::string, GlobalState*> _globalConf;
-	std::map<std::string, GlobalState*> _activeConf; // potentially enabled transition sets per active configuration
-	std::map<std::string, Arabica::DOM::Element<std::string> > _historyTargets; // ids of all history states
 	
 	friend class GlobalTransition;
 	friend class GlobalState;

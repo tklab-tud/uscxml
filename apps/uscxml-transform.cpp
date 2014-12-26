@@ -1,6 +1,7 @@
 #include "uscxml/config.h"
 #include "uscxml/Interpreter.h"
 #include "uscxml/transform/ChartToFlatSCXML.h"
+#include "uscxml/transform/ChartToMinimalSCXML.h"
 #include "uscxml/transform/ChartToPromela.h"
 #include "uscxml/DOMUtils.h"
 #include <glog/logging.h>
@@ -66,6 +67,7 @@ void printUsageAndExit(const char* progName) {
 	printf("Options\n");
 	printf("\t-t flat   : flatten to SCXML state-machine\n");
 	printf("\t-t pml    : convert to spin/promela program\n");
+	printf("\t-t min    : minimize SCXML state-chart\n");
 	printf("\t-v        : be verbose\n");
 	printf("\t-lN       : Set loglevel to N\n");
 	printf("\t-i URL    : Input file (defaults to STDIN)\n");
@@ -154,7 +156,7 @@ int main(int argc, char** argv) {
 	if (outType.length() == 0)
 		printUsageAndExit(argv[0]);
 
-	if (outType != "flat" && outType != "scxml" && outType != "pml")
+	if (outType != "flat" && outType != "scxml" && outType != "pml" && outType != "min")
 		printUsageAndExit(argv[0]);
 
 	// register plugins
@@ -185,6 +187,7 @@ int main(int argc, char** argv) {
 			exit(EXIT_FAILURE);
 		}
 
+		
 		if (outType == "pml") {
 			if (outputFile.size() == 0 || outputFile == "-") {
 				ChartToPromela::transform(interpreter).writeTo(std::cout);
@@ -195,18 +198,6 @@ int main(int argc, char** argv) {
 				outStream.close();
 			}
 			exit(EXIT_SUCCESS);
-
-//			Interpreter flatInterpreter = ChartToPromela::transform(interpreter);
-//
-//			if (outputFile.size() == 0 || outputFile == "-") {
-//				ChartToPromela::writeProgram(std::cout, flatInterpreter);
-//			} else {
-//				std::ofstream outStream;
-//				outStream.open(outputFile.c_str());
-//				ChartToPromela::writeProgram(outStream, flatInterpreter);
-//				outStream.close();
-//			}
-//			exit(EXIT_SUCCESS);
 		}
 
 		if (outType == "scxml" || outType == "flat") {
@@ -220,6 +211,19 @@ int main(int argc, char** argv) {
 			}
 			exit(EXIT_SUCCESS);
 		}
+
+		if (outType == "min") {
+			if (outputFile.size() == 0 || outputFile == "-") {
+				ChartToMinimalSCXML::transform(interpreter).writeTo(std::cout);
+			} else {
+				std::ofstream outStream;
+				outStream.open(outputFile.c_str());
+				ChartToMinimalSCXML::transform(interpreter).writeTo(outStream);
+				outStream.close();
+			}
+			exit(EXIT_SUCCESS);
+		}
+
 	} catch (Event e) {
 		std::cout << e << std::endl;
 	}

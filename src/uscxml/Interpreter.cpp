@@ -329,6 +329,53 @@ void NameSpaceInfo::init(const std::map<std::string, std::string>& namespaceInfo
 	}
 }
 
+void StateTransitionMonitor::beforeTakingTransition(uscxml::Interpreter interpreter, const Arabica::DOM::Element<std::string>& transition, bool moreComing) {
+	std::cout << "Transition: " << uscxml::DOMUtils::xPathForNode(transition) << std::endl;
+}
+
+void StateTransitionMonitor::onStableConfiguration(uscxml::Interpreter interpreter) {
+	std::cout << "Config: {";
+	printNodeSet(interpreter.getConfiguration());
+	std::cout << "}" << std::endl;
+}
+
+void StateTransitionMonitor::beforeProcessingEvent(uscxml::Interpreter interpreter, const uscxml::Event& event) {
+	std::cout << "Event: " << event.name << std::endl;
+}
+
+void StateTransitionMonitor::beforeExecutingContent(Interpreter interpreter, const Arabica::DOM::Element<std::string>& element) {
+	std::cout << "Executable Content: " << DOMUtils::xPathForNode(element) << std::endl;
+}
+
+void StateTransitionMonitor::beforeExitingState(uscxml::Interpreter interpreter, const Arabica::DOM::Element<std::string>& state, bool moreComing) {
+	exitingStates.push_back(state);
+	if (!moreComing) {
+		std::cout << "Exiting: {";
+		printNodeSet(exitingStates);
+		std::cout << "}" << std::endl;
+		exitingStates = Arabica::XPath::NodeSet<std::string>();
+	}
+}
+
+void StateTransitionMonitor::beforeEnteringState(uscxml::Interpreter interpreter, const Arabica::DOM::Element<std::string>& state, bool moreComing) {
+	enteringStates.push_back(state);
+	if (!moreComing) {
+		std::cout << "Entering: {";
+		printNodeSet(enteringStates);
+		std::cout << "}" << std::endl;
+		enteringStates = Arabica::XPath::NodeSet<std::string>();
+	}
+	
+}
+
+void StateTransitionMonitor::printNodeSet(const Arabica::XPath::NodeSet<std::string>& config) {
+	std::string seperator;
+	for (int i = 0; i < config.size(); i++) {
+		std::cout << seperator << ATTR_CAST(config[i], "id");
+		seperator = ", ";
+	}
+}
+
 std::map<std::string, boost::weak_ptr<InterpreterImpl> > Interpreter::_instances;
 tthread::recursive_mutex Interpreter::_instanceMutex;
 
@@ -345,6 +392,11 @@ std::map<std::string, boost::weak_ptr<InterpreterImpl> > Interpreter::getInstanc
 	return _instances;
 }
 
+void Interpreter::addInstance(boost::shared_ptr<InterpreterImpl> interpreterImpl) {
+	tthread::lock_guard<tthread::recursive_mutex> lock(_instanceMutex);
+	assert(_instances.find(interpreterImpl->getSessionId()) == _instances.end());
+	_instances[interpreterImpl->getSessionId()] = interpreterImpl;
+}
 
 InterpreterImpl::InterpreterImpl() {
 	_state = USCXML_INSTANTIATED;
@@ -467,7 +519,7 @@ Interpreter Interpreter::fromInputSource(Arabica::SAX::InputSource<std::string>&
 		if (parser.errorsReported()) {
 			ERROR_PLATFORM_THROW(parser.errors())
 		} else {
-			ERROR_PLATFORM_THROW("Failed to create interpreter");
+			ERROR_PLATFORM_THROW("Failed to create interpreter from " + sourceURL);
 //			interpreterImpl->setInterpreterState(USCXML_FAULTED, parser.errors());
 		}
 	}
@@ -481,7 +533,7 @@ Interpreter Interpreter::fromClone(const Interpreter& other) {
 	interpreterImpl->cloneFrom(other.getImpl());
 	Interpreter interpreter(interpreterImpl);
 
-	_instances[interpreterImpl->getSessionId()] = interpreterImpl;
+	addInstance(interpreterImpl);
 	return interpreter;
 }
 
@@ -733,7 +785,7 @@ InterpreterState InterpreterImpl::step(int waitForMS) {
 			setInterpreterState(USCXML_MICROSTEPPED);
 		}
 
-		//assert(isLegalConfiguration(_configuration));
+		assert(isLegalConfiguration(_configuration));
 
 		// are there spontaneous transitions?
 		if (!_stable) {
@@ -1243,6 +1295,8 @@ void InterpreterImpl::setupDOM() {
 		_baseURL[_scxml] = URL::asBaseURL(_sourceURL);
 	}
 
+	_binding = (HAS_ATTR(_scxml, "binding") && iequals(ATTR(_scxml, "binding"), "late") ? LATE : EARLY);
+
 	if (_nsInfo.getNSContext() != NULL)
 		_xpath.setNamespaceContext(*_nsInfo.getNSContext());
 
@@ -1470,8 +1524,6 @@ void InterpreterImpl::init() {
 #if VERBOSE
 	std::cout << "running " << this << std::endl;
 #endif
-
-	_binding = (HAS_ATTR(_scxml, "binding") && iequals(ATTR(_scxml, "binding"), "late") ? LATE : EARLY);
 
 	if (_binding == EARLY) {
 		// initialize all data elements
@@ -2104,6 +2156,8 @@ void InterpreterImpl::invoke(const Arabica::DOM::Element<std::string>& element) 
 					LOG(ERROR) << "Exception caught while sending invoke request to invoker " << invokeReq.invokeid << ": " << e.what();
 				} catch (const std::exception &e) {
 					LOG(ERROR) << "Unknown exception caught while sending invoke request to invoker " << invokeReq.invokeid << ": " << e.what();
+				} catch (Event &e) {
+					LOG(ERROR) << e;
 				} catch(...) {
 					LOG(ERROR) << "Unknown exception caught while sending invoke request to invoker " << invokeReq.invokeid;
 				}

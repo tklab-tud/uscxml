@@ -93,7 +93,7 @@ protected:
 	Data evaluateExpr(const std::string& expr);
 	void evaluateStmnt(const std::string& expr);
 
-	void setVariable(void* ast, Data value);
+	void setVariable(void* ast, const Data& value);
 	Data getVariable(void* ast);
 
 	void adaptType(Data& data);

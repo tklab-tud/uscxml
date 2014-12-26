@@ -78,6 +78,30 @@ if (NOT BUILD_MINIMAL)
 	target_link_libraries(test-w3c uscxml uscxml_transform)
 	set_target_properties(test-w3c PROPERTIES FOLDER "Tests")
 
+	# copy resources
+	file(GLOB_RECURSE W3C_RESOURCES
+		w3c/*.txt
+		w3c/*sub*.scxml
+	)
+
+	foreach(W3C_RESOURCE ${W3C_RESOURCES} )
+		# we abuse this as head and tail
+		get_filename_component(W3C_RESOURCE_PATH ${W3C_RESOURCE} PATH)
+		get_filename_component(W3C_TEST_TYPE ${W3C_RESOURCE_PATH} NAME)
+		
+		if (BUILD_TESTS_W3C_ECMA AND W3C_TEST_TYPE STREQUAL "ecma")
+			file(COPY ${W3C_RESOURCE} DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/ecma)
+		elseif (BUILD_TESTS_W3C_XPATH AND W3C_TEST_TYPE STREQUAL "xpath")
+			file(COPY ${W3C_RESOURCE} DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/xpath)
+		elseif (BUILD_TESTS_W3C_LUA AND W3C_TEST_TYPE STREQUAL "lua")
+			file(COPY ${W3C_RESOURCE} DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/lua)
+		elseif (BUILD_TESTS_W3C_PROMELA AND W3C_TEST_TYPE STREQUAL "promela")
+			file(COPY ${W3C_RESOURCE} DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/lua)
+		endif()
+		
+	endforeach()
+
+	# prepare tests
 	file(GLOB_RECURSE W3C_TESTS
 		w3c/*.scxml
 	)
@@ -102,6 +126,31 @@ if (NOT BUILD_MINIMAL)
 			if (BUILD_TESTS_FSM_ECMA AND TEST_NAME MATCHES "^ecma\\/.*")
 				add_test("fsm/${TEST_NAME}" ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-w3c -f ${W3C_TEST})
 				set_property(TEST "fsm/${TEST_NAME}" PROPERTY LABELS "fsm/${TEST_NAME}")
+
+				add_test(NAME "minimized/${TEST_NAME}"
+				    COMMAND ${CMAKE_COMMAND}
+							-DOUTDIR:FILEPATH=${CMAKE_CURRENT_BINARY_DIR}/ecma
+							-DTESTFILE:FILEPATH=${W3C_TEST}
+							-DUSCXML_TRANSFORM_BIN:FILEPATH=${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/uscxml-transform
+							-DUSCXML_W3C_TEST_BIN:FILEPATH=${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-w3c
+						-P ${CMAKE_CURRENT_SOURCE_DIR}/w3c/run_minimized_test.cmake)
+				set_property(TEST "minimized/${TEST_NAME}" PROPERTY LABELS "minimized/${TEST_NAME}")
+
+				set_tests_properties(${TEST_NAME} PROPERTIES DEPENDS uscxml-transform)
+				set_tests_properties(${TEST_NAME} PROPERTIES DEPENDS test-w3c)
+
+				add_test(NAME "fsm/minimized/${TEST_NAME}"
+				    COMMAND ${CMAKE_COMMAND}
+							-DOUTDIR:FILEPATH=${CMAKE_CURRENT_BINARY_DIR}/ecma
+							-DTESTFILE:FILEPATH=${W3C_TEST}
+							-DUSCXML_TRANSFORM_BIN:FILEPATH=${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/uscxml-transform
+							-DUSCXML_W3C_TEST_BIN:FILEPATH=${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-w3c
+						-P ${CMAKE_CURRENT_SOURCE_DIR}/w3c/run_minimized_flat_test.cmake)
+				set_property(TEST "fsm/minimized/${TEST_NAME}" PROPERTY LABELS "fsm/minimized/${TEST_NAME}")
+
+				set_tests_properties(${TEST_NAME} PROPERTIES DEPENDS uscxml-transform)
+				set_tests_properties(${TEST_NAME} PROPERTIES DEPENDS test-w3c)
+
 			endif()
 		
 			if (BUILD_TESTS_W3C_XPATH AND TEST_NAME MATCHES "^xpath\\/.*")
@@ -131,7 +180,7 @@ if (NOT BUILD_MINIMAL)
 
 				add_test(NAME "spin/${TEST_NAME}"
 				    COMMAND ${CMAKE_COMMAND}
-							-DOUTDIR:FILEPATH=${CMAKE_CURRENT_BINARY_DIR}
+							-DOUTDIR:FILEPATH=${CMAKE_CURRENT_BINARY_DIR}/promela
 							-DTESTFILE:FILEPATH=${W3C_TEST}
 							-DUSCXML_TRANSFORM_BIN:FILEPATH=${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/uscxml-transform
 							-DSPIN_BIN:FILEPATH=${SPIN}

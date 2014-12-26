@@ -39,12 +39,14 @@ public:
 protected:
 	void writeTo(std::ostream& stream);
 	
-	ChartToFlatSCXML(const Interpreter& other) : TransformerImpl(), ChartToFSM(other) {}
+	ChartToFlatSCXML(const Interpreter& other) : TransformerImpl(), ChartToFSM(other), _lastTransientStateId(0) {}
 	void createDocument();
 	
 	void appendGlobalStateNode(GlobalState* globalState);
 	Arabica::DOM::Node<std::string> globalTransitionToNode(GlobalTransition* globalTransition);
 	static bool sortStatesByIndex(const std::pair<std::string,GlobalState*>& s1, const std::pair<std::string,GlobalState*>& s2);
+
+	size_t _lastTransientStateId;
 
 };
 

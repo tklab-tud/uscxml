@@ -42,7 +42,7 @@ $/ = '-' x 58 . "\n";
 
 while ($block = <FILE>) {
 	chomp($block);
-	
+		
 	# Test Preambel ========
 	if ($block =~ 
 		/
@@ -81,6 +81,37 @@ while ($block = <FILE>) {
 		$test->{$currTest}->{'duration'} = $1;
 		$test->{$currTest}->{'durationUnit'} = $2;
 		# next; - no next as this is part of the actual test output we need to scan below
+	}
+	
+	# Minimization ========
+	# print $block;
+
+	if ($block =~ 
+		/
+			Number\sof\selements\sbefore\sreduction:\s(\d+)
+		/x ) {
+		$test->{$currTest}->{'min'}->{'before'} = $1;
+		if ($block =~ 
+			/
+				Number\sof\selements\safter\sreduction:\s(\d+)
+			/x ) {
+			$test->{$currTest}->{'min'}->{'after'} = $1;
+		}
+	}
+	
+	# Flattening ========
+
+	if ($block =~ 
+		/
+			Number\sof\selements\sbefore\sflattening:\s(\d+)
+		/x ) {
+		$test->{$currTest}->{'flat'}->{'before'} = $1;
+		if ($block =~ 
+			/
+				Number\sof\selements\safter\sflattening:\s(\d+)
+			/x ) {
+			$test->{$currTest}->{'flat'}->{'after'} = $1;
+		}
 	}
 	
 	# Promela Test ========

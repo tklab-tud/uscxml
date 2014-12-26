@@ -329,6 +329,7 @@ void PromelaDataModel::evaluateStmnt(const std::string& expr) {
 
 void PromelaDataModel::evaluateDecl(void* ast) {
 	PromelaParserNode* node = (PromelaParserNode*)ast;
+//	node->dump();
 	if (false) {
 	} else if (node->type == PML_DECL) {
 		std::list<PromelaParserNode*>::iterator opIter = node->operands.begin();
@@ -398,6 +399,7 @@ void PromelaDataModel::evaluateDecl(void* ast) {
 			evaluateDecl(*declIter);
 		}
 	} else {
+		node->dump();
 		ERROR_EXECUTION_THROW("Declaring variables via " + PromelaParserNode::typeToDesc(node->type) + " not implemented");
 	}
 }
@@ -446,8 +448,9 @@ Data PromelaDataModel::evaluateExpr(void* ast) {
 	case PML_CMPND:
 		return getVariable(node);
 	case PML_STRING: {
-		std::string stripped = node->value.substr(1, node->value.size() - 2);
-		return Data(stripped, Data::VERBATIM);
+//		std::string stripped = node->value.substr(1, node->value.size() - 2);
+//		return Data(stripped, Data::VERBATIM);
+		return Data(node->value, Data::INTERPRETED);
 	}
 	case PML_PLUS:
 		return dataToInt(evaluateExpr(*opIter++)) + dataToInt(evaluateExpr(*opIter++));
@@ -549,29 +552,33 @@ void PromelaDataModel::evaluateStmnt(void* ast) {
 	}
 }
 
-void PromelaDataModel::setVariable(void* ast, Data value) {
+	
+void PromelaDataModel::setVariable(void* ast, const Data& value) {
 	PromelaParserNode* node = (PromelaParserNode*)ast;
 
-	std::list<PromelaParserNode*>::iterator opIter = node->operands.begin();
+	if (INVALID_ASSIGNMENT(node->value)) {
+		ERROR_EXECUTION_THROW("Cannot assign to " + node->value);
+	}
+
+//	if (_variables.compound.find(name->value) == _variables.compound.end()) {
+//		// declare implicitly / convenience
+//		evaluateDecl(ast);
+//	}
+
 	switch (node->type) {
 	case PML_VAR_ARRAY: {
+		std::list<PromelaParserNode*>::iterator opIter = node->operands.begin();
+
 		PromelaParserNode* name = *opIter++;
 		PromelaParserNode* expr = *opIter++;
 
-		if (INVALID_ASSIGNMENT(name->value)) {
-			ERROR_EXECUTION_THROW("Cannot assign to " + name->value);
-		}
-
-		int index = dataToInt(evaluateExpr(expr));
-
-		if (_variables.compound.find(name->value) == _variables.compound.end()) {
-			ERROR_EXECUTION_THROW("No variable " + name->value + " was declared");
-		}
-
+		// is the location an array?
 		if (!_variables[name->value].hasKey("size")) {
 			ERROR_EXECUTION_THROW("Variable " + name->value + " is no array");
 		}
 
+		// is the array large enough?
+		int index = dataToInt(evaluateExpr(expr));
 		if (strTo<int>(_variables[name->value]["size"].atom) <= index) {
 			ERROR_EXECUTION_THROW("Index " + toStr(index) + " in array " + name->value + "[" + _variables[name->value]["size"].atom + "] is out of bounds");
 		}
@@ -580,19 +587,51 @@ void PromelaDataModel::setVariable(void* ast, Data value) {
 
 		break;
 	}
-	case PML_NAME:
-		if (INVALID_ASSIGNMENT(node->value)) {
-			ERROR_EXECUTION_THROW("Cannot assign to " + node->value);
+	case PML_NAME: {
+		// location is an array, but no array was passed
+		if (_variables[node->value].hasKey("size")) {
+			if (value.compound.size() > 0 || value.atom.size() > 0)
+				ERROR_EXECUTION_THROW("Variable " + node->value + " is an array");
+			
+			if (_variables[node->value].compound["size"] < value.array.size())
+				ERROR_EXECUTION_THROW("Array assigned to " + node->value + " is too large");
 		}
+
 		_variables.compound[node->value].compound["value"] = value;
 		break;
+	}
+	case PML_CMPND: {
+		std::list<PromelaParserNode*>::iterator opIter = node->operands.begin();
+		PromelaParserNode* name = *opIter++;
+
+		// location is no array
+		if (_variables[name->value].hasKey("size")) {
+			ERROR_EXECUTION_THROW("Variable " + name->value + " is an array");
+		}
+
+//		std::cout << Data::toJSON(_variables) << std::endl;;
+		
+		Data* var = &_variables[name->value].compound["value"];
+		var->compound["type"] = Data("compound", Data::VERBATIM);
+		var->compound["vis"] = Data("", Data::VERBATIM);
+		
+		while(opIter != node->operands.end()) {
+			name = *opIter; opIter++;
+			var = &(var->compound[name->value]);
+		}
+		*var = value;
+			
+		break;
+	}
 	default:
+			node->dump();
+			ERROR_EXECUTION_THROW("No support for " + PromelaParserNode::typeToDesc(node->type) + " variables implemented");
 		break;
 	}
 
 //	std::cout << Data::toJSON(_variables) << std::endl;
 }
-
+	
 Data PromelaDataModel::getVariable(void* ast) {
 	PromelaParserNode* node = (PromelaParserNode*)ast;
 //	node->dump();
@@ -628,7 +667,6 @@ Data PromelaDataModel::getVariable(void* ast) {
 	case PML_CMPND: {
 //		node->dump();
 //		std::cout << Data::toJSON(_variables["_event"]);
-
 		std::stringstream idPath;
 		PromelaParserNode* name = *opIter++;
 
@@ -711,7 +749,7 @@ void PromelaDataModel::init(const Element<std::string>& dataElem,
 	// from <datamodel>
 	if (HAS_ATTR(dataElem, "id")) {
 		std::string identifier = ATTR(dataElem, "id");
-		std::string type = (HAS_ATTR(dataElem, "type") ? ATTR(dataElem, "type") : "int");
+		std::string type = (HAS_ATTR(dataElem, "type") ? ATTR(dataElem, "type") : "auto");
 		std::string arrSize;
 
 		size_t bracketPos = type.find("[");
@@ -719,7 +757,7 @@ void PromelaDataModel::init(const Element<std::string>& dataElem,
 			arrSize = type.substr(bracketPos, type.length() - bracketPos);
 			type = type.substr(0, bracketPos);
 		}
-
+		
 		std::string expr = type + " " + identifier + arrSize;
 		PromelaParser parser(expr, 1, PromelaParser::PROMELA_DECL);
 		evaluateDecl(parser.ast);
@@ -733,8 +771,28 @@ void PromelaDataModel::init(const std::string& location, const Data& data) {
 
 bool PromelaDataModel::isDeclared(const std::string& expr) {
 	PromelaParser parser(expr);
+//	parser.dump();
 	if (parser.ast->type == PML_VAR_ARRAY)
 		return _variables.compound.find(parser.ast->operands.front()->value) != _variables.compound.end();
+
+	if (parser.ast->type == PML_CMPND) {
+		// JSON declaration
+		std::list<PromelaParserNode*>::iterator opIter = parser.ast->operands.begin();
+		Data* var = &_variables;
+		
+		while(opIter != parser.ast->operands.end()) {
+			std::string name = (*opIter)->value; opIter++;
+			if (var->compound.find(name) != var->compound.end()) {
+				var = &(var->compound.at(name));
+			} else if (var->compound.find("value") != var->compound.end() && var->compound.at("value").compound.find(name) != var->compound.at("value").compound.end()) {
+				var = &(var->compound.at("value").compound.at(name));
+			} else {
+				return false;
+			}
+		}
+		return true;
+		
+	}
 
 	return _variables.compound.find(expr) != _variables.compound.end();
 }

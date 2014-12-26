@@ -43,7 +43,7 @@ L        [a-zA-Z_]
 
 \/\*([^*]|\*[^/])*\*+\/    /* multiline comments */
 
-bit|bool|byte|int|mtype|short|unsigned|string {
+bit|bool|byte|int|mtype|short|unsigned|string|auto {
   yylval->value = strdup(yytext);
   return PML_TYPE;
 }

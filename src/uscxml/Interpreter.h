@@ -840,6 +840,7 @@ public:
 	}
 
 	static std::map<std::string, boost::weak_ptr<InterpreterImpl> > getInstances();
+	static void addInstance(boost::shared_ptr<InterpreterImpl> instance);
 
 protected:
 
@@ -888,6 +889,21 @@ public:
 
 	virtual void reportIssue(Interpreter interpreter, const InterpreterIssue& issue) {}
 
+};
+
+class StateTransitionMonitor : public uscxml::InterpreterMonitor {
+public:
+	virtual void beforeTakingTransition(uscxml::Interpreter interpreter, const Arabica::DOM::Element<std::string>& transition, bool moreComing);
+	virtual void beforeExecutingContent(Interpreter interpreter, const Arabica::DOM::Element<std::string>& element);
+	virtual void onStableConfiguration(uscxml::Interpreter interpreter);
+	virtual void beforeProcessingEvent(uscxml::Interpreter interpreter, const uscxml::Event& event);
+	virtual void beforeExitingState(uscxml::Interpreter interpreter, const Arabica::DOM::Element<std::string>& state, bool moreComing);
+	virtual void beforeEnteringState(uscxml::Interpreter interpreter, const Arabica::DOM::Element<std::string>& state, bool moreComing);
+
+protected:
+	void printNodeSet(const Arabica::XPath::NodeSet<std::string>& config);
+	Arabica::XPath::NodeSet<std::string> exitingStates;
+	Arabica::XPath::NodeSet<std::string> enteringStates;
 };
 
 }

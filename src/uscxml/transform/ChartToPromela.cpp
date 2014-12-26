@@ -418,7 +418,7 @@ void PromelaCodeAnalyzer::addCode(const std::string& code, ChartToPromela* inter
 		case PML_NAME: {
 			_typeDefs.types[node->value].occurrences.insert(interpreter);
 			_typeDefs.types[node->value].minValue = 0;
-			_typeDefs.types[node->value].maxValue = 1;
+			_typeDefs.types[node->value].maxValue = 0;
 			// test325
 			if (node->value.compare("_ioprocessors") == 0) {
 				addCode("_ioprocessors.scxml.location", interpreter);
@@ -717,7 +717,7 @@ void ChartToPromela::writeStates(std::ostream& stream) {
 }
 
 void ChartToPromela::writeStateMap(std::ostream& stream) {
-	stream << "/* macros for original state names */" << std::endl;
+	stream << "/* original state names */" << std::endl;
 	std::map<std::string, int> origStates = _analyzer->getOrigStates();
 	for (std::map<std::string, int>::iterator origIter = origStates.begin(); origIter != origStates.end(); origIter++) {
 		stream << "#define " << _analyzer->macroForLiteral(origIter->first) << " " << origIter->second;
@@ -737,24 +737,23 @@ void ChartToPromela::writeStateMap(std::ostream& stream) {
 }
 
 void ChartToPromela::writeHistoryArrays(std::ostream& stream) {
-	stream << "/* history assignments */" << std::endl;
 	std::map<std::string, std::map<std::string, size_t> >::iterator histNameIter = _historyMembers.begin();
 	while(histNameIter != _historyMembers.end()) {
-		stream << "bool _hist_" << boost::to_lower_copy(histNameIter->first) << "[" << histNameIter->second.size() << "];";
-
-		stream << " /* ";
+		stream << "/* history assignments for " << histNameIter->first << std::endl;
 		std::map<std::string, size_t>::iterator histMemberIter = histNameIter->second.begin();
 		while(histMemberIter != histNameIter->second.end()) {
-			stream << " " << histMemberIter->second << ":" << histMemberIter->first;
+			stream << "   " << histMemberIter->second << ": " << histMemberIter->first << std::endl;;
 			histMemberIter++;
 		}
-		stream << " */" << std::endl;
+		stream << "*/" << std::endl;
+		stream << "bool " << _prefix << "_hist_" << boost::replace_all_copy(boost::to_lower_copy(histNameIter->first), ".", "_") << "[" << histNameIter->second.size() << "];" << std::endl;
+
 		histNameIter++;
 	}
 }
 	
 void ChartToPromela::writeTypeDefs(std::ostream& stream) {
-	stream << "/* typedefs */" << std::endl;
+	stream << "/* type definitions */" << std::endl;
 	PromelaCodeAnalyzer::PromelaTypedef typeDefs = _analyzer->getTypes();
 	if (typeDefs.types.size() == 0)
 		return;
@@ -930,7 +929,7 @@ std::string ChartToPromela::conditionalizeForHist(const std::set<GlobalTransitio
 			while(histItemIter != relevanthistIter->second.end()) {
 				assert(_historyMembers.find(relevanthistIter->first) != _historyMembers.end());
 				assert(_historyMembers[relevanthistIter->first].find(*histItemIter) != _historyMembers[relevanthistIter->first].end());
-				condition << itemSep << "_hist_" << boost::to_lower_copy(_analyzer->macroForLiteral(relevanthistIter->first)) << "[" << _historyMembers[relevanthistIter->first][*histItemIter] << "]";
+				condition << itemSep << _prefix << "_hist_" << boost::to_lower_copy(_analyzer->macroForLiteral(relevanthistIter->first)) << "[" << _historyMembers[relevanthistIter->first][*histItemIter] << "]";
 				itemSep = " && ";
 				histItemIter++;
 			}
@@ -945,7 +944,23 @@ std::string ChartToPromela::conditionalizeForHist(const std::set<GlobalTransitio
 		return "(" + condition.str() + ")";
 	return "";
 }
-	
+
+//std::list<GlobalTransition::Action> ChartToPromela::getTransientContent(GlobalTransition* transition) {
+//	std::list<GlobalTransition::Action> content;
+//	GlobalTransition* currTrans = transition;
+//	for (;;) {
+//		if (!HAS_ATTR(currState, "transient") || !DOMUtils::attributeIsTrue(ATTR(currState, "transient")))
+//			break;
+//		content.push_back(filterChildElements(_nsInfo.xmlNSPrefix + "invoke", currState));
+//		content.push_back(filterChildElements(_nsInfo.xmlNSPrefix + "onentry", currState));
+//		content.push_back(filterChildElements(_nsInfo.xmlNSPrefix + "onexit", currState));
+//		NodeSet<std::string> transitions = filterChildElements(_nsInfo.xmlNSPrefix + "transition", currState);
+//		currState = _globalConf[ATTR_CAST(transitions[0], "target")];
+//	}
+//	
+//	return content;
+//}
+
 void ChartToPromela::writeTransition(std::ostream& stream, GlobalTransition* transition, int indent) {
 	std::string padding;
 	for (int i = 0; i < indent; i++) {
@@ -953,19 +968,24 @@ void ChartToPromela::writeTransition(std::ostream& stream, GlobalTransition* tra
 	}
 
 	stream << std::endl << _prefix << "t" << transition->index << ": /* ######################## " << std::endl;
-	stream << "   from state: ";
 	FlatStateIdentifier flatActiveSource(transition->source);
+	stream << "     from state: ";
 	PRETTY_PRINT_LIST(stream, flatActiveSource.getActive());
 	stream << std::endl;
-	stream << "     on event: " << (transition->eventDesc.size() > 0 ? transition->eventDesc : "SPONTANEOUS") << std::endl;
+	stream << "   with history: " << flatActiveSource.getFlatHistory() << std::endl;
+	stream << " ----- on event: " << (transition->eventDesc.size() > 0 ? transition->eventDesc : "SPONTANEOUS") << " --" << std::endl;
+	stream << "       to state: ";
+	FlatStateIdentifier flatActiveDest(transition->destination);
+	PRETTY_PRINT_LIST(stream, flatActiveDest.getActive());
+	stream << std::endl;
+	stream << "   with history: " << flatActiveDest.getFlatHistory() << std::endl;
+
 	stream << "############################### */" << std::endl;
 	stream << std::endl;
 
-	stream << padding << "atomic {" << std::endl;
-//	stream << padding << "  if" << std::endl;
-//	stream << padding << "  :: " << _prefix << "done -> goto " << _prefix << "terminate;" << std::endl;
-//	stream << padding << "  :: else -> skip;" << std::endl;
-//	stream << padding << "  fi" << std::endl;
+	stream << padding << "skip;" << std::endl;
+	stream << padding << "d_step {" << std::endl;
+	stream << padding << "  printf(\"Taking Transition " << _prefix << "t" << transition->index << "\\n\");" << std::endl;
 	padding += "  ";
 	indent++;
 	
@@ -1099,18 +1119,24 @@ void ChartToPromela::writeTransition(std::ostream& stream, GlobalTransition* tra
 
 		if (action.transition) {
 			// this is executable content from a transition
+			stream << std::endl << "/* executable content for transition */" << std::endl;
 			writeExecutableContent(stream, action.transition, indent);
 //			continue;
 		}
 		
 		if (action.onExit) {
+//			std::cout<< action.onExit << std::endl;
 			// executable content from an onexit element
+			if (action.onExit.getParentNode()) // this should not be necessary?
+				stream << std::endl << "/* executable content for exiting state " << ATTR_CAST(action.onExit.getParentNode(), "id") << " */" << std::endl;
 			writeExecutableContent(stream, action.onExit, indent);
 //			continue;
 		}
 		
 		if (action.onEntry) {
 			// executable content from an onentry element
+			if (action.onEntry.getParentNode()) // this should not be necessary?
+				stream << std::endl << "/* executable content for entering state " << ATTR_CAST(action.onEntry.getParentNode(), "id") << " */" << std::endl;
 			writeExecutableContent(stream, action.onEntry, indent);
 //			continue;
 		}
@@ -1183,10 +1209,13 @@ void ChartToPromela::writeTransition(std::ostream& stream, GlobalTransition* tra
 			if (_machines.find(action.uninvoke) != _machines.end()) {
 				// nested SCXML document
 				stream << padding << _machines[action.uninvoke]->_prefix << "canceled = true;" << std::endl;
-				writeRemovePendingEventsFromInvoker(stream, _machines[action.uninvoke], indent, false);
+				if (_analyzer->usesEventField("delay"))
+					stream << padding << "removePendingEventsForInvoker(" << _analyzer->macroForLiteral(_machines[action.uninvoke]->_invokerid) << ");" << std::endl;
+//				writeRemovePendingEventsFromInvoker(stream, _machines[action.uninvoke], indent, false);
 #if 0
 				stream << padding << "do" << std::endl;
-				stream << padding << ":: len(" << _machines[action.uninvoke]->_prefix << "tmpQ) > 0 -> " << _machines[action.uninvoke]->_prefix << "tmpQ?_;" << std::endl;
+				if (_allowEventInterleaving)
+					stream << padding << ":: len(" << _machines[action.uninvoke]->_prefix << "tmpQ) > 0 -> " << _machines[action.uninvoke]->_prefix << "tmpQ?_;" << std::endl;
 				stream << padding << ":: len(" << _machines[action.uninvoke]->_prefix << "eQ) > 0 -> " << _machines[action.uninvoke]->_prefix << "eQ?_;" << std::endl;
 				stream << padding << ":: else -> break;" << std::endl;
 				stream << padding << "od" << std::endl;
@@ -1247,7 +1276,7 @@ void ChartToPromela::writeTransition(std::ostream& stream, GlobalTransition* tra
 
 		stream << padding << "  " << _prefix << "s = s" << histNewState->activeIndex << ";" << std::endl;
 		
-		writeTransitionClosure(stream, *histTargetIter->second.begin(), histNewState, indent + 1); // is this correct for everyone in set?
+//		writeTransitionClosure(stream, *histTargetIter->second.begin(), histNewState, indent + 1); // is this correct for everyone in set?
 
 		stream << padding << "}" << std::endl;
 		hasHistoryTarget = true;
@@ -1261,16 +1290,12 @@ void ChartToPromela::writeTransition(std::ostream& stream, GlobalTransition* tra
 	
 	origNewState = _activeConf[transition->activeDestination];
 	assert(origNewState != NULL);
-	
-	
+
 	stream << std::endl << "/* to state ";
-	FlatStateIdentifier flatActiveDest(transition->activeDestination);
 	PRETTY_PRINT_LIST(stream, flatActiveDest.getActive());
 	stream <<  " */" << std::endl;
 	
 	stream << padding << _prefix << "s = s" << origNewState->activeIndex << ";" << std::endl;
-
-	writeTransitionClosure(stream, transition, origNewState, indent);
 
 	if (hasHistoryTarget) {
 		padding = padding.substr(2);
@@ -1279,8 +1304,11 @@ void ChartToPromela::writeTransition(std::ostream& stream, GlobalTransition* tra
 		stream << padding << "fi;" << std::endl;
 	}
 	
+	// moved up here for goto from d_step
 	padding = padding.substr(2);
 	stream << padding << "}" << std::endl;
+
+	writeTransitionClosure(stream, transition, origNewState, indent-1);
 
 }
 
@@ -1366,7 +1394,7 @@ void ChartToPromela::writeHistoryAssignments(std::ostream& stream, GlobalTransit
 			while(forgetIter != histClassIter->toForget.end()) {
 				std::set<std::string>::iterator forgetMemberIter = forgetIter->second.begin();
 				while(forgetMemberIter != forgetIter->second.end()) {
-					stream << padding << "_hist_" << boost::to_lower_copy(_analyzer->macroForLiteral(forgetIter->first));
+					stream << padding << _prefix << "_hist_" << boost::to_lower_copy(_analyzer->macroForLiteral(forgetIter->first));
 					stream << "[" << _historyMembers[forgetIter->first][*forgetMemberIter] << "] = 0;";
 					stream << " \t/* " << *forgetMemberIter << " */" << std::endl;
 					forgetMemberIter++;
@@ -1380,7 +1408,7 @@ void ChartToPromela::writeHistoryAssignments(std::ostream& stream, GlobalTransit
 			while(rememberIter != histClassIter->toRemember.end()) {
 				std::set<std::string>::iterator rememberMemberIter = rememberIter->second.begin();
 				while(rememberMemberIter != rememberIter->second.end()) {
-					stream << padding << "_hist_" << boost::to_lower_copy(_analyzer->macroForLiteral(rememberIter->first));
+					stream << padding << _prefix << "_hist_" << boost::to_lower_copy(_analyzer->macroForLiteral(rememberIter->first));
 					stream << "[" << _historyMembers[rememberIter->first][*rememberMemberIter] << "] = 1;";
 					stream << " \t/* " << *rememberMemberIter << " */" << std::endl;
 					rememberMemberIter++;
@@ -1586,12 +1614,16 @@ void ChartToPromela::writeExecutableContent(std::ostream& stream, const Arabica:
 		std::string seperator;
 		
 		if (label.size() > 0) {
-			formatString += label + ": ";
+			if (expr.size() > 0) {
+				formatString += label + ": ";
+			} else {
+				formatString += label;
+			}
 		}
 		
 		if (isStringLiteral) {
 			formatString += expr;
-		} else {
+		} else if (expr.size() > 0) {
 			formatString += "%d";
 			varString += seperator + expr;
 		}
@@ -1612,8 +1644,8 @@ void ChartToPromela::writeExecutableContent(std::ostream& stream, const Arabica:
 			writeExecutableContent(stream, child, indent + 1);
 			child = child.getNextSibling();
 		}
-		if (HAS_ATTR(nodeElem, "index"))
-			stream << padding << "  " << _prefix << ATTR(nodeElem, "index") << "++;" << std::endl;
+//		if (HAS_ATTR(nodeElem, "index"))
+//			stream << padding << "  " << _prefix << ATTR(nodeElem, "index") << "++;" << std::endl;
 		stream << padding << "}" << std::endl;
 		
 	} else if(TAGNAME(nodeElem) == "if") {
@@ -1627,14 +1659,18 @@ void ChartToPromela::writeExecutableContent(std::ostream& stream, const Arabica:
 	} else if(TAGNAME(nodeElem) == "assign") {
 		NodeSet<std::string> assignTexts = filterChildType(Node_base::TEXT_NODE, nodeElem, true);
 		assert(assignTexts.size() > 0);
-		stream << ADAPT_SRC(boost::trim_copy(assignTexts[0].getNodeValue())) << std::endl;
+		stream << beautifyIndentation(ADAPT_SRC(boost::trim_copy(assignTexts[0].getNodeValue())), indent) << std::endl;
 		
 	} else if(TAGNAME(nodeElem) == "send" || TAGNAME(nodeElem) == "raise") {
 		std::string targetQueue;
 		if (TAGNAME(nodeElem) == "raise") {
 			targetQueue = _prefix + "iQ!";
 		} else if (!HAS_ATTR(nodeElem, "target")) {
-			targetQueue = _prefix + "tmpQ!";
+			if (_allowEventInterleaving) {
+				targetQueue = _prefix + "tmpQ!";
+			} else {
+				targetQueue = _prefix + "eQ!";
+			}
 		} else if (ATTR(nodeElem, "target").compare("#_internal") == 0) {
 			targetQueue = _prefix + "iQ!";
 		} else if (ATTR(nodeElem, "target").compare("#_parent") == 0) {
@@ -1663,13 +1699,13 @@ void ChartToPromela::writeExecutableContent(std::ostream& stream, const Arabica:
 					stream << padding << "  tmpE.sendid = _lastSendId;" << std::endl;
 					stream << padding << "  if" << std::endl;
 					stream << padding << "  :: _lastSendId == 2147483647 -> _lastSendId = 0;" << std::endl;
-					stream << padding << "  :: timeout -> skip;" << std::endl;
+					stream << padding << "  :: else -> skip;" << std::endl;
 					stream << padding << "  fi;" << std::endl;
 				} else if (HAS_ATTR(nodeElem, "id")) {
 					stream << padding << "  tmpE.sendid = " << _analyzer->macroForLiteral(ATTR(nodeElem, "id")) << ";" << std::endl;
 				}
 				
-				if (_invokerid.length() > 0 && !boost::starts_with(targetQueue, _prefix)) { // do not send invokeid if we send / raise to ourself
+				if (_invokerid.length() > 0) { // do not send invokeid if we send / raise to ourself
 					stream << padding << "  tmpE.invokeid = " << _analyzer->macroForLiteral(_invokerid) << ";" << std::endl;
 				}
 				
@@ -1733,82 +1769,17 @@ void ChartToPromela::writeExecutableContent(std::ostream& stream, const Arabica:
 			}
 		}
 	} else if(TAGNAME(nodeElem) == "cancel") {
-		writeCancelWithIdOrExpr(stream, nodeElem, this, indent);
+		if (HAS_ATTR(nodeElem, "sendid")) {
+			stream << padding << "cancelSendId(" << _analyzer->macroForLiteral(ATTR(nodeElem, "sendid")) << "," << (_invokerid.size() > 0 ? _analyzer->macroForLiteral(_invokerid) : "0") << ");" << std::endl;
+		} else if (HAS_ATTR(nodeElem, "sendidexpr")) {
+			stream << padding << "cancelSendId(" << ADAPT_SRC(ATTR(nodeElem, "sendidexpr")) << "," << (_invokerid.size() > 0 ? _analyzer->macroForLiteral(_invokerid) : "0") << ");" << std::endl;
+		}
 	} else {
 		std::cerr << "'" << TAGNAME(nodeElem) << "'" << std::endl << nodeElem << std::endl;
 		assert(false);
 	}
 }
 
-void ChartToPromela::writeCancelWithIdOrExpr(std::ostream& stream, const Arabica::DOM::Element<std::string>& cancel, ChartToPromela* invoker, int indent) {
-	std::string padding;
-	for (int i = 0; i < indent; i++) {
-		padding += "  ";
-	}
-
-	ChartToPromela* topMachine = (invoker->_parent != NULL ? invoker->_parent : invoker);
-	
-	std::list<ChartToPromela*> others;
-	others.push_back(topMachine);
-	for (std::map<Arabica::DOM::Node<std::string>, ChartToPromela*>::iterator queueIter = topMachine->_machines.begin(); queueIter != topMachine->_machines.end(); queueIter++) {
-		others.push_back(queueIter->second);
-	}
-	
-	if (HAS_ATTR(cancel, "sendid")) {
-		stream << padding << "/* cancel event given by sendid */" << std::endl;
-		stream << padding << "atomic {" << std::endl;
-		stream << padding << "  _event_t tmpE;" << std::endl;
-		stream << padding << "  do" << std::endl;
-		for (std::list<ChartToPromela*>::iterator queueIter = others.begin(); queueIter != others.end(); queueIter++) {
-			stream << padding << "  :: " << (*queueIter)->_prefix << "eQ?\?" << (_analyzer->usesEventField("delay") ? "tmpE.delay, tmpE.seqNr," : "") << " tmpE.name, " << _analyzer->macroForLiteral(ATTR(cancel, "sendid")) << ";" << std::endl;
-			stream << padding << "  :: " << (*queueIter)->_prefix << "tmpQ?\?" << (_analyzer->usesEventField("delay") ? "tmpE.delay, tmpE.seqNr," : "") << " tmpE.name, " << _analyzer->macroForLiteral(ATTR(cancel, "sendid")) << ";" << std::endl;
-		}
-		stream << padding << "  :: else -> break;" << std::endl;
-		stream << padding << "  od" << std::endl;
-		stream << padding << "}" << std::endl;
-
-	} else if (HAS_ATTR(cancel, "sendidexpr")) {
-		stream << padding << "/* cancel event given by sendidexpr */" << std::endl;
-		stream << padding << "atomic {" << std::endl;
-		stream << padding << "  _event_t tmpE;" << std::endl;
-		
-		stream << padding << "  do" << std::endl;
-		stream << padding << "  :: (len(" << _prefix << "tmpQ) > 0) -> { " << _prefix << "tmpQ?tmpE; sendIdQ!tmpE;  }" << std::endl;
-		stream << padding << "  :: else -> break;" << std::endl;
-		stream << padding << "  od" << std::endl;
-		
-		stream << padding << "  do" << std::endl;
-		stream << padding << "  :: (len(sendIdQ) > 0) -> {" << std::endl;
-		stream << padding << "    sendIdQ?tmpE;" << std::endl;
-		stream << padding << "    if" << std::endl;
-		stream << padding << "    :: (tmpE.sendid != " << ADAPT_SRC(ATTR(cancel, "sendidexpr")) << ") -> " << _prefix << "tmpQ!tmpE" << std::endl;
-		stream << padding << "    :: else -> skip;" << std::endl;
-		stream << padding << "    fi" << std::endl;
-		stream << padding << "  }" << std::endl;
-		stream << padding << "  :: else -> break;" << std::endl;
-		stream << padding << "  od" << std::endl;
-
-		for (std::list<ChartToPromela*>::iterator queueIter = others.begin(); queueIter != others.end(); queueIter++) {
-			stream << padding << "  do" << std::endl;
-			stream << padding << "  :: (len(" << (*queueIter)->_prefix << "eQ) > 0) -> { " << (*queueIter)->_prefix << "eQ?tmpE; sendIdQ!tmpE;  }" << std::endl;
-			stream << padding << "  :: else -> break;" << std::endl;
-			stream << padding << "  od" << std::endl;
-			
-			stream << padding << "  do" << std::endl;
-			stream << padding << "  :: (len(sendIdQ) > 0) -> {" << std::endl;
-			stream << padding << "    sendIdQ?tmpE;" << std::endl;
-			stream << padding << "    if" << std::endl;
-			stream << padding << "    :: (tmpE.sendid != " << ADAPT_SRC(ATTR(cancel, "sendidexpr")) << ") -> " << (*queueIter)->_prefix << "eQ!tmpE" << std::endl;
-			stream << padding << "    :: else -> skip;" << std::endl;
-			stream << padding << "    fi" << std::endl;
-			stream << padding << "  }" << std::endl;
-			stream << padding << "  :: else -> break;" << std::endl;
-			stream << padding << "  od" << std::endl;
-		}
-		stream << padding << "}" << std::endl;
-	}
-
-}
 
 PromelaInlines PromelaInlines::fromNodeSet(const NodeSet<std::string>& node, bool recurse) {
 	PromelaInlines allPromInls;
@@ -2012,7 +1983,7 @@ void ChartToPromela::writeStrings(std::ostream& stream) {
 
 void ChartToPromela::writeDeclarations(std::ostream& stream) {
 
-	stream << "/* global variables */" << std::endl;
+	stream << "/* global variables " << (_prefix.size() > 0 ? "for " + _prefix : "") << " */" << std::endl;
 	
 	// we cannot know our event queue with nested invokers? Adding some for test422
 	size_t tolerance = 6;
@@ -2023,14 +1994,15 @@ void ChartToPromela::writeDeclarations(std::ostream& stream) {
 		stream << "unsigned " << _prefix << "s : " << BIT_WIDTH(_activeConf.size() + 1) << ";                /* current state */" << std::endl;
 		stream << "chan " << _prefix << "iQ   = [" << MAX(_internalQueueLength, 1) << "] of {_event_t}  /* internal queue */" << std::endl;
 		stream << "chan " << _prefix << "eQ   = [" << _externalQueueLength + tolerance << "] of {_event_t}  /* external queue */" << std::endl;
-		stream << "chan " << _prefix << "tmpQ = [" << MAX(_externalQueueLength + tolerance, 1) << "] of {_event_t}  /* temporary queue for external events in transitions */" << std::endl;
-//		stream << "hidden " << "_event_t " << _prefix << "tmpQItem;" << std::endl;
+		if (_allowEventInterleaving)
+			stream << "chan " << _prefix << "tmpQ = [" << MAX(_externalQueueLength + tolerance, 1) << "] of {_event_t}  /* temporary queue for external events in transitions */" << std::endl;
 	} else {
 		stream << "unsigned " << _prefix << "_event : " << BIT_WIDTH(_analyzer->getEvents().size() + 1) << ";                /* current event */" << std::endl;
 		stream << "unsigned " << _prefix << "s : " << BIT_WIDTH(_activeConf.size() + 1) << ";            /* current state */" << std::endl;
 		stream << "chan " << _prefix << "iQ   = [" << MAX(_internalQueueLength, 1) << "] of {int}  /* internal queue */" << std::endl;
 		stream << "chan " << _prefix << "eQ   = [" << _externalQueueLength + tolerance << "] of {int}  /* external queue */" << std::endl;
-		stream << "chan " << _prefix << "tmpQ = [" << MAX(_externalQueueLength + tolerance, 1) << "] of {int}  /* temporary queue for external events in transitions */" << std::endl;
+		if (_allowEventInterleaving)
+			stream << "chan " << _prefix << "tmpQ = [" << MAX(_externalQueueLength + tolerance, 1) << "] of {int}  /* temporary queue for external events in transitions */" << std::endl;
 //		stream << "hidden unsigned " << _prefix << "tmpQItem : " << BIT_WIDTH(_analyzer->getEvents().size() + 1) << ";" << std::endl;
 	}
 	if (_machines.size() > 0) {
@@ -2051,11 +2023,11 @@ void ChartToPromela::writeDeclarations(std::ostream& stream) {
 	if (_prefix.size() == 0 || _prefix == "MAIN_") {
 		if (_analyzer->usesEventField("sendid")) {
 			stream << "chan sendIdQ = [" << MAX(_externalQueueLength + 1, 1) << "] of {_event_t}  /* temporary queue to cancel events per sendidexpr */" << std::endl;
-			stream << "hidden int _lastSendId = 0;         /* sequential counter for send ids */";
+			stream << "hidden int _lastSendId = 0;         /* sequential counter for send ids */" << std::endl;
 		}
 
 		if (_analyzer->usesEventField("delay")) {
-			stream << "hidden int _lastSeqId = 0;          /* sequential counter for delayed events */";
+			stream << "hidden int _lastSeqId = 0;     /* sequential counter for delayed events */"  << std::endl;
 		}
 	}
 //	if (_analyzer->usesPlatformVars()) {
@@ -2181,7 +2153,8 @@ void ChartToPromela::writeDeclarations(std::ostream& stream) {
 	}
 
 	stream << std::endl;
-	stream << "/* event sources */" << std::endl;
+	if (_globalEventSource || _invokers.size() > 0)
+		stream << "/* event sources */" << std::endl;
 
 	if (_globalEventSource) {
 		_globalEventSource.writeDeclarations(stream);
@@ -2220,7 +2193,7 @@ void ChartToPromela::writeStartInvoker(std::ostream& stream, const Arabica::DOM:
 		std::list<std::string> namelist = tokenize(ATTR_CAST(node, "namelist"));
 		for (std::list<std::string>::iterator nlIter = namelist.begin(); nlIter != namelist.end(); nlIter++) {
 			if (invoker->_dataModelVars.find(*nlIter) != invoker->_dataModelVars.end()) {
-				stream << padding << invoker->_prefix << *nlIter << " = " << _prefix << *nlIter << std::endl;
+				stream << padding << invoker->_prefix << *nlIter << " = " << _prefix << *nlIter << ";" << std::endl;
 			}
 		}
 	}
@@ -2254,14 +2227,16 @@ void ChartToPromela::writeFSM(std::ostream& stream) {
 //	transitions = filterChildElements(_nsInfo.xmlNSPrefix + "transition", _startState);
 //	assert(transitions.size() == 1);
 
-	stream << std::endl << "/* global scripts */" << std::endl;
 	NodeSet<std::string> scripts = filterChildElements(_nsInfo.xmlNSPrefix + "script", _scxml, false);
-	for (int i = 0; i < scripts.size(); i++) {
-		writeExecutableContent(stream, scripts[i], 1);
+	if (scripts.size() > 0) {
+		stream << std::endl << "/* global scripts */" << std::endl;
+		for (int i = 0; i < scripts.size(); i++) {
+			writeExecutableContent(stream, scripts[i], 1);
+		}
+		stream << std::endl;
 	}
-	stream << std::endl;
-
-	stream << "/* transition to initial state */" << std::endl;
+	
+	stream << std::endl << "/* transition to initial state */" << std::endl;
 	assert(_start->sortedOutgoing.size() == 1);
 	// initial transition has to be first one for control flow at start
 	writeTransition(stream, _start->sortedOutgoing.front(), 1);
@@ -2281,77 +2256,40 @@ void ChartToPromela::writeFSM(std::ostream& stream) {
 	}
 
 	stream << std::endl;
-	stream << _prefix << "macroStep:" << std::endl;
-	stream << "  /* push send events to external queue */" << std::endl;
-	stream << "  do" << std::endl;
-	if (_analyzer->usesEventField("delay")) {
-		stream << "  :: len(" << _prefix << "tmpQ) != 0 -> { " << _prefix << "tmpQ?" << _prefix << "_event; " << _prefix << "eQ!!" << _prefix << "_event }" << std::endl;
-	} else {
-		stream << "  :: len(" << _prefix << "tmpQ) != 0 -> { " << _prefix << "tmpQ?" << _prefix << "_event; " << _prefix << "eQ!" << _prefix << "_event }" << std::endl;
+	stream << _prefix << "macroStep: skip;" << std::endl;
+	if (_allowEventInterleaving) {
+		stream << "  /* push send events to external queue */" << std::endl;
+		stream << "  do" << std::endl;
+		if (_analyzer->usesEventField("delay")) {
+			stream << "  :: len(" << _prefix << "tmpQ) != 0 -> { " << _prefix << "tmpQ?" << _prefix << "_event; " << _prefix << "eQ!!" << _prefix << "_event }" << std::endl;
+		} else {
+			stream << "  :: len(" << _prefix << "tmpQ) != 0 -> { " << _prefix << "tmpQ?" << _prefix << "_event; " << _prefix << "eQ!" << _prefix << "_event }" << std::endl;
+		}
+		stream << "  :: else -> break;" << std::endl;
+		stream << "  od;" << std::endl << std::endl;
 	}
-	stream << "  :: else -> break;" << std::endl;
-	stream << "  od;" << std::endl << std::endl;
-
+	
 	if (_machines.size() > 0) {
 		stream << "  /* start pending invokers */" << std::endl;
 		stream << "  int invokerId;" << std::endl;
 		stream << "  do" << std::endl;
 		stream << "  :: " << _prefix << "start?invokerId -> {" << std::endl;
-		stream << "  if " << std::endl;
+		stream << "    if " << std::endl;
 		for (std::map<Arabica::DOM::Node<std::string>, ChartToPromela*>::iterator machIter = _machines.begin(); machIter != _machines.end(); machIter++) {
-			stream << "  :: invokerId == " << _analyzer->macroForLiteral(machIter->second->_invokerid) << " -> {" << std::endl;
-			writeStartInvoker(stream, machIter->first, machIter->second, 2);
-			stream << "  }" << std::endl;
+			stream << "    :: invokerId == " << _analyzer->macroForLiteral(machIter->second->_invokerid) << " -> {" << std::endl;
+			writeStartInvoker(stream, machIter->first, machIter->second, 3);
+			stream << "    }" << std::endl;
 		}
-		stream << "  :: else -> skip; " << std::endl;
-		stream << "  fi " << std::endl;
-		stream << "  } " << std::endl;
+		stream << "    :: else -> skip; " << std::endl;
+		stream << "    fi " << std::endl;
+		stream << "  }" << std::endl;
 		stream << "  :: else -> break;" << std::endl;
-		stream << "  od" << std::endl;
+		stream << "  od" << std::endl << std::endl;
 	}
 	
-	if (_analyzer->usesEventField("delay")) {
-		stream << "  /* find machine with next event due */" << std::endl;
-		stream << "  if" << std::endl;
-		stream << "  :: len(" << _prefix << "iQ) != 0 -> skip;    /* internal queue not empty -> do not reduce our priority */" << std::endl;
-		stream << "  :: " << _prefix << "eQ?\? <0> -> skip;           /* at least one event without delay -> do not reduce our priority */" << std::endl;
-		stream << "  :: timeout -> { "<< std::endl;
-	//	stream << "    /* determine queue with shortest delay in front */" << std::endl;
-		stream << "    atomic {" << std::endl;
-		stream << "      int nextPid;" << std::endl;
-		stream << "      int lowestDelay = 0;" << std::endl;
-		stream << "      _event_t tmpE;" << std::endl;
-
-		for (std::map<Arabica::DOM::Node<std::string>, ChartToPromela*>::iterator queueIter = _machinesAll->begin(); queueIter != _machinesAll->end(); queueIter++) {
-			std::list<std::string> queues;
-			queues.push_back("eQ");
-			queues.push_back("tmpQ");
-			for (std::list<std::string>::iterator qIter = queues.begin(); qIter != queues.end(); qIter++) {
-				stream << "      if" << std::endl;
-				stream << "      :: len(" << queueIter->second->_prefix << *qIter << ") > 0 -> {" << std::endl;
-				stream << "        " << queueIter->second->_prefix << *qIter << "?<tmpE>;" << std::endl;
-				stream << "        if" << std::endl;
-				stream << "        :: (tmpE.delay < lowestDelay || lowestDelay == 0) -> {" << std::endl;
-				stream << "          lowestDelay = tmpE.delay;" << std::endl;
-				stream << "          nextPid = " << queueIter->second->_prefix << "procid;" << std::endl;
-				stream << "        }" << std::endl;
-				stream << "        :: else -> skip;" << std::endl;
-				stream << "        fi;" << std::endl;
-				stream << "      }" << std::endl;
-				stream << "      :: else -> skip;;" << std::endl;
-				stream << "      fi;" << std::endl;
-			}
-		}
-		
-		stream << "      set_priority(nextPid, 10);" << std::endl;
-		stream << "      if" << std::endl;
-		stream << "      :: (nextPid != _pid) -> set_priority(_pid, 1);" << std::endl;
-		stream << "      :: else -> skip;" << std::endl;
-		stream << "      fi;" << std::endl;
-		stream << "    }" << std::endl;
-		stream << "  }" << std::endl;
-		stream << "  fi;" << std::endl;
-		stream << "  set_priority(_pid, 10);" << std::endl << std::endl;
+	if (_analyzer->usesEventField("delay") && _machinesAll->size() > 1) {
+		stream << "/* Determine machines with smallest delay and set their process priority */" << std::endl;
+		stream << "  scheduleMachines();" << std::endl << std::endl;
 	}
 	
 	stream << "  /* pop an event */" << std::endl;
@@ -2359,7 +2297,21 @@ void ChartToPromela::writeFSM(std::ostream& stream) {
 	stream << "  :: len(" << _prefix << "iQ) != 0 -> " << _prefix << "iQ ? " << _prefix << "_event   /* from internal queue */" << std::endl;
 	stream << "  :: else -> " << _prefix << "eQ ? " << _prefix << "_event           /* from external queue */" << std::endl;
 	stream << "  fi;" << std::endl << std::endl;
-	
+
+#if 0
+	if (!_analyzer->usesComplexEventStruct()) {
+		stream << "    printf(\"======= Process %d dequeued %d\\n\", _pid, " << _prefix << "_event);" << std::endl;
+	} else {
+		stream << "    printf(\"======= Process %d dequeued %d\\n\", _pid, " << _prefix << "_event.name);" << std::endl;
+		if (_analyzer->usesEventField("sendid"))
+			stream << "    printf(\"  sendid: %d\\n\", " << _prefix << "_event.sendid);" << std::endl;
+		if (_analyzer->usesEventField("invokeid"))
+			stream << "    printf(\"  invokeid: %d\\n\", " << _prefix << "_event.invokeid);" << std::endl;
+		if (_analyzer->usesEventField("delay"))
+			stream << "    printf(\"  delay: %d\\n\", " << _prefix << "_event.delay);" << std::endl;
+	}
+	stream << std::endl;
+#endif
 	stream << "  /* terminate if we are stopped */" << std::endl;
 	stream << "  if" << std::endl;
 	stream << "  :: " << _prefix << "done -> goto " << _prefix << "terminate;" << std::endl;
@@ -2396,13 +2348,13 @@ void ChartToPromela::writeFSM(std::ostream& stream) {
 	}
 #endif
 	
-	stream << "  /* autoforward to respective invokers */" << std::endl;
 	for (std::map<Arabica::DOM::Node<std::string>, ChartToPromela*>::iterator invIter = _machines.begin(); invIter != _machines.end(); invIter++) {
 		if (invIter->second == this) {
 			continue;
 		}
 		//std::cout << invIter->first << std::endl;
 		if (DOMUtils::attributeIsTrue(ATTR_CAST(invIter->first, "autoforward"))) {
+			stream << "  /* autoforward event to " << invIter->second->_invokerid << " invokers */" << std::endl;
 			stream << "  if" << std::endl;
 			stream << "  :: " << invIter->second->_prefix << "done -> skip;" << std::endl;
 			stream << "  :: " << invIter->second->_prefix << "canceled -> skip;" << std::endl;
@@ -2442,8 +2394,8 @@ void ChartToPromela::writeFSM(std::ostream& stream) {
 		}
 		stream << "  }" << std::endl;
 		stream << _prefix << "cancel: skip;" << std::endl;
-		writeRemovePendingEventsFromInvoker(stream, this, 1, true);
-
+		if (_analyzer->usesEventField("delay"))
+			stream << "  removePendingEventsForInvoker(" << _analyzer->macroForLiteral(this->_invokerid) << ")" << std::endl;
 	}
 	
 	// stop all event sources
@@ -2459,53 +2411,217 @@ void ChartToPromela::writeFSM(std::ostream& stream) {
 	stream << "}" << std::endl;
 }
 
-void ChartToPromela::writeRemovePendingEventsFromInvoker(std::ostream& stream, ChartToPromela* invoker, int indent, bool atomic) {
+void ChartToPromela::writeRescheduleProcess(std::ostream& stream, int indent) {
 	std::string padding;
 	for (int i = 0; i < indent; i++) {
 		padding += "  ";
 	}
 
-	if (!invoker || !invoker->_parent)
-		return;
-	
-	if (_analyzer->usesEventField("delay")) {
-		if (atomic) {
-			stream << padding << "atomic {" << std::endl;
-		} else {
-			stream << padding << "{" << std::endl;
-		}
-		stream << padding << "  /* remove all this invoker's pending events from all queues */" << std::endl;
-		stream << padding << "  _event_t tmpE;" << std::endl;
-		std::list<ChartToPromela*> others;
-		others.push_back(invoker->_parent);
-		for (std::map<Arabica::DOM::Node<std::string>, ChartToPromela*>::iterator queueIter = invoker->_parent->_machines.begin(); queueIter != invoker->_parent->_machines.end(); queueIter++) {
-			if (queueIter->second != invoker)
-				others.push_back(queueIter->second);
-		}
-		
-		for (std::list<ChartToPromela*>::iterator queueIter = others.begin(); queueIter != others.end(); queueIter++) {
-			stream << padding << "  do" << std::endl;
-			stream << padding << "  :: (len(" << (*queueIter)->_prefix << "eQ) > 0) -> { " << (*queueIter)->_prefix << "eQ?tmpE; " << _prefix << "tmpQ!tmpE;  }" << std::endl;
-			stream << padding << "  :: else -> break;" << std::endl;
-			stream << padding << "  od" << std::endl;
-
-			stream << padding << "  do" << std::endl;
-			stream << padding << "  :: (len(" << _prefix << "tmpQ) > 0) -> {" << std::endl;
-			stream << padding << "    " << _prefix << "tmpQ?tmpE;" << std::endl;
-			stream << padding << "    if" << std::endl;
-			stream << padding << "    :: (tmpE.invokeid != " << _analyzer->macroForLiteral(invoker->_invokerid) << " || tmpE.delay == 0) -> " << (*queueIter)->_prefix << "eQ!tmpE" << std::endl;
-			stream << padding << "    :: else -> skip;" << std::endl;
-			stream << padding << "    fi" << std::endl;
-			stream << padding << "  }" << std::endl;
-			stream << padding << "  :: else -> break;" << std::endl;
-			stream << padding << "  od" << std::endl;
-
-		}
-		stream << padding << "}" << std::endl;
+	if (_allowEventInterleaving) {
+		stream << padding << "inline rescheduleProcess(smallestDelay, procId, internalQ, externalQ, tempQ) {" << std::endl;
+	} else {
+		stream << padding << "inline rescheduleProcess(smallestDelay, procId, internalQ, externalQ) {" << std::endl;
 	}
+	stream << padding << "  _event_t tmpEvent;" << std::endl;
 
+	stream << padding << "  set_priority(procId, 1);" << std::endl;
+	stream << padding << "  if" << std::endl;
+	stream << padding << "  :: len(internalQ) > 0 -> set_priority(procId, 10);" << std::endl;
+	stream << padding << "  :: else {" << std::endl;
+	stream << padding << "    if" << std::endl;
+
+	stream << padding << "    :: len(externalQ) > 0 -> {" << std::endl;
+	stream << padding << "      externalQ?<tmpEvent>;" << std::endl;
+	stream << padding << "      if" << std::endl;
+	stream << padding << "      :: smallestDelay == tmpEvent.delay -> set_priority(procId, 10);" << std::endl;
+	stream << padding << "      :: else -> skip;" << std::endl;
+	stream << padding << "      fi;" << std::endl;
+	stream << padding << "    }" << std::endl;
+
+	if (_allowEventInterleaving) {
+		stream << padding << "    :: len(tempQ) > 0 -> {" << std::endl;
+		stream << padding << "      tempQ?<tmpEvent>;" << std::endl;
+		stream << padding << "      if" << std::endl;
+		stream << padding << "      :: smallestDelay == tmpEvent.delay -> set_priority(procId, 10);" << std::endl;
+		stream << padding << "      :: else -> skip;" << std::endl;
+		stream << padding << "      fi;" << std::endl;
+		stream << padding << "    }" << std::endl;
+	}
+	
+	stream << padding << "    :: else -> skip;" << std::endl;
+	stream << padding << "    fi;" << std::endl;
+	stream << padding << "  }" << std::endl;
+	stream << padding << "  fi;" << std::endl;
+	stream << padding << "}" << std::endl;
 }
 
+void ChartToPromela::writeDetermineShortestDelay(std::ostream& stream, int indent) {
+	std::string padding;
+	for (int i = 0; i < indent; i++) {
+		padding += "  ";
+	}
+
+	stream << padding << "inline determineSmallestDelay(smallestDelay, queue) {" << std::endl;
+	stream << padding << "  _event_t tmpEvent;" << std::endl;
+	stream << padding << "  if" << std::endl;
+	stream << padding << "  :: len(queue) > 0 -> {" << std::endl;
+	stream << padding << "    queue?<tmpEvent>;" << std::endl;
+	stream << padding << "    if" << std::endl;
+	stream << padding << "    :: (tmpEvent.delay < smallestDelay) -> { smallestDelay = tmpEvent.delay; }" << std::endl;
+	stream << padding << "    :: else -> skip;" << std::endl;
+	stream << padding << "    fi;" << std::endl;
+	stream << padding << "  }" << std::endl;
+	stream << padding << "  :: else -> skip;" << std::endl;
+	stream << padding << "  fi;" << std::endl;
+	stream << padding << "}" << std::endl;
+}
+
+void ChartToPromela::writeAdvanceTime(std::ostream& stream, int indent) {
+	std::string padding;
+	for (int i = 0; i < indent; i++) {
+		padding += "  ";
+	}
+	
+	stream << padding << "inline advanceTime(increment, queue) {" << std::endl;
+	stream << padding << "  int tmpIndex = 0;" << std::endl;
+	stream << padding << "  _event_t tmpEvent;" << std::endl;
+	stream << padding << "  do" << std::endl;
+	stream << padding << "  :: tmpIndex < len(queue) -> {" << std::endl;
+	stream << padding << "    queue?tmpEvent;" << std::endl;
+	stream << padding << "    if" << std::endl;
+	stream << padding << "    :: tmpEvent.delay >= increment -> tmpEvent.delay = tmpEvent.delay - increment;" << std::endl;
+	stream << padding << "    :: else -> skip;" << std::endl;
+	stream << padding << "    fi" << std::endl;
+	stream << padding << "    queue!tmpEvent;" << std::endl;
+	stream << padding << "    tmpIndex++;" << std::endl;
+	stream << padding << "  }" << std::endl;
+	stream << padding << "  :: else -> break;" << std::endl;
+	stream << padding << "  od" << std::endl;
+	stream << padding << "}" << std::endl;
+}
+
+void ChartToPromela::writeRemovePendingEventsFromInvoker(std::ostream& stream, int indent) {
+	std::list<std::string> queues;
+	queues.push_back("eQ");
+	if (_allowEventInterleaving)
+		queues.push_back("tmpQ");
+	
+	stream << "inline removePendingEventsForInvoker(invokeIdentifier) {" << std::endl;
+	for (std::map<Arabica::DOM::Node<std::string>, ChartToPromela*>::iterator queueIter = _machinesAll->begin(); queueIter != _machinesAll->end(); queueIter++) {
+		for (std::list<std::string>::iterator qIter = queues.begin(); qIter != queues.end(); qIter++) {
+			stream << "  removePendingEventsForInvokerOnQueue(invokeIdentifier, " << queueIter->second->_prefix << *qIter << ");" << std::endl;
+		}
+	}
+	stream << "}" << std::endl;
+	stream << std::endl;
+
+	stream << "inline removePendingEventsForInvokerOnQueue(invokeIdentifier, queue) {" << std::endl;
+	stream << "  int tmpIndex = 0;" << std::endl;
+	stream << "  _event_t tmpEvent;" << std::endl;
+	stream << "  do" << std::endl;
+	stream << "  :: tmpIndex < len(queue) -> {" << std::endl;
+	stream << "    queue?tmpEvent;" << std::endl;
+	stream << "    if" << std::endl;
+	stream << "    :: tmpEvent.delay == 0 || tmpEvent.invokeid != invokeIdentifier -> queue!tmpEvent;" << std::endl;
+	stream << "    :: else -> skip;" << std::endl;
+	stream << "    fi" << std::endl;
+	stream << "    tmpIndex++;" << std::endl;
+	stream << "  }" << std::endl;
+	stream << "  :: else -> break;" << std::endl;
+	stream << "  od" << std::endl;
+	stream << "}" << std::endl;
+}
+
+void ChartToPromela::writeCancelEvents(std::ostream& stream, int indent) {
+	std::list<std::string> queues;
+	queues.push_back("eQ");
+	if (_allowEventInterleaving)
+		queues.push_back("tmpQ");
+
+	stream << "inline cancelSendId(sendIdentifier, invokerIdentifier) {" << std::endl;
+	for (std::map<Arabica::DOM::Node<std::string>, ChartToPromela*>::iterator queueIter = _machinesAll->begin(); queueIter != _machinesAll->end(); queueIter++) {
+		for (std::list<std::string>::iterator qIter = queues.begin(); qIter != queues.end(); qIter++) {
+			stream << "  cancelSendIdOnQueue(sendIdentifier, " << queueIter->second->_prefix << *qIter << ", invokerIdentifier);" << std::endl;
+		}
+	}
+	stream << "}" << std::endl;
+	stream << std::endl;
+
+
+	stream << "inline cancelSendIdOnQueue(sendIdentifier, queue, invokerIdentifier) {" << std::endl;
+	stream << "  int tmpIndex = 0;" << std::endl;
+	stream << "  _event_t tmpEvent;" << std::endl;
+	stream << "  do" << std::endl;
+	stream << "  :: tmpIndex < len(queue) -> {" << std::endl;
+	stream << "    queue?tmpEvent;" << std::endl;
+	stream << "    if" << std::endl;
+	stream << "    :: tmpEvent.invokeid != invokerIdentifier || tmpEvent.sendid != sendIdentifier || tmpEvent.delay == 0 -> queue!tmpEvent;" << std::endl;
+	stream << "    :: else -> skip;" << std::endl;
+	stream << "    fi" << std::endl;
+	stream << "    tmpIndex++;" << std::endl;
+	stream << "  }" << std::endl;
+	stream << "  :: else -> break;" << std::endl;
+	stream << "  od" << std::endl;
+	stream << "}" << std::endl;
+}
+
+void ChartToPromela::writeScheduleMachines(std::ostream& stream, int indent) {
+	std::string padding;
+	for (int i = 0; i < indent; i++) {
+		padding += "  ";
+	}
+	
+	stream << padding << "inline scheduleMachines() {" << std::endl;
+	std::list<std::string> queues;
+	queues.push_back("eQ");
+
+	if (_allowEventInterleaving)
+		queues.push_back("tmpQ");
+	
+	stream << "  /* schedule state-machines with regard to their event's delay */" << std::endl;
+	stream << "  skip;" << std::endl;
+	stream << "  d_step {" << std::endl;
+	
+	stream << std::endl << "/* determine smallest delay */" << std::endl;
+	stream << "    int smallestDelay = 2147483647;" << std::endl;
+	
+	for (std::map<Arabica::DOM::Node<std::string>, ChartToPromela*>::iterator queueIter = _machinesAll->begin(); queueIter != _machinesAll->end(); queueIter++) {
+		for (std::list<std::string>::iterator qIter = queues.begin(); qIter != queues.end(); qIter++) {
+			stream << "    determineSmallestDelay(smallestDelay, " << queueIter->second->_prefix << *qIter << ");" << std::endl;
+		}
+	}
+	//		stream << "    printf(\"======= Lowest delay is %d\\n\", smallestDelay);" << std::endl;
+	
+	stream << std::endl << "/* prioritize processes with lowest delay or internal events */" << std::endl;
+	
+	for (std::map<Arabica::DOM::Node<std::string>, ChartToPromela*>::iterator queueIter = _machinesAll->begin(); queueIter != _machinesAll->end(); queueIter++) {
+		stream << "    rescheduleProcess(smallestDelay, "
+		<< queueIter->second->_prefix << "procid, "
+		<< queueIter->second->_prefix << "iQ, "
+		<< queueIter->second->_prefix << "eQ";
+		if (_allowEventInterleaving) {
+			stream << ", " << queueIter->second->_prefix << "tmpQ);" << std::endl;
+		} else {
+			stream << ");" << std::endl;
+		}
+	}
+	
+	stream << std::endl << "/* advance time by subtracting the smallest delay from all event delays */" << std::endl;
+	stream << "    if" << std::endl;
+	stream << "    :: (smallestDelay > 0) -> {" << std::endl;
+	for (std::map<Arabica::DOM::Node<std::string>, ChartToPromela*>::iterator queueIter = _machinesAll->begin(); queueIter != _machinesAll->end(); queueIter++) {
+		for (std::list<std::string>::iterator qIter = queues.begin(); qIter != queues.end(); qIter++) {
+			stream << "      advanceTime(smallestDelay, " << queueIter->second->_prefix << *qIter << ");" << std::endl;
+		}
+	}
+	stream << "    }" << std::endl;
+	stream << "    :: else -> skip;" << std::endl;
+	stream << "    fi;" << std::endl;
+	stream << "  }" << std::endl;
+	stream << "  set_priority(_pid, 10);" << std::endl << std::endl;
+	stream << padding << "}" << std::endl;
+}
+	
 void ChartToPromela::writeEventDispatching(std::ostream& stream) {
 	for (std::map<std::string, GlobalState*>::iterator stateIter = _activeConf.begin(); stateIter != _activeConf.end(); stateIter++) {
 //		if (_globalStates[i] == _startState)
@@ -2882,6 +2998,11 @@ void ChartToPromela::initNodes() {
 	{
 		NodeSet<std::string> invokes = filterChildElements(_nsInfo.xmlNSPrefix + "invoke", _scxml, true);
 		NodeSet<std::string> sends = filterChildElements(_nsInfo.xmlNSPrefix + "send", _scxml, true);
+		NodeSet<std::string> cancels = filterChildElements(_nsInfo.xmlNSPrefix + "cancel", _scxml, true);
+		
+		if (cancels.size() > 0) {
+			_analyzer->addCode("_event.invokeid", this);
+		}
 		
 		for (int i = 0; i < sends.size(); i++) {
 			if (HAS_ATTR_CAST(sends[i], "idlocation")) {
@@ -2951,6 +3072,12 @@ void ChartToPromela::initNodes() {
 		}
 	}
 	
+	if (_globalEventSource || _invokers.size() > 0) {
+		_allowEventInterleaving = true;
+	} else {
+		_allowEventInterleaving = false;
+	}
+
 	// add platform variables as string literals
 	_analyzer->addLiteral(_prefix + "_sessionid");
 	_analyzer->addLiteral(_prefix + "_name");
@@ -3128,7 +3255,7 @@ void ChartToPromela::writeProgram(std::ostream& stream) {
 	stream << std::endl;
 
 	initNodes();
-
+	
 	for (std::map<Arabica::DOM::Node<std::string>, ChartToPromela*>::iterator nestedIter = _machines.begin(); nestedIter != _machines.end(); nestedIter++) {
 		if (nestedIter->second->_start == NULL) {
 			nestedIter->second->interpret();
@@ -3153,12 +3280,42 @@ void ChartToPromela::writeProgram(std::ostream& stream) {
 	writeStrings(stream);
 	stream << std::endl;
 	writeDeclarations(stream);
-	
+	stream << std::endl;
+
 	for (std::map<Arabica::DOM::Node<std::string>, ChartToPromela*>::iterator nestedIter = _machines.begin(); nestedIter != _machines.end(); nestedIter++) {
 		nestedIter->second->writeDeclarations(stream);
 		stream << std::endl;
 	}
 
+	stream << std::endl << "/* Global inline functions */" << std::endl;
+
+	
+	if (_analyzer->usesEventField("delay") && _machines.size() > 0) {
+		writeDetermineShortestDelay(stream);
+		stream << std::endl;
+		writeAdvanceTime(stream);
+		stream << std::endl;
+		writeRescheduleProcess(stream);
+		stream << std::endl;
+		writeScheduleMachines(stream);
+		stream << std::endl;
+	}
+
+	{
+		NodeSet<std::string> cancels = filterChildElements(_nsInfo.xmlNSPrefix + "cancel", _scxml, true);
+		if (cancels.size() > 0) {
+			writeCancelEvents(stream);
+			stream << std::endl;
+		}
+	}
+	{
+		NodeSet<std::string> invokes = filterChildElements(_nsInfo.xmlNSPrefix + "invoke", _scxml, true);
+		if (invokes.size() > 0 && _analyzer->usesEventField("delay")) {
+			writeRemovePendingEventsFromInvoker(stream);
+			stream << std::endl;
+		}
+
+	}
 	stream << std::endl;
 	writeEventSources(stream);
 	stream << std::endl;
@@ -3171,7 +3328,7 @@ void ChartToPromela::writeProgram(std::ostream& stream) {
 		nestedIter->second->writeFSM(stream);
 		stream << std::endl;
 	}
-
+	
 	// write ltl expression for success
 	std::stringstream acceptingStates;
 	std::string seperator;

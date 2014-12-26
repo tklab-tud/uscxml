@@ -312,10 +312,16 @@ protected:
 	void writeDispatchingBlock(std::ostream& stream, std::list<GlobalTransition*>, int indent = 0);
 
 	void writeStartInvoker(std::ostream& stream, const Arabica::DOM::Node<std::string>& node, ChartToPromela* invoker, int indent = 0);
-	void writeRemovePendingEventsFromInvoker(std::ostream& stream, ChartToPromela* invoker, int indent = 0, bool atomic = true);
-	void writeCancelWithIdOrExpr(std::ostream& stream, const Arabica::DOM::Element<std::string>& cancel, ChartToPromela* invoker, int indent = 0);
+	//void writeRemovePendingEventsFromInvoker(std::ostream& stream, ChartToPromela* invoker, int indent = 0, bool atomic = true);
 	
-	Arabica::XPath::NodeSet<std::string> getTransientContent(const Arabica::DOM::Element<std::string>& state, const std::string& source = "");
+	void writeDetermineShortestDelay(std::ostream& stream, int indent = 0);
+	void writeAdvanceTime(std::ostream& stream, int indent = 0);
+	void writeRescheduleProcess(std::ostream& stream, int indent = 0);
+	void writeScheduleMachines(std::ostream& stream, int indent = 0);
+	void writeCancelEvents(std::ostream& stream, int indent = 0);
+	void writeRemovePendingEventsFromInvoker(std::ostream& stream, int indent = 0);
+
+	std::list<GlobalTransition::Action> getTransientContent(GlobalTransition* transition);
 	//Arabica::DOM::Node<std::string> getUltimateTarget(const Arabica::DOM::Element<std::string>& transition);
 	
 	static std::string declForRange(const std::string& identifier, long minValue, long maxValue, bool nativeOnly = false);
@@ -334,7 +340,8 @@ protected:
 	std::list<std::string> _varInitializers; // pending initializations for arrays
 
 	PromelaCodeAnalyzer* _analyzer;
-
+	bool _allowEventInterleaving;
+	
 	uint32_t _externalQueueLength;
 	uint32_t _internalQueueLength;
 	

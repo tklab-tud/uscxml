@@ -44,6 +44,7 @@ ChartToFlatSCXML::operator Interpreter() {
 	if (!HAS_ATTR(_scxml, "flat") || !DOMUtils::attributeIsTrue(ATTR(_scxml, "flat"))) {
 		createDocument();
 	}
+
 	return Interpreter::fromClone(shared_from_this());
 }
 	
@@ -55,6 +56,27 @@ void ChartToFlatSCXML::writeTo(std::ostream& stream) {
 	if (!HAS_ATTR(_scxml, "flat") || !DOMUtils::attributeIsTrue(ATTR(_scxml, "flat"))) {
 		createDocument();
 	}
+	
+	char* withDebugAttrs = getenv("USCXML_FLAT_WITH_DEBUG_ATTRS");
+	if (withDebugAttrs == NULL || !DOMUtils::attributeIsTrue(withDebugAttrs)) {
+		// remove all debug attributes
+		NodeSet<std::string> elementNodes = filterChildType(Node_base::ELEMENT_NODE, _scxml, true);
+		for (int i = 0; i < elementNodes.size(); i++) {
+			Element<std::string> element(elementNodes[i]);
+			if (HAS_ATTR(element, "send"))
+				element.removeAttribute("send");
+			if (HAS_ATTR(element, "raise"))
+				element.removeAttribute("raise");
+			if (HAS_ATTR(element, "members"))
+				element.removeAttribute("members");
+			if (HAS_ATTR(element, "ref"))
+				element.removeAttribute("ref");
+			if (HAS_ATTR(element, "final-target"))
+				element.removeAttribute("final-target");
+		}
+	}
+	
+	
 	stream << _scxml;
 }
 
@@ -63,6 +85,17 @@ void ChartToFlatSCXML::createDocument() {
 	if (HAS_ATTR(_scxml, "flat") && DOMUtils::attributeIsTrue(ATTR(_scxml, "flat")))
 		return;
 	
+	{
+		NodeSet<std::string> allElements = filterChildType(Node_base::ELEMENT_NODE, _scxml, true);
+		size_t nrElements = 0;
+		for (int i = 0; i < allElements.size(); i++) {
+			if (!isInEmbeddedDocument(allElements[i]))
+				nrElements++;
+		}
+		std::cerr << "Number of elements before flattening: " << nrElements + 1 << std::endl;
+	}
+	
+
 	if (_start == NULL)
 		interpret(); // only if not already flat!
 	
@@ -134,6 +167,23 @@ void ChartToFlatSCXML::createDocument() {
 	}
 
 	_document = _flatDoc;
+
+	NodeSet<std::string> scxmls = filterChildElements(_nsInfo.xmlNSPrefix + "scxml", _document);
+	if (scxmls.size() > 0) {
+		_scxml = Element<std::string>(scxmls[0]);
+	}
+	
+	{
+		NodeSet<std::string> allElements = filterChildType(Node_base::ELEMENT_NODE, _scxml, true);
+		size_t nrElements = 0;
+		for (int i = 0; i < allElements.size(); i++) {
+			if (!isInEmbeddedDocument(allElements[i]))
+				nrElements++;
+		}
+		std::cerr << "Number of elements after flattening: " << nrElements + 1 << std::endl;
+	}
+	
+
 }
 
 void ChartToFlatSCXML::appendGlobalStateNode(GlobalState* globalState) {
@@ -222,14 +272,12 @@ Node<std::string> ChartToFlatSCXML::globalTransitionToNode(GlobalTransition* glo
 		
 		if (actionIter->onExit) {
 			//			DETAIL_EXEC_CONTENT(onExit, actionIter);
-			
 			childs.push_back(actionIter->onExit);
 			continue;
 		}
 		
 		if (actionIter->onEntry) {
 			//			DETAIL_EXEC_CONTENT(onEntry, actionIter);
-			
 			childs.push_back(actionIter->onEntry);
 			continue;
 		}

@@ -24,74 +24,16 @@ static std::string documentURI;
 
 int retCode = EXIT_FAILURE;
 
-class W3CStatusMonitor : public uscxml::InterpreterMonitor {
+class W3CStatusMonitor : public uscxml::StateTransitionMonitor {
 
-	void beforeTakingTransition(uscxml::Interpreter interpreter, const Arabica::DOM::Element<std::string>& transition, bool moreComing) {
-		std::cout << "Transition: " << uscxml::DOMUtils::xPathForNode(transition) << std::endl;
+void beforeCompletion(uscxml::Interpreter interpreter) {
+	if (interpreter.getConfiguration().size() == 1 && interpreter.isInState("pass")) {
+		std::cout << "TEST SUCCEEDED" << std::endl;
+		retCode = EXIT_SUCCESS;
+		return;
 	}
-
-	void onStableConfiguration(uscxml::Interpreter interpreter) {
-		std::cout << "Config: {";
-		printNodeSet(interpreter.getConfiguration());
-		std::cout << "}" << std::endl;
-	}
-
-	void beforeProcessingEvent(uscxml::Interpreter interpreter, const uscxml::Event& event) {
-		std::cout << "Event: " << event.name << std::endl;
-	}
-
-	void beforeExitingState(uscxml::Interpreter interpreter, const Arabica::DOM::Element<std::string>& state, bool moreComing) {
-		exitingStates.push_back(state);
-		if (!moreComing) {
-			std::cout << "Exiting: {";
-			printNodeSet(exitingStates);
-			std::cout << "}" << std::endl;
-			exitingStates = Arabica::XPath::NodeSet<std::string>();
-		}
-	}
-
-	void beforeEnteringState(uscxml::Interpreter interpreter, const Arabica::DOM::Element<std::string>& state, bool moreComing) {
-		enteringStates.push_back(state);
-		if (!moreComing) {
-			std::cout << "Entering: {";
-			printNodeSet(enteringStates);
-			std::cout << "}" << std::endl;
-			enteringStates = Arabica::XPath::NodeSet<std::string>();
-		}
-
-	}
-
-	void printNodeSet(const Arabica::XPath::NodeSet<std::string>& config) {
-		std::string seperator;
-		for (int i = 0; i < config.size(); i++) {
-			std::cout << seperator << ATTR_CAST(config[i], "id");
-			seperator = ", ";
-		}
-	}
-
-	void beforeCompletion(uscxml::Interpreter interpreter) {
-		Arabica::XPath::NodeSet<std::string> config = interpreter.getConfiguration();
-		if (config.size() == 1) {
-			if (withFlattening) {
-				std::cout << ATTR_CAST(config[0], "id") << std::endl;
-				if (boost::starts_with(ATTR_CAST(config[0], "id"), "active:{pass")) {
-					std::cout << "TEST SUCCEEDED" << std::endl;
-					retCode = EXIT_SUCCESS;
-					return;
-				}
-			} else {
-				if (boost::iequals(ATTR_CAST(config[0], "id"), "pass")) {
-					std::cout << "TEST SUCCEEDED" << std::endl;
-					retCode = EXIT_SUCCESS;
-					return;
-				}
-			}
-		}
-		std::cout << "TEST FAILED" << std::endl;
-	}
-
-	Arabica::XPath::NodeSet<std::string> exitingStates;
-	Arabica::XPath::NodeSet<std::string> enteringStates;
+	std::cout << "TEST FAILED" << std::endl;
+}
 };
 
 int main(int argc, char** argv) {
@@ -143,7 +85,7 @@ int main(int argc, char** argv) {
 		} else {
 			interpreter = Interpreter::fromURL(documentURI);
 		}
-
+		
 		if (delayFactor != 1) {
 			Arabica::DOM::Document<std::string> document = interpreter.getDocument();
 			Arabica::DOM::Element<std::string> root = document.getDocumentElement();

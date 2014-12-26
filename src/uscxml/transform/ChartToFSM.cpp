@@ -197,7 +197,6 @@ ChartToFSM::ChartToFSM(const Interpreter& other) {
 
 	_start = NULL;
 	_currGlobalTransition = NULL;
-	_lastTransientStateId = 0;
 
 	_lastStateIndex = 0;
 	_lastActiveIndex = 0;
@@ -289,7 +288,13 @@ InterpreterState ChartToFSM::interpret() {
 	}
 	
 	_binding = (HAS_ATTR(_scxml, "binding") && iequals(ATTR(_scxml, "binding"), "late") ? LATE : EARLY);
+	_alreadyFlat = (HAS_ATTR(_scxml, "flat") && DOMUtils::attributeIsTrue(ATTR(_scxml, "flat")));
 
+	if (_alreadyFlat) {
+		reassembleFromFlat();
+		return _state;
+	}
+	
 	// set invokeid for all invokers to parent state if none given
 	NodeSet<std::string> invokers = filterChildElements(_nsInfo.xmlNSPrefix + "invoke", _scxml, true);
 	for (int i = 0; i < invokers.size(); i++) {
@@ -1043,6 +1048,11 @@ uint32_t ChartToFSM::getMinExternalQueueLength(uint32_t defaultVal) {
 	return defaultVal;
 }
 
+void ChartToFSM::reassembleFromFlat() {
+	LOG(ERROR) << "Cannot flatten flat SCXML document";
+	abort();
+}
+
 Arabica::XPath::NodeSet<std::string> ChartToFSM::refsToStates(const std::set<int>& stateRefs) {
 	NodeSet<std::string> states;
 	for (std::set<int>::const_iterator stateIter = stateRefs.begin(); stateIter != stateRefs.end(); stateIter++) {
@@ -1239,7 +1249,7 @@ GlobalTransition::GlobalTransition(const Arabica::XPath::NodeSet<std::string>& t
 		Arabica::DOM::Element<std::string> transElem = Arabica::DOM::Element<std::string>(transitionSet[i]);
 		// gather conditions while we are iterating anyway
 		if (HAS_ATTR(transElem, "cond")) {
-			conditions.push_back(ATTR(transElem, "cond"));
+			conditions.push_back(boost::trim_copy(ATTR(transElem, "cond")));
 		}
 		
 		std::list<std::string> targets = InterpreterImpl::tokenizeIdRefs(ATTR(transElem, "target"));
