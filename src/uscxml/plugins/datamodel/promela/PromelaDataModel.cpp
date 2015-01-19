@@ -211,6 +211,16 @@ bool PromelaDataModel::isLocation(const std::string& expr) {
 	return true;
 }
 
+bool PromelaDataModel::isValidSyntax(const std::string& expr) {
+	try {
+		PromelaParser parser(expr);
+	} catch (Event e) {
+		std::cerr << e << std::endl;
+		return false;
+	}
+	return true;
+}
+
 uint32_t PromelaDataModel::getLength(const std::string& expr) {
 	if (!isDeclared(expr)) {
 		ERROR_EXECUTION_THROW("Variable '" + expr + "' was not declared");
@@ -593,7 +603,7 @@ void PromelaDataModel::setVariable(void* ast, const Data& value) {
 			if (value.compound.size() > 0 || value.atom.size() > 0)
 				ERROR_EXECUTION_THROW("Variable " + node->value + " is an array");
 			
-			if (_variables[node->value].compound["size"] < value.array.size())
+			if (strTo<size_t>(_variables[node->value].compound["size"].atom) < value.array.size())
 				ERROR_EXECUTION_THROW("Array assigned to " + node->value + " is too large");
 		}
 

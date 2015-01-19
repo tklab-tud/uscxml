@@ -42,6 +42,10 @@ public:
 		return stateId.length() > 0;
 	}
 
+	bool operator<( const FlatStateIdentifier& other) const {
+		return stateId < other.stateId;
+	}
+
 	FlatStateIdentifier(const Arabica::XPath::NodeSet<std::string>& activeStates,
 	                    const Arabica::XPath::NodeSet<std::string>& alreadyEnteredStates,
 	                    const std::map<std::string, Arabica::XPath::NodeSet<std::string> >& historyStates) {
@@ -166,29 +170,31 @@ public:
 		initStateId();
 	}
 
-	const std::string& getStateId() {
+	const std::string& getStateId() const {
 		return stateId;
 	}
 
-	const std::list<std::string>& getActive() {
+	const std::list<std::string>& getActive() const {
 		return active;
 	}
-	const std::string& getFlatActive() {
+	const std::string& getFlatActive() const {
 		return flatActive;
 	}
 
-	const std::string& getFlatHistory() {
+
+	const std::string& getFlatHistory() const {
 		return flatHistories;
 	}
 
-	const std::list<std::string>& getVisited() {
+	const std::list<std::string>& getVisited() const {
 		return visited;
 	}
-	const std::string& getFlatVisited() {
+	const std::string& getFlatVisited() const {
 		return flatVisited;
 	}
 
-	const std::map<std::string, std::list<std::string> > & getHistory() {
+
+	const std::map<std::string, std::list<std::string> > & getHistory() const {
 		return histories;
 	}
 

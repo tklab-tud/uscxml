@@ -151,7 +151,7 @@ void InterpreterRC::exitStates(const Arabica::XPath::NodeSet<std::string>& enabl
 		NodeSet<std::string> invokes = filterChildElements(_nsInfo.xmlNSPrefix + "invoke", statesToExit[i]);
 		for (int j = 0; j < invokes.size(); j++) {
 			Element<std::string> invokeElem = (Element<std::string>)invokes[j];
-			if (HAS_ATTR(invokeElem, "persist") && DOMUtils::attributeIsTrue(ATTR(invokeElem, "persist"))) {
+			if (HAS_ATTR(invokeElem, "persist") && stringIsTrue(ATTR(invokeElem, "persist"))) {
 			} else {
 				cancelInvoke(invokeElem);
 			}
@@ -271,12 +271,12 @@ void InterpreterRC::enterStates(const Arabica::XPath::NodeSet<std::string>& enab
 
 		USCXML_MONITOR_CALLBACK3(afterEnteringState, s, i + 1 < statesToEnter.size())
 
-		if (HAS_ATTR(_scxml, "flat") && DOMUtils::attributeIsTrue(ATTR(_scxml, "flat"))) {
+		if (HAS_ATTR(_scxml, "flat") && stringIsTrue(ATTR(_scxml, "flat"))) {
 			// extension for flattened interpreters
 			NodeSet<std::string> invokes = filterChildElements(_nsInfo.xmlNSPrefix + "invoke", s);
 			for (unsigned int j = 0; j < invokes.size(); j++) {
 				Element<std::string> invokeElem = Element<std::string>(invokes[j]);
-				if (HAS_ATTR(invokeElem, "persist") && DOMUtils::attributeIsTrue(ATTR(invokeElem, "persist"))) {
+				if (HAS_ATTR(invokeElem, "persist") && stringIsTrue(ATTR(invokeElem, "persist"))) {
 					invoke(invokeElem);
 				}
 			}

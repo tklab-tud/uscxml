@@ -36,7 +36,7 @@ Transformer ChartToMinimalSCXML::transform(const Interpreter& other) {
 	return boost::shared_ptr<TransformerImpl>(new ChartToMinimalSCXML(other));
 }
 
-ChartToMinimalSCXML::ChartToMinimalSCXML(const Interpreter& other) : TransformerImpl(), _retainAsComments(false) {
+ChartToMinimalSCXML::ChartToMinimalSCXML(const Interpreter& other) : TransformerImpl(), _retainAsComments(false), _step(1) {
 	cloneFrom(other.getImpl());
 	
 	// a bit messy but needed for SCXML IO Processor with session id target
@@ -85,10 +85,7 @@ void ChartToMinimalSCXML::writeTo(std::ostream& stream) {
 	}
 	
 	char* waitForEnv = getenv("USCXML_MINIMIZE_WAIT_MS");
-	char* waitForCmpl = getenv("USCXML_MINIMIZE_WAIT_FOR_COMPLETION");
-	char* retainAsComments = getenv("USCXML_MINIMIZE_RETAIN_AS_COMMENTS");
-	if (retainAsComments != NULL && DOMUtils::attributeIsTrue(retainAsComments))
-		_retainAsComments = true;
+	_retainAsComments = envVarIsTrue("USCXML_MINIMIZE_RETAIN_AS_COMMENTS");
 	
 	long waitFor = -1;
 
@@ -100,7 +97,7 @@ void ChartToMinimalSCXML::writeTo(std::ostream& stream) {
 		}
 	}
 
-	if (waitForCmpl != NULL && DOMUtils::attributeIsTrue(waitForCmpl)) {
+	if (envVarIsTrue("USCXML_MINIMIZE_WAIT_FOR_COMPLETION")) {
 		interpret();
 	} else {
 		start();
@@ -181,14 +178,15 @@ void ChartToMinimalSCXML::removeUnvisited(Arabica::DOM::Node<std::string>& node)
 	
 	// detach unvisited nodes from DOM
 	if (_visited.find(node) == _visited.end()) {
-		std::cout << DOMUtils::xPathForNode(node) << std::endl;
+		std::cerr << DOMUtils::xPathForNode(node) << std::endl;
 		if (_retainAsComments) {
 			std::stringstream oldContent;
 			oldContent << node;
 			node.getParentNode().replaceChild(_document.createComment(boost::replace_all_copy(oldContent.str(),"--", "-")), node);
 		} else {
 			// removeChildren is not working as expected
-			node.getParentNode().replaceChild(_document.createTextNode(""), node);
+//			node.getParentNode().replaceChild(_document.createTextNode(""), node);
+			node.getParentNode().removeChild(node);
 		}
 		return;
 	}
@@ -231,11 +229,29 @@ void ChartToMinimalSCXML::beforeTakingTransition(Interpreter interpreter, const 
 		markAsVisited(Arabica::DOM::Element<std::string>(targets[i]));
 	}
 	markAsVisited(transition);
+	
+	std::stringstream commentSS;
+	if (HAS_ATTR(transition, "event")) {
+		commentSS << " Step #" << _step++ << " - transition taken for event '" << _currEvent.name << "' ";
+	} else {
+		commentSS << " Step #" << _step++ << " - spontaneous transition taken ";
+	}
+	if (envVarIsTrue("USCXML_ANNOTATE_PROGRESS"))
+		transition.getParentNode().insertBefore(_document.createComment(commentSS.str()), transition);
+
 	StateTransitionMonitor::beforeTakingTransition(interpreter, transition, moreComing);
 }
 
 void ChartToMinimalSCXML::beforeEnteringState(Interpreter interpreter, const Arabica::DOM::Element<std::string>& state, bool moreComing) {
 	markAsVisited(state);
+	
+	std::stringstream commentSS;
+	commentSS << " Step #" << _step++ << " - state entered ";
+	
+	Arabica::DOM::Element<std::string> ncState = const_cast<Arabica::DOM::Element<std::string>&>(state);
+	if (envVarIsTrue("USCXML_ANNOTATE_PROGRESS"))
+		ncState.insertBefore(_document.createComment(commentSS.str()), ncState.getFirstChild());
+
 	StateTransitionMonitor::beforeEnteringState(interpreter, state, moreComing);
 }
 
@@ -260,6 +276,9 @@ void ChartToMinimalSCXML::invoke(const Arabica::DOM::Element<std::string>& eleme
 void ChartToMinimalSCXML::cancelInvoke(const Arabica::DOM::Element<std::string>& element) {
 	markAsVisited(element);
 	InterpreterRC::cancelInvoke(element);
+}
+
+void ChartToMinimalSCXML::onStableConfiguration(uscxml::Interpreter interpreter) {
 }
 
 }

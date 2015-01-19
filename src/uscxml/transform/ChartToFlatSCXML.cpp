@@ -18,6 +18,7 @@
  */
 
 #include "ChartToFlatSCXML.h"
+#include "uscxml/Convenience.h"
 #include "uscxml/transform/FlatStateIdentifier.h"
 
 #define CREATE_TRANSIENT_STATE_WITH_CHILDS(stateId) \
@@ -25,6 +26,10 @@ if (childs.size() > 0) { \
 	Element<std::string> transientState = _flatDoc.createElementNS(_nsInfo.nsURL, "state"); \
 	_nsInfo.setPrefix(transientState);\
 	transientState.setAttribute("transient", "true"); \
+	for (std::list<Arabica::DOM::Comment<std::string> >::iterator commentIter = pendingComments.begin(); commentIter != pendingComments.end(); commentIter++) {\
+		transientState.appendChild(*commentIter); \
+	}\
+	pendingComments.clear(); \
 	if (stateId.length() > 0) \
 		transientState.setAttribute("id", stateId); \
 	for (int i = 0; i < childs.size(); i++) { \
@@ -41,7 +46,7 @@ using namespace Arabica::DOM;
 using namespace Arabica::XPath;
 
 ChartToFlatSCXML::operator Interpreter() {
-	if (!HAS_ATTR(_scxml, "flat") || !DOMUtils::attributeIsTrue(ATTR(_scxml, "flat"))) {
+	if (!HAS_ATTR(_scxml, "flat") || !stringIsTrue(ATTR(_scxml, "flat"))) {
 		createDocument();
 	}
 
@@ -53,36 +58,37 @@ Transformer ChartToFlatSCXML::transform(const Interpreter& other) {
 }
 
 void ChartToFlatSCXML::writeTo(std::ostream& stream) {
-	if (!HAS_ATTR(_scxml, "flat") || !DOMUtils::attributeIsTrue(ATTR(_scxml, "flat"))) {
+	if (!HAS_ATTR(_scxml, "flat") || !stringIsTrue(ATTR(_scxml, "flat"))) {
 		createDocument();
 	}
-	
-	char* withDebugAttrs = getenv("USCXML_FLAT_WITH_DEBUG_ATTRS");
-	if (withDebugAttrs == NULL || !DOMUtils::attributeIsTrue(withDebugAttrs)) {
-		// remove all debug attributes
-		NodeSet<std::string> elementNodes = filterChildType(Node_base::ELEMENT_NODE, _scxml, true);
-		for (int i = 0; i < elementNodes.size(); i++) {
-			Element<std::string> element(elementNodes[i]);
-			if (HAS_ATTR(element, "send"))
-				element.removeAttribute("send");
-			if (HAS_ATTR(element, "raise"))
-				element.removeAttribute("raise");
-			if (HAS_ATTR(element, "members"))
-				element.removeAttribute("members");
-			if (HAS_ATTR(element, "ref"))
-				element.removeAttribute("ref");
-			if (HAS_ATTR(element, "final-target"))
-				element.removeAttribute("final-target");
-		}
+
+	// remove all debug attributes
+	NodeSet<std::string> elementNodes = filterChildType(Node_base::ELEMENT_NODE, _scxml, true);
+	for (int i = 0; i < elementNodes.size(); i++) {
+		Element<std::string> element(elementNodes[i]);
+		if (!envVarIsTrue("USCXML_ANNOTATE_GLOBAL_TRANS_SENDS") && HAS_ATTR(element, "send"))
+			element.removeAttribute("send");
+		if (!envVarIsTrue("USCXML_ANNOTATE_GLOBAL_TRANS_RAISES") && HAS_ATTR(element, "raise"))
+			element.removeAttribute("raise");
+		if (!envVarIsTrue("USCXML_ANNOTATE_GLOBAL_TRANS_MEMBERS") && HAS_ATTR(element, "members"))
+			element.removeAttribute("members");
+		if (!envVarIsTrue("USCXML_ANNOTATE_GLOBAL_TRANS_PRIO") && HAS_ATTR(element, "priority"))
+			element.removeAttribute("priority");
+		if (!envVarIsTrue("USCXML_ANNOTATE_GLOBAL_STATE_STEP") && HAS_ATTR(element, "step"))
+			element.removeAttribute("step");
+		if (HAS_ATTR(element, "final-target"))
+			element.removeAttribute("final-target");
 	}
 	
+	if (envVarIsTrue("USCXML_FLAT_FSM_METRICS_ONLY"))
+		return;
 	
 	stream << _scxml;
 }
 
 void ChartToFlatSCXML::createDocument() {
 
-	if (HAS_ATTR(_scxml, "flat") && DOMUtils::attributeIsTrue(ATTR(_scxml, "flat")))
+	if (HAS_ATTR(_scxml, "flat") && stringIsTrue(ATTR(_scxml, "flat")))
 		return;
 	
 	{
@@ -98,6 +104,9 @@ void ChartToFlatSCXML::createDocument() {
 
 	if (_start == NULL)
 		interpret(); // only if not already flat!
+	
+	if (envVarIsTrue("USCXML_FLAT_FSM_METRICS_ONLY"))
+		return;
 	
 	Element<std::string> _origSCXML = _scxml;
 	
@@ -190,7 +199,7 @@ void ChartToFlatSCXML::appendGlobalStateNode(GlobalState* globalState) {
 	Element<std::string> state = _flatDoc.createElementNS(_nsInfo.nsURL, "state");
 	_nsInfo.setPrefix(state);
 	
-	state.setAttribute("ref", toStr(globalState->index));
+	state.setAttribute("step", toStr(globalState->index));
 	state.setAttribute("id", globalState->stateId);
 	
 	if (globalState->isFinal)
@@ -247,13 +256,17 @@ Node<std::string> ChartToFlatSCXML::globalTransitionToNode(GlobalTransition* glo
 	
 	// gather content for new transient state
 	NodeSet<std::string> childs;
+	
+	// aggregated entering / exiting to avoid states without childs while still labeling
+	std::list<Arabica::DOM::Comment<std::string> > pendingComments;
+	
 	// iterate all actions taken during the transition
 	for (std::list<GlobalTransition::Action>::iterator actionIter = globalTransition->actions.begin();
 			 actionIter != globalTransition->actions.end();
 			 actionIter++) {
 		
 		if (actionIter->transition) {
-			//			DETAIL_EXEC_CONTENT(transition, actionIter);
+			// DETAIL_EXEC_CONTENT(transition, actionIter);
 			
 			Element<std::string> onexit = _flatDoc.createElementNS(_nsInfo.nsURL, "onexit");
 			_nsInfo.setPrefix(onexit);
@@ -264,29 +277,48 @@ Node<std::string> ChartToFlatSCXML::globalTransitionToNode(GlobalTransition* glo
 				child = child.getNextSibling();
 			}
 			// only append if there is something done
-			if (onexit.hasChildNodes())
+			std::stringstream commentSS;
+			commentSS << " Transition in '" << ATTR_CAST(getSourceState(actionIter->transition), "id") << "'";
+			if (HAS_ATTR(actionIter->transition, "event"))
+				commentSS << " for event '" << ATTR(actionIter->transition, "event") << "'";
+			if (HAS_ATTR(actionIter->transition, "cond"))
+				commentSS << " with condition '" << ATTR(actionIter->transition, "cond") << "'";
+			if (HAS_ATTR(actionIter->transition, "target"))
+				commentSS << " to target '" << ATTR(actionIter->transition, "target") << "'";
+			commentSS << " ";
+			
+			if (onexit.hasChildNodes()) {
+				if (envVarIsTrue("USCXML_ANNOTATE_VERBOSE_COMMENTS"))
+					childs.push_back(_flatDoc.createComment(commentSS.str()));
 				childs.push_back(onexit);
+			} else {
+				if (envVarIsTrue("USCXML_ANNOTATE_VERBOSE_COMMENTS"))
+					pendingComments.push_back(_flatDoc.createComment(commentSS.str()));
+			}
 			
 			continue;
 		}
 		
 		if (actionIter->onExit) {
-			//			DETAIL_EXEC_CONTENT(onExit, actionIter);
+			// DETAIL_EXEC_CONTENT(onExit, actionIter);
 			childs.push_back(actionIter->onExit);
 			continue;
 		}
 		
 		if (actionIter->onEntry) {
-			//			DETAIL_EXEC_CONTENT(onEntry, actionIter);
+			// DETAIL_EXEC_CONTENT(onEntry, actionIter);
 			childs.push_back(actionIter->onEntry);
 			continue;
 		}
-		
+
+		if (actionIter->raiseDone) {
+			// DETAIL_EXEC_CONTENT(raiseDone, actionIter);
+			childs.push_back(actionIter->raiseDone);
+			continue;
+		}
+
 		if (actionIter->invoke) {
-			//			DETAIL_EXEC_CONTENT(invoke, actionIter);
-			if (!globalTransition->isTargetless) {
-				//				CREATE_TRANSIENT_STATE_WITH_CHILDS(FlatStateIdentifier::toStateId(currActiveStates));
-			}
+			// DETAIL_EXEC_CONTENT(invoke, actionIter);
 			Element<std::string> invokeElem = Element<std::string>(actionIter->invoke);
 			invokeElem.setAttribute("persist", "true");
 			childs.push_back(invokeElem);
@@ -294,7 +326,7 @@ Node<std::string> ChartToFlatSCXML::globalTransitionToNode(GlobalTransition* glo
 		}
 		
 		if (actionIter->uninvoke) {
-			//			DETAIL_EXEC_CONTENT(uninvoke, actionIter);
+			// DETAIL_EXEC_CONTENT(uninvoke, actionIter);
 			Element<std::string> uninvokeElem = _flatDoc.createElementNS(_nsInfo.nsURL, "uninvoke");
 			_nsInfo.setPrefix(uninvokeElem);
 			
@@ -315,17 +347,27 @@ Node<std::string> ChartToFlatSCXML::globalTransitionToNode(GlobalTransition* glo
 		}
 		
 		if (actionIter->exited) {
-			//			std::cerr << " exited(" << ATTR_CAST(actionIter->exited, "id") << ")";
 			currActiveStates.remove(ATTR_CAST(actionIter->exited, "id"));
 			if (childs.size() > 0) {
+				if (envVarIsTrue("USCXML_ANNOTATE_VERBOSE_COMMENTS"))
+					childs.push_back(_flatDoc.createComment(" Exiting " + ATTR_CAST(actionIter->exited, "id") + " "));
 				CREATE_TRANSIENT_STATE_WITH_CHILDS(FlatStateIdentifier::toStateId(currActiveStates)); // create a new transient state to update its id
+			} else {
+				// enqueue for next actual state
+				if (envVarIsTrue("USCXML_ANNOTATE_VERBOSE_COMMENTS"))
+					pendingComments.push_back(_flatDoc.createComment(" Exiting " + ATTR_CAST(actionIter->exited, "id") + " "));
 			}
 		}
 		
 		if (actionIter->entered) {
-			//			std::cerr << " entered(" << ATTR_CAST(actionIter->entered, "id") << ")";
-			if (childs.size() > 0)
+			if (childs.size() > 0) {
+				if (envVarIsTrue("USCXML_ANNOTATE_VERBOSE_COMMENTS"))
+					childs.push_back(_flatDoc.createComment(" Entering " + ATTR_CAST(actionIter->entered, "id") + " "));
 				CREATE_TRANSIENT_STATE_WITH_CHILDS(FlatStateIdentifier::toStateId(currActiveStates)); // create a new transient state to update its id
+			} else {
+				if (envVarIsTrue("USCXML_ANNOTATE_VERBOSE_COMMENTS"))
+					pendingComments.push_back(_flatDoc.createComment(" Entering " + ATTR_CAST(actionIter->entered, "id") + " "));
+			}
 			currActiveStates.push_back(ATTR_CAST(actionIter->entered, "id"));
 			
 			// we entered a new child - check if it has a datamodel and we entered for the first time
@@ -336,21 +378,7 @@ Node<std::string> ChartToFlatSCXML::globalTransitionToNode(GlobalTransition* glo
 				}
 			}
 		}
-		if (!globalTransition->isTargetless) {
-			//			CREATE_TRANSIENT_STATE_WITH_CHILDS(FlatStateIdentifier::toStateId(currActiveStates))
-		}
 	}
-	
-	//	std::cerr << std::endl;
-	
-	//	if (globalTransition->isTargetless) {
-	//		for (int i = 0; i < childs.size(); i++) {
-	//			Node<std::string> imported = _flatDoc.importNode(childs[i], true);
-	//			transition.appendChild(imported);
-	//			//			CREATE_TRANSIENT_STATE_WITH_CHILDS(FlatStateIdentifier::toStateId(currActiveStates))
-	//		}
-	//		return transition;
-	//	}
 	
 	CREATE_TRANSIENT_STATE_WITH_CHILDS(FlatStateIdentifier::toStateId(currActiveStates))
 	
@@ -383,7 +411,20 @@ Node<std::string> ChartToFlatSCXML::globalTransitionToNode(GlobalTransition* glo
 		// last one points to actual target
 		assert(prevExitTransitionElem);
 		prevExitTransitionElem.setAttribute("target", globalTransition->destination);
+#if 0
+	} else if (transientStateChain.size() == 1) {
+		Element<std::string> transientStateElem = Element<std::string>(transientStateChain[0]);
+		transientStateElem.setAttribute("onlyOne", "yes!");
 		
+		Element<std::string> exitTransition = _flatDoc.createElementNS(_nsInfo.nsURL, "transition");
+		_nsInfo.setPrefix(exitTransition);
+		exitTransition.setAttribute("target", globalTransition->destination);
+		
+		transientStateElem.appendChild(exitTransition);
+
+		_scxml.appendChild(transientStateElem);
+		transition.setAttribute("target", transientStateElem.getAttribute("id"));
+#endif
 	} else {
 		transition.setAttribute("target", globalTransition->destination);
 	}

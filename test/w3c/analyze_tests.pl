@@ -119,17 +119,22 @@ while ($block = <FILE>) {
 		/
 			Approximate\sComplexity:\s(\d+)\n
 			Approximate\sActive\sComplexity:\s(\d+)\n
-			Actual\sComplexity:\s(\d+)\n
-			Actual\sActive\sComplexity:\s(\d+)\n
-			Internal\sQueue:\s(\d+)\n
-			External\sQueue:\s(\d+)\n
 		/x ) {
 		$test->{$currTest}->{'flat'}->{'cmplx'}->{'appr'} = $1;
 		$test->{$currTest}->{'flat'}->{'cmplx'}->{'apprActv'} = $2;
-		$test->{$currTest}->{'flat'}->{'cmplx'}->{'actual'} = $3;
-		$test->{$currTest}->{'flat'}->{'cmplx'}->{'actualActv'} = $4;
-		$test->{$currTest}->{'flat'}->{'queue'}->{'internal'} = $5;
-		$test->{$currTest}->{'flat'}->{'queue'}->{'external'} = $6;
+		
+		if ($block =~ 
+			/
+				Actual\sComplexity:\s(\d+)\n
+				Actual\sActive\sComplexity:\s(\d+)\n
+				Internal\sQueue:\s(\d+)\n
+				External\sQueue:\s(\d+)\n
+			/x ) {
+			$test->{$currTest}->{'flat'}->{'cmplx'}->{'actual'} = $1;
+			$test->{$currTest}->{'flat'}->{'cmplx'}->{'actualActv'} = $2;
+			$test->{$currTest}->{'flat'}->{'queue'}->{'internal'} = $3;
+			$test->{$currTest}->{'flat'}->{'queue'}->{'external'} = $4;
+		}
 		
 		if ($block =~ /State-vector (\d+) byte, depth reached (\d+), errors: (\d+)/) {
 			$test->{$currTest}->{'pml'}->{'states'}->{'stateSize'} = $1;

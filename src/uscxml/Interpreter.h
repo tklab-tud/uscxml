@@ -423,7 +423,7 @@ public:
 	static bool isParallel(const Arabica::DOM::Element<std::string>& state);
 	static bool isCompound(const Arabica::DOM::Element<std::string>& state);
 	static bool isDescendant(const Arabica::DOM::Node<std::string>& s1, const Arabica::DOM::Node<std::string>& s2);
-	bool isInEmbeddedDocument(const Arabica::DOM::Node<std::string>& node);
+	static bool isInEmbeddedDocument(const Arabica::DOM::Node<std::string>& node);
 	bool isInitial(const Arabica::DOM::Element<std::string>& state);
 
 	static std::string stateToString(InterpreterState state);

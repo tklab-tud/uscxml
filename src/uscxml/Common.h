@@ -20,6 +20,17 @@
 #ifndef COMMON_H_YZ3CIYP
 #define COMMON_H_YZ3CIYP
 
+#if __cplusplus >= 201402L
+#define DEPRECATED [[deprecated]]
+#elif defined(__GNUC__)
+#define DEPRECATED __attribute__((deprecated))
+#elif defined(_MSC_VER)
+#define DEPRECATED __declspec(deprecated)
+#else
+#pragma message("WARNING: You need to implement DEPRECATED for this compiler")
+#define DEPRECATED(alternative)
+#endif
+
 #if defined(_WIN32) && !defined(USCXML_STATIC)
 #	ifdef USCXML_EXPORT
 #		define USCXML_API __declspec(dllexport)
@@ -39,6 +50,19 @@
 #undef WIN32_LEAN_AND_MEAN
 #else
 #include <sys/socket.h>
+#endif
+
+#if defined(_WIN32)
+inline int setenv(const char *name, const char *value, int overwrite)
+{
+    int errcode = 0;
+    if(!overwrite) {
+        size_t envsize = 0;
+        errcode = getenv_s(&envsize, NULL, 0, name);
+        if(errcode || envsize) return errcode;
+    }
+    return _putenv_s(name, value);
+}
 #endif
 
 #define _USE_MATH_DEFINES

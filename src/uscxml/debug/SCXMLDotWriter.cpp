@@ -45,7 +45,7 @@ SCXMLDotWriter::SCXMLDotWriter(Interpreter interpreter,
 
 	NodeList<std::string > scxmlElems = interpreter.getDocument().getElementsByTagName("scxml");
 	_scxml = (Element<std::string>)scxmlElems.item(0);
-	_isFlat = HAS_ATTR(_scxml, "flat") && DOMUtils::attributeIsTrue(ATTR(_scxml, "flat"));
+	_isFlat = HAS_ATTR(_scxml, "flat") && stringIsTrue(ATTR(_scxml, "flat"));
 
 	if (_anchors.size() == 0) {
 		StateAnchor anchor;

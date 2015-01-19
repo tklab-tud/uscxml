@@ -21,14 +21,13 @@
 #define CONVENIENCE_H_LU7GZ6CB
 
 #include <inttypes.h>
+#include <stdlib.h>
 #include <boost/detail/endian.hpp>
 #include <boost/lexical_cast.hpp>
 
 namespace uscxml {
-inline bool isnan(double x) {
-	return x != x;
-}
-
+inline bool isnan(double x);
+	
 // see http://stackoverflow.com/questions/228005/alternative-to-itoa-for-converting-integer-to-string-c
 template <typename T> std::string toStr(T tmp) {
 	std::ostringstream out;
@@ -44,82 +43,15 @@ template <typename T> T strTo(std::string tmp) {
 	return output;
 }
 
-inline bool isNumeric( const char* pszInput, int nNumberBase) {
-	std::string base = ".-0123456789ABCDEF";
-	std::string input = pszInput;
-	return (input.find_first_not_of(base.substr(0, nNumberBase + 2)) == std::string::npos);
-}
+bool isNumeric(const char* pszInput, int nNumberBase);
+bool isInteger( const char* pszInput, int nNumberBase);
+bool iequals(const std::string& a, const std::string& b);
+bool equals(const std::string& a, const std::string& b);
+bool stringIsTrue(const std::string& value);
+bool envVarIsTrue(const char* name);
+bool envVarIEquals(const char* name, const char* value);
 
-inline bool isInteger( const char* pszInput, int nNumberBase) {
-	std::string base = "-0123456789ABCDEF";
-	std::string input = pszInput;
-	return (input.find_first_not_of(base.substr(0, nNumberBase + 1)) == std::string::npos);
-}
-
-inline bool iequals(const std::string& a, const std::string& b) {
-	// this impementation beats boost::iequals 2700ms vs 2100ms for test-performance.scxml - we don't care for non-ascii yet
-	unsigned int size = a.size();
-	if (b.size() != size)
-		return false;
-	for (unsigned int i = 0; i < size; ++i)
-		if (tolower(a[i]) != tolower(b[i]))
-			return false;
-	return true;
-}
-
-inline bool equals(const std::string& a, const std::string& b) {
-	unsigned int size = a.size();
-	if (b.size() != size)
-		return false;
-	for (unsigned int i = 0; i < size; ++i)
-		if (a[i] != b[i])
-			return false;
-	return true;
-}
-
-inline std::string unescape(const std::string& a) {
-	std::stringstream b;
-	// see http://en.cppreference.com/w/cpp/language/escape
-
-	std::string::const_iterator it = a.begin();
-	while (it != a.end()) {
-		char c = *it++;
-		if (c == '\\' && it != a.end()) {
-			switch (*it++) {
-			case '\\':
-				c = '\\';
-				break;
-			case '0':
-				c = '\0';
-				break;
-			case 'a':
-				c = '\a';
-				break;
-			case 'b':
-				c = '\b';
-				break;
-			case 'f':
-				c = '\f';
-				break;
-			case 'n':
-				c = '\n';
-				break;
-			case 'r':
-				c = '\r';
-				break;
-			case 't':
-				c = '\t';
-				break;
-			case 'v':
-				c = '\v';
-				break;
-			}
-		}
-		b << c;
-	}
-
-	return b.str();
-}
+std::string unescape(const std::string& a);
 
 // see http://www.cplusplus.com/forum/general/27544/
 

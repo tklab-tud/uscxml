@@ -22,40 +22,6 @@
 #include <dlfcn.h>
 #endif
 
-class VerboseMonitor : public uscxml::InterpreterMonitor {
-	void onStableConfiguration(uscxml::Interpreter interpreter) {
-		printConfig(interpreter.getConfiguration());
-	}
-
-	void beforeProcessingEvent(uscxml::Interpreter interpreter, const uscxml::Event& event) {
-		switch (event.eventType) {
-			case uscxml::Event::INTERNAL:
-				std::cout << "Internal Event: " << event.name << std::endl;
-				break;
-			case uscxml::Event::EXTERNAL:
-				std::cout << "External Event: " << event.name << std::endl;
-				break;
-			case uscxml::Event::PLATFORM:
-				std::cout << "Platform Event: " << event.name << std::endl;
-				break;
-		}
-	}
-
-	void beforeCompletion(uscxml::Interpreter interpreter) {
-		printConfig(interpreter.getConfiguration());
-	}
-
-	void printConfig(const Arabica::XPath::NodeSet<std::string>& config) {
-		std::string seperator;
-		std::cout << "Config: {";
-		for (int i = 0; i < config.size(); i++) {
-			std::cout << seperator << ATTR_CAST(config[i], "id");
-			seperator = ", ";
-		}
-		std::cout << "}" << std::endl;
-	}
-};
-
 #ifdef CMAKE_BUILD_TYPE_DEBUG
 
 #ifdef HAS_EXECINFO_H
@@ -206,7 +172,7 @@ int main(int argc, char** argv) {
 				interpreter.setCapabilities(options.getCapabilities());
 
 				if (options.verbose) {
-					VerboseMonitor* vm = new VerboseMonitor();
+					StateTransitionMonitor* vm = new StateTransitionMonitor();
 					interpreter.addMonitor(vm);
 				}
 

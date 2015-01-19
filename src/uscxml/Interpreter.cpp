@@ -330,29 +330,39 @@ void NameSpaceInfo::init(const std::map<std::string, std::string>& namespaceInfo
 }
 
 void StateTransitionMonitor::beforeTakingTransition(uscxml::Interpreter interpreter, const Arabica::DOM::Element<std::string>& transition, bool moreComing) {
-	std::cout << "Transition: " << uscxml::DOMUtils::xPathForNode(transition) << std::endl;
+	std::cerr << "Transition: " << uscxml::DOMUtils::xPathForNode(transition) << std::endl;
 }
 
 void StateTransitionMonitor::onStableConfiguration(uscxml::Interpreter interpreter) {
-	std::cout << "Config: {";
+	std::cerr << "Config: {";
 	printNodeSet(interpreter.getConfiguration());
-	std::cout << "}" << std::endl;
+	std::cerr << "}" << std::endl;
 }
 
 void StateTransitionMonitor::beforeProcessingEvent(uscxml::Interpreter interpreter, const uscxml::Event& event) {
-	std::cout << "Event: " << event.name << std::endl;
+	switch (event.eventType) {
+		case uscxml::Event::INTERNAL:
+			std::cerr << "Internal Event: " << event.name << std::endl;
+			break;
+		case uscxml::Event::EXTERNAL:
+			std::cerr << "External Event: " << event.name << std::endl;
+			break;
+		case uscxml::Event::PLATFORM:
+			std::cerr << "Platform Event: " << event.name << std::endl;
+			break;
+	}
 }
 
 void StateTransitionMonitor::beforeExecutingContent(Interpreter interpreter, const Arabica::DOM::Element<std::string>& element) {
-	std::cout << "Executable Content: " << DOMUtils::xPathForNode(element) << std::endl;
+	std::cerr << "Executable Content: " << DOMUtils::xPathForNode(element) << std::endl;
 }
 
 void StateTransitionMonitor::beforeExitingState(uscxml::Interpreter interpreter, const Arabica::DOM::Element<std::string>& state, bool moreComing) {
 	exitingStates.push_back(state);
 	if (!moreComing) {
-		std::cout << "Exiting: {";
+		std::cerr << "Exiting: {";
 		printNodeSet(exitingStates);
-		std::cout << "}" << std::endl;
+		std::cerr << "}" << std::endl;
 		exitingStates = Arabica::XPath::NodeSet<std::string>();
 	}
 }
@@ -360,9 +370,9 @@ void StateTransitionMonitor::beforeExitingState(uscxml::Interpreter interpreter,
 void StateTransitionMonitor::beforeEnteringState(uscxml::Interpreter interpreter, const Arabica::DOM::Element<std::string>& state, bool moreComing) {
 	enteringStates.push_back(state);
 	if (!moreComing) {
-		std::cout << "Entering: {";
+		std::cerr << "Entering: {";
 		printNodeSet(enteringStates);
-		std::cout << "}" << std::endl;
+		std::cerr << "}" << std::endl;
 		enteringStates = Arabica::XPath::NodeSet<std::string>();
 	}
 	
@@ -371,7 +381,7 @@ void StateTransitionMonitor::beforeEnteringState(uscxml::Interpreter interpreter
 void StateTransitionMonitor::printNodeSet(const Arabica::XPath::NodeSet<std::string>& config) {
 	std::string seperator;
 	for (int i = 0; i < config.size(); i++) {
-		std::cout << seperator << ATTR_CAST(config[i], "id");
+		std::cerr << seperator << ATTR_CAST(config[i], "id");
 		seperator = ", ";
 	}
 }
@@ -577,7 +587,7 @@ InterpreterImpl::~InterpreterImpl() {
 		tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
 		stop(); // unset started bit
 	}
-//	std::cout << "stopped " << this << std::endl;
+//	std::cerr << "stopped " << this << std::endl;
 //	tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
 	if (_thread) {
 		if (_thread->get_id() != tthread::this_thread::get_id()) {
@@ -774,11 +784,11 @@ InterpreterState InterpreterImpl::step(int waitForMS) {
 			NodeSet<std::string> initialTransitions = getDocumentInitialTransitions();
 			assert(initialTransitions.size() > 0);
 #if VERBOSE
-			std::cout << _name << ": initialTransitions: " << std::endl;
+			std::cerr << _name << ": initialTransitions: " << std::endl;
 			for (int i = 0; i < initialTransitions.size(); i++) {
-				std::cout << initialTransitions[i] << std::endl;
+				std::cerr << initialTransitions[i] << std::endl;
 			}
-			std::cout << std::endl;
+			std::cerr << std::endl;
 #endif
 
 			enterStates(initialTransitions);
@@ -856,7 +866,7 @@ InterpreterState InterpreterImpl::step(int waitForMS) {
 			NodeSet<std::string> invokes = filterChildElements(_nsInfo.xmlNSPrefix + "invoke", _statesToInvoke[i]);
 			for (unsigned int j = 0; j < invokes.size(); j++) {
 				Element<std::string> invokeElem = Element<std::string>(invokes[j]);
-				if (!HAS_ATTR(invokeElem, "persist") || !DOMUtils::attributeIsTrue(ATTR(invokeElem, "persist"))) {
+				if (!HAS_ATTR(invokeElem, "persist") || !stringIsTrue(ATTR(invokeElem, "persist"))) {
 					invoke(invokeElem);
 				}
 			}
@@ -1007,7 +1017,7 @@ void InterpreterImpl::stabilize() {
 				_currEvent = _internalQueue.front();
 				_internalQueue.pop_front();
 #if VERBOSE
-				std::cout << "Received internal event " << _currEvent.name << std::endl;
+				std::cerr << "Received internal event " << _currEvent.name << std::endl;
 #endif
 
 				USCXML_MONITOR_CALLBACK2(beforeProcessingEvent, _currEvent)
@@ -1032,7 +1042,7 @@ void InterpreterImpl::stabilize() {
 		NodeSet<std::string> invokes = filterChildElements(_nsInfo.xmlNSPrefix + "invoke", _statesToInvoke[i]);
 		for (unsigned int j = 0; j < invokes.size(); j++) {
 			Element<std::string> invokeElem = Element<std::string>(invokes[j]);
-			if (!HAS_ATTR(invokeElem, "persist") || !DOMUtils::attributeIsTrue(ATTR(invokeElem, "persist"))) {
+			if (!HAS_ATTR(invokeElem, "persist") || !stringIsTrue(ATTR(invokeElem, "persist"))) {
 				invoke(invokeElem);
 			}
 		}
@@ -1107,11 +1117,11 @@ LOOP:
 	}
 
 #if VERBOSE
-	std::cout << "Enabled eventless transitions: " << std::endl;
+	std::cerr << "Enabled eventless transitions: " << std::endl;
 	for (int i = 0; i < enabledTransitions.size(); i++) {
-		std::cout << enabledTransitions[i] << std::endl << "----" << std::endl;
+		std::cerr << enabledTransitions[i] << std::endl << "----" << std::endl;
 	}
-	std::cout << std::endl;
+	std::cerr << std::endl;
 #endif
 
 	enabledTransitions = removeConflictingTransitions(enabledTransitions);
@@ -1522,7 +1532,7 @@ void InterpreterImpl::init() {
 
 //	_running = true;
 #if VERBOSE
-	std::cout << "running " << this << std::endl;
+	std::cerr << "running " << this << std::endl;
 #endif
 
 	if (_binding == EARLY) {
@@ -1592,7 +1602,7 @@ void InterpreterImpl::initializeData(const Element<std::string>& data) {
 
 void InterpreterImpl::receiveInternal(const Event& event) {
 #if VERBOSE
-	std::cout << _name << " receiveInternal: " << event.name << std::endl;
+	std::cerr << _name << " receiveInternal: " << event.name << std::endl;
 #endif
 	_internalQueue.push_back(event);
 //	_condVar.notify_all();
@@ -1600,7 +1610,7 @@ void InterpreterImpl::receiveInternal(const Event& event) {
 
 void InterpreterImpl::receive(const Event& event, bool toFront)   {
 #if VERBOSE
-	std::cout << _name << " receive: " << event.name << std::endl;
+	std::cerr << _name << " receive: " << event.name << std::endl;
 #endif
 	if (toFront) {
 		_externalQueue.push_front(event);
@@ -1715,7 +1725,7 @@ void InterpreterImpl::processDOMorText(const Arabica::DOM::Element<std::string>&
 
 	Node<std::string> child = element.getFirstChild();
 	while (child) {
-//		std::cout << child.getNodeType() << std::endl;
+//		std::cerr << child.getNodeType() << std::endl;
 		if (child.getNodeType() == Node_base::TEXT_NODE ||
 		        child.getNodeType() == Node_base::CDATA_SECTION_NODE) {
 			std::string trimmed = child.getNodeValue();
@@ -2035,7 +2045,7 @@ void InterpreterImpl::invoke(const Arabica::DOM::Element<std::string>& element) 
 			if (HAS_ATTR(element, "id")) {
 				invokeReq.invokeid = ATTR(element, "id");
 			} else {
-				if (HAS_ATTR(_scxml, "flat") && DOMUtils::attributeIsTrue(ATTR(_scxml, "flat")) && HAS_ATTR(element, "parent")) {
+				if (HAS_ATTR(_scxml, "flat") && stringIsTrue(ATTR(_scxml, "flat")) && HAS_ATTR(element, "parent")) {
 					invokeReq.invokeid = ATTR(element, "parent") + "." + UUID::getUUID();
 				} else {
 					invokeReq.invokeid = ATTR(getParentState(element), "id") + "." + UUID::getUUID();
@@ -2381,7 +2391,7 @@ void InterpreterImpl::executeContent(const Arabica::DOM::Element<std::string>& c
 		Arabica::DOM::Element<std::string> ifElem = (Arabica::DOM::Element<std::string>)content;
 #if VERBOSE
 		if (HAS_ATTR(ifElem, "cond"))
-			std::cout << ATTR(ifElem, "cond") << std::endl;
+			std::cerr << ATTR(ifElem, "cond") << std::endl;
 #endif
 		/**
 		 * A block is everything up to or between elseifs and else. Those element
@@ -2446,15 +2456,15 @@ void InterpreterImpl::executeContent(const Arabica::DOM::Element<std::string>& c
 		// --- LOG --------------------------
 		Arabica::DOM::Element<std::string> logElem = (Arabica::DOM::Element<std::string>)content;
 		if (logElem.hasAttribute("label"))
-			std::cout << logElem.getAttribute("label") << ": ";
+			std::cerr << logElem.getAttribute("label") << ": ";
 		if (logElem.hasAttribute("expr")) {
 			try {
-				std::cout << _dataModel.evalAsString(logElem.getAttribute("expr")) << std::endl;
+				std::cerr << _dataModel.evalAsString(logElem.getAttribute("expr")) << std::endl;
 			}
 			CATCH_AND_DISTRIBUTE2("Syntax error in expr attribute of log element", content)
 		} else {
 			if (logElem.hasAttribute("label"))
-				std::cout << std::endl;
+				std::cerr << std::endl;
 		}
 	} else if (iequals(TAGNAME(content), _nsInfo.xmlNSPrefix + "assign")) {
 		// --- ASSIGN --------------------------
@@ -2586,7 +2596,7 @@ void InterpreterImpl::finalizeAndAutoForwardCurrentEvent() {
 				executeContent(finalizeElem);
 			}
 		}
-		if (HAS_ATTR(invokeIter->second.getElement(), "autoforward") && DOMUtils::attributeIsTrue(ATTR(invokeIter->second.getElement(), "autoforward"))) {
+		if (HAS_ATTR(invokeIter->second.getElement(), "autoforward") && stringIsTrue(ATTR(invokeIter->second.getElement(), "autoforward"))) {
 			try {
 				// do not autoforward to invokers that send to #_parent from the SCXML IO Processor!
 				// Yes do so, see test229!
@@ -2602,7 +2612,7 @@ void InterpreterImpl::finalizeAndAutoForwardCurrentEvent() {
 }
 
 void InterpreterImpl::returnDoneEvent(const Arabica::DOM::Node<std::string>& state) {
-//	std::cout << state << std::endl;
+//	std::cerr << state << std::endl;
 	if (_parentQueue != NULL) {
 		Event done;
 		done.name = "done.invoke." + _sessionId;
@@ -2695,11 +2705,11 @@ Arabica::DOM::Node<std::string> InterpreterImpl::getAncestorElement(const Arabic
 
 Arabica::DOM::Node<std::string> InterpreterImpl::findLCCA(const Arabica::XPath::NodeSet<std::string>& states) {
 #if VERBOSE_FIND_LCCA
-	std::cout << "findLCCA: ";
+	std::cerr << "findLCCA: ";
 	for (int i = 0; i < states.size(); i++) {
-		std::cout << ATTR_CAST(states[i], "id") << ", ";
+		std::cerr << ATTR_CAST(states[i], "id") << ", ";
 	}
-	std::cout << std::endl << std::flush;
+	std::cerr << std::endl << std::flush;
 #endif
 
 	Arabica::XPath::NodeSet<std::string> ancestors = getProperAncestors(states[0], Arabica::DOM::Node<std::string>());
@@ -2711,7 +2721,7 @@ Arabica::DOM::Node<std::string> InterpreterImpl::findLCCA(const Arabica::XPath::
 		for (int j = 0; j < states.size(); j++) {
 
 #if VERBOSE_FIND_LCCA
-			std::cout << "Checking " << ATTR_CAST(states[j], "id") << " and " << ATTR_CAST(ancestors[i], "id") << std::endl;
+			std::cerr << "Checking " << ATTR_CAST(states[j], "id") << " and " << ATTR_CAST(ancestors[i], "id") << std::endl;
 #endif
 
 			if (!isDescendant(states[j], ancestors[i]))
@@ -2728,7 +2738,7 @@ NEXT_ANCESTOR:
 		ancestor = _scxml;
 	assert(ancestor);
 #if VERBOSE_FIND_LCCA
-	std::cout << " -> " << ATTR_CAST(ancestor, "id") << " " << ancestor.getLocalName() << std::endl;
+	std::cerr << " -> " << ATTR_CAST(ancestor, "id") << " " << ancestor.getLocalName() << std::endl;
 #endif
 	return ancestor;
 }
@@ -2814,7 +2824,7 @@ Arabica::XPath::NodeSet<std::string> InterpreterImpl::getInitialStates(Arabica::
 	}
 
 #if VERBOSE
-	std::cout << "Getting initial state of " << TAGNAME(state) << " " << ATTR(state, "id") << std::endl;
+	std::cerr << "Getting initial state of " << TAGNAME(state) << " " << ATTR(state, "id") << std::endl;
 #endif
 
 	if (isAtomic(state)) {
@@ -2940,7 +2950,7 @@ std::string InterpreterImpl::spaceNormalize(const std::string& text) {
 			content << seperator << text.substr(start, i + 1 - start);
 		}
 	}
-//	std::cout << ">>" << content.str() << "<<" << std::endl;
+//	std::cerr << ">>" << content.str() << "<<" << std::endl;
 
 #else
 
@@ -2979,7 +2989,7 @@ NodeSet<std::string> InterpreterImpl::filterChildElements(const std::string& tag
 	for (unsigned int i = 0; i < childs.getLength(); i++) {
 		if (childs.item(i).getNodeType() != Node_base::ELEMENT_NODE)
 			continue;
-//		std::cout << TAGNAME(childs.item(i)) << std::endl;
+//		std::cerr << TAGNAME(childs.item(i)) << std::endl;
 		if(iequals(TAGNAME_CAST(childs.item(i)), tagName)) {
 			filteredChildElems.push_back(childs.item(i));
 		}
@@ -3098,9 +3108,6 @@ bool InterpreterImpl::isInEmbeddedDocument(const Node<std::string>& node) {
 	// a node is in an embedded document if there is a content element in its parents
 	Node<std::string> parent = node;
 	while(parent) {
-		if(parent == _scxml) {
-			return false;
-		}
 		if(iequals(parent.getLocalName(), "content")) {
 			return true;
 		}
@@ -3357,10 +3364,10 @@ bool InterpreterImpl::isLegalConfiguration(const NodeSet<std::string>& config) {
 		Element<std::string> configElem(config[i]);
 		if (!isAtomic(configElem) && !isParallel(configElem)) {
 			Node<std::string> foundChildState;
-			//std::cout << config[i] << std::endl;
+			//std::cerr << config[i] << std::endl;
 			NodeSet<std::string> childs = getChildStates(config[i]);
 			for (int j = 0; j < childs.size(); j++) {
-				//std::cout << childs[j] << std::endl;
+				//std::cerr << childs[j] << std::endl;
 				if (isMember(childs[j], config)) {
 					if (foundChildState) {
 						LOG(ERROR) << "Invalid configuration: Multiple childs of compound '" << ATTR_CAST(config[i], "id")
@@ -3395,7 +3402,7 @@ bool InterpreterImpl::isLegalConfiguration(const NodeSet<std::string>& config) {
 }
 
 bool InterpreterImpl::isInState(const std::string& stateId) {
-	if (HAS_ATTR(_scxml, "flat") && DOMUtils::attributeIsTrue(ATTR(_scxml, "flat"))) {
+	if (HAS_ATTR(_scxml, "flat") && stringIsTrue(ATTR(_scxml, "flat"))) {
 		// extension for flattened SCXML documents
 		if (_configuration.size() > 0 && HAS_ATTR_CAST(_configuration[0], "id")) {
 			// all states are encoded in the current statename

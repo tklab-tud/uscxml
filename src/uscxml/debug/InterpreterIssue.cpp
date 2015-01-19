@@ -318,11 +318,43 @@ std::list<InterpreterIssue> InterpreterIssue::forInterpreter(InterpreterImpl* in
 
 		std::string stateId = ATTR(state, "id");
 
-		if (!InterpreterImpl::isMember(state, reachable)) {
-			issues.push_back(InterpreterIssue("State with id '" + stateId + "' is unreachable", state, InterpreterIssue::USCXML_ISSUE_FATAL));
+		// check for valid transition with history states
+		if (LOCALNAME(state) == "history") {
+			NodeSet<std::string> transitions = InterpreterImpl::filterChildElements(_nsInfo.xmlNSPrefix + "transition", state, false);
+			if (transitions.size() > 1) {
+				issues.push_back(InterpreterIssue("History pseudo-state with id '" + stateId + "' has multiple transitions", state, InterpreterIssue::USCXML_ISSUE_FATAL));
+			} else if (transitions.size() == 1) {
+				Element<std::string> transition = Element<std::string>(transitions[0]);
+				if (HAS_ATTR(transition, "cond")) {
+					issues.push_back(InterpreterIssue("Transition in history pseudo-state '" + stateId + "' must not have a condition", transition, InterpreterIssue::USCXML_ISSUE_FATAL));
+				}
+				if (HAS_ATTR(transition, "event")) {
+					issues.push_back(InterpreterIssue("Transition in history pseudo-state '" + stateId + "' must not have an event attribute", transition, InterpreterIssue::USCXML_ISSUE_FATAL));
+				}
+				if (!HAS_ATTR(transition, "target")) {
+					issues.push_back(InterpreterIssue("Transition in history pseudo-state '" + stateId + "' has no target", transition, InterpreterIssue::USCXML_ISSUE_FATAL));
+				} else {
+					NodeSet<std::string> targetStates = interpreter->getTargetStates(transition);
+					for (int j = 0; j < targetStates.size(); j++) {
+						Element<std::string> target = Element<std::string>(targetStates[j]);
+						if (HAS_ATTR(state, "type") && ATTR(state, "type") == "deep") {
+							if (!InterpreterImpl::isDescendant(target, state.getParentNode())) {
+								issues.push_back(InterpreterIssue("Transition in deep history pseudo-state '" + stateId + "' has invalid target state '" + ATTR(target, "id") + "'", transition, InterpreterIssue::USCXML_ISSUE_FATAL));
+							}
+						} else {
+							if (target.getParentNode() != state.getParentNode()) {
+								issues.push_back(InterpreterIssue("Transition in shallow history pseudo-state '" + stateId + "' has invalid target state '" + ATTR(target, "id") + "'", transition, InterpreterIssue::USCXML_ISSUE_FATAL));
+							}
+						}
+					}
+				}
+			}
 		}
 
-
+		// check whether state is reachable
+		if (!InterpreterImpl::isMember(state, reachable) && !InterpreterImpl::isInEmbeddedDocument(state)) {
+			issues.push_back(InterpreterIssue("State with id '" + stateId + "' is unreachable", state, InterpreterIssue::USCXML_ISSUE_FATAL));
+		}
 
 		// check for uniqueness of id attribute
 		if (seenStates.find(stateId) != seenStates.end()) {
@@ -336,15 +368,17 @@ std::list<InterpreterIssue> InterpreterIssue::forInterpreter(InterpreterImpl* in
 		Element<std::string> transition = Element<std::string>(transitions[i]);
 
 		// check for valid target
-		std::list<std::string> targetIds = InterpreterImpl::tokenizeIdRefs(ATTR(transition, "target"));
-		if (targetIds.size() == 0) {
-			issues.push_back(InterpreterIssue("Transition has empty target state list", transition, InterpreterIssue::USCXML_ISSUE_FATAL));
-		}
-		
-		for (std::list<std::string>::iterator targetIter = targetIds.begin(); targetIter != targetIds.end(); targetIter++) {
-			if (seenStates.find(*targetIter) == seenStates.end()) {
-				issues.push_back(InterpreterIssue("Transition has non-existant target state with id '" + *targetIter + "'", transition, InterpreterIssue::USCXML_ISSUE_FATAL));
-				continue;
+		if (HAS_ATTR(transition, "target")) {
+			std::list<std::string> targetIds = InterpreterImpl::tokenizeIdRefs(ATTR(transition, "target"));
+			if (targetIds.size() == 0) {
+				issues.push_back(InterpreterIssue("Transition has empty target state list", transition, InterpreterIssue::USCXML_ISSUE_FATAL));
+			}
+			
+			for (std::list<std::string>::iterator targetIter = targetIds.begin(); targetIter != targetIds.end(); targetIter++) {
+				if (seenStates.find(*targetIter) == seenStates.end()) {
+					issues.push_back(InterpreterIssue("Transition has non-existant target state with id '" + *targetIter + "'", transition, InterpreterIssue::USCXML_ISSUE_FATAL));
+					continue;
+				}
 			}
 		}
 	}
@@ -412,6 +446,7 @@ NEXT_TRANSITION:
 			}
 		}
 	}
+
 
 	// check that all invokers exists
 	{

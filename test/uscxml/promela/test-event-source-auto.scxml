@@ -1,0 +1,22 @@
+<scxml datamodel="promela">
+  <!--
+    #promela-event-source-auto
+    { e1: [
+        { state: ['s0'],
+          data: { foo: 'some string' }}
+        { state: ['s0'],
+          data: { bar: 12 }}
+        { state: ['s1'],
+          data: { foo: 'some other string' }}
+    ]}
+	-->
+  
+  <state id="s0">
+    <transition event="e1" cond="_event.data.foo == 'some string'" />
+    <transition event="e1" cond="_event.data.bar == 12" />
+  </state>
+  <state id="s1">
+    <transition event="e1" cond="_event.data.foo == 'some other string'" />
+    <transition event="e1" cond="_event.data.bar == 12" />
+  </state>
+</scxml>

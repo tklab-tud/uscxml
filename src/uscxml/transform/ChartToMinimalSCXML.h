@@ -45,6 +45,7 @@ public:
 	virtual void beforeEnteringState(Interpreter interpreter, const Arabica::DOM::Element<std::string>& state, bool moreComing);
 	virtual void beforeInvoking(Interpreter interpreter, const Arabica::DOM::Element<std::string>& invokeElem, const std::string& invokeid);
 	virtual void beforeCompletion(Interpreter interpreter);
+	virtual void onStableConfiguration(Interpreter interpreter);
 
 	// gather executable content per microstep
 	void executeContent(const Arabica::DOM::Element<std::string>& content, bool rethrow = false);
@@ -66,6 +67,8 @@ protected:
 	bool _retainAsComments;
 	
 private:
+	size_t _step;
+	
 	// we need this to register as an instance at Interpreter::_instances
 	boost::shared_ptr<InterpreterImpl> _selfPtr;
 	

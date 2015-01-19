@@ -36,22 +36,21 @@
 #define UNDECIDABLE 2147483647
 #define MIN(X,Y) ((X) < (Y) ? (X) : (Y))
 
-#define DUMP_STATS(nrTrans, disregardTime) \
+#define DUMP_STATS(nrTrans) \
 uint64_t now = tthread::chrono::system_clock::now(); \
-if (now - _lastTimeStamp > 1000 || disregardTime) { \
+if (now - _lastTimeStamp > 1000) { \
 	std::cerr << "## Transition: " << _perfTransUsed << " / " << _perfTransTotal << " [" << _perfTransProcessed << "/sec]"; \
 	if (nrTrans > 0) { \
 		std::cerr << " - 2**" << nrTrans << " = " << pow(2.0, static_cast<double>(nrTrans)); \
 	} \
 	std::cerr << std::endl; \
-	std::cerr << "## State     : " <<  _globalConf.size() << " found / " << _perfStackSize << " stacked / " << _perfStatesTotal << " seen [" << _perfStatesProcessed << "/sec]" << std::endl; \
+	std::cerr << "## State     : " << _globalConf.size() << " [" << _perfStatesProcessed << "/sec]" << std::endl; \
 	std::cerr << "## Microstep : " << _perfMicroStepTotal << " [" << _perfMicroStepProcessed << "/sec]" << std::endl; \
 	std::cerr << "## Cached    : " << _perfStatesCachedTotal << " [" << _perfStatesCachedProcessed << "/sec]" << std::endl; \
 	std::cerr << "## Skipped   : " << _perfStatesSkippedTotal << " [" << _perfStatesSkippedProcessed << "/sec]" << std::endl; \
 	std::cerr << "## Queues    : " << (_maxEventRaisedChain == UNDECIDABLE ? "UNK" : toStr(_maxEventRaisedChain)) << " / " << (_maxEventSentChain == UNDECIDABLE ? "UNK" : toStr(_maxEventSentChain)) << std::endl; \
-	std::cerr << "toFSM: "; \
 	std::cerr << _perfTransUsed << ", " << _perfTransTotal << ", " << _perfTransProcessed << ", "; \
-	std::cerr << _globalConf.size() << ", " << _perfStackSize << ", " << _perfStatesTotal << ", " << _perfStatesProcessed << ", "; \
+	std::cerr << _globalConf.size() << ", " << _perfStatesProcessed << ", "; \
 	std::cerr << _perfMicroStepTotal << ", " << _perfMicroStepProcessed << ", "; \
 	std::cerr << _perfStatesCachedTotal << ", " << _perfStatesCachedProcessed << ", " << _perfStatesSkippedTotal << ", " << _perfStatesSkippedProcessed << ", "; \
 	std::cerr << (_maxEventRaisedChain == UNDECIDABLE ? "UNK" : toStr(_maxEventRaisedChain)) << ", " << (_maxEventSentChain == UNDECIDABLE ? "UNK" : toStr(_maxEventSentChain)) << std::endl; \
@@ -61,8 +60,7 @@ if (now - _lastTimeStamp > 1000 || disregardTime) { \
 	_perfStatesCachedProcessed = 0; \
 	_perfStatesSkippedProcessed = 0; \
 	_perfMicroStepProcessed = 0; \
-	if (!disregardTime)\
-		_lastTimeStamp = now; \
+	_lastTimeStamp = now; \
 }
 
 //std::cerr << "Q: " << (_maxEventRaisedChain == UNDECIDABLE ? "UNK" : toStr(_maxEventRaisedChain)) << " / " << (_maxEventSentChain == UNDECIDABLE ? "UNK" : toStr(_maxEventSentChain)) << std::endl;
@@ -90,83 +88,6 @@ for (int i = 0; i < contents.size(); i++) { \
 	std::cerr << " " << TAGNAME_CAST(contents[i]); \
 } \
 std::cerr << ")";
-
-std::list<std::set<Element<std::string> > > Complexity::getAllConfigurations(const Arabica::DOM::Element<std::string>& root) {
-
-	std::list<std::set<Element<std::string> > > allConfigurations;
-	std::string nsPrefix = (root.getPrefix().size() > 0 ? root.getPrefix() + ":" : "");
-	std::string localName = root.getLocalName();
-	bool isAtomic = true;
-	
-	NodeList<std::string> children = root.getChildNodes();
-	for (int i = 0; i < children.getLength(); i++) {
-		if (children.item(i).getNodeType() != Node_base::ELEMENT_NODE)
-			continue;
-		Element<std::string> childElem(children.item(i));
-		if (childElem.getTagName() == nsPrefix + "state" ||
-				childElem.getTagName() == nsPrefix + "parallel" ||
-				childElem.getTagName() == nsPrefix + "final") {
-			// nested child state
-			std::list<std::set<Element<std::string> > > nestedConfigurations = getAllConfigurations(childElem);
-			isAtomic = false;
-			if (localName == "parallel" && allConfigurations.size() > 0) {
-				// for every nested configuration, every new nested is valid
-				std::list<std::set<Element<std::string> > > combinedConfigurations;
-				for (std::list<std::set<Element<std::string> > >::iterator existIter = allConfigurations.begin(); existIter != allConfigurations.end(); existIter++) {
-					std::set<Element<std::string> > existingConfig = *existIter;
-					
-					for (std::list<std::set<Element<std::string> > >::iterator newIter = nestedConfigurations.begin(); newIter != nestedConfigurations.end(); newIter++) {
-
-						std::set<Element<std::string> > newConfig = *newIter;
-						std::set<Element<std::string> > combinedSet;
-						combinedSet.insert(existingConfig.begin(), existingConfig.end());
-						combinedSet.insert(newConfig.begin(), newConfig.end());
-
-						combinedConfigurations.push_back(combinedSet);
-					}
-				}
-				allConfigurations = combinedConfigurations;
-			} else {
-				// just add nested configurations and this
-				for (std::list<std::set<Element<std::string> > >::iterator newIter = nestedConfigurations.begin(); newIter != nestedConfigurations.end(); newIter++) {
-					std::set<Element<std::string> > newConfig = *newIter;
-					if (localName != "scxml")
-						newConfig.insert(root);
-					allConfigurations.push_back(newConfig);
-				}
-			}
-		}
-	}
-
-	if (isAtomic) {
-		std::set<Element<std::string> > soleConfig;
-		soleConfig.insert(root);
-		allConfigurations.push_back(soleConfig);
-	}
-	return allConfigurations;
-}
-	
-std::map<size_t, size_t> Complexity::getTransitionHistogramm(const Arabica::DOM::Element<std::string>& root) {
-	std::map<size_t, size_t> histogram;
-	std::string nameSpace;
-
-	std::list<std::set<Element<std::string> > > allConfig = Complexity::getAllConfigurations(root);
-	
-	// for every legal configuration, count the transitions
-	for (std::list<std::set<Element<std::string> > >::iterator confIter = allConfig.begin(); confIter != allConfig.end(); confIter++) {
-		NodeSet<std::string> configNodeSet;
-		std::set<Element<std::string> > config = *confIter;
-		for (std::set<Element<std::string> >::iterator elemIter = config.begin(); elemIter != config.end(); elemIter++) {
-			configNodeSet.push_back(*elemIter);
-			if (nameSpace.size() == 0 && elemIter->getPrefix().size() > 0)
-				nameSpace = elemIter->getPrefix() + ":";
-		}
-		NodeSet<std::string> transitions = InterpreterImpl::filterChildElements(nameSpace + "transition", configNodeSet);
-		histogram[transitions.size()]++;
-	}
-
-	return histogram;
-}
 
 
 uint64_t Complexity::stateMachineComplexity(const Arabica::DOM::Element<std::string>& root, Variant variant) {
@@ -262,15 +183,12 @@ ChartToFSM::ChartToFSM(const Interpreter& other) {
 
 	cloneFrom(other.getImpl());
 	
-	_transitionsFromTree = true;
 	_keepInvalidTransitions = false;
 	_lastTimeStamp = tthread::chrono::system_clock::now();
 	_perfTransProcessed = 0;
 	_perfTransTotal = 0;
 	_perfTransUsed = 0;
-	_perfStatesTotal = 0;
 	_perfStatesProcessed = 0;
-	_perfStackSize = 0;
 	_perfStatesSkippedProcessed = 0;
 	_perfStatesSkippedTotal = 0;
 	_perfStatesCachedProcessed = 0;
@@ -278,13 +196,9 @@ ChartToFSM::ChartToFSM(const Interpreter& other) {
 	_perfMicroStepProcessed = 0;
 	_perfMicroStepTotal = 0;
 
-	if (envVarIEquals("USCXML_TRANSFORM_TRANS_FROM", "powerset"))
-		_transitionsFromTree = false;
-	
 	_start = NULL;
 	_currGlobalTransition = NULL;
-	_transTree = NULL;
-	
+
 	_lastStateIndex = 0;
 	_lastActiveIndex = 0;
 	_lastTransIndex = 0;
@@ -332,24 +246,6 @@ InterpreterState ChartToFSM::interpret() {
 	init();
 	setupIOProcessors();
 
-	{
-		std::list<std::set<Element<std::string> > > allConfig = Complexity::getAllConfigurations(_scxml);
-		for (std::list<std::set<Element<std::string> > >::iterator confIter = allConfig.begin(); confIter != allConfig.end(); confIter++) {
-			std::string seperator;
-			NodeSet<std::string> configNodeSet;
-			std::set<Element<std::string> > config = *confIter;
-			for (std::set<Element<std::string> >::iterator elemIter = config.begin(); elemIter != config.end(); elemIter++) {
-//				std::cerr << seperator << ATTR((*elemIter), "id");
-				seperator = ",";
-				configNodeSet.push_back(*elemIter);
-			}
-			assert(isLegalConfiguration(configNodeSet));
-//			std::cerr << std::endl;
-		}
-	}
-	std::map<size_t, size_t> histoGramm = Complexity::getTransitionHistogramm(_scxml);
-//	abort();
-	
 	uint64_t complexity = Complexity::stateMachineComplexity(_scxml) + 1;
 	std::cerr << "Approximate Complexity: " << complexity << std::endl;
 	std::cerr << "Approximate Active Complexity: " << Complexity::stateMachineComplexity(_scxml, Complexity::IGNORE_HISTORY_AND_NESTED_DATA) + 1  << std::endl;
@@ -449,8 +345,8 @@ InterpreterState ChartToFSM::interpret() {
 
 	// set index attribute for transitions
 	for (int i = 0; i < indexedTransitions.size(); i++) {
-//		std::cerr << toStr(i) << ":" << (HAS_ATTR(indexedTransitions[i], "line_start") ? ATTR(indexedTransitions[i], "line_start") : "");
-//		std::cerr << "\t" << DOMUtils::xPathForNode(indexedTransitions[i]) << std::endl;
+		std::cerr << toStr(i) << ":" << (HAS_ATTR(indexedTransitions[i], "line_start") ? ATTR(indexedTransitions[i], "line_start") : "");
+		std::cerr << "\t" << DOMUtils::xPathForNode(indexedTransitions[i]) << std::endl;
 		indexedTransitions[i].setAttribute("index", toStr(i));
 	}
 
@@ -491,8 +387,6 @@ InterpreterState ChartToFSM::interpret() {
 	
 	explode();
 
-	DUMP_STATS(0, true);
-
 #if 0
 	// print set of global configurations
 	for(std::map<std::string, GlobalState*>::iterator globalConfIter = _globalConf.begin();
@@ -508,8 +402,8 @@ InterpreterState ChartToFSM::interpret() {
 	std::cerr << "Internal Queue: " << _maxEventRaisedChain << std::endl;
 	std::cerr << "External Queue: " << _maxEventSentChain << std::endl;
 
-//	if (complexity < _globalConf.size())
-//		throw std::runtime_error("Upper bound for states exceeded");
+	if (complexity < _globalConf.size())
+		throw std::runtime_error("Upper bound for states exceeded");
 
 	return _state;
 }
@@ -584,7 +478,6 @@ void ChartToFSM::internalDoneSend(const Arabica::DOM::Element<std::string>& stat
 	if (parentIsScxmlState(state))
 		return;
 
-//	return;
 //	std::cerr << "internalDoneSend: " << state << std::endl;
 
 	// create onentry with a raise element
@@ -614,7 +507,7 @@ void ChartToFSM::internalDoneSend(const Arabica::DOM::Element<std::string>& stat
 	raise.setAttribute("event", "done.state." + ATTR_CAST(state.getParentNode(), "id")); // parent?!
 
 	GlobalTransition::Action action;
-	action.raiseDone = onentry; // HERE!
+	action.onEntry = onentry;
 
 	_currGlobalTransition->actions.push_back(action);
 	if (!_skipEventChainCalculations &&
@@ -626,10 +519,10 @@ void ChartToFSM::internalDoneSend(const Arabica::DOM::Element<std::string>& stat
 
 static bool isSuperset(const GlobalTransition* t1, const GlobalTransition* t2) {
 	bool isSuperset = true;
-	
+
 	if (t1->transitionRefs.size() >= t2->transitionRefs.size())
 		return false;
-	
+
 	NodeSet<std::string> t1Trans = t1->getTransitions();
 	NodeSet<std::string> t2Trans = t2->getTransitions();
 	
@@ -660,25 +553,6 @@ bool ChartToFSM::filterSameState(const NodeSet<std::string>& transitions) {
 	return true;
 }
 
-static bool filterSameHierarchy(const NodeSet<std::string>& transitions) {
-	for (unsigned int i = 0; i < transitions.size(); i++) {
-		Node<std::string> t1 = transitions[i];
-		Node<std::string> p1 = InterpreterImpl::getParentState(t1);
-		for (unsigned int j = i + 1; j < transitions.size(); j++) {
-			Node<std::string> t2 = transitions[j];
-			Node<std::string> p2 = InterpreterImpl::getParentState(t2);
-			while(p2) {
-				if (p1 == p2) {
-					return false;
-				}
-				p2 = p2.getParentNode();
-			}
-		}
-	}
-	return true;
-}
-
-	
 static bool filterChildEnabled(const NodeSet<std::string>& transitions) {
 	// drop any transition that is already enabled by a child
 	NodeSet<std::string> filteredTransitions;
@@ -764,17 +638,17 @@ void ChartToFSM::annotateRaiseAndSend(const Arabica::DOM::Element<std::string>& 
 
 void ChartToFSM::indexTransitions() {
 	indexTransitions(_scxml);
+	// reverse indices for most prior to be in front
+	std::reverse(indexedTransitions.begin(), indexedTransitions.end());
 
-	size_t index = 0;
+	size_t index = 1;
 	for (std::vector<Arabica::DOM::Element<std::string> >::iterator transIter = indexedTransitions.begin(); transIter != indexedTransitions.end(); transIter++) {
 		transIter->setAttribute("priority", toStr(index));
 		index++;
 	}
 
-	// reverse indices for most prior to be in front
-	std::reverse(indexedTransitions.begin(), indexedTransitions.end());
 }
-
+	
 void ChartToFSM::indexTransitions(const Arabica::DOM::Element<std::string>& root) {
 	// breadth first traversal of transitions
 	Arabica::XPath::NodeSet<std::string> levelTransitions = filterChildElements(_nsInfo.xmlNSPrefix + "transition", root);
@@ -817,7 +691,7 @@ template <typename T> bool PtrComp(const T * const & a, const T * const & b) {
 /**
  * subset only removes transitions without cond -> superset will always be enabled
  */
-bool hasUnconditionalSuperset(GlobalTransition* first, GlobalTransition* second) {
+bool hasUnconditionalSuperset (GlobalTransition* first, GlobalTransition* second) {
 
 	NodeSet<std::string> firstTransitions = first->getTransitions();
 	NodeSet<std::string> secondTransitions = first->getTransitions();
@@ -835,9 +709,6 @@ bool hasUnconditionalSuperset(GlobalTransition* first, GlobalTransition* second)
 	return false; //second can't be removed
 }
 
-/**
- * earlier transition is conditionless for same event
- */
 bool hasEarlierUnconditionalMatch(GlobalTransition* first, GlobalTransition* second) {
 	if (first->eventDesc == second->eventDesc) {
 		if (first->condition.size() == 0)
@@ -847,123 +718,36 @@ bool hasEarlierUnconditionalMatch(GlobalTransition* first, GlobalTransition* sec
 }
 
 std::list<GlobalTransition*> redundantRemove(std::list<GlobalTransition*> list) {
-#if 1
-	std::list<GlobalTransition*>::iterator outerIter;
-	std::list<GlobalTransition*>::iterator innerIter;
-	
-	outerIter = list.begin();
-	while(outerIter != list.end()) {
-		innerIter = outerIter;
-		
-		while(innerIter != list.end()) {
-			if (innerIter == outerIter) {
-				innerIter++;
+	for (std::list<GlobalTransition*>::iterator outerIter = list.begin();
+			 outerIter != list.end();
+			 outerIter++) {
+		for (std::list<GlobalTransition*>::iterator innerIter = outerIter;
+				 innerIter != list.end();
+				 innerIter++) {
+			
+			if (innerIter == outerIter)
 				continue;
-			}
-
+			
 			GlobalTransition* t1 = *outerIter;
 			GlobalTransition* t2 = *innerIter;
-
+			
 			if (hasUnconditionalSuperset(t1, t2)) {
 				list.erase(innerIter++);
 				continue;
 			} else if (hasUnconditionalSuperset(t2, t1)) {
 				list.erase(outerIter++);
-				break;
+				continue;
 			}
 			if (hasEarlierUnconditionalMatch(t1, t2)) {
 				list.erase(innerIter++);
 				continue;
 			}
-			innerIter++;
-		}
-		
-		outerIter++;
-	}
-	
-#else
-
-	for (std::list<GlobalTransition*>::iterator outerIter = list.begin();
-			 outerIter != list.end();
-			 outerIter++) {
-		for (std::list<GlobalTransition*>::iterator innerIter = outerIter;
-				 innerIter != list.end();
-				 innerIter++) {
-			
-			if (innerIter == outerIter)
-				continue;
-			
-			GlobalTransition* t1 = *outerIter;
-			GlobalTransition* t2 = *innerIter;
-			
-			if (hasUnconditionalSuperset(t1, t2)) {
-				innerIter = list.erase(innerIter);
-				continue;
-			} else if (hasUnconditionalSuperset(t2, t1)) {
-				outerIter = list.erase(outerIter);
-				continue;
-			}
-			if (hasEarlierUnconditionalMatch(t1, t2)) {
-				innerIter = list.erase(innerIter);
-				continue;
-			}
 		}
 	}
-#endif
 	return list;
 }
 
 std::list<GlobalTransition*> redundantMark(std::list<GlobalTransition*> list) {
-#if 1
-	std::list<GlobalTransition*>::iterator outerIter;
-	std::list<GlobalTransition*>::iterator innerIter;
-	
-	outerIter = list.begin();
-	while(outerIter != list.end()) {
-		innerIter = outerIter;
-		
-		while(innerIter != list.end()) {
-			if (innerIter == outerIter) {
-				innerIter++;
-				continue;
-			}
-			
-			GlobalTransition* t1 = *outerIter;
-			GlobalTransition* t2 = *innerIter;
-			
-			if (!t1->isValid || !t2->isValid) {
-				innerIter++;
-				continue;
-			}
-
-			if (hasUnconditionalSuperset(t1, t2)) {
-				t2->isValid = false;
-				t2->invalidMsg = "Unconditional superset";
-				t2->invalidReason = GlobalTransition::UNCONDITIONAL_SUPERSET;
-				innerIter++;
-				continue;
-			} else if (hasUnconditionalSuperset(t2, t1)) {
-				t1->isValid = false;
-				t1->invalidMsg = "Unconditional superset";
-				t1->invalidReason = GlobalTransition::UNCONDITIONAL_SUPERSET;
-				outerIter++;
-				break;
-			}
-			if (hasEarlierUnconditionalMatch(t1, t2)) {
-				t2->isValid = false;
-				t2->invalidMsg = "Earlier unconditional match";
-				t2->invalidReason = GlobalTransition::UNCONDITIONAL_MATCH;
-				innerIter++;
-				continue;
-			}
-			innerIter++;
-		}
-		
-		outerIter++;
-	}
-	
-#else
-
 	for (std::list<GlobalTransition*>::iterator outerIter = list.begin();
 			 outerIter != list.end();
 			 outerIter++) {
@@ -973,10 +757,10 @@ std::list<GlobalTransition*> redundantMark(std::list<GlobalTransition*> list) {
 			
 			if (innerIter == outerIter)
 				continue;
-			
+
 			GlobalTransition* t1 = *outerIter;
 			GlobalTransition* t2 = *innerIter;
-			
+
 			if (!t1->isValid || !t2->isValid)
 				continue;
 			
@@ -999,323 +783,13 @@ std::list<GlobalTransition*> redundantMark(std::list<GlobalTransition*> list) {
 			}
 		}
 	}
-#endif
 	return list;
 }
 
-	
-void TransitionTreeNode::dump(int indent) {
-	std::string padding;
-	for (int i = 0; i + 1 < indent; i++) {
-		padding += "| ";
-	}
-	if (indent > 0)
-		padding += "|-";
-	
-	std::string typeString;
-	switch (type) {
-		case TYPE_NESTED:
-			typeString = "NESTED"; break;
-		case TYPE_PARALLEL:
-			typeString = "PARALLEL"; break;
-		case TYPE_TRANSITION:
-			typeString = "TRANSITION"; break;
-		case TYPE_UNDEFINED:
-			typeString = "UNDEFINED"; break;
-			break;
-		default:
-			break;
-	}
-
-	
-	if (transition) {
-		std::cerr << padding << "t" << ATTR(transition, "index") << " " << typeString << ": ";
-//		std::cerr << (prevTransition != NULL ? " (" + prevTransition->nodeId + ") <-" : "");
-		std::cerr << "[" << nodeId << "]";
-//		std::cerr << (nextTransition != NULL ? " -> (" + nextTransition->nodeId + ")" : "");
-		std::cerr << std::endl;
-	} else {
-		std::cerr << padding << ATTR(state, "id") << " " << typeString << ": " << "[" << nodeId << "]";
-//		std::cerr << (firstTransition != NULL ? " -> " + firstTransition->nodeId : "");
-		std::cerr << std::endl;
-	}
-	
-	for (std::list<TransitionTreeNode*>::iterator childIter = children.begin(); childIter != children.end(); childIter++) {
-		(*childIter)->dump(indent + 1);
-	}
-}
-
-void ChartToFSM::getPotentialTransitionsForConfFromTree(const Arabica::XPath::NodeSet<std::string>& conf, std::map<std::string, GlobalTransition*>& outMap) {
-	if (_transTree == NULL) {
-		_transTree = buildTransTree(_scxml, "0");
-//		_transTree->dump();
-	}
-	std::string seperator;
-
-
-//	std::cerr << "--- ";
-
-	// recursion start
-	std::set<TransitionTreeNode*> transLeafs;
-
-		for (int i = 0; i < conf.size(); i++) {
-			DUMP_STATS(conf.size(), false);
-
-			Element<std::string> confElem(conf[i]);
-			assert(_stateToTransTreeNode.find(confElem) != _stateToTransTreeNode.end());
-			TransitionTreeNode* node = _stateToTransTreeNode[confElem];
-			if (node->firstState == NULL) { // a leaf - ignore intermediates
-				// ascend to the first parent with transitions but stop at parallel nodes
-				while(node != NULL && node->firstTransition == NULL) {
-					if (node->parent && node->parent->type == TransitionTreeNode::TYPE_PARALLEL)
-						break;
-					node = node->parent;
-				}
-				if (node != NULL) {
-					transLeafs.insert(node);
-				} else {
-					//std::cerr << ATTR(confElem, "id") << " does not cause transitions" << std::endl;
-				}
-			}
-		}
-	
-	std::list<std::set<TransitionTreeNode*> > stack;
-	stack.push_back(transLeafs); // push follow-up configurations onto stack
-
-	while (stack.size() > 0) {
-		// pop from front of stack
-		std::set<TransitionTreeNode*> stateList = stack.front();
-		stack.pop_front();
-		
-		DUMP_STATS(conf.size(), false);
-
-#if 0
-		seperator = "";
-		std::cerr << "Current set: ";
-		for (std::set<TransitionTreeNode*>::iterator transIter = stateList.begin(); transIter != stateList.end(); transIter++) {
-			std::cerr << seperator << (*transIter)->nodeId;
-			seperator = ", ";
-		}
-		std::cerr << std::endl;
-#endif
-		
-		/*
-		 * TransNodes contains a set of lists of transitions.
-		 * In the inner stack we build every possible combination 
-		 * of picking at-most one from each list.
-		 */
-		
-		/* create global transitions for every n-tuple in current set of lists */
-		std::list<std::pair<std::set<TransitionTreeNode*>, std::set<TransitionTreeNode*> > > innerStack;
-		innerStack.push_back(std::make_pair(std::set<TransitionTreeNode*>(), stateList));
-		
-		while(innerStack.size() > 0) {
-
-			// picking at-most one from each list
-			std::set<TransitionTreeNode*> remainingStates = innerStack.front().second;
-			std::set<TransitionTreeNode*> fixedTransitions = innerStack.front().first;
-			innerStack.pop_front();
-			
-			if (remainingStates.size() > 0) {
-				// iterate for each first element fixed
-				TransitionTreeNode* firstRemainingState = *remainingStates.begin();
-				remainingStates.erase(remainingStates.begin());
-				
-				if (firstRemainingState->firstTransition == NULL) {
-					// no transitions at this state - reenqueue with NULL selection from this
-					innerStack.push_back(std::make_pair(fixedTransitions, remainingStates));
-					continue;
-				}
-				
-				TransitionTreeNode* currTrans = firstRemainingState->firstTransition;
-				
-				// choose none from firstList
-				innerStack.push_back(std::make_pair(fixedTransitions, remainingStates));
-	
-				while(currTrans != NULL) {
-					std::set<TransitionTreeNode*> fixedAndThis(fixedTransitions);
-					fixedAndThis.insert(currTrans);
-					innerStack.push_back(std::make_pair(fixedAndThis, remainingStates));
-					currTrans = currTrans->nextTransition;
-				}
-			} else {
-				DUMP_STATS(conf.size(), false);
-
-				if (fixedTransitions.size() > 0) {
-
-					_perfTransTotal++;
-					_perfTransProcessed++;
-
-					NodeSet<std::string> fixed;
-					
-#if 0
-					seperator = "";
-					for (std::set<TransitionTreeNode*>::iterator itemIter = fixedTransitions.begin(); itemIter != fixedTransitions.end(); itemIter++) {
-						TransitionTreeNode* currItem = *itemIter;
-						std::cerr << seperator << currItem->nodeId;
-						seperator = ", ";
-					}
-					std::cerr << " ## ";
-#endif
-					
-					seperator = "";
-					for (std::set<TransitionTreeNode*>::iterator itemIter = fixedTransitions.begin(); itemIter != fixedTransitions.end(); itemIter++) {
-						TransitionTreeNode* currItem = *itemIter;
-						fixed.push_back(currItem->transition);
-//						std::cerr << seperator << ATTR(currItem->transition, "index");
-						seperator = ", ";
-					}
-//					std::cerr << std::endl;
-
-					// fixed contains a transiton set!
-					assert(filterSameState(fixed));
-//					assert(filterChildEnabled(fixed));
-					assert(filterSameHierarchy(fixed));
-					// do not add if they preempt
-					if (fixed.size() != removeConflictingTransitions(fixed).size()) {
-//						std::cerr << " - PREEMPTS" << std::endl;
-						continue;
-					}
-					
-					GlobalTransition* transition = new GlobalTransition(fixed, _dataModel, this);
-					transition->index = _lastTransIndex++;
-
-//					assert(outMap.find(transition->transitionId) == outMap.end());
-
-					if (!transition->isValid && !_keepInvalidTransitions) {
-						delete(transition);
-//						std::cerr << " - INVALID" << std::endl;
-						continue;
-					}
-					
-					_perfTransUsed++;
-
-					outMap[transition->transitionId] = transition;
-//					std::cerr << " - GOOD" << std::endl;
-				}
-			}
-		}
-		
-		// create new set of transition lists by moving to parent states
-		for (std::set<TransitionTreeNode*>::iterator stateIter = stateList.begin(); stateIter != stateList.end(); stateIter++) {
-			TransitionTreeNode* origState = *stateIter;
-			TransitionTreeNode* currState = origState;
-			TransitionTreeNode* parentState = currState->parent;
-			
-			/**
-			 * We ascend the current state via its parent and add the parent with transitions.
-			 * However, we break if we reached the top or if we passed a parallel state for 
-			 * wich we are not the first child
-			 */
-			
-			while(parentState != NULL) {
-				if (parentState->type == TransitionTreeNode::TYPE_PARALLEL && parentState->firstState != currState) {
-					// the first child of the parallel state will continue this transition - we made sure to keep them
-					break;
-				}
-				
-				if (parentState->firstTransition != NULL) {
-//					std::cerr << "#### Adding new parent lists for " << origState->nodeId << std::endl;
-					
-					std::set<TransitionTreeNode*> newStateList;
-					newStateList.insert(parentState);
-					
-					// add all other states that are not a child of the parent state
-					for (std::set<TransitionTreeNode*>::iterator newlistIter = stateList.begin(); newlistIter != stateList.end(); newlistIter++) {
-						TransitionTreeNode* otherState = *newlistIter;
-						while(otherState != NULL && otherState != parentState) {
-							otherState = otherState->parent;
-						}
-						if (otherState == NULL)
-							newStateList.insert(*newlistIter);
-					}
-					if (newStateList.size() > 0)
-						stack.push_back(newStateList);
-					break;
-				}
-
-				currState = currState->parent;
-				parentState = currState->parent;
-			}
-		}
-	}
-}
-
-TransitionTreeNode* ChartToFSM::buildTransTree(const Arabica::DOM::Element<std::string>& root, const std::string& nodeId) {
-	TransitionTreeNode* stateNode = new TransitionTreeNode();
-	stateNode->nodeId = nodeId;
-	stateNode->state = root;
-	
-	if (TAGNAME(root) == _nsInfo.xmlNSPrefix + "parallel") {
-		stateNode->type = TransitionTreeNode::TYPE_PARALLEL;
-	} else {
-		stateNode->type = TransitionTreeNode::TYPE_NESTED;
-	}
-
-	// get all transitions and states from root without recursing
-	NodeSet<std::string> nested;
-	nested.push_back(filterChildElements(_nsInfo.xmlNSPrefix + "transition", root));
-	nested.push_back(filterChildElements(_nsInfo.xmlNSPrefix + "state", root));
-	nested.push_back(filterChildElements(_nsInfo.xmlNSPrefix + "final", root));
-	nested.push_back(filterChildElements(_nsInfo.xmlNSPrefix + "parallel", root));
-	nested.to_document_order();
-
-	TransitionTreeNode* lastNode = NULL;
-	
-	for (int i = 0; i < nested.size(); i++) {
-		Element<std::string> nestedElem(nested[i]);
-		if (TAGNAME(nestedElem) == _nsInfo.xmlNSPrefix + "transition") {
-			TransitionTreeNode* transNode = new TransitionTreeNode();
-			transNode->transition = nestedElem;
-			transNode->parent = stateNode;
-			transNode->nodeId = nodeId + "-" + toStr(i);
-			transNode->type = TransitionTreeNode::TYPE_TRANSITION;
-			
-			if (stateNode->firstTransition == NULL) {
-				stateNode->firstTransition = transNode;
-			}
-			stateNode->children.push_back(transNode);
-			stateNode->lastTransition = transNode;
-			
-			if (lastNode != NULL) {
-				lastNode->nextTransition = transNode;
-				transNode->prevTransition = lastNode;
-			}
-			lastNode = transNode;
-			
-			
-		} else  {
-			TransitionTreeNode* deeperNode = buildTransTree(nestedElem, nodeId + "-" + toStr(i));
-			if (stateNode->firstState == NULL) {
-				stateNode->firstState = deeperNode;
-			}
-
-			deeperNode->parent = stateNode;
-			stateNode->children.push_back(deeperNode);
-		}
-	}
-	
-	_stateToTransTreeNode[root] = stateNode;
-	
-	return stateNode;
-}
-
-void ChartToFSM::getPotentialTransitionsForConfFromPowerSet(const Arabica::XPath::NodeSet<std::string>& conf, std::map<std::string, GlobalTransition*>& outMap) {
+void ChartToFSM::getPotentialTransitionsForConf(const Arabica::XPath::NodeSet<std::string>& conf, std::map<std::string, GlobalTransition*>& outMap) {
 	// get all transition elements from states in the current configuration
 	NodeSet<std::string> allTransitions = filterChildElements(_nsInfo.xmlNSPrefix + "transition", conf);
-
-	{
-		std::string seperator = "";
-		for (int i = 0; i < allTransitions.size(); i++) {
-			std::cerr << seperator << ATTR_CAST(allTransitions[i], "index");
-			seperator=", ";
-		}
-		std::cerr << std::endl;
-	}
 	
-//	if (true) {
-//		outMap = _confToTransitions[""];
-//	}
 	
 	if (allTransitions.size() == 0)
 		return; // no transitions
@@ -1324,12 +798,6 @@ void ChartToFSM::getPotentialTransitionsForConfFromPowerSet(const Arabica::XPath
 	int k = 0;
 	int* stack = (int*)malloc((nrElements + 1) * sizeof(int));
 	memset(stack, 0, (nrElements + 1) * sizeof(int));
-	
-	/**
-	 * Powerset is too naive and takes too long!
-	 * We have it up to 500k checks/sec and still 2**30 is 
-	 * 1G+ for 30minutes in a single state out of 50k+!
-	 */
 	
 	while(1) {
 		// create the power set of all potential transitions - this is expensive!
@@ -1349,7 +817,7 @@ void ChartToFSM::getPotentialTransitionsForConfFromPowerSet(const Arabica::XPath
 			break;
 		
 		NodeSet<std::string> transitions;
-//		std::cerr << globalState->stateId << " [" << nrElements << "]: " << std::endl;
+		//		std::cerr << globalState->stateId << " [" << nrElements << "]: " << std::endl;
 		for (int i = 1; i <= k; i++) {
 			//			std::cerr << stack[i] - 1 << ", ";
 			transitions.push_back(allTransitions[stack[i] - 1]);
@@ -1372,7 +840,8 @@ void ChartToFSM::getPotentialTransitionsForConfFromPowerSet(const Arabica::XPath
 		_perfTransTotal++;
 		_perfTransProcessed++;
 		
-		DUMP_STATS(nrElements, false);
+		DUMP_STATS(nrElements);
+		
 		
 		GlobalTransition* transition = NULL;
 		
@@ -1385,11 +854,10 @@ void ChartToFSM::getPotentialTransitionsForConfFromPowerSet(const Arabica::XPath
 			if (dump) DUMP_TRANSSET("after same state filtered");
 			
 			// remove those transitions with a child transition
-//			if(!filterChildEnabled(transitions))
-			if(!filterSameHierarchy(transitions))
+			if(!filterChildEnabled(transitions))
 				continue;
 			if (dump) DUMP_TRANSSET("after child enabled filtered");
-			
+
 			transitions = removeConflictingTransitions(transitions);
 			if (dump) DUMP_TRANSSET("after conflicting filtered");
 			// algorithm can never reduce to empty set
@@ -1404,18 +872,18 @@ void ChartToFSM::getPotentialTransitionsForConfFromPowerSet(const Arabica::XPath
 			}
 		} else {
 			transition = new GlobalTransition(transitions, _dataModel, this);
-			
+
 			// remove transitions in the same state
 			if(!filterSameState(transitions)) {
 				transition->isValid = false;
 				transition->invalidReason = GlobalTransition::SAME_SOURCE_STATE;
 				transition->invalidMsg = "Same source state";
 				
-//			} else if(!filterChildEnabled(transitions)) {
-			} else if(!filterSameHierarchy(transitions)) {
+			} else if(!filterChildEnabled(transitions)) {
 				transition->isValid = false;
 				transition->invalidReason = GlobalTransition::CHILD_ENABLED;
-				transition->invalidMsg = "Nested transitions";
+				transition->invalidMsg = "Nested transition enabled";
+
 			} else {
 				NodeSet<std::string> nonPreemptingTransitions = removeConflictingTransitions(transitions);
 				if (nonPreemptingTransitions.size() != transitions.size()) {
@@ -1426,6 +894,7 @@ void ChartToFSM::getPotentialTransitionsForConfFromPowerSet(const Arabica::XPath
 			}
 			
 		}
+		
 
 		// two combinations might have projected onto the same conflict-free set
 		if (outMap.find(transition->transitionId) != outMap.end()) {
@@ -1441,7 +910,6 @@ void ChartToFSM::getPotentialTransitionsForConfFromPowerSet(const Arabica::XPath
 		//		std::cerr << "New conflict-free subset: " << transition->transitionId << ":" << transition->eventDesc << std::endl;
 		outMap[transition->transitionId] = transition;
 	}
-//	_confToTransitions[""] = outMap;
 	return;
 }
 	
@@ -1460,16 +928,12 @@ void ChartToFSM::explode() {
 	_statesToInvoke = NodeSet<std::string>();
 
 	/**
-	 We need this to be a recursion in order not to exhaust the stack
+	 We need to resolve the recursion in order not to exhaust the stack
 	 */
 	
 	// append new global states and pop from front
 	while(statesRemaining.size() > 0) {
-		_perfStackSize = statesRemaining.size();
-		_perfStatesTotal++;
-		_perfStatesProcessed++;
-
-		DUMP_STATS(0, false);
+		DUMP_STATS(0);
 		
 		GlobalState* globalState = statesRemaining.front().second;
 		_currGlobalTransition = statesRemaining.front().first;
@@ -1490,6 +954,8 @@ void ChartToFSM::explode() {
 			_perfStatesSkippedProcessed++;
 			continue; // we have already been here
 		}
+
+		_perfStatesProcessed++;
 
 		_configuration = globalState->getActiveStates();
 		_alreadyEntered = globalState->getAlreadyEnteredStates();
@@ -1524,13 +990,8 @@ void ChartToFSM::explode() {
 		} else {
 			// we need to calculate the potential optimal transition sets
 			std::map<std::string, GlobalTransition*> transitionSets;
-			//			std::cerr << globalState->stateId << std::endl;
-			if (_transitionsFromTree) {
-				getPotentialTransitionsForConfFromTree(refsToStates(globalState->activeStatesRefs), transitionSets);
-			} else {
-				getPotentialTransitionsForConfFromPowerSet(refsToStates(globalState->activeStatesRefs), transitionSets);
-			}
-
+			getPotentialTransitionsForConf(refsToStates(globalState->activeStatesRefs), transitionSets);
+			
 			// reduce and sort transition sets
 			for(std::map<std::string, GlobalTransition*>::iterator transSetIter = transitionSets.begin();
 					transSetIter != transitionSets.end();
@@ -1545,13 +1006,13 @@ void ChartToFSM::explode() {
 			if (_keepInvalidTransitions) {
 				globalState->sortedOutgoing = redundantMark(globalState->sortedOutgoing);
 			} else {
-//				globalState->sortedOutgoing.unique(hasUnconditionalSuperset);
-//				globalState->sortedOutgoing.unique(hasEarlierUnconditionalMatch);
+				globalState->sortedOutgoing.unique(hasUnconditionalSuperset);
+				globalState->sortedOutgoing.unique(hasEarlierUnconditionalMatch);
 				globalState->sortedOutgoing = redundantRemove(globalState->sortedOutgoing);
 			}
 //			globalState->sortedOutgoing = redundantRemove(globalState->sortedOutgoing);
 //			globalState->sortedOutgoing = redundantRemove(globalState->sortedOutgoing);
-//
+			
 //			std::cout << globalState->sortedOutgoing.size() << std::endl;
 			
 			assert(_activeConf.find(globalState->activeId) == _activeConf.end());
@@ -1572,12 +1033,12 @@ void ChartToFSM::explode() {
 			
 			if (_keepInvalidTransitions && !outgoingTrans->isValid)
 				continue;
-
+			
 			_currGlobalTransition = outgoingTrans;
 
 			microstep(refsToTransitions(outgoingTrans->transitionRefs));
-//			assert(isLegalConfiguration(_configuration));
-
+			assert(isLegalConfiguration(_configuration));
+			
 			_perfMicroStepProcessed++;
 			_perfMicroStepTotal++;
 
@@ -1719,26 +1180,6 @@ void ChartToFSM::beforeEnteringState(Interpreter interpreter, const Arabica::DOM
 void ChartToFSM::beforeTakingTransition(Interpreter interpreter, const Arabica::DOM::Element<std::string>& transition, bool moreComing) {
 }
 
-std::ostream& operator<< (std::ostream& os, const GlobalTransition::Action& action) {
-	if (action.onEntry)
-		os << "onEntry: " << action.onEntry;
-	if (action.onExit)
-		os << "onExit: " << action.onExit;
-	if (action.transition)
-		os << "transition: " << action.transition;
-	if (action.entered)
-		os << "entered: " << action.entered;
-	if (action.exited)
-		os << "exited: " << action.exited;
-	if (action.invoke)
-		os << "invoke: " << action.invoke;
-	if (action.uninvoke)
-		os << "uninvoke: " << action.uninvoke;
-	if (action.raiseDone)
-		os << "raiseDone: " << action.raiseDone;
-	return os;
-}
-
 GlobalState::GlobalState(const Arabica::XPath::NodeSet<std::string>& activeStates_,
                          const Arabica::XPath::NodeSet<std::string>& alreadyEnteredStates_, // we need to remember for binding=late
                          const std::map<std::string, Arabica::XPath::NodeSet<std::string> >& historyStates_,
@@ -1838,7 +1279,7 @@ GlobalTransition::GlobalTransition(const Arabica::XPath::NodeSet<std::string>& t
 	Arabica::DOM::Element<std::string> noneEvent;
 	Arabica::DOM::Element<std::string> withTarget;
 	Arabica::DOM::Element<std::string> noneTarget;
-
+	
 	for (int i = 0; i < transitionSet.size(); i++) {
 		Arabica::DOM::Element<std::string> transElem = Arabica::DOM::Element<std::string>(transitionSet[i]);
 		if (HAS_ATTR(transElem, "eventexpr")) {

@@ -36,12 +36,18 @@ typedef uscxml::InterpreterIssue InterpreterIssue;
 %feature("director") uscxml::WrappedExecutableContent;
 %feature("director") uscxml::WrappedInterpreterMonitor;
 
-// disable warning related to unknown base class
+// disable warnings 
+
+// unknown base class
 #pragma SWIG nowarn=401
-// do not warn when we override symbols via extend
+// override symbols via extend
 #pragma SWIG nowarn=302
-// do not warn when ignoring overrided method
+// ignoring overrided method
 #pragma SWIG nowarn=516
+// pointer from director
+#pragma SWIG nowarn=473
+// renamed params -> _params
+#pragma SWIG nowarn=314
 
 %csconst(1);
 
@@ -159,6 +165,9 @@ WRAP_TO_STRING(uscxml::InvokeRequest);
 WRAP_TO_STRING(uscxml::InterpreterIssue);
 
 %include "../uscxml_ignores.i"
+
+// InterpreterMonitor -> StateTransitionMonitor
+%ignore uscxml::StateTransitionMonitor;
 
 //***********************************************
 // Beautify important classes

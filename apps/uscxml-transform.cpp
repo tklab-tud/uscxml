@@ -1,6 +1,7 @@
 #include "uscxml/config.h"
 #include "uscxml/Interpreter.h"
 #include "uscxml/transform/ChartToFlatSCXML.h"
+#include "uscxml/transform/ChartToTex.h"
 #include "uscxml/transform/ChartToMinimalSCXML.h"
 #include "uscxml/transform/ChartToPromela.h"
 #include "uscxml/DOMUtils.h"
@@ -23,6 +24,9 @@
 #ifdef HAS_DLFCN_H
 #include <dlfcn.h>
 #endif
+
+#define ANNOTATE(envKey, annotationParam) \
+envVarIsTrue(envKey) || std::find(annotations.begin(), annotations.end(), annotationParam) != annotations.end()
 
 class VerboseMonitor : public uscxml::InterpreterMonitor {
 	void onStableConfiguration(uscxml::Interpreter interpreter) {
@@ -58,20 +62,29 @@ void printUsageAndExit(const char* progName) {
 	printf("%s version " USCXML_VERSION " (" CMAKE_BUILD_TYPE " build - " CMAKE_COMPILER_STRING ")\n", progStr.c_str());
 	printf("Usage\n");
 	printf("\t%s", progStr.c_str());
-	printf(" [-t pml|flat] [-v] [-lN]");
+	printf(" [-t pml|flat|min|tex] [-a {OPTIONS}] [-v] [-lN]");
 #ifdef BUILD_AS_PLUGINS
 	printf(" [-p pluginPath]");
 #endif
 	printf(" [-i URL] [-o FILE]");
 	printf("\n");
 	printf("Options\n");
-	printf("\t-t flat   : flatten to SCXML state-machine\n");
-	printf("\t-t pml    : convert to spin/promela program\n");
-	printf("\t-t min    : minimize SCXML state-chart\n");
-	printf("\t-v        : be verbose\n");
-	printf("\t-lN       : Set loglevel to N\n");
-	printf("\t-i URL    : Input file (defaults to STDIN)\n");
-	printf("\t-o FILE   : Output file (defaults to STDOUT)\n");
+	printf("\t-t flat      : flatten to SCXML state-machine\n");
+	printf("\t-t pml       : convert to spin/promela program\n");
+	printf("\t-t min       : minimize SCXML state-chart\n");
+	printf("\t-t tex       : write global state transition table as tex file\n");
+	printf("\t-a {OPTIONS} : annotate SCXML elements with comma seperated options\n");
+	printf("\t   'priority'  - transitions with their priority for transition selection\n");
+	printf("\t   'step'      - global states with their step identifier (-tflat only)\n");
+	printf("\t   'members'   - global transitions with their member transitions per index (-tflat only)\n");
+	printf("\t   'sends'     - transititve number of sends to external queue for global transitions (-tflat only)\n");
+	printf("\t   'raises'    - transititve number of raises to internal queue for global transitions (-tflat only)\n");
+	printf("\t   'verbose'   - comments detailling state changes and transitions for content selection (-tflat only)\n");
+	printf("\t   'progress'  - insert comments documenting progress in dociment (-tmin only)\n");
+	printf("\t-v           : be verbose\n");
+	printf("\t-lN          : Set loglevel to N\n");
+	printf("\t-i URL       : Input file (defaults to STDIN)\n");
+	printf("\t-o FILE      : Output file (defaults to STDOUT)\n");
 	printf("\n");
 	exit(1);
 }
@@ -84,7 +97,8 @@ int main(int argc, char** argv) {
 	std::string pluginPath;
 	std::string inputFile;
 	std::string outputFile;
-
+	std::list<std::string> annotations;
+	
 #if defined(HAS_SIGNAL_H) && !defined(WIN32)
 	signal(SIGPIPE, SIG_IGN);
 #endif
@@ -99,9 +113,10 @@ int main(int argc, char** argv) {
 	struct option longOptions[] = {
 		{"verbose",       no_argument,       0, 'v'},
 		{"type",          required_argument, 0, 't'},
+		{"annotate",      required_argument, 0, 'a'},
 		{"plugin-path",   required_argument, 0, 'p'},
 		{"input-file",    required_argument, 0, 'i'},
-		{"output-file",    required_argument, 0, 'o'},
+		{"output-file",   required_argument, 0, 'o'},
 		{"loglevel",      required_argument, 0, 'l'},
 		{0, 0, 0, 0}
 	};
@@ -110,7 +125,7 @@ int main(int argc, char** argv) {
 	int optionInd = 0;
 	int option;
 	for (;;) {
-		option = getopt_long_only(argc, argv, "+vp:t:i:o:l:", longOptions, &optionInd);
+		option = getopt_long_only(argc, argv, "+vp:t:i:o:l:a:", longOptions, &optionInd);
 		if (option == -1) {
 			break;
 		}
@@ -132,6 +147,9 @@ int main(int argc, char** argv) {
 		case 'i':
 			inputFile = optarg;
 			break;
+		case 'a':
+			annotations = InterpreterImpl::tokenize(optarg, ',');
+			break;
 		case 'o':
 			outputFile = optarg;
 			break;
@@ -145,18 +163,45 @@ int main(int argc, char** argv) {
 		}
 	}
 
-	if (outType.length() == 0 && outputFile.length() > 0) {
-		// try to get type from outfile extension
-		size_t dotPos = outputFile.find_last_of(".");
-		if (dotPos != std::string::npos) {
-			outType= outputFile.substr(dotPos + 1);
-		}
-	}
-	
-	if (outType.length() == 0)
-		printUsageAndExit(argv[0]);
+	// make sure given annotation options are available in the environment
+	if(ANNOTATE("USCXML_ANNOTATE_GLOBAL_STATE_STEP", "step"))
+		setenv("USCXML_ANNOTATE_GLOBAL_STATE_STEP", "YES", 1);
 
-	if (outType != "flat" && outType != "scxml" && outType != "pml" && outType != "min")
+	if (ANNOTATE("USCXML_ANNOTATE_GLOBAL_TRANS_PRIO", "priority"))
+		setenv("USCXML_ANNOTATE_GLOBAL_TRANS_PRIO", "YES", 1);
+
+	if (ANNOTATE("USCXML_ANNOTATE_VERBOSE_COMMENTS", "verbose"))
+		setenv("USCXML_ANNOTATE_VERBOSE_COMMENTS", "YES", 1);
+
+	if(ANNOTATE("USCXML_ANNOTATE_GLOBAL_TRANS_MEMBERS", "members"))
+		setenv("USCXML_ANNOTATE_GLOBAL_TRANS_MEMBERS", "YES", 1);
+
+	if(ANNOTATE("USCXML_ANNOTATE_GLOBAL_TRANS_SENDS", "sends"))
+		setenv("USCXML_ANNOTATE_GLOBAL_TRANS_SENDS", "YES", 1);
+
+	if(ANNOTATE("USCXML_ANNOTATE_GLOBAL_TRANS_RAISES", "raises"))
+		setenv("USCXML_ANNOTATE_GLOBAL_TRANS_RAISES", "YES", 1);
+
+	if(ANNOTATE("USCXML_ANNOTATE_PROGRESS", "progress"))
+		setenv("USCXML_ANNOTATE_PROGRESS", "YES", 1);
+
+//	if (outType.length() == 0 && outputFile.length() > 0) {
+//		// try to get type from outfile extension
+//		size_t dotPos = outputFile.find_last_of(".");
+//		if (dotPos != std::string::npos) {
+//			outType= outputFile.substr(dotPos + 1);
+//		}
+//	}
+	
+//	if (outType.length() == 0)
+//		printUsageAndExit(argv[0]);
+
+	if (outType != "flat" &&
+			outType != "scxml" &&
+			outType != "pml" &&
+			outType != "min" &&
+			outType != "tex" &&
+			std::find(annotations.begin(), annotations.end(), "priority") == annotations.end())
 		printUsageAndExit(argv[0]);
 
 	// register plugins
@@ -200,7 +245,19 @@ int main(int argc, char** argv) {
 			exit(EXIT_SUCCESS);
 		}
 
-		if (outType == "scxml" || outType == "flat") {
+		if (outType == "tex") {
+			if (outputFile.size() == 0 || outputFile == "-") {
+				ChartToTex::transform(interpreter).writeTo(std::cout);
+			} else {
+				std::ofstream outStream;
+				outStream.open(outputFile.c_str());
+				ChartToTex::transform(interpreter).writeTo(outStream);
+				outStream.close();
+			}
+			exit(EXIT_SUCCESS);
+		}
+
+		if (outType == "flat") {
 			if (outputFile.size() == 0 || outputFile == "-") {
 				ChartToFlatSCXML::transform(interpreter).writeTo(std::cout);
 			} else {
@@ -224,6 +281,24 @@ int main(int argc, char** argv) {
 			exit(EXIT_SUCCESS);
 		}
 
+#if 1
+		if (annotations.size() > 0) {
+			ChartToFSM annotater(interpreter);
+			if (std::find(annotations.begin(), annotations.end(), "priority") != annotations.end())
+				annotater.indexTransitions();
+
+			if (outputFile.size() == 0 || outputFile == "-") {
+				std::cout << annotater.getDocument();
+			} else {
+				std::ofstream outStream;
+				outStream.open(outputFile.c_str());
+				outStream << annotater.getDocument();
+				outStream.close();
+			}
+			exit(EXIT_SUCCESS);
+		}
+#endif
+		
 	} catch (Event e) {
 		std::cout << e << std::endl;
 	}

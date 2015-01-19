@@ -280,7 +280,25 @@ public:
 	void writeTo(std::ostream& stream);
 	
 protected:
-	ChartToPromela(const Interpreter& other) : TransformerImpl(), ChartToFSM(other), _analyzer(NULL), _machinesAll(NULL), _parent(NULL), _parentTopMost(NULL), _machinesAllPerId(NULL) {}
+	ChartToPromela(const Interpreter& other)
+	: TransformerImpl(),
+		ChartToFSM(other),
+		_analyzer(NULL),
+		_allowEventInterleaving(false),
+		_hasIndexLessLoops(false),
+		_writeTransitionPrintfs(false),
+		_traceTransitions(false),
+		_machinesAll(NULL),
+		_parent(NULL),
+		_parentTopMost(NULL),
+		_machinesAllPerId(NULL),
+		_perfTransProcessed(0),
+		_perfTransTotal(0),
+		_perfHistoryProcessed(0),
+		_perfHistoryTotal(0),
+		_perfStatesProcessed(0),
+		_perfStatesTotal(0),
+		_lastTimeStamp(0) {}
 
 	void initNodes();
 
@@ -341,6 +359,9 @@ protected:
 
 	PromelaCodeAnalyzer* _analyzer;
 	bool _allowEventInterleaving;
+	bool _hasIndexLessLoops;
+	bool _writeTransitionPrintfs;
+	bool _traceTransitions;
 	
 	uint32_t _externalQueueLength;
 	uint32_t _internalQueueLength;
@@ -362,6 +383,14 @@ protected:
 	std::string _prefix; // our prefix in case of nested SCXML documents
 	std::string _invokerid;
 	
+	uint64_t _perfTransProcessed;
+	uint64_t _perfTransTotal;
+	uint64_t _perfHistoryProcessed;
+	uint64_t _perfHistoryTotal;
+	uint64_t _perfStatesProcessed;
+	uint64_t _perfStatesTotal;
+	uint64_t _lastTimeStamp;
+
 	friend class PromelaEventSource;
 };
 
