@@ -1,4 +1,4 @@
-%module(directors="1", allprotected="1") uscxmlNativeJava
+%module(directors="1", allprotected="1") uscxmlNativePHP
 
 // provide a macro for the header files
 #define SWIGIMPORTED 1
@@ -10,7 +10,7 @@
 %include "../stl_set.i"
 %include "../stl_list.i"
 
-%include <boost_shared_ptr.i>
+//%include <boost_shared_ptr.i>
 
 // these are needed at least for the templates to work
 typedef uscxml::Blob Blob;
@@ -43,7 +43,7 @@ typedef uscxml::InterpreterIssue InterpreterIssue;
 // do not warn when ignoring overrided method
 #pragma SWIG nowarn=516
 
-%javaconst(1);
+//%javaconst(1);
 
 %rename(equals) operator==; // signature is wrong, still useful
 %rename(isValid) operator bool;
@@ -79,6 +79,11 @@ using namespace Arabica::DOM;
 
 %}
 
+%insert("begin") %{
+void*** tsrm_ls;
+%}
+
+#if 0
 %define WRAP_THROW_EXCEPTION( MATCH )
 %javaexception("org.uscxml.InterpreterException") MATCH {
   try {
@@ -99,7 +104,7 @@ WRAP_THROW_EXCEPTION(uscxml::Interpreter::fromXML);
 WRAP_THROW_EXCEPTION(uscxml::Interpreter::fromURL);
 WRAP_THROW_EXCEPTION(uscxml::Interpreter::step);
 WRAP_THROW_EXCEPTION(uscxml::Interpreter::interpret);
-
+#endif
 
 %define WRAP_HASHCODE( CLASSNAME )
 %extend CLASSNAME {
@@ -130,66 +135,12 @@ WRAP_HASHCODE(uscxml::Interpreter);
 
 %include "../uscxml_ignores.i"
 
-#if 0
-// see http://swig.org/Doc2.0/Java.html#Java_date_marshalling
-%define BEAUTIFY_NATIVE( MATCH, WRAPPER, NATIVE )
-
-%rename WRAPPER NATIVE;
-
-%typemap(jstype) const MATCH & "WRAPPER"
-%typemap(jstype) MATCH "WRAPPER"
-
-%typemap(javain,
-         pre="    NATIVE temp$javainput = $javainput.toNative();", 
-         pgcppname="temp$javainput") const MATCH &
-         "$javaclassname.getCPtr(temp$javainput)"
-
- %typemap(javain,
-          pre="    NATIVE temp$javainput = $javainput.toNative();", 
-          pgcppname="temp$javainput") MATCH
-          "$javaclassname.getCPtr(temp$javainput)"
-
-%typemap(javaout) const MATCH & {
-    NATIVE nativeData = new NATIVE($jnicall, $owner);
-    return new WRAPPER(nativeData);
-}
-
-%typemap(javaout) MATCH {
-    NATIVE nativeData = new NATIVE($jnicall, $owner);
-    return new WRAPPER(nativeData);
-}
-
-%typemap(javadirectorout) MATCH "NATIVE.getCPtr($javacall.toNative())"
-
-%typemap(javadirectorin) MATCH "WRAPPER.fromNative(new NATIVE($jniinput, false))";
-%typemap(javadirectorin) const MATCH & "WRAPPER.fromNative(new NATIVE($jniinput, false))";
-
-%typemap(directorin,descriptor="L/org/uscxml/"##"WRAPPER;") const MATCH & "*(MATCH **)&$input = (MATCH *) &$1;"
-
-%typemap(directorout) MATCH ($&1_type argp)
-%{ argp = *($&1_ltype*)&$input;
-   if (!argp) {
-     SWIG_JavaThrowException(jenv, SWIG_JavaNullPointerException, "Unexpected null return for type $1_type");
-     return $null;
-   }
-   $result = *argp; %}
-
-%enddef
-
-/*
-// not used as it will not work for directors :(
-BEAUTIFY_NATIVE(uscxml::Data, Data, DataNative);
-BEAUTIFY_NATIVE(uscxml::Event, Event, EventNative);
-BEAUTIFY_NATIVE(uscxml::SendRequest, SendRequest, SendRequestNative);
-BEAUTIFY_NATIVE(uscxml::InvokeRequest, InvokeRequest, InvokeRequestNative);
-*/
-#endif
-
 // bytearray for Blob::data
 // see: http://stackoverflow.com/questions/9934059/swig-technique-to-wrap-unsigned-binary-data
 
 %apply (char *STRING, size_t LENGTH) { (const char* data, size_t size) };
 
+#if 0
 %typemap(jni) char* getData "jbyteArray"
 %typemap(jtype) char* getData "byte[]"
 %typemap(jstype) char* getData "byte[]"
@@ -201,11 +152,13 @@ BEAUTIFY_NATIVE(uscxml::InvokeRequest, InvokeRequest, InvokeRequestNative);
   $result = JCALL1(NewByteArray, jenv, ((uscxml::Blob const *)arg1)->getSize());
   JCALL4(SetByteArrayRegion, jenv, $result, 0, ((uscxml::Blob const *)arg1)->getSize(), (jbyte *)$1);
 }
+#endif
 
 //***********************************************
 // Beautify important classes
 //***********************************************
 
+#if 0
 %javamethodmodifiers uscxml::Event::getParamMap() "private";
 %javamethodmodifiers uscxml::Event::getParamMapKeys() "private";
 %javamethodmodifiers uscxml::Event::setParamMap(const std::map<std::string, std::list<uscxml::Data> >&) "private";
@@ -218,6 +171,7 @@ BEAUTIFY_NATIVE(uscxml::InvokeRequest, InvokeRequest, InvokeRequestNative);
 
 %javamethodmodifiers uscxml::Blob::setData(const char* data, size_t length) "private";
 %javamethodmodifiers uscxml::Blob::setMimeType(const std::string& mimeType) "private";
+#endif
 
 %include "../uscxml_beautify.i"
 
@@ -264,6 +218,7 @@ import java.net.URL;
 	}
 %}
 
+#if 0
 %rename(getCompoundNative) uscxml::Data::getCompound();
 %rename(getArrayNative) uscxml::Data::getArray();
 %rename(setCompoundNative) uscxml::Data::setCompound(const std::map<std::string, Data>&);
@@ -273,6 +228,7 @@ import java.net.URL;
 %javamethodmodifiers uscxml::Data::setCompound(const std::map<std::string, Data>&) "private";
 %javamethodmodifiers uscxml::Data::setArray(const std::list<Data>&) "private";
 %javamethodmodifiers uscxml::Data::getCompoundKeys() "private";
+#endif
 
 %typemap(javaimports) uscxml::Data %{
 import java.util.Map;
@@ -334,6 +290,7 @@ import java.util.LinkedList;
 		
 %}
 
+#if 0
 %rename(getNameListNative) uscxml::Event::getNameList();
 %rename(getParamsNative) uscxml::Event::getParams();
 %rename(setNameListNative) uscxml::Event::setNameList(const std::map<std::string, Data>&);
@@ -343,6 +300,7 @@ import java.util.LinkedList;
 %javamethodmodifiers uscxml::Event::getParams() "private";
 %javamethodmodifiers uscxml::Event::setNameList(const std::map<std::string, Data>&) "private";
 %javamethodmodifiers uscxml::Event::setParams(const std::multimap<std::string, Data>&) "private";
+#endif
 
 %typemap(javaimports) uscxml::Event %{
 import java.util.Map;

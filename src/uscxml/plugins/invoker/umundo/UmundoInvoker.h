@@ -60,7 +60,7 @@ public:
 
 	virtual void added(umundo::ServiceDescription);
 	virtual void removed(umundo::ServiceDescription);
-	virtual void changed(umundo::ServiceDescription);
+	virtual void changed(umundo::ServiceDescription, uint64_t what);
 
 	virtual void welcome(umundo::TypedPublisher atPub, const umundo::SubscriberStub& sub);
 	virtual void farewell(umundo::TypedPublisher fromPub, const umundo::SubscriberStub& sub);

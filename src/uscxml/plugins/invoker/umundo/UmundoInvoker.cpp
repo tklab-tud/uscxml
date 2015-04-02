@@ -176,8 +176,8 @@ void UmundoInvoker::invoke(const InvokeRequest& req) {
 	}
 	_node = new umundo::Node();
 
-	umundo::MDNSDiscoveryOptions discOpts;
-	_discovery = new umundo::Discovery(umundo::Discovery::MDNS, &discOpts);
+	umundo::DiscoveryConfigMDNS discOpts;
+	_discovery = new umundo::Discovery(&discOpts);
 
 	_discovery->add(*_node);
 
@@ -335,7 +335,7 @@ void UmundoInvoker::removed(umundo::ServiceDescription desc) {
 	returnEvent(addedEvent);
 }
 
-void UmundoInvoker::changed(umundo::ServiceDescription desc) {
+void UmundoInvoker::changed(umundo::ServiceDescription desc, uint64_t what) {
 }
 
 bool UmundoInvoker::jsonbufToData(Data& data, const JSONProto& json) {

@@ -84,6 +84,7 @@ class USCXML_API NameSpacingParser : public Arabica::SAX2DOM::Parser<std::string
 public:
 	NameSpacingParser();
 	NameSpacingParser(const NameSpacingParser& other) {}
+	static NameSpacingParser fromFile(const std::string& file);
 	static NameSpacingParser fromXML(const std::string& xml);
 	static NameSpacingParser fromInputSource(Arabica::SAX::InputSource<std::string>& source);
 

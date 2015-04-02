@@ -122,6 +122,12 @@ std::list<Arabica::DOM::Node<std::string> > DOMUtils::getElementsByType(const Ar
 	return result;
 }
 
+NameSpacingParser NameSpacingParser::fromFile(const std::string& file) {
+	Arabica::SAX::InputSource<std::string> inputSource;
+	inputSource.setSystemId(file);
+	return fromInputSource(inputSource);
+}
+	
 NameSpacingParser NameSpacingParser::fromXML(const std::string& xml) {
 	std::stringstream* ss = new std::stringstream();
 	(*ss) << xml;

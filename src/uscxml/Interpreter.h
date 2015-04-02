@@ -448,9 +448,9 @@ public:
 	static Arabica::XPath::NodeSet<std::string> filterChildType(const Arabica::DOM::Node_base::Type type, const Arabica::XPath::NodeSet<std::string>& nodeSet, bool recurse = false);
 
 	static std::list<std::string> tokenizeIdRefs(const std::string& idRefs) {
-		return tokenize(idRefs);
+		return tokenize(idRefs, ' ', true);
 	}
-	static std::list<std::string> tokenize(const std::string& line, const char seperator = ' ');
+	static std::list<std::string> tokenize(const std::string& line, const char seperator = ' ', bool trimWhiteSpace = false);
 	
 	static std::string spaceNormalize(const std::string& text);
 	static bool nameMatch(const std::string& eventDescs, const std::string& event);

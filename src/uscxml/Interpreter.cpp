@@ -2260,7 +2260,7 @@ bool InterpreterImpl::nameMatch(const std::string& eventDescs, const std::string
 				return true;
 
 			// eventDesc has to be a real prefix of event now and therefore shorter
-			if (eventDesc.size() >= eventName.size())
+			if (eventDesc.size() > eventName.size())
 				goto NEXT_DESC;
 
 			// are they already equal?
@@ -2910,17 +2910,19 @@ NodeSet<std::string> InterpreterImpl::getTargetStates(const Arabica::XPath::Node
 	return targets;
 }
 
-std::list<std::string> InterpreterImpl::tokenize(const std::string& line, const char sep) {
+#define ISWHITESPACE(char) (isspace(char))
+	
+std::list<std::string> InterpreterImpl::tokenize(const std::string& line, const char sep, bool trimWhiteSpace) {
 	std::list<std::string> tokens;
 
 	// appr. 3x faster than stringstream
 	size_t start = 0;
 	for (int i = 0; i < line.size(); i++) {
-		if (line[i] == sep) {
+		if (line[i] == sep || (trimWhiteSpace && ISWHITESPACE(line[i]))) {
 			if (i > 0 && start < i) {
 				tokens.push_back(line.substr(start, i - start));
 			}
-			while(line[++i] == sep); // skip multiple occurences of seperator
+			while(line[i] == sep || (trimWhiteSpace && ISWHITESPACE(line[i]))) { i++; } // skip multiple occurences of seperator and whitespaces
 			start = i;
 		} else if (i + 1 == line.size()) {
 			tokens.push_back(line.substr(start, i + 1 - start));

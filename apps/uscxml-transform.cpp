@@ -232,6 +232,12 @@ int main(int argc, char** argv) {
 			exit(EXIT_FAILURE);
 		}
 
+		if (verbose) {
+			std::list<InterpreterIssue> issues = interpreter.validate();
+			for (std::list<InterpreterIssue>::iterator issueIter = issues.begin(); issueIter != issues.end(); issueIter++) {
+				std::cerr << *issueIter << std::endl;
+			}
+		}
 		
 		if (outType == "pml") {
 			if (outputFile.size() == 0 || outputFile == "-") {

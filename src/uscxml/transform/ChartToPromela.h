@@ -36,30 +36,95 @@ namespace uscxml {
 class PromelaCodeAnalyzer;
 class ChartToPromela;
 class PromelaParserNode;
-	
+
 class USCXML_API PromelaInline {
 public:
-	PromelaInline() : type(PROMELA_NIL) {}
+	enum PromelaInlineType {
+		PROMELA_NIL             = 0x0000,
+		PROMELA_LTL             = 0x0001,
+		PROMELA_CODE            = 0x0002,
+		PROMELA_EVENT_ALL_BUT   = 0x0004,
+		PROMELA_EVENT_ONLY      = 0x0008,
+		PROMELA_PROGRESS_LABEL  = 0x0010,
+		PROMELA_ACCEPT_LABEL    = 0x0020,
+		PROMELA_END_LABEL       = 0x0040
+	};
 
+	PromelaInline(const Arabica::DOM::Node<std::string>& node);
+	virtual ~PromelaInline() {}
+	
 	operator bool() {
 		return (type != PROMELA_NIL);
 	}
 
-	void dump();
+	std::list<PromelaInline*> children;
+	PromelaInline* prevSibling;
+	PromelaInline* nextSibling;
+	
+	virtual void dump();
 
-	enum PromelaInlineType {
-		PROMELA_NIL,
-		PROMELA_CODE,
-		PROMELA_EVENT_SOURCE,
-		PROMELA_EVENT_SOURCE_CUSTOM,
-		PROMELA_PROGRESS_LABEL,
-		PROMELA_ACCEPT_LABEL,
-		PROMELA_END_LABEL
-	};
-
+	virtual bool relatesTo(const Arabica::DOM::Node<std::string>& node) {
+		return container == node;
+	}
+	
+	size_t level;
 	std::string content;
+	Arabica::DOM::Element<std::string> container;
 	PromelaInlineType type;
+
+protected:
+	PromelaInline() : prevSibling(NULL), nextSibling(NULL), type(PROMELA_NIL) {};
 };
+
+class USCXML_API PromelaInlines {
+public:
+	
+	PromelaInlines(const Arabica::DOM::Node<std::string>& node);
+	PromelaInlines() {}
+
+	virtual ~PromelaInlines();
+	
+	std::list<PromelaInline*> getRelatedTo(const Arabica::DOM::Node<std::string>& node, PromelaInline::PromelaInlineType type);
+	std::list<PromelaInline*> getAllOfType(uint32_t type);
+
+	std::map<Arabica::DOM::Node<std::string>, std::list<PromelaInline*> > inlines;
+	std::list<PromelaInline*> allInlines;
+	
+	static std::list<std::string> getStringLiterals(const Data& data);
+	static std::list<std::string> getEventNames(const Data& data);
+
+	
+};
+
+class USCXML_API PromelaEventSource : public PromelaInline {
+public:
+	PromelaEventSource(const PromelaInline& pmlInline) {
+		type = pmlInline.type;
+		container = pmlInline.container;
+		content = pmlInline.content;
+		events = Data::fromJSON(pmlInline.content);
+	}
+	
+	virtual bool relatesTo(const Arabica::DOM::Node<std::string>& node) {
+		return container == node || InterpreterImpl::isDescendant(node, container);
+	}
+
+	Data events;
+};
+
+#if 0
+
+
+class USCXML_API PromelaInlinesAutoEvents : public PromelaInline {
+public:
+	virtual ~PromelaInlinesAutoEvents() {}
+	virtual bool relatesTo(const Arabica::DOM::Node<std::string>&);
+	virtual void setContent(const std::string& content);
+	virtual void dump();
+
+	std::map<std::string, Data> states;
+};
+
 
 class USCXML_API PromelaEventSource {
 public:
@@ -93,37 +158,8 @@ public:
 	PromelaCodeAnalyzer* analyzer;
 };
 
-class USCXML_API PromelaInlines {
-public:
+#endif
 	
-	static PromelaInlines fromNodeSet(const Arabica::XPath::NodeSet<std::string>& node, bool recurse = false);
-	static PromelaInlines fromNode(const Arabica::DOM::Node<std::string>& node);
-	static PromelaInlines fromString(const std::string& text);
-	
-	PromelaInlines(const std::string& text, const Arabica::DOM::Node<std::string>& node);
-	PromelaInlines();
-
-	void merge(const PromelaInlines& other) {
-		code.insert(code.end(), other.code.begin(), other.code.end());
-		nrProgressLabels += other.nrProgressLabels;
-		nrAcceptLabels += other.nrAcceptLabels;
-		nrEndLabels += other.nrEndLabels;
-		nrEventSources += other.nrEventSources;
-		nrCodes += other.nrCodes;
-	}
-
-	operator bool() {
-		return code.size() > 0;
-	}
-
-	std::list<PromelaInline> code;
-	int nrProgressLabels;
-	int nrAcceptLabels;
-	int nrEndLabels;
-	int nrEventSources;
-	int nrCodes;
-};
-
 class USCXML_API PromelaCodeAnalyzer {
 public:
 	class PromelaTypedef {
@@ -171,6 +207,9 @@ public:
 
 	bool usesInPredicate() {
 		return _usesInPredicate;
+	}
+	void usesInPredicate(bool value) {
+		_usesInPredicate = value;
 	}
 	bool usesPlatformVars() {
 		return _usesPlatformVars;
@@ -366,8 +405,9 @@ protected:
 	uint32_t _externalQueueLength;
 	uint32_t _internalQueueLength;
 	
-	std::map<std::string, PromelaEventSource> _invokers;
-	PromelaEventSource _globalEventSource;
+	PromelaInlines pmlInlines;
+//	std::map<std::string, PromelaEventSource> _invokers;
+//	PromelaEventSource _globalEventSource;
 	
 	std::map<std::string, std::map<std::string, size_t> > _historyMembers; // ids of all history states
 	std::set<std::string> _dataModelVars;

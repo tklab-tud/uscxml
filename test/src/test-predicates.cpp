@@ -118,7 +118,7 @@ int main(int argc, char** argv) {
 		assert(InterpreterImpl::nameMatch(transEvents, "error"));
 		assert(!InterpreterImpl::nameMatch(transEvents, "foo"));
 
-		transEvents = "error foo";
+		transEvents = " error foo";
 		assert(InterpreterImpl::nameMatch(transEvents, "error"));
 		assert(InterpreterImpl::nameMatch(transEvents, "error.send"));
 		assert(InterpreterImpl::nameMatch(transEvents, "error.send.failed"));

@@ -132,8 +132,8 @@ public:
 	}
 
 	const Data item(const size_t index) const {
-		if (array.size() < index) {
-			std::list<Data>::const_iterator arrayIter;
+		if (array.size() > index) {
+			std::list<Data>::const_iterator arrayIter = array.begin();
 			for (int i = 0; i < index; i++, arrayIter++) {}
 			return *arrayIter;
 		}

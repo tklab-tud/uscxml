@@ -9,13 +9,68 @@
 #include <assert.h>
 #include <boost/algorithm/string.hpp>
 #include <iostream>
+#include <DOM/Document.hpp>
 
 using namespace uscxml;
 using namespace boost;
+using namespace Arabica::DOM;
 
 extern int promela_debug;
 
 void testInlinePromela() {
+	
+	DOMImplementation<std::string> domFactory = Arabica::SimpleDOM::DOMImplementation<std::string>::getDOMImplementation();
+	Document<std::string> document = domFactory.createDocument("", "", 0);
+
+	{
+		std::string test = "\
+		promela-code This is foo!\
+		";
+
+		Comment<std::string> comment = document.createComment(test);
+		PromelaInline inl(comment);
+		assert(inl.type == PromelaInline::PROMELA_CODE);
+		assert(inl.content == "This is foo!");
+	}
+
+	{
+		std::string test = "\
+		promela-code\n \
+		This is foo!\
+		";
+		
+		Comment<std::string> comment = document.createComment(test);
+		PromelaInline inl(comment);
+		assert(inl.type == PromelaInline::PROMELA_CODE);
+		assert(inl.content == "This is foo!");
+	}
+
+	{
+		std::string test = "\
+		promela-event\n \
+		[{\"name\": \"e1\", \"data\": { \"foo\": \"some string\" }}, \
+     {\"name\": \"e1\", \"data\": { \"bar\": 12 }}]";
+		
+		Comment<std::string> comment = document.createComment(test);
+		PromelaInline inl(comment);
+		assert(inl.type == PromelaInline::PROMELA_EVENT_ONLY);
+		
+		PromelaEventSource es(inl);
+		assert(es.events.array.size() == 2);
+		
+	}
+
+	{
+		Interpreter interpreter = Interpreter::fromURL("/Users/sradomski/Documents/TK/Code/uscxml/test/uscxml/promela/test-event-source-auto.scxml");
+		assert(interpreter);
+		PromelaInlines inls(interpreter.getDocument().getDocumentElement());
+		
+		assert(inls.getAllOfType(PromelaInline::PROMELA_EVENT_ONLY).size() == 1);
+		assert(inls.getAllOfType(PromelaInline::PROMELA_EVENT_ALL_BUT).size() == 1);
+		interpreter.getImpl()->getState("s0");
+	}
+	
+#if 0
 	{
 		std::string test = "\
 		#promela-inline:\n \
@@ -169,6 +224,7 @@ void testInlinePromela() {
 		assert(pmlES.sequences.size() == 0);
 		assert(boost::trim_copy(pmlES.source.content) == "This is foo!");
 	}
+#endif
 }
 
 void checkTokenLocations(const std::string& expr, PromelaParserNode* ast) {

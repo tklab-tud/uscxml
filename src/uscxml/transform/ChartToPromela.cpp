@@ -130,200 +130,6 @@ void ChartToPromela::writeTo(std::ostream& stream) {
 	writeProgram(stream);
 }
 
-void PromelaEventSource::writeStart(std::ostream& stream, int indent) {
-	std::string padding;
-	for (int i = 0; i < indent; i++) {
-		padding += "  ";
-	}
-	stream << padding << "run " << name << "EventSource() priority 10;" << std::endl;
-}
-
-void PromelaEventSource::writeStop(std::ostream& stream, int indent) {
-	std::string padding;
-	for (int i = 0; i < indent; i++) {
-		padding += "  ";
-	}
-
-	stream << padding << name << "EventSourceDone = 1;" << std::endl;
-}
-
-void PromelaEventSource::writeDeclarations(std::ostream& stream, int indent) {
-	std::string padding;
-	for (int i = 0; i < indent; i++) {
-		padding += "  ";
-	}
-	stream << "bool " << name << "EventSourceDone = 0;" << std::endl;
-	
-}
-
-void PromelaEventSource::writeBody(std::ostream& stream) {
-	
-	stream << "proctype " << name << "EventSource() {" << std::endl;
-	stream << "  " << name << "EventSourceDone = 0;" << std::endl;
-	if (analyzer->usesComplexEventStruct()) {
-		stream << "  _event_t tmpE;" << std::endl;
-	}
-	stream << "  " << name << "NewEvent:" << std::endl;
-	stream << "  " << "if" << std::endl;
-	stream << "  " << ":: " << name << "EventSourceDone -> goto " << name << "Done;" << std::endl;
-	stream << "  " << ":: " << "len(eQ) >= " << externalQueueLength - longestSequence << " -> skip;" << std::endl;
-	stream << "  " << ":: else { " << std::endl;
-
-	Trie& trie = analyzer->getTrie();
-	if (source.type == PromelaInline::PROMELA_EVENT_SOURCE_CUSTOM) {
-		// custom event source
-		std::string content = source.content;
-
-		boost::replace_all(content, "#REDO#", name + "NewEvent");
-		boost::replace_all(content, "#DONE#", name + "Done");
-
-		std::list<TrieNode*> eventNames = trie.getChildsWithWords(trie.getNodeWithPrefix(""));
-		std::list<TrieNode*>::iterator eventNameIter = eventNames.begin();
-		while(eventNameIter != eventNames.end()) {
-			boost::replace_all(content, "#" + (*eventNameIter)->value + "#", (*eventNameIter)->identifier);
-			eventNameIter++;
-		}
-
-		stream << ChartToPromela::beautifyIndentation(content, 2) << std::endl;
-	} else {
-		// standard event source
-		stream << "  " << "  if" << std::endl;
-//		stream << "  " << "  :: 1 -> " << "goto " << sourceName << "NewEvent;" << std::endl;
-
-		std::list<std::list<std::string> >::const_iterator seqIter = sequences.begin();
-		while(seqIter != sequences.end()) {
-			stream << "    " << ":: skip -> { ";
-			std::list<std::string>::const_iterator evIter = seqIter->begin();
-			while(evIter != seqIter->end()) {
-				TrieNode* node = trie.getNodeWithPrefix(*evIter);
-				if (!node) {
-					std::cerr << "Event " << *evIter << " defined in event source but never used in transitions" << std::endl;
-					evIter++;
-					continue;
-				}
-				if (analyzer->usesComplexEventStruct()) {
-					stream << "tmpE.name = " << analyzer->macroForLiteral(node->value) << "; eQ!tmpE; ";
-				} else {
-					stream << "eQ!" << analyzer->macroForLiteral(node->value) << "; ";
-				}
-				evIter++;
-			}
-			stream << "goto " << name << "NewEvent;";
-			stream << " }" << std::endl;
-			seqIter++;
-		}
-
-		stream << "  " << "  fi;" << std::endl;
-	}
-
-	stream << "  " << "}" << std::endl;
-	stream << "  " << "fi;" << std::endl;
-	stream << name << "Done:" << " skip;" << std::endl;
-	stream << "}" << std::endl;
-
-	
-//	std::list<PromelaInline>::iterator sourceIter = eventSources.inlines.begin();
-//	int i = 0;
-//	while(sourceIter != eventSources.inlines.end()) {
-//		if (sourceIter->type != PromelaInline::PROMELA_EVENT_SOURCE_CUSTOM && sourceIter->type != PromelaInline::PROMELA_EVENT_SOURCE) {
-//			sourceIter++;
-//			continue;
-//		}
-//
-//		std::string sourceName = name + "_"+ toStr(i);
-//
-//		stream << "proctype " << sourceName << "EventSource() {" << std::endl;
-//		stream << "  " << sourceName << "EventSourceDone = 0;" << std::endl;
-//		stream << "  " << sourceName << "NewEvent:" << std::endl;
-//		stream << "  " << "if" << std::endl;
-//		stream << "  " << ":: " << sourceName << "EventSourceDone -> skip;" << std::endl;
-//		stream << "  " << ":: else { " << std::endl;
-//
-//		Trie& trie = analyzer->getTrie();
-//
-//		if (sourceIter->type == PromelaInline::PROMELA_EVENT_SOURCE_CUSTOM) {
-//			std::string content = sourceIter->content;
-//
-//			boost::replace_all(content, "#REDO#", sourceName + "NewEvent");
-//			boost::replace_all(content, "#DONE#", sourceName + "Done");
-//
-//			std::list<TrieNode*> eventNames = trie.getChildsWithWords(trie.getNodeWithPrefix(""));
-//			std::list<TrieNode*>::iterator eventNameIter = eventNames.begin();
-//			while(eventNameIter != eventNames.end()) {
-//				boost::replace_all(content, "#" + (*eventNameIter)->value + "#", (*eventNameIter)->identifier);
-//				eventNameIter++;
-//			}
-//
-//			stream << ChartToPromela::beautifyIndentation(content, 2) << std::endl;
-//
-//		} else {
-//			stream << "  " << "  if" << std::endl;
-////			stream << "  " << "  :: 1 -> " << "goto " << sourceName << "NewEvent;" << std::endl;
-//
-//			std::list<std::list<std::string> >::const_iterator seqIter = sourceIter->sequences.begin();
-//			while(seqIter != sourceIter->sequences.end()) {
-//				stream << "    " << ":: ";
-//				std::list<std::string>::const_iterator evIter = seqIter->begin();
-//				while(evIter != seqIter->end()) {
-//					TrieNode* node = trie.getNodeWithPrefix(*evIter);
-//					stream << "eQ!" << node->identifier << "; ";
-//					evIter++;
-//				}
-//				stream << "goto " << sourceName << "NewEvent;" << std::endl;
-//				seqIter++;
-//			}
-//
-//			stream << "  " << "  fi;" << std::endl;
-//		}
-//
-//		stream << "  " << "}" << std::endl;
-//		stream << "  " << "fi;" << std::endl;
-//		stream << sourceName << "Done:" << " skip;" << std::endl;
-//		stream << "}" << std::endl;
-//
-//		i++;
-//		sourceIter++;
-//	}
-}
-
-PromelaEventSource::PromelaEventSource() {
-	type = PROMELA_EVENT_SOURCE_INVALID;
-	analyzer = NULL;
-}
-
-PromelaEventSource::PromelaEventSource(const PromelaInline& source, PromelaCodeAnalyzer* analyzer, uint32_t eQueueLength) {
-	type = PROMELA_EVENT_SOURCE_INVALID;
-	this->analyzer = analyzer;
-	externalQueueLength = eQueueLength;
-	
-	this->source = source;
-	
-	if (source.type == PromelaInline::PROMELA_EVENT_SOURCE) {
-		std::stringstream ssLines(source.content);
-		std::string line;
-		while(std::getline(ssLines, line)) {
-			boost::trim(line);
-			if (line.length() == 0)
-				continue;
-			if (boost::starts_with(line, "//"))
-				continue;
-
-			std::list<std::string> seq;
-			std::stringstream ssToken(line);
-			std::string token;
-			while(std::getline(ssToken, token, ' ')) {
-				if (token.length() == 0)
-					continue;
-				seq.push_back(token);
-				if (analyzer != NULL)
-					analyzer->addEvent(token);
-			}
-			sequences.push_back(seq);
-			if (seq.size() > longestSequence)
-				longestSequence = seq.size();
-		}
-	}
-}
 	
 void PromelaCodeAnalyzer::addCode(const std::string& code, ChartToPromela* interpreter) {
 	PromelaParser parser(code);
@@ -570,7 +376,7 @@ std::string PromelaCodeAnalyzer::macroForLiteral(const std::string& literal) {
 		throw std::runtime_error("Literal " + literal + " passed with quotes");
 
 	if (_strMacroNames.find(literal) == _strMacroNames.end())
-		throw std::runtime_error("No macro for literal " + literal + " known");
+		throw std::runtime_error("No macro for literal '" + literal + "' known");
 	return _strMacroNames[literal];
 }
 
@@ -1051,16 +857,6 @@ void ChartToPromela::writeTransition(std::ostream& stream, GlobalTransition* tra
 	}
 //	std::cout << "###" << std::endl;
 	for (std::list<GlobalTransition::Action>::iterator actionIter = transition->actions.begin(); actionIter != transition->actions.end(); actionIter++) {
-#if 0
-		if (actionIter->onEntry) {
-			std::cout << "onEntry: " << actionIter->onEntry << std::endl;
-		} else if (actionIter->raiseDone) {
-			std::cout << "raiseDone: " << actionIter->raiseDone << std::endl;
-		} else {
-			std::cout << "#" << std::endl;
-		}
-		foo.insert(*actionIter);
-#endif
 		actionsInTransition[transition].insert(*actionIter);
 	}
 //	std::copy(transition->actions.begin(), transition->actions.end(), std::inserter(actionsInTransition[transition], actionsInTransition[transition].begin()));
@@ -1163,6 +959,7 @@ void ChartToPromela::writeTransition(std::ostream& stream, GlobalTransition* tra
 			isConditionalized = true;
 		}
 
+#if 0
 		switch (ecIter->type) {
 		case ExecContentSeqItem::EXEC_CONTENT_ALL_BUT:
 			std::cout << "ALL_BUT" << std::endl;
@@ -1177,6 +974,7 @@ void ChartToPromela::writeTransition(std::ostream& stream, GlobalTransition* tra
 			default:
     break;
 		}
+#endif
 		
 		if (action.exited) {
 			// we left a state
@@ -1226,86 +1024,31 @@ void ChartToPromela::writeTransition(std::ostream& stream, GlobalTransition* tra
 			// an invoke element
 			
 			if (_machines.find(action.invoke) != _machines.end()) {
-#if 1
 				stream << padding << _prefix << "start!" << _analyzer->macroForLiteral(_machines[action.invoke]->_invokerid) << ";" << std::endl;
-#else
-
-				// nested SCXML document
-				
-				// set from namelist
-				if (HAS_ATTR_CAST(action.invoke, "namelist")) {
-					std::list<std::string> namelist = tokenize(ATTR_CAST(action.invoke, "namelist"));
-					for (std::list<std::string>::iterator nlIter = namelist.begin(); nlIter != namelist.end(); nlIter++) {
-						if (_machines[action.invoke]->_dataModelVars.find(*nlIter) != _machines[action.invoke]->_dataModelVars.end()) {
-							stream << padding << _machines[action.invoke]->_prefix << *nlIter << " = " << _prefix << *nlIter << std::endl;
-						}
-					}
-				}
-				
-				// set from params
-				NodeSet<std::string> invokeParams = filterChildElements(_nsInfo.xmlNSPrefix + "param", action.invoke);
-				for (int i = 0; i < invokeParams.size(); i++) {
-					std::string identifier = ATTR_CAST(invokeParams[i], "name");
-					std::string expression = ATTR_CAST(invokeParams[i], "expr");
-					if (_machines[action.invoke]->_dataModelVars.find(identifier) != _machines[action.invoke]->_dataModelVars.end()) {
-						stream << padding << _machines[action.invoke]->_prefix << identifier << " = " << ADAPT_SRC(expression) << ";" << std::endl;
-					}
-				}
-				
-//				stream << padding << "  /* assign local variables from invoke request */" << std::endl;
-//				
-//				if (_analyzer->usesComplexEventStruct() && _analyzer->usesEventField("data")) {
-//					for (std::set<std::string>::iterator dmIter = _dataModelVars.begin(); dmIter != _dataModelVars.end(); dmIter++) {
-//						if (_analyzer->usesEventDataField(*dmIter)) {
-//							stream << "  if" << std::endl;
-//							stream << "  :: " << _prefix << "_event.data." << *dmIter << " -> " << _prefix << *dmIter << " = " << "_event.data." << *dmIter << ";" << std::endl;
-//							stream << "  :: else -> skip;" << std::endl;
-//							stream << "  fi" << std::endl;
-//						}
-//					}
-//				}
-//				stream << std::endl;
-
-				stream << padding << "run " << _machines[action.invoke]->_prefix << "run() priority 20;" << std::endl;
-				if (HAS_ATTR_CAST(action.invoke, "idlocation")) {
-					stream << padding << ADAPT_SRC(ATTR_CAST(action.invoke, "idlocation")) << " = " << _analyzer->macroForLiteral(_machines[_machinesPerId[ATTR_CAST(action.invoke, "id")]]->_invokerid) << ";" << std::endl;
-				}
-#endif
 			} else {
-				if (HAS_ATTR_CAST(action.invoke, "invokeid") && _invokers.find(ATTR_CAST(action.invoke, "invokeid")) != _invokers.end())
-					_invokers[ATTR_CAST(action.invoke, "invokeid")].writeStart(stream, indent);
+				if (HAS_ATTR_CAST(action.invoke, "id")) {
+					stream << padding << _prefix << ATTR_CAST(action.invoke, "id") << "Running = true;" << std::endl;
+				}
 			}
 
 		}
 		
 		if (action.uninvoke) {
-			assert(_machines.find(action.uninvoke) != _machines.end());
-			stream << padding << "do" << std::endl;
-			stream << padding << ":: " << _prefix << "start??" << _analyzer->macroForLiteral(_machines[action.uninvoke]->_invokerid) << " -> skip" << std::endl;
-			stream << padding << ":: else -> break;" << std::endl;
-			stream << padding << "od" << std::endl;
-
-//			std::cout << action.uninvoke << std::endl;
-			// an invoke element to uninvoke
 			if (_machines.find(action.uninvoke) != _machines.end()) {
-				// nested SCXML document
-				stream << padding << _machines[action.uninvoke]->_prefix << "canceled = true;" << std::endl;
-				if (_analyzer->usesEventField("delay"))
-					stream << padding << "removePendingEventsForInvoker(" << _analyzer->macroForLiteral(_machines[action.uninvoke]->_invokerid) << ");" << std::endl;
-//				writeRemovePendingEventsFromInvoker(stream, _machines[action.uninvoke], indent, false);
-#if 0
 				stream << padding << "do" << std::endl;
-				if (_allowEventInterleaving)
-					stream << padding << ":: len(" << _machines[action.uninvoke]->_prefix << "tmpQ) > 0 -> " << _machines[action.uninvoke]->_prefix << "tmpQ?_;" << std::endl;
-				stream << padding << ":: len(" << _machines[action.uninvoke]->_prefix << "eQ) > 0 -> " << _machines[action.uninvoke]->_prefix << "eQ?_;" << std::endl;
+				stream << padding << ":: " << _prefix << "start??" << _analyzer->macroForLiteral(_machines[action.uninvoke]->_invokerid) << " -> skip" << std::endl;
 				stream << padding << ":: else -> break;" << std::endl;
 				stream << padding << "od" << std::endl;
-#endif
+
+				stream << padding << _machines[action.uninvoke]->_prefix << "canceled = true;" << std::endl;
+				if (_analyzer->usesEventField("delay")) {
+					stream << padding << "removePendingEventsForInvoker(" << _analyzer->macroForLiteral(_machines[action.uninvoke]->_invokerid) << ");" << std::endl;
+				}
 			} else {
-				if (HAS_ATTR_CAST(action.uninvoke, "invokeid") && _invokers.find(ATTR_CAST(action.invoke, "invokeid")) != _invokers.end())
-					stream << padding << ATTR_CAST(action.uninvoke, "invokeid") << "EventSourceDone" << "= 1;" << std::endl;
+				if (HAS_ATTR_CAST(action.uninvoke, "id")) {
+					stream << padding << _prefix << ATTR_CAST(action.uninvoke, "id") << "Running = false;" << std::endl;
+				}
 			}
-//			continue;
 		}
 		
 		if (isConditionalized) {
@@ -1682,17 +1425,7 @@ void ChartToPromela::writeExecutableContent(std::ostream& stream, const Arabica:
 	for (int i = 0; i < indent; i++) {
 		padding += "  ";
 	}
-
-	if (node.getNodeType() == Node_base::COMMENT_NODE) {
-		// we cannot have labels in an atomic block, just process inline promela
-		PromelaInlines promInls = PromelaInlines::fromNode(node);
-		//		TODO!
-		//		if (promInls) {
-		//		stream << padding << "skip;" << std::endl;
-		//		stream << beautifyIndentation(inlinePromela.str(), indent) << std::endl;
-		//		}
-	}
-
+	
 	if (node.getNodeType() == Node_base::TEXT_NODE) {
 		if (boost::trim_copy(node.getNodeValue()).length() > 0)
 			stream << beautifyIndentation(ADAPT_SRC(node.getNodeValue()), indent) << std::endl;
@@ -1894,94 +1627,168 @@ void ChartToPromela::writeExecutableContent(std::ostream& stream, const Arabica:
 	}
 }
 
+PromelaInlines::~PromelaInlines() {
+	return;
+}
 
-PromelaInlines PromelaInlines::fromNodeSet(const NodeSet<std::string>& node, bool recurse) {
-	PromelaInlines allPromInls;
-	Arabica::XPath::NodeSet<std::string> comments = InterpreterImpl::filterChildType(Node_base::COMMENT_NODE, node, recurse);
-	for (int i = 0; i < comments.size(); i++) {
-		allPromInls.merge(PromelaInlines::fromNode(comments[i]));
-	}
-	return allPromInls;
+std::list<PromelaInline*> PromelaInlines::getRelatedTo(const Arabica::DOM::Node<std::string>& node, PromelaInline::PromelaInlineType type) {
+	std::list<PromelaInline*> related;
 	
-}
-
-PromelaInlines PromelaInlines::fromNode(const Arabica::DOM::Node<std::string>& node) {
-	if (node.getNodeType() != Node_base::COMMENT_NODE && node.getNodeType() != Node_base::TEXT_NODE)
-		return PromelaInlines();
-	return PromelaInlines(node.getNodeValue(), node);
-}
-
-	PromelaInlines PromelaInlines::fromString(const std::string& text) {
-	return PromelaInlines(text, Arabica::DOM::Node<std::string>());
-}
-
-PromelaInlines::PromelaInlines() : nrProgressLabels(0), nrAcceptLabels(0), nrEndLabels(0), nrEventSources(0), nrCodes(0) {
-}
-
-PromelaInlines::PromelaInlines(const std::string& content, const Arabica::DOM::Node<std::string>& node)
-		: nrProgressLabels(0), nrAcceptLabels(0), nrEndLabels(0), nrEventSources(0), nrCodes(0) {
-
-	std::stringstream ssLine(content);
-	std::string line;
-
-	bool isInPromelaCode = false;
-	PromelaInline promInl;
-
-	while(std::getline(ssLine, line)) {
-		std::string trimLine = boost::trim_copy(line);
-		if (trimLine.length() == 0)
-			continue;
-		if (boost::starts_with(trimLine, "#promela")) {
-			if (isInPromelaCode) {
-				code.push_back(promInl);
-				isInPromelaCode = false;
+	std::map<Arabica::DOM::Node<std::string>, std::list<PromelaInline*> >::iterator inlIter = inlines.begin();
+	while (inlIter != inlines.end()) {
+		std::list<PromelaInline*>::iterator pmlIter = inlIter->second.begin();
+		while (pmlIter != inlIter->second.end()) {
+			if ((type != PromelaInline::PROMELA_NIL || (*pmlIter)->type == type) && (*pmlIter)->relatesTo(node)) {
+				related.push_back(*pmlIter);
 			}
-			promInl = PromelaInline();
+			pmlIter++;
 		}
-
-		if (false) {
-		} else if (boost::starts_with(trimLine, "#promela-progress")) {
-			nrProgressLabels++;
-			promInl.type = PromelaInline::PROMELA_PROGRESS_LABEL;
-			promInl.content = line;
-			code.push_back(promInl);
-		} else if (boost::starts_with(trimLine, "#promela-accept")) {
-			nrAcceptLabels++;
-			promInl.type = PromelaInline::PROMELA_ACCEPT_LABEL;
-			promInl.content = line;
-			code.push_back(promInl);
-		} else if (boost::starts_with(trimLine, "#promela-end")) {
-			nrEndLabels++;
-			promInl.type = PromelaInline::PROMELA_END_LABEL;
-			promInl.content = line;
-			code.push_back(promInl);
-		} else if (boost::starts_with(trimLine, "#promela-inline")) {
-			nrCodes++;
-			isInPromelaCode = true;
-			promInl.type = PromelaInline::PROMELA_CODE;
-		} else if (boost::starts_with(trimLine, "#promela-event-source-custom")) {
-			nrEventSources++;
-			isInPromelaCode = true;
-			promInl.type = PromelaInline::PROMELA_EVENT_SOURCE_CUSTOM;
-		} else if (boost::starts_with(trimLine, "#promela-event-source")) {
-			nrEventSources++;
-			isInPromelaCode = true;
-			promInl.type = PromelaInline::PROMELA_EVENT_SOURCE;
-		} else if (isInPromelaCode) {
-			promInl.content += line;
-			promInl.content += "\n";
-		}
+		inlIter++;
 	}
-	// inline code ends with comment
-	if (isInPromelaCode) {
-		code.push_back(promInl);
-	}
-			
-	// iterate inlinesFound and classify
-//			PromelaEventSource promES; // TODO! use this
+	return related;
 
+	return related;
 }
 
+std::list<PromelaInline*> PromelaInlines::getAllOfType(uint32_t type) {
+	std::list<PromelaInline*> related;
+	
+	std::map<Arabica::DOM::Node<std::string>, std::list<PromelaInline*> >::iterator inlIter = inlines.begin();
+	while (inlIter != inlines.end()) {
+		std::list<PromelaInline*>::iterator pmlIter = inlIter->second.begin();
+		while (pmlIter != inlIter->second.end()) {
+			if ((*pmlIter)->type & type) {
+				related.push_back(*pmlIter);
+			}
+			pmlIter++;
+		}
+		inlIter++;
+	}
+	return related;
+}
+
+PromelaInline::PromelaInline(const Arabica::DOM::Node<std::string>& node) : prevSibling(NULL), nextSibling(NULL), type(PROMELA_NIL) {
+	if (node.getNodeType() != Node_base::COMMENT_NODE && node.getNodeType() != Node_base::TEXT_NODE)
+		return; // nothing to do
+
+	std::stringstream ssLine(node.getNodeValue());
+	std::string line;
+	
+	while(std::getline(ssLine, line)) {
+		// skip to first promela line
+		boost::trim(line);
+		if (boost::starts_with(line, "promela"))
+			break;
+	}
+
+	if (!boost::starts_with(line, "promela"))
+		return;
+
+	if (false) {
+	} else if (boost::starts_with(line, "promela-code")) {
+		type = PROMELA_CODE;
+	} else if (boost::starts_with(line, "promela-ltl")) {
+		type = PROMELA_LTL;
+	} else if (boost::starts_with(line, "promela-event-all")) {
+		type = PROMELA_EVENT_ALL_BUT;
+	} else if (boost::starts_with(line, "promela-event")) {
+		type = PROMELA_EVENT_ONLY;
+	} else if (boost::starts_with(line, "promela-progress")) {
+		type = PROMELA_PROGRESS_LABEL;
+	} else if (boost::starts_with(line, "promela-accept")) {
+		type = PROMELA_ACCEPT_LABEL;
+	} else if (boost::starts_with(line, "promela-end")) {
+		type = PROMELA_END_LABEL;
+	}
+
+	std::stringstream contentSS;
+	size_t endType = line.find_first_of(": \n");
+	
+	std::string seperator;
+	if (endType != std::string::npos && endType + 1 < line.size()) {
+		contentSS << line.substr(endType + 1, line.size() - endType + 1);
+		seperator = "\n";
+	}
+	
+	while(std::getline(ssLine, line)) {
+		boost::trim(line);
+		if (boost::starts_with(line, "promela")) {
+			std::cerr << "Split multiple #promela pragmas into multiple comments!" << std::endl;
+			break;
+		}
+		contentSS << seperator << line;
+		seperator = "\n";
+	}
+	content = contentSS.str();
+}
+
+
+PromelaInlines::PromelaInlines(const Arabica::DOM::Node<std::string>& node) {
+	NodeSet<std::string> levelNodes;
+	levelNodes.push_back(node);
+	
+	size_t level = 0;
+	while(levelNodes.size() > 0) {
+		PromelaInline* predecessor = NULL;
+
+		// iterate all nodes at given level
+		for (int i = 0; i < levelNodes.size(); i++) {
+			
+			// get all comments
+			NodeSet<std::string> comments = InterpreterImpl::filterChildType(Node_base::COMMENT_NODE, levelNodes[i]);
+			for (int j = 0; j < comments.size(); j++) {
+				PromelaInline* tmp = new PromelaInline(comments[j]);
+				if (tmp->type == PromelaInline::PROMELA_NIL) {
+					delete tmp;
+					continue;
+				}
+
+				if (predecessor != NULL) {
+					tmp->prevSibling = predecessor;
+					predecessor->nextSibling = tmp;
+				}
+				tmp->level = level;
+				tmp->container = Element<std::string>(levelNodes[i]);
+				predecessor = tmp;
+				inlines[levelNodes[i]].push_back(tmp);
+				allInlines.push_back(tmp);
+			}
+		}
+		
+		levelNodes = InterpreterImpl::filterChildType(Node_base::ELEMENT_NODE, levelNodes);
+		level++;
+	}
+}
+
+void PromelaInline::dump() {
+#if 0
+	switch(type) {
+		case PROMELA_NIL:
+			std::cerr << "PROMELA_NIL" << std::endl;
+			break;
+		case PROMELA_CODE:
+			std::cerr << "PROMELA_CODE" << std::endl;
+			break;
+		case PROMELA_EVENT_SOURCE_ALL:
+			std::cerr << "PROMELA_EVENT_SOURCE" << std::endl;
+			break;
+		case PROMELA_INVOKER:
+			std::cerr << "PROMELA_INVOKER" << std::endl;
+			break;
+		case PROMELA_PROGRESS_LABEL:
+			std::cerr << "PROMELA_PROGRESS_LABEL" << std::endl;
+			break;
+		case PROMELA_ACCEPT_LABEL:
+			std::cerr << "PROMELA_ACCEPT_LABEL" << std::endl;
+			break;
+		case PROMELA_END_LABEL:
+			std::cerr << "PROMELA_END_LABEL" << std::endl;
+			break;
+	}
+#endif
+}
+
+	
 void ChartToPromela::writeIfBlock(std::ostream& stream, const Arabica::XPath::NodeSet<std::string>& condChain, int indent) {
 	if (condChain.size() == 0)
 		return;
@@ -2157,6 +1964,13 @@ void ChartToPromela::writeDeclarations(std::ostream& stream) {
 		stream << "_x_t " << _prefix << "_x;" << std::endl;
 	}
 
+	std::list<PromelaInline*> pmls = pmlInlines.getAllOfType(PromelaInline::PROMELA_EVENT_ALL_BUT | PromelaInline::PROMELA_EVENT_ONLY);
+	for (std::list<PromelaInline*>::iterator pmlIter = pmls.begin(); pmlIter != pmls.end(); pmlIter++) {
+		if ((*pmlIter)->container && LOCALNAME((*pmlIter)->container) == "invoke") {
+			stream << "bool " << _prefix << ATTR_CAST((*pmlIter)->container, "id") << "Running;" << std::endl;
+		}
+	}
+
 	stream << std::endl << std::endl;
 
 	// get all data elements
@@ -2206,41 +2020,6 @@ void ChartToPromela::writeDeclarations(std::ostream& stream) {
 		std::string decl = type + " " + _prefix + identifier + arrSize;
 		stream << decl << ";" << std::endl;
 
-#if 0
-		
-		NodeSet<std::string> dataText = filterChildType(Node_base::TEXT_NODE, data, true);
-		std::string value;
-		if (dataText.size() > 0) {
-			value = dataText[0].getNodeValue();
-			boost::trim(value);
-		}
-		
-		if (identifier.length() > 0) {
-			
-			size_t bracketPos = type.find("[");
-			if (bracketPos != std::string::npos) {
-				arrSize = type.substr(bracketPos, type.length() - bracketPos);
-				type = type.substr(0, bracketPos);
-			}
-			std::string decl = type + " " + _prefix + identifier + arrSize;
-			stream << decl << ";" << std::endl;
-			
-			if (arrSize.length() > 0) {
-				_varInitializers.push_back(value);
-			} else {
-				if (expression.length() > 0) {
-					// id and expr given
-					_varInitializers.push_back(identifier + " = " + boost::trim_copy(expression) + ";");
-				} else if (value.length() > 0) {
-					// id and text content given
-					_varInitializers.push_back(identifier + " = " + value + ";");
-				}
-			}
-		} else if (value.length() > 0) {
-			// no id but text content given
-			stream << beautifyIndentation(value) << std::endl;
-		}
-#endif
 	}
 	
 	
@@ -2277,33 +2056,10 @@ void ChartToPromela::writeDeclarations(std::ostream& stream) {
 	}
 
 	stream << std::endl;
-	if (_globalEventSource || _invokers.size() > 0)
-		stream << "/* event sources */" << std::endl;
-
-	if (_globalEventSource) {
-		_globalEventSource.writeDeclarations(stream);
-	}
-
-	std::map<std::string, PromelaEventSource>::iterator invIter = _invokers.begin();
-	while(invIter != _invokers.end()) {
-		invIter->second.writeDeclarations(stream);
-		invIter++;
-	}
-
+	
 }
 
 void ChartToPromela::writeEventSources(std::ostream& stream) {
-	std::list<PromelaInline>::iterator inlineIter;
-
-	if (_globalEventSource) {
-		_globalEventSource.writeBody(stream);
-	}
-
-	std::map<std::string, PromelaEventSource>::iterator invIter = _invokers.begin();
-	while(invIter != _invokers.end()) {
-		invIter->second.writeBody(stream);
-		invIter++;
-	}
 }
 
 void ChartToPromela::writeStartInvoker(std::ostream& stream, const Arabica::DOM::Node<std::string>& node, ChartToPromela* invoker, int indent) {
@@ -2427,27 +2183,96 @@ void ChartToPromela::writeFSM(std::ostream& stream) {
 		stream << "  scheduleMachines();" << std::endl << std::endl;
 	}
 	
+	std::list<PromelaInline*> eventSources = pmlInlines.getAllOfType(PromelaInline::PROMELA_EVENT_ALL_BUT |
+																																	 PromelaInline::PROMELA_EVENT_ONLY);
+	
 	stream << "  atomic {" << std::endl;
 	stream << "    /* pop an event */" << std::endl;
 	stream << "    if" << std::endl;
 	stream << "    :: len(" << _prefix << "iQ) != 0 -> " << _prefix << "iQ ? " << _prefix << "_event   /* from internal queue */" << std::endl;
-	stream << "    :: else -> " << _prefix << "eQ ? " << _prefix << "_event           /* from external queue */" << std::endl;
+	if (eventSources.size() > 0) {
+		stream << "    :: len(" << _prefix << "eQ) != 0 -> " << _prefix << "eQ ? " << _prefix << "_event   /* from external queue */" << std::endl;
+		stream << "    :: else -> {" << std::endl;
+		stream << "      /* external queue is empty -> automatically enqueue external event */" << std::endl;
+		stream << "      if" << std::endl;
+
+		for (std::list<PromelaInline*>::iterator esIter = eventSources.begin(); esIter != eventSources.end(); esIter++) {
+			PromelaEventSource es(**esIter);
+
+			std::string condition = "true";
+			
+			if (LOCALNAME(es.container) == "invoke") {
+				if (HAS_ATTR_CAST(es.container, "id")) {
+					condition = _prefix + ATTR_CAST(es.container, "id") + "Running";
+				} else {
+					LOG(ERROR) << "Invoker has no id";
+				}
+			} else if (HAS_ATTR(es.container, "id")) {
+				condition = _prefix + "_x.states[" + _analyzer->macroForLiteral(ATTR(es.container, "id")) + "]";
+			}
+			stream << "      :: " << condition << " -> {" << std::endl;
+			
+			if (es.type == PromelaInline::PROMELA_EVENT_ALL_BUT) {
+				std::string excludeEventDescs;
+				for (std::list<Data>::iterator evIter = es.events.array.begin(); evIter != es.events.array.end(); evIter++) {
+					excludeEventDescs += " " + evIter->atom;
+				}
+				
+				NodeSet<std::string> transitions = filterChildElements("transition", es.container, true);
+				std::set<std::string> eventNames;
+				for (int i = 0; i < transitions.size(); i++) {
+					if (!HAS_ATTR_CAST(transitions[i], "event"))
+						continue;
+					if (HAS_ATTR_CAST(transitions[i], "cond") && ATTR_CAST(transitions[i], "cond").find("_event.") != std::string::npos)
+						continue;
+					std::list<std::string> events = InterpreterImpl::tokenizeIdRefs(ATTR_CAST(transitions[i], "event"));
+					for (std::list<std::string>::iterator evIter = events.begin(); evIter != events.end(); evIter++) {
+						std::string eventName = *evIter;
+						if (boost::ends_with(eventName, "*"))
+							eventName = eventName.substr(0, eventName.size() - 1);
+						if (boost::ends_with(eventName, "."))
+							eventName = eventName.substr(0, eventName.size() - 1);
+
+						// is this event excluded?
+						if (!InterpreterImpl::nameMatch(excludeEventDescs, eventName)) {
+							eventNames.insert(eventName);
+						}
+					}
+				}
+
+				if (eventNames.size() > 0) {
+					stream << "        if " << std::endl;
+					for (std::set<std::string>::iterator evIter = eventNames.begin(); evIter != eventNames.end(); evIter++) {
+						stream << "        :: true -> { " << _prefix << "_event.name = " << _analyzer->macroForLiteral(*evIter) << " }" << std::endl;
+					}
+					stream << "        fi " << std::endl;
+				}
+				
+			} else if (es.type == PromelaInline::PROMELA_EVENT_ONLY) {
+				if (es.events.array.size() > 0) {
+					stream << "        if " << std::endl;
+					for (std::list<Data>::iterator evIter = es.events.array.begin(); evIter != es.events.array.end(); evIter++) {
+						stream << "        :: true -> { " << std::endl;
+						stream << dataToAssignments("          _event", *evIter);
+						stream << "        } " << std::endl;
+					}
+					stream << "        fi " << std::endl;
+				} else {
+					stream << dataToAssignments("        _event", es.events);
+				}
+			} else {
+				assert(false);
+			}
+			stream << "      }" << std::endl;
+		}
+		
+		stream << "      fi" << std::endl;
+		stream << "    }" << std::endl;
+	} else {
+		stream << "    :: else -> " << _prefix << "eQ ? " << _prefix << "_event           /* from external queue */" << std::endl;
+	}
 	stream << "    fi;" << std::endl << std::endl;
 
-#if 0
-	if (!_analyzer->usesComplexEventStruct()) {
-		stream << "    printf(\"======= Process %d dequeued %d\\n\", _pid, " << _prefix << "_event);" << std::endl;
-	} else {
-		stream << "    printf(\"======= Process %d dequeued %d\\n\", _pid, " << _prefix << "_event.name);" << std::endl;
-		if (_analyzer->usesEventField("sendid"))
-			stream << "    printf(\"  sendid: %d\\n\", " << _prefix << "_event.sendid);" << std::endl;
-		if (_analyzer->usesEventField("invokeid"))
-			stream << "    printf(\"  invokeid: %d\\n\", " << _prefix << "_event.invokeid);" << std::endl;
-		if (_analyzer->usesEventField("delay"))
-			stream << "    printf(\"  delay: %d\\n\", " << _prefix << "_event.delay);" << std::endl;
-	}
-	stream << std::endl;
-#endif
 	
 	stream << "    /* terminate if we are stopped */" << std::endl;
 	stream << "    if" << std::endl;
@@ -2532,16 +2357,6 @@ void ChartToPromela::writeFSM(std::ostream& stream) {
 			stream << "    removePendingEventsForInvoker(" << _analyzer->macroForLiteral(this->_invokerid) << ")" << std::endl;
 	}
 	
-	// stop all event sources
-	if (_globalEventSource)
-		_globalEventSource.writeStop(stream, 2);
-
-	std::map<std::string, PromelaEventSource>::iterator invIter = _invokers.begin();
-	while(invIter != _invokers.end()) {
-		invIter->second.writeStop(stream, 2);
-		invIter++;
-	}
-
 	stream << "  }" << std::endl;
 	stream << "}" << std::endl;
 }
@@ -2907,8 +2722,7 @@ void ChartToPromela::writeMain(std::ostream& stream) {
 		}
 		stream << std::endl;
 	}
-	if (_globalEventSource)
-		_globalEventSource.writeStart(stream, 1);
+	
 	stream << "  run " << (_prefix.size() == 0 ? "machine_" : _prefix) << "run() priority 10;" << std::endl;
 	stream << "}" << std::endl;
 
@@ -3175,43 +2989,43 @@ void ChartToPromela::initNodes() {
 			}
 		}
 	}
-	// external event names from comments and event sources
-	NodeSet<std::string> promelaEventSourceComments;
-	NodeSet<std::string> invokers = _xpath.evaluate("//" + _nsInfo.xpathPrefix + "invoke", _scxml).asNodeSet();
-	promelaEventSourceComments.push_back(filterChildType(Node_base::COMMENT_NODE, invokers, false)); // comments in invoke elements
-	promelaEventSourceComments.push_back(filterChildType(Node_base::COMMENT_NODE, _scxml, false)); // comments in scxml element
-
-	for (int i = 0; i < promelaEventSourceComments.size(); i++) {
-		PromelaInlines promInls = PromelaInlines::fromNode(promelaEventSourceComments[i]);
+	
+	{
+		// gather all inline promela comments
+		pmlInlines = PromelaInlines(_scxml);
+		if (pmlInlines.getAllOfType(PromelaInline::PROMELA_EVENT_ONLY).size() > 0)
+			_analyzer->addCode("_x.states", this);
 		
-		for (	std::list<PromelaInline>::iterator promIter = promInls.code.begin(); promIter != promInls.code.end(); promIter++) {
-			if (promIter->type == PromelaInline::PROMELA_EVENT_SOURCE || promIter->type == PromelaInline::PROMELA_EVENT_SOURCE_CUSTOM) {
-				PromelaEventSource promES(*promIter, _analyzer, _externalQueueLength);
-				if (TAGNAME_CAST(promelaEventSourceComments[i].getParentNode()) == "scxml") {
-					promES.type = PromelaEventSource::PROMELA_EVENT_SOURCE_GLOBAL;
-					promES.name = "global";
-					_globalEventSource = promES;
-				} else {
-					Element<std::string> invoker = Element<std::string>(promelaEventSourceComments[i].getParentNode());
-					if (!HAS_ATTR_CAST(promelaEventSourceComments[i].getParentNode(), "id")) {
-						invoker.setAttribute("invokeid", "invoker" + toStr(_invokers.size())); // if there is no invokeid, enumerate
-					} else {
-						invoker.setAttribute("invokeid", ATTR_CAST(promelaEventSourceComments[i].getParentNode(), "id"));
-					}
-					std::string invokeId = ATTR_CAST(promelaEventSourceComments[i].getParentNode(), "invokeid");
-
-					promES.type = PromelaEventSource::PROMELA_EVENT_SOURCE_INVOKER;
-					promES.name = invokeId;
-					_invokers[invokeId] = promES;
+		// register events and string literals
+		for (std::list<PromelaInline*>::iterator inlIter = pmlInlines.allInlines.begin(); inlIter != pmlInlines.allInlines.end(); inlIter++) {
+			if ((*inlIter)->type != (PromelaInline::PROMELA_EVENT_ONLY))
+				continue;
+			
+			Data json = Data::fromJSON((*inlIter)->content);
+			if (!json.empty()) {
+				std::list<std::string> eventNames = PromelaInlines::getEventNames(json);
+				for (std::list<std::string>::iterator evIter = eventNames.begin(); evIter != eventNames.end(); evIter++) {
+					_analyzer->addEvent(*evIter);
 				}
+				
+				std::list<std::string> stringLiterals = PromelaInlines::getStringLiterals(json);
+				for (std::list<std::string>::iterator strIter = stringLiterals.begin(); strIter != stringLiterals.end(); strIter++) {
+					_analyzer->addLiteral(*strIter);
+				}
+				
+				if (json.array.size() > 0) {
+					for (int i = 0; i < json.array.size(); i++) {
+						std::string expr = dataToAssignments("_event", json.item(i));
+						_analyzer->addCode(expr, this);
+					}
+				} else {
+					std::string expr = dataToAssignments("_event", json);
+					_analyzer->addCode(expr, this);
+				
+				}
+
 			}
 		}
-	}
-	
-	if (_globalEventSource || _invokers.size() > 0) {
-		_allowEventInterleaving = true;
-	} else {
-		_allowEventInterleaving = false;
 	}
 
 	// add platform variables as string literals
@@ -3331,11 +3145,55 @@ void ChartToPromela::initNodes() {
 	}
 }
 
-	
+std::list<std::string> PromelaInlines::getStringLiterals(const Data& data) {
+	std::list<std::string> literals;
+	if (data.atom.size() > 0 && data.type == Data::VERBATIM) {
+		literals.push_back(data.atom);
+	}
+	if (data.array.size() > 0) {
+		for (std::list<Data>::const_iterator arrIter = data.array.begin(); arrIter != data.array.end(); arrIter++) {
+			std::list<std::string> nested = getStringLiterals(*arrIter);
+			literals.insert(literals.end(), nested.begin(), nested.end());
+		}
+	}
+	if (data.compound.size() > 0) {
+		for (std::map<std::string, Data>::const_iterator compIter = data.compound.begin(); compIter != data.compound.end(); compIter++) {
+			std::list<std::string> nested = getStringLiterals(compIter->second);
+			literals.insert(literals.end(), nested.begin(), nested.end());
+		}
+	}
+	return literals;
+}
+
+std::list<std::string> PromelaInlines::getEventNames(const Data& data) {
+	std::list<std::string> eventNames;
+	if (data.compound.size() > 0 && data.hasKey("name")) {
+		eventNames.push_back(data.at("name"));
+	}
+	if (data.array.size() > 0) {
+		for (std::list<Data>::const_iterator arrIter = data.array.begin(); arrIter != data.array.end(); arrIter++) {
+			std::list<std::string> nested = getEventNames(*arrIter);
+			eventNames.insert(eventNames.end(), nested.begin(), nested.end());
+		}
+	}
+	if (data.compound.size() > 0) {
+		for (std::map<std::string, Data>::const_iterator compIter = data.compound.begin(); compIter != data.compound.end(); compIter++) {
+			std::list<std::string> nested = getEventNames(compIter->second);
+			eventNames.insert(eventNames.end(), nested.begin(), nested.end());
+		}
+	}
+
+	return eventNames;
+}
+
 std::string ChartToPromela::dataToAssignments(const std::string& prefix, const Data& data) {
 	std::stringstream retVal;
 	if (data.atom.size() > 0) {
-		retVal << prefix << " = " << data.atom << ";" << std::endl;
+		if (data.type == Data::VERBATIM) {
+			retVal << prefix << " = " << _analyzer->macroForLiteral(data.atom) << ";" << std::endl;
+		} else {
+			retVal << prefix << " = " << data.atom << ";" << std::endl;
+		}
 	} else if (data.compound.size() > 0) {
 		for (std::map<std::string, Data>::const_iterator cIter = data.compound.begin(); cIter != data.compound.end(); cIter++) {
 			retVal << dataToAssignments(prefix + "." + cIter->first, cIter->second);
@@ -3358,18 +3216,6 @@ std::string ChartToPromela::sanitizeCode(const std::string& code) {
 	return replaced;
 }
 
-void PromelaInline::dump() {
-//	std::list<std::list<std::string> >::iterator outerIter = sequences.begin();
-//	while(outerIter != sequences.end()) {
-//		std::list<std::string>::iterator innerIter = outerIter->begin();
-//		while(innerIter != outerIter->end()) {
-//			std::cout << *innerIter << " ";
-//			innerIter++;
-//		}
-//		std::cout << std::endl;
-//		outerIter++;
-//	}
-}
 
 void ChartToPromela::writeProgram(std::ostream& stream) {
 
