@@ -820,8 +820,11 @@ template <typename T> bool PtrComp(const T * const & a, const T * const & b) {
 bool hasUnconditionalSuperset(GlobalTransition* first, GlobalTransition* second) {
 
 	NodeSet<std::string> firstTransitions = first->getTransitions();
-	NodeSet<std::string> secondTransitions = first->getTransitions();
+	NodeSet<std::string> secondTransitions = second->getTransitions();
 	
+//    if (first->condition.size() > 0)
+//        return false;
+    
 	if (isSuperset(second, first)) {
 		for (int i = 0; i < firstTransitions.size(); i++) {
 			if (!InterpreterImpl::isMember(firstTransitions[i], secondTransitions)) {

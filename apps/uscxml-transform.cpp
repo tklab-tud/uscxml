@@ -74,13 +74,14 @@ void printUsageAndExit(const char* progName) {
 	printf("\t-t min       : minimize SCXML state-chart\n");
 	printf("\t-t tex       : write global state transition table as tex file\n");
 	printf("\t-a {OPTIONS} : annotate SCXML elements with comma seperated options\n");
-	printf("\t   'priority'  - transitions with their priority for transition selection\n");
-	printf("\t   'step'      - global states with their step identifier (-tflat only)\n");
-	printf("\t   'members'   - global transitions with their member transitions per index (-tflat only)\n");
-	printf("\t   'sends'     - transititve number of sends to external queue for global transitions (-tflat only)\n");
-	printf("\t   'raises'    - transititve number of raises to internal queue for global transitions (-tflat only)\n");
-	printf("\t   'verbose'   - comments detailling state changes and transitions for content selection (-tflat only)\n");
-	printf("\t   'progress'  - insert comments documenting progress in dociment (-tmin only)\n");
+	printf("\t   'priority'   - transitions with their priority for transition selection\n");
+	printf("\t   'step'       - global states with their step identifier (-tflat only)\n");
+	printf("\t   'members'    - global transitions with their member transitions per index (-tflat only)\n");
+	printf("\t   'sends'      - transititve number of sends to external queue for global transitions (-tflat only)\n");
+	printf("\t   'raises'     - transititve number of raises to internal queue for global transitions (-tflat only)\n");
+	printf("\t   'verbose'    - comments detailling state changes and transitions for content selection (-tflat only)\n");
+    printf("\t   'progress'   - insert comments documenting progress in dociment (-tmin only)\n");
+    printf("\t   'nocomment'  - surpress the generation of comments in output\n");
 	printf("\t-v           : be verbose\n");
 	printf("\t-lN          : Set loglevel to N\n");
 	printf("\t-i URL       : Input file (defaults to STDIN)\n");
@@ -185,6 +186,10 @@ int main(int argc, char** argv) {
 	if(ANNOTATE("USCXML_ANNOTATE_PROGRESS", "progress"))
 		setenv("USCXML_ANNOTATE_PROGRESS", "YES", 1);
 
+    if(ANNOTATE("USCXML_ANNOTATE_NOCOMMENT", "nocomment"))
+        setenv("USCXML_ANNOTATE_NOCOMMENT", "YES", 1);
+
+    
 //	if (outType.length() == 0 && outputFile.length() > 0) {
 //		// try to get type from outfile extension
 //		size_t dotPos = outputFile.find_last_of(".");

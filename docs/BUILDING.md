@@ -147,7 +147,14 @@ The following sections will detail the preparation of the respective platforms t
 
 You will have to install <tt>CMake</tt> via Macports:
 
-	sudo port install cmake
+	# required dependencies
+	$ sudo port install cmake
+	
+	# optional dependencies for language bindings
+	$ sudo port install apache-ant swig-java swig-php swig-csharp
+
+	# other optional dependencies
+	$ sudo port install lua swi-prolog-devel ffmpeg-devel libical expect libpurple OpenSceneGraph-devel protobuf-cpp 
 
 The rest is pre-installed or downloaded at configure-time as pre-compiled libraries.
 Just download the source and invoke CMake to create Makefiles or a Xcode project.

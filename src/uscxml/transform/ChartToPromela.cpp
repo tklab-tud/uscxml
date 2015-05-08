@@ -181,7 +181,8 @@ void PromelaCodeAnalyzer::addCode(const std::string& code, ChartToPromela* inter
 			std::list<PromelaParserNode*>::iterator opIter = node->operands.begin();
 			if ((*opIter)->type != PML_NAME) {
 				node->dump();
-				assert(false);
+                return;
+                assert(false);
 			}
 
 			PromelaTypedef* td = &_typeDefs;
@@ -803,34 +804,38 @@ void ChartToPromela::writeTransition(std::ostream& stream, GlobalTransition* tra
 	}
 	std::list<GlobalTransition*>::const_iterator histIter;
 	
-	stream << std::endl << _prefix << "t" << transition->index << ": /* ######################## " << std::endl;
-	FlatStateIdentifier flatActiveSource(transition->source);
-	stream << "     from state: ";
-	PRETTY_PRINT_LIST(stream, flatActiveSource.getActive());
-	stream << std::endl;
-//	stream << "   with history: " << flatActiveSource.getFlatHistory() << std::endl;
-	stream << " ----- on event: " << (transition->eventDesc.size() > 0 ? transition->eventDesc : "SPONTANEOUS") << " --" << std::endl;
-	stream << "       to state: ";
-	std::set<FlatStateIdentifier> destinations;
-	destinations.insert(FlatStateIdentifier(transition->destination));
-	histIter = transition->historyTrans.begin();
-	while(histIter != transition->historyTrans.end()) {
-		destinations.insert(FlatStateIdentifier((*histIter)->destination));
-		histIter++;
-	}
-	
-	std::string seperator = "";
-	for (std::set<FlatStateIdentifier>::iterator destIter = destinations.begin(); destIter != destinations.end(); destIter++) {
-		stream << seperator;
-		PRETTY_PRINT_LIST(stream, destIter->getActive());
-		stream << " with " << (destIter->getFlatHistory().size() > 0 ? destIter->getFlatHistory() : "no history");
-		seperator = "\n                 ";
-	}
-	stream << std::endl;
+    if (envVarIsTrue("USCXML_ANNOTATE_NOCOMMENT")) {
+        stream << std::endl << _prefix << "t" << transition->index << ": /* ######################## */ " << std::endl;
 
-	stream << "############################### */" << std::endl;
-	stream << std::endl;
+    } else {
 
+        stream << std::endl << _prefix << "t" << transition->index << ": /* ######################## " << std::endl;
+        FlatStateIdentifier flatActiveSource(transition->source);
+        stream << "     from state: ";
+        PRETTY_PRINT_LIST(stream, flatActiveSource.getActive());
+        stream << std::endl;
+    //	stream << "   with history: " << flatActiveSource.getFlatHistory() << std::endl;
+        stream << " ----- on event: " << (transition->eventDesc.size() > 0 ? transition->eventDesc : "SPONTANEOUS") << " --" << std::endl;
+        stream << "       to state: ";
+        std::set<FlatStateIdentifier> destinations;
+        destinations.insert(FlatStateIdentifier(transition->destination));
+        histIter = transition->historyTrans.begin();
+        while(histIter != transition->historyTrans.end()) {
+            destinations.insert(FlatStateIdentifier((*histIter)->destination));
+            histIter++;
+        }
+        std::string seperator = "";
+        for (std::set<FlatStateIdentifier>::iterator destIter = destinations.begin(); destIter != destinations.end(); destIter++) {
+            stream << seperator;
+            PRETTY_PRINT_LIST(stream, destIter->getActive());
+            stream << " with " << (destIter->getFlatHistory().size() > 0 ? destIter->getFlatHistory() : "no history");
+            seperator = "\n                 ";
+        }
+        stream << std::endl;
+
+        stream << "############################### */" << std::endl;
+    }
+    stream << std::endl;
 	stream << padding << "skip;" << std::endl;
 	stream << padding << "d_step {" << std::endl;
 	if (_writeTransitionPrintfs)
@@ -1104,12 +1109,14 @@ void ChartToPromela::writeTransition(std::ostream& stream, GlobalTransition* tra
 			continue;
 		stream << padding << "if" << std::endl;
 
-		stream << "/* to state ";
-		FlatStateIdentifier flatActiveDest(histNewState->activeId);
-		PRETTY_PRINT_LIST(stream, flatActiveDest.getActive());
-		stream << " via history */" << std::endl;
+        if (!envVarIsTrue("USCXML_ANNOTATE_NOCOMMENT")) {
+            stream << "/* to state ";
+            FlatStateIdentifier flatActiveDest(histNewState->activeId);
+            PRETTY_PRINT_LIST(stream, flatActiveDest.getActive());
+            stream << " via history */" << std::endl;
+        }
 
-		stream << padding << ":: " << conditionalizeForHist(histTargetIter->second) << " -> " << _prefix << "s = s" << histNewState->activeIndex << ";" << std::endl;
+        stream << padding << ":: " << conditionalizeForHist(histTargetIter->second) << " -> " << _prefix << "s = s" << histNewState->activeIndex << ";" << std::endl;
 //		writeTransitionClosure(stream, *histTargetIter->second.begin(), histNewState, indent + 1); // is this correct for everyone in set?
 
 
@@ -1120,10 +1127,11 @@ void ChartToPromela::writeTransition(std::ostream& stream, GlobalTransition* tra
 	FlatStateIdentifier flatActiveDest(transition->activeDestination);
 	assert(origNewState != NULL);
 	
-	stream << "/* to state ";
-	PRETTY_PRINT_LIST(stream, flatActiveDest.getActive());
-	stream <<  " */" << std::endl;
-
+    if (!envVarIsTrue("USCXML_ANNOTATE_NOCOMMENT")) {
+        stream << "/* to state ";
+        PRETTY_PRINT_LIST(stream, flatActiveDest.getActive());
+        stream <<  " */" << std::endl;
+    }
 	if (hasHistoryTarget) {
 		stream << padding << ":: else -> ";
 		padding += "  ";
@@ -1948,7 +1956,7 @@ void ChartToPromela::writeDeclarations(std::ostream& stream) {
 	
 	if (_prefix.size() == 0 || _prefix == "MAIN_") {
 		if (_analyzer->usesEventField("sendid")) {
-			stream << "chan sendIdQ = [" << MAX(_externalQueueLength + 1, 1) << "] of {_event_t}  /* temporary queue to cancel events per sendidexpr */" << std::endl;
+//			stream << "chan sendIdQ = [" << MAX(_externalQueueLength + 1, 1) << "] of {_event_t}  /* temporary queue to cancel events per sendidexpr */" << std::endl;
 			stream << "hidden int _lastSendId = 0;         /* sequential counter for send ids */" << std::endl;
 		}
 
@@ -2243,7 +2251,7 @@ void ChartToPromela::writeFSM(std::ostream& stream) {
 				if (eventNames.size() > 0) {
 					stream << "        if " << std::endl;
 					for (std::set<std::string>::iterator evIter = eventNames.begin(); evIter != eventNames.end(); evIter++) {
-						stream << "        :: true -> { " << _prefix << "_event.name = " << _analyzer->macroForLiteral(*evIter) << " }" << std::endl;
+						stream << "        :: true -> { " << _prefix << "_event" << (_analyzer->usesComplexEventStruct() ? ".name" : "")<< " = " << _analyzer->macroForLiteral(*evIter) << " }" << std::endl;
 					}
 					stream << "        fi " << std::endl;
 				}
@@ -2671,11 +2679,13 @@ void ChartToPromela::writeDispatchingBlock(std::ostream& stream, std::list<Globa
 	}
 	if (currTrans->hasExecutableContent || currTrans->historyTrans.size() > 0) {
 		stream << " -> { " << std::endl;
-		stream << "/* transition to ";
-		FlatStateIdentifier flatActiveSource(currTrans->activeDestination);
-		PRETTY_PRINT_LIST(stream, flatActiveSource.getActive());
-		stream << " */" << std::endl;
-
+        if (!envVarIsTrue("USCXML_ANNOTATE_NOCOMMENT")) {
+            stream << "/* transition to ";
+            FlatStateIdentifier flatActiveSource(currTrans->activeDestination);
+            PRETTY_PRINT_LIST(stream, flatActiveSource.getActive());
+            stream << " */" << std::endl;
+        }
+        
 		if (_traceTransitions) {
 			for (std::set<int>::iterator transRefIter = currTrans->transitionRefs.begin(); transRefIter != currTrans->transitionRefs.end(); transRefIter++) {
 				stream << padding << "  " << _prefix << "transitions[" << *transRefIter << "] = true; " << std::endl;
@@ -2691,11 +2701,12 @@ void ChartToPromela::writeDispatchingBlock(std::ostream& stream, std::list<Globa
 		GlobalState* newState = _activeConf[currTrans->activeDestination];
 		assert(newState != NULL);
 
-		stream << "/* new state ";
-		FlatStateIdentifier flatActiveDest(currTrans->activeDestination);
-		PRETTY_PRINT_LIST(stream, flatActiveDest.getActive());
-		stream <<  " */" << std::endl;
-
+        if (!envVarIsTrue("USCXML_ANNOTATE_NOCOMMENT")) {
+            stream << "/* new state ";
+            FlatStateIdentifier flatActiveDest(currTrans->activeDestination);
+            PRETTY_PRINT_LIST(stream, flatActiveDest.getActive());
+            stream <<  " */" << std::endl;
+        }
 		stream << padding << "  " << _prefix << "s = s" << newState->activeIndex << ";" << std::endl;
 
 		writeTransitionClosure(stream, currTrans, newState, indent + 1);
