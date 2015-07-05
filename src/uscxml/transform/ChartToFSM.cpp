@@ -21,6 +21,7 @@
 #include "uscxml/transform/FlatStateIdentifier.h"
 #include "uscxml/Convenience.h"
 #include "uscxml/Factory.h"
+#include "uscxml/debug/Complexity.h"
 
 #include <DOM/io/Stream.hpp>
 #include <glog/logging.h>
@@ -91,171 +92,6 @@ for (int i = 0; i < contents.size(); i++) { \
 } \
 std::cerr << ")";
 
-std::list<std::set<Element<std::string> > > Complexity::getAllConfigurations(const Arabica::DOM::Element<std::string>& root) {
-
-	std::list<std::set<Element<std::string> > > allConfigurations;
-	std::string nsPrefix = (root.getPrefix().size() > 0 ? root.getPrefix() + ":" : "");
-	std::string localName = root.getLocalName();
-	bool isAtomic = true;
-	
-	NodeList<std::string> children = root.getChildNodes();
-	for (int i = 0; i < children.getLength(); i++) {
-		if (children.item(i).getNodeType() != Node_base::ELEMENT_NODE)
-			continue;
-		Element<std::string> childElem(children.item(i));
-		if (childElem.getTagName() == nsPrefix + "state" ||
-				childElem.getTagName() == nsPrefix + "parallel" ||
-				childElem.getTagName() == nsPrefix + "final") {
-			// nested child state
-			std::list<std::set<Element<std::string> > > nestedConfigurations = getAllConfigurations(childElem);
-			isAtomic = false;
-			if (localName == "parallel" && allConfigurations.size() > 0) {
-				// for every nested configuration, every new nested is valid
-				std::list<std::set<Element<std::string> > > combinedConfigurations;
-				for (std::list<std::set<Element<std::string> > >::iterator existIter = allConfigurations.begin(); existIter != allConfigurations.end(); existIter++) {
-					std::set<Element<std::string> > existingConfig = *existIter;
-					
-					for (std::list<std::set<Element<std::string> > >::iterator newIter = nestedConfigurations.begin(); newIter != nestedConfigurations.end(); newIter++) {
-
-						std::set<Element<std::string> > newConfig = *newIter;
-						std::set<Element<std::string> > combinedSet;
-						combinedSet.insert(existingConfig.begin(), existingConfig.end());
-						combinedSet.insert(newConfig.begin(), newConfig.end());
-
-						combinedConfigurations.push_back(combinedSet);
-					}
-				}
-				allConfigurations = combinedConfigurations;
-			} else {
-				// just add nested configurations and this
-				for (std::list<std::set<Element<std::string> > >::iterator newIter = nestedConfigurations.begin(); newIter != nestedConfigurations.end(); newIter++) {
-					std::set<Element<std::string> > newConfig = *newIter;
-					if (localName != "scxml")
-						newConfig.insert(root);
-					allConfigurations.push_back(newConfig);
-				}
-			}
-		}
-	}
-
-	if (isAtomic) {
-		std::set<Element<std::string> > soleConfig;
-		soleConfig.insert(root);
-		allConfigurations.push_back(soleConfig);
-	}
-	return allConfigurations;
-}
-	
-std::map<size_t, size_t> Complexity::getTransitionHistogramm(const Arabica::DOM::Element<std::string>& root) {
-	std::map<size_t, size_t> histogram;
-	std::string nameSpace;
-
-	std::list<std::set<Element<std::string> > > allConfig = Complexity::getAllConfigurations(root);
-	
-	// for every legal configuration, count the transitions
-	for (std::list<std::set<Element<std::string> > >::iterator confIter = allConfig.begin(); confIter != allConfig.end(); confIter++) {
-		NodeSet<std::string> configNodeSet;
-		std::set<Element<std::string> > config = *confIter;
-		for (std::set<Element<std::string> >::iterator elemIter = config.begin(); elemIter != config.end(); elemIter++) {
-			configNodeSet.push_back(*elemIter);
-			if (nameSpace.size() == 0 && elemIter->getPrefix().size() > 0)
-				nameSpace = elemIter->getPrefix() + ":";
-		}
-		NodeSet<std::string> transitions = InterpreterImpl::filterChildElements(nameSpace + "transition", configNodeSet);
-		histogram[transitions.size()]++;
-	}
-
-	return histogram;
-}
-
-
-uint64_t Complexity::stateMachineComplexity(const Arabica::DOM::Element<std::string>& root, Variant variant) {
-	Complexity complexity = calculateStateMachineComplexity(root);
-	uint64_t value = complexity.value;
-	
-	if (variant != IGNORE_HISTORY_AND_NESTED_DATA && variant != IGNORE_HISTORY) {
-		for (std::list<uint64_t>::const_iterator histIter = complexity.history.begin(); histIter != complexity.history.end(); histIter++) {
-			value *= *histIter;
-		}
-	}
-	
-	if (variant != IGNORE_HISTORY_AND_NESTED_DATA && variant != IGNORE_NESTED_DATA) {
-		bool ignoreNestedData = false;
-		if (root.getLocalName() == "scxml" && (!HAS_ATTR_CAST(root, "binding") || boost::to_lower_copy(ATTR_CAST(root, "binding")) == "early")) {
-			ignoreNestedData = true;
-		}
-		
-		if (!ignoreNestedData) {
-			uint64_t power = complexity.nestedData;
-			while(power--) {
-				value *= 2;
-			}
-		}
-	}
-	
-	return value;
-}
-	
-Complexity Complexity::calculateStateMachineComplexity(const Arabica::DOM::Element<std::string>& root) {
-	Complexity complexity;
-
-	bool hasFlatHistory = false;
-	bool hasDeepHistory = false;
-	bool hasNestedData = false;
-	
-	Arabica::DOM::NodeList<std::string> childElems = root.getChildNodes();
-	for (int i = 0; i < childElems.getLength(); i++) {
-		if (childElems.item(i).getNodeType() != Node_base::ELEMENT_NODE)
-			continue;
-		Element<std::string> childElem = Element<std::string>(childElems.item(i));
-		if (InterpreterImpl::isHistory(childElem)) {
-			if (HAS_ATTR(childElem, "type") && ATTR(childElem, "type") == "deep") {
-				hasDeepHistory = true;
-			} else {
-				hasFlatHistory = true;
-			}
-		}
-		if (!hasNestedData && childElem.getLocalName() == "datamodel") {
-			Arabica::DOM::NodeList<std::string> dataElemChilds = childElem.getChildNodes();
-			for (int j = 0; j < dataElemChilds.getLength(); j++) {
-				if (dataElemChilds.item(j).getLocalName() == "data")
-					hasNestedData = true;
-			}
-		}
-	}
-
-	if (hasNestedData)
-		complexity.nestedData++;
-	
-	if (InterpreterImpl::isCompound(root) || TAGNAME(root) == "scxml") {
-		// compounds can be in any of the child state -> add
-		NodeSet<std::string> childs = InterpreterImpl::getChildStates(root);
-		for (int i = 0; i < childs.size(); i++) {
-			complexity += calculateStateMachineComplexity(Element<std::string>(childs[i]));
-		}
-		if (hasFlatHistory) {
-			complexity.history.push_back(childs.size());
-		}
-		if (hasDeepHistory) {
-			complexity.history.push_back(complexity.value);
-		}
-	} else if (InterpreterImpl::isParallel(root)) {
-		// parallels are in all states -> multiply
-		NodeSet<std::string> childs = InterpreterImpl::getChildStates(root);
-		complexity.value = 1;
-		for (int i = 0; i < childs.size(); i++) {
-			complexity *= calculateStateMachineComplexity(Element<std::string>(childs[i]));
-		}
-		if (hasDeepHistory) {
-			complexity.history.push_back(complexity.value);
-		}
-
-	} else if (InterpreterImpl::isAtomic(root)) {
-		return 1;
-	}
-
-	return complexity;
-}
 
 
 ChartToFSM::ChartToFSM(const Interpreter& other) {
@@ -314,7 +150,6 @@ ChartToFSM::~ChartToFSM() {
 	for (int i = 0; i < allTransitions.size(); i++) {
 		_transParents.erase(allTransitions[i]);
 	}
-
 }
 
 Document<std::string> ChartToFSM::getDocument() const {
@@ -324,10 +159,6 @@ Document<std::string> ChartToFSM::getDocument() const {
 }
 
 InterpreterState ChartToFSM::interpret() {
-
-	// create a _flatDoc for the FSM
-	DOMImplementation<std::string> domFactory = Arabica::SimpleDOM::DOMImplementation<std::string>::getDOMImplementation();
-	_flatDoc = domFactory.createDocument(_document.getNamespaceURI(), "", 0);
 
 	init();
 	setupIOProcessors();
@@ -350,9 +181,9 @@ InterpreterState ChartToFSM::interpret() {
 	std::map<size_t, size_t> histoGramm = Complexity::getTransitionHistogramm(_scxml);
 //	abort();
 	
-	uint64_t complexity = Complexity::stateMachineComplexity(_scxml) + 1;
+	uint64_t complexity = Complexity::stateMachineComplexity(this) + 1;
 	std::cerr << "Approximate Complexity: " << complexity << std::endl;
-	std::cerr << "Approximate Active Complexity: " << Complexity::stateMachineComplexity(_scxml, Complexity::IGNORE_HISTORY_AND_NESTED_DATA) + 1  << std::endl;
+	std::cerr << "Approximate Active Complexity: " << Complexity::stateMachineComplexity(this, Complexity::IGNORE_HISTORY | Complexity::IGNORE_NESTED_DATA) + 1  << std::endl;
 
 	if (complexity > 1000) {
 		_skipEventChainCalculations = true;
@@ -477,6 +308,10 @@ InterpreterState ChartToFSM::interpret() {
 	}
 
 //	std::cerr << _scxml << std::endl;
+
+    // create a _flatDoc for the FSM
+    DOMImplementation<std::string> domFactory = Arabica::SimpleDOM::DOMImplementation<std::string>::getDOMImplementation();
+    _flatDoc = domFactory.createDocument(_document.getNamespaceURI(), "", 0);
 
 	GlobalTransition* globalTransition = new GlobalTransition(initialTransitions, _dataModel, this);
 	globalTransition->index = _lastTransIndex++;

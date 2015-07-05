@@ -25,6 +25,9 @@ my $maxStates = $options{'states-max'} || 60;
 my $maxTrans = $options{'trans-max'} || 6;
 my $maxEvents = $options{'trans-max'} || int($maxStates / 3) + 1;
 
+# $maxStates = 8;
+# $maxTrans = 8
+
 srand($seed);
 
 my $machine;
@@ -33,9 +36,9 @@ my $stateId = 0;
 my $probs = {
 	'state' => {
 		'type' => {
-			'history' => 1,
+			'history' => 2,
 			'parallel' => 2,
-			'state' => 6,
+			'state' => 5,
 			'final' => 1
 		}
 	},
@@ -46,7 +49,7 @@ my $probs = {
 		'execContent' => 0.7,
 	},
 	'history' => {
-		'deep' => 0.2
+		'deep' => 0.4
 	}
 };
 
@@ -159,9 +162,9 @@ sub writeState {
 		writeState($_);
 	}
 
-	foreach (@{$state->{'transitions'}}) {
-		writeTransition($_);
-	}
+	# foreach (@{$state->{'transitions'}}) {
+	# 	writeTransition($_);
+	# }
 
 	print STDOUT '</'.$state->{'type'} . '>';
 	

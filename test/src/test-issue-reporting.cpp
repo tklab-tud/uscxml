@@ -6,7 +6,12 @@ using namespace uscxml;
 
 std::set<std::string> issueLocationsForXML(const std::string xml) {
 	Interpreter interpreter = Interpreter::fromXML(xml, "");
-	std::list<InterpreterIssue> issues = interpreter.validate();
+
+    // common xmlns and version requirement on scxml attribute
+    interpreter.getDocument().getDocumentElement().setAttribute("xmlns", "http://www.w3.org/2005/07/scxml");
+    interpreter.getDocument().getDocumentElement().setAttribute("version", "1.0");
+
+    std::list<InterpreterIssue> issues = interpreter.validate();
 
 	std::set<std::string> issueLocations;
 
@@ -61,7 +66,7 @@ int main(int argc, char** argv) {
 		}
 
 		if (1) {
-			// Unreachable states
+			// Unreachable states 1
 
 			const char* xml =
 			    "<scxml datamodel=\"ecmascript\">"
@@ -82,7 +87,6 @@ int main(int argc, char** argv) {
 
 		if (1) {
 			// Invalid parents
-
 			const char* xml =
 			    "<scxml datamodel=\"ecmascript\">"
 			    "		<onentry>"
@@ -97,6 +101,7 @@ int main(int argc, char** argv) {
 
 		if (1) {
 			// State has no 'id' attribute
+            // *** This is not actually an error! ***
 			const char* xml =
 			    "<scxml datamodel=\"ecmascript\">"
 			    "	<state>"
@@ -137,7 +142,108 @@ int main(int argc, char** argv) {
 			assert(issueLocations.size() == 1);
 		}
 
+        if (1) {
+            // Useless history 1
+            
+            const char* xml =
+            "<scxml datamodel=\"ecmascript\">"
+            " <state id=\"start\" initial=\"bar\">"
+            "   <history id=\"bar\" />"
+            "   <state id=\"baz\" />"
+            "   <transition event=\"e.foo\" target=\"done\" />"
+            "   <transition event=\"e.bar\" target=\"baz\" />"
+            " </state>"
+            " <final id=\"done\" />"
+            "</scxml>";
+            
+            std::set<std::string> issueLocations = issueLocationsForXML(xml);
+            assert(issueLocations.find("//history[@id=\"bar\"]") != issueLocations.end());
+            assert(issueLocations.size() == 1);
+        }
 
+        if (1) {
+            // Useless history 2
+            
+            const char* xml =
+            "<scxml datamodel=\"ecmascript\">"
+            " <state id=\"start\" initial=\"bar\">"
+            "   <history id=\"bar\">"
+            "       <transition target=\"foo\" />"
+            "   </history>"
+            "   <transition target=\"done\" />"
+            "	<state id=\"foo\" />"
+            " </state>"
+            " <final id=\"done\" />"
+            "</scxml>";
+            
+            std::set<std::string> issueLocations = issueLocationsForXML(xml);
+            assert(issueLocations.find("//history[@id=\"bar\"]") != issueLocations.end());
+            assert(issueLocations.size() == 1);
+        }
+
+        if (1) {
+            // No legal completion
+            
+            const char* xml =
+            "<scxml datamodel=\"ecmascript\">"
+            " <state id=\"start\" initial=\"foo bar\">"
+            "	<state id=\"foo\" />"
+            "	<state id=\"bar\" />"
+            "   <transition target=\"foo bar\" />"
+            " </state>"
+            "</scxml>";
+            
+            std::set<std::string> issueLocations = issueLocationsForXML(xml);
+            assert(issueLocations.find("//state[@id=\"start\"]") != issueLocations.end());
+            assert(issueLocations.find("//state[@id=\"start\"]/transition[1]") != issueLocations.end());
+            assert(issueLocations.size() == 2);
+        }
+
+        if (1) {
+            // attribute constraints
+            
+            {
+                // initial attribute and <initial> child
+                const char* xml =
+                "<scxml datamodel=\"ecmascript\">"
+                " <state id=\"start\" initial=\"foo\">"
+                "   <initial></initial>"
+                "	<state id=\"foo\" />"
+                " </state>"
+                "</scxml>";
+                
+                std::set<std::string> issueLocations = issueLocationsForXML(xml);
+                assert(issueLocations.find("//state[@id=\"start\"]") != issueLocations.end());
+                assert(issueLocations.size() == 1);
+            }
+            {
+                // initial attribute with atomic state
+                const char* xml =
+                "<scxml datamodel=\"ecmascript\">"
+                " <state id=\"start\" initial=\"\" />"
+                "</scxml>";
+                
+                std::set<std::string> issueLocations = issueLocationsForXML(xml);
+                assert(issueLocations.find("//state[@id=\"start\"]") != issueLocations.end());
+                assert(issueLocations.size() == 1);
+            }
+            {
+                // initial child with atomic state
+                const char* xml =
+                "<scxml datamodel=\"ecmascript\">"
+                " <state id=\"start\">"
+                "   <initial />"
+                " </state>"
+                "</scxml>";
+                
+                std::set<std::string> issueLocations = issueLocationsForXML(xml);
+                assert(issueLocations.find("//state[@id=\"start\"]") != issueLocations.end());
+                assert(issueLocations.size() == 1);
+                
+            }
+        }
+        
+        
 		if (1) {
 			// Transition can never be optimally enabled (conditionless, eventless)
 
@@ -185,20 +291,119 @@ int main(int argc, char** argv) {
 			assert(issueLocations.size() == 1);
 		}
 
-		if (1) {
-			// Invoke with unknown type
+        if (1) {
+            // Initial attribute with target outside of children
+            
+            const char* xml =
+            "<scxml datamodel=\"ecmascript\">"
+            " <state id=\"start\" initial=\"foo done\">"
+            "	<state id=\"foo\" />"
+            " </state>"
+            " <final id=\"done\" />"
+            "</scxml>";
+            
+            std::set<std::string> issueLocations = issueLocationsForXML(xml);
+            assert(issueLocations.find("//state[@id=\"start\"]") != issueLocations.end());
+            assert(issueLocations.size() == 1);
+        }
 
-			const char* xml =
-			    "<scxml datamodel=\"ecmascript\">"
-			    "	<state id=\"start\">"
-			    "		<invoke type=\"non-existant\" />"
-			    " </state>"
-			    "</scxml>";
+        if (1) {
+            // Initial transition with target outside of children
+            
+            const char* xml =
+            "<scxml datamodel=\"ecmascript\">"
+            " <state id=\"start\">"
+            "   <initial>"
+            "       <transition target=\"foo done\" />"
+            "   </initial>"
+            "	<state id=\"foo\" />"
+            " </state>"
+            " <final id=\"done\" />"
+            "</scxml>";
+            
+            std::set<std::string> issueLocations = issueLocationsForXML(xml);
+            assert(issueLocations.find("//state[@id=\"start\"]/initial[1]/transition[1]") != issueLocations.end());
+            assert(issueLocations.size() == 1);
+        }
+
+        if (1) {
+            // Initial history transition with target outside of children
+            
+            const char* xml =
+            "<scxml datamodel=\"ecmascript\">"
+            " <state id=\"start\" initial=\"bar\">"
+            "   <history id=\"bar\">"
+            "       <transition target=\"foo done\" />"
+            "   </history>"
+            "	<state id=\"foo\">"
+            "       <transition target=\"baz\" />"
+            "   </state>"
+            "	<state id=\"baz\" />"
+            " </state>"
+            " <final id=\"done\" />"
+            "</scxml>";
+            
+            std::set<std::string> issueLocations = issueLocationsForXML(xml);
+            assert(issueLocations.find("//history[@id=\"bar\"]/transition[1]") != issueLocations.end());
+            assert(issueLocations.size() == 1);
+        }
+
+        if (1) {
+            // Initial transition with target outside of children
+            
+            const char* xml =
+            "<scxml datamodel=\"ecmascript\">"
+            " <state id=\"start\">"
+            "   <initial>"
+            "       <transition target=\"foo done\" />"
+            "   </initial>"
+            "	<state id=\"foo\" />"
+            " </state>"
+            " <final id=\"done\" />"
+            "</scxml>";
+            
+            std::set<std::string> issueLocations = issueLocationsForXML(xml);
+            assert(issueLocations.find("//state[@id=\"start\"]/initial[1]/transition[1]") != issueLocations.end());
+            assert(issueLocations.size() == 1);
+        }
+
+		if (1) {
+			// Initial transition with event
+            const char* xml =
+            "<scxml datamodel=\"ecmascript\">"
+            " <state id=\"start\">"
+            "   <initial>"
+            "       <transition event=\"e.foo\" target=\"foo\" />"
+            "   </initial>"
+            "	<state id=\"foo\" />"
+            "   <transition event=\"e.bar\" target=\"done\" />"
+            " </state>"
+            " <final id=\"done\" />"
+            "</scxml>";
 
 			std::set<std::string> issueLocations = issueLocationsForXML(xml);
-			assert(issueLocations.find("//state[@id=\"start\"]/invoke[1]") != issueLocations.end());
+            assert(issueLocations.find("//state[@id=\"start\"]/initial[1]/transition[1]") != issueLocations.end());
 			assert(issueLocations.size() == 1);
 		}
+
+        if (1) {
+            // Initial transition with condition
+            const char* xml =
+            "<scxml datamodel=\"ecmascript\">"
+            " <state id=\"start\">"
+            "   <initial>"
+            "       <transition cond=\"true\" target=\"foo\" />"
+            "   </initial>"
+            "	<state id=\"foo\" />"
+            "   <transition event=\"e.bar\" target=\"done\" />"
+            " </state>"
+            " <final id=\"done\" />"
+            "</scxml>";
+            
+            std::set<std::string> issueLocations = issueLocationsForXML(xml);
+            assert(issueLocations.find("//state[@id=\"start\"]/initial[1]/transition[1]") != issueLocations.end());
+            assert(issueLocations.size() == 1);
+        }
 
 		if (1) {
 			// Send to unknown IO Processor

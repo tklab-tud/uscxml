@@ -33,44 +33,6 @@ class GlobalState;
 class GlobalTransition;
 class ChartToFSM;
 
-class USCXML_API Complexity {
-public:
-	
-	enum Variant {
-		IGNORE_NOTHING,
-		IGNORE_HISTORY,
-		IGNORE_NESTED_DATA,
-		IGNORE_HISTORY_AND_NESTED_DATA,
-	};
-	
-	Complexity() : value(0), nestedData(0) {}
-	Complexity(uint64_t value) : value(value), nestedData(0) {}
-	
-	Complexity& operator+=(const Complexity& rhs) {
-		value += rhs.value;
-		nestedData += rhs.nestedData;
-		history.insert(history.end(), rhs.history.begin(), rhs.history.end());
-		return *this;
-	}
-	
-	Complexity& operator*=(const Complexity& rhs) {
-		value *= rhs.value;
-		nestedData += rhs.nestedData;
-		history.insert(history.end(), rhs.history.begin(), rhs.history.end());
-		return *this;
-	}
-	
-	static uint64_t stateMachineComplexity(const Arabica::DOM::Element<std::string>& root, Complexity::Variant variant = IGNORE_NOTHING);
-	static std::list<std::set<Arabica::DOM::Element<std::string> > > getAllConfigurations(const Arabica::DOM::Element<std::string>& root);
-	static std::map<size_t, size_t> getTransitionHistogramm(const Arabica::DOM::Element<std::string>& root);
-
-protected:
-	static Complexity calculateStateMachineComplexity(const Arabica::DOM::Element<std::string>& root);
-
-	uint64_t value;
-	uint64_t nestedData;
-	std::list<uint64_t> history;
-};
 
 class USCXML_API GlobalState {
 public:

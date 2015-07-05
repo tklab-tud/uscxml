@@ -1326,7 +1326,7 @@ void InterpreterImpl::setupDOM() {
 	}
 #endif
 
-	// make sure every invoke has an idlocation or id
+	// make sure every invoke has an idlocation or id - actually required!
 	Arabica::XPath::NodeSet<std::string> invokes = _xpath.evaluate("//" + _nsInfo.xpathPrefix + "invoke", _scxml).asNodeSet();
 	for (int i = 0; i < invokes.size(); i++) {
 		Arabica::DOM::Element<std::string> invokeElem = Arabica::DOM::Element<std::string>(invokes[i]);
@@ -2865,6 +2865,81 @@ Arabica::XPath::NodeSet<std::string> InterpreterImpl::getInitialStates(Arabica::
 	// nothing found
 	return Arabica::XPath::NodeSet<std::string>();
 }
+
+NodeSet<std::string> InterpreterImpl::getReachableStates() {
+    /** Check which states are reachable */
+    
+    NodeSet<std::string> reachable;
+    reachable.push_back(_scxml);
+    
+    bool hasChanges = true;
+    
+    while (hasChanges) {
+        // iterate initials and transitions until stable, unneccerily iterates complete reachable set everytime
+        
+        hasChanges = false;
+        // reachable per initial attribute or document order - size will increase as we append new states
+        for (int i = 0; i < reachable.size(); i++) {
+            // get the state's initial states
+            Element<std::string> state = Element<std::string>(reachable[i]);
+            try {
+                NodeSet<std::string> initials = getInitialStates(state);
+                for (int j = 0; j < initials.size(); j++) {
+                    Element<std::string> initial = Element<std::string>(initials[j]);
+                    if (!InterpreterImpl::isMember(initial, reachable)) {
+                        reachable.push_back(initial);
+                        hasChanges = true;
+                    }
+                }
+            } catch (Event e) {
+            }
+        }
+        
+        // reachable per target attribute in transitions
+        for (int i = 0; i < reachable.size(); i++) {
+            Element<std::string> state = Element<std::string>(reachable[i]);
+            NodeSet<std::string> transitions = InterpreterImpl::filterChildElements(_nsInfo.xmlNSPrefix + "transition", state, false);
+            for (int j = 0; j < transitions.size(); j++) {
+                Element<std::string> transition = Element<std::string>(transitions[j]);
+                try {
+                    NodeSet<std::string> targets = getTargetStates(transition);
+                    for (int k = 0; k < targets.size(); k++) {
+                        Element<std::string> target = Element<std::string>(targets[k]);
+                        if (!InterpreterImpl::isMember(target, reachable)) {
+                            reachable.push_back(target);
+                            hasChanges = true;
+                        }
+                    }
+                } catch (Event e) {
+                }
+            }
+        }
+
+        // reachable via a reachable child state
+        for (int i = 0; i < reachable.size(); i++) {
+            Element<std::string> state = Element<std::string>(reachable[i]);
+            if (InterpreterImpl::isAtomic(state)) {
+                // iterate the states parents
+                Node<std::string> parent = state.getParentNode();
+                while(parent && parent.getNodeType() == Node_base::ELEMENT_NODE) {
+                    Element<std::string> parentElem = Element<std::string>(parent);
+                    if (!InterpreterImpl::isState(parentElem)) {
+                        break;
+                    }
+                    if (!InterpreterImpl::isMember(parentElem, reachable)) {
+                        reachable.push_back(parent);
+                        hasChanges = true;
+                    }
+                    parent = parent.getParentNode();
+                }
+            }
+        }
+    }
+    
+    
+    return reachable;
+}
+
 
 NodeSet<std::string> InterpreterImpl::getTargetStates(const Arabica::DOM::Element<std::string>& transition) {
 	if (_cachedTargets.find(transition) != _cachedTargets.end())

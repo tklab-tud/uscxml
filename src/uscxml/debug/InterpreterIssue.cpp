@@ -21,6 +21,7 @@
 
 #include "InterpreterIssue.h"
 #include "uscxml/DOMUtils.h"
+#include "uscxml/debug/Complexity.h"
 #include "uscxml/Interpreter.h"
 #include "uscxml/Factory.h"
 
@@ -53,78 +54,41 @@ void assembleNodeSets(const std::string nsPrefix, const Node<std::string>& node,
 	}
 }
 
-NodeSet<std::string> getReachableStates(const Node<std::string>& scxml, InterpreterImpl* interpreter, const std::string& nsPrefix) {
-	/** Check whether this state is reachable */
 
-	NodeSet<std::string> reachable;
-	reachable.push_back(scxml);
-
-	bool hasChanges = true;
-
-	while (hasChanges) {
-		// iterate initials and transitions until stable
-
-		hasChanges = false;
-		// reachable per initial attribute or document order - size will increase as we append new states
-		for (int i = 0; i < reachable.size(); i++) {
-			// get the state's initial states
-			Element<std::string> state = Element<std::string>(reachable[i]);
-			try {
-				NodeSet<std::string> initials = interpreter->getInitialStates(state);
-				for (int j = 0; j < initials.size(); j++) {
-					Element<std::string> initial = Element<std::string>(initials[j]);
-					if (!InterpreterImpl::isMember(initial, reachable)) {
-						reachable.push_back(initial);
-						hasChanges = true;
-					}
-				}
-			} catch (Event e) {
-			}
-		}
-
-		// reachable per target attribute in transitions
-		for (int i = 0; i < reachable.size(); i++) {
-			Element<std::string> state = Element<std::string>(reachable[i]);
-			NodeSet<std::string> transitions = InterpreterImpl::filterChildElements(nsPrefix + "transition", state, false);
-			for (int j = 0; j < transitions.size(); j++) {
-				Element<std::string> transition = Element<std::string>(transitions[j]);
-				try {
-					NodeSet<std::string> targets = interpreter->getTargetStates(transition);
-					for (int k = 0; k < targets.size(); k++) {
-						Element<std::string> target = Element<std::string>(targets[k]);
-						if (!InterpreterImpl::isMember(target, reachable)) {
-							reachable.push_back(target);
-							hasChanges = true;
-						}
-					}
-				} catch (Event e) {
-				}
-			}
-		}
-	}
-
-	// reachable via a reachable child state
-	for (int i = 0; i < reachable.size(); i++) {
-		Element<std::string> state = Element<std::string>(reachable[i]);
-		if (InterpreterImpl::isAtomic(state)) {
-			// iterate the states parents
-			Node<std::string> parent = state.getParentNode();
-			while(parent && parent.getNodeType() == Node_base::ELEMENT_NODE) {
-				Element<std::string> parentElem = Element<std::string>(parent);
-				if (!InterpreterImpl::isState(parentElem)) {
-					break;
-				}
-				if (!InterpreterImpl::isMember(parentElem, reachable)) {
-					reachable.push_back(parent);
-				}
-				parent = parent.getParentNode();
-			}
-		}
-	}
-
-	return reachable;
+/**
+ * Can the given states ever appear in an active configuration?
+ */
+bool hasLegalCompletion(const NodeSet<std::string>& states) {
+    if (states.size() < 2)
+        return true;
+    
+    // iterate every pair
+    for (unsigned int outer = 0; outer < states.size() - 1; outer++) {
+        Element<std::string> s1(states[outer]);
+        for (unsigned int inner = outer + 1; inner < states.size(); inner++) {
+            Element<std::string> s2(states[inner]);
+            Node<std::string> parent;
+            
+            // ok to be directly ancestorally related
+            if (InterpreterImpl::isDescendant(s1, s2) || InterpreterImpl::isDescendant(s2, s1))
+                goto NEXT_PAIR;
+            
+            // find least common ancestor
+            parent = s1.getParentNode();
+            while(parent && parent.getNodeType() == Node_base::ELEMENT_NODE) {
+                if (InterpreterImpl::isDescendant(s2, parent)) {
+                    if (InterpreterImpl::isParallel(Element<std::string>(parent)))
+                        goto NEXT_PAIR;
+                }
+                parent = parent.getParentNode();
+            }
+            
+            return false;
+        NEXT_PAIR:;
+        }
+    }
+    return true;
 }
-
 
 std::list<InterpreterIssue> InterpreterIssue::forInterpreter(InterpreterImpl* interpreter) {
 	// some things we need to prepare first
@@ -156,7 +120,7 @@ std::list<InterpreterIssue> InterpreterIssue::forInterpreter(InterpreterImpl* in
 	NodeSet<std::string> scxmls = nodeSets["scxml"];
 	scxmls.push_back(_scxml);
 
-	NodeSet<std::string> reachable = getReachableStates(_scxml, interpreter, _nsInfo.xmlNSPrefix);
+	NodeSet<std::string> reachable = interpreter->getReachableStates();
 
 	NodeSet<std::string>& states = nodeSets["state"];
 	NodeSet<std::string>& parallels = nodeSets["parallel"];
@@ -206,7 +170,8 @@ std::list<InterpreterIssue> InterpreterIssue::forInterpreter(InterpreterImpl* in
 	allExecContents.push_back(cancels);
 
 	NodeSet<std::string> allElements;
-	allElements.push_back(allStates);
+    allElements.push_back(scxmls);
+    allElements.push_back(allStates);
 	allElements.push_back(allExecContents);
 	allElements.push_back(transitions);
 	allElements.push_back(initials);
@@ -222,17 +187,30 @@ std::list<InterpreterIssue> InterpreterIssue::forInterpreter(InterpreterImpl* in
 
 
 	std::set<std::string> execContentSet;
-	execContentSet.insert("raise");
 	execContentSet.insert("if");
 	execContentSet.insert("elseif");
 	execContentSet.insert("else");
 	execContentSet.insert("foreach");
-	execContentSet.insert("log");
+    execContentSet.insert("raise");
 	execContentSet.insert("send");
+    execContentSet.insert("cancel");
 	execContentSet.insert("assign");
 	execContentSet.insert("script");
-	execContentSet.insert("cancel");
+    execContentSet.insert("log");
 
+    // required attributes per standard
+    std::map<std::string, std::set<std::string> > reqAttr;
+    reqAttr["scxml"].insert("xmlns");
+    reqAttr["scxml"].insert("version");
+    reqAttr["raise"].insert("event");
+    reqAttr["if"].insert("cond");
+    reqAttr["elseif"].insert("cond");
+    reqAttr["foreach"].insert("array");
+    reqAttr["foreach"].insert("item");
+    reqAttr["data"].insert("id");
+    reqAttr["assign"].insert("location");
+    reqAttr["param"].insert("name");
+    
 	// these are the valid children for elements in the SCXML namespace as per specification
 	std::map<std::string, std::set<std::string> > validChildren;
 	validChildren["scxml"].insert("state");
@@ -244,13 +222,13 @@ std::list<InterpreterIssue> InterpreterIssue::forInterpreter(InterpreterImpl* in
 	validChildren["state"].insert("onentry");
 	validChildren["state"].insert("onexit");
 	validChildren["state"].insert("transition");
-	validChildren["state"].insert("initial");
 	validChildren["state"].insert("state");
 	validChildren["state"].insert("parallel");
-	validChildren["state"].insert("final");
-	validChildren["state"].insert("history");
-	validChildren["state"].insert("datamodel");
-	validChildren["state"].insert("invoke");
+    validChildren["state"].insert("history");
+    validChildren["state"].insert("datamodel");
+    validChildren["state"].insert("invoke");
+    validChildren["state"].insert("initial");
+    validChildren["state"].insert("final");
 
 	validChildren["parallel"].insert("onentry");
 	validChildren["parallel"].insert("onexit");
@@ -305,7 +283,7 @@ std::list<InterpreterIssue> InterpreterIssue::forInterpreter(InterpreterImpl* in
 		if (InterpreterImpl::isMember(state, finals) && !HAS_ATTR(state, "id")) // id is not required for finals
 			continue;
 
-		// check for existance of id attribute
+		// check for existance of id attribute - this not actually required!
 		if (!HAS_ATTR(state, "id")) {
 			issues.push_back(InterpreterIssue("State has no 'id' attribute", state, InterpreterIssue::USCXML_ISSUE_FATAL));
 			continue;
@@ -427,6 +405,25 @@ NEXT_TRANSITION:
 		}
 	}
 
+    // check for useless history elements
+    {
+        for (int i = 0; i < histories.size(); i++) {
+            Element<std::string> history = Element<std::string>(histories[i]);
+            if (!history.getParentNode() || history.getParentNode().getNodeType() != Node_base::ELEMENT_NODE)
+                continue; // syntax check will have catched this
+            Element<std::string> parent(history.getParentNode());
+            if (InterpreterImpl::isAtomic(parent)) {
+                issues.push_back(InterpreterIssue("Useless history '" + ATTR(history, "id") + "' in atomic state", history, InterpreterIssue::USCXML_ISSUE_INFO));
+                continue;
+            }
+            std::list<std::set<Arabica::DOM::Element<std::string> > > configs = Complexity::getAllConfigurations(parent);
+            if (configs.size() <= 1) {
+                issues.push_back(InterpreterIssue("Useless history '" + ATTR(history, "id") + "' in state with single legal configuration", history, InterpreterIssue::USCXML_ISSUE_INFO));
+                continue;
+            }
+        }
+    }
+    
 	// check for valid initial attribute
 	{
 		NodeSet<std::string> withInitialAttr;
@@ -435,17 +432,114 @@ NEXT_TRANSITION:
 
 		for (int i = 0; i < withInitialAttr.size(); i++) {
 			Element<std::string> state = Element<std::string>(withInitialAttr[i]);
+
 			if (HAS_ATTR(state, "initial")) {
-				std::list<std::string> intials = InterpreterImpl::tokenizeIdRefs(ATTR(state, "initial"));
+                NodeSet<std::string> childs;
+                childs.push_back(InterpreterImpl::filterChildElements(_nsInfo.xmlNSPrefix + "state", state, true));
+                childs.push_back(InterpreterImpl::filterChildElements(_nsInfo.xmlNSPrefix + "parallel", state, true));
+                childs.push_back(InterpreterImpl::filterChildElements(_nsInfo.xmlNSPrefix + "final", state, true));
+                childs.push_back(InterpreterImpl::filterChildElements(_nsInfo.xmlNSPrefix + "history", state, true));
+
+                std::list<std::string> intials = InterpreterImpl::tokenizeIdRefs(ATTR(state, "initial"));
 				for (std::list<std::string>::iterator initIter = intials.begin(); initIter != intials.end(); initIter++) {
 					if (seenStates.find(*initIter) == seenStates.end()) {
 						issues.push_back(InterpreterIssue("Initial attribute has invalid target state with id '" + *initIter + "'", state, InterpreterIssue::USCXML_ISSUE_FATAL));
 						continue;
 					}
+                    // value of the 'initial' attribute [..] must be descendants of the containing <state> or <parallel> element
+                    if (!InterpreterImpl::isMember(seenStates[*initIter], childs)) {
+                        issues.push_back(InterpreterIssue("Initial attribute references non-child state '" + *initIter + "'", state, InterpreterIssue::USCXML_ISSUE_FATAL));
+                    }
 				}
 			}
 		}
 	}
+
+    // check for legal configuration of target sets
+    {
+        std::map<Element<std::string>, std::string > targetIdSets;
+        for (int i = 0; i < transitions.size(); i++) {
+            Element<std::string> transition = Element<std::string>(transitions[i]);
+
+            if (HAS_ATTR(transition, "target")) {
+                targetIdSets[transition] = ATTR(transition, "target");
+            }
+        }
+        
+        for (int i = 0; i < initials.size(); i++) {
+            Element<std::string> initial = Element<std::string>(initials[i]);
+
+            if (HAS_ATTR(initial, "target")) {
+                targetIdSets[initial] = ATTR(initial, "target");
+            }
+        }
+
+        for (int i = 0; i < allStates.size(); i++) {
+            Element<std::string> state = Element<std::string>(allStates[i]);
+            
+            if (HAS_ATTR(state, "initial")) {
+                targetIdSets[state] = ATTR(state, "initial");
+            }
+        }
+
+        for (std::map<Element<std::string>, std::string >::iterator setIter = targetIdSets.begin();
+             setIter != targetIdSets.end();
+             setIter++) {
+            NodeSet<std::string> targets;
+            std::list<std::string> targetIds = InterpreterImpl::tokenizeIdRefs(setIter->second);
+            for (std::list<std::string>::iterator tgtIter = targetIds.begin(); tgtIter != targetIds.end(); tgtIter++) {
+                if (seenStates.find(*tgtIter) == seenStates.end())
+                    goto NEXT_SET;
+                targets.push_back(seenStates[*tgtIter]);
+            }
+            if (!hasLegalCompletion(targets)) {
+                issues.push_back(InterpreterIssue("Target states cause illegal configuration", setIter->first, InterpreterIssue::USCXML_ISSUE_FATAL));
+            }
+            NEXT_SET:;
+        }
+    }
+    
+    // check for valid initial transition
+    {
+        NodeSet<std::string> initTrans;
+        initTrans.push_back(InterpreterImpl::filterChildElements(_nsInfo.xmlNSPrefix + "transition", initials, true));
+        initTrans.push_back(InterpreterImpl::filterChildElements(_nsInfo.xmlNSPrefix + "transition", histories, true));
+
+        for (int i = 0; i < initTrans.size(); i++) {
+            Element<std::string> transition = Element<std::string>(initTrans[i]);
+            
+            /* In a conformant SCXML document, this transition must not contain 'cond' or 'event' attributes, and must specify a non-null 'target'
+             * whose value is a valid state specification consisting solely of descendants of the containing state
+             */
+            
+            if (HAS_ATTR(transition, "cond")) {
+                issues.push_back(InterpreterIssue("Initial transition cannot have a condition", transition, InterpreterIssue::USCXML_ISSUE_FATAL));
+            }
+            if (HAS_ATTR(transition, "event")) {
+                issues.push_back(InterpreterIssue("Initial transition cannot be eventful", transition, InterpreterIssue::USCXML_ISSUE_FATAL));
+            }
+            
+            if (!transition.getParentNode() || !transition.getParentNode().getParentNode() || transition.getParentNode().getParentNode().getNodeType() != Node_base::ELEMENT_NODE)
+                continue; // syntax will catch this one
+            Element<std::string> state(transition.getParentNode().getParentNode());
+            if (!InterpreterImpl::isState(state))
+                continue; // syntax will catch this one
+
+            NodeSet<std::string> childs;
+            childs.push_back(InterpreterImpl::filterChildElements(_nsInfo.xmlNSPrefix + "state", state, true));
+            childs.push_back(InterpreterImpl::filterChildElements(_nsInfo.xmlNSPrefix + "parallel", state, true));
+            childs.push_back(InterpreterImpl::filterChildElements(_nsInfo.xmlNSPrefix + "final", state, true));
+            childs.push_back(InterpreterImpl::filterChildElements(_nsInfo.xmlNSPrefix + "history", state, true));
+
+            std::list<std::string> intials = InterpreterImpl::tokenizeIdRefs(ATTR(transition, "target"));
+            for (std::list<std::string>::iterator initIter = intials.begin(); initIter != intials.end(); initIter++) {
+                // the 'target' of a <transition> inside an <initial> or <history> element: all the states must be descendants of the containing <state> or <parallel> element
+                if (!InterpreterImpl::isMember(seenStates[*initIter], childs)) {
+                    issues.push_back(InterpreterIssue("Target of initial transition references non-child state '" + *initIter + "'", transition, InterpreterIssue::USCXML_ISSUE_FATAL));
+                }
+            }
+        }
+    }
 
 
 	// check that all invokers exists
@@ -510,11 +604,24 @@ NEXT_TRANSITION:
 		}
 	}
 
-	// check that all SCXML elements have valid parents
+	// check that all SCXML elements have valid parents and required attributes
 	{
 		for (int i = 0; i < allElements.size(); i++) {
 			Element<std::string> element = Element<std::string>(allElements[i]);
 			std::string localName = LOCALNAME(element);
+            
+            if (reqAttr.find(localName) != reqAttr.end()) {
+                for (std::set<std::string>::const_iterator reqIter = reqAttr[localName].begin();
+                     reqIter != reqAttr[localName].end(); reqIter++) {
+                    if (!HAS_ATTR(element, *reqIter)) {
+                        issues.push_back(InterpreterIssue("Element " + localName + " is missing required attribute '" + *reqIter + "'", element, InterpreterIssue::USCXML_ISSUE_WARNING));
+                    }
+                }
+            }
+            
+            if (localName == "scxml") // can be anywhere: <assign>, <content>, <other:embed>
+                continue;
+            
 			if (!element.getParentNode() || element.getParentNode().getNodeType() != Node_base::ELEMENT_NODE) {
 				issues.push_back(InterpreterIssue("Parent of " + localName + " is no element", element, InterpreterIssue::USCXML_ISSUE_WARNING));
 				continue;
@@ -530,6 +637,103 @@ NEXT_TRANSITION:
 		}
 	}
 
+    // check attribute constraints
+    {
+        for (int i = 0; i < initials.size(); i++) {
+            Element<std::string> initial = Element<std::string>(initials[i]);
+            if (initial.getParentNode() && initial.getParentNode().getNodeType() == Node_base::ELEMENT_NODE) {
+                Element<std::string> state(initial.getParentNode());
+                if (HAS_ATTR(state, "initial")) {
+                    issues.push_back(InterpreterIssue("State with initial attribute cannot have <initial> child ", state, InterpreterIssue::USCXML_ISSUE_WARNING));
+                }
+                if (InterpreterImpl::isAtomic(state)) {
+                    issues.push_back(InterpreterIssue("Atomic state cannot have <initial> child ", state, InterpreterIssue::USCXML_ISSUE_WARNING));
+                }
+            }
+        }
+        for (int i = 0; i < allStates.size(); i++) {
+            Element<std::string> state = Element<std::string>(allStates[i]);
+            if (InterpreterImpl::isAtomic(state) && HAS_ATTR(state, "initial")) {
+                issues.push_back(InterpreterIssue("Atomic state cannot have initial attribute ", state, InterpreterIssue::USCXML_ISSUE_WARNING));
+            }
+        }
+
+        for (int i = 0; i < assigns.size(); i++) {
+            Element<std::string> assign = Element<std::string>(assigns[i]);
+            if (HAS_ATTR(assign, "expr") && assign.getChildNodes().getLength() > 0) {
+                issues.push_back(InterpreterIssue("Assign element cannot have expr attribute and children", assign, InterpreterIssue::USCXML_ISSUE_WARNING));
+            }
+        }
+
+        for (int i = 0; i < contents.size(); i++) {
+            Element<std::string> content = Element<std::string>(contents[i]);
+            if (HAS_ATTR(content, "expr") && content.getChildNodes().getLength() > 0) {
+                issues.push_back(InterpreterIssue("Content element cannot have expr attribute and children", content, InterpreterIssue::USCXML_ISSUE_WARNING));
+            }
+        }
+
+        for (int i = 0; i < params.size(); i++) {
+            Element<std::string> param = Element<std::string>(params[i]);
+            if (HAS_ATTR(param, "expr") && HAS_ATTR(param, "location")) {
+                issues.push_back(InterpreterIssue("Param element cannot have both expr and location attribute", param, InterpreterIssue::USCXML_ISSUE_WARNING));
+            }
+        }
+
+        for (int i = 0; i < scripts.size(); i++) {
+            Element<std::string> script = Element<std::string>(scripts[i]);
+            if (HAS_ATTR(script, "src") && script.getChildNodes().getLength() > 0) {
+                issues.push_back(InterpreterIssue("Script element cannot have src attribute and children", script, InterpreterIssue::USCXML_ISSUE_WARNING));
+            }
+        }
+
+        for (int i = 0; i < sends.size(); i++) {
+            Element<std::string> send = Element<std::string>(sends[i]);
+            if (HAS_ATTR(send, "event") && HAS_ATTR(send, "eventexpr")) {
+                issues.push_back(InterpreterIssue("Send element cannot have both event and eventexpr attribute", send, InterpreterIssue::USCXML_ISSUE_WARNING));
+            }
+            if (HAS_ATTR(send, "target") && HAS_ATTR(send, "targetexpr")) {
+                issues.push_back(InterpreterIssue("Send element cannot have both target and targetexpr attribute", send, InterpreterIssue::USCXML_ISSUE_WARNING));
+            }
+            if (HAS_ATTR(send, "type") && HAS_ATTR(send, "typeexpr")) {
+                issues.push_back(InterpreterIssue("Send element cannot have both type and typeexpr attribute", send, InterpreterIssue::USCXML_ISSUE_WARNING));
+            }
+            if (HAS_ATTR(send, "id") && HAS_ATTR(send, "idlocation")) {
+                issues.push_back(InterpreterIssue("Send element cannot have both id and idlocation attribute", send, InterpreterIssue::USCXML_ISSUE_WARNING));
+            }
+            if (HAS_ATTR(send, "delay") && HAS_ATTR(send, "delayexpr")) {
+                issues.push_back(InterpreterIssue("Send element cannot have both delay and delayexpr attribute", send, InterpreterIssue::USCXML_ISSUE_WARNING));
+            }
+            if (HAS_ATTR(send, "delay") && HAS_ATTR(send, "target") && ATTR(send, "target")== "_internal") {
+                issues.push_back(InterpreterIssue("Send element cannot have delay with target _internal", send, InterpreterIssue::USCXML_ISSUE_WARNING));
+            }
+            if (HAS_ATTR(send, "namelist") && InterpreterImpl::filterChildElements(_nsInfo.xmlNSPrefix + "content", send, false).size() > 0) {
+                issues.push_back(InterpreterIssue("Send element cannot have namelist attribute and content child", send, InterpreterIssue::USCXML_ISSUE_WARNING));
+            }
+        }
+        for (int i = 0; i < cancels.size(); i++) {
+            Element<std::string> cancel = Element<std::string>(cancels[i]);
+            if (HAS_ATTR(cancel, "sendid") && HAS_ATTR(cancel, "sendidexpr")) {
+                issues.push_back(InterpreterIssue("Cancel element cannot have both sendid and eventexpr sendidexpr", cancel, InterpreterIssue::USCXML_ISSUE_WARNING));
+            }
+        }
+        
+        for (int i = 0; i < invokes.size(); i++) {
+            Element<std::string> invoke = Element<std::string>(invokes[i]);
+            if (HAS_ATTR(invoke, "type") && HAS_ATTR(invoke, "typeexpr")) {
+                issues.push_back(InterpreterIssue("Invoke element cannot have both type and typeexpr attribute", invoke, InterpreterIssue::USCXML_ISSUE_WARNING));
+            }
+            if (HAS_ATTR(invoke, "src") && HAS_ATTR(invoke, "srcexpr")) {
+                issues.push_back(InterpreterIssue("Invoke element cannot have both src and srcexpr attribute", invoke, InterpreterIssue::USCXML_ISSUE_WARNING));
+            }
+            if (HAS_ATTR(invoke, "id") && HAS_ATTR(invoke, "idlocation")) {
+                issues.push_back(InterpreterIssue("Invoke element cannot have both id and idlocation attribute", invoke, InterpreterIssue::USCXML_ISSUE_WARNING));
+            }
+            if (HAS_ATTR(invoke, "namelist") && InterpreterImpl::filterChildElements(_nsInfo.xmlNSPrefix + "param", invoke, false).size() > 0) {
+                issues.push_back(InterpreterIssue("Invoke element cannot have namelist attribute and param child", invoke, InterpreterIssue::USCXML_ISSUE_WARNING));
+            }
+        }
+
+    }
 
 	// check that the datamodel is known if not already instantiated
 	if (!interpreter->_dataModel) {

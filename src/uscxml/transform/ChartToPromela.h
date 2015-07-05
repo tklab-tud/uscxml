@@ -205,6 +205,9 @@ public:
 		return false;
 	}
 
+    std::string getTypeAssignment(const std::string& varTo, const std::string& varFrom, const PromelaTypedef& type, const std::string padding = "");
+    std::string getTypeReset(const std::string& var, const PromelaTypedef& type, const std::string padding = "");
+    
 	bool usesInPredicate() {
 		return _usesInPredicate;
 	}
@@ -247,6 +250,10 @@ public:
 	PromelaTypedef& getTypes() {
 		return _typeDefs;
 	}
+
+    PromelaTypedef& getType(const std::string& typeName) {
+        return _typeDefs.types.at(typeName);
+    }
 
 protected:
 	std::string createMacroName(const std::string& literal);
@@ -372,7 +379,8 @@ protected:
 	//void writeRemovePendingEventsFromInvoker(std::ostream& stream, ChartToPromela* invoker, int indent = 0, bool atomic = true);
 	
 	void writeDetermineShortestDelay(std::ostream& stream, int indent = 0);
-	void writeAdvanceTime(std::ostream& stream, int indent = 0);
+    void writeInsertWithDelay(std::ostream& stream, int indent = 0);
+    void writeAdvanceTime(std::ostream& stream, int indent = 0);
 	void writeRescheduleProcess(std::ostream& stream, int indent = 0);
 	void writeScheduleMachines(std::ostream& stream, int indent = 0);
 	void writeCancelEvents(std::ostream& stream, int indent = 0);

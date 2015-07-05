@@ -100,7 +100,7 @@ HTTPServer::HTTPServer(unsigned short port, unsigned short wsPort, SSLConfig* ss
 	if (_port > 0) {
 		_httpHandle = evhttp_bind_socket_with_handle(_http, INADDR_ANY, _port);
 		if (_httpHandle) {
-			LOG(INFO) << "HTTP server listening on tcp/" << _port;
+			DLOG(INFO) << "HTTP server listening on tcp/" << _port;
 		} else {
 			LOG(ERROR) << "HTTP server cannot bind to tcp/" << _port;
 		}
@@ -110,7 +110,7 @@ HTTPServer::HTTPServer(unsigned short port, unsigned short wsPort, SSLConfig* ss
 	if (_wsPort > 0) {
 		_wsHandle = evws_bind_socket(_evws, _wsPort);
 		if (_wsHandle) {
-			LOG(INFO) << "WebSocket server listening on tcp/" << _wsPort;
+			DLOG(INFO) << "WebSocket server listening on tcp/" << _wsPort;
 		} else {
 			LOG(ERROR) << "WebSocket server cannot bind to tcp/" << _wsPort;
 		}

@@ -434,6 +434,8 @@ public:
 
 	Arabica::XPath::NodeSet<std::string> getDocumentInitialTransitions();
 	Arabica::XPath::NodeSet<std::string> getInitialStates(Arabica::DOM::Element<std::string> state = Arabica::DOM::Element<std::string>());
+    Arabica::XPath::NodeSet<std::string> getReachableStates();
+
 	static Arabica::XPath::NodeSet<std::string> getChildStates(const Arabica::DOM::Node<std::string>& state);
 	static Arabica::XPath::NodeSet<std::string> getChildStates(const Arabica::XPath::NodeSet<std::string>& state);
 	static Arabica::DOM::Element<std::string> getParentState(const Arabica::DOM::Node<std::string>& element);

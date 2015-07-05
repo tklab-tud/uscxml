@@ -30,6 +30,8 @@ if (!$testResultFile) {
 	$testResultFile = File::Spec->catfile($toBaseDir, "../../build/cli/Testing/Temporary/LastTest.log");
 }
 
+print STDERR "Using log file from:\n\t$testResultFile\n";
+
 open(FILE, $testResultFile) or die $!;
 mkdir($outDir) or die($!) if (! -d $outDir);
 
@@ -78,8 +80,8 @@ while ($block = <FILE>) {
 			\<end\sof\soutput\>\n
 			Test\stime\s\=\s+([\d\.]+)\s(\w+)
 		/x ) {
-		$test->{$currTest}->{'duration'} = $1;
-		$test->{$currTest}->{'durationUnit'} = $2;
+		$test->{$currTest}->{'duration'}->{'total'} = $1;
+		$test->{$currTest}->{'duration'}->{'totalUnit'} = $2;
 		# next; - no next as this is part of the actual test output we need to scan below
 	}
 	
@@ -174,6 +176,53 @@ while ($block = <FILE>) {
 			$test->{$currTest}->{'pml'}->{'memory'}->{'total'} = $7;
 		}
 
+		if ($block =~ 
+			/
+				pan:\selapsed\stime\s(.*)\sseconds\n
+			/x ) {
+			$test->{$currTest}->{'pml'}->{'duration'} = $1;
+		}
+
+		if ($block =~ 
+			/
+				real\s+([\d\.]+)\n
+				user\s+([\d\.]+)\n
+				sys\s+([\d\.]+)\n
+				--\stime\sfor\stransforming\sto\spromela\n
+			/x ) {
+			$test->{$currTest}->{'duration'}->{'toPML'} = $1;
+		}
+
+		if ($block =~ 
+			/
+				real\s+([\d\.]+)\n
+				user\s+([\d\.]+)\n
+				sys\s+([\d\.]+)\n
+				--\stime\sfor\stransforming\sto\sc\n
+			/x ) {
+			$test->{$currTest}->{'duration'}->{'toC'} = $1;
+		}
+
+		if ($block =~ 
+			/
+				real\s+([\d\.]+)\n
+				user\s+([\d\.]+)\n
+				sys\s+([\d\.]+)\n
+				--\stime\sfor\stransforming\sto\sbinary\n
+			/x ) {
+			$test->{$currTest}->{'duration'}->{'toBin'} = $1;
+		}
+
+		if ($block =~ 
+			/
+				real\s+([\d\.]+)\n
+				user\s+([\d\.]+)\n
+				sys\s+([\d\.]+)\n
+				--\stime\sfor\sverification\n
+			/x ) {
+			$test->{$currTest}->{'duration'}->{'toVerif'} = $1;
+		}
+		
 		next;
 	}
 	
