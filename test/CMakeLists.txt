@@ -36,6 +36,7 @@ endif()
 USCXML_TEST_COMPILE(BUILD_ONLY NAME test-sockets LABEL general/test-sockets FILES src/test-sockets.cpp)
 
 USCXML_TEST_COMPILE(NAME test-url LABEL general/test-url FILES src/test-url.cpp)
+USCXML_TEST_COMPILE(NAME test-doneevent LABEL general/test-doneevent FILES src/test-doneevent.cpp)
 USCXML_TEST_COMPILE(NAME test-base64 LABEL general/test-base64 FILES src/test-base64.cpp)
 USCXML_TEST_COMPILE(NAME test-eventdelay LABEL general/test-eventdelay FILES src/test-eventdelay.cpp)
 USCXML_TEST_COMPILE(NAME test-flat-stateid LABEL general/test-flat-stateid FILES src/test-flat-stateid.cpp)
@@ -74,6 +75,9 @@ find_program(SPIN spin)
 find_program(GCC gcc)
 
 if (NOT BUILD_MINIMAL)
+	# compile and add all reported issues tests
+
+	
 	add_executable(test-w3c src/test-w3c.cpp)
 	target_link_libraries(test-w3c uscxml uscxml_transform)
 	set_target_properties(test-w3c PROPERTIES FOLDER "Tests")
@@ -165,6 +169,12 @@ if (NOT BUILD_MINIMAL)
 			endif()
 
 			if (BUILD_DM_LUA AND LUA_FOUND AND BUILD_TESTS_W3C_LUA AND TEST_NAME MATCHES "^lua\\/.*")
+				add_test(${TEST_NAME} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-w3c ${W3C_TEST})
+				set_property(TEST ${TEST_NAME} PROPERTY LABELS ${TEST_NAME})
+	#			set_tests_properties(${TEST_NAME} PROPERTIES FAIL_REGULAR_EXPRESSION "TEST FAILED")
+			endif()
+
+			if (BUILD_DM_PROLOG AND SWI_FOUND AND BUILD_TESTS_W3C_PROLOG AND TEST_NAME MATCHES "^prolog\\/.*")
 				add_test(${TEST_NAME} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-w3c ${W3C_TEST})
 				set_property(TEST ${TEST_NAME} PROPERTY LABELS ${TEST_NAME})
 	#			set_tests_properties(${TEST_NAME} PROPERTIES FAIL_REGULAR_EXPRESSION "TEST FAILED")

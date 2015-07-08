@@ -276,7 +276,7 @@ private:
 
 	// override to do nothing
 	void send(const Arabica::DOM::Element<std::string>& element) {}
-	void internalDoneSend(const Arabica::DOM::Element<std::string>& state);
+	void internalDoneSend(const Arabica::DOM::Element<std::string>& state, const Arabica::DOM::Element<std::string>& doneData);
 
 	// InterpreterMonitor
 	virtual void beforeMicroStep(Interpreter interpreter);

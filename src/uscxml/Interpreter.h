@@ -576,7 +576,7 @@ protected:
 	virtual void send(const Arabica::DOM::Element<std::string>& element);
 	virtual void invoke(const Arabica::DOM::Element<std::string>& element);
 	virtual void cancelInvoke(const Arabica::DOM::Element<std::string>& element);
-	virtual void internalDoneSend(const Arabica::DOM::Element<std::string>& state);
+	virtual void internalDoneSend(const Arabica::DOM::Element<std::string>& state, const Arabica::DOM::Element<std::string>& doneData);
 	static void delayedSend(void* userdata, std::string eventName);
 	void returnDoneEvent(const Arabica::DOM::Node<std::string>& state);
 

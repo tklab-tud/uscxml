@@ -689,7 +689,9 @@ bool SWIDataModel::evalAsBool(const Arabica::DOM::Element<std::string>& node, co
 		}
 		PlQuery query(compound.name(), termv);
 		return query.next_solution() > 0;
-	} catch(...) {
+    }
+    RETHROW_PLEX_AS_EVENT
+    catch(...) {
 		return false;
 	}
 }
@@ -823,7 +825,7 @@ void SWIDataModel::assign(const Element<std::string>& assignElem,
 				PlCall(dataInitStr.str().c_str());
 			} else {
 				// treat content as . seperated facts
-				std::stringstream factStream(content);
+				std::stringstream factStream(expr);
 				std::string item;
 				while(std::getline(factStream, item, '.')) {
 					std::string fact = boost::trim_copy(item);

@@ -295,14 +295,22 @@ void InterpreterRC::enterStates(const Arabica::XPath::NodeSet<std::string>& enab
 		}
 
 		if (isFinal(s)) {
-			internalDoneSend(s);
-			if (parentIsScxmlState(s)) {
+            Element<std::string> parent = (Element<std::string>)s.getParentNode();
+
+            Arabica::DOM::Element<std::string> doneData;
+            Arabica::XPath::NodeSet<std::string> doneDatas = filterChildElements(_nsInfo.xmlNSPrefix + "donedata", s);
+            if (doneDatas.size() > 0) {
+                // only process first donedata element
+                doneData = Element<std::string>(doneDatas[0]);
+            }
+			internalDoneSend(parent, doneData);
+
+            if (parentIsScxmlState(s)) {
 				_topLevelFinalReached = true;
 			} else {
-				Element<std::string> parent = (Element<std::string>)s.getParentNode();
 				Element<std::string> grandParent = (Element<std::string>)parent.getParentNode();
 
-				internalDoneSend(parent);
+//				internalDoneSend(parent, Arabica::DOM::Element<std::string>());
 
 				if (isParallel(grandParent)) {
 					Arabica::XPath::NodeSet<std::string> childs = getChildStates(grandParent);
@@ -314,7 +322,7 @@ void InterpreterRC::enterStates(const Arabica::XPath::NodeSet<std::string>& enab
 						}
 					}
 					if (inFinalState) {
-						internalDoneSend(grandParent);
+						internalDoneSend(grandParent, Arabica::DOM::Element<std::string>());
 					}
 				}
 			}

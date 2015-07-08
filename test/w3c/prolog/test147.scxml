@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- test that the first clause that evaluates to true - and only that clause - is executed.
+Only one event should be raised, and it should be bar -->
+<scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" initial="s0" version="1.0" datamodel="prolog">
+  <datamodel>
+    <data id="var1" expr="0"/>
+  </datamodel>
+  <state id="s0">
+    <onentry>
+      <if cond="false">
+        <raise event="foo"/>
+        <assign location="var1(Y)" expr="var1(X), Y is X + 1, retractall(var1(_))"/>
+        <elseif cond="true"/>
+        <raise event="bar"/>
+        <assign location="var1(Y)" expr="var1(X), Y is X + 1, retractall(var1(_))"/>
+        <else/>
+        <raise event="baz"/>
+        <assign location="var1(Y)" expr="var1(X), Y is X + 1, retractall(var1(_))"/>
+      </if>
+      <raise event="bat"/>
+    </onentry>
+    <transition event="bar" cond="X = 1, var1(X)" target="pass"/>
+    <transition event="*" target="fail"/>
+  </state>
+  <final id="pass">
+    <onentry>
+      <log label="Outcome" expr="'pass'"/>
+    </onentry>
+  </final>
+  <final id="fail">
+    <onentry>
+      <log label="Outcome" expr="'fail'"/>
+    </onentry>
+  </final>
+</scxml>

@@ -33,7 +33,9 @@ public:
 	operator Interpreter();
 
 	Arabica::DOM::Document<std::string> getDocument() const {
-		return _flatDoc;
+        if (_flatDoc)
+            return _flatDoc;
+        return _document;
 	}
 
 protected:

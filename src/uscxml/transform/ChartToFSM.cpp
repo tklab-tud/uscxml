@@ -412,12 +412,12 @@ void ChartToFSM::cancelInvoke(const Arabica::DOM::Element<std::string>& element)
 	_currGlobalTransition->hasExecutableContent = true;
 }
 
-void ChartToFSM::internalDoneSend(const Arabica::DOM::Element<std::string>& state) {
+void ChartToFSM::internalDoneSend(const Arabica::DOM::Element<std::string>& state, const Arabica::DOM::Element<std::string>& doneData) {
 	if (!isState(state))
 		return;
 
-	if (parentIsScxmlState(state))
-		return;
+//	if (parentIsScxmlState(state))
+//		return;
 
 //	return;
 //	std::cerr << "internalDoneSend: " << state << std::endl;
@@ -431,22 +431,21 @@ void ChartToFSM::internalDoneSend(const Arabica::DOM::Element<std::string>& stat
 
 	onentry.appendChild(raise);
 
-	Arabica::XPath::NodeSet<std::string> doneDatas = filterChildElements(_nsInfo.xmlNSPrefix + "donedata", state);
-	if (doneDatas.size() > 0) {
-		Arabica::DOM::Node<std::string> doneData = doneDatas[0];
-		Arabica::XPath::NodeSet<std::string> contents = filterChildElements(_nsInfo.xmlNSPrefix + "content", doneDatas[0]);
-		if (contents.size() > 0) {
-			Node<std::string> imported = _flatDoc.importNode(contents[0], true);
-			raise.appendChild(imported);
-		}
-		Arabica::XPath::NodeSet<std::string> params = filterChildElements(_nsInfo.xmlNSPrefix + "param", doneDatas[0]);
-		if (params.size() > 0) {
-			Node<std::string> imported = _flatDoc.importNode(params[0], true);
-			raise.appendChild(imported);
-		}
-	}
+    if (doneData) {
+        Arabica::XPath::NodeSet<std::string> contents = filterChildElements(_nsInfo.xmlNSPrefix + "content", doneData);
+        if (contents.size() > 0) {
+            Node<std::string> imported = _flatDoc.importNode(contents[0], true);
+            raise.appendChild(imported);
+        }
+        Arabica::XPath::NodeSet<std::string> params = filterChildElements(_nsInfo.xmlNSPrefix + "param", doneData);
+        if (params.size() > 0) {
+            Node<std::string> imported = _flatDoc.importNode(params[0], true);
+            raise.appendChild(imported);
+        }
+    }
+    
 
-	raise.setAttribute("event", "done.state." + ATTR_CAST(state.getParentNode(), "id")); // parent?!
+	raise.setAttribute("event", "done.state." + ATTR_CAST(state, "id")); // parent?!
 
 	GlobalTransition::Action action;
 	action.raiseDone = onentry; // HERE!

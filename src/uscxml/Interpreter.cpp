@@ -1312,19 +1312,15 @@ void InterpreterImpl::setupDOM() {
 
 	// normalize document
 
-#if 0
-	// make sure every state has an id
-	Arabica::XPath::NodeSet<std::string> states;
-	states.push_back(_xpath.evaluate("//" + _nsInfo.xpathPrefix + "state", _scxml).asNodeSet());
-	states.push_back(_xpath.evaluate("//" + _nsInfo.xpathPrefix + "final", _scxml).asNodeSet());
-	states.push_back(_xpath.evaluate("//" + _nsInfo.xpathPrefix + "history", _scxml).asNodeSet());
-	for (int i = 0; i < states.size(); i++) {
-		Arabica::DOM::Element<std::string> stateElem = Arabica::DOM::Element<std::string>(states[i]);
-		if (!stateElem.hasAttribute("id")) {
-			stateElem.setAttribute("id", UUID::getUUID());
-		}
-	}
-#endif
+    // make sure every state has an id - not required per spec, but needed for us
+    Arabica::XPath::NodeSet<std::string> states = getAllStates();
+    for (int i = 0; i < states.size(); i++) {
+        Arabica::DOM::Element<std::string> stateElem = Arabica::DOM::Element<std::string>(states[i]);
+        if (!stateElem.hasAttribute("id")) {
+            stateElem.setAttribute("id", UUID::getUUID());
+        }
+        _cachedStates[ATTR(stateElem, "id")] = stateElem;
+    }
 
 	// make sure every invoke has an idlocation or id - actually required!
 	Arabica::XPath::NodeSet<std::string> invokes = _xpath.evaluate("//" + _nsInfo.xpathPrefix + "invoke", _scxml).asNodeSet();
@@ -1620,39 +1616,36 @@ void InterpreterImpl::receive(const Event& event, bool toFront)   {
 	_condVar.notify_all();
 }
 
-void InterpreterImpl::internalDoneSend(const Arabica::DOM::Element<std::string>& state) {
+void InterpreterImpl::internalDoneSend(const Arabica::DOM::Element<std::string>& state, const Arabica::DOM::Element<std::string>& doneData) {
 	if (!isState(state))
 		return;
 
-	if (parentIsScxmlState(state))
-		return;
+//	if (parentIsScxmlState(state))
+//		return;
 
 	Event event;
 
-	Arabica::XPath::NodeSet<std::string> doneDatas = filterChildElements(_nsInfo.xmlNSPrefix + "donedata", state);
-	if (doneDatas.size() > 0) {
-		// only process first donedata element
-		Arabica::DOM::Element<std::string> doneData = Element<std::string>(doneDatas[0]);
-		processParamChilds(doneData, event.params);
-		Arabica::XPath::NodeSet<std::string> contents = filterChildElements(_nsInfo.xmlNSPrefix + "content", doneDatas[0]);
-		if (contents.size() > 1)
-			LOG(ERROR) << "Only a single content element is allowed for send elements - using first one";
-		if (contents.size() > 0) {
-			std::string expr;
-			processContentElement(Element<std::string>(contents[0]), event.dom, event.content, expr);
-			if (expr.length() > 0) {
-				try {
-					event.content =_dataModel.evalAsString(expr);
-				} catch (Event e) {
-					e.name = "error.execution";
-					e.dom = contents[0];
-					receiveInternal(e);
-				}
-			}
-		}
-	}
-
-	event.name = "done.state." + ATTR_CAST(state.getParentNode(), "id"); // parent?!
+    if (doneData) {
+        processParamChilds(doneData, event.params);
+        Arabica::XPath::NodeSet<std::string> contents = filterChildElements(_nsInfo.xmlNSPrefix + "content", doneData);
+        if (contents.size() > 1)
+            LOG(ERROR) << "Only a single content element is allowed for send elements - using first one";
+        if (contents.size() > 0) {
+            std::string expr;
+            processContentElement(Element<std::string>(contents[0]), event.dom, event.content, expr);
+            if (expr.length() > 0) {
+                try {
+                    event.content =_dataModel.evalAsString(expr);
+                } catch (Event e) {
+                    e.name = "error.execution";
+                    e.dom = contents[0];
+                    receiveInternal(e);
+                }
+            }
+        }
+    }
+    
+	event.name = "done.state." + ATTR_CAST(state, "id"); // parent?!
 	receiveInternal(event);
 
 }

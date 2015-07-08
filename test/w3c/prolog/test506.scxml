@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- test that an internal transition whose targets are not proper descendants of its source state
+behaves like an external transition -->
+<scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" initial="s1" version="1.0" datamodel="prolog">
+  <datamodel>
+    <data id="var1" expr="0"/>
+    <!-- how often we have exited s2 -->
+    <data id="var2" expr="0"/>
+    <!-- how often we have exited s21 -->
+    <data id="var3" expr="0"/>
+    <!-- how often the transition for foo has been taken -->
+  </datamodel>
+  <state id="s1">
+    <onentry>
+      <raise event="foo"/>
+      <raise event="bar"/>
+    </onentry>
+    <transition target="s2"/>
+  </state>
+  <state id="s2" initial="s21">
+    <onexit>
+      <assign location="var1(Y)" expr="var1(X), Y is X + 1, retractall(var1(_))"/>
+    </onexit>
+    <transition event="foo" type="internal" target="s2">
+      <assign location="var3(Y)" expr="var3(X), Y is X + 1, retractall(var1(_))"/>
+    </transition>
+    <!-- make sure the transition on foo was actually taken -->
+    <transition event="bar" cond="X = 1, var3(X)" target="s3"/>
+    <transition event="bar" target="fail"/>
+    <state id="s21">
+      <onexit>
+        <assign location="var2(Y)" expr="var2(X), Y is X + 1, retractall(var1(_))"/>
+      </onexit>
+    </state>
+  </state>
+  <state id="s3">
+    <!-- make sure that s2 was exited twice -->
+    <transition cond="X = 2, var1(X)" target="s4"/>
+    <transition target="fail"/>
+  </state>
+  <state id="s4">
+    <!-- make sure that s21 was exited twice -->
+    <transition cond="X = 2, var2(X)" target="pass"/>
+    <transition target="fail"/>
+  </state>
+  <final id="pass">
+    <onentry>
+      <log label="Outcome" expr="'pass'"/>
+    </onentry>
+  </final>
+  <final id="fail">
+    <onentry>
+      <log label="Outcome" expr="'fail'"/>
+    </onentry>
+  </final>
+</scxml>

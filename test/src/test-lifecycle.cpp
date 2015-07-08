@@ -23,6 +23,7 @@
 
 int startedAt;
 int lastTransitionAt;
+bool testIssue56();
 
 #ifdef HAS_EXECINFO_H
 void printBacktrace(void** array, int size) {
@@ -414,3 +415,4 @@ int main(int argc, char** argv) {
 	}
 	return EXIT_SUCCESS;
 }
+

@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- test that foreach causes a new variable to be declared if 'item' doesn't already exist.  Also
+test that it will use an existing var if it does exist. -->
+<scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" initial="s0" datamodel="prolog" version="1.0">
+  <datamodel>
+    <data id="var1"/>
+    <data id="var2"/>
+    <data id="var3">
+    [1,2,3]
+    </data>
+  </datamodel>
+  <state id="s0">
+    <onentry>
+      <!-- first use declared variables -->
+      <foreach item="var1" index="var2" array="var3(X), member(M, X)"/>
+      <raise event="foo"/>
+    </onentry>
+    <transition event="error" target="fail"/>
+    <transition event="*" target="s1"/>
+  </state>
+  <state id="s1">
+    <onentry>
+      <!-- now use undeclared variables -->
+      <foreach item="var4" index="var5" array="var3(X), member(M, X)"/>
+      <raise event="bar"/>
+    </onentry>
+    <transition event="error" target="fail"/>
+    <transition event="*" target="s2"/>
+  </state>
+  <state id="s2">
+    <!-- check that var5 is bound -->
+    <transition cond="var5" target="pass"/>
+    <transition target="fail"/>
+  </state>
+  <final id="pass">
+    <onentry>
+      <log label="Outcome" expr="'pass'"/>
+    </onentry>
+  </final>
+  <final id="fail">
+    <onentry>
+      <log label="Outcome" expr="'fail'"/>
+    </onentry>
+  </final>
+</scxml>

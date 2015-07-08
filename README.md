@@ -66,6 +66,38 @@ even in C# and Java. It runs on <b>Linux</b>, <b>Windows</b>, <b>Raspberry Pi</b
 * Have a look at the [result](http://uscxml.tk.informatik.tu-darmstadt.de/cdash/index.php?project=uscxml) for the various platforms.
 * The manual and XPath specific tests are [excluded](https://github.com/tklab-tud/uscxml/blob/master/test/ctest/CTestCustom.ctest.in).
 
+To run the tests yourself, you need to generate the build environment and pass <tt>-DBUILD_TESTS=ON</tt> via CMake:
+
+    $ cmake -DBUILD_TESTS=ON <USCXML_SRC> && make
+
+Afterwards, you can run the various tests. There are more than 1500 tests in total, so maybe restrict yourself to 
+some subset.
+
+*W3C Tests ECMAScript Datamodel*
+
+    $ ctest -L "^ecma/test"
+    [...]
+    $ 100% tests passed, 0 tests failed out of 196
+
+*W3C Tests XPath Datamodel*
+
+    $ ctest -L "^xpath/test"
+    [...]
+    $ 51% tests passed, 104 tests failed out of 211
+
+*W3C Tests PROMELA Datamodel*
+
+    $ ctest -L "^promela/test"
+    [...]
+    $ 89% tests passed, 18 tests failed out of 165
+
+*W3C Tests Lua Datamodel*
+
+    $ ctest -L "^lua/test"
+    [...]
+    $ 78% tests passed, 45 tests failed out of 201
+
+
 ### License 
 
 uSCXML itself is distributed under the Simplified BSD license as in, do not sue us and do

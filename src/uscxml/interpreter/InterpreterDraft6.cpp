@@ -441,7 +441,15 @@ void InterpreterDraft6::enterStates(const Arabica::XPath::NodeSet<std::string>& 
 		}
 #endif
 		if (isFinal(stateElem)) {
-			internalDoneSend(stateElem);
+            
+            Arabica::DOM::Element<std::string> doneData;
+            Arabica::XPath::NodeSet<std::string> doneDatas = filterChildElements(_nsInfo.xmlNSPrefix + "donedata", stateElem);
+            if (doneDatas.size() > 0) {
+                // only process first donedata element
+                doneData = Element<std::string>(doneDatas[0]);
+            }
+
+			internalDoneSend(stateElem, doneData);
 			Node<std::string> parent = stateElem.getParentNode();
 
 			if (parent.getNodeType() == Node_base::ELEMENT_NODE &&
@@ -458,7 +466,7 @@ void InterpreterDraft6::enterStates(const Arabica::XPath::NodeSet<std::string>& 
 					}
 				}
 				if (inFinalState) {
-					internalDoneSend(Element<std::string>(parent));
+					internalDoneSend(Element<std::string>(parent), Arabica::DOM::Element<std::string>());
 				}
 			}
 		}

@@ -99,7 +99,7 @@ int main(int argc, char** argv) {
 			assert(issueLocations.size() == 1);
 		}
 
-		if (1) {
+		if (0) {
 			// State has no 'id' attribute
             // *** This is not actually an error! ***
 			const char* xml =
