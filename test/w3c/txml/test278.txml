@@ -1,5 +1,5 @@
 
-<scxml initial="s0" version="1.0" conf:datamodel="" xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance">
+<scxml initial="s0" version="1.0" datamodel="ecmascript" xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance">
 
 <!-- test that a variable can be accessed from a state that is outside its lexical scope -->   
      

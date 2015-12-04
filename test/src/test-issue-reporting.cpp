@@ -207,7 +207,9 @@ int main(int argc, char** argv) {
                 const char* xml =
                 "<scxml datamodel=\"ecmascript\">"
                 " <state id=\"start\" initial=\"foo\">"
-                "   <initial></initial>"
+                "   <initial>"
+                "       <transition target=\"foo\" />"
+                "   </initial>"
                 "	<state id=\"foo\" />"
                 " </state>"
                 "</scxml>";
@@ -216,6 +218,7 @@ int main(int argc, char** argv) {
                 assert(issueLocations.find("//state[@id=\"start\"]") != issueLocations.end());
                 assert(issueLocations.size() == 1);
             }
+            
             {
                 // initial attribute with atomic state
                 const char* xml =
@@ -227,23 +230,162 @@ int main(int argc, char** argv) {
                 assert(issueLocations.find("//state[@id=\"start\"]") != issueLocations.end());
                 assert(issueLocations.size() == 1);
             }
+            
             {
                 // initial child with atomic state
                 const char* xml =
                 "<scxml datamodel=\"ecmascript\">"
                 " <state id=\"start\">"
-                "   <initial />"
+                "   <initial>"
+                "       <transition target=\"start\" />"
+                "   </initial>"
                 " </state>"
                 "</scxml>";
                 
                 std::set<std::string> issueLocations = issueLocationsForXML(xml);
                 assert(issueLocations.find("//state[@id=\"start\"]") != issueLocations.end());
-                assert(issueLocations.size() == 1);
-                
+                assert(issueLocations.size() == 2); // also invalid non-child target state in initial
             }
+
+            // combinations of namelist, content and param
+            {
+                // send with content and namelist, not allowed
+                const char* xml =
+                "<scxml datamodel=\"ecmascript\">"
+                " <state id=\"start\">"
+                "   <onentry>"
+                "     <send target=\"#_external\" namelist=\"var1\">"
+                "       <content>Foo!</content>"
+                "     </send>"
+                "   </onentry>"
+                " </state>"
+                "</scxml>";
+                
+                std::set<std::string> issueLocations = issueLocationsForXML(xml);
+                assert(issueLocations.find("//state[@id=\"start\"]/onentry[1]/send[1]") != issueLocations.end());
+                assert(issueLocations.size() == 1);
+            }
+
+            {
+                // send with content and params, not allowed
+                const char* xml =
+                "<scxml datamodel=\"ecmascript\">"
+                " <state id=\"start\">"
+                "   <onentry>"
+                "     <send target=\"#_external\">"
+                "       <param name=\"foo\" expr=\"3\" />"
+                "       <content>Foo!</content>"
+                "     </send>"
+                "   </onentry>"
+                " </state>"
+                "</scxml>";
+                
+                std::set<std::string> issueLocations = issueLocationsForXML(xml);
+                assert(issueLocations.find("//state[@id=\"start\"]/onentry[1]/send[1]") != issueLocations.end());
+                assert(issueLocations.size() == 1);
+            }
+
+            {
+                // send with params and namelist, perfectly acceptable
+                const char* xml =
+                "<scxml datamodel=\"ecmascript\">"
+                " <state id=\"start\">"
+                "   <onentry>"
+                "     <send target=\"#_external\" namelist=\"foo\">"
+                "       <param name=\"foo\" expr=\"3\" />"
+                "     </send>"
+                "   </onentry>"
+                " </state>"
+                "</scxml>";
+                
+                std::set<std::string> issueLocations = issueLocationsForXML(xml);
+                assert(issueLocations.size() == 0);
+            }
+            
+            {
+                // invoke with content and src, not allowed
+                const char* xml =
+                "<scxml datamodel=\"ecmascript\">"
+                " <state id=\"start\">"
+                "     <invoke type=\"scxml\" src=\"var1\">"
+                "       <content>Foo!</content>"
+                "     </invoke>"
+                " </state>"
+                "</scxml>";
+                
+                std::set<std::string> issueLocations = issueLocationsForXML(xml);
+                assert(issueLocations.find("//state[@id=\"start\"]/invoke[1]") != issueLocations.end());
+                assert(issueLocations.size() == 1);
+            }
+
+            {
+                // invoke with namelist and param, not allowed
+                const char* xml =
+                "<scxml datamodel=\"ecmascript\">"
+                " <state id=\"start\">"
+                "     <invoke type=\"scxml\" namelist=\"var1\">"
+                "       <param name=\"foo\" expr=\"3\" />"
+                "     </invoke>"
+                " </state>"
+                "</scxml>";
+                
+                std::set<std::string> issueLocations = issueLocationsForXML(xml);
+                assert(issueLocations.find("//state[@id=\"start\"]/invoke[1]") != issueLocations.end());
+                assert(issueLocations.size() == 1);
+            }
+
+            {
+                // invoke with param and content, perfectly acceptable
+                const char* xml =
+                "<scxml datamodel=\"ecmascript\">"
+                " <state id=\"start\">"
+                "     <invoke type=\"scxml\">"
+                "       <param name=\"foo\" expr=\"3\" />"
+                "       <content>Foo!</content>"
+                "     </invoke>"
+                " </state>"
+                "</scxml>";
+                
+                std::set<std::string> issueLocations = issueLocationsForXML(xml);
+                assert(issueLocations.size() == 0);
+            }
+
+            {
+                // invoke with namelist and content, perfectly acceptable
+                const char* xml =
+                "<scxml datamodel=\"ecmascript\">"
+                " <state id=\"start\">"
+                "     <invoke type=\"scxml\" namelist=\"var1\">"
+                "       <content>Foo!</content>"
+                "     </invoke>"
+                " </state>"
+                "</scxml>";
+                
+                std::set<std::string> issueLocations = issueLocationsForXML(xml);
+                assert(issueLocations.size() == 0);
+            }
+            
+            {
+                // donedata with content and param, not allowed
+                const char* xml =
+                "<scxml datamodel=\"ecmascript\">"
+                " <state id=\"start\">"
+                "     <donedata>"
+                "       <param name=\"foo\" expr=\"3\" />"
+                "       <content>Foo!</content>"
+                "     </donedata>"
+                " </state>"
+                "</scxml>";
+                
+                std::set<std::string> issueLocations = issueLocationsForXML(xml);
+                assert(issueLocations.find("//state[@id=\"start\"]/donedata[1]") != issueLocations.end());
+                assert(issueLocations.size() == 1);
+            }
+
+
         }
-        
-        
+    
+    
 		if (1) {
 			// Transition can never be optimally enabled (conditionless, eventless)
 
@@ -405,6 +547,91 @@ int main(int argc, char** argv) {
             assert(issueLocations.size() == 1);
         }
 
+        if (1) {
+            // Initial with multiple transitions
+            const char* xml =
+            "<scxml datamodel=\"ecmascript\">"
+            " <state id=\"start\">"
+            "   <initial>"
+            "       <transition target=\"foo\" />"
+            "       <transition target=\"foo\" />"
+            "   </initial>"
+            "	<state id=\"foo\" />"
+            "   <transition event=\"e.bar\" target=\"done\" />"
+            " </state>"
+            " <final id=\"done\" />"
+            "</scxml>";
+            
+            std::set<std::string> issueLocations = issueLocationsForXML(xml);
+            assert(issueLocations.find("//state[@id=\"start\"]/initial[1]") != issueLocations.end());
+            assert(issueLocations.size() == 1);
+        }
+
+        if (1) {
+            // Initial with no transitions
+            const char* xml =
+            "<scxml datamodel=\"ecmascript\">"
+            " <state id=\"start\">"
+            "   <initial />"
+            "	<state id=\"foo\" />"
+            "   <transition event=\"e.bar\" target=\"done\" />"
+            " </state>"
+            " <final id=\"done\" />"
+            "</scxml>";
+            
+            std::set<std::string> issueLocations = issueLocationsForXML(xml);
+            assert(issueLocations.find("//state[@id=\"start\"]/initial[1]") != issueLocations.end());
+            assert(issueLocations.size() == 1);
+        }
+
+        if (1) {
+            // History transition with event
+            const char* xml =
+            "<scxml datamodel=\"ecmascript\">"
+            " <state id=\"start\" initial=\"bar\">"
+            "   <history id=\"bar\">"
+            "       <transition event=\"e.foo\" target=\"foo\" />"
+            "   </history>"
+            "	<state id=\"foo\">"
+            "       <state id=\"foo.s1\">"
+            "           <transition target=\"foo.s2\" />"
+            "       </state>"
+            "       <state id=\"foo.s2\" />"
+            "   </state>"
+            "   <transition event=\"e.bar\" target=\"done\" />"
+            " </state>"
+            " <final id=\"done\" />"
+            "</scxml>";
+            
+            std::set<std::string> issueLocations = issueLocationsForXML(xml);
+            assert(issueLocations.find("//history[@id=\"bar\"]/transition[1]") != issueLocations.end());
+            assert(issueLocations.size() == 1);
+        }
+
+        if (1) {
+            // History transition with condition
+            const char* xml =
+            "<scxml datamodel=\"ecmascript\">"
+            " <state id=\"start\" initial=\"bar\">"
+            "   <history id=\"bar\">"
+            "       <transition cond=\"false\" target=\"foo\" />"
+            "   </history>"
+            "	<state id=\"foo\">"
+            "       <state id=\"foo.s1\">"
+            "           <transition target=\"foo.s2\" />"
+            "       </state>"
+            "       <state id=\"foo.s2\" />"
+            "   </state>"
+            "   <transition event=\"e.bar\" target=\"done\" />"
+            " </state>"
+            " <final id=\"done\" />"
+            "</scxml>";
+            
+            std::set<std::string> issueLocations = issueLocationsForXML(xml);
+            assert(issueLocations.find("//history[@id=\"bar\"]/transition[1]") != issueLocations.end());
+            assert(issueLocations.size() == 1);
+        }
+
 		if (1) {
 			// Send to unknown IO Processor
 
@@ -502,8 +729,10 @@ int main(int argc, char** argv) {
 			    "			<assign location=\"foo\" expr=\"%2345\" />"
 			    "			<send>"
 			    "				<param expr=\"%2345\" />"
-			    "				<content expr=\"%2345\" />"
 			    "			</send>"
+                "			<send>"
+                "				<content expr=\"%2345\" />"
+                "			</send>"
 			    "		</onentry>"
 			    " </state>"
 			    "</scxml>";
@@ -512,8 +741,8 @@ int main(int argc, char** argv) {
 			assert(issueLocations.find("//state[@id=\"start\"]/onentry[1]/log[1]") != issueLocations.end());
 			assert(issueLocations.find("//data[@id=\"foo\"]") != issueLocations.end());
 			assert(issueLocations.find("//state[@id=\"start\"]/onentry[1]/assign[1]") != issueLocations.end());
-			assert(issueLocations.find("//state[@id=\"start\"]/onentry[1]/send[1]/content[1]") != issueLocations.end());
 			assert(issueLocations.find("//state[@id=\"start\"]/onentry[1]/send[1]/param[1]") != issueLocations.end());
+            assert(issueLocations.find("//state[@id=\"start\"]/onentry[1]/send[2]/content[1]") != issueLocations.end());
 			assert(issueLocations.size() == 5);
 		}
 

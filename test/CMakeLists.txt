@@ -1,3 +1,5 @@
+set(TEST_TIMEOUT 10)
+
 function(USCXML_TEST_COMPILE)
 	set(options BUILD_ONLY)
 	set(oneValueArgs LABEL NAME)
@@ -114,10 +116,19 @@ if (NOT BUILD_MINIMAL)
 		string(REGEX MATCH "[^//]+/[^//]+.scxml" TEST_NAME ${W3C_TEST})
 	#	message("TEST_NAME: ${TEST_NAME}")
 		if (NOT TEST_NAME MATCHES ".*sub.*")
+			if (TEST_NAME MATCHES "^null\\/.*")
+				add_test(${TEST_NAME} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-w3c ${W3C_TEST})
+				set_property(TEST ${TEST_NAME} PROPERTY LABELS ${TEST_NAME})
+				set_tests_properties(${TEST_NAME} PROPERTIES TIMEOUT ${TEST_TIMEOUT})
+			endif()
+
 			if (BUILD_TESTS_W3C_ECMA AND TEST_NAME MATCHES "^ecma\\/.*")
 				add_test(${TEST_NAME} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-w3c ${W3C_TEST})
 				set_property(TEST ${TEST_NAME} PROPERTY LABELS ${TEST_NAME})
+				set_tests_properties(${TEST_NAME} PROPERTIES TIMEOUT ${TEST_TIMEOUT})
+				
 	#			set_tests_properties(${TEST_NAME} PROPERTIES FAIL_REGULAR_EXPRESSION "TEST FAILED")
+	
 				if (TEST_NAME STREQUAL "ecma/test250.scxml")
 					set_tests_properties(${TEST_NAME} PROPERTIES 
 						FAIL_REGULAR_EXPRESSION "entering final state, invocation was not cancelled")
@@ -127,9 +138,10 @@ if (NOT BUILD_MINIMAL)
 				endif()
 			endif()
 		
-			if (BUILD_TESTS_FSM_ECMA AND TEST_NAME MATCHES "^ecma\\/.*")
+			if (BUILD_TESTS_FSM AND BUILD_TESTS_FSM_ECMA AND TEST_NAME MATCHES "^ecma\\/.*")
 				add_test("fsm/${TEST_NAME}" ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-w3c -f ${W3C_TEST})
 				set_property(TEST "fsm/${TEST_NAME}" PROPERTY LABELS "fsm/${TEST_NAME}")
+				set_tests_properties("fsm/${TEST_NAME}" PROPERTIES TIMEOUT ${TEST_TIMEOUT})
 
 				add_test(NAME "minimized/${TEST_NAME}"
 				    COMMAND ${CMAKE_COMMAND}
@@ -139,51 +151,73 @@ if (NOT BUILD_MINIMAL)
 							-DUSCXML_W3C_TEST_BIN:FILEPATH=${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-w3c
 						-P ${CMAKE_CURRENT_SOURCE_DIR}/w3c/run_minimized_test.cmake)
 				set_property(TEST "minimized/${TEST_NAME}" PROPERTY LABELS "minimized/${TEST_NAME}")
+				set_tests_properties("minimized/${TEST_NAME}" PROPERTIES TIMEOUT ${TEST_TIMEOUT})
 
 				set_tests_properties(${TEST_NAME} PROPERTIES DEPENDS uscxml-transform)
 				set_tests_properties(${TEST_NAME} PROPERTIES DEPENDS test-w3c)
 
-				add_test(NAME "fsm/minimized/${TEST_NAME}"
-				    COMMAND ${CMAKE_COMMAND}
-							-DOUTDIR:FILEPATH=${CMAKE_CURRENT_BINARY_DIR}/ecma
-							-DTESTFILE:FILEPATH=${W3C_TEST}
-							-DUSCXML_TRANSFORM_BIN:FILEPATH=${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/uscxml-transform
-							-DUSCXML_W3C_TEST_BIN:FILEPATH=${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-w3c
-						-P ${CMAKE_CURRENT_SOURCE_DIR}/w3c/run_minimized_flat_test.cmake)
-				set_property(TEST "fsm/minimized/${TEST_NAME}" PROPERTY LABELS "fsm/minimized/${TEST_NAME}")
+				# add_test(NAME "fsm/minimized/${TEST_NAME}"
+				#     COMMAND ${CMAKE_COMMAND}
+				# 			-DOUTDIR:FILEPATH=${CMAKE_CURRENT_BINARY_DIR}/ecma
+				# 			-DTESTFILE:FILEPATH=${W3C_TEST}
+				# 			-DUSCXML_TRANSFORM_BIN:FILEPATH=${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/uscxml-transform
+				# 			-DUSCXML_W3C_TEST_BIN:FILEPATH=${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-w3c
+				# 		-P ${CMAKE_CURRENT_SOURCE_DIR}/w3c/run_minimized_flat_test.cmake)
+				# set_property(TEST "fsm/minimized/${TEST_NAME}" PROPERTY LABELS "fsm/minimized/${TEST_NAME}")
+				# set_tests_properties("fsm/minimized/${TEST_NAME}" PROPERTIES TIMEOUT ${TEST_TIMEOUT})
 
-				set_tests_properties(${TEST_NAME} PROPERTIES DEPENDS uscxml-transform)
-				set_tests_properties(${TEST_NAME} PROPERTIES DEPENDS test-w3c)
+				# set_tests_properties(${TEST_NAME} PROPERTIES DEPENDS uscxml-transform)
+				# set_tests_properties(${TEST_NAME} PROPERTIES DEPENDS test-w3c)
 
 			endif()
 		
 			if (BUILD_TESTS_W3C_XPATH AND TEST_NAME MATCHES "^xpath\\/.*")
 				add_test(${TEST_NAME} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-w3c ${W3C_TEST})
 				set_property(TEST ${TEST_NAME} PROPERTY LABELS ${TEST_NAME})
+				set_tests_properties(${TEST_NAME} PROPERTIES TIMEOUT ${TEST_TIMEOUT})
 	#			set_tests_properties(${TEST_NAME} PROPERTIES FAIL_REGULAR_EXPRESSION "TEST FAILED")
+				if (BUILD_TESTS_FSM AND BUILD_TESTS_FSM_XPATH)
+					add_test("fsm/${TEST_NAME}" ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-w3c -f ${W3C_TEST})
+					set_property(TEST "fsm/${TEST_NAME}" PROPERTY LABELS "fsm/${TEST_NAME}")
+					set_tests_properties("fsm/${TEST_NAME}" PROPERTIES TIMEOUT ${TEST_TIMEOUT})
+				endif()
 			endif()
 		
-			if (BUILD_TESTS_FSM_XPATH AND TEST_NAME MATCHES "^xpath\\/.*")
-				add_test("fsm/${TEST_NAME}" ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-w3c -f ${W3C_TEST})
-				set_property(TEST "fsm/${TEST_NAME}" PROPERTY LABELS "fsm/${TEST_NAME}")
-			endif()
-
 			if (BUILD_DM_LUA AND LUA_FOUND AND BUILD_TESTS_W3C_LUA AND TEST_NAME MATCHES "^lua\\/.*")
 				add_test(${TEST_NAME} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-w3c ${W3C_TEST})
 				set_property(TEST ${TEST_NAME} PROPERTY LABELS ${TEST_NAME})
+				set_tests_properties(${TEST_NAME} PROPERTIES TIMEOUT ${TEST_TIMEOUT})
 	#			set_tests_properties(${TEST_NAME} PROPERTIES FAIL_REGULAR_EXPRESSION "TEST FAILED")
+				if (BUILD_TESTS_FSM AND BUILD_TESTS_FSM_LUA)
+					add_test("fsm/${TEST_NAME}" ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-w3c -f ${W3C_TEST})
+					set_property(TEST "fsm/${TEST_NAME}" PROPERTY LABELS "fsm/${TEST_NAME}")
+					set_tests_properties("fsm/${TEST_NAME}" PROPERTIES TIMEOUT ${TEST_TIMEOUT})
+				endif()
+	
 			endif()
 
 			if (BUILD_DM_PROLOG AND SWI_FOUND AND BUILD_TESTS_W3C_PROLOG AND TEST_NAME MATCHES "^prolog\\/.*")
 				add_test(${TEST_NAME} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-w3c ${W3C_TEST})
 				set_property(TEST ${TEST_NAME} PROPERTY LABELS ${TEST_NAME})
+				set_tests_properties(${TEST_NAME} PROPERTIES TIMEOUT ${TEST_TIMEOUT})
 	#			set_tests_properties(${TEST_NAME} PROPERTIES FAIL_REGULAR_EXPRESSION "TEST FAILED")
+				if (BUILD_TESTS_FSM AND BUILD_TESTS_FSM_PROLOG)
+					add_test("fsm/${TEST_NAME}" ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-w3c -f ${W3C_TEST})
+					set_property(TEST "fsm/${TEST_NAME}" PROPERTY LABELS "fsm/${TEST_NAME}")
+					set_tests_properties("fsm/${TEST_NAME}" PROPERTIES TIMEOUT ${TEST_TIMEOUT})
+				endif()
 			endif()
 		
 			if (BUILD_DM_PROMELA AND BUILD_TESTS_W3C_PROMELA AND TEST_NAME MATCHES "^promela\\/.*")
 				add_test(${TEST_NAME} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-w3c ${W3C_TEST})
 				set_property(TEST ${TEST_NAME} PROPERTY LABELS ${TEST_NAME})
+				set_tests_properties(${TEST_NAME} PROPERTIES TIMEOUT ${TEST_TIMEOUT})
 	#			set_tests_properties(${TEST_NAME} PROPERTIES FAIL_REGULAR_EXPRESSION "TEST FAILED")
+				if (BUILD_TESTS_FSM AND BUILD_TESTS_FSM_PROMELA)
+					add_test("fsm/${TEST_NAME}" ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-w3c -f ${W3C_TEST})
+					set_property(TEST "fsm/${TEST_NAME}" PROPERTY LABELS "fsm/${TEST_NAME}")
+					set_tests_properties("fsm/${TEST_NAME}" PROPERTIES TIMEOUT ${TEST_TIMEOUT})
+				endif()
 			endif()
 		
 			if (GCC AND SPIN AND BUILD_DM_PROMELA AND BUILD_TESTS_W3C_PROMELA AND TEST_NAME MATCHES "^promela\\/.*")
@@ -197,6 +231,7 @@ if (NOT BUILD_MINIMAL)
 							-DGCC_BIN:FILEPATH=${GCC}
 							-P ${CMAKE_CURRENT_SOURCE_DIR}/w3c/run_promela_test.cmake)
 				set_property(TEST "spin/${TEST_NAME}" PROPERTY LABELS "spin/${TEST_NAME}")
+				set_tests_properties("spin/${TEST_NAME}" PROPERTIES TIMEOUT ${TEST_TIMEOUT})
 				set_tests_properties("spin/${TEST_NAME}" PROPERTIES PASS_REGULAR_EXPRESSION "depth reached [0-9]+, errors: 0")
 				set_tests_properties("spin/${TEST_NAME}" PROPERTIES FAIL_REGULAR_EXPRESSION "depth reached [0-9]+, errors: [1-9]+")
 

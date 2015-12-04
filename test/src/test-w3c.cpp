@@ -23,10 +23,11 @@ static double delayFactor = 1;
 static std::string documentURI;
 
 int retCode = EXIT_FAILURE;
+uscxml::Interpreter interpreter;
 
 class W3CStatusMonitor : public uscxml::StateTransitionMonitor {
 
-void beforeCompletion(uscxml::Interpreter interpreter) {
+void beforeCompletion(uscxml::Interpreter tmp) {
 	if (interpreter.getConfiguration().size() == 1 && interpreter.isInState("pass")) {
 		std::cout << "TEST SUCCEEDED" << std::endl;
 		retCode = EXIT_SUCCESS;
@@ -75,7 +76,6 @@ int main(int argc, char** argv) {
 
 		documentURI = argv[optind];
 
-		Interpreter interpreter;
 		LOG(INFO) << "Processing " << documentURI << (withFlattening ? " FSM converted" : "") << (delayFactor ? "" : " with delays *= " + toStr(delayFactor));
 		if (withFlattening) {
 			interpreter = Interpreter::fromURL(documentURI);

@@ -384,7 +384,7 @@ std::string PromelaCodeAnalyzer::createMacroName(const std::string& literal) {
 	return macroName;
 }
 
-std::string PromelaCodeAnalyzer::getTypeReset(const std::string& var, const PromelaTypedef& type, const std::string padding) {
+    std::string PromelaCodeAnalyzer::getTypeReset(const std::string& var, const PromelaTypedef& type, const std::string padding) {
     std::stringstream assignment;
     
     std::map<std::string, PromelaTypedef>::const_iterator typeIter = type.types.begin();
@@ -1603,52 +1603,53 @@ void ChartToPromela::writeExecutableContent(std::ostream& stream, const Arabica:
 			}
 			if (_analyzer->usesComplexEventStruct()) {
 				stream << padding << "{" << std::endl;
-                stream << _analyzer->getTypeReset("tmpE", _analyzer->getType("_event"), padding + "  ");
-                stream << padding << "  tmpE.name = " << event << ";" << std::endl;
+                std::string typeReset = _analyzer->getTypeReset("tmpE", _analyzer->getType("_event"), padding + "  ");
+                std::stringstream typeAssignSS;
+                typeAssignSS << padding << "  tmpE.name = " << event << ";" << std::endl;
 				
 				if (HAS_ATTR(nodeElem, "idlocation")) {
-					stream << padding << "  /* idlocation */" << std::endl;
-					stream << padding << "  _lastSendId = _lastSendId + 1;" << std::endl;
-					stream << padding << "  " << _prefix << ATTR(nodeElem, "idlocation") << " = _lastSendId;" << std::endl;
-					stream << padding << "  tmpE.sendid = _lastSendId;" << std::endl;
-					stream << padding << "  if" << std::endl;
-					stream << padding << "  :: _lastSendId == 2147483647 -> _lastSendId = 0;" << std::endl;
-					stream << padding << "  :: else -> skip;" << std::endl;
-					stream << padding << "  fi;" << std::endl;
+					typeAssignSS << padding << "  /* idlocation */" << std::endl;
+					typeAssignSS << padding << "  _lastSendId = _lastSendId + 1;" << std::endl;
+					typeAssignSS << padding << "  " << _prefix << ATTR(nodeElem, "idlocation") << " = _lastSendId;" << std::endl;
+					typeAssignSS << padding << "  tmpE.sendid = _lastSendId;" << std::endl;
+					typeAssignSS << padding << "  if" << std::endl;
+					typeAssignSS << padding << "  :: _lastSendId == 2147483647 -> _lastSendId = 0;" << std::endl;
+					typeAssignSS << padding << "  :: else -> skip;" << std::endl;
+					typeAssignSS << padding << "  fi;" << std::endl;
 				} else if (HAS_ATTR(nodeElem, "id")) {
-					stream << padding << "  tmpE.sendid = " << _analyzer->macroForLiteral(ATTR(nodeElem, "id")) << ";" << std::endl;
+					typeAssignSS << padding << "  tmpE.sendid = " << _analyzer->macroForLiteral(ATTR(nodeElem, "id")) << ";" << std::endl;
 				}
 				
 				if (_invokerid.length() > 0) { // do not send invokeid if we send / raise to ourself
-					stream << padding << "  tmpE.invokeid = " << _analyzer->macroForLiteral(_invokerid) << ";" << std::endl;
+					typeAssignSS << padding << "  tmpE.invokeid = " << _analyzer->macroForLiteral(_invokerid) << ";" << std::endl;
 				}
 				
 				if (_analyzer->usesEventField("origintype") && !boost::ends_with(targetQueue, "iQ")) {
-					stream << padding << "  tmpE.origintype = " << _analyzer->macroForLiteral("http://www.w3.org/TR/scxml/#SCXMLEventProcessor") << ";" << std::endl;
+					typeAssignSS << padding << "  tmpE.origintype = " << _analyzer->macroForLiteral("http://www.w3.org/TR/scxml/#SCXMLEventProcessor") << ";" << std::endl;
 				}
 
 				if (_analyzer->usesEventField("delay")) {
 #if NEW_DELAY_RESHUFFLE
 #else
                     insertOp += "!";
-					stream << padding << "  _lastSeqId = _lastSeqId + 1;" << std::endl;
+					typeAssignSS << padding << "  _lastSeqId = _lastSeqId + 1;" << std::endl;
 #endif
 					if (HAS_ATTR_CAST(nodeElem, "delay")) {
-						stream << padding << "  tmpE.delay = " << ATTR_CAST(nodeElem, "delay") << ";" << std::endl;
+						typeAssignSS << padding << "  tmpE.delay = " << ATTR_CAST(nodeElem, "delay") << ";" << std::endl;
 					} else if (HAS_ATTR_CAST(nodeElem, "delayexpr")) {
-						stream << padding << "  tmpE.delay = " << ADAPT_SRC(ATTR_CAST(nodeElem, "delayexpr")) << ";" << std::endl;
+						typeAssignSS << padding << "  tmpE.delay = " << ADAPT_SRC(ATTR_CAST(nodeElem, "delayexpr")) << ";" << std::endl;
 					} else {
-						stream << padding << "  tmpE.delay = 0;" << std::endl;
+						typeAssignSS << padding << "  tmpE.delay = 0;" << std::endl;
 					}
 #if NEW_DELAY_RESHUFFLE
 #else
-                    stream << padding << "  tmpE.seqNr = _lastSeqId;" << std::endl;
+                    typeAssignSS << padding << "  tmpE.seqNr = _lastSeqId;" << std::endl;
 #endif
 				}
 
 				if (_analyzer->usesEventField("type")) {
 					std::string eventType = (targetQueue.compare("iQ!") == 0 ? _analyzer->macroForLiteral("internal") : _analyzer->macroForLiteral("external"));
-					stream << padding << "  tmpE.type = " << eventType << ";" << std::endl;
+					typeAssignSS << padding << "  tmpE.type = " << eventType << ";" << std::endl;
 				}
 				
 				NodeSet<std::string> sendParams = filterChildElements(_nsInfo.xmlNSPrefix + "param", nodeElem);
@@ -1657,14 +1658,14 @@ void ChartToPromela::writeExecutableContent(std::ostream& stream, const Arabica:
 				if (sendParams.size() > 0) {
 					for (int i = 0; i < sendParams.size(); i++) {
 						Element<std::string> paramElem = Element<std::string>(sendParams[i]);
-						stream << padding << "  tmpE.data." << ATTR(paramElem, "name") << " = " << ADAPT_SRC(ATTR(paramElem, "expr"))  << ";" << std::endl;
+						typeAssignSS << padding << "  tmpE.data." << ATTR(paramElem, "name") << " = " << ADAPT_SRC(ATTR(paramElem, "expr"))  << ";" << std::endl;
 					}
 				}
 				if (sendNameList.size() > 0) {
 					std::list<std::string> nameListIds = tokenizeIdRefs(sendNameList);
 					std::list<std::string>::iterator nameIter = nameListIds.begin();
 					while(nameIter != nameListIds.end()) {
-						stream << padding << "  tmpE.data." << *nameIter << " = " << ADAPT_SRC(*nameIter) << ";" << std::endl;
+						typeAssignSS << padding << "  tmpE.data." << *nameIter << " = " << ADAPT_SRC(*nameIter) << ";" << std::endl;
 						nameIter++;
 					}
 				}
@@ -1674,14 +1675,42 @@ void ChartToPromela::writeExecutableContent(std::ostream& stream, const Arabica:
 					if (contentElem.hasChildNodes() && contentElem.getFirstChild().getNodeType() == Node_base::TEXT_NODE) {
 						std::string content = spaceNormalize(contentElem.getFirstChild().getNodeValue());
 						if (!isNumeric(content.c_str(), 10)) {
-							stream << padding << "  tmpE.data = " << _analyzer->macroForLiteral(content) << ";" << std::endl;
+							typeAssignSS << padding << "  tmpE.data = " << _analyzer->macroForLiteral(content) << ";" << std::endl;
 						} else {
-							stream << padding << "  tmpE.data = " << content << ";" << std::endl;
+							typeAssignSS << padding << "  tmpE.data = " << content << ";" << std::endl;
 						}
 					} else if (HAS_ATTR(contentElem, "expr")) {
-						stream << padding << "  tmpE.data = " << ADAPT_SRC(ATTR(contentElem, "expr")) << ";" << std::endl;
+						typeAssignSS << padding << "  tmpE.data = " << ADAPT_SRC(ATTR(contentElem, "expr")) << ";" << std::endl;
 					}
 				}
+                
+                // remove all fields from typeReset that are indeed set by typeAssign
+//                for (std::string assigned; std::getline(typeAssignSS, assigned); ) {
+//                    assigned = assigned.substr(0, assigned.find('='));
+//                    assigned = assigned.substr(assigned.find('.'));
+//                    std::istringstream typeResetSS (typeReset);
+//                    for (std::string reset; std::getline(typeResetSS, reset); ) {
+//                        if (!boost::find_first(reset, assigned)) {
+//                            stream << reset << std::endl;
+//                        }
+//                    }
+//                }
+//                stream << typeAssignSS.str();
+
+                std::istringstream typeResetSS (typeReset);
+                for (std::string reset; std::getline(typeResetSS, reset); ) {
+                    std::string resetField = reset.substr(0, reset.find('='));
+                    resetField = resetField.substr(resetField.find('.'));
+                    for (std::string assigned; std::getline(typeAssignSS, assigned); ) {
+                        if (boost::find_first(resetField, assigned)) {
+                            break;
+                        }
+                    }
+                    stream << reset << std::endl;
+                }
+                stream << typeAssignSS.str();
+
+                
 				stream << padding << "  " << targetQueue << insertOp <<"tmpE;" << std::endl;
                 
 #if NEW_DELAY_RESHUFFLE
@@ -2276,7 +2305,7 @@ void ChartToPromela::writeFSM(std::ostream& stream) {
 																																	 PromelaInline::PROMELA_EVENT_ONLY);
 	
 	stream << "  atomic {" << std::endl;
-	stream << "    /* pop an event */" << std::endl;
+	stream << "/* pop an event */" << std::endl;
 	stream << "    if" << std::endl;
 	stream << "    :: len(" << _prefix << "iQ) != 0 -> " << _prefix << "iQ ? " << _prefix << "_event   /* from internal queue */" << std::endl;
 	if (eventSources.size() > 0) {
@@ -2363,7 +2392,7 @@ void ChartToPromela::writeFSM(std::ostream& stream) {
 	stream << "    fi;" << std::endl << std::endl;
 
 	
-	stream << "    /* terminate if we are stopped */" << std::endl;
+	stream << "/* terminate if we are stopped */" << std::endl;
 	stream << "    if" << std::endl;
 	stream << "    :: " << _prefix << "done -> goto " << _prefix << "terminate;" << std::endl;
 	if (_parent != NULL) {

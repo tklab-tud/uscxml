@@ -330,16 +330,19 @@ void NameSpaceInfo::init(const std::map<std::string, std::string>& namespaceInfo
 }
 
 void StateTransitionMonitor::beforeTakingTransition(uscxml::Interpreter interpreter, const Arabica::DOM::Element<std::string>& transition, bool moreComing) {
+    tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
 	std::cerr << "Transition: " << uscxml::DOMUtils::xPathForNode(transition) << std::endl;
 }
 
 void StateTransitionMonitor::onStableConfiguration(uscxml::Interpreter interpreter) {
+    tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
 	std::cerr << "Config: {";
 	printNodeSet(interpreter.getConfiguration());
 	std::cerr << "}" << std::endl;
 }
 
 void StateTransitionMonitor::beforeProcessingEvent(uscxml::Interpreter interpreter, const uscxml::Event& event) {
+    tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
 	switch (event.eventType) {
 		case uscxml::Event::INTERNAL:
 			std::cerr << "Internal Event: " << event.name << std::endl;
@@ -354,10 +357,12 @@ void StateTransitionMonitor::beforeProcessingEvent(uscxml::Interpreter interpret
 }
 
 void StateTransitionMonitor::beforeExecutingContent(Interpreter interpreter, const Arabica::DOM::Element<std::string>& element) {
+    tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
 	std::cerr << "Executable Content: " << DOMUtils::xPathForNode(element) << std::endl;
 }
 
 void StateTransitionMonitor::beforeExitingState(uscxml::Interpreter interpreter, const Arabica::DOM::Element<std::string>& state, bool moreComing) {
+    tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
 	exitingStates.push_back(state);
 	if (!moreComing) {
 		std::cerr << "Exiting: {";
@@ -368,6 +373,7 @@ void StateTransitionMonitor::beforeExitingState(uscxml::Interpreter interpreter,
 }
 
 void StateTransitionMonitor::beforeEnteringState(uscxml::Interpreter interpreter, const Arabica::DOM::Element<std::string>& state, bool moreComing) {
+    tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
 	enteringStates.push_back(state);
 	if (!moreComing) {
 		std::cerr << "Entering: {";
@@ -385,7 +391,8 @@ void StateTransitionMonitor::printNodeSet(const Arabica::XPath::NodeSet<std::str
 		seperator = ", ";
 	}
 }
-
+tthread::recursive_mutex StateTransitionMonitor::_mutex;
+    
 std::map<std::string, boost::weak_ptr<InterpreterImpl> > Interpreter::_instances;
 tthread::recursive_mutex Interpreter::_instanceMutex;
 
@@ -740,7 +747,7 @@ NodeSet<std::string> InterpreterImpl::getDocumentInitialTransitions() {
 
 	} else {
 		// try to get initial transition from initial element
-		initialTransitions = _xpath.evaluate("/" + _nsInfo.xpathPrefix + "initial/" + _nsInfo.xpathPrefix + "transition", _scxml).asNodeSet();
+		initialTransitions = _xpath.evaluate("/" + _nsInfo.xpathPrefix + "scxml/"+ _nsInfo.xpathPrefix + "initial/" + _nsInfo.xpathPrefix + "transition", _scxml).asNodeSet();
 		if (initialTransitions.size() == 0) {
 			Arabica::XPath::NodeSet<std::string> initialStates;
 			// fetch per draft
@@ -790,6 +797,14 @@ InterpreterState InterpreterImpl::step(int waitForMS) {
 			}
 			std::cerr << std::endl;
 #endif
+
+            // this is not mentionend in the standard, though it makes sense
+            for (int i = 0; i < initialTransitions.size(); i++) {
+                Element<std::string> transition(initialTransitions[i]);
+                USCXML_MONITOR_CALLBACK3(beforeTakingTransition, transition, (i + 1 < enabledTransitions.size()))
+                executeContent(transition);
+                USCXML_MONITOR_CALLBACK3(afterTakingTransition, transition, (i + 1 < enabledTransitions.size()))
+            }
 
 			enterStates(initialTransitions);
 			setInterpreterState(USCXML_MICROSTEPPED);
@@ -1050,6 +1065,8 @@ void InterpreterImpl::stabilize() {
 	_statesToInvoke = NodeSet<std::string>();
 }
 
+#if 0
+    
 Arabica::XPath::NodeSet<std::string> InterpreterImpl::selectTransitions(const std::string& event) {
 	Arabica::XPath::NodeSet<std::string> enabledTransitions;
 
@@ -1128,6 +1145,104 @@ LOOP:
 	return enabledTransitions;
 }
 
+#else
+
+Arabica::XPath::NodeSet<std::string> InterpreterImpl::selectTransitions(const std::string& event) {
+    Arabica::XPath::NodeSet<std::string> enabledTransitions;
+    
+    NodeSet<std::string> atomicStates;
+    for (unsigned int i = 0; i < _configuration.size(); i++) {
+        if (isAtomic(Element<std::string>(_configuration[i])))
+            atomicStates.push_back(_configuration[i]);
+    }
+    atomicStates.to_document_order();
+    
+    for (unsigned int i = 0; i < atomicStates.size(); i++) {
+        Element<std::string> state(atomicStates[i]);
+        while(true) {
+            NodeSet<std::string> transitions = filterChildElements(_nsInfo.xmlNSPrefix + "transition", state);
+            for (unsigned int k = 0; k < transitions.size(); k++) {
+                if (isEnabledTransition(Element<std::string>(transitions[k]), event)) {
+                    enabledTransitions.push_back(transitions[k]);
+                    goto NEXT_ATOMIC;
+                }
+            }
+            if (state.getParentNode() && state.getParentNode().getNodeType() == Node_base::ELEMENT_NODE) {
+                state = Element<std::string>(state.getParentNode());
+            } else {
+                goto NEXT_ATOMIC;
+            }
+        }
+    NEXT_ATOMIC:;
+    }
+    
+#if 0
+    std::cerr << "Enabled transitions for '" << event << "': " << std::endl;
+    for (int i = 0; i < enabledTransitions.size(); i++) {
+        std::cerr << enabledTransitions[i] << std::endl << "----" << std::endl;
+    }
+    std::cerr << std::endl;
+#endif
+
+    enabledTransitions = removeConflictingTransitions(enabledTransitions);
+
+#if 0
+    std::cerr << "Non-conflicting transitions for '" << event << "': " << std::endl;
+    for (int i = 0; i < enabledTransitions.size(); i++) {
+        std::cerr << enabledTransitions[i] << std::endl << "----" << std::endl;
+    }
+    std::cerr << std::endl;
+#endif
+
+    return enabledTransitions;
+}
+
+
+Arabica::XPath::NodeSet<std::string> InterpreterImpl::selectEventlessTransitions() {
+
+    Arabica::XPath::NodeSet<std::string> enabledTransitions;
+    
+    NodeSet<std::string> atomicStates;
+    for (unsigned int i = 0; i < _configuration.size(); i++) {
+        if (isAtomic(Element<std::string>(_configuration[i])))
+            atomicStates.push_back(_configuration[i]);
+    }
+    atomicStates.to_document_order();
+    
+    for (unsigned int i = 0; i < atomicStates.size(); i++) {
+        Element<std::string> state(atomicStates[i]);
+        while(true) {
+            NodeSet<std::string> transitions = filterChildElements(_nsInfo.xmlNSPrefix + "transition", state);
+            for (unsigned int k = 0; k < transitions.size(); k++) {
+                Element<std::string> transElem(transitions[k]);
+                if (!HAS_ATTR(transElem, "event") && hasConditionMatch(transElem)) {
+                    enabledTransitions.push_back(transitions[k]);
+                    goto NEXT_ATOMIC;
+                }
+            }
+            if (state.getParentNode() && state.getParentNode().getNodeType() == Node_base::ELEMENT_NODE) {
+                state = Element<std::string>(state.getParentNode());
+            } else {
+                goto NEXT_ATOMIC;
+            }
+        }
+    NEXT_ATOMIC:;
+    }
+    
+#if 0
+    std::cerr << "Enabled eventless transitions: " << std::endl;
+    for (int i = 0; i < enabledTransitions.size(); i++) {
+        std::cerr << enabledTransitions[i] << std::endl << "----" << std::endl;
+    }
+    std::cerr << std::endl;
+#endif
+
+    enabledTransitions = removeConflictingTransitions(enabledTransitions);
+    return enabledTransitions;
+}
+
+    
+#endif
 
 bool InterpreterImpl::isEnabledTransition(const Element<std::string>& transition, const std::string& event) {
 	std::string eventName;
@@ -2151,9 +2266,15 @@ void InterpreterImpl::invoke(const Arabica::DOM::Element<std::string>& element) 
 					USCXML_MONITOR_CALLBACK3(afterInvoking, Arabica::DOM::Element<std::string>(element), invokeReq.invokeid)
 
 					// this is out of draft but so useful to know when an invoker started
-//					Event invSuccess;
-//					invSuccess.name = "invoke.success." + invokeReq.invokeid;
-//					receive(invSuccess);
+                    if (HAS_ATTR(element, "callback")) {
+                        std::string callback = ATTR(element, "callback");
+                        if (callback.size() > 0) {
+                            Event invSuccess;
+                            invSuccess.name = callback + "." + invokeReq.invokeid;
+                            receive(invSuccess);
+                        }
+                    }
+                    
 
 				} catch(boost::bad_lexical_cast e) {
 					LOG(ERROR) << "Exception caught while sending invoke request to invoker " << invokeReq.invokeid << ": " << e.what();
@@ -2594,7 +2715,8 @@ void InterpreterImpl::finalizeAndAutoForwardCurrentEvent() {
 				// do not autoforward to invokers that send to #_parent from the SCXML IO Processor!
 				// Yes do so, see test229!
 				// if (!boost::equals(_currEvent.getOriginType(), "http://www.w3.org/TR/scxml/#SCXMLEventProcessor"))
-				invokeIter->second.send(_currEvent);
+//                LOG(ERROR) << _sessionId << " auto forwards " << _currEvent.name << " to " << invokeIter->first << std::endl;
+                invokeIter->second.send(_currEvent);
 			} catch (const std::exception &e) {
 				LOG(ERROR) << "Exception caught while sending event to invoker " << invokeIter->first << ": " << e.what();
 			} catch(...) {
@@ -2696,6 +2818,7 @@ Arabica::DOM::Node<std::string> InterpreterImpl::getAncestorElement(const Arabic
  we are speaking of proper ancestor (parent or parent of a parent, etc.) the LCCA is never a member of stateList.
 */
 
+#define VERBOSE_FIND_LCCA 0
 Arabica::DOM::Node<std::string> InterpreterImpl::findLCCA(const Arabica::XPath::NodeSet<std::string>& states) {
 #if VERBOSE_FIND_LCCA
 	std::cerr << "findLCCA: ";
@@ -2729,7 +2852,7 @@ NEXT_ANCESTOR:
 	// take uppermost root as ancestor
 	if (!ancestor)
 		ancestor = _scxml;
-	assert(ancestor);
+
 #if VERBOSE_FIND_LCCA
 	std::cerr << " -> " << ATTR_CAST(ancestor, "id") << " " << ancestor.getLocalName() << std::endl;
 #endif
@@ -2838,10 +2961,12 @@ Arabica::XPath::NodeSet<std::string> InterpreterImpl::getInitialStates(Arabica::
 
 	// initial element as child - but not the implicit generated one
 	NodeSet<std::string> initElems = filterChildElements(_nsInfo.xmlNSPrefix + "initial", state);
-	if(initElems.size() == 1 && !iequals(ATTR_CAST(initElems[0], "generated"), "true")) {
+	if(initElems.size() > 0 && !iequals(ATTR_CAST(initElems[0], "generated"), "true")) {
 		NodeSet<std::string> initTrans = filterChildElements(_nsInfo.xmlNSPrefix + "transition", initElems[0]);
-		return getTargetStates(Element<std::string>(initTrans[0]));
-	}
+        if (initTrans.size() > 0) {
+            return getTargetStates(Element<std::string>(initTrans[0]));
+        }
+    }
 
 	// first child state
 	Arabica::XPath::NodeSet<std::string> initStates;
@@ -3096,6 +3221,14 @@ NodeSet<std::string> InterpreterImpl::filterChildType(const Node_base::Type type
 	return filteredChildTypes;
 }
 
+/*
+ * If state2 is null, returns the set of all ancestors of state1 in ancestry order
+ * (state1's parent followed by the parent's parent, etc. up to an including the <scxml>
+ * element). If state2 is non-null, returns in ancestry order the set of all ancestors
+ * of state1, up to but not including state2. (A "proper ancestor" of a state is its
+ * parent, or the parent's parent, or the parent's parent's parent, etc.))If state2 is
+ * state1's parent, or equal to state1, or a descendant of state1, this returns the empty set.
+ */
 
 NodeSet<std::string> InterpreterImpl::getProperAncestors(const Arabica::DOM::Node<std::string>& s1,
         const Arabica::DOM::Node<std::string>& s2) {
@@ -3109,13 +3242,13 @@ NodeSet<std::string> InterpreterImpl::getProperAncestors(const Arabica::DOM::Nod
 		Arabica::DOM::Node<std::string> node = s1;
 		while((node = node.getParentNode())) {
 			if (node.getNodeType() != Node_base::ELEMENT_NODE)
-				continue;
+				break;
 
 			Element<std::string> nodeElem(node);
 			if (!isState(nodeElem))
 				break;
-			if (iequals(TAGNAME(nodeElem), _nsInfo.xmlNSPrefix + "scxml")) // do not return scxml root itself - this is somewhat ill-defined
-				break;
+//			if (iequals(TAGNAME(nodeElem), _nsInfo.xmlNSPrefix + "scxml")) // do not return scxml root itself - this is somewhat ill-defined
+//				break;
 			if (!iequals(TAGNAME(nodeElem), _nsInfo.xmlNSPrefix + "parallel") &&
 			        !iequals(TAGNAME(nodeElem), _nsInfo.xmlNSPrefix + "state") &&
 			        !iequals(TAGNAME(nodeElem), _nsInfo.xmlNSPrefix + "scxml"))
@@ -3131,7 +3264,10 @@ NodeSet<std::string> InterpreterImpl::getProperAncestors(const Arabica::DOM::Nod
 
 bool InterpreterImpl::isDescendant(const Arabica::DOM::Node<std::string>& s1,
                                    const Arabica::DOM::Node<std::string>& s2) {
-	Arabica::DOM::Node<std::string> parent = s1.getParentNode();
+    if (!s1 || !s2)
+        return false;
+
+    Arabica::DOM::Node<std::string> parent = s1.getParentNode();
 	while(parent) {
 		if (s2 == parent)
 			return true;

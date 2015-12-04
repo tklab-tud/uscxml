@@ -81,15 +81,15 @@ void FetchElement::downloadFailed(const URL& url, int errorCode) {
 }
 
 void FetchElement::enterElement(const Arabica::DOM::Element<std::string>& node) {
-	if (!HAS_ATTR(node, "target") && !HAS_ATTR(node, "targetexpr")) {
-		LOG(ERROR) << "Fetch element requires target or targetexpr";
+	if (!HAS_ATTR(node, "src") && !HAS_ATTR(node, "srcexpr")) {
+		LOG(ERROR) << "Fetch element requires src or srcexpr";
 		return;
 	}
-	if (HAS_ATTR(node, "targetexpr") && !_interpreter->getDataModel()) {
-		LOG(ERROR) << "Fetch element with targetexpr requires datamodel";
+	if (HAS_ATTR(node, "srcexpr") && !_interpreter->getDataModel()) {
+		LOG(ERROR) << "Fetch element with srcexpr requires datamodel";
 		return;
 	}
-	_target = (HAS_ATTR(node, "target") ? ATTR(node, "target") : _interpreter->getDataModel().evalAsString(ATTR(node, "targetexpr")));
+	_source = (HAS_ATTR(node, "src") ? ATTR(node, "src") : _interpreter->getDataModel().evalAsString(ATTR(node, "srcexpr")));
 
 	if (!HAS_ATTR(node, "callback") && !HAS_ATTR(node, "callbackexpr")) {
 		LOG(ERROR) << "Fetch element requires callback or callbackexpr";
@@ -110,10 +110,10 @@ void FetchElement::enterElement(const Arabica::DOM::Element<std::string>& node) 
 		return;
 	}
 
-	_targetUrl = URL(_target);
+	_targetUrl = URL(_source);
 	if (!_targetUrl.isAbsolute()) {
 		if (!_targetUrl.toAbsolute(_interpreter->getBaseURL(node))) {
-			LOG(ERROR) << "Cannot transform " << _target << " into absolute URL";
+			LOG(ERROR) << "Cannot transform " << _source << " into absolute URL";
 			return;
 		}
 	}

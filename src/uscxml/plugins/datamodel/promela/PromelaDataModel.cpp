@@ -458,9 +458,9 @@ Data PromelaDataModel::evaluateExpr(void* ast) {
 	case PML_CMPND:
 		return getVariable(node);
 	case PML_STRING: {
-//		std::string stripped = node->value.substr(1, node->value.size() - 2);
-//		return Data(stripped, Data::VERBATIM);
-		return Data(node->value, Data::INTERPRETED);
+		std::string stripped = node->value.substr(1, node->value.size() - 2);
+		return Data(stripped, Data::VERBATIM);
+//		return Data(node->value, Data::INTERPRETED);
 	}
 	case PML_PLUS:
 		return dataToInt(evaluateExpr(*opIter++)) + dataToInt(evaluateExpr(*opIter++));

@@ -1,0 +1,12 @@
+<scxml>
+  <parallel id="p1">
+    <state id="s1">
+      <transition target="pass" />
+    </state>
+    <state id="s2">
+      <transition target="fail" />
+    </state>
+  </parallel>
+  <final id="pass" />
+  <final id="fail" />
+</scxml>

@@ -1,6 +1,6 @@
 <scxml datamodel="ecmascript" name="vrml">
 	<script src="http://uscxml.tk.informatik.tu-darmstadt.de/scripts/dump.js" />
-	<script src="http://uscxml.tk.informatik.tu-darmstadt.de/scripts/string.endsWith.js" />
+	<script src="http://uscxml.tk.informatik.tu-darmstadt.de/scripts/string.  .js" />
 	<script src="http://uscxml.tk.informatik.tu-darmstadt.de/scripts/array.last.js" />
 	<script>
 		var wrls = {};        // information of the wrl, vrml files
@@ -294,7 +294,7 @@
 							<content fileexpr="processed[_event['fileStruct'].key][_event['fileStruct'].format].path" />
 						</respond>
 					<else />
-						<if cond="_event.name.endsWith('postponed')">
+						<if cond="_event.name.  ('postponed')">
 							<!--
 								A postponed event we couldn't answer
 							-->

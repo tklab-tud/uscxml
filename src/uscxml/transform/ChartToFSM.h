@@ -242,6 +242,10 @@ public:
 	virtual ~ChartToFSM();
 
 	void indexTransitions();
+    void annotateDomain();
+    void annotateExitSet();
+    void annotateEntrySet();
+    void annotateConflicts();
 	Arabica::DOM::Document<std::string> getDocument() const; // overwrite to return flat FSM
 
 protected:

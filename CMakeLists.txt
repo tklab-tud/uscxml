@@ -18,6 +18,10 @@ if(POLICY CMP0054)
 	# Escape variables in if
 	cmake_policy(SET CMP0054 OLD)
 endif()
+if(POLICY CMP0059)
+	# Don't treat ``DEFINITIONS`` as a built-in directory property - required for cotire
+	cmake_policy(SET CMP0059 OLD)
+endif()
 
 # specify USCXML version
 SET(USCXML_VERSION_MAJOR "0")
@@ -41,6 +45,7 @@ include("${CMAKE_MODULE_PATH}/USCXMLMacros.cmake")
 include("${CMAKE_MODULE_PATH}/FunctionExists.cmake")
 include("${CMAKE_MODULE_PATH}/HeaderExists.cmake")
 include("${CMAKE_MODULE_PATH}/BinaryExists.cmake")
+include("${CMAKE_MODULE_PATH}/TryCompile.cmake")
 
 # CMake 2.8.11 reports AMD64 for Windows 64Bit, where earlier versions reported x86
 # we resolve it with a 64bit check later
@@ -356,8 +361,12 @@ else()
 	OPTION(BUILD_TESTS_W3C_PROLOG "Create W3C Prolog tests" ON)
 	OPTION(BUILD_TESTS_W3C_PROMELA "Create W3C Promela tests" ON)
 	
+	OPTION(BUILD_TESTS_FSM "Build FSM converted W3C tests" OFF)
 	OPTION(BUILD_TESTS_FSM_ECMA "Create FSM converted W3C ECMAScript tests" ON)
-	OPTION(BUILD_TESTS_FSM_XPATH "Create FSM converted W3C XPath tests" OFF)
+	OPTION(BUILD_TESTS_FSM_XPATH "Create FSM converted W3C XPath tests" ON)
+	OPTION(BUILD_TESTS_FSM_LUA "Create FSM converted W3C Lua tests" ON)
+	OPTION(BUILD_TESTS_FSM_PROLOG "Create FSM converted W3C Prolog tests" ON)
+	OPTION(BUILD_TESTS_FSM_PROMELA "Create FSM converted W3C Promela tests" ON)
 endif()
 OPTION(ENABLE_GCOV "Compile with gcov support" OFF)
 
@@ -367,6 +376,10 @@ OPTION(BUILD_DM_XPATH "Build with XPath datamodel" ON)
 OPTION(BUILD_DM_PROLOG "Build with Prolog datamodel" ON)
 OPTION(BUILD_DM_PROMELA "Build with Promela datamodel" ON)
 OPTION(BUILD_DM_LUA "Build with Lua datamodel" ON)
+
+OPTION(BUILD_BINDING_JAVA "Build language bindings for Java" ON)
+OPTION(BUILD_BINDING_CSHARP "Build language bindings for CSharp" ON)
+OPTION(BUILD_BINDING_PHP "Build language bindings for PHP" OFF)
 
 # a dummy target to depend on the targets needed for tests, see:
 # http://stackoverflow.com/questions/733475/cmake-ctest-make-test-doesnt-build-tests
@@ -485,6 +498,12 @@ elseif (${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
 	# set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -read_only_relocs suppress")
 	# set(CMAKE_EXE_LINKER_FLAGS_DEBUG "${CMAKE_EXE_LINKER_FLAGS_DEBUG} -read_only_relocs suppress")
+
+	# not too sure when this happened, 'void' has to be qualified as 'std::type_info' on __cxa_throw
+	if(CMAKE_CXX_COMPILER_VERSION VERSION_EQUAL 4.3 OR CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 4.3)
+		set(CXA_THROW_TYPEINFO_SIGNATURE ON)
+	endif()
+	
 else()
 	message(FATAL_ERROR "Unknown compiler: ${CMAKE_CXX_COMPILER_ID}")
 endif()
@@ -502,9 +521,18 @@ if (APPLE AND MACOSX_VERSION VERSION_LESS "10.9")
 	# support leopard and above
 	set(CMAKE_OSX_DEPLOYMENT_TARGET 10.6)
 	foreach(FLAGS CMAKE_C_FLAGS CMAKE_CXX_FLAGS CMAKE_EXE_LINKER_FLAGS CMAKE_SHARED_LINKER_FLAGS CMAKE_MODULE_LINKER_FLAGS)
-			set(${FLAGS} "${${FLAGS}} -mmacosx-version-min=${CMAKE_OSX_DEPLOYMENT_TARGET}")
+		set(${FLAGS} "${${FLAGS}} -mmacosx-version-min=${CMAKE_OSX_DEPLOYMENT_TARGET}")
   endforeach()
 endif()
+
+# if (APPLE AND MACOSX_VERSION VERSION_GREATER "10.9.99")
+# 	set(CMAKE_OSX_DEPLOYMENT_TARGET 10.10) # ?
+# 	foreach(FLAGS CMAKE_C_FLAGS CMAKE_CXX_FLAGS CMAKE_EXE_LINKER_FLAGS CMAKE_SHARED_LINKER_FLAGS CMAKE_MODULE_LINKER_FLAGS)
+# 			set(${FLAGS} "${${FLAGS}} -mmacosx-version-min=${CMAKE_OSX_DEPLOYMENT_TARGET} -arch x86_64")
+# 			# we get "Illegal Instruction: 4" errors without on yosemite?!
+# 			# set(${FLAGS} "${${FLAGS}} -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.10.sdk")
+#   endforeach()
+# endif()
 
 if (IOS)
 	if (${CMAKE_GENERATOR} STREQUAL "Xcode")
@@ -1314,6 +1342,8 @@ if(CMAKE_BUILD_TYPE STREQUAL "Release")
 elseif(CMAKE_BUILD_TYPE STREQUAL "Debug")
 	set(CMAKE_BUILD_TYPE_DEBUG ON)
 endif()
+
+
 
 # enable config.h style compile time options and add as "uscxml/config.h"
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.h.in ${CMAKE_CURRENT_BINARY_DIR}/uscxml/config.h)

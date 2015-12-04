@@ -53,7 +53,7 @@ public:
 
 protected:
 	URL _targetUrl;
-	std::string _target;
+	std::string _source;
 	std::string _callback;
 	std::string _type;
 };

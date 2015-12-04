@@ -6,7 +6,7 @@
 
 <scxml name="push" datamodel="ecmascript">
 	<script src="http://uscxml.tk.informatik.tu-darmstadt.de/scripts/dump.js" />
-	<script src="http://uscxml.tk.informatik.tu-darmstadt.de/scripts/string.endsWith.js" />
+	<script src="http://uscxml.tk.informatik.tu-darmstadt.de/scripts/string.  .js" />
 
 	<state id="main">
 		<!-- We will only answer http requests when the heartbeat is emitted -->
@@ -25,7 +25,7 @@
 			</transition>
 			
 			<transition event="http.post" target="idle">
-				<if cond="_event.name.endsWith('postponed')">
+				<if cond="_event.name.  ('postponed')">
 					<!-- This is an event we postponed before the heartbeat, respond -->
 					<respond to="_event.origin">
 						<content>This is awesome!</content>

@@ -75,11 +75,15 @@ void printUsageAndExit(const char* progName) {
 	printf("\t-t tex       : write global state transition table as tex file\n");
 	printf("\t-a {OPTIONS} : annotate SCXML elements with comma seperated options\n");
 	printf("\t   'priority'   - transitions with their priority for transition selection\n");
+    printf("\t   'exitset'    - annotate all transitions with their exit sets\n");
+    printf("\t   'entryset'   - annotate all transitions with their entry sets\n");
+    printf("\t   'conflicts'  - annotate all transitions with their conflicts\n");
+    printf("\t   'domain'     - annotate all transitions with their domain\n");
 	printf("\t   'step'       - global states with their step identifier (-tflat only)\n");
 	printf("\t   'members'    - global transitions with their member transitions per index (-tflat only)\n");
 	printf("\t   'sends'      - transititve number of sends to external queue for global transitions (-tflat only)\n");
 	printf("\t   'raises'     - transititve number of raises to internal queue for global transitions (-tflat only)\n");
-	printf("\t   'verbose'    - comments detailling state changes and transitions for content selection (-tflat only)\n");
+    printf("\t   'verbose'    - comments detailling state changes and transitions for content selection (-tflat only)\n");
     printf("\t   'progress'   - insert comments documenting progress in dociment (-tmin only)\n");
     printf("\t   'nocomment'  - surpress the generation of comments in output\n");
 	printf("\t-v           : be verbose\n");
@@ -174,6 +178,18 @@ int main(int argc, char** argv) {
 	if (ANNOTATE("USCXML_ANNOTATE_VERBOSE_COMMENTS", "verbose"))
 		setenv("USCXML_ANNOTATE_VERBOSE_COMMENTS", "YES", 1);
 
+    if (ANNOTATE("USCXML_ANNOTATE_TRANS_EXITSET", "exitset"))
+        setenv("USCXML_ANNOTATE_TRANS_EXITSET", "YES", 1);
+
+    if (ANNOTATE("USCXML_ANNOTATE_TRANS_DOMAIN", "domain"))
+        setenv("USCXML_ANNOTATE_TRANS_DOMAIN", "YES", 1);
+
+    if (ANNOTATE("USCXML_ANNOTATE_TRANS_CONFLICTS", "conflicts"))
+        setenv("USCXML_ANNOTATE_TRANS_CONFLICTS", "YES", 1);
+
+    if (ANNOTATE("USCXML_ANNOTATE_TRANS_ENTRYSET", "entryset"))
+        setenv("USCXML_ANNOTATE_TRANS_ENTRYSET", "YES", 1);
+
 	if(ANNOTATE("USCXML_ANNOTATE_GLOBAL_TRANS_MEMBERS", "members"))
 		setenv("USCXML_ANNOTATE_GLOBAL_TRANS_MEMBERS", "YES", 1);
 
@@ -202,11 +218,15 @@ int main(int argc, char** argv) {
 //		printUsageAndExit(argv[0]);
 
 	if (outType != "flat" &&
-			outType != "scxml" &&
-			outType != "pml" &&
-			outType != "min" &&
-			outType != "tex" &&
-			std::find(annotations.begin(), annotations.end(), "priority") == annotations.end())
+        outType != "scxml" &&
+        outType != "pml" &&
+        outType != "min" &&
+        outType != "tex" &&
+        std::find(annotations.begin(), annotations.end(), "priority") == annotations.end() &&
+        std::find(annotations.begin(), annotations.end(), "domain") == annotations.end() &&
+        std::find(annotations.begin(), annotations.end(), "conflicts") == annotations.end() &&
+        std::find(annotations.begin(), annotations.end(), "exitset") == annotations.end() &&
+        std::find(annotations.begin(), annotations.end(), "entryset") == annotations.end())
 		printUsageAndExit(argv[0]);
 
 	// register plugins
@@ -243,7 +263,7 @@ int main(int argc, char** argv) {
 				std::cerr << *issueIter << std::endl;
 			}
 		}
-		
+        
 		if (outType == "pml") {
 			if (outputFile.size() == 0 || outputFile == "-") {
 				ChartToPromela::transform(interpreter).writeTo(std::cout);
@@ -292,24 +312,34 @@ int main(int argc, char** argv) {
 			exit(EXIT_SUCCESS);
 		}
 
+        
 #if 1
-		if (annotations.size() > 0) {
-			ChartToFSM annotater(interpreter);
-			if (std::find(annotations.begin(), annotations.end(), "priority") != annotations.end())
-				annotater.indexTransitions();
-
-			if (outputFile.size() == 0 || outputFile == "-") {
-				std::cout << annotater.getDocument();
-			} else {
-				std::ofstream outStream;
-				outStream.open(outputFile.c_str());
-				outStream << annotater.getDocument();
-				outStream.close();
-			}
-			exit(EXIT_SUCCESS);
-		}
+        if (annotations.size() > 0) {
+            ChartToFSM annotater(interpreter);
+            if (std::find(annotations.begin(), annotations.end(), "priority") != annotations.end())
+                annotater.indexTransitions();
+            if (std::find(annotations.begin(), annotations.end(), "conflicts") != annotations.end())
+                annotater.annotateConflicts();
+            if (std::find(annotations.begin(), annotations.end(), "exitset") != annotations.end())
+                annotater.annotateExitSet();
+            if (std::find(annotations.begin(), annotations.end(), "entryset") != annotations.end())
+                annotater.annotateEntrySet();
+            if (std::find(annotations.begin(), annotations.end(), "domain") != annotations.end())
+                annotater.annotateDomain();
+            
+            if (outputFile.size() == 0 || outputFile == "-") {
+                std::cout << annotater.getDocument();
+            } else {
+                std::ofstream outStream;
+                outStream.open(outputFile.c_str());
+                outStream << annotater.getDocument();
+                outStream.close();
+            }
+            exit(EXIT_SUCCESS);
+        }
 #endif
-		
+
+        
 	} catch (Event e) {
 		std::cout << e << std::endl;
 	}

@@ -209,15 +209,22 @@ Arabica::XPath::NodeSet<std::string> InterpreterRC::computeExitSet(const Arabica
 }
 
 Arabica::XPath::NodeSet<std::string> InterpreterRC::computeExitSet(const Arabica::DOM::Node<std::string>& transition) {
-	if (_exitSet.find(transition) != _exitSet.end()) // speed up removeConflicting
-		return _exitSet[transition];
+//	if (_exitSet.find(transition) != _exitSet.end()) // speed up removeConflicting
+//		return _exitSet[transition];
 
 	Arabica::XPath::NodeSet<std::string> transitions;
 	transitions.push_back(transition);
 	
 	Arabica::XPath::NodeSet<std::string> exitSet = computeExitSet(transitions);
-	_exitSet[transition] = exitSet;
+	//_exitSet[transition] = exitSet;
 	
+#if 0
+    std::cerr << "Exit set for transition '" << transition << "': " << std::endl;
+    for (int i = 0; i < exitSet.size(); i++) {
+        std::cerr << ATTR_CAST(exitSet[i], "id") << std::endl << "----" << std::endl;
+    }
+    std::cerr << std::endl;
+#endif
 	return exitSet;
 }
 
@@ -303,11 +310,11 @@ void InterpreterRC::enterStates(const Arabica::XPath::NodeSet<std::string>& enab
                 // only process first donedata element
                 doneData = Element<std::string>(doneDatas[0]);
             }
-			internalDoneSend(parent, doneData);
 
             if (parentIsScxmlState(s)) {
 				_topLevelFinalReached = true;
 			} else {
+                internalDoneSend(parent, doneData);
 				Element<std::string> grandParent = (Element<std::string>)parent.getParentNode();
 
 //				internalDoneSend(parent, Arabica::DOM::Element<std::string>());

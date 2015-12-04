@@ -33,7 +33,7 @@ namespace uscxml {
 using namespace Arabica::XPath;
 using namespace Arabica::DOM;
 
-InterpreterIssue::InterpreterIssue(const std::string& msg, Arabica::DOM::Node<std::string> node, IssueSeverity severity) : message(msg), node(node), severity(severity) {
+InterpreterIssue::InterpreterIssue(const std::string& msg, Arabica::DOM::Node<std::string> node, IssueSeverity severity, const std::string& specRef) : message(msg), node(node), severity(severity), specRef(specRef) {
 	if (node)
 		xPath = DOMUtils::xPathForNode(node);
 }
@@ -502,8 +502,17 @@ NEXT_TRANSITION:
     // check for valid initial transition
     {
         NodeSet<std::string> initTrans;
-        initTrans.push_back(InterpreterImpl::filterChildElements(_nsInfo.xmlNSPrefix + "transition", initials, true));
-        initTrans.push_back(InterpreterImpl::filterChildElements(_nsInfo.xmlNSPrefix + "transition", histories, true));
+//        initTrans.push_back(InterpreterImpl::filterChildElements(_nsInfo.xmlNSPrefix + "transition", histories, true));
+        
+        for (int i = 0; i < initials.size(); i++) {
+            Element<std::string> initial = Element<std::string>(initials[i]);
+            NodeSet<std::string> initTransitions = InterpreterImpl::filterChildElements(_nsInfo.xmlNSPrefix + "transition", initial, true);
+            if (initTransitions.size() != 1) {
+                issues.push_back(InterpreterIssue("Initial element must define exactly one transition", initial, InterpreterIssue::USCXML_ISSUE_FATAL));
+            }
+            initTrans.push_back(initTransitions);
+
+        }
 
         for (int i = 0; i < initTrans.size(); i++) {
             Element<std::string> transition = Element<std::string>(initTrans[i]);
@@ -616,6 +625,9 @@ NEXT_TRANSITION:
                     if (!HAS_ATTR(element, *reqIter)) {
                         issues.push_back(InterpreterIssue("Element " + localName + " is missing required attribute '" + *reqIter + "'", element, InterpreterIssue::USCXML_ISSUE_WARNING));
                     }
+                    if (HAS_ATTR(element, *reqIter) && ATTR(element, *reqIter).size() == 0) {
+                        issues.push_back(InterpreterIssue("Required attribute '" + *reqIter + "' of element " + localName + " is empty", element, InterpreterIssue::USCXML_ISSUE_WARNING));
+                    }
                 }
             }
             
@@ -706,9 +718,18 @@ NEXT_TRANSITION:
             if (HAS_ATTR(send, "delay") && HAS_ATTR(send, "target") && ATTR(send, "target")== "_internal") {
                 issues.push_back(InterpreterIssue("Send element cannot have delay with target _internal", send, InterpreterIssue::USCXML_ISSUE_WARNING));
             }
-            if (HAS_ATTR(send, "namelist") && InterpreterImpl::filterChildElements(_nsInfo.xmlNSPrefix + "content", send, false).size() > 0) {
+            
+            NodeSet<std::string> contentChilds = InterpreterImpl::filterChildElements(_nsInfo.xmlNSPrefix + "content", send, false);
+            NodeSet<std::string> paramChilds = InterpreterImpl::filterChildElements(_nsInfo.xmlNSPrefix + "param", send, false);
+
+            if (HAS_ATTR(send, "namelist") && contentChilds.size() > 0) {
                 issues.push_back(InterpreterIssue("Send element cannot have namelist attribute and content child", send, InterpreterIssue::USCXML_ISSUE_WARNING));
             }
+
+            if (paramChilds.size() > 0 && contentChilds.size() > 0) {
+                issues.push_back(InterpreterIssue("Send element cannot have param child and content child", send, InterpreterIssue::USCXML_ISSUE_WARNING));
+            }
+
         }
         for (int i = 0; i < cancels.size(); i++) {
             Element<std::string> cancel = Element<std::string>(cancels[i]);
@@ -731,8 +752,19 @@ NEXT_TRANSITION:
             if (HAS_ATTR(invoke, "namelist") && InterpreterImpl::filterChildElements(_nsInfo.xmlNSPrefix + "param", invoke, false).size() > 0) {
                 issues.push_back(InterpreterIssue("Invoke element cannot have namelist attribute and param child", invoke, InterpreterIssue::USCXML_ISSUE_WARNING));
             }
-        }
+            if (HAS_ATTR(invoke, "src") && InterpreterImpl::filterChildElements(_nsInfo.xmlNSPrefix + "content", invoke, false).size() > 0) {
+                issues.push_back(InterpreterIssue("Invoke element cannot have src attribute and content child", invoke, InterpreterIssue::USCXML_ISSUE_WARNING));
 
+            }
+        }
+        for (int i = 0; i < doneDatas.size(); i++) {
+            Element<std::string> donedata = Element<std::string>(doneDatas[i]);
+            if (InterpreterImpl::filterChildElements(_nsInfo.xmlNSPrefix + "content", donedata, false).size() > 0 &&
+                InterpreterImpl::filterChildElements(_nsInfo.xmlNSPrefix + "param", donedata, false).size() > 0) {
+                issues.push_back(InterpreterIssue("Donedata element cannot have param child and content child", donedata, InterpreterIssue::USCXML_ISSUE_WARNING));
+
+            }
+        }
     }
 
 	// check that the datamodel is known if not already instantiated

@@ -50,6 +50,13 @@ find ./prolog -type f -exec grep -Ili 'datamodel="xpath"' {} \; |xargs rm -fv
 find ./prolog -type f -exec grep -Ili 'datamodel="ecmascript"' {} \; |xargs rm -fv
 find ./prolog -type f -exec grep -Ili 'datamodel="null"' {} \; |xargs rm -fv
 
+# test436 is the null datamodel
+mv ./ecma/test436.scxml ./null
+rm ./xpath/test436.scxml
+rm ./promela/test436.scxml
+rm ./prolog/test436.scxml
+rm ./lua/test436.scxml
+
 # format all SCXML files
 SCXMLS=`find . -type f -name '*.scxml'`
 for SCXML in $SCXMLS

@@ -35,7 +35,6 @@ void printBacktrace(void** array, int size) {
 }
 
 #ifdef HAS_DLFCN_H
-#if 0 // deactivated as we use exceptions to signal errors now
 // see https://gist.github.com/nkuln/2020860
 typedef void (*cxa_throw_type)(void *, void *, void (*) (void *));
 cxa_throw_type orig_cxa_throw = 0;
@@ -45,7 +44,7 @@ void load_orig_throw_code() {
 }
 
 extern "C"
-void __cxa_throw (void *thrown_exception, void *pvtinfo, void (*dest)(void *)) {
+CXA_THROW_SIGNATURE {
 	std::cerr << __FUNCTION__ << " will throw exception from " << std::endl;
 	if (orig_cxa_throw == 0)
 		load_orig_throw_code();
@@ -57,13 +56,11 @@ void __cxa_throw (void *thrown_exception, void *pvtinfo, void (*dest)(void *)) {
 }
 #endif
 #endif
-#endif
 
 
 // see http://stackoverflow.com/questions/2443135/how-do-i-find-where-an-exception-was-thrown-in-c
 void customTerminate() {
 	static bool tried_throw = false;
-
 	try {
 		// try once to re-throw currently active exception
 		if (!tried_throw) {
@@ -142,6 +139,7 @@ int main(int argc, char** argv) {
 	DebuggerServlet* debugger;
 	if (options.withDebugger) {
 		debugger = new DebuggerServlet();
+    debugger->copyToInvokers(true);
 		HTTPServer::getInstance()->registerServlet("/debug", debugger);
 	}
 #endif
@@ -173,6 +171,7 @@ int main(int argc, char** argv) {
 
 				if (options.verbose) {
 					StateTransitionMonitor* vm = new StateTransitionMonitor();
+                    vm->copyToInvokers(true);
 					interpreter.addMonitor(vm);
 				}
 

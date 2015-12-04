@@ -45,7 +45,7 @@ void load_orig_throw_code() {
 }
 
 extern "C"
-void __cxa_throw (void *thrown_exception, void *pvtinfo, void (*dest)(void *)) {
+CXA_THROW_SIGNATURE {
 	std::cerr << __FUNCTION__ << " will throw exception from " << std::endl;
 	if (orig_cxa_throw == 0)
 		load_orig_throw_code();

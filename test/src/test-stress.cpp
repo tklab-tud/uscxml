@@ -8,6 +8,13 @@
 #include "uscxml/plugins/invoker/filesystem/dirmon/DirMonInvoker.h"
 #include <boost/algorithm/string.hpp>
 
+#ifdef _WIN32
+#include "XGetopt.h"
+#endif
+
+int startedAt;
+int lastTransitionAt;
+
 #ifdef HAS_SIGNAL_H
 #include <signal.h>
 #endif
@@ -19,13 +26,6 @@
 #ifdef HAS_DLFCN_H
 #include <dlfcn.h>
 #endif
-
-#ifdef _WIN32
-#include "XGetopt.h"
-#endif
-
-int startedAt;
-int lastTransitionAt;
 
 #ifdef HAS_EXECINFO_H
 void printBacktrace(void** array, int size) {
@@ -47,7 +47,7 @@ void load_orig_throw_code() {
 }
 
 extern "C"
-void __cxa_throw (void *thrown_exception, void *pvtinfo, void (*dest)(void *)) {
+CXA_THROW_SIGNATURE {
 	std::cerr << __FUNCTION__ << " will throw exception from " << std::endl;
 	if (orig_cxa_throw == 0)
 		load_orig_throw_code();
@@ -67,11 +67,11 @@ void customTerminate() {
 	try {
 		// try once to re-throw currently active exception
 		if (!tried_throw) {
-			throw;
 			tried_throw = true;
+			throw;
 		} else {
 			tried_throw = false;
-		};
+		}
 	} catch (const std::exception &e) {
 		std::cerr << __FUNCTION__ << " caught unhandled exception. what(): "
 		          << e.what() << std::endl;

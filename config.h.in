@@ -29,6 +29,15 @@
 
 #cmakedefine PATH_SEPERATOR '@PATH_SEPERATOR@'
 
+// CPP headers
+#cmakedefine CXA_THROW_TYPEINFO_SIGNATURE
+#ifdef CXA_THROW_TYPEINFO_SIGNATURE
+#define CXA_THROW_SIGNATURE void __cxa_throw (void *thrown_exception, std::type_info *pvtinfo, void (*dest)(void *))
+#else
+#define CXA_THROW_SIGNATURE void __cxa_throw (void *thrown_exception, void *pvtinfo, void (*dest)(void *))
+#endif
+
+
 /** version */
 #cmakedefine USCXML_VERSION_MAJOR "@USCXML_VERSION_MAJOR@"
 #cmakedefine USCXML_VERSION_MINOR "@USCXML_VERSION_MINOR@"

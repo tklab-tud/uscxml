@@ -416,6 +416,9 @@ void ChartToFSM::internalDoneSend(const Arabica::DOM::Element<std::string>& stat
 	if (!isState(state))
 		return;
 
+//    if (LOCALNAME(state) == "scxml")
+//        return;
+
 //	if (parentIsScxmlState(state))
 //		return;
 
@@ -596,19 +599,149 @@ void ChartToFSM::annotateRaiseAndSend(const Arabica::DOM::Element<std::string>& 
 	}
 }
 
-void ChartToFSM::indexTransitions() {
-	indexTransitions(_scxml);
+void ChartToFSM::annotateDomain() {
+    Arabica::XPath::NodeSet<std::string> allTransitions = filterChildElements(_nsInfo.xmlNSPrefix + "transition", _scxml, true);
+    for (int i = 0; i < allTransitions.size(); i++) {
+        Element<std::string> transition(allTransitions[i]);
+        Arabica::DOM::Node<std::string> domain = getTransitionDomain(transition);
+        if (domain) {
+            transition.setAttribute("domain", (HAS_ATTR_CAST(domain, "id") ? ATTR_CAST(domain, "id") : DOMUtils::xPathForNode(domain)));
+        } else {
+            transition.setAttribute("domain", "#UNDEF");
+        }
+    }
+}
+    
+void ChartToFSM::annotateExitSet() {
+    Arabica::XPath::NodeSet<std::string> allTransitions = filterChildElements(_nsInfo.xmlNSPrefix + "transition", _scxml, true);
+    for (int i = 0; i < allTransitions.size(); i++) {
+        Element<std::string> transition(allTransitions[i]);
+        Arabica::DOM::Node<std::string> domain = getTransitionDomain(transition);
 
-	size_t index = 0;
-	for (std::vector<Arabica::DOM::Element<std::string> >::iterator transIter = indexedTransitions.begin(); transIter != indexedTransitions.end(); transIter++) {
-		transIter->setAttribute("priority", toStr(index));
-		index++;
-	}
+        Arabica::XPath::NodeSet<std::string> allStates = getAllStates();
+        std::ostringstream exitSetStr;
+        std::string seperator = "";
+        for (int j = 0; j < allStates.size(); j++) {
+            Element<std::string> state(allStates[j]);
+            if (state.getParentNode() == domain) {
+                exitSetStr << seperator << (HAS_ATTR(state, "id") ? ATTR(state, "id") : DOMUtils::xPathForNode(state));
+                seperator = ", ";
+            }
+        }
+        transition.setAttribute("exitset", exitSetStr.str());
+    }
+}
+    
+void ChartToFSM::annotateEntrySet() {
+    Arabica::XPath::NodeSet<std::string> allTransitions = filterChildElements(_nsInfo.xmlNSPrefix + "transition", _scxml, true);
+    for (int i = 0; i < allTransitions.size(); i++) {
+        Element<std::string> transition(allTransitions[i]);
+        
+        NodeSet<std::string> tmpTransitions;
+        NodeSet<std::string> tmpStatesToEnter;
+        NodeSet<std::string> tmpStatesForDefaultEntry;
+        std::map<std::string, Arabica::DOM::Node<std::string> > tmpDefaultHistoryContent;
+        
+        tmpTransitions.push_back(transition);
+        computeEntrySet(tmpTransitions, tmpStatesToEnter, tmpStatesForDefaultEntry, tmpDefaultHistoryContent);
+        
+        std::ostringstream entrySetStr;
+        std::string seperator = "";
 
-	// reverse indices for most prior to be in front
-	std::reverse(indexedTransitions.begin(), indexedTransitions.end());
+        for (int j = 0; j < tmpStatesToEnter.size(); j++) {
+            Element<std::string> state(tmpStatesToEnter[j]);
+            entrySetStr << seperator << (HAS_ATTR(state, "id") ? ATTR(state, "id") : DOMUtils::xPathForNode(state));
+            seperator = ", ";
+        }
+        for (int j = 0; j < tmpStatesForDefaultEntry.size(); j++) {
+            Element<std::string> state(tmpStatesForDefaultEntry[j]);
+            entrySetStr << seperator << (HAS_ATTR(state, "id") ? ATTR(state, "id") : DOMUtils::xPathForNode(state));
+            seperator = ", ";
+        }
+        transition.setAttribute("entryset", entrySetStr.str());
+
+    }
 }
 
+void ChartToFSM::annotateConflicts() {
+    Arabica::XPath::NodeSet<std::string> allTransitions = filterChildElements(_nsInfo.xmlNSPrefix + "transition", _scxml, true);
+    Arabica::XPath::NodeSet<std::string> allStates = getAllStates();
+
+    for (int i = 0; i < allTransitions.size(); i++) {
+        Element<std::string> t1(allTransitions[i]);
+        if (!isState(Element<std::string>(t1.getParentNode())))
+            continue;
+        
+        Arabica::DOM::Node<std::string> d1 = getTransitionDomain(t1);
+
+        Arabica::XPath::NodeSet<std::string> exitSet1;
+        for (int k = 0; k < allStates.size(); k++) {
+            Element<std::string> state(allStates[k]);
+            if (isDescendant(state, d1)) {
+                exitSet1.push_back(state);
+            }
+        }
+
+        std::ostringstream preemptionStr;
+        std::string seperator = "";
+
+        for (int j = 0; j < allTransitions.size(); j++) {
+            if ( i == j)
+                continue;
+
+            Element<std::string> t2(allTransitions[j]);
+            if (!isState(Element<std::string>(t2.getParentNode())))
+                continue;
+
+            Arabica::DOM::Node<std::string> d2 = getTransitionDomain(t2);
+
+            Arabica::XPath::NodeSet<std::string> exitSet2;
+            for (int k = 0; k < allStates.size(); k++) {
+                Element<std::string> state(allStates[k]);
+                if (isDescendant(state, d2)) {
+                    exitSet2.push_back(state);
+                }
+            }
+
+            if (hasIntersection(exitSet1, exitSet2)) {
+                preemptionStr << seperator << (HAS_ATTR(t2, "priority") ? ATTR(t2, "priority") : DOMUtils::xPathForNode(t2));
+                seperator = ", ";
+            }
+
+//            if (isDescendant(d1, d2) || isDescendant(d2, d1) || d1 == d2) {
+//                preemptionStr << seperator << ATTR(t2, "priority");
+//                seperator = ", ";
+//            }
+
+        }
+        if (preemptionStr.str().size() > 0)
+            t1.setAttribute("conflicts", preemptionStr.str());
+
+    }
+}
+
+void ChartToFSM::indexTransitions() {
+    indexedTransitions.clear();
+    indexTransitions(_scxml);
+    
+#if 1
+    size_t index = indexedTransitions.size() - 1;
+    for (std::vector<Arabica::DOM::Element<std::string> >::iterator transIter = indexedTransitions.begin(); transIter != indexedTransitions.end(); transIter++) {
+        transIter->setAttribute("priority", toStr(index));
+        index--;
+    }
+#else
+    size_t index = 0;
+    for (std::vector<Arabica::DOM::Element<std::string> >::iterator transIter = indexedTransitions.begin(); transIter != indexedTransitions.end(); transIter++) {
+        transIter->setAttribute("priority", toStr(index));
+        index++;
+    }
+#endif
+    // reverse indices for most prior to be in front
+    //std::reverse(indexedTransitions.begin(), indexedTransitions.end());
+}
+
+#if 0
 void ChartToFSM::indexTransitions(const Arabica::DOM::Element<std::string>& root) {
 	// breadth first traversal of transitions
 	Arabica::XPath::NodeSet<std::string> levelTransitions = filterChildElements(_nsInfo.xmlNSPrefix + "transition", root);
@@ -624,7 +757,26 @@ void ChartToFSM::indexTransitions(const Arabica::DOM::Element<std::string>& root
 			indexTransitions(stateElem);
 	}
 }
+    
+#else
+    
+void ChartToFSM::indexTransitions(const Arabica::DOM::Element<std::string>& root) {
+    // Post-order traversal of transitions
+    Arabica::XPath::NodeSet<std::string> childStates = getChildStates(root);
+    for (int i = 0; i < childStates.size(); i++) {
+        Element<std::string> childElem(childStates[i]);
+        indexTransitions(childElem);
+    }
+    
+    Arabica::XPath::NodeSet<std::string> levelTransitions = filterChildElements(_nsInfo.xmlNSPrefix + "transition", root);
+    for (int i = 0; i < levelTransitions.size(); i++) {
+        // push into index starting with least prior
+        indexedTransitions.push_back(Element<std::string>(levelTransitions[i]));
+    }
 
+}
+    
+#endif
 bool GlobalTransition::operator< (const GlobalTransition& other) const {
 	const std::vector<Arabica::DOM::Element<std::string> >& indexedTransitions = interpreter->indexedTransitions;
 	NodeSet<std::string> transitions = getTransitions();

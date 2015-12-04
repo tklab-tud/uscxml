@@ -793,7 +793,7 @@ NodeSetVariableResolver::resolveVariable(const std::string& namepaceUri,
         const std::string& name) const {
 	std::map<std::string, NodeSet<std::string> >::const_iterator n = _variables.find(name);
 	if(n == _variables.end()) {
-		ERROR_EXECUTION_THROW("No varable named '" + name + "'");
+		ERROR_EXECUTION_THROW("No variable named '" + name + "'");
 	}
 #if VERBOSE
 	std::cout << std::endl << "Getting " << name << ":" << std::endl;

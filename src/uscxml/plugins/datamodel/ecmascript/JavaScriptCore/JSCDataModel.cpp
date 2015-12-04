@@ -556,7 +556,7 @@ void JSCDataModel::setForeach(const std::string& item,
 }
 
 bool JSCDataModel::isLocation(const std::string& expr) {
-	// location needs to be RHS and ++ is only valid for RHS
+	// location needs to be LHS and ++ is only valid for LHS
 	return isValidSyntax(expr + "++");
 }
 

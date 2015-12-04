@@ -1,0 +1,118 @@
+<scxml>
+	<!-- invoke and communicate on entry - will fail -->
+	<state id="send.onentry">
+		<invoke type="scxml" id="send.onentry.invoker">
+			<content>
+				<scxml>
+					<state>
+						<transition event="finish" target="done" />
+					</state>
+					<final id="done"/>
+				</scxml>
+			</content>
+		</invoke>
+		
+		<onentry>
+			<!-- This will fail as invoker is not yet instantiated -->
+			<send target="#_send.onentry.invoker" event="finish"/>
+		</onentry>
+		
+		<transition event="done.invoke.send.onentry.invoker" target="send.onentry.pass" />
+		<transition event="error.communication" target="send.onentry.fail" />
+	</state>
+
+	<state id="send.onentry.pass">
+		<transition target="external.event" />
+	</state>
+	<state id="send.onentry.fail">
+		<transition target="external.event" />
+	</state>
+	
+	
+	<!-- Invoke and send an event to the external queue which will trigger communication -->
+	<state id="external.event">
+		<invoke type="scxml" id="external.event.invoker">
+			<content>
+				<scxml>
+					<state>
+						<transition event="finish" target="done" />
+					</state>
+					<final id="done"/>
+				</scxml>
+			</content>
+		</invoke>
+		
+		<onentry>
+			<send event="send.to.invoker"/>
+		</onentry>
+		<transition type="internal" event="send.to.invoker">
+			<!-- This will succeed as invoker was instantiated -->
+			<send target="#_external.event.invoker" event="finish"/>
+		</transition>
+		
+		<transition event="done.invoke.external.event.invoker" target="external.event.pass" />
+		<transition event="error.communication" target="external.event.fail" />
+		
+	</state>
+	
+	<state id="external.event.pass">
+		<transition target="delayed.event" />
+	</state>
+	<state id="external.event.fail">
+		<transition target="delayed.event" />
+	</state>
+	
+	<!-- invoke and communicate delayed on entry - will succeed -->
+	<state id="delayed.event">
+		<invoke type="scxml" id="delayed.event.invoker">
+			<content>
+				<scxml>
+					<state>
+						<transition event="finish" target="done" />
+					</state>
+					<final id="done"/>
+				</scxml>
+			</content>
+		</invoke>
+		
+		<onentry>
+			<!-- This will succeed as the invoker will be instantiated in 1ms (invoking is synchronous) -->
+			<send target="#_delayed.event.invoker" event="finish" delay="1ms"/>
+		</onentry>
+		
+		<transition event="done.invoke.delayed.event.invoker" target="delayed.event.pass" />
+		<transition event="error.communication" target="delayed.event.fail" />
+	</state>
+
+	<state id="delayed.event.pass">
+		<transition target="callback.event" />		
+	</state>
+	<state id="delayed.event.fail">
+		<transition target="callback.event" />
+	</state>
+
+	<!-- invoke with callback event (out of spec, but so useful!) -->
+	<state id="callback.event">
+		<invoke type="scxml" id="callback.event.invoker" callback="init">
+			<content>
+				<scxml>
+					<state>
+						<transition event="finish" target="done" />
+					</state>
+					<final id="done"/>
+				</scxml>
+			</content>
+		</invoke>
+		
+		<transition event="init.callback.event.invoker">
+			<send target="#_callback.event.invoker" event="finish" />
+		</transition>
+		
+		<transition event="done.invoke.callback.event.invoker" target="callback.event.pass" />
+		<transition event="error.communication" target="callback.event.fail" />
+	</state>
+
+	<final id="callback.event.pass" />
+	<final id="callback.event.fail" />
+	
+</scxml>

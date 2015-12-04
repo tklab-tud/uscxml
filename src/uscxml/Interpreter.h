@@ -859,6 +859,7 @@ protected:
 
 class USCXML_API InterpreterMonitor {
 public:
+    InterpreterMonitor() : _copyToInvokers(false) {}
 	virtual ~InterpreterMonitor() {}
 
 	virtual void beforeProcessingEvent(Interpreter interpreter, const Event& event) {}
@@ -891,6 +892,17 @@ public:
 
 	virtual void reportIssue(Interpreter interpreter, const InterpreterIssue& issue) {}
 
+    void copyToInvokers(bool copy) {
+        _copyToInvokers = copy;
+    }
+
+    bool copyToInvokers() {
+        return _copyToInvokers;
+    }
+
+protected:
+    bool _copyToInvokers;
+    
 };
 
 class StateTransitionMonitor : public uscxml::InterpreterMonitor {
@@ -903,6 +915,7 @@ public:
 	virtual void beforeEnteringState(uscxml::Interpreter interpreter, const Arabica::DOM::Element<std::string>& state, bool moreComing);
 
 protected:
+    static tthread::recursive_mutex _mutex;
 	void printNodeSet(const Arabica::XPath::NodeSet<std::string>& config);
 	Arabica::XPath::NodeSet<std::string> exitingStates;
 	Arabica::XPath::NodeSet<std::string> enteringStates;

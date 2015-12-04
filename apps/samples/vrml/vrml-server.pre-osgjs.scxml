@@ -1,6 +1,6 @@
 <scxml datamodel="ecmascript" name="vrml">
 	<script src="http://uscxml.tk.informatik.tu-darmstadt.de/scripts/dump.js" />
-	<script src="http://uscxml.tk.informatik.tu-darmstadt.de/scripts/string.endsWith.js" />
+	<script src="http://uscxml.tk.informatik.tu-darmstadt.de/scripts/string.  .js" />
 	<script src="http://uscxml.tk.informatik.tu-darmstadt.de/scripts/array.last.js" />
 	<script>
 		var wrls = {};        // information of the wrl, vrml files
@@ -201,7 +201,7 @@
 				</script>
 				<if cond="'context' in _event.data">
 					<!-- this was generated in reply to a request -->
-					<if cond="_event.name.endsWith('success')">
+					<if cond="_event.name.  ('success')">
 						<respond status="200" to="_event.data.context">
 							<header name="Connection" value="close" />
 							<header name="Content-Type" value="application/json" />
