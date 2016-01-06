@@ -569,7 +569,7 @@ bool Factory::hasDataModel(const std::string& type) {
 	return false;
 }
 
-boost::shared_ptr<DataModelImpl> Factory::createDataModel(const std::string& type, InterpreterImpl* interpreter) {
+boost::shared_ptr<DataModelImpl> Factory::createDataModel(const std::string& type, InterpreterInfo* interpreter) {
 
 	// do we have this type ourself?
 	if (_dataModelAliases.find(type) != _dataModelAliases.end()) {

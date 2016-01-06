@@ -89,7 +89,7 @@ SWIDataModel::~SWIDataModel() {
 	RETHROW_PLEX_AS_EVENT;
 }
 
-boost::shared_ptr<DataModelImpl> SWIDataModel::create(InterpreterImpl* interpreter) {
+boost::shared_ptr<DataModelImpl> SWIDataModel::create(InterpreterInfo* interpreter) {
 	try {
 		boost::shared_ptr<SWIDataModel> dm = boost::shared_ptr<SWIDataModel>(new SWIDataModel());
 		dm->_interpreter = interpreter;

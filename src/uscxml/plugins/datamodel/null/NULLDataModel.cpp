@@ -43,7 +43,7 @@ bool pluginConnect(pluma::Host& host) {
 NULLDataModel::NULLDataModel() {
 }
 
-boost::shared_ptr<DataModelImpl> NULLDataModel::create(InterpreterImpl* interpreter) {
+boost::shared_ptr<DataModelImpl> NULLDataModel::create(InterpreterInfo* interpreter) {
 	boost::shared_ptr<NULLDataModel> dm = boost::shared_ptr<NULLDataModel>(new NULLDataModel());
 	dm->_interpreter = interpreter;
 	return dm;

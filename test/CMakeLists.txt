@@ -29,6 +29,10 @@ if (NOT WIN32)
 	USCXML_TEST_COMPILE(NAME test-promela-parser LABEL general/test-promela-parser FILES src/test-promela-parser.cpp)
 	target_link_libraries(test-promela-parser uscxml_transform)
 	USCXML_TEST_COMPILE(BUILD_ONLY NAME test-stress LABEL general/test-stress FILES src/test-stress.cpp)
+
+	USCXML_TEST_COMPILE(NAME test-c-machine LABEL general/test-c-machine FILES src/test-c-machine.cpp)
+	USCXML_TEST_COMPILE(NAME test-misc LABEL general/test-misc FILES src/test-misc.cpp)
+
 endif()
 
 if (APPLE)
@@ -75,10 +79,10 @@ add_test(test-done-data ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/uscxml-browser ${CMAKE
 
 find_program(SPIN spin)
 find_program(GCC gcc)
+find_program(GPP g++)
 
 if (NOT BUILD_MINIMAL)
 	# compile and add all reported issues tests
-
 	
 	add_executable(test-w3c src/test-w3c.cpp)
 	target_link_libraries(test-w3c uscxml uscxml_transform)
@@ -138,6 +142,27 @@ if (NOT BUILD_MINIMAL)
 				endif()
 			endif()
 		
+			if (BUILD_TESTS_GENERATED_C AND TEST_NAME MATCHES "^ecma\\/.*")
+				add_test(NAME "gen_c/${TEST_NAME}"
+				    COMMAND ${CMAKE_COMMAND}
+							-DOUTDIR:FILEPATH=${CMAKE_CURRENT_BINARY_DIR}/gen_c
+							-DTESTFILE:FILEPATH=${W3C_TEST}
+							-DJSC_LIBRARY:FILEPATH=${JSC_LIBRARY}
+							-DUSCXML_TRANSFORM_BIN:FILEPATH=${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/uscxml-transform
+							-DGCC_BIN:FILEPATH=${GCC}
+							-DGPP_BIN:FILEPATH=${GPP}
+							-DPROJECT_SOURCE_DIR=${PROJECT_SOURCE_DIR}
+							-DUSCXML_PLATFORM_ID=${USCXML_PLATFORM_ID}
+							-DCMAKE_BINARY_DIR=${CMAKE_BINARY_DIR}
+							-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=${CMAKE_LIBRARY_OUTPUT_DIRECTORY}
+							-DSCAFFOLDING_FOR_GENERATED_C:FILEPATH=${CMAKE_CURRENT_SOURCE_DIR}/src/test-c-machine.cpp
+							-P ${CMAKE_CURRENT_SOURCE_DIR}/w3c/run_generated_c_test.cmake)
+				set_property(TEST "gen_c/${TEST_NAME}" PROPERTY LABELS "gen_c/${TEST_NAME}")
+				set_tests_properties("gen_c/${TEST_NAME}" PROPERTIES TIMEOUT ${TEST_TIMEOUT})
+				set_tests_properties("gen_c/${TEST_NAME}" PROPERTIES DEPENDS uscxml-transform)
+				
+			endif()
+			
 			if (BUILD_TESTS_FSM AND BUILD_TESTS_FSM_ECMA AND TEST_NAME MATCHES "^ecma\\/.*")
 				add_test("fsm/${TEST_NAME}" ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-w3c -f ${W3C_TEST})
 				set_property(TEST "fsm/${TEST_NAME}" PROPERTY LABELS "fsm/${TEST_NAME}")

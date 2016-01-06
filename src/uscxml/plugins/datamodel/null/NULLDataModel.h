@@ -38,7 +38,7 @@ class NULLDataModel : public DataModelImpl {
 public:
 	NULLDataModel();
 	virtual ~NULLDataModel();
-	virtual boost::shared_ptr<DataModelImpl> create(InterpreterImpl* interpreter);
+	virtual boost::shared_ptr<DataModelImpl> create(InterpreterInfo* interpreter);
 
 	virtual std::list<std::string> getNames() {
 		std::list<std::string> names;

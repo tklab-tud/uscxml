@@ -48,7 +48,7 @@ public:
 class USCXML_API DataModelImpl {
 public:
 	virtual ~DataModelImpl() {}
-	virtual boost::shared_ptr<DataModelImpl> create(InterpreterImpl* interpreter) = 0;
+	virtual boost::shared_ptr<DataModelImpl> create(InterpreterInfo* interpreter) = 0;
 	virtual std::list<std::string> getNames() = 0;
 
 	virtual bool validate(const std::string& location, const std::string& schema) = 0;
@@ -93,7 +93,7 @@ public:
 	                  const std::string& content) = 0;
 	virtual void init(const std::string& location, const Data& data) = 0;
 
-	virtual void setInterpreter(InterpreterImpl* interpreter) {
+	virtual void setInterpreter(InterpreterInfo* interpreter) {
 		_interpreter = interpreter;
 	}
 
@@ -103,7 +103,7 @@ public:
 	}
 
 protected:
-	InterpreterImpl* _interpreter;
+	InterpreterInfo* _interpreter;
 };
 
 class USCXML_API DataModel {
@@ -214,7 +214,7 @@ public:
 		return _impl->andExpressions(expressions);
 	}
 
-	virtual void setInterpreter(InterpreterImpl* interpreter) {
+	virtual void setInterpreter(InterpreterInfo* interpreter) {
 		_impl->setInterpreter(interpreter);
 	}
 

@@ -20,8 +20,8 @@
 #ifndef TRANSFORMER_H_32113356
 #define TRANSFORMER_H_32113356
 
+#include <iostream>
 #include "uscxml/interpreter/InterpreterRC.h"
-#include <ostream>
 
 namespace uscxml {
 

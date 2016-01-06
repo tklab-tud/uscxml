@@ -44,7 +44,7 @@ class LuaDataModel : public DataModelImpl {
 public:
 	LuaDataModel();
 	virtual ~LuaDataModel();
-	virtual boost::shared_ptr<DataModelImpl> create(InterpreterImpl* interpreter);
+	virtual boost::shared_ptr<DataModelImpl> create(InterpreterInfo* interpreter);
 
 	virtual std::list<std::string> getNames() {
 		std::list<std::string> names;

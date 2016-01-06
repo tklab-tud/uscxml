@@ -20,10 +20,35 @@
 
 static bool withFlattening = false;
 static double delayFactor = 1;
+static size_t benchmarkRuns = 0;
 static std::string documentURI;
 
 int retCode = EXIT_FAILURE;
 uscxml::Interpreter interpreter;
+
+void printUsageAndExit(const char* progName) {
+    // remove path from program name
+    std::string progStr(progName);
+    if (progStr.find_last_of(PATH_SEPERATOR) != std::string::npos) {
+        progStr = progStr.substr(progStr.find_last_of(PATH_SEPERATOR) + 1, progStr.length() - (progStr.find_last_of(PATH_SEPERATOR) + 1));
+    }
+    
+    printf("%s version " USCXML_VERSION " (" CMAKE_BUILD_TYPE " build - " CMAKE_COMPILER_STRING ")\n", progStr.c_str());
+    printf("Usage\n");
+    printf("\t%s", progStr.c_str());
+    printf(" [-f] [-dN] [-bN]");
+#ifdef BUILD_AS_PLUGINS
+    printf(" [-p pluginPath]");
+#endif
+    printf(" URL");
+    printf("\n");
+    printf("Options\n");
+    printf("\t-f             : flatten to SCXML state-machine\n");
+    printf("\t-d FACTOR      : delay factor\n");
+    printf("\t-b ITERATIONS  : benchmark with number of runs\n");
+    printf("\n");
+    exit(1);
+}
 
 class W3CStatusMonitor : public uscxml::StateTransitionMonitor {
 
@@ -61,7 +86,7 @@ int main(int argc, char** argv) {
 		}
 
 		int option;
-		while ((option = getopt(argc, argv, "fd:")) != -1) {
+		while ((option = getopt(argc, argv, "fd:b:")) != -1) {
 			switch(option) {
 			case 'f':
 				withFlattening = true;
@@ -69,6 +94,9 @@ int main(int argc, char** argv) {
 			case 'd':
 				delayFactor = strTo<double>(optarg);
 				break;
+            case 'b':
+                benchmarkRuns = strTo<size_t>(optarg);
+                break;
 			default:
 				break;
 			}
@@ -76,7 +104,7 @@ int main(int argc, char** argv) {
 
 		documentURI = argv[optind];
 
-		LOG(INFO) << "Processing " << documentURI << (withFlattening ? " FSM converted" : "") << (delayFactor ? "" : " with delays *= " + toStr(delayFactor));
+        LOG(INFO) << "Processing " << documentURI << (withFlattening ? " FSM converted" : "") << (delayFactor ? "" : " with delays *= " + toStr(delayFactor)) << (benchmarkRuns > 0 ? " for " + toStr(benchmarkRuns) + " benchmarks" : "");
 		if (withFlattening) {
 			interpreter = Interpreter::fromURL(documentURI);
 			Transformer flattener = ChartToFlatSCXML::transform(interpreter);
@@ -117,11 +145,37 @@ int main(int argc, char** argv) {
 		}
 
 		if (interpreter) {
-			W3CStatusMonitor* vm = new W3CStatusMonitor();
-			interpreter.addMonitor(vm);
+            if (benchmarkRuns > 0) {
+                LOG(INFO) << "Benchmarking " << documentURI << (withFlattening ? " FSM converted" : "") << (delayFactor ? "" : " with delays *= " + toStr(delayFactor));
 
-			interpreter.start();
-			while(interpreter.runOnMainThread(25));
+                InterpreterState state = interpreter.getState();
+                
+                double avg = 0;
+                uint64_t now = 0;
+                size_t remainingRuns = benchmarkRuns;
+                uint64_t start = tthread::chrono::system_clock::now();
+
+                while(remainingRuns-- > 0) {
+                    now = tthread::chrono::system_clock::now();
+                    for(;;) {
+                        state = interpreter.step(true);
+                        if (state < 0)
+                            break;
+                    }
+                    avg += (double)(tthread::chrono::system_clock::now() - now) / (double)benchmarkRuns;
+                    interpreter.reset();
+                }
+                uint64_t totalDuration = tthread::chrono::system_clock::now() - start;
+                std::cout << benchmarkRuns << " iterations in " << totalDuration << " ms" << std::endl;
+                std::cout << avg << " ms on average" << std::endl;
+                
+            } else {
+                W3CStatusMonitor* vm = new W3CStatusMonitor();
+                interpreter.addMonitor(vm);
+
+                interpreter.start();
+                while(interpreter.runOnMainThread(25));
+            }
 		}
 	} catch(Event e) {
 		std::cout << e << std::endl;

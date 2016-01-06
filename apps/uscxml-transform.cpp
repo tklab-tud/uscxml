@@ -1,6 +1,7 @@
 #include "uscxml/config.h"
 #include "uscxml/Interpreter.h"
 #include "uscxml/transform/ChartToFlatSCXML.h"
+#include "uscxml/transform/ChartToC.h"
 #include "uscxml/transform/ChartToTex.h"
 #include "uscxml/transform/ChartToMinimalSCXML.h"
 #include "uscxml/transform/ChartToPromela.h"
@@ -62,15 +63,16 @@ void printUsageAndExit(const char* progName) {
 	printf("%s version " USCXML_VERSION " (" CMAKE_BUILD_TYPE " build - " CMAKE_COMPILER_STRING ")\n", progStr.c_str());
 	printf("Usage\n");
 	printf("\t%s", progStr.c_str());
-	printf(" [-t pml|flat|min|tex] [-a {OPTIONS}] [-v] [-lN]");
+	printf(" [-t c|pml|flat|min|tex] [-a {OPTIONS}] [-v] [-lN]");
 #ifdef BUILD_AS_PLUGINS
 	printf(" [-p pluginPath]");
 #endif
 	printf(" [-i URL] [-o FILE]");
 	printf("\n");
 	printf("Options\n");
-	printf("\t-t flat      : flatten to SCXML state-machine\n");
-	printf("\t-t pml       : convert to spin/promela program\n");
+    printf("\t-t c         : convert to C program\n");
+    printf("\t-t pml       : convert to spin/promela program\n");
+    printf("\t-t flat      : flatten to SCXML state-machine\n");
 	printf("\t-t min       : minimize SCXML state-chart\n");
 	printf("\t-t tex       : write global state transition table as tex file\n");
 	printf("\t-a {OPTIONS} : annotate SCXML elements with comma seperated options\n");
@@ -220,6 +222,7 @@ int main(int argc, char** argv) {
 	if (outType != "flat" &&
         outType != "scxml" &&
         outType != "pml" &&
+        outType != "c" &&
         outType != "min" &&
         outType != "tex" &&
         std::find(annotations.begin(), annotations.end(), "priority") == annotations.end() &&
@@ -264,6 +267,18 @@ int main(int argc, char** argv) {
 			}
 		}
         
+        if (outType == "c") {
+            if (outputFile.size() == 0 || outputFile == "-") {
+                ChartToC::transform(interpreter).writeTo(std::cout);
+            } else {
+                std::ofstream outStream;
+                outStream.open(outputFile.c_str());
+                ChartToC::transform(interpreter).writeTo(outStream);
+                outStream.close();
+            }
+            exit(EXIT_SUCCESS);
+        }
+
 		if (outType == "pml") {
 			if (outputFile.size() == 0 || outputFile == "-") {
 				ChartToPromela::transform(interpreter).writeTo(std::cout);

@@ -41,7 +41,7 @@ class V8DataModel : public DataModelImpl {
 public:
 	V8DataModel();
 	virtual ~V8DataModel();
-	virtual boost::shared_ptr<DataModelImpl> create(InterpreterImpl* interpreter);
+	virtual boost::shared_ptr<DataModelImpl> create(InterpreterInfo* interpreter);
 
 	virtual std::list<std::string> getNames() {
 		std::list<std::string> names;

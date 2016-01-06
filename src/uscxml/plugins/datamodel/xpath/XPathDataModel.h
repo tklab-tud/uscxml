@@ -39,14 +39,14 @@ public:
 	XPathFunctionIn(int minArgs,
 	                int maxArgs,
 	                const std::vector<Arabica::XPath::XPathExpression<std::string> >& args,
-	                InterpreterImpl* interpreter) :
+	                InterpreterInfo* interpreter) :
 		Arabica::XPath::BooleanXPathFunction<std::string>(minArgs, maxArgs, args),
 		_interpreter(interpreter) {}
 
 protected:
 	bool doEvaluate(const Arabica::DOM::Node<std::string>& context,
 	                const Arabica::XPath::ExecutionContext<std::string>& executionContext) const;
-	InterpreterImpl* _interpreter;
+	InterpreterInfo* _interpreter;
 };
 
 class XPathFunctionResolver : public Arabica::XPath::FunctionResolver<std::string> {
@@ -59,12 +59,12 @@ public:
 	                const std::vector<Arabica::XPath::XPathExpression<std::string> >& argExprs) const;
 
 	virtual std::vector<std::pair<std::string, std::string> > validNames() const;
-	void setInterpreter(InterpreterImpl* interpreter) {
+	void setInterpreter(InterpreterInfo* interpreter) {
 		_interpreter = interpreter;
 	}
 protected:
 	Arabica::XPath::StandardXPathFunctionResolver<std::string> _xpathFuncRes;
-	InterpreterImpl* _interpreter;
+	InterpreterInfo* _interpreter;
 };
 
 class NodeSetVariableResolver : public Arabica::XPath::VariableResolver<std::string> {
@@ -83,7 +83,7 @@ class XPathDataModel : public DataModelImpl {
 public:
 	XPathDataModel();
 	virtual ~XPathDataModel();
-	virtual boost::shared_ptr<DataModelImpl> create(InterpreterImpl* interpreter);
+	virtual boost::shared_ptr<DataModelImpl> create(InterpreterInfo* interpreter);
 
 	virtual std::list<std::string> getNames() {
 		std::list<std::string> names;

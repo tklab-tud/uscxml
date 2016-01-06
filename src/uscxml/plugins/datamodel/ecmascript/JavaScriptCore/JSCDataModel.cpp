@@ -189,18 +189,18 @@ JSClassDefinition JSCDataModel::jsExtensionClassDef = { 0, 0, "Extension", 0, 0,
 JSClassDefinition JSCDataModel::jsIOProcessorsClassDef = { 0, 0, "ioProcessors", 0, 0, 0, 0, 0, jsIOProcessorHasProp, jsIOProcessorGetProp, 0, 0, jsIOProcessorListProps, 0, 0, 0, 0 };
 JSClassDefinition JSCDataModel::jsInvokersClassDef = { 0, 0, "invokers", 0, 0, 0, 0, 0, jsInvokerHasProp, jsInvokerGetProp, 0, 0, jsInvokerListProps, 0, 0, 0, 0 };
 
-boost::shared_ptr<DataModelImpl> JSCDataModel::create(InterpreterImpl* interpreter) {
+boost::shared_ptr<DataModelImpl> JSCDataModel::create(InterpreterInfo* interpreter) {
 	boost::shared_ptr<JSCDataModel> dm = boost::shared_ptr<JSCDataModel>(new JSCDataModel());
 
 	dm->_ctx = JSGlobalContextCreate(NULL);
 	dm->_interpreter = interpreter;
 
-	dm->_dom = new JSCDOM();
-	dm->_dom->xpath = new XPath<std::string>();
-	dm->_dom->xpath->setNamespaceContext(*interpreter->getNameSpaceInfo().getNSContext());
-	dm->_dom->storage	= new Storage(URL::getResourceDir() + PATH_SEPERATOR + interpreter->getName() + ".storage");
-	dm->_dom->nsInfo	= new NameSpaceInfo(interpreter->getNameSpaceInfo());
-
+    dm->_dom = new JSCDOM();
+    dm->_dom->xpath = new XPath<std::string>();
+    dm->_dom->xpath->setNamespaceContext(*interpreter->getNameSpaceInfo().getNSContext());
+    dm->_dom->storage	= new Storage(URL::getResourceDir() + PATH_SEPERATOR + interpreter->getName() + ".storage");
+    dm->_dom->nsInfo	= new NameSpaceInfo(interpreter->getNameSpaceInfo());
+    
 	// introduce global functions as objects for private data
 	JSClassRef jsInClassRef = JSClassCreate(&jsInClassDef);
 	JSObjectRef jsIn = JSObjectMake(dm->_ctx, jsInClassRef, dm.get());

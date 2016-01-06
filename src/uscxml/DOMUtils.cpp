@@ -30,6 +30,43 @@ bool DOMUtils::attributeIsTrue(const::std::string& value) {
 	return stringIsTrue(value.c_str());
 }
 
+std::string DOMUtils::idForNode(const Arabica::DOM::Node<std::string>& node) {
+    std::string nodeId;
+    std::string seperator;
+    Arabica::DOM::Node<std::string> curr = node;
+    while(curr) {
+        switch (curr.getNodeType()) {
+            case Arabica::DOM::Node_base::ELEMENT_NODE: {
+                Arabica::DOM::Element<std::string> elem = Arabica::DOM::Element<std::string>(curr);
+                if (HAS_ATTR(elem, "id") && !UUID::isUUID(ATTR(elem, "id"))) {
+                    nodeId.insert(0, ATTR(elem, "id") + seperator);
+                    seperator = "_";
+                    return nodeId;
+                } else {
+                    Arabica::DOM::Node<std::string> sibling = curr.getPreviousSibling();
+                    int index = 0;
+                    while(sibling) {
+                        if (sibling.getNodeType() == Arabica::DOM::Node_base::ELEMENT_NODE) {
+                            if (iequals(TAGNAME_CAST(sibling), TAGNAME(elem))) {
+                                index++;
+                            }
+                        }
+                        sibling = sibling.getPreviousSibling();
+                    }
+                    nodeId.insert(0, TAGNAME(elem) + toStr(index) + seperator);
+                    seperator = "_";
+                }
+                break;
+            }
+            case Arabica::DOM::Node_base::DOCUMENT_NODE:
+                return nodeId;
+        }
+ 
+        curr = curr.getParentNode();
+    }
+    return nodeId;
+}
+
 std::string DOMUtils::xPathForNode(const Arabica::DOM::Node<std::string>& node, const std::string& ns) {
 	std::string xPath;
 	std::string nsPrefix;

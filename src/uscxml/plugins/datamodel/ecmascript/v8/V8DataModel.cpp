@@ -153,7 +153,7 @@ v8::Handle<v8::Value> V8DataModel::jsExtension(const v8::Arguments& args) {
 	return v8::Undefined();
 }
 
-boost::shared_ptr<DataModelImpl> V8DataModel::create(InterpreterImpl* interpreter) {
+boost::shared_ptr<DataModelImpl> V8DataModel::create(InterpreterInfo* interpreter) {
 	boost::shared_ptr<V8DataModel> dm = boost::shared_ptr<V8DataModel>(new V8DataModel());
 	dm->_interpreter = interpreter;
 	v8::Locker locker;

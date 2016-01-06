@@ -52,6 +52,10 @@ public:
 		return new WrappedDataModel();
 	}
 
+	virtual boost::shared_ptr<DataModelImpl> create(InterpreterInfo* interpreter) {
+		return boost::shared_ptr<DataModelImpl>(create(_interpreter));
+	}
+	
 	virtual boost::shared_ptr<DataModelImpl> create(InterpreterImpl* interpreter) {
 		_interpreter = interpreter->shared_from_this();
 		return boost::shared_ptr<DataModelImpl>(create(_interpreter));

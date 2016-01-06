@@ -44,33 +44,9 @@ class USCXML_API DOMUtils {
 public:
 	static std::string xPathForNode(const Arabica::DOM::Node<std::string>& node, const std::string& ns = "");
 	static std::list<Arabica::DOM::Node<std::string> > getElementsByType(const Arabica::DOM::Node<std::string>& root, Arabica::DOM::Node_base::Type type);
-	// deprecated, use stringIsTrue from Convenience.h instead
+    static std::string idForNode(const Arabica::DOM::Node<std::string>& node);
+    // deprecated, use stringIsTrue from Convenience.h instead
 	DEPRECATED static bool attributeIsTrue(const::std::string& value);
-};
-
-class USCXML_API NumAttr {
-public:
-	NumAttr(const std::string& str) {
-		size_t valueStart = str.find_first_of("0123456789.");
-		if (valueStart != std::string::npos) {
-			size_t valueEnd = str.find_last_of("0123456789.");
-			if (valueEnd != std::string::npos) {
-				value = str.substr(valueStart, (valueEnd - valueStart) + 1);
-				size_t unitStart = str.find_first_not_of(" \t", valueEnd + 1);
-				if (unitStart != std::string::npos) {
-					size_t unitEnd = str.find_last_of(" \t");
-					if (unitEnd != std::string::npos && unitEnd > unitStart) {
-						unit = str.substr(unitStart, unitEnd - unitStart);
-					} else {
-						unit = str.substr(unitStart, str.length() - unitStart);
-					}
-				}
-			}
-		}
-	}
-
-	std::string value;
-	std::string unit;
 };
 
 class ScriptEntityResolver : public Arabica::SAX::EntityResolver<std::string> {

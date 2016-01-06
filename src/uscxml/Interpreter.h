@@ -28,6 +28,8 @@
 #include <set>
 #include <map>
 
+#include "uscxml/InterpreterInfo.h"
+
 #include <XPath/XPath.hpp>
 #include <DOM/Document.hpp>
 
@@ -150,62 +152,6 @@ public:
 
 };
 
-class USCXML_API NameSpaceInfo {
-public:
-	NameSpaceInfo() : nsContext(NULL) {
-		init(std::map<std::string, std::string>());
-	}
-
-	NameSpaceInfo(const std::map<std::string, std::string>& nsInfo) : nsContext(NULL) {
-		init(nsInfo);
-	}
-
-	NameSpaceInfo(const NameSpaceInfo& other) : nsContext(NULL) {
-		init(other.nsInfo);
-	}
-
-	virtual ~NameSpaceInfo() {
-		if (nsContext)
-			delete nsContext;
-	}
-
-	NameSpaceInfo& operator=( const NameSpaceInfo& other ) {
-		init(other.nsInfo);
-		return *this;
-	}
-
-	void setPrefix(Arabica::DOM::Element<std::string> element) {
-		if (nsURL.size() > 0)
-			element.setPrefix(nsToPrefix[nsURL]);
-	}
-
-	void setPrefix(Arabica::DOM::Attr<std::string> attribute) {
-		if (nsURL.size() > 0)
-			attribute.setPrefix(nsToPrefix[nsURL]);
-	}
-
-	std::string getXMLPrefixForNS(const std::string& ns) const {
-		if (nsToPrefix.find(ns) != nsToPrefix.end() && nsToPrefix.at(ns).size())
-			return nsToPrefix.at(ns) + ":";
-		return "";
-	}
-
-	const Arabica::XPath::StandardNamespaceContext<std::string>* getNSContext() {
-		return nsContext;
-	}
-
-	std::string nsURL;         // ough to be "http://www.w3.org/2005/07/scxml" but maybe empty
-	std::string xpathPrefix;   // prefix mapped for xpath, "scxml" is _xmlNSPrefix is empty but _nsURL set
-	std::string xmlNSPrefix;   // the actual prefix for elements in the xml file
-	std::map<std::string, std::string> nsToPrefix;  // prefixes for a given namespace
-	std::map<std::string, std::string> nsInfo;      // all xmlns mappings
-
-private:
-	Arabica::XPath::StandardNamespaceContext<std::string>* nsContext;
-
-	void init(const std::map<std::string, std::string>& nsInfo);
-};
-
 enum InterpreterState {
 	USCXML_DESTROYED      = -2,  ///< destructor ran - users should never see this one
 	USCXML_FINISHED       = -1,  ///< machine reached a final configuration and is done
@@ -216,7 +162,7 @@ enum InterpreterState {
 };
 USCXML_API std::ostream& operator<< (std::ostream& os, const InterpreterState& interpreterState);
 
-class USCXML_API InterpreterImpl : public boost::enable_shared_from_this<InterpreterImpl> {
+class USCXML_API InterpreterImpl : public InterpreterInfo, public boost::enable_shared_from_this<InterpreterImpl> {
 public:
 
 	typedef std::set<InterpreterMonitor*>::iterator monIter_t;

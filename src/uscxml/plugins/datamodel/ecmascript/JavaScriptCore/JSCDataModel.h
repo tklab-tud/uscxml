@@ -40,7 +40,7 @@ class JSCDataModel : public DataModelImpl {
 public:
 	JSCDataModel();
 	virtual ~JSCDataModel();
-	virtual boost::shared_ptr<DataModelImpl> create(InterpreterImpl* interpreter);
+	virtual boost::shared_ptr<DataModelImpl> create(InterpreterInfo* interpreter);
 
 	virtual void addExtension(DataModelExtension* ext);
 

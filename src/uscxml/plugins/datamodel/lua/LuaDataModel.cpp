@@ -139,7 +139,7 @@ static int luaInFunction(lua_State * l) {
 	return 1;
 }
 
-boost::shared_ptr<DataModelImpl> LuaDataModel::create(InterpreterImpl* interpreter) {
+boost::shared_ptr<DataModelImpl> LuaDataModel::create(InterpreterInfo* interpreter) {
 	boost::shared_ptr<LuaDataModel> dm = boost::shared_ptr<LuaDataModel>(new LuaDataModel());
 	dm->_interpreter = interpreter;
 	dm->_luaState = luaL_newstate();

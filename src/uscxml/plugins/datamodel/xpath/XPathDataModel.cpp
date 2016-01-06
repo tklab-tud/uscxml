@@ -46,7 +46,7 @@ bool pluginConnect(pluma::Host& host) {
 XPathDataModel::XPathDataModel() {
 }
 
-boost::shared_ptr<DataModelImpl> XPathDataModel::create(InterpreterImpl* interpreter) {
+boost::shared_ptr<DataModelImpl> XPathDataModel::create(InterpreterInfo* interpreter) {
 	boost::shared_ptr<XPathDataModel> dm = boost::shared_ptr<XPathDataModel>(new XPathDataModel());
 	dm->_interpreter = interpreter;
 

@@ -21,6 +21,7 @@
 #define FACTORY_H_5WKLGPRB
 
 #include "uscxml/Common.h"
+#include "uscxml/InterpreterInfo.h"
 
 #include "uscxml/plugins/ExecutableContent.h"
 #include "uscxml/plugins/EventHandler.h"
@@ -54,7 +55,7 @@ public:
 	void registerInvoker(InvokerImpl* invoker);
 	void registerExecutableContent(ExecutableContentImpl* executableContent);
 
-	boost::shared_ptr<DataModelImpl> createDataModel(const std::string& type, InterpreterImpl* interpreter);
+	boost::shared_ptr<DataModelImpl> createDataModel(const std::string& type, InterpreterInfo* interpreter);
 	boost::shared_ptr<IOProcessorImpl> createIOProcessor(const std::string& type, InterpreterImpl* interpreter);
 	boost::shared_ptr<InvokerImpl> createInvoker(const std::string& type, InterpreterImpl* interpreter);
 	boost::shared_ptr<ExecutableContentImpl> createExecutableContent(const std::string& localName, const std::string& nameSpace, InterpreterImpl* interpreter);

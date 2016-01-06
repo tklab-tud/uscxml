@@ -59,7 +59,7 @@ PromelaDataModel::PromelaDataModel() {
 PromelaDataModel::~PromelaDataModel() {
 }
 
-boost::shared_ptr<DataModelImpl> PromelaDataModel::create(InterpreterImpl* interpreter) {
+boost::shared_ptr<DataModelImpl> PromelaDataModel::create(InterpreterInfo* interpreter) {
 	boost::shared_ptr<PromelaDataModel> dm = boost::shared_ptr<PromelaDataModel>(new PromelaDataModel());
 	dm->_interpreter = interpreter;
 

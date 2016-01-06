@@ -195,6 +195,44 @@ set(CTEST_CUSTOM_TESTS_IGNORE
   # "spin/promela/test577.scxml" # send without target for basichttp
   
   
+  ### Ignore for generated C sources
+  
+  # we do not support invokers yet
+  "gen_c/ecma/test191.scxml"
+  "gen_c/ecma/test192.scxml"
+  "gen_c/ecma/test207.scxml"
+  "gen_c/ecma/test215.scxml"
+  "gen_c/ecma/test216.scxml"
+  "gen_c/ecma/test220.scxml"
+  "gen_c/ecma/test223.scxml"
+  "gen_c/ecma/test224.scxml"
+  "gen_c/ecma/test225.scxml"
+  "gen_c/ecma/test226.scxml"
+  "gen_c/ecma/test228.scxml"
+  "gen_c/ecma/test229.scxml"
+  "gen_c/ecma/test230.scxml"
+  "gen_c/ecma/test232.scxml"
+  "gen_c/ecma/test233.scxml"
+  "gen_c/ecma/test234.scxml"
+  "gen_c/ecma/test235.scxml"
+  "gen_c/ecma/test236.scxml"
+  "gen_c/ecma/test237.scxml"
+  "gen_c/ecma/test239.scxml"
+  "gen_c/ecma/test240.scxml"
+  "gen_c/ecma/test241.scxml"
+  "gen_c/ecma/test242.scxml"
+  "gen_c/ecma/test243.scxml"
+  "gen_c/ecma/test244.scxml"
+  "gen_c/ecma/test245.scxml"
+  "gen_c/ecma/test247.scxml"
+  "gen_c/ecma/test250.scxml"
+  "gen_c/ecma/test252.scxml"
+  "gen_c/ecma/test253.scxml"
+  "gen_c/ecma/test276.scxml"
+  
+  # we do not support io processors yet
+  "gen_c/ecma/test201.scxml"
+  
 )
 
 
