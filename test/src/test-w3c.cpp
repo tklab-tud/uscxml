@@ -1,4 +1,8 @@
+// I feel dirty, but we need to access the datamodel timer
+#define protected public
+
 #include "uscxml/config.h"
+#include "uscxml/Convenience.h"
 #include "uscxml/Interpreter.h"
 #include "uscxml/DOMUtils.h"
 
@@ -12,6 +16,10 @@
 #ifdef HAS_SIGNAL_H
 #include <signal.h>
 #endif
+
+#ifdef BUILD_PROFILING
+#   include "uscxml/plugins/DataModel.h"
+# endif
 
 #ifdef _WIN32
 #include "XGetopt.h"
@@ -50,7 +58,7 @@ void printUsageAndExit(const char* progName) {
     exit(1);
 }
 
-class W3CStatusMonitor : public uscxml::StateTransitionMonitor {
+class W3CStatusMonitor : public uscxml::InterpreterMonitor {
 
 void beforeCompletion(uscxml::Interpreter tmp) {
 	if (interpreter.getConfiguration().size() == 1 && interpreter.isInState("pass")) {
@@ -101,7 +109,12 @@ int main(int argc, char** argv) {
 				break;
 			}
 		}
-
+        
+        const char* envBenchmarkRuns = getenv("USCXML_BENCHMARK_ITERATIONS");
+        if (envBenchmarkRuns != NULL) {
+            benchmarkRuns = strTo<size_t>(envBenchmarkRuns);
+        }
+        
 		documentURI = argv[optind];
 
         LOG(INFO) << "Processing " << documentURI << (withFlattening ? " FSM converted" : "") << (delayFactor ? "" : " with delays *= " + toStr(delayFactor)) << (benchmarkRuns > 0 ? " for " + toStr(benchmarkRuns) + " benchmarks" : "");
@@ -145,34 +158,50 @@ int main(int argc, char** argv) {
 		}
 
 		if (interpreter) {
+            W3CStatusMonitor* vm = new W3CStatusMonitor();
+            interpreter.addMonitor(vm);
+
             if (benchmarkRuns > 0) {
                 LOG(INFO) << "Benchmarking " << documentURI << (withFlattening ? " FSM converted" : "") << (delayFactor ? "" : " with delays *= " + toStr(delayFactor));
 
                 InterpreterState state = interpreter.getState();
-                
+
                 double avg = 0;
-                uint64_t now = 0;
+#ifdef BUILD_PROFILING
+                double avgDm = 0;
+                double avgStep = 0;
+#endif
                 size_t remainingRuns = benchmarkRuns;
                 uint64_t start = tthread::chrono::system_clock::now();
 
                 while(remainingRuns-- > 0) {
-                    now = tthread::chrono::system_clock::now();
+                    Timer t;
+                    t.start();
                     for(;;) {
                         state = interpreter.step(true);
+                        if (state == USCXML_FINISHED) {
+#ifdef BUILD_PROFILING
+                            avgDm += interpreter.getDataModel()._impl.get()->timer.elapsed;
+                            interpreter.getDataModel()._impl.get()->timer.elapsed = 0;
+                            avgStep += interpreter.getImpl()->timer.elapsed;
+#endif
+                        }
                         if (state < 0)
                             break;
                     }
-                    avg += (double)(tthread::chrono::system_clock::now() - now) / (double)benchmarkRuns;
+                    t.stop();
+                    avg += t.elapsed;
                     interpreter.reset();
                 }
                 uint64_t totalDuration = tthread::chrono::system_clock::now() - start;
                 std::cout << benchmarkRuns << " iterations in " << totalDuration << " ms" << std::endl;
-                std::cout << avg << " ms on average" << std::endl;
-                
-            } else {
-                W3CStatusMonitor* vm = new W3CStatusMonitor();
-                interpreter.addMonitor(vm);
+                std::cout << (avg * 1000.0)  / (double)benchmarkRuns << " ms on average" << std::endl;
+#ifdef BUILD_PROFILING
+                std::cout << (avgDm * 1000.0) / (double)benchmarkRuns << " ms in datamodel" << std::endl;
+                std::cout << (avgStep * 1000.0) / (double)benchmarkRuns << " ms in microsteps" << std::endl;
+#endif
 
+            } else {
                 interpreter.start();
                 while(interpreter.runOnMainThread(25));
             }

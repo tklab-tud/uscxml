@@ -77,6 +77,9 @@ protected:
     std::map<std::string, Arabica::DOM::Element<std::string> > _stateNames;
     Arabica::XPath::NodeSet<std::string> _transitions;
 
+    bool _hasGlobalScripts;
+    bool _hasDoneData;
+    
     size_t _transCharArraySize;
     std::string _transCharArrayInit;
 

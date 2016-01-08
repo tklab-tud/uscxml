@@ -372,6 +372,7 @@ else()
 endif()
 OPTION(ENABLE_GCOV "Compile with gcov support" OFF)
 
+OPTION(BUILD_PROFILING "Build with profiling information" OFF)
 OPTION(BUILD_MINIMAL "Build only features mandated by specification" OFF)
 OPTION(BUILD_DM_ECMA "Build with ECMAScript datamodel" ON)
 OPTION(BUILD_DM_XPATH "Build with XPath datamodel" ON)

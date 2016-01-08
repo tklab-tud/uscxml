@@ -198,6 +198,7 @@ set(CTEST_CUSTOM_TESTS_IGNORE
   ### Ignore for generated C sources
   
   # we do not support invokers yet
+  "gen_c/ecma/test187.scxml"
   "gen_c/ecma/test191.scxml"
   "gen_c/ecma/test192.scxml"
   "gen_c/ecma/test207.scxml"
@@ -229,9 +230,45 @@ set(CTEST_CUSTOM_TESTS_IGNORE
   "gen_c/ecma/test252.scxml"
   "gen_c/ecma/test253.scxml"
   "gen_c/ecma/test276.scxml"
+  "gen_c/ecma/test338.scxml"
+  "gen_c/ecma/test347.scxml"
+  "gen_c/ecma/test422.scxml"
+  "gen_c/ecma/test530.scxml"
+  "gen_c/ecma/test554.scxml"
   
   # we do not support io processors yet
   "gen_c/ecma/test201.scxml"
+  "gen_c/ecma/test496.scxml"
+  "gen_c/ecma/test500.scxml"
+  "gen_c/ecma/test501.scxml"
+  "gen_c/ecma/test509.scxml"
+  "gen_c/ecma/test510.scxml"
+  "gen_c/ecma/test518.scxml"
+  "gen_c/ecma/test519.scxml"
+  "gen_c/ecma/test520.scxml"
+  "gen_c/ecma/test521.scxml"
+  "gen_c/ecma/test522.scxml"
+  "gen_c/ecma/test531.scxml"
+  "gen_c/ecma/test532.scxml"
+  "gen_c/ecma/test534.scxml"
+  "gen_c/ecma/test567.scxml"
+  "gen_c/ecma/test569.scxml"
+  "gen_c/ecma/test577.scxml"
+  
+  # failing is succeeding
+  "gen_c/ecma/test301.scxml"
+  
+  # manual test
+  "gen_c/ecma/test307.scxml"
+  
+  # data from file
+  "gen_c/ecma/test446.scxml"
+  "gen_c/ecma/test552.scxml"
+  "gen_c/ecma/test557.scxml"
+  "gen_c/ecma/test558.scxml"
+  
+  # XML DOM in data
+  "gen_c/ecma/test561.scxml"
   
 )
 

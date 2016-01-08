@@ -20,8 +20,13 @@
 #ifndef DATAMODEL_H_F1F776F9
 #define DATAMODEL_H_F1F776F9
 
+#include "uscxml/config.h"
 #include "uscxml/Common.h"
 #include "uscxml/plugins/EventHandler.h"
+
+#ifdef BUILD_PROFILING
+#include "uscxml/concurrency/Timer.h"
+#endif
 
 #include <list>
 #include <boost/shared_ptr.hpp>
@@ -101,6 +106,10 @@ public:
 	virtual std::string andExpressions(std::list<std::string>) {
 		return "";
 	}
+
+#ifdef BUILD_PROFILING
+    Timer timer;
+#endif
 
 protected:
 	InterpreterInfo* _interpreter;

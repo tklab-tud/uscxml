@@ -57,7 +57,8 @@ public:
 
 	void addEvent(std::string eventId, int fd, short opMask, void (*callback)(void*, const std::string eventId), void* userData, bool persist = true);
 	void addEvent(std::string eventId, void (*callback)(void*, const std::string eventId), uint32_t delayMs, void* userData, bool persist = false);
-	void cancelEvent(std::string eventId);
+    void cancelEvent(std::string eventId);
+    void cancelAllEvents();
 
 	void start();
 	void stop();

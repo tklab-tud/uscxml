@@ -21,6 +21,7 @@
 #define RUNTIME_H_SQ1MBKGN
 
 // this has to be the first include or MSVC will run amok
+#include "uscxml/config.h"
 #include "uscxml/Common.h"
 
 #include <iostream> // arabica xpath uses cerr without iostream
@@ -48,6 +49,10 @@
 #include "uscxml/plugins/IOProcessor.h"
 #include "uscxml/plugins/Invoker.h"
 #include "uscxml/plugins/ExecutableContent.h"
+
+#ifdef BUILD_PROFILING
+#include "uscxml/concurrency/Timer.h"
+#endif
 
 #define ERROR_PLATFORM_THROW(msg) \
 	Event e; \
@@ -406,6 +411,10 @@ public:
 	virtual Arabica::XPath::NodeSet<std::string> getProperAncestors(const Arabica::DOM::Node<std::string>& s1, const Arabica::DOM::Node<std::string>& s2);
 
 	virtual void handleDOMEvent(Arabica::DOM::Events::Event<std::string>& event);
+
+#ifdef BUILD_PROFILING
+    Timer timer;
+#endif
 
 protected:
 

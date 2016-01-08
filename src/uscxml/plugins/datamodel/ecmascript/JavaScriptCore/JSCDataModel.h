@@ -120,6 +120,7 @@ protected:
 	
 	Event _event;
 	JSGlobalContextRef _ctx;
+    
 };
 
 #ifdef BUILD_AS_PLUGINS

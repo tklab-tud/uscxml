@@ -77,7 +77,6 @@ private:
 	public:
 		void operator()(ChartToMinimalSCXML* p) { /* do nothing */ }
 	};
-	friend class ChartToMinimalSCXML;
 
 };
 

@@ -57,6 +57,12 @@
 #	include "uscxml/interpreter/InterpreterRC.h"
 #endif
 
+#ifdef BUILD_PROFILING
+#define TIME_BLOCK Measurement msm(&timer);
+#else
+#define TIME_BLOCK (0);
+#endif
+
 #define VERBOSE 0
 
 /// valid interpreter state transitions
@@ -772,7 +778,8 @@ NodeSet<std::string> InterpreterImpl::getDocumentInitialTransitions() {
 }
 
 InterpreterState InterpreterImpl::step(int waitForMS) {
-	try {
+    TIME_BLOCK
+    try {
 		tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
 
 		if (_state == USCXML_FINISHED || _state == USCXML_DESTROYED) {
@@ -967,8 +974,8 @@ EXIT_INTERPRETER:
 		_mutex.unlock();
 
 		// remove datamodel
-		if(!_userSuppliedDataModel)
-			_dataModel = DataModel();
+//		if(!_userSuppliedDataModel)
+//			_dataModel = DataModel();
 
 		setInterpreterState(USCXML_FINISHED);
 		return _state;
@@ -1362,6 +1369,10 @@ void InterpreterImpl::reset() {
 	_isInitialized = false;
 	_stable = false;
 
+#ifdef BUILD_PROFILING
+    timer = Timer();
+#endif
+    _dataModel = DataModel();
 	setInterpreterState(USCXML_INSTANTIATED);
 }
 

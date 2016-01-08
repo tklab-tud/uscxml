@@ -10,8 +10,11 @@ if(CMD_RESULT)
 endif()
 message(STATUS "time for transforming to c machine")
 
+# message(FATAL_ERROR "PROJECT_BINARY_DIR: ${PROJECT_BINARY_DIR}")
+
 set(COMPILE_CMD
 "-o" "${OUTDIR}/${TEST_FILE_NAME}"
+"-Ofast"
 "-L${CMAKE_LIBRARY_OUTPUT_DIRECTORY}"
 "-luscxml64" 
 "-include" "${OUTDIR}/${TEST_FILE_NAME}.machine.c"
@@ -19,6 +22,7 @@ set(COMPILE_CMD
 "-I${PROJECT_SOURCE_DIR}/contrib/prebuilt/${USCXML_PLATFORM_ID}/include/arabica"
 "-I${PROJECT_SOURCE_DIR}/contrib/prebuilt/include"
 "-I${CMAKE_BINARY_DIR}"
+"-I${PROJECT_BINARY_DIR}"
 "-I${PROJECT_SOURCE_DIR}/src"
 "-Wl,-rpath,${CMAKE_LIBRARY_OUTPUT_DIRECTORY}"
 "-DAUTOINCLUDE_TEST=ON"
