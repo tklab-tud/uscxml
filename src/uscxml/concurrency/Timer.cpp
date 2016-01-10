@@ -4,7 +4,10 @@
 
 // see https://github.com/awreece/monotonic_timer
 
+#include "uscxml/config.h"
+#ifdef HAS_UNISTD_H
 #include <unistd.h>
+#endif
 #include "Timer.h"
 
 #define NANOS_PER_SECF 1000000000.0
@@ -44,29 +47,25 @@
 #elif defined(_MSC_VER)
   // On Windows, use QueryPerformanceCounter and QueryPerformanceFrequency.
 
+#define NOMINMAX
   #include <windows.h>
 
   static double PCFreq = 0.0;
-
-  // According to http://stackoverflow.com/q/1113409/447288, this will
-  // make this function a constructor.
-  // TODO(awreece) Actually attempt to compile on windows.
-  static void __cdecl init_pcfreq();
-  __declspec(allocate(".CRT$XCU")) void (__cdecl*init_pcfreq_)() = init_pcfreq;
-  static void __cdecl init_pcfreq() {
-    // Accoring to http://stackoverflow.com/a/1739265/447288, this will
-    // properly initialize the QueryPerformanceCounter.
-    LARGE_INTEGER li;
-    int has_qpc = QueryPerformanceFrequency(&li);
-    assert(has_qpc);
-
-    PCFreq = ((double) li.QuadPart) / 1000.0;
-  }
+__int64 CounterStart = 0;
 
   double uscxml::Timer::monotonic_seconds() {
+    if (CounterStart == 0) {
+      // Accoring to http://stackoverflow.com/a/1739265/447288, this will
+      // properly initialize the QueryPerformanceCounter.
+
+      LARGE_INTEGER li;
+      int has_qpc = QueryPerformanceFrequency(&li);
+
+      PCFreq = ((double) li.QuadPart) / 1000.0;
+    }
     LARGE_INTEGER li;
     QueryPerformanceCounter(&li);
-    return ((double) li.QuadPart) / PCFreq;
+    return double(li.QuadPart - CounterStart)/PCFreq;
   }
 
 #else

@@ -1,7 +1,8 @@
 // I feel dirty, but we need to access the datamodel timer
-#define protected public
+// #define protected public
 
 #include "uscxml/config.h"
+#include "uscxml/Common.h"
 #include "uscxml/Convenience.h"
 #include "uscxml/Interpreter.h"
 #include "uscxml/DOMUtils.h"
@@ -181,9 +182,9 @@ int main(int argc, char** argv) {
                         state = interpreter.step(true);
                         if (state == USCXML_FINISHED) {
 #ifdef BUILD_PROFILING
-                            avgDm += interpreter.getDataModel()._impl.get()->timer.elapsed;
-                            interpreter.getDataModel()._impl.get()->timer.elapsed = 0;
-                            avgStep += interpreter.getImpl()->timer.elapsed;
+                            avgDm += interpreter.getDataModel().timer.elapsed;
+                            interpreter.getDataModel().timer.reset();
+                            avgStep += interpreter.timer.elapsed;
 #endif
                         }
                         if (state < 0)

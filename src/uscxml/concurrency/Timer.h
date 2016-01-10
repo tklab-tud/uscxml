@@ -7,6 +7,8 @@
 #ifndef MONOTONIC_TIMER_H_
 #define MONOTONIC_TIMER_H_
 
+#include "uscxml/Common.h"
+
 // Returns seconds since some unspecified start time (guaranteed to be
 // monotonicly increasing).
 
@@ -31,6 +33,10 @@ public:
         invocations++;
     }
 
+    void reset() {
+			elapsed = 0;
+		}
+		
     void stop() {
         if (invocations == 0)
             return;

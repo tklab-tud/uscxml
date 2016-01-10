@@ -2563,7 +2563,7 @@ void ChartToPromela::writeInsertWithDelay(std::ostream& stream, int indent) {
     uint32_t maxExternalQueueLength = 1;
     std::map<Arabica::DOM::Node<std::string>, ChartToPromela*>::iterator machineIter = _machinesAll->begin();
     while(machineIter != _machinesAll->end()) {
-        maxExternalQueueLength = std::max(maxExternalQueueLength, machineIter->second->_externalQueueLength);
+        maxExternalQueueLength = MAX(maxExternalQueueLength, machineIter->second->_externalQueueLength);
         machineIter++;
     }
     

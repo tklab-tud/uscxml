@@ -122,8 +122,13 @@ void ChartToC::writeMacros(std::ostream& stream) {
     stream << "#define CLEARBIT(idx, bitset)   bitset[idx >> 3] &= (1 << (idx & 7)) ^ 0xFF;" << std::endl;
     stream << std::endl;
     
-    stream << "#define likely(x)    (__builtin_expect (!!(x), 1))" << std::endl;
-    stream << "#define unlikely(x)  (__builtin_expect (!!(x), 0))" << std::endl;
+    stream << "#ifdef __GNUC__" << std::endl;
+    stream << "#define likely(x)       __builtin_expect(!!(x), 1)" << std::endl;
+    stream << "#define unlikely(x)     __builtin_expect(!!(x), 0)" << std::endl;
+    stream << "#else" << std::endl;
+    stream << "#define likely(x)       (x)" << std::endl;
+    stream << "#define unlikely(x)     (x)" << std::endl;
+    stream << "#endif" << std::endl;
     stream << std::endl;
 
     stream << "// error return codes" << std::endl;
@@ -666,7 +671,7 @@ void ChartToC::writeExecContent(std::ostream& stream, const Arabica::DOM::Node<s
         stream << padding;
         stream << "if likely(ctx->exec_content_raise != NULL) {" << std::endl;
         stream << padding;
-        stream << "    if ((ctx->exec_content_raise(ctx, ";
+        stream << "    if unlikely((ctx->exec_content_raise(ctx, ";
         stream << (HAS_ATTR(elem, "event") ? "\"" + escape(ATTR(elem, "event")) + "\"" : "NULL");
         stream << ")) != SCXML_ERR_OK) return err;" << std::endl;
         stream << padding << "} else {" << std::endl;
@@ -1231,7 +1236,7 @@ void ChartToC::writeFSM(std::ostream& stream) {
     stream << "#endif" << std::endl;
     stream << std::endl;
 
-    stream << "MACRO_STEP:" << std::endl;
+    stream << "// MACRO_STEP:" << std::endl;
     stream << "    ctx->flags &= ~SCXML_CTX_TRANSITION_FOUND;" << std::endl;
     stream << std::endl;
     
@@ -1321,7 +1326,7 @@ void ChartToC::writeFSM(std::ostream& stream) {
     stream << "#endif" << std::endl;
     stream << std::endl;
     
-    stream << "REMEMBER_HISTORY:" << std::endl;
+    stream << "// REMEMBER_HISTORY:" << std::endl;
     stream << "    for (int i = 0; i < SCXML_NUMBER_STATES; i++) {" << std::endl;
     stream << "        if unlikely(scxml_states[i].type == SCXML_STATE_HISTORY_SHALLOW || scxml_states[i].type == SCXML_STATE_HISTORY_DEEP) {" << std::endl;
     stream << "            // a history state whose parent is about to be exited" << std::endl;
@@ -1353,7 +1358,7 @@ void ChartToC::writeFSM(std::ostream& stream) {
     stream << "#endif" << std::endl;
     stream << std::endl;
 
-    stream << "EXIT_STATES:" << std::endl;
+    stream << "// EXIT_STATES:" << std::endl;
     stream << "    for (int i = SCXML_NUMBER_STATES - 1; i >= 0; i--) {" << std::endl;
     stream << "        if (IS_SET(i, exit_set) && IS_SET(i, ctx->config)) {" << std::endl;
     stream << "            // call all on exit handlers" << std::endl;
@@ -1378,7 +1383,7 @@ void ChartToC::writeFSM(std::ostream& stream) {
     stream << "    }" << std::endl;
     stream << std::endl;
 
-    stream << "ADD_DESCENDANTS:" << std::endl;
+    stream << "// ADD_DESCENDANTS:" << std::endl;
     stream << "    // iterate for descendants" << std::endl;
     stream << "    for (int i = 0; i < SCXML_NUMBER_STATES; i++) {" << std::endl;
     stream << "        if (IS_SET(i, entry_set)) {" << std::endl;
@@ -1438,7 +1443,7 @@ void ChartToC::writeFSM(std::ostream& stream) {
     stream << "#endif" << std::endl;
     stream << std::endl;
 
-    stream << "TAKE_TRANSITIONS:" << std::endl;
+    stream << "// TAKE_TRANSITIONS:" << std::endl;
     stream << "    for (int i = 0; i < SCXML_NUMBER_TRANSITIONS; i++) {" << std::endl;
     stream << "        if (IS_SET(i, trans_set) && (scxml_transitions[i].type & SCXML_TRANS_HISTORY) == 0) {" << std::endl;
     stream << "            // call executable content in transition" << std::endl;
@@ -1458,7 +1463,7 @@ void ChartToC::writeFSM(std::ostream& stream) {
     stream << "#endif" << std::endl;
     stream << std::endl;
 
-    stream << "ENTER_STATES:" << std::endl;
+    stream << "// ENTER_STATES:" << std::endl;
     stream << "    for (int i = 0; i < SCXML_NUMBER_STATES; i++) {" << std::endl;
     stream << "        if (IS_SET(i, entry_set) && !IS_SET(i, ctx->config)) {" << std::endl;
     stream << "            // these are no proper states" << std::endl;
@@ -1549,7 +1554,7 @@ void ChartToC::writeFSM(std::ostream& stream) {
     stream << "    }" << std::endl;
     stream << std::endl;
 
-    stream << "HISTORY_TRANSITIONS:" << std::endl;
+    stream << "// HISTORY_TRANSITIONS:" << std::endl;
     stream << "    for (int i = 0; i < SCXML_NUMBER_TRANSITIONS; i++) {" << std::endl;
     stream << "        if unlikely(IS_SET(i, trans_set) && (scxml_transitions[i].type & SCXML_TRANS_HISTORY)) {" << std::endl;
     stream << "            // call executable content in transition" << std::endl;

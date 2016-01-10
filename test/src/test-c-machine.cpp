@@ -79,7 +79,7 @@ public:
     std::map<std::string, Invoker> invokers;
     Arabica::DOM::Document<std::string> document;
     scxml_ctx* ctx;
-    boost::shared_ptr<DataModelImpl> datamodel;
+    DataModel datamodel;
     
     std::map<const scxml_elem_foreach*, scxml_foreach_info*> foreachInfo;
     std::deque<Event*> iq;
@@ -144,7 +144,7 @@ int exec_content_raise(const scxml_ctx* ctx, const char* event) {
 
 int is_true(const scxml_ctx* ctx, const char* expr) {
     try {
-        return USER_DATA(ctx)->datamodel->evalAsBool(expr);
+        return USER_DATA(ctx)->datamodel.evalAsBool(expr);
     } catch (Event e) {
         exec_content_raise(ctx, e.name.c_str());
     }
@@ -183,7 +183,7 @@ int raise_done_event(const scxml_ctx* ctx, const scxml_state* state, const scxml
             e->data = Data(donedata->content, Data::VERBATIM);
         } else if (donedata->contentexpr != NULL) {
             try {
-                e->data = USER_DATA(ctx)->datamodel->getStringAsData(donedata->contentexpr);
+                e->data = USER_DATA(ctx)->datamodel.getStringAsData(donedata->contentexpr);
             } catch (Event e) {
                 exec_content_raise(ctx, e.name.c_str());
             }
@@ -193,9 +193,9 @@ int raise_done_event(const scxml_ctx* ctx, const scxml_state* state, const scxml
                 while (param && ELEM_PARAM_IS_SET(param)) {
                     Data paramValue;
                     if (param->expr != NULL) {
-                        paramValue = USER_DATA(ctx)->datamodel->getStringAsData(param->expr);
+                        paramValue = USER_DATA(ctx)->datamodel.getStringAsData(param->expr);
                     } else if(param->location) {
-                        paramValue = USER_DATA(ctx)->datamodel->getStringAsData(param->location);
+                        paramValue = USER_DATA(ctx)->datamodel.getStringAsData(param->location);
                     }
                     e->params.insert(std::make_pair(param->name, paramValue));
                     param++;
@@ -238,7 +238,7 @@ int exec_content_cancel(const scxml_ctx* ctx, const char* sendid, const char* se
     if (sendid != NULL) {
         eventId = sendid;
     } else if (sendidexpr != NULL) {
-        eventId = USER_DATA(ctx)->datamodel->evalAsString(sendidexpr);
+        eventId = USER_DATA(ctx)->datamodel.evalAsString(sendidexpr);
     }
     
     if (eventId.length() > 0) {
@@ -278,7 +278,7 @@ int exec_content_send(const scxml_ctx* ctx, const scxml_elem_send* send) {
     if (send->target != NULL) {
         e->target = send->target;
     } else if (send->targetexpr != NULL) {
-        e->target = USER_DATA(ctx)->datamodel->evalAsString(send->targetexpr);
+        e->target = USER_DATA(ctx)->datamodel.evalAsString(send->targetexpr);
     } else {
         e->target = "#_external";
     }
@@ -296,7 +296,7 @@ int exec_content_send(const scxml_ctx* ctx, const scxml_elem_send* send) {
         if (send->type != NULL) {
             e->type = send->type;
         } else if (send->typeexpr != NULL) {
-            e->type = USER_DATA(ctx)->datamodel->evalAsString(send->typeexpr);
+            e->type = USER_DATA(ctx)->datamodel.evalAsString(send->typeexpr);
         } else {
             e->type = "http://www.w3.org/TR/scxml/#SCXMLEventProcessor";
         }
@@ -315,7 +315,7 @@ int exec_content_send(const scxml_ctx* ctx, const scxml_elem_send* send) {
     e->origintype = e->type;
     
     if (send->eventexpr != NULL) {
-        e->name = USER_DATA(ctx)->datamodel->evalAsString(send->eventexpr);
+        e->name = USER_DATA(ctx)->datamodel.evalAsString(send->eventexpr);
     } else {
         e->name = strdup(send->event);
     }
@@ -325,9 +325,9 @@ int exec_content_send(const scxml_ctx* ctx, const scxml_elem_send* send) {
         while (param && ELEM_PARAM_IS_SET(param)) {
             Data paramValue;
             if (param->expr != NULL) {
-                paramValue = USER_DATA(ctx)->datamodel->getStringAsData(param->expr);
+                paramValue = USER_DATA(ctx)->datamodel.getStringAsData(param->expr);
             } else if(param->location) {
-                paramValue = USER_DATA(ctx)->datamodel->getStringAsData(param->location);
+                paramValue = USER_DATA(ctx)->datamodel.getStringAsData(param->location);
             }
             e->params.insert(std::make_pair(param->name, paramValue));
             param++;
@@ -345,7 +345,7 @@ int exec_content_send(const scxml_ctx* ctx, const scxml_elem_send* send) {
                 ePtr++;
                 if (*ePtr == ' ' || *ePtr == '\0') {
                     std::string key(bPtr, ePtr - bPtr);
-                    e->params.insert(std::make_pair(key, USER_DATA(ctx)->datamodel->getStringAsData(key)));
+                    e->params.insert(std::make_pair(key, USER_DATA(ctx)->datamodel.getStringAsData(key)));
                     if (*ePtr == '\0')
                         break;
                     bPtr = ++ePtr;
@@ -374,7 +374,7 @@ int exec_content_send(const scxml_ctx* ctx, const scxml_elem_send* send) {
     } else {
         sendid = strdup(UUID::getUUID().c_str());
         if (send->idlocation != NULL) {
-            USER_DATA(ctx)->datamodel->assign(send->idlocation, Data(sendid, Data::VERBATIM));
+            USER_DATA(ctx)->datamodel.assign(send->idlocation, Data(sendid, Data::VERBATIM));
         } else {
             e->hideSendId = true;
         }
@@ -384,7 +384,7 @@ int exec_content_send(const scxml_ctx* ctx, const scxml_elem_send* send) {
     size_t delayMs = 0;
     std::string delay;
     if (send->delayexpr != NULL) {
-        delay = USER_DATA(ctx)->datamodel->evalAsString(send->delayexpr);
+        delay = USER_DATA(ctx)->datamodel.evalAsString(send->delayexpr);
     } else if (send->delay != NULL) {
         delay = send->delay;
     }
@@ -424,7 +424,7 @@ int exec_content_init(const scxml_ctx* ctx, const scxml_elem_data* data) {
             d = Data("undefined", Data::INTERPRETED);
         }
         try {
-            USER_DATA(ctx)->datamodel->init(data->id, d);
+            USER_DATA(ctx)->datamodel.init(data->id, d);
         } catch (Event e) {
             exec_content_raise(ctx, e.name.c_str());
         }
@@ -442,7 +442,7 @@ int exec_content_assign(const scxml_ctx* ctx, const char* location, const char* 
 
     try {
         Data d(expr, Data::INTERPRETED);
-        USER_DATA(ctx)->datamodel->assign(key, d);
+        USER_DATA(ctx)->datamodel.assign(key, d);
     } catch (Event e) {
         exec_content_raise(ctx, e.name.c_str());
         return SCXML_ERR_EXEC_CONTENT;
@@ -455,7 +455,7 @@ int exec_content_foreach_init(const scxml_ctx* ctx, const scxml_elem_foreach* fo
         scxml_foreach_info* feInfo = (scxml_foreach_info*)malloc(sizeof(scxml_foreach_info));
         USER_DATA(ctx)->foreachInfo[foreach] = feInfo;
         
-        feInfo->iterations = USER_DATA(ctx)->datamodel->getLength(foreach->array);
+        feInfo->iterations = USER_DATA(ctx)->datamodel.getLength(foreach->array);
         feInfo->currIteration = 0;
     } catch (Event e) {
         exec_content_raise(ctx, e.name.c_str());
@@ -468,7 +468,7 @@ int exec_content_foreach_next(const scxml_ctx* ctx, const scxml_elem_foreach* fo
     try {
         scxml_foreach_info* feInfo = USER_DATA(ctx)->foreachInfo[foreach];
         if (feInfo->currIteration < feInfo->iterations) {
-            USER_DATA(ctx)->datamodel->setForeach((foreach->item != NULL ? foreach->item : ""),
+            USER_DATA(ctx)->datamodel.setForeach((foreach->item != NULL ? foreach->item : ""),
                                                   (foreach->array != NULL ? foreach->array : ""),
                                                   (foreach->index != NULL ? foreach->index : ""),
                                                   feInfo->currIteration);
@@ -493,9 +493,9 @@ int exec_content_foreach_done(const scxml_ctx* ctx, const scxml_elem_foreach* fo
 int exec_content_log(const scxml_ctx* ctx, const char* label, const char* expr) {
     try {
         if (label != 0) {
-//            printf("%s: %s\n", label, USER_DATA(ctx)->datamodel->evalAsString(expr).c_str());
+//            printf("%s: %s\n", label, USER_DATA(ctx)->datamodel.evalAsString(expr).c_str());
         } else {
-//            printf("%s\n", USER_DATA(ctx)->datamodel->evalAsString(expr).c_str());
+//            printf("%s\n", USER_DATA(ctx)->datamodel.evalAsString(expr).c_str());
         }
     } catch (Event e) {
         exec_content_raise(ctx, e.name.c_str());
@@ -507,7 +507,7 @@ int exec_content_log(const scxml_ctx* ctx, const char* label, const char* expr) 
 
 int exec_content_script(const scxml_ctx* ctx, const char* src, const char* content) {
     if (content != NULL) {
-        USER_DATA(ctx)->datamodel->eval(Arabica::DOM::Element<std::string>(), content);
+        USER_DATA(ctx)->datamodel.eval(Arabica::DOM::Element<std::string>(), content);
     } else if (src != NULL) {
         return SCXML_ERR_UNSUPPORTED;
     }
@@ -521,7 +521,7 @@ void* dequeue_external(const scxml_ctx* ctx) {
     }
     Event* e = USER_DATA(ctx)->eq.front();
     USER_DATA(ctx)->eq.pop_front();
-    USER_DATA(ctx)->datamodel->setEvent(*e);
+    USER_DATA(ctx)->datamodel.setEvent(*e);
 #ifdef SCXML_VERBOSE
     printf("Popping External Event: %s\n", e->name.c_str());
 #endif
@@ -533,7 +533,7 @@ void* dequeue_internal(const scxml_ctx* ctx) {
         return NULL;
     Event* e = USER_DATA(ctx)->iq.front();
     USER_DATA(ctx)->iq.pop_front();
-    USER_DATA(ctx)->datamodel->setEvent(*e);
+    USER_DATA(ctx)->datamodel.setEvent(*e);
 #ifdef SCXML_VERBOSE
     printf("Popping Internal Event: %s\n", e->name.c_str());
 #endif
@@ -627,8 +627,8 @@ int main(int argc, char** argv) {
         t.stop();
         avg += t.elapsed;
 #ifdef BUILD_PROFILING
-        avgDm += interpreterInfo.datamodel.get()->timer.elapsed;
-        interpreterInfo.datamodel.get()->timer.elapsed = 0;
+        avgDm += interpreterInfo.datamodel.timer.elapsed;
+        interpreterInfo.datamodel.timer.elapsed = 0;
 #endif
         size_t passIdx = 0;
         for (int i = 0; i < SCXML_NUMBER_STATES; i++) {

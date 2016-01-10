@@ -26,6 +26,9 @@
 
 #ifdef BUILD_PROFILING
 #include "uscxml/concurrency/Timer.h"
+#define TIME_BLOCK Measurement msm(&timer);
+#else
+#define TIME_BLOCK (0);
 #endif
 
 #include <list>
@@ -107,10 +110,6 @@ public:
 		return "";
 	}
 
-#ifdef BUILD_PROFILING
-    Timer timer;
-#endif
-
 protected:
 	InterpreterInfo* _interpreter;
 };
@@ -141,96 +140,123 @@ public:
 	}
 
 	virtual std::list<std::string> getNames() {
-		return _impl->getNames();
+        TIME_BLOCK
+        return _impl->getNames();
 	}
 
 	virtual bool validate(const std::string& location, const std::string& schema) {
+        TIME_BLOCK
 		return _impl->validate(location, schema);
 	}
 	virtual bool isLocation(const std::string& expr) {
+        TIME_BLOCK
 		return _impl->isLocation(expr);
 	}
 	virtual bool isValidSyntax(const std::string& expr) {
+        TIME_BLOCK
 		return _impl->isValidSyntax(expr);
 	}
 
 	virtual void setEvent(const Event& event) {
+        TIME_BLOCK
 		return _impl->setEvent(event);
 	}
 	virtual Data getStringAsData(const std::string& content) {
+        TIME_BLOCK
 		return _impl->getStringAsData(content);
 	}
 
 	virtual void pushContext() {
+        TIME_BLOCK
 		return _impl->pushContext();
 	}
 	virtual void popContext() {
+        TIME_BLOCK
 		return _impl->popContext();
 	}
 
 	virtual void eval(const Arabica::DOM::Element<std::string>& scriptElem,
 	                  const std::string& expr) {
+        TIME_BLOCK
 		return _impl->eval(scriptElem, expr);
 	}
 	virtual std::string evalAsString(const std::string& expr) {
+        TIME_BLOCK
 		return _impl->evalAsString(expr);
 	}
 	virtual bool evalAsBool(const std::string& expr) {
+        TIME_BLOCK
 		return _impl->evalAsBool(expr);
 	}
 	virtual bool evalAsBool(const Arabica::DOM::Element<std::string>& scriptNode,
 	                        const std::string& expr) {
+        TIME_BLOCK
 		return _impl->evalAsBool(scriptNode, expr);
 	}
 
 	virtual uint32_t getLength(const std::string& expr) {
+        TIME_BLOCK
 		return _impl->getLength(expr);
 	}
 	virtual void setForeach(const std::string& item,
 	                        const std::string& array,
 	                        const std::string& index,
 	                        uint32_t iteration) {
+        TIME_BLOCK
 		return _impl->setForeach(item, array, index, iteration);
 	}
 
 	virtual void assign(const Arabica::DOM::Element<std::string>& assignElem,
 	                    const Arabica::DOM::Node<std::string>& node,
 	                    const std::string& content) {
+        TIME_BLOCK
 		return _impl->assign(assignElem, node, content);
 	}
 	virtual void assign(const std::string& location, const Data& data) {
+        TIME_BLOCK
 		return _impl->assign(location, data);
 	}
 
 	virtual void init(const Arabica::DOM::Element<std::string>& dataElem,
 	                  const Arabica::DOM::Node<std::string>& node,
 	                  const std::string& content) {
+        TIME_BLOCK
 		return _impl->init(dataElem, node, content);
 	}
 	virtual void init(const std::string& location, const Data& data) {
+        TIME_BLOCK
 		return _impl->init(location, data);
 	}
 
 	virtual bool isDeclared(const std::string& expr) {
+        TIME_BLOCK
 		return _impl->isDeclared(expr);
 	}
 
 	size_t replaceExpressions(std::string& content) {
+        TIME_BLOCK
 		return _impl->replaceExpressions(content);
 	}
 
 	std::string andExpressions(std::list<std::string> expressions) {
+        TIME_BLOCK
 		return _impl->andExpressions(expressions);
 	}
 
 	virtual void setInterpreter(InterpreterInfo* interpreter) {
+        TIME_BLOCK
 		_impl->setInterpreter(interpreter);
 	}
 
 	virtual void addExtension(DataModelExtension* ext) {
+        TIME_BLOCK
 		_impl->addExtension(ext);
 	}
 	
+#ifdef BUILD_PROFILING
+    Timer timer;
+#endif
+
 protected:
 	boost::shared_ptr<DataModelImpl> _impl;
 };

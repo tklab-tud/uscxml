@@ -44,12 +44,6 @@
 #include "uscxml/DOMUtils.h"
 #include <glog/logging.h>
 
-#ifdef BUILD_PROFILING
-#define TIME_BLOCK Measurement msm(&timer);
-#else
-#define TIME_BLOCK (0);
-#endif
-
 #ifdef BUILD_AS_PLUGINS
 #include <Pluma/Connector.hpp>
 #endif
@@ -93,7 +87,6 @@ JSCDataModel::~JSCDataModel() {
 }
 
 void JSCDataModel::addExtension(DataModelExtension* ext) {
-    TIME_BLOCK
 	if (_extensions.find(ext) != _extensions.end())
 		return;
 	
@@ -199,7 +192,6 @@ JSClassDefinition JSCDataModel::jsInvokersClassDef = { 0, 0, "invokers", 0, 0, 0
 
 boost::shared_ptr<DataModelImpl> JSCDataModel::create(InterpreterInfo* interpreter) {
 	boost::shared_ptr<JSCDataModel> dm = boost::shared_ptr<JSCDataModel>(new JSCDataModel());
-    TIME_BLOCK
     
 	dm->_ctx = JSGlobalContextCreate(NULL);
 	dm->_interpreter = interpreter;
@@ -284,7 +276,6 @@ void JSCDataModel::popContext() {
 }
 
 void JSCDataModel::setEvent(const Event& event) {
-    TIME_BLOCK
 	JSCSCXMLEvent::JSCSCXMLEventPrivate* privData = new JSCSCXMLEvent::JSCSCXMLEventPrivate();
 	privData->nativeObj = new Event(event);
 	privData->dom = _dom;
@@ -367,14 +358,12 @@ void JSCDataModel::setEvent(const Event& event) {
 }
 
 Data JSCDataModel::getStringAsData(const std::string& content) {
-    TIME_BLOCK
 	JSValueRef result = evalAsValue(content);
 	Data data = getValueAsData(result);
 	return data;
 }
 
 JSValueRef JSCDataModel::getDataAsValue(const Data& data) {
-    TIME_BLOCK
 	JSValueRef exception = NULL;
 
 	if (data.node) {
@@ -440,7 +429,6 @@ JSValueRef JSCDataModel::getDataAsValue(const Data& data) {
 }
 
 Data JSCDataModel::getValueAsData(const JSValueRef value) {
-    TIME_BLOCK
 	Data data;
 	JSValueRef exception = NULL;
 	switch(JSValueGetType(_ctx, value)) {
@@ -529,12 +517,10 @@ Data JSCDataModel::getValueAsData(const JSValueRef value) {
 }
 
 bool JSCDataModel::validate(const std::string& location, const std::string& schema) {
-    TIME_BLOCK
 	return true;
 }
 
 uint32_t JSCDataModel::getLength(const std::string& expr) {
-    TIME_BLOCK
 	JSValueRef result;
 
 	result = evalAsValue("(" + expr + ").length");
@@ -555,7 +541,6 @@ void JSCDataModel::setForeach(const std::string& item,
                               const std::string& array,
                               const std::string& index,
                               uint32_t iteration) {
-    TIME_BLOCK
 	if (!isDeclared(item)) {
 		assign(item, Data());
 	}
@@ -572,13 +557,11 @@ void JSCDataModel::setForeach(const std::string& item,
 }
 
 bool JSCDataModel::isLocation(const std::string& expr) {
-    TIME_BLOCK
 	// location needs to be LHS and ++ is only valid for LHS
 	return isValidSyntax(expr + "++");
 }
 
 bool JSCDataModel::isValidSyntax(const std::string& expr) {
-    TIME_BLOCK
 	JSStringRef scriptJS = JSStringCreateWithUTF8CString(expr.c_str());
 	JSValueRef exception = NULL;
 	bool valid = JSCheckScriptSyntax(_ctx, scriptJS, NULL, 0, &exception);
@@ -591,7 +574,6 @@ bool JSCDataModel::isValidSyntax(const std::string& expr) {
 }
 
 bool JSCDataModel::isDeclared(const std::string& expr) {
-    TIME_BLOCK
 	JSStringRef scriptJS = JSStringCreateWithUTF8CString(expr.c_str());
 	JSValueRef exception = NULL;
 	JSValueRef result = JSEvaluateScript(_ctx, scriptJS, NULL, NULL, 0, &exception);
@@ -605,18 +587,15 @@ bool JSCDataModel::isDeclared(const std::string& expr) {
 
 void JSCDataModel::eval(const Element<std::string>& scriptElem,
                         const std::string& expr) {
-    TIME_BLOCK
 	evalAsValue(expr);
 }
 
 bool JSCDataModel::evalAsBool(const Arabica::DOM::Element<std::string>& node, const std::string& expr) {
-    TIME_BLOCK
 	JSValueRef result = evalAsValue(expr);
 	return JSValueToBoolean(_ctx, result);
 }
 
 std::string JSCDataModel::evalAsString(const std::string& expr) {
-    TIME_BLOCK
 	JSValueRef result = evalAsValue(expr);
 	JSValueRef exception = NULL;
 
@@ -635,7 +614,6 @@ std::string JSCDataModel::evalAsString(const std::string& expr) {
 }
 
 JSValueRef JSCDataModel::evalAsValue(const std::string& expr, bool dontThrow) {
-    TIME_BLOCK
 	JSStringRef scriptJS = JSStringCreateWithUTF8CString(expr.c_str());
 	JSValueRef exception = NULL;
 	JSValueRef result = JSEvaluateScript(_ctx, scriptJS, NULL, NULL, 0, &exception);
@@ -650,7 +628,6 @@ JSValueRef JSCDataModel::evalAsValue(const std::string& expr, bool dontThrow) {
 void JSCDataModel::assign(const Element<std::string>& assignElem,
                           const Node<std::string>& node,
                           const std::string& content) {
-    TIME_BLOCK
 	std::string key;
 	JSValueRef exception = NULL;
 	if (HAS_ATTR(assignElem, "id")) {
@@ -693,7 +670,6 @@ void JSCDataModel::assign(const Element<std::string>& assignElem,
 }
 
 JSValueRef JSCDataModel::getNodeAsValue(const Node<std::string>& node) {
-    TIME_BLOCK
 	switch (node.getNodeType()) {
 	case Node_base::ELEMENT_NODE:         {
 		TO_JSC_DOMVALUE(Element);
@@ -714,7 +690,6 @@ JSValueRef JSCDataModel::getNodeAsValue(const Node<std::string>& node) {
 }
 
 void JSCDataModel::assign(const std::string& location, const Data& data) {
-    TIME_BLOCK
 	std::stringstream ssJSON;
 	ssJSON << data;
 	evalAsValue(location + " = " + ssJSON.str());
@@ -723,7 +698,6 @@ void JSCDataModel::assign(const std::string& location, const Data& data) {
 void JSCDataModel::init(const Element<std::string>& dataElem,
                         const Node<std::string>& node,
                         const std::string& content) {
-    TIME_BLOCK
 	try {
 		assign(dataElem, node, content);
 	} catch (Event e) {
@@ -740,7 +714,6 @@ void JSCDataModel::init(const Element<std::string>& dataElem,
 }
 
 void JSCDataModel::init(const std::string& location, const Data& data) {
-    TIME_BLOCK
 	try {
 		assign(location, data);
 	} catch (Event e) {
@@ -751,8 +724,6 @@ void JSCDataModel::init(const std::string& location, const Data& data) {
 }
 
 std::string JSCDataModel::andExpressions(std::list<std::string> expressions) {
-    TIME_BLOCK
-
 	if (expressions.size() == 0)
 		return "";
 

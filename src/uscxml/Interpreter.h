@@ -52,6 +52,9 @@
 
 #ifdef BUILD_PROFILING
 #include "uscxml/concurrency/Timer.h"
+#define TIME_BLOCK Measurement msm(&timer);
+#else
+#define TIME_BLOCK (0);
 #endif
 
 #define ERROR_PLATFORM_THROW(msg) \
@@ -412,10 +415,6 @@ public:
 
 	virtual void handleDOMEvent(Arabica::DOM::Events::Event<std::string>& event);
 
-#ifdef BUILD_PROFILING
-    Timer timer;
-#endif
-
 protected:
 
 	static void run(void*); // static method for thread to run
@@ -593,10 +592,14 @@ public:
 	}
 
 	virtual void writeTo(std::ostream& stream) {
+        TIME_BLOCK
 		return _impl->writeTo(stream);
 	}
 
 	void reset() {
+#ifdef BUILD_PROFILING
+        timer = Timer();
+#endif
 		return _impl->reset();
 	}
 
@@ -618,16 +621,19 @@ public:
 	};
 
 	InterpreterState step(int waitForMS = 0) {
+        TIME_BLOCK
 		return _impl->step(waitForMS);
 	};
 
 	InterpreterState step(bool blocking) {
+        TIME_BLOCK
 		if (blocking)
 			return _impl->step(-1);
 		return _impl->step(0);
 	};
 
 	std::list<InterpreterIssue> validate() {
+        TIME_BLOCK
 		return _impl->validate();
 	}
 
@@ -714,33 +720,41 @@ public:
 		return _impl->getFactory();
 	}
 	Arabica::XPath::NodeSet<std::string> getNodeSetForXPath(const std::string& xpathExpr) {
+        TIME_BLOCK
 		return _impl->getNodeSetForXPath(xpathExpr);
 	}
 
 	void inline receiveInternal(const Event& event) {
+        TIME_BLOCK
 		return _impl->receiveInternal(event);
 	}
 	void receive(const Event& event, bool toFront = false) {
+        TIME_BLOCK
 		return _impl->receive(event, toFront);
 	}
 
 	Event getCurrentEvent() {
+        TIME_BLOCK
 		return _impl->getCurrentEvent();
 	}
 
 	bool isInState(const std::string& stateId) {
+        TIME_BLOCK
 		return _impl->isInState(stateId);
 	}
 
 	Arabica::XPath::NodeSet<std::string> getConfiguration() {
+        TIME_BLOCK
 		return _impl->getConfiguration();
 	}
 
 	Arabica::XPath::NodeSet<std::string> getBasicConfiguration() {
+        TIME_BLOCK
 		return _impl->getBasicConfiguration();
 	}
 
 	void setInitalConfiguration(const std::list<std::string>& states) {
+        TIME_BLOCK
 		return _impl->setInitalConfiguration(states);
 	}
 
@@ -777,19 +791,23 @@ public:
 	}
 
 	bool runOnMainThread(int fps, bool blocking = true) {
+        TIME_BLOCK
 		return _impl->runOnMainThread(fps, blocking);
 	}
 
 	bool hasLegalConfiguration() {
+        TIME_BLOCK
 		return _impl->hasLegalConfiguration();
 	}
 
 	bool isLegalConfiguration(const Arabica::XPath::NodeSet<std::string>& config) {
+        TIME_BLOCK
 		return _impl->isLegalConfiguration(config);
 	}
 
 	bool isLegalConfiguration(const std::list<std::string>& config) {
-		return _impl->isLegalConfiguration(config);
+        TIME_BLOCK
+        return _impl->isLegalConfiguration(config);
 	}
 
 	boost::shared_ptr<InterpreterImpl> getImpl() const {
@@ -798,6 +816,10 @@ public:
 
 	static std::map<std::string, boost::weak_ptr<InterpreterImpl> > getInstances();
 	static void addInstance(boost::shared_ptr<InterpreterImpl> instance);
+
+#ifdef BUILD_PROFILING
+    Timer timer;
+#endif
 
 protected:
 

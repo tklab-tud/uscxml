@@ -1,5 +1,9 @@
 cmake_minimum_required(VERSION 2.8.4)
 
+# TODO:
+# - Have a look at PGO:
+# https://mailman.videolan.org/pipermail/x265-devel/2015-April/007399.html
+
 cmake_policy(PUSH)
 if(POLICY CMP0042)
 	# new behavior defaults to ON for MACOSX_RPATH
@@ -384,6 +388,19 @@ OPTION(BUILD_BINDING_JAVA "Build language bindings for Java" ON)
 OPTION(BUILD_BINDING_CSHARP "Build language bindings for CSharp" ON)
 OPTION(BUILD_BINDING_PHP "Build language bindings for PHP" OFF)
 
+# ccache:
+# http://stackoverflow.com/questions/1815688/how-to-use-ccache-with-cmake
+#
+# see also:
+# http://blogs.s-osg.org/a-conclusion-to-accelerating-your-build-with-clang/
+
+find_program(CCACHE_FOUND ccache)
+if(CCACHE_FOUND)
+    set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE ccache)
+    set_property(GLOBAL PROPERTY RULE_LAUNCH_LINK ccache)
+endif(CCACHE_FOUND)
+
+
 # a dummy target to depend on the targets needed for tests, see:
 # http://stackoverflow.com/questions/733475/cmake-ctest-make-test-doesnt-build-tests
 add_custom_target(ALL_TESTS COMMENT "Building all tests when BUILD_TESTS is enabled")
@@ -496,6 +513,10 @@ elseif (${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-string-plus-int")
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-non-literal-null-conversion")
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-null-conversion")
+	
+	# clang throws these for boost all over the place!
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-local-typedefs")
+	
 	#SET(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -stdlib=libstdc++")
 	
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")

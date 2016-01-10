@@ -20,6 +20,8 @@
 #include "Complexity.h"
 #include "uscxml/DOMUtils.h"
 
+#include <boost/algorithm/string.hpp>
+
 namespace uscxml {
 
 using namespace Arabica::DOM;
