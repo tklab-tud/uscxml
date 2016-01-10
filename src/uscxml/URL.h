@@ -232,14 +232,14 @@ public:
 	}
 
 	void dump();
-	
+
 	void addMonitor(URLMonitor* monitor)    {
 		_impl->addMonitor(monitor);
 	}
 	void removeMonitor(URLMonitor* monitor) {
 		_impl->removeMonitor(monitor);
 	}
-	
+
 	bool downloadFailed() {
 		return _impl->downloadFailed();
 	}
@@ -286,7 +286,7 @@ public:
 	operator std::string() const {
 		return asString();
 	}
-	
+
 protected:
 	void downloadStarted() {
 		return _impl->downloadStarted();

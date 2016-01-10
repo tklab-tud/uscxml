@@ -89,10 +89,10 @@ JSCDataModel::~JSCDataModel() {
 void JSCDataModel::addExtension(DataModelExtension* ext) {
 	if (_extensions.find(ext) != _extensions.end())
 		return;
-	
+
 	ext->dm = this;
 	_extensions.insert(ext);
-	
+
 	JSObjectRef currScope = JSContextGetGlobalObject(_ctx);
 	std::list<std::string> locPath = InterpreterImpl::tokenize(ext->provides(), '.');
 	std::list<std::string>::iterator locIter = locPath.begin();
@@ -108,7 +108,7 @@ void JSCDataModel::addExtension(DataModelExtension* ext) {
 			JSValueRef newScope = JSObjectGetProperty(_ctx, currScope, pathCompJS, NULL);
 			JSStringRelease(pathCompJS);
 
-			
+
 			if (JSValueIsObject(_ctx, newScope)) {
 				currScope = JSValueToObject(_ctx, newScope, NULL);
 			} else {
@@ -129,10 +129,10 @@ void JSCDataModel::addExtension(DataModelExtension* ext) {
 
 JSValueRef JSCDataModel::jsExtension(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef* exception) {
 	DataModelExtension* extension = (DataModelExtension*)JSObjectGetPrivate(function);
-	
+
 	JSStringRef memberRef;
 	std::string memberName;
-	
+
 	if (argumentCount > 0 && JSValueIsString(ctx, arguments[0])) {
 		memberRef = JSValueToStringCopy(ctx, arguments[0], exception);
 		size_t maxSize = JSStringGetMaximumUTF8CStringSize(memberRef);
@@ -192,16 +192,16 @@ JSClassDefinition JSCDataModel::jsInvokersClassDef = { 0, 0, "invokers", 0, 0, 0
 
 boost::shared_ptr<DataModelImpl> JSCDataModel::create(InterpreterInfo* interpreter) {
 	boost::shared_ptr<JSCDataModel> dm = boost::shared_ptr<JSCDataModel>(new JSCDataModel());
-    
+
 	dm->_ctx = JSGlobalContextCreate(NULL);
 	dm->_interpreter = interpreter;
 
-    dm->_dom = new JSCDOM();
-    dm->_dom->xpath = new XPath<std::string>();
-    dm->_dom->xpath->setNamespaceContext(*interpreter->getNameSpaceInfo().getNSContext());
-    dm->_dom->storage	= new Storage(URL::getResourceDir() + PATH_SEPERATOR + interpreter->getName() + ".storage");
-    dm->_dom->nsInfo	= new NameSpaceInfo(interpreter->getNameSpaceInfo());
-    
+	dm->_dom = new JSCDOM();
+	dm->_dom->xpath = new XPath<std::string>();
+	dm->_dom->xpath->setNamespaceContext(*interpreter->getNameSpaceInfo().getNSContext());
+	dm->_dom->storage	= new Storage(URL::getResourceDir() + PATH_SEPERATOR + interpreter->getName() + ".storage");
+	dm->_dom->nsInfo	= new NameSpaceInfo(interpreter->getNameSpaceInfo());
+
 	// introduce global functions as objects for private data
 	JSClassRef jsInClassRef = JSClassCreate(&jsInClassDef);
 	JSObjectRef jsIn = JSObjectMake(dm->_ctx, jsInClassRef, dm.get());

@@ -39,18 +39,18 @@ public:
 
 	virtual ~ChartToTex();
 	static Transformer transform(const Interpreter& other);
-	
+
 	void writeTo(std::ostream& stream);
-	
+
 protected:
 	ChartToTex(const Interpreter& other)
-	: TransformerImpl(),
-		ChartToFSM(other) {}
+		: TransformerImpl(),
+		  ChartToFSM(other) {}
 
 	void writeTex(std::ostream& stream);
 
 	std::map<unsigned long, GlobalState*> _indexToState;
-	
+
 private:
 	static std::string stateListToTex(const std::string& input, bool isEmpty);
 	static std::string texEscape(const std::string& input);

@@ -36,13 +36,13 @@ public:
 		USCXML_ISSUE_INFO
 	};
 
-    InterpreterIssue(const std::string& msg, Arabica::DOM::Node<std::string> node, IssueSeverity severity, const std::string& specRef = "");
+	InterpreterIssue(const std::string& msg, Arabica::DOM::Node<std::string> node, IssueSeverity severity, const std::string& specRef = "");
 
 	std::string xPath;
-    std::string message;
+	std::string message;
 	Arabica::DOM::Node<std::string> node;
 	IssueSeverity severity;
-    std::string specRef;
+	std::string specRef;
 
 private:
 	static std::list<InterpreterIssue> forInterpreter(InterpreterImpl* interpreter);

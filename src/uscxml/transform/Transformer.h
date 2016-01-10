@@ -39,12 +39,12 @@ public:
 class USCXML_API Transformer : public boost::enable_shared_from_this<Transformer> {
 public:
 //	Transformer(const Interpreter& source) { _impl = new (source) }
-	
+
 	Transformer() : _impl() {} // the empty, invalid interpreter
 	Transformer(boost::shared_ptr<TransformerImpl> const impl) : _impl(impl) { }
 	Transformer(const Transformer& other) : _impl(other._impl) { }
 	virtual ~Transformer() {};
-	
+
 	operator bool() const {
 		return (_impl);
 	}
@@ -68,11 +68,11 @@ public:
 	operator Interpreter() {
 		return _impl->operator Interpreter();
 	}
-	
-    boost::shared_ptr<TransformerImpl> getImpl() {
-        return _impl;
-    }
-    
+
+	boost::shared_ptr<TransformerImpl> getImpl() {
+		return _impl;
+	}
+
 protected:
 	boost::shared_ptr<TransformerImpl> _impl;
 

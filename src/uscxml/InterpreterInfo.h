@@ -30,72 +30,72 @@
 
 
 namespace uscxml {
-    
+
 class USCXML_API NameSpaceInfo {
 public:
-    NameSpaceInfo() : nsContext(NULL) {
-        init(std::map<std::string, std::string>());
-    }
-    
-    NameSpaceInfo(const std::map<std::string, std::string>& nsInfo) : nsContext(NULL) {
-        init(nsInfo);
-    }
-    
-    NameSpaceInfo(const NameSpaceInfo& other) : nsContext(NULL) {
-        init(other.nsInfo);
-    }
-    
-    virtual ~NameSpaceInfo() {
-        if (nsContext)
-            delete nsContext;
-    }
-    
-    NameSpaceInfo& operator=( const NameSpaceInfo& other ) {
-        init(other.nsInfo);
-        return *this;
-    }
-    
-    void setPrefix(Arabica::DOM::Element<std::string> element) {
-        if (nsURL.size() > 0)
-            element.setPrefix(nsToPrefix[nsURL]);
-    }
-    
-    void setPrefix(Arabica::DOM::Attr<std::string> attribute) {
-        if (nsURL.size() > 0)
-            attribute.setPrefix(nsToPrefix[nsURL]);
-    }
-    
-    std::string getXMLPrefixForNS(const std::string& ns) const {
-        if (nsToPrefix.find(ns) != nsToPrefix.end() && nsToPrefix.at(ns).size())
-            return nsToPrefix.at(ns) + ":";
-        return "";
-    }
-    
-    const Arabica::XPath::StandardNamespaceContext<std::string>* getNSContext() {
-        return nsContext;
-    }
-    
-    std::string nsURL;         // ough to be "http://www.w3.org/2005/07/scxml" but maybe empty
-    std::string xpathPrefix;   // prefix mapped for xpath, "scxml" is _xmlNSPrefix is empty but _nsURL set
-    std::string xmlNSPrefix;   // the actual prefix for elements in the xml file
-    std::map<std::string, std::string> nsToPrefix;  // prefixes for a given namespace
-    std::map<std::string, std::string> nsInfo;      // all xmlns mappings
-    
+	NameSpaceInfo() : nsContext(NULL) {
+		init(std::map<std::string, std::string>());
+	}
+
+	NameSpaceInfo(const std::map<std::string, std::string>& nsInfo) : nsContext(NULL) {
+		init(nsInfo);
+	}
+
+	NameSpaceInfo(const NameSpaceInfo& other) : nsContext(NULL) {
+		init(other.nsInfo);
+	}
+
+	virtual ~NameSpaceInfo() {
+		if (nsContext)
+			delete nsContext;
+	}
+
+	NameSpaceInfo& operator=( const NameSpaceInfo& other ) {
+		init(other.nsInfo);
+		return *this;
+	}
+
+	void setPrefix(Arabica::DOM::Element<std::string> element) {
+		if (nsURL.size() > 0)
+			element.setPrefix(nsToPrefix[nsURL]);
+	}
+
+	void setPrefix(Arabica::DOM::Attr<std::string> attribute) {
+		if (nsURL.size() > 0)
+			attribute.setPrefix(nsToPrefix[nsURL]);
+	}
+
+	std::string getXMLPrefixForNS(const std::string& ns) const {
+		if (nsToPrefix.find(ns) != nsToPrefix.end() && nsToPrefix.at(ns).size())
+			return nsToPrefix.at(ns) + ":";
+		return "";
+	}
+
+	const Arabica::XPath::StandardNamespaceContext<std::string>* getNSContext() {
+		return nsContext;
+	}
+
+	std::string nsURL;         // ough to be "http://www.w3.org/2005/07/scxml" but maybe empty
+	std::string xpathPrefix;   // prefix mapped for xpath, "scxml" is _xmlNSPrefix is empty but _nsURL set
+	std::string xmlNSPrefix;   // the actual prefix for elements in the xml file
+	std::map<std::string, std::string> nsToPrefix;  // prefixes for a given namespace
+	std::map<std::string, std::string> nsInfo;      // all xmlns mappings
+
 private:
-    Arabica::XPath::StandardNamespaceContext<std::string>* nsContext;
-    
-    void init(const std::map<std::string, std::string>& nsInfo);
+	Arabica::XPath::StandardNamespaceContext<std::string>* nsContext;
+
+	void init(const std::map<std::string, std::string>& nsInfo);
 };
 
 class USCXML_API InterpreterInfo {
 public:
-    virtual NameSpaceInfo getNameSpaceInfo() const = 0;
-    virtual const std::string& getName() = 0;
-    virtual const std::string& getSessionId() = 0;
-    virtual const std::map<std::string, IOProcessor>& getIOProcessors() = 0;
-    virtual bool isInState(const std::string& stateId) = 0;
-    virtual Arabica::DOM::Document<std::string> getDocument() const = 0;
-    virtual const std::map<std::string, Invoker>& getInvokers() = 0;
+	virtual NameSpaceInfo getNameSpaceInfo() const = 0;
+	virtual const std::string& getName() = 0;
+	virtual const std::string& getSessionId() = 0;
+	virtual const std::map<std::string, IOProcessor>& getIOProcessors() = 0;
+	virtual bool isInState(const std::string& stateId) = 0;
+	virtual Arabica::DOM::Document<std::string> getDocument() const = 0;
+	virtual const std::map<std::string, Invoker>& getInvokers() = 0;
 };
 
 }

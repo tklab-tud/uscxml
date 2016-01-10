@@ -53,12 +53,12 @@ void ChartToTex::writeTex(std::ostream& stream) {
 
 	bool wroteRowStart = false;
 	std::string seperator;
-	
+
 	for (std::map<std::string, GlobalState*>::iterator stateIter = _globalConf.begin(); stateIter != _globalConf.end(); stateIter++) {
 		assert(_indexToState.find(stateIter->second->index) == _indexToState.end());
 		_indexToState[stateIter->second->index] = stateIter->second;
 	}
-	
+
 	stream << "% " << _sourceURL.asString() << std::endl;
 
 	stream << "%<*provideCommand>" << std::endl;
@@ -84,7 +84,7 @@ void ChartToTex::writeTex(std::ostream& stream) {
 			stream << "%<*tableRows>" << std::endl;
 			wroteRowStart = true;
 		}
-		
+
 		stream << "%<*globalState" << currState->index << ">" << std::endl;
 
 		// state index
@@ -95,15 +95,15 @@ void ChartToTex::writeTex(std::ostream& stream) {
 		stream << "\\globalStateListCell[t]{";
 		stream << "\\tikzmark{active_" << currState->index << "}";
 		stream << "$\\widetilde{s}_a(" << currState->index << ")$: " << stateListToTex(flatId.getFlatActive(), flatId.getActive().size() == 0) << "\\\\";
-		
+
 		// already visited states
 		stream << "\\tikzmark{visited_" << currState->index << "}";
 		stream << "$\\widetilde{s}_d(" << currState->index << ")$: " << stateListToTex(flatId.getFlatVisited(), flatId.getVisited().size() == 0) << "\\\\";
-		
+
 		// history assignments
 		stream << "\\tikzmark{history_" << currState->index << "}";
 		stream << "$\\widetilde{s}_h(" << currState->index << ")$: " << stateListToTex(flatId.getFlatHistory(), flatId.getHistory().size() == 0) << "} & ";
-		
+
 		// all transitions
 		std::set<std::string> origTransitions;
 		for (std::list<GlobalTransition*>::iterator transIter = stateIter->second->sortedOutgoing.begin(); transIter != stateIter->second->sortedOutgoing.end(); transIter++) {
@@ -118,7 +118,7 @@ void ChartToTex::writeTex(std::ostream& stream) {
 				}
 			}
 		}
-		
+
 		if (origTransitions.size() > 0) {
 			stream << "$\\{ ";
 			seperator = "";
@@ -144,7 +144,7 @@ void ChartToTex::writeTex(std::ostream& stream) {
 
 				if (!currTrans->isValid)
 					stream << "\\sout{";
-				
+
 				Arabica::XPath::NodeSet<std::string> members = currTrans->getTransitions();
 				if (members.size() > 0) {
 					stream << "$\\{ ";
@@ -162,28 +162,35 @@ void ChartToTex::writeTex(std::ostream& stream) {
 				} else {
 					stream << "$\\emptyset$";
 				}
-	//			stream << "& \\sout{$\\{ t_2, t_0 \\}$}, & \\emph{$Inv_4$: nested source states} \\\\" << std::endl;
-	//			stream << "& $\\{ t_2 \\}$ &  & $\\widetilde{s}(2)$ \\\\" << std::endl;
-	//			stream << "& $\\{ t_0 \\}$ &  & $\\widetilde{s}(4)$ \\\\" << std::endl;
+				//			stream << "& \\sout{$\\{ t_2, t_0 \\}$}, & \\emph{$Inv_4$: nested source states} \\\\" << std::endl;
+				//			stream << "& $\\{ t_2 \\}$ &  & $\\widetilde{s}(2)$ \\\\" << std::endl;
+				//			stream << "& $\\{ t_0 \\}$ &  & $\\widetilde{s}(4)$ \\\\" << std::endl;
 
 				if (!currTrans->isValid) {
 #if 1
 					stream << " } & \\emph{";
 					switch(currTrans->invalidReason) {
-						case GlobalTransition::NO_COMMON_EVENT:
-							stream << "$Inv_1$: "; break;
-						case GlobalTransition::MIXES_EVENT_SPONTANEOUS:
-							stream << "$Inv_2$: "; break;
-						case GlobalTransition::SAME_SOURCE_STATE:
-							stream << "$Inv_3$: "; break;
-						case GlobalTransition::CHILD_ENABLED:
-							stream << "$Inv_4$: "; break;
-						case GlobalTransition::PREEMPTING_MEMBERS:
-							stream << "$Inv_5$: "; break;
-						case GlobalTransition::UNCONDITIONAL_MATCH:
-							stream << "$Opt_1$: "; break;
-						case GlobalTransition::UNCONDITIONAL_SUPERSET:
-							stream << "$Opt_2$: "; break;
+					case GlobalTransition::NO_COMMON_EVENT:
+						stream << "$Inv_1$: ";
+						break;
+					case GlobalTransition::MIXES_EVENT_SPONTANEOUS:
+						stream << "$Inv_2$: ";
+						break;
+					case GlobalTransition::SAME_SOURCE_STATE:
+						stream << "$Inv_3$: ";
+						break;
+					case GlobalTransition::CHILD_ENABLED:
+						stream << "$Inv_4$: ";
+						break;
+					case GlobalTransition::PREEMPTING_MEMBERS:
+						stream << "$Inv_5$: ";
+						break;
+					case GlobalTransition::UNCONDITIONAL_MATCH:
+						stream << "$Opt_1$: ";
+						break;
+					case GlobalTransition::UNCONDITIONAL_SUPERSET:
+						stream << "$Opt_2$: ";
+						break;
 					}
 					stream << currTrans->invalidMsg << "} ";
 #endif
@@ -192,7 +199,7 @@ void ChartToTex::writeTex(std::ostream& stream) {
 				} else {
 					stream << " & ";
 					std::stringstream execContentSS;
-					
+
 					seperator = "";
 					for (std::list<GlobalTransition::Action>::iterator actionIter = currTrans->actions.begin(); actionIter != currTrans->actions.end(); actionIter++) {
 						Element<std::string> execContent;
@@ -224,7 +231,7 @@ void ChartToTex::writeTex(std::ostream& stream) {
 							seperator = ", ";
 						}
 					}
-					
+
 					if (execContentSS.str().size() > 0) {
 						stream << "$\\mathcal{X} := (" << execContentSS.str() << ")$";
 					} else {
@@ -241,7 +248,7 @@ void ChartToTex::writeTex(std::ostream& stream) {
 			if (stateIter->second->sortedOutgoing.size() == 0) {
 				stream << " &  &  & \\\\" << std::endl;
 			}
-			
+
 			stream << "\\hline" << std::endl;
 		}
 		stream << "%</globalState" << currState->index << ">" << std::endl;
@@ -270,7 +277,7 @@ std::string ChartToTex::stateListToTex(const std::string& input, bool isEmpty) {
 	}
 	return statesTex;
 }
-	
+
 std::string ChartToTex::texEscape(const std::string& input) {
 	std::string texString(input);
 	boost::replace_all(texString, "\\", "\\\\");

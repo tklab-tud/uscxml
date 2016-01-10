@@ -26,7 +26,7 @@ namespace uscxml {
 bool isnan(double x) {
 	return x != x;
 }
-	
+
 bool isNumeric(const char* pszInput, int nNumberBase) {
 	std::string base = ".-0123456789ABCDEF";
 	std::string input = pszInput;
@@ -62,9 +62,9 @@ bool equals(const std::string& a, const std::string& b) {
 
 bool stringIsTrue(const std::string& value) {
 	return (iequals(value, "on") ||
-					iequals(value, "true") ||
-					iequals(value, "1") ||
-					iequals(value, "yes"));
+	        iequals(value, "true") ||
+	        iequals(value, "1") ||
+	        iequals(value, "yes"));
 }
 
 bool envVarIsTrue(const char* name) {
@@ -88,90 +88,90 @@ std::string escape(const std::string& a) {
 	std::string::const_iterator it = a.begin();
 	while (it != a.end()) {
 		char c = *it++;
-        switch (c) {
-        case '\\':
-            b << '\\' << '\\';
-            break;
-        case '\0':
-            b << '\\' << '0';
-            break;
-        case '"':
-            b << '\\' << '"';
-            break;
-        case '\a':
-            b << '\\' << 'a';
-            break;
-        case '\b':
-            b << '\\' << 'b';
-            break;
-        case '\f':
-            b << '\\' << 'f';
-            break;
-        case '\n':
-            b << '\\' << 'n';
-            break;
-        case '\r':
-            b << '\\' << 'r';
-            break;
-        case '\t':
-            b << '\\' << 't';
-            break;
-        case '\v':
-            b << '\\' << 'v';
-            break;
-        default:
-            b << c;
-        }
+		switch (c) {
+		case '\\':
+			b << '\\' << '\\';
+			break;
+		case '\0':
+			b << '\\' << '0';
+			break;
+		case '"':
+			b << '\\' << '"';
+			break;
+		case '\a':
+			b << '\\' << 'a';
+			break;
+		case '\b':
+			b << '\\' << 'b';
+			break;
+		case '\f':
+			b << '\\' << 'f';
+			break;
+		case '\n':
+			b << '\\' << 'n';
+			break;
+		case '\r':
+			b << '\\' << 'r';
+			break;
+		case '\t':
+			b << '\\' << 't';
+			break;
+		case '\v':
+			b << '\\' << 'v';
+			break;
+		default:
+			b << c;
+		}
 	}
 
 	return b.str();
 }
 
 std::string unescape(const std::string& a) {
-    std::stringstream b;
-    // see http://en.cppreference.com/w/cpp/language/escape
-    
-    std::string::const_iterator it = a.begin();
-    while (it != a.end()) {
-        char c = *it++;
-        if (c == '\\' && it != a.end()) {
-            switch (*it++) {
-                case '\\':
-                    c = '\\';
-                    break;
-                case '0':
-                    c = '\0';
-                    break;
-                case '"':
-                    c = '"';
-                    break;
-                case 'a':
-                    c = '\a';
-                    break;
-                case 'b':
-                    c = '\b';
-                    break;
-                case 'f':
-                    c = '\f';
-                    break;
-                case 'n':
-                    c = '\n';
-                    break;
-                case 'r':
-                    c = '\r';
-                    break;
-                case 't':
-                    c = '\t';
-                    break;
-                case 'v':
-                    c = '\v';
-                    break;
-            }
-        }
-        b << c;
-    }
-    
-    return b.str();
+	std::stringstream b;
+	// see http://en.cppreference.com/w/cpp/language/escape
+
+	std::string::const_iterator it = a.begin();
+	while (it != a.end()) {
+		char c = *it++;
+		if (c == '\\' && it != a.end()) {
+			switch (*it++) {
+			case '\\':
+				c = '\\';
+				break;
+			case '0':
+				c = '\0';
+				break;
+			case '"':
+				c = '"';
+				break;
+			case 'a':
+				c = '\a';
+				break;
+			case 'b':
+				c = '\b';
+				break;
+			case 'f':
+				c = '\f';
+				break;
+			case 'n':
+				c = '\n';
+				break;
+			case 'r':
+				c = '\r';
+				break;
+			case 't':
+				c = '\t';
+				break;
+			case 'v':
+				c = '\v';
+				break;
+			}
+		}
+		b << c;
+	}
+
+	return b.str();
 }
 
 }

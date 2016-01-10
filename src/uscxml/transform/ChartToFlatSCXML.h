@@ -33,17 +33,17 @@ public:
 	operator Interpreter();
 
 	Arabica::DOM::Document<std::string> getDocument() const {
-        if (_flatDoc)
-            return _flatDoc;
-        return _document;
+		if (_flatDoc)
+			return _flatDoc;
+		return _document;
 	}
 
 protected:
 	void writeTo(std::ostream& stream);
-	
+
 	ChartToFlatSCXML(const Interpreter& other) : TransformerImpl(), ChartToFSM(other), _lastTransientStateId(0) {}
 	void createDocument();
-	
+
 	void appendGlobalStateNode(GlobalState* globalState);
 	Arabica::DOM::Node<std::string> globalTransitionToNode(GlobalTransition* globalTransition);
 	static bool sortStatesByIndex(const std::pair<std::string,GlobalState*>& s1, const std::pair<std::string,GlobalState*>& s2);

@@ -100,12 +100,12 @@ void DelayedEventQueue::addEvent(std::string eventId, void (*callback)(void*, co
 }
 
 void DelayedEventQueue::cancelAllEvents() {
-    tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
-    while(_callbackData.size() > 0) {
-        event_del(_callbackData[_callbackData.begin()->first].event);
-        event_free(_callbackData[_callbackData.begin()->first].event);
-        _callbackData.erase(_callbackData.begin());
-    }
+	tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
+	while(_callbackData.size() > 0) {
+		event_del(_callbackData[_callbackData.begin()->first].event);
+		event_free(_callbackData[_callbackData.begin()->first].event);
+		_callbackData.erase(_callbackData.begin());
+	}
 }
 
 void DelayedEventQueue::cancelEvent(std::string eventId) {
@@ -131,7 +131,7 @@ void DelayedEventQueue::stop() {
 	if (_thread) {
 		_thread->join();
 		delete _thread;
-        _thread = NULL;
+		_thread = NULL;
 	}
 }
 

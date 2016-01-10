@@ -27,35 +27,35 @@ namespace uscxml {
 
 class USCXML_API Complexity {
 public:
-	
+
 	enum Variant {
 		IGNORE_NOTHING      = 0x0000,
 		IGNORE_HISTORY      = 0x0001,
 		IGNORE_NESTED_DATA  = 0x0002,
 		IGNORE_UNREACHABLE  = 0x0004,
 	};
-	
+
 	Complexity() : value(0), nestedData(0) {}
 	Complexity(uint64_t value) : value(value), nestedData(0) {}
-	
+
 	Complexity& operator+=(const Complexity& rhs) {
 		value += rhs.value;
 		nestedData += rhs.nestedData;
 		history.insert(history.end(), rhs.history.begin(), rhs.history.end());
 		return *this;
 	}
-	
+
 	Complexity& operator*=(const Complexity& rhs) {
 		value *= rhs.value;
 		nestedData += rhs.nestedData;
 		history.insert(history.end(), rhs.history.begin(), rhs.history.end());
 		return *this;
 	}
-	
-    static uint64_t stateMachineComplexity(const Interpreter& interpreter, Complexity::Variant variant = IGNORE_NOTHING) {
-        return stateMachineComplexity(interpreter.getImpl().get());
-    }
-    static uint64_t stateMachineComplexity(InterpreterImpl* interpreter, Complexity::Variant variant = IGNORE_NOTHING);
+
+	static uint64_t stateMachineComplexity(const Interpreter& interpreter, Complexity::Variant variant = IGNORE_NOTHING) {
+		return stateMachineComplexity(interpreter.getImpl().get());
+	}
+	static uint64_t stateMachineComplexity(InterpreterImpl* interpreter, Complexity::Variant variant = IGNORE_NOTHING);
 
 	static std::list<std::set<Arabica::DOM::Element<std::string> > > getAllConfigurations(const Arabica::DOM::Element<std::string>& root);
 	static std::map<size_t, size_t> getTransitionHistogramm(const Arabica::DOM::Element<std::string>& root);
@@ -69,8 +69,8 @@ protected:
 };
 
 inline Complexity::Variant operator | ( Complexity::Variant lhs, Complexity::Variant rhs ) {
-    // Cast to int first otherwise we'll just end up recursing
-    return static_cast< Complexity::Variant >( static_cast< int >( lhs ) | static_cast< int >( rhs ) );
+	// Cast to int first otherwise we'll just end up recursing
+	return static_cast< Complexity::Variant >( static_cast< int >( lhs ) | static_cast< int >( rhs ) );
 }
 
 }

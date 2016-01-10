@@ -37,7 +37,7 @@ class USCXML_API ChartToMinimalSCXML : public InterpreterRC, public StateTransit
 public:
 	virtual ~ChartToMinimalSCXML() {}
 	static Transformer transform(const Interpreter& other);
-	
+
 	// InterpreterMonitor
 	virtual void beforeExecutingContent(Interpreter interpreter, const Arabica::DOM::Element<std::string>& element);
 	virtual void beforeUninvoking(Interpreter interpreter, const Arabica::DOM::Element<std::string>& invokeElem, const std::string& invokeid);
@@ -49,33 +49,35 @@ public:
 
 	// gather executable content per microstep
 	void executeContent(const Arabica::DOM::Element<std::string>& content, bool rethrow = false);
-	
+
 	// invoke and uninvoke
 	virtual void invoke(const Arabica::DOM::Element<std::string>& element);
 	virtual void cancelInvoke(const Arabica::DOM::Element<std::string>& element);
 
 protected:
 	void writeTo(std::ostream& stream);
-	
+
 	ChartToMinimalSCXML(const Interpreter& other);
-	
+
 	void markAsVisited(const Arabica::DOM::Element<std::string>& element);
 	void removeUnvisited(Arabica::DOM::Node<std::string>& node);
 
 	std::set<Arabica::DOM::Node<std::string> > _visited;
 	DataModel _dmCopy;
 	bool _retainAsComments;
-	
+
 private:
 	size_t _step;
-	
+
 	// we need this to register as an instance at Interpreter::_instances
 	boost::shared_ptr<InterpreterImpl> _selfPtr;
-	
+
 	// prevent deletion from shared_ptr
 	class Deleter {
 	public:
-		void operator()(ChartToMinimalSCXML* p) { /* do nothing */ }
+		void operator()(ChartToMinimalSCXML* p) {
+			/* do nothing */
+		}
 	};
 
 };

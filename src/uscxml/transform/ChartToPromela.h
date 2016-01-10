@@ -52,7 +52,7 @@ public:
 
 	PromelaInline(const Arabica::DOM::Node<std::string>& node);
 	virtual ~PromelaInline() {}
-	
+
 	operator bool() {
 		return (type != PROMELA_NIL);
 	}
@@ -60,13 +60,13 @@ public:
 	std::list<PromelaInline*> children;
 	PromelaInline* prevSibling;
 	PromelaInline* nextSibling;
-	
+
 	virtual void dump();
 
 	virtual bool relatesTo(const Arabica::DOM::Node<std::string>& node) {
 		return container == node;
 	}
-	
+
 	size_t level;
 	std::string content;
 	Arabica::DOM::Element<std::string> container;
@@ -78,22 +78,22 @@ protected:
 
 class USCXML_API PromelaInlines {
 public:
-	
+
 	PromelaInlines(const Arabica::DOM::Node<std::string>& node);
 	PromelaInlines() {}
 
 	virtual ~PromelaInlines();
-	
+
 	std::list<PromelaInline*> getRelatedTo(const Arabica::DOM::Node<std::string>& node, PromelaInline::PromelaInlineType type);
 	std::list<PromelaInline*> getAllOfType(uint32_t type);
 
 	std::map<Arabica::DOM::Node<std::string>, std::list<PromelaInline*> > inlines;
 	std::list<PromelaInline*> allInlines;
-	
+
 	static std::list<std::string> getStringLiterals(const Data& data);
 	static std::list<std::string> getEventNames(const Data& data);
 
-	
+
 };
 
 class USCXML_API PromelaEventSource : public PromelaInline {
@@ -104,7 +104,7 @@ public:
 		content = pmlInline.content;
 		events = Data::fromJSON(pmlInline.content);
 	}
-	
+
 	virtual bool relatesTo(const Arabica::DOM::Node<std::string>& node) {
 		return container == node || InterpreterImpl::isDescendant(node, container);
 	}
@@ -128,30 +128,30 @@ public:
 
 class USCXML_API PromelaEventSource {
 public:
-	
+
 	enum PromelaEventSourceType {
 		PROMELA_EVENT_SOURCE_INVALID,
 		PROMELA_EVENT_SOURCE_INVOKER,
 		PROMELA_EVENT_SOURCE_GLOBAL,
 	};
-	
+
 	PromelaEventSource();
 	PromelaEventSource(const PromelaInline& source, PromelaCodeAnalyzer* analyzer = NULL, uint32_t externalQueueLength = 0);
-	
+
 	void writeStart(std::ostream& stream, int indent = 0);
 	void writeStop(std::ostream& stream, int indent = 0);
 	void writeDeclarations(std::ostream& stream, int indent = 0);
 	void writeBody(std::ostream& stream);
-	
+
 	operator bool() {
 		return type != PROMELA_EVENT_SOURCE_INVALID;
 	}
-	
+
 	PromelaInline source;
 	std::string name;
 	uint32_t externalQueueLength;
 	uint32_t longestSequence;
-	
+
 	Arabica::DOM::Node<std::string> container;
 	std::list<std::list<std::string> > sequences;
 	PromelaEventSourceType type;
@@ -159,7 +159,7 @@ public:
 };
 
 #endif
-	
+
 class USCXML_API PromelaCodeAnalyzer {
 public:
 	class PromelaTypedef {
@@ -172,7 +172,7 @@ public:
 		size_t maxValue;
 		std::map<std::string, PromelaTypedef> types;
 		std::set<ChartToPromela*> occurrences;
-		
+
 		bool operator==(const PromelaTypedef& other) const {
 			return name == other.name;
 		}
@@ -199,15 +199,15 @@ public:
 
 	bool usesEventDataField(const std::string& fieldName) {
 		if (usesComplexEventStruct() &&
-				_typeDefs.types["_event"].types.find("data") != _typeDefs.types["_event"].types.end() &&
-				_typeDefs.types["_event"].types["data"].types.find(fieldName) != _typeDefs.types["_event"].types["data"].types.end())
+		        _typeDefs.types["_event"].types.find("data") != _typeDefs.types["_event"].types.end() &&
+		        _typeDefs.types["_event"].types["data"].types.find(fieldName) != _typeDefs.types["_event"].types["data"].types.end())
 			return true;
 		return false;
 	}
 
-    std::string getTypeAssignment(const std::string& varTo, const std::string& varFrom, const PromelaTypedef& type, const std::string padding = "");
-    std::string getTypeReset(const std::string& var, const PromelaTypedef& type, const std::string padding = "");
-    
+	std::string getTypeAssignment(const std::string& varTo, const std::string& varFrom, const PromelaTypedef& type, const std::string padding = "");
+	std::string getTypeReset(const std::string& var, const PromelaTypedef& type, const std::string padding = "");
+
 	bool usesInPredicate() {
 		return _usesInPredicate;
 	}
@@ -251,9 +251,9 @@ public:
 		return _typeDefs;
 	}
 
-    PromelaTypedef& getType(const std::string& typeName) {
-        return _typeDefs.types.at(typeName);
-    }
+	PromelaTypedef& getType(const std::string& typeName) {
+		return _typeDefs.types.at(typeName);
+	}
 
 protected:
 	std::string createMacroName(const std::string& literal);
@@ -266,7 +266,7 @@ protected:
 
 	std::map<std::string, int> _states;
 	std::map<std::string, int> _events;
-	
+
 	PromelaTypedef _typeDefs;
 	Trie _eventTrie;
 
@@ -288,12 +288,12 @@ public:
 	};
 
 	ExecContentSeqItem(ExecContentType type, const std::set<GlobalTransition*>& transitions, const GlobalTransition::Action& action)
-	: type(type), transitions(transitions), action(action) {}
+		: type(type), transitions(transitions), action(action) {}
 	ExecContentSeqItem(ExecContentType type, GlobalTransition* transition, const GlobalTransition::Action& action)
-	: type(type), action(action) {
+		: type(type), action(action) {
 		transitions.insert(transition);
 	}
-	
+
 	ExecContentType type;
 	std::set<GlobalTransition*> transitions;
 	GlobalTransition::Action action;
@@ -303,48 +303,48 @@ class HistoryTransitionClass {
 public:
 	HistoryTransitionClass(GlobalTransition* transition);
 	HistoryTransitionClass(const std::string& from, const std::string& to);
-	
+
 	void init(const std::string& from, const std::string& to);
-	
+
 	std::map<std::string, std::set<std::string> > toRemember;
 	std::map<std::string, std::set<std::string> > toKeep;
 	std::map<std::string, std::set<std::string> > toForget;
-	
+
 	std::set<GlobalTransition*> members;
 
 
 	void merge(const HistoryTransitionClass& other);
 	bool matches(const HistoryTransitionClass& other);
 };
-	
+
 class USCXML_API ChartToPromela : public TransformerImpl, public ChartToFSM {
 public:
 
 	virtual ~ChartToPromela();
 	static Transformer transform(const Interpreter& other);
-	
+
 	void writeTo(std::ostream& stream);
-	
+
 protected:
 	ChartToPromela(const Interpreter& other)
-	: TransformerImpl(),
-		ChartToFSM(other),
-		_analyzer(NULL),
-		_allowEventInterleaving(false),
-		_hasIndexLessLoops(false),
-		_writeTransitionPrintfs(false),
-		_traceTransitions(false),
-		_machinesAll(NULL),
-		_parent(NULL),
-		_parentTopMost(NULL),
-		_machinesAllPerId(NULL),
-		_perfTransProcessed(0),
-		_perfTransTotal(0),
-		_perfHistoryProcessed(0),
-		_perfHistoryTotal(0),
-		_perfStatesProcessed(0),
-		_perfStatesTotal(0),
-		_lastTimeStamp(0) {}
+		: TransformerImpl(),
+		  ChartToFSM(other),
+		  _analyzer(NULL),
+		  _allowEventInterleaving(false),
+		  _hasIndexLessLoops(false),
+		  _writeTransitionPrintfs(false),
+		  _traceTransitions(false),
+		  _machinesAll(NULL),
+		  _parent(NULL),
+		  _parentTopMost(NULL),
+		  _machinesAllPerId(NULL),
+		  _perfTransProcessed(0),
+		  _perfTransTotal(0),
+		  _perfHistoryProcessed(0),
+		  _perfHistoryTotal(0),
+		  _perfStatesProcessed(0),
+		  _perfStatesTotal(0),
+		  _lastTimeStamp(0) {}
 
 	void initNodes();
 
@@ -377,10 +377,10 @@ protected:
 
 	void writeStartInvoker(std::ostream& stream, const Arabica::DOM::Node<std::string>& node, ChartToPromela* invoker, int indent = 0);
 	//void writeRemovePendingEventsFromInvoker(std::ostream& stream, ChartToPromela* invoker, int indent = 0, bool atomic = true);
-	
+
 	void writeDetermineShortestDelay(std::ostream& stream, int indent = 0);
-    void writeInsertWithDelay(std::ostream& stream, int indent = 0);
-    void writeAdvanceTime(std::ostream& stream, int indent = 0);
+	void writeInsertWithDelay(std::ostream& stream, int indent = 0);
+	void writeAdvanceTime(std::ostream& stream, int indent = 0);
 	void writeRescheduleProcess(std::ostream& stream, int indent = 0);
 	void writeScheduleMachines(std::ostream& stream, int indent = 0);
 	void writeCancelEvents(std::ostream& stream, int indent = 0);
@@ -388,7 +388,7 @@ protected:
 
 	std::list<GlobalTransition::Action> getTransientContent(GlobalTransition* transition);
 	//Arabica::DOM::Node<std::string> getUltimateTarget(const Arabica::DOM::Element<std::string>& transition);
-	
+
 	static std::string declForRange(const std::string& identifier, long minValue, long maxValue, bool nativeOnly = false);
 	static std::string conditionForHistoryTransition(const GlobalTransition* transition);
 
@@ -396,7 +396,7 @@ protected:
 
 	std::string sanitizeCode(const std::string& code);
 	std::string dataToAssignments(const std::string& prefix, const Data& data);
-	
+
 //	Arabica::XPath::NodeSet<std::string> _globalStates;
 //	Arabica::DOM::Node<std::string> _startState;
 //	std::map<std::string, Arabica::DOM::Element<std::string> > _states;
@@ -409,28 +409,28 @@ protected:
 	bool _hasIndexLessLoops;
 	bool _writeTransitionPrintfs;
 	bool _traceTransitions;
-	
+
 	uint32_t _externalQueueLength;
 	uint32_t _internalQueueLength;
-	
+
 	PromelaInlines pmlInlines;
 //	std::map<std::string, PromelaEventSource> _invokers;
 //	PromelaEventSource _globalEventSource;
-	
+
 	std::map<std::string, std::map<std::string, size_t> > _historyMembers; // ids of all history states
 	std::set<std::string> _dataModelVars;
-	
+
 	Arabica::DOM::Node<std::string> _finalize;
 	std::map<Arabica::DOM::Node<std::string>, ChartToPromela*> _machines;
 	std::map<Arabica::DOM::Node<std::string>, ChartToPromela*>* _machinesAll;
 	ChartToPromela* _parent; // our invoking interpreter
 	ChartToPromela* _parentTopMost;
-	
+
 	std::map<std::string, Arabica::DOM::Node<std::string> > _machinesPerId;
 	std::map<std::string, Arabica::DOM::Node<std::string> >* _machinesAllPerId;
 	std::string _prefix; // our prefix in case of nested SCXML documents
 	std::string _invokerid;
-	
+
 	uint64_t _perfTransProcessed;
 	uint64_t _perfTransTotal;
 	uint64_t _perfHistoryProcessed;

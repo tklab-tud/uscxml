@@ -18,56 +18,56 @@ namespace uscxml {
 
 class USCXML_API Timer {
 public:
-    
-    static double monotonic_seconds();
 
-    Timer() {
-        invocations = 0;
-        elapsed = 0;
-    }
-    
-    void start() {
-        if (invocations == 0) {
-            started = monotonic_seconds();
-        }
-        invocations++;
-    }
+	static double monotonic_seconds();
 
-    void reset() {
-			elapsed = 0;
+	Timer() {
+		invocations = 0;
+		elapsed = 0;
+	}
+
+	void start() {
+		if (invocations == 0) {
+			started = monotonic_seconds();
 		}
-		
-    void stop() {
-        if (invocations == 0)
-            return;
-        
-        invocations--;
-        if (invocations == 0) {
-            elapsed += monotonic_seconds() - started;
-        }
-    }
+		invocations++;
+	}
 
-    ~Timer() {
-    }
-    double elapsed;
+	void reset() {
+		elapsed = 0;
+	}
+
+	void stop() {
+		if (invocations == 0)
+			return;
+
+		invocations--;
+		if (invocations == 0) {
+			elapsed += monotonic_seconds() - started;
+		}
+	}
+
+	~Timer() {
+	}
+	double elapsed;
 
 protected:
-    size_t invocations;
-    double started;
+	size_t invocations;
+	double started;
 };
-    
+
 class USCXML_API Measurement {
 public:
-    Measurement(Timer* timer) : timer(timer) {
-        timer->start();
-    }
+	Measurement(Timer* timer) : timer(timer) {
+		timer->start();
+	}
 
-    ~Measurement() {
-        timer->stop();
-    }
+	~Measurement() {
+		timer->stop();
+	}
 
 protected:
-    Timer* timer;
+	Timer* timer;
 };
 
 }

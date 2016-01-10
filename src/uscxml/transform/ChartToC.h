@@ -34,57 +34,57 @@ namespace uscxml {
 
 class USCXML_API ChartToC : public InterpreterRC, public TransformerImpl {
 public:
-    
-    virtual ~ChartToC();
-    static Transformer transform(const Interpreter& other);
-    
-    void writeTo(std::ostream& stream);
 
-    static Arabica::XPath::NodeSet<std::string> inPostFixOrder(const std::set<std::string>& elements,
-                                                               const Arabica::DOM::Element<std::string>& root);
-    static Arabica::XPath::NodeSet<std::string> inDocumentOrder(const std::set<std::string>& elements,
-                                                                const Arabica::DOM::Element<std::string>& root);
+	virtual ~ChartToC();
+	static Transformer transform(const Interpreter& other);
+
+	void writeTo(std::ostream& stream);
+
+	static Arabica::XPath::NodeSet<std::string> inPostFixOrder(const std::set<std::string>& elements,
+	        const Arabica::DOM::Element<std::string>& root);
+	static Arabica::XPath::NodeSet<std::string> inDocumentOrder(const std::set<std::string>& elements,
+	        const Arabica::DOM::Element<std::string>& root);
 protected:
-    ChartToC(const Interpreter& other);
+	ChartToC(const Interpreter& other);
 
-    static void inPostFixOrder(const std::set<std::string>& elements,
-                               const Arabica::DOM::Element<std::string>& root,
-                               Arabica::XPath::NodeSet<std::string>& nodes);
+	static void inPostFixOrder(const std::set<std::string>& elements,
+	                           const Arabica::DOM::Element<std::string>& root,
+	                           Arabica::XPath::NodeSet<std::string>& nodes);
 
-    static void inDocumentOrder(const std::set<std::string>& elements,
-                                const Arabica::DOM::Element<std::string>& root,
-                                Arabica::XPath::NodeSet<std::string>& nodes);
+	static void inDocumentOrder(const std::set<std::string>& elements,
+	                            const Arabica::DOM::Element<std::string>& root,
+	                            Arabica::XPath::NodeSet<std::string>& nodes);
 
-    void writeIncludes(std::ostream& stream);
-    void writeMacros(std::ostream& stream);
-    void writeTypes(std::ostream& stream);
-    void writeHelpers(std::ostream& stream);
-    void writeExecContent(std::ostream& stream);
-    void writeElementInfo(std::ostream& stream);
+	void writeIncludes(std::ostream& stream);
+	void writeMacros(std::ostream& stream);
+	void writeTypes(std::ostream& stream);
+	void writeHelpers(std::ostream& stream);
+	void writeExecContent(std::ostream& stream);
+	void writeElementInfo(std::ostream& stream);
 
-    void writeStates(std::ostream& stream);
-    void writeTransitions(std::ostream& stream);
-    void writeFSM(std::ostream& stream);
-    void writeCharArrayInitList(std::ostream& stream, const std::string& boolString);
+	void writeStates(std::ostream& stream);
+	void writeTransitions(std::ostream& stream);
+	void writeFSM(std::ostream& stream);
+	void writeCharArrayInitList(std::ostream& stream, const std::string& boolString);
 
-    void writeExecContent(std::ostream& stream, const Arabica::DOM::Node<std::string>& node, int indent = 0);
+	void writeExecContent(std::ostream& stream, const Arabica::DOM::Node<std::string>& node, int indent = 0);
 
-    Arabica::XPath::NodeSet<std::string> computeExitSet(const Arabica::DOM::Element<std::string>& transition);
+	Arabica::XPath::NodeSet<std::string> computeExitSet(const Arabica::DOM::Element<std::string>& transition);
 
-    Interpreter interpreter;
-    
-    Arabica::XPath::NodeSet<std::string> _states;
-    std::map<std::string, Arabica::DOM::Element<std::string> > _stateNames;
-    Arabica::XPath::NodeSet<std::string> _transitions;
+	Interpreter interpreter;
 
-    bool _hasGlobalScripts;
-    bool _hasDoneData;
-    
-    size_t _transCharArraySize;
-    std::string _transCharArrayInit;
+	Arabica::XPath::NodeSet<std::string> _states;
+	std::map<std::string, Arabica::DOM::Element<std::string> > _stateNames;
+	Arabica::XPath::NodeSet<std::string> _transitions;
 
-    size_t _stateCharArraySize;
-    std::string _stateCharArrayInit;
+	bool _hasGlobalScripts;
+	bool _hasDoneData;
+
+	size_t _transCharArraySize;
+	std::string _transCharArrayInit;
+
+	size_t _stateCharArraySize;
+	std::string _stateCharArrayInit;
 };
 
 }

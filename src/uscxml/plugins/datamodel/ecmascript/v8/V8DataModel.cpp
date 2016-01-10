@@ -93,7 +93,7 @@ V8DataModel::~V8DataModel() {
 void V8DataModel::addExtension(DataModelExtension* ext) {
 	if (_extensions.find(ext) != _extensions.end())
 		return;
-	
+
 	ext->dm = this;
 	_extensions.insert(ext);
 
@@ -107,13 +107,13 @@ void V8DataModel::addExtension(DataModelExtension* ext) {
 	while(true) {
 		std::string pathComp = *locIter;
 		v8::Local<v8::String> pathCompJS = v8::String::New(locIter->c_str());
-		
+
 		if (++locIter != locPath.end()) {
 			// just another intermediate step
 			if (!currScope->Has(pathCompJS)) {
 				currScope->Set(pathCompJS, v8::Object::New());
 			}
-			
+
 			v8::Local<v8::Value> newScope = currScope->Get(pathCompJS);
 			if (newScope->IsObject()) {
 				currScope = newScope->ToObject();
@@ -133,19 +133,19 @@ v8::Handle<v8::Value> V8DataModel::jsExtension(const v8::Arguments& args) {
 
 	v8::Local<v8::String> memberJS;
 	std::string memberName;
-	
+
 	if (args.Length() > 0 && args[0]->IsString()) {
 		memberJS = args[0]->ToString();
 		memberName = *v8::String::AsciiValue(memberJS);
 	}
-	
+
 	if (args.Length() > 1) {
 		// setter
 		Data data = ((V8DataModel*)(extension->dm))->getValueAsData(args[1]);
 		extension->setValueOf(memberName, data);
 		return v8::Undefined();
 	}
-	
+
 	if (args.Length() == 1) {
 		// getter
 		return ((V8DataModel*)(extension->dm))->getDataAsValue(extension->getValueOf(memberName));

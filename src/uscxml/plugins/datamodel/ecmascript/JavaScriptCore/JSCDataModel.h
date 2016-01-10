@@ -105,7 +105,7 @@ protected:
 	static bool jsInvokerHasProp(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName);
 	static JSValueRef jsInvokerGetProp(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef* exception);
 	static void jsInvokerListProps(JSContextRef ctx, JSObjectRef object, JSPropertyNameAccumulatorRef propertyNames);
-	
+
 	JSValueRef getNodeAsValue(const Arabica::DOM::Node<std::string>& node);
 	JSValueRef getDataAsValue(const Data& data);
 	Data getValueAsData(const JSValueRef value);
@@ -117,10 +117,10 @@ protected:
 	std::string _name;
 
 	std::set<DataModelExtension*> _extensions;
-	
+
 	Event _event;
 	JSGlobalContextRef _ctx;
-    
+
 };
 
 #ifdef BUILD_AS_PLUGINS

@@ -18,7 +18,7 @@ using namespace Arabica::DOM;
 extern int promela_debug;
 
 void testInlinePromela() {
-	
+
 	DOMImplementation<std::string> domFactory = Arabica::SimpleDOM::DOMImplementation<std::string>::getDOMImplementation();
 	Document<std::string> document = domFactory.createDocument("", "", 0);
 
@@ -38,7 +38,7 @@ void testInlinePromela() {
 		promela-code\n \
 		This is foo!\
 		";
-		
+
 		Comment<std::string> comment = document.createComment(test);
 		PromelaInline inl(comment);
 		assert(inl.type == PromelaInline::PROMELA_CODE);
@@ -50,26 +50,26 @@ void testInlinePromela() {
 		promela-event\n \
 		[{\"name\": \"e1\", \"data\": { \"foo\": \"some string\" }}, \
      {\"name\": \"e1\", \"data\": { \"bar\": 12 }}]";
-		
+
 		Comment<std::string> comment = document.createComment(test);
 		PromelaInline inl(comment);
 		assert(inl.type == PromelaInline::PROMELA_EVENT_ONLY);
-		
+
 		PromelaEventSource es(inl);
 		assert(es.events.array.size() == 2);
-		
+
 	}
 
 	{
 		Interpreter interpreter = Interpreter::fromURL("/Users/sradomski/Documents/TK/Code/uscxml/test/uscxml/promela/test-event-source-auto.scxml");
 		assert(interpreter);
 		PromelaInlines inls(interpreter.getDocument().getDocumentElement());
-		
+
 		assert(inls.getAllOfType(PromelaInline::PROMELA_EVENT_ONLY).size() == 1);
 		assert(inls.getAllOfType(PromelaInline::PROMELA_EVENT_ALL_BUT).size() == 1);
 		interpreter.getImpl()->getState("s0");
 	}
-	
+
 #if 0
 	{
 		std::string test = "\
@@ -80,8 +80,8 @@ void testInlinePromela() {
 		assert(prmInls.nrAcceptLabels == 0 &&
 		       prmInls.nrCodes == 1 &&
 		       prmInls.nrEventSources == 0 &&
-					 prmInls.nrEndLabels == 0 &&
-					 prmInls.nrAcceptLabels == 0 &&
+		       prmInls.nrEndLabels == 0 &&
+		       prmInls.nrAcceptLabels == 0 &&
 		       prmInls.nrProgressLabels == 0);
 		assert(prmInls.code.size() == 1);
 		assert(prmInls.code.front().type == PromelaInline::PROMELA_CODE);
@@ -191,13 +191,13 @@ void testInlinePromela() {
 		";
 		PromelaInlines prmInls = PromelaInlines::fromString(test);
 		assert(prmInls.nrAcceptLabels == 0 &&
-					 prmInls.nrCodes == 0 &&
-					 prmInls.nrEventSources == 1 &&
-					 prmInls.nrEndLabels == 0 &&
-					 prmInls.nrProgressLabels == 0);
+		       prmInls.nrCodes == 0 &&
+		       prmInls.nrEventSources == 1 &&
+		       prmInls.nrEndLabels == 0 &&
+		       prmInls.nrProgressLabels == 0);
 		assert(prmInls.code.size() == 1);
 		assert(prmInls.code.front().type == PromelaInline::PROMELA_EVENT_SOURCE_CUSTOM);
-		
+
 		PromelaEventSource pmlES(prmInls.code.front());
 
 		assert(pmlES.sequences.size() == 0);
@@ -212,10 +212,10 @@ void testInlinePromela() {
 		";
 		PromelaInlines prmInls = PromelaInlines::fromString(test);
 		assert(prmInls.nrAcceptLabels == 0 &&
-					 prmInls.nrCodes == 0 &&
-					 prmInls.nrEventSources == 1 &&
-					 prmInls.nrEndLabels == 0 &&
-					 prmInls.nrProgressLabels == 1);
+		       prmInls.nrCodes == 0 &&
+		       prmInls.nrEventSources == 1 &&
+		       prmInls.nrEndLabels == 0 &&
+		       prmInls.nrProgressLabels == 1);
 		assert(prmInls.code.size() == 2);
 		assert(prmInls.code.front().type == PromelaInline::PROMELA_EVENT_SOURCE_CUSTOM);
 
@@ -269,7 +269,7 @@ void testPromelaParser() {
 	expressions.push_back("_event.data[1].aParam.key1.key2[1].key3.key4");
 	expressions.push_back("\n\n\n\n    int foo = 3;\n\nint bar = 5;");
 
-	
+
 	/* expressions  */
 	expressions.push_back("i+1");
 	expressions.push_back("(x == false || t == Bturn);");

@@ -43,12 +43,12 @@ public:
 	            const Arabica::XPath::NodeSet<std::string>& alreadyEnteredStates, // we need to remember for binding=late
 	            const std::map<std::string, Arabica::XPath::NodeSet<std::string> >& historyStates,
 	            const std::string& xmlNSPrefix,
-							ChartToFSM* flattener);
+	            ChartToFSM* flattener);
 
 	std::set<int> activeStatesRefs;
 	std::set<int> alreadyEnteredStatesRefs;
 	std::map<std::string, std::set<int> > historyStatesRefs;
-	
+
 	std::list<GlobalTransition*> sortedOutgoing;
 	std::string stateId;
 	std::string activeId;
@@ -56,9 +56,9 @@ public:
 	unsigned long activeIndex;
 	unsigned long index;
 	bool isFinal;
-	
+
 	ChartToFSM* interpreter;
-	
+
 	Arabica::XPath::NodeSet<std::string> getActiveStates();
 	Arabica::XPath::NodeSet<std::string> getAlreadyEnteredStates();
 	std::map<std::string, Arabica::XPath::NodeSet<std::string> > getHistoryStates();
@@ -98,7 +98,7 @@ public:
 				return true;
 			if ((uninvoke && !other.uninvoke) || (!uninvoke && other.uninvoke))
 				return true;
-			
+
 			if (onEntry < other.onEntry)
 				return onEntry < other.onEntry;
 			if (raiseDone < other.raiseDone)
@@ -124,11 +124,11 @@ public:
 		bool operator!=(const Action& other) const {
 			return !operator==(other);
 		}
-		
+
 		friend USCXML_API std::ostream& operator<< (std::ostream& os, const Action& action);
 
 		typedef std::list<GlobalTransition::Action>::iterator iter_t;
-		
+
 		Arabica::DOM::Element<std::string> onEntry;
 		Arabica::DOM::Element<std::string> onExit;
 		Arabica::DOM::Element<std::string> transition;
@@ -137,12 +137,12 @@ public:
 		Arabica::DOM::Element<std::string> invoke;
 		Arabica::DOM::Element<std::string> uninvoke;
 		Arabica::DOM::Element<std::string> raiseDone;
-		
+
 	};
 
 	GlobalTransition(const Arabica::XPath::NodeSet<std::string>& transitions, DataModel dataModel, ChartToFSM* flattener);
 	static GlobalTransition* copyWithoutExecContent(GlobalTransition* other);
-	
+
 	bool isValid; // constructor will determine, calling code will delete if not
 	std::string invalidMsg;
 	InvalidReason invalidReason;
@@ -151,17 +151,17 @@ public:
 	bool isTargetless; // whether or not all our transitions are eventless
 	bool isSubset; // there is a superset to this set
 	bool hasExecutableContent;
-	
+
 	uint32_t eventsRaised; // internal events this transition will raise
 	uint32_t eventsSent; // external events this transition will send
 	uint32_t eventsChainRaised; // maximum number of internal events raised when taking this transition in a chain
 	uint32_t eventsChainSent; // maximum number of external events raised when taking this transition in a chain
-	
+
 	std::set<int> startTransitionRefs; // indices of eventful transitions that might trigger this transition
-	
+
 	std::set<int> transitionRefs; // indizes of constituting transitions
 	Arabica::XPath::NodeSet<std::string> getTransitions() const;
-	
+
 	std::list<std::string> eventNames; // the list of longest event names that will enable this set
 	std::string eventDesc; // space-seperated eventnames for convenience
 	std::string condition; // conjunction of all the set's conditions
@@ -198,15 +198,15 @@ public:
 		TYPE_NESTED,
 		TYPE_TRANSITION
 	};
-	
+
 	TransitionTreeNode()
-	: prevTransition(NULL),
-		nextTransition(NULL),
-		firstTransition(NULL),
-		firstState(NULL),
-		parent(NULL),
-		type(TYPE_UNDEFINED) {}
-	
+		: prevTransition(NULL),
+		  nextTransition(NULL),
+		  firstTransition(NULL),
+		  firstState(NULL),
+		  parent(NULL),
+		  type(TYPE_UNDEFINED) {}
+
 	virtual ~TransitionTreeNode() {
 		for (std::list<TransitionTreeNode*>::iterator childIter = children.begin(); childIter != children.end(); childIter++) {
 			delete(*childIter);
@@ -229,7 +229,7 @@ public:
 	std::string nodeId;
 
 	TransitionTreeNodeType type;
-	
+
 	bool operator<(const TransitionTreeNode& other) const {
 		return nodeId < other.nodeId;
 	}
@@ -242,16 +242,16 @@ public:
 	virtual ~ChartToFSM();
 
 	void indexTransitions();
-    void annotateDomain();
-    void annotateExitSet();
-    void annotateEntrySet();
-    void annotateConflicts();
+	void annotateDomain();
+	void annotateExitSet();
+	void annotateEntrySet();
+	void annotateConflicts();
 	Arabica::DOM::Document<std::string> getDocument() const; // overwrite to return flat FSM
 
 protected:
 
 	InterpreterState interpret();
-		
+
 	GlobalState* _start;
 	Arabica::DOM::Document<std::string> _flatDoc;
 	std::map<std::string, GlobalState*> _globalConf;
@@ -270,7 +270,7 @@ protected:
 private:
 	Arabica::XPath::NodeSet<std::string> refsToStates(const std::set<int>&);
 	Arabica::XPath::NodeSet<std::string> refsToTransitions(const std::set<int>&);
-	
+
 	// gather executable content per microstep
 	void executeContent(const Arabica::DOM::Element<std::string>& content, bool rethrow = false);
 
@@ -301,12 +301,12 @@ private:
 	void updateRaisedAndSendChains(GlobalState* state, GlobalTransition* source, std::set<GlobalTransition*> visited);
 
 	void reassembleFromFlat();
-	
+
 	std::list<GlobalTransition*> sortTransitions(std::list<GlobalTransition*> list);
 
 	// we need this static as we use it in a sort function
 	static std::map<Arabica::DOM::Node<std::string>, Arabica::DOM::Node<std::string> > _transParents;
-	
+
 	static bool filterSameState(const Arabica::XPath::NodeSet<std::string>& transitions);
 
 	uint64_t _perfTransProcessed;
@@ -334,13 +334,13 @@ private:
 	size_t _maxEventSentChain;
 	size_t _maxEventRaisedChain;
 	size_t _doneEventRaiseTolerance;
-	
+
 	GlobalTransition* _currGlobalTransition;
 	std::map<std::string, std::map<std::string, GlobalTransition*> > _confToTransitions;
-	
+
 	TransitionTreeNode* _transTree;
 	std::map<Arabica::DOM::Element<std::string>, TransitionTreeNode*> _stateToTransTreeNode;
-	
+
 	friend class GlobalTransition;
 	friend class GlobalState;
 };

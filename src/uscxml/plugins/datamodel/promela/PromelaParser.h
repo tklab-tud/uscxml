@@ -40,7 +40,7 @@ public:
 		int lastLine;
 		int lastCol;
 	};
-	
+
 	PromelaParserNode() : type(0), parent(NULL), loc(NULL) {}
 	virtual ~PromelaParserNode();
 
@@ -85,7 +85,7 @@ public:
 	operator bool() const {
 		return ast != NULL;
 	}
-	
+
 protected:
 
 	void init(const std::string& expr);

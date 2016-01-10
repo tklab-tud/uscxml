@@ -65,7 +65,7 @@ Data USCXMLInvoker::getDataModelVariables() {
 
 void USCXMLInvoker::send(const SendRequest& req) {
 	if (_invokedInterpreter)
-        _invokedInterpreter.receive(req);
+		_invokedInterpreter.receive(req);
 }
 
 void USCXMLInvoker::cancel(const std::string sendId) {
@@ -93,19 +93,19 @@ void USCXMLInvoker::invoke(const InvokeRequest& req) {
 		if (req.elem && HAS_ATTR(req.elem, "initial")) {
 			_invokedInterpreter.setInitalConfiguration(InterpreterImpl::tokenize(ATTR(req.elem, "initial")));
 		}
-		
+
 		DataModel dataModel(_invokedInterpreter.getImpl()->getDataModel());
 		_invokedInterpreter.getImpl()->setParentQueue(&_parentQueue);
 
-        // copy monitors
-        std::set<InterpreterMonitor*>::const_iterator monIter = _interpreter->_monitors.begin();
-        while(monIter != _interpreter->_monitors.end()) {
-            if ((*monIter)->copyToInvokers()) {
-                _invokedInterpreter.getImpl()->_monitors.insert(*monIter);
-            }
-            monIter++;
-        }
-        
+		// copy monitors
+		std::set<InterpreterMonitor*>::const_iterator monIter = _interpreter->_monitors.begin();
+		while(monIter != _interpreter->_monitors.end()) {
+			if ((*monIter)->copyToInvokers()) {
+				_invokedInterpreter.getImpl()->_monitors.insert(*monIter);
+			}
+			monIter++;
+		}
+
 		// transfer namespace prefixes
 		_invokedInterpreter.setNameSpaceInfo(_parentInterpreter->getNameSpaceInfo());
 		_invokedInterpreter.getImpl()->_sessionId = req.invokeid;

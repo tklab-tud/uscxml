@@ -61,7 +61,7 @@ protected:
 	std::string src;
 	bool autoForward;
 	Arabica::DOM::Element<std::string> elem;
-	
+
 	friend USCXML_API std::ostream& operator<< (std::ostream& os, const InvokeRequest& sendReq);
 
 };

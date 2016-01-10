@@ -689,9 +689,9 @@ bool SWIDataModel::evalAsBool(const Arabica::DOM::Element<std::string>& node, co
 		}
 		PlQuery query(compound.name(), termv);
 		return query.next_solution() > 0;
-    }
-    RETHROW_PLEX_AS_EVENT
-    catch(...) {
+	}
+	RETHROW_PLEX_AS_EVENT
+	catch(...) {
 		return false;
 	}
 }

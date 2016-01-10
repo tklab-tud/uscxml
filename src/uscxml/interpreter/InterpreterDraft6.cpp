@@ -441,13 +441,13 @@ void InterpreterDraft6::enterStates(const Arabica::XPath::NodeSet<std::string>& 
 		}
 #endif
 		if (isFinal(stateElem)) {
-            
-            Arabica::DOM::Element<std::string> doneData;
-            Arabica::XPath::NodeSet<std::string> doneDatas = filterChildElements(_nsInfo.xmlNSPrefix + "donedata", stateElem);
-            if (doneDatas.size() > 0) {
-                // only process first donedata element
-                doneData = Element<std::string>(doneDatas[0]);
-            }
+
+			Arabica::DOM::Element<std::string> doneData;
+			Arabica::XPath::NodeSet<std::string> doneDatas = filterChildElements(_nsInfo.xmlNSPrefix + "donedata", stateElem);
+			if (doneDatas.size() > 0) {
+				// only process first donedata element
+				doneData = Element<std::string>(doneDatas[0]);
+			}
 
 			internalDoneSend(stateElem, doneData);
 			Node<std::string> parent = stateElem.getParentNode();

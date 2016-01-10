@@ -33,15 +33,15 @@ std::list<std::set<Element<std::string> > > Complexity::getAllConfigurations(con
 	std::string nsPrefix = (root.getPrefix().size() > 0 ? root.getPrefix() + ":" : "");
 	std::string localName = root.getLocalName();
 	bool isAtomic = true;
-	
+
 	NodeList<std::string> children = root.getChildNodes();
 	for (int i = 0; i < children.getLength(); i++) {
 		if (children.item(i).getNodeType() != Node_base::ELEMENT_NODE)
 			continue;
 		Element<std::string> childElem(children.item(i));
 		if (childElem.getTagName() == nsPrefix + "state" ||
-				childElem.getTagName() == nsPrefix + "parallel" ||
-				childElem.getTagName() == nsPrefix + "final") {
+		        childElem.getTagName() == nsPrefix + "parallel" ||
+		        childElem.getTagName() == nsPrefix + "final") {
 			// nested child state
 			std::list<std::set<Element<std::string> > > nestedConfigurations = getAllConfigurations(childElem);
 			isAtomic = false;
@@ -50,7 +50,7 @@ std::list<std::set<Element<std::string> > > Complexity::getAllConfigurations(con
 				std::list<std::set<Element<std::string> > > combinedConfigurations;
 				for (std::list<std::set<Element<std::string> > >::iterator existIter = allConfigurations.begin(); existIter != allConfigurations.end(); existIter++) {
 					std::set<Element<std::string> > existingConfig = *existIter;
-					
+
 					for (std::list<std::set<Element<std::string> > >::iterator newIter = nestedConfigurations.begin(); newIter != nestedConfigurations.end(); newIter++) {
 
 						std::set<Element<std::string> > newConfig = *newIter;
@@ -81,13 +81,13 @@ std::list<std::set<Element<std::string> > > Complexity::getAllConfigurations(con
 	}
 	return allConfigurations;
 }
-	
+
 std::map<size_t, size_t> Complexity::getTransitionHistogramm(const Arabica::DOM::Element<std::string>& root) {
 	std::map<size_t, size_t> histogram;
 	std::string nameSpace;
-    
+
 	std::list<std::set<Element<std::string> > > allConfig = Complexity::getAllConfigurations(root);
-	
+
 	// for every legal configuration, count the transitions
 	for (std::list<std::set<Element<std::string> > >::iterator confIter = allConfig.begin(); confIter != allConfig.end(); confIter++) {
 		NodeSet<std::string> configNodeSet;
@@ -106,29 +106,29 @@ std::map<size_t, size_t> Complexity::getTransitionHistogramm(const Arabica::DOM:
 
 
 uint64_t Complexity::stateMachineComplexity(InterpreterImpl* interpreter, Variant variant) {
-    Arabica::DOM::Element<std::string> root = interpreter->getDocument().getDocumentElement();
+	Arabica::DOM::Element<std::string> root = interpreter->getDocument().getDocumentElement();
 
-    Arabica::XPath::NodeSet<std::string> reachable;
-    
-    if (variant & IGNORE_UNREACHABLE) {
-        reachable = interpreter->getReachableStates();
-    }
-    
-    Complexity complexity = calculateStateMachineComplexity(root, reachable);
+	Arabica::XPath::NodeSet<std::string> reachable;
+
+	if (variant & IGNORE_UNREACHABLE) {
+		reachable = interpreter->getReachableStates();
+	}
+
+	Complexity complexity = calculateStateMachineComplexity(root, reachable);
 	uint64_t value = complexity.value;
-	
-    if (!(variant & IGNORE_HISTORY)) {
+
+	if (!(variant & IGNORE_HISTORY)) {
 		for (std::list<uint64_t>::const_iterator histIter = complexity.history.begin(); histIter != complexity.history.end(); histIter++) {
 			value *= *histIter;
 		}
 	}
-	
-    if (!(variant & IGNORE_NESTED_DATA)) {
+
+	if (!(variant & IGNORE_NESTED_DATA)) {
 		bool ignoreNestedData = false;
 		if (root.getLocalName() == "scxml" && (!HAS_ATTR_CAST(root, "binding") || boost::to_lower_copy(ATTR_CAST(root, "binding")) == "early")) {
 			ignoreNestedData = true;
 		}
-		
+
 		if (!ignoreNestedData) {
 			uint64_t power = complexity.nestedData;
 			while(power--) {
@@ -136,17 +136,17 @@ uint64_t Complexity::stateMachineComplexity(InterpreterImpl* interpreter, Varian
 			}
 		}
 	}
-	
+
 	return value;
 }
-	
+
 Complexity Complexity::calculateStateMachineComplexity(const Arabica::DOM::Element<std::string>& root, const Arabica::XPath::NodeSet<std::string>& reachable) {
 	Complexity complexity;
 
 	bool hasFlatHistory = false;
 	bool hasDeepHistory = false;
 	bool hasNestedData = false;
-	
+
 	Arabica::DOM::NodeList<std::string> childElems = root.getChildNodes();
 	for (int i = 0; i < childElems.getLength(); i++) {
 		if (childElems.item(i).getNodeType() != Node_base::ELEMENT_NODE)
@@ -170,10 +170,10 @@ Complexity Complexity::calculateStateMachineComplexity(const Arabica::DOM::Eleme
 
 	if (hasNestedData)
 		complexity.nestedData++;
-	
-    if (reachable.size() > 0 && !InterpreterImpl::isMember(root, reachable)) {
-        return 0;
-    } else if (InterpreterImpl::isCompound(root) || TAGNAME(root) == "scxml") {
+
+	if (reachable.size() > 0 && !InterpreterImpl::isMember(root, reachable)) {
+		return 0;
+	} else if (InterpreterImpl::isCompound(root) || TAGNAME(root) == "scxml") {
 		// compounds can be in any of the child state -> add
 		NodeSet<std::string> childs = InterpreterImpl::getChildStates(root);
 		for (int i = 0; i < childs.size(); i++) {

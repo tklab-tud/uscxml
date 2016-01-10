@@ -330,39 +330,39 @@ void NameSpaceInfo::init(const std::map<std::string, std::string>& namespaceInfo
 }
 
 void StateTransitionMonitor::beforeTakingTransition(uscxml::Interpreter interpreter, const Arabica::DOM::Element<std::string>& transition, bool moreComing) {
-    tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
+	tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
 	std::cerr << "Transition: " << uscxml::DOMUtils::xPathForNode(transition) << std::endl;
 }
 
 void StateTransitionMonitor::onStableConfiguration(uscxml::Interpreter interpreter) {
-    tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
+	tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
 	std::cerr << "Config: {";
 	printNodeSet(interpreter.getConfiguration());
 	std::cerr << "}" << std::endl;
 }
 
 void StateTransitionMonitor::beforeProcessingEvent(uscxml::Interpreter interpreter, const uscxml::Event& event) {
-    tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
+	tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
 	switch (event.eventType) {
-		case uscxml::Event::INTERNAL:
-			std::cerr << "Internal Event: " << event.name << std::endl;
-			break;
-		case uscxml::Event::EXTERNAL:
-			std::cerr << "External Event: " << event.name << std::endl;
-			break;
-		case uscxml::Event::PLATFORM:
-			std::cerr << "Platform Event: " << event.name << std::endl;
-			break;
+	case uscxml::Event::INTERNAL:
+		std::cerr << "Internal Event: " << event.name << std::endl;
+		break;
+	case uscxml::Event::EXTERNAL:
+		std::cerr << "External Event: " << event.name << std::endl;
+		break;
+	case uscxml::Event::PLATFORM:
+		std::cerr << "Platform Event: " << event.name << std::endl;
+		break;
 	}
 }
 
 void StateTransitionMonitor::beforeExecutingContent(Interpreter interpreter, const Arabica::DOM::Element<std::string>& element) {
-    tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
+	tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
 	std::cerr << "Executable Content: " << DOMUtils::xPathForNode(element) << std::endl;
 }
 
 void StateTransitionMonitor::beforeExitingState(uscxml::Interpreter interpreter, const Arabica::DOM::Element<std::string>& state, bool moreComing) {
-    tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
+	tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
 	exitingStates.push_back(state);
 	if (!moreComing) {
 		std::cerr << "Exiting: {";
@@ -373,7 +373,7 @@ void StateTransitionMonitor::beforeExitingState(uscxml::Interpreter interpreter,
 }
 
 void StateTransitionMonitor::beforeEnteringState(uscxml::Interpreter interpreter, const Arabica::DOM::Element<std::string>& state, bool moreComing) {
-    tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
+	tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
 	enteringStates.push_back(state);
 	if (!moreComing) {
 		std::cerr << "Entering: {";
@@ -381,7 +381,7 @@ void StateTransitionMonitor::beforeEnteringState(uscxml::Interpreter interpreter
 		std::cerr << "}" << std::endl;
 		enteringStates = Arabica::XPath::NodeSet<std::string>();
 	}
-	
+
 }
 
 void StateTransitionMonitor::printNodeSet(const Arabica::XPath::NodeSet<std::string>& config) {
@@ -392,7 +392,7 @@ void StateTransitionMonitor::printNodeSet(const Arabica::XPath::NodeSet<std::str
 	}
 }
 tthread::recursive_mutex StateTransitionMonitor::_mutex;
-    
+
 std::map<std::string, boost::weak_ptr<InterpreterImpl> > Interpreter::_instances;
 tthread::recursive_mutex Interpreter::_instanceMutex;
 
@@ -572,7 +572,7 @@ void InterpreterImpl::cloneFrom(InterpreterImpl* other) {
 		}
 
 		setNameSpaceInfo(other->_nsInfo);
-		
+
 		_baseURL = other->_baseURL;
 		_sourceURL = other->_sourceURL;
 
@@ -772,7 +772,7 @@ NodeSet<std::string> InterpreterImpl::getDocumentInitialTransitions() {
 }
 
 InterpreterState InterpreterImpl::step(int waitForMS) {
-    try {
+	try {
 		tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
 
 		if (_state == USCXML_FINISHED || _state == USCXML_DESTROYED) {
@@ -798,13 +798,13 @@ InterpreterState InterpreterImpl::step(int waitForMS) {
 			std::cerr << std::endl;
 #endif
 
-            // this is not mentionend in the standard, though it makes sense
-            for (int i = 0; i < initialTransitions.size(); i++) {
-                Element<std::string> transition(initialTransitions[i]);
-                USCXML_MONITOR_CALLBACK3(beforeTakingTransition, transition, (i + 1 < enabledTransitions.size()))
-                executeContent(transition);
-                USCXML_MONITOR_CALLBACK3(afterTakingTransition, transition, (i + 1 < enabledTransitions.size()))
-            }
+			// this is not mentionend in the standard, though it makes sense
+			for (int i = 0; i < initialTransitions.size(); i++) {
+				Element<std::string> transition(initialTransitions[i]);
+				USCXML_MONITOR_CALLBACK3(beforeTakingTransition, transition, (i + 1 < enabledTransitions.size()))
+				executeContent(transition);
+				USCXML_MONITOR_CALLBACK3(afterTakingTransition, transition, (i + 1 < enabledTransitions.size()))
+			}
 
 			enterStates(initialTransitions);
 			setInterpreterState(USCXML_MICROSTEPPED);
@@ -1066,7 +1066,7 @@ void InterpreterImpl::stabilize() {
 }
 
 #if 0
-    
+
 Arabica::XPath::NodeSet<std::string> InterpreterImpl::selectTransitions(const std::string& event) {
 	Arabica::XPath::NodeSet<std::string> enabledTransitions;
 
@@ -1148,100 +1148,102 @@ LOOP:
 #else
 
 Arabica::XPath::NodeSet<std::string> InterpreterImpl::selectTransitions(const std::string& event) {
-    Arabica::XPath::NodeSet<std::string> enabledTransitions;
-    
-    NodeSet<std::string> atomicStates;
-    for (unsigned int i = 0; i < _configuration.size(); i++) {
-        if (isAtomic(Element<std::string>(_configuration[i])))
-            atomicStates.push_back(_configuration[i]);
-    }
-    atomicStates.to_document_order();
-    
-    for (unsigned int i = 0; i < atomicStates.size(); i++) {
-        Element<std::string> state(atomicStates[i]);
-        while(true) {
-            NodeSet<std::string> transitions = filterChildElements(_nsInfo.xmlNSPrefix + "transition", state);
-            for (unsigned int k = 0; k < transitions.size(); k++) {
-                if (isEnabledTransition(Element<std::string>(transitions[k]), event)) {
-                    enabledTransitions.push_back(transitions[k]);
-                    goto NEXT_ATOMIC;
-                }
-            }
-            if (state.getParentNode() && state.getParentNode().getNodeType() == Node_base::ELEMENT_NODE) {
-                state = Element<std::string>(state.getParentNode());
-            } else {
-                goto NEXT_ATOMIC;
-            }
-        }
-    NEXT_ATOMIC:;
-    }
-    
-#if 0
-    std::cerr << "Enabled transitions for '" << event << "': " << std::endl;
-    for (int i = 0; i < enabledTransitions.size(); i++) {
-        std::cerr << enabledTransitions[i] << std::endl << "----" << std::endl;
-    }
-    std::cerr << std::endl;
-#endif
+	Arabica::XPath::NodeSet<std::string> enabledTransitions;
 
-    enabledTransitions = removeConflictingTransitions(enabledTransitions);
+	NodeSet<std::string> atomicStates;
+	for (unsigned int i = 0; i < _configuration.size(); i++) {
+		if (isAtomic(Element<std::string>(_configuration[i])))
+			atomicStates.push_back(_configuration[i]);
+	}
+	atomicStates.to_document_order();
+
+	for (unsigned int i = 0; i < atomicStates.size(); i++) {
+		Element<std::string> state(atomicStates[i]);
+		while(true) {
+			NodeSet<std::string> transitions = filterChildElements(_nsInfo.xmlNSPrefix + "transition", state);
+			for (unsigned int k = 0; k < transitions.size(); k++) {
+				if (isEnabledTransition(Element<std::string>(transitions[k]), event)) {
+					enabledTransitions.push_back(transitions[k]);
+					goto NEXT_ATOMIC;
+				}
+			}
+			if (state.getParentNode() && state.getParentNode().getNodeType() == Node_base::ELEMENT_NODE) {
+				state = Element<std::string>(state.getParentNode());
+			} else {
+				goto NEXT_ATOMIC;
+			}
+		}
+NEXT_ATOMIC:
+		;
+	}
 
 #if 0
-    std::cerr << "Non-conflicting transitions for '" << event << "': " << std::endl;
-    for (int i = 0; i < enabledTransitions.size(); i++) {
-        std::cerr << enabledTransitions[i] << std::endl << "----" << std::endl;
-    }
-    std::cerr << std::endl;
+	std::cerr << "Enabled transitions for '" << event << "': " << std::endl;
+	for (int i = 0; i < enabledTransitions.size(); i++) {
+		std::cerr << enabledTransitions[i] << std::endl << "----" << std::endl;
+	}
+	std::cerr << std::endl;
 #endif
 
-    return enabledTransitions;
+	enabledTransitions = removeConflictingTransitions(enabledTransitions);
+
+#if 0
+	std::cerr << "Non-conflicting transitions for '" << event << "': " << std::endl;
+	for (int i = 0; i < enabledTransitions.size(); i++) {
+		std::cerr << enabledTransitions[i] << std::endl << "----" << std::endl;
+	}
+	std::cerr << std::endl;
+#endif
+
+	return enabledTransitions;
 }
 
 
 Arabica::XPath::NodeSet<std::string> InterpreterImpl::selectEventlessTransitions() {
 
-    Arabica::XPath::NodeSet<std::string> enabledTransitions;
-    
-    NodeSet<std::string> atomicStates;
-    for (unsigned int i = 0; i < _configuration.size(); i++) {
-        if (isAtomic(Element<std::string>(_configuration[i])))
-            atomicStates.push_back(_configuration[i]);
-    }
-    atomicStates.to_document_order();
-    
-    for (unsigned int i = 0; i < atomicStates.size(); i++) {
-        Element<std::string> state(atomicStates[i]);
-        while(true) {
-            NodeSet<std::string> transitions = filterChildElements(_nsInfo.xmlNSPrefix + "transition", state);
-            for (unsigned int k = 0; k < transitions.size(); k++) {
-                Element<std::string> transElem(transitions[k]);
-                if (!HAS_ATTR(transElem, "event") && hasConditionMatch(transElem)) {
-                    enabledTransitions.push_back(transitions[k]);
-                    goto NEXT_ATOMIC;
-                }
-            }
-            if (state.getParentNode() && state.getParentNode().getNodeType() == Node_base::ELEMENT_NODE) {
-                state = Element<std::string>(state.getParentNode());
-            } else {
-                goto NEXT_ATOMIC;
-            }
-        }
-    NEXT_ATOMIC:;
-    }
-    
+	Arabica::XPath::NodeSet<std::string> enabledTransitions;
+
+	NodeSet<std::string> atomicStates;
+	for (unsigned int i = 0; i < _configuration.size(); i++) {
+		if (isAtomic(Element<std::string>(_configuration[i])))
+			atomicStates.push_back(_configuration[i]);
+	}
+	atomicStates.to_document_order();
+
+	for (unsigned int i = 0; i < atomicStates.size(); i++) {
+		Element<std::string> state(atomicStates[i]);
+		while(true) {
+			NodeSet<std::string> transitions = filterChildElements(_nsInfo.xmlNSPrefix + "transition", state);
+			for (unsigned int k = 0; k < transitions.size(); k++) {
+				Element<std::string> transElem(transitions[k]);
+				if (!HAS_ATTR(transElem, "event") && hasConditionMatch(transElem)) {
+					enabledTransitions.push_back(transitions[k]);
+					goto NEXT_ATOMIC;
+				}
+			}
+			if (state.getParentNode() && state.getParentNode().getNodeType() == Node_base::ELEMENT_NODE) {
+				state = Element<std::string>(state.getParentNode());
+			} else {
+				goto NEXT_ATOMIC;
+			}
+		}
+NEXT_ATOMIC:
+		;
+	}
+
 #if 0
-    std::cerr << "Enabled eventless transitions: " << std::endl;
-    for (int i = 0; i < enabledTransitions.size(); i++) {
-        std::cerr << enabledTransitions[i] << std::endl << "----" << std::endl;
-    }
-    std::cerr << std::endl;
+	std::cerr << "Enabled eventless transitions: " << std::endl;
+	for (int i = 0; i < enabledTransitions.size(); i++) {
+		std::cerr << enabledTransitions[i] << std::endl << "----" << std::endl;
+	}
+	std::cerr << std::endl;
 #endif
 
-    enabledTransitions = removeConflictingTransitions(enabledTransitions);
-    return enabledTransitions;
+	enabledTransitions = removeConflictingTransitions(enabledTransitions);
+	return enabledTransitions;
 }
 
-    
+
 #endif
 
 bool InterpreterImpl::isEnabledTransition(const Element<std::string>& transition, const std::string& event) {
@@ -1362,7 +1364,7 @@ void InterpreterImpl::reset() {
 	_isInitialized = false;
 	_stable = false;
 
-    _dataModel = DataModel();
+	_dataModel = DataModel();
 	setInterpreterState(USCXML_INSTANTIATED);
 }
 
@@ -1403,7 +1405,7 @@ void InterpreterImpl::setupDOM() {
 	}
 
 	resolveXIncludes();
-	
+
 	// find scxml element
 	if (!_scxml) {
 		NodeList<std::string> scxmls;
@@ -1428,15 +1430,15 @@ void InterpreterImpl::setupDOM() {
 
 	// normalize document
 
-    // make sure every state has an id - not required per spec, but needed for us
-    Arabica::XPath::NodeSet<std::string> states = getAllStates();
-    for (int i = 0; i < states.size(); i++) {
-        Arabica::DOM::Element<std::string> stateElem = Arabica::DOM::Element<std::string>(states[i]);
-        if (!stateElem.hasAttribute("id")) {
-            stateElem.setAttribute("id", UUID::getUUID());
-        }
-        _cachedStates[ATTR(stateElem, "id")] = stateElem;
-    }
+	// make sure every state has an id - not required per spec, but needed for us
+	Arabica::XPath::NodeSet<std::string> states = getAllStates();
+	for (int i = 0; i < states.size(); i++) {
+		Arabica::DOM::Element<std::string> stateElem = Arabica::DOM::Element<std::string>(states[i]);
+		if (!stateElem.hasAttribute("id")) {
+			stateElem.setAttribute("id", UUID::getUUID());
+		}
+		_cachedStates[ATTR(stateElem, "id")] = stateElem;
+	}
 
 	// make sure every invoke has an idlocation or id - actually required!
 	Arabica::XPath::NodeSet<std::string> invokes = _xpath.evaluate("//" + _nsInfo.xpathPrefix + "invoke", _scxml).asNodeSet();
@@ -1464,7 +1466,7 @@ void InterpreterImpl::setupDOM() {
 
 void InterpreterImpl::resolveXIncludes() {
 	std::string xIncludeNS = _nsInfo.getXMLPrefixForNS("http://www.w3.org/2001/XInclude");
-	
+
 	// no element in namespace for xinclude, don't bother searching
 	if (xIncludeNS.size() == 0)
 		return;
@@ -1479,7 +1481,7 @@ void InterpreterImpl::resolveXIncludes() {
 		// recursively resolve includes
 		resolveXIncludes(includeChain, mergedNs, xIncludeNS, URL::asBaseURL(_sourceURL), Element<std::string>(xincludes[i]));
 	}
-	
+
 	// update NameSpaceInfo and reinit xpath resolver
 	_nsInfo = NameSpaceInfo(mergedNs);
 	_xpath.setNamespaceContext(*_nsInfo.getNSContext());
@@ -1487,10 +1489,10 @@ void InterpreterImpl::resolveXIncludes() {
 }
 
 void InterpreterImpl::resolveXIncludes(std::list<std::string> includeChain,
-																			 std::map<std::string, std::string>& mergedNS,
-																			 const std::string& xIncludeNS,
-																			 const URL& baseURL,
-																			 const Arabica::DOM::Element<std::string>& xinclude) {
+                                       std::map<std::string, std::string>& mergedNS,
+                                       const std::string& xIncludeNS,
+                                       const URL& baseURL,
+                                       const Arabica::DOM::Element<std::string>& xinclude) {
 	URL src = baseURL;
 	NodeSet<std::string> newNodes;
 
@@ -1502,7 +1504,7 @@ void InterpreterImpl::resolveXIncludes(std::list<std::string> includeChain,
 				goto TRY_WITH_FALLBACK;
 			}
 		}
-		
+
 		if (std::find(includeChain.begin(), includeChain.end(), src.asString()) != includeChain.end()) {
 			std::stringstream incErr;
 			incErr << ("Ignoring recursive inclusion of '" + src.asString() + " via:") << std::endl;
@@ -1513,7 +1515,7 @@ void InterpreterImpl::resolveXIncludes(std::list<std::string> includeChain,
 			return;
 		}
 		includeChain.push_back(src.asString());
-		
+
 		if (HAS_ATTR(xinclude, "accept")) {
 			src.addOutHeader("Accept", ATTR_CAST(xinclude, "accept"));
 		}
@@ -1528,7 +1530,7 @@ void InterpreterImpl::resolveXIncludes(std::list<std::string> includeChain,
 		} catch (Event e) {
 			goto TRY_WITH_FALLBACK;
 		}
-		
+
 		if (HAS_ATTR(xinclude, "parse") && iequals(ATTR(xinclude, "parse"), "text")) {
 			// parse as text
 			Text<std::string> textNode = _document.createTextNode(includedContent);
@@ -1547,7 +1549,7 @@ void InterpreterImpl::resolveXIncludes(std::list<std::string> includeChain,
 				if (mergedNS.find("http://www.w3.org/2005/07/scxml") == mergedNS.end() && xiParser.nameSpace.find("http://www.w3.org/2005/07/scxml") != xiParser.nameSpace.end()) {
 					LOG(ERROR) << ("Error for '" + DOMUtils::xPathForNode(xinclude) + "': root document uses implicit SCXML namespace without prefix, included document does map it to prefix '" + xiParser.nameSpace["http://www.w3.org/2005/07/scxml"] + "', trying xi:fallback");
 					goto TRY_WITH_FALLBACK;
-					
+
 				}
 
 				// merge namespaces to prefix mappings
@@ -1558,7 +1560,7 @@ void InterpreterImpl::resolveXIncludes(std::list<std::string> includeChain,
 						LOG(ERROR) << ("Error for '" + DOMUtils::xPathForNode(xinclude) + "': Cannot map namespace '" + nsIter->first + "' to prefix '" + nsIter->second + "', it is already mapped to prefix '" + mergedNS[nsIter->first] + "', trying xi:fallback");
 						goto TRY_WITH_FALLBACK;
 					}
-					
+
 					// same prefix but different nsURL
 					for (std::map<std::string, std::string>::iterator currIter = mergedNS.begin(); currIter != mergedNS.end(); currIter++) {
 						if (currIter->second == nsIter->second && currIter->first != nsIter->first) {
@@ -1568,7 +1570,7 @@ void InterpreterImpl::resolveXIncludes(std::list<std::string> includeChain,
 					}
 					mergedNS[nsIter->first] = nsIter->second;
 				}
-				
+
 				// import DOM
 				Node<std::string> imported = _document.importNode(xiParser.getDocument().getDocumentElement(), true);
 				newNodes.push_back(imported);
@@ -1580,8 +1582,7 @@ void InterpreterImpl::resolveXIncludes(std::list<std::string> includeChain,
 		LOG(ERROR) << "No href attribute for xi:xinclude at '" << DOMUtils::xPathForNode(xinclude) << "', trying xi:fallback";
 		goto TRY_WITH_FALLBACK;
 	}
-TRY_WITH_FALLBACK:
-	{
+TRY_WITH_FALLBACK: {
 		NodeSet<std::string> fallbacks = filterChildElements(xIncludeNS + "fallback", xinclude);
 		if (fallbacks.size() > 0) {
 			LOG(WARNING) << "Using xi:fallback for '" << DOMUtils::xPathForNode(xinclude) << "'";
@@ -1605,7 +1606,7 @@ REMOVE_AND_RECURSE:
 		}
 	}
 }
-	
+
 void InterpreterImpl::init() {
 	// make sure we have a factory if none was set before
 	if (_factory == NULL)
@@ -1741,26 +1742,26 @@ void InterpreterImpl::internalDoneSend(const Arabica::DOM::Element<std::string>&
 
 	Event event;
 
-    if (doneData) {
-        processParamChilds(doneData, event.params);
-        Arabica::XPath::NodeSet<std::string> contents = filterChildElements(_nsInfo.xmlNSPrefix + "content", doneData);
-        if (contents.size() > 1)
-            LOG(ERROR) << "Only a single content element is allowed for send elements - using first one";
-        if (contents.size() > 0) {
-            std::string expr;
-            processContentElement(Element<std::string>(contents[0]), event.dom, event.content, expr);
-            if (expr.length() > 0) {
-                try {
-                    event.content =_dataModel.evalAsString(expr);
-                } catch (Event e) {
-                    e.name = "error.execution";
-                    e.dom = contents[0];
-                    receiveInternal(e);
-                }
-            }
-        }
-    }
-    
+	if (doneData) {
+		processParamChilds(doneData, event.params);
+		Arabica::XPath::NodeSet<std::string> contents = filterChildElements(_nsInfo.xmlNSPrefix + "content", doneData);
+		if (contents.size() > 1)
+			LOG(ERROR) << "Only a single content element is allowed for send elements - using first one";
+		if (contents.size() > 0) {
+			std::string expr;
+			processContentElement(Element<std::string>(contents[0]), event.dom, event.content, expr);
+			if (expr.length() > 0) {
+				try {
+					event.content =_dataModel.evalAsString(expr);
+				} catch (Event e) {
+					e.name = "error.execution";
+					e.dom = contents[0];
+					receiveInternal(e);
+				}
+			}
+		}
+	}
+
 	event.name = "done.state." + ATTR_CAST(state, "id"); // parent?!
 	receiveInternal(event);
 
@@ -2267,15 +2268,15 @@ void InterpreterImpl::invoke(const Arabica::DOM::Element<std::string>& element) 
 					USCXML_MONITOR_CALLBACK3(afterInvoking, Arabica::DOM::Element<std::string>(element), invokeReq.invokeid)
 
 					// this is out of draft but so useful to know when an invoker started
-                    if (HAS_ATTR(element, "callback")) {
-                        std::string callback = ATTR(element, "callback");
-                        if (callback.size() > 0) {
-                            Event invSuccess;
-                            invSuccess.name = callback + "." + invokeReq.invokeid;
-                            receive(invSuccess);
-                        }
-                    }
-                    
+					if (HAS_ATTR(element, "callback")) {
+						std::string callback = ATTR(element, "callback");
+						if (callback.size() > 0) {
+							Event invSuccess;
+							invSuccess.name = callback + "." + invokeReq.invokeid;
+							receive(invSuccess);
+						}
+					}
+
 
 				} catch(boost::bad_lexical_cast e) {
 					LOG(ERROR) << "Exception caught while sending invoke request to invoker " << invokeReq.invokeid << ": " << e.what();
@@ -2717,7 +2718,7 @@ void InterpreterImpl::finalizeAndAutoForwardCurrentEvent() {
 				// Yes do so, see test229!
 				// if (!boost::equals(_currEvent.getOriginType(), "http://www.w3.org/TR/scxml/#SCXMLEventProcessor"))
 //                LOG(ERROR) << _sessionId << " auto forwards " << _currEvent.name << " to " << invokeIter->first << std::endl;
-                invokeIter->second.send(_currEvent);
+				invokeIter->second.send(_currEvent);
 			} catch (const std::exception &e) {
 				LOG(ERROR) << "Exception caught while sending event to invoker " << invokeIter->first << ": " << e.what();
 			} catch(...) {
@@ -2964,10 +2965,10 @@ Arabica::XPath::NodeSet<std::string> InterpreterImpl::getInitialStates(Arabica::
 	NodeSet<std::string> initElems = filterChildElements(_nsInfo.xmlNSPrefix + "initial", state);
 	if(initElems.size() > 0 && !iequals(ATTR_CAST(initElems[0], "generated"), "true")) {
 		NodeSet<std::string> initTrans = filterChildElements(_nsInfo.xmlNSPrefix + "transition", initElems[0]);
-        if (initTrans.size() > 0) {
-            return getTargetStates(Element<std::string>(initTrans[0]));
-        }
-    }
+		if (initTrans.size() > 0) {
+			return getTargetStates(Element<std::string>(initTrans[0]));
+		}
+	}
 
 	// first child state
 	Arabica::XPath::NodeSet<std::string> initStates;
@@ -2986,77 +2987,77 @@ Arabica::XPath::NodeSet<std::string> InterpreterImpl::getInitialStates(Arabica::
 }
 
 NodeSet<std::string> InterpreterImpl::getReachableStates() {
-    /** Check which states are reachable */
-    
-    NodeSet<std::string> reachable;
-    reachable.push_back(_scxml);
-    
-    bool hasChanges = true;
-    
-    while (hasChanges) {
-        // iterate initials and transitions until stable, unneccerily iterates complete reachable set everytime
-        
-        hasChanges = false;
-        // reachable per initial attribute or document order - size will increase as we append new states
-        for (int i = 0; i < reachable.size(); i++) {
-            // get the state's initial states
-            Element<std::string> state = Element<std::string>(reachable[i]);
-            try {
-                NodeSet<std::string> initials = getInitialStates(state);
-                for (int j = 0; j < initials.size(); j++) {
-                    Element<std::string> initial = Element<std::string>(initials[j]);
-                    if (!InterpreterImpl::isMember(initial, reachable)) {
-                        reachable.push_back(initial);
-                        hasChanges = true;
-                    }
-                }
-            } catch (Event e) {
-            }
-        }
-        
-        // reachable per target attribute in transitions
-        for (int i = 0; i < reachable.size(); i++) {
-            Element<std::string> state = Element<std::string>(reachable[i]);
-            NodeSet<std::string> transitions = InterpreterImpl::filterChildElements(_nsInfo.xmlNSPrefix + "transition", state, false);
-            for (int j = 0; j < transitions.size(); j++) {
-                Element<std::string> transition = Element<std::string>(transitions[j]);
-                try {
-                    NodeSet<std::string> targets = getTargetStates(transition);
-                    for (int k = 0; k < targets.size(); k++) {
-                        Element<std::string> target = Element<std::string>(targets[k]);
-                        if (!InterpreterImpl::isMember(target, reachable)) {
-                            reachable.push_back(target);
-                            hasChanges = true;
-                        }
-                    }
-                } catch (Event e) {
-                }
-            }
-        }
+	/** Check which states are reachable */
 
-        // reachable via a reachable child state
-        for (int i = 0; i < reachable.size(); i++) {
-            Element<std::string> state = Element<std::string>(reachable[i]);
-            if (InterpreterImpl::isAtomic(state)) {
-                // iterate the states parents
-                Node<std::string> parent = state.getParentNode();
-                while(parent && parent.getNodeType() == Node_base::ELEMENT_NODE) {
-                    Element<std::string> parentElem = Element<std::string>(parent);
-                    if (!InterpreterImpl::isState(parentElem)) {
-                        break;
-                    }
-                    if (!InterpreterImpl::isMember(parentElem, reachable)) {
-                        reachable.push_back(parent);
-                        hasChanges = true;
-                    }
-                    parent = parent.getParentNode();
-                }
-            }
-        }
-    }
-    
-    
-    return reachable;
+	NodeSet<std::string> reachable;
+	reachable.push_back(_scxml);
+
+	bool hasChanges = true;
+
+	while (hasChanges) {
+		// iterate initials and transitions until stable, unneccerily iterates complete reachable set everytime
+
+		hasChanges = false;
+		// reachable per initial attribute or document order - size will increase as we append new states
+		for (int i = 0; i < reachable.size(); i++) {
+			// get the state's initial states
+			Element<std::string> state = Element<std::string>(reachable[i]);
+			try {
+				NodeSet<std::string> initials = getInitialStates(state);
+				for (int j = 0; j < initials.size(); j++) {
+					Element<std::string> initial = Element<std::string>(initials[j]);
+					if (!InterpreterImpl::isMember(initial, reachable)) {
+						reachable.push_back(initial);
+						hasChanges = true;
+					}
+				}
+			} catch (Event e) {
+			}
+		}
+
+		// reachable per target attribute in transitions
+		for (int i = 0; i < reachable.size(); i++) {
+			Element<std::string> state = Element<std::string>(reachable[i]);
+			NodeSet<std::string> transitions = InterpreterImpl::filterChildElements(_nsInfo.xmlNSPrefix + "transition", state, false);
+			for (int j = 0; j < transitions.size(); j++) {
+				Element<std::string> transition = Element<std::string>(transitions[j]);
+				try {
+					NodeSet<std::string> targets = getTargetStates(transition);
+					for (int k = 0; k < targets.size(); k++) {
+						Element<std::string> target = Element<std::string>(targets[k]);
+						if (!InterpreterImpl::isMember(target, reachable)) {
+							reachable.push_back(target);
+							hasChanges = true;
+						}
+					}
+				} catch (Event e) {
+				}
+			}
+		}
+
+		// reachable via a reachable child state
+		for (int i = 0; i < reachable.size(); i++) {
+			Element<std::string> state = Element<std::string>(reachable[i]);
+			if (InterpreterImpl::isAtomic(state)) {
+				// iterate the states parents
+				Node<std::string> parent = state.getParentNode();
+				while(parent && parent.getNodeType() == Node_base::ELEMENT_NODE) {
+					Element<std::string> parentElem = Element<std::string>(parent);
+					if (!InterpreterImpl::isState(parentElem)) {
+						break;
+					}
+					if (!InterpreterImpl::isMember(parentElem, reachable)) {
+						reachable.push_back(parent);
+						hasChanges = true;
+					}
+					parent = parent.getParentNode();
+				}
+			}
+		}
+	}
+
+
+	return reachable;
 }
 
 
@@ -3105,7 +3106,7 @@ NodeSet<std::string> InterpreterImpl::getTargetStates(const Arabica::XPath::Node
 }
 
 #define ISWHITESPACE(char) (isspace(char))
-	
+
 std::list<std::string> InterpreterImpl::tokenize(const std::string& line, const char sep, bool trimWhiteSpace) {
 	std::list<std::string> tokens;
 
@@ -3116,7 +3117,9 @@ std::list<std::string> InterpreterImpl::tokenize(const std::string& line, const 
 			if (i > 0 && start < i) {
 				tokens.push_back(line.substr(start, i - start));
 			}
-			while(line[i] == sep || (trimWhiteSpace && ISWHITESPACE(line[i]))) { i++; } // skip multiple occurences of seperator and whitespaces
+			while(line[i] == sep || (trimWhiteSpace && ISWHITESPACE(line[i]))) {
+				i++;    // skip multiple occurences of seperator and whitespaces
+			}
 			start = i;
 		} else if (i + 1 == line.size()) {
 			tokens.push_back(line.substr(start, i + 1 - start));
@@ -3196,7 +3199,7 @@ NodeSet<std::string> InterpreterImpl::filterChildElements(const std::string& tag
 	return filteredChildElems;
 }
 
-	
+
 NodeSet<std::string> InterpreterImpl::filterChildType(const Node_base::Type type, const NodeSet<std::string>& nodeSet, bool recurse) {
 	NodeSet<std::string> filteredChildType;
 	for (unsigned int i = 0; i < nodeSet.size(); i++) {
@@ -3265,10 +3268,10 @@ NodeSet<std::string> InterpreterImpl::getProperAncestors(const Arabica::DOM::Nod
 
 bool InterpreterImpl::isDescendant(const Arabica::DOM::Node<std::string>& s1,
                                    const Arabica::DOM::Node<std::string>& s2) {
-    if (!s1 || !s2)
-        return false;
+	if (!s1 || !s2)
+		return false;
 
-    Arabica::DOM::Node<std::string> parent = s1.getParentNode();
+	Arabica::DOM::Node<std::string> parent = s1.getParentNode();
 	while(parent) {
 		if (s2 == parent)
 			return true;

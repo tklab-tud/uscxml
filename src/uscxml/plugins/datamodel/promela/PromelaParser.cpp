@@ -136,7 +136,7 @@ PromelaParserNode::~PromelaParserNode() {
 
 PromelaParserNode* PromelaParser::node(int type, int nrArgs, ...) {
 	PromelaParserNode* newNode = new PromelaParserNode();
-	
+
 	newNode->type = type;
 	va_list ap;
 	va_start(ap, nrArgs);
@@ -164,7 +164,7 @@ PromelaParserNode* PromelaParser::value(int type, void* location, const char* va
 	return newNode;
 }
 
-	
+
 void PromelaParser::dump() {
 	switch (type) {
 	case PROMELA_EXPR:

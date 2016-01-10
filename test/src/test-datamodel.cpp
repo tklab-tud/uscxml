@@ -16,15 +16,15 @@ using namespace boost;
 class TestDataModelExtension : public DataModelExtension {
 public:
 	TestDataModelExtension() {}
-	
+
 	std::string provides() {
 		return "_x.platform.pool";
 	}
-	
+
 	Data getValueOf(const std::string& member) {
 		return Data(true);
 	}
-	
+
 	void setValueOf(const std::string& member, const Data& data) {
 		std::cout << "Setting " << member << " to " << std::endl << Data::toJSON(data);
 	}
@@ -497,20 +497,20 @@ int main(int argc, char** argv) {
 		std::cout << content << std::endl;
 		assert(boost::equals(content, "There are 12 monkeys! Really 12 monkeys!"));
 	}
-	
+
 	{
 		std::string xml =
-		"<scxml datamodel=\"ecmascript\">"
-		"  <script src=\"http://uscxml.tk.informatik.tu-darmstadt.de/scripts/dump.js\" />"
-		"  <state id=\"s1\">"
-		"    <onentry>"
-		"      <script>_x.platform.pool('memeber.second', { foo: 12, bar: 34})</script>"
-		"      <log label=\"ext\" expr=\"dump(_x.platform.pool('member.first'))\" />"
-		"    </onentry>"
-		"    <transition target=\"done\" />"
-		"  </state>"
-		"  <final id=\"done\" />"
-		"</scxml>";
+		    "<scxml datamodel=\"ecmascript\">"
+		    "  <script src=\"http://uscxml.tk.informatik.tu-darmstadt.de/scripts/dump.js\" />"
+		    "  <state id=\"s1\">"
+		    "    <onentry>"
+		    "      <script>_x.platform.pool('memeber.second', { foo: 12, bar: 34})</script>"
+		    "      <log label=\"ext\" expr=\"dump(_x.platform.pool('member.first'))\" />"
+		    "    </onentry>"
+		    "    <transition target=\"done\" />"
+		    "  </state>"
+		    "  <final id=\"done\" />"
+		    "</scxml>";
 
 		TestDataModelExtension ext;
 		Interpreter interpreter = Interpreter::fromXML(xml, "");
@@ -522,6 +522,6 @@ int main(int argc, char** argv) {
 			state = interpreter.step();
 		} while (state != USCXML_FINISHED && state!= USCXML_DESTROYED);
 
-		
+
 	}
 }

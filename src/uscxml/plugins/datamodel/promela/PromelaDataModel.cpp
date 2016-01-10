@@ -310,7 +310,7 @@ void PromelaDataModel::assign(const Element<std::string>& assignElem,
 
 	if (value.length() == 0)
 		return;
-	
+
 	Data json = Data::fromJSON(value);
 	if (!json.empty()) {
 		// simply assign from json to key
@@ -371,7 +371,7 @@ void PromelaDataModel::evaluateDecl(void* ast) {
 				std::list<PromelaParserNode*>::iterator opIterAsgn = (*nameIter)->operands.begin();
 				PromelaParserNode* name = *opIterAsgn++;
 				PromelaParserNode* expr = *opIterAsgn++;
-				
+
 				try {
 					variable.compound["value"] = evaluateExpr(expr);
 				} catch(uscxml::Event e) {
@@ -562,7 +562,7 @@ void PromelaDataModel::evaluateStmnt(void* ast) {
 	}
 }
 
-	
+
 void PromelaDataModel::setVariable(void* ast, const Data& value) {
 	PromelaParserNode* node = (PromelaParserNode*)ast;
 
@@ -602,7 +602,7 @@ void PromelaDataModel::setVariable(void* ast, const Data& value) {
 		if (_variables[node->value].hasKey("size")) {
 			if (value.compound.size() > 0 || value.atom.size() > 0)
 				ERROR_EXECUTION_THROW("Variable " + node->value + " is an array");
-			
+
 			if (strTo<size_t>(_variables[node->value].compound["size"].atom) < value.array.size())
 				ERROR_EXECUTION_THROW("Array assigned to " + node->value + " is too large");
 		}
@@ -620,28 +620,29 @@ void PromelaDataModel::setVariable(void* ast, const Data& value) {
 		}
 
 //		std::cout << Data::toJSON(_variables) << std::endl;;
-		
+
 		Data* var = &_variables[name->value].compound["value"];
 		var->compound["type"] = Data("compound", Data::VERBATIM);
 		var->compound["vis"] = Data("", Data::VERBATIM);
-		
+
 		while(opIter != node->operands.end()) {
-			name = *opIter; opIter++;
+			name = *opIter;
+			opIter++;
 			var = &(var->compound[name->value]);
 		}
 		*var = value;
-			
+
 		break;
 	}
 	default:
-			node->dump();
-			ERROR_EXECUTION_THROW("No support for " + PromelaParserNode::typeToDesc(node->type) + " variables implemented");
+		node->dump();
+		ERROR_EXECUTION_THROW("No support for " + PromelaParserNode::typeToDesc(node->type) + " variables implemented");
 		break;
 	}
 
 //	std::cout << Data::toJSON(_variables) << std::endl;
 }
-	
+
 Data PromelaDataModel::getVariable(void* ast) {
 	PromelaParserNode* node = (PromelaParserNode*)ast;
 //	node->dump();
@@ -767,11 +768,11 @@ void PromelaDataModel::init(const Element<std::string>& dataElem,
 			arrSize = type.substr(bracketPos, type.length() - bracketPos);
 			type = type.substr(0, bracketPos);
 		}
-		
+
 		std::string expr = type + " " + identifier + arrSize;
 		PromelaParser parser(expr, 1, PromelaParser::PROMELA_DECL);
 		evaluateDecl(parser.ast);
-		
+
 	}
 	assign(dataElem, node, content);
 }
@@ -789,9 +790,10 @@ bool PromelaDataModel::isDeclared(const std::string& expr) {
 		// JSON declaration
 		std::list<PromelaParserNode*>::iterator opIter = parser.ast->operands.begin();
 		Data* var = &_variables;
-		
+
 		while(opIter != parser.ast->operands.end()) {
-			std::string name = (*opIter)->value; opIter++;
+			std::string name = (*opIter)->value;
+			opIter++;
 			if (var->compound.find(name) != var->compound.end()) {
 				var = &(var->compound.at(name));
 			} else if (var->compound.find("value") != var->compound.end() && var->compound.at("value").compound.find(name) != var->compound.at("value").compound.end()) {
@@ -801,7 +803,7 @@ bool PromelaDataModel::isDeclared(const std::string& expr) {
 			}
 		}
 		return true;
-		
+
 	}
 
 	return _variables.compound.find(expr) != _variables.compound.end();

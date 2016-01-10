@@ -139,7 +139,7 @@ int main(int argc, char** argv) {
 	DebuggerServlet* debugger;
 	if (options.withDebugger) {
 		debugger = new DebuggerServlet();
-    debugger->copyToInvokers(true);
+		debugger->copyToInvokers(true);
 		HTTPServer::getInstance()->registerServlet("/debug", debugger);
 	}
 #endif
@@ -171,7 +171,7 @@ int main(int argc, char** argv) {
 
 				if (options.verbose) {
 					StateTransitionMonitor* vm = new StateTransitionMonitor();
-                    vm->copyToInvokers(true);
+					vm->copyToInvokers(true);
 					interpreter.addMonitor(vm);
 				}
 

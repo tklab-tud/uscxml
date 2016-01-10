@@ -63,11 +63,11 @@ int main(int argc, char** argv) {
 		// these will match
 		uscxml::HistoryTransitionClass histClass1Match1("history:{h0:{s1, s2, s3}}", "history:{h0:{s0}}");
 		assert(histClass1.matches(histClass1Match1));
-		
+
 		histClass1.merge(histClass1Match1);
 		assert(histClass1.toRemember.at("h0").find("s0") != histClass1.toRemember.at("h0").end());
 		assert(histClass1.toRemember.at("h0").size() == 1);
-		
+
 		assert(histClass1.toForget.at("h0").find("s1") != histClass1.toForget.at("h0").end());
 		assert(histClass1.toForget.at("h0").find("s2") != histClass1.toForget.at("h0").end());
 		assert(histClass1.toForget.at("h0").find("s3") != histClass1.toForget.at("h0").end());

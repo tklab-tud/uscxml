@@ -185,7 +185,7 @@ public:
 	void cloneFrom(InterpreterImpl* other);
 	void cloneFrom(boost::shared_ptr<InterpreterImpl> other);
 	virtual void writeTo(std::ostream& stream);
-	
+
 	// TODO: We need to move the destructor to the implementations to make these pure virtual
 	virtual InterpreterState interpret();
 	virtual InterpreterState step(int waitForMS = 0);
@@ -214,7 +214,7 @@ public:
 			_baseURL[_scxml] = baseURL;
 		}
 	}
-	
+
 	std::string getSourceURL()                                       {
 		return _sourceURL.asString();
 	}
@@ -347,7 +347,7 @@ public:
 	void addDataModelExtension(DataModelExtension* ext) {
 		_dataModelExtensions.insert(ext);
 	}
-	
+
 	void setInvoker(const std::string& invokeId, Invoker invoker) {
 		_dontDestructOnUninvoke.insert(invokeId);
 		_invokers[invokeId] = invoker;
@@ -388,7 +388,7 @@ public:
 
 	Arabica::XPath::NodeSet<std::string> getDocumentInitialTransitions();
 	Arabica::XPath::NodeSet<std::string> getInitialStates(Arabica::DOM::Element<std::string> state = Arabica::DOM::Element<std::string>());
-    Arabica::XPath::NodeSet<std::string> getReachableStates();
+	Arabica::XPath::NodeSet<std::string> getReachableStates();
 
 	static Arabica::XPath::NodeSet<std::string> getChildStates(const Arabica::DOM::Node<std::string>& state);
 	static Arabica::XPath::NodeSet<std::string> getChildStates(const Arabica::XPath::NodeSet<std::string>& state);
@@ -407,7 +407,7 @@ public:
 		return tokenize(idRefs, ' ', true);
 	}
 	static std::list<std::string> tokenize(const std::string& line, const char seperator = ' ', bool trimWhiteSpace = false);
-	
+
 	static std::string spaceNormalize(const std::string& text);
 	static bool nameMatch(const std::string& eventDescs, const std::string& event);
 	Arabica::DOM::Node<std::string> findLCCA(const Arabica::XPath::NodeSet<std::string>& states);
@@ -431,10 +431,10 @@ protected:
 	void setupDOM();
 	void resolveXIncludes();
 	void resolveXIncludes(std::list<std::string> includeChain,
-												std::map<std::string, std::string>& mergedNS,
-												const std::string& xIncludeNS,
-												const URL& baseURL,
-												const Arabica::DOM::Element<std::string>& xinclude);
+	                      std::map<std::string, std::string>& mergedNS,
+	                      const std::string& xIncludeNS,
+	                      const URL& baseURL,
+	                      const Arabica::DOM::Element<std::string>& xinclude);
 	virtual void setupIOProcessors();
 
 	std::list<InterpreterIssue> validate();
@@ -448,7 +448,7 @@ protected:
 	virtual Arabica::XPath::NodeSet<std::string> selectEventlessTransitions();
 	virtual Arabica::XPath::NodeSet<std::string> selectTransitions(const std::string& event);
 	virtual bool isEnabledTransition(const Arabica::DOM::Element<std::string>& transition, const std::string& event);
-	
+
 	void setInterpreterState(InterpreterState newState);
 
 	bool _stable;
@@ -540,13 +540,13 @@ protected:
 
 	IOProcessor getIOProcessor(const std::string& type);
 	const URL& getBaseURLForNode(const Arabica::DOM::Node<std::string>& node);
-	
+
 	std::map<std::string, IOProcessor> _ioProcessors;
 	std::map<std::string, std::pair<InterpreterImpl*, SendRequest> > _sendIds;
 	std::map<std::string, Invoker> _invokers;
 	std::map<Arabica::DOM::Node<std::string>, ExecutableContent> _executableContent;
 	std::set<DataModelExtension*> _dataModelExtensions;
-	
+
 	std::map<std::pair<Arabica::DOM::Node<std::string>, Arabica::DOM::Node<std::string> >, Arabica::XPath::NodeSet<std::string> >  _cachedProperAncestors;
 	std::map<Arabica::DOM::Element<std::string>, Arabica::XPath::NodeSet<std::string> > _cachedTargets;
 	std::map<std::string, Arabica::DOM::Element<std::string> > _cachedStates;
@@ -563,9 +563,9 @@ class USCXML_API Interpreter {
 public:
 	static Interpreter fromDOM(const Arabica::DOM::Document<std::string>& dom,
 	                           const NameSpaceInfo& nameSpaceInfo,
-														 const std::string& sourceURL);
+	                           const std::string& sourceURL);
 	static Interpreter fromXML(const std::string& xml,
-														 const std::string& sourceURL);
+	                           const std::string& sourceURL);
 	static Interpreter fromURL(const std::string& URL);
 	static Interpreter fromClone(const Interpreter& other);
 
@@ -592,13 +592,13 @@ public:
 	}
 
 	virtual void writeTo(std::ostream& stream) {
-        TIME_BLOCK
+		TIME_BLOCK
 		return _impl->writeTo(stream);
 	}
 
 	void reset() {
 #ifdef BUILD_PROFILING
-        timer = Timer();
+		timer = Timer();
 #endif
 		return _impl->reset();
 	}
@@ -621,19 +621,19 @@ public:
 	};
 
 	InterpreterState step(int waitForMS = 0) {
-        TIME_BLOCK
+		TIME_BLOCK
 		return _impl->step(waitForMS);
 	};
 
 	InterpreterState step(bool blocking) {
-        TIME_BLOCK
+		TIME_BLOCK
 		if (blocking)
 			return _impl->step(-1);
 		return _impl->step(0);
 	};
 
 	std::list<InterpreterIssue> validate() {
-        TIME_BLOCK
+		TIME_BLOCK
 		return _impl->validate();
 	}
 
@@ -720,41 +720,41 @@ public:
 		return _impl->getFactory();
 	}
 	Arabica::XPath::NodeSet<std::string> getNodeSetForXPath(const std::string& xpathExpr) {
-        TIME_BLOCK
+		TIME_BLOCK
 		return _impl->getNodeSetForXPath(xpathExpr);
 	}
 
 	void inline receiveInternal(const Event& event) {
-        TIME_BLOCK
+		TIME_BLOCK
 		return _impl->receiveInternal(event);
 	}
 	void receive(const Event& event, bool toFront = false) {
-        TIME_BLOCK
+		TIME_BLOCK
 		return _impl->receive(event, toFront);
 	}
 
 	Event getCurrentEvent() {
-        TIME_BLOCK
+		TIME_BLOCK
 		return _impl->getCurrentEvent();
 	}
 
 	bool isInState(const std::string& stateId) {
-        TIME_BLOCK
+		TIME_BLOCK
 		return _impl->isInState(stateId);
 	}
 
 	Arabica::XPath::NodeSet<std::string> getConfiguration() {
-        TIME_BLOCK
+		TIME_BLOCK
 		return _impl->getConfiguration();
 	}
 
 	Arabica::XPath::NodeSet<std::string> getBasicConfiguration() {
-        TIME_BLOCK
+		TIME_BLOCK
 		return _impl->getBasicConfiguration();
 	}
 
 	void setInitalConfiguration(const std::list<std::string>& states) {
-        TIME_BLOCK
+		TIME_BLOCK
 		return _impl->setInitalConfiguration(states);
 	}
 
@@ -791,23 +791,23 @@ public:
 	}
 
 	bool runOnMainThread(int fps, bool blocking = true) {
-        TIME_BLOCK
+		TIME_BLOCK
 		return _impl->runOnMainThread(fps, blocking);
 	}
 
 	bool hasLegalConfiguration() {
-        TIME_BLOCK
+		TIME_BLOCK
 		return _impl->hasLegalConfiguration();
 	}
 
 	bool isLegalConfiguration(const Arabica::XPath::NodeSet<std::string>& config) {
-        TIME_BLOCK
+		TIME_BLOCK
 		return _impl->isLegalConfiguration(config);
 	}
 
 	bool isLegalConfiguration(const std::list<std::string>& config) {
-        TIME_BLOCK
-        return _impl->isLegalConfiguration(config);
+		TIME_BLOCK
+		return _impl->isLegalConfiguration(config);
 	}
 
 	boost::shared_ptr<InterpreterImpl> getImpl() const {
@@ -818,7 +818,7 @@ public:
 	static void addInstance(boost::shared_ptr<InterpreterImpl> instance);
 
 #ifdef BUILD_PROFILING
-    Timer timer;
+	Timer timer;
 #endif
 
 protected:
@@ -836,7 +836,7 @@ protected:
 
 class USCXML_API InterpreterMonitor {
 public:
-    InterpreterMonitor() : _copyToInvokers(false) {}
+	InterpreterMonitor() : _copyToInvokers(false) {}
 	virtual ~InterpreterMonitor() {}
 
 	virtual void beforeProcessingEvent(Interpreter interpreter, const Event& event) {}
@@ -869,17 +869,17 @@ public:
 
 	virtual void reportIssue(Interpreter interpreter, const InterpreterIssue& issue) {}
 
-    void copyToInvokers(bool copy) {
-        _copyToInvokers = copy;
-    }
+	void copyToInvokers(bool copy) {
+		_copyToInvokers = copy;
+	}
 
-    bool copyToInvokers() {
-        return _copyToInvokers;
-    }
+	bool copyToInvokers() {
+		return _copyToInvokers;
+	}
 
 protected:
-    bool _copyToInvokers;
-    
+	bool _copyToInvokers;
+
 };
 
 class StateTransitionMonitor : public uscxml::InterpreterMonitor {
@@ -892,7 +892,7 @@ public:
 	virtual void beforeEnteringState(uscxml::Interpreter interpreter, const Arabica::DOM::Element<std::string>& state, bool moreComing);
 
 protected:
-    static tthread::recursive_mutex _mutex;
+	static tthread::recursive_mutex _mutex;
 	void printNodeSet(const Arabica::XPath::NodeSet<std::string>& config);
 	Arabica::XPath::NodeSet<std::string> exitingStates;
 	Arabica::XPath::NodeSet<std::string> enteringStates;

@@ -66,7 +66,7 @@ void testFileURLs() {
 //		absURLs.push_back(URL("/Users/sradomski/Desktop/"));
 //		absURLs.push_back(URL("/Users/sradomski/Desktop/foo.txt"));
 	}
-	
+
 	std::list<URL> absWithHostURLs;
 	{
 		absWithHostURLs.push_back(URL("file://hostname/"));
@@ -82,17 +82,17 @@ void testFileURLs() {
 	}
 	// relative URLs
 	std::list<URL> relURLs;
-	
+
 	{
 		relURLs.push_back(URL("file"));
 		relURLs.push_back(URL("file:"));
 		relURLs.push_back(URL("file://"));
-		
+
 		// platform specific
 		relURLs.push_back(URL("file:Macintosh%20HD/fileURLs/text.txt"));
 		relURLs.push_back(URL("file:fileURLs/text.txt"));
 		relURLs.push_back(URL("file:Document/Text.foo"));
-		
+
 		// usual filesystem paths
 		relURLs.push_back(URL("Users\\sradomski\\Desktop\\foo.txt"));
 		relURLs.push_back(URL("Document\\Some Spaces\\index.txt"));
@@ -111,7 +111,7 @@ void testFileURLs() {
 	for (std::list<URL>::iterator relIter = relURLs.begin(); relIter != relURLs.end(); relIter++) {
 		assert(!relIter->isAbsolute());
 	}
-	
+
 	for (std::list<URL>::iterator absIter = absURLs.begin(); absIter != absURLs.end(); absIter++) {
 		for (std::list<URL>::iterator relIter = relURLs.begin(); relIter != relURLs.end(); relIter++) {
 			URL relURL(*relIter);
@@ -265,7 +265,7 @@ int main(int argc, char** argv) {
 		content << url;
 	}
 #endif
-	
+
 	{
 		URL url("test/index.html");
 		assert(iequals(url.scheme(), ""));

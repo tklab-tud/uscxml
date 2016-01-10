@@ -124,17 +124,18 @@ bool BasicHTTPIOProcessor::httpRecvRequest(const HTTPServer::Request& req) {
 	 * raises.
 	 */
 
-    { // if we sent ourself an event it will end up here
-        // this will call the const subscript operator
-        if (req.data.at("content").hasKey("_scxmleventname")) {
-            reqEvent.name = req.data.at("content").at("_scxmleventname").atom;
-        }
-        if (req.data.at("content").hasKey("content")) {
-            reqEvent.content = req.data.at("content").at("content").atom;
-        }
-    }
-    
-    // if we used wget, it will end up here - unify?
+	{
+		// if we sent ourself an event it will end up here
+		// this will call the const subscript operator
+		if (req.data.at("content").hasKey("_scxmleventname")) {
+			reqEvent.name = req.data.at("content").at("_scxmleventname").atom;
+		}
+		if (req.data.at("content").hasKey("content")) {
+			reqEvent.content = req.data.at("content").at("content").atom;
+		}
+	}
+
+	// if we used wget, it will end up here - unify?
 	if (req.data.hasKey("content")) {
 		const Data& data = req.data["content"];
 		for(std::map<std::string, Data>::const_iterator compIter = data.compound.begin();
@@ -147,16 +148,16 @@ bool BasicHTTPIOProcessor::httpRecvRequest(const HTTPServer::Request& req) {
 		}
 	}
 
-    if (req.data.hasKey("header")) {
-        const Data& data = req.data["header"];
-        for(std::map<std::string, Data>::const_iterator compIter = data.compound.begin();
-            compIter!= data.compound.end(); compIter++) {
-            if (compIter->first == "_scxmleventname") {
-                reqEvent.name = compIter->second.atom;
-            }
-        }
-    }
-    
+	if (req.data.hasKey("header")) {
+		const Data& data = req.data["header"];
+		for(std::map<std::string, Data>::const_iterator compIter = data.compound.begin();
+		        compIter!= data.compound.end(); compIter++) {
+			if (compIter->first == "_scxmleventname") {
+				reqEvent.name = compIter->second.atom;
+			}
+		}
+	}
+
 	// check whether we can parse it as XML
 	if (reqEvent.content.length() > 0) {
 		NameSpacingParser parser = NameSpacingParser::fromXML(reqEvent.content);
