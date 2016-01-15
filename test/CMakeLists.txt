@@ -110,7 +110,8 @@ if (NOT BUILD_MINIMAL)
 		"gen/c/xpath"
 		"gen/c/lua"
 		"gen/c/promela"
-
+		"gen/vhdl/ecma"
+		
 		# state-machine interpreters
 		"fsm/ecma"
 		"fsm/xpath"

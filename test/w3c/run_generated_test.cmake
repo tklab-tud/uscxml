@@ -15,7 +15,12 @@ message(STATUS "time for transforming to c machine")
 
 # message(FATAL_ERROR "PROJECT_BINARY_DIR: ${PROJECT_BINARY_DIR}")
 
-if (${TARGETLANG} STREQUAL "c")
+if (${TARGETLANG} STREQUAL "vhdl")
+
+	message(STATUS ${OUTDIR}/${TEST_FILE_NAME})
+
+
+elseif (${TARGETLANG} STREQUAL "c")
 	
 	# set(COMPILE_CMD_OBJ
 	# "-c" "${OUTDIR}/${TEST_FILE_NAME}.machine.c"
