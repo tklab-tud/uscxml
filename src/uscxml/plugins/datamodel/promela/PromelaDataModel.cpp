@@ -215,7 +215,7 @@ bool PromelaDataModel::isValidSyntax(const std::string& expr) {
 	try {
 		PromelaParser parser(expr);
 	} catch (Event e) {
-		std::cerr << e << std::endl;
+		LOG(ERROR) << e << std::endl;
 		return false;
 	}
 	return true;

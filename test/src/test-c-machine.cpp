@@ -6,7 +6,7 @@
 #include <deque> // deque
 #include <boost/algorithm/string.hpp> // trim
 
-//#define SCXML_VERBOSE
+#define SCXML_VERBOSE
 
 #include "uscxml/config.h"
 
@@ -492,16 +492,20 @@ int exec_content_foreach_done(const scxml_ctx* ctx, const scxml_elem_foreach* fo
 
 int exec_content_log(const scxml_ctx* ctx, const char* label, const char* expr) {
 	try {
-		if (label != 0) {
-//            printf("%s: %s\n", label, USER_DATA(ctx)->datamodel.evalAsString(expr).c_str());
-		} else {
-//            printf("%s\n", USER_DATA(ctx)->datamodel.evalAsString(expr).c_str());
-		}
+		if (label != NULL) {
+            printf("%s%s", label, (expr != NULL ? ": " : ""));
+        }
+        if (expr != NULL) {
+            std::string msg = USER_DATA(ctx)->datamodel.evalAsString(expr);
+            printf("%s", msg.c_str());
+        }
+        if (label != NULL || expr != NULL) {
+            printf("\n");
+        }
 	} catch (Event e) {
 		exec_content_raise(ctx, e.name.c_str());
 		return SCXML_ERR_EXEC_CONTENT;
 	}
-
 	return SCXML_ERR_OK;
 }
 
@@ -570,7 +574,7 @@ int main(int argc, char** argv) {
 	const char* envBenchmarkRuns = getenv("USCXML_BENCHMARK_ITERATIONS");
 	if (envBenchmarkRuns != NULL) {
 		benchmarkRuns = strTo<size_t>(envBenchmarkRuns);
-	}
+    }
 
 
 	size_t remainingRuns = benchmarkRuns;
@@ -590,6 +594,8 @@ int main(int argc, char** argv) {
 	double avgDm = 0;
 #endif
 
+    Timer tTotal;
+    tTotal.start();
 	while(remainingRuns-- > 0) {
 		memset(&ctx, 0, sizeof(scxml_ctx));
 
@@ -622,8 +628,15 @@ int main(int argc, char** argv) {
 
 		microSteps = 0;
 		while((err = scxml_step(&ctx)) == SCXML_ERR_OK) {
-			microSteps++;
+            t.stop();
+            microSteps++;
+            if (ctx.event != NULL) {
+                delete ((Event*)(ctx.event));
+            }
+            t.start();
 		}
+        microSteps++;
+
 		assert(ctx.flags & SCXML_CTX_TOP_LEVEL_FINAL);
 
 		t.stop();
@@ -645,11 +658,12 @@ int main(int argc, char** argv) {
 		interpreterInfo.eq.clear();
 		interpreterInfo.iq.clear();
 	}
-
-	// 14.25311111 us per microstep
-	// 1.923466667 us
-	std::cout << (avg * 1000.0) / (double)benchmarkRuns << " ms on average" << std::endl;
-	std::cout << microSteps << " microsteps per iteration (" << (avg * 1000.0) / ((double)benchmarkRuns * (double)microSteps) << " ms per microstep)" << std::endl;
+    tTotal.stop();
+    std::cout << benchmarkRuns << " iterations" << std::endl;
+    std::cout << tTotal.elapsed * 1000.0 << " ms in total" << std::endl;
+	std::cout << (avg * 1000.0) / (double)benchmarkRuns << " ms per execution" << std::endl;
+    std::cout << microSteps << " microsteps per iteration" << std::endl;
+    std::cout << (avg * 1000.0) / ((double)benchmarkRuns * (double)microSteps) << " ms per microstep" << std::endl;
 #ifdef BUILD_PROFILING
 	std::cout << (avgDm * 1000.0) / (double)benchmarkRuns << " ms in datamodel" << std::endl;
 	std::cout << ((avg - avgDm) * 1000.0) / ((double)benchmarkRuns * (double)microSteps) << " ms per microstep \\wo datamodel" << std::endl;

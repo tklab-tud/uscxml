@@ -61,7 +61,8 @@
 
 /// valid interpreter state transitions
 #define VALID_FROM_INSTANTIATED(newState) ( \
-	newState == USCXML_MICROSTEPPED || \
+    newState == USCXML_MICROSTEPPED || \
+    newState == USCXML_INITIALIZED || \
 	newState == USCXML_DESTROYED\
 )
 
@@ -384,6 +385,13 @@ void StateTransitionMonitor::beforeEnteringState(uscxml::Interpreter interpreter
 
 }
 
+void StateTransitionMonitor::beforeMicroStep(uscxml::Interpreter interpreter) {
+    tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
+    std::cerr << "Config: {";
+    printNodeSet(interpreter.getConfiguration());
+    std::cerr << "}" << std::endl;
+}
+    
 void StateTransitionMonitor::printNodeSet(const Arabica::XPath::NodeSet<std::string>& config) {
 	std::string seperator;
 	for (int i = 0; i < config.size(); i++) {
@@ -593,21 +601,18 @@ InterpreterImpl::~InterpreterImpl() {
 		// make sure we are done with setting up with early abort
 		tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
 		stop(); // unset started bit
+        
+        setInterpreterState(USCXML_DESTROYED);
+
+        // unblock event queue
+        Event event;
+        event.name = "unblock.and.die";
+        receive(event);
+
 	}
 //	std::cerr << "stopped " << this << std::endl;
 //	tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
 	if (_thread) {
-		if (_thread->get_id() != tthread::this_thread::get_id()) {
-
-			// unblock event queue
-			Event event;
-			event.name = "unblock.and.die";
-			receive(event);
-
-		} else {
-			// this can happen with a shared_from_this at an interpretermonitor
-			setInterpreterState(USCXML_DESTROYED);
-		}
 		_thread->join();
 		delete(_thread);
 	}
@@ -784,6 +789,7 @@ InterpreterState InterpreterImpl::step(int waitForMS) {
 		// setup document and interpreter
 		if (!_isInitialized) {
 			init(); // will throw
+            return _state;
 		}
 
 		if (_configuration.size() == 0) {
@@ -954,23 +960,25 @@ EXIT_INTERPRETER:
 
 		exitInterpreter();
 		if (_sendQueue) {
+            _sendQueue->stop();
 			std::map<std::string, std::pair<InterpreterImpl*, SendRequest> >::iterator sendIter = _sendIds.begin();
 			while(sendIter != _sendIds.end()) {
 				_sendQueue->cancelEvent(sendIter->first);
 				sendIter++;
 			}
+            _sendQueue->start();
 		}
 
 		USCXML_MONITOR_CALLBACK(afterCompletion)
 
 		//		assert(hasLegalConfiguration());
+        setInterpreterState(USCXML_FINISHED);
 		_mutex.unlock();
 
 		// remove datamodel
 //		if(!_userSuppliedDataModel)
 //			_dataModel = DataModel();
 
-		setInterpreterState(USCXML_FINISHED);
 		return _state;
 	} catch (boost::bad_weak_ptr e) {
 		LOG(ERROR) << "Unclean shutdown " << std::endl << std::endl;
@@ -1284,6 +1292,11 @@ void InterpreterImpl::setInterpreterState(InterpreterState newState) {
 			break;
 		assert(false);
 		break;
+    case USCXML_INITIALIZED:
+        if (VALID_FROM_INITIALIZED(newState))
+            break;
+        assert(false);
+        break;
 	case USCXML_MICROSTEPPED:
 		if (VALID_FROM_MICROSTEPPED(newState))
 			break;
@@ -1304,11 +1317,8 @@ void InterpreterImpl::setInterpreterState(InterpreterState newState) {
 			break;
 		assert(false);
 		break;
-	case USCXML_DESTROYED:
-		assert(false);
-		break;
-
 	default:
+        assert(false);
 		break;
 	}
 
@@ -1352,7 +1362,22 @@ bool InterpreterImpl::runOnMainThread(int fps, bool blocking) {
 
 void InterpreterImpl::reset() {
 	tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
-
+    
+    if (_sendQueue) {
+        _sendQueue->stop();
+        std::map<std::string, std::pair<InterpreterImpl*, SendRequest> >::iterator sendIter = _sendIds.begin();
+        while(sendIter != _sendIds.end()) {
+            _sendQueue->cancelEvent(sendIter->first);
+            sendIter = _sendIds.erase(sendIter);
+        }
+        _sendQueue->start();
+    }
+    std::map<std::string, Invoker>::iterator invokeIter = _invokers.begin();
+    while(invokeIter != _invokers.end()) {
+        invokeIter->second.uninvoke();
+        invokeIter = _invokers.erase(invokeIter);
+    }
+    
 	_externalQueue.clear();
 	_internalQueue.clear();
 	_historyValue.clear();
@@ -1675,6 +1700,7 @@ void InterpreterImpl::init() {
 
 	_isInitialized = true;
 	_stable = false;
+    setInterpreterState(USCXML_INITIALIZED);
 }
 
 /**
@@ -2537,9 +2563,9 @@ void InterpreterImpl::executeContent(const Arabica::DOM::Element<std::string>& c
 			}
 		}
 	} else if (iequals(TAGNAME(content), _nsInfo.xmlNSPrefix + "elseif")) {
-		std::cerr << "Found single elsif to evaluate!" << std::endl;
+		LOG(ERROR) << "Found single elsif to evaluate!" << std::endl;
 	} else if (iequals(TAGNAME(content), _nsInfo.xmlNSPrefix + "else")) {
-		std::cerr << "Found single else to evaluate!" << std::endl;
+		LOG(ERROR) << "Found single else to evaluate!" << std::endl;
 	} else if (iequals(TAGNAME(content), _nsInfo.xmlNSPrefix + "foreach")) {
 		// --- FOREACH --------------------------
 		if (HAS_ATTR(content, "array") && HAS_ATTR(content, "item")) {
@@ -2571,16 +2597,19 @@ void InterpreterImpl::executeContent(const Arabica::DOM::Element<std::string>& c
 	} else if (iequals(TAGNAME(content), _nsInfo.xmlNSPrefix + "log")) {
 		// --- LOG --------------------------
 		Arabica::DOM::Element<std::string> logElem = (Arabica::DOM::Element<std::string>)content;
-		if (logElem.hasAttribute("label"))
-			std::cerr << logElem.getAttribute("label") << ": ";
+        if (logElem.hasAttribute("label")) {
+            std::cout << logElem.getAttribute("label") << ": ";
+        }
 		if (logElem.hasAttribute("expr")) {
 			try {
-				std::cerr << _dataModel.evalAsString(logElem.getAttribute("expr")) << std::endl;
+                std::string msg = _dataModel.evalAsString(logElem.getAttribute("expr"));
+				std::cout << msg << std::endl;
 			}
 			CATCH_AND_DISTRIBUTE2("Syntax error in expr attribute of log element", content)
 		} else {
-			if (logElem.hasAttribute("label"))
-				std::cerr << std::endl;
+            if (logElem.hasAttribute("label")) {
+				std::cout << std::endl;
+            }
 		}
 	} else if (iequals(TAGNAME(content), _nsInfo.xmlNSPrefix + "assign")) {
 		// --- ASSIGN --------------------------

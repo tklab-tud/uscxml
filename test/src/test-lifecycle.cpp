@@ -275,7 +275,9 @@ int main(int argc, char** argv) {
 			Interpreter interpreter = Interpreter::fromXML(xml, "");
 			interpreter.addMonitor(mon);
 
-			callBackSeq.push_back(USCXML_BEFOREENTERINGSTATE);
+            callBackSeq.push_back(USCXML_BEFORETAKINGTRANSITION);
+            callBackSeq.push_back(USCXML_AFTERTAKINGTRANSITION);
+            callBackSeq.push_back(USCXML_BEFOREENTERINGSTATE);
 			callBackSeq.push_back(USCXML_AFTERENTERINGSTATE);
 
 			callBackSeq.push_back(USCXML_BEFOREMICROSTEP);
@@ -299,9 +301,10 @@ int main(int argc, char** argv) {
 			callBackSeq.push_back(USCXML_BEFORECOMPLETION);
 			callBackSeq.push_back(USCXML_AFTERCOMPLETION);
 
-			assert(interpreter.getState() == USCXML_INSTANTIATED);
+            assert(interpreter.getState() == USCXML_INSTANTIATED);
+            assert(interpreter.step() == USCXML_INITIALIZED);
 			assert(interpreter.step() == USCXML_MICROSTEPPED);
-			assert(interpreter.step() == USCXML_MICROSTEPPED);
+            assert(interpreter.step() == USCXML_MICROSTEPPED);
 			assert(interpreter.step() == USCXML_FINISHED);
 			assert(callBackSeq.empty());
 		}
@@ -319,6 +322,8 @@ int main(int argc, char** argv) {
 			Interpreter interpreter = Interpreter::fromXML(xml, "");
 			interpreter.addMonitor(mon);
 
+            callBackSeq.push_back(USCXML_BEFORETAKINGTRANSITION);
+            callBackSeq.push_back(USCXML_AFTERTAKINGTRANSITION);
 			callBackSeq.push_back(USCXML_BEFOREENTERINGSTATE);
 			callBackSeq.push_back(USCXML_AFTERENTERINGSTATE);
 
@@ -335,10 +340,13 @@ int main(int argc, char** argv) {
 			callBackSeq.push_back(USCXML_AFTERCOMPLETION);
 
 			assert(interpreter.getState() == USCXML_INSTANTIATED);
-			assert(interpreter.step() == USCXML_MICROSTEPPED);
+            assert(interpreter.step() == USCXML_INITIALIZED);
+            assert(interpreter.step() == USCXML_MICROSTEPPED);
 			assert(interpreter.step() == USCXML_FINISHED);
 			interpreter.reset();
 
+            callBackSeq.push_back(USCXML_BEFORETAKINGTRANSITION);
+            callBackSeq.push_back(USCXML_AFTERTAKINGTRANSITION);
 			callBackSeq.push_back(USCXML_BEFOREENTERINGSTATE);
 			callBackSeq.push_back(USCXML_AFTERENTERINGSTATE);
 
@@ -355,7 +363,8 @@ int main(int argc, char** argv) {
 			callBackSeq.push_back(USCXML_AFTERCOMPLETION);
 
 			assert(interpreter.getState() == USCXML_INSTANTIATED);
-			assert(interpreter.step() == USCXML_MICROSTEPPED);
+            assert(interpreter.step() == USCXML_INITIALIZED);
+            assert(interpreter.step() == USCXML_MICROSTEPPED);
 			assert(interpreter.step() == USCXML_FINISHED);
 		}
 
@@ -378,6 +387,8 @@ int main(int argc, char** argv) {
 			Interpreter interpreter = Interpreter::fromXML(xml, "");
 			interpreter.addMonitor(mon);
 
+            callBackSeq.push_back(USCXML_BEFORETAKINGTRANSITION);
+            callBackSeq.push_back(USCXML_AFTERTAKINGTRANSITION);
 			callBackSeq.push_back(USCXML_BEFOREENTERINGSTATE);
 			callBackSeq.push_back(USCXML_BEFOREEXECUTINGCONTENT);
 			callBackSeq.push_back(USCXML_AFTEREXECUTINGCONTENT);
@@ -406,10 +417,11 @@ int main(int argc, char** argv) {
 			callBackSeq.push_back(USCXML_BEFORECOMPLETION);
 			callBackSeq.push_back(USCXML_AFTERCOMPLETION);
 
-			assert(interpreter.getState() == USCXML_INSTANTIATED);
+            assert(interpreter.getState() == USCXML_INSTANTIATED);
+            assert(interpreter.step() == USCXML_INITIALIZED);
 			assert(interpreter.step() == USCXML_IDLE);
 			assert(interpreter.step(true) == USCXML_MACROSTEPPED);
-			assert(interpreter.step() == USCXML_MICROSTEPPED);
+            assert(interpreter.step() == USCXML_MICROSTEPPED);
 			assert(interpreter.step() == USCXML_FINISHED);
 		}
 	}

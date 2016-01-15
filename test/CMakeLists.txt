@@ -1,4 +1,5 @@
-set(TEST_TIMEOUT 10)
+set(TEST_TIMEOUT 15)
+set(TEST_BENCHMARK_ITERATIONS 1000)
 
 function(USCXML_TEST_COMPILE)
 	set(options BUILD_ONLY)
@@ -77,6 +78,8 @@ add_test(test-execution ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/uscxml-browser ${CMAKE
 add_test(test-communication ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/uscxml-browser -t5493 ${CMAKE_SOURCE_DIR}/test/uscxml/test-communication.scxml)
 add_test(test-done-data ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/uscxml-browser ${CMAKE_SOURCE_DIR}/test/uscxml/test-donedata.scxml)
 
+# declare W#C tests
+
 find_program(SPIN spin)
 find_program(GCC gcc)
 find_program(GPP g++)
@@ -94,177 +97,295 @@ if (NOT BUILD_MINIMAL)
 		w3c/*sub*.scxml
 	)
 
+	set(TEST_CLASSES 
+		# standard tests generated per datamodel
+		"ecma"
+		"xpath"
+		"null"
+		"lua"
+		"promela"
+
+		# generated c source
+		"gen/c/ecma"
+		"gen/c/xpath"
+		"gen/c/lua"
+		"gen/c/promela"
+
+		# state-machine interpreters
+		"fsm/ecma"
+		"fsm/xpath"
+		"fsm/lua"
+		"fsm/promela"
+
+		# minimized interpreters
+		"min/ecma"
+		"min/xpath"
+		"min/lua"
+		"min/promela"
+
+		# performance tests
+		"perf/gen/c/ecma"
+		"perf/ecma")
+
+	# prepare directories for test classes and copy resources over
 	foreach(W3C_RESOURCE ${W3C_RESOURCES} )
-		# we abuse this as head and tail
-		get_filename_component(W3C_RESOURCE_PATH ${W3C_RESOURCE} PATH)
-		get_filename_component(W3C_TEST_TYPE ${W3C_RESOURCE_PATH} NAME)
+		get_filename_component(TEST_DATAMODEL ${W3C_RESOURCE} NAME)
 		
-		if (BUILD_TESTS_W3C_ECMA AND W3C_TEST_TYPE STREQUAL "ecma")
-			file(COPY ${W3C_RESOURCE} DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/ecma)
-		elseif (BUILD_TESTS_W3C_XPATH AND W3C_TEST_TYPE STREQUAL "xpath")
-			file(COPY ${W3C_RESOURCE} DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/xpath)
-		elseif (BUILD_TESTS_W3C_LUA AND W3C_TEST_TYPE STREQUAL "lua")
-			file(COPY ${W3C_RESOURCE} DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/lua)
-		elseif (BUILD_TESTS_W3C_PROMELA AND W3C_TEST_TYPE STREQUAL "promela")
-			file(COPY ${W3C_RESOURCE} DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/lua)
-		endif()
-		
+		foreach(TEST_CLASS ${TEST_CLASSES})
+			# datamodel has to be the suffix of the test class
+			if (TEST_CLASS MATCHES ".*/${TEST_DATAMODEL}$")
+				file(COPY ${W3C_RESOURCE} DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/${TEST_CLASS})
+			endif()
+		endforeach()
 	endforeach()
 
-	# prepare tests
-	file(GLOB_RECURSE W3C_TESTS
-		w3c/*.scxml
-	)
+	# establish actual tests
+	foreach(TEST_CLASS ${TEST_CLASSES})
+		get_filename_component(TEST_DATAMODEL ${TEST_CLASS} NAME)
+		get_filename_component(TEST_TYPE ${TEST_CLASS} PATH)
 
-	foreach( W3C_TEST ${W3C_TESTS} )
-		string(REGEX MATCH "[^//]+/[^//]+.scxml" TEST_NAME ${W3C_TEST})
-	#	message("TEST_NAME: ${TEST_NAME}")
-		if (NOT TEST_NAME MATCHES ".*sub.*")
-			if (TEST_NAME MATCHES "^null\\/.*")
-				add_test(${TEST_NAME} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-w3c ${W3C_TEST})
-				set_property(TEST ${TEST_NAME} PROPERTY LABELS ${TEST_NAME})
-				set_tests_properties(${TEST_NAME} PROPERTIES TIMEOUT ${TEST_TIMEOUT})
-			endif()
-
-			if (BUILD_TESTS_W3C_ECMA AND TEST_NAME MATCHES "^ecma\\/.*")
-				add_test(${TEST_NAME} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-w3c ${W3C_TEST})
-				set_property(TEST ${TEST_NAME} PROPERTY LABELS ${TEST_NAME})
-				set_tests_properties(${TEST_NAME} PROPERTIES TIMEOUT ${TEST_TIMEOUT})
+		# get all respective scxml files into W3C_TESTS
+		file(GLOB_RECURSE W3C_TESTS w3c/${TEST_DATAMODEL}/*.scxml)
 				
-	#			set_tests_properties(${TEST_NAME} PROPERTIES FAIL_REGULAR_EXPRESSION "TEST FAILED")
-	
-				if (TEST_NAME STREQUAL "ecma/test250.scxml")
-					set_tests_properties(${TEST_NAME} PROPERTIES 
-						FAIL_REGULAR_EXPRESSION "entering final state, invocation was not cancelled")
-				elseif (TEST_NAME STREQUAL "ecma/test307.scxml")
-					set_tests_properties(${TEST_NAME} PROPERTIES
-						FAIL_REGULAR_EXPRESSION "error in state")
-				endif()
-			endif()
+		SET(IS_PERFORMANCE_TEST OFF)
+		if (TEST_CLASS MATCHES "^perf/.*")
+			SET(IS_PERFORMANCE_TEST ON)
+		endif()
 		
-			if (BUILD_TESTS_GENERATED_C AND TEST_NAME MATCHES "^ecma\\/.*")
-				add_test(NAME "gen_c/${TEST_NAME}"
-				    COMMAND ${CMAKE_COMMAND}
-							-DOUTDIR:FILEPATH=${CMAKE_CURRENT_BINARY_DIR}/gen_c
-							-DTESTFILE:FILEPATH=${W3C_TEST}
-							-DJSC_LIBRARY:FILEPATH=${JSC_LIBRARY}
-							-DUSCXML_TRANSFORM_BIN:FILEPATH=${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/uscxml-transform
-							-DGCC_BIN:FILEPATH=${GCC}
-							-DGPP_BIN:FILEPATH=${GPP}
-							-DPROJECT_SOURCE_DIR=${PROJECT_SOURCE_DIR}
-							-DUSCXML_PLATFORM_ID=${USCXML_PLATFORM_ID}
-							-DCMAKE_BINARY_DIR=${CMAKE_BINARY_DIR}
-							-DPROJECT_BINARY_DIR=${PROJECT_BINARY_DIR}
-							-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=${CMAKE_LIBRARY_OUTPUT_DIRECTORY}
-							-DSCAFFOLDING_FOR_GENERATED_C:FILEPATH=${CMAKE_CURRENT_SOURCE_DIR}/src/test-c-machine.cpp
-							-P ${CMAKE_CURRENT_SOURCE_DIR}/w3c/run_generated_c_test.cmake)
-				set_property(TEST "gen_c/${TEST_NAME}" PROPERTY LABELS "gen_c/${TEST_NAME}")
-				set_tests_properties("gen_c/${TEST_NAME}" PROPERTIES TIMEOUT ${TEST_TIMEOUT})
-				set_tests_properties("gen_c/${TEST_NAME}" PROPERTIES DEPENDS uscxml-transform)
-				
+		if (IS_PERFORMANCE_TEST)
+			string(REGEX REPLACE "^perf/?" "" TEST_TYPE ${TEST_TYPE})
+		endif()
+		
+		SET(IS_STANDARD_TEST OFF)
+		if ("${TEST_TYPE}" STREQUAL "")
+			if (IS_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/w3c/${TEST_DATAMODEL}")
+				SET(IS_STANDARD_TEST ON)
 			endif()
+		endif()
+		
+		# normal IRP tests - get all scxml files within
+		foreach(W3C_TEST ${W3C_TESTS} )
+			get_filename_component(TEST_FILE ${W3C_TEST} NAME)
+			set(TEST_NAME "${TEST_CLASS}/${TEST_FILE}")
+
+			if (NOT TEST_NAME MATCHES ".*sub.*")
+				if (IS_STANDARD_TEST)
+					
+					add_test(${TEST_NAME} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-w3c ${W3C_TEST})
 			
-			if (BUILD_TESTS_FSM AND BUILD_TESTS_FSM_ECMA AND TEST_NAME MATCHES "^ecma\\/.*")
-				add_test("fsm/${TEST_NAME}" ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-w3c -f ${W3C_TEST})
-				set_property(TEST "fsm/${TEST_NAME}" PROPERTY LABELS "fsm/${TEST_NAME}")
-				set_tests_properties("fsm/${TEST_NAME}" PROPERTIES TIMEOUT ${TEST_TIMEOUT})
-
-				add_test(NAME "minimized/${TEST_NAME}"
-				    COMMAND ${CMAKE_COMMAND}
-							-DOUTDIR:FILEPATH=${CMAKE_CURRENT_BINARY_DIR}/ecma
-							-DTESTFILE:FILEPATH=${W3C_TEST}
-							-DUSCXML_TRANSFORM_BIN:FILEPATH=${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/uscxml-transform
-							-DUSCXML_W3C_TEST_BIN:FILEPATH=${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-w3c
-						-P ${CMAKE_CURRENT_SOURCE_DIR}/w3c/run_minimized_test.cmake)
-				set_property(TEST "minimized/${TEST_NAME}" PROPERTY LABELS "minimized/${TEST_NAME}")
-				set_tests_properties("minimized/${TEST_NAME}" PROPERTIES TIMEOUT ${TEST_TIMEOUT})
-
-				set_tests_properties(${TEST_NAME} PROPERTIES DEPENDS uscxml-transform)
-				set_tests_properties(${TEST_NAME} PROPERTIES DEPENDS test-w3c)
-
-				# add_test(NAME "fsm/minimized/${TEST_NAME}"
-				#     COMMAND ${CMAKE_COMMAND}
-				# 			-DOUTDIR:FILEPATH=${CMAKE_CURRENT_BINARY_DIR}/ecma
-				# 			-DTESTFILE:FILEPATH=${W3C_TEST}
-				# 			-DUSCXML_TRANSFORM_BIN:FILEPATH=${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/uscxml-transform
-				# 			-DUSCXML_W3C_TEST_BIN:FILEPATH=${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-w3c
-				# 		-P ${CMAKE_CURRENT_SOURCE_DIR}/w3c/run_minimized_flat_test.cmake)
-				# set_property(TEST "fsm/minimized/${TEST_NAME}" PROPERTY LABELS "fsm/minimized/${TEST_NAME}")
-				# set_tests_properties("fsm/minimized/${TEST_NAME}" PROPERTIES TIMEOUT ${TEST_TIMEOUT})
-
-				# set_tests_properties(${TEST_NAME} PROPERTIES DEPENDS uscxml-transform)
-				# set_tests_properties(${TEST_NAME} PROPERTIES DEPENDS test-w3c)
-
-			endif()
+					if (TEST_NAME MATCHES ".*/test250.scxml")
+						set_tests_properties(${TEST_NAME} PROPERTIES FAIL_REGULAR_EXPRESSION "entering final state, invocation was not cancelled")
+					elseif (TEST_NAME MATCHES ".*/test307.scxml")
+						set_tests_properties(${TEST_NAME} PROPERTIES FAIL_REGULAR_EXPRESSION "error in state")
+					endif()
+			
+					# more properties for standard tests
 		
-			if (BUILD_TESTS_W3C_XPATH AND TEST_NAME MATCHES "^xpath\\/.*")
-				add_test(${TEST_NAME} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-w3c ${W3C_TEST})
+				else()
+
+					if (TEST_TYPE MATCHES "^gen.*")
+						get_filename_component(TEST_TARGET ${TEST_TYPE} NAME)
+						if (TEST_TYPE MATCHES "^gen/${TEST_TARGET}")
+
+							# generate native interpreters
+							add_test(NAME "${TEST_NAME}"
+							    COMMAND ${CMAKE_COMMAND}
+										-DOUTDIR:FILEPATH=${CMAKE_CURRENT_BINARY_DIR}/${TEST_CLASS}
+										-DTESTFILE:FILEPATH=${W3C_TEST}
+										-DTARGETLANG=${TEST_TARGET}
+										-DJSC_LIBRARY:FILEPATH=${JSC_LIBRARY}
+										-DUSCXML_TRANSFORM_BIN:FILEPATH=${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/uscxml-transform
+										-DGCC_BIN:FILEPATH=${GCC}
+										-DGPP_BIN:FILEPATH=${GPP}
+										-DPROJECT_SOURCE_DIR=${PROJECT_SOURCE_DIR}
+										-DUSCXML_PLATFORM_ID=${USCXML_PLATFORM_ID}
+										-DCMAKE_BINARY_DIR=${CMAKE_BINARY_DIR}
+										-DPROJECT_BINARY_DIR=${PROJECT_BINARY_DIR}
+										-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=${CMAKE_LIBRARY_OUTPUT_DIRECTORY}
+										-DSCAFFOLDING_FOR_GENERATED_C:FILEPATH=${CMAKE_CURRENT_SOURCE_DIR}/src/test-c-machine.cpp
+										-P ${CMAKE_CURRENT_SOURCE_DIR}/w3c/run_generated_test.cmake)
+							set_tests_properties("${TEST_NAME}" PROPERTIES DEPENDS uscxml-transform)
+
+						endif()
+						
+					elseif (TEST_TYPE MATCHES "^min.*")
+
+						add_test(NAME "${TEST_NAME}"
+						    COMMAND ${CMAKE_COMMAND}
+									-DOUTDIR:FILEPATH=${CMAKE_CURRENT_BINARY_DIR}/ecma
+									-DTESTFILE:FILEPATH=${W3C_TEST}
+									-DUSCXML_TRANSFORM_BIN:FILEPATH=${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/uscxml-transform
+									-DUSCXML_W3C_TEST_BIN:FILEPATH=${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-w3c
+								-P ${CMAKE_CURRENT_SOURCE_DIR}/w3c/run_minimized_test.cmake)
+
+						
+					elseif (TEST_TYPE MATCHES "^fsm.*")
+							
+						add_test("${TEST_NAME}" ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-w3c -f ${W3C_TEST})
+							
+					endif()
+				endif()
+				
 				set_property(TEST ${TEST_NAME} PROPERTY LABELS ${TEST_NAME})
 				set_tests_properties(${TEST_NAME} PROPERTIES TIMEOUT ${TEST_TIMEOUT})
-	#			set_tests_properties(${TEST_NAME} PROPERTIES FAIL_REGULAR_EXPRESSION "TEST FAILED")
-				if (BUILD_TESTS_FSM AND BUILD_TESTS_FSM_XPATH)
-					add_test("fsm/${TEST_NAME}" ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-w3c -f ${W3C_TEST})
-					set_property(TEST "fsm/${TEST_NAME}" PROPERTY LABELS "fsm/${TEST_NAME}")
-					set_tests_properties("fsm/${TEST_NAME}" PROPERTIES TIMEOUT ${TEST_TIMEOUT})
+				if (IS_PERFORMANCE_TEST)
+					set_tests_properties("${TEST_NAME}" PROPERTIES ENVIRONMENT USCXML_BENCHMARK_ITERATIONS=${TEST_BENCHMARK_ITERATIONS})
 				endif()
+				
 			endif()
-		
-			if (BUILD_DM_LUA AND LUA_FOUND AND BUILD_TESTS_W3C_LUA AND TEST_NAME MATCHES "^lua\\/.*")
-				add_test(${TEST_NAME} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-w3c ${W3C_TEST})
-				set_property(TEST ${TEST_NAME} PROPERTY LABELS ${TEST_NAME})
-				set_tests_properties(${TEST_NAME} PROPERTIES TIMEOUT ${TEST_TIMEOUT})
-	#			set_tests_properties(${TEST_NAME} PROPERTIES FAIL_REGULAR_EXPRESSION "TEST FAILED")
-				if (BUILD_TESTS_FSM AND BUILD_TESTS_FSM_LUA)
-					add_test("fsm/${TEST_NAME}" ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-w3c -f ${W3C_TEST})
-					set_property(TEST "fsm/${TEST_NAME}" PROPERTY LABELS "fsm/${TEST_NAME}")
-					set_tests_properties("fsm/${TEST_NAME}" PROPERTIES TIMEOUT ${TEST_TIMEOUT})
-				endif()
-	
-			endif()
-
-			if (BUILD_DM_PROLOG AND SWI_FOUND AND BUILD_TESTS_W3C_PROLOG AND TEST_NAME MATCHES "^prolog\\/.*")
-				add_test(${TEST_NAME} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-w3c ${W3C_TEST})
-				set_property(TEST ${TEST_NAME} PROPERTY LABELS ${TEST_NAME})
-				set_tests_properties(${TEST_NAME} PROPERTIES TIMEOUT ${TEST_TIMEOUT})
-	#			set_tests_properties(${TEST_NAME} PROPERTIES FAIL_REGULAR_EXPRESSION "TEST FAILED")
-				if (BUILD_TESTS_FSM AND BUILD_TESTS_FSM_PROLOG)
-					add_test("fsm/${TEST_NAME}" ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-w3c -f ${W3C_TEST})
-					set_property(TEST "fsm/${TEST_NAME}" PROPERTY LABELS "fsm/${TEST_NAME}")
-					set_tests_properties("fsm/${TEST_NAME}" PROPERTIES TIMEOUT ${TEST_TIMEOUT})
-				endif()
-			endif()
-		
-			if (BUILD_DM_PROMELA AND BUILD_TESTS_W3C_PROMELA AND TEST_NAME MATCHES "^promela\\/.*")
-				add_test(${TEST_NAME} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-w3c ${W3C_TEST})
-				set_property(TEST ${TEST_NAME} PROPERTY LABELS ${TEST_NAME})
-				set_tests_properties(${TEST_NAME} PROPERTIES TIMEOUT ${TEST_TIMEOUT})
-	#			set_tests_properties(${TEST_NAME} PROPERTIES FAIL_REGULAR_EXPRESSION "TEST FAILED")
-				if (BUILD_TESTS_FSM AND BUILD_TESTS_FSM_PROMELA)
-					add_test("fsm/${TEST_NAME}" ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-w3c -f ${W3C_TEST})
-					set_property(TEST "fsm/${TEST_NAME}" PROPERTY LABELS "fsm/${TEST_NAME}")
-					set_tests_properties("fsm/${TEST_NAME}" PROPERTIES TIMEOUT ${TEST_TIMEOUT})
-				endif()
-			endif()
-		
-			if (GCC AND SPIN AND BUILD_DM_PROMELA AND BUILD_TESTS_W3C_PROMELA AND TEST_NAME MATCHES "^promela\\/.*")
-
-				add_test(NAME "spin/${TEST_NAME}"
-				    COMMAND ${CMAKE_COMMAND}
-							-DOUTDIR:FILEPATH=${CMAKE_CURRENT_BINARY_DIR}/promela
-							-DTESTFILE:FILEPATH=${W3C_TEST}
-							-DUSCXML_TRANSFORM_BIN:FILEPATH=${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/uscxml-transform
-							-DSPIN_BIN:FILEPATH=${SPIN}
-							-DGCC_BIN:FILEPATH=${GCC}
-							-P ${CMAKE_CURRENT_SOURCE_DIR}/w3c/run_promela_test.cmake)
-				set_property(TEST "spin/${TEST_NAME}" PROPERTY LABELS "spin/${TEST_NAME}")
-				set_tests_properties("spin/${TEST_NAME}" PROPERTIES TIMEOUT ${TEST_TIMEOUT})
-				set_tests_properties("spin/${TEST_NAME}" PROPERTIES PASS_REGULAR_EXPRESSION "depth reached [0-9]+, errors: 0")
-				set_tests_properties("spin/${TEST_NAME}" PROPERTIES FAIL_REGULAR_EXPRESSION "depth reached [0-9]+, errors: [1-9]+")
-
-				set_tests_properties(${TEST_NAME} PROPERTIES DEPENDS uscxml-transform)
-	#			set_tests_properties(${TEST_NAME} PROPERTIES FAIL_REGULAR_EXPRESSION "TEST FAILED")
-			endif()
-		
-		endif()
+		endforeach()
 	endforeach()
+
+	# # iterate all SCXML files in test directory
+	# foreach( W3C_TEST ${W3C_TESTS} )
+	# 	string(REGEX MATCH "[^//]+/[^//]+.scxml" TEST_NAME ${W3C_TEST})
+	# 	message("TEST_NAME: ${TEST_NAME}")
+	# 	if (NOT TEST_NAME MATCHES ".*sub.*")
+	#
+	# 		# add new test
+	# 		add_test(${TEST_NAME} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-w3c ${W3C_TEST})
+	# 		set_property(TEST ${TEST_NAME} PROPERTY LABELS ${TEST_NAME})
+	# 		set_tests_properties(${TEST_NAME} PROPERTIES TIMEOUT ${TEST_TIMEOUT})
+	#
+	# 		if (BUILD_TESTS_W3C_ECMA AND TEST_NAME MATCHES "^ecma\\/.*")
+	# 			add_test(${TEST_NAME} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-w3c ${W3C_TEST})
+	# 			set_property(TEST ${TEST_NAME} PROPERTY LABELS ${TEST_NAME})
+	# 			set_tests_properties(${TEST_NAME} PROPERTIES TIMEOUT ${TEST_TIMEOUT})
+	#
+	# #			set_tests_properties(${TEST_NAME} PROPERTIES FAIL_REGULAR_EXPRESSION "TEST FAILED")
+	#
+	# 			if (TEST_NAME STREQUAL "ecma/test250.scxml")
+	# 				set_tests_properties(${TEST_NAME} PROPERTIES
+	# 					FAIL_REGULAR_EXPRESSION "entering final state, invocation was not cancelled")
+	# 			elseif (TEST_NAME STREQUAL "ecma/test307.scxml")
+	# 				set_tests_properties(${TEST_NAME} PROPERTIES
+	# 					FAIL_REGULAR_EXPRESSION "error in state")
+	# 			endif()
+	# 		endif()
+	#
+	# 		if (BUILD_TESTS_GENERATED_C AND TEST_NAME MATCHES "^ecma\\/.*")
+	# 			add_test(NAME "gen_c/${TEST_NAME}"
+	# 			    COMMAND ${CMAKE_COMMAND}
+	# 						-DOUTDIR:FILEPATH=${CMAKE_CURRENT_BINARY_DIR}/gen_c
+	# 						-DTESTFILE:FILEPATH=${W3C_TEST}
+	# 						-DJSC_LIBRARY:FILEPATH=${JSC_LIBRARY}
+	# 						-DUSCXML_TRANSFORM_BIN:FILEPATH=${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/uscxml-transform
+	# 						-DGCC_BIN:FILEPATH=${GCC}
+	# 						-DGPP_BIN:FILEPATH=${GPP}
+	# 						-DPROJECT_SOURCE_DIR=${PROJECT_SOURCE_DIR}
+	# 						-DUSCXML_PLATFORM_ID=${USCXML_PLATFORM_ID}
+	# 						-DCMAKE_BINARY_DIR=${CMAKE_BINARY_DIR}
+	# 						-DPROJECT_BINARY_DIR=${PROJECT_BINARY_DIR}
+	# 						-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=${CMAKE_LIBRARY_OUTPUT_DIRECTORY}
+	# 						-DSCAFFOLDING_FOR_GENERATED_C:FILEPATH=${CMAKE_CURRENT_SOURCE_DIR}/src/test-c-machine.cpp
+	# 						-P ${CMAKE_CURRENT_SOURCE_DIR}/w3c/run_generated_c_test.cmake)
+	# 			set_property(TEST "gen_c/${TEST_NAME}" PROPERTY LABELS "gen_c/${TEST_NAME}")
+	# 			set_tests_properties("gen_c/${TEST_NAME}" PROPERTIES TIMEOUT ${TEST_TIMEOUT})
+	# 			set_tests_properties("gen_c/${TEST_NAME}" PROPERTIES DEPENDS uscxml-transform)
+	#
+	# 		endif()
+	#
+	# 		if (BUILD_TESTS_FSM AND BUILD_TESTS_FSM_ECMA AND TEST_NAME MATCHES "^ecma\\/.*")
+	# 			add_test("fsm/${TEST_NAME}" ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-w3c -f ${W3C_TEST})
+	# 			set_property(TEST "fsm/${TEST_NAME}" PROPERTY LABELS "fsm/${TEST_NAME}")
+	# 			set_tests_properties("fsm/${TEST_NAME}" PROPERTIES TIMEOUT ${TEST_TIMEOUT})
+	#
+	# 			add_test(NAME "minimized/${TEST_NAME}"
+	# 			    COMMAND ${CMAKE_COMMAND}
+	# 						-DOUTDIR:FILEPATH=${CMAKE_CURRENT_BINARY_DIR}/ecma
+	# 						-DTESTFILE:FILEPATH=${W3C_TEST}
+	# 						-DUSCXML_TRANSFORM_BIN:FILEPATH=${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/uscxml-transform
+	# 						-DUSCXML_W3C_TEST_BIN:FILEPATH=${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-w3c
+	# 					-P ${CMAKE_CURRENT_SOURCE_DIR}/w3c/run_minimized_test.cmake)
+	# 			set_property(TEST "minimized/${TEST_NAME}" PROPERTY LABELS "minimized/${TEST_NAME}")
+	# 			set_tests_properties("minimized/${TEST_NAME}" PROPERTIES TIMEOUT ${TEST_TIMEOUT})
+	#
+	# 			set_tests_properties(${TEST_NAME} PROPERTIES DEPENDS uscxml-transform)
+	# 			set_tests_properties(${TEST_NAME} PROPERTIES DEPENDS test-w3c)
+	#
+	# 			# add_test(NAME "fsm/minimized/${TEST_NAME}"
+	# 			#     COMMAND ${CMAKE_COMMAND}
+	# 			# 			-DOUTDIR:FILEPATH=${CMAKE_CURRENT_BINARY_DIR}/ecma
+	# 			# 			-DTESTFILE:FILEPATH=${W3C_TEST}
+	# 			# 			-DUSCXML_TRANSFORM_BIN:FILEPATH=${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/uscxml-transform
+	# 			# 			-DUSCXML_W3C_TEST_BIN:FILEPATH=${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-w3c
+	# 			# 		-P ${CMAKE_CURRENT_SOURCE_DIR}/w3c/run_minimized_flat_test.cmake)
+	# 			# set_property(TEST "fsm/minimized/${TEST_NAME}" PROPERTY LABELS "fsm/minimized/${TEST_NAME}")
+	# 			# set_tests_properties("fsm/minimized/${TEST_NAME}" PROPERTIES TIMEOUT ${TEST_TIMEOUT})
+	#
+	# 			# set_tests_properties(${TEST_NAME} PROPERTIES DEPENDS uscxml-transform)
+	# 			# set_tests_properties(${TEST_NAME} PROPERTIES DEPENDS test-w3c)
+	#
+	# 		endif()
+	#
+	# 		if (BUILD_TESTS_W3C_XPATH AND TEST_NAME MATCHES "^xpath\\/.*")
+	# 			add_test(${TEST_NAME} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-w3c ${W3C_TEST})
+	# 			set_property(TEST ${TEST_NAME} PROPERTY LABELS ${TEST_NAME})
+	# 			set_tests_properties(${TEST_NAME} PROPERTIES TIMEOUT ${TEST_TIMEOUT})
+	# #			set_tests_properties(${TEST_NAME} PROPERTIES FAIL_REGULAR_EXPRESSION "TEST FAILED")
+	# 			if (BUILD_TESTS_FSM AND BUILD_TESTS_FSM_XPATH)
+	# 				add_test("fsm/${TEST_NAME}" ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-w3c -f ${W3C_TEST})
+	# 				set_property(TEST "fsm/${TEST_NAME}" PROPERTY LABELS "fsm/${TEST_NAME}")
+	# 				set_tests_properties("fsm/${TEST_NAME}" PROPERTIES TIMEOUT ${TEST_TIMEOUT})
+	# 			endif()
+	# 		endif()
+	#
+	# 		if (BUILD_DM_LUA AND LUA_FOUND AND BUILD_TESTS_W3C_LUA AND TEST_NAME MATCHES "^lua\\/.*")
+	# 			add_test(${TEST_NAME} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-w3c ${W3C_TEST})
+	# 			set_property(TEST ${TEST_NAME} PROPERTY LABELS ${TEST_NAME})
+	# 			set_tests_properties(${TEST_NAME} PROPERTIES TIMEOUT ${TEST_TIMEOUT})
+	# #			set_tests_properties(${TEST_NAME} PROPERTIES FAIL_REGULAR_EXPRESSION "TEST FAILED")
+	# 			if (BUILD_TESTS_FSM AND BUILD_TESTS_FSM_LUA)
+	# 				add_test("fsm/${TEST_NAME}" ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-w3c -f ${W3C_TEST})
+	# 				set_property(TEST "fsm/${TEST_NAME}" PROPERTY LABELS "fsm/${TEST_NAME}")
+	# 				set_tests_properties("fsm/${TEST_NAME}" PROPERTIES TIMEOUT ${TEST_TIMEOUT})
+	# 			endif()
+	#
+	# 		endif()
+	#
+	# 		if (BUILD_DM_PROLOG AND SWI_FOUND AND BUILD_TESTS_W3C_PROLOG AND TEST_NAME MATCHES "^prolog\\/.*")
+	# 			add_test(${TEST_NAME} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-w3c ${W3C_TEST})
+	# 			set_property(TEST ${TEST_NAME} PROPERTY LABELS ${TEST_NAME})
+	# 			set_tests_properties(${TEST_NAME} PROPERTIES TIMEOUT ${TEST_TIMEOUT})
+	# #			set_tests_properties(${TEST_NAME} PROPERTIES FAIL_REGULAR_EXPRESSION "TEST FAILED")
+	# 			if (BUILD_TESTS_FSM AND BUILD_TESTS_FSM_PROLOG)
+	# 				add_test("fsm/${TEST_NAME}" ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-w3c -f ${W3C_TEST})
+	# 				set_property(TEST "fsm/${TEST_NAME}" PROPERTY LABELS "fsm/${TEST_NAME}")
+	# 				set_tests_properties("fsm/${TEST_NAME}" PROPERTIES TIMEOUT ${TEST_TIMEOUT})
+	# 			endif()
+	# 		endif()
+	#
+	# 		if (BUILD_DM_PROMELA AND BUILD_TESTS_W3C_PROMELA AND TEST_NAME MATCHES "^promela\\/.*")
+	# 			add_test(${TEST_NAME} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-w3c ${W3C_TEST})
+	# 			set_property(TEST ${TEST_NAME} PROPERTY LABELS ${TEST_NAME})
+	# 			set_tests_properties(${TEST_NAME} PROPERTIES TIMEOUT ${TEST_TIMEOUT})
+	# #			set_tests_properties(${TEST_NAME} PROPERTIES FAIL_REGULAR_EXPRESSION "TEST FAILED")
+	# 			if (BUILD_TESTS_FSM AND BUILD_TESTS_FSM_PROMELA)
+	# 				add_test("fsm/${TEST_NAME}" ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-w3c -f ${W3C_TEST})
+	# 				set_property(TEST "fsm/${TEST_NAME}" PROPERTY LABELS "fsm/${TEST_NAME}")
+	# 				set_tests_properties("fsm/${TEST_NAME}" PROPERTIES TIMEOUT ${TEST_TIMEOUT})
+	# 			endif()
+	# 		endif()
+	#
+	# 		if (GCC AND SPIN AND BUILD_DM_PROMELA AND BUILD_TESTS_W3C_PROMELA AND TEST_NAME MATCHES "^promela\\/.*")
+	#
+	# 			add_test(NAME "spin/${TEST_NAME}"
+	# 			    COMMAND ${CMAKE_COMMAND}
+	# 						-DOUTDIR:FILEPATH=${CMAKE_CURRENT_BINARY_DIR}/promela
+	# 						-DTESTFILE:FILEPATH=${W3C_TEST}
+	# 						-DUSCXML_TRANSFORM_BIN:FILEPATH=${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/uscxml-transform
+	# 						-DSPIN_BIN:FILEPATH=${SPIN}
+	# 						-DGCC_BIN:FILEPATH=${GCC}
+	# 						-P ${CMAKE_CURRENT_SOURCE_DIR}/w3c/run_promela_test.cmake)
+	# 			set_property(TEST "spin/${TEST_NAME}" PROPERTY LABELS "spin/${TEST_NAME}")
+	# 			set_tests_properties("spin/${TEST_NAME}" PROPERTIES TIMEOUT ${TEST_TIMEOUT})
+	# 			set_tests_properties("spin/${TEST_NAME}" PROPERTIES PASS_REGULAR_EXPRESSION "depth reached [0-9]+, errors: 0")
+	# 			set_tests_properties("spin/${TEST_NAME}" PROPERTIES FAIL_REGULAR_EXPRESSION "depth reached [0-9]+, errors: [1-9]+")
+	#
+	# 			set_tests_properties(${TEST_NAME} PROPERTIES DEPENDS uscxml-transform)
+	# #			set_tests_properties(${TEST_NAME} PROPERTIES FAIL_REGULAR_EXPRESSION "TEST FAILED")
+	# 		endif()
+	#
+	# 	endif()
+	# endforeach()
 endif()

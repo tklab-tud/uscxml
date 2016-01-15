@@ -164,8 +164,9 @@ enum InterpreterState {
 	USCXML_DESTROYED      = -2,  ///< destructor ran - users should never see this one
 	USCXML_FINISHED       = -1,  ///< machine reached a final configuration and is done
 	USCXML_IDLE           = 0,   ///< stable configuration and queues empty
-	USCXML_INSTANTIATED   = 1,   ///< nothing really, just instantiated
-	USCXML_MICROSTEPPED   = 2,   ///< processed one transition set
+    USCXML_INITIALIZED    = 1,    ///< DOM is setup and all external components instantiated
+    USCXML_INSTANTIATED   = 2,   ///< nothing really, just instantiated
+	USCXML_MICROSTEPPED   = 3,   ///< processed one transition set
 	USCXML_MACROSTEPPED   = 4,   ///< processed all transition sets and reached a stable configuration
 };
 USCXML_API std::ostream& operator<< (std::ostream& os, const InterpreterState& interpreterState);
@@ -890,7 +891,8 @@ public:
 	virtual void beforeProcessingEvent(uscxml::Interpreter interpreter, const uscxml::Event& event);
 	virtual void beforeExitingState(uscxml::Interpreter interpreter, const Arabica::DOM::Element<std::string>& state, bool moreComing);
 	virtual void beforeEnteringState(uscxml::Interpreter interpreter, const Arabica::DOM::Element<std::string>& state, bool moreComing);
-
+    virtual void beforeMicroStep(uscxml::Interpreter interpreter);
+    
 protected:
 	static tthread::recursive_mutex _mutex;
 	void printNodeSet(const Arabica::XPath::NodeSet<std::string>& config);

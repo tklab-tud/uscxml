@@ -68,7 +68,7 @@ while ($block = <FILE>) {
 	# Test Epilog ========
 	if ($block =~ 
 		/
-			Test\s(\S+)\sReason:\n
+			Test\s(\S+)\.\n
 		/x ) {
 		$test->{$currTest}->{'status'} = lc($1);
 		next;
@@ -83,6 +83,38 @@ while ($block = <FILE>) {
 		$test->{$currTest}->{'duration'}->{'total'} = $1;
 		$test->{$currTest}->{'duration'}->{'totalUnit'} = $2;
 		# next; - no next as this is part of the actual test output we need to scan below
+	}
+	
+	# Performance ========
+	if ($block =~ 
+		/
+			(\d+)\siterations\n
+			([\d\.]+)\sms\sin\stotal\n
+			([\d\.]+)\sms\sper\sexecution\n
+			(\d+)\smicrosteps\sper\siteration\n
+			([\d\.]+)\sms\sper\smicrostep\n
+			([\d\.]+)\sms\sin\sdatamodel\n
+			([\d\.]+)\sms\sper\smicrostep\s\\wo\sdatamodel\n
+		/x ) {
+			$test->{$currTest}->{'benchmark'}->{'iterations'} = $1;
+			$test->{$currTest}->{'benchmark'}->{'total'} = $2;
+			$test->{$currTest}->{'benchmark'}->{'perExecution'} = $3;
+			$test->{$currTest}->{'benchmark'}->{'mirosteps'} = $4;
+			$test->{$currTest}->{'benchmark'}->{'perMicrostep'} = $5;
+			$test->{$currTest}->{'benchmark'}->{'inDataModel'} = $6;
+			$test->{$currTest}->{'benchmark'}->{'inMicrostep'} = $7;
+	}
+
+	if ($block =~ /Size\sof\scompiled\sunit:\s(\d+)/x ) {
+			$test->{$currTest}->{'benchmark'}->{'size'} = $1;
+	}
+
+	if ($block =~ /Size\sof\scompiled\sunit\soptimized\sfor\sspeed:\s(\d+)/x ) {
+			$test->{$currTest}->{'benchmark'}->{'sizeFast'} = $1;
+	}
+
+	if ($block =~ /Size\sof\scompiled\sunit\soptimized\sfor\ssize:\s(\d+)/x ) {
+			$test->{$currTest}->{'benchmark'}->{'sizeSmall'} = $1;
 	}
 	
 	# Minimization ========
@@ -240,7 +272,9 @@ if (@dataQuery > 0) {
 				if (defined($currVal->{$dataKey})) {
 					$currVal = $currVal->{$dataKey};
 				} else {
-					die("no key $dataKey in structure:\n" . Dumper($currVal));
+					print STDERR "no key $dataKey in structure:\n" . Dumper($currVal);
+					$currVal = "N/A";
+					last;
 				}
 			}
 			print $seperator . $currVal;

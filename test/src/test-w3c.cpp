@@ -2,10 +2,27 @@
 // #define protected public
 
 #include "uscxml/config.h"
+
+#ifdef APPLE
+#include <mach/mach.h>
+#include <mach/mach_time.h>
+#include <pthread.h>
+#endif
+
 #include "uscxml/Common.h"
 #include "uscxml/Convenience.h"
+
+#ifdef BUILD_PROFILING
+// get access to the datamodel - this causes strange issues with MSVC depending on include order
+// may be better to ifndef all protected: and private: stanzas for profiling?
+#define protected public
 #include "uscxml/Interpreter.h"
+#undef protected
+# endif
+
+
 #include "uscxml/DOMUtils.h"
+#include "uscxml/concurrency/Timer.h"
 
 #include "uscxml/Factory.h"
 #include "uscxml/server/HTTPServer.h"
@@ -29,7 +46,7 @@
 
 static bool withFlattening = false;
 static double delayFactor = 1;
-static size_t benchmarkRuns = 0;
+static size_t benchmarkRuns = 1;
 static std::string documentURI;
 
 int retCode = EXIT_FAILURE;
@@ -63,16 +80,44 @@ class W3CStatusMonitor : public uscxml::InterpreterMonitor {
 
 	void beforeCompletion(uscxml::Interpreter tmp) {
 		if (interpreter.getConfiguration().size() == 1 && interpreter.isInState("pass")) {
-			std::cout << "TEST SUCCEEDED" << std::endl;
+#ifndef BUILD_PROFILING
+            std::cout << "TEST SUCCEEDED" << std::endl;
+#endif
 			retCode = EXIT_SUCCESS;
 			return;
 		}
+#ifndef BUILD_PROFILING
 		std::cout << "TEST FAILED" << std::endl;
-	}
+#endif
+        retCode = EXIT_FAILURE;
+    }
 };
 
 int main(int argc, char** argv) {
 	using namespace uscxml;
+
+#ifdef APPLE
+    mach_timebase_info_data_t timebase_info;
+    mach_timebase_info(&timebase_info);
+    
+    const uint64_t NANOS_PER_MSEC = 1000000ULL;
+    double clock2abs = ((double)timebase_info.denom / (double)timebase_info.numer) * NANOS_PER_MSEC;
+    
+    thread_time_constraint_policy_data_t policy;
+    policy.period      = 0;
+    policy.computation = (uint32_t)(5 * clock2abs); // 5 ms of work
+    policy.constraint  = (uint32_t)(10 * clock2abs);
+    policy.preemptible = FALSE;
+    
+    int kr = thread_policy_set(pthread_mach_thread_np(pthread_self()),
+                               THREAD_TIME_CONSTRAINT_POLICY,
+                               (thread_policy_t)&policy,
+                               THREAD_TIME_CONSTRAINT_POLICY_COUNT);
+    if (kr != KERN_SUCCESS) {
+        mach_error("thread_policy_set:", kr);
+        exit(1);
+    }
+#endif
 
 	try {
 
@@ -85,7 +130,6 @@ int main(int argc, char** argv) {
 		}
 
 		google::InitGoogleLogging(argv[0]);
-		google::LogToStderr();
 
 		HTTPServer::getInstance(32954, 32955, NULL); // bind to some random tcp sockets for ioprocessor tests
 
@@ -93,6 +137,14 @@ int main(int argc, char** argv) {
 		if (dfEnv) {
 			delayFactor = strTo<double>(dfEnv);
 		}
+
+        const char* envBenchmarkRuns = getenv("USCXML_BENCHMARK_ITERATIONS");
+        if (envBenchmarkRuns != NULL) {
+            benchmarkRuns = strTo<size_t>(envBenchmarkRuns);
+            google::SetStderrLogging(3);
+        } else {
+            google::LogToStderr();
+        }
 
 		int option;
 		while ((option = getopt(argc, argv, "fd:b:")) != -1) {
@@ -109,11 +161,6 @@ int main(int argc, char** argv) {
 			default:
 				break;
 			}
-		}
-
-		const char* envBenchmarkRuns = getenv("USCXML_BENCHMARK_ITERATIONS");
-		if (envBenchmarkRuns != NULL) {
-			benchmarkRuns = strTo<size_t>(envBenchmarkRuns);
 		}
 
 		documentURI = argv[optind];
@@ -162,50 +209,59 @@ int main(int argc, char** argv) {
 			W3CStatusMonitor* vm = new W3CStatusMonitor();
 			interpreter.addMonitor(vm);
 
-			if (benchmarkRuns > 0) {
-				LOG(INFO) << "Benchmarking " << documentURI << (withFlattening ? " FSM converted" : "") << (delayFactor ? "" : " with delays *= " + toStr(delayFactor));
+            LOG(INFO) << "Benchmarking " << documentURI << (withFlattening ? " FSM converted" : "") << (delayFactor ? "" : " with delays *= " + toStr(delayFactor));
 
-				InterpreterState state = interpreter.getState();
+            size_t remainingRuns = benchmarkRuns;
+            size_t microSteps = 0;
 
-				double avg = 0;
-#ifdef BUILD_PROFILING
-				double avgDm = 0;
-				double avgStep = 0;
-#endif
-				size_t remainingRuns = benchmarkRuns;
-				uint64_t start = tthread::chrono::system_clock::now();
+            Timer tTotal;
+            tTotal.start();
 
-				while(remainingRuns-- > 0) {
-					Timer t;
-					t.start();
-					for(;;) {
-						state = interpreter.step(true);
-						if (state == USCXML_FINISHED) {
+            double avg = 0;
 #ifdef BUILD_PROFILING
-							avgDm += interpreter.getDataModel().timer.elapsed;
-							interpreter.getDataModel().timer.reset();
-							avgStep += interpreter.timer.elapsed;
-#endif
-						}
-						if (state < 0)
-							break;
-					}
-					t.stop();
-					avg += t.elapsed;
-					interpreter.reset();
-				}
-				uint64_t totalDuration = tthread::chrono::system_clock::now() - start;
-				std::cout << benchmarkRuns << " iterations in " << totalDuration << " ms" << std::endl;
-				std::cout << (avg * 1000.0)  / (double)benchmarkRuns << " ms on average" << std::endl;
-#ifdef BUILD_PROFILING
-				std::cout << (avgDm * 1000.0) / (double)benchmarkRuns << " ms in datamodel" << std::endl;
-				std::cout << (avgStep * 1000.0) / (double)benchmarkRuns << " ms in microsteps" << std::endl;
+            double avgDm = 0;
+            double avgStep = 0;
 #endif
 
-			} else {
-				interpreter.start();
-				while(interpreter.runOnMainThread(25));
-			}
+            while(remainingRuns-- > 0) {
+                Timer t;
+                microSteps = 0;
+
+                InterpreterState state = interpreter.getState();
+
+                for(;;) {
+                    state = interpreter.step(true);
+                    microSteps++;
+                    if (state == USCXML_INITIALIZED) {
+                        t.start();
+                    } else if (state == USCXML_FINISHED) {
+#ifdef BUILD_PROFILING
+                        avgDm += interpreter._impl->_dataModel.timer.elapsed;
+                        interpreter._impl->_dataModel.timer.reset();
+                        avgStep += interpreter.timer.elapsed;
+#endif
+                    }
+                    if (state < 0)
+                        break;
+                }
+                assert(retCode == EXIT_SUCCESS);
+                t.stop();
+                avg += t.elapsed;
+                interpreter.reset();
+                std::cout << "." << std::flush;
+            }
+            
+            tTotal.stop();
+            
+            std::cout << benchmarkRuns << " iterations" << std::endl;
+            std::cout << tTotal.elapsed * 1000.0 << " ms in total" << std::endl;
+            std::cout << (avg * 1000.0) / (double)benchmarkRuns << " ms per execution" << std::endl;
+            std::cout << microSteps << " microsteps per iteration" << std::endl;
+            std::cout << (avg * 1000.0) / ((double)benchmarkRuns * (double)microSteps) << " ms per microstep" << std::endl;
+#ifdef BUILD_PROFILING
+            std::cout << (avgDm * 1000.0) / (double)benchmarkRuns << " ms in datamodel" << std::endl;
+            std::cout << ((avg - avgDm) * 1000.0) / ((double)benchmarkRuns * (double)microSteps) << " ms per microstep \\wo datamodel" << std::endl;
+#endif
 		}
 	} catch(Event e) {
 		std::cout << e << std::endl;
