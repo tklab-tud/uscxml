@@ -1368,14 +1368,14 @@ void InterpreterImpl::reset() {
         std::map<std::string, std::pair<InterpreterImpl*, SendRequest> >::iterator sendIter = _sendIds.begin();
         while(sendIter != _sendIds.end()) {
             _sendQueue->cancelEvent(sendIter->first);
-            sendIter = _sendIds.erase(sendIter);
+//            sendIter = _sendIds.erase(sendIter);
         }
         _sendQueue->start();
     }
     std::map<std::string, Invoker>::iterator invokeIter = _invokers.begin();
     while(invokeIter != _invokers.end()) {
         invokeIter->second.uninvoke();
-        invokeIter = _invokers.erase(invokeIter);
+//        invokeIter = _invokers.erase(invokeIter);
     }
     
 	_externalQueue.clear();

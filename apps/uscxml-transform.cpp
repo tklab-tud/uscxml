@@ -2,6 +2,7 @@
 #include "uscxml/Interpreter.h"
 #include "uscxml/transform/ChartToFlatSCXML.h"
 #include "uscxml/transform/ChartToC.h"
+#include "uscxml/transform/ChartToVHDL.h"
 #include "uscxml/transform/ChartToTex.h"
 #include "uscxml/transform/ChartToMinimalSCXML.h"
 #include "uscxml/transform/ChartToPromela.h"
@@ -72,6 +73,7 @@ void printUsageAndExit(const char* progName) {
 	printf("Options\n");
 	printf("\t-t c         : convert to C program\n");
 	printf("\t-t pml       : convert to spin/promela program\n");
+    printf("\t-t vhdl      : convert to VHDL hardware description\n");
 	printf("\t-t flat      : flatten to SCXML state-machine\n");
 	printf("\t-t min       : minimize SCXML state-chart\n");
 	printf("\t-t tex       : write global state transition table as tex file\n");
@@ -223,6 +225,7 @@ int main(int argc, char** argv) {
 	        outType != "scxml" &&
 	        outType != "pml" &&
 	        outType != "c" &&
+	        outType != "vhdl" &&
 	        outType != "min" &&
 	        outType != "tex" &&
 	        std::find(annotations.begin(), annotations.end(), "priority") == annotations.end() &&
@@ -278,6 +281,18 @@ int main(int argc, char** argv) {
 			}
 			exit(EXIT_SUCCESS);
 		}
+
+	if (outType == "vhdl") {
+            if (outputFile.size() == 0 || outputFile == "-") {
+                ChartToVHDL::transform(interpreter).writeTo(std::cout);
+            } else {
+                std::ofstream outStream;
+                outStream.open(outputFile.c_str());
+                ChartToVHDL::transform(interpreter).writeTo(outStream);
+                outStream.close();
+            }
+            exit(EXIT_SUCCESS);
+        }
 
 		if (outType == "pml") {
 			if (outputFile.size() == 0 || outputFile == "-") {
