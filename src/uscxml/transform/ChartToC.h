@@ -81,9 +81,11 @@ protected:
 
 	size_t _transCharArraySize;
 	std::string _transCharArrayInit;
+	std::string _transDataType;
 
 	size_t _stateCharArraySize;
 	std::string _stateCharArrayInit;
+	std::string _stateDataType;
 };
 
 }

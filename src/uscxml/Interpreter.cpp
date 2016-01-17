@@ -386,12 +386,12 @@ void StateTransitionMonitor::beforeEnteringState(uscxml::Interpreter interpreter
 }
 
 void StateTransitionMonitor::beforeMicroStep(uscxml::Interpreter interpreter) {
-    tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
-    std::cerr << "Config: {";
-    printNodeSet(interpreter.getConfiguration());
-    std::cerr << "}" << std::endl;
+	tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
+	std::cerr << "Config: {";
+	printNodeSet(interpreter.getConfiguration());
+	std::cerr << "}" << std::endl;
 }
-    
+
 void StateTransitionMonitor::printNodeSet(const Arabica::XPath::NodeSet<std::string>& config) {
 	std::string seperator;
 	for (int i = 0; i < config.size(); i++) {
@@ -601,13 +601,13 @@ InterpreterImpl::~InterpreterImpl() {
 		// make sure we are done with setting up with early abort
 		tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
 		stop(); // unset started bit
-        
-        setInterpreterState(USCXML_DESTROYED);
 
-        // unblock event queue
-        Event event;
-        event.name = "unblock.and.die";
-        receive(event);
+		setInterpreterState(USCXML_DESTROYED);
+
+		// unblock event queue
+		Event event;
+		event.name = "unblock.and.die";
+		receive(event);
 
 	}
 //	std::cerr << "stopped " << this << std::endl;
@@ -789,7 +789,7 @@ InterpreterState InterpreterImpl::step(int waitForMS) {
 		// setup document and interpreter
 		if (!_isInitialized) {
 			init(); // will throw
-            return _state;
+			return _state;
 		}
 
 		if (_configuration.size() == 0) {
@@ -960,19 +960,19 @@ EXIT_INTERPRETER:
 
 		exitInterpreter();
 		if (_sendQueue) {
-            _sendQueue->stop();
+			_sendQueue->stop();
 			std::map<std::string, std::pair<InterpreterImpl*, SendRequest> >::iterator sendIter = _sendIds.begin();
 			while(sendIter != _sendIds.end()) {
 				_sendQueue->cancelEvent(sendIter->first);
 				sendIter++;
 			}
-            _sendQueue->start();
+			_sendQueue->start();
 		}
 
 		USCXML_MONITOR_CALLBACK(afterCompletion)
 
 		//		assert(hasLegalConfiguration());
-        setInterpreterState(USCXML_FINISHED);
+		setInterpreterState(USCXML_FINISHED);
 		_mutex.unlock();
 
 		// remove datamodel
@@ -1292,11 +1292,11 @@ void InterpreterImpl::setInterpreterState(InterpreterState newState) {
 			break;
 		assert(false);
 		break;
-    case USCXML_INITIALIZED:
-        if (VALID_FROM_INITIALIZED(newState))
-            break;
-        assert(false);
-        break;
+	case USCXML_INITIALIZED:
+		if (VALID_FROM_INITIALIZED(newState))
+			break;
+		assert(false);
+		break;
 	case USCXML_MICROSTEPPED:
 		if (VALID_FROM_MICROSTEPPED(newState))
 			break;
@@ -1318,7 +1318,7 @@ void InterpreterImpl::setInterpreterState(InterpreterState newState) {
 		assert(false);
 		break;
 	default:
-        assert(false);
+		assert(false);
 		break;
 	}
 
@@ -1362,22 +1362,22 @@ bool InterpreterImpl::runOnMainThread(int fps, bool blocking) {
 
 void InterpreterImpl::reset() {
 	tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
-    
-    if (_sendQueue) {
-        _sendQueue->stop();
-        std::map<std::string, std::pair<InterpreterImpl*, SendRequest> >::iterator sendIter = _sendIds.begin();
-        while(sendIter != _sendIds.end()) {
-            _sendQueue->cancelEvent(sendIter->first);
-            sendIter = _sendIds.erase(sendIter);
-        }
-        _sendQueue->start();
-    }
-    std::map<std::string, Invoker>::iterator invokeIter = _invokers.begin();
-    while(invokeIter != _invokers.end()) {
-        invokeIter->second.uninvoke();
-        invokeIter = _invokers.erase(invokeIter);
-    }
-    
+
+	if (_sendQueue) {
+		_sendQueue->stop();
+		std::map<std::string, std::pair<InterpreterImpl*, SendRequest> >::iterator sendIter = _sendIds.begin();
+		while(sendIter != _sendIds.end()) {
+			_sendQueue->cancelEvent(sendIter->first);
+			_sendIds.erase(sendIter++);
+		}
+		_sendQueue->start();
+	}
+	std::map<std::string, Invoker>::iterator invokeIter = _invokers.begin();
+	while(invokeIter != _invokers.end()) {
+		invokeIter->second.uninvoke();
+		_invokers.erase(invokeIter++);
+	}
+
 	_externalQueue.clear();
 	_internalQueue.clear();
 	_historyValue.clear();
@@ -1700,7 +1700,7 @@ void InterpreterImpl::init() {
 
 	_isInitialized = true;
 	_stable = false;
-    setInterpreterState(USCXML_INITIALIZED);
+	setInterpreterState(USCXML_INITIALIZED);
 }
 
 /**
@@ -2597,19 +2597,19 @@ void InterpreterImpl::executeContent(const Arabica::DOM::Element<std::string>& c
 	} else if (iequals(TAGNAME(content), _nsInfo.xmlNSPrefix + "log")) {
 		// --- LOG --------------------------
 		Arabica::DOM::Element<std::string> logElem = (Arabica::DOM::Element<std::string>)content;
-        if (logElem.hasAttribute("label")) {
-            std::cout << logElem.getAttribute("label") << ": ";
-        }
+		if (logElem.hasAttribute("label")) {
+			std::cout << logElem.getAttribute("label") << ": ";
+		}
 		if (logElem.hasAttribute("expr")) {
 			try {
-                std::string msg = _dataModel.evalAsString(logElem.getAttribute("expr"));
+				std::string msg = _dataModel.evalAsString(logElem.getAttribute("expr"));
 				std::cout << msg << std::endl;
 			}
 			CATCH_AND_DISTRIBUTE2("Syntax error in expr attribute of log element", content)
 		} else {
-            if (logElem.hasAttribute("label")) {
+			if (logElem.hasAttribute("label")) {
 				std::cout << std::endl;
-            }
+			}
 		}
 	} else if (iequals(TAGNAME(content), _nsInfo.xmlNSPrefix + "assign")) {
 		// --- ASSIGN --------------------------
