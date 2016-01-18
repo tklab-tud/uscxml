@@ -127,7 +127,7 @@ int matches(const char* desc, const char* event) {
 
 int exec_content_raise(const scxml_ctx* ctx, const char* event) {
 	Event* e = new Event();
-	e->name = strdup(event);
+	e->name = event;
 
 	if (boost::starts_with(e->name, "error.")) {
 		e->eventType = Event::PLATFORM;
@@ -216,8 +216,10 @@ int raise_done_event(const scxml_ctx* ctx, const scxml_state* state, const scxml
 void delayedSend(void* ctx, std::string eventName) {
 	tthread::lock_guard<tthread::mutex> lock(USER_DATA(ctx)->mutex);
 
-	SendRequest* e = USER_DATA(ctx)->sendIds[eventName];
-	if (e->target == "#_internal") {
+	SendRequest* sr = USER_DATA(ctx)->sendIds[eventName];
+    Event* e = new Event(*sr);
+    
+    if (sr->target == "#_internal") {
 		e->eventType = Event::INTERNAL;
 #ifdef SCXML_VERBOSE
 		printf("Pushing Internal Event: %s\n", e->name.c_str());
@@ -231,6 +233,7 @@ void delayedSend(void* ctx, std::string eventName) {
 		USER_DATA(ctx)->eq.push_back(e);
 	}
 	USER_DATA(ctx)->monitor.notify_all();
+    delete sr;
 }
 
 int exec_content_cancel(const scxml_ctx* ctx, const char* sendid, const char* sendidexpr) {
@@ -300,8 +303,9 @@ int exec_content_send(const scxml_ctx* ctx, const scxml_elem_send* send) {
 		} else {
 			e->type = "http://www.w3.org/TR/scxml/#SCXMLEventProcessor";
 		}
-	} catch (Event e) {
-		exec_content_raise(ctx, e.name.c_str());
+	} catch (Event exc) {
+		exec_content_raise(ctx, exc.name.c_str());
+        delete e;
 		return SCXML_ERR_EXEC_CONTENT;
 	}
 
@@ -317,7 +321,7 @@ int exec_content_send(const scxml_ctx* ctx, const scxml_elem_send* send) {
 	if (send->eventexpr != NULL) {
 		e->name = USER_DATA(ctx)->datamodel.evalAsString(send->eventexpr);
 	} else {
-		e->name = strdup(send->event);
+		e->name = send->event;
 	}
 
 	try {
@@ -367,12 +371,12 @@ int exec_content_send(const scxml_ctx* ctx, const scxml_elem_send* send) {
 		}
 	}
 
-	const char* sendid = NULL;
+    std::string sendid;
 	if (send->id != NULL) {
 		sendid = send->id;
 		e->sendid = sendid;
 	} else {
-		sendid = strdup(UUID::getUUID().c_str());
+		sendid = UUID::getUUID();
 		if (send->idlocation != NULL) {
 			USER_DATA(ctx)->datamodel.assign(send->idlocation, Data(sendid, Data::VERBATIM));
 		} else {

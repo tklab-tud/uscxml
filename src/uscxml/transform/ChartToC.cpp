@@ -216,10 +216,10 @@ void ChartToC::writeTypes(std::ostream& stream) {
 	stream << "typedef struct scxml_elem_foreach scxml_elem_foreach;" << std::endl;
 	stream << std::endl;
 
-	stream << "typedef void* (*dequeue_internal_cb_t)(const scxml_ctx* ctx);" << std::endl;
-	stream << "typedef void* (*dequeue_external_cb_t)(const scxml_ctx* ctx);" << std::endl;
-	stream << "typedef int (*is_enabled_cb_t)(const scxml_ctx* ctx, const scxml_transition* transition, const void* event);" << std::endl;
-	stream << "typedef int (*is_true_cb_t)(const scxml_ctx* ctx, const char* expr);" << std::endl;
+	stream << "typedef void* (*dequeue_internal_t)(const scxml_ctx* ctx);" << std::endl;
+	stream << "typedef void* (*dequeue_external_t)(const scxml_ctx* ctx);" << std::endl;
+	stream << "typedef int (*is_enabled_t)(const scxml_ctx* ctx, const scxml_transition* transition, const void* event);" << std::endl;
+	stream << "typedef int (*is_true_t)(const scxml_ctx* ctx, const char* expr);" << std::endl;
 	stream << "typedef int (*exec_content_t)(const scxml_ctx* ctx, const scxml_state* state, const void* event);" << std::endl;
 	stream << "typedef int (*raise_done_event_t)(const scxml_ctx* ctx, const scxml_state* state, const scxml_elem_donedata* donedata);" << std::endl;
 	stream << "typedef int (*invoke_t)(const scxml_ctx* ctx, const scxml_state* s, const scxml_invoke* x);" << std::endl;
@@ -339,10 +339,10 @@ void ChartToC::writeTypes(std::ostream& stream) {
 	stream << "    void* user_data;" << std::endl;
 	stream << "    void* event;" << std::endl;
 	stream << std::endl;
-	stream << "    dequeue_internal_cb_t dequeue_internal;" << std::endl;
-	stream << "    dequeue_external_cb_t dequeue_external;" << std::endl;
-	stream << "    is_enabled_cb_t is_enabled;" << std::endl;
-	stream << "    is_true_cb_t is_true;" << std::endl;
+	stream << "    dequeue_internal_t dequeue_internal;" << std::endl;
+	stream << "    dequeue_external_t dequeue_external;" << std::endl;
+	stream << "    is_enabled_t is_enabled;" << std::endl;
+	stream << "    is_true_t is_true;" << std::endl;
 	stream << "    raise_done_event_t raise_done_event;" << std::endl;
 	stream << std::endl;
 	stream << "    exec_content_log_t exec_content_log;" << std::endl;
@@ -491,7 +491,12 @@ void ChartToC::writeExecContent(std::ostream& stream) {
 			stream << std::endl;
 		}
 
-		bool hasInitialState = false;
+        /*
+            gen/c/ecma/test412.scxml (Failed)
+            gen/c/ecma/test579.scxml (Failed)
+         */
+#if 0
+        bool hasInitialState = false;
 		NodeSet<std::string> initial = filterChildElements(_nsInfo.xmlNSPrefix + "initial", state);
 		if (initial.size() > 0) {
 			NodeSet<std::string> initialTransition = filterChildElements(_nsInfo.xmlNSPrefix + "transition", initial);
@@ -505,16 +510,16 @@ void ChartToC::writeExecContent(std::ostream& stream) {
 				stream << std::endl;
 			}
 		}
-
+#endif
 
 		if (onentry.size() > 0) {
 			stream << "static int " << DOMUtils::idForNode(state) << "_on_entry(const scxml_ctx* ctx, const scxml_state* state, const void* event) {" << std::endl;
 			for (size_t j = 0; j < onentry.size(); j++) {
 				stream << "    " << DOMUtils::idForNode(state) << "_on_entry_" << toStr(j) << "(ctx, state, event);" << std::endl;
 			}
-			if (hasInitialState) {
-				stream << "    " << DOMUtils::idForNode(state) << "_initial" << "(ctx, state, event);" << std::endl;
-			}
+//			if (hasInitialState) {
+//				stream << "    " << DOMUtils::idForNode(state) << "_initial" << "(ctx, state, event);" << std::endl;
+//			}
 
 			stream << "    return SCXML_ERR_OK;" << std::endl;
 			stream << "}" << std::endl;
@@ -536,8 +541,8 @@ void ChartToC::writeExecContent(std::ostream& stream) {
 
 	for (size_t i = 0; i < _transitions.size(); i++) {
 		Element<std::string> transition(_transitions[i]);
-		if (iequals(TAGNAME_CAST(transition.getParentNode()), "initial"))
-			continue;
+//		if (iequals(TAGNAME_CAST(transition.getParentNode()), "initial"))
+//			continue;
 
 		NodeSet<std::string> execContent = filterChildType(Node_base::ELEMENT_NODE, transition);
 
@@ -1087,30 +1092,33 @@ void ChartToC::writeStates(std::ostream& stream) {
 
 void ChartToC::writeTransitions(std::ostream& stream) {
 
-#if 0
 	// cross reference transition by document order - is this really needed?!
 	std::set<std::string> elements;
 	elements.insert(_nsInfo.xmlNSPrefix + "transition");
 	NodeSet<std::string> transDocOrder = inDocumentOrder(elements, _scxml);
 
-	stream << "static const " << _transDataType << " scxml_transitions_doc_order[" << toStr(_transitions.size()) << "] = {" << std::endl;
-	stream << "    ";
+    std::stringstream transDocOrderSS;
 	std::string seperator = "";
 	for (size_t i = 0; i < transDocOrder.size(); i++) {
 		Element<std::string> transition(_transitions[i]);
 		transition.setAttribute("documentOrder", toStr(i));
-		stream << seperator << ATTR(transition, "postFixOrder");
+		transDocOrderSS << seperator << ATTR(transition, "postFixOrder");
 		seperator = ", ";
 	}
 
-	stream << std::endl << "};" << std::endl;
-	stream << std::endl;
+#if 0
+    stream << "static const " << _transDataType << " scxml_transitions_doc_order[" << toStr(_transitions.size()) << "] = {" << std::endl;
+    stream << "    " << transDocOrderSS;
+    stream << std::endl << "};" << std::endl;
+    stream << std::endl;
 #endif
 
 	stream << "static const scxml_transition scxml_transitions[" << toStr(_transitions.size()) << "] = {" << std::endl;
 	for (size_t i = 0; i < _transitions.size(); i++) {
 		Element<std::string> transition(_transitions[i]);
-		stream << "    {   /* transition number " << ATTR(transition, "documentOrder") << " with priority " << toStr(i) << " */" << std::endl;
+        stream << "    {   /* transition number " << ATTR(transition, "documentOrder") << " with priority " << toStr(i) << std::endl;
+        stream << "           target: " << ATTR(transition, "target") << std::endl;
+        stream << "         */" << std::endl;
 
 		/**
 		 uint16_t source;
@@ -1167,8 +1175,8 @@ void ChartToC::writeTransitions(std::ostream& stream) {
 
 		// on transition handlers
 		stream << "        /* ontrans    */ ";
-		if (filterChildType(Arabica::DOM::Node_base::ELEMENT_NODE, transition).size() > 0 &&
-		        !iequals(TAGNAME_CAST(transition.getParentNode()), "initial")) {
+		if (filterChildType(Arabica::DOM::Node_base::ELEMENT_NODE, transition).size() > 0 /* &&
+		        !iequals(TAGNAME_CAST(transition.getParentNode()), "initial") */) {
 			stream << DOMUtils::idForNode(transition) + "_on_trans";
 		} else {
 			stream << "NULL";
@@ -1525,7 +1533,7 @@ void ChartToC::writeFSM(std::ostream& stream) {
 
 	stream << "// TAKE_TRANSITIONS:" << std::endl;
 	stream << "    for (size_t i = 0; i < SCXML_NUMBER_TRANSITIONS; i++) {" << std::endl;
-	stream << "        if (IS_SET(i, trans_set) && (scxml_transitions[i].type & SCXML_TRANS_HISTORY) == 0) {" << std::endl;
+	stream << "        if (IS_SET(i, trans_set) && (scxml_transitions[i].type & (SCXML_TRANS_HISTORY | SCXML_TRANS_INITIAL)) == 0) {" << std::endl;
 	stream << "            // call executable content in transition" << std::endl;
 	stream << "            if (scxml_transitions[i].on_transition != NULL) {" << std::endl;
 	stream << "                if unlikely((err = scxml_transitions[i].on_transition(ctx," << std::endl;
@@ -1571,10 +1579,10 @@ void ChartToC::writeFSM(std::ostream& stream) {
 	stream << "            }" << std::endl;
 	stream << std::endl;
 
-	stream << "            // take history transitions" << std::endl;
+	stream << "            // take history and initial transitions" << std::endl;
 	stream << "            for (size_t j = 0; j < SCXML_NUMBER_TRANSITIONS; j++) {" << std::endl;
 	stream << "                if unlikely(IS_SET(j, trans_set) &&" << std::endl;
-	stream << "                            (scxml_transitions[j].type & SCXML_TRANS_HISTORY) &&" << std::endl;
+	stream << "                            (scxml_transitions[j].type & (SCXML_TRANS_HISTORY | SCXML_TRANS_INITIAL)) &&" << std::endl;
 	stream << "                            scxml_states[scxml_transitions[j].source].parent == i) {" << std::endl;
 	stream << "                    // call executable content in transition" << std::endl;
 	stream << "                    if (scxml_transitions[j].on_transition != NULL) {" << std::endl;
