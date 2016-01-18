@@ -1,5 +1,5 @@
 #!/bin/bash
-SCXML_BIN=/home/juehv/git/uscxml/bin/
+SCXML_BIN=/home/juehv/git/uscxml/build/bin/
 SCXML_TEST=/home/juehv/git/uscxml/test/
 
 SIM_DIR=/home/juehv/modelsim/automated_test/
@@ -10,14 +10,22 @@ COMPILE_CMD="${INSTALL_DIR}vcom ${VHDL_OUT}dut.vhd ${VHDL_OUT}testbench.vhd"
 SIMULATION_CMD="${INSTALL_DIR}vsim -c scxml_lib.testbench -do automation.tcl"
 
 # get arguments
-TEST_NUMBER="144"
-if [ "$1" != '' ] ; then
+TEST_NUMBER="test144.scxml"
+if [ "$1" != "" ] ; then
   TEST_NUMBER="$1"
 fi
 
 # Write file
-${SCXML_BIN}uscxml-transform -t vhdl -i ${SCXML_TEST}/w3c/ecma/test144.scxml -o ${VHDL_OUT}dut.vhd
+${SCXML_BIN}uscxml-transform -t vhdl -i ${SCXML_TEST}/w3c/ecma/${TEST_NUMBER} -o ${VHDL_OUT}dut.vhd
+echo "$(cat ${VHDL_OUT}dut.vhd)"
 echo "${VHDL_OUT}dut.vhd written"
+TMP_RESULT="$(tail -n 1 ${VHDL_OUT}dut.vhd)"
+
+if [ "$TMP_RESULT" == "ERROR" ] ; then
+  echo "Error while generating VHDL"
+  exit -1
+fi
+
 
 # compile stuff
 cd ${SIM_DIR}
