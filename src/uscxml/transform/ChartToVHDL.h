@@ -65,15 +65,18 @@ namespace uscxml {
         void writeFiFo(std::ostream& stream);
         void writeModuleInstantiation(std::ostream& stream);
         void writeErrorHandler(std::ostream& stream);
+        void writeFSM(std::ostream& stream);
 
-        std::string _initState;
-       
-        
+
+
         Interpreter interpreter;
 
+        std::string _initState;
         Arabica::XPath::NodeSet<std::string> _states;
         std::map<std::string, Arabica::DOM::Element<std::string> > _stateNames;
         Arabica::XPath::NodeSet<std::string> _transitions;
+        std::map<std::string, Arabica::DOM::Element<std::string> > _transitionNames;
+        std::vector<std::string> _events;
 
         bool _hasGlobalScripts;
         bool _hasDoneData;
