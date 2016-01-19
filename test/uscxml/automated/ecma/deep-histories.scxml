@@ -3,19 +3,38 @@
     <data id="Var1" expr="0" />
   </datamodel>
   <state id="s0">
+    <transition target="pass" cond="Var1 == 2" />
+    <transition target="fail" />
     <history id="s0.h0" type="deep" />
     <state id="s0.0">
       <history id="s0.0.h0" type="shallow" />
       <state id="s0.0.0">
+        <!-- initial default completion -->
+        <!-- spontaneous transition to s0.0.1 -->
+        <transition target="s0.0.1" />
       </state>
       <state id="s0.0.1">
+        <onentry>
+          <assign location="Var1" expr="Var1 + 1" />
+        </onentry>
+        <!-- spontaneous transition to s1, sets s0.0.h0 and s0.h0 -->
+        <transition target="s1" cond="Var1 == 1" />
       </state>
     </state>
     <state id="s0.1">
-      
+      <!-- we come from s1 -->
+      <!-- spontaneous transition to s2, sets s0.h0 and erroneously overwrites s0.0.h0 -->
+      <transition target="s2" />
     </state>
   </state>
   <state id="s1">
-  </state>
-  
+    <!-- We come from s0.0.1 , Var1 == 1-->
+    <transition target="s0.1" />
+  </state>  
+  <state id="s2">
+    <!-- We come from s0.1 , Var1 == 1-->
+    <transition target="s0.0.h0" />
+  </state>  
+  <final id="pass" />
+  <final id="fail" />
 </scxml>

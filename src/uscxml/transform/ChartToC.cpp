@@ -46,10 +46,46 @@ ChartToC::ChartToC(const Interpreter& other) : TransformerImpl() {
 	cloneFrom(other.getImpl());
 }
 
+void ChartToC::resortStates(Arabica::DOM::Node<std::string>& node) {
+    if (node.getNodeType() != Node_base::ELEMENT_NODE)
+        return;
+
+    // move history states to top
+    Element<std::string> element(node);
+    Node<std::string> child = element.getFirstChild();
+    while(child) {
+        resortStates(child);
+        if (child.getNodeType() == Node_base::ELEMENT_NODE && TAGNAME_CAST(child) == _nsInfo.xmlNSPrefix + "history") {
+            Node<std::string> tmp = child.getNextSibling();
+            element.insertBefore(child, element.getFirstChild());
+            child = tmp;
+        } else {
+            child = child.getNextSibling();
+        }
+    }
+
+    // move initial states on top of histories even
+    child = element.getFirstChild();
+    while(child) {
+        resortStates(child);
+        if (child.getNodeType() == Node_base::ELEMENT_NODE && TAGNAME_CAST(child) == _nsInfo.xmlNSPrefix + "initial") {
+            Node<std::string> tmp = child.getNextSibling();
+            element.insertBefore(child, element.getFirstChild());
+            child = tmp;
+        } else {
+            child = child.getNextSibling();
+        }
+    }
+
+}
+    
 void ChartToC::writeTo(std::ostream& stream) {
 	_binding = (HAS_ATTR(_scxml, "binding") && iequals(ATTR(_scxml, "binding"), "late") ? LATE : EARLY);
 	_name = (HAS_ATTR(_scxml, "name") ? ATTR(_scxml, "name") : "");
 
+    // make sure initial and history elements always precede propoer states
+    
+    
 	std::set<std::string> elements;
 	elements.insert(_nsInfo.xmlNSPrefix + "scxml");
 	elements.insert(_nsInfo.xmlNSPrefix + "state");
@@ -1496,16 +1532,16 @@ void ChartToC::writeFSM(std::ostream& stream) {
 	stream << "                    break;" << std::endl;
 	stream << "                }" << std::endl;
 	stream << "                case SCXML_STATE_COMPOUND: { // we need to check whether one child is already in entry_set" << std::endl;
-	stream << "                    if (!bit_has_and(entry_set, scxml_states[i].children, 1) &&" << std::endl;
-	stream << "                        (!bit_has_and(ctx->config, scxml_states[i].children, 1) ||" << std::endl;
-	stream << "                         bit_has_and(exit_set, scxml_states[i].children, 1)))" << std::endl;
+	stream << "                    if (!bit_has_and(entry_set, scxml_states[i].children, " << _stateCharArraySize << ") &&" << std::endl;
+	stream << "                        (!bit_has_and(ctx->config, scxml_states[i].children, " << _stateCharArraySize << ") ||" << std::endl;
+	stream << "                         bit_has_and(exit_set, scxml_states[i].children, " << _stateCharArraySize << ")))" << std::endl;
 	stream << "                    {" << std::endl;
-	stream << "                        bit_or(entry_set, scxml_states[i].completion, 1);" << std::endl;
-	stream << "                        if (!bit_has_and(scxml_states[i].completion, scxml_states[i].children, 1)) {" << std::endl;
+	stream << "                        bit_or(entry_set, scxml_states[i].completion, " << _stateCharArraySize << ");" << std::endl;
+	stream << "                        if (!bit_has_and(scxml_states[i].completion, scxml_states[i].children, " << _stateCharArraySize << ")) {" << std::endl;
 	stream << "                            // deep completion" << std::endl;
 	stream << "                            for (size_t j = 0; j < SCXML_NUMBER_STATES; j++) {" << std::endl;
 	stream << "                                if (IS_SET(j, scxml_states[i].completion)) {" << std::endl;
-	stream << "                                    bit_or(entry_set, scxml_states[j].ancestors, 1);" << std::endl;
+	stream << "                                    bit_or(entry_set, scxml_states[j].ancestors, " << _stateCharArraySize << ");" << std::endl;
 	stream << "                                    break; // completion of compound is single state" << std::endl;
 	stream << "                                }" << std::endl;
 	stream << "                            }" << std::endl;
