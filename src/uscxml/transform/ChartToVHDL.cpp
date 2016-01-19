@@ -24,6 +24,7 @@
 #include <iostream>
 #include "uscxml/UUID.h"
 #include "uscxml/DOMUtils.h"
+#include "DOM/NodeList.hpp"
 #include <math.h>
 #include <boost/algorithm/string.hpp>
 #include <glog/logging.h>
@@ -33,7 +34,7 @@
 
 #include <sstream>
 
-#define CONST_TRANS_SPONTANIOUS "HWE_NOW"
+#define CONST_TRANS_SPONTANEOUS "HWE_NOW"
 #define CONST_EVENT_ANY "HWE_ANY"
 
 namespace uscxml {
@@ -100,6 +101,24 @@ namespace uscxml {
         return nodes;
     }
 
+    Arabica::XPath::NodeSet<std::string> ChartToVHDL::computeExitSet(const Arabica::DOM::Element<std::string>& transition) {
+
+        NodeSet<std::string> statesToExit;
+        if (!isTargetless(transition)) {
+            Arabica::DOM::Node<std::string> domain = getTransitionDomain(transition);
+            if (!domain)
+                return statesToExit;
+            for (unsigned int j = 0; j < _states.size(); j++) {
+                const Node<std::string>& s = _states[j];
+                if (isDescendant(s, domain)) {
+                    statesToExit.push_back(s);
+                }
+            }
+        }
+
+        return statesToExit;
+    }
+
 
     // ASK Where does _scxml,_nsInfo come from
 
@@ -120,6 +139,7 @@ namespace uscxml {
         elements.insert(_nsInfo.xmlNSPrefix + "script");
 
         elements.insert(_nsInfo.xmlNSPrefix + "parallel");
+        elements.insert(_nsInfo.xmlNSPrefix + "inital");
         elements.insert(_nsInfo.xmlNSPrefix + "history");
 
         elements.insert(_nsInfo.xmlNSPrefix + "if"); //implizit elseif und else
@@ -158,18 +178,18 @@ namespace uscxml {
                 stream << "ERROR" << std::endl;
                 return;
             }
-            if (!HAS_ATTR(transition, "event")) {
-                stream << transition << std::endl;
-                stream << "transition is spntaneous (not supported)!" << std::endl;
-                stream << "ERROR" << std::endl;
-                return;
-            }
-            if (transition.getChildNodes().getLength() > 0) {
-                stream << transition << std::endl;
-                stream << "transition executable code (not supported)!" << std::endl;
-                stream << "ERROR" << std::endl;
-                return;
-            }
+            //            if (!HAS_ATTR(transition, "event")) {
+            //                stream << transition << std::endl;
+            //                stream << "transition is spntaneous (not supported)!" << std::endl;
+            //                stream << "ERROR" << std::endl;
+            //                return;
+            //            }
+            //            if (transition.getChildNodes().getLength() > 0) {
+            //                stream << transition << std::endl;
+            //                stream << "transition executable code (not supported)!" << std::endl;
+            //                stream << "ERROR" << std::endl;
+            //                return;
+            //            }
         }
 
         // create states array
@@ -204,8 +224,8 @@ namespace uscxml {
             Element<std::string> transition(_transitions[i]);
             transition.setAttribute("postFixOrder", toStr(i));
             if (!HAS_ATTR(transition, "event")) {
-                // spontanious transition
-                transition.setAttribute("event", CONST_TRANS_SPONTANIOUS);
+                // spontaneous transition
+                transition.setAttribute("event", CONST_TRANS_SPONTANEOUS);
             }
             std::stringstream ss;
             ss << "HWT" << toStr(i) << "_to_" << ATTR(transition, "target");
@@ -264,11 +284,21 @@ namespace uscxml {
         stream << "    rst  :in    std_logic;" << std::endl;
         stream << "    en   :in    std_logic;" << std::endl;
         stream << "    next_event_i    :in  event_type;" << std::endl;
-        stream << "    next_event_en_i :in  std_logic;" << std::endl;
+        stream << "    next_event_int_en_i :in  std_logic;" << std::endl;
+        stream << "    next_event_ext_en_i :in  std_logic;" << std::endl;
         stream << "    --outputs" << std::endl;
         stream << "    completed_o :out std_logic;" << std::endl;
         stream << "    error_o     :out std_logic;" << std::endl;
-        stream << "    current_state_o  :out state_type" << std::endl;
+
+        for (int i = 0; i < _transitions.size(); i++) {
+            Element<std::string> transition(_transitions[i]);
+            if (transition.getChildNodes().getLength() > 0) {
+                stream << "    " << ATTR(transition, "id") << "_o :out std_logic;" << std::endl;
+            }
+        }
+
+        stream << "    current_state_o  :out state_type;" << std::endl;
+        stream << "    exit_set_o  :out state_type" << std::endl;
         stream << ");" << std::endl;
         stream << "end fsm_scxml; " << std::endl;
 
@@ -342,9 +372,9 @@ namespace uscxml {
         stream << std::endl;
         stream << "package generated_p1 is" << std::endl;
         // create state type
-        stream << "  type state_type is std_logic_vector( ";
+        stream << "  subtype state_type is std_logic_vector(";
         stream << _states.size() - 1;
-        stream << " downto 0)" << std::endl;
+        stream << " downto 0);" << std::endl;
 
         //TODO complete
         // create event type
@@ -479,10 +509,9 @@ namespace uscxml {
 
         for (int i = 0; i < _states.size(); i++) {
             Element<std::string> state(_states[i]);
-            stream << "signal " << ATTR(state, "id") << "_curr : current_state("
-                    << toStr(i) << ");" << std::endl;
-            stream << "signal " << ATTR(state, "id") << "_next : next_state("
-                    << toStr(i) << ");" << std::endl;
+            stream << "signal " << ATTR(state, "id") << "_curr : std_logic;" << std::endl;
+            stream << "signal " << ATTR(state, "id") << "_next : std_logic;" << std::endl;
+            stream << "signal " << ATTR(state, "id") << "_exit : std_logic;" << std::endl;
         }
         stream << std::endl;
         stream << "-- event signals" << std::endl;
@@ -491,16 +520,23 @@ namespace uscxml {
         stream << "signal int_event_empty : std_logic;" << std::endl;
         stream << "signal int_event_input : event_type;" << std::endl;
         stream << "signal int_event_output : event_type;" << std::endl;
+        stream << "signal ext_event_write_en : std_logic;" << std::endl;
+        stream << "signal ext_event_read_en : std_logic;" << std::endl;
+        stream << "signal ext_event_empty : std_logic;" << std::endl;
+        stream << "signal ext_event_input : event_type;" << std::endl;
+        stream << "signal ext_event_output : event_type;" << std::endl;
         stream << "signal next_event_re : std_logic;" << std::endl;
         stream << "signal next_event : event_type;" << std::endl;
         stream << "signal event_consumed : std_logic;" << std::endl;
         stream << std::endl;
         stream << "-- transition signals" << std::endl;
-        stream << "signal transition_spntaneous_en : std_logic;" << std::endl;
+        stream << "signal transition_spontaneous_en : std_logic;" << std::endl;
 
         for (int i = 0; i < _transitions.size(); i++) {
             Element<std::string> transition(_transitions[i]);
             stream << "signal " << ATTR(transition, "id") << "_sig : std_logic;"
+                    << std::endl;
+            stream << "signal " << ATTR(transition, "id") << "_sig_stage1 : std_logic;"
                     << std::endl;
         }
 
@@ -533,11 +569,35 @@ namespace uscxml {
         stream << "stall <= not en; " << std::endl;
         stream << std::endl;
 
-        stream << "next_event_re <= not int_event_empty and not stall; " << std::endl;
-        stream << "next_event <= int_event_output; " << std::endl;
-        stream << "int_event_write_en <= next_event_en_i; " << std::endl;
+        stream << "next_event_re <= ( (not int_event_empty) or (not ext_event_empty) ) and not stall; " << std::endl;
+        stream << "int_event_write_en <= next_event_int_en_i; " << std::endl;
+        stream << "ext_event_write_en <= next_event_ext_en_i; " << std::endl;
         stream << "int_event_input <= next_event_i; " << std::endl;
-        stream << "int_event_read_en <= not transition_spontanous_en and not stall; " << std::endl;
+        stream << "ext_event_input <= next_event_i; " << std::endl;
+        stream << "int_event_read_en <= not transition_spontaneous_en and not stall; " << std::endl;
+        stream << "ext_event_read_en <= not transition_spontaneous_en and not stall and int_event_empty; " << std::endl;
+        stream << std::endl;
+
+        for (int i = 0; i < _transitions.size(); i++) {
+            Element<std::string> transition(_transitions[i]);
+            if (transition.getChildNodes().getLength() > 0) {
+                stream << ATTR(transition, "id") << "_o <= "
+                        << ATTR(transition, "id") << "_sig;" << std::endl;
+            }
+        }
+        stream << std::endl;
+
+        for (int i = 0; i < _states.size(); i++) {
+            Element<std::string> state(_states[i]);
+            stream << "current_state(" << toStr(i) << ") <= " << ATTR(state, "id")
+                    << "_curr;" << std::endl;
+            stream << "next_state(" << toStr(i) << ") <= " << ATTR(state, "id")
+                    << "_next;" << std::endl;
+            stream << "current_state_o(" << toStr(i) << ") <= " << ATTR(state, "id")
+                    << "_curr;" << std::endl;
+            stream << "exit_set_o(" << toStr(i) << ") <= " << ATTR(state, "id")
+                    << "_exit;" << std::endl;
+        }
         stream << std::endl;
 
         // instantiate event fifo
@@ -553,6 +613,29 @@ namespace uscxml {
         stream << "	full        => error_full_int_event_fifo" << std::endl; // we calculate how much we need
         stream << ");" << std::endl;
         stream << std::endl;
+
+        stream << "ext_event_fifo : component std_fifo " << std::endl;
+        stream << "port map ( " << std::endl;
+        stream << "	clk         => clk," << std::endl;
+        stream << "	rst         => rst," << std::endl;
+        stream << "	write_en    => ext_event_write_en," << std::endl;
+        stream << "	read_en     => ext_event_read_en," << std::endl;
+        stream << "	data_in     => ext_event_input," << std::endl;
+        stream << "	data_out    => ext_event_output," << std::endl;
+        stream << "	empty       => ext_event_empty," << std::endl;
+        stream << "	full        => error_full_int_event_fifo" << std::endl; // we calculate how much we need
+        stream << ");" << std::endl;
+        stream << std::endl;
+
+        // event bus switch
+        stream << "event_bus_switch: process (int_event_empty)" << std::endl;
+        stream << "begin" << std::endl;
+        stream << "  if int_event_empty = '1' then" << std::endl;
+        stream << "    next_event <= ext_event_output;" << std::endl;
+        stream << "  else" << std::endl;
+        stream << "    next_event <= int_event_output;" << std::endl;
+        stream << "  end if;" << std::endl;
+        stream << "end process;" << std::endl;
     }
 
     void ChartToVHDL::writeErrorHandler(std::ostream & stream) {
@@ -594,7 +677,7 @@ namespace uscxml {
                 Element<std::string> transition(_transitions[j]);
                 if (ATTR_CAST(transition.getParentNode(), "id") == ATTR(state, "id")) {
                     choises.push_back(transition);
-                    if (ATTR(transition, "event") == CONST_TRANS_SPONTANIOUS) {
+                    if (ATTR(transition, "event") == CONST_TRANS_SPONTANEOUS) {
                         spntaneous_trans_sig = ATTR(transition, "id");
                         // FIXME hofully there are just single spntaneous transitions allowed
                         // else we have to handle this
@@ -613,15 +696,15 @@ namespace uscxml {
 
             if (choises.size() > 0) {// if no outgoing transitions (maybe final state :D) we don't write anything
 
-                stream << "  if ( " << ATTR(state, "id") << " = '1' ) then" << std::endl;
-                stream << "    if ( transition_spntaneous_en = '1' ) then" << std::endl;
+                stream << "  if ( " << ATTR(state, "id") << "_curr = '1' ) then" << std::endl;
+                stream << "    if ( transition_spontaneous_en = '1' ) then" << std::endl;
                 // enable spntaneous transition (if any) and disable all other
                 for (int j = 0; j < choises.size(); j++) {
                     Element<std::string> transition(choises[j]);
                     if (ATTR(transition, "id") == spntaneous_trans_sig) {
-                        stream << "      " << ATTR(transition, "id") << "_sig <= '1';" << std::endl;
+                        stream << "      " << ATTR(transition, "id") << "_sig_stage1 <= '1';" << std::endl;
                     } else {
-                        stream << "      " << ATTR(transition, "id") << "_sig <= '0';" << std::endl;
+                        stream << "      " << ATTR(transition, "id") << "_sig_stage1 <= '0';" << std::endl;
                     }
                 }
 
@@ -644,9 +727,9 @@ namespace uscxml {
                     for (int k = 0; k < choises.size(); k++) {
                         Element<std::string> tmp_t(choises[k]);
                         if (ATTR(tmp_t, "event") == ATTR(transition, "event")) {
-                            stream << "        " << ATTR(tmp_t, "id") << "_sig <= '1';" << std::endl;
+                            stream << "        " << ATTR(tmp_t, "id") << "_sig_stage1 <= '1';" << std::endl;
                         } else {
-                            stream << "        " << ATTR(tmp_t, "id") << "_sig <= '0';" << std::endl;
+                            stream << "        " << ATTR(tmp_t, "id") << "_sig_stage1 <= '0';" << std::endl;
                         }
                     }
                 }
@@ -655,25 +738,38 @@ namespace uscxml {
                     stream << "      when others =>" << std::endl;
                     for (int j = 0; j < choises.size(); j++) {
                         Element<std::string> tmp_t(choises[j]);
-                        stream << "        " << ATTR(tmp_t, "id") << "_sig <= '0';" << std::endl;
+                        stream << "        " << ATTR(tmp_t, "id") << "_sig_stage1 <= '0';" << std::endl;
                     }
                 }
                 stream << "    end case;" << std::endl;
-                //TODO umkehren oder other abfangen
-                //stream << "    when others =>" << std::endl;
-                //stream << "     next_state <= current_state;" << std::endl;
 
                 stream << "    else" << std::endl;
                 // no enabled event ? disable all transitions (looks like we have to wait)
                 for (int j = 0; j < choises.size(); j++) {
                     Element<std::string> transition(choises[j]);
-                    stream << "      " << ATTR(transition, "id") << "_sig <= '0';" << std::endl;
+                    stream << "      " << ATTR(transition, "id") << "_sig_stage1 <= '0';" << std::endl;
                 }
                 stream << "    end if;" << std::endl;
                 stream << "  end if;" << std::endl;
                 stream << std::endl;
             }
+
             // write next state calculation in buffer for later use
+            // for that we use unconflicted transition lines and
+            // compute children for automatic (recursive) parent activation
+            std::vector< Element<std::string> > stateChildren;
+            for (int j = 0; j < _states.size(); j++) {
+                Element<std::string> s(_states[j]);
+                if (ATTR_CAST(s.getParentNode(), "id") == ATTR(state, "id")) {
+                    stateChildren.push_back(s);
+                }
+            }
+            nextStateBuffer << ATTR(state, "id") << "_exit <= ( '0'";
+            for (int j = 0; j < choises.size(); j++) {
+                nextStateBuffer << " or "
+                        << ATTR(choises[j], "id") << "_sig";
+            }
+            nextStateBuffer << " );" << std::endl;
             nextStateBuffer << ATTR(state, "id") << "_next <= ( ( '0'";
             std::string seperator = "  or  ";
             for (int j = 0; j < incommingTransitions.size(); j++) {
@@ -681,19 +777,47 @@ namespace uscxml {
                         << ATTR(incommingTransitions[j], "id") << "_sig";
             }
             nextStateBuffer << " ) or ";
-            nextStateBuffer << "( ( not ( '0'";
-            seperator = "  or  ";
-            for (int j = 0; j < choises.size(); j++) {
-                nextStateBuffer << seperator
-                        << ATTR(choises[j], "id") << "_sig";
-            }
+            nextStateBuffer << "( ( not ( " << ATTR(state, "id") << "_exit";
             nextStateBuffer << " ) ) and " << ATTR(state, "id")
-                    << "_curr ));" << std::endl;
+                    << "_curr ) or ( '0' ";
+
+            for (int j = 0; j < stateChildren.size(); j++) {
+                nextStateBuffer << " or " << ATTR(stateChildren[j], "id")
+                        << "_next";
+            }
+
+            nextStateBuffer << " ) );" << std::endl;
         }
         stream << "end process;" << std::endl;
         stream << std::endl;
         // write outgoing transition buffer
         stream << nextStateBuffer.str() << std::endl;
+
+        // calculate conflicts and write resolver
+        std::string conflictBools;
+        for (unsigned int j = 0; j < _transitions.size(); j++) {
+            Element<std::string> transition(_transitions[j]);
+
+            stream << ATTR(transition, "id") << "_sig <= ( "
+                    << ATTR(transition, "id") << "_sig_stage1 ) and ( not ( '0' ";
+
+            for (int k = 0; k < _transitions.size(); k++) {
+                Element<std::string> t2(_transitions[k]);
+                if (ATTR(transition, "id") != ATTR(t2, "id")) {
+                    if (hasIntersection(computeExitSet(transition), computeExitSet(t2)) ||
+                            (getSourceState(transition) == getSourceState(t2)) ||
+                            (isDescendant(getSourceState(transition), getSourceState(t2))) ||
+                            (isDescendant(getSourceState(t2), getSourceState(transition)))) {
+                        stream << " or " << ATTR(t2, "id") << "_sig_stage1";
+                    } else {
+                        conflictBools += "0";
+                    }
+                }
+            }
+
+            stream << " ) );" << std::endl;
+        }
+        stream << std::endl;
 
         // updater for current state
         stream << "-- update current state" << std::endl;
@@ -716,14 +840,25 @@ namespace uscxml {
         stream << "    case current_state is" << std::endl;
 
         for (int i = 0; i < _states.size(); i++) {
-            //TODO
-            // if end state set completed and result 
-            // on entry events generated here
+            Element<std::string> state(_states[i]);
+            for (int j = 0; j < _transitions.size(); j++) {
+                Element<std::string> transition(_transitions[j]);
+                if (ATTR_CAST(transition.getParentNode(), "id") == ATTR(state, "id")) {
+                    if (ATTR(transition, "target") == CONST_TRANS_SPONTANEOUS) {
+                        stream << "    when " << ATTR(state, "id") << "_curr =>" << std::endl;
+                        stream << "        completed_o <= '0';" << std::endl;
+                        stream << "        result_o <= '0';" << std::endl;
+                        stream << "        transition_spontaneous_en <= '1';" << std::endl;
+                        // TODO manage completed and result
+                    }
+                }
+            }
         }
 
         stream << "    when others =>" << std::endl;
         stream << "        completed_o <= '0';" << std::endl;
         stream << "        result_o <= '0';" << std::endl;
+        stream << "        transition_spontaneous_en <= '0';" << std::endl;
 
         stream << "end case;" << std::endl;
         stream << "end process;" << std::endl;

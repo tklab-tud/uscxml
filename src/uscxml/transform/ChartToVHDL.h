@@ -55,6 +55,9 @@ namespace uscxml {
                 const Arabica::DOM::Element<std::string>& root,
                 Arabica::XPath::NodeSet<std::string>& nodes);
 
+        Arabica::XPath::NodeSet<std::string> computeExitSet(
+                const Arabica::DOM::Element<std::string>& transition);
+
         void writeIncludes(std::ostream& stream);
         void writeTopDown(std::ostream& stream);
 
