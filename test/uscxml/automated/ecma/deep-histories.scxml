@@ -1,0 +1,21 @@
+<scxml datamodel="ecmascript">
+  <datamodel>
+    <data id="Var1" expr="0" />
+  </datamodel>
+  <state id="s0">
+    <history id="s0.h0" type="deep" />
+    <state id="s0.0">
+      <history id="s0.0.h0" type="shallow" />
+      <state id="s0.0.0">
+      </state>
+      <state id="s0.0.1">
+      </state>
+    </state>
+    <state id="s0.1">
+      
+    </state>
+  </state>
+  <state id="s1">
+  </state>
+  
+</scxml>

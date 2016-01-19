@@ -517,9 +517,6 @@ void ChartToC::writeExecContent(std::ostream& stream) {
 			for (size_t j = 0; j < onentry.size(); j++) {
 				stream << "    " << DOMUtils::idForNode(state) << "_on_entry_" << toStr(j) << "(ctx, state, event);" << std::endl;
 			}
-//			if (hasInitialState) {
-//				stream << "    " << DOMUtils::idForNode(state) << "_initial" << "(ctx, state, event);" << std::endl;
-//			}
 
 			stream << "    return SCXML_ERR_OK;" << std::endl;
 			stream << "}" << std::endl;
@@ -541,8 +538,6 @@ void ChartToC::writeExecContent(std::ostream& stream) {
 
 	for (size_t i = 0; i < _transitions.size(); i++) {
 		Element<std::string> transition(_transitions[i]);
-//		if (iequals(TAGNAME_CAST(transition.getParentNode()), "initial"))
-//			continue;
 
 		NodeSet<std::string> execContent = filterChildType(Node_base::ELEMENT_NODE, transition);
 
@@ -1491,18 +1486,30 @@ void ChartToC::writeFSM(std::ostream& stream) {
 	stream << "                            SET_BIT(j, trans_set);" << std::endl;
 	stream << "                            CLEARBIT(i, entry_set);" << std::endl;
 	stream << "                            bit_or(entry_set, scxml_transitions[j].target, " << _stateCharArraySize << ");" << std::endl;
-	stream << "                            // one target may have been above, reestablish completion" << std::endl;
-	stream << "                            // goto ADD_DESCENDANTS; // initial will have to be first!" << std::endl;
-	stream << "                        }" << std::endl;
+	stream << "                            for (size_t k = 0; k < SCXML_NUMBER_STATES; k++) {" << std::endl;
+	stream << "                                if (IS_SET(k, scxml_transitions[j].target)) {" << std::endl;
+	stream << "                                    bit_or(entry_set, scxml_states[k].ancestors, " << _stateCharArraySize << ");" << std::endl;
+	stream << "                                }" << std::endl;
+	stream << "                            }" << std::endl;
+    stream << "                        }" << std::endl;
 	stream << "                    }" << std::endl;
 	stream << "                    break;" << std::endl;
 	stream << "                }" << std::endl;
 	stream << "                case SCXML_STATE_COMPOUND: { // we need to check whether one child is already in entry_set" << std::endl;
-	stream << "                    if (!bit_has_and(entry_set, scxml_states[i].children, " << _stateCharArraySize << ") &&" << std::endl;
-	stream << "                        (!bit_has_and(ctx->config, scxml_states[i].children, " << _stateCharArraySize << ") ||" << std::endl;
-	stream << "                        bit_has_and(exit_set, scxml_states[i].children, " << _stateCharArraySize << ")))" << std::endl;
+	stream << "                    if (!bit_has_and(entry_set, scxml_states[i].children, 1) &&" << std::endl;
+	stream << "                        (!bit_has_and(ctx->config, scxml_states[i].children, 1) ||" << std::endl;
+	stream << "                         bit_has_and(exit_set, scxml_states[i].children, 1)))" << std::endl;
 	stream << "                    {" << std::endl;
-	stream << "                        bit_or(entry_set, scxml_states[i].completion, " << _stateCharArraySize << ");" << std::endl;
+	stream << "                        bit_or(entry_set, scxml_states[i].completion, 1);" << std::endl;
+	stream << "                        if (!bit_has_and(scxml_states[i].completion, scxml_states[i].children, 1)) {" << std::endl;
+	stream << "                            // deep completion" << std::endl;
+	stream << "                            for (size_t j = 0; j < SCXML_NUMBER_STATES; j++) {" << std::endl;
+	stream << "                                if (IS_SET(j, scxml_states[i].completion)) {" << std::endl;
+	stream << "                                    bit_or(entry_set, scxml_states[j].ancestors, 1);" << std::endl;
+	stream << "                                    break; // completion of compound is single state" << std::endl;
+	stream << "                                }" << std::endl;
+	stream << "                            }" << std::endl;
+	stream << "                        }" << std::endl;
 	stream << "                    }" << std::endl;
 	stream << "                    break;" << std::endl;
 	stream << "                }" << std::endl;
