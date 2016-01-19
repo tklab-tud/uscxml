@@ -19,6 +19,7 @@ package/windows*
 
 *.class
 *.cmake
+*.log
 /package/*
 contrib/prebuilt/include/*
 
