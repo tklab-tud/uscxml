@@ -109,12 +109,14 @@ upon](https://github.com/tklab-tud/uscxml/blob/master/docs/BUILDING.md#build-dep
 
 ## Performance
 
-We did some performance measurements in the scope of the [C transformation](https://github.com/tklab-tud/uscxml/blob/master/test/src/test-c-machine.machine.c). As you can see in the 
-figure below, for most IRP tests we average to a duration of 5-20us per microstep in the case of
-generated/compiled C. For interpretation at runtime, we average at around 70-130us per 
-microstep. The generated C is rather optimized while the focus of the interpreter is more on
-correctness, feature completeness and extensibility. However, there are some lessons learned
-that are yet to be applied for the interpreter.
+We did some performance measurements in the scope of the C transformation. As
+you can see in the figure below, for most IRP tests we average to a duration of
+5-20us per microstep on an early 2015 MacBook Pro 13" with 3.1Ghz in the case
+of [generated/compiled C](https://github.com/tklab-tud/uscxml/blob/master/test/src/test-c-machine.machine.c). For interpretation at runtime, we average at around 70-130us per
+microstep. The generated C is rather optimized while the focus of the
+interpreter is more on correctness, feature completeness and extensibility.
+However, there are some lessons learned that are yet to be applied for the
+interpreter.
 
 <img src="https://raw.github.com/tklab-tud/uscxml/master/docs/Performance_Microstep.png" width="500px" />
 

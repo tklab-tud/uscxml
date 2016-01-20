@@ -1615,8 +1615,7 @@ void ChartToC::writeFSM(std::ostream& stream) {
 	stream << "                        bit_copy(history_targets, scxml_states[i].completion, " << _stateCharArraySize << ");" << std::endl;
 	stream << "                        bit_and(history_targets, ctx->history, " << _stateCharArraySize << ");" << std::endl;
 	stream << "                        bit_or(entry_set, history_targets, " << _stateCharArraySize << ");" << std::endl;
-    stream << "                        if (SCXML_STATE_MASK(scxml_states[i].type) == SCXML_STATE_HAS_HISTORY || " << std::endl;
-    stream << "                            SCXML_STATE_MASK(scxml_states[i].type) == SCXML_STATE_HISTORY_DEEP) {" << std::endl;
+    stream << "                        if (scxml_states[i].type == (SCXML_STATE_HAS_HISTORY | SCXML_STATE_HISTORY_DEEP)) {" << std::endl;
 	stream << "                            // a deep history state with nested histories -> more completion" << std::endl;
 	stream << "                            for (size_t j = i + 1; j < SCXML_NUMBER_STATES; j++) {" << std::endl;
 	stream << "                                if (IS_SET(j, scxml_states[i].completion) &&" << std::endl;

@@ -635,8 +635,8 @@ ESTABLISH_ENTRY_SET:
                                 SET_BIT(j, trans_set);
                                 break;
                             }
+                            // Note: SCXML mandates every history to have a transition!
                         }
-                        // TODO: enter parents default completion here
                     } else {
                         bit_copy(history_targets, scxml_states[i].completion, 2);
                         bit_and(history_targets, ctx->history, 2);
@@ -649,8 +649,8 @@ ESTABLISH_ENTRY_SET:
                                     (scxml_states[j].type & SCXML_STATE_HAS_HISTORY)) {
                                     for (size_t k = j + 1; k < SCXML_NUMBER_STATES; k++) {
                                         // add nested history to entry_set
-                                        if ((scxml_states[k].type == SCXML_STATE_HISTORY_DEEP ||
-                                             scxml_states[k].type == SCXML_STATE_HISTORY_SHALLOW) &&
+                                        if ((SCXML_STATE_MASK(scxml_states[k].type) == SCXML_STATE_HISTORY_DEEP ||
+                                             SCXML_STATE_MASK(scxml_states[k].type) == SCXML_STATE_HISTORY_SHALLOW) &&
                                             IS_SET(k, scxml_states[j].children)) {
                                             // a nested history state
                                             SET_BIT(k, entry_set);
@@ -668,7 +668,7 @@ ESTABLISH_ENTRY_SET:
                             SET_BIT(j, trans_set);
                             CLEARBIT(i, entry_set);
                             bit_or(entry_set, scxml_transitions[j].target, 2);
-                            for (size_t k = 0; k < SCXML_NUMBER_STATES; k++) {
+                            for (size_t k = i + 1; k < SCXML_NUMBER_STATES; k++) {
                                 if (IS_SET(k, scxml_transitions[j].target)) {
                                     bit_or(entry_set, scxml_states[k].ancestors, 2);
                                 }
@@ -685,7 +685,7 @@ ESTABLISH_ENTRY_SET:
                         bit_or(entry_set, scxml_states[i].completion, 2);
                         if (!bit_has_and(scxml_states[i].completion, scxml_states[i].children, 2)) {
                             // deep completion
-                            for (size_t j = 0; j < SCXML_NUMBER_STATES; j++) {
+                            for (size_t j = i + 1; j < SCXML_NUMBER_STATES; j++) {
                                 if (IS_SET(j, scxml_states[i].completion)) {
                                     bit_or(entry_set, scxml_states[j].ancestors, 2);
                                     break; // completion of compound is single state
