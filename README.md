@@ -10,12 +10,18 @@
 
 ## General
 
-uSCXML is a SCXML interpreter and transformer written in C/C++. It is [standards compliant](#test-reports) and [easily extended](#extending-uscxml)
-even in C# and Java. The *interpreter* itself runs on <b>Linux</b>, <b>Windows</b>, <b>Raspberry Pi</b> and <b>Mac OSX</b>, each 32- as well as 64Bits as well as <b>iOS</b>. The generated native code transformed from an SCXML document runs on virtually any platform.
+uSCXML is a SCXML interpreter and transformer written in C/C++. It is
+[standards compliant](#test-reports) and [easily extended](#extending-uscxml)
+even in C# and Java. The *interpreter* itself runs on <b>Linux</b>,
+<b>Windows</b>, <b>Raspberry Pi</b> and <b>Mac OSX</b>, each 32- as well as
+64Bits as well as <b>iOS</b>. The *generated native code* transformed from an
+SCXML document runs on virtually any platform.
 
 ### Interpreter
 
-The implementation of the SCXML **runtime interpreter** is available in the <tt>libuscxml</tt> library with the <tt>uscxml-browser</tt> binary as a frontend. It implements the following features:
+The implementation of the SCXML **runtime interpreter** is available in the
+<tt>libuscxml</tt> library with the <tt>uscxml-browser</tt> binary as a
+frontend. It implements the following features:
 
 * <b>Data Models</b>
     * Full [ECMAScript data model](https://github.com/tklab-tud/uscxml/tree/master/src/uscxml/plugins/datamodel/ecmascript) using Google's v8 (and JavaScriptCore on MacOSX and iOS)
@@ -53,11 +59,14 @@ The implementation of the SCXML **runtime interpreter** is available in the <tt>
 
 ### Transformer
 
-The transformer is available in the <tt>libuscxml_transform</tt> library and made available via the <tt>uscxml-transform</tt> binary. It is a general tool for SCXML documents and currently implements the following features:
+The **transformer** is implemented in the <tt>libuscxml_transform</tt> library and
+made available via the <tt>uscxml-transform</tt> binary. It is a general tool
+for SCXML documents and currently implements the following features:
 
 * Transformations onto
     * [Flattened SCXML documents](https://github.com/tklab-tud/uscxml/blob/master/src/uscxml/transform/ChartToFlatSCXML.cpp) in which only a single state is ever active 
         * Resulting documents require slight adaptations to a compliant interpreter for donedata, the <tt>In</tt> predicate and invokers.
+        * Semantic equivalence is shown via IRP tests.
     * [C native code](https://github.com/tklab-tud/uscxml/blob/master/src/uscxml/transform/ChartToC.cpp) for easy embedding of SCXML state-charts in C and C++ programs
         * No invokers are implemented at the moment and only a single SCXML state-chart can be given in a given document.
     * [PROMELA programs](https://github.com/tklab-tud/uscxml/blob/master/src/uscxml/transform/ChartToPromela.cpp) for model-checking via linear temporal logic with the SPIN model-checker.
