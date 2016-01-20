@@ -118,6 +118,9 @@ if (NOT BUILD_MINIMAL)
 		"fsm/lua"
 		"fsm/promela"
 
+		# formal verification
+		"spin/promela"
+
 		# minimized interpreters
 		"min/ecma"
 		"min/xpath"
@@ -190,21 +193,21 @@ if (NOT BUILD_MINIMAL)
 
 							# generate native interpreters
 							add_test(NAME "${TEST_NAME}"
-							    COMMAND ${CMAKE_COMMAND}
-										-DOUTDIR:FILEPATH=${CMAKE_CURRENT_BINARY_DIR}/${TEST_CLASS}
-										-DTESTFILE:FILEPATH=${W3C_TEST}
-										-DTARGETLANG=${TEST_TARGET}
-										-DJSC_LIBRARY:FILEPATH=${JSC_LIBRARY}
-										-DUSCXML_TRANSFORM_BIN:FILEPATH=${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/uscxml-transform
-										-DGCC_BIN:FILEPATH=${GCC}
-										-DGPP_BIN:FILEPATH=${GPP}
-										-DPROJECT_SOURCE_DIR=${PROJECT_SOURCE_DIR}
-										-DUSCXML_PLATFORM_ID=${USCXML_PLATFORM_ID}
-										-DCMAKE_BINARY_DIR=${CMAKE_BINARY_DIR}
-										-DPROJECT_BINARY_DIR=${PROJECT_BINARY_DIR}
-										-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=${CMAKE_LIBRARY_OUTPUT_DIRECTORY}
-										-DSCAFFOLDING_FOR_GENERATED_C:FILEPATH=${CMAKE_CURRENT_SOURCE_DIR}/src/test-c-machine.cpp
-										-P ${CMAKE_CURRENT_SOURCE_DIR}/w3c/run_generated_test.cmake)
+								COMMAND ${CMAKE_COMMAND}
+									-DOUTDIR:FILEPATH=${CMAKE_CURRENT_BINARY_DIR}/${TEST_CLASS}
+									-DTESTFILE:FILEPATH=${W3C_TEST}
+									-DTARGETLANG=${TEST_TARGET}
+									-DJSC_LIBRARY:FILEPATH=${JSC_LIBRARY}
+									-DUSCXML_TRANSFORM_BIN:FILEPATH=${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/uscxml-transform
+									-DGCC_BIN:FILEPATH=${GCC}
+									-DGPP_BIN:FILEPATH=${GPP}
+									-DPROJECT_SOURCE_DIR=${PROJECT_SOURCE_DIR}
+									-DUSCXML_PLATFORM_ID=${USCXML_PLATFORM_ID}
+									-DCMAKE_BINARY_DIR=${CMAKE_BINARY_DIR}
+									-DPROJECT_BINARY_DIR=${PROJECT_BINARY_DIR}
+									-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=${CMAKE_LIBRARY_OUTPUT_DIRECTORY}
+									-DSCAFFOLDING_FOR_GENERATED_C:FILEPATH=${CMAKE_CURRENT_SOURCE_DIR}/src/test-c-machine.cpp
+									-P ${CMAKE_CURRENT_SOURCE_DIR}/w3c/run_generated_test.cmake)
 							set_tests_properties("${TEST_NAME}" PROPERTIES DEPENDS uscxml-transform)
 
 						endif()
@@ -212,13 +215,29 @@ if (NOT BUILD_MINIMAL)
 					elseif (TEST_TYPE MATCHES "^min.*")
 
 						add_test(NAME "${TEST_NAME}"
-						    COMMAND ${CMAKE_COMMAND}
-									-DOUTDIR:FILEPATH=${CMAKE_CURRENT_BINARY_DIR}/ecma
-									-DTESTFILE:FILEPATH=${W3C_TEST}
-									-DUSCXML_TRANSFORM_BIN:FILEPATH=${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/uscxml-transform
-									-DUSCXML_W3C_TEST_BIN:FILEPATH=${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-w3c
+							COMMAND ${CMAKE_COMMAND}
+								-DOUTDIR:FILEPATH=${CMAKE_CURRENT_BINARY_DIR}/${TEST_CLASS}
+								-DTESTFILE:FILEPATH=${W3C_TEST}
+								-DUSCXML_TRANSFORM_BIN:FILEPATH=${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/uscxml-transform
+								-DUSCXML_W3C_TEST_BIN:FILEPATH=${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-w3c
 								-P ${CMAKE_CURRENT_SOURCE_DIR}/w3c/run_minimized_test.cmake)
 
+					elseif (TEST_TYPE MATCHES "^spin.*")
+
+						if (NOT ${TEST_DATAMODEL} STREQUAL "promela")
+							break()
+						endif()
+
+						add_test(NAME "${TEST_NAME}"
+							COMMAND ${CMAKE_COMMAND}
+								-DOUTDIR:FILEPATH=${CMAKE_CURRENT_BINARY_DIR}/promela
+								-DTESTFILE:FILEPATH=${W3C_TEST}
+								-DUSCXML_TRANSFORM_BIN:FILEPATH=${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/uscxml-transform
+								-DSPIN_BIN:FILEPATH=${SPIN}
+								-DGCC_BIN:FILEPATH=${GCC}
+								-P ${CMAKE_CURRENT_SOURCE_DIR}/w3c/run_promela_test.cmake)
+						set_tests_properties("${TEST_NAME}" PROPERTIES PASS_REGULAR_EXPRESSION "depth reached [0-9]+, errors: 0")
+						set_tests_properties("${TEST_NAME}" PROPERTIES FAIL_REGULAR_EXPRESSION "depth reached [0-9]+, errors: [1-9]+")
 						
 					elseif (TEST_TYPE MATCHES "^fsm.*")
 							
