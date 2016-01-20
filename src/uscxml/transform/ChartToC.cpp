@@ -1615,7 +1615,8 @@ void ChartToC::writeFSM(std::ostream& stream) {
 	stream << "                        bit_copy(history_targets, scxml_states[i].completion, " << _stateCharArraySize << ");" << std::endl;
 	stream << "                        bit_and(history_targets, ctx->history, " << _stateCharArraySize << ");" << std::endl;
 	stream << "                        bit_or(entry_set, history_targets, " << _stateCharArraySize << ");" << std::endl;
-	stream << "                        if (scxml_states[i].type == (SCXML_STATE_HAS_HISTORY | SCXML_STATE_HISTORY_DEEP)) {" << std::endl;
+    stream << "                        if (SCXML_STATE_MASK(scxml_states[i].type) == SCXML_STATE_HAS_HISTORY || " << std::endl;
+    stream << "                            SCXML_STATE_MASK(scxml_states[i].type) == SCXML_STATE_HISTORY_DEEP) {" << std::endl;
 	stream << "                            // a deep history state with nested histories -> more completion" << std::endl;
 	stream << "                            for (size_t j = i + 1; j < SCXML_NUMBER_STATES; j++) {" << std::endl;
 	stream << "                                if (IS_SET(j, scxml_states[i].completion) &&" << std::endl;
@@ -1623,8 +1624,8 @@ void ChartToC::writeFSM(std::ostream& stream) {
 	stream << "                                    (scxml_states[j].type & SCXML_STATE_HAS_HISTORY)) {" << std::endl;
 	stream << "                                    for (size_t k = j + 1; k < SCXML_NUMBER_STATES; k++) {" << std::endl;
 	stream << "                                        // add nested history to entry_set" << std::endl;
-	stream << "                                        if ((scxml_states[k].type == SCXML_STATE_HISTORY_DEEP ||" << std::endl;
-	stream << "                                             scxml_states[k].type == SCXML_STATE_HISTORY_SHALLOW) &&" << std::endl;
+	stream << "                                        if ((SCXML_STATE_MASK(scxml_states[k].type) == SCXML_STATE_HISTORY_DEEP ||" << std::endl;
+	stream << "                                             SCXML_STATE_MASK(scxml_states[k].type) == SCXML_STATE_HISTORY_SHALLOW) &&" << std::endl;
 	stream << "                                            IS_SET(k, scxml_states[j].children)) {" << std::endl;
 	stream << "                                            // a nested history state" << std::endl;
 	stream << "                                            SET_BIT(k, entry_set);" << std::endl;
