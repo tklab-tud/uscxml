@@ -1,0 +1,11 @@
+<scxml datamodel="ecmascript" initial="s0.h0">
+  <state id="s0">
+    <transition target="fail" />
+    <history id="s0.h0" type="deep" />
+    <state id="s0.0">
+      <transition target="pass" />
+    </state>
+  </state>
+  <final id="pass" />
+  <final id="fail" />
+</scxml>

@@ -46,31 +46,123 @@ ChartToC::ChartToC(const Interpreter& other) : TransformerImpl() {
 	cloneFrom(other.getImpl());
 }
 
+void ChartToC::setHistoryResponsibility(Arabica::DOM::Node<std::string>& node) {
+    std::set<std::string> elements;
+    elements.insert(_nsInfo.xmlNSPrefix + "history");
+    Arabica::XPath::NodeSet<std::string> histories = inPostFixOrder(elements, _scxml);
+
+    NodeSet<std::string> covered;
+    NodeSet<std::string> perParentcovered;
+    Node<std::string> parent;
+    
+    for (size_t i = 0; i < histories.size(); i++) {
+        Element<std::string> history(histories[i]);
+        NodeSet<std::string> completion;
+
+        if (parent != history.getParentNode()) {
+            covered.push_back(perParentcovered);
+            perParentcovered = NodeSet<std::string>();
+            parent = history.getParentNode();
+        }
+
+        bool deep = (HAS_ATTR(history, "type") && iequals(ATTR(history, "type"), "deep"));
+        for (size_t j = 0; j < _states.size(); j++) {
+            if (_states[j] == history)
+                continue;
+            
+            if (isDescendant(_states[j], history.getParentNode()) && isHistory(Element<std::string>(_states[j]))) {
+                history.setAttribute("hasNestedHistory", "true");
+            }
+            
+            if (isMember(_states[j], covered))
+                continue;
+            
+            if (deep) {
+                if (isDescendant(_states[j], history.getParentNode()) && !isHistory(Element<std::string>(_states[j]))) {
+                    completion.push_back(_states[j]);
+                }
+            } else {
+                if (_states[j].getParentNode() == history.getParentNode() && !isHistory(Element<std::string>(_states[j]))) {
+                    completion.push_back(_states[j]);
+                }
+            }
+        }
+        perParentcovered.push_back(completion);
+
+        std::string respBools;
+        std::string respBoolsIdx;
+        for (size_t j = 0; j < _states.size(); j++) {
+            if (isMember(_states[j], completion)) {
+                respBools += "1";
+                respBoolsIdx += " " + toStr(j);
+            } else {
+                respBools += "0";
+            }
+        }
+        history.setAttribute("respBools", respBools);
+        history.setAttribute("respBoolsIdx", respBoolsIdx);
+    }
+}
+
+    
 void ChartToC::resortStates(Arabica::DOM::Node<std::string>& node) {
     if (node.getNodeType() != Node_base::ELEMENT_NODE)
         return;
 
-    // move history states to top
+    /**
+      initials
+      deep histories
+      shallow histories
+      everything else
+     */
+
     Element<std::string> element(node);
+
+    // shallow history states to top
     Node<std::string> child = element.getFirstChild();
     while(child) {
         resortStates(child);
-        if (child.getNodeType() == Node_base::ELEMENT_NODE && TAGNAME_CAST(child) == _nsInfo.xmlNSPrefix + "history") {
+        if (child.getNodeType() == Node_base::ELEMENT_NODE &&
+            TAGNAME_CAST(child) == _nsInfo.xmlNSPrefix + "history" &&
+            (!HAS_ATTR(element, "type") || iequals(ATTR(element, "type"), "shallow"))) {
             Node<std::string> tmp = child.getNextSibling();
-            element.insertBefore(child, element.getFirstChild());
+            if (child != element.getFirstChild()) {
+                element.insertBefore(child, element.getFirstChild());
+            }
             child = tmp;
         } else {
             child = child.getNextSibling();
         }
     }
 
-    // move initial states on top of histories even
+    // deep history states to top
+    child = element.getFirstChild();
+    while(child) {
+        resortStates(child);
+        if (child.getNodeType() == Node_base::ELEMENT_NODE &&
+            TAGNAME_CAST(child) == _nsInfo.xmlNSPrefix + "history" &&
+            HAS_ATTR(element, "type") &&
+            iequals(ATTR(element, "type"), "deep")) {
+            
+            Node<std::string> tmp = child.getNextSibling();
+            if (child != element.getFirstChild()) {
+                element.insertBefore(child, element.getFirstChild());
+            }
+            child = tmp;
+        } else {
+            child = child.getNextSibling();
+        }
+    }
+
+    // initial states on top of histories even
     child = element.getFirstChild();
     while(child) {
         resortStates(child);
         if (child.getNodeType() == Node_base::ELEMENT_NODE && TAGNAME_CAST(child) == _nsInfo.xmlNSPrefix + "initial") {
             Node<std::string> tmp = child.getNextSibling();
-            element.insertBefore(child, element.getFirstChild());
+            if (child != element.getFirstChild()) {
+                element.insertBefore(child, element.getFirstChild());
+            }
             child = tmp;
         } else {
             child = child.getNextSibling();
@@ -84,7 +176,7 @@ void ChartToC::writeTo(std::ostream& stream) {
 	_name = (HAS_ATTR(_scxml, "name") ? ATTR(_scxml, "name") : "");
 
     // make sure initial and history elements always precede propoer states
-    
+    resortStates(_scxml);
     
 	std::set<std::string> elements;
 	elements.insert(_nsInfo.xmlNSPrefix + "scxml");
@@ -154,6 +246,9 @@ void ChartToC::writeTo(std::ostream& stream) {
 		_transDataType = "uint64_t";
 	}
 
+    // set the responsibility of history elements
+    setHistoryResponsibility(_scxml);
+
 	writeIncludes(stream);
 	writeMacros(stream);
 	writeTypes(stream);
@@ -220,7 +315,9 @@ void ChartToC::writeMacros(std::ostream& stream) {
 	stream << "#define SCXML_STATE_HISTORY_DEEP     0x05" << std::endl;
 	stream << "#define SCXML_STATE_HISTORY_SHALLOW  0x06" << std::endl;
 	stream << "#define SCXML_STATE_INITIAL          0x07" << std::endl;
-
+	stream << "#define SCXML_STATE_HAS_HISTORY      0x80 // highest bit" << std::endl;
+    stream << "#define SCXML_STATE_MASK(t)          (t & 0x7F) // mask highest bit" << std::endl;
+    
 	stream << "" << std::endl;
 	stream << "#define SCXML_CTX_PRISTINE           0x00" << std::endl;
 	stream << "#define SCXML_CTX_SPONTANEOUS        0x01" << std::endl;
@@ -1001,11 +1098,15 @@ void ChartToC::writeStates(std::ostream& stream) {
 		stream << "," << std::endl;
 
 		// children
+        bool hasHistoryChild = false;
 		std::string childBools;
 		std::string childBoolsIdx;
 		for (size_t j = 0; j < _states.size(); j++) {
 			if (_states[j].getParentNode() == state) {
-				childBools += "1";
+                if (isHistory(Element<std::string>(_states[j]))) {
+                    hasHistoryChild = true;
+                }
+                childBools += "1";
 				childBoolsIdx += " " + toStr(j);
 			} else {
 				childBools += "0";
@@ -1017,20 +1118,16 @@ void ChartToC::writeStates(std::ostream& stream) {
 		stream << " }," << std::endl;
 
 		// default completion
+        std::string descBools;
+        std::string descBoolsIdx;
+
 		NodeSet<std::string> completion;
 		if (isHistory(state)) {
-			bool deep = (HAS_ATTR(state, "type") && iequals(ATTR(state, "type"), "deep"));
-			for (size_t j = 0; j < _states.size(); j++) {
-				if (deep) {
-					if (isDescendant(_states[j], state.getParentNode()) && !isHistory(Element<std::string>(_states[j]))) {
-						completion.push_back(_states[j]);
-					}
-				} else {
-					if (_states[j].getParentNode() == state.getParentNode() && !isHistory(Element<std::string>(_states[j]))) {
-						completion.push_back(_states[j]);
-					}
-				}
-			}
+            // we already precalculated everything
+            descBools = ATTR(state, "respBools");
+            descBoolsIdx = ATTR(state, "respBoolsIdx");
+            hasHistoryChild = HAS_ATTR(state, "hasNestedHistory");
+            goto WRITE_COMPLETION;
 		}
 		if (isParallel(state)) {
 			completion = getChildStates(state);
@@ -1056,8 +1153,6 @@ void ChartToC::writeStates(std::ostream& stream) {
 			}
 		}
 
-		std::string descBools;
-		std::string descBoolsIdx;
 		for (size_t j = 0; j < _states.size(); j++) {
 			if (isMember(_states[j], completion)) {
 				descBools += "1";
@@ -1066,6 +1161,8 @@ void ChartToC::writeStates(std::ostream& stream) {
 				descBools += "0";
 			}
 		}
+    WRITE_COMPLETION:
+        
 		stream << "        /* completion */ { ";
 		writeCharArrayInitList(stream, descBools);
 		stream << " /* " << descBools << "," << descBoolsIdx << " */";
@@ -1112,6 +1209,10 @@ void ChartToC::writeStates(std::ostream& stream) {
 		} else { // <scxml>
 			stream << "SCXML_STATE_COMPOUND";
 		}
+        if (hasHistoryChild) {
+            stream << " | SCXML_STATE_HAS_HISTORY";
+        }
+        
 		stream << "," << std::endl;
 
 		stream << "    }" << (i + 1 < _states.size() ? ",": "") << std::endl;
@@ -1456,7 +1557,8 @@ void ChartToC::writeFSM(std::ostream& stream) {
 
 	stream << "// REMEMBER_HISTORY:" << std::endl;
 	stream << "    for (size_t i = 0; i < SCXML_NUMBER_STATES; i++) {" << std::endl;
-	stream << "        if unlikely(scxml_states[i].type == SCXML_STATE_HISTORY_SHALLOW || scxml_states[i].type == SCXML_STATE_HISTORY_DEEP) {" << std::endl;
+	stream << "        if unlikely(SCXML_STATE_MASK(scxml_states[i].type) == SCXML_STATE_HISTORY_SHALLOW ||" << std::endl;
+    stream << "                    SCXML_STATE_MASK(scxml_states[i].type) == SCXML_STATE_HISTORY_DEEP) {" << std::endl;
 	stream << "            // a history state whose parent is about to be exited" << std::endl;
 	stream << "            if unlikely(IS_SET(scxml_states[i].parent, exit_set)) {" << std::endl;
 	stream << "                char history[" << _stateCharArraySize << "] = " << _stateCharArrayInit << ";" << std::endl;
@@ -1490,7 +1592,7 @@ void ChartToC::writeFSM(std::ostream& stream) {
 	stream << "    // iterate for descendants" << std::endl;
 	stream << "    for (size_t i = 0; i < SCXML_NUMBER_STATES; i++) {" << std::endl;
 	stream << "        if (IS_SET(i, entry_set)) {" << std::endl;
-	stream << "            switch (scxml_states[i].type) {" << std::endl;
+	stream << "            switch (SCXML_STATE_MASK(scxml_states[i].type)) {" << std::endl;
 	stream << "                case SCXML_STATE_PARALLEL: {" << std::endl;
 	stream << "                    bit_or(entry_set, scxml_states[i].completion, " << _stateCharArraySize << ");" << std::endl;
 	stream << "                    break;" << std::endl;
@@ -1507,12 +1609,30 @@ void ChartToC::writeFSM(std::ostream& stream) {
 	stream << "                                SET_BIT(j, trans_set);" << std::endl;
 	stream << "                                break;" << std::endl;
 	stream << "                            }" << std::endl;
+    stream << "                            // Note: SCXML mandates every history to have a transition!" << std::endl;
 	stream << "                        }" << std::endl;
-	stream << "                        // TODO: enter parents default completion here" << std::endl;
 	stream << "                    } else {" << std::endl;
 	stream << "                        bit_copy(history_targets, scxml_states[i].completion, " << _stateCharArraySize << ");" << std::endl;
 	stream << "                        bit_and(history_targets, ctx->history, " << _stateCharArraySize << ");" << std::endl;
 	stream << "                        bit_or(entry_set, history_targets, " << _stateCharArraySize << ");" << std::endl;
+	stream << "                        if (scxml_states[i].type == (SCXML_STATE_HAS_HISTORY | SCXML_STATE_HISTORY_DEEP)) {" << std::endl;
+	stream << "                            // a deep history state with nested histories -> more completion" << std::endl;
+	stream << "                            for (size_t j = i + 1; j < SCXML_NUMBER_STATES; j++) {" << std::endl;
+	stream << "                                if (IS_SET(j, scxml_states[i].completion) &&" << std::endl;
+	stream << "                                    IS_SET(j, entry_set) &&" << std::endl;
+	stream << "                                    (scxml_states[j].type & SCXML_STATE_HAS_HISTORY)) {" << std::endl;
+	stream << "                                    for (size_t k = j + 1; k < SCXML_NUMBER_STATES; k++) {" << std::endl;
+	stream << "                                        // add nested history to entry_set" << std::endl;
+	stream << "                                        if ((scxml_states[k].type == SCXML_STATE_HISTORY_DEEP ||" << std::endl;
+	stream << "                                             scxml_states[k].type == SCXML_STATE_HISTORY_SHALLOW) &&" << std::endl;
+	stream << "                                            IS_SET(k, scxml_states[j].children)) {" << std::endl;
+	stream << "                                            // a nested history state" << std::endl;
+	stream << "                                            SET_BIT(k, entry_set);" << std::endl;
+	stream << "                                        }" << std::endl;
+	stream << "                                    }" << std::endl;
+	stream << "                                }" << std::endl;
+	stream << "                            }" << std::endl;
+	stream << "                        }" << std::endl;
 	stream << "                    }" << std::endl;
 	stream << "                    break;" << std::endl;
 	stream << "                }" << std::endl;
@@ -1522,7 +1642,7 @@ void ChartToC::writeFSM(std::ostream& stream) {
 	stream << "                            SET_BIT(j, trans_set);" << std::endl;
 	stream << "                            CLEARBIT(i, entry_set);" << std::endl;
 	stream << "                            bit_or(entry_set, scxml_transitions[j].target, " << _stateCharArraySize << ");" << std::endl;
-	stream << "                            for (size_t k = 0; k < SCXML_NUMBER_STATES; k++) {" << std::endl;
+	stream << "                            for (size_t k = i + 1; k < SCXML_NUMBER_STATES; k++) {" << std::endl;
 	stream << "                                if (IS_SET(k, scxml_transitions[j].target)) {" << std::endl;
 	stream << "                                    bit_or(entry_set, scxml_states[k].ancestors, " << _stateCharArraySize << ");" << std::endl;
 	stream << "                                }" << std::endl;
@@ -1539,7 +1659,7 @@ void ChartToC::writeFSM(std::ostream& stream) {
 	stream << "                        bit_or(entry_set, scxml_states[i].completion, " << _stateCharArraySize << ");" << std::endl;
 	stream << "                        if (!bit_has_and(scxml_states[i].completion, scxml_states[i].children, " << _stateCharArraySize << ")) {" << std::endl;
 	stream << "                            // deep completion" << std::endl;
-	stream << "                            for (size_t j = 0; j < SCXML_NUMBER_STATES; j++) {" << std::endl;
+	stream << "                            for (size_t j = i + 1; j < SCXML_NUMBER_STATES; j++) {" << std::endl;
 	stream << "                                if (IS_SET(j, scxml_states[i].completion)) {" << std::endl;
 	stream << "                                    bit_or(entry_set, scxml_states[j].ancestors, " << _stateCharArraySize << ");" << std::endl;
 	stream << "                                    break; // completion of compound is single state" << std::endl;
@@ -1598,9 +1718,9 @@ void ChartToC::writeFSM(std::ostream& stream) {
 	stream << "    for (size_t i = 0; i < SCXML_NUMBER_STATES; i++) {" << std::endl;
 	stream << "        if (IS_SET(i, entry_set) && !IS_SET(i, ctx->config)) {" << std::endl;
 	stream << "            // these are no proper states" << std::endl;
-	stream << "            if unlikely(scxml_states[i].type == SCXML_STATE_HISTORY_DEEP ||" << std::endl;
-	stream << "                        scxml_states[i].type == SCXML_STATE_HISTORY_SHALLOW ||" << std::endl;
-	stream << "                        scxml_states[i].type == SCXML_STATE_INITIAL)" << std::endl;
+	stream << "            if unlikely(SCXML_STATE_MASK(scxml_states[i].type) == SCXML_STATE_HISTORY_DEEP ||" << std::endl;
+	stream << "                        SCXML_STATE_MASK(scxml_states[i].type) == SCXML_STATE_HISTORY_SHALLOW ||" << std::endl;
+	stream << "                        SCXML_STATE_MASK(scxml_states[i].type) == SCXML_STATE_INITIAL)" << std::endl;
 	stream << "                continue;" << std::endl;
 	stream << std::endl;
 
@@ -1639,7 +1759,7 @@ void ChartToC::writeFSM(std::ostream& stream) {
 	stream << std::endl;
 
 	stream << "            // handle final states" << std::endl;
-	stream << "            if unlikely(scxml_states[i].type == SCXML_STATE_FINAL) {" << std::endl;
+	stream << "            if unlikely(SCXML_STATE_MASK(scxml_states[i].type) == SCXML_STATE_FINAL) {" << std::endl;
 	stream << "                if unlikely(scxml_states[i].ancestors[0] == 0x01) {" << std::endl;
 	stream << "                    ctx->flags |= SCXML_CTX_TOP_LEVEL_FINAL;" << std::endl;
 	stream << "                } else {" << std::endl;
@@ -1662,12 +1782,12 @@ void ChartToC::writeFSM(std::ostream& stream) {
 	stream << "                 * 4. If a state remains, not all children of a parallel are final" << std::endl;
 	stream << "                 */" << std::endl;
 	stream << "                for (size_t j = 0; j < SCXML_NUMBER_STATES; j++) {" << std::endl;
-	stream << "                    if unlikely(scxml_states[j].type == SCXML_STATE_PARALLEL) {" << std::endl;
+	stream << "                    if unlikely(SCXML_STATE_MASK(scxml_states[j].type) == SCXML_STATE_PARALLEL) {" << std::endl;
 	stream << "                        char parallel_children[" << _stateCharArraySize << "] = " << _stateCharArrayInit << ";" << std::endl;
 	stream << "                        size_t parallel = j;" << std::endl;
 	stream << "                        for (size_t k = 0; k < SCXML_NUMBER_STATES; k++) {" << std::endl;
 	stream << "                            if unlikely(IS_SET(parallel, scxml_states[k].ancestors) && IS_SET(k, ctx->config)) {" << std::endl;
-	stream << "                                if (scxml_states[k].type == SCXML_STATE_FINAL) {" << std::endl;
+	stream << "                                if (SCXML_STATE_MASK(scxml_states[k].type) == SCXML_STATE_FINAL) {" << std::endl;
 	stream << "                                    bit_and_not(parallel_children, scxml_states[k].ancestors, " << _stateCharArraySize << ");" << std::endl;
 	stream << "                                } else {" << std::endl;
 	stream << "                                    SET_BIT(k, parallel_children);" << std::endl;

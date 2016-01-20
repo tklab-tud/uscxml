@@ -1,0 +1,31 @@
+<scxml datamodel="ecmascript">
+  <datamodel>
+    <data id="Var1" expr="0" />
+  </datamodel>
+  <state id="s0">
+    <transition target="pass" cond="Var1 == 2" />
+    <transition target="fail" />
+    
+    <history id="h0" type="deep" />
+    <state id="s0.0">
+      <history id="h1" type="deep" />
+      <state id="s0.0.0">
+        <onentry>
+          <assign location="Var1" expr="Var1 + 1" />
+        </onentry>
+        <transition target="s0.0.1" cond="Var1 == 1" />
+      </state>
+      <state id="s0.0.1">
+        <transition target="s1" cond="Var1 == 1" />
+      </state>
+    </state>
+  </state>
+  <state id="s1">
+    <onentry>
+      <assign location="Var1" expr="Var1 + 1" />
+    </onentry>
+    <transition target="h0" cond="Var1 == 2" />
+  </state>
+  <final id="pass" />
+  <final id="fail" />
+</scxml>

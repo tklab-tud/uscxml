@@ -302,7 +302,9 @@ std::list<InterpreterIssue> InterpreterIssue::forInterpreter(InterpreterImpl* in
 			NodeSet<std::string> transitions = InterpreterImpl::filterChildElements(_nsInfo.xmlNSPrefix + "transition", state, false);
 			if (transitions.size() > 1) {
 				issues.push_back(InterpreterIssue("History pseudo-state with id '" + stateId + "' has multiple transitions", state, InterpreterIssue::USCXML_ISSUE_FATAL));
-			} else if (transitions.size() == 1) {
+            } else if (transitions.size() == 0) {
+                issues.push_back(InterpreterIssue("History pseudo-state with id '" + stateId + "' has no default transition", state, InterpreterIssue::USCXML_ISSUE_FATAL));
+            } else {
 				Element<std::string> transition = Element<std::string>(transitions[0]);
 				if (HAS_ATTR(transition, "cond")) {
 					issues.push_back(InterpreterIssue("Transition in history pseudo-state '" + stateId + "' must not have a condition", transition, InterpreterIssue::USCXML_ISSUE_FATAL));
