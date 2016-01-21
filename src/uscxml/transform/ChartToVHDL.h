@@ -69,6 +69,7 @@ namespace uscxml {
         void writeModuleInstantiation(std::ostream& stream);
         void writeErrorHandler(std::ostream& stream);
         void writeFSM(std::ostream& stream);
+        void writeTestbench(std::ostream& stream);
 
 
 
@@ -80,6 +81,10 @@ namespace uscxml {
         Arabica::XPath::NodeSet<std::string> _transitions;
         std::map<std::string, Arabica::DOM::Element<std::string> > _transitionNames;
         std::vector<std::string> _events;
+        Arabica::XPath::NodeSet<std::string> _compoundStates;
+        Arabica::XPath::NodeSet<std::string> _parallelStates;
+        Arabica::XPath::NodeSet<std::string> _finalStates;
+        Arabica::XPath::NodeSet<std::string> _superFinalStates;
 
         bool _hasGlobalScripts;
         bool _hasDoneData;

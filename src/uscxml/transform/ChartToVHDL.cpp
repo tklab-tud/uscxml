@@ -172,7 +172,7 @@ namespace uscxml {
                 stream << "ERROR" << std::endl;
                 return;
             }
-            if (!HAS_ATTR(transition, "target")) {
+            if (!HAS_ATTR(transition, "target")) { // filter never matches
                 stream << transition << std::endl;
                 stream << "transition has no target (not supported)!" << std::endl;
                 stream << "ERROR" << std::endl;
@@ -190,6 +190,32 @@ namespace uscxml {
             //                stream << "ERROR" << std::endl;
             //                return;
             //            }
+        }
+
+        elements.clear();
+        elements.insert(_nsInfo.xmlNSPrefix + "send");
+        unsupported = inPostFixOrder(elements, _scxml);
+
+        for (int i = 0; i < unsupported.size(); i++) {
+            Element<std::string> send(unsupported[i]);
+            if (HAS_ATTR(send, "target") && (ATTR(send, "target")[0] != '#' || ATTR(send, "target")[1] != '_')) {
+                stream << send << std::endl;
+                stream << "complex send tag (not supported)!" << std::endl;
+                stream << "ERROR" << std::endl;
+                return;
+            }
+        }
+
+        // filter final states which are not terminating the fsm
+        elements.clear();
+        elements.insert(_nsInfo.xmlNSPrefix + "final");
+        unsupported = inPostFixOrder(elements, _scxml);
+        for (int i = 0; i < unsupported.size(); i++) {
+            Element<std::string> state(unsupported[i]);
+            if (TAGNAME_CAST(state.getParentNode()) != "scxml") {
+                stream << "internal final stateds (not supported)" << std::endl;
+                stream << "ERROR" << std::endl;
+            }
         }
 
         // create states array
@@ -215,7 +241,83 @@ namespace uscxml {
         }
         _initState = ATTR(_scxml, "initial");
 
+        //create compount states array
+        elements.clear();
+        //        elements.insert(_nsInfo.xmlNSPrefix + "scxml");
+        elements.insert(_nsInfo.xmlNSPrefix + "state");
+        //        elements.insert(_nsInfo.xmlNSPrefix + "initial");
+        //        elements.insert(_nsInfo.xmlNSPrefix + "parallel");
+        Arabica::XPath::NodeSet<std::string> tmp_states = inDocumentOrder(elements, _scxml);
+
+        for (int i = 0; i < tmp_states.size(); i++) {
+            Element<std::string> state(tmp_states[i]);
+            NodeList<std::string> children = state.getChildNodes();
+
+            bool isCompound = false;
+            for (int j = 0; j < children.getLength(); j++) {
+                if (children.item(j).getNodeType() == Node_base::ELEMENT_NODE) {
+                    Element<std::string> child(children.item(j));
+                    if (TAGNAME(child) == "state" ||
+                            //                            TAGNAME(child) == "initial"||
+                            TAGNAME(child) == "final" ||
+                            TAGNAME(child) == "parallel" ||
+                            TAGNAME(child) == "history") {
+                        // is compound state
+                        _compoundStates.push_back(state);
+                        isCompound = true;
+                        break;
+                    }
+                }
+            }
+
+            // mark as explizit compount and
+            // set initial state if not defined
+            if (isCompound) {
+                state.setAttribute("isCompound", "true");
+                if (!HAS_ATTR(state, "initial")) {
+                    // go to states in document order
+                    // find the first child and set it as inital state
+                    for (int j = 0; j < _states.size(); j++) {
+                        if (isDescendant(_states[j], state)) {
+                            Element<std::string> s2(_states[j]);
+                            state.setAttribute("initial", ATTR(s2, "id"));
+                            s2.setAttribute("defaultEntryFor", ATTR(state, "id"));
+                        }
+                    }
+                } else {
+                    // if state has initial attribute
+                    // just mark the given child
+                    for (int j = 0; j < _states.size(); j++) {
+                        if (ATTR_CAST(_states[j], "id") == ATTR(state, "target")) {
+                            Element<std::string> s2(_states[j]);
+                            s2.setAttribute("defaultEntryFor", ATTR(state, "id"));
+                        }
+                    }
+                }
+            }
+            //FIXME verschachtelte compound auflösen
+        }
+
+        // create final states array
+        elements.clear();
+        //        elements.insert(_nsInfo.xmlNSPrefix + "scxml");
+        elements.insert(_nsInfo.xmlNSPrefix + "final");
+        _finalStates = inDocumentOrder(elements, _scxml);
+        for (int i = 0; i < _finalStates.size(); i++) {
+            Element<std::string> state(_finalStates[i]);
+            if (TAGNAME_CAST(state.getParentNode()) == "scxml") {
+                _superFinalStates.push_back(state);
+            }
+        }
+
+        // create parallel states array
+        elements.clear();
+        //        elements.insert(_nsInfo.xmlNSPrefix + "scxml");
+        elements.insert(_nsInfo.xmlNSPrefix + "parallel");
+        _parallelStates = inDocumentOrder(elements, _scxml);
+
         // create transitions array & event array
+        // modify transitions for compound states
         elements.clear();
         elements.insert(_nsInfo.xmlNSPrefix + "transition");
         _transitions = inPostFixOrder(elements, _scxml);
@@ -241,8 +343,10 @@ namespace uscxml {
                 // if eventname does not exist
                 _events.push_back(event);
             }
+
         }
 
+        //        stream << _scxml;
         // debug
         //        stream << _scxml;
         //        return;
@@ -270,6 +374,7 @@ namespace uscxml {
         writeTypes(stream);
         writeFiFo(stream);
         writeFSM(stream);
+        writeTestbench(stream);
     }
 
     void ChartToVHDL::writeFSM(std::ostream & stream) {
@@ -292,12 +397,13 @@ namespace uscxml {
 
         for (int i = 0; i < _transitions.size(); i++) {
             Element<std::string> transition(_transitions[i]);
-            if (transition.getChildNodes().getLength() > 0) {
-                stream << "    " << ATTR(transition, "id") << "_o :out std_logic;" << std::endl;
-            }
+            //            if (transition.getChildNodes().getLength() > 0) {
+            stream << "    " << ATTR(transition, "id") << "_o :out std_logic;" << std::endl;
+            //            }
         }
 
         stream << "    current_state_o  :out state_type;" << std::endl;
+        stream << "    entry_set_o  :out state_type;" << std::endl;
         stream << "    exit_set_o  :out state_type" << std::endl;
         stream << ");" << std::endl;
         stream << "end fsm_scxml; " << std::endl;
@@ -318,7 +424,7 @@ namespace uscxml {
 
         // write fsm architecture
         writeNextStateLogic(stream);
-        //        writeOutputLogic(stream);
+        writeOutputLogic(stream);
         writeErrorHandler(stream);
 
         stream << std::endl;
@@ -400,6 +506,7 @@ namespace uscxml {
         stream << "library IEEE;" << std::endl;
         stream << "use IEEE.std_logic_1164.all;" << std::endl;
         stream << "use work.generated_p1.all;" << std::endl;
+        stream << "use ieee.numeric_std.all;" << std::endl;
         stream << std::endl;
     }
 
@@ -503,15 +610,17 @@ namespace uscxml {
         // create needed internal signals
         stream << "-- system signals" << std::endl;
         stream << "signal stall : std_logic;" << std::endl;
+        stream << "signal completed : std_logic;" << std::endl;
         stream << "-- state signals" << std::endl;
-        stream << "signal next_state : state_type;" << std::endl;
-        stream << "signal current_state : state_type;" << std::endl;
+        //        stream << "signal next_state : state_type;" << std::endl;
+        //        stream << "signal current_state : state_type;" << std::endl;
 
         for (int i = 0; i < _states.size(); i++) {
             Element<std::string> state(_states[i]);
             stream << "signal " << ATTR(state, "id") << "_curr : std_logic;" << std::endl;
             stream << "signal " << ATTR(state, "id") << "_next : std_logic;" << std::endl;
             stream << "signal " << ATTR(state, "id") << "_exit : std_logic;" << std::endl;
+            stream << "signal " << ATTR(state, "id") << "_entry : std_logic;" << std::endl;
         }
         stream << std::endl;
         stream << "-- event signals" << std::endl;
@@ -528,6 +637,9 @@ namespace uscxml {
         stream << "signal next_event_re : std_logic;" << std::endl;
         stream << "signal next_event : event_type;" << std::endl;
         stream << "signal event_consumed : std_logic;" << std::endl;
+        for (int i = 0; i < _events.size(); i++) {
+            stream << "signal " << _events[i] << "_sig : std_logic;" << std::endl;
+        }
         stream << std::endl;
         stream << "-- transition signals" << std::endl;
         stream << "signal transition_spontaneous_en : std_logic;" << std::endl;
@@ -566,7 +678,8 @@ namespace uscxml {
     void ChartToVHDL::writeModuleInstantiation(std::ostream & stream) {
         // tmp mapping for events
         stream << "error_o <= reg_error_out; " << std::endl;
-        stream << "stall <= not en; " << std::endl;
+        stream << "stall <= not en or completed or rst; " << std::endl;
+        stream << "completed_o <= completed; " << std::endl;
         stream << std::endl;
 
         stream << "next_event_re <= ( (not int_event_empty) or (not ext_event_empty) ) and not stall; " << std::endl;
@@ -580,23 +693,25 @@ namespace uscxml {
 
         for (int i = 0; i < _transitions.size(); i++) {
             Element<std::string> transition(_transitions[i]);
-            if (transition.getChildNodes().getLength() > 0) {
-                stream << ATTR(transition, "id") << "_o <= "
-                        << ATTR(transition, "id") << "_sig;" << std::endl;
-            }
+            //            if (transition.getChildNodes().getLength() > 0) {
+            stream << ATTR(transition, "id") << "_o <= "
+                    << ATTR(transition, "id") << "_sig;" << std::endl;
+            //            }
         }
         stream << std::endl;
 
         for (int i = 0; i < _states.size(); i++) {
             Element<std::string> state(_states[i]);
-            stream << "current_state(" << toStr(i) << ") <= " << ATTR(state, "id")
-                    << "_curr;" << std::endl;
-            stream << "next_state(" << toStr(i) << ") <= " << ATTR(state, "id")
-                    << "_next;" << std::endl;
+            //            stream << "current_state(" << toStr(i) << ") <= " << ATTR(state, "id")
+            //                    << "_curr;" << std::endl;
+            //            stream << "next_state(" << toStr(i) << ") <= " << ATTR(state, "id")
+            //                    << "_next;" << std::endl;
             stream << "current_state_o(" << toStr(i) << ") <= " << ATTR(state, "id")
                     << "_curr;" << std::endl;
             stream << "exit_set_o(" << toStr(i) << ") <= " << ATTR(state, "id")
                     << "_exit;" << std::endl;
+            stream << "entry_set_o(" << toStr(i) << ") <= " << ATTR(state, "id")
+                    << "_entry;" << std::endl;
         }
         stream << std::endl;
 
@@ -635,7 +750,31 @@ namespace uscxml {
         stream << "  else" << std::endl;
         stream << "    next_event <= int_event_output;" << std::endl;
         stream << "  end if;" << std::endl;
-        stream << "end process;" << std::endl;
+        stream << "end process;" << std::endl << std::endl;
+
+        // event signal set
+        stream << "event_signal_set: process (next_event)" << std::endl;
+        stream << "begin" << std::endl;
+        stream << "  case next_event is" << std::endl;
+
+        for (int i = 0; i < _events.size(); i++) {
+            stream << "  when " << _events[i] << " =>" << std::endl;
+            for (int j = 0; j < _events.size(); j++) {
+                if (_events[j] == _events[i]) {
+                    stream << _events[j] << "_sig <= '1';" << std::endl;
+                } else {
+                    stream << _events[j] << "_sig <= '0';" << std::endl;
+                }
+            }
+        }
+
+        stream << "  when others =>" << std::endl;
+        for (int j = 0; j < _events.size(); j++) {
+            stream << _events[j] << "_sig <= '0';" << std::endl;
+        }
+        stream << "  end case;" << std::endl;
+        stream << "end process;" << std::endl << std::endl;
+
     }
 
     void ChartToVHDL::writeErrorHandler(std::ostream & stream) {
@@ -659,9 +798,16 @@ namespace uscxml {
 
     void ChartToVHDL::writeNextStateLogic(std::ostream & stream) {
         stream << "-- state logic" << std::endl;
-        stream << "-- only gets active when state changes (microstep?) " << std::endl;
-        stream << "state_decode_proc: process(current_state)" << std::endl;
-        stream << "begin" << std::endl;
+        //        stream << "-- only gets active when state changes (microstep?) " << std::endl;
+        //        stream << "state_decode_proc: process(";
+        //
+        //        for (int i = 0; i < _states.size(); i++) {
+        //            Element<std::string> state(_states[i]);
+        //            stream << ATTR(state, "id") << "_curr," << std::endl;
+        //        }
+        //
+        //        stream << "next_event)" << std::endl;
+        //        stream << "begin" << std::endl;
 
         std::stringstream nextStateBuffer;
         for (int i = 0; i < _states.size(); i++) {
@@ -689,69 +835,90 @@ namespace uscxml {
             std::vector< Element<std::string> > incommingTransitions;
             for (int j = 0; j < _transitions.size(); j++) {
                 Element<std::string> transition(_transitions[j]);
-                if (ATTR_CAST(transition, "target") == ATTR(state, "id")) {
+                if (ATTR(transition, "target") == ATTR(state, "id")) {
                     incommingTransitions.push_back(transition);
                 }
             }
 
             if (choises.size() > 0) {// if no outgoing transitions (maybe final state :D) we don't write anything
 
-                stream << "  if ( " << ATTR(state, "id") << "_curr = '1' ) then" << std::endl;
-                stream << "    if ( transition_spontaneous_en = '1' ) then" << std::endl;
-                // enable spntaneous transition (if any) and disable all other
-                for (int j = 0; j < choises.size(); j++) {
-                    Element<std::string> transition(choises[j]);
-                    if (ATTR(transition, "id") == spntaneous_trans_sig) {
-                        stream << "      " << ATTR(transition, "id") << "_sig_stage1 <= '1';" << std::endl;
-                    } else {
-                        stream << "      " << ATTR(transition, "id") << "_sig_stage1 <= '0';" << std::endl;
-                    }
-                }
+                //                stream << "  if ( " << ATTR(state, "id") << "_curr = '1' ) then" << std::endl;
+                //                stream << "    if ( transition_spontaneous_en = '1' ) then" << std::endl;
 
-                stream << "    elsif ( next_event_re = '1' ) then" << std::endl;
-                // if no spntaneous transition enables, look at events
-                // since there is just one event at a time, we use case statement
-                // to check transitions matching in postfix order
-                // FIXME hopefully there is just one transition per state and event at a time
-                stream << "    case next_event is" << std::endl;
-                bool hasWildcardTransition = false;
+                // write transitions
                 for (int j = 0; j < choises.size(); j++) {
                     Element<std::string> transition(choises[j]);
-                    std::string eventName = ATTR(transition, "event");
-                    if (eventName == CONST_EVENT_ANY) {
-                        eventName = "others";
-                        hasWildcardTransition = true;
-                    }
-                    stream << "      when " << eventName << " =>" << std::endl;
-                    // activate transition and deactivete others
-                    for (int k = 0; k < choises.size(); k++) {
-                        Element<std::string> tmp_t(choises[k]);
-                        if (ATTR(tmp_t, "event") == ATTR(transition, "event")) {
-                            stream << "        " << ATTR(tmp_t, "id") << "_sig_stage1 <= '1';" << std::endl;
-                        } else {
-                            stream << "        " << ATTR(tmp_t, "id") << "_sig_stage1 <= '0';" << std::endl;
+                    stream << ATTR(transition, "id") << "_sig_stage1 <= ( "
+                            << ATTR(state, "id") << "_curr and ";
+                    if (ATTR(transition, "id") == spntaneous_trans_sig) {
+                        // spontaneous transitions
+                        stream << "transition_spontaneous_en ";
+                    } else {
+                        // event driven transition
+                        stream << "( not transition_spontaneous_en ) and " << std::endl
+                                << "next_event_re" << std::endl;
+                        // needed event
+                        std::string eventName = ATTR(transition, "event");
+                        if (eventName != CONST_EVENT_ANY) {
+                            // if next_event_re is high, there is a valid event which matches to any
+                            stream << " and  " << eventName << "_sig";
                         }
                     }
+                    stream << ");" << std::endl;
                 }
-                if (!hasWildcardTransition) {
-                    // if there is no others we create one for deactivating everything
-                    stream << "      when others =>" << std::endl;
-                    for (int j = 0; j < choises.size(); j++) {
-                        Element<std::string> tmp_t(choises[j]);
-                        stream << "        " << ATTR(tmp_t, "id") << "_sig_stage1 <= '0';" << std::endl;
-                    }
-                }
-                stream << "    end case;" << std::endl;
 
-                stream << "    else" << std::endl;
-                // no enabled event ? disable all transitions (looks like we have to wait)
-                for (int j = 0; j < choises.size(); j++) {
-                    Element<std::string> transition(choises[j]);
-                    stream << "      " << ATTR(transition, "id") << "_sig_stage1 <= '0';" << std::endl;
-                }
-                stream << "    end if;" << std::endl;
-                stream << "  end if;" << std::endl;
-                stream << std::endl;
+                //                    stream << "    elsif ( next_event_re = '1' ) then" << std::endl;
+                //                    // if no spntaneous transition enables, look at events
+                //                    // since there is just one event at a time, we use case statement
+                //                    // to check transitions matching in postfix order
+                //                    // FIXME hopefully there is just one transition per state and event at a time
+                //                    stream << "    case next_event is" << std::endl;
+                //                    bool hasWildcardTransition = false;
+                //                    for (int j = 0; j < choises.size(); j++) {
+                //                        Element<std::string> transition(choises[j]);
+                //                        std::string eventName = ATTR(transition, "event");
+                //                        if (eventName == CONST_EVENT_ANY) {
+                //                            eventName = "others";
+                //                            hasWildcardTransition = true;
+                //                        }
+                //                        stream << "      when " << eventName << " =>" << std::endl;
+                //                        // activate transition and deactivete others
+                //                        for (int k = 0; k < choises.size(); k++) {
+                //                            Element<std::string> tmp_t(choises[k]);
+                //                            if (ATTR(tmp_t, "event") == ATTR(transition, "event")) {
+                //                                stream << "        " << ATTR(tmp_t, "id") << "_sig_stage1 <= '1';" << std::endl;
+                //                            } else {
+                //                                stream << "        " << ATTR(tmp_t, "id") << "_sig_stage1 <= '0';" << std::endl;
+                //                            }
+                //                        }
+                //                    }
+                //                    if (!hasWildcardTransition) {
+                //                        // if there is no others we create one for deactivating everything
+                //                        stream << "      when others =>" << std::endl;
+                //                        for (int j = 0; j < choises.size(); j++) {
+                //                            Element<std::string> tmp_t(choises[j]);
+                //                            stream << "        " << ATTR(tmp_t, "id") << "_sig_stage1 <= '0';" << std::endl;
+                //                        }
+                //                    }
+                //                    stream << "    end case;" << std::endl;
+                //
+                //
+                //                    // no enabled event ? disable all transitions 
+                //                    stream << "    else" << std::endl;
+                //                    for (int j = 0; j < choises.size(); j++) {
+                //                        Element<std::string> transition(choises[j]);
+                //                        stream << "      " << ATTR(transition, "id") << "_sig_stage1 <= '0';" << std::endl;
+                //                    }
+                //                    stream << "    end if;" << std::endl;
+                //
+                //                    // state is not active? disable all transitions 
+                //                    stream << "  else" << std::endl;
+                //                    for (int j = 0; j < choises.size(); j++) {
+                //                        Element<std::string> transition(choises[j]);
+                //                        stream << "    " << ATTR(transition, "id") << "_sig_stage1 <= '0';" << std::endl;
+                //                    }
+                //                    stream << "  end if;" << std::endl;
+                //                    stream << std::endl;
             }
 
             // write next state calculation in buffer for later use
@@ -764,31 +931,63 @@ namespace uscxml {
                     stateChildren.push_back(s);
                 }
             }
+
+            // exit set
+            std::string id = ATTR(state, "id");
             nextStateBuffer << ATTR(state, "id") << "_exit <= ( '0'";
             for (int j = 0; j < choises.size(); j++) {
                 nextStateBuffer << " or "
                         << ATTR(choises[j], "id") << "_sig";
             }
+
+            if (HAS_ATTR(state, "isCompound")) {
+                // exit set of compound contains every transitions out of a child state
+                for (int j = 0; j < _states.size(); j++) {
+                    Element<std::string> s(_states[j]);
+                    if (ATTR_CAST(s.getParentNode(), "id") == ATTR(state, "id")) {
+                        nextStateBuffer << " or "
+                                << ATTR(s, "id") << "_exit";
+                    }
+                }
+            }
             nextStateBuffer << " );" << std::endl;
-            nextStateBuffer << ATTR(state, "id") << "_next <= ( ( '0'";
-            std::string seperator = "  or  ";
+
+            // entry set
+            nextStateBuffer << ATTR(state, "id") << "_entry <= ( '0'";
             for (int j = 0; j < incommingTransitions.size(); j++) {
-                nextStateBuffer << seperator
+                nextStateBuffer << " or "
                         << ATTR(incommingTransitions[j], "id") << "_sig";
             }
+            nextStateBuffer << " );" << std::endl;
+
+            // next round
+            nextStateBuffer << ATTR(state, "id") << "_next <= ( ( '0'";
+            if (!HAS_ATTR(state, "isCompound")) {
+                // compount states will be entered through childs
+                nextStateBuffer << " or " << ATTR(state, "id") << "_entry";
+            }
+            if (HAS_ATTR(state, "isDefaultFor")) {
+                // default entry state for compound state
+                nextStateBuffer << " or " << ATTR(state, "isDefaultFor") << "_entry";
+            }
             nextStateBuffer << " ) or ";
-            nextStateBuffer << "( ( not ( " << ATTR(state, "id") << "_exit";
-            nextStateBuffer << " ) ) and " << ATTR(state, "id")
-                    << "_curr ) or ( '0' ";
+            if (!HAS_ATTR(state, "isCompound")) {
+                // compound state is just defined through child states
+                // no relation to exit set or current state (holding state)
+                nextStateBuffer << "( ( not ( '0'";
+                nextStateBuffer << " or " << ATTR(state, "id") << "_exit";
+                nextStateBuffer << " ) ) and " << ATTR(state, "id") << "_curr ) or";
+            }
+            nextStateBuffer << " ( '0' ";
 
             for (int j = 0; j < stateChildren.size(); j++) {
                 nextStateBuffer << " or " << ATTR(stateChildren[j], "id")
                         << "_next";
             }
 
-            nextStateBuffer << " ) );" << std::endl;
+            nextStateBuffer << " ) );" << std::endl << std::endl;
         }
-        stream << "end process;" << std::endl;
+        //        stream << "end process;" << std::endl;
         stream << std::endl;
         // write outgoing transition buffer
         stream << nextStateBuffer.str() << std::endl;
@@ -824,10 +1023,21 @@ namespace uscxml {
         stream << "state_proc: process(clk, rst, stall)" << std::endl;
         stream << "begin" << std::endl;
         stream << "    if rst = '1' then" << std::endl;
-        stream << "        current_state <= (others => '0');" << std::endl;
         stream << "        " << _initState << "_curr <= '1';" << std::endl;
+
+        for (int i = 0; i < _states.size(); i++) {
+            Element<std::string> state(_states[i]);
+            if (ATTR(state, "id") != _initState) {
+                stream << "        " << ATTR(state, "id") << "_curr <= '0';" << std::endl;
+            }
+        }
+
         stream << "    elsif (rising_edge(clk) and stall = '0') then" << std::endl;
-        stream << "        current_state <= next_state;" << std::endl;
+        for (int i = 0; i < _states.size(); i++) {
+            Element<std::string> state(_states[i]);
+            stream << "        " << ATTR(state, "id") << "_curr <= "
+                    << ATTR(state, "id") << "_next;" << std::endl;
+        }
         stream << "    end if;" << std::endl;
         stream << "end process;" << std::endl;
         stream << std::endl;
@@ -835,33 +1045,131 @@ namespace uscxml {
 
     void ChartToVHDL::writeOutputLogic(std::ostream & stream) {
         stream << "-- output logic" << std::endl;
-        stream << "output_proc: process(current_state)" << std::endl;
-        stream << "begin" << std::endl;
-        stream << "    case current_state is" << std::endl;
+        stream << "-- spontaneous transition calculation" << std::endl;
+        stream << "transition_spontaneous_en <= '0'";
 
         for (int i = 0; i < _states.size(); i++) {
             Element<std::string> state(_states[i]);
+
             for (int j = 0; j < _transitions.size(); j++) {
                 Element<std::string> transition(_transitions[j]);
                 if (ATTR_CAST(transition.getParentNode(), "id") == ATTR(state, "id")) {
-                    if (ATTR(transition, "target") == CONST_TRANS_SPONTANEOUS) {
-                        stream << "    when " << ATTR(state, "id") << "_curr =>" << std::endl;
-                        stream << "        completed_o <= '0';" << std::endl;
-                        stream << "        result_o <= '0';" << std::endl;
-                        stream << "        transition_spontaneous_en <= '1';" << std::endl;
-                        // TODO manage completed and result
+                    if (ATTR(transition, "event") == CONST_TRANS_SPONTANEOUS) {
+                        stream << " or " << ATTR(state, "id") << "_curr";
                     }
                 }
             }
         }
+        stream << ";" << std::endl;
+        stream << "-- complete calculation" << std::endl;
+        stream << "completed <= '0'";
+        for (int i = 0; i < _superFinalStates.size(); i++) {
+            Element<std::string> state(_superFinalStates[i]);
+            stream << " or " << ATTR(state, "id") << "_curr";
+        }
+        stream << ";" << std::endl;
+        stream << "-- END output logic" << std::endl;
+        stream << std::endl;
+    }
 
-        stream << "    when others =>" << std::endl;
-        stream << "        completed_o <= '0';" << std::endl;
-        stream << "        result_o <= '0';" << std::endl;
-        stream << "        transition_spontaneous_en <= '0';" << std::endl;
+    void ChartToVHDL::writeTestbench(std::ostream & stream) {
+        stream << "-- Testbench for SCXML Modul" << std::endl;
+        stream << " " << std::endl;
+        writeIncludes(stream);
+        stream << " " << std::endl;
+        stream << "-- empty entity for testbench" << std::endl;
+        stream << "entity testbench is" << std::endl;
+        stream << "end entity testbench;" << std::endl;
+        stream << " " << std::endl;
+        stream << "architecture bhv of testbench is" << std::endl;
+        stream << " " << std::endl;
+        stream << "  -- modul declaration" << std::endl;
+        stream << "  component fsm_scxml is" << std::endl;
+        stream << "  port (" << std::endl;
+        stream << "    --inputs" << std::endl;
+        stream << "    clk  :in    std_logic;" << std::endl;
+        stream << "    rst  :in    std_logic;" << std::endl;
+        stream << "    en   :in    std_logic;" << std::endl;
+        stream << "    next_event_i    :in  event_type;" << std::endl;
+        stream << "    next_event_int_en_i :in  std_logic;" << std::endl;
+        stream << "    next_event_ext_en_i :in  std_logic;" << std::endl;
+        stream << "    --outputs" << std::endl;
+        stream << "    completed_o :out std_logic;" << std::endl;
+        stream << "    error_o     :out std_logic;" << std::endl;
 
-        stream << "end case;" << std::endl;
-        stream << "end process;" << std::endl;
+        for (int i = 0; i < _transitions.size(); i++) {
+            Element<std::string> transition(_transitions[i]);
+            //            if (transition.getChildNodes().getLength() > 0) {
+            stream << "    " << ATTR(transition, "id") << "_o :out std_logic;" << std::endl;
+            //            }
+        }
+
+        stream << "    current_state_o  :out state_type;" << std::endl;
+        stream << "    entry_set_o  :out state_type;" << std::endl;
+        stream << "    exit_set_o  :out state_type" << std::endl;
+        stream << "  );" << std::endl;
+        stream << "  end component;" << std::endl;
+        stream << " " << std::endl;
+        stream << "  -- input" << std::endl;
+        stream << "  signal clk   : std_logic := '0';" << std::endl;
+        stream << "  signal reset : std_logic;" << std::endl;
+        stream << "  signal en    : std_logic;" << std::endl;
+        stream << "  signal next_event_i : event_type;" << std::endl;
+        stream << "  signal next_event_int_en_i :  std_logic;" << std::endl;
+        stream << "  signal next_event_ext_en_i :  std_logic;" << std::endl;
+        stream << " " << std::endl;
+        stream << "  -- output" << std::endl;
+        //        stream << "  signal result_o : std_logic;" << std::endl;
+        stream << "  signal completed_o : std_logic;" << std::endl;
+        stream << "  signal error_o : std_logic;" << std::endl;
+
+        for (int i = 0; i < _transitions.size(); i++) {
+            Element<std::string> transition(_transitions[i]);
+            //            if (transition.getChildNodes().getLength() > 0) {
+            stream << "  signal " << ATTR(transition, "id") << "_o : std_logic;" << std::endl;
+            //            }
+        }
+
+        stream << "  signal current_state_o  : state_type;" << std::endl;
+        stream << "  signal entry_set_o  : state_type;" << std::endl;
+        stream << "  signal exit_set_o  : state_type;" << std::endl;
+        stream << " " << std::endl;
+        stream << "begin" << std::endl;
+        stream << "  clk   <= not clk  after 20 ns;  -- 25 MHz " << std::endl;
+        stream << "  reset <= '1', '0' after 100 ns; -- reset signal" << std::endl;
+        stream << "  en <= '0', '1' after 50 ns; -- enable signal" << std::endl;
+        stream << " " << std::endl;
+        stream << "  -- modul instatciation" << std::endl;
+        stream << "  dut : component fsm_scxml" << std::endl;
+        stream << "    port map (" << std::endl;
+        stream << "      clk       => clk," << std::endl;
+        stream << "      rst       => reset," << std::endl;
+        stream << "      en        => en," << std::endl;
+        stream << "      next_event_i => next_event_i," << std::endl;
+        stream << "      next_event_int_en_i => next_event_int_en_i," << std::endl;
+        stream << "      next_event_ext_en_i => next_event_ext_en_i," << std::endl;
+        stream << " " << std::endl;
+
+        for (int i = 0; i < _transitions.size(); i++) {
+            Element<std::string> transition(_transitions[i]);
+            //            if (transition.getChildNodes().getLength() > 0) {
+            stream << "       " << ATTR(transition, "id") << "_o  => "
+                    << ATTR(transition, "id") << "_o," << std::endl;
+            //            }
+        }
+
+        stream << "      current_state_o  =>  current_state_o," << std::endl;
+        stream << "      entry_set_o  =>  entry_set_o," << std::endl;
+        stream << "      exit_set_o  =>  exit_set_o," << std::endl;
+        //        stream << "      result_o  => result_o," << std::endl;
+        stream << "      completed_o => completed_o," << std::endl;
+        stream << "      error_o => error_o" << std::endl;
+        stream << "    );" << std::endl;
+        stream << "" << std::endl;
+        stream << "  -- stimulation code" << std::endl;
+        stream << " " << std::endl;
+        stream << "end architecture;" << std::endl;
+        stream << "-- END Testbench" << std::endl;
         stream << std::endl;
     }
 
