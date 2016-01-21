@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- test that events are inserted into the queue in the order in which they are raised.  If
+foo occurs before bar, success, otherwise failure -->
+<scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" initial="s00" version="1.0" datamodel="ecmascript">
+  <state id="s00">
+    <transition target="s0"/>
+  </state>  
+  <state id="s0" initial="s01">
+    <state id="s02">
+      <onentry>
+        <raise event="bar"/>
+      </onentry>
+    </state>
+    <state id="s01">
+      <state id="s011">
+        <onentry>
+          <raise event="foo"/>
+          <raise event="bar"/>
+        </onentry>
+      </state>
+      <state id="s012">
+        <onentry>
+          <raise event="bar"/>
+        </onentry>
+      </state>
+    </state>
+    <transition event="foo" target="s1"/>
+    <transition event="*" target="fail"/>
+  </state>
+  <state id="s1">
+      <state id="s1a">
+          <transition event="bar" target="pass"/>
+          <transition event="*" target="fail"/>
+      </state>
+  </state>
+  <final id="pass">
+    <onentry>
+      <log label="Outcome" expr="'pass'"/>
+    </onentry>
+  </final>
+  <final id="fail">
+    <onentry>
+      <log label="Outcome" expr="'fail'"/>
+    </onentry>
+  </final>
+</scxml>
