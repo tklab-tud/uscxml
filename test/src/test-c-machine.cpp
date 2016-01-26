@@ -60,7 +60,7 @@ public:
 	}
 	bool isInState(const std::string& stateId) {
 		for (int i = 0 ; i < SCXML_NUMBER_STATES; i++) {
-			if (scxml_states[i].name != NULL && IS_SET(i, ctx->config) && stateId == scxml_states[i].name)
+			if (scxml_states[i].name != NULL && BIT_HAS(i, ctx->config) && stateId == scxml_states[i].name)
 				return true;
 		}
 		return false;
@@ -217,9 +217,9 @@ void delayedSend(void* ctx, std::string eventName) {
 	tthread::lock_guard<tthread::mutex> lock(USER_DATA(ctx)->mutex);
 
 	SendRequest* sr = USER_DATA(ctx)->sendIds[eventName];
-    Event* e = new Event(*sr);
-    
-    if (sr->target == "#_internal") {
+	Event* e = new Event(*sr);
+
+	if (sr->target == "#_internal") {
 		e->eventType = Event::INTERNAL;
 #ifdef SCXML_VERBOSE
 		printf("Pushing Internal Event: %s\n", e->name.c_str());
@@ -233,7 +233,7 @@ void delayedSend(void* ctx, std::string eventName) {
 		USER_DATA(ctx)->eq.push_back(e);
 	}
 	USER_DATA(ctx)->monitor.notify_all();
-    delete sr;
+	delete sr;
 }
 
 int exec_content_cancel(const scxml_ctx* ctx, const char* sendid, const char* sendidexpr) {
@@ -305,7 +305,7 @@ int exec_content_send(const scxml_ctx* ctx, const scxml_elem_send* send) {
 		}
 	} catch (Event exc) {
 		exec_content_raise(ctx, exc.name.c_str());
-        delete e;
+		delete e;
 		return SCXML_ERR_EXEC_CONTENT;
 	}
 
@@ -371,7 +371,7 @@ int exec_content_send(const scxml_ctx* ctx, const scxml_elem_send* send) {
 		}
 	}
 
-    std::string sendid;
+	std::string sendid;
 	if (send->id != NULL) {
 		sendid = send->id;
 		e->sendid = sendid;
@@ -661,7 +661,7 @@ int main(int argc, char** argv) {
 			}
 		}
 
-		if(!IS_SET(passIdx, ctx.config)) {
+		if(!BIT_HAS(passIdx, ctx.config)) {
 			std::cerr << "Interpreter did not end in pass" << std::endl;
 			exit(EXIT_FAILURE);
 		}

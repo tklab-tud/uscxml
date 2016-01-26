@@ -71,8 +71,8 @@ protected:
 
 	Arabica::XPath::NodeSet<std::string> computeExitSet(const Arabica::DOM::Element<std::string>& transition);
 
-    void resortStates(Arabica::DOM::Node<std::string>& node);
-    void setHistoryResponsibility(Arabica::DOM::Node<std::string>& node);
+	void resortStates(Arabica::DOM::Node<std::string>& node);
+	void setHistoryResponsibility(Arabica::DOM::Node<std::string>& node);
 
 	Interpreter interpreter;
 

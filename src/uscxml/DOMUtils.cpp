@@ -39,9 +39,9 @@ std::string DOMUtils::idForNode(const Arabica::DOM::Node<std::string>& node) {
 		case Arabica::DOM::Node_base::ELEMENT_NODE: {
 			Arabica::DOM::Element<std::string> elem = Arabica::DOM::Element<std::string>(curr);
 			if (HAS_ATTR(elem, "id") && !UUID::isUUID(ATTR(elem, "id"))) {
-                std::string elementId = ATTR(elem, "id");
-                boost::replace_all(elementId, ".", "_");
-                boost::replace_all(elementId, ",", "_");
+				std::string elementId = ATTR(elem, "id");
+				boost::replace_all(elementId, ".", "_");
+				boost::replace_all(elementId, ",", "_");
 				nodeId.insert(0, elementId + seperator);
 				seperator = "_";
 				return nodeId;

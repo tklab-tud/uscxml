@@ -4,7 +4,7 @@
 
 #### Related Documents
 
-- [Building form Source](docs/BUILDING.md)
+- [Building from Source](docs/BUILDING.md)
 - [Open Issues](docs/ISSUES.md)
 - [Getting Started](docs/GETTING_STARTED.md)
 
@@ -111,7 +111,7 @@ upon](https://github.com/tklab-tud/uscxml/blob/master/docs/BUILDING.md#build-dep
 
 We did some performance measurements in the scope of the C transformation. As
 you can see in the figure below, for most IRP tests we average to a duration of
-5-20us per microstep on an early 2015 MacBook Pro 13" with 3.1Ghz in the case
+5-20us per microstep on an early 2015 MacBook Pro 13" with 3.1GHz in the case
 of [generated/compiled C](https://github.com/tklab-tud/uscxml/blob/master/test/src/test-c-machine.machine.c). For interpretation at runtime, we average at around 70-130us per
 microstep. The generated C is rather optimized while the focus of the
 interpreter is more on correctness, feature completeness and extensibility.
@@ -121,7 +121,7 @@ interpreter.
 <img src="https://raw.github.com/tklab-tud/uscxml/master/docs/Performance_Microstep.png" width="500px" />
 
 For the tests, we took the [highest precision timer](https://github.com/tklab-tud/uscxml/blob/master/src/uscxml/concurrency/Timer.cpp) 
-we could attain and measured how long the execution of a given SCXML IRP tests took while
+we could attain and measured how long the execution of a given SCXML IRP test took while
 subtracting initialization, tear-down and the time spent in the data-model's routines. Time is
 averaged over 1.000 iterations.
 
