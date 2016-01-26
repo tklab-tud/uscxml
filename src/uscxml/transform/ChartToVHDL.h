@@ -32,61 +32,62 @@
 
 namespace uscxml {
 
-    class USCXML_API ChartToVHDL : public InterpreterRC, public TransformerImpl {
-    public:
+class USCXML_API ChartToVHDL : public InterpreterRC, public TransformerImpl {
+public:
 
-        virtual ~ChartToVHDL();
-        static Transformer transform(const Interpreter& other);
+	virtual ~ChartToVHDL();
+	static Transformer transform(const Interpreter& other);
 
-        void writeTo(std::ostream& stream);
+	void writeTo(std::ostream& stream);
 
-        static Arabica::XPath::NodeSet<std::string> inPostFixOrder(const std::set<std::string>& elements,
-                const Arabica::DOM::Element<std::string>& root);
-        static Arabica::XPath::NodeSet<std::string> inDocumentOrder(const std::set<std::string>& elements,
-                const Arabica::DOM::Element<std::string>& root);
-    protected:
-        ChartToVHDL(const Interpreter& other);
+	static Arabica::XPath::NodeSet<std::string> inPostFixOrder(const std::set<std::string>& elements,
+	        const Arabica::DOM::Element<std::string>& root);
+	static Arabica::XPath::NodeSet<std::string> inDocumentOrder(const std::set<std::string>& elements,
+	        const Arabica::DOM::Element<std::string>& root);
 
-        static void inPostFixOrder(const std::set<std::string>& elements,
-                const Arabica::DOM::Element<std::string>& root,
-                Arabica::XPath::NodeSet<std::string>& nodes);
+protected:
+	ChartToVHDL(const Interpreter& other);
 
-        static void inDocumentOrder(const std::set<std::string>& elements,
-                const Arabica::DOM::Element<std::string>& root,
-                Arabica::XPath::NodeSet<std::string>& nodes);
+	static void inPostFixOrder(const std::set<std::string>& elements,
+	                           const Arabica::DOM::Element<std::string>& root,
+	                           Arabica::XPath::NodeSet<std::string>& nodes);
 
-        void writeIncludes(std::ostream& stream);
-        void writeTopDown(std::ostream& stream);
+	static void inDocumentOrder(const std::set<std::string>& elements,
+	                            const Arabica::DOM::Element<std::string>& root,
+	                            Arabica::XPath::NodeSet<std::string>& nodes);
 
-        void writeTypes(std::ostream& stream);
-        void writeNextStateLogic(std::ostream& stream);
-        void writeOutputLogic(std::ostream& stream);
-        void writeSignals(std::ostream& stream);
-        void writeFiFo(std::ostream& stream);
-        void writeModuleInstantiation(std::ostream& stream);
-        void writeErrorHandler(std::ostream& stream);
-        void writeFSM(std::ostream& stream);
+	void writeIncludes(std::ostream& stream);
+	void writeTopDown(std::ostream& stream);
+
+	void writeTypes(std::ostream& stream);
+	void writeNextStateLogic(std::ostream& stream);
+	void writeOutputLogic(std::ostream& stream);
+	void writeSignals(std::ostream& stream);
+	void writeFiFo(std::ostream& stream);
+	void writeModuleInstantiation(std::ostream& stream);
+	void writeErrorHandler(std::ostream& stream);
+	void writeFSM(std::ostream& stream);
 
 
 
-        Interpreter interpreter;
+	Interpreter interpreter;
 
-        std::string _initState;
-        Arabica::XPath::NodeSet<std::string> _states;
-        std::map<std::string, Arabica::DOM::Element<std::string> > _stateNames;
-        Arabica::XPath::NodeSet<std::string> _transitions;
-        std::map<std::string, Arabica::DOM::Element<std::string> > _transitionNames;
-        std::vector<std::string> _events;
+	std::string _initState;
+	Arabica::XPath::NodeSet<std::string> _states;
+	std::map<std::string, Arabica::DOM::Element<std::string> > _stateNames;
+	Arabica::XPath::NodeSet<std::string> _transitions;
+	std::map<std::string, Arabica::DOM::Element<std::string> > _transitionNames;
+	std::vector<std::string> _events;
 
-        bool _hasGlobalScripts;
-        bool _hasDoneData;
+	bool _hasGlobalScripts;
+	bool _hasDoneData;
 
-        size_t _transCharArraySize;
-        std::string _transCharArrayInit;
+	size_t _transCharArraySize;
+	std::string _transCharArrayInit;
 
-        size_t _stateCharArraySize;
-        std::string _stateCharArrayInit;
-    };
+	size_t _stateCharArraySize;
+	std::string _stateCharArrayInit;
+};
 
 }
 
