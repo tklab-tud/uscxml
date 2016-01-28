@@ -47,8 +47,8 @@ Transformer ChartToC::transform(const Interpreter& other) {
 ChartToC::ChartToC(const Interpreter& other) : TransformerImpl() {
 	cloneFrom(other.getImpl());
 }
-
-void ChartToC::setHistoryResponsibility(Arabica::DOM::Node<std::string>& node) {
+    
+void ChartToC::setHistoryResponsibility() {
 	std::set<std::string> elements;
 	elements.insert(_nsInfo.xmlNSPrefix + "history");
 	Arabica::XPath::NodeSet<std::string> histories = inPostFixOrder(elements, _scxml);
@@ -105,7 +105,6 @@ void ChartToC::setHistoryResponsibility(Arabica::DOM::Node<std::string>& node) {
 		history.setAttribute("respBoolsIdx", respBoolsIdx);
 	}
 }
-
 
 void ChartToC::resortStates(Arabica::DOM::Node<std::string>& node) {
 	if (node.getNodeType() != Node_base::ELEMENT_NODE)
@@ -173,83 +172,91 @@ void ChartToC::resortStates(Arabica::DOM::Node<std::string>& node) {
 
 }
 
+void ChartToC::prepare() {
+    _binding = (HAS_ATTR(_scxml, "binding") && iequals(ATTR(_scxml, "binding"), "late") ? LATE : EARLY);
+    _name = (HAS_ATTR(_scxml, "name") ? ATTR(_scxml, "name") : "");
+    
+    // make sure initial and history elements always precede propoer states
+    resortStates(_scxml);
+
+    std::set<std::string> elements;
+    elements.insert(_nsInfo.xmlNSPrefix + "scxml");
+    elements.insert(_nsInfo.xmlNSPrefix + "state");
+    elements.insert(_nsInfo.xmlNSPrefix + "final");
+    elements.insert(_nsInfo.xmlNSPrefix + "parallel");
+    elements.insert(_nsInfo.xmlNSPrefix + "history");
+    elements.insert(_nsInfo.xmlNSPrefix + "initial");
+    elements.insert(_nsInfo.xmlNSPrefix + "parallel");
+    _states = inDocumentOrder(elements, _scxml);
+    
+    for (size_t i = 0; i < _states.size(); i++) {
+        Element<std::string> state(_states[i]);
+        state.setAttribute("documentOrder", toStr(i));
+    }
+
+    elements.clear();
+    elements.insert(_nsInfo.xmlNSPrefix + "transition");
+    _transitions = inDocumentOrder(elements, _scxml);
+    for (size_t i = 0; i < _transitions.size(); i++) {
+        Element<std::string> transition(_transitions[i]);
+        transition.setAttribute("documentOrder", toStr(i));
+    }
+    
+    _transitions = inPostFixOrder(elements, _scxml);
+    for (size_t i = 0; i < _transitions.size(); i++) {
+        Element<std::string> transition(_transitions[i]);
+        transition.setAttribute("postFixOrder", toStr(i));
+    }
+    // leave transitions in postfix order
+    
+    // set the responsibility of history elements
+    setHistoryResponsibility();
+
+    // how many bits do we need to represent the state array?
+    std::string seperator;
+    _stateCharArraySize = ceil((float)_states.size() / (float)8);
+    _stateCharArrayInit = "{";
+    for (size_t i = 0; i < _stateCharArraySize; i++) {
+        _stateCharArrayInit += seperator + "0";
+        seperator = ", ";
+    }
+    _stateCharArrayInit += "}";
+    
+    if (false) {
+    } else if (_states.size() < (1UL << 8)) {
+        _stateDataType = "uint8_t";
+    } else if (_states.size() < (1UL << 16)) {
+        _stateDataType = "uint16_t";
+    } else if (_states.size() < (1UL << 32)) {
+        _stateDataType = "uint32_t";
+    } else {
+        _stateDataType = "uint64_t";
+    }
+    
+    seperator = "";
+    _transCharArraySize = ceil((float)_transitions.size() / (float)8);
+    _transCharArrayInit = "{";
+    for (size_t i = 0; i < _transCharArraySize; i++) {
+        _transCharArrayInit += seperator + "0";
+        seperator = ", ";
+    }
+    _transCharArrayInit += "}";
+    
+    if (false) {
+    } else if (_transitions.size() < (1UL << 8)) {
+        _transDataType = "uint8_t";
+    } else if (_transitions.size() < (1UL << 16)) {
+        _transDataType = "uint16_t";
+    } else if (_transitions.size() < (1UL << 32)) {
+        _transDataType = "uint32_t";
+    } else {
+        _transDataType = "uint64_t";
+    }
+    
+}
+
 void ChartToC::writeTo(std::ostream& stream) {
-	_binding = (HAS_ATTR(_scxml, "binding") && iequals(ATTR(_scxml, "binding"), "late") ? LATE : EARLY);
-	_name = (HAS_ATTR(_scxml, "name") ? ATTR(_scxml, "name") : "");
-
-	// make sure initial and history elements always precede propoer states
-	resortStates(_scxml);
-
-	std::set<std::string> elements;
-	elements.insert(_nsInfo.xmlNSPrefix + "scxml");
-	elements.insert(_nsInfo.xmlNSPrefix + "state");
-	elements.insert(_nsInfo.xmlNSPrefix + "final");
-	elements.insert(_nsInfo.xmlNSPrefix + "parallel");
-	elements.insert(_nsInfo.xmlNSPrefix + "history");
-	elements.insert(_nsInfo.xmlNSPrefix + "initial");
-	elements.insert(_nsInfo.xmlNSPrefix + "parallel");
-	_states = inDocumentOrder(elements, _scxml);
-
-	for (size_t i = 0; i < _states.size(); i++) {
-		Element<std::string> state(_states[i]);
-		state.setAttribute("documentOrder", toStr(i));
-		if (HAS_ATTR(state, "id")) {
-			_stateNames[ATTR(state, "id")] = state;
-		}
-	}
-
-	elements.clear();
-	elements.insert(_nsInfo.xmlNSPrefix + "transition");
-	_transitions = inPostFixOrder(elements, _scxml);
-
-	for (size_t i = 0; i < _transitions.size(); i++) {
-		Element<std::string> transition(_transitions[i]);
-		transition.setAttribute("postFixOrder", toStr(i));
-	}
-
-	// how many bits do we need to represent the state array?
-	std::string seperator;
-	_stateCharArraySize = ceil((float)_states.size() / (float)8);
-	_stateCharArrayInit = "{";
-	for (size_t i = 0; i < _stateCharArraySize; i++) {
-		_stateCharArrayInit += seperator + "0";
-		seperator = ", ";
-	}
-	_stateCharArrayInit += "}";
-
-	if (false) {
-	} else if (_states.size() < (1UL << 8)) {
-		_stateDataType = "uint8_t";
-	} else if (_states.size() < (1UL << 16)) {
-		_stateDataType = "uint16_t";
-	} else if (_states.size() < (1UL << 32)) {
-		_stateDataType = "uint32_t";
-	} else {
-		_stateDataType = "uint64_t";
-	}
-
-	seperator = "";
-	_transCharArraySize = ceil((float)_transitions.size() / (float)8);
-	_transCharArrayInit = "{";
-	for (size_t i = 0; i < _transCharArraySize; i++) {
-		_transCharArrayInit += seperator + "0";
-		seperator = ", ";
-	}
-	_transCharArrayInit += "}";
-
-	if (false) {
-	} else if (_transitions.size() < (1UL << 8)) {
-		_transDataType = "uint8_t";
-	} else if (_transitions.size() < (1UL << 16)) {
-		_transDataType = "uint16_t";
-	} else if (_transitions.size() < (1UL << 32)) {
-		_transDataType = "uint32_t";
-	} else {
-		_transDataType = "uint64_t";
-	}
-
-	// set the responsibility of history elements
-	setHistoryResponsibility(_scxml);
+    prepare();
 
 	writeIncludes(stream);
 	writeMacros(stream);
@@ -498,8 +505,9 @@ void ChartToC::writeTypes(std::ostream& stream) {
 void ChartToC::writeHelpers(std::ostream& stream) {
 	stream << "#ifdef SCXML_VERBOSE" << std::endl;
 	stream << "static void printStateNames(const char* a) {" << std::endl;
-	stream << "    const char* seperator = \"\";" << std::endl;
-	stream << "    for (size_t i = 0; i < SCXML_NUMBER_STATES; i++) {" << std::endl;
+    stream << "    size_t i;" << std::endl;
+    stream << "    const char* seperator = \"\";" << std::endl;
+	stream << "    for (i = 0; i < SCXML_NUMBER_STATES; i++) {" << std::endl;
 	stream << "        if (BIT_HAS(i, a)) {" << std::endl;
 	stream << "            printf(\"%s%s\", seperator, (scxml_states[i].name != NULL ? scxml_states[i].name : \"UNK\"));" << std::endl;
 	stream << "            seperator = \", \";" << std::endl;
@@ -510,8 +518,9 @@ void ChartToC::writeHelpers(std::ostream& stream) {
 	stream << std::endl;
 
 	stream << "static void printBitsetIndices(const char* a, size_t length) {" << std::endl;
+    stream << "    size_t i;" << std::endl;
 	stream << "    const char* seperator = \"\";" << std::endl;
-	stream << "    for (size_t i = 0; i < length; i++) {" << std::endl;
+	stream << "    for (i = 0; i < length; i++) {" << std::endl;
 	stream << "        if (BIT_HAS(i, a)) {" << std::endl;
 	stream << "            printf(\"%s%lu\", seperator, i);" << std::endl;
 	stream << "            seperator = \", \";" << std::endl;
@@ -526,18 +535,18 @@ void ChartToC::writeHelpers(std::ostream& stream) {
 	stream << "static int bit_has_and(const char* a, const char* b, size_t i) {" << std::endl;
 	stream << "    do {" << std::endl;
 	stream << "        if (a[i - 1] & b[i - 1])" << std::endl;
-	stream << "            return true;" << std::endl;
+	stream << "            return 1;" << std::endl;
 	stream << "    } while(--i);" << std::endl;
-	stream << "    return false;" << std::endl;
+	stream << "    return 0;" << std::endl;
 	stream << "}" << std::endl;
 	stream << std::endl;
 
 	stream << "static int bit_has_any(const char* a, size_t i) {" << std::endl;
 	stream << "    do {" << std::endl;
 	stream << "        if (a[i - 1] > 0)" << std::endl;
-	stream << "            return true;" << std::endl;
+	stream << "            return 1;" << std::endl;
 	stream << "    } while(--i);" << std::endl;
-	stream << "    return false;" << std::endl;
+	stream << "    return 0;" << std::endl;
 	stream << "}" << std::endl;
 	stream << std::endl;
 
@@ -1470,7 +1479,8 @@ void ChartToC::writeFSM(std::ostream& stream) {
 	stream << "        return SCXML_ERR_DONE; " << std::endl;
 	stream << std::endl;
 
-	stream << "    int err = SCXML_ERR_OK;" << std::endl;
+    stream << "    size_t i, j, k;" << std::endl;
+    stream << "    int err = SCXML_ERR_OK;" << std::endl;
 	stream << "    char conflicts[" << _transCharArraySize << "] = " << _transCharArrayInit << ";" << std::endl;
 	stream << "    char target_set[" << _stateCharArraySize << "] = " << _stateCharArrayInit << ";" << std::endl;
 	stream << "    char exit_set[" << _stateCharArraySize << "] = " << _stateCharArrayInit << ";" << std::endl;
@@ -1500,7 +1510,7 @@ void ChartToC::writeFSM(std::ostream& stream) {
 	stream << std::endl;
 
 	stream << "SELECT_TRANSITIONS:" << std::endl;
-	stream << "    for (size_t i = 0; i < SCXML_NUMBER_TRANSITIONS; i++) {" << std::endl;
+	stream << "    for (i = 0; i < SCXML_NUMBER_TRANSITIONS; i++) {" << std::endl;
 	stream << "        // never select history or initial transitions automatically" << std::endl;
 	stream << "        if unlikely(scxml_transitions[i].type & (SCXML_TRANS_HISTORY | SCXML_TRANS_INITIAL))" << std::endl;
 	stream << "            continue;" << std::endl;
@@ -1560,7 +1570,7 @@ void ChartToC::writeFSM(std::ostream& stream) {
 	stream << std::endl;
 
 	stream << "// REMEMBER_HISTORY:" << std::endl;
-	stream << "    for (size_t i = 0; i < SCXML_NUMBER_STATES; i++) {" << std::endl;
+	stream << "    for (i = 0; i < SCXML_NUMBER_STATES; i++) {" << std::endl;
 	stream << "        if unlikely(SCXML_STATE_MASK(scxml_states[i].type) == SCXML_STATE_HISTORY_SHALLOW ||" << std::endl;
 	stream << "                    SCXML_STATE_MASK(scxml_states[i].type) == SCXML_STATE_HISTORY_DEEP) {" << std::endl;
 	stream << "            // a history state whose parent is about to be exited" << std::endl;
@@ -1585,7 +1595,7 @@ void ChartToC::writeFSM(std::ostream& stream) {
 	stream << "    bit_copy(entry_set, target_set, " << _stateCharArraySize << ");" << std::endl;
 	stream << std::endl;
 	stream << "    // iterate for ancestors" << std::endl;
-	stream << "    for (size_t i = 0; i < SCXML_NUMBER_STATES; i++) {" << std::endl;
+	stream << "    for (i = 0; i < SCXML_NUMBER_STATES; i++) {" << std::endl;
 	stream << "        if (BIT_HAS(i, entry_set)) {" << std::endl;
 	stream << "            bit_or(entry_set, scxml_states[i].ancestors, " << _stateCharArraySize << ");" << std::endl;
 	stream << "        }" << std::endl;
@@ -1593,7 +1603,7 @@ void ChartToC::writeFSM(std::ostream& stream) {
 	stream << std::endl;
 
 	stream << "    // iterate for descendants" << std::endl;
-	stream << "    for (size_t i = 0; i < SCXML_NUMBER_STATES; i++) {" << std::endl;
+	stream << "    for (i = 0; i < SCXML_NUMBER_STATES; i++) {" << std::endl;
 	stream << "        if (BIT_HAS(i, entry_set)) {" << std::endl;
 	stream << "            switch (SCXML_STATE_MASK(scxml_states[i].type)) {" << std::endl;
 	stream << "                case SCXML_STATE_PARALLEL: {" << std::endl;
@@ -1605,12 +1615,12 @@ void ChartToC::writeFSM(std::ostream& stream) {
 	stream << "                    if (!bit_has_and(scxml_states[i].completion, ctx->history, " << _stateCharArraySize << ") &&" << std::endl;
 	stream << "                        !BIT_HAS(scxml_states[i].parent, ctx->config)) {" << std::endl;
 	stream << "                        // nothing set for history, look for a default transition" << std::endl;
-	stream << "                        for (size_t j = 0; j < SCXML_NUMBER_TRANSITIONS; j++) {" << std::endl;
+	stream << "                        for (j = 0; j < SCXML_NUMBER_TRANSITIONS; j++) {" << std::endl;
 	stream << "                            if unlikely(scxml_transitions[j].source == i) {" << std::endl;
 	stream << "                                bit_or(entry_set, scxml_transitions[j].target, " << _stateCharArraySize << ");" << std::endl;
 	stream << "                                if(SCXML_STATE_MASK(scxml_states[i].type) == SCXML_STATE_HISTORY_DEEP &&" << std::endl;
 	stream << "                                   !bit_has_and(scxml_transitions[j].target, scxml_states[i].children, " << _stateCharArraySize << ")) {" << std::endl;
-	stream << "                                    for (size_t k = i + 1; k < SCXML_NUMBER_STATES; k++) {" << std::endl;
+	stream << "                                    for (k = i + 1; k < SCXML_NUMBER_STATES; k++) {" << std::endl;
 	stream << "                                        if (BIT_HAS(k, scxml_transitions[j].target)) {" << std::endl;
 	stream << "                                            bit_or(entry_set, scxml_states[k].ancestors, " << _stateCharArraySize << ");" << std::endl;
 	stream << "                                            break;" << std::endl;
@@ -1628,11 +1638,11 @@ void ChartToC::writeFSM(std::ostream& stream) {
 	stream << "                        bit_or(entry_set, tmp_states, " << _stateCharArraySize << ");" << std::endl;
 	stream << "                        if (scxml_states[i].type == (SCXML_STATE_HAS_HISTORY | SCXML_STATE_HISTORY_DEEP)) {" << std::endl;
 	stream << "                            // a deep history state with nested histories -> more completion" << std::endl;
-	stream << "                            for (size_t j = i + 1; j < SCXML_NUMBER_STATES; j++) {" << std::endl;
+	stream << "                            for (j = i + 1; j < SCXML_NUMBER_STATES; j++) {" << std::endl;
 	stream << "                                if (BIT_HAS(j, scxml_states[i].completion) &&" << std::endl;
 	stream << "                                    BIT_HAS(j, entry_set) &&" << std::endl;
 	stream << "                                    (scxml_states[j].type & SCXML_STATE_HAS_HISTORY)) {" << std::endl;
-	stream << "                                    for (size_t k = j + 1; k < SCXML_NUMBER_STATES; k++) {" << std::endl;
+	stream << "                                    for (k = j + 1; k < SCXML_NUMBER_STATES; k++) {" << std::endl;
 	stream << "                                        // add nested history to entry_set" << std::endl;
 	stream << "                                        if ((SCXML_STATE_MASK(scxml_states[k].type) == SCXML_STATE_HISTORY_DEEP ||" << std::endl;
 	stream << "                                             SCXML_STATE_MASK(scxml_states[k].type) == SCXML_STATE_HISTORY_SHALLOW) &&" << std::endl;
@@ -1648,12 +1658,12 @@ void ChartToC::writeFSM(std::ostream& stream) {
 	stream << "                    break;" << std::endl;
 	stream << "                }" << std::endl;
 	stream << "                case SCXML_STATE_INITIAL: {" << std::endl;
-	stream << "                    for (size_t j = 0; j < SCXML_NUMBER_TRANSITIONS; j++) {" << std::endl;
+	stream << "                    for (j = 0; j < SCXML_NUMBER_TRANSITIONS; j++) {" << std::endl;
 	stream << "                        if (scxml_transitions[j].source == i) {" << std::endl;
 	stream << "                            BIT_SET_AT(j, trans_set);" << std::endl;
 	stream << "                            BIT_CLEAR(i, entry_set);" << std::endl;
 	stream << "                            bit_or(entry_set, scxml_transitions[j].target, " << _stateCharArraySize << ");" << std::endl;
-	stream << "                            for (size_t k = i + 1; k < SCXML_NUMBER_STATES; k++) {" << std::endl;
+	stream << "                            for (k = i + 1; k < SCXML_NUMBER_STATES; k++) {" << std::endl;
 	stream << "                                if (BIT_HAS(k, scxml_transitions[j].target)) {" << std::endl;
 	stream << "                                    bit_or(entry_set, scxml_states[k].ancestors, " << _stateCharArraySize << ");" << std::endl;
 	stream << "                                }" << std::endl;
@@ -1670,7 +1680,7 @@ void ChartToC::writeFSM(std::ostream& stream) {
 	stream << "                        bit_or(entry_set, scxml_states[i].completion, " << _stateCharArraySize << ");" << std::endl;
 	stream << "                        if (!bit_has_and(scxml_states[i].completion, scxml_states[i].children, " << _stateCharArraySize << ")) {" << std::endl;
 	stream << "                            // deep completion" << std::endl;
-	stream << "                            for (size_t j = i + 1; j < SCXML_NUMBER_STATES; j++) {" << std::endl;
+	stream << "                            for (j = i + 1; j < SCXML_NUMBER_STATES; j++) {" << std::endl;
 	stream << "                                if (BIT_HAS(j, scxml_states[i].completion)) {" << std::endl;
 	stream << "                                    bit_or(entry_set, scxml_states[j].ancestors, " << _stateCharArraySize << ");" << std::endl;
 	stream << "                                    break; // completion of compound is single state" << std::endl;
@@ -1692,7 +1702,7 @@ void ChartToC::writeFSM(std::ostream& stream) {
 	stream << std::endl;
 
 	stream << "// EXIT_STATES:" << std::endl;
-	stream << "    size_t i = SCXML_NUMBER_STATES;" << std::endl;
+	stream << "    i = SCXML_NUMBER_STATES;" << std::endl;
 	stream << "    while(i-- > 0) {" << std::endl;
 	stream << "        if (BIT_HAS(i, exit_set) && BIT_HAS(i, ctx->config)) {" << std::endl;
 	stream << "            // call all on exit handlers" << std::endl;
@@ -1706,7 +1716,7 @@ void ChartToC::writeFSM(std::ostream& stream) {
 	stream << std::endl;
 
 	stream << "// TAKE_TRANSITIONS:" << std::endl;
-	stream << "    for (size_t i = 0; i < SCXML_NUMBER_TRANSITIONS; i++) {" << std::endl;
+	stream << "    for (i = 0; i < SCXML_NUMBER_TRANSITIONS; i++) {" << std::endl;
 	stream << "        if (BIT_HAS(i, trans_set) && (scxml_transitions[i].type & (SCXML_TRANS_HISTORY | SCXML_TRANS_INITIAL)) == 0) {" << std::endl;
 	stream << "            // call executable content in transition" << std::endl;
 	stream << "            if (scxml_transitions[i].on_transition != NULL) {" << std::endl;
@@ -1726,7 +1736,7 @@ void ChartToC::writeFSM(std::ostream& stream) {
 	stream << std::endl;
 
 	stream << "// ENTER_STATES:" << std::endl;
-	stream << "    for (size_t i = 0; i < SCXML_NUMBER_STATES; i++) {" << std::endl;
+	stream << "    for (i = 0; i < SCXML_NUMBER_STATES; i++) {" << std::endl;
 	stream << "        if (BIT_HAS(i, entry_set) && !BIT_HAS(i, ctx->config)) {" << std::endl;
 	stream << "            // these are no proper states" << std::endl;
 	stream << "            if unlikely(SCXML_STATE_MASK(scxml_states[i].type) == SCXML_STATE_HISTORY_DEEP ||" << std::endl;
@@ -1754,7 +1764,7 @@ void ChartToC::writeFSM(std::ostream& stream) {
 	stream << std::endl;
 
 	stream << "            // take history and initial transitions" << std::endl;
-	stream << "            for (size_t j = 0; j < SCXML_NUMBER_TRANSITIONS; j++) {" << std::endl;
+	stream << "            for (j = 0; j < SCXML_NUMBER_TRANSITIONS; j++) {" << std::endl;
 	stream << "                if unlikely(BIT_HAS(j, trans_set) &&" << std::endl;
 	stream << "                            (scxml_transitions[j].type & (SCXML_TRANS_HISTORY | SCXML_TRANS_INITIAL)) &&" << std::endl;
 	stream << "                            scxml_states[scxml_transitions[j].source].parent == i) {" << std::endl;
@@ -1792,11 +1802,11 @@ void ChartToC::writeFSM(std::ostream& stream) {
 	stream << "                 * 3. Iterate all active final states and remove their ancestors" << std::endl;
 	stream << "                 * 4. If a state remains, not all children of a parallel are final" << std::endl;
 	stream << "                 */" << std::endl;
-	stream << "                for (size_t j = 0; j < SCXML_NUMBER_STATES; j++) {" << std::endl;
+	stream << "                for (j = 0; j < SCXML_NUMBER_STATES; j++) {" << std::endl;
 	stream << "                    if unlikely(SCXML_STATE_MASK(scxml_states[j].type) == SCXML_STATE_PARALLEL &&" << std::endl;
 	stream << "                                BIT_HAS(j, scxml_states[i].ancestors)) {" << std::endl;
 	stream << "                        bit_and_not(tmp_states, tmp_states, " << _stateCharArraySize << ");" << std::endl;
-	stream << "                        for (size_t k = 0; k < SCXML_NUMBER_STATES; k++) {" << std::endl;
+	stream << "                        for (k = 0; k < SCXML_NUMBER_STATES; k++) {" << std::endl;
 	stream << "                            if unlikely(BIT_HAS(j, scxml_states[k].ancestors) && BIT_HAS(k, ctx->config)) {" << std::endl;
 	stream << "                                if (SCXML_STATE_MASK(scxml_states[k].type) == SCXML_STATE_FINAL) {" << std::endl;
 	stream << "                                    bit_and_not(tmp_states, scxml_states[k].ancestors, " << _stateCharArraySize << ");" << std::endl;

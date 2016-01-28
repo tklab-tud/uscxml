@@ -20,10 +20,10 @@ if(CMD_RESULT)
 endif()
 message(STATUS "time for transforming to c")
 
-message(STATUS "${GCC_BIN} -DMEMLIM=1024 -DVECTORSZ=8192 -O2 -DXUSAFE -w -o ${OUTDIR}/pan ${OUTDIR}/pan.c")
-execute_process(COMMAND time -p ${GCC_BIN} -DMEMLIM=1024 -DVECTORSZ=8192 -O2 -DXUSAFE -w -o ${OUTDIR}/pan ${OUTDIR}/pan.c WORKING_DIRECTORY ${OUTDIR} RESULT_VARIABLE CMD_RESULT)
+message(STATUS "${CXX_BIN} -DMEMLIM=1024 -DVECTORSZ=8192 -O2 -DXUSAFE -w -o ${OUTDIR}/pan ${OUTDIR}/pan.c")
+execute_process(COMMAND time -p ${CXX_BIN} -DMEMLIM=1024 -DVECTORSZ=8192 -O2 -DXUSAFE -w -o ${OUTDIR}/pan ${OUTDIR}/pan.c WORKING_DIRECTORY ${OUTDIR} RESULT_VARIABLE CMD_RESULT)
 if(CMD_RESULT)
-	message(FATAL_ERROR "Error running gcc ${GCC_BIN}: ${CMD_RESULT}")
+	message(FATAL_ERROR "Error running gcc ${CXX_BIN}: ${CMD_RESULT}")
 endif()
 message(STATUS "time for transforming to binary")
 

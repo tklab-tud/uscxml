@@ -81,8 +81,8 @@ add_test(test-done-data ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/uscxml-browser ${CMAKE
 # declare W#C tests
 
 find_program(SPIN spin)
-find_program(GCC gcc)
-find_program(GPP g++)
+find_program(CC gcc)
+find_program(CXX g++)
 
 if (NOT BUILD_MINIMAL)
 	# compile and add all reported issues tests
@@ -199,8 +199,8 @@ if (NOT BUILD_MINIMAL)
 									-DTARGETLANG=${TEST_TARGET}
 									-DJSC_LIBRARY:FILEPATH=${JSC_LIBRARY}
 									-DUSCXML_TRANSFORM_BIN:FILEPATH=${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/uscxml-transform
-									-DGCC_BIN:FILEPATH=${GCC}
-									-DGPP_BIN:FILEPATH=${GPP}
+									-DCC_BIN:FILEPATH=${CC}
+									-DCXX_BIN:FILEPATH=${CXX}
 									-DPROJECT_SOURCE_DIR=${PROJECT_SOURCE_DIR}
 									-DUSCXML_PLATFORM_ID=${USCXML_PLATFORM_ID}
 									-DCMAKE_BINARY_DIR=${CMAKE_BINARY_DIR}
@@ -234,7 +234,7 @@ if (NOT BUILD_MINIMAL)
 								-DTESTFILE:FILEPATH=${W3C_TEST}
 								-DUSCXML_TRANSFORM_BIN:FILEPATH=${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/uscxml-transform
 								-DSPIN_BIN:FILEPATH=${SPIN}
-								-DGCC_BIN:FILEPATH=${GCC}
+								-DCC_BIN:FILEPATH=${CC}
 								-P ${CMAKE_CURRENT_SOURCE_DIR}/w3c/run_promela_test.cmake)
 						set_tests_properties("${TEST_NAME}" PROPERTIES PASS_REGULAR_EXPRESSION "depth reached [0-9]+, errors: 0")
 						set_tests_properties("${TEST_NAME}" PROPERTIES FAIL_REGULAR_EXPRESSION "depth reached [0-9]+, errors: [1-9]+")
@@ -290,8 +290,8 @@ if (NOT BUILD_MINIMAL)
 	# 						-DTESTFILE:FILEPATH=${W3C_TEST}
 	# 						-DJSC_LIBRARY:FILEPATH=${JSC_LIBRARY}
 	# 						-DUSCXML_TRANSFORM_BIN:FILEPATH=${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/uscxml-transform
-	# 						-DGCC_BIN:FILEPATH=${GCC}
-	# 						-DGPP_BIN:FILEPATH=${GPP}
+	# 						-DCC_BIN:FILEPATH=${CC}
+	# 						-DCXX_BIN:FILEPATH=${CXX}
 	# 						-DPROJECT_SOURCE_DIR=${PROJECT_SOURCE_DIR}
 	# 						-DUSCXML_PLATFORM_ID=${USCXML_PLATFORM_ID}
 	# 						-DCMAKE_BINARY_DIR=${CMAKE_BINARY_DIR}
@@ -387,7 +387,7 @@ if (NOT BUILD_MINIMAL)
 	# 			endif()
 	# 		endif()
 	#
-	# 		if (GCC AND SPIN AND BUILD_DM_PROMELA AND BUILD_TESTS_W3C_PROMELA AND TEST_NAME MATCHES "^promela\\/.*")
+	# 		if (CC AND SPIN AND BUILD_DM_PROMELA AND BUILD_TESTS_W3C_PROMELA AND TEST_NAME MATCHES "^promela\\/.*")
 	#
 	# 			add_test(NAME "spin/${TEST_NAME}"
 	# 			    COMMAND ${CMAKE_COMMAND}
@@ -395,7 +395,7 @@ if (NOT BUILD_MINIMAL)
 	# 						-DTESTFILE:FILEPATH=${W3C_TEST}
 	# 						-DUSCXML_TRANSFORM_BIN:FILEPATH=${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/uscxml-transform
 	# 						-DSPIN_BIN:FILEPATH=${SPIN}
-	# 						-DGCC_BIN:FILEPATH=${GCC}
+	# 						-DCC_BIN:FILEPATH=${CC}
 	# 						-P ${CMAKE_CURRENT_SOURCE_DIR}/w3c/run_promela_test.cmake)
 	# 			set_property(TEST "spin/${TEST_NAME}" PROPERTY LABELS "spin/${TEST_NAME}")
 	# 			set_tests_properties("spin/${TEST_NAME}" PROPERTIES TIMEOUT ${TEST_TIMEOUT})

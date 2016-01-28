@@ -372,7 +372,9 @@ int main(int argc, char** argv) {
 
 	} catch (Event e) {
 		std::cout << e << std::endl;
-	}
+    } catch (const std::exception &e) {
+        std::cout << e.what() << std::endl;
+    }
 
 	return EXIT_SUCCESS;
 }

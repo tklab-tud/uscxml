@@ -17,7 +17,6 @@
  *  @endcond
  */
 
-#include "uscxml/transform/ChartToFSM.h"
 #include "uscxml/transform/ChartToVHDL.h"
 #include "uscxml/debug/Complexity.h"
 #include <DOM/io/Stream.hpp>
@@ -47,209 +46,103 @@ Transformer ChartToVHDL::transform(const Interpreter& other) {
 	return boost::shared_ptr<TransformerImpl>(c2c);
 }
 
-ChartToVHDL::ChartToVHDL(const Interpreter& other) : TransformerImpl() {
-	cloneFrom(other.getImpl());
+ChartToVHDL::ChartToVHDL(const Interpreter& other) : ChartToC(other), _eventTrie(".") {
 }
 
 ChartToVHDL::~ChartToVHDL() {
 }
 
-NodeSet<std::string> ChartToVHDL::inPostFixOrder(const std::set<std::string>& elements, const Element<std::string>& root) {
-	NodeSet<std::string> nodes;
-	inPostFixOrder(elements, root, nodes);
-	return nodes;
+void ChartToVHDL::checkDocument() {
+    // filter unsupported stuff
+    Arabica::XPath::NodeSet<std::string> unsupported;
+    
+    std::set<std::string> elements;
+    elements.insert(_nsInfo.xmlNSPrefix + "datamodel");
+    elements.insert(_nsInfo.xmlNSPrefix + "data");
+    elements.insert(_nsInfo.xmlNSPrefix + "assign");
+    elements.insert(_nsInfo.xmlNSPrefix + "donedata");
+    elements.insert(_nsInfo.xmlNSPrefix + "content");
+    elements.insert(_nsInfo.xmlNSPrefix + "param");
+    elements.insert(_nsInfo.xmlNSPrefix + "script");
+    
+    elements.insert(_nsInfo.xmlNSPrefix + "parallel");
+    elements.insert(_nsInfo.xmlNSPrefix + "history");
+    
+    elements.insert(_nsInfo.xmlNSPrefix + "if"); // implicit elseif und else
+    elements.insert(_nsInfo.xmlNSPrefix + "foreach");
+    elements.insert(_nsInfo.xmlNSPrefix + "send");
+    elements.insert(_nsInfo.xmlNSPrefix + "cancel");
+    elements.insert(_nsInfo.xmlNSPrefix + "invoke");
+    elements.insert(_nsInfo.xmlNSPrefix + "finalize");
+    unsupported = ChartToC::inDocumentOrder(elements, _scxml);
+    
+    std::stringstream ss;
+    if (unsupported.size() > 0) {
+        for (int i = 0; i < unsupported.size(); i++) {
+            ss << "  " << DOMUtils::xPathForNode(unsupported[i]) << " unsupported" << std::endl;
+        }
+        throw std::runtime_error("Unsupported elements found:\n" + ss.str());
+    }
+    
+    elements.clear();
+    elements.insert(_nsInfo.xmlNSPrefix + "transition");
+    unsupported = inDocumentOrder(elements, _scxml);
+    
+    for (int i = 0; i < unsupported.size(); i++) {
+        Element<std::string> transition(unsupported[i]);
+        if (HAS_ATTR(transition, "cond")) {
+            ERROR_PLATFORM_THROW("transition with conditions not supported!");
+        }
+        if (!HAS_ATTR(transition, "target")) {
+            ERROR_PLATFORM_THROW("targetless transition not supported!");
+        }
+    }
+
 }
 
-void ChartToVHDL::inPostFixOrder(const std::set<std::string>& elements, const Element<std::string>& root, NodeSet<std::string>& nodes) {
-	NodeList<std::string> children = root.getChildNodes();
-	for (int i = 0; i < children.getLength(); i++) {
-		if (children.item(i).getNodeType() != Node_base::ELEMENT_NODE)
-			continue;
-		Arabica::DOM::Element<std::string> childElem(children.item(i));
-		inPostFixOrder(elements, childElem, nodes);
-
-	}
-	for (int i = 0; i < children.getLength(); i++) {
-		if (children.item(i).getNodeType() != Node_base::ELEMENT_NODE)
-			continue;
-		Arabica::DOM::Element<std::string> childElem(children.item(i));
-
-		if (elements.find(TAGNAME(childElem)) != elements.end()) {
-			nodes.push_back(childElem);
-		}
-	}
+void ChartToVHDL::findEvents() {
+    // elements with an event attribute
+    NodeSet<std::string> withEvent;
+    withEvent.push_back(InterpreterImpl::filterChildElements(_nsInfo.xmlNSPrefix + "raise", _scxml, true));
+    withEvent.push_back(InterpreterImpl::filterChildElements(_nsInfo.xmlNSPrefix + "send", _scxml, true));
+    withEvent.push_back(InterpreterImpl::filterChildElements(_nsInfo.xmlNSPrefix + "transition", _scxml, true));
+    
+    for (size_t i = 0; i < withEvent.size(); i++) {
+        if (HAS_ATTR_CAST(withEvent[i], "event")) {
+            _eventTrie.addWord(ATTR_CAST(withEvent[i], "event"));
+        }
+    }
 }
-
-void ChartToVHDL::inDocumentOrder(const std::set<std::string>& elements, const Element<std::string>& root, NodeSet<std::string>& nodes) {
-	if (elements.find(TAGNAME(root)) != elements.end()) {
-		nodes.push_back(root);
-	}
-
-	NodeList<std::string> children = root.getChildNodes();
-	for (int i = 0; i < children.getLength(); i++) {
-		if (children.item(i).getNodeType() != Node_base::ELEMENT_NODE)
-			continue;
-		Arabica::DOM::Element<std::string> childElem(children.item(i));
-		inDocumentOrder(elements, childElem, nodes);
-	}
-}
-
-NodeSet<std::string> ChartToVHDL::inDocumentOrder(const std::set<std::string>& elements, const Element<std::string>& root) {
-	NodeSet<std::string> nodes;
-	inDocumentOrder(elements, root, nodes);
-	return nodes;
-}
-
-
-// ASK Where does _scxml,_nsInfo come from
-
+    
 void ChartToVHDL::writeTo(std::ostream& stream) {
-	// ASK What is this ?
-	_binding = (HAS_ATTR(_scxml, "binding") && iequals(ATTR(_scxml, "binding"), "late") ? LATE : EARLY);
-	// ASK Name for whole state machine? Important ?
-	_name = (HAS_ATTR(_scxml, "name") ? ATTR(_scxml, "name") : "no_name_machine");
-
-	// filter unsupported stuff
-	std::set<std::string> elements;
-	elements.insert(_nsInfo.xmlNSPrefix + "datamodel");
-	elements.insert(_nsInfo.xmlNSPrefix + "data");
-	elements.insert(_nsInfo.xmlNSPrefix + "assign");
-	elements.insert(_nsInfo.xmlNSPrefix + "donedata");
-	elements.insert(_nsInfo.xmlNSPrefix + "content");
-	elements.insert(_nsInfo.xmlNSPrefix + "param");
-	elements.insert(_nsInfo.xmlNSPrefix + "script");
-
-	elements.insert(_nsInfo.xmlNSPrefix + "parallel");
-	elements.insert(_nsInfo.xmlNSPrefix + "history");
-
-	elements.insert(_nsInfo.xmlNSPrefix + "if"); //implizit elseif und else
-	elements.insert(_nsInfo.xmlNSPrefix + "foreach");
-	elements.insert(_nsInfo.xmlNSPrefix + "send");
-	elements.insert(_nsInfo.xmlNSPrefix + "cancel");
-	elements.insert(_nsInfo.xmlNSPrefix + "invoke");
-	elements.insert(_nsInfo.xmlNSPrefix + "finalize");
-	Arabica::XPath::NodeSet<std::string> unsupported = inDocumentOrder(elements, _scxml);
-
-	if (unsupported.size() > 0) {
-		stream << "contains unsupported elements:" << std::endl;
-		for (int i = 0; i < unsupported.size(); i++) {
-			Element<std::string> uElement(unsupported[i]);
-			stream << TAGNAME(uElement) << std::endl;
-		}
-		stream << "ERROR" << std::endl;
-		return;
-	}
-
-	elements.clear();
-	elements.insert(_nsInfo.xmlNSPrefix + "transition");
-	unsupported = inPostFixOrder(elements, _scxml);
-
-	for (int i = 0; i < unsupported.size(); i++) {
-		Element<std::string> transition(unsupported[i]);
-		if (HAS_ATTR(transition, "cond")) {
-			stream << transition << std::endl;
-			stream << "transition has conditions (not supported)!" << std::endl;
-			stream << "ERROR" << std::endl;
-			return;
-		}
-		if (!HAS_ATTR(transition, "target")) {
-			stream << transition << std::endl;
-			stream << "transition has no target (not supported)!" << std::endl;
-			stream << "ERROR" << std::endl;
-			return;
-		}
-		if (!HAS_ATTR(transition, "event")) {
-			stream << transition << std::endl;
-			stream << "transition is spntaneous (not supported)!" << std::endl;
-			stream << "ERROR" << std::endl;
-			return;
-		}
-		if (transition.getChildNodes().getLength() > 0) {
-			stream << transition << std::endl;
-			stream << "transition executable code (not supported)!" << std::endl;
-			stream << "ERROR" << std::endl;
-			return;
-		}
-	}
-
-	// create states array
-	elements.clear();
-	//        elements.insert(_nsInfo.xmlNSPrefix + "scxml");
-	elements.insert(_nsInfo.xmlNSPrefix + "state");
-	elements.insert(_nsInfo.xmlNSPrefix + "final");
-	elements.insert(_nsInfo.xmlNSPrefix + "parallel");
-	elements.insert(_nsInfo.xmlNSPrefix + "history");
-	elements.insert(_nsInfo.xmlNSPrefix + "initial");
-	//        elements.insert(_nsInfo.xmlNSPrefix + "parallel");
-	_states = inDocumentOrder(elements, _scxml);
-
-	for (int i = 0; i < _states.size(); i++) {
-		Element<std::string> state(_states[i]);
-		state.setAttribute("documentOrder", toStr(i));
-		if (!HAS_ATTR(state, "id")) {
-			std::stringstream ss;
-			ss << "HWS_" << toStr(i);
-			state.setAttribute("id", ss.str());
-		}
-		_stateNames[ATTR(state, "id")] = state;
-	}
-	_initState = ATTR(_scxml, "initial");
-
-	// create transitions array & event array
-	elements.clear();
-	elements.insert(_nsInfo.xmlNSPrefix + "transition");
-	_transitions = inPostFixOrder(elements, _scxml);
-
-	for (int i = 0; i < _transitions.size(); i++) {
-		Element<std::string> transition(_transitions[i]);
-		transition.setAttribute("postFixOrder", toStr(i));
-		if (!HAS_ATTR(transition, "event")) {
-			// spontanious transition
-			transition.setAttribute("event", CONST_TRANS_SPONTANIOUS);
-		}
-		std::stringstream ss;
-		ss << "HWT" << toStr(i) << "_to_" << ATTR(transition, "target");
-		transition.setAttribute("id", ss.str());
-		_transitionNames[ss.str()] = transition;
-
-		std::string event = ATTR(transition, "event");
-		if (event == "*") {
-			event = CONST_EVENT_ANY;
-			transition.setAttribute("event", CONST_EVENT_ANY);
-		}
-		if (!(std::find(_events.begin(), _events.end(), event) != _events.end())) {
-			// if eventname does not exist
-			_events.push_back(event);
-		}
-	}
-
-	// debug
-	//        stream << _scxml;
-	//        return;
-
-	// how many bits do we need to represent the state array?
-	//        std::string seperator;
-	//        _stateCharArraySize = ceil((float) _states.size() / (float) 8);
-	//        _stateCharArrayInit = "{";
-	//        for (int i = 0; i < _stateCharArraySize; i++) {
-	//            _stateCharArrayInit += seperator + "0";
-	//            seperator = ", ";
-	//        }
-	//        _stateCharArrayInit += "}";
-	//
-	//        seperator = "";
-	//        _transCharArraySize = ceil((float) _transitions.size() / (float) 8);
-	//        _transCharArrayInit = "{";
-	//        for (int i = 0; i < _transCharArraySize; i++) {
-	//            _transCharArrayInit += seperator + "0";
-	//            seperator = ", ";
-	//        }
-	//        _transCharArrayInit += "}";
-
-	//        writeTopDown(stream);
+    // same preparations as the C transformation
+//    annotateElementSets();
+    
+    
+//    checkDocument();
+    findEvents();
+    _eventTrie.dump();
+    
 	writeTypes(stream);
-	writeFiFo(stream);
+    writeFiFo(stream);
+    writeTransitionSet(stream);
+    writeExitSet(stream);
+    writeEntrySet(stream);
 	writeFSM(stream);
+}
+
+void ChartToVHDL::writeTransitionSet(std::ostream & stream) {
+    for (size_t i = 0; i < _transitions.size(); i++) {
+        Element<std::string> transition(_transitions[i]);
+        std::string name = DOMUtils::idForNode(transition);
+        
+    }
+}
+
+void ChartToVHDL::writeExitSet(std::ostream & stream) {
+}
+
+void ChartToVHDL::writeEntrySet(std::ostream & stream) {
 }
 
 void ChartToVHDL::writeFSM(std::ostream & stream) {
@@ -350,11 +243,11 @@ void ChartToVHDL::writeTypes(std::ostream & stream) {
 	// create event type
 	stream << "  type event_type is (";
 	seperator = "";
-	for (int i = 0; i < _events.size(); i++) {
-		stream << seperator;
-		stream << _events[i];
-		seperator = ", ";
-	}
+//	for (int i = 0; i < _events.size(); i++) {
+//		stream << seperator;
+//		stream << _events[i];
+//		seperator = ", ";
+//	}
 	if (seperator.size() == 0) {
 		stream << "NO_EVENTS";
 	}
@@ -701,7 +594,7 @@ void ChartToVHDL::writeNextStateLogic(std::ostream & stream) {
 	stream << "begin" << std::endl;
 	stream << "    if rst = '1' then" << std::endl;
 	stream << "        current_state <= (others => '0');" << std::endl;
-	stream << "        " << _initState << "_curr <= '1';" << std::endl;
+//	stream << "        " << _initState << "_curr <= '1';" << std::endl;
 	stream << "    elsif (rising_edge(clk) and stall = '0') then" << std::endl;
 	stream << "        current_state <= next_state;" << std::endl;
 	stream << "    end if;" << std::endl;

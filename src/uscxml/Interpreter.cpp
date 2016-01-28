@@ -72,7 +72,8 @@
 
 #define VALID_FROM_INITIALIZED(newState) ( \
 	newState == USCXML_MICROSTEPPED || \
-	newState == USCXML_FINISHED \
+    newState == USCXML_FINISHED || \
+    newState == USCXML_DESTROYED \
 )
 
 #define VALID_FROM_MICROSTEPPED(newState) ( \

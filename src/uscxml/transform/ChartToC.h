@@ -54,7 +54,7 @@ protected:
 	static void inDocumentOrder(const std::set<std::string>& elements,
 	                            const Arabica::DOM::Element<std::string>& root,
 	                            Arabica::XPath::NodeSet<std::string>& nodes);
-
+    
 	void writeIncludes(std::ostream& stream);
 	void writeMacros(std::ostream& stream);
 	void writeTypes(std::ostream& stream);
@@ -72,12 +72,12 @@ protected:
 	Arabica::XPath::NodeSet<std::string> computeExitSet(const Arabica::DOM::Element<std::string>& transition);
 
 	void resortStates(Arabica::DOM::Node<std::string>& node);
-	void setHistoryResponsibility(Arabica::DOM::Node<std::string>& node);
-
+	void setHistoryResponsibility();
+    void prepare();
+    
 	Interpreter interpreter;
 
 	Arabica::XPath::NodeSet<std::string> _states;
-	std::map<std::string, Arabica::DOM::Element<std::string> > _stateNames;
 	Arabica::XPath::NodeSet<std::string> _transitions;
 
 	bool _hasGlobalScripts;

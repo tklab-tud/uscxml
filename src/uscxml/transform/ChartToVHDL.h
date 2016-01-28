@@ -24,6 +24,7 @@
 #include "uscxml/DOMUtils.h"
 #include "uscxml/util/Trie.h"
 #include "Transformer.h"
+#include "ChartToC.h"
 
 #include <DOM/Document.hpp>
 #include <DOM/Node.hpp>
@@ -32,7 +33,7 @@
 
 namespace uscxml {
 
-class USCXML_API ChartToVHDL : public InterpreterRC, public TransformerImpl {
+class USCXML_API ChartToVHDL : public ChartToC {
 public:
 
 	virtual ~ChartToVHDL();
@@ -40,22 +41,12 @@ public:
 
 	void writeTo(std::ostream& stream);
 
-	static Arabica::XPath::NodeSet<std::string> inPostFixOrder(const std::set<std::string>& elements,
-	        const Arabica::DOM::Element<std::string>& root);
-	static Arabica::XPath::NodeSet<std::string> inDocumentOrder(const std::set<std::string>& elements,
-	        const Arabica::DOM::Element<std::string>& root);
-
 protected:
 	ChartToVHDL(const Interpreter& other);
 
-	static void inPostFixOrder(const std::set<std::string>& elements,
-	                           const Arabica::DOM::Element<std::string>& root,
-	                           Arabica::XPath::NodeSet<std::string>& nodes);
-
-	static void inDocumentOrder(const std::set<std::string>& elements,
-	                            const Arabica::DOM::Element<std::string>& root,
-	                            Arabica::XPath::NodeSet<std::string>& nodes);
-
+    void checkDocument();
+    void findEvents();
+    
 	void writeIncludes(std::ostream& stream);
 	void writeTopDown(std::ostream& stream);
 
@@ -68,25 +59,12 @@ protected:
 	void writeErrorHandler(std::ostream& stream);
 	void writeFSM(std::ostream& stream);
 
+    void writeTransitionSet(std::ostream & stream);
+    void writeExitSet(std::ostream & stream);
+    void writeEntrySet(std::ostream & stream);
 
+    Trie _eventTrie;
 
-	Interpreter interpreter;
-
-	std::string _initState;
-	Arabica::XPath::NodeSet<std::string> _states;
-	std::map<std::string, Arabica::DOM::Element<std::string> > _stateNames;
-	Arabica::XPath::NodeSet<std::string> _transitions;
-	std::map<std::string, Arabica::DOM::Element<std::string> > _transitionNames;
-	std::vector<std::string> _events;
-
-	bool _hasGlobalScripts;
-	bool _hasDoneData;
-
-	size_t _transCharArraySize;
-	std::string _transCharArrayInit;
-
-	size_t _stateCharArraySize;
-	std::string _stateCharArrayInit;
 };
 
 }
