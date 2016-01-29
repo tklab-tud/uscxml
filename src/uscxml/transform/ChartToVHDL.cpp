@@ -116,8 +116,7 @@ void ChartToVHDL::findEvents() {
     
 void ChartToVHDL::writeTo(std::ostream& stream) {
     // same preparations as the C transformation
-//    annotateElementSets();
-    
+    prepare();    
     
 //    checkDocument();
     findEvents();

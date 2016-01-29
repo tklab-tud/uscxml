@@ -25,8 +25,8 @@
 #define SCXML_ERR_UNSUPPORTED       8
 
 #define SCXML_MACHINE_NAME ""
-#define SCXML_NUMBER_STATES 14
-#define SCXML_NUMBER_TRANSITIONS 10
+#define SCXML_NUMBER_STATES 9
+#define SCXML_NUMBER_TRANSITIONS 6
 
 #define SCXML_TRANS_SPONTANEOUS      0x01
 #define SCXML_TRANS_TARGETLESS       0x02
@@ -113,7 +113,7 @@ struct scxml_transition {
     const char* condition;
     const exec_content_t on_transition;
     const uint8_t type;
-    const char conflicts[2];
+    const char conflicts[1];
     const char exit_set[2];
 };
 
@@ -204,106 +204,20 @@ static const scxml_elem_data scxml_elem_datas[2] = {
     { NULL, NULL, NULL, NULL }
 };
 
-static const scxml_elem_send scxml_elem_sends[1] = {
-    { 
-        /* event       */ "timeout", 
-        /* eventexpr   */ NULL, 
-        /* target      */ NULL, 
-        /* targetexpr  */ NULL, 
-        /* type        */ NULL, 
-        /* typeexpr    */ NULL, 
-        /* id          */ NULL, 
-        /* idlocation  */ NULL, 
-        /* delay       */ "2s", 
-        /* delayexpr   */ NULL, 
-        /* namelist    */ NULL, 
-        /* content     */ NULL,
-        /* contentexpr */ NULL,
-        /* params      */ NULL 
-    }
+static const scxml_elem_param scxml_elem_params[2] = {
+    /* name, expr, location */
+    { "Var1", "1", NULL },
+    { NULL, NULL, NULL }
 };
 
-static const scxml_elem_donedata scxml_elem_donedatas[1] = {
+static const scxml_elem_donedata scxml_elem_donedatas[3] = {
     /* source, content, contentexpr, params */
+    { 3, NULL, NULL, &scxml_elem_params[0] },
+    { 6, "foo", NULL, NULL },
     { 0, NULL, NULL, NULL }
 };
 
 static int global_script(const scxml_ctx* ctx, const scxml_state* state, const void* event) {
-    return SCXML_ERR_OK;
-}
-
-static int s0_on_entry_0(const scxml_ctx* ctx, const scxml_state* state, const void* event) {
-    int err = SCXML_ERR_OK;
-    if likely(ctx->exec_content_assign != NULL) {
-        if ((ctx->exec_content_assign(ctx, "Var1", "Var1 + 1")) != SCXML_ERR_OK) return err;
-    } else {
-        return SCXML_ERR_MISSING_CALLBACK;
-    }
-    return SCXML_ERR_OK;
-}
-
-static int s0_on_entry(const scxml_ctx* ctx, const scxml_state* state, const void* event) {
-    s0_on_entry_0(ctx, state, event);
-    return SCXML_ERR_OK;
-}
-
-static int s011_on_entry_0(const scxml_ctx* ctx, const scxml_state* state, const void* event) {
-    int err = SCXML_ERR_OK;
-    if likely(ctx->exec_content_raise != NULL) {
-        if unlikely((ctx->exec_content_raise(ctx, "entering.s011")) != SCXML_ERR_OK) return err;
-    } else {
-        return SCXML_ERR_MISSING_CALLBACK;
-    }
-    return SCXML_ERR_OK;
-}
-
-static int s011_on_entry(const scxml_ctx* ctx, const scxml_state* state, const void* event) {
-    s011_on_entry_0(ctx, state, event);
-    return SCXML_ERR_OK;
-}
-
-static int s012_on_entry_0(const scxml_ctx* ctx, const scxml_state* state, const void* event) {
-    int err = SCXML_ERR_OK;
-    if likely(ctx->exec_content_raise != NULL) {
-        if unlikely((ctx->exec_content_raise(ctx, "entering.s012")) != SCXML_ERR_OK) return err;
-    } else {
-        return SCXML_ERR_MISSING_CALLBACK;
-    }
-    return SCXML_ERR_OK;
-}
-
-static int s012_on_entry(const scxml_ctx* ctx, const scxml_state* state, const void* event) {
-    s012_on_entry_0(ctx, state, event);
-    return SCXML_ERR_OK;
-}
-
-static int s021_on_entry_0(const scxml_ctx* ctx, const scxml_state* state, const void* event) {
-    int err = SCXML_ERR_OK;
-    if likely(ctx->exec_content_raise != NULL) {
-        if unlikely((ctx->exec_content_raise(ctx, "entering.s021")) != SCXML_ERR_OK) return err;
-    } else {
-        return SCXML_ERR_MISSING_CALLBACK;
-    }
-    return SCXML_ERR_OK;
-}
-
-static int s021_on_entry(const scxml_ctx* ctx, const scxml_state* state, const void* event) {
-    s021_on_entry_0(ctx, state, event);
-    return SCXML_ERR_OK;
-}
-
-static int s022_on_entry_0(const scxml_ctx* ctx, const scxml_state* state, const void* event) {
-    int err = SCXML_ERR_OK;
-    if likely(ctx->exec_content_raise != NULL) {
-        if unlikely((ctx->exec_content_raise(ctx, "entering.s022")) != SCXML_ERR_OK) return err;
-    } else {
-        return SCXML_ERR_MISSING_CALLBACK;
-    }
-    return SCXML_ERR_OK;
-}
-
-static int s022_on_entry(const scxml_ctx* ctx, const scxml_state* state, const void* event) {
-    s022_on_entry_0(ctx, state, event);
     return SCXML_ERR_OK;
 }
 
@@ -337,314 +251,197 @@ static int fail_on_entry(const scxml_ctx* ctx, const scxml_state* state, const v
     return SCXML_ERR_OK;
 }
 
-static int s0_transition0_on_trans(const scxml_ctx* ctx, const scxml_state* state, const void* event) {
-    int err = SCXML_ERR_OK;
-    if likely(ctx->exec_content_send != NULL) {
-        if ((ctx->exec_content_send(ctx, &scxml_elem_sends[0])) != SCXML_ERR_OK) return err;
-    } else {
-        return SCXML_ERR_MISSING_CALLBACK;
-    }
-    return SCXML_ERR_OK;
-}
-
-static const scxml_state scxml_states[14] = {
+static const scxml_state scxml_states[9] = {
     {   /* state number 0 */
         /* name       */ NULL,
         /* parent     */ 0,
         /* onentry    */ NULL,
         /* onexit     */ NULL,
         /* invoke     */ NULL,
-        /* children   */ { 0x02, 0x3c /* 01000000001111, 1 10 11 12 13 */ },
-        /* completion */ { 0x40, 0x00 /* 00000010000000, 6 */ }, 	
-        /* ancestors  */ { 0x00, 0x00 /* 00000000000000, */ },
+        /* children   */ { 0x92, 0x01 /* 010010011, 1 4 7 8 */ },
+        /* completion */ { 0x02, 0x00 /* 010000000, 1 */ }, 	
+        /* ancestors  */ { 0x00, 0x00 /* 000000000, */ },
         /* data       */ &scxml_elem_datas[0],
         /* type       */ SCXML_STATE_COMPOUND,
     },
     {   /* state number 1 */
         /* name       */ "s0",
         /* parent     */ 0,
-        /* onentry    */ s0_on_entry,
+        /* onentry    */ NULL,
         /* onexit     */ NULL,
         /* invoke     */ NULL,
-        /* children   */ { 0x9c, 0x00 /* 00111001000000, 2 3 4 7 */ },
-        /* completion */ { 0x10, 0x00 /* 00001000000000, 4 */ }, 	
-        /* ancestors  */ { 0x01, 0x00 /* 10000000000000, 0 */ },
+        /* children   */ { 0x0c, 0x00 /* 001100000, 2 3 */ },
+        /* completion */ { 0x04, 0x00 /* 001000000, 2 */ }, 	
+        /* ancestors  */ { 0x01, 0x00 /* 100000000, 0 */ },
         /* data       */ NULL,
-        /* type       */ SCXML_STATE_COMPOUND | SCXML_STATE_HAS_HISTORY,
+        /* type       */ SCXML_STATE_COMPOUND,
     },
     {   /* state number 2 */
-        /* name       */ "s0HistDeep",
-        /* parent     */ 1,
-        /* onentry    */ NULL,
-        /* onexit     */ NULL,
-        /* invoke     */ NULL,
-        /* children   */ { 0x00, 0x00 /* 00000000000000, */ },
-        /* completion */ { 0xf0, 0x03 /* 00001111110000, 4 5 6 7 8 9 */ }, 	
-        /* ancestors  */ { 0x03, 0x00 /* 11000000000000, 0 1 */ },
-        /* data       */ NULL,
-        /* type       */ SCXML_STATE_HISTORY_DEEP | SCXML_STATE_HAS_HISTORY,
-    },
-    {   /* state number 3 */
-        /* name       */ "s0HistShallow",
-        /* parent     */ 1,
-        /* onentry    */ NULL,
-        /* onexit     */ NULL,
-        /* invoke     */ NULL,
-        /* children   */ { 0x00, 0x00 /* 00000000000000, */ },
-        /* completion */ { 0x90, 0x00 /* 00001001000000, 4 7 */ }, 	
-        /* ancestors  */ { 0x03, 0x00 /* 11000000000000, 0 1 */ },
-        /* data       */ NULL,
-        /* type       */ SCXML_STATE_HISTORY_SHALLOW | SCXML_STATE_HAS_HISTORY,
-    },
-    {   /* state number 4 */
         /* name       */ "s01",
         /* parent     */ 1,
         /* onentry    */ NULL,
         /* onexit     */ NULL,
         /* invoke     */ NULL,
-        /* children   */ { 0x60, 0x00 /* 00000110000000, 5 6 */ },
-        /* completion */ { 0x20, 0x00 /* 00000100000000, 5 */ }, 	
-        /* ancestors  */ { 0x03, 0x00 /* 11000000000000, 0 1 */ },
-        /* data       */ NULL,
-        /* type       */ SCXML_STATE_COMPOUND,
-    },
-    {   /* state number 5 */
-        /* name       */ "s011",
-        /* parent     */ 4,
-        /* onentry    */ s011_on_entry,
-        /* onexit     */ NULL,
-        /* invoke     */ NULL,
-        /* children   */ { 0x00, 0x00 /* 00000000000000, */ },
-        /* completion */ { 0x00, 0x00 /* 00000000000000, */ }, 	
-        /* ancestors  */ { 0x13, 0x00 /* 11001000000000, 0 1 4 */ },
+        /* children   */ { 0x00, 0x00 /* 000000000, */ },
+        /* completion */ { 0x00, 0x00 /* 000000000, */ }, 	
+        /* ancestors  */ { 0x03, 0x00 /* 110000000, 0 1 */ },
         /* data       */ NULL,
         /* type       */ SCXML_STATE_ATOMIC,
     },
-    {   /* state number 6 */
-        /* name       */ "s012",
-        /* parent     */ 4,
-        /* onentry    */ s012_on_entry,
-        /* onexit     */ NULL,
-        /* invoke     */ NULL,
-        /* children   */ { 0x00, 0x00 /* 00000000000000, */ },
-        /* completion */ { 0x00, 0x00 /* 00000000000000, */ }, 	
-        /* ancestors  */ { 0x13, 0x00 /* 11001000000000, 0 1 4 */ },
-        /* data       */ NULL,
-        /* type       */ SCXML_STATE_ATOMIC,
-    },
-    {   /* state number 7 */
+    {   /* state number 3 */
         /* name       */ "s02",
         /* parent     */ 1,
         /* onentry    */ NULL,
         /* onexit     */ NULL,
         /* invoke     */ NULL,
-        /* children   */ { 0x00, 0x03 /* 00000000110000, 8 9 */ },
-        /* completion */ { 0x00, 0x01 /* 00000000100000, 8 */ }, 	
-        /* ancestors  */ { 0x03, 0x00 /* 11000000000000, 0 1 */ },
+        /* children   */ { 0x00, 0x00 /* 000000000, */ },
+        /* completion */ { 0x00, 0x00 /* 000000000, */ }, 	
+        /* ancestors  */ { 0x03, 0x00 /* 110000000, 0 1 */ },
         /* data       */ NULL,
-        /* type       */ SCXML_STATE_COMPOUND,
+        /* type       */ SCXML_STATE_FINAL,
     },
-    {   /* state number 8 */
-        /* name       */ "s021",
-        /* parent     */ 7,
-        /* onentry    */ s021_on_entry,
-        /* onexit     */ NULL,
-        /* invoke     */ NULL,
-        /* children   */ { 0x00, 0x00 /* 00000000000000, */ },
-        /* completion */ { 0x00, 0x00 /* 00000000000000, */ }, 	
-        /* ancestors  */ { 0x83, 0x00 /* 11000001000000, 0 1 7 */ },
-        /* data       */ NULL,
-        /* type       */ SCXML_STATE_ATOMIC,
-    },
-    {   /* state number 9 */
-        /* name       */ "s022",
-        /* parent     */ 7,
-        /* onentry    */ s022_on_entry,
-        /* onexit     */ NULL,
-        /* invoke     */ NULL,
-        /* children   */ { 0x00, 0x00 /* 00000000000000, */ },
-        /* completion */ { 0x00, 0x00 /* 00000000000000, */ }, 	
-        /* ancestors  */ { 0x83, 0x00 /* 11000001000000, 0 1 7 */ },
-        /* data       */ NULL,
-        /* type       */ SCXML_STATE_ATOMIC,
-    },
-    {   /* state number 10 */
+    {   /* state number 4 */
         /* name       */ "s1",
         /* parent     */ 0,
         /* onentry    */ NULL,
         /* onexit     */ NULL,
         /* invoke     */ NULL,
-        /* children   */ { 0x00, 0x00 /* 00000000000000, */ },
-        /* completion */ { 0x00, 0x00 /* 00000000000000, */ }, 	
-        /* ancestors  */ { 0x01, 0x00 /* 10000000000000, 0 */ },
+        /* children   */ { 0x60, 0x00 /* 000001100, 5 6 */ },
+        /* completion */ { 0x20, 0x00 /* 000001000, 5 */ }, 	
+        /* ancestors  */ { 0x01, 0x00 /* 100000000, 0 */ },
         /* data       */ NULL,
-        /* type       */ SCXML_STATE_ATOMIC,
+        /* type       */ SCXML_STATE_COMPOUND,
     },
-    {   /* state number 11 */
-        /* name       */ "s2",
-        /* parent     */ 0,
+    {   /* state number 5 */
+        /* name       */ "s11",
+        /* parent     */ 4,
         /* onentry    */ NULL,
         /* onexit     */ NULL,
         /* invoke     */ NULL,
-        /* children   */ { 0x00, 0x00 /* 00000000000000, */ },
-        /* completion */ { 0x00, 0x00 /* 00000000000000, */ }, 	
-        /* ancestors  */ { 0x01, 0x00 /* 10000000000000, 0 */ },
+        /* children   */ { 0x00, 0x00 /* 000000000, */ },
+        /* completion */ { 0x00, 0x00 /* 000000000, */ }, 	
+        /* ancestors  */ { 0x11, 0x00 /* 100010000, 0 4 */ },
         /* data       */ NULL,
         /* type       */ SCXML_STATE_ATOMIC,
     },
-    {   /* state number 12 */
+    {   /* state number 6 */
+        /* name       */ "s12",
+        /* parent     */ 4,
+        /* onentry    */ NULL,
+        /* onexit     */ NULL,
+        /* invoke     */ NULL,
+        /* children   */ { 0x00, 0x00 /* 000000000, */ },
+        /* completion */ { 0x00, 0x00 /* 000000000, */ }, 	
+        /* ancestors  */ { 0x11, 0x00 /* 100010000, 0 4 */ },
+        /* data       */ NULL,
+        /* type       */ SCXML_STATE_FINAL,
+    },
+    {   /* state number 7 */
         /* name       */ "pass",
         /* parent     */ 0,
         /* onentry    */ pass_on_entry,
         /* onexit     */ NULL,
         /* invoke     */ NULL,
-        /* children   */ { 0x00, 0x00 /* 00000000000000, */ },
-        /* completion */ { 0x00, 0x00 /* 00000000000000, */ }, 	
-        /* ancestors  */ { 0x01, 0x00 /* 10000000000000, 0 */ },
+        /* children   */ { 0x00, 0x00 /* 000000000, */ },
+        /* completion */ { 0x00, 0x00 /* 000000000, */ }, 	
+        /* ancestors  */ { 0x01, 0x00 /* 100000000, 0 */ },
         /* data       */ NULL,
         /* type       */ SCXML_STATE_FINAL,
     },
-    {   /* state number 13 */
+    {   /* state number 8 */
         /* name       */ "fail",
         /* parent     */ 0,
         /* onentry    */ fail_on_entry,
         /* onexit     */ NULL,
         /* invoke     */ NULL,
-        /* children   */ { 0x00, 0x00 /* 00000000000000, */ },
-        /* completion */ { 0x00, 0x00 /* 00000000000000, */ }, 	
-        /* ancestors  */ { 0x01, 0x00 /* 10000000000000, 0 */ },
+        /* children   */ { 0x00, 0x00 /* 000000000, */ },
+        /* completion */ { 0x00, 0x00 /* 000000000, */ }, 	
+        /* ancestors  */ { 0x01, 0x00 /* 100000000, 0 */ },
         /* data       */ NULL,
         /* type       */ SCXML_STATE_FINAL,
     }
 };
 
-static const scxml_transition scxml_transitions[10] = {
+static const scxml_transition scxml_transitions[6] = {
     {   /* transition number 0 with priority 0
-           target: s022
-         */
-        /* source     */ 2,
-        /* target     */ { 0x00, 0x02 /* 00000000010000, 9 */ },
-        /* event      */ NULL,
-        /* condition  */ NULL,
-        /* ontrans    */ NULL,
-        /* type       */ SCXML_TRANS_SPONTANEOUS | SCXML_TRANS_HISTORY,
-        /* conflicts  */ { 0xff, 0x03 /* 1111111111, 0 1 2 3 4 5 6 7 8 9 */ }, 
-        /* exit set   */ { 0xfe, 0x3f /* 01111111111111, 1 2 3 4 5 6 7 8 9 10 11 12 13 */ }
-    },
-    {   /* transition number 1 with priority 1
            target: s02
          */
-        /* source     */ 3,
-        /* target     */ { 0x80, 0x00 /* 00000001000000, 7 */ },
+        /* source     */ 2,
+        /* target     */ { 0x08, 0x00 /* 000100000, 3 */ },
         /* event      */ NULL,
         /* condition  */ NULL,
         /* ontrans    */ NULL,
-        /* type       */ SCXML_TRANS_SPONTANEOUS | SCXML_TRANS_HISTORY,
-        /* conflicts  */ { 0xff, 0x03 /* 1111111111, 0 1 2 3 4 5 6 7 8 9 */ }, 
-        /* exit set   */ { 0xfe, 0x3f /* 01111111111111, 1 2 3 4 5 6 7 8 9 10 11 12 13 */ }
+        /* type       */ SCXML_TRANS_SPONTANEOUS,
+        /* conflicts  */ { 0x37 /* 111011, 0 1 2 4 5 */ }, 
+        /* exit set   */ { 0x0c, 0x00 /* 001100000, 2 3 */ }
     },
-    {   /* transition number 2 with priority 2
+    {   /* transition number 1 with priority 1
            target: s1
          */
         /* source     */ 1,
-        /* target     */ { 0x00, 0x04 /* 00000000001000, 10 */ },
-        /* event      */ "entering.s012",
-        /* condition  */ "Var1==1",
-        /* ontrans    */ s0_transition0_on_trans,
+        /* target     */ { 0x10, 0x00 /* 000010000, 4 */ },
+        /* event      */ "done.state.s0",
+        /* condition  */ "_event.data['Var1']==1",
+        /* ontrans    */ NULL,
         /* type       */ 0,
-        /* conflicts  */ { 0xff, 0x03 /* 1111111111, 0 1 2 3 4 5 6 7 8 9 */ }, 
-        /* exit set   */ { 0xfe, 0x3f /* 01111111111111, 1 2 3 4 5 6 7 8 9 10 11 12 13 */ }
+        /* conflicts  */ { 0x3f /* 111111, 0 1 2 3 4 5 */ }, 
+        /* exit set   */ { 0xfe, 0x01 /* 011111111, 1 2 3 4 5 6 7 8 */ }
+    },
+    {   /* transition number 2 with priority 2
+           target: fail
+         */
+        /* source     */ 1,
+        /* target     */ { 0x00, 0x01 /* 000000001, 8 */ },
+        /* event      */ "done.state.s0",
+        /* condition  */ NULL,
+        /* ontrans    */ NULL,
+        /* type       */ 0,
+        /* conflicts  */ { 0x3f /* 111111, 0 1 2 3 4 5 */ }, 
+        /* exit set   */ { 0xfe, 0x01 /* 011111111, 1 2 3 4 5 6 7 8 */ }
     },
     {   /* transition number 3 with priority 3
-           target: s2
+           target: s12
          */
-        /* source     */ 1,
-        /* target     */ { 0x00, 0x08 /* 00000000000100, 11 */ },
-        /* event      */ "entering.s012",
-        /* condition  */ "Var1==2",
+        /* source     */ 5,
+        /* target     */ { 0x40, 0x00 /* 000000100, 6 */ },
+        /* event      */ NULL,
+        /* condition  */ NULL,
         /* ontrans    */ NULL,
-        /* type       */ 0,
-        /* conflicts  */ { 0xff, 0x03 /* 1111111111, 0 1 2 3 4 5 6 7 8 9 */ }, 
-        /* exit set   */ { 0xfe, 0x3f /* 01111111111111, 1 2 3 4 5 6 7 8 9 10 11 12 13 */ }
+        /* type       */ SCXML_TRANS_SPONTANEOUS,
+        /* conflicts  */ { 0x3e /* 011111, 1 2 3 4 5 */ }, 
+        /* exit set   */ { 0x60, 0x00 /* 000001100, 5 6 */ }
     },
     {   /* transition number 4 with priority 4
-           target: fail
-         */
-        /* source     */ 1,
-        /* target     */ { 0x00, 0x20 /* 00000000000001, 13 */ },
-        /* event      */ "entering",
-        /* condition  */ "Var1==2",
-        /* ontrans    */ NULL,
-        /* type       */ 0,
-        /* conflicts  */ { 0xff, 0x03 /* 1111111111, 0 1 2 3 4 5 6 7 8 9 */ }, 
-        /* exit set   */ { 0xfe, 0x3f /* 01111111111111, 1 2 3 4 5 6 7 8 9 10 11 12 13 */ }
-    },
-    {   /* transition number 5 with priority 5
            target: pass
          */
-        /* source     */ 1,
-        /* target     */ { 0x00, 0x10 /* 00000000000010, 12 */ },
-        /* event      */ "entering.s011",
-        /* condition  */ "Var1==3",
+        /* source     */ 4,
+        /* target     */ { 0x80, 0x00 /* 000000010, 7 */ },
+        /* event      */ "done.state.s1",
+        /* condition  */ "_event.data == 'foo'",
         /* ontrans    */ NULL,
         /* type       */ 0,
-        /* conflicts  */ { 0xff, 0x03 /* 1111111111, 0 1 2 3 4 5 6 7 8 9 */ }, 
-        /* exit set   */ { 0xfe, 0x3f /* 01111111111111, 1 2 3 4 5 6 7 8 9 10 11 12 13 */ }
+        /* conflicts  */ { 0x3f /* 111111, 0 1 2 3 4 5 */ }, 
+        /* exit set   */ { 0xfe, 0x01 /* 011111111, 1 2 3 4 5 6 7 8 */ }
     },
-    {   /* transition number 6 with priority 6
+    {   /* transition number 5 with priority 5
            target: fail
          */
-        /* source     */ 1,
-        /* target     */ { 0x00, 0x20 /* 00000000000001, 13 */ },
-        /* event      */ "entering",
-        /* condition  */ "Var1==3",
-        /* ontrans    */ NULL,
-        /* type       */ 0,
-        /* conflicts  */ { 0xff, 0x03 /* 1111111111, 0 1 2 3 4 5 6 7 8 9 */ }, 
-        /* exit set   */ { 0xfe, 0x3f /* 01111111111111, 1 2 3 4 5 6 7 8 9 10 11 12 13 */ }
-    },
-    {   /* transition number 7 with priority 7
-           target: fail
-         */
-        /* source     */ 1,
-        /* target     */ { 0x00, 0x20 /* 00000000000001, 13 */ },
-        /* event      */ "timeout",
+        /* source     */ 4,
+        /* target     */ { 0x00, 0x01 /* 000000001, 8 */ },
+        /* event      */ "done.state.s1",
         /* condition  */ NULL,
         /* ontrans    */ NULL,
         /* type       */ 0,
-        /* conflicts  */ { 0xff, 0x03 /* 1111111111, 0 1 2 3 4 5 6 7 8 9 */ }, 
-        /* exit set   */ { 0xfe, 0x3f /* 01111111111111, 1 2 3 4 5 6 7 8 9 10 11 12 13 */ }
-    },
-    {   /* transition number 8 with priority 8
-           target: s0HistDeep
-         */
-        /* source     */ 10,
-        /* target     */ { 0x04, 0x00 /* 00100000000000, 2 */ },
-        /* event      */ NULL,
-        /* condition  */ NULL,
-        /* ontrans    */ NULL,
-        /* type       */ SCXML_TRANS_SPONTANEOUS,
-        /* conflicts  */ { 0xff, 0x03 /* 1111111111, 0 1 2 3 4 5 6 7 8 9 */ }, 
-        /* exit set   */ { 0xfe, 0x3f /* 01111111111111, 1 2 3 4 5 6 7 8 9 10 11 12 13 */ }
-    },
-    {   /* transition number 9 with priority 9
-           target: s0HistShallow
-         */
-        /* source     */ 11,
-        /* target     */ { 0x08, 0x00 /* 00010000000000, 3 */ },
-        /* event      */ NULL,
-        /* condition  */ NULL,
-        /* ontrans    */ NULL,
-        /* type       */ SCXML_TRANS_SPONTANEOUS,
-        /* conflicts  */ { 0xff, 0x03 /* 1111111111, 0 1 2 3 4 5 6 7 8 9 */ }, 
-        /* exit set   */ { 0xfe, 0x3f /* 01111111111111, 1 2 3 4 5 6 7 8 9 10 11 12 13 */ }
+        /* conflicts  */ { 0x3f /* 111111, 0 1 2 3 4 5 */ }, 
+        /* exit set   */ { 0xfe, 0x01 /* 011111111, 1 2 3 4 5 6 7 8 */ }
     }
 };
 
 #ifdef SCXML_VERBOSE
 static void printStateNames(const char* a) {
+    size_t i;
     const char* seperator = "";
-    for (size_t i = 0; i < SCXML_NUMBER_STATES; i++) {
+    for (i = 0; i < SCXML_NUMBER_STATES; i++) {
         if (BIT_HAS(i, a)) {
             printf("%s%s", seperator, (scxml_states[i].name != NULL ? scxml_states[i].name : "UNK"));
             seperator = ", ";
@@ -654,8 +451,9 @@ static void printStateNames(const char* a) {
 }
 
 static void printBitsetIndices(const char* a, size_t length) {
+    size_t i;
     const char* seperator = "";
-    for (size_t i = 0; i < length; i++) {
+    for (i = 0; i < length; i++) {
         if (BIT_HAS(i, a)) {
             printf("%s%lu", seperator, i);
             seperator = ", ";
@@ -668,17 +466,17 @@ static void printBitsetIndices(const char* a, size_t length) {
 static int bit_has_and(const char* a, const char* b, size_t i) {
     do {
         if (a[i - 1] & b[i - 1])
-            return true;
+            return 1;
     } while(--i);
-    return false;
+    return 0;
 }
 
 static int bit_has_any(const char* a, size_t i) {
     do {
         if (a[i - 1] > 0)
-            return true;
+            return 1;
     } while(--i);
-    return false;
+    return 0;
 }
 
 static void bit_or(char* dest, const char* mask, size_t i) {
@@ -717,11 +515,12 @@ int scxml_step(scxml_ctx* ctx) {
     if (ctx->flags & SCXML_CTX_TOP_LEVEL_FINAL) 
         return SCXML_ERR_DONE; 
 
+    size_t i, j, k;
     int err = SCXML_ERR_OK;
-    char conflicts[2] = {0, 0};
+    char conflicts[1] = {0};
     char target_set[2] = {0, 0};
     char exit_set[2] = {0, 0};
-    char trans_set[2] = {0, 0};
+    char trans_set[1] = {0};
     char entry_set[2] = {0, 0};
     char tmp_states[2] = {0, 0};
 
@@ -744,7 +543,7 @@ int scxml_step(scxml_ctx* ctx) {
     }
 
 SELECT_TRANSITIONS:
-    for (size_t i = 0; i < SCXML_NUMBER_TRANSITIONS; i++) {
+    for (i = 0; i < SCXML_NUMBER_TRANSITIONS; i++) {
         // never select history or initial transitions automatically
         if unlikely(scxml_transitions[i].type & (SCXML_TRANS_HISTORY | SCXML_TRANS_INITIAL))
             continue;
@@ -759,7 +558,7 @@ SELECT_TRANSITIONS:
                     ctx->flags |= SCXML_CTX_TRANSITION_FOUND;
 
                     // transitions that are pre-empted
-                    bit_or(conflicts, scxml_transitions[i].conflicts, 2);
+                    bit_or(conflicts, scxml_transitions[i].conflicts, 1);
 
                     // states that are directly targeted (resolve as entry-set later)
                     bit_or(target_set, scxml_transitions[i].target, 2);
@@ -797,7 +596,7 @@ SELECT_TRANSITIONS:
 #endif
 
 // REMEMBER_HISTORY:
-    for (size_t i = 0; i < SCXML_NUMBER_STATES; i++) {
+    for (i = 0; i < SCXML_NUMBER_STATES; i++) {
         if unlikely(SCXML_STATE_MASK(scxml_states[i].type) == SCXML_STATE_HISTORY_SHALLOW ||
                     SCXML_STATE_MASK(scxml_states[i].type) == SCXML_STATE_HISTORY_DEEP) {
             // a history state whose parent is about to be exited
@@ -821,14 +620,14 @@ ESTABLISH_ENTRY_SET:
     bit_copy(entry_set, target_set, 2);
 
     // iterate for ancestors
-    for (size_t i = 0; i < SCXML_NUMBER_STATES; i++) {
+    for (i = 0; i < SCXML_NUMBER_STATES; i++) {
         if (BIT_HAS(i, entry_set)) {
             bit_or(entry_set, scxml_states[i].ancestors, 2);
         }
     }
 
     // iterate for descendants
-    for (size_t i = 0; i < SCXML_NUMBER_STATES; i++) {
+    for (i = 0; i < SCXML_NUMBER_STATES; i++) {
         if (BIT_HAS(i, entry_set)) {
             switch (SCXML_STATE_MASK(scxml_states[i].type)) {
                 case SCXML_STATE_PARALLEL: {
@@ -840,12 +639,12 @@ ESTABLISH_ENTRY_SET:
                     if (!bit_has_and(scxml_states[i].completion, ctx->history, 2) &&
                         !BIT_HAS(scxml_states[i].parent, ctx->config)) {
                         // nothing set for history, look for a default transition
-                        for (size_t j = 0; j < SCXML_NUMBER_TRANSITIONS; j++) {
+                        for (j = 0; j < SCXML_NUMBER_TRANSITIONS; j++) {
                             if unlikely(scxml_transitions[j].source == i) {
                                 bit_or(entry_set, scxml_transitions[j].target, 2);
                                 if(SCXML_STATE_MASK(scxml_states[i].type) == SCXML_STATE_HISTORY_DEEP &&
                                    !bit_has_and(scxml_transitions[j].target, scxml_states[i].children, 2)) {
-                                    for (size_t k = i + 1; k < SCXML_NUMBER_STATES; k++) {
+                                    for (k = i + 1; k < SCXML_NUMBER_STATES; k++) {
                                         if (BIT_HAS(k, scxml_transitions[j].target)) {
                                             bit_or(entry_set, scxml_states[k].ancestors, 2);
                                             break;
@@ -863,11 +662,11 @@ ESTABLISH_ENTRY_SET:
                         bit_or(entry_set, tmp_states, 2);
                         if (scxml_states[i].type == (SCXML_STATE_HAS_HISTORY | SCXML_STATE_HISTORY_DEEP)) {
                             // a deep history state with nested histories -> more completion
-                            for (size_t j = i + 1; j < SCXML_NUMBER_STATES; j++) {
+                            for (j = i + 1; j < SCXML_NUMBER_STATES; j++) {
                                 if (BIT_HAS(j, scxml_states[i].completion) &&
                                     BIT_HAS(j, entry_set) &&
                                     (scxml_states[j].type & SCXML_STATE_HAS_HISTORY)) {
-                                    for (size_t k = j + 1; k < SCXML_NUMBER_STATES; k++) {
+                                    for (k = j + 1; k < SCXML_NUMBER_STATES; k++) {
                                         // add nested history to entry_set
                                         if ((SCXML_STATE_MASK(scxml_states[k].type) == SCXML_STATE_HISTORY_DEEP ||
                                              SCXML_STATE_MASK(scxml_states[k].type) == SCXML_STATE_HISTORY_SHALLOW) &&
@@ -883,12 +682,12 @@ ESTABLISH_ENTRY_SET:
                     break;
                 }
                 case SCXML_STATE_INITIAL: {
-                    for (size_t j = 0; j < SCXML_NUMBER_TRANSITIONS; j++) {
+                    for (j = 0; j < SCXML_NUMBER_TRANSITIONS; j++) {
                         if (scxml_transitions[j].source == i) {
                             BIT_SET_AT(j, trans_set);
                             BIT_CLEAR(i, entry_set);
                             bit_or(entry_set, scxml_transitions[j].target, 2);
-                            for (size_t k = i + 1; k < SCXML_NUMBER_STATES; k++) {
+                            for (k = i + 1; k < SCXML_NUMBER_STATES; k++) {
                                 if (BIT_HAS(k, scxml_transitions[j].target)) {
                                     bit_or(entry_set, scxml_states[k].ancestors, 2);
                                 }
@@ -905,7 +704,7 @@ ESTABLISH_ENTRY_SET:
                         bit_or(entry_set, scxml_states[i].completion, 2);
                         if (!bit_has_and(scxml_states[i].completion, scxml_states[i].children, 2)) {
                             // deep completion
-                            for (size_t j = i + 1; j < SCXML_NUMBER_STATES; j++) {
+                            for (j = i + 1; j < SCXML_NUMBER_STATES; j++) {
                                 if (BIT_HAS(j, scxml_states[i].completion)) {
                                     bit_or(entry_set, scxml_states[j].ancestors, 2);
                                     break; // completion of compound is single state
@@ -921,11 +720,11 @@ ESTABLISH_ENTRY_SET:
 
 #ifdef SCXML_VERBOSE
     printf("Transitions: ");
-    printBitsetIndices(trans_set, sizeof(char) * 8 * 2);
+    printBitsetIndices(trans_set, sizeof(char) * 8 * 1);
 #endif
 
 // EXIT_STATES:
-    size_t i = SCXML_NUMBER_STATES;
+    i = SCXML_NUMBER_STATES;
     while(i-- > 0) {
         if (BIT_HAS(i, exit_set) && BIT_HAS(i, ctx->config)) {
             // call all on exit handlers
@@ -938,7 +737,7 @@ ESTABLISH_ENTRY_SET:
     }
 
 // TAKE_TRANSITIONS:
-    for (size_t i = 0; i < SCXML_NUMBER_TRANSITIONS; i++) {
+    for (i = 0; i < SCXML_NUMBER_TRANSITIONS; i++) {
         if (BIT_HAS(i, trans_set) && (scxml_transitions[i].type & (SCXML_TRANS_HISTORY | SCXML_TRANS_INITIAL)) == 0) {
             // call executable content in transition
             if (scxml_transitions[i].on_transition != NULL) {
@@ -956,7 +755,7 @@ ESTABLISH_ENTRY_SET:
 #endif
 
 // ENTER_STATES:
-    for (size_t i = 0; i < SCXML_NUMBER_STATES; i++) {
+    for (i = 0; i < SCXML_NUMBER_STATES; i++) {
         if (BIT_HAS(i, entry_set) && !BIT_HAS(i, ctx->config)) {
             // these are no proper states
             if unlikely(SCXML_STATE_MASK(scxml_states[i].type) == SCXML_STATE_HISTORY_DEEP ||
@@ -980,7 +779,7 @@ ESTABLISH_ENTRY_SET:
             }
 
             // take history and initial transitions
-            for (size_t j = 0; j < SCXML_NUMBER_TRANSITIONS; j++) {
+            for (j = 0; j < SCXML_NUMBER_TRANSITIONS; j++) {
                 if unlikely(BIT_HAS(j, trans_set) &&
                             (scxml_transitions[j].type & (SCXML_TRANS_HISTORY | SCXML_TRANS_INITIAL)) &&
                             scxml_states[scxml_transitions[j].source].parent == i) {
@@ -1016,11 +815,11 @@ ESTABLISH_ENTRY_SET:
                  * 3. Iterate all active final states and remove their ancestors
                  * 4. If a state remains, not all children of a parallel are final
                  */
-                for (size_t j = 0; j < SCXML_NUMBER_STATES; j++) {
+                for (j = 0; j < SCXML_NUMBER_STATES; j++) {
                     if unlikely(SCXML_STATE_MASK(scxml_states[j].type) == SCXML_STATE_PARALLEL &&
                                 BIT_HAS(j, scxml_states[i].ancestors)) {
                         bit_and_not(tmp_states, tmp_states, 2);
-                        for (size_t k = 0; k < SCXML_NUMBER_STATES; k++) {
+                        for (k = 0; k < SCXML_NUMBER_STATES; k++) {
                             if unlikely(BIT_HAS(j, scxml_states[k].ancestors) && BIT_HAS(k, ctx->config)) {
                                 if (SCXML_STATE_MASK(scxml_states[k].type) == SCXML_STATE_FINAL) {
                                     bit_and_not(tmp_states, scxml_states[k].ancestors, 2);

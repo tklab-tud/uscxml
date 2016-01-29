@@ -67,7 +67,7 @@ for SCXML documents and currently implements the following features:
     * [Flattened SCXML documents](https://github.com/tklab-tud/uscxml/blob/master/src/uscxml/transform/ChartToFlatSCXML.cpp) in which only a single state is ever active 
         * Resulting documents require slight adaptations to a compliant interpreter for donedata, the <tt>In</tt> predicate and invokers.
         * Semantic equivalence is shown via IRP tests.
-    * [C native code](https://github.com/tklab-tud/uscxml/blob/master/src/uscxml/transform/ChartToC.cpp) for easy embedding of SCXML state-charts in C and C++ programs
+    * [ANSI C native code](https://github.com/tklab-tud/uscxml/blob/master/src/uscxml/transform/ChartToC.cpp) for easy embedding of SCXML state-charts in C and C++ programs
         * No invokers are implemented at the moment and only a single SCXML state-chart can be given in a given document.
     * [PROMELA programs](https://github.com/tklab-tud/uscxml/blob/master/src/uscxml/transform/ChartToPromela.cpp) for model-checking via linear temporal logic with the SPIN model-checker.
         * Only defined for the <tt>promela</tt> and <tt>null</tt> datamodel.

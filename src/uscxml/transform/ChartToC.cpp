@@ -48,7 +48,7 @@ ChartToC::ChartToC(const Interpreter& other) : TransformerImpl() {
 	cloneFrom(other.getImpl());
 }
     
-void ChartToC::setHistoryResponsibility() {
+void ChartToC::setHistoryCompletion() {
 	std::set<std::string> elements;
 	elements.insert(_nsInfo.xmlNSPrefix + "history");
 	Arabica::XPath::NodeSet<std::string> histories = inPostFixOrder(elements, _scxml);
@@ -73,7 +73,7 @@ void ChartToC::setHistoryResponsibility() {
 				continue;
 
 			if (isDescendant(_states[j], history.getParentNode()) && isHistory(Element<std::string>(_states[j]))) {
-				history.setAttribute("hasNestedHistory", "true");
+				history.setAttribute("hasHistoryChild", "yes");
 			}
 
 			if (isMember(_states[j], covered))
@@ -91,18 +91,15 @@ void ChartToC::setHistoryResponsibility() {
 		}
 		perParentcovered.push_back(completion);
 
-		std::string respBools;
-		std::string respBoolsIdx;
+		std::string completionBools;
 		for (size_t j = 0; j < _states.size(); j++) {
 			if (isMember(_states[j], completion)) {
-				respBools += "1";
-				respBoolsIdx += " " + toStr(j);
+				completionBools += "1";
 			} else {
-				respBools += "0";
+				completionBools += "0";
 			}
 		}
-		history.setAttribute("respBools", respBools);
-		history.setAttribute("respBoolsIdx", respBoolsIdx);
+		history.setAttribute("completionBools", completionBools);
 	}
 }
 
@@ -172,6 +169,57 @@ void ChartToC::resortStates(Arabica::DOM::Node<std::string>& node) {
 
 }
 
+void ChartToC::setStateCompletion() {
+    setHistoryCompletion();
+
+    for (size_t i = 0; i < _states.size(); i++) {
+        Element<std::string> state(_states[i]);
+
+        if (isHistory(state)) {
+            // we already did in setHistoryCompletion
+            continue;
+        }
+        
+        NodeSet<std::string> completion;
+        
+        if (isParallel(state)) {
+            completion = getChildStates(state);
+            
+        } else if (state.hasAttribute("initial")) {
+            completion = getStates(tokenizeIdRefs(state.getAttribute("initial")));
+            
+        } else {
+            NodeSet<std::string> initElems = filterChildElements(_nsInfo.xmlNSPrefix + "initial", state);
+            if(initElems.size() > 0 && !iequals(ATTR_CAST(initElems[0], "generated"), "true")) {
+                // initial element is first child
+                completion.push_back(initElems[0]);
+            } else {
+                // first child state
+                Arabica::XPath::NodeSet<std::string> initStates;
+                NodeList<std::string> childs = state.getChildNodes();
+                for (size_t i = 0; i < childs.getLength(); i++) {
+                    if (childs.item(i).getNodeType() != Node_base::ELEMENT_NODE)
+                        continue;
+                    if (isState(Element<std::string>(childs.item(i)))) {
+                        completion.push_back(childs.item(i));
+                        break;
+                    }
+                }
+            }
+        }
+
+        std::string completionBools;
+        for (size_t j = 0; j < _states.size(); j++) {
+            if (isMember(_states[j], completion)) {
+                completionBools += "1";
+            } else {
+                completionBools += "0";
+            }
+        }
+        state.setAttribute("completionBools", completionBools);
+    }
+}
+    
 void ChartToC::prepare() {
     _binding = (HAS_ATTR(_scxml, "binding") && iequals(ATTR(_scxml, "binding"), "late") ? LATE : EARLY);
     _name = (HAS_ATTR(_scxml, "name") ? ATTR(_scxml, "name") : "");
@@ -189,28 +237,118 @@ void ChartToC::prepare() {
     elements.insert(_nsInfo.xmlNSPrefix + "parallel");
     _states = inDocumentOrder(elements, _scxml);
     
+    // set states' document order and parent attribute
     for (size_t i = 0; i < _states.size(); i++) {
         Element<std::string> state(_states[i]);
         state.setAttribute("documentOrder", toStr(i));
+        if (state.getParentNode().getNodeType() == Node_base::ELEMENT_NODE &&
+            HAS_ATTR_CAST(state.getParentNode(), "documentOrder")) {
+            state.setAttribute("parent", ATTR_CAST(state.getParentNode(), "documentOrder"));
+        }
+        
+        // set the states' children and whether it has a history
+        std::string childBools;
+        bool hasHistoryChild = false;
+        for (size_t j = 0; j < _states.size(); j++) {
+            if (_states[j].getParentNode() == state) {
+                if (isHistory(Element<std::string>(_states[j]))) {
+                    hasHistoryChild = true;
+                }
+                childBools += "1";
+            } else {
+                childBools += "0";
+            }
+        }
+        state.setAttribute("childBools", childBools);
+        if (hasHistoryChild) {
+            state.setAttribute("hasHistoryChild", "yes");
+        }
+        
+        // ancestors
+        std::string ancBools;
+        for (size_t j = 0; j < _states.size(); j++) {
+            if (isDescendant(state, _states[j])) {
+                ancBools += "1";
+            } else {
+                ancBools += "0";
+            }
+        }
+        state.setAttribute("ancBools", ancBools);
+
     }
 
+    // set transitions' document order and source attribute
     elements.clear();
     elements.insert(_nsInfo.xmlNSPrefix + "transition");
     _transitions = inDocumentOrder(elements, _scxml);
     for (size_t i = 0; i < _transitions.size(); i++) {
         Element<std::string> transition(_transitions[i]);
         transition.setAttribute("documentOrder", toStr(i));
+        if (transition.getParentNode().getNodeType() == Node_base::ELEMENT_NODE &&
+            HAS_ATTR_CAST(transition.getParentNode(), "documentOrder")) {
+            transition.setAttribute("source", ATTR_CAST(transition.getParentNode(), "documentOrder"));
+        }
     }
     
+    // set transitions' postfix order attribute
     _transitions = inPostFixOrder(elements, _scxml);
     for (size_t i = 0; i < _transitions.size(); i++) {
         Element<std::string> transition(_transitions[i]);
         transition.setAttribute("postFixOrder", toStr(i));
+        
+        // and exit set
+        std::string exitSetBools;
+        NodeSet<std::string> exitSet = computeExitSet(transition);
+        for (unsigned int j = 0; j < _states.size(); j++) {
+            Element<std::string> state(_states[j]);
+            if (isMember(state, exitSet)) {
+                exitSetBools += "1";
+            } else {
+                exitSetBools += "0";
+            }
+        }
+        transition.setAttribute("exitSetBools", exitSetBools);
+
+        // and conflicts
+        std::string conflictBools;
+        for (unsigned int j = 0; j < _transitions.size(); j++) {
+            Element<std::string> t2(_transitions[j]);
+            if (hasIntersection(computeExitSet(transition), computeExitSet(t2)) ||
+                (getSourceState(transition) == getSourceState(t2)) ||
+                (isDescendant(getSourceState(transition), getSourceState(t2))) ||
+                (isDescendant(getSourceState(t2), getSourceState(transition)))) {
+                conflictBools += "1";
+            } else {
+                conflictBools += "0";
+            }
+        }
+        transition.setAttribute("conflictBools", conflictBools);
+
+        // and target
+        if (HAS_ATTR(transition, "target")) {
+            std::list<std::string> targets = tokenize(ATTR(transition, "target"));
+            
+            std::string targetBools;
+            for (size_t j = 0; j < _states.size(); j++) {
+                Element<std::string> state(_states[j]);
+                
+                if (HAS_ATTR(state, "id") &&
+                    std::find(targets.begin(), targets.end(), escape(ATTR(state, "id"))) != targets.end()) {
+                    targetBools += "1";
+                } else {
+                    targetBools += "0";
+                }
+            }
+            transition.setAttribute("targetBools", targetBools);
+
+        }
     }
     // leave transitions in postfix order
     
-    // set the responsibility of history elements
-    setHistoryResponsibility();
+    
+    
+    // set the completion of states and responsibility of history elements
+    setStateCompletion();
 
     // how many bits do we need to represent the state array?
     std::string seperator;
@@ -1081,6 +1219,7 @@ void ChartToC::writeStates(std::ostream& stream) {
 	stream << "static const scxml_state scxml_states[" << toStr(_states.size()) << "] = {" << std::endl;
 	for (size_t i = 0; i < _states.size(); i++) {
 		Element<std::string> state(_states[i]);
+        
 		stream << "    {   /* state number " << toStr(i) << " */" << std::endl;
 
 		// name
@@ -1109,97 +1248,25 @@ void ChartToC::writeStates(std::ostream& stream) {
 		stream << "," << std::endl;
 
 		// children
-		bool hasHistoryChild = false;
-		std::string childBools;
-		std::string childBoolsIdx;
-		for (size_t j = 0; j < _states.size(); j++) {
-			if (_states[j].getParentNode() == state) {
-				if (isHistory(Element<std::string>(_states[j]))) {
-					hasHistoryChild = true;
-				}
-				childBools += "1";
-				childBoolsIdx += " " + toStr(j);
-			} else {
-				childBools += "0";
-			}
-		}
 		stream << "        /* children   */ { ";
-		writeCharArrayInitList(stream, childBools);
-		stream << " /* " << childBools << "," << childBoolsIdx << " */";
-		stream << " }," << std::endl;
+		writeCharArrayInitList(stream, ATTR(state, "childBools"));
+		stream << " /* " << ATTR(state, "childBools") << " */ }," << std::endl;
 
 		// default completion
-		std::string descBools;
-		std::string descBoolsIdx;
-
-		NodeSet<std::string> completion;
-		if (isHistory(state)) {
-			// we already precalculated everything
-			descBools = ATTR(state, "respBools");
-			descBoolsIdx = ATTR(state, "respBoolsIdx");
-			hasHistoryChild = HAS_ATTR(state, "hasNestedHistory");
-			goto WRITE_COMPLETION;
-		}
-		if (isParallel(state)) {
-			completion = getChildStates(state);
-		} else if (state.hasAttribute("initial")) {
-			completion = getStates(tokenizeIdRefs(state.getAttribute("initial")));
-		} else {
-			NodeSet<std::string> initElems = filterChildElements(_nsInfo.xmlNSPrefix + "initial", state);
-			if(initElems.size() > 0 && !iequals(ATTR_CAST(initElems[0], "generated"), "true")) {
-				// initial element is first child
-				completion.push_back(initElems[0]);
-			} else {
-				// first child state
-				Arabica::XPath::NodeSet<std::string> initStates;
-				NodeList<std::string> childs = state.getChildNodes();
-				for (size_t i = 0; i < childs.getLength(); i++) {
-					if (childs.item(i).getNodeType() != Node_base::ELEMENT_NODE)
-						continue;
-					if (isState(Element<std::string>(childs.item(i)))) {
-						completion.push_back(childs.item(i));
-						break;
-					}
-				}
-			}
-		}
-
-		for (size_t j = 0; j < _states.size(); j++) {
-			if (isMember(_states[j], completion)) {
-				descBools += "1";
-				descBoolsIdx += " " + toStr(j);
-			} else {
-				descBools += "0";
-			}
-		}
-WRITE_COMPLETION:
-
 		stream << "        /* completion */ { ";
-		writeCharArrayInitList(stream, descBools);
-		stream << " /* " << descBools << "," << descBoolsIdx << " */";
-		stream << " }, \t" << std::endl;
+		writeCharArrayInitList(stream, ATTR(state, "completionBools"));
+		stream << " /* " << ATTR(state, "completionBools") << " */ }, \t" << std::endl;
 
-		// ancestors
-		std::string ancBools;
-		std::string ancBoolsIdx;
-		for (size_t j = 0; j < _states.size(); j++) {
-			if (isDescendant(state, _states[j])) {
-				ancBools += "1";
-				ancBoolsIdx += " " + toStr(j);
-			} else {
-				ancBools += "0";
-			}
-		}
 		stream << "        /* ancestors  */ { ";
-		writeCharArrayInitList(stream, ancBools);
-		stream << " /* " << ancBools << "," << ancBoolsIdx << " */";
-		stream << " }," << std::endl;
+        writeCharArrayInitList(stream, ATTR(state, "ancBools"));
+		stream << " /* " << ATTR(state, "ancBools") << " */ }," << std::endl;
 
 		stream << "        /* data       */ ";
 		stream << (HAS_ATTR(state, "dataIndex") ? "&scxml_elem_datas[" + escape(ATTR(state, "dataIndex")) + "]" : "NULL");
 		stream << "," << std::endl;
 
 		stream << "        /* type       */ ";
+                               
 		if (false) {
 		} else if (iequals(TAGNAME(state), "initial")) {
 			stream << "SCXML_STATE_INITIAL";
@@ -1220,7 +1287,7 @@ WRITE_COMPLETION:
 		} else { // <scxml>
 			stream << "SCXML_STATE_COMPOUND";
 		}
-		if (hasHistoryChild) {
+		if (HAS_ATTR(state, "hasHistoryChild")) {
 			stream << " | SCXML_STATE_HAS_HISTORY";
 		}
 
@@ -1240,25 +1307,10 @@ void ChartToC::writeTransitions(std::ostream& stream) {
 	elements.insert(_nsInfo.xmlNSPrefix + "transition");
 	NodeSet<std::string> transDocOrder = inDocumentOrder(elements, _scxml);
 
-	std::stringstream transDocOrderSS;
-	std::string seperator = "";
-	for (size_t i = 0; i < transDocOrder.size(); i++) {
-		Element<std::string> transition(_transitions[i]);
-		transition.setAttribute("documentOrder", toStr(i));
-		transDocOrderSS << seperator << ATTR(transition, "postFixOrder");
-		seperator = ", ";
-	}
-
-#if 0
-	stream << "static const " << _transDataType << " scxml_transitions_doc_order[" << toStr(_transitions.size()) << "] = {" << std::endl;
-	stream << "    " << transDocOrderSS;
-	stream << std::endl << "};" << std::endl;
-	stream << std::endl;
-#endif
-
 	stream << "static const scxml_transition scxml_transitions[" << toStr(_transitions.size()) << "] = {" << std::endl;
 	for (size_t i = 0; i < _transitions.size(); i++) {
 		Element<std::string> transition(_transitions[i]);
+        
 		stream << "    {   /* transition number " << ATTR(transition, "documentOrder") << " with priority " << toStr(i) << std::endl;
 		stream << "           target: " << ATTR(transition, "target") << std::endl;
 		stream << "         */" << std::endl;
@@ -1281,27 +1333,10 @@ void ChartToC::writeTransitions(std::ostream& stream) {
 
 		// targets
 		stream << "        /* target     */ ";
-		if (HAS_ATTR(transition, "target")) {
-			std::list<std::string> targets = tokenize(ATTR(transition, "target"));
-
-			std::string targetBools;
-			std::string targetBoolsIdx;
-			for (size_t j = 0; j < _states.size(); j++) {
-				Element<std::string> state(_states[j]);
-
-				if (HAS_ATTR(state, "id") &&
-				        std::find(targets.begin(), targets.end(), escape(ATTR(state, "id"))) != targets.end()) {
-					targetBools += "1";
-					targetBoolsIdx += " " + toStr(j);
-				} else {
-					targetBools += "0";
-				}
-			}
-
+		if (HAS_ATTR(transition, "targetBools")) {
 			stream << "{ ";
-			writeCharArrayInitList(stream, targetBools);
-			stream << " /* " << targetBools << "," << targetBoolsIdx << " */";
-			stream << " }";
+			writeCharArrayInitList(stream, ATTR(transition, "targetBools"));
+			stream << " /* " << ATTR(transition, "targetBools") << " */ }";
 
 		} else {
 			stream << "{ NULL }";
@@ -1318,8 +1353,7 @@ void ChartToC::writeTransitions(std::ostream& stream) {
 
 		// on transition handlers
 		stream << "        /* ontrans    */ ";
-		if (filterChildType(Arabica::DOM::Node_base::ELEMENT_NODE, transition).size() > 0 /* &&
-		        !iequals(TAGNAME_CAST(transition.getParentNode()), "initial") */) {
+		if (filterChildType(Arabica::DOM::Node_base::ELEMENT_NODE, transition).size() > 0) {
 			stream << DOMUtils::idForNode(transition) + "_on_trans";
 		} else {
 			stream << "NULL";
@@ -1360,43 +1394,14 @@ void ChartToC::writeTransitions(std::ostream& stream) {
 		stream << "," << std::endl;
 
 		// conflicts
-		std::string conflictBools;
-		std::string conflictBoolsIdx;
-		for (unsigned int j = 0; j < _transitions.size(); j++) {
-			Element<std::string> t2(_transitions[j]);
-			if (hasIntersection(computeExitSet(transition), computeExitSet(t2)) ||
-			        (getSourceState(transition) == getSourceState(t2)) ||
-			        (isDescendant(getSourceState(transition), getSourceState(t2))) ||
-			        (isDescendant(getSourceState(t2), getSourceState(transition)))) {
-				conflictBools += "1";
-				conflictBoolsIdx += " " + toStr(j);
-			} else {
-				conflictBools += "0";
-			}
-		}
 		stream << "        /* conflicts  */ { ";
-		writeCharArrayInitList(stream, conflictBools);
-		stream << " /* " << conflictBools << "," << conflictBoolsIdx << " */";
-		stream << " }, " << std::endl;
+		writeCharArrayInitList(stream, ATTR(transition, "conflictBools"));
+		stream << " /* " << ATTR(transition, "conflictBools") << " */ }, " << std::endl;
 
 		// exit set
-		std::string exitSetBools;
-		std::string exitSetBoolsIdx;
-		NodeSet<std::string> exitSet = computeExitSet(transition);
-		for (unsigned int j = 0; j < _states.size(); j++) {
-			Element<std::string> state(_states[j]);
-			if (isMember(state, exitSet)) {
-				exitSetBools += "1";
-				exitSetBoolsIdx += " " + toStr(j);
-			} else {
-				exitSetBools += "0";
-			}
-		}
 		stream << "        /* exit set   */ { ";
-		writeCharArrayInitList(stream, exitSetBools);
-		stream << " /* " << exitSetBools << "," << exitSetBoolsIdx << " */";
-
-		stream << " }" << std::endl;
+		writeCharArrayInitList(stream, ATTR(transition, "exitSetBools"));
+		stream << " /* " << ATTR(transition, "exitSetBools") << " */ }" << std::endl;
 
 		stream << "    }" << (i + 1 < _transitions.size() ? ",": "") << std::endl;
 	}

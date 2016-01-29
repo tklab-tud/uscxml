@@ -22,35 +22,35 @@ if (${TARGETLANG} STREQUAL "vhdl")
 
 elseif (${TARGETLANG} STREQUAL "c")
 	
-	set(COMPILE_CMD_OBJ
-	"-c" "${OUTDIR}/${TEST_FILE_NAME}.machine.c"
-	"-o" "${OUTDIR}/${TEST_FILE_NAME}.machine.c.o"
-	"-Ofast" "-ansi" "-m16")
-
-	message(STATUS "${CC_BIN} ${COMPILE_CMD_OBJ}")
-	execute_process(
-		COMMAND time -p ${CC_BIN} ${COMPILE_CMD_OBJ}
-		WORKING_DIRECTORY ${OUTDIR} RESULT_VARIABLE CMD_RESULT)
-	if(CMD_RESULT)
-		message(FATAL_ERROR "Error running gcc ${CC_BIN}: ${CMD_RESULT}")
-	endif()
-	file (SIZE "${OUTDIR}/${TEST_FILE_NAME}.machine.c.o" BINARY_SIZE)
-	message("Size of compiled unit optimized for speed: ${BINARY_SIZE}")
-
-	set(COMPILE_CMD_OBJ
-	"-c" "${OUTDIR}/${TEST_FILE_NAME}.machine.c"
-	"-o" "${OUTDIR}/${TEST_FILE_NAME}.machine.c.o"
-	"-Os" "-ansi" "-m16")
-
-	message(STATUS "${CC_BIN} ${COMPILE_CMD_OBJ}")
-	execute_process(
-		COMMAND time -p ${CC_BIN} ${COMPILE_CMD_OBJ}
-		WORKING_DIRECTORY ${OUTDIR} RESULT_VARIABLE CMD_RESULT)
-	if(CMD_RESULT)
-		message(FATAL_ERROR "Error running gcc ${CC_BIN}: ${CMD_RESULT}")
-	endif()
-	file (SIZE "${OUTDIR}/${TEST_FILE_NAME}.machine.c.o" BINARY_SIZE)
-	message("Size of compiled unit optimized for size: ${BINARY_SIZE}")
+	# set(COMPILE_CMD_OBJ
+	# "-c" "${OUTDIR}/${TEST_FILE_NAME}.machine.c"
+	# "-o" "${OUTDIR}/${TEST_FILE_NAME}.machine.c.o"
+	# "-Ofast" "-ansi" "-m16")
+	#
+	# message(STATUS "${CC_BIN} ${COMPILE_CMD_OBJ}")
+	# execute_process(
+	# 	COMMAND time -p ${CC_BIN} ${COMPILE_CMD_OBJ}
+	# 	WORKING_DIRECTORY ${OUTDIR} RESULT_VARIABLE CMD_RESULT)
+	# if(CMD_RESULT)
+	# 	message(FATAL_ERROR "Error running gcc ${CC_BIN}: ${CMD_RESULT}")
+	# endif()
+	# file (SIZE "${OUTDIR}/${TEST_FILE_NAME}.machine.c.o" BINARY_SIZE)
+	# message("Size of compiled unit optimized for speed: ${BINARY_SIZE}")
+	#
+	# set(COMPILE_CMD_OBJ
+	# "-c" "${OUTDIR}/${TEST_FILE_NAME}.machine.c"
+	# "-o" "${OUTDIR}/${TEST_FILE_NAME}.machine.c.o"
+	# "-Os" "-ansi" "-m16")
+	#
+	# message(STATUS "${CC_BIN} ${COMPILE_CMD_OBJ}")
+	# execute_process(
+	# 	COMMAND time -p ${CC_BIN} ${COMPILE_CMD_OBJ}
+	# 	WORKING_DIRECTORY ${OUTDIR} RESULT_VARIABLE CMD_RESULT)
+	# if(CMD_RESULT)
+	# 	message(FATAL_ERROR "Error running gcc ${CC_BIN}: ${CMD_RESULT}")
+	# endif()
+	# file (SIZE "${OUTDIR}/${TEST_FILE_NAME}.machine.c.o" BINARY_SIZE)
+	# message("Size of compiled unit optimized for size: ${BINARY_SIZE}")
 	
 	set(COMPILE_CMD_BIN
 	"-o" "${OUTDIR}/${TEST_FILE_NAME}"
