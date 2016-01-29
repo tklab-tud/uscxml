@@ -7,6 +7,7 @@
 - [Building from Source](docs/BUILDING.md)
 - [Open Issues](docs/ISSUES.md)
 - [Getting Started](docs/GETTING_STARTED.md)
+- [Publications](docs/PUBLICATIONS.md)
 
 ## General
 
@@ -120,11 +121,8 @@ interpreter.
 
 <img src="https://raw.github.com/tklab-tud/uscxml/master/docs/Performance_Microstep.png" width="500px" />
 
-For the tests, we took the [highest precision timer](https://github.com/tklab-tud/uscxml/blob/master/src/uscxml/concurrency/Timer.cpp) 
-we could attain and measured how long the execution of a given SCXML IRP test took while
-subtracting initialization, tear-down and the time spent in the data-model's routines. Time is
-averaged over 1.000 iterations.
-
-# Acknowledgments
-
-This SCXML interpreter is developed at the [Telekooperation Group](http://www.tk.informatik.tu-darmstadt.de) of the Technical University of Darmstadt as part of the [SmartVortex](http://smartvortex.eu) project funded by the [7th European framework program](http://ec.europa.eu/research/fp7/index_en.cfm).
+For the tests, we took the 
+[highest precision timer](https://github.com/tklab-tud/uscxml/blob/master/src/uscxml/concurrency/Timer.cpp) 
+we could attain and measured how long the execution of a given SCXML IRP test
+took while subtracting initialization, tear-down and the time spent in the
+data-model's routines. Time is averaged over 1.000 iterations.
