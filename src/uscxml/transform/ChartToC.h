@@ -20,7 +20,7 @@
 #ifndef FSMTOCPP_H_201672B0
 #define FSMTOCPP_H_201672B0
 
-#include "uscxml/interpreter/InterpreterDraft6.h"
+#include "uscxml/interpreter/InterpreterRC.h"
 #include "uscxml/DOMUtils.h"
 #include "uscxml/util/Trie.h"
 #include "Transformer.h"
@@ -40,20 +40,8 @@ public:
 
 	void writeTo(std::ostream& stream);
 
-	static Arabica::XPath::NodeSet<std::string> inPostFixOrder(const std::set<std::string>& elements,
-	        const Arabica::DOM::Element<std::string>& root);
-	static Arabica::XPath::NodeSet<std::string> inDocumentOrder(const std::set<std::string>& elements,
-	        const Arabica::DOM::Element<std::string>& root);
 protected:
 	ChartToC(const Interpreter& other);
-
-	static void inPostFixOrder(const std::set<std::string>& elements,
-	                           const Arabica::DOM::Element<std::string>& root,
-	                           Arabica::XPath::NodeSet<std::string>& nodes);
-
-	static void inDocumentOrder(const std::set<std::string>& elements,
-	                            const Arabica::DOM::Element<std::string>& root,
-	                            Arabica::XPath::NodeSet<std::string>& nodes);
     
 	void writeIncludes(std::ostream& stream);
 	void writeMacros(std::ostream& stream);
@@ -81,8 +69,8 @@ protected:
 	Arabica::XPath::NodeSet<std::string> _states;
 	Arabica::XPath::NodeSet<std::string> _transitions;
 
-	bool _hasGlobalScripts;
-
+//    std::string md5sum;
+    
 	size_t _transCharArraySize;
 	std::string _transCharArrayInit;
 	std::string _transDataType;

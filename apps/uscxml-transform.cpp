@@ -7,9 +7,13 @@
 #include "uscxml/transform/ChartToMinimalSCXML.h"
 #include "uscxml/transform/ChartToPromela.h"
 #include "uscxml/DOMUtils.h"
+
 #include <glog/logging.h>
+#include <boost/algorithm/string.hpp>
+
 #include <fstream>
 #include <iostream>
+#include <map>
 
 #include "uscxml/Factory.h"
 #include "uscxml/server/HTTPServer.h"
@@ -28,7 +32,7 @@
 #endif
 
 #define ANNOTATE(envKey, annotationParam) \
-envVarIsTrue(envKey) || std::find(annotations.begin(), annotations.end(), annotationParam) != annotations.end()
+envVarIsTrue(envKey) || std::find(options.begin(), options.end(), annotationParam) != options.end()
 
 class VerboseMonitor : public uscxml::InterpreterMonitor {
 	void onStableConfiguration(uscxml::Interpreter interpreter) {
@@ -71,29 +75,31 @@ void printUsageAndExit(const char* progName) {
 	printf(" [-i URL] [-o FILE]");
 	printf("\n");
 	printf("Options\n");
-	printf("\t-t c         : convert to C program\n");
-	printf("\t-t pml       : convert to spin/promela program\n");
-	printf("\t-t vhdl      : convert to VHDL hardware description\n");
-	printf("\t-t flat      : flatten to SCXML state-machine\n");
-	printf("\t-t min       : minimize SCXML state-chart\n");
-	printf("\t-t tex       : write global state transition table as tex file\n");
-	printf("\t-a {OPTIONS} : annotate SCXML elements with comma seperated options\n");
-	printf("\t   'priority'   - transitions with their priority for transition selection\n");
-	printf("\t   'exitset'    - annotate all transitions with their exit sets\n");
-	printf("\t   'entryset'   - annotate all transitions with their entry sets\n");
-	printf("\t   'conflicts'  - annotate all transitions with their conflicts\n");
-	printf("\t   'domain'     - annotate all transitions with their domain\n");
-	printf("\t   'step'       - global states with their step identifier (-tflat only)\n");
-	printf("\t   'members'    - global transitions with their member transitions per index (-tflat only)\n");
-	printf("\t   'sends'      - transititve number of sends to external queue for global transitions (-tflat only)\n");
-	printf("\t   'raises'     - transititve number of raises to internal queue for global transitions (-tflat only)\n");
-	printf("\t   'verbose'    - comments detailling state changes and transitions for content selection (-tflat only)\n");
-	printf("\t   'progress'   - insert comments documenting progress in dociment (-tmin only)\n");
-	printf("\t   'nocomment'  - surpress the generation of comments in output\n");
-	printf("\t-v           : be verbose\n");
-	printf("\t-lN          : Set loglevel to N\n");
-	printf("\t-i URL       : Input file (defaults to STDIN)\n");
-	printf("\t-o FILE      : Output file (defaults to STDOUT)\n");
+	printf("\t-t c           : convert to C program\n");
+	printf("\t-t pml         : convert to spin/promela program\n");
+	printf("\t-t vhdl        : convert to VHDL hardware description\n");
+	printf("\t-t flat        : flatten to SCXML state-machine\n");
+	printf("\t-t min         : minimize SCXML state-chart\n");
+	printf("\t-t tex         : write global state transition table as tex file\n");
+	printf("\t-a {OPTIONS}   : annotate SCXML elements with comma seperated options\n");
+	printf("\t    priority     - transitions with their priority for transition selection\n");
+	printf("\t    exitset      - annotate all transitions with their exit sets\n");
+	printf("\t    entryset     - annotate all transitions with their entry sets\n");
+	printf("\t    conflicts    - annotate all transitions with their conflicts\n");
+	printf("\t    domain       - annotate all transitions with their domain\n");
+	printf("\t    step         - global states with their step identifier (-tflat only)\n");
+	printf("\t    members      - global transitions with their member transitions per index (-tflat only)\n");
+	printf("\t    sends        - transititve number of sends to external queue for global transitions (-tflat only)\n");
+	printf("\t    raises       - transititve number of raises to internal queue for global transitions (-tflat only)\n");
+	printf("\t    verbose      - comments detailling state changes and transitions for content selection (-tflat only)\n");
+	printf("\t    progress     - insert comments documenting progress in dociment (-tmin only)\n");
+	printf("\t    nocomment    - surpress the generation of comments in output\n");
+    printf("\t-X {PARAMETER} : pass additional parameters to the transformation\n");
+    printf("\t    prefix=ID    - prefix all symbols and identifiers with ID (-tc)\n");
+    printf("\t-v             : be verbose\n");
+	printf("\t-lN            : Set loglevel to N\n");
+	printf("\t-i URL         : Input file (defaults to STDIN)\n");
+	printf("\t-o FILE        : Output file (defaults to STDOUT)\n");
 	printf("\n");
 	exit(1);
 }
@@ -106,8 +112,9 @@ int main(int argc, char** argv) {
 	std::string pluginPath;
 	std::string inputFile;
 	std::string outputFile;
-	std::list<std::string> annotations;
-
+	std::list<std::string> options;
+    std::multimap<std::string, std::string> extensions;
+    
 #if defined(HAS_SIGNAL_H) && !defined(WIN32)
 	signal(SIGPIPE, SIG_IGN);
 #endif
@@ -122,7 +129,8 @@ int main(int argc, char** argv) {
 	struct option longOptions[] = {
 		{"verbose",       no_argument,       0, 'v'},
 		{"type",          required_argument, 0, 't'},
-		{"annotate",      required_argument, 0, 'a'},
+        {"annotate",      required_argument, 0, 'a'},
+        {"param",         required_argument, 0, 'X'},
 		{"plugin-path",   required_argument, 0, 'p'},
 		{"input-file",    required_argument, 0, 'i'},
 		{"output-file",   required_argument, 0, 'o'},
@@ -134,7 +142,7 @@ int main(int argc, char** argv) {
 	int optionInd = 0;
 	int option;
 	for (;;) {
-		option = getopt_long_only(argc, argv, "+vp:t:i:o:l:a:", longOptions, &optionInd);
+		option = getopt_long_only(argc, argv, "+vp:X:t:i:o:l:a:", longOptions, &optionInd);
 		if (option == -1) {
 			break;
 		}
@@ -157,8 +165,17 @@ int main(int argc, char** argv) {
 			inputFile = optarg;
 			break;
 		case 'a':
-			annotations = InterpreterImpl::tokenize(optarg, ',');
+			options = InterpreterImpl::tokenize(optarg, ',');
 			break;
+            case 'X': {
+                std::list<std::string> extension = InterpreterImpl::tokenize(optarg, '=');
+                if (extension.size() != 2)
+                    printUsageAndExit(argv[0]);
+                std::string key = boost::trim_copy(*(extension.begin()));
+                std::string value = boost::trim_copy(*(++extension.begin()));
+                extensions.insert(std::pair<std::string, std::string>(key, value));
+            }
+            break;
 		case 'o':
 			outputFile = optarg;
 			break;
@@ -228,11 +245,11 @@ int main(int argc, char** argv) {
 	        outType != "vhdl" &&
 	        outType != "min" &&
 	        outType != "tex" &&
-	        std::find(annotations.begin(), annotations.end(), "priority") == annotations.end() &&
-	        std::find(annotations.begin(), annotations.end(), "domain") == annotations.end() &&
-	        std::find(annotations.begin(), annotations.end(), "conflicts") == annotations.end() &&
-	        std::find(annotations.begin(), annotations.end(), "exitset") == annotations.end() &&
-	        std::find(annotations.begin(), annotations.end(), "entryset") == annotations.end())
+	        std::find(options.begin(), options.end(), "priority") == options.end() &&
+	        std::find(options.begin(), options.end(), "domain") == options.end() &&
+	        std::find(options.begin(), options.end(), "conflicts") == options.end() &&
+	        std::find(options.begin(), options.end(), "exitset") == options.end() &&
+	        std::find(options.begin(), options.end(), "entryset") == options.end())
 		printUsageAndExit(argv[0]);
 
 	// register plugins
@@ -271,12 +288,15 @@ int main(int argc, char** argv) {
 		}
 
 		if (outType == "c") {
+            Transformer transformer = ChartToC::transform(interpreter);
+            transformer.setExtensions(extensions);
+            transformer.setOptions(options);
 			if (outputFile.size() == 0 || outputFile == "-") {
-				ChartToC::transform(interpreter).writeTo(std::cout);
+				transformer.writeTo(std::cout);
 			} else {
 				std::ofstream outStream;
 				outStream.open(outputFile.c_str());
-				ChartToC::transform(interpreter).writeTo(outStream);
+				transformer.writeTo(outStream);
 				outStream.close();
 			}
 			exit(EXIT_SUCCESS);
@@ -344,17 +364,17 @@ int main(int argc, char** argv) {
 
 
 #if 1
-		if (annotations.size() > 0) {
+		if (options.size() > 0) {
 			ChartToFSM annotater(interpreter);
-			if (std::find(annotations.begin(), annotations.end(), "priority") != annotations.end())
+			if (std::find(options.begin(), options.end(), "priority") != options.end())
 				annotater.indexTransitions();
-			if (std::find(annotations.begin(), annotations.end(), "conflicts") != annotations.end())
+			if (std::find(options.begin(), options.end(), "conflicts") != options.end())
 				annotater.annotateConflicts();
-			if (std::find(annotations.begin(), annotations.end(), "exitset") != annotations.end())
+			if (std::find(options.begin(), options.end(), "exitset") != options.end())
 				annotater.annotateExitSet();
-			if (std::find(annotations.begin(), annotations.end(), "entryset") != annotations.end())
+			if (std::find(options.begin(), options.end(), "entryset") != options.end())
 				annotater.annotateEntrySet();
-			if (std::find(annotations.begin(), annotations.end(), "domain") != annotations.end())
+			if (std::find(options.begin(), options.end(), "domain") != options.end())
 				annotater.annotateDomain();
 
 			if (outputFile.size() == 0 || outputFile == "-") {

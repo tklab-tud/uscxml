@@ -417,7 +417,6 @@ public:
 	virtual void handleDOMEvent(Arabica::DOM::Events::Event<std::string>& event);
 
 protected:
-
 	static void run(void*); // static method for thread to run
 
 	class DOMEventListener : public Arabica::DOM::Events::EventListener<std::string> {

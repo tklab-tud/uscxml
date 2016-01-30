@@ -74,7 +74,7 @@ void ChartToVHDL::checkDocument() {
     elements.insert(_nsInfo.xmlNSPrefix + "cancel");
     elements.insert(_nsInfo.xmlNSPrefix + "invoke");
     elements.insert(_nsInfo.xmlNSPrefix + "finalize");
-    unsupported = ChartToC::inDocumentOrder(elements, _scxml);
+    unsupported = DOMUtils::inDocumentOrder(elements, _scxml);
     
     std::stringstream ss;
     if (unsupported.size() > 0) {
@@ -86,7 +86,7 @@ void ChartToVHDL::checkDocument() {
     
     elements.clear();
     elements.insert(_nsInfo.xmlNSPrefix + "transition");
-    unsupported = inDocumentOrder(elements, _scxml);
+    unsupported = DOMUtils::inDocumentOrder(elements, _scxml);
     
     for (int i = 0; i < unsupported.size(); i++) {
         Element<std::string> transition(unsupported[i]);
@@ -116,7 +116,7 @@ void ChartToVHDL::findEvents() {
     
 void ChartToVHDL::writeTo(std::ostream& stream) {
     // same preparations as the C transformation
-    prepare();    
+    prepare();
     
 //    checkDocument();
     findEvents();

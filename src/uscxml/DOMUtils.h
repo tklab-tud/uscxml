@@ -25,6 +25,7 @@
 #include <SAX/helpers/DefaultHandler.hpp>
 #include <SAX/helpers/CatchErrorHandler.hpp>
 #include <DOM/io/Stream.hpp> // operator<< for nodes
+#include <XPath/XPath.hpp>
 
 #define TAGNAME_CAST(elem) ((Arabica::DOM::Element<std::string>)elem).getTagName()
 #define LOCALNAME_CAST(elem) ((Arabica::DOM::Element<std::string>)elem).getLocalName()
@@ -47,6 +48,20 @@ public:
 	static std::string idForNode(const Arabica::DOM::Node<std::string>& node);
 	// deprecated, use stringIsTrue from Convenience.h instead
 	DEPRECATED static bool attributeIsTrue(const::std::string& value);
+    
+    static Arabica::XPath::NodeSet<std::string> inPostFixOrder(const std::set<std::string>& elements,
+                                                               const Arabica::DOM::Element<std::string>& root);
+    static Arabica::XPath::NodeSet<std::string> inDocumentOrder(const std::set<std::string>& elements,
+                                                                const Arabica::DOM::Element<std::string>& root);
+protected:
+    static void inPostFixOrder(const std::set<std::string>& elements,
+                               const Arabica::DOM::Element<std::string>& root,
+                               Arabica::XPath::NodeSet<std::string>& nodes);
+    
+    static void inDocumentOrder(const std::set<std::string>& elements,
+                                const Arabica::DOM::Element<std::string>& root,
+                                Arabica::XPath::NodeSet<std::string>& nodes);
+
 };
 
 class ScriptEntityResolver : public Arabica::SAX::EntityResolver<std::string> {

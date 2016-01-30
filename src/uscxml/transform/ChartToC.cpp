@@ -51,7 +51,7 @@ ChartToC::ChartToC(const Interpreter& other) : TransformerImpl() {
 void ChartToC::setHistoryCompletion() {
 	std::set<std::string> elements;
 	elements.insert(_nsInfo.xmlNSPrefix + "history");
-	Arabica::XPath::NodeSet<std::string> histories = inPostFixOrder(elements, _scxml);
+	Arabica::XPath::NodeSet<std::string> histories = DOMUtils::inPostFixOrder(elements, _scxml);
 
 	NodeSet<std::string> covered;
 	NodeSet<std::string> perParentcovered;
@@ -235,7 +235,7 @@ void ChartToC::prepare() {
     elements.insert(_nsInfo.xmlNSPrefix + "history");
     elements.insert(_nsInfo.xmlNSPrefix + "initial");
     elements.insert(_nsInfo.xmlNSPrefix + "parallel");
-    _states = inDocumentOrder(elements, _scxml);
+    _states = DOMUtils::inDocumentOrder(elements, _scxml);
     
     // set states' document order and parent attribute
     for (size_t i = 0; i < _states.size(); i++) {
@@ -280,7 +280,7 @@ void ChartToC::prepare() {
     // set transitions' document order and source attribute
     elements.clear();
     elements.insert(_nsInfo.xmlNSPrefix + "transition");
-    _transitions = inDocumentOrder(elements, _scxml);
+    _transitions = DOMUtils::inDocumentOrder(elements, _scxml);
     for (size_t i = 0; i < _transitions.size(); i++) {
         Element<std::string> transition(_transitions[i]);
         transition.setAttribute("documentOrder", toStr(i));
@@ -291,7 +291,7 @@ void ChartToC::prepare() {
     }
     
     // set transitions' postfix order attribute
-    _transitions = inPostFixOrder(elements, _scxml);
+    _transitions = DOMUtils::inPostFixOrder(elements, _scxml);
     for (size_t i = 0; i < _transitions.size(); i++) {
         Element<std::string> transition(_transitions[i]);
         transition.setAttribute("postFixOrder", toStr(i));
@@ -482,11 +482,11 @@ void ChartToC::writeMacros(std::ostream& stream) {
 void ChartToC::writeTypes(std::ostream& stream) {
 
 	stream << std::endl;
-	stream << "typedef struct scxml_transition scxml_transition;" << std::endl;
+    stream << "typedef struct scxml_machine scxml_machine;" << std::endl;
+    stream << "typedef struct scxml_transition scxml_transition;" << std::endl;
 	stream << "typedef struct scxml_state scxml_state;" << std::endl;
 	stream << "typedef struct scxml_ctx scxml_ctx;" << std::endl;
 	stream << "typedef struct scxml_invoke scxml_invoke;" << std::endl;
-
 	stream << std::endl;
 
 	stream << "typedef struct scxml_elem_send scxml_elem_send;" << std::endl;
@@ -518,6 +518,26 @@ void ChartToC::writeTypes(std::ostream& stream) {
 	stream << "typedef int (*exec_content_script_t)(const scxml_ctx* ctx, const char* src, const char* content);" << std::endl;
 	stream << std::endl;
 
+#if 0
+    stream << "struct scxml_machine {" << std::endl;
+    stream << "    uint8_t                 flags;" << std::endl;
+    stream << "    uint32_t                nr_states;" << std::endl;
+    stream << "    uint32_t                nr_transitions;" << std::endl;
+    stream << "    const char*             name;" << std::endl;
+    stream << "    const char*             datamodel;" << std::endl;
+    stream << "    const char*             uuid;" << std::endl;
+    stream << "    const scxml_elem_data*  datas;" << std::endl;
+    stream << "    const scxml_state*      states;" << std::endl;
+    stream << "    const scxml_transition* transitions;" << std::endl;
+    stream << "    const scxml_foreach*       foreachs;" << std::endl;
+    stream << "    const scxml_elem_param*    params;" << std::endl;
+    stream << "    const scxml_elem_donedata* donedatas;" << std::endl;
+    stream << "    const scxml_elem_invoke*   invokes;" << std::endl;
+    stream << "    const scxml_elem_send*     sends;" << std::endl;
+    stream << "};" << std::endl;
+    stream << std::endl;
+#endif
+    
 	stream << "struct scxml_elem_data {" << std::endl;
 	stream << "    const char* id;" << std::endl;
 	stream << "    const char* src;" << std::endl;
@@ -575,7 +595,8 @@ void ChartToC::writeTypes(std::ostream& stream) {
 	stream << std::endl;
 
 	stream << "struct scxml_elem_invoke {" << std::endl;
-	stream << "    const char* type;" << std::endl;
+    stream << "    const char* uuid;" << std::endl;
+    stream << "    const char* type;" << std::endl;
 	stream << "    const char* typeexpr;" << std::endl;
 	stream << "    const char* src;" << std::endl;
 	stream << "    const char* srcexpr;" << std::endl;
@@ -1305,7 +1326,7 @@ void ChartToC::writeTransitions(std::ostream& stream) {
 	// cross reference transition by document order - is this really needed?!
 	std::set<std::string> elements;
 	elements.insert(_nsInfo.xmlNSPrefix + "transition");
-	NodeSet<std::string> transDocOrder = inDocumentOrder(elements, _scxml);
+	NodeSet<std::string> transDocOrder = DOMUtils::inDocumentOrder(elements, _scxml);
 
 	stream << "static const scxml_transition scxml_transitions[" << toStr(_transitions.size()) << "] = {" << std::endl;
 	for (size_t i = 0; i < _transitions.size(); i++) {
@@ -1837,52 +1858,6 @@ void ChartToC::writeFSM(std::ostream& stream) {
 	stream << "    return SCXML_ERR_OK;" << std::endl;
 	stream << "}" << std::endl;
 	stream << std::endl;
-}
-
-NodeSet<std::string> ChartToC::inPostFixOrder(const std::set<std::string>& elements, const Element<std::string>& root) {
-	NodeSet<std::string> nodes;
-	inPostFixOrder(elements, root, nodes);
-	return nodes;
-}
-
-void ChartToC::inPostFixOrder(const std::set<std::string>& elements, const Element<std::string>& root, NodeSet<std::string>& nodes) {
-	NodeList<std::string> children = root.getChildNodes();
-	for (size_t i = 0; i < children.getLength(); i++) {
-		if (children.item(i).getNodeType() != Node_base::ELEMENT_NODE)
-			continue;
-		Arabica::DOM::Element<std::string> childElem(children.item(i));
-		inPostFixOrder(elements, childElem, nodes);
-
-	}
-	for (size_t i = 0; i < children.getLength(); i++) {
-		if (children.item(i).getNodeType() != Node_base::ELEMENT_NODE)
-			continue;
-		Arabica::DOM::Element<std::string> childElem(children.item(i));
-
-		if (elements.find(TAGNAME(childElem)) != elements.end()) {
-			nodes.push_back(childElem);
-		}
-	}
-}
-
-NodeSet<std::string> ChartToC::inDocumentOrder(const std::set<std::string>& elements, const Element<std::string>& root) {
-	NodeSet<std::string> nodes;
-	inDocumentOrder(elements, root, nodes);
-	return nodes;
-}
-
-void ChartToC::inDocumentOrder(const std::set<std::string>& elements, const Element<std::string>& root, NodeSet<std::string>& nodes) {
-	if (elements.find(TAGNAME(root)) != elements.end()) {
-		nodes.push_back(root);
-	}
-
-	NodeList<std::string> children = root.getChildNodes();
-	for (size_t i = 0; i < children.getLength(); i++) {
-		if (children.item(i).getNodeType() != Node_base::ELEMENT_NODE)
-			continue;
-		Arabica::DOM::Element<std::string> childElem(children.item(i));
-		inDocumentOrder(elements, childElem, nodes);
-	}
 }
 
 ChartToC::~ChartToC() {

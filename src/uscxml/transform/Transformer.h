@@ -21,7 +21,8 @@
 #define TRANSFORMER_H_32113356
 
 #include <iostream>
-#include "uscxml/interpreter/InterpreterRC.h"
+#include <map>
+#include "uscxml/Interpreter.h"
 
 namespace uscxml {
 
@@ -34,6 +35,11 @@ public:
 		throw std::runtime_error("Transformer cannot be interpreted as an Interpreter again");
 	}
 
+protected:
+    std::multimap<std::string, std::string> _extensions;
+    std::list<std::string> _options;
+    
+    friend class Transformer;
 };
 
 class USCXML_API Transformer : public boost::enable_shared_from_this<Transformer> {
@@ -73,6 +79,14 @@ public:
 		return _impl;
 	}
 
+    void setExtensions(const std::multimap<std::string, std::string>& extensions) {
+        _impl->_extensions = extensions;
+    }
+    
+    void setOptions(const std::list<std::string>& options) {
+        _impl->_options = options;
+    }
+    
 protected:
 	boost::shared_ptr<TransformerImpl> _impl;
 

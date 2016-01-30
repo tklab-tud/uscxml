@@ -52,9 +52,12 @@
 #if 0
 #	define INTERPRETER_IMPL InterpreterDraft6
 #	include "uscxml/interpreter/InterpreterDraft6.h"
-#else
+#elif 1
 #	define INTERPRETER_IMPL InterpreterRC
 #	include "uscxml/interpreter/InterpreterRC.h"
+#else
+#	define INTERPRETER_IMPL InterpreterFast
+#	include "uscxml/interpreter/InterpreterFast.h"
 #endif
 
 #define VERBOSE 0
@@ -776,7 +779,7 @@ NodeSet<std::string> InterpreterImpl::getDocumentInitialTransitions() {
 	}
 	return initialTransitions;
 }
-
+        
 InterpreterState InterpreterImpl::step(int waitForMS) {
 	try {
 		tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
