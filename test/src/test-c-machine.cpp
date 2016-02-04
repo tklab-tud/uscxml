@@ -40,22 +40,23 @@ using namespace uscxml;
 
 class StateMachine : public InterpreterInfo {
 public:
-	StateMachine(const scxml_machine* machine) : parentMachine(NULL), topMostMachine(NULL) {
+	StateMachine(const scxml_machine* machine) : parentMachine(NULL), topMostMachine(NULL), invocation(NULL) {
 		init(machine);
 		allMachines[sessionId] = this;
 		topMostMachine = this;
 		currentMachine = allMachines.begin();
 	}
 
-	StateMachine(StateMachine* parent, const scxml_machine* machine) {
-		init(machine);
+    StateMachine(StateMachine* parent, const scxml_machine* machine, const scxml_elem_invoke* invoke) : invocation(invoke) {
 		parentMachine = parent;
 		topMostMachine = parent->topMostMachine;
+        init(machine);
 	}
 
 	void init(const scxml_machine* machine) {
 		sessionId = UUID::getUUID();
-
+        isFinalized = false;
+        
 		// clear and initialize machine context
 		memset(&ctx, 0, sizeof(scxml_ctx));
 		ctx.machine = machine;
@@ -83,6 +84,54 @@ public:
 
 		delayQueue.start();
 		dataModel = Factory::getInstance()->createDataModel(machine->datamodel, this);
+        
+        if (invocation != NULL) {
+            /// test 226/240 - initialize from invoke request
+            
+            // TODO: Only set if there is a corresponding data element: test245
+            if (invocation->params != NULL) {
+                const scxml_elem_param* param = invocation->params;
+                while(ELEM_PARAM_IS_SET(param)) {
+                    try {
+                        std::string identifier;
+                        if (param->name != NULL) {
+                            identifier = param->name;
+                        } else if (param->location != NULL) {
+                            identifier = param->location;
+                        }
+                        dataModel.init(identifier, parentMachine->dataModel.getStringAsData(param->expr));
+                        invokeIdentifiers.insert(identifier);
+                        
+                    } catch (Event e) {
+                        execContentRaise(&ctx, e.name.c_str());
+                    }
+                    param++;
+                }
+            }
+            
+            if (invocation->namelist != NULL) {
+                const char* cPtr = invocation->namelist;
+                const char* aPtr = invocation->namelist;
+                while(cPtr) {
+                    while (isspace(*cPtr))
+                        cPtr++;
+                    aPtr = cPtr;
+                    while(*cPtr && !isspace(*cPtr))
+                        cPtr++;
+                    
+                    if (aPtr == cPtr)
+                        break;
+                    
+                    std::string identifier = std::string(aPtr, cPtr - aPtr);
+                    try {
+                        dataModel.init(identifier, parentMachine->dataModel.getStringAsData(identifier));
+                        invokeIdentifiers.insert(identifier);
+                    } catch (Event e) {
+                        execContentRaise(&ctx, e.name.c_str());
+                    }
+                }
+            }
+        }
 	}
 
 	virtual ~StateMachine() {
@@ -98,8 +147,22 @@ public:
 	}
 
 	bool isDone() {
-		return ctx.flags & SCXML_CTX_TOP_LEVEL_FINAL;
+		return ctx.flags & SCXML_CTX_FINISHED;
 	}
+
+    void finalize() {
+        if (isFinalized)
+            return;
+        
+        delayQueue.stop();
+        if (parentMachine != NULL) {
+            Event* done = new Event();
+            done->invokeid = invokeId;
+            done->name = "done.invoke." + invokeId;
+            parentMachine->eq.push_back(done);
+        }
+        isFinalized = true;
+    }
 
 	void reset() {
 		sessionId = UUID::getUUID();
@@ -122,6 +185,12 @@ public:
 			return SCXML_ERR_IDLE;
 		}
 
+        // test 187
+        if (toRun->isDone()) {
+            toRun->finalize();
+            return SCXML_ERR_IDLE;
+        }
+        
 		return scxml_step(&toRun->ctx);
 	}
 
@@ -169,6 +238,10 @@ public:
 			}
 		}
 
+        // real event but spontaneous transition
+        if (t->event == NULL)
+            return false;
+        
 		// real transition, real event
 		if (nameMatch(t->event, event->name.c_str())) {
 			if (t->condition != NULL)
@@ -188,17 +261,44 @@ public:
 	}
 
 	static int invoke(const scxml_ctx* ctx, const scxml_state* s, const scxml_elem_invoke* invocation, uint8_t uninvoke) {
-		if (invocation->machine != NULL) {
-			StateMachine* INSTANCE = USER_DATA(ctx);
-			// invoke a nested SCXML machine
-			StateMachine* invokedMachine = new StateMachine(INSTANCE, invocation->machine);
-			invokedMachine->invocation = invocation;
-			invokedMachine->invokeId = invocation->id;
-			assert(invocation->id != NULL);
-
-			INSTANCE->topMostMachine->allMachines[invokedMachine->invokeId] = invokedMachine;
-		}
-		return SCXML_ERR_UNSUPPORTED;
+        std::map<std::string, StateMachine*> &allMachines = USER_DATA(ctx)->topMostMachine->allMachines;
+        StateMachine* topMachine = USER_DATA(ctx)->topMostMachine;
+        
+        if (uninvoke) {
+            if (invocation->machine != NULL) {
+                if (topMachine->invocationIds.find(invocation) != topMachine->invocationIds.end() &&
+                    allMachines.find(topMachine->invocationIds[invocation]) != allMachines.end()) {
+                    
+                    delete allMachines[topMachine->invocationIds[invocation]];
+                    topMachine->allMachines.erase(topMachine->invocationIds[invocation]);
+                    topMachine->invocationIds.erase(invocation);
+                }
+            } else {
+                return SCXML_ERR_UNSUPPORTED;
+            }
+        } else {
+            // invocations
+            if (invocation->machine != NULL) {
+                // invoke a nested SCXML machine
+                StateMachine* invokedMachine = new StateMachine(USER_DATA(ctx), invocation->machine, invocation);
+                
+                if (invocation->id != NULL) {
+                    invokedMachine->invokeId = invocation->id;
+                } else if (invocation->idlocation != NULL) {
+                    // test224
+                    invokedMachine->invokeId = (invocation->sourcename != NULL ? std::string(invocation->sourcename) + "." : "") + UUID::getUUID();
+                    ctx->exec_content_assign(ctx, invocation->idlocation, std::string("\"" + invokedMachine->invokeId + "\"").c_str());
+                } else {
+                    delete invokedMachine;
+                    return SCXML_ERR_UNSUPPORTED;
+                }
+                allMachines[invokedMachine->invokeId] = invokedMachine;
+                topMachine->invocationIds[invocation] = invokedMachine->invokeId;
+            } else {
+                return SCXML_ERR_UNSUPPORTED;
+            }
+        }
+        return SCXML_ERR_OK;
 	}
 
 	static int raiseDoneEvent(const scxml_ctx* ctx, const scxml_state* state, const scxml_elem_donedata* donedata) {
@@ -283,7 +383,8 @@ public:
 		}
 
 		e->origintype = e->type;
-
+        e->invokeid = USER_DATA(ctx)->invokeId;
+        
 		if (send->eventexpr != NULL) {
 			e->name = USER_DATA(ctx)->dataModel.evalAsString(send->eventexpr);
 		} else {
@@ -494,19 +595,22 @@ public:
 
 	static int execContentInit(const scxml_ctx* ctx, const scxml_elem_data* data) {
 		while(ELEM_DATA_IS_SET(data)) {
-			Data d;
-			if (data->expr != NULL) {
-				d = Data(data->expr, Data::INTERPRETED);
-			} else if (data->content != NULL) {
-				d = Data(data->content, Data::INTERPRETED);
-			} else {
-				d = Data("undefined", Data::INTERPRETED);
-			}
-			try {
-				USER_DATA(ctx)->dataModel.init(data->id, d);
-			} catch (Event e) {
-				execContentRaise(ctx, e.name.c_str());
-			}
+            // only initialize data that was not already passed per invocation
+            if (USER_DATA(ctx)->invokeIdentifiers.find(data->id) == USER_DATA(ctx)->invokeIdentifiers.end()) {
+                Data d;
+                if (data->expr != NULL) {
+                    d = Data(data->expr, Data::INTERPRETED);
+                } else if (data->content != NULL) {
+                    d = Data(data->content, Data::INTERPRETED);
+                } else {
+                    d = Data("undefined", Data::INTERPRETED);
+                }
+                try {
+                    USER_DATA(ctx)->dataModel.init(data->id, d);
+                } catch (Event e) {
+                    execContentRaise(ctx, e.name.c_str());
+                }
+            }
 			data++;
 		}
 		return SCXML_ERR_OK;
@@ -530,15 +634,25 @@ public:
 		USER_DATA(ctx)->eq.pop_front();
 		USER_DATA(ctx)->dataModel.setEvent(*e);
 
-		if (e->invokeid.size() > 0) {
+        std::map<std::string, StateMachine*>& allMachines = USER_DATA(ctx)->topMostMachine->allMachines;
+		if (e->invokeid.size() > 0 && allMachines.find(e->invokeid) != allMachines.end()) {
 			// we need to check for finalize content
-			StateMachine* invokedMachine = USER_DATA(ctx)->allMachines[e->invokeid];
-			if (invokedMachine->invocation->finalize != NULL)
+			StateMachine* invokedMachine = allMachines[e->invokeid];
+			if (invokedMachine->invocation != NULL && invokedMachine->invocation->finalize != NULL)
 				invokedMachine->invocation->finalize(ctx,
 				                                     invokedMachine->invocation,
 				                                     e);
 		}
-
+        
+        // auto forward event
+        for (std::map<std::string, StateMachine*>::iterator machIter = allMachines.begin(); machIter != allMachines.end(); machIter++) {
+            if (machIter->second->parentMachine != NULL &&
+                machIter->second->parentMachine == USER_DATA(ctx) &&
+                machIter->second->invocation->autoforward) {
+                machIter->second->eq.push_back(e);
+            }
+        }
+        
 #ifdef SCXML_VERBOSE
 		printf("Popping External Event: %s\n", e->name.c_str());
 #endif
@@ -569,18 +683,36 @@ public:
 			printf("Pushing Internal Event: %s\n", e->name.c_str());
 #endif
 			USER_DATA(ctx)->iq.push_back(e);
-		} else if (sr->target == "#_parent") {
+        } else if (sr->target == "#_external") {
+            e->eventType = Event::EXTERNAL;
+#ifdef SCXML_VERBOSE
+            printf("Pushing External Event: %s\n", e->name.c_str());
+#endif
+            USER_DATA(ctx)->eq.push_back(e);
+        } else if (sr->target == "#_parent") {
 			e->eventType = Event::EXTERNAL;
 			if (USER_DATA(ctx)->parentMachine != NULL) {
 				USER_DATA(ctx)->parentMachine->eq.push_back(e);
 			}
 			// TODO: handle invalid parent
+        } else if (sr->target.substr(0,8) == "#_scxml_") {
+            std::string sessionId = sr->target.substr(8);
+            for (std::map<std::string, StateMachine*>::iterator machIter = USER_DATA(ctx)->topMostMachine->allMachines.begin();
+                 machIter != USER_DATA(ctx)->topMostMachine->allMachines.end(); machIter++) {
+                if (machIter->second->sessionId == sessionId) {
+                    e->eventType = Event::EXTERNAL;
+                    machIter->second->eq.push_back(e);
+                    break;
+                }
+            }
+        } else if (sr->target.substr(0,2) == "#_") {
+            e->eventType = Event::EXTERNAL;
+            std::string targetId = sr->target.substr(2);
+            if (USER_DATA(ctx)->topMostMachine->allMachines.find(targetId) != USER_DATA(ctx)->topMostMachine->allMachines.end()) {
+                USER_DATA(ctx)->topMostMachine->allMachines[targetId]->eq.push_back(e);
+            }
 		} else {
-			e->eventType = Event::EXTERNAL;
-#ifdef SCXML_VERBOSE
-			printf("Pushing External Event: %s\n", e->name.c_str());
-#endif
-			USER_DATA(ctx)->eq.push_back(e);
+            assert(false);
 		}
 		USER_DATA(ctx)->monitor.notify_all();
 		delete sr;
@@ -658,12 +790,14 @@ NEXT_DESC:
 		return false;
 	}
 
+    std::map<const scxml_elem_invoke*, std::string> invocationIds;
 	std::map<std::string, StateMachine*> allMachines;
 
 	StateMachine* parentMachine;
 	StateMachine* topMostMachine;
 	std::map<std::string, StateMachine* >::iterator currentMachine; // next machine to advance
 
+    bool isFinalized;
 	int state;
 	scxml_ctx ctx;
 
@@ -673,6 +807,7 @@ NEXT_DESC:
 	// in case we were invoked
 	std::string invokeId;
 	const scxml_elem_invoke* invocation;
+    std::set<std::string> invokeIdentifiers;
 
 	std::deque<Event*> iq;
 	std::deque<Event*> eq;

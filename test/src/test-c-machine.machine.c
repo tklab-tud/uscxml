@@ -64,6 +64,7 @@
 #define SCXML_CTX_INITIALIZED        0x02
 #define SCXML_CTX_TOP_LEVEL_FINAL    0x04
 #define SCXML_CTX_TRANSITION_FOUND   0x08
+#define SCXML_CTX_FINISHED           0x10
 
 #define ELEM_DATA_IS_SET(data) (data->id != NULL)
 #define ELEM_DONEDATA_IS_SET(donedata) (donedata->content != NULL || donedata->contentexpr != NULL || donedata->params != NULL)
@@ -118,7 +119,7 @@ struct scxml_machine {
 };
 
 // forward declare machines to allow references
-extern const scxml_machine scxml_machines[3];
+extern const scxml_machine scxml_machines[4];
 
 struct scxml_elem_data {
     const char* id;
@@ -178,6 +179,7 @@ struct scxml_elem_invoke {
     const char* srcexpr;
     const char* id;
     const char* idlocation;
+    const char* sourcename;
     const char* namelist;
     const uint8_t autoforward;
     const scxml_elem_param* params;
@@ -234,19 +236,19 @@ struct scxml_ctx {
     invoke_t invoke;
 };
 
-static const scxml_elem_data _scxml_6A932FF1_elem_datas[2] = {
+static const scxml_elem_data _scxml_22A28DED_elem_datas[2] = {
     /* id, src, expr, content */
     { "Var1", NULL, "1", NULL },
     { NULL, NULL, NULL, NULL }
 };
 
-static const scxml_elem_param _scxml_6A932FF1_elem_params[2] = {
+static const scxml_elem_param _scxml_22A28DED_elem_params[2] = {
     /* name, expr, location */
-    { "aParam", "2", NULL },
+    { "Var1", "1", NULL },
     { NULL, NULL, NULL }
 };
 
-static const scxml_elem_send _scxml_6A932FF1_elem_sends[2] = {
+static const scxml_elem_send _scxml_22A28DED_elem_sends[1] = {
     { 
         /* event       */ "timeout", 
         /* eventexpr   */ NULL, 
@@ -256,85 +258,81 @@ static const scxml_elem_send _scxml_6A932FF1_elem_sends[2] = {
         /* typeexpr    */ NULL, 
         /* id          */ NULL, 
         /* idlocation  */ NULL, 
-        /* delay       */ "300s", 
+        /* delay       */ "2s", 
         /* delayexpr   */ NULL, 
         /* namelist    */ NULL, 
         /* content     */ NULL,
         /* contentexpr */ NULL,
         /* params      */ NULL 
-    },
-    { 
-        /* event       */ "childToParent", 
-        /* eventexpr   */ NULL, 
-        /* target      */ "#_parent", 
-        /* targetexpr  */ NULL, 
-        /* type        */ NULL, 
-        /* typeexpr    */ NULL, 
-        /* id          */ NULL, 
-        /* idlocation  */ NULL, 
-        /* delay       */ NULL, 
-        /* delayexpr   */ NULL, 
-        /* namelist    */ NULL, 
-        /* content     */ NULL,
-        /* contentexpr */ NULL,
-        /* params      */ &_scxml_6A932FF1_elem_params[0] 
     }
 };
 
-static const scxml_elem_donedata _scxml_6A932FF1_elem_donedatas[1] = {
+static const scxml_elem_donedata _scxml_22A28DED_elem_donedatas[1] = {
     /* source, content, contentexpr, params */
     { 0, NULL, NULL, NULL }
 };
 
-static int _scxml_6A932FF1_s0_invoke0_finalize0(const scxml_ctx* ctx, const scxml_elem_invoke* invocation, const void* event) {
-    int err = SCXML_ERR_OK;
-    if likely(ctx->exec_content_assign != NULL) {
-        if ((ctx->exec_content_assign(ctx, "Var1", "_event.data.aParam")) != SCXML_ERR_OK) return err;
-    } else {
-        return SCXML_ERR_MISSING_CALLBACK;
-    }
-    return SCXML_ERR_OK;
-}
-
-static const scxml_elem_invoke _scxml_6A932FF1_elem_invokes[1] = {
+static const scxml_elem_invoke _scxml_22A28DED_elem_invokes[2] = {
     { 
         /* machine     */ &scxml_machines[1], 
         /* type        */ "http://www.w3.org/TR/scxml/", 
         /* typeexpr    */ NULL, 
         /* src         */ NULL, 
         /* srcexpr     */ NULL, 
-        /* id          */ "d2170d67-da91-4aba-99a1-b1c021513e75", 
+        /* id          */ "43b1f997-4793-4391-8786-d387b411529d", 
         /* idlocation  */ NULL, 
-        /* namelist    */ NULL, 
+        /* sourcename  */ "s01", 
+        /* namelist    */ "Var1", 
         /* autoforward */ 0, 
         /* params      */ NULL, 
-        /* finalize    */ _scxml_6A932FF1_s0_invoke0_finalize0, 
+        /* finalize    */ NULL, 
+        /* content     */ NULL,
+        /* contentexpr */ NULL,
+    },
+    { 
+        /* machine     */ &scxml_machines[2], 
+        /* type        */ "http://www.w3.org/TR/scxml/", 
+        /* typeexpr    */ NULL, 
+        /* src         */ NULL, 
+        /* srcexpr     */ NULL, 
+        /* id          */ "8283f07f-2eac-469d-9e43-49c655c7590f", 
+        /* idlocation  */ NULL, 
+        /* sourcename  */ "s02", 
+        /* namelist    */ NULL, 
+        /* autoforward */ 0, 
+        /* params      */ &_scxml_22A28DED_elem_params[0], 
+        /* finalize    */ NULL, 
         /* content     */ NULL,
         /* contentexpr */ NULL,
     }
 };
 
-static int _scxml_6A932FF1_s0_on_entry_0(const scxml_ctx* ctx, const scxml_state* state, const void* event) {
+static int _scxml_22A28DED_s0_on_entry_0(const scxml_ctx* ctx, const scxml_state* state, const void* event) {
     int err = SCXML_ERR_OK;
     if likely(ctx->exec_content_send != NULL) {
-        if ((ctx->exec_content_send(ctx, &_scxml_6A932FF1_elem_sends[0])) != SCXML_ERR_OK) return err;
+        if ((ctx->exec_content_send(ctx, &_scxml_22A28DED_elem_sends[0])) != SCXML_ERR_OK) return err;
     } else {
         return SCXML_ERR_MISSING_CALLBACK;
     }
     return SCXML_ERR_OK;
 }
 
-static int _scxml_6A932FF1_s0_on_entry(const scxml_ctx* ctx, const scxml_state* state, const void* event) {
-    _scxml_6A932FF1_s0_on_entry_0(ctx, state, event);
+static int _scxml_22A28DED_s0_on_entry(const scxml_ctx* ctx, const scxml_state* state, const void* event) {
+    _scxml_22A28DED_s0_on_entry_0(ctx, state, event);
     return SCXML_ERR_OK;
 }
 
-static int _scxml_6A932FF1_s0_invoke(const scxml_ctx* ctx, const scxml_state* s, const scxml_elem_invoke* invocation, uint8_t uninvoke) {
-    ctx->invoke(ctx, s, &_scxml_6A932FF1_elem_invokes[0], uninvoke);
+static int _scxml_22A28DED_s01_invoke(const scxml_ctx* ctx, const scxml_state* s, const scxml_elem_invoke* invocation, uint8_t uninvoke) {
+    ctx->invoke(ctx, s, &_scxml_22A28DED_elem_invokes[0], uninvoke);
 
     return SCXML_ERR_OK;
 }
-static int _scxml_6A932FF1_pass_on_entry_0(const scxml_ctx* ctx, const scxml_state* state, const void* event) {
+static int _scxml_22A28DED_s02_invoke(const scxml_ctx* ctx, const scxml_state* s, const scxml_elem_invoke* invocation, uint8_t uninvoke) {
+    ctx->invoke(ctx, s, &_scxml_22A28DED_elem_invokes[1], uninvoke);
+
+    return SCXML_ERR_OK;
+}
+static int _scxml_22A28DED_pass_on_entry_0(const scxml_ctx* ctx, const scxml_state* state, const void* event) {
     int err = SCXML_ERR_OK;
     if likely(ctx->exec_content_log != NULL) {
         if unlikely((ctx->exec_content_log(ctx, "Outcome", "'pass'")) != SCXML_ERR_OK) return err;
@@ -344,12 +342,12 @@ static int _scxml_6A932FF1_pass_on_entry_0(const scxml_ctx* ctx, const scxml_sta
     return SCXML_ERR_OK;
 }
 
-static int _scxml_6A932FF1_pass_on_entry(const scxml_ctx* ctx, const scxml_state* state, const void* event) {
-    _scxml_6A932FF1_pass_on_entry_0(ctx, state, event);
+static int _scxml_22A28DED_pass_on_entry(const scxml_ctx* ctx, const scxml_state* state, const void* event) {
+    _scxml_22A28DED_pass_on_entry_0(ctx, state, event);
     return SCXML_ERR_OK;
 }
 
-static int _scxml_6A932FF1_fail_on_entry_0(const scxml_ctx* ctx, const scxml_state* state, const void* event) {
+static int _scxml_22A28DED_fail_on_entry_0(const scxml_ctx* ctx, const scxml_state* state, const void* event) {
     int err = SCXML_ERR_OK;
     if likely(ctx->exec_content_log != NULL) {
         if unlikely((ctx->exec_content_log(ctx, "Outcome", "'fail'")) != SCXML_ERR_OK) return err;
@@ -359,98 +357,158 @@ static int _scxml_6A932FF1_fail_on_entry_0(const scxml_ctx* ctx, const scxml_sta
     return SCXML_ERR_OK;
 }
 
-static int _scxml_6A932FF1_fail_on_entry(const scxml_ctx* ctx, const scxml_state* state, const void* event) {
-    _scxml_6A932FF1_fail_on_entry_0(ctx, state, event);
+static int _scxml_22A28DED_fail_on_entry(const scxml_ctx* ctx, const scxml_state* state, const void* event) {
+    _scxml_22A28DED_fail_on_entry_0(ctx, state, event);
     return SCXML_ERR_OK;
 }
 
-static const scxml_state _scxml_6A932FF1_states[4] = {
+static const scxml_state _scxml_22A28DED_states[6] = {
     {   /* state number 0 */
         /* name       */ NULL,
         /* parent     */ 0,
         /* onentry    */ NULL,
         /* onexit     */ NULL,
         /* invoke     */ NULL,
-        /* children   */ { 0x0e /* 0111 */ },
-        /* completion */ { 0x02 /* 0100 */ }, 	
-        /* ancestors  */ { 0x00 /* 0000 */ },
-        /* data       */ &_scxml_6A932FF1_elem_datas[0],
+        /* children   */ { 0x32 /* 010011 */ },
+        /* completion */ { 0x02 /* 010000 */ }, 	
+        /* ancestors  */ { 0x00 /* 000000 */ },
+        /* data       */ &_scxml_22A28DED_elem_datas[0],
         /* type       */ SCXML_STATE_COMPOUND,
     },
     {   /* state number 1 */
         /* name       */ "s0",
         /* parent     */ 0,
-        /* onentry    */ _scxml_6A932FF1_s0_on_entry,
+        /* onentry    */ _scxml_22A28DED_s0_on_entry,
         /* onexit     */ NULL,
-        /* invoke     */ _scxml_6A932FF1_s0_invoke,
-        /* children   */ { 0x00 /* 0000 */ },
-        /* completion */ { 0x00 /* 0000 */ }, 	
-        /* ancestors  */ { 0x01 /* 1000 */ },
+        /* invoke     */ NULL,
+        /* children   */ { 0x0c /* 001100 */ },
+        /* completion */ { 0x04 /* 001000 */ }, 	
+        /* ancestors  */ { 0x01 /* 100000 */ },
+        /* data       */ NULL,
+        /* type       */ SCXML_STATE_COMPOUND,
+    },
+    {   /* state number 2 */
+        /* name       */ "s01",
+        /* parent     */ 1,
+        /* onentry    */ NULL,
+        /* onexit     */ NULL,
+        /* invoke     */ _scxml_22A28DED_s01_invoke,
+        /* children   */ { 0x00 /* 000000 */ },
+        /* completion */ { 0x00 /* 000000 */ }, 	
+        /* ancestors  */ { 0x03 /* 110000 */ },
         /* data       */ NULL,
         /* type       */ SCXML_STATE_ATOMIC,
     },
-    {   /* state number 2 */
+    {   /* state number 3 */
+        /* name       */ "s02",
+        /* parent     */ 1,
+        /* onentry    */ NULL,
+        /* onexit     */ NULL,
+        /* invoke     */ _scxml_22A28DED_s02_invoke,
+        /* children   */ { 0x00 /* 000000 */ },
+        /* completion */ { 0x00 /* 000000 */ }, 	
+        /* ancestors  */ { 0x03 /* 110000 */ },
+        /* data       */ NULL,
+        /* type       */ SCXML_STATE_ATOMIC,
+    },
+    {   /* state number 4 */
         /* name       */ "pass",
         /* parent     */ 0,
-        /* onentry    */ _scxml_6A932FF1_pass_on_entry,
+        /* onentry    */ _scxml_22A28DED_pass_on_entry,
         /* onexit     */ NULL,
         /* invoke     */ NULL,
-        /* children   */ { 0x00 /* 0000 */ },
-        /* completion */ { 0x00 /* 0000 */ }, 	
-        /* ancestors  */ { 0x01 /* 1000 */ },
+        /* children   */ { 0x00 /* 000000 */ },
+        /* completion */ { 0x00 /* 000000 */ }, 	
+        /* ancestors  */ { 0x01 /* 100000 */ },
         /* data       */ NULL,
         /* type       */ SCXML_STATE_FINAL,
     },
-    {   /* state number 3 */
+    {   /* state number 5 */
         /* name       */ "fail",
         /* parent     */ 0,
-        /* onentry    */ _scxml_6A932FF1_fail_on_entry,
+        /* onentry    */ _scxml_22A28DED_fail_on_entry,
         /* onexit     */ NULL,
         /* invoke     */ NULL,
-        /* children   */ { 0x00 /* 0000 */ },
-        /* completion */ { 0x00 /* 0000 */ }, 	
-        /* ancestors  */ { 0x01 /* 1000 */ },
+        /* children   */ { 0x00 /* 000000 */ },
+        /* completion */ { 0x00 /* 000000 */ }, 	
+        /* ancestors  */ { 0x01 /* 100000 */ },
         /* data       */ NULL,
         /* type       */ SCXML_STATE_FINAL,
     }
 };
 
-static const scxml_transition _scxml_6A932FF1_transitions[2] = {
-    {   /* transition number 0 with priority 0
-           target: pass
+static const scxml_transition _scxml_22A28DED_transitions[5] = {
+    {   /* transition number 1 with priority 0
+           target: s02
          */
-        /* source     */ 1,
-        /* target     */ { 0x04 /* 0010 */ },
-        /* event      */ "childToParent",
-        /* condition  */ "Var1==2",
-        /* ontrans    */ NULL,
-        /* type       */ 0,
-        /* conflicts  */ { 0x03 /* 11 */ }, 
-        /* exit set   */ { 0x0e /* 0111 */ }
-    },
-    {   /* transition number 1 with priority 1
-           target: fail
-         */
-        /* source     */ 1,
-        /* target     */ { 0x08 /* 0001 */ },
-        /* event      */ "*",
+        /* source     */ 2,
+        /* target     */ { 0x08 /* 000100 */ },
+        /* event      */ "success",
         /* condition  */ NULL,
         /* ontrans    */ NULL,
         /* type       */ 0,
-        /* conflicts  */ { 0x03 /* 11 */ }, 
-        /* exit set   */ { 0x0e /* 0111 */ }
+        /* conflicts  */ { 0x1f /* 11111 */ }, 
+        /* exit set   */ { 0x0c /* 001100 */ }
+    },
+    {   /* transition number 2 with priority 1
+           target: fail
+         */
+        /* source     */ 2,
+        /* target     */ { 0x20 /* 000001 */ },
+        /* event      */ "failure",
+        /* condition  */ NULL,
+        /* ontrans    */ NULL,
+        /* type       */ 0,
+        /* conflicts  */ { 0x1f /* 11111 */ }, 
+        /* exit set   */ { 0x3e /* 011111 */ }
+    },
+    {   /* transition number 3 with priority 2
+           target: pass
+         */
+        /* source     */ 3,
+        /* target     */ { 0x10 /* 000010 */ },
+        /* event      */ "success",
+        /* condition  */ NULL,
+        /* ontrans    */ NULL,
+        /* type       */ 0,
+        /* conflicts  */ { 0x1f /* 11111 */ }, 
+        /* exit set   */ { 0x3e /* 011111 */ }
+    },
+    {   /* transition number 4 with priority 3
+           target: fail
+         */
+        /* source     */ 3,
+        /* target     */ { 0x20 /* 000001 */ },
+        /* event      */ "failure",
+        /* condition  */ NULL,
+        /* ontrans    */ NULL,
+        /* type       */ 0,
+        /* conflicts  */ { 0x1f /* 11111 */ }, 
+        /* exit set   */ { 0x3e /* 011111 */ }
+    },
+    {   /* transition number 0 with priority 4
+           target: fail
+         */
+        /* source     */ 1,
+        /* target     */ { 0x20 /* 000001 */ },
+        /* event      */ "timeout",
+        /* condition  */ NULL,
+        /* ontrans    */ NULL,
+        /* type       */ 0,
+        /* conflicts  */ { 0x1f /* 11111 */ }, 
+        /* exit set   */ { 0x3e /* 011111 */ }
     }
 };
 
-static const scxml_elem_param _scxml_74EC8913_elem_params[2] = {
-    /* name, expr, location */
-    { "aParam", "2", NULL },
-    { NULL, NULL, NULL }
+static const scxml_elem_data _scxml_FD9C4306_elem_datas[2] = {
+    /* id, src, expr, content */
+    { "Var1", NULL, "0", NULL },
+    { NULL, NULL, NULL, NULL }
 };
 
-static const scxml_elem_send _scxml_74EC8913_elem_sends[1] = {
+static const scxml_elem_send _scxml_FD9C4306_elem_sends[2] = {
     { 
-        /* event       */ "childToParent", 
+        /* event       */ "success", 
         /* eventexpr   */ NULL, 
         /* target      */ "#_parent", 
         /* targetexpr  */ NULL, 
@@ -463,85 +521,287 @@ static const scxml_elem_send _scxml_74EC8913_elem_sends[1] = {
         /* namelist    */ NULL, 
         /* content     */ NULL,
         /* contentexpr */ NULL,
-        /* params      */ &_scxml_74EC8913_elem_params[0] 
+        /* params      */ NULL 
+    },
+    { 
+        /* event       */ "failure", 
+        /* eventexpr   */ NULL, 
+        /* target      */ "#_parent", 
+        /* targetexpr  */ NULL, 
+        /* type        */ NULL, 
+        /* typeexpr    */ NULL, 
+        /* id          */ NULL, 
+        /* idlocation  */ NULL, 
+        /* delay       */ NULL, 
+        /* delayexpr   */ NULL, 
+        /* namelist    */ NULL, 
+        /* content     */ NULL,
+        /* contentexpr */ NULL,
+        /* params      */ NULL 
     }
 };
 
-static const scxml_elem_donedata _scxml_74EC8913_elem_donedatas[1] = {
+static const scxml_elem_donedata _scxml_FD9C4306_elem_donedatas[1] = {
     /* source, content, contentexpr, params */
     { 0, NULL, NULL, NULL }
 };
 
-static int _scxml_74EC8913_subFinal_on_entry_0(const scxml_ctx* ctx, const scxml_state* state, const void* event) {
+static int _scxml_FD9C4306_sub01_transition0_on_trans(const scxml_ctx* ctx, const scxml_state* state, const void* event) {
     int err = SCXML_ERR_OK;
     if likely(ctx->exec_content_send != NULL) {
-        if ((ctx->exec_content_send(ctx, &_scxml_74EC8913_elem_sends[0])) != SCXML_ERR_OK) return err;
+        if ((ctx->exec_content_send(ctx, &_scxml_FD9C4306_elem_sends[0])) != SCXML_ERR_OK) return err;
     } else {
         return SCXML_ERR_MISSING_CALLBACK;
     }
     return SCXML_ERR_OK;
 }
 
-static int _scxml_74EC8913_subFinal_on_entry(const scxml_ctx* ctx, const scxml_state* state, const void* event) {
-    _scxml_74EC8913_subFinal_on_entry_0(ctx, state, event);
+static int _scxml_FD9C4306_sub01_transition1_on_trans(const scxml_ctx* ctx, const scxml_state* state, const void* event) {
+    int err = SCXML_ERR_OK;
+    if likely(ctx->exec_content_send != NULL) {
+        if ((ctx->exec_content_send(ctx, &_scxml_FD9C4306_elem_sends[1])) != SCXML_ERR_OK) return err;
+    } else {
+        return SCXML_ERR_MISSING_CALLBACK;
+    }
     return SCXML_ERR_OK;
 }
 
-static const scxml_state _scxml_74EC8913_states[2] = {
+static const scxml_state _scxml_FD9C4306_states[3] = {
     {   /* state number 0 */
         /* name       */ NULL,
         /* parent     */ 0,
         /* onentry    */ NULL,
         /* onexit     */ NULL,
         /* invoke     */ NULL,
-        /* children   */ { 0x02 /* 01 */ },
-        /* completion */ { 0x02 /* 01 */ }, 	
-        /* ancestors  */ { 0x00 /* 00 */ },
-        /* data       */ NULL,
+        /* children   */ { 0x06 /* 011 */ },
+        /* completion */ { 0x02 /* 010 */ }, 	
+        /* ancestors  */ { 0x00 /* 000 */ },
+        /* data       */ &_scxml_FD9C4306_elem_datas[0],
         /* type       */ SCXML_STATE_COMPOUND,
     },
     {   /* state number 1 */
-        /* name       */ "subFinal",
+        /* name       */ "sub01",
         /* parent     */ 0,
-        /* onentry    */ _scxml_74EC8913_subFinal_on_entry,
+        /* onentry    */ NULL,
         /* onexit     */ NULL,
         /* invoke     */ NULL,
-        /* children   */ { 0x00 /* 00 */ },
-        /* completion */ { 0x00 /* 00 */ }, 	
-        /* ancestors  */ { 0x01 /* 10 */ },
+        /* children   */ { 0x00 /* 000 */ },
+        /* completion */ { 0x00 /* 000 */ }, 	
+        /* ancestors  */ { 0x01 /* 100 */ },
+        /* data       */ NULL,
+        /* type       */ SCXML_STATE_ATOMIC,
+    },
+    {   /* state number 2 */
+        /* name       */ "subFinal1",
+        /* parent     */ 0,
+        /* onentry    */ NULL,
+        /* onexit     */ NULL,
+        /* invoke     */ NULL,
+        /* children   */ { 0x00 /* 000 */ },
+        /* completion */ { 0x00 /* 000 */ }, 	
+        /* ancestors  */ { 0x01 /* 100 */ },
         /* data       */ NULL,
         /* type       */ SCXML_STATE_FINAL,
     }
 };
 
-static const scxml_transition _scxml_74EC8913_transitions[0] = {
+static const scxml_transition _scxml_FD9C4306_transitions[2] = {
+    {   /* transition number 0 with priority 0
+           target: subFinal1
+         */
+        /* source     */ 1,
+        /* target     */ { 0x04 /* 001 */ },
+        /* event      */ NULL,
+        /* condition  */ "Var1===1",
+        /* ontrans    */ _scxml_FD9C4306_sub01_transition0_on_trans,
+        /* type       */ SCXML_TRANS_SPONTANEOUS,
+        /* conflicts  */ { 0x03 /* 11 */ }, 
+        /* exit set   */ { 0x06 /* 011 */ }
+    },
+    {   /* transition number 1 with priority 1
+           target: subFinal1
+         */
+        /* source     */ 1,
+        /* target     */ { 0x04 /* 001 */ },
+        /* event      */ NULL,
+        /* condition  */ NULL,
+        /* ontrans    */ _scxml_FD9C4306_sub01_transition1_on_trans,
+        /* type       */ SCXML_TRANS_SPONTANEOUS,
+        /* conflicts  */ { 0x03 /* 11 */ }, 
+        /* exit set   */ { 0x06 /* 011 */ }
+    }
 };
 
-const scxml_machine scxml_machines[3] = {
+static const scxml_elem_data _scxml_50B9C583_elem_datas[2] = {
+    /* id, src, expr, content */
+    { "Var1", NULL, "0", NULL },
+    { NULL, NULL, NULL, NULL }
+};
+
+static const scxml_elem_send _scxml_50B9C583_elem_sends[2] = {
+    { 
+        /* event       */ "success", 
+        /* eventexpr   */ NULL, 
+        /* target      */ "#_parent", 
+        /* targetexpr  */ NULL, 
+        /* type        */ NULL, 
+        /* typeexpr    */ NULL, 
+        /* id          */ NULL, 
+        /* idlocation  */ NULL, 
+        /* delay       */ NULL, 
+        /* delayexpr   */ NULL, 
+        /* namelist    */ NULL, 
+        /* content     */ NULL,
+        /* contentexpr */ NULL,
+        /* params      */ NULL 
+    },
+    { 
+        /* event       */ "failure", 
+        /* eventexpr   */ NULL, 
+        /* target      */ "#_parent", 
+        /* targetexpr  */ NULL, 
+        /* type        */ NULL, 
+        /* typeexpr    */ NULL, 
+        /* id          */ NULL, 
+        /* idlocation  */ NULL, 
+        /* delay       */ NULL, 
+        /* delayexpr   */ NULL, 
+        /* namelist    */ NULL, 
+        /* content     */ NULL,
+        /* contentexpr */ NULL,
+        /* params      */ NULL 
+    }
+};
+
+static const scxml_elem_donedata _scxml_50B9C583_elem_donedatas[1] = {
+    /* source, content, contentexpr, params */
+    { 0, NULL, NULL, NULL }
+};
+
+static int _scxml_50B9C583_sub02_transition0_on_trans(const scxml_ctx* ctx, const scxml_state* state, const void* event) {
+    int err = SCXML_ERR_OK;
+    if likely(ctx->exec_content_send != NULL) {
+        if ((ctx->exec_content_send(ctx, &_scxml_50B9C583_elem_sends[0])) != SCXML_ERR_OK) return err;
+    } else {
+        return SCXML_ERR_MISSING_CALLBACK;
+    }
+    return SCXML_ERR_OK;
+}
+
+static int _scxml_50B9C583_sub02_transition1_on_trans(const scxml_ctx* ctx, const scxml_state* state, const void* event) {
+    int err = SCXML_ERR_OK;
+    if likely(ctx->exec_content_send != NULL) {
+        if ((ctx->exec_content_send(ctx, &_scxml_50B9C583_elem_sends[1])) != SCXML_ERR_OK) return err;
+    } else {
+        return SCXML_ERR_MISSING_CALLBACK;
+    }
+    return SCXML_ERR_OK;
+}
+
+static const scxml_state _scxml_50B9C583_states[3] = {
+    {   /* state number 0 */
+        /* name       */ NULL,
+        /* parent     */ 0,
+        /* onentry    */ NULL,
+        /* onexit     */ NULL,
+        /* invoke     */ NULL,
+        /* children   */ { 0x06 /* 011 */ },
+        /* completion */ { 0x02 /* 010 */ }, 	
+        /* ancestors  */ { 0x00 /* 000 */ },
+        /* data       */ &_scxml_50B9C583_elem_datas[0],
+        /* type       */ SCXML_STATE_COMPOUND,
+    },
+    {   /* state number 1 */
+        /* name       */ "sub02",
+        /* parent     */ 0,
+        /* onentry    */ NULL,
+        /* onexit     */ NULL,
+        /* invoke     */ NULL,
+        /* children   */ { 0x00 /* 000 */ },
+        /* completion */ { 0x00 /* 000 */ }, 	
+        /* ancestors  */ { 0x01 /* 100 */ },
+        /* data       */ NULL,
+        /* type       */ SCXML_STATE_ATOMIC,
+    },
+    {   /* state number 2 */
+        /* name       */ "subFinal2",
+        /* parent     */ 0,
+        /* onentry    */ NULL,
+        /* onexit     */ NULL,
+        /* invoke     */ NULL,
+        /* children   */ { 0x00 /* 000 */ },
+        /* completion */ { 0x00 /* 000 */ }, 	
+        /* ancestors  */ { 0x01 /* 100 */ },
+        /* data       */ NULL,
+        /* type       */ SCXML_STATE_FINAL,
+    }
+};
+
+static const scxml_transition _scxml_50B9C583_transitions[2] = {
+    {   /* transition number 0 with priority 0
+           target: subFinal2
+         */
+        /* source     */ 1,
+        /* target     */ { 0x04 /* 001 */ },
+        /* event      */ NULL,
+        /* condition  */ "Var1==1",
+        /* ontrans    */ _scxml_50B9C583_sub02_transition0_on_trans,
+        /* type       */ SCXML_TRANS_SPONTANEOUS,
+        /* conflicts  */ { 0x03 /* 11 */ }, 
+        /* exit set   */ { 0x06 /* 011 */ }
+    },
+    {   /* transition number 1 with priority 1
+           target: subFinal2
+         */
+        /* source     */ 1,
+        /* target     */ { 0x04 /* 001 */ },
+        /* event      */ NULL,
+        /* condition  */ NULL,
+        /* ontrans    */ _scxml_50B9C583_sub02_transition1_on_trans,
+        /* type       */ SCXML_TRANS_SPONTANEOUS,
+        /* conflicts  */ { 0x03 /* 11 */ }, 
+        /* exit set   */ { 0x06 /* 011 */ }
+    }
+};
+
+const scxml_machine scxml_machines[4] = {
     {
         /* flags          */ 0,
-        /* nr_states      */ 4,
-        /* nr_transitions */ 2,
+        /* nr_states      */ 6,
+        /* nr_transitions */ 5,
         /* name           */ "",
         /* datamodel      */ "ecmascript",
-        /* uuid           */ "6A932FF17BFF1735E3F3C77F7B54C218",
-        /* states         */ &_scxml_6A932FF1_states[0], 
-        /* transitions    */ &_scxml_6A932FF1_transitions[0], 
+        /* uuid           */ "22A28DEDB4EF5C2066BF1D2C022A8AD9",
+        /* states         */ &_scxml_22A28DED_states[0], 
+        /* transitions    */ &_scxml_22A28DED_transitions[0], 
         /* parent         */ NULL,
-        /* donedata       */ &_scxml_6A932FF1_elem_donedatas[0], 
+        /* donedata       */ &_scxml_22A28DED_elem_donedatas[0], 
         /* script         */ NULL
     },
     {
         /* flags          */ 0,
-        /* nr_states      */ 2,
-        /* nr_transitions */ 0,
+        /* nr_states      */ 3,
+        /* nr_transitions */ 2,
         /* name           */ "",
         /* datamodel      */ "ecmascript",
-        /* uuid           */ "74EC8913A9386F1A7EC5EF2A0426752B",
-        /* states         */ &_scxml_74EC8913_states[0], 
-        /* transitions    */ &_scxml_74EC8913_transitions[0], 
+        /* uuid           */ "FD9C43066AC6FCEE1EC61755B4F2ED11",
+        /* states         */ &_scxml_FD9C4306_states[0], 
+        /* transitions    */ &_scxml_FD9C4306_transitions[0], 
         /* parent         */ &scxml_machines[0],
-        /* donedata       */ &_scxml_74EC8913_elem_donedatas[0], 
+        /* donedata       */ &_scxml_FD9C4306_elem_donedatas[0], 
+        /* script         */ NULL
+    },
+    {
+        /* flags          */ 0,
+        /* nr_states      */ 3,
+        /* nr_transitions */ 2,
+        /* name           */ "",
+        /* datamodel      */ "ecmascript",
+        /* uuid           */ "50B9C5830D90CE26DE76391506C882A0",
+        /* states         */ &_scxml_50B9C583_states[0], 
+        /* transitions    */ &_scxml_50B9C583_transitions[0], 
+        /* parent         */ &scxml_machines[0],
+        /* donedata       */ &_scxml_50B9C583_elem_donedatas[0], 
         /* script         */ NULL
     },
     {0, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL }
@@ -621,14 +881,6 @@ static void bit_and(char* dest, const char* mask, size_t i) {
 
 int scxml_step(scxml_ctx* ctx) {
 
-#ifdef SCXML_VERBOSE
-    printf("Config: ");
-    printStateNames(ctx, ctx->config, SCXML_NUMBER_STATES);
-#endif
-
-    if (ctx->flags & SCXML_CTX_TOP_LEVEL_FINAL) 
-        return SCXML_ERR_DONE; 
-
     SCXML_NR_STATES_TYPE i, j, k;
     SCXML_NR_STATES_TYPE nr_states_bytes = ((SCXML_NUMBER_STATES + 7) & ~7) >> 3;
     SCXML_NR_TRANS_TYPE  nr_trans_bytes  = ((SCXML_NUMBER_TRANS + 7) & ~7) >> 3;
@@ -639,6 +891,30 @@ int scxml_step(scxml_ctx* ctx) {
     char exit_set   [SCXML_MAX_NR_STATES_BYTES];
     char entry_set  [SCXML_MAX_NR_STATES_BYTES];
     char tmp_states [SCXML_MAX_NR_STATES_BYTES];
+
+#ifdef SCXML_VERBOSE
+    printf("Config: ");
+    printStateNames(ctx, ctx->config, SCXML_NUMBER_STATES);
+#endif
+
+    if (ctx->flags & SCXML_CTX_FINISHED)
+        return SCXML_ERR_DONE;
+
+    if (ctx->flags & SCXML_CTX_TOP_LEVEL_FINAL) {
+        // exit all remaining states
+        i = SCXML_NUMBER_STATES;
+        while(i-- > 0) {
+            if (BIT_HAS(i, ctx->config)) {
+                // call all on exit handlers
+                if (ctx->machine->states[i].on_exit != NULL) {
+                    if unlikely((err = ctx->machine->states[i].on_exit(ctx, &ctx->machine->states[i], ctx->event)) != SCXML_ERR_OK)
+                        return err;
+                }
+            }
+        }
+        ctx->flags |= SCXML_CTX_FINISHED;
+        return SCXML_ERR_DONE;
+    }
 
     bit_clear_all(target_set, nr_states_bytes);
     bit_clear_all(trans_set, nr_trans_bytes);

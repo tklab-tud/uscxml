@@ -50,9 +50,26 @@ public:
 	// deprecated, use stringIsTrue from Convenience.h instead
 	DEPRECATED static bool attributeIsTrue(const::std::string& value);
 
+    static Arabica::XPath::NodeSet<std::string> inPostFixOrder(const std::string& element,
+                                                               const Arabica::DOM::Element<std::string>& root,
+                                                               const bool includeEmbeddedDoc = false) {
+        std::set<std::string> elements;
+        elements.insert(element);
+        return inPostFixOrder(elements, root, includeEmbeddedDoc);
+    }
+
 	static Arabica::XPath::NodeSet<std::string> inPostFixOrder(const std::set<std::string>& elements,
 	        const Arabica::DOM::Element<std::string>& root,
 	        const bool includeEmbeddedDoc = false);
+
+    static Arabica::XPath::NodeSet<std::string> inDocumentOrder(const std::string& element,
+                                                                const Arabica::DOM::Element<std::string>& root,
+                                                                const bool includeEmbeddedDoc = false) {
+        std::set<std::string> elements;
+        elements.insert(element);
+        return inDocumentOrder(elements, root, includeEmbeddedDoc);
+    }
+    
 	static Arabica::XPath::NodeSet<std::string> inDocumentOrder(const std::set<std::string>& elements,
 	        const Arabica::DOM::Element<std::string>& root,
 	        const bool includeEmbeddedDoc = false);

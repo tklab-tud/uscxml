@@ -69,7 +69,7 @@ for SCXML documents and currently implements the following features:
         * Resulting documents require slight adaptations to a compliant interpreter for donedata, the <tt>In</tt> predicate and invokers.
         * Semantic equivalence is shown via IRP tests.
     * [ANSI C native code](https://github.com/tklab-tud/uscxml/blob/master/src/uscxml/transform/ChartToC.cpp) for easy embedding of SCXML state-charts in C and C++ programs
-        * No invokers are implemented at the moment and only a single SCXML state-chart can be given in a given document.
+        * No custom I/O processors implemented in scaffolding just yet.
     * [PROMELA programs](https://github.com/tklab-tud/uscxml/blob/master/src/uscxml/transform/ChartToPromela.cpp) for model-checking via linear temporal logic with the SPIN model-checker.
         * Only defined for the <tt>promela</tt> and <tt>null</tt> datamodel.
     * [Minimized SCXML documents](https://github.com/tklab-tud/uscxml/blob/master/src/uscxml/transform/ChartToMinimalSCXML.cpp) with dead states and executable content removed
@@ -98,7 +98,7 @@ so maybe restrict yourself to some subset.
 |               | XPath      | 107/211 | <tt>$ ctest -L "^fsm/xpath/test"</tt>    |
 |               | PROMELA    | 147/165 | <tt>$ ctest -L "^fsm/promela/test"</tt>  |
 |               | Lua        | 165/201 | <tt>$ ctest -L "^fsm/lua/test"</tt>      |
-| Generated C   | ECMAScript | 140/140 | <tt>$ ctest -L "^gen/c/ecma/test"</tt>   |
+| Generated C   | ECMAScript | 173/176 | <tt>$ ctest -L "^gen/c/ecma/test"</tt>   |
 | Verification  | PROMELA    | 130/181 | <tt>$ ctest -L "^spin/promela/test"</tt> |
 
 

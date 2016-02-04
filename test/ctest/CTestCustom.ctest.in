@@ -203,7 +203,7 @@ set(CTEST_CUSTOM_TESTS_IGNORE
   # "gen/c/ecma/test192.scxml"
   # "gen/c/ecma/test207.scxml"
   # "gen/c/ecma/test215.scxml"
-  # "gen/c/ecma/test216.scxml"
+  "gen/c/ecma/test216.scxml" // invoke srcexpr
   # "gen/c/ecma/test220.scxml"
   # "gen/c/ecma/test223.scxml"
   # "gen/c/ecma/test224.scxml"
