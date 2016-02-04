@@ -125,6 +125,7 @@ void USCXMLInvoker::ParentQueue::push(const SendRequest& event) {
 	if (_invoker->_cancelled)
 		return;
 	SendRequest copyEvent(event);
+	// this is somewhat hidden here!
 	copyEvent.invokeid = _invoker->_invokeId;
 	_invoker->_parentInterpreter->receive(copyEvent);
 }

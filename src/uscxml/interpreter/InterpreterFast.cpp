@@ -33,10 +33,10 @@ using namespace Arabica::DOM;
 
 
 void InterpreterFast::handleDOMEvent(Arabica::DOM::Events::Event<std::string>& event) {
-    InterpreterImpl::handleDOMEvent(event);
-    
-    if (event.getType().compare("DOMAttrModified") == 0) // we do not care about attributes
-        return;
-    
+	InterpreterImpl::handleDOMEvent(event);
+
+	if (event.getType().compare("DOMAttrModified") == 0) // we do not care about attributes
+		return;
+
 }
 }

@@ -94,9 +94,9 @@ void printUsageAndExit(const char* progName) {
 	printf("\t    verbose      - comments detailling state changes and transitions for content selection (-tflat only)\n");
 	printf("\t    progress     - insert comments documenting progress in dociment (-tmin only)\n");
 	printf("\t    nocomment    - surpress the generation of comments in output\n");
-    printf("\t-X {PARAMETER} : pass additional parameters to the transformation\n");
-    printf("\t    prefix=ID    - prefix all symbols and identifiers with ID (-tc)\n");
-    printf("\t-v             : be verbose\n");
+	printf("\t-X {PARAMETER} : pass additional parameters to the transformation\n");
+	printf("\t    prefix=ID    - prefix all symbols and identifiers with ID (-tc)\n");
+	printf("\t-v             : be verbose\n");
 	printf("\t-lN            : Set loglevel to N\n");
 	printf("\t-i URL         : Input file (defaults to STDIN)\n");
 	printf("\t-o FILE        : Output file (defaults to STDOUT)\n");
@@ -113,8 +113,8 @@ int main(int argc, char** argv) {
 	std::string inputFile;
 	std::string outputFile;
 	std::list<std::string> options;
-    std::multimap<std::string, std::string> extensions;
-    
+	std::multimap<std::string, std::string> extensions;
+
 #if defined(HAS_SIGNAL_H) && !defined(WIN32)
 	signal(SIGPIPE, SIG_IGN);
 #endif
@@ -129,8 +129,8 @@ int main(int argc, char** argv) {
 	struct option longOptions[] = {
 		{"verbose",       no_argument,       0, 'v'},
 		{"type",          required_argument, 0, 't'},
-        {"annotate",      required_argument, 0, 'a'},
-        {"param",         required_argument, 0, 'X'},
+		{"annotate",      required_argument, 0, 'a'},
+		{"param",         required_argument, 0, 'X'},
 		{"plugin-path",   required_argument, 0, 'p'},
 		{"input-file",    required_argument, 0, 'i'},
 		{"output-file",   required_argument, 0, 'o'},
@@ -167,15 +167,15 @@ int main(int argc, char** argv) {
 		case 'a':
 			options = InterpreterImpl::tokenize(optarg, ',');
 			break;
-            case 'X': {
-                std::list<std::string> extension = InterpreterImpl::tokenize(optarg, '=');
-                if (extension.size() != 2)
-                    printUsageAndExit(argv[0]);
-                std::string key = boost::trim_copy(*(extension.begin()));
-                std::string value = boost::trim_copy(*(++extension.begin()));
-                extensions.insert(std::pair<std::string, std::string>(key, value));
-            }
-            break;
+		case 'X': {
+			std::list<std::string> extension = InterpreterImpl::tokenize(optarg, '=');
+			if (extension.size() != 2)
+				printUsageAndExit(argv[0]);
+			std::string key = boost::trim_copy(*(extension.begin()));
+			std::string value = boost::trim_copy(*(++extension.begin()));
+			extensions.insert(std::pair<std::string, std::string>(key, value));
+		}
+		break;
 		case 'o':
 			outputFile = optarg;
 			break;
@@ -288,9 +288,9 @@ int main(int argc, char** argv) {
 		}
 
 		if (outType == "c") {
-            Transformer transformer = ChartToC::transform(interpreter);
-            transformer.setExtensions(extensions);
-            transformer.setOptions(options);
+			Transformer transformer = ChartToC::transform(interpreter);
+			transformer.setExtensions(extensions);
+			transformer.setOptions(options);
 			if (outputFile.size() == 0 || outputFile == "-") {
 				transformer.writeTo(std::cout);
 			} else {
@@ -392,9 +392,9 @@ int main(int argc, char** argv) {
 
 	} catch (Event e) {
 		std::cout << e << std::endl;
-    } catch (const std::exception &e) {
-        std::cout << e.what() << std::endl;
-    }
+	} catch (const std::exception &e) {
+		std::cout << e.what() << std::endl;
+	}
 
 	return EXIT_SUCCESS;
 }

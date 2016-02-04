@@ -779,7 +779,7 @@ NodeSet<std::string> InterpreterImpl::getDocumentInitialTransitions() {
 	}
 	return initialTransitions;
 }
-        
+
 InterpreterState InterpreterImpl::step(int waitForMS) {
 	try {
 		tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
@@ -2374,6 +2374,7 @@ void InterpreterImpl::cancelInvoke(const Arabica::DOM::Element<std::string>& ele
 
 // see: http://www.w3.org/TR/scxml/#EventDescriptors
 bool InterpreterImpl::nameMatch(const std::string& eventDescs, const std::string& eventName) {
+#if 1
 	if(eventDescs.length() == 0 || eventName.length() == 0)
 		return false;
 
@@ -2422,6 +2423,38 @@ NEXT_DESC:
 		}
 	}
 	return false;
+#else
+	const char* dPtr = eventDescs.c_str();
+	const char* ePtr = eventName.c_str();
+	while(*dPtr != 0) {
+
+		if (*dPtr == '*' && *ePtr != 0) // something following
+			return true;
+
+		// descriptor differs from event name
+		if (*dPtr != *ePtr) {
+			// move to next descriptor
+			while(*dPtr != ' ' && *dPtr != 0) {
+				dPtr++;
+			}
+			if (*dPtr == 0)
+				return false;
+			dPtr++;
+			ePtr = eventName.c_str();
+		} else {
+			// move both pointers one character
+			dPtr++;
+			ePtr++;
+
+		}
+
+		// descriptor is done, return match
+		if (((*dPtr == 0 || *dPtr == ' ') && (*ePtr == 0 || *ePtr == ' ')) || // exact match, end of string
+		        (*dPtr == ' ' && *ePtr == '.') || (*dPtr == 0 && *ePtr == '.')) // prefix match
+			return true;
+	}
+	return false;
+#endif
 }
 
 

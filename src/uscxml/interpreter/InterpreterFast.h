@@ -23,25 +23,25 @@
 #include "uscxml/Interpreter.h"
 
 namespace uscxml {
-    
+
 class InterpreterFast : public InterpreterImpl {
 protected:
-    virtual void setupSets();
-    virtual void handleDOMEvent(Arabica::DOM::Events::Event<std::string>& event);
-    
+	virtual void setupSets();
+	virtual void handleDOMEvent(Arabica::DOM::Events::Event<std::string>& event);
+
 private:
 
-    /* TODO: use post-order and document-order per STL comparator (sorted std::set?) */
-    
-    std::vector<Arabica::XPath::NodeSet<std::string> > _states;
-    std::vector<Arabica::XPath::NodeSet<std::string> > _transitions;
-    
-    std::vector<std::vector<bool> > _conflictingTransitions;
-    std::vector<std::vector<bool> > _exitSets;
-    std::vector<std::vector<bool> > _targetSets;
+	/* TODO: use post-order and document-order per STL comparator (sorted std::set?) */
+
+	std::vector<Arabica::XPath::NodeSet<std::string> > _states;
+	std::vector<Arabica::XPath::NodeSet<std::string> > _transitions;
+
+	std::vector<std::vector<bool> > _conflictingTransitions;
+	std::vector<std::vector<bool> > _exitSets;
+	std::vector<std::vector<bool> > _targetSets;
 
 };
-    
+
 }
 
 #endif /* end of include guard: INTERPRETERFAST_H_224A5F07 */

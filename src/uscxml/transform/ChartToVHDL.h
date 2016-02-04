@@ -44,13 +44,14 @@ public:
 protected:
 	ChartToVHDL(const Interpreter& other);
 
-    void checkDocument();
-    void findEvents();
-    
+	void checkDocument();
+	void findEvents();
+
 	void writeIncludes(std::ostream& stream);
 	void writeTopDown(std::ostream& stream);
 
 	void writeTypes(std::ostream& stream);
+	void writeOptimalTransitionSetSelection(std::ostream& stream);
 	void writeNextStateLogic(std::ostream& stream);
 	void writeOutputLogic(std::ostream& stream);
 	void writeSignals(std::ostream& stream);
@@ -59,11 +60,15 @@ protected:
 	void writeErrorHandler(std::ostream& stream);
 	void writeFSM(std::ostream& stream);
 
-    void writeTransitionSet(std::ostream & stream);
-    void writeExitSet(std::ostream & stream);
-    void writeEntrySet(std::ostream & stream);
+	void writeTransitionSet(std::ostream & stream);
+	void writeExitSet(std::ostream & stream);
+	void writeEntrySet(std::ostream & stream);
 
-    Trie _eventTrie;
+	Trie _eventTrie;
+
+private:
+	std::string eventNameEscape(const std::string& eventName);
+
 
 };
 

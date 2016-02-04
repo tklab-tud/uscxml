@@ -43,24 +43,29 @@ namespace uscxml {
 
 class USCXML_API DOMUtils {
 public:
+
 	static std::string xPathForNode(const Arabica::DOM::Node<std::string>& node, const std::string& ns = "");
 	static std::list<Arabica::DOM::Node<std::string> > getElementsByType(const Arabica::DOM::Node<std::string>& root, Arabica::DOM::Node_base::Type type);
 	static std::string idForNode(const Arabica::DOM::Node<std::string>& node);
 	// deprecated, use stringIsTrue from Convenience.h instead
 	DEPRECATED static bool attributeIsTrue(const::std::string& value);
-    
-    static Arabica::XPath::NodeSet<std::string> inPostFixOrder(const std::set<std::string>& elements,
-                                                               const Arabica::DOM::Element<std::string>& root);
-    static Arabica::XPath::NodeSet<std::string> inDocumentOrder(const std::set<std::string>& elements,
-                                                                const Arabica::DOM::Element<std::string>& root);
+
+	static Arabica::XPath::NodeSet<std::string> inPostFixOrder(const std::set<std::string>& elements,
+	        const Arabica::DOM::Element<std::string>& root,
+	        const bool includeEmbeddedDoc = false);
+	static Arabica::XPath::NodeSet<std::string> inDocumentOrder(const std::set<std::string>& elements,
+	        const Arabica::DOM::Element<std::string>& root,
+	        const bool includeEmbeddedDoc = false);
 protected:
-    static void inPostFixOrder(const std::set<std::string>& elements,
-                               const Arabica::DOM::Element<std::string>& root,
-                               Arabica::XPath::NodeSet<std::string>& nodes);
-    
-    static void inDocumentOrder(const std::set<std::string>& elements,
-                                const Arabica::DOM::Element<std::string>& root,
-                                Arabica::XPath::NodeSet<std::string>& nodes);
+	static void inPostFixOrder(const std::set<std::string>& elements,
+	                           const Arabica::DOM::Element<std::string>& root,
+	                           const bool includeEmbeddedDoc,
+	                           Arabica::XPath::NodeSet<std::string>& nodes);
+
+	static void inDocumentOrder(const std::set<std::string>& elements,
+	                            const Arabica::DOM::Element<std::string>& root,
+	                            const bool includeEmbeddedDoc,
+	                            Arabica::XPath::NodeSet<std::string>& nodes);
 
 };
 

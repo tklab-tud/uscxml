@@ -129,50 +129,66 @@ std::string DOMUtils::xPathForNode(const Arabica::DOM::Node<std::string>& node, 
 	return xPath;
 }
 
-NodeSet<std::string> DOMUtils::inPostFixOrder(const std::set<std::string>& elements, const Element<std::string>& root) {
-    NodeSet<std::string> nodes;
-    inPostFixOrder(elements, root, nodes);
-    return nodes;
+NodeSet<std::string> DOMUtils::inPostFixOrder(const std::set<std::string>& elements,
+        const Element<std::string>& root,
+        const bool includeEmbeddedDoc) {
+	NodeSet<std::string> nodes;
+	inPostFixOrder(elements, root, includeEmbeddedDoc, nodes);
+	return nodes;
 }
 
-void DOMUtils::inPostFixOrder(const std::set<std::string>& elements, const Element<std::string>& root, NodeSet<std::string>& nodes) {
-    NodeList<std::string> children = root.getChildNodes();
-    for (size_t i = 0; i < children.getLength(); i++) {
-        if (children.item(i).getNodeType() != Node_base::ELEMENT_NODE)
-            continue;
-        Arabica::DOM::Element<std::string> childElem(children.item(i));
-        inPostFixOrder(elements, childElem, nodes);
-        
-    }
-    for (size_t i = 0; i < children.getLength(); i++) {
-        if (children.item(i).getNodeType() != Node_base::ELEMENT_NODE)
-            continue;
-        Arabica::DOM::Element<std::string> childElem(children.item(i));
-        
-        if (elements.find(TAGNAME(childElem)) != elements.end()) {
-            nodes.push_back(childElem);
-        }
-    }
+void DOMUtils::inPostFixOrder(const std::set<std::string>& elements,
+                              const Element<std::string>& root,
+                              const bool includeEmbeddedDoc,
+                              NodeSet<std::string>& nodes) {
+	NodeList<std::string> children = root.getChildNodes();
+	for (size_t i = 0; i < children.getLength(); i++) {
+		if (children.item(i).getNodeType() != Node_base::ELEMENT_NODE)
+			continue;
+		Arabica::DOM::Element<std::string> childElem(children.item(i));
+		if (!includeEmbeddedDoc && LOCALNAME(childElem) == "scxml")
+			continue;
+		inPostFixOrder(elements, childElem, includeEmbeddedDoc, nodes);
+
+	}
+	for (size_t i = 0; i < children.getLength(); i++) {
+		if (children.item(i).getNodeType() != Node_base::ELEMENT_NODE)
+			continue;
+		Arabica::DOM::Element<std::string> childElem(children.item(i));
+		if (!includeEmbeddedDoc && LOCALNAME(childElem) == "scxml")
+			continue;
+
+		if (elements.find(TAGNAME(childElem)) != elements.end()) {
+			nodes.push_back(childElem);
+		}
+	}
 }
 
-NodeSet<std::string> DOMUtils::inDocumentOrder(const std::set<std::string>& elements, const Element<std::string>& root) {
-    NodeSet<std::string> nodes;
-    inDocumentOrder(elements, root, nodes);
-    return nodes;
+NodeSet<std::string> DOMUtils::inDocumentOrder(const std::set<std::string>& elements,
+        const Element<std::string>& root,
+        const bool includeEmbeddedDoc) {
+	NodeSet<std::string> nodes;
+	inDocumentOrder(elements, root, includeEmbeddedDoc, nodes);
+	return nodes;
 }
 
-void DOMUtils::inDocumentOrder(const std::set<std::string>& elements, const Element<std::string>& root, NodeSet<std::string>& nodes) {
-    if (elements.find(TAGNAME(root)) != elements.end()) {
-        nodes.push_back(root);
-    }
-    
-    NodeList<std::string> children = root.getChildNodes();
-    for (size_t i = 0; i < children.getLength(); i++) {
-        if (children.item(i).getNodeType() != Node_base::ELEMENT_NODE)
-            continue;
-        Arabica::DOM::Element<std::string> childElem(children.item(i));
-        inDocumentOrder(elements, childElem, nodes);
-    }
+void DOMUtils::inDocumentOrder(const std::set<std::string>& elements,
+                               const Element<std::string>& root,
+                               const bool includeEmbeddedDoc,
+                               NodeSet<std::string>& nodes) {
+	if (elements.find(TAGNAME(root)) != elements.end()) {
+		nodes.push_back(root);
+	}
+
+	NodeList<std::string> children = root.getChildNodes();
+	for (size_t i = 0; i < children.getLength(); i++) {
+		if (children.item(i).getNodeType() != Node_base::ELEMENT_NODE)
+			continue;
+		if (!includeEmbeddedDoc && LOCALNAME_CAST(children.item(i)) == "scxml")
+			continue;
+		Arabica::DOM::Element<std::string> childElem(children.item(i));
+		inDocumentOrder(elements, childElem, includeEmbeddedDoc, nodes);
+	}
 }
 
 std::list<Arabica::DOM::Node<std::string> > DOMUtils::getElementsByType(const Arabica::DOM::Node<std::string>& root, Arabica::DOM::Node_base::Type type) {
