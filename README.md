@@ -1,6 +1,6 @@
 # uSCXML ReadMe
 
-[![Build Status](https://travis-ci.org/tklab-tud/uscxml.png?branch=master)](https://travis-ci.org/sradomski/uscxml)
+[![Build Status](https://travis-ci.org/tklab-tud/uscxml.png?branch=master)](https://travis-ci.org/tklab-tud/uscxml)
 
 #### Related Documents
 
