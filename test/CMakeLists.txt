@@ -133,7 +133,11 @@ if (NOT BUILD_MINIMAL)
 
 	# prepare directories for test classes and copy resources over
 	foreach(W3C_RESOURCE ${W3C_RESOURCES} )
-		get_filename_component(TEST_DATAMODEL ${W3C_RESOURCE} NAME)
+		get_filename_component(TEST_DATAMODEL ${W3C_RESOURCE} PATH)
+		get_filename_component(TEST_DATAMODEL ${TEST_DATAMODEL} NAME)
+		
+		# message(STATUS "W3C_RESOURCE: ${W3C_RESOURCE}")
+		# message(STATUS "TEST_DATAMODEL: ${TEST_DATAMODEL}")
 		
 		foreach(TEST_CLASS ${TEST_CLASSES})
 			# datamodel has to be the suffix of the test class

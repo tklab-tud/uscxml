@@ -1,6 +1,6 @@
 # uSCXML ReadMe
 
-[![Build Status](https://travis-ci.org/sradomski/uscxml.png?branch=master)](https://travis-ci.org/sradomski/uscxml)
+[![Build Status](https://travis-ci.org/tklab-tud/uscxml.png?branch=master)](https://travis-ci.org/sradomski/uscxml)
 
 #### Related Documents
 
@@ -98,7 +98,7 @@ so maybe restrict yourself to some subset.
 |               | XPath      | 107/211 | <tt>$ ctest -L "^fsm/xpath/test"</tt>    |
 |               | PROMELA    | 147/165 | <tt>$ ctest -L "^fsm/promela/test"</tt>  |
 |               | Lua        | 165/201 | <tt>$ ctest -L "^fsm/lua/test"</tt>      |
-| Generated C   | ECMAScript | 173/176 | <tt>$ ctest -L "^gen/c/ecma/test"</tt>   |
+| Generated C   | ECMAScript | 180/180 | <tt>$ ctest -L "^gen/c/ecma/test"</tt>   |
 | Verification  | PROMELA    | 130/181 | <tt>$ ctest -L "^spin/promela/test"</tt> |
 
 

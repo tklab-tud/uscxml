@@ -21,6 +21,7 @@
 #endif
 
 #include "uscxml/Convenience.h"
+#include "uscxml/URL.h"
 #include "uscxml/concurrency/Timer.h"
 //#include "uscxml/DOMUtils.h"
 #include "uscxml/Factory.h"
@@ -40,23 +41,24 @@ using namespace uscxml;
 
 class StateMachine : public InterpreterInfo {
 public:
-	StateMachine(const scxml_machine* machine) : parentMachine(NULL), topMostMachine(NULL), invocation(NULL) {
-		init(machine);
+	StateMachine(const scxml_machine* machine) : machine(machine), parentMachine(NULL), topMostMachine(NULL), invocation(NULL) {
 		allMachines[sessionId] = this;
 		topMostMachine = this;
 		currentMachine = allMachines.begin();
+		init();
 	}
 
-    StateMachine(StateMachine* parent, const scxml_machine* machine, const scxml_elem_invoke* invoke) : invocation(invoke) {
+	StateMachine(StateMachine* parent, const scxml_machine* machine, const scxml_elem_invoke* invoke) : machine(machine), invocation(invoke) {
 		parentMachine = parent;
 		topMostMachine = parent->topMostMachine;
-        init(machine);
+		init();
 	}
 
-	void init(const scxml_machine* machine) {
+	void init() {
 		sessionId = UUID::getUUID();
-        isFinalized = false;
-        
+		isFinalized = false;
+		currEvent = NULL;
+
 		// clear and initialize machine context
 		memset(&ctx, 0, sizeof(scxml_ctx));
 		ctx.machine = machine;
@@ -84,58 +86,62 @@ public:
 
 		delayQueue.start();
 		dataModel = Factory::getInstance()->createDataModel(machine->datamodel, this);
-        
-        if (invocation != NULL) {
-            /// test 226/240 - initialize from invoke request
-            
-            // TODO: Only set if there is a corresponding data element: test245
-            if (invocation->params != NULL) {
-                const scxml_elem_param* param = invocation->params;
-                while(ELEM_PARAM_IS_SET(param)) {
-                    try {
-                        std::string identifier;
-                        if (param->name != NULL) {
-                            identifier = param->name;
-                        } else if (param->location != NULL) {
-                            identifier = param->location;
-                        }
-                        dataModel.init(identifier, parentMachine->dataModel.getStringAsData(param->expr));
-                        invokeIdentifiers.insert(identifier);
-                        
-                    } catch (Event e) {
-                        execContentRaise(&ctx, e.name.c_str());
-                    }
-                    param++;
-                }
-            }
-            
-            if (invocation->namelist != NULL) {
-                const char* cPtr = invocation->namelist;
-                const char* aPtr = invocation->namelist;
-                while(cPtr) {
-                    while (isspace(*cPtr))
-                        cPtr++;
-                    aPtr = cPtr;
-                    while(*cPtr && !isspace(*cPtr))
-                        cPtr++;
-                    
-                    if (aPtr == cPtr)
-                        break;
-                    
-                    std::string identifier = std::string(aPtr, cPtr - aPtr);
-                    try {
-                        dataModel.init(identifier, parentMachine->dataModel.getStringAsData(identifier));
-                        invokeIdentifiers.insert(identifier);
-                    } catch (Event e) {
-                        execContentRaise(&ctx, e.name.c_str());
-                    }
-                }
-            }
-        }
+
+		if (invocation != NULL) {
+			/// test 226/240 - initialize from invoke request
+			if (invocation->params != NULL) {
+				const scxml_elem_param* param = invocation->params;
+				while(ELEM_PARAM_IS_SET(param)) {
+					std::string identifier;
+					if (param->name != NULL) {
+						identifier = param->name;
+					} else if (param->location != NULL) {
+						identifier = param->location;
+					}
+					invokeData[identifier] = parentMachine->dataModel.getStringAsData(param->expr);
+					param++;
+				}
+			}
+
+			if (invocation->namelist != NULL) {
+				const char* cPtr = invocation->namelist;
+				const char* aPtr = invocation->namelist;
+				while(cPtr) {
+					while (isspace(*cPtr))
+						cPtr++;
+					aPtr = cPtr;
+					while(*cPtr && !isspace(*cPtr))
+						cPtr++;
+
+					if (aPtr == cPtr)
+						break;
+
+					std::string identifier = std::string(aPtr, cPtr - aPtr);
+					invokeData[identifier] = parentMachine->dataModel.getStringAsData(identifier);
+				}
+			}
+		}
 	}
 
 	virtual ~StateMachine() {
+		if (parentMachine != NULL) {
+			topMostMachine->allMachines.erase(topMostMachine->invocationIds[invocation]);
+		}
+//        finalize();
+
 		delayQueue.stop();
+		delayQueue.cancelAllEvents();
+
+		while(eq.size() > 0) {
+			delete eq.front();
+			eq.pop_front();
+		}
+		eq.clear();
+		while(iq.size() > 0) {
+			delete iq.front();
+			iq.pop_front();
+		}
+		iq.clear();
 	}
 
 	bool hasPendingWork() {
@@ -150,27 +156,41 @@ public:
 		return ctx.flags & SCXML_CTX_FINISHED;
 	}
 
-    void finalize() {
-        if (isFinalized)
-            return;
-        
-        delayQueue.stop();
-        if (parentMachine != NULL) {
-            Event* done = new Event();
-            done->invokeid = invokeId;
-            done->name = "done.invoke." + invokeId;
-            parentMachine->eq.push_back(done);
-        }
-        isFinalized = true;
-    }
+	void finalize() {
+		if (isFinalized)
+			return;
 
-	void reset() {
-		sessionId = UUID::getUUID();
-		iq.clear();
-		eq.clear();
+		delayQueue.stop();
 		delayQueue.cancelAllEvents();
 
-		dataModel = Factory::getInstance()->createDataModel(ctx.machine->datamodel, this);
+		if (parentMachine != NULL) {
+			tthread::lock_guard<tthread::mutex> lock(mutex);
+
+			Event* done = new Event();
+			done->invokeid = invokeId;
+			done->name = "done.invoke." + invokeId;
+			parentMachine->eq.push_back(done);
+		}
+		isFinalized = true;
+	}
+
+	void reset() {
+		delayQueue.stop();
+		delayQueue.cancelAllEvents();
+
+		while(eq.size() > 0) {
+			delete eq.front();
+			eq.pop_front();
+		}
+		while(iq.size() > 0) {
+			delete iq.front();
+			iq.pop_front();
+		}
+
+		iq.clear();
+		eq.clear();
+
+		init();
 
 	}
 
@@ -185,13 +205,19 @@ public:
 			return SCXML_ERR_IDLE;
 		}
 
-        // test 187
-        if (toRun->isDone()) {
-            toRun->finalize();
-            return SCXML_ERR_IDLE;
-        }
-        
-		return scxml_step(&toRun->ctx);
+		// test 187
+		if (toRun->isDone()) {
+			toRun->finalize();
+			return SCXML_ERR_IDLE;
+		}
+
+		state = scxml_step(&toRun->ctx);
+		if (toRun->currEvent != NULL) {
+			delete toRun->currEvent;
+			toRun->currEvent = NULL;
+		}
+
+		return state;
 	}
 
 	// InterpreterInfo
@@ -238,10 +264,10 @@ public:
 			}
 		}
 
-        // real event but spontaneous transition
-        if (t->event == NULL)
-            return false;
-        
+		// real event but spontaneous transition
+		if (t->event == NULL)
+			return false;
+
 		// real transition, real event
 		if (nameMatch(t->event, event->name.c_str())) {
 			if (t->condition != NULL)
@@ -261,44 +287,49 @@ public:
 	}
 
 	static int invoke(const scxml_ctx* ctx, const scxml_state* s, const scxml_elem_invoke* invocation, uint8_t uninvoke) {
-        std::map<std::string, StateMachine*> &allMachines = USER_DATA(ctx)->topMostMachine->allMachines;
-        StateMachine* topMachine = USER_DATA(ctx)->topMostMachine;
-        
-        if (uninvoke) {
-            if (invocation->machine != NULL) {
-                if (topMachine->invocationIds.find(invocation) != topMachine->invocationIds.end() &&
-                    allMachines.find(topMachine->invocationIds[invocation]) != allMachines.end()) {
-                    
-                    delete allMachines[topMachine->invocationIds[invocation]];
-                    topMachine->allMachines.erase(topMachine->invocationIds[invocation]);
-                    topMachine->invocationIds.erase(invocation);
-                }
-            } else {
-                return SCXML_ERR_UNSUPPORTED;
-            }
-        } else {
-            // invocations
-            if (invocation->machine != NULL) {
-                // invoke a nested SCXML machine
-                StateMachine* invokedMachine = new StateMachine(USER_DATA(ctx), invocation->machine, invocation);
-                
-                if (invocation->id != NULL) {
-                    invokedMachine->invokeId = invocation->id;
-                } else if (invocation->idlocation != NULL) {
-                    // test224
-                    invokedMachine->invokeId = (invocation->sourcename != NULL ? std::string(invocation->sourcename) + "." : "") + UUID::getUUID();
-                    ctx->exec_content_assign(ctx, invocation->idlocation, std::string("\"" + invokedMachine->invokeId + "\"").c_str());
-                } else {
-                    delete invokedMachine;
-                    return SCXML_ERR_UNSUPPORTED;
-                }
-                allMachines[invokedMachine->invokeId] = invokedMachine;
-                topMachine->invocationIds[invocation] = invokedMachine->invokeId;
-            } else {
-                return SCXML_ERR_UNSUPPORTED;
-            }
-        }
-        return SCXML_ERR_OK;
+		std::map<std::string, StateMachine*> &allMachines = USER_DATA(ctx)->topMostMachine->allMachines;
+		StateMachine* topMachine = USER_DATA(ctx)->topMostMachine;
+
+		if (uninvoke) {
+			if (invocation->machine != NULL) {
+				if (topMachine->invocationIds.find(invocation) != topMachine->invocationIds.end() &&
+				        allMachines.find(topMachine->invocationIds[invocation]) != allMachines.end()) {
+
+					delete allMachines[topMachine->invocationIds[invocation]];
+					topMachine->allMachines.erase(topMachine->invocationIds[invocation]);
+					topMachine->invocationIds.erase(invocation);
+				}
+			} else {
+				return SCXML_ERR_UNSUPPORTED;
+			}
+		} else {
+			// invocations
+			if (invocation->machine != NULL) {
+				// invoke a nested SCXML machine
+				StateMachine* invokedMachine = NULL;
+				try {
+					invokedMachine = new StateMachine(USER_DATA(ctx), invocation->machine, invocation);
+				} catch (Event e) {
+					delete invokedMachine;
+					return SCXML_ERR_EXEC_CONTENT;
+				}
+				if (invocation->id != NULL) {
+					invokedMachine->invokeId = invocation->id;
+				} else if (invocation->idlocation != NULL) {
+					// test224
+					invokedMachine->invokeId = (invocation->sourcename != NULL ? std::string(invocation->sourcename) + "." : "") + UUID::getUUID();
+					ctx->exec_content_assign(ctx, invocation->idlocation, std::string("\"" + invokedMachine->invokeId + "\"").c_str());
+				} else {
+					delete invokedMachine;
+					return SCXML_ERR_UNSUPPORTED;
+				}
+				allMachines[invokedMachine->invokeId] = invokedMachine;
+				topMachine->invocationIds[invocation] = invokedMachine->invokeId;
+			} else {
+				return SCXML_ERR_UNSUPPORTED;
+			}
+		}
+		return SCXML_ERR_OK;
 	}
 
 	static int raiseDoneEvent(const scxml_ctx* ctx, const scxml_state* state, const scxml_elem_donedata* donedata) {
@@ -383,8 +414,8 @@ public:
 		}
 
 		e->origintype = e->type;
-        e->invokeid = USER_DATA(ctx)->invokeId;
-        
+		e->invokeid = USER_DATA(ctx)->invokeId;
+
 		if (send->eventexpr != NULL) {
 			e->name = USER_DATA(ctx)->dataModel.evalAsString(send->eventexpr);
 		} else {
@@ -595,22 +626,51 @@ public:
 
 	static int execContentInit(const scxml_ctx* ctx, const scxml_elem_data* data) {
 		while(ELEM_DATA_IS_SET(data)) {
-            // only initialize data that was not already passed per invocation
-            if (USER_DATA(ctx)->invokeIdentifiers.find(data->id) == USER_DATA(ctx)->invokeIdentifiers.end()) {
-                Data d;
-                if (data->expr != NULL) {
-                    d = Data(data->expr, Data::INTERPRETED);
-                } else if (data->content != NULL) {
-                    d = Data(data->content, Data::INTERPRETED);
-                } else {
-                    d = Data("undefined", Data::INTERPRETED);
-                }
-                try {
-                    USER_DATA(ctx)->dataModel.init(data->id, d);
-                } catch (Event e) {
-                    execContentRaise(ctx, e.name.c_str());
-                }
-            }
+			if (USER_DATA(ctx)->invokeData.find(data->id) != USER_DATA(ctx)->invokeData.end()) {
+				// passed via param or namelist: test245
+				try {
+					USER_DATA(ctx)->dataModel.init(data->id, USER_DATA(ctx)->invokeData[data->id]);
+				} catch (Event e) {
+					execContentRaise(ctx, e.name.c_str());
+				}
+			} else {
+				Data d;
+				std::stringstream content;
+
+				if (data->expr != NULL) {
+					d = Data(data->expr, Data::INTERPRETED);
+				} else if (data->content != NULL) {
+					content << data->content;
+					d = Data(content.str(), Data::INTERPRETED);
+				} else if (data->src != NULL) {
+					URL sourceURL(data->src);
+					if (USER_DATA(ctx)->baseURL.size() > 0) {
+						sourceURL.toAbsolute(USER_DATA(ctx)->baseURL);
+					} else {
+						sourceURL.toAbsoluteCwd();
+					}
+					content << sourceURL;
+					d = Data(content.str(), Data::INTERPRETED);
+
+				} else {
+					d = Data("undefined", Data::INTERPRETED);
+				}
+				try {
+					// this might fail with an unquoted string literal in content
+					USER_DATA(ctx)->dataModel.init(data->id, d);
+				} catch (Event e) {
+					if (content.str().size() > 0) {
+						try {
+							d = Data(escape(spaceNormalize(content.str())), Data::VERBATIM);
+							USER_DATA(ctx)->dataModel.init(data->id, d);
+						} catch (Event e) {
+							execContentRaise(ctx, e.name.c_str());
+						}
+					} else {
+						execContentRaise(ctx, e.name.c_str());
+					}
+				}
+			}
 			data++;
 		}
 		return SCXML_ERR_OK;
@@ -632,9 +692,10 @@ public:
 
 		Event* e = USER_DATA(ctx)->eq.front();
 		USER_DATA(ctx)->eq.pop_front();
+		USER_DATA(ctx)->currEvent = e;
 		USER_DATA(ctx)->dataModel.setEvent(*e);
 
-        std::map<std::string, StateMachine*>& allMachines = USER_DATA(ctx)->topMostMachine->allMachines;
+		std::map<std::string, StateMachine*>& allMachines = USER_DATA(ctx)->topMostMachine->allMachines;
 		if (e->invokeid.size() > 0 && allMachines.find(e->invokeid) != allMachines.end()) {
 			// we need to check for finalize content
 			StateMachine* invokedMachine = allMachines[e->invokeid];
@@ -643,16 +704,19 @@ public:
 				                                     invokedMachine->invocation,
 				                                     e);
 		}
-        
-        // auto forward event
-        for (std::map<std::string, StateMachine*>::iterator machIter = allMachines.begin(); machIter != allMachines.end(); machIter++) {
-            if (machIter->second->parentMachine != NULL &&
-                machIter->second->parentMachine == USER_DATA(ctx) &&
-                machIter->second->invocation->autoforward) {
-                machIter->second->eq.push_back(e);
-            }
-        }
-        
+
+		// auto forward event
+		for (std::map<std::string, StateMachine*>::iterator machIter = allMachines.begin(); machIter != allMachines.end(); machIter++) {
+			if (machIter->second->parentMachine != NULL &&
+			        machIter->second->parentMachine == USER_DATA(ctx) &&
+			        machIter->second->invocation->autoforward) {
+				tthread::lock_guard<tthread::mutex> lock(machIter->second->mutex);
+
+				Event* ne = new Event(*e);
+				machIter->second->eq.push_back(ne);
+			}
+		}
+
 #ifdef SCXML_VERBOSE
 		printf("Popping External Event: %s\n", e->name.c_str());
 #endif
@@ -664,6 +728,7 @@ public:
 			return NULL;
 		Event* e = USER_DATA(ctx)->iq.front();
 		USER_DATA(ctx)->iq.pop_front();
+		USER_DATA(ctx)->currEvent = e;
 		USER_DATA(ctx)->dataModel.setEvent(*e);
 #ifdef SCXML_VERBOSE
 		printf("Popping Internal Event: %s\n", e->name.c_str());
@@ -683,36 +748,44 @@ public:
 			printf("Pushing Internal Event: %s\n", e->name.c_str());
 #endif
 			USER_DATA(ctx)->iq.push_back(e);
-        } else if (sr->target == "#_external") {
-            e->eventType = Event::EXTERNAL;
+		} else if (sr->target == "#_external") {
+			e->eventType = Event::EXTERNAL;
 #ifdef SCXML_VERBOSE
-            printf("Pushing External Event: %s\n", e->name.c_str());
+			printf("Pushing External Event: %s\n", e->name.c_str());
 #endif
-            USER_DATA(ctx)->eq.push_back(e);
-        } else if (sr->target == "#_parent") {
+			USER_DATA(ctx)->eq.push_back(e);
+		} else if (sr->target == "#_parent") {
 			e->eventType = Event::EXTERNAL;
 			if (USER_DATA(ctx)->parentMachine != NULL) {
 				USER_DATA(ctx)->parentMachine->eq.push_back(e);
 			}
 			// TODO: handle invalid parent
-        } else if (sr->target.substr(0,8) == "#_scxml_") {
-            std::string sessionId = sr->target.substr(8);
-            for (std::map<std::string, StateMachine*>::iterator machIter = USER_DATA(ctx)->topMostMachine->allMachines.begin();
-                 machIter != USER_DATA(ctx)->topMostMachine->allMachines.end(); machIter++) {
-                if (machIter->second->sessionId == sessionId) {
-                    e->eventType = Event::EXTERNAL;
-                    machIter->second->eq.push_back(e);
-                    break;
-                }
-            }
-        } else if (sr->target.substr(0,2) == "#_") {
-            e->eventType = Event::EXTERNAL;
-            std::string targetId = sr->target.substr(2);
-            if (USER_DATA(ctx)->topMostMachine->allMachines.find(targetId) != USER_DATA(ctx)->topMostMachine->allMachines.end()) {
-                USER_DATA(ctx)->topMostMachine->allMachines[targetId]->eq.push_back(e);
-            }
+		} else if (sr->target.substr(0,8) == "#_scxml_") {
+			std::string sessionId = sr->target.substr(8);
+			bool sessionFound = false;
+			for (std::map<std::string, StateMachine*>::iterator machIter = USER_DATA(ctx)->topMostMachine->allMachines.begin();
+			        machIter != USER_DATA(ctx)->topMostMachine->allMachines.end(); machIter++) {
+				if (machIter->second->sessionId == sessionId) {
+					e->eventType = Event::EXTERNAL;
+					machIter->second->eq.push_back(e);
+					sessionFound = true;
+					break;
+				}
+			}
+			if (!sessionFound) {
+				// test496
+				execContentRaise((scxml_ctx*)ctx, "error.communication");
+			}
+		} else if (sr->target.substr(0,2) == "#_") {
+			e->eventType = Event::EXTERNAL;
+			std::string targetId = sr->target.substr(2);
+			if (USER_DATA(ctx)->topMostMachine->allMachines.find(targetId) != USER_DATA(ctx)->topMostMachine->allMachines.end()) {
+				USER_DATA(ctx)->topMostMachine->allMachines[targetId]->eq.push_back(e);
+			} else {
+				execContentRaise((scxml_ctx*)ctx, "error.communication");
+			}
 		} else {
-            assert(false);
+			assert(false);
 		}
 		USER_DATA(ctx)->monitor.notify_all();
 		delete sr;
@@ -790,24 +863,28 @@ NEXT_DESC:
 		return false;
 	}
 
-    std::map<const scxml_elem_invoke*, std::string> invocationIds;
+	Event* currEvent;
+
+	std::map<const scxml_elem_invoke*, std::string> invocationIds;
 	std::map<std::string, StateMachine*> allMachines;
+
+	bool isFinalized;
+	int state;
+	scxml_ctx ctx;
+	const scxml_machine* machine;
 
 	StateMachine* parentMachine;
 	StateMachine* topMostMachine;
 	std::map<std::string, StateMachine* >::iterator currentMachine; // next machine to advance
 
-    bool isFinalized;
-	int state;
-	scxml_ctx ctx;
-
+	std::string baseURL;
 	std::string sessionId;
 	std::string name;
 
 	// in case we were invoked
 	std::string invokeId;
 	const scxml_elem_invoke* invocation;
-    std::set<std::string> invokeIdentifiers;
+	std::map<std::string, Data> invokeData;
 
 	std::deque<Event*> iq;
 	std::deque<Event*> eq;
@@ -893,6 +970,7 @@ int main(int argc, char** argv) {
 			std::cerr << "Interpreter did not end in pass" << std::endl;
 			exit(EXIT_FAILURE);
 		}
+		rootMachine.reset();
 	}
 	tTotal.stop();
 	std::cout << benchmarkRuns << " iterations" << std::endl;

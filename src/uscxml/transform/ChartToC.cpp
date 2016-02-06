@@ -405,6 +405,12 @@ void ChartToC::prepare() {
 
 void ChartToC::writeTo(std::ostream& stream) {
 
+	stream << "/**" << std::endl;
+	stream << "  Generated from source:" << std::endl;
+	stream << "  " << _sourceURL.asString() << std::endl;
+	stream << "*/" << std::endl;
+	stream << std::endl;
+
 	writeIncludes(stream);
 	writeMacros(stream);
 	writeTypes(stream);
@@ -439,11 +445,11 @@ void ChartToC::findNestedMachines() {
 
 		ChartToC* c2c = NULL;
 		if (HAS_ATTR(invoke, "src")) {
-            URL srcURL(ATTR(invoke, "src"));
-            if (!srcURL.toAbsolute(getBaseURLForNode(invoke))) {
-                LOG(ERROR) << "invoke element has relative src URL with no baseURL set.";
-                return;
-            }
+			URL srcURL(ATTR(invoke, "src"));
+			if (!srcURL.toAbsolute(getBaseURLForNode(invoke))) {
+				LOG(ERROR) << "invoke element has relative src URL with no baseURL set.";
+				return;
+			}
 			c2c = new ChartToC(Interpreter::fromURL(srcURL.asString()));
 		} else {
 			// is there a nested scxml machine inside?
@@ -556,8 +562,8 @@ void ChartToC::writeMacros(std::ostream& stream) {
 	stream << "#define SCXML_CTX_SPONTANEOUS        0x01" << std::endl;
 	stream << "#define SCXML_CTX_INITIALIZED        0x02" << std::endl;
 	stream << "#define SCXML_CTX_TOP_LEVEL_FINAL    0x04" << std::endl;
-    stream << "#define SCXML_CTX_TRANSITION_FOUND   0x08" << std::endl;
-    stream << "#define SCXML_CTX_FINISHED           0x10" << std::endl;
+	stream << "#define SCXML_CTX_TRANSITION_FOUND   0x08" << std::endl;
+	stream << "#define SCXML_CTX_FINISHED           0x10" << std::endl;
 	stream << std::endl;
 
 
@@ -692,8 +698,8 @@ void ChartToC::writeTypes(std::ostream& stream) {
 	stream << "    const char* src;" << std::endl;
 	stream << "    const char* srcexpr;" << std::endl;
 	stream << "    const char* id;" << std::endl;
-    stream << "    const char* idlocation;" << std::endl;
-    stream << "    const char* sourcename;" << std::endl;
+	stream << "    const char* idlocation;" << std::endl;
+	stream << "    const char* sourcename;" << std::endl;
 	stream << "    const char* namelist;" << std::endl;
 	stream << "    const uint8_t autoforward;" << std::endl;
 	stream << "    const scxml_elem_param* params;" << std::endl;
@@ -1146,8 +1152,8 @@ void ChartToC::writeElementInfoInvocation(std::ostream& stream) {
 			 stream << "    const char* src;" << std::endl;
 			 stream << "    const char* srcexpr;" << std::endl;
 			 stream << "    const char* id;" << std::endl;
-             stream << "    const char* idlocation;" << std::endl;
-             stream << "    const char* sourcename;" << std::endl;
+			 stream << "    const char* idlocation;" << std::endl;
+			 stream << "    const char* sourcename;" << std::endl;
 			 stream << "    const char* namelist;" << std::endl;
 			 stream << "    const uint8_t autoforward;" << std::endl;
 			 stream << "    const scxml_elem_param* params;" << std::endl;
@@ -1197,9 +1203,9 @@ void ChartToC::writeElementInfoInvocation(std::ostream& stream) {
 			stream << (HAS_ATTR(invoke, "idlocation") ? "\"" +  escape(ATTR(invoke, "idlocation")) + "\"" : "NULL");
 			stream << ", " << std::endl;
 
-            stream << "        /* sourcename  */ ";
-            stream << (HAS_ATTR_CAST(invoke.getParentNode(), "id") ? "\"" +  escape(ATTR_CAST(invoke.getParentNode(), "id")) + "\"" : "NULL");
-            stream << ", " << std::endl;
+			stream << "        /* sourcename  */ ";
+			stream << (HAS_ATTR_CAST(invoke.getParentNode(), "id") ? "\"" +  escape(ATTR_CAST(invoke.getParentNode(), "id")) + "\"" : "NULL");
+			stream << ", " << std::endl;
 
 			stream << "        /* namelist    */ ";
 			stream << (HAS_ATTR(invoke, "namelist") ? "\"" +  escape(ATTR(invoke, "namelist")) + "\"" : "NULL");
@@ -1253,7 +1259,7 @@ void ChartToC::writeElementInfoInvocation(std::ostream& stream) {
 }
 
 void ChartToC::writeElementInfo(std::ostream& stream) {
-    NodeSet<std::string> foreachs = DOMUtils::inDocumentOrder(_nsInfo.xmlNSPrefix + "foreach", _scxml);
+	NodeSet<std::string> foreachs = DOMUtils::inDocumentOrder(_nsInfo.xmlNSPrefix + "foreach", _scxml);
 	if (foreachs.size() > 0) {
 		_hasElement.insert("foreach");
 		stream << "static const scxml_elem_foreach " << _prefix << "_elem_foreachs[" << foreachs.size() << "] = {" << std::endl;
@@ -1315,7 +1321,7 @@ void ChartToC::writeElementInfo(std::ostream& stream) {
 			if (dataTexts.size() > 0) {
 				if (boost::trim_copy(dataTexts[0].getNodeValue()).length() > 0) {
 					std::string escaped = escape(dataTexts[0].getNodeValue());
-					stream << "\"" << escaped << "\"" << std::endl;
+					stream << "\"" << escaped << "\"";
 				}
 			} else {
 				stream << "NULL";
@@ -1507,7 +1513,7 @@ void ChartToC::writeMachineInfo(std::ostream& stream) {
 		stream << "    }," << std::endl;
 
 	}
-	stream << "    {0, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL }" << std::endl;
+	stream << "    {0, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL }" << std::endl;
 	stream << "};" << std::endl;
 	stream << std::endl;
 }
@@ -1759,18 +1765,18 @@ void ChartToC::writeFSM(std::ostream& stream) {
 	stream << "int scxml_step(scxml_ctx* ctx) {" << std::endl;
 	stream << std::endl;
 
-    stream << "    " << (_states.size() > _transitions.size() ? "SCXML_NR_STATES_TYPE" : "SCXML_NR_TRANS_TYPE") << " i, j, k;" << std::endl;
-    stream << "    SCXML_NR_STATES_TYPE nr_states_bytes = ((SCXML_NUMBER_STATES + 7) & ~7) >> 3;" << std::endl;
-    stream << "    SCXML_NR_TRANS_TYPE  nr_trans_bytes  = ((SCXML_NUMBER_TRANS + 7) & ~7) >> 3;" << std::endl;
-    stream << "    int err = SCXML_ERR_OK;" << std::endl;
-    
-    stream << "    char conflicts  [SCXML_MAX_NR_TRANS_BYTES];" << std::endl;
-    stream << "    char trans_set  [SCXML_MAX_NR_TRANS_BYTES];" << std::endl;
-    stream << "    char target_set [SCXML_MAX_NR_STATES_BYTES];" << std::endl;
-    stream << "    char exit_set   [SCXML_MAX_NR_STATES_BYTES];" << std::endl;
-    stream << "    char entry_set  [SCXML_MAX_NR_STATES_BYTES];" << std::endl;
-    stream << "    char tmp_states [SCXML_MAX_NR_STATES_BYTES];" << std::endl;
-    stream << std::endl;
+	stream << "    " << (_states.size() > _transitions.size() ? "SCXML_NR_STATES_TYPE" : "SCXML_NR_TRANS_TYPE") << " i, j, k;" << std::endl;
+	stream << "    SCXML_NR_STATES_TYPE nr_states_bytes = ((SCXML_NUMBER_STATES + 7) & ~7) >> 3;" << std::endl;
+	stream << "    SCXML_NR_TRANS_TYPE  nr_trans_bytes  = ((SCXML_NUMBER_TRANS + 7) & ~7) >> 3;" << std::endl;
+	stream << "    int err = SCXML_ERR_OK;" << std::endl;
+
+	stream << "    char conflicts  [SCXML_MAX_NR_TRANS_BYTES];" << std::endl;
+	stream << "    char trans_set  [SCXML_MAX_NR_TRANS_BYTES];" << std::endl;
+	stream << "    char target_set [SCXML_MAX_NR_STATES_BYTES];" << std::endl;
+	stream << "    char exit_set   [SCXML_MAX_NR_STATES_BYTES];" << std::endl;
+	stream << "    char entry_set  [SCXML_MAX_NR_STATES_BYTES];" << std::endl;
+	stream << "    char tmp_states [SCXML_MAX_NR_STATES_BYTES];" << std::endl;
+	stream << std::endl;
 
 	stream << "#ifdef SCXML_VERBOSE" << std::endl;
 	stream << "    printf(\"Config: \");" << std::endl;
@@ -1778,9 +1784,9 @@ void ChartToC::writeFSM(std::ostream& stream) {
 	stream << "#endif" << std::endl;
 	stream << std::endl;
 
-    stream << "    if (ctx->flags & SCXML_CTX_FINISHED)" << std::endl;
-    stream << "        return SCXML_ERR_DONE;" << std::endl;
-    stream << std::endl;
+	stream << "    if (ctx->flags & SCXML_CTX_FINISHED)" << std::endl;
+	stream << "        return SCXML_ERR_DONE;" << std::endl;
+	stream << std::endl;
 
 	stream << "    if (ctx->flags & SCXML_CTX_TOP_LEVEL_FINAL) {" << std::endl;
 	stream << "        // exit all remaining states" << std::endl;
@@ -1793,6 +1799,11 @@ void ChartToC::writeFSM(std::ostream& stream) {
 	stream << "                        return err;" << std::endl;
 	stream << "                }" << std::endl;
 //	stream << "                BIT_CLEAR(i, ctx->config);" << std::endl;
+	stream << "            }" << std::endl;
+	stream << "            if (BIT_HAS(i, ctx->invocations)) {" << std::endl;
+	stream << "                if (ctx->machine->states[i].invoke != NULL)" << std::endl;
+	stream << "                    ctx->machine->states[i].invoke(ctx, &ctx->machine->states[i], NULL, 1);" << std::endl;
+	stream << "                BIT_CLEAR(i, ctx->invocations);" << std::endl;
 	stream << "            }" << std::endl;
 	stream << "        }" << std::endl;
 	stream << "        ctx->flags |= SCXML_CTX_FINISHED;" << std::endl;
