@@ -1,6 +1,6 @@
 /**
  *  @file
- *  @author     2012-2014 Stefan Radomski (stefan.radomski@cs.tu-darmstadt.de)
+ *  @author     2012-2016 Stefan Radomski (stefan.radomski@cs.tu-darmstadt.de)
  *  @copyright  Simplified BSD
  *
  *  @cond
@@ -51,6 +51,7 @@ protected:
 	void writeExecContent(std::ostream& stream);
 	void writeExecContentFinalize(std::ostream& stream);
 	void writeElementInfoInvocation(std::ostream& stream);
+	void writeForwardDeclarations(std::ostream& stream);
 
 	void writeElementInfo(std::ostream& stream);
 

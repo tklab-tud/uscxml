@@ -6,7 +6,7 @@
 #include <deque> // deque
 #include <boost/algorithm/string.hpp> // trim
 
-#define SCXML_VERBOSE
+#define USCXML_VERBOSE
 
 #include "uscxml/config.h"
 
@@ -35,20 +35,20 @@
 #   include "uscxml/plugins/DataModel.h"
 # endif
 
-#define USER_DATA(ctx) ((StateMachine*)(((scxml_ctx*)ctx)->user_data))
+#define USER_DATA(ctx) ((StateMachine*)(((uscxml_ctx*)ctx)->user_data))
 
 using namespace uscxml;
 
 class StateMachine : public InterpreterInfo {
 public:
-	StateMachine(const scxml_machine* machine) : machine(machine), parentMachine(NULL), topMostMachine(NULL), invocation(NULL) {
+	StateMachine(const uscxml_machine* machine) : machine(machine), parentMachine(NULL), topMostMachine(NULL), invocation(NULL) {
 		allMachines[sessionId] = this;
 		topMostMachine = this;
 		currentMachine = allMachines.begin();
 		init();
 	}
 
-	StateMachine(StateMachine* parent, const scxml_machine* machine, const scxml_elem_invoke* invoke) : machine(machine), invocation(invoke) {
+	StateMachine(StateMachine* parent, const uscxml_machine* machine, const uscxml_elem_invoke* invoke) : machine(machine), invocation(invoke) {
 		parentMachine = parent;
 		topMostMachine = parent->topMostMachine;
 		init();
@@ -60,7 +60,7 @@ public:
 		currEvent = NULL;
 
 		// clear and initialize machine context
-		memset(&ctx, 0, sizeof(scxml_ctx));
+		memset(&ctx, 0, sizeof(uscxml_ctx));
 		ctx.machine = machine;
 		ctx.user_data = (void*)this;
 
@@ -90,8 +90,8 @@ public:
 		if (invocation != NULL) {
 			/// test 226/240 - initialize from invoke request
 			if (invocation->params != NULL) {
-				const scxml_elem_param* param = invocation->params;
-				while(ELEM_PARAM_IS_SET(param)) {
+				const uscxml_elem_param* param = invocation->params;
+				while(USCXML_ELEM_PARAM_IS_SET(param)) {
 					std::string identifier;
 					if (param->name != NULL) {
 						identifier = param->name;
@@ -147,13 +147,13 @@ public:
 	bool hasPendingWork() {
 		return (iq.size() > 0 ||
 		        eq.size() > 0 ||
-		        ctx.flags & SCXML_CTX_SPONTANEOUS ||
-		        ctx.flags == SCXML_CTX_PRISTINE ||
+		        ctx.flags & USCXML_CTX_SPONTANEOUS ||
+		        ctx.flags == USCXML_CTX_PRISTINE ||
 		        memcmp(ctx.config, ctx.invocations, sizeof(ctx.config)) != 0);
 	}
 
 	bool isDone() {
-		return ctx.flags & SCXML_CTX_FINISHED;
+		return ctx.flags & USCXML_CTX_FINISHED;
 	}
 
 	void finalize() {
@@ -202,16 +202,16 @@ public:
 
 		StateMachine* toRun = currentMachine->second;
 		if (!toRun->hasPendingWork()) {
-			return SCXML_ERR_IDLE;
+			return USCXML_ERR_IDLE;
 		}
 
 		// test 187
 		if (toRun->isDone()) {
 			toRun->finalize();
-			return SCXML_ERR_IDLE;
+			return USCXML_ERR_IDLE;
 		}
 
-		state = scxml_step(&toRun->ctx);
+		state = uscxml_step(&toRun->ctx);
 		if (toRun->currEvent != NULL) {
 			delete toRun->currEvent;
 			toRun->currEvent = NULL;
@@ -250,7 +250,7 @@ public:
 
 	// callbacks for scxml context
 
-	static int isEnabled(const scxml_ctx* ctx, const scxml_transition* t, const void* e) {
+	static int isEnabled(const uscxml_ctx* ctx, const uscxml_transition* t, const void* e) {
 		Event* event = (Event*)e;
 		if (event == NULL) {
 			if (t->event == NULL) {
@@ -277,7 +277,7 @@ public:
 		return false;
 	}
 
-	static int isTrue(const scxml_ctx* ctx, const char* expr) {
+	static int isTrue(const uscxml_ctx* ctx, const char* expr) {
 		try {
 			return USER_DATA(ctx)->dataModel.evalAsBool(expr);
 		} catch (Event e) {
@@ -286,7 +286,7 @@ public:
 		return false;
 	}
 
-	static int invoke(const scxml_ctx* ctx, const scxml_state* s, const scxml_elem_invoke* invocation, uint8_t uninvoke) {
+	static int invoke(const uscxml_ctx* ctx, const uscxml_state* s, const uscxml_elem_invoke* invocation, unsigned char uninvoke) {
 		std::map<std::string, StateMachine*> &allMachines = USER_DATA(ctx)->topMostMachine->allMachines;
 		StateMachine* topMachine = USER_DATA(ctx)->topMostMachine;
 
@@ -300,7 +300,7 @@ public:
 					topMachine->invocationIds.erase(invocation);
 				}
 			} else {
-				return SCXML_ERR_UNSUPPORTED;
+				return USCXML_ERR_UNSUPPORTED;
 			}
 		} else {
 			// invocations
@@ -311,7 +311,7 @@ public:
 					invokedMachine = new StateMachine(USER_DATA(ctx), invocation->machine, invocation);
 				} catch (Event e) {
 					delete invokedMachine;
-					return SCXML_ERR_EXEC_CONTENT;
+					return USCXML_ERR_EXEC_CONTENT;
 				}
 				if (invocation->id != NULL) {
 					invokedMachine->invokeId = invocation->id;
@@ -321,18 +321,18 @@ public:
 					ctx->exec_content_assign(ctx, invocation->idlocation, std::string("\"" + invokedMachine->invokeId + "\"").c_str());
 				} else {
 					delete invokedMachine;
-					return SCXML_ERR_UNSUPPORTED;
+					return USCXML_ERR_UNSUPPORTED;
 				}
 				allMachines[invokedMachine->invokeId] = invokedMachine;
 				topMachine->invocationIds[invocation] = invokedMachine->invokeId;
 			} else {
-				return SCXML_ERR_UNSUPPORTED;
+				return USCXML_ERR_UNSUPPORTED;
 			}
 		}
-		return SCXML_ERR_OK;
+		return USCXML_ERR_OK;
 	}
 
-	static int raiseDoneEvent(const scxml_ctx* ctx, const scxml_state* state, const scxml_elem_donedata* donedata) {
+	static int raiseDoneEvent(const uscxml_ctx* ctx, const uscxml_state* state, const uscxml_elem_donedata* donedata) {
 		Event* e = new Event();
 		e->name = std::string("done.state.") + state->name;
 
@@ -347,8 +347,8 @@ public:
 				}
 			} else {
 				try {
-					const scxml_elem_param* param = donedata->params;
-					while (param && ELEM_PARAM_IS_SET(param)) {
+					const uscxml_elem_param* param = donedata->params;
+					while (param && USCXML_ELEM_PARAM_IS_SET(param)) {
 						Data paramValue;
 						if (param->expr != NULL) {
 							paramValue = USER_DATA(ctx)->dataModel.getStringAsData(param->expr);
@@ -364,14 +364,14 @@ public:
 			}
 		}
 
-#ifdef SCXML_VERBOSE
+#ifdef USCXML_VERBOSE
 		printf("Raising Done Event: %s\n", e->name.c_str());
 #endif
 		USER_DATA(ctx)->iq.push_back(e);
-		return SCXML_ERR_OK;
+		return USCXML_ERR_OK;
 	}
 
-	static int execContentSend(const scxml_ctx* ctx, const scxml_elem_send* send) {
+	static int execContentSend(const uscxml_ctx* ctx, const uscxml_elem_send* send) {
 		SendRequest* e = new SendRequest();
 
 		std::string target;
@@ -386,7 +386,7 @@ public:
 		if (e->target.size() > 0 && (e->target[0] != '#' || e->target[1] != '_')) {
 			delete e;
 			execContentRaise(ctx, "error.execution");
-			return SCXML_ERR_INVALID_TARGET;
+			return USCXML_ERR_INVALID_TARGET;
 		}
 
 		e->origintype = "http://www.w3.org/TR/scxml/#SCXMLEventProcessor";
@@ -403,14 +403,14 @@ public:
 		} catch (Event exc) {
 			execContentRaise(ctx, exc.name.c_str());
 			delete e;
-			return SCXML_ERR_EXEC_CONTENT;
+			return USCXML_ERR_EXEC_CONTENT;
 		}
 
 		// only one somewhat supported
 		if (e->type != "http://www.w3.org/TR/scxml/#SCXMLEventProcessor") {
 			delete e;
 			execContentRaise(ctx, "error.execution");
-			return SCXML_ERR_INVALID_TARGET;
+			return USCXML_ERR_INVALID_TARGET;
 		}
 
 		e->origintype = e->type;
@@ -423,8 +423,8 @@ public:
 		}
 
 		try {
-			const scxml_elem_param* param = send->params;
-			while (param && ELEM_PARAM_IS_SET(param)) {
+			const uscxml_elem_param* param = send->params;
+			while (param && USCXML_ELEM_PARAM_IS_SET(param)) {
 				Data paramValue;
 				if (param->expr != NULL) {
 					paramValue = USER_DATA(ctx)->dataModel.getStringAsData(param->expr);
@@ -436,7 +436,7 @@ public:
 			}
 		} catch (Event e) {
 			execContentRaise(ctx, e.name.c_str());
-			return SCXML_ERR_EXEC_CONTENT;
+			return USCXML_ERR_EXEC_CONTENT;
 		}
 
 		try {
@@ -456,7 +456,7 @@ public:
 			}
 		} catch (Event e) {
 			execContentRaise(ctx, e.name.c_str());
-			return SCXML_ERR_EXEC_CONTENT;
+			return USCXML_ERR_EXEC_CONTENT;
 		}
 
 		if (send->content != NULL) {
@@ -515,10 +515,10 @@ public:
 			delayedSend((void*)ctx, sendid);
 		}
 
-		return SCXML_ERR_OK;
+		return USCXML_ERR_OK;
 	}
 
-	static int execContentRaise(const scxml_ctx* ctx, const char* event) {
+	static int execContentRaise(const uscxml_ctx* ctx, const char* event) {
 		Event* e = new Event();
 		e->name = event;
 
@@ -528,10 +528,10 @@ public:
 			e->eventType = Event::INTERNAL;
 		}
 		USER_DATA(ctx)->iq.push_back(e);
-		return SCXML_ERR_OK;
+		return USCXML_ERR_OK;
 	}
 
-	static int execContentCancel(const scxml_ctx* ctx, const char* sendid, const char* sendidexpr) {
+	static int execContentCancel(const uscxml_ctx* ctx, const char* sendid, const char* sendidexpr) {
 		std::string eventId;
 		if (sendid != NULL) {
 			eventId = sendid;
@@ -543,12 +543,12 @@ public:
 			USER_DATA(ctx)->delayQueue.cancelEvent(eventId);
 		} else {
 			execContentRaise(ctx, "error.execution");
-			return SCXML_ERR_EXEC_CONTENT;
+			return USCXML_ERR_EXEC_CONTENT;
 		}
-		return SCXML_ERR_OK;
+		return USCXML_ERR_OK;
 	}
 
-	static int execContentLog(const scxml_ctx* ctx, const char* label, const char* expr) {
+	static int execContentLog(const uscxml_ctx* ctx, const char* label, const char* expr) {
 		try {
 			if (label != NULL) {
 				printf("%s%s", label, (expr != NULL ? ": " : ""));
@@ -562,29 +562,29 @@ public:
 			}
 		} catch (Event e) {
 			execContentRaise(ctx, e.name.c_str());
-			return SCXML_ERR_EXEC_CONTENT;
+			return USCXML_ERR_EXEC_CONTENT;
 		}
-		return SCXML_ERR_OK;
+		return USCXML_ERR_OK;
 	}
 
-	static int execContentAssign(const scxml_ctx* ctx, const char* location, const char* expr) {
+	static int execContentAssign(const uscxml_ctx* ctx, const char* location, const char* expr) {
 		std::string key = location;
 		if (key == "_sessionid" || key == "_name" || key == "_ioprocessors" || key == "_invokers" || key == "_event") {
 			execContentRaise(ctx, "error.execution");
-			return SCXML_ERR_EXEC_CONTENT;
+			return USCXML_ERR_EXEC_CONTENT;
 		}
 
 		try {
-			Data d(expr, Data::INTERPRETED);
+			Data d = USER_DATA(ctx)->dataModel.getStringAsData(expr);
 			USER_DATA(ctx)->dataModel.assign(key, d);
 		} catch (Event e) {
 			execContentRaise(ctx, e.name.c_str());
-			return SCXML_ERR_EXEC_CONTENT;
+			return USCXML_ERR_EXEC_CONTENT;
 		}
-		return SCXML_ERR_OK;
+		return USCXML_ERR_OK;
 	}
 
-	static int execContentForeachInit(const scxml_ctx* ctx, const scxml_elem_foreach* foreach) {
+	static int execContentForeachInit(const uscxml_ctx* ctx, const uscxml_elem_foreach* foreach) {
 		try {
 			scxml_foreach_info* feInfo = (scxml_foreach_info*)malloc(sizeof(scxml_foreach_info));
 			USER_DATA(ctx)->foreachInfo[foreach] = feInfo;
@@ -593,12 +593,12 @@ public:
 			feInfo->currIteration = 0;
 		} catch (Event e) {
 			execContentRaise(ctx, e.name.c_str());
-			return SCXML_ERR_EXEC_CONTENT;
+			return USCXML_ERR_EXEC_CONTENT;
 		}
-		return SCXML_ERR_OK;
+		return USCXML_ERR_OK;
 	}
 
-	static int execContentForeachNext(const scxml_ctx* ctx, const scxml_elem_foreach* foreach) {
+	static int execContentForeachNext(const uscxml_ctx* ctx, const uscxml_elem_foreach* foreach) {
 		try {
 			scxml_foreach_info* feInfo = USER_DATA(ctx)->foreachInfo[foreach];
 			if (feInfo->currIteration < feInfo->iterations) {
@@ -607,25 +607,25 @@ public:
 				                                     (foreach->index != NULL ? foreach->index : ""),
 				                                     feInfo->currIteration);
 				feInfo->currIteration++;
-				return SCXML_ERR_OK;
+				return USCXML_ERR_OK;
 			}
 		} catch (Event e) {
 			execContentRaise(ctx, e.name.c_str());
 			free(USER_DATA(ctx)->foreachInfo[foreach]);
 			USER_DATA(ctx)->foreachInfo.erase(foreach);
-			return SCXML_ERR_EXEC_CONTENT;
+			return USCXML_ERR_EXEC_CONTENT;
 		}
-		return SCXML_ERR_FOREACH_DONE;
+		return USCXML_ERR_FOREACH_DONE;
 	}
 
-	static int execContentForeachDone(const scxml_ctx* ctx, const scxml_elem_foreach* foreach) {
+	static int execContentForeachDone(const uscxml_ctx* ctx, const uscxml_elem_foreach* foreach) {
 		free(USER_DATA(ctx)->foreachInfo[foreach]);
 		USER_DATA(ctx)->foreachInfo.erase(foreach);
-		return SCXML_ERR_OK;
+		return USCXML_ERR_OK;
 	}
 
-	static int execContentInit(const scxml_ctx* ctx, const scxml_elem_data* data) {
-		while(ELEM_DATA_IS_SET(data)) {
+	static int execContentInit(const uscxml_ctx* ctx, const uscxml_elem_data* data) {
+		while(USCXML_ELEM_DATA_IS_SET(data)) {
 			if (USER_DATA(ctx)->invokeData.find(data->id) != USER_DATA(ctx)->invokeData.end()) {
 				// passed via param or namelist: test245
 				try {
@@ -638,10 +638,12 @@ public:
 				std::stringstream content;
 
 				if (data->expr != NULL) {
-					d = Data(data->expr, Data::INTERPRETED);
+					d = USER_DATA(ctx)->dataModel.getStringAsData(data->expr);
+//					d = Data(data->expr, Data::INTERPRETED);
 				} else if (data->content != NULL) {
 					content << data->content;
-					d = Data(content.str(), Data::INTERPRETED);
+					d = USER_DATA(ctx)->dataModel.getStringAsData(content.str());
+//					d = Data(content.str(), Data::INTERPRETED);
 				} else if (data->src != NULL) {
 					URL sourceURL(data->src);
 					if (USER_DATA(ctx)->baseURL.size() > 0) {
@@ -650,8 +652,8 @@ public:
 						sourceURL.toAbsoluteCwd();
 					}
 					content << sourceURL;
-					d = Data(content.str(), Data::INTERPRETED);
-
+//					d = Data(content.str(), Data::INTERPRETED);
+					d = USER_DATA(ctx)->dataModel.getStringAsData(content.str());
 				} else {
 					d = Data("undefined", Data::INTERPRETED);
 				}
@@ -673,19 +675,19 @@ public:
 			}
 			data++;
 		}
-		return SCXML_ERR_OK;
+		return USCXML_ERR_OK;
 	}
 
-	static int execContentScript(const scxml_ctx* ctx, const char* src, const char* content) {
+	static int execContentScript(const uscxml_ctx* ctx, const char* src, const char* content) {
 		if (content != NULL) {
 			USER_DATA(ctx)->dataModel.eval(Arabica::DOM::Element<std::string>(), content);
 		} else if (src != NULL) {
-			return SCXML_ERR_UNSUPPORTED;
+			return USCXML_ERR_UNSUPPORTED;
 		}
-		return SCXML_ERR_OK;
+		return USCXML_ERR_OK;
 	}
 
-	static void* dequeueExternal(const scxml_ctx* ctx) {
+	static void* dequeueExternal(const uscxml_ctx* ctx) {
 		tthread::lock_guard<tthread::mutex> lock(USER_DATA(ctx)->mutex);
 		if (USER_DATA(ctx)->eq.size() == 0)
 			return NULL;
@@ -717,20 +719,20 @@ public:
 			}
 		}
 
-#ifdef SCXML_VERBOSE
+#ifdef USCXML_VERBOSE
 		printf("Popping External Event: %s\n", e->name.c_str());
 #endif
 		return e;
 	}
 
-	static void* dequeueInternal(const scxml_ctx* ctx) {
+	static void* dequeueInternal(const uscxml_ctx* ctx) {
 		if (USER_DATA(ctx)->iq.size() == 0)
 			return NULL;
 		Event* e = USER_DATA(ctx)->iq.front();
 		USER_DATA(ctx)->iq.pop_front();
 		USER_DATA(ctx)->currEvent = e;
 		USER_DATA(ctx)->dataModel.setEvent(*e);
-#ifdef SCXML_VERBOSE
+#ifdef USCXML_VERBOSE
 		printf("Popping Internal Event: %s\n", e->name.c_str());
 #endif
 		return e;
@@ -744,13 +746,13 @@ public:
 
 		if (sr->target == "#_internal") {
 			e->eventType = Event::INTERNAL;
-#ifdef SCXML_VERBOSE
+#ifdef USCXML_VERBOSE
 			printf("Pushing Internal Event: %s\n", e->name.c_str());
 #endif
 			USER_DATA(ctx)->iq.push_back(e);
 		} else if (sr->target == "#_external") {
 			e->eventType = Event::EXTERNAL;
-#ifdef SCXML_VERBOSE
+#ifdef USCXML_VERBOSE
 			printf("Pushing External Event: %s\n", e->name.c_str());
 #endif
 			USER_DATA(ctx)->eq.push_back(e);
@@ -774,7 +776,7 @@ public:
 			}
 			if (!sessionFound) {
 				// test496
-				execContentRaise((scxml_ctx*)ctx, "error.communication");
+				execContentRaise((uscxml_ctx*)ctx, "error.communication");
 			}
 		} else if (sr->target.substr(0,2) == "#_") {
 			e->eventType = Event::EXTERNAL;
@@ -782,7 +784,7 @@ public:
 			if (USER_DATA(ctx)->topMostMachine->allMachines.find(targetId) != USER_DATA(ctx)->topMostMachine->allMachines.end()) {
 				USER_DATA(ctx)->topMostMachine->allMachines[targetId]->eq.push_back(e);
 			} else {
-				execContentRaise((scxml_ctx*)ctx, "error.communication");
+				execContentRaise((uscxml_ctx*)ctx, "error.communication");
 			}
 		} else {
 			assert(false);
@@ -865,13 +867,13 @@ NEXT_DESC:
 
 	Event* currEvent;
 
-	std::map<const scxml_elem_invoke*, std::string> invocationIds;
+	std::map<const uscxml_elem_invoke*, std::string> invocationIds;
 	std::map<std::string, StateMachine*> allMachines;
 
 	bool isFinalized;
 	int state;
-	scxml_ctx ctx;
-	const scxml_machine* machine;
+	uscxml_ctx ctx;
+	const uscxml_machine* machine;
 
 	StateMachine* parentMachine;
 	StateMachine* topMostMachine;
@@ -883,7 +885,7 @@ NEXT_DESC:
 
 	// in case we were invoked
 	std::string invokeId;
-	const scxml_elem_invoke* invocation;
+	const uscxml_elem_invoke* invocation;
 	std::map<std::string, Data> invokeData;
 
 	std::deque<Event*> iq;
@@ -904,7 +906,7 @@ protected:
 
 	DelayedEventQueue delayQueue;
 	std::map<std::string, SendRequest*> sendIds;
-	std::map<const scxml_elem_foreach*, scxml_foreach_info*> foreachInfo;
+	std::map<const uscxml_elem_foreach*, scxml_foreach_info*> foreachInfo;
 
 	tthread::condition_variable monitor;
 	tthread::mutex mutex;
@@ -928,7 +930,7 @@ int main(int argc, char** argv) {
 	double avgDm = 0;
 #endif
 
-	StateMachine rootMachine(&scxml_machines[0]);
+	StateMachine rootMachine(&uscxml_machines[0]);
 
 	Timer tTotal;
 	tTotal.start();
@@ -950,7 +952,7 @@ int main(int argc, char** argv) {
 		}
 		microSteps++;
 
-		assert(rootMachine.ctx.flags & SCXML_CTX_TOP_LEVEL_FINAL);
+		assert(rootMachine.ctx.flags & USCXML_CTX_TOP_LEVEL_FINAL);
 		t.stop();
 
 		avg += t.elapsed;

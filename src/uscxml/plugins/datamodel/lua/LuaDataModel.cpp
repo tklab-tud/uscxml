@@ -160,7 +160,7 @@ boost::shared_ptr<DataModelImpl> LuaDataModel::create(InterpreterInfo* interpret
 		LOG(INFO) << e.what();
 	}
 
-	luabridge::getGlobalNamespace(dm->_luaState).beginClass<InterpreterImpl>("Interpreter").endClass();
+	luabridge::getGlobalNamespace(dm->_luaState).beginClass<InterpreterInfo>("Interpreter").endClass();
 	luabridge::setGlobal(dm->_luaState, dm->_interpreter, "__interpreter");
 
 	luabridge::getGlobalNamespace(dm->_luaState).addCFunction("In", luaInFunction);
@@ -315,7 +315,8 @@ void LuaDataModel::setEvent(const Event& event) {
 }
 
 Data LuaDataModel::getStringAsData(const std::string& content) {
-	Data data = Data::fromJSON(content);
+//    Data data = Data::fromJSON(content);
+	Data data;
 	if (data.empty()) {
 		std::string trimmedExpr = boost::trim_copy(content);
 		if (!boost::starts_with(trimmedExpr, "return")) {

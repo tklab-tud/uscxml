@@ -31,7 +31,11 @@ if (NOT WIN32)
 	target_link_libraries(test-promela-parser uscxml_transform)
 	USCXML_TEST_COMPILE(BUILD_ONLY NAME test-stress LABEL general/test-stress FILES src/test-stress.cpp)
 
-	USCXML_TEST_COMPILE(NAME test-c-machine LABEL general/test-c-machine FILES src/test-c-machine.cpp)
+	USCXML_TEST_COMPILE(NAME test-c-machine LABEL general/test-c-machine FILES 
+	  src/test-c-machine.cpp 
+	  # ../src/compiled/cxx/StateChart.cpp
+	  # ../src/compiled/cxx/StateChart.h
+	)
 	USCXML_TEST_COMPILE(NAME test-misc LABEL general/test-misc FILES src/test-misc.cpp)
 
 endif()

@@ -79,7 +79,7 @@ for SCXML documents and currently implements the following features:
 ### Test Reports
 
 * We continuously run the [W3C IRP tests](http://www.w3.org/Voice/2013/scxml-irp/) for SCXML. 
-* The manual and XPath specific tests, are [excluded](https://github.com/tklab-tud/uscxml/blob/master/test/ctest/CTestCustom.ctest.in).
+* Some tests are [excluded](https://github.com/tklab-tud/uscxml/blob/master/test/ctest/CTestCustom.ctest.in).
 
 To run the tests yourself, you need to generate the build environment and pass <tt>-DBUILD_TESTS=ON</tt> via CMake:
 
@@ -88,18 +88,12 @@ To run the tests yourself, you need to generate the build environment and pass <
 Afterwards, you can run the various tests. There are more than 3500 tests in total, 
 so maybe restrict yourself to some subset.
 
-| Variant       | Data Model | Results | Invoke as                                |
-|---------------|------------|---------|------------------------------------------|
-| Plain IRP     | ECMAScript | 196/196 | <tt>$ ctest -L "^ecma/test"</tt>         |
-|               | XPath      | 107/211 | <tt>$ ctest -L "^xpath/test"</tt>        |
-|               | PROMELA    | 147/165 | <tt>$ ctest -L "^promela/test"</tt>      |
-|               | Lua        | 165/201 | <tt>$ ctest -L "^lua/test"</tt>          |
-| Flattened IRP | ECMAScript | 196/196 | <tt>$ ctest -L "^fsm/ecma/test"</tt>     |
-|               | XPath      | 107/211 | <tt>$ ctest -L "^fsm/xpath/test"</tt>    |
-|               | PROMELA    | 147/165 | <tt>$ ctest -L "^fsm/promela/test"</tt>  |
-|               | Lua        | 165/201 | <tt>$ ctest -L "^fsm/lua/test"</tt>      |
-| Generated C   | ECMAScript | 180/180 | <tt>$ ctest -L "^gen/c/ecma/test"</tt>   |
-| Verification  | PROMELA    | 130/181 | <tt>$ ctest -L "^spin/promela/test"</tt> |
+|               | ECMAScript       | XPath            | PROMELA          | Lua              | Invoke as        |
+|---------------|------------------|------------------|------------------|------------------|------------------|
+| Plain IRP     | <tt>196/196</tt> | <tt>107/211</tt> | <tt>147/181</tt> | <tt>165/201</tt> | <tt>$ ctest -L "^[datamodel]/test"</tt> |
+| Flattened IRP | <tt>196/196</tt> | <tt>107/211</tt> | <tt>147/181</tt> | <tt>165/201</tt> | <tt>$ ctest -L "^fsm/[datamodel]/test"</tt> |
+| Generated C   | <tt>180/196</tt> | <tt>73/211</tt>  | <tt>144/181</tt> | <tt>143/201</tt> | <tt>$ ctest -L "^gen/c/[datamodel]/test"</tt>
+| Verification  |                  |                  | <tt>130/181</tt> |                  | <tt>$ ctest -L "^spin/promela/test"</tt>
 
 
 ### License 
