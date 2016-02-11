@@ -275,11 +275,44 @@ int main(int argc, char** argv) {
 		} else {
 			interpreter = Interpreter::fromURL(inputFile);
 		}
-		if (!interpreter) {
-			LOG(ERROR) << "Cannot create interpreter from " << inputFile;
-			exit(EXIT_FAILURE);
+	} catch (Event e) {
+		// we will reattempt below, not yet a fatal error
+	} catch (const std::exception &e) {
+		std::cout << e.what() << std::endl;
+	}
+
+	if (!interpreter) {
+		URL tmp(inputFile);
+		tmp.toAbsoluteCwd();
+		std::stringstream contentSS;
+		contentSS << tmp;
+
+		std::string inlineBeginMarker = "INLINE SCXML BEGIN\n";
+		std::string inlineEndMarker = "\nINLINE SCXML END";
+
+		size_t inlineSCXMLBegin = contentSS.str().find(inlineBeginMarker);
+		if (inlineSCXMLBegin != std::string::npos) {
+			inlineSCXMLBegin += inlineBeginMarker.size();
+			size_t inlineSCXMLEnd = contentSS.str().find(inlineEndMarker);
+			std::string inlineSCXMLContent = contentSS.str().substr(inlineSCXMLBegin, inlineSCXMLEnd - inlineSCXMLBegin);
+			try {
+				interpreter = Interpreter::fromXML(inlineSCXMLContent, tmp);
+			} catch (Event e) {
+				std::cout << e << std::endl;
+			} catch (const std::exception &e) {
+				std::cout << e.what() << std::endl;
+			}
 		}
 
+	}
+
+	if (!interpreter) {
+		LOG(ERROR) << "Cannot create interpreter from " << inputFile;
+		exit(EXIT_FAILURE);
+
+	}
+
+	try {
 		if (verbose) {
 			std::list<InterpreterIssue> issues = interpreter.validate();
 			for (std::list<InterpreterIssue>::iterator issueIter = issues.begin(); issueIter != issues.end(); issueIter++) {

@@ -17,7 +17,7 @@
 #endif
 
 #ifndef AUTOINCLUDE_TEST
-#include "test-c-machine.machine.c"
+#include "test-c-machine.scxml.c"
 #endif
 
 #include "uscxml/Convenience.h"
@@ -637,27 +637,27 @@ public:
 				Data d;
 				std::stringstream content;
 
-				if (data->expr != NULL) {
-					d = USER_DATA(ctx)->dataModel.getStringAsData(data->expr);
-//					d = Data(data->expr, Data::INTERPRETED);
-				} else if (data->content != NULL) {
-					content << data->content;
-					d = USER_DATA(ctx)->dataModel.getStringAsData(content.str());
-//					d = Data(content.str(), Data::INTERPRETED);
-				} else if (data->src != NULL) {
-					URL sourceURL(data->src);
-					if (USER_DATA(ctx)->baseURL.size() > 0) {
-						sourceURL.toAbsolute(USER_DATA(ctx)->baseURL);
-					} else {
-						sourceURL.toAbsoluteCwd();
-					}
-					content << sourceURL;
-//					d = Data(content.str(), Data::INTERPRETED);
-					d = USER_DATA(ctx)->dataModel.getStringAsData(content.str());
-				} else {
-					d = Data("undefined", Data::INTERPRETED);
-				}
 				try {
+					if (data->expr != NULL) {
+//                        d = USER_DATA(ctx)->dataModel.getStringAsData(data->expr);
+						d = Data(data->expr, Data::INTERPRETED);
+					} else if (data->content != NULL) {
+						content << data->content;
+						d = USER_DATA(ctx)->dataModel.getStringAsData(content.str());
+						//					d = Data(content.str(), Data::INTERPRETED);
+					} else if (data->src != NULL) {
+						URL sourceURL(data->src);
+						if (USER_DATA(ctx)->baseURL.size() > 0) {
+							sourceURL.toAbsolute(USER_DATA(ctx)->baseURL);
+						} else {
+							sourceURL.toAbsoluteCwd();
+						}
+						content << sourceURL;
+						//					d = Data(content.str(), Data::INTERPRETED);
+						d = USER_DATA(ctx)->dataModel.getStringAsData(content.str());
+					} else {
+						d = Data("undefined", Data::INTERPRETED);
+					}
 					// this might fail with an unquoted string literal in content
 					USER_DATA(ctx)->dataModel.init(data->id, d);
 				} catch (Event e) {
@@ -930,7 +930,7 @@ int main(int argc, char** argv) {
 	double avgDm = 0;
 #endif
 
-	StateMachine rootMachine(&uscxml_machines[0]);
+	StateMachine rootMachine(&USCXML_MACHINE);
 
 	Timer tTotal;
 	tTotal.start();

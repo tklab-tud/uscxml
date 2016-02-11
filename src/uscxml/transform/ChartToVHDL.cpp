@@ -125,28 +125,14 @@ void ChartToVHDL::writeTo(std::ostream& stream) {
 //    _eventTrie.dump();
 
 
-	writeOptimalTransitionSetSelection(stream);
 	writeTypes(stream);
 	writeFiFo(stream);
-	writeTransitionSet(stream);
+	writeOptimalTransitionSetSelection(stream);
 	writeExitSet(stream);
 	writeEntrySet(stream);
 	writeFSM(stream);
 }
 
-void ChartToVHDL::writeTransitionSet(std::ostream & stream) {
-	for (size_t i = 0; i < _transitions.size(); i++) {
-		Element<std::string> transition(_transitions[i]);
-		std::string name = DOMUtils::idForNode(transition);
-
-	}
-}
-
-void ChartToVHDL::writeExitSet(std::ostream & stream) {
-}
-
-void ChartToVHDL::writeEntrySet(std::ostream & stream) {
-}
 
 void ChartToVHDL::writeFSM(std::ostream & stream) {
 
@@ -475,14 +461,14 @@ std::string ChartToVHDL::eventNameEscape(const std::string& eventName) {
 }
 
 void ChartToVHDL::writeOptimalTransitionSetSelection(std::ostream & stream) {
-	stream << "-- write optimal transition set selection" << std::endl;
+	stream << "-- optimal transition set selection" << std::endl;
 	for (size_t i = 0; i < _transitions.size(); i++) {
 		Element<std::string> transition(_transitions[i]);
 		std::string conflicts = ATTR(transition, "conflictBools");
 
 		stream << "in_optimal_transition_set_" << ATTR(transition, "postFixOrder") << "_sig "
 		       << "<= " << (HAS_ATTR(transition, "event") ? "(not spontaneous_sig)" : "spontaneous_sig") << " and " << std::endl
-		       << "  state_active_" << ATTR(transition, "source") << "_sig and not ( 0 " << std::endl;
+		       << "  state_active_" << ATTR(transition, "source") << "_sig and not ( '0' " << std::endl;
 		for (size_t j = 0; j < i; j++) {
 			if (conflicts[j] == '1') {
 				stream << "    or in_optimal_transition_set_" << toStr(j) << "_sig" << std::endl;
@@ -490,7 +476,7 @@ void ChartToVHDL::writeOptimalTransitionSetSelection(std::ostream & stream) {
 		}
 		stream << "  )";
 		if (HAS_ATTR(transition, "event")) {
-			stream << " and ( 0 " << std::endl;;
+			stream << " and ( '0' " << std::endl;;
 
 			// find all matching event literals
 			std::list<std::string> eventDescs = tokenizeIdRefs(ATTR(transition, "event"));
@@ -506,6 +492,96 @@ void ChartToVHDL::writeOptimalTransitionSetSelection(std::ostream & stream) {
 		stream << ";" << std::endl;
 	}
 
+}
+
+void ChartToVHDL::writeExitSet(std::ostream & stream) {
+	stream << "-- exit set selection" << std::endl;
+
+	for (size_t i = 0; i < _states.size(); i++) {
+		Element<std::string> state(_states[i]);
+		std::string completion = ATTR(state, "completionBools");
+		std::string ancestors = ATTR(state, "ancBools");
+		std::string children = ATTR(state, "childBools");
+		std::string parent = ATTR(state, "parent");
+
+		stream << "in_exit_set_" << toStr(i) << "_sig "
+		       << "<= state_active_ " << toStr(i) << "_sig and ('0'" << std::endl;
+		for (size_t j = 0; j < _transitions.size(); j++) {
+			Element<std::string> transition(_transitions[j]);
+			std::string exitSet = ATTR(transition, "exitSetBools");
+			if (exitSet[i] == '1') {
+				stream << "  or in_optimal_transition_set_" << toStr(j) << "_sig " << std::endl;
+			}
+		}
+
+		stream << ")";
+		stream << ";" << std::endl;
+
+	}
+}
+
+void ChartToVHDL::writeEntrySet(std::ostream & stream) {
+	stream << "-- entry set selection" << std::endl;
+
+	for (size_t i = 0; i < _states.size(); i++) {
+		Element<std::string> state(_states[i]);
+		std::string completion = ATTR(state, "completionBools");
+		std::string ancestors = ATTR(state, "ancBools");
+		std::string children = ATTR(state, "childBools");
+		std::string parent = ATTR(state, "parent");
+
+		stream << "in_complete_entry_set_up_" << toStr(i) << "_sig <= ('0'" << std::endl;
+
+		for (size_t j = 0; j < _transitions.size(); j++) {
+			Element<std::string> transition(_transitions[j]);
+//            std::cout << transition;
+			std::string targetSet = ATTR(transition, "targetBools");
+			if (targetSet[i] == '1') {
+				stream << "  or in_optimal_transition_set_" << toStr(j) << std::endl;
+			}
+		}
+		if (isCompound(state)) {
+			for (size_t j = 0; j < _states.size(); j++) {
+				if (children[j] != '1')
+					continue;
+
+				stream << "  or in_complete_entry_set_up_" << toStr(j) << "_sig" << std::endl;
+			}
+
+		}
+		stream << ");" << std::endl;
+
+	}
+
+	for (size_t i = 0; i < _states.size(); i++) {
+		Element<std::string> state(_states[i]);
+		std::string completion = ATTR(state, "completionBools");
+		std::string ancestors = ATTR(state, "ancBools");
+		std::string children = ATTR(state, "childBools");
+		std::string parent = ATTR(state, "parent");
+
+		if (parent.size() == 0) {
+			continue; // TODO: FixMe <scxml>
+		}
+
+		stream << "in_complete_entry_set_" << toStr(i) << "_sig <= (in_complete_entry_set_up_" << toStr(i) << "_sig or (" << std::endl;
+
+		if (isParallel(Element<std::string>(_states[strTo<size_t>(parent)]))) {
+			stream << "  in_complete_entry_set_" << toStr(parent) << "_sig" << std::endl;
+		} else if (isCompound(Element<std::string>(_states[strTo<size_t>(parent)]))) {
+			stream << "  default_completion_" << toStr(parent) << "_sig" << std::endl;
+
+			for (size_t j = 0; j < _states.size(); j++) {
+				if (children[j] != '1')
+					continue;
+				stream << "  and not (is_active" << toStr(j) << "_sig and not in_exit_set_" << toStr(j) << "_sig)" << std::endl;
+
+			}
+		}
+
+		stream << ");" << std::endl;
+
+	}
 }
 
 //TODO write event generator

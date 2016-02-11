@@ -56,6 +56,15 @@ ChartToC::ChartToC(const Interpreter& other) : TransformerImpl(), _topMostMachin
 	prepare();
 	findNestedMachines();
 
+	if (_extensions.find("prefix") != _extensions.end()) {
+		_prefixes = new std::list<std::string>();
+		std::pair<std::multimap<std::string, std::string>::iterator,
+		    std::multimap<std::string, std::string>::iterator> keyRange = _extensions.equal_range("prefix");
+		for (std::multimap<std::string, std::string>::iterator iter = keyRange.first; iter != keyRange.second; ++iter) {
+			_prefixes->push_back(iter->second);
+		}
+	}
+
 }
 
 void ChartToC::setHistoryCompletion() {
@@ -423,8 +432,8 @@ void ChartToC::writeTo(std::ostream& stream) {
 		(*machIter)->writeExecContent(stream);
 		(*machIter)->writeStates(stream);
 		(*machIter)->writeTransitions(stream);
+		(*machIter)->writeMachineInfo(stream);
 	}
-	writeMachineInfo(stream);
 	writeHelpers(stream);
 	writeFSM(stream);
 
@@ -434,7 +443,9 @@ void ChartToC::writeTo(std::ostream& stream) {
 
 void ChartToC::writeForwardDeclarations(std::ostream& stream) {
 	stream << "/* forward declare machines to allow references */" << std::endl;
-	stream << "extern const uscxml_machine uscxml_machines[" << toStr(_allMachines.size() + 1) << "];" << std::endl;
+	for (std::list<ChartToC*>::iterator machIter = _allMachines.begin(); machIter != _allMachines.end(); machIter++) {
+		stream << "extern const uscxml_machine " << (*machIter)->_prefix << "_machine;" << std::endl;
+	}
 	stream << std::endl;
 }
 
@@ -488,13 +499,15 @@ void ChartToC::findNestedMachines() {
 }
 
 void ChartToC::writeIncludes(std::ostream& stream) {
-	stream << "#include <stdint.h> /* explicit types */" << std::endl;
+	stream << "#ifndef USCXML_NO_STDTYPES_H" << std::endl;
+	stream << "#  include <stdint.h> /* explicit types */" << std::endl;
+	stream << "#endif" << std::endl;
 	stream << "#include <stddef.h> /* NULL */" << std::endl;
 	stream << std::endl;
 }
 
 void ChartToC::writeMacros(std::ostream& stream) {
-	stream << "#ifndef USCXML_GEN_C_MACROS" << std::endl;
+	stream << "#ifndef USCXML_NO_GEN_C_MACROS" << std::endl;
 	stream << std::endl;
 	stream << "/**" << std::endl;
 	stream << " * All macros used for the scxml types and functions" << std::endl;
@@ -651,7 +664,7 @@ void ChartToC::writeMacros(std::ostream& stream) {
 	stream << "#define USCXML_ELEM_PARAM_IS_SET(param) (param->name != NULL)" << std::endl;
 	stream << "#define USCXML_MACHINE_IS_SET(machine) (machine->nr_states > 0)" << std::endl;
 	stream << std::endl;
-	stream << "#define USCXML_GEN_C_MACROS" << std::endl;
+	stream << "#define USCXML_NO_GEN_C_MACROS" << std::endl;
 	stream << "#endif" << std::endl;
 	stream << std::endl;
 }
@@ -659,11 +672,11 @@ void ChartToC::writeMacros(std::ostream& stream) {
 void ChartToC::writeTypes(std::ostream& stream) {
 
 	stream << std::endl;
-	stream << "#ifndef USCXML_GEN_C_TYPES" << std::endl;
+	stream << "#ifndef USCXML_NO_GEN_C_TYPES" << std::endl;
 	stream << std::endl;
 	stream << "/**" << std::endl;
 	stream << " * All types required to represent an SCXML state chart." << std::endl;
-	stream << " * Just predefine the USCXML_GEN_C_TYPES macro if you do not need them." << std::endl;
+	stream << " * Just predefine the USCXML_NO_GEN_C_TYPES macro if you do not need them." << std::endl;
 	stream << " */" << std::endl;
 	stream << std::endl;
 
@@ -876,7 +889,7 @@ void ChartToC::writeTypes(std::ostream& stream) {
 	stream << "    invoke_t invoke;" << std::endl;
 	stream << "};" << std::endl;
 	stream << std::endl;
-	stream << "#define USCXML_GEN_C_TYPES" << std::endl;
+	stream << "#define USCXML_NO_GEN_C_TYPES" << std::endl;
 	stream << "#endif" << std::endl;
 	stream << std::endl;
 }
@@ -917,7 +930,7 @@ void ChartToC::writeHelpers(std::ostream& stream) {
 	stream << "#endif" << std::endl;
 	stream << std::endl;
 
-	stream << "#ifndef USCXML_BIT_OPERATIONS" << std::endl;
+	stream << "#ifndef USCXML_NO_BIT_OPERATIONS" << std::endl;
 	stream << "/**" << std::endl;
 	stream << " * Return true if there is a common bit in a and b." << std::endl;
 	stream << " */" << std::endl;
@@ -993,15 +1006,22 @@ void ChartToC::writeHelpers(std::ostream& stream) {
 	stream << "    };" << std::endl;
 	stream << "}" << std::endl;
 	stream << std::endl;
-	stream << "#define USCXML_BIT_OPERATIONS" << std::endl;
+	stream << "#define USCXML_NO_BIT_OPERATIONS" << std::endl;
 	stream << "#endif" << std::endl;
 	stream << std::endl;
 
 }
 
 void ChartToC::writeExecContentFinalize(std::ostream& stream) {
+
 	// needs to be written prior to invocation elem info
 	NodeSet<std::string> finalizes = DOMUtils::inDocumentOrder(_nsInfo.xmlNSPrefix + "finalize", _scxml);
+
+	if (finalizes.size() > 0) {
+		stream << "#ifndef USCXML_NO_EXEC_CONTENT" << std::endl;
+		stream << std::endl;
+	}
+
 	for (size_t i = 0; i < finalizes.size(); i++) {
 		Element<std::string> finalize(finalizes[i]);
 		NodeSet<std::string> execContent = filterChildType(Node_base::ELEMENT_NODE, finalize);
@@ -1018,9 +1038,16 @@ void ChartToC::writeExecContentFinalize(std::ostream& stream) {
 		}
 	}
 
+	if (finalizes.size() > 0) {
+		stream << "#endif" << std::endl;
+		stream << std::endl;
+	}
 }
 
 void ChartToC::writeExecContent(std::ostream& stream) {
+	stream << "#ifndef USCXML_NO_EXEC_CONTENT" << std::endl;
+	stream << std::endl;
+
 	for (size_t i = 0; i < _states.size(); i++) {
 		Element<std::string> state(_states[i]);
 
@@ -1118,6 +1145,9 @@ void ChartToC::writeExecContent(std::ostream& stream) {
 		}
 	}
 
+	stream << "#endif" << std::endl;
+	stream << std::endl;
+
 }
 
 void ChartToC::writeExecContent(std::ostream& stream, const Arabica::DOM::Node<std::string>& node, int indent) {
@@ -1126,8 +1156,12 @@ void ChartToC::writeExecContent(std::ostream& stream, const Arabica::DOM::Node<s
 
 	if (node.getNodeType() == Node_base::TEXT_NODE) {
 		if (boost::trim_copy(node.getNodeValue()).length() > 0) {
-			std::string escaped = escape(node.getNodeValue());
-			stream << escaped;
+			if (HAS_ATTR(_scxml, "datamodel") && ATTR(_scxml, "datamodel") == "native") {
+				stream << node.getNodeValue();
+			} else {
+				std::string escaped = escape(node.getNodeValue());
+				stream << escaped;
+			}
 		}
 		return;
 	}
@@ -1291,6 +1325,10 @@ void ChartToC::writeExecContent(std::ostream& stream, const Arabica::DOM::Node<s
 }
 
 void ChartToC::writeElementInfoInvocation(std::ostream& stream) {
+
+	stream << "#ifndef USCXML_NO_ELEM_INFO" << std::endl;
+	stream << std::endl;
+
 	NodeSet<std::string> invokes = filterChildElements(_nsInfo.xmlNSPrefix + "invoke", _scxml, true);
 	if (invokes.size() > 0) {
 		_hasElement.insert("invoke");
@@ -1321,6 +1359,15 @@ void ChartToC::writeElementInfoInvocation(std::ostream& stream) {
 
 			stream << "        /* machine     */ ";
 			if (HAS_ATTR(invoke, "md5sum")) {
+#if 1
+				size_t machIdx = 0;
+				for (std::list<ChartToC*>::iterator machIter = _allMachines.begin(); machIter != _allMachines.end(); machIter++, machIdx++) {
+					if ((*machIter)->_md5 == ATTR(invoke, "md5sum")) {
+						stream << "&" << (*machIter)->_prefix << "_machine";
+						break;
+					}
+				}
+#else
 				size_t machIdx = 0;
 				for (std::list<ChartToC*>::iterator machIter = _allMachines.begin(); machIter != _allMachines.end(); machIter++, machIdx++) {
 					if ((*machIter)->_md5 == ATTR(invoke, "md5sum")) {
@@ -1328,6 +1375,7 @@ void ChartToC::writeElementInfoInvocation(std::ostream& stream) {
 						break;
 					}
 				}
+#endif
 			} else {
 				stream << "NULL";
 			}
@@ -1410,9 +1458,15 @@ void ChartToC::writeElementInfoInvocation(std::ostream& stream) {
 		stream << std::endl;
 	}
 
+	stream << "#endif" << std::endl;
+	stream << std::endl;
+
 }
 
 void ChartToC::writeElementInfo(std::ostream& stream) {
+	stream << "#ifndef USCXML_NO_ELEM_INFO" << std::endl;
+	stream << std::endl;
+
 	NodeSet<std::string> foreachs = DOMUtils::inDocumentOrder(_nsInfo.xmlNSPrefix + "foreach", _scxml);
 	if (foreachs.size() > 0) {
 		_hasElement.insert("foreach");
@@ -1624,9 +1678,76 @@ void ChartToC::writeElementInfo(std::ostream& stream) {
 	stream << "};" << std::endl;
 	stream << std::endl;
 
+	stream << "#endif" << std::endl;
+	stream << std::endl;
+
 }
 
 void ChartToC::writeMachineInfo(std::ostream& stream) {
+
+	stream << "#ifndef USCXML_NO_ELEM_INFO" << std::endl;
+	stream << std::endl;
+
+#if 1
+	size_t currIndex = 0;
+	char* currIndexStr = getenv("USCXML_CURRENT_MACHINE_INDEX");
+	if (currIndexStr != NULL) {
+		currIndex = strTo<size_t>(currIndexStr);
+	}
+
+	stream << "#ifndef USCXML_MACHINE" << std::endl;
+	stream << "#  define USCXML_MACHINE " << _prefix << "_machine" << std::endl;
+	stream << "#endif" << std::endl;
+
+	stream << "#define USCXML_MACHINE_" << toStr(currIndex) << " " << _prefix << "_machine" << std::endl;
+
+	if (_name.size() > 0) {
+		std::string macroName = boost::to_upper_copy(escape(_name));
+		boost::replace_all(macroName, "-", "_");
+		stream << "#define USCXML_MACHINE_" << macroName << " " << _prefix << "_machine" << std::endl;
+	}
+	stream << std::endl;
+
+	currIndex++;
+	setenv("USCXML_CURRENT_MACHINE_INDEX", toStr(currIndex).c_str(), 1);
+
+	stream << "const uscxml_machine " << _prefix << "_machine = {" << std::endl;
+	stream << "        /* flags          */ 0," << std::endl;
+	stream << "        /* nr_states      */ " << _states.size() << "," << std::endl;
+	stream << "        /* nr_transitions */ " << _transitions.size() << "," << std::endl;
+	stream << "        /* name           */ \"" << escape(_name) << "\"," << std::endl;
+	stream << "        /* datamodel      */ \"" << (HAS_ATTR(_scxml, "datamodel") ? ATTR(_scxml, "datamodel") : "null") << "\"," << std::endl;
+	stream << "        /* uuid           */ \"" << _md5 << "\"," << std::endl;
+	stream << "        /* states         */ " << "&" << _prefix << "_states[0], " << std::endl;
+	stream << "        /* transitions    */ " << "&" << _prefix << "_transitions[0], " << std::endl;
+	stream << "        /* parent         */ ";
+	if (_parentMachine != NULL) {
+		size_t parentIndex = 0;
+		for (std::list<ChartToC*>::iterator parentIter = _topMostMachine->_allMachines.begin();
+		        parentIter != _topMostMachine->_allMachines.end();
+		        parentIter++, parentIndex++) {
+			if (*parentIter == _parentMachine) {
+				stream << "&" << (*parentIter)->_prefix << "_machine";
+			}
+		}
+	} else {
+		stream << "NULL";
+	}
+	stream << "," << std::endl;
+
+	stream << "        /* donedata       */ " << "&" << _prefix << "_elem_donedatas[0], " << std::endl;
+	stream << "        /* script         */ ";
+	if (filterChildElements(_nsInfo.xmlNSPrefix + "script", _scxml).size() > 0) {
+		stream << _prefix << "_global_script" << std::endl;
+	} else {
+		stream << "NULL";
+	}
+	stream << std::endl;
+
+	stream << "};" << std::endl;
+	stream << std::endl;
+
+#else
 	if (_topMostMachine != NULL)
 		return;
 
@@ -1670,9 +1791,17 @@ void ChartToC::writeMachineInfo(std::ostream& stream) {
 	stream << "    {0, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL }" << std::endl;
 	stream << "};" << std::endl;
 	stream << std::endl;
+#endif
+
+	stream << "#endif" << std::endl;
+	stream << std::endl;
+
 }
 
 void ChartToC::writeStates(std::ostream& stream) {
+	stream << "#ifndef USCXML_NO_ELEM_INFO" << std::endl;
+	stream << std::endl;
+
 	stream << "static const uscxml_state " << _prefix << "_states[" << toStr(_states.size()) << "] = {" << std::endl;
 	for (size_t i = 0; i < _states.size(); i++) {
 		Element<std::string> state(_states[i]);
@@ -1754,10 +1883,17 @@ void ChartToC::writeStates(std::ostream& stream) {
 	}
 	stream << "};" << std::endl;
 	stream << std::endl;
+
+	stream << "#endif" << std::endl;
+	stream << std::endl;
+
 }
 
 
 void ChartToC::writeTransitions(std::ostream& stream) {
+
+	stream << "#ifndef USCXML_NO_ELEM_INFO" << std::endl;
+	stream << std::endl;
 
 	// cross reference transition by document order - is this really needed?!
 	std::set<std::string> elements;
@@ -1853,6 +1989,10 @@ void ChartToC::writeTransitions(std::ostream& stream) {
 	}
 	stream << "};" << std::endl;
 	stream << std::endl;
+
+	stream << "#endif" << std::endl;
+	stream << std::endl;
+
 }
 
 Arabica::XPath::NodeSet<std::string> ChartToC::computeExitSet(const Arabica::DOM::Element<std::string>& transition) {
@@ -1916,7 +2056,7 @@ void ChartToC::writeCharArrayInitList(std::ostream& stream, const std::string& b
 }
 
 void ChartToC::writeFSM(std::ostream& stream) {
-	stream << "#ifndef USCXML_STEP_FUNCTION" << std::endl;
+	stream << "#ifndef USCXML_NO_STEP_FUNCTION" << std::endl;
 	stream << "int uscxml_step(uscxml_ctx* ctx) {" << std::endl;
 	stream << std::endl;
 
@@ -1981,7 +2121,7 @@ void ChartToC::writeFSM(std::ostream& stream) {
 	stream << "        ctx->event = NULL;" << std::endl;
 	stream << "        goto SELECT_TRANSITIONS;" << std::endl;
 	stream << "    }" << std::endl;
-	stream << "    if ((ctx->event = ctx->dequeue_internal(ctx)) != NULL) {" << std::endl;
+	stream << "    if (ctx->dequeue_internal != NULL && (ctx->event = ctx->dequeue_internal(ctx)) != NULL) {" << std::endl;
 	stream << "        goto SELECT_TRANSITIONS;" << std::endl;
 	stream << "    }" << std::endl;
 	stream << std::endl;
@@ -2003,9 +2143,14 @@ void ChartToC::writeFSM(std::ostream& stream) {
 	stream << "    }" << std::endl;
 	stream << std::endl;
 
-	stream << "    if ((ctx->event = ctx->dequeue_external(ctx)) != NULL) {" << std::endl;
+	stream << "    if (ctx->dequeue_external != NULL && (ctx->event = ctx->dequeue_external(ctx)) != NULL) {" << std::endl;
 	stream << "        goto SELECT_TRANSITIONS;" << std::endl;
 	stream << "    }" << std::endl;
+	stream << std::endl;
+	stream << "    if (ctx->dequeue_external == NULL) {" << std::endl;
+	stream << "        return USCXML_ERR_DONE;" << std::endl;
+	stream << "    }" << std::endl;
+	stream << "    return USCXML_ERR_IDLE;" << std::endl;
 	stream << std::endl;
 
 	stream << "SELECT_TRANSITIONS:" << std::endl;
@@ -2020,22 +2165,26 @@ void ChartToC::writeFSM(std::ostream& stream) {
 	stream << "        if (BIT_HAS(USCXML_GET_TRANS(i).source, ctx->config)) {" << std::endl;
 	stream << "            /* is it non-conflicting? */" << std::endl;
 	stream << "            if (!BIT_HAS(i, conflicts)) {" << std::endl;
-	stream << "                /* is it enabled? */" << std::endl;
-	stream << "                if (ctx->is_enabled(ctx, &USCXML_GET_TRANS(i), ctx->event) > 0) {" << std::endl;
-	stream << "                    /* remember that we found a transition */" << std::endl;
-	stream << "                    ctx->flags |= USCXML_CTX_TRANSITION_FOUND;" << std::endl;
+	stream << "                /* is it spontaneous with an event or vice versa? */" << std::endl;
+	stream << "                if ((USCXML_GET_TRANS(i).event == NULL && ctx->event == NULL) || " << std::endl;
+	stream << "                    (USCXML_GET_TRANS(i).event != NULL && ctx->event != NULL)) {" << std::endl;
+	stream << "                    /* is it enabled? */" << std::endl;
+	stream << "                    if (ctx->is_enabled(ctx, &USCXML_GET_TRANS(i), ctx->event) > 0) {" << std::endl;
+	stream << "                        /* remember that we found a transition */" << std::endl;
+	stream << "                        ctx->flags |= USCXML_CTX_TRANSITION_FOUND;" << std::endl;
 	stream << std::endl;
 
-	stream << "                    /* transitions that are pre-empted */" << std::endl;
-	stream << "                    bit_or(conflicts, USCXML_GET_TRANS(i).conflicts, nr_trans_bytes);" << std::endl;
+	stream << "                        /* transitions that are pre-empted */" << std::endl;
+	stream << "                        bit_or(conflicts, USCXML_GET_TRANS(i).conflicts, nr_trans_bytes);" << std::endl;
 	stream << std::endl;
-	stream << "                    /* states that are directly targeted (resolve as entry-set later) */" << std::endl;
-	stream << "                    bit_or(target_set, USCXML_GET_TRANS(i).target, nr_states_bytes);" << std::endl;
+	stream << "                        /* states that are directly targeted (resolve as entry-set later) */" << std::endl;
+	stream << "                        bit_or(target_set, USCXML_GET_TRANS(i).target, nr_states_bytes);" << std::endl;
 	stream << std::endl;
-	stream << "                    /* states that will be left */" << std::endl;
-	stream << "                    bit_or(exit_set, USCXML_GET_TRANS(i).exit_set, nr_states_bytes);" << std::endl;
+	stream << "                        /* states that will be left */" << std::endl;
+	stream << "                        bit_or(exit_set, USCXML_GET_TRANS(i).exit_set, nr_states_bytes);" << std::endl;
 	stream << std::endl;
-	stream << "                    BIT_SET_AT(i, trans_set);" << std::endl;
+	stream << "                        BIT_SET_AT(i, trans_set);" << std::endl;
+	stream << "                    }" << std::endl;
 	stream << "                }" << std::endl;
 	stream << "            }" << std::endl;
 	stream << "        }" << std::endl;
@@ -2334,7 +2483,7 @@ void ChartToC::writeFSM(std::ostream& stream) {
 	stream << "}" << std::endl;
 	stream << std::endl;
 
-	stream << "#define USCXML_STEP_FUNCTION" << std::endl;
+	stream << "#define USCXML_NO_STEP_FUNCTION" << std::endl;
 	stream << "#endif" << std::endl;
 	stream << std::endl;
 }

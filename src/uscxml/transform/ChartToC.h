@@ -93,6 +93,8 @@ protected:
 	ChartToC* _parentMachine;
 	std::list<ChartToC*> _nestedMachines;
 	std::list<ChartToC*> _allMachines;
+
+	std::list<std::string>* _prefixes;
 };
 
 }

@@ -82,7 +82,30 @@ add_test(test-execution ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/uscxml-browser ${CMAKE
 add_test(test-communication ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/uscxml-browser -t5493 ${CMAKE_SOURCE_DIR}/test/uscxml/test-communication.scxml)
 add_test(test-done-data ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/uscxml-browser ${CMAKE_SOURCE_DIR}/test/uscxml/test-donedata.scxml)
 
-# declare W#C tests
+# tests for inline SCXML with generated C
+
+add_executable(test-c-inline src/test-c-inline.c)
+set_target_properties(test-c-inline PROPERTIES FOLDER "Tests")
+
+add_test(NAME "gen/c/inline"
+	COMMAND ${CMAKE_COMMAND}
+		-DOUTDIR:FILEPATH=${CMAKE_CURRENT_BINARY_DIR}/gen/c
+		-DTESTFILE:FILEPATH=${CMAKE_CURRENT_SOURCE_DIR}/src/test-c-inline.c
+		-DTARGETLANG=c
+		-DUSCXML_TRANSFORM_BIN:FILEPATH=${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/uscxml-transform
+		-DCC_BIN:FILEPATH=${CC}
+		-DCXX_BIN:FILEPATH=${CXX}
+		-DPROJECT_SOURCE_DIR=${PROJECT_SOURCE_DIR}
+		-DUSCXML_PLATFORM_ID=${USCXML_PLATFORM_ID}
+		-DCMAKE_BINARY_DIR=${CMAKE_BINARY_DIR}
+		-DPROJECT_BINARY_DIR=${PROJECT_BINARY_DIR}
+		-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=${CMAKE_LIBRARY_OUTPUT_DIRECTORY}
+	-P ${CMAKE_CURRENT_SOURCE_DIR}/w3c/run_generated_inline_test.cmake)
+set_tests_properties("gen/c/inline" PROPERTIES DEPENDS uscxml-transform)
+set_property(TEST "gen/c/inline" PROPERTY LABELS "gen/c/inline")
+
+
+# declare W3C tests
 
 find_program(SPIN spin)
 find_program(CC gcc)

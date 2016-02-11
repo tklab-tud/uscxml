@@ -51,7 +51,11 @@ protected:
 	void writeTopDown(std::ostream& stream);
 
 	void writeTypes(std::ostream& stream);
+
 	void writeOptimalTransitionSetSelection(std::ostream& stream);
+	void writeExitSet(std::ostream & stream);
+	void writeEntrySet(std::ostream & stream);
+
 	void writeNextStateLogic(std::ostream& stream);
 	void writeOutputLogic(std::ostream& stream);
 	void writeSignals(std::ostream& stream);
@@ -61,8 +65,6 @@ protected:
 	void writeFSM(std::ostream& stream);
 
 	void writeTransitionSet(std::ostream & stream);
-	void writeExitSet(std::ostream & stream);
-	void writeEntrySet(std::ostream & stream);
 
 	Trie _eventTrie;
 

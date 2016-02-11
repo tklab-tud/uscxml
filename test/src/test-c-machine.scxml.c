@@ -1,12 +1,14 @@
 /**
   Generated from source:
-  file:///Users/sradomski/Documents/TK/Code/uscxml/test/w3c/lua/test150.scxml
+  file:///Users/sradomski/Documents/TK/Code/uscxml/test/w3c/ecma/test326.scxml
 */
 
-#include <stdint.h> /* explicit types */
+#ifndef USCXML_NO_STDTYPES_H
+#  include <stdint.h> /* explicit types */
+#endif
 #include <stddef.h> /* NULL */
 
-#ifndef USCXML_GEN_C_MACROS
+#ifndef USCXML_NO_GEN_C_MACROS
 
 /**
  * All macros used for the scxml types and functions
@@ -143,15 +145,15 @@
 #define USCXML_ELEM_PARAM_IS_SET(param) (param->name != NULL)
 #define USCXML_MACHINE_IS_SET(machine) (machine->nr_states > 0)
 
-#define USCXML_GEN_C_MACROS
+#define USCXML_NO_GEN_C_MACROS
 #endif
 
 
-#ifndef USCXML_GEN_C_TYPES
+#ifndef USCXML_NO_GEN_C_TYPES
 
 /**
  * All types required to represent an SCXML state chart.
- * Just predefine the USCXML_GEN_C_TYPES macro if you do not need them.
+ * Just predefine the USCXML_NO_GEN_C_TYPES macro if you do not need them.
  */
 
 typedef struct uscxml_machine uscxml_machine;
@@ -350,41 +352,38 @@ struct uscxml_ctx {
     invoke_t invoke;
 };
 
-#define USCXML_GEN_C_TYPES
+#define USCXML_NO_GEN_C_TYPES
 #endif
 
 /* forward declare machines to allow references */
-extern const uscxml_machine uscxml_machines[2];
+extern const uscxml_machine _uscxml_EC83C2A5_machine;
 
-static const uscxml_elem_foreach _uscxml_9FEEFF45_elem_foreachs[2] = {
-    /* array, item, index */
-    { "testvar3", "testvar1", "testvar2" },
-    { "testvar3", "testvar4", "testvar5" }
-};
+#ifndef USCXML_NO_ELEM_INFO
 
-static const uscxml_elem_data _uscxml_9FEEFF45_elem_datas[4] = {
+static const uscxml_elem_data _uscxml_EC83C2A5_elem_datas[3] = {
     /* id, src, expr, content */
-    { "testvar1", NULL, NULL, NULL },
-    { "testvar2", NULL, NULL, NULL },
-    { "testvar3", NULL, NULL, "{1,2,3}" },
+    { "Var1", NULL, "_ioprocessors", NULL },
+    { "Var2", NULL, NULL, NULL },
     { NULL, NULL, NULL, NULL }
 };
 
-static const uscxml_elem_donedata _uscxml_9FEEFF45_elem_donedatas[1] = {
+static const uscxml_elem_donedata _uscxml_EC83C2A5_elem_donedatas[1] = {
     /* source, content, contentexpr, params */
     { 0, NULL, NULL, NULL }
 };
 
-static int _uscxml_9FEEFF45_s0_on_entry_0(const uscxml_ctx* ctx, const uscxml_state* state, const void* event) {
-    int err = USCXML_ERR_OK;
-    if likely(ctx->exec_content_foreach_init != NULL &&
-              ctx->exec_content_foreach_next != NULL &&
-              ctx->exec_content_foreach_done != NULL) {
+#endif
 
-        if unlikely((ctx->exec_content_foreach_init(ctx, &_uscxml_9FEEFF45_elem_foreachs[0])) != USCXML_ERR_OK) return err;
-        while (ctx->exec_content_foreach_next(ctx, &_uscxml_9FEEFF45_elem_foreachs[0]) == USCXML_ERR_OK) {
-        }
-        if ((ctx->exec_content_foreach_done(ctx, &_uscxml_9FEEFF45_elem_foreachs[0])) != USCXML_ERR_OK) return err;
+#ifndef USCXML_NO_ELEM_INFO
+
+#endif
+
+#ifndef USCXML_NO_EXEC_CONTENT
+
+static int _uscxml_EC83C2A5_s1_on_entry_0(const uscxml_ctx* ctx, const uscxml_state* state, const void* event) {
+    int err = USCXML_ERR_OK;
+    if likely(ctx->exec_content_assign != NULL) {
+        if ((ctx->exec_content_assign(ctx, "_ioprocessors", "'otherName'")) != USCXML_ERR_OK) return err;
     } else {
         return USCXML_ERR_MISSING_CALLBACK;
     }
@@ -396,38 +395,61 @@ static int _uscxml_9FEEFF45_s0_on_entry_0(const uscxml_ctx* ctx, const uscxml_st
     return USCXML_ERR_OK;
 }
 
-static int _uscxml_9FEEFF45_s0_on_entry(const uscxml_ctx* ctx, const uscxml_state* state, const void* event) {
-    _uscxml_9FEEFF45_s0_on_entry_0(ctx, state, event);
+static int _uscxml_EC83C2A5_s1_on_entry(const uscxml_ctx* ctx, const uscxml_state* state, const void* event) {
+    _uscxml_EC83C2A5_s1_on_entry_0(ctx, state, event);
     return USCXML_ERR_OK;
 }
 
-static int _uscxml_9FEEFF45_s1_on_entry_0(const uscxml_ctx* ctx, const uscxml_state* state, const void* event) {
+static int _uscxml_EC83C2A5_s2_on_entry_0(const uscxml_ctx* ctx, const uscxml_state* state, const void* event) {
     int err = USCXML_ERR_OK;
-    if likely(ctx->exec_content_foreach_init != NULL &&
-              ctx->exec_content_foreach_next != NULL &&
-              ctx->exec_content_foreach_done != NULL) {
-
-        if unlikely((ctx->exec_content_foreach_init(ctx, &_uscxml_9FEEFF45_elem_foreachs[1])) != USCXML_ERR_OK) return err;
-        while (ctx->exec_content_foreach_next(ctx, &_uscxml_9FEEFF45_elem_foreachs[1]) == USCXML_ERR_OK) {
-        }
-        if ((ctx->exec_content_foreach_done(ctx, &_uscxml_9FEEFF45_elem_foreachs[1])) != USCXML_ERR_OK) return err;
-    } else {
-        return USCXML_ERR_MISSING_CALLBACK;
-    }
-    if likely(ctx->exec_content_raise != NULL) {
-        if unlikely((ctx->exec_content_raise(ctx, "bar")) != USCXML_ERR_OK) return err;
+    if likely(ctx->exec_content_assign != NULL) {
+        if ((ctx->exec_content_assign(ctx, "Var2", "_ioprocessors")) != USCXML_ERR_OK) return err;
     } else {
         return USCXML_ERR_MISSING_CALLBACK;
     }
     return USCXML_ERR_OK;
 }
 
-static int _uscxml_9FEEFF45_s1_on_entry(const uscxml_ctx* ctx, const uscxml_state* state, const void* event) {
-    _uscxml_9FEEFF45_s1_on_entry_0(ctx, state, event);
+static int _uscxml_EC83C2A5_s2_on_entry(const uscxml_ctx* ctx, const uscxml_state* state, const void* event) {
+    _uscxml_EC83C2A5_s2_on_entry_0(ctx, state, event);
     return USCXML_ERR_OK;
 }
 
-static const uscxml_state _uscxml_9FEEFF45_states[6] = {
+static int _uscxml_EC83C2A5_pass_on_entry_0(const uscxml_ctx* ctx, const uscxml_state* state, const void* event) {
+    int err = USCXML_ERR_OK;
+    if likely(ctx->exec_content_log != NULL) {
+        if unlikely((ctx->exec_content_log(ctx, "Outcome", "'pass'")) != USCXML_ERR_OK) return err;
+    } else {
+        return USCXML_ERR_MISSING_CALLBACK;
+    }
+    return USCXML_ERR_OK;
+}
+
+static int _uscxml_EC83C2A5_pass_on_entry(const uscxml_ctx* ctx, const uscxml_state* state, const void* event) {
+    _uscxml_EC83C2A5_pass_on_entry_0(ctx, state, event);
+    return USCXML_ERR_OK;
+}
+
+static int _uscxml_EC83C2A5_fail_on_entry_0(const uscxml_ctx* ctx, const uscxml_state* state, const void* event) {
+    int err = USCXML_ERR_OK;
+    if likely(ctx->exec_content_log != NULL) {
+        if unlikely((ctx->exec_content_log(ctx, "Outcome", "'fail'")) != USCXML_ERR_OK) return err;
+    } else {
+        return USCXML_ERR_MISSING_CALLBACK;
+    }
+    return USCXML_ERR_OK;
+}
+
+static int _uscxml_EC83C2A5_fail_on_entry(const uscxml_ctx* ctx, const uscxml_state* state, const void* event) {
+    _uscxml_EC83C2A5_fail_on_entry_0(ctx, state, event);
+    return USCXML_ERR_OK;
+}
+
+#endif
+
+#ifndef USCXML_NO_ELEM_INFO
+
+static const uscxml_state _uscxml_EC83C2A5_states[6] = {
     {   /* state number 0 */
         /* name       */ NULL,
         /* parent     */ 0,
@@ -437,13 +459,13 @@ static const uscxml_state _uscxml_9FEEFF45_states[6] = {
         /* children   */ { 0x3e /* 011111 */ },
         /* completion */ { 0x02 /* 010000 */ }, 	
         /* ancestors  */ { 0x00 /* 000000 */ },
-        /* data       */ &_uscxml_9FEEFF45_elem_datas[0],
+        /* data       */ &_uscxml_EC83C2A5_elem_datas[0],
         /* type       */ USCXML_STATE_COMPOUND,
     },
     {   /* state number 1 */
         /* name       */ "s0",
         /* parent     */ 0,
-        /* onentry    */ _uscxml_9FEEFF45_s0_on_entry,
+        /* onentry    */ NULL,
         /* onexit     */ NULL,
         /* invoke     */ NULL,
         /* children   */ { 0x00 /* 000000 */ },
@@ -455,7 +477,7 @@ static const uscxml_state _uscxml_9FEEFF45_states[6] = {
     {   /* state number 2 */
         /* name       */ "s1",
         /* parent     */ 0,
-        /* onentry    */ _uscxml_9FEEFF45_s1_on_entry,
+        /* onentry    */ _uscxml_EC83C2A5_s1_on_entry,
         /* onexit     */ NULL,
         /* invoke     */ NULL,
         /* children   */ { 0x00 /* 000000 */ },
@@ -467,7 +489,7 @@ static const uscxml_state _uscxml_9FEEFF45_states[6] = {
     {   /* state number 3 */
         /* name       */ "s2",
         /* parent     */ 0,
-        /* onentry    */ NULL,
+        /* onentry    */ _uscxml_EC83C2A5_s2_on_entry,
         /* onexit     */ NULL,
         /* invoke     */ NULL,
         /* children   */ { 0x00 /* 000000 */ },
@@ -479,7 +501,7 @@ static const uscxml_state _uscxml_9FEEFF45_states[6] = {
     {   /* state number 4 */
         /* name       */ "pass",
         /* parent     */ 0,
-        /* onentry    */ NULL,
+        /* onentry    */ _uscxml_EC83C2A5_pass_on_entry,
         /* onexit     */ NULL,
         /* invoke     */ NULL,
         /* children   */ { 0x00 /* 000000 */ },
@@ -491,7 +513,7 @@ static const uscxml_state _uscxml_9FEEFF45_states[6] = {
     {   /* state number 5 */
         /* name       */ "fail",
         /* parent     */ 0,
-        /* onentry    */ NULL,
+        /* onentry    */ _uscxml_EC83C2A5_fail_on_entry,
         /* onexit     */ NULL,
         /* invoke     */ NULL,
         /* children   */ { 0x00 /* 000000 */ },
@@ -502,37 +524,41 @@ static const uscxml_state _uscxml_9FEEFF45_states[6] = {
     }
 };
 
-static const uscxml_transition _uscxml_9FEEFF45_transitions[6] = {
+#endif
+
+#ifndef USCXML_NO_ELEM_INFO
+
+static const uscxml_transition _uscxml_EC83C2A5_transitions[6] = {
     {   /* transition number 0 with priority 0
-           target: fail
-         */
-        /* source     */ 1,
-        /* target     */ { 0x20 /* 000001 */ },
-        /* event      */ "error",
-        /* condition  */ NULL,
-        /* ontrans    */ NULL,
-        /* type       */ 0,
-        /* conflicts  */ { 0x3f /* 111111 */ }, 
-        /* exit set   */ { 0x3e /* 011111 */ }
-    },
-    {   /* transition number 1 with priority 1
            target: s1
          */
         /* source     */ 1,
         /* target     */ { 0x04 /* 001000 */ },
-        /* event      */ "*",
-        /* condition  */ NULL,
+        /* event      */ NULL,
+        /* condition  */ "Var1",
         /* ontrans    */ NULL,
-        /* type       */ 0,
+        /* type       */ USCXML_TRANS_SPONTANEOUS,
+        /* conflicts  */ { 0x3f /* 111111 */ }, 
+        /* exit set   */ { 0x3e /* 011111 */ }
+    },
+    {   /* transition number 1 with priority 1
+           target: fail
+         */
+        /* source     */ 1,
+        /* target     */ { 0x20 /* 000001 */ },
+        /* event      */ NULL,
+        /* condition  */ "true",
+        /* ontrans    */ NULL,
+        /* type       */ USCXML_TRANS_SPONTANEOUS,
         /* conflicts  */ { 0x3f /* 111111 */ }, 
         /* exit set   */ { 0x3e /* 011111 */ }
     },
     {   /* transition number 2 with priority 2
-           target: fail
+           target: s2
          */
         /* source     */ 2,
-        /* target     */ { 0x20 /* 000001 */ },
-        /* event      */ "error",
+        /* target     */ { 0x08 /* 000100 */ },
+        /* event      */ "error.execution",
         /* condition  */ NULL,
         /* ontrans    */ NULL,
         /* type       */ 0,
@@ -540,10 +566,10 @@ static const uscxml_transition _uscxml_9FEEFF45_transitions[6] = {
         /* exit set   */ { 0x3e /* 011111 */ }
     },
     {   /* transition number 3 with priority 3
-           target: s2
+           target: fail
          */
         /* source     */ 2,
-        /* target     */ { 0x08 /* 000100 */ },
+        /* target     */ { 0x20 /* 000001 */ },
         /* event      */ "*",
         /* condition  */ NULL,
         /* ontrans    */ NULL,
@@ -557,7 +583,7 @@ static const uscxml_transition _uscxml_9FEEFF45_transitions[6] = {
         /* source     */ 3,
         /* target     */ { 0x10 /* 000010 */ },
         /* event      */ NULL,
-        /* condition  */ "testvar4 ~= nil",
+        /* condition  */ "Var1==Var2",
         /* ontrans    */ NULL,
         /* type       */ USCXML_TRANS_SPONTANEOUS,
         /* conflicts  */ { 0x3f /* 111111 */ }, 
@@ -577,22 +603,31 @@ static const uscxml_transition _uscxml_9FEEFF45_transitions[6] = {
     }
 };
 
-const uscxml_machine uscxml_machines[2] = {
-    {
+#endif
+
+#ifndef USCXML_NO_ELEM_INFO
+
+#ifndef USCXML_MACHINE
+#  define USCXML_MACHINE _uscxml_EC83C2A5_machine
+#endif
+#define USCXML_MACHINE_0 _uscxml_EC83C2A5_machine
+#define USCXML_MACHINE_MACHINENAME _uscxml_EC83C2A5_machine
+
+const uscxml_machine _uscxml_EC83C2A5_machine = {
         /* flags          */ 0,
         /* nr_states      */ 6,
         /* nr_transitions */ 6,
-        /* name           */ "",
-        /* datamodel      */ "lua",
-        /* uuid           */ "9FEEFF45D10C557438897A21612B7382",
-        /* states         */ &_uscxml_9FEEFF45_states[0], 
-        /* transitions    */ &_uscxml_9FEEFF45_transitions[0], 
+        /* name           */ "machineName",
+        /* datamodel      */ "ecmascript",
+        /* uuid           */ "EC83C2A5BDF05B11A1F7E2C35039F65D",
+        /* states         */ &_uscxml_EC83C2A5_states[0], 
+        /* transitions    */ &_uscxml_EC83C2A5_transitions[0], 
         /* parent         */ NULL,
-        /* donedata       */ &_uscxml_9FEEFF45_elem_donedatas[0], 
+        /* donedata       */ &_uscxml_EC83C2A5_elem_donedatas[0], 
         /* script         */ NULL
-    },
-    {0, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL }
 };
+
+#endif
 
 #ifdef USCXML_VERBOSE
 /**
@@ -626,7 +661,7 @@ static void printBitsetIndices(const char* a, size_t length) {
 }
 #endif
 
-#ifndef USCXML_BIT_OPERATIONS
+#ifndef USCXML_NO_BIT_OPERATIONS
 /**
  * Return true if there is a common bit in a and b.
  */
@@ -696,10 +731,10 @@ static void bit_and(char* dest, const char* mask, size_t i) {
     };
 }
 
-#define USCXML_BIT_OPERATIONS
+#define USCXML_NO_BIT_OPERATIONS
 #endif
 
-#ifndef USCXML_STEP_FUNCTION
+#ifndef USCXML_NO_STEP_FUNCTION
 int uscxml_step(uscxml_ctx* ctx) {
 
     USCXML_NR_TRANS_TYPE i, j, k;
@@ -756,7 +791,7 @@ int uscxml_step(uscxml_ctx* ctx) {
         ctx->event = NULL;
         goto SELECT_TRANSITIONS;
     }
-    if ((ctx->event = ctx->dequeue_internal(ctx)) != NULL) {
+    if (ctx->dequeue_internal != NULL && (ctx->event = ctx->dequeue_internal(ctx)) != NULL) {
         goto SELECT_TRANSITIONS;
     }
 
@@ -776,9 +811,14 @@ int uscxml_step(uscxml_ctx* ctx) {
         }
     }
 
-    if ((ctx->event = ctx->dequeue_external(ctx)) != NULL) {
+    if (ctx->dequeue_external != NULL && (ctx->event = ctx->dequeue_external(ctx)) != NULL) {
         goto SELECT_TRANSITIONS;
     }
+
+    if (ctx->dequeue_external == NULL) {
+        return USCXML_ERR_DONE;
+    }
+    return USCXML_ERR_IDLE;
 
 SELECT_TRANSITIONS:
     bit_clear_all(conflicts, nr_trans_bytes);
@@ -792,21 +832,25 @@ SELECT_TRANSITIONS:
         if (BIT_HAS(USCXML_GET_TRANS(i).source, ctx->config)) {
             /* is it non-conflicting? */
             if (!BIT_HAS(i, conflicts)) {
-                /* is it enabled? */
-                if (ctx->is_enabled(ctx, &USCXML_GET_TRANS(i), ctx->event) > 0) {
-                    /* remember that we found a transition */
-                    ctx->flags |= USCXML_CTX_TRANSITION_FOUND;
+                /* is it spontaneous with an event or vice versa? */
+                if ((USCXML_GET_TRANS(i).event == NULL && ctx->event == NULL) || 
+                    (USCXML_GET_TRANS(i).event != NULL && ctx->event != NULL)) {
+                    /* is it enabled? */
+                    if (ctx->is_enabled(ctx, &USCXML_GET_TRANS(i), ctx->event) > 0) {
+                        /* remember that we found a transition */
+                        ctx->flags |= USCXML_CTX_TRANSITION_FOUND;
 
-                    /* transitions that are pre-empted */
-                    bit_or(conflicts, USCXML_GET_TRANS(i).conflicts, nr_trans_bytes);
+                        /* transitions that are pre-empted */
+                        bit_or(conflicts, USCXML_GET_TRANS(i).conflicts, nr_trans_bytes);
 
-                    /* states that are directly targeted (resolve as entry-set later) */
-                    bit_or(target_set, USCXML_GET_TRANS(i).target, nr_states_bytes);
+                        /* states that are directly targeted (resolve as entry-set later) */
+                        bit_or(target_set, USCXML_GET_TRANS(i).target, nr_states_bytes);
 
-                    /* states that will be left */
-                    bit_or(exit_set, USCXML_GET_TRANS(i).exit_set, nr_states_bytes);
+                        /* states that will be left */
+                        bit_or(exit_set, USCXML_GET_TRANS(i).exit_set, nr_states_bytes);
 
-                    BIT_SET_AT(i, trans_set);
+                        BIT_SET_AT(i, trans_set);
+                    }
                 }
             }
         }
@@ -1082,6 +1126,6 @@ ESTABLISH_ENTRY_SET:
     return USCXML_ERR_OK;
 }
 
-#define USCXML_STEP_FUNCTION
+#define USCXML_NO_STEP_FUNCTION
 #endif
 
