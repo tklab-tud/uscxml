@@ -165,12 +165,14 @@ typedef struct uscxml_elem_invoke uscxml_elem_invoke;
 typedef struct uscxml_elem_send uscxml_elem_send;
 typedef struct uscxml_elem_param uscxml_elem_param;
 typedef struct uscxml_elem_data uscxml_elem_data;
+typedef struct uscxml_elem_assign uscxml_elem_assign;
 typedef struct uscxml_elem_donedata uscxml_elem_donedata;
 typedef struct uscxml_elem_foreach uscxml_elem_foreach;
 
 typedef void* (*dequeue_internal_t)(const uscxml_ctx* ctx);
 typedef void* (*dequeue_external_t)(const uscxml_ctx* ctx);
-typedef int (*is_enabled_t)(const uscxml_ctx* ctx, const uscxml_transition* transition, const void* event);
+typedef int (*is_enabled_t)(const uscxml_ctx* ctx, const uscxml_transition* transition);
+typedef int (*is_matched_t)(const uscxml_ctx* ctx, const uscxml_transition* transition, const void* event);
 typedef int (*is_true_t)(const uscxml_ctx* ctx, const char* expr);
 typedef int (*exec_content_t)(const uscxml_ctx* ctx, const uscxml_state* state, const void* event);
 typedef int (*raise_done_event_t)(const uscxml_ctx* ctx, const uscxml_state* state, const uscxml_elem_donedata* donedata);
@@ -182,7 +184,7 @@ typedef int (*exec_content_send_t)(const uscxml_ctx* ctx, const uscxml_elem_send
 typedef int (*exec_content_foreach_init_t)(const uscxml_ctx* ctx, const uscxml_elem_foreach* foreach);
 typedef int (*exec_content_foreach_next_t)(const uscxml_ctx* ctx, const uscxml_elem_foreach* foreach);
 typedef int (*exec_content_foreach_done_t)(const uscxml_ctx* ctx, const uscxml_elem_foreach* foreach);
-typedef int (*exec_content_assign_t)(const uscxml_ctx* ctx, const char* location, const char* expr);
+typedef int (*exec_content_assign_t)(const uscxml_ctx* ctx, const uscxml_elem_assign* assign);
 typedef int (*exec_content_init_t)(const uscxml_ctx* ctx, const uscxml_elem_data* data);
 typedef int (*exec_content_cancel_t)(const uscxml_ctx* ctx, const char* sendid, const char* sendidexpr);
 typedef int (*exec_content_finalize_t)(const uscxml_ctx* ctx, const uscxml_elem_invoke* invoker, const void* event);
@@ -213,6 +215,15 @@ struct uscxml_machine {
 struct uscxml_elem_data {
     const char* id;
     const char* src;
+    const char* expr;
+    const char* content;
+};
+
+/**
+ * All information pertaining to an <assign> element.
+ */
+struct uscxml_elem_assign {
+    const char* location;
     const char* expr;
     const char* content;
 };
@@ -335,6 +346,7 @@ struct uscxml_ctx {
     dequeue_internal_t dequeue_internal;
     dequeue_external_t dequeue_external;
     is_enabled_t       is_enabled;
+    is_matched_t       is_matched;
     is_true_t          is_true;
     raise_done_event_t raise_done_event;
 
@@ -360,6 +372,12 @@ extern const uscxml_machine _uscxml_EC83C2A5_machine;
 
 #ifndef USCXML_NO_ELEM_INFO
 
+static const uscxml_elem_assign _uscxml_EC83C2A5_elem_assigns[2] = {
+    /* location, expr, content */
+    { "_ioprocessors", "'otherName'", NULL },
+    { "Var2", "_ioprocessors", NULL },
+};
+
 static const uscxml_elem_data _uscxml_EC83C2A5_elem_datas[3] = {
     /* id, src, expr, content */
     { "Var1", NULL, "_ioprocessors", NULL },
@@ -383,7 +401,7 @@ static const uscxml_elem_donedata _uscxml_EC83C2A5_elem_donedatas[1] = {
 static int _uscxml_EC83C2A5_s1_on_entry_0(const uscxml_ctx* ctx, const uscxml_state* state, const void* event) {
     int err = USCXML_ERR_OK;
     if likely(ctx->exec_content_assign != NULL) {
-        if ((ctx->exec_content_assign(ctx, "_ioprocessors", "'otherName'")) != USCXML_ERR_OK) return err;
+        if ((ctx->exec_content_assign(ctx, &_uscxml_EC83C2A5_elem_assigns[0])) != USCXML_ERR_OK) return err;
     } else {
         return USCXML_ERR_MISSING_CALLBACK;
     }
@@ -403,7 +421,7 @@ static int _uscxml_EC83C2A5_s1_on_entry(const uscxml_ctx* ctx, const uscxml_stat
 static int _uscxml_EC83C2A5_s2_on_entry_0(const uscxml_ctx* ctx, const uscxml_state* state, const void* event) {
     int err = USCXML_ERR_OK;
     if likely(ctx->exec_content_assign != NULL) {
-        if ((ctx->exec_content_assign(ctx, "Var2", "_ioprocessors")) != USCXML_ERR_OK) return err;
+        if ((ctx->exec_content_assign(ctx, &_uscxml_EC83C2A5_elem_assigns[1])) != USCXML_ERR_OK) return err;
     } else {
         return USCXML_ERR_MISSING_CALLBACK;
     }
@@ -836,7 +854,8 @@ SELECT_TRANSITIONS:
                 if ((USCXML_GET_TRANS(i).event == NULL && ctx->event == NULL) || 
                     (USCXML_GET_TRANS(i).event != NULL && ctx->event != NULL)) {
                     /* is it enabled? */
-                    if (ctx->is_enabled(ctx, &USCXML_GET_TRANS(i), ctx->event) > 0) {
+                    if ((ctx->event == NULL || ctx->is_matched(ctx, &USCXML_GET_TRANS(i), ctx->event) > 0) &&
+                        (USCXML_GET_TRANS(i).condition == NULL || ctx->is_enabled(ctx, &USCXML_GET_TRANS(i)) > 0)) {
                         /* remember that we found a transition */
                         ctx->flags |= USCXML_CTX_TRANSITION_FOUND;
 

@@ -91,6 +91,19 @@ public:
 
 	virtual bool isDeclared(const std::string& expr) = 0;
 
+	/**
+	 * test147:
+	 *     <data id="Var1" expr="0"/>
+	 *
+	 * test150:
+	 *  <data id="Var3">
+	 *    [1,2,3]
+	 *  </data>
+	 *
+	 * test277:
+	 *  <data id="Var1" expr="return"/>
+	 *
+	 */
 	virtual void assign(const Arabica::DOM::Element<std::string>& assignElem,
 	                    const Arabica::DOM::Node<std::string>& node,
 	                    const std::string& content) = 0;

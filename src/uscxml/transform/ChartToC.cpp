@@ -690,13 +690,15 @@ void ChartToC::writeTypes(std::ostream& stream) {
 	stream << "typedef struct uscxml_elem_send uscxml_elem_send;" << std::endl;
 	stream << "typedef struct uscxml_elem_param uscxml_elem_param;" << std::endl;
 	stream << "typedef struct uscxml_elem_data uscxml_elem_data;" << std::endl;
+	stream << "typedef struct uscxml_elem_assign uscxml_elem_assign;" << std::endl;
 	stream << "typedef struct uscxml_elem_donedata uscxml_elem_donedata;" << std::endl;
 	stream << "typedef struct uscxml_elem_foreach uscxml_elem_foreach;" << std::endl;
 	stream << std::endl;
 
 	stream << "typedef void* (*dequeue_internal_t)(const uscxml_ctx* ctx);" << std::endl;
 	stream << "typedef void* (*dequeue_external_t)(const uscxml_ctx* ctx);" << std::endl;
-	stream << "typedef int (*is_enabled_t)(const uscxml_ctx* ctx, const uscxml_transition* transition, const void* event);" << std::endl;
+	stream << "typedef int (*is_enabled_t)(const uscxml_ctx* ctx, const uscxml_transition* transition);" << std::endl;
+	stream << "typedef int (*is_matched_t)(const uscxml_ctx* ctx, const uscxml_transition* transition, const void* event);" << std::endl;
 	stream << "typedef int (*is_true_t)(const uscxml_ctx* ctx, const char* expr);" << std::endl;
 	stream << "typedef int (*exec_content_t)(const uscxml_ctx* ctx, const uscxml_state* state, const void* event);" << std::endl;
 	stream << "typedef int (*raise_done_event_t)(const uscxml_ctx* ctx, const uscxml_state* state, const uscxml_elem_donedata* donedata);" << std::endl;
@@ -709,7 +711,7 @@ void ChartToC::writeTypes(std::ostream& stream) {
 	stream << "typedef int (*exec_content_foreach_init_t)(const uscxml_ctx* ctx, const uscxml_elem_foreach* foreach);" << std::endl;
 	stream << "typedef int (*exec_content_foreach_next_t)(const uscxml_ctx* ctx, const uscxml_elem_foreach* foreach);" << std::endl;
 	stream << "typedef int (*exec_content_foreach_done_t)(const uscxml_ctx* ctx, const uscxml_elem_foreach* foreach);" << std::endl;
-	stream << "typedef int (*exec_content_assign_t)(const uscxml_ctx* ctx, const char* location, const char* expr);" << std::endl;
+	stream << "typedef int (*exec_content_assign_t)(const uscxml_ctx* ctx, const uscxml_elem_assign* assign);" << std::endl;
 	stream << "typedef int (*exec_content_init_t)(const uscxml_ctx* ctx, const uscxml_elem_data* data);" << std::endl;
 	stream << "typedef int (*exec_content_cancel_t)(const uscxml_ctx* ctx, const char* sendid, const char* sendidexpr);" << std::endl;
 	stream << "typedef int (*exec_content_finalize_t)(const uscxml_ctx* ctx, const uscxml_elem_invoke* invoker, const void* event);" << std::endl;
@@ -742,6 +744,16 @@ void ChartToC::writeTypes(std::ostream& stream) {
 	stream << "struct uscxml_elem_data {" << std::endl;
 	stream << "    const char* id;" << std::endl;
 	stream << "    const char* src;" << std::endl;
+	stream << "    const char* expr;" << std::endl;
+	stream << "    const char* content;" << std::endl;
+	stream << "};" << std::endl;
+	stream << std::endl;
+
+	stream << "/**" << std::endl;
+	stream << " * All information pertaining to an <assign> element." << std::endl;
+	stream << " */" << std::endl;
+	stream << "struct uscxml_elem_assign {" << std::endl;
+	stream << "    const char* location;" << std::endl;
 	stream << "    const char* expr;" << std::endl;
 	stream << "    const char* content;" << std::endl;
 	stream << "};" << std::endl;
@@ -872,6 +884,7 @@ void ChartToC::writeTypes(std::ostream& stream) {
 	stream << "    dequeue_internal_t dequeue_internal;" << std::endl;
 	stream << "    dequeue_external_t dequeue_external;" << std::endl;
 	stream << "    is_enabled_t       is_enabled;" << std::endl;
+	stream << "    is_matched_t       is_matched;" << std::endl;
 	stream << "    is_true_t          is_true;" << std::endl;
 	stream << "    raise_done_event_t raise_done_event;" << std::endl;
 	stream << std::endl;
@@ -1264,20 +1277,7 @@ void ChartToC::writeExecContent(std::ostream& stream, const Arabica::DOM::Node<s
 		stream << padding;
 		stream << "if likely(ctx->exec_content_assign != NULL) {" << std::endl;
 		stream << padding;
-		stream << "    if ((ctx->exec_content_assign(ctx, ";
-		stream << (HAS_ATTR(elem, "location") ? "\"" + escape(ATTR(elem, "location")) + "\"" : "NULL") << ", ";
-		if (HAS_ATTR(elem, "expr")) {
-			stream << "\"" + escape(ATTR(elem, "expr")) + "\"";
-		} else {
-			NodeSet<std::string> assignTexts = filterChildType(Node_base::TEXT_NODE, elem);
-			if (assignTexts.size() > 0) {
-				stream << "\"";
-				writeExecContent(stream, assignTexts[0], 0);
-				stream << "\"";
-			} else {
-				stream << "NULL";
-			}
-		}
+		stream << "    if ((ctx->exec_content_assign(ctx, &" << _prefix << "_elem_assigns[" << ATTR(elem, "documentOrder") << "]";
 		stream << ")) != USCXML_ERR_OK) return err;" << std::endl;
 		stream << padding << "} else {" << std::endl;
 		stream << padding << "    return USCXML_ERR_MISSING_CALLBACK;" << std::endl;
@@ -1483,6 +1483,38 @@ void ChartToC::writeElementInfo(std::ostream& stream) {
 		}
 		stream << "};" << std::endl;
 		stream << std::endl;
+	}
+
+	NodeSet<std::string> assigns = DOMUtils::inDocumentOrder(_nsInfo.xmlNSPrefix + "assign", _scxml);
+	if (assigns.size() > 0) {
+		_hasElement.insert("assign");
+		stream << "static const uscxml_elem_assign " << _prefix << "_elem_assigns[" << assigns.size() << "] = {" << std::endl;
+		stream << "    /* location, expr, content */" << std::endl;
+
+		for (size_t i = 0; i < assigns.size(); i++) {
+			Element<std::string> assign(assigns[i]);
+
+			stream << "    { ";
+			stream << (HAS_ATTR(assign, "location") ? "\"" + escape(ATTR(assign, "location")) + "\"" : "NULL") << ", ";
+			stream << (HAS_ATTR(assign, "expr") ? "\"" + escape(ATTR(assign, "expr")) + "\"" : "NULL") << ", ";
+
+			NodeSet<std::string> assignTexts = filterChildType(Node_base::TEXT_NODE, assign);
+			if (assignTexts.size() > 0) {
+				if (boost::trim_copy(assignTexts[0].getNodeValue()).length() > 0) {
+					std::string escaped = escape(assignTexts[0].getNodeValue());
+					stream << "\"" << escaped << "\"";
+				}
+			} else {
+				stream << "NULL";
+			}
+			stream << " }," << std::endl;
+
+			assign.setAttribute("documentOrder", toStr(i));
+		}
+
+		stream << "};" << std::endl;
+		stream << std::endl;
+
 	}
 
 	NodeSet<std::string> datas = DOMUtils::inDocumentOrder(_nsInfo.xmlNSPrefix + "data", _scxml);
@@ -2169,7 +2201,8 @@ void ChartToC::writeFSM(std::ostream& stream) {
 	stream << "                if ((USCXML_GET_TRANS(i).event == NULL && ctx->event == NULL) || " << std::endl;
 	stream << "                    (USCXML_GET_TRANS(i).event != NULL && ctx->event != NULL)) {" << std::endl;
 	stream << "                    /* is it enabled? */" << std::endl;
-	stream << "                    if (ctx->is_enabled(ctx, &USCXML_GET_TRANS(i), ctx->event) > 0) {" << std::endl;
+	stream << "                    if ((ctx->event == NULL || ctx->is_matched(ctx, &USCXML_GET_TRANS(i), ctx->event) > 0) &&" << std::endl;
+	stream << "                        (USCXML_GET_TRANS(i).condition == NULL || ctx->is_enabled(ctx, &USCXML_GET_TRANS(i)) > 0)) {" << std::endl;
 	stream << "                        /* remember that we found a transition */" << std::endl;
 	stream << "                        ctx->flags |= USCXML_CTX_TRANSITION_FOUND;" << std::endl;
 	stream << std::endl;

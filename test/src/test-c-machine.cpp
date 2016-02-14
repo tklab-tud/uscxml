@@ -66,6 +66,7 @@ public:
 
 		// register callbacks with scxml context
 		ctx.is_enabled = &isEnabled;
+		ctx.is_matched = &isMatched;
 		ctx.is_true = &isTrue;
 		ctx.raise_done_event = &raiseDoneEvent;
 		ctx.invoke = &invoke;
@@ -250,31 +251,15 @@ public:
 
 	// callbacks for scxml context
 
-	static int isEnabled(const uscxml_ctx* ctx, const uscxml_transition* t, const void* e) {
+	static int isMatched(const uscxml_ctx* ctx, const uscxml_transition* t, const void* e) {
 		Event* event = (Event*)e;
-		if (event == NULL) {
-			if (t->event == NULL) {
-				// spontaneous transition, null event
-				if (t->condition != NULL)
-					return isTrue(ctx, t->condition);
-				return true;
-			} else {
-				// spontaneous transition, but real event
-				return false;
-			}
-		}
+		return (nameMatch(t->event, event->name.c_str()));
+	}
 
-		// real event but spontaneous transition
-		if (t->event == NULL)
-			return false;
-
-		// real transition, real event
-		if (nameMatch(t->event, event->name.c_str())) {
-			if (t->condition != NULL)
-				return isTrue(ctx, t->condition);
-			return true;
-		}
-		return false;
+	static int isEnabled(const uscxml_ctx* ctx, const uscxml_transition* t) {
+		if (t->condition != NULL)
+			return isTrue(ctx, t->condition);
+		return 1;
 	}
 
 	static int isTrue(const uscxml_ctx* ctx, const char* expr) {
@@ -318,7 +303,7 @@ public:
 				} else if (invocation->idlocation != NULL) {
 					// test224
 					invokedMachine->invokeId = (invocation->sourcename != NULL ? std::string(invocation->sourcename) + "." : "") + UUID::getUUID();
-					ctx->exec_content_assign(ctx, invocation->idlocation, std::string("\"" + invokedMachine->invokeId + "\"").c_str());
+					USER_DATA(ctx)->dataModel.assign(invocation->idlocation, Data(invokedMachine->invokeId, Data::VERBATIM));
 				} else {
 					delete invokedMachine;
 					return USCXML_ERR_UNSUPPORTED;
@@ -374,6 +359,19 @@ public:
 	static int execContentSend(const uscxml_ctx* ctx, const uscxml_elem_send* send) {
 		SendRequest* e = new SendRequest();
 
+		std::string sendid;
+		if (send->id != NULL) {
+			sendid = send->id;
+		} else {
+			sendid = UUID::getUUID();
+			if (send->idlocation != NULL) {
+				USER_DATA(ctx)->dataModel.assign(send->idlocation, Data(sendid, Data::VERBATIM));
+			} else {
+				e->hideSendId = true;
+			}
+		}
+		e->sendid = sendid;
+
 		std::string target;
 		if (send->target != NULL) {
 			e->target = send->target;
@@ -384,8 +382,8 @@ public:
 		}
 
 		if (e->target.size() > 0 && (e->target[0] != '#' || e->target[1] != '_')) {
-			delete e;
-			execContentRaise(ctx, "error.execution");
+			e->name = "error.execution";
+			execContentRaise(ctx, e);
 			return USCXML_ERR_INVALID_TARGET;
 		}
 
@@ -401,15 +399,15 @@ public:
 				e->type = "http://www.w3.org/TR/scxml/#SCXMLEventProcessor";
 			}
 		} catch (Event exc) {
-			execContentRaise(ctx, exc.name.c_str());
-			delete e;
+			e->name = "error.execution";
+			execContentRaise(ctx, e);
 			return USCXML_ERR_EXEC_CONTENT;
 		}
 
 		// only one somewhat supported
 		if (e->type != "http://www.w3.org/TR/scxml/#SCXMLEventProcessor") {
-			delete e;
-			execContentRaise(ctx, "error.execution");
+			e->name = "error.execution";
+			execContentRaise(ctx, e);
 			return USCXML_ERR_INVALID_TARGET;
 		}
 
@@ -469,19 +467,6 @@ public:
 			}
 		}
 
-		std::string sendid;
-		if (send->id != NULL) {
-			sendid = send->id;
-			e->sendid = sendid;
-		} else {
-			sendid = UUID::getUUID();
-			if (send->idlocation != NULL) {
-				USER_DATA(ctx)->dataModel.assign(send->idlocation, Data(sendid, Data::VERBATIM));
-			} else {
-				e->hideSendId = true;
-			}
-		}
-
 		size_t delayMs = 0;
 		std::string delay;
 		if (send->delayexpr != NULL) {
@@ -518,10 +503,7 @@ public:
 		return USCXML_ERR_OK;
 	}
 
-	static int execContentRaise(const uscxml_ctx* ctx, const char* event) {
-		Event* e = new Event();
-		e->name = event;
-
+	static int execContentRaise(const uscxml_ctx* ctx, Event* e) {
 		if (boost::starts_with(e->name, "error.")) {
 			e->eventType = Event::PLATFORM;
 		} else {
@@ -529,6 +511,12 @@ public:
 		}
 		USER_DATA(ctx)->iq.push_back(e);
 		return USCXML_ERR_OK;
+	}
+
+	static int execContentRaise(const uscxml_ctx* ctx, const char* event) {
+		Event* e = new Event();
+		e->name = event;
+		return execContentRaise(ctx, e);
 	}
 
 	static int execContentCancel(const uscxml_ctx* ctx, const char* sendid, const char* sendidexpr) {
@@ -567,16 +555,22 @@ public:
 		return USCXML_ERR_OK;
 	}
 
-	static int execContentAssign(const uscxml_ctx* ctx, const char* location, const char* expr) {
-		std::string key = location;
+	static int execContentAssign(const uscxml_ctx* ctx, const uscxml_elem_assign* assign) {
+		std::string key = assign->location;
 		if (key == "_sessionid" || key == "_name" || key == "_ioprocessors" || key == "_invokers" || key == "_event") {
 			execContentRaise(ctx, "error.execution");
 			return USCXML_ERR_EXEC_CONTENT;
 		}
 
 		try {
-			Data d = USER_DATA(ctx)->dataModel.getStringAsData(expr);
-			USER_DATA(ctx)->dataModel.assign(key, d);
+//			Data d = USER_DATA(ctx)->dataModel.getStringAsData(expr);
+			if (assign->expr != NULL) {
+				Data d = Data(assign->expr, Data::INTERPRETED);
+				USER_DATA(ctx)->dataModel.assign(key, d);
+			} else if (assign->content != NULL) {
+				Data d = Data(assign->content, Data::INTERPRETED);
+				USER_DATA(ctx)->dataModel.assign(key, d);
+			}
 		} catch (Event e) {
 			execContentRaise(ctx, e.name.c_str());
 			return USCXML_ERR_EXEC_CONTENT;
@@ -639,27 +633,32 @@ public:
 
 				try {
 					if (data->expr != NULL) {
-//                        d = USER_DATA(ctx)->dataModel.getStringAsData(data->expr);
 						d = Data(data->expr, Data::INTERPRETED);
-					} else if (data->content != NULL) {
-						content << data->content;
-						d = USER_DATA(ctx)->dataModel.getStringAsData(content.str());
-						//					d = Data(content.str(), Data::INTERPRETED);
-					} else if (data->src != NULL) {
-						URL sourceURL(data->src);
-						if (USER_DATA(ctx)->baseURL.size() > 0) {
-							sourceURL.toAbsolute(USER_DATA(ctx)->baseURL);
+
+					} else if (data->content != NULL || data->src != NULL) {
+						if (data->content) {
+							content << data->content;
 						} else {
-							sourceURL.toAbsoluteCwd();
+							URL sourceURL(data->src);
+							if (USER_DATA(ctx)->baseURL.size() > 0) {
+								sourceURL.toAbsolute(USER_DATA(ctx)->baseURL);
+							} else {
+								sourceURL.toAbsoluteCwd();
+							}
+							content << sourceURL;
 						}
-						content << sourceURL;
-						//					d = Data(content.str(), Data::INTERPRETED);
+						/**
+						 * first attempt to parse as structured data, we will try
+						 * as space normalized string literals if this fails below
+						 */
 						d = USER_DATA(ctx)->dataModel.getStringAsData(content.str());
+
 					} else {
 						d = Data("undefined", Data::INTERPRETED);
 					}
 					// this might fail with an unquoted string literal in content
 					USER_DATA(ctx)->dataModel.init(data->id, d);
+
 				} catch (Event e) {
 					if (content.str().size() > 0) {
 						try {
