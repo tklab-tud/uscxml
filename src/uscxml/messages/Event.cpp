@@ -18,7 +18,10 @@
  */
 
 #include "uscxml/messages/Event.h"
-#include "uscxml/DOMUtils.h"
+#include "uscxml/dom/DOMUtils.h"
+#include <DOM/SAX2DOM/SAX2DOM.hpp>
+#include <SAX/helpers/DefaultHandler.hpp>
+#include <SAX/helpers/CatchErrorHandler.hpp>
 
 namespace uscxml {
 

@@ -21,7 +21,7 @@
 #include "uscxml/UUID.h"
 #include "SCXMLDotWriter.h"
 #include "../transform/FlatStateIdentifier.h"
-#include "uscxml/DOMUtils.h"
+#include "uscxml/dom/DOMUtils.h"
 #include <boost/algorithm/string.hpp> // replace_all
 #include <iomanip>
 
@@ -199,7 +199,7 @@ void SCXMLDotWriter::assembleGraph(const Element<std::string>& state, int32_t ch
 	}
 
 
-	NodeSet<std::string> childElems = InterpreterImpl::filterChildType(Node_base::ELEMENT_NODE, state);
+	NodeSet<std::string> childElems = DOMUtils::filterChildType(Node_base::ELEMENT_NODE, state);
 	for (int i = 0; i < childElems.size(); i++) {
 		Element<std::string> childElem(childElems[i]);
 
@@ -225,7 +225,7 @@ void SCXMLDotWriter::assembleGraph(const Element<std::string>& state, int32_t ch
 
 			std::list<std::string> eventNames;
 			if (HAS_ATTR(childElem, "event"))
-				eventNames = InterpreterImpl::tokenizeIdRefs(ATTR(childElem, "event"));
+				eventNames = tokenize(ATTR(childElem, "event"));
 			if (eventNames.size() == 0)
 				_graph[nodeId].events.insert(std::make_pair("", childElem));
 			for (std::list<std::string>::iterator evIter = eventNames.begin(); evIter != eventNames.end(); evIter++) {
@@ -399,7 +399,7 @@ void SCXMLDotWriter::writeStateElement(std::ostream& os, const Element<std::stri
 		}
 
 		// write history states
-		NodeSet<std::string> histories = InterpreterImpl::filterChildElements(_xmlNSPrefix + "history", stateElem);
+		NodeSet<std::string> histories = DOMUtils::filterChildElements(_xmlNSPrefix + "history", stateElem);
 		for (int i = 0; i < histories.size(); i++) {
 			os << "  <tr><td port=\"" << portEscape(ATTR_CAST(histories[i], "id")) << "\" balign=\"left\" colspan=\"" << (nrOutPorts == 0 ? 1 : 2) << "\"><b>history: </b>" << ATTR_CAST(histories[i], "id") << "</td></tr>" << std::endl;
 
@@ -421,7 +421,7 @@ void SCXMLDotWriter::writeStateElement(std::ostream& os, const Element<std::stri
 	}
 
 	// recurse into children and search others to draw
-	NodeSet<std::string> childElems = InterpreterImpl::filterChildType(Node_base::ELEMENT_NODE, stateElem);
+	NodeSet<std::string> childElems = DOMUtils::filterChildType(Node_base::ELEMENT_NODE, stateElem);
 	for (int i = 0; i < childElems.size(); i++) {
 		Element<std::string> childElem(childElems[i]);
 		if (InterpreterImpl::isState(Element<std::string>(childElem))) {
@@ -538,7 +538,7 @@ void SCXMLDotWriter::writePerTargetPorts(std::ostream& os, const DotState& dotSt
 		for (iter_t::const_iterator transIter = targetKeyRange.first; transIter != targetKeyRange.second;  ++transIter) {
 			const Element<std::string>& transElem = transIter->second;
 
-			std::list<std::string> events = InterpreterImpl::tokenizeIdRefs(ATTR(transElem, "event"));
+			std::list<std::string> events = tokenize(ATTR(transElem, "event"));
 			eventNames.insert(events.begin(), events.end());
 
 			if (events.size() == 0) {

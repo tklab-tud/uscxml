@@ -1,6 +1,6 @@
 /**
  *  @file
- *  @author     2012-2013 Stefan Radomski (stefan.radomski@cs.tu-darmstadt.de)
+ *  @author     2016 Stefan Radomski (stefan.radomski@cs.tu-darmstadt.de)
  *  @copyright  Simplified BSD
  *
  *  @cond
@@ -17,31 +17,18 @@
  *  @endcond
  */
 
-#ifndef STORAGE_H_L672TNX
-#define STORAGE_H_L672TNX
+#ifndef STRING_H_FD462039
+#define STRING_H_FD462039
 
 #include <string>
-#include <map>
+#include <list>
 
 namespace uscxml {
 
-class Storage {
-public:
-	Storage(const std::string& filename);
-	~Storage();
-
-	unsigned long getLength();
-	std::string key(unsigned long index);
-	std::string getItem(const std::string& key);
-	void setItem(const std::string& key, const std::string& value);
-	void removeItem(const std::string& key);
-	void clear();
-
-protected:
-	std::map<std::string, std::string> _data;
-	std::string _filename;
-};
+std::list<std::string> tokenize(const std::string& line, const char seperator = ' ', bool trimWhiteSpace = true);
+std::string spaceNormalize(const std::string& text);
+bool nameMatch(const std::string& eventDescs, const std::string& event);
 
 }
 
-#endif /* end of include guard: STORAGE_H_L672TNX */
+#endif /* end of include guard: STRING_H_FD462039 */

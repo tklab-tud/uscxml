@@ -23,6 +23,7 @@
 // this has to be the first include or MSVC will run amok
 #include "uscxml/config.h"
 #include "uscxml/Common.h"
+#include "uscxml/util/String.h"
 
 #include <iostream> // arabica xpath uses cerr without iostream
 #include <boost/shared_ptr.hpp>
@@ -33,11 +34,6 @@
 
 #include <XPath/XPath.hpp>
 #include <DOM/Document.hpp>
-
-#include <DOM/SAX2DOM/SAX2DOM.hpp>
-#include <SAX/helpers/CatchErrorHandler.hpp>
-#include <DOM/Events/EventTarget.hpp>
-#include <DOM/Events/EventListener.hpp>
 
 #include "uscxml/concurrency/BlockingQueue.h"
 #include "uscxml/messages/Data.h"
@@ -50,11 +46,13 @@
 #include "uscxml/plugins/Invoker.h"
 #include "uscxml/plugins/ExecutableContent.h"
 
-#ifdef BUILD_PROFILING
-#include "uscxml/concurrency/Timer.h"
-#define TIME_BLOCK Measurement msm(&timer);
-#else
-#define TIME_BLOCK (0);
+#ifndef TIME_BLOCK
+#	ifdef BUILD_PROFILING
+#		include "uscxml/concurrency/Timer.h"
+#		define TIME_BLOCK Measurement msm(&timer);
+#	else
+#		define TIME_BLOCK
+#	endif
 #endif
 
 #define ERROR_PLATFORM_THROW(msg) \
@@ -399,18 +397,6 @@ public:
 	virtual Arabica::XPath::NodeSet<std::string> getTargetStates(const Arabica::XPath::NodeSet<std::string>& transitions);
 	virtual Arabica::DOM::Node<std::string> getSourceState(const Arabica::DOM::Element<std::string>& transition);
 
-	static Arabica::XPath::NodeSet<std::string> filterChildElements(const std::string& tagname, const Arabica::DOM::Node<std::string>& node, bool recurse = false);
-	static Arabica::XPath::NodeSet<std::string> filterChildElements(const std::string& tagName, const Arabica::XPath::NodeSet<std::string>& nodeSet, bool recurse = false);
-	static Arabica::XPath::NodeSet<std::string> filterChildType(const Arabica::DOM::Node_base::Type type, const Arabica::DOM::Node<std::string>& node, bool recurse = false);
-	static Arabica::XPath::NodeSet<std::string> filterChildType(const Arabica::DOM::Node_base::Type type, const Arabica::XPath::NodeSet<std::string>& nodeSet, bool recurse = false);
-
-	static std::list<std::string> tokenizeIdRefs(const std::string& idRefs) {
-		return tokenize(idRefs, ' ', true);
-	}
-	static std::list<std::string> tokenize(const std::string& line, const char seperator = ' ', bool trimWhiteSpace = false);
-
-	static std::string spaceNormalize(const std::string& text);
-	static bool nameMatch(const std::string& eventDescs, const std::string& event);
 	Arabica::DOM::Node<std::string> findLCCA(const Arabica::XPath::NodeSet<std::string>& states);
 	virtual Arabica::XPath::NodeSet<std::string> getProperAncestors(const Arabica::DOM::Node<std::string>& s1, const Arabica::DOM::Node<std::string>& s2);
 
@@ -827,7 +813,8 @@ protected:
 		return _impl->setInvokeRequest(req);
 	}
 
-	static Interpreter fromInputSource(Arabica::SAX::InputSource<std::string>& source, const std::string& sourceURL);
+	// we use a void ptr here as Arabica::SAX::InputSource complicates includes
+	static Interpreter fromInputSource(void* source, const std::string& sourceURL);
 
 	boost::shared_ptr<InterpreterImpl> _impl;
 	static std::map<std::string, boost::weak_ptr<InterpreterImpl> > _instances;

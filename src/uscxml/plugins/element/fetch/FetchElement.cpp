@@ -20,7 +20,7 @@
 #include <boost/algorithm/string.hpp>
 
 #include "FetchElement.h"
-#include "uscxml/DOMUtils.h"
+#include "uscxml/dom/DOMUtils.h"
 #include <glog/logging.h>
 
 #include <event2/http.h>

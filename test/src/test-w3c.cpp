@@ -21,7 +21,7 @@
 # endif
 
 
-#include "uscxml/DOMUtils.h"
+#include "uscxml/dom/DOMUtils.h"
 #include "uscxml/concurrency/Timer.h"
 
 #include "uscxml/Factory.h"
@@ -178,7 +178,7 @@ int main(int argc, char** argv) {
 		if (delayFactor != 1) {
 			Arabica::DOM::Document<std::string> document = interpreter.getDocument();
 			Arabica::DOM::Element<std::string> root = document.getDocumentElement();
-			Arabica::XPath::NodeSet<std::string> sends = InterpreterImpl::filterChildElements(interpreter.getNameSpaceInfo().xmlNSPrefix + "send", root, true);
+			Arabica::XPath::NodeSet<std::string> sends = DOMUtils::filterChildElements(interpreter.getNameSpaceInfo().xmlNSPrefix + "send", root, true);
 
 			for (int i = 0; i < sends.size(); i++) {
 				Arabica::DOM::Element<std::string> send = Arabica::DOM::Element<std::string>(sends[i]);

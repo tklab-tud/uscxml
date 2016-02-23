@@ -20,7 +20,8 @@
 #ifndef LUADATAMODEL_H_113E014C
 #define LUADATAMODEL_H_113E014C
 
-#include "uscxml/Interpreter.h"
+#include "uscxml/InterpreterInfo.h"
+#include "uscxml/plugins/DataModel.h"
 #include <list>
 
 #ifdef BUILD_AS_PLUGINS

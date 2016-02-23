@@ -22,7 +22,7 @@
 #include <DOM/io/Stream.hpp>
 #include <iostream>
 #include "uscxml/UUID.h"
-#include "uscxml/DOMUtils.h"
+#include "uscxml/dom/DOMUtils.h"
 #include <math.h>
 #include <boost/algorithm/string.hpp>
 #include <glog/logging.h>
@@ -103,9 +103,9 @@ void ChartToVHDL::checkDocument() {
 void ChartToVHDL::findEvents() {
 	// elements with an event attribute
 	NodeSet<std::string> withEvent;
-	withEvent.push_back(InterpreterImpl::filterChildElements(_nsInfo.xmlNSPrefix + "raise", _scxml, true));
-	withEvent.push_back(InterpreterImpl::filterChildElements(_nsInfo.xmlNSPrefix + "send", _scxml, true));
-	withEvent.push_back(InterpreterImpl::filterChildElements(_nsInfo.xmlNSPrefix + "transition", _scxml, true));
+	withEvent.push_back(DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "raise", _scxml, true));
+	withEvent.push_back(DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "send", _scxml, true));
+	withEvent.push_back(DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "transition", _scxml, true));
 
 	for (size_t i = 0; i < withEvent.size(); i++) {
 		if (HAS_ATTR_CAST(withEvent[i], "event")) {
@@ -479,7 +479,7 @@ void ChartToVHDL::writeOptimalTransitionSetSelection(std::ostream & stream) {
 			stream << " and ( '0' " << std::endl;;
 
 			// find all matching event literals
-			std::list<std::string> eventDescs = tokenizeIdRefs(ATTR(transition, "event"));
+			std::list<std::string> eventDescs = tokenize(ATTR(transition, "event"));
 			for (std::list<std::string>::iterator descIter = eventDescs.begin(); descIter != eventDescs.end(); descIter++) {
 				std::list<TrieNode*> eventNames = _eventTrie.getWordsWithPrefix((*descIter) == "*" ? "" : *descIter);
 				for (std::list<TrieNode*>::iterator eventIter = eventNames.begin(); eventIter != eventNames.end(); eventIter++) {

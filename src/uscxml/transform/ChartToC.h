@@ -21,7 +21,7 @@
 #define FSMTOCPP_H_201672B0
 
 #include "uscxml/interpreter/InterpreterRC.h"
-#include "uscxml/DOMUtils.h"
+#include "uscxml/dom/DOMUtils.h"
 #include "uscxml/util/Trie.h"
 #include "Transformer.h"
 

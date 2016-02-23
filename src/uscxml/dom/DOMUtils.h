@@ -21,9 +21,9 @@
 #define DOMUTILS_H_WK0WAEA7
 
 #include "uscxml/Common.h"
-#include <DOM/SAX2DOM/SAX2DOM.hpp>
-#include <SAX/helpers/DefaultHandler.hpp>
-#include <SAX/helpers/CatchErrorHandler.hpp>
+#include <vector>
+#include <iostream>
+#include <DOM/Document.hpp>
 #include <DOM/io/Stream.hpp> // operator<< for nodes
 #include <XPath/XPath.hpp>
 
@@ -73,6 +73,23 @@ public:
 	static Arabica::XPath::NodeSet<std::string> inDocumentOrder(const std::set<std::string>& elements,
 	        const Arabica::DOM::Element<std::string>& root,
 	        const bool includeEmbeddedDoc = false);
+
+	static Arabica::XPath::NodeSet<std::string> filterChildElements(const std::string& tagname,
+	        const Arabica::DOM::Node<std::string>& node,
+	        bool recurse = false);
+
+	static Arabica::XPath::NodeSet<std::string> filterChildElements(const std::string& tagName,
+	        const Arabica::XPath::NodeSet<std::string>& nodeSet,
+	        bool recurse = false);
+
+	static Arabica::XPath::NodeSet<std::string> filterChildType(const Arabica::DOM::Node_base::Type type,
+	        const Arabica::DOM::Node<std::string>& node,
+	        bool recurse = false);
+
+	static Arabica::XPath::NodeSet<std::string> filterChildType(const Arabica::DOM::Node_base::Type type,
+	        const Arabica::XPath::NodeSet<std::string>& nodeSet,
+	        bool recurse = false);
+
 protected:
 	static void inPostFixOrder(const std::set<std::string>& elements,
 	                           const Arabica::DOM::Element<std::string>& root,
@@ -84,38 +101,9 @@ protected:
 	                            const bool includeEmbeddedDoc,
 	                            Arabica::XPath::NodeSet<std::string>& nodes);
 
+
 };
 
-class ScriptEntityResolver : public Arabica::SAX::EntityResolver<std::string> {
-	virtual InputSourceT resolveEntity(const std::string& publicId, const std::string& systemId) {
-		Arabica::SAX::InputSource<std::string> is;
-		return is;
-	}
-};
-
-class USCXML_API NameSpacingParser : public Arabica::SAX2DOM::Parser<std::string> {
-public:
-	NameSpacingParser();
-	NameSpacingParser(const NameSpacingParser& other) {}
-	static NameSpacingParser fromFile(const std::string& file);
-	static NameSpacingParser fromXML(const std::string& xml);
-	static NameSpacingParser fromInputSource(Arabica::SAX::InputSource<std::string>& source);
-
-	void startPrefixMapping(const std::string& prefix, const std::string& uri);
-
-	std::map<std::string, std::string> nameSpace;
-
-	virtual bool errorsReported() {
-		return _errorHandler.errorsReported();
-	}
-
-	virtual const std::string& errors() {
-		return _errorHandler.errors();
-	}
-
-private:
-	Arabica::SAX::CatchErrorHandler<std::string> _errorHandler;
-};
 
 }
 

@@ -42,8 +42,8 @@ public:\
 	std::string getLocalName() { return "elementName"; }\
 	std::string getNamespace() { return "http://www.w3.org/2008/04/mmi-arch"; }\
 	bool processChildren()     { return false; }\
-	void enterElement(const Arabica::DOM::Node<std::string>& node);\
-	void exitElement(const Arabica::DOM::Node<std::string>& node) {}\
+	void enterElement(const Arabica::DOM::Element<std::string>& node) {}\
+	void exitElement(const Arabica::DOM::Element<std::string>& node) {}\
 };
 
 namespace uscxml {

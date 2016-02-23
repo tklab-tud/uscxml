@@ -22,6 +22,7 @@
 
 #define MMI_WITH_OPERATOR_EVENT 1
 
+#include <iostream>
 #include <DOM/Node.hpp>
 #include <DOM/Document.hpp>
 #include <uscxml/Interpreter.h>

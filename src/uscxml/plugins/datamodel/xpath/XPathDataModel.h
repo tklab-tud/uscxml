@@ -20,7 +20,9 @@
 #ifndef XPATHDATAMODEL_H_KN8TWG0V
 #define XPATHDATAMODEL_H_KN8TWG0V
 
-#include "uscxml/Interpreter.h"
+#include "uscxml/InterpreterInfo.h"
+#include "uscxml/plugins/DataModel.h"
+
 #include <list>
 
 #ifdef BUILD_AS_PLUGINS

@@ -1,6 +1,6 @@
 /**
  *  @file
- *  @author     2016 Stefan Radomski (stefan.radomski@cs.tu-darmstadt.de)
+ *  @author     2012-2015 Stefan Radomski (stefan.radomski@cs.tu-darmstadt.de)
  *  @copyright  Simplified BSD
  *
  *  @cond
@@ -17,26 +17,8 @@
  *  @endcond
  */
 
-#include "InterpreterFast.h"
-
-#include "uscxml/Factory.h"
-#include "uscxml/concurrency/DelayedEventQueue.h"
-
-#include <glog/logging.h>
-#include "uscxml/UUID.h"
-#include "uscxml/dom/DOMUtils.h"
+#include "ChartAnnotator.h"
 
 namespace uscxml {
 
-using namespace Arabica::XPath;
-using namespace Arabica::DOM;
-
-
-void InterpreterFast::handleDOMEvent(Arabica::DOM::Events::Event<std::string>& event) {
-	InterpreterImpl::handleDOMEvent(event);
-
-	if (event.getType().compare("DOMAttrModified") == 0) // we do not care about attributes
-		return;
-
-}
 }

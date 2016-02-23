@@ -9,6 +9,7 @@
 #include <assert.h>
 #include <boost/algorithm/string.hpp>
 #include <iostream>
+#include <DOM/SAX2DOM/SAX2DOM.hpp>
 #include <DOM/Document.hpp>
 
 using namespace uscxml;

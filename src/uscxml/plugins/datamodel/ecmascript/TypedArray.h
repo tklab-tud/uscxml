@@ -21,7 +21,7 @@
 #define TYPEDARRAY_H_99815BLY
 
 #include "uscxml/Common.h"
-#include "uscxml/Message.h"
+#include "uscxml/messages/Blob.h"
 
 #include <string>
 #include <vector>

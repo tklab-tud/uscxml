@@ -19,6 +19,8 @@
 
 #include "uscxml/Common.h"
 #include "uscxml/config.h"
+#include "uscxml/URL.h"
+#include "uscxml/util/String.h"
 
 #include "JSCDataModel.h"
 #include "JSCDOM.h"
@@ -41,7 +43,7 @@
 #include "dom/JSCDataView.h"
 
 #include "uscxml/Message.h"
-#include "uscxml/DOMUtils.h"
+#include "uscxml/dom/DOMUtils.h"
 #include <glog/logging.h>
 
 #ifdef BUILD_AS_PLUGINS
@@ -94,7 +96,7 @@ void JSCDataModel::addExtension(DataModelExtension* ext) {
 	_extensions.insert(ext);
 
 	JSObjectRef currScope = JSContextGetGlobalObject(_ctx);
-	std::list<std::string> locPath = InterpreterImpl::tokenize(ext->provides(), '.');
+	std::list<std::string> locPath = tokenize(ext->provides(), '.');
 	std::list<std::string>::iterator locIter = locPath.begin();
 	while(true) {
 		std::string pathComp = *locIter;
@@ -309,7 +311,7 @@ void JSCDataModel::setEvent(const Event& event) {
 				handleException(exception);
 		} else {
 			JSStringRef propName = JSStringCreateWithUTF8CString("data");
-			JSStringRef contentStr = JSStringCreateWithUTF8CString(InterpreterImpl::spaceNormalize(event.content).c_str());
+			JSStringRef contentStr = JSStringCreateWithUTF8CString(spaceNormalize(event.content).c_str());
 			JSObjectSetProperty(_ctx, eventObj, propName, JSValueMakeString(_ctx, contentStr), 0, &exception);
 			JSStringRelease(propName);
 			JSStringRelease(contentStr);
@@ -701,7 +703,7 @@ void JSCDataModel::assign(const Element<std::string>& assignElem,
 				throw Event();
 			assign(key, Data(d, Data::INTERPRETED));
 		} catch (Event e) {
-			assign(key, Data("\"" + InterpreterImpl::spaceNormalize(content) + "\"", Data::INTERPRETED));
+			assign(key, Data("\"" + spaceNormalize(content) + "\"", Data::INTERPRETED));
 		}
 	} else {
 		JSValueRef exception = NULL;

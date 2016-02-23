@@ -20,7 +20,7 @@
 #include <string>
 
 #include "InterpreterIssue.h"
-#include "uscxml/DOMUtils.h"
+#include "uscxml/dom/DOMUtils.h"
 #include "uscxml/debug/Complexity.h"
 #include "uscxml/Interpreter.h"
 #include "uscxml/Factory.h"
@@ -299,7 +299,7 @@ std::list<InterpreterIssue> InterpreterIssue::forInterpreter(InterpreterImpl* in
 
 		// check for valid transition with history states
 		if (LOCALNAME(state) == "history") {
-			NodeSet<std::string> transitions = InterpreterImpl::filterChildElements(_nsInfo.xmlNSPrefix + "transition", state, false);
+			NodeSet<std::string> transitions = DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "transition", state, false);
 			if (transitions.size() > 1) {
 				issues.push_back(InterpreterIssue("History pseudo-state with id '" + stateId + "' has multiple transitions", state, InterpreterIssue::USCXML_ISSUE_FATAL));
 			} else if (transitions.size() == 0) {
@@ -350,7 +350,7 @@ std::list<InterpreterIssue> InterpreterIssue::forInterpreter(InterpreterImpl* in
 
 		// check for valid target
 		if (HAS_ATTR(transition, "target")) {
-			std::list<std::string> targetIds = InterpreterImpl::tokenizeIdRefs(ATTR(transition, "target"));
+			std::list<std::string> targetIds = tokenize(ATTR(transition, "target"));
 			if (targetIds.size() == 0) {
 				issues.push_back(InterpreterIssue("Transition has empty target state list", transition, InterpreterIssue::USCXML_ISSUE_FATAL));
 			}
@@ -367,7 +367,7 @@ std::list<InterpreterIssue> InterpreterIssue::forInterpreter(InterpreterImpl* in
 	// check for redundancy of transition
 	for (int i = 0; i < allStates.size(); i++) {
 		Element<std::string> state = Element<std::string>(allStates[i]);
-		NodeSet<std::string> transitions = InterpreterImpl::filterChildElements(_nsInfo.xmlNSPrefix + "transition", state, false);
+		NodeSet<std::string> transitions = DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "transition", state, false);
 
 		transitions.to_document_order();
 
@@ -386,11 +386,11 @@ std::list<InterpreterIssue> InterpreterIssue::forInterpreter(InterpreterImpl* in
 
 					} else if (HAS_ATTR(transition, "event")) {
 						// does the earlier transition match all our events?
-						std::list<std::string> events = InterpreterImpl::tokenizeIdRefs(ATTR(transition, "event"));
+						std::list<std::string> events = tokenize(ATTR(transition, "event"));
 
 						bool allMatched = true;
 						for (std::list<std::string>::iterator eventIter = events.begin(); eventIter != events.end(); eventIter++) {
-							if (!InterpreterImpl::nameMatch(ATTR(earlierTransition, "event"), *eventIter)) {
+							if (!nameMatch(ATTR(earlierTransition, "event"), *eventIter)) {
 								allMatched = false;
 								break;
 							}
@@ -438,12 +438,12 @@ NEXT_TRANSITION:
 
 			if (HAS_ATTR(state, "initial")) {
 				NodeSet<std::string> childs;
-				childs.push_back(InterpreterImpl::filterChildElements(_nsInfo.xmlNSPrefix + "state", state, true));
-				childs.push_back(InterpreterImpl::filterChildElements(_nsInfo.xmlNSPrefix + "parallel", state, true));
-				childs.push_back(InterpreterImpl::filterChildElements(_nsInfo.xmlNSPrefix + "final", state, true));
-				childs.push_back(InterpreterImpl::filterChildElements(_nsInfo.xmlNSPrefix + "history", state, true));
+				childs.push_back(DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "state", state, true));
+				childs.push_back(DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "parallel", state, true));
+				childs.push_back(DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "final", state, true));
+				childs.push_back(DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "history", state, true));
 
-				std::list<std::string> intials = InterpreterImpl::tokenizeIdRefs(ATTR(state, "initial"));
+				std::list<std::string> intials = tokenize(ATTR(state, "initial"));
 				for (std::list<std::string>::iterator initIter = intials.begin(); initIter != intials.end(); initIter++) {
 					if (seenStates.find(*initIter) == seenStates.end()) {
 						issues.push_back(InterpreterIssue("Initial attribute has invalid target state with id '" + *initIter + "'", state, InterpreterIssue::USCXML_ISSUE_FATAL));
@@ -489,7 +489,7 @@ NEXT_TRANSITION:
 		        setIter != targetIdSets.end();
 		        setIter++) {
 			NodeSet<std::string> targets;
-			std::list<std::string> targetIds = InterpreterImpl::tokenizeIdRefs(setIter->second);
+			std::list<std::string> targetIds = tokenize(setIter->second);
 			for (std::list<std::string>::iterator tgtIter = targetIds.begin(); tgtIter != targetIds.end(); tgtIter++) {
 				if (seenStates.find(*tgtIter) == seenStates.end())
 					goto NEXT_SET;
@@ -506,11 +506,11 @@ NEXT_SET:
 	// check for valid initial transition
 	{
 		NodeSet<std::string> initTrans;
-//        initTrans.push_back(InterpreterImpl::filterChildElements(_nsInfo.xmlNSPrefix + "transition", histories, true));
+//        initTrans.push_back(DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "transition", histories, true));
 
 		for (int i = 0; i < initials.size(); i++) {
 			Element<std::string> initial = Element<std::string>(initials[i]);
-			NodeSet<std::string> initTransitions = InterpreterImpl::filterChildElements(_nsInfo.xmlNSPrefix + "transition", initial, true);
+			NodeSet<std::string> initTransitions = DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "transition", initial, true);
 			if (initTransitions.size() != 1) {
 				issues.push_back(InterpreterIssue("Initial element must define exactly one transition", initial, InterpreterIssue::USCXML_ISSUE_FATAL));
 			}
@@ -539,12 +539,12 @@ NEXT_SET:
 				continue; // syntax will catch this one
 
 			NodeSet<std::string> childs;
-			childs.push_back(InterpreterImpl::filterChildElements(_nsInfo.xmlNSPrefix + "state", state, true));
-			childs.push_back(InterpreterImpl::filterChildElements(_nsInfo.xmlNSPrefix + "parallel", state, true));
-			childs.push_back(InterpreterImpl::filterChildElements(_nsInfo.xmlNSPrefix + "final", state, true));
-			childs.push_back(InterpreterImpl::filterChildElements(_nsInfo.xmlNSPrefix + "history", state, true));
+			childs.push_back(DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "state", state, true));
+			childs.push_back(DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "parallel", state, true));
+			childs.push_back(DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "final", state, true));
+			childs.push_back(DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "history", state, true));
 
-			std::list<std::string> intials = InterpreterImpl::tokenizeIdRefs(ATTR(transition, "target"));
+			std::list<std::string> intials = tokenize(ATTR(transition, "target"));
 			for (std::list<std::string>::iterator initIter = intials.begin(); initIter != intials.end(); initIter++) {
 				// the 'target' of a <transition> inside an <initial> or <history> element: all the states must be descendants of the containing <state> or <parallel> element
 				if (!InterpreterImpl::isMember(seenStates[*initIter], childs)) {
@@ -602,7 +602,7 @@ NEXT_SET:
 
 		for (int i = 0; i < allExecContentContainers.size(); i++) {
 			Element<std::string> block = Element<std::string>(allExecContentContainers[i]);
-			NodeSet<std::string> execContents = InterpreterImpl::filterChildType(Node_base::ELEMENT_NODE, block);
+			NodeSet<std::string> execContents = DOMUtils::filterChildType(Node_base::ELEMENT_NODE, block);
 			for (int j = 0; j < execContents.size(); j++) {
 				Element<std::string> execContent = Element<std::string>(execContents[j]);
 				// SCXML specific executable content, always available
@@ -723,8 +723,8 @@ NEXT_SET:
 				issues.push_back(InterpreterIssue("Send element cannot have delay with target _internal", send, InterpreterIssue::USCXML_ISSUE_WARNING));
 			}
 
-			NodeSet<std::string> contentChilds = InterpreterImpl::filterChildElements(_nsInfo.xmlNSPrefix + "content", send, false);
-			NodeSet<std::string> paramChilds = InterpreterImpl::filterChildElements(_nsInfo.xmlNSPrefix + "param", send, false);
+			NodeSet<std::string> contentChilds = DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "content", send, false);
+			NodeSet<std::string> paramChilds = DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "param", send, false);
 
 			if (HAS_ATTR(send, "namelist") && contentChilds.size() > 0) {
 				issues.push_back(InterpreterIssue("Send element cannot have namelist attribute and content child", send, InterpreterIssue::USCXML_ISSUE_WARNING));
@@ -753,18 +753,18 @@ NEXT_SET:
 			if (HAS_ATTR(invoke, "id") && HAS_ATTR(invoke, "idlocation")) {
 				issues.push_back(InterpreterIssue("Invoke element cannot have both id and idlocation attribute", invoke, InterpreterIssue::USCXML_ISSUE_WARNING));
 			}
-			if (HAS_ATTR(invoke, "namelist") && InterpreterImpl::filterChildElements(_nsInfo.xmlNSPrefix + "param", invoke, false).size() > 0) {
+			if (HAS_ATTR(invoke, "namelist") && DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "param", invoke, false).size() > 0) {
 				issues.push_back(InterpreterIssue("Invoke element cannot have namelist attribute and param child", invoke, InterpreterIssue::USCXML_ISSUE_WARNING));
 			}
-			if (HAS_ATTR(invoke, "src") && InterpreterImpl::filterChildElements(_nsInfo.xmlNSPrefix + "content", invoke, false).size() > 0) {
+			if (HAS_ATTR(invoke, "src") && DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "content", invoke, false).size() > 0) {
 				issues.push_back(InterpreterIssue("Invoke element cannot have src attribute and content child", invoke, InterpreterIssue::USCXML_ISSUE_WARNING));
 
 			}
 		}
 		for (int i = 0; i < doneDatas.size(); i++) {
 			Element<std::string> donedata = Element<std::string>(doneDatas[i]);
-			if (InterpreterImpl::filterChildElements(_nsInfo.xmlNSPrefix + "content", donedata, false).size() > 0 &&
-			        InterpreterImpl::filterChildElements(_nsInfo.xmlNSPrefix + "param", donedata, false).size() > 0) {
+			if (DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "content", donedata, false).size() > 0 &&
+			        DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "param", donedata, false).size() > 0) {
 				issues.push_back(InterpreterIssue("Donedata element cannot have param child and content child", donedata, InterpreterIssue::USCXML_ISSUE_WARNING));
 
 			}

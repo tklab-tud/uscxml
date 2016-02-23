@@ -22,7 +22,7 @@
 
 #include <glog/logging.h>
 #include "uscxml/UUID.h"
-#include "uscxml/DOMUtils.h"
+#include "uscxml/dom/DOMUtils.h"
 
 #define VERBOSE 0
 
@@ -208,7 +208,7 @@ void InterpreterDraft6::exitStates(const Arabica::XPath::NodeSet<std::string>& e
 #endif
 
 	for (int i = 0; i < statesToExit.size(); i++) {
-		NodeSet<std::string> histories = filterChildElements(_nsInfo.xmlNSPrefix + "history", statesToExit[i]);
+		NodeSet<std::string> histories = DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "history", statesToExit[i]);
 		for (int j = 0; j < histories.size(); j++) {
 			Element<std::string> historyElem = (Element<std::string>)histories[j];
 			std::string historyType = (historyElem.hasAttribute("type") ? historyElem.getAttribute("type") : "shallow");
@@ -237,7 +237,7 @@ void InterpreterDraft6::exitStates(const Arabica::XPath::NodeSet<std::string>& e
 	for (int i = 0; i < statesToExit.size(); i++) {
 		USCXML_MONITOR_CALLBACK3(beforeExitingState, Element<std::string>(statesToExit[i]), (i + 1 < statesToExit.size()))
 
-		NodeSet<std::string> onExits = filterChildElements(_nsInfo.xmlNSPrefix + "onExit", statesToExit[i]);
+		NodeSet<std::string> onExits = DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "onExit", statesToExit[i]);
 		for (int j = 0; j < onExits.size(); j++) {
 			Element<std::string> onExitElem = (Element<std::string>)onExits[j];
 			executeContent(onExitElem);
@@ -245,7 +245,7 @@ void InterpreterDraft6::exitStates(const Arabica::XPath::NodeSet<std::string>& e
 
 		USCXML_MONITOR_CALLBACK3(afterExitingState, Element<std::string>(statesToExit[i]), (i + 1 < statesToExit.size()))
 
-		NodeSet<std::string> invokes = filterChildElements(_nsInfo.xmlNSPrefix + "invoke", statesToExit[i]);
+		NodeSet<std::string> invokes = DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "invoke", statesToExit[i]);
 		for (int j = 0; j < invokes.size(); j++) {
 			Element<std::string> invokeElem = (Element<std::string>)invokes[j];
 			if (HAS_ATTR(invokeElem, "persist") && stringIsTrue(ATTR(invokeElem, "persist"))) {
@@ -384,7 +384,7 @@ void InterpreterDraft6::enterStates(const Arabica::XPath::NodeSet<std::string>& 
 
 		// extension for flattened interpreters
 		for (unsigned int k = 0; k < statesToEnter.size(); k++) {
-			NodeSet<std::string> invokes = filterChildElements(_nsInfo.xmlNSPrefix + "invoke", statesToEnter[k]);
+			NodeSet<std::string> invokes = DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "invoke", statesToEnter[k]);
 			for (unsigned int j = 0; j < invokes.size(); j++) {
 				Element<std::string> invokeElem = Element<std::string>(invokes[j]);
 				if (HAS_ATTR(invokeElem, "persist") && stringIsTrue(ATTR(invokeElem, "persist"))) {
@@ -396,7 +396,7 @@ void InterpreterDraft6::enterStates(const Arabica::XPath::NodeSet<std::string>& 
 		USCXML_MONITOR_CALLBACK3(beforeEnteringState, stateElem, (i + 1 < statesToEnter.size()))
 
 		// extension for flattened SCXML documents, we will need an explicit uninvoke element
-		NodeSet<std::string> uninvokes = filterChildElements(_nsInfo.xmlNSPrefix + "uninvoke", statesToEnter[i]);
+		NodeSet<std::string> uninvokes = DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "uninvoke", statesToEnter[i]);
 		for (int j = 0; j < uninvokes.size(); j++) {
 			Element<std::string> uninvokeElem = (Element<std::string>)uninvokes[j];
 			cancelInvoke(uninvokeElem);
@@ -406,9 +406,9 @@ void InterpreterDraft6::enterStates(const Arabica::XPath::NodeSet<std::string>& 
 		_statesToInvoke.push_back(stateElem);
 
 		if (_binding == LATE && !isMember(stateElem, _alreadyEntered)) {
-			NodeSet<std::string> dataModelElems = filterChildElements(_nsInfo.xmlNSPrefix + "datamodel", stateElem);
+			NodeSet<std::string> dataModelElems = DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "datamodel", stateElem);
 			if(dataModelElems.size() > 0 && _dataModel) {
-				Arabica::XPath::NodeSet<std::string> dataElems = filterChildElements(_nsInfo.xmlNSPrefix + "data", dataModelElems[0]);
+				Arabica::XPath::NodeSet<std::string> dataElems = DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "data", dataModelElems[0]);
 				for (int j = 0; j < dataElems.size(); j++) {
 					if (dataElems[j].getNodeType() == Node_base::ELEMENT_NODE)
 						initializeData(Element<std::string>(dataElems[j]));
@@ -417,7 +417,7 @@ void InterpreterDraft6::enterStates(const Arabica::XPath::NodeSet<std::string>& 
 			_alreadyEntered.push_back(stateElem);
 		}
 		// execute onentry executable content
-		NodeSet<std::string> onEntryElems = filterChildElements(_nsInfo.xmlNSPrefix + "onEntry", stateElem);
+		NodeSet<std::string> onEntryElems = DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "onEntry", stateElem);
 		executeContent(onEntryElems, false);
 
 		USCXML_MONITOR_CALLBACK3(afterEnteringState, stateElem, (i + 1 < statesToEnter.size()))
@@ -443,7 +443,7 @@ void InterpreterDraft6::enterStates(const Arabica::XPath::NodeSet<std::string>& 
 		if (isFinal(stateElem)) {
 
 			Arabica::DOM::Element<std::string> doneData;
-			Arabica::XPath::NodeSet<std::string> doneDatas = filterChildElements(_nsInfo.xmlNSPrefix + "donedata", stateElem);
+			Arabica::XPath::NodeSet<std::string> doneDatas = DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "donedata", stateElem);
 			if (doneDatas.size() > 0) {
 				// only process first donedata element
 				doneData = Element<std::string>(doneDatas[0]);
@@ -518,7 +518,7 @@ void InterpreterDraft6::addStatesToEnter(const Element<std::string>& state,
 			}
 		} else {
 			defaultHistoryContent.push_back(getParentState(state));
-			NodeSet<std::string> transitions = filterChildElements(_nsInfo.xmlNSPrefix + "transition", state);
+			NodeSet<std::string> transitions = DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "transition", state);
 			for (int i = 0; i < transitions.size(); i++) {
 				NodeSet<std::string> targets = getTargetStates(Element<std::string>(transitions[i]));
 				for (int j = 0; j < targets.size(); j++) {
@@ -561,7 +561,7 @@ void InterpreterDraft6::handleDOMEvent(Arabica::DOM::Events::Event<std::string>&
 	if (event.getType().compare("DOMAttrModified") == 0) // we do not care about attributes
 		return;
 	Node<std::string> target = Arabica::DOM::Node<std::string>(event.getTarget());
-	NodeSet<std::string> transitions = InterpreterImpl::filterChildElements(_nsInfo.xmlNSPrefix + "transition", target, true);
+	NodeSet<std::string> transitions = DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "transition", target, true);
 	for (int i = 0; i < transitions.size(); i++) {
 		const Element<std::string> transElem = Element<std::string>(transitions[i]);
 		if (_transWithinParallel.find(transElem) != _transWithinParallel.end())

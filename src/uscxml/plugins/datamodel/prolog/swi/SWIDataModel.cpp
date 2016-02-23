@@ -21,8 +21,10 @@
 
 #include "uscxml/Common.h"
 #include "uscxml/config.h"
+#include "uscxml/util/String.h"
+#include "uscxml/URL.h"
 #include "SWIDataModel.h"
-#include "uscxml/DOMUtils.h"
+#include "uscxml/dom/DOMUtils.h"
 #include "uscxml/Message.h"
 #include <glog/logging.h>
 
@@ -272,7 +274,7 @@ void SWIDataModel::setEvent(const Event& event) {
 			dataInitStr << "load_xml_file('" << domUrl.asLocalFile(".pl") << "', XML), copy_term(XML,DATA), assert(event(data(DATA)))";
 			PlCall(dataInitStr.str().c_str());
 		} else if (event.content.size() > 0) {
-			PlCall("assert", PlCompound("event", PlCompound("data", PlString(InterpreterImpl::spaceNormalize(event.content).c_str()))));
+			PlCall("assert", PlCompound("event", PlCompound("data", PlString(spaceNormalize(event.content).c_str()))));
 		} else if (!event.data.empty()) {
 			assertFromData(event.data, "event(data(", 2);
 		}

@@ -1,6 +1,6 @@
 #include "uscxml/config.h"
 #include "uscxml/Interpreter.h"
-#include "uscxml/DOMUtils.h"
+#include "uscxml/dom/DOMUtils.h"
 
 #ifndef BUILD_MINIMAL
 #	include "uscxml/debug/DebuggerServlet.h"

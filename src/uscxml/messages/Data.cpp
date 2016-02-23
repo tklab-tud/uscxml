@@ -22,7 +22,12 @@
 
 #include <boost/algorithm/string.hpp>
 
-#include "uscxml/DOMUtils.h"
+#include "uscxml/dom/DOMUtils.h"
+#include "uscxml/dom/NameSpacingParser.h"
+#include <DOM/SAX2DOM/SAX2DOM.hpp>
+#include <SAX/helpers/DefaultHandler.hpp>
+#include <SAX/helpers/CatchErrorHandler.hpp>
+
 #include "glog/logging.h"
 
 #ifdef HAS_STRING_H

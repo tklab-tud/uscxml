@@ -21,7 +21,7 @@
 #define CHARTOVHDL_H
 
 #include "uscxml/interpreter/InterpreterDraft6.h"
-#include "uscxml/DOMUtils.h"
+#include "uscxml/dom/DOMUtils.h"
 #include "uscxml/util/Trie.h"
 #include "Transformer.h"
 #include "ChartToC.h"

@@ -20,7 +20,7 @@
 #ifndef JSCDOM_H_1RC5LCG8
 #define JSCDOM_H_1RC5LCG8
 
-#include "uscxml/Interpreter.h"
+#include "uscxml/InterpreterInfo.h"
 #include <JavaScriptCore/JavaScriptCore.h>
 #include <XPath/XPath.hpp>
 #include "../Storage.h"

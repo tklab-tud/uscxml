@@ -19,6 +19,8 @@
 
 #include "Storage.h"
 #include <iostream>
+#include <fstream>
+#include <istream>
 
 namespace uscxml {
 

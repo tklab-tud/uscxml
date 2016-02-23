@@ -28,10 +28,11 @@ void enteredFoo() {
 
 int main(int argc, char** argv) {
 	uscxml_ctx ctx;
+	int err = USCXML_ERR_OK;
+
 	memset(&ctx, 0, sizeof(uscxml_ctx));
 	ctx.machine = &USCXML_MACHINE_TEST_INLINE;
 	
-	int err = USCXML_ERR_OK;
 	while(err != USCXML_ERR_DONE) {
 		err = uscxml_step(&ctx);
 	}

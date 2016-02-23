@@ -1,6 +1,10 @@
 set(TEST_TIMEOUT 15)
 set(TEST_BENCHMARK_ITERATIONS 1000)
 
+find_program(SPIN spin)
+find_program(CC gcc)
+find_program(CXX g++)
+
 function(USCXML_TEST_COMPILE)
 	set(options BUILD_ONLY)
 	set(oneValueArgs LABEL NAME)
@@ -82,6 +86,36 @@ add_test(test-execution ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/uscxml-browser ${CMAKE
 add_test(test-communication ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/uscxml-browser -t5493 ${CMAKE_SOURCE_DIR}/test/uscxml/test-communication.scxml)
 add_test(test-done-data ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/uscxml-browser ${CMAKE_SOURCE_DIR}/test/uscxml/test-donedata.scxml)
 
+# make sure all headers are self-reliant
+file(GLOB_RECURSE USCXML_HEADERS
+	../src/*.h
+	../src/*.hpp
+)
+
+foreach(USCXML_HEADER ${USCXML_HEADERS} )
+	STRING(REGEX REPLACE "${CMAKE_CURRENT_SOURCE_DIR}/../src/" "" USCXML_REL_HEADER ${USCXML_HEADER})
+
+	set(HEADER_TEST)
+	set(HEADER_TEST "${HEADER_TEST}#include \"${USCXML_HEADER}\"\n")
+	set(HEADER_TEST "${HEADER_TEST}int main(int argc, char** argv) {}")
+	FILE(WRITE ${CMAKE_CURRENT_BINARY_DIR}/headers/${USCXML_REL_HEADER}.cpp ${HEADER_TEST})
+
+	add_test(NAME "header/${USCXML_REL_HEADER}"
+		COMMAND ${CMAKE_COMMAND}
+			-DTESTFILE:FILEPATH=${CMAKE_CURRENT_BINARY_DIR}/headers/${USCXML_REL_HEADER}.cpp
+			-DCC_BIN:FILEPATH=${CC}
+			-DCXX_BIN:FILEPATH=${CXX}
+			-DPROJECT_SOURCE_DIR=${PROJECT_SOURCE_DIR}
+			-DUSCXML_PLATFORM_ID=${USCXML_PLATFORM_ID}
+			-DCMAKE_BINARY_DIR=${CMAKE_BINARY_DIR}
+			-DPROJECT_BINARY_DIR=${PROJECT_BINARY_DIR}
+			-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=${CMAKE_LIBRARY_OUTPUT_DIRECTORY}
+		-P ${CMAKE_CURRENT_SOURCE_DIR}/ctest/scripts/run_header_compiles.cmake)
+	set_property(TEST "header/${USCXML_REL_HEADER}" PROPERTY LABELS "header/${USCXML_REL_HEADER}")
+	
+endforeach()
+
+
 # tests for inline SCXML with generated C
 
 add_executable(test-c-inline src/test-c-inline.c)
@@ -106,10 +140,6 @@ set_property(TEST "gen/c/inline" PROPERTY LABELS "gen/c/inline")
 
 
 # declare W3C tests
-
-find_program(SPIN spin)
-find_program(CC gcc)
-find_program(CXX g++)
 
 if (NOT BUILD_MINIMAL)
 	# compile and add all reported issues tests

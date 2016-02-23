@@ -20,7 +20,8 @@
 #ifndef PROMELADATAMODEL_H_4VG0TDMU
 #define PROMELADATAMODEL_H_4VG0TDMU
 
-#include "uscxml/Interpreter.h"
+#include "uscxml/InterpreterInfo.h"
+#include "uscxml/plugins/DataModel.h"
 #include <list>
 
 #ifdef BUILD_AS_PLUGINS

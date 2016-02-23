@@ -26,7 +26,7 @@
 #include <DOM/SAX2DOM/SAX2DOM.hpp>
 #include <SAX/helpers/InputSourceResolver.hpp>
 
-#include <uscxml/DOMUtils.h>
+#include <uscxml/dom/DOMUtils.h>
 
 #include <boost/algorithm/string.hpp>
 

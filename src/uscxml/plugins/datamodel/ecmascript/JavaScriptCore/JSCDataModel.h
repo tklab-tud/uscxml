@@ -20,7 +20,8 @@
 #ifndef JSCDATAMODEL_H_KN8TWG0V
 #define JSCDATAMODEL_H_KN8TWG0V
 
-#include "uscxml/Interpreter.h"
+#include "uscxml/InterpreterInfo.h"
+#include "uscxml/plugins/DataModel.h"
 #include <list>
 #include <JavaScriptCore/JavaScriptCore.h>
 #include "JSCDOM.h"

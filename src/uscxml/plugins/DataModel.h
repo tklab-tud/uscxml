@@ -22,13 +22,16 @@
 
 #include "uscxml/config.h"
 #include "uscxml/Common.h"
+#include "uscxml/InterpreterInfo.h"
 #include "uscxml/plugins/EventHandler.h"
 
-#ifdef BUILD_PROFILING
-#include "uscxml/concurrency/Timer.h"
-#define TIME_BLOCK Measurement msm(&timer);
-#else
-#define TIME_BLOCK (0);
+#ifndef TIME_BLOCK
+#	ifdef BUILD_PROFILING
+#		include "uscxml/concurrency/Timer.h"
+#		define TIME_BLOCK Measurement msm(&timer);
+#	else
+#		define TIME_BLOCK
+#	endif
 #endif
 
 #include <list>

@@ -23,7 +23,7 @@
 #include "uscxml/Convenience.h"
 #include "uscxml/URL.h"
 #include "uscxml/concurrency/Timer.h"
-//#include "uscxml/DOMUtils.h"
+//#include "uscxml/dom/DOMUtils.h"
 #include "uscxml/Factory.h"
 //#include "uscxml/Interpreter.h"
 #include "uscxml/UUID.h"

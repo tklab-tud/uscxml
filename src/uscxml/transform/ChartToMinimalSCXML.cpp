@@ -49,7 +49,7 @@ void ChartToMinimalSCXML::writeTo(std::ostream& stream) {
 	addMonitor(this);
 
 	{
-		NodeSet<std::string> allElements = filterChildType(Node_base::ELEMENT_NODE, _scxml, true);
+		NodeSet<std::string> allElements = DOMUtils::filterChildType(Node_base::ELEMENT_NODE, _scxml, true);
 		size_t nrElements = 0;
 		for (int i = 0; i < allElements.size(); i++) {
 			if (!isInEmbeddedDocument(allElements[i]))
@@ -61,11 +61,11 @@ void ChartToMinimalSCXML::writeTo(std::ostream& stream) {
 	// test 278 - move embedded datas to topmost datamodel
 	if (_binding == EARLY) {
 		// move all data elements into topmost datamodel element
-		NodeSet<std::string> datas = filterChildElements(_nsInfo.xmlNSPrefix + "data", _scxml, true);
+		NodeSet<std::string> datas = DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "data", _scxml, true);
 
 		if (datas.size() > 0) {
 			Node<std::string> topMostDatamodel;
-			NodeSet<std::string> datamodels = filterChildElements(_nsInfo.xmlNSPrefix + "datamodel", _scxml, false);
+			NodeSet<std::string> datamodels = DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "datamodel", _scxml, false);
 			if (datamodels.size() > 0) {
 				topMostDatamodel = datamodels[0];
 			} else {
@@ -118,7 +118,7 @@ void ChartToMinimalSCXML::writeTo(std::ostream& stream) {
 	removeUnvisited(_scxml);
 
 	{
-		NodeSet<std::string> allElements = filterChildType(Node_base::ELEMENT_NODE, _scxml, true);
+		NodeSet<std::string> allElements = DOMUtils::filterChildType(Node_base::ELEMENT_NODE, _scxml, true);
 		size_t nrElements = 0;
 		for (int i = 0; i < allElements.size(); i++) {
 			if (!isInEmbeddedDocument(allElements[i]))
@@ -150,7 +150,7 @@ void ChartToMinimalSCXML::removeUnvisited(Arabica::DOM::Node<std::string>& node)
 
 	// special handling for conditional blocks with if
 	if (TAGNAME(elem) == _nsInfo.xmlNSPrefix + "if") {
-		NodeSet<std::string> ifChilds = filterChildType(Node_base::ELEMENT_NODE, elem, false);
+		NodeSet<std::string> ifChilds = DOMUtils::filterChildType(Node_base::ELEMENT_NODE, elem, false);
 		Element<std::string> lastConditional = elem;
 		bool hadVisitedChild = false;
 		for (int j = 0; j < ifChilds.size(); j++) {

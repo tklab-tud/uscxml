@@ -22,9 +22,15 @@
 #include "XPathDataModel.h"
 
 #include "uscxml/Message.h"
-#include "uscxml/DOMUtils.h"
+#include "uscxml/util/String.h"
+#include "uscxml/dom/DOMUtils.h"
 #include <glog/logging.h>
 #include <boost/algorithm/string.hpp>
+
+#include <DOM/SAX2DOM/SAX2DOM.hpp>
+//#include <SAX/helpers/CatchErrorHandler.hpp>
+//#include <DOM/Events/EventTarget.hpp>
+//#include <DOM/Events/EventListener.hpp>
 
 #ifdef BUILD_AS_PLUGINS
 #include <Pluma/Connector.hpp>
@@ -195,7 +201,7 @@ void XPathDataModel::setEvent(const Event& event) {
 	}
 
 	if (event.content.size() > 0) {
-		Text<std::string> textNode = _doc.createTextNode(InterpreterImpl::spaceNormalize(event.content).c_str());
+		Text<std::string> textNode = _doc.createTextNode(spaceNormalize(event.content).c_str());
 		eventDataElem.appendChild(textNode);
 	}
 	if (event.dom) {
@@ -503,7 +509,7 @@ void XPathDataModel::assign(const Element<std::string>& assignElem,
 		}
 		assign(key, nodeSet, assignElem);
 	} else if (content.length() > 0) {
-		Text<std::string> textNode = _doc.createTextNode(InterpreterImpl::spaceNormalize(content));
+		Text<std::string> textNode = _doc.createTextNode(spaceNormalize(content));
 		nodeSet.push_back(textNode);
 		assign(key, nodeSet, assignElem);
 	} else if (HAS_ATTR(assignElem, "expr")) {

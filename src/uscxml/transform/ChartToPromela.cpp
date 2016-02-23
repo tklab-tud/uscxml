@@ -26,6 +26,7 @@
 #include "uscxml/plugins/datamodel/promela/parser/promela.tab.hpp"
 
 #include <DOM/io/Stream.hpp>
+#include <DOM/SAX2DOM/SAX2DOM.hpp>
 #include <iostream>
 #include "uscxml/UUID.h"
 #include <math.h>
@@ -843,10 +844,10 @@ std::string ChartToPromela::conditionalizeForHist(const std::set<GlobalTransitio
 //	for (;;) {
 //		if (!HAS_ATTR(currState, "transient") || !DOMUtils::attributeIsTrue(ATTR(currState, "transient")))
 //			break;
-//		content.push_back(filterChildElements(_nsInfo.xmlNSPrefix + "invoke", currState));
-//		content.push_back(filterChildElements(_nsInfo.xmlNSPrefix + "onentry", currState));
-//		content.push_back(filterChildElements(_nsInfo.xmlNSPrefix + "onexit", currState));
-//		NodeSet<std::string> transitions = filterChildElements(_nsInfo.xmlNSPrefix + "transition", currState);
+//		content.push_back(DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "invoke", currState));
+//		content.push_back(DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "onentry", currState));
+//		content.push_back(DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "onexit", currState));
+//		NodeSet<std::string> transitions = DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "transition", currState);
 //		currState = _globalConf[ATTR_CAST(transitions[0], "target")];
 //	}
 //
@@ -1511,7 +1512,7 @@ void ChartToPromela::writeExecutableContent(std::ostream& stream, const Arabica:
 			child = child.getNextSibling();
 		}
 	} else if(TAGNAME(nodeElem) == "script") {
-		NodeSet<std::string> scriptText = filterChildType(Node_base::TEXT_NODE, node, true);
+		NodeSet<std::string> scriptText = DOMUtils::filterChildType(Node_base::TEXT_NODE, node, true);
 		for (int i = 0; i < scriptText.size(); i++) {
 			stream << ADAPT_SRC(beautifyIndentation(scriptText[i].getNodeValue(), indent)) << std::endl;
 		}
@@ -1564,13 +1565,13 @@ void ChartToPromela::writeExecutableContent(std::ostream& stream, const Arabica:
 	} else if(TAGNAME(nodeElem) == "if") {
 		NodeSet<std::string> condChain;
 		condChain.push_back(node);
-		condChain.push_back(filterChildElements(_nsInfo.xmlNSPrefix + "elseif", node));
-		condChain.push_back(filterChildElements(_nsInfo.xmlNSPrefix + "else", node));
+		condChain.push_back(DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "elseif", node));
+		condChain.push_back(DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "else", node));
 
 		writeIfBlock(stream, condChain, indent);
 
 	} else if(TAGNAME(nodeElem) == "assign") {
-		NodeSet<std::string> assignTexts = filterChildType(Node_base::TEXT_NODE, nodeElem, true);
+		NodeSet<std::string> assignTexts = DOMUtils::filterChildType(Node_base::TEXT_NODE, nodeElem, true);
 		assert(assignTexts.size() > 0);
 		stream << beautifyIndentation(ADAPT_SRC(boost::trim_copy(assignTexts[0].getNodeValue())), indent) << std::endl;
 
@@ -1652,8 +1653,8 @@ void ChartToPromela::writeExecutableContent(std::ostream& stream, const Arabica:
 					typeAssignSS << padding << "  tmpE.type = " << eventType << ";" << std::endl;
 				}
 
-				NodeSet<std::string> sendParams = filterChildElements(_nsInfo.xmlNSPrefix + "param", nodeElem);
-				NodeSet<std::string> sendContents = filterChildElements(_nsInfo.xmlNSPrefix + "content", nodeElem);
+				NodeSet<std::string> sendParams = DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "param", nodeElem);
+				NodeSet<std::string> sendContents = DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "content", nodeElem);
 				std::string sendNameList = ATTR(nodeElem, "namelist");
 				if (sendParams.size() > 0) {
 					for (int i = 0; i < sendParams.size(); i++) {
@@ -1662,7 +1663,7 @@ void ChartToPromela::writeExecutableContent(std::ostream& stream, const Arabica:
 					}
 				}
 				if (sendNameList.size() > 0) {
-					std::list<std::string> nameListIds = tokenizeIdRefs(sendNameList);
+					std::list<std::string> nameListIds = tokenize(sendNameList);
 					std::list<std::string>::iterator nameIter = nameListIds.begin();
 					while(nameIter != nameListIds.end()) {
 						typeAssignSS << padding << "  tmpE.data." << *nameIter << " = " << ADAPT_SRC(*nameIter) << ";" << std::endl;
@@ -1844,7 +1845,7 @@ PromelaInlines::PromelaInlines(const Arabica::DOM::Node<std::string>& node) {
 		for (int i = 0; i < levelNodes.size(); i++) {
 
 			// get all comments
-			NodeSet<std::string> comments = InterpreterImpl::filterChildType(Node_base::COMMENT_NODE, levelNodes[i]);
+			NodeSet<std::string> comments = DOMUtils::filterChildType(Node_base::COMMENT_NODE, levelNodes[i]);
 			for (int j = 0; j < comments.size(); j++) {
 				PromelaInline* tmp = new PromelaInline(comments[j]);
 				if (tmp->type == PromelaInline::PROMELA_NIL) {
@@ -1864,7 +1865,7 @@ PromelaInlines::PromelaInlines(const Arabica::DOM::Node<std::string>& node) {
 			}
 		}
 
-		levelNodes = InterpreterImpl::filterChildType(Node_base::ELEMENT_NODE, levelNodes);
+		levelNodes = DOMUtils::filterChildType(Node_base::ELEMENT_NODE, levelNodes);
 		level++;
 	}
 }
@@ -2191,7 +2192,7 @@ void ChartToPromela::writeStartInvoker(std::ostream& stream, const Arabica::DOM:
 	}
 
 	// set from params
-	NodeSet<std::string> invokeParams = filterChildElements(_nsInfo.xmlNSPrefix + "param", node);
+	NodeSet<std::string> invokeParams = DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "param", node);
 	for (int i = 0; i < invokeParams.size(); i++) {
 		std::string identifier = ATTR_CAST(invokeParams[i], "name");
 		std::string expression = ATTR_CAST(invokeParams[i], "expr");
@@ -2218,10 +2219,10 @@ void ChartToPromela::writeFSM(std::ostream& stream) {
 	stream << "    " << _prefix << "procid = _pid;" << std::endl;
 	stream << "  }" << std::endl;
 	// write initial transition
-//	transitions = filterChildElements(_nsInfo.xmlNSPrefix + "transition", _startState);
+//	transitions = DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "transition", _startState);
 //	assert(transitions.size() == 1);
 
-	NodeSet<std::string> scripts = filterChildElements(_nsInfo.xmlNSPrefix + "script", _scxml, false);
+	NodeSet<std::string> scripts = DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "script", _scxml, false);
 	if (scripts.size() > 0) {
 		stream << std::endl << "/* global scripts */" << std::endl;
 		for (int i = 0; i < scripts.size(); i++) {
@@ -2336,14 +2337,14 @@ void ChartToPromela::writeFSM(std::ostream& stream) {
 					excludeEventDescs += " " + evIter->atom;
 				}
 
-				NodeSet<std::string> transitions = filterChildElements("transition", es.container, true);
+				NodeSet<std::string> transitions = DOMUtils::filterChildElements("transition", es.container, true);
 				std::set<std::string> eventNames;
 				for (int i = 0; i < transitions.size(); i++) {
 					if (!HAS_ATTR_CAST(transitions[i], "event"))
 						continue;
 					if (HAS_ATTR_CAST(transitions[i], "cond") && ATTR_CAST(transitions[i], "cond").find("_event.") != std::string::npos)
 						continue;
-					std::list<std::string> events = InterpreterImpl::tokenizeIdRefs(ATTR_CAST(transitions[i], "event"));
+					std::list<std::string> events = tokenize(ATTR_CAST(transitions[i], "event"));
 					for (std::list<std::string>::iterator evIter = events.begin(); evIter != events.end(); evIter++) {
 						std::string eventName = *evIter;
 						if (boost::ends_with(eventName, "*"))
@@ -2352,7 +2353,7 @@ void ChartToPromela::writeFSM(std::ostream& stream) {
 							eventName = eventName.substr(0, eventName.size() - 1);
 
 						// is this event excluded?
-						if (!InterpreterImpl::nameMatch(excludeEventDescs, eventName)) {
+						if (!nameMatch(excludeEventDescs, eventName)) {
 							eventNames.insert(eventName);
 						}
 					}
@@ -2404,7 +2405,7 @@ void ChartToPromela::writeFSM(std::ostream& stream) {
 	{
 		bool finalizeFound = false;
 		for (std::map<Arabica::DOM::Node<std::string>, ChartToPromela*>::iterator invIter = _machines.begin(); invIter != _machines.end(); invIter++) {
-			NodeSet<std::string> finalizes = filterChildElements(_nsInfo.xmlNSPrefix + "finalize", invIter->first, false);
+			NodeSet<std::string> finalizes = DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "finalize", invIter->first, false);
 			if (finalizes.size() > 0) {
 				finalizeFound = true;
 				break;
@@ -2414,7 +2415,7 @@ void ChartToPromela::writeFSM(std::ostream& stream) {
 			stream << "/* <finalize> event */" << std::endl;
 			stream << "    if" << std::endl;
 			for (std::map<Arabica::DOM::Node<std::string>, ChartToPromela*>::iterator invIter = _machines.begin(); invIter != _machines.end(); invIter++) {
-				NodeSet<std::string> finalizes = filterChildElements(_nsInfo.xmlNSPrefix + "finalize", invIter->first, false);
+				NodeSet<std::string> finalizes = DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "finalize", invIter->first, false);
 				if (finalizes.size() > 0) {
 					stream << "    :: " << _prefix << "_event.invokeid == " << _analyzer->macroForLiteral(invIter->second->_invokerid) << " -> {" << std::endl;
 					writeExecutableContent(stream, finalizes[0], 3);
@@ -2841,7 +2842,7 @@ void ChartToPromela::writeDispatchingBlock(std::ostream& stream, std::list<Globa
 	} else {
 		std::string eventDescs = currTrans->eventDesc;
 
-		std::list<std::string> eventNames = tokenizeIdRefs(eventDescs);
+		std::list<std::string> eventNames = tokenize(eventDescs);
 		std::set<std::string> eventPrefixes;
 		std::list<std::string>::iterator eventNameIter = eventNames.begin();
 		while(eventNameIter != eventNames.end()) {
@@ -2987,8 +2988,8 @@ void ChartToPromela::initNodes() {
 
 	{
 		// shorten UUID ids at invokers for readability
-		NodeSet<std::string> invokes = filterChildElements(_nsInfo.xmlNSPrefix + "invoke", _scxml, true);
-		invokes.push_back(filterChildElements(_nsInfo.xmlNSPrefix + "uninvoke", _scxml, true));
+		NodeSet<std::string> invokes = DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "invoke", _scxml, true);
+		invokes.push_back(DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "uninvoke", _scxml, true));
 
 		// make sure all invokers have an id!
 		for (int i = 0; i < invokes.size(); i++) {
@@ -3006,7 +3007,7 @@ void ChartToPromela::initNodes() {
 
 	// are there nestes SCXML invokers?
 	{
-		NodeSet<std::string> invokes = filterChildElements(_nsInfo.xmlNSPrefix + "invoke", _scxml, true);
+		NodeSet<std::string> invokes = DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "invoke", _scxml, true);
 		for (int i = 0; i < invokes.size(); i++) {
 			if (!HAS_ATTR_CAST(invokes[i], "type") ||
 			        ATTR_CAST(invokes[i], "type") == "scxml" ||
@@ -3023,9 +3024,9 @@ void ChartToPromela::initNodes() {
 					nested = Interpreter::fromURL(absUrl);
 
 				} else {
-					NodeSet<std::string> nestedContent = InterpreterImpl::filterChildElements(_nsInfo.xmlNSPrefix + "content", invokes[i]);
+					NodeSet<std::string> nestedContent = DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "content", invokes[i]);
 					assert(nestedContent.size() == 1);
-					NodeSet<std::string> nestedRoot = InterpreterImpl::filterChildElements(_nsInfo.xmlNSPrefix + "scxml", nestedContent[0]);
+					NodeSet<std::string> nestedRoot = DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "scxml", nestedContent[0]);
 					assert(nestedRoot.size() == 1);
 
 					DOMImplementation<std::string> domFactory = Arabica::SimpleDOM::DOMImplementation<std::string>::getDOMImplementation();
@@ -3070,9 +3071,9 @@ void ChartToPromela::initNodes() {
 	while(histIter != _historyTargets.end()) {
 		NodeSet<std::string> histStatesMembers;
 		bool isDeep = (HAS_ATTR_CAST(histIter->second, "type") && ATTR_CAST(histIter->second, "type") == "deep");
-		histStatesMembers.push_back(filterChildElements(_nsInfo.xmlNSPrefix + "state", histIter->second.getParentNode(), isDeep));
-		histStatesMembers.push_back(filterChildElements(_nsInfo.xmlNSPrefix + "parallel", histIter->second.getParentNode(), isDeep));
-		histStatesMembers.push_back(filterChildElements(_nsInfo.xmlNSPrefix + "final", histIter->second.getParentNode(), isDeep));
+		histStatesMembers.push_back(DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "state", histIter->second.getParentNode(), isDeep));
+		histStatesMembers.push_back(DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "parallel", histIter->second.getParentNode(), isDeep));
+		histStatesMembers.push_back(DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "final", histIter->second.getParentNode(), isDeep));
 
 		for (int i = 0; i < histStatesMembers.size(); i++) {
 			_historyMembers[histIter->first].insert(std::make_pair(ATTR_CAST(histStatesMembers[i], "id"), i));
@@ -3089,7 +3090,7 @@ void ChartToPromela::initNodes() {
 	for (int i = 0; i < internalEventNames.size(); i++) {
 		if (HAS_ATTR_CAST(internalEventNames[i], "event")) {
 			std::string eventNames = ATTR_CAST(internalEventNames[i], "event");
-			std::list<std::string> events = tokenizeIdRefs(eventNames);
+			std::list<std::string> events = tokenize(eventNames);
 			for (std::list<std::string>::iterator eventIter = events.begin();
 			        eventIter != events.end(); eventIter++) {
 				std::string eventName = *eventIter;
@@ -3109,8 +3110,8 @@ void ChartToPromela::initNodes() {
 	// transform data / assign json into PROMELA statements
 	{
 		NodeSet<std::string> asgn;
-		asgn.push_back(filterChildElements(_nsInfo.xmlNSPrefix + "data", _scxml, true));
-		asgn.push_back(filterChildElements(_nsInfo.xmlNSPrefix + "assign", _scxml, true));
+		asgn.push_back(DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "data", _scxml, true));
+		asgn.push_back(DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "assign", _scxml, true));
 
 		for (int i = 0; i < asgn.size(); i++) {
 			if (isInEmbeddedDocument(asgn[i]))
@@ -3136,7 +3137,7 @@ void ChartToPromela::initNodes() {
 				absUrl.toAbsolute(_baseURL[_scxml]);
 				value = absUrl.getInContent();
 			} else {
-				NodeSet<std::string> textChilds = filterChildType(Node_base::TEXT_NODE, asgnElem);
+				NodeSet<std::string> textChilds = DOMUtils::filterChildType(Node_base::TEXT_NODE, asgnElem);
 				if (textChilds.size() > 0) {
 					for (int j = 0; j < textChilds.size(); j++) {
 						value += textChilds[j].getNodeValue();
@@ -3171,9 +3172,9 @@ void ChartToPromela::initNodes() {
 
 	// do we need sendid / invokeid?
 	{
-		NodeSet<std::string> invokes = filterChildElements(_nsInfo.xmlNSPrefix + "invoke", _scxml, true);
-		NodeSet<std::string> sends = filterChildElements(_nsInfo.xmlNSPrefix + "send", _scxml, true);
-		NodeSet<std::string> cancels = filterChildElements(_nsInfo.xmlNSPrefix + "cancel", _scxml, true);
+		NodeSet<std::string> invokes = DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "invoke", _scxml, true);
+		NodeSet<std::string> sends = DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "send", _scxml, true);
+		NodeSet<std::string> cancels = DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "cancel", _scxml, true);
 
 		if (cancels.size() > 0) {
 			_analyzer->addCode("_event.invokeid", this);
@@ -3204,11 +3205,11 @@ void ChartToPromela::initNodes() {
 	{
 		// string literals for raise / send content
 		NodeSet<std::string> withContent;
-		withContent.push_back(filterChildElements(_nsInfo.xmlNSPrefix + "send", _scxml, true));
-		withContent.push_back(filterChildElements(_nsInfo.xmlNSPrefix + "raise", _scxml, true));
+		withContent.push_back(DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "send", _scxml, true));
+		withContent.push_back(DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "raise", _scxml, true));
 
 		for (int i = 0; i < withContent.size(); i++) {
-			NodeSet<std::string> content = filterChildElements(_nsInfo.xmlNSPrefix + "content", withContent[i], true);
+			NodeSet<std::string> content = DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "content", withContent[i], true);
 			for (int j = 0; j < content.size(); j++) {
 				Element<std::string> contentElem(content[j]);
 				std::string content = spaceNormalize(contentElem.getFirstChild().getNodeValue());
@@ -3264,7 +3265,7 @@ void ChartToPromela::initNodes() {
 		_analyzer->addLiteral(ATTR(_scxml, "name"), _analyzer->indexForLiteral(_prefix + "_sessionid"));
 	}
 
-	NodeSet<std::string> contents = filterChildElements(_nsInfo.xmlNSPrefix + "content", _scxml, true);
+	NodeSet<std::string> contents = DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "content", _scxml, true);
 	for (int i = 0; i < contents.size(); i++) {
 		Element<std::string> contentElem = Element<std::string>(contents[i]);
 		if (contentElem.hasChildNodes() && contentElem.getFirstChild().getNodeType() == Node_base::TEXT_NODE && contentElem.getChildNodes().getLength() == 1) {
@@ -3279,9 +3280,9 @@ void ChartToPromela::initNodes() {
 	std::set<std::string> allStrings;
 	{
 		NodeSet<std::string> withCond;
-		withCond.push_back(filterChildElements(_nsInfo.xmlNSPrefix + "transition", _scxml, true));
-		withCond.push_back(filterChildElements(_nsInfo.xmlNSPrefix + "if", _scxml, true));
-		withCond.push_back(filterChildElements(_nsInfo.xmlNSPrefix + "elseif", _scxml, true));
+		withCond.push_back(DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "transition", _scxml, true));
+		withCond.push_back(DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "if", _scxml, true));
+		withCond.push_back(DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "elseif", _scxml, true));
 		for (int i = 0; i < withCond.size(); i++) {
 			Element<std::string> elem = Element<std::string>(withCond[i]);
 			if (HAS_ATTR(elem, "cond")) {
@@ -3294,11 +3295,11 @@ void ChartToPromela::initNodes() {
 	}
 	{
 		NodeSet<std::string> withExpr;
-		withExpr.push_back(filterChildElements(_nsInfo.xmlNSPrefix + "log", _scxml, true));
-		withExpr.push_back(filterChildElements(_nsInfo.xmlNSPrefix + "data", _scxml, true));
-		withExpr.push_back(filterChildElements(_nsInfo.xmlNSPrefix + "assign", _scxml, true));
-		withExpr.push_back(filterChildElements(_nsInfo.xmlNSPrefix + "content", _scxml, true));
-		withExpr.push_back(filterChildElements(_nsInfo.xmlNSPrefix + "param", _scxml, true));
+		withExpr.push_back(DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "log", _scxml, true));
+		withExpr.push_back(DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "data", _scxml, true));
+		withExpr.push_back(DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "assign", _scxml, true));
+		withExpr.push_back(DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "content", _scxml, true));
+		withExpr.push_back(DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "param", _scxml, true));
 		for (int i = 0; i < withExpr.size(); i++) {
 			Element<std::string> elem = Element<std::string>(withExpr[i]);
 			if (HAS_ATTR(elem, "expr")) {
@@ -3311,7 +3312,7 @@ void ChartToPromela::initNodes() {
 	}
 	{
 		NodeSet<std::string> withLocation;
-		withLocation.push_back(filterChildElements(_nsInfo.xmlNSPrefix + "assign", _scxml, true));
+		withLocation.push_back(DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "assign", _scxml, true));
 		for (int i = 0; i < withLocation.size(); i++) {
 			Element<std::string> elem = Element<std::string>(withLocation[i]);
 			if (HAS_ATTR(elem, "location")) {
@@ -3324,10 +3325,10 @@ void ChartToPromela::initNodes() {
 	}
 	{
 		NodeSet<std::string> withText;
-		withText.push_back(filterChildElements(_nsInfo.xmlNSPrefix + "script", _scxml, true));
-//		withText.push_back(filterChildElements(_nsInfo.xmlNSPrefix + "data", _scxml, true));
+		withText.push_back(DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "script", _scxml, true));
+//		withText.push_back(DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "data", _scxml, true));
 		for (int i = 0; i < withText.size(); i++) {
-			NodeSet<std::string> texts = filterChildType(Node_base::TEXT_NODE, withText[i], true);
+			NodeSet<std::string> texts = DOMUtils::filterChildType(Node_base::TEXT_NODE, withText[i], true);
 			for (int j = 0; j < texts.size(); j++) {
 				if (texts[j].getNodeValue().size() > 0) {
 					Text<std::string> elem = Text<std::string>(texts[j]);
@@ -3340,7 +3341,7 @@ void ChartToPromela::initNodes() {
 		}
 	}
 	{
-		NodeSet<std::string> foreachs = filterChildElements(_nsInfo.xmlNSPrefix + "foreach", _scxml, true);
+		NodeSet<std::string> foreachs = DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "foreach", _scxml, true);
 		for (int i = 0; i < foreachs.size(); i++) {
 			if (HAS_ATTR_CAST(foreachs[i], "index")) {
 				allCode.insert(ATTR_CAST(foreachs[i], "index"));
@@ -3359,12 +3360,12 @@ void ChartToPromela::initNodes() {
 	// add all namelist entries to the _event structure
 	{
 		NodeSet<std::string> withNamelist;
-		withNamelist.push_back(filterChildElements(_nsInfo.xmlNSPrefix + "send", _scxml, true));
-		withNamelist.push_back(filterChildElements(_nsInfo.xmlNSPrefix + "invoke", _scxml, true));
+		withNamelist.push_back(DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "send", _scxml, true));
+		withNamelist.push_back(DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "invoke", _scxml, true));
 		for (int i = 0; i < withNamelist.size(); i++) {
 			if (HAS_ATTR_CAST(withNamelist[i], "namelist")) {
 				std::string namelist = ATTR_CAST(withNamelist[i], "namelist");
-				std::list<std::string> names = tokenizeIdRefs(namelist);
+				std::list<std::string> names = tokenize(namelist);
 				for (std::list<std::string>::iterator nameIter = names.begin(); nameIter != names.end(); nameIter++) {
 					_analyzer->addCode("_event.data." + *nameIter + " = 0;", this); // introduce for _event_t typedef
 				}
@@ -3531,14 +3532,14 @@ void ChartToPromela::writeProgram(std::ostream& stream) {
 	}
 
 	{
-		NodeSet<std::string> cancels = filterChildElements(_nsInfo.xmlNSPrefix + "cancel", _scxml, true);
+		NodeSet<std::string> cancels = DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "cancel", _scxml, true);
 		if (cancels.size() > 0) {
 			writeCancelEvents(stream);
 			stream << std::endl;
 		}
 	}
 	{
-		NodeSet<std::string> invokes = filterChildElements(_nsInfo.xmlNSPrefix + "invoke", _scxml, true);
+		NodeSet<std::string> invokes = DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "invoke", _scxml, true);
 		if (invokes.size() > 0 && _analyzer->usesEventField("delay")) {
 			writeRemovePendingEventsFromInvoker(stream);
 			stream << std::endl;

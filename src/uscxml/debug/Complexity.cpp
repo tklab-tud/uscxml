@@ -18,7 +18,7 @@
 */
 
 #include "Complexity.h"
-#include "uscxml/DOMUtils.h"
+#include "uscxml/dom/DOMUtils.h"
 
 #include <boost/algorithm/string.hpp>
 
@@ -97,7 +97,7 @@ std::map<size_t, size_t> Complexity::getTransitionHistogramm(const Arabica::DOM:
 			if (nameSpace.size() == 0 && elemIter->getPrefix().size() > 0)
 				nameSpace = elemIter->getPrefix() + ":";
 		}
-		NodeSet<std::string> transitions = InterpreterImpl::filterChildElements(nameSpace + "transition", configNodeSet);
+		NodeSet<std::string> transitions = DOMUtils::filterChildElements(nameSpace + "transition", configNodeSet);
 		histogram[transitions.size()]++;
 	}
 

@@ -6,7 +6,7 @@
 #include "uscxml/transform/ChartToTex.h"
 #include "uscxml/transform/ChartToMinimalSCXML.h"
 #include "uscxml/transform/ChartToPromela.h"
-#include "uscxml/DOMUtils.h"
+#include "uscxml/dom/DOMUtils.h"
 
 #include <glog/logging.h>
 #include <boost/algorithm/string.hpp>
@@ -165,10 +165,10 @@ int main(int argc, char** argv) {
 			inputFile = optarg;
 			break;
 		case 'a':
-			options = InterpreterImpl::tokenize(optarg, ',');
+			options = tokenize(optarg, ',');
 			break;
 		case 'X': {
-			std::list<std::string> extension = InterpreterImpl::tokenize(optarg, '=');
+			std::list<std::string> extension = tokenize(optarg, '=');
 			if (extension.size() != 2)
 				printUsageAndExit(argv[0]);
 			std::string key = boost::trim_copy(*(extension.begin()));

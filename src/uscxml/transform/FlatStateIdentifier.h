@@ -22,7 +22,7 @@
 
 #include "uscxml/Common.h"
 #include "uscxml/Convenience.h"
-#include "uscxml/DOMUtils.h"
+#include "uscxml/dom/DOMUtils.h"
 
 #include <XPath/XPath.hpp>
 

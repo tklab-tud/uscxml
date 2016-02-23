@@ -17,12 +17,13 @@
  *  @endcond
  */
 
-#include <uscxml/Common.h>
+#include "uscxml/Common.h"
 #include "uscxml/UUID.h"
-#include "uscxml/DOMUtils.h"
-#include <uscxml/Convenience.h>
+#include "uscxml/dom/DOMUtils.h"
+#include "uscxml/Convenience.h"
+
 #include <glog/logging.h>
-#include <SAX/helpers/InputSourceResolver.hpp>
+#include <boost/algorithm/string.hpp>
 
 namespace uscxml {
 
@@ -227,44 +228,61 @@ std::list<Arabica::DOM::Node<std::string> > DOMUtils::getElementsByType(const Ar
 	return result;
 }
 
-NameSpacingParser NameSpacingParser::fromFile(const std::string& file) {
-	Arabica::SAX::InputSource<std::string> inputSource;
-	inputSource.setSystemId(file);
-	return fromInputSource(inputSource);
+
+NodeSet<std::string> DOMUtils::filterChildElements(const std::string& tagName, const NodeSet<std::string>& nodeSet, bool recurse) {
+	NodeSet<std::string> filteredChildElems;
+	for (unsigned int i = 0; i < nodeSet.size(); i++) {
+		filteredChildElems.push_back(filterChildElements(tagName, nodeSet[i], recurse));
+	}
+	return filteredChildElems;
 }
 
-NameSpacingParser NameSpacingParser::fromXML(const std::string& xml) {
-	std::stringstream* ss = new std::stringstream();
-	(*ss) << xml;
-	// we need an auto_ptr for arabica to assume ownership
-	std::auto_ptr<std::istream> ssPtr(ss);
-	Arabica::SAX::InputSource<std::string> inputSource;
-	inputSource.setByteStream(ssPtr);
-	return fromInputSource(inputSource);
-}
+NodeSet<std::string> DOMUtils::filterChildElements(const std::string& tagName, const Node<std::string>& node, bool recurse) {
+	NodeSet<std::string> filteredChildElems;
 
-NameSpacingParser NameSpacingParser::fromInputSource(Arabica::SAX::InputSource<std::string>& source) {
-	NameSpacingParser parser;
-	if(!parser.parse(source) || !parser.getDocument().hasChildNodes()) {
-		if(parser._errorHandler.errorsReported()) {
-//			LOG(ERROR) << "could not parse input:";
-//			LOG(ERROR) << parser._errorHandler.errors() << std::endl;
-		} else {
-			Arabica::SAX::InputSourceResolver resolver(source, Arabica::default_string_adaptor<std::string>());
-			if (!resolver.resolve()) {
-				LOG(ERROR) << source.getSystemId() << ": no such file";
-			}
+	if (!node)
+		return filteredChildElems;
+
+	NodeList<std::string> childs = node.getChildNodes();
+	for (unsigned int i = 0; i < childs.getLength(); i++) {
+		if (childs.item(i).getNodeType() != Node_base::ELEMENT_NODE)
+			continue;
+		//		std::cerr << TAGNAME(childs.item(i)) << std::endl;
+		if(iequals(TAGNAME_CAST(childs.item(i)), tagName)) {
+			filteredChildElems.push_back(childs.item(i));
+		}
+		if (recurse) {
+			filteredChildElems.push_back(filterChildElements(tagName, childs.item(i), recurse));
 		}
 	}
-	return parser;
+	return filteredChildElems;
 }
 
-NameSpacingParser::NameSpacingParser() {
-	setErrorHandler(_errorHandler);
+
+NodeSet<std::string> DOMUtils::filterChildType(const Node_base::Type type, const NodeSet<std::string>& nodeSet, bool recurse) {
+	NodeSet<std::string> filteredChildType;
+	for (unsigned int i = 0; i < nodeSet.size(); i++) {
+		filteredChildType.push_back(filterChildType(type, nodeSet[i], recurse));
+	}
+	return filteredChildType;
 }
 
-void NameSpacingParser::startPrefixMapping(const std::string& prefix, const std::string& uri) {
-	nameSpace.insert(std::make_pair(uri, prefix));
+NodeSet<std::string> DOMUtils::filterChildType(const Node_base::Type type, const Node<std::string>& node, bool recurse) {
+	NodeSet<std::string> filteredChildTypes;
+
+	if (!node)
+		return filteredChildTypes;
+
+	NodeList<std::string> childs = node.getChildNodes();
+	for (unsigned int i = 0; i < childs.getLength(); i++) {
+		if (childs.item(i).getNodeType() == type)
+			filteredChildTypes.push_back(childs.item(i));
+		if (recurse) {
+			filteredChildTypes.push_back(filterChildType(type, childs.item(i), recurse));
+		}
+	}
+	return filteredChildTypes;
 }
+
 
 }

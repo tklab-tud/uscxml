@@ -31,7 +31,7 @@
 #include "../../../uscxml/Message.h"
 #include "../../../uscxml/Factory.h"
 #include "../../../uscxml/Interpreter.h"
-#include "../../../uscxml/DOMUtils.h"
+#include "../../../uscxml/dom/DOMUtils.h"
 
 namespace uscxml {
 

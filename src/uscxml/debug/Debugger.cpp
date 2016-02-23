@@ -18,7 +18,7 @@
 */
 
 #include "uscxml/debug/Debugger.h"
-#include "uscxml/DOMUtils.h"
+#include "uscxml/dom/DOMUtils.h"
 #include "uscxml/debug/DebugSession.h"
 
 namespace uscxml {

@@ -21,10 +21,11 @@
 #include "uscxml/transform/ChartToC.h"
 #include "uscxml/debug/Complexity.h"
 #include <DOM/io/Stream.hpp>
+#include <DOM/SAX2DOM/SAX2DOM.hpp>
 #include <iostream>
 #include "uscxml/UUID.h"
 #include "uscxml/util/MD5.hpp"
-#include "uscxml/DOMUtils.h"
+#include "uscxml/dom/DOMUtils.h"
 #include <math.h>
 #include <boost/algorithm/string.hpp>
 #include <glog/logging.h>
@@ -205,10 +206,10 @@ void ChartToC::setStateCompletion() {
 			completion = getChildStates(state);
 
 		} else if (state.hasAttribute("initial")) {
-			completion = getStates(tokenizeIdRefs(state.getAttribute("initial")));
+			completion = getStates(tokenize(state.getAttribute("initial")));
 
 		} else {
-			NodeSet<std::string> initElems = filterChildElements(_nsInfo.xmlNSPrefix + "initial", state);
+			NodeSet<std::string> initElems = DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "initial", state);
 			if(initElems.size() > 0 && !iequals(ATTR_CAST(initElems[0], "generated"), "true")) {
 				// initial element is first child
 				completion.push_back(initElems[0]);
@@ -450,7 +451,7 @@ void ChartToC::writeForwardDeclarations(std::ostream& stream) {
 }
 
 void ChartToC::findNestedMachines() {
-	NodeSet<std::string> invokes = InterpreterImpl::filterChildElements(_nsInfo.xmlNSPrefix + "invoke", _scxml, true);
+	NodeSet<std::string> invokes = DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "invoke", _scxml, true);
 
 	for (size_t i = 0; i < invokes.size(); i++) {
 		if(isInEmbeddedDocument(invokes[i]))
@@ -472,10 +473,10 @@ void ChartToC::findNestedMachines() {
 			c2c = new ChartToC(Interpreter::fromURL(srcURL.asString()));
 		} else {
 			// is there a nested scxml machine inside?
-			NodeSet<std::string> contents = filterChildElements(_nsInfo.xmlNSPrefix + "content", invoke);
+			NodeSet<std::string> contents = DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "content", invoke);
 			if (contents.size() == 0)
 				continue;
-			NodeSet<std::string> scxmls = filterChildElements(_nsInfo.xmlNSPrefix + "scxml", contents[0]);
+			NodeSet<std::string> scxmls = DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "scxml", contents[0]);
 			if (scxmls.size() == 0)
 				continue;
 
@@ -555,7 +556,7 @@ void ChartToC::writeMacros(std::ostream& stream) {
 	stream << std::endl;
 
 	stream << "#ifndef USCXML_MAX_NR_STATES_BYTES " << std::endl;
-	stream << "#  define USCXML_MAX_NR_STATES_BYTES " << _stateCharArraySize << std::endl;
+	stream << "#  define USCXML_MAX_NR_STATES_BYTES " << (std::max)((size_t)1, _stateCharArraySize) << std::endl;
 	stream << "#endif " << std::endl;
 	stream << std::endl;
 
@@ -566,7 +567,7 @@ void ChartToC::writeMacros(std::ostream& stream) {
 	stream << std::endl;
 
 	stream << "#ifndef USCXML_MAX_NR_TRANS_BYTES " << std::endl;
-	stream << "#  define USCXML_MAX_NR_TRANS_BYTES " << _transCharArraySize << std::endl;
+	stream << "#  define USCXML_MAX_NR_TRANS_BYTES " << (std::max)((size_t)1, _transCharArraySize) << std::endl;
 	stream << "#endif " << std::endl;
 	stream << std::endl;
 
@@ -1037,7 +1038,7 @@ void ChartToC::writeExecContentFinalize(std::ostream& stream) {
 
 	for (size_t i = 0; i < finalizes.size(); i++) {
 		Element<std::string> finalize(finalizes[i]);
-		NodeSet<std::string> execContent = filterChildType(Node_base::ELEMENT_NODE, finalize);
+		NodeSet<std::string> execContent = DOMUtils::filterChildType(Node_base::ELEMENT_NODE, finalize);
 
 		if (execContent.size() > 0) {
 			stream << "static int " << _prefix << "_" << DOMUtils::idForNode(finalize) << "(const uscxml_ctx* ctx, const uscxml_elem_invoke* invocation, const void* event) {" << std::endl;
@@ -1066,7 +1067,7 @@ void ChartToC::writeExecContent(std::ostream& stream) {
 
 		if (i == 0) {
 			// root state - we need to perform some initialization here
-			NodeSet<std::string> globalScripts = filterChildElements(_nsInfo.xmlNSPrefix + "script", state);
+			NodeSet<std::string> globalScripts = DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "script", state);
 			if (globalScripts.size() > 0) {
 				for (size_t j = 0; j < globalScripts.size(); j++) {
 					stream << "static int " << _prefix << "_global_script_" << toStr(j) << "(const uscxml_ctx* ctx, const uscxml_state* state, const void* event) {" << std::endl;
@@ -1086,7 +1087,7 @@ void ChartToC::writeExecContent(std::ostream& stream) {
 			}
 		}
 
-		NodeSet<std::string> onexit = filterChildElements(_nsInfo.xmlNSPrefix + "onexit", state);
+		NodeSet<std::string> onexit = DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "onexit", state);
 		for (size_t j = 0; j < onexit.size(); j++) {
 			stream << "static int " << _prefix << "_" << DOMUtils::idForNode(state) << "_on_exit_" << toStr(j) << "(const uscxml_ctx* ctx, const uscxml_state* state, const void* event) {" << std::endl;
 			stream << "    int err = USCXML_ERR_OK;" << std::endl;
@@ -1107,7 +1108,7 @@ void ChartToC::writeExecContent(std::ostream& stream) {
 		}
 
 
-		NodeSet<std::string> onentry = filterChildElements(_nsInfo.xmlNSPrefix + "onentry", state);
+		NodeSet<std::string> onentry = DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "onentry", state);
 		for (size_t j = 0; j < onentry.size(); j++) {
 			stream << "static int " << _prefix << "_" << DOMUtils::idForNode(state) << "_on_entry_" << toStr(j) << "(const uscxml_ctx* ctx, const uscxml_state* state, const void* event) {" << std::endl;
 			stream << "    int err = USCXML_ERR_OK;" << std::endl;
@@ -1129,7 +1130,7 @@ void ChartToC::writeExecContent(std::ostream& stream) {
 		}
 
 
-		NodeSet<std::string> invokes = filterChildElements(_nsInfo.xmlNSPrefix + "invoke", state);
+		NodeSet<std::string> invokes = DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "invoke", state);
 		if (invokes.size() > 0) {
 			stream << "static int " << _prefix << "_" << DOMUtils::idForNode(state) << "_invoke(const uscxml_ctx* ctx, const uscxml_state* s, const uscxml_elem_invoke* invocation, unsigned char uninvoke) {" << std::endl;
 			for (size_t j = 0; j < invokes.size(); j++) {
@@ -1144,7 +1145,7 @@ void ChartToC::writeExecContent(std::ostream& stream) {
 
 	for (size_t i = 0; i < _transitions.size(); i++) {
 		Element<std::string> transition(_transitions[i]);
-		NodeSet<std::string> execContent = filterChildType(Node_base::ELEMENT_NODE, transition);
+		NodeSet<std::string> execContent = DOMUtils::filterChildType(Node_base::ELEMENT_NODE, transition);
 
 		if (execContent.size() > 0) {
 			stream << "static int " << _prefix << "_" << DOMUtils::idForNode(transition) << "_on_trans(const uscxml_ctx* ctx, const uscxml_state* state, const void* event) {" << std::endl;
@@ -1205,7 +1206,7 @@ void ChartToC::writeExecContent(std::ostream& stream, const Arabica::DOM::Node<s
 		stream << "    if unlikely((err = ctx->exec_content_script(ctx, ";
 		stream << (HAS_ATTR(elem, "src") ? "\"" + escape(ATTR(elem, "src")) + "\"" : "NULL") << ", ";
 
-		NodeSet<std::string> scriptTexts = filterChildType(Node_base::TEXT_NODE, elem);
+		NodeSet<std::string> scriptTexts = DOMUtils::filterChildType(Node_base::TEXT_NODE, elem);
 		if (scriptTexts.size() > 0) {
 			stream << "\"";
 			writeExecContent(stream, scriptTexts[0], 0);
@@ -1329,7 +1330,7 @@ void ChartToC::writeElementInfoInvocation(std::ostream& stream) {
 	stream << "#ifndef USCXML_NO_ELEM_INFO" << std::endl;
 	stream << std::endl;
 
-	NodeSet<std::string> invokes = filterChildElements(_nsInfo.xmlNSPrefix + "invoke", _scxml, true);
+	NodeSet<std::string> invokes = DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "invoke", _scxml, true);
 	if (invokes.size() > 0) {
 		_hasElement.insert("invoke");
 		stream << "static const uscxml_elem_invoke " << _prefix << "_elem_invokes[" << invokes.size() << "] = {" << std::endl;
@@ -1426,7 +1427,7 @@ void ChartToC::writeElementInfoInvocation(std::ostream& stream) {
 			stream << ", " << std::endl;
 
 			stream << "        /* finalize    */ ";
-			NodeSet<std::string> finalizes = filterChildElements(_nsInfo.xmlNSPrefix + "finalize", invoke);
+			NodeSet<std::string> finalizes = DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "finalize", invoke);
 			if (finalizes.size() > 0) {
 				stream << _prefix << "_" << DOMUtils::idForNode(finalizes[0]);
 			} else {
@@ -1434,7 +1435,7 @@ void ChartToC::writeElementInfoInvocation(std::ostream& stream) {
 			}
 			stream << ", " << std::endl;
 
-			NodeSet<std::string> contents = filterChildElements(_nsInfo.xmlNSPrefix + "content", invoke);
+			NodeSet<std::string> contents = DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "content", invoke);
 			if (contents.size() > 0 && !HAS_ATTR(invoke, "md5sum")) {
 				std::stringstream ss;
 				NodeList<std::string> cChilds = contents[0].getChildNodes();
@@ -1498,7 +1499,7 @@ void ChartToC::writeElementInfo(std::ostream& stream) {
 			stream << (HAS_ATTR(assign, "location") ? "\"" + escape(ATTR(assign, "location")) + "\"" : "NULL") << ", ";
 			stream << (HAS_ATTR(assign, "expr") ? "\"" + escape(ATTR(assign, "expr")) + "\"" : "NULL") << ", ";
 
-			NodeSet<std::string> assignTexts = filterChildType(Node_base::TEXT_NODE, assign);
+			NodeSet<std::string> assignTexts = DOMUtils::filterChildType(Node_base::TEXT_NODE, assign);
 			if (assignTexts.size() > 0) {
 				if (boost::trim_copy(assignTexts[0].getNodeValue()).length() > 0) {
 					std::string escaped = escape(assignTexts[0].getNodeValue());
@@ -1557,7 +1558,7 @@ void ChartToC::writeElementInfo(std::ostream& stream) {
 			stream << (HAS_ATTR(data, "src") ? "\"" + escape(ATTR(data, "src")) + "\"" : "NULL") << ", ";
 			stream << (HAS_ATTR(data, "expr") ? "\"" + escape(ATTR(data, "expr")) + "\"" : "NULL") << ", ";
 
-			NodeSet<std::string> dataTexts = filterChildType(Node_base::TEXT_NODE, data);
+			NodeSet<std::string> dataTexts = DOMUtils::filterChildType(Node_base::TEXT_NODE, data);
 			if (dataTexts.size() > 0) {
 				if (boost::trim_copy(dataTexts[0].getNodeValue()).length() > 0) {
 					std::string escaped = escape(dataTexts[0].getNodeValue());
@@ -1640,7 +1641,7 @@ void ChartToC::writeElementInfo(std::ostream& stream) {
 			stream << std::endl << "        /* namelist    */ ";
 			stream << (HAS_ATTR(send, "namelist") ? "\"" + escape(ATTR(send, "namelist")) + "\"" : "NULL") << ", ";
 
-			NodeSet<std::string> contents = filterChildElements(_nsInfo.xmlNSPrefix + "content", send);
+			NodeSet<std::string> contents = DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "content", send);
 			if (contents.size() > 0) {
 				std::stringstream ss;
 				NodeList<std::string> cChilds = contents[0].getChildNodes();
@@ -1684,7 +1685,7 @@ void ChartToC::writeElementInfo(std::ostream& stream) {
 		// parent
 		stream << ATTR_CAST(donedata.getParentNode(), "documentOrder") << ", ";
 
-		NodeSet<std::string> contents = filterChildElements(_nsInfo.xmlNSPrefix + "content", donedata);
+		NodeSet<std::string> contents = DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "content", donedata);
 		if (contents.size() > 0) {
 			std::stringstream ss;
 			NodeList<std::string> cChilds = contents[0].getChildNodes();
@@ -1751,7 +1752,11 @@ void ChartToC::writeMachineInfo(std::ostream& stream) {
 	stream << "        /* datamodel      */ \"" << (HAS_ATTR(_scxml, "datamodel") ? ATTR(_scxml, "datamodel") : "null") << "\"," << std::endl;
 	stream << "        /* uuid           */ \"" << _md5 << "\"," << std::endl;
 	stream << "        /* states         */ " << "&" << _prefix << "_states[0], " << std::endl;
-	stream << "        /* transitions    */ " << "&" << _prefix << "_transitions[0], " << std::endl;
+	if (_transitions.size() > 0) {
+		stream << "        /* transitions    */ " << "&" << _prefix << "_transitions[0], " << std::endl;
+	} else {
+		stream << "        /* transitions    */ " << "NULL, " << std::endl;
+	}
 	stream << "        /* parent         */ ";
 	if (_parentMachine != NULL) {
 		size_t parentIndex = 0;
@@ -1769,7 +1774,7 @@ void ChartToC::writeMachineInfo(std::ostream& stream) {
 
 	stream << "        /* donedata       */ " << "&" << _prefix << "_elem_donedatas[0], " << std::endl;
 	stream << "        /* script         */ ";
-	if (filterChildElements(_nsInfo.xmlNSPrefix + "script", _scxml).size() > 0) {
+	if (DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "script", _scxml).size() > 0) {
 		stream << _prefix << "_global_script" << std::endl;
 	} else {
 		stream << "NULL";
@@ -1810,7 +1815,7 @@ void ChartToC::writeMachineInfo(std::ostream& stream) {
 
 		stream << "        /* donedata       */ " << "&" << m->_prefix << "_elem_donedatas[0], " << std::endl;
 		stream << "        /* script         */ ";
-		if (filterChildElements(_nsInfo.xmlNSPrefix + "script", _scxml).size() > 0) {
+		if (DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "script", _scxml).size() > 0) {
 			stream << m->_prefix << "_global_script" << std::endl;
 		} else {
 			stream << "NULL";
@@ -1852,17 +1857,17 @@ void ChartToC::writeStates(std::ostream& stream) {
 
 		// onentry
 		stream << "        /* onentry    */ ";
-		stream << (filterChildElements(_nsInfo.xmlNSPrefix + "onentry", state).size() > 0 ? _prefix + "_" + DOMUtils::idForNode(state) + "_on_entry" : "NULL");
+		stream << (DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "onentry", state).size() > 0 ? _prefix + "_" + DOMUtils::idForNode(state) + "_on_entry" : "NULL");
 		stream << "," << std::endl;
 
 		// onexit
 		stream << "        /* onexit     */ ";
-		stream << (filterChildElements(_nsInfo.xmlNSPrefix + "onexit", state).size() > 0 ? _prefix + "_" + DOMUtils::idForNode(state) + "_on_exit" : "NULL");
+		stream << (DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "onexit", state).size() > 0 ? _prefix + "_" + DOMUtils::idForNode(state) + "_on_exit" : "NULL");
 		stream << "," << std::endl;
 
 		// invokers
 		stream << "        /* invoke     */ ";
-		stream << (filterChildElements(_nsInfo.xmlNSPrefix + "invoke", state).size() > 0 ? _prefix + "_" + DOMUtils::idForNode(state) + "_invoke" : "NULL");
+		stream << (DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "invoke", state).size() > 0 ? _prefix + "_" + DOMUtils::idForNode(state) + "_invoke" : "NULL");
 		stream << "," << std::endl;
 
 		// children
@@ -1932,95 +1937,97 @@ void ChartToC::writeTransitions(std::ostream& stream) {
 	elements.insert(_nsInfo.xmlNSPrefix + "transition");
 	NodeSet<std::string> transDocOrder = DOMUtils::inDocumentOrder(elements, _scxml);
 
-	stream << "static const uscxml_transition " << _prefix << "_transitions[" << toStr(_transitions.size()) << "] = {" << std::endl;
-	for (size_t i = 0; i < _transitions.size(); i++) {
-		Element<std::string> transition(_transitions[i]);
+	if (_transitions.size() > 0) {
+		stream << "static const uscxml_transition " << _prefix << "_transitions[" << toStr(_transitions.size()) << "] = {" << std::endl;
+		for (size_t i = 0; i < _transitions.size(); i++) {
+			Element<std::string> transition(_transitions[i]);
 
-		stream << "    {   /* transition number " << ATTR(transition, "documentOrder") << " with priority " << toStr(i) << std::endl;
-		stream << "           target: " << ATTR(transition, "target") << std::endl;
-		stream << "         */" << std::endl;
+			stream << "    {   /* transition number " << ATTR(transition, "documentOrder") << " with priority " << toStr(i) << std::endl;
+			stream << "           target: " << ATTR(transition, "target") << std::endl;
+			stream << "         */" << std::endl;
 
-		// source
-		stream << "        /* source     */ ";
-		stream << ATTR_CAST(transition.getParentNode(), "documentOrder");
-		stream << "," << std::endl;
+			// source
+			stream << "        /* source     */ ";
+			stream << ATTR_CAST(transition.getParentNode(), "documentOrder");
+			stream << "," << std::endl;
 
-		// targets
-		stream << "        /* target     */ ";
-		if (HAS_ATTR(transition, "targetBools")) {
-			stream << "{ ";
-			writeCharArrayInitList(stream, ATTR(transition, "targetBools"));
-			stream << " /* " << ATTR(transition, "targetBools") << " */ }";
+			// targets
+			stream << "        /* target     */ ";
+			if (HAS_ATTR(transition, "targetBools")) {
+				stream << "{ ";
+				writeCharArrayInitList(stream, ATTR(transition, "targetBools"));
+				stream << " /* " << ATTR(transition, "targetBools") << " */ }";
 
-		} else {
-			stream << "{ NULL }";
+			} else {
+				stream << "{ NULL }";
+			}
+			stream << "," << std::endl;
+
+			stream << "        /* event      */ ";
+			stream << (HAS_ATTR(transition, "event") ? "\"" + escape(ATTR(transition, "event")) + "\"" : "NULL");
+			stream << "," << std::endl;
+
+			stream << "        /* condition  */ ";
+			stream << (HAS_ATTR(transition, "cond") ? "\"" + escape(ATTR(transition, "cond")) + "\"" : "NULL");
+			stream << "," << std::endl;
+
+			// on transition handlers
+			stream << "        /* ontrans    */ ";
+			if (DOMUtils::filterChildType(Arabica::DOM::Node_base::ELEMENT_NODE, transition).size() > 0) {
+				stream << _prefix << "_" << DOMUtils::idForNode(transition) + "_on_trans";
+			} else {
+				stream << "NULL";
+			}
+			stream << "," << std::endl;
+
+			// type
+			stream << "        /* type       */ ";
+			std::string seperator = "";
+			if (!HAS_ATTR(transition, "target")) {
+				stream << seperator << "USCXML_TRANS_TARGETLESS";
+				seperator = " | ";
+			}
+
+			if (HAS_ATTR(transition, "type") && iequals(ATTR(transition, "type"), "internal")) {
+				stream << seperator << "USCXML_TRANS_INTERNAL";
+				seperator = " | ";
+			}
+
+			if (!HAS_ATTR(transition, "event")) {
+				stream << seperator << "USCXML_TRANS_SPONTANEOUS";
+				seperator = " | ";
+			}
+
+			if (iequals(TAGNAME_CAST(transition.getParentNode()), "history")) {
+				stream << seperator << "USCXML_TRANS_HISTORY";
+				seperator = " | ";
+			}
+
+			if (iequals(TAGNAME_CAST(transition.getParentNode()), "initial")) {
+				stream << seperator << "USCXML_TRANS_INITIAL";
+				seperator = " | ";
+			}
+
+			if (seperator.size() == 0) {
+				stream << "0";
+			}
+			stream << "," << std::endl;
+
+			// conflicts
+			stream << "        /* conflicts  */ { ";
+			writeCharArrayInitList(stream, ATTR(transition, "conflictBools"));
+			stream << " /* " << ATTR(transition, "conflictBools") << " */ }, " << std::endl;
+
+			// exit set
+			stream << "        /* exit set   */ { ";
+			writeCharArrayInitList(stream, ATTR(transition, "exitSetBools"));
+			stream << " /* " << ATTR(transition, "exitSetBools") << " */ }" << std::endl;
+
+			stream << "    }" << (i + 1 < _transitions.size() ? ",": "") << std::endl;
 		}
-		stream << "," << std::endl;
-
-		stream << "        /* event      */ ";
-		stream << (HAS_ATTR(transition, "event") ? "\"" + escape(ATTR(transition, "event")) + "\"" : "NULL");
-		stream << "," << std::endl;
-
-		stream << "        /* condition  */ ";
-		stream << (HAS_ATTR(transition, "cond") ? "\"" + escape(ATTR(transition, "cond")) + "\"" : "NULL");
-		stream << "," << std::endl;
-
-		// on transition handlers
-		stream << "        /* ontrans    */ ";
-		if (filterChildType(Arabica::DOM::Node_base::ELEMENT_NODE, transition).size() > 0) {
-			stream << _prefix << "_" << DOMUtils::idForNode(transition) + "_on_trans";
-		} else {
-			stream << "NULL";
-		}
-		stream << "," << std::endl;
-
-		// type
-		stream << "        /* type       */ ";
-		std::string seperator = "";
-		if (!HAS_ATTR(transition, "target")) {
-			stream << seperator << "USCXML_TRANS_TARGETLESS";
-			seperator = " | ";
-		}
-
-		if (HAS_ATTR(transition, "type") && iequals(ATTR(transition, "type"), "internal")) {
-			stream << seperator << "USCXML_TRANS_INTERNAL";
-			seperator = " | ";
-		}
-
-		if (!HAS_ATTR(transition, "event")) {
-			stream << seperator << "USCXML_TRANS_SPONTANEOUS";
-			seperator = " | ";
-		}
-
-		if (iequals(TAGNAME_CAST(transition.getParentNode()), "history")) {
-			stream << seperator << "USCXML_TRANS_HISTORY";
-			seperator = " | ";
-		}
-
-		if (iequals(TAGNAME_CAST(transition.getParentNode()), "initial")) {
-			stream << seperator << "USCXML_TRANS_INITIAL";
-			seperator = " | ";
-		}
-
-		if (seperator.size() == 0) {
-			stream << "0";
-		}
-		stream << "," << std::endl;
-
-		// conflicts
-		stream << "        /* conflicts  */ { ";
-		writeCharArrayInitList(stream, ATTR(transition, "conflictBools"));
-		stream << " /* " << ATTR(transition, "conflictBools") << " */ }, " << std::endl;
-
-		// exit set
-		stream << "        /* exit set   */ { ";
-		writeCharArrayInitList(stream, ATTR(transition, "exitSetBools"));
-		stream << " /* " << ATTR(transition, "exitSetBools") << " */ }" << std::endl;
-
-		stream << "    }" << (i + 1 < _transitions.size() ? ",": "") << std::endl;
+		stream << "};" << std::endl;
+		stream << std::endl;
 	}
-	stream << "};" << std::endl;
-	stream << std::endl;
 
 	stream << "#endif" << std::endl;
 	stream << std::endl;

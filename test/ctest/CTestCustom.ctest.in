@@ -251,6 +251,15 @@ set(CTEST_CUSTOM_TESTS_IGNORE
   "perf/ecma/test553.scxml"
   "perf/ecma/test579.scxml"
   
+  ### Ignore some Header self-sufficient tests
+  "header/bindings/swig/msvc/inttypes.h"
+  "header/bindings/swig/wrapped/WrappedDataModel.h"
+  "header/bindings/swig/wrapped/WrappedExecutableContent.h"
+  "header/bindings/swig/wrapped/WrappedInterpreterMonitor.h"
+  "header/bindings/swig/wrapped/WrappedInvoker.h"
+  "header/bindings/swig/wrapped/WrappedIOProcessor.h"
+  
+  
 )
 # unset(CTEST_CUSTOM_TESTS_IGNORE)
 

@@ -1,6 +1,6 @@
 /**
  *  @file
- *  @author     2012-2013 Stefan Radomski (stefan.radomski@cs.tu-darmstadt.de)
+ *  @author     2012-2016 Stefan Radomski (stefan.radomski@cs.tu-darmstadt.de)
  *  @copyright  Simplified BSD
  *
  *  @cond
@@ -17,41 +17,11 @@
  *  @endcond
  */
 
-#include "uscxml/config.h"
-
-#include "uscxml/Common.h"
-#include "uscxml/Message.h"
-#include "uscxml/DOMUtils.h"
-#include <DOM/SAX2DOM/SAX2DOM.hpp>
-#include <SAX/helpers/CatchErrorHandler.hpp>
-#include <glog/logging.h>
-
-#include <boost/algorithm/string.hpp>
-
+#ifndef CHARTANNOTATOR_H_2AC11ECB
+#define CHARTANNOTATOR_H_2AC11ECB
 
 namespace uscxml {
 
-
-
-
-
-
-
-
-
-
-#ifndef SWIGJAVA
-#endif
-
-
-#ifndef SWIGJAVA
-#endif
-
-#ifndef SWIGJAVA
-#endif
-
-#ifndef SWIGJAVA
-#endif
-
-
 }
+
+#endif /* end of include guard: CHARTANNOTATOR_H_2AC11ECB */
