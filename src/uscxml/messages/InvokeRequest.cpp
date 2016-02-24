@@ -48,7 +48,7 @@ InvokeRequest InvokeRequest::fromXML(const std::string& xmlString) {
 std::ostream& operator<< (std::ostream& os, const InvokeRequest& invokeReq) {
 
 	std::string indent;
-	for (int i = 0; i < _dataIndentation; i++) {
+	for (size_t i = 0; i < _dataIndentation; i++) {
 		indent += "  ";
 	}
 

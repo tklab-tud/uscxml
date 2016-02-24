@@ -51,7 +51,7 @@ void ChartToMinimalSCXML::writeTo(std::ostream& stream) {
 	{
 		NodeSet<std::string> allElements = DOMUtils::filterChildType(Node_base::ELEMENT_NODE, _scxml, true);
 		size_t nrElements = 0;
-		for (int i = 0; i < allElements.size(); i++) {
+		for (size_t i = 0; i < allElements.size(); i++) {
 			if (!isInEmbeddedDocument(allElements[i]))
 				nrElements++;
 		}
@@ -76,7 +76,7 @@ void ChartToMinimalSCXML::writeTo(std::ostream& stream) {
 			while(topMostDatamodel.hasChildNodes())
 				topMostDatamodel.removeChild(topMostDatamodel.getFirstChild());
 
-			for (int i = 0; i < datas.size(); i++) {
+			for (size_t i = 0; i < datas.size(); i++) {
 				if (!isInEmbeddedDocument(datas[i])) {
 					topMostDatamodel.appendChild(datas[i]);
 				}
@@ -120,7 +120,7 @@ void ChartToMinimalSCXML::writeTo(std::ostream& stream) {
 	{
 		NodeSet<std::string> allElements = DOMUtils::filterChildType(Node_base::ELEMENT_NODE, _scxml, true);
 		size_t nrElements = 0;
-		for (int i = 0; i < allElements.size(); i++) {
+		for (size_t i = 0; i < allElements.size(); i++) {
 			if (!isInEmbeddedDocument(allElements[i]))
 				nrElements++;
 		}
@@ -153,7 +153,7 @@ void ChartToMinimalSCXML::removeUnvisited(Arabica::DOM::Node<std::string>& node)
 		NodeSet<std::string> ifChilds = DOMUtils::filterChildType(Node_base::ELEMENT_NODE, elem, false);
 		Element<std::string> lastConditional = elem;
 		bool hadVisitedChild = false;
-		for (int j = 0; j < ifChilds.size(); j++) {
+		for (size_t j = 0; j < ifChilds.size(); j++) {
 			Element<std::string> ifChildElem(ifChilds[j]);
 			if (TAGNAME(ifChildElem) == _nsInfo.xmlNSPrefix + "else" || TAGNAME(ifChildElem) == _nsInfo.xmlNSPrefix + "elseif") {
 				if (!hadVisitedChild && HAS_ATTR(lastConditional, "cond")) {
@@ -193,7 +193,7 @@ void ChartToMinimalSCXML::removeUnvisited(Arabica::DOM::Node<std::string>& node)
 
 	// iterate and remove unvisited children
 	NodeList<std::string> children = node.getChildNodes();
-	for (int i = 0; i < children.getLength(); i++) {
+	for (size_t i = 0; i < children.getLength(); i++) {
 		Node<std::string> child(children.item(i));
 		removeUnvisited(child);
 	}
@@ -225,7 +225,7 @@ void ChartToMinimalSCXML::beforeUninvoking(Interpreter interpreter, const Arabic
 void ChartToMinimalSCXML::beforeTakingTransition(Interpreter interpreter, const Arabica::DOM::Element<std::string>& transition, bool moreComing) {
 	NodeSet<std::string> targets = getTargetStates(transition);
 	// we need this for history pseudo states
-	for (int i = 0; i < targets.size(); i++) {
+	for (size_t i = 0; i < targets.size(); i++) {
 		markAsVisited(Arabica::DOM::Element<std::string>(targets[i]));
 	}
 	markAsVisited(transition);

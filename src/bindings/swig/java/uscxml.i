@@ -239,7 +239,7 @@ import java.net.URL;
 		Map<String, NativeIOProcessor> ioProcs = new HashMap<String, NativeIOProcessor>();
 		StringVector keys = getIOProcessorKeys();
 		IOProcMap ioProcMap = getIOProcessorsNative();
-		for (int i = 0; i < keys.size(); i++) {
+		for (size_t i = 0; i < keys.size(); i++) {
 			ioProcs.put(keys.get(i), ioProcMap.get(keys.get(i)));
 		}
 		return ioProcs;
@@ -249,7 +249,7 @@ import java.net.URL;
 		Map<String, NativeInvoker> invokers = new HashMap<String, NativeInvoker>();
 		StringVector keys = getInvokerKeys();
 		InvokerMap invokerMap = getInvokersNative();
-		for (int i = 0; i < keys.size(); i++) {
+		for (size_t i = 0; i < keys.size(); i++) {
 			invokers.put(keys.get(i), invokerMap.get(keys.get(i)));
 		}
 		return invokers;
@@ -301,7 +301,7 @@ import java.util.LinkedList;
 		Map<String, Data> compound = new HashMap<String, Data>();
 		DataMap dataMap = getCompoundNative();
 		StringVector dataMapKeys = getCompoundKeys();
-		for (int i = 0; i < dataMapKeys.size(); i++) {
+		for (size_t i = 0; i < dataMapKeys.size(); i++) {
 			compound.put(dataMapKeys.get(i), dataMap.get(dataMapKeys.get(i)));
 		}
 		return compound;
@@ -318,7 +318,7 @@ import java.util.LinkedList;
 	public List<Data> getArray() {
 		List<Data> array = new LinkedList<Data>();
 		DataList dataList = getArrayNative();
-		for (int i = 0; i < dataList.size(); i++) {
+		for (size_t i = 0; i < dataList.size(); i++) {
 			array.add(dataList.get(i));
 		}
 		return array;		
@@ -357,11 +357,11 @@ import java.util.LinkedList;
 		ParamMap paramMap = getParamMap();
 		StringVector paramMapKeys = getParamMapKeys();
 	
-		for (int i = 0; i < paramMapKeys.size(); i++) {
+		for (size_t i = 0; i < paramMapKeys.size(); i++) {
 			String key = paramMapKeys.get(i);
 			DataList dataList = paramMap.get(key);
 		
-			for (int j = 0; j < dataList.size(); j++) {
+			for (size_t j = 0; j < dataList.size(); j++) {
 				Data data = dataList.get(j);
 				if (!params.containsKey(key))
 					params.put(key, new LinkedList<Data>());
@@ -388,7 +388,7 @@ import java.util.LinkedList;
 		StringVector nameMapKeys = getNameListKeys();
 		DataMap nameMap = getNameListNative();
 		
-		for (int i = 0; i < nameMapKeys.size(); i++) {
+		for (size_t i = 0; i < nameMapKeys.size(); i++) {
 			namelist.put(nameMapKeys.get(i), nameMap.get(nameMapKeys.get(i)));
 		}
 		return namelist;

@@ -30,7 +30,7 @@ std::list<std::string> tokenize(const std::string& line, const char sep, bool tr
 
 	// appr. 3x faster than stringstream
 	size_t start = 0;
-	for (int i = 0; i < line.size(); i++) {
+	for (size_t i = 0; i < line.size(); i++) {
 		if (line[i] == sep || (trimWhiteSpace && ISWHITESPACE(line[i]))) {
 			if (i > 0 && start < i) {
 				tokens.push_back(line.substr(start, i - start));
@@ -55,7 +55,7 @@ std::string spaceNormalize(const std::string& text) {
 	std::string seperator;
 
 	size_t start = 0;
-	for (int i = 0; i < text.size(); i++) {
+	for (size_t i = 0; i < text.size(); i++) {
 		if (isspace(text[i])) {
 			if (i > 0 && start < i) {
 				content << seperator << text.substr(start, i - start);
@@ -99,7 +99,7 @@ bool nameMatch(const std::string& eventDescs, const std::string& eventName) {
 
 	size_t start = 0;
 	std::string eventDesc;
-	for (int i = 0; i < eventDescs.size(); i++) {
+	for (size_t i = 0; i < eventDescs.size(); i++) {
 		if (isspace(eventDescs[i])) {
 			if (i > 0 && start < i - 1) {
 				eventDesc = eventDescs.substr(start, i - start);

@@ -78,7 +78,7 @@ void ChartToVHDL::checkDocument() {
 
 	std::stringstream ss;
 	if (unsupported.size() > 0) {
-		for (int i = 0; i < unsupported.size(); i++) {
+		for (size_t i = 0; i < unsupported.size(); i++) {
 			ss << "  " << DOMUtils::xPathForNode(unsupported[i]) << " unsupported" << std::endl;
 		}
 		throw std::runtime_error("Unsupported elements found:\n" + ss.str());
@@ -88,7 +88,7 @@ void ChartToVHDL::checkDocument() {
 	elements.insert(_nsInfo.xmlNSPrefix + "transition");
 	unsupported = DOMUtils::inDocumentOrder(elements, _scxml);
 
-	for (int i = 0; i < unsupported.size(); i++) {
+	for (size_t i = 0; i < unsupported.size(); i++) {
 		Element<std::string> transition(unsupported[i]);
 		if (HAS_ATTR(transition, "cond")) {
 			ERROR_PLATFORM_THROW("transition with conditions not supported!");
@@ -122,14 +122,9 @@ void ChartToVHDL::writeTo(std::ostream& stream) {
 
 //    checkDocument();
 	findEvents();
-//    _eventTrie.dump();
-
 
 	writeTypes(stream);
 	writeFiFo(stream);
-	writeOptimalTransitionSetSelection(stream);
-	writeExitSet(stream);
-	writeEntrySet(stream);
 	writeFSM(stream);
 }
 
@@ -169,10 +164,16 @@ void ChartToVHDL::writeFSM(std::ostream & stream) {
 	writeModuleInstantiation(stream);
 
 	// write fsm architecture
-	writeNextStateLogic(stream);
+//	writeNextStateLogic(stream);
+    
+    writeOptimalTransitionSetSelection(stream);
+    writeExitSet(stream);
+    writeEntrySet(stream);
+
 	//        writeOutputLogic(stream);
 	writeErrorHandler(stream);
 
+    
 	stream << std::endl;
 	stream << "end behavioral; " << std::endl;
 	stream << "-- END FSM Logic" << std::endl;
@@ -226,15 +227,15 @@ void ChartToVHDL::writeTypes(std::ostream & stream) {
 	stream << std::endl;
 	stream << "package machine" << _md5 << " is" << std::endl;
 	// create state type
-	stream << "  type state_type is std_logic_vector( ";
+	stream << "  subtype state_type is std_logic_vector( ";
 	stream << _states.size() - 1;
-	stream << " downto 0)" << std::endl;
+	stream << " downto 0);" << std::endl;
 
 	//TODO complete
 	// create event type
 	stream << "  type event_type is (";
 	seperator = "";
-//	for (int i = 0; i < _events.size(); i++) {
+//	for (size_t i = 0; i < _events.size(); i++) {
 //		stream << seperator;
 //		stream << _events[i];
 //		seperator = ", ";
@@ -358,16 +359,32 @@ void ChartToVHDL::writeSignals(std::ostream & stream) {
 	stream << "-- system signals" << std::endl;
 	stream << "signal stall : std_logic;" << std::endl;
 	stream << "-- state signals" << std::endl;
-	stream << "signal next_state : state_type;" << std::endl;
-	stream << "signal current_state : state_type;" << std::endl;
+//	stream << "signal next_state : state_type;" << std::endl;
+//	stream << "signal current_state : state_type;" << std::endl;
 
-	for (int i = 0; i < _states.size(); i++) {
+	for (size_t i = 0; i < _states.size(); i++) {
 		Element<std::string> state(_states[i]);
-		stream << "signal " << ATTR(state, "id") << "_curr : current_state("
-		       << toStr(i) << ");" << std::endl;
-		stream << "signal " << ATTR(state, "id") << "_next : next_state("
-		       << toStr(i) << ");" << std::endl;
+        stream << "signal " << DOMUtils::idForNode(state) << "_curr : std_logic;" << std::endl;
+		stream << "signal " << DOMUtils::idForNode(state) << "_next : std_logic;" << std::endl;
 	}
+    for (size_t i = 0; i < _states.size(); i++) {
+        Element<std::string> state(_states[i]);
+        stream << "signal in_exit_set_" << ATTR(state, "documentOrder") << "_sig : std_logic;" << std::endl;
+        stream << "signal in_complete_entry_set_up_" << ATTR(state, "documentOrder") << "_sig : std_logic;" << std::endl;
+        stream << "signal in_complete_entry_set_" << ATTR(state, "documentOrder") << "_sig : std_logic;" << std::endl;
+        stream << "signal state_active_" << ATTR(state, "documentOrder") << "_sig : std_logic;" << std::endl;
+        stream << "signal default_completion_" << ATTR(state, "documentOrder") << "_sig : std_logic;" << std::endl;
+    }
+
+    stream << "-- transition signals" << std::endl;
+    stream << "signal spontaneous_en : std_logic;" << std::endl;
+    
+    for (size_t i = 0; i < _transitions.size(); i++) {
+        Element<std::string> transition(_transitions[i]);
+        stream << "signal in_optimal_transition_set_" << ATTR(transition, "postFixOrder") << "_sig : std_logic;"
+        << std::endl;
+    }
+
 	stream << std::endl;
 	stream << "-- event signals" << std::endl;
 	stream << "signal int_event_write_en : std_logic;" << std::endl;
@@ -379,14 +396,13 @@ void ChartToVHDL::writeSignals(std::ostream & stream) {
 	stream << "signal next_event : event_type;" << std::endl;
 	stream << "signal event_consumed : std_logic;" << std::endl;
 	stream << std::endl;
-	stream << "-- transition signals" << std::endl;
-	stream << "signal transition_spntaneous_en : std_logic;" << std::endl;
 
-	for (int i = 0; i < _transitions.size(); i++) {
-		Element<std::string> transition(_transitions[i]);
-		stream << "signal in_optimal_transition_set_" << ATTR(transition, "postFixOrder") << "_sig : std_logic;"
-		       << std::endl;
-	}
+    std::list<TrieNode*> eventNames = _eventTrie.getWordsWithPrefix("");
+    for (std::list<TrieNode*>::iterator eventIter = eventNames.begin(); eventIter != eventNames.end(); eventIter++) {
+        stream << "signal event_" << eventNameEscape((*eventIter)->value) << "_sig : std_logic;" << std::endl;
+    }
+    //    _eventTrie.dump();
+
 
 	stream << std::endl;
 	stream << "-- error signals" << std::endl;
@@ -421,7 +437,7 @@ void ChartToVHDL::writeModuleInstantiation(std::ostream & stream) {
 	stream << "next_event <= int_event_output; " << std::endl;
 	stream << "int_event_write_en <= next_event_en_i; " << std::endl;
 	stream << "int_event_input <= next_event_i; " << std::endl;
-	stream << "int_event_read_en <= not transition_spontanous_en and not stall; " << std::endl;
+	stream << "int_event_read_en <= not spontaneous_en and not stall; " << std::endl;
 	stream << std::endl;
 
 	// instantiate event fifo
@@ -466,8 +482,44 @@ void ChartToVHDL::writeOptimalTransitionSetSelection(std::ostream & stream) {
 		Element<std::string> transition(_transitions[i]);
 		std::string conflicts = ATTR(transition, "conflictBools");
 
+
+        VContainer nameMatchers = VOR;
+        if (HAS_ATTR(transition, "event")) {
+            std::list<std::string> eventDescs = tokenize(ATTR(transition, "event"));
+            for (std::list<std::string>::iterator descIter = eventDescs.begin(); descIter != eventDescs.end(); descIter++) {
+                std::list<TrieNode*> eventNames = _eventTrie.getWordsWithPrefix((*descIter) == "*" ? "" : *descIter);
+                for (std::list<TrieNode*>::iterator eventIter = eventNames.begin(); eventIter != eventNames.end(); eventIter++) {
+                    *nameMatchers += VLINE("event_" + eventNameEscape((*eventIter)->value) + "_sig");
+                }
+            }
+        } else {
+            *nameMatchers += VLINE("'1'");
+        }
+        
+        VContainer conflicters = VOR;
+        for (size_t j = 0; j < i; j++) {
+            if (conflicts[j] == '1') {
+                *conflicters += VLINE("in_optimal_transition_set_" + toStr(j) + "_sig");
+            }
+        }
+        
+        VBranch* tree = (VASSIGN ,
+                         VLINE("in_optimal_transition_set_" + ATTR(transition, "postFixOrder") + "_sig") ,
+                         (VAND ,
+                             (HAS_ATTR(transition, "event")
+                              ? ( VNOT , VLINE("spontaneous_en") )
+                              : ( VNOP , VLINE("spontaneous_en") ) ) ,
+                          VLINE("state_active_" + ATTR(transition, "source") + "_sig"),
+                          nameMatchers,
+                         (VNOT , conflicters) ) );
+
+        tree->print(stream);
+        stream << ";" << std::endl;
+
+
+#if 0
 		stream << "in_optimal_transition_set_" << ATTR(transition, "postFixOrder") << "_sig "
-		       << "<= " << (HAS_ATTR(transition, "event") ? "(not spontaneous_sig)" : "spontaneous_sig") << " and " << std::endl
+		       << "<= " << (HAS_ATTR(transition, "event") ? "(not spontaneous_en)" : "spontaneous_en") << " and " << std::endl
 		       << "  state_active_" << ATTR(transition, "source") << "_sig and not ( '0' " << std::endl;
 		for (size_t j = 0; j < i; j++) {
 			if (conflicts[j] == '1') {
@@ -490,8 +542,8 @@ void ChartToVHDL::writeOptimalTransitionSetSelection(std::ostream & stream) {
 
 		}
 		stream << ";" << std::endl;
+#endif
 	}
-
 }
 
 void ChartToVHDL::writeExitSet(std::ostream & stream) {
@@ -504,8 +556,27 @@ void ChartToVHDL::writeExitSet(std::ostream & stream) {
 		std::string children = ATTR(state, "childBools");
 		std::string parent = ATTR(state, "parent");
 
+        VContainer exitsetters = VOR;
+        for (size_t j = 0; j < _transitions.size(); j++) {
+            Element<std::string> transition(_transitions[j]);
+            std::string exitSet = ATTR(transition, "exitSetBools");
+            if (exitSet[i] == '1') {
+                *exitsetters += VLINE("in_optimal_transition_set_" + toStr(j) + "_sig ");
+            }
+        }
+        
+        VBranch* tree = (VASSIGN ,
+                         VLINE("in_exit_set_" + toStr(i) + "_sig"),
+                         (VAND,
+                          VLINE("state_active_" + toStr(i) + "_sig"),
+                          exitsetters ));
+
+        tree->print(stream);
+        stream << ";" << std::endl;
+
+#if 0
 		stream << "in_exit_set_" << toStr(i) << "_sig "
-		       << "<= state_active_ " << toStr(i) << "_sig and ('0'" << std::endl;
+		       << "<= state_active_" << toStr(i) << "_sig and ('0'" << std::endl;
 		for (size_t j = 0; j < _transitions.size(); j++) {
 			Element<std::string> transition(_transitions[j]);
 			std::string exitSet = ATTR(transition, "exitSetBools");
@@ -516,7 +587,7 @@ void ChartToVHDL::writeExitSet(std::ostream & stream) {
 
 		stream << ")";
 		stream << ";" << std::endl;
-
+#endif
 	}
 }
 
@@ -530,6 +601,33 @@ void ChartToVHDL::writeEntrySet(std::ostream & stream) {
 		std::string children = ATTR(state, "childBools");
 		std::string parent = ATTR(state, "parent");
 
+        VContainer optimalEntrysetters = VOR;
+        for (size_t j = 0; j < _transitions.size(); j++) {
+            Element<std::string> transition(_transitions[j]);
+            std::string targetSet = ATTR(transition, "targetBools");
+            if (targetSet[i] == '1') {
+                *optimalEntrysetters += VLINE("in_optimal_transition_set_" + toStr(j) + "_sig");
+            }
+        }
+
+        VContainer completeEntrysetters = VOR;
+        if (isCompound(state)) {
+            for (size_t j = 0; j < _states.size(); j++) {
+                if (children[j] != '1')
+                    continue;
+                *completeEntrysetters += VLINE("in_complete_entry_set_up_" + toStr(j) + "_sig");
+            }
+        }
+        
+        VBranch* tree = (VASSIGN ,
+                         VLINE("in_complete_entry_set_up_" + toStr(i) + "_sig"),
+                         optimalEntrysetters,
+                         completeEntrysetters);
+
+        tree->print(stream);
+        stream << ";" << std::endl;
+
+#if 0
 		stream << "in_complete_entry_set_up_" << toStr(i) << "_sig <= ('0'" << std::endl;
 
 		for (size_t j = 0; j < _transitions.size(); j++) {
@@ -550,7 +648,7 @@ void ChartToVHDL::writeEntrySet(std::ostream & stream) {
 
 		}
 		stream << ");" << std::endl;
-
+#endif
 	}
 
 	for (size_t i = 0; i < _states.size(); i++) {
@@ -564,6 +662,35 @@ void ChartToVHDL::writeEntrySet(std::ostream & stream) {
 			continue; // TODO: FixMe <scxml>
 		}
 
+        VContainer tmp1 = VAND;
+        if (isCompound(Element<std::string>(_states[strTo<size_t>(parent)]))) {
+            *tmp1 += VLINE("default_completion_" + toStr(parent) + "_sig");
+
+            for (size_t j = 0; j < _states.size(); j++) {
+                if (children[j] != '1')
+                    continue;
+                *tmp1 += ( VAND,
+                          ( VNOT,
+                           ( VAND,
+                            VLINE("is_active" + toStr(j) + "_sig"),
+                            ( VNOT,
+                             VLINE("in_exit_set_" + toStr(j) + "_sig") ) ) ) );
+                
+            }
+
+        }
+        
+        if (isParallel(Element<std::string>(_states[strTo<size_t>(parent)]))) {
+            *tmp1 += VLINE("in_complete_entry_set_" + toStr(parent) + "_sig");
+        }
+        
+        VBranch* tree = (VASSIGN ,
+                         VLINE("in_complete_entry_set_" + toStr(i) + "_sig"), tmp1);
+
+        tree->print(stream);
+        stream << ";" << std::endl;
+
+#if 0
 		stream << "in_complete_entry_set_" << toStr(i) << "_sig <= (in_complete_entry_set_up_" << toStr(i) << "_sig or (" << std::endl;
 
 		if (isParallel(Element<std::string>(_states[strTo<size_t>(parent)]))) {
@@ -580,7 +707,7 @@ void ChartToVHDL::writeEntrySet(std::ostream & stream) {
 		}
 
 		stream << ");" << std::endl;
-
+#endif
 	}
 }
 
@@ -595,7 +722,7 @@ void ChartToVHDL::writeNextStateLogic(std::ostream & stream) {
 	stream << "begin" << std::endl;
 
 	std::stringstream nextStateBuffer;
-	for (int i = 0; i < _states.size(); i++) {
+	for (size_t i = 0; i < _states.size(); i++) {
 		Element<std::string> state(_states[i]);
 
 		// calculate event choices
@@ -604,7 +731,7 @@ void ChartToVHDL::writeNextStateLogic(std::ostream & stream) {
 		// will be written first
 		std::vector< Element<std::string> > choices;
 		std::string spntaneous_trans_sig = "";
-		for (int j = 0; j < _transitions.size(); j++) {
+		for (size_t j = 0; j < _transitions.size(); j++) {
 			Element<std::string> transition(_transitions[j]);
 			if (ATTR_CAST(transition.getParentNode(), "id") == ATTR(state, "id")) {
 				choices.push_back(transition);
@@ -618,7 +745,7 @@ void ChartToVHDL::writeNextStateLogic(std::ostream & stream) {
 
 		// calculate incomming transitions (for later use)
 		std::vector< Element<std::string> > incommingTransitions;
-		for (int j = 0; j < _transitions.size(); j++) {
+		for (size_t j = 0; j < _transitions.size(); j++) {
 			Element<std::string> transition(_transitions[j]);
 			if (ATTR_CAST(transition, "target") == ATTR(state, "id")) {
 				incommingTransitions.push_back(transition);
@@ -630,7 +757,7 @@ void ChartToVHDL::writeNextStateLogic(std::ostream & stream) {
 			stream << "  if ( " << ATTR(state, "id") << " = '1' ) then" << std::endl;
 			stream << "    if ( transition_spntaneous_en = '1' ) then" << std::endl;
 			// enable spntaneous transition (if any) and disable all other
-			for (int j = 0; j < choices.size(); j++) {
+			for (size_t j = 0; j < choices.size(); j++) {
 				Element<std::string> transition(choices[j]);
 				if (ATTR(transition, "id") == spntaneous_trans_sig) {
 					stream << "      " << ATTR(transition, "id") << "_sig <= '1';" << std::endl;
@@ -646,7 +773,7 @@ void ChartToVHDL::writeNextStateLogic(std::ostream & stream) {
 			// FIXME hopefully there is just one transition per state and event at a time
 			stream << "    case next_event is" << std::endl;
 			bool hasWildcardTransition = false;
-			for (int j = 0; j < choices.size(); j++) {
+			for (size_t j = 0; j < choices.size(); j++) {
 				Element<std::string> transition(choices[j]);
 				std::string eventName = ATTR(transition, "event");
 				if (eventName == CONST_EVENT_ANY) {
@@ -655,7 +782,7 @@ void ChartToVHDL::writeNextStateLogic(std::ostream & stream) {
 				}
 				stream << "      when " << eventName << " =>" << std::endl;
 				// activate transition and deactivete others
-				for (int k = 0; k < choices.size(); k++) {
+				for (size_t k = 0; k < choices.size(); k++) {
 					Element<std::string> tmp_t(choices[k]);
 					if (ATTR(tmp_t, "event") == ATTR(transition, "event")) {
 						stream << "        " << ATTR(tmp_t, "id") << "_sig <= '1';" << std::endl;
@@ -667,7 +794,7 @@ void ChartToVHDL::writeNextStateLogic(std::ostream & stream) {
 			if (!hasWildcardTransition) {
 				// if there is no others we create one for deactivating everything
 				stream << "      when others =>" << std::endl;
-				for (int j = 0; j < choices.size(); j++) {
+				for (size_t j = 0; j < choices.size(); j++) {
 					Element<std::string> tmp_t(choices[j]);
 					stream << "        " << ATTR(tmp_t, "id") << "_sig <= '0';" << std::endl;
 				}
@@ -679,7 +806,7 @@ void ChartToVHDL::writeNextStateLogic(std::ostream & stream) {
 
 			stream << "    else" << std::endl;
 			// no enabled event ? disable all transitions (looks like we have to wait)
-			for (int j = 0; j < choices.size(); j++) {
+			for (size_t j = 0; j < choices.size(); j++) {
 				Element<std::string> transition(choices[j]);
 				stream << "      " << ATTR(transition, "id") << "_sig <= '0';" << std::endl;
 			}
@@ -690,14 +817,14 @@ void ChartToVHDL::writeNextStateLogic(std::ostream & stream) {
 		// write next state calculation in buffer for later use
 		nextStateBuffer << ATTR(state, "id") << "_next <= ( ( '0'";
 		std::string seperator = "  or  ";
-		for (int j = 0; j < incommingTransitions.size(); j++) {
+		for (size_t j = 0; j < incommingTransitions.size(); j++) {
 			nextStateBuffer << seperator
 			                << ATTR(incommingTransitions[j], "id") << "_sig";
 		}
 		nextStateBuffer << " ) or ";
 		nextStateBuffer << "( ( not ( '0'";
 		seperator = "  or  ";
-		for (int j = 0; j < choices.size(); j++) {
+		for (size_t j = 0; j < choices.size(); j++) {
 			nextStateBuffer << seperator
 			                << ATTR(choices[j], "id") << "_sig";
 		}
@@ -729,7 +856,7 @@ void ChartToVHDL::writeOutputLogic(std::ostream & stream) {
 	stream << "begin" << std::endl;
 	stream << "    case current_state is" << std::endl;
 
-	for (int i = 0; i < _states.size(); i++) {
+	for (size_t i = 0; i < _states.size(); i++) {
 		//TODO
 		// if end state set completed and result
 		// on entry events generated here

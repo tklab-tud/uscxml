@@ -284,7 +284,7 @@ public:
 	Arabica::XPath::NodeSet<std::string> getBasicConfiguration()  {
 		tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
 		Arabica::XPath::NodeSet<std::string> basicConfig;
-		for (int i = 0; i < _configuration.size(); i++) {
+		for (size_t i = 0; i < _configuration.size(); i++) {
 			if (isAtomic(Arabica::DOM::Element<std::string>(_configuration[i])))
 				basicConfig.push_back(_configuration[i]);
 		}

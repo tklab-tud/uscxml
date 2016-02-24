@@ -83,7 +83,7 @@ Data::Data(const Arabica::DOM::Node<std::string>& dom) {
 
 	if (dom.hasAttributes()) {
 		Arabica::DOM::NamedNodeMap<std::string> attributes = dom.getAttributes();
-		for (int i = 0; i < attributes.getLength(); i++) {
+		for (size_t i = 0; i < attributes.getLength(); i++) {
 			Arabica::DOM::Node<std::string> attribute = attributes.item(i);
 //      Interpreter::dump(attribute);
 
@@ -96,7 +96,7 @@ Data::Data(const Arabica::DOM::Node<std::string>& dom) {
 
 	if (dom.hasChildNodes()) {
 		Arabica::DOM::NodeList<std::string> children = dom.getChildNodes();
-		for (int i = 0; i < children.getLength(); i++) {
+		for (size_t i = 0; i < children.getLength(); i++) {
 			Arabica::DOM::Node<std::string> child = children.item(i);
 //      Interpreter::dump(child);
 			std::string key;
@@ -307,7 +307,7 @@ std::ostream& operator<< (std::ostream& os, const Data& data) {
 std::string Data::toJSON(const Data& data) {
 	std::stringstream os;
 	std::string indent;
-	for (int i = 0; i < _dataIndentation; i++) {
+	for (size_t i = 0; i < _dataIndentation; i++) {
 		indent += "  ";
 	}
 	if (false) {
@@ -352,7 +352,7 @@ std::string Data::toJSON(const Data& data) {
 		// empty string is handled below
 		if (data.type == Data::VERBATIM) {
 			os << "\"";
-			for (int i = 0; i < data.atom.size(); i++) {
+			for (size_t i = 0; i < data.atom.size(); i++) {
 				// escape string
 				if (false) {
 				} else if (data.atom[i] == '"') {

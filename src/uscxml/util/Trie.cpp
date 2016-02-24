@@ -148,7 +148,7 @@ std::list<TrieNode*> Trie::getChildsWithWords(TrieNode* node) {
 
 void TrieNode::dump(int indent) {
 	std::string padding;
-	for (int i = 0; i < indent; i++) {
+	for (size_t i = 0; i < indent; i++) {
 		padding += "  ";
 	}
 

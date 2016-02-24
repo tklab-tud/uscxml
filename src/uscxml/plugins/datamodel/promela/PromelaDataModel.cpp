@@ -391,7 +391,7 @@ void PromelaDataModel::evaluateDecl(void* ast) {
 				int size = dataToInt(evaluateExpr(*opIterAsgn++));
 
 				variable.compound["size"] = size;
-				for (int i = 0; i < size; i++) {
+				for (size_t i = 0; i < size; i++) {
 					variable.compound["value"].array.push_back(Data(0, Data::INTERPRETED));
 				}
 

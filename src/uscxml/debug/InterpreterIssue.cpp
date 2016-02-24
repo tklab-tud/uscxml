@@ -278,7 +278,7 @@ std::list<InterpreterIssue> InterpreterIssue::forInterpreter(InterpreterImpl* in
 	}
 
 
-	for (int i = 0; i < allStates.size(); i++) {
+	for (size_t i = 0; i < allStates.size(); i++) {
 		Element<std::string> state = Element<std::string>(allStates[i]);
 
 		if (InterpreterImpl::isMember(state, finals) && !HAS_ATTR(state, "id")) // id is not required for finals
@@ -316,7 +316,7 @@ std::list<InterpreterIssue> InterpreterIssue::forInterpreter(InterpreterImpl* in
 					issues.push_back(InterpreterIssue("Transition in history pseudo-state '" + stateId + "' has no target", transition, InterpreterIssue::USCXML_ISSUE_FATAL));
 				} else {
 					NodeSet<std::string> targetStates = interpreter->getTargetStates(transition);
-					for (int j = 0; j < targetStates.size(); j++) {
+					for (size_t j = 0; j < targetStates.size(); j++) {
 						Element<std::string> target = Element<std::string>(targetStates[j]);
 						if (HAS_ATTR(state, "type") && ATTR(state, "type") == "deep") {
 							if (!InterpreterImpl::isDescendant(target, state.getParentNode())) {
@@ -345,7 +345,7 @@ std::list<InterpreterIssue> InterpreterIssue::forInterpreter(InterpreterImpl* in
 		seenStates[ATTR(state, "id")] = state;
 	}
 
-	for (int i = 0; i < transitions.size(); i++) {
+	for (size_t i = 0; i < transitions.size(); i++) {
 		Element<std::string> transition = Element<std::string>(transitions[i]);
 
 		// check for valid target
@@ -365,15 +365,15 @@ std::list<InterpreterIssue> InterpreterIssue::forInterpreter(InterpreterImpl* in
 	}
 
 	// check for redundancy of transition
-	for (int i = 0; i < allStates.size(); i++) {
+	for (size_t i = 0; i < allStates.size(); i++) {
 		Element<std::string> state = Element<std::string>(allStates[i]);
 		NodeSet<std::string> transitions = DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "transition", state, false);
 
 		transitions.to_document_order();
 
-		for (int j = 1; j < transitions.size(); j++) {
+		for (size_t j = 1; j < transitions.size(); j++) {
 			Element<std::string> transition = Element<std::string>(transitions[j]);
-			for (int k = 0; k < j; k++) {
+			for (size_t k = 0; k < j; k++) {
 				Element<std::string> earlierTransition = Element<std::string>(transitions[k]);
 
 				// will the earlier transition always be enabled when the later is?
@@ -410,7 +410,7 @@ NEXT_TRANSITION:
 
 	// check for useless history elements
 	{
-		for (int i = 0; i < histories.size(); i++) {
+		for (size_t i = 0; i < histories.size(); i++) {
 			Element<std::string> history = Element<std::string>(histories[i]);
 			if (!history.getParentNode() || history.getParentNode().getNodeType() != Node_base::ELEMENT_NODE)
 				continue; // syntax check will have catched this
@@ -433,7 +433,7 @@ NEXT_TRANSITION:
 		withInitialAttr.push_back(allStates);
 		withInitialAttr.push_back(_scxml);
 
-		for (int i = 0; i < withInitialAttr.size(); i++) {
+		for (size_t i = 0; i < withInitialAttr.size(); i++) {
 			Element<std::string> state = Element<std::string>(withInitialAttr[i]);
 
 			if (HAS_ATTR(state, "initial")) {
@@ -461,7 +461,7 @@ NEXT_TRANSITION:
 	// check for legal configuration of target sets
 	{
 		std::map<Element<std::string>, std::string > targetIdSets;
-		for (int i = 0; i < transitions.size(); i++) {
+		for (size_t i = 0; i < transitions.size(); i++) {
 			Element<std::string> transition = Element<std::string>(transitions[i]);
 
 			if (HAS_ATTR(transition, "target")) {
@@ -469,7 +469,7 @@ NEXT_TRANSITION:
 			}
 		}
 
-		for (int i = 0; i < initials.size(); i++) {
+		for (size_t i = 0; i < initials.size(); i++) {
 			Element<std::string> initial = Element<std::string>(initials[i]);
 
 			if (HAS_ATTR(initial, "target")) {
@@ -477,7 +477,7 @@ NEXT_TRANSITION:
 			}
 		}
 
-		for (int i = 0; i < allStates.size(); i++) {
+		for (size_t i = 0; i < allStates.size(); i++) {
 			Element<std::string> state = Element<std::string>(allStates[i]);
 
 			if (HAS_ATTR(state, "initial")) {
@@ -508,7 +508,7 @@ NEXT_SET:
 		NodeSet<std::string> initTrans;
 //        initTrans.push_back(DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "transition", histories, true));
 
-		for (int i = 0; i < initials.size(); i++) {
+		for (size_t i = 0; i < initials.size(); i++) {
 			Element<std::string> initial = Element<std::string>(initials[i]);
 			NodeSet<std::string> initTransitions = DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "transition", initial, true);
 			if (initTransitions.size() != 1) {
@@ -518,7 +518,7 @@ NEXT_SET:
 
 		}
 
-		for (int i = 0; i < initTrans.size(); i++) {
+		for (size_t i = 0; i < initTrans.size(); i++) {
 			Element<std::string> transition = Element<std::string>(initTrans[i]);
 
 			/* In a conformant SCXML document, this transition must not contain 'cond' or 'event' attributes, and must specify a non-null 'target'
@@ -557,7 +557,7 @@ NEXT_SET:
 
 	// check that all invokers exists
 	{
-		for (int i = 0; i < invokes.size(); i++) {
+		for (size_t i = 0; i < invokes.size(); i++) {
 			Element<std::string> invoke = Element<std::string>(invokes[i]);
 			if (HAS_ATTR(invoke, "type") && !_factory->hasInvoker(ATTR(invoke, "type"))) {
 				// unknown at factory - adhoc extension?
@@ -580,7 +580,7 @@ NEXT_SET:
 
 	// check that all io processors exists
 	{
-		for (int i = 0; i < sends.size(); i++) {
+		for (size_t i = 0; i < sends.size(); i++) {
 			Element<std::string> send = Element<std::string>(sends[i]);
 			if (HAS_ATTR(send, "type") && !_factory->hasIOProcessor(ATTR(send, "type"))) {
 				if (interpreter->_ioProcessors.find(ATTR(send, "type")) != interpreter->_ioProcessors.end())
@@ -600,10 +600,10 @@ NEXT_SET:
 		allExecContentContainers.push_back(transitions);
 		allExecContentContainers.push_back(finalizes);
 
-		for (int i = 0; i < allExecContentContainers.size(); i++) {
+		for (size_t i = 0; i < allExecContentContainers.size(); i++) {
 			Element<std::string> block = Element<std::string>(allExecContentContainers[i]);
 			NodeSet<std::string> execContents = DOMUtils::filterChildType(Node_base::ELEMENT_NODE, block);
-			for (int j = 0; j < execContents.size(); j++) {
+			for (size_t j = 0; j < execContents.size(); j++) {
 				Element<std::string> execContent = Element<std::string>(execContents[j]);
 				// SCXML specific executable content, always available
 				if (InterpreterImpl::isMember(execContent, allExecContents)) {
@@ -619,7 +619,7 @@ NEXT_SET:
 
 	// check that all SCXML elements have valid parents and required attributes
 	{
-		for (int i = 0; i < allElements.size(); i++) {
+		for (size_t i = 0; i < allElements.size(); i++) {
 			Element<std::string> element = Element<std::string>(allElements[i]);
 			std::string localName = LOCALNAME(element);
 
@@ -655,7 +655,7 @@ NEXT_SET:
 
 	// check attribute constraints
 	{
-		for (int i = 0; i < initials.size(); i++) {
+		for (size_t i = 0; i < initials.size(); i++) {
 			Element<std::string> initial = Element<std::string>(initials[i]);
 			if (initial.getParentNode() && initial.getParentNode().getNodeType() == Node_base::ELEMENT_NODE) {
 				Element<std::string> state(initial.getParentNode());
@@ -667,42 +667,42 @@ NEXT_SET:
 				}
 			}
 		}
-		for (int i = 0; i < allStates.size(); i++) {
+		for (size_t i = 0; i < allStates.size(); i++) {
 			Element<std::string> state = Element<std::string>(allStates[i]);
 			if (InterpreterImpl::isAtomic(state) && HAS_ATTR(state, "initial")) {
 				issues.push_back(InterpreterIssue("Atomic state cannot have initial attribute ", state, InterpreterIssue::USCXML_ISSUE_WARNING));
 			}
 		}
 
-		for (int i = 0; i < assigns.size(); i++) {
+		for (size_t i = 0; i < assigns.size(); i++) {
 			Element<std::string> assign = Element<std::string>(assigns[i]);
 			if (HAS_ATTR(assign, "expr") && assign.getChildNodes().getLength() > 0) {
 				issues.push_back(InterpreterIssue("Assign element cannot have expr attribute and children", assign, InterpreterIssue::USCXML_ISSUE_WARNING));
 			}
 		}
 
-		for (int i = 0; i < contents.size(); i++) {
+		for (size_t i = 0; i < contents.size(); i++) {
 			Element<std::string> content = Element<std::string>(contents[i]);
 			if (HAS_ATTR(content, "expr") && content.getChildNodes().getLength() > 0) {
 				issues.push_back(InterpreterIssue("Content element cannot have expr attribute and children", content, InterpreterIssue::USCXML_ISSUE_WARNING));
 			}
 		}
 
-		for (int i = 0; i < params.size(); i++) {
+		for (size_t i = 0; i < params.size(); i++) {
 			Element<std::string> param = Element<std::string>(params[i]);
 			if (HAS_ATTR(param, "expr") && HAS_ATTR(param, "location")) {
 				issues.push_back(InterpreterIssue("Param element cannot have both expr and location attribute", param, InterpreterIssue::USCXML_ISSUE_WARNING));
 			}
 		}
 
-		for (int i = 0; i < scripts.size(); i++) {
+		for (size_t i = 0; i < scripts.size(); i++) {
 			Element<std::string> script = Element<std::string>(scripts[i]);
 			if (HAS_ATTR(script, "src") && script.getChildNodes().getLength() > 0) {
 				issues.push_back(InterpreterIssue("Script element cannot have src attribute and children", script, InterpreterIssue::USCXML_ISSUE_WARNING));
 			}
 		}
 
-		for (int i = 0; i < sends.size(); i++) {
+		for (size_t i = 0; i < sends.size(); i++) {
 			Element<std::string> send = Element<std::string>(sends[i]);
 			if (HAS_ATTR(send, "event") && HAS_ATTR(send, "eventexpr")) {
 				issues.push_back(InterpreterIssue("Send element cannot have both event and eventexpr attribute", send, InterpreterIssue::USCXML_ISSUE_WARNING));
@@ -735,14 +735,14 @@ NEXT_SET:
 			}
 
 		}
-		for (int i = 0; i < cancels.size(); i++) {
+		for (size_t i = 0; i < cancels.size(); i++) {
 			Element<std::string> cancel = Element<std::string>(cancels[i]);
 			if (HAS_ATTR(cancel, "sendid") && HAS_ATTR(cancel, "sendidexpr")) {
 				issues.push_back(InterpreterIssue("Cancel element cannot have both sendid and eventexpr sendidexpr", cancel, InterpreterIssue::USCXML_ISSUE_WARNING));
 			}
 		}
 
-		for (int i = 0; i < invokes.size(); i++) {
+		for (size_t i = 0; i < invokes.size(); i++) {
 			Element<std::string> invoke = Element<std::string>(invokes[i]);
 			if (HAS_ATTR(invoke, "type") && HAS_ATTR(invoke, "typeexpr")) {
 				issues.push_back(InterpreterIssue("Invoke element cannot have both type and typeexpr attribute", invoke, InterpreterIssue::USCXML_ISSUE_WARNING));
@@ -761,7 +761,7 @@ NEXT_SET:
 
 			}
 		}
-		for (int i = 0; i < doneDatas.size(); i++) {
+		for (size_t i = 0; i < doneDatas.size(); i++) {
 			Element<std::string> donedata = Element<std::string>(doneDatas[i]);
 			if (DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "content", donedata, false).size() > 0 &&
 			        DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "param", donedata, false).size() > 0) {
@@ -798,7 +798,7 @@ NEXT_SET:
 
 	// test all scripts for valid syntax
 	{
-		for (int i = 0; i < scripts.size(); i++) {
+		for (size_t i = 0; i < scripts.size(); i++) {
 			Element<std::string> script = Element<std::string>(scripts[i]);
 
 			if (script.hasChildNodes()) {
@@ -823,7 +823,7 @@ NEXT_SET:
 		withCondAttrs.push_back(ifs);
 		withCondAttrs.push_back(elseIfs);
 
-		for (int i = 0; i < withCondAttrs.size(); i++) {
+		for (size_t i = 0; i < withCondAttrs.size(); i++) {
 			Element<std::string> condAttr = Element<std::string>(withCondAttrs[i]);
 			if (HAS_ATTR(condAttr, "cond")) {
 				if (!_dataModel.isValidSyntax(ATTR(condAttr, "cond"))) {
@@ -842,7 +842,7 @@ NEXT_SET:
 		withExprAttrs.push_back(contents);
 		withExprAttrs.push_back(params);
 
-		for (int i = 0; i < withExprAttrs.size(); i++) {
+		for (size_t i = 0; i < withExprAttrs.size(); i++) {
 			Element<std::string> withExprAttr = Element<std::string>(withExprAttrs[i]);
 			if (HAS_ATTR(withExprAttr, "expr")) {
 				if (InterpreterImpl::isMember(withExprAttr, datas) || InterpreterImpl::isMember(withExprAttr, assigns)) {
@@ -861,7 +861,7 @@ NEXT_SET:
 	}
 
 	{
-		for (int i = 0; i < foreachs.size(); i++) {
+		for (size_t i = 0; i < foreachs.size(); i++) {
 			Element<std::string> foreach = Element<std::string>(foreachs[i]);
 			if (HAS_ATTR(foreach, "array")) {
 				if (!_dataModel.isValidSyntax(ATTR(foreach, "array"))) {
@@ -882,7 +882,7 @@ NEXT_SET:
 	}
 
 	{
-		for (int i = 0; i < sends.size(); i++) {
+		for (size_t i = 0; i < sends.size(); i++) {
 			Element<std::string> send = Element<std::string>(sends[i]);
 			if (HAS_ATTR(send, "eventexpr")) {
 				if (!_dataModel.isValidSyntax(ATTR(send, "eventexpr"))) {
@@ -914,7 +914,7 @@ NEXT_SET:
 	}
 
 	{
-		for (int i = 0; i < invokes.size(); i++) {
+		for (size_t i = 0; i < invokes.size(); i++) {
 			Element<std::string> invoke = Element<std::string>(invokes[i]);
 			if (HAS_ATTR(invoke, "typeexpr")) {
 				if (!_dataModel.isValidSyntax(ATTR(invoke, "typeexpr"))) {
@@ -938,7 +938,7 @@ NEXT_SET:
 	}
 
 	{
-		for (int i = 0; i < cancels.size(); i++) {
+		for (size_t i = 0; i < cancels.size(); i++) {
 			Element<std::string> cancel = Element<std::string>(cancels[i]);
 			if (HAS_ATTR(cancel, "sendidexpr")) {
 				if (!_dataModel.isValidSyntax(ATTR(cancel, "sendidexpr"))) {

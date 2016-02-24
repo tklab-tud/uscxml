@@ -70,7 +70,7 @@ std::list<Breakpoint> getQualifiedTransBreakpoints(Interpreter interpreter, cons
 	Arabica::DOM::Element<std::string> source(interpreter.getImpl()->getSourceState(transition));
 	Arabica::XPath::NodeSet<std::string> targets = interpreter.getImpl()->getTargetStates(transition);
 
-	for (int j = 0; j < targets.size(); j++) {
+	for (size_t j = 0; j < targets.size(); j++) {
 		Arabica::DOM::Element<std::string> target(targets[j]);
 
 		Breakpoint bp = breakpointTemplate; // copy base as template

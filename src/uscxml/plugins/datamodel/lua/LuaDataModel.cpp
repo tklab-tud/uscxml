@@ -127,7 +127,7 @@ static int luaInFunction(lua_State * l) {
 	InterpreterInfo* interpreter = ref.cast<InterpreterInfo*>();
 
 	int stackSize = lua_gettop(l);
-	for (int i = 0; i < stackSize; i++) {
+	for (size_t i = 0; i < stackSize; i++) {
 		if (!lua_isstring(l, -1 - i))
 			continue;
 		std::string stateName = lua_tostring(l, -1 - i);

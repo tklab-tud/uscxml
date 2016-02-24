@@ -6,21 +6,35 @@ include("${CMAKE_MODULE_PATH}/FileInformation.cmake")
 get_filename_component(TEST_FILE_NAME ${TESTFILE} NAME)
 execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory ${OUTDIR})
 
-message(STATUS "${USCXML_TRANSFORM_BIN} -t${TARGETLANG} -i ${TESTFILE} -o ${OUTDIR}/${TEST_FILE_NAME}.machine.c")
-execute_process(COMMAND time -p ${USCXML_TRANSFORM_BIN} -t${TARGETLANG} -i ${TESTFILE} -o ${OUTDIR}/${TEST_FILE_NAME}.machine.c RESULT_VARIABLE CMD_RESULT)
-if(CMD_RESULT)
-	message(FATAL_ERROR "Error running ${USCXML_TRANSFORM_BIN}: ${CMD_RESULT}")
-endif()
-message(STATUS "time for transforming to c machine")
 
 # message(FATAL_ERROR "PROJECT_BINARY_DIR: ${PROJECT_BINARY_DIR}")
 
 if (${TARGETLANG} STREQUAL "vhdl")
+	find_program(GHDL ghdl)
 
-	message(STATUS ${OUTDIR}/${TEST_FILE_NAME})
+	execute_process(COMMAND time -p ${USCXML_TRANSFORM_BIN} -t${TARGETLANG} -i ${TESTFILE} -o ${OUTDIR}/${TEST_FILE_NAME}.machine.vhdl RESULT_VARIABLE CMD_RESULT)
+	if(CMD_RESULT)
+		message(FATAL_ERROR "Error running ${USCXML_TRANSFORM_BIN}: ${CMD_RESULT}")
+	endif()
+	message(STATUS "time for transforming to VHDL machine")
 
+	message(STATUS "${GHDL} -a ${OUTDIR}/${TEST_FILE_NAME}.machine.vhdl")
+	execute_process(
+		COMMAND time -p ${GHDL} -a ${OUTDIR}/${TEST_FILE_NAME}.machine.vhdl
+		WORKING_DIRECTORY ${OUTDIR} RESULT_VARIABLE CMD_RESULT)
+	if(CMD_RESULT)
+		message(FATAL_ERROR "Error running ghdl ${GHDL}: ${CMD_RESULT}")
+	endif()
+	message(STATUS "time for transforming to binary")
 
 elseif (${TARGETLANG} STREQUAL "c")
+	
+	message(STATUS "${USCXML_TRANSFORM_BIN} -t${TARGETLANG} -i ${TESTFILE} -o ${OUTDIR}/${TEST_FILE_NAME}.machine.c")
+	execute_process(COMMAND time -p ${USCXML_TRANSFORM_BIN} -t${TARGETLANG} -i ${TESTFILE} -o ${OUTDIR}/${TEST_FILE_NAME}.machine.c RESULT_VARIABLE CMD_RESULT)
+	if(CMD_RESULT)
+		message(FATAL_ERROR "Error running ${USCXML_TRANSFORM_BIN}: ${CMD_RESULT}")
+	endif()
+	message(STATUS "time for transforming to c machine")
 	
 	# set(COMPILE_CMD_OBJ
 	# "-c" "${OUTDIR}/${TEST_FILE_NAME}.machine.c"

@@ -144,7 +144,7 @@ void RespondElement::enterElement(const Arabica::DOM::Element<std::string>& node
 
 	// process headers
 	Arabica::XPath::NodeSet<std::string> headers = DOMUtils::filterChildElements(_interpreter->getNameSpaceInfo().getXMLPrefixForNS(getNamespace()) + "header", node);
-	for (int i = 0; i < headers.size(); i++) {
+	for (size_t i = 0; i < headers.size(); i++) {
 		Arabica::DOM::Element<std::string> headerElem = Arabica::DOM::Element<std::string>(headers[i]);
 
 		std::string name;

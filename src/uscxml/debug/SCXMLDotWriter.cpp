@@ -99,7 +99,7 @@ void SCXMLDotWriter::beforeTakingTransition(Interpreter interpreter,
 
 std::string SCXMLDotWriter::getPrefix() {
 	std::string prefix = "";
-	for (int i = 0; i < _indentation; i++)
+	for (size_t i = 0; i < _indentation; i++)
 		prefix += "  ";
 	return prefix;
 }
@@ -200,7 +200,7 @@ void SCXMLDotWriter::assembleGraph(const Element<std::string>& state, int32_t ch
 
 
 	NodeSet<std::string> childElems = DOMUtils::filterChildType(Node_base::ELEMENT_NODE, state);
-	for (int i = 0; i < childElems.size(); i++) {
+	for (size_t i = 0; i < childElems.size(); i++) {
 		Element<std::string> childElem(childElems[i]);
 
 		// remember histories we passed
@@ -213,7 +213,7 @@ void SCXMLDotWriter::assembleGraph(const Element<std::string>& state, int32_t ch
 		if (iequals(TAGNAME(childElem), "transition")) {
 			_graph[nodeId].transitions.push_back(childElem);
 			NodeSet<std::string> targetStates = _interpreter.getImpl()->getTargetStates(childElem);
-			for (int j = 0; j < targetStates.size(); j++) {
+			for (size_t j = 0; j < targetStates.size(); j++) {
 				std::string remoteNodeId = idForNode(targetStates[j]);
 				_graph[nodeId].targets.insert(std::make_pair(remoteNodeId, childElem));
 
@@ -348,7 +348,7 @@ void SCXMLDotWriter::writeStateElement(std::ostream& os, const Element<std::stri
 			break;
 		case PORT_TRANSITION:
 			nrOutPorts = dotState.transitions.size();
-//			for (int i = 0; i < dotState.transitions.size(); i++) {
+//			for (size_t i = 0; i < dotState.transitions.size(); i++) {
 //				outPorts.push_back(idForNode(dotState.transitions[i]));
 //			}
 			break;
@@ -400,7 +400,7 @@ void SCXMLDotWriter::writeStateElement(std::ostream& os, const Element<std::stri
 
 		// write history states
 		NodeSet<std::string> histories = DOMUtils::filterChildElements(_xmlNSPrefix + "history", stateElem);
-		for (int i = 0; i < histories.size(); i++) {
+		for (size_t i = 0; i < histories.size(); i++) {
 			os << "  <tr><td port=\"" << portEscape(ATTR_CAST(histories[i], "id")) << "\" balign=\"left\" colspan=\"" << (nrOutPorts == 0 ? 1 : 2) << "\"><b>history: </b>" << ATTR_CAST(histories[i], "id") << "</td></tr>" << std::endl;
 
 		}
@@ -422,7 +422,7 @@ void SCXMLDotWriter::writeStateElement(std::ostream& os, const Element<std::stri
 
 	// recurse into children and search others to draw
 	NodeSet<std::string> childElems = DOMUtils::filterChildType(Node_base::ELEMENT_NODE, stateElem);
-	for (int i = 0; i < childElems.size(); i++) {
+	for (size_t i = 0; i < childElems.size(); i++) {
 		Element<std::string> childElem(childElems[i]);
 		if (InterpreterImpl::isState(Element<std::string>(childElem))) {
 			writeStateElement(os, childElem);
@@ -598,7 +598,7 @@ std::string SCXMLDotWriter::getDetailedLabel(const Element<std::string>& elem, i
 	std::list<struct ElemDetails> content;
 
 	NodeList<std::string > childElems = elem.getChildNodes();
-	for (int i = 0; i < childElems.getLength(); i++) {
+	for (size_t i = 0; i < childElems.getLength(); i++) {
 		if (childElems.item(i).getNodeType() != Node_base::ELEMENT_NODE)
 			continue;
 		Element<std::string> elem = Element<std::string>(childElems.item(i));
@@ -637,7 +637,7 @@ std::string SCXMLDotWriter::getDetailedLabel(const Element<std::string>& elem, i
 			if (HAS_ATTR(elem, "expr"))
 				details.name += " = " + ATTR(elem, "expr");
 			NodeList<std::string > grandChildElems = elem.getChildNodes();
-			for (int j = 0; j < grandChildElems.getLength(); j++) {
+			for (size_t j = 0; j < grandChildElems.getLength(); j++) {
 				if (grandChildElems.item(j).getNodeType() == Node_base::TEXT_NODE) {
 					details.name += dotEscape(grandChildElems.item(j).getNodeValue());
 				}
@@ -700,7 +700,7 @@ std::string SCXMLDotWriter::getDetailedLabel(const Element<std::string>& elem, i
 			if (HAS_ATTR(elem, "src"))
 				details.name += ATTR(elem, "src");
 			NodeList<std::string > grandChildElems = childElems.item(i).getChildNodes();
-			for (int j = 0; j < grandChildElems.getLength(); j++) {
+			for (size_t j = 0; j < grandChildElems.getLength(); j++) {
 				if (grandChildElems.item(j).getNodeType() == Node_base::TEXT_NODE) {
 					details.name += dotEscape(grandChildElems.item(j).getNodeValue());
 				}

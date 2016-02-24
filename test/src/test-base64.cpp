@@ -9,7 +9,7 @@ int main(int argc, char** argv) {
 	std::string base64C;
 
 	char buffer[SOURCE_LEN];
-	for (int i = 0; i < SOURCE_LEN; i++) {
+	for (size_t i = 0; i < SOURCE_LEN; i++) {
 		buffer[i] = (char)55;
 	}
 

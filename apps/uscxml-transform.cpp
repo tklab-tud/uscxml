@@ -50,7 +50,7 @@ class VerboseMonitor : public uscxml::InterpreterMonitor {
 	void printConfig(const Arabica::XPath::NodeSet<std::string>& config) {
 		std::string seperator;
 		std::cerr << "Config: {";
-		for (int i = 0; i < config.size(); i++) {
+		for (size_t i = 0; i < config.size(); i++) {
 			std::cerr << seperator << ATTR_CAST(config[i], "id");
 			seperator = ", ";
 		}

@@ -116,7 +116,7 @@ public:
 			array.push_back(Data("", Data::VERBATIM));
 		}
 		std::list<Data>::iterator arrayIter = array.begin();
-		for (int i = 0; i < index; i++, arrayIter++) {}
+		for (size_t i = 0; i < index; i++, arrayIter++) {}
 		return *arrayIter;
 	}
 
@@ -134,7 +134,7 @@ public:
 	const Data item(const size_t index) const {
 		if (array.size() > index) {
 			std::list<Data>::const_iterator arrayIter = array.begin();
-			for (int i = 0; i < index; i++, arrayIter++) {}
+			for (size_t i = 0; i < index; i++, arrayIter++) {}
 			return *arrayIter;
 		}
 		Data data;

@@ -61,7 +61,7 @@ void URL::dump() {
 	std::cout << "[path]" << path();
 	std::cout << "[file]" << file() << std::endl;
 	std::cout << "[segmts " << pathComponents().size() << "]: ";
-	for (int i = 0; i < pathComponents().size(); i++) {
+	for (size_t i = 0; i < pathComponents().size(); i++) {
 		std::cout << pathComponents()[i] << ", ";
 	}
 	std::cout << std::endl << std::endl;

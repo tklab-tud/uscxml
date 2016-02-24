@@ -38,7 +38,7 @@ bool UUID::isUUID(const std::string& uuid) {
 	if (uuid[8] != '-' || uuid[13] != '-' || uuid[18] != '-' || uuid[23] != '-')
 		return false;
 
-	for (int i = 0; i < 36; i++) {
+	for (size_t i = 0; i < 36; i++) {
 		if (i == 8 || i == 13 || i == 18 || i ==23)
 			continue;
 

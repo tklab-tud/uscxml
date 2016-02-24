@@ -49,14 +49,14 @@ public:
 	FlatStateIdentifier(const Arabica::XPath::NodeSet<std::string>& activeStates,
 	                    const Arabica::XPath::NodeSet<std::string>& alreadyEnteredStates,
 	                    const std::map<std::string, Arabica::XPath::NodeSet<std::string> >& historyStates) {
-		for (int i = 0; i < activeStates.size(); i++) {
+		for (size_t i = 0; i < activeStates.size(); i++) {
 			active.push_back(ATTR_CAST(activeStates[i], "id"));
 		}
 
-		for (int i = 0; i < alreadyEnteredStates.size(); i++) {
+		for (size_t i = 0; i < alreadyEnteredStates.size(); i++) {
 			const Arabica::DOM::NodeList<std::string>& children = alreadyEnteredStates[i].getChildNodes();
 			bool isRelevant = false;
-			for (int j = 0; j < children.getLength(); j++) {
+			for (size_t j = 0; j < children.getLength(); j++) {
 				if (children.item(j).getNodeType() != Arabica::DOM::Node_base::ELEMENT_NODE)
 					continue;
 				if (iequals(LOCALNAME_CAST(children.item(j)), "data") || iequals(LOCALNAME_CAST(children.item(j)), "datamodel")) {
@@ -70,7 +70,7 @@ public:
 
 		std::map<std::string, Arabica::XPath::NodeSet<std::string> >::const_iterator histIter;
 		for (histIter = historyStates.begin(); histIter != historyStates.end(); histIter++) {
-			for (int i = 0; i < histIter->second.size(); i++) {
+			for (size_t i = 0; i < histIter->second.size(); i++) {
 				histories[histIter->first].push_back(ATTR_CAST(histIter->second[i], "id"));
 			}
 		}

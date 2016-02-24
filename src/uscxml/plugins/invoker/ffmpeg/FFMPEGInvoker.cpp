@@ -95,7 +95,7 @@ void FFMPEGInvoker::invoke(const InvokeRequest& req) {
 	Event::getParam(req.params, "threads", nrThreads);
 
 	_isRunning = true;
-	for (int i = 0; i < nrThreads; i++) {
+	for (size_t i = 0; i < nrThreads; i++) {
 		_threads.insert(new tthread::thread(FFMPEGInvoker::run, this));
 	}
 }

@@ -339,7 +339,7 @@ int main(int argc, char **argv) {
 
 	if (frame)
 		frame->pts = 0;
-	for (int i = 0; i < 125; i++) {
+	for (size_t i = 0; i < 125; i++) {
 		write_video_frame(oc, video_st);
 		frame->pts += av_rescale_q(1, video_st->codec->time_base, video_st->time_base);
 	}

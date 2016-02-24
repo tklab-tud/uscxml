@@ -180,7 +180,7 @@ int main(int argc, char** argv) {
 			Arabica::DOM::Element<std::string> root = document.getDocumentElement();
 			Arabica::XPath::NodeSet<std::string> sends = DOMUtils::filterChildElements(interpreter.getNameSpaceInfo().xmlNSPrefix + "send", root, true);
 
-			for (int i = 0; i < sends.size(); i++) {
+			for (size_t i = 0; i < sends.size(); i++) {
 				Arabica::DOM::Element<std::string> send = Arabica::DOM::Element<std::string>(sends[i]);
 				if (HAS_ATTR(send, "delay")) {
 					NumAttr delay(ATTR(send, "delay"));

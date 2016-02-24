@@ -135,7 +135,7 @@ int main(int argc, char** argv) {
 	std::stringstream newCtxReqXMLSS;
 	newCtxReqXMLSS << newCtxReqXML;
 
-	for (int i = 0; i < 100000; i++) {
+	for (size_t i = 0; i < 100000; i++) {
 		std::string index = toStr(i);
 		client.write(index.c_str(), index.size() + 1);
 //		client.write(newCtxReqXMLSS.str().data(), newCtxReqXMLSS.str().size());
