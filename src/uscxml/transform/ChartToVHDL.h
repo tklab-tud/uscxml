@@ -42,111 +42,111 @@ public:
 
 	void writeTo(std::ostream& stream);
 
-    
-    struct VNode {
-        virtual void print(std::ostream& stream, const std::string padding = "") = 0;
-        virtual ~VNode() {};
-    };
-    struct VBranch : VNode {
-        std::vector< VNode* > v;
-        virtual ~VBranch(){
-            for(unsigned i = 0; i < v.size(); i++)
-                delete v[i];
-        }
-        
-        VBranch& operator +=(VNode* p ) {
-            v.push_back(p);
-            return *this;
-        }
-    };
-    
-    struct VPointer{
-        VNode* ptr;
-        
-        operator VNode*() {
-            return ptr;
-        }
 
-        VPointer& operator /( VNode* p ){
-            ptr = p;
-            return *this;
-        }
-    };
+	struct VNode {
+		virtual void print(std::ostream& stream, const std::string padding = "") = 0;
+		virtual ~VNode() {};
+	};
+	struct VBranch : VNode {
+		std::vector< VNode* > v;
+		virtual ~VBranch() {
+			for(unsigned i = 0; i < v.size(); i++)
+				delete v[i];
+		}
 
-    struct VContainer {
-        VBranch* ptr;
-        
-        operator VBranch*() {
-            return ptr;
-        }
-        VContainer& operator /( VBranch* p ){
-            ptr = p;
-            return *this;
-        }
-        VContainer& operator , ( VPointer p ) {
-            if(ptr) ptr->v.push_back(p.ptr);
-            return *this;
-        }
-        VContainer& operator , ( VContainer c ) {
-            if(ptr) ptr->v.push_back(c.ptr);
-            return *this;
-        }
-    };
+		VBranch& operator +=(VNode* p ) {
+			v.push_back(p);
+			return *this;
+		}
+	};
 
-    struct VLine : VNode {
-        VLine(const std::string& name) : name(name) {}
-        virtual void print(std::ostream& stream, const std::string padding = "") {
-            stream << " " << name;
-        }
+	struct VPointer {
+		VNode* ptr;
 
-        std::string name;
-    };
-    
-    struct VAssign : VBranch {
-        virtual void print(std::ostream& stream, const std::string padding = "") {
-            v[0]->print(stream, padding);
-            stream << padding << " <=";
-            v[1]->print(stream, padding + "  ");
-        }
-    };
+		operator VNode*() {
+			return ptr;
+		}
 
-    struct VAnd : VBranch {
-        virtual void print(std::ostream& stream, const std::string padding = "") {
-            stream << std::endl << padding << "( '1' ";
-            for(unsigned i = 0; i < v.size(); i++) {
-                stream << std::endl << padding << "  and";
-                v[i]->print(stream, padding + "    ");
-            }
-            stream << padding << ")" << std::endl;
-        }
-    };
+		VPointer& operator /( VNode* p ) {
+			ptr = p;
+			return *this;
+		}
+	};
 
-    struct VOr : VBranch {
-        virtual void print(std::ostream& stream, const std::string padding = "") {
-            stream << std::endl << padding << "( '0' ";
-            for(unsigned i = 0; i < v.size(); i++) {
-                stream << std::endl << padding << "  or";
-                v[i]->print(stream, padding + "    ");
-            }
-            stream << std::endl << padding << ")" << std::endl;
-        }
-    };
+	struct VContainer {
+		VBranch* ptr;
 
-    struct VNot : VBranch {
-        virtual void print(std::ostream& stream, const std::string padding = "") {
-            stream << " ( not";
-            v[0]->print(stream, padding + "  ");
-            stream << " )";
-        }
-    };
+		operator VBranch*() {
+			return ptr;
+		}
+		VContainer& operator /( VBranch* p ) {
+			ptr = p;
+			return *this;
+		}
+		VContainer& operator , ( VPointer p ) {
+			if(ptr) ptr->v.push_back(p.ptr);
+			return *this;
+		}
+		VContainer& operator , ( VContainer c ) {
+			if(ptr) ptr->v.push_back(c.ptr);
+			return *this;
+		}
+	};
 
-    struct VNop : VBranch {
-        virtual void print(std::ostream& stream, const std::string padding = "") {
-            v[0]->print(stream, padding);
-        }
-    };
+	struct VLine : VNode {
+		VLine(const std::string& name) : name(name) {}
+		virtual void print(std::ostream& stream, const std::string padding = "") {
+			stream << " " << name;
+		}
 
-    
+		std::string name;
+	};
+
+	struct VAssign : VBranch {
+		virtual void print(std::ostream& stream, const std::string padding = "") {
+			v[0]->print(stream, padding);
+			stream << padding << " <=";
+			v[1]->print(stream, padding + "  ");
+		}
+	};
+
+	struct VAnd : VBranch {
+		virtual void print(std::ostream& stream, const std::string padding = "") {
+			stream << std::endl << padding << "( '1' ";
+			for(unsigned i = 0; i < v.size(); i++) {
+				stream << std::endl << padding << "  and";
+				v[i]->print(stream, padding + "    ");
+			}
+			stream << padding << ")" << std::endl;
+		}
+	};
+
+	struct VOr : VBranch {
+		virtual void print(std::ostream& stream, const std::string padding = "") {
+			stream << std::endl << padding << "( '0' ";
+			for(unsigned i = 0; i < v.size(); i++) {
+				stream << std::endl << padding << "  or";
+				v[i]->print(stream, padding + "    ");
+			}
+			stream << std::endl << padding << ")" << std::endl;
+		}
+	};
+
+	struct VNot : VBranch {
+		virtual void print(std::ostream& stream, const std::string padding = "") {
+			stream << " ( not";
+			v[0]->print(stream, padding + "  ");
+			stream << " )";
+		}
+	};
+
+	struct VNop : VBranch {
+		virtual void print(std::ostream& stream, const std::string padding = "") {
+			v[0]->print(stream, padding);
+		}
+	};
+
+
 #define VLINE   VPointer()/new VLine
 #define VASSIGN VContainer()/new VAssign
 #define VOR     VContainer()/new VOr
@@ -154,8 +154,8 @@ public:
 #define VNOT    VContainer()/new VNot
 #define VNOP    VContainer()/new VNop
 
-    
-    
+
+
 protected:
 	ChartToVHDL(const Interpreter& other);
 
