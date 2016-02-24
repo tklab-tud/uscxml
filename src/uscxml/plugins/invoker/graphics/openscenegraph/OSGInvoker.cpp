@@ -22,7 +22,7 @@
 #include "OSGInvoker.h"
 #include "uscxml/URL.h"
 #include "uscxml/UUID.h"
-#include "uscxml/DOMUtils.h"
+#include "uscxml/dom/DOMUtils.h"
 #include <glog/logging.h>
 
 #include <osg/Shape>
