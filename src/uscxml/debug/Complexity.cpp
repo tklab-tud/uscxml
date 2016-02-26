@@ -18,7 +18,7 @@
 */
 
 #include "Complexity.h"
-#include "uscxml/DOMUtils.h"
+#include "uscxml/dom/DOMUtils.h"
 
 #include <boost/algorithm/string.hpp>
 
@@ -35,7 +35,7 @@ std::list<std::set<Element<std::string> > > Complexity::getAllConfigurations(con
 	bool isAtomic = true;
 
 	NodeList<std::string> children = root.getChildNodes();
-	for (int i = 0; i < children.getLength(); i++) {
+	for (size_t i = 0; i < children.getLength(); i++) {
 		if (children.item(i).getNodeType() != Node_base::ELEMENT_NODE)
 			continue;
 		Element<std::string> childElem(children.item(i));
@@ -97,7 +97,7 @@ std::map<size_t, size_t> Complexity::getTransitionHistogramm(const Arabica::DOM:
 			if (nameSpace.size() == 0 && elemIter->getPrefix().size() > 0)
 				nameSpace = elemIter->getPrefix() + ":";
 		}
-		NodeSet<std::string> transitions = InterpreterImpl::filterChildElements(nameSpace + "transition", configNodeSet);
+		NodeSet<std::string> transitions = DOMUtils::filterChildElements(nameSpace + "transition", configNodeSet);
 		histogram[transitions.size()]++;
 	}
 
@@ -148,7 +148,7 @@ Complexity Complexity::calculateStateMachineComplexity(const Arabica::DOM::Eleme
 	bool hasNestedData = false;
 
 	Arabica::DOM::NodeList<std::string> childElems = root.getChildNodes();
-	for (int i = 0; i < childElems.getLength(); i++) {
+	for (size_t i = 0; i < childElems.getLength(); i++) {
 		if (childElems.item(i).getNodeType() != Node_base::ELEMENT_NODE)
 			continue;
 		Element<std::string> childElem = Element<std::string>(childElems.item(i));
@@ -161,7 +161,7 @@ Complexity Complexity::calculateStateMachineComplexity(const Arabica::DOM::Eleme
 		}
 		if (!hasNestedData && childElem.getLocalName() == "datamodel") {
 			Arabica::DOM::NodeList<std::string> dataElemChilds = childElem.getChildNodes();
-			for (int j = 0; j < dataElemChilds.getLength(); j++) {
+			for (size_t j = 0; j < dataElemChilds.getLength(); j++) {
 				if (dataElemChilds.item(j).getLocalName() == "data")
 					hasNestedData = true;
 			}
@@ -176,7 +176,7 @@ Complexity Complexity::calculateStateMachineComplexity(const Arabica::DOM::Eleme
 	} else if (InterpreterImpl::isCompound(root) || TAGNAME(root) == "scxml") {
 		// compounds can be in any of the child state -> add
 		NodeSet<std::string> childs = InterpreterImpl::getChildStates(root);
-		for (int i = 0; i < childs.size(); i++) {
+		for (size_t i = 0; i < childs.size(); i++) {
 			complexity += calculateStateMachineComplexity(Element<std::string>(childs[i]), reachable);
 		}
 		if (hasFlatHistory) {
@@ -189,7 +189,7 @@ Complexity Complexity::calculateStateMachineComplexity(const Arabica::DOM::Eleme
 		// parallels are in all states -> multiply
 		NodeSet<std::string> childs = InterpreterImpl::getChildStates(root);
 		complexity.value = 1;
-		for (int i = 0; i < childs.size(); i++) {
+		for (size_t i = 0; i < childs.size(); i++) {
 			complexity *= calculateStateMachineComplexity(Element<std::string>(childs[i]), reachable);
 		}
 		if (hasDeepHistory) {

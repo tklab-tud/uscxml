@@ -19,6 +19,8 @@
 
 #include "uscxml/Common.h"
 #include "uscxml/config.h"
+#include "uscxml/URL.h"
+#include "uscxml/util/String.h"
 
 #include "JSCDataModel.h"
 #include "JSCDOM.h"
@@ -41,7 +43,7 @@
 #include "dom/JSCDataView.h"
 
 #include "uscxml/Message.h"
-#include "uscxml/DOMUtils.h"
+#include "uscxml/dom/DOMUtils.h"
 #include <glog/logging.h>
 
 #ifdef BUILD_AS_PLUGINS
@@ -94,7 +96,7 @@ void JSCDataModel::addExtension(DataModelExtension* ext) {
 	_extensions.insert(ext);
 
 	JSObjectRef currScope = JSContextGetGlobalObject(_ctx);
-	std::list<std::string> locPath = InterpreterImpl::tokenize(ext->provides(), '.');
+	std::list<std::string> locPath = tokenize(ext->provides(), '.');
 	std::list<std::string>::iterator locIter = locPath.begin();
 	while(true) {
 		std::string pathComp = *locIter;
@@ -309,7 +311,7 @@ void JSCDataModel::setEvent(const Event& event) {
 				handleException(exception);
 		} else {
 			JSStringRef propName = JSStringCreateWithUTF8CString("data");
-			JSStringRef contentStr = JSStringCreateWithUTF8CString(InterpreterImpl::spaceNormalize(event.content).c_str());
+			JSStringRef contentStr = JSStringCreateWithUTF8CString(spaceNormalize(event.content).c_str());
 			JSObjectSetProperty(_ctx, eventObj, propName, JSValueMakeString(_ctx, contentStr), 0, &exception);
 			JSStringRelease(propName);
 			JSStringRelease(contentStr);
@@ -625,50 +627,6 @@ JSValueRef JSCDataModel::evalAsValue(const std::string& expr, bool dontThrow) {
 	return result;
 }
 
-void JSCDataModel::assign(const Element<std::string>& assignElem,
-                          const Node<std::string>& node,
-                          const std::string& content) {
-	std::string key;
-	JSValueRef exception = NULL;
-	if (HAS_ATTR(assignElem, "id")) {
-		key = ATTR(assignElem, "id");
-	} else if (HAS_ATTR(assignElem, "location")) {
-		key = ATTR(assignElem, "location");
-	}
-	if (key.length() == 0) {
-		ERROR_EXECUTION_THROW("Assign element has neither id nor location");
-	}
-	// flags on attribute are ignored?
-	if (key.compare("_sessionid") == 0) // test 322
-		ERROR_EXECUTION_THROW("Cannot assign to _sessionId");
-	if (key.compare("_name") == 0)
-		ERROR_EXECUTION_THROW("Cannot assign to _name");
-	if (key.compare("_ioprocessors") == 0)  // test 326
-		ERROR_EXECUTION_THROW("Cannot assign to _ioprocessors");
-	if (key.compare("_invokers") == 0)
-		ERROR_EXECUTION_THROW("Cannot assign to _invokers");
-	if (key.compare("_event") == 0)
-		ERROR_EXECUTION_THROW("Cannot assign to _event");
-
-	if (HAS_ATTR(assignElem, "expr")) {
-		evalAsValue(key + " = " + ATTR(assignElem, "expr"));
-	} else if (node) {
-		JSObjectSetProperty(_ctx, JSContextGetGlobalObject(_ctx), JSStringCreateWithUTF8CString(key.c_str()), getNodeAsValue(node), 0, &exception);
-		if (exception)
-			handleException(exception);
-	} else if (content.size() > 0) {
-		try {
-			evalAsValue(key + " = " + content);
-		} catch (...) {
-			evalAsValue(key + " = " + "\"" + InterpreterImpl::spaceNormalize(content) + "\"");
-		}
-	} else {
-		JSObjectSetProperty(_ctx, JSContextGetGlobalObject(_ctx), JSStringCreateWithUTF8CString(key.c_str()), JSValueMakeUndefined(_ctx), 0, &exception);
-		if (exception)
-			handleException(exception);
-	}
-}
-
 JSValueRef JSCDataModel::getNodeAsValue(const Node<std::string>& node) {
 	switch (node.getNodeType()) {
 	case Node_base::ELEMENT_NODE:         {
@@ -690,9 +648,69 @@ JSValueRef JSCDataModel::getNodeAsValue(const Node<std::string>& node) {
 }
 
 void JSCDataModel::assign(const std::string& location, const Data& data) {
-	std::stringstream ssJSON;
-	ssJSON << data;
-	evalAsValue(location + " = " + ssJSON.str());
+
+	// flags on attribute are ignored?
+	if (location.compare("_sessionid") == 0) // test 322
+		ERROR_EXECUTION_THROW("Cannot assign to _sessionId");
+	if (location.compare("_name") == 0)
+		ERROR_EXECUTION_THROW("Cannot assign to _name");
+	if (location.compare("_ioprocessors") == 0)  // test 326
+		ERROR_EXECUTION_THROW("Cannot assign to _ioprocessors");
+	if (location.compare("_invokers") == 0)
+		ERROR_EXECUTION_THROW("Cannot assign to _invokers");
+	if (location.compare("_event") == 0)
+		ERROR_EXECUTION_THROW("Cannot assign to _event");
+
+	JSValueRef exception = NULL;
+	if (data.node) {
+		JSObjectSetProperty(_ctx, JSContextGetGlobalObject(_ctx), JSStringCreateWithUTF8CString(location.c_str()), getNodeAsValue(data.node), 0, &exception);
+	} else {
+		evalAsValue(location + " = " + Data::toJSON(data));
+	}
+
+	/**
+	 * test157: We need to evluate, as this will not throw for 'continue' = Var[5] in
+	 */
+//    JSObjectSetProperty(_ctx, JSContextGetGlobalObject(_ctx), JSStringCreateWithUTF8CString(location.c_str()), getDataAsValue(data), 0, &exception);
+
+	if (exception)
+		handleException(exception);
+}
+
+void JSCDataModel::assign(const Element<std::string>& assignElem,
+                          const Node<std::string>& node,
+                          const std::string& content) {
+	std::string key;
+	if (HAS_ATTR(assignElem, "id")) {
+		key = ATTR(assignElem, "id");
+	} else if (HAS_ATTR(assignElem, "location")) {
+		key = ATTR(assignElem, "location");
+	}
+	if (key.length() == 0) {
+		ERROR_EXECUTION_THROW("Assign element has neither id nor location");
+	}
+
+	if (HAS_ATTR(assignElem, "expr")) {
+		assign(key, Data(ATTR(assignElem, "expr"), Data::INTERPRETED));
+	} else if (node) {
+		Data d;
+		d.node = node;
+		assign(key, d);
+	} else if (content.size() > 0) {
+		try {
+			Data d = Data::fromJSON(content);
+			if (d.empty())
+				throw Event();
+			assign(key, Data(d, Data::INTERPRETED));
+		} catch (Event e) {
+			assign(key, Data("\"" + spaceNormalize(content) + "\"", Data::INTERPRETED));
+		}
+	} else {
+		JSValueRef exception = NULL;
+		JSObjectSetProperty(_ctx, JSContextGetGlobalObject(_ctx), JSStringCreateWithUTF8CString(key.c_str()), JSValueMakeUndefined(_ctx), 0, &exception);
+		if (exception)
+			handleException(exception);
+	}
 }
 
 void JSCDataModel::init(const Element<std::string>& dataElem,
@@ -708,7 +726,9 @@ void JSCDataModel::init(const Element<std::string>& dataElem,
 		} else if (HAS_ATTR(dataElem, "location")) {
 			key = ATTR(dataElem, "location");
 		}
-		evalAsValue(key + " = undefined", true);
+		if (key.size() > 0) {
+			evalAsValue(key + " = undefined", true);
+		}
 		throw e;
 	}
 }

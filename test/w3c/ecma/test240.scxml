@@ -46,7 +46,7 @@ should run correctly. -->
               <transition cond="Var1==1" target="subFinal2">
                 <send target="#_parent" event="success"/>
               </transition>
-              <transition target="subFinal1">
+              <transition target="subFinal2">
                 <send target="#_parent" event="failure"/>
               </transition>
             </state>

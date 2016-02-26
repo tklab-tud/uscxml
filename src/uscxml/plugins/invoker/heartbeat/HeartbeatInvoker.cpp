@@ -20,7 +20,7 @@
 #include <boost/algorithm/string.hpp>
 
 #include "HeartbeatInvoker.h"
-#include "uscxml/DOMUtils.h"
+#include "uscxml/dom/DOMUtils.h"
 #include <glog/logging.h>
 
 #ifdef BUILD_AS_PLUGINS

@@ -25,7 +25,7 @@ freely, subject to the following restrictions:
 #define _TINYTHREAD_H_
 
 #include "uscxml/Common.h"
-#include <ostream>
+//#include <ostream>
 
 /// @file
 /// @mainpage TinyThread++ API Reference

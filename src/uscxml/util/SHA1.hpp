@@ -40,7 +40,7 @@ namespace uscxml {
         } else {
         	std::ostringstream ss;
         	ss << std::hex << std::uppercase << std::setfill( '0' );
-        	for (int i = 0; i < 5; i++) {
+        	for (size_t i = 0; i < 5; i++) {
         		ss << std::setw( 2 ) << sha.Message_Digest[i];
         	}
 

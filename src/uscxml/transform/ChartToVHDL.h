@@ -21,80 +21,173 @@
 #define CHARTOVHDL_H
 
 #include "uscxml/interpreter/InterpreterDraft6.h"
-#include "uscxml/DOMUtils.h"
+#include "uscxml/dom/DOMUtils.h"
 #include "uscxml/util/Trie.h"
 #include "Transformer.h"
+#include "ChartToC.h"
 
 #include <DOM/Document.hpp>
 #include <DOM/Node.hpp>
 #include <XPath/XPath.hpp>
 #include <ostream>
+#include <vector>
 
 namespace uscxml {
 
-    class USCXML_API ChartToVHDL : public InterpreterRC, public TransformerImpl {
-    public:
+class USCXML_API ChartToVHDL : public ChartToC {
+public:
 
-        virtual ~ChartToVHDL();
-        static Transformer transform(const Interpreter& other);
+	virtual ~ChartToVHDL();
+	static Transformer transform(const Interpreter& other);
 
-        void writeTo(std::ostream& stream);
-
-        static Arabica::XPath::NodeSet<std::string> inPostFixOrder(const std::set<std::string>& elements,
-                const Arabica::DOM::Element<std::string>& root);
-        static Arabica::XPath::NodeSet<std::string> inDocumentOrder(const std::set<std::string>& elements,
-                const Arabica::DOM::Element<std::string>& root);
-    protected:
-        ChartToVHDL(const Interpreter& other);
-
-        static void inPostFixOrder(const std::set<std::string>& elements,
-                const Arabica::DOM::Element<std::string>& root,
-                Arabica::XPath::NodeSet<std::string>& nodes);
-
-        static void inDocumentOrder(const std::set<std::string>& elements,
-                const Arabica::DOM::Element<std::string>& root,
-                Arabica::XPath::NodeSet<std::string>& nodes);
-
-        Arabica::XPath::NodeSet<std::string> computeExitSet(
-                const Arabica::DOM::Element<std::string>& transition);
-
-        void writeIncludes(std::ostream& stream);
-        void writeTopDown(std::ostream& stream);
-
-        void writeTypes(std::ostream& stream);
-        void writeNextStateLogic(std::ostream& stream);
-        void writeOutputLogic(std::ostream& stream);
-        void writeSignals(std::ostream& stream);
-        void writeFiFo(std::ostream& stream);
-        void writeModuleInstantiation(std::ostream& stream);
-        void writeErrorHandler(std::ostream& stream);
-        void writeFSM(std::ostream& stream);
-        void writeTestbench(std::ostream& stream);
+	void writeTo(std::ostream& stream);
 
 
+	struct VNode {
+		virtual void print(std::ostream& stream, const std::string padding = "") = 0;
+		virtual ~VNode() {};
+	};
+	struct VBranch : VNode {
+		std::vector< VNode* > v;
+		virtual ~VBranch() {
+			for(unsigned i = 0; i < v.size(); i++)
+				delete v[i];
+		}
 
-        Interpreter interpreter;
+		VBranch& operator +=(VNode* p ) {
+			v.push_back(p);
+			return *this;
+		}
+	};
 
-        std::string _initState;
-        Arabica::XPath::NodeSet<std::string> _states;
-        std::map<std::string, Arabica::DOM::Element<std::string> > _stateNames;
-        Arabica::XPath::NodeSet<std::string> _transitions;
-        std::map<std::string, Arabica::DOM::Element<std::string> > _transitionNames;
-        std::vector<std::string> _events;
-        Arabica::XPath::NodeSet<std::string> _compoundStates;
-        Arabica::XPath::NodeSet<std::string> _parallelStates;
-        Arabica::XPath::NodeSet<std::string> _finalStates;
-        Arabica::XPath::NodeSet<std::string> _superFinalStates;
+	struct VPointer {
+		VNode* ptr;
 
-        bool _hasGlobalScripts;
-        bool _hasDoneData;
+		operator VNode*() {
+			return ptr;
+		}
 
-        size_t _transCharArraySize;
-        std::string _transCharArrayInit;
+		VPointer& operator /( VNode* p ) {
+			ptr = p;
+			return *this;
+		}
+	};
 
-        size_t _stateCharArraySize;
-        std::string _stateCharArrayInit;
-    };
+	struct VContainer {
+		VBranch* ptr;
+
+		operator VBranch*() {
+			return ptr;
+		}
+		VContainer& operator /( VBranch* p ) {
+			ptr = p;
+			return *this;
+		}
+		VContainer& operator , ( VPointer p ) {
+			if(ptr) ptr->v.push_back(p.ptr);
+			return *this;
+		}
+		VContainer& operator , ( VContainer c ) {
+			if(ptr) ptr->v.push_back(c.ptr);
+			return *this;
+		}
+	};
+
+	struct VLine : VNode {
+		VLine(const std::string& name) : name(name) {}
+		virtual void print(std::ostream& stream, const std::string padding = "") {
+			stream << " " << name;
+		}
+
+		std::string name;
+	};
+
+	struct VAssign : VBranch {
+		virtual void print(std::ostream& stream, const std::string padding = "") {
+			v[0]->print(stream, padding);
+			stream << padding << " <=";
+			v[1]->print(stream, padding + "  ");
+		}
+	};
+
+	struct VAnd : VBranch {
+		virtual void print(std::ostream& stream, const std::string padding = "") {
+			stream << std::endl << padding << "( '1' ";
+			for(unsigned i = 0; i < v.size(); i++) {
+				stream << std::endl << padding << "  and";
+				v[i]->print(stream, padding + "    ");
+			}
+			stream << padding << ")" << std::endl;
+		}
+	};
+
+	struct VOr : VBranch {
+		virtual void print(std::ostream& stream, const std::string padding = "") {
+			stream << std::endl << padding << "( '0' ";
+			for(unsigned i = 0; i < v.size(); i++) {
+				stream << std::endl << padding << "  or";
+				v[i]->print(stream, padding + "    ");
+			}
+			stream << std::endl << padding << ")" << std::endl;
+		}
+	};
+
+	struct VNot : VBranch {
+		virtual void print(std::ostream& stream, const std::string padding = "") {
+			stream << " ( not";
+			v[0]->print(stream, padding + "  ");
+			stream << " )";
+		}
+	};
+
+	struct VNop : VBranch {
+		virtual void print(std::ostream& stream, const std::string padding = "") {
+			v[0]->print(stream, padding);
+		}
+	};
+
+
+#define VLINE   VPointer()/new VLine
+#define VASSIGN VContainer()/new VAssign
+#define VOR     VContainer()/new VOr
+#define VAND    VContainer()/new VAnd
+#define VNOT    VContainer()/new VNot
+#define VNOP    VContainer()/new VNop
+
+
+
+protected:
+	ChartToVHDL(const Interpreter& other);
+
+	void checkDocument();
+	void findEvents();
+
+	void writeIncludes(std::ostream& stream);
+	void writeTopDown(std::ostream& stream);
+
+	void writeTypes(std::ostream& stream);
+
+	void writeOptimalTransitionSetSelection(std::ostream& stream);
+	void writeExitSet(std::ostream & stream);
+	void writeEntrySet(std::ostream & stream);
+
+	void writeNextStateLogic(std::ostream& stream);
+	void writeOutputLogic(std::ostream& stream);
+	void writeSignals(std::ostream& stream);
+	void writeFiFo(std::ostream& stream);
+	void writeModuleInstantiation(std::ostream& stream);
+	void writeErrorHandler(std::ostream& stream);
+	void writeFSM(std::ostream& stream);
+
+	void writeTransitionSet(std::ostream & stream);
+
+	Trie _eventTrie;
+
+private:
+	std::string eventNameEscape(const std::string& eventName);
+
+
+};
 
 }
 

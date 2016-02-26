@@ -20,7 +20,7 @@
 #include "RespondElement.h"
 #include "uscxml/plugins/invoker/http/HTTPServletInvoker.h"
 #include "uscxml/server/InterpreterServlet.h"
-#include "uscxml/DOMUtils.h"
+#include "uscxml/dom/DOMUtils.h"
 #include <glog/logging.h>
 
 #ifdef BUILD_AS_PLUGINS
@@ -79,7 +79,7 @@ void RespondElement::enterElement(const Arabica::DOM::Element<std::string>& node
 	httpReply.status = strTo<int>(statusStr);;
 
 	// extract the content
-	Arabica::XPath::NodeSet<std::string> contents = InterpreterImpl::filterChildElements(_interpreter->getNameSpaceInfo().getXMLPrefixForNS(getNamespace()) + "content", node);
+	Arabica::XPath::NodeSet<std::string> contents = DOMUtils::filterChildElements(_interpreter->getNameSpaceInfo().getXMLPrefixForNS(getNamespace()) + "content", node);
 	if (contents.size() > 0) {
 		Arabica::DOM::Element<std::string> contentElem = Arabica::DOM::Element<std::string>(contents[0]);
 		if (HAS_ATTR(contentElem, "expr")) { // -- content is evaluated string from datamodel ------
@@ -143,8 +143,8 @@ void RespondElement::enterElement(const Arabica::DOM::Element<std::string>& node
 	}
 
 	// process headers
-	Arabica::XPath::NodeSet<std::string> headers = InterpreterImpl::filterChildElements(_interpreter->getNameSpaceInfo().getXMLPrefixForNS(getNamespace()) + "header", node);
-	for (int i = 0; i < headers.size(); i++) {
+	Arabica::XPath::NodeSet<std::string> headers = DOMUtils::filterChildElements(_interpreter->getNameSpaceInfo().getXMLPrefixForNS(getNamespace()) + "header", node);
+	for (size_t i = 0; i < headers.size(); i++) {
 		Arabica::DOM::Element<std::string> headerElem = Arabica::DOM::Element<std::string>(headers[i]);
 
 		std::string name;

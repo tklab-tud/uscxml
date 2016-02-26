@@ -80,7 +80,7 @@ int main(int argc, char** argv) {
 
 		int iterations = 1000;
 		std::stringstream contentSS;
-		for (int i = 0; i < iterations; i++) {
+		for (size_t i = 0; i < iterations; i++) {
 			contentSS << toStr(i);
 			contentSS << "tadaa!";
 		}
@@ -99,7 +99,7 @@ int main(int argc, char** argv) {
 		client.connect("127.0.0.1", 1235);
 
 		int iterations = 1000;
-		for (int i = 0; i < iterations; i++) {
+		for (size_t i = 0; i < iterations; i++) {
 			client.write(toStr(i));
 			client.write("\0", 1);
 		}

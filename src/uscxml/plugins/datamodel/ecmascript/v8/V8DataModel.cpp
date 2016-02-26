@@ -46,7 +46,7 @@
 #include "dom/V8DataView.h"
 
 #include "uscxml/Message.h"
-#include "uscxml/DOMUtils.h"
+#include "uscxml/dom/DOMUtils.h"
 #include <glog/logging.h>
 
 #ifdef BUILD_AS_PLUGINS
@@ -102,7 +102,7 @@ void V8DataModel::addExtension(DataModelExtension* ext) {
 	v8::Context::Scope contextScope(_contexts.front());
 	v8::Handle<v8::Object> currScope = _contexts.front()->Global();
 
-	std::list<std::string> locPath = InterpreterImpl::tokenize(ext->provides(), '.');
+	std::list<std::string> locPath = tokenize(ext->provides(), '.');
 	std::list<std::string>::iterator locIter = locPath.begin();
 	while(true) {
 		std::string pathComp = *locIter;
@@ -317,7 +317,7 @@ void V8DataModel::setEvent(const Event& event) {
 		if (!json.empty()) {
 			eventObj->Set(v8::String::New("data"), getDataAsValue(json));
 		} else {
-			eventObj->Set(v8::String::New("data"), v8::String::New(InterpreterImpl::spaceNormalize(event.content).c_str()));
+			eventObj->Set(v8::String::New("data"), v8::String::New(spaceNormalize(event.content).c_str()));
 		}
 	} else {
 		// _event.data is KVP
@@ -716,7 +716,7 @@ void V8DataModel::assign(const Element<std::string>& assignElem,
 		try {
 			evalAsValue(key + " = " + content);
 		} catch (...) {
-			evalAsValue(key + " = " + "\"" + InterpreterImpl::spaceNormalize(content) + "\"");
+			evalAsValue(key + " = " + "\"" + spaceNormalize(content) + "\"");
 		}
 	} else {
 		global->Set(v8::String::New(key.c_str()), v8::Undefined());

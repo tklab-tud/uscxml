@@ -197,63 +197,24 @@ set(CTEST_CUSTOM_TESTS_IGNORE
   
   ### Ignore for generated C sources
   
-  # we do not support invokers yet
-  "gen/c/ecma/test187.scxml"
-  "gen/c/ecma/test191.scxml"
-  "gen/c/ecma/test192.scxml"
-  "gen/c/ecma/test207.scxml"
-  "gen/c/ecma/test215.scxml"
-  "gen/c/ecma/test216.scxml"
-  "gen/c/ecma/test220.scxml"
-  "gen/c/ecma/test223.scxml"
-  "gen/c/ecma/test224.scxml"
-  "gen/c/ecma/test225.scxml"
-  "gen/c/ecma/test226.scxml"
-  "gen/c/ecma/test228.scxml"
-  "gen/c/ecma/test229.scxml"
-  "gen/c/ecma/test230.scxml"
-  "gen/c/ecma/test232.scxml"
-  "gen/c/ecma/test233.scxml"
-  "gen/c/ecma/test234.scxml"
-  "gen/c/ecma/test235.scxml"
-  "gen/c/ecma/test236.scxml"
-  "gen/c/ecma/test237.scxml"
-  "gen/c/ecma/test239.scxml"
-  "gen/c/ecma/test240.scxml"
-  "gen/c/ecma/test241.scxml"
-  "gen/c/ecma/test242.scxml"
-  "gen/c/ecma/test243.scxml"
-  "gen/c/ecma/test244.scxml"
-  "gen/c/ecma/test245.scxml"
-  "gen/c/ecma/test247.scxml"
-  "gen/c/ecma/test250.scxml"
-  "gen/c/ecma/test252.scxml"
-  "gen/c/ecma/test253.scxml"
-  "gen/c/ecma/test276.scxml"
-  "gen/c/ecma/test338.scxml"
-  "gen/c/ecma/test347.scxml"
-  "gen/c/ecma/test422.scxml"
-  "gen/c/ecma/test530.scxml"
-  "gen/c/ecma/test554.scxml"
+  "gen/c/ecma/test216.scxml" // invoke srcexpr
   
   # we do not support io processors yet
-  "gen/c/ecma/test201.scxml"
-  "gen/c/ecma/test496.scxml"
-  "gen/c/ecma/test500.scxml"
-  "gen/c/ecma/test501.scxml"
-  "gen/c/ecma/test509.scxml"
-  "gen/c/ecma/test510.scxml"
-  "gen/c/ecma/test518.scxml"
-  "gen/c/ecma/test519.scxml"
-  "gen/c/ecma/test520.scxml"
-  "gen/c/ecma/test521.scxml"
-  "gen/c/ecma/test522.scxml"
-  "gen/c/ecma/test531.scxml"
-  "gen/c/ecma/test532.scxml"
-  "gen/c/ecma/test534.scxml"
-  "gen/c/ecma/test567.scxml"
-  "gen/c/ecma/test569.scxml"
-  "gen/c/ecma/test577.scxml"
+  "gen/c/ecma/test201.scxml" # basichttp
+  "gen/c/ecma/test500.scxml" # _ioprocessors
+  "gen/c/ecma/test501.scxml" # _ioprocessors
+  "gen/c/ecma/test509.scxml" # _ioprocessors / basichttp
+  "gen/c/ecma/test510.scxml" # _ioprocessors / basichttp
+  "gen/c/ecma/test518.scxml" # _ioprocessors / basichttp
+  "gen/c/ecma/test519.scxml" # _ioprocessors / basichttp
+  "gen/c/ecma/test520.scxml" # _ioprocessors / basichttp
+  "gen/c/ecma/test522.scxml" # _ioprocessors / basichttp
+  "gen/c/ecma/test531.scxml" # _ioprocessors / basichttp
+  "gen/c/ecma/test532.scxml" # _ioprocessors / basichttp
+  "gen/c/ecma/test534.scxml" # _ioprocessors / basichttp
+  "gen/c/ecma/test567.scxml" # _ioprocessors / basichttp
+  "gen/c/ecma/test569.scxml" # _ioprocessors
+  "gen/c/ecma/test577.scxml" # basichttp
   
   # failing is succeeding
   "gen/c/ecma/test301.scxml"
@@ -261,13 +222,9 @@ set(CTEST_CUSTOM_TESTS_IGNORE
   # manual test
   "gen/c/ecma/test307.scxml"
   
-  # data from file
-  "gen/c/ecma/test446.scxml"
-  "gen/c/ecma/test552.scxml"
-  "gen/c/ecma/test557.scxml"
-  "gen/c/ecma/test558.scxml"
-  
   # XML DOM in data
+  "gen/c/ecma/test530.scxml"
+  "gen/c/ecma/test557.scxml"
   "gen/c/ecma/test561.scxml"
 
 
@@ -293,6 +250,15 @@ set(CTEST_CUSTOM_TESTS_IGNORE
   "perf/ecma/test423.scxml"
   "perf/ecma/test553.scxml"
   "perf/ecma/test579.scxml"
+  
+  ### Ignore some Header self-sufficient tests
+  "header/bindings/swig/msvc/inttypes.h"
+  "header/bindings/swig/wrapped/WrappedDataModel.h"
+  "header/bindings/swig/wrapped/WrappedExecutableContent.h"
+  "header/bindings/swig/wrapped/WrappedInterpreterMonitor.h"
+  "header/bindings/swig/wrapped/WrappedInvoker.h"
+  "header/bindings/swig/wrapped/WrappedIOProcessor.h"
+  
   
 )
 # unset(CTEST_CUSTOM_TESTS_IGNORE)

@@ -20,7 +20,7 @@
 #ifndef V8DATAMODEL_H_KN8TWG0V
 #define V8DATAMODEL_H_KN8TWG0V
 
-#include "uscxml/Interpreter.h"
+#include "uscxml/InterpreterInfo.h"
 #include <list>
 #include <v8.h>
 #include "V8DOM.h"

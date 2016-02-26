@@ -21,7 +21,9 @@
 
 #include "uscxml/plugins/ioprocessor/basichttp/BasicHTTPIOProcessor.h"
 #include "uscxml/Message.h"
-#include "uscxml/DOMUtils.h"
+#include "uscxml/dom/DOMUtils.h"
+#include "uscxml/dom/NameSpacingParser.h"
+
 #include <iostream>
 #include <event2/dns.h>
 #include <event2/buffer.h>

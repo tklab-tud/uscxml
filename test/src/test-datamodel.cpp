@@ -38,7 +38,7 @@ int main(int argc, char** argv) {
 
 	{
 		char* testData = (char*)malloc(1024);
-		for (int i = 0; i < 1024; i++) {
+		for (size_t i = 0; i < 1024; i++) {
 			testData[i] = (char)i;
 		}
 
@@ -46,7 +46,7 @@ int main(int argc, char** argv) {
 		Blob blob = data.getBinary();
 		char* otherData = blob.getData();
 
-		for (int i = 0; i < 1024; i++) {
+		for (size_t i = 0; i < 1024; i++) {
 			assert(testData[i] == otherData[i]);
 		}
 

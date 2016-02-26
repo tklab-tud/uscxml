@@ -89,7 +89,7 @@ SendRequest SendRequest::fromXML(const std::string& xmlString) {
 std::ostream& operator<< (std::ostream& os, const SendRequest& sendReq) {
 
 	std::string indent;
-	for (int i = 0; i < _dataIndentation; i++) {
+	for (size_t i = 0; i < _dataIndentation; i++) {
 		indent += "  ";
 	}
 

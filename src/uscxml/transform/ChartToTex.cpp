@@ -109,7 +109,7 @@ void ChartToTex::writeTex(std::ostream& stream) {
 		for (std::list<GlobalTransition*>::iterator transIter = stateIter->second->sortedOutgoing.begin(); transIter != stateIter->second->sortedOutgoing.end(); transIter++) {
 			GlobalTransition* currTrans = *transIter;
 			Arabica::XPath::NodeSet<std::string> members = currTrans->getTransitions();
-			for (int i = 0; i < members.size(); i++) {
+			for (size_t i = 0; i < members.size(); i++) {
 				Element<std::string> transElem(members[i]);
 				if (HAS_ATTR(transElem, "priority")) {
 					origTransitions.insert(ATTR(transElem, "priority"));
@@ -149,7 +149,7 @@ void ChartToTex::writeTex(std::ostream& stream) {
 				if (members.size() > 0) {
 					stream << "$\\{ ";
 					seperator = "";
-					for (int i = 0; i < members.size(); i++) {
+					for (size_t i = 0; i < members.size(); i++) {
 						Element<std::string> transElem(members[i]);
 						if (HAS_ATTR(transElem, "priority")) {
 							stream << seperator << "t_{" << ATTR(transElem, "priority") << "}";

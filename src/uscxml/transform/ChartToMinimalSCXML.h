@@ -20,8 +20,8 @@
 #ifndef CHARTTOMINIMALSCXML_H_7B97677A
 #define CHARTTOMINIMALSCXML_H_7B97677A
 
-#include "uscxml/DOMUtils.h"
 #include "uscxml/interpreter/InterpreterRC.h"
+#include "uscxml/dom/DOMUtils.h"
 #include <DOM/Document.hpp>
 #include <DOM/Node.hpp>
 #include <XPath/XPath.hpp>

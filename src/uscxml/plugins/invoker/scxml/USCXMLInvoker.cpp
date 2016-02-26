@@ -19,7 +19,8 @@
 
 #include "USCXMLInvoker.h"
 #include <glog/logging.h>
-#include "uscxml/DOMUtils.h"
+#include "uscxml/dom/DOMUtils.h"
+#include <DOM/SAX2DOM/SAX2DOM.hpp>
 
 #ifdef BUILD_AS_PLUGINS
 #include <Pluma/Connector.hpp>
@@ -91,7 +92,7 @@ void USCXMLInvoker::invoke(const InvokeRequest& req) {
 	}
 	if (_invokedInterpreter) {
 		if (req.elem && HAS_ATTR(req.elem, "initial")) {
-			_invokedInterpreter.setInitalConfiguration(InterpreterImpl::tokenize(ATTR(req.elem, "initial")));
+			_invokedInterpreter.setInitalConfiguration(tokenize(ATTR(req.elem, "initial")));
 		}
 
 		DataModel dataModel(_invokedInterpreter.getImpl()->getDataModel());
@@ -125,6 +126,7 @@ void USCXMLInvoker::ParentQueue::push(const SendRequest& event) {
 	if (_invoker->_cancelled)
 		return;
 	SendRequest copyEvent(event);
+	// this is somewhat hidden here!
 	copyEvent.invokeid = _invoker->_invokeId;
 	_invoker->_parentInterpreter->receive(copyEvent);
 }

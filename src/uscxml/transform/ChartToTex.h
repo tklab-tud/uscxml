@@ -24,7 +24,7 @@
 #include "Transformer.h"
 #include "ChartToFSM.h"
 #include "uscxml/Interpreter.h"
-#include "uscxml/DOMUtils.h"
+#include "uscxml/dom/DOMUtils.h"
 #include "uscxml/util/Trie.h"
 
 #include <DOM/Document.hpp>

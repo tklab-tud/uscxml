@@ -21,8 +21,10 @@
 
 #include "uscxml/Common.h"
 #include "uscxml/config.h"
+#include "uscxml/util/String.h"
+#include "uscxml/URL.h"
 #include "SWIDataModel.h"
-#include "uscxml/DOMUtils.h"
+#include "uscxml/dom/DOMUtils.h"
 #include "uscxml/Message.h"
 #include <glog/logging.h>
 
@@ -272,7 +274,7 @@ void SWIDataModel::setEvent(const Event& event) {
 			dataInitStr << "load_xml_file('" << domUrl.asLocalFile(".pl") << "', XML), copy_term(XML,DATA), assert(event(data(DATA)))";
 			PlCall(dataInitStr.str().c_str());
 		} else if (event.content.size() > 0) {
-			PlCall("assert", PlCompound("event", PlCompound("data", PlString(InterpreterImpl::spaceNormalize(event.content).c_str()))));
+			PlCall("assert", PlCompound("event", PlCompound("data", PlString(spaceNormalize(event.content).c_str()))));
 		} else if (!event.data.empty()) {
 			assertFromData(event.data, "event(data(", 2);
 		}
@@ -306,7 +308,7 @@ void SWIDataModel::setEvent(const Event& event) {
 				paramArray << paramIter->first << "([";
 				std::string termSep = "";
 
-				for (int j = 0; paramIter != lastValueIter; j++) {
+				for (size_t j = 0; paramIter != lastValueIter; j++) {
 					paramArray << termSep << "'" << paramIter->second << "'";
 					termSep = ", ";
 					paramIter++;
@@ -403,7 +405,7 @@ std::list<PlCompound> SWIDataModel::getSolutions(PlCompound compound) {
 	std::list<PlCompound> solutions;
 
 	PlTermv termv(compound.arity());
-	for (int i = 0; i < compound.arity(); i++) {
+	for (size_t i = 0; i < compound.arity(); i++) {
 		termv[i] = compound[i + 1];
 	}
 	PlQuery query(compound.name(), termv);
@@ -423,7 +425,7 @@ Data SWIDataModel::getStringAsData(const std::string& content) {
 		Data data;
 
 		PlTermv termv(compound.arity());
-		for (int i = 0; i < compound.arity(); i++) {
+		for (size_t i = 0; i < compound.arity(); i++) {
 			termv[i] = compound[i + 1];
 		}
 		PlQuery query(compound.name(), termv);
@@ -458,7 +460,7 @@ Data SWIDataModel::termAsData(PlTerm term) {
 
 	switch (term.type()) {
 	case PL_TERM:
-		for (int i = 1; i <= term.arity(); i++) { // arguments start at 1
+		for (size_t i = 1; i <= term.arity(); i++) { // arguments start at 1
 			data.compound[term.name()] = termAsData(term[i]);
 		}
 		break;
@@ -616,7 +618,7 @@ uint32_t SWIDataModel::getLength(const std::string& expr) {
 	try {
 		PlCompound compound(expr.c_str());
 		PlTermv termv(compound.arity());
-		for (int i = 0; i < compound.arity(); i++) {
+		for (size_t i = 0; i < compound.arity(); i++) {
 			termv[i] = compound[i + 1];
 		}
 		PlQuery query(compound.name(), termv);
@@ -637,7 +639,7 @@ void SWIDataModel::setForeach(const std::string& item,
 		PlCompound compound(array.c_str());
 		PlCompound orig(array.c_str());
 		PlTermv termv(compound.arity());
-		for (int i = 0; i < compound.arity(); i++) {
+		for (size_t i = 0; i < compound.arity(); i++) {
 			termv[i] = compound[i + 1];
 		}
 		{
@@ -684,7 +686,7 @@ bool SWIDataModel::evalAsBool(const Arabica::DOM::Element<std::string>& node, co
 	try {
 		PlCompound compound(expr.c_str());
 		PlTermv termv(compound.arity());
-		for (int i = 0; i < compound.arity(); i++) {
+		for (size_t i = 0; i < compound.arity(); i++) {
 			termv[i] = compound[i + 1];
 		}
 		PlQuery query(compound.name(), termv);
@@ -706,7 +708,7 @@ std::string SWIDataModel::evalAsString(const std::string& expr) {
 			PlCompound orig(expr.c_str());
 
 			PlTermv termv(compound.arity());
-			for (int i = 0; i < compound.arity(); i++) {
+			for (size_t i = 0; i < compound.arity(); i++) {
 				termv[i] = compound[i + 1];
 			}
 			PlQuery query(compound.name(), termv);
@@ -758,7 +760,7 @@ std::map<std::string, PlTerm> SWIDataModel::resolveAtoms(PlTerm& term, PlTerm& o
 		case PL_INTEGER:
 			break;
 		case PL_TERM:
-			for (int i = 1; i <= orig.arity(); i++) {
+			for (size_t i = 1; i <= orig.arity(); i++) {
 				PlTerm newTerm = term[i];
 				PlTerm newOrig = orig[i];
 				std::map<std::string, PlTerm> result = resolveAtoms(newTerm, newOrig);

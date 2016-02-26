@@ -21,9 +21,9 @@
 #define BREAKPOINT_H_VR7K7T1X
 
 #include <string>                       // for string
+#include "uscxml/Common.h"              // for USCXML_API
 #include "uscxml/Interpreter.h"
 #include "DOM/Element.hpp"              // for Element
-#include "uscxml/Common.h"              // for USCXML_API
 #include "uscxml/messages/Data.h"       // for Data
 
 namespace uscxml {

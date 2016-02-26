@@ -19,7 +19,7 @@
 
 #include "uscxml/debug/Breakpoint.h"
 #include "uscxml/Interpreter.h"
-#include "uscxml/DOMUtils.h"
+#include "uscxml/dom/DOMUtils.h"
 
 namespace uscxml {
 
@@ -223,7 +223,7 @@ bool Breakpoint::matches(Interpreter interpreter, const Breakpoint& other) const
 		return false;
 	}
 
-	if(eventName.length() > 0 && !InterpreterImpl::nameMatch(eventName, other.eventName)) {
+	if(eventName.length() > 0 && !nameMatch(eventName, other.eventName)) {
 		return false;
 	}
 

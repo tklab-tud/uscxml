@@ -236,7 +236,7 @@ using System.Runtime.InteropServices;
 		Dictionary<string, NativeIOProcessor> ioProcs = new Dictionary<string, NativeIOProcessor>();
 		StringVector keys = getIOProcessorKeys();
 		IOProcMap ioProcMap = getIOProcessorsNative();
-		for (int i = 0; i < keys.Count; i++) {
+		for (size_t i = 0; i < keys.Count; i++) {
 			ioProcs[keys[i]] = ioProcMap[keys[i]];
 		}
 		return ioProcs;
@@ -246,7 +246,7 @@ using System.Runtime.InteropServices;
 		Dictionary<string, NativeInvoker> invokers = new Dictionary<string, NativeInvoker>();
 		StringVector keys = getInvokerKeys();
 		InvokerMap invokerMap = getInvokersNative();
-		for (int i = 0; i < keys.Count; i++) {
+		for (size_t i = 0; i < keys.Count; i++) {
 			invokers[keys[i]] = invokerMap[keys[i]];
 		}
 		return invokers;
@@ -288,7 +288,7 @@ using System.Runtime.InteropServices;
 		Dictionary<string, Data> compound = new Dictionary<string, Data>();
 		DataMap dataMap = getCompoundNative();
 		StringVector dataMapKeys = getCompoundKeys();
-		for (int i = 0; i < dataMapKeys.Count; i++) {
+		for (size_t i = 0; i < dataMapKeys.Count; i++) {
 			compound[dataMapKeys[i]] = dataMap[dataMapKeys[i]];
 		}
 		return compound;
@@ -305,7 +305,7 @@ using System.Runtime.InteropServices;
 	public List<Data> getArray() {
 		List<Data> arr = new List<Data>();
 		DataList dataList = getArrayNative();
-		for (int i = 0; i < dataList.size(); i++) {
+		for (size_t i = 0; i < dataList.size(); i++) {
 			arr.Add(dataList.get(i));
 		}
 		return arr;
@@ -345,7 +345,7 @@ using System.Runtime.InteropServices;
 		foreach (KeyValuePair<string, DataList> entry in paramMap) {
 			DataList dataList = entry.Value;
 			List<Data> paramList = new List<Data>();
-			for (int i = 0; i < dataList.size(); i++) {
+			for (size_t i = 0; i < dataList.size(); i++) {
 				Data data = dataList.get(i);
 				paramList.Add(data);
 			}
@@ -370,7 +370,7 @@ using System.Runtime.InteropServices;
 		Dictionary<string, Data> nameList = new Dictionary<string, Data>();
 		DataMap nameListMap = getNameListNative();
 		StringVector nameListMapKeys = getNameListKeys();
-		for (int i = 0; i < nameListMapKeys.Count; i++) {
+		for (size_t i = 0; i < nameListMapKeys.Count; i++) {
 			nameList[nameListMapKeys[i]] = nameListMap[nameListMapKeys[i]];
 		}
 		return nameList;

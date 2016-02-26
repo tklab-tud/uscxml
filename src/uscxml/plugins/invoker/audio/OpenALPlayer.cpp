@@ -96,12 +96,12 @@ OpenALPlayer::~OpenALPlayer() {
 		if (alIsSource(_alId)) {
 			throw std::runtime_error("openal source id still valid");
 		}
-		for (int i = 0; i < _nrBuffers; i++) {
+		for (size_t i = 0; i < _nrBuffers; i++) {
 			assert(alIsBuffer(_bufferIds[i]));
 			free(_buffers[i]);
 		}
 		alDeleteBuffers(_nrBuffers, _bufferIds);
-		for (int i = 0; i < _nrBuffers; i++) {
+		for (size_t i = 0; i < _nrBuffers; i++) {
 //			assert(!alIsBuffer(_bufferIds[i]));
 		}
 		free(_buffers);
@@ -134,7 +134,7 @@ void OpenALPlayer::init() {
 
 	_buffers = (char**)malloc(_nrBuffers * sizeof(char*));
 	_bufferIds = (ALuint*)malloc(_nrBuffers * sizeof(ALuint));
-	for (int i = 0; i < _nrBuffers; i++) {
+	for (size_t i = 0; i < _nrBuffers; i++) {
 		_buffers[i] = 0; //(char*)malloc(_bufferSize);
 	}
 
@@ -384,7 +384,7 @@ void OpenALPlayer::updateBuffers() {
 			alSourceUnqueueBuffers(_alId, processed, bufferIds);
 			checkOpenALError(__LINE__);
 
-			for (int id = 0; id < processed; id++) {
+			for (size_t id = 0; id < processed; id++) {
 				int bufferIdx = bufferIndex(bufferIds[id]);
 
 				// refill the buffer with data from the callback

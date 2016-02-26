@@ -118,6 +118,8 @@
 
 %{
 	#include <glog/logging.h>
+	#include "uscxml/dom/NameSpacingParser.h"
+	
 %}
 
 %extend uscxml::Data {

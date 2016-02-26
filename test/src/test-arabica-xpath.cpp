@@ -5,7 +5,7 @@
 #include <DOM/io/Stream.hpp>
 #include <iostream>
 #include <string>
-#include "uscxml/DOMUtils.h"
+#include "uscxml/dom/DOMUtils.h"
 
 #define string_type std::string
 #define string_adaptor Arabica::default_string_adaptor<std::string>

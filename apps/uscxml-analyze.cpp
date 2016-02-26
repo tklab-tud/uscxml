@@ -2,7 +2,7 @@
 #include "uscxml/Interpreter.h"
 #include "uscxml/debug/Complexity.h"
 #include "uscxml/transform/ChartToFSM.h"
-#include "uscxml/DOMUtils.h"
+#include "uscxml/dom/DOMUtils.h"
 #include <glog/logging.h>
 #include <fstream>
 #include <iostream>
@@ -95,7 +95,7 @@ int main(int argc, char** argv) {
 			pluginPath = optarg;
 			break;
 		case 'a':
-			aspects = InterpreterImpl::tokenize(optarg, ',');
+			aspects = tokenize(optarg, ',');
 			break;
 		case 'l':
 			break;

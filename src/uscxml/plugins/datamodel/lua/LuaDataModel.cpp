@@ -20,6 +20,7 @@
 #include <boost/algorithm/string.hpp>
 
 #include "uscxml/Common.h"
+#include "uscxml/util/String.h"
 #include "LuaDataModel.h"
 
 // disable forcing to bool performance warning
@@ -28,7 +29,7 @@
 #include "LuaBridge.h"
 #pragma warning(pop)
 
-#include "uscxml/DOMUtils.h"
+#include "uscxml/dom/DOMUtils.h"
 
 #include "uscxml/Message.h"
 #include <glog/logging.h>
@@ -123,10 +124,10 @@ LuaDataModel::LuaDataModel() {
 
 static int luaInFunction(lua_State * l) {
 	luabridge::LuaRef ref = luabridge::getGlobal(l, "__interpreter");
-	InterpreterImpl* interpreter = ref.cast<InterpreterImpl*>();
+	InterpreterInfo* interpreter = ref.cast<InterpreterInfo*>();
 
 	int stackSize = lua_gettop(l);
-	for (int i = 0; i < stackSize; i++) {
+	for (size_t i = 0; i < stackSize; i++) {
 		if (!lua_isstring(l, -1 - i))
 			continue;
 		std::string stateName = lua_tostring(l, -1 - i);
@@ -160,7 +161,7 @@ boost::shared_ptr<DataModelImpl> LuaDataModel::create(InterpreterInfo* interpret
 		LOG(INFO) << e.what();
 	}
 
-	luabridge::getGlobalNamespace(dm->_luaState).beginClass<InterpreterImpl>("Interpreter").endClass();
+	luabridge::getGlobalNamespace(dm->_luaState).beginClass<InterpreterInfo>("Interpreter").endClass();
 	luabridge::setGlobal(dm->_luaState, dm->_interpreter, "__interpreter");
 
 	luabridge::getGlobalNamespace(dm->_luaState).addCFunction("In", luaInFunction);
@@ -278,7 +279,7 @@ void LuaDataModel::setEvent(const Event& event) {
 			std::string trimmed = boost::trim_copy(event.content);
 			if ((boost::starts_with(trimmed, "'") && boost::ends_with(trimmed, "'")) ||
 			        (boost::starts_with(trimmed, "\"") && boost::ends_with(trimmed, "\""))) {
-				luaEvent["data"] = InterpreterImpl::spaceNormalize(event.content);
+				luaEvent["data"] = spaceNormalize(event.content);
 			} else {
 				Data tmp(event.content, Data::INTERPRETED);
 				luaEvent["data"] = getDataAsLua(_luaState, tmp);
@@ -315,7 +316,8 @@ void LuaDataModel::setEvent(const Event& event) {
 }
 
 Data LuaDataModel::getStringAsData(const std::string& content) {
-	Data data = Data::fromJSON(content);
+//    Data data = Data::fromJSON(content);
+	Data data;
 	if (data.empty()) {
 		std::string trimmedExpr = boost::trim_copy(content);
 		if (!boost::starts_with(trimmedExpr, "return")) {
@@ -463,7 +465,7 @@ void LuaDataModel::assign(const Arabica::DOM::Element<std::string>& assignElem,
 		try {
 			eval(Arabica::DOM::Element<std::string>(), key + " = " + content + ";");
 		} catch (...) {
-			eval(Arabica::DOM::Element<std::string>(), key + " = " + "\"" + InterpreterImpl::spaceNormalize(content) + "\";");
+			eval(Arabica::DOM::Element<std::string>(), key + " = " + "\"" + spaceNormalize(content) + "\";");
 		}
 	} else {
 		eval(Arabica::DOM::Element<std::string>(), key + " = " + "nil;");

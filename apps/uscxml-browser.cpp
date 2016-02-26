@@ -1,6 +1,6 @@
 #include "uscxml/config.h"
 #include "uscxml/Interpreter.h"
-#include "uscxml/DOMUtils.h"
+#include "uscxml/dom/DOMUtils.h"
 
 #ifndef BUILD_MINIMAL
 #	include "uscxml/debug/DebuggerServlet.h"
@@ -27,7 +27,7 @@
 #ifdef HAS_EXECINFO_H
 void printBacktrace(void** array, int size) {
 	char** messages = backtrace_symbols(array, size);
-	for (int i = 0; i < size && messages != NULL; ++i) {
+	for (size_t i = 0; i < size && messages != NULL; ++i) {
 		std::cerr << "\t" << messages[i] << std::endl;
 	}
 	std::cerr << std::endl;

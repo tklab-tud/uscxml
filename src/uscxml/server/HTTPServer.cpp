@@ -26,7 +26,8 @@
 #endif
 
 #include "uscxml/server/HTTPServer.h"
-#include "uscxml/DOMUtils.h"
+#include "uscxml/dom/DOMUtils.h"
+#include "uscxml/dom/NameSpacingParser.h"
 
 #include <string>
 #include <iostream>

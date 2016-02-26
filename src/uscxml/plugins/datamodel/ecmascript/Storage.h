@@ -22,8 +22,6 @@
 
 #include <string>
 #include <map>
-#include <fstream>
-#include <istream>
 
 namespace uscxml {
 

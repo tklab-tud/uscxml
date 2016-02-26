@@ -42,7 +42,7 @@ void promela_error (void* yylloc_param, uscxml::PromelaParser* ctx, void* yyscan
 	excEvent.data.compound["col"] = uscxml::Data(yylloc->first_column, uscxml::Data::VERBATIM);
 
 	std::stringstream ssUnderline;
-	for (int i = 0; i < yylloc->first_column; i++)
+	for (size_t i = 0; i < yylloc->first_column; i++)
 		ssUnderline << " ";
 	ssUnderline << "^";
 	excEvent.data.compound["sourcemark"] = uscxml::Data(ssUnderline.str(), uscxml::Data::VERBATIM);
@@ -197,7 +197,7 @@ void PromelaParserNode::push(PromelaParserNode* node) {
 
 void PromelaParserNode::dump(int indent) {
 	std::string padding;
-	for (int i = 0; i < indent; i++) {
+	for (size_t i = 0; i < indent; i++) {
 		padding += "  ";
 	}
 	std::cout << padding << typeToDesc(type) << ": " << value;

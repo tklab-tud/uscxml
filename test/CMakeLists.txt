@@ -1,6 +1,10 @@
 set(TEST_TIMEOUT 15)
 set(TEST_BENCHMARK_ITERATIONS 1000)
 
+find_program(SPIN spin)
+find_program(CC gcc)
+find_program(CXX g++)
+
 function(USCXML_TEST_COMPILE)
 	set(options BUILD_ONLY)
 	set(oneValueArgs LABEL NAME)
@@ -31,7 +35,11 @@ if (NOT WIN32)
 	target_link_libraries(test-promela-parser uscxml_transform)
 	USCXML_TEST_COMPILE(BUILD_ONLY NAME test-stress LABEL general/test-stress FILES src/test-stress.cpp)
 
-	USCXML_TEST_COMPILE(NAME test-c-machine LABEL general/test-c-machine FILES src/test-c-machine.cpp)
+	USCXML_TEST_COMPILE(NAME test-c-machine LABEL general/test-c-machine FILES 
+	  src/test-c-machine.cpp 
+	  # ../src/compiled/cxx/StateChart.cpp
+	  # ../src/compiled/cxx/StateChart.h
+	)
 	USCXML_TEST_COMPILE(NAME test-misc LABEL general/test-misc FILES src/test-misc.cpp)
 
 endif()
@@ -78,11 +86,60 @@ add_test(test-execution ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/uscxml-browser ${CMAKE
 add_test(test-communication ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/uscxml-browser -t5493 ${CMAKE_SOURCE_DIR}/test/uscxml/test-communication.scxml)
 add_test(test-done-data ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/uscxml-browser ${CMAKE_SOURCE_DIR}/test/uscxml/test-donedata.scxml)
 
-# declare W#C tests
+# make sure all headers are self-reliant
+file(GLOB_RECURSE USCXML_HEADERS
+	../src/*.h
+	../src/*.hpp
+)
 
-find_program(SPIN spin)
-find_program(GCC gcc)
-find_program(GPP g++)
+foreach(USCXML_HEADER ${USCXML_HEADERS} )
+	STRING(REGEX REPLACE "${CMAKE_CURRENT_SOURCE_DIR}/../src/" "" USCXML_REL_HEADER ${USCXML_HEADER})
+
+	set(HEADER_TEST)
+	set(HEADER_TEST "${HEADER_TEST}#include \"${USCXML_HEADER}\"\n")
+	set(HEADER_TEST "${HEADER_TEST}int main(int argc, char** argv) {}")
+	FILE(WRITE ${CMAKE_CURRENT_BINARY_DIR}/headers/${USCXML_REL_HEADER}.cpp ${HEADER_TEST})
+
+	add_test(NAME "header/${USCXML_REL_HEADER}"
+		COMMAND ${CMAKE_COMMAND}
+			-DTESTFILE:FILEPATH=${CMAKE_CURRENT_BINARY_DIR}/headers/${USCXML_REL_HEADER}.cpp
+			-DCC_BIN:FILEPATH=${CC}
+			-DCXX_BIN:FILEPATH=${CXX}
+			-DPROJECT_SOURCE_DIR=${PROJECT_SOURCE_DIR}
+			-DUSCXML_PLATFORM_ID=${USCXML_PLATFORM_ID}
+			-DCMAKE_BINARY_DIR=${CMAKE_BINARY_DIR}
+			-DPROJECT_BINARY_DIR=${PROJECT_BINARY_DIR}
+			-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=${CMAKE_LIBRARY_OUTPUT_DIRECTORY}
+		-P ${CMAKE_CURRENT_SOURCE_DIR}/ctest/scripts/run_header_compiles.cmake)
+	set_property(TEST "header/${USCXML_REL_HEADER}" PROPERTY LABELS "header/${USCXML_REL_HEADER}")
+	
+endforeach()
+
+
+# tests for inline SCXML with generated C
+
+add_executable(test-c-inline src/test-c-inline.c)
+set_target_properties(test-c-inline PROPERTIES FOLDER "Tests")
+
+add_test(NAME "gen/c/inline"
+	COMMAND ${CMAKE_COMMAND}
+		-DOUTDIR:FILEPATH=${CMAKE_CURRENT_BINARY_DIR}/gen/c
+		-DTESTFILE:FILEPATH=${CMAKE_CURRENT_SOURCE_DIR}/src/test-c-inline.c
+		-DTARGETLANG=c
+		-DUSCXML_TRANSFORM_BIN:FILEPATH=${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/uscxml-transform
+		-DCC_BIN:FILEPATH=${CC}
+		-DCXX_BIN:FILEPATH=${CXX}
+		-DPROJECT_SOURCE_DIR=${PROJECT_SOURCE_DIR}
+		-DUSCXML_PLATFORM_ID=${USCXML_PLATFORM_ID}
+		-DCMAKE_BINARY_DIR=${CMAKE_BINARY_DIR}
+		-DPROJECT_BINARY_DIR=${PROJECT_BINARY_DIR}
+		-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=${CMAKE_LIBRARY_OUTPUT_DIRECTORY}
+	-P ${CMAKE_CURRENT_SOURCE_DIR}/w3c/run_generated_inline_test.cmake)
+set_tests_properties("gen/c/inline" PROPERTIES DEPENDS uscxml-transform)
+set_property(TEST "gen/c/inline" PROPERTY LABELS "gen/c/inline")
+
+
+# declare W3C tests
 
 if (NOT BUILD_MINIMAL)
 	# compile and add all reported issues tests
@@ -118,6 +175,9 @@ if (NOT BUILD_MINIMAL)
 		"fsm/lua"
 		"fsm/promela"
 
+		# formal verification
+		"spin/promela"
+
 		# minimized interpreters
 		"min/ecma"
 		"min/xpath"
@@ -130,7 +190,11 @@ if (NOT BUILD_MINIMAL)
 
 	# prepare directories for test classes and copy resources over
 	foreach(W3C_RESOURCE ${W3C_RESOURCES} )
-		get_filename_component(TEST_DATAMODEL ${W3C_RESOURCE} NAME)
+		get_filename_component(TEST_DATAMODEL ${W3C_RESOURCE} PATH)
+		get_filename_component(TEST_DATAMODEL ${TEST_DATAMODEL} NAME)
+		
+		# message(STATUS "W3C_RESOURCE: ${W3C_RESOURCE}")
+		# message(STATUS "TEST_DATAMODEL: ${TEST_DATAMODEL}")
 		
 		foreach(TEST_CLASS ${TEST_CLASSES})
 			# datamodel has to be the suffix of the test class
@@ -190,21 +254,21 @@ if (NOT BUILD_MINIMAL)
 
 							# generate native interpreters
 							add_test(NAME "${TEST_NAME}"
-							    COMMAND ${CMAKE_COMMAND}
-										-DOUTDIR:FILEPATH=${CMAKE_CURRENT_BINARY_DIR}/${TEST_CLASS}
-										-DTESTFILE:FILEPATH=${W3C_TEST}
-										-DTARGETLANG=${TEST_TARGET}
-										-DJSC_LIBRARY:FILEPATH=${JSC_LIBRARY}
-										-DUSCXML_TRANSFORM_BIN:FILEPATH=${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/uscxml-transform
-										-DGCC_BIN:FILEPATH=${GCC}
-										-DGPP_BIN:FILEPATH=${GPP}
-										-DPROJECT_SOURCE_DIR=${PROJECT_SOURCE_DIR}
-										-DUSCXML_PLATFORM_ID=${USCXML_PLATFORM_ID}
-										-DCMAKE_BINARY_DIR=${CMAKE_BINARY_DIR}
-										-DPROJECT_BINARY_DIR=${PROJECT_BINARY_DIR}
-										-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=${CMAKE_LIBRARY_OUTPUT_DIRECTORY}
-										-DSCAFFOLDING_FOR_GENERATED_C:FILEPATH=${CMAKE_CURRENT_SOURCE_DIR}/src/test-c-machine.cpp
-										-P ${CMAKE_CURRENT_SOURCE_DIR}/w3c/run_generated_test.cmake)
+								COMMAND ${CMAKE_COMMAND}
+									-DOUTDIR:FILEPATH=${CMAKE_CURRENT_BINARY_DIR}/${TEST_CLASS}
+									-DTESTFILE:FILEPATH=${W3C_TEST}
+									-DTARGETLANG=${TEST_TARGET}
+									-DJSC_LIBRARY:FILEPATH=${JSC_LIBRARY}
+									-DUSCXML_TRANSFORM_BIN:FILEPATH=${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/uscxml-transform
+									-DCC_BIN:FILEPATH=${CC}
+									-DCXX_BIN:FILEPATH=${CXX}
+									-DPROJECT_SOURCE_DIR=${PROJECT_SOURCE_DIR}
+									-DUSCXML_PLATFORM_ID=${USCXML_PLATFORM_ID}
+									-DCMAKE_BINARY_DIR=${CMAKE_BINARY_DIR}
+									-DPROJECT_BINARY_DIR=${PROJECT_BINARY_DIR}
+									-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=${CMAKE_LIBRARY_OUTPUT_DIRECTORY}
+									-DSCAFFOLDING_FOR_GENERATED_C:FILEPATH=${CMAKE_CURRENT_SOURCE_DIR}/src/test-c-machine.cpp
+									-P ${CMAKE_CURRENT_SOURCE_DIR}/w3c/run_generated_test.cmake)
 							set_tests_properties("${TEST_NAME}" PROPERTIES DEPENDS uscxml-transform)
 
 						endif()
@@ -212,13 +276,29 @@ if (NOT BUILD_MINIMAL)
 					elseif (TEST_TYPE MATCHES "^min.*")
 
 						add_test(NAME "${TEST_NAME}"
-						    COMMAND ${CMAKE_COMMAND}
-									-DOUTDIR:FILEPATH=${CMAKE_CURRENT_BINARY_DIR}/ecma
-									-DTESTFILE:FILEPATH=${W3C_TEST}
-									-DUSCXML_TRANSFORM_BIN:FILEPATH=${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/uscxml-transform
-									-DUSCXML_W3C_TEST_BIN:FILEPATH=${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-w3c
+							COMMAND ${CMAKE_COMMAND}
+								-DOUTDIR:FILEPATH=${CMAKE_CURRENT_BINARY_DIR}/${TEST_CLASS}
+								-DTESTFILE:FILEPATH=${W3C_TEST}
+								-DUSCXML_TRANSFORM_BIN:FILEPATH=${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/uscxml-transform
+								-DUSCXML_W3C_TEST_BIN:FILEPATH=${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-w3c
 								-P ${CMAKE_CURRENT_SOURCE_DIR}/w3c/run_minimized_test.cmake)
 
+					elseif (TEST_TYPE MATCHES "^spin.*")
+
+						if (NOT ${TEST_DATAMODEL} STREQUAL "promela")
+							break()
+						endif()
+
+						add_test(NAME "${TEST_NAME}"
+							COMMAND ${CMAKE_COMMAND}
+								-DOUTDIR:FILEPATH=${CMAKE_CURRENT_BINARY_DIR}/promela
+								-DTESTFILE:FILEPATH=${W3C_TEST}
+								-DUSCXML_TRANSFORM_BIN:FILEPATH=${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/uscxml-transform
+								-DSPIN_BIN:FILEPATH=${SPIN}
+								-DCC_BIN:FILEPATH=${CC}
+								-P ${CMAKE_CURRENT_SOURCE_DIR}/w3c/run_promela_test.cmake)
+						set_tests_properties("${TEST_NAME}" PROPERTIES PASS_REGULAR_EXPRESSION "depth reached [0-9]+, errors: 0")
+						set_tests_properties("${TEST_NAME}" PROPERTIES FAIL_REGULAR_EXPRESSION "depth reached [0-9]+, errors: [1-9]+")
 						
 					elseif (TEST_TYPE MATCHES "^fsm.*")
 							
@@ -271,8 +351,8 @@ if (NOT BUILD_MINIMAL)
 	# 						-DTESTFILE:FILEPATH=${W3C_TEST}
 	# 						-DJSC_LIBRARY:FILEPATH=${JSC_LIBRARY}
 	# 						-DUSCXML_TRANSFORM_BIN:FILEPATH=${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/uscxml-transform
-	# 						-DGCC_BIN:FILEPATH=${GCC}
-	# 						-DGPP_BIN:FILEPATH=${GPP}
+	# 						-DCC_BIN:FILEPATH=${CC}
+	# 						-DCXX_BIN:FILEPATH=${CXX}
 	# 						-DPROJECT_SOURCE_DIR=${PROJECT_SOURCE_DIR}
 	# 						-DUSCXML_PLATFORM_ID=${USCXML_PLATFORM_ID}
 	# 						-DCMAKE_BINARY_DIR=${CMAKE_BINARY_DIR}
@@ -368,7 +448,7 @@ if (NOT BUILD_MINIMAL)
 	# 			endif()
 	# 		endif()
 	#
-	# 		if (GCC AND SPIN AND BUILD_DM_PROMELA AND BUILD_TESTS_W3C_PROMELA AND TEST_NAME MATCHES "^promela\\/.*")
+	# 		if (CC AND SPIN AND BUILD_DM_PROMELA AND BUILD_TESTS_W3C_PROMELA AND TEST_NAME MATCHES "^promela\\/.*")
 	#
 	# 			add_test(NAME "spin/${TEST_NAME}"
 	# 			    COMMAND ${CMAKE_COMMAND}
@@ -376,7 +456,7 @@ if (NOT BUILD_MINIMAL)
 	# 						-DTESTFILE:FILEPATH=${W3C_TEST}
 	# 						-DUSCXML_TRANSFORM_BIN:FILEPATH=${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/uscxml-transform
 	# 						-DSPIN_BIN:FILEPATH=${SPIN}
-	# 						-DGCC_BIN:FILEPATH=${GCC}
+	# 						-DCC_BIN:FILEPATH=${CC}
 	# 						-P ${CMAKE_CURRENT_SOURCE_DIR}/w3c/run_promela_test.cmake)
 	# 			set_property(TEST "spin/${TEST_NAME}" PROPERTY LABELS "spin/${TEST_NAME}")
 	# 			set_tests_properties("spin/${TEST_NAME}" PROPERTIES TIMEOUT ${TEST_TIMEOUT})

@@ -32,7 +32,7 @@ if (childs.size() > 0) { \
 	pendingComments.clear(); \
 	if (stateId.length() > 0) \
 		transientState.setAttribute("id", stateId); \
-	for (int i = 0; i < childs.size(); i++) { \
+	for (size_t i = 0; i < childs.size(); i++) { \
 		Node<std::string> imported = _flatDoc.importNode(childs[i], true); \
 		transientState.appendChild(imported); \
 	} \
@@ -63,8 +63,8 @@ void ChartToFlatSCXML::writeTo(std::ostream& stream) {
 	}
 
 	// remove all debug attributes
-	NodeSet<std::string> elementNodes = filterChildType(Node_base::ELEMENT_NODE, _scxml, true);
-	for (int i = 0; i < elementNodes.size(); i++) {
+	NodeSet<std::string> elementNodes = DOMUtils::filterChildType(Node_base::ELEMENT_NODE, _scxml, true);
+	for (size_t i = 0; i < elementNodes.size(); i++) {
 		Element<std::string> element(elementNodes[i]);
 		if (!envVarIsTrue("USCXML_ANNOTATE_GLOBAL_TRANS_SENDS") && HAS_ATTR(element, "send"))
 			element.removeAttribute("send");
@@ -92,9 +92,9 @@ void ChartToFlatSCXML::createDocument() {
 		return;
 
 	{
-		NodeSet<std::string> allElements = filterChildType(Node_base::ELEMENT_NODE, _scxml, true);
+		NodeSet<std::string> allElements = DOMUtils::filterChildType(Node_base::ELEMENT_NODE, _scxml, true);
 		size_t nrElements = 0;
-		for (int i = 0; i < allElements.size(); i++) {
+		for (size_t i = 0; i < allElements.size(); i++) {
 			if (!isInEmbeddedDocument(allElements[i]))
 				nrElements++;
 		}
@@ -133,12 +133,12 @@ void ChartToFlatSCXML::createDocument() {
 	NodeSet<std::string> datas;
 	if (_binding == InterpreterImpl::LATE) {
 		// with late binding, just copy direct datamodel childs
-		datas = filterChildElements(_nsInfo.xmlNSPrefix + "datamodel", _origSCXML);
+		datas = DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "datamodel", _origSCXML);
 	} else {
 		// with early binding, copy all datamodel elements into scxml element
 		datas = _xpath.evaluate("//" + _nsInfo.xpathPrefix + "datamodel", _origSCXML).asNodeSet();
 	}
-	for (int i = 0; i < datas.size(); i++) {
+	for (size_t i = 0; i < datas.size(); i++) {
 		if (isInEmbeddedDocument(datas[i]))
 			continue; // nested document
 		Node<std::string> imported = _flatDoc.importNode(datas[i], true);
@@ -146,14 +146,14 @@ void ChartToFlatSCXML::createDocument() {
 	}
 
 
-	NodeSet<std::string> scripts = filterChildElements(_nsInfo.xmlNSPrefix + "script", _origSCXML);
-	for (int i = 0; i < scripts.size(); i++) {
+	NodeSet<std::string> scripts = DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "script", _origSCXML);
+	for (size_t i = 0; i < scripts.size(); i++) {
 		Node<std::string> imported = _flatDoc.importNode(scripts[i], true);
 		_scxml.appendChild(imported);
 	}
 
-	NodeSet<std::string> comments = filterChildType(Node_base::COMMENT_NODE, _origSCXML);
-	for (int i = 0; i < comments.size(); i++) {
+	NodeSet<std::string> comments = DOMUtils::filterChildType(Node_base::COMMENT_NODE, _origSCXML);
+	for (size_t i = 0; i < comments.size(); i++) {
 		Node<std::string> imported = _flatDoc.importNode(comments[i], true);
 		_scxml.appendChild(imported);
 	}
@@ -177,15 +177,15 @@ void ChartToFlatSCXML::createDocument() {
 
 	_document = _flatDoc;
 
-	NodeSet<std::string> scxmls = filterChildElements(_nsInfo.xmlNSPrefix + "scxml", _document);
+	NodeSet<std::string> scxmls = DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "scxml", _document);
 	if (scxmls.size() > 0) {
 		_scxml = Element<std::string>(scxmls[0]);
 	}
 
 	{
-		NodeSet<std::string> allElements = filterChildType(Node_base::ELEMENT_NODE, _scxml, true);
+		NodeSet<std::string> allElements = DOMUtils::filterChildType(Node_base::ELEMENT_NODE, _scxml, true);
 		size_t nrElements = 0;
-		for (int i = 0; i < allElements.size(); i++) {
+		for (size_t i = 0; i < allElements.size(); i++) {
 			if (!isInEmbeddedDocument(allElements[i]))
 				nrElements++;
 		}
@@ -372,7 +372,7 @@ Node<std::string> ChartToFlatSCXML::globalTransitionToNode(GlobalTransition* glo
 
 			// we entered a new child - check if it has a datamodel and we entered for the first time
 			if (_binding == InterpreterImpl::LATE) {
-				NodeSet<std::string> datamodel = filterChildElements(_nsInfo.xmlNSPrefix + "datamodel", actionIter->entered);
+				NodeSet<std::string> datamodel = DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "datamodel", actionIter->entered);
 				if (datamodel.size() > 0 && !isMember(actionIter->entered, _globalConf[globalTransition->source]->getAlreadyEnteredStates())) {
 					childs.push_back(datamodel);
 				}
@@ -385,7 +385,7 @@ Node<std::string> ChartToFlatSCXML::globalTransitionToNode(GlobalTransition* glo
 	if (transientStateChain.size() > 0) {
 		Element<std::string> prevExitTransitionElem;
 
-		for (int i = 0; i < transientStateChain.size(); i++) {
+		for (size_t i = 0; i < transientStateChain.size(); i++) {
 			Element<std::string> transientStateElem = Element<std::string>(transientStateChain[i]);
 			transientStateElem.setAttribute("id", transientStateElem.getAttribute("id") + "-via-" + toStr(_lastTransientStateId++));
 

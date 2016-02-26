@@ -56,7 +56,7 @@ int main(int argc, char** argv) {
 	Arabica::XPath::XPath<std::string> xpath;
 	Arabica::XPath::NodeSet<std::string> divs = xpath.evaluate("//div", doc).asNodeSet();
 
-	for (int i = 0; i < divs.size(); i++) {
+	for (size_t i = 0; i < divs.size(); i++) {
 		Element<std::string> divElem = Element<std::string>(divs[i]);
 		divElem.setAttribute("foo", "true");
 		divElem.setAttribute("foo", "false");

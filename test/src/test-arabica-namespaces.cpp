@@ -7,7 +7,8 @@
 #include <DOM/SAX2DOM/SAX2DOM.hpp>
 #include <DOM/io/Stream.hpp>
 #include "uscxml/Interpreter.h"
-#include "uscxml/DOMUtils.h"
+#include "uscxml/dom/DOMUtils.h"
+#include "uscxml/dom/NameSpacingParser.h"
 
 using namespace Arabica::DOM;
 using namespace Arabica::XPath;
@@ -25,8 +26,8 @@ parsed = cloneDocument(parsed);\
 insertBaz(parsed);\
 std::cout << parsed.first << std::endl;\
 validateRootFooBarBaz(parsed);\
-assert(InterpreterImpl::filterChildElements(origNS.xmlNSPrefix + "bar", origDoc.getDocumentElement()).size() == 3);\
-assert(InterpreterImpl::filterChildElements(origNS.xmlNSPrefix + "baz", origDoc.getDocumentElement()).size() == 0);
+assert(DOMUtils::filterChildElements(origNS.xmlNSPrefix + "bar", origDoc.getDocumentElement()).size() == 3);\
+assert(DOMUtils::filterChildElements(origNS.xmlNSPrefix + "baz", origDoc.getDocumentElement()).size() == 0);
 
 
 /**
@@ -66,7 +67,7 @@ void insertBar(std::pair<Document<std::string>, NameSpaceInfo>& parsed) {
 	Document<std::string> document = parsed.first;
 
 	Node<std::string> root = document.getDocumentElement();
-	for (int i = 0; i < 3; i++) {
+	for (size_t i = 0; i < 3; i++) {
 		Element<std::string> bar = document.createElementNS(nsInfo.nsURL, "bar");
 //		if (nsInfo.nsToPrefix.find(nsInfo.nsURL) != nsInfo.nsToPrefix.end())
 		nsInfo.setPrefix(bar);
@@ -79,7 +80,7 @@ void insertBaz(std::pair<Document<std::string>, NameSpaceInfo>& parsed) {
 	Document<std::string> document = parsed.first;
 
 	Node<std::string> root = document.getDocumentElement();
-	for (int i = 0; i < 3; i++) {
+	for (size_t i = 0; i < 3; i++) {
 		Element<std::string> baz = document.createElementNS(nsInfo.nsURL, "baz");
 		nsInfo.setPrefix(baz);
 		root.appendChild(baz);
@@ -96,12 +97,12 @@ static void validateRootFoo(std::pair<Document<std::string>, NameSpaceInfo>& par
 
 	assert(TAGNAME_CAST(root) == nsInfo.xmlNSPrefix + "root");
 	assert(LOCALNAME_CAST(root) == "root");
-	NodeSet<std::string> foosFiltered = InterpreterImpl::filterChildElements(nsInfo.xmlNSPrefix + "foo", root);
+	NodeSet<std::string> foosFiltered = DOMUtils::filterChildElements(nsInfo.xmlNSPrefix + "foo", root);
 	assert(foosFiltered.size() == 3);
 	NodeSet<std::string> foosXPath = _xpath.evaluate("//" + nsInfo.xpathPrefix + "foo", root).asNodeSet();
 	assert(foosXPath.size() == 3);
 
-	for (int i = 0; i < 3; i++) {
+	for (size_t i = 0; i < 3; i++) {
 		assert(foosFiltered[i] == foosXPath[i]);
 		assert(TAGNAME_CAST(foosFiltered[i]) == nsInfo.xmlNSPrefix + "foo");
 		assert(LOCALNAME_CAST(foosFiltered[i]) == "foo");
@@ -118,12 +119,12 @@ static void validateRootFooBar(std::pair<Document<std::string>, NameSpaceInfo>& 
 	Node<std::string> root = document.getDocumentElement();
 	_xpath.setNamespaceContext(*nsInfo.getNSContext());
 
-	NodeSet<std::string> barsFiltered = InterpreterImpl::filterChildElements(nsInfo.xmlNSPrefix + "bar", root);
+	NodeSet<std::string> barsFiltered = DOMUtils::filterChildElements(nsInfo.xmlNSPrefix + "bar", root);
 	assert(barsFiltered.size() == 3);
 	NodeSet<std::string> barsXPath = _xpath.evaluate("//" + nsInfo.xpathPrefix + "bar", root).asNodeSet();
 	assert(barsXPath.size() == 3);
 
-	for (int i = 0; i < 3; i++) {
+	for (size_t i = 0; i < 3; i++) {
 		assert(barsFiltered[i] == barsXPath[i]);
 		assert(TAGNAME_CAST(barsFiltered[i]) == nsInfo.xmlNSPrefix + "bar");
 		assert(LOCALNAME_CAST(barsFiltered[i]) == "bar");
@@ -143,12 +144,12 @@ static void validateRootFooBarBaz(std::pair<Document<std::string>, NameSpaceInfo
 	assert(TAGNAME_CAST(root) == nsInfo.xmlNSPrefix + "root");
 	assert(LOCALNAME_CAST(root) == "root");
 
-	NodeSet<std::string> bazsFiltered = InterpreterImpl::filterChildElements(nsInfo.xmlNSPrefix + "baz", root);
+	NodeSet<std::string> bazsFiltered = DOMUtils::filterChildElements(nsInfo.xmlNSPrefix + "baz", root);
 	assert(bazsFiltered.size() == 3);
 	NodeSet<std::string> bazsXPath = _xpath.evaluate("//" + nsInfo.xpathPrefix + "baz", root).asNodeSet();
 	assert(bazsXPath.size() == 3);
 
-	for (int i = 0; i < 3; i++) {
+	for (size_t i = 0; i < 3; i++) {
 		assert(bazsFiltered[i] == bazsXPath[i]);
 		assert(TAGNAME_CAST(bazsFiltered[i]) == nsInfo.xmlNSPrefix + "baz");
 		assert(LOCALNAME_CAST(bazsFiltered[i]) == "baz");

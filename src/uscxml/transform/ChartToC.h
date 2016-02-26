@@ -1,6 +1,6 @@
 /**
  *  @file
- *  @author     2012-2014 Stefan Radomski (stefan.radomski@cs.tu-darmstadt.de)
+ *  @author     2012-2016 Stefan Radomski (stefan.radomski@cs.tu-darmstadt.de)
  *  @copyright  Simplified BSD
  *
  *  @cond
@@ -20,8 +20,8 @@
 #ifndef FSMTOCPP_H_201672B0
 #define FSMTOCPP_H_201672B0
 
-#include "uscxml/interpreter/InterpreterDraft6.h"
-#include "uscxml/DOMUtils.h"
+#include "uscxml/interpreter/InterpreterRC.h"
+#include "uscxml/dom/DOMUtils.h"
 #include "uscxml/util/Trie.h"
 #include "Transformer.h"
 
@@ -29,6 +29,7 @@
 #include <DOM/Node.hpp>
 #include <XPath/XPath.hpp>
 #include <ostream>
+#include <set>
 
 namespace uscxml {
 
@@ -40,28 +41,21 @@ public:
 
 	void writeTo(std::ostream& stream);
 
-	static Arabica::XPath::NodeSet<std::string> inPostFixOrder(const std::set<std::string>& elements,
-	        const Arabica::DOM::Element<std::string>& root);
-	static Arabica::XPath::NodeSet<std::string> inDocumentOrder(const std::set<std::string>& elements,
-	        const Arabica::DOM::Element<std::string>& root);
 protected:
 	ChartToC(const Interpreter& other);
-
-	static void inPostFixOrder(const std::set<std::string>& elements,
-	                           const Arabica::DOM::Element<std::string>& root,
-	                           Arabica::XPath::NodeSet<std::string>& nodes);
-
-	static void inDocumentOrder(const std::set<std::string>& elements,
-	                            const Arabica::DOM::Element<std::string>& root,
-	                            Arabica::XPath::NodeSet<std::string>& nodes);
 
 	void writeIncludes(std::ostream& stream);
 	void writeMacros(std::ostream& stream);
 	void writeTypes(std::ostream& stream);
 	void writeHelpers(std::ostream& stream);
 	void writeExecContent(std::ostream& stream);
+	void writeExecContentFinalize(std::ostream& stream);
+	void writeElementInfoInvocation(std::ostream& stream);
+	void writeForwardDeclarations(std::ostream& stream);
+
 	void writeElementInfo(std::ostream& stream);
 
+	void writeMachineInfo(std::ostream& stream);
 	void writeStates(std::ostream& stream);
 	void writeTransitions(std::ostream& stream);
 	void writeFSM(std::ostream& stream);
@@ -71,19 +65,36 @@ protected:
 
 	Arabica::XPath::NodeSet<std::string> computeExitSet(const Arabica::DOM::Element<std::string>& transition);
 
+	void resortStates(Arabica::DOM::Node<std::string>& node);
+	void setHistoryCompletion();
+	void setStateCompletion();
+	void prepare();
+
+	void findNestedMachines();
+
 	Interpreter interpreter;
 
 	Arabica::XPath::NodeSet<std::string> _states;
-	std::map<std::string, Arabica::DOM::Element<std::string> > _stateNames;
 	Arabica::XPath::NodeSet<std::string> _transitions;
 
-	bool _hasGlobalScripts;
+	std::string _md5;
+	std::string _prefix;
+	std::set<std::string> _hasElement;
 
 	size_t _transCharArraySize;
 	std::string _transCharArrayInit;
+	std::string _transDataType;
 
 	size_t _stateCharArraySize;
 	std::string _stateCharArrayInit;
+	std::string _stateDataType;
+
+	ChartToC* _topMostMachine;
+	ChartToC* _parentMachine;
+	std::list<ChartToC*> _nestedMachines;
+	std::list<ChartToC*> _allMachines;
+
+	std::list<std::string>* _prefixes;
 };
 
 }

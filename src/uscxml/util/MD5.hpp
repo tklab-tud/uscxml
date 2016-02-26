@@ -43,7 +43,7 @@ namespace uscxml {
 
     	std::ostringstream ss;
     	ss << std::hex << std::uppercase << std::setfill( '0' );
-    	for (int i = 0; i < 16; i++) {
+    	for (size_t i = 0; i < 16; i++) {
     		ss << std::setw( 2 ) << (int)digest[i];
     	}
 

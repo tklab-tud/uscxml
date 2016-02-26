@@ -21,7 +21,7 @@
 # endif
 
 
-#include "uscxml/DOMUtils.h"
+#include "uscxml/dom/DOMUtils.h"
 #include "uscxml/concurrency/Timer.h"
 
 #include "uscxml/Factory.h"
@@ -81,7 +81,7 @@ class W3CStatusMonitor : public uscxml::InterpreterMonitor {
 	void beforeCompletion(uscxml::Interpreter tmp) {
 		if (interpreter.getConfiguration().size() == 1 && interpreter.isInState("pass")) {
 #ifndef BUILD_PROFILING
-            std::cout << "TEST SUCCEEDED" << std::endl;
+			std::cout << "TEST SUCCEEDED" << std::endl;
 #endif
 			retCode = EXIT_SUCCESS;
 			return;
@@ -89,34 +89,34 @@ class W3CStatusMonitor : public uscxml::InterpreterMonitor {
 #ifndef BUILD_PROFILING
 		std::cout << "TEST FAILED" << std::endl;
 #endif
-        retCode = EXIT_FAILURE;
-    }
+		retCode = EXIT_FAILURE;
+	}
 };
 
 int main(int argc, char** argv) {
 	using namespace uscxml;
 
 #ifdef APPLE
-    mach_timebase_info_data_t timebase_info;
-    mach_timebase_info(&timebase_info);
-    
-    const uint64_t NANOS_PER_MSEC = 1000000ULL;
-    double clock2abs = ((double)timebase_info.denom / (double)timebase_info.numer) * NANOS_PER_MSEC;
-    
-    thread_time_constraint_policy_data_t policy;
-    policy.period      = 0;
-    policy.computation = (uint32_t)(5 * clock2abs); // 5 ms of work
-    policy.constraint  = (uint32_t)(10 * clock2abs);
-    policy.preemptible = FALSE;
-    
-    int kr = thread_policy_set(pthread_mach_thread_np(pthread_self()),
-                               THREAD_TIME_CONSTRAINT_POLICY,
-                               (thread_policy_t)&policy,
-                               THREAD_TIME_CONSTRAINT_POLICY_COUNT);
-    if (kr != KERN_SUCCESS) {
-        mach_error("thread_policy_set:", kr);
-        exit(1);
-    }
+	mach_timebase_info_data_t timebase_info;
+	mach_timebase_info(&timebase_info);
+
+	const uint64_t NANOS_PER_MSEC = 1000000ULL;
+	double clock2abs = ((double)timebase_info.denom / (double)timebase_info.numer) * NANOS_PER_MSEC;
+
+	thread_time_constraint_policy_data_t policy;
+	policy.period      = 0;
+	policy.computation = (uint32_t)(5 * clock2abs); // 5 ms of work
+	policy.constraint  = (uint32_t)(10 * clock2abs);
+	policy.preemptible = FALSE;
+
+	int kr = thread_policy_set(pthread_mach_thread_np(pthread_self()),
+	                           THREAD_TIME_CONSTRAINT_POLICY,
+	                           (thread_policy_t)&policy,
+	                           THREAD_TIME_CONSTRAINT_POLICY_COUNT);
+	if (kr != KERN_SUCCESS) {
+		mach_error("thread_policy_set:", kr);
+		exit(1);
+	}
 #endif
 
 	try {
@@ -138,13 +138,13 @@ int main(int argc, char** argv) {
 			delayFactor = strTo<double>(dfEnv);
 		}
 
-        const char* envBenchmarkRuns = getenv("USCXML_BENCHMARK_ITERATIONS");
-        if (envBenchmarkRuns != NULL) {
-            benchmarkRuns = strTo<size_t>(envBenchmarkRuns);
-            google::SetStderrLogging(3);
-        } else {
-            google::LogToStderr();
-        }
+		const char* envBenchmarkRuns = getenv("USCXML_BENCHMARK_ITERATIONS");
+		if (envBenchmarkRuns != NULL) {
+			benchmarkRuns = strTo<size_t>(envBenchmarkRuns);
+			google::SetStderrLogging(3);
+		} else {
+			google::LogToStderr();
+		}
 
 		int option;
 		while ((option = getopt(argc, argv, "fd:b:")) != -1) {
@@ -178,9 +178,9 @@ int main(int argc, char** argv) {
 		if (delayFactor != 1) {
 			Arabica::DOM::Document<std::string> document = interpreter.getDocument();
 			Arabica::DOM::Element<std::string> root = document.getDocumentElement();
-			Arabica::XPath::NodeSet<std::string> sends = InterpreterImpl::filterChildElements(interpreter.getNameSpaceInfo().xmlNSPrefix + "send", root, true);
+			Arabica::XPath::NodeSet<std::string> sends = DOMUtils::filterChildElements(interpreter.getNameSpaceInfo().xmlNSPrefix + "send", root, true);
 
-			for (int i = 0; i < sends.size(); i++) {
+			for (size_t i = 0; i < sends.size(); i++) {
 				Arabica::DOM::Element<std::string> send = Arabica::DOM::Element<std::string>(sends[i]);
 				if (HAS_ATTR(send, "delay")) {
 					NumAttr delay(ATTR(send, "delay"));
@@ -209,58 +209,58 @@ int main(int argc, char** argv) {
 			W3CStatusMonitor* vm = new W3CStatusMonitor();
 			interpreter.addMonitor(vm);
 
-            LOG(INFO) << "Benchmarking " << documentURI << (withFlattening ? " FSM converted" : "") << (delayFactor ? "" : " with delays *= " + toStr(delayFactor));
+			LOG(INFO) << "Benchmarking " << documentURI << (withFlattening ? " FSM converted" : "") << (delayFactor ? "" : " with delays *= " + toStr(delayFactor));
 
-            size_t remainingRuns = benchmarkRuns;
-            size_t microSteps = 0;
+			size_t remainingRuns = benchmarkRuns;
+			size_t microSteps = 0;
 
-            Timer tTotal;
-            tTotal.start();
+			Timer tTotal;
+			tTotal.start();
 
-            double avg = 0;
+			double avg = 0;
 #ifdef BUILD_PROFILING
-            double avgDm = 0;
-            double avgStep = 0;
+			double avgDm = 0;
+			double avgStep = 0;
 #endif
 
-            while(remainingRuns-- > 0) {
-                Timer t;
-                microSteps = 0;
+			while(remainingRuns-- > 0) {
+				Timer t;
+				microSteps = 0;
 
-                InterpreterState state = interpreter.getState();
+				InterpreterState state = interpreter.getState();
 
-                for(;;) {
-                    state = interpreter.step(true);
-                    microSteps++;
-                    if (state == USCXML_INITIALIZED) {
-                        t.start();
-                    } else if (state == USCXML_FINISHED) {
+				for(;;) {
+					state = interpreter.step(true);
+					microSteps++;
+					if (state == USCXML_INITIALIZED) {
+						t.start();
+					} else if (state == USCXML_FINISHED) {
 #ifdef BUILD_PROFILING
-                        avgDm += interpreter._impl->_dataModel.timer.elapsed;
-                        interpreter._impl->_dataModel.timer.reset();
-                        avgStep += interpreter.timer.elapsed;
+						avgDm += interpreter._impl->_dataModel.timer.elapsed;
+						interpreter._impl->_dataModel.timer.reset();
+						avgStep += interpreter.timer.elapsed;
 #endif
-                    }
-                    if (state < 0)
-                        break;
-                }
-                assert(retCode == EXIT_SUCCESS);
-                t.stop();
-                avg += t.elapsed;
-                interpreter.reset();
-                std::cout << "." << std::flush;
-            }
-            
-            tTotal.stop();
-            
-            std::cout << benchmarkRuns << " iterations" << std::endl;
-            std::cout << tTotal.elapsed * 1000.0 << " ms in total" << std::endl;
-            std::cout << (avg * 1000.0) / (double)benchmarkRuns << " ms per execution" << std::endl;
-            std::cout << microSteps << " microsteps per iteration" << std::endl;
-            std::cout << (avg * 1000.0) / ((double)benchmarkRuns * (double)microSteps) << " ms per microstep" << std::endl;
+					}
+					if (state < 0)
+						break;
+				}
+				assert(retCode == EXIT_SUCCESS);
+				t.stop();
+				avg += t.elapsed;
+				interpreter.reset();
+				std::cout << "." << std::flush;
+			}
+
+			tTotal.stop();
+
+			std::cout << benchmarkRuns << " iterations" << std::endl;
+			std::cout << tTotal.elapsed * 1000.0 << " ms in total" << std::endl;
+			std::cout << (avg * 1000.0) / (double)benchmarkRuns << " ms per execution" << std::endl;
+			std::cout << microSteps << " microsteps per iteration" << std::endl;
+			std::cout << (avg * 1000.0) / ((double)benchmarkRuns * (double)microSteps) << " ms per microstep" << std::endl;
 #ifdef BUILD_PROFILING
-            std::cout << (avgDm * 1000.0) / (double)benchmarkRuns << " ms in datamodel" << std::endl;
-            std::cout << ((avg - avgDm) * 1000.0) / ((double)benchmarkRuns * (double)microSteps) << " ms per microstep \\wo datamodel" << std::endl;
+			std::cout << (avgDm * 1000.0) / (double)benchmarkRuns << " ms in datamodel" << std::endl;
+			std::cout << ((avg - avgDm) * 1000.0) / ((double)benchmarkRuns * (double)microSteps) << " ms per microstep \\wo datamodel" << std::endl;
 #endif
 		}
 	} catch(Event e) {

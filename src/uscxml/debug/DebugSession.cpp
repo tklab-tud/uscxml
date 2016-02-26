@@ -72,7 +72,7 @@ void DebugSession::breakExecution(Data replyData) {
 	tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
 
 	Arabica::XPath::NodeSet<std::string> basicConf = _interpreter.getBasicConfiguration();
-	for (int i = 0; i < basicConf.size(); i++) {
+	for (size_t i = 0; i < basicConf.size(); i++) {
 		Arabica::DOM::Element<std::string> element = Arabica::DOM::Element<std::string>(basicConf[i]);
 		if (element.hasAttribute("id")) {
 			replyData.compound["basicStates"].array.push_back(Data(element.getAttribute("id"), Data::VERBATIM));
@@ -80,7 +80,7 @@ void DebugSession::breakExecution(Data replyData) {
 	}
 
 	Arabica::XPath::NodeSet<std::string> activeConf = _interpreter.getConfiguration();
-	for (int i = 0; i < activeConf.size(); i++) {
+	for (size_t i = 0; i < activeConf.size(); i++) {
 		Arabica::DOM::Element<std::string> element = Arabica::DOM::Element<std::string>(activeConf[i]);
 		if (element.hasAttribute("id")) {
 			replyData.compound["activeStates"].array.push_back(Data(element.getAttribute("id"), Data::VERBATIM));

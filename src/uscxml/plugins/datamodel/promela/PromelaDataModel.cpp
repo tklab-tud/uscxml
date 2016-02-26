@@ -21,8 +21,9 @@
 
 #include "uscxml/Common.h"
 #include "uscxml/config.h"
+#include "uscxml/util/String.h"
 #include "PromelaDataModel.h"
-#include "uscxml/DOMUtils.h"
+#include "uscxml/dom/DOMUtils.h"
 #include "uscxml/Message.h"
 #include <glog/logging.h>
 #include <cctype>
@@ -138,7 +139,7 @@ void PromelaDataModel::setEvent(const Event& event) {
 			if (isNumeric(event.content.c_str(), 10)) {
 				variable.compound["value"].compound["data"] = Data(event.content, Data::INTERPRETED);
 			} else {
-				variable.compound["value"].compound["data"] = Data(InterpreterImpl::spaceNormalize(event.content), Data::VERBATIM);
+				variable.compound["value"].compound["data"] = Data(spaceNormalize(event.content), Data::VERBATIM);
 			}
 		}
 	} else {
@@ -390,7 +391,7 @@ void PromelaDataModel::evaluateDecl(void* ast) {
 				int size = dataToInt(evaluateExpr(*opIterAsgn++));
 
 				variable.compound["size"] = size;
-				for (int i = 0; i < size; i++) {
+				for (size_t i = 0; i < size; i++) {
 					variable.compound["value"].array.push_back(Data(0, Data::INTERPRETED));
 				}
 

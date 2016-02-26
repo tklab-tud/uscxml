@@ -20,8 +20,8 @@
 #ifndef CHARTTOFSM_H_IOKPYEBY
 #define CHARTTOFSM_H_IOKPYEBY
 
-#include "uscxml/DOMUtils.h"
 #include "uscxml/interpreter/InterpreterRC.h"
+#include "uscxml/dom/DOMUtils.h"
 #include <DOM/Document.hpp>
 #include <DOM/Node.hpp>
 #include <XPath/XPath.hpp>

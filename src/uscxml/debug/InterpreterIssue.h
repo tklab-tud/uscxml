@@ -22,6 +22,7 @@
 
 #include "uscxml/Common.h"
 #include <list>
+#include <iostream>
 #include <DOM/Node.hpp>
 
 namespace uscxml {

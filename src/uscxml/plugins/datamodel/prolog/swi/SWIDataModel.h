@@ -20,7 +20,8 @@
 #ifndef SWIDATAMODEL_H_KN8TWG0V
 #define SWIDATAMODEL_H_KN8TWG0V
 
-#include "uscxml/Interpreter.h"
+#include "uscxml/InterpreterInfo.h"
+#include "uscxml/plugins/DataModel.h"
 #include "uscxml/SWIConfig.h"
 
 #include <list>

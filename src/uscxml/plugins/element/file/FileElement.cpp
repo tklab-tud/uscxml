@@ -24,7 +24,8 @@
 #include <boost/algorithm/string.hpp>
 #include "uscxml/messages/Blob.h"
 
-#include "uscxml/DOMUtils.h"
+#include "uscxml/dom/DOMUtils.h"
+#include "uscxml/dom/NameSpacingParser.h"
 
 #ifdef BUILD_AS_PLUGINS
 #include <Pluma/Connector.hpp>
