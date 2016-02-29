@@ -785,6 +785,7 @@ void ChartToC::writeTypes(std::ostream& stream) {
 	stream << "    const char target[USCXML_MAX_NR_STATES_BYTES];" << std::endl;
 	stream << "    const char* event;" << std::endl;
 	stream << "    const char* condition;" << std::endl;
+	stream << "    const is_enabled_t is_enabled;" << std::endl;
 	stream << "    const exec_content_t on_transition;" << std::endl;
 	stream << "    const unsigned char type;" << std::endl;
 	stream << "    const char conflicts[USCXML_MAX_NR_TRANS_BYTES];" << std::endl;
@@ -884,7 +885,6 @@ void ChartToC::writeTypes(std::ostream& stream) {
 	stream << std::endl;
 	stream << "    dequeue_internal_t dequeue_internal;" << std::endl;
 	stream << "    dequeue_external_t dequeue_external;" << std::endl;
-	stream << "    is_enabled_t       is_enabled;" << std::endl;
 	stream << "    is_matched_t       is_matched;" << std::endl;
 	stream << "    is_true_t          is_true;" << std::endl;
 	stream << "    raise_done_event_t raise_done_event;" << std::endl;
@@ -1146,6 +1146,19 @@ void ChartToC::writeExecContent(std::ostream& stream) {
 	for (size_t i = 0; i < _transitions.size(); i++) {
 		Element<std::string> transition(_transitions[i]);
 		NodeSet<std::string> execContent = DOMUtils::filterChildType(Node_base::ELEMENT_NODE, transition);
+
+		if (HAS_ATTR(transition, "cond")) {
+			stream << "static int " << _prefix << "_" << DOMUtils::idForNode(transition) << "_is_enabled(const uscxml_ctx* ctx, const uscxml_transition* transition) {" << std::endl;
+			if (HAS_ATTR(_scxml, "datamodel") && ATTR(_scxml, "datamodel") == "native") {
+				stream << "    return (" << ATTR(transition, "cond") << ");" << std::endl;
+			} else {
+				stream << "    if likely(ctx->is_true != NULL) {" << std::endl;
+				stream << "        return (ctx->is_true(ctx, \"" << escape(ATTR(transition, "cond")) << "\"));" << std::endl;
+				stream << "    }" << std::endl;
+				stream << "    return USCXML_ERR_MISSING_CALLBACK;" << std::endl;
+			}
+			stream << "}" << std::endl;
+		}
 
 		if (execContent.size() > 0) {
 			stream << "static int " << _prefix << "_" << DOMUtils::idForNode(transition) << "_on_trans(const uscxml_ctx* ctx, const uscxml_state* state, const void* event) {" << std::endl;
@@ -1971,6 +1984,16 @@ void ChartToC::writeTransitions(std::ostream& stream) {
 			stream << (HAS_ATTR(transition, "cond") ? "\"" + escape(ATTR(transition, "cond")) + "\"" : "NULL");
 			stream << "," << std::endl;
 
+
+			// is enabled
+			stream << "        /* is_enabled */ ";
+			if (HAS_ATTR(transition, "cond")) {
+				stream << _prefix << "_" << DOMUtils::idForNode(transition) << "_is_enabled";
+			} else {
+				stream << "NULL";
+			}
+			stream << "," << std::endl;
+
 			// on transition handlers
 			stream << "        /* ontrans    */ ";
 			if (DOMUtils::filterChildType(Arabica::DOM::Node_base::ELEMENT_NODE, transition).size() > 0) {
@@ -2209,7 +2232,8 @@ void ChartToC::writeFSM(std::ostream& stream) {
 	stream << "                    (USCXML_GET_TRANS(i).event != NULL && ctx->event != NULL)) {" << std::endl;
 	stream << "                    /* is it enabled? */" << std::endl;
 	stream << "                    if ((ctx->event == NULL || ctx->is_matched(ctx, &USCXML_GET_TRANS(i), ctx->event) > 0) &&" << std::endl;
-	stream << "                        (USCXML_GET_TRANS(i).condition == NULL || ctx->is_enabled(ctx, &USCXML_GET_TRANS(i)) > 0)) {" << std::endl;
+	stream << "                        (USCXML_GET_TRANS(i).condition == NULL || " << std::endl;
+	stream << "                         USCXML_GET_TRANS(i).is_enabled(ctx, &USCXML_GET_TRANS(i)) > 0)) {" << std::endl;
 	stream << "                        /* remember that we found a transition */" << std::endl;
 	stream << "                        ctx->flags |= USCXML_CTX_TRANSITION_FOUND;" << std::endl;
 	stream << std::endl;

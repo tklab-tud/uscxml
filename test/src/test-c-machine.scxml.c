@@ -1,6 +1,6 @@
 /**
   Generated from source:
-  file:///Users/sradomski/Documents/TK/Code/uscxml/test/w3c/ecma/test326.scxml
+  file:///Users/sradomski/Documents/TK/Code/uscxml/test/w3c/ecma/test144.scxml
 */
 
 #ifndef USCXML_NO_STDTYPES_H
@@ -252,6 +252,7 @@ struct uscxml_transition {
     const char target[USCXML_MAX_NR_STATES_BYTES];
     const char* event;
     const char* condition;
+    const is_enabled_t is_enabled;
     const exec_content_t on_transition;
     const unsigned char type;
     const char conflicts[USCXML_MAX_NR_TRANS_BYTES];
@@ -345,7 +346,6 @@ struct uscxml_ctx {
 
     dequeue_internal_t dequeue_internal;
     dequeue_external_t dequeue_external;
-    is_enabled_t       is_enabled;
     is_matched_t       is_matched;
     is_true_t          is_true;
     raise_done_event_t raise_done_event;
@@ -368,24 +368,11 @@ struct uscxml_ctx {
 #endif
 
 /* forward declare machines to allow references */
-extern const uscxml_machine _uscxml_EC83C2A5_machine;
+extern const uscxml_machine _uscxml_7B67993D_machine;
 
 #ifndef USCXML_NO_ELEM_INFO
 
-static const uscxml_elem_assign _uscxml_EC83C2A5_elem_assigns[2] = {
-    /* location, expr, content */
-    { "_ioprocessors", "'otherName'", NULL },
-    { "Var2", "_ioprocessors", NULL },
-};
-
-static const uscxml_elem_data _uscxml_EC83C2A5_elem_datas[3] = {
-    /* id, src, expr, content */
-    { "Var1", NULL, "_ioprocessors", NULL },
-    { "Var2", NULL, NULL, NULL },
-    { NULL, NULL, NULL, NULL }
-};
-
-static const uscxml_elem_donedata _uscxml_EC83C2A5_elem_donedatas[1] = {
+static const uscxml_elem_donedata _uscxml_7B67993D_elem_donedatas[1] = {
     /* source, content, contentexpr, params */
     { 0, NULL, NULL, NULL }
 };
@@ -398,42 +385,27 @@ static const uscxml_elem_donedata _uscxml_EC83C2A5_elem_donedatas[1] = {
 
 #ifndef USCXML_NO_EXEC_CONTENT
 
-static int _uscxml_EC83C2A5_s1_on_entry_0(const uscxml_ctx* ctx, const uscxml_state* state, const void* event) {
+static int _uscxml_7B67993D_s0_on_entry_0(const uscxml_ctx* ctx, const uscxml_state* state, const void* event) {
     int err = USCXML_ERR_OK;
-    if likely(ctx->exec_content_assign != NULL) {
-        if ((ctx->exec_content_assign(ctx, &_uscxml_EC83C2A5_elem_assigns[0])) != USCXML_ERR_OK) return err;
-    } else {
-        return USCXML_ERR_MISSING_CALLBACK;
-    }
     if likely(ctx->exec_content_raise != NULL) {
         if unlikely((ctx->exec_content_raise(ctx, "foo")) != USCXML_ERR_OK) return err;
     } else {
         return USCXML_ERR_MISSING_CALLBACK;
     }
-    return USCXML_ERR_OK;
-}
-
-static int _uscxml_EC83C2A5_s1_on_entry(const uscxml_ctx* ctx, const uscxml_state* state, const void* event) {
-    _uscxml_EC83C2A5_s1_on_entry_0(ctx, state, event);
-    return USCXML_ERR_OK;
-}
-
-static int _uscxml_EC83C2A5_s2_on_entry_0(const uscxml_ctx* ctx, const uscxml_state* state, const void* event) {
-    int err = USCXML_ERR_OK;
-    if likely(ctx->exec_content_assign != NULL) {
-        if ((ctx->exec_content_assign(ctx, &_uscxml_EC83C2A5_elem_assigns[1])) != USCXML_ERR_OK) return err;
+    if likely(ctx->exec_content_raise != NULL) {
+        if unlikely((ctx->exec_content_raise(ctx, "bar")) != USCXML_ERR_OK) return err;
     } else {
         return USCXML_ERR_MISSING_CALLBACK;
     }
     return USCXML_ERR_OK;
 }
 
-static int _uscxml_EC83C2A5_s2_on_entry(const uscxml_ctx* ctx, const uscxml_state* state, const void* event) {
-    _uscxml_EC83C2A5_s2_on_entry_0(ctx, state, event);
+static int _uscxml_7B67993D_s0_on_entry(const uscxml_ctx* ctx, const uscxml_state* state, const void* event) {
+    _uscxml_7B67993D_s0_on_entry_0(ctx, state, event);
     return USCXML_ERR_OK;
 }
 
-static int _uscxml_EC83C2A5_pass_on_entry_0(const uscxml_ctx* ctx, const uscxml_state* state, const void* event) {
+static int _uscxml_7B67993D_pass_on_entry_0(const uscxml_ctx* ctx, const uscxml_state* state, const void* event) {
     int err = USCXML_ERR_OK;
     if likely(ctx->exec_content_log != NULL) {
         if unlikely((ctx->exec_content_log(ctx, "Outcome", "'pass'")) != USCXML_ERR_OK) return err;
@@ -443,12 +415,12 @@ static int _uscxml_EC83C2A5_pass_on_entry_0(const uscxml_ctx* ctx, const uscxml_
     return USCXML_ERR_OK;
 }
 
-static int _uscxml_EC83C2A5_pass_on_entry(const uscxml_ctx* ctx, const uscxml_state* state, const void* event) {
-    _uscxml_EC83C2A5_pass_on_entry_0(ctx, state, event);
+static int _uscxml_7B67993D_pass_on_entry(const uscxml_ctx* ctx, const uscxml_state* state, const void* event) {
+    _uscxml_7B67993D_pass_on_entry_0(ctx, state, event);
     return USCXML_ERR_OK;
 }
 
-static int _uscxml_EC83C2A5_fail_on_entry_0(const uscxml_ctx* ctx, const uscxml_state* state, const void* event) {
+static int _uscxml_7B67993D_fail_on_entry_0(const uscxml_ctx* ctx, const uscxml_state* state, const void* event) {
     int err = USCXML_ERR_OK;
     if likely(ctx->exec_content_log != NULL) {
         if unlikely((ctx->exec_content_log(ctx, "Outcome", "'fail'")) != USCXML_ERR_OK) return err;
@@ -458,8 +430,8 @@ static int _uscxml_EC83C2A5_fail_on_entry_0(const uscxml_ctx* ctx, const uscxml_
     return USCXML_ERR_OK;
 }
 
-static int _uscxml_EC83C2A5_fail_on_entry(const uscxml_ctx* ctx, const uscxml_state* state, const void* event) {
-    _uscxml_EC83C2A5_fail_on_entry_0(ctx, state, event);
+static int _uscxml_7B67993D_fail_on_entry(const uscxml_ctx* ctx, const uscxml_state* state, const void* event) {
+    _uscxml_7B67993D_fail_on_entry_0(ctx, state, event);
     return USCXML_ERR_OK;
 }
 
@@ -467,76 +439,64 @@ static int _uscxml_EC83C2A5_fail_on_entry(const uscxml_ctx* ctx, const uscxml_st
 
 #ifndef USCXML_NO_ELEM_INFO
 
-static const uscxml_state _uscxml_EC83C2A5_states[6] = {
+static const uscxml_state _uscxml_7B67993D_states[5] = {
     {   /* state number 0 */
         /* name       */ NULL,
         /* parent     */ 0,
         /* onentry    */ NULL,
         /* onexit     */ NULL,
         /* invoke     */ NULL,
-        /* children   */ { 0x3e /* 011111 */ },
-        /* completion */ { 0x02 /* 010000 */ }, 	
-        /* ancestors  */ { 0x00 /* 000000 */ },
-        /* data       */ &_uscxml_EC83C2A5_elem_datas[0],
+        /* children   */ { 0x1e /* 01111 */ },
+        /* completion */ { 0x02 /* 01000 */ }, 	
+        /* ancestors  */ { 0x00 /* 00000 */ },
+        /* data       */ NULL,
         /* type       */ USCXML_STATE_COMPOUND,
     },
     {   /* state number 1 */
         /* name       */ "s0",
         /* parent     */ 0,
-        /* onentry    */ NULL,
+        /* onentry    */ _uscxml_7B67993D_s0_on_entry,
         /* onexit     */ NULL,
         /* invoke     */ NULL,
-        /* children   */ { 0x00 /* 000000 */ },
-        /* completion */ { 0x00 /* 000000 */ }, 	
-        /* ancestors  */ { 0x01 /* 100000 */ },
+        /* children   */ { 0x00 /* 00000 */ },
+        /* completion */ { 0x00 /* 00000 */ }, 	
+        /* ancestors  */ { 0x01 /* 10000 */ },
         /* data       */ NULL,
         /* type       */ USCXML_STATE_ATOMIC,
     },
     {   /* state number 2 */
         /* name       */ "s1",
         /* parent     */ 0,
-        /* onentry    */ _uscxml_EC83C2A5_s1_on_entry,
+        /* onentry    */ NULL,
         /* onexit     */ NULL,
         /* invoke     */ NULL,
-        /* children   */ { 0x00 /* 000000 */ },
-        /* completion */ { 0x00 /* 000000 */ }, 	
-        /* ancestors  */ { 0x01 /* 100000 */ },
+        /* children   */ { 0x00 /* 00000 */ },
+        /* completion */ { 0x00 /* 00000 */ }, 	
+        /* ancestors  */ { 0x01 /* 10000 */ },
         /* data       */ NULL,
         /* type       */ USCXML_STATE_ATOMIC,
     },
     {   /* state number 3 */
-        /* name       */ "s2",
-        /* parent     */ 0,
-        /* onentry    */ _uscxml_EC83C2A5_s2_on_entry,
-        /* onexit     */ NULL,
-        /* invoke     */ NULL,
-        /* children   */ { 0x00 /* 000000 */ },
-        /* completion */ { 0x00 /* 000000 */ }, 	
-        /* ancestors  */ { 0x01 /* 100000 */ },
-        /* data       */ NULL,
-        /* type       */ USCXML_STATE_ATOMIC,
-    },
-    {   /* state number 4 */
         /* name       */ "pass",
         /* parent     */ 0,
-        /* onentry    */ _uscxml_EC83C2A5_pass_on_entry,
+        /* onentry    */ _uscxml_7B67993D_pass_on_entry,
         /* onexit     */ NULL,
         /* invoke     */ NULL,
-        /* children   */ { 0x00 /* 000000 */ },
-        /* completion */ { 0x00 /* 000000 */ }, 	
-        /* ancestors  */ { 0x01 /* 100000 */ },
+        /* children   */ { 0x00 /* 00000 */ },
+        /* completion */ { 0x00 /* 00000 */ }, 	
+        /* ancestors  */ { 0x01 /* 10000 */ },
         /* data       */ NULL,
         /* type       */ USCXML_STATE_FINAL,
     },
-    {   /* state number 5 */
+    {   /* state number 4 */
         /* name       */ "fail",
         /* parent     */ 0,
-        /* onentry    */ _uscxml_EC83C2A5_fail_on_entry,
+        /* onentry    */ _uscxml_7B67993D_fail_on_entry,
         /* onexit     */ NULL,
         /* invoke     */ NULL,
-        /* children   */ { 0x00 /* 000000 */ },
-        /* completion */ { 0x00 /* 000000 */ }, 	
-        /* ancestors  */ { 0x01 /* 100000 */ },
+        /* children   */ { 0x00 /* 00000 */ },
+        /* completion */ { 0x00 /* 00000 */ }, 	
+        /* ancestors  */ { 0x01 /* 10000 */ },
         /* data       */ NULL,
         /* type       */ USCXML_STATE_FINAL,
     }
@@ -546,78 +506,58 @@ static const uscxml_state _uscxml_EC83C2A5_states[6] = {
 
 #ifndef USCXML_NO_ELEM_INFO
 
-static const uscxml_transition _uscxml_EC83C2A5_transitions[6] = {
+static const uscxml_transition _uscxml_7B67993D_transitions[4] = {
     {   /* transition number 0 with priority 0
            target: s1
          */
         /* source     */ 1,
-        /* target     */ { 0x04 /* 001000 */ },
-        /* event      */ NULL,
-        /* condition  */ "Var1",
+        /* target     */ { 0x04 /* 00100 */ },
+        /* event      */ "foo",
+        /* condition  */ NULL,
+        /* is_enabled */ NULL,
         /* ontrans    */ NULL,
-        /* type       */ USCXML_TRANS_SPONTANEOUS,
-        /* conflicts  */ { 0x3f /* 111111 */ }, 
-        /* exit set   */ { 0x3e /* 011111 */ }
+        /* type       */ 0,
+        /* conflicts  */ { 0x0f /* 1111 */ }, 
+        /* exit set   */ { 0x1e /* 01111 */ }
     },
     {   /* transition number 1 with priority 1
            target: fail
          */
         /* source     */ 1,
-        /* target     */ { 0x20 /* 000001 */ },
-        /* event      */ NULL,
-        /* condition  */ "true",
-        /* ontrans    */ NULL,
-        /* type       */ USCXML_TRANS_SPONTANEOUS,
-        /* conflicts  */ { 0x3f /* 111111 */ }, 
-        /* exit set   */ { 0x3e /* 011111 */ }
-    },
-    {   /* transition number 2 with priority 2
-           target: s2
-         */
-        /* source     */ 2,
-        /* target     */ { 0x08 /* 000100 */ },
-        /* event      */ "error.execution",
+        /* target     */ { 0x10 /* 00001 */ },
+        /* event      */ "*",
         /* condition  */ NULL,
+        /* is_enabled */ NULL,
         /* ontrans    */ NULL,
         /* type       */ 0,
-        /* conflicts  */ { 0x3f /* 111111 */ }, 
-        /* exit set   */ { 0x3e /* 011111 */ }
+        /* conflicts  */ { 0x0f /* 1111 */ }, 
+        /* exit set   */ { 0x1e /* 01111 */ }
+    },
+    {   /* transition number 2 with priority 2
+           target: pass
+         */
+        /* source     */ 2,
+        /* target     */ { 0x08 /* 00010 */ },
+        /* event      */ "bar",
+        /* condition  */ NULL,
+        /* is_enabled */ NULL,
+        /* ontrans    */ NULL,
+        /* type       */ 0,
+        /* conflicts  */ { 0x0f /* 1111 */ }, 
+        /* exit set   */ { 0x1e /* 01111 */ }
     },
     {   /* transition number 3 with priority 3
            target: fail
          */
         /* source     */ 2,
-        /* target     */ { 0x20 /* 000001 */ },
+        /* target     */ { 0x10 /* 00001 */ },
         /* event      */ "*",
         /* condition  */ NULL,
+        /* is_enabled */ NULL,
         /* ontrans    */ NULL,
         /* type       */ 0,
-        /* conflicts  */ { 0x3f /* 111111 */ }, 
-        /* exit set   */ { 0x3e /* 011111 */ }
-    },
-    {   /* transition number 4 with priority 4
-           target: pass
-         */
-        /* source     */ 3,
-        /* target     */ { 0x10 /* 000010 */ },
-        /* event      */ NULL,
-        /* condition  */ "Var1==Var2",
-        /* ontrans    */ NULL,
-        /* type       */ USCXML_TRANS_SPONTANEOUS,
-        /* conflicts  */ { 0x3f /* 111111 */ }, 
-        /* exit set   */ { 0x3e /* 011111 */ }
-    },
-    {   /* transition number 5 with priority 5
-           target: fail
-         */
-        /* source     */ 3,
-        /* target     */ { 0x20 /* 000001 */ },
-        /* event      */ NULL,
-        /* condition  */ NULL,
-        /* ontrans    */ NULL,
-        /* type       */ USCXML_TRANS_SPONTANEOUS,
-        /* conflicts  */ { 0x3f /* 111111 */ }, 
-        /* exit set   */ { 0x3e /* 011111 */ }
+        /* conflicts  */ { 0x0f /* 1111 */ }, 
+        /* exit set   */ { 0x1e /* 01111 */ }
     }
 };
 
@@ -626,22 +566,21 @@ static const uscxml_transition _uscxml_EC83C2A5_transitions[6] = {
 #ifndef USCXML_NO_ELEM_INFO
 
 #ifndef USCXML_MACHINE
-#  define USCXML_MACHINE _uscxml_EC83C2A5_machine
+#  define USCXML_MACHINE _uscxml_7B67993D_machine
 #endif
-#define USCXML_MACHINE_0 _uscxml_EC83C2A5_machine
-#define USCXML_MACHINE_MACHINENAME _uscxml_EC83C2A5_machine
+#define USCXML_MACHINE_0 _uscxml_7B67993D_machine
 
-const uscxml_machine _uscxml_EC83C2A5_machine = {
+const uscxml_machine _uscxml_7B67993D_machine = {
         /* flags          */ 0,
-        /* nr_states      */ 6,
-        /* nr_transitions */ 6,
-        /* name           */ "machineName",
+        /* nr_states      */ 5,
+        /* nr_transitions */ 4,
+        /* name           */ "",
         /* datamodel      */ "ecmascript",
-        /* uuid           */ "EC83C2A5BDF05B11A1F7E2C35039F65D",
-        /* states         */ &_uscxml_EC83C2A5_states[0], 
-        /* transitions    */ &_uscxml_EC83C2A5_transitions[0], 
+        /* uuid           */ "7B67993D8309FD356AECB23C2C98EE79",
+        /* states         */ &_uscxml_7B67993D_states[0], 
+        /* transitions    */ &_uscxml_7B67993D_transitions[0], 
         /* parent         */ NULL,
-        /* donedata       */ &_uscxml_EC83C2A5_elem_donedatas[0], 
+        /* donedata       */ &_uscxml_7B67993D_elem_donedatas[0], 
         /* script         */ NULL
 };
 
@@ -755,7 +694,7 @@ static void bit_and(char* dest, const char* mask, size_t i) {
 #ifndef USCXML_NO_STEP_FUNCTION
 int uscxml_step(uscxml_ctx* ctx) {
 
-    USCXML_NR_TRANS_TYPE i, j, k;
+    USCXML_NR_STATES_TYPE i, j, k;
     USCXML_NR_STATES_TYPE nr_states_bytes = ((USCXML_NUMBER_STATES + 7) & ~7) >> 3;
     USCXML_NR_TRANS_TYPE  nr_trans_bytes  = ((USCXML_NUMBER_TRANS + 7) & ~7) >> 3;
     int err = USCXML_ERR_OK;
@@ -855,7 +794,7 @@ SELECT_TRANSITIONS:
                     (USCXML_GET_TRANS(i).event != NULL && ctx->event != NULL)) {
                     /* is it enabled? */
                     if ((ctx->event == NULL || ctx->is_matched(ctx, &USCXML_GET_TRANS(i), ctx->event) > 0) &&
-                        (USCXML_GET_TRANS(i).condition == NULL || ctx->is_enabled(ctx, &USCXML_GET_TRANS(i)) > 0)) {
+                        (USCXML_GET_TRANS(i).condition == NULL || USCXML_GET_TRANS(i).is_enabled(ctx, &USCXML_GET_TRANS(i)) > 0)) {
                         /* remember that we found a transition */
                         ctx->flags |= USCXML_CTX_TRANSITION_FOUND;
 

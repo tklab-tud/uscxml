@@ -180,6 +180,11 @@ protected:
 	void writeFSM(std::ostream& stream);
 
 	void writeTransitionSet(std::ostream & stream);
+	void writeActiveStateNplusOne(std::ostream & stream);
+	void writeDefaultCompletions(std::ostream & stream);
+	void writeCompleteEntrySet(std::ostream & stream);
+
+	void writeTestbench(std::ostream & stream);
 
 	Trie _eventTrie;
 

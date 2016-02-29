@@ -65,7 +65,6 @@ public:
 		ctx.user_data = (void*)this;
 
 		// register callbacks with scxml context
-		ctx.is_enabled = &isEnabled;
 		ctx.is_matched = &isMatched;
 		ctx.is_true = &isTrue;
 		ctx.raise_done_event = &raiseDoneEvent;
@@ -254,12 +253,6 @@ public:
 	static int isMatched(const uscxml_ctx* ctx, const uscxml_transition* t, const void* e) {
 		Event* event = (Event*)e;
 		return (nameMatch(t->event, event->name.c_str()));
-	}
-
-	static int isEnabled(const uscxml_ctx* ctx, const uscxml_transition* t) {
-		if (t->condition != NULL)
-			return isTrue(ctx, t->condition);
-		return 1;
 	}
 
 	static int isTrue(const uscxml_ctx* ctx, const char* expr) {
