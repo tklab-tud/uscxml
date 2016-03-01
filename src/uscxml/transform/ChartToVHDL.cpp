@@ -150,7 +150,7 @@ namespace uscxml {
         stream << "    port (" << std::endl;
         stream << "    --inputs" << std::endl;
         stream << "    clk  :in    std_logic;" << std::endl;
-        stream << "    rst  :in    std_logic;" << std::endl;
+        stream << "    rst_i  :in    std_logic;" << std::endl;
         stream << "    en   :in    std_logic;" << std::endl;
         stream << "    next_event_i    :in  event_type;" << std::endl;
         stream << "    next_event_en_i :in  std_logic;" << std::endl;
@@ -182,7 +182,7 @@ namespace uscxml {
         stream << "  dut : fsm_scxml" << std::endl;
         stream << "    port map (" << std::endl;
         stream << "      clk       => clk," << std::endl;
-        stream << "      rst     => reset," << std::endl;
+        stream << "      rst_i     => reset," << std::endl;
         stream << "      en     => '1'," << std::endl;
         stream << " " << std::endl;
         stream << "      next_event_i     => next_event_i," << std::endl;
@@ -211,7 +211,7 @@ namespace uscxml {
         stream << "port(" << std::endl;
         stream << "    --inputs" << std::endl;
         stream << "    clk  :in    std_logic;" << std::endl;
-        stream << "    rst  :in    std_logic;" << std::endl;
+        stream << "    rst_i  :in    std_logic;" << std::endl;
         stream << "    en   :in    std_logic;" << std::endl;
         stream << "    next_event_i    :in  event_type;" << std::endl;
         stream << "    next_event_en_i :in  std_logic;" << std::endl;
@@ -240,6 +240,8 @@ namespace uscxml {
         stream << std::endl;
         // signal mapping
         writeModuleInstantiation(stream);
+
+        writeSpontaneousHandler(stream);
 
         // write fsm architecture
         writeNextStateLogic(stream);
@@ -441,6 +443,9 @@ namespace uscxml {
         stream << "-- system signals" << std::endl;
         stream << "signal stall : std_logic;" << std::endl;
         stream << "signal completed_sig : std_logic;" << std::endl;
+        stream << "signal rst_2 : std_logic;" << std::endl;
+        stream << "signal rst_1 : std_logic;" << std::endl;
+        stream << "signal rst : std_logic;" << std::endl;
         stream << "-- state signals" << std::endl;
         //	stream << "signal next_state : state_type;" << std::endl;
         //	stream << "signal current_state : state_type;" << std::endl;
@@ -458,6 +463,7 @@ namespace uscxml {
 
         stream << "-- transition signals" << std::endl;
         stream << "signal spontaneous_en : std_logic;" << std::endl;
+        stream << "signal optimal_transition_set_combined_sig : std_logic;" << std::endl;
 
         for (size_t i = 0; i < _transitions.size(); i++) {
             Element<std::string> transition(_transitions[i]);
@@ -526,8 +532,24 @@ namespace uscxml {
                     << "_o <= state_active_" << ATTR(state, "documentOrder")
                     << "_sig;" << std::endl;
         }
-        
+
         stream << "completed_o <= completed_sig; " << std::endl;
+
+        // rest handler
+        stream << "-- reset handler" << std::endl;
+        stream << "rst_proc: process(clk, rst_i)" << std::endl;
+        stream << "begin" << std::endl;
+        stream << "    if rst_i = '1' then" << std::endl;
+        stream << "        rst_2 <= '1';" << std::endl;
+        stream << "        rst_1 <= '1';" << std::endl;
+        stream << "        rst <= '1';" << std::endl;
+        stream << "    elsif (rising_edge(clk)) then" << std::endl;
+        stream << "        rst_2 <= rst_i;" << std::endl;
+        stream << "        rst_1 <= rst_2;" << std::endl;
+        stream << "        rst <= rst_1;" << std::endl;
+        stream << "    end if;" << std::endl;
+        stream << "end process;" << std::endl;
+        stream << std::endl;
 
         // instantiate event fifo
         stream << "int_event_fifo : component std_fifo " << std::endl;
@@ -559,6 +581,25 @@ namespace uscxml {
         stream << std::endl;
     }
 
+    void ChartToVHDL::writeSpontaneousHandler(std::ostream & stream) {
+        // sets spontaneous signal
+        stream << "-- spontaneous handler" << std::endl;
+        stream << "spontaneous_handler : process (clk, rst) " << std::endl;
+        stream << "begin" << std::endl;
+        stream << "    if rst = '1' then" << std::endl;
+        stream << "        spontaneous_en <= '1';" << std::endl;
+        stream << "    elsif rising_edge(clk) then" << std::endl;
+        stream << "        if spontaneous_en = '1' then" << std::endl;
+        stream << "            spontaneous_en <= optimal_transition_set_combined_sig;" << std::endl;
+        stream << "        else" << std::endl;
+        //TODO if new event is dequeued then 1 else stay 0                        
+        stream << "            spontaneous_en <= '0';" << std::endl;
+        stream << "        end if;" << std::endl;
+        stream << "    end if;" << std::endl;
+        stream << "end process;" << std::endl;
+        stream << std::endl;
+    }
+
     std::string ChartToVHDL::eventNameEscape(const std::string& eventName) {
         std::string escaped = escape(eventName);
         boost::replace_all(escaped, ".", "_");
@@ -584,6 +625,7 @@ namespace uscxml {
 
     void ChartToVHDL::writeOptimalTransitionSetSelection(std::ostream & stream) {
         stream << "-- optimal transition set selection" << std::endl;
+        VContainer optimalTransitions = VOR;
         for (size_t i = 0; i < _transitions.size(); i++) {
             Element<std::string> transition(_transitions[i]);
             std::string conflicts = ATTR(transition, "conflictBools");
@@ -621,7 +663,18 @@ namespace uscxml {
 
             tree->print(stream);
             stream << ";" << std::endl;
+
+            *optimalTransitions += VLINE("in_optimal_transition_set_" + ATTR(transition, "postFixOrder") + "_sig");
         }
+
+        VBranch* tree = (VASSIGN,
+                VLINE("optimal_transition_set_combined_sig"),
+                optimalTransitions);
+
+        tree->print(stream);
+        stream << ";" << std::endl;
+
+
     }
 
     void ChartToVHDL::writeExitSet(std::ostream & stream) {
@@ -982,7 +1035,8 @@ namespace uscxml {
 
     void ChartToVHDL::writeOutputLogic(std::ostream & stream) {
         stream << "-- output logic" << std::endl;
-        // TODO find final states and add to or statement
+        // TODO or over all states which are toplevel final
+        // localname_case( state paren name)
         stream << "completed_sig <= '0' or state_active_4_sig;" << std::endl;
         stream << std::endl;
     }

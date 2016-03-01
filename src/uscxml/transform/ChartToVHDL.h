@@ -183,6 +183,8 @@ protected:
 	void writeActiveStateNplusOne(std::ostream & stream);
 	void writeDefaultCompletions(std::ostream & stream);
 	void writeCompleteEntrySet(std::ostream & stream);
+	void writeSpontaneousHandler(std::ostream & stream);
+        
 
 	void writeTestbench(std::ostream & stream);
 
