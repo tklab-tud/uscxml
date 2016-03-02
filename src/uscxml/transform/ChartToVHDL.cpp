@@ -169,10 +169,11 @@ namespace uscxml {
         stream << "  -- input" << std::endl;
         stream << "  signal clk   : std_logic := '0';" << std::endl;
         stream << "  signal reset : std_logic;" << std::endl;
-        stream << "  signal next_event_i : event_type;" << std::endl;
+        stream << "  signal next_event_en_i : std_logic := '0';" << std::endl;
+        stream << "  signal next_event_i : event_type := NO_EVENTS;" << std::endl;
         stream << " " << std::endl;
         stream << "  -- output" << std::endl;
-        stream << "  signal error_o, next_event_en_i, completed_o : std_logic;" << std::endl;
+        stream << "  signal error_o, completed_o : std_logic;" << std::endl;
         stream << " " << std::endl;
         stream << "begin" << std::endl;
         stream << "  clk   <= not clk  after 20 ns;  -- 25 MHz clock frequency" << std::endl;
@@ -255,6 +256,7 @@ namespace uscxml {
 
         writeErrorHandler(stream);
         writeOutputLogic(stream);
+        writeEventHandler(stream);
 
 
         stream << std::endl;
@@ -315,7 +317,7 @@ namespace uscxml {
         stream << _states.size() - 1;
         stream << " downto 0);" << std::endl;
 
-        //TODO complete
+        //TODO event type creation!
         // create event type
         stream << "  type event_type is (";
         seperator = "";
@@ -479,6 +481,7 @@ namespace uscxml {
         stream << "signal int_event_input : event_type;" << std::endl;
         stream << "signal int_event_output : event_type;" << std::endl;
         stream << "signal next_event_re : std_logic;" << std::endl;
+        stream << "signal next_event_dequeued : std_logic;" << std::endl;
         stream << "signal next_event : event_type;" << std::endl;
         stream << "signal event_consumed : std_logic;" << std::endl;
         stream << std::endl;
@@ -516,7 +519,7 @@ namespace uscxml {
     void ChartToVHDL::writeModuleInstantiation(std::ostream & stream) {
         // tmp mapping for events
         stream << "error_o <= reg_error_out; " << std::endl;
-        stream << "stall <= not en or completed_sig; " << std::endl;
+        stream << "stall <= not en or completed_sig or ( int_event_empty and not spontaneous_en ) ; " << std::endl;
         stream << std::endl;
 
         stream << "next_event_re <= not int_event_empty and not stall; " << std::endl;
@@ -545,7 +548,7 @@ namespace uscxml {
         stream << "        rst <= '1';" << std::endl;
         stream << "    elsif (rising_edge(clk)) then" << std::endl;
         stream << "        rst_2 <= rst_i;" << std::endl;
-        stream << "        rst_1 <= rst_2;" << std::endl;
+        stream << "        rst_1 <= rst_i;" << std::endl;
         stream << "        rst <= rst_1;" << std::endl;
         stream << "    end if;" << std::endl;
         stream << "end process;" << std::endl;
@@ -555,7 +558,7 @@ namespace uscxml {
         stream << "int_event_fifo : component std_fifo " << std::endl;
         stream << "port map ( " << std::endl;
         stream << "	clk         => clk," << std::endl;
-        stream << "	rst         => rst," << std::endl;
+        stream << "	rst         => rst_i," << std::endl;
         stream << "	write_en    => int_event_write_en," << std::endl;
         stream << "	read_en     => int_event_read_en," << std::endl;
         stream << "	data_in     => int_event_input," << std::endl;
@@ -592,9 +595,32 @@ namespace uscxml {
         stream << "        if spontaneous_en = '1' then" << std::endl;
         stream << "            spontaneous_en <= optimal_transition_set_combined_sig;" << std::endl;
         stream << "        else" << std::endl;
-        //TODO if new event is dequeued then 1 else stay 0                        
-        stream << "            spontaneous_en <= '0';" << std::endl;
+        //TODO if new event is dequeued then 1 else stay 0       
+        stream << "            spontaneous_en <= next_event_dequeued;" << std::endl;
         stream << "        end if;" << std::endl;
+        stream << "    end if;" << std::endl;
+        stream << "end process;" << std::endl;
+        stream << std::endl;
+    }
+
+    void ChartToVHDL::writeEventHandler(std::ostream & stream) {
+        // Add controler specific stuff here
+        stream << "-- event handler" << std::endl;
+        stream << "-- pops events and set event signals" << std::endl;
+        stream << "event_handler : process (clk, rst) " << std::endl;
+        stream << "begin" << std::endl;
+        stream << "    if rst = '1' then" << std::endl;
+
+        std::list<TrieNode*> eventNames = _eventTrie.getWordsWithPrefix("");
+        for (std::list<TrieNode*>::iterator eventIter = eventNames.begin(); eventIter != eventNames.end(); eventIter++) {
+            stream << "        event_" << eventNameEscape((*eventIter)->value) << "_sig <= '0';" << std::endl;
+        }
+
+        stream << "        next_event_dequeued <= '0';" << std::endl;
+
+        stream << "    elsif rising_edge(clk) then" << std::endl;
+        //TODO
+
         stream << "    end if;" << std::endl;
         stream << "end process;" << std::endl;
         stream << std::endl;
@@ -831,12 +857,12 @@ namespace uscxml {
             std::string parent = ATTR(state, "parent");
 
             if (parent.size() == 0) {
-                continue; // TODO: FixMe <scxml>
+                continue; // TODO: FixMe <scxml> <-- ?
             }
 
             VContainer tmp1 = VAND;
             if (isCompound(Element<std::string>(_states[strTo<size_t>(parent)]))) {
-                *tmp1 += VLINE("default_completion_" + toStr(parent) + "_sig");
+                *tmp1 += VLINE("default_completion_" + ATTR(state, "documentOrder") + "_sig");
 
                 for (size_t j = 0; j < _states.size(); j++) {
                     if (children[j] != '1')
@@ -857,7 +883,10 @@ namespace uscxml {
             }
 
             VBranch* tree = (VASSIGN,
-                    VLINE("in_complete_entry_set_" + toStr(i) + "_sig"), tmp1);
+                    VLINE("in_complete_entry_set_" + toStr(i) + "_sig"),
+                    (VOR,
+                    VLINE("in_complete_entry_set_up_" + ATTR(state, "documentOrder") + "_sig"),
+                    tmp1));
 
             tree->print(stream);
             stream << ";" << std::endl;
