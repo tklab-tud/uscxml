@@ -35,6 +35,10 @@ add wave -noupdate -divider -height 20 Transition_Set
 add wave -position insertpoint  \
 sim:/tb/dut/in_optimal_transition_set_*_sig 
 
+add wave -noupdate -divider -height 20 Event
+add wave -position insertpoint  \
+sim:/tb/dut/*event* 
+
 add wave -noupdate -divider -height 20 ALL
 add wave -position insertpoint  \
 sim:/tb/dut/*
