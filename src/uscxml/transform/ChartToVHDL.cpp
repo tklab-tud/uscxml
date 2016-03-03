@@ -193,7 +193,7 @@ namespace uscxml {
         stream << "architecture bhv of tb is" << std::endl;
         stream << " " << std::endl;
         stream << "  -- Module declaration" << std::endl;
-        stream << "  component fsm_scxml is" << std::endl;
+        stream << "  component micro_stepper is" << std::endl;
         stream << "    port (" << std::endl;
         stream << "    --inputs" << std::endl;
         stream << "    clk  :in    std_logic;" << std::endl;
@@ -227,7 +227,7 @@ namespace uscxml {
         stream << "  reset <= '1', '0' after 100 ns; -- generates reset signal: --__" << std::endl;
         stream << " " << std::endl;
         stream << "  -- Module instantiation" << std::endl;
-        stream << "  dut : fsm_scxml" << std::endl;
+        stream << "  dut : micro_stepper" << std::endl;
         stream << "    port map (" << std::endl;
         stream << "      clk       => clk," << std::endl;
         stream << "      rst_i     => reset," << std::endl;
@@ -255,7 +255,7 @@ namespace uscxml {
         // create hardware top level
         stream << "-- Event Controller Logic" << std::endl;
         writeIncludes(stream);
-        stream << "entity fsm_scxml is" << std::endl;
+        stream << "entity event_controller is" << std::endl;
         stream << "port(" << std::endl;
         stream << "    --inputs" << std::endl;
         stream << "    clk  :in    std_logic;" << std::endl;
@@ -273,38 +273,21 @@ namespace uscxml {
 
         stream << "    completed_o :out std_logic" << std::endl;
         stream << ");" << std::endl;
-        stream << "end fsm_scxml; " << std::endl;
+        stream << "end event_controller; " << std::endl;
 
         stream << std::endl;
         stream << std::endl;
-        stream << "architecture behavioral of fsm_scxml is " << std::endl;
+        stream << "architecture behavioral of event_controller is " << std::endl;
         stream << std::endl;
 
         // Add signals and components
-        writeSignalsAndComponents(stream);
 
         stream << std::endl;
         stream << "begin" << std::endl;
         stream << std::endl;
         // signal mapping
-        writeModuleInstantiation(stream);
 
-        writeSpontaneousHandler(stream);
-
-        // write fsm architecture
-        writeStateHandler(stream);
-
-        writeOptimalTransitionSetSelection(stream);
-        writeExitSet(stream);
-        writeEntrySet(stream);
-        writeDefaultCompletions(stream);
-        writeCompleteEntrySet(stream);
-        writeActiveStateNplusOne(stream);
-
-        writeErrorHandler(stream);
-        writeSystemSignalMapping(stream);
-        writeInternalEventHandler(stream);
-
+        // architecture
 
         stream << std::endl;
         stream << "end behavioral; " << std::endl;
@@ -315,7 +298,7 @@ namespace uscxml {
         // create MicroStepper top level
         stream << "-- FSM Logic" << std::endl;
         writeIncludes(stream);
-        stream << "entity fsm_scxml is" << std::endl;
+        stream << "entity micro_stepper is" << std::endl;
         stream << "port(" << std::endl;
         stream << "    --inputs" << std::endl;
         stream << "    clk  :in    std_logic;" << std::endl;
@@ -333,10 +316,10 @@ namespace uscxml {
 
         stream << "    completed_o :out std_logic" << std::endl;
         stream << ");" << std::endl;
-        stream << "end fsm_scxml; " << std::endl;
+        stream << "end micro_stepper; " << std::endl;
 
         stream << std::endl;
-        stream << "architecture behavioral of fsm_scxml is " << std::endl;
+        stream << "architecture behavioral of micro_stepper is " << std::endl;
         stream << std::endl;
 
         // Add signals and components
