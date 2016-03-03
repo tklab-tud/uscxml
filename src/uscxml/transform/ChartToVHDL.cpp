@@ -142,7 +142,7 @@ namespace uscxml {
     }
 
     void ChartToVHDL::writeTypes(std::ostream & stream) {
-        std::string seperator = "";
+        std::string seperator;
 
         stream << "-- required global types" << std::endl;
         stream << "library IEEE;" << std::endl;
@@ -153,20 +153,16 @@ namespace uscxml {
         stream << "  subtype state_type is std_logic_vector( ";
         stream << _states.size() - 1;
         stream << " downto 0);" << std::endl;
-
-        //TODO event type creation!
-        // create event type
-        stream << "  type event_type is (";
+        
+        std::list<TrieNode*> eventNames = _eventTrie.getWordsWithPrefix("");
+        stream << "  type event_type is ( ";
         seperator = "";
-        //	for (size_t i = 0; i < _events.size(); i++) {
-        //		stream << seperator;
-        //		stream << _events[i];
-        //		seperator = ", ";
-        //	}
-        if (seperator.size() == 0) {
-            stream << "NO_EVENTS";
+
+        for (std::list<TrieNode*>::iterator eventIter = eventNames.begin(); eventIter != eventNames.end(); eventIter++) {
+            stream << seperator << "hwe_" << eventNameEscape((*eventIter)->value);
+            seperator = ", ";
         }
-        stream << ");" << std::endl;
+        stream << " );" << std::endl;
 
         stream << "end machine" << _md5 << ";" << std::endl;
         stream << std::endl;
@@ -217,7 +213,7 @@ namespace uscxml {
         stream << "  signal clk   : std_logic := '0';" << std::endl;
         stream << "  signal reset : std_logic;" << std::endl;
         stream << "  signal next_event_en_i : std_logic := '0';" << std::endl;
-        stream << "  signal next_event_i : event_type := NO_EVENTS;" << std::endl;
+        stream << "  signal next_event_i : event_type;" << std::endl;
         stream << " " << std::endl;
         stream << "  -- output" << std::endl;
         stream << "  signal error_o, completed_o : std_logic;" << std::endl;
@@ -464,18 +460,27 @@ namespace uscxml {
         
         stream << "-- state signals" << std::endl;
 
+        std::list<std::string> signalDecls;
+        
         for (size_t i = 0; i < _states.size(); i++) {
             Element<std::string> state(_states[i]);
-            stream << "signal state_active_" << ATTR(state, "documentOrder") << "_sig : std_logic;" << std::endl;
-            stream << "signal state_next_" << ATTR(state, "documentOrder") << "_sig : std_logic;" << std::endl;
-            stream << "signal in_entry_set_" << ATTR(state, "documentOrder") << "_sig : std_logic;" << std::endl;
-            stream << "signal in_exit_set_" << ATTR(state, "documentOrder") << "_sig : std_logic;" << std::endl;
-            stream << "signal in_complete_entry_set_up_" << ATTR(state, "documentOrder") << "_sig : std_logic;" << std::endl;
-            stream << "signal in_complete_entry_set_" << ATTR(state, "documentOrder") << "_sig : std_logic;" << std::endl;
-            stream << "signal default_completion_" << ATTR(state, "documentOrder") << "_sig : std_logic;" << std::endl;
+            
+            signalDecls.push_back("signal state_active_" + ATTR(state, "documentOrder") + "_sig : std_logic;");
+            signalDecls.push_back("signal state_next_" + ATTR(state, "documentOrder") + "_sig : std_logic;");
+            signalDecls.push_back("signal in_entry_set_" + ATTR(state, "documentOrder") + "_sig : std_logic;");
+            signalDecls.push_back("signal in_exit_set_" + ATTR(state, "documentOrder") + "_sig : std_logic;");
+            signalDecls.push_back("signal in_complete_entry_set_up_" + ATTR(state, "documentOrder") + "_sig : std_logic;");
+            signalDecls.push_back("signal in_complete_entry_set_" + ATTR(state, "documentOrder") + "_sig : std_logic;");
+            signalDecls.push_back("signal default_completion_" + ATTR(state, "documentOrder") + "_sig : std_logic;");
         }
-        stream <<  std::endl;
 
+        signalDecls.sort();
+        for (std::list<std::string>::iterator iter = signalDecls.begin(); iter != signalDecls.end(); iter++) {
+            stream << *iter << std::endl;
+        }
+        stream << std::endl;
+
+        
         stream << "-- transition signals" << std::endl;
         stream << "signal spontaneous_en : std_logic;" << std::endl;
         stream << "signal optimal_transition_set_combined_sig : std_logic;" << std::endl;
@@ -933,10 +938,22 @@ namespace uscxml {
 
     void ChartToVHDL::writeSystemSignalMapping(std::ostream & stream) {
         stream << "-- system signals" << std::endl;
-        // TODO or over all states which are toplevel final
-        // localname_case( state paren name)
-        stream << "completed_sig <= '0' or state_active_4_sig;" << std::endl;
+        NodeSet<std::string> topLevelFinal = DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "final", _scxml);
 
+        VContainer tlf = VOR;
+        for (size_t i = 0; i < topLevelFinal.size(); i++) {
+            Element<std::string> final(topLevelFinal[i]);
+            *tlf += VLINE("state_active_" + ATTR(final, "documentOrder") + "_sig");
+
+        }
+        
+        VBranch* tree = (VASSIGN,
+                         VLINE("completed_sig"),
+                         tlf);
+        
+        tree->print(stream);
+        stream << ";" << std::endl;
+        
         // tmp mapping for events
         stream << "stall <= not en or completed_sig or ( int_event_empty and not spontaneous_en ) ; " << std::endl;
         stream << std::endl;
