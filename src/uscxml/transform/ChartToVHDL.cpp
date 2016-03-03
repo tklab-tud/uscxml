@@ -100,6 +100,12 @@ namespace uscxml {
 
     }
 
+    std::string ChartToVHDL::eventNameEscape(const std::string& eventName) {
+        std::string escaped = escape(eventName);
+        boost::replace_all(escaped, ".", "_");
+        return escaped;
+    }
+
     void ChartToVHDL::findEvents() {
         // elements with an event attribute
         NodeSet<std::string> withEvent;
@@ -130,8 +136,49 @@ namespace uscxml {
 
         writeTypes(stream);
         writeFiFo(stream);
-        writeFSM(stream);
+        writeEventController(stream);
+        writeMicroStepper(stream);
         writeTestbench(stream);
+    }
+
+    void ChartToVHDL::writeTypes(std::ostream & stream) {
+        std::string seperator = "";
+
+        stream << "-- required global types" << std::endl;
+        stream << "library IEEE;" << std::endl;
+        stream << "use IEEE.std_logic_1164.all;" << std::endl;
+        stream << std::endl;
+        stream << "package machine" << _md5 << " is" << std::endl;
+        // create state type
+        stream << "  subtype state_type is std_logic_vector( ";
+        stream << _states.size() - 1;
+        stream << " downto 0);" << std::endl;
+
+        //TODO event type creation!
+        // create event type
+        stream << "  type event_type is (";
+        seperator = "";
+        //	for (size_t i = 0; i < _events.size(); i++) {
+        //		stream << seperator;
+        //		stream << _events[i];
+        //		seperator = ", ";
+        //	}
+        if (seperator.size() == 0) {
+            stream << "NO_EVENTS";
+        }
+        stream << ");" << std::endl;
+
+        stream << "end machine" << _md5 << ";" << std::endl;
+        stream << std::endl;
+        stream << "-- END needed global types" << std::endl;
+    }
+
+    void ChartToVHDL::writeIncludes(std::ostream & stream) {
+        // Add controler specific stuff here
+        stream << "library IEEE;" << std::endl;
+        stream << "use IEEE.std_logic_1164.all;" << std::endl;
+        stream << "use work.machine" << _md5 << ".all;" << std::endl;
+        stream << std::endl;
     }
 
     void ChartToVHDL::writeTestbench(std::ostream& stream) {
@@ -203,10 +250,10 @@ namespace uscxml {
 
     }
 
-    void ChartToVHDL::writeFSM(std::ostream & stream) {
-
+    void ChartToVHDL::writeEventController(std::ostream & stream) {
+        // Add controler specific stuff here
         // create hardware top level
-        stream << "-- FSM Logic" << std::endl;
+        stream << "-- Event Controller Logic" << std::endl;
         writeIncludes(stream);
         stream << "entity fsm_scxml is" << std::endl;
         stream << "port(" << std::endl;
@@ -234,7 +281,7 @@ namespace uscxml {
         stream << std::endl;
 
         // Add signals and components
-        writeSignals(stream);
+        writeSignalsAndComponents(stream);
 
         stream << std::endl;
         stream << "begin" << std::endl;
@@ -245,7 +292,7 @@ namespace uscxml {
         writeSpontaneousHandler(stream);
 
         // write fsm architecture
-        writeNextStateLogic(stream);
+        writeStateHandler(stream);
 
         writeOptimalTransitionSetSelection(stream);
         writeExitSet(stream);
@@ -255,93 +302,75 @@ namespace uscxml {
         writeActiveStateNplusOne(stream);
 
         writeErrorHandler(stream);
-        writeOutputLogic(stream);
-        writeEventHandler(stream);
+        writeSystemSignalMapping(stream);
+        writeInternalEventHandler(stream);
+
+
+        stream << std::endl;
+        stream << "end behavioral; " << std::endl;
+        stream << "-- END Event Controller Logic" << std::endl;
+    }
+
+    void ChartToVHDL::writeMicroStepper(std::ostream & stream) {
+        // create MicroStepper top level
+        stream << "-- FSM Logic" << std::endl;
+        writeIncludes(stream);
+        stream << "entity fsm_scxml is" << std::endl;
+        stream << "port(" << std::endl;
+        stream << "    --inputs" << std::endl;
+        stream << "    clk  :in    std_logic;" << std::endl;
+        stream << "    rst_i  :in    std_logic;" << std::endl;
+        stream << "    en   :in    std_logic;" << std::endl;
+        stream << "    next_event_i    :in  event_type;" << std::endl;
+        stream << "    next_event_en_i :in  std_logic;" << std::endl;
+        stream << "    --outputs" << std::endl;
+        stream << "    error_o     :out std_logic;" << std::endl;
+
+        for (size_t i = 0; i < _states.size(); i++) {
+            Element<std::string> state(_states[i]);
+            stream << "    state_active_" << ATTR(state, "documentOrder") << "_o :out std_logic;" << std::endl;
+        }
+
+        stream << "    completed_o :out std_logic" << std::endl;
+        stream << ");" << std::endl;
+        stream << "end fsm_scxml; " << std::endl;
+
+        stream << std::endl;
+        stream << "architecture behavioral of fsm_scxml is " << std::endl;
+        stream << std::endl;
+
+        // Add signals and components
+        writeSignalsAndComponents(stream);
+
+        stream << std::endl;
+        stream << "begin" << std::endl;
+        stream << std::endl;
+
+        // signal mapping
+        writeModuleInstantiation(stream);
+
+        // signal handler
+        writeSpontaneousHandler(stream);
+        writeErrorHandler(stream);
+        writeInternalEventHandler(stream);
+        writeStateHandler(stream);
+        writeResetHandler(stream);
+
+        // combinatorial logic for Sn+1
+        writeOptimalTransitionSetSelection(stream);
+        writeExitSet(stream);
+        writeCompleteEntrySet(stream);
+        writeEntrySet(stream);
+        writeDefaultCompletions(stream);
+        writeActiveStateNplusOne(stream);
+
+        // connect output signals
+        writeSystemSignalMapping(stream);
 
 
         stream << std::endl;
         stream << "end behavioral; " << std::endl;
         stream << "-- END FSM Logic" << std::endl;
-    }
-
-#if 0
-
-    void ChartToVHDL::writeTopDown(std::ostream & stream) {
-        // create hardware top level
-        stream << "-- top level" << std::endl;
-        writeIncludes(stream);
-        stream << "entity top_scxml is" << std::endl;
-        stream << "port(" << std::endl;
-        stream << "    --inputs" << std::endl;
-        stream << "    clk\t:in    std_logic;" << std::endl;
-        stream << "    rst\t:in    std_logic;" << std::endl;
-        stream << "    --outputs" << std::endl;
-        stream << "    completed_o\t:out    std_logic;" << std::endl;
-        stream << "    result_o\t:out    std_logic;" << std::endl;
-        stream << "    error_o\t:out    std_logic" << std::endl;
-        stream << ");" << std::endl;
-        stream << "end top_scxml; " << std::endl;
-        stream << std::endl;
-        stream << std::endl;
-        stream << "architecture behavioral of top_scxml is " << std::endl;
-        stream << std::endl;
-
-        // Add signals and components
-        writeSignals(stream);
-
-        stream << std::endl;
-        stream << "begin" << std::endl;
-        stream << std::endl;
-        // signal mapping
-        writeModuleInstantiation(stream);
-
-        // write fsm architecture
-        writeNextStateLogic(stream);
-        writeOutputLogic(stream);
-
-        stream << std::endl;
-        stream << "end behavioral; " << std::endl;
-    }
-#endif
-
-    void ChartToVHDL::writeTypes(std::ostream & stream) {
-        std::string seperator = "";
-
-        stream << "-- required global types" << std::endl;
-        stream << "library IEEE;" << std::endl;
-        stream << "use IEEE.std_logic_1164.all;" << std::endl;
-        stream << std::endl;
-        stream << "package machine" << _md5 << " is" << std::endl;
-        // create state type
-        stream << "  subtype state_type is std_logic_vector( ";
-        stream << _states.size() - 1;
-        stream << " downto 0);" << std::endl;
-
-        //TODO event type creation!
-        // create event type
-        stream << "  type event_type is (";
-        seperator = "";
-        //	for (size_t i = 0; i < _events.size(); i++) {
-        //		stream << seperator;
-        //		stream << _events[i];
-        //		seperator = ", ";
-        //	}
-        if (seperator.size() == 0) {
-            stream << "NO_EVENTS";
-        }
-        stream << ");" << std::endl;
-
-        stream << "end machine" << _md5 << ";" << std::endl;
-        stream << std::endl;
-        stream << "-- END needed global types" << std::endl;
-    }
-
-    void ChartToVHDL::writeIncludes(std::ostream & stream) {
-        // Add controler specific stuff here
-        stream << "library IEEE;" << std::endl;
-        stream << "use IEEE.std_logic_1164.all;" << std::endl;
-        stream << "use work.machine" << _md5 << ".all;" << std::endl;
-        stream << std::endl;
     }
 
     void ChartToVHDL::writeFiFo(std::ostream & stream) {
@@ -440,17 +469,17 @@ namespace uscxml {
         stream << "-- END standard FIFO buffer" << std::endl;
     }
 
-    void ChartToVHDL::writeSignals(std::ostream & stream) {
-        // create needed internal signals
+    void ChartToVHDL::writeSignalsAndComponents(std::ostream & stream) {
+        // create internal signals
         stream << "-- system signals" << std::endl;
         stream << "signal stall : std_logic;" << std::endl;
         stream << "signal completed_sig : std_logic;" << std::endl;
         stream << "signal rst_2 : std_logic;" << std::endl;
         stream << "signal rst_1 : std_logic;" << std::endl;
         stream << "signal rst : std_logic;" << std::endl;
+        stream <<  std::endl;
+        
         stream << "-- state signals" << std::endl;
-        //	stream << "signal next_state : state_type;" << std::endl;
-        //	stream << "signal current_state : state_type;" << std::endl;
 
         for (size_t i = 0; i < _states.size(); i++) {
             Element<std::string> state(_states[i]);
@@ -462,6 +491,7 @@ namespace uscxml {
             stream << "signal in_complete_entry_set_" << ATTR(state, "documentOrder") << "_sig : std_logic;" << std::endl;
             stream << "signal default_completion_" << ATTR(state, "documentOrder") << "_sig : std_logic;" << std::endl;
         }
+        stream <<  std::endl;
 
         stream << "-- transition signals" << std::endl;
         stream << "signal spontaneous_en : std_logic;" << std::endl;
@@ -472,8 +502,8 @@ namespace uscxml {
             stream << "signal in_optimal_transition_set_" << ATTR(transition, "postFixOrder") << "_sig : std_logic;"
                     << std::endl;
         }
-
         stream << std::endl;
+        
         stream << "-- event signals" << std::endl;
         stream << "signal int_event_write_en : std_logic;" << std::endl;
         stream << "signal int_event_read_en : std_logic;" << std::endl;
@@ -490,16 +520,14 @@ namespace uscxml {
         for (std::list<TrieNode*>::iterator eventIter = eventNames.begin(); eventIter != eventNames.end(); eventIter++) {
             stream << "signal event_" << eventNameEscape((*eventIter)->value) << "_sig : std_logic;" << std::endl;
         }
-        //    _eventTrie.dump();
-
-
         stream << std::endl;
+
         stream << "-- error signals" << std::endl;
         stream << "signal reg_error_out : std_logic;" << std::endl;
         stream << "signal error_full_int_event_fifo : std_logic;" << std::endl;
         stream << std::endl;
 
-        // add needed components
+        // add components
         stream << "-- event FIFO" << std::endl;
         stream << "component std_fifo is" << std::endl;
         stream << "port ( " << std::endl;
@@ -517,43 +545,6 @@ namespace uscxml {
     }
 
     void ChartToVHDL::writeModuleInstantiation(std::ostream & stream) {
-        // tmp mapping for events
-        stream << "error_o <= reg_error_out; " << std::endl;
-        stream << "stall <= not en or completed_sig or ( int_event_empty and not spontaneous_en ) ; " << std::endl;
-        stream << std::endl;
-
-        stream << "next_event_re <= not int_event_empty and not stall; " << std::endl;
-        stream << "next_event <= int_event_output; " << std::endl;
-        stream << "int_event_write_en <= next_event_en_i; " << std::endl;
-        stream << "int_event_input <= next_event_i; " << std::endl;
-        stream << "int_event_read_en <= not spontaneous_en and not stall; " << std::endl;
-        stream << std::endl;
-
-        for (size_t i = 0; i < _states.size(); i++) {
-            Element<std::string> state(_states[i]);
-            stream << "    state_active_" << ATTR(state, "documentOrder")
-                    << "_o <= state_active_" << ATTR(state, "documentOrder")
-                    << "_sig;" << std::endl;
-        }
-
-        stream << "completed_o <= completed_sig; " << std::endl;
-
-        // rest handler
-        stream << "-- reset handler" << std::endl;
-        stream << "rst_proc: process(clk, rst_i)" << std::endl;
-        stream << "begin" << std::endl;
-        stream << "    if rst_i = '1' then" << std::endl;
-        stream << "        rst_2 <= '1';" << std::endl;
-        stream << "        rst_1 <= '1';" << std::endl;
-        stream << "        rst <= '1';" << std::endl;
-        stream << "    elsif (rising_edge(clk)) then" << std::endl;
-        stream << "        rst_2 <= rst_i;" << std::endl;
-        stream << "        rst_1 <= rst_i;" << std::endl;
-        stream << "        rst <= rst_1;" << std::endl;
-        stream << "    end if;" << std::endl;
-        stream << "end process;" << std::endl;
-        stream << std::endl;
-
         // instantiate event fifo
         stream << "int_event_fifo : component std_fifo " << std::endl;
         stream << "port map ( " << std::endl;
@@ -584,6 +575,23 @@ namespace uscxml {
         stream << std::endl;
     }
 
+    void ChartToVHDL::writeResetHandler(std::ostream & stream) {
+        stream << "-- reset handler" << std::endl;
+        stream << "rst_proc: process(clk, rst_i)" << std::endl;
+        stream << "begin" << std::endl;
+        stream << "    if rst_i = '1' then" << std::endl;
+        stream << "        rst_2 <= '1';" << std::endl;
+        stream << "        rst_1 <= '1';" << std::endl;
+        stream << "        rst <= '1';" << std::endl;
+        stream << "    elsif (rising_edge(clk)) then" << std::endl;
+        stream << "        rst_2 <= rst_i;" << std::endl;
+        stream << "        rst_1 <= rst_i;" << std::endl;
+        stream << "        rst <= rst_1;" << std::endl;
+        stream << "    end if;" << std::endl;
+        stream << "end process;" << std::endl;
+        stream << std::endl;
+    }
+
     void ChartToVHDL::writeSpontaneousHandler(std::ostream & stream) {
         // sets spontaneous signal
         stream << "-- spontaneous handler" << std::endl;
@@ -603,7 +611,7 @@ namespace uscxml {
         stream << std::endl;
     }
 
-    void ChartToVHDL::writeEventHandler(std::ostream & stream) {
+    void ChartToVHDL::writeInternalEventHandler(std::ostream & stream) {
         // Add controler specific stuff here
         stream << "-- event handler" << std::endl;
         stream << "-- pops events and set event signals" << std::endl;
@@ -624,12 +632,13 @@ namespace uscxml {
         stream << "    end if;" << std::endl;
         stream << "end process;" << std::endl;
         stream << std::endl;
-    }
 
-    std::string ChartToVHDL::eventNameEscape(const std::string& eventName) {
-        std::string escaped = escape(eventName);
-        boost::replace_all(escaped, ".", "_");
-        return escaped;
+        stream << "next_event_re <= not int_event_empty and not stall; " << std::endl;
+        stream << "next_event <= int_event_output; " << std::endl;
+        stream << "int_event_write_en <= next_event_en_i; " << std::endl;
+        stream << "int_event_input <= next_event_i; " << std::endl;
+        stream << "int_event_read_en <= not spontaneous_en and not stall; " << std::endl;
+        stream << std::endl;
     }
 
     void ChartToVHDL::writeActiveStateNplusOne(std::ostream & stream) {
@@ -912,133 +921,10 @@ namespace uscxml {
         }
     }
 
-    //TODO write event generator
-    // wie die letzten beiden states erkennen
-    // process bauen der bei fail 0 ausgibt und bei accept 1
-
-    void ChartToVHDL::writeNextStateLogic(std::ostream & stream) {
-        //	stream << "-- state logic" << std::endl;
-        //	stream << "-- only gets active when state changes (microstep?) " << std::endl;
-        //	stream << "state_decode_proc: process(current_state)" << std::endl;
-        //	stream << "begin" << std::endl;
-        //
-        //	std::stringstream nextStateBuffer;
-        //	for (size_t i = 0; i < _states.size(); i++) {
-        //		Element<std::string> state(_states[i]);
-        //
-        //		// calculate event choices
-        //		// _transitions is sorted in Postfix order
-        //		// by stating with smalest index the most important
-        //		// will be written first
-        //		std::vector< Element<std::string> > choices;
-        //		std::string spntaneous_trans_sig = "";
-        //		for (size_t j = 0; j < _transitions.size(); j++) {
-        //			Element<std::string> transition(_transitions[j]);
-        //			if (ATTR_CAST(transition.getParentNode(), "id") == ATTR(state, "id")) {
-        //				choices.push_back(transition);
-        //				if (ATTR(transition, "event") == CONST_TRANS_SPONTANIOUS) {
-        //					spntaneous_trans_sig = ATTR(transition, "id");
-        //					// FIXME hofully there are just single spntaneous transitions allowed
-        //					// else we have to handle this
-        //				}
-        //			}
-        //		}
-        //
-        //		// calculate incomming transitions (for later use)
-        //		std::vector< Element<std::string> > incommingTransitions;
-        //		for (size_t j = 0; j < _transitions.size(); j++) {
-        //			Element<std::string> transition(_transitions[j]);
-        //			if (ATTR_CAST(transition, "target") == ATTR(state, "id")) {
-        //				incommingTransitions.push_back(transition);
-        //			}
-        //		}
-        //
-        //		if (choices.size() > 0) {// if no outgoing transitions (maybe final state :D) we don't write anything
-        //
-        //			stream << "  if ( " << ATTR(state, "id") << " = '1' ) then" << std::endl;
-        //			stream << "    if ( transition_spntaneous_en = '1' ) then" << std::endl;
-        //			// enable spntaneous transition (if any) and disable all other
-        //			for (size_t j = 0; j < choices.size(); j++) {
-        //				Element<std::string> transition(choices[j]);
-        //				if (ATTR(transition, "id") == spntaneous_trans_sig) {
-        //					stream << "      " << ATTR(transition, "id") << "_sig <= '1';" << std::endl;
-        //				} else {
-        //					stream << "      " << ATTR(transition, "id") << "_sig <= '0';" << std::endl;
-        //				}
-        //			}
-        //
-        //			stream << "    elsif ( next_event_re = '1' ) then" << std::endl;
-        //			// if no spntaneous transition enables, look at events
-        //			// since there is just one event at a time, we use case statement
-        //			// to check transitions matching in postfix order
-        //			// FIXME hopefully there is just one transition per state and event at a time
-        //			stream << "    case next_event is" << std::endl;
-        //			bool hasWildcardTransition = false;
-        //			for (size_t j = 0; j < choices.size(); j++) {
-        //				Element<std::string> transition(choices[j]);
-        //				std::string eventName = ATTR(transition, "event");
-        //				if (eventName == CONST_EVENT_ANY) {
-        //					eventName = "others";
-        //					hasWildcardTransition = true;
-        //				}
-        //				stream << "      when " << eventName << " =>" << std::endl;
-        //				// activate transition and deactivete others
-        //				for (size_t k = 0; k < choices.size(); k++) {
-        //					Element<std::string> tmp_t(choices[k]);
-        //					if (ATTR(tmp_t, "event") == ATTR(transition, "event")) {
-        //						stream << "        " << ATTR(tmp_t, "id") << "_sig <= '1';" << std::endl;
-        //					} else {
-        //						stream << "        " << ATTR(tmp_t, "id") << "_sig <= '0';" << std::endl;
-        //					}
-        //				}
-        //			}
-        //			if (!hasWildcardTransition) {
-        //				// if there is no others we create one for deactivating everything
-        //				stream << "      when others =>" << std::endl;
-        //				for (size_t j = 0; j < choices.size(); j++) {
-        //					Element<std::string> tmp_t(choices[j]);
-        //					stream << "        " << ATTR(tmp_t, "id") << "_sig <= '0';" << std::endl;
-        //				}
-        //			}
-        //			stream << "    end case;" << std::endl;
-        //			//TODO umkehren oder other abfangen
-        //			//stream << "    when others =>" << std::endl;
-        //			//stream << "     next_state <= current_state;" << std::endl;
-        //
-        //			stream << "    else" << std::endl;
-        //			// no enabled event ? disable all transitions (looks like we have to wait)
-        //			for (size_t j = 0; j < choices.size(); j++) {
-        //				Element<std::string> transition(choices[j]);
-        //				stream << "      " << ATTR(transition, "id") << "_sig <= '0';" << std::endl;
-        //			}
-        //			stream << "    end if;" << std::endl;
-        //			stream << "  end if;" << std::endl;
-        //			stream << std::endl;
-        //		}
-        //		// write next state calculation in buffer for later use
-        //		nextStateBuffer << ATTR(state, "id") << "_next <= ( ( '0'";
-        //		std::string seperator = "  or  ";
-        //		for (size_t j = 0; j < incommingTransitions.size(); j++) {
-        //			nextStateBuffer << seperator
-        //			                << ATTR(incommingTransitions[j], "id") << "_sig";
-        //		}
-        //		nextStateBuffer << " ) or ";
-        //		nextStateBuffer << "( ( not ( '0'";
-        //		seperator = "  or  ";
-        //		for (size_t j = 0; j < choices.size(); j++) {
-        //			nextStateBuffer << seperator
-        //			                << ATTR(choices[j], "id") << "_sig";
-        //		}
-        //		nextStateBuffer << " ) ) and " << ATTR(state, "id")
-        //		                << "_curr ));" << std::endl;
-        //	}
-        //	stream << "end process;" << std::endl;
-        //	stream << std::endl;
-        //	// write outgoing transition buffer
-        //	stream << nextStateBuffer.str() << std::endl;
-
+    void ChartToVHDL::writeStateHandler(std::ostream & stream) {
         // updater for current state
-        stream << "-- update current state" << std::endl;
+        stream << "-- State Handler" << std::endl;
+        stream << "-- updates current state" << std::endl;
         stream << "state_proc: process(clk, rst, stall)" << std::endl;
         stream << "begin" << std::endl;
         stream << "    if rst = '1' then" << std::endl;
@@ -1062,11 +948,27 @@ namespace uscxml {
         stream << std::endl;
     }
 
-    void ChartToVHDL::writeOutputLogic(std::ostream & stream) {
-        stream << "-- output logic" << std::endl;
+    void ChartToVHDL::writeSystemSignalMapping(std::ostream & stream) {
+        stream << "-- system signals" << std::endl;
         // TODO or over all states which are toplevel final
         // localname_case( state paren name)
         stream << "completed_sig <= '0' or state_active_4_sig;" << std::endl;
+
+        // tmp mapping for events
+        stream << "stall <= not en or completed_sig or ( int_event_empty and not spontaneous_en ) ; " << std::endl;
+        stream << std::endl;
+
+        // interface signals
+        stream << "-- interface signals" << std::endl;
+        for (size_t i = 0; i < _states.size(); i++) {
+            Element<std::string> state(_states[i]);
+            stream << "    state_active_" << ATTR(state, "documentOrder")
+                    << "_o <= state_active_" << ATTR(state, "documentOrder")
+                    << "_sig;" << std::endl;
+        }
+
+        stream << "completed_o <= completed_sig; " << std::endl;
+        stream << "error_o <= reg_error_out; " << std::endl;
         stream << std::endl;
     }
 

@@ -162,32 +162,35 @@ protected:
 	void checkDocument();
 	void findEvents();
 
-	void writeIncludes(std::ostream& stream);
-	void writeTopDown(std::ostream& stream);
-
 	void writeTypes(std::ostream& stream);
+	void writeIncludes(std::ostream& stream);
+        
+        // top layer components
+	void writeFiFo(std::ostream& stream);
+	void writeEventController(std::ostream & stream);
+	void writeMicroStepper(std::ostream& stream);
+	void writeTestbench(std::ostream & stream);
+        
+        // system
+	void writeSignalsAndComponents(std::ostream& stream);
+	void writeSystemSignalMapping(std::ostream& stream);
+	void writeModuleInstantiation(std::ostream& stream);
 
+        // combinatorial logic
 	void writeOptimalTransitionSetSelection(std::ostream& stream);
 	void writeExitSet(std::ostream & stream);
 	void writeEntrySet(std::ostream & stream);
-
-	void writeNextStateLogic(std::ostream& stream);
-	void writeOutputLogic(std::ostream& stream);
-	void writeSignals(std::ostream& stream);
-	void writeFiFo(std::ostream& stream);
-	void writeModuleInstantiation(std::ostream& stream);
-	void writeErrorHandler(std::ostream& stream);
-	void writeFSM(std::ostream& stream);
-
 	void writeTransitionSet(std::ostream & stream);
-	void writeActiveStateNplusOne(std::ostream & stream);
 	void writeDefaultCompletions(std::ostream & stream);
 	void writeCompleteEntrySet(std::ostream & stream);
-	void writeSpontaneousHandler(std::ostream & stream);
-	void writeEventHandler(std::ostream & stream);
-        
+	void writeActiveStateNplusOne(std::ostream & stream);
 
-	void writeTestbench(std::ostream & stream);
+        // handler
+	void writeStateHandler(std::ostream& stream);
+	void writeResetHandler(std::ostream & stream);
+	void writeSpontaneousHandler(std::ostream & stream);
+	void writeInternalEventHandler(std::ostream & stream);
+	void writeErrorHandler(std::ostream& stream);
 
 	Trie _eventTrie;
 
