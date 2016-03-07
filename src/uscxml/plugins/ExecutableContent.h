@@ -60,7 +60,7 @@ public:
 	virtual ~ExecutableContent() {};
 
 	operator bool() const {
-		return _impl;
+		return !!_impl;
 	}
 	bool operator< (const ExecutableContent& other) const     {
 		return _impl < other._impl;

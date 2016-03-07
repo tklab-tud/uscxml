@@ -50,7 +50,7 @@ public:
 	virtual ~Invoker() {};
 
 	operator bool()                       const {
-		return _impl;
+		return !!_impl;
 	}
 	bool operator< (const Invoker& other) const {
 		return _impl < other._impl;

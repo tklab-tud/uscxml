@@ -139,7 +139,7 @@ public:
 	virtual ~DataModel() {};
 
 	operator bool()                         const     {
-		return _impl;
+		return !!_impl;
 	}
 	bool operator< (const DataModel& other) const     {
 		return _impl < other._impl;

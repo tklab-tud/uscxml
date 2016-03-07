@@ -42,7 +42,7 @@ public:
 	virtual ~IOProcessor() {};
 
 	operator bool()                           const     {
-		return _impl;
+		return !!_impl;
 	}
 	bool operator< (const IOProcessor& other) const     {
 		return _impl < other._impl;

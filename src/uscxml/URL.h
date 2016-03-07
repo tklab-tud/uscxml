@@ -161,7 +161,7 @@ public:
 	virtual ~URL() {};
 
 	operator bool() const {
-		return _impl;
+		return !!_impl;
 	}
 	bool operator< (const URL& other) const {
 		return _impl < other._impl;

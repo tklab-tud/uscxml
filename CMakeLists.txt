@@ -539,14 +539,21 @@ if (APPLE)
 endif()
 
 # see http://www.mail-archive.com/cmake@cmake.org/msg23240.html
-if (APPLE AND MACOSX_VERSION VERSION_LESS "10.9")
-	# figure out what to do with Mavericks (10.9) later
-#	add_definitions("-D_DARWIN_UNLIMITED_SELECT")
-	# support leopard and above
-	set(CMAKE_OSX_DEPLOYMENT_TARGET 10.6)
-	foreach(FLAGS CMAKE_C_FLAGS CMAKE_CXX_FLAGS CMAKE_EXE_LINKER_FLAGS CMAKE_SHARED_LINKER_FLAGS CMAKE_MODULE_LINKER_FLAGS)
-		set(${FLAGS} "${${FLAGS}} -mmacosx-version-min=${CMAKE_OSX_DEPLOYMENT_TARGET}")
-  endforeach()
+if (APPLE)
+	if (MACOSX_VERSION VERSION_LESS "10.9")
+		# figure out what to do with Mavericks (10.9) later
+	#	add_definitions("-D_DARWIN_UNLIMITED_SELECT")
+		# support leopard and above
+		set(CMAKE_OSX_DEPLOYMENT_TARGET 10.6)
+		foreach(FLAGS CMAKE_C_FLAGS CMAKE_CXX_FLAGS CMAKE_EXE_LINKER_FLAGS CMAKE_SHARED_LINKER_FLAGS CMAKE_MODULE_LINKER_FLAGS)
+			set(${FLAGS} "${${FLAGS}} -stdlib=libstdc++ -mmacosx-version-min=${CMAKE_OSX_DEPLOYMENT_TARGET}")
+	  endforeach()
+	else()
+		set(CMAKE_OSX_DEPLOYMENT_TARGET 10.7)
+		foreach(FLAGS CMAKE_C_FLAGS CMAKE_CXX_FLAGS CMAKE_EXE_LINKER_FLAGS CMAKE_SHARED_LINKER_FLAGS CMAKE_MODULE_LINKER_FLAGS)
+			set(${FLAGS} "${${FLAGS}} -stdlib=libc++ -mmacosx-version-min=${CMAKE_OSX_DEPLOYMENT_TARGET}")
+	  endforeach()
+	endif()
 endif()
 
 # if (APPLE AND MACOSX_VERSION VERSION_GREATER "10.9.99")
@@ -1159,7 +1166,16 @@ list(SORT USCXML_TRANSFORM_FILES)
 # we cannot define source groups in sub directories!
 foreach( FILE ${ALL_SOURCE_FILES} )
 	get_filename_component(PATH ${FILE} PATH)
-	
+	get_filename_component(NAME ${FILE} NAME)
+
+	# if (${NAME} MATCHES "Factory.cpp")
+	# 	set_property(SOURCE ${FILE} PROPERTY COMPILE_FLAGS -std=c++11)
+	# endif()
+	# if (${PATH} MATCHES ".*datamodel\\/ecmascript\\/v8\\/*")
+	# 	set_property(SOURCE ${FILE} PROPERTY COMPILE_FLAGS -std=c++11)
+	# 	# message(${FILE})
+	# endif()
+
 	if (${PATH} MATCHES ".*datamodel\\/ecmascript.*")
 		STRING(REGEX MATCH "[^\\/]*$" COMP_NAME ${PATH})
 		if (COMP_NAME STREQUAL "ecmascript")
@@ -1215,6 +1231,10 @@ foreach( FILE ${ALL_SOURCE_FILES} )
 	endif()
 endforeach()
 
+# if (V8_FOUND AND BUILD_DM_ECMA)
+# 	set_property(SOURCE ${ALL_SOURCE_FILES} PROPERTY COMPILE_FLAGS -Wno-c++11-extensions)
+# endif()
+
 # add compile time reducer
 # see https://github.com/sakra/cotire
 if (ENABLE_COTIRE)
@@ -1247,7 +1267,7 @@ if (BUILD_AS_PLUGINS)
 	set_target_properties(uscxml PROPERTIES COMPILE_FLAGS "-DUSCXML_EXPORT")
 #	set_target_properties(uscxml PROPERTIES COMPILE_FLAGS "-DPLUMA_EXPORTS")
 	add_definitions(-DPLUMA_EXPORTS)
-else()
+else()	
 	add_library(uscxml ${USCXML_FILES})
 	target_link_libraries(uscxml ${USCXML_OPT_LIBS} ${USCXML_CORE_LIBS})
 endif()

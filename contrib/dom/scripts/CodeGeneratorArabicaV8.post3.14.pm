@@ -193,7 +193,7 @@ END
         my $attrExt = $function->signature->extendedAttributes;
         my $custom = ($attrExt->{'Custom'} ? "Custom" : "");
         next if (exists $generated{"${name}${custom}Callback"});
-        push(@headerContent, "\n    static v8::Handle<v8::Value> ${name}${custom}Callback(const v8::Arguments&);");
+        push(@headerContent, "\n    static void ${name}${custom}Callback(const v8::FunctionCallbackInfo<v8::Value>&);");
         $generated{"${name}${custom}Callback"} = 1;
     }
     push(@headerContent, "\n");
@@ -204,17 +204,17 @@ END
         my $attrExt = $attribute->signature->extendedAttributes;
         my $customGetter = ($attrExt->{'CustomGetter'} ? "Custom" : "");
         my $customSetter = ($attrExt->{'CustomSetter'} ? "Custom" : "");
-        push(@headerContent, "\n    static v8::Handle<v8::Value> ${name}${customGetter}AttrGetter(v8::Local<v8::String> property, const v8::AccessorInfo& info);");
+        push(@headerContent, "\n    static void ${name}${customGetter}AttrGetter(v8::Local<v8::String> property, const v8::PropertyCallbackInfo<v8::Value>& info);");
         if (!IsReadonly($attribute)) {
-          push(@headerContent, "\n    static void ${name}${customSetter}AttrSetter(v8::Local<v8::String> property, v8::Local<v8::Value> value, const v8::AccessorInfo& info);");
+          push(@headerContent, "\n    static void ${name}${customSetter}AttrSetter(v8::Local<v8::String> property, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info);");
         }
     }
 
     if ($extensions->{'CustomIndexedGetter'}) {
-      push(@headerContent, "\n    static v8::Handle<v8::Value> indexedPropertyCustomGetter(uint32_t, const v8::AccessorInfo&);");
+      push(@headerContent, "\n    static void indexedPropertyCustomGetter(uint32_t, const v8::PropertyCallbackInfo<v8::Value>&);");
     }
     if ($extensions->{'CustomIndexedSetter'}) {
-      push(@headerContent, "\n    static v8::Handle<v8::Value> indexedPropertyCustomSetter(uint32_t, v8::Local<v8::Value>, const v8::AccessorInfo&);");
+      push(@headerContent, "\n    static void indexedPropertyCustomSetter(uint32_t, v8::Local<v8::Value>, const v8::PropertyCallbackInfo<v8::Value>&);");
     }
     push(@headerContent, "\n");
 
@@ -237,32 +237,25 @@ sub GenerateClassPrototypeHeader
   if ($extensions->{'Constructors'}) {
     
     push(@headerContent, "\n");
-    push(@headerContent, "    static v8::Handle<v8::Value> constructor(const v8::Arguments&);\n");
-    push(@headerContent, "    static v8::Persistent<v8::FunctionTemplate> Constr;\n");
+    push(@headerContent, "    static void constructor(const v8::FunctionCallbackInfo<v8::Value>&);\n");
 	  push(@headerContent, <<END);
-    static v8::Handle<v8::FunctionTemplate> getConstructor() {
-        if (Constr.IsEmpty()) {
-            v8::Handle<v8::FunctionTemplate> constr = v8::FunctionTemplate::New(constructor);
-            Constr = v8::Persistent<v8::FunctionTemplate>::New(constr);
-        }
-        return Constr;
+    static v8::Handle<v8::FunctionTemplate> getConstructor(v8::Isolate* isolate) {
+      return v8::FunctionTemplate::New(isolate, constructor);
     }
 END
   }
 
-  push(@headerContent, "\n    static v8::Persistent<v8::FunctionTemplate> Tmpl;\n");
   push(@headerContent, <<END);
-    static v8::Handle<v8::FunctionTemplate> getTmpl() {
-        if (Tmpl.IsEmpty()) {
-            v8::Handle<v8::FunctionTemplate> tmpl = v8::FunctionTemplate::New();
-            tmpl->SetClassName(v8::String::New("${interfaceName}"));
-            tmpl->ReadOnlyPrototype();
+    static v8::Handle<v8::FunctionTemplate> getTmpl(v8::Isolate* isolate) {
+      v8::Handle<v8::FunctionTemplate> tmpl = v8::FunctionTemplate::New(isolate);
+      tmpl->SetClassName(v8::String::NewFromUtf8(isolate, "${interfaceName}"));
+      tmpl->ReadOnlyPrototype();
 
-            v8::Local<v8::ObjectTemplate> instance = tmpl->InstanceTemplate();
-            v8::Local<v8::ObjectTemplate> prototype = tmpl->PrototypeTemplate();
-            (void)prototype; // surpress unused warnings
-            
-            instance->SetInternalFieldCount(1);
+      v8::Local<v8::ObjectTemplate> instance = tmpl->InstanceTemplate();
+      v8::Local<v8::ObjectTemplate> prototype = tmpl->PrototypeTemplate();
+      (void)prototype; // surpress unused warnings
+    
+      instance->SetInternalFieldCount(1);
 END
 
   push(@headerContent, "\n");
@@ -274,8 +267,8 @@ END
     my $getter = "V8${interfaceName}::${name}${customGetter}AttrGetter";
     my $setter = (IsReadonly($attribute) ? "0" : "V8${interfaceName}::${name}${customSetter}AttrSetter");
     push(@headerContent, <<END);
-            instance->SetAccessor(v8::String::NewSymbol("${name}"), ${getter}, ${setter},
-                                  v8::External::New(0), static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None));
+      instance->SetAccessor(v8::String::NewFromUtf8(isolate, "${name}"), ${getter}, ${setter},
+                            v8::External::New(isolate, 0), static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None));
 END
     }
 
@@ -294,8 +287,8 @@ END
     next if (exists $generated{"${name}"});
     $generated{"${name}"} = 1;
   push(@headerContent, <<END);
-            prototype->Set(v8::String::NewSymbol("${name}"),
-                           v8::FunctionTemplate::New(V8${interfaceName}::${name}${custom}Callback, v8::Undefined()), static_cast<v8::PropertyAttribute>(v8::DontDelete));
+      prototype->Set(v8::String::NewFromUtf8(isolate, "${name}"),
+                     v8::FunctionTemplate::New(isolate, V8${interfaceName}::${name}${custom}Callback, v8::Undefined(isolate)), static_cast<v8::PropertyAttribute>(v8::DontDelete));
 END
   }
 
@@ -305,20 +298,18 @@ END
     my $value = $constant->value;
     my $type = IdlToV8Type($constant->type);
     push(@headerContent, <<END);
-            tmpl->Set(v8::String::NewSymbol("${name}"), ${type}::New(${value}), static_cast<v8::PropertyAttribute>(v8::ReadOnly | v8::DontEnum));
-            prototype->Set(v8::String::NewSymbol("${name}"), ${type}::New(${value}), static_cast<v8::PropertyAttribute>(v8::ReadOnly | v8::DontEnum));
+      tmpl->Set(v8::String::NewFromUtf8(isolate, "${name}"), ${type}::New(isolate, ${value}), static_cast<v8::PropertyAttribute>(v8::ReadOnly | v8::DontEnum));
+      prototype->Set(v8::String::NewFromUtf8(isolate, "${name}"), ${type}::New(isolate, ${value}), static_cast<v8::PropertyAttribute>(v8::ReadOnly | v8::DontEnum));
 END
   }
 
   push(@headerContent, "\n");
   if (@{$interface->parents}) {
     my $parent = @{$interface->parents}[0];
-    push(@headerContent, "            tmpl->Inherit(V8${parent}::getTmpl());\n");
+    push(@headerContent, "      tmpl->Inherit(V8${parent}::getTmpl(isolate));\n");
   }
   push(@headerContent, <<END);
-            Tmpl = v8::Persistent<v8::FunctionTemplate>::New(tmpl);
-        }
-        return Tmpl;
+      return tmpl;
     }
 
 END
@@ -353,7 +344,8 @@ sub GenerateImplementationAttributes
     if (!$attrExt->{'CustomGetter'}) {
       push(@implContent, <<END);
 
-  v8::Handle<v8::Value> V8${interfaceName}::${attrName}AttrGetter(v8::Local<v8::String> property, const v8::AccessorInfo& info) {
+  void V8${interfaceName}::${attrName}AttrGetter(v8::Local<v8::String> property, const v8::PropertyCallbackInfo<v8::Value>& info) {
+		v8::Isolate* isolate = info.GetIsolate();
     v8::Local<v8::Object> self = info.Holder();
     struct V8${interfaceName}Private* privData = V8DOM::toClassPtr<V8${interfaceName}Private >(self->GetInternalField(0));
 END
@@ -365,27 +357,29 @@ END
 
     ${wrapperRetType}* arbaicaRet = new ${wrapperRetType}(privData->nativeObj->${wrapperGetter});
 
-    v8::Handle<v8::Function> arbaicaRetCtor = V8${attrType}::getTmpl()->GetFunction();
-    v8::Persistent<v8::Object> arbaicaRetObj = v8::Persistent<v8::Object>::New(arbaicaRetCtor->NewInstance());
+    v8::Handle<v8::Function> arbaicaRetCtor = V8${attrType}::getTmpl(isolate)->GetFunction();
+    v8::Persistent<v8::Object> arbaicaRetObj(isolate, arbaicaRetCtor->NewInstance());
 
     struct V8${attrType}::V8${attrType}Private* retPrivData = new V8${attrType}::V8${attrType}Private();
     retPrivData->dom = privData->dom;
     retPrivData->nativeObj = arbaicaRet;
     
-    arbaicaRetObj->SetInternalField(0, V8DOM::toExternal(retPrivData));
-    arbaicaRetObj.MakeWeak(0, V8${attrType}::jsDestructor);
-    return arbaicaRetObj;
+    arbaicaRetObj.Get(isolate)->SetInternalField(0, V8DOM::toExternal(retPrivData));
+    arbaicaRetObj.SetWeak<V8${attrType}::V8${attrType}Private>(0, V8${attrType}::jsDestructor);
+    info.GetReturnValue().Set(arbaicaRetObj);
+    // return arbaicaRetObj;
 END
       } else {
         my $v8Type = IdlToV8Type($attrType);
         if ($attrType eq "DOMString") {
           if ($attrExt->{'EmptyAsNull'}) {
             push(@implContent, "\n    if (privData->nativeObj->${wrapperGetter}.length() == 0)");
-            push(@implContent, "\n      return v8::Undefined();");
+            push(@implContent, "\n      return; //v8::Undefined(isolate);");
           }
-          push(@implContent, "\n    return ${v8Type}::New(privData->nativeObj->${wrapperGetter}.c_str());");
+          push(@implContent, "\n    info.GetReturnValue().Set(${v8Type}::NewFromUtf8(isolate, privData->nativeObj->${wrapperGetter}.c_str()));");
+          # push(@implContent, "\n    return ${v8Type}::New(privData->nativeObj->${wrapperGetter}.c_str());");
         } else {
-          push(@implContent, "\n    return ${v8Type}::New(privData->nativeObj->${wrapperGetter});");
+          push(@implContent, "\n    info.GetReturnValue().Set(${v8Type}::New(isolate, privData->nativeObj->${wrapperGetter}));");
         }
       }
       push(@implContent, "\n  }\n");
@@ -395,7 +389,8 @@ END
     # setter
       if (!IsReadonly($attribute)) {
         my $wrapperSetter = IdlToWrapperAttrSetter($attrName);
-        push(@implContent, "\n  void V8${interfaceName}::${attrName}AttrSetter(v8::Local<v8::String> property, v8::Local<v8::Value> value, const v8::AccessorInfo& info) {");
+        push(@implContent, "\n  void V8${interfaceName}::${attrName}AttrSetter(v8::Local<v8::String> property, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info) {");
+        push(@implContent, "\n    v8::Isolate* isolate = info.GetIsolate();");
         push(@implContent, "\n    v8::Local<v8::Object> self = info.Holder();");
         push(@implContent, "\n    struct V8${interfaceName}Private* privData = V8DOM::toClassPtr<V8${interfaceName}Private >(self->GetInternalField(0));");
 
@@ -418,7 +413,7 @@ sub GenerateConditionalUndefReturn
   
   return "" if ($attribute->signature->type eq "NamedNodeMap");
   return "" if ($attribute->signature->type eq "NodeList");
-  return "if (!$getterExpression) return v8::Undefined();";
+  return "if (!$getterExpression) return; //v8::Undefined(isolate);";
 }
 
 sub GenerateConstructor
@@ -430,11 +425,14 @@ sub GenerateConstructor
   
   if ($extensions->{'Constructors'}) {
 
-    push(@implContent, "\n  v8::Handle<v8::Value> V8${interfaceName}::constructor(const v8::Arguments& args) {");
+    push(@implContent, "\n  void V8${interfaceName}::constructor(const v8::FunctionCallbackInfo<v8::Value>& info) {");
     push(@implContent, <<END);
-
-    if (!args.IsConstructCall()) 
-      return v8::ThrowException(v8::String::New("Cannot call constructor as function"));
+    
+    v8::Isolate* isolate = info.GetIsolate();
+    if (!info.IsConstructCall()) {
+      isolate->ThrowException(v8::String::NewFromUtf8(isolate, "Cannot call constructor as function"));
+      return;
+    }
 END
 
     push(@implContent, "\n    ".IdlToWrapperType($interfaceName)."* localInstance = NULL;");
@@ -468,12 +466,12 @@ END
       } @variants;
     }
     foreach my $constructor (@variants) {
-      push(@implContent, " else if (args.Length() == " . @{$constructor});
+      push(@implContent, " else if (info.Length() == " . @{$constructor});
 
       for (my $i = 0; $i < @{$constructor}; $i++) {
         my $type = $constructor->[$i]->{'domSignature::type'};
         AddToImplIncludes("V8".$type.".h") if (IsWrapperType($type));
-        push(@implContent, " &&\n        " . IdlToTypeChecker($type, "args[$i]"));
+        push(@implContent, " &&\n        " . IdlToTypeChecker($type, "info[$i]"));
 
       }
       push(@implContent, ") {\n");
@@ -482,7 +480,7 @@ END
       for (my $i = 0; $i < @{$constructor}; $i++) {
         my $type = $constructor->[$i]->{'domSignature::type'};
         my $name = $constructor->[$i]->{'domSignature::name'};
-        my ($handle, $deref) = IdlToArgHandle($type, "local".ucfirst($name), "args[$i]", $interfaceName);
+        my ($handle, $deref) = IdlToArgHandle($type, "local".ucfirst($name), "info[$i]", $interfaceName);
         $constructorArgs .= ${constructorSep}.${deref};
         $constructorSep = ", ";
         push(@implContent, "\n      $handle");
@@ -496,19 +494,19 @@ END
     push(@implContent, <<END);
     if (!localInstance) {
       throw V8Exception("Parameter mismatch while calling constructor for ${interfaceName}");
-      return v8::Undefined();
     }
 
-    v8::Handle<v8::Function> retCtor = V8${interfaceName}::getTmpl()->GetFunction();
-    v8::Persistent<v8::Object> retObj = v8::Persistent<v8::Object>::New(retCtor->NewInstance());
+    v8::Handle<v8::Function> retCtor = V8${interfaceName}::getTmpl(isolate)->GetFunction();
+    v8::Persistent<v8::Object> retObj(isolate, retCtor->NewInstance());
 
     struct V8${interfaceName}::V8${interfaceName}Private* retPrivData = new V8${interfaceName}::V8${interfaceName}Private();
     retPrivData->nativeObj = localInstance;
 
-    retObj->SetInternalField(0, V8DOM::toExternal(retPrivData));
+    retObj.Get(isolate)->SetInternalField(0, V8DOM::toExternal(retPrivData));
+    retObj.SetWeak<V8${interfaceName}::V8${interfaceName}Private>(0, V8${interfaceName}::jsDestructor);
 
-    retObj.MakeWeak(0, V8${interfaceName}::jsDestructor);
-    return retObj;
+		info.GetReturnValue().Set(retObj);
+		return;
   }
 END
   }
@@ -541,11 +539,12 @@ sub GenerateImplementationFunctionCallbacks
     # signature
     push(@implContent, <<END);
 
-  v8::Handle<v8::Value> V8${interfaceName}::${name}Callback(const v8::Arguments& args) {
+  void V8${interfaceName}::${name}Callback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+    v8::Isolate* isolate = info.GetIsolate();
 END
 
     # get this
-    push(@implContent, "\n    v8::Local<v8::Object> self = args.Holder();");
+    push(@implContent, "\n    v8::Local<v8::Object> self = info.Holder();");
     push(@implContent, "\n    struct V8${interfaceName}Private* privData = V8DOM::toClassPtr<V8${interfaceName}Private >(self->GetInternalField(0));");
 
     # establish all variants
@@ -584,18 +583,18 @@ END
       my $parameterIndex = 0;
       my @argList;
       
-      push(@implContent, "\n    } else if (args.Length() == " . @{$variant});
+      push(@implContent, "\n    } else if (info.Length() == " . @{$variant});
       for (my $i = 0; $i < @{$variant}; $i++) {
         my $type = $variant->[$i]->{'domSignature::type'};
-        push(@implContent, " &&\n        " . IdlToTypeChecker($type, "args[$i]"));
+        push(@implContent, " &&\n        " . IdlToTypeChecker($type, "info[$i]"));
       }
       push(@implContent, ")\n        {");
       foreach my $parameter (@{$variant}) {
-          my $value = "args[$parameterIndex]";
+          my $value = "info[$parameterIndex]";
           my $type = $parameter->type;
           AddToImplIncludes("V8".$type.".h") if (IsWrapperType($type));
 
-          my ($handle, $deref) = IdlToArgHandle($parameter->type, "local".ucfirst($parameter->name), "args[${parameterIndex}]", $interfaceName);
+          my ($handle, $deref) = IdlToArgHandle($parameter->type, "local".ucfirst($parameter->name), "info[${parameterIndex}]", $interfaceName);
           push(@implContent, "\n      ${handle}");
           push(@argList, $deref);
           $parameterIndex++;
@@ -617,28 +616,28 @@ END
         AddToImplIncludes("V8".$retType.".h");
 
         push(@implContent, <<END);
-        v8::Handle<v8::Function> retCtor = V8${retType}::getTmpl()->GetFunction();
-        v8::Persistent<v8::Object> retObj = v8::Persistent<v8::Object>::New(retCtor->NewInstance());
+        v8::Handle<v8::Function> retCtor = V8${retType}::getTmpl(isolate)->GetFunction();
+        v8::Persistent<v8::Object> retObj(isolate, retCtor->NewInstance());
 
         struct V8${retType}::V8${retType}Private* retPrivData = new V8${retType}::V8${retType}Private();
         retPrivData->dom = privData->dom;
         retPrivData->nativeObj = retVal;
 
-        retObj->SetInternalField(0, V8DOM::toExternal(retPrivData));
-
-        retObj.MakeWeak(0, V8${retType}::jsDestructor);
-        return retObj;
+        retObj.Get(isolate)->SetInternalField(0, V8DOM::toExternal(retPrivData));
+        retObj.SetWeak<V8${retType}::V8${retType}Private>(0, V8${retType}::jsDestructor);
+        info.GetReturnValue().Set(retObj);
+        //return retObj;
 END
       } else {
         my $toHandleString = NativeToHandle($retNativeType, "retVal");
-        push(@implContent, "\n      return ${toHandleString};");
+        push(@implContent, "\n      info.GetReturnValue().Set(${toHandleString});");
       }
     }
     push(@implContent, <<END);
     
     }
     throw V8Exception("Parameter mismatch while calling ${name}");
-    return v8::Undefined();
+    // return v8::Undefined(isolate);
   }
 END
   }
@@ -669,10 +668,8 @@ sub GenerateImplementation
         
     push(@implContent, "namespace Arabica {\n");
     push(@implContent, "namespace DOM {\n\n");
-    push(@implContent, "  v8::Persistent<v8::FunctionTemplate> V8${interfaceName}::Tmpl;\n");
 
     if ($extensions->{'Constructors'}) {
-      push(@implContent, "  v8::Persistent<v8::FunctionTemplate> V8${interfaceName}::Constr;\n");
       GenerateConstructor($interface);
     }
     
@@ -682,7 +679,7 @@ sub GenerateImplementation
 
     push(@implContent, <<END);
   bool V8${interfaceName}::hasInstance(v8::Handle<v8::Value> value) {
-    return getTmpl()->HasInstance(value);
+    return getTmpl(v8::Isolate::GetCurrent())->HasInstance(value);
   }
 
 } 
@@ -799,18 +796,18 @@ sub NativeToHandle
   my $nativeType  = shift;
   my $nativeName  = shift;
   
-  return ("v8::Boolean::New(${nativeName})") if ($nativeType eq "bool");
-  return ("v8::Number::New(${nativeName})") if ($nativeType eq "double");
-  return ("v8::Number::New(${nativeName})") if ($nativeType eq "double");
-  return ("v8::Number::New(${nativeName})") if ($nativeType eq "float");
-  return ("v8::Number::New(${nativeName})") if ($nativeType eq "short");
-  return ("v8::Number::New(${nativeName})") if ($nativeType eq "char");
-  return ("v8::Number::New(${nativeName})") if ($nativeType eq "unsigned short");
-  return ("v8::Number::New(${nativeName})") if ($nativeType eq "unsigned long");
-  return ("v8::Number::New(${nativeName})") if ($nativeType eq "unsigned char");
-  return ("v8::Number::New(${nativeName})") if ($nativeType eq "long");
-  return ("v8::String::New(${nativeName}.c_str())") if ($nativeType eq "std::string");
-  return ("v8::Undefined()") if ($nativeType eq "void");
+  return ("v8::Boolean::New(isolate, ${nativeName})") if ($nativeType eq "bool");
+  return ("v8::Number::New(isolate, ${nativeName})") if ($nativeType eq "double");
+  return ("v8::Number::New(isolate, ${nativeName})") if ($nativeType eq "double");
+  return ("v8::Number::New(isolate, ${nativeName})") if ($nativeType eq "float");
+  return ("v8::Number::New(isolate, ${nativeName})") if ($nativeType eq "short");
+  return ("v8::Number::New(isolate, ${nativeName})") if ($nativeType eq "char");
+  return ("v8::Number::New(isolate, ${nativeName})") if ($nativeType eq "unsigned short");
+  return ("v8::Number::New(isolate, ${nativeName})") if ($nativeType eq "unsigned long");
+  return ("v8::Number::New(isolate, ${nativeName})") if ($nativeType eq "unsigned char");
+  return ("v8::Number::New(isolate, ${nativeName})") if ($nativeType eq "long");
+  return ("v8::String::NewFromUtf8(isolate, ${nativeName}.c_str())") if ($nativeType eq "std::string");
+  return ("v8::Undefined(isolate)") if ($nativeType eq "void");
   
   die($nativeType);
 }
@@ -846,7 +843,7 @@ sub IdlToArgHandle
   my $paramName = shift;
   my $thisType = shift;
   
-  return ("v8::String::AsciiValue ${localName}(${paramName});", "*${localName}") if ($type eq "DOMString");
+  return ("v8::String::Utf8Value ${localName}(${paramName});", "*${localName}") if ($type eq "DOMString");
   return ("unsigned long ${localName} = ${paramName}->ToNumber()->Uint32Value();", ${localName}) if ($type eq "unsigned long");
   return ("long ${localName} = ${paramName}->ToNumber()->Int32Value();", ${localName}) if ($type eq "long");
   return ("double ${localName} = ${paramName}->ToNumber()->Value();", ${localName}) if ($type eq "double");
@@ -856,15 +853,16 @@ sub IdlToArgHandle
   return ("char ${localName} = ${paramName}->ToNumber()->Int32Value();", ${localName}) if ($type eq "byte");
   return ("short ${localName} = ${paramName}->ToNumber()->Int32Value();", ${localName}) if ($type eq "short");
   return ("unsigned char ${localName} = ${paramName}->ToNumber()->Uint32Value();", ${localName}) if ($type eq "octet");
-  return ("void* ${localName} = v8::External::Unwrap(${paramName}->ToObject()->GetInternalField(0));", ${localName}) if ($type eq "any");
-  return ("std::vector<long> ${localName};\nv8::Handle<v8::Array> ${localName}Array(v8::Array::Cast(*args[0]));\nfor (int i = 0; i < ${localName}Array->Length(); i++) {\n  ${localName}.push_back(${localName}Array->Get(i)->ToInteger()->Value());\n}", "${localName}")  if ($type eq "long[]");
-  return ("std::vector<float> ${localName};\nv8::Handle<v8::Array> ${localName}Array(v8::Array::Cast(*args[0]));\nfor (int i = 0; i < ${localName}Array->Length(); i++) {\n  ${localName}.push_back(${localName}Array->Get(i)->ToNumber()->Value());\n}", "${localName}")  if ($type eq "float[]");
-  return ("std::vector<double> ${localName};\nv8::Handle<v8::Array> ${localName}Array(v8::Array::Cast(*args[0]));\nfor (int i = 0; i < ${localName}Array->Length(); i++) {\n  ${localName}.push_back(${localName}Array->Get(i)->ToNumber()->Value());\n}", "${localName}")  if ($type eq "double[]");
-  return ("std::vector<char> ${localName};\nv8::Handle<v8::Array> ${localName}Array(v8::Array::Cast(*args[0]));\nfor (int i = 0; i < ${localName}Array->Length(); i++) {\n  ${localName}.push_back(${localName}Array->Get(i)->ToInt32()->Value());\n}", "${localName}")  if ($type eq "byte[]");
-  return ("std::vector<short> ${localName};\nv8::Handle<v8::Array> ${localName}Array(v8::Array::Cast(*args[0]));\nfor (int i = 0; i < ${localName}Array->Length(); i++) {\n  ${localName}.push_back(${localName}Array->Get(i)->ToInt32()->Value());\n}", "${localName}")  if ($type eq "short[]");
-  return ("std::vector<unsigned short> ${localName};\nv8::Handle<v8::Array> ${localName}Array(v8::Array::Cast(*args[0]));\nfor (int i = 0; i < ${localName}Array->Length(); i++) {\n  ${localName}.push_back(${localName}Array->Get(i)->ToUint32()->Value());\n}", "${localName}")  if ($type eq "unsigned short[]");
-  return ("std::vector<unsigned long> ${localName};\nv8::Handle<v8::Array> ${localName}Array(v8::Array::Cast(*args[0]));\nfor (int i = 0; i < ${localName}Array->Length(); i++) {\n  ${localName}.push_back(${localName}Array->Get(i)->ToUint32()->Value());\n}", "${localName}")  if ($type eq "unsigned long[]");
-  return ("std::vector<unsigned char> ${localName};\nv8::Handle<v8::Array> ${localName}Array(v8::Array::Cast(*args[0]));\nfor (int i = 0; i < ${localName}Array->Length(); i++) {\n  ${localName}.push_back(${localName}Array->Get(i)->ToUint32()->Value());\n}", "${localName}")  if ($type eq "octet[]");
+  # return ("void* ${localName} = v8::External::Unwrap(${paramName}->ToObject()->GetInternalField(0));", ${localName}) if ($type eq "any");
+  return ("void* ${localName} = v8::Handle<v8::External>::Cast(${paramName}->ToObject()->GetInternalField(0))->Value();", ${localName}) if ($type eq "any");
+  return ("std::vector<long> ${localName};\nv8::Handle<v8::Array> ${localName}Array = v8::Array::New(isolate, v8::Array::Cast(*info[0])->Length());\nfor (int i = 0; i < ${localName}Array->Length(); i++) {\n  ${localName}.push_back(${localName}Array->Get(i)->ToInteger()->Value());\n}", "${localName}")  if ($type eq "long[]");
+  return ("std::vector<float> ${localName};\nv8::Handle<v8::Array> ${localName}Array = v8::Array::New(isolate, v8::Array::Cast(*info[0])->Length());\nfor (int i = 0; i < ${localName}Array->Length(); i++) {\n  ${localName}.push_back(${localName}Array->Get(i)->ToNumber()->Value());\n}", "${localName}")  if ($type eq "float[]");
+  return ("std::vector<double> ${localName};\nv8::Handle<v8::Array> ${localName}Array = v8::Array::New(isolate, v8::Array::Cast(*info[0])->Length());\nfor (int i = 0; i < ${localName}Array->Length(); i++) {\n  ${localName}.push_back(${localName}Array->Get(i)->ToNumber()->Value());\n}", "${localName}")  if ($type eq "double[]");
+  return ("std::vector<char> ${localName};\nv8::Handle<v8::Array> ${localName}Array = v8::Array::New(isolate, v8::Array::Cast(*info[0])->Length());\nfor (int i = 0; i < ${localName}Array->Length(); i++) {\n  ${localName}.push_back(${localName}Array->Get(i)->ToInt32()->Value());\n}", "${localName}")  if ($type eq "byte[]");
+  return ("std::vector<short> ${localName};\nv8::Handle<v8::Array> ${localName}Array = v8::Array::New(isolate, v8::Array::Cast(*info[0])->Length());\nfor (int i = 0; i < ${localName}Array->Length(); i++) {\n  ${localName}.push_back(${localName}Array->Get(i)->ToInt32()->Value());\n}", "${localName}")  if ($type eq "short[]");
+  return ("std::vector<unsigned short> ${localName};\nv8::Handle<v8::Array> ${localName}Array = v8::Array::New(isolate, v8::Array::Cast(*info[0])->Length());\nfor (int i = 0; i < ${localName}Array->Length(); i++) {\n  ${localName}.push_back(${localName}Array->Get(i)->ToUint32()->Value());\n}", "${localName}")  if ($type eq "unsigned short[]");
+  return ("std::vector<unsigned long> ${localName};\nv8::Handle<v8::Array> ${localName}Array = v8::Array::New(isolate, v8::Array::Cast(*info[0])->Length());\nfor (int i = 0; i < ${localName}Array->Length(); i++) {\n  ${localName}.push_back(${localName}Array->Get(i)->ToUint32()->Value());\n}", "${localName}")  if ($type eq "unsigned long[]");
+  return ("std::vector<unsigned char> ${localName};\nv8::Handle<v8::Array> ${localName}Array = v8::Array::New(isolate, v8::Array::Cast(*info[0])->Length());\nfor (int i = 0; i < ${localName}Array->Length(); i++) {\n  ${localName}.push_back(${localName}Array->Get(i)->ToUint32()->Value());\n}", "${localName}")  if ($type eq "octet[]");
   
   if (IsWrapperType($type)) {
     my $wrapperType = IdlToWrapperType($type);

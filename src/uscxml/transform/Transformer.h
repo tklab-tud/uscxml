@@ -52,7 +52,7 @@ public:
 	virtual ~Transformer() {};
 
 	operator bool() const {
-		return (_impl);
+		return !!_impl;
 	}
 	bool operator< (const Transformer& other) const     {
 		return _impl < other._impl;

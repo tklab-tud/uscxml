@@ -561,7 +561,7 @@ public:
 	virtual ~Interpreter() {};
 
 	operator bool() const {
-		return (_impl && _impl->_state != USCXML_DESTROYED);
+		return (!!_impl && _impl->_state != USCXML_DESTROYED);
 	}
 	bool operator< (const Interpreter& other) const     {
 		return _impl < other._impl;

@@ -75,7 +75,7 @@ bool ArrayBuffer::isView(void*) {
 }
 
 ArrayBuffer::operator bool() {
-	return _blob;
+	return !!_blob;
 }
 
 ArrayBuffer ArrayBufferView::getBuffer() {
