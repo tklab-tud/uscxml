@@ -191,8 +191,13 @@ protected:
 	void writeSpontaneousHandler(std::ostream & stream);
 	void writeInternalEventHandler(std::ostream & stream);
 	void writeErrorHandler(std::ostream& stream);
-
+        
+        // event generation
+	void writeExContentBlock(std::ostream & stream, std::string index, 
+            std::list< Arabica::DOM::Element<std::string> > commandSequence);
+        
 	Trie _eventTrie;
+        Arabica::XPath::NodeSet<std::string> _execContent;
 
 private:
 	std::string eventNameEscape(const std::string& eventName);

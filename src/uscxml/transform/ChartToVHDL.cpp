@@ -111,7 +111,7 @@ namespace uscxml {
         NodeSet<std::string> withEvent;
         withEvent.push_back(DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "raise", _scxml, true));
         withEvent.push_back(DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "send", _scxml, true));
-        withEvent.push_back(DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "transition", _scxml, true));
+        withEvent.push_back(DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "transition", _scxml, true)); // TODO was haben events da verloren???
 
         for (size_t i = 0; i < withEvent.size(); i++) {
             if (HAS_ATTR_CAST(withEvent[i], "event")) {
@@ -120,6 +120,20 @@ namespace uscxml {
                     _eventTrie.addWord(ATTR_CAST(withEvent[i], "event"));
             }
         }
+
+        std::set<std::string> elements;
+        elements.insert(_nsInfo.xmlNSPrefix + "raise");
+        //        elements.insert(_nsInfo.xmlNSPrefix + "if");
+        //        elements.insert(_nsInfo.xmlNSPrefix + "elseif");
+        //        elements.insert(_nsInfo.xmlNSPrefix + "else");
+        //        elements.insert(_nsInfo.xmlNSPrefix + "foreach");
+        //        elements.insert(_nsInfo.xmlNSPrefix + "log");
+        //        elements.insert(_nsInfo.xmlNSPrefix + "send");
+        //        elements.insert(_nsInfo.xmlNSPrefix + "assign");
+        //        elements.insert(_nsInfo.xmlNSPrefix + "script");
+        //        elements.insert(_nsInfo.xmlNSPrefix + "cancel");
+        _execContent = DOMUtils::inDocumentOrder(elements, _scxml);
+
     }
 
     void ChartToVHDL::writeTo(std::ostream& stream) {
@@ -128,6 +142,7 @@ namespace uscxml {
 
         //    checkDocument();
         findEvents();
+
 
         stream << "-- generated from " << _sourceURL.asString() << std::endl;
         stream << "-- run as " << std::endl;
@@ -153,7 +168,7 @@ namespace uscxml {
         stream << "  subtype state_type is std_logic_vector( ";
         stream << _states.size() - 1;
         stream << " downto 0);" << std::endl;
-        
+
         std::list<TrieNode*> eventNames = _eventTrie.getWordsWithPrefix("");
         stream << "  type event_type is ( ";
         seperator = "";
@@ -181,13 +196,16 @@ namespace uscxml {
 
         stream << "-- TESTBENCH" << std::endl;
         writeIncludes(stream);
-        stream << " " << std::endl;
+        stream << std::endl;
+
         stream << "-- empty entity" << std::endl;
         stream << "entity tb is" << std::endl;
         stream << "end entity tb;" << std::endl;
-        stream << " " << std::endl;
+        stream << std::endl;
+
         stream << "architecture bhv of tb is" << std::endl;
-        stream << " " << std::endl;
+        stream << std::endl;
+
         stream << "  -- Module declaration" << std::endl;
         stream << "  component micro_stepper is" << std::endl;
         stream << "    port (" << std::endl;
@@ -196,7 +214,7 @@ namespace uscxml {
         stream << "    rst_i  :in    std_logic;" << std::endl;
         stream << "    en   :in    std_logic;" << std::endl;
         stream << "    next_event_i    :in  event_type;" << std::endl;
-        stream << "    next_event_en_i :in  std_logic;" << std::endl;
+        stream << "    next_event_we_i :in  std_logic;" << std::endl;
         stream << "    --outputs" << std::endl;
         stream << "    error_o     :out std_logic;" << std::endl;
 
@@ -208,29 +226,34 @@ namespace uscxml {
         stream << "    completed_o :out std_logic" << std::endl;
         stream << "    );" << std::endl;
         stream << "  end component;" << std::endl;
-        stream << " " << std::endl;
+        stream << std::endl;
+
         stream << "  -- input" << std::endl;
         stream << "  signal clk   : std_logic := '0';" << std::endl;
         stream << "  signal reset : std_logic;" << std::endl;
-        stream << "  signal next_event_en_i : std_logic := '0';" << std::endl;
+        stream << "  signal next_event_we_i : std_logic := '0';" << std::endl;
         stream << "  signal next_event_i : event_type;" << std::endl;
-        stream << " " << std::endl;
+        stream << std::endl;
+
         stream << "  -- output" << std::endl;
         stream << "  signal error_o, completed_o : std_logic;" << std::endl;
-        stream << " " << std::endl;
+        stream << std::endl;
+
         stream << "begin" << std::endl;
         stream << "  clk   <= not clk  after 20 ns;  -- 25 MHz clock frequency" << std::endl;
         stream << "  reset <= '1', '0' after 100 ns; -- generates reset signal: --__" << std::endl;
-        stream << " " << std::endl;
+        stream << std::endl;
+
         stream << "  -- Module instantiation" << std::endl;
         stream << "  dut : micro_stepper" << std::endl;
         stream << "    port map (" << std::endl;
         stream << "      clk       => clk," << std::endl;
         stream << "      rst_i     => reset," << std::endl;
         stream << "      en     => '1'," << std::endl;
-        stream << " " << std::endl;
+        stream << std::endl;
+
         stream << "      next_event_i     => next_event_i," << std::endl;
-        stream << "      next_event_en_i => next_event_en_i," << std::endl;
+        stream << "      next_event_we_i => next_event_we_i," << std::endl;
         stream << "      error_o  => error_o," << std::endl;
 
         for (size_t i = 0; i < _states.size(); i++) {
@@ -240,10 +263,18 @@ namespace uscxml {
 
         stream << "      completed_o  => completed_o" << std::endl;
         stream << "      );" << std::endl;
-        stream << " " << std::endl;
+        stream << std::endl;
+
         stream << "end architecture;" << std::endl;
         stream << "-- END TESTBENCH" << std::endl;
 
+    }
+
+    void ChartToVHDL::writeExContentBlock(std::ostream & stream,
+            std::string index, std::list< Element<std::string> > commandSequence) {
+        // index should be [entry, transition, exit]_<index of state/transition>_<optional index for block>
+
+        // write clock blocks
     }
 
     void ChartToVHDL::writeEventController(std::ostream & stream) {
@@ -257,35 +288,79 @@ namespace uscxml {
         stream << "    clk  :in    std_logic;" << std::endl;
         stream << "    rst_i  :in    std_logic;" << std::endl;
         stream << "    en   :in    std_logic;" << std::endl;
-        stream << "    next_event_i    :in  event_type;" << std::endl;
-        stream << "    next_event_en_i :in  std_logic;" << std::endl;
         stream << "    --outputs" << std::endl;
-        stream << "    error_o     :out std_logic;" << std::endl;
+        stream << "    event_o    :out  event_type;" << std::endl;
+        stream << "    event_we_o :out  std_logic;" << std::endl;
 
         for (size_t i = 0; i < _states.size(); i++) {
             Element<std::string> state(_states[i]);
             stream << "    state_active_" << ATTR(state, "documentOrder") << "_o :out std_logic;" << std::endl;
+            //TODO if has ex content
+            stream << "    entry_set_" << ATTR(state, "documentOrder") << "_o :out std_logic;" << std::endl;
+            //TODO if has ex content
+            stream << "    exit_set_" << ATTR(state, "documentOrder") << "_o :out std_logic;" << std::endl;
+        }
+        
+        for (size_t i = 0; i < _transitions.size(); i++) {
+            Element<std::string> transition(_transitions[i]);
+            //TODO if has ex content
+            stream << "    transition_set_" << ATTR(transition, "postFixOrder") << "_o : std_logic;"
+                    << std::endl;
         }
 
-        stream << "    completed_o :out std_logic" << std::endl;
+        //TODO write interface lines (exit, entry, transition) for SUPPORTED executable content 
+
+        stream << "    done_o :out std_logic" << std::endl;
         stream << ");" << std::endl;
         stream << "end event_controller; " << std::endl;
 
-        stream << std::endl;
         stream << std::endl;
         stream << "architecture behavioral of event_controller is " << std::endl;
         stream << std::endl;
 
         // Add signals and components
+        stream << "signal rst : std_logic;" << std::endl;
+        stream << "signal event_bus : event_type;" << std::endl;
+        stream << "signal event_we  : std_logic;" << std::endl;
+        stream << "signal done  : std_logic;" << std::endl;
 
+        for (int i = 0; i < _execContent.size(); i++) {
+            stream << "signal done_" << toStr(i) << "_sig : std_logic;" << std::endl;
+            stream << "signal start_" << toStr(i) << "_sig : std_logic;" << std::endl;
+        }
         stream << std::endl;
+
         stream << "begin" << std::endl;
         stream << std::endl;
         // signal mapping
+        stream << "rst <= rst_i;" << std::endl;
+        stream << "event_o <= event_bus;" << std::endl;
+        stream << "event_we_o <= event_we;" << std::endl;
+        stream << "done_o <= done;" << std::endl;
 
         // architecture
 
+        stream << "ex_content_block : process (clk) " << std::endl;
+        stream << "begin" << std::endl;
+        stream << "  if rst = '1' then" << std::endl;
+        for (int i = 0; i < _execContent.size(); i++) {
+            stream << "    done_" << toStr(i) << "_sig <= '0';" << std::endl;
+        }
+        stream << "  elsif rising_edge(clk) then" << std::endl;
+        stream << "    ";
+        std::string seperator = "";
+        for (int i = 0; i < _execContent.size(); i++) {
+            Element<std::string> exContentTag(_execContent[i]);
+            stream << seperator << "if start_" << toStr(i) << "_sig = '1' then" << std::endl;
+            stream << "        event_bus <= hwe_"<< ATTR(exContentTag, "event") <<";" << std::endl;
+            stream << "      done_" << toStr(i) << "_sig <= '1';" << std::endl;
+            seperator = "    els";
+        }
+        stream << "    end if;" << std::endl;
+        stream << "  end if;" << std::endl;
+        stream << "end process;" << std::endl;
         stream << std::endl;
+
         stream << "end behavioral; " << std::endl;
         stream << "-- END Event Controller Logic" << std::endl;
     }
@@ -301,13 +376,24 @@ namespace uscxml {
         stream << "    rst_i  :in    std_logic;" << std::endl;
         stream << "    en   :in    std_logic;" << std::endl;
         stream << "    next_event_i    :in  event_type;" << std::endl;
-        stream << "    next_event_en_i :in  std_logic;" << std::endl;
+        stream << "    next_event_we_i :in  std_logic;" << std::endl;
         stream << "    --outputs" << std::endl;
         stream << "    error_o     :out std_logic;" << std::endl;
 
         for (size_t i = 0; i < _states.size(); i++) {
             Element<std::string> state(_states[i]);
             stream << "    state_active_" << ATTR(state, "documentOrder") << "_o :out std_logic;" << std::endl;
+            //TODO if has ex content
+            stream << "    entry_set_" << ATTR(state, "documentOrder") << "_o :out std_logic;" << std::endl;
+            //TODO if has ex content
+            stream << "    exit_set_" << ATTR(state, "documentOrder") << "_o :out std_logic;" << std::endl;
+        }
+        
+        for (size_t i = 0; i < _transitions.size(); i++) {
+            Element<std::string> transition(_transitions[i]);
+            //TODO if has ex content
+            stream << "    transition_set_" << ATTR(transition, "postFixOrder") << "_o : std_logic;"
+                    << std::endl;
         }
 
         stream << "    completed_o :out std_logic" << std::endl;
@@ -456,15 +542,15 @@ namespace uscxml {
         stream << "signal rst_2 : std_logic;" << std::endl;
         stream << "signal rst_1 : std_logic;" << std::endl;
         stream << "signal rst : std_logic;" << std::endl;
-        stream <<  std::endl;
-        
+        stream << std::endl;
+
         stream << "-- state signals" << std::endl;
 
         std::list<std::string> signalDecls;
-        
+
         for (size_t i = 0; i < _states.size(); i++) {
             Element<std::string> state(_states[i]);
-            
+
             signalDecls.push_back("signal state_active_" + ATTR(state, "documentOrder") + "_sig : std_logic;");
             signalDecls.push_back("signal state_next_" + ATTR(state, "documentOrder") + "_sig : std_logic;");
             signalDecls.push_back("signal in_entry_set_" + ATTR(state, "documentOrder") + "_sig : std_logic;");
@@ -480,7 +566,7 @@ namespace uscxml {
         }
         stream << std::endl;
 
-        
+
         stream << "-- transition signals" << std::endl;
         stream << "signal spontaneous_en : std_logic;" << std::endl;
         stream << "signal optimal_transition_set_combined_sig : std_logic;" << std::endl;
@@ -491,7 +577,7 @@ namespace uscxml {
                     << std::endl;
         }
         stream << std::endl;
-        
+
         stream << "-- event signals" << std::endl;
         stream << "signal int_event_write_en : std_logic;" << std::endl;
         stream << "signal int_event_read_en : std_logic;" << std::endl;
@@ -623,7 +709,7 @@ namespace uscxml {
 
         stream << "next_event_re <= not int_event_empty and not stall; " << std::endl;
         stream << "next_event <= int_event_output; " << std::endl;
-        stream << "int_event_write_en <= next_event_en_i; " << std::endl;
+        stream << "int_event_write_en <= next_event_we_i; " << std::endl;
         stream << "int_event_input <= next_event_i; " << std::endl;
         stream << "int_event_read_en <= not spontaneous_en and not stall; " << std::endl;
         stream << std::endl;
@@ -696,8 +782,6 @@ namespace uscxml {
 
         tree->print(stream);
         stream << ";" << std::endl;
-
-
     }
 
     void ChartToVHDL::writeExitSet(std::ostream & stream) {
@@ -946,14 +1030,14 @@ namespace uscxml {
             *tlf += VLINE("state_active_" + ATTR(final, "documentOrder") + "_sig");
 
         }
-        
+
         VBranch* tree = (VASSIGN,
-                         VLINE("completed_sig"),
-                         tlf);
-        
+                VLINE("completed_sig"),
+                tlf);
+
         tree->print(stream);
         stream << ";" << std::endl;
-        
+
         // tmp mapping for events
         stream << "stall <= not en or completed_sig or ( int_event_empty and not spontaneous_en ) ; " << std::endl;
         stream << std::endl;
@@ -965,8 +1049,24 @@ namespace uscxml {
             stream << "    state_active_" << ATTR(state, "documentOrder")
                     << "_o <= state_active_" << ATTR(state, "documentOrder")
                     << "_sig;" << std::endl;
+            // TODO if has ex content
+            stream << "    entry_set_" << ATTR(state, "documentOrder")
+                    << "_o <= in_exit_set_" << ATTR(state, "documentOrder")
+                    << "_sig;" << std::endl;
+            // TODO if has ex content
+            stream << "    exit_set_" << ATTR(state, "documentOrder")
+                    << "_o <= in_entry_set_" << ATTR(state, "documentOrder")
+                    << "_sig;" << std::endl;
         }
-
+        
+        for (size_t i = 0; i < _transitions.size(); i++) {
+            Element<std::string> transition(_transitions[i]);
+            //TODO if has ex content
+            stream << "    transition_set_" << ATTR(transition, "postFixOrder")
+                    << "_o <= in_optimal_transition_set" << ATTR(transition, "postFixOrder") //TODO I think optimal transition set is wrong ... ?
+                    << "_sig;" << std::endl;
+        }
+        
         stream << "completed_o <= completed_sig; " << std::endl;
         stream << "error_o <= reg_error_out; " << std::endl;
         stream << std::endl;
