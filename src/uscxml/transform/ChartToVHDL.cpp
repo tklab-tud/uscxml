@@ -288,28 +288,29 @@ namespace uscxml {
         stream << "    clk  :in    std_logic;" << std::endl;
         stream << "    rst_i  :in    std_logic;" << std::endl;
         stream << "    en   :in    std_logic;" << std::endl;
-        stream << "    --outputs" << std::endl;
-        stream << "    event_o    :out  event_type;" << std::endl;
-        stream << "    event_we_o :out  std_logic;" << std::endl;
 
         for (size_t i = 0; i < _states.size(); i++) {
             Element<std::string> state(_states[i]);
-            stream << "    state_active_" << ATTR(state, "documentOrder") << "_o :out std_logic;" << std::endl;
+            stream << "    state_active_" << ATTR(state, "documentOrder") 
+                    << "_i :in std_logic;" << std::endl;
             //TODO if has ex content
-            stream << "    entry_set_" << ATTR(state, "documentOrder") << "_o :out std_logic;" << std::endl;
+            stream << "    entry_set_" << ATTR(state, "documentOrder") 
+                    << "_i :in std_logic;" << std::endl;
             //TODO if has ex content
-            stream << "    exit_set_" << ATTR(state, "documentOrder") << "_o :out std_logic;" << std::endl;
+            stream << "    exit_set_" << ATTR(state, "documentOrder") 
+                    << "_i :in std_logic;" << std::endl;
         }
-        
+
         for (size_t i = 0; i < _transitions.size(); i++) {
             Element<std::string> transition(_transitions[i]);
             //TODO if has ex content
-            stream << "    transition_set_" << ATTR(transition, "postFixOrder") << "_o : std_logic;"
-                    << std::endl;
+            stream << "    transition_set_" << ATTR(transition, "postFixOrder")
+                    << "_i :in std_logic;" << std::endl;
         }
 
-        //TODO write interface lines (exit, entry, transition) for SUPPORTED executable content 
-
+        stream << "    --outputs" << std::endl;
+        stream << "    event_o    :out  event_type;" << std::endl;
+        stream << "    event_we_o :out  std_logic;" << std::endl;
         stream << "    done_o :out std_logic" << std::endl;
         stream << ");" << std::endl;
         stream << "end event_controller; " << std::endl;
@@ -352,7 +353,7 @@ namespace uscxml {
         for (int i = 0; i < _execContent.size(); i++) {
             Element<std::string> exContentTag(_execContent[i]);
             stream << seperator << "if start_" << toStr(i) << "_sig = '1' then" << std::endl;
-            stream << "        event_bus <= hwe_"<< ATTR(exContentTag, "event") <<";" << std::endl;
+            stream << "        event_bus <= hwe_" << ATTR(exContentTag, "event") << ";" << std::endl;
             stream << "      done_" << toStr(i) << "_sig <= '1';" << std::endl;
             seperator = "    els";
         }
@@ -388,11 +389,11 @@ namespace uscxml {
             //TODO if has ex content
             stream << "    exit_set_" << ATTR(state, "documentOrder") << "_o :out std_logic;" << std::endl;
         }
-        
+
         for (size_t i = 0; i < _transitions.size(); i++) {
             Element<std::string> transition(_transitions[i]);
             //TODO if has ex content
-            stream << "    transition_set_" << ATTR(transition, "postFixOrder") << "_o : std_logic;"
+            stream << "    transition_set_" << ATTR(transition, "postFixOrder") << "_o :out std_logic;"
                     << std::endl;
         }
 
@@ -1046,27 +1047,27 @@ namespace uscxml {
         stream << "-- interface signals" << std::endl;
         for (size_t i = 0; i < _states.size(); i++) {
             Element<std::string> state(_states[i]);
-            stream << "    state_active_" << ATTR(state, "documentOrder")
+            stream << "state_active_" << ATTR(state, "documentOrder")
                     << "_o <= state_active_" << ATTR(state, "documentOrder")
                     << "_sig;" << std::endl;
             // TODO if has ex content
-            stream << "    entry_set_" << ATTR(state, "documentOrder")
+            stream << "entry_set_" << ATTR(state, "documentOrder")
                     << "_o <= in_exit_set_" << ATTR(state, "documentOrder")
                     << "_sig;" << std::endl;
             // TODO if has ex content
-            stream << "    exit_set_" << ATTR(state, "documentOrder")
+            stream << "exit_set_" << ATTR(state, "documentOrder")
                     << "_o <= in_entry_set_" << ATTR(state, "documentOrder")
                     << "_sig;" << std::endl;
         }
-        
+
         for (size_t i = 0; i < _transitions.size(); i++) {
             Element<std::string> transition(_transitions[i]);
             //TODO if has ex content
-            stream << "    transition_set_" << ATTR(transition, "postFixOrder")
-                    << "_o <= in_optimal_transition_set" << ATTR(transition, "postFixOrder") //TODO I think optimal transition set is wrong ... ?
+            stream << "transition_set_" << ATTR(transition, "postFixOrder")
+                    << "_o <= in_optimal_transition_set_" << ATTR(transition, "postFixOrder") //TODO I think optimal transition set is wrong ... ?
                     << "_sig;" << std::endl;
         }
-        
+
         stream << "completed_o <= completed_sig; " << std::endl;
         stream << "error_o <= reg_error_out; " << std::endl;
         stream << std::endl;
