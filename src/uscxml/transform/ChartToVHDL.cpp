@@ -293,19 +293,24 @@ namespace uscxml {
             Element<std::string> state(_states[i]);
             stream << "    state_active_" << ATTR(state, "documentOrder")
                     << "_i :in std_logic;" << std::endl;
-            //TODO if has ex content
-            stream << "    entry_set_" << ATTR(state, "documentOrder")
-                    << "_i :in std_logic;" << std::endl;
-            //TODO if has ex content
-            stream << "    exit_set_" << ATTR(state, "documentOrder")
-                    << "_i :in std_logic;" << std::endl;
+
+            if (DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "onentry", state).size() > 0) {
+                stream << "    entry_set_" << ATTR(state, "documentOrder")
+                        << "_i :in std_logic;" << std::endl;
+            }
+
+            if (DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "onexit", state).size() > 0) {
+                stream << "    exit_set_" << ATTR(state, "documentOrder")
+                        << "_i :in std_logic;" << std::endl;
+            }
         }
 
         for (size_t i = 0; i < _transitions.size(); i++) {
             Element<std::string> transition(_transitions[i]);
-            //TODO if has ex content
-            stream << "    transition_set_" << ATTR(transition, "postFixOrder")
-                    << "_i :in std_logic;" << std::endl;
+            if (DOMUtils::filterChildType(Arabica::DOM::Node_base::ELEMENT_NODE, transition).size() > 0) {
+                stream << "    transition_set_" << ATTR(transition, "postFixOrder")
+                        << "_i :in std_logic;" << std::endl;
+            }
         }
 
         stream << "    --outputs" << std::endl;
@@ -355,13 +360,13 @@ namespace uscxml {
         stream << "  elsif rising_edge(clk) then" << std::endl;
         std::string seperator = "    ";
         for (int i = 0; i < _execContent.size(); i++) {
-            Element<std::string> exContentTag(_execContent[i]);
-            // TODO if raise
-            if (true) {
+            Element<std::string> exContentElem(_execContent[i]);
+
+            if (TAGNAME(_nsInfo.xmlNSPrefix + exContentElem) == "") {
                 stream << seperator << "if start_" << toStr(i) << "_sig = '1' "
                         << "and done_" << toStr(i) << "_sig = '0' then"
                         << std::endl;
-                stream << "        event_bus <= hwe_" << ATTR(exContentTag, "event")
+                stream << "        event_bus <= hwe_" << ATTR(exContentElem, "event")
                         << ";" << std::endl;
                 stream << "        done_" << toStr(i) << "_sig <= '1';" << std::endl;
                 seperator = "    els";
@@ -372,6 +377,7 @@ namespace uscxml {
         stream << "end process;" << std::endl;
         stream << std::endl;
 
+        
         // start signal generation
         if (_execContent.size() > 0) {
             stream << "start_0_sig <= "
@@ -379,10 +385,10 @@ namespace uscxml {
                     << ";" << std::endl;
         }
 
-        for (int i = 0; i < _execContent.size(); i++) {
+        for (size_t i = 0; i < _execContent.size(); i++) {
             // start lines
             stream << "start_" << toStr(i) << "_sig <= "
-                    << /* TODO find enable line and put here */ "'1' and "
+                    << getLineForExecContent(_execContent[i]) << " and "
                     << "(not done_" << toStr(i) << "_sig )";
             if (i != 0) { // if not first element
                 stream << " and seq_" << toStr(i) << "_sig";
@@ -391,12 +397,12 @@ namespace uscxml {
             
         }
         
-        for (int i = 1; i < _execContent.size(); i++) {
+        for (size_t i = 1; i < _execContent.size(); i++) {
             // seq lines
              stream << "seq_" << toStr(i) << "_sig <= "
                     << "done_"<< toStr(i) << "_sig or "
                     << "( not "
-                    << /* TODO find enable line and put here */ "'1' and "
+                    << getLineForExecContent(_execContent[i]) << " and "
                     << "seq_" << toStr(i-1) << "_sig )";
             stream << ";" << std::endl;
         }
@@ -406,6 +412,31 @@ namespace uscxml {
         stream << "-- END Event Controller Logic" << std::endl;
     }
 
+    std::string ChartToVHDL::getLineForExecContent(const Arabica::DOM::Node<std::string>& elem) {
+        Arabica::DOM::Node<std::string> ecBlock = elem;
+        while(ecBlock) {
+            if (ecBlock.getNodeType() == Arabica::DOM::Node_base::ELEMENT_NODE) {
+                std::string localName = LOCALNAME_CAST(ecBlock);
+                if (localName == _nsInfo.xmlNSPrefix + "transition") {
+                    return "transition_set_" + ATTR_CAST(ecBlock, "postFixOrder") + "_i";
+                }
+                
+                if (localName == _nsInfo.xmlNSPrefix + "onentry") {
+                    return "entry_set_" + ATTR_CAST(ecBlock.getParentNode(), "documentOrder") + "_i";
+                }
+
+                if (localName == _nsInfo.xmlNSPrefix + "onexit") {
+                    return "exit_set_" + ATTR_CAST(ecBlock.getParentNode(), "documentOrder") + "_i";
+                }
+
+            }
+            ecBlock = ecBlock.getParentNode();
+        }
+
+        return "";
+    }
+
+    
     void ChartToVHDL::writeMicroStepper(std::ostream & stream) {
         // create MicroStepper top level
         stream << "-- FSM Logic" << std::endl;
@@ -424,17 +455,22 @@ namespace uscxml {
         for (size_t i = 0; i < _states.size(); i++) {
             Element<std::string> state(_states[i]);
             stream << "    state_active_" << ATTR(state, "documentOrder") << "_o :out std_logic;" << std::endl;
-            //TODO if has ex content
-            stream << "    entry_set_" << ATTR(state, "documentOrder") << "_o :out std_logic;" << std::endl;
-            //TODO if has ex content
-            stream << "    exit_set_" << ATTR(state, "documentOrder") << "_o :out std_logic;" << std::endl;
+
+            if (DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "onentry", state).size() > 0) {
+                stream << "    entry_set_" << ATTR(state, "documentOrder") << "_o :out std_logic;" << std::endl;
+            }
+
+            if (DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "onexit", state).size() > 0) {
+                stream << "    exit_set_" << ATTR(state, "documentOrder") << "_o :out std_logic;" << std::endl;
+            }
         }
 
         for (size_t i = 0; i < _transitions.size(); i++) {
             Element<std::string> transition(_transitions[i]);
-            //TODO if has ex content
-            stream << "    transition_set_" << ATTR(transition, "postFixOrder") << "_o :out std_logic;"
-                    << std::endl;
+            if (DOMUtils::filterChildType(Arabica::DOM::Node_base::ELEMENT_NODE, transition).size() > 0) {
+                stream << "    transition_set_" << ATTR(transition, "postFixOrder") << "_o :out std_logic;"
+                        << std::endl;
+            }
         }
 
         stream << "    completed_o :out std_logic" << std::endl;
@@ -1090,22 +1126,26 @@ namespace uscxml {
             stream << "state_active_" << ATTR(state, "documentOrder")
                     << "_o <= state_active_" << ATTR(state, "documentOrder")
                     << "_sig;" << std::endl;
-            // TODO if has ex content
-            stream << "entry_set_" << ATTR(state, "documentOrder")
-                    << "_o <= in_exit_set_" << ATTR(state, "documentOrder")
-                    << "_sig;" << std::endl;
-            // TODO if has ex content
-            stream << "exit_set_" << ATTR(state, "documentOrder")
-                    << "_o <= in_entry_set_" << ATTR(state, "documentOrder")
-                    << "_sig;" << std::endl;
+            if (DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "onentry", state).size() > 0) {
+                stream << "entry_set_" << ATTR(state, "documentOrder")
+                        << "_o <= in_exit_set_" << ATTR(state, "documentOrder")
+                        << "_sig;" << std::endl;
+            }
+
+            if (DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "onexit", state).size() > 0) {
+                stream << "exit_set_" << ATTR(state, "documentOrder")
+                        << "_o <= in_entry_set_" << ATTR(state, "documentOrder")
+                        << "_sig;" << std::endl;
+            }
         }
 
         for (size_t i = 0; i < _transitions.size(); i++) {
             Element<std::string> transition(_transitions[i]);
-            //TODO if has ex content
-            stream << "transition_set_" << ATTR(transition, "postFixOrder")
-                    << "_o <= in_optimal_transition_set_" << ATTR(transition, "postFixOrder") //TODO I think optimal transition set is wrong ... ?
-                    << "_sig;" << std::endl;
+            if (DOMUtils::filterChildType(Arabica::DOM::Node_base::ELEMENT_NODE, transition).size() > 0) {
+                stream << "transition_set_" << ATTR(transition, "postFixOrder")
+                        << "_o <= in_optimal_transition_set_" << ATTR(transition, "postFixOrder")
+                        << "_sig;" << std::endl;
+            }
         }
 
         stream << "completed_o <= completed_sig; " << std::endl;

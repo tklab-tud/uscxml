@@ -197,11 +197,12 @@ protected:
             std::list< Arabica::DOM::Element<std::string> > commandSequence);
         
 	Trie _eventTrie;
-        Arabica::XPath::NodeSet<std::string> _execContent;
+    Arabica::XPath::NodeSet<std::string> _execContent;
 
 private:
 	std::string eventNameEscape(const std::string& eventName);
 
+    std::string getLineForExecContent(const Arabica::DOM::Node<std::string>& elem);
 
 };
 
