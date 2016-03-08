@@ -27,3 +27,5 @@ contrib/prebuilt/include/*
 /embedding/csharp/uSCXMLEmbedding/obj/
 
 /test/w3c/graphs/
+
+/.idea/*
