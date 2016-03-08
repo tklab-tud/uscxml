@@ -291,13 +291,13 @@ namespace uscxml {
 
         for (size_t i = 0; i < _states.size(); i++) {
             Element<std::string> state(_states[i]);
-            stream << "    state_active_" << ATTR(state, "documentOrder") 
+            stream << "    state_active_" << ATTR(state, "documentOrder")
                     << "_i :in std_logic;" << std::endl;
             //TODO if has ex content
-            stream << "    entry_set_" << ATTR(state, "documentOrder") 
+            stream << "    entry_set_" << ATTR(state, "documentOrder")
                     << "_i :in std_logic;" << std::endl;
             //TODO if has ex content
-            stream << "    exit_set_" << ATTR(state, "documentOrder") 
+            stream << "    exit_set_" << ATTR(state, "documentOrder")
                     << "_i :in std_logic;" << std::endl;
         }
 
@@ -329,6 +329,11 @@ namespace uscxml {
             stream << "signal done_" << toStr(i) << "_sig : std_logic;" << std::endl;
             stream << "signal start_" << toStr(i) << "_sig : std_logic;" << std::endl;
         }
+
+        stream << "-- sequence input line" << std::endl;
+        for (int i = 0; i < _execContent.size(); i++) {
+                stream << "signal seq_" << toStr(i) << "_sig : std_logic;" << std::endl;
+        }
         stream << std::endl;
 
         stream << "begin" << std::endl;
@@ -338,9 +343,9 @@ namespace uscxml {
         stream << "event_o <= event_bus;" << std::endl;
         stream << "event_we_o <= event_we;" << std::endl;
         stream << "done_o <= done;" << std::endl;
+        stream << std::endl;
 
-        // architecture
-
+        // sequential code operation
         stream << "ex_content_block : process (clk) " << std::endl;
         stream << "begin" << std::endl;
         stream << "  if rst = '1' then" << std::endl;
@@ -348,18 +353,53 @@ namespace uscxml {
             stream << "    done_" << toStr(i) << "_sig <= '0';" << std::endl;
         }
         stream << "  elsif rising_edge(clk) then" << std::endl;
-        stream << "    ";
-        std::string seperator = "";
+        std::string seperator = "    ";
         for (int i = 0; i < _execContent.size(); i++) {
             Element<std::string> exContentTag(_execContent[i]);
-            stream << seperator << "if start_" << toStr(i) << "_sig = '1' then" << std::endl;
-            stream << "        event_bus <= hwe_" << ATTR(exContentTag, "event") << ";" << std::endl;
-            stream << "      done_" << toStr(i) << "_sig <= '1';" << std::endl;
-            seperator = "    els";
+            // TODO if raise
+            if (true) {
+                stream << seperator << "if start_" << toStr(i) << "_sig = '1' "
+                        << "and done_" << toStr(i) << "_sig = '0' then"
+                        << std::endl;
+                stream << "        event_bus <= hwe_" << ATTR(exContentTag, "event")
+                        << ";" << std::endl;
+                stream << "        done_" << toStr(i) << "_sig <= '1';" << std::endl;
+                seperator = "    els";
+            }
         }
         stream << "    end if;" << std::endl;
         stream << "  end if;" << std::endl;
         stream << "end process;" << std::endl;
+        stream << std::endl;
+
+        // start signal generation
+        if (_execContent.size() > 0) {
+            stream << "start_0_sig <= "
+                    << /* TODO find enable line and put here */ "'1'"
+                    << ";" << std::endl;
+        }
+
+        for (int i = 0; i < _execContent.size(); i++) {
+            // start lines
+            stream << "start_" << toStr(i) << "_sig <= "
+                    << /* TODO find enable line and put here */ "'1' and "
+                    << "(not done_" << toStr(i) << "_sig )";
+            if (i != 0) { // if not first element
+                stream << " and seq_" << toStr(i) << "_sig";
+            }
+            stream << ";" << std::endl;
+            
+        }
+        
+        for (int i = 1; i < _execContent.size(); i++) {
+            // seq lines
+             stream << "seq_" << toStr(i) << "_sig <= "
+                    << "done_"<< toStr(i) << "_sig or "
+                    << "( not "
+                    << /* TODO find enable line and put here */ "'1' and "
+                    << "seq_" << toStr(i-1) << "_sig )";
+            stream << ";" << std::endl;
+        }
         stream << std::endl;
 
         stream << "end behavioral; " << std::endl;
