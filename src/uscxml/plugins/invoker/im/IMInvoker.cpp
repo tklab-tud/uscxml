@@ -21,6 +21,7 @@
 #include <glog/logging.h>
 #include "uscxml/UUID.h"
 #include "uscxml/dom/DOMUtils.h"
+#include "uscxml/dom/NameSpacingParser.h"
 #include <boost/algorithm/string.hpp>
 
 #include "uscxml/concurrency/DelayedEventQueue.h"
