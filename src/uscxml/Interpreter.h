@@ -46,6 +46,8 @@
 #include "uscxml/plugins/Invoker.h"
 #include "uscxml/plugins/ExecutableContent.h"
 
+#include "dom/DOMUtils.h"
+
 #ifndef TIME_BLOCK
 #	ifdef BUILD_PROFILING
 #		include "uscxml/concurrency/Timer.h"
@@ -402,6 +404,38 @@ public:
 
 	virtual void handleDOMEvent(Arabica::DOM::Events::Event<std::string>& event);
 
+  std::vector<std::string> getReachableTargets() {
+
+    std::vector<std::string> e;
+		tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
+    Arabica::XPath::NodeSet<std::string> possibleTransitions = DOMUtils::filterChildElements( "transition", _configuration, false);
+
+    for( size_t i = 0; i < possibleTransitions.size(); i++ ) {
+        Arabica::DOM::Node<std::string>         transitions = possibleTransitions[ i ];
+        Arabica::DOM::NamedNodeMap<std::string> attributes  = transitions.getAttributes();
+        Arabica::DOM::Node<std::string>         events      = attributes.getNamedItem("target");
+        e.push_back( std::string( events.getNodeValue() ) );
+    }
+    return e;
+
+  }
+
+  std::vector<std::string> getValidEvents() {
+
+    std::vector<std::string> e;
+		tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
+    Arabica::XPath::NodeSet<std::string> possibleTransitions = DOMUtils::filterChildElements( "transition", _configuration, false);
+
+    for( size_t i = 0; i < possibleTransitions.size(); i++ ) {
+        Arabica::DOM::Node<std::string>         transitions  = possibleTransitions[ i ];
+        Arabica::DOM::NamedNodeMap<std::string> attributes   = transitions.getAttributes();
+        Arabica::DOM::Node<std::string>         events       = attributes.getNamedItem("event");
+        e.push_back( std::string( events.getNodeValue() ) );
+    }
+    return e;
+
+  }
+
 protected:
 	static void run(void*); // static method for thread to run
 
@@ -588,6 +622,14 @@ public:
 #endif
 		return _impl->reset();
 	}
+
+  std::vector<std::string> getReachableTargets() {
+    return _impl->getReachableTargets();
+  }
+
+  std::vector<std::string> getValidEvents() {
+    return _impl->getValidEvents();
+  }
 
 	void start() {
 		return _impl->start();
@@ -806,6 +848,7 @@ public:
 #ifdef BUILD_PROFILING
 	Timer timer;
 #endif
+
 
 protected:
 
