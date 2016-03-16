@@ -420,7 +420,7 @@ public:
 
   }
 
-  std::vector<std::string> getValidEvents() {
+  std::vector<std::string> getEventDescriptors() {
 
     std::vector<std::string> e;
 		tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
@@ -627,8 +627,8 @@ public:
     return _impl->getReachableTargets();
   }
 
-  std::vector<std::string> getValidEvents() {
-    return _impl->getValidEvents();
+  std::vector<std::string> getEventDescriptors() {
+    return _impl->getEventDescriptors();
   }
 
 	void start() {
