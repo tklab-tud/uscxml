@@ -13,6 +13,7 @@ sim:/tb/dut/en
 add wave -noupdate -divider -height 20 Outputs
 add wave -position insertpoint  \
 sim:/tb/dut/state_active_*_o \
+sim:/tb/dut/*_set_*_o \
 sim:/tb/dut/completed_o 
 
 add wave -noupdate -divider -height 20 System
@@ -35,11 +36,16 @@ add wave -noupdate -divider -height 20 Transition_Set
 add wave -position insertpoint  \
 sim:/tb/dut/in_optimal_transition_set_*_sig 
 
-add wave -noupdate -divider -height 20 Event
-add wave -position insertpoint  \
-sim:/tb/dut/*event* 
+#add wave -noupdate -divider -height 20 Event_Interface
+#add wave -position insertpoint  \
+#sim:/tb/ec/*_i \
+#sim:/tb/ec/*_o
 
-add wave -noupdate -divider -height 20 ALL
+add wave -noupdate -divider -height 20 ALL_EventController
+add wave -position insertpoint  \
+sim:/tb/ec/*
+
+add wave -noupdate -divider -height 20 ALL_MicroStepper
 add wave -position insertpoint  \
 sim:/tb/dut/*
 
