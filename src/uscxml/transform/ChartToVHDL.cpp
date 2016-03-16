@@ -170,7 +170,7 @@ namespace uscxml {
         stream << " downto 0);" << std::endl;
 
         std::list<TrieNode*> eventNames = _eventTrie.getWordsWithPrefix("");
-        stream << "  type event_type is ( ";
+        stream << "  type event_type is ( hwe_null, ";
         seperator = "";
 
         for (std::list<TrieNode*>::iterator eventIter = eventNames.begin(); eventIter != eventNames.end(); eventIter++) {
@@ -206,6 +206,7 @@ namespace uscxml {
         stream << "architecture bhv of tb is" << std::endl;
         stream << std::endl;
 
+        // modules
         stream << "  -- Module declaration" << std::endl;
         stream << "  component micro_stepper is" << std::endl;
         stream << "    port (" << std::endl;
@@ -221,6 +222,22 @@ namespace uscxml {
         for (size_t i = 0; i < _states.size(); i++) {
             Element<std::string> state(_states[i]);
             stream << "    state_active_" << ATTR(state, "documentOrder") << "_o :out std_logic;" << std::endl;
+
+            if (DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "onentry", state).size() > 0) {
+                stream << "    entry_set_" << ATTR(state, "documentOrder") << "_o :out std_logic;" << std::endl;
+            }
+
+            if (DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "onexit", state).size() > 0) {
+                stream << "    exit_set_" << ATTR(state, "documentOrder") << "_o :out std_logic;" << std::endl;
+            }
+        }
+
+        for (size_t i = 0; i < _transitions.size(); i++) {
+            Element<std::string> transition(_transitions[i]);
+            if (DOMUtils::filterChildType(Arabica::DOM::Node_base::ELEMENT_NODE, transition).size() > 0) {
+                stream << "    transition_set_" << ATTR(transition, "postFixOrder") << "_o :out std_logic;"
+                        << std::endl;
+            }
         }
 
         stream << "    completed_o :out std_logic" << std::endl;
@@ -228,10 +245,49 @@ namespace uscxml {
         stream << "  end component;" << std::endl;
         stream << std::endl;
 
+        stream << "  component event_controller is" << std::endl;
+        stream << "  port(" << std::endl;
+        stream << "    --inputs" << std::endl;
+        stream << "    clk  :in    std_logic;" << std::endl;
+        stream << "    rst_i  :in    std_logic;" << std::endl;
+
+        for (size_t i = 0; i < _states.size(); i++) {
+            Element<std::string> state(_states[i]);
+            stream << "    state_active_" << ATTR(state, "documentOrder")
+                    << "_i :in std_logic;" << std::endl;
+
+            if (DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "onentry", state).size() > 0) {
+                stream << "    entry_set_" << ATTR(state, "documentOrder")
+                        << "_i :in std_logic;" << std::endl;
+            }
+
+            if (DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "onexit", state).size() > 0) {
+                stream << "    exit_set_" << ATTR(state, "documentOrder")
+                        << "_i :in std_logic;" << std::endl;
+            }
+        }
+
+        for (size_t i = 0; i < _transitions.size(); i++) {
+            Element<std::string> transition(_transitions[i]);
+            if (DOMUtils::filterChildType(Arabica::DOM::Node_base::ELEMENT_NODE, transition).size() > 0) {
+                stream << "    transition_set_" << ATTR(transition, "postFixOrder")
+                        << "_i :in std_logic;" << std::endl;
+            }
+        }
+        stream << "    --outputs" << std::endl;
+        stream << "    micro_stepper_en_o :out  std_logic;" << std::endl;
+        stream << "    event_o    :out  event_type;" << std::endl;
+        stream << "    event_we_o :out  std_logic" << std::endl;
+        //        stream << "    done_o :out std_logic" << std::endl;
+        stream << ");" << std::endl;
+        stream << "end component; " << std::endl;
+
+        // signals
         stream << "  -- input" << std::endl;
         stream << "  signal clk   : std_logic := '0';" << std::endl;
         stream << "  signal reset : std_logic;" << std::endl;
-        stream << "  signal next_event_we_i : std_logic := '0';" << std::endl;
+        stream << "  signal dut_enable : std_logic;" << std::endl;
+        stream << "  signal next_event_we_i : std_logic;" << std::endl;
         stream << "  signal next_event_i : event_type;" << std::endl;
         stream << std::endl;
 
@@ -239,6 +295,32 @@ namespace uscxml {
         stream << "  signal error_o, completed_o : std_logic;" << std::endl;
         stream << std::endl;
 
+        stream << "  -- wiring" << std::endl;
+        for (size_t i = 0; i < _states.size(); i++) {
+            Element<std::string> state(_states[i]);
+            stream << "  signal state_active_" << ATTR(state, "documentOrder")
+                    << "_sig : std_logic;" << std::endl;
+
+            if (DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "onentry", state).size() > 0) {
+                stream << "  signal entry_set_" << ATTR(state, "documentOrder")
+                        << "_sig : std_logic;" << std::endl;
+            }
+
+            if (DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "onexit", state).size() > 0) {
+                stream << "  signal exit_set_" << ATTR(state, "documentOrder")
+                        << "_sig : std_logic;" << std::endl;
+            }
+        }
+
+        for (size_t i = 0; i < _transitions.size(); i++) {
+            Element<std::string> transition(_transitions[i]);
+            if (DOMUtils::filterChildType(Arabica::DOM::Node_base::ELEMENT_NODE, transition).size() > 0) {
+                stream << "  signal transition_set_" << ATTR(transition, "postFixOrder")
+                        << "_sig : std_logic;" << std::endl;
+            }
+        }
+
+        // wiring
         stream << "begin" << std::endl;
         stream << "  clk   <= not clk  after 20 ns;  -- 25 MHz clock frequency" << std::endl;
         stream << "  reset <= '1', '0' after 100 ns; -- generates reset signal: --__" << std::endl;
@@ -249,7 +331,7 @@ namespace uscxml {
         stream << "    port map (" << std::endl;
         stream << "      clk       => clk," << std::endl;
         stream << "      rst_i     => reset," << std::endl;
-        stream << "      en     => '1'," << std::endl;
+        stream << "      en     => dut_enable," << std::endl;
         stream << std::endl;
 
         stream << "      next_event_i     => next_event_i," << std::endl;
@@ -258,10 +340,75 @@ namespace uscxml {
 
         for (size_t i = 0; i < _states.size(); i++) {
             Element<std::string> state(_states[i]);
-            stream << "      state_active_" << ATTR(state, "documentOrder") << "_o => open," << std::endl;
+            stream << "      state_active_" << ATTR(state, "documentOrder")
+                    << "_o => state_active_" << ATTR(state, "documentOrder")
+                    << "_sig," << std::endl;
+
+            if (DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "onentry", state).size() > 0) {
+                stream << "      entry_set_" << ATTR(state, "documentOrder")
+                        << "_o => entry_set_" << ATTR(state, "documentOrder")
+                        << "_sig," << std::endl;
+            }
+
+            if (DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "onexit", state).size() > 0) {
+                stream << "      exit_set_" << ATTR(state, "documentOrder")
+                        << "_o => exit_set_" << ATTR(state, "documentOrder")
+                        << "_sig," << std::endl;
+            }
+        }
+
+        for (size_t i = 0; i < _transitions.size(); i++) {
+            Element<std::string> transition(_transitions[i]);
+            if (DOMUtils::filterChildType(Arabica::DOM::Node_base::ELEMENT_NODE, transition).size() > 0) {
+                stream << "      transition_set_" << ATTR(transition, "postFixOrder")
+                        << "_o => transition_set_" << ATTR(transition, "postFixOrder")
+                        << "_sig," << std::endl;
+            }
         }
 
         stream << "      completed_o  => completed_o" << std::endl;
+        stream << "      );" << std::endl;
+        stream << std::endl;
+
+        stream << "  ec : event_controller" << std::endl;
+        stream << "    port map (" << std::endl;
+        stream << "      clk       => clk," << std::endl;
+        stream << "      rst_i     => reset," << std::endl;
+        stream << std::endl;
+
+        stream << "      event_o     => next_event_i," << std::endl;
+        stream << "      event_we_o => next_event_we_i," << std::endl;
+
+        for (size_t i = 0; i < _states.size(); i++) {
+            Element<std::string> state(_states[i]);
+            stream << "      state_active_" << ATTR(state, "documentOrder")
+                    << "_i => state_active_" << ATTR(state, "documentOrder")
+                    << "_sig," << std::endl;
+
+            if (DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "onentry", state).size() > 0) {
+                stream << "      entry_set_" << ATTR(state, "documentOrder")
+                        << "_i => entry_set_" << ATTR(state, "documentOrder")
+                        << "_sig," << std::endl;
+            }
+
+            if (DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "onexit", state).size() > 0) {
+                stream << "      exit_set_" << ATTR(state, "documentOrder")
+                        << "_i => exit_set_" << ATTR(state, "documentOrder")
+                        << "_sig," << std::endl;
+            }
+        }
+
+        for (size_t i = 0; i < _transitions.size(); i++) {
+            Element<std::string> transition(_transitions[i]);
+            if (DOMUtils::filterChildType(Arabica::DOM::Node_base::ELEMENT_NODE, transition).size() > 0) {
+                stream << "      transition_set_" << ATTR(transition, "postFixOrder")
+                        << "_o => transition_set_" << ATTR(transition, "postFixOrder")
+                        << "_sig," << std::endl;
+            }
+        }
+
+        stream << "      micro_stepper_en_o  => dut_enable" << std::endl;
+        //        stream << "      done_o  => open" << std::endl;
         stream << "      );" << std::endl;
         stream << std::endl;
 
@@ -287,7 +434,6 @@ namespace uscxml {
         stream << "    --inputs" << std::endl;
         stream << "    clk  :in    std_logic;" << std::endl;
         stream << "    rst_i  :in    std_logic;" << std::endl;
-        stream << "    en   :in    std_logic;" << std::endl;
 
         for (size_t i = 0; i < _states.size(); i++) {
             Element<std::string> state(_states[i]);
@@ -314,9 +460,9 @@ namespace uscxml {
         }
 
         stream << "    --outputs" << std::endl;
+        stream << "    micro_stepper_en_o :out  std_logic;" << std::endl;
         stream << "    event_o    :out  event_type;" << std::endl;
-        stream << "    event_we_o :out  std_logic;" << std::endl;
-        stream << "    done_o :out std_logic" << std::endl;
+        stream << "    event_we_o :out  std_logic" << std::endl;
         stream << ");" << std::endl;
         stream << "end event_controller; " << std::endl;
 
@@ -326,9 +472,11 @@ namespace uscxml {
 
         // Add signals and components
         stream << "signal rst : std_logic;" << std::endl;
+        stream << "signal micro_stepper_en : std_logic;" << std::endl;
+        stream << "signal cmpl_buf : std_logic;" << std::endl;
+        stream << "signal completed_sig : std_logic;" << std::endl;
         stream << "signal event_bus : event_type;" << std::endl;
         stream << "signal event_we  : std_logic;" << std::endl;
-        stream << "signal done  : std_logic;" << std::endl;
 
         for (int i = 0; i < _execContent.size(); i++) {
             stream << "signal done_" << toStr(i) << "_sig : std_logic;" << std::endl;
@@ -337,74 +485,135 @@ namespace uscxml {
 
         stream << "-- sequence input line" << std::endl;
         for (int i = 0; i < _execContent.size(); i++) {
-                stream << "signal seq_" << toStr(i) << "_sig : std_logic;" << std::endl;
+            stream << "signal seq_" << toStr(i) << "_sig : std_logic;" << std::endl;
         }
         stream << std::endl;
 
         stream << "begin" << std::endl;
         stream << std::endl;
-        // signal mapping
+        // system signal mapping
         stream << "rst <= rst_i;" << std::endl;
+        stream << "micro_stepper_en_o <= micro_stepper_en;" << std::endl;
         stream << "event_o <= event_bus;" << std::endl;
         stream << "event_we_o <= event_we;" << std::endl;
-        stream << "done_o <= done;" << std::endl;
         stream << std::endl;
 
+        // stall management
+        stream << "-- stalling microstepper" << std::endl;
+        //        stream << "ms_enable_manager : process (clk, rst) " << std::endl;
+        //        stream << "begin" << std::endl;
+        //        stream << "  if rst = '1' then" << std::endl;
+        //        stream << "    micro_stepper_en <= '1';" << std::endl;
+        //        stream << "  elsif rising_edge(clk) then" << std::endl;
+        //         stream << "    " << std::endl;
+        stream << "micro_stepper_en <= completed_sig or not ( '0' ";
+        for (size_t i = 0; i < _states.size(); i++) {
+            Element<std::string> state(_states[i]);
+
+            if (DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "onentry", state).size() > 0) {
+                stream << std::endl << "      or entry_set_" << ATTR(state, "documentOrder")
+                        << "_i";
+            }
+
+            if (DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "onexit", state).size() > 0) {
+                stream << std::endl << "      or exit_set_" << ATTR(state, "documentOrder")
+                        << "_i";
+            }
+        }
+        for (size_t i = 0; i < _transitions.size(); i++) {
+            Element<std::string> transition(_transitions[i]);
+            if (DOMUtils::filterChildType(Arabica::DOM::Node_base::ELEMENT_NODE, transition).size() > 0) {
+                stream << std::endl << "      or transition_set_" << ATTR(transition, "postFixOrder")
+                        << "_i";
+            }
+        }
+        stream << ");" << std::endl;
+        //        stream << "  end if;" << std::endl;
+        //        stream << "end process;" << std::endl;
+        stream << std::endl;
+
+        // write enable management
+        //        stream << "-- write enable for FIFO buffer" << std::endl;
+        //        stream << "event_we <= not rst and ('0'";
+        //        for (int i = 0; i < _execContent.size(); i++) {
+        //            stream << std::endl << "   or start_" << toStr(i) << "_sig";
+        //        }
+        //        stream << ");" << std::endl;
+        //        stream << std::endl;
+
         // sequential code operation
-        stream << "ex_content_block : process (clk) " << std::endl;
+        stream << "-- seq code block " << std::endl;
+        stream << "ex_content_block : process (clk, rst) " << std::endl;
         stream << "begin" << std::endl;
         stream << "  if rst = '1' then" << std::endl;
         for (int i = 0; i < _execContent.size(); i++) {
             stream << "    done_" << toStr(i) << "_sig <= '0';" << std::endl;
         }
+        stream << "    event_bus <= hwe_null;" << std::endl;
+        stream << "    event_we <= '0';" << std::endl;
+        stream << "    cmpl_buf <= '0';" << std::endl;
+        stream << "    completed_sig <= '0';" << std::endl;
         stream << "  elsif rising_edge(clk) then" << std::endl;
+
+        stream << "    if micro_stepper_en = '1' then" << std::endl;
+        stream << "      cmpl_buf <= '0' ;" << std::endl;
+        stream << "    else" << std::endl;
+        stream << "      cmpl_buf <= seq_" << toStr(_execContent.size() - 1)
+                << "_sig;" << std::endl;
+        stream << "    end if;" << std::endl;
+        stream << "    completed_sig <= cmpl_buf;" << std::endl << std::endl;
         std::string seperator = "    ";
         for (int i = 0; i < _execContent.size(); i++) {
             Element<std::string> exContentElem(_execContent[i]);
 
-            if (TAGNAME(_nsInfo.xmlNSPrefix + exContentElem) == "") {
-                stream << seperator << "if start_" << toStr(i) << "_sig = '1' "
-                        << "and done_" << toStr(i) << "_sig = '0' then"
+            //TODO if raise
+            if (TAGNAME(_nsInfo.xmlNSPrefix + exContentElem) == "raise") {
+                stream << seperator << "if start_" << toStr(i) << "_sig = '1' then"
                         << std::endl;
-                stream << "        event_bus <= hwe_" << ATTR(exContentElem, "event")
+                //TODO use escape
+                stream << "      event_bus <= hwe_" << ATTR(exContentElem, "event")
                         << ";" << std::endl;
-                stream << "        done_" << toStr(i) << "_sig <= '1';" << std::endl;
+                stream << "      done_" << toStr(i) << "_sig <= '1';" << std::endl;
+                stream << "      event_we <= '1';" << std::endl;
                 seperator = "    els";
             }
         }
+        stream << "    elsif micro_stepper_en = '1' then" << std::endl;
+        for (int i = 0; i < _execContent.size(); i++) {
+            Element<std::string> exContentElem(_execContent[i]);
+
+            //TODO if raise
+            if (TAGNAME(_nsInfo.xmlNSPrefix + exContentElem) == "raise") {
+                stream << "      done_" << toStr(i) << "_sig <= '0';" << std::endl;
+            }
+        }
+        stream << "      event_we <= '0';" << std::endl;
         stream << "    end if;" << std::endl;
         stream << "  end if;" << std::endl;
         stream << "end process;" << std::endl;
         stream << std::endl;
 
-        
-        // start signal generation
-        if (_execContent.size() > 0) {
-            stream << "start_0_sig <= "
-                    << /* TODO find enable line and put here */ "'1'"
-                    << ";" << std::endl;
-        }
-
         for (size_t i = 0; i < _execContent.size(); i++) {
             // start lines
             stream << "start_" << toStr(i) << "_sig <= "
                     << getLineForExecContent(_execContent[i]) << " and "
-                    << "(not done_" << toStr(i) << "_sig )";
+                    << "not done_" << toStr(i) << "_sig";
             if (i != 0) { // if not first element
                 stream << " and seq_" << toStr(i) << "_sig";
             }
             stream << ";" << std::endl;
-            
+
         }
-        
+
+        stream << "seq_0_sig <= '1';" << std::endl;
         for (size_t i = 1; i < _execContent.size(); i++) {
-            // seq lines
-             stream << "seq_" << toStr(i) << "_sig <= "
-                    << "done_"<< toStr(i) << "_sig or "
+            // seq lines (input if process i is in seqence now)
+            stream << "seq_" << toStr(i) << "_sig <= "
+                    << "done_" << toStr(i - 1) << "_sig or "
                     << "( not "
-                    << getLineForExecContent(_execContent[i]) << " and "
-                    << "seq_" << toStr(i-1) << "_sig )";
-            stream << ";" << std::endl;
+                    << getLineForExecContent(_execContent[i - 1]);
+            stream << " and seq_" << toStr(i - 1) << "_sig";
+            stream << " );" << std::endl;
         }
         stream << std::endl;
 
@@ -414,13 +623,13 @@ namespace uscxml {
 
     std::string ChartToVHDL::getLineForExecContent(const Arabica::DOM::Node<std::string>& elem) {
         Arabica::DOM::Node<std::string> ecBlock = elem;
-        while(ecBlock) {
+        while (ecBlock) {
             if (ecBlock.getNodeType() == Arabica::DOM::Node_base::ELEMENT_NODE) {
                 std::string localName = LOCALNAME_CAST(ecBlock);
                 if (localName == _nsInfo.xmlNSPrefix + "transition") {
                     return "transition_set_" + ATTR_CAST(ecBlock, "postFixOrder") + "_i";
                 }
-                
+
                 if (localName == _nsInfo.xmlNSPrefix + "onentry") {
                     return "entry_set_" + ATTR_CAST(ecBlock.getParentNode(), "documentOrder") + "_i";
                 }
@@ -436,7 +645,6 @@ namespace uscxml {
         return "";
     }
 
-    
     void ChartToVHDL::writeMicroStepper(std::ostream & stream) {
         // create MicroStepper top level
         stream << "-- FSM Logic" << std::endl;
@@ -616,8 +824,8 @@ namespace uscxml {
         stream << "-- system signals" << std::endl;
         stream << "signal stall : std_logic;" << std::endl;
         stream << "signal completed_sig : std_logic;" << std::endl;
-        stream << "signal rst_2 : std_logic;" << std::endl;
-        stream << "signal rst_1 : std_logic;" << std::endl;
+        //        stream << "signal rst_2 : std_logic;" << std::endl;
+        //        stream << "signal rst_1 : std_logic;" << std::endl;
         stream << "signal rst : std_logic;" << std::endl;
         stream << std::endl;
 
@@ -646,6 +854,7 @@ namespace uscxml {
 
         stream << "-- transition signals" << std::endl;
         stream << "signal spontaneous_en : std_logic;" << std::endl;
+        stream << "signal spontaneous_active : std_logic;" << std::endl;
         stream << "signal optimal_transition_set_combined_sig : std_logic;" << std::endl;
 
         for (size_t i = 0; i < _transitions.size(); i++) {
@@ -728,18 +937,19 @@ namespace uscxml {
 
     void ChartToVHDL::writeResetHandler(std::ostream & stream) {
         stream << "-- reset handler" << std::endl;
-        stream << "rst_proc: process(clk, rst_i)" << std::endl;
-        stream << "begin" << std::endl;
-        stream << "    if rst_i = '1' then" << std::endl;
-        stream << "        rst_2 <= '1';" << std::endl;
-        stream << "        rst_1 <= '1';" << std::endl;
-        stream << "        rst <= '1';" << std::endl;
-        stream << "    elsif (rising_edge(clk)) then" << std::endl;
-        stream << "        rst_2 <= rst_i;" << std::endl;
-        stream << "        rst_1 <= rst_i;" << std::endl;
-        stream << "        rst <= rst_1;" << std::endl;
-        stream << "    end if;" << std::endl;
-        stream << "end process;" << std::endl;
+        stream << "rst <= rst_i;" << std::endl;
+        //        stream << "rst_proc: process(clk, rst_i)" << std::endl;
+        //        stream << "begin" << std::endl;
+        //        stream << "    if rst_i = '1' then" << std::endl;
+        //        stream << "        rst_2 <= '1';" << std::endl;
+        //        stream << "        rst_1 <= '1';" << std::endl;
+        //        stream << "        rst <= '1';" << std::endl;
+        //        stream << "    elsif (rising_edge(clk)) then" << std::endl;
+        //        stream << "        rst_2 <= rst_i;" << std::endl;
+        //        stream << "        rst_1 <= rst_i;" << std::endl;
+        //        stream << "        rst <= rst_1;" << std::endl;
+        //        stream << "    end if;" << std::endl;
+        //        stream << "end process;" << std::endl;
         stream << std::endl;
     }
 
@@ -750,7 +960,7 @@ namespace uscxml {
         stream << "begin" << std::endl;
         stream << "    if rst = '1' then" << std::endl;
         stream << "        spontaneous_en <= '1';" << std::endl;
-        stream << "    elsif rising_edge(clk) then" << std::endl;
+        stream << "    elsif rising_edge(clk) and stall = '0' then" << std::endl;
         stream << "        if spontaneous_en = '1' then" << std::endl;
         stream << "            spontaneous_en <= optimal_transition_set_combined_sig;" << std::endl;
         stream << "        else" << std::endl;
@@ -777,9 +987,27 @@ namespace uscxml {
 
         stream << "        next_event_dequeued <= '0';" << std::endl;
 
-        stream << "    elsif rising_edge(clk) then" << std::endl;
-        //TODO
-
+        stream << "    elsif falling_edge(clk) then" << std::endl;
+        stream << "      case next_event is " << std::endl;
+        for (std::list<TrieNode*>::iterator eventIter = eventNames.begin(); eventIter != eventNames.end(); eventIter++) {
+            stream << "      when hwe_"
+                    << eventNameEscape((*eventIter)->value) << " =>" << std::endl;
+            for (std::list<TrieNode*>::iterator eventIter2 = eventNames.begin(); eventIter2 != eventNames.end(); eventIter2++) {
+                stream << "        event_" << eventNameEscape((*eventIter2)->value);
+                if (eventNameEscape((*eventIter)->value) == eventNameEscape((*eventIter2)->value)) {
+                    stream << "_sig <= '1';" << std::endl;
+                } else {
+                    stream << "_sig <= '0';" << std::endl;
+                }
+            }
+            stream << "        next_event_dequeued <= '1';" << std::endl;
+        }
+        stream << "      when others =>" << std::endl;
+        for (std::list<TrieNode*>::iterator eventIter = eventNames.begin(); eventIter != eventNames.end(); eventIter++) {
+            stream << "        event_" << eventNameEscape((*eventIter)->value) << "_sig <= '0';" << std::endl;
+        }
+        stream << "        next_event_dequeued <= '0';" << std::endl;
+        stream << "      end case;" << std::endl;
         stream << "    end if;" << std::endl;
         stream << "end process;" << std::endl;
         stream << std::endl;
@@ -788,7 +1016,7 @@ namespace uscxml {
         stream << "next_event <= int_event_output; " << std::endl;
         stream << "int_event_write_en <= next_event_we_i; " << std::endl;
         stream << "int_event_input <= next_event_i; " << std::endl;
-        stream << "int_event_read_en <= not spontaneous_en and not stall; " << std::endl;
+        stream << "int_event_read_en <= not stall; --not spontaneous_en and  " << std::endl;
         stream << std::endl;
     }
 
@@ -812,6 +1040,7 @@ namespace uscxml {
     void ChartToVHDL::writeOptimalTransitionSetSelection(std::ostream & stream) {
         stream << "-- optimal transition set selection" << std::endl;
         VContainer optimalTransitions = VOR;
+        VContainer spontaneoursActive = VOR;
         for (size_t i = 0; i < _transitions.size(); i++) {
             Element<std::string> transition(_transitions[i]);
             std::string conflicts = ATTR(transition, "conflictBools");
@@ -841,7 +1070,7 @@ namespace uscxml {
                     VLINE("in_optimal_transition_set_" + ATTR(transition, "postFixOrder") + "_sig"),
                     (VAND,
                     (HAS_ATTR(transition, "event")
-                    ? (VNOT, VLINE("spontaneous_en"))
+                    ? (VNOT, VLINE("spontaneous_active"))
                     : (VNOP, VLINE("spontaneous_en"))),
                     VLINE("state_active_" + ATTR(transition, "source") + "_sig"),
                     nameMatchers,
@@ -850,7 +1079,12 @@ namespace uscxml {
             tree->print(stream);
             stream << ";" << std::endl;
 
-            *optimalTransitions += VLINE("in_optimal_transition_set_" + ATTR(transition, "postFixOrder") + "_sig");
+            *optimalTransitions += VLINE("in_optimal_transition_set_"
+                    + ATTR(transition, "postFixOrder") + "_sig");
+            if (HAS_ATTR(transition, "event") == false) {
+                *spontaneoursActive += VLINE("in_optimal_transition_set_"
+                        + ATTR(transition, "postFixOrder") + "_sig");
+            }
         }
 
         VBranch* tree = (VASSIGN,
@@ -858,6 +1092,13 @@ namespace uscxml {
                 optimalTransitions);
 
         tree->print(stream);
+        stream << ";" << std::endl;
+
+        VBranch* tree2 = (VASSIGN,
+                VLINE("spontaneous_active"),
+                spontaneoursActive);
+
+        tree2->print(stream);
         stream << ";" << std::endl;
     }
 
@@ -1126,14 +1367,14 @@ namespace uscxml {
             stream << "state_active_" << ATTR(state, "documentOrder")
                     << "_o <= state_active_" << ATTR(state, "documentOrder")
                     << "_sig;" << std::endl;
-            if (DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "onentry", state).size() > 0) {
-                stream << "entry_set_" << ATTR(state, "documentOrder")
+            if (DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "onexit", state).size() > 0) {
+                stream << "exit_set_" << ATTR(state, "documentOrder")
                         << "_o <= in_exit_set_" << ATTR(state, "documentOrder")
                         << "_sig;" << std::endl;
             }
 
-            if (DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "onexit", state).size() > 0) {
-                stream << "exit_set_" << ATTR(state, "documentOrder")
+            if (DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "onentry", state).size() > 0) {
+                stream << "entry_set_" << ATTR(state, "documentOrder")
                         << "_o <= in_entry_set_" << ATTR(state, "documentOrder")
                         << "_sig;" << std::endl;
             }
