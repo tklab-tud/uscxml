@@ -986,8 +986,27 @@ namespace uscxml {
         }
 
         stream << "        next_event_dequeued <= '0';" << std::endl;
+        stream << "        event_consumed <= '0';" << std::endl;
 
-        stream << "    elsif falling_edge(clk) then" << std::endl;
+        stream << "    elsif falling_edge(clk) and stall = '0' then" << std::endl;
+        
+        VContainer eventConsumed = VOR;
+        for (size_t i = 0; i < _transitions.size(); i++) {
+            Element<std::string> transition(_transitions[i]);
+            
+            if (HAS_ATTR(transition, "event") == true) {
+                *eventConsumed += VLINE("in_optimal_transition_set_"
+                        + ATTR(transition, "postFixOrder") + "_sig");                
+            }
+        }
+                
+        VBranch* tree = (VASSIGN,
+                VLINE("event_consumed"),
+                eventConsumed);
+        tree->print(stream);
+        stream << ";" << std::endl;
+        
+        stream << "      if int_event_empty = '0' then " << std::endl;
         stream << "      case next_event is " << std::endl;
         for (std::list<TrieNode*>::iterator eventIter = eventNames.begin(); eventIter != eventNames.end(); eventIter++) {
             stream << "      when hwe_"
@@ -1008,6 +1027,13 @@ namespace uscxml {
         }
         stream << "        next_event_dequeued <= '0';" << std::endl;
         stream << "      end case;" << std::endl;
+        stream << "      elsif int_event_empty = '1' and event_consumed = '1' then" << std::endl;
+        
+        for (std::list<TrieNode*>::iterator eventIter = eventNames.begin(); eventIter != eventNames.end(); eventIter++) {
+            stream << "        event_" << eventNameEscape((*eventIter)->value) << "_sig <= '0';" << std::endl;
+        }
+        stream << "        next_event_dequeued <= '0';" << std::endl;
+        stream << "    end if;" << std::endl;
         stream << "    end if;" << std::endl;
         stream << "end process;" << std::endl;
         stream << std::endl;
@@ -1090,14 +1116,12 @@ namespace uscxml {
         VBranch* tree = (VASSIGN,
                 VLINE("optimal_transition_set_combined_sig"),
                 optimalTransitions);
-
         tree->print(stream);
         stream << ";" << std::endl;
 
         VBranch* tree2 = (VASSIGN,
                 VLINE("spontaneous_active"),
                 spontaneoursActive);
-
         tree2->print(stream);
         stream << ";" << std::endl;
     }
@@ -1202,15 +1226,15 @@ namespace uscxml {
             for (size_t j = 0; j < _transitions.size(); j++) {
                 Element<std::string> transition(_transitions[j]);
                 std::string targetSet = ATTR(transition, "targetBools");
-                if (targetSet[i] == '1') {
+                if (targetSet[i] == '1') {// <- ? TODO Was ist hier der vergleich?
                     *optimalEntrysetters += VLINE("in_optimal_transition_set_" + toStr(j) + "_sig");
                 }
             }
 
             VContainer completeEntrysetters = VOR;
-            if (isCompound(state)) {
+            if (isCompound(state)) { // <- true for scxml? TODO
                 for (size_t j = 0; j < _states.size(); j++) {
-                    if (children[j] != '1')
+                    if (children[j] != '1') // <- ? TODO Was ist hier der vergleich?
                         continue;
                     *completeEntrysetters += VLINE("in_complete_entry_set_up_" + toStr(j) + "_sig");
                 }
