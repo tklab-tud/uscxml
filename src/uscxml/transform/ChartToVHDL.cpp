@@ -128,7 +128,7 @@ namespace uscxml {
         //        elements.insert(_nsInfo.xmlNSPrefix + "else");
         //        elements.insert(_nsInfo.xmlNSPrefix + "foreach");
         //        elements.insert(_nsInfo.xmlNSPrefix + "log");
-                elements.insert(_nsInfo.xmlNSPrefix + "send");
+        elements.insert(_nsInfo.xmlNSPrefix + "send");
         //        elements.insert(_nsInfo.xmlNSPrefix + "assign");
         //        elements.insert(_nsInfo.xmlNSPrefix + "script");
         //        elements.insert(_nsInfo.xmlNSPrefix + "cancel");
@@ -990,23 +990,23 @@ namespace uscxml {
         stream << "        event_consumed <= '0';" << std::endl;
 
         stream << "    elsif falling_edge(clk) and stall = '0' then" << std::endl;
-        
+
         VContainer eventConsumed = VOR;
         for (size_t i = 0; i < _transitions.size(); i++) {
             Element<std::string> transition(_transitions[i]);
-            
+
             if (HAS_ATTR(transition, "event") == true) {
                 *eventConsumed += VLINE("in_optimal_transition_set_"
-                        + ATTR(transition, "postFixOrder") + "_sig");                
+                        + ATTR(transition, "postFixOrder") + "_sig");
             }
         }
-                
+
         VBranch* tree = (VASSIGN,
                 VLINE("event_consumed"),
                 eventConsumed);
         tree->print(stream);
         stream << ";" << std::endl;
-        
+
         stream << "      if int_event_empty = '0' then " << std::endl;
         stream << "      case next_event is " << std::endl;
         for (std::list<TrieNode*>::iterator eventIter = eventNames.begin(); eventIter != eventNames.end(); eventIter++) {
@@ -1029,7 +1029,7 @@ namespace uscxml {
         stream << "        next_event_dequeued <= '0';" << std::endl;
         stream << "      end case;" << std::endl;
         stream << "      elsif int_event_empty = '1' and event_consumed = '1' then" << std::endl;
-        
+
         for (std::list<TrieNode*>::iterator eventIter = eventNames.begin(); eventIter != eventNames.end(); eventIter++) {
             stream << "        event_" << eventNameEscape((*eventIter)->value) << "_sig <= '0';" << std::endl;
         }
@@ -1052,11 +1052,18 @@ namespace uscxml {
 
         for (size_t i = 0; i < _states.size(); i++) {
 
+            // TÖDO: is there a case where complete entry set reflects not the next state ?
             VBranch* tree = (VASSIGN,
+                    //                    VLINE("state_next_" + toStr(i) + "_sig"),
+                    //                    (VAND,
+                    //                    VLINE("in_complete_entry_set_" + toStr(i) + "_sig") ,
+                    //                    (VOR, VLINE("in_exit_set_" + toStr(i) + "_sig"), (VNOT, VLINE("state_active_" + toStr(i) + "_sig"))))
+                    //                    );
                     VLINE("state_next_" + toStr(i) + "_sig"),
-                    (VAND,
+                    (VOR,
                     VLINE("in_complete_entry_set_" + toStr(i) + "_sig"),
-                    (VOR, VLINE("in_exit_set_" + toStr(i) + "_sig"), (VNOT, VLINE("state_active_" + toStr(i) + "_sig")))));
+                    (VAND, (VNOT, VLINE("in_exit_set_" + toStr(i) + "_sig")), VLINE("state_active_" + toStr(i) + "_sig")))
+                    );
 
             tree->print(stream);
             stream << ";" << std::endl;
@@ -1175,7 +1182,6 @@ namespace uscxml {
 
     void ChartToVHDL::writeDefaultCompletions(std::ostream & stream) {
         stream << "-- default completion assignments" << std::endl;
-
         std::map<Element<std::string>, NodeSet<std::string> > completions;
         for (size_t i = 0; i < _states.size(); i++) {
             Element<std::string> state(_states[i]);
@@ -1184,7 +1190,13 @@ namespace uscxml {
             std::string completion = ATTR(state, "completionBools");
             for (size_t j = 0; j < _states.size(); j++) {
                 if (completion[j] == '1') {
-                    completions[Element<std::string>(_states[j])].push_back(state);
+                    //                    completions[Element<std::string>(_states[j])].push_back(state);
+                    completions[state].push_back(Element<std::string>(_states[j]));
+                    stream << "-- " << toStr(i) << " ("
+                            << ATTR(state, "id") << ") completed through "
+                            << toStr(j) << " ("
+                            << ATTR_CAST(_states[j], "id") << ")"
+                            << std::endl;
                 }
             }
         }
@@ -1198,7 +1210,8 @@ namespace uscxml {
             VContainer defaultCompleters = VOR;
 
             for (size_t i = 0; i < refs.size(); i++) {
-                *defaultCompleters += VLINE("in_complete_entry_set_" + toStr(i) + "_sig ");
+                *defaultCompleters += VLINE("in_complete_entry_set_" + 
+                        ATTR_CAST(refs[i],"documentOrder") + "_sig ");
             }
 
             VBranch* tree = (VASSIGN,
@@ -1233,7 +1246,8 @@ namespace uscxml {
             }
 
             VContainer completeEntrysetters = VOR;
-            if (isCompound(state)) { // <- true for scxml? TODO
+            stream << "--" << state.getNodeName() << std::endl; // for debugging
+            if (isCompound(state) || isParallel(state)) { // <- true for scxml? TODO
                 for (size_t j = 0; j < _states.size(); j++) {
                     if (children[j] != '1') // <- ? TODO Was ist hier der vergleich?
                         continue;
@@ -1243,8 +1257,8 @@ namespace uscxml {
 
             VBranch* tree = (VASSIGN,
                     VLINE("in_complete_entry_set_up_" + toStr(i) + "_sig"),
-                    optimalEntrysetters,
-                    completeEntrysetters);
+                    (VOR, optimalEntrysetters, completeEntrysetters)
+                    );
 
             tree->print(stream);
             stream << ";" << std::endl;
@@ -1285,7 +1299,10 @@ namespace uscxml {
             }
 
             VContainer tmp1 = VAND;
+            // if parent is compound
             if (isCompound(Element<std::string>(_states[strTo<size_t>(parent)]))) {
+                // TODO: if this state is the default completion of parent
+                // --> init attr. or if not present first in document order
                 *tmp1 += VLINE("default_completion_" + ATTR(state, "documentOrder") + "_sig");
 
                 for (size_t j = 0; j < _states.size(); j++) {
@@ -1302,6 +1319,7 @@ namespace uscxml {
 
             }
 
+            // if parent is parallel
             if (isParallel(Element<std::string>(_states[strTo<size_t>(parent)]))) {
                 *tmp1 += VLINE("in_complete_entry_set_" + toStr(parent) + "_sig");
             }
