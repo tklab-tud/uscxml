@@ -128,7 +128,7 @@ namespace uscxml {
         //        elements.insert(_nsInfo.xmlNSPrefix + "else");
         //        elements.insert(_nsInfo.xmlNSPrefix + "foreach");
         //        elements.insert(_nsInfo.xmlNSPrefix + "log");
-        //        elements.insert(_nsInfo.xmlNSPrefix + "send");
+                elements.insert(_nsInfo.xmlNSPrefix + "send");
         //        elements.insert(_nsInfo.xmlNSPrefix + "assign");
         //        elements.insert(_nsInfo.xmlNSPrefix + "script");
         //        elements.insert(_nsInfo.xmlNSPrefix + "cancel");
@@ -402,7 +402,7 @@ namespace uscxml {
             Element<std::string> transition(_transitions[i]);
             if (DOMUtils::filterChildType(Arabica::DOM::Node_base::ELEMENT_NODE, transition).size() > 0) {
                 stream << "      transition_set_" << ATTR(transition, "postFixOrder")
-                        << "_o => transition_set_" << ATTR(transition, "postFixOrder")
+                        << "_i => transition_set_" << ATTR(transition, "postFixOrder")
                         << "_sig," << std::endl;
             }
         }
@@ -567,7 +567,8 @@ namespace uscxml {
             Element<std::string> exContentElem(_execContent[i]);
 
             //TODO if raise
-            if (TAGNAME(_nsInfo.xmlNSPrefix + exContentElem) == "raise") {
+            if (TAGNAME(_nsInfo.xmlNSPrefix + exContentElem) == "raise" ||
+                    TAGNAME(_nsInfo.xmlNSPrefix + exContentElem) == "send") {
                 stream << seperator << "if start_" << toStr(i) << "_sig = '1' then"
                         << std::endl;
                 //TODO use escape
@@ -1293,7 +1294,7 @@ namespace uscxml {
                     *tmp1 += (VAND,
                             (VNOT,
                             (VAND,
-                            VLINE("state_active" + toStr(j) + "_sig"),
+                            VLINE("state_active_" + toStr(j) + "_sig"),
                             (VNOT,
                             VLINE("in_exit_set_" + toStr(j) + "_sig")))));
 
