@@ -1267,6 +1267,8 @@ namespace uscxml {
                     VLINE("in_complete_entry_set_up_" + toStr(i) + "_sig"),
                     (VOR, optimalEntrysetters, completeEntrysetters)
                     );
+                    (VOR, optimalEntrysetters, completeEntrysetters)
+                    );
 
             tree->print(stream);
             stream << ";" << std::endl;
