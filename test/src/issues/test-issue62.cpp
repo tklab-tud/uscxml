@@ -41,6 +41,11 @@ int main(int argc, char** argv) {
     std::string msg;
     
     uscxml::Interpreter scxml = uscxml::Interpreter(uscxml::Interpreter::fromXML(scxmlContent, ""));
+    std::list<InterpreterIssue> issues = scxml.validate();
+    for (std::list<InterpreterIssue>::iterator issueIter = issues.begin(); issueIter != issues.end(); issueIter++) {
+        std::cout << *issueIter;
+    }
+    
     scxml.addMonitor(new StateTransitionMonitor());
     
     uscxml::InterpreterState state;
@@ -54,11 +59,9 @@ int main(int argc, char** argv) {
     scxml.receive(Event("inside_invoke"));
 
     while(state != uscxml::USCXML_FINISHED) {
-
         do {
-            state = scxml.step();
+            state = scxml.step(true);
         } while(state > 0);
-        
     }
     
     std::cout << "************************************" << std::endl;

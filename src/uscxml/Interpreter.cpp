@@ -924,6 +924,10 @@ InterpreterState InterpreterImpl::step(int waitForMS) {
 				return _state;
 			}
 
+            if (_state == USCXML_FINISHED || _state == USCXML_DESTROYED) {
+                return _state;
+            }
+
 			setInterpreterState(USCXML_MACROSTEPPED);
 		}
 
