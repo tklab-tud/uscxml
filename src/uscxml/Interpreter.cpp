@@ -2516,7 +2516,7 @@ void InterpreterImpl::executeContent(const Arabica::DOM::Element<std::string>& c
 			}
 		}
 	} else if (iequals(TAGNAME(content), _nsInfo.xmlNSPrefix + "elseif")) {
-		LOG(ERROR) << "Found single elsif to evaluate!" << std::endl;
+		LOG(ERROR) << "Found single elseif to evaluate!" << std::endl;
 	} else if (iequals(TAGNAME(content), _nsInfo.xmlNSPrefix + "else")) {
 		LOG(ERROR) << "Found single else to evaluate!" << std::endl;
 	} else if (iequals(TAGNAME(content), _nsInfo.xmlNSPrefix + "foreach")) {

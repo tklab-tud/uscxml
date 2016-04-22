@@ -116,6 +116,7 @@
 #define USCXML_ERR_INVALID_TARGET    6
 #define USCXML_ERR_INVALID_TYPE      7
 #define USCXML_ERR_UNSUPPORTED       8
+#define USCXML_ERR_MACRO             9
 
 #define USCXML_TRANS_SPONTANEOUS      0x01
 #define USCXML_TRANS_TARGETLESS       0x02
@@ -368,11 +369,11 @@ struct uscxml_ctx {
 #endif
 
 /* forward declare machines to allow references */
-extern const uscxml_machine _uscxml_04E4C4CE_machine;
+extern const uscxml_machine _uscxml_C4473F72_machine;
 
 #ifndef USCXML_NO_ELEM_INFO
 
-static const uscxml_elem_donedata _uscxml_04E4C4CE_elem_donedatas[1] = {
+static const uscxml_elem_donedata _uscxml_C4473F72_elem_donedatas[1] = {
     /* source, content, contentexpr, params */
     { 0, NULL, NULL, NULL }
 };
@@ -385,73 +386,152 @@ static const uscxml_elem_donedata _uscxml_04E4C4CE_elem_donedatas[1] = {
 
 #ifndef USCXML_NO_EXEC_CONTENT
 
-static int _uscxml_04E4C4CE_foo_on_entry_0(const uscxml_ctx* ctx, const uscxml_state* state, const void* event) {
+static int _uscxml_C4473F72_scxml0_parallel0_on_entry_0(const uscxml_ctx* ctx, const uscxml_state* state, const void* event) {
     int err = USCXML_ERR_OK;
-
-			enteredFoo();
-		    return USCXML_ERR_OK;
-}
-
-static int _uscxml_04E4C4CE_foo_on_entry(const uscxml_ctx* ctx, const uscxml_state* state, const void* event) {
-    _uscxml_04E4C4CE_foo_on_entry_0(ctx, state, event);
+    if likely(ctx->exec_content_raise != NULL) {
+        if unlikely((ctx->exec_content_raise(ctx, "blueHigh")) != USCXML_ERR_OK) return err;
+    } else {
+        return USCXML_ERR_MISSING_CALLBACK;
+    }
     return USCXML_ERR_OK;
 }
 
-static int _uscxml_04E4C4CE_done_on_entry_0(const uscxml_ctx* ctx, const uscxml_state* state, const void* event) {
-    int err = USCXML_ERR_OK;
-
-            enteredDone();
-            return USCXML_ERR_OK;
-}
-
-static int _uscxml_04E4C4CE_done_on_entry(const uscxml_ctx* ctx, const uscxml_state* state, const void* event) {
-    _uscxml_04E4C4CE_done_on_entry_0(ctx, state, event);
+static int _uscxml_C4473F72_scxml0_parallel0_on_entry(const uscxml_ctx* ctx, const uscxml_state* state, const void* event) {
+    _uscxml_C4473F72_scxml0_parallel0_on_entry_0(ctx, state, event);
     return USCXML_ERR_OK;
 }
 
-static int _uscxml_04E4C4CE_foo_transition0_is_enabled(const uscxml_ctx* ctx, const uscxml_transition* transition) {
-    return (UD->foo == 3);
+static int _uscxml_C4473F72_IRLedOff_on_entry_0(const uscxml_ctx* ctx, const uscxml_state* state, const void* event) {
+    int err = USCXML_ERR_OK;
+ledOff();    return USCXML_ERR_OK;
 }
+
+static int _uscxml_C4473F72_IRLedOff_on_entry(const uscxml_ctx* ctx, const uscxml_state* state, const void* event) {
+    _uscxml_C4473F72_IRLedOff_on_entry_0(ctx, state, event);
+    return USCXML_ERR_OK;
+}
+
+static int _uscxml_C4473F72_IRLedOn_on_entry_0(const uscxml_ctx* ctx, const uscxml_state* state, const void* event) {
+    int err = USCXML_ERR_OK;
+ledOn();    return USCXML_ERR_OK;
+}
+
+static int _uscxml_C4473F72_IRLedOn_on_entry(const uscxml_ctx* ctx, const uscxml_state* state, const void* event) {
+    _uscxml_C4473F72_IRLedOn_on_entry_0(ctx, state, event);
+    return USCXML_ERR_OK;
+}
+
+static int _uscxml_C4473F72_interaction_transition0_on_trans(const uscxml_ctx* ctx, const uscxml_state* state, const void* event) {
+    int err = USCXML_ERR_OK;
+    if likely(ctx->exec_content_raise != NULL) {
+        if unlikely((ctx->exec_content_raise(ctx, "IROn")) != USCXML_ERR_OK) return err;
+    } else {
+        return USCXML_ERR_MISSING_CALLBACK;
+    }
+    if likely(ctx->exec_content_raise != NULL) {
+        if unlikely((ctx->exec_content_raise(ctx, "IROn")) != USCXML_ERR_OK) return err;
+    } else {
+        return USCXML_ERR_MISSING_CALLBACK;
+    }
+    if likely(ctx->exec_content_raise != NULL) {
+        if unlikely((ctx->exec_content_raise(ctx, "IROn")) != USCXML_ERR_OK) return err;
+    } else {
+        return USCXML_ERR_MISSING_CALLBACK;
+    }
+    if likely(ctx->exec_content_raise != NULL) {
+        if unlikely((ctx->exec_content_raise(ctx, "IROff")) != USCXML_ERR_OK) return err;
+    } else {
+        return USCXML_ERR_MISSING_CALLBACK;
+    }
+    if likely(ctx->exec_content_raise != NULL) {
+        if unlikely((ctx->exec_content_raise(ctx, "IROn")) != USCXML_ERR_OK) return err;
+    } else {
+        return USCXML_ERR_MISSING_CALLBACK;
+    }
+    if likely(ctx->exec_content_raise != NULL) {
+        if unlikely((ctx->exec_content_raise(ctx, "IROff")) != USCXML_ERR_OK) return err;
+    } else {
+        return USCXML_ERR_MISSING_CALLBACK;
+    }
+    return USCXML_ERR_OK;
+}
+
 #endif
 
 #ifndef USCXML_NO_ELEM_INFO
 
-static const uscxml_state _uscxml_04E4C4CE_states[3] = {
+static const uscxml_state _uscxml_C4473F72_states[6] = {
     {   /* state number 0 */
         /* name       */ NULL,
         /* parent     */ 0,
         /* onentry    */ NULL,
         /* onexit     */ NULL,
         /* invoke     */ NULL,
-        /* children   */ { 0x06 /* 011 */ },
-        /* completion */ { 0x02 /* 010 */ }, 	
-        /* ancestors  */ { 0x00 /* 000 */ },
+        /* children   */ { 0x02 /* 010000 */ },
+        /* completion */ { 0x02 /* 010000 */ }, 	
+        /* ancestors  */ { 0x00 /* 000000 */ },
         /* data       */ NULL,
         /* type       */ USCXML_STATE_COMPOUND,
     },
     {   /* state number 1 */
-        /* name       */ "foo",
+        /* name       */ "0a3ff41d-98e6-40fe-b147-cf397c12eb55",
         /* parent     */ 0,
-        /* onentry    */ _uscxml_04E4C4CE_foo_on_entry,
+        /* onentry    */ _uscxml_C4473F72_scxml0_parallel0_on_entry,
         /* onexit     */ NULL,
         /* invoke     */ NULL,
-        /* children   */ { 0x00 /* 000 */ },
-        /* completion */ { 0x00 /* 000 */ }, 	
-        /* ancestors  */ { 0x01 /* 100 */ },
+        /* children   */ { 0x0c /* 001100 */ },
+        /* completion */ { 0x0c /* 001100 */ }, 	
+        /* ancestors  */ { 0x01 /* 100000 */ },
+        /* data       */ NULL,
+        /* type       */ USCXML_STATE_PARALLEL,
+    },
+    {   /* state number 2 */
+        /* name       */ "interaction",
+        /* parent     */ 1,
+        /* onentry    */ NULL,
+        /* onexit     */ NULL,
+        /* invoke     */ NULL,
+        /* children   */ { 0x00 /* 000000 */ },
+        /* completion */ { 0x00 /* 000000 */ }, 	
+        /* ancestors  */ { 0x03 /* 110000 */ },
         /* data       */ NULL,
         /* type       */ USCXML_STATE_ATOMIC,
     },
-    {   /* state number 2 */
-        /* name       */ "done",
-        /* parent     */ 0,
-        /* onentry    */ _uscxml_04E4C4CE_done_on_entry,
+    {   /* state number 3 */
+        /* name       */ "periphery",
+        /* parent     */ 1,
+        /* onentry    */ NULL,
         /* onexit     */ NULL,
         /* invoke     */ NULL,
-        /* children   */ { 0x00 /* 000 */ },
-        /* completion */ { 0x00 /* 000 */ }, 	
-        /* ancestors  */ { 0x01 /* 100 */ },
+        /* children   */ { 0x30 /* 000011 */ },
+        /* completion */ { 0x10 /* 000010 */ }, 	
+        /* ancestors  */ { 0x03 /* 110000 */ },
         /* data       */ NULL,
-        /* type       */ USCXML_STATE_FINAL,
+        /* type       */ USCXML_STATE_COMPOUND,
+    },
+    {   /* state number 4 */
+        /* name       */ "IRLedOff",
+        /* parent     */ 3,
+        /* onentry    */ _uscxml_C4473F72_IRLedOff_on_entry,
+        /* onexit     */ NULL,
+        /* invoke     */ NULL,
+        /* children   */ { 0x00 /* 000000 */ },
+        /* completion */ { 0x00 /* 000000 */ }, 	
+        /* ancestors  */ { 0x0b /* 110100 */ },
+        /* data       */ NULL,
+        /* type       */ USCXML_STATE_ATOMIC,
+    },
+    {   /* state number 5 */
+        /* name       */ "IRLedOn",
+        /* parent     */ 3,
+        /* onentry    */ _uscxml_C4473F72_IRLedOn_on_entry,
+        /* onexit     */ NULL,
+        /* invoke     */ NULL,
+        /* children   */ { 0x00 /* 000000 */ },
+        /* completion */ { 0x00 /* 000000 */ }, 	
+        /* ancestors  */ { 0x0b /* 110100 */ },
+        /* data       */ NULL,
+        /* type       */ USCXML_STATE_ATOMIC,
     }
 };
 
@@ -459,19 +539,45 @@ static const uscxml_state _uscxml_04E4C4CE_states[3] = {
 
 #ifndef USCXML_NO_ELEM_INFO
 
-static const uscxml_transition _uscxml_04E4C4CE_transitions[1] = {
+static const uscxml_transition _uscxml_C4473F72_transitions[3] = {
     {   /* transition number 0 with priority 0
-           target: done
+           target: 
          */
-        /* source     */ 1,
-        /* target     */ { 0x04 /* 001 */ },
-        /* event      */ NULL,
-        /* condition  */ "UD->foo == 3",
-        /* is_enabled */ _uscxml_04E4C4CE_foo_transition0_is_enabled,
+        /* source     */ 2,
+        /* target     */ { NULL },
+        /* event      */ "blueHigh",
+        /* condition  */ NULL,
+        /* is_enabled */ NULL,
+        /* ontrans    */ _uscxml_C4473F72_interaction_transition0_on_trans,
+        /* type       */ USCXML_TRANS_TARGETLESS,
+        /* conflicts  */ { 0x01 /* 100 */ }, 
+        /* exit set   */ { 0x00 /* 000000 */ }
+    },
+    {   /* transition number 1 with priority 1
+           target: IRLedOn
+         */
+        /* source     */ 3,
+        /* target     */ { 0x20 /* 000001 */ },
+        /* event      */ "IROn",
+        /* condition  */ NULL,
+        /* is_enabled */ NULL,
         /* ontrans    */ NULL,
-        /* type       */ USCXML_TRANS_SPONTANEOUS,
-        /* conflicts  */ { 0x01 /* 1 */ }, 
-        /* exit set   */ { 0x06 /* 011 */ }
+        /* type       */ USCXML_TRANS_INTERNAL,
+        /* conflicts  */ { 0x06 /* 011 */ }, 
+        /* exit set   */ { 0x30 /* 000011 */ }
+    },
+    {   /* transition number 2 with priority 2
+           target: IRLedOff
+         */
+        /* source     */ 3,
+        /* target     */ { 0x10 /* 000010 */ },
+        /* event      */ "IROff",
+        /* condition  */ NULL,
+        /* is_enabled */ NULL,
+        /* ontrans    */ NULL,
+        /* type       */ USCXML_TRANS_INTERNAL,
+        /* conflicts  */ { 0x06 /* 011 */ }, 
+        /* exit set   */ { 0x30 /* 000011 */ }
     }
 };
 
@@ -480,22 +586,21 @@ static const uscxml_transition _uscxml_04E4C4CE_transitions[1] = {
 #ifndef USCXML_NO_ELEM_INFO
 
 #ifndef USCXML_MACHINE
-#  define USCXML_MACHINE _uscxml_04E4C4CE_machine
+#  define USCXML_MACHINE _uscxml_C4473F72_machine
 #endif
-#define USCXML_MACHINE_0 _uscxml_04E4C4CE_machine
-#define USCXML_MACHINE_TEST_INLINE _uscxml_04E4C4CE_machine
+#define USCXML_MACHINE_0 _uscxml_C4473F72_machine
 
-const uscxml_machine _uscxml_04E4C4CE_machine = {
+const uscxml_machine _uscxml_C4473F72_machine = {
         /* flags          */ 0,
-        /* nr_states      */ 3,
-        /* nr_transitions */ 1,
-        /* name           */ "test-inline",
-        /* datamodel      */ "native",
-        /* uuid           */ "04E4C4CEB25F6A7D5638FCE2C3213285",
-        /* states         */ &_uscxml_04E4C4CE_states[0], 
-        /* transitions    */ &_uscxml_04E4C4CE_transitions[0], 
+        /* nr_states      */ 6,
+        /* nr_transitions */ 3,
+        /* name           */ "",
+        /* datamodel      */ "null",
+        /* uuid           */ "C4473F72ECDBC2BBAE099A8F6849A804",
+        /* states         */ &_uscxml_C4473F72_states[0], 
+        /* transitions    */ &_uscxml_C4473F72_transitions[0], 
         /* parent         */ NULL,
-        /* donedata       */ &_uscxml_04E4C4CE_elem_donedatas[0], 
+        /* donedata       */ &_uscxml_C4473F72_elem_donedatas[0], 
         /* script         */ NULL
 };
 
@@ -659,6 +764,7 @@ int uscxml_step(uscxml_ctx* ctx) {
         goto ESTABLISH_ENTRY_SET;
     }
 
+DEQUEUE_EVENT:
     if (ctx->flags & USCXML_CTX_SPONTANEOUS) {
         ctx->event = NULL;
         goto SELECT_TRANSITIONS;
@@ -736,6 +842,7 @@ SELECT_TRANSITIONS:
         ctx->flags &= ~USCXML_CTX_TRANSITION_FOUND;
     } else {
         ctx->flags &= ~USCXML_CTX_SPONTANEOUS;
+        goto DEQUEUE_EVENT;
     }
 
 #ifdef USCXML_VERBOSE

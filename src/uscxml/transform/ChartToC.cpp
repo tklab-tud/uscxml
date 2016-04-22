@@ -57,6 +57,8 @@ ChartToC::ChartToC(const Interpreter& other) : TransformerImpl(), _topMostMachin
 	prepare();
 	findNestedMachines();
 
+//    std::cout << _scxml;
+    
 	if (_extensions.find("prefix") != _extensions.end()) {
 		_prefixes = new std::list<std::string>();
 		std::pair<std::multimap<std::string, std::string>::iterator,
@@ -251,7 +253,6 @@ void ChartToC::prepare() {
 	elements.insert(_nsInfo.xmlNSPrefix + "scxml");
 	elements.insert(_nsInfo.xmlNSPrefix + "state");
 	elements.insert(_nsInfo.xmlNSPrefix + "final");
-	elements.insert(_nsInfo.xmlNSPrefix + "parallel");
 	elements.insert(_nsInfo.xmlNSPrefix + "history");
 	elements.insert(_nsInfo.xmlNSPrefix + "initial");
 	elements.insert(_nsInfo.xmlNSPrefix + "parallel");
@@ -1972,7 +1973,7 @@ void ChartToC::writeTransitions(std::ostream& stream) {
 				stream << " /* " << ATTR(transition, "targetBools") << " */ }";
 
 			} else {
-				stream << "{ NULL }";
+				stream << "{ 0x00 }";
 			}
 			stream << "," << std::endl;
 
@@ -2179,7 +2180,8 @@ void ChartToC::writeFSM(std::ostream& stream) {
 	stream << "    }" << std::endl;
 	stream << std::endl;
 
-	stream << "    if (ctx->flags & USCXML_CTX_SPONTANEOUS) {" << std::endl;
+    stream << "DEQUEUE_EVENT:" << std::endl;
+    stream << "    if (ctx->flags & USCXML_CTX_SPONTANEOUS) {" << std::endl;
 	stream << "        ctx->event = NULL;" << std::endl;
 	stream << "        goto SELECT_TRANSITIONS;" << std::endl;
 	stream << "    }" << std::endl;
@@ -2261,7 +2263,7 @@ void ChartToC::writeFSM(std::ostream& stream) {
 	stream << "        ctx->flags &= ~USCXML_CTX_TRANSITION_FOUND;" << std::endl;
 	stream << "    } else {" << std::endl;
 	stream << "        ctx->flags &= ~USCXML_CTX_SPONTANEOUS;" << std::endl;
-//	stream << "        return USCXML_ERR_OK;" << std::endl;
+	stream << "        goto DEQUEUE_EVENT;" << std::endl;
 	stream << "    }" << std::endl;
 	stream << std::endl;
 

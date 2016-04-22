@@ -50,6 +50,8 @@ endif()
 
 USCXML_TEST_COMPILE(BUILD_ONLY NAME test-sockets LABEL general/test-sockets FILES src/test-sockets.cpp)
 
+USCXML_TEST_COMPILE(NAME test-issue62 LABEL general/test-issue64 FILES src/issues/test-issue62.cpp)
+
 USCXML_TEST_COMPILE(NAME test-url LABEL general/test-url FILES src/test-url.cpp)
 USCXML_TEST_COMPILE(NAME test-doneevent LABEL general/test-doneevent FILES src/test-doneevent.cpp)
 USCXML_TEST_COMPILE(NAME test-base64 LABEL general/test-base64 FILES src/test-base64.cpp)

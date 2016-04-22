@@ -74,10 +74,11 @@ endif()
 
 file(GLOB USCXML_CORE
   ${CMAKE_SOURCE_DIR}/contrib/src/jsmn/jsmn.c
-  ${CMAKE_SOURCE_DIR}/contrib/src/evws/*.c
+  ${CMAKE_SOURCE_DIR}/contrib/src/evws/evws.c
 	*.cpp
 	*.h
 )
+
 source_group("Interpreter" FILES ${USCXML_CORE})
 list (APPEND USCXML_FILES ${USCXML_CORE})
 
