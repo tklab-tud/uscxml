@@ -2718,6 +2718,18 @@ void InterpreterImpl::finalizeAndAutoForwardCurrentEvent() {
                             }
                         }
                     }
+                    
+                    Arabica::XPath::NodeSet<std::string> params = DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "param", invokeIter->second.getElement());
+                    for (size_t l = 0; l < params.size(); l++) {
+                        Element<std::string> paramElem = Element<std::string>(params[l]);
+                        if (HAS_ATTR(paramElem, "location") &&
+                            _currEvent.data.compound.find(ATTR(paramElem, "location")) != _currEvent.data.compound.end()) {
+                            std::string location = ATTR(paramElem, "location");
+                            _dataModel.assign(location, _currEvent.data.compound[location]);
+                        }
+                    }
+                    
+
                 }
 			}
 		}
