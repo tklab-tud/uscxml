@@ -924,9 +924,9 @@ InterpreterState InterpreterImpl::step(int waitForMS) {
 				return _state;
 			}
 
-            if (_state == USCXML_FINISHED || _state == USCXML_DESTROYED) {
-                return _state;
-            }
+			if (_state == USCXML_FINISHED || _state == USCXML_DESTROYED) {
+				return _state;
+			}
 
 			setInterpreterState(USCXML_MACROSTEPPED);
 		}
@@ -1472,7 +1472,9 @@ void InterpreterImpl::setupDOM() {
 		if (!stateElem.hasAttribute("id")) {
 			stateElem.setAttribute("id", UUID::getUUID());
 		}
-		_cachedStates[ATTR(stateElem, "id")] = stateElem;
+		// Issue 64 - we may not cache them as they may be in an embedded document
+		if (!isInEmbeddedDocument(stateElem))
+			_cachedStates[ATTR(stateElem, "id")] = stateElem;
 	}
 
 	// make sure every invoke has an idlocation or id - actually required!
@@ -2695,42 +2697,42 @@ void InterpreterImpl::finalizeAndAutoForwardCurrentEvent() {
 			Arabica::XPath::NodeSet<std::string> finalizes = DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "finalize", invokeIter->second.getElement());
 			for (size_t k = 0; k < finalizes.size(); k++) {
 				Element<std::string> finalizeElem = Element<std::string>(finalizes[k]);
-                
-                bool hasChildElems = false;
-                Node<std::string> child = finalizeElem.getFirstChild();
-                while(child) {
-                    if (child.getNodeType() == Node_base::ELEMENT_NODE) {
-                        hasChildElems = true;
-                        break;
-                    }
-                    child = child.getNextSibling();
-                }
-                
-                if (hasChildElems) {
-                    executeContent(finalizeElem);
-                } else {
-                    // Specification 6.5.2: http://www.w3.org/TR/scxml/#N110EF
-                    if (HAS_ATTR(invokeIter->second.getElement(), "namelist")) {
-                        std::list<std::string> names = tokenize(ATTR(invokeIter->second.getElement(), "namelist"));
-                        for (std::list<std::string>::iterator nameIter = names.begin(); nameIter != names.end(); nameIter++) {
-                            if (_currEvent.data.compound.find(*nameIter) != _currEvent.data.compound.end()) {
-                                _dataModel.assign(*nameIter, _currEvent.data.compound[*nameIter]);
-                            }
-                        }
-                    }
-                    
-                    Arabica::XPath::NodeSet<std::string> params = DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "param", invokeIter->second.getElement());
-                    for (size_t l = 0; l < params.size(); l++) {
-                        Element<std::string> paramElem = Element<std::string>(params[l]);
-                        if (HAS_ATTR(paramElem, "location") &&
-                            _currEvent.data.compound.find(ATTR(paramElem, "location")) != _currEvent.data.compound.end()) {
-                            std::string location = ATTR(paramElem, "location");
-                            _dataModel.assign(location, _currEvent.data.compound[location]);
-                        }
-                    }
-                    
 
-                }
+				bool hasChildElems = false;
+				Node<std::string> child = finalizeElem.getFirstChild();
+				while(child) {
+					if (child.getNodeType() == Node_base::ELEMENT_NODE) {
+						hasChildElems = true;
+						break;
+					}
+					child = child.getNextSibling();
+				}
+
+				if (hasChildElems) {
+					executeContent(finalizeElem);
+				} else {
+					// Specification 6.5.2: http://www.w3.org/TR/scxml/#N110EF
+					if (HAS_ATTR(invokeIter->second.getElement(), "namelist")) {
+						std::list<std::string> names = tokenize(ATTR(invokeIter->second.getElement(), "namelist"));
+						for (std::list<std::string>::iterator nameIter = names.begin(); nameIter != names.end(); nameIter++) {
+							if (_currEvent.data.compound.find(*nameIter) != _currEvent.data.compound.end()) {
+								_dataModel.assign(*nameIter, _currEvent.data.compound[*nameIter]);
+							}
+						}
+					}
+
+					Arabica::XPath::NodeSet<std::string> params = DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "param", invokeIter->second.getElement());
+					for (size_t l = 0; l < params.size(); l++) {
+						Element<std::string> paramElem = Element<std::string>(params[l]);
+						if (HAS_ATTR(paramElem, "location") &&
+						        _currEvent.data.compound.find(ATTR(paramElem, "location")) != _currEvent.data.compound.end()) {
+							std::string location = ATTR(paramElem, "location");
+							_dataModel.assign(location, _currEvent.data.compound[location]);
+						}
+					}
+
+
+				}
 			}
 		}
 		if (HAS_ATTR(invokeIter->second.getElement(), "autoforward") && stringIsTrue(ATTR(invokeIter->second.getElement(), "autoforward"))) {
@@ -2898,6 +2900,25 @@ Arabica::DOM::Element<std::string> InterpreterImpl::getState(const std::string& 
 		return _cachedStates[stateId];
 	}
 
+#if 0
+	std::list<Element<std::string> > stateStack;
+	stateStack.push_back(_scxml);
+
+
+	while(stateStack.size() > 0) {
+		Element<std::string> curr = stateStack.front();
+		stateStack.pop_front();
+
+		if (HAS_ATTR(curr, "id") && ATTR(curr, "id") == stateId) {
+			_cachedStates[stateId] = curr;
+			return curr;
+		}
+
+		Arabica::XPath::NodeSet<std::string> children = getChildStates(curr);
+		stateStack.insert(stateStack.end(), children.begin(), children.end());
+	}
+
+#else
 	// first try atomic and compound states
 	NodeSet<std::string> target = _xpath.evaluate("//" + _nsInfo.xpathPrefix + "state[@id='" + stateId + "']", _scxml).asNodeSet();
 	if (target.size() > 0)
@@ -2917,7 +2938,6 @@ Arabica::DOM::Element<std::string> InterpreterImpl::getState(const std::string& 
 	target = _xpath.evaluate("//" + _nsInfo.xpathPrefix + "history[@id='" + stateId + "']", _scxml).asNodeSet();
 	if (target.size() > 0)
 		goto FOUND;
-
 	{
 		ERROR_EXECUTION_THROW("No state with id '" + stateId + "' found");
 	}
@@ -2931,6 +2951,8 @@ FOUND:
 			}
 		}
 	}
+#endif
+
 	// return the empty node
 	return Arabica::DOM::Element<std::string>();
 }

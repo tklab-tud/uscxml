@@ -162,6 +162,9 @@ int main(int argc, char** argv) {
 					for (std::list<InterpreterIssue>::iterator issueIter = issues.begin(); issueIter != issues.end(); issueIter++) {
 						std::cout << *issueIter << std::endl;
 					}
+					if (issues.size() == 0) {
+						std::cout << "No issues found" << std::endl;
+					}
 
 				}
 

@@ -69,7 +69,7 @@ bool pluginConnect(pluma::Host& host) {
 } else if (iequals(LOCALNAME(childElem), tagName) && \
 	validChildren.find(tagName) != validChildren.end()) { \
 		procFunc(childElem);\
- 
+
 
 OSGInvoker::OSGInvoker() {
 }

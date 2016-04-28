@@ -58,7 +58,7 @@ ChartToC::ChartToC(const Interpreter& other) : TransformerImpl(), _topMostMachin
 	findNestedMachines();
 
 //    std::cout << _scxml;
-    
+
 	if (_extensions.find("prefix") != _extensions.end()) {
 		_prefixes = new std::list<std::string>();
 		std::pair<std::multimap<std::string, std::string>::iterator,
@@ -2180,8 +2180,8 @@ void ChartToC::writeFSM(std::ostream& stream) {
 	stream << "    }" << std::endl;
 	stream << std::endl;
 
-    stream << "DEQUEUE_EVENT:" << std::endl;
-    stream << "    if (ctx->flags & USCXML_CTX_SPONTANEOUS) {" << std::endl;
+	stream << "DEQUEUE_EVENT:" << std::endl;
+	stream << "    if (ctx->flags & USCXML_CTX_SPONTANEOUS) {" << std::endl;
 	stream << "        ctx->event = NULL;" << std::endl;
 	stream << "        goto SELECT_TRANSITIONS;" << std::endl;
 	stream << "    }" << std::endl;

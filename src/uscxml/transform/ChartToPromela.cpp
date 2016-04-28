@@ -110,7 +110,7 @@ for (std::set<int>::iterator transRefIter = transList->transitionRefs.begin(); \
         stream << padding << _prefix << "transitions[" << *transRefIter << "] = "#value"; " << std::endl; \
     } \
 } \
- 
+
 
 #define DUMP_STATS(disregardTime) \
 uint64_t now = tthread::chrono::system_clock::now(); \

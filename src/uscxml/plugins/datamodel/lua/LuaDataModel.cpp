@@ -267,11 +267,11 @@ void LuaDataModel::setEvent(const Event& event) {
 				ERROR_EXECUTION_THROW(e.what());
 			}
 		} else {
-            // some error events have a dom node attached - do not throw for them
-            // issue65
-            if (!nameMatch("error.*", event.name)) {
-                ERROR_EXECUTION_THROW("No DOM support in Lua datamodel");
-            }
+			// some error events have a dom node attached - do not throw for them
+			// issue65
+			if (!nameMatch("error.*", event.name)) {
+				ERROR_EXECUTION_THROW("No DOM support in Lua datamodel");
+			}
 		}
 	} else if (event.content.length() > 0) {
 		// _event.data is a string or JSON

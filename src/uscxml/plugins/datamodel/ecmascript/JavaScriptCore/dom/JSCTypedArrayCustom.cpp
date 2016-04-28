@@ -36,7 +36,7 @@ char* name##Buffer = new char[name##MaxSize];\
 JSStringGetUTF8CString(name, name##Buffer, name##MaxSize);\
 std::string stringName(name##Buffer);\
 free(name##Buffer);\
- 
+
 
 #define JSC_TYPED_ARRAY_GET_PROP_RETURN(type)\
 size_t propMaxSize = JSStringGetMaximumUTF8CStringSize(propertyName);\
@@ -129,7 +129,7 @@ unsigned long index = boost::lexical_cast<unsigned long>(propName);\
 if (array->getLength() > index)\
 	return true;\
 return false;\
- 
+
 namespace Arabica {
 namespace DOM {
 

@@ -41,10 +41,10 @@ extern "C" {
 catch (PlException plex) { \
 	ERROR_EXECUTION_THROW((char*)plex); \
 } \
- 
+
 #define PL_MODULE \
 _interpreter.getSessionId().c_str() \
- 
+
 #define SET_PL_ENGINE(dm) \
 assert(_swiEngines.find(dm) != _swiEngines.end()); \
 int rc = PL_set_engine(_swiEngines[dm], NULL); \

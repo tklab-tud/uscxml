@@ -644,7 +644,7 @@ static yyconst flex_int16_t yy_rule_linenum[46] = {
 #define YY_USER_INIT \
   yycolumn = yylloc->first_line = yylloc->first_column = 0; \
   yylineno = yylloc->last_line = yylloc->last_column = 0; \
- 
+
 //int yycolumn = 1;
 
 #define YY_USER_ACTION \

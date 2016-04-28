@@ -74,7 +74,7 @@ while (node) {\
 	}\
 	node = node.getNextSibling();\
 }\
- 
+
 
 namespace uscxml {
 

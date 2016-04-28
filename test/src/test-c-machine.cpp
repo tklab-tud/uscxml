@@ -591,8 +591,8 @@ public:
 			if (feInfo->currIteration < feInfo->iterations) {
 				USER_DATA(ctx)->dataModel.setForeach((foreach->item != NULL ? foreach->item : ""),
 				                                     (foreach->array != NULL ? foreach->array : ""),
-				                                     (foreach->index != NULL ? foreach->index : ""),
-				                                     feInfo->currIteration);
+					                                     (foreach->index != NULL ? foreach->index : ""),
+						                                     feInfo->currIteration);
 				feInfo->currIteration++;
 				return USCXML_ERR_OK;
 			}
