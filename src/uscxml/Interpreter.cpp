@@ -2695,7 +2695,30 @@ void InterpreterImpl::finalizeAndAutoForwardCurrentEvent() {
 			Arabica::XPath::NodeSet<std::string> finalizes = DOMUtils::filterChildElements(_nsInfo.xmlNSPrefix + "finalize", invokeIter->second.getElement());
 			for (size_t k = 0; k < finalizes.size(); k++) {
 				Element<std::string> finalizeElem = Element<std::string>(finalizes[k]);
-				executeContent(finalizeElem);
+                
+                bool hasChildElems = false;
+                Node<std::string> child = finalizeElem.getFirstChild();
+                while(child) {
+                    if (child.getNodeType() == Node_base::ELEMENT_NODE) {
+                        hasChildElems = true;
+                        break;
+                    }
+                    child = child.getNextSibling();
+                }
+                
+                if (hasChildElems) {
+                    executeContent(finalizeElem);
+                } else {
+                    // Specification 6.5.2: http://www.w3.org/TR/scxml/#N110EF
+                    if (HAS_ATTR(invokeIter->second.getElement(), "namelist")) {
+                        std::list<std::string> names = tokenize(ATTR(invokeIter->second.getElement(), "namelist"));
+                        for (std::list<std::string>::iterator nameIter = names.begin(); nameIter != names.end(); nameIter++) {
+                            if (_currEvent.data.compound.find(*nameIter) != _currEvent.data.compound.end()) {
+                                _dataModel.assign(*nameIter, _currEvent.data.compound[*nameIter]);
+                            }
+                        }
+                    }
+                }
 			}
 		}
 		if (HAS_ATTR(invokeIter->second.getElement(), "autoforward") && stringIsTrue(ATTR(invokeIter->second.getElement(), "autoforward"))) {
