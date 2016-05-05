@@ -2660,6 +2660,10 @@ void InterpreterImpl::executeContent(const Arabica::DOM::Element<std::string>& c
 				return;
 			}
 			_sendQueue->cancelEvent(sendId);
+            {
+                tthread::lock_guard<tthread::recursive_mutex> lock(_sendQueue->_mutex);
+                _sendIds.erase(sendId); // issue 68
+            }
 
 		}
 		CATCH_AND_DISTRIBUTE2("Syntax error while executing cancel element", content)
