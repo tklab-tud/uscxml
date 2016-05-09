@@ -70,7 +70,7 @@ catch (Event e) { \
 } catch (boost::bad_weak_ptr e) { \
 	LOG(ERROR) << "Unclean shutdown " << std::endl << std::endl; \
 } catch (...) { \
-	LOG(ERROR) << "An exception occured when calling " #callback " on monitors"; \
+	LOG(ERROR) << "An exception occurred when calling " #callback " on monitors"; \
 } \
 if (_state == USCXML_DESTROYED) { \
 	throw boost::bad_weak_ptr(); \
