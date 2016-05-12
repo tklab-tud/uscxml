@@ -233,6 +233,9 @@ void DOMUtils::inPostFixOrder(const std::set<std::string>& elements,
                               const bool includeEmbeddedDoc,
                               std::list<DOMElement*>& nodes) {
 
+    if (root == NULL)
+        return;
+
 	DOMNodeList* children = root->getChildNodes();
 	for (size_t i = 0; i < children->getLength(); i++) {
 		if (children->item(i)->getNodeType() != DOMNode::ELEMENT_NODE)
@@ -257,8 +260,8 @@ void DOMUtils::inPostFixOrder(const std::set<std::string>& elements,
 }
 
 std::list<DOMElement*> DOMUtils::inDocumentOrder(const std::set<std::string>& elements,
-        const DOMElement* root,
-        const bool includeEmbeddedDoc) {
+                                                 const DOMElement* root,
+                                                 const bool includeEmbeddedDoc) {
 	std::list<DOMElement*> nodes;
 	inDocumentOrder(elements, root, includeEmbeddedDoc, nodes);
 	return nodes;
@@ -268,7 +271,10 @@ void DOMUtils::inDocumentOrder(const std::set<std::string>& elements,
                                const DOMElement* root,
                                const bool includeEmbeddedDoc,
                                std::list<DOMElement*>& nodes) {
-	if (elements.find(TAGNAME(root)) != elements.end()) {
+    if (root == NULL)
+        return;
+    
+    if (elements.find(TAGNAME(root)) != elements.end()) {
 		nodes.push_back((DOMElement*)root);
 	}
 

@@ -68,10 +68,8 @@ ChartToC::ChartToC(const Interpreter& other) : TransformerImpl(other), _topMostM
 }
 
 void ChartToC::setHistoryCompletion() {
-	std::set<std::string> elements;
 
-	elements.insert(XML_PREFIX(_scxml).str() + "history");
-	std::list<DOMElement*> histories = DOMUtils::inPostFixOrder(elements, _scxml);
+    std::list<DOMElement*> histories = DOMUtils::inPostFixOrder({ XML_PREFIX(_scxml).str() + "history" }, _scxml);
 
 	std::list<DOMElement*> covered;
 	std::list<DOMElement*> perParentcovered;
@@ -247,15 +245,14 @@ void ChartToC::prepare() {
 	// make sure initial and history elements always precede propoer states
 	resortStates(_scxml);
 
-	std::set<std::string> elements;
-	elements.insert(XML_PREFIX(_scxml).str() + "scxml");
-	elements.insert(XML_PREFIX(_scxml).str() + "state");
-	elements.insert(XML_PREFIX(_scxml).str() + "final");
-	elements.insert(XML_PREFIX(_scxml).str() + "history");
-	elements.insert(XML_PREFIX(_scxml).str() + "initial");
-	elements.insert(XML_PREFIX(_scxml).str() + "parallel");
-
-	std::list<xercesc::DOMElement*> tmp = DOMUtils::inDocumentOrder(elements, _scxml);
+    std::list<xercesc::DOMElement*> tmp = DOMUtils::inDocumentOrder({
+        XML_PREFIX(_scxml).str() + "scxml",
+        XML_PREFIX(_scxml).str() + "state",
+        XML_PREFIX(_scxml).str() + "final",
+        XML_PREFIX(_scxml).str() + "history",
+        XML_PREFIX(_scxml).str() + "initial",
+        XML_PREFIX(_scxml).str() + "parallel"
+    }, _scxml);
 	_states.insert(_states.end(), tmp.begin(), tmp.end());
 
 	// set states' document order and parent attribute
@@ -300,9 +297,7 @@ void ChartToC::prepare() {
 
 
 	// set transitions' document order and source attribute
-	elements.clear();
-	elements.insert(XML_PREFIX(_scxml).str() + "transition");
-	tmp = DOMUtils::inDocumentOrder(elements, _scxml);
+    tmp = DOMUtils::inDocumentOrder({ XML_PREFIX(_scxml).str() + "transition" }, _scxml);
 	size_t index = 0;
 	for (auto transIter = tmp.begin(); transIter != tmp.end(); transIter++, index++) {
 		DOMElement* transition = *transIter;
@@ -314,7 +309,7 @@ void ChartToC::prepare() {
 	}
 
 	// set transitions' postfix order attribute
-	tmp = DOMUtils::inPostFixOrder(elements, _scxml);
+	tmp = DOMUtils::inPostFixOrder({ XML_PREFIX(_scxml).str() + "transition" }, _scxml);
 	_transitions.insert(_transitions.end(), tmp.begin(), tmp.end());
 
 	for (size_t i = 0; i < _transitions.size(); i++) {
@@ -1032,7 +1027,7 @@ void ChartToC::writeHelpers(std::ostream& stream) {
 void ChartToC::writeExecContentFinalize(std::ostream& stream) {
 
 	// needs to be written prior to invocation elem info
-	std::list<DOMElement*> finalizes = DOMUtils::inDocumentOrder(XML_PREFIX(_scxml).str() + "finalize", _scxml);
+    std::list<DOMElement*> finalizes = DOMUtils::inDocumentOrder({ XML_PREFIX(_scxml).str() + "finalize" }, _scxml);
 
 	if (finalizes.size() > 0) {
 		stream << "#ifndef USCXML_NO_EXEC_CONTENT" << std::endl;
@@ -1502,7 +1497,7 @@ void ChartToC::writeElementInfo(std::ostream& stream) {
 	stream << "#ifndef USCXML_NO_ELEM_INFO" << std::endl;
 	stream << std::endl;
 
-	std::list<DOMElement*> foreachs = DOMUtils::inDocumentOrder(XML_PREFIX(_scxml).str() + "foreach", _scxml);
+    std::list<DOMElement*> foreachs = DOMUtils::inDocumentOrder({ XML_PREFIX(_scxml).str() + "foreach" }, _scxml);
 	if (foreachs.size() > 0) {
 		_hasElement.insert("foreach");
 		stream << "static const uscxml_elem_foreach " << _prefix << "_elem_foreachs[" << foreachs.size() << "] = {" << std::endl;
@@ -1521,7 +1516,7 @@ void ChartToC::writeElementInfo(std::ostream& stream) {
 		stream << std::endl;
 	}
 
-	std::list<DOMElement*> assigns = DOMUtils::inDocumentOrder(XML_PREFIX(_scxml).str() + "assign", _scxml);
+    std::list<DOMElement*> assigns = DOMUtils::inDocumentOrder({ XML_PREFIX(_scxml).str() + "assign" }, _scxml);
 	if (assigns.size() > 0) {
 		_hasElement.insert("assign");
 		stream << "static const uscxml_elem_assign " << _prefix << "_elem_assigns[" << assigns.size() << "] = {" << std::endl;
@@ -1554,7 +1549,7 @@ void ChartToC::writeElementInfo(std::ostream& stream) {
 
 	}
 
-	std::list<DOMElement*> datas = DOMUtils::inDocumentOrder(XML_PREFIX(_scxml).str() + "data", _scxml);
+    std::list<DOMElement*> datas = DOMUtils::inDocumentOrder({ XML_PREFIX(_scxml).str() + "data" }, _scxml);
 	if (datas.size() > 0) {
 		_hasElement.insert("data");
 		size_t dataIndexOffset = 0;
@@ -1612,7 +1607,7 @@ void ChartToC::writeElementInfo(std::ostream& stream) {
 		stream << std::endl;
 	}
 
-	std::list<DOMElement*> params = DOMUtils::inDocumentOrder(XML_PREFIX(_scxml).str() + "param", _scxml);
+    std::list<DOMElement*> params = DOMUtils::inDocumentOrder({ XML_PREFIX(_scxml).str() + "param" }, _scxml);
 	if (params.size() > 0) {
 		_hasElement.insert("param");
 		DOMNode* parent = NULL;
@@ -1649,7 +1644,7 @@ void ChartToC::writeElementInfo(std::ostream& stream) {
 		stream << std::endl;
 	}
 
-	std::list<DOMElement*> sends = DOMUtils::inDocumentOrder(XML_PREFIX(_scxml).str() + "send", _scxml);
+    std::list<DOMElement*> sends = DOMUtils::inDocumentOrder({ XML_PREFIX(_scxml).str() + "send" }, _scxml);
 	if (sends.size() > 0) {
 		_hasElement.insert("send");
 		stream << "static const uscxml_elem_send " << _prefix << "_elem_sends[" << sends.size() << "] = {" << std::endl;
@@ -1713,7 +1708,7 @@ void ChartToC::writeElementInfo(std::ostream& stream) {
 		stream << std::endl;
 	}
 
-	std::list<DOMElement*> donedatas = DOMUtils::inDocumentOrder(XML_PREFIX(_scxml).str() + "donedata", _scxml);
+    std::list<DOMElement*> donedatas = DOMUtils::inDocumentOrder({ XML_PREFIX(_scxml).str() + "donedata" }, _scxml);
 	stream << "static const uscxml_elem_donedata " << _prefix << "_elem_donedatas[" << donedatas.size() + 1 << "] = {" << std::endl;
 	stream << "    /* source, content, contentexpr, params */" << std::endl;
 	size_t i = 0;
@@ -1975,9 +1970,7 @@ void ChartToC::writeTransitions(std::ostream& stream) {
 	stream << std::endl;
 
 	// cross reference transition by document order - is this really needed?!
-	std::set<std::string> elements;
-	elements.insert(XML_PREFIX(_scxml).str() + "transition");
-	std::list<DOMElement*> transDocOrder = DOMUtils::inDocumentOrder(elements, _scxml);
+    std::list<DOMElement*> transDocOrder = DOMUtils::inDocumentOrder({ XML_PREFIX(_scxml).str() + "transition" }, _scxml);
 
 	if (_transitions.size() > 0) {
 		stream << "static const uscxml_transition " << _prefix << "_transitions[" << toStr(_transitions.size()) << "] = {" << std::endl;

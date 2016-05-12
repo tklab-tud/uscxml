@@ -172,18 +172,17 @@ void MicroStepFast::init(xercesc::DOMElement* scxml) {
 
 	/** -- All things states -- */
 
-	std::set<std::string> elements;
-	elements.insert(_xmlPrefix.str() + "state");
-	elements.insert(_xmlPrefix.str() + "parallel");
-	elements.insert(_xmlPrefix.str() + "scxml");
-	elements.insert(_xmlPrefix.str() + "initial");
-	elements.insert(_xmlPrefix.str() + "final");
-	elements.insert(_xmlPrefix.str() + "history");
-
 	std::list<xercesc::DOMElement*> tmp;
 	size_t i, j;
 
-	tmp = DOMUtils::inDocumentOrder(elements, _scxml);
+    tmp = DOMUtils::inDocumentOrder({
+        _xmlPrefix.str() + "state",
+        _xmlPrefix.str() + "parallel",
+        _xmlPrefix.str() + "scxml",
+        _xmlPrefix.str() + "initial",
+        _xmlPrefix.str() + "final",
+        _xmlPrefix.str() + "history"}, _scxml);
+    
 	_states.resize(tmp.size());
 	_configuration.resize(tmp.size());
 	_history.resize(tmp.size());
@@ -308,7 +307,7 @@ void MicroStepFast::init(xercesc::DOMElement* scxml) {
 
 	/** -- All things transitions -- */
 
-	tmp = DOMUtils::inPostFixOrder(_xmlPrefix.str() + "transition", _scxml);
+    tmp = DOMUtils::inPostFixOrder({_xmlPrefix.str() + "transition"}, _scxml);
 	_transitions.resize(tmp.size());
 
 	for (i = 0; i < _transitions.size(); i++) {
@@ -319,10 +318,13 @@ void MicroStepFast::init(xercesc::DOMElement* scxml) {
 		_transitions[i]->target.resize(_states.size());
 		tmp.pop_front();
 	}
-
+    assert(tmp.size() == 0);
+    
 	for (i = 0; i < _transitions.size(); i++) {
 
 		// establish the transitions' exit set
+        assert(_transitions[i]->element != NULL);
+        std::cout << "i: " << i << std::endl << std::flush;
 		std::list<DOMElement*> exitList = getExitSet(_transitions[i]->element, _scxml);
 		for (j = 0; j < _states.size(); j++) {
 			if (!exitList.empty() && _states[j]->element == exitList.front()) {

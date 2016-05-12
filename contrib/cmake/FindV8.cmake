@@ -55,11 +55,11 @@ include(CheckCXXSourceCompiles)
 set(CMAKE_REQUIRED_INCLUDES ${V8_INCLUDE_DIR})
 set(CMAKE_REQUIRED_LIBRARIES ${V8_LIBRARY})
 check_cxx_source_compiles("
-	#include <v8>
-	int main(){ v8::Array::New(v8::Isolate::GetCurrent()); }
-" V8_VER_AFTER_032318)
+	#include <v8.h>
+	int main(){ v8::Local<v8::Value> foo = v8::Array::New(v8::Isolate::GetCurrent()); }
+" V8_VER_GREATER_032317)
 
-if (NOT V8_VER_AFTER_032318)
+if (NOT V8_VER_GREATER_032317)
 	message(STATUS "Your V8 installation is too old - we need >= 3.23.17")
 	unset(V8_LIBRARY)
 	unset(V8_INCLUDE_DIR)

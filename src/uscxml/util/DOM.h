@@ -75,26 +75,9 @@ public:
 	static std::list<xercesc::DOMNode*> getElementsByType(const xercesc::DOMNode* root,
 	        xercesc::DOMNode::NodeType type);
 
-	static std::list<xercesc::DOMElement*> inPostFixOrder(const std::string& element,
-	        const xercesc::DOMElement* root,
-	        const bool includeEmbeddedDoc = false) {
-		std::set<std::string> elements;
-		elements.insert(element);
-		return inPostFixOrder(elements, root, includeEmbeddedDoc);
-	}
-
 	static std::list<xercesc::DOMElement*> inPostFixOrder(const std::set<std::string>& elements,
 	        const xercesc::DOMElement* root,
 	        const bool includeEmbeddedDoc = false);
-
-
-	static std::list<xercesc::DOMElement*> inDocumentOrder(const std::string& element,
-	        const xercesc::DOMElement* root,
-	        const bool includeEmbeddedDoc = false) {
-		std::set<std::string> elements;
-		elements.insert(element);
-		return inDocumentOrder(elements, root, includeEmbeddedDoc);
-	}
 
 	static std::list<xercesc::DOMElement*> inDocumentOrder(const std::set<std::string>& elements,
 	        const xercesc::DOMElement* root,
