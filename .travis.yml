@@ -1,9 +1,21 @@
+sudo: false
 language: cpp
 compiler:
   - gcc
   - clang
+install:
+  - if [ "$CXX" = "g++" ]; then export CXX="g++-4.8" CC="gcc-4.8"; fi
+addons:
+  apt:
+    sources:
+    - ubuntu-toolchain-r-test
+    packages:
+    - gcc-4.8
+    - g++-4.8
+    - clang
+
 before_install:
- - sudo apt-get update -qq
- - sudo apt-get install -qq libxml2-dev libcurl4-openssl-dev 
+  - sudo apt-get update -qq
+  - sudo apt-get install -qq libxml2-dev libcurl4-openssl-dev 
  
 script: mkdir build && cd build && cmake .. && make
