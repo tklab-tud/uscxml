@@ -1,6 +1,6 @@
 # Major update!
 
-We deprecated the [old uscxml interperter](https://github.com/tklab-tud/uscxml/tree/legacy-1.0) and rewrote large parts with the lessons learned from the old version. The new implementation is not yet fully done and there is some functionality that has not (yet) made it to the new version.
+We deprecated the [old uscxml interpreter](https://github.com/tklab-tud/uscxml/tree/legacy-1.0) and rewrote large parts with the lessons learned from the old version. The new implementation is not yet fully done and there is some functionality that has not (yet) made it to the new version.
 
 I will update the documentation once I finished up on some polishing and remaining issues.
 
