@@ -47,9 +47,9 @@ static XMLCh* JS2XMLString(const v8::Local<v8::Value>& value) {
 	return(ret);
 }
 
-// javascript magic here
+// this is the version we support here
+#define SWIG_V8_VERSION 0x032317
 
-#define SWIG_V8_VERSION 0x034000
 #include "V8DOM.cpp.inc"
 
 namespace uscxml {

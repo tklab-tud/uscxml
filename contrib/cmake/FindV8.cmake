@@ -50,6 +50,21 @@ else()
 	endif()
 endif()
 
+# I have no idea how we would find the version otherwise :(
+include(CheckCXXSourceCompiles)
+set(CMAKE_REQUIRED_INCLUDES ${V8_INCLUDE_DIR})
+set(CMAKE_REQUIRED_LIBRARIES ${V8_LIBRARY})
+check_cxx_source_compiles("
+	#include <v8>
+	int main(){ v8::Array::New(v8::Isolate::GetCurrent()); }
+" V8_VER_AFTER_032318)
+
+if (NOT V8_VER_AFTER_032318)
+	message(STATUS "Your V8 installation is too old - we need >= 3.23.17")
+	unset(V8_LIBRARY)
+	unset(V8_INCLUDE_DIR)
+endif()
+
 INCLUDE(FindPackageHandleStandardArgs)
 FIND_PACKAGE_HANDLE_STANDARD_ARGS(V8 DEFAULT_MSG V8_LIBRARY V8_INCLUDE_DIR)
 MARK_AS_ADVANCED(V8_LIBRARY V8_INCLUDE_DIR)

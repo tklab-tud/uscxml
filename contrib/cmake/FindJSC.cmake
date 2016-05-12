@@ -1,6 +1,6 @@
 if (NOT APPLE)
-	FIND_PATH(JSC_INCLUDE_DIR JavaScriptCore/JavaScriptCore.h
-	  PATH_SUFFIXES webkitgtk-1.0 webkitgtk-3.0
+	FIND_PATH(JSC_INCLUDE_DIR JavaScriptCore/JSBase.h
+	  PATH_SUFFIXES webkitgtk-4.0 webkitgtk-3.0 webkitgtk-1.0
 	  PATHS
 	  /usr/local
 	  /usr
@@ -11,8 +11,11 @@ if (NOT APPLE)
 	)
 endif()
 
+FIND_PATH(HAS_JSC_JAVASCRIPTCORE_H JavaScriptCore/JavaScriptCore.h PATHS ${JSC_INCLUDE_DIR})
+FIND_PATH(HAS_JSC_JAVASCRIPT_H JavaScriptCore/JavaScript.h PATHS ${JSC_INCLUDE_DIR})
+
 FIND_LIBRARY(JSC_LIBRARY
-  NAMES JavaScriptCore javascriptcoregtk-1.0 javascriptcoregtk-3.0
+  NAMES JavaScriptCore javascriptcoregtk-4.0 javascriptcoregtk-3.0 javascriptcoregtk-1.0
 )
 
 INCLUDE(FindPackageHandleStandardArgs)

@@ -138,10 +138,10 @@ URL URLImpl::resolveWithCWD(URLImpl* relative) {
 	if (!getcwd(currPath, sizeof(currPath))) {
 		ERROR_PLATFORM_THROW("Cannot get current working directory");
 	}
-	currPath[sizeof(currPath) - 1] = '\0'; /* not really required */
+	currPath[sizeof(currPath) - 1] = '\0'; /* not really required? */
 
-
-	std::shared_ptr<URLImpl> cwdURL(new URLImpl(std::string("file://") + currPath));
+    // without the trailing slash, last component is assumed a file
+	std::shared_ptr<URLImpl> cwdURL(new URLImpl(std::string("file://") + currPath + PATH_SEPERATOR));
 
 	return resolve(relative, cwdURL.get());
 }

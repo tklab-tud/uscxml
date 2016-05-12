@@ -20,10 +20,22 @@
 #ifndef JSCDATAMODEL_H_KN8TWG0V
 #define JSCDATAMODEL_H_KN8TWG0V
 
+#include "uscxml/config.h"
 #include "uscxml/plugins/DataModel.h"
 #include <list>
 #include <set>
+
+/**
+ * There are two variants with JavaScriptCore headers
+ * Still beats the >20 V8 variants =D
+ */
+#if defined(HAS_JSC_JAVASCRIPTCORE_H)
 #include <JavaScriptCore/JavaScriptCore.h>
+#elif defined(HAS_JSC_JAVASCRIPT_H)
+#include <JavaScriptCore/JavaScript.h>
+#else
+#error "Did not find header for JSC?"
+#endif
 
 #ifdef BUILD_AS_PLUGINS
 #include "uscxml/plugins/Plugins.h"

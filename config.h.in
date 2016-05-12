@@ -72,6 +72,8 @@
 #cmakedefine MILES_FOUND
 #cmakedefine V8_FOUND
 #cmakedefine JSC_FOUND
+#cmakedefine HAS_JSC_JAVASCRIPTCORE_H
+#cmakedefine HAS_JSC_JAVASCRIPT_H
 #cmakedefine LIBICAL_FOUND
 #cmakedefine SWI_FOUND
 #cmakedefine FFMPEG_FOUND
