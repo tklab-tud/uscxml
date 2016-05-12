@@ -1,46 +1,54 @@
-<?xml version="1.0" standalone="no"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <!-- test that none of the system variables can be modified -->
-<scxml xmlns="http://www.w3.org/2005/07/scxml" initial="s0" version="1.0" name="machineName" datamodel="lua">
+<scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" initial="s0" version="1.0" datamodel="lua" name="machineName">
   <datamodel>
-    <data id="testvar1"/>
-    <data id="testvar2"/>
-    <data id="testvar3"/>
-    <data id="testvar4"/>
+    <data id="Var1"/>
+    <data id="Var2"/>
+    <data id="Var3"/>
+    <data id="Var4"/>
   </datamodel>
   <state id="s0">
     <onentry>
       <!-- get _event bound so we can use it in s1-->
       <raise event="foo"/>
-      <assign expr="_sessionid" location="testvar1"/>
-      <assign expr="-1" location="_sessionid"/>
+      <assign location="Var1" expr="_sessionid"/>
+      <assign location="_sessionid" expr="27"/>
     </onentry>
-    <transition event="foo" target="s1" cond="testvar1 == _sessionid"/>
+    <transition event="foo" cond="Var1==_sessionid" target="s1"/>
     <transition event="*" target="fail"/>
   </state>
   <state id="s1">
     <onentry>
-      <assign expr="_event" location="testvar2"/>
-      <assign expr="27" location="_event"/>
+      <assign location="Var2" expr="_event"/>
+      <assign location="_event" expr="27"/>
     </onentry>
-    <transition target="s2" cond="testvar2 == _event"/>
+    <transition cond="Var2==_event" target="s2"/>
     <transition target="fail"/>
   </state>
   <state id="s2">
     <onentry>
-      <assign expr="_name" location="testvar3"/>
-      <assign expr="27" location="_name"/>
+      <assign location="Var3" expr="_name"/>
+      <assign location="_name" expr="27"/>
     </onentry>
-    <transition target="s3" cond="testvar3 == _name"/>
+    <transition cond="Var3==_name" target="s3"/>
     <transition target="fail"/>
   </state>
   <state id="s3">
     <onentry>
-      <assign expr="_ioprocessors" location="testvar4"/>
-      <assign expr="27" location="_ioprocessors"/>
+      <assign location="Var4" expr="_ioprocessors"/>
+      <assign location="_ioprocessors" expr="27"/>
     </onentry>
-    <transition cond="testvar4 == _ioprocessors" target="pass"/>
+    <transition cond="Var4==_ioprocessors" target="pass"/>
     <transition target="fail"/>
   </state>
-  <final id="pass"/>
-  <final id="fail"/>
+  <final xmlns:scxml="http://www.w3.org/2005/07/scxml" id="pass">
+    <onentry>
+      <log label="Outcome" expr="'pass'"/>
+    </onentry>
+  </final>
+  <final xmlns:scxml="http://www.w3.org/2005/07/scxml" id="fail">
+    <onentry>
+      <log label="Outcome" expr="'fail'"/>
+    </onentry>
+  </final>
 </scxml>

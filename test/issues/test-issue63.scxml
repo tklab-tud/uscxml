@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<scxml xmlns="http://www.w3.org/2005/07/scxml" datamodel="lua" initial="init" name="scxml_root" version="1.0">
+  <state id="init">
+    <transition event="timeout" target="fail" />
+    <onentry>
+      <send event="timeout" delay="1s" />
+      <send event="test">
+        <content>string value</content>
+      </send>
+    </onentry>
+    <onentry>
+      <script>print('Hello, World!')</script>
+    </onentry>
+    <onentry>
+      <script>print("Hello, World!")</script>
+    </onentry>
+    <onentry>
+      <script>print('Hello, "World"')</script>
+    </onentry>
+    <onentry>
+      <script><![CDATA[print('Hello, "World"')]]></script>
+    </onentry>
+    <onentry>
+      <script>print("Hello, world!")</script>
+    </onentry>
+    <transition cond="_event.data==&quot;string value&quot;" event="test" target="pass"/>
+  </state>
+  <final id="pass"/>
+  <final id="fail"/>
+</scxml>

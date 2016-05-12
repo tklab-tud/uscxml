@@ -20,15 +20,12 @@
 #ifndef CHARTOVHDL_H
 #define CHARTOVHDL_H
 
-#include "uscxml/interpreter/InterpreterDraft6.h"
-#include "uscxml/dom/DOMUtils.h"
-#include "uscxml/util/Trie.h"
+#include "uscxml/util/DOM.h"
+#include "uscxml/transform/Trie.h"
 #include "Transformer.h"
 #include "ChartToC.h"
 
-#include <DOM/Document.hpp>
-#include <DOM/Node.hpp>
-#include <XPath/XPath.hpp>
+#include <xercesc/dom/DOM.hpp>
 #include <ostream>
 #include <vector>
 
@@ -194,15 +191,15 @@ protected:
 
 	// event generation
 	void writeExContentBlock(std::ostream & stream, std::string index,
-	                         std::list< Arabica::DOM::Element<std::string> > commandSequence);
+	                         std::list<xercesc::DOMElement*> commandSequence);
 
 	Trie _eventTrie;
-	Arabica::XPath::NodeSet<std::string> _execContent;
+	std::list<xercesc::DOMElement*> _execContent;
 
 private:
 	std::string eventNameEscape(const std::string& eventName);
 
-	std::string getLineForExecContent(const Arabica::DOM::Node<std::string>& elem);
+	std::string getLineForExecContent(const xercesc::DOMElement* elem);
 
 };
 

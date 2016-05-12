@@ -18,55 +18,66 @@
  */
 
 #include "uscxml/Common.h"
-#include "uscxml/config.h"
-#include "uscxml/URL.h"
+#include "uscxml/util/URL.h"
 #include "uscxml/util/String.h"
 
 #include "JSCDataModel.h"
-#include "JSCDOM.h"
-#include "dom/JSCDocument.h"
-#include "dom/JSCElement.h"
-#include "dom/JSCText.h"
-#include "dom/JSCCDATASection.h"
-#include "dom/JSCSCXMLEvent.h"
+//#include "JSCSCXMLEvent.h"
 
-#include "dom/JSCArrayBuffer.h"
-#include "dom/JSCInt8Array.h"
-#include "dom/JSCUint8Array.h"
-#include "dom/JSCUint8ClampedArray.h"
-#include "dom/JSCInt16Array.h"
-#include "dom/JSCUint16Array.h"
-#include "dom/JSCInt32Array.h"
-#include "dom/JSCUint32Array.h"
-#include "dom/JSCFloat32Array.h"
-#include "dom/JSCFloat64Array.h"
-#include "dom/JSCDataView.h"
+#include "uscxml/messages/Event.h"
+#include "uscxml/util/DOM.h"
+#include <easylogging++.h>
 
-#include "uscxml/Message.h"
-#include "uscxml/dom/DOMUtils.h"
-#include <glog/logging.h>
+#define EVENT_STRING_OR_UNDEF(field, cond) \
+JSStringRef field##Name = JSStringCreateWithUTF8CString( #field ); \
+JSStringRef field##Val = JSStringCreateWithUTF8CString(event.field.c_str()); \
+JSObjectSetProperty(_ctx, \
+                    eventObj, \
+                    field##Name, \
+                    (cond ? JSValueMakeString(_ctx, field##Val) : JSValueMakeUndefined(_ctx)), \
+                    0, \
+                    &exception); \
+JSStringRelease(field##Name); \
+JSStringRelease(field##Val); \
+if (exception) \
+    handleException(exception);
 
-#ifdef BUILD_AS_PLUGINS
-#include <Pluma/Connector.hpp>
-#endif
 
-#define TO_JSC_DOMVALUE(type) \
-struct JSC##type::JSC##type##Private* privData = new JSC##type::JSC##type##Private(); \
-privData->dom = _dom; \
-privData->nativeObj = new type<std::string>(node); \
-JSObjectRef retObj = JSObjectMake(_ctx, JSC##type::getTmpl(), privData);\
-return retObj;
+using namespace xercesc;
 
-#define JSC_ADD_GLOBAL_OBJECT(name, constructor)\
-JSStringRef name##Name = JSStringCreateWithUTF8CString(#name);\
-JSObjectRef name = JSObjectMake(dm->_ctx, constructor, NULL);\
-JSObjectSetProperty(dm->_ctx, JSContextGetGlobalObject(dm->_ctx), name##Name, name, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontDelete, NULL);\
-JSStringRelease(name##Name);
+static JSValueRef XMLString2JS(const XMLCh* input, JSContextRef context) {
+	JSValueRef output;
+
+	char* res = xercesc::XMLString::transcode(input);
+
+	JSStringRef stringRef = JSStringCreateWithUTF8CString(res);
+	output = JSValueMakeString(context, stringRef);
+	JSStringRelease(stringRef);
+
+	return output;
+}
+
+static XMLCh* JS2XMLString(JSValueRef input, JSContextRef context) {
+
+	if (!JSValueIsString(context, input))
+		return NULL;
+
+	JSValueRef exception = NULL;
+	JSStringRef stringInput = JSValueToStringCopy(context, input, &exception);
+
+	// TODO: I am leaking!
+	size_t maxSize = JSStringGetMaximumUTF8CStringSize(stringInput);
+	char* output = new char[maxSize + 1];
+
+	JSStringGetUTF8CString(stringInput, output, maxSize);
+	XMLCh* ret = xercesc::XMLString::transcode(output);
+
+	return(ret);
+}
+
+#include "JSCDOM.cpp.inc"
 
 namespace uscxml {
-
-using namespace Arabica::XPath;
-using namespace Arabica::DOM;
 
 #ifdef BUILD_AS_PLUGINS
 PLUMA_CONNECTOR
@@ -77,13 +88,10 @@ bool pluginConnect(pluma::Host& host) {
 #endif
 
 JSCDataModel::JSCDataModel() {
-	_dom = NULL;
 	_ctx = NULL;
 }
 
 JSCDataModel::~JSCDataModel() {
-	if (_dom)
-		delete _dom;
 	if (_ctx)
 		JSGlobalContextRelease(_ctx);
 }
@@ -159,31 +167,6 @@ JSValueRef JSCDataModel::jsExtension(JSContextRef ctx, JSObjectRef function, JSO
 	return JSValueMakeNull(ctx);
 }
 
-#if 0
-typedef struct {
-	int                                 version; /* current (and only) version is 0 */
-	JSClassAttributes                   attributes;
-
-	const char*                         className;
-	JSClassRef                          parentClass;
-
-	const JSStaticValue*                staticValues;
-	const JSStaticFunction*             staticFunctions;
-
-	JSObjectInitializeCallback          initialize;
-	JSObjectFinalizeCallback            finalize;
-	JSObjectHasPropertyCallback         hasProperty;
-	JSObjectGetPropertyCallback         getProperty;
-	JSObjectSetPropertyCallback         setProperty;
-	JSObjectDeletePropertyCallback      deleteProperty;
-	JSObjectGetPropertyNamesCallback    getPropertyNames;
-	JSObjectCallAsFunctionCallback      callAsFunction;
-	JSObjectCallAsConstructorCallback   callAsConstructor;
-	JSObjectHasInstanceCallback         hasInstance;
-	JSObjectConvertToTypeCallback       convertToType;
-} JSClassDefinition;
-#endif
-
 // functions need to be objects to hold private data in JSC
 JSClassDefinition JSCDataModel::jsInClassDef = { 0, 0, "In", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, jsIn, 0, 0, 0 };
 JSClassDefinition JSCDataModel::jsPrintClassDef = { 0, 0, "print", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, jsPrint, 0, 0, 0 };
@@ -192,17 +175,74 @@ JSClassDefinition JSCDataModel::jsExtensionClassDef = { 0, 0, "Extension", 0, 0,
 JSClassDefinition JSCDataModel::jsIOProcessorsClassDef = { 0, 0, "ioProcessors", 0, 0, 0, 0, 0, jsIOProcessorHasProp, jsIOProcessorGetProp, 0, 0, jsIOProcessorListProps, 0, 0, 0, 0 };
 JSClassDefinition JSCDataModel::jsInvokersClassDef = { 0, 0, "invokers", 0, 0, 0, 0, 0, jsInvokerHasProp, jsInvokerGetProp, 0, 0, jsInvokerListProps, 0, 0, 0, 0 };
 
-boost::shared_ptr<DataModelImpl> JSCDataModel::create(InterpreterInfo* interpreter) {
-	boost::shared_ptr<JSCDataModel> dm = boost::shared_ptr<JSCDataModel>(new JSCDataModel());
+std::mutex JSCDataModel::_initMutex;
+
+bool JSCNodeListHasPropertyCallback(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName) {
+	size_t propMaxSize = JSStringGetMaximumUTF8CStringSize(propertyName);
+	char* propBuffer = new char[propMaxSize];
+	JSStringGetUTF8CString(propertyName, propBuffer, propMaxSize);
+	std::string propName(propBuffer);
+	free(propBuffer);
+
+	std::string base = "0123456789";
+	if (propName.find_first_not_of(base) != std::string::npos) {
+		return false;
+	}
+
+	int index = strTo<int>(propName);
+	SwigPrivData* t = (SwigPrivData*) JSObjectGetPrivate(object);
+	DOMNodeList* nodeList = (DOMNodeList*)t->swigCObject;
+
+	if (nodeList->getLength() < index) {
+		return false;
+	}
+
+	return true;
+}
+
+JSValueRef JSCNodeListGetPropertyCallback(JSContextRef context, JSObjectRef object, JSStringRef propertyName, JSValueRef* exception) {
+	size_t propMaxSize = JSStringGetMaximumUTF8CStringSize(propertyName);
+	char* propBuffer = new char[propMaxSize];
+	JSStringGetUTF8CString(propertyName, propBuffer, propMaxSize);
+	std::string propName(propBuffer);
+	free(propBuffer);
+
+	std::string base = "0123456789";
+	if (propName.find_first_not_of(base) != std::string::npos) {
+		return JSValueMakeUndefined(context);
+	}
+
+	int index = strTo<int>(propName);
+	SwigPrivData* t = (SwigPrivData*) JSObjectGetPrivate(object);
+	DOMNodeList* nodeList = (DOMNodeList*)t->swigCObject;
+
+	if (nodeList->getLength() < index) {
+		return JSValueMakeUndefined(context);
+	}
+
+	DOMNode* node = nodeList->item(index);
+	JSValueRef jsresult = SWIG_NewPointerObj(SWIG_as_voidptr(node),
+	                      SWIG_TypeDynamicCast(SWIGTYPE_p_XERCES_CPP_NAMESPACE__DOMNode, SWIG_as_voidptrptr(&node)), 0);
+	return jsresult;
+}
+
+std::shared_ptr<DataModelImpl> JSCDataModel::create(DataModelCallbacks* callbacks) {
+	std::shared_ptr<JSCDataModel> dm(new JSCDataModel());
 
 	dm->_ctx = JSGlobalContextCreate(NULL);
-	dm->_interpreter = interpreter;
+	dm->_callbacks = callbacks;
 
-	dm->_dom = new JSCDOM();
-	dm->_dom->xpath = new XPath<std::string>();
-	dm->_dom->xpath->setNamespaceContext(*interpreter->getNameSpaceInfo().getNSContext());
-	dm->_dom->storage	= new Storage(URL::getResourceDir() + PATH_SEPERATOR + interpreter->getName() + ".storage");
-	dm->_dom->nsInfo	= new NameSpaceInfo(interpreter->getNameSpaceInfo());
+	JSObjectRef exports;
+
+	// register subscript operator with nodelist
+	_exports_DOMNodeList_objectDefinition.hasProperty = JSCNodeListHasPropertyCallback;
+	_exports_DOMNodeList_objectDefinition.getProperty = JSCNodeListGetPropertyCallback;
+
+	// not thread safe!
+	{
+		std::lock_guard<std::mutex> lock(_initMutex);
+		JSCDOM_initialize(dm->_ctx, &exports);
+	}
 
 	// introduce global functions as objects for private data
 	JSClassRef jsInClassRef = JSClassCreate(&jsInClassDef);
@@ -230,76 +270,68 @@ boost::shared_ptr<DataModelImpl> JSCDataModel::create(InterpreterInfo* interpret
 	JSStringRelease(ioProcName);
 
 	JSStringRef nameName = JSStringCreateWithUTF8CString("_name");
-	JSStringRef name = JSStringCreateWithUTF8CString(dm->_interpreter->getName().c_str());
+	JSStringRef name = JSStringCreateWithUTF8CString(dm->_callbacks->getName().c_str());
 	JSObjectSetProperty(dm->_ctx, JSContextGetGlobalObject(dm->_ctx), nameName, JSValueMakeString(dm->_ctx, name), kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontDelete, NULL);
 	JSStringRelease(nameName);
 	JSStringRelease(name);
 
 	JSStringRef sessionIdName = JSStringCreateWithUTF8CString("_sessionid");
-	JSStringRef sessionId = JSStringCreateWithUTF8CString(dm->_interpreter->getSessionId().c_str());
+	JSStringRef sessionId = JSStringCreateWithUTF8CString(dm->_callbacks->getSessionId().c_str());
 	JSObjectSetProperty(dm->_ctx, JSContextGetGlobalObject(dm->_ctx), sessionIdName, JSValueMakeString(dm->_ctx, sessionId), kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontDelete, NULL);
 	JSStringRelease(sessionIdName);
 	JSStringRelease(sessionId);
 
-	JSC_ADD_GLOBAL_OBJECT(ArrayBuffer, JSCArrayBuffer::getTmpl());
-	JSC_ADD_GLOBAL_OBJECT(Int8Array, JSCInt8Array::getTmpl());
-	JSC_ADD_GLOBAL_OBJECT(Uint8Array, JSCUint8Array::getTmpl());
-	JSC_ADD_GLOBAL_OBJECT(Uint8ClampedArray, JSCUint8ClampedArray::getTmpl());
-	JSC_ADD_GLOBAL_OBJECT(Int16Array, JSCInt16Array::getTmpl());
-	JSC_ADD_GLOBAL_OBJECT(Uint16Array, JSCUint16Array::getTmpl());
-	JSC_ADD_GLOBAL_OBJECT(Int32Array, JSCInt32Array::getTmpl());
-	JSC_ADD_GLOBAL_OBJECT(Uint32Array, JSCUint32Array::getTmpl());
-	JSC_ADD_GLOBAL_OBJECT(Float32Array, JSCFloat32Array::getTmpl());
-	JSC_ADD_GLOBAL_OBJECT(Float64Array, JSCFloat64Array::getTmpl());
-	JSC_ADD_GLOBAL_OBJECT(DataView, JSCDataView::getTmpl());
-
-	JSCDocument::JSCDocumentPrivate* privData = new JSCDocument::JSCDocumentPrivate();
-	if (interpreter) {
-		privData->nativeObj = new Document<std::string>(interpreter->getDocument());
-		privData->dom = dm->_dom;
-
-		JSObjectRef documentObject = JSObjectMake(dm->_ctx, JSCDocument::getTmpl(), privData);
-		JSObjectRef globalObject = JSContextGetGlobalObject(dm->_ctx);
-		JSStringRef documentName = JSStringCreateWithUTF8CString("document");
-
-		JSObjectSetProperty(dm->_ctx, globalObject, documentName, documentObject, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontDelete, NULL);
-		JSStringRelease(documentName);
-	}
-
-	dm->eval(Element<std::string>(), "_x = {};");
+	dm->evalAsValue("_x = {};");
 
 	return dm;
 }
 
-void JSCDataModel::pushContext() {
-}
-
-void JSCDataModel::popContext() {
-}
-
 void JSCDataModel::setEvent(const Event& event) {
-	JSCSCXMLEvent::JSCSCXMLEventPrivate* privData = new JSCSCXMLEvent::JSCSCXMLEventPrivate();
-	privData->nativeObj = new Event(event);
-	privData->dom = _dom;
+	Event* evPtr = new Event(event);
 
-	JSObjectRef eventObj = JSObjectMake(_ctx, JSCSCXMLEvent::getTmpl(), privData);
+	JSObjectRef eventObj = SWIG_JSC_NewPointerObj(_ctx, evPtr, SWIGTYPE_p_uscxml__Event, SWIG_POINTER_OWN);
 	JSObjectRef globalObject = JSContextGetGlobalObject(_ctx);
 
 	JSValueRef exception = NULL;
 
-	if (event.raw.size() == 0) {
-		std::stringstream ssRaw;
-		ssRaw << event;
-		privData->nativeObj->raw = ssRaw.str();
+	/* Manually handle swig ignored fields */
+	EVENT_STRING_OR_UNDEF(sendid, !event.hideSendId); // test333
+	EVENT_STRING_OR_UNDEF(origin, event.origin.size() > 0); // test335
+	EVENT_STRING_OR_UNDEF(origintype, event.origintype.size() > 0); // test337
+	EVENT_STRING_OR_UNDEF(invokeid, event.invokeid.size() > 0); // test339
+
+	/* Manually handle swig ignored event type */
+	JSStringRef eventTypeName = JSStringCreateWithUTF8CString("type");
+	JSStringRef eventTypeVal;
+
+	// test 331
+	switch (event.eventType) {
+	case Event::EXTERNAL:
+		eventTypeVal = JSStringCreateWithUTF8CString("external");
+		break;
+	case Event::INTERNAL:
+		eventTypeVal = JSStringCreateWithUTF8CString("internal");
+		break;
+	case Event::PLATFORM:
+		eventTypeVal = JSStringCreateWithUTF8CString("platform");
+		break;
 	}
 
-	if (event.dom) {
+	JSObjectSetProperty(_ctx, eventObj, eventTypeName, JSValueMakeString(_ctx, eventTypeVal), 0, &exception);
+	if (exception)
+		handleException(exception);
+
+	JSStringRelease(eventTypeName);
+	JSStringRelease(eventTypeVal);
+
+	/* Manually handle swig ignored event data */
+	if (event.data.node) {
 		JSStringRef propName = JSStringCreateWithUTF8CString("data");
-		JSObjectSetProperty(_ctx, eventObj, propName, getNodeAsValue(event.dom), 0, &exception);
+		JSObjectSetProperty(_ctx, eventObj, propName, getNodeAsValue(event.data.node), 0, &exception);
 		JSStringRelease(propName);
 		if (exception)
 			handleException(exception);
-
+#if 0
 	} else if (event.content.length() > 0) {
 		// _event.data is a string or JSON
 		Data json = Data::fromJSON(event.content);
@@ -319,6 +351,7 @@ void JSCDataModel::setEvent(const Event& event) {
 			if (exception)
 				handleException(exception);
 		}
+#endif
 	} else {
 		// _event.data is KVP
 		Event eventCopy(event);
@@ -359,22 +392,21 @@ void JSCDataModel::setEvent(const Event& event) {
 
 }
 
-Data JSCDataModel::getStringAsData(const std::string& content) {
+Data JSCDataModel::evalAsData(const std::string& content) {
 	JSValueRef result = evalAsValue(content);
-	Data data = getValueAsData(result);
-	return data;
+	return getValueAsData(result);
+}
+
+Data JSCDataModel::getAsData(const std::string& content) {
+	// parse as JSON test 578
+	return Data::fromJSON(content);
 }
 
 JSValueRef JSCDataModel::getDataAsValue(const Data& data) {
 	JSValueRef exception = NULL;
 
 	if (data.node) {
-		JSCNode::JSCNodePrivate* privData = new JSCNode::JSCNodePrivate();
-		privData->nativeObj = new Node<std::string>(data.node);
-		privData->dom = _dom;
-
-		JSObjectRef value = JSObjectMake(_ctx, JSCNode::getTmpl(), privData);
-		return value;
+		return getNodeAsValue(data.node);
 	}
 	if (data.compound.size() > 0) {
 		JSObjectRef value = JSObjectMake(_ctx, 0, 0);
@@ -417,16 +449,16 @@ JSValueRef JSCDataModel::getDataAsValue(const Data& data) {
 		}
 		}
 	}
-	if (data.binary) {
-		uscxml::ArrayBuffer* localInstance = new uscxml::ArrayBuffer(data.binary);
-
-		JSClassRef retClass = JSCArrayBuffer::getTmpl();
-		struct JSCArrayBuffer::JSCArrayBufferPrivate* retPrivData = new JSCArrayBuffer::JSCArrayBufferPrivate();
-		retPrivData->nativeObj = localInstance;
-
-		JSObjectRef retObj = JSObjectMake(_ctx, retClass, retPrivData);
-		return retObj;
-	}
+//	if (data.binary) {
+//		uscxml::ArrayBuffer* localInstance = new uscxml::ArrayBuffer(data.binary);
+//
+//		JSClassRef retClass = JSCArrayBuffer::getTmpl();
+//		struct JSCArrayBuffer::JSCArrayBufferPrivate* retPrivData = new JSCArrayBuffer::JSCArrayBufferPrivate();
+//		retPrivData->nativeObj = localInstance;
+//
+//		JSObjectRef retObj = JSObjectMake(_ctx, retClass, retPrivData);
+//		return retObj;
+//	}
 	return JSValueMakeUndefined(_ctx);
 }
 
@@ -466,15 +498,18 @@ Data JSCDataModel::getValueAsData(const JSValueRef value) {
 		JSObjectRef objValue = JSValueToObject(_ctx, value, &exception);
 		if (exception)
 			handleException(exception);
-		if (JSValueIsObjectOfClass(_ctx, value, JSCArrayBuffer::getTmpl())) {
-			// binary data
-			JSCArrayBuffer::JSCArrayBufferPrivate* privObj = (JSCArrayBuffer::JSCArrayBufferPrivate*)JSObjectGetPrivate(objValue);
-			data.binary = privObj->nativeObj->_blob;
-			return data;
-		} else if (JSValueIsObjectOfClass(_ctx, value, JSCNode::getTmpl())) {
+//		if (JSValueIsObjectOfClass(_ctx, value, JSCArrayBuffer::getTmpl())) {
+//			// binary data
+//			JSCArrayBuffer::JSCArrayBufferPrivate* privObj = (JSCArrayBuffer::JSCArrayBufferPrivate*)JSObjectGetPrivate(objValue);
+//			data.binary = privObj->nativeObj->_blob;
+//			return data;
+//		} else
+
+		if (JSValueIsObjectOfClass(_ctx, value, _exports_DOMNode_classRef)) {
 			// dom node
-			JSCNode::JSCNodePrivate* privObj = (JSCNode::JSCNodePrivate*)JSObjectGetPrivate(objValue);
-			data.node = *privObj->nativeObj;
+			void* privData = NULL;
+			SWIG_JSC_ConvertPtr(_ctx, value, &privData, SWIGTYPE_p_XERCES_CPP_NAMESPACE__DOMNode, 0);
+			data.node = (xercesc::DOMNode*)privData;
 			return data;
 		}
 		std::set<std::string> propertySet;
@@ -518,10 +553,6 @@ Data JSCDataModel::getValueAsData(const JSValueRef value) {
 	return data;
 }
 
-bool JSCDataModel::validate(const std::string& location, const std::string& schema) {
-	return true;
-}
-
 uint32_t JSCDataModel::getLength(const std::string& expr) {
 	JSValueRef result;
 
@@ -558,10 +589,12 @@ void JSCDataModel::setForeach(const std::string& item,
 	}
 }
 
+#if 0
 bool JSCDataModel::isLocation(const std::string& expr) {
 	// location needs to be LHS and ++ is only valid for LHS
 	return isValidSyntax(expr + "++");
 }
+#endif
 
 bool JSCDataModel::isValidSyntax(const std::string& expr) {
 	JSStringRef scriptJS = JSStringCreateWithUTF8CString(expr.c_str());
@@ -587,32 +620,9 @@ bool JSCDataModel::isDeclared(const std::string& expr) {
 	return true;
 }
 
-void JSCDataModel::eval(const Element<std::string>& scriptElem,
-                        const std::string& expr) {
-	evalAsValue(expr);
-}
-
-bool JSCDataModel::evalAsBool(const Arabica::DOM::Element<std::string>& node, const std::string& expr) {
+bool JSCDataModel::evalAsBool(const std::string& expr) {
 	JSValueRef result = evalAsValue(expr);
 	return JSValueToBoolean(_ctx, result);
-}
-
-std::string JSCDataModel::evalAsString(const std::string& expr) {
-	JSValueRef result = evalAsValue(expr);
-	JSValueRef exception = NULL;
-
-	JSStringRef stringValue = JSValueToStringCopy( _ctx, result, &exception);
-	if (exception)
-		handleException(exception);
-
-	size_t maxSize = JSStringGetMaximumUTF8CStringSize(stringValue);
-	char data[maxSize];
-	JSStringGetUTF8CString(stringValue, data, maxSize);
-	std::string retString(data);
-
-	JSStringRelease(stringValue);
-
-	return retString;
 }
 
 JSValueRef JSCDataModel::evalAsValue(const std::string& expr, bool dontThrow) {
@@ -627,24 +637,27 @@ JSValueRef JSCDataModel::evalAsValue(const std::string& expr, bool dontThrow) {
 	return result;
 }
 
-JSValueRef JSCDataModel::getNodeAsValue(const Node<std::string>& node) {
-	switch (node.getNodeType()) {
-	case Node_base::ELEMENT_NODE:         {
-		TO_JSC_DOMVALUE(Element);
-	}
-	case Node_base::TEXT_NODE:            {
-		TO_JSC_DOMVALUE(Text);
-	}
-	case Node_base::CDATA_SECTION_NODE:   {
-		TO_JSC_DOMVALUE(CDATASection);
-	}
-	case Node_base::DOCUMENT_NODE:        {
-		TO_JSC_DOMVALUE(Document);
-	}
-	default:                              {
-		TO_JSC_DOMVALUE(Node);
-	}
-	}
+JSValueRef JSCDataModel::getNodeAsValue(const DOMNode* node) {
+	return SWIG_JSC_NewPointerObj(_ctx,
+	                              (void*)node,
+	                              SWIG_TypeDynamicCast(SWIGTYPE_p_XERCES_CPP_NAMESPACE__DOMNode,
+	                                      SWIG_as_voidptrptr(&node)),
+	                              0);
+
+//    switch (node->getNodeType()) {
+//    case DOMNode::ELEMENT_NODE:
+//        return SWIG_JSC_NewPointerObj(_ctx, (void*)node, SWIGTYPE_p_XERCES_CPP_NAMESPACE__DOMElement, 0);
+//        break;
+//
+//    case DOMNode::COMMENT_NODE:
+//        return SWIG_JSC_NewPointerObj(_ctx, (void*)node, SWIGTYPE_p_XERCES_CPP_NAMESPACE__DOMComment, 0);
+//        break;
+//
+//    // TODO: We need to dispatch more types here!
+//    default:
+//        return SWIG_JSC_NewPointerObj(_ctx, (void*)node, SWIGTYPE_p_XERCES_CPP_NAMESPACE__DOMNode, 0);
+//        break;
+//    }
 }
 
 void JSCDataModel::assign(const std::string& location, const Data& data) {
@@ -669,7 +682,7 @@ void JSCDataModel::assign(const std::string& location, const Data& data) {
 	}
 
 	/**
-	 * test157: We need to evluate, as this will not throw for 'continue' = Var[5] in
+	 * test157: We need to evaluate, as this will not throw for 'continue' = Var[5] in
 	 */
 //    JSObjectSetProperty(_ctx, JSContextGetGlobalObject(_ctx), JSStringCreateWithUTF8CString(location.c_str()), getDataAsValue(data), 0, &exception);
 
@@ -677,66 +690,10 @@ void JSCDataModel::assign(const std::string& location, const Data& data) {
 		handleException(exception);
 }
 
-void JSCDataModel::assign(const Element<std::string>& assignElem,
-                          const Node<std::string>& node,
-                          const std::string& content) {
-	std::string key;
-	if (HAS_ATTR(assignElem, "id")) {
-		key = ATTR(assignElem, "id");
-	} else if (HAS_ATTR(assignElem, "location")) {
-		key = ATTR(assignElem, "location");
-	}
-	if (key.length() == 0) {
-		ERROR_EXECUTION_THROW("Assign element has neither id nor location");
-	}
-
-	if (HAS_ATTR(assignElem, "expr")) {
-		assign(key, Data(ATTR(assignElem, "expr"), Data::INTERPRETED));
-	} else if (node) {
-		Data d;
-		d.node = node;
-		assign(key, d);
-	} else if (content.size() > 0) {
-		try {
-			Data d = Data::fromJSON(content);
-			if (d.empty())
-				throw Event();
-			assign(key, Data(d, Data::INTERPRETED));
-		} catch (Event e) {
-			assign(key, Data("\"" + spaceNormalize(content) + "\"", Data::INTERPRETED));
-		}
-	} else {
-		JSValueRef exception = NULL;
-		JSObjectSetProperty(_ctx, JSContextGetGlobalObject(_ctx), JSStringCreateWithUTF8CString(key.c_str()), JSValueMakeUndefined(_ctx), 0, &exception);
-		if (exception)
-			handleException(exception);
-	}
-}
-
-void JSCDataModel::init(const Element<std::string>& dataElem,
-                        const Node<std::string>& node,
-                        const std::string& content) {
-	try {
-		assign(dataElem, node, content);
-	} catch (Event e) {
-		// test 277
-		std::string key;
-		if (HAS_ATTR(dataElem, "id")) {
-			key = ATTR(dataElem, "id");
-		} else if (HAS_ATTR(dataElem, "location")) {
-			key = ATTR(dataElem, "location");
-		}
-		if (key.size() > 0) {
-			evalAsValue(key + " = undefined", true);
-		}
-		throw e;
-	}
-}
-
 void JSCDataModel::init(const std::string& location, const Data& data) {
 	try {
 		assign(location, data);
-	} catch (Event e) {
+	} catch (ErrorEvent e) {
 		// test 277
 		evalAsValue(location + " = undefined", true);
 		throw e;
@@ -814,7 +771,7 @@ JSValueRef JSCDataModel::jsIn(JSContextRef ctx, JSObjectRef function, JSObjectRe
 			std::string stateName(buffer);
 			free(buffer);
 
-			if (INSTANCE->_interpreter->isInState(stateName)) {
+			if (INSTANCE->_callbacks->isInState(stateName)) {
 				continue;
 			}
 		}
@@ -826,7 +783,7 @@ JSValueRef JSCDataModel::jsIn(JSContextRef ctx, JSObjectRef function, JSObjectRe
 
 bool JSCDataModel::jsIOProcessorHasProp(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName) {
 	JSCDataModel* INSTANCE = (JSCDataModel*)JSObjectGetPrivate(object);
-	std::map<std::string, IOProcessor> ioProcessors = INSTANCE->_interpreter->getIOProcessors();
+	std::map<std::string, IOProcessor> ioProcessors = INSTANCE->_callbacks->getIOProcessors();
 
 	size_t maxSize = JSStringGetMaximumUTF8CStringSize(propertyName);
 	char buffer[maxSize];
@@ -838,7 +795,7 @@ bool JSCDataModel::jsIOProcessorHasProp(JSContextRef ctx, JSObjectRef object, JS
 
 JSValueRef JSCDataModel::jsIOProcessorGetProp(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef* exception) {
 	JSCDataModel* INSTANCE = (JSCDataModel*)JSObjectGetPrivate(object);
-	std::map<std::string, IOProcessor> ioProcessors = INSTANCE->_interpreter->getIOProcessors();
+	std::map<std::string, IOProcessor> ioProcessors = INSTANCE->_callbacks->getIOProcessors();
 
 	size_t maxSize = JSStringGetMaximumUTF8CStringSize(propertyName);
 	char buffer[maxSize];
@@ -853,7 +810,7 @@ JSValueRef JSCDataModel::jsIOProcessorGetProp(JSContextRef ctx, JSObjectRef obje
 
 void JSCDataModel::jsIOProcessorListProps(JSContextRef ctx, JSObjectRef object, JSPropertyNameAccumulatorRef propertyNames) {
 	JSCDataModel* INSTANCE = (JSCDataModel*)JSObjectGetPrivate(object);
-	std::map<std::string, IOProcessor> ioProcessors = INSTANCE->_interpreter->getIOProcessors();
+	std::map<std::string, IOProcessor> ioProcessors = INSTANCE->_callbacks->getIOProcessors();
 
 	std::map<std::string, IOProcessor>::const_iterator ioProcIter = ioProcessors.begin();
 	while(ioProcIter != ioProcessors.end()) {
@@ -866,7 +823,7 @@ void JSCDataModel::jsIOProcessorListProps(JSContextRef ctx, JSObjectRef object, 
 
 bool JSCDataModel::jsInvokerHasProp(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName) {
 	JSCDataModel* INSTANCE = (JSCDataModel*)JSObjectGetPrivate(object);
-	std::map<std::string, Invoker> invokers = INSTANCE->_interpreter->getInvokers();
+	std::map<std::string, Invoker> invokers = INSTANCE->_callbacks->getInvokers();
 
 	size_t maxSize = JSStringGetMaximumUTF8CStringSize(propertyName);
 	char buffer[maxSize];
@@ -878,7 +835,7 @@ bool JSCDataModel::jsInvokerHasProp(JSContextRef ctx, JSObjectRef object, JSStri
 
 JSValueRef JSCDataModel::jsInvokerGetProp(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef* exception) {
 	JSCDataModel* INSTANCE = (JSCDataModel*)JSObjectGetPrivate(object);
-	std::map<std::string, Invoker> invokers = INSTANCE->_interpreter->getInvokers();
+	std::map<std::string, Invoker> invokers = INSTANCE->_callbacks->getInvokers();
 
 	size_t maxSize = JSStringGetMaximumUTF8CStringSize(propertyName);
 	char buffer[maxSize];
@@ -893,7 +850,7 @@ JSValueRef JSCDataModel::jsInvokerGetProp(JSContextRef ctx, JSObjectRef object, 
 
 void JSCDataModel::jsInvokerListProps(JSContextRef ctx, JSObjectRef object, JSPropertyNameAccumulatorRef propertyNames) {
 	JSCDataModel* INSTANCE = (JSCDataModel*)JSObjectGetPrivate(object);
-	std::map<std::string, Invoker> invokers = INSTANCE->_interpreter->getInvokers();
+	std::map<std::string, Invoker> invokers = INSTANCE->_callbacks->getInvokers();
 
 	std::map<std::string, Invoker>::const_iterator invokerIter = invokers.begin();
 	while(invokerIter != invokers.end()) {

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- test that the location entry for the SCXML Event I/O processor can be used as the target for an event -->
+<scxml:scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" xmlns:scxml="http://www.w3.org/2005/07/scxml" initial="s0" version="1.0" datamodel="ecmascript">
+  <scxml:datamodel>
+    <scxml:data id="Var1" expr="_ioprocessors['http://www.w3.org/TR/scxml/#SCXMLEventProcessor'].location"/>
+  </scxml:datamodel>
+  <scxml:state id="s0">
+    <scxml:onentry>
+      <scxml:send targetexpr="Var1" event="foo"/>
+      <scxml:send event="timeout" delay="2s"/>
+    </scxml:onentry>
+    <scxml:transition event="foo" target="pass"/>
+    <scxml:transition event="*" target="fail"/>
+  </scxml:state>
+  <scxml:final id="pass">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'pass'"/>
+    </scxml:onentry>
+  </scxml:final>
+  <scxml:final id="fail">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'fail'"/>
+    </scxml:onentry>
+  </scxml:final>
+</scxml:scxml>

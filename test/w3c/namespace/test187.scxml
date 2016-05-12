@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- we test that delayed <send> is not sent if the sending session terminates.  In this case,
+a subscript is invoked which sends the event childToParent delayed by 1 second, and then terminates.  The
+parent session, should not receive childToParent. If it does, we fail.  Otherwise the 
+10 sec timer expires and we pass -->
+<scxml:scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" xmlns:scxml="http://www.w3.org/2005/07/scxml" initial="s0" version="1.0" datamodel="ecmascript">
+  <scxml:state id="s0">
+    <scxml:onentry>
+      <scxml:send event="timeout" delayexpr="'1s'"/>
+    </scxml:onentry>
+    <scxml:invoke type="scxml">
+      <scxml:content>
+        <!-- exit before the delayed send can execute -->
+        <scxml:scxml initial="sub0" version="1.0" datamodel="ecmascript">
+          <scxml:state id="sub0">
+            <scxml:onentry>
+              <scxml:send event="childToParent" target="#_parent" delayexpr="'.5s'"/>
+            </scxml:onentry>
+            <scxml:transition target="subFinal"/>
+          </scxml:state>
+          <scxml:final id="subFinal"/>
+        </scxml:scxml>
+      </scxml:content>
+    </scxml:invoke>
+    <scxml:transition event="childToParent" target="fail"/>
+    <scxml:transition event="timeout" target="pass"/>
+  </scxml:state>
+  <scxml:final id="pass">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'pass'"/>
+    </scxml:onentry>
+  </scxml:final>
+  <scxml:final id="fail">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'fail'"/>
+    </scxml:onentry>
+  </scxml:final>
+</scxml:scxml>

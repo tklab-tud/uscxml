@@ -1,10 +1,10 @@
-<?xml version="1.0" standalone="no"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <!-- test that executable content in the <initial> transition executes after the onentry handler on the state
 and before the onentry handler of the child states.  Event1, event2, and event3 should occur in that order. -->
-<scxml xmlns="http://www.w3.org/2005/07/scxml" initial="s0" version="1.0" datamodel="lua">
+<scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" initial="s0" version="1.0" datamodel="lua">
   <state id="s0" initial="s01">
     <onentry>
-      <send event="timeout" delay="1s"/>
+      <send xmlns:scxml="http://www.w3.org/2005/07/scxml" delay="1000" event="timeout"/>
     </onentry>
     <transition event="timeout" target="fail"/>
     <transition event="event1" target="fail"/>
@@ -39,6 +39,14 @@ and before the onentry handler of the child states.  Event1, event2, and event3 
     </state>
   </state>
   <!-- end s0 -->
-  <final id="pass"/>
-  <final id="fail"/>
+  <final xmlns:scxml="http://www.w3.org/2005/07/scxml" id="pass">
+    <onentry>
+      <log label="Outcome" expr="'pass'"/>
+    </onentry>
+  </final>
+  <final xmlns:scxml="http://www.w3.org/2005/07/scxml" id="fail">
+    <onentry>
+      <log label="Outcome" expr="'fail'"/>
+    </onentry>
+  </final>
 </scxml>

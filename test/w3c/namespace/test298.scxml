@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- reference a non-existent data model location in param in donedata and see that the right error is raised -->
+<scxml:scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" xmlns:scxml="http://www.w3.org/2005/07/scxml" version="1.0" datamodel="ecmascript" initial="s0">
+  <scxml:datamodel>
+    <scxml:data id="Var1" expr="0"/>
+  </scxml:datamodel>
+  <scxml:state id="s0" initial="s01">
+    <scxml:onentry>
+      <scxml:send event="timeout" delay="1s"/>
+    </scxml:onentry>
+    <scxml:transition event="error.execution" target="pass"/>
+    <scxml:transition event="*" target="fail"/>
+    <scxml:state id="s01">
+      <scxml:transition target="s02"/>
+    </scxml:state>
+    <scxml:final id="s02">
+      <scxml:donedata>
+        <scxml:param name="Var3" location="foo.bar.baz "/>
+      </scxml:donedata>
+    </scxml:final>
+  </scxml:state>
+  <scxml:final id="pass">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'pass'"/>
+    </scxml:onentry>
+  </scxml:final>
+  <scxml:final id="fail">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'fail'"/>
+    </scxml:onentry>
+  </scxml:final>
+</scxml:scxml>

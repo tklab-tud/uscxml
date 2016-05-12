@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- test that assigment to a non-declared var causes an error.  the transition on foo catches the case
+where no error is raised -->
+<scxml:scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" xmlns:scxml="http://www.w3.org/2005/07/scxml" version="1.0" datamodel="ecmascript" initial="s0">
+  <scxml:state id="s0">
+    <scxml:onentry>
+      <scxml:assign location="foo.bar.baz " expr="1"/>
+      <scxml:raise event="foo"/>
+    </scxml:onentry>
+    <scxml:transition event="error.execution" target="pass"/>
+    <scxml:transition event="*" target="fail"/>
+  </scxml:state>
+  <scxml:final id="pass">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'pass'"/>
+    </scxml:onentry>
+  </scxml:final>
+  <scxml:final id="fail">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'fail'"/>
+    </scxml:onentry>
+  </scxml:final>
+</scxml:scxml>

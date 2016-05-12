@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- we test that typeexpr uses the current value of var1, not its initial value
+(If it uses the initial value, it will generate an error.  If it uses the current value, event1 will be raised  -->
+<scxml:scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" xmlns:scxml="http://www.w3.org/2005/07/scxml" initial="s0" datamodel="ecmascript" version="1.0">
+  <scxml:datamodel>
+    <scxml:data id="Var1" expr="27"/>
+  </scxml:datamodel>
+  <scxml:state id="s0">
+    <scxml:onentry>
+      <scxml:assign location="Var1" expr="'http://www.w3.org/TR/scxml/#SCXMLEventProcessor'"/>
+      <scxml:send typeexpr="Var1" event="event1"/>
+    </scxml:onentry>
+    <scxml:transition event="event1" target="pass"/>
+    <scxml:transition event="*" target="fail"/>
+  </scxml:state>
+  <scxml:final id="pass">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'pass'"/>
+    </scxml:onentry>
+  </scxml:final>
+  <scxml:final id="fail">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'fail'"/>
+    </scxml:onentry>
+  </scxml:final>
+</scxml:scxml>

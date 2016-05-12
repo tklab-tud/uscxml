@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- when invoked, if var1 has a value notify parent. Then terminate.   -->
+<scxml:scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" xmlns:scxml="http://www.w3.org/2005/07/scxml" initial="s0" datamodel="ecmascript" version="1.0">
+  <scxml:datamodel>
+    <scxml:data id="Var1"/>
+  </scxml:datamodel>
+  <scxml:state id="s0">
+    <scxml:transition cond="Var1" target="final">
+      <scxml:send target="#_parent" event="varBound"/>
+    </scxml:transition>
+    <scxml:transition target="final"/>
+  </scxml:state>
+  <scxml:final id="final"/>
+</scxml:scxml>

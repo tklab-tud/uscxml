@@ -1,15 +1,15 @@
-<?xml version="1.0" standalone="no"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <!-- we test that the automatically generated id has the form stateid.platformid.   -->
-<scxml xmlns="http://www.w3.org/2005/07/scxml" initial="s0" version="1.0" datamodel="lua">
+<scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" initial="s0" version="1.0" datamodel="lua">
   <datamodel>
-    <data id="testvar1"/>
-    <data expr="'s0.'" id="testvar2"/>
+    <data id="Var1"/>
+    <data id="Var2" expr="'s0.'"/>
   </datamodel>
   <state id="s0">
     <onentry>
-      <send event="timeout" delay="1s"/>
+      <send xmlns:scxml="http://www.w3.org/2005/07/scxml" delay="1000" event="timeout"/>
     </onentry>
-    <invoke type="http://www.w3.org/TR/scxml/" idlocation="testvar1">
+    <invoke type="http://www.w3.org/TR/scxml/" idlocation="Var1">
       <content>
         <!-- when invoked, terminate returning done.invoke. This proves that the invocation succeeded.   -->
         <scxml version="1.0" initial="subFinal" datamodel="lua">
@@ -20,9 +20,17 @@
     <transition event="*" target="s1"/>
   </state>
   <state id="s1">
-    <transition cond="string.sub(testvar1,1,string.len(testvar2))==testvar2" target="pass"/>
+    <transition cond="string.sub(Var1,1,string.len(Var2))==Var2" target="pass"/>
     <transition target="fail"/>
   </state>
-  <final id="pass"/>
-  <final id="fail"/>
+  <final xmlns:scxml="http://www.w3.org/2005/07/scxml" id="pass">
+    <onentry>
+      <log label="Outcome" expr="'pass'"/>
+    </onentry>
+  </final>
+  <final xmlns:scxml="http://www.w3.org/2005/07/scxml" id="fail">
+    <onentry>
+      <log label="Outcome" expr="'fail'"/>
+    </onentry>
+  </final>
 </scxml>

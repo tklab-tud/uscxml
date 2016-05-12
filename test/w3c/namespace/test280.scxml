@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- test late binding.  var2 won't get bound until s1 is entered, so it shouldn't  have a value in s0 and
+accessing it should cause an error. It should get bound before the onentry code in s1 so it should  be
+possible access it there and assign its value to var1 -->
+<scxml:scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" xmlns:scxml="http://www.w3.org/2005/07/scxml" initial="s0" version="1.0" datamodel="ecmascript" binding="late">
+  <scxml:datamodel>
+    <scxml:data id="Var1"/>
+  </scxml:datamodel>
+  <scxml:state id="s0">
+    <scxml:transition cond="typeof Var2 === 'undefined' " target="s1"/>
+    <scxml:transition target="fail"/>
+  </scxml:state>
+  <scxml:state id="s1">
+    <scxml:datamodel>
+      <scxml:data id="Var2" expr="1"/>
+    </scxml:datamodel>
+    <scxml:onentry>
+      <scxml:assign location="Var1" expr="Var2"/>
+    </scxml:onentry>
+    <scxml:transition cond="Var1===Var2" target="pass"/>
+    <scxml:transition target="fail"/>
+  </scxml:state>
+  <scxml:final id="pass">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'pass'"/>
+    </scxml:onentry>
+  </scxml:final>
+  <scxml:final id="fail">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'fail'"/>
+    </scxml:onentry>
+  </scxml:final>
+</scxml:scxml>

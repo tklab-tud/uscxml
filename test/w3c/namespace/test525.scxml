@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- test that <foreach> does a shallow copy, so that modifying the array does not change
+the iteration behavior. -->
+<scxml:scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" xmlns:scxml="http://www.w3.org/2005/07/scxml" datamodel="ecmascript" version="1.0">
+  <scxml:datamodel>
+    <scxml:data id="Var1">
+      [1,2,3]
+      </scxml:data>
+    <scxml:data id="Var2" expr="0"/>
+    <!-- counts the number of iterations -->
+  </scxml:datamodel>
+  <scxml:state id="s0">
+    <scxml:onentry>
+      <scxml:foreach item="Var3" array="Var1">
+        <scxml:assign location="Var1" expr="[].concat(Var1, [4])"/>
+        <scxml:assign location="Var2" expr="Var2 + 1"/>
+      </scxml:foreach>
+    </scxml:onentry>
+    <scxml:transition cond="Var2==3" target="pass"/>
+    <scxml:transition target="fail"/>
+  </scxml:state>
+  <scxml:final id="pass">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'pass'"/>
+    </scxml:onentry>
+  </scxml:final>
+  <scxml:final id="fail">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'fail'"/>
+    </scxml:onentry>
+  </scxml:final>
+</scxml:scxml>

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- test that markup can be specified both by 'src' and by <content>  -->
+<scxml:scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" xmlns:scxml="http://www.w3.org/2005/07/scxml" initial="s0" version="1.0" datamodel="ecmascript">
+  <scxml:state id="s0" initial="s01">
+    <scxml:onentry>
+      <scxml:send event="timeout" delay="2s"/>
+    </scxml:onentry>
+    <scxml:transition event="timeout" target="fail"/>
+    <scxml:state id="s01">
+      <scxml:invoke type="http://www.w3.org/TR/scxml/" src="file:test239sub1.scxml"/>
+      <scxml:transition event="done.invoke" target="s02"/>
+    </scxml:state>
+    <scxml:state id="s02">
+      <scxml:invoke type="http://www.w3.org/TR/scxml/">
+        <!-- identical to test239sub1.scxml.  -->
+        <scxml:content>
+          <scxml:scxml version="1.0" initial="final" datamodel="ecmascript">
+            <scxml:final id="final"/>
+          </scxml:scxml>
+        </scxml:content>
+      </scxml:invoke>
+      <scxml:transition event="done.invoke" target="pass"/>
+    </scxml:state>
+  </scxml:state>
+  <scxml:final id="pass">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'pass'"/>
+    </scxml:onentry>
+  </scxml:final>
+  <scxml:final id="fail">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'fail'"/>
+    </scxml:onentry>
+  </scxml:final>
+</scxml:scxml>

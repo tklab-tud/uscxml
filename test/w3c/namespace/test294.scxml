@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- test that a param inside donedata ends up in the data field of the done event and
+that content inside donedata sets the full value of the event.data field -->
+<scxml:scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" xmlns:scxml="http://www.w3.org/2005/07/scxml" version="1.0" datamodel="ecmascript" initial="s0">
+  <scxml:datamodel>
+    <scxml:data id="Var1" expr="0"/>
+  </scxml:datamodel>
+  <scxml:state id="s0" initial="s01">
+    <scxml:transition event="done.state.s0" cond="_event.data['Var1']==1" target="s1">
+     </scxml:transition>
+    <scxml:transition event="done.state.s0" target="fail">
+     </scxml:transition>
+    <scxml:state id="s01">
+      <scxml:transition target="s02"/>
+    </scxml:state>
+    <scxml:final id="s02">
+      <scxml:donedata>
+        <scxml:param name="Var1" expr="1"/>
+      </scxml:donedata>
+    </scxml:final>
+  </scxml:state>
+  <scxml:state id="s1" initial="s11">
+    <scxml:transition event="done.state.s1" cond="_event.data == 'foo'" target="pass">
+     </scxml:transition>
+    <scxml:transition event="done.state.s1" target="fail">
+     </scxml:transition>
+    <scxml:state id="s11">
+      <scxml:transition target="s12"/>
+    </scxml:state>
+    <scxml:final id="s12">
+      <scxml:donedata>
+        <scxml:content>foo</scxml:content>
+      </scxml:donedata>
+    </scxml:final>
+  </scxml:state>
+  <scxml:final id="pass">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'pass'"/>
+    </scxml:onentry>
+  </scxml:final>
+  <scxml:final id="fail">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'fail'"/>
+    </scxml:onentry>
+  </scxml:final>
+</scxml:scxml>

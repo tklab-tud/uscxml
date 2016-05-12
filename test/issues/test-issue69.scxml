@@ -1,0 +1,57 @@
+<scxml datamodel="lua" initial="Level_1" name="Simulator" version="1.0" xmlns="http://www.w3.org/2005/07/scxml">
+    <state id="Level_1" initial="Level_2_a">
+        <transition event="error.*" target="fail"/>
+        <transition event="Quit" target="pass"/>
+        <state id="Level_2_a" initial="FlashProcess">
+            <transition event="Stop" target="Level_2_b"/>
+            <state id="FlashProcess">
+                <invoke autoforward="true" type="scxml">
+                    <content>
+                        <scxml datamodel="lua" initial="Flash" name="Flasher" version="1.0" xmlns="http://www.w3.org/2005/07/scxml">
+                            <state id="Flash">
+                                <onexit>
+                                    <log expr="'Why onexit does not work?'"/>
+                                </onexit>
+                                <transition event="error" target="fail"/>
+                                <initial>
+                                    <transition target="Off"/>
+                                </initial>
+                                <state id="Off">
+                                    <onentry>
+                                        <send delay="100ms" event="DoOn"/>
+                                        <log expr="'Flash off'"/>
+                                    </onentry>
+                                    <transition event="DoOn" target="On"/>
+                                </state>
+                                <state id="On">
+                                    <onentry>
+                                        <send delay="100ms" event="DoOff"/>
+                                        <log expr="'Flash on'"/>
+                                    </onentry>
+                                    <transition event="DoOff" target="Off"/>
+                                </state>
+                            </state>
+                            <final id="fail"/>
+                        </scxml>
+                    </content>
+                </invoke>
+                <onentry>
+                    <send delay="300ms" event="Pause"/>
+                </onentry>
+                <transition event="Pause" target="OnPause"/>
+            </state>
+            <state id="OnPause">
+                <onentry>
+                    <send delay="300ms" event="Stop"/>
+                </onentry>
+            </state>
+        </state>
+        <state id="Level_2_b">
+            <onentry>
+                <send delay="300ms" event="Quit"/>
+            </onentry>
+        </state>
+    </state>
+    <final id="pass"/>
+    <final id="fail"/>
+</scxml>

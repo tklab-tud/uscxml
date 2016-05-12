@@ -23,7 +23,7 @@
 #include "uscxml/Common.h"
 #include <list>
 #include <iostream>
-#include <DOM/Node.hpp>
+#include <xercesc/dom/DOMNode.hpp>
 
 namespace uscxml {
 
@@ -37,17 +37,17 @@ public:
 		USCXML_ISSUE_INFO
 	};
 
-	InterpreterIssue(const std::string& msg, Arabica::DOM::Node<std::string> node, IssueSeverity severity, const std::string& specRef = "");
+	InterpreterIssue(const std::string& msg, xercesc::DOMNode* node, IssueSeverity severity, const std::string& specRef = "");
 
 	std::string xPath;
 	std::string message;
-	Arabica::DOM::Node<std::string> node;
+	xercesc::DOMNode* node;
 	IssueSeverity severity;
 	std::string specRef;
 
 private:
 	static std::list<InterpreterIssue> forInterpreter(InterpreterImpl* interpreter);
-	friend class InterpreterImpl;
+	friend class Interpreter;
 };
 USCXML_API std::ostream& operator<< (std::ostream& os, const InterpreterIssue& issue);
 

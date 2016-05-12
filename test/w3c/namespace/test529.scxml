@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- simple test that children workn with <content> -->
+<scxml:scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" xmlns:scxml="http://www.w3.org/2005/07/scxml" version="1.0" datamodel="ecmascript" initial="s0">
+  <scxml:state id="s0" initial="s01">
+    <scxml:transition event="done.state.s0" cond="_event.data == 21" target="pass">
+     </scxml:transition>
+    <scxml:transition event="done.state.s0" target="fail">
+     </scxml:transition>
+    <scxml:state id="s01">
+      <scxml:transition target="s02"/>
+    </scxml:state>
+    <scxml:final id="s02">
+      <scxml:donedata>
+        <scxml:content>21</scxml:content>
+      </scxml:donedata>
+    </scxml:final>
+  </scxml:state>
+  <scxml:final id="pass">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'pass'"/>
+    </scxml:onentry>
+  </scxml:final>
+  <scxml:final id="fail">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'fail'"/>
+    </scxml:onentry>
+  </scxml:final>
+</scxml:scxml>

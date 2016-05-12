@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- test that executable content in the <initial> transition executes after the onentry handler on the state
+and before the onentry handler of the child states.  Event1, event2, and event3 should occur in that order. -->
+<scxml:scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" xmlns:scxml="http://www.w3.org/2005/07/scxml" initial="s0" version="1.0" datamodel="ecmascript">
+  <scxml:state id="s0" initial="s01">
+    <scxml:onentry>
+      <scxml:send event="timeout" delay="1s"/>
+    </scxml:onentry>
+    <scxml:transition event="timeout" target="fail"/>
+    <scxml:transition event="event1" target="fail"/>
+    <scxml:transition event="event2" target="pass"/>
+    <scxml:state id="s01">
+      <scxml:onentry>
+        <scxml:raise event="event1"/>
+      </scxml:onentry>
+      <scxml:initial>
+        <scxml:transition target="s011">
+          <scxml:raise event="event2"/>
+        </scxml:transition>
+      </scxml:initial>
+      <scxml:state id="s011">
+        <scxml:onentry>
+          <scxml:raise event="event3"/>
+        </scxml:onentry>
+        <scxml:transition target="s02"/>
+      </scxml:state>
+    </scxml:state>
+    <scxml:state id="s02">
+      <scxml:transition event="event1" target="s03"/>
+      <scxml:transition event="*" target="fail"/>
+    </scxml:state>
+    <scxml:state id="s03">
+      <scxml:transition event="event2" target="s04"/>
+      <scxml:transition event="*" target="fail"/>
+    </scxml:state>
+    <scxml:state id="s04">
+      <scxml:transition event="event3" target="pass"/>
+      <scxml:transition event="*" target="fail"/>
+    </scxml:state>
+  </scxml:state>
+  <!-- end s0 -->
+  <scxml:final id="pass">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'pass'"/>
+    </scxml:onentry>
+  </scxml:final>
+  <scxml:final id="fail">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'fail'"/>
+    </scxml:onentry>
+  </scxml:final>
+</scxml:scxml>

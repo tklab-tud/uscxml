@@ -21,10 +21,7 @@
 
 #include "uscxml/Common.h"
 #include "NULLDataModel.h"
-#include "uscxml/dom/DOMUtils.h"
-
-#include "uscxml/Message.h"
-#include <glog/logging.h>
+#include "uscxml/util/DOM.h"
 
 #ifdef BUILD_AS_PLUGINS
 #include <Pluma/Connector.hpp>
@@ -43,59 +40,21 @@ bool pluginConnect(pluma::Host& host) {
 NULLDataModel::NULLDataModel() {
 }
 
-boost::shared_ptr<DataModelImpl> NULLDataModel::create(InterpreterInfo* interpreter) {
-	boost::shared_ptr<NULLDataModel> dm = boost::shared_ptr<NULLDataModel>(new NULLDataModel());
-	dm->_interpreter = interpreter;
+std::shared_ptr<DataModelImpl> NULLDataModel::create(DataModelCallbacks* callbacks) {
+	std::shared_ptr<NULLDataModel> dm(new NULLDataModel());
+	dm->_callbacks = callbacks;
 	return dm;
 }
 
 NULLDataModel::~NULLDataModel() {
 }
 
-void NULLDataModel::pushContext() {
-}
-
-void NULLDataModel::popContext() {
-}
-
-void NULLDataModel::initialize() {
-}
-
-void NULLDataModel::setEvent(const Event& event) {
-}
-
-Data NULLDataModel::getStringAsData(const std::string& content) {
+Data NULLDataModel::getAsData(const std::string& content) {
 	Data data = Data::fromJSON(content);
 	if (data.empty()) {
 		data = Data(content, Data::VERBATIM);
 	}
 	return data;
-}
-
-bool NULLDataModel::validate(const std::string& location, const std::string& schema) {
-	return true;
-}
-
-bool NULLDataModel::isLocation(const std::string& expr) {
-	return true;
-}
-
-uint32_t NULLDataModel::getLength(const std::string& expr) {
-	return 0;
-}
-
-void NULLDataModel::setForeach(const std::string& item,
-                               const std::string& array,
-                               const std::string& index,
-                               uint32_t iteration) {
-}
-
-void NULLDataModel::eval(const Arabica::DOM::Element<std::string>& scriptElem,
-                         const std::string& expr) {
-}
-
-bool NULLDataModel::isDeclared(const std::string& expr) {
-	return true;
 }
 
 /**
@@ -104,7 +63,7 @@ bool NULLDataModel::isDeclared(const std::string& expr) {
  * The predicate must return 'true' if and only if that state is in the current
  * state configuration.
  */
-bool NULLDataModel::evalAsBool(const Arabica::DOM::Element<std::string>& node, const std::string& expr) {
+bool NULLDataModel::evalAsBool(const xercesc::DOMElement* scriptNode, const std::string& expr) {
 	std::string trimmedExpr = expr;
 	boost::trim(trimmedExpr);
 	if (!boost::istarts_with(trimmedExpr, "in"))
@@ -138,17 +97,12 @@ bool NULLDataModel::evalAsBool(const Arabica::DOM::Element<std::string>& node, c
 			stateName = *stateIter;
 		}
 
-		if (_interpreter->isInState(stateName)) {
+		if (_callbacks->isInState(stateName)) {
 			continue;
 		}
 		return false;
 	}
 	return true;
 }
-
-std::string NULLDataModel::evalAsString(const std::string& expr) {
-	return expr;
-}
-
 
 }

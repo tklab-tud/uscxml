@@ -1,12 +1,12 @@
-<?xml version="1.0" standalone="no"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <!-- test that default history content is executed correctly.   The Process MUST execute any executable content in the transition after the parent state's onentry handlers, and, in the case where the history pseudo-state is the target of an <initial> transition, 
 the executable content inside the <initial> transition.  However the Processor MUST
 execute this content only if there is no stored history.  Once the history state's
 parent state has been visited and exited, the default history content must not be executed -->
-<scxml xmlns="http://www.w3.org/2005/07/scxml" version="1.0" initial="s0" datamodel="lua">
+<scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" version="1.0" initial="s0" datamodel="lua">
   <state id="s0">
     <datamodel>
-      <data expr="0" id="testvar1"/>
+      <data id="Var1" expr="0"/>
     </datamodel>
     <initial>
       <transition target="sh1">
@@ -14,11 +14,11 @@ parent state has been visited and exited, the default history content must not b
       </transition>
     </initial>
     <onentry>
-      <send event="timeout" delay="100ms"/>
+      <send delayexpr="'1s'" event="timeout"/>
       <raise event="event1"/>
     </onentry>
     <onexit>
-      <assign location="testvar1" expr="testvar1+1"/>
+      <assign xmlns:scxml="http://www.w3.org/2005/07/scxml" location="Var1" expr="Var1 + 1"/>
     </onexit>
     <history id="sh1">
       <transition target="s01">
@@ -34,8 +34,8 @@ parent state has been visited and exited, the default history content must not b
       <transition event="*" target="fail"/>
     </state>
     <state id="s03">
-      <transition event="event3" target="s0" cond="testvar1 == 0"/>
-      <transition event="event1" target="s2" cond="testvar1 == 1"/>
+      <transition cond="Var1==0" event="event3" target="s0"/>
+      <transition cond="Var1==1" event="event1" target="s2"/>
       <transition event="*" target="fail"/>
     </state>
   </state>
@@ -47,6 +47,14 @@ parent state has been visited and exited, the default history content must not b
     <transition event="event3" target="fail"/>
     <transition event="timeout" target="pass"/>
   </state>
-  <final id="pass"/>
-  <final id="fail"/>
+  <final xmlns:scxml="http://www.w3.org/2005/07/scxml" id="pass">
+    <onentry>
+      <log label="Outcome" expr="'pass'"/>
+    </onentry>
+  </final>
+  <final xmlns:scxml="http://www.w3.org/2005/07/scxml" id="fail">
+    <onentry>
+      <log label="Outcome" expr="'fail'"/>
+    </onentry>
+  </final>
 </scxml>

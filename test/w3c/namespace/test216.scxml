@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- we test that srcexpr is evaluated at runtime.  If the original value of var1 is used, the invocation
+will fail (assuming that there is no script named 'foo').  If
+the runtime value is used, the invocation will succeed -->
+<scxml:scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" xmlns:scxml="http://www.w3.org/2005/07/scxml" initial="s0" version="1.0" datamodel="ecmascript">
+  <scxml:datamodel>
+    <scxml:data id="Var1" expr="'foo'"/>
+  </scxml:datamodel>
+  <scxml:state id="s0">
+    <scxml:onentry>
+      <scxml:send event="timeout" delay="5s"/>
+      <scxml:assign location="Var1" expr="'file:test216sub1.scxml'"/>
+    </scxml:onentry>
+    <scxml:invoke srcexpr="Var1" type="http://www.w3.org/TR/scxml"/>
+    <scxml:transition event="done.invoke" target="pass"/>
+    <scxml:transition event="*" target="fail"/>
+  </scxml:state>
+  <scxml:final id="pass">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'pass'"/>
+    </scxml:onentry>
+  </scxml:final>
+  <scxml:final id="fail">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'fail'"/>
+    </scxml:onentry>
+  </scxml:final>
+</scxml:scxml>

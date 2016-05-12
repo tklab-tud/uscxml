@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- test that invokeid is set correctly in events received from an invoked process.  timeout event catches the 
+case where the invoke doesn't work correctly -->
+<scxml:scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" xmlns:scxml="http://www.w3.org/2005/07/scxml" initial="s0" version="1.0" datamodel="ecmascript">
+  <scxml:datamodel>
+    <scxml:data id="Var1"/>
+    <scxml:data id="Var2"/>
+  </scxml:datamodel>
+  <scxml:state id="s0">
+    <scxml:onentry>
+      <scxml:send event="timeout" delay="2s"/>
+    </scxml:onentry>
+    <scxml:invoke idlocation="Var1" type="http://www.w3.org/TR/scxml/">
+      <scxml:content>
+        <scxml:scxml initial="sub0" version="1.0" datamodel="ecmascript" name="machineName">
+          <scxml:final id="sub0">
+            <scxml:onentry>
+              <scxml:send target="#_parent" event="event1"/>
+            </scxml:onentry>
+          </scxml:final>
+        </scxml:scxml>
+      </scxml:content>
+    </scxml:invoke>
+    <scxml:transition event="event1" target="s1">
+      <scxml:assign location="Var2" expr="_event.invokeid"/>
+    </scxml:transition>
+    <scxml:transition event="event0" target="fail"/>
+  </scxml:state>
+  <scxml:state id="s1">
+    <scxml:transition cond="Var1===Var2" target="pass"/>
+    <scxml:transition target="fail"/>
+  </scxml:state>
+  <scxml:final id="pass">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'pass'"/>
+    </scxml:onentry>
+  </scxml:final>
+  <scxml:final id="fail">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'fail'"/>
+    </scxml:onentry>
+  </scxml:final>
+</scxml:scxml>

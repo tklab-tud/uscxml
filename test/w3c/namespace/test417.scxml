@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- test that we get the done.state.id event when all of a 
+parallel elements children enter final states.  -->
+<scxml:scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" xmlns:scxml="http://www.w3.org/2005/07/scxml" version="1.0" initial="s1" datamodel="ecmascript">
+  <scxml:state id="s1" initial="s1p1">
+    <scxml:onentry>
+      <scxml:send event="timeout" delay="1s"/>
+    </scxml:onentry>
+    <scxml:transition event="timeout" target="fail"/>
+    <scxml:parallel id="s1p1">
+      <scxml:transition event="done.state.s1p1" target="pass"/>
+      <scxml:state id="s1p11" initial="s1p111">
+        <scxml:state id="s1p111">
+          <scxml:transition target="s1p11final"/>
+        </scxml:state>
+        <scxml:final id="s1p11final"/>
+      </scxml:state>
+      <scxml:state id="s1p12" initial="s1p121">
+        <scxml:state id="s1p121">
+          <scxml:transition target="s1p12final"/>
+        </scxml:state>
+        <scxml:final id="s1p12final"/>
+      </scxml:state>
+    </scxml:parallel>
+  </scxml:state>
+  <scxml:final id="pass">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'pass'"/>
+    </scxml:onentry>
+  </scxml:final>
+  <scxml:final id="fail">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'fail'"/>
+    </scxml:onentry>
+  </scxml:final>
+</scxml:scxml>

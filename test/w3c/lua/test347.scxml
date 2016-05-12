@@ -1,11 +1,11 @@
-<?xml version="1.0" standalone="no"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <!-- test that the scxml event I/O processor works by sending events back and forth between an invoked child
 and its parent process -->
-<scxml xmlns="http://www.w3.org/2005/07/scxml" initial="s0" version="1.0" datamodel="lua">
+<scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" initial="s0" datamodel="lua" version="1.0">
   <state id="s0" initial="s01">
     <invoke id="child" type="scxml">
       <content>
-        <scxml initial="sub0" version="1.0" name="machineName" datamodel="lua">
+        <scxml initial="sub0" version="1.0" datamodel="lua" name="machineName">
           <state id="sub0">
             <onentry>
               <send type="http://www.w3.org/TR/scxml/#SCXMLEventProcessor" target="#_parent" event="childToParent"/>
@@ -17,7 +17,7 @@ and its parent process -->
       </content>
     </invoke>
     <onentry>
-      <send delay="20s" event="timeout"/>
+      <send xmlns:scxml="http://www.w3.org/2005/07/scxml" delay="20000" event="timeout"/>
     </onentry>
     <transition event="timeout" target="fail"/>
     <state id="s01">
@@ -31,6 +31,14 @@ and its parent process -->
       <transition event="error" target="fail"/>
     </state>
   </state>
-  <final id="pass"/>
-  <final id="fail"/>
+  <final xmlns:scxml="http://www.w3.org/2005/07/scxml" id="pass">
+    <onentry>
+      <log label="Outcome" expr="'pass'"/>
+    </onentry>
+  </final>
+  <final xmlns:scxml="http://www.w3.org/2005/07/scxml" id="fail">
+    <onentry>
+      <log label="Outcome" expr="'fail'"/>
+    </onentry>
+  </final>
 </scxml>

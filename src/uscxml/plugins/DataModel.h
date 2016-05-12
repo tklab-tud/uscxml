@@ -20,10 +20,9 @@
 #ifndef DATAMODEL_H_F1F776F9
 #define DATAMODEL_H_F1F776F9
 
-#include "uscxml/config.h"
 #include "uscxml/Common.h"
-#include "uscxml/InterpreterInfo.h"
-#include "uscxml/plugins/EventHandler.h"
+#include "uscxml/plugins/Invoker.h"
+#include "uscxml/plugins/IOProcessor.h"
 
 #ifndef TIME_BLOCK
 #	ifdef BUILD_PROFILING
@@ -35,16 +34,26 @@
 #endif
 
 #include <list>
-#include <boost/shared_ptr.hpp>
 #include <string>
+#include <memory>
 #include <sstream>
 
-#include "DOM/Document.hpp"
+#include <xercesc/dom/DOM.hpp>
 
 namespace uscxml {
 
 class InterpreterImpl;
 class DataModelImpl;
+
+class USCXML_API DataModelCallbacks {
+public:
+	virtual const std::string& getName() = 0;
+	virtual const std::string& getSessionId() = 0;
+	virtual const std::map<std::string, IOProcessor>& getIOProcessors() = 0;
+	virtual bool isInState(const std::string& stateId) = 0;
+	virtual xercesc::DOMDocument* getDocument() const = 0;
+	virtual const std::map<std::string, Invoker>& getInvokers() = 0;
+};
 
 class USCXML_API DataModelExtension {
 public:
@@ -59,16 +68,13 @@ public:
 class USCXML_API DataModelImpl {
 public:
 	virtual ~DataModelImpl() {}
-	virtual boost::shared_ptr<DataModelImpl> create(InterpreterInfo* interpreter) = 0;
+	virtual std::shared_ptr<DataModelImpl> create(DataModelCallbacks* interpreter) = 0;
 	virtual std::list<std::string> getNames() = 0;
 
-	virtual bool validate(const std::string& location, const std::string& schema) = 0;
-	virtual bool isLocation(const std::string& expr) = 0;
 	virtual bool isValidSyntax(const std::string& expr) {
 		return true; // overwrite when datamodel supports it
 	}
 	virtual void setEvent(const Event& event) = 0;
-	virtual Data getStringAsData(const std::string& content) = 0;
 
 	size_t replaceExpressions(std::string& content);
 
@@ -78,19 +84,10 @@ public:
 	                        const std::string& array,
 	                        const std::string& index,
 	                        uint32_t iteration) = 0;
-	virtual void pushContext() = 0;
-	virtual void popContext() = 0;
 
-	virtual void eval(const Arabica::DOM::Element<std::string>& scriptElem,
-	                  const std::string& expr) = 0;
-
-	virtual std::string evalAsString(const std::string& expr) = 0;
-
-	virtual bool evalAsBool(const Arabica::DOM::Element<std::string>& scriptNode,
-	                        const std::string& expr) = 0;
-	virtual bool evalAsBool(const std::string& expr) {
-		return evalAsBool(Arabica::DOM::Element<std::string>(), expr);
-	}
+	virtual Data getAsData(const std::string& content) = 0;
+	virtual Data evalAsData(const std::string& content) = 0;
+	virtual bool evalAsBool(const std::string& expr) = 0;
 
 	virtual bool isDeclared(const std::string& expr) = 0;
 
@@ -107,18 +104,11 @@ public:
 	 *  <data id="Var1" expr="return"/>
 	 *
 	 */
-	virtual void assign(const Arabica::DOM::Element<std::string>& assignElem,
-	                    const Arabica::DOM::Node<std::string>& node,
-	                    const std::string& content) = 0;
 	virtual void assign(const std::string& location, const Data& data) = 0;
-
-	virtual void init(const Arabica::DOM::Element<std::string>& dataElem,
-	                  const Arabica::DOM::Node<std::string>& node,
-	                  const std::string& content) = 0;
 	virtual void init(const std::string& location, const Data& data) = 0;
 
-	virtual void setInterpreter(InterpreterInfo* interpreter) {
-		_interpreter = interpreter;
+	virtual void setCallbacks(DataModelCallbacks* callbacks) {
+		_callbacks = callbacks;
 	}
 
 	virtual void addExtension(DataModelExtension* ext);
@@ -127,14 +117,14 @@ public:
 	}
 
 protected:
-	InterpreterInfo* _interpreter;
+	DataModelCallbacks* _callbacks;
 };
 
 class USCXML_API DataModel {
 public:
 
 	DataModel() : _impl() {}
-	DataModel(const boost::shared_ptr<DataModelImpl> impl) : _impl(impl) { }
+	DataModel(const std::shared_ptr<DataModelImpl> impl) : _impl(impl) { }
 	DataModel(const DataModel& other) : _impl(other._impl) { }
 	virtual ~DataModel() {};
 
@@ -160,14 +150,6 @@ public:
 		return _impl->getNames();
 	}
 
-	virtual bool validate(const std::string& location, const std::string& schema) {
-		TIME_BLOCK
-		return _impl->validate(location, schema);
-	}
-	virtual bool isLocation(const std::string& expr) {
-		TIME_BLOCK
-		return _impl->isLocation(expr);
-	}
 	virtual bool isValidSyntax(const std::string& expr) {
 		TIME_BLOCK
 		return _impl->isValidSyntax(expr);
@@ -177,37 +159,18 @@ public:
 		TIME_BLOCK
 		return _impl->setEvent(event);
 	}
-	virtual Data getStringAsData(const std::string& content) {
+	virtual Data getAsData(const std::string& content) {
 		TIME_BLOCK
-		return _impl->getStringAsData(content);
+		return _impl->getAsData(content);
+	}
+	virtual Data evalAsData(const std::string& content) {
+		TIME_BLOCK
+		return _impl->evalAsData(content);
 	}
 
-	virtual void pushContext() {
-		TIME_BLOCK
-		return _impl->pushContext();
-	}
-	virtual void popContext() {
-		TIME_BLOCK
-		return _impl->popContext();
-	}
-
-	virtual void eval(const Arabica::DOM::Element<std::string>& scriptElem,
-	                  const std::string& expr) {
-		TIME_BLOCK
-		return _impl->eval(scriptElem, expr);
-	}
-	virtual std::string evalAsString(const std::string& expr) {
-		TIME_BLOCK
-		return _impl->evalAsString(expr);
-	}
 	virtual bool evalAsBool(const std::string& expr) {
 		TIME_BLOCK
 		return _impl->evalAsBool(expr);
-	}
-	virtual bool evalAsBool(const Arabica::DOM::Element<std::string>& scriptNode,
-	                        const std::string& expr) {
-		TIME_BLOCK
-		return _impl->evalAsBool(scriptNode, expr);
 	}
 
 	virtual uint32_t getLength(const std::string& expr) {
@@ -222,23 +185,11 @@ public:
 		return _impl->setForeach(item, array, index, iteration);
 	}
 
-	virtual void assign(const Arabica::DOM::Element<std::string>& assignElem,
-	                    const Arabica::DOM::Node<std::string>& node,
-	                    const std::string& content) {
-		TIME_BLOCK
-		return _impl->assign(assignElem, node, content);
-	}
 	virtual void assign(const std::string& location, const Data& data) {
 		TIME_BLOCK
 		return _impl->assign(location, data);
 	}
 
-	virtual void init(const Arabica::DOM::Element<std::string>& dataElem,
-	                  const Arabica::DOM::Node<std::string>& node,
-	                  const std::string& content) {
-		TIME_BLOCK
-		return _impl->init(dataElem, node, content);
-	}
 	virtual void init(const std::string& location, const Data& data) {
 		TIME_BLOCK
 		return _impl->init(location, data);
@@ -259,9 +210,9 @@ public:
 		return _impl->andExpressions(expressions);
 	}
 
-	virtual void setInterpreter(InterpreterInfo* interpreter) {
+	virtual void setCallbacks(DataModelCallbacks* callbacks) {
 		TIME_BLOCK
-		_impl->setInterpreter(interpreter);
+		_impl->setCallbacks(callbacks);
 	}
 
 	virtual void addExtension(DataModelExtension* ext) {
@@ -274,7 +225,7 @@ public:
 #endif
 
 protected:
-	boost::shared_ptr<DataModelImpl> _impl;
+	std::shared_ptr<DataModelImpl> _impl;
 };
 
 

@@ -41,8 +41,8 @@ parent state has been visited and exited, the default history content must not b
   			</state>
   <state id="s03">
   	
-  	<transition conf:idVal="1==0" event="event3" target="s0"/>
-  	<transition conf:idVal="1==1" event="event1" target="s2"/>
+  	<transition conf:idVal="1=0" event="event3" target="s0"/>
+  	<transition conf:idVal="1=1" event="event1" target="s2"/>
   	<transition event="*" conf:targetfail=""/>
   	</state>
 </state> 

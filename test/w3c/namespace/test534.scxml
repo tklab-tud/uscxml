@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- test that that <send> 'event' value gets sent as the param _scxmleventname . -->
+<scxml:scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" xmlns:scxml="http://www.w3.org/2005/07/scxml" initial="s0" datamodel="ecmascript" version="1.0">
+  <scxml:state id="s0">
+    <scxml:onentry>
+      <scxml:send event="timeout" delay="30s"/>
+      <scxml:send event="test" targetexpr="_ioprocessors['basichttp']['location']" type="http://www.w3.org/TR/scxml/#BasicHTTPEventProcessor">
+        </scxml:send>
+    </scxml:onentry>
+    <!-- if other end sends us back this event, we succeed -->
+    <scxml:transition event="test" cond="_event.raw.search('_scxmleventname=test') !== -1" target="pass"/>
+    <scxml:transition event="*" target="fail"/>
+  </scxml:state>
+  <scxml:final id="pass">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'pass'"/>
+    </scxml:onentry>
+  </scxml:final>
+  <scxml:final id="fail">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'fail'"/>
+    </scxml:onentry>
+  </scxml:final>
+</scxml:scxml>

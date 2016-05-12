@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- test that foreach causes a new variable to be declared if 'item' doesn't already exist.  Also
+test that it will use an existing var if it does exist. -->
+<scxml:scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" xmlns:scxml="http://www.w3.org/2005/07/scxml" initial="s0" datamodel="ecmascript" version="1.0">
+  <scxml:datamodel>
+    <scxml:data id="Var1"/>
+    <scxml:data id="Var2"/>
+    <scxml:data id="Var3">
+    [1,2,3]
+    </scxml:data>
+  </scxml:datamodel>
+  <scxml:state id="s0">
+    <scxml:onentry>
+      <!-- first use declared variables -->
+      <scxml:foreach item="Var1" index="Var2" array="Var3"/>
+      <scxml:raise event="foo"/>
+    </scxml:onentry>
+    <scxml:transition event="error" target="fail"/>
+    <scxml:transition event="*" target="s1"/>
+  </scxml:state>
+  <scxml:state id="s1">
+    <scxml:onentry>
+      <!-- now use undeclared variables -->
+      <scxml:foreach item="Var4" index="Var5" array="Var3"/>
+      <scxml:raise event="bar"/>
+    </scxml:onentry>
+    <scxml:transition event="error" target="fail"/>
+    <scxml:transition event="*" target="s2"/>
+  </scxml:state>
+  <scxml:state id="s2">
+    <!-- check that var4 is bound -->
+    <scxml:transition cond="Var4" target="pass"/>
+    <scxml:transition target="fail"/>
+  </scxml:state>
+  <scxml:final id="pass">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'pass'"/>
+    </scxml:onentry>
+  </scxml:final>
+  <scxml:final id="fail">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'fail'"/>
+    </scxml:onentry>
+  </scxml:final>
+</scxml:scxml>

@@ -1,4 +1,0 @@
-<scxml datamodel="ecmascript">
-	<script>print("asdf");</script>
-	<state id="foo" final="true" />
-</scxml>

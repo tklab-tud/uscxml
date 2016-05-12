@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- we test that states are removed from the active states list as they are exited.  When s01's onexit handler
+fires, s011 should not be on the active state list, so in(S011) should be false, and event1 should not
+be raised.  Therefore the timeout should fire to indicate success   -->
+<scxml:scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" xmlns:scxml="http://www.w3.org/2005/07/scxml" initial="s0" version="1.0" datamodel="ecmascript">
+  <scxml:state id="s0" initial="s01">
+    <scxml:onentry>
+      <scxml:send event="timeout" delayexpr="'1s'"/>
+    </scxml:onentry>
+    <scxml:transition event="timeout" target="pass"/>
+    <scxml:transition event="event1" target="fail"/>
+    <scxml:state id="s01" initial="s011">
+      <scxml:onexit>
+        <scxml:if cond="In('s011')">
+          <scxml:raise event="event1"/>
+        </scxml:if>
+      </scxml:onexit>
+      <scxml:state id="s011">
+        <scxml:transition target="s02"/>
+      </scxml:state>
+    </scxml:state>
+    <!-- end s01 -->
+    <scxml:state id="s02"/>
+  </scxml:state>
+  <!-- end s0 -->
+  <scxml:final id="pass">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'pass'"/>
+    </scxml:onentry>
+  </scxml:final>
+  <scxml:final id="fail">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'fail'"/>
+    </scxml:onentry>
+  </scxml:final>
+</scxml:scxml>

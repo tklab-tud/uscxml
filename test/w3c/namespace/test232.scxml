@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- test that a parent process can receive multiple events from a child process   -->
+<scxml:scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" xmlns:scxml="http://www.w3.org/2005/07/scxml" initial="s0" version="1.0" datamodel="ecmascript">
+  <scxml:state id="s0" initial="s01">
+    <scxml:onentry>
+      <scxml:send event="timeout" delay="3s"/>
+    </scxml:onentry>
+    <scxml:invoke type="http://www.w3.org/TR/scxml/">
+      <scxml:content>
+        <scxml:scxml initial="subFinal" version="1.0" datamodel="ecmascript">
+          <scxml:final id="subFinal">
+            <scxml:onentry>
+              <scxml:send target="#_parent" event="childToParent1"/>
+              <scxml:send target="#_parent" event="childToParent2"/>
+            </scxml:onentry>
+          </scxml:final>
+        </scxml:scxml>
+      </scxml:content>
+    </scxml:invoke>
+    <scxml:transition event="timeout" target="fail"/>
+    <scxml:state id="s01">
+      <scxml:transition event="childToParent1" target="s02"/>
+    </scxml:state>
+    <scxml:state id="s02">
+      <scxml:transition event="childToParent2" target="s03"/>
+    </scxml:state>
+    <scxml:state id="s03">
+      <scxml:transition event="done.invoke" target="pass"/>
+    </scxml:state>
+  </scxml:state>
+  <scxml:final id="pass">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'pass'"/>
+    </scxml:onentry>
+  </scxml:final>
+  <scxml:final id="fail">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'fail'"/>
+    </scxml:onentry>
+  </scxml:final>
+</scxml:scxml>

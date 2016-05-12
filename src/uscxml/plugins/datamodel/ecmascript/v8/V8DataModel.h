@@ -20,10 +20,10 @@
 #ifndef V8DATAMODEL_H_KN8TWG0V
 #define V8DATAMODEL_H_KN8TWG0V
 
-#include "uscxml/InterpreterInfo.h"
+#include "uscxml/plugins/DataModel.h"
 #include <list>
+#include <set>
 #include <v8.h>
-#include "V8DOM.h"
 
 #ifdef BUILD_AS_PLUGINS
 #include "uscxml/plugins/Plugins.h"
@@ -32,7 +32,6 @@
 namespace uscxml {
 class Event;
 class Data;
-class V8SCXMLDOM;
 }
 
 namespace uscxml {
@@ -41,7 +40,9 @@ class V8DataModel : public DataModelImpl {
 public:
 	V8DataModel();
 	virtual ~V8DataModel();
-	virtual boost::shared_ptr<DataModelImpl> create(InterpreterInfo* interpreter);
+	virtual std::shared_ptr<DataModelImpl> create(DataModelCallbacks* callbacks);
+
+	virtual void addExtension(DataModelExtension* ext);
 
 	virtual std::list<std::string> getNames() {
 		std::list<std::string> names;
@@ -49,79 +50,61 @@ public:
 		return names;
 	}
 
-	virtual void initialize();
-	virtual void setEvent(const Event& event);
-
-	virtual bool validate(const std::string& location, const std::string& schema);
-	virtual bool isLocation(const std::string& expr);
 	virtual bool isValidSyntax(const std::string& expr);
 
+	virtual void setEvent(const Event& event);
+
+	// foreach
 	virtual uint32_t getLength(const std::string& expr);
 	virtual void setForeach(const std::string& item,
 	                        const std::string& array,
 	                        const std::string& index,
 	                        uint32_t iteration);
-	virtual void pushContext();
-	virtual void popContext();
 
-	virtual bool supportsJSON() {
-		return true;
-	}
-
-	virtual void eval(const Arabica::DOM::Element<std::string>& scriptElem,
-	                  const std::string& expr);
-	virtual void assign(const Arabica::DOM::Element<std::string>& assignElem,
-	                    const Arabica::DOM::Node<std::string>& node,
-	                    const std::string& content);
-	virtual void assign(const std::string& location,
-	                    const Data& data);
-
-	virtual void init(const Arabica::DOM::Element<std::string>& dataElem,
-	                  const Arabica::DOM::Node<std::string>& node,
-	                  const std::string& content);
-	virtual void init(const std::string& location,
-	                  const Data& data);
-
-	virtual std::string andExpressions(std::list<std::string>);
-
-	virtual Data getStringAsData(const std::string& content);
-	virtual Data getValueAsData(const v8::Handle<v8::Value>& value,
-	                            std::set<v8::Value*>& alreadySeen);
-	virtual Data getValueAsData(const v8::Handle<v8::Value>& value);
+	virtual bool evalAsBool(const std::string& expr);
+	virtual Data evalAsData(const std::string& expr);
+	virtual Data getAsData(const std::string& content);
 
 	virtual bool isDeclared(const std::string& expr);
 
-	virtual std::string evalAsString(const std::string& expr);
-	virtual bool evalAsBool(const Arabica::DOM::Element<std::string>& node, const std::string& expr);
-	virtual bool evalAsBool(const std::string& expr);
-	virtual double evalAsNumber(const std::string& expr);
+	virtual void assign(const std::string& location, const Data& data);
+	virtual void init(const std::string& location, const Data& data);
 
-	virtual void addExtension(DataModelExtension* ext);
-
-	static v8::Handle<v8::Value> jsExtension(const v8::Arguments& args);
-	static v8::Handle<v8::Value> jsIn(const v8::Arguments& args);
-	static v8::Handle<v8::Value> jsPrint(const v8::Arguments& args);
+	virtual std::string andExpressions(std::list<std::string>);
 
 protected:
-	std::list<v8::Persistent<v8::Context> > _contexts;
 
-	Arabica::DOM::V8DOM* _dom;
+	static void jsExtension(const v8::FunctionCallbackInfo<v8::Value>& info);
+	static void jsIn(const v8::FunctionCallbackInfo<v8::Value>& info);
+	static void jsPrint(const v8::FunctionCallbackInfo<v8::Value>& info);
 
-	bool _ioProcessorsAreSet;
-	bool _invokersAreSet;
+	v8::Persistent<v8::Object> _event;
+	v8::Persistent<v8::Context> _context;
+	static v8::Isolate* _isolate;
+
 	v8::Persistent<v8::Object> _ioProcessors;
 	v8::Persistent<v8::Object> _invokers;
-	static v8::Handle<v8::Value> getIOProcessors(v8::Local<v8::String> property, const v8::AccessorInfo& info);
-	static v8::Handle<v8::Value> getInvokers(v8::Local<v8::String> property, const v8::AccessorInfo& info);
-	static v8::Handle<v8::Value> getAttribute(v8::Local<v8::String> property, const v8::AccessorInfo& info);
-	static void setWithException(v8::Local<v8::String> property, v8::Local<v8::Value> value, const v8::AccessorInfo& info);
 
-	v8::Handle<v8::Value> evalAsValue(const std::string& expr, bool dontThrow = false);
-	v8::Handle<v8::Value> getDataAsValue(const Data& data);
-	v8::Handle<v8::Value> getNodeAsValue(const Arabica::DOM::Node<std::string>& node);
+	static void getIOProcessors(v8::Local<v8::String> property, const v8::PropertyCallbackInfo<v8::Value>& info);
+	static void getInvokers(v8::Local<v8::String> property, const v8::PropertyCallbackInfo<v8::Value>& info);
+	static void getAttribute(v8::Local<v8::String> property, const v8::PropertyCallbackInfo<v8::Value>& info);
+	static void setWithException(v8::Local<v8::String> property,
+	                             v8::Local<v8::Value> value,
+	                             const v8::PropertyCallbackInfo<void>& info);
+
+	v8::Local<v8::Value> evalAsValue(const std::string& expr, bool dontThrow = false);
+	v8::Local<v8::Value> getDataAsValue(const Data& data);
+	Data getValueAsData(const v8::Local<v8::Value>& value);
+	v8::Local<v8::Value> getNodeAsValue(const xercesc::DOMNode* node);
 	void throwExceptionEvent(const v8::TryCatch& tryCatch);
 
 	std::set<DataModelExtension*> _extensions;
+
+private:
+	Data getValueAsData(const v8::Local<v8::Value>& value, std::set<v8::Value*>& alreadySeen);
+
+	static std::mutex _initMutex;
+
 };
 
 #ifdef BUILD_AS_PLUGINS

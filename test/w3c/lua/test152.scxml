@@ -1,19 +1,21 @@
-<?xml version="1.0" standalone="no"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <!-- test that an illegal array or item value causes error.execution and results in executable content
 not being executed. -->
-<scxml xmlns="http://www.w3.org/2005/07/scxml" initial="s0" version="1.0" datamodel="lua">
+<scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" initial="s0" datamodel="lua" version="1.0">
   <datamodel>
-    <data expr="0" id="testvar1"/>
-    <data id="testvar2"/>
-    <data id="testvar3"/>
-    <data expr="7" id="testvar4"/>
-    <data id="testvar5">{1,2,3}</data>
+    <data id="Var1" expr="0"/>
+    <data id="Var2"/>
+    <data id="Var3"/>
+    <data id="Var4" expr="7"/>
+    <data id="Var5">
+    {1,2,3}
+    </data>
   </datamodel>
   <state id="s0">
     <onentry>
       <!-- invalid array, legal item -->
-      <foreach array="testvar4" index="testvar3" item="testvar2">
-        <assign location="testvar1" expr="testvar1+1"/>
+      <foreach item="Var2" index="Var3" array="Var4">
+        <assign xmlns:scxml="http://www.w3.org/2005/07/scxml" location="Var1" expr="Var1 + 1"/>
       </foreach>
       <raise event="foo"/>
     </onentry>
@@ -23,8 +25,8 @@ not being executed. -->
   <state id="s1">
     <onentry>
       <!-- illegal item, legal array -->
-      <foreach array="testvar5" index="testvar3" item="!_no">
-        <assign location="testvar1" expr="testvar1+1"/>
+      <foreach item="'continue'" index="Var3" array="Var5">
+        <assign xmlns:scxml="http://www.w3.org/2005/07/scxml" location="Var1" expr="Var1 + 1"/>
       </foreach>
       <raise event="bar"/>
     </onentry>
@@ -33,9 +35,17 @@ not being executed. -->
   </state>
   <state id="s2">
     <!-- check that var1 has its original value (so executable content never got executed -->
-    <transition cond="testvar1 == 0" target="pass"/>
+    <transition cond="Var1==0" target="pass"/>
     <transition target="fail"/>
   </state>
-  <final id="pass"/>
-  <final id="fail"/>
+  <final xmlns:scxml="http://www.w3.org/2005/07/scxml" id="pass">
+    <onentry>
+      <log label="Outcome" expr="'pass'"/>
+    </onentry>
+  </final>
+  <final xmlns:scxml="http://www.w3.org/2005/07/scxml" id="fail">
+    <onentry>
+      <log label="Outcome" expr="'fail'"/>
+    </onentry>
+  </final>
 </scxml>

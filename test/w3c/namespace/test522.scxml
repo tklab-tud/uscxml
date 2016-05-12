@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- test that location field the entry for Basic HTTP Event I/O processor can be used
+to send a message to the processor -->
+<scxml:scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" xmlns:scxml="http://www.w3.org/2005/07/scxml" initial="s0" datamodel="ecmascript" version="1.0">
+  <scxml:state id="s0">
+    <scxml:onentry>
+      <scxml:send event="timeout" delay="30s"/>
+      <scxml:send event="test" type="http://www.w3.org/TR/scxml/#BasicHTTPEventProcessor" targetexpr="_ioprocessors['basichttp']['location']"/>
+    </scxml:onentry>
+    <!-- the event we receive should be called 'test', but that's not actually
+     required for this test. Only that the send deliver some event to us.  So if
+     we get something other than timeout or error, we call it success -->
+    <scxml:transition event="timeout" target="fail"/>
+    <scxml:transition event="error" target="fail"/>
+    <scxml:transition event="*" target="pass"/>
+  </scxml:state>
+  <scxml:final id="pass">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'pass'"/>
+    </scxml:onentry>
+  </scxml:final>
+  <scxml:final id="fail">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'fail'"/>
+    </scxml:onentry>
+  </scxml:final>
+</scxml:scxml>

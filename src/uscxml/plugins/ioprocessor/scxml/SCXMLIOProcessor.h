@@ -20,19 +20,15 @@
 #ifndef SCXMLIOProcessor_H_2CUY93KU
 #define SCXMLIOProcessor_H_2CUY93KU
 
-#include "uscxml/plugins/ioprocessor/basichttp/BasicHTTPIOProcessor.h"
-
-#ifdef BUILD_AS_PLUGINS
-#include "uscxml/plugins/Plugins.h"
-#endif
+#include "uscxml/plugins/IOProcessor.h"
 
 namespace uscxml {
 
-class SCXMLIOProcessor : public BasicHTTPIOProcessor {
+class SCXMLIOProcessor : public IOProcessorImpl {
 public:
 	SCXMLIOProcessor();
 	virtual ~SCXMLIOProcessor();
-	virtual boost::shared_ptr<IOProcessorImpl> create(uscxml::InterpreterImpl* interpreter);
+	virtual std::shared_ptr<IOProcessorImpl> create(uscxml::InterpreterImpl* interpreter);
 
 	virtual std::list<std::string> getNames() {
 		std::list<std::string> names;
@@ -41,9 +37,12 @@ public:
 		return names;
 	}
 
-	virtual void send(const SendRequest& req);
+	virtual void eventFromSCXML(const std::string& target, const Event& event);
+	virtual bool isValidTarget(const std::string& target);
 
 	Data getDataModelVariables();
+protected:
+	InterpreterImpl* _interpreter;
 };
 
 #ifdef BUILD_AS_PLUGINS

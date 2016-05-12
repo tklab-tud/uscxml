@@ -1,6 +1,0 @@
-#!/bin/bash
-
-set -e
-TEST_DIR="$( cd "$( dirname "$0" )" && pwd )"
-
-${TEST_DIR}/../../test/ctest/run-tests.cron

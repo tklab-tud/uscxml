@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- we test that the processor supports the basic http event i/o processor.  This is an optional
+test since platforms are not required to support basic http event i/o -->
+<scxml:scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" xmlns:scxml="http://www.w3.org/2005/07/scxml" initial="s0" version="1.0" datamodel="ecmascript">
+  <scxml:state id="s0">
+    <scxml:onentry>
+      <scxml:send type="http://www.w3.org/TR/scxml/#BasicHTTPEventProcessor" targetexpr="_ioprocessors['basichttp']['location']" event="event1"/>
+      <scxml:send event="timeout"/>
+    </scxml:onentry>
+    <scxml:transition event="event1" target="pass"/>
+    <scxml:transition event="*" target="fail"/>
+  </scxml:state>
+  <scxml:final id="pass">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'pass'"/>
+    </scxml:onentry>
+  </scxml:final>
+  <scxml:final id="fail">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'fail'"/>
+    </scxml:onentry>
+  </scxml:final>
+</scxml:scxml>

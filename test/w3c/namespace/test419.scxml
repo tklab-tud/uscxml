@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- test that eventless transitions take precedence over event-driven ones -->
+<scxml:scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" xmlns:scxml="http://www.w3.org/2005/07/scxml" version="1.0" initial="s1" datamodel="ecmascript">
+  <scxml:state id="s1">
+    <scxml:onentry>
+      <scxml:raise event="internalEvent"/>
+      <scxml:send event="externalEvent"/>
+    </scxml:onentry>
+    <scxml:transition event="*" target="fail"/>
+    <scxml:transition target="pass"/>
+  </scxml:state>
+  <scxml:final id="pass">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'pass'"/>
+    </scxml:onentry>
+  </scxml:final>
+  <scxml:final id="fail">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'fail'"/>
+    </scxml:onentry>
+  </scxml:final>
+</scxml:scxml>

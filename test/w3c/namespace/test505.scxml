@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- test that an internal transition does not exit its source state -->
+<scxml:scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" xmlns:scxml="http://www.w3.org/2005/07/scxml" initial="s1" version="1.0" datamodel="ecmascript">
+  <scxml:datamodel>
+    <scxml:data id="Var1" expr="0"/>
+    <!-- how often we have exited s1 -->
+    <scxml:data id="Var2" expr="0"/>
+    <!-- how often we have exited s11 -->
+    <scxml:data id="Var3" expr="0"/>
+    <!-- how often the transition for foo has been taken -->
+  </scxml:datamodel>
+  <scxml:state id="s1">
+    <scxml:onentry>
+      <scxml:raise event="foo"/>
+      <scxml:raise event="bar"/>
+    </scxml:onentry>
+    <scxml:onexit>
+      <scxml:assign location="Var1" expr="Var1 + 1"/>
+    </scxml:onexit>
+    <scxml:transition event="foo" type="internal" target="s11">
+      <scxml:assign location="Var3" expr="Var3 + 1"/>
+    </scxml:transition>
+    <!-- make sure the transition on foo was actually taken -->
+    <scxml:transition event="bar" cond="Var3==1" target="s2"/>
+    <scxml:transition event="bar" target="fail"/>
+    <scxml:state id="s11">
+      <scxml:onexit>
+        <scxml:assign location="Var2" expr="Var2 + 1"/>
+      </scxml:onexit>
+    </scxml:state>
+  </scxml:state>
+  <scxml:state id="s2">
+    <!-- make sure that s1 was exited once -->
+    <scxml:transition cond="Var1==1" target="s3"/>
+    <scxml:transition target="fail"/>
+  </scxml:state>
+  <scxml:state id="s3">
+    <!-- make sure that s11 was exited twice -->
+    <scxml:transition cond="Var2==2" target="pass"/>
+    <scxml:transition target="fail"/>
+  </scxml:state>
+  <scxml:final id="pass">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'pass'"/>
+    </scxml:onentry>
+  </scxml:final>
+  <scxml:final id="fail">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'fail'"/>
+    </scxml:onentry>
+  </scxml:final>
+</scxml:scxml>

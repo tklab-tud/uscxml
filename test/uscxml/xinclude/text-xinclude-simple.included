@@ -1,3 +1,0 @@
-<state id="start">
-	<transition target="s1" />
-</state>

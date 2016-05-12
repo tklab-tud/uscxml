@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- test that event.data can be populated using both namelist, param and <content>
+and that correct values are used -->
+<scxml:scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" xmlns:scxml="http://www.w3.org/2005/07/scxml" initial="s0" version="1.0" datamodel="ecmascript">
+  <scxml:datamodel>
+    <scxml:data id="Var1" expr="1"/>
+    <scxml:data id="Var2"/>
+    <scxml:data id="Var3"/>
+  </scxml:datamodel>
+  <scxml:state id="s0">
+    <scxml:onentry>
+      <scxml:send delay="5s" event="timeout"/>
+      <scxml:send event="event1" type="http://www.w3.org/TR/scxml/#SCXMLEventProcessor" namelist="Var1">
+        <scxml:param name="param1" expr="2"/>
+      </scxml:send>
+    </scxml:onentry>
+    <scxml:transition event="event1" target="s1">
+      <scxml:assign location="Var2" expr="_event.data.Var1"/>
+      <scxml:assign location="Var3" expr="_event.data.param1"/>
+    </scxml:transition>
+    <scxml:transition event="*" target="fail">
+    </scxml:transition>
+  </scxml:state>
+  <scxml:state id="s1">
+    <scxml:transition cond="Var2==1" target="s2"/>
+    <scxml:transition target="fail"/>
+  </scxml:state>
+  <scxml:state id="s2">
+    <scxml:transition cond="Var3==2" target="s3"/>
+    <scxml:transition target="fail"/>
+  </scxml:state>
+  <scxml:state id="s3">
+    <scxml:onentry>
+      <scxml:send delay="5s" event="timeout"/>
+      <scxml:send event="event2">
+        <scxml:content>123</scxml:content>
+      </scxml:send>
+    </scxml:onentry>
+    <scxml:transition event="event2" cond="_event.data == 123" target="pass"/>
+    <scxml:transition event="*" target="fail"/>
+  </scxml:state>
+  <scxml:final id="pass">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'pass'"/>
+    </scxml:onentry>
+  </scxml:final>
+  <scxml:final id="fail">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'fail'"/>
+    </scxml:onentry>
+  </scxml:final>
+</scxml:scxml>

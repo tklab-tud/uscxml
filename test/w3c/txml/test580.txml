@@ -36,8 +36,8 @@
   		
   	<state id="s12"/>
   <transition conf:inState="sh1"  conf:targetfail=""/>
- <transition conf:idVal="1==0" target="sh1"/>
- <transition conf:idVal="1==1"  conf:targetpass=""/>
+ <transition conf:idVal="1=0" target="sh1"/>
+ <transition conf:idVal="1=1"  conf:targetpass=""/>
    <onexit>
   	<conf:incrementID id="1"/>
   	</onexit>

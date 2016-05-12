@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- test that inline content can be used to assign a value to a var.  -->
+<scxml:scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" xmlns:scxml="http://www.w3.org/2005/07/scxml" initial="s0" version="1.0" binding="early" datamodel="ecmascript">
+  <scxml:state id="s0">
+    <scxml:transition cond="Var1" target="pass"/>
+    <scxml:transition target="fail"/>
+  </scxml:state>
+  <scxml:state id="s1">
+    <scxml:datamodel>
+      <scxml:data id="Var1">
+     [1,2,3]
+     </scxml:data>
+    </scxml:datamodel>
+  </scxml:state>
+  <scxml:final id="pass">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'pass'"/>
+    </scxml:onentry>
+  </scxml:final>
+  <scxml:final id="fail">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'fail'"/>
+    </scxml:onentry>
+  </scxml:final>
+</scxml:scxml>

@@ -21,56 +21,57 @@
 #define USCXMLINVOKER_H_OQFA21IO
 
 #include <uscxml/Interpreter.h>
-#include <boost/enable_shared_from_this.hpp>
-#include "uscxml/concurrency/BlockingQueue.h"
+#include "uscxml/interpreter/EventQueueImpl.h"
 
 #ifdef BUILD_AS_PLUGINS
 #include "uscxml/plugins/Plugins.h"
 #endif
 
-namespace uscxml {
+#define USCXML_INVOKER_SCXML_TYPE "http://www.w3.org/TR/scxml"
 
-class Interpreter;
-class USCXMLInvoker;
+namespace uscxml {
 
 class USCXMLInvoker :
 	public InvokerImpl,
-	public boost::enable_shared_from_this<USCXMLInvoker> {
+	public std::enable_shared_from_this<USCXMLInvoker> {
 public:
-	class ParentQueue : public concurrency::BlockingQueue<SendRequest> {
+	class ParentQueueImpl : public EventQueueImpl {
 	public:
-		ParentQueue() {}
-		virtual void push(const SendRequest& event);
+		ParentQueueImpl(USCXMLInvoker* invoker) : _invoker(invoker) {}
+		virtual void enqueue(const Event& event);
 		USCXMLInvoker* _invoker;
 	};
 
 	USCXMLInvoker();
 	virtual ~USCXMLInvoker();
-	virtual boost::shared_ptr<InvokerImpl> create(InterpreterImpl* interpreter);
+	virtual std::shared_ptr<InvokerImpl> create(InterpreterImpl* interpreter);
+
 	virtual std::list<std::string> getNames() {
 		std::list<std::string> names;
 		names.push_back("scxml");
 		names.push_back("uscxml");
-		names.push_back("http://www.w3.org/TR/scxml");
+		names.push_back(USCXML_INVOKER_SCXML_TYPE);
 		names.push_back("http://www.w3.org/TR/scxml/");
 		return names;
 	}
 
-	virtual bool deleteOnUninvoke() {
-		return false;
-	}
+	virtual void eventFromSCXML(const Event& event);
 
 	virtual Data getDataModelVariables();
-	virtual void send(const SendRequest& req);
-	virtual void cancel(const std::string sendId);
-	virtual void invoke(const InvokeRequest& req);
+	virtual void invoke(const std::string& source, const Event& invokeEvent);
 	virtual void uninvoke();
 
 protected:
-	bool _cancelled;
-	ParentQueue _parentQueue;
+
+	void start();
+	void stop();
+	static void run(void* instance);
+
+	bool _isActive;
+	bool _isStarted;
+	std::thread* _thread;
+	EventQueue _parentQueue;
 	Interpreter _invokedInterpreter;
-	InterpreterImpl* _parentInterpreter;
 };
 
 #ifdef BUILD_AS_PLUGINS

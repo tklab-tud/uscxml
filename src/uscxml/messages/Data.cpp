@@ -22,25 +22,21 @@
 
 #include <boost/algorithm/string.hpp>
 
-#include "uscxml/dom/DOMUtils.h"
-#include "uscxml/dom/NameSpacingParser.h"
-#include <DOM/SAX2DOM/SAX2DOM.hpp>
-#include <SAX/helpers/DefaultHandler.hpp>
-#include <SAX/helpers/CatchErrorHandler.hpp>
+#include "uscxml/util/DOM.h"
 
-#include "glog/logging.h"
+#include "easylogging++.h"
 
 #ifdef HAS_STRING_H
 #include <string.h>
 #endif
 
 extern "C" {
-#include "jsmn.h" // minimal json parser
+#include "jsmn/jsmn.h" // minimal json parser
 }
 
 namespace uscxml {
 
-Data::Data(const char* data, size_t size, const std::string& mimeType, bool adopt) : binary(data, size, mimeType, adopt) {}
+Data::Data(const char* data, size_t size, const std::string& mimeType, bool adopt) : node(NULL), binary(data, size, mimeType, adopt) {}
 
 void Data::merge(const Data& other) {
 	if (other.compound.size() > 0) {
@@ -74,103 +70,6 @@ void Data::merge(const Data& other) {
 		atom = other.atom;
 		type = other.type;
 	}
-}
-
-Data::Data(const Arabica::DOM::Node<std::string>& dom) {
-	// we may need to convert some keys to arrays if we have the same name as an element
-	std::map<std::string, std::list<Data> > arrays;
-//  Interpreter::dump(dom);
-
-	if (dom.hasAttributes()) {
-		Arabica::DOM::NamedNodeMap<std::string> attributes = dom.getAttributes();
-		for (size_t i = 0; i < attributes.getLength(); i++) {
-			Arabica::DOM::Node<std::string> attribute = attributes.item(i);
-//      Interpreter::dump(attribute);
-
-			assert(attribute.getNodeType() == Arabica::DOM::Node_base::ATTRIBUTE_NODE);
-			std::string key = attribute.getLocalName();
-			std::string value = attribute.getNodeValue();
-			compound[key] = Data(value, VERBATIM);
-		}
-	}
-
-	if (dom.hasChildNodes()) {
-		Arabica::DOM::NodeList<std::string> children = dom.getChildNodes();
-		for (size_t i = 0; i < children.getLength(); i++) {
-			Arabica::DOM::Node<std::string> child = children.item(i);
-//      Interpreter::dump(child);
-			std::string key;
-			switch (child.getNodeType()) {
-			case Arabica::DOM::Node_base::ELEMENT_NODE:
-				key = TAGNAME_CAST(child);
-				break;
-			case Arabica::DOM::Node_base::ATTRIBUTE_NODE:
-				key = ((Arabica::DOM::Attr<std::string>)child).getName();
-				break;
-			case Arabica::DOM::Node_base::TEXT_NODE:
-			default:
-				break;
-			}
-			if (key.length() == 0)
-				continue;
-
-			if (compound.find(key) != compound.end()) {
-				// we already have such a key .. make it an array after we processed all children
-				arrays[key].push_back(Data(child));
-			} else {
-				compound[key] = Data(child);
-			}
-		}
-	} else {
-		atom = dom.getNodeValue();
-		type = VERBATIM;
-	}
-
-	std::map<std::string, std::list<Data> >::iterator arrayIter = arrays.begin();
-	while(arrayIter != arrays.end()) {
-		assert(compound.find(arrayIter->first) != compound.end());
-		Data arrayData;
-		arrays[arrayIter->first].push_front(compound[arrayIter->first]);
-		arrayData.array = arrays[arrayIter->first];
-		compound[arrayIter->first] = arrayData;
-	}
-}
-
-Arabica::DOM::Document<std::string> Data::toDocument() {
-	Arabica::DOM::DOMImplementation<std::string> domFactory = Arabica::SimpleDOM::DOMImplementation<std::string>::getDOMImplementation();
-	Arabica::DOM::Document<std::string> document = domFactory.createDocument("http://www.w3.org/2005/07/scxml", "message", 0);
-	Arabica::DOM::Element<std::string> scxmlMsg = document.getDocumentElement();
-	scxmlMsg.setPrefix("scxml");
-	scxmlMsg.setAttribute("version", "1.0");
-
-	if (compound.size() > 0 || array.size() > 0) {
-		Arabica::DOM::Element<std::string> payloadElem = document.createElementNS("http://www.w3.org/2005/07/scxml", "payload");
-		payloadElem.setPrefix("scxml");
-
-		scxmlMsg.appendChild(payloadElem);
-
-		// we do not support nested attibutes
-		if (compound.size() > 0) {
-			std::map<std::string, Data>::iterator compoundIter = compound.begin();
-			while(compoundIter != compound.end()) {
-				if (compoundIter->second.atom.size() > 0) {
-					Arabica::DOM::Element<std::string> propertyElem = document.createElementNS("http://www.w3.org/2005/07/scxml", "property");
-					propertyElem.setPrefix("scxml");
-
-					propertyElem.setAttribute("name", compoundIter->first);
-					Arabica::DOM::Text<std::string> textElem = document.createTextNode(compoundIter->second.atom);
-					propertyElem.appendChild(textElem);
-					payloadElem.appendChild(propertyElem);
-				}
-				compoundIter++;
-			}
-		}
-	}
-	return document;
-}
-
-Data Data::fromXML(const std::string& xmlString) {
-	return Data();
 }
 
 Data Data::fromJSON(const std::string& jsonString) {
@@ -300,8 +199,12 @@ Data Data::fromJSON(const std::string& jsonString) {
 }
 
 std::ostream& operator<< (std::ostream& os, const Data& data) {
-	os << Data::toJSON(data);
+	os << data.asJSON();
 	return os;
+}
+
+std::string Data::asJSON() const {
+	return Data::toJSON(*this);
 }
 
 std::string Data::toJSON(const Data& data) {

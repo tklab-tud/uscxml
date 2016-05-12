@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scxml xmlns="http://www.w3.org/2005/07/scxml" version="1.0" initial="initial_state">
+  <transition event="timeout" target="fail"/>
+  
+  <state id="initial_state">
+    <onentry>
+      <send event="timeout" delay="1s" />
+      <send event="a" />
+      <send event="b" />
+      <send event="c" />
+      <send event="d" />
+    </onentry>
+    <transition event="a" target="parallel_state"/>
+  </state>
+  <parallel id="parallel_state">
+    <transition event="done.state.parallel_state" target="join_state"/>
+    <state id="p1out" initial="p1">
+      <state id="p1">
+        <transition event="b" target="p11"/>
+      </state>
+      <final id="p11"/>
+    </state>
+    <state id="p2out" initial="p2">
+      <state id="p2">
+        <transition event="c" target="p21"/>
+      </state>
+      <final id="p21"/>
+    </state>
+  </parallel>
+  <state id="join_state">
+    <transition event="d" target="pass"/>
+  </state>
+  <final id="pass"/>
+  <final id="fail"/>
+</scxml>

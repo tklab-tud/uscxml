@@ -22,10 +22,3 @@ astyle  \
 	--indent=tab \
 	--recursive "${DIR}/../../test/*.cpp"
 find ${DIR}/../../test/ -iname '*.orig' -exec rm {} \;
-
-astyle  \
-	--style=java \
-	--indent=tab \
-	--recursive "${DIR}/../../apps/*.cpp"
-find ${DIR}/../../apps/ -iname '*.orig' -exec rm {} \;
-

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- we test that cancel works.  We cancel delayed event1.  If cancel works, we get event2 first and pass.  If
+we get event1 or an error first, cancel didn't work and we fail.  -->
+<scxml:scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" xmlns:scxml="http://www.w3.org/2005/07/scxml" initial="s0" version="1.0" datamodel="ecmascript">
+  <scxml:state id="s0">
+    <scxml:onentry>
+      <scxml:send id="foo" event="event1" delayexpr="'1s'"/>
+      <scxml:send event="event2" delayexpr="'1.5s'"/>
+      <scxml:cancel sendid="foo"/>
+    </scxml:onentry>
+    <scxml:transition event="event2" target="pass"/>
+    <scxml:transition event="*" target="fail"/>
+  </scxml:state>
+  <scxml:final id="pass">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'pass'"/>
+    </scxml:onentry>
+  </scxml:final>
+  <scxml:final id="fail">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'fail'"/>
+    </scxml:onentry>
+  </scxml:final>
+</scxml:scxml>

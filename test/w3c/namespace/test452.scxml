@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--  test that we can assign to any location in the datamodel. In this case, we just test that we can assign
+to a substructure (not the top level variable).  This may not be the most idiomatic way to write the test -->
+<scxml:scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" xmlns:scxml="http://www.w3.org/2005/07/scxml" datamodel="ecmascript" version="1.0">
+  <scxml:datamodel>
+    <scxml:data id="foo" expr="0"/>
+  </scxml:datamodel>
+  <scxml:script>
+    function testobject() {
+    this.bar = 0;}
+   </scxml:script>
+  <scxml:state id="s0">
+    <scxml:onentry>
+      <scxml:assign location="foo" expr="new testobject();"/>
+      <!-- try to assign to foo's bar property -->
+      <scxml:assign location="foo.bar" expr="1"/>
+      <scxml:raise event="event1"/>
+    </scxml:onentry>
+    <!-- test that we have assigned to foo's bar property -->
+    <scxml:transition event="event1" cond="foo.bar == 1" target="pass"/>
+    <scxml:transition event="*" target="fail"/>
+  </scxml:state>
+  <scxml:final id="pass">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'pass'"/>
+    </scxml:onentry>
+  </scxml:final>
+  <scxml:final id="fail">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'fail'"/>
+    </scxml:onentry>
+  </scxml:final>
+</scxml:scxml>

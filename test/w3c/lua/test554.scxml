@@ -1,14 +1,14 @@
-<?xml version="1.0" standalone="no"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <!-- test that if the evaluation of <invoke>'s args causes an error, the 
 invocation is cancelled.  In this test, that means that we don't get done.invoke 
 before the timer goes off.  -->
-<scxml xmlns="http://www.w3.org/2005/07/scxml" initial="s0" version="1.0" datamodel="lua">
+<scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" initial="s0" version="1.0" datamodel="lua">
   <state id="s0">
     <onentry>
-      <send event="timer" delay="100ms"/>
+      <send event="timer" delayexpr="'1s'"/>
     </onentry>
     <!-- reference an invalid namelist -->
-    <invoke type="http://www.w3.org/TR/scxml/" namelist="!no">
+    <invoke type="http://www.w3.org/TR/scxml/" namelist="&quot;foo">
       <content>
         <scxml initial="subFinal" version="1.0" datamodel="lua">
           <final id="subFinal"/>
@@ -18,6 +18,14 @@ before the timer goes off.  -->
     <transition event="timer" target="pass"/>
     <transition event="done.invoke" target="fail"/>
   </state>
-  <final id="pass"/>
-  <final id="fail"/>
+  <final xmlns:scxml="http://www.w3.org/2005/07/scxml" id="pass">
+    <onentry>
+      <log label="Outcome" expr="'pass'"/>
+    </onentry>
+  </final>
+  <final xmlns:scxml="http://www.w3.org/2005/07/scxml" id="fail">
+    <onentry>
+      <log label="Outcome" expr="'fail'"/>
+    </onentry>
+  </final>
 </scxml>

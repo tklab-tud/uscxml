@@ -5,14 +5,13 @@ DIR="$( cd "$( dirname "$0" )" && pwd )"
 CWD=`pwd`
 
 SOURCE_FILES=`find ${DIR}/../../src/ -name \*.h -print -o -name \*.cpp -print`
-ARABICA_FILES=`find ${DIR}/../../contrib/prebuilt/darwin-i386/clang/include/arabica -name \*.hpp -print -o -name \*.cpp -print`
 
 # echo ${ARABICA_FILES}
 # exit
 
-/Users/sradomski/Documents/TK/Code/boost_1_54_0/dist/bin/bcp \
---boost=/Users/sradomski/Documents/TK/Code/boost_1_54_0 \
---scan ${SOURCE_FILES} ${ARABICA_FILES} \
-${DIR}/../prebuilt/include
+/Users/sradomski/Documents/TK/Code/boost_1_60_0/dist/bin/bcp \
+--boost=/Users/sradomski/Documents/TK/Code/boost_1_60_0 \
+--scan ${SOURCE_FILES} \
+${DIR}/../src
 
-rm -rf ${DIR}/../prebuilt/include/libs
+# rm -rf ${DIR}/../prebuilt/include/libs

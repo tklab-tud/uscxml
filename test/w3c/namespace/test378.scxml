@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- test that each onexithandler is a separate block.  The <send> of event1 will cause an error but
+ the increment to var1 should happen anyways -->
+<scxml:scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" xmlns:scxml="http://www.w3.org/2005/07/scxml" version="1.0" datamodel="ecmascript">
+  <scxml:datamodel>
+    <scxml:data id="Var1" expr="1"/>
+  </scxml:datamodel>
+  <scxml:state id="s0">
+    <scxml:onexit>
+      <scxml:send target="baz" event="event1"/>
+    </scxml:onexit>
+    <scxml:onexit>
+      <scxml:assign location="Var1" expr="Var1 + 1"/>
+    </scxml:onexit>
+    <scxml:transition target="s1"/>
+  </scxml:state>
+  <scxml:state id="s1">
+    <scxml:transition cond="Var1==2" target="pass"/>
+    <scxml:transition target="fail"/>
+  </scxml:state>
+  <scxml:final id="pass">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'pass'"/>
+    </scxml:onentry>
+  </scxml:final>
+  <scxml:final id="fail">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'fail'"/>
+    </scxml:onentry>
+  </scxml:final>
+</scxml:scxml>

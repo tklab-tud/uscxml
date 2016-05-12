@@ -1,15 +1,25 @@
-<?xml version="1.0" standalone="no"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <!-- test that inline content can be used to assign a value to a var.  -->
-<scxml xmlns="http://www.w3.org/2005/07/scxml" initial="s0" version="1.0" binding="early" datamodel="lua">
+<scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" initial="s0" version="1.0" binding="early" datamodel="lua">
   <state id="s0">
-    <transition cond="testvar1 ~= nil" target="pass"/>
+    <transition cond="Var1[1]" target="pass"/>
     <transition target="fail"/>
   </state>
   <state id="s1">
     <datamodel>
-      <data id="testvar1">{1,2,3}</data>
+      <data id="Var1">
+     {1,2,3}
+     </data>
     </datamodel>
   </state>
-  <final id="pass"/>
-  <final id="fail"/>
+  <final xmlns:scxml="http://www.w3.org/2005/07/scxml" id="pass">
+    <onentry>
+      <log label="Outcome" expr="'pass'"/>
+    </onentry>
+  </final>
+  <final xmlns:scxml="http://www.w3.org/2005/07/scxml" id="fail">
+    <onentry>
+      <log label="Outcome" expr="'fail'"/>
+    </onentry>
+  </final>
 </scxml>

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- we test that 'optimally enabled set' really is a set, specifically that if a transition is optimally enabled in
+two different states, it is taken only once.  -->
+<scxml:scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" xmlns:scxml="http://www.w3.org/2005/07/scxml" initial="s0" version="1.0" datamodel="ecmascript">
+  <scxml:datamodel>
+    <scxml:data id="Var1" expr="0"/>
+  </scxml:datamodel>
+  <scxml:state id="s0" initial="p0">
+    <!-- this transition should never be taken because a transition in a lower state should
+  always be selected -->
+    <scxml:transition event="event1">
+      <scxml:assign location="Var1" expr="Var1 + 1"/>
+    </scxml:transition>
+    <scxml:parallel id="p0">
+      <scxml:onentry>
+        <scxml:raise event="event1"/>
+        <scxml:raise event="event2"/>
+      </scxml:onentry>
+      <!-- this transition will be selected by both states p0s1 and p0s2, but should be executed only once -->
+      <scxml:transition event="event1">
+        <scxml:assign location="Var1" expr="Var1 + 1"/>
+      </scxml:transition>
+      <scxml:state id="p0s1">
+        <scxml:transition event="event2" cond="Var1==1" target="pass"/>
+        <scxml:transition event="event2" target="fail"/>
+      </scxml:state>
+      <scxml:state id="p0s2"/>
+    </scxml:parallel>
+  </scxml:state>
+  <scxml:final id="pass">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'pass'"/>
+    </scxml:onentry>
+  </scxml:final>
+  <scxml:final id="fail">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'fail'"/>
+    </scxml:onentry>
+  </scxml:final>
+</scxml:scxml>

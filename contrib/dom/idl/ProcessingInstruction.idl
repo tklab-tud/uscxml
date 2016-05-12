@@ -1,6 +1,0 @@
-interface ProcessingInstruction : Node {
-  readonly attribute DOMString        target;
-           attribute DOMString        data;
-                                      // raises(DOMException) on setting
-
-};

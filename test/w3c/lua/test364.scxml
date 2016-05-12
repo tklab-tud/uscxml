@@ -1,11 +1,11 @@
-<?xml version="1.0" standalone="no"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <!-- test that default initial states are entered when a compound state is entered.  First we test
 the 'initial' attribute, then the initial element, then default to the first child in document order.  
 If we get to s01111 we succeed, if any other state, failure.  -->
-<scxml xmlns="http://www.w3.org/2005/07/scxml" initial="s1" version="1.0" datamodel="lua">
+<scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" datamodel="lua" initial="s1" version="1.0">
   <state id="s1" initial="s11p112 s11p122">
     <onentry>
-      <send event="timeout" delay="1s"/>
+      <send xmlns:scxml="http://www.w3.org/2005/07/scxml" delay="1000" event="timeout"/>
     </onentry>
     <transition event="timeout" target="fail"/>
     <state id="s11" initial="s111">
@@ -66,6 +66,14 @@ If we get to s01111 we succeed, if any other state, failure.  -->
       </state>
     </state>
   </state>
-  <final id="pass"/>
-  <final id="fail"/>
+  <final xmlns:scxml="http://www.w3.org/2005/07/scxml" id="pass">
+    <onentry>
+      <log label="Outcome" expr="'pass'"/>
+    </onentry>
+  </final>
+  <final xmlns:scxml="http://www.w3.org/2005/07/scxml" id="fail">
+    <onentry>
+      <log label="Outcome" expr="'fail'"/>
+    </onentry>
+  </final>
 </scxml>

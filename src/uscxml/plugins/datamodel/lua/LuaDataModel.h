@@ -20,19 +20,19 @@
 #ifndef LUADATAMODEL_H_113E014C
 #define LUADATAMODEL_H_113E014C
 
-#include "uscxml/InterpreterInfo.h"
 #include "uscxml/plugins/DataModel.h"
 #include <list>
-
-#ifdef BUILD_AS_PLUGINS
-#include "uscxml/plugins/Plugins.h"
-#endif
 
 extern "C" {
 #include "lua.h"
 #include "lualib.h"
 #include "lauxlib.h"
 }
+
+#ifdef BUILD_AS_PLUGINS
+#include "uscxml/plugins/Plugins.h"
+#endif
+
 
 namespace uscxml {
 class Event;
@@ -45,7 +45,9 @@ class LuaDataModel : public DataModelImpl {
 public:
 	LuaDataModel();
 	virtual ~LuaDataModel();
-	virtual boost::shared_ptr<DataModelImpl> create(InterpreterInfo* interpreter);
+	virtual std::shared_ptr<DataModelImpl> create(DataModelCallbacks* callbacks);
+
+	virtual void addExtension(DataModelExtension* ext);
 
 	virtual std::list<std::string> getNames() {
 		std::list<std::string> names;
@@ -53,46 +55,31 @@ public:
 		return names;
 	}
 
-	virtual void initialize();
-	virtual void setEvent(const Event& event);
-
-	virtual bool validate(const std::string& location, const std::string& schema);
-	virtual bool isLocation(const std::string& expr);
 	virtual bool isValidSyntax(const std::string& expr);
 
+	virtual void setEvent(const Event& event);
+
+	// foreach
 	virtual uint32_t getLength(const std::string& expr);
 	virtual void setForeach(const std::string& item,
 	                        const std::string& array,
 	                        const std::string& index,
 	                        uint32_t iteration);
 
-	virtual void pushContext();
-	virtual void popContext();
+	virtual bool evalAsBool(const std::string& expr);
+	virtual Data evalAsData(const std::string& expr);
+	virtual Data getAsData(const std::string& content);
 
-	virtual void assign(const Arabica::DOM::Element<std::string>& assignElem,
-	                    const Arabica::DOM::Node<std::string>& node,
-	                    const std::string& content);
-	virtual void assign(const std::string& location, const Data& data);
-
-	virtual void init(const Arabica::DOM::Element<std::string>& dataElem,
-	                  const Arabica::DOM::Node<std::string>& node,
-	                  const std::string& content);
-	virtual void init(const std::string& location, const Data& data);
-
-	virtual Data getStringAsData(const std::string& content);
 	virtual bool isDeclared(const std::string& expr);
 
-	virtual void eval(const Arabica::DOM::Element<std::string>& scriptElem,
-	                  const std::string& expr);
-	virtual std::string evalAsString(const std::string& expr);
-	virtual bool evalAsBool(const Arabica::DOM::Element<std::string>& node, const std::string& expr);
+	virtual void assign(const std::string& location, const Data& data);
+	virtual void init(const std::string& location, const Data& data);
 
 	virtual std::string andExpressions(std::list<std::string>);
 
 protected:
 
-	virtual int luaEval(const Arabica::DOM::Element<std::string>& scriptElem,
-	                    const std::string& expr);
+	static int luaInFunction(lua_State * l);
 
 	lua_State* _luaState;
 };

@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- test that the scxml event processor is used in both directions.  If child process uses the 
+scxml event i/o processor to communicate with us, send it an event.  It will send back success if
+this process uses the scxml processor to send the message to it, otherwise failure.  For this test we allow 
+'scxml' as an alternative to the full url.   -->
+<scxml:scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" xmlns:scxml="http://www.w3.org/2005/07/scxml" initial="s0" version="1.0" datamodel="ecmascript">
+  <scxml:datamodel>
+    <scxml:data id="Var1"/>
+  </scxml:datamodel>
+  <scxml:state id="s0" initial="s01">
+    <scxml:onentry>
+      <scxml:send event="timeout" delay="2s"/>
+    </scxml:onentry>
+    <scxml:transition event="timeout" target="fail"/>
+    <scxml:invoke type="scxml" id="foo">
+      <scxml:content>
+        <!-- inform parent we're running then wait for it to send us an event.  If it uses the scxml event i/o
+             processor to do so, return success, otherwise return failure.   -->
+        <scxml:scxml initial="sub0" version="1.0" datamodel="ecmascript">
+          <scxml:datamodel>
+            <scxml:data id="Var2"/>
+          </scxml:datamodel>
+          <scxml:state id="sub0">
+            <scxml:onentry>
+              <scxml:send target="#_parent" event="childRunning"/>
+            </scxml:onentry>
+            <scxml:transition event="parentToChild" target="sub1">
+              <scxml:assign location="Var2" expr="_event.origintype"/>
+            </scxml:transition>
+          </scxml:state>
+          <scxml:state id="sub1">
+            <scxml:transition cond="Var2=='http://www.w3.org/TR/scxml/#SCXMLEventProcessor'" target="subFinal">
+              <scxml:send target="#_parent" event="success"/>
+            </scxml:transition>
+            <scxml:transition cond="Var2=='scxml'" target="subFinal">
+              <scxml:send target="#_parent" event="success"/>
+            </scxml:transition>
+            <scxml:transition target="subFinal">
+              <scxml:send target="#_parent" event="failure"/>
+            </scxml:transition>
+          </scxml:state>
+          <scxml:final id="subFinal"/>
+        </scxml:scxml>
+      </scxml:content>
+    </scxml:invoke>
+    <scxml:state id="s01">
+      <scxml:transition event="childRunning" target="s02">
+        <scxml:assign location="Var1" expr="_event.origintype"/>
+      </scxml:transition>
+    </scxml:state>
+    <scxml:state id="s02">
+      <scxml:transition cond="Var1=='http://www.w3.org/TR/scxml/#SCXMLEventProcessor'" target="s03">
+        <scxml:send target="#_foo" event="parentToChild"/>
+      </scxml:transition>
+      <scxml:transition cond="Var1=='scxml'" target="s03">
+        <scxml:send target="#_foo" event="parentToChild"/>
+      </scxml:transition>
+      <scxml:transition target="fail"/>
+    </scxml:state>
+    <scxml:state id="s03">
+      <scxml:transition event="success" target="pass"/>
+      <scxml:transition event="fail" target="fail"/>
+    </scxml:state>
+  </scxml:state>
+  <scxml:final id="pass">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'pass'"/>
+    </scxml:onentry>
+  </scxml:final>
+  <scxml:final id="fail">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'fail'"/>
+    </scxml:onentry>
+  </scxml:final>
+</scxml:scxml>

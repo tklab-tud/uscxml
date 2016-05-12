@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- we test one part of 'optimal enablement' meaning that of all transitions that are enabled, we chose the ones
+in child states over parent states, and use document order to break ties. We have
+a parent state s0 with two children, s01 and s02. In s01, we test that a) if
+a transition in the child matches, we don't consider matches in the parent and b)
+that if two transitions match in any state, we take the first in document order.
+In s02 we test that we take a transition in the parent if there is no
+matching transition in the child. -->
+<scxml:scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" xmlns:scxml="http://www.w3.org/2005/07/scxml" initial="s0" version="1.0" datamodel="ecmascript">
+  <scxml:state id="s0" initial="s01">
+    <scxml:onentry>
+      <!-- catch the failure case -->
+      <scxml:send event="timeout" delay="1s"/>
+    </scxml:onentry>
+    <scxml:transition event="timeout" target="fail"/>
+    <scxml:transition event="event1" target="fail"/>
+    <scxml:transition event="event2" target="pass"/>
+    <scxml:state id="s01">
+      <scxml:onentry>
+        <!-- this should be caught by the first transition in this state, taking us to S02 -->
+        <scxml:raise event="event1"/>
+      </scxml:onentry>
+      <scxml:transition event="event1" target="s02"/>
+      <scxml:transition event="*" target="fail"/>
+    </scxml:state>
+    <scxml:state id="s02">
+      <scxml:onentry>
+        <!-- since the local transition has a cond that evaluates to false this should be caught by a 
+    transition in the parent state, taking us to pass -->
+        <scxml:raise event="event2"/>
+      </scxml:onentry>
+      <scxml:transition event="event1" target="fail"/>
+      <scxml:transition event="event2" cond="false" target="fail"/>
+    </scxml:state>
+  </scxml:state>
+  <scxml:final id="pass">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'pass'"/>
+    </scxml:onentry>
+  </scxml:final>
+  <scxml:final id="fail">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'fail'"/>
+    </scxml:onentry>
+  </scxml:final>
+</scxml:scxml>

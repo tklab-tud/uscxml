@@ -20,20 +20,17 @@
 #ifndef FSMTOCPP_H_201672B0
 #define FSMTOCPP_H_201672B0
 
-#include "uscxml/interpreter/InterpreterRC.h"
-#include "uscxml/dom/DOMUtils.h"
-#include "uscxml/util/Trie.h"
+#include "uscxml/util/DOM.h"
+#include "uscxml/transform/Trie.h"
 #include "Transformer.h"
 
-#include <DOM/Document.hpp>
-#include <DOM/Node.hpp>
-#include <XPath/XPath.hpp>
+#include <xercesc/dom/DOM.hpp>
 #include <ostream>
 #include <set>
 
 namespace uscxml {
 
-class USCXML_API ChartToC : public InterpreterRC, public TransformerImpl {
+class USCXML_API ChartToC : public TransformerImpl {
 public:
 
 	virtual ~ChartToC();
@@ -61,11 +58,9 @@ protected:
 	void writeFSM(std::ostream& stream);
 	void writeCharArrayInitList(std::ostream& stream, const std::string& boolString);
 
-	void writeExecContent(std::ostream& stream, const Arabica::DOM::Node<std::string>& node, int indent = 0);
+	void writeExecContent(std::ostream& stream, const xercesc::DOMNode* node, int indent = 0);
 
-	Arabica::XPath::NodeSet<std::string> computeExitSet(const Arabica::DOM::Element<std::string>& transition);
-
-	void resortStates(Arabica::DOM::Node<std::string>& node);
+	void resortStates(xercesc::DOMNode* node);
 	void setHistoryCompletion();
 	void setStateCompletion();
 	void prepare();
@@ -74,8 +69,8 @@ protected:
 
 	Interpreter interpreter;
 
-	Arabica::XPath::NodeSet<std::string> _states;
-	Arabica::XPath::NodeSet<std::string> _transitions;
+	std::vector<xercesc::DOMElement*> _states;
+	std::vector<xercesc::DOMElement*> _transitions;
 
 	std::string _md5;
 	std::string _prefix;

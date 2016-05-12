@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- test that the value in _event.name matches the event name used to match against transitions  -->
+<scxml:scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" xmlns:scxml="http://www.w3.org/2005/07/scxml" datamodel="ecmascript" version="1.0">
+  <scxml:state id="s0">
+    <scxml:onentry>
+      <scxml:raise event="foo"/>
+    </scxml:onentry>
+    <scxml:transition event="foo" cond="_event.name == 'foo'" target="pass"/>
+    <scxml:transition event="foo" target="fail"/>
+  </scxml:state>
+  <scxml:final id="pass">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'pass'"/>
+    </scxml:onentry>
+  </scxml:final>
+  <scxml:final id="fail">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'fail'"/>
+    </scxml:onentry>
+  </scxml:final>
+</scxml:scxml>

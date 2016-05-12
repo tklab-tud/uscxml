@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- test that we generate done.state.id when all a parallel state's children are in final states -->
+<scxml:scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" xmlns:scxml="http://www.w3.org/2005/07/scxml" initial="p0" datamodel="ecmascript" version="1.0">
+  <scxml:datamodel>
+    <scxml:data id="Var1" expr="0"/>
+  </scxml:datamodel>
+  <scxml:parallel id="p0">
+    <scxml:onentry>
+      <scxml:send event="timeout" delay="2s"/>
+      <scxml:raise event="e1"/>
+      <scxml:raise event="e2"/>
+    </scxml:onentry>
+    <!-- record that we get the first done event -->
+    <scxml:transition event="done.state.p0s1">
+      <scxml:assign location="Var1" expr="1"/>
+    </scxml:transition>
+    <!-- we should get the second done event before done.state.p0 -->
+    <scxml:transition event="done.state.p0s2" target="s1"/>
+    <scxml:transition event="timeout" target="fail"/>
+    <scxml:state id="p0s1" initial="p0s11">
+      <scxml:state id="p0s11">
+        <scxml:transition event="e1" target="p0s1final"/>
+      </scxml:state>
+      <scxml:final id="p0s1final"/>
+    </scxml:state>
+    <scxml:state id="p0s2" initial="p0s21">
+      <scxml:state id="p0s21">
+        <scxml:transition event="e2" target="p0s2final"/>
+      </scxml:state>
+      <scxml:final id="p0s2final"/>
+    </scxml:state>
+  </scxml:parallel>
+  <scxml:state id="s1">
+    <!-- if we get done.state.p0, success -->
+    <scxml:transition event="done.state.p0" cond="Var1==1" target="pass"/>
+    <scxml:transition event="*" target="fail"/>
+  </scxml:state>
+  <scxml:final id="pass">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'pass'"/>
+    </scxml:onentry>
+  </scxml:final>
+  <scxml:final id="fail">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'fail'"/>
+    </scxml:onentry>
+  </scxml:final>
+</scxml:scxml>

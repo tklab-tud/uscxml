@@ -1,25 +1,33 @@
-<?xml version="1.0" standalone="no"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <!-- test late binding.  var2 won't get bound until s1 is entered, so it shouldn't  have a value in s0 and
 accessing it should cause an error. It should get bound before the onentry code in s1 so it should  be
 possible access it there and assign its value to var1 -->
-<scxml xmlns="http://www.w3.org/2005/07/scxml" initial="s0" version="1.0" binding="late" datamodel="lua">
+<scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" initial="s0" version="1.0" datamodel="lua" binding="late">
   <datamodel>
-    <data id="testvar1"/>
+    <data id="Var1"/>
   </datamodel>
   <state id="s0">
-    <transition target="s1" cond="testvar2==nil"/>
+    <transition cond="Var2 == nil" target="s1"/>
     <transition target="fail"/>
   </state>
   <state id="s1">
     <datamodel>
-      <data expr="1" id="testvar2"/>
+      <data id="Var2" expr="1"/>
     </datamodel>
     <onentry>
-      <assign expr="testvar2" location="testvar1"/>
+      <assign location="Var1" expr="Var2"/>
     </onentry>
-    <transition cond="testvar1==testvar2" target="pass"/>
+    <transition cond="Var1==Var2" target="pass"/>
     <transition target="fail"/>
   </state>
-  <final id="pass"/>
-  <final id="fail"/>
+  <final xmlns:scxml="http://www.w3.org/2005/07/scxml" id="pass">
+    <onentry>
+      <log label="Outcome" expr="'pass'"/>
+    </onentry>
+  </final>
+  <final xmlns:scxml="http://www.w3.org/2005/07/scxml" id="fail">
+    <onentry>
+      <log label="Outcome" expr="'fail'"/>
+    </onentry>
+  </final>
 </scxml>

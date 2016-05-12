@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Test that at the end of a macrostep, the processor executes all invokes in states
+that have been entered and not exited during the step.  (The invokes are supposed to be executed
+in document order, but we can test that since each invocation is separate and they may take
+different amounts to time to start up.)  In this case, there are three invoke statements,
+in states s1, s11 and s12.  Each invoked process returns an event named after its parent state.
+The invokes in s1 and s12 should execute, but not the one
+in s11. So we should receive invokeS1, invokeS12, but not invokeS12.  Furthermore, when the timeout fires, var1 should equal 2.-->
+<scxml:scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" xmlns:scxml="http://www.w3.org/2005/07/scxml" version="1.0" initial="s1" datamodel="ecmascript">
+  <scxml:datamodel>
+    <scxml:data id="Var1" expr="0"/>
+  </scxml:datamodel>
+  <scxml:state id="s1" initial="s11">
+    <scxml:onentry>
+      <scxml:send event="timeout" delayexpr="'2s'"/>
+    </scxml:onentry>
+    <scxml:transition event="invokeS1 invokeS12">
+      <scxml:assign location="Var1" expr="Var1 + 1"/>
+    </scxml:transition>
+    <scxml:transition event="invokeS11" target="fail"/>
+    <scxml:transition event="timeout" cond="Var1==2" target="pass"/>
+    <scxml:transition event="timeout" target="fail"/>
+    <scxml:invoke>
+      <scxml:content>
+        <!-- when invoked, send 'foo' to parent, then terminate.   -->
+        <scxml:scxml initial="sub0" version="1.0" datamodel="ecmascript">
+          <scxml:state id="sub0">
+            <scxml:onentry>
+              <scxml:send target="#_parent" event="invokeS1"/>
+            </scxml:onentry>
+            <scxml:transition target="subFinal0"/>
+          </scxml:state>
+          <scxml:final id="subFinal0"/>
+        </scxml:scxml>
+      </scxml:content>
+    </scxml:invoke>
+    <scxml:state id="s11">
+      <scxml:invoke>
+        <scxml:content>
+          <!-- when invoked, send 'foo' to parent, then terminate.   -->
+          <scxml:scxml initial="sub1" version="1.0" datamodel="ecmascript">
+            <scxml:state id="sub1">
+              <scxml:onentry>
+                <scxml:send target="#_parent" event="invokeS11"/>
+              </scxml:onentry>
+              <scxml:transition target="subFinal1"/>
+            </scxml:state>
+            <scxml:final id="subFinal1"/>
+          </scxml:scxml>
+        </scxml:content>
+      </scxml:invoke>
+      <scxml:transition target="s12"/>
+    </scxml:state>
+    <scxml:state id="s12">
+      <scxml:invoke>
+        <scxml:content>
+          <!-- when invoked, send 'foo' to parent, then terminate.   -->
+          <scxml:scxml initial="sub2" version="1.0" datamodel="ecmascript">
+            <scxml:state id="sub2">
+              <scxml:onentry>
+                <scxml:send target="#_parent" event="invokeS12"/>
+              </scxml:onentry>
+              <scxml:transition target="subFinal2"/>
+            </scxml:state>
+            <scxml:final id="subFinal2"/>
+          </scxml:scxml>
+        </scxml:content>
+      </scxml:invoke>
+    </scxml:state>
+  </scxml:state>
+  <scxml:final id="pass">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'pass'"/>
+    </scxml:onentry>
+  </scxml:final>
+  <scxml:final id="fail">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'fail'"/>
+    </scxml:onentry>
+  </scxml:final>
+</scxml:scxml>

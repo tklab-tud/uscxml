@@ -1,4 +1,4 @@
-<?xml version="1.0" standalone="no"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <!-- we test one part of 'optimal enablement' meaning that of all transitions that are enabled, we chose the ones
 in child states over parent states, and use document order to break ties. We have
 a parent state s0 with two children, s01 and s02. In s01, we test that a) if
@@ -6,11 +6,11 @@ a transition in the child matches, we don't consider matches in the parent and b
 that if two transitions match in any state, we take the first in document order.
 In s02 we test that we take a transition in the parent if there is no
 matching transition in the child. -->
-<scxml xmlns="http://www.w3.org/2005/07/scxml" initial="s0" version="1.0" datamodel="lua">
+<scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" initial="s0" version="1.0" datamodel="lua">
   <state id="s0" initial="s01">
     <onentry>
       <!-- catch the failure case -->
-      <send event="timeout" delay="1s"/>
+      <send xmlns:scxml="http://www.w3.org/2005/07/scxml" delay="1000" event="timeout"/>
     </onentry>
     <transition event="timeout" target="fail"/>
     <transition event="event1" target="fail"/>
@@ -33,6 +33,14 @@ matching transition in the child. -->
       <transition event="event2" cond="false" target="fail"/>
     </state>
   </state>
-  <final id="pass"/>
-  <final id="fail"/>
+  <final xmlns:scxml="http://www.w3.org/2005/07/scxml" id="pass">
+    <onentry>
+      <log label="Outcome" expr="'pass'"/>
+    </onentry>
+  </final>
+  <final xmlns:scxml="http://www.w3.org/2005/07/scxml" id="fail">
+    <onentry>
+      <log label="Outcome" expr="'fail'"/>
+    </onentry>
+  </final>
 </scxml>

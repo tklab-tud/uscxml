@@ -24,6 +24,8 @@
 
 #include <map>                          // for map, map<>::iterator, etc
 #include <string>                       // for string, operator<
+#include <thread>
+#include <mutex>
 
 extern "C" {
 #include "event2/util.h"                // for evutil_socket_t
@@ -32,8 +34,7 @@ extern "C" {
 }
 
 #include "uscxml/Common.h"              // for USCXML_API
-#include "uscxml/Message.h"             // for Data, Event
-#include "uscxml/concurrency/tinythread.h"  // for recursive_mutex, etc
+#include "uscxml/messages/Event.h"      // for Data, Event
 #include "uscxml/config.h"              // for OPENSSL_FOUND
 
 namespace uscxml {
@@ -54,14 +55,7 @@ public:
 		}
 	};
 
-	class WSFrame : public Event {
-	public:
-		WSFrame() : evwsConn(NULL) {}
-		std::string content;
-		struct evws_connection* evwsConn;
-	};
-
-	class SSLConfig {
+	class USCXML_API SSLConfig {
 	public:
 		SSLConfig() : port(8443) {}
 		std::string privateKey;
@@ -69,7 +63,14 @@ public:
 		unsigned short port;
 	};
 
-	class Reply {
+	class WSFrame : public Event {
+	public:
+		WSFrame() : evwsConn(NULL) {}
+		std::string content;
+		struct evws_connection* evwsConn;
+	};
+
+	class USCXML_API Reply {
 	public:
 		Reply() : status(200), type("get"), evhttpReq(NULL) {}
 		Reply(Request req) : status(200), type(req.data.compound["type"].atom), evhttpReq(req.evhttpReq) {}
@@ -140,7 +141,7 @@ private:
 		};
 	};
 
-	HTTPServer(unsigned short port, unsigned short wsPort, SSLConfig* sslConf = NULL);
+	HTTPServer(unsigned short port, unsigned short wsPort, SSLConfig* sslConf);
 	virtual ~HTTPServer();
 
 	void start();
@@ -178,9 +179,9 @@ private:
 
 	static HTTPServer* _instance;
 
-	static tthread::recursive_mutex _instanceMutex;
-	tthread::thread* _thread;
-	tthread::recursive_mutex _mutex;
+	static std::recursive_mutex _instanceMutex;
+	std::thread* _thread;
+	std::recursive_mutex _mutex;
 	bool _isRunning;
 
 	friend class HTTPServlet;
@@ -199,7 +200,7 @@ private:
 class USCXML_API HTTPServlet {
 public:
 	virtual ~HTTPServlet() {}
-	virtual bool httpRecvRequest(const HTTPServer::Request& request) = 0;
+	virtual bool requestFromHTTP(const HTTPServer::Request& request) = 0;
 	virtual void setURL(const std::string& url) = 0; /// Called by the server with the actual URL
 	virtual bool canAdaptPath() {
 		return true;
@@ -209,7 +210,7 @@ public:
 class USCXML_API WebSocketServlet {
 public:
 	virtual ~WebSocketServlet() {}
-	virtual bool wsRecvRequest(struct evws_connection *conn, const HTTPServer::WSFrame& frame) = 0;
+	virtual bool requestFromWS(struct evws_connection *conn, const HTTPServer::WSFrame& frame) = 0;
 	virtual void setURL(const std::string& url) = 0; /// Called by the server with the actual URL
 	virtual bool canAdaptPath() {
 		return true;

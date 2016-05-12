@@ -20,11 +20,10 @@
 #ifndef JSCDATAMODEL_H_KN8TWG0V
 #define JSCDATAMODEL_H_KN8TWG0V
 
-#include "uscxml/InterpreterInfo.h"
 #include "uscxml/plugins/DataModel.h"
 #include <list>
+#include <set>
 #include <JavaScriptCore/JavaScriptCore.h>
-#include "JSCDOM.h"
 
 #ifdef BUILD_AS_PLUGINS
 #include "uscxml/plugins/Plugins.h"
@@ -41,7 +40,7 @@ class JSCDataModel : public DataModelImpl {
 public:
 	JSCDataModel();
 	virtual ~JSCDataModel();
-	virtual boost::shared_ptr<DataModelImpl> create(InterpreterInfo* interpreter);
+	virtual std::shared_ptr<DataModelImpl> create(DataModelCallbacks* callbacks);
 
 	virtual void addExtension(DataModelExtension* ext);
 
@@ -51,12 +50,9 @@ public:
 		return names;
 	}
 
-	virtual bool validate(const std::string& location, const std::string& schema);
-	virtual bool isLocation(const std::string& expr);
 	virtual bool isValidSyntax(const std::string& expr);
 
 	virtual void setEvent(const Event& event);
-	virtual Data getStringAsData(const std::string& content);
 
 	// foreach
 	virtual uint32_t getLength(const std::string& expr);
@@ -64,31 +60,19 @@ public:
 	                        const std::string& array,
 	                        const std::string& index,
 	                        uint32_t iteration);
-	virtual void pushContext();
-	virtual void popContext();
 
-	virtual void eval(const Arabica::DOM::Element<std::string>& scriptElem,
-	                  const std::string& expr);
-	virtual std::string evalAsString(const std::string& expr);
-
-	virtual bool evalAsBool(const Arabica::DOM::Element<std::string>& node, const std::string& expr);
+	virtual Data getAsData(const std::string& content);
+	virtual Data evalAsData(const std::string& expr);
+	virtual bool evalAsBool(const std::string& expr);
 
 	virtual bool isDeclared(const std::string& expr);
 
-	virtual void assign(const Arabica::DOM::Element<std::string>& assignElem,
-	                    const Arabica::DOM::Node<std::string>& node,
-	                    const std::string& content);
 	virtual void assign(const std::string& location, const Data& data);
-
-	virtual void init(const Arabica::DOM::Element<std::string>& dataElem,
-	                  const Arabica::DOM::Node<std::string>& node,
-	                  const std::string& content);
 	virtual void init(const std::string& location, const Data& data);
 
 	virtual std::string andExpressions(std::list<std::string>);
 
 protected:
-	Arabica::DOM::JSCDOM* _dom;
 
 	static JSClassDefinition jsInClassDef;
 	static JSValueRef jsIn(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef* exception);
@@ -107,7 +91,7 @@ protected:
 	static JSValueRef jsInvokerGetProp(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef* exception);
 	static void jsInvokerListProps(JSContextRef ctx, JSObjectRef object, JSPropertyNameAccumulatorRef propertyNames);
 
-	JSValueRef getNodeAsValue(const Arabica::DOM::Node<std::string>& node);
+	JSValueRef getNodeAsValue(const xercesc::DOMNode* node);
 	JSValueRef getDataAsValue(const Data& data);
 	Data getValueAsData(const JSValueRef value);
 	JSValueRef evalAsValue(const std::string& expr, bool dontThrow = false);
@@ -121,6 +105,8 @@ protected:
 
 	Event _event;
 	JSGlobalContextRef _ctx;
+
+	static std::mutex _initMutex;
 
 };
 

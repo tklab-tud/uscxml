@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- we test that the processor doesn't  change the message.  We can't test that it never does this, but
+at least we can check that the event name and included data are the same as we sent.  -->
+<scxml:scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" xmlns:scxml="http://www.w3.org/2005/07/scxml" initial="s0" version="1.0" datamodel="ecmascript">
+  <scxml:datamodel>
+    <scxml:data id="Var1"/>
+  </scxml:datamodel>
+  <scxml:state id="s0">
+    <scxml:onentry>
+      <scxml:send event="event1">
+        <scxml:param name="aParam" expr="1"/>
+      </scxml:send>
+      <scxml:send event="timeout"/>
+    </scxml:onentry>
+    <scxml:transition event="event1" target="s1">
+      <scxml:assign location="Var1" expr="_event.data.aParam"/>
+    </scxml:transition>
+    <scxml:transition event="*" target="fail"/>
+  </scxml:state>
+  <scxml:state id="s1">
+    <scxml:transition cond="Var1==1" target="pass"/>
+    <scxml:transition target="fail"/>
+  </scxml:state>
+  <scxml:final id="pass">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'pass'"/>
+    </scxml:onentry>
+  </scxml:final>
+  <scxml:final id="fail">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'fail'"/>
+    </scxml:onentry>
+  </scxml:final>
+</scxml:scxml>

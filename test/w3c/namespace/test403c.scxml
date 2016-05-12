@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- we test 'optimally enabled set', specifically that preemption works correctly -->
+<scxml:scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" xmlns:scxml="http://www.w3.org/2005/07/scxml" initial="s0" version="1.0" datamodel="ecmascript">
+  <scxml:datamodel>
+    <scxml:data id="Var1" expr="0"/>
+  </scxml:datamodel>
+  <scxml:state id="s0" initial="p0">
+    <scxml:onentry>
+      <scxml:raise event="event1"/>
+      <scxml:send event="timeout" delay="1s"/>
+    </scxml:onentry>
+    <scxml:transition event="event2" target="fail"/>
+    <scxml:transition event="timeout" target="fail"/>
+    <scxml:parallel id="p0">
+      <scxml:state id="p0s1">
+        <scxml:transition event="event1"/>
+        <scxml:transition event="event2"/>
+      </scxml:state>
+      <scxml:state id="p0s2">
+        <scxml:transition event="event1" target="p0s1">
+          <scxml:raise event="event2"/>
+        </scxml:transition>
+      </scxml:state>
+      <scxml:state id="p0s3">
+        <!-- this transition should be blocked by the one in p0s2-->
+        <scxml:transition event="event1" target="fail"/>
+        <!-- this transition will preempt the one that p0s2 inherits
+   from an ancestor  -->
+        <scxml:transition event="event2" target="s1"/>
+      </scxml:state>
+      <scxml:state id="p0s4">
+        <!-- this transition never gets preempted, should fire twice -->
+        <scxml:transition event="*">
+          <scxml:assign location="Var1" expr="Var1 + 1"/>
+        </scxml:transition>
+      </scxml:state>
+    </scxml:parallel>
+  </scxml:state>
+  <scxml:state id="s1">
+    <scxml:transition cond="Var1==2" target="pass"/>
+    <scxml:transition target="fail"/>
+  </scxml:state>
+  <scxml:final id="pass">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'pass'"/>
+    </scxml:onentry>
+  </scxml:final>
+  <scxml:final id="fail">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'fail'"/>
+    </scxml:onentry>
+  </scxml:final>
+</scxml:scxml>

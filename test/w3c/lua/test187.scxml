@@ -1,12 +1,12 @@
-<?xml version="1.0" standalone="no"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <!-- we test that delayed <send> is not sent if the sending session terminates.  In this case,
 a subscript is invoked which sends the event childToParent delayed by 1 second, and then terminates.  The
 parent session, should not receive childToParent. If it does, we fail.  Otherwise the 
 10 sec timer expires and we pass -->
-<scxml xmlns="http://www.w3.org/2005/07/scxml" initial="s0" version="1.0" datamodel="lua">
+<scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" initial="s0" version="1.0" datamodel="lua">
   <state id="s0">
     <onentry>
-      <send event="timeout" delay="400ms"/>
+      <send event="timeout" delayexpr="'1s'"/>
     </onentry>
     <invoke type="scxml">
       <content>
@@ -14,7 +14,7 @@ parent session, should not receive childToParent. If it does, we fail.  Otherwis
         <scxml initial="sub0" version="1.0" datamodel="lua">
           <state id="sub0">
             <onentry>
-              <send event="childToParent" target="#_parent" delay="40ms"/>
+              <send event="childToParent" target="#_parent" delayexpr="'.5s'"/>
             </onentry>
             <transition target="subFinal"/>
           </state>
@@ -25,6 +25,14 @@ parent session, should not receive childToParent. If it does, we fail.  Otherwis
     <transition event="childToParent" target="fail"/>
     <transition event="timeout" target="pass"/>
   </state>
-  <final id="pass"/>
-  <final id="fail"/>
+  <final xmlns:scxml="http://www.w3.org/2005/07/scxml" id="pass">
+    <onentry>
+      <log label="Outcome" expr="'pass'"/>
+    </onentry>
+  </final>
+  <final xmlns:scxml="http://www.w3.org/2005/07/scxml" id="fail">
+    <onentry>
+      <log label="Outcome" expr="'fail'"/>
+    </onentry>
+  </final>
 </scxml>

@@ -1,11 +1,11 @@
-<?xml version="1.0" standalone="no"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <!-- test that any attempt to change the value of a system variable causes error.execution to be raised.  
 Event1..4 are there to catch the case where the error event is not raised. In cases where it is, we have
 to dispose of eventn in the next state, hence the targetless transitions (which simply throw away the event.) -->
-<scxml xmlns="http://www.w3.org/2005/07/scxml" initial="s0" version="1.0" name="machineName" datamodel="lua">
+<scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" initial="s0" version="1.0" datamodel="lua" name="machineName">
   <state id="s0">
     <onentry>
-      <assign expr="'otherName'" location="_sessionid"/>
+      <assign location="_sessionid" expr="'otherName'"/>
       <raise event="event1"/>
     </onentry>
     <transition event="error.execution" target="s1"/>
@@ -13,7 +13,7 @@ to dispose of eventn in the next state, hence the targetless transitions (which 
   </state>
   <state id="s1">
     <onentry>
-      <assign expr="'otherName'" location="_event"/>
+      <assign location="_event" expr="'otherName'"/>
       <raise event="event2"/>
     </onentry>
     <!-- throw out event1 if it's still around -->
@@ -25,7 +25,7 @@ to dispose of eventn in the next state, hence the targetless transitions (which 
   </state>
   <state id="s2">
     <onentry>
-      <assign expr="'otherName'" location="_ioprocessors"/>
+      <assign location="_ioprocessors" expr="'otherName'"/>
       <raise event="event3"/>
     </onentry>
     <transition event="event2"/>
@@ -34,13 +34,21 @@ to dispose of eventn in the next state, hence the targetless transitions (which 
   </state>
   <state id="s3">
     <onentry>
-      <assign expr="'otherName'" location="_name"/>
+      <assign location="_name" expr="'otherName'"/>
       <raise event="event4"/>
     </onentry>
     <transition event="event3"/>
     <transition event="error.execution" target="pass"/>
     <transition event="*" target="fail"/>
   </state>
-  <final id="pass"/>
-  <final id="fail"/>
+  <final xmlns:scxml="http://www.w3.org/2005/07/scxml" id="pass">
+    <onentry>
+      <log label="Outcome" expr="'pass'"/>
+    </onentry>
+  </final>
+  <final xmlns:scxml="http://www.w3.org/2005/07/scxml" id="fail">
+    <onentry>
+      <log label="Outcome" expr="'fail'"/>
+    </onentry>
+  </final>
 </scxml>

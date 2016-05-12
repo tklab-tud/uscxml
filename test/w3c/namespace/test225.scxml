@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- we test that the automatically generated id is unique, we call invoke twice and compare the ids.   -->
+<scxml:scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" xmlns:scxml="http://www.w3.org/2005/07/scxml" initial="s0" version="1.0" datamodel="ecmascript">
+  <scxml:datamodel>
+    <scxml:data id="Var1"/>
+    <scxml:data id="Var2"/>
+  </scxml:datamodel>
+  <scxml:state id="s0">
+    <scxml:onentry>
+      <scxml:send event="timeout" delay="1s"/>
+    </scxml:onentry>
+    <scxml:invoke type="http://www.w3.org/TR/scxml/" idlocation="Var1">
+      <scxml:content>
+        <scxml:scxml initial="subFinal1" version="1.0" datamodel="ecmascript">
+          <scxml:final id="subFinal1"/>
+        </scxml:scxml>
+      </scxml:content>
+    </scxml:invoke>
+    <scxml:invoke type="http://www.w3.org/TR/scxml/" idlocation="Var2">
+      <scxml:content>
+        <scxml:scxml initial="subFinal2" version="1.0" datamodel="ecmascript">
+          <scxml:final id="subFinal2"/>
+        </scxml:scxml>
+      </scxml:content>
+    </scxml:invoke>
+    <scxml:transition event="*" target="s1"/>
+  </scxml:state>
+  <scxml:state id="s1">
+    <scxml:transition cond="Var1===Var2" target="fail"/>
+    <scxml:transition target="pass"/>
+  </scxml:state>
+  <scxml:final id="pass">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'pass'"/>
+    </scxml:onentry>
+  </scxml:final>
+  <scxml:final id="fail">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'fail'"/>
+    </scxml:onentry>
+  </scxml:final>
+</scxml:scxml>

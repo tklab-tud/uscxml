@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- test that history states works correctly.  The counter Var1 counts how many times
+we have entered s0.  The initial state is s012.  We then transition to s1, which transitions
+to s0's deep history state.  entering.s012 should be raised, otherwise failure.  Then we transition
+to s02, which transitions to s0's shallow history state.  That should have value s01, and its initial
+state is s011, so we should get entering.s011, otherwise failure.-->
+<scxml:scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" xmlns:scxml="http://www.w3.org/2005/07/scxml" version="1.0" initial="s012" datamodel="ecmascript">
+  <scxml:datamodel>
+    <scxml:data id="Var1" expr="0"/>
+  </scxml:datamodel>
+  <scxml:state id="s0" initial="s01">
+    <scxml:onentry>
+      <scxml:assign location="Var1" expr="Var1 + 1"/>
+    </scxml:onentry>
+    <!-- the first time through, go to s1, setting  a timer just in case something hangs -->
+    <scxml:transition event="entering.s012" cond="Var1==1" target="s1">
+      <scxml:send event="timeout" delay="2s"/>
+    </scxml:transition>
+    <!-- the second time, we should get entering.s012.  If so, go to s2, otherwise fail -->
+    <scxml:transition event="entering.s012" cond="Var1==2" target="s2"/>
+    <scxml:transition event="entering" cond="Var1==2" target="fail"/>
+    <!-- the third time we should get entering-s011. If so, pass, otherwise fail -->
+    <scxml:transition event="entering.s011" cond="Var1==3" target="pass"/>
+    <scxml:transition event="entering" cond="Var1==3" target="fail"/>
+    <!-- if we timeout, the state machine is hung somewhere, so fail -->
+    <scxml:transition event="timeout" target="fail"/>
+    <scxml:history type="shallow" id="s0HistShallow">
+      <scxml:transition target="s02"/>
+    </scxml:history>
+    <scxml:history type="deep" id="s0HistDeep">
+      <scxml:transition target="s022"/>
+    </scxml:history>
+    <scxml:state id="s01" initial="s011">
+      <scxml:state id="s011">
+        <scxml:onentry>
+          <scxml:raise event="entering.s011"/>
+        </scxml:onentry>
+      </scxml:state>
+      <scxml:state id="s012">
+        <scxml:onentry>
+          <scxml:raise event="entering.s012"/>
+        </scxml:onentry>
+      </scxml:state>
+    </scxml:state>
+    <scxml:state id="s02" initial="s021">
+      <scxml:state id="s021">
+        <scxml:onentry>
+          <scxml:raise event="entering.s021"/>
+        </scxml:onentry>
+      </scxml:state>
+      <scxml:state id="s022">
+        <scxml:onentry>
+          <scxml:raise event="entering.s022"/>
+        </scxml:onentry>
+      </scxml:state>
+    </scxml:state>
+  </scxml:state>
+  <scxml:state id="s1">
+    <scxml:transition target="s0HistDeep"/>
+  </scxml:state>
+  <scxml:state id="s2">
+    <scxml:transition target="s0HistShallow"/>
+  </scxml:state>
+  <scxml:final id="pass">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'pass'"/>
+    </scxml:onentry>
+  </scxml:final>
+  <scxml:final id="fail">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'fail'"/>
+    </scxml:onentry>
+  </scxml:final>
+</scxml:scxml>

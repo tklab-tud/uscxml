@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- define var1 with default value 0.  Parent will invoke this process setting var1 = 1.  Return event1 if var1 == 1, event0 otherwise -->
+<scxml:scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" xmlns:scxml="http://www.w3.org/2005/07/scxml" initial="s0" version="1.0" datamodel="ecmascript">
+  <scxml:datamodel>
+    <scxml:data id="Var1" expr="0"/>
+  </scxml:datamodel>
+  <scxml:state id="s0">
+    <scxml:transition cond="Var1==1" target="final">
+      <scxml:send target="#_parent" event="event1"/>
+    </scxml:transition>
+    <scxml:transition target="final">
+      <scxml:send target="#_parent" event="event0"/>
+    </scxml:transition>
+  </scxml:state>
+  <scxml:final id="final"/>
+</scxml:scxml>

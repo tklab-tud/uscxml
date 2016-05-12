@@ -28,7 +28,15 @@ namespace uscxml {
 
 class USCXML_API TransformerImpl {
 public:
-	TransformerImpl() {}
+	TransformerImpl(const Interpreter& other) {
+		interpreter = other; // we need to keep a reference to retain the document!
+		other.getImpl()->init();
+		_document = other.getImpl()->_document;
+		_baseURL = other.getImpl()->_baseURL;
+		_scxml =  other.getImpl()->_scxml;
+		_name =  other.getImpl()->_name;
+		_binding = other.getImpl()->_binding;
+	}
 
 	virtual void writeTo(std::ostream& stream) = 0;
 	virtual operator Interpreter() {
@@ -39,10 +47,18 @@ protected:
 	std::multimap<std::string, std::string> _extensions;
 	std::list<std::string> _options;
 
+	xercesc::DOMDocument* _document;
+	xercesc::DOMElement* _scxml;
+
+	Interpreter interpreter;
+	InterpreterImpl::Binding _binding;
+	URL _baseURL;
+	std::string _name;
+
 	friend class Transformer;
 };
 
-class USCXML_API Transformer : public boost::enable_shared_from_this<Transformer> {
+class USCXML_API Transformer {
 public:
 //	Transformer(const Interpreter& source) { _impl = new (source) }
 

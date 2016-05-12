@@ -1,5 +1,0 @@
-import "Dependee.proto";
-
-message DependerMsg {
-	required DependeeMsg dependeeType = 1;
-}

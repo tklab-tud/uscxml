@@ -511,9 +511,9 @@ is the second argument -->
 </xsl:template>
 
 <!-- returns true if all the required fields of _event are bound -->
-<xsl:template match="//@conf:eventFieldsAreBound">
-	<xsl:attribute name="cond">'name' in _event &amp;&amp; 'type' in _event &amp;&amp; 'sendid' in _event &amp;&amp; 'origin' in _event &amp;&amp; 'invokeid' &amp;&amp; 'data' in _event</xsl:attribute>
-</xsl:template>
+  <xsl:template match="//@conf:eventFieldsAreBound">
+    <xsl:attribute name="cond">'name' in _event &amp;&amp; 'type' in _event &amp;&amp; 'sendid' in _event &amp;&amp; 'origin' in _event &amp;&amp; 'origintype' in _event &amp;&amp; 'invokeid' in _event &amp;&amp; 'data' in _event</xsl:attribute>
+  </xsl:template> 
 
 <!-- returns true if  _event.data contains the specified item -->
 <xsl:template match="//@conf:eventDataHasField">

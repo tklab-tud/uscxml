@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<!-- Fatal error with duplicating names in invokable scxml placed in content -->
+<scxml xmlns="http://www.w3.org/2005/07/scxml" datamodel="lua" initial="start" name="root" version="1.0">
+  <transition event="timeout" target="fail"/>
+  <onentry>
+    <send event="timeout" delay="1s"/>
+  </onentry>
+  <state id="start">
+    <invoke id="test_invoke" type="scxml">
+      <content>
+        <scxml xmlns="http://www.w3.org/2005/07/scxml" datamodel="lua" name="scxml_invoke" version="1.0">
+          <state id="start">
+            <transition target="end"/>
+          </state>
+          <final id="end"/>
+        </scxml>
+      </content>
+    </invoke>
+    <transition event="done.invoke.test_invoke" target="pass"/>
+  </state>
+  <final id="pass"/>
+  <final id="fail"/>
+  
+</scxml>

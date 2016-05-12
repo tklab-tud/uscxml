@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- we test that idlocation is supported.   -->
+<scxml:scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" xmlns:scxml="http://www.w3.org/2005/07/scxml" initial="s0" version="1.0" datamodel="ecmascript">
+  <scxml:datamodel>
+    <scxml:data id="Var1"/>
+  </scxml:datamodel>
+  <scxml:state id="s0">
+    <scxml:onentry>
+      <scxml:send event="timeout" delay="1s"/>
+    </scxml:onentry>
+    <scxml:invoke type="http://www.w3.org/TR/scxml/" idlocation="Var1">
+      <scxml:content>
+        <!-- when invoked, terminate returning done.invoke. This proves that the invocation succeeded.   -->
+        <scxml:scxml initial="subFinal" version="1.0" datamodel="ecmascript">
+          <scxml:final id="subFinal"/>
+        </scxml:scxml>
+      </scxml:content>
+    </scxml:invoke>
+    <scxml:transition event="*" target="s1"/>
+  </scxml:state>
+  <scxml:state id="s1">
+    <scxml:transition cond="Var1" target="pass"/>
+    <scxml:transition target="fail"/>
+  </scxml:state>
+  <scxml:final id="pass">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'pass'"/>
+    </scxml:onentry>
+  </scxml:final>
+  <scxml:final id="fail">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'fail'"/>
+    </scxml:onentry>
+  </scxml:final>
+</scxml:scxml>

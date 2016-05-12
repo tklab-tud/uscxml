@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- we test that the processor does not dispatch the event if evaluation
+of <send>'s args causes an error..  -->
+<scxml:scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" xmlns:scxml="http://www.w3.org/2005/07/scxml" initial="s0" datamodel="ecmascript" version="1.0">
+  <scxml:state id="s0">
+    <scxml:onentry>
+      <!-- timeout event -->
+      <scxml:send event="timeout" delayexpr="'1s'"/>
+      <!-- generate an invalid namelist -->
+      <scxml:send event="event1" namelist="&quot;foo"/>
+    </scxml:onentry>
+    <!-- if we get the timeout before event1, we assume that event1 hasn't been sent
+ We ignore the error event here because this assertion doesn't mention it -->
+    <scxml:transition event="timeout" target="pass"/>
+    <scxml:transition event="event1" target="fail"/>
+  </scxml:state>
+  <scxml:final id="pass">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'pass'"/>
+    </scxml:onentry>
+  </scxml:final>
+  <scxml:final id="fail">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'fail'"/>
+    </scxml:onentry>
+  </scxml:final>
+</scxml:scxml>

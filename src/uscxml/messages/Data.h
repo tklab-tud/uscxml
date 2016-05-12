@@ -22,13 +22,13 @@
 
 #include <list>
 #include <map>
-
-#include <boost/shared_ptr.hpp>
+#include <memory>
 
 #include "uscxml/Common.h"
-#include "uscxml/Convenience.h"
+#include "uscxml/util/Convenience.h"
 #include "uscxml/messages/Blob.h"
-#include <DOM/Document.hpp>
+
+#include <xercesc/dom/DOMDocument.hpp>
 
 namespace uscxml {
 
@@ -41,22 +41,12 @@ public:
 		INTERPRETED,
 	};
 
-	Data() : type(INTERPRETED) {}
+	Data() : node(NULL), type(INTERPRETED) {}
 
-	// TODO: default INTERPRETED is unfortunate
-	Data(const std::string& atom, Type type) : atom(atom), type(type) {}
 	Data(const char* data, size_t size, const std::string& mimeType, bool adopt = false);
 
 	// convenience constructors
-	Data(short atom) : atom(toStr(atom)), type(INTERPRETED) {}
-	Data(int atom) : atom(toStr(atom)), type(INTERPRETED) {}
-	Data(unsigned int atom) : atom(toStr(atom)), type(INTERPRETED) {}
-	Data(long atom) : atom(toStr(atom)), type(INTERPRETED) {}
-	Data(unsigned long atom) : atom(toStr(atom)), type(INTERPRETED) {}
-	Data(long long int atom) : atom(toStr(atom)), type(INTERPRETED) {}
-	Data(float atom) : atom(toStr(atom)), type(INTERPRETED) {}
-	Data(double atom) : atom(toStr(atom)), type(INTERPRETED) {}
-	Data(bool atom) : type(INTERPRETED) {
+	Data(bool atom) : node(NULL), type(VERBATIM) {
 		if (atom) {
 			this->atom = "true";
 		} else {
@@ -64,18 +54,18 @@ public:
 		}
 	}
 
-	template <typename T> Data(T value, Type type) : atom(toStr(value)), type(type) {}
+	Data(xercesc::DOMNode* node) : node(node), type(VERBATIM) {}
 
-#if 0
-	// constructor for arbitrary types, skip if type is subclass though (C++11)
+	//    template <typename T> Data(T value, Type type = INTERPRETED) : atom(toStr(value)), type(type) {}
+
 	// we will have to drop this constructor as it interferes with operator Data() and requires C++11
 	template <typename T>
 	Data(T value, typename std::enable_if<! std::is_base_of<Data, T>::value>::type* = nullptr)
-		: atom(toStr(value)), type(INTERPRETED) {}
-#endif
+		: node(NULL), atom(toStr(value)), type(VERBATIM) {}
+	template <typename T>
+	Data(T value, Type type, typename std::enable_if<! std::is_base_of<Data, T>::value>::type* = nullptr)
+		: node(NULL), atom(toStr(value)), type(type) {}
 
-
-	explicit Data(const Arabica::DOM::Node<std::string>& dom);
 	~Data() {}
 
 	bool empty() const {
@@ -84,9 +74,20 @@ public:
 	}
 
 	bool operator<(const Data& other) const {
-		std::string thisJSON = Data::toJSON(*this);
-		std::string otherJSON = Data::toJSON(other);
-		return (thisJSON < otherJSON);
+		if (other.atom != atom)
+			return other.atom < atom;
+		if (other.array != array)
+			return other.array < array;
+		if (other.compound != compound)
+			return other.compound < compound;
+		if (other.node != node)
+			return other.node < node;
+		if (other.binary != binary)
+			return other.binary < binary;
+		if (other.type != type)
+			return other.type < type;
+
+		return false;
 	}
 
 	void merge(const Data& other);
@@ -150,27 +151,7 @@ public:
 	}
 
 	bool operator==(const Data &other) const {
-		if (other.atom.size() != atom.size())
-			return false;
-		if (other.type != type)
-			return false;
-		if (other.binary != binary)
-			return false;
-		if (other.array.size() != array.size())
-			return false;
-		if (other.compound.size() != compound.size())
-			return false;
-
-		if (other.atom != atom)
-			return false;
-		if (other.array != array)
-			return false;
-		if (other.compound != compound)
-			return false;
-		if (other.node != node)
-			return false;
-
-		return true;
+		return (*this < other || other < *this);
 	}
 
 	bool operator!=(const Data &other) const {
@@ -191,13 +172,8 @@ public:
 
 	static Data fromJSON(const std::string& jsonString);
 	static std::string toJSON(const Data& data);
-	static Data fromXML(const std::string& xmlString);
-	Arabica::DOM::Document<std::string> toDocument();
-	std::string toXMLString() {
-		std::stringstream ss;
-		ss << toDocument();
-		return ss.str();
-	}
+	std::string asJSON() const;
+
 
 	std::map<std::string, Data> getCompound() {
 		return compound;
@@ -238,7 +214,8 @@ public:
 protected:
 #endif
 
-	Arabica::DOM::Node<std::string> node;
+	xercesc::DOMNode* node;
+	std::shared_ptr<xercesc::DOMDocument*> adoptedDoc;
 	std::map<std::string, Data> compound;
 	std::list<Data> array;
 	std::string atom;
@@ -246,7 +223,6 @@ protected:
 	Type type;
 
 protected:
-	Arabica::DOM::Document<std::string> toNode(const Arabica::DOM::Document<std::string>& factory, const Data& data);
 	friend USCXML_API std::ostream& operator<< (std::ostream& os, const Data& data);
 };
 

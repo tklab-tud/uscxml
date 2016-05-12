@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- test that the default history state works correctly.  From initial state s3 we take a transition to s0's default
+shallow history state.  That should generate "enteringS011", which takes us to s4.  In s4, we
+transition to s1's default deep history state. We should end up in s122, generating "enteringS122".  Otherwise failure.-->
+<scxml:scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" xmlns:scxml="http://www.w3.org/2005/07/scxml" initial="s3" version="1.0" datamodel="ecmascript">
+  <scxml:state id="s0" initial="s01">
+    <scxml:transition event="enteringS011" target="s4"/>
+    <scxml:transition event="*" target="fail"/>
+    <scxml:history type="shallow" id="s0HistShallow">
+      <scxml:transition target="s01"/>
+    </scxml:history>
+    <scxml:history type="deep" id="s0HistDeep">
+      <scxml:transition target="s022"/>
+    </scxml:history>
+    <scxml:state id="s01" initial="s011">
+      <scxml:state id="s011">
+        <scxml:onentry>
+          <scxml:raise event="enteringS011"/>
+        </scxml:onentry>
+      </scxml:state>
+      <scxml:state id="s012">
+        <scxml:onentry>
+          <scxml:raise event="enteringS012"/>
+        </scxml:onentry>
+      </scxml:state>
+    </scxml:state>
+    <scxml:state id="s02" initial="s021">
+      <scxml:state id="s021">
+        <scxml:onentry>
+          <scxml:raise event="enteringS021"/>
+        </scxml:onentry>
+      </scxml:state>
+      <scxml:state id="s022">
+        <scxml:onentry>
+          <scxml:raise event="enteringS022"/>
+        </scxml:onentry>
+      </scxml:state>
+    </scxml:state>
+  </scxml:state>
+  <scxml:state id="s1" initial="s11">
+    <scxml:transition event="enteringS122" target="pass"/>
+    <scxml:transition event="*" target="fail"/>
+    <scxml:history type="shallow" id="s1HistShallow">
+      <scxml:transition target="s11"/>
+    </scxml:history>
+    <scxml:history type="deep" id="s1HistDeep">
+      <scxml:transition target="s122"/>
+    </scxml:history>
+    <scxml:state id="s11" initial="s111">
+      <scxml:state id="s111">
+        <scxml:onentry>
+          <scxml:raise event="enteringS111"/>
+        </scxml:onentry>
+      </scxml:state>
+      <scxml:state id="s112">
+        <scxml:onentry>
+          <scxml:raise event="enteringS112"/>
+        </scxml:onentry>
+      </scxml:state>
+    </scxml:state>
+    <scxml:state id="s12" initial="s121">
+      <scxml:state id="s121">
+        <scxml:onentry>
+          <scxml:raise event="enteringS121"/>
+        </scxml:onentry>
+      </scxml:state>
+      <scxml:state id="s122">
+        <scxml:onentry>
+          <scxml:raise event="enteringS122"/>
+        </scxml:onentry>
+      </scxml:state>
+    </scxml:state>
+  </scxml:state>
+  <scxml:state id="s3">
+    <scxml:onentry>
+      <scxml:send event="timeout" delay="1s"/>
+    </scxml:onentry>
+    <scxml:transition target="s0HistShallow"/>
+  </scxml:state>
+  <scxml:state id="s4">
+    <scxml:transition target="s1HistDeep"/>
+  </scxml:state>
+  <scxml:final id="pass">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'pass'"/>
+    </scxml:onentry>
+  </scxml:final>
+  <scxml:final id="fail">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'fail'"/>
+    </scxml:onentry>
+  </scxml:final>
+</scxml:scxml>

@@ -21,14 +21,15 @@
 #define EVENTHANDLER_H_2801243E
 
 #include "uscxml/Common.h"
+#include "uscxml/messages/Data.h"
+#include "uscxml/messages/Event.h"
 
 #include <list>
-#include <boost/shared_ptr.hpp>
 #include <string>
+#include <memory>
 #include <sstream>
 
-#include "DOM/Document.hpp"
-#include "uscxml/messages/SendRequest.h"
+#include <xercesc/dom/DOM.hpp>
 
 namespace uscxml {
 
@@ -36,54 +37,19 @@ class InterpreterImpl;
 
 class USCXML_API EventHandlerImpl {
 public:
+	EventHandlerImpl() {}
 	virtual ~EventHandlerImpl() {}
 
 	virtual std::list<std::string> getNames() = 0;
-
-	virtual void setInterpreter(InterpreterImpl* interpreter) {
-		_interpreter = interpreter;
-	}
-	void setInvokeId(const std::string& invokeId) {
-		_invokeId = invokeId;
-	}
-	void setType(const std::string& type) {
-		_type = type;
-	}
-	std::string getType() {
-		return _type;
-	}
-
-	void setElement(const Arabica::DOM::Element<std::string>& element) {
-		_element = element;
-	}
-
-	Arabica::DOM::Element<std::string> getElement() {
-		return _element;
-	}
-
 	virtual Data getDataModelVariables() = 0;
-	virtual void send(const SendRequest& req) = 0;
-
-	virtual void runOnMainThread() {};
-	void returnErrorExecution(const std::string&);
-	void returnErrorCommunication(const std::string&);
-	void returnEvent(Event& event, bool internal = false);
 
 protected:
 	InterpreterImpl* _interpreter;
-	Arabica::DOM::Element<std::string> _element;
-	std::string _invokeId;
-	std::string _type;
-
-
 };
 
 class USCXML_API EventHandler {
 public:
-	EventHandler() : _impl() {}
-	EventHandler(boost::shared_ptr<EventHandlerImpl> const impl) : _impl(impl) { }
-	EventHandler(const EventHandler& other) : _impl(other._impl) { }
-	virtual ~EventHandler() {};
+	PIMPL_OPERATORS(EventHandler);
 
 	virtual std::list<std::string> getNames()   {
 		return _impl->getNames();
@@ -92,37 +58,9 @@ public:
 	virtual Data getDataModelVariables() const {
 		return _impl->getDataModelVariables();
 	};
-	virtual void send(const SendRequest& req)  {
-		return _impl->send(req);
-	};
-	virtual void runOnMainThread()             {
-		return _impl->runOnMainThread();
-	}
-
-	void setInterpreter(InterpreterImpl* interpreter) {
-		_impl->setInterpreter(interpreter);
-	}
-	void setInvokeId(const std::string& invokeId) {
-		_impl->setInvokeId(invokeId);
-	}
-
-	void setType(const std::string& type) {
-		_impl->setType(type);
-	}
-	std::string getType() {
-		return _impl->getType();
-	}
-
-	void setElement(const Arabica::DOM::Element<std::string>& element) {
-		_impl->setElement(element);
-	}
-
-	Arabica::DOM::Element<std::string> getElement() {
-		return _impl->getElement();
-	}
 
 protected:
-	boost::shared_ptr<EventHandlerImpl> _impl;
+	std::shared_ptr<EventHandlerImpl> _impl;
 	friend class InterpreterImpl;
 };
 

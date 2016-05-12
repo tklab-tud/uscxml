@@ -310,7 +310,7 @@ events which cause the test to fail.  The default value provided here is pretty 
 
 <!-- returns the value of a KVP specified by Namelist from  _event.data  -->
 <xsl:template match="//@conf:eventDataNamelistValue"> 
-	<xsl:attribute name="expr">$_event/data/data[@id=Var'<xsl:value-of select="."/>']/data/text()</xsl:attribute>
+	<xsl:attribute name="expr">$_event/data/data[@id='Var<xsl:value-of select="."/>']/data/text()</xsl:attribute>
 </xsl:template>
 
 <!-- returns the location of the scxml event i/o processor -->
@@ -525,7 +525,7 @@ is the second argument -->
 
 <!-- test that _event.data is set to the value specified by <conf:someInlineVal> -->
 <xsl:template match="//@conf:eventdataSomeVal">
-	<xsl:attribute name="cond">_event.data = 123</xsl:attribute>
+	<xsl:attribute name="cond">_event/data = 123</xsl:attribute>
 </xsl:template>
 
 <xsl:template match="//@conf:emptyEventData"> 

@@ -1,62 +1,23 @@
 #include "uscxml/config.h"
 #include "uscxml/Interpreter.h"
-#include "uscxml/transform/ChartToFlatSCXML.h"
+#include "uscxml/util/String.h"
 #include "uscxml/transform/ChartToC.h"
 #include "uscxml/transform/ChartToVHDL.h"
-#include "uscxml/transform/ChartToTex.h"
-#include "uscxml/transform/ChartToMinimalSCXML.h"
-#include "uscxml/transform/ChartToPromela.h"
-#include "uscxml/dom/DOMUtils.h"
 
-#include <glog/logging.h>
 #include <boost/algorithm/string.hpp>
 
 #include <fstream>
 #include <iostream>
 #include <map>
 
-#include "uscxml/Factory.h"
+#include "uscxml/plugins/Factory.h"
 #include "uscxml/server/HTTPServer.h"
 #include "getopt.h"
 
-#ifdef HAS_SIGNAL_H
-#include <signal.h>
-#endif
-
-#ifdef HAS_EXECINFO_H
-#include <execinfo.h>
-#endif
-
-#ifdef HAS_DLFCN_H
-#include <dlfcn.h>
-#endif
+#include <easylogging++.h>
 
 #define ANNOTATE(envKey, annotationParam) \
 envVarIsTrue(envKey) || std::find(options.begin(), options.end(), annotationParam) != options.end()
-
-class VerboseMonitor : public uscxml::InterpreterMonitor {
-	void onStableConfiguration(uscxml::Interpreter interpreter) {
-		printConfig(interpreter.getConfiguration());
-	}
-
-	void beforeProcessingEvent(uscxml::Interpreter interpreter, const uscxml::Event& event) {
-		std::cerr << "Event: " << event.name << std::endl;
-	}
-
-	void beforeCompletion(uscxml::Interpreter interpreter) {
-		printConfig(interpreter.getConfiguration());
-	}
-
-	void printConfig(const Arabica::XPath::NodeSet<std::string>& config) {
-		std::string seperator;
-		std::cerr << "Config: {";
-		for (size_t i = 0; i < config.size(); i++) {
-			std::cerr << seperator << ATTR_CAST(config[i], "id");
-			seperator = ", ";
-		}
-		std::cerr << "}" << std::endl;
-	}
-};
 
 void printUsageAndExit(const char* progName) {
 	// remove path from program name
@@ -118,10 +79,6 @@ int main(int argc, char** argv) {
 #if defined(HAS_SIGNAL_H) && !defined(WIN32)
 	signal(SIGPIPE, SIG_IGN);
 #endif
-
-	// setup logging
-	google::LogToStderr();
-	google::InitGoogleLogging(argv[0]);
 
 	optind = 0;
 	opterr = 0;
@@ -270,7 +227,7 @@ int main(int argc, char** argv) {
 				ss << line;
 			}
 			URL tmp("anonymous.scxml");
-			tmp.toAbsoluteCwd();
+            tmp = URL::resolveWithCWD(tmp);
 			interpreter = Interpreter::fromXML(ss.str(), tmp);
 		} else {
 			interpreter = Interpreter::fromURL(inputFile);
@@ -283,18 +240,17 @@ int main(int argc, char** argv) {
 
 	if (!interpreter) {
 		URL tmp(inputFile);
-		tmp.toAbsoluteCwd();
-		std::stringstream contentSS;
-		contentSS << tmp;
+        tmp = URL::resolveWithCWD(tmp);
+        std::string content = tmp.getInContent();
 
 		std::string inlineBeginMarker = "INLINE SCXML BEGIN\n";
 		std::string inlineEndMarker = "\nINLINE SCXML END";
 
-		size_t inlineSCXMLBegin = contentSS.str().find(inlineBeginMarker);
+		size_t inlineSCXMLBegin = content.find(inlineBeginMarker);
 		if (inlineSCXMLBegin != std::string::npos) {
 			inlineSCXMLBegin += inlineBeginMarker.size();
-			size_t inlineSCXMLEnd = contentSS.str().find(inlineEndMarker);
-			std::string inlineSCXMLContent = contentSS.str().substr(inlineSCXMLBegin, inlineSCXMLEnd - inlineSCXMLBegin);
+			size_t inlineSCXMLEnd = content.find(inlineEndMarker);
+			std::string inlineSCXMLContent = content.substr(inlineSCXMLBegin, inlineSCXMLEnd - inlineSCXMLBegin);
 			try {
 				interpreter = Interpreter::fromXML(inlineSCXMLContent, tmp);
 			} catch (Event e) {
@@ -335,68 +291,68 @@ int main(int argc, char** argv) {
 			exit(EXIT_SUCCESS);
 		}
 
-		if (outType == "vhdl") {
-			if (outputFile.size() == 0 || outputFile == "-") {
-				ChartToVHDL::transform(interpreter).writeTo(std::cout);
-			} else {
-				std::ofstream outStream;
-				outStream.open(outputFile.c_str());
-				ChartToVHDL::transform(interpreter).writeTo(outStream);
-				outStream.close();
-			}
-			exit(EXIT_SUCCESS);
-		}
+//		if (outType == "vhdl") {
+//			if (outputFile.size() == 0 || outputFile == "-") {
+//				ChartToVHDL::transform(interpreter).writeTo(std::cout);
+//			} else {
+//				std::ofstream outStream;
+//				outStream.open(outputFile.c_str());
+//				ChartToVHDL::transform(interpreter).writeTo(outStream);
+//				outStream.close();
+//			}
+//			exit(EXIT_SUCCESS);
+//		}
 
-		if (outType == "pml") {
-			if (outputFile.size() == 0 || outputFile == "-") {
-				ChartToPromela::transform(interpreter).writeTo(std::cout);
-			} else {
-				std::ofstream outStream;
-				outStream.open(outputFile.c_str());
-				ChartToPromela::transform(interpreter).writeTo(outStream);
-				outStream.close();
-			}
-			exit(EXIT_SUCCESS);
-		}
+//		if (outType == "pml") {
+//			if (outputFile.size() == 0 || outputFile == "-") {
+//				ChartToPromela::transform(interpreter).writeTo(std::cout);
+//			} else {
+//				std::ofstream outStream;
+//				outStream.open(outputFile.c_str());
+//				ChartToPromela::transform(interpreter).writeTo(outStream);
+//				outStream.close();
+//			}
+//			exit(EXIT_SUCCESS);
+//		}
 
-		if (outType == "tex") {
-			if (outputFile.size() == 0 || outputFile == "-") {
-				ChartToTex::transform(interpreter).writeTo(std::cout);
-			} else {
-				std::ofstream outStream;
-				outStream.open(outputFile.c_str());
-				ChartToTex::transform(interpreter).writeTo(outStream);
-				outStream.close();
-			}
-			exit(EXIT_SUCCESS);
-		}
+//		if (outType == "tex") {
+//			if (outputFile.size() == 0 || outputFile == "-") {
+//				ChartToTex::transform(interpreter).writeTo(std::cout);
+//			} else {
+//				std::ofstream outStream;
+//				outStream.open(outputFile.c_str());
+//				ChartToTex::transform(interpreter).writeTo(outStream);
+//				outStream.close();
+//			}
+//			exit(EXIT_SUCCESS);
+//		}
 
-		if (outType == "flat") {
-			if (outputFile.size() == 0 || outputFile == "-") {
-				ChartToFlatSCXML::transform(interpreter).writeTo(std::cout);
-			} else {
-				std::ofstream outStream;
-				outStream.open(outputFile.c_str());
-				ChartToFlatSCXML::transform(interpreter).writeTo(outStream);
-				outStream.close();
-			}
-			exit(EXIT_SUCCESS);
-		}
+//		if (outType == "flat") {
+//			if (outputFile.size() == 0 || outputFile == "-") {
+//				ChartToFlatSCXML::transform(interpreter).writeTo(std::cout);
+//			} else {
+//				std::ofstream outStream;
+//				outStream.open(outputFile.c_str());
+//				ChartToFlatSCXML::transform(interpreter).writeTo(outStream);
+//				outStream.close();
+//			}
+//			exit(EXIT_SUCCESS);
+//		}
 
-		if (outType == "min") {
-			if (outputFile.size() == 0 || outputFile == "-") {
-				ChartToMinimalSCXML::transform(interpreter).writeTo(std::cout);
-			} else {
-				std::ofstream outStream;
-				outStream.open(outputFile.c_str());
-				ChartToMinimalSCXML::transform(interpreter).writeTo(outStream);
-				outStream.close();
-			}
-			exit(EXIT_SUCCESS);
-		}
+//		if (outType == "min") {
+//			if (outputFile.size() == 0 || outputFile == "-") {
+//				ChartToMinimalSCXML::transform(interpreter).writeTo(std::cout);
+//			} else {
+//				std::ofstream outStream;
+//				outStream.open(outputFile.c_str());
+//				ChartToMinimalSCXML::transform(interpreter).writeTo(outStream);
+//				outStream.close();
+//			}
+//			exit(EXIT_SUCCESS);
+//		}
 
 
-#if 1
+#if 0
 		if (options.size() > 0) {
 			ChartToFSM annotater(interpreter);
 			if (std::find(options.begin(), options.end(), "priority") != options.end())

@@ -18,108 +18,9 @@
  */
 
 #include "uscxml/messages/Event.h"
-#include "uscxml/dom/DOMUtils.h"
-#include <DOM/SAX2DOM/SAX2DOM.hpp>
-#include <SAX/helpers/DefaultHandler.hpp>
-#include <SAX/helpers/CatchErrorHandler.hpp>
+#include "uscxml/util/DOM.h"
 
 namespace uscxml {
-
-//Arabica::DOM::Node<std::string> Event::getFirstDOMElement() const {
-//	return getFirstDOMElement(dom);
-//}
-//
-//Arabica::DOM::Document<std::string> Event::getStrippedDOM() const {
-//	return getStrippedDOM(dom);
-//}
-
-//Arabica::DOM::Node<std::string> Event::getFirstDOMElement(const Arabica::DOM::Document<std::string> dom) {
-//	Arabica::DOM::Node<std::string> data = dom.getDocumentElement().getFirstChild();
-//	while (data) {
-//		if (data.getNodeType() == Arabica::DOM::Node_base::TEXT_NODE) {
-//			std::string trimmed = boost::trim_copy(data.getNodeValue());
-//			if (trimmed.length() == 0) {
-//				data = data.getNextSibling();
-//				continue;
-//			}
-//		}
-//		break;
-//	}
-//	return data;
-//}
-//
-//Arabica::DOM::Document<std::string> Event::getStrippedDOM(const Arabica::DOM::Document<std::string> dom) {
-//	Arabica::DOM::DOMImplementation<std::string> domFactory = Arabica::SimpleDOM::DOMImplementation<std::string>::getDOMImplementation();
-//	Arabica::DOM::Document<std::string> document = domFactory.createDocument("", "", 0);
-//	if (dom) {
-//		document.getDocumentElement().appendChild(document.importNode(getFirstDOMElement(dom), true));
-//	}
-//	return document;
-//}
-
-std::string Event::toXMLString() {
-	std::stringstream ss;
-	ss << toDocument();
-	return ss.str();
-}
-
-Arabica::DOM::Document<std::string> Event::toDocument() {
-	Arabica::DOM::DOMImplementation<std::string> domFactory = Arabica::SimpleDOM::DOMImplementation<std::string>::getDOMImplementation();
-	Arabica::DOM::Document<std::string> document = data.toDocument();
-	Arabica::DOM::Element<std::string> scxmlMsg = document.getDocumentElement();
-
-
-	scxmlMsg.setAttribute("source", origin);
-	scxmlMsg.setAttribute("name", name);
-
-	return document;
-}
-
-
-Event Event::fromXML(const std::string& xmlString) {
-	Arabica::SAX2DOM::Parser<std::string> eventParser;
-	Arabica::SAX::CatchErrorHandler<std::string> errorHandler;
-	eventParser.setErrorHandler(errorHandler);
-
-	std::istringstream is(xmlString);
-	Arabica::SAX::InputSource<std::string> inputSource;
-	inputSource.setByteStream(is);
-
-	Event event;
-	if(eventParser.parse(inputSource) && eventParser.getDocument().hasChildNodes()) {
-		Arabica::DOM::Element<std::string> scxmlMsg = eventParser.getDocument().getDocumentElement();
-		if (HAS_ATTR(scxmlMsg, "name"))
-			event.name = ATTR(scxmlMsg, "name");
-		if (HAS_ATTR(scxmlMsg, "sendid"))
-			event.sendid = ATTR(scxmlMsg, "sendid");
-
-		Arabica::DOM::NodeList<std::string> payloads = scxmlMsg.getElementsByTagName("scxml:payload");
-		if (payloads.getLength() > 0) {
-			Arabica::DOM::Node<std::string> payload = payloads.item(0);
-			if (payload.getNodeType() == Arabica::DOM::Node_base::ELEMENT_NODE) {
-				Arabica::DOM::Element<std::string> payloadElem = (Arabica::DOM::Element<std::string>)payload;
-				Arabica::DOM::NodeList<std::string> properties = payloadElem.getElementsByTagName("scxml:property");
-				if (properties.getLength() > 0) {
-					for (size_t i = 0; i < properties.getLength(); i++) {
-						if (HAS_ATTR_CAST(properties.item(i), "name")) {
-							std::string key = ATTR_CAST(properties.item(i), "name");
-							std::string value;
-							Arabica::DOM::NodeList<std::string> childs = properties.item(i).getChildNodes();
-							for (size_t j = 0; j < childs.getLength(); j++) {
-								if (childs.item(j).getNodeType() == Arabica::DOM::Node_base::TEXT_NODE) {
-									value = childs.item(j).getNodeValue();
-									break;
-								}
-							}
-							event.data.compound[key] = Data(value, Data::VERBATIM);
-						}
-					}
-				}
-			}
-		}
-	}
-	return event;
-}
 
 std::ostream& operator<< (std::ostream& os, const Event& event) {
 	std::string indent;
@@ -127,7 +28,7 @@ std::ostream& operator<< (std::ostream& os, const Event& event) {
 		indent += "  ";
 	}
 
-	os << indent << (event.eventType == Event::EXTERNAL ? "External" : "Internal") << " Event " << (event.dom ? "with DOM attached" : "") << std::endl;
+//    os << indent << (event.eventType == Event::EXTERNAL ? "External" : "Internal") << " Event " << (event.dom ? "with DOM attached" : "") << std::endl;
 
 	if (event.name.size() > 0)
 		os << indent << "  name: " << event.name << std::endl;
@@ -135,8 +36,8 @@ std::ostream& operator<< (std::ostream& os, const Event& event) {
 		os << indent << "  origin: " << event.origin << std::endl;
 	if (event.origintype.size() > 0)
 		os << indent << "  origintype: " << event.origintype << std::endl;
-	if (event.content.size() > 0)
-		os << indent << "  content: '" << event.content << "'" << std::endl;
+//    if (event.content.size() > 0)
+//        os << indent << "  content: '" << event.content << "'" << std::endl;
 	if (event.params.size() > 0) {
 		std::multimap<std::string, Data>::const_iterator paramIter = event.params.begin();
 		os << indent << "  params:" << std::endl;

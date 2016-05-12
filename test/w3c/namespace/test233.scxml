@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- test that finalize markup runs before the event is processed.  The invoked process will
+return 2 in _event.data.aParam, so that new value should be in force when we select
+the transtitions.   -->
+<scxml:scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" xmlns:scxml="http://www.w3.org/2005/07/scxml" initial="s0" version="1.0" datamodel="ecmascript">
+  <scxml:datamodel>
+    <scxml:data id="Var1" expr="1"/>
+  </scxml:datamodel>
+  <scxml:state id="s0">
+    <scxml:onentry>
+      <scxml:send event="timeout" delay="3s"/>
+    </scxml:onentry>
+    <scxml:invoke type="http://www.w3.org/TR/scxml/">
+      <scxml:content>
+        <scxml:scxml initial="subFinal" version="1.0" datamodel="ecmascript">
+          <scxml:final id="subFinal">
+            <scxml:onentry>
+              <scxml:send target="#_parent" event="childToParent">
+                <scxml:param name="aParam" expr="2"/>
+              </scxml:send>
+            </scxml:onentry>
+          </scxml:final>
+        </scxml:scxml>
+      </scxml:content>
+      <scxml:finalize>
+        <scxml:assign location="Var1" expr="_event.data.aParam"/>
+      </scxml:finalize>
+    </scxml:invoke>
+    <scxml:transition event="childToParent" cond="Var1==2" target="pass"/>
+    <scxml:transition event="*" target="fail"/>
+  </scxml:state>
+  <scxml:final id="pass">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'pass'"/>
+    </scxml:onentry>
+  </scxml:final>
+  <scxml:final id="fail">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'fail'"/>
+    </scxml:onentry>
+  </scxml:final>
+</scxml:scxml>

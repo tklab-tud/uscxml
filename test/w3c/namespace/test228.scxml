@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- test that the invokeid is included in events returned from the invoked process.   -->
+<scxml:scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" xmlns:scxml="http://www.w3.org/2005/07/scxml" initial="s0" version="1.0" datamodel="ecmascript">
+  <scxml:datamodel>
+    <scxml:data id="Var1"/>
+  </scxml:datamodel>
+  <scxml:state id="s0">
+    <scxml:onentry>
+      <scxml:send event="timeout" delay="3s"/>
+    </scxml:onentry>
+    <scxml:invoke type="http://www.w3.org/TR/scxml/" id="foo">
+      <scxml:content>
+        <scxml:scxml initial="subFinal" version="1.0" datamodel="ecmascript">
+          <scxml:final id="subFinal"/>
+        </scxml:scxml>
+      </scxml:content>
+    </scxml:invoke>
+    <scxml:transition event="done.invoke" target="s1">
+      <scxml:assign location="Var1" expr="_event.invokeid"/>
+    </scxml:transition>
+    <scxml:transition event="*" target="fail"/>
+  </scxml:state>
+  <scxml:state id="s1">
+    <scxml:transition cond="Var1=='foo'" target="pass"/>
+    <scxml:transition target="fail"/>
+  </scxml:state>
+  <scxml:final id="pass">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'pass'"/>
+    </scxml:onentry>
+  </scxml:final>
+  <scxml:final id="fail">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'fail'"/>
+    </scxml:onentry>
+  </scxml:final>
+</scxml:scxml>

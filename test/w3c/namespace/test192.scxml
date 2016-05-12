@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- we test that #_invokeid works as  a target of  <send> .  A child  script is invoked and sends us
+childToParent once its running.  Then we send it the event parentToChild using its invokeid as the target.  
+If it receives this event, it sends sends the event eventReceived to its parent session (ths session). 
+If we get this event, we pass, otherwise the child script eventually times out sends invoke.done and we fail.
+We also set a timeout in this process to make sure the test doesn't hang  -->
+<scxml:scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" xmlns:scxml="http://www.w3.org/2005/07/scxml" initial="s0" datamodel="ecmascript" version="1.0">
+  <scxml:state id="s0" initial="s01">
+    <scxml:onentry>
+      <scxml:send event="timeout" delay="5s"/>
+    </scxml:onentry>
+    <scxml:invoke type="scxml" id="invokedChild">
+      <scxml:content>
+        <!-- let the parent session know we're running by sending childToParent, then wait for parentToChild.
+       If we get it, send eventReceived.  If we don't we eventually time out -->
+        <scxml:scxml initial="sub0" version="1.0" datamodel="ecmascript">
+          <scxml:state id="sub0">
+            <scxml:onentry>
+              <scxml:send event="childToParent" target="#_parent"/>
+              <scxml:send event="timeout" delay="3s"/>
+            </scxml:onentry>
+            <scxml:transition event="parentToChild" target="subFinal">
+              <scxml:send target="#_parent" event="eventReceived"/>
+            </scxml:transition>
+            <scxml:transition event="timeout" target="subFinal"/>
+          </scxml:state>
+          <scxml:final id="subFinal"/>
+        </scxml:scxml>
+      </scxml:content>
+    </scxml:invoke>
+    <scxml:transition event="timeout" target="fail"/>
+    <scxml:transition event="done.invoke" target="fail"/>
+    <scxml:state id="s01">
+      <scxml:transition event="childToParent" target="s02">
+        <scxml:send target="#_invokedChild" event="parentToChild"/>
+      </scxml:transition>
+    </scxml:state>
+    <scxml:state id="s02">
+      <scxml:transition event="eventReceived" target="pass"/>
+    </scxml:state>
+  </scxml:state>
+  <scxml:final id="pass">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'pass'"/>
+    </scxml:onentry>
+  </scxml:final>
+  <scxml:final id="fail">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'fail'"/>
+    </scxml:onentry>
+  </scxml:final>
+</scxml:scxml>

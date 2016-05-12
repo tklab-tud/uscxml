@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- test that onentry handlers are executed in document order.  event1 should be raised before event2 -->
+<scxml:scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" xmlns:scxml="http://www.w3.org/2005/07/scxml" datamodel="ecmascript" version="1.0">
+  <scxml:state id="s0">
+    <scxml:onentry>
+      <scxml:raise event="event1"/>
+    </scxml:onentry>
+    <scxml:onentry>
+      <scxml:raise event="event2"/>
+    </scxml:onentry>
+    <scxml:transition event="event1" target="s1"/>
+    <scxml:transition event="*" target="fail"/>
+  </scxml:state>
+  <scxml:state id="s1">
+    <scxml:transition event="event2" target="pass"/>
+    <scxml:transition event="*" target="fail"/>
+  </scxml:state>
+  <scxml:final id="pass">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'pass'"/>
+    </scxml:onentry>
+  </scxml:final>
+  <scxml:final id="fail">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'fail'"/>
+    </scxml:onentry>
+  </scxml:final>
+</scxml:scxml>

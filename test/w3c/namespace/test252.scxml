@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- test that we don't process any events received from the invoked process once it is cancelled.  child
+process tries to send us childToParent in an onexit handler.  If we get it, we fail.  
+timeout indicates success.   -->
+<scxml:scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" xmlns:scxml="http://www.w3.org/2005/07/scxml" initial="s0" version="1.0" datamodel="ecmascript">
+  <scxml:state id="s0" initial="s01">
+    <scxml:onentry>
+      <scxml:send event="timeout" delayexpr="'1s'"/>
+    </scxml:onentry>
+    <scxml:transition event="timeout" target="pass"/>
+    <scxml:transition event="childToParent" target="fail"/>
+    <scxml:transition event="done.invoke" target="fail"/>
+    <scxml:state id="s01">
+      <scxml:onentry>
+        <scxml:send event="foo"/>
+      </scxml:onentry>
+      <scxml:invoke type="http://www.w3.org/TR/scxml/">
+        <scxml:content>
+          <scxml:scxml initial="sub0" version="1.0" datamodel="ecmascript">
+            <scxml:state id="sub0">
+              <scxml:onentry>
+                <scxml:send event="timeout" delayexpr="'.5s'"/>
+              </scxml:onentry>
+              <scxml:transition event="timeout" target="subFinal"/>
+              <scxml:onexit>
+                <scxml:send target="#_parent" event="childToParent"/>
+              </scxml:onexit>
+            </scxml:state>
+            <scxml:final id="subFinal"/>
+          </scxml:scxml>
+        </scxml:content>
+      </scxml:invoke>
+      <!-- this transition will cause the invocation to be cancelled -->
+      <scxml:transition event="foo" target="s02"/>
+    </scxml:state>
+    <scxml:state id="s02"/>
+  </scxml:state>
+  <scxml:final id="pass">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'pass'"/>
+    </scxml:onentry>
+  </scxml:final>
+  <scxml:final id="fail">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'fail'"/>
+    </scxml:onentry>
+  </scxml:final>
+</scxml:scxml>

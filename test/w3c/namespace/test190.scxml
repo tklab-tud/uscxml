@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- we test that #_scxml_sessionid as a target of <send> puts the event on the external queue.  If it does,
+event1 will be processed before event2, because event1 is added to the internal queue while event2 is
+added to the external queue (event though event2 is generated first).  we have to make sure that event2
+is actually delivered.  The delayed <send> makes sure another event is generated (so the test doesn't hang) -->
+<scxml:scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" xmlns:scxml="http://www.w3.org/2005/07/scxml" initial="s0" version="1.0" datamodel="ecmascript">
+  <scxml:datamodel>
+    <scxml:data id="Var1" expr="'#_scxml_'"/>
+    <scxml:data id="Var2" expr="_sessionid"/>
+  </scxml:datamodel>
+  <scxml:state id="s0">
+    <scxml:onentry>
+      <scxml:assign location="Var1" expr="Var1 + Var2"/>
+      <!-- goes to the external queue -->
+      <scxml:send event="event2" targetexpr="Var1"/>
+      <!-- to the internal queue -->
+      <scxml:raise event="event1"/>
+      <!-- this should get added to the external queue after event2 -->
+      <scxml:send event="timeout"/>
+    </scxml:onentry>
+    <!-- once we've entered the state, we should check for internal events first -->
+    <scxml:transition event="event1" target="s1"/>
+    <scxml:transition event="*" target="fail"/>
+  </scxml:state>
+  <!-- now check that we get event2 and not a timeout -->
+  <scxml:state id="s1">
+    <scxml:transition event="event2" target="pass"/>
+    <scxml:transition event="*" target="fail"/>
+  </scxml:state>
+  <scxml:final id="pass">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'pass'"/>
+    </scxml:onentry>
+  </scxml:final>
+  <scxml:final id="fail">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'fail'"/>
+    </scxml:onentry>
+  </scxml:final>
+</scxml:scxml>

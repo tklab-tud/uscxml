@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- test that a history state never ends up part of the configuration -->
+<scxml:scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" xmlns:scxml="http://www.w3.org/2005/07/scxml" version="1.0" initial="p1" datamodel="ecmascript">
+  <scxml:datamodel>
+    <scxml:data id="Var1" expr="0"/>
+  </scxml:datamodel>
+  <scxml:parallel id="p1">
+    <scxml:onentry>
+      <scxml:send delay="2s" event="timeout"/>
+    </scxml:onentry>
+    <scxml:state id="s0">
+      <scxml:transition cond="In('sh1')" target="fail"/>
+      <scxml:transition event="timeout" target="fail"/>
+    </scxml:state>
+    <scxml:state id="s1">
+      <scxml:initial>
+        <scxml:transition target="sh1"/>
+      </scxml:initial>
+      <scxml:history id="sh1">
+        <scxml:transition target="s11"/>
+      </scxml:history>
+      <scxml:state id="s11">
+        <scxml:transition cond="In('sh1')" target="fail"/>
+        <scxml:transition target="s12"/>
+      </scxml:state>
+      <scxml:state id="s12"/>
+      <scxml:transition cond="In('sh1')" target="fail"/>
+      <scxml:transition cond="Var1==0" target="sh1"/>
+      <scxml:transition cond="Var1==1" target="pass"/>
+      <scxml:onexit>
+        <scxml:assign location="Var1" expr="Var1 + 1"/>
+      </scxml:onexit>
+    </scxml:state>
+  </scxml:parallel>
+  <scxml:final id="pass">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'pass'"/>
+    </scxml:onentry>
+  </scxml:final>
+  <scxml:final id="fail">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'fail'"/>
+    </scxml:onentry>
+  </scxml:final>
+</scxml:scxml>

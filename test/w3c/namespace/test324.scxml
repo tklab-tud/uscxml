@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- test that _name stays bound till the session ends.  This means that it cannot be assigned to -->
+<scxml:scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" xmlns:scxml="http://www.w3.org/2005/07/scxml" initial="s0" version="1.0" datamodel="ecmascript" name="machineName">
+  <scxml:state id="s0">
+    <scxml:transition cond="_name  === 'machineName'" target="s1"/>
+    <scxml:transition target="fail"/>
+  </scxml:state>
+  <scxml:state id="s1">
+    <scxml:onentry>
+      <scxml:assign location="_name" expr="'otherName'"/>
+    </scxml:onentry>
+    <scxml:transition cond="_name  === 'machineName'" target="pass"/>
+    <scxml:transition target="fail"/>
+  </scxml:state>
+  <scxml:final id="pass">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'pass'"/>
+    </scxml:onentry>
+  </scxml:final>
+  <scxml:final id="fail">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'fail'"/>
+    </scxml:onentry>
+  </scxml:final>
+</scxml:scxml>

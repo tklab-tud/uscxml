@@ -1,19 +1,19 @@
-<?xml version="1.0" standalone="no"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <!-- test that non-existent datamodel values are not set.  Var2 is not defined in 
 invoked child's datamodel.  It will will return success if its Var2 remains unbound, failure otherwise.  -->
-<scxml xmlns="http://www.w3.org/2005/07/scxml" initial="s0" version="1.0" datamodel="lua">
+<scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" initial="s0" version="1.0" datamodel="lua">
   <datamodel>
-    <data expr="3" id="testvar2"/>
+    <data id="Var2" expr="3"/>
   </datamodel>
   <state id="s0">
     <onentry>
-      <send event="timeout" delay="2s"/>
+      <send xmlns:scxml="http://www.w3.org/2005/07/scxml" delay="2000" event="timeout"/>
     </onentry>
-    <invoke type="http://www.w3.org/TR/scxml/" namelist="testvar2">
+    <invoke type="http://www.w3.org/TR/scxml/" namelist="Var2">
       <content>
         <scxml initial="sub0" version="1.0" datamodel="lua">
           <state id="sub0">
-            <transition target="subFinal" cond="testvar2 ~= nil">
+            <transition cond="Var2 ~= nil" target="subFinal">
               <send target="#_parent" event="failure"/>
             </transition>
             <transition target="subFinal">
@@ -27,6 +27,14 @@ invoked child's datamodel.  It will will return success if its Var2 remains unbo
     <transition event="success" target="pass"/>
     <transition event="*" target="fail"/>
   </state>
-  <final id="pass"/>
-  <final id="fail"/>
+  <final xmlns:scxml="http://www.w3.org/2005/07/scxml" id="pass">
+    <onentry>
+      <log label="Outcome" expr="'pass'"/>
+    </onentry>
+  </final>
+  <final xmlns:scxml="http://www.w3.org/2005/07/scxml" id="fail">
+    <onentry>
+      <log label="Outcome" expr="'fail'"/>
+    </onentry>
+  </final>
 </scxml>

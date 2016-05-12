@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- test that we keep pulling external events off the queue till we find one that matches a transition. -->
+<scxml:scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" xmlns:scxml="http://www.w3.org/2005/07/scxml" initial="s0" version="1.0" datamodel="ecmascript">
+  <scxml:state id="s0">
+    <scxml:onentry>
+      <scxml:send event="externalEvent1"/>
+      <scxml:send event="externalEvent2" delayexpr="'1s'"/>
+      <scxml:raise event="internalEvent"/>
+    </scxml:onentry>
+    <!-- in this state we should process only internalEvent -->
+    <scxml:transition event="internalEvent" target="s1"/>
+    <scxml:transition event="*" target="fail"/>
+  </scxml:state>
+  <scxml:state id="s1">
+    <!-- in this state we ignore externalEvent1 and wait for externalEvent2 -->
+    <scxml:transition event="externalEvent2" target="pass"/>
+    <scxml:transition event="internalEvent" target="fail"/>
+  </scxml:state>
+  <scxml:final id="pass">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'pass'"/>
+    </scxml:onentry>
+  </scxml:final>
+  <scxml:final id="fail">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'fail'"/>
+    </scxml:onentry>
+  </scxml:final>
+</scxml:scxml>

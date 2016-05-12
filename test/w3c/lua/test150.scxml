@@ -1,16 +1,18 @@
-<?xml version="1.0" standalone="no"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <!-- test that foreach causes a new variable to be declared if 'item' doesn't already exist.  Also
 test that it will use an existing var if it does exist. -->
-<scxml xmlns="http://www.w3.org/2005/07/scxml" initial="s0" version="1.0" datamodel="lua">
+<scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" initial="s0" datamodel="lua" version="1.0">
   <datamodel>
-    <data id="testvar1"/>
-    <data id="testvar2"/>
-    <data id="testvar3">{1,2,3}</data>
+    <data id="Var1"/>
+    <data id="Var2"/>
+    <data id="Var3">
+    {1,2,3}
+    </data>
   </datamodel>
   <state id="s0">
     <onentry>
       <!-- first use declared variables -->
-      <foreach array="testvar3" index="testvar2" item="testvar1"/>
+      <foreach item="Var1" index="Var2" array="Var3"/>
       <raise event="foo"/>
     </onentry>
     <transition event="error" target="fail"/>
@@ -19,7 +21,7 @@ test that it will use an existing var if it does exist. -->
   <state id="s1">
     <onentry>
       <!-- now use undeclared variables -->
-      <foreach array="testvar3" index="testvar5" item="testvar4"/>
+      <foreach item="Var4" index="Var5" array="Var3"/>
       <raise event="bar"/>
     </onentry>
     <transition event="error" target="fail"/>
@@ -27,9 +29,17 @@ test that it will use an existing var if it does exist. -->
   </state>
   <state id="s2">
     <!-- check that var4 is bound -->
-    <transition cond="testvar4 ~= nil" target="pass"/>
+    <transition cond="Var4 ~= nil" target="pass"/>
     <transition target="fail"/>
   </state>
-  <final id="pass"/>
-  <final id="fail"/>
+  <final xmlns:scxml="http://www.w3.org/2005/07/scxml" id="pass">
+    <onentry>
+      <log label="Outcome" expr="'pass'"/>
+    </onentry>
+  </final>
+  <final xmlns:scxml="http://www.w3.org/2005/07/scxml" id="fail">
+    <onentry>
+      <log label="Outcome" expr="'fail'"/>
+    </onentry>
+  </final>
 </scxml>

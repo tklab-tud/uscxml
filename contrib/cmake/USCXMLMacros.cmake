@@ -78,3 +78,34 @@ MACRO(THREE_PART_VERSION_TO_VARS version major minor patch)
     MESSAGE(FATAL_ERROR "Problem parsing version string, I can't parse it properly.")
   ENDIF(${version} MATCHES ${THREE_PART_VERSION_REGEX})
 ENDMACRO(THREE_PART_VERSION_TO_VARS)
+
+
+MACRO(CHECK_COMPILER_FEATURE feature output)
+	if (";${CMAKE_CXX_COMPILE_FEATURES};" MATCHES ";${feature};")
+		set(${output} ON)
+	else()
+		set(${output} OFF)		
+	endif()
+	
+ENDMACRO(CHECK_COMPILER_FEATURE)
+
+
+#
+# http://stackoverflow.com/questions/15706318/check-if-cmake-module-exists
+#
+# This makes use of the fact that if a package configuration file isn't found
+# for VAR, then a cache variable VAR_DIR is set to VAR_DIR-NOTFOUND. So if the
+# package configuration file is found, either this variable isn't defined, or
+# it's set to a valid path (regardless of whether the find_package finds the
+# requested package).
+
+function(CheckHasModule Module)
+  find_package(${Module} QUIET)
+  if(NOT DEFINED ${Module}_DIR)
+    set(HAS_MODULE_${Module} TRUE PARENT_SCOPE)
+  elseif(${Module}_DIR)
+    set(HAS_MODULE_${Module} TRUE PARENT_SCOPE)
+  else()
+    set(HAS_MODULE_${Module} FALSE PARENT_SCOPE)
+  endif()
+endfunction()

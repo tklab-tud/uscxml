@@ -18,15 +18,21 @@
  */
 
 #include "USCXMLInvoker.h"
-#include <glog/logging.h>
-#include "uscxml/dom/DOMUtils.h"
-#include <DOM/SAX2DOM/SAX2DOM.hpp>
+
+#include "uscxml/config.h"
 
 #ifdef BUILD_AS_PLUGINS
 #include <Pluma/Connector.hpp>
 #endif
 
+#ifdef UNIX
+#include <pthread.h>
+#endif
+
 namespace uscxml {
+
+// msxml.h should die in a fire for polluting the global namespace
+// using namespace xercesc;
 
 #ifdef BUILD_AS_PLUGINS
 PLUMA_CONNECTOR
@@ -36,26 +42,88 @@ bool pluginConnect(pluma::Host& host) {
 }
 #endif
 
-USCXMLInvoker::USCXMLInvoker() : _cancelled(false) {
-	_parentQueue._invoker = this;
+USCXMLInvoker::USCXMLInvoker() {
+	_parentQueue = EventQueue(std::shared_ptr<ParentQueueImpl>(new ParentQueueImpl(this)));
+	_thread = NULL;
+	_isActive = false;
+	_isStarted = false;
 }
 
 
 USCXMLInvoker::~USCXMLInvoker() {
+	stop();
 };
 
-void USCXMLInvoker::uninvoke() {
-	_cancelled = true;
-	Event event;
-	event.name = "unblock.and.die";
-	if (_invokedInterpreter)
-		_invokedInterpreter.receive(event);
-
+void USCXMLInvoker::start() {
+	_isStarted = true;
+	_thread = new std::thread(USCXMLInvoker::run, this);
 }
 
-boost::shared_ptr<InvokerImpl> USCXMLInvoker::create(InterpreterImpl* interpreter) {
-	boost::shared_ptr<USCXMLInvoker> invoker = boost::shared_ptr<USCXMLInvoker>(new USCXMLInvoker());
-	invoker->_parentInterpreter = interpreter;
+void USCXMLInvoker::stop() {
+	_isStarted = false;
+	_isActive = false;
+
+	if (_thread) {
+		/**
+		 * We cannot join the invoked thread if it is blocking at an external
+		 * receive. Cancel will finalize and unblock.
+		 */
+		_invokedInterpreter.cancel();
+		_thread->join();
+		delete _thread;
+		_thread = NULL;
+	}
+}
+
+void USCXMLInvoker::uninvoke() {
+	_isActive = false;
+	stop();
+}
+
+void USCXMLInvoker::eventFromSCXML(const Event& event) {
+	if (_isActive) {
+		_invokedInterpreter.receive(event);
+	}
+}
+
+void USCXMLInvoker::run(void* instance) {
+	USCXMLInvoker* INSTANCE = (USCXMLInvoker*)instance;
+
+#ifdef APPLE
+	std::string threadName;
+	threadName += "uscxml::";
+	threadName += (INSTANCE->_invokedInterpreter.getImpl()->_name.size() > 0 ? INSTANCE->_invokedInterpreter.getImpl()->_name : "anon");
+	threadName += ".scxml";
+
+	pthread_setname_np(threadName.c_str());
+#endif
+
+	InterpreterState state = USCXML_UNDEF;
+	while(state != USCXML_FINISHED) {
+		state = INSTANCE->_invokedInterpreter.step(true);
+
+//		if (!INSTANCE->_isStarted) {
+//			// we have been cancelled
+//			INSTANCE->_isActive = false;
+//			return;
+//		}
+	}
+
+	if (INSTANCE->_isActive) {
+		// we finished on our own and were not cancelled
+		Event e;
+		e.eventType = Event::PLATFORM;
+		e.invokeid = INSTANCE->_invokedInterpreter.getImpl()->getInvokeId();
+		e.name = "done.invoke." + e.invokeid;
+		INSTANCE->_interpreter->enqueueExternal(e);
+	}
+
+	INSTANCE->_isActive = false;
+}
+
+std::shared_ptr<InvokerImpl> USCXMLInvoker::create(InterpreterImpl* interpreter) {
+	std::shared_ptr<USCXMLInvoker> invoker(new USCXMLInvoker());
+	invoker->_interpreter = interpreter;
 	return invoker;
 }
 
@@ -64,71 +132,65 @@ Data USCXMLInvoker::getDataModelVariables() {
 	return data;
 }
 
-void USCXMLInvoker::send(const SendRequest& req) {
-	if (_invokedInterpreter)
-		_invokedInterpreter.receive(req);
-}
+void USCXMLInvoker::invoke(const std::string& source, const Event& invokeEvent) {
+	if (source.length() > 0) {
+		_invokedInterpreter = Interpreter::fromURL(source);
+	} else if (invokeEvent.data.node) {
+		xercesc::DOMImplementation* implementation = xercesc::DOMImplementationRegistry::getDOMImplementation(X("core"));
+		xercesc::DOMDocument* document = implementation->createDocument();
 
-void USCXMLInvoker::cancel(const std::string sendId) {
-	assert(false);
-}
-
-void USCXMLInvoker::invoke(const InvokeRequest& req) {
-	_cancelled = false;
-	if (req.src.length() > 0) {
-		_invokedInterpreter = Interpreter::fromURL(req.src);
-	} else if (req.dom) {
-		Arabica::DOM::DOMImplementation<std::string> domFactory = Arabica::SimpleDOM::DOMImplementation<std::string>::getDOMImplementation();
-		Arabica::DOM::Document<std::string> dom = domFactory.createDocument(req.dom.getNamespaceURI(), "", 0);
 		// we need to import the parent - to support xpath test150
-		Arabica::DOM::Node<std::string> newNode = dom.importNode(req.dom, true);
-		dom.appendChild(newNode);
-		// TODO: where do we get the namespace from?
-		_invokedInterpreter = Interpreter::fromDOM(dom, _interpreter->getNameSpaceInfo(), _interpreter->getSourceURL());
-	} else if (req.content.size() > 0) {
-		_invokedInterpreter = Interpreter::fromXML(req.content, _interpreter->getSourceURL());
-	} else {
-		LOG(ERROR) << "Cannot invoke nested SCXML interpreter, neither src attribute nor content nor DOM is given";
-	}
-	if (_invokedInterpreter) {
-		if (req.elem && HAS_ATTR(req.elem, "initial")) {
-			_invokedInterpreter.setInitalConfiguration(tokenize(ATTR(req.elem, "initial")));
-		}
+		xercesc::DOMNode* newNode = document->importNode(invokeEvent.data.node, true);
+		document->appendChild(newNode);
 
-		DataModel dataModel(_invokedInterpreter.getImpl()->getDataModel());
-		_invokedInterpreter.getImpl()->setParentQueue(&_parentQueue);
+//        std::cout << *document << std::endl;
+
+		// TODO: where do we get the namespace from?
+		_invokedInterpreter = Interpreter::fromDocument(document, _interpreter->getBaseURL());
+
+	} else {
+		_isActive = false;
+		ERROR_PLATFORM_THROW("Cannot invoke nested SCXML interpreter, neither src attribute nor content nor DOM is given");
+	}
+
+	if (_invokedInterpreter) {
+		_invokedInterpreter.getImpl()->_parentQueue = _parentQueue;
+		_invokedInterpreter.getImpl()->_invokeId = invokeEvent.invokeid;
+		_invokedInterpreter.getImpl()->_invokeReq = invokeEvent;
 
 		// copy monitors
-		std::set<InterpreterMonitor*>::const_iterator monIter = _interpreter->_monitors.begin();
-		while(monIter != _interpreter->_monitors.end()) {
-			if ((*monIter)->copyToInvokers()) {
-				_invokedInterpreter.getImpl()->_monitors.insert(*monIter);
-			}
-			monIter++;
-		}
+//		std::set<InterpreterMonitor*>::const_iterator monIter = _interpreter->_monitors.begin();
+//		while(monIter != _interpreter->_monitors.end()) {
+//			if ((*monIter)->copyToInvokers()) {
+//				_invokedInterpreter.getImpl()->_monitors.insert(*monIter);
+//			}
+//			monIter++;
+//		}
 
-		// transfer namespace prefixes
-		_invokedInterpreter.setNameSpaceInfo(_parentInterpreter->getNameSpaceInfo());
-		_invokedInterpreter.getImpl()->_sessionId = req.invokeid;
 
 		/// test240 assumes that invoke request params will carry over to the datamodel
-		_invokedInterpreter.getImpl()->setInvokeRequest(req);
+//		_invokedInterpreter.getImpl()->setInvokeRequest(req);
+		_isActive = true;
 
-		_invokedInterpreter.start();
+		// we need to make sure it is at least setup to receive data!
+		_invokedInterpreter.getImpl()->init();
+
+		start();
+
 	} else {
 		/// test 530
-		_parentInterpreter->receive(Event("done.invoke." + _invokeId, Event::PLATFORM));
+		Event e("done.invoke." + invokeEvent.invokeid, Event::PLATFORM);
+		eventToSCXML(e, USCXML_INVOKER_SCXML_TYPE, _invokeId);
+		_isActive = false;
 	}
 }
 
-void USCXMLInvoker::ParentQueue::push(const SendRequest& event) {
+void USCXMLInvoker::ParentQueueImpl::enqueue(const Event& event) {
 	// test 252
-	if (_invoker->_cancelled)
+	if (!_invoker->_isActive)
 		return;
-	SendRequest copyEvent(event);
-	// this is somewhat hidden here!
-	copyEvent.invokeid = _invoker->_invokeId;
-	_invoker->_parentInterpreter->receive(copyEvent);
+	Event copy(event); // TODO: can we get around a copy?
+	_invoker->eventToSCXML(copy, USCXML_INVOKER_SCXML_TYPE, _invoker->_invokeId);
 }
 
 }

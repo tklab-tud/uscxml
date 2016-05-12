@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- we test that #_parent works as  a target of  <send> .  a subscript is invoked and sends the event 
+childToParent to its parent session (ths session) using #_parent as the target. If we get this event, we
+pass, otherwise we fail.  The timer insures that some event is generated and that the test does not hang. -->
+<scxml:scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" xmlns:scxml="http://www.w3.org/2005/07/scxml" initial="s0" version="1.0" datamodel="ecmascript">
+  <scxml:state id="s0">
+    <scxml:onentry>
+      <scxml:send event="timeout" delay="5s"/>
+    </scxml:onentry>
+    <scxml:invoke type="scxml">
+      <scxml:content>
+        <!-- send an event to the parent session using #_parent as the target -->
+        <scxml:scxml initial="sub0" version="1.0" datamodel="ecmascript">
+          <scxml:state id="sub0">
+            <scxml:onentry>
+              <scxml:send event="childToParent" target="#_parent"/>
+            </scxml:onentry>
+            <scxml:transition target="subFinal"/>
+          </scxml:state>
+          <scxml:final id="subFinal"/>
+        </scxml:scxml>
+      </scxml:content>
+    </scxml:invoke>
+    <scxml:transition event="childToParent" target="pass"/>
+    <scxml:transition event="*" target="fail"/>
+  </scxml:state>
+  <scxml:final id="pass">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'pass'"/>
+    </scxml:onentry>
+  </scxml:final>
+  <scxml:final id="fail">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'fail'"/>
+    </scxml:onentry>
+  </scxml:final>
+</scxml:scxml>

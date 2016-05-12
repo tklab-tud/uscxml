@@ -42,15 +42,68 @@
 #endif
 
 #ifdef _WIN32
-#include <winsock2.h>
+typedef unsigned __int32  uint32_t;
+
 // see http://stackoverflow.com/questions/1372480/c-redefinition-header-files
 #define _WINSOCKAPI_    // stops windows.h including winsock.h
+#include <winsock2.h>
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #undef WIN32_LEAN_AND_MEAN
 #else
 #include <sys/socket.h>
 #endif
+
+#define PIMPL_OPERATORS(type) \
+\
+type() : _impl() { }\
+type(const std::shared_ptr<type##Impl> impl) : _impl(impl) { }\
+type(const type& other) : _impl(other._impl) { }\
+virtual ~type() { };\
+\
+operator bool()                    const     {\
+    return !!_impl;\
+}\
+bool operator< (const type& other) const     {\
+    return _impl < other._impl;\
+}\
+bool operator==(const type& other) const     {\
+    return _impl == other._impl;\
+}\
+bool operator!=(const type& other) const     {\
+    return _impl != other._impl;\
+}\
+type& operator= (const type& other)     {\
+    _impl = other._impl;\
+    return *this;\
+}
+
+#define PIMPL_OPERATORS2(type, base) \
+\
+type() : _impl() {}\
+type(std::shared_ptr<type##Impl> const impl) : base(impl), _impl(impl) { }\
+type(const type& other) : base(other._impl), _impl(other._impl) { }\
+virtual ~type() {};\
+\
+operator bool()                           const     {\
+    return !!_impl;\
+}\
+bool operator< (const type& other) const     {\
+    return _impl < other._impl;\
+}\
+bool operator==(const type& other) const     {\
+    return _impl == other._impl;\
+}\
+bool operator!=(const type& other) const     {\
+    return _impl != other._impl;\
+}\
+type& operator= (const type& other)   {\
+    _impl = other._impl;\
+    base::_impl = _impl;\
+    return *this;\
+}
+
+
 
 #if defined(_WIN32)
 inline int setenv(const char *name, const char *value, int overwrite) {

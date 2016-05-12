@@ -21,10 +21,10 @@
 #define EXECUTABLECONTENT_H_1E028A2D
 
 #include "uscxml/Common.h"
-#include <boost/shared_ptr.hpp>
 #include <string>
+#include <memory>
 #include <sstream>
-#include "DOM/Document.hpp"
+#include "xercesc/dom/DOM.hpp"
 
 namespace uscxml {
 
@@ -34,7 +34,7 @@ class USCXML_API ExecutableContentImpl {
 public:
 	ExecutableContentImpl() {};
 	virtual ~ExecutableContentImpl() {};
-	virtual boost::shared_ptr<ExecutableContentImpl> create(InterpreterImpl* interpreter) = 0;
+	virtual std::shared_ptr<ExecutableContentImpl> create(InterpreterImpl* interpreter) = 0;
 
 	virtual void setInterpreter(InterpreterImpl* interpreter) {
 		_interpreter = interpreter;
@@ -44,8 +44,8 @@ public:
 	virtual std::string getNamespace() {
 		return "http://www.w3.org/2005/07/scxml";    ///< The namespace of the element.
 	}
-	virtual void enterElement(const Arabica::DOM::Element<std::string>& node) = 0; ///< Invoked when entering the element as part of evaluating executable content.
-	virtual void exitElement(const Arabica::DOM::Element<std::string>& node) = 0; ///< Invoked when exiting the element as part of evaluating executable content.
+	virtual void enterElement(xercesc::DOMElement* node) = 0; ///< Invoked when entering the element as part of evaluating executable content.
+	virtual void exitElement(xercesc::DOMElement* node) = 0; ///< Invoked when exiting the element as part of evaluating executable content.
 	virtual bool processChildren() = 0; ///< Whether or not the interpreter should process this elements children.
 
 protected:
@@ -55,7 +55,7 @@ protected:
 class USCXML_API ExecutableContent {
 public:
 	ExecutableContent() : _impl() {}
-	ExecutableContent(boost::shared_ptr<ExecutableContentImpl> const impl) : _impl(impl) { }
+	ExecutableContent(std::shared_ptr<ExecutableContentImpl> const impl) : _impl(impl) { }
 	ExecutableContent(const ExecutableContent& other) : _impl(other._impl) { }
 	virtual ~ExecutableContent() {};
 
@@ -86,17 +86,17 @@ public:
 	std::string getNamespace() {
 		return _impl->getNamespace();
 	}
-	void enterElement(const Arabica::DOM::Element<std::string>& node) {
+	void enterElement(xercesc::DOMElement* node) {
 		return _impl->enterElement(node);
 	}
-	void exitElement(const Arabica::DOM::Element<std::string>& node) {
+	void exitElement(xercesc::DOMElement* node) {
 		return _impl->exitElement(node);
 	}
 	bool processChildren() {
 		return _impl->processChildren();
 	}
 protected:
-	boost::shared_ptr<ExecutableContentImpl> _impl;
+	std::shared_ptr<ExecutableContentImpl> _impl;
 
 };
 

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- we test that delayexpr uses the current value of var1, not its initial value
+(If it uses the initial value, event2 will be generated first, before event1.  If it uses the current value, 
+event1 will be raised first.  Succeed if event1 occurs before event2, otherwise fail -->
+<scxml:scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" xmlns:scxml="http://www.w3.org/2005/07/scxml" initial="s0" version="1.0" datamodel="ecmascript">
+  <scxml:datamodel>
+    <scxml:data id="Var1" expr="'0s'"/>
+  </scxml:datamodel>
+  <scxml:state id="s0">
+    <scxml:onentry>
+      <scxml:assign location="Var1" expr="'1s'"/>
+      <scxml:send delayexpr="Var1" event="event2"/>
+      <scxml:send delayexpr="'.5s'" event="event1"/>
+    </scxml:onentry>
+    <scxml:transition event="event1" target="s1"/>
+    <scxml:transition event="event2" target="fail"/>
+  </scxml:state>
+  <scxml:state id="s1">
+    <scxml:transition event="event2" target="pass"/>
+    <scxml:transition event="*" target="fail"/>
+  </scxml:state>
+  <scxml:final id="pass">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'pass'"/>
+    </scxml:onentry>
+  </scxml:final>
+  <scxml:final id="fail">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'fail'"/>
+    </scxml:onentry>
+  </scxml:final>
+</scxml:scxml>

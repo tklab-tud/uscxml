@@ -1,7 +1,0 @@
-uMundo is a publish/subscribe implementation from the Telecooperation Group at
-the Technical University of Darmstadt.
-
-uMundo is continuously updated; everything we would write here would be
-out-dated in a matter of weeks. As the only thing worse than no documentation
-is wrong documentation, please have a look at the website at:
-https://github.com/tklab-tud/umundo for current information.

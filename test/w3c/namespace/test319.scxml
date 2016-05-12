@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- test that _event is not bound before any event has been raised -->
+<scxml:scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" xmlns:scxml="http://www.w3.org/2005/07/scxml" initial="s0" datamodel="ecmascript" version="1.0" name="machineName">
+  <scxml:state id="s0">
+    <scxml:onentry>
+      <scxml:if cond="_event">
+        <scxml:raise event="bound"/>
+        <scxml:else/>
+        <scxml:raise event="unbound"/>
+      </scxml:if>
+    </scxml:onentry>
+    <scxml:transition event="unbound" target="pass"/>
+    <scxml:transition event="bound" target="fail"/>
+  </scxml:state>
+  <scxml:final id="pass">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'pass'"/>
+    </scxml:onentry>
+  </scxml:final>
+  <scxml:final id="fail">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'fail'"/>
+    </scxml:onentry>
+  </scxml:final>
+</scxml:scxml>

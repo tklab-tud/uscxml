@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<scxml xmlns="http://www.w3.org/2005/07/scxml" datamodel="lua" initial="init" name="scxml_root" version="1.0">
+  <transition event="timeout" target="fail"/>
+  <state id="init">
+    <onentry>
+      <send event="timeout" delay="1s" />
+    </onentry>
+    <transition target="InvokeParent"/>
+  </state>
+  
+  <state id="InvokeParent">
+    <invoke autoforward="true" id="test_invoke" type="scxml">
+      <content>
+        <scxml xmlns="http://www.w3.org/2005/07/scxml" datamodel="lua" initial="On" name="ScxmlShape1" version="1.0">
+          <state id="On">
+            <onentry>
+              <raise event="inside_invoke" />
+            </onentry>
+            <transition target="Off"/>
+          </state>
+          <state id="Off">
+            <transition event="inside_invoke" target="End"/>
+          </state>
+          <final id="End"/>
+        </scxml>
+      </content>
+    </invoke>
+    <transition event="done.invoke.test_invoke" target="pass"/>
+  </state>
+  <state id="StateXXX">
+    <transition target="pass"/>
+  </state>
+  <final id="pass"/>
+  <final id="fail"/>
+</scxml>

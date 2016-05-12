@@ -16,16 +16,15 @@
  *  program. If not, see <http://www.opensource.org/licenses/bsd-license>.
  *  @endcond
  */
+#if 0
 
 #include "uscxml/transform/ChartToVHDL.h"
-#include "uscxml/debug/Complexity.h"
-#include <DOM/io/Stream.hpp>
 #include <iostream>
-#include "uscxml/UUID.h"
-#include "uscxml/dom/DOMUtils.h"
+#include "uscxml/util/UUID.h"
+#include "uscxml/util/DOM.h"
 #include <math.h>
 #include <boost/algorithm/string.hpp>
-#include <glog/logging.h>
+#include <easylogging++.h>
 
 #include <algorithm>
 #include <iomanip>
@@ -1451,3 +1450,5 @@ void ChartToVHDL::writeSystemSignalMapping(std::ostream & stream) {
 }
 
 }
+
+#endif

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- test that platform creates undound variable if we assign an illegal value to it.  Thus
+ we can assign to it later in state s1.  -->
+<scxml:scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" xmlns:scxml="http://www.w3.org/2005/07/scxml" initial="s0" version="1.0" datamodel="ecmascript">
+  <scxml:datamodel>
+    <scxml:data id="Var1" expr="return"/>
+  </scxml:datamodel>
+  <scxml:state id="s0">
+    <scxml:onentry>
+      <scxml:raise event="foo"/>
+    </scxml:onentry>
+    <scxml:transition event="error.execution" cond="typeof Var1 === 'undefined' " target="s1"/>
+    <scxml:transition event="*" target="fail"/>
+  </scxml:state>
+  <scxml:state id="s1">
+    <scxml:onentry>
+      <scxml:assign location="Var1" expr="1"/>
+    </scxml:onentry>
+    <scxml:transition cond="Var1==1" target="pass"/>
+    <scxml:transition target="fail"/>
+  </scxml:state>
+  <scxml:final id="pass">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'pass'"/>
+    </scxml:onentry>
+  </scxml:final>
+  <scxml:final id="fail">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'fail'"/>
+    </scxml:onentry>
+  </scxml:final>
+</scxml:scxml>

@@ -17,44 +17,20 @@
  *  @endcond
  */
 
-#include <boost/algorithm/string.hpp>
 
-#ifdef _WIN32
-#define NOMINMAX
-#include <winsock2.h>
-#include <windows.h>
-#endif
-
-#include "uscxml/plugins/ioprocessor/scxml/SCXMLIOProcessor.h"
-#include "uscxml/Message.h"
-#include <iostream>
-#include <event2/dns.h>
-#include <event2/buffer.h>
-#include <event2/keyvalq_struct.h>
+#include "SCXMLIOProcessor.h"
+#include "uscxml/messages/Event.h"
+#include "uscxml/interpreter/InterpreterImpl.h"
 
 #include <string.h>
 
-#include <io/uri.hpp>
-#include <glog/logging.h>
 
 #ifndef _WIN32
 #include <netdb.h>
 #include <arpa/inet.h>
 #endif
 
-#ifdef BUILD_AS_PLUGINS
-#include <Pluma/Connector.hpp>
-#endif
-
 namespace uscxml {
-
-#ifdef BUILD_AS_PLUGINS
-PLUMA_CONNECTOR
-bool pluginConnect(pluma::Host& host) {
-	host.add( new SCXMLIOProcessorProvider() );
-	return true;
-}
-#endif
 
 // see http://www.w3.org/TR/scxml/#SCXMLEventProcessor
 
@@ -62,43 +38,43 @@ SCXMLIOProcessor::SCXMLIOProcessor() {
 }
 
 SCXMLIOProcessor::~SCXMLIOProcessor() {
-	HTTPServer::unregisterServlet(this);
 }
 
 
-boost::shared_ptr<IOProcessorImpl> SCXMLIOProcessor::create(InterpreterImpl* interpreter) {
-	boost::shared_ptr<SCXMLIOProcessor> io = boost::shared_ptr<SCXMLIOProcessor>(new SCXMLIOProcessor());
+std::shared_ptr<IOProcessorImpl> SCXMLIOProcessor::create(InterpreterImpl* interpreter) {
+	std::shared_ptr<SCXMLIOProcessor> io(new SCXMLIOProcessor());
 	io->_interpreter = interpreter;
-
-	// register at http server
-	std::string path = interpreter->getName();
-	int i = 2;
-	while (!HTTPServer::registerServlet(path + "/scxml", io.get())) {
-		std::stringstream ss;
-		ss << interpreter->getName() << i++;
-		path = ss.str();
-	}
 	return io;
 }
 
 Data SCXMLIOProcessor::getDataModelVariables() {
 	Data data;
-	if(_url.length() > 0)
-		data.compound["location"] = Data(_url, Data::VERBATIM);
+
+	data.compound["location"] = Data("#_scxml_" + _interpreter->getSessionId(), Data::VERBATIM);
+
 	return data;
 }
 
+bool SCXMLIOProcessor::isValidTarget(const std::string& target) {
+	if (target.size() > 0 && (target[0] != '#' || target[1] != '_')) {
+		ERROR_EXECUTION_THROW("Target '" + target + "' not supported in send");
+	}
+	return true;
+}
 
-void SCXMLIOProcessor::send(const SendRequest& req) {
+
+void SCXMLIOProcessor::eventFromSCXML(const std::string& target, const Event& event) {
 	// see http://www.w3.org/TR/scxml/#SendTargets
+	Event eventCopy(event);
 
-	SendRequest reqCopy(req);
-	// test 253
-	reqCopy.origintype = "http://www.w3.org/TR/scxml/#SCXMLEventProcessor";
-	reqCopy.origin = _url;
+	// test 253 / 198 / 336
+	eventCopy.origintype = "http://www.w3.org/TR/scxml/#SCXMLEventProcessor";
+
+	// test 336
+	eventCopy.origin = "#_scxml_" + _interpreter->getSessionId();
 
 	if (false) {
-	} else if(reqCopy.target.length() == 0) {
+	} else if(target.length() == 0) {
 		/**
 		 * If neither the 'target' nor the 'targetexpr' attribute is specified, the
 		 * SCXML Processor must add the event will be added to the external event
@@ -107,16 +83,31 @@ void SCXMLIOProcessor::send(const SendRequest& req) {
 
 		// test333 vs test351
 //		reqCopy.sendid = "";
+
 		// test 198
-		_interpreter->receive(reqCopy);
-	} else if (iequals(reqCopy.target, "#_internal")) {
+		_interpreter->enqueueExternal(eventCopy);
+
+	} else if (iequals(target, "#_internal")) {
 		/**
 		 * #_internal: If the target is the special term '#_internal', the Processor
 		 * must add the event to the internal event queue of the sending session.
 		 */
-		_interpreter->receiveInternal(reqCopy);
+		_interpreter->enqueueInternal(eventCopy);
 
-	} else if(boost::starts_with(reqCopy.target, "#_scxml_")) {
+	} else if (iequals(target, "#_parent")) {
+		/**
+		 * #_parent: If the target is the special term '#_parent', the Processor must
+		 * add the event to the external event queue of the SCXML session that invoked
+		 * the sending session, if there is one.
+		 */
+
+		if (_interpreter->_parentQueue) {
+			_interpreter->_parentQueue.enqueue(eventCopy);
+		} else {
+			ERROR_COMMUNICATION_THROW("Sending to parent invoker, but none is set");
+		}
+
+	} else if (target.length() > 8 && iequals(target.substr(0, 8), "#_scxml_")) {
 		/**
 		 * #_scxml_sessionid: If the target is the special term '#_scxml_sessionid',
 		 * where sessionid is the id of an SCXML session that is accessible to the
@@ -124,66 +115,46 @@ void SCXMLIOProcessor::send(const SendRequest& req) {
 		 * session. The set of SCXML sessions that are accessible to a given SCXML
 		 * Processor is platform-dependent.
 		 */
-		std::string sessionId = reqCopy.target.substr(8, reqCopy.target.length() - 8);
-		std::map<std::string, boost::weak_ptr<InterpreterImpl> > instances = Interpreter::getInstances();
-		if (instances.find(sessionId) != instances.end()) {
-			boost::shared_ptr<InterpreterImpl> other = instances[sessionId].lock();
-			other->receive(reqCopy);
-		} else {
-			ERROR_COMMUNICATION(error, "Can not send to scxml session " + sessionId + " - not known");
-			error.sendid = reqCopy.sendid;
-			_interpreter->receiveInternal(error);
+		std::string sessionId = target.substr(8);
 
-		}
-	} else if (iequals(reqCopy.target, "#_parent")) {
-		/**
-		 * #_parent: If the target is the special term '#_parent', the Processor must
-		 * add the event to the external event queue of the SCXML session that invoked
-		 * the sending session, if there is one.
-		 */
-		if (_interpreter->_parentQueue != NULL) {
-			_interpreter->_parentQueue->push(reqCopy);
+		std::lock_guard<std::recursive_mutex> lock(_interpreter->_instanceMutex);
+		std::map<std::string, std::weak_ptr<InterpreterImpl> > instances = InterpreterImpl::getInstances();
+		if (instances.find(sessionId) != instances.end()) {
+			std::shared_ptr<InterpreterImpl> otherSession = instances[sessionId].lock();
+			if (otherSession) {
+				otherSession->enqueueExternal(eventCopy);
+			} else {
+				ERROR_COMMUNICATION_THROW("Can not send to scxml session " + sessionId + " - not known");
+			}
 		} else {
-			ERROR_COMMUNICATION(error, "Can not send to parent, we were not invoked or no parent queue is set");
-			error.sendid = reqCopy.sendid;
-			_interpreter->receiveInternal(error);
+			ERROR_COMMUNICATION_THROW("Invalid target scxml session for send");
 		}
-	} else if (boost::starts_with(reqCopy.target, "#_")) {
+
+	} else if (target.length() > 2 && iequals(target.substr(0, 2), "#_")) {
 		/**
 		 * #_invokeid: If the target is the special term '#_invokeid', where invokeid
 		 * is the invokeid of an SCXML session that the sending session has created
 		 * by <invoke>, the Processor must add the event to the external queue of that
 		 * session.
 		 */
-		std::string invokeId = reqCopy.target.substr(2, reqCopy.target.length() - 2);
+		std::string invokeId = target.substr(2);
 		if (_interpreter->_invokers.find(invokeId) != _interpreter->_invokers.end()) {
-			tthread::lock_guard<tthread::recursive_mutex> lock(_interpreter->_mutex);
+			std::lock_guard<std::recursive_mutex> lock(_interpreter->_instanceMutex);
 			try {
-				_interpreter->_invokers[invokeId].send(reqCopy);
+				_interpreter->_invokers[invokeId].eventFromSCXML(eventCopy);
 			} catch(Event e) {
 				// Is this the right thing to do?
-				_interpreter->receive(e);
+//				_interpreter->enqueueExternal(eventCopy);
 			} catch (const std::exception &e) {
-				LOG(ERROR) << "Exception caught while sending event to invoker " << invokeId << ": " << e.what();
+				ERROR_COMMUNICATION_THROW("Exception caught while sending event to invoker '" + invokeId + "': " + e.what());
 			} catch(...) {
-				LOG(ERROR) << "Exception caught while sending event to invoker " << invokeId;
+				ERROR_COMMUNICATION_THROW("Exception caught while sending event to invoker '" + invokeId + "'");
 			}
 		} else {
-			ERROR_COMMUNICATION(error, "Can not send to invoked component '" + invokeId + "', no such invokeId");
-			error.sendid = reqCopy.sendid;
-			_interpreter->receiveInternal(error);
+			ERROR_COMMUNICATION_THROW("Can not send to invoked component '" + invokeId + "', no such invokeId");
 		}
 	} else {
-		URL target(reqCopy.target);
-		if (target.isAbsolute()) {
-			BasicHTTPIOProcessor::send(reqCopy);
-		} else {
-			ERROR_EXECUTION(error, "Not sure what to make of the target '" + reqCopy.target + "' - raising error");
-			error.sendid = reqCopy.sendid;
-			// test 159 still fails
-//			_interpreter->receiveInternal(error);
-			throw error;
-		}
+		ERROR_COMMUNICATION_THROW("Not sure what to make of the target '" + target + "' - raising error");
 	}
 }
 

@@ -1,0 +1,37 @@
+<!-- Element <finalize> with no executable content do not update model data: rec 6.5.2 -->
+<scxml datamodel="lua" initial="main" name="root" version="1.0" xmlns="http://www.w3.org/2005/07/scxml">
+    <datamodel>
+        <data expr="1" id="i_GLOBAL_VAR"/>
+    </datamodel>
+    <state id="main" initial="start">
+        <transition event="error.*" target="fail"/>
+        <transition cond="i_GLOBAL_VAR==2" event="completed" target="pass"/>
+        <transition event="completed" target="fail"/>
+        <state id="start">
+            <invoke id="test_invoke" namelist="i_GLOBAL_VAR" type="scxml">
+                <content>
+                    <scxml datamodel="lua" initial="InvokeStart" name="scxml_invoke" version="1.0" xmlns="http://www.w3.org/2005/07/scxml">
+                        <datamodel>
+                            <data expr="0" id="i_GLOBAL_VAR"/>
+                        </datamodel>
+                        <final id="InvokeEnd">
+                            <onentry>
+                                <send event="completed" namelist="i_GLOBAL_VAR" target="#_parent"/>
+                            </onentry>
+                        </final>
+                        <state id="InvokeStart">
+                            <onentry>
+                                <assign expr="i_GLOBAL_VAR*2" location="i_GLOBAL_VAR"/>
+                                <log expr="i_GLOBAL_VAR" label="INVOKE-i_GLOBAL_VAR"/>
+                            </onentry>
+                            <transition target="InvokeEnd"/>
+                        </state>
+                    </scxml>
+                </content>
+                <finalize/>
+            </invoke>
+        </state>
+    </state>
+    <final id="fail"/>
+    <final id="pass"/>
+</scxml>

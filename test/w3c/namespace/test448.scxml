@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--  test that all ecmascript objects are placed in a single global scope -->
+<scxml:scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" xmlns:scxml="http://www.w3.org/2005/07/scxml" datamodel="ecmascript" version="1.0">
+  <scxml:state id="s0">
+    <!-- test that a parent state can access a variable defined in a child -->
+    <scxml:transition cond="var1==1" target="s1"/>
+    <scxml:transition target="fail"/>
+    <scxml:state id="s01">
+      <scxml:datamodel>
+        <scxml:data id="var1" expr="1"/>
+      </scxml:datamodel>
+    </scxml:state>
+  </scxml:state>
+  <scxml:state id="s1" initial="s01p">
+    <scxml:parallel id="s01p">
+      <scxml:state id="s01p1">
+        <!-- test that we can access a variable defined in a parallel sibling state -->
+        <scxml:transition cond="var2==1" target="pass"/>
+        <scxml:transition target="fail"/>
+      </scxml:state>
+      <scxml:state id="s01p2">
+        <scxml:datamodel>
+          <scxml:data id="var2" expr="1"/>
+        </scxml:datamodel>
+      </scxml:state>
+    </scxml:parallel>
+  </scxml:state>
+  <scxml:final id="pass">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'pass'"/>
+    </scxml:onentry>
+  </scxml:final>
+  <scxml:final id="fail">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'fail'"/>
+    </scxml:onentry>
+  </scxml:final>
+</scxml:scxml>

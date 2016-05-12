@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- test that datamodel values can be specified both by 'namelist' and by <param>.
+invoked child will return success if its Var1 is set to 1, failure otherwise. This
+test will fail schema validation because of the multiple occurences of Var1, but
+should run correctly. -->
+<scxml:scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" xmlns:scxml="http://www.w3.org/2005/07/scxml" initial="s0" version="1.0" datamodel="ecmascript">
+  <scxml:datamodel>
+    <scxml:data id="Var1" expr="1"/>
+  </scxml:datamodel>
+  <scxml:state id="s0" initial="s01">
+    <scxml:onentry>
+      <scxml:send event="timeout" delay="2s"/>
+    </scxml:onentry>
+    <scxml:transition event="timeout" target="fail"/>
+    <scxml:state id="s01">
+      <scxml:invoke type="http://www.w3.org/TR/scxml/" namelist="Var1">
+        <scxml:content>
+          <scxml:scxml initial="sub01" version="1.0" datamodel="ecmascript">
+            <scxml:datamodel>
+              <scxml:data id="Var1" expr="0"/>
+            </scxml:datamodel>
+            <scxml:state id="sub01">
+              <scxml:transition cond="Var1===1" target="subFinal1">
+                <scxml:send target="#_parent" event="success"/>
+              </scxml:transition>
+              <scxml:transition target="subFinal1">
+                <scxml:send target="#_parent" event="failure"/>
+              </scxml:transition>
+            </scxml:state>
+            <scxml:final id="subFinal1"/>
+          </scxml:scxml>
+        </scxml:content>
+      </scxml:invoke>
+      <scxml:transition event="success" target="s02"/>
+      <scxml:transition event="failure" target="fail"/>
+    </scxml:state>
+    <scxml:state id="s02">
+      <scxml:invoke type="http://www.w3.org/TR/scxml/">
+        <scxml:param name="Var1" expr="1"/>
+        <scxml:content>
+          <scxml:scxml initial="sub02" version="1.0" datamodel="ecmascript">
+            <scxml:datamodel>
+              <scxml:data id="Var1" expr="0"/>
+            </scxml:datamodel>
+            <scxml:state id="sub02">
+              <scxml:transition cond="Var1==1" target="subFinal2">
+                <scxml:send target="#_parent" event="success"/>
+              </scxml:transition>
+              <scxml:transition target="subFinal2">
+                <scxml:send target="#_parent" event="failure"/>
+              </scxml:transition>
+            </scxml:state>
+            <scxml:final id="subFinal2"/>
+          </scxml:scxml>
+        </scxml:content>
+      </scxml:invoke>
+      <scxml:transition event="success" target="pass"/>
+      <scxml:transition event="failure" target="fail"/>
+    </scxml:state>
+  </scxml:state>
+  <scxml:final id="pass">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'pass'"/>
+    </scxml:onentry>
+  </scxml:final>
+  <scxml:final id="fail">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'fail'"/>
+    </scxml:onentry>
+  </scxml:final>
+</scxml:scxml>

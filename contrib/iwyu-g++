@@ -1,8 +1,0 @@
-#!/bin/sh
-
-# call as cmake CC=[..]/iwyu-gcc CXX=[..]/iwyu-g++
-
-IWYU_COMMAND=/usr/bin/iwyu
-COMPILER_COMMAND=/usr/bin/g++
-$IWYU_COMMAND $@
-$COMPILER_COMMAND $@

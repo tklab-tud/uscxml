@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- test that default initial states are entered when a compound state is entered.  First we test
+the 'initial' attribute, then the initial element, then default to the first child in document order.  
+If we get to s01111 we succeed, if any other state, failure.  -->
+<scxml:scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" xmlns:scxml="http://www.w3.org/2005/07/scxml" datamodel="ecmascript" initial="s1" version="1.0">
+  <scxml:state id="s1" initial="s11p112 s11p122">
+    <scxml:onentry>
+      <scxml:send event="timeout" delay="1s"/>
+    </scxml:onentry>
+    <scxml:transition event="timeout" target="fail"/>
+    <scxml:state id="s11" initial="s111">
+      <scxml:state id="s111"/>
+      <scxml:parallel id="s11p1">
+        <scxml:state id="s11p11" initial="s11p111">
+          <scxml:state id="s11p111"/>
+          <scxml:state id="s11p112">
+            <scxml:onentry>
+              <scxml:raise event="In-s11p112"/>
+            </scxml:onentry>
+          </scxml:state>
+        </scxml:state>
+        <scxml:state id="s11p12" initial="s11p121">
+          <scxml:state id="s11p121"/>
+          <scxml:state id="s11p122">
+            <scxml:transition event="In-s11p112" target="s2"/>
+          </scxml:state>
+        </scxml:state>
+      </scxml:parallel>
+    </scxml:state>
+  </scxml:state>
+  <scxml:state id="s2">
+    <scxml:initial>
+      <scxml:transition target="s21p112 s21p122"/>
+    </scxml:initial>
+    <scxml:transition event="timeout" target="fail"/>
+    <scxml:state id="s21" initial="s211">
+      <scxml:state id="s211"/>
+      <scxml:parallel id="s21p1">
+        <scxml:state id="s21p11" initial="s21p111">
+          <scxml:state id="s21p111"/>
+          <scxml:state id="s21p112">
+            <scxml:onentry>
+              <scxml:raise event="In-s21p112"/>
+            </scxml:onentry>
+          </scxml:state>
+        </scxml:state>
+        <scxml:state id="s21p12" initial="s21p121">
+          <scxml:state id="s21p121"/>
+          <scxml:state id="s21p122">
+            <scxml:transition event="In-s21p112" target="s3"/>
+          </scxml:state>
+        </scxml:state>
+      </scxml:parallel>
+    </scxml:state>
+  </scxml:state>
+  <scxml:state id="s3">
+    <scxml:transition target="fail"/>
+    <scxml:state id="s31">
+      <scxml:state id="s311">
+        <scxml:state id="s3111">
+          <scxml:transition target="pass"/>
+        </scxml:state>
+        <scxml:state id="s3112"/>
+        <scxml:state id="s312"/>
+        <scxml:state id="s32"/>
+      </scxml:state>
+    </scxml:state>
+  </scxml:state>
+  <scxml:final id="pass">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'pass'"/>
+    </scxml:onentry>
+  </scxml:final>
+  <scxml:final id="fail">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'fail'"/>
+    </scxml:onentry>
+  </scxml:final>
+</scxml:scxml>

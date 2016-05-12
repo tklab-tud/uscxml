@@ -1,27 +1,27 @@
-<?xml version="1.0" standalone="no"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <!-- test that history states works correctly.  The counter Var1 counts how many times
 we have entered s0.  The initial state is s012.  We then transition to s1, which transitions
 to s0's deep history state.  entering.s012 should be raised, otherwise failure.  Then we transition
 to s02, which transitions to s0's shallow history state.  That should have value s01, and its initial
 state is s011, so we should get entering.s011, otherwise failure.-->
-<scxml xmlns="http://www.w3.org/2005/07/scxml" version="1.0" initial="s012" datamodel="lua">
+<scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" version="1.0" initial="s012" datamodel="lua">
   <datamodel>
-    <data expr="0" id="testvar1"/>
+    <data id="Var1" expr="0"/>
   </datamodel>
   <state id="s0" initial="s01">
     <onentry>
-      <assign location="testvar1" expr="testvar1+1"/>
+      <assign xmlns:scxml="http://www.w3.org/2005/07/scxml" location="Var1" expr="Var1 + 1"/>
     </onentry>
     <!-- the first time through, go to s1, setting  a timer just in case something hangs -->
-    <transition event="entering.s012" target="s1" cond="testvar1 == 1">
-      <send event="timeout" delay="2s"/>
+    <transition event="entering.s012" cond="Var1==1" target="s1">
+      <send xmlns:scxml="http://www.w3.org/2005/07/scxml" delay="2000" event="timeout"/>
     </transition>
     <!-- the second time, we should get entering.s012.  If so, go to s2, otherwise fail -->
-    <transition event="entering.s012" target="s2" cond="testvar1 == 2"/>
-    <transition event="entering" cond="testvar1 == 2" target="fail"/>
+    <transition event="entering.s012" cond="Var1==2" target="s2"/>
+    <transition event="entering" cond="Var1==2" target="fail"/>
     <!-- the third time we should get entering-s011. If so, pass, otherwise fail -->
-    <transition event="entering.s011" cond="testvar1 == 3" target="pass"/>
-    <transition event="entering" cond="testvar1 == 3" target="fail"/>
+    <transition event="entering.s011" cond="Var1==3" target="pass"/>
+    <transition event="entering" cond="Var1==3" target="fail"/>
     <!-- if we timeout, the state machine is hung somewhere, so fail -->
     <transition event="timeout" target="fail"/>
     <history type="shallow" id="s0HistShallow">
@@ -61,6 +61,14 @@ state is s011, so we should get entering.s011, otherwise failure.-->
   <state id="s2">
     <transition target="s0HistShallow"/>
   </state>
-  <final id="pass"/>
-  <final id="fail"/>
+  <final xmlns:scxml="http://www.w3.org/2005/07/scxml" id="pass">
+    <onentry>
+      <log label="Outcome" expr="'pass'"/>
+    </onentry>
+  </final>
+  <final xmlns:scxml="http://www.w3.org/2005/07/scxml" id="fail">
+    <onentry>
+      <log label="Outcome" expr="'fail'"/>
+    </onentry>
+  </final>
 </scxml>

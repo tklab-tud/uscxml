@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- test that default history content is executed correctly.   The Process MUST execute any executable content in the transition after the parent state's onentry handlers, and, in the case where the history pseudo-state is the target of an <initial> transition, 
+the executable content inside the <initial> transition.  However the Processor MUST
+execute this content only if there is no stored history.  Once the history state's
+parent state has been visited and exited, the default history content must not be executed -->
+<scxml:scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" xmlns:scxml="http://www.w3.org/2005/07/scxml" version="1.0" initial="s0" datamodel="ecmascript">
+  <scxml:state id="s0">
+    <scxml:datamodel>
+      <scxml:data id="Var1" expr="0"/>
+    </scxml:datamodel>
+    <scxml:initial>
+      <scxml:transition target="sh1">
+        <scxml:raise event="event2"/>
+      </scxml:transition>
+    </scxml:initial>
+    <scxml:onentry>
+      <scxml:send delayexpr="'1s'" event="timeout"/>
+      <scxml:raise event="event1"/>
+    </scxml:onentry>
+    <scxml:onexit>
+      <scxml:assign location="Var1" expr="Var1 + 1"/>
+    </scxml:onexit>
+    <scxml:history id="sh1">
+      <scxml:transition target="s01">
+        <scxml:raise event="event3"/>
+      </scxml:transition>
+    </scxml:history>
+    <scxml:state id="s01">
+      <scxml:transition event="event1" target="s02"/>
+      <scxml:transition event="*" target="fail"/>
+    </scxml:state>
+    <scxml:state id="s02">
+      <scxml:transition event="event2" target="s03"/>
+      <scxml:transition event="*" target="fail"/>
+    </scxml:state>
+    <scxml:state id="s03">
+      <scxml:transition cond="Var1==0" event="event3" target="s0"/>
+      <scxml:transition cond="Var1==1" event="event1" target="s2"/>
+      <scxml:transition event="*" target="fail"/>
+    </scxml:state>
+  </scxml:state>
+  <scxml:state id="s2">
+    <scxml:transition event="event2" target="s3"/>
+    <scxml:transition event="*" target="fail"/>
+  </scxml:state>
+  <scxml:state id="s3">
+    <scxml:transition event="event3" target="fail"/>
+    <scxml:transition event="timeout" target="pass"/>
+  </scxml:state>
+  <scxml:final id="pass">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'pass'"/>
+    </scxml:onentry>
+  </scxml:final>
+  <scxml:final id="fail">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'fail'"/>
+    </scxml:onentry>
+  </scxml:final>
+</scxml:scxml>

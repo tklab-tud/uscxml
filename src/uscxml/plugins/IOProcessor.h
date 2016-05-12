@@ -22,6 +22,7 @@
 
 #include "uscxml/Common.h"
 #include "uscxml/plugins/EventHandler.h"
+#include "uscxml/messages/Event.h"
 
 namespace uscxml {
 
@@ -29,38 +30,30 @@ class InterpreterImpl;
 
 class USCXML_API IOProcessorImpl : public EventHandlerImpl {
 public:
-	IOProcessorImpl() {};
-	virtual ~IOProcessorImpl() {};
-	virtual boost::shared_ptr<IOProcessorImpl> create(InterpreterImpl* interpreter) = 0;
+
+	virtual std::shared_ptr<IOProcessorImpl> create(InterpreterImpl* interpreter) = 0;
+	virtual void eventFromSCXML(const std::string& target, const Event& event) = 0;
+	virtual bool isValidTarget(const std::string& target) = 0;
+
+protected:
+	void eventToSCXML(Event& event, const std::string& type, const std::string& origin, bool internal = false);
+
 };
 
 class USCXML_API IOProcessor : public EventHandler {
 public:
-	IOProcessor() : _impl() {}
-	IOProcessor(boost::shared_ptr<IOProcessorImpl> const impl) : EventHandler(impl), _impl(impl) { }
-	IOProcessor(const IOProcessor& other) : EventHandler(other._impl), _impl(other._impl) { }
-	virtual ~IOProcessor() {};
+	PIMPL_OPERATORS2(IOProcessor, EventHandler)
 
-	operator bool()                           const     {
-		return !!_impl;
+	virtual void eventFromSCXML(const std::string& target, const Event& event) {
+		_impl->eventFromSCXML(target, event);
 	}
-	bool operator< (const IOProcessor& other) const     {
-		return _impl < other._impl;
-	}
-	bool operator==(const IOProcessor& other) const     {
-		return _impl == other._impl;
-	}
-	bool operator!=(const IOProcessor& other) const     {
-		return _impl != other._impl;
-	}
-	IOProcessor& operator= (const IOProcessor& other)   {
-		_impl = other._impl;
-		EventHandler::_impl = _impl;
-		return *this;
+
+	virtual bool isValidTarget(const std::string& target) {
+		return _impl->isValidTarget(target);
 	}
 
 protected:
-	boost::shared_ptr<IOProcessorImpl> _impl;
+	std::shared_ptr<IOProcessorImpl> _impl;
 	friend class InterpreterImpl;
 };
 

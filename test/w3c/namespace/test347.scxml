@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- test that the scxml event I/O processor works by sending events back and forth between an invoked child
+and its parent process -->
+<scxml:scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" xmlns:scxml="http://www.w3.org/2005/07/scxml" initial="s0" datamodel="ecmascript" version="1.0">
+  <scxml:state id="s0" initial="s01">
+    <scxml:invoke id="child" type="scxml">
+      <scxml:content>
+        <scxml:scxml initial="sub0" version="1.0" datamodel="ecmascript" name="machineName">
+          <scxml:state id="sub0">
+            <scxml:onentry>
+              <scxml:send type="http://www.w3.org/TR/scxml/#SCXMLEventProcessor" target="#_parent" event="childToParent"/>
+            </scxml:onentry>
+            <scxml:transition event="parentToChild" target="subFinal"/>
+          </scxml:state>
+          <scxml:final id="subFinal"/>
+        </scxml:scxml>
+      </scxml:content>
+    </scxml:invoke>
+    <scxml:onentry>
+      <scxml:send delay="20s" event="timeout"/>
+    </scxml:onentry>
+    <scxml:transition event="timeout" target="fail"/>
+    <scxml:state id="s01">
+      <scxml:transition event="childToParent" target="s02"/>
+    </scxml:state>
+    <scxml:state id="s02">
+      <scxml:onentry>
+        <scxml:send type="http://www.w3.org/TR/scxml/#SCXMLEventProcessor" target="#_child" event="parentToChild"/>
+      </scxml:onentry>
+      <scxml:transition event="done.invoke" target="pass"/>
+      <scxml:transition event="error" target="fail"/>
+    </scxml:state>
+  </scxml:state>
+  <scxml:final id="pass">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'pass'"/>
+    </scxml:onentry>
+  </scxml:final>
+  <scxml:final id="fail">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'fail'"/>
+    </scxml:onentry>
+  </scxml:final>
+</scxml:scxml>

@@ -1,4 +1,0 @@
-interface Text : CharacterData {
-  Text               splitText(in unsigned long offset)
-                                      raises(DOMException);
-};

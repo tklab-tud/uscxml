@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- test that the event name matching works correctly, including prefix matching and the fact
+that the event attribute of transition may contain multiple event designators.    -->
+<scxml:scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" xmlns:scxml="http://www.w3.org/2005/07/scxml" initial="s0" version="1.0" datamodel="ecmascript">
+  <scxml:state id="s0" initial="s01">
+    <scxml:onentry>
+      <scxml:send event="timeout" delay="2s"/>
+    </scxml:onentry>
+    <!-- this will catch the failure case -->
+    <scxml:transition event="timeout" target="fail"/>
+    <scxml:state id="s01">
+      <scxml:onentry>
+        <scxml:raise event="foo"/>
+      </scxml:onentry>
+      <!-- test that an event can match against a transition with multiple descriptors -->
+      <scxml:transition event="foo bar" target="s02"/>
+    </scxml:state>
+    <scxml:state id="s02">
+      <scxml:onentry>
+        <scxml:raise event="bar"/>
+      </scxml:onentry>
+      <!-- test that an event can match the second descriptor as well -->
+      <scxml:transition event="foo bar" target="s03"/>
+    </scxml:state>
+    <scxml:state id="s03">
+      <scxml:onentry>
+        <scxml:raise event="foo.zoo"/>
+      </scxml:onentry>
+      <!-- test that a prefix descriptor matches -->
+      <scxml:transition event="foo bar" target="s04"/>
+    </scxml:state>
+    <scxml:state id="s04">
+      <scxml:onentry>
+        <scxml:raise event="foos"/>
+      </scxml:onentry>
+      <!-- test that only token prefixes match -->
+      <scxml:transition event="foo" target="fail"/>
+      <scxml:transition event="foos" target="s05"/>
+    </scxml:state>
+    <scxml:state id="s05">
+      <scxml:onentry>
+        <scxml:raise event="foo.zoo"/>
+      </scxml:onentry>
+      <!-- test that .* works at the end of a descriptor -->
+      <scxml:transition event="foo.*" target="s06"/>
+    </scxml:state>
+    <scxml:state id="s06">
+      <scxml:onentry>
+        <scxml:raise event="foo"/>
+      </scxml:onentry>
+      <!-- test that "*" works by itself -->
+      <scxml:transition event="*" target="pass"/>
+    </scxml:state>
+  </scxml:state>
+  <scxml:final id="pass">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'pass'"/>
+    </scxml:onentry>
+  </scxml:final>
+  <scxml:final id="fail">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'fail'"/>
+    </scxml:onentry>
+  </scxml:final>
+</scxml:scxml>

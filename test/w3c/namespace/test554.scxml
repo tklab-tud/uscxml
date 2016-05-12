@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- test that if the evaluation of <invoke>'s args causes an error, the 
+invocation is cancelled.  In this test, that means that we don't get done.invoke 
+before the timer goes off.  -->
+<scxml:scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" xmlns:scxml="http://www.w3.org/2005/07/scxml" initial="s0" version="1.0" datamodel="ecmascript">
+  <scxml:state id="s0">
+    <scxml:onentry>
+      <scxml:send event="timer" delayexpr="'1s'"/>
+    </scxml:onentry>
+    <!-- reference an invalid namelist -->
+    <scxml:invoke type="http://www.w3.org/TR/scxml/" namelist="&quot;foo">
+      <scxml:content>
+        <scxml:scxml initial="subFinal" version="1.0" datamodel="ecmascript">
+          <scxml:final id="subFinal"/>
+        </scxml:scxml>
+      </scxml:content>
+    </scxml:invoke>
+    <scxml:transition event="timer" target="pass"/>
+    <scxml:transition event="done.invoke" target="fail"/>
+  </scxml:state>
+  <scxml:final id="pass">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'pass'"/>
+    </scxml:onentry>
+  </scxml:final>
+  <scxml:final id="fail">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'fail'"/>
+    </scxml:onentry>
+  </scxml:final>
+</scxml:scxml>

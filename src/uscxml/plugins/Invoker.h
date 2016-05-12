@@ -23,64 +23,63 @@
 
 #include "uscxml/Common.h"
 #include "uscxml/plugins/EventHandler.h"
-#include "uscxml/messages/InvokeRequest.h"
+#include "uscxml/messages/Event.h"
 
 namespace uscxml {
 
-class InterpreterImpl;
+class Interpreter;
 
 class USCXML_API InvokerImpl : public EventHandlerImpl {
 public:
+	InvokerImpl() : _finalize(NULL) {};
 	virtual ~InvokerImpl() {}
-	virtual void invoke(const InvokeRequest& req) = 0;
-	virtual void uninvoke() {}
+	virtual std::list<std::string> getNames() = 0;
 
-	virtual bool deleteOnUninvoke() {
-		return true;
+	virtual void invoke(const std::string& source, const Event& invokeEvent) = 0;
+	virtual void uninvoke() = 0;
+
+	virtual void eventFromSCXML(const Event& event) = 0;
+
+	virtual std::shared_ptr<InvokerImpl> create(InterpreterImpl* interpreter) = 0;
+	virtual xercesc::DOMElement* getFinalize() {
+		return _finalize;
+	}
+	virtual void setFinalize(xercesc::DOMElement* finalize) {
+		_finalize = finalize;
+	}
+	virtual void setInvokeId(const std::string& invokeId) {
+		_invokeId = invokeId;
 	}
 
-	virtual boost::shared_ptr<InvokerImpl> create(InterpreterImpl* interpreter) = 0;
+protected:
+	void eventToSCXML(Event& event, const std::string& type, const std::string& invokeId, bool internal = false);
+
+	xercesc::DOMElement* _finalize;
+	std::string _invokeId;
+
 };
 
 class USCXML_API Invoker : public EventHandler {
 public:
-	Invoker() : _impl() {}
-	Invoker(boost::shared_ptr<InvokerImpl> const impl) : EventHandler(impl), _impl(impl) { }
-	Invoker(const Invoker& other) : EventHandler(other._impl), _impl(other._impl) { }
-	virtual ~Invoker() {};
+	PIMPL_OPERATORS2(Invoker, EventHandler);
 
-	operator bool()                       const {
-		return !!_impl;
-	}
-	bool operator< (const Invoker& other) const {
-		return _impl < other._impl;
-	}
-	bool operator==(const Invoker& other) const {
-		return _impl == other._impl;
-	}
-	bool operator!=(const Invoker& other) const {
-		return _impl != other._impl;
-	}
-	Invoker& operator= (const Invoker& other)   {
-		_impl = other._impl;
-		EventHandler::_impl = _impl;
-		return *this;
-	}
-
-	virtual void invoke(InvokeRequest& req)     {
-		_impl->invoke(req);
+	virtual void invoke(const std::string& source, const Event& invokeEvent)     {
+		_impl->invoke(source, invokeEvent);
 	}
 
 	virtual void uninvoke()     {
 		_impl->uninvoke();
 	}
 
-	virtual bool deleteOnUninvoke() {
-		return _impl->deleteOnUninvoke();
+	virtual void eventFromSCXML(const Event& event)     {
+		_impl->eventFromSCXML(event);
 	}
 
+	virtual xercesc::DOMElement* getFinalize() {
+		return _impl->getFinalize();
+	}
 protected:
-	boost::shared_ptr<InvokerImpl> _impl;
+	std::shared_ptr<InvokerImpl> _impl;
 };
 
 

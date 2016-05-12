@@ -1,3 +1,0 @@
-<state id="start" xmlns:foo="http://www.w3.org/2001/Bar">
-	<transition target="pass" />
-</state>

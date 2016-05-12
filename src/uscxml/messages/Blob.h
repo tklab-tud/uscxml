@@ -21,7 +21,7 @@
 #define BLOB_H_E1B6D2C3
 
 #include <string>
-#include <boost/shared_ptr.hpp>
+#include <memory>
 
 #include "uscxml/Common.h"
 
@@ -65,36 +65,17 @@ protected:
 class USCXML_API Blob {
 public:
 
-	Blob() : _impl() {}
-	Blob(const boost::shared_ptr<BlobImpl> impl) : _impl(impl) { }
-	Blob(const Blob& other) : _impl(other._impl) { }
-	Blob(size_t size) : _impl(boost::shared_ptr<BlobImpl>(new BlobImpl(size))) {}
+	PIMPL_OPERATORS(Blob)
+
+	Blob(size_t size) : _impl(std::shared_ptr<BlobImpl>(new BlobImpl(size))) {}
 	Blob(const char* data,
 	     size_t size,
 	     const std::string& mimeType = "application/octet-stream",
 	     bool adopt = false) :
-		_impl(boost::shared_ptr<BlobImpl>(new BlobImpl(data, size, mimeType, adopt))) {}
-	virtual ~Blob() {};
-
-	operator bool()                    const     {
-		return !!_impl;
-	}
-	bool operator< (const Blob& other) const     {
-		return _impl < other._impl;
-	}
-	bool operator==(const Blob& other) const     {
-		return _impl == other._impl;
-	}
-	bool operator!=(const Blob& other) const     {
-		return _impl != other._impl;
-	}
-	Blob& operator= (const Blob& other)          {
-		_impl = other._impl;
-		return *this;
-	}
+		_impl(std::shared_ptr<BlobImpl>(new BlobImpl(data, size, mimeType, adopt))) {}
 
 	static Blob fromBase64(const std::string base64, const std::string& mimeType = "application/octet-stream") {
-		return Blob(boost::shared_ptr<BlobImpl>(BlobImpl::fromBase64(base64, mimeType)));
+		return Blob(std::shared_ptr<BlobImpl>(BlobImpl::fromBase64(base64, mimeType)));
 	}
 
 	std::string base64() const {
@@ -124,7 +105,7 @@ public:
 #ifdef SWIGIMPORTED
 protected:
 #endif
-	boost::shared_ptr<BlobImpl> _impl;
+	std::shared_ptr<BlobImpl> _impl;
 
 };
 

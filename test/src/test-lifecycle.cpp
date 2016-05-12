@@ -1,21 +1,10 @@
 #include "uscxml/config.h"
 #include "uscxml/Interpreter.h"
-#include <glog/logging.h>
+#include "uscxml/interpreter/InterpreterMonitor.h"
+#include <easylogging++.h>
 
-#include "uscxml/plugins/invoker/filesystem/dirmon/DirMonInvoker.h"
 #include <boost/algorithm/string.hpp>
-
-#ifdef HAS_SIGNAL_H
-#include <signal.h>
-#endif
-
-#ifdef HAS_EXECINFO_H
-#include <execinfo.h>
-#endif
-
-#ifdef HAS_DLFCN_H
-#include <dlfcn.h>
-#endif
+#include <xercesc/util/PlatformUtils.hpp>
 
 #ifdef _WIN32
 #include "XGetopt.h"
@@ -23,74 +12,9 @@
 
 int startedAt;
 int lastTransitionAt;
-bool testIssue56();
-
-#ifdef HAS_EXECINFO_H
-void printBacktrace(void** array, int size) {
-	char** messages = backtrace_symbols(array, size);
-	for (size_t i = 0; i < size && messages != NULL; ++i) {
-		std::cerr << "\t" << messages[i] << std::endl;
-	}
-	std::cerr << std::endl;
-	free(messages);
-}
-
-#ifdef HAS_DLFCN_H
-// see https://gist.github.com/nkuln/2020860
-typedef void (*cxa_throw_type)(void *, void *, void (*) (void *));
-cxa_throw_type orig_cxa_throw = 0;
-
-void load_orig_throw_code() {
-	orig_cxa_throw = (cxa_throw_type) dlsym(RTLD_NEXT, "__cxa_throw");
-}
-
-extern "C"
-CXA_THROW_SIGNATURE {
-	std::cerr << __FUNCTION__ << " will throw exception from " << std::endl;
-	if (orig_cxa_throw == 0)
-		load_orig_throw_code();
-
-	void *array[50];
-	size_t size = backtrace(array, 50);
-	printBacktrace(array, size);
-	orig_cxa_throw(thrown_exception, pvtinfo, dest);
-}
-#endif
-#endif
-
-
-// see http://stackoverflow.com/questions/2443135/how-do-i-find-where-an-exception-was-thrown-in-c
-void customTerminate() {
-	static bool tried_throw = false;
-	try {
-		// try once to re-throw currently active exception
-		if (!tried_throw) {
-			throw;
-			tried_throw = true;
-		} else {
-			tried_throw = false;
-		};
-	} catch (const std::exception &e) {
-		std::cerr << __FUNCTION__ << " caught unhandled exception. what(): "
-		          << e.what() << std::endl;
-	} catch (const uscxml::Event &e) {
-		std::cerr << __FUNCTION__ << " caught unhandled exception. Event: "
-		          << e << std::endl;
-	} catch (...) {
-		std::cerr << __FUNCTION__ << " caught unknown/unhandled exception."
-		          << std::endl;
-	}
-
-#ifdef HAS_EXECINFO_H
-	void * array[50];
-	int size = backtrace(array, 50);
-
-	printBacktrace(array, size);
-#endif
-	abort();
-}
 
 using namespace uscxml;
+using namespace xercesc;
 
 enum CallbackType {
 	USCXML_BEFOREPROCESSINGEVENT,
@@ -124,73 +48,67 @@ std::list<CallbackType> callBackSeq;
 
 
 class SequenceCheckingMonitor : public InterpreterMonitor {
-	virtual void beforeProcessingEvent(Interpreter interpreter, const Event& event) {
+	virtual void beforeProcessingEvent(const Event& event) {
 		CHECK_CALLBACK_TYPE(USCXML_BEFOREPROCESSINGEVENT);
 	}
-	virtual void beforeMicroStep(Interpreter interpreter) {
+	virtual void beforeMicroStep() {
 		CHECK_CALLBACK_TYPE(USCXML_BEFOREMICROSTEP);
 	}
 
-	virtual void beforeExitingState(Interpreter interpreter, const Arabica::DOM::Element<std::string>& state, bool moreComing) {
-		if (!moreComing)
-			CHECK_CALLBACK_TYPE(USCXML_BEFOREEXITINGSTATE);
+	virtual void beforeExitingState(const xercesc::DOMElement* state) {
+		CHECK_CALLBACK_TYPE(USCXML_BEFOREEXITINGSTATE);
 	}
-	virtual void afterExitingState(Interpreter interpreter, const Arabica::DOM::Element<std::string>& state, bool moreComing) {
-		if (!moreComing)
-			CHECK_CALLBACK_TYPE(USCXML_AFTEREXITINGSTATE);
+	virtual void afterExitingState(const xercesc::DOMElement* state) {
+		CHECK_CALLBACK_TYPE(USCXML_AFTEREXITINGSTATE);
 	}
 
-	virtual void beforeExecutingContent(Interpreter interpreter, const Arabica::DOM::Element<std::string>& element) {
+	virtual void beforeExecutingContent(const xercesc::DOMElement* element) {
 		CHECK_CALLBACK_TYPE(USCXML_BEFOREEXECUTINGCONTENT);
 	}
-	virtual void afterExecutingContent(Interpreter interpreter, const Arabica::DOM::Element<std::string>& element) {
+	virtual void afterExecutingContent(const xercesc::DOMElement* element) {
 		CHECK_CALLBACK_TYPE(USCXML_AFTEREXECUTINGCONTENT);
 	}
 
-	virtual void beforeUninvoking(Interpreter interpreter, const Arabica::DOM::Element<std::string>& invokeElem, const std::string& invokeid) {
+	virtual void beforeUninvoking(const xercesc::DOMElement* invokeElem, const std::string& invokeid) {
 		CHECK_CALLBACK_TYPE(USCXML_BEFOREUNINVOKING);
 	}
-	virtual void afterUninvoking(Interpreter interpreter, const Arabica::DOM::Element<std::string>& invokeElem, const std::string& invokeid) {
+	virtual void afterUninvoking(const xercesc::DOMElement* invokeElem, const std::string& invokeid) {
 		CHECK_CALLBACK_TYPE(USCXML_AFTERUNINVOKING);
 	}
 
-	virtual void beforeTakingTransition(Interpreter interpreter, const Arabica::DOM::Element<std::string>& transition, bool moreComing) {
-		if (!moreComing)
-			CHECK_CALLBACK_TYPE(USCXML_BEFORETAKINGTRANSITION);
+	virtual void beforeTakingTransition(const xercesc::DOMElement* transition) {
+		CHECK_CALLBACK_TYPE(USCXML_BEFORETAKINGTRANSITION);
 	}
-	virtual void afterTakingTransition(Interpreter interpreter, const Arabica::DOM::Element<std::string>& transition, bool moreComing) {
-		if (!moreComing)
-			CHECK_CALLBACK_TYPE(USCXML_AFTERTAKINGTRANSITION);
+	virtual void afterTakingTransition(const xercesc::DOMElement* transition) {
+		CHECK_CALLBACK_TYPE(USCXML_AFTERTAKINGTRANSITION);
 	}
 
-	virtual void beforeEnteringState(Interpreter interpreter, const Arabica::DOM::Element<std::string>& state, bool moreComing) {
-		if (!moreComing)
-			CHECK_CALLBACK_TYPE(USCXML_BEFOREENTERINGSTATE);
+	virtual void beforeEnteringState(const xercesc::DOMElement* state) {
+		CHECK_CALLBACK_TYPE(USCXML_BEFOREENTERINGSTATE);
 	}
-	virtual void afterEnteringState(Interpreter interpreter, const Arabica::DOM::Element<std::string>& state, bool moreComing) {
-		if (!moreComing)
-			CHECK_CALLBACK_TYPE(USCXML_AFTERENTERINGSTATE);
+	virtual void afterEnteringState(const xercesc::DOMElement* state) {
+		CHECK_CALLBACK_TYPE(USCXML_AFTERENTERINGSTATE);
 	}
 
-	virtual void beforeInvoking(Interpreter interpreter, const Arabica::DOM::Element<std::string>& invokeElem, const std::string& invokeid) {
+	virtual void beforeInvoking(const xercesc::DOMElement* invokeElem, const std::string& invokeid) {
 		CHECK_CALLBACK_TYPE(USCXML_BEFOREINVOKING);
 	}
-	virtual void afterInvoking(Interpreter interpreter, const Arabica::DOM::Element<std::string>& invokeElem, const std::string& invokeid) {
+	virtual void afterInvoking(const xercesc::DOMElement* invokeElem, const std::string& invokeid) {
 		CHECK_CALLBACK_TYPE(USCXML_AFTERINVOKING);
 	}
 
-	virtual void afterMicroStep(Interpreter interpreter) {
+	virtual void afterMicroStep() {
 		CHECK_CALLBACK_TYPE(USCXML_AFTERMICROSTEP);
 	}
 
-	virtual void onStableConfiguration(Interpreter interpreter) {
+	virtual void onStableConfiguration() {
 		CHECK_CALLBACK_TYPE(USCXML_ONSTABLECONFIGURATION);
 	}
 
-	virtual void beforeCompletion(Interpreter interpreter) {
+	virtual void beforeCompletion() {
 		CHECK_CALLBACK_TYPE(USCXML_BEFORECOMPLETION);
 	}
-	virtual void afterCompletion(Interpreter interpreter) {
+	virtual void afterCompletion() {
 		CHECK_CALLBACK_TYPE(USCXML_AFTERCOMPLETION);
 	}
 
@@ -199,16 +117,7 @@ class SequenceCheckingMonitor : public InterpreterMonitor {
 
 int main(int argc, char** argv) {
 
-	std::set_terminate(customTerminate);
-
-#if defined(HAS_SIGNAL_H) && !defined(WIN32)
-	signal(SIGPIPE, SIG_IGN);
-#endif
-
-	google::InitGoogleLogging(argv[0]);
-	google::LogToStderr();
-
-	SequenceCheckingMonitor* mon = new SequenceCheckingMonitor();
+	SequenceCheckingMonitor mon;
 
 	int iterations = 1;
 
@@ -230,7 +139,7 @@ int main(int argc, char** argv) {
 			try {
 				const char* xml = "<invalid />";
 				Interpreter interpreter = Interpreter::fromXML(xml, "");
-				interpreter.addMonitor(mon);
+				interpreter.setMonitor(&mon);
 				assert(interpreter.getState() == USCXML_INSTANTIATED);
 				interpreter.step();
 				assert(false);
@@ -250,7 +159,7 @@ int main(int argc, char** argv) {
 				    " <final id=\"done\" />"
 				    "</scxml>";
 				Interpreter interpreter = Interpreter::fromXML(xml, "");
-				interpreter.addMonitor(mon);
+				interpreter.setMonitor(&mon);
 				assert(interpreter.getState() == USCXML_INSTANTIATED);
 				interpreter.step();
 				assert(false);
@@ -273,39 +182,42 @@ int main(int argc, char** argv) {
 			    "</scxml>";
 
 			Interpreter interpreter = Interpreter::fromXML(xml, "");
-			interpreter.addMonitor(mon);
-
-			callBackSeq.push_back(USCXML_BEFORETAKINGTRANSITION);
-			callBackSeq.push_back(USCXML_AFTERTAKINGTRANSITION);
-			callBackSeq.push_back(USCXML_BEFOREENTERINGSTATE);
-			callBackSeq.push_back(USCXML_AFTERENTERINGSTATE);
+			interpreter.setMonitor(&mon);
 
 			callBackSeq.push_back(USCXML_BEFOREMICROSTEP);
-			callBackSeq.push_back(USCXML_BEFOREEXITINGSTATE);
-			callBackSeq.push_back(USCXML_AFTEREXITINGSTATE);
-			callBackSeq.push_back(USCXML_BEFORETAKINGTRANSITION);
-			callBackSeq.push_back(USCXML_AFTERTAKINGTRANSITION);
-			callBackSeq.push_back(USCXML_BEFOREENTERINGSTATE);
+			callBackSeq.push_back(USCXML_BEFOREENTERINGSTATE); // scxml
+			callBackSeq.push_back(USCXML_AFTERENTERINGSTATE);
+			callBackSeq.push_back(USCXML_BEFOREENTERINGSTATE); // start
 			callBackSeq.push_back(USCXML_AFTERENTERINGSTATE);
 			callBackSeq.push_back(USCXML_AFTERMICROSTEP);
 
 			callBackSeq.push_back(USCXML_BEFOREMICROSTEP);
-			callBackSeq.push_back(USCXML_BEFOREEXITINGSTATE);
+			callBackSeq.push_back(USCXML_BEFOREEXITINGSTATE); // start
 			callBackSeq.push_back(USCXML_AFTEREXITINGSTATE);
 			callBackSeq.push_back(USCXML_BEFORETAKINGTRANSITION);
 			callBackSeq.push_back(USCXML_AFTERTAKINGTRANSITION);
-			callBackSeq.push_back(USCXML_BEFOREENTERINGSTATE);
+			callBackSeq.push_back(USCXML_BEFOREENTERINGSTATE); // s2
 			callBackSeq.push_back(USCXML_AFTERENTERINGSTATE);
 			callBackSeq.push_back(USCXML_AFTERMICROSTEP);
 
-			callBackSeq.push_back(USCXML_BEFORECOMPLETION);
+			callBackSeq.push_back(USCXML_BEFOREMICROSTEP);
+			callBackSeq.push_back(USCXML_BEFOREEXITINGSTATE); // s2
+			callBackSeq.push_back(USCXML_AFTEREXITINGSTATE);
+			callBackSeq.push_back(USCXML_BEFORETAKINGTRANSITION);
+			callBackSeq.push_back(USCXML_AFTERTAKINGTRANSITION);
+			callBackSeq.push_back(USCXML_BEFOREENTERINGSTATE); // final
+			callBackSeq.push_back(USCXML_AFTERENTERINGSTATE);
+			callBackSeq.push_back(USCXML_AFTERMICROSTEP);
+
+			callBackSeq.push_back(USCXML_BEFORECOMPLETION); // interpreter is finalizing
 			callBackSeq.push_back(USCXML_AFTERCOMPLETION);
 
 			assert(interpreter.getState() == USCXML_INSTANTIATED);
 			assert(interpreter.step() == USCXML_INITIALIZED);
-			assert(interpreter.step() == USCXML_MICROSTEPPED);
-			assert(interpreter.step() == USCXML_MICROSTEPPED);
-			assert(interpreter.step() == USCXML_FINISHED);
+			assert(interpreter.step() == USCXML_MICROSTEPPED); // initial config
+			assert(interpreter.step() == USCXML_MICROSTEPPED); // s2
+			assert(interpreter.step() == USCXML_MICROSTEPPED); // done
+			assert(interpreter.step() == USCXML_FINISHED); // cleaned up
 			assert(callBackSeq.empty());
 		}
 
@@ -320,19 +232,21 @@ int main(int argc, char** argv) {
 			    "</scxml>";
 
 			Interpreter interpreter = Interpreter::fromXML(xml, "");
-			interpreter.addMonitor(mon);
-
-			callBackSeq.push_back(USCXML_BEFORETAKINGTRANSITION);
-			callBackSeq.push_back(USCXML_AFTERTAKINGTRANSITION);
-			callBackSeq.push_back(USCXML_BEFOREENTERINGSTATE);
-			callBackSeq.push_back(USCXML_AFTERENTERINGSTATE);
+			interpreter.setMonitor(&mon);
 
 			callBackSeq.push_back(USCXML_BEFOREMICROSTEP);
-			callBackSeq.push_back(USCXML_BEFOREEXITINGSTATE);
+			callBackSeq.push_back(USCXML_BEFOREENTERINGSTATE); // scxml
+			callBackSeq.push_back(USCXML_AFTERENTERINGSTATE);
+			callBackSeq.push_back(USCXML_BEFOREENTERINGSTATE); // start
+			callBackSeq.push_back(USCXML_AFTERENTERINGSTATE);
+			callBackSeq.push_back(USCXML_AFTERMICROSTEP);
+
+			callBackSeq.push_back(USCXML_BEFOREMICROSTEP);
+			callBackSeq.push_back(USCXML_BEFOREEXITINGSTATE); // start
 			callBackSeq.push_back(USCXML_AFTEREXITINGSTATE);
 			callBackSeq.push_back(USCXML_BEFORETAKINGTRANSITION);
 			callBackSeq.push_back(USCXML_AFTERTAKINGTRANSITION);
-			callBackSeq.push_back(USCXML_BEFOREENTERINGSTATE);
+			callBackSeq.push_back(USCXML_BEFOREENTERINGSTATE); // done
 			callBackSeq.push_back(USCXML_AFTERENTERINGSTATE);
 			callBackSeq.push_back(USCXML_AFTERMICROSTEP);
 
@@ -342,20 +256,24 @@ int main(int argc, char** argv) {
 			assert(interpreter.getState() == USCXML_INSTANTIATED);
 			assert(interpreter.step() == USCXML_INITIALIZED);
 			assert(interpreter.step() == USCXML_MICROSTEPPED);
+			assert(interpreter.step() == USCXML_MICROSTEPPED);
 			assert(interpreter.step() == USCXML_FINISHED);
+			assert(callBackSeq.empty());
 			interpreter.reset();
 
-			callBackSeq.push_back(USCXML_BEFORETAKINGTRANSITION);
-			callBackSeq.push_back(USCXML_AFTERTAKINGTRANSITION);
-			callBackSeq.push_back(USCXML_BEFOREENTERINGSTATE);
+			callBackSeq.push_back(USCXML_BEFOREMICROSTEP);
+			callBackSeq.push_back(USCXML_BEFOREENTERINGSTATE); // scxml
 			callBackSeq.push_back(USCXML_AFTERENTERINGSTATE);
+			callBackSeq.push_back(USCXML_BEFOREENTERINGSTATE); // start
+			callBackSeq.push_back(USCXML_AFTERENTERINGSTATE);
+			callBackSeq.push_back(USCXML_AFTERMICROSTEP);
 
 			callBackSeq.push_back(USCXML_BEFOREMICROSTEP);
-			callBackSeq.push_back(USCXML_BEFOREEXITINGSTATE);
+			callBackSeq.push_back(USCXML_BEFOREEXITINGSTATE); // start
 			callBackSeq.push_back(USCXML_AFTEREXITINGSTATE);
 			callBackSeq.push_back(USCXML_BEFORETAKINGTRANSITION);
 			callBackSeq.push_back(USCXML_AFTERTAKINGTRANSITION);
-			callBackSeq.push_back(USCXML_BEFOREENTERINGSTATE);
+			callBackSeq.push_back(USCXML_BEFOREENTERINGSTATE); // done
 			callBackSeq.push_back(USCXML_AFTERENTERINGSTATE);
 			callBackSeq.push_back(USCXML_AFTERMICROSTEP);
 
@@ -364,6 +282,7 @@ int main(int argc, char** argv) {
 
 			assert(interpreter.getState() == USCXML_INSTANTIATED);
 			assert(interpreter.step() == USCXML_INITIALIZED);
+			assert(interpreter.step() == USCXML_MICROSTEPPED);
 			assert(interpreter.step() == USCXML_MICROSTEPPED);
 			assert(interpreter.step() == USCXML_FINISHED);
 		}
@@ -385,17 +304,19 @@ int main(int argc, char** argv) {
 			    "</scxml>";
 
 			Interpreter interpreter = Interpreter::fromXML(xml, "");
-			interpreter.addMonitor(mon);
-
-			callBackSeq.push_back(USCXML_BEFORETAKINGTRANSITION);
-			callBackSeq.push_back(USCXML_AFTERTAKINGTRANSITION);
-			callBackSeq.push_back(USCXML_BEFOREENTERINGSTATE);
-			callBackSeq.push_back(USCXML_BEFOREEXECUTINGCONTENT);
+			interpreter.setMonitor(&mon);
+			callBackSeq.push_back(USCXML_BEFOREMICROSTEP);
+			callBackSeq.push_back(USCXML_BEFOREENTERINGSTATE); // scxml
+			callBackSeq.push_back(USCXML_AFTERENTERINGSTATE);
+			callBackSeq.push_back(USCXML_BEFOREENTERINGSTATE); // start
+			callBackSeq.push_back(USCXML_BEFOREEXECUTINGCONTENT); // send
 			callBackSeq.push_back(USCXML_AFTEREXECUTINGCONTENT);
 			callBackSeq.push_back(USCXML_AFTERENTERINGSTATE);
-			callBackSeq.push_back(USCXML_ONSTABLECONFIGURATION);
+			callBackSeq.push_back(USCXML_AFTERMICROSTEP);
 
+			callBackSeq.push_back(USCXML_ONSTABLECONFIGURATION);
 			callBackSeq.push_back(USCXML_BEFOREPROCESSINGEVENT);
+
 			callBackSeq.push_back(USCXML_BEFOREMICROSTEP);
 			callBackSeq.push_back(USCXML_BEFOREEXITINGSTATE);
 			callBackSeq.push_back(USCXML_AFTEREXITINGSTATE);
@@ -419,8 +340,10 @@ int main(int argc, char** argv) {
 
 			assert(interpreter.getState() == USCXML_INSTANTIATED);
 			assert(interpreter.step() == USCXML_INITIALIZED);
+			assert(interpreter.step() == USCXML_MICROSTEPPED);
+			assert(interpreter.step() == USCXML_MACROSTEPPED);
 			assert(interpreter.step() == USCXML_IDLE);
-			assert(interpreter.step(true) == USCXML_MACROSTEPPED);
+			assert(interpreter.step(true) == USCXML_MICROSTEPPED);
 			assert(interpreter.step() == USCXML_MICROSTEPPED);
 			assert(interpreter.step() == USCXML_FINISHED);
 		}

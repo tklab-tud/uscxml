@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- test that any attempt to change the value of a system variable causes error.execution to be raised.  
+Event1..4 are there to catch the case where the error event is not raised. In cases where it is, we have
+to dispose of eventn in the next state, hence the targetless transitions (which simply throw away the event.) -->
+<scxml:scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" xmlns:scxml="http://www.w3.org/2005/07/scxml" initial="s0" version="1.0" datamodel="ecmascript" name="machineName">
+  <scxml:state id="s0">
+    <scxml:onentry>
+      <scxml:assign location="_sessionid" expr="'otherName'"/>
+      <scxml:raise event="event1"/>
+    </scxml:onentry>
+    <scxml:transition event="error.execution" target="s1"/>
+    <scxml:transition event="*" target="fail"/>
+  </scxml:state>
+  <scxml:state id="s1">
+    <scxml:onentry>
+      <scxml:assign location="_event" expr="'otherName'"/>
+      <scxml:raise event="event2"/>
+    </scxml:onentry>
+    <!-- throw out event1 if it's still around -->
+    <scxml:transition event="event1"/>
+    <scxml:transition event="error.execution" target="s2"/>
+    <!-- event1 would trigger this transition if we didn't drop it.  We want this transition to have
+   a very general trigger to catch cases where the wrong error event was raised -->
+    <scxml:transition event="*" target="fail"/>
+  </scxml:state>
+  <scxml:state id="s2">
+    <scxml:onentry>
+      <scxml:assign location="_ioprocessors" expr="'otherName'"/>
+      <scxml:raise event="event3"/>
+    </scxml:onentry>
+    <scxml:transition event="event2"/>
+    <scxml:transition event="error.execution" target="s3"/>
+    <scxml:transition event="*" target="fail"/>
+  </scxml:state>
+  <scxml:state id="s3">
+    <scxml:onentry>
+      <scxml:assign location="_name" expr="'otherName'"/>
+      <scxml:raise event="event4"/>
+    </scxml:onentry>
+    <scxml:transition event="event3"/>
+    <scxml:transition event="error.execution" target="pass"/>
+    <scxml:transition event="*" target="fail"/>
+  </scxml:state>
+  <scxml:final id="pass">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'pass'"/>
+    </scxml:onentry>
+  </scxml:final>
+  <scxml:final id="fail">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'fail'"/>
+    </scxml:onentry>
+  </scxml:final>
+</scxml:scxml>

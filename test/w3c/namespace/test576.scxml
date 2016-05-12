@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- test that the 'initial' value of scxml is respected.  We set the value to deeply nested non-default parallel siblings and
+test that both are entered. -->
+<scxml:scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" xmlns:scxml="http://www.w3.org/2005/07/scxml" initial="s11p112 s11p122" datamodel="ecmascript" version="1.0">
+  <scxml:state id="s0">
+    <scxml:transition target="fail"/>
+  </scxml:state>
+  <scxml:state id="s1">
+    <scxml:onentry>
+      <scxml:send event="timeout" delay="1s"/>
+    </scxml:onentry>
+    <scxml:transition event="timeout" target="fail"/>
+    <scxml:state id="s11" initial="s111">
+      <scxml:state id="s111"/>
+      <scxml:parallel id="s11p1">
+        <scxml:state id="s11p11" initial="s11p111">
+          <scxml:state id="s11p111"/>
+          <scxml:state id="s11p112">
+            <scxml:onentry>
+              <scxml:raise event="In-s11p112"/>
+            </scxml:onentry>
+          </scxml:state>
+        </scxml:state>
+        <scxml:state id="s11p12" initial="s11p121">
+          <scxml:state id="s11p121"/>
+          <scxml:state id="s11p122">
+            <scxml:transition event="In-s11p112" target="pass"/>
+          </scxml:state>
+        </scxml:state>
+      </scxml:parallel>
+    </scxml:state>
+  </scxml:state>
+  <scxml:final id="pass">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'pass'"/>
+    </scxml:onentry>
+  </scxml:final>
+  <scxml:final id="fail">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'fail'"/>
+    </scxml:onentry>
+  </scxml:final>
+</scxml:scxml>

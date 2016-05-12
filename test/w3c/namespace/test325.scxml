@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- test that _ioprocessors is bound at startup.  I'm not sure how to test for a set value or
+how to test that the entries in it do represent I/O processors, since the set that each implementation
+supports may be different.  Suggestions welcome -->
+<scxml:scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" xmlns:scxml="http://www.w3.org/2005/07/scxml" initial="s0" datamodel="ecmascript" version="1.0" name="machineName">
+  <scxml:datamodel>
+    <scxml:data id="Var1" expr="_ioprocessors"/>
+  </scxml:datamodel>
+  <scxml:state id="s0">
+    <scxml:transition cond="Var1" target="pass"/>
+    <scxml:transition target="fail"/>
+  </scxml:state>
+  <scxml:final id="pass">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'pass'"/>
+    </scxml:onentry>
+  </scxml:final>
+  <scxml:final id="fail">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'fail'"/>
+    </scxml:onentry>
+  </scxml:final>
+</scxml:scxml>

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- in the ECMA data model, test that processor creates an ECMAScript DOM object
+ _event.data when receiving XML in an event -->
+<scxml:scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" xmlns:scxml="http://www.w3.org/2005/07/scxml" initial="s0" version="1.0" datamodel="ecmascript">
+  <scxml:state id="s0">
+    <scxml:onentry>
+      <scxml:send event="foo">
+        <scxml:content>
+          <books>
+            <book title="title1"/>
+            <book title="title2"/>
+          </books>
+        </scxml:content>
+      </scxml:send>
+    </scxml:onentry>
+    <scxml:transition event="foo" cond="_event.data.getElementsByTagName('book')[1].getAttribute('title') == 'title2'" target="pass"/>
+    <scxml:transition event="*" target="fail"/>
+  </scxml:state>
+  <scxml:final id="pass">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'pass'"/>
+    </scxml:onentry>
+  </scxml:final>
+  <scxml:final id="fail">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'fail'"/>
+    </scxml:onentry>
+  </scxml:final>
+</scxml:scxml>

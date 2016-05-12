@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- test that neither if clause executes, so that bat is the only event raised. -->
+<scxml:scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" xmlns:scxml="http://www.w3.org/2005/07/scxml" initial="s0" version="1.0" datamodel="ecmascript">
+  <scxml:datamodel>
+    <scxml:data id="Var1" expr="0"/>
+  </scxml:datamodel>
+  <scxml:state id="s0">
+    <scxml:onentry>
+      <scxml:if cond="false">
+        <scxml:raise event="foo"/>
+        <scxml:assign location="Var1" expr="Var1 + 1"/>
+        <scxml:elseif cond="false"/>
+        <scxml:raise event="bar"/>
+        <scxml:assign location="Var1" expr="Var1 + 1"/>
+      </scxml:if>
+      <scxml:raise event="bat"/>
+    </scxml:onentry>
+    <scxml:transition event="bat" cond="Var1==0" target="pass"/>
+    <scxml:transition event="*" target="fail"/>
+  </scxml:state>
+  <scxml:final id="pass">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'pass'"/>
+    </scxml:onentry>
+  </scxml:final>
+  <scxml:final id="fail">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'fail'"/>
+    </scxml:onentry>
+  </scxml:final>
+</scxml:scxml>

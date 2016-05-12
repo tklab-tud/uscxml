@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- test that <content> child is evaluated when <invoke> is. Var1 is initialized
+with an integer value, then set to an scxml script in the onentry to s0.  If <content>
+is evaluated at the right time, we should get invoke.done, otherwise an error  -->
+<scxml:scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" xmlns:scxml="http://www.w3.org/2005/07/scxml" initial="s0" version="1.0" datamodel="ecmascript">
+  <scxml:datamodel>
+    <scxml:data id="Var1" expr="1"/>
+  </scxml:datamodel>
+  <scxml:state id="s0">
+    <scxml:onentry>
+      <scxml:assign location="Var1">
+        <scxml:scxml version="1.0">
+          <scxml:final/>
+        </scxml:scxml>
+      </scxml:assign>
+      <scxml:send event="timeout" delay="2s"/>
+    </scxml:onentry>
+    <scxml:invoke type="http://www.w3.org/TR/scxml/">
+      <scxml:content expr="Var1"/>
+    </scxml:invoke>
+    <scxml:transition event="done.invoke" target="pass"/>
+    <scxml:transition event="*" target="fail"/>
+  </scxml:state>
+  <scxml:final id="pass">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'pass'"/>
+    </scxml:onentry>
+  </scxml:final>
+  <scxml:final id="fail">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'fail'"/>
+    </scxml:onentry>
+  </scxml:final>
+</scxml:scxml>

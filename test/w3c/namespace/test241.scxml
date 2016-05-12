@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The child process will return success ifits Var1 is set to 1, failure otherwise. For this test
+we try passing in Var1 by param and by namelist and check that we either get two successes
+or two failures.  This test will fail schema validation due to multiple  declarations of
+Var1, but should  run correctly.  -->
+<scxml:scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" xmlns:scxml="http://www.w3.org/2005/07/scxml" initial="s0" version="1.0" datamodel="ecmascript">
+  <scxml:datamodel>
+    <scxml:data id="Var1" expr="1"/>
+  </scxml:datamodel>
+  <scxml:state id="s0" initial="s01">
+    <scxml:onentry>
+      <scxml:send event="timeout" delay="2s"/>
+    </scxml:onentry>
+    <scxml:transition event="timeout" target="fail"/>
+    <scxml:state id="s01">
+      <scxml:invoke type="http://www.w3.org/TR/scxml/" namelist="Var1">
+        <scxml:content>
+          <scxml:scxml initial="sub01" version="1.0" datamodel="ecmascript">
+            <scxml:datamodel>
+              <scxml:data id="Var1" expr="0"/>
+            </scxml:datamodel>
+            <scxml:state id="sub01">
+              <scxml:transition cond="Var1==1" target="subFinal1">
+                <scxml:send target="#_parent" event="success"/>
+              </scxml:transition>
+              <scxml:transition target="subFinal1">
+                <scxml:send target="#_parent" event="failure"/>
+              </scxml:transition>
+            </scxml:state>
+            <scxml:final id="subFinal1"/>
+          </scxml:scxml>
+        </scxml:content>
+      </scxml:invoke>
+      <scxml:transition event="success" target="s02"/>
+      <scxml:transition event="failure" target="s03"/>
+    </scxml:state>
+    <scxml:state id="s02">
+      <scxml:invoke type="http://www.w3.org/TR/scxml/">
+        <scxml:param name="Var1" expr="1"/>
+        <scxml:content>
+          <scxml:scxml initial="sub02" version="1.0" datamodel="ecmascript">
+            <scxml:datamodel>
+              <scxml:data id="Var1" expr="0"/>
+            </scxml:datamodel>
+            <scxml:state id="sub02">
+              <scxml:transition cond="Var1==1" target="subFinal2">
+                <scxml:send target="#_parent" event="success"/>
+              </scxml:transition>
+              <scxml:transition target="subFinal2">
+                <scxml:send target="#_parent" event="failure"/>
+              </scxml:transition>
+            </scxml:state>
+            <scxml:final id="subFinal2"/>
+          </scxml:scxml>
+        </scxml:content>
+      </scxml:invoke>
+      <!-- we got success in s01, so we need to do so here -->
+      <scxml:transition event="success" target="pass"/>
+      <scxml:transition event="failure" target="fail"/>
+    </scxml:state>
+    <scxml:state id="s03">
+      <scxml:invoke type="http://www.w3.org/TR/scxml/">
+        <scxml:param name="Var1" expr="1"/>
+        <scxml:content>
+          <scxml:scxml initial="sub03" version="1.0" datamodel="ecmascript">
+            <scxml:datamodel>
+              <scxml:data id="Var1" expr="0"/>
+            </scxml:datamodel>
+            <scxml:state id="sub03">
+              <scxml:transition cond="Var1==1" target="subFinal3">
+                <scxml:send target="#_parent" event="success"/>
+              </scxml:transition>
+              <scxml:transition target="subFinal3">
+                <scxml:send target="#_parent" event="failure"/>
+              </scxml:transition>
+            </scxml:state>
+            <scxml:final id="subFinal3"/>
+          </scxml:scxml>
+        </scxml:content>
+      </scxml:invoke>
+      <!-- we got failure in s01, so we need to do so here -->
+      <scxml:transition event="failure" target="pass"/>
+      <scxml:transition event="success" target="fail"/>
+    </scxml:state>
+  </scxml:state>
+  <scxml:final id="pass">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'pass'"/>
+    </scxml:onentry>
+  </scxml:final>
+  <scxml:final id="fail">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'fail'"/>
+    </scxml:onentry>
+  </scxml:final>
+</scxml:scxml>

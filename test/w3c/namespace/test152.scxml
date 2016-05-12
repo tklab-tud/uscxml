@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- test that an illegal array or item value causes error.execution and results in executable content
+not being executed. -->
+<scxml:scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" xmlns:scxml="http://www.w3.org/2005/07/scxml" initial="s0" datamodel="ecmascript" version="1.0">
+  <scxml:datamodel>
+    <scxml:data id="Var1" expr="0"/>
+    <scxml:data id="Var2"/>
+    <scxml:data id="Var3"/>
+    <scxml:data id="Var4" expr="7"/>
+    <scxml:data id="Var5">
+    [1,2,3]
+    </scxml:data>
+  </scxml:datamodel>
+  <scxml:state id="s0">
+    <scxml:onentry>
+      <!-- invalid array, legal item -->
+      <scxml:foreach item="Var2" index="Var3" array="Var4">
+        <scxml:assign location="Var1" expr="Var1 + 1"/>
+      </scxml:foreach>
+      <scxml:raise event="foo"/>
+    </scxml:onentry>
+    <scxml:transition event="error.execution" target="s1"/>
+    <scxml:transition event="*" target="fail"/>
+  </scxml:state>
+  <scxml:state id="s1">
+    <scxml:onentry>
+      <!-- illegal item, legal array -->
+      <scxml:foreach item="'continue'" index="Var3" array="Var5">
+        <scxml:assign location="Var1" expr="Var1 + 1"/>
+      </scxml:foreach>
+      <scxml:raise event="bar"/>
+    </scxml:onentry>
+    <scxml:transition event="error.execution" target="s2"/>
+    <scxml:transition event="bar" target="fail"/>
+  </scxml:state>
+  <scxml:state id="s2">
+    <!-- check that var1 has its original value (so executable content never got executed -->
+    <scxml:transition cond="Var1==0" target="pass"/>
+    <scxml:transition target="fail"/>
+  </scxml:state>
+  <scxml:final id="pass">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'pass'"/>
+    </scxml:onentry>
+  </scxml:final>
+  <scxml:final id="fail">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'fail'"/>
+    </scxml:onentry>
+  </scxml:final>
+</scxml:scxml>

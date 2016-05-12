@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scxml:scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" xmlns:scxml="http://www.w3.org/2005/07/scxml" version="1.0" datamodel="ecmascript" initial="s0" name="machineName">
+  <!-- test that _event.type is set correctly for internal, platform, and external events -->
+  <scxml:datamodel>
+    <scxml:data id="Var1"/>
+  </scxml:datamodel>
+  <scxml:state id="s0">
+    <scxml:onentry>
+      <!-- internal event -->
+      <scxml:raise event="foo"/>
+    </scxml:onentry>
+    <scxml:transition event="foo" target="s1">
+      <scxml:assign location="Var1" expr="_event.type"/>
+    </scxml:transition>
+    <scxml:transition event="*" target="fail"/>
+  </scxml:state>
+  <scxml:state id="s1">
+    <scxml:transition cond="Var1=='internal'" target="s2"/>
+    <scxml:transition target="fail"/>
+  </scxml:state>
+  <scxml:state id="s2">
+    <scxml:onentry>
+      <!-- this will generate an error, which is a platform event -->
+      <scxml:assign location="foo.bar.baz " expr="1"/>
+    </scxml:onentry>
+    <scxml:transition event="error" target="s3">
+      <scxml:assign location="Var1" expr="_event.type"/>
+    </scxml:transition>
+    <scxml:transition event="*" target="fail"/>
+  </scxml:state>
+  <scxml:state id="s3">
+    <scxml:transition cond="Var1=='platform'" target="s4"/>
+    <scxml:transition target="fail"/>
+  </scxml:state>
+  <scxml:state id="s4">
+    <scxml:onentry>
+      <!-- external event -->
+      <scxml:send event="foo"/>
+    </scxml:onentry>
+    <scxml:transition event="foo" target="s5">
+      <scxml:assign location="Var1" expr="_event.type"/>
+    </scxml:transition>
+    <scxml:transition event="*" target="fail"/>
+  </scxml:state>
+  <scxml:state id="s5">
+    <scxml:transition cond="Var1=='external'" target="pass"/>
+    <scxml:transition target="fail"/>
+  </scxml:state>
+  <scxml:final id="pass">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'pass'"/>
+    </scxml:onentry>
+  </scxml:final>
+  <scxml:final id="fail">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'fail'"/>
+    </scxml:onentry>
+  </scxml:final>
+</scxml:scxml>

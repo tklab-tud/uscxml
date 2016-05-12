@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- in the ECMA data model, test that if the child of <data> is XML, or if XML is loaded via src=, the processor
+ assigns it as the value of the var -->
+<scxml:scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" xmlns:scxml="http://www.w3.org/2005/07/scxml" initial="s0" version="1.0" datamodel="ecmascript">
+  <scxml:datamodel>
+    <scxml:data id="var1">
+      <books>
+        <book title="title1"/>
+        <book title="title2"/>
+      </books>
+    </scxml:data>
+    <scxml:data id="var2" src="file:test557.txt"/>
+  </scxml:datamodel>
+  <scxml:state id="s0">
+    <scxml:transition cond="var1.getElementsByTagName('book')[0].getAttribute('title') == 'title1'" target="s1"/>
+    <scxml:transition target="fail"/>
+  </scxml:state>
+  <scxml:state id="s1">
+    <scxml:transition cond="var2.getElementsByTagName('book')[1].getAttribute('title') == 'title2'" target="pass"/>
+    <scxml:transition target="fail"/>
+  </scxml:state>
+  <scxml:final id="pass">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'pass'"/>
+    </scxml:onentry>
+  </scxml:final>
+  <scxml:final id="fail">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'fail'"/>
+    </scxml:onentry>
+  </scxml:final>
+</scxml:scxml>

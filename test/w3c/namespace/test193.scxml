@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- we test that omitting target and targetexpr of <send> when using the
+SCXML event i/o processor puts the event on the external queue.  -->
+<scxml:scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" xmlns:scxml="http://www.w3.org/2005/07/scxml" initial="s0" version="1.0" datamodel="ecmascript">
+  <scxml:state id="s0">
+    <scxml:onentry>
+      <scxml:send event="internal"/>
+      <!-- this should put event1 in the external queue -->
+      <scxml:send event="event1" type="http://www.w3.org/TR/scxml/#SCXMLEventProcessor"/>
+      <scxml:send event="timeout" delay="1s"/>
+    </scxml:onentry>
+    <scxml:transition event="event1" target="fail"/>
+    <scxml:transition event="internal" target="s1"/>
+  </scxml:state>
+  <scxml:state id="s1">
+    <scxml:transition event="event1" target="pass"/>
+    <scxml:transition event="timeout" target="fail"/>
+  </scxml:state>
+  <scxml:final id="pass">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'pass'"/>
+    </scxml:onentry>
+  </scxml:final>
+  <scxml:final id="fail">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'fail'"/>
+    </scxml:onentry>
+  </scxml:final>
+</scxml:scxml>

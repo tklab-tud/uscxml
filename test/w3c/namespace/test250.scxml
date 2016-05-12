@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- test that the onexit handlers run in the invoked process if it is cancelled.  This has to be a
+manual test, since this process won't accept any events from the child  process once it has been cancelled.
+Tester must examine log output from child process to determine success   -->
+<scxml:scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" xmlns:scxml="http://www.w3.org/2005/07/scxml" initial="s0" version="1.0" datamodel="ecmascript">
+  <scxml:state id="s0">
+    <scxml:onentry>
+      <scxml:send event="foo"/>
+    </scxml:onentry>
+    <scxml:invoke type="http://www.w3.org/TR/scxml/">
+      <scxml:content>
+        <scxml:scxml initial="sub0" version="1.0" datamodel="ecmascript">
+          <scxml:state id="sub0" initial="sub01">
+            <scxml:onentry>
+              <scxml:send event="timeout" delay="2s"/>
+            </scxml:onentry>
+            <scxml:transition event="timeout" target="subFinal"/>
+            <scxml:onexit>
+              <scxml:log expr="'Exiting sub0'"/>
+            </scxml:onexit>
+            <scxml:state id="sub01">
+              <scxml:onexit>
+                <scxml:log expr="'Exiting sub01'"/>
+              </scxml:onexit>
+            </scxml:state>
+          </scxml:state>
+          <scxml:final id="subFinal">
+            <scxml:onentry>
+              <scxml:log expr="'entering final state, invocation was not cancelled'"/>
+            </scxml:onentry>
+          </scxml:final>
+        </scxml:scxml>
+      </scxml:content>
+    </scxml:invoke>
+    <!-- this transition will cause the invocation to be cancelled -->
+    <scxml:transition event="foo" target="final"/>
+  </scxml:state>
+  <scxml:final id="final"/>
+</scxml:scxml>

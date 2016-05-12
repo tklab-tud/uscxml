@@ -1,12 +1,12 @@
-<?xml version="1.0" standalone="no"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <!-- a manual test that an autofowarded event has the same fields and values as the original event.
 the child process sends the parent process an event which is forwarded back to it.  
 Both the parent and child process print out the contents of the event. The tester 
 must check if they are the same and report his result.   -->
-<scxml xmlns="http://www.w3.org/2005/07/scxml" initial="s0" version="1.0" datamodel="lua">
+<scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" initial="s0" version="1.0" datamodel="lua">
   <state id="s0" initial="s01">
     <onentry>
-      <send event="timeout" delay="3s"/>
+      <send xmlns:scxml="http://www.w3.org/2005/07/scxml" delay="3000" event="timeout"/>
     </onentry>
     <invoke type="http://www.w3.org/TR/scxml/" autoforward="true">
       <content>
@@ -16,7 +16,7 @@ must check if they are the same and report his result.   -->
           <state id="sub0">
             <onentry>
               <send target="#_parent" event="childToParent"/>
-              <send event="timeout" delay="2s"/>
+              <send xmlns:scxml="http://www.w3.org/2005/07/scxml" delay="2000" event="timeout"/>
             </onentry>
             <transition event="childToParent" target="subFinal">
               <log label="name is " expr="_event.name"/>
@@ -52,5 +52,9 @@ must check if they are the same and report his result.   -->
     </state>
   </state>
   <final id="final"/>
-  <final id="fail"/>
+  <final xmlns:scxml="http://www.w3.org/2005/07/scxml" id="fail">
+    <onentry>
+      <log label="Outcome" expr="'fail'"/>
+    </onentry>
+  </final>
 </scxml>

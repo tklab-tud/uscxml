@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- the assertion that errors are 'like any other event' is pretty broad, but we can check that they
+are pulled off the internal queue in order, and that prefix matching works on them.  -->
+<scxml:scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" xmlns:scxml="http://www.w3.org/2005/07/scxml" initial="s0" version="1.0" datamodel="ecmascript">
+  <scxml:state id="s0" initial="s01">
+    <scxml:onentry>
+      <!-- catch the failure case -->
+      <scxml:send event="timeout" delay="1s"/>
+    </scxml:onentry>
+    <scxml:transition event="timeout" target="fail"/>
+    <scxml:state id="s01">
+      <scxml:onentry>
+        <!-- the first internal event.  The error will be the second, and event2 will be the third -->
+        <scxml:raise event="event1"/>
+        <!-- assigning to a non-existent location should raise an error -->
+        <scxml:assign location="foo.bar.baz " expr="2"/>
+      </scxml:onentry>
+      <scxml:transition event="event1" target="s02">
+        <scxml:raise event="event2"/>
+      </scxml:transition>
+      <scxml:transition event="*" target="fail"/>
+    </scxml:state>
+    <scxml:state id="s02">
+      <scxml:transition event="error" target="s03"/>
+      <scxml:transition event="*" target="fail"/>
+    </scxml:state>
+    <scxml:state id="s03">
+      <scxml:transition event="event2" target="pass"/>
+      <scxml:transition event="*" target="fail"/>
+    </scxml:state>
+  </scxml:state>
+  <scxml:final id="pass">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'pass'"/>
+    </scxml:onentry>
+  </scxml:final>
+  <scxml:final id="fail">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'fail'"/>
+    </scxml:onentry>
+  </scxml:final>
+</scxml:scxml>

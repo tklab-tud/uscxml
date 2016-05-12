@@ -1,9 +1,9 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <!-- this is a manual test because the processor is allowed to reject this document.  But if it executes it,
 it should not raise an error until it gets to s03 and evaluates the illegal expr -->
-<scxml xmlns="http://www.w3.org/2005/07/scxml" version="1.0" initial="s0" datamodel="lua">
+<scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" version="1.0" datamodel="lua" initial="s0">
   <datamodel>
-    <data expr="1" id="testvar1"/>
+    <data id="Var1" expr="1"/>
   </datamodel>
   <state id="s0" initial="s01">
     <transition event="error.execution" target="fail"/>
@@ -15,13 +15,21 @@ it should not raise an error until it gets to s03 and evaluates the illegal expr
     </state>
     <state id="s03">
       <onentry>
-        <assign expr="!" location="testvar1"/>
+        <assign location="Var1" expr="return"/>
         <raise event="foo"/>
       </onentry>
       <transition event="error.execution" target="pass"/>
       <transition event=".*" target="fail"/>
     </state>
   </state>
-  <final id="pass"/>
-  <final id="fail"/>
+  <final xmlns:scxml="http://www.w3.org/2005/07/scxml" id="pass">
+    <onentry>
+      <log label="Outcome" expr="'pass'"/>
+    </onentry>
+  </final>
+  <final xmlns:scxml="http://www.w3.org/2005/07/scxml" id="fail">
+    <onentry>
+      <log label="Outcome" expr="'fail'"/>
+    </onentry>
+  </final>
 </scxml>

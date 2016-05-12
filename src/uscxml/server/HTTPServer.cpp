@@ -25,9 +25,8 @@
 #include <windows.h>
 #endif
 
-#include "uscxml/server/HTTPServer.h"
-#include "uscxml/dom/DOMUtils.h"
-#include "uscxml/dom/NameSpacingParser.h"
+#include "HTTPServer.h"
+#include "uscxml/util/DOM.h"
 
 #include <string>
 #include <iostream>
@@ -41,7 +40,7 @@ extern "C" {
 #include <event2/thread.h>
 }
 
-#include <glog/logging.h>
+#include <easylogging++.h>
 #include <boost/algorithm/string.hpp>
 
 #ifndef _WIN32
@@ -53,16 +52,8 @@ extern "C" {
 //#include <arpa/inet.h>
 #endif
 
-#if (defined EVENT_SSL_FOUND && defined OPENSSL_FOUND && defined OPENSSL_HAS_ELIPTIC_CURVES)
-#include <openssl/ssl.h>
-#include <openssl/bio.h>
-#include <openssl/err.h>
-#include <openssl/pem.h>
-#include <event2/bufferevent_ssl.h>
-#endif
 
-#include "uscxml/Message.h"
-#include "uscxml/Convenience.h"         // for toStr
+#include "uscxml/util/Convenience.h"         // for toStr
 
 #ifdef BUILD_AS_PLUGINS
 #include <Pluma/Connector.hpp>
@@ -100,9 +91,9 @@ HTTPServer::HTTPServer(unsigned short port, unsigned short wsPort, SSLConfig* ss
 	evhttp_set_allowed_methods(_http, allowedMethods); // allow all methods
 
 	if (_port > 0) {
-		_httpHandle = evhttp_bind_socket_with_handle(_http, INADDR_ANY, _port);
+		_httpHandle = evhttp_bind_socket_with_handle(_http, NULL, _port);
 		if (_httpHandle) {
-			DLOG(INFO) << "HTTP server listening on tcp/" << _port;
+			LOG(INFO) << "HTTP server listening on tcp/" << _port;
 		} else {
 			LOG(ERROR) << "HTTP server cannot bind to tcp/" << _port;
 		}
@@ -112,7 +103,7 @@ HTTPServer::HTTPServer(unsigned short port, unsigned short wsPort, SSLConfig* ss
 	if (_wsPort > 0) {
 		_wsHandle = evws_bind_socket(_evws, _wsPort);
 		if (_wsHandle) {
-			DLOG(INFO) << "WebSocket server listening on tcp/" << _wsPort;
+			LOG(INFO) << "WebSocket server listening on tcp/" << _wsPort;
 		} else {
 			LOG(ERROR) << "WebSocket server cannot bind to tcp/" << _wsPort;
 		}
@@ -178,10 +169,10 @@ HTTPServer::~HTTPServer() {
 }
 
 HTTPServer* HTTPServer::_instance = NULL;
-tthread::recursive_mutex HTTPServer::_instanceMutex;
+std::recursive_mutex HTTPServer::_instanceMutex;
 
 HTTPServer* HTTPServer::getInstance(unsigned short port, unsigned short wsPort, SSLConfig* sslConf) {
-//	tthread::lock_guard<tthread::recursive_mutex> lock(_instanceMutex);
+//	std::lock_guard<std::recursive_mutex> lock(_instanceMutex);
 	if (_instance == NULL) {
 #ifdef _WIN32
 		WSADATA wsaData;
@@ -247,7 +238,7 @@ void HTTPServer::wsRecvReqCallback(struct evws_connection *conn, struct evws_fra
 	// try with the handler registered for path first
 	bool answered = false;
 	if (callbackData != NULL)
-		answered = ((WebSocketServlet*)callbackData)->wsRecvRequest(conn, wsFrame);
+		answered = ((WebSocketServlet*)callbackData)->requestFromWS(conn, wsFrame);
 
 	if (!answered)
 		HTTPServer::getInstance()->processByMatchingServlet(conn, wsFrame);
@@ -415,12 +406,13 @@ void HTTPServer::httpRecvReqCallback(struct evhttp_request *req, void *callbackD
 				request.data.compound["content"] = json;
 			}
 		} else if (iequals(contentType.substr(0, 15), "application/xml")) {
-			NameSpacingParser parser = NameSpacingParser::fromXML(request.data.compound["content"].atom);
-			if (parser.errorsReported()) {
-				LOG(ERROR) << "Cannot parse contents of HTTP request as XML";
-			} else {
-				request.data.compound["content"].node = parser.getDocument().getDocumentElement();
-			}
+			assert(0);
+//            NameSpacingParser parser = NameSpacingParser::fromXML(request.data.compound["content"].atom);
+//			if (parser.errorsReported()) {
+//				LOG(ERROR) << "Cannot parse contents of HTTP request as XML";
+//			} else {
+//				request.data.compound["content"].node = parser.getDocument().getDocumentElement();
+//			}
 		}
 	}
 
@@ -429,7 +421,7 @@ void HTTPServer::httpRecvReqCallback(struct evhttp_request *req, void *callbackD
 	// try with the handler registered for path first
 	bool answered = false;
 	if (callbackData != NULL)
-		answered = ((HTTPServlet*)callbackData)->httpRecvRequest(request);
+		answered = ((HTTPServlet*)callbackData)->requestFromHTTP(request);
 
 	if (!answered)
 		HTTPServer::getInstance()->processByMatchingServlet(request);
@@ -437,7 +429,7 @@ void HTTPServer::httpRecvReqCallback(struct evhttp_request *req, void *callbackD
 
 
 void HTTPServer::processByMatchingServlet(const Request& request) {
-	tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
+	std::lock_guard<std::recursive_mutex> lock(_mutex);
 
 	http_servlet_iter_t servletIter = _httpServlets.begin();
 
@@ -459,7 +451,7 @@ void HTTPServer::processByMatchingServlet(const Request& request) {
 	// process by best matching servlet until someone feels responsible
 	std::map<std::string, HTTPServlet*, comp_strsize_less>::iterator matchesIter = matches.begin();
 	while(matchesIter != matches.end()) {
-		if (matchesIter->second->httpRecvRequest(request)) {
+		if (matchesIter->second->requestFromHTTP(request)) {
 			return;
 		}
 		matchesIter++;
@@ -470,7 +462,7 @@ void HTTPServer::processByMatchingServlet(const Request& request) {
 }
 
 void HTTPServer::processByMatchingServlet(evws_connection* conn, const WSFrame& frame) {
-	tthread::lock_guard<tthread::recursive_mutex> lock(_mutex);
+	std::lock_guard<std::recursive_mutex> lock(_mutex);
 
 	ws_servlet_iter_t servletIter = _wsServlets.begin();
 
@@ -490,7 +482,7 @@ void HTTPServer::processByMatchingServlet(evws_connection* conn, const WSFrame& 
 	// process by best matching servlet until someone feels responsible
 	std::map<std::string, WebSocketServlet*, comp_strsize_less>::iterator matchesIter = matches.begin();
 	while(matchesIter != matches.end()) {
-		if (matchesIter->second->wsRecvRequest(conn, frame)) {
+		if (matchesIter->second->requestFromWS(conn, frame)) {
 			return;
 		}
 		matchesIter++;
@@ -568,10 +560,11 @@ bool HTTPServer::registerServlet(const std::string& path, HTTPServlet* servlet) 
 	HTTPServer* INSTANCE = getInstance();
 
 	if (!INSTANCE->_httpHandle) {
+		LOG(INFO) << "Registering at unstarted HTTP Server";
 		return true; // this is the culprit!
 	}
 
-	tthread::lock_guard<tthread::recursive_mutex> lock(INSTANCE->_mutex);
+	std::lock_guard<std::recursive_mutex> lock(INSTANCE->_mutex);
 
 	// remove trailing and leading slash
 	std::string actualPath = path;
@@ -596,7 +589,7 @@ bool HTTPServer::registerServlet(const std::string& path, HTTPServlet* servlet) 
 	servlet->setURL(servletURL.str());
 
 	INSTANCE->_httpServlets[suffixedPath] = servlet;
-	DLOG(INFO) << "HTTP Servlet listening at: " << servletURL.str() << std::endl;
+//	LOG(INFO) << "HTTP Servlet listening at: " << servletURL.str();
 
 	// register callback
 	evhttp_set_cb(INSTANCE->_http, ("/" + suffixedPath).c_str(), HTTPServer::httpRecvReqCallback, servlet);
@@ -606,7 +599,7 @@ bool HTTPServer::registerServlet(const std::string& path, HTTPServlet* servlet) 
 
 void HTTPServer::unregisterServlet(HTTPServlet* servlet) {
 	HTTPServer* INSTANCE = getInstance();
-	tthread::lock_guard<tthread::recursive_mutex> lock(INSTANCE->_mutex);
+	std::lock_guard<std::recursive_mutex> lock(INSTANCE->_mutex);
 	http_servlet_iter_t servletIter = INSTANCE->_httpServlets.begin();
 	while(servletIter != INSTANCE->_httpServlets.end()) {
 		if (servletIter->second == servlet) {
@@ -624,7 +617,7 @@ bool HTTPServer::registerServlet(const std::string& path, WebSocketServlet* serv
 	if (!INSTANCE->_wsHandle)
 		return true;
 
-	tthread::lock_guard<tthread::recursive_mutex> lock(INSTANCE->_mutex);
+	std::lock_guard<std::recursive_mutex> lock(INSTANCE->_mutex);
 
 	// remove trailing and leading slash
 	std::string actualPath = path;
@@ -660,7 +653,7 @@ bool HTTPServer::registerServlet(const std::string& path, WebSocketServlet* serv
 
 void HTTPServer::unregisterServlet(WebSocketServlet* servlet) {
 	HTTPServer* INSTANCE = getInstance();
-	tthread::lock_guard<tthread::recursive_mutex> lock(INSTANCE->_mutex);
+	std::lock_guard<std::recursive_mutex> lock(INSTANCE->_mutex);
 	ws_servlet_iter_t servletIter = INSTANCE->_wsServlets.begin();
 	while(servletIter != INSTANCE->_wsServlets.end()) {
 		if (servletIter->second == servlet) {
@@ -696,7 +689,7 @@ std::string HTTPServer::getBaseURL(ServerType type) {
 
 void HTTPServer::start() {
 	_isRunning = true;
-	_thread = new tthread::thread(HTTPServer::run, this);
+	_thread = new std::thread(HTTPServer::run, this);
 }
 
 void HTTPServer::run(void* instance) {
@@ -704,7 +697,7 @@ void HTTPServer::run(void* instance) {
 	while(INSTANCE->_isRunning) {
 		event_base_dispatch(INSTANCE->_base);
 	}
-	LOG(INFO) << "HTTP Server stopped" << std::endl;
+	LOG(INFO) << "HTTP Server stopped";
 }
 
 void HTTPServer::determineAddress() {

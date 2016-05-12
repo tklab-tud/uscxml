@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- test that internal events take priority over external ones, and that the processor
+keeps pulling off internal events until it finds one that triggers a transition -->
+<scxml:scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" xmlns:scxml="http://www.w3.org/2005/07/scxml" version="1.0" initial="s1" datamodel="ecmascript">
+  <scxml:state id="s1" initial="s11">
+    <scxml:onentry>
+      <scxml:send event="externalEvent"/>
+      <scxml:raise event="internalEvent1"/>
+      <scxml:raise event="internalEvent2"/>
+      <scxml:raise event="internalEvent3"/>
+      <scxml:raise event="internalEvent4"/>
+    </scxml:onentry>
+    <scxml:transition event="externalEvent" target="fail"/>
+    <scxml:state id="s11">
+      <scxml:transition event="internalEvent3" target="s12"/>
+    </scxml:state>
+    <scxml:state id="s12">
+      <scxml:transition event="internalEvent4" target="pass"/>
+    </scxml:state>
+  </scxml:state>
+  <scxml:final id="pass">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'pass'"/>
+    </scxml:onentry>
+  </scxml:final>
+  <scxml:final id="fail">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'fail'"/>
+    </scxml:onentry>
+  </scxml:final>
+</scxml:scxml>

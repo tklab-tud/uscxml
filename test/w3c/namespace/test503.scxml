@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- test that a targetless transition does not exit and reenter its source state -->
+<scxml:scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" xmlns:scxml="http://www.w3.org/2005/07/scxml" initial="s1" version="1.0" datamodel="ecmascript">
+  <scxml:datamodel>
+    <scxml:data id="Var1" expr="0"/>
+    <!-- how often we have exited s2 -->
+    <scxml:data id="Var2" expr="0"/>
+    <!-- how often the targetless transition in s2 has been executed -->
+  </scxml:datamodel>
+  <scxml:state id="s1">
+    <scxml:onentry>
+      <scxml:raise event="foo"/>
+      <scxml:raise event="bar"/>
+    </scxml:onentry>
+    <scxml:transition target="s2"/>
+  </scxml:state>
+  <scxml:state id="s2">
+    <scxml:onexit>
+      <scxml:assign location="Var1" expr="Var1 + 1"/>
+    </scxml:onexit>
+    <scxml:transition event="foo">
+      <scxml:assign location="Var2" expr="Var2 + 1"/>
+    </scxml:transition>
+    <!-- make sure the transition on foo was actually taken -->
+    <scxml:transition event="bar" cond="Var2==1" target="s3"/>
+    <scxml:transition event="bar" target="fail"/>
+  </scxml:state>
+  <scxml:state id="s3">
+    <!-- make sure that s2 was exited only once -->
+    <scxml:transition cond="Var1==1" target="pass"/>
+    <scxml:transition target="fail"/>
+  </scxml:state>
+  <scxml:final id="pass">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'pass'"/>
+    </scxml:onentry>
+  </scxml:final>
+  <scxml:final id="fail">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'fail'"/>
+    </scxml:onentry>
+  </scxml:final>
+</scxml:scxml>

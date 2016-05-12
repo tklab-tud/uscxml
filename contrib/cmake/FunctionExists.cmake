@@ -1,2 +1,0 @@
-include(CheckFunctionExists)
-CHECK_FUNCTION_EXISTS(strndup HAS_STRNDUP)

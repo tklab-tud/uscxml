@@ -1,8 +1,8 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<scxml xmlns="http://www.w3.org/2005/07/scxml" version="1.0" initial="s0" name="machineName" datamodel="lua">
+<?xml version="1.0" encoding="UTF-8"?>
+<scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" version="1.0" datamodel="lua" initial="s0" name="machineName">
   <!-- test that _event.type is set correctly for internal, platform, and external events -->
   <datamodel>
-    <data id="testvar1"/>
+    <data id="Var1"/>
   </datamodel>
   <state id="s0">
     <onentry>
@@ -10,26 +10,26 @@
       <raise event="foo"/>
     </onentry>
     <transition event="foo" target="s1">
-      <assign expr="_event.type" location="testvar1"/>
+      <assign location="Var1" expr="_event.type"/>
     </transition>
     <transition event="*" target="fail"/>
   </state>
   <state id="s1">
-    <transition target="s2" cond="testvar1 == 'internal'"/>
+    <transition cond="Var1=='internal'" target="s2"/>
     <transition target="fail"/>
   </state>
   <state id="s2">
     <onentry>
       <!-- this will generate an error, which is a platform event -->
-      <assign expr="1" location=""/>
+      <assign location="foo.bar.baz " expr="1"/>
     </onentry>
     <transition event="error" target="s3">
-      <assign expr="_event.type" location="testvar1"/>
+      <assign location="Var1" expr="_event.type"/>
     </transition>
     <transition event="*" target="fail"/>
   </state>
   <state id="s3">
-    <transition target="s4" cond="testvar1 == 'platform'"/>
+    <transition cond="Var1=='platform'" target="s4"/>
     <transition target="fail"/>
   </state>
   <state id="s4">
@@ -38,14 +38,22 @@
       <send event="foo"/>
     </onentry>
     <transition event="foo" target="s5">
-      <assign expr="_event.type" location="testvar1"/>
+      <assign location="Var1" expr="_event.type"/>
     </transition>
     <transition event="*" target="fail"/>
   </state>
   <state id="s5">
-    <transition cond="testvar1 == 'external'" target="pass"/>
+    <transition cond="Var1=='external'" target="pass"/>
     <transition target="fail"/>
   </state>
-  <final id="pass"/>
-  <final id="fail"/>
+  <final xmlns:scxml="http://www.w3.org/2005/07/scxml" id="pass">
+    <onentry>
+      <log label="Outcome" expr="'pass'"/>
+    </onentry>
+  </final>
+  <final xmlns:scxml="http://www.w3.org/2005/07/scxml" id="fail">
+    <onentry>
+      <log label="Outcome" expr="'fail'"/>
+    </onentry>
+  </final>
 </scxml>

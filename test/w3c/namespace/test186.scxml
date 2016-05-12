@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- we test that <send> evals its args when it is evaluated, not when the delay interval expires and the
+message is actually sent.  If it does, aParam will have the value of 1 (even though var1 has been incremented
+in the interval.)  If var2 ends up == 1, we pass.  Otherwise we fail  -->
+<scxml:scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" xmlns:scxml="http://www.w3.org/2005/07/scxml" initial="s0" version="1.0" datamodel="ecmascript">
+  <scxml:datamodel>
+    <scxml:data id="Var1" expr="1"/>
+    <scxml:data id="Var2"/>
+  </scxml:datamodel>
+  <scxml:state id="s0">
+    <scxml:onentry>
+      <scxml:send event="event1" delayexpr="'1s'">
+        <scxml:param name="aParam" expr="Var1"/>
+      </scxml:send>
+      <scxml:assign location="Var1" expr="2"/>
+    </scxml:onentry>
+    <scxml:transition event="event1" target="s1">
+      <scxml:assign location="Var2" expr="_event.data.aParam"/>
+    </scxml:transition>
+    <scxml:transition event="*" target="fail"/>
+  </scxml:state>
+  <scxml:state id="s1">
+    <scxml:transition cond="Var2==1" target="pass"/>
+    <scxml:transition target="fail"/>
+  </scxml:state>
+  <scxml:final id="pass">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'pass'"/>
+    </scxml:onentry>
+  </scxml:final>
+  <scxml:final id="fail">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'fail'"/>
+    </scxml:onentry>
+  </scxml:final>
+</scxml:scxml>

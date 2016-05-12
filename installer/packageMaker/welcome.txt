@@ -1,3 +1,0 @@
-This package will install the uMundo publish/subscribe implementation 
-for MacOSX along with all libraries for cross-compilation on Android 
-and iOS.

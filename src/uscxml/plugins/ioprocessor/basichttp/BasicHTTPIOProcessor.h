@@ -35,10 +35,9 @@ extern "C" {
 #	define USCXML_PLUGIN_API
 #endif
 
-#include "uscxml/concurrency/DelayedEventQueue.h"
 #include "uscxml/server/HTTPServer.h"
 #include "uscxml/Interpreter.h"
-#include "uscxml/Factory.h"
+#include "uscxml/plugins/Factory.h"
 #ifndef _WIN32
 #include <sys/time.h>
 #endif
@@ -47,27 +46,30 @@ extern "C" {
 #include "uscxml/plugins/Plugins.h"
 #endif
 
+#define USCXML_IOPROC_BASICHTTP_TYPE "http://www.w3.org/TR/scxml/#BasicHTTPEventProcessor"
+
 namespace uscxml {
 
 class USCXML_PLUGIN_API BasicHTTPIOProcessor : public IOProcessorImpl, public HTTPServlet, public URLMonitor {
 public:
 	BasicHTTPIOProcessor();
 	virtual ~BasicHTTPIOProcessor();
-	virtual boost::shared_ptr<IOProcessorImpl> create(uscxml::InterpreterImpl* interpreter);
+	virtual std::shared_ptr<IOProcessorImpl> create(uscxml::InterpreterImpl* interpreter);
 
 	virtual std::list<std::string> getNames() {
 		std::list<std::string> names;
 		names.push_back("basichttp");
-		names.push_back("http://www.w3.org/TR/scxml/#BasicHTTPEventProcessor");
+		names.push_back(USCXML_IOPROC_BASICHTTP_TYPE);
 		return names;
 	}
 
-	virtual void send(const SendRequest& req);
+	virtual void eventFromSCXML(const std::string& target, const Event& event);
+	virtual bool isValidTarget(const std::string& target);
 
 	Data getDataModelVariables();
 
 	/// HTTPServlet
-	bool httpRecvRequest(const HTTPServer::Request& req);
+	bool requestFromHTTP(const HTTPServer::Request& req);
 	void setURL(const std::string& url) {
 		_url = url;
 	}
@@ -83,7 +85,7 @@ public:
 
 protected:
 	std::string _url;
-	std::map<std::string, std::pair<URL, SendRequest> > _sendRequests;
+	std::map<std::string, std::pair<URL, Event> > _sendRequests;
 };
 
 // do not implement pluma plugins if we build an inherited plugin

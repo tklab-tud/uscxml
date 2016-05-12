@@ -20,7 +20,6 @@
 #ifndef NULLDATAMODEL_H_KN8TWG0V
 #define NULLDATAMODEL_H_KN8TWG0V
 
-#include "uscxml/InterpreterInfo.h"
 #include "uscxml/plugins/DataModel.h"
 #include <list>
 
@@ -39,7 +38,7 @@ class NULLDataModel : public DataModelImpl {
 public:
 	NULLDataModel();
 	virtual ~NULLDataModel();
-	virtual boost::shared_ptr<DataModelImpl> create(InterpreterInfo* interpreter);
+	virtual std::shared_ptr<DataModelImpl> create(DataModelCallbacks* callbacks);
 
 	virtual std::list<std::string> getNames() {
 		std::list<std::string> names;
@@ -47,38 +46,64 @@ public:
 		return names;
 	}
 
-	virtual void initialize();
-	virtual void setEvent(const Event& event);
+	virtual bool validate(const std::string& location, const std::string& schema) {
+		return true;
+	}
+	virtual bool isValidSyntax(const std::string& expr) {
+		return true; // overwrite when datamodel supports it
+	}
+	virtual void setEvent(const Event& event) {}
 
-	virtual bool validate(const std::string& location, const std::string& schema);
-	virtual bool isLocation(const std::string& expr);
+	size_t replaceExpressions(std::string& content) {
+		return 0;
+	}
 
-	virtual uint32_t getLength(const std::string& expr);
+	// foreach
+	virtual uint32_t getLength(const std::string& expr) {
+		return 0;
+	}
 	virtual void setForeach(const std::string& item,
 	                        const std::string& array,
 	                        const std::string& index,
-	                        uint32_t iteration);
+	                        uint32_t iteration) {}
 
-	virtual void pushContext();
-	virtual void popContext();
+	virtual Data getAsData(const std::string& content);
 
-	virtual void assign(const Arabica::DOM::Element<std::string>& assignElem,
-	                    const Arabica::DOM::Node<std::string>& node,
+	virtual Data evalAsData(const std::string& content) {
+		return getAsData(content);
+	}
+	virtual std::string evalAsString(const std::string& expr) {
+		return expr;
+	}
+
+	virtual bool evalAsBool(const xercesc::DOMElement* scriptNode,
+	                        const std::string& expr);
+	virtual bool evalAsBool(const std::string& expr) {
+		return evalAsBool(NULL, expr);
+	}
+
+	virtual bool isDeclared(const std::string& expr) {
+		return true;
+	}
+
+	virtual void assign(const xercesc::DOMElement* assignElem,
+	                    const xercesc::DOMNode* node,
 	                    const std::string& content) {}
 	virtual void assign(const std::string& location, const Data& data) {}
 
-	virtual void init(const Arabica::DOM::Element<std::string>& dataElem,
-	                  const Arabica::DOM::Node<std::string>& node,
+	virtual void init(const xercesc::DOMElement* dataElem,
+	                  const xercesc::DOMNode* node,
 	                  const std::string& content) {}
 	virtual void init(const std::string& location, const Data& data) {}
 
-	virtual Data getStringAsData(const std::string& content);
-	virtual bool isDeclared(const std::string& expr);
+	virtual void setCallbacks(DataModelCallbacks* callbacks) {
+		_callbacks = callbacks;
+	}
 
-	virtual void eval(const Arabica::DOM::Element<std::string>& scriptElem,
-	                  const std::string& expr);
-	virtual std::string evalAsString(const std::string& expr);
-	virtual bool evalAsBool(const Arabica::DOM::Element<std::string>& node, const std::string& expr);
+	virtual void addExtension(DataModelExtension* ext) {}
+	virtual std::string andExpressions(std::list<std::string>) {
+		return "";
+	}
 
 protected:
 

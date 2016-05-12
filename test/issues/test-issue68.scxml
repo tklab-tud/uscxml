@@ -1,0 +1,31 @@
+<!-- Assertion in case of reusing send id  -->
+<scxml datamodel="lua" initial="work" name="root" version="1.0" xmlns="http://www.w3.org/2005/07/scxml">
+    <datamodel>
+        <data expr="0" id="testvar1"/>
+    </datamodel>
+    <state id="work" initial="act1">
+        <transition event="OnTimer" target="fail"/>
+        <transition cond="testvar1&gt;3" target="pass"/>
+        <state id="act1">
+            <onentry>
+                <send delay="3000ms" event="OnTimer" id="ID_OnTimer"/>
+                <send delay="3000ms" event="OnTimer" id="ID_OnTimer"/>
+                <send delay="300ms" event="OnDone"/>
+                <assign expr="testvar1 + 1" location="testvar1"/>
+                <log expr="testvar1" />
+            </onentry>
+            <onexit>
+                <cancel sendid="ID_OnTimer"/>
+            </onexit>
+            <transition event="OnDone" target="act2"/>
+        </state>
+        <state id="act2">
+            <onentry>
+                <send delay="100ms" event="Back"/>
+            </onentry>
+            <transition event="Back" target="act1"/>
+        </state>
+    </state>
+    <final id="fail"/>
+    <final id="pass"/>
+</scxml>

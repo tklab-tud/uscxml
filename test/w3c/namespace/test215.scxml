@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- we test that typexpr is evaluated at runtime.  If the original value of var1 is used, the invocation
+will fail (test215sub1.scxml is not of type 'foo', even if the platform supports foo as a type).  If
+the runtime value is used, the invocation will succeed -->
+<scxml:scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" xmlns:scxml="http://www.w3.org/2005/07/scxml" initial="s0" datamodel="ecmascript" version="1.0">
+  <scxml:datamodel>
+    <scxml:data id="Var1" expr="'foo'"/>
+  </scxml:datamodel>
+  <scxml:state id="s0">
+    <scxml:onentry>
+      <scxml:send event="timeout" delay="5s"/>
+      <scxml:assign location="Var1" expr="'http://www.w3.org/TR/scxml/'"/>
+    </scxml:onentry>
+    <scxml:invoke typeexpr="Var1">
+      <scxml:content>
+        <!-- when invoked, terminate returning done.invoke. This proves that the invocation succeeded.   -->
+        <scxml:scxml initial="subFinal" datamodel="ecmascript" version="1.0">
+          <scxml:final id="subFinal"/>
+        </scxml:scxml>
+      </scxml:content>
+    </scxml:invoke>
+    <scxml:transition event="done.invoke" target="pass"/>
+    <scxml:transition event="*" target="fail"/>
+  </scxml:state>
+  <scxml:final id="pass">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'pass'"/>
+    </scxml:onentry>
+  </scxml:final>
+  <scxml:final id="fail">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'fail'"/>
+    </scxml:onentry>
+  </scxml:final>
+</scxml:scxml>

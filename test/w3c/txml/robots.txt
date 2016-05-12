@@ -1,7 +1,7 @@
 #
 # robots.txt for http://www.w3.org/
 #
-# $Id: robots.txt,v 1.67 2014-06-25 13:06:01 ddavis Exp $
+# $Id: robots.txt,v 1.74 2016/02/11 20:30:26 gerald Exp $
 #
 
 # For use by search.w3.org
@@ -80,6 +80,7 @@ Disallow: /2004/08/W3CTalks
 Disallow: /2007/11/Talks/search
 Disallow: /People/all/
 Disallow: /RDF/Validator/ARPServlet
+Disallow: /RDF/Validator/rdfval
 Disallow: /2003/03/Translations/byLanguage
 Disallow: /2003/03/Translations/byTechnology
 Disallow: /2005/11/Translations/Query
@@ -92,5 +93,11 @@ Disallow: /2006/02/chartergen
 Disallow: /2004/01/pp-impl
 Disallow: /Consortium/supporters
 Disallow: /2007/08/pyRdfa/
+Disallow: /2012/pyRdfa/extract
 Disallow: /WAI/PF/comments/
 Disallow: /participate/conferences.xml
+Disallow: /scripts/
+Disallow: /2005/01/yacker/
+Disallow: /2005/01/yacker?
+Disallow: /2003/09/nschecker?
+

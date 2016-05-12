@@ -1,8 +1,8 @@
-<?xml version="1.0" standalone="no"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <!-- test that the state machine is put into the configuration specified by the initial element, without regard
 to any other defaults.  we should start off in s2p111 and s2p122.  the atomic
 states we should not enter all have immediate transitions to failure in them -->
-<scxml xmlns="http://www.w3.org/2005/07/scxml" initial="s2p112 s2p122" version="1.0" datamodel="lua">
+<scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" initial="s2p112 s2p122" version="1.0" datamodel="lua">
   <state id="s1">
     <transition target="fail"/>
   </state>
@@ -31,6 +31,14 @@ states we should not enter all have immediate transitions to failure in them -->
     </parallel>
   </state>
   <!-- end s2 -->
-  <final id="pass"/>
-  <final id="fail"/>
+  <final xmlns:scxml="http://www.w3.org/2005/07/scxml" id="pass">
+    <onentry>
+      <log label="Outcome" expr="'pass'"/>
+    </onentry>
+  </final>
+  <final xmlns:scxml="http://www.w3.org/2005/07/scxml" id="fail">
+    <onentry>
+      <log label="Outcome" expr="'fail'"/>
+    </onentry>
+  </final>
 </scxml>

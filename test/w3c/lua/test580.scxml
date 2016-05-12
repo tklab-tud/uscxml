@@ -1,12 +1,12 @@
-<?xml version="1.0" standalone="no"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <!-- test that a history state never ends up part of the configuration -->
-<scxml xmlns="http://www.w3.org/2005/07/scxml" version="1.0" initial="p1" datamodel="lua">
+<scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" version="1.0" initial="p1" datamodel="lua">
   <datamodel>
-    <data expr="0" id="testvar1"/>
+    <data id="Var1" expr="0"/>
   </datamodel>
   <parallel id="p1">
     <onentry>
-      <send delay="2s" event="timeout"/>
+      <send xmlns:scxml="http://www.w3.org/2005/07/scxml" delay="2000" event="timeout"/>
     </onentry>
     <state id="s0">
       <transition cond="In('sh1')" target="fail"/>
@@ -25,13 +25,21 @@
       </state>
       <state id="s12"/>
       <transition cond="In('sh1')" target="fail"/>
-      <transition target="sh1" cond="testvar1 == 0"/>
-      <transition cond="testvar1 == 1" target="pass"/>
+      <transition cond="Var1==0" target="sh1"/>
+      <transition cond="Var1==1" target="pass"/>
       <onexit>
-        <assign location="testvar1" expr="testvar1+1"/>
+        <assign xmlns:scxml="http://www.w3.org/2005/07/scxml" location="Var1" expr="Var1 + 1"/>
       </onexit>
     </state>
   </parallel>
-  <final id="pass"/>
-  <final id="fail"/>
+  <final xmlns:scxml="http://www.w3.org/2005/07/scxml" id="pass">
+    <onentry>
+      <log label="Outcome" expr="'pass'"/>
+    </onentry>
+  </final>
+  <final xmlns:scxml="http://www.w3.org/2005/07/scxml" id="fail">
+    <onentry>
+      <log label="Outcome" expr="'fail'"/>
+    </onentry>
+  </final>
 </scxml>

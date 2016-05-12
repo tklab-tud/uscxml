@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- a manual test that an autofowarded event has the same fields and values as the original event.
+the child process sends the parent process an event which is forwarded back to it.  
+Both the parent and child process print out the contents of the event. The tester 
+must check if they are the same and report his result.   -->
+<scxml:scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" xmlns:scxml="http://www.w3.org/2005/07/scxml" initial="s0" version="1.0" datamodel="ecmascript">
+  <scxml:state id="s0" initial="s01">
+    <scxml:onentry>
+      <scxml:send event="timeout" delay="3s"/>
+    </scxml:onentry>
+    <scxml:invoke type="http://www.w3.org/TR/scxml/" autoforward="true">
+      <scxml:content>
+        <!-- when invoked, send childToParent to parent.  If it is forwarded back to us, print out its
+        fields and terminate.  -->
+        <scxml:scxml initial="sub0" version="1.0" datamodel="ecmascript">
+          <scxml:state id="sub0">
+            <scxml:onentry>
+              <scxml:send target="#_parent" event="childToParent"/>
+              <scxml:send event="timeout" delay="2s"/>
+            </scxml:onentry>
+            <scxml:transition event="childToParent" target="subFinal">
+              <scxml:log label="name is " expr="_event.name"/>
+              <scxml:log label="type is " expr="_event.type"/>
+              <scxml:log label="sendid is " expr="_event.sendid"/>
+              <scxml:log label="origin is " expr="_event.origin"/>
+              <scxml:log label="origintype is " expr="_event.origintype"/>
+              <scxml:log label="invokeid is " expr="_event.invokeid"/>
+              <scxml:log label="data is " expr="_event.data"/>
+            </scxml:transition>
+            <scxml:transition event="*" target="subFinal"/>
+          </scxml:state>
+          <scxml:final id="subFinal"/>
+        </scxml:scxml>
+      </scxml:content>
+    </scxml:invoke>
+    <scxml:transition event="timeout" target="final"/>
+    <scxml:state id="s01">
+      <scxml:transition event="childToParent" target="s02">
+        <scxml:log label="name is " expr="_event.name"/>
+        <scxml:log label="type is " expr="_event.type"/>
+        <scxml:log label="sendid is " expr="_event.sendid"/>
+        <scxml:log label="origin is " expr="_event.origin"/>
+        <scxml:log label="origintype is " expr="_event.origintype"/>
+        <scxml:log label="invokeid is " expr="_event.invokeid"/>
+        <scxml:log label="data is " expr="_event.data"/>
+      </scxml:transition>
+      <scxml:transition event="*" target="fail"/>
+    </scxml:state>
+    <scxml:state id="s02">
+      <!-- wait till we get the done event to ensure that the child process has time to print out its results -->
+      <scxml:transition event="done.invoke" target="final"/>
+    </scxml:state>
+  </scxml:state>
+  <scxml:final id="final"/>
+  <scxml:final id="fail">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'fail'"/>
+    </scxml:onentry>
+  </scxml:final>
+</scxml:scxml>

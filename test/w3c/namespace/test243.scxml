@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- test that datamodel values can be specified by param.
+test240sub1 will return success ifits Var1 is set to 1, failure otherwise.  -->
+<scxml:scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" xmlns:scxml="http://www.w3.org/2005/07/scxml" initial="s0" version="1.0" datamodel="ecmascript">
+  <scxml:state id="s0">
+    <scxml:onentry>
+      <scxml:send event="timeout" delay="2s"/>
+    </scxml:onentry>
+    <scxml:invoke type="http://www.w3.org/TR/scxml/">
+      <scxml:param name="Var1" expr="1"/>
+      <scxml:content>
+        <scxml:scxml version="1.0" initial="sub0" datamodel="ecmascript">
+          <scxml:datamodel>
+            <scxml:data id="Var1" expr="0"/>
+          </scxml:datamodel>
+          <scxml:state id="sub0">
+            <scxml:transition cond="Var1==1" target="subFinal">
+              <scxml:send target="#_parent" event="success"/>
+            </scxml:transition>
+            <scxml:transition target="subFinal">
+              <scxml:send target="#_parent" event="failure"/>
+            </scxml:transition>
+          </scxml:state>
+          <scxml:final id="subFinal"/>
+        </scxml:scxml>
+      </scxml:content>
+    </scxml:invoke>
+    <scxml:transition event="success" target="pass"/>
+    <scxml:transition event="*" target="fail"/>
+  </scxml:state>
+  <scxml:final id="pass">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'pass'"/>
+    </scxml:onentry>
+  </scxml:final>
+  <scxml:final id="fail">
+    <scxml:onentry>
+      <scxml:log label="Outcome" expr="'fail'"/>
+    </scxml:onentry>
+  </scxml:final>
+</scxml:scxml>
