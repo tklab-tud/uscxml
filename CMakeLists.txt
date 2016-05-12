@@ -21,6 +21,8 @@ SET(USCXML_VERSION_MINOR "0")
 SET(USCXML_VERSION_PATCH "0")
 SET(USCXML_VERSION ${USCXML_VERSION_MAJOR}.${USCXML_VERSION_MINOR}.${USCXML_VERSION_PATCH})
 
+set(CMAKE_MACOSX_RPATH 1)
+
 # where do libraries and binaries go
 set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set (CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
@@ -43,7 +45,7 @@ endif()
 
 # various options
 # OPTION(BUILD_MINIMAL "Build only features mandated by specification" OFF)
-OPTION(BUILD_DM_ECMA "Build with ECMAScript datamodel" ON)
+# OPTION(BUILD_DM_ECMA "Build with ECMAScript datamodel" ON)
 # OPTION(BUILD_DM_XPATH "Build with XPath datamodel" OFF)
 # OPTION(BUILD_DM_PROLOG "Build with Prolog datamodel" OFF)
 # OPTION(BUILD_DM_PROMELA "Build with Promela datamodel" OFF)
@@ -139,7 +141,7 @@ endif()
 
 ################################
 # Required
-
+set(USCXML_PREREQS)
 
 # CURL
 find_package(CURL)
@@ -160,6 +162,7 @@ else()
 	if (LIBCURL_BUILT)
 		include_directories(${LIBCURL_INCLUDE_DIR})
 		list (APPEND USCXML_CORE_LIBS ${LIBCURL_LIBRARY})
+		list (APPEND USCXML_PREREQS libcurl)
 		set(CURL_HAS_SMTP ON)
 	else()
 		message(FATAL_ERROR "Could neither find nor build CURL")
@@ -183,6 +186,7 @@ else()
 	if (XercesC_BUILT)
 		include_directories(${XercesC_INCLUDE_DIRS})
 		list (APPEND USCXML_CORE_LIBS ${XercesC_LIBRARIES})
+		list (APPEND USCXML_PREREQS xerces-c)
 	else()
 		message(FATAL_ERROR "Could neither find nor build XercesC")
 	endif()
@@ -199,6 +203,7 @@ else()
 	if (LIBEVENT_BUILT)
 		include_directories(${LIBEVENT_INCLUDE_DIR})
 		list (APPEND USCXML_CORE_LIBS ${LIBEVENT_LIBRARIES})
+		list (APPEND USCXML_PREREQS libevent)
 	else()
 		message(FATAL_ERROR "Could neither find nor build libevent")
 	endif()
@@ -215,6 +220,7 @@ message(STATUS "--> will download and compile")
 if (URIPARSER_BUILT)
 	include_directories(${URIPARSER_INCLUDE_DIR})
 	list (APPEND USCXML_CORE_LIBS ${URIPARSER_LIBRARY})
+	list (APPEND USCXML_PREREQS uriparser)
 else()
 	message(FATAL_ERROR "Could not build uriparser")
 endif()
@@ -247,16 +253,6 @@ if (LUA_FOUND)
 	list (APPEND USCXML_OPT_LIBS ${LUA_LIBRARIES})
 endif()
 
-
-# if(APPLE)
-# 	find_library(APP_SERVICES_LIBRARY ApplicationServices)
-# 	find_library(COREFOUNDATION_LIBRARY CoreFoundation)
-# 	find_library(FOUNDATION_LIBRARY Foundation)
-# 	list (APPEND USCXML_CORE_LIBS ${APP_SERVICES_LIBRARY})
-# 	list (APPEND USCXML_CORE_LIBS ${COREFOUNDATION_LIBRARY})
-# 	list (APPEND USCXML_CORE_LIBS ${FOUNDATION_LIBRARY})
-# endif()
-
 add_subdirectory(src/uscxml)
 
 add_library(uscxml ${USCXML_FILES})
@@ -264,7 +260,7 @@ set_property(TARGET uscxml PROPERTY CXX_STANDARD 11)
 set_property(TARGET uscxml PROPERTY CXX_STANDARD_REQUIRED ON)
 set_property(TARGET uscxml PROPERTY SOVERSION ${USCXML_VERSION})
 
-add_dependencies(uscxml libevent xerces-c)
+add_dependencies(uscxml ${USCXML_PREREQS})
 target_link_libraries(uscxml ${USCXML_OPT_LIBS} ${USCXML_CORE_LIBS})
 
 add_library(uscxml_transform ${USCXML_TRANSFORM_FILES})

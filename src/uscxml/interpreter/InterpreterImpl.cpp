@@ -80,6 +80,7 @@ InterpreterImpl::~InterpreterImpl() {
 		_delayQueue.cancelAllDelayed();
 	if (_document)
 		delete _document;
+    
 	{
 		std::lock_guard<std::recursive_mutex> lock(_instanceMutex);
 		_instances.erase(getSessionId());

@@ -6,6 +6,7 @@ if (UNIX)
 		BUILD_IN_SOURCE 0
 		PREFIX ${CMAKE_BINARY_DIR}/deps/uriparser
 		CONFIGURE_COMMAND 
+			"CFLAGS=-fPIC"
 			"<SOURCE_DIR>/configure" 
 			"--disable-test"
 			"--disable-doc"

@@ -9,10 +9,7 @@ if (UNIX)
 		BUILD_IN_SOURCE 0
 		PREFIX ${CMAKE_BINARY_DIR}/deps/libevent
 		CONFIGURE_COMMAND 
-			"<SOURCE_DIR>/configure" 
-			"--enable-static" 
-			"--disable-openssl"
-			"--prefix=<INSTALL_DIR>"
+			CFLAGS=-fPIC <SOURCE_DIR>/configure --enable-static --enable-shared --disable-openssl --prefix=<INSTALL_DIR>
 	)
 elseif (WIN32)
 	

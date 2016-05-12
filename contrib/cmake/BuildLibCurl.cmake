@@ -10,6 +10,7 @@ if (UNIX)
 		CONFIGURE_COMMAND 
 			"<SOURCE_DIR>/configure" 
 			"--without-ssl"
+			"--enable-shared"
 			"--prefix=<INSTALL_DIR>"
 	)
 elseif (WIN32)
@@ -64,9 +65,9 @@ endif()
 set(LIBCURL_INCLUDE_DIR ${CMAKE_BINARY_DIR}/deps/libcurl/include)
 
 if (APPLE)
-	set(LIBCURL_LIBRARY ${CMAKE_BINARY_DIR}/deps/libcurl/lib/libcurl.dylib)
+	set(LIBCURL_LIBRARY ${CMAKE_BINARY_DIR}/deps/libcurl/lib/libcurl.a)
 elseif(UNIX)
-	set(LIBCURL_LIBRARY ${CMAKE_BINARY_DIR}/deps/libcurl/lib/libcurl.so)
+	set(LIBCURL_LIBRARY ${CMAKE_BINARY_DIR}/deps/libcurl/lib/libcurl.a)
 elseif(WIN32)
 	set(LIBCURL_LIBRARY ${CMAKE_BINARY_DIR}/deps/libcurl/lib/libcurl_a.lib)
 else()

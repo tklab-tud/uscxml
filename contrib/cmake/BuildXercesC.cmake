@@ -11,6 +11,7 @@ if (UNIX)
 		CONFIGURE_COMMAND 
 			"<SOURCE_DIR>/configure" 
 			"--enable-static" 
+			"--enable-shared"
 			"--prefix=<INSTALL_DIR>"
 	)
 elseif(WIN32)
