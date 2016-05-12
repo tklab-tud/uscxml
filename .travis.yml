@@ -5,12 +5,5 @@ compiler:
 before_install:
  - sudo apt-get update -qq
  - sudo apt-get install -qq libxml2-dev libcurl4-openssl-dev 
- - sudo apt-get install -qq libpurple-dev
- - sudo apt-get install -qq libical-dev
- - sudo apt-get install -qq libopenal-dev libsndfile-dev
- - sudo apt-get install -qq expect-dev
- - sudo apt-get install -qq libprotobuf-dev libprotoc-dev
- - sudo apt-get install -qq swi-prolog
- - wget http://uscxml.tk.informatik.tu-darmstadt.de || true
  
 script: mkdir build && cd build && cmake .. && make
