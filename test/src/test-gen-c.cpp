@@ -85,7 +85,7 @@ public:
 	}
 
 	void init() {
-		sessionId = UUID::getUUID();
+		sessionId = uscxml::UUID::getUUID();
 		isFinalized = false;
 
 		// clear and initialize machine context
@@ -284,10 +284,10 @@ public:
 					invokedMachine->invokeId = invocation->id;
 				} else if (invocation->idlocation != NULL) {
 					// test224
-					invokedMachine->invokeId = (invocation->sourcename != NULL ? std::string(invocation->sourcename) + "." : "") + UUID::getUUID();
+					invokedMachine->invokeId = (invocation->sourcename != NULL ? std::string(invocation->sourcename) + "." : "") + uscxml::UUID::getUUID();
 					USER_DATA(ctx)->dataModel.assign(invocation->idlocation, Data(invokedMachine->invokeId, Data::VERBATIM));
 				} else {
-					invokedMachine->invokeId = UUID::getUUID();
+					invokedMachine->invokeId = uscxml::UUID::getUUID();
 				}
 				allMachines[invokedMachine->invokeId] = invokedMachine;
 				topMachine->invocationIds[invocation] = invokedMachine->invokeId;
@@ -344,7 +344,7 @@ public:
 		if (send->id != NULL) {
 			sendid = send->id;
 		} else {
-			sendid = UUID::getUUID();
+			sendid = uscxml::UUID::getUUID();
 			if (send->idlocation != NULL) {
 				USER_DATA(ctx)->dataModel.assign(send->idlocation, Data(sendid, Data::VERBATIM));
 			} else {

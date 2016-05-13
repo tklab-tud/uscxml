@@ -932,7 +932,7 @@ void ChartToC::writeHelpers(std::ostream& stream) {
 	stream << "    const char* seperator = \"\";" << std::endl;
 	stream << "    for (i = 0; i < length; i++) {" << std::endl;
 	stream << "        if (BIT_HAS(i, a)) {" << std::endl;
-	stream << "            printf(\"%s%lu\", seperator, i);" << std::endl;
+	stream << "            printf(\"%s%zu\", seperator, i);" << std::endl;
 	stream << "            seperator = \", \";" << std::endl;
 	stream << "        }" << std::endl;
 	stream << "    }" << std::endl;

@@ -36,6 +36,8 @@ elseif(WIN32)
 		set(VC_VERSION VC11)
 	elseif (MSVC_VERSION LESS 1900)
 		set(VC_VERSION VC12)
+	else()
+		# set(VC_PLATFORM /p:PlatformToolset=v140)
 	endif()
 	
 	set(VSPROJECT_PATH "projects/Win32/${VC_VERSION}/xerces-all/XercesLib")
@@ -47,8 +49,13 @@ elseif(WIN32)
 			BUILD_IN_SOURCE 1
 			PREFIX ${CMAKE_BINARY_DIR}/deps/xerces-c
 			CONFIGURE_COMMAND ""
-			BUILD_COMMAND cd ${VSPROJECT_PATH} && devenv /Upgrade XercesLib.vcxproj && msbuild /p:Configuration=Static\ Release /p:Platform=x64 /t:build XercesLib.vcxproj
-			INSTALL_COMMAND ${CMAKE_COMMAND} -E copy_directory Build/Win64/${VC_VERSION}/Static\ Release/ ${CMAKE_BINARY_DIR}/deps/xerces-c/lib/ && ${CMAKE_COMMAND} -E copy_directory src/ ${CMAKE_BINARY_DIR}/deps/xerces-c/include/
+			# BUILD_COMMAND cd ${VSPROJECT_PATH} && msbuild /p:Configuration=Static\ Release /p:Platform=x64 /p:RuntimeLibrary=MD_DynamicRelease ${VC_PLATFORM} /t:build XercesLib.vcxproj
+			# INSTALL_COMMAND ${CMAKE_COMMAND} -E copy_directory Build/Win64/${VC_VERSION}/Static\ Release/ ${CMAKE_BINARY_DIR}/deps/xerces-c/lib/ && ${CMAKE_COMMAND} -E copy_directory src/ ${CMAKE_BINARY_DIR}/deps/xerces-c/include/
+			BUILD_COMMAND cd ${VSPROJECT_PATH} && msbuild /p:Configuration=Release /p:Platform=x64 ${VC_PLATFORM} /t:build XercesLib.vcxproj
+			INSTALL_COMMAND 
+				${CMAKE_COMMAND} -E copy_directory Build/Win64/${VC_VERSION}/Release/ ${CMAKE_BINARY_DIR}/deps/xerces-c/lib/ && 
+				${CMAKE_COMMAND} -E copy ${CMAKE_BINARY_DIR}/deps/xerces-c/lib/xerces-c_3_1.dll ${CMAKE_RUNTIME_OUTPUT_DIRECTORY} && 
+				${CMAKE_COMMAND} -E copy_directory src/ ${CMAKE_BINARY_DIR}/deps/xerces-c/include/
 		)
 	else()
 		externalproject_add(xerces-c
@@ -57,8 +64,13 @@ elseif(WIN32)
 			BUILD_IN_SOURCE 1
 			PREFIX ${CMAKE_BINARY_DIR}/deps/xerces-c
 			CONFIGURE_COMMAND ""
-			BUILD_COMMAND cd ${VSPROJECT_PATH} && devenv /Upgrade XercesLib.vcxproj && msbuild /p:Configuration=Static\ Release /p:Platform=Win32 /t:build XercesLib.vcxproj
-			INSTALL_COMMAND ${CMAKE_COMMAND} -E copy_directory Build/Win32/${VC_VERSION}/Static\ Release/ ${CMAKE_BINARY_DIR}/deps/xerces-c/lib/ && ${CMAKE_COMMAND} -E copy_directory src/ ${CMAKE_BINARY_DIR}/deps/xerces-c/include/
+			# BUILD_COMMAND cd ${VSPROJECT_PATH} && msbuild /p:Configuration=Static\ Release /p:Platform=Win32 /p:RuntimeLibrary=MD_DynamicRelease ${VC_PLATFORM} /t:build XercesLib.vcxproj
+			# INSTALL_COMMAND ${CMAKE_COMMAND} -E copy_directory Build/Win32/${VC_VERSION}/Static\ Release/ ${CMAKE_BINARY_DIR}/deps/xerces-c/lib/ && ${CMAKE_COMMAND} -E copy_directory src/ ${CMAKE_BINARY_DIR}/deps/xerces-c/include/
+			BUILD_COMMAND cd ${VSPROJECT_PATH} && msbuild /p:Configuration=Release /p:Platform=Win32 ${VC_PLATFORM} /t:build XercesLib.vcxproj
+			INSTALL_COMMAND 
+				${CMAKE_COMMAND} -E copy_directory Build/Win32/${VC_VERSION}/Release/ ${CMAKE_BINARY_DIR}/deps/xerces-c/lib/ && 
+				${CMAKE_COMMAND} -E copy ${CMAKE_BINARY_DIR}/deps/xerces-c/lib/xerces-c_3_1.dll ${CMAKE_RUNTIME_OUTPUT_DIRECTORY} && 
+				${CMAKE_COMMAND} -E copy_directory src/ ${CMAKE_BINARY_DIR}/deps/xerces-c/include/
 		)
 	endif()
 endif()
@@ -72,7 +84,8 @@ if (APPLE)
 elseif(UNIX)
 	set(XercesC_LIBRARIES ${CMAKE_BINARY_DIR}/deps/xerces-c/lib/libxerces-c.so)
 elseif(WIN32)
-	set(XercesC_LIBRARIES ${CMAKE_BINARY_DIR}/deps/xerces-c/lib/xerces-c_static_3.lib)
+	# set(XercesC_LIBRARIES ${CMAKE_BINARY_DIR}/deps/xerces-c/lib/xerces-c_static_3.lib)
+	set(XercesC_LIBRARIES ${CMAKE_BINARY_DIR}/deps/xerces-c/lib/xerces-c_3.lib)
 else()
 	message(FATAL_ERROR "Unknown platform!")
 endif()

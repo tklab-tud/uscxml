@@ -1,6 +1,10 @@
 set(TEST_TIMEOUT 15)
 set(TEST_BENCHMARK_ITERATIONS 1000)
 
+if (WIN32)
+	set(GETOPT_FILES ${PROJECT_SOURCE_DIR}/contrib/src/getopt/getopt.c)
+endif()
+
 find_program(SPIN spin)
 find_program(CC gcc)
 find_program(CXX g++)
@@ -11,9 +15,7 @@ function(USCXML_TEST_COMPILE)
 	set(multiValueArgs FILES ARGS)
 	cmake_parse_arguments(USCXML_TEST "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
-	if (WIN32)
-		list(APPEND USCXML_TEST_FILES "${PROJECT_SOURCE_DIR}/contrib/src/getopt/getopt.c")
-	endif()
+	list(APPEND USCXML_TEST_FILES ${GETOPT_FILES})
 
 	add_executable(${USCXML_TEST_NAME} ${USCXML_TEST_FILES})
 	target_link_libraries(${USCXML_TEST_NAME} uscxml)
@@ -30,15 +32,11 @@ USCXML_TEST_COMPILE(NAME test-lifecycle LABEL general/test-lifecycle FILES src/t
 USCXML_TEST_COMPILE(NAME test-validating LABEL general/test-validating FILES src/test-validating.cpp)
 
 # the one binary to test for pass / fail final states
-if (WIN32)
-	add_executable(test-state-pass src/test-state-pass.cpp ${PROJECT_SOURCE_DIR}/contrib/src/getopt/getopt.c)
-else()
-	add_executable(test-state-pass src/test-state-pass.cpp)
-endif()
+add_executable(test-state-pass src/test-state-pass.cpp ${GETOPT_FILES})
 target_link_libraries(test-state-pass uscxml)
 set_target_properties(test-state-pass PROPERTIES FOLDER "Tests")
 
-add_executable(test-gen-c src/test-gen-c.cpp)
+add_executable(test-gen-c src/test-gen-c.cpp ${GETOPT_FILES})
 target_link_libraries(test-gen-c uscxml)
 set_target_properties(test-gen-c PROPERTIES FOLDER "Tests")
 

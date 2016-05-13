@@ -1077,7 +1077,7 @@ static void printBitsetIndices(const unsigned char* a, size_t length) {
     const char* seperator = "";
     for (i = 0; i < length; i++) {
         if (BIT_HAS(i, a)) {
-            printf("%s%lu", seperator, i);
+            printf("%s%zu", seperator, i);
             seperator = ", ";
         }
     }
