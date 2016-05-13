@@ -11,6 +11,10 @@ function(USCXML_TEST_COMPILE)
 	set(multiValueArgs FILES ARGS)
 	cmake_parse_arguments(USCXML_TEST "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
+	if (WIN32)
+		list(APPEND USCXML_TEST_FILES "${PROJECT_SOURCE_DIR}/contrib/src/getopt/getopt.c")
+	endif()
+
 	add_executable(${USCXML_TEST_NAME} ${USCXML_TEST_FILES})
 	target_link_libraries(${USCXML_TEST_NAME} uscxml)
 	if (NOT ${USCXML_TEST_BUILD_ONLY})
@@ -26,7 +30,7 @@ USCXML_TEST_COMPILE(NAME test-lifecycle LABEL general/test-lifecycle FILES src/t
 USCXML_TEST_COMPILE(NAME test-validating LABEL general/test-validating FILES src/test-validating.cpp)
 
 # the one binary to test for pass / fail final states
-add_executable(test-state-pass src/test-state-pass.cpp)
+add_executable(test-state-pass src/test-state-pass.cpp ${PROJECT_SOURCE_DIR}/contrib/src/getopt/getopt.c)
 target_link_libraries(test-state-pass uscxml)
 set_target_properties(test-state-pass PROPERTIES FOLDER "Tests")
 
