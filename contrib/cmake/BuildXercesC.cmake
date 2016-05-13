@@ -47,7 +47,7 @@ elseif(WIN32)
 			BUILD_IN_SOURCE 1
 			PREFIX ${CMAKE_BINARY_DIR}/deps/xerces-c
 			CONFIGURE_COMMAND ""
-			BUILD_COMMAND cd ${VSPROJECT_PATH} && msbuild /p:Configuration=Static\ Release /p:Platform=x64 /t:build XercesLib.vcxproj
+			BUILD_COMMAND cd ${VSPROJECT_PATH} && devenv /Upgrade XercesLib.vcxproj && msbuild /p:Configuration=Static\ Release /p:Platform=x64 /t:build XercesLib.vcxproj
 			INSTALL_COMMAND ${CMAKE_COMMAND} -E copy_directory Build/Win64/${VC_VERSION}/Static\ Release/ ${CMAKE_BINARY_DIR}/deps/xerces-c/lib/ && ${CMAKE_COMMAND} -E copy_directory src/ ${CMAKE_BINARY_DIR}/deps/xerces-c/include/
 		)
 	else()
@@ -57,7 +57,7 @@ elseif(WIN32)
 			BUILD_IN_SOURCE 1
 			PREFIX ${CMAKE_BINARY_DIR}/deps/xerces-c
 			CONFIGURE_COMMAND ""
-			BUILD_COMMAND cd ${VSPROJECT_PATH} && msbuild /p:Configuration=Static\ Release /p:Platform=Win32 /t:build XercesLib.vcxproj
+			BUILD_COMMAND cd ${VSPROJECT_PATH} && devenv /Upgrade XercesLib.vcxproj && msbuild /p:Configuration=Static\ Release /p:Platform=Win32 /t:build XercesLib.vcxproj
 			INSTALL_COMMAND ${CMAKE_COMMAND} -E copy_directory Build/Win32/${VC_VERSION}/Static\ Release/ ${CMAKE_BINARY_DIR}/deps/xerces-c/lib/ && ${CMAKE_COMMAND} -E copy_directory src/ ${CMAKE_BINARY_DIR}/deps/xerces-c/include/
 		)
 	endif()
