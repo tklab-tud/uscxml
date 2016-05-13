@@ -57,7 +57,7 @@ elseif (WIN32)
 			PREFIX ${CMAKE_BINARY_DIR}/deps/libcurl
 			CONFIGURE_COMMAND ""
 			BUILD_COMMAND cd winbuild && nmake /f Makefile.vc mode=static MACHINE=x86 VC=${VC_VERSION}
-			INSTALL_COMMAND ${CMAKE_COMMAND} -E copy_directory builds/libcurl-vc-x86-release-static-ipv6-sspi-winssl ${CMAKE_BINARY_DIR}/deps/libcurl/
+			INSTALL_COMMAND ${CMAKE_COMMAND} -E copy_directory builds/libcurl-vc${VC_VERSION}-x86-release-static-ipv6-sspi-winssl ${CMAKE_BINARY_DIR}/deps/libcurl/
 		)
 	endif()
 endif()

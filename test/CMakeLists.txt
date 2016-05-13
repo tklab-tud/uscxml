@@ -1,10 +1,6 @@
 set(TEST_TIMEOUT 15)
 set(TEST_BENCHMARK_ITERATIONS 1000)
 
-if (WIN32)
-	set(GETOPT_FILES ${PROJECT_SOURCE_DIR}/contrib/src/getopt/getopt.c)
-endif()
-
 find_program(SPIN spin)
 find_program(CC gcc)
 find_program(CXX g++)

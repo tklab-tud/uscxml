@@ -47,8 +47,6 @@ if (LUA_FOUND)
 	list (APPEND USCXML_OPT_LIBS ${LUA_LIBRARY})
 endif()
 
-
-find_package(SWIG)
 if (NOT SWIG_FOUND)
 	message(STATUS "No swig binary found, not generating DOM classes")		
 elseif(SWIG_VERSION VERSION_LESS 3.0.8)

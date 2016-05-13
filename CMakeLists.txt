@@ -15,22 +15,76 @@ PROJECT(uscxml)
 # General Setup
 #################################################
 
+# where to find more cmake scripts
+set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/contrib/cmake)
+include("${CMAKE_MODULE_PATH}/USCXMLMacros.cmake")
+
+# use folders in the IDEs for the various targets
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+
+# use rpath with MacOSX
+set(CMAKE_MACOSX_RPATH 1)
+
 # specify USCXML version
 SET(USCXML_VERSION_MAJOR "2")
 SET(USCXML_VERSION_MINOR "0")
 SET(USCXML_VERSION_PATCH "0")
 SET(USCXML_VERSION ${USCXML_VERSION_MAJOR}.${USCXML_VERSION_MINOR}.${USCXML_VERSION_PATCH})
 
-set(CMAKE_MACOSX_RPATH 1)
+# Normalize CMAKE_SYSTEM_PROCESSOR for build target
+if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+	set(64BIT_HOST ON)
+	set(64BIT_SUFFIX "_64")
+endif()
+
+if (${CMAKE_SYSTEM_PROCESSOR} STREQUAL "AMD64")
+  set(CMAKE_SYSTEM_PROCESSOR "x86${64BIT_SUFFIX}")
+endif()
+if (${CMAKE_SYSTEM_PROCESSOR} STREQUAL "i386")
+  set(CMAKE_SYSTEM_PROCESSOR "x86${64BIT_SUFFIX}")
+endif()
+if (${CMAKE_SYSTEM_PROCESSOR} STREQUAL "x86_64")
+  set(CMAKE_SYSTEM_PROCESSOR "x86${64BIT_SUFFIX}")
+endif()
+
+
+# determine platform id
+SET(USCXML_PLATFORM_ID)
+string(TOLOWER ${CMAKE_SYSTEM_NAME} CMAKE_SYSTEM_NAME_LC)
+string(TOLOWER ${CMAKE_CXX_COMPILER_ID} CMAKE_CXX_COMPILER_ID_LC)
+string(TOLOWER ${CMAKE_SYSTEM_PROCESSOR} CMAKE_SYSTEM_PROCESSOR_LC)
+set(USCXML_PLATFORM_ID "${CMAKE_SYSTEM_NAME_LC}-${CMAKE_SYSTEM_PROCESSOR_LC}-${CMAKE_CXX_COMPILER_ID_LC}")
+
+# figure out MacOSX version and C++ library
+if (APPLE)
+	set(LIBCPP_NAME "libstdc++") # before mavericks
+	# get MacOSX version
+	execute_process(
+		COMMAND /usr/bin/sw_vers -productVersion 
+		OUTPUT_VARIABLE MACOSX_VERSION
+		OUTPUT_STRIP_TRAILING_WHITESPACE)
+	if (MACOSX_VERSION)
+		THREE_PART_VERSION_TO_VARS(
+			${MACOSX_VERSION}
+			MACOSX_VERSION_MAJOR 
+			MACOSX_VERSION_MINOR 
+			MACOSX_VERSION_PATCH)
+	endif()
+	if (MACOSX_VERSION VERSION_GREATER "10.8.99")
+		set(LIBCPP_NAME "libc++") # mavericks and above
+		# set(CMAKE_FIND_ROOT_PATH ${CMAKE_OSX_SYSROOT} ${CMAKE_FIND_ROOT_PATH})
+	endif()
+	set(USCXML_PLATFORM_ID "${USCXML_PLATFORM_ID}-${LIBCPP_NAME}")
+endif()
+
+if (MSVC)
+	set(USCXML_PLATFORM_ID "${USCXML_PLATFORM_ID}-${MSVC_VERSION}")
+endif()
 
 # where do libraries and binaries go
 set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set (CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set (CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
-
-# where to find more cmake scripts
-set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/contrib/cmake)
-include("${CMAKE_MODULE_PATH}/USCXMLMacros.cmake")
 
 # setup header include paths
 include_directories(src)
@@ -41,16 +95,8 @@ include_directories(${PROJECT_SOURCE_DIR}/contrib/src/evws)
 if (WIN32)
 	include_directories(${PROJECT_SOURCE_DIR}/contrib/src/getopt)
 	include_directories(${PROJECT_SOURCE_DIR}/contrib/src/inttypes)
+	set(GETOPT_FILES ${PROJECT_SOURCE_DIR}/contrib/src/getopt/getopt.c)	
 endif()
-
-# various options
-# OPTION(BUILD_MINIMAL "Build only features mandated by specification" OFF)
-# OPTION(BUILD_DM_ECMA "Build with ECMAScript datamodel" ON)
-# OPTION(BUILD_DM_XPATH "Build with XPath datamodel" OFF)
-# OPTION(BUILD_DM_PROLOG "Build with Prolog datamodel" OFF)
-# OPTION(BUILD_DM_PROMELA "Build with Promela datamodel" OFF)
-# OPTION(BUILD_DM_LUA "Build with Lua datamodel" OFF)
-
 
 ################################
 # Compiler Features and Flags
@@ -101,6 +147,14 @@ check_cxx_source_compiles("
 check_cxx_source_compiles("
 	int main(){ []{}(); }
 " CXX_HAS_LAMBDAS)
+check_cxx_source_compiles("
+	class Foo { int x = 8; }; int main(){}
+" CXX_HAS_MEMBER_INIT)
+check_cxx_source_compiles("
+	#include <list>
+	#include <string>
+	int main(){ std::list<std::string> foo = {\"a\", \"b\"}; }
+" CXX_HAS_INLINE_INIT)
 
 set(CXX_MISSING_FEATURES "")
 if (NOT CXX_HAS_LAMBDAS)
@@ -115,6 +169,13 @@ endif()
 if(NOT CXX_HAS_SHARED_PTR)
 	set(CXX_MISSING_FEATURES "${CXX_MISSING_FEATURES} shared_ptr")
 endif()
+if(NOT CXX_HAS_MEMBER_INIT)
+	set(CXX_MISSING_FEATURES "${CXX_MISSING_FEATURES} member_init")
+endif()
+if(NOT CXX_HAS_INLINE_INIT)
+	set(CXX_MISSING_FEATURES "${CXX_MISSING_FEATURES} inline_init")
+endif()
+
 
 if (CXX_MISSING_FEATURES)
 	message(FATAL_ERROR "Compiler is missing required C++11 features: ${CXX_MISSING_FEATURES}")
@@ -137,7 +198,6 @@ endif()
 #################################################
 # Dependent Libraries
 #################################################
-
 
 ################################
 # Required
@@ -229,28 +289,60 @@ endif()
 ################################
 # Optional
 
-# JavaScriptCore
-find_package(JSC)
-if (JSC_FOUND)
-	set(ECMA_FOUND ON)
-	if (NOT APPLE)
-		include_directories(${JSC_INCLUDE_DIR})
+#swig
+if (WIN32)
+	if(EXISTS "${PROJECT_BINARY_DIR}/../swig/")
+		LIST(APPEND CMAKE_PROGRAM_PATH "${PROJECT_BINARY_DIR}/../swig/")
+	elseif(EXISTS "${PROJECT_BINARY_DIR}/../../swig/")
+		LIST(APPEND CMAKE_PROGRAM_PATH "${PROJECT_BINARY_DIR}/../../swig/")
 	endif()
-	list (APPEND USCXML_OPT_LIBS ${JSC_LIBRARY})
+
+	file(GLOB POTENTIAL_SWIG "C:/Program Files/swig*" "C:/Program Files (x86)/swig*")
+	LIST(APPEND CMAKE_PROGRAM_PATH ${POTENTIAL_SWIG}) # swig.exe
+	# message(FATAL_ERROR "POTENTIAL_SWIG: ${POTENTIAL_SWIG}")
+	
+endif()
+LIST(APPEND CMAKE_PROGRAM_PATH $ENV{SWIG_DIR})
+find_package(SWIG)
+
+
+# JavaScriptCore
+OPTION(IGNORE_JSC "Do not search for JavaScriptCore" OFF)
+if (NOT IGNORE_JSC)
+	find_package(JSC)
+	if (JSC_FOUND)
+		set(ECMA_FOUND ON)
+		if (NOT APPLE)
+			include_directories(${JSC_INCLUDE_DIR})
+		endif()
+		list (APPEND USCXML_OPT_LIBS ${JSC_LIBRARY})
+	endif()
 endif()
 
-find_package(V8)
-if (V8_FOUND)
-	set(ECMA_FOUND ON)
-	include_directories(${V8_INCLUDE_DIR})
-	list (APPEND USCXML_OPT_LIBS ${V8_LIBRARY})
+# V8
+OPTION(IGNORE_V8 "Do not search for the V8 ECMAScript implementation" OFF)
+if (NOT IGNORE_V8)
+	find_package(V8)
+	if (V8_FOUND)
+		set(ECMA_FOUND ON)
+		include_directories(${V8_INCLUDE_DIR})
+		list (APPEND USCXML_OPT_LIBS ${V8_LIBRARY})
+	endif()
 endif()
 
-find_package(Lua)
-if (LUA_FOUND)
-	include_directories (${LUA_INCLUDE_DIR})
-	include_directories(${PROJECT_SOURCE_DIR}/contrib/src/LuaBridge)
-	list (APPEND USCXML_OPT_LIBS ${LUA_LIBRARIES})
+# Lua
+OPTION(IGNORE_V8 "Do not search for the Lua libraries" OFF)
+if (NOT IGNORE_LUA)
+	if (WIN32)
+		# LuaForWindows https://code.google.com/archive/p/luaforwindows/downloads
+		set(ENV{LUA_DIR} "C:/Program Files (x86)/Lua/5.1/")
+	endif()
+	find_package(Lua)
+	if (LUA_FOUND)
+		include_directories (${LUA_INCLUDE_DIR})
+		include_directories(${PROJECT_SOURCE_DIR}/contrib/src/LuaBridge)
+		list (APPEND USCXML_OPT_LIBS ${LUA_LIBRARIES})
+	endif()
 endif()
 
 add_subdirectory(src/uscxml)
@@ -274,20 +366,16 @@ if (NOT CMAKE_CROSSCOMPILING)
 	add_subdirectory(test)
 endif()
 
-if (WIN32)
-	add_executable(uscxml-browser apps/uscxml-browser.cpp ${PROJECT_SOURCE_DIR}/contrib/src/getopt/getopt.c)
-	add_executable(uscxml-transform apps/uscxml-transform.cpp ${PROJECT_SOURCE_DIR}/contrib/src/getopt/getopt.c)
-else()
-	add_executable(uscxml-browser apps/uscxml-browser.cpp)
-	add_executable(uscxml-transform apps/uscxml-transform.cpp)
-endif()
-
+add_executable(uscxml-browser apps/uscxml-browser.cpp ${GETOPT_FILES})
 set_property(TARGET uscxml-browser PROPERTY CXX_STANDARD 11)
 set_property(TARGET uscxml-browser PROPERTY CXX_STANDARD_REQUIRED ON)
+install_executable(TARGETS uscxml-browser COMPONENT tools)
+target_link_libraries(uscxml-browser uscxml)
+
+add_executable(uscxml-transform apps/uscxml-transform.cpp ${GETOPT_FILES})
 set_property(TARGET uscxml-transform PROPERTY CXX_STANDARD 11)
 set_property(TARGET uscxml-transform PROPERTY CXX_STANDARD_REQUIRED ON)
-
-target_link_libraries(uscxml-browser uscxml)
+install_executable(TARGETS uscxml-transform COMPONENT tools)
 target_link_libraries(uscxml-transform uscxml uscxml_transform)
 
 
@@ -312,7 +400,92 @@ endif()
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.h.in ${CMAKE_CURRENT_BINARY_DIR}/uscxml/config.h)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/test/ctest/CTestCustom.ctest.in ${CMAKE_CURRENT_BINARY_DIR}/CTestCustom.ctest)
 
+# all variables that cmake knows about
 # get_cmake_property(_variableNames VARIABLES)
 # foreach (_variableName ${_variableNames})
 #     message(STATUS "${_variableName}=${${_variableName}}")
 # endforeach()
+
+############################################################
+# Some concluding remarks
+############################################################
+message(STATUS "")
+
+set(USCXML_LIBS ${USCXML_OPT_LIBS} ${USCXML_CORE_LIBS})
+list(SORT USCXML_LIBS)
+message(STATUS "Linking against libraries (check if you need to export in LD_LIBRARY_PATH or PATH):")
+set(SKIP_NEXT OFF)
+foreach(LIBRARY ${USCXML_LIBS})
+	if (LIBRARY MATCHES "debug")
+		if(CMAKE_BUILD_TYPE STREQUAL "Release")
+			set(SKIP_NEXT ON)
+		endif()
+	elseif (LIBRARY MATCHES "optimized")
+		if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+			set(SKIP_NEXT ON)
+		endif()
+	else()
+		if (NOT SKIP_NEXT)
+			STRING(REGEX REPLACE "${CMAKE_BINARY_DIR}" "BUILD_DIR" LIBRARY ${LIBRARY})
+			STRING(REGEX REPLACE "${CMAKE_SOURCE_DIR}" "SOURCE_DIR" LIBRARY ${LIBRARY})
+			message(STATUS "  ${LIBRARY}")
+		else()
+			set(SKIP_NEXT OFF)
+		endif()
+	endif()
+endforeach()
+
+message(STATUS "Targets:")
+message(STATUS "  Available datamodels ........... : ${USCXML_DATAMODELS}")
+message(STATUS "  Available invokers ............. : ${USCXML_INVOKERS}")
+message(STATUS "  Available ioprocessors ......... : ${USCXML_IOPROCESSORS}")
+message(STATUS "  Available custom elements ...... : ${USCXML_ELEMENTS}")
+message(STATUS "  Available language bindings .... : ${USCXML_LANGUAGE_BINDINGS}")
+if (BUILD_SHARED_LIBS AND BUILD_BINDINGS)
+	message(STATUS "")
+	message(STATUS "    Warning: Building language bindings BUILD_SHARED_LIBS=ON")
+	message(STATUS "             introduces runtime dependency to libuscxml")
+	message(STATUS "")
+endif()
+
+message(STATUS "General information:")
+message(STATUS "  Build type ..................... : ${CMAKE_BUILD_TYPE} for ${USCXML_PLATFORM_ID}")
+if (BUILD_SHARED_LIBS)
+	if (BUILD_AS_PLUGINS)
+		message(STATUS "  Building library as ............ : SHARED with plugins")
+	else()
+		message(STATUS "  Building library as ............ : SHARED without plugins")
+	endif()
+else()
+	if (BUILD_AS_PLUGINS)
+		message(STATUS "  Building library as ............ : STATIC with plugins")
+	else()
+		message(STATUS "  Building library as ............ : STATIC without plugins")
+	endif()
+endif()
+
+string(TOUPPER ${CMAKE_BUILD_TYPE} CMAKE_BUILD_TYPE_UC)
+message(STATUS "  CXX Flags : " ${CMAKE_CXX_FLAGS} " " ${CMAKE_CXX_FLAGS_${CMAKE_BUILD_TYPE_UC}})
+message(STATUS "  C   Flags : " ${CMAKE_C_FLAGS} " " ${CMAKE_C_FLAGS_${CMAKE_BUILD_TYPE_UC}})
+
+STRING(REGEX REPLACE "${CMAKE_BINARY_DIR}" "BUILD_DIR" REL_CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
+STRING(REGEX REPLACE "${CMAKE_SOURCE_DIR}" "SOURCE_DIR" REL_CMAKE_LIBRARY_OUTPUT_DIRECTORY ${REL_CMAKE_LIBRARY_OUTPUT_DIRECTORY})
+
+STRING(REGEX REPLACE "${CMAKE_BINARY_DIR}" "BUILD_DIR" REL_CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
+STRING(REGEX REPLACE "${CMAKE_SOURCE_DIR}" "SOURCE_DIR" REL_CMAKE_RUNTIME_OUTPUT_DIRECTORY ${REL_CMAKE_RUNTIME_OUTPUT_DIRECTORY})
+
+message(STATUS "  Libraries will end up in ....... : " ${REL_CMAKE_LIBRARY_OUTPUT_DIRECTORY})
+message(STATUS "  Binaries will end up in ........ : " ${REL_CMAKE_RUNTIME_OUTPUT_DIRECTORY})
+
+
+############################################################
+# Installation / Provide package target
+############################################################
+
+# see contrib/cmake/CPackUSCXML.cmake
+include(contrib/cmake/CPackUSCXML.cmake)
+
+# cmake_policy(POP)
+
+# This must always be last!
+include(CPack)

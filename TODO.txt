@@ -1,7 +1,9 @@
 Doxygen
 C# / Java Bindings
 Plugins
-Transformers
+VHDL Transformer
+Installer
 HTTPS
 respond element
 Arraybuffers
+No third-party dependencies in headers (run_header_compiles)

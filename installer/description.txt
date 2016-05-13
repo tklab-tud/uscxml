@@ -1,0 +1,2 @@
+uSCXML is an SCXML interpreter and transformer written in C/C++. It is standards compliant and easily extended even in C# and Java. The interpreter itself runs on Linux, Windows, Raspberry Pi and Mac OSX, each 32- as well as 64Bits as well as iOS. The generated native code transformed from an SCXML document runs on virtually any platform.
+
