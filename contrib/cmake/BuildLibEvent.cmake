@@ -11,8 +11,8 @@ if (UNIX)
 		CONFIGURE_COMMAND 
 			CFLAGS=-fPIC <SOURCE_DIR>/configure --enable-static --enable-shared --disable-openssl --prefix=<INSTALL_DIR>
 	)
-elseif (WIN32)
 	
+elseif (WIN32)
 	
 	externalproject_add(libevent
 		URL https://github.com/libevent/libevent/releases/download/release-2.0.22-stable/libevent-2.0.22-stable.tar.gz
@@ -24,8 +24,8 @@ elseif (WIN32)
 		INSTALL_COMMAND
 			${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/deps/libevent/lib && 
 			${CMAKE_COMMAND} -E copy libevent.lib libevent_core.lib libevent_extras.lib ${CMAKE_BINARY_DIR}/deps/libevent/lib/ && 
-			${CMAKE_COMMAND} -E copy_directory include ${CMAKE_BINARY_DIR}/deps/libevent/include
-			${CMAKE_COMMAND} -E copy Win32-Code/event2 ${CMAKE_BINARY_DIR}/deps/libevent/include/event2
+			${CMAKE_COMMAND} -E copy_directory include ${CMAKE_BINARY_DIR}/deps/libevent/include &&
+			${CMAKE_COMMAND} -E copy Win32-Code/event2/event-config.h ${CMAKE_BINARY_DIR}/deps/libevent/include/event2/
 	)
 endif()
 

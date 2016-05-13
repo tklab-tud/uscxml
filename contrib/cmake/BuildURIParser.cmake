@@ -23,7 +23,7 @@ elseif(WIN32)
 			BUILD_IN_SOURCE 1
 			PREFIX ${CMAKE_BINARY_DIR}/deps/uriparser
 			CONFIGURE_COMMAND ""
-			BUILD_COMMAND cd ${VSPROJECT_PATH} && devenv /build Release|x64 uriparser.sln
+			BUILD_COMMAND cd ${VSPROJECT_PATH} && devenv /Upgrade uriparser.vcproj && msbuild /p:Configuration=Release /p:Platform=Win32 /t:build uriparser.vcxproj
 			INSTALL_COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/deps/uriparser/lib && ${CMAKE_COMMAND} -E copy win32/uriparser.lib ${CMAKE_BINARY_DIR}/deps/uriparser/lib && ${CMAKE_COMMAND} -E copy_directory include ${CMAKE_BINARY_DIR}/deps/uriparser/include
 		)
 	else()

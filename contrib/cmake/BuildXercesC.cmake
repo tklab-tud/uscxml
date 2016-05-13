@@ -48,7 +48,7 @@ elseif(WIN32)
 			PREFIX ${CMAKE_BINARY_DIR}/deps/xerces-c
 			CONFIGURE_COMMAND ""
 			BUILD_COMMAND cd ${VSPROJECT_PATH} && msbuild /p:Configuration=Release /p:Platform=x64 /t:build XercesLib.vcxproj
-			INSTALL_COMMAND ${CMAKE_COMMAND} -E copy_directory Build/x64/${VC_VERSION}/Release/ ${CMAKE_BINARY_DIR}/deps/xerces-c/
+			INSTALL_COMMAND ${CMAKE_COMMAND} -E copy_directory Build/Win64/${VC_VERSION}/Release/ ${CMAKE_BINARY_DIR}/deps/xerces-c/lib/ && ${CMAKE_COMMAND} -E copy_directory src/ ${CMAKE_BINARY_DIR}/deps/xerces-c/include/
 		)
 	else()
 		externalproject_add(xerces-c

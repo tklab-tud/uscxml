@@ -47,7 +47,7 @@ elseif (WIN32)
 			PREFIX ${CMAKE_BINARY_DIR}/deps/libcurl
 			CONFIGURE_COMMAND ""
 			BUILD_COMMAND cd winbuild && nmake /f Makefile.vc mode=static MACHINE=x64 VC=${VC_VERSION}
-			INSTALL_COMMAND ${CMAKE_COMMAND} -E copy_directory builds/libcurl-vc-x64-release-static-ipv6-sspi-winssl ${CMAKE_BINARY_DIR}/deps/libcurl/
+			INSTALL_COMMAND ${CMAKE_COMMAND} -E copy_directory builds/libcurl-vc${VC_VERSION}-x64-release-static-ipv6-sspi-winssl ${CMAKE_BINARY_DIR}/deps/libcurl/
 		)
 	else()
 		externalproject_add(libcurl
