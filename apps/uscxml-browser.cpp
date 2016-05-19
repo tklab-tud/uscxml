@@ -99,6 +99,7 @@ int main(int argc, char** argv) {
                     interpreterIter++;
                 }
             }
+            interpreterIter = interpreters.begin();
         }
 	} catch (Event e) {
 		std::cout << e << std::endl;

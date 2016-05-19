@@ -325,7 +325,7 @@ void FastMicroStep::init(XERCESC_NS::DOMElement* scxml) {
 
 		// establish the transitions' exit set
 		assert(_transitions[i]->element != NULL);
-		std::cout << "i: " << i << std::endl << std::flush;
+//		std::cout << "i: " << i << std::endl << std::flush;
 		std::list<DOMElement*> exitList = getExitSet(_transitions[i]->element, _scxml);
 		for (j = 0; j < _states.size(); j++) {
 			if (!exitList.empty() && _states[j]->element == exitList.front()) {

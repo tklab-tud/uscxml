@@ -111,16 +111,24 @@ public:
 	 */
 	size_t replaceExpressions(std::string& content);
 
-	///@name Foreach Support
-	///@{ 
-
-	// foreach
+	/**
+	 * Evaluate the given expression as something iterable and return its length.
+	 * @param expr Anything that possibly evaluates to an enumerable object.
+	 * @return The number of items in the enumerable object.
+	 */
 	virtual uint32_t getLength(const std::string& expr) = 0;
+	
+	/**
+	 * Set a given item to the object at a given index for one iteration.
+	 * @param item A variable or location to assign the current object to.
+	 * @param array An expression evalating to an enumerable object.
+	 * @param index A variable or location to set the current index at.
+	 * @param iteration The current iteration index.
+	 */
 	virtual void setForeach(const std::string& item,
 	                        const std::string& array,
 	                        const std::string& index,
 	                        uint32_t iteration) = 0;
-	///@} 
 
 	/**
 	 * Return a string as an *unevaluated* Data object.
@@ -181,8 +189,17 @@ test277:
 	 */
 	virtual void init(const std::string& location, const Data& data) = 0;
 
-
+	/**
+	 * Register an extension to get data into and out of the data-model.
+	 * @todo This is currently unsupported
+	 */
 	virtual void addExtension(DataModelExtension* ext);
+	
+	/**
+	 * Concat the given terms into a conjunctive form.
+	 * @todo This is required to automatically transform a state-chart into a 
+	 * state-machine. Actual transformation is still only available in legacy though.
+	 */
 	virtual std::string andExpressions(std::list<std::string>) {
 		return "";
 	}

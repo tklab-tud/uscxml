@@ -160,7 +160,7 @@ public:
 	 *
 	 * @todo Have Interpreter::step() take a duration to block
 	 */
-	InterpreterState step(bool blocking = false);
+	InterpreterState step(bool blocking = true);
 
 	/**
 	 * Unblock and mark for finalize.

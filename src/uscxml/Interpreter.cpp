@@ -230,6 +230,7 @@ std::list<InterpreterIssue> Interpreter::validate() {
 
 std::recursive_mutex StateTransitionMonitor::_mutex;
 
+#if 0
 static void printNodeSet(const std::list<XERCESC_NS::DOMElement*> nodes) {
 	std::string seperator;
 	for (auto nIter = nodes.begin(); nIter != nodes.end(); nIter++) {
@@ -237,7 +238,8 @@ static void printNodeSet(const std::list<XERCESC_NS::DOMElement*> nodes) {
 		seperator = ", ";
 	}
 }
-
+#endif
+    
 void StateTransitionMonitor::beforeTakingTransition(const XERCESC_NS::DOMElement* transition) {
 	std::lock_guard<std::recursive_mutex> lock(_mutex);
 	std::cerr << "Transition: " << uscxml::DOMUtils::xPathForNode(transition) << std::endl;
