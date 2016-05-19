@@ -21,7 +21,6 @@
 #define UUID_H_8X65R2EI
 
 #include "uscxml/Common.h"
-#include <boost/uuid/uuid_generators.hpp>
 #include <string>
 
 namespace uscxml {
@@ -30,7 +29,6 @@ class USCXML_API UUID {
 public:
 	static std::string getUUID();
 	static bool isUUID(const std::string& uuid);
-	static boost::uuids::random_generator uuidGen;
 };
 
 }

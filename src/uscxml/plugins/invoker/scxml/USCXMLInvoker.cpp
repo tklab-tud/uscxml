@@ -32,7 +32,7 @@
 namespace uscxml {
 
 // msxml.h should die in a fire for polluting the global namespace
-// using namespace xercesc;
+// using namespace XERCESC_NS;
 
 #ifdef BUILD_AS_PLUGINS
 PLUMA_CONNECTOR
@@ -136,11 +136,11 @@ void USCXMLInvoker::invoke(const std::string& source, const Event& invokeEvent) 
 	if (source.length() > 0) {
 		_invokedInterpreter = Interpreter::fromURL(source);
 	} else if (invokeEvent.data.node) {
-		xercesc::DOMImplementation* implementation = xercesc::DOMImplementationRegistry::getDOMImplementation(X("core"));
-		xercesc::DOMDocument* document = implementation->createDocument();
+		XERCESC_NS::DOMImplementation* implementation = XERCESC_NS::DOMImplementationRegistry::getDOMImplementation(X("core"));
+		XERCESC_NS::DOMDocument* document = implementation->createDocument();
 
 		// we need to import the parent - to support xpath test150
-		xercesc::DOMNode* newNode = document->importNode(invokeEvent.data.node, true);
+		XERCESC_NS::DOMNode* newNode = document->importNode(invokeEvent.data.node, true);
 		document->appendChild(newNode);
 
 //        std::cout << *document << std::endl;

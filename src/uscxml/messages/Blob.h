@@ -65,7 +65,7 @@ protected:
 class USCXML_API Blob {
 public:
 
-	PIMPL_OPERATORS(Blob)
+	PIMPL_OPERATORS(Blob);
 
 	Blob(size_t size) : _impl(std::shared_ptr<BlobImpl>(new BlobImpl(size))) {}
 	Blob(const char* data,

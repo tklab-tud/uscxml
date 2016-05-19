@@ -43,12 +43,12 @@ if (exception) \
     handleException(exception);
 
 
-using namespace xercesc;
+using namespace XERCESC_NS;
 
 static JSValueRef XMLString2JS(const XMLCh* input, JSContextRef context) {
 	JSValueRef output;
 
-	char* res = xercesc::XMLString::transcode(input);
+	char* res = XERCESC_NS::XMLString::transcode(input);
 
 	JSStringRef stringRef = JSStringCreateWithUTF8CString(res);
 	output = JSValueMakeString(context, stringRef);
@@ -70,7 +70,7 @@ static XMLCh* JS2XMLString(JSValueRef input, JSContextRef context) {
 	char* output = new char[maxSize + 1];
 
 	JSStringGetUTF8CString(stringInput, output, maxSize);
-	XMLCh* ret = xercesc::XMLString::transcode(output);
+	XMLCh* ret = XERCESC_NS::XMLString::transcode(output);
 
 	return(ret);
 }
@@ -509,7 +509,7 @@ Data JSCDataModel::getValueAsData(const JSValueRef value) {
 			// dom node
 			void* privData = NULL;
 			SWIG_JSC_ConvertPtr(_ctx, value, &privData, SWIGTYPE_p_XERCES_CPP_NAMESPACE__DOMNode, 0);
-			data.node = (xercesc::DOMNode*)privData;
+			data.node = (XERCESC_NS::DOMNode*)privData;
 			return data;
 		}
 		std::set<std::string> propertySet;

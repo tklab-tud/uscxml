@@ -36,8 +36,9 @@ extern "C" {
 #endif
 
 #include "uscxml/server/HTTPServer.h"
-#include "uscxml/Interpreter.h"
-#include "uscxml/plugins/Factory.h"
+#include "uscxml/interpreter/InterpreterImpl.h"
+#include "uscxml/plugins/IOProcessorImpl.h"
+
 #ifndef _WIN32
 #include <sys/time.h>
 #endif
@@ -50,6 +51,10 @@ extern "C" {
 
 namespace uscxml {
 
+/**
+ * @ingroup ioproc
+ * The basichttp I/O processor as per standard.
+ */
 class USCXML_PLUGIN_API BasicHTTPIOProcessor : public IOProcessorImpl, public HTTPServlet, public URLMonitor {
 public:
 	BasicHTTPIOProcessor();

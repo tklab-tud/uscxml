@@ -24,11 +24,18 @@
 #include <map>
 #include <memory>
 
+#include "uscxml/config.h"
 #include "uscxml/Common.h"
 #include "uscxml/util/Convenience.h"
 #include "uscxml/messages/Blob.h"
 
-#include <xercesc/dom/DOMDocument.hpp>
+//#include <xercesc/dom/DOMDocument.hpp>
+
+// forward declare
+namespace XERCESC_NS {
+	class DOMDocument;
+	class DOMNode;
+}
 
 namespace uscxml {
 
@@ -53,8 +60,6 @@ public:
 			this->atom = "false";
 		}
 	}
-
-	Data(xercesc::DOMNode* node) : node(node), type(VERBATIM) {}
 
 	//    template <typename T> Data(T value, Type type = INTERPRETED) : atom(toStr(value)), type(type) {}
 
@@ -214,8 +219,8 @@ public:
 protected:
 #endif
 
-	xercesc::DOMNode* node;
-	std::shared_ptr<xercesc::DOMDocument*> adoptedDoc;
+	XERCESC_NS::DOMNode* node;
+	std::shared_ptr<XERCESC_NS::DOMDocument*> adoptedDoc;
 	std::map<std::string, Data> compound;
 	std::list<Data> array;
 	std::string atom;

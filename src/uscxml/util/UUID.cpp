@@ -17,12 +17,16 @@
  *  @endcond
  */
 
-#include "UUID.h"
 #include <sstream>
 #include <boost/uuid/uuid_io.hpp>
+#include <boost/uuid/random_generator.hpp>
+
+#include "UUID.h"
 
 namespace uscxml {
-boost::uuids::random_generator UUID::uuidGen;
+
+// hide from public header
+boost::uuids::random_generator uuidGen;
 
 std::string UUID::getUUID() {
 	boost::uuids::uuid uuid = uuidGen();

@@ -24,6 +24,7 @@
 #include <list>
 #include <iostream>
 
+#include "uscxml/config.h"
 #include "uscxml/Common.h"
 #include <xercesc/util/XMLString.hpp>
 #include <xercesc/dom/DOM.hpp>
@@ -58,57 +59,57 @@ namespace uscxml {
 class USCXML_API DOMUtils {
 public:
 
-	static const xercesc::DOMNode* getNearestAncestor(const xercesc::DOMNode* node, const std::string tagName);
-	static bool isDescendant(const xercesc::DOMNode* s1, const xercesc::DOMNode* s2);
+	static const XERCESC_NS::DOMNode* getNearestAncestor(const XERCESC_NS::DOMNode* node, const std::string tagName);
+	static bool isDescendant(const XERCESC_NS::DOMNode* s1, const XERCESC_NS::DOMNode* s2);
 
 
-	static bool hasIntersection(const std::list<xercesc::DOMElement*>& l1,
-	                            const std::list<xercesc::DOMElement*>& l2);
-	static bool isMember(const xercesc::DOMElement* node, const std::list<xercesc::DOMElement*>& list);
-	static bool isMember(const xercesc::DOMNode* node, const std::list<xercesc::DOMNode*>& list);
-	static bool isMember(const xercesc::DOMNode* node, const xercesc::DOMNodeList* list);
+	static bool hasIntersection(const std::list<XERCESC_NS::DOMElement*>& l1,
+	                            const std::list<XERCESC_NS::DOMElement*>& l2);
+	static bool isMember(const XERCESC_NS::DOMElement* node, const std::list<XERCESC_NS::DOMElement*>& list);
+	static bool isMember(const XERCESC_NS::DOMNode* node, const std::list<XERCESC_NS::DOMNode*>& list);
+	static bool isMember(const XERCESC_NS::DOMNode* node, const XERCESC_NS::DOMNodeList* list);
 
-	static std::string xPathForNode(const xercesc::DOMNode* node,
+	static std::string xPathForNode(const XERCESC_NS::DOMNode* node,
 	                                const std::string& ns = "");
-	static std::string idForNode(const xercesc::DOMNode* node);
+	static std::string idForNode(const XERCESC_NS::DOMNode* node);
 
-	static std::list<xercesc::DOMNode*> getElementsByType(const xercesc::DOMNode* root,
-	        xercesc::DOMNode::NodeType type);
+	static std::list<XERCESC_NS::DOMNode*> getElementsByType(const XERCESC_NS::DOMNode* root,
+	        XERCESC_NS::DOMNode::NodeType type);
 
-	static std::list<xercesc::DOMElement*> inPostFixOrder(const std::set<std::string>& elements,
-	        const xercesc::DOMElement* root,
+	static std::list<XERCESC_NS::DOMElement*> inPostFixOrder(const std::set<std::string>& elements,
+	        const XERCESC_NS::DOMElement* root,
 	        const bool includeEmbeddedDoc = false);
 
-	static std::list<xercesc::DOMElement*> inDocumentOrder(const std::set<std::string>& elements,
-	        const xercesc::DOMElement* root,
+	static std::list<XERCESC_NS::DOMElement*> inDocumentOrder(const std::set<std::string>& elements,
+	        const XERCESC_NS::DOMElement* root,
 	        const bool includeEmbeddedDoc = false);
 
-	static std::list<xercesc::DOMElement*> filterChildElements(const std::string& tagName,
-	        const xercesc::DOMElement* node,
+	static std::list<XERCESC_NS::DOMElement*> filterChildElements(const std::string& tagName,
+	        const XERCESC_NS::DOMElement* node,
 	        bool recurse = false);
 
-	static std::list<xercesc::DOMElement*> filterChildElements(const std::string& tagName,
-	        const std::list<xercesc::DOMElement*>& nodeSet,
+	static std::list<XERCESC_NS::DOMElement*> filterChildElements(const std::string& tagName,
+	        const std::list<XERCESC_NS::DOMElement*>& nodeSet,
 	        bool recurse = false);
 
-	static std::list<xercesc::DOMNode*> filterChildType(const xercesc::DOMNode::NodeType type,
-	        const xercesc::DOMNode* node,
+	static std::list<XERCESC_NS::DOMNode*> filterChildType(const XERCESC_NS::DOMNode::NodeType type,
+	        const XERCESC_NS::DOMNode* node,
 	        bool recurse = false);
 
-	static std::list<xercesc::DOMNode*> filterChildType(const xercesc::DOMNode::NodeType type,
-	        const std::list<xercesc::DOMNode*>& nodeSet,
+	static std::list<XERCESC_NS::DOMNode*> filterChildType(const XERCESC_NS::DOMNode::NodeType type,
+	        const std::list<XERCESC_NS::DOMNode*>& nodeSet,
 	        bool recurse = false);
 
 protected:
 	static void inPostFixOrder(const std::set<std::string>& elements,
-	                           const xercesc::DOMElement* root,
+	                           const XERCESC_NS::DOMElement* root,
 	                           const bool includeEmbeddedDoc,
-	                           std::list<xercesc::DOMElement*>& nodes);
+	                           std::list<XERCESC_NS::DOMElement*>& nodes);
 
 	static void inDocumentOrder(const std::set<std::string>& elements,
-	                            const xercesc::DOMElement* root,
+	                            const XERCESC_NS::DOMElement* root,
 	                            const bool includeEmbeddedDoc,
-	                            std::list<xercesc::DOMElement*>& nodes);
+	                            std::list<XERCESC_NS::DOMElement*>& nodes);
 
 
 };
@@ -121,21 +122,21 @@ public :
 
 	X(X const &other) {
 		_localForm = other._localForm;
-		_otherForm = xercesc::XMLString::replicate(other._otherForm);
+		_otherForm = XERCESC_NS::XMLString::replicate(other._otherForm);
 		_deallocOther = true;
 	}
 	void operator=(X const &other) { // did we maybe leak before?
 		_localForm = other._localForm;
-		_otherForm = xercesc::XMLString::replicate(other._otherForm);
+		_otherForm = XERCESC_NS::XMLString::replicate(other._otherForm);
 		_deallocOther = true;
 	}
 
 	X(const XMLCh* const toTranscode) {
 		if (toTranscode != NULL) {
 			// Call the private transcoding method
-			char* tmp = xercesc::XMLString::transcode(toTranscode);
+			char* tmp = XERCESC_NS::XMLString::transcode(toTranscode);
 			_localForm = std::string(tmp);
-			xercesc::XMLString::release(&tmp);
+			XERCESC_NS::XMLString::release(&tmp);
 		}
 		_otherForm = NULL;
 		_deallocOther = false;
@@ -144,21 +145,21 @@ public :
 	X(const std::string& fromTranscode) {
 		// Call the private transcoding method
 		_localForm = fromTranscode;
-		_otherForm = xercesc::XMLString::transcode(fromTranscode.c_str());
+		_otherForm = XERCESC_NS::XMLString::transcode(fromTranscode.c_str());
 		_deallocOther = true;
 	}
 
 	X(const char* const fromTranscode) {
 		// Call the private transcoding method
 		_localForm = fromTranscode;
-		_otherForm = xercesc::XMLString::transcode(fromTranscode);
+		_otherForm = XERCESC_NS::XMLString::transcode(fromTranscode);
 		_deallocOther = true;
 	}
 
 	X(char* fromTranscode) {
 		// Call the private transcoding method
 		_localForm = fromTranscode;
-		_otherForm = xercesc::XMLString::transcode(fromTranscode);
+		_otherForm = XERCESC_NS::XMLString::transcode(fromTranscode);
 		_deallocOther = true;
 	}
 
@@ -169,7 +170,7 @@ public :
 
 	~X() {
 		if (_deallocOther)
-			xercesc::XMLString::release(&_otherForm);
+			XERCESC_NS::XMLString::release(&_otherForm);
 	}
 
 	const std::string& str() const {
@@ -199,7 +200,7 @@ private:
 };
 
 USCXML_API std::ostream& operator<< (std::ostream& os, const X& xmlString);
-USCXML_API std::ostream& operator<< (std::ostream& os, const xercesc::DOMNode& node);
+USCXML_API std::ostream& operator<< (std::ostream& os, const XERCESC_NS::DOMNode& node);
 
 }
 

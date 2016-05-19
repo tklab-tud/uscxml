@@ -63,7 +63,7 @@ Data NULLDataModel::getAsData(const std::string& content) {
  * The predicate must return 'true' if and only if that state is in the current
  * state configuration.
  */
-bool NULLDataModel::evalAsBool(const xercesc::DOMElement* scriptNode, const std::string& expr) {
+bool NULLDataModel::evalAsBool(const XERCESC_NS::DOMElement* scriptNode, const std::string& expr) {
 	std::string trimmedExpr = expr;
 	boost::trim(trimmedExpr);
 	if (!boost::istarts_with(trimmedExpr, "in"))

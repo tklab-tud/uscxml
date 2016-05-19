@@ -21,14 +21,10 @@
 #define JSCDATAMODEL_H_KN8TWG0V
 
 #include "uscxml/config.h"
-#include "uscxml/plugins/DataModel.h"
+#include "uscxml/plugins/DataModelImpl.h"
 #include <list>
 #include <set>
 
-/**
- * There are two variants with JavaScriptCore headers
- * Still beats the >20 V8 variants =D
- */
 #if defined(HAS_JSC_JAVASCRIPTCORE_H)
 #include <JavaScriptCore/JavaScriptCore.h>
 #elif defined(HAS_JSC_JAVASCRIPT_H)
@@ -48,6 +44,11 @@ class Data;
 
 namespace uscxml {
 
+/**
+ * @ingroup datamodel
+ *
+ * ECMAScript data-model via JavaScriptCore.
+ */
 class JSCDataModel : public DataModelImpl {
 public:
 	JSCDataModel();
@@ -103,7 +104,7 @@ protected:
 	static JSValueRef jsInvokerGetProp(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef* exception);
 	static void jsInvokerListProps(JSContextRef ctx, JSObjectRef object, JSPropertyNameAccumulatorRef propertyNames);
 
-	JSValueRef getNodeAsValue(const xercesc::DOMNode* node);
+	JSValueRef getNodeAsValue(const XERCESC_NS::DOMNode* node);
 	JSValueRef getDataAsValue(const Data& data);
 	Data getValueAsData(const JSValueRef value);
 	JSValueRef evalAsValue(const std::string& expr, bool dontThrow = false);

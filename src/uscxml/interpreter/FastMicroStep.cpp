@@ -19,7 +19,7 @@
 
 #undef USCXML_VERBOSE
 
-#include "MicroStepFast.h"
+#include "FastMicroStep.h"
 #include "uscxml/util/DOM.h"
 #include "uscxml/util/String.h"
 #include "uscxml/util/Predicates.h"
@@ -74,13 +74,13 @@
 
 namespace uscxml {
 
-using namespace xercesc;
+using namespace XERCESC_NS;
 
-MicroStepFast::MicroStepFast(MicroStepCallbacks* callbacks)
+FastMicroStep::FastMicroStep(MicroStepCallbacks* callbacks)
 	: MicroStepImpl(callbacks), _flags(USCXML_CTX_PRISTINE), _isInitialized(false), _isCancelled(false) {
 }
 
-MicroStepFast::~MicroStepFast() {
+FastMicroStep::~FastMicroStep() {
 	for (size_t i = 0; i < _states.size(); i++) {
 		delete(_states[i]);
 	}
@@ -89,7 +89,7 @@ MicroStepFast::~MicroStepFast() {
 	}
 }
 
-void MicroStepFast::resortStates(DOMNode* node, const X& xmlPrefix) {
+void FastMicroStep::resortStates(DOMNode* node, const X& xmlPrefix) {
 	if (node->getNodeType() != DOMNode::ELEMENT_NODE)
 		return;
 
@@ -155,7 +155,7 @@ void MicroStepFast::resortStates(DOMNode* node, const X& xmlPrefix) {
 	}
 }
 
-void MicroStepFast::init(xercesc::DOMElement* scxml) {
+void FastMicroStep::init(XERCESC_NS::DOMElement* scxml) {
 
 	_scxml = scxml;
 	_binding = (HAS_ATTR(_scxml, "binding") && iequals(ATTR(_scxml, "binding"), "late") ? LATE : EARLY);
@@ -172,17 +172,18 @@ void MicroStepFast::init(xercesc::DOMElement* scxml) {
 
 	/** -- All things states -- */
 
-	std::list<xercesc::DOMElement*> tmp;
+	std::list<XERCESC_NS::DOMElement*> tmp;
 	size_t i, j;
 
-    tmp = DOMUtils::inDocumentOrder({
-        _xmlPrefix.str() + "state",
-        _xmlPrefix.str() + "parallel",
-        _xmlPrefix.str() + "scxml",
-        _xmlPrefix.str() + "initial",
-        _xmlPrefix.str() + "final",
-        _xmlPrefix.str() + "history"}, _scxml);
-    
+	tmp = DOMUtils::inDocumentOrder({
+		_xmlPrefix.str() + "state",
+		_xmlPrefix.str() + "parallel",
+		_xmlPrefix.str() + "scxml",
+		_xmlPrefix.str() + "initial",
+		_xmlPrefix.str() + "final",
+		_xmlPrefix.str() + "history"
+	}, _scxml);
+
 	_states.resize(tmp.size());
 	_configuration.resize(tmp.size());
 	_history.resize(tmp.size());
@@ -307,7 +308,7 @@ void MicroStepFast::init(xercesc::DOMElement* scxml) {
 
 	/** -- All things transitions -- */
 
-    tmp = DOMUtils::inPostFixOrder({_xmlPrefix.str() + "transition"}, _scxml);
+	tmp = DOMUtils::inPostFixOrder({_xmlPrefix.str() + "transition"}, _scxml);
 	_transitions.resize(tmp.size());
 
 	for (i = 0; i < _transitions.size(); i++) {
@@ -318,13 +319,13 @@ void MicroStepFast::init(xercesc::DOMElement* scxml) {
 		_transitions[i]->target.resize(_states.size());
 		tmp.pop_front();
 	}
-    assert(tmp.size() == 0);
-    
+	assert(tmp.size() == 0);
+
 	for (i = 0; i < _transitions.size(); i++) {
 
 		// establish the transitions' exit set
-        assert(_transitions[i]->element != NULL);
-        std::cout << "i: " << i << std::endl << std::flush;
+		assert(_transitions[i]->element != NULL);
+		std::cout << "i: " << i << std::endl << std::flush;
 		std::list<DOMElement*> exitList = getExitSet(_transitions[i]->element, _scxml);
 		for (j = 0; j < _states.size(); j++) {
 			if (!exitList.empty() && _states[j]->element == exitList.front()) {
@@ -393,11 +394,11 @@ void MicroStepFast::init(xercesc::DOMElement* scxml) {
 	_isInitialized = true;
 }
 
-void MicroStepFast::markAsCancelled() {
+void FastMicroStep::markAsCancelled() {
 	_isCancelled = true;
 }
 
-InterpreterState MicroStepFast::step(bool blocking) {
+InterpreterState FastMicroStep::step(bool blocking) {
 	if (!_isInitialized) {
 		init(_scxml);
 		return USCXML_INITIALIZED;
@@ -911,7 +912,7 @@ ESTABLISH_ENTRYSET:
 	return USCXML_MICROSTEPPED;
 }
 
-void MicroStepFast::reset() {
+void FastMicroStep::reset() {
 	_isCancelled = false;
 	_flags = USCXML_CTX_PRISTINE;
 	_configuration.reset();
@@ -921,7 +922,7 @@ void MicroStepFast::reset() {
 
 }
 
-bool MicroStepFast::isInState(const std::string& stateId) {
+bool FastMicroStep::isInState(const std::string& stateId) {
 #ifdef USCXML_VERBOSE
 	printStateNames(_configuration);
 #endif
@@ -930,8 +931,8 @@ bool MicroStepFast::isInState(const std::string& stateId) {
 	return _configuration[_stateIds[stateId]];
 }
 
-std::list<xercesc::DOMElement*> MicroStepFast::getConfiguration() {
-	std::list<xercesc::DOMElement*> config;
+std::list<XERCESC_NS::DOMElement*> FastMicroStep::getConfiguration() {
+	std::list<XERCESC_NS::DOMElement*> config;
 	size_t i = _configuration.find_first();
 	while(i != boost::dynamic_bitset<>::npos) {
 		config.push_back(_states[i]->element);
@@ -941,7 +942,7 @@ std::list<xercesc::DOMElement*> MicroStepFast::getConfiguration() {
 }
 
 
-std::list<DOMElement*> MicroStepFast::getHistoryCompletion(const DOMElement* history) {
+std::list<DOMElement*> FastMicroStep::getHistoryCompletion(const DOMElement* history) {
 	std::set<std::string> elements;
 	elements.insert(_xmlPrefix.str() + "history");
 	std::list<DOMElement*> histories = DOMUtils::inPostFixOrder(elements, _scxml);
@@ -990,7 +991,7 @@ std::list<DOMElement*> MicroStepFast::getHistoryCompletion(const DOMElement* his
 /**
  * Print name of states contained in a (debugging).
  */
-void MicroStepFast::printStateNames(const boost::dynamic_bitset<>& a) {
+void FastMicroStep::printStateNames(const boost::dynamic_bitset<>& a) {
 	size_t i;
 	const char* seperator = "";
 	for (i = 0; i < a.size(); i++) {
@@ -1003,7 +1004,7 @@ void MicroStepFast::printStateNames(const boost::dynamic_bitset<>& a) {
 }
 #endif
 
-std::list<DOMElement*> MicroStepFast::getCompletion(const DOMElement* state) {
+std::list<DOMElement*> FastMicroStep::getCompletion(const DOMElement* state) {
 
 	if (isHistory(state)) {
 		// we already did in setHistoryCompletion
@@ -1044,7 +1045,7 @@ std::list<DOMElement*> MicroStepFast::getCompletion(const DOMElement* state) {
 /**
  * See: http://www.w3.org/TR/scxml/#LegalStateConfigurations
  */
-bool MicroStepFast::hasLegalConfiguration() {
+bool FastMicroStep::hasLegalConfiguration() {
 
 	// The configuration contains exactly one child of the <scxml> element.
 	std::list<DOMElement*> scxmlChilds = getChildStates(_scxml, true);

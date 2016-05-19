@@ -20,20 +20,28 @@
 #ifndef INTERPRETER_H_6CD5A168
 #define INTERPRETER_H_6CD5A168
 
-#include <map>
-#include <mutex>
-#include <string>
 
 #include "Common.h"
-#include "uscxml/interpreter/InterpreterImpl.h"
-#include "uscxml/interpreter/InterpreterMonitor.h" // beware cyclic reference!
-#include "uscxml/debug/InterpreterIssue.h" // beware cyclic reference!
-#include <xercesc/dom/DOM.hpp>
+
+#include <map>
+#include <string>
+#include <vector>
+
+#include "uscxml/interpreter/MicroStep.h"
+#include "uscxml/plugins/DataModel.h"
+#include "uscxml/interpreter/ContentExecutor.h"
+#include "uscxml/interpreter/InterpreterState.h"
 
 namespace uscxml {
 
-class InterpreterMonitor; // forward declare
+class InterpreterMonitor;
+class InterpreterImpl;
+class InterpreterIssue;
 
+/**
+ * @ingroup interpreter
+ * Options to pass into an interpreter.
+ */
 class USCXML_API InterpreterOptions {
 public:
 	InterpreterOptions() :
@@ -75,60 +83,139 @@ public:
 
 };
 
+/**
+ * @ingroup interpreter
+ * Collection of instances for interpreter that constitute its action language.
+ */
+class USCXML_API ActionLanguage {
+public:
+	MicroStep microStepper; ///< The microstepper instance to use
+	DataModel dataModel; ///< The datamodel to uses
+	ContentExecutor execContent; ///< To process executable content elements
+};
+
+/**
+ * @ingroup interpreter
+ * @ingroup facade
+ * Central class to interpret and process SCXML documents.
+
+	 Instances of this class are available from the static constructors. In order
+	 to use an interpreter instance to actually *do* things, you will want to
+	 provide an ActionLanguage and an InterpreterMonitor.
+
+	 We did avoid threading primitives within the core interpreter (there is
+	 threading for nested interpeters in the USCXMLInvoker, though). As such, you
+	 will have to call the <step> function continuously.
+
+ */
+
 class USCXML_API Interpreter {
 public:
-	static Interpreter fromDocument(xercesc::DOMDocument* dom,
+
+	/**
+	 * Instantiate an Interpeter with a given XML document.
+	 * @param dom A pointer to the XML document.
+	 * @param baseURL An absolute URL to resolve relative URLs in the document.
+	 * @param copy Whether to make a copy of the document, we deallocate it either way.
+	 */
+	static Interpreter fromDocument(XERCESC_NS::DOMDocument* dom,
 	                                const std::string& baseURL,
 	                                bool copy = true);
-	static Interpreter fromElement(xercesc::DOMElement* element,
+	/**
+	 * Instantiate an Interpeter with a given XML element.
+	 * This constructor will create a new document and copy/import the given element.
+	 * @param element The element to be copies/imported as the new document element.
+	 * @param baseURL An absolute URL to resolve relative URLs in the document.
+	 */
+	static Interpreter fromElement(XERCESC_NS::DOMElement* element,
 	                               const std::string& baseURL);
+	/**
+	 * Instantiate an Interpeter from a string containined proper XML markup.
+	 * @param xml Textual representation of an SCXML document.
+	 * @param baseURL An absolute URL to resolve relative URLs in the document.
+	 */
 	static Interpreter fromXML(const std::string& xml,
 	                           const std::string& baseURL);
-	static Interpreter fromURL(const std::string& URL);
+	/**
+	 * Instantiate an Interpeter with a document located at an URL.
+	 * @param url An absolute URL to locate the SCXML document.
+	 */
+	static Interpreter fromURL(const std::string& url);
+
+	/**
+	 * Instantiate an Interpeter as a copy of another.
+	 * @param other The other interpreter.
+	 */
 	static Interpreter fromClone(const Interpreter& other);
 
+	/**
+	 * See PIMPL_OPERATORS macro in Common.h
+	 */
 	PIMPL_OPERATORS(Interpreter);
 
-	void reset() {
-		return _impl->reset();
-	}
+	/**
+	 * Perform a single microstep and return.
+	 * @param blocking Whether or not to block the thread when waiting for events
+	 * @return The new state of the interpreter object.
+	 *
+	 * @todo Have Interpreter::step() take a duration to block
+	 */
+	InterpreterState step(bool blocking = false);
 
-	InterpreterState step(bool blocking = false) {
-		return _impl->step(blocking);
-	};
+	/**
+	 * Unblock and mark for finalize.
+	 */
+	void cancel();
 
-	void cancel() {
-		return _impl->cancel();
-	}
+	/**
+	 * Finalize and reset interpeter.
+	 */
+	void reset();
 
-	virtual bool isInState(const std::string& stateId) {
-		return _impl->isInState(stateId);
-	}
+	/**
+	 * Get all state elements that constitute the active configuration.
+	 * @return A list of XML elements of the active states.
+	 */
+	std::list<XERCESC_NS::DOMElement*> getConfiguration();
+	
+	/**
+	 * Determine whether the state with the given `id` is in the active configuration.
+	 * @param id An identifier for a state from the SCXML document.
+	 * @return Whether the interpreter is in state `id`.
+	 */
+	bool isInState(const std::string& stateId);
+	
+	/**
+	 * The current state of the interpreter, not to be confused with its configuration.
+	 * @return The current state of the interpreter object.
+	 */
+	InterpreterState getState();
 
-	InterpreterState getState() {
-		return _impl->getState();
-	}
+	/**
+	 * Return a list of possible syntactic and semantic issues with the interpreter's state-chart.
+	 * @return A list of InterpreterIssue%s
+	 */
+	std::list<InterpreterIssue> validate();
 
-	std::list<xercesc::DOMElement*> getConfiguration() {
-		return _impl->getConfiguration();
-	}
+	/**
+	 * Enqueue an event to the interpreter's external queue.
+	 * @event An event to be enqueued
+	 */
+	void receive(const Event& event);
+	
+	/**
+	 * Adapt the constituting components for a SCXML interpreter.
+	 */
+	void setActionLanguage(ActionLanguage actionLanguage);
+	
+	/**
+	 * Attach a monitor to make more details of the interpreter observable.
+	 */
+	void setMonitor(InterpreterMonitor* monitor);
 
-	virtual void receive(const Event& event) {
-		_impl->enqueueExternal(event);
-	}
-
-	void setActionLanguage(ActionLanguage actionLanguage) {
-		return _impl->setActionLanguage(actionLanguage);
-	}
-
-	void setMonitor(InterpreterMonitor* monitor) {
-		return _impl->setMonitor(monitor);
-	}
-
-	std::list<InterpreterIssue> validate() {
-		return InterpreterIssue::forInterpreter(_impl.get());
-	}
-
+	/**
+	 * Return the actual implementation of the Interperter.
+	 */
 	std::shared_ptr<InterpreterImpl> getImpl() const {
 		return _impl;
 	}
@@ -136,24 +223,6 @@ public:
 protected:
 	std::shared_ptr<InterpreterImpl> _impl;
 
-};
-
-class USCXML_API StateTransitionMonitor : public uscxml::InterpreterMonitor {
-public:
-	StateTransitionMonitor(Interpreter interpreter) : _interpreter(interpreter) {}
-	virtual ~StateTransitionMonitor() {}
-
-	virtual void beforeTakingTransition(const xercesc::DOMElement* transition);
-	virtual void beforeExecutingContent(const xercesc::DOMElement* element);
-	virtual void onStableConfiguration();
-	virtual void beforeProcessingEvent(const uscxml::Event& event);
-	virtual void beforeExitingState(const xercesc::DOMElement* state);
-	virtual void beforeEnteringState(const xercesc::DOMElement* state);
-	virtual void beforeMicroStep();
-
-protected:
-	Interpreter _interpreter;
-	static std::recursive_mutex _mutex;
 };
 
 }

@@ -17,8 +17,8 @@
  *  @endcond
  */
 
-#ifndef INTERPRETERMONITOR_H_4BA77097
-#define INTERPRETERMONITOR_H_4BA77097
+#ifndef INTERPRETERMONITOR_H_D3F21429
+#define INTERPRETERMONITOR_H_D3F21429
 
 #include "uscxml/Common.h"
 #include "uscxml/messages/Event.h"
@@ -51,23 +51,23 @@ public:
 	virtual void beforeProcessingEvent(const Event& event) {}
 	virtual void beforeMicroStep() {}
 
-	virtual void beforeExitingState(const xercesc::DOMElement* state) {}
-	virtual void afterExitingState(const xercesc::DOMElement* state) {}
+	virtual void beforeExitingState(const XERCESC_NS::DOMElement* state) {}
+	virtual void afterExitingState(const XERCESC_NS::DOMElement* state) {}
 
-	virtual void beforeExecutingContent(const xercesc::DOMElement* execContent) {}
-	virtual void afterExecutingContent(const xercesc::DOMElement* execContent) {}
+	virtual void beforeExecutingContent(const XERCESC_NS::DOMElement* execContent) {}
+	virtual void afterExecutingContent(const XERCESC_NS::DOMElement* execContent) {}
 
-	virtual void beforeUninvoking(const xercesc::DOMElement* invokeElem, const std::string& invokeid) {}
-	virtual void afterUninvoking(const xercesc::DOMElement* invokeElem, const std::string& invokeid) {}
+	virtual void beforeUninvoking(const XERCESC_NS::DOMElement* invokeElem, const std::string& invokeid) {}
+	virtual void afterUninvoking(const XERCESC_NS::DOMElement* invokeElem, const std::string& invokeid) {}
 
-	virtual void beforeTakingTransition(const xercesc::DOMElement* transition) {}
-	virtual void afterTakingTransition(const xercesc::DOMElement* transition) {}
+	virtual void beforeTakingTransition(const XERCESC_NS::DOMElement* transition) {}
+	virtual void afterTakingTransition(const XERCESC_NS::DOMElement* transition) {}
 
-	virtual void beforeEnteringState(const xercesc::DOMElement* state) {}
-	virtual void afterEnteringState(const xercesc::DOMElement* state) {}
+	virtual void beforeEnteringState(const XERCESC_NS::DOMElement* state) {}
+	virtual void afterEnteringState(const XERCESC_NS::DOMElement* state) {}
 
-	virtual void beforeInvoking(const xercesc::DOMElement* invokeElem, const std::string& invokeid) {}
-	virtual void afterInvoking(const xercesc::DOMElement* invokeElem, const std::string& invokeid) {}
+	virtual void beforeInvoking(const XERCESC_NS::DOMElement* invokeElem, const std::string& invokeid) {}
+	virtual void afterInvoking(const XERCESC_NS::DOMElement* invokeElem, const std::string& invokeid) {}
 
 	virtual void afterMicroStep() {}
 	virtual void onStableConfiguration() {}
@@ -90,6 +90,23 @@ protected:
 
 };
 
+class USCXML_API StateTransitionMonitor : public uscxml::InterpreterMonitor {
+public:
+	StateTransitionMonitor() {}
+	virtual ~StateTransitionMonitor() {}
+
+	virtual void beforeTakingTransition(const XERCESC_NS::DOMElement* transition);
+	virtual void beforeExecutingContent(const XERCESC_NS::DOMElement* element);
+	virtual void onStableConfiguration();
+	virtual void beforeProcessingEvent(const uscxml::Event& event);
+	virtual void beforeExitingState(const XERCESC_NS::DOMElement* state);
+	virtual void beforeEnteringState(const XERCESC_NS::DOMElement* state);
+	virtual void beforeMicroStep();
+
+protected:
+	static std::recursive_mutex _mutex;
+};
+
 }
 
-#endif /* end of include guard: INTERPRETERMONITOR_H_4BA77097 */
+#endif /* end of include guard: INTERPRETERMONITOR_H_D3F21429 */

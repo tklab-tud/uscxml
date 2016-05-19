@@ -28,7 +28,7 @@
 #include "uscxml/util/UUID.h"
 
 #include "uscxml/interpreter/InterpreterImpl.h"
-#include "uscxml/interpreter/EventQueueImpl.h"
+#include "uscxml/interpreter/BasicEventQueue.h"
 
 #ifdef BUILD_PROFILING
 #   include "uscxml/plugins/DataModel.h"
@@ -77,7 +77,7 @@ public:
 		return false;
 	}
 
-	xercesc::DOMDocument* getDocument() const {
+	XERCESC_NS::DOMDocument* getDocument() const {
 		return document;
 	}
 	const std::map<std::string, Invoker>& getInvokers() {
@@ -113,7 +113,7 @@ public:
 
 		name = machine->name;
 
-		delayQueue = DelayedEventQueue(std::shared_ptr<DelayedEventQueueImpl>(new DelayedEventQueueImpl(this)));
+		delayQueue = DelayedEventQueue(std::shared_ptr<DelayedEventQueueImpl>(new BasicDelayedEventQueue(this)));
 		dataModel = Factory::getInstance()->createDataModel(machine->datamodel, this);
 
 		if (invocation != NULL) {
@@ -899,7 +899,7 @@ protected:
 	X xmlPrefix;
 	std::map<std::string, IOProcessor> ioProcs;
 	std::map<std::string, Invoker> invokers;
-	xercesc::DOMDocument* document;
+	XERCESC_NS::DOMDocument* document;
 
 	DelayedEventQueue delayQueue;
 	std::map<std::string, std::tuple<std::string, std::string, std::string> > sendUUIDs;

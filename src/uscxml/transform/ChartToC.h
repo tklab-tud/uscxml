@@ -58,9 +58,9 @@ protected:
 	void writeFSM(std::ostream& stream);
 	void writeCharArrayInitList(std::ostream& stream, const std::string& boolString);
 
-	void writeExecContent(std::ostream& stream, const xercesc::DOMNode* node, int indent = 0);
+	void writeExecContent(std::ostream& stream, const XERCESC_NS::DOMNode* node, int indent = 0);
 
-	void resortStates(xercesc::DOMNode* node);
+	void resortStates(XERCESC_NS::DOMNode* node);
 	void setHistoryCompletion();
 	void setStateCompletion();
 	void prepare();
@@ -69,8 +69,8 @@ protected:
 
 	Interpreter interpreter;
 
-	std::vector<xercesc::DOMElement*> _states;
-	std::vector<xercesc::DOMElement*> _transitions;
+	std::vector<XERCESC_NS::DOMElement*> _states;
+	std::vector<XERCESC_NS::DOMElement*> _transitions;
 
 	std::string _md5;
 	std::string _prefix;

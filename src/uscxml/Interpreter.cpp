@@ -20,6 +20,7 @@
 #include "uscxml/config.h"
 #include "uscxml/Common.h"
 #include "uscxml/Interpreter.h"
+#include "uscxml/interpreter/InterpreterImpl.h"
 #include "uscxml/util/DOM.h"
 #include "uscxml/util/URL.h"
 
@@ -49,7 +50,7 @@ INITIALIZE_EASYLOGGINGPP
 namespace uscxml {
 
 // msxml.h defines all the DOM types as well
-//using namespace xercesc;
+//using namespace XERCESC_NS;
 
 static URL normalizeURL(const std::string url) {
 	URL absUrl(url);
@@ -70,48 +71,48 @@ Interpreter Interpreter::fromXML(const std::string& xml, const std::string& base
 	std::shared_ptr<InterpreterImpl> interpreterImpl(new InterpreterImpl());
 	Interpreter interpreter(interpreterImpl);
 
-	std::unique_ptr<xercesc::XercesDOMParser> parser(new xercesc::XercesDOMParser());
-	std::unique_ptr<xercesc::ErrorHandler> errHandler(new xercesc::HandlerBase());
+	std::unique_ptr<XERCESC_NS::XercesDOMParser> parser(new XERCESC_NS::XercesDOMParser());
+	std::unique_ptr<XERCESC_NS::ErrorHandler> errHandler(new XERCESC_NS::HandlerBase());
 
 	try {
-		parser->setValidationScheme(xercesc::XercesDOMParser::Val_Always);
+		parser->setValidationScheme(XERCESC_NS::XercesDOMParser::Val_Always);
 		parser->setDoNamespaces(true);
-		parser->useScanner(xercesc::XMLUni::fgWFXMLScanner);
+		parser->useScanner(XERCESC_NS::XMLUni::fgWFXMLScanner);
 
 		parser->setErrorHandler(errHandler.get());
 
-		xercesc::MemBufInputSource is((XMLByte*)xml.c_str(), xml.size(), X("fake"));
+		XERCESC_NS::MemBufInputSource is((XMLByte*)xml.c_str(), xml.size(), X("fake"));
 		parser->parse(is);
 
 		interpreterImpl->_document = parser->adoptDocument();
 		interpreterImpl->_baseURL = absUrl;
 		InterpreterImpl::addInstance(interpreterImpl);
 
-	} catch (const xercesc::SAXParseException& toCatch) {
+	} catch (const XERCESC_NS::SAXParseException& toCatch) {
 		ERROR_PLATFORM_THROW(X(toCatch.getMessage()).str());
-	} catch (const xercesc::RuntimeException& toCatch) {
+	} catch (const XERCESC_NS::RuntimeException& toCatch) {
 		ERROR_PLATFORM_THROW(X(toCatch.getMessage()).str());
-	} catch (const xercesc::XMLException& toCatch) {
+	} catch (const XERCESC_NS::XMLException& toCatch) {
 		ERROR_PLATFORM_THROW(X(toCatch.getMessage()).str());
-	} catch (const xercesc::DOMException& toCatch) {
+	} catch (const XERCESC_NS::DOMException& toCatch) {
 		ERROR_PLATFORM_THROW(X(toCatch.getMessage()).str());
 	}
 
 	return interpreter;
 }
 
-Interpreter Interpreter::fromElement(xercesc::DOMElement* scxml, const std::string& baseURL) {
+Interpreter Interpreter::fromElement(XERCESC_NS::DOMElement* scxml, const std::string& baseURL) {
 	URL absUrl = normalizeURL(baseURL);
 
 	std::shared_ptr<InterpreterImpl> interpreterImpl(new InterpreterImpl());
 	Interpreter interpreter(interpreterImpl);
 
-	// *copy* the given xercesc::DOM to get rid of event listeners
-	xercesc::DOMImplementation* implementation = xercesc::DOMImplementationRegistry::getDOMImplementation(X("core"));
+	// *copy* the given XERCESC_NS::DOM to get rid of event listeners
+	XERCESC_NS::DOMImplementation* implementation = XERCESC_NS::DOMImplementationRegistry::getDOMImplementation(X("core"));
 	interpreterImpl->_document = implementation->createDocument();
 
 	// we need to import the parent - to support xpath test150
-	xercesc::DOMNode* newNode = interpreterImpl->_document->importNode(scxml, true);
+	XERCESC_NS::DOMNode* newNode = interpreterImpl->_document->importNode(scxml, true);
 //    interpreterImpl->_document->adoptNode(newNode);
 	interpreterImpl->_document->appendChild(newNode);
 
@@ -123,19 +124,19 @@ Interpreter Interpreter::fromElement(xercesc::DOMElement* scxml, const std::stri
 	return interpreter;
 }
 
-Interpreter Interpreter::fromDocument(xercesc::DOMDocument* dom, const std::string& baseURL, bool copy) {
+Interpreter Interpreter::fromDocument(XERCESC_NS::DOMDocument* dom, const std::string& baseURL, bool copy) {
 	URL absUrl = normalizeURL(baseURL);
 
 	std::shared_ptr<InterpreterImpl> interpreterImpl(new InterpreterImpl());
 	Interpreter interpreter(interpreterImpl);
 
 	if (copy) {
-		// *copy* the given xercesc::DOM to get rid of event listeners
-		xercesc::DOMImplementation* implementation = xercesc::DOMImplementationRegistry::getDOMImplementation(X("core"));
+		// *copy* the given XERCESC_NS::DOM to get rid of event listeners
+		XERCESC_NS::DOMImplementation* implementation = XERCESC_NS::DOMImplementationRegistry::getDOMImplementation(X("core"));
 		interpreterImpl->_document = implementation->createDocument();
 
 		// we need to import the parent - to support xpath test150
-		xercesc::DOMNode* newNode = interpreterImpl->_document->importNode(dom->getDocumentElement(), true);
+		XERCESC_NS::DOMNode* newNode = interpreterImpl->_document->importNode(dom->getDocumentElement(), true);
 		interpreterImpl->_document->appendChild(newNode);
 
 	} else {
@@ -154,14 +155,14 @@ Interpreter Interpreter::fromURL(const std::string& url) {
 	std::shared_ptr<InterpreterImpl> interpreterImpl(new InterpreterImpl());
 	Interpreter interpreter(interpreterImpl);
 
-	std::unique_ptr<xercesc::XercesDOMParser> parser(new xercesc::XercesDOMParser());
-	parser->setValidationScheme(xercesc::XercesDOMParser::Val_Always);
+	std::unique_ptr<XERCESC_NS::XercesDOMParser> parser(new XERCESC_NS::XercesDOMParser());
+	parser->setValidationScheme(XERCESC_NS::XercesDOMParser::Val_Always);
 	parser->setDoNamespaces(true);
 
 	// we do not have a real schema anyway
-	parser->useScanner(xercesc::XMLUni::fgWFXMLScanner);
+	parser->useScanner(XERCESC_NS::XMLUni::fgWFXMLScanner);
 
-	std::unique_ptr<xercesc::ErrorHandler> errHandler(new xercesc::HandlerBase());
+	std::unique_ptr<XERCESC_NS::ErrorHandler> errHandler(new XERCESC_NS::HandlerBase());
 	parser->setErrorHandler(errHandler.get());
 
 
@@ -173,13 +174,13 @@ Interpreter Interpreter::fromURL(const std::string& url) {
 		InterpreterImpl::addInstance(interpreterImpl);
 	}
 
-	catch (const xercesc::SAXParseException& toCatch) {
+	catch (const XERCESC_NS::SAXParseException& toCatch) {
 		LOG(ERROR) << X(toCatch.getMessage());
-	} catch (const xercesc::RuntimeException& toCatch) {
+	} catch (const XERCESC_NS::RuntimeException& toCatch) {
 		LOG(ERROR) << X(toCatch.getMessage());
-	} catch (const xercesc::XMLException& toCatch) {
+	} catch (const XERCESC_NS::XMLException& toCatch) {
 		LOG(ERROR) << X(toCatch.getMessage());
-	} catch (const xercesc::DOMException& toCatch) {
+	} catch (const XERCESC_NS::DOMException& toCatch) {
 		LOG(ERROR) << X(toCatch.getMessage());
 	}
 
@@ -187,9 +188,49 @@ Interpreter Interpreter::fromURL(const std::string& url) {
 
 }
 
+void Interpreter::reset() {
+	return _impl->reset();
+}
+
+InterpreterState Interpreter::step(bool blocking) {
+	return _impl->step(blocking);
+};
+
+void Interpreter::cancel() {
+	return _impl->cancel();
+}
+
+bool Interpreter::isInState(const std::string& stateId) {
+	return _impl->isInState(stateId);
+}
+
+InterpreterState Interpreter::getState() {
+	return _impl->getState();
+}
+
+std::list<XERCESC_NS::DOMElement*> Interpreter::getConfiguration() {
+	return _impl->getConfiguration();
+}
+
+void Interpreter::receive(const Event& event) {
+	_impl->enqueueExternal(event);
+}
+
+void Interpreter::setActionLanguage(ActionLanguage actionLanguage) {
+	return _impl->setActionLanguage(actionLanguage);
+}
+
+void Interpreter::setMonitor(InterpreterMonitor* monitor) {
+	return _impl->setMonitor(monitor);
+}
+
+std::list<InterpreterIssue> Interpreter::validate() {
+	return InterpreterIssue::forInterpreter(_impl.get());
+}
+
 std::recursive_mutex StateTransitionMonitor::_mutex;
 
-static void printNodeSet(const std::list<xercesc::DOMElement*> nodes) {
+static void printNodeSet(const std::list<XERCESC_NS::DOMElement*> nodes) {
 	std::string seperator;
 	for (auto nIter = nodes.begin(); nIter != nodes.end(); nIter++) {
 		std::cerr << seperator << (HAS_ATTR(*nIter, "id") ? ATTR(*nIter, "id") : DOMUtils::xPathForNode(*nIter));
@@ -197,7 +238,7 @@ static void printNodeSet(const std::list<xercesc::DOMElement*> nodes) {
 	}
 }
 
-void StateTransitionMonitor::beforeTakingTransition(const xercesc::DOMElement* transition) {
+void StateTransitionMonitor::beforeTakingTransition(const XERCESC_NS::DOMElement* transition) {
 	std::lock_guard<std::recursive_mutex> lock(_mutex);
 	std::cerr << "Transition: " << uscxml::DOMUtils::xPathForNode(transition) << std::endl;
 }
@@ -205,7 +246,7 @@ void StateTransitionMonitor::beforeTakingTransition(const xercesc::DOMElement* t
 void StateTransitionMonitor::onStableConfiguration() {
 	std::lock_guard<std::recursive_mutex> lock(_mutex);
 	std::cerr << "Stable Config: { ";
-	printNodeSet(_interpreter.getConfiguration());
+//	printNodeSet(_interpreter.getConfiguration());
 	std::cerr << " }" << std::endl;
 }
 
@@ -224,17 +265,17 @@ void StateTransitionMonitor::beforeProcessingEvent(const  uscxml::Event& event) 
 	}
 }
 
-void StateTransitionMonitor::beforeExecutingContent(const xercesc::DOMElement* element) {
+void StateTransitionMonitor::beforeExecutingContent(const XERCESC_NS::DOMElement* element) {
 	std::lock_guard<std::recursive_mutex> lock(_mutex);
 	std::cerr << "Executable Content: " << DOMUtils::xPathForNode(element) << std::endl;
 }
 
-void StateTransitionMonitor::beforeExitingState(const xercesc::DOMElement* state) {
+void StateTransitionMonitor::beforeExitingState(const XERCESC_NS::DOMElement* state) {
 	std::lock_guard<std::recursive_mutex> lock(_mutex);
 	std::cerr << "Exiting: " << (HAS_ATTR(state, "id") ? ATTR(state, "id") : DOMUtils::xPathForNode(state)) << std::endl;
 }
 
-void StateTransitionMonitor::beforeEnteringState(const xercesc::DOMElement* state) {
+void StateTransitionMonitor::beforeEnteringState(const XERCESC_NS::DOMElement* state) {
 	std::lock_guard<std::recursive_mutex> lock(_mutex);
 	std::cerr << "Entering: " << (HAS_ATTR(state, "id") ? ATTR(state, "id") : DOMUtils::xPathForNode(state)) << std::endl;
 
@@ -243,7 +284,7 @@ void StateTransitionMonitor::beforeEnteringState(const xercesc::DOMElement* stat
 void StateTransitionMonitor::beforeMicroStep() {
 	std::lock_guard<std::recursive_mutex> lock(_mutex);
 	std::cerr << "Config: {";
-	printNodeSet(_interpreter.getConfiguration());
+//	printNodeSet(_interpreter.getConfiguration());
 	std::cerr << "}" << std::endl;
 }
 

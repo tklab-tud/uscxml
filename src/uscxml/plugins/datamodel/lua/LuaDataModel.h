@@ -20,7 +20,7 @@
 #ifndef LUADATAMODEL_H_113E014C
 #define LUADATAMODEL_H_113E014C
 
-#include "uscxml/plugins/DataModel.h"
+#include "uscxml/plugins/DataModelImpl.h"
 #include <list>
 
 extern "C" {
@@ -40,6 +40,11 @@ class Data;
 }
 
 namespace uscxml {
+
+/**
+ * @ingroup datamodel
+ * Lua data-model.
+ */
 
 class LuaDataModel : public DataModelImpl {
 public:

@@ -20,7 +20,7 @@
 #ifndef NULLDATAMODEL_H_KN8TWG0V
 #define NULLDATAMODEL_H_KN8TWG0V
 
-#include "uscxml/plugins/DataModel.h"
+#include "uscxml/plugins/DataModelImpl.h"
 #include <list>
 
 #ifdef BUILD_AS_PLUGINS
@@ -34,6 +34,10 @@ class Data;
 
 namespace uscxml {
 
+/**
+ * @ingroup datamodel
+ * NULL data-model.
+ */
 class NULLDataModel : public DataModelImpl {
 public:
 	NULLDataModel();
@@ -76,7 +80,7 @@ public:
 		return expr;
 	}
 
-	virtual bool evalAsBool(const xercesc::DOMElement* scriptNode,
+	virtual bool evalAsBool(const XERCESC_NS::DOMElement* scriptNode,
 	                        const std::string& expr);
 	virtual bool evalAsBool(const std::string& expr) {
 		return evalAsBool(NULL, expr);
@@ -86,13 +90,13 @@ public:
 		return true;
 	}
 
-	virtual void assign(const xercesc::DOMElement* assignElem,
-	                    const xercesc::DOMNode* node,
+	virtual void assign(const XERCESC_NS::DOMElement* assignElem,
+	                    const XERCESC_NS::DOMNode* node,
 	                    const std::string& content) {}
 	virtual void assign(const std::string& location, const Data& data) {}
 
-	virtual void init(const xercesc::DOMElement* dataElem,
-	                  const xercesc::DOMNode* node,
+	virtual void init(const XERCESC_NS::DOMElement* dataElem,
+	                  const XERCESC_NS::DOMNode* node,
 	                  const std::string& content) {}
 	virtual void init(const std::string& location, const Data& data) {}
 

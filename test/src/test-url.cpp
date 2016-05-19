@@ -10,7 +10,7 @@
 #include <iostream>
 
 using namespace uscxml;
-using namespace xercesc;
+using namespace XERCESC_NS;
 
 class TestServlet : public HTTPServlet {
 public:

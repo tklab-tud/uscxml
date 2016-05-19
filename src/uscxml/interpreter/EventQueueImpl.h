@@ -17,8 +17,8 @@
  *  @endcond
  */
 
-#ifndef EVENTSOURCE_H_775AB206
-#define EVENTSOURCE_H_775AB206
+#ifndef EVENTQUEUEIMPL_H_48027643
+#define EVENTQUEUEIMPL_H_48027643
 
 #include "uscxml/Common.h"
 #include "uscxml/messages/Event.h"
@@ -34,92 +34,36 @@
 
 namespace uscxml {
 
+/**
+ * @ingroup eventqueue
+ * @ingroup impl
+ */
 class USCXML_API EventQueueImpl {
 public:
-	EventQueueImpl();
-	virtual ~EventQueueImpl();
-	virtual Event dequeue(bool blocking);
-	virtual void enqueue(const Event& event);
-
-protected:
-	std::list<Event> _queue;
-	std::recursive_mutex _mutex;
-	std::condition_variable_any _cond;
-
+	virtual Event dequeue(bool blocking) = 0;
+	virtual void enqueue(const Event& event) = 0;
 };
 
+/**
+ * @ingroup eventqueue
+ * @ingroup callback
+ */
 class USCXML_API DelayedEventQueueCallbacks {
 public:
 	virtual void eventReady(Event& event, const std::string& eventId) = 0;
 };
 
+/**
+ * @ingroup eventqueue
+ * @ingroup impl
+ */
 class USCXML_API DelayedEventQueueImpl : public EventQueueImpl {
 public:
-	DelayedEventQueueImpl(DelayedEventQueueCallbacks* callbacks);
-	virtual ~DelayedEventQueueImpl();
-	virtual void enqueueDelayed(const Event& event, size_t delayMs, const std::string& eventUUID);
-	virtual void cancelDelayed(const std::string& eventId);
-	virtual void cancelAllDelayed();
-
-protected:
-	struct callbackData {
-		Event userData;
-		std::string eventUUID;
-		bool persist;
-		struct event *event;
-		DelayedEventQueueImpl* eventQueue;
-	};
-
-	bool _isStarted;
-	std::thread* _thread;
-
-	std::map<std::string, callbackData> _callbackData;
-	struct event_base* _eventLoop;
-	struct event* _dummyEvent;
-
-	static void run(void* instance);
-	void start();
-	void stop();
-
-	static void timerCallback(evutil_socket_t fd, short what, void *arg);
-	DelayedEventQueueCallbacks* _callbacks;
-};
-
-class USCXML_API EventQueue {
-public:
-	PIMPL_OPERATORS(EventQueue)
-
-	virtual Event dequeue(bool blocking) {
-		return _impl->dequeue(blocking);
-	}
-	virtual void enqueue(const Event& event) {
-		return _impl->enqueue(event);
-	}
-
-protected:
-	std::shared_ptr<EventQueueImpl> _impl;
-
-};
-
-class USCXML_API DelayedEventQueue : public EventQueue {
-public:
-	PIMPL_OPERATORS2(DelayedEventQueue, EventQueue)
-
-	void enqueueDelayed(const Event& event, size_t delayMs, const std::string& eventUUID) {
-		_impl->enqueueDelayed(event, delayMs, eventUUID);
-	}
-	void cancelDelayed(const std::string& eventUUID) {
-		return _impl->cancelDelayed(eventUUID);
-	}
-
-	void cancelAllDelayed() {
-		return _impl->cancelAllDelayed();
-	}
-
-protected:
-	std::shared_ptr<DelayedEventQueueImpl> _impl;
+	virtual void enqueueDelayed(const Event& event, size_t delayMs, const std::string& eventUUID) = 0;
+	virtual void cancelDelayed(const std::string& eventId) = 0;
+	virtual void cancelAllDelayed() = 0;
 };
 
 }
 
-#endif /* end of include guard: EVENTSOURCE_H_775AB206 */
+#endif /* end of include guard: EVENTQUEUEIMPL_H_48027643 */

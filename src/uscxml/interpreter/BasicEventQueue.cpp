@@ -17,7 +17,7 @@
  *  @endcond
  */
 
-#include "EventQueueImpl.h"
+#include "BasicEventQueue.h"
 #include <event2/util.h>                // for evutil_socket_t
 #include <event2/thread.h>
 #include <assert.h>
@@ -26,12 +26,12 @@
 
 namespace uscxml {
 
-EventQueueImpl::EventQueueImpl() {
+BasicEventQueue::BasicEventQueue() {
 }
-EventQueueImpl::~EventQueueImpl() {
+BasicEventQueue::~BasicEventQueue() {
 }
 
-Event EventQueueImpl::dequeue(bool blocking) {
+Event BasicEventQueue::dequeue(bool blocking) {
 	std::lock_guard<std::recursive_mutex> lock(_mutex);
 	if (blocking) {
 		while (_queue.empty()) {
@@ -48,7 +48,7 @@ Event EventQueueImpl::dequeue(bool blocking) {
 
 }
 
-void EventQueueImpl::enqueue(const Event& event) {
+void BasicEventQueue::enqueue(const Event& event) {
 	std::lock_guard<std::recursive_mutex> lock(_mutex);
 	_queue.push_back(event);
 	_cond.notify_all();
@@ -62,7 +62,7 @@ static void dummyCallback(evutil_socket_t fd, short what, void *arg) {
 	evtimer_add(ev, &tv);
 }
 
-DelayedEventQueueImpl::DelayedEventQueueImpl(DelayedEventQueueCallbacks* callbacks) {
+BasicDelayedEventQueue::BasicDelayedEventQueue(DelayedEventQueueCallbacks* callbacks) {
 	_callbacks = callbacks;
 #ifndef _WIN32
 	evthread_use_pthreads();
@@ -84,14 +84,14 @@ DelayedEventQueueImpl::DelayedEventQueueImpl(DelayedEventQueueCallbacks* callbac
 	start();
 }
 
-DelayedEventQueueImpl::~DelayedEventQueueImpl() {
+BasicDelayedEventQueue::~BasicDelayedEventQueue() {
 	stop();
 	evtimer_del(_dummyEvent);
 	event_free(_dummyEvent);
 	event_base_free(_eventLoop);
 }
 
-void DelayedEventQueueImpl::timerCallback(evutil_socket_t fd, short what, void *arg) {
+void BasicDelayedEventQueue::timerCallback(evutil_socket_t fd, short what, void *arg) {
 	struct callbackData *data = (struct callbackData*)arg;
 	std::lock_guard<std::recursive_mutex> lock(data->eventQueue->_mutex);
 
@@ -103,7 +103,7 @@ void DelayedEventQueueImpl::timerCallback(evutil_socket_t fd, short what, void *
 	data->eventQueue->_callbackData.erase(data->eventUUID);
 }
 
-void DelayedEventQueueImpl::enqueueDelayed(const Event& event, size_t delayMs, const std::string& eventUUID) {
+void BasicDelayedEventQueue::enqueueDelayed(const Event& event, size_t delayMs, const std::string& eventUUID) {
 	std::lock_guard<std::recursive_mutex> lock(_mutex);
 	if(_callbackData.find(eventUUID) != _callbackData.end()) {
 		cancelDelayed(eventUUID);
@@ -121,7 +121,7 @@ void DelayedEventQueueImpl::enqueueDelayed(const Event& event, size_t delayMs, c
 	event_add(e, &delay);
 }
 
-void DelayedEventQueueImpl::cancelAllDelayed() {
+void BasicDelayedEventQueue::cancelAllDelayed() {
 	std::lock_guard<std::recursive_mutex> lock(_mutex);
 
 	while(_callbackData.size() > 0) {
@@ -134,7 +134,7 @@ void DelayedEventQueueImpl::cancelAllDelayed() {
 
 }
 
-void DelayedEventQueueImpl::cancelDelayed(const std::string& eventId) {
+void BasicDelayedEventQueue::cancelDelayed(const std::string& eventId) {
 	std::lock_guard<std::recursive_mutex> lock(_mutex);
 
 	if(_callbackData.find(eventId) != _callbackData.end()) {
@@ -144,8 +144,8 @@ void DelayedEventQueueImpl::cancelDelayed(const std::string& eventId) {
 	}
 }
 
-void DelayedEventQueueImpl::run(void* instance) {
-	DelayedEventQueueImpl* INSTANCE = (DelayedEventQueueImpl*)instance;
+void BasicDelayedEventQueue::run(void* instance) {
+	BasicDelayedEventQueue* INSTANCE = (BasicDelayedEventQueue*)instance;
 	int result;
 	while(INSTANCE->_isStarted) {
 		/**
@@ -165,15 +165,15 @@ void DelayedEventQueueImpl::run(void* instance) {
 	}
 }
 
-void DelayedEventQueueImpl::start() {
+void BasicDelayedEventQueue::start() {
 	if (_isStarted) {
 		return;
 	}
 	_isStarted = true;
-	_thread = new std::thread(DelayedEventQueueImpl::run, this);
+	_thread = new std::thread(BasicDelayedEventQueue::run, this);
 }
 
-void DelayedEventQueueImpl::stop() {
+void BasicDelayedEventQueue::stop() {
 	if (_isStarted) {
 		_isStarted = false;
 		event_base_loopbreak(_eventLoop);

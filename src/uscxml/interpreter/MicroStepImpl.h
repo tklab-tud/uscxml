@@ -20,57 +20,50 @@
 #ifndef MICROSTEPIMPL_H_98233709
 #define MICROSTEPIMPL_H_98233709
 
-#include <memory>
-#include <mutex>
+#include "uscxml/config.h"
+
 #include <list>
-#include <map>
 #include <string>
+#include <xercesc/dom/DOM.hpp>
 
 #include "uscxml/Common.h"
+#include "uscxml/Interpreter.h"
 #include "uscxml/messages/Event.h"
-#include "uscxml/interpreter/InterpreterMonitor.h"
-#include "uscxml/util/DOM.h"
-#include <xercesc/dom/DOM.hpp>
+
 
 namespace uscxml {
 
-enum InterpreterState {
-
-
-	USCXML_FINISHED       = -2,  ///< machine reached a final configuration and is done
-	USCXML_INTERRUPTED    = -1,  ///< machine received the empty event on the external queue
-	USCXML_UNDEF          = 0,   ///< not an actual state
-	USCXML_IDLE           = 1,   ///< stable configuration and queues empty
-	USCXML_INITIALIZED    = 2,   ///< DOM is setup and all external components instantiated
-	USCXML_INSTANTIATED   = 3,   ///< nothing really, just instantiated
-	USCXML_MICROSTEPPED   = 4,   ///< processed one transition set
-	USCXML_MACROSTEPPED   = 5,   ///< processed all transition sets and reached a stable configuration
-	USCXML_CANCELLED      = 6,   ///< machine was cancelled, step once more to finalize
-};
-
+/**
+ * @ingroup microstep
+ * @ingroup callback
+ */
 class USCXML_API MicroStepCallbacks {
 public:
 	/** Event Queues / Matching */
 	virtual Event dequeueInternal() = 0;
 	virtual Event dequeueExternal(bool blocking) = 0;
 	virtual bool isMatched(const Event& event, const std::string& eventDesc) = 0;
-	virtual void raiseDoneEvent(xercesc::DOMElement* state, xercesc::DOMElement* doneData) = 0;
+	virtual void raiseDoneEvent(XERCESC_NS::DOMElement* state, XERCESC_NS::DOMElement* doneData) = 0;
 
 	/** Datamodel */
 	virtual bool isTrue(const std::string& expr) = 0;
-	virtual void initData(xercesc::DOMElement* element) = 0;
+	virtual void initData(XERCESC_NS::DOMElement* element) = 0;
 
 	/** Executable Content */
-	virtual void process(xercesc::DOMElement* block) = 0;
+	virtual void process(XERCESC_NS::DOMElement* block) = 0;
 
 	/** Invocations */
-	virtual void invoke(xercesc::DOMElement* invoke) = 0;
-	virtual void uninvoke(xercesc::DOMElement* invoke) = 0;
+	virtual void invoke(XERCESC_NS::DOMElement* invoke) = 0;
+	virtual void uninvoke(XERCESC_NS::DOMElement* invoke) = 0;
 
 	/** Monitoring */
 	virtual InterpreterMonitor* getMonitor() = 0;
 };
 
+/**
+ * @ingroup microstep
+ * @ingroup impl
+ */
 class USCXML_API MicroStepImpl {
 public:
 	enum Binding {
@@ -83,43 +76,14 @@ public:
 	virtual InterpreterState step(bool blocking) = 0;
 	virtual void reset() = 0; ///< Reset state machine
 	virtual bool isInState(const std::string& stateId) = 0;
-	virtual std::list<xercesc::DOMElement*> getConfiguration() = 0;
+	virtual std::list<XERCESC_NS::DOMElement*> getConfiguration() = 0;
 
-	virtual void init(xercesc::DOMElement* scxml) = 0;
+	virtual void init(XERCESC_NS::DOMElement* scxml) = 0;
 	virtual void markAsCancelled() = 0;
 
 protected:
 	MicroStepCallbacks* _callbacks;
 
-};
-
-class USCXML_API MicroStep {
-public:
-	PIMPL_OPERATORS(MicroStep)
-
-	virtual InterpreterState step(bool blocking) {
-		return _impl->step(blocking);
-	}
-	virtual void reset() {
-		return _impl->reset();
-	}
-	virtual bool isInState(const std::string& stateId) {
-		return _impl->isInState(stateId);
-	}
-
-	std::list<xercesc::DOMElement*> getConfiguration() {
-		return _impl->getConfiguration();
-	}
-
-	virtual void init(xercesc::DOMElement* scxml) {
-		_impl->init(scxml);
-	}
-
-	virtual void markAsCancelled() {
-		_impl->markAsCancelled();
-	}
-protected:
-	std::shared_ptr<MicroStepImpl> _impl;
 };
 
 }

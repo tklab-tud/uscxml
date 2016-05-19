@@ -17,8 +17,8 @@
  *  @endcond
  */
 
-#ifndef INTERPRETERIMPL_H_29D5BEBA
-#define INTERPRETERIMPL_H_29D5BEBA
+#ifndef INTERPRETERIMPL_H_2A79C83D
+#define INTERPRETERIMPL_H_2A79C83D
 
 #include <memory>
 #include <mutex>
@@ -29,9 +29,10 @@
 #include "uscxml/Common.h"
 #include "uscxml/util/URL.h"
 #include "uscxml/plugins/Factory.h"
-#include "uscxml/plugins/DataModel.h"
+#include "uscxml/plugins/DataModelImpl.h"
 #include "uscxml/interpreter/MicroStepImpl.h"
 #include "uscxml/interpreter/ContentExecutorImpl.h"
+#include "uscxml/interpreter/EventQueue.h"
 #include "uscxml/interpreter/EventQueueImpl.h"
 #include "uscxml/util/DOM.h"
 #include <xercesc/dom/DOM.hpp>
@@ -41,13 +42,10 @@ namespace uscxml {
 class InterpreterMonitor;
 class InterpreterIssue;
 
-class USCXML_API ActionLanguage {
-public:
-	MicroStep microStepper;
-	DataModel dataModel;
-	ContentExecutor execContent;
-};
-
+/**
+ * @ingroup interpreter
+ * @ingroup impl
+ */
 class USCXML_API InterpreterImpl :
 	public MicroStepCallbacks,
 	public DataModelCallbacks,
@@ -92,7 +90,7 @@ public:
 		return _state;
 	}
 
-	std::list<xercesc::DOMElement*> getConfiguration() {
+	std::list<XERCESC_NS::DOMElement*> getConfiguration() {
 		return _microStepper.getConfiguration();
 	}
 
@@ -112,22 +110,22 @@ public:
 	virtual Event dequeueExternal(bool blocking);
 	virtual bool isTrue(const std::string& expr);
 
-	virtual void raiseDoneEvent(xercesc::DOMElement* state, xercesc::DOMElement* doneData) {
+	virtual void raiseDoneEvent(XERCESC_NS::DOMElement* state, XERCESC_NS::DOMElement* doneData) {
 		_execContent.raiseDoneEvent(state, doneData);
 	}
 
-	virtual void process(xercesc::DOMElement* block) {
+	virtual void process(XERCESC_NS::DOMElement* block) {
 		_execContent.process(block, _xmlPrefix);
 	}
 
 	virtual bool isMatched(const Event& event, const std::string& eventDesc);
-	virtual void initData(xercesc::DOMElement* element);
+	virtual void initData(XERCESC_NS::DOMElement* element);
 
-	virtual void invoke(xercesc::DOMElement* invoke) {
+	virtual void invoke(XERCESC_NS::DOMElement* invoke) {
 		_execContent.invoke(invoke);
 	}
 
-	virtual void uninvoke(xercesc::DOMElement* invoke) {
+	virtual void uninvoke(XERCESC_NS::DOMElement* invoke) {
 		_execContent.uninvoke(invoke);
 	}
 
@@ -154,7 +152,7 @@ public:
 	virtual bool isInState(const std::string& stateId) {
 		return _microStepper.isInState(stateId);
 	}
-	virtual xercesc::DOMDocument* getDocument() const {
+	virtual XERCESC_NS::DOMDocument* getDocument() const {
 		return _document;
 	}
 
@@ -201,7 +199,7 @@ public:
 	}
 
 	virtual bool checkValidSendType(const std::string& type, const std::string& target);
-	virtual void invoke(const std::string& type, const std::string& src, bool autoForward, xercesc::DOMElement* finalize, const Event& invokeEvent);
+	virtual void invoke(const std::string& type, const std::string& src, bool autoForward, XERCESC_NS::DOMElement* finalize, const Event& invokeEvent);
 	virtual void uninvoke(const std::string& invokeId);
 	virtual void enqueue(const std::string& type, const std::string& target, size_t delayMs, const Event& sendEvent);
 
@@ -225,7 +223,7 @@ public:
 
 	static std::map<std::string, std::weak_ptr<InterpreterImpl> > getInstances();
 
-	virtual xercesc::DOMDocument* getDocument() {
+	virtual XERCESC_NS::DOMDocument* getDocument() {
 		return _document;
 	}
 
@@ -239,8 +237,8 @@ protected:
 	std::string _invokeId; // TODO: Never set!
 
 	bool _isInitialized;
-	xercesc::DOMDocument* _document;
-	xercesc::DOMElement* _scxml;
+	XERCESC_NS::DOMDocument* _document;
+	XERCESC_NS::DOMElement* _scxml;
 
 	std::map<std::string, std::tuple<std::string, std::string, std::string> > _delayedEventTargets;
 
@@ -287,4 +285,4 @@ private:
 
 }
 
-#endif /* end of include guard: INTERPRETERIMPL_H_29D5BEBA */
+#endif /* end of include guard: INTERPRETERIMPL_H_2A79C83D */

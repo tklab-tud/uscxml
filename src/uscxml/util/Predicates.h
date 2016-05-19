@@ -28,32 +28,32 @@
 
 namespace uscxml {
 
-std::list<xercesc::DOMElement*> getChildStates(const xercesc::DOMElement* state, bool properOnly = true);
-std::list<xercesc::DOMElement*> getChildStates(const std::list<xercesc::DOMElement*>& states, bool properOnly = true);
-xercesc::DOMElement* getParentState(const xercesc::DOMElement* element);
-xercesc::DOMElement* getSourceState(const xercesc::DOMElement* transition);
-xercesc::DOMElement* findLCCA(const std::list<xercesc::DOMElement*>& states);
-std::list<xercesc::DOMElement*> getProperAncestors(const xercesc::DOMElement* s1, const xercesc::DOMElement* s2);
+std::list<XERCESC_NS::DOMElement*> getChildStates(const XERCESC_NS::DOMElement* state, bool properOnly = true);
+std::list<XERCESC_NS::DOMElement*> getChildStates(const std::list<XERCESC_NS::DOMElement*>& states, bool properOnly = true);
+XERCESC_NS::DOMElement* getParentState(const XERCESC_NS::DOMElement* element);
+XERCESC_NS::DOMElement* getSourceState(const XERCESC_NS::DOMElement* transition);
+XERCESC_NS::DOMElement* findLCCA(const std::list<XERCESC_NS::DOMElement*>& states);
+std::list<XERCESC_NS::DOMElement*> getProperAncestors(const XERCESC_NS::DOMElement* s1, const XERCESC_NS::DOMElement* s2);
 
-std::list<xercesc::DOMElement*> getTargetStates(const xercesc::DOMElement* transition, const xercesc::DOMElement* root);
-std::list<xercesc::DOMElement*> getEffectiveTargetStates(const xercesc::DOMElement* transition);
-xercesc::DOMElement* getTransitionDomain(const xercesc::DOMElement* transition, const xercesc::DOMElement* root);
+std::list<XERCESC_NS::DOMElement*> getTargetStates(const XERCESC_NS::DOMElement* transition, const XERCESC_NS::DOMElement* root);
+std::list<XERCESC_NS::DOMElement*> getEffectiveTargetStates(const XERCESC_NS::DOMElement* transition);
+XERCESC_NS::DOMElement* getTransitionDomain(const XERCESC_NS::DOMElement* transition, const XERCESC_NS::DOMElement* root);
 
-bool isInEmbeddedDocument(const xercesc::DOMNode* node);
+bool isInEmbeddedDocument(const XERCESC_NS::DOMNode* node);
 
-std::list<xercesc::DOMElement*> getStates(const std::list<std::string>& stateIds, const xercesc::DOMElement* root);
-xercesc::DOMElement* getState(const std::string& stateId, const xercesc::DOMElement* root);
-std::list<xercesc::DOMElement*> getInitialStates(const xercesc::DOMElement* state, const xercesc::DOMElement* root);
-std::list<xercesc::DOMElement*> getReachableStates(const xercesc::DOMElement* root);
-std::list<xercesc::DOMElement*> getExitSet(const xercesc::DOMElement* transition, const xercesc::DOMElement* root);
-bool conflicts(const xercesc::DOMElement* transition1, const xercesc::DOMElement* transition2, const xercesc::DOMElement* root);
+std::list<XERCESC_NS::DOMElement*> getStates(const std::list<std::string>& stateIds, const XERCESC_NS::DOMElement* root);
+XERCESC_NS::DOMElement* getState(const std::string& stateId, const XERCESC_NS::DOMElement* root);
+std::list<XERCESC_NS::DOMElement*> getInitialStates(const XERCESC_NS::DOMElement* state, const XERCESC_NS::DOMElement* root);
+std::list<XERCESC_NS::DOMElement*> getReachableStates(const XERCESC_NS::DOMElement* root);
+std::list<XERCESC_NS::DOMElement*> getExitSet(const XERCESC_NS::DOMElement* transition, const XERCESC_NS::DOMElement* root);
+bool conflicts(const XERCESC_NS::DOMElement* transition1, const XERCESC_NS::DOMElement* transition2, const XERCESC_NS::DOMElement* root);
 
-bool isState(const xercesc::DOMElement* state, bool properOnly = true);
-bool isCompound(const xercesc::DOMElement* state);
-bool isAtomic(const xercesc::DOMElement* state);
-bool isParallel(const xercesc::DOMElement* state);
-bool isFinal(const xercesc::DOMElement* state);
-bool isHistory(const xercesc::DOMElement* state);
+bool isState(const XERCESC_NS::DOMElement* state, bool properOnly = true);
+bool isCompound(const XERCESC_NS::DOMElement* state);
+bool isAtomic(const XERCESC_NS::DOMElement* state);
+bool isParallel(const XERCESC_NS::DOMElement* state);
+bool isFinal(const XERCESC_NS::DOMElement* state);
+bool isHistory(const XERCESC_NS::DOMElement* state);
 
 
 }

@@ -23,6 +23,7 @@
 #include <iostream>
 #include <map>
 #include "uscxml/Interpreter.h"
+#include "uscxml/interpreter/InterpreterImpl.h"
 
 namespace uscxml {
 
@@ -47,8 +48,8 @@ protected:
 	std::multimap<std::string, std::string> _extensions;
 	std::list<std::string> _options;
 
-	xercesc::DOMDocument* _document;
-	xercesc::DOMElement* _scxml;
+	XERCESC_NS::DOMDocument* _document;
+	XERCESC_NS::DOMElement* _scxml;
 
 	Interpreter interpreter;
 	InterpreterImpl::Binding _binding;
@@ -63,7 +64,7 @@ public:
 //	Transformer(const Interpreter& source) { _impl = new (source) }
 
 	Transformer() : _impl() {} // the empty, invalid interpreter
-	Transformer(boost::shared_ptr<TransformerImpl> const impl) : _impl(impl) { }
+	Transformer(std::shared_ptr<TransformerImpl> const impl) : _impl(impl) { }
 	Transformer(const Transformer& other) : _impl(other._impl) { }
 	virtual ~Transformer() {};
 
@@ -91,7 +92,7 @@ public:
 		return _impl->operator Interpreter();
 	}
 
-	boost::shared_ptr<TransformerImpl> getImpl() {
+	std::shared_ptr<TransformerImpl> getImpl() {
 		return _impl;
 	}
 
@@ -104,7 +105,7 @@ public:
 	}
 
 protected:
-	boost::shared_ptr<TransformerImpl> _impl;
+	std::shared_ptr<TransformerImpl> _impl;
 
 };
 

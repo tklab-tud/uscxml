@@ -1,5 +1,7 @@
 #include "uscxml/config.h"
 #include "uscxml/Interpreter.h"
+#include "uscxml/interpreter/InterpreterImpl.h"
+#include "uscxml/debug/InterpreterIssue.h"
 #include <easylogging++.h>
 #include <xercesc/util/PlatformUtils.hpp>
 
@@ -36,7 +38,7 @@ public:
 
 int main(int argc, char** argv) {
 
-	using namespace xercesc;
+	using namespace XERCESC_NS;
 
 	int iterations = 1;
 

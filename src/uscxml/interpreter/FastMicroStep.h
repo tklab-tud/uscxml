@@ -17,10 +17,13 @@
  *  @endcond
  */
 
-#ifndef INTERPRETERFAST_H_DA55E52B
-#define INTERPRETERFAST_H_DA55E52B
+#ifndef FASTMICROSTEP_H_065FE1F7
+#define FASTMICROSTEP_H_065FE1F7
 
 //#define USCXML_VERBOSE 1
+
+#include "uscxml/config.h"
+#include "uscxml/util/DOM.h" // X
 
 #include <vector>
 #include <set>
@@ -30,15 +33,19 @@
 
 namespace uscxml {
 
-class MicroStepFast : public MicroStepImpl {
+/**
+ * @ingroup microstep
+ * @ingroup impl
+ */
+class FastMicroStep : public MicroStepImpl {
 public:
-	MicroStepFast(MicroStepCallbacks* callbacks);
-	virtual ~MicroStepFast();
+	FastMicroStep(MicroStepCallbacks* callbacks);
+	virtual ~FastMicroStep();
 
 	virtual InterpreterState step(bool blocking);
 	virtual void reset();
 	virtual bool isInState(const std::string& stateId);
-	virtual std::list<xercesc::DOMElement*> getConfiguration();
+	virtual std::list<XERCESC_NS::DOMElement*> getConfiguration();
 	void markAsCancelled();
 
 protected:
@@ -46,14 +53,14 @@ protected:
 	public:
 		Transition() : element(NULL), source(0), onTrans(NULL), type(0) {}
 
-		xercesc::DOMElement* element;
+		XERCESC_NS::DOMElement* element;
 		boost::dynamic_bitset<> conflicts;
 		boost::dynamic_bitset<> exitSet;
 
 		uint32_t source;
 		boost::dynamic_bitset<> target;
 
-		xercesc::DOMElement* onTrans;
+		XERCESC_NS::DOMElement* onTrans;
 
 		std::string event;
 		std::string cond;
@@ -66,32 +73,32 @@ protected:
 	public:
 		State() : element(NULL), parent(0), documentOrder(0), doneData(NULL), type(0) {}
 
-		xercesc::DOMElement* element;
+		XERCESC_NS::DOMElement* element;
 		boost::dynamic_bitset<> completion;
 		boost::dynamic_bitset<> children;
 		boost::dynamic_bitset<> ancestors;
 		uint32_t parent;
 		uint32_t documentOrder;
 
-		std::list<xercesc::DOMElement*> data;
-		std::list<xercesc::DOMElement*> invoke;
-		std::list<xercesc::DOMElement*> onEntry;
-		std::list<xercesc::DOMElement*> onExit;
-		xercesc::DOMElement* doneData;
+		std::list<XERCESC_NS::DOMElement*> data;
+		std::list<XERCESC_NS::DOMElement*> invoke;
+		std::list<XERCESC_NS::DOMElement*> onEntry;
+		std::list<XERCESC_NS::DOMElement*> onExit;
+		XERCESC_NS::DOMElement* doneData;
 
 		unsigned char type;
 	};
 
-	virtual void init(xercesc::DOMElement* scxml);
+	virtual void init(XERCESC_NS::DOMElement* scxml);
 
-	std::list<xercesc::DOMElement*> getCompletion(const xercesc::DOMElement* state);
+	std::list<XERCESC_NS::DOMElement*> getCompletion(const XERCESC_NS::DOMElement* state);
 
 	unsigned char _flags;
 	std::map<std::string, int> _stateIds;
 
 	std::vector<State*> _states;
 	std::vector<Transition*> _transitions;
-	std::list<xercesc::DOMElement*> _globalScripts;
+	std::list<XERCESC_NS::DOMElement*> _globalScripts;
 
 	boost::dynamic_bitset<> _configuration;
 	boost::dynamic_bitset<> _invocations;
@@ -101,7 +108,7 @@ protected:
 	std::set<boost::dynamic_bitset<> > _microstepConfigurations;
 
 	Binding _binding;
-	xercesc::DOMElement* _scxml;
+	XERCESC_NS::DOMElement* _scxml;
 	X _xmlPrefix;
 	X _xmlNS;
 
@@ -110,8 +117,8 @@ protected:
 	Event _event; // we do not care about the event's representation
 
 private:
-	std::list<xercesc::DOMElement*> getHistoryCompletion(const xercesc::DOMElement* state);
-	void resortStates(xercesc::DOMNode* node, const X& xmlPrefix);
+	std::list<XERCESC_NS::DOMElement*> getHistoryCompletion(const XERCESC_NS::DOMElement* state);
+	void resortStates(XERCESC_NS::DOMNode* node, const X& xmlPrefix);
 
 //    bool hasLegalConfiguration();
 
@@ -123,5 +130,5 @@ private:
 
 }
 
-#endif /* end of include guard: INTERPRETERFAST_H_DA55E52B */
+#endif /* end of include guard: FASTMICROSTEP_H_065FE1F7 */
 

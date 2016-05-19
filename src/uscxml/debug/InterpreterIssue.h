@@ -2,6 +2,7 @@
  *  @file
  *  @author     2012-2014 Stefan Radomski (stefan.radomski@cs.tu-darmstadt.de)
  *  @copyright  Simplified BSD
+ *  @brief      Identifies some common problems with SCXML documents
  *
  *  @cond
  *  This program is free software: you can redistribute it and/or modify
@@ -20,32 +21,46 @@
 #ifndef INTERPRETERISSUE_H_962CB305
 #define INTERPRETERISSUE_H_962CB305
 
+#include "uscxml/config.h"
 #include "uscxml/Common.h"
+
 #include <list>
 #include <iostream>
-#include <xercesc/dom/DOMNode.hpp>
+
+// forward declare
+namespace XERCESC_NS {
+    class DOMNode;
+}
 
 namespace uscxml {
 
 class InterpreterImpl;
 
+/**
+ * Identify and report syntactic and semantic problems with a SCXML state-charts.
+ * @see uscxml::Interpreter::validate()
+ */
 class USCXML_API InterpreterIssue {
 public:
 	enum IssueSeverity {
-		USCXML_ISSUE_FATAL,
-		USCXML_ISSUE_WARNING,
-		USCXML_ISSUE_INFO
+		USCXML_ISSUE_FATAL, ///< Interpreter can not process such a document
+		USCXML_ISSUE_WARNING, ///< Document is questionable, but formally ok
+		USCXML_ISSUE_INFO ///< Indicates a possible problem, but maybe perfectly ok
 	};
 
-	InterpreterIssue(const std::string& msg, xercesc::DOMNode* node, IssueSeverity severity, const std::string& specRef = "");
+	std::string xPath; ///< Where did the issue arise
+	std::string message; ///< What is the issue
+	XERCESC_NS::DOMNode* node; ///< The DOM node pertaining to the issue
+	IssueSeverity severity; ///< Severity of the issue
+	std::string specRef; ///< If applicable, the violated section from the standard
 
-	std::string xPath;
-	std::string message;
-	xercesc::DOMNode* node;
-	IssueSeverity severity;
-	std::string specRef;
+    /**
+     * Constructor is solely used to report issues at runtime.
+     */
+    InterpreterIssue(const std::string& msg, XERCESC_NS::DOMNode* node, IssueSeverity severity, const std::string& specRef = "");
 
 private:
+
 	static std::list<InterpreterIssue> forInterpreter(InterpreterImpl* interpreter);
 	friend class Interpreter;
 };

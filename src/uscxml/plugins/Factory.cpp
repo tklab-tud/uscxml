@@ -24,6 +24,8 @@
 #include "uscxml/Interpreter.h"
 #include <easylogging++.h>
 
+#include "uscxml/plugins/ExecutableContentImpl.h"
+
 // see http://nadeausoftware.com/articles/2012/01/c_c_tip_how_use_compiler_predefined_macros_detect_operating_system
 
 // we will always include these in a build
@@ -275,7 +277,6 @@ std::shared_ptr<DataModelImpl> Factory::createDataModel(const std::string& type,
 		std::string canonicalName = _dataModelAliases[type];
 		if (_dataModels.find(canonicalName) != _dataModels.end()) {
 			std::shared_ptr<DataModelImpl> dataModel = _dataModels[canonicalName]->create(callbacks);
-			dataModel->setCallbacks(callbacks);
 			return dataModel;
 		}
 	}

@@ -26,31 +26,25 @@
 
 namespace uscxml {
 
+class IOProcessorImpl;
 class InterpreterImpl;
 
-class USCXML_API IOProcessorImpl : public EventHandlerImpl {
-public:
-
-	virtual std::shared_ptr<IOProcessorImpl> create(InterpreterImpl* interpreter) = 0;
-	virtual void eventFromSCXML(const std::string& target, const Event& event) = 0;
-	virtual bool isValidTarget(const std::string& target) = 0;
-
-protected:
-	void eventToSCXML(Event& event, const std::string& type, const std::string& origin, bool internal = false);
-
-};
-
+/**
+ * @ingroup ioproc
+ * @ingroup facade
+ * Facade for I/O processors.
+ */
 class USCXML_API IOProcessor : public EventHandler {
 public:
-	PIMPL_OPERATORS2(IOProcessor, EventHandler)
 
-	virtual void eventFromSCXML(const std::string& target, const Event& event) {
-		_impl->eventFromSCXML(target, event);
-	}
+	PIMPL_OPERATORS_INHERIT(IOProcessor, EventHandler);
 
-	virtual bool isValidTarget(const std::string& target) {
-		return _impl->isValidTarget(target);
-	}
+	/// @copydoc IOProcessorImpl::eventFromSCXML
+	virtual void eventFromSCXML(const std::string& target, const Event& event);
+	
+	/// @copydoc IOProcessorImpl::isValidTarget
+	virtual bool isValidTarget(const std::string& target);
+
 
 protected:
 	std::shared_ptr<IOProcessorImpl> _impl;

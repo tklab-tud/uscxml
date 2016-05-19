@@ -26,7 +26,7 @@
 #include "uscxml/plugins/EventHandler.h"
 #include "uscxml/plugins/IOProcessor.h"
 #include "uscxml/plugins/Invoker.h"
-#include "uscxml/plugins/DataModel.h"
+#include "uscxml/plugins/DataModelImpl.h"
 
 #include <string.h>
 

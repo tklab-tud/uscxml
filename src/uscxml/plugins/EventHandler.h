@@ -21,40 +21,58 @@
 #define EVENTHANDLER_H_2801243E
 
 #include "uscxml/Common.h"
-#include "uscxml/messages/Data.h"
 #include "uscxml/messages/Event.h"
 
 #include <list>
 #include <string>
 #include <memory>
-#include <sstream>
-
-#include <xercesc/dom/DOM.hpp>
 
 namespace uscxml {
 
 class InterpreterImpl;
+
+/**
+ * @ingroup ioproc
+ * @ingroup invoker
+ * @ingroup impl
+ * Common base class for invokers and i/o processors.
+ */
 
 class USCXML_API EventHandlerImpl {
 public:
 	EventHandlerImpl() {}
 	virtual ~EventHandlerImpl() {}
 
+	/**
+	 * Return a list of names for types we implement.
+	 */
 	virtual std::list<std::string> getNames() = 0;
+	
+	/**
+	 * Export a Data object for the `_x['name']` data-model namespace
+	 * @return An object to be represented at `_x['name']`
+	 */
 	virtual Data getDataModelVariables() = 0;
 
 protected:
 	InterpreterImpl* _interpreter;
 };
 
+/**
+ * @ingroup ioproc
+ * @ingroup invoker
+ * @ingroup facade
+ */
 class USCXML_API EventHandler {
 public:
 	PIMPL_OPERATORS(EventHandler);
 
+	/// @copydoc EventHandlerImpl::getNames
 	virtual std::list<std::string> getNames()   {
 		return _impl->getNames();
 	}
 
+	/// @copydoc EventHandlerImpl::getDataModelVariables
 	virtual Data getDataModelVariables() const {
 		return _impl->getDataModelVariables();
 	};

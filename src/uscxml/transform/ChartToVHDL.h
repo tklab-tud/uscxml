@@ -191,15 +191,15 @@ protected:
 
 	// event generation
 	void writeExContentBlock(std::ostream & stream, std::string index,
-	                         std::list<xercesc::DOMElement*> commandSequence);
+	                         std::list<XERCESC_NS::DOMElement*> commandSequence);
 
 	Trie _eventTrie;
-	std::list<xercesc::DOMElement*> _execContent;
+	std::list<XERCESC_NS::DOMElement*> _execContent;
 
 private:
 	std::string eventNameEscape(const std::string& eventName);
 
-	std::string getLineForExecContent(const xercesc::DOMElement* elem);
+	std::string getLineForExecContent(const XERCESC_NS::DOMElement* elem);
 
 };
 

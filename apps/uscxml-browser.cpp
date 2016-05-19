@@ -1,5 +1,7 @@
 #include "uscxml/config.h"
 #include "uscxml/Interpreter.h"
+#include "uscxml/debug/InterpreterIssue.h"
+#include "uscxml/interpreter/InterpreterMonitor.h"
 #include "uscxml/util/DOM.h"
 
 #include <easylogging++.h>
@@ -70,7 +72,7 @@ int main(int argc, char** argv) {
 				}
 
 				if (options.verbose) {
-					StateTransitionMonitor* vm = new StateTransitionMonitor(interpreter);
+					StateTransitionMonitor* vm = new StateTransitionMonitor();
 					vm->copyToInvokers(true);
 					interpreter.setMonitor(vm);
 				}

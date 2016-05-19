@@ -53,12 +53,17 @@ foreach(USCXML_ISSUE ${USCXML_ISSUES} )
 endforeach()
 
 # make sure all headers are self-reliant
+set (USCXML_PUBLIC_HEADERS 
+	"${PROJECT_SOURCE_DIR}/src/uscxml/uscxml.h"
+	"${PROJECT_SOURCE_DIR}/src/uscxml/Interpreter.h"
+)
+
 file(GLOB_RECURSE USCXML_HEADERS
 	../src/*.h
 	../src/*.hpp
 )
 
-foreach(USCXML_HEADER ${USCXML_HEADERS} )
+foreach(USCXML_HEADER ${USCXML_PUBLIC_HEADERS} )
 	STRING(REGEX REPLACE "${CMAKE_CURRENT_SOURCE_DIR}/../src/" "" USCXML_REL_HEADER ${USCXML_HEADER})
 
 	set(HEADER_TEST)

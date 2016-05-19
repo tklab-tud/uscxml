@@ -22,7 +22,7 @@
 
 namespace uscxml {
 
-using namespace xercesc;
+using namespace XERCESC_NS;
 
 std::list<DOMElement*> getChildStates(const DOMElement* state, bool properOnly) {
 	std::list<DOMElement*> children;
@@ -39,8 +39,8 @@ std::list<DOMElement*> getChildStates(const DOMElement* state, bool properOnly) 
 	return children;
 }
 
-std::list<xercesc::DOMElement*> getChildStates(const std::list<xercesc::DOMElement*>& states, bool properOnly) {
-	std::list<xercesc::DOMElement*>  children;
+std::list<XERCESC_NS::DOMElement*> getChildStates(const std::list<XERCESC_NS::DOMElement*>& states, bool properOnly) {
+	std::list<XERCESC_NS::DOMElement*>  children;
 	for (auto stateIter = states.begin(); stateIter != states.end(); stateIter++) {
 		std::list<DOMElement*> tmp = getChildStates(*stateIter, properOnly);
 		children.merge(tmp);

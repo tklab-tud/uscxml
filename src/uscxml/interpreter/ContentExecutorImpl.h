@@ -17,20 +17,24 @@
  *  @endcond
  */
 
+#ifndef CONTENTEXECUTORIMPL_H_3ABA8969
+#define CONTENTEXECUTORIMPL_H_3ABA8969
 
-#ifndef CONTENTEXECUTORIMPL_H_13F2884F
-#define CONTENTEXECUTORIMPL_H_13F2884F
 
 #include "uscxml/Common.h"
 #include "uscxml/util/DOM.h"
-#include "uscxml/messages/Data.h"
 #include "uscxml/messages/Event.h"
 #include "uscxml/interpreter/InterpreterMonitor.h"
+
 #include <xercesc/dom/DOM.hpp>
 #include <string>
 
 namespace uscxml {
 
+/**
+ * @ingroup execcontent
+ * @ingroup callback
+ */
 class USCXML_API ContentExecutorCallbacks {
 public:
 	virtual void enqueueInternal(const Event& event) = 0;
@@ -55,7 +59,7 @@ public:
 	virtual std::string getBaseURL() = 0;
 	virtual bool checkValidSendType(const std::string& type, const std::string& target) = 0;
 	virtual void enqueue(const std::string& type, const std::string& target, size_t delayMs, const Event& sendEvent) = 0;
-	virtual void invoke(const std::string& type, const std::string& src, bool autoForward, xercesc::DOMElement* finalize, const Event& invokeEvent) = 0;
+	virtual void invoke(const std::string& type, const std::string& src, bool autoForward, XERCESC_NS::DOMElement* finalize, const Event& invokeEvent) = 0;
 	virtual void uninvoke(const std::string& invokeId) = 0;
 
 	virtual const Event& getCurrentEvent() = 0;
@@ -65,79 +69,27 @@ public:
 
 };
 
+/**
+ * @ingroup execcontent
+ * @ingroup impl
+ */
 class USCXML_API ContentExecutorImpl {
 public:
 	ContentExecutorImpl(ContentExecutorCallbacks* callbacks) : _callbacks(callbacks) {}
 
-	virtual void process(xercesc::DOMElement* block, const X& xmlPrefix) = 0;
+	virtual void process(XERCESC_NS::DOMElement* block, const X& xmlPrefix) = 0;
 
-	virtual void invoke(xercesc::DOMElement* invoke) = 0;
-	virtual void uninvoke(xercesc::DOMElement* invoke) = 0;
+	virtual void invoke(XERCESC_NS::DOMElement* invoke) = 0;
+	virtual void uninvoke(XERCESC_NS::DOMElement* invoke) = 0;
 
-	virtual void raiseDoneEvent(xercesc::DOMElement* state, xercesc::DOMElement* doneData) = 0;
-	virtual Data elementAsData(xercesc::DOMElement* element) = 0;
+	virtual void raiseDoneEvent(XERCESC_NS::DOMElement* state, XERCESC_NS::DOMElement* doneData) = 0;
+	virtual Data elementAsData(XERCESC_NS::DOMElement* element) = 0;
 
 protected:
 	ContentExecutorCallbacks* _callbacks;
 
 };
 
-class USCXML_API BasicContentExecutorImpl : public ContentExecutorImpl {
-public:
-	BasicContentExecutorImpl(ContentExecutorCallbacks* callbacks) : ContentExecutorImpl(callbacks) {}
-	virtual ~BasicContentExecutorImpl() {}
-
-	void processRaise(xercesc::DOMElement* content);
-	void processSend(xercesc::DOMElement* element);
-	void processCancel(xercesc::DOMElement* content);
-	void processIf(xercesc::DOMElement* content);
-	void processAssign(xercesc::DOMElement* content);
-	void processForeach(xercesc::DOMElement* content);
-	void processLog(xercesc::DOMElement* content);
-	void processScript(xercesc::DOMElement* content);
-
-	virtual void process(xercesc::DOMElement* block, const X& xmlPrefix);
-
-	virtual void invoke(xercesc::DOMElement* invoke);
-	virtual void uninvoke(xercesc::DOMElement* invoke);
-	virtual void raiseDoneEvent(xercesc::DOMElement* state, xercesc::DOMElement* doneData);
-
-	virtual Data elementAsData(xercesc::DOMElement* element);
-
-protected:
-	void processNameLists(std::map<std::string, Data>& nameMap, xercesc::DOMElement* element);
-	void processParams(std::multimap<std::string, Data>& paramMap, xercesc::DOMElement* element);
-
-};
-
-class USCXML_API ContentExecutor {
-public:
-	PIMPL_OPERATORS(ContentExecutor)
-
-	virtual void process(xercesc::DOMElement* block, const X& xmlPrefix) {
-		_impl->process(block, xmlPrefix);
-	}
-
-	virtual void invoke(xercesc::DOMElement* invoke) {
-		_impl->invoke(invoke);
-	}
-
-	virtual void uninvoke(xercesc::DOMElement* invoke) {
-		_impl->uninvoke(invoke);
-	}
-
-	virtual Data elementAsData(xercesc::DOMElement* element) {
-		return _impl->elementAsData(element);
-	}
-
-	virtual void raiseDoneEvent(xercesc::DOMElement* state, xercesc::DOMElement* doneData) {
-		return _impl->raiseDoneEvent(state, doneData);
-	}
-
-protected:
-	std::shared_ptr<ContentExecutorImpl> _impl;
-};
-
 }
 
-#endif /* end of include guard: CONTENTEXECUTORIMPL_H_13F2884F */
+#endif /* end of include guard: CONTENTEXECUTORIMPL_H_3ABA8969 */

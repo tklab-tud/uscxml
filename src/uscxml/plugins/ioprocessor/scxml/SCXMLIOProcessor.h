@@ -20,10 +20,14 @@
 #ifndef SCXMLIOProcessor_H_2CUY93KU
 #define SCXMLIOProcessor_H_2CUY93KU
 
-#include "uscxml/plugins/IOProcessor.h"
+#include "uscxml/plugins/IOProcessorImpl.h"
 
 namespace uscxml {
 
+/**
+ * @ingroup ioproc
+ * The scxml I/O processor as per standard.
+ */
 class SCXMLIOProcessor : public IOProcessorImpl {
 public:
 	SCXMLIOProcessor();

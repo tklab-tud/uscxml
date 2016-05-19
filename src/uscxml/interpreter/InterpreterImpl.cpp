@@ -17,12 +17,16 @@
  *  @endcond
  */
 
+#include "uscxml/config.h"
 #include "uscxml/Common.h"
 #include "uscxml/util/UUID.h"
 #include "uscxml/Interpreter.h"
+#include "uscxml/interpreter/InterpreterImpl.h" // beware cyclic reference!
+#include "uscxml/interpreter/BasicEventQueue.h"
 #include "uscxml/messages/Event.h"
 #include "uscxml/util/String.h"
 #include "uscxml/util/Predicates.h"
+#include "uscxml/plugins/InvokerImpl.h"
 
 #include "easylogging++.h"
 
@@ -33,13 +37,15 @@
 #include <memory>
 #include <mutex>
 
-#include "uscxml/interpreter/MicroStepFast.h"
+#include "uscxml/interpreter/FastMicroStep.h"
+#include "uscxml/interpreter/BasicContentExecutor.h"
+
+#include <xercesc/dom/DOM.hpp>
+#include <xercesc/util/PlatformUtils.hpp>
 
 #define VERBOSE 0
 
 namespace uscxml {
-
-using namespace xercesc;
 
 std::map<std::string, std::weak_ptr<InterpreterImpl> > InterpreterImpl::_instances;
 std::recursive_mutex InterpreterImpl::_instanceMutex;
@@ -65,8 +71,8 @@ void InterpreterImpl::addInstance(std::shared_ptr<InterpreterImpl> interpreterIm
 
 InterpreterImpl::InterpreterImpl() : _isInitialized(false), _document(NULL), _scxml(NULL), _state(USCXML_INSTANTIATED), _monitor(NULL) {
 	try {
-		xercesc::XMLPlatformUtils::Initialize();
-	} catch (const xercesc::XMLException& toCatch) {
+		::xercesc_3_1::XMLPlatformUtils::Initialize();
+	} catch (const XERCESC_NS::XMLException& toCatch) {
 		ERROR_PLATFORM_THROW("Cannot initialize XercesC: " + X(toCatch.getMessage()).str());
 	}
 
@@ -80,7 +86,7 @@ InterpreterImpl::~InterpreterImpl() {
 		_delayQueue.cancelAllDelayed();
 	if (_document)
 		delete _document;
-    
+
 	{
 		std::lock_guard<std::recursive_mutex> lock(_instanceMutex);
 		_instances.erase(getSessionId());
@@ -102,7 +108,7 @@ void InterpreterImpl::setupDOM() {
 
 	if (!_scxml) {
 		// find scxml element
-		DOMNodeList* scxmls = NULL;
+		XERCESC_NS::DOMNodeList* scxmls = NULL;
 
 		// proper namespace
 		scxmls = _document->getElementsByTagNameNS(X("http://www.w3.org/2005/07/scxml"), X("scxml"));
@@ -120,7 +126,7 @@ SCXML_STOP_SEARCH:
 			return;
 		}
 
-		_scxml = dynamic_cast<DOMElement*>(scxmls->item(0));
+		_scxml = dynamic_cast<XERCESC_NS::DOMElement*>(scxmls->item(0));
 
 		_xmlPrefix = _scxml->getPrefix();
 		_xmlNS = _scxml->getNamespaceURI();
@@ -171,7 +177,7 @@ void InterpreterImpl::init() {
 	}
 
 	if (!_microStepper) {
-		_microStepper = MicroStep(std::shared_ptr<MicroStepImpl>(new MicroStepFast(this)));
+		_microStepper = MicroStep(std::shared_ptr<MicroStepImpl>(new FastMicroStep(this)));
 	}
 	_microStepper.init(_scxml);
 
@@ -179,23 +185,23 @@ void InterpreterImpl::init() {
 		_dataModel = _factory->createDataModel(HAS_ATTR(_scxml, "datamodel") ? ATTR(_scxml, "datamodel") : "null", this);
 	}
 	if (!_execContent) {
-		_execContent = ContentExecutor(std::shared_ptr<ContentExecutorImpl>(new BasicContentExecutorImpl(this)));
+		_execContent = ContentExecutor(std::shared_ptr<ContentExecutorImpl>(new BasicContentExecutor(this)));
 	}
 
 	if (!_externalQueue) {
-		_externalQueue = EventQueue(std::shared_ptr<EventQueueImpl>(new EventQueueImpl()));
+		_externalQueue = EventQueue(std::shared_ptr<EventQueueImpl>(new BasicEventQueue()));
 	}
 	if (!_internalQueue) {
-		_internalQueue = EventQueue(std::shared_ptr<EventQueueImpl>(new EventQueueImpl()));
+		_internalQueue = EventQueue(std::shared_ptr<EventQueueImpl>(new BasicEventQueue()));
 	}
 	if (!_delayQueue) {
-		_delayQueue = DelayedEventQueue(std::shared_ptr<DelayedEventQueueImpl>(new DelayedEventQueueImpl(this)));
+		_delayQueue = DelayedEventQueue(std::shared_ptr<DelayedEventQueueImpl>(new BasicDelayedEventQueue(this)));
 	}
 
 	_isInitialized = true;
 }
 
-void InterpreterImpl::initData(xercesc::DOMElement* root) {
+void InterpreterImpl::initData(XERCESC_NS::DOMElement* root) {
 	std::string id = ATTR(root, "id");
 	Data d;
 	try {
@@ -330,7 +336,7 @@ void InterpreterImpl::eventReady(Event& sendEvent, const std::string& eventUUID)
 	}
 }
 
-void InterpreterImpl::invoke(const std::string& type, const std::string& src, bool autoForward, xercesc::DOMElement* finalize, const Event& invokeEvent) {
+void InterpreterImpl::invoke(const std::string& type, const std::string& src, bool autoForward, XERCESC_NS::DOMElement* finalize, const Event& invokeEvent) {
 
 	std::string tmp;
 	if (src.size() > 0) {

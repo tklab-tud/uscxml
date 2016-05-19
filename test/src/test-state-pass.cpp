@@ -7,6 +7,7 @@
 #include <xercesc/util/PlatformUtils.hpp>
 
 #include "uscxml/Interpreter.h"
+#include "uscxml/interpreter/InterpreterMonitor.h"
 #include "uscxml/util/DOM.h"
 #include "uscxml/util/String.h"
 #include "uscxml/util/UUID.h"
@@ -34,7 +35,7 @@
 #endif
 
 using namespace std;
-using namespace xercesc;
+using namespace XERCESC_NS;
 using namespace uscxml;
 
 
@@ -67,11 +68,11 @@ int main(int argc, char** argv) {
 		try {
 			Interpreter interpreter = Interpreter::fromURL(documentURI);
 
-			ActionLanguage al;
-			al.execContent = std::shared_ptr<ContentExecutorImpl>(new BasicContentExecutorImpl(interpreter.getImpl().get()));
-			interpreter.setActionLanguage(al);
+//			ActionLanguage al;
+//			al.execContent = std::shared_ptr<ContentExecutorImpl>(new ContentExecutorBasic(interpreter.getImpl().get()));
+//			interpreter.setActionLanguage(al);
 
-			StateTransitionMonitor mon(interpreter);
+			StateTransitionMonitor mon;
 			interpreter.setMonitor(&mon);
 
 			InterpreterState state = InterpreterState::USCXML_UNDEF;

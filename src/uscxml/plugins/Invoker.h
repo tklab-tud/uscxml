@@ -21,63 +21,42 @@
 #define INVOKER_H_CAC11892
 
 
+#include "uscxml/config.h"
 #include "uscxml/Common.h"
 #include "uscxml/plugins/EventHandler.h"
 #include "uscxml/messages/Event.h"
+#include <xercesc/dom/DOM.hpp>
+
+namespace XERCESC_NS {
+    class DOMDocument;
+    class DOMNode;
+}
 
 namespace uscxml {
 
-class Interpreter;
+class InvokerImpl;
 
-class USCXML_API InvokerImpl : public EventHandlerImpl {
-public:
-	InvokerImpl() : _finalize(NULL) {};
-	virtual ~InvokerImpl() {}
-	virtual std::list<std::string> getNames() = 0;
-
-	virtual void invoke(const std::string& source, const Event& invokeEvent) = 0;
-	virtual void uninvoke() = 0;
-
-	virtual void eventFromSCXML(const Event& event) = 0;
-
-	virtual std::shared_ptr<InvokerImpl> create(InterpreterImpl* interpreter) = 0;
-	virtual xercesc::DOMElement* getFinalize() {
-		return _finalize;
-	}
-	virtual void setFinalize(xercesc::DOMElement* finalize) {
-		_finalize = finalize;
-	}
-	virtual void setInvokeId(const std::string& invokeId) {
-		_invokeId = invokeId;
-	}
-
-protected:
-	void eventToSCXML(Event& event, const std::string& type, const std::string& invokeId, bool internal = false);
-
-	xercesc::DOMElement* _finalize;
-	std::string _invokeId;
-
-};
-
+/**
+ * @ingroup invoker
+ * @ingroup facade
+ * Facade for invoker implementation.
+ */
 class USCXML_API Invoker : public EventHandler {
 public:
-	PIMPL_OPERATORS2(Invoker, EventHandler);
+	PIMPL_OPERATORS_INHERIT(Invoker, EventHandler);
 
-	virtual void invoke(const std::string& source, const Event& invokeEvent)     {
-		_impl->invoke(source, invokeEvent);
-	}
+	/// @copydoc InvokerImpl::invoke
+	virtual void invoke(const std::string& source, const Event& invokeEvent);
 
-	virtual void uninvoke()     {
-		_impl->uninvoke();
-	}
+	/// @copydoc InvokerImpl::uninvoke
+	virtual void uninvoke();
 
-	virtual void eventFromSCXML(const Event& event)     {
-		_impl->eventFromSCXML(event);
-	}
+	/// @copydoc InvokerImpl::eventFromSCXML
+	virtual void eventFromSCXML(const Event& event);
 
-	virtual xercesc::DOMElement* getFinalize() {
-		return _impl->getFinalize();
-	}
+	/// @copydoc InvokerImpl::getFinalize
+	virtual XERCESC_NS::DOMElement* getFinalize();
+
 protected:
 	std::shared_ptr<InvokerImpl> _impl;
 };

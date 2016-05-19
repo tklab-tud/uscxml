@@ -33,17 +33,17 @@
 #include "uscxml/util/DOM.h"
 #include <easylogging++.h>
 
-using namespace xercesc;
+using namespace XERCESC_NS;
 
 static v8::Local<v8::Value> XMLString2JS(const XMLCh* input) {
-	char* res = xercesc::XMLString::transcode(input);
+	char* res = XERCESC_NS::XMLString::transcode(input);
 	v8::Local<v8::Value> handle = v8::String::New(res);
 	return handle;
 }
 
 static XMLCh* JS2XMLString(const v8::Local<v8::Value>& value) {
 	v8::String::AsciiValue s(value);
-	XMLCh* ret = xercesc::XMLString::transcode(*s);
+	XMLCh* ret = XERCESC_NS::XMLString::transcode(*s);
 	return(ret);
 }
 
@@ -137,11 +137,11 @@ std::mutex V8DataModel::_initMutex;
 v8::Isolate* V8DataModel::_isolate = NULL;
 
 void V8NodeListIndexedPropertyHandler(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info) {
-	xercesc::DOMNodeList* list;
+	XERCESC_NS::DOMNodeList* list;
 	SWIG_V8_GetInstancePtr(info.Holder(), (void**)&list);
 
 	if (list->getLength() >= index) {
-		xercesc::DOMNode* node = list->item(index);
+		XERCESC_NS::DOMNode* node = list->item(index);
 
 		v8::Handle<v8::Value> val = SWIG_NewPointerObj(SWIG_as_voidptr(node), SWIG_TypeDynamicCast(SWIGTYPE_p_XERCES_CPP_NAMESPACE__DOMNode, SWIG_as_voidptrptr(&node)), 0 |  0 );
 		info.GetReturnValue().Set(val);
@@ -528,7 +528,7 @@ Data V8DataModel::getValueAsData(const v8::Local<v8::Value>& value, std::set<v8:
 	return data;
 }
 
-v8::Local<v8::Value> V8DataModel::getNodeAsValue(const xercesc::DOMNode* node) {
+v8::Local<v8::Value> V8DataModel::getNodeAsValue(const XERCESC_NS::DOMNode* node) {
 	return SWIG_NewPointerObj(SWIG_as_voidptr(node),
 	                          SWIG_TypeDynamicCast(SWIGTYPE_p_XERCES_CPP_NAMESPACE__DOMNode,
 	                                  SWIG_as_voidptrptr(&node)),

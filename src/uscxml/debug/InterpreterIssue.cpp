@@ -23,15 +23,14 @@
 #include "uscxml/util/DOM.h"
 #include "uscxml/util/String.h"
 #include "uscxml/util/Predicates.h"
-//#include "uscxml/debug/Complexity.h"
-#include "uscxml/Interpreter.h"
+#include "uscxml/interpreter/InterpreterImpl.h"
 #include "uscxml/plugins/Factory.h"
 
 #include <xercesc/dom/DOMDocument.hpp>
 
-namespace uscxml {
+using namespace XERCESC_NS;
 
-using namespace xercesc;
+namespace uscxml {
 
 InterpreterIssue::InterpreterIssue(const std::string& msg, DOMNode* node, IssueSeverity severity, const std::string& specRef) : message(msg), node(node), severity(severity), specRef(specRef) {
 	if (node)
@@ -181,7 +180,7 @@ std::list<InterpreterIssue> InterpreterIssue::forInterpreter(InterpreterImpl* in
 	std::list<DOMElement*> scxmls = nodeSets["scxml"];
 	scxmls.push_back(_scxml);
 
-	std::list<xercesc::DOMElement*> reachable = getReachableStates(_scxml);
+	std::list<XERCESC_NS::DOMElement*> reachable = getReachableStates(_scxml);
 
 	std::list<DOMElement*>& states = nodeSets["state"];
 	std::list<DOMElement*>& parallels = nodeSets["parallel"];

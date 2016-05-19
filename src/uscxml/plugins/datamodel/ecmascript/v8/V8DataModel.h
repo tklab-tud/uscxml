@@ -20,7 +20,8 @@
 #ifndef V8DATAMODEL_H_KN8TWG0V
 #define V8DATAMODEL_H_KN8TWG0V
 
-#include "uscxml/plugins/DataModel.h"
+#include "uscxml/plugins/DataModelImpl.h"
+
 #include <list>
 #include <set>
 #include <v8.h>
@@ -35,6 +36,11 @@ class Data;
 }
 
 namespace uscxml {
+
+/**
+ * @ingroup datamodel
+ * ECMAScript data-model via Google's V8.
+ */
 
 class V8DataModel : public DataModelImpl {
 public:
@@ -95,7 +101,7 @@ protected:
 	v8::Local<v8::Value> evalAsValue(const std::string& expr, bool dontThrow = false);
 	v8::Local<v8::Value> getDataAsValue(const Data& data);
 	Data getValueAsData(const v8::Local<v8::Value>& value);
-	v8::Local<v8::Value> getNodeAsValue(const xercesc::DOMNode* node);
+	v8::Local<v8::Value> getNodeAsValue(const XERCESC_NS::DOMNode* node);
 	void throwExceptionEvent(const v8::TryCatch& tryCatch);
 
 	std::set<DataModelExtension*> _extensions;

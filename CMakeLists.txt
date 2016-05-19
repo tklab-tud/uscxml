@@ -9,7 +9,7 @@ ELSE()
    SET(CMAKE_BUILD_TYPE Release CACHE STRING ${BUILD_TYPE_HELP})
 ENDIF()
 
-PROJECT(uscxml)
+PROJECT(uSCXML)
 
 #################################################
 # General Setup
@@ -236,10 +236,22 @@ if (HAS_MODULE_XercesC)
 	find_package(XercesC)
 else()
 	message(STATUS "Could NOT find XercesC (your CMake distribution does not include the FindXercesC module)")
+
+	# make a quick attempt to find xerces
+	INCLUDE(FindPackageHandleStandardArgs)
+	find_path(XercesC_INCLUDE_DIR NAMES "xercesc/util/PlatformUtils.hpp")
+  find_library(XercesC_LIBRARY NAMES "xerces-c" "xerces-c_3")
+  mark_as_advanced(XercesC_LIBRARY)
+	mark_as_advanced(XercesC_INCLUDE_DIR)
+	if (XercesC_INCLUDE_DIR AND XercesC_LIBRARY)
+		set(XercesC_FOUND ON)
+	endif()
 endif()
+
 if (XercesC_FOUND)
 	include_directories(${XercesC_INCLUDE_DIRS})
 	list (APPEND USCXML_CORE_LIBS ${XercesC_LIBRARIES})
+	set(XERCESC_NS "xercesc_3_1")
 else()
 	message(STATUS "--> will download and compile")
 	include("${CMAKE_MODULE_PATH}/BuildXercesC.cmake")
@@ -247,6 +259,7 @@ else()
 		include_directories(${XercesC_INCLUDE_DIRS})
 		list (APPEND USCXML_CORE_LIBS ${XercesC_LIBRARIES})
 		list (APPEND USCXML_PREREQS xerces-c)
+		set(XERCESC_NS "xercesc_3_1")
 	else()
 		message(FATAL_ERROR "Could neither find nor build XercesC")
 	endif()
@@ -378,6 +391,11 @@ set_property(TARGET uscxml-transform PROPERTY CXX_STANDARD_REQUIRED ON)
 install_executable(TARGETS uscxml-transform COMPONENT tools)
 target_link_libraries(uscxml-transform uscxml uscxml_transform)
 
+############################################################
+# Documentation
+############################################################
+
+add_subdirectory(docs)
 
 ############################################################
 # Create config.h

@@ -54,9 +54,11 @@ typedef unsigned __int32  uint32_t;
 #include <sys/socket.h>
 #endif
 
+/**
+   The usual operators as required for the PIMPL pattern.
+ */
 #define PIMPL_OPERATORS(type) \
-\
-type() : _impl() { }\
+type() : _impl() { } \
 type(const std::shared_ptr<type##Impl> impl) : _impl(impl) { }\
 type(const type& other) : _impl(other._impl) { }\
 virtual ~type() { };\
@@ -73,19 +75,18 @@ bool operator==(const type& other) const     {\
 bool operator!=(const type& other) const     {\
     return _impl != other._impl;\
 }\
-type& operator= (const type& other)     {\
+type& operator= (const type& other)          {\
     _impl = other._impl;\
     return *this;\
 }
 
-#define PIMPL_OPERATORS2(type, base) \
-\
+#define PIMPL_OPERATORS_INHERIT(type, base) \
 type() : _impl() {}\
-type(std::shared_ptr<type##Impl> const impl) : base(impl), _impl(impl) { }\
-type(const type& other) : base(other._impl), _impl(other._impl) { }\
+type(std::shared_ptr<type##Impl> const impl);\
+type(const type& other);\
 virtual ~type() {};\
 \
-operator bool()                           const     {\
+operator bool()                    const     {\
     return !!_impl;\
 }\
 bool operator< (const type& other) const     {\
@@ -97,12 +98,17 @@ bool operator==(const type& other) const     {\
 bool operator!=(const type& other) const     {\
     return _impl != other._impl;\
 }\
-type& operator= (const type& other)   {\
+type& operator= (const type& other);
+
+
+#define PIMPL_OPERATORS_INHERIT_IMPL(type, base) \
+type::type(std::shared_ptr<type##Impl> const impl) : base(impl), _impl(impl) { }\
+type::type(const type& other) : base(other._impl), _impl(other._impl) { }\
+type& type::operator= (const type& other)   {\
     _impl = other._impl;\
     base::_impl = _impl;\
     return *this;\
 }
-
 
 
 #if defined(_WIN32)

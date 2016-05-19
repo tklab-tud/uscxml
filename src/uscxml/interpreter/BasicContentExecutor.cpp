@@ -17,13 +17,13 @@
  *  @endcond
  */
 
-#include "ContentExecutorImpl.h"
+#include "BasicContentExecutor.h"
 #include "uscxml/util/String.h"
 #include "uscxml/util/Predicates.h"
 #include "uscxml/util/UUID.h"
 #include "uscxml/util/URL.h"
-#include "uscxml/messages/Data.h"
 
+#include <xercesc/dom/DOM.hpp>
 #include <xercesc/parsers/XercesDOMParser.hpp>
 #include <xercesc/sax/HandlerBase.hpp>
 #include <xercesc/framework/MemBufInputSource.hpp>
@@ -32,14 +32,14 @@
 
 namespace uscxml {
 
-using namespace xercesc;
+using namespace XERCESC_NS;
 
-void BasicContentExecutorImpl::processRaise(xercesc::DOMElement* content) {
+void BasicContentExecutor::processRaise(XERCESC_NS::DOMElement* content) {
 	Event raised(ATTR(content, "event"));
 	_callbacks->enqueueInternal(raised);
 }
 
-void BasicContentExecutorImpl::processSend(xercesc::DOMElement* element) {
+void BasicContentExecutor::processSend(XERCESC_NS::DOMElement* element) {
 	Event sendEvent;
 	std::string target;
 	std::string type = "http://www.w3.org/TR/scxml/#SCXMLEventProcessor"; // default
@@ -193,7 +193,7 @@ void BasicContentExecutorImpl::processSend(xercesc::DOMElement* element) {
 
 }
 
-void BasicContentExecutorImpl::processCancel(xercesc::DOMElement* content) {
+void BasicContentExecutor::processCancel(XERCESC_NS::DOMElement* content) {
 	std::string sendid;
 	if (HAS_ATTR(content, "sendid")) {
 		sendid = ATTR(content, "sendid");
@@ -206,7 +206,7 @@ void BasicContentExecutorImpl::processCancel(xercesc::DOMElement* content) {
 	_callbacks->cancelDelayed(sendid);
 }
 
-void BasicContentExecutorImpl::processIf(xercesc::DOMElement* content) {
+void BasicContentExecutor::processIf(XERCESC_NS::DOMElement* content) {
 	bool blockIsTrue = _callbacks->isTrue(ATTR(content, "cond"));
 
 	DOMNodeList* children = content->getChildNodes();
@@ -241,12 +241,12 @@ void BasicContentExecutorImpl::processIf(xercesc::DOMElement* content) {
 	}
 }
 
-void BasicContentExecutorImpl::processAssign(xercesc::DOMElement* content) {
+void BasicContentExecutor::processAssign(XERCESC_NS::DOMElement* content) {
 	std::string location = ATTR(content, "location");
 	_callbacks->assign(location, elementAsData(content));
 }
 
-void BasicContentExecutorImpl::processForeach(xercesc::DOMElement* content) {
+void BasicContentExecutor::processForeach(XERCESC_NS::DOMElement* content) {
 	std::string array = ATTR(content, "array");
 	std::string item = ATTR(content, "item");
 	std::string index = (HAS_ATTR(content, "index") ? ATTR(content, "index") : "");
@@ -266,7 +266,7 @@ void BasicContentExecutorImpl::processForeach(xercesc::DOMElement* content) {
 	}
 }
 
-void BasicContentExecutorImpl::processLog(xercesc::DOMElement* content) {
+void BasicContentExecutor::processLog(XERCESC_NS::DOMElement* content) {
 	std::string label = ATTR(content, "label");
 	std::string expr = ATTR(content, "expr");
 
@@ -277,14 +277,14 @@ void BasicContentExecutorImpl::processLog(xercesc::DOMElement* content) {
 	std::cout << d << std::endl;
 }
 
-void BasicContentExecutorImpl::processScript(xercesc::DOMElement* content) {
+void BasicContentExecutor::processScript(XERCESC_NS::DOMElement* content) {
 	// download as necessary
 	std::string scriptContent(X(content->getTextContent()));
 	_callbacks->evalAsData(scriptContent);
 
 }
 
-void BasicContentExecutorImpl::process(xercesc::DOMElement* block, const X& xmlPrefix) {
+void BasicContentExecutor::process(XERCESC_NS::DOMElement* block, const X& xmlPrefix) {
 	std::string tagName = TAGNAME(block);
 
 
@@ -379,7 +379,7 @@ void BasicContentExecutorImpl::process(xercesc::DOMElement* block, const X& xmlP
 
 }
 
-void BasicContentExecutorImpl::invoke(xercesc::DOMElement* element) {
+void BasicContentExecutor::invoke(XERCESC_NS::DOMElement* element) {
 	std::string type;
 	std::string source;
 	bool autoForward = false;
@@ -475,7 +475,7 @@ void BasicContentExecutorImpl::invoke(xercesc::DOMElement* element) {
 	USCXML_MONITOR_CALLBACK2(_callbacks->getMonitor(), afterUninvoking, element, invokeEvent.invokeid);
 }
 
-void BasicContentExecutorImpl::uninvoke(xercesc::DOMElement* invoke) {
+void BasicContentExecutor::uninvoke(XERCESC_NS::DOMElement* invoke) {
 	// TODO: DANGER This is the real danger here
 	char* invokeId = (char*)invoke->getUserData(X("invokeid"));
 	assert(invokeId != NULL);
@@ -487,7 +487,7 @@ void BasicContentExecutorImpl::uninvoke(xercesc::DOMElement* invoke) {
 	free(invokeId);
 }
 
-void BasicContentExecutorImpl::raiseDoneEvent(xercesc::DOMElement* state, xercesc::DOMElement* doneData) {
+void BasicContentExecutor::raiseDoneEvent(XERCESC_NS::DOMElement* state, XERCESC_NS::DOMElement* doneData) {
 
 	Event doneEvent;
 	doneEvent.name = "done.state.";
@@ -535,7 +535,7 @@ void BasicContentExecutorImpl::raiseDoneEvent(xercesc::DOMElement* state, xerces
 
 }
 
-void BasicContentExecutorImpl::processNameLists(std::map<std::string, Data>& nameMap, DOMElement* element) {
+void BasicContentExecutor::processNameLists(std::map<std::string, Data>& nameMap, DOMElement* element) {
 	if (HAS_ATTR(element, "namelist")) {
 		std::list<std::string> names = tokenize(ATTR(element, "namelist"));
 		for (std::list<std::string>::const_iterator nameIter = names.begin(); nameIter != names.end(); nameIter++) {
@@ -544,7 +544,7 @@ void BasicContentExecutorImpl::processNameLists(std::map<std::string, Data>& nam
 	}
 }
 
-void BasicContentExecutorImpl::processParams(std::multimap<std::string, Data>& paramMap, DOMElement* element) {
+void BasicContentExecutor::processParams(std::multimap<std::string, Data>& paramMap, DOMElement* element) {
 	std::list<DOMElement*> params = DOMUtils::filterChildElements(XML_PREFIX(element).str() + "param", element);
 	for (auto paramIter = params.begin(); paramIter != params.end(); paramIter++) {
 		std::string name = ATTR(*paramIter, "name");
@@ -560,7 +560,7 @@ void BasicContentExecutorImpl::processParams(std::multimap<std::string, Data>& p
 	}
 }
 
-Data BasicContentExecutorImpl::elementAsData(xercesc::DOMElement* element) {
+Data BasicContentExecutor::elementAsData(XERCESC_NS::DOMElement* element) {
 	if (HAS_ATTR(element, "expr")) {
 //        return _callbacks->evalAsData(ATTR(element, "expr"));
 		if (LOCALNAME(element) == "content") {
@@ -586,22 +586,22 @@ Data BasicContentExecutorImpl::elementAsData(xercesc::DOMElement* element) {
 
 		// make an attempt to parse as XML
 		try {
-			xercesc::XercesDOMParser* parser = new xercesc::XercesDOMParser();
-			parser->setValidationScheme(xercesc::XercesDOMParser::Val_Always);
+			XERCESC_NS::XercesDOMParser* parser = new XERCESC_NS::XercesDOMParser();
+			parser->setValidationScheme(XERCESC_NS::XercesDOMParser::Val_Always);
 			parser->setDoNamespaces(true);
-			parser->useScanner(xercesc::XMLUni::fgWFXMLScanner);
+			parser->useScanner(XERCESC_NS::XMLUni::fgWFXMLScanner);
 
-			xercesc::ErrorHandler* errHandler = new xercesc::HandlerBase();
+			XERCESC_NS::ErrorHandler* errHandler = new XERCESC_NS::HandlerBase();
 			parser->setErrorHandler(errHandler);
 
 			std::string tmp = url;
-			xercesc::MemBufInputSource is((XMLByte*)content.c_str(), content.size(), X("fake"));
+			XERCESC_NS::MemBufInputSource is((XMLByte*)content.c_str(), content.size(), X("fake"));
 
 			parser->parse(is);
 
 			Data d;
-			xercesc::DOMDocument* doc = parser->adoptDocument();
-			d.adoptedDoc = std::make_shared<xercesc::DOMDocument*>(doc);
+			XERCESC_NS::DOMDocument* doc = parser->adoptDocument();
+			d.adoptedDoc = std::make_shared<XERCESC_NS::DOMDocument*>(doc);
 			d.node = doc->getDocumentElement();
 			return d;
 

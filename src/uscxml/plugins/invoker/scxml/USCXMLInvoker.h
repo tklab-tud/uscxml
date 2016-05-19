@@ -20,8 +20,11 @@
 #ifndef USCXMLINVOKER_H_OQFA21IO
 #define USCXMLINVOKER_H_OQFA21IO
 
-#include <uscxml/Interpreter.h>
-#include "uscxml/interpreter/EventQueueImpl.h"
+#include "uscxml/interpreter/InterpreterImpl.h"
+#include "uscxml/interpreter/BasicEventQueue.h"
+
+#include "uscxml/plugins/Invoker.h"
+#include "uscxml/plugins/InvokerImpl.h"
 
 #ifdef BUILD_AS_PLUGINS
 #include "uscxml/plugins/Plugins.h"
@@ -31,11 +34,15 @@
 
 namespace uscxml {
 
+/**
+* @ingroup invoker
+ * An invoker for other SCXML instances.
+ */
 class USCXMLInvoker :
 	public InvokerImpl,
 	public std::enable_shared_from_this<USCXMLInvoker> {
 public:
-	class ParentQueueImpl : public EventQueueImpl {
+	class ParentQueueImpl : public BasicEventQueue {
 	public:
 		ParentQueueImpl(USCXMLInvoker* invoker) : _invoker(invoker) {}
 		virtual void enqueue(const Event& event);

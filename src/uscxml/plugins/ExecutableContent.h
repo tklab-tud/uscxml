@@ -20,81 +20,37 @@
 #ifndef EXECUTABLECONTENT_H_1E028A2D
 #define EXECUTABLECONTENT_H_1E028A2D
 
+#include "uscxml/config.h"
 #include "uscxml/Common.h"
+
 #include <string>
 #include <memory>
 #include <sstream>
-#include "xercesc/dom/DOM.hpp"
+
+// forward declare
+namespace XERCESC_NS {
+    class DOMElement;
+}
 
 namespace uscxml {
 
-class InterpreterImpl;
+class ExecutableContentImpl;
 
-class USCXML_API ExecutableContentImpl {
-public:
-	ExecutableContentImpl() {};
-	virtual ~ExecutableContentImpl() {};
-	virtual std::shared_ptr<ExecutableContentImpl> create(InterpreterImpl* interpreter) = 0;
-
-	virtual void setInterpreter(InterpreterImpl* interpreter) {
-		_interpreter = interpreter;
-	}
-
-	virtual std::string getLocalName() = 0; ///< The name of the element.
-	virtual std::string getNamespace() {
-		return "http://www.w3.org/2005/07/scxml";    ///< The namespace of the element.
-	}
-	virtual void enterElement(xercesc::DOMElement* node) = 0; ///< Invoked when entering the element as part of evaluating executable content.
-	virtual void exitElement(xercesc::DOMElement* node) = 0; ///< Invoked when exiting the element as part of evaluating executable content.
-	virtual bool processChildren() = 0; ///< Whether or not the interpreter should process this elements children.
-
-protected:
-	InterpreterImpl* _interpreter;
-};
-
+/**
+ * @ingroup element
+ * @ingroup facade
+ * Facade for all executable content implementations.
+ */
 class USCXML_API ExecutableContent {
 public:
-	ExecutableContent() : _impl() {}
-	ExecutableContent(std::shared_ptr<ExecutableContentImpl> const impl) : _impl(impl) { }
-	ExecutableContent(const ExecutableContent& other) : _impl(other._impl) { }
-	virtual ~ExecutableContent() {};
+	PIMPL_OPERATORS(ExecutableContent);
 
-	operator bool() const {
-		return !!_impl;
-	}
-	bool operator< (const ExecutableContent& other) const     {
-		return _impl < other._impl;
-	}
-	bool operator==(const ExecutableContent& other) const     {
-		return _impl == other._impl;
-	}
-	bool operator!=(const ExecutableContent& other) const     {
-		return _impl != other._impl;
-	}
-	ExecutableContent& operator= (const ExecutableContent& other)   {
-		_impl = other._impl;
-		return *this;
-	}
-
-	void setInterpreter(InterpreterImpl* interpreter) {
-		_impl->setInterpreter(interpreter);
-	}
-
-	std::string getLocalName() {
-		return _impl->getLocalName();
-	}
-	std::string getNamespace() {
-		return _impl->getNamespace();
-	}
-	void enterElement(xercesc::DOMElement* node) {
-		return _impl->enterElement(node);
-	}
-	void exitElement(xercesc::DOMElement* node) {
-		return _impl->exitElement(node);
-	}
-	bool processChildren() {
-		return _impl->processChildren();
-	}
+	std::string getLocalName();
+	std::string getNamespace();
+	void enterElement(XERCESC_NS::DOMElement* node);
+	void exitElement(XERCESC_NS::DOMElement* node);
+	bool processChildren();
+	
 protected:
 	std::shared_ptr<ExecutableContentImpl> _impl;
 

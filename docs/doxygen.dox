@@ -1,0 +1,56 @@
+/**
+ * @defgroup extension Extension Points
+ * @brief    Available extension points for the uSCXML intepreter.
+ *
+ * @{
+ * 	@defgroup ioproc I/O Processors
+ * 	@brief    Custom In-/Ouput processors.
+
+I/O processors will allow to send and receive events from and to a running
+SCXML instance.
+
+ * 	@defgroup invoker Invokers
+ * 	@brief    Types of components for the invoke element to summon.
+
+Invokers will allow to specify types of external components to instantiate and
+communicate with via events.
+
+ * 	@defgroup datamodel Data-Models
+ * 	@brief    Additional data-models for embedded scriptings.
+
+Data-models provide a syntax and semantic for an embedded scripting language.
+Within the SCXML standard there are normative descriptions of ECMAScript and an
+XPath description that was removed before recommendation status.
+
+ * 	@defgroup element Executable Content
+ * 	@brief    Custom XML elements for executable content.
+
+An extension point to register custom elements as executable content.
+
+ * @}
+
+ * @defgroup interpreter Interpreter
+ * @brief    The components constituting the core of the interpreter.
+ * @{
+
+ * 	@defgroup microstep Microstep
+ * 	@brief    Implementations of the micro-step(t) algorithm.
+
+ * 	@defgroup execcontent Content Executor
+ * 	@brief    Instances to process executable content as part of a micro-step.
+
+ * 	@defgroup eventqueue Event Queue
+ * 	@brief    Implementation of proper and delayed event queues.
+
+ * @}
+
+ * @defgroup callback Callbacks
+ * @brief    Callback interfaces.
+
+ * @defgroup facade Facades
+ * @brief    User-facing facades for the implementations.
+
+ * @defgroup abstract Interfaces
+ * @brief    Base classes as interfaces for implementations.
+
+ */
