@@ -1,0 +1,6 @@
+<map id="Extension Points" name="Extension Points">
+<area shape="rect" id="node2" href="$group__invoker.html" title="Types of components for the invoke element to summon. " alt="" coords="208,5,280,32"/>
+<area shape="rect" id="node3" href="$group__ioproc.html" title="Custom In&#45;/Ouput processors. " alt="" coords="189,56,299,83"/>
+<area shape="rect" id="node4" href="$group__datamodel.html" title="Additional data&#45;models for embedded scriptings. " alt="" coords="195,107,293,133"/>
+<area shape="rect" id="node5" href="$group__element.html" title="Custom XML elements for executable content. " alt="" coords="175,157,313,184"/>
+</map>

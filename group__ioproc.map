@@ -1,0 +1,6 @@
+<map id="I/O Processors" name="I/O Processors">
+<area shape="rect" id="node1" href="$group__extension.html" title="Available extension points for the uSCXML intepreter. " alt="" coords="5,76,127,103"/>
+<area shape="rect" id="node2" href="$group__facade.html" title="User&#45;facing facades for the implementations. " alt="" coords="494,16,567,43"/>
+<area shape="rect" id="node3" href="$group__invoker.html" title="Types of components for the invoke element to summon. " alt="" coords="495,76,567,103"/>
+<area shape="rect" id="node5" href="$group__abstract.html" title="Base classes as interfaces for implementations. " alt="" coords="491,127,571,153"/>
+</map>

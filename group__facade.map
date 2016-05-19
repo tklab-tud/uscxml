@@ -1,0 +1,10 @@
+<map id="Facades" name="Facades">
+<area shape="rect" id="node1" href="$group__eventqueue.html" title="Implementation of proper and delayed event queues. " alt="" coords="318,32,418,59"/>
+<area shape="rect" id="node3" href="$group__interpreter.html" title="The components constituting the core of the interpreter. " alt="" coords="326,83,410,109"/>
+<area shape="rect" id="node4" href="$group__invoker.html" title="Types of components for the invoke element to summon. " alt="" coords="332,143,404,169"/>
+<area shape="rect" id="node5" href="$group__ioproc.html" title="Custom In&#45;/Ouput processors. " alt="" coords="313,197,423,224"/>
+<area shape="rect" id="node6" href="$group__microstep.html" title="Implementations of the micro&#45;step(t) algorithm. " alt="" coords="328,248,408,275"/>
+<area shape="rect" id="node7" href="$group__datamodel.html" title="Additional data&#45;models for embedded scriptings. " alt="" coords="319,299,417,325"/>
+<area shape="rect" id="node8" href="$group__execcontent.html" title="Instances to process executable content as part of a micro&#45;step. " alt="" coords="305,349,431,376"/>
+<area shape="rect" id="node9" href="$group__element.html" title="Custom XML elements for executable content. " alt="" coords="299,400,437,427"/>
+</map>
