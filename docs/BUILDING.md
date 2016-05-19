@@ -4,9 +4,9 @@
 
 [TOC]
 
-@brief This page describes how to build uSCXML from source, starting with either a git checkout or from a downloaded archive.
-The source code is built using CMake, the process of building uscxml is
-essentially the same on every platform:
+This page describes how to build uSCXML from source, starting with either a git
+checkout or from a downloaded archive. The source code is built using CMake,
+the process of building uscxml is essentially the same on every platform.
 
 1. Read the <b>[Platform Notes](#platform-notes)</b> below to prepare your system.
 2. Checkout uscxml into a convenient directory.

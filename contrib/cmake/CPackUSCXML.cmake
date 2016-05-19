@@ -18,7 +18,7 @@ file(GLOB_RECURSE PLATFORM_LIBS
 
 # sort host-native libraries into installation components
 foreach(PLATFORM_LIB ${PLATFORM_LIBS})
-#	message("PLATFORM_LIB: ${PLATFORM_LIB}")
+	# message("PLATFORM_LIB: ${PLATFORM_LIB}")
 	install(FILES ${PLATFORM_LIB} DESTINATION lib COMPONENT library)
 	list (APPEND USCXML_CPACK_COMPONENTS "library")
 endforeach()
@@ -33,6 +33,12 @@ file(GLOB_RECURSE USCXML_HEADERS
 	${CMAKE_BINARY_DIR}/uscxml/)
 
 INSTALL_HEADERS(HEADERS ${USCXML_HEADERS} COMPONENT headers)
+list (APPEND USCXML_CPACK_COMPONENTS "headers")
+
+# foreach(USCXML_HEADER ${USCXML_HEADERS})
+# 	message("USCXML_HEADER: ${USCXML_HEADER}")
+# endforeach()
+
 
 
 ########################################
@@ -61,8 +67,6 @@ endif()
 # #	message(STATUS ${HTML_PATH})
 # endforeach()
 
-
-list (APPEND USCXML_CPACK_COMPONENTS "headers")
 
 if (NOT CMAKE_CROSS_COMPILING)
 	list (APPEND USCXML_CPACK_COMPONENTS "tools")
