@@ -17,6 +17,8 @@ if(BUILD_DOCS)
 	    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
 	    COMMENT "Generating API documentation with Doxygen"
 	    VERBATIM)
-
+	
+	file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/html)
+	
 	install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/html DESTINATION share/doc/uscxml)
 endif()
