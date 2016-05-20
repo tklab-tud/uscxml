@@ -141,8 +141,12 @@ URL URLImpl::resolveWithCWD(URLImpl* relative) {
 	currPath[sizeof(currPath) - 1] = '\0'; /* not really required? */
 
 	// without the trailing slash, last component is assumed a file
-	std::shared_ptr<URLImpl> cwdURL(new URLImpl(std::string("file://") + currPath + PATH_SEPERATOR));
-
+#if WIN32
+	std::shared_ptr<URLImpl> cwdURL(new URLImpl(std::string(currPath)));
+#else
+    std::shared_ptr<URLImpl> cwdURL(new URLImpl(std::string("file://") + currPath + PATH_SEPERATOR));
+#endif
+    
 	return resolve(relative, cwdURL.get());
 }
 

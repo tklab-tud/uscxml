@@ -23,7 +23,9 @@ elseif (WIN32)
 		BUILD_COMMAND nmake -f Makefile.nmake
 		INSTALL_COMMAND
 			${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/deps/libevent/lib && 
-			${CMAKE_COMMAND} -E copy libevent.lib libevent_core.lib libevent_extras.lib ${CMAKE_BINARY_DIR}/deps/libevent/lib/ && 
+			${CMAKE_COMMAND} -E copy libevent.lib ${CMAKE_BINARY_DIR}/deps/libevent/lib/ && 
+			${CMAKE_COMMAND} -E copy libevent_core.lib ${CMAKE_BINARY_DIR}/deps/libevent/lib/ && 
+			${CMAKE_COMMAND} -E copy libevent_extras.lib ${CMAKE_BINARY_DIR}/deps/libevent/lib/ && 
 			${CMAKE_COMMAND} -E copy_directory include ${CMAKE_BINARY_DIR}/deps/libevent/include &&
 			${CMAKE_COMMAND} -E copy Win32-Code/event2/event-config.h ${CMAKE_BINARY_DIR}/deps/libevent/include/event2/
 	)

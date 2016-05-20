@@ -344,7 +344,7 @@ if (NOT IGNORE_V8)
 endif()
 
 # Lua
-OPTION(IGNORE_V8 "Do not search for the Lua libraries" OFF)
+OPTION(IGNORE_LUA "Do not search for the Lua libraries" OFF)
 if (NOT IGNORE_LUA)
 	if (WIN32)
 		# LuaForWindows https://code.google.com/archive/p/luaforwindows/downloads

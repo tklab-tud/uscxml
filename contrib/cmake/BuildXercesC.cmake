@@ -2,19 +2,7 @@
 # see http://tools.cinemapub.be/opendcp/opendcp-0.19-src/contrib/CMakeLists.txt
 
 include(ExternalProject)
-if (UNIX)
-	externalproject_add(xerces-c
-		URL http://ftp.halifax.rwth-aachen.de/apache/xerces/c/3/sources/xerces-c-3.1.3.tar.gz
-		URL_MD5 70320ab0e3269e47d978a6ca0c0e1e2d
-		BUILD_IN_SOURCE 0
-		PREFIX ${CMAKE_BINARY_DIR}/deps/xerces-c
-		CONFIGURE_COMMAND 
-			"<SOURCE_DIR>/configure" 
-			"--enable-static" 
-			"--enable-shared"
-			"--prefix=<INSTALL_DIR>"
-	)
-elseif(WIN32)
+if(MSVC)
 	set(VC_VERSION VC12)
 	# see https://en.wikipedia.org/wiki/Visual_C%2B%2B
 
@@ -42,38 +30,46 @@ elseif(WIN32)
 	
 	set(VSPROJECT_PATH "projects/Win32/${VC_VERSION}/xerces-all/XercesLib")
 	
+	set(XERCESC_BUILD_PATH_SUFFIX Win32)
+	set(XERCESC_BUILD_PLATFORM Win32)
 	if( CMAKE_SIZEOF_VOID_P EQUAL 8 )
-		externalproject_add(xerces-c
-			URL http://ftp.halifax.rwth-aachen.de/apache/xerces/c/3/sources/xerces-c-3.1.3.tar.gz
-			URL_MD5 70320ab0e3269e47d978a6ca0c0e1e2d
-			BUILD_IN_SOURCE 1
-			PREFIX ${CMAKE_BINARY_DIR}/deps/xerces-c
-			CONFIGURE_COMMAND ""
-			# BUILD_COMMAND cd ${VSPROJECT_PATH} && msbuild /p:Configuration=Static\ Release /p:Platform=x64 /p:RuntimeLibrary=MD_DynamicRelease ${VC_PLATFORM} /t:build XercesLib.vcxproj
-			# INSTALL_COMMAND ${CMAKE_COMMAND} -E copy_directory Build/Win64/${VC_VERSION}/Static\ Release/ ${CMAKE_BINARY_DIR}/deps/xerces-c/lib/ && ${CMAKE_COMMAND} -E copy_directory src/ ${CMAKE_BINARY_DIR}/deps/xerces-c/include/
-			BUILD_COMMAND cd ${VSPROJECT_PATH} && msbuild /p:Configuration=Release /p:Platform=x64 ${VC_PLATFORM} /t:build XercesLib.vcxproj
-			INSTALL_COMMAND 
-				${CMAKE_COMMAND} -E copy_directory Build/Win64/${VC_VERSION}/Release/ ${CMAKE_BINARY_DIR}/deps/xerces-c/lib/ && 
-				${CMAKE_COMMAND} -E copy ${CMAKE_BINARY_DIR}/deps/xerces-c/lib/xerces-c_3_1.dll ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/ && 
-				${CMAKE_COMMAND} -E copy_directory src/ ${CMAKE_BINARY_DIR}/deps/xerces-c/include/
-		)
-	else()
-		externalproject_add(xerces-c
-			URL http://ftp.halifax.rwth-aachen.de/apache/xerces/c/3/sources/xerces-c-3.1.3.tar.gz
-			URL_MD5 70320ab0e3269e47d978a6ca0c0e1e2d
-			BUILD_IN_SOURCE 1
-			PREFIX ${CMAKE_BINARY_DIR}/deps/xerces-c
-			CONFIGURE_COMMAND ""
-			# BUILD_COMMAND cd ${VSPROJECT_PATH} && msbuild /p:Configuration=Static\ Release /p:Platform=Win32 /p:RuntimeLibrary=MD_DynamicRelease ${VC_PLATFORM} /t:build XercesLib.vcxproj
-			# INSTALL_COMMAND ${CMAKE_COMMAND} -E copy_directory Build/Win32/${VC_VERSION}/Static\ Release/ ${CMAKE_BINARY_DIR}/deps/xerces-c/lib/ && ${CMAKE_COMMAND} -E copy_directory src/ ${CMAKE_BINARY_DIR}/deps/xerces-c/include/
-			BUILD_COMMAND cd ${VSPROJECT_PATH} && msbuild /p:Configuration=Release /p:Platform=Win32 ${VC_PLATFORM} /t:build XercesLib.vcxproj
-			INSTALL_COMMAND 
-				${CMAKE_COMMAND} -E copy_directory Build/Win32/${VC_VERSION}/Release/ ${CMAKE_BINARY_DIR}/deps/xerces-c/lib/ && 
-				${CMAKE_COMMAND} -E copy ${CMAKE_BINARY_DIR}/deps/xerces-c/lib/xerces-c_3_1.dll ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/ && 
-				${CMAKE_COMMAND} -E copy_directory src/ ${CMAKE_BINARY_DIR}/deps/xerces-c/include/
-		)
+		set(XERCESC_BUILD_PATH_SUFFIX Win64)
+		set(XERCESC_BUILD_PLATFORM x64)
 	endif()
-endif()
+	
+	externalproject_add(xerces-c
+		URL http://ftp.halifax.rwth-aachen.de/apache/xerces/c/3/sources/xerces-c-3.1.3.tar.gz
+		URL_MD5 70320ab0e3269e47d978a6ca0c0e1e2d
+		BUILD_IN_SOURCE 1
+		PREFIX ${CMAKE_BINARY_DIR}/deps/xerces-c
+		CONFIGURE_COMMAND ""
+		# BUILD_COMMAND cd ${VSPROJECT_PATH} && msbuild /p:Configuration=Static\ Release /p:Platform=x64 /p:RuntimeLibrary=MD_DynamicRelease ${VC_PLATFORM} /t:build XercesLib.vcxproj
+		# INSTALL_COMMAND ${CMAKE_COMMAND} -E copy_directory Build/Win64/${VC_VERSION}/Static\ Release/ ${CMAKE_BINARY_DIR}/deps/xerces-c/lib/ && ${CMAKE_COMMAND} -E copy_directory src/ ${CMAKE_BINARY_DIR}/deps/xerces-c/include/
+		BUILD_COMMAND cd ${VSPROJECT_PATH} && msbuild /p:Configuration=Release /p:Platform=${XERCESC_BUILD_PLATFORM} ${VC_PLATFORM} /t:build XercesLib.vcxproj
+		INSTALL_COMMAND 
+			${CMAKE_COMMAND} -E make_directory Build/${XERCESC_BUILD_PATH_SUFFIX}/${VC_VERSION}/Debug &&
+			${CMAKE_COMMAND} -E make_directory ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Debug &&
+			${CMAKE_COMMAND} -E make_directory Build/${XERCESC_BUILD_PATH_SUFFIX}/${VC_VERSION}/Release &&
+			${CMAKE_COMMAND} -E make_directory ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Release &&
+			${CMAKE_COMMAND} -E copy_directory Build/${XERCESC_BUILD_PATH_SUFFIX}/${VC_VERSION}/Debug/ ${CMAKE_BINARY_DIR}/deps/xerces-c/lib/ && 
+			${CMAKE_COMMAND} -E copy ${CMAKE_BINARY_DIR}/deps/xerces-c/lib/xerces-c_3_1.dll ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Debug/ && 
+			${CMAKE_COMMAND} -E copy_directory Build/${XERCESC_BUILD_PATH_SUFFIX}/${VC_VERSION}/Release/ ${CMAKE_BINARY_DIR}/deps/xerces-c/lib/ && 
+			${CMAKE_COMMAND} -E copy ${CMAKE_BINARY_DIR}/deps/xerces-c/lib/xerces-c_3_1.dll ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Release/ && 
+			${CMAKE_COMMAND} -E copy_directory src/ ${CMAKE_BINARY_DIR}/deps/xerces-c/include/
+		)
+else()
+	externalproject_add(xerces-c
+		URL http://ftp.halifax.rwth-aachen.de/apache/xerces/c/3/sources/xerces-c-3.1.3.tar.gz
+		URL_MD5 70320ab0e3269e47d978a6ca0c0e1e2d
+		BUILD_IN_SOURCE 0
+		PREFIX ${CMAKE_BINARY_DIR}/deps/xerces-c
+		CONFIGURE_COMMAND 
+			"<SOURCE_DIR>/configure" 
+			"--enable-static" 
+			"--enable-shared"
+			"--prefix=<INSTALL_DIR>"
+	)
+endif()	
 
 # TODO: --with-curl=DIR 
 

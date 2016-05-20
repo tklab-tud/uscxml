@@ -44,9 +44,9 @@ int main(int argc, char** argv) {
 
 	while(iterations--) {
 
-		if (1) {
+		if (Factory::getInstance()->hasDataModel("ecmascript")) {
 			// Potential endless loop
-
+			
 			const char* xml =
 			    "<scxml datamodel=\"ecmascript\">"
 			    "	<datamodel><data id=\"counter\" expr=\"5\" /></datamodel>"
@@ -72,7 +72,7 @@ int main(int argc, char** argv) {
 			// Unreachable states 1
 
 			const char* xml =
-			    "<scxml datamodel=\"ecmascript\">"
+			    "<scxml>"
 			    "	<state id=\"foo\">"
 			    "		<parallel id=\"foz\">"
 			    "			<state id=\"s0\" />"
@@ -91,9 +91,9 @@ int main(int argc, char** argv) {
 		if (1) {
 			// Invalid parents
 			const char* xml =
-			    "<scxml datamodel=\"ecmascript\">"
+			    "<scxml>"
 			    "		<onentry>"
-			    "			<cancel sendidexpr=\"foo\" />"
+			    "			<cancel sendid=\"foo\" />"
 			    "		</onentry>"
 			    "</scxml>";
 
@@ -102,11 +102,11 @@ int main(int argc, char** argv) {
 			assert(issueLocations.size() == 1);
 		}
 
-		if (0) {
+		if (1) {
 			// State has no 'id' attribute
 			// *** This is not actually an error! ***
 			const char* xml =
-			    "<scxml datamodel=\"ecmascript\">"
+			    "<scxml>"
 			    "	<state>"
 			    "		<transition/>"
 			    " </state>"
@@ -120,7 +120,7 @@ int main(int argc, char** argv) {
 		if (1) {
 			// Duplicate state with id
 			const char* xml =
-			    "<scxml datamodel=\"ecmascript\">"
+			    "<scxml>"
 			    "	<state id=\"start\" />"
 			    " <state id=\"start\" />"
 			    "</scxml>";
@@ -134,7 +134,7 @@ int main(int argc, char** argv) {
 			// Transition has non-existant target state
 
 			const char* xml =
-			    "<scxml datamodel=\"ecmascript\">"
+			    "<scxml>"
 			    "	<state id=\"start\">"
 			    "		<transition target=\"done\" />"
 			    " </state>"
@@ -149,7 +149,7 @@ int main(int argc, char** argv) {
 			// Useless history 1
 
 			const char* xml =
-			    "<scxml datamodel=\"ecmascript\">"
+			    "<scxml>"
 			    " <state id=\"start\" initial=\"bar\">"
 			    "   <history id=\"bar\" />"
 			    "   <state id=\"baz\" />"
@@ -168,7 +168,7 @@ int main(int argc, char** argv) {
 			// Useless history 2
 
 			const char* xml =
-			    "<scxml datamodel=\"ecmascript\">"
+			    "<scxml>"
 			    " <state id=\"start\" initial=\"bar\">"
 			    "   <history id=\"bar\">"
 			    "       <transition target=\"foo\" />"
@@ -188,7 +188,7 @@ int main(int argc, char** argv) {
 			// No legal completion
 
 			const char* xml =
-			    "<scxml datamodel=\"ecmascript\">"
+			    "<scxml>"
 			    " <state id=\"start\" initial=\"foo bar\">"
 			    "	<state id=\"foo\" />"
 			    "	<state id=\"bar\" />"
@@ -208,7 +208,7 @@ int main(int argc, char** argv) {
 			{
 				// initial attribute and <initial> child
 				const char* xml =
-				    "<scxml datamodel=\"ecmascript\">"
+				    "<scxml>"
 				    " <state id=\"start\" initial=\"foo\">"
 				    "   <initial>"
 				    "       <transition target=\"foo\" />"
@@ -225,7 +225,7 @@ int main(int argc, char** argv) {
 			{
 				// initial attribute with atomic state
 				const char* xml =
-				    "<scxml datamodel=\"ecmascript\">"
+				    "<scxml>"
 				    " <state id=\"start\" initial=\"\" />"
 				    "</scxml>";
 
@@ -237,7 +237,7 @@ int main(int argc, char** argv) {
 			{
 				// initial child with atomic state
 				const char* xml =
-				    "<scxml datamodel=\"ecmascript\">"
+				    "<scxml>"
 				    " <state id=\"start\">"
 				    "   <initial>"
 				    "       <transition target=\"start\" />"
@@ -254,7 +254,7 @@ int main(int argc, char** argv) {
 			{
 				// send with content and namelist, not allowed
 				const char* xml =
-				    "<scxml datamodel=\"ecmascript\">"
+				    "<scxml>"
 				    " <state id=\"start\">"
 				    "   <onentry>"
 				    "     <send target=\"#_external\" namelist=\"var1\">"
@@ -272,7 +272,7 @@ int main(int argc, char** argv) {
 			{
 				// send with content and params, not allowed
 				const char* xml =
-				    "<scxml datamodel=\"ecmascript\">"
+				    "<scxml>"
 				    " <state id=\"start\">"
 				    "   <onentry>"
 				    "     <send target=\"#_external\">"
@@ -291,7 +291,7 @@ int main(int argc, char** argv) {
 			{
 				// send with params and namelist, perfectly acceptable
 				const char* xml =
-				    "<scxml datamodel=\"ecmascript\">"
+				    "<scxml>"
 				    " <state id=\"start\">"
 				    "   <onentry>"
 				    "     <send target=\"#_external\" namelist=\"foo\">"
@@ -308,7 +308,7 @@ int main(int argc, char** argv) {
 			{
 				// invoke with content and src, not allowed
 				const char* xml =
-				    "<scxml datamodel=\"ecmascript\">"
+				    "<scxml>"
 				    " <state id=\"start\">"
 				    "     <invoke type=\"scxml\" src=\"var1\">"
 				    "       <content>Foo!</content>"
@@ -324,7 +324,7 @@ int main(int argc, char** argv) {
 			{
 				// invoke with namelist and param, not allowed
 				const char* xml =
-				    "<scxml datamodel=\"ecmascript\">"
+				    "<scxml>"
 				    " <state id=\"start\">"
 				    "     <invoke type=\"scxml\" namelist=\"var1\">"
 				    "       <param name=\"foo\" expr=\"3\" />"
@@ -340,7 +340,7 @@ int main(int argc, char** argv) {
 			{
 				// invoke with param and content, perfectly acceptable
 				const char* xml =
-				    "<scxml datamodel=\"ecmascript\">"
+				    "<scxml>"
 				    " <state id=\"start\">"
 				    "     <invoke type=\"scxml\">"
 				    "       <param name=\"foo\" expr=\"3\" />"
@@ -356,7 +356,7 @@ int main(int argc, char** argv) {
 			{
 				// invoke with namelist and content, perfectly acceptable
 				const char* xml =
-				    "<scxml datamodel=\"ecmascript\">"
+				    "<scxml>"
 				    " <state id=\"start\">"
 				    "     <invoke type=\"scxml\" namelist=\"var1\">"
 				    "       <content>Foo!</content>"
@@ -371,7 +371,7 @@ int main(int argc, char** argv) {
 			{
 				// donedata with content and param, not allowed
 				const char* xml =
-				    "<scxml datamodel=\"ecmascript\">"
+				    "<scxml>"
 				    " <state id=\"start\">"
 				    "     <donedata>"
 				    "       <param name=\"foo\" expr=\"3\" />"
@@ -392,7 +392,7 @@ int main(int argc, char** argv) {
 			// Transition can never be optimally enabled (conditionless, eventless)
 
 			const char* xml =
-			    "<scxml datamodel=\"ecmascript\">"
+			    "<scxml>"
 			    "  <state id=\"start\">"
 			    "    <transition target=\"done\" />"
 			    "    <transition target=\"done\" />"
@@ -408,7 +408,7 @@ int main(int argc, char** argv) {
 			// Transition can never be optimally enabled (conditionless, more events)
 
 			const char* xml =
-			    "<scxml datamodel=\"ecmascript\">"
+			    "<scxml>"
 			    "	<state id=\"start\">"
 			    "		<transition event=\"error\" target=\"done\" />"
 			    "		<transition event=\"error.bar error.foo\" />"
@@ -426,7 +426,7 @@ int main(int argc, char** argv) {
 			// Initial attribute has invalid target state
 
 			const char* xml =
-			    "<scxml datamodel=\"ecmascript\" initial=\"foo\">"
+			    "<scxml initial=\"foo\">"
 			    "</scxml>";
 
 			std::set<std::string> issueLocations = issueLocationsForXML(xml);
@@ -438,7 +438,7 @@ int main(int argc, char** argv) {
 			// Initial attribute with target outside of children
 
 			const char* xml =
-			    "<scxml datamodel=\"ecmascript\">"
+			    "<scxml>"
 			    " <state id=\"start\" initial=\"foo done\">"
 			    "	<state id=\"foo\" />"
 			    " </state>"
@@ -453,7 +453,7 @@ int main(int argc, char** argv) {
 			// Initial transition with target outside of children
 
 			const char* xml =
-			    "<scxml datamodel=\"ecmascript\">"
+			    "<scxml>"
 			    " <state id=\"start\">"
 			    "   <initial>"
 			    "       <transition target=\"foo done\" />"
@@ -471,7 +471,7 @@ int main(int argc, char** argv) {
 			// Initial history transition with target outside of children
 
 			const char* xml =
-			    "<scxml datamodel=\"ecmascript\">"
+			    "<scxml>"
 			    " <state id=\"start\" initial=\"bar\">"
 			    "   <history id=\"bar\">"
 			    "       <transition target=\"foo done\" />"
@@ -492,7 +492,7 @@ int main(int argc, char** argv) {
 			// Initial transition with target outside of children
 
 			const char* xml =
-			    "<scxml datamodel=\"ecmascript\">"
+			    "<scxml>"
 			    " <state id=\"start\">"
 			    "   <initial>"
 			    "       <transition target=\"foo done\" />"
@@ -510,7 +510,7 @@ int main(int argc, char** argv) {
 		if (1) {
 			// Initial transition with event
 			const char* xml =
-			    "<scxml datamodel=\"ecmascript\">"
+			    "<scxml>"
 			    " <state id=\"start\">"
 			    "   <initial>"
 			    "       <transition event=\"e.foo\" target=\"foo\" />"
@@ -529,7 +529,7 @@ int main(int argc, char** argv) {
 		if (1) {
 			// Initial transition with condition
 			const char* xml =
-			    "<scxml datamodel=\"ecmascript\">"
+			    "<scxml>"
 			    " <state id=\"start\">"
 			    "   <initial>"
 			    "       <transition cond=\"true\" target=\"foo\" />"
@@ -548,7 +548,7 @@ int main(int argc, char** argv) {
 		if (1) {
 			// Initial with multiple transitions
 			const char* xml =
-			    "<scxml datamodel=\"ecmascript\">"
+			    "<scxml>"
 			    " <state id=\"start\">"
 			    "   <initial>"
 			    "       <transition target=\"foo\" />"
@@ -568,7 +568,7 @@ int main(int argc, char** argv) {
 		if (1) {
 			// Initial with no transitions
 			const char* xml =
-			    "<scxml datamodel=\"ecmascript\">"
+			    "<scxml>"
 			    " <state id=\"start\">"
 			    "   <initial />"
 			    "	<state id=\"foo\" />"
@@ -586,7 +586,7 @@ int main(int argc, char** argv) {
 		if (1) {
 			// History transition with event
 			const char* xml =
-			    "<scxml datamodel=\"ecmascript\">"
+			    "<scxml>"
 			    " <state id=\"start\" initial=\"bar\">"
 			    "   <history id=\"bar\">"
 			    "       <transition event=\"e.foo\" target=\"foo\" />"
@@ -610,7 +610,7 @@ int main(int argc, char** argv) {
 		if (1) {
 			// History transition with condition
 			const char* xml =
-			    "<scxml datamodel=\"ecmascript\">"
+			    "<scxml>"
 			    " <state id=\"start\" initial=\"bar\">"
 			    "   <history id=\"bar\">"
 			    "       <transition cond=\"false\" target=\"foo\" />"
@@ -635,7 +635,7 @@ int main(int argc, char** argv) {
 			// Send to unknown IO Processor
 
 			const char* xml =
-			    "<scxml datamodel=\"ecmascript\">"
+			    "<scxml>"
 			    "	<state id=\"start\">"
 			    "		<onentry>"
 			    "			<send type=\"non-existant\" />"
@@ -664,7 +664,7 @@ int main(int argc, char** argv) {
 			// Unknown executable content element
 
 			const char* xml =
-			    "<scxml datamodel=\"ecmascript\">"
+			    "<scxml>"
 			    "	<state id=\"start\">"
 			    "		<onentry>"
 			    "			<nonexistant />"
@@ -677,7 +677,7 @@ int main(int argc, char** argv) {
 			assert(issueLocations.size() == 1);
 		}
 
-		if (1) {
+        if (Factory::getInstance()->hasDataModel("ecmascript")) {
 			// Syntax error in script
 
 			const char* xml =
@@ -692,7 +692,7 @@ int main(int argc, char** argv) {
 			assert(issueLocations.size() == 1);
 		}
 
-		if (1) {
+        if (Factory::getInstance()->hasDataModel("ecmascript")) {
 			// Syntax error in cond attribute
 
 			const char* xml =
@@ -714,7 +714,7 @@ int main(int argc, char** argv) {
 			assert(issueLocations.size() == 3);
 		}
 
-		if (1) {
+        if (Factory::getInstance()->hasDataModel("ecmascript")) {
 			// Syntax error in expr attribute
 
 			const char* xml =
@@ -745,7 +745,7 @@ int main(int argc, char** argv) {
 			assert(issueLocations.size() == 5);
 		}
 
-		if (1) {
+        if (Factory::getInstance()->hasDataModel("ecmascript")) {
 			// Syntax error with foreach
 
 			const char* xml =
@@ -763,7 +763,7 @@ int main(int argc, char** argv) {
 			assert(issueLocations.size() == 1);
 		}
 
-		if (1) {
+        if (Factory::getInstance()->hasDataModel("ecmascript")) {
 			// Syntax error with send
 
 			const char* xml =
@@ -780,7 +780,7 @@ int main(int argc, char** argv) {
 			assert(issueLocations.size() == 1);
 		}
 
-		if (1) {
+        if (Factory::getInstance()->hasDataModel("ecmascript")) {
 			// Syntax error with invoke
 
 			const char* xml =
@@ -795,7 +795,7 @@ int main(int argc, char** argv) {
 			assert(issueLocations.size() == 1);
 		}
 
-		if (1) {
+        if (Factory::getInstance()->hasDataModel("ecmascript")) {
 			// Syntax error with cancel
 
 			const char* xml =
