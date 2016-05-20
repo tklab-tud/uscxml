@@ -25,7 +25,7 @@ elseif(WIN32)
 				${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/contrib/patches/uriparser-vs2013 <SOURCE_DIR>/win32/uriparser-vs2013
 			CONFIGURE_COMMAND ""
 			BUILD_COMMAND cd win32/uriparser-vs2013 && devenv /Upgrade uriparser.vcxproj && msbuild /p:Configuration=Release /p:Platform=x64 /t:build uriparser.vcxproj
-			INSTALL_COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/deps/uriparser/lib && ${CMAKE_COMMAND} -E copy win32/uriparser.lib ${CMAKE_BINARY_DIR}/deps/uriparser/lib && ${CMAKE_COMMAND} -E copy_directory include ${CMAKE_BINARY_DIR}/deps/uriparser/include
+			INSTALL_COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/deps/uriparser/lib && ${CMAKE_COMMAND} -E copy win32/uriparser.lib ${CMAKE_BINARY_DIR}/deps/uriparser/lib/ && ${CMAKE_COMMAND} -E copy_directory include ${CMAKE_BINARY_DIR}/deps/uriparser/include
 		)
 	else()
 		set(VSPROJECT_PATH "win32/Visual_Studio_2005")
@@ -37,7 +37,7 @@ elseif(WIN32)
 			PREFIX ${CMAKE_BINARY_DIR}/deps/uriparser
 			CONFIGURE_COMMAND ""
 			BUILD_COMMAND cd ${VSPROJECT_PATH} && devenv /Upgrade uriparser.vcproj && msbuild /p:Configuration=Release /p:Platform=Win32 /t:build uriparser.vcxproj
-			INSTALL_COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/deps/uriparser/lib && ${CMAKE_COMMAND} -E copy win32/uriparser.lib ${CMAKE_BINARY_DIR}/deps/uriparser/lib && ${CMAKE_COMMAND} -E copy_directory include ${CMAKE_BINARY_DIR}/deps/uriparser/include
+			INSTALL_COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/deps/uriparser/lib && ${CMAKE_COMMAND} -E copy win32/uriparser.lib ${CMAKE_BINARY_DIR}/deps/uriparser/lib/ && ${CMAKE_COMMAND} -E copy_directory include ${CMAKE_BINARY_DIR}/deps/uriparser/include
 		)
 	endif()
 	
