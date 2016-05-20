@@ -146,7 +146,7 @@ void USCXMLInvoker::invoke(const std::string& source, const Event& invokeEvent) 
 //        std::cout << *document << std::endl;
 
 		// TODO: where do we get the namespace from?
-		_invokedInterpreter = Interpreter::fromDocument(document, _interpreter->getBaseURL());
+		_invokedInterpreter = Interpreter::fromDocument(document, _interpreter->getBaseURL(), false);
 
 	} else {
 		_isActive = false;

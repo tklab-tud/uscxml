@@ -2,17 +2,7 @@
 # see http://tools.cinemapub.be/opendcp/opendcp-0.19-src/contrib/CMakeLists.txt
 
 include(ExternalProject)
-if (UNIX)
-	externalproject_add(libevent
-		URL https://github.com/libevent/libevent/releases/download/release-2.0.22-stable/libevent-2.0.22-stable.tar.gz
-		URL_MD5 c4c56f986aa985677ca1db89630a2e11
-		BUILD_IN_SOURCE 0
-		PREFIX ${CMAKE_BINARY_DIR}/deps/libevent
-		CONFIGURE_COMMAND 
-			CFLAGS=-fPIC <SOURCE_DIR>/configure --enable-static --enable-shared --disable-openssl --prefix=<INSTALL_DIR>
-	)
-	
-elseif (WIN32)
+if (MSVC)
 	
 	externalproject_add(libevent
 		URL https://github.com/libevent/libevent/releases/download/release-2.0.22-stable/libevent-2.0.22-stable.tar.gz
@@ -29,6 +19,20 @@ elseif (WIN32)
 			${CMAKE_COMMAND} -E copy_directory include ${CMAKE_BINARY_DIR}/deps/libevent/include &&
 			${CMAKE_COMMAND} -E copy Win32-Code/event2/event-config.h ${CMAKE_BINARY_DIR}/deps/libevent/include/event2/
 	)
+else ()
+	if (UNIX)
+		set(FORCE_FPIC "CFLAGS=-fPIC")
+	endif()
+
+	externalproject_add(libevent
+		URL https://github.com/libevent/libevent/releases/download/release-2.0.22-stable/libevent-2.0.22-stable.tar.gz
+		URL_MD5 c4c56f986aa985677ca1db89630a2e11
+		BUILD_IN_SOURCE 0
+		PREFIX ${CMAKE_BINARY_DIR}/deps/libevent
+		CONFIGURE_COMMAND
+			 ${FORCE_FPIC} <SOURCE_DIR>/configure --enable-static --enable-shared --disable-openssl --prefix=<INSTALL_DIR>
+	)
+	
 endif()
 
 set(LIBEVENT_INCLUDE_DIR ${CMAKE_BINARY_DIR}/deps/libevent/include)

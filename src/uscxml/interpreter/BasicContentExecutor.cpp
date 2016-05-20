@@ -444,6 +444,9 @@ void BasicContentExecutor::invoke(XERCESC_NS::DOMElement* element) {
 		// content
 		std::list<DOMElement*> contents = DOMUtils::filterChildElements(XML_PREFIX(element).str() + "content", element);
 		if (contents.size() > 0) {
+#if 1
+			invokeEvent.data.node = contents.front();
+#else
 			Data d = elementAsData(contents.front());
 			if (d.type == Data::INTERPRETED && d.atom.size() > 0) {
 				// immediately evaluate!
@@ -451,9 +454,10 @@ void BasicContentExecutor::invoke(XERCESC_NS::DOMElement* element) {
 			} else {
 				invokeEvent.data = d;
 			}
+#endif
 		}
 	} catch (Event e) {
-		ERROR_EXECUTION_THROW2("Syntax error in send element content", element);
+		ERROR_EXECUTION_THROW2("Syntax error in invoke element content", element);
 	}
 
 	// autoforward

@@ -289,19 +289,24 @@ void FastMicroStep::init(XERCESC_NS::DOMElement* scxml) {
 		DOMNode* parent = _states[i]->element->getParentNode();
 		if (parent && parent->getNodeType() == DOMNode::ELEMENT_NODE) {
 			State* uscxmlState = (State*)parent->getUserData(X("uscxmlState"));
-			// parent
-			_states[i]->parent = uscxmlState->documentOrder;
+			// parent maybe a content element
+            if (uscxmlState != NULL) {
+                _states[i]->parent = uscxmlState->documentOrder;
+            }
 		}
 
 		while(parent && parent->getNodeType() == DOMNode::ELEMENT_NODE) {
 			State* uscxmlState = (State*)parent->getUserData(X("uscxmlState"));
 
-			// ancestors
-			BIT_SET_AT(uscxmlState->documentOrder, _states[i]->ancestors);
+            if (uscxmlState == NULL)
+                break;
 
-			// children
-			BIT_SET_AT(i, uscxmlState->children);
-			parent = parent->getParentNode();
+            // ancestors
+            BIT_SET_AT(uscxmlState->documentOrder, _states[i]->ancestors);
+
+            // children
+            BIT_SET_AT(i, uscxmlState->children);
+            parent = parent->getParentNode();
 		}
 	}
 

@@ -1,19 +1,10 @@
 include(ExternalProject)
 
+if (WIN32)
+	add_definitions("-DCURL_STATICLIB")
+endif()
 
-if (UNIX)
-	externalproject_add(libcurl
-		URL https://curl.haxx.se/download/curl-7.48.0.tar.gz
-		URL_MD5 b2cac71029d28cb989150bac72aafab5
-		BUILD_IN_SOURCE 0
-		PREFIX ${CMAKE_BINARY_DIR}/deps/libcurl
-		CONFIGURE_COMMAND 
-			"<SOURCE_DIR>/configure" 
-			"--without-ssl"
-			"--enable-shared"
-			"--prefix=<INSTALL_DIR>"
-	)
-elseif (WIN32)
+if (MSVC)
 	
 	# see https://en.wikipedia.org/wiki/Visual_C%2B%2B
 	set(VC_VERSION 14)
@@ -34,11 +25,7 @@ elseif (WIN32)
 	elseif (MSVC_VERSION LESS 1900)
 		set(VC_VERSION 12)
 	endif()
-	
-	if (WIN32)
-		add_definitions("-DCURL_STATICLIB")
-	endif()
-	
+		
 	if( CMAKE_SIZEOF_VOID_P EQUAL 8 )
 		externalproject_add(libcurl
 			URL https://curl.haxx.se/download/curl-7.48.0.tar.gz
@@ -60,6 +47,18 @@ elseif (WIN32)
 			INSTALL_COMMAND ${CMAKE_COMMAND} -E copy_directory builds/libcurl-vc${VC_VERSION}-x86-release-static-ipv6-sspi-winssl ${CMAKE_BINARY_DIR}/deps/libcurl/
 		)
 	endif()
+else()
+	externalproject_add(libcurl
+		URL https://curl.haxx.se/download/curl-7.48.0.tar.gz
+		URL_MD5 b2cac71029d28cb989150bac72aafab5
+		BUILD_IN_SOURCE 0
+		PREFIX ${CMAKE_BINARY_DIR}/deps/libcurl
+		CONFIGURE_COMMAND 
+			"<SOURCE_DIR>/configure" 
+			"--without-ssl"
+			"--enable-shared"
+			"--prefix=<INSTALL_DIR>"
+	)
 endif()
 
 set(LIBCURL_INCLUDE_DIR ${CMAKE_BINARY_DIR}/deps/libcurl/include)

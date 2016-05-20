@@ -20,15 +20,11 @@ For **Makefiles on Unices**, these steps essentially boil down to:
 
 	$ git clone git://github.com/tklab-tud/uscxml.git
 	$ mkdir uscxml/build && cd uscxml/build
-	$ cmake ..
-	$ make
+	$ cmake .. && make
 
-On **NMake on Windows**, you may have luck to run the following from a VS2013 or VS2015 command prompt:
+For **MSVC on Windows**, run form a developer command-prompt and substitute the last line above by:
 
-	$ git clone git://github.com/tklab-tud/uscxml.git
-	$ mkdir uscxml/build && cd uscxml/build
-	$ cmake -G"NMake Makefiles" ..
-	$ nmake
+	$ cmake -G "NMake Makefiles" .. && nmake
 
 <b>Note:</b> If you want to build for another IDE or build-system, just create
 a new *out-of-source* build directory and start over with CMake. To get an idea
@@ -43,6 +39,9 @@ directory anywhere else. This only applies to the Eclipse CDT project generator.
 <b>Note:</b> I could not build the language bindings with the Visual Studio
 generator as it croaks when calling SWIG, just have another build directory
 with the "NMake Makefiles" project generator.
+
+<b>Note:</b> In order to compile with `MinGW` on windows you will ave to adapt the build scripts in `contrib/cmake/Build*`. If you succeed, a pull request would be most appreciated.
+
 
 \section deps Build Dependencies
 
