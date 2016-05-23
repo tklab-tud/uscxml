@@ -105,7 +105,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="contents">
 
 <p>The basichttp I/O processor as per standard.  
- <a href="classuscxml_1_1_basic_h_t_t_p_i_o_processor.html#details">More...</a></p>
+</p>
 
 <p><code>#include &lt;<a class="el" href="_basic_h_t_t_p_i_o_processor_8h_source.html">BasicHTTPIOProcessor.h</a>&gt;</code></p>
 <div class="dynheader">
@@ -121,57 +121,57 @@ Collaboration diagram for uscxml::BasicHTTPIOProcessor:</div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a1aac2ea2ef2f5b04b7f5e5bdbcc358cb"><td class="memItemLeft" align="right" valign="top">virtual std::shared_ptr&lt; <a class="el" href="classuscxml_1_1_i_o_processor_impl.html">IOProcessorImpl</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classuscxml_1_1_basic_h_t_t_p_i_o_processor.html#a1aac2ea2ef2f5b04b7f5e5bdbcc358cb">create</a> (<a class="el" href="classuscxml_1_1_interpreter_impl.html">uscxml::InterpreterImpl</a> *interpreter)</td></tr>
-<tr class="memdesc:a1aac2ea2ef2f5b04b7f5e5bdbcc358cb"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="classuscxml_1_1_factory.html">Factory</a> demands a new instance.  <a href="#a1aac2ea2ef2f5b04b7f5e5bdbcc358cb">More...</a><br /></td></tr>
-<tr class="separator:a1aac2ea2ef2f5b04b7f5e5bdbcc358cb"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a76bbdd6891629367f1209e0089ecfa8b"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a76bbdd6891629367f1209e0089ecfa8b"></a>
-virtual std::list&lt; std::string &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classuscxml_1_1_basic_h_t_t_p_i_o_processor.html#a76bbdd6891629367f1209e0089ecfa8b">getNames</a> ()</td></tr>
-<tr class="memdesc:a76bbdd6891629367f1209e0089ecfa8b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a list of names for types we implement. <br /></td></tr>
-<tr class="separator:a76bbdd6891629367f1209e0089ecfa8b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6a2a96ce6a2b03f47e058c4ffcd884d3"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classuscxml_1_1_basic_h_t_t_p_i_o_processor.html#a6a2a96ce6a2b03f47e058c4ffcd884d3">eventFromSCXML</a> (const std::string &amp;target, const <a class="el" href="classuscxml_1_1_event.html">Event</a> &amp;event)</td></tr>
-<tr class="memdesc:a6a2a96ce6a2b03f47e058c4ffcd884d3"><td class="mdescLeft">&#160;</td><td class="mdescRight">We received an event from the SCXML <a class="el" href="classuscxml_1_1_interpreter.html" title="Central class to interpret and process SCXML documents. ">Interpreter</a> we are associated with.  <a href="#a6a2a96ce6a2b03f47e058c4ffcd884d3">More...</a><br /></td></tr>
-<tr class="separator:a6a2a96ce6a2b03f47e058c4ffcd884d3"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac2bcef2d25bfb6c576644959847481d0"><td class="memItemLeft" align="right" valign="top">virtual bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classuscxml_1_1_basic_h_t_t_p_i_o_processor.html#ac2bcef2d25bfb6c576644959847481d0">isValidTarget</a> (const std::string &amp;target)</td></tr>
-<tr class="memdesc:ac2bcef2d25bfb6c576644959847481d0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Determine whether the given target is a valid destination for events.  <a href="#ac2bcef2d25bfb6c576644959847481d0">More...</a><br /></td></tr>
-<tr class="separator:ac2bcef2d25bfb6c576644959847481d0"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5b12c4ac369a7993d28f34d4ed19ea2f"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classuscxml_1_1_data.html">Data</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classuscxml_1_1_basic_h_t_t_p_i_o_processor.html#a5b12c4ac369a7993d28f34d4ed19ea2f">getDataModelVariables</a> ()</td></tr>
-<tr class="memdesc:a5b12c4ac369a7993d28f34d4ed19ea2f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Export a <a class="el" href="classuscxml_1_1_data.html">Data</a> object for the `_x['name']` data-model namespace.  <a href="#a5b12c4ac369a7993d28f34d4ed19ea2f">More...</a><br /></td></tr>
-<tr class="separator:a5b12c4ac369a7993d28f34d4ed19ea2f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8737617ee6d2288fd8b44483c9f100c8"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classuscxml_1_1_basic_h_t_t_p_i_o_processor.html#a8737617ee6d2288fd8b44483c9f100c8">requestFromHTTP</a> (const <a class="el" href="classuscxml_1_1_h_t_t_p_server_1_1_request.html">HTTPServer::Request</a> &amp;req)</td></tr>
-<tr class="memdesc:a8737617ee6d2288fd8b44483c9f100c8"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="classuscxml_1_1_h_t_t_p_servlet.html">HTTPServlet</a>.  <a href="#a8737617ee6d2288fd8b44483c9f100c8">More...</a><br /></td></tr>
-<tr class="separator:a8737617ee6d2288fd8b44483c9f100c8"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a26721bb8f8b63a84451a9d82fbfa3588"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a26721bb8f8b63a84451a9d82fbfa3588"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>setURL</b> (const std::string &amp;url)</td></tr>
-<tr class="separator:a26721bb8f8b63a84451a9d82fbfa3588"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4c6784e9913f20fd891c41c2e062891d"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a4c6784e9913f20fd891c41c2e062891d"></a>
 bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classuscxml_1_1_basic_h_t_t_p_i_o_processor.html#a4c6784e9913f20fd891c41c2e062891d">canAdaptPath</a> ()</td></tr>
 <tr class="memdesc:a4c6784e9913f20fd891c41c2e062891d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Called by the server with the actual <a class="el" href="classuscxml_1_1_u_r_l.html">URL</a>. <br /></td></tr>
 <tr class="separator:a4c6784e9913f20fd891c41c2e062891d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a62b6d31ff9ee6b55632e0b686a1b9d5b"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a62b6d31ff9ee6b55632e0b686a1b9d5b"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>downloadStarted</b> (const <a class="el" href="classuscxml_1_1_u_r_l.html">URL</a> &amp;url)</td></tr>
-<tr class="separator:a62b6d31ff9ee6b55632e0b686a1b9d5b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1aac2ea2ef2f5b04b7f5e5bdbcc358cb"><td class="memItemLeft" align="right" valign="top">virtual std::shared_ptr&lt; <a class="el" href="classuscxml_1_1_i_o_processor_impl.html">IOProcessorImpl</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classuscxml_1_1_basic_h_t_t_p_i_o_processor.html#a1aac2ea2ef2f5b04b7f5e5bdbcc358cb">create</a> (<a class="el" href="classuscxml_1_1_interpreter_impl.html">uscxml::InterpreterImpl</a> *interpreter)</td></tr>
+<tr class="memdesc:a1aac2ea2ef2f5b04b7f5e5bdbcc358cb"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="classuscxml_1_1_factory.html">Factory</a> demands a new instance.  <a href="#a1aac2ea2ef2f5b04b7f5e5bdbcc358cb">More...</a><br /></td></tr>
+<tr class="separator:a1aac2ea2ef2f5b04b7f5e5bdbcc358cb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2f389a572cc97c244a89e625ffc9c71c"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a2f389a572cc97c244a89e625ffc9c71c"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>downloadCompleted</b> (const <a class="el" href="classuscxml_1_1_u_r_l.html">URL</a> &amp;url)</td></tr>
 <tr class="separator:a2f389a572cc97c244a89e625ffc9c71c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae33cd9b3a2a0227ae469701b8f1bd5a5"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ae33cd9b3a2a0227ae469701b8f1bd5a5"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>downloadFailed</b> (const <a class="el" href="classuscxml_1_1_u_r_l.html">URL</a> &amp;url, int errorCode)</td></tr>
 <tr class="separator:ae33cd9b3a2a0227ae469701b8f1bd5a5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a62b6d31ff9ee6b55632e0b686a1b9d5b"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a62b6d31ff9ee6b55632e0b686a1b9d5b"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>downloadStarted</b> (const <a class="el" href="classuscxml_1_1_u_r_l.html">URL</a> &amp;url)</td></tr>
+<tr class="separator:a62b6d31ff9ee6b55632e0b686a1b9d5b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6a2a96ce6a2b03f47e058c4ffcd884d3"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classuscxml_1_1_basic_h_t_t_p_i_o_processor.html#a6a2a96ce6a2b03f47e058c4ffcd884d3">eventFromSCXML</a> (const std::string &amp;target, const <a class="el" href="classuscxml_1_1_event.html">Event</a> &amp;event)</td></tr>
+<tr class="memdesc:a6a2a96ce6a2b03f47e058c4ffcd884d3"><td class="mdescLeft">&#160;</td><td class="mdescRight">We received an event from the SCXML <a class="el" href="classuscxml_1_1_interpreter.html" title="Central class to interpret and process SCXML documents. ">Interpreter</a> we are associated with.  <a href="#a6a2a96ce6a2b03f47e058c4ffcd884d3">More...</a><br /></td></tr>
+<tr class="separator:a6a2a96ce6a2b03f47e058c4ffcd884d3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5b12c4ac369a7993d28f34d4ed19ea2f"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classuscxml_1_1_data.html">Data</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classuscxml_1_1_basic_h_t_t_p_i_o_processor.html#a5b12c4ac369a7993d28f34d4ed19ea2f">getDataModelVariables</a> ()</td></tr>
+<tr class="memdesc:a5b12c4ac369a7993d28f34d4ed19ea2f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Export a <a class="el" href="classuscxml_1_1_data.html">Data</a> object for the `_x['name']` data-model namespace.  <a href="#a5b12c4ac369a7993d28f34d4ed19ea2f">More...</a><br /></td></tr>
+<tr class="separator:a5b12c4ac369a7993d28f34d4ed19ea2f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a76bbdd6891629367f1209e0089ecfa8b"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a76bbdd6891629367f1209e0089ecfa8b"></a>
+virtual std::list&lt; std::string &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classuscxml_1_1_basic_h_t_t_p_i_o_processor.html#a76bbdd6891629367f1209e0089ecfa8b">getNames</a> ()</td></tr>
+<tr class="memdesc:a76bbdd6891629367f1209e0089ecfa8b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a list of names for types we implement. <br /></td></tr>
+<tr class="separator:a76bbdd6891629367f1209e0089ecfa8b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac2bcef2d25bfb6c576644959847481d0"><td class="memItemLeft" align="right" valign="top">virtual bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classuscxml_1_1_basic_h_t_t_p_i_o_processor.html#ac2bcef2d25bfb6c576644959847481d0">isValidTarget</a> (const std::string &amp;target)</td></tr>
+<tr class="memdesc:ac2bcef2d25bfb6c576644959847481d0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Determine whether the given target is a valid destination for events.  <a href="#ac2bcef2d25bfb6c576644959847481d0">More...</a><br /></td></tr>
+<tr class="separator:ac2bcef2d25bfb6c576644959847481d0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8737617ee6d2288fd8b44483c9f100c8"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classuscxml_1_1_basic_h_t_t_p_i_o_processor.html#a8737617ee6d2288fd8b44483c9f100c8">requestFromHTTP</a> (const <a class="el" href="classuscxml_1_1_h_t_t_p_server_1_1_request.html">HTTPServer::Request</a> &amp;req)</td></tr>
+<tr class="memdesc:a8737617ee6d2288fd8b44483c9f100c8"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="classuscxml_1_1_h_t_t_p_servlet.html">HTTPServlet</a>.  <a href="#a8737617ee6d2288fd8b44483c9f100c8">More...</a><br /></td></tr>
+<tr class="separator:a8737617ee6d2288fd8b44483c9f100c8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a26721bb8f8b63a84451a9d82fbfa3588"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a26721bb8f8b63a84451a9d82fbfa3588"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>setURL</b> (const std::string &amp;url)</td></tr>
+<tr class="separator:a26721bb8f8b63a84451a9d82fbfa3588"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pub_methods_classuscxml_1_1_u_r_l_monitor"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_classuscxml_1_1_u_r_l_monitor')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="classuscxml_1_1_u_r_l_monitor.html">uscxml::URLMonitor</a></td></tr>
-<tr class="memitem:a168642ff149a6bcd1f01f565ceba7b4a inherit pub_methods_classuscxml_1_1_u_r_l_monitor"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a168642ff149a6bcd1f01f565ceba7b4a"></a>
-virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>headerChunkReceived</b> (const <a class="el" href="classuscxml_1_1_u_r_l.html">URL</a> &amp;url, const std::string &amp;headerChunk)</td></tr>
-<tr class="separator:a168642ff149a6bcd1f01f565ceba7b4a inherit pub_methods_classuscxml_1_1_u_r_l_monitor"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af3da3b3fcaa32d44bf7be98e230876b6 inherit pub_methods_classuscxml_1_1_u_r_l_monitor"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="af3da3b3fcaa32d44bf7be98e230876b6"></a>
 virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>contentChunkReceived</b> (const <a class="el" href="classuscxml_1_1_u_r_l.html">URL</a> &amp;url, const std::string &amp;contentChunk)</td></tr>
 <tr class="separator:af3da3b3fcaa32d44bf7be98e230876b6 inherit pub_methods_classuscxml_1_1_u_r_l_monitor"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a168642ff149a6bcd1f01f565ceba7b4a inherit pub_methods_classuscxml_1_1_u_r_l_monitor"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a168642ff149a6bcd1f01f565ceba7b4a"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>headerChunkReceived</b> (const <a class="el" href="classuscxml_1_1_u_r_l.html">URL</a> &amp;url, const std::string &amp;headerChunk)</td></tr>
+<tr class="separator:a168642ff149a6bcd1f01f565ceba7b4a inherit pub_methods_classuscxml_1_1_u_r_l_monitor"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-attribs"></a>
 Protected Attributes</h2></td></tr>
-<tr class="memitem:abbb36d780ad53a83875acc5516240530"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="abbb36d780ad53a83875acc5516240530"></a>
-std::string&#160;</td><td class="memItemRight" valign="bottom"><b>_url</b></td></tr>
-<tr class="separator:abbb36d780ad53a83875acc5516240530"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a58891e794a37e81a419d142bc056ae48"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a58891e794a37e81a419d142bc056ae48"></a>
 std::map&lt; std::string, std::pair&lt; <a class="el" href="classuscxml_1_1_u_r_l.html">URL</a>, <a class="el" href="classuscxml_1_1_event.html">Event</a> &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>_sendRequests</b></td></tr>
 <tr class="separator:a58891e794a37e81a419d142bc056ae48"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abbb36d780ad53a83875acc5516240530"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="abbb36d780ad53a83875acc5516240530"></a>
+std::string&#160;</td><td class="memItemRight" valign="bottom"><b>_url</b></td></tr>
+<tr class="separator:abbb36d780ad53a83875acc5516240530"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pro_attribs_classuscxml_1_1_event_handler_impl"><td colspan="2" onclick="javascript:toggleInherit('pro_attribs_classuscxml_1_1_event_handler_impl')"><img src="closed.png" alt="-"/>&#160;Protected Attributes inherited from <a class="el" href="classuscxml_1_1_event_handler_impl.html">uscxml::EventHandlerImpl</a></td></tr>
 <tr class="memitem:af7069a12f5b67953f76c2eda8c1fc419 inherit pro_attribs_classuscxml_1_1_event_handler_impl"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="af7069a12f5b67953f76c2eda8c1fc419"></a>
 <a class="el" href="classuscxml_1_1_interpreter_impl.html">InterpreterImpl</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>_interpreter</b></td></tr>
@@ -184,9 +184,7 @@ Additional Inherited Members</h2></td></tr>
 <tr class="memdesc:a1d41b3fd61ac1ce289c28af5da130109 inherit pro_methods_classuscxml_1_1_i_o_processor_impl"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return an event to the SCXML <a class="el" href="classuscxml_1_1_interpreter.html" title="Central class to interpret and process SCXML documents. ">Interpreter</a> instance.  <a href="#a1d41b3fd61ac1ce289c28af5da130109">More...</a><br /></td></tr>
 <tr class="separator:a1d41b3fd61ac1ce289c28af5da130109 inherit pro_methods_classuscxml_1_1_i_o_processor_impl"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>The basichttp I/O processor as per standard. </p>
-</div><h2 class="groupheader">Member Function Documentation</h2>
+<h2 class="groupheader">Member Function Documentation</h2>
 <a class="anchor" id="a1aac2ea2ef2f5b04b7f5e5bdbcc358cb"></a>
 <div class="memitem">
 <div class="memproto">
@@ -208,15 +206,13 @@ Additional Inherited Members</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-
-<p><a class="el" href="classuscxml_1_1_factory.html">Factory</a> demands a new instance. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">interpreter</td><td>The imlementation of the associated <a class="el" href="classuscxml_1_1_interpreter.html" title="Central class to interpret and process SCXML documents. ">Interpreter</a> </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="todo"><dt><b><a class="el" href="todo.html#_todo000004">Todo:</a></b></dt><dd>We will eventually introduce callbacks and prevent complete access to the interpreter. </dd></dl>
+<dl class="todo"><dt><b><a class="el" href="todo.html#_todo000005">Todo:</a></b></dt><dd>We will eventually introduce callbacks and prevent complete access to the interpreter. </dd></dl>
 
 <p>Implements <a class="el" href="classuscxml_1_1_i_o_processor_impl.html#a29b122781dc57dcd889e06ae1fccb813">uscxml::IOProcessorImpl</a>.</p>
 
@@ -253,8 +249,6 @@ Additional Inherited Members</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-
-<p>We received an event from the SCXML <a class="el" href="classuscxml_1_1_interpreter.html" title="Central class to interpret and process SCXML documents. ">Interpreter</a> we are associated with. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">target</td><td>Where the event is supposed to be delivered to. </td></tr>
@@ -287,8 +281,6 @@ Additional Inherited Members</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-
-<p>Export a <a class="el" href="classuscxml_1_1_data.html">Data</a> object for the `_x['name']` data-model namespace. </p>
 <dl class="section return"><dt>Returns</dt><dd>An object to be represented at `_x['name']` </dd></dl>
 
 <p>Implements <a class="el" href="classuscxml_1_1_event_handler_impl.html#a14286b0d059c5f269abdb9efeb084b7c">uscxml::EventHandlerImpl</a>.</p>
@@ -316,8 +308,6 @@ Additional Inherited Members</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-
-<p>Determine whether the given target is a valid destination for events. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">target</td><td>A target where the <a class="el" href="classuscxml_1_1_interpreter.html" title="Central class to interpret and process SCXML documents. ">Interpreter</a> wants to deliver <a class="el" href="classuscxml_1_1_event.html">Event</a>s to. </td></tr>
@@ -351,8 +341,6 @@ Additional Inherited Members</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-
-<p><a class="el" href="classuscxml_1_1_h_t_t_p_servlet.html">HTTPServlet</a>. </p>
 <p>If a single instance of the parameter '_scxmleventname' is present, the SCXML Processor must use its value as the name of the SCXML event that it raises.</p>
 
 <p>Implements <a class="el" href="classuscxml_1_1_h_t_t_p_servlet.html">uscxml::HTTPServlet</a>.</p>
@@ -372,7 +360,7 @@ Additional Inherited Members</h2></td></tr>
 </div>
 </div>
 <!-- <hr class="footer"/><address class="footer"><small>
-Generated on Thu May 19 2016 14:56:47 for uSCXML by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon May 23 2016 08:47:45 for uSCXML by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.10
 </small></address> -->

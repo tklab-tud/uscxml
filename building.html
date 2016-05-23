@@ -126,15 +126,12 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </ol>
 <p>For <b>Makefiles on Unices</b>, these steps essentially boil down to: </p><pre class="fragment">$ git clone git://github.com/tklab-tud/uscxml.git
 $ mkdir uscxml/build &amp;&amp; cd uscxml/build
-$ cmake ..
-$ make
-</pre><p>On <b>NMake on Windows</b>, you may have luck to run the following from a VS2013 or VS2015 command prompt: </p><pre class="fragment">$ git clone git://github.com/tklab-tud/uscxml.git
-$ mkdir uscxml/build &amp;&amp; cd uscxml/build
-$ cmake -G"NMake Makefiles" ..
-$ nmake
+$ cmake .. &amp;&amp; make
+</pre><p>For <b>MSVC on Windows</b>, run form a developer command-prompt and substitute the last line above by: </p><pre class="fragment">$ cmake -G "NMake Makefiles" .. &amp;&amp; nmake
 </pre><p><b>Note:</b> If you want to build for another IDE or build-system, just create a new <em>out-of-source</em> build directory and start over with CMake. To get an idea of supported IDEs and build-environments on your platform, type <code>cmake &ndash;help</code> or run the CMake-GUI and look for the <em>Generators</em> section at the end of the output.</p>
 <p><b>Note:</b> If you plan to use the Eclipse CDT generator, you cannot have a build directory anywhere under the source directory - just create the build directory anywhere else. This only applies to the Eclipse CDT project generator.</p>
 <p><b>Note:</b> I could not build the language bindings with the Visual Studio generator as it croaks when calling SWIG, just have another build directory with the "NMake Makefiles" project generator.</p>
+<p><b>Note:</b> In order to compile with <code>MinGW</code> on windows you will ave to adapt the build scripts in <code>contrib/cmake/Build*</code>. If you succeed, a pull request would be most appreciated.</p>
 <h1><a class="anchor" id="deps"></a>
 Build Dependencies</h1>
 <p>Overview of the uSCXML dependencies. See the <a href="#platform-notes">Platform Notes</a> for details.</p>
@@ -327,7 +324,7 @@ Important Note for Windows</h2>
 </div>
 </div>
 <!-- <hr class="footer"/><address class="footer"><small>
-Generated on Thu May 19 2016 14:56:47 for uSCXML by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon May 23 2016 08:47:45 for uSCXML by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.10
 </small></address> -->

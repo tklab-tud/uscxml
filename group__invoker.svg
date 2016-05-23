@@ -52,8 +52,8 @@
 <!-- Node0&#45;&gt;Node2 -->
 <g id="edge2" class="edge"><title>Node0&#45;&gt;Node2</title>
 <path fill="none" stroke="orange" stroke-dasharray="5,2" d="M182.041,-48C219.857,-48 290.318,-48 334.963,-48"/>
-<text text-anchor="middle" x="258.5" y="-62" font-family="Helvetica,sans-Serif" font-size="10.00">uscxml::EventHandlerImpl</text>
-<text text-anchor="middle" x="258.5" y="-51" font-family="Helvetica,sans-Serif" font-size="10.00">uscxml::EventHandler</text>
+<text text-anchor="middle" x="258.5" y="-62" font-family="Helvetica,sans-Serif" font-size="10.00">uscxml::EventHandler</text>
+<text text-anchor="middle" x="258.5" y="-51" font-family="Helvetica,sans-Serif" font-size="10.00">uscxml::EventHandlerImpl</text>
 </g>
 <!-- Node4 -->
 <g id="node5" class="node"><title>Node4</title>

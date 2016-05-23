@@ -105,7 +105,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="contents">
 
 <p>Common base class for invokers and i/o processors.  
- <a href="classuscxml_1_1_event_handler_impl.html#details">More...</a></p>
+</p>
 
 <p><code>#include &lt;<a class="el" href="_event_handler_8h_source.html">EventHandler.h</a>&gt;</code></p>
 <div class="dynheader">
@@ -121,13 +121,13 @@ Collaboration diagram for uscxml::EventHandlerImpl:</div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
+<tr class="memitem:a14286b0d059c5f269abdb9efeb084b7c"><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="classuscxml_1_1_data.html">Data</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classuscxml_1_1_event_handler_impl.html#a14286b0d059c5f269abdb9efeb084b7c">getDataModelVariables</a> ()=0</td></tr>
+<tr class="memdesc:a14286b0d059c5f269abdb9efeb084b7c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Export a <a class="el" href="classuscxml_1_1_data.html">Data</a> object for the `_x['name']` data-model namespace.  <a href="#a14286b0d059c5f269abdb9efeb084b7c">More...</a><br /></td></tr>
+<tr class="separator:a14286b0d059c5f269abdb9efeb084b7c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6e91964e1444932e5199d300c22c7803"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a6e91964e1444932e5199d300c22c7803"></a>
 virtual std::list&lt; std::string &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classuscxml_1_1_event_handler_impl.html#a6e91964e1444932e5199d300c22c7803">getNames</a> ()=0</td></tr>
 <tr class="memdesc:a6e91964e1444932e5199d300c22c7803"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a list of names for types we implement. <br /></td></tr>
 <tr class="separator:a6e91964e1444932e5199d300c22c7803"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a14286b0d059c5f269abdb9efeb084b7c"><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="classuscxml_1_1_data.html">Data</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classuscxml_1_1_event_handler_impl.html#a14286b0d059c5f269abdb9efeb084b7c">getDataModelVariables</a> ()=0</td></tr>
-<tr class="memdesc:a14286b0d059c5f269abdb9efeb084b7c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Export a <a class="el" href="classuscxml_1_1_data.html">Data</a> object for the `_x['name']` data-model namespace.  <a href="#a14286b0d059c5f269abdb9efeb084b7c">More...</a><br /></td></tr>
-<tr class="separator:a14286b0d059c5f269abdb9efeb084b7c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-attribs"></a>
 Protected Attributes</h2></td></tr>
@@ -135,9 +135,7 @@ Protected Attributes</h2></td></tr>
 <a class="el" href="classuscxml_1_1_interpreter_impl.html">InterpreterImpl</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>_interpreter</b></td></tr>
 <tr class="separator:af7069a12f5b67953f76c2eda8c1fc419"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>Common base class for invokers and i/o processors. </p>
-</div><h2 class="groupheader">Member Function Documentation</h2>
+<h2 class="groupheader">Member Function Documentation</h2>
 <a class="anchor" id="a14286b0d059c5f269abdb9efeb084b7c"></a>
 <div class="memitem">
 <div class="memproto">
@@ -158,8 +156,6 @@ Protected Attributes</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-
-<p>Export a <a class="el" href="classuscxml_1_1_data.html">Data</a> object for the `_x['name']` data-model namespace. </p>
 <dl class="section return"><dt>Returns</dt><dd>An object to be represented at `_x['name']` </dd></dl>
 
 <p>Implemented in <a class="el" href="classuscxml_1_1_basic_h_t_t_p_i_o_processor.html#a5b12c4ac369a7993d28f34d4ed19ea2f">uscxml::BasicHTTPIOProcessor</a>, <a class="el" href="classuscxml_1_1_u_s_c_x_m_l_invoker.html#a4ae4ecb0bc9585d0f970d02f156b351c">uscxml::USCXMLInvoker</a>, and <a class="el" href="classuscxml_1_1_s_c_x_m_l_i_o_processor.html#a66b77406ff3de27a3db26e8de6ad4d53">uscxml::SCXMLIOProcessor</a>.</p>
@@ -178,7 +174,7 @@ Protected Attributes</h2></td></tr>
 </div>
 </div>
 <!-- <hr class="footer"/><address class="footer"><small>
-Generated on Thu May 19 2016 14:56:47 for uSCXML by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon May 23 2016 08:47:45 for uSCXML by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.10
 </small></address> -->

@@ -242,11 +242,34 @@ div.groupText {
 
 /* OWN */
 
+.table> tbody > .mdetail > td {
+	padding: 0px;
+	border-top: 0px;
+}
+
+.table> tbody > .mdetail > td > div.panel {
+	border-radius: 0px;
+	box-shadow: none;
+	-webkit-box-shadow: none;
+	margin-bottom: 0px;
+	border: 0px;
+}
+
+.table> tbody > .mdetail {
+	border: 1px solid #ddd;
+}
+
+
 div.mbrief {
 	padding: 0px 8px;
 	margin: 5px 0px;
 	border-left: 4px solid #DDD;
 }
+
+.mdetail div.fragment {
+  margin-bottom: 15px;
+}
+
 
 div.toc, div.toc li {
 	font: 400 10px/22px Roboto, sans-serif;
@@ -410,11 +433,20 @@ span.SRScope {
   .table-hover;
 	padding: 3px;
 /*	border-bottom: 2px solid #e0e0e0;*/
+	border-bottom: 0px;
+}
+
+table.memname td.memname > a,
+table.memname td.paramtype > a,
+.table > tbody > tr > td.memItemLeft > a,
+.table > tbody > tr > td.memItemRight > a {
+	font-weight: bold;
 }
 
 .table > tbody > tr > td.memItemLeft {
 	border-top: 1px solid #e0e0e0;
 }
+
 .table > tbody > tr > td.mdescRight {
 	border-bottom: 1px solid #e0e0e0;
 }
@@ -424,6 +456,8 @@ span.SRScope {
 .table > tbody > tr > td.memItemRight {
 	border-left: 1px solid #e0e0e0;
 	border-right: 1px solid #e0e0e0;
+	padding: 5px 8px;
+/*	line-height: 1.2;*/
 /*	width: auto;*/
 }
 

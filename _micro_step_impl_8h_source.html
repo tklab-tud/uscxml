@@ -117,7 +117,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00040"></a><span class="lineno"><a class="line" href="classuscxml_1_1_micro_step_callbacks.html">   40</a></span>&#160;<span class="keyword">class </span>USCXML_API <a class="code" href="classuscxml_1_1_micro_step_callbacks.html">MicroStepCallbacks</a> {</div>
 <div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;<span class="keyword">public</span>:</div>
 <div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;    <span class="keyword">virtual</span> <a class="code" href="classuscxml_1_1_event.html">Event</a> dequeueInternal() = 0;</div>
-<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;    <span class="keyword">virtual</span> <a class="code" href="classuscxml_1_1_event.html">Event</a> dequeueExternal(<span class="keywordtype">bool</span> blocking) = 0;</div>
+<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;    <span class="keyword">virtual</span> <a class="code" href="classuscxml_1_1_event.html">Event</a> dequeueExternal(<span class="keywordtype">size_t</span> blockMs) = 0;</div>
 <div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">bool</span> isMatched(<span class="keyword">const</span> <a class="code" href="classuscxml_1_1_event.html">Event</a>&amp; event, <span class="keyword">const</span> std::string&amp; eventDesc) = 0;</div>
 <div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> raiseDoneEvent(XERCESC_NS::DOMElement* state, XERCESC_NS::DOMElement* doneData) = 0;</div>
 <div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;</div>
@@ -141,7 +141,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;</div>
 <div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;    <a class="code" href="classuscxml_1_1_micro_step_impl.html">MicroStepImpl</a>(<a class="code" href="classuscxml_1_1_micro_step_callbacks.html">MicroStepCallbacks</a>* callbacks) : _callbacks(callbacks) {}</div>
 <div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;</div>
-<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;    <span class="keyword">virtual</span> InterpreterState step(<span class="keywordtype">bool</span> blocking) = 0;</div>
+<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;    <span class="keyword">virtual</span> InterpreterState step(<span class="keywordtype">size_t</span> blockMs) = 0;</div>
 <div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> reset() = 0; </div>
 <div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">bool</span> isInState(<span class="keyword">const</span> std::string&amp; stateId) = 0;</div>
 <div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;    <span class="keyword">virtual</span> std::list&lt;XERCESC_NS::DOMElement*&gt; getConfiguration() = 0;</div>
@@ -174,7 +174,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div>
 </div>
 <!-- <hr class="footer"/><address class="footer"><small>
-Generated on Thu May 19 2016 14:56:46 for uSCXML by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon May 23 2016 08:47:44 for uSCXML by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.10
 </small></address> -->

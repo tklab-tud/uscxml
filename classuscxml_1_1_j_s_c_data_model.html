@@ -108,7 +108,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="contents">
 
 <p>ECMAScript data-model via JavaScriptCore.  
- <a href="classuscxml_1_1_j_s_c_data_model.html#details">More...</a></p>
+</p>
 
 <p><code>#include &lt;<a class="el" href="_j_s_c_data_model_8h_source.html">JSCDataModel.h</a>&gt;</code></p>
 <div class="dynheader">
@@ -124,49 +124,49 @@ Collaboration diagram for uscxml::JSCDataModel:</div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
+<tr class="memitem:a591403a4335f665a7f9f42b3ac00689e"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classuscxml_1_1_j_s_c_data_model.html#a591403a4335f665a7f9f42b3ac00689e">addExtension</a> (<a class="el" href="classuscxml_1_1_data_model_extension.html">DataModelExtension</a> *ext)</td></tr>
+<tr class="memdesc:a591403a4335f665a7f9f42b3ac00689e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Register an extension to get data into and out of the data-model.  <a href="#a591403a4335f665a7f9f42b3ac00689e">More...</a><br /></td></tr>
+<tr class="separator:a591403a4335f665a7f9f42b3ac00689e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad2e282225a1c8cdbeb29206413f3ac4a"><td class="memItemLeft" align="right" valign="top">virtual std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classuscxml_1_1_j_s_c_data_model.html#ad2e282225a1c8cdbeb29206413f3ac4a">andExpressions</a> (std::list&lt; std::string &gt;)</td></tr>
+<tr class="memdesc:ad2e282225a1c8cdbeb29206413f3ac4a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Concat the given terms into a conjunctive form.  <a href="#ad2e282225a1c8cdbeb29206413f3ac4a">More...</a><br /></td></tr>
+<tr class="separator:ad2e282225a1c8cdbeb29206413f3ac4a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad1cdfb5c119641aa99ae1b3cf8c66cf9"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classuscxml_1_1_j_s_c_data_model.html#ad1cdfb5c119641aa99ae1b3cf8c66cf9">assign</a> (const std::string &amp;location, const <a class="el" href="classuscxml_1_1_data.html">Data</a> &amp;data)</td></tr>
+<tr class="memdesc:ad1cdfb5c119641aa99ae1b3cf8c66cf9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Assign a data object to a location in the data-model.  <a href="#ad1cdfb5c119641aa99ae1b3cf8c66cf9">More...</a><br /></td></tr>
+<tr class="separator:ad1cdfb5c119641aa99ae1b3cf8c66cf9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aaca23f71c1a3807d21dd6fc8d4d75488"><td class="memItemLeft" align="right" valign="top">virtual std::shared_ptr&lt; <a class="el" href="classuscxml_1_1_data_model_impl.html">DataModelImpl</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classuscxml_1_1_j_s_c_data_model.html#aaca23f71c1a3807d21dd6fc8d4d75488">create</a> (<a class="el" href="classuscxml_1_1_data_model_callbacks.html">DataModelCallbacks</a> *callbacks)</td></tr>
 <tr class="memdesc:aaca23f71c1a3807d21dd6fc8d4d75488"><td class="mdescLeft">&#160;</td><td class="mdescRight">The <a class="el" href="classuscxml_1_1_factory.html">Factory</a> wants to instantiate a new instance.  <a href="#aaca23f71c1a3807d21dd6fc8d4d75488">More...</a><br /></td></tr>
 <tr class="separator:aaca23f71c1a3807d21dd6fc8d4d75488"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a591403a4335f665a7f9f42b3ac00689e"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a591403a4335f665a7f9f42b3ac00689e"></a>
-virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>addExtension</b> (<a class="el" href="classuscxml_1_1_data_model_extension.html">DataModelExtension</a> *ext)</td></tr>
-<tr class="separator:a591403a4335f665a7f9f42b3ac00689e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a785c87b41da0fe32a3bf0f4f79c2bc13"><td class="memItemLeft" align="right" valign="top">virtual bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classuscxml_1_1_j_s_c_data_model.html#a785c87b41da0fe32a3bf0f4f79c2bc13">evalAsBool</a> (const std::string &amp;expr)</td></tr>
+<tr class="memdesc:a785c87b41da0fe32a3bf0f4f79c2bc13"><td class="mdescLeft">&#160;</td><td class="mdescRight">Evaluate a given expression as a boolean.  <a href="#a785c87b41da0fe32a3bf0f4f79c2bc13">More...</a><br /></td></tr>
+<tr class="separator:a785c87b41da0fe32a3bf0f4f79c2bc13"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad3e87b80df626b8b40174b2435ef60f5"><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="classuscxml_1_1_data.html">Data</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classuscxml_1_1_j_s_c_data_model.html#ad3e87b80df626b8b40174b2435ef60f5">evalAsData</a> (const std::string &amp;expr)</td></tr>
+<tr class="memdesc:ad3e87b80df626b8b40174b2435ef60f5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a string as an <em>evaluated</em> <a class="el" href="classuscxml_1_1_data.html">Data</a> object.  <a href="#ad3e87b80df626b8b40174b2435ef60f5">More...</a><br /></td></tr>
+<tr class="separator:ad3e87b80df626b8b40174b2435ef60f5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8c4dc3e092a614850d5b194c97752300"><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="classuscxml_1_1_data.html">Data</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classuscxml_1_1_j_s_c_data_model.html#a8c4dc3e092a614850d5b194c97752300">getAsData</a> (const std::string &amp;content)</td></tr>
+<tr class="memdesc:a8c4dc3e092a614850d5b194c97752300"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a string as an <em>unevaluated</em> <a class="el" href="classuscxml_1_1_data.html">Data</a> object.  <a href="#a8c4dc3e092a614850d5b194c97752300">More...</a><br /></td></tr>
+<tr class="separator:a8c4dc3e092a614850d5b194c97752300"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1ffe81d46dd290741af5fbbff9a60d54"><td class="memItemLeft" align="right" valign="top">virtual uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classuscxml_1_1_j_s_c_data_model.html#a1ffe81d46dd290741af5fbbff9a60d54">getLength</a> (const std::string &amp;expr)</td></tr>
+<tr class="memdesc:a1ffe81d46dd290741af5fbbff9a60d54"><td class="mdescLeft">&#160;</td><td class="mdescRight">Evaluate the given expression as something iterable and return its length.  <a href="#a1ffe81d46dd290741af5fbbff9a60d54">More...</a><br /></td></tr>
+<tr class="separator:a1ffe81d46dd290741af5fbbff9a60d54"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1491a48eba86a6b7eb713093828735a8"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a1491a48eba86a6b7eb713093828735a8"></a>
 virtual std::list&lt; std::string &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classuscxml_1_1_j_s_c_data_model.html#a1491a48eba86a6b7eb713093828735a8">getNames</a> ()</td></tr>
 <tr class="memdesc:a1491a48eba86a6b7eb713093828735a8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a list of names to be matched by the <code>datamodel</code> attribute in SCXML. <br /></td></tr>
 <tr class="separator:a1491a48eba86a6b7eb713093828735a8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a65c4d661169e39e2feb0432834ac17f8"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classuscxml_1_1_j_s_c_data_model.html#a65c4d661169e39e2feb0432834ac17f8">init</a> (const std::string &amp;location, const <a class="el" href="classuscxml_1_1_data.html">Data</a> &amp;data)</td></tr>
+<tr class="memdesc:a65c4d661169e39e2feb0432834ac17f8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize a variable / location in the data-model with a given data object.  <a href="#a65c4d661169e39e2feb0432834ac17f8">More...</a><br /></td></tr>
+<tr class="separator:a65c4d661169e39e2feb0432834ac17f8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a18e73b777496c62178b5ca885a1d1042"><td class="memItemLeft" align="right" valign="top">virtual bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classuscxml_1_1_j_s_c_data_model.html#a18e73b777496c62178b5ca885a1d1042">isDeclared</a> (const std::string &amp;expr)</td></tr>
+<tr class="memdesc:a18e73b777496c62178b5ca885a1d1042"><td class="mdescLeft">&#160;</td><td class="mdescRight">Determine whether a given variable / location is declared.  <a href="#a18e73b777496c62178b5ca885a1d1042">More...</a><br /></td></tr>
+<tr class="separator:a18e73b777496c62178b5ca885a1d1042"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a253b66cf532661a47b0e423826b1ae4c"><td class="memItemLeft" align="right" valign="top">virtual bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classuscxml_1_1_j_s_c_data_model.html#a253b66cf532661a47b0e423826b1ae4c">isValidSyntax</a> (const std::string &amp;expr)</td></tr>
 <tr class="memdesc:a253b66cf532661a47b0e423826b1ae4c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Determine whether a given string constitutes valid syntax in the data-model's language.  <a href="#a253b66cf532661a47b0e423826b1ae4c">More...</a><br /></td></tr>
 <tr class="separator:a253b66cf532661a47b0e423826b1ae4c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad0685b4dd44243b0341000c0b818a9fa"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classuscxml_1_1_j_s_c_data_model.html#ad0685b4dd44243b0341000c0b818a9fa">setEvent</a> (const <a class="el" href="classuscxml_1_1_event.html">Event</a> &amp;event)</td></tr>
 <tr class="memdesc:ad0685b4dd44243b0341000c0b818a9fa"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the given event as <code>_event</code> in the data-model's global scope.  <a href="#ad0685b4dd44243b0341000c0b818a9fa">More...</a><br /></td></tr>
 <tr class="separator:ad0685b4dd44243b0341000c0b818a9fa"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a1ffe81d46dd290741af5fbbff9a60d54"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a1ffe81d46dd290741af5fbbff9a60d54"></a>
-virtual uint32_t&#160;</td><td class="memItemRight" valign="bottom"><b>getLength</b> (const std::string &amp;expr)</td></tr>
-<tr class="separator:a1ffe81d46dd290741af5fbbff9a60d54"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a46d8da2c2e9a9a0dbcb2ea896f5ce22a"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a46d8da2c2e9a9a0dbcb2ea896f5ce22a"></a>
-virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>setForeach</b> (const std::string &amp;item, const std::string &amp;array, const std::string &amp;index, uint32_t iteration)</td></tr>
+<tr class="memitem:a46d8da2c2e9a9a0dbcb2ea896f5ce22a"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classuscxml_1_1_j_s_c_data_model.html#a46d8da2c2e9a9a0dbcb2ea896f5ce22a">setForeach</a> (const std::string &amp;item, const std::string &amp;array, const std::string &amp;index, uint32_t iteration)</td></tr>
+<tr class="memdesc:a46d8da2c2e9a9a0dbcb2ea896f5ce22a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set a given item to the object at a given index for one iteration.  <a href="#a46d8da2c2e9a9a0dbcb2ea896f5ce22a">More...</a><br /></td></tr>
 <tr class="separator:a46d8da2c2e9a9a0dbcb2ea896f5ce22a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8c4dc3e092a614850d5b194c97752300"><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="classuscxml_1_1_data.html">Data</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classuscxml_1_1_j_s_c_data_model.html#a8c4dc3e092a614850d5b194c97752300">getAsData</a> (const std::string &amp;content)</td></tr>
-<tr class="memdesc:a8c4dc3e092a614850d5b194c97752300"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a string as an <em>unevaluated</em> <a class="el" href="classuscxml_1_1_data.html">Data</a> object.  <a href="#a8c4dc3e092a614850d5b194c97752300">More...</a><br /></td></tr>
-<tr class="separator:a8c4dc3e092a614850d5b194c97752300"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad3e87b80df626b8b40174b2435ef60f5"><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="classuscxml_1_1_data.html">Data</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classuscxml_1_1_j_s_c_data_model.html#ad3e87b80df626b8b40174b2435ef60f5">evalAsData</a> (const std::string &amp;expr)</td></tr>
-<tr class="memdesc:ad3e87b80df626b8b40174b2435ef60f5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a string as an <em>evaluated</em> <a class="el" href="classuscxml_1_1_data.html">Data</a> object.  <a href="#ad3e87b80df626b8b40174b2435ef60f5">More...</a><br /></td></tr>
-<tr class="separator:ad3e87b80df626b8b40174b2435ef60f5"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a785c87b41da0fe32a3bf0f4f79c2bc13"><td class="memItemLeft" align="right" valign="top">virtual bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classuscxml_1_1_j_s_c_data_model.html#a785c87b41da0fe32a3bf0f4f79c2bc13">evalAsBool</a> (const std::string &amp;expr)</td></tr>
-<tr class="memdesc:a785c87b41da0fe32a3bf0f4f79c2bc13"><td class="mdescLeft">&#160;</td><td class="mdescRight">Evaluate a given expression as a boolean.  <a href="#a785c87b41da0fe32a3bf0f4f79c2bc13">More...</a><br /></td></tr>
-<tr class="separator:a785c87b41da0fe32a3bf0f4f79c2bc13"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a18e73b777496c62178b5ca885a1d1042"><td class="memItemLeft" align="right" valign="top">virtual bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classuscxml_1_1_j_s_c_data_model.html#a18e73b777496c62178b5ca885a1d1042">isDeclared</a> (const std::string &amp;expr)</td></tr>
-<tr class="memdesc:a18e73b777496c62178b5ca885a1d1042"><td class="mdescLeft">&#160;</td><td class="mdescRight">Determine whether a given variable / location is declared.  <a href="#a18e73b777496c62178b5ca885a1d1042">More...</a><br /></td></tr>
-<tr class="separator:a18e73b777496c62178b5ca885a1d1042"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad1cdfb5c119641aa99ae1b3cf8c66cf9"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classuscxml_1_1_j_s_c_data_model.html#ad1cdfb5c119641aa99ae1b3cf8c66cf9">assign</a> (const std::string &amp;location, const <a class="el" href="classuscxml_1_1_data.html">Data</a> &amp;data)</td></tr>
-<tr class="memdesc:ad1cdfb5c119641aa99ae1b3cf8c66cf9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Assign a data object to a location in the data-model.  <a href="#ad1cdfb5c119641aa99ae1b3cf8c66cf9">More...</a><br /></td></tr>
-<tr class="separator:ad1cdfb5c119641aa99ae1b3cf8c66cf9"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a65c4d661169e39e2feb0432834ac17f8"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classuscxml_1_1_j_s_c_data_model.html#a65c4d661169e39e2feb0432834ac17f8">init</a> (const std::string &amp;location, const <a class="el" href="classuscxml_1_1_data.html">Data</a> &amp;data)</td></tr>
-<tr class="memdesc:a65c4d661169e39e2feb0432834ac17f8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize a variable / location in the data-model with a given data object.  <a href="#a65c4d661169e39e2feb0432834ac17f8">More...</a><br /></td></tr>
-<tr class="separator:a65c4d661169e39e2feb0432834ac17f8"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad2e282225a1c8cdbeb29206413f3ac4a"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ad2e282225a1c8cdbeb29206413f3ac4a"></a>
-virtual std::string&#160;</td><td class="memItemRight" valign="bottom"><b>andExpressions</b> (std::list&lt; std::string &gt;)</td></tr>
-<tr class="separator:ad2e282225a1c8cdbeb29206413f3ac4a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pub_methods_classuscxml_1_1_data_model_impl"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_classuscxml_1_1_data_model_impl')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="classuscxml_1_1_data_model_impl.html">uscxml::DataModelImpl</a></td></tr>
 <tr class="memitem:acc27a4123c53055a24000dfd9a9cbc57 inherit pub_methods_classuscxml_1_1_data_model_impl"><td class="memItemLeft" align="right" valign="top">size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classuscxml_1_1_data_model_impl.html#acc27a4123c53055a24000dfd9a9cbc57">replaceExpressions</a> (std::string &amp;content)</td></tr>
 <tr class="memdesc:acc27a4123c53055a24000dfd9a9cbc57 inherit pub_methods_classuscxml_1_1_data_model_impl"><td class="mdescLeft">&#160;</td><td class="mdescRight">Experimental extension to have dynamic content in string literals.  <a href="#acc27a4123c53055a24000dfd9a9cbc57">More...</a><br /></td></tr>
@@ -174,69 +174,69 @@ virtual std::string&#160;</td><td class="memItemRight" valign="bottom"><b>andExp
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-methods"></a>
 Protected Member Functions</h2></td></tr>
-<tr class="memitem:a3650c68bf434edb0b138f0d2b6eb6ad9"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a3650c68bf434edb0b138f0d2b6eb6ad9"></a>
-JSValueRef&#160;</td><td class="memItemRight" valign="bottom"><b>getNodeAsValue</b> (const XERCESC_NS::DOMNode *node)</td></tr>
-<tr class="separator:a3650c68bf434edb0b138f0d2b6eb6ad9"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa47cf08bc4bc705cd46b85b25e21923f"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aa47cf08bc4bc705cd46b85b25e21923f"></a>
-JSValueRef&#160;</td><td class="memItemRight" valign="bottom"><b>getDataAsValue</b> (const <a class="el" href="classuscxml_1_1_data.html">Data</a> &amp;data)</td></tr>
-<tr class="separator:aa47cf08bc4bc705cd46b85b25e21923f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8a2b060e3e211cbdcd86974919e8a2b3"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a8a2b060e3e211cbdcd86974919e8a2b3"></a>
-<a class="el" href="classuscxml_1_1_data.html">Data</a>&#160;</td><td class="memItemRight" valign="bottom"><b>getValueAsData</b> (const JSValueRef value)</td></tr>
-<tr class="separator:a8a2b060e3e211cbdcd86974919e8a2b3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a30a0dd31ee36e4d28d93f2bbe507b0d9"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a30a0dd31ee36e4d28d93f2bbe507b0d9"></a>
 JSValueRef&#160;</td><td class="memItemRight" valign="bottom"><b>evalAsValue</b> (const std::string &amp;expr, bool dontThrow=false)</td></tr>
 <tr class="separator:a30a0dd31ee36e4d28d93f2bbe507b0d9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa47cf08bc4bc705cd46b85b25e21923f"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aa47cf08bc4bc705cd46b85b25e21923f"></a>
+JSValueRef&#160;</td><td class="memItemRight" valign="bottom"><b>getDataAsValue</b> (const <a class="el" href="classuscxml_1_1_data.html">Data</a> &amp;data)</td></tr>
+<tr class="separator:aa47cf08bc4bc705cd46b85b25e21923f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3650c68bf434edb0b138f0d2b6eb6ad9"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a3650c68bf434edb0b138f0d2b6eb6ad9"></a>
+JSValueRef&#160;</td><td class="memItemRight" valign="bottom"><b>getNodeAsValue</b> (const XERCESC_NS::DOMNode *node)</td></tr>
+<tr class="separator:a3650c68bf434edb0b138f0d2b6eb6ad9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8a2b060e3e211cbdcd86974919e8a2b3"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a8a2b060e3e211cbdcd86974919e8a2b3"></a>
+<a class="el" href="classuscxml_1_1_data.html">Data</a>&#160;</td><td class="memItemRight" valign="bottom"><b>getValueAsData</b> (const JSValueRef value)</td></tr>
+<tr class="separator:a8a2b060e3e211cbdcd86974919e8a2b3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3797e219ad495c54598f478c0be20c84"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a3797e219ad495c54598f478c0be20c84"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>handleException</b> (JSValueRef exception)</td></tr>
 <tr class="separator:a3797e219ad495c54598f478c0be20c84"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-static-methods"></a>
 Static Protected Member Functions</h2></td></tr>
-<tr class="memitem:a406637daa14b9f9a600094b93e4ef11a"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a406637daa14b9f9a600094b93e4ef11a"></a>
-static JSValueRef&#160;</td><td class="memItemRight" valign="bottom"><b>jsIn</b> (JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef *exception)</td></tr>
-<tr class="separator:a406637daa14b9f9a600094b93e4ef11a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:afbee8b873908194b176d9ceba878c2e5"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="afbee8b873908194b176d9ceba878c2e5"></a>
-static JSValueRef&#160;</td><td class="memItemRight" valign="bottom"><b>jsPrint</b> (JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef *exception)</td></tr>
-<tr class="separator:afbee8b873908194b176d9ceba878c2e5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af455135723d3fa755955ee77a88ac029"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="af455135723d3fa755955ee77a88ac029"></a>
 static JSValueRef&#160;</td><td class="memItemRight" valign="bottom"><b>jsExtension</b> (JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef *exception)</td></tr>
 <tr class="separator:af455135723d3fa755955ee77a88ac029"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3c93fa93bbd3c0147be9fa939cb87616"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a3c93fa93bbd3c0147be9fa939cb87616"></a>
-static bool&#160;</td><td class="memItemRight" valign="bottom"><b>jsIOProcessorHasProp</b> (JSContextRef ctx, JSObjectRef object, JSStringRef propertyName)</td></tr>
-<tr class="separator:a3c93fa93bbd3c0147be9fa939cb87616"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3f4e125bc4c666a4a3e65fa0cf7b367c"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a3f4e125bc4c666a4a3e65fa0cf7b367c"></a>
-static JSValueRef&#160;</td><td class="memItemRight" valign="bottom"><b>jsIOProcessorGetProp</b> (JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef *exception)</td></tr>
-<tr class="separator:a3f4e125bc4c666a4a3e65fa0cf7b367c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a69d5957d2c366961325ecaece7ad3e5f"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a69d5957d2c366961325ecaece7ad3e5f"></a>
-static void&#160;</td><td class="memItemRight" valign="bottom"><b>jsIOProcessorListProps</b> (JSContextRef ctx, JSObjectRef object, JSPropertyNameAccumulatorRef propertyNames)</td></tr>
-<tr class="separator:a69d5957d2c366961325ecaece7ad3e5f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:abd236e066bdc99c54f085090423702e9"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="abd236e066bdc99c54f085090423702e9"></a>
-static bool&#160;</td><td class="memItemRight" valign="bottom"><b>jsInvokerHasProp</b> (JSContextRef ctx, JSObjectRef object, JSStringRef propertyName)</td></tr>
-<tr class="separator:abd236e066bdc99c54f085090423702e9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a406637daa14b9f9a600094b93e4ef11a"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a406637daa14b9f9a600094b93e4ef11a"></a>
+static JSValueRef&#160;</td><td class="memItemRight" valign="bottom"><b>jsIn</b> (JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef *exception)</td></tr>
+<tr class="separator:a406637daa14b9f9a600094b93e4ef11a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae09b2aa523522a798bf8749990ef551b"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ae09b2aa523522a798bf8749990ef551b"></a>
 static JSValueRef&#160;</td><td class="memItemRight" valign="bottom"><b>jsInvokerGetProp</b> (JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef *exception)</td></tr>
 <tr class="separator:ae09b2aa523522a798bf8749990ef551b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abd236e066bdc99c54f085090423702e9"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="abd236e066bdc99c54f085090423702e9"></a>
+static bool&#160;</td><td class="memItemRight" valign="bottom"><b>jsInvokerHasProp</b> (JSContextRef ctx, JSObjectRef object, JSStringRef propertyName)</td></tr>
+<tr class="separator:abd236e066bdc99c54f085090423702e9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac5c3a23cdb6e731e027edf9fb97ae3b4"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ac5c3a23cdb6e731e027edf9fb97ae3b4"></a>
 static void&#160;</td><td class="memItemRight" valign="bottom"><b>jsInvokerListProps</b> (JSContextRef ctx, JSObjectRef object, JSPropertyNameAccumulatorRef propertyNames)</td></tr>
 <tr class="separator:ac5c3a23cdb6e731e027edf9fb97ae3b4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3f4e125bc4c666a4a3e65fa0cf7b367c"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a3f4e125bc4c666a4a3e65fa0cf7b367c"></a>
+static JSValueRef&#160;</td><td class="memItemRight" valign="bottom"><b>jsIOProcessorGetProp</b> (JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef *exception)</td></tr>
+<tr class="separator:a3f4e125bc4c666a4a3e65fa0cf7b367c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3c93fa93bbd3c0147be9fa939cb87616"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a3c93fa93bbd3c0147be9fa939cb87616"></a>
+static bool&#160;</td><td class="memItemRight" valign="bottom"><b>jsIOProcessorHasProp</b> (JSContextRef ctx, JSObjectRef object, JSStringRef propertyName)</td></tr>
+<tr class="separator:a3c93fa93bbd3c0147be9fa939cb87616"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a69d5957d2c366961325ecaece7ad3e5f"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a69d5957d2c366961325ecaece7ad3e5f"></a>
+static void&#160;</td><td class="memItemRight" valign="bottom"><b>jsIOProcessorListProps</b> (JSContextRef ctx, JSObjectRef object, JSPropertyNameAccumulatorRef propertyNames)</td></tr>
+<tr class="separator:a69d5957d2c366961325ecaece7ad3e5f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afbee8b873908194b176d9ceba878c2e5"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="afbee8b873908194b176d9ceba878c2e5"></a>
+static JSValueRef&#160;</td><td class="memItemRight" valign="bottom"><b>jsPrint</b> (JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef *exception)</td></tr>
+<tr class="separator:afbee8b873908194b176d9ceba878c2e5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-attribs"></a>
 Protected Attributes</h2></td></tr>
-<tr class="memitem:ab6ee7408b3a0c1a23f4b8060b5bb0462"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ab6ee7408b3a0c1a23f4b8060b5bb0462"></a>
-std::string&#160;</td><td class="memItemRight" valign="bottom"><b>_sessionId</b></td></tr>
-<tr class="separator:ab6ee7408b3a0c1a23f4b8060b5bb0462"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a11480a89a76855c4c51063083ace739a"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a11480a89a76855c4c51063083ace739a"></a>
-std::string&#160;</td><td class="memItemRight" valign="bottom"><b>_name</b></td></tr>
-<tr class="separator:a11480a89a76855c4c51063083ace739a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae38cb67702bd41f1a880dffc626f8c2a"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ae38cb67702bd41f1a880dffc626f8c2a"></a>
-std::set&lt; <a class="el" href="classuscxml_1_1_data_model_extension.html">DataModelExtension</a> * &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>_extensions</b></td></tr>
-<tr class="separator:ae38cb67702bd41f1a880dffc626f8c2a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a349e99eab5f730cc1a20934362928e0c"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a349e99eab5f730cc1a20934362928e0c"></a>
-<a class="el" href="classuscxml_1_1_event.html">Event</a>&#160;</td><td class="memItemRight" valign="bottom"><b>_event</b></td></tr>
-<tr class="separator:a349e99eab5f730cc1a20934362928e0c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad4f29a1e8e8316c1e55b6dc3ca12fc48"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ad4f29a1e8e8316c1e55b6dc3ca12fc48"></a>
 JSGlobalContextRef&#160;</td><td class="memItemRight" valign="bottom"><b>_ctx</b></td></tr>
 <tr class="separator:ad4f29a1e8e8316c1e55b6dc3ca12fc48"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a349e99eab5f730cc1a20934362928e0c"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a349e99eab5f730cc1a20934362928e0c"></a>
+<a class="el" href="classuscxml_1_1_event.html">Event</a>&#160;</td><td class="memItemRight" valign="bottom"><b>_event</b></td></tr>
+<tr class="separator:a349e99eab5f730cc1a20934362928e0c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae38cb67702bd41f1a880dffc626f8c2a"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ae38cb67702bd41f1a880dffc626f8c2a"></a>
+std::set&lt; <a class="el" href="classuscxml_1_1_data_model_extension.html">DataModelExtension</a> * &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>_extensions</b></td></tr>
+<tr class="separator:ae38cb67702bd41f1a880dffc626f8c2a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a11480a89a76855c4c51063083ace739a"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a11480a89a76855c4c51063083ace739a"></a>
+std::string&#160;</td><td class="memItemRight" valign="bottom"><b>_name</b></td></tr>
+<tr class="separator:a11480a89a76855c4c51063083ace739a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab6ee7408b3a0c1a23f4b8060b5bb0462"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ab6ee7408b3a0c1a23f4b8060b5bb0462"></a>
+std::string&#160;</td><td class="memItemRight" valign="bottom"><b>_sessionId</b></td></tr>
+<tr class="separator:ab6ee7408b3a0c1a23f4b8060b5bb0462"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pro_attribs_classuscxml_1_1_data_model_impl"><td colspan="2" onclick="javascript:toggleInherit('pro_attribs_classuscxml_1_1_data_model_impl')"><img src="closed.png" alt="-"/>&#160;Protected Attributes inherited from <a class="el" href="classuscxml_1_1_data_model_impl.html">uscxml::DataModelImpl</a></td></tr>
 <tr class="memitem:aa5aed42d77aac94ea28561aebf6ee7c8 inherit pro_attribs_classuscxml_1_1_data_model_impl"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aa5aed42d77aac94ea28561aebf6ee7c8"></a>
 <a class="el" href="classuscxml_1_1_data_model_callbacks.html">DataModelCallbacks</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>_callbacks</b></td></tr>
@@ -244,28 +244,80 @@ JSGlobalContextRef&#160;</td><td class="memItemRight" valign="bottom"><b>_ctx</b
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-static-attribs"></a>
 Static Protected Attributes</h2></td></tr>
-<tr class="memitem:a6e7876756e6c7945b08c274984a00315"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a6e7876756e6c7945b08c274984a00315"></a>
-static JSClassDefinition&#160;</td><td class="memItemRight" valign="bottom"><b>jsInClassDef</b> = { 0, 0, &quot;In&quot;, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, jsIn, 0, 0, 0 }</td></tr>
-<tr class="separator:a6e7876756e6c7945b08c274984a00315"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9e0098d3cf6fc5e2fa9f7fd956bfd4c6"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a9e0098d3cf6fc5e2fa9f7fd956bfd4c6"></a>
-static JSClassDefinition&#160;</td><td class="memItemRight" valign="bottom"><b>jsPrintClassDef</b> = { 0, 0, &quot;print&quot;, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, jsPrint, 0, 0, 0 }</td></tr>
-<tr class="separator:a9e0098d3cf6fc5e2fa9f7fd956bfd4c6"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a579ff21a99f423980c1fbda593394a21"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a579ff21a99f423980c1fbda593394a21"></a>
-static JSClassDefinition&#160;</td><td class="memItemRight" valign="bottom"><b>jsExtensionClassDef</b> = { 0, 0, &quot;Extension&quot;, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, jsExtension, 0, 0, 0 }</td></tr>
-<tr class="separator:a579ff21a99f423980c1fbda593394a21"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7d9158c7368e062fea9cc97479e5b5e7"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a7d9158c7368e062fea9cc97479e5b5e7"></a>
-static JSClassDefinition&#160;</td><td class="memItemRight" valign="bottom"><b>jsIOProcessorsClassDef</b> = { 0, 0, &quot;ioProcessors&quot;, 0, 0, 0, 0, 0, jsIOProcessorHasProp, jsIOProcessorGetProp, 0, 0, jsIOProcessorListProps, 0, 0, 0, 0 }</td></tr>
-<tr class="separator:a7d9158c7368e062fea9cc97479e5b5e7"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8074e54dbaaec2fbf2238eec75a3e2a2"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a8074e54dbaaec2fbf2238eec75a3e2a2"></a>
-static JSClassDefinition&#160;</td><td class="memItemRight" valign="bottom"><b>jsInvokersClassDef</b> = { 0, 0, &quot;invokers&quot;, 0, 0, 0, 0, 0, jsInvokerHasProp, jsInvokerGetProp, 0, 0, jsInvokerListProps, 0, 0, 0, 0 }</td></tr>
-<tr class="separator:a8074e54dbaaec2fbf2238eec75a3e2a2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6eedc5204f0e793a746e4854356c5f40"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a6eedc5204f0e793a746e4854356c5f40"></a>
 static std::mutex&#160;</td><td class="memItemRight" valign="bottom"><b>_initMutex</b></td></tr>
 <tr class="separator:a6eedc5204f0e793a746e4854356c5f40"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a579ff21a99f423980c1fbda593394a21"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a579ff21a99f423980c1fbda593394a21"></a>
+static JSClassDefinition&#160;</td><td class="memItemRight" valign="bottom"><b>jsExtensionClassDef</b> = { 0, 0, &quot;Extension&quot;, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, jsExtension, 0, 0, 0 }</td></tr>
+<tr class="separator:a579ff21a99f423980c1fbda593394a21"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6e7876756e6c7945b08c274984a00315"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a6e7876756e6c7945b08c274984a00315"></a>
+static JSClassDefinition&#160;</td><td class="memItemRight" valign="bottom"><b>jsInClassDef</b> = { 0, 0, &quot;In&quot;, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, jsIn, 0, 0, 0 }</td></tr>
+<tr class="separator:a6e7876756e6c7945b08c274984a00315"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8074e54dbaaec2fbf2238eec75a3e2a2"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a8074e54dbaaec2fbf2238eec75a3e2a2"></a>
+static JSClassDefinition&#160;</td><td class="memItemRight" valign="bottom"><b>jsInvokersClassDef</b> = { 0, 0, &quot;invokers&quot;, 0, 0, 0, 0, 0, jsInvokerHasProp, jsInvokerGetProp, 0, 0, jsInvokerListProps, 0, 0, 0, 0 }</td></tr>
+<tr class="separator:a8074e54dbaaec2fbf2238eec75a3e2a2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7d9158c7368e062fea9cc97479e5b5e7"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a7d9158c7368e062fea9cc97479e5b5e7"></a>
+static JSClassDefinition&#160;</td><td class="memItemRight" valign="bottom"><b>jsIOProcessorsClassDef</b> = { 0, 0, &quot;ioProcessors&quot;, 0, 0, 0, 0, 0, jsIOProcessorHasProp, jsIOProcessorGetProp, 0, 0, jsIOProcessorListProps, 0, 0, 0, 0 }</td></tr>
+<tr class="separator:a7d9158c7368e062fea9cc97479e5b5e7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9e0098d3cf6fc5e2fa9f7fd956bfd4c6"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a9e0098d3cf6fc5e2fa9f7fd956bfd4c6"></a>
+static JSClassDefinition&#160;</td><td class="memItemRight" valign="bottom"><b>jsPrintClassDef</b> = { 0, 0, &quot;print&quot;, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, jsPrint, 0, 0, 0 }</td></tr>
+<tr class="separator:a9e0098d3cf6fc5e2fa9f7fd956bfd4c6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>ECMAScript data-model via JavaScriptCore. </p>
-</div><h2 class="groupheader">Member Function Documentation</h2>
+<h2 class="groupheader">Member Function Documentation</h2>
+<a class="anchor" id="a591403a4335f665a7f9f42b3ac00689e"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void uscxml::JSCDataModel::addExtension </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classuscxml_1_1_data_model_extension.html">DataModelExtension</a> *&#160;</td>
+          <td class="paramname"><em>ext</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<dl class="todo"><dt><b><a class="el" href="todo.html#_todo000002">Todo:</a></b></dt><dd>This is currently unsupported </dd></dl>
+
+<p>Reimplemented from <a class="el" href="classuscxml_1_1_data_model_impl.html#a8137c81a64d3978fc5a13cefdfe9a57a">uscxml::DataModelImpl</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="ad2e282225a1c8cdbeb29206413f3ac4a"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::string uscxml::JSCDataModel::andExpressions </td>
+          <td>(</td>
+          <td class="paramtype">std::list&lt; std::string &gt;&#160;</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<dl class="todo"><dt><b><a class="el" href="todo.html#_todo000003">Todo:</a></b></dt><dd>This is required to automatically transform a state-chart into a state-machine. Actual transformation is still only available in legacy though. </dd></dl>
+
+<p>Reimplemented from <a class="el" href="classuscxml_1_1_data_model_impl.html#a85a2bdd7493a4dfb156c723b204e858a">uscxml::DataModelImpl</a>.</p>
+
+</div>
+</div>
 <a class="anchor" id="ad1cdfb5c119641aa99ae1b3cf8c66cf9"></a>
 <div class="memitem">
 <div class="memproto">
@@ -297,18 +349,16 @@ static std::mutex&#160;</td><td class="memItemRight" valign="bottom"><b>_initMut
   </tr>
 </table>
 </div><div class="memdoc">
-
-<p>Assign a data object to a location in the data-model. </p>
 <p>There are different occurences in the SCXML IRP tests, e.g. </p><pre class="fragment">test147:
-  &lt;data id="Var1" expr="0"/&gt;
+&lt;data id="Var1" expr="0"/&gt;
 
 test150:
-  &lt;data id="Var3"&gt;
-    [1,2,3]
-  &lt;/data&gt;
+&lt;data id="Var3"&gt;
+[1,2,3]
+&lt;/data&gt;
 
 test277:
-  &lt;data id="Var1" expr="return"/&gt;
+&lt;data id="Var1" expr="return"/&gt;
 </pre> <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">location</td><td>A variable or locatio to assign to. </td></tr>
@@ -343,8 +393,6 @@ test277:
   </tr>
 </table>
 </div><div class="memdoc">
-
-<p>The <a class="el" href="classuscxml_1_1_factory.html">Factory</a> wants to instantiate a new instance. </p>
 <p>This function will have to initialize the object. The actual constructor is called from within here. The only one who calls the constructor directly is the <a class="el" href="classuscxml_1_1_factory.html">Factory</a> for the prototype object.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
@@ -379,8 +427,6 @@ test277:
   </tr>
 </table>
 </div><div class="memdoc">
-
-<p>Evaluate a given expression as a boolean. </p>
 <p>This function is a subset of <a class="el" href="classuscxml_1_1_j_s_c_data_model.html#ad3e87b80df626b8b40174b2435ef60f5" title="Return a string as an evaluated Data object. ">evalAsData()</a> but saves on creating and copying a <a class="el" href="classuscxml_1_1_data.html">Data</a> object. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">expr</td><td>An expression in the data-model's language. </td></tr>
@@ -414,8 +460,6 @@ test277:
   </tr>
 </table>
 </div><div class="memdoc">
-
-<p>Return a string as an <em>evaluated</em> <a class="el" href="classuscxml_1_1_data.html">Data</a> object. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">content</td><td>A string with a literal, eppression or compound data-structure in the data-model's language. </td></tr>
@@ -449,8 +493,6 @@ test277:
   </tr>
 </table>
 </div><div class="memdoc">
-
-<p>Return a string as an <em>unevaluated</em> <a class="el" href="classuscxml_1_1_data.html">Data</a> object. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">content</td><td>A string with a literal, eppression or compound data-structure in the data-model's language. </td></tr>
@@ -460,6 +502,39 @@ test277:
 <dl class="section return"><dt>Returns</dt><dd>An unevaluated structure representing the given compound or literal. </dd></dl>
 
 <p>Implements <a class="el" href="classuscxml_1_1_data_model_impl.html#ac026678fef708090caba851bc9681dfc">uscxml::DataModelImpl</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="a1ffe81d46dd290741af5fbbff9a60d54"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint32_t uscxml::JSCDataModel::getLength </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;&#160;</td>
+          <td class="paramname"><em>expr</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">expr</td><td>Anything that possibly evaluates to an enumerable object. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>The number of items in the enumerable object. </dd></dl>
+
+<p>Implements <a class="el" href="classuscxml_1_1_data_model_impl.html#a355696d8b85c00a640232b158f93850f">uscxml::DataModelImpl</a>.</p>
 
 </div>
 </div>
@@ -494,8 +569,6 @@ test277:
   </tr>
 </table>
 </div><div class="memdoc">
-
-<p>Initialize a variable / location in the data-model with a given data object. </p>
 <p>This is, semantically, very close to <a class="el" href="classuscxml_1_1_j_s_c_data_model.html#ad1cdfb5c119641aa99ae1b3cf8c66cf9" title="Assign a data object to a location in the data-model. ">assign()</a> but does not assume the location to be declared first.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
@@ -530,15 +603,13 @@ test277:
   </tr>
 </table>
 </div><div class="memdoc">
-
-<p>Determine whether a given variable / location is declared. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">expr</td><td>The variable / location to check. </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="todo"><dt><b><a class="el" href="todo.html#_todo000002">Todo:</a></b></dt><dd>Is this still used? </dd></dl>
+<dl class="todo"><dt><b><a class="el" href="todo.html#_todo000001">Todo:</a></b></dt><dd>Is this still used? </dd></dl>
 
 <p>Implements <a class="el" href="classuscxml_1_1_data_model_impl.html#a83a8684b45f509a1180fb41ebb42192e">uscxml::DataModelImpl</a>.</p>
 
@@ -565,8 +636,6 @@ test277:
   </tr>
 </table>
 </div><div class="memdoc">
-
-<p>Determine whether a given string constitutes valid syntax in the data-model's language. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">expr</td><td>A string, supposedly containing an expression of the data-model. </td></tr>
@@ -600,8 +669,6 @@ test277:
   </tr>
 </table>
 </div><div class="memdoc">
-
-<p>Set the given event as <code>_event</code> in the data-model's global scope. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">event</td><td>The event as it was dequeued from either the internal or external queue. </td></tr>
@@ -610,6 +677,63 @@ test277:
 </dl>
 
 <p>Implements <a class="el" href="classuscxml_1_1_data_model_impl.html#a1d3ef74ba677d7224d7320d7980c757c">uscxml::DataModelImpl</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="a46d8da2c2e9a9a0dbcb2ea896f5ce22a"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void uscxml::JSCDataModel::setForeach </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;&#160;</td>
+          <td class="paramname"><em>item</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const std::string &amp;&#160;</td>
+          <td class="paramname"><em>array</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const std::string &amp;&#160;</td>
+          <td class="paramname"><em>index</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint32_t&#160;</td>
+          <td class="paramname"><em>iteration</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">item</td><td>A variable or location to assign the current object to. </td></tr>
+    <tr><td class="paramname">array</td><td>An expression evalating to an enumerable object. </td></tr>
+    <tr><td class="paramname">index</td><td>A variable or location to set the current index at. </td></tr>
+    <tr><td class="paramname">iteration</td><td>The current iteration index. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+<p>Implements <a class="el" href="classuscxml_1_1_data_model_impl.html#a0a6504a4c62e5925854998ce750d1675">uscxml::DataModelImpl</a>.</p>
 
 </div>
 </div>
@@ -626,7 +750,7 @@ test277:
 </div>
 </div>
 <!-- <hr class="footer"/><address class="footer"><small>
-Generated on Thu May 19 2016 14:56:47 for uSCXML by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon May 23 2016 08:47:45 for uSCXML by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.10
 </small></address> -->

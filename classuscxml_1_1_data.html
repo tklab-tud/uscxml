@@ -135,18 +135,60 @@ template&lt;typename T &gt; </td></tr>
 template&lt;typename T &gt; </td></tr>
 <tr class="memitem:a14618005baa0f7e5a7f6cb1cdd225192"><td class="memTemplItemLeft" align="right" valign="top">&#160;</td><td class="memTemplItemRight" valign="bottom"><b>Data</b> (T value, Type type, typename std::enable_if&lt;!std::is_base_of&lt; <a class="el" href="classuscxml_1_1_data.html">Data</a>, T &gt;::value &gt;::type *=nullptr)</td></tr>
 <tr class="separator:a14618005baa0f7e5a7f6cb1cdd225192"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4af722b198b82488b8abf0a1a115f775"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a4af722b198b82488b8abf0a1a115f775"></a>
+std::string&#160;</td><td class="memItemRight" valign="bottom"><b>asJSON</b> () const </td></tr>
+<tr class="separator:a4af722b198b82488b8abf0a1a115f775"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a19ba71b4fc3796a2577bfeb60d9f7352"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a19ba71b4fc3796a2577bfeb60d9f7352"></a>
+const <a class="el" href="classuscxml_1_1_data.html">Data</a>&#160;</td><td class="memItemRight" valign="bottom"><b>at</b> (const std::string &amp;key) const </td></tr>
+<tr class="separator:a19ba71b4fc3796a2577bfeb60d9f7352"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:addbc6c0fc0c6dd209b2ce530709c2074"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="addbc6c0fc0c6dd209b2ce530709c2074"></a>
+const <a class="el" href="classuscxml_1_1_data.html">Data</a>&#160;</td><td class="memItemRight" valign="bottom"><b>at</b> (const char *key) const </td></tr>
+<tr class="separator:addbc6c0fc0c6dd209b2ce530709c2074"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4fcaa85240da412c98314a71326649d1"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a4fcaa85240da412c98314a71326649d1"></a>
 bool&#160;</td><td class="memItemRight" valign="bottom"><b>empty</b> () const </td></tr>
 <tr class="separator:a4fcaa85240da412c98314a71326649d1"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3026131e5f1c4320c2a1dc49ee450621"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a3026131e5f1c4320c2a1dc49ee450621"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><b>operator&lt;</b> (const <a class="el" href="classuscxml_1_1_data.html">Data</a> &amp;other) const </td></tr>
-<tr class="separator:a3026131e5f1c4320c2a1dc49ee450621"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad17c5d882690e83096e3593976484427"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ad17c5d882690e83096e3593976484427"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>merge</b> (const <a class="el" href="classuscxml_1_1_data.html">Data</a> &amp;other)</td></tr>
-<tr class="separator:ad17c5d882690e83096e3593976484427"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a18eb5adab364f6fd28085d5946ed1668"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a18eb5adab364f6fd28085d5946ed1668"></a>
+std::list&lt; <a class="el" href="classuscxml_1_1_data.html">Data</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>getArray</b> ()</td></tr>
+<tr class="separator:a18eb5adab364f6fd28085d5946ed1668"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae41d92177f4198477826c51235b639fe"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ae41d92177f4198477826c51235b639fe"></a>
+std::string&#160;</td><td class="memItemRight" valign="bottom"><b>getAtom</b> () const </td></tr>
+<tr class="separator:ae41d92177f4198477826c51235b639fe"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae21901d3a26d9580459f499054b3a8d4"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ae21901d3a26d9580459f499054b3a8d4"></a>
+<a class="el" href="classuscxml_1_1_blob.html">Blob</a>&#160;</td><td class="memItemRight" valign="bottom"><b>getBinary</b> ()</td></tr>
+<tr class="separator:ae21901d3a26d9580459f499054b3a8d4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae4c1d74489b30b3900db38fbbcd6f8bc"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ae4c1d74489b30b3900db38fbbcd6f8bc"></a>
+std::map&lt; std::string, <a class="el" href="classuscxml_1_1_data.html">Data</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>getCompound</b> ()</td></tr>
+<tr class="separator:ae4c1d74489b30b3900db38fbbcd6f8bc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a70c4ba364765b58a6c126e2fa209dbf5"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a70c4ba364765b58a6c126e2fa209dbf5"></a>
+Type&#160;</td><td class="memItemRight" valign="bottom"><b>getType</b> ()</td></tr>
+<tr class="separator:a70c4ba364765b58a6c126e2fa209dbf5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:abb4e5c2be4e8a9752c4eb63ee365898c"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="abb4e5c2be4e8a9752c4eb63ee365898c"></a>
 bool&#160;</td><td class="memItemRight" valign="bottom"><b>hasKey</b> (const std::string &amp;key) const </td></tr>
 <tr class="separator:abb4e5c2be4e8a9752c4eb63ee365898c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8d37889601a49a6caa6ff9ff5bf09792"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a8d37889601a49a6caa6ff9ff5bf09792"></a>
+const <a class="el" href="classuscxml_1_1_data.html">Data</a>&#160;</td><td class="memItemRight" valign="bottom"><b>item</b> (const size_t index) const </td></tr>
+<tr class="separator:a8d37889601a49a6caa6ff9ff5bf09792"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad17c5d882690e83096e3593976484427"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ad17c5d882690e83096e3593976484427"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>merge</b> (const <a class="el" href="classuscxml_1_1_data.html">Data</a> &amp;other)</td></tr>
+<tr class="separator:ad17c5d882690e83096e3593976484427"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acf130ad13509f824680bb3471412b0c0"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="acf130ad13509f824680bb3471412b0c0"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>operator std::list&lt; Data &gt;</b> ()</td></tr>
+<tr class="separator:acf130ad13509f824680bb3471412b0c0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7335fe964dd13ed41f5bcb4bb9ca09fa"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a7335fe964dd13ed41f5bcb4bb9ca09fa"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>operator std::map&lt; std::string, Data &gt;</b> ()</td></tr>
+<tr class="separator:a7335fe964dd13ed41f5bcb4bb9ca09fa"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af0690eef3a7328f95b86c6bdeb5c15d3"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="af0690eef3a7328f95b86c6bdeb5c15d3"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>operator std::string</b> () const </td></tr>
+<tr class="separator:af0690eef3a7328f95b86c6bdeb5c15d3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afa894b640dec05ecb5c5da30b9897a96"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="afa894b640dec05ecb5c5da30b9897a96"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>operator!=</b> (const <a class="el" href="classuscxml_1_1_data.html">Data</a> &amp;other) const </td></tr>
+<tr class="separator:afa894b640dec05ecb5c5da30b9897a96"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3026131e5f1c4320c2a1dc49ee450621"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a3026131e5f1c4320c2a1dc49ee450621"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>operator&lt;</b> (const <a class="el" href="classuscxml_1_1_data.html">Data</a> &amp;other) const </td></tr>
+<tr class="separator:a3026131e5f1c4320c2a1dc49ee450621"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a48973ec47f1c935b5f47c426c53ebc64"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a48973ec47f1c935b5f47c426c53ebc64"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>operator==</b> (const <a class="el" href="classuscxml_1_1_data.html">Data</a> &amp;other) const </td></tr>
+<tr class="separator:a48973ec47f1c935b5f47c426c53ebc64"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0fc427cf627c6e211a88bff86d1a42c0"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a0fc427cf627c6e211a88bff86d1a42c0"></a>
 <a class="el" href="classuscxml_1_1_data.html">Data</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator[]</b> (const std::string &amp;key)</td></tr>
 <tr class="separator:a0fc427cf627c6e211a88bff86d1a42c0"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -162,66 +204,24 @@ const <a class="el" href="classuscxml_1_1_data.html">Data</a> &amp;&#160;</td><t
 <tr class="memitem:ab38f1e305796e72ac6ae13c1c27d1610"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ab38f1e305796e72ac6ae13c1c27d1610"></a>
 <a class="el" href="classuscxml_1_1_data.html">Data</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator[]</b> (const size_t index)</td></tr>
 <tr class="separator:ab38f1e305796e72ac6ae13c1c27d1610"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a19ba71b4fc3796a2577bfeb60d9f7352"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a19ba71b4fc3796a2577bfeb60d9f7352"></a>
-const <a class="el" href="classuscxml_1_1_data.html">Data</a>&#160;</td><td class="memItemRight" valign="bottom"><b>at</b> (const std::string &amp;key) const </td></tr>
-<tr class="separator:a19ba71b4fc3796a2577bfeb60d9f7352"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:addbc6c0fc0c6dd209b2ce530709c2074"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="addbc6c0fc0c6dd209b2ce530709c2074"></a>
-const <a class="el" href="classuscxml_1_1_data.html">Data</a>&#160;</td><td class="memItemRight" valign="bottom"><b>at</b> (const char *key) const </td></tr>
-<tr class="separator:addbc6c0fc0c6dd209b2ce530709c2074"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8d37889601a49a6caa6ff9ff5bf09792"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a8d37889601a49a6caa6ff9ff5bf09792"></a>
-const <a class="el" href="classuscxml_1_1_data.html">Data</a>&#160;</td><td class="memItemRight" valign="bottom"><b>item</b> (const size_t index) const </td></tr>
-<tr class="separator:a8d37889601a49a6caa6ff9ff5bf09792"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:acf9519c36b3f320a5cd83cf6218b6082"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="acf9519c36b3f320a5cd83cf6218b6082"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>put</b> (std::string key, const <a class="el" href="classuscxml_1_1_data.html">Data</a> &amp;data)</td></tr>
 <tr class="separator:acf9519c36b3f320a5cd83cf6218b6082"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a093a4e78dc9cf4f1824f467ee19c6b53"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a093a4e78dc9cf4f1824f467ee19c6b53"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>put</b> (size_t index, const <a class="el" href="classuscxml_1_1_data.html">Data</a> &amp;data)</td></tr>
 <tr class="separator:a093a4e78dc9cf4f1824f467ee19c6b53"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a48973ec47f1c935b5f47c426c53ebc64"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a48973ec47f1c935b5f47c426c53ebc64"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><b>operator==</b> (const <a class="el" href="classuscxml_1_1_data.html">Data</a> &amp;other) const </td></tr>
-<tr class="separator:a48973ec47f1c935b5f47c426c53ebc64"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:afa894b640dec05ecb5c5da30b9897a96"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="afa894b640dec05ecb5c5da30b9897a96"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><b>operator!=</b> (const <a class="el" href="classuscxml_1_1_data.html">Data</a> &amp;other) const </td></tr>
-<tr class="separator:afa894b640dec05ecb5c5da30b9897a96"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af0690eef3a7328f95b86c6bdeb5c15d3"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="af0690eef3a7328f95b86c6bdeb5c15d3"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>operator std::string</b> () const </td></tr>
-<tr class="separator:af0690eef3a7328f95b86c6bdeb5c15d3"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7335fe964dd13ed41f5bcb4bb9ca09fa"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a7335fe964dd13ed41f5bcb4bb9ca09fa"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>operator std::map&lt; std::string, Data &gt;</b> ()</td></tr>
-<tr class="separator:a7335fe964dd13ed41f5bcb4bb9ca09fa"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:acf130ad13509f824680bb3471412b0c0"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="acf130ad13509f824680bb3471412b0c0"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>operator std::list&lt; Data &gt;</b> ()</td></tr>
-<tr class="separator:acf130ad13509f824680bb3471412b0c0"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4af722b198b82488b8abf0a1a115f775"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a4af722b198b82488b8abf0a1a115f775"></a>
-std::string&#160;</td><td class="memItemRight" valign="bottom"><b>asJSON</b> () const </td></tr>
-<tr class="separator:a4af722b198b82488b8abf0a1a115f775"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae4c1d74489b30b3900db38fbbcd6f8bc"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ae4c1d74489b30b3900db38fbbcd6f8bc"></a>
-std::map&lt; std::string, <a class="el" href="classuscxml_1_1_data.html">Data</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>getCompound</b> ()</td></tr>
-<tr class="separator:ae4c1d74489b30b3900db38fbbcd6f8bc"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad82be841111ddbaa53b83e393bd748c1"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ad82be841111ddbaa53b83e393bd748c1"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>setCompound</b> (const std::map&lt; std::string, <a class="el" href="classuscxml_1_1_data.html">Data</a> &gt; &amp;compound)</td></tr>
-<tr class="separator:ad82be841111ddbaa53b83e393bd748c1"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a18eb5adab364f6fd28085d5946ed1668"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a18eb5adab364f6fd28085d5946ed1668"></a>
-std::list&lt; <a class="el" href="classuscxml_1_1_data.html">Data</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>getArray</b> ()</td></tr>
-<tr class="separator:a18eb5adab364f6fd28085d5946ed1668"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2fc06b3b87b1d3d7569c59e2af7602bf"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a2fc06b3b87b1d3d7569c59e2af7602bf"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>setArray</b> (const std::list&lt; <a class="el" href="classuscxml_1_1_data.html">Data</a> &gt; &amp;array)</td></tr>
 <tr class="separator:a2fc06b3b87b1d3d7569c59e2af7602bf"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae41d92177f4198477826c51235b639fe"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ae41d92177f4198477826c51235b639fe"></a>
-std::string&#160;</td><td class="memItemRight" valign="bottom"><b>getAtom</b> () const </td></tr>
-<tr class="separator:ae41d92177f4198477826c51235b639fe"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a780e3a965b49008678013b8ca5143b2e"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a780e3a965b49008678013b8ca5143b2e"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>setAtom</b> (const std::string &amp;atom)</td></tr>
 <tr class="separator:a780e3a965b49008678013b8ca5143b2e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae21901d3a26d9580459f499054b3a8d4"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ae21901d3a26d9580459f499054b3a8d4"></a>
-<a class="el" href="classuscxml_1_1_blob.html">Blob</a>&#160;</td><td class="memItemRight" valign="bottom"><b>getBinary</b> ()</td></tr>
-<tr class="separator:ae21901d3a26d9580459f499054b3a8d4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0fa371618f166adb03abff2b5737e1b6"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a0fa371618f166adb03abff2b5737e1b6"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>setBinary</b> (const <a class="el" href="classuscxml_1_1_blob.html">Blob</a> &amp;binary)</td></tr>
 <tr class="separator:a0fa371618f166adb03abff2b5737e1b6"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a70c4ba364765b58a6c126e2fa209dbf5"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a70c4ba364765b58a6c126e2fa209dbf5"></a>
-Type&#160;</td><td class="memItemRight" valign="bottom"><b>getType</b> ()</td></tr>
-<tr class="separator:a70c4ba364765b58a6c126e2fa209dbf5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad82be841111ddbaa53b83e393bd748c1"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ad82be841111ddbaa53b83e393bd748c1"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>setCompound</b> (const std::map&lt; std::string, <a class="el" href="classuscxml_1_1_data.html">Data</a> &gt; &amp;compound)</td></tr>
+<tr class="separator:ad82be841111ddbaa53b83e393bd748c1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad3713c96532ca1f23769610f05803102"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ad3713c96532ca1f23769610f05803102"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>setType</b> (const Type type)</td></tr>
 <tr class="separator:ad3713c96532ca1f23769610f05803102"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -237,15 +237,9 @@ static std::string&#160;</td><td class="memItemRight" valign="bottom"><b>toJSON<
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
-<tr class="memitem:abb7551ac24719447a77be6fa1a77e24f"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="abb7551ac24719447a77be6fa1a77e24f"></a>
-XERCESC_NS::DOMNode *&#160;</td><td class="memItemRight" valign="bottom"><b>node</b></td></tr>
-<tr class="separator:abb7551ac24719447a77be6fa1a77e24f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a54cdf9a64e0c38df060ddb49c82f8d98"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a54cdf9a64e0c38df060ddb49c82f8d98"></a>
 std::shared_ptr&lt; XERCESC_NS::DOMDocument * &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>adoptedDoc</b></td></tr>
 <tr class="separator:a54cdf9a64e0c38df060ddb49c82f8d98"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac67e9e2118eb62d656feba86b86a4339"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ac67e9e2118eb62d656feba86b86a4339"></a>
-std::map&lt; std::string, <a class="el" href="classuscxml_1_1_data.html">Data</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>compound</b></td></tr>
-<tr class="separator:ac67e9e2118eb62d656feba86b86a4339"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9b563f5616cf32129ce0c2403f2acbf5"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a9b563f5616cf32129ce0c2403f2acbf5"></a>
 std::list&lt; <a class="el" href="classuscxml_1_1_data.html">Data</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>array</b></td></tr>
 <tr class="separator:a9b563f5616cf32129ce0c2403f2acbf5"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -255,6 +249,12 @@ std::string&#160;</td><td class="memItemRight" valign="bottom"><b>atom</b></td><
 <tr class="memitem:a7e81b111d8e845ed6c6e46332dd81a7d"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a7e81b111d8e845ed6c6e46332dd81a7d"></a>
 <a class="el" href="classuscxml_1_1_blob.html">Blob</a>&#160;</td><td class="memItemRight" valign="bottom"><b>binary</b></td></tr>
 <tr class="separator:a7e81b111d8e845ed6c6e46332dd81a7d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac67e9e2118eb62d656feba86b86a4339"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ac67e9e2118eb62d656feba86b86a4339"></a>
+std::map&lt; std::string, <a class="el" href="classuscxml_1_1_data.html">Data</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>compound</b></td></tr>
+<tr class="separator:ac67e9e2118eb62d656feba86b86a4339"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abb7551ac24719447a77be6fa1a77e24f"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="abb7551ac24719447a77be6fa1a77e24f"></a>
+XERCESC_NS::DOMNode *&#160;</td><td class="memItemRight" valign="bottom"><b>node</b></td></tr>
+<tr class="separator:abb7551ac24719447a77be6fa1a77e24f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:afcf59f136aaf82a04ce8c30fa81360e3"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="afcf59f136aaf82a04ce8c30fa81360e3"></a>
 Type&#160;</td><td class="memItemRight" valign="bottom"><b>type</b></td></tr>
 <tr class="separator:afcf59f136aaf82a04ce8c30fa81360e3"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -278,7 +278,7 @@ USCXML_API std::ostream &amp;&#160;</td><td class="memItemRight" valign="bottom"
 </div>
 </div>
 <!-- <hr class="footer"/><address class="footer"><small>
-Generated on Thu May 19 2016 14:56:47 for uSCXML by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon May 23 2016 08:47:45 for uSCXML by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.10
 </small></address> -->

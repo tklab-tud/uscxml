@@ -127,25 +127,25 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a522071e33d2c24c0d8b1f71f0a3d6259"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a522071e33d2c24c0d8b1f71f0a3d6259"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><b>MicroStepImpl</b> (<a class="el" href="classuscxml_1_1_micro_step_callbacks.html">MicroStepCallbacks</a> *callbacks)</td></tr>
 <tr class="separator:a522071e33d2c24c0d8b1f71f0a3d6259"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:afd86b505f423ee003d5d95cc331af15e"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="afd86b505f423ee003d5d95cc331af15e"></a>
-virtual InterpreterState&#160;</td><td class="memItemRight" valign="bottom"><b>step</b> (bool blocking)=0</td></tr>
-<tr class="separator:afd86b505f423ee003d5d95cc331af15e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0fa02ea1906b5404169e1671788c62b1"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a0fa02ea1906b5404169e1671788c62b1"></a>
-virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classuscxml_1_1_micro_step_impl.html#a0fa02ea1906b5404169e1671788c62b1">reset</a> ()=0</td></tr>
-<tr class="memdesc:a0fa02ea1906b5404169e1671788c62b1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Reset state machine. <br /></td></tr>
-<tr class="separator:a0fa02ea1906b5404169e1671788c62b1"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a33ee0a52788bb02b6ebde0875c62962c"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a33ee0a52788bb02b6ebde0875c62962c"></a>
-virtual bool&#160;</td><td class="memItemRight" valign="bottom"><b>isInState</b> (const std::string &amp;stateId)=0</td></tr>
-<tr class="separator:a33ee0a52788bb02b6ebde0875c62962c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6af3e97c41587f21d89de119519448c5"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a6af3e97c41587f21d89de119519448c5"></a>
 virtual std::list&lt; XERCESC_NS::DOMElement * &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>getConfiguration</b> ()=0</td></tr>
 <tr class="separator:a6af3e97c41587f21d89de119519448c5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae4658bea669516a41e824fee7e03585b"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ae4658bea669516a41e824fee7e03585b"></a>
 virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>init</b> (XERCESC_NS::DOMElement *scxml)=0</td></tr>
 <tr class="separator:ae4658bea669516a41e824fee7e03585b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a33ee0a52788bb02b6ebde0875c62962c"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a33ee0a52788bb02b6ebde0875c62962c"></a>
+virtual bool&#160;</td><td class="memItemRight" valign="bottom"><b>isInState</b> (const std::string &amp;stateId)=0</td></tr>
+<tr class="separator:a33ee0a52788bb02b6ebde0875c62962c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a632946ae59769e3753184b8ec7214fb6"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a632946ae59769e3753184b8ec7214fb6"></a>
 virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>markAsCancelled</b> ()=0</td></tr>
 <tr class="separator:a632946ae59769e3753184b8ec7214fb6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0fa02ea1906b5404169e1671788c62b1"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a0fa02ea1906b5404169e1671788c62b1"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classuscxml_1_1_micro_step_impl.html#a0fa02ea1906b5404169e1671788c62b1">reset</a> ()=0</td></tr>
+<tr class="memdesc:a0fa02ea1906b5404169e1671788c62b1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Reset state machine. <br /></td></tr>
+<tr class="separator:a0fa02ea1906b5404169e1671788c62b1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aedd6f75e3682823c3fdd5cfb59b47f8a"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aedd6f75e3682823c3fdd5cfb59b47f8a"></a>
+virtual InterpreterState&#160;</td><td class="memItemRight" valign="bottom"><b>step</b> (size_t blockMs)=0</td></tr>
+<tr class="separator:aedd6f75e3682823c3fdd5cfb59b47f8a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-attribs"></a>
 Protected Attributes</h2></td></tr>
@@ -165,7 +165,7 @@ Protected Attributes</h2></td></tr>
 </div>
 </div>
 <!-- <hr class="footer"/><address class="footer"><small>
-Generated on Thu May 19 2016 14:56:47 for uSCXML by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon May 23 2016 08:47:45 for uSCXML by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.10
 </small></address> -->

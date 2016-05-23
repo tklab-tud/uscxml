@@ -112,36 +112,34 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:aed09ee1f90bc1e12397329c198c59be0"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aed09ee1f90bc1e12397329c198c59be0"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classuscxml_1_1_interpreter.html#aed09ee1f90bc1e12397329c198c59be0">PIMPL_OPERATORS</a> (<a class="el" href="classuscxml_1_1_interpreter.html">Interpreter</a>)</td></tr>
-<tr class="memdesc:aed09ee1f90bc1e12397329c198c59be0"><td class="mdescLeft">&#160;</td><td class="mdescRight">See PIMPL_OPERATORS macro in <a class="el" href="_common_8h.html">Common.h</a>. <br /></td></tr>
-<tr class="separator:aed09ee1f90bc1e12397329c198c59be0"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:acea1e6b1b02663f22ec5367118f1066a"><td class="memItemLeft" align="right" valign="top">InterpreterState&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classuscxml_1_1_interpreter.html#acea1e6b1b02663f22ec5367118f1066a">step</a> (bool blocking=false)</td></tr>
-<tr class="memdesc:acea1e6b1b02663f22ec5367118f1066a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Perform a single microstep and return.  <a href="#acea1e6b1b02663f22ec5367118f1066a">More...</a><br /></td></tr>
-<tr class="separator:acea1e6b1b02663f22ec5367118f1066a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6cffb6d5573c2168e0215b5389a44aa8"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a6cffb6d5573c2168e0215b5389a44aa8"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classuscxml_1_1_interpreter.html#a6cffb6d5573c2168e0215b5389a44aa8">cancel</a> ()</td></tr>
 <tr class="memdesc:a6cffb6d5573c2168e0215b5389a44aa8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Unblock and mark for finalize. <br /></td></tr>
 <tr class="separator:a6cffb6d5573c2168e0215b5389a44aa8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aaf7fa4cdb85a97331f3c69d54675949f"><td class="memItemLeft" align="right" valign="top">std::list&lt; XERCESC_NS::DOMElement * &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classuscxml_1_1_interpreter.html#aaf7fa4cdb85a97331f3c69d54675949f">getConfiguration</a> ()</td></tr>
+<tr class="memdesc:aaf7fa4cdb85a97331f3c69d54675949f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get all state elements that constitute the active configuration.  <a href="#aaf7fa4cdb85a97331f3c69d54675949f">More...</a><br /></td></tr>
+<tr class="separator:aaf7fa4cdb85a97331f3c69d54675949f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a24ac91189b526ed80edc4b34e02bca53"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a24ac91189b526ed80edc4b34e02bca53"></a>
+std::shared_ptr&lt; <a class="el" href="classuscxml_1_1_interpreter_impl.html">InterpreterImpl</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classuscxml_1_1_interpreter.html#a24ac91189b526ed80edc4b34e02bca53">getImpl</a> () const </td></tr>
+<tr class="memdesc:a24ac91189b526ed80edc4b34e02bca53"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the actual implementation of the Interperter. <br /></td></tr>
+<tr class="separator:a24ac91189b526ed80edc4b34e02bca53"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a013f7011d488894349b88fea2fbe4a52"><td class="memItemLeft" align="right" valign="top">InterpreterState&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classuscxml_1_1_interpreter.html#a013f7011d488894349b88fea2fbe4a52">getState</a> ()</td></tr>
+<tr class="memdesc:a013f7011d488894349b88fea2fbe4a52"><td class="mdescLeft">&#160;</td><td class="mdescRight">The current state of the interpreter, not to be confused with its configuration.  <a href="#a013f7011d488894349b88fea2fbe4a52">More...</a><br /></td></tr>
+<tr class="separator:a013f7011d488894349b88fea2fbe4a52"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a05096251daf3f0665b275d8528244565"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classuscxml_1_1_interpreter.html#a05096251daf3f0665b275d8528244565">isInState</a> (const std::string &amp;stateId)</td></tr>
+<tr class="memdesc:a05096251daf3f0665b275d8528244565"><td class="mdescLeft">&#160;</td><td class="mdescRight">Determine whether the state with the given <code>id</code> is in the active configuration.  <a href="#a05096251daf3f0665b275d8528244565">More...</a><br /></td></tr>
+<tr class="separator:a05096251daf3f0665b275d8528244565"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aed09ee1f90bc1e12397329c198c59be0"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aed09ee1f90bc1e12397329c198c59be0"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classuscxml_1_1_interpreter.html#aed09ee1f90bc1e12397329c198c59be0">PIMPL_OPERATORS</a> (<a class="el" href="classuscxml_1_1_interpreter.html">Interpreter</a>)</td></tr>
+<tr class="memdesc:aed09ee1f90bc1e12397329c198c59be0"><td class="mdescLeft">&#160;</td><td class="mdescRight">See PIMPL_OPERATORS macro in <a class="el" href="_common_8h.html">Common.h</a>. <br /></td></tr>
+<tr class="separator:aed09ee1f90bc1e12397329c198c59be0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2279af2a6c78d2123e2a083903414e72"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classuscxml_1_1_interpreter.html#a2279af2a6c78d2123e2a083903414e72">receive</a> (const <a class="el" href="classuscxml_1_1_event.html">Event</a> &amp;event)</td></tr>
+<tr class="memdesc:a2279af2a6c78d2123e2a083903414e72"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enqueue an event to the interpreter's external queue.  <a href="#a2279af2a6c78d2123e2a083903414e72">More...</a><br /></td></tr>
+<tr class="separator:a2279af2a6c78d2123e2a083903414e72"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:acd21b0cc08aee82e55685955cc3fe64c"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="acd21b0cc08aee82e55685955cc3fe64c"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classuscxml_1_1_interpreter.html#acd21b0cc08aee82e55685955cc3fe64c">reset</a> ()</td></tr>
 <tr class="memdesc:acd21b0cc08aee82e55685955cc3fe64c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Finalize and reset interpeter. <br /></td></tr>
 <tr class="separator:acd21b0cc08aee82e55685955cc3fe64c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aaf7fa4cdb85a97331f3c69d54675949f"><td class="memItemLeft" align="right" valign="top">std::list&lt; XERCESC_NS::DOMElement * &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classuscxml_1_1_interpreter.html#aaf7fa4cdb85a97331f3c69d54675949f">getConfiguration</a> ()</td></tr>
-<tr class="memdesc:aaf7fa4cdb85a97331f3c69d54675949f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get all state elements that constitute the active configuration.  <a href="#aaf7fa4cdb85a97331f3c69d54675949f">More...</a><br /></td></tr>
-<tr class="separator:aaf7fa4cdb85a97331f3c69d54675949f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a05096251daf3f0665b275d8528244565"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classuscxml_1_1_interpreter.html#a05096251daf3f0665b275d8528244565">isInState</a> (const std::string &amp;stateId)</td></tr>
-<tr class="memdesc:a05096251daf3f0665b275d8528244565"><td class="mdescLeft">&#160;</td><td class="mdescRight">Determine whether the state with the given <code>id</code> is in the active configuration.  <a href="#a05096251daf3f0665b275d8528244565">More...</a><br /></td></tr>
-<tr class="separator:a05096251daf3f0665b275d8528244565"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a013f7011d488894349b88fea2fbe4a52"><td class="memItemLeft" align="right" valign="top">InterpreterState&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classuscxml_1_1_interpreter.html#a013f7011d488894349b88fea2fbe4a52">getState</a> ()</td></tr>
-<tr class="memdesc:a013f7011d488894349b88fea2fbe4a52"><td class="mdescLeft">&#160;</td><td class="mdescRight">The current state of the interpreter, not to be confused with its configuration.  <a href="#a013f7011d488894349b88fea2fbe4a52">More...</a><br /></td></tr>
-<tr class="separator:a013f7011d488894349b88fea2fbe4a52"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab72353f9d89d1c64dcc3501e86ed7472"><td class="memItemLeft" align="right" valign="top">std::list&lt; <a class="el" href="classuscxml_1_1_interpreter_issue.html">InterpreterIssue</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classuscxml_1_1_interpreter.html#ab72353f9d89d1c64dcc3501e86ed7472">validate</a> ()</td></tr>
-<tr class="memdesc:ab72353f9d89d1c64dcc3501e86ed7472"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a list of possible syntactic and semantic issues with the interpreter's state-chart.  <a href="#ab72353f9d89d1c64dcc3501e86ed7472">More...</a><br /></td></tr>
-<tr class="separator:ab72353f9d89d1c64dcc3501e86ed7472"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2279af2a6c78d2123e2a083903414e72"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classuscxml_1_1_interpreter.html#a2279af2a6c78d2123e2a083903414e72">receive</a> (const <a class="el" href="classuscxml_1_1_event.html">Event</a> &amp;event)</td></tr>
-<tr class="memdesc:a2279af2a6c78d2123e2a083903414e72"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enqueue an event to the interpreter's external queue.  <a href="#a2279af2a6c78d2123e2a083903414e72">More...</a><br /></td></tr>
-<tr class="separator:a2279af2a6c78d2123e2a083903414e72"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a269f8d91e9ea8e213fd51cac9964c6a3"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a269f8d91e9ea8e213fd51cac9964c6a3"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classuscxml_1_1_interpreter.html#a269f8d91e9ea8e213fd51cac9964c6a3">setActionLanguage</a> (<a class="el" href="classuscxml_1_1_action_language.html">ActionLanguage</a> actionLanguage)</td></tr>
 <tr class="memdesc:a269f8d91e9ea8e213fd51cac9964c6a3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Adapt the constituting components for a SCXML interpreter. <br /></td></tr>
@@ -150,28 +148,30 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
 void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classuscxml_1_1_interpreter.html#a846b763072fc4c2a62ab3d75f6981926">setMonitor</a> (<a class="el" href="classuscxml_1_1_interpreter_monitor.html">InterpreterMonitor</a> *monitor)</td></tr>
 <tr class="memdesc:a846b763072fc4c2a62ab3d75f6981926"><td class="mdescLeft">&#160;</td><td class="mdescRight">Attach a monitor to make more details of the interpreter observable. <br /></td></tr>
 <tr class="separator:a846b763072fc4c2a62ab3d75f6981926"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a24ac91189b526ed80edc4b34e02bca53"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a24ac91189b526ed80edc4b34e02bca53"></a>
-std::shared_ptr&lt; <a class="el" href="classuscxml_1_1_interpreter_impl.html">InterpreterImpl</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classuscxml_1_1_interpreter.html#a24ac91189b526ed80edc4b34e02bca53">getImpl</a> () const </td></tr>
-<tr class="memdesc:a24ac91189b526ed80edc4b34e02bca53"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the actual implementation of the Interperter. <br /></td></tr>
-<tr class="separator:a24ac91189b526ed80edc4b34e02bca53"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9e935bc5d73504768d59ceac2882f586"><td class="memItemLeft" align="right" valign="top">InterpreterState&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classuscxml_1_1_interpreter.html#a9e935bc5d73504768d59ceac2882f586">step</a> (size_t blockMs=std::numeric_limits&lt; size_t &gt;::max())</td></tr>
+<tr class="memdesc:a9e935bc5d73504768d59ceac2882f586"><td class="mdescLeft">&#160;</td><td class="mdescRight">Advance the state-machine by a single microstep and return.  <a href="#a9e935bc5d73504768d59ceac2882f586">More...</a><br /></td></tr>
+<tr class="separator:a9e935bc5d73504768d59ceac2882f586"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab72353f9d89d1c64dcc3501e86ed7472"><td class="memItemLeft" align="right" valign="top">std::list&lt; <a class="el" href="classuscxml_1_1_interpreter_issue.html">InterpreterIssue</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classuscxml_1_1_interpreter.html#ab72353f9d89d1c64dcc3501e86ed7472">validate</a> ()</td></tr>
+<tr class="memdesc:ab72353f9d89d1c64dcc3501e86ed7472"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a list of possible syntactic and semantic issues with the interpreter's state-chart.  <a href="#ab72353f9d89d1c64dcc3501e86ed7472">More...</a><br /></td></tr>
+<tr class="separator:ab72353f9d89d1c64dcc3501e86ed7472"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
 Static Public Member Functions</h2></td></tr>
+<tr class="memitem:a6650b96dbf1e87996aef4c46ad99aadb"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="classuscxml_1_1_interpreter.html">Interpreter</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classuscxml_1_1_interpreter.html#a6650b96dbf1e87996aef4c46ad99aadb">fromClone</a> (const <a class="el" href="classuscxml_1_1_interpreter.html">Interpreter</a> &amp;other)</td></tr>
+<tr class="memdesc:a6650b96dbf1e87996aef4c46ad99aadb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Instantiate an Interpeter as a copy of another.  <a href="#a6650b96dbf1e87996aef4c46ad99aadb">More...</a><br /></td></tr>
+<tr class="separator:a6650b96dbf1e87996aef4c46ad99aadb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:abc2f0ea505323e6d7af6c23d62963c54"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="classuscxml_1_1_interpreter.html">Interpreter</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classuscxml_1_1_interpreter.html#abc2f0ea505323e6d7af6c23d62963c54">fromDocument</a> (XERCESC_NS::DOMDocument *dom, const std::string &amp;baseURL, bool copy=true)</td></tr>
 <tr class="memdesc:abc2f0ea505323e6d7af6c23d62963c54"><td class="mdescLeft">&#160;</td><td class="mdescRight">Instantiate an Interpeter with a given XML document.  <a href="#abc2f0ea505323e6d7af6c23d62963c54">More...</a><br /></td></tr>
 <tr class="separator:abc2f0ea505323e6d7af6c23d62963c54"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a99c0413d9093d482ed46bf3d1ea2ed13"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="classuscxml_1_1_interpreter.html">Interpreter</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classuscxml_1_1_interpreter.html#a99c0413d9093d482ed46bf3d1ea2ed13">fromElement</a> (XERCESC_NS::DOMElement *element, const std::string &amp;baseURL)</td></tr>
 <tr class="memdesc:a99c0413d9093d482ed46bf3d1ea2ed13"><td class="mdescLeft">&#160;</td><td class="mdescRight">Instantiate an Interpeter with a given XML element.  <a href="#a99c0413d9093d482ed46bf3d1ea2ed13">More...</a><br /></td></tr>
 <tr class="separator:a99c0413d9093d482ed46bf3d1ea2ed13"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac2966a3c1cf0503772c1054ee3af94ad"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="classuscxml_1_1_interpreter.html">Interpreter</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classuscxml_1_1_interpreter.html#ac2966a3c1cf0503772c1054ee3af94ad">fromXML</a> (const std::string &amp;xml, const std::string &amp;baseURL)</td></tr>
-<tr class="memdesc:ac2966a3c1cf0503772c1054ee3af94ad"><td class="mdescLeft">&#160;</td><td class="mdescRight">Instantiate an Interpeter from a string containined proper XML markup.  <a href="#ac2966a3c1cf0503772c1054ee3af94ad">More...</a><br /></td></tr>
-<tr class="separator:ac2966a3c1cf0503772c1054ee3af94ad"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab3b1107314bbabcc642fe323bb6c76b7"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="classuscxml_1_1_interpreter.html">Interpreter</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classuscxml_1_1_interpreter.html#ab3b1107314bbabcc642fe323bb6c76b7">fromURL</a> (const std::string &amp;url)</td></tr>
 <tr class="memdesc:ab3b1107314bbabcc642fe323bb6c76b7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Instantiate an Interpeter with a document located at an <a class="el" href="classuscxml_1_1_u_r_l.html">URL</a>.  <a href="#ab3b1107314bbabcc642fe323bb6c76b7">More...</a><br /></td></tr>
 <tr class="separator:ab3b1107314bbabcc642fe323bb6c76b7"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6650b96dbf1e87996aef4c46ad99aadb"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="classuscxml_1_1_interpreter.html">Interpreter</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classuscxml_1_1_interpreter.html#a6650b96dbf1e87996aef4c46ad99aadb">fromClone</a> (const <a class="el" href="classuscxml_1_1_interpreter.html">Interpreter</a> &amp;other)</td></tr>
-<tr class="memdesc:a6650b96dbf1e87996aef4c46ad99aadb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Instantiate an Interpeter as a copy of another.  <a href="#a6650b96dbf1e87996aef4c46ad99aadb">More...</a><br /></td></tr>
-<tr class="separator:a6650b96dbf1e87996aef4c46ad99aadb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac2966a3c1cf0503772c1054ee3af94ad"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="classuscxml_1_1_interpreter.html">Interpreter</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classuscxml_1_1_interpreter.html#ac2966a3c1cf0503772c1054ee3af94ad">fromXML</a> (const std::string &amp;xml, const std::string &amp;baseURL)</td></tr>
+<tr class="memdesc:ac2966a3c1cf0503772c1054ee3af94ad"><td class="mdescLeft">&#160;</td><td class="mdescRight">Instantiate an Interpeter from a string containined proper XML markup.  <a href="#ac2966a3c1cf0503772c1054ee3af94ad">More...</a><br /></td></tr>
+<tr class="separator:ac2966a3c1cf0503772c1054ee3af94ad"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-attribs"></a>
 Protected Attributes</h2></td></tr>
@@ -180,8 +180,7 @@ std::shared_ptr&lt; <a class="el" href="classuscxml_1_1_interpreter_impl.html">I
 <tr class="separator:ac75b2088bc8f8fa00225988962f8159c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>Central class to interpret and process SCXML documents. </p>
-<p>Instances of this class are available from the static constructors. In order to use an interpreter instance to actually <em>do</em> things, you will want to provide an <a class="el" href="classuscxml_1_1_action_language.html" title="Collection of instances for interpreter that constitute its action language. ">ActionLanguage</a> and an <a class="el" href="classuscxml_1_1_interpreter_monitor.html">InterpreterMonitor</a>.</p>
+<div class="textblock"><p>Instances of this class are available from the static constructors. In order to use an interpreter instance to actually <em>do</em> things, you will want to provide an <a class="el" href="classuscxml_1_1_action_language.html" title="Collection of instances for interpreter that constitute its action language. ">ActionLanguage</a> and an <a class="el" href="classuscxml_1_1_interpreter_monitor.html">InterpreterMonitor</a>.</p>
 <p>We did avoid threading primitives within the core interpreter (there is threading for nested interpeters in the <a class="el" href="classuscxml_1_1_u_s_c_x_m_l_invoker.html" title="An invoker for other SCXML instances. ">USCXMLInvoker</a>, though). As such, you will have to call the &lt;step&gt; function continuously. </p>
 </div><h2 class="groupheader">Member Function Documentation</h2>
 <a class="anchor" id="a6650b96dbf1e87996aef4c46ad99aadb"></a>
@@ -205,8 +204,6 @@ std::shared_ptr&lt; <a class="el" href="classuscxml_1_1_interpreter_impl.html">I
   </tr>
 </table>
 </div><div class="memdoc">
-
-<p>Instantiate an Interpeter as a copy of another. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">other</td><td>The other interpreter. </td></tr>
@@ -253,8 +250,6 @@ std::shared_ptr&lt; <a class="el" href="classuscxml_1_1_interpreter_impl.html">I
   </tr>
 </table>
 </div><div class="memdoc">
-
-<p>Instantiate an Interpeter with a given XML document. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">dom</td><td>A pointer to the XML document. </td></tr>
@@ -297,8 +292,6 @@ std::shared_ptr&lt; <a class="el" href="classuscxml_1_1_interpreter_impl.html">I
   </tr>
 </table>
 </div><div class="memdoc">
-
-<p>Instantiate an Interpeter with a given XML element. </p>
 <p>This constructor will create a new document and copy/import the given element. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">element</td><td>The element to be copies/imported as the new document element. </td></tr>
@@ -330,8 +323,6 @@ std::shared_ptr&lt; <a class="el" href="classuscxml_1_1_interpreter_impl.html">I
   </tr>
 </table>
 </div><div class="memdoc">
-
-<p>Instantiate an Interpeter with a document located at an <a class="el" href="classuscxml_1_1_u_r_l.html">URL</a>. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">url</td><td>An absolute <a class="el" href="classuscxml_1_1_u_r_l.html">URL</a> to locate the SCXML document. </td></tr>
@@ -372,8 +363,6 @@ std::shared_ptr&lt; <a class="el" href="classuscxml_1_1_interpreter_impl.html">I
   </tr>
 </table>
 </div><div class="memdoc">
-
-<p>Instantiate an Interpeter from a string containined proper XML markup. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">xml</td><td>Textual representation of an SCXML document. </td></tr>
@@ -396,8 +385,6 @@ std::shared_ptr&lt; <a class="el" href="classuscxml_1_1_interpreter_impl.html">I
         </tr>
       </table>
 </div><div class="memdoc">
-
-<p>Get all state elements that constitute the active configuration. </p>
 <dl class="section return"><dt>Returns</dt><dd>A list of XML elements of the active states. </dd></dl>
 
 </div>
@@ -414,8 +401,6 @@ std::shared_ptr&lt; <a class="el" href="classuscxml_1_1_interpreter_impl.html">I
         </tr>
       </table>
 </div><div class="memdoc">
-
-<p>The current state of the interpreter, not to be confused with its configuration. </p>
 <dl class="section return"><dt>Returns</dt><dd>The current state of the interpreter object. </dd></dl>
 
 </div>
@@ -433,8 +418,6 @@ std::shared_ptr&lt; <a class="el" href="classuscxml_1_1_interpreter_impl.html">I
         </tr>
       </table>
 </div><div class="memdoc">
-
-<p>Determine whether the state with the given <code>id</code> is in the active configuration. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">id</td><td>An identifier for a state from the SCXML document. </td></tr>
@@ -458,35 +441,42 @@ std::shared_ptr&lt; <a class="el" href="classuscxml_1_1_interpreter_impl.html">I
         </tr>
       </table>
 </div><div class="memdoc">
-
-<p>Enqueue an event to the interpreter's external queue. </p>
 <p>An event to be enqueued </p>
 
 </div>
 </div>
-<a class="anchor" id="acea1e6b1b02663f22ec5367118f1066a"></a>
+<a class="anchor" id="a9e935bc5d73504768d59ceac2882f586"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
           <td class="memname">InterpreterState uscxml::Interpreter::step </td>
           <td>(</td>
-          <td class="paramtype">bool&#160;</td>
-          <td class="paramname"><em>blocking</em> = <code>false</code></td><td>)</td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>blockMs</em> = <code>std::numeric_limits&lt;size_t&gt;::max()</code></td><td>)</td>
           <td></td>
         </tr>
       </table>
 </div><div class="memdoc">
-
-<p>Perform a single microstep and return. </p>
-<dl class="params"><dt>Parameters</dt><dd>
+<p>This is the central function to drive the state machine. Calling <a class="el" href="classuscxml_1_1_interpreter.html#a9e935bc5d73504768d59ceac2882f586" title="Advance the state-machine by a single microstep and return. ">step()</a> will perform one <em>microstep</em> and return the current state of the interpreter. Here, the state is not to be confused with the interpreter's configuration.</p>
+<div class="fragment"><div class="line">    InterpreterState state = uscxml::USCXML_UNDEF;</div>
+<div class="line">    <span class="keywordflow">while</span>((state = scxml.step()) != uscxml::USCXML_FINISHED) {</div>
+<div class="line">        <span class="keywordflow">switch</span> (state) {</div>
+<div class="line">        <span class="keywordflow">case</span> USCXML_MICROSTEPPED:</div>
+<div class="line">        <span class="keywordflow">case</span> USCXML_MACROSTEPPED:</div>
+<div class="line">            <span class="comment">/* Interpreter performed a microstep */</span></div>
+<div class="line">            <span class="keywordflow">break</span>;</div>
+<div class="line">        <span class="keywordflow">default</span>:</div>
+<div class="line">            <span class="keywordflow">break</span>;</div>
+<div class="line">        }</div>
+<div class="line">    }</div>
+</div><!-- fragment --> <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">blocking</td><td>Whether or not to block the thread when waiting for events </td></tr>
+    <tr><td class="paramname">blockMs</td><td>The maximum duration in milli-seconds to wait for an event to become available. </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>The new state of the interpreter object.</dd></dl>
-<dl class="todo"><dt><b><a class="el" href="todo.html#_todo000001">Todo:</a></b></dt><dd>Have <a class="el" href="classuscxml_1_1_interpreter.html#acea1e6b1b02663f22ec5367118f1066a" title="Perform a single microstep and return. ">Interpreter::step()</a> take a duration to block </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>The new state of the interpreter object. </dd></dl>
 
 </div>
 </div>
@@ -502,8 +492,6 @@ std::shared_ptr&lt; <a class="el" href="classuscxml_1_1_interpreter_impl.html">I
         </tr>
       </table>
 </div><div class="memdoc">
-
-<p>Return a list of possible syntactic and semantic issues with the interpreter's state-chart. </p>
 <dl class="section return"><dt>Returns</dt><dd>A list of <a class="el" href="classuscxml_1_1_interpreter_issue.html" title="Identify and report syntactic and semantic problems with a SCXML state-charts. ">InterpreterIssue</a>s </dd></dl>
 
 </div>
@@ -521,7 +509,7 @@ std::shared_ptr&lt; <a class="el" href="classuscxml_1_1_interpreter_impl.html">I
 </div>
 </div>
 <!-- <hr class="footer"/><address class="footer"><small>
-Generated on Thu May 19 2016 14:56:47 for uSCXML by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon May 23 2016 08:47:45 for uSCXML by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.10
 </small></address> -->

@@ -105,7 +105,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="contents">
 
 <p>Abstract base class fo all elements of executable content.  
- <a href="classuscxml_1_1_executable_content_impl.html#details">More...</a></p>
+</p>
 
 <p><code>#include &lt;<a class="el" href="_executable_content_impl_8h_source.html">ExecutableContentImpl.h</a>&gt;</code></p>
 <div class="dynheader">
@@ -119,15 +119,6 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:abf80516d5a71467190106778a6c1dece"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="abf80516d5a71467190106778a6c1dece"></a>
 virtual std::shared_ptr&lt; <a class="el" href="classuscxml_1_1_executable_content_impl.html">ExecutableContentImpl</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>create</b> (<a class="el" href="classuscxml_1_1_interpreter_impl.html">InterpreterImpl</a> *interpreter)=0</td></tr>
 <tr class="separator:abf80516d5a71467190106778a6c1dece"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a14a3c40c222dc107b1d70e00977aee56"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a14a3c40c222dc107b1d70e00977aee56"></a>
-virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>setInterpreter</b> (<a class="el" href="classuscxml_1_1_interpreter_impl.html">InterpreterImpl</a> *interpreter)</td></tr>
-<tr class="separator:a14a3c40c222dc107b1d70e00977aee56"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aad9a126146b44a711e50b6a9764f9989"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aad9a126146b44a711e50b6a9764f9989"></a>
-virtual std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classuscxml_1_1_executable_content_impl.html#aad9a126146b44a711e50b6a9764f9989">getLocalName</a> ()=0</td></tr>
-<tr class="memdesc:aad9a126146b44a711e50b6a9764f9989"><td class="mdescLeft">&#160;</td><td class="mdescRight">The name of the element. <br /></td></tr>
-<tr class="separator:aad9a126146b44a711e50b6a9764f9989"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad9cc7faa94695e918334b1dee1a17035"><td class="memItemLeft" align="right" valign="top">virtual std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classuscxml_1_1_executable_content_impl.html#ad9cc7faa94695e918334b1dee1a17035">getNamespace</a> ()</td></tr>
-<tr class="separator:ad9cc7faa94695e918334b1dee1a17035"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a29c65ba31d10b4375fc14df5ce175bd0"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a29c65ba31d10b4375fc14df5ce175bd0"></a>
 virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classuscxml_1_1_executable_content_impl.html#a29c65ba31d10b4375fc14df5ce175bd0">enterElement</a> (XERCESC_NS::DOMElement *node)=0</td></tr>
 <tr class="memdesc:a29c65ba31d10b4375fc14df5ce175bd0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Invoked when entering the element as part of evaluating executable content. <br /></td></tr>
@@ -136,10 +127,19 @@ virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hr
 virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classuscxml_1_1_executable_content_impl.html#a7f42861395a31152e6621359f2ec98ef">exitElement</a> (XERCESC_NS::DOMElement *node)=0</td></tr>
 <tr class="memdesc:a7f42861395a31152e6621359f2ec98ef"><td class="mdescLeft">&#160;</td><td class="mdescRight">Invoked when exiting the element as part of evaluating executable content. <br /></td></tr>
 <tr class="separator:a7f42861395a31152e6621359f2ec98ef"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aad9a126146b44a711e50b6a9764f9989"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aad9a126146b44a711e50b6a9764f9989"></a>
+virtual std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classuscxml_1_1_executable_content_impl.html#aad9a126146b44a711e50b6a9764f9989">getLocalName</a> ()=0</td></tr>
+<tr class="memdesc:aad9a126146b44a711e50b6a9764f9989"><td class="mdescLeft">&#160;</td><td class="mdescRight">The name of the element. <br /></td></tr>
+<tr class="separator:aad9a126146b44a711e50b6a9764f9989"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad9cc7faa94695e918334b1dee1a17035"><td class="memItemLeft" align="right" valign="top">virtual std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classuscxml_1_1_executable_content_impl.html#ad9cc7faa94695e918334b1dee1a17035">getNamespace</a> ()</td></tr>
+<tr class="separator:ad9cc7faa94695e918334b1dee1a17035"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a24cb42032a7a183e292619a591891980"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a24cb42032a7a183e292619a591891980"></a>
 virtual bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classuscxml_1_1_executable_content_impl.html#a24cb42032a7a183e292619a591891980">processChildren</a> ()=0</td></tr>
 <tr class="memdesc:a24cb42032a7a183e292619a591891980"><td class="mdescLeft">&#160;</td><td class="mdescRight">Whether or not the interpreter should process this elements children. <br /></td></tr>
 <tr class="separator:a24cb42032a7a183e292619a591891980"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a14a3c40c222dc107b1d70e00977aee56"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a14a3c40c222dc107b1d70e00977aee56"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>setInterpreter</b> (<a class="el" href="classuscxml_1_1_interpreter_impl.html">InterpreterImpl</a> *interpreter)</td></tr>
+<tr class="separator:a14a3c40c222dc107b1d70e00977aee56"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-attribs"></a>
 Protected Attributes</h2></td></tr>
@@ -147,9 +147,7 @@ Protected Attributes</h2></td></tr>
 <a class="el" href="classuscxml_1_1_interpreter_impl.html">InterpreterImpl</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>_interpreter</b></td></tr>
 <tr class="separator:a5f7aeb34fac1f1cfd91342159f14c74d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>Abstract base class fo all elements of executable content. </p>
-</div><h2 class="groupheader">Member Function Documentation</h2>
+<h2 class="groupheader">Member Function Documentation</h2>
 <a class="anchor" id="ad9cc7faa94695e918334b1dee1a17035"></a>
 <div class="memitem">
 <div class="memproto">
@@ -186,7 +184,7 @@ Protected Attributes</h2></td></tr>
 </div>
 </div>
 <!-- <hr class="footer"/><address class="footer"><small>
-Generated on Thu May 19 2016 14:56:47 for uSCXML by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon May 23 2016 08:47:45 for uSCXML by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.10
 </small></address> -->

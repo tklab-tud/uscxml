@@ -117,6 +117,9 @@ Macros</h2></td></tr>
 <tr class="memitem:a7e5a418ddf9db73d164e8919d84cfa1c"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a7e5a418ddf9db73d164e8919d84cfa1c"></a>
 #define&#160;</td><td class="memItemRight" valign="bottom"><b>BIT_ANY_SET</b>(b)&#160;&#160;&#160;(!b.none())</td></tr>
 <tr class="separator:a7e5a418ddf9db73d164e8919d84cfa1c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a35ab6bf8512198798dcadc44396c1dbc"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a35ab6bf8512198798dcadc44396c1dbc"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>BIT_CLEAR</b>(idx,  bitset)&#160;&#160;&#160;bitset[idx] = false;</td></tr>
+<tr class="separator:a35ab6bf8512198798dcadc44396c1dbc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a856f650ccbfdca32e799ae794f6e2f7b"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a856f650ccbfdca32e799ae794f6e2f7b"></a>
 #define&#160;</td><td class="memItemRight" valign="bottom"><b>BIT_HAS</b>(idx,  bitset)&#160;&#160;&#160;(bitset[idx])</td></tr>
 <tr class="separator:a856f650ccbfdca32e799ae794f6e2f7b"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -126,63 +129,57 @@ Macros</h2></td></tr>
 <tr class="memitem:ab25b4580e9816dc0c64c2452e66df877"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ab25b4580e9816dc0c64c2452e66df877"></a>
 #define&#160;</td><td class="memItemRight" valign="bottom"><b>BIT_SET_AT</b>(idx,  bitset)&#160;&#160;&#160;bitset[idx] = true;</td></tr>
 <tr class="separator:ab25b4580e9816dc0c64c2452e66df877"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a35ab6bf8512198798dcadc44396c1dbc"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a35ab6bf8512198798dcadc44396c1dbc"></a>
-#define&#160;</td><td class="memItemRight" valign="bottom"><b>BIT_CLEAR</b>(idx,  bitset)&#160;&#160;&#160;bitset[idx] = false;</td></tr>
-<tr class="separator:a35ab6bf8512198798dcadc44396c1dbc"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8f42d37dcbcc55fe339f4bda97f8e474"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a8f42d37dcbcc55fe339f4bda97f8e474"></a>
-#define&#160;</td><td class="memItemRight" valign="bottom"><b>USCXML_GET_TRANS</b>(i)&#160;&#160;&#160;(*_transitions[i])</td></tr>
-<tr class="separator:a8f42d37dcbcc55fe339f4bda97f8e474"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0fb99738c0c38ce96ee1b69c3e07774e"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a0fb99738c0c38ce96ee1b69c3e07774e"></a>
-#define&#160;</td><td class="memItemRight" valign="bottom"><b>USCXML_GET_STATE</b>(i)&#160;&#160;&#160;(*_states[i])</td></tr>
-<tr class="separator:a0fb99738c0c38ce96ee1b69c3e07774e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae2d3bba3b14b63be03ed05e831a187ed"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ae2d3bba3b14b63be03ed05e831a187ed"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>likely</b>(x)          &#160;&#160;&#160;(x)</td></tr>
+<tr class="separator:ae2d3bba3b14b63be03ed05e831a187ed"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a901070bb8ed8e8438b3220e5c7eee33a"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a901070bb8ed8e8438b3220e5c7eee33a"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>unlikely</b>(x)      &#160;&#160;&#160;(x)</td></tr>
+<tr class="separator:a901070bb8ed8e8438b3220e5c7eee33a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2f82ebdcac324e1a78a7f5bb997350a6"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a2f82ebdcac324e1a78a7f5bb997350a6"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>USCXML_CTX_FINISHED</b>&#160;&#160;&#160;0x10</td></tr>
+<tr class="separator:a2f82ebdcac324e1a78a7f5bb997350a6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1fa62bebe7be2a4247dfdb5bf50cc4c9"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a1fa62bebe7be2a4247dfdb5bf50cc4c9"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>USCXML_CTX_INITIALIZED</b>&#160;&#160;&#160;0x02</td></tr>
+<tr class="separator:a1fa62bebe7be2a4247dfdb5bf50cc4c9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a317e74ee182eaabebb277190c972edac"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a317e74ee182eaabebb277190c972edac"></a>
 #define&#160;</td><td class="memItemRight" valign="bottom"><b>USCXML_CTX_PRISTINE</b>&#160;&#160;&#160;0x00</td></tr>
 <tr class="separator:a317e74ee182eaabebb277190c972edac"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac2d7c68742a2b53bff73b48db59a91bc"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ac2d7c68742a2b53bff73b48db59a91bc"></a>
 #define&#160;</td><td class="memItemRight" valign="bottom"><b>USCXML_CTX_SPONTANEOUS</b>&#160;&#160;&#160;0x01</td></tr>
 <tr class="separator:ac2d7c68742a2b53bff73b48db59a91bc"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a1fa62bebe7be2a4247dfdb5bf50cc4c9"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a1fa62bebe7be2a4247dfdb5bf50cc4c9"></a>
-#define&#160;</td><td class="memItemRight" valign="bottom"><b>USCXML_CTX_INITIALIZED</b>&#160;&#160;&#160;0x02</td></tr>
-<tr class="separator:a1fa62bebe7be2a4247dfdb5bf50cc4c9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0d010860188463b5b9364452b3b17524"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a0d010860188463b5b9364452b3b17524"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>USCXML_CTX_STABLE</b>&#160;&#160;&#160;0x20</td></tr>
+<tr class="separator:a0d010860188463b5b9364452b3b17524"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae1448368a10a0468cf245ad5d12f1fbc"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ae1448368a10a0468cf245ad5d12f1fbc"></a>
 #define&#160;</td><td class="memItemRight" valign="bottom"><b>USCXML_CTX_TOP_LEVEL_FINAL</b>&#160;&#160;&#160;0x04</td></tr>
 <tr class="separator:ae1448368a10a0468cf245ad5d12f1fbc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:add9e0bb1a67e6bb3af8ba583737662f0"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="add9e0bb1a67e6bb3af8ba583737662f0"></a>
 #define&#160;</td><td class="memItemRight" valign="bottom"><b>USCXML_CTX_TRANSITION_FOUND</b>&#160;&#160;&#160;0x08</td></tr>
 <tr class="separator:add9e0bb1a67e6bb3af8ba583737662f0"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2f82ebdcac324e1a78a7f5bb997350a6"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a2f82ebdcac324e1a78a7f5bb997350a6"></a>
-#define&#160;</td><td class="memItemRight" valign="bottom"><b>USCXML_CTX_FINISHED</b>&#160;&#160;&#160;0x10</td></tr>
-<tr class="separator:a2f82ebdcac324e1a78a7f5bb997350a6"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0d010860188463b5b9364452b3b17524"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a0d010860188463b5b9364452b3b17524"></a>
-#define&#160;</td><td class="memItemRight" valign="bottom"><b>USCXML_CTX_STABLE</b>&#160;&#160;&#160;0x20</td></tr>
-<tr class="separator:a0d010860188463b5b9364452b3b17524"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aef418d91de1f2f73cebda9853e3959b0"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aef418d91de1f2f73cebda9853e3959b0"></a>
-#define&#160;</td><td class="memItemRight" valign="bottom"><b>USCXML_TRANS_SPONTANEOUS</b>&#160;&#160;&#160;0x01</td></tr>
-<tr class="separator:aef418d91de1f2f73cebda9853e3959b0"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:adaced472b3369d202deccfdf7ee5a680"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="adaced472b3369d202deccfdf7ee5a680"></a>
-#define&#160;</td><td class="memItemRight" valign="bottom"><b>USCXML_TRANS_TARGETLESS</b>&#160;&#160;&#160;0x02</td></tr>
-<tr class="separator:adaced472b3369d202deccfdf7ee5a680"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7fafc407e12910ee5df29cf935561d8c"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a7fafc407e12910ee5df29cf935561d8c"></a>
-#define&#160;</td><td class="memItemRight" valign="bottom"><b>USCXML_TRANS_INTERNAL</b>&#160;&#160;&#160;0x04</td></tr>
-<tr class="separator:a7fafc407e12910ee5df29cf935561d8c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a02cf867670e9f54f99645c12aac4d40e"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a02cf867670e9f54f99645c12aac4d40e"></a>
-#define&#160;</td><td class="memItemRight" valign="bottom"><b>USCXML_TRANS_HISTORY</b>&#160;&#160;&#160;0x08</td></tr>
-<tr class="separator:a02cf867670e9f54f99645c12aac4d40e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:abd57dfe82490dccd74b29f63ef5f4da0"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="abd57dfe82490dccd74b29f63ef5f4da0"></a>
-#define&#160;</td><td class="memItemRight" valign="bottom"><b>USCXML_TRANS_INITIAL</b>&#160;&#160;&#160;0x10</td></tr>
-<tr class="separator:abd57dfe82490dccd74b29f63ef5f4da0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0fb99738c0c38ce96ee1b69c3e07774e"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a0fb99738c0c38ce96ee1b69c3e07774e"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>USCXML_GET_STATE</b>(i)&#160;&#160;&#160;(*_states[i])</td></tr>
+<tr class="separator:a0fb99738c0c38ce96ee1b69c3e07774e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8f42d37dcbcc55fe339f4bda97f8e474"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a8f42d37dcbcc55fe339f4bda97f8e474"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>USCXML_GET_TRANS</b>(i)&#160;&#160;&#160;(*_transitions[i])</td></tr>
+<tr class="separator:a8f42d37dcbcc55fe339f4bda97f8e474"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a36575633ee5b36b861662933cf4be214"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a36575633ee5b36b861662933cf4be214"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>USCXML_NUMBER_STATES</b>&#160;&#160;&#160;_states.size()</td></tr>
+<tr class="separator:a36575633ee5b36b861662933cf4be214"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a27c38b3f4ee2e7f3b26771ae9eb4d02e"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a27c38b3f4ee2e7f3b26771ae9eb4d02e"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>USCXML_NUMBER_TRANS</b>&#160;&#160;&#160;_transitions.size()</td></tr>
+<tr class="separator:a27c38b3f4ee2e7f3b26771ae9eb4d02e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa63ad5da71ef82fdd4d9f23abf2d5563"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aa63ad5da71ef82fdd4d9f23abf2d5563"></a>
 #define&#160;</td><td class="memItemRight" valign="bottom"><b>USCXML_STATE_ATOMIC</b>&#160;&#160;&#160;0x01</td></tr>
 <tr class="separator:aa63ad5da71ef82fdd4d9f23abf2d5563"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a37f8bfb7a62e902934c0c101dd95f8d6"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a37f8bfb7a62e902934c0c101dd95f8d6"></a>
-#define&#160;</td><td class="memItemRight" valign="bottom"><b>USCXML_STATE_PARALLEL</b>&#160;&#160;&#160;0x02</td></tr>
-<tr class="separator:a37f8bfb7a62e902934c0c101dd95f8d6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a36026df3a69eb8ec7b44f87aa2c93e10"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a36026df3a69eb8ec7b44f87aa2c93e10"></a>
 #define&#160;</td><td class="memItemRight" valign="bottom"><b>USCXML_STATE_COMPOUND</b>&#160;&#160;&#160;0x03</td></tr>
 <tr class="separator:a36026df3a69eb8ec7b44f87aa2c93e10"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a79377e895a1dd41b2ca2d36642dfa5fa"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a79377e895a1dd41b2ca2d36642dfa5fa"></a>
 #define&#160;</td><td class="memItemRight" valign="bottom"><b>USCXML_STATE_FINAL</b>&#160;&#160;&#160;0x04</td></tr>
 <tr class="separator:a79377e895a1dd41b2ca2d36642dfa5fa"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7352719f2d17f2782b119ba7d45c6331"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a7352719f2d17f2782b119ba7d45c6331"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>USCXML_STATE_HAS_HISTORY</b>&#160;&#160;&#160;0x80  /* highest bit */</td></tr>
+<tr class="separator:a7352719f2d17f2782b119ba7d45c6331"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:afa952e4904086003b92ec1e3a9f9a99f"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="afa952e4904086003b92ec1e3a9f9a99f"></a>
 #define&#160;</td><td class="memItemRight" valign="bottom"><b>USCXML_STATE_HISTORY_DEEP</b>&#160;&#160;&#160;0x05</td></tr>
 <tr class="separator:afa952e4904086003b92ec1e3a9f9a99f"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -192,24 +189,27 @@ Macros</h2></td></tr>
 <tr class="memitem:a51a5328a8fb21c81870874e079d981dc"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a51a5328a8fb21c81870874e079d981dc"></a>
 #define&#160;</td><td class="memItemRight" valign="bottom"><b>USCXML_STATE_INITIAL</b>&#160;&#160;&#160;0x07</td></tr>
 <tr class="separator:a51a5328a8fb21c81870874e079d981dc"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7352719f2d17f2782b119ba7d45c6331"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a7352719f2d17f2782b119ba7d45c6331"></a>
-#define&#160;</td><td class="memItemRight" valign="bottom"><b>USCXML_STATE_HAS_HISTORY</b>&#160;&#160;&#160;0x80  /* highest bit */</td></tr>
-<tr class="separator:a7352719f2d17f2782b119ba7d45c6331"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4e1fd9dc74aa28a370380cf25bd63de6"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a4e1fd9dc74aa28a370380cf25bd63de6"></a>
 #define&#160;</td><td class="memItemRight" valign="bottom"><b>USCXML_STATE_MASK</b>(t)      &#160;&#160;&#160;(t &amp; 0x7F) /* mask highest bit */</td></tr>
 <tr class="separator:a4e1fd9dc74aa28a370380cf25bd63de6"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a36575633ee5b36b861662933cf4be214"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a36575633ee5b36b861662933cf4be214"></a>
-#define&#160;</td><td class="memItemRight" valign="bottom"><b>USCXML_NUMBER_STATES</b>&#160;&#160;&#160;_states.size()</td></tr>
-<tr class="separator:a36575633ee5b36b861662933cf4be214"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a27c38b3f4ee2e7f3b26771ae9eb4d02e"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a27c38b3f4ee2e7f3b26771ae9eb4d02e"></a>
-#define&#160;</td><td class="memItemRight" valign="bottom"><b>USCXML_NUMBER_TRANS</b>&#160;&#160;&#160;_transitions.size()</td></tr>
-<tr class="separator:a27c38b3f4ee2e7f3b26771ae9eb4d02e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae2d3bba3b14b63be03ed05e831a187ed"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ae2d3bba3b14b63be03ed05e831a187ed"></a>
-#define&#160;</td><td class="memItemRight" valign="bottom"><b>likely</b>(x)          &#160;&#160;&#160;(x)</td></tr>
-<tr class="separator:ae2d3bba3b14b63be03ed05e831a187ed"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a901070bb8ed8e8438b3220e5c7eee33a"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a901070bb8ed8e8438b3220e5c7eee33a"></a>
-#define&#160;</td><td class="memItemRight" valign="bottom"><b>unlikely</b>(x)      &#160;&#160;&#160;(x)</td></tr>
-<tr class="separator:a901070bb8ed8e8438b3220e5c7eee33a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a37f8bfb7a62e902934c0c101dd95f8d6"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a37f8bfb7a62e902934c0c101dd95f8d6"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>USCXML_STATE_PARALLEL</b>&#160;&#160;&#160;0x02</td></tr>
+<tr class="separator:a37f8bfb7a62e902934c0c101dd95f8d6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a02cf867670e9f54f99645c12aac4d40e"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a02cf867670e9f54f99645c12aac4d40e"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>USCXML_TRANS_HISTORY</b>&#160;&#160;&#160;0x08</td></tr>
+<tr class="separator:a02cf867670e9f54f99645c12aac4d40e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abd57dfe82490dccd74b29f63ef5f4da0"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="abd57dfe82490dccd74b29f63ef5f4da0"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>USCXML_TRANS_INITIAL</b>&#160;&#160;&#160;0x10</td></tr>
+<tr class="separator:abd57dfe82490dccd74b29f63ef5f4da0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7fafc407e12910ee5df29cf935561d8c"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a7fafc407e12910ee5df29cf935561d8c"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>USCXML_TRANS_INTERNAL</b>&#160;&#160;&#160;0x04</td></tr>
+<tr class="separator:a7fafc407e12910ee5df29cf935561d8c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aef418d91de1f2f73cebda9853e3959b0"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aef418d91de1f2f73cebda9853e3959b0"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>USCXML_TRANS_SPONTANEOUS</b>&#160;&#160;&#160;0x01</td></tr>
+<tr class="separator:aef418d91de1f2f73cebda9853e3959b0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adaced472b3369d202deccfdf7ee5a680"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="adaced472b3369d202deccfdf7ee5a680"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>USCXML_TRANS_TARGETLESS</b>&#160;&#160;&#160;0x02</td></tr>
+<tr class="separator:adaced472b3369d202deccfdf7ee5a680"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><dl class="section author"><dt>Author</dt><dd>2012-2016 Stefan Radomski (<a href="#" onclick="location.href='mai'+'lto:'+'ste'+'fa'+'n.r'+'ad'+'oms'+'ki'+'@cs'+'.t'+'u-d'+'ar'+'mst'+'ad'+'t.d'+'e'; return false;">stefa<span style="display: none;">.nosp@m.</span>n.ra<span style="display: none;">.nosp@m.</span>domsk<span style="display: none;">.nosp@m.</span>i@cs<span style="display: none;">.nosp@m.</span>.tu-d<span style="display: none;">.nosp@m.</span>arms<span style="display: none;">.nosp@m.</span>tadt.<span style="display: none;">.nosp@m.</span>de</a>) </dd></dl>
@@ -223,7 +223,7 @@ Macros</h2></td></tr>
 </div>
 </div>
 <!-- <hr class="footer"/><address class="footer"><small>
-Generated on Thu May 19 2016 14:56:46 for uSCXML by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon May 23 2016 08:47:44 for uSCXML by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.10
 </small></address> -->

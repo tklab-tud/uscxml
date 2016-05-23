@@ -25,8 +25,8 @@
 <!-- Node0&#45;&gt;Node2 -->
 <g id="edge2" class="edge"><title>Node0&#45;&gt;Node2</title>
 <path fill="none" stroke="orange" stroke-dasharray="5,2" d="M175.023,-35.6444C221.611,-40.2931 301.076,-48.2223 342.349,-52.3406"/>
-<text text-anchor="middle" x="257.5" y="-64" font-family="Helvetica,sans-Serif" font-size="10.00">uscxml::EventQueue</text>
-<text text-anchor="middle" x="257.5" y="-53" font-family="Helvetica,sans-Serif" font-size="10.00">uscxml::DelayedEventQueue</text>
+<text text-anchor="middle" x="257.5" y="-64" font-family="Helvetica,sans-Serif" font-size="10.00">uscxml::DelayedEventQueue</text>
+<text text-anchor="middle" x="257.5" y="-53" font-family="Helvetica,sans-Serif" font-size="10.00">uscxml::EventQueue</text>
 </g>
 <!-- Node3 -->
 <g id="node4" class="node"><title>Node3</title>

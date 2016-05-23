@@ -110,41 +110,41 @@ Inheritance diagram for uscxml::MicroStepCallbacks:</div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
+<tr class="memitem:a3996690866a58a5ed736eb5b6abb8fa1"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a3996690866a58a5ed736eb5b6abb8fa1"></a>
+virtual <a class="el" href="classuscxml_1_1_event.html">Event</a>&#160;</td><td class="memItemRight" valign="bottom"><b>dequeueExternal</b> (size_t blockMs)=0</td></tr>
+<tr class="separator:a3996690866a58a5ed736eb5b6abb8fa1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad8412ae4e9f555a12351ab92eebda650"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ad8412ae4e9f555a12351ab92eebda650"></a>
 virtual <a class="el" href="classuscxml_1_1_event.html">Event</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classuscxml_1_1_micro_step_callbacks.html#ad8412ae4e9f555a12351ab92eebda650">dequeueInternal</a> ()=0</td></tr>
 <tr class="memdesc:ad8412ae4e9f555a12351ab92eebda650"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="classuscxml_1_1_event.html">Event</a> Queues / Matching. <br /></td></tr>
 <tr class="separator:ad8412ae4e9f555a12351ab92eebda650"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad269fdec5f55ae49591a773d4a52db3a"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ad269fdec5f55ae49591a773d4a52db3a"></a>
-virtual <a class="el" href="classuscxml_1_1_event.html">Event</a>&#160;</td><td class="memItemRight" valign="bottom"><b>dequeueExternal</b> (bool blocking)=0</td></tr>
-<tr class="separator:ad269fdec5f55ae49591a773d4a52db3a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:acb26fe79cf5ab04c86a81b048af2368d"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="acb26fe79cf5ab04c86a81b048af2368d"></a>
-virtual bool&#160;</td><td class="memItemRight" valign="bottom"><b>isMatched</b> (const <a class="el" href="classuscxml_1_1_event.html">Event</a> &amp;event, const std::string &amp;eventDesc)=0</td></tr>
-<tr class="separator:acb26fe79cf5ab04c86a81b048af2368d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad202df34b7c887b5f58d320c8898143f"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ad202df34b7c887b5f58d320c8898143f"></a>
-virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>raiseDoneEvent</b> (XERCESC_NS::DOMElement *state, XERCESC_NS::DOMElement *doneData)=0</td></tr>
-<tr class="separator:ad202df34b7c887b5f58d320c8898143f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2325de720c65bad85b7b57102bffcb5c"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a2325de720c65bad85b7b57102bffcb5c"></a>
-virtual bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classuscxml_1_1_micro_step_callbacks.html#a2325de720c65bad85b7b57102bffcb5c">isTrue</a> (const std::string &amp;expr)=0</td></tr>
-<tr class="memdesc:a2325de720c65bad85b7b57102bffcb5c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Datamodel. <br /></td></tr>
-<tr class="separator:a2325de720c65bad85b7b57102bffcb5c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:abe2e77cb7e15540777d670171d44e981"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="abe2e77cb7e15540777d670171d44e981"></a>
-virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>initData</b> (XERCESC_NS::DOMElement *element)=0</td></tr>
-<tr class="separator:abe2e77cb7e15540777d670171d44e981"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a55128d741fbe42eb75b8760e8415f9b5"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a55128d741fbe42eb75b8760e8415f9b5"></a>
-virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classuscxml_1_1_micro_step_callbacks.html#a55128d741fbe42eb75b8760e8415f9b5">process</a> (XERCESC_NS::DOMElement *block)=0</td></tr>
-<tr class="memdesc:a55128d741fbe42eb75b8760e8415f9b5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Executable Content. <br /></td></tr>
-<tr class="separator:a55128d741fbe42eb75b8760e8415f9b5"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8168a1710f3c0b8e9a546cd2aeb9deb6"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a8168a1710f3c0b8e9a546cd2aeb9deb6"></a>
-virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classuscxml_1_1_micro_step_callbacks.html#a8168a1710f3c0b8e9a546cd2aeb9deb6">invoke</a> (XERCESC_NS::DOMElement *invoke)=0</td></tr>
-<tr class="memdesc:a8168a1710f3c0b8e9a546cd2aeb9deb6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Invocations. <br /></td></tr>
-<tr class="separator:a8168a1710f3c0b8e9a546cd2aeb9deb6"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae3563c6e57bd5999d81bb0009d43286a"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ae3563c6e57bd5999d81bb0009d43286a"></a>
-virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>uninvoke</b> (XERCESC_NS::DOMElement *<a class="el" href="classuscxml_1_1_micro_step_callbacks.html#a8168a1710f3c0b8e9a546cd2aeb9deb6">invoke</a>)=0</td></tr>
-<tr class="separator:ae3563c6e57bd5999d81bb0009d43286a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a89afbe30698acb3a6f1ed57200690990"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a89afbe30698acb3a6f1ed57200690990"></a>
 virtual <a class="el" href="classuscxml_1_1_interpreter_monitor.html">InterpreterMonitor</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classuscxml_1_1_micro_step_callbacks.html#a89afbe30698acb3a6f1ed57200690990">getMonitor</a> ()=0</td></tr>
 <tr class="memdesc:a89afbe30698acb3a6f1ed57200690990"><td class="mdescLeft">&#160;</td><td class="mdescRight">Monitoring. <br /></td></tr>
 <tr class="separator:a89afbe30698acb3a6f1ed57200690990"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abe2e77cb7e15540777d670171d44e981"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="abe2e77cb7e15540777d670171d44e981"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>initData</b> (XERCESC_NS::DOMElement *element)=0</td></tr>
+<tr class="separator:abe2e77cb7e15540777d670171d44e981"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8168a1710f3c0b8e9a546cd2aeb9deb6"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a8168a1710f3c0b8e9a546cd2aeb9deb6"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classuscxml_1_1_micro_step_callbacks.html#a8168a1710f3c0b8e9a546cd2aeb9deb6">invoke</a> (XERCESC_NS::DOMElement *invoke)=0</td></tr>
+<tr class="memdesc:a8168a1710f3c0b8e9a546cd2aeb9deb6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Invocations. <br /></td></tr>
+<tr class="separator:a8168a1710f3c0b8e9a546cd2aeb9deb6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acb26fe79cf5ab04c86a81b048af2368d"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="acb26fe79cf5ab04c86a81b048af2368d"></a>
+virtual bool&#160;</td><td class="memItemRight" valign="bottom"><b>isMatched</b> (const <a class="el" href="classuscxml_1_1_event.html">Event</a> &amp;event, const std::string &amp;eventDesc)=0</td></tr>
+<tr class="separator:acb26fe79cf5ab04c86a81b048af2368d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2325de720c65bad85b7b57102bffcb5c"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a2325de720c65bad85b7b57102bffcb5c"></a>
+virtual bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classuscxml_1_1_micro_step_callbacks.html#a2325de720c65bad85b7b57102bffcb5c">isTrue</a> (const std::string &amp;expr)=0</td></tr>
+<tr class="memdesc:a2325de720c65bad85b7b57102bffcb5c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Datamodel. <br /></td></tr>
+<tr class="separator:a2325de720c65bad85b7b57102bffcb5c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a55128d741fbe42eb75b8760e8415f9b5"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a55128d741fbe42eb75b8760e8415f9b5"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classuscxml_1_1_micro_step_callbacks.html#a55128d741fbe42eb75b8760e8415f9b5">process</a> (XERCESC_NS::DOMElement *block)=0</td></tr>
+<tr class="memdesc:a55128d741fbe42eb75b8760e8415f9b5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Executable Content. <br /></td></tr>
+<tr class="separator:a55128d741fbe42eb75b8760e8415f9b5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad202df34b7c887b5f58d320c8898143f"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ad202df34b7c887b5f58d320c8898143f"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>raiseDoneEvent</b> (XERCESC_NS::DOMElement *state, XERCESC_NS::DOMElement *doneData)=0</td></tr>
+<tr class="separator:ad202df34b7c887b5f58d320c8898143f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae3563c6e57bd5999d81bb0009d43286a"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ae3563c6e57bd5999d81bb0009d43286a"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>uninvoke</b> (XERCESC_NS::DOMElement *<a class="el" href="classuscxml_1_1_micro_step_callbacks.html#a8168a1710f3c0b8e9a546cd2aeb9deb6">invoke</a>)=0</td></tr>
+<tr class="separator:ae3563c6e57bd5999d81bb0009d43286a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <hr/>The documentation for this class was generated from the following file:<ul>
 <li>interpreter/<a class="el" href="_micro_step_impl_8h_source.html">MicroStepImpl.h</a></li>
@@ -158,7 +158,7 @@ virtual <a class="el" href="classuscxml_1_1_interpreter_monitor.html">Interprete
 </div>
 </div>
 <!-- <hr class="footer"/><address class="footer"><small>
-Generated on Thu May 19 2016 14:56:47 for uSCXML by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon May 23 2016 08:47:45 for uSCXML by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.10
 </small></address> -->

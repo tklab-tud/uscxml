@@ -108,7 +108,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="contents">
 
 <p>An invoker for other SCXML instances.  
- <a href="classuscxml_1_1_u_s_c_x_m_l_invoker.html#details">More...</a></p>
+</p>
 
 <p><code>#include &lt;<a class="el" href="_u_s_c_x_m_l_invoker_8h_source.html">USCXMLInvoker.h</a>&gt;</code></p>
 <div class="dynheader">
@@ -132,10 +132,6 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:aab47a7d82206603f988a7534ddc1172e"><td class="memItemLeft" align="right" valign="top">virtual std::shared_ptr&lt; <a class="el" href="classuscxml_1_1_invoker_impl.html">InvokerImpl</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classuscxml_1_1_u_s_c_x_m_l_invoker.html#aab47a7d82206603f988a7534ddc1172e">create</a> (<a class="el" href="classuscxml_1_1_interpreter_impl.html">InterpreterImpl</a> *interpreter)</td></tr>
 <tr class="memdesc:aab47a7d82206603f988a7534ddc1172e"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="classuscxml_1_1_factory.html">Factory</a> demands a new instance.  <a href="#aab47a7d82206603f988a7534ddc1172e">More...</a><br /></td></tr>
 <tr class="separator:aab47a7d82206603f988a7534ddc1172e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:abb533adf8dd28fd26ebd5e41c4e64980"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="abb533adf8dd28fd26ebd5e41c4e64980"></a>
-virtual std::list&lt; std::string &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classuscxml_1_1_u_s_c_x_m_l_invoker.html#abb533adf8dd28fd26ebd5e41c4e64980">getNames</a> ()</td></tr>
-<tr class="memdesc:abb533adf8dd28fd26ebd5e41c4e64980"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a list of names for types we implement. <br /></td></tr>
-<tr class="separator:abb533adf8dd28fd26ebd5e41c4e64980"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab9fcae2b06dd88e9cf7a5aab0205af49"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ab9fcae2b06dd88e9cf7a5aab0205af49"></a>
 virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classuscxml_1_1_u_s_c_x_m_l_invoker.html#ab9fcae2b06dd88e9cf7a5aab0205af49">eventFromSCXML</a> (const <a class="el" href="classuscxml_1_1_event.html">Event</a> &amp;event)</td></tr>
 <tr class="memdesc:ab9fcae2b06dd88e9cf7a5aab0205af49"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="classuscxml_1_1_interpreter.html" title="Central class to interpret and process SCXML documents. ">Interpreter</a> received an event from the SCXML <a class="el" href="classuscxml_1_1_interpreter.html" title="Central class to interpret and process SCXML documents. ">Interpreter</a>. <br /></td></tr>
@@ -143,6 +139,10 @@ virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hr
 <tr class="memitem:a4ae4ecb0bc9585d0f970d02f156b351c"><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="classuscxml_1_1_data.html">Data</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classuscxml_1_1_u_s_c_x_m_l_invoker.html#a4ae4ecb0bc9585d0f970d02f156b351c">getDataModelVariables</a> ()</td></tr>
 <tr class="memdesc:a4ae4ecb0bc9585d0f970d02f156b351c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Export a <a class="el" href="classuscxml_1_1_data.html">Data</a> object for the `_x['name']` data-model namespace.  <a href="#a4ae4ecb0bc9585d0f970d02f156b351c">More...</a><br /></td></tr>
 <tr class="separator:a4ae4ecb0bc9585d0f970d02f156b351c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abb533adf8dd28fd26ebd5e41c4e64980"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="abb533adf8dd28fd26ebd5e41c4e64980"></a>
+virtual std::list&lt; std::string &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classuscxml_1_1_u_s_c_x_m_l_invoker.html#abb533adf8dd28fd26ebd5e41c4e64980">getNames</a> ()</td></tr>
+<tr class="memdesc:abb533adf8dd28fd26ebd5e41c4e64980"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a list of names for types we implement. <br /></td></tr>
+<tr class="separator:abb533adf8dd28fd26ebd5e41c4e64980"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0447c03fb84d50ae39f222c479330c9a"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classuscxml_1_1_u_s_c_x_m_l_invoker.html#a0447c03fb84d50ae39f222c479330c9a">invoke</a> (const std::string &amp;source, const <a class="el" href="classuscxml_1_1_event.html">Event</a> &amp;invokeEvent)</td></tr>
 <tr class="memdesc:a0447c03fb84d50ae39f222c479330c9a"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="classuscxml_1_1_invoker.html" title="Facade for invoker implementation. ">Invoker</a>'s parent state became active at the end of a macro-step.  <a href="#a0447c03fb84d50ae39f222c479330c9a">More...</a><br /></td></tr>
 <tr class="separator:a0447c03fb84d50ae39f222c479330c9a"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -182,21 +182,21 @@ static void&#160;</td><td class="memItemRight" valign="bottom"><b>run</b> (void 
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-attribs"></a>
 Protected Attributes</h2></td></tr>
+<tr class="memitem:abeef84e12074492424256bdfaf2978b8"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="abeef84e12074492424256bdfaf2978b8"></a>
+<a class="el" href="classuscxml_1_1_interpreter.html">Interpreter</a>&#160;</td><td class="memItemRight" valign="bottom"><b>_invokedInterpreter</b></td></tr>
+<tr class="separator:abeef84e12074492424256bdfaf2978b8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a58aea238e29003a966b0c9be7aa36343"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a58aea238e29003a966b0c9be7aa36343"></a>
 bool&#160;</td><td class="memItemRight" valign="bottom"><b>_isActive</b></td></tr>
 <tr class="separator:a58aea238e29003a966b0c9be7aa36343"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a39edeafb6d853dd6f135f6a763cfb64f"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a39edeafb6d853dd6f135f6a763cfb64f"></a>
 bool&#160;</td><td class="memItemRight" valign="bottom"><b>_isStarted</b></td></tr>
 <tr class="separator:a39edeafb6d853dd6f135f6a763cfb64f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac58d40eb761a4fc55f44636677b5eb37"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ac58d40eb761a4fc55f44636677b5eb37"></a>
-std::thread *&#160;</td><td class="memItemRight" valign="bottom"><b>_thread</b></td></tr>
-<tr class="separator:ac58d40eb761a4fc55f44636677b5eb37"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:afdc9826366f86fb4514f022ddd01c9e5"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="afdc9826366f86fb4514f022ddd01c9e5"></a>
 <a class="el" href="classuscxml_1_1_event_queue.html">EventQueue</a>&#160;</td><td class="memItemRight" valign="bottom"><b>_parentQueue</b></td></tr>
 <tr class="separator:afdc9826366f86fb4514f022ddd01c9e5"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:abeef84e12074492424256bdfaf2978b8"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="abeef84e12074492424256bdfaf2978b8"></a>
-<a class="el" href="classuscxml_1_1_interpreter.html">Interpreter</a>&#160;</td><td class="memItemRight" valign="bottom"><b>_invokedInterpreter</b></td></tr>
-<tr class="separator:abeef84e12074492424256bdfaf2978b8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac58d40eb761a4fc55f44636677b5eb37"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ac58d40eb761a4fc55f44636677b5eb37"></a>
+std::thread *&#160;</td><td class="memItemRight" valign="bottom"><b>_thread</b></td></tr>
+<tr class="separator:ac58d40eb761a4fc55f44636677b5eb37"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pro_attribs_classuscxml_1_1_invoker_impl"><td colspan="2" onclick="javascript:toggleInherit('pro_attribs_classuscxml_1_1_invoker_impl')"><img src="closed.png" alt="-"/>&#160;Protected Attributes inherited from <a class="el" href="classuscxml_1_1_invoker_impl.html">uscxml::InvokerImpl</a></td></tr>
 <tr class="memitem:ae0820809fba6c83b448a9140b1c3b13c inherit pro_attribs_classuscxml_1_1_invoker_impl"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ae0820809fba6c83b448a9140b1c3b13c"></a>
 XERCESC_NS::DOMElement *&#160;</td><td class="memItemRight" valign="bottom"><b>_finalize</b></td></tr>
@@ -209,9 +209,7 @@ std::string&#160;</td><td class="memItemRight" valign="bottom"><b>_invokeId</b><
 <a class="el" href="classuscxml_1_1_interpreter_impl.html">InterpreterImpl</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>_interpreter</b></td></tr>
 <tr class="separator:af7069a12f5b67953f76c2eda8c1fc419 inherit pro_attribs_classuscxml_1_1_event_handler_impl"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>An invoker for other SCXML instances. </p>
-</div><h2 class="groupheader">Member Function Documentation</h2>
+<h2 class="groupheader">Member Function Documentation</h2>
 <a class="anchor" id="aab47a7d82206603f988a7534ddc1172e"></a>
 <div class="memitem">
 <div class="memproto">
@@ -233,15 +231,13 @@ std::string&#160;</td><td class="memItemRight" valign="bottom"><b>_invokeId</b><
   </tr>
 </table>
 </div><div class="memdoc">
-
-<p><a class="el" href="classuscxml_1_1_factory.html">Factory</a> demands a new instance. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">interpreter</td><td>The imlementation of the associated <a class="el" href="classuscxml_1_1_interpreter.html" title="Central class to interpret and process SCXML documents. ">Interpreter</a> </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="todo"><dt><b><a class="el" href="todo.html#_todo000003">Todo:</a></b></dt><dd>We will eventually introduce callbacks and prevent complete access to the interpreter. </dd></dl>
+<dl class="todo"><dt><b><a class="el" href="todo.html#_todo000004">Todo:</a></b></dt><dd>We will eventually introduce callbacks and prevent complete access to the interpreter. </dd></dl>
 
 <p>Implements <a class="el" href="classuscxml_1_1_invoker_impl.html#ac0b677a69ce22f9d455149f9a185a77f">uscxml::InvokerImpl</a>.</p>
 
@@ -267,8 +263,6 @@ std::string&#160;</td><td class="memItemRight" valign="bottom"><b>_invokeId</b><
   </tr>
 </table>
 </div><div class="memdoc">
-
-<p>Export a <a class="el" href="classuscxml_1_1_data.html">Data</a> object for the `_x['name']` data-model namespace. </p>
 <dl class="section return"><dt>Returns</dt><dd>An object to be represented at `_x['name']` </dd></dl>
 
 <p>Implements <a class="el" href="classuscxml_1_1_event_handler_impl.html#a14286b0d059c5f269abdb9efeb084b7c">uscxml::EventHandlerImpl</a>.</p>
@@ -306,8 +300,6 @@ std::string&#160;</td><td class="memItemRight" valign="bottom"><b>_invokeId</b><
   </tr>
 </table>
 </div><div class="memdoc">
-
-<p><a class="el" href="classuscxml_1_1_invoker.html" title="Facade for invoker implementation. ">Invoker</a>'s parent state became active at the end of a macro-step. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">source</td><td>The content of the invoke's <code>src</code> or evaluated <code>srcexpr</code> attribute </td></tr>
@@ -359,7 +351,7 @@ std::string&#160;</td><td class="memItemRight" valign="bottom"><b>_invokeId</b><
 </div>
 </div>
 <!-- <hr class="footer"/><address class="footer"><small>
-Generated on Thu May 19 2016 14:56:47 for uSCXML by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon May 23 2016 08:47:46 for uSCXML by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.10
 </small></address> -->

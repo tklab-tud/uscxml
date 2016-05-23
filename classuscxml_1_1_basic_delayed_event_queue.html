@@ -127,21 +127,21 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:acaed532499050b36583358fd29b8bb39"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="acaed532499050b36583358fd29b8bb39"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><b>BasicDelayedEventQueue</b> (<a class="el" href="classuscxml_1_1_delayed_event_queue_callbacks.html">DelayedEventQueueCallbacks</a> *callbacks)</td></tr>
 <tr class="separator:acaed532499050b36583358fd29b8bb39"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa7357348efc1d96af0e782a23c06578f"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aa7357348efc1d96af0e782a23c06578f"></a>
-virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>enqueueDelayed</b> (const <a class="el" href="classuscxml_1_1_event.html">Event</a> &amp;event, size_t delayMs, const std::string &amp;eventUUID)</td></tr>
-<tr class="separator:aa7357348efc1d96af0e782a23c06578f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3802c7fa7c4d1c6d08af3e691a7081f9"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a3802c7fa7c4d1c6d08af3e691a7081f9"></a>
-virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>cancelDelayed</b> (const std::string &amp;eventId)</td></tr>
-<tr class="separator:a3802c7fa7c4d1c6d08af3e691a7081f9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac1c709c057ad34c3bb64bbd8727d37ca"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ac1c709c057ad34c3bb64bbd8727d37ca"></a>
 virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>cancelAllDelayed</b> ()</td></tr>
 <tr class="separator:ac1c709c057ad34c3bb64bbd8727d37ca"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac6f9040d7836575ed2c9c31464a1ec53"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ac6f9040d7836575ed2c9c31464a1ec53"></a>
-virtual <a class="el" href="classuscxml_1_1_event.html">Event</a>&#160;</td><td class="memItemRight" valign="bottom"><b>dequeue</b> (bool blocking)</td></tr>
-<tr class="separator:ac6f9040d7836575ed2c9c31464a1ec53"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3802c7fa7c4d1c6d08af3e691a7081f9"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a3802c7fa7c4d1c6d08af3e691a7081f9"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>cancelDelayed</b> (const std::string &amp;eventId)</td></tr>
+<tr class="separator:a3802c7fa7c4d1c6d08af3e691a7081f9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a21727a05e40fc75fd043afbf40976dfc"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a21727a05e40fc75fd043afbf40976dfc"></a>
+virtual <a class="el" href="classuscxml_1_1_event.html">Event</a>&#160;</td><td class="memItemRight" valign="bottom"><b>dequeue</b> (size_t blockMs)</td></tr>
+<tr class="separator:a21727a05e40fc75fd043afbf40976dfc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4d21e13a575cbec7487f0ca39714ed6c"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a4d21e13a575cbec7487f0ca39714ed6c"></a>
 virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>enqueue</b> (const <a class="el" href="classuscxml_1_1_event.html">Event</a> &amp;event)</td></tr>
 <tr class="separator:a4d21e13a575cbec7487f0ca39714ed6c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa7357348efc1d96af0e782a23c06578f"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aa7357348efc1d96af0e782a23c06578f"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>enqueueDelayed</b> (const <a class="el" href="classuscxml_1_1_event.html">Event</a> &amp;event, size_t delayMs, const std::string &amp;eventUUID)</td></tr>
+<tr class="separator:aa7357348efc1d96af0e782a23c06578f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-methods"></a>
 Protected Member Functions</h2></td></tr>
@@ -162,34 +162,34 @@ static void&#160;</td><td class="memItemRight" valign="bottom"><b>timerCallback<
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-attribs"></a>
 Protected Attributes</h2></td></tr>
+<tr class="memitem:addf606626e97c754fdfdcf84f935abdd"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="addf606626e97c754fdfdcf84f935abdd"></a>
+std::map&lt; std::string, <a class="el" href="structuscxml_1_1_basic_delayed_event_queue_1_1callback_data.html">callbackData</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>_callbackData</b></td></tr>
+<tr class="separator:addf606626e97c754fdfdcf84f935abdd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a30babc44bf122789ba5f2a98361e7750"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a30babc44bf122789ba5f2a98361e7750"></a>
+<a class="el" href="classuscxml_1_1_delayed_event_queue_callbacks.html">DelayedEventQueueCallbacks</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>_callbacks</b></td></tr>
+<tr class="separator:a30babc44bf122789ba5f2a98361e7750"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abd211f81de4c9ea587c0441793205dcd"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="abd211f81de4c9ea587c0441793205dcd"></a>
+struct event *&#160;</td><td class="memItemRight" valign="bottom"><b>_dummyEvent</b></td></tr>
+<tr class="separator:abd211f81de4c9ea587c0441793205dcd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa91591e0e7d23011b8daf743a85e7f87"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aa91591e0e7d23011b8daf743a85e7f87"></a>
+struct event_base *&#160;</td><td class="memItemRight" valign="bottom"><b>_eventLoop</b></td></tr>
+<tr class="separator:aa91591e0e7d23011b8daf743a85e7f87"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a25bbad52b9b5322ce597a9c649d1870e"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a25bbad52b9b5322ce597a9c649d1870e"></a>
 bool&#160;</td><td class="memItemRight" valign="bottom"><b>_isStarted</b></td></tr>
 <tr class="separator:a25bbad52b9b5322ce597a9c649d1870e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a18a45c200d759642f3cab592c0b79142"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a18a45c200d759642f3cab592c0b79142"></a>
 std::thread *&#160;</td><td class="memItemRight" valign="bottom"><b>_thread</b></td></tr>
 <tr class="separator:a18a45c200d759642f3cab592c0b79142"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:addf606626e97c754fdfdcf84f935abdd"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="addf606626e97c754fdfdcf84f935abdd"></a>
-std::map&lt; std::string, <a class="el" href="structuscxml_1_1_basic_delayed_event_queue_1_1callback_data.html">callbackData</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>_callbackData</b></td></tr>
-<tr class="separator:addf606626e97c754fdfdcf84f935abdd"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa91591e0e7d23011b8daf743a85e7f87"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aa91591e0e7d23011b8daf743a85e7f87"></a>
-struct event_base *&#160;</td><td class="memItemRight" valign="bottom"><b>_eventLoop</b></td></tr>
-<tr class="separator:aa91591e0e7d23011b8daf743a85e7f87"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:abd211f81de4c9ea587c0441793205dcd"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="abd211f81de4c9ea587c0441793205dcd"></a>
-struct event *&#160;</td><td class="memItemRight" valign="bottom"><b>_dummyEvent</b></td></tr>
-<tr class="separator:abd211f81de4c9ea587c0441793205dcd"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a30babc44bf122789ba5f2a98361e7750"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a30babc44bf122789ba5f2a98361e7750"></a>
-<a class="el" href="classuscxml_1_1_delayed_event_queue_callbacks.html">DelayedEventQueueCallbacks</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>_callbacks</b></td></tr>
-<tr class="separator:a30babc44bf122789ba5f2a98361e7750"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pro_attribs_classuscxml_1_1_basic_event_queue"><td colspan="2" onclick="javascript:toggleInherit('pro_attribs_classuscxml_1_1_basic_event_queue')"><img src="closed.png" alt="-"/>&#160;Protected Attributes inherited from <a class="el" href="classuscxml_1_1_basic_event_queue.html">uscxml::BasicEventQueue</a></td></tr>
-<tr class="memitem:a126c9562b940b0aa31a1e0474160d8f9 inherit pro_attribs_classuscxml_1_1_basic_event_queue"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a126c9562b940b0aa31a1e0474160d8f9"></a>
-std::list&lt; <a class="el" href="classuscxml_1_1_event.html">Event</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>_queue</b></td></tr>
-<tr class="separator:a126c9562b940b0aa31a1e0474160d8f9 inherit pro_attribs_classuscxml_1_1_basic_event_queue"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2fd214fdfd8fc21ff6ee7d6a09cf6bc5 inherit pro_attribs_classuscxml_1_1_basic_event_queue"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a2fd214fdfd8fc21ff6ee7d6a09cf6bc5"></a>
-std::recursive_mutex&#160;</td><td class="memItemRight" valign="bottom"><b>_mutex</b></td></tr>
-<tr class="separator:a2fd214fdfd8fc21ff6ee7d6a09cf6bc5 inherit pro_attribs_classuscxml_1_1_basic_event_queue"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a94d2d5a6f7504b925f8b53d0537791a5 inherit pro_attribs_classuscxml_1_1_basic_event_queue"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a94d2d5a6f7504b925f8b53d0537791a5"></a>
 std::condition_variable_any&#160;</td><td class="memItemRight" valign="bottom"><b>_cond</b></td></tr>
 <tr class="separator:a94d2d5a6f7504b925f8b53d0537791a5 inherit pro_attribs_classuscxml_1_1_basic_event_queue"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2fd214fdfd8fc21ff6ee7d6a09cf6bc5 inherit pro_attribs_classuscxml_1_1_basic_event_queue"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a2fd214fdfd8fc21ff6ee7d6a09cf6bc5"></a>
+std::recursive_mutex&#160;</td><td class="memItemRight" valign="bottom"><b>_mutex</b></td></tr>
+<tr class="separator:a2fd214fdfd8fc21ff6ee7d6a09cf6bc5 inherit pro_attribs_classuscxml_1_1_basic_event_queue"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a126c9562b940b0aa31a1e0474160d8f9 inherit pro_attribs_classuscxml_1_1_basic_event_queue"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a126c9562b940b0aa31a1e0474160d8f9"></a>
+std::list&lt; <a class="el" href="classuscxml_1_1_event.html">Event</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>_queue</b></td></tr>
+<tr class="separator:a126c9562b940b0aa31a1e0474160d8f9 inherit pro_attribs_classuscxml_1_1_basic_event_queue"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Member Function Documentation</h2>
 <a class="anchor" id="a121101701a8c88a4e8eff947bbfb6149"></a>
@@ -230,7 +230,7 @@ std::condition_variable_any&#160;</td><td class="memItemRight" valign="bottom"><
 </div>
 </div>
 <!-- <hr class="footer"/><address class="footer"><small>
-Generated on Thu May 19 2016 14:56:47 for uSCXML by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon May 23 2016 08:47:45 for uSCXML by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.10
 </small></address> -->

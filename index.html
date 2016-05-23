@@ -88,7 +88,12 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><!--header-->
 <div class="contents">
 <div class="textblock"><h2>Getting Started</h2>
-<p>Did only work on structure and layout of documentation so far </p>
+<p>When you <a class="el" href="building.html">built SCXML</a>, you have three possibilities to work with SCXML state-charts:</p>
+<ol type="1">
+<li>Embed the uSCXML interpreter in your program and parse and interpret state-chart documents at runtime. This allows for the most flexibility as the complete SCXML DOM is still available.</li>
+<li>Transpile SCXML state-charts onto one of the available target languages. These are currently VHDL and ANSI-C with C# and Java as likely additional targets. The benefit of this approach is the reduced footprint at runtime and fewer dependencies.</li>
+<li>Interpret SCXML documents directly with the <code>uscxml-browser</code>. </li>
+</ol>
 </div></div><!-- contents -->
 <!-- HTML footer for doxygen 1.8.8-->
 <!-- start footer part -->
@@ -98,7 +103,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div>
 </div>
 <!-- <hr class="footer"/><address class="footer"><small>
-Generated on Thu May 19 2016 14:56:47 for uSCXML by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon May 23 2016 08:47:46 for uSCXML by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.10
 </small></address> -->
