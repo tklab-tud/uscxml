@@ -43,7 +43,7 @@ public:
 	PIMPL_OPERATORS(DataModel);
 
 	/// @copydoc DataModelImpl::getNames()
-	virtual std::list<std::string> getNames();	
+	virtual std::list<std::string> getNames();
 	/// @copydoc DataModelImpl::isValidSyntax()
 	virtual bool isValidSyntax(const std::string& expr);
 

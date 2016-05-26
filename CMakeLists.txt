@@ -194,6 +194,10 @@ else()
 	add_definitions("-DUSCXML_STATIC")
 endif()
 
+OPTION(BUILD_BINDING_JAVA "Build language bindings for Java" ON)
+OPTION(BUILD_BINDING_CSHARP "Build language bindings for CSharp" ON)
+OPTION(BUILD_BINDING_PHP "Build language bindings for PHP" OFF)
+
 
 #################################################
 # Dependent Libraries
@@ -359,6 +363,7 @@ if (NOT IGNORE_LUA)
 endif()
 
 add_subdirectory(src/uscxml)
+add_subdirectory(src/bindings)
 
 add_library(uscxml ${USCXML_FILES})
 set_property(TARGET uscxml PROPERTY CXX_STANDARD 11)

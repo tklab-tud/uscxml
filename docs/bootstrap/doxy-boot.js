@@ -315,6 +315,46 @@ $( document ).ready(function() {
 		$(this).parent().remove();
 	});
 
+	/* Move detailled collapsible under brief */
+	$('div.mbrief a').each(function(){
+		var detailLink = $(this);
+		var detailAnchor = $(this).attr('href');
+
+		if ($(detailAnchor).length) {
+			
+			var detailContent = $(detailAnchor).next();
+			detailContent.addClass("collapse");
+
+			$(this).removeAttr('href');
+
+			$(this).click(function() {
+				if (!$(detailContent).hasClass("in")) {
+					detailContent.addClass("in");
+					$(detailLink).text("Less ...");
+				} else {
+					detailContent.removeClass("in");
+					$(detailLink).text("More ...");
+				}
+			});
+
+			$(detailContent).find('.panel-heading').remove();
+
+			$(this).parent().parent().prev().append($(detailAnchor));
+			// $(this).parent().parent().append($(detailContent));
+
+			$(this).parent().parent().parent()
+			.after("<tr>").next().addClass("mdetail")
+			.append("<td>").children('td:last').attr("colspan", "2")
+			.append($(detailContent));
+		}
+	});
+	
+	$('h2.groupheader').each(function(){
+		if ($(this).text() == "Member Function Documentation") {
+			$(this).remove();
+		}
+	});
+	
 	// $('.mdescLeft').each(function(){
 	// 	if($(this).html()=="&nbsp;") {
 	// 		$(this).siblings('.mdescRight').attr('colspan', 2);

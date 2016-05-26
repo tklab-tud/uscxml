@@ -47,7 +47,7 @@ public:
 	 * Return a list of names for types we implement.
 	 */
 	virtual std::list<std::string> getNames() = 0;
-	
+
 	/**
 	 * Export a Data object for the `_x['name']` data-model namespace
 	 * @return An object to be represented at `_x['name']`

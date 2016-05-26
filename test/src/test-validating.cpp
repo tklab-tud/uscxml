@@ -46,7 +46,7 @@ int main(int argc, char** argv) {
 
 		if (Factory::getInstance()->hasDataModel("ecmascript")) {
 			// Potential endless loop
-			
+
 			const char* xml =
 			    "<scxml datamodel=\"ecmascript\">"
 			    "	<datamodel><data id=\"counter\" expr=\"5\" /></datamodel>"
@@ -677,7 +677,7 @@ int main(int argc, char** argv) {
 			assert(issueLocations.size() == 1);
 		}
 
-        if (Factory::getInstance()->hasDataModel("ecmascript")) {
+		if (Factory::getInstance()->hasDataModel("ecmascript")) {
 			// Syntax error in script
 
 			const char* xml =
@@ -692,7 +692,7 @@ int main(int argc, char** argv) {
 			assert(issueLocations.size() == 1);
 		}
 
-        if (Factory::getInstance()->hasDataModel("ecmascript")) {
+		if (Factory::getInstance()->hasDataModel("ecmascript")) {
 			// Syntax error in cond attribute
 
 			const char* xml =
@@ -714,7 +714,7 @@ int main(int argc, char** argv) {
 			assert(issueLocations.size() == 3);
 		}
 
-        if (Factory::getInstance()->hasDataModel("ecmascript")) {
+		if (Factory::getInstance()->hasDataModel("ecmascript")) {
 			// Syntax error in expr attribute
 
 			const char* xml =
@@ -745,7 +745,7 @@ int main(int argc, char** argv) {
 			assert(issueLocations.size() == 5);
 		}
 
-        if (Factory::getInstance()->hasDataModel("ecmascript")) {
+		if (Factory::getInstance()->hasDataModel("ecmascript")) {
 			// Syntax error with foreach
 
 			const char* xml =
@@ -763,7 +763,7 @@ int main(int argc, char** argv) {
 			assert(issueLocations.size() == 1);
 		}
 
-        if (Factory::getInstance()->hasDataModel("ecmascript")) {
+		if (Factory::getInstance()->hasDataModel("ecmascript")) {
 			// Syntax error with send
 
 			const char* xml =
@@ -780,7 +780,7 @@ int main(int argc, char** argv) {
 			assert(issueLocations.size() == 1);
 		}
 
-        if (Factory::getInstance()->hasDataModel("ecmascript")) {
+		if (Factory::getInstance()->hasDataModel("ecmascript")) {
 			// Syntax error with invoke
 
 			const char* xml =
@@ -795,7 +795,7 @@ int main(int argc, char** argv) {
 			assert(issueLocations.size() == 1);
 		}
 
-        if (Factory::getInstance()->hasDataModel("ecmascript")) {
+		if (Factory::getInstance()->hasDataModel("ecmascript")) {
 			// Syntax error with cancel
 
 			const char* xml =

@@ -191,7 +191,7 @@ protected:
 class USCXML_API URL {
 public:
 	PIMPL_OPERATORS(URL);
-	
+
 	URL(const std::string url) : _impl(new URLImpl(url)) {}
 
 	bool isAbsolute() {

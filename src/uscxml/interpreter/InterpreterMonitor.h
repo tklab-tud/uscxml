@@ -20,6 +20,7 @@
 #ifndef INTERPRETERMONITOR_H_D3F21429
 #define INTERPRETERMONITOR_H_D3F21429
 
+#include "uscxml/config.h"
 #include "uscxml/Common.h"
 #include "uscxml/messages/Event.h"
 #include "uscxml/debug/InterpreterIssue.h"
@@ -40,6 +41,11 @@ if (callback) { callback->function(arg1); }
 
 #define USCXML_MONITOR_CALLBACK2(callback, function, arg1, arg2) \
 if (callback) { callback->function(arg1, arg2); }
+
+// forward declare
+namespace XERCESC_NS {
+    class DOMElement;
+}
 
 namespace uscxml {
 

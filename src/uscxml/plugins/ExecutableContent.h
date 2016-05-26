@@ -29,7 +29,7 @@
 
 // forward declare
 namespace XERCESC_NS {
-    class DOMElement;
+class DOMElement;
 }
 
 namespace uscxml {
@@ -50,7 +50,7 @@ public:
 	void enterElement(XERCESC_NS::DOMElement* node);
 	void exitElement(XERCESC_NS::DOMElement* node);
 	bool processChildren();
-	
+
 protected:
 	std::shared_ptr<ExecutableContentImpl> _impl;
 

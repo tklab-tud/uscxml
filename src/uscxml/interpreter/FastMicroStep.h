@@ -42,7 +42,7 @@ public:
 	FastMicroStep(MicroStepCallbacks* callbacks);
 	virtual ~FastMicroStep();
 
-	virtual InterpreterState step(bool blocking);
+	virtual InterpreterState step(size_t blockMs);
 	virtual void reset();
 	virtual bool isInState(const std::string& stateId);
 	virtual std::list<XERCESC_NS::DOMElement*> getConfiguration();

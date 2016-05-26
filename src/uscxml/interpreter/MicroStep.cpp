@@ -22,8 +22,8 @@
 
 namespace uscxml {
 
-InterpreterState MicroStep::step(bool blocking) {
-	return _impl->step(blocking);
+InterpreterState MicroStep::step(size_t blockMs) {
+	return _impl->step(blockMs);
 }
 void MicroStep::reset() {
 	return _impl->reset();

@@ -69,11 +69,11 @@ public:
 class USCXML_API DataModelImpl {
 public:
 	virtual ~DataModelImpl() {}
-	
+
 	/**
 	 * The Factory wants to instantiate a new instance.
-	 * This function will have to initialize the object. The actual constructor 
-	 * is called from within here. The only one who calls the constructor directly 
+	 * This function will have to initialize the object. The actual constructor
+	 * is called from within here. The only one who calls the constructor directly
 	 * is the Factory for the prototype object.
 	 *
 	 * @param callbacks The callbacks available to the datamodel
@@ -87,7 +87,7 @@ public:
 	virtual std::list<std::string> getNames() = 0;
 
 	/**
-	 * Determine whether a given string constitutes valid syntax in the 
+	 * Determine whether a given string constitutes valid syntax in the
 	 * data-model's language.
 	 * @param expr A string, supposedly containing an expression of the data-model.
 	 * @return Whether expr is in L(DM).
@@ -95,7 +95,7 @@ public:
 	virtual bool isValidSyntax(const std::string& expr) {
 		return true; // overwrite when datamodel supports it
 	}
-	
+
 	/**
 	 * Set the given event as `_event` in the data-model's global scope.
 	 * @param event The event as it was dequeued from either the internal or external queue.
@@ -104,7 +104,7 @@ public:
 
 	/**
 	 * Experimental extension to have dynamic content in string literals.
-	 * This function was used to replace ${foo} expressions on the data-model, 
+	 * This function was used to replace ${foo} expressions on the data-model,
 	 * e.g. in text nodes. It will eventually make a reappearance I guess.
 	 * @param content The string with tokens to replace.
 	 * @return How many occurences where replaced.
@@ -116,8 +116,8 @@ public:
 	 * @param expr Anything that possibly evaluates to an enumerable object.
 	 * @return The number of items in the enumerable object.
 	 */
-	virtual uint32_t getLength(const std::string& expr) = 0;
-	
+    virtual uint32_t getLength(const std::string& expr) = 0;
+
 	/**
 	 * Set a given item to the object at a given index for one iteration.
 	 * @param item A variable or location to assign the current object to.
@@ -143,7 +143,7 @@ public:
 	 * @return An evaluated structure representing the given compound or literal.
 	 */
 	virtual Data evalAsData(const std::string& content) = 0;
-	
+
 	/**
 	 * Evaluate a given expression as a boolean.
 	 * This function is a subset of evalAsData() but saves on creating and copying a Data object.
@@ -162,28 +162,28 @@ public:
 	/**
 	 * Assign a data object to a location in the data-model.
 	 * There are different occurences in the SCXML IRP tests, e.g.
-\verbatim
-test147:
-  <data id="Var1" expr="0"/>
+	\verbatim
+	test147:
+	<data id="Var1" expr="0"/>
 
-test150:
-  <data id="Var3">
-    [1,2,3]
-  </data>
+	test150:
+	<data id="Var3">
+	[1,2,3]
+	</data>
 
-test277:
-  <data id="Var1" expr="return"/>
-\endverbatim
+	test277:
+	<data id="Var1" expr="return"/>
+	\endverbatim
 	 * @param location A variable or locatio to assign to.
 	 * @param data The Data object with the respective data.
 	 */
 	virtual void assign(const std::string& location, const Data& data) = 0;
-	
+
 	/**
 	 * Initialize a variable / location in the data-model with a given data object.
-	 * This is, semantically, very close to assign() but does not assume the 
+	 * This is, semantically, very close to assign() but does not assume the
 	 * location to be declared first.
-	 * 
+	 *
 	 * @param location A variable or locatio to assign to.
 	 * @param data The Data object with the respective data.
 	 */
@@ -194,10 +194,10 @@ test277:
 	 * @todo This is currently unsupported
 	 */
 	virtual void addExtension(DataModelExtension* ext);
-	
+
 	/**
 	 * Concat the given terms into a conjunctive form.
-	 * @todo This is required to automatically transform a state-chart into a 
+	 * @todo This is required to automatically transform a state-chart into a
 	 * state-machine. Actual transformation is still only available in legacy though.
 	 */
 	virtual std::string andExpressions(std::list<std::string>) {

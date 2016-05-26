@@ -192,8 +192,8 @@ void Interpreter::reset() {
 	return _impl->reset();
 }
 
-InterpreterState Interpreter::step(bool blocking) {
-	return _impl->step(blocking);
+InterpreterState Interpreter::step(size_t blockMs) {
+	return _impl->step(blockMs);
 };
 
 void Interpreter::cancel() {
@@ -239,7 +239,7 @@ static void printNodeSet(const std::list<XERCESC_NS::DOMElement*> nodes) {
 	}
 }
 #endif
-    
+
 void StateTransitionMonitor::beforeTakingTransition(const XERCESC_NS::DOMElement* transition) {
 	std::lock_guard<std::recursive_mutex> lock(_mutex);
 	std::cerr << "Transition: " << uscxml::DOMUtils::xPathForNode(transition) << std::endl;

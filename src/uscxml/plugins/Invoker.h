@@ -28,8 +28,8 @@
 #include <xercesc/dom/DOM.hpp>
 
 namespace XERCESC_NS {
-    class DOMDocument;
-    class DOMNode;
+class DOMDocument;
+class DOMNode;
 }
 
 namespace uscxml {

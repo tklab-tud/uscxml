@@ -27,8 +27,7 @@
 namespace uscxml {
 
 enum InterpreterState {
-	USCXML_FINISHED       = -2,  ///< machine reached a final configuration and is done
-	USCXML_INTERRUPTED    = -1,  ///< machine received the empty event on the external queue
+	USCXML_FINISHED       = -1,  ///< machine reached a final configuration and is done
 	USCXML_UNDEF          = 0,   ///< not an actual state
 	USCXML_IDLE           = 1,   ///< stable configuration and queues empty
 	USCXML_INITIALIZED    = 2,   ///< DOM is setup and all external components instantiated

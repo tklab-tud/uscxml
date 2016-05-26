@@ -194,12 +194,12 @@ bool DOMUtils::isMember(const DOMElement* node,
 	return false;
 }
 
-const DOMNode* DOMUtils::getNearestAncestor(const DOMNode* node, const std::string tagName) {
+const DOMElement* DOMUtils::getNearestAncestor(const DOMNode* node, const std::string tagName) {
 	const DOMNode* parent = node->getParentNode();
 	while(parent) {
 		if (parent->getNodeType() == DOMNode::ELEMENT_NODE &&
 		        iequals(TAGNAME_CAST(parent), tagName)) {
-			return parent;
+			return static_cast<const DOMElement*>(parent);
 		}
 		parent = parent->getParentNode();
 	}

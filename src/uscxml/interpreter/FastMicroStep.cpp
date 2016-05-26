@@ -290,23 +290,23 @@ void FastMicroStep::init(XERCESC_NS::DOMElement* scxml) {
 		if (parent && parent->getNodeType() == DOMNode::ELEMENT_NODE) {
 			State* uscxmlState = (State*)parent->getUserData(X("uscxmlState"));
 			// parent maybe a content element
-            if (uscxmlState != NULL) {
-                _states[i]->parent = uscxmlState->documentOrder;
-            }
+			if (uscxmlState != NULL) {
+				_states[i]->parent = uscxmlState->documentOrder;
+			}
 		}
 
 		while(parent && parent->getNodeType() == DOMNode::ELEMENT_NODE) {
 			State* uscxmlState = (State*)parent->getUserData(X("uscxmlState"));
 
-            if (uscxmlState == NULL)
-                break;
+			if (uscxmlState == NULL)
+				break;
 
-            // ancestors
-            BIT_SET_AT(uscxmlState->documentOrder, _states[i]->ancestors);
+			// ancestors
+			BIT_SET_AT(uscxmlState->documentOrder, _states[i]->ancestors);
 
-            // children
-            BIT_SET_AT(i, uscxmlState->children);
-            parent = parent->getParentNode();
+			// children
+			BIT_SET_AT(i, uscxmlState->children);
+			parent = parent->getParentNode();
 		}
 	}
 
@@ -403,7 +403,7 @@ void FastMicroStep::markAsCancelled() {
 	_isCancelled = true;
 }
 
-InterpreterState FastMicroStep::step(bool blocking) {
+InterpreterState FastMicroStep::step(size_t blockMs) {
 	if (!_isInitialized) {
 		init(_scxml);
 		return USCXML_INITIALIZED;
@@ -517,7 +517,7 @@ InterpreterState FastMicroStep::step(bool blocking) {
 		_flags |= USCXML_CTX_STABLE;
 	}
 
-	if ((_event = _callbacks->dequeueExternal(blocking))) {
+	if ((_event = _callbacks->dequeueExternal(blockMs))) {
 		USCXML_MONITOR_CALLBACK1(_callbacks->getMonitor(), beforeProcessingEvent, _event);
 		goto SELECT_TRANSITIONS;
 	}

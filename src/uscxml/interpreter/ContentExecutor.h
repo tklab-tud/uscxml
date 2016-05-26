@@ -28,7 +28,7 @@
 
 // forward declare
 namespace XERCESC_NS {
- class DOMElement;
+class DOMElement;
 }
 
 namespace uscxml {

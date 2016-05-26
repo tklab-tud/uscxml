@@ -26,6 +26,14 @@ endfunction()
 USCXML_TEST_COMPILE(NAME test-url LABEL general/test-url FILES src/test-url.cpp)
 USCXML_TEST_COMPILE(NAME test-lifecycle LABEL general/test-lifecycle FILES src/test-lifecycle.cpp)
 USCXML_TEST_COMPILE(NAME test-validating LABEL general/test-validating FILES src/test-validating.cpp)
+USCXML_TEST_COMPILE(NAME test-snippets LABEL general/test-snippets FILES src/test-snippets.cpp)
+
+file(GLOB_RECURSE USCXML_WRAPPERS
+	${PROJECT_SOURCE_DIR}/src/bindings/swig/wrapped/*.cpp
+	${PROJECT_SOURCE_DIR}/src/bindings/swig/wrapped/*.h
+)
+
+USCXML_TEST_COMPILE(NAME test-bindings LABEL general/test-bindings FILES ${USCXML_WRAPPERS} src/test-bindings.cpp)
 
 # the one binary to test for pass / fail final states
 add_executable(test-state-pass src/test-state-pass.cpp ${GETOPT_FILES})

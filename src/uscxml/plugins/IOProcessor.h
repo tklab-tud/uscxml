@@ -41,7 +41,7 @@ public:
 
 	/// @copydoc IOProcessorImpl::eventFromSCXML
 	virtual void eventFromSCXML(const std::string& target, const Event& event);
-	
+
 	/// @copydoc IOProcessorImpl::isValidTarget
 	virtual bool isValidTarget(const std::string& target);
 

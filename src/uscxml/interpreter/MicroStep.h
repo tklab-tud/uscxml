@@ -33,7 +33,7 @@
 
 // forward declare
 namespace XERCESC_NS {
-    class DOMElement;
+class DOMElement;
 }
 
 namespace uscxml {
@@ -48,7 +48,7 @@ class USCXML_API MicroStep {
 public:
 	PIMPL_OPERATORS(MicroStep);
 
-	virtual InterpreterState step(bool blocking);
+	virtual InterpreterState step(size_t blockMs);
 	virtual void reset();
 	virtual bool isInState(const std::string& stateId);
 

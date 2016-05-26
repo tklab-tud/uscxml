@@ -154,13 +154,19 @@ public:
 	PIMPL_OPERATORS(Interpreter);
 
 	/**
-	 * Perform a single microstep and return.
-	 * @param blocking Whether or not to block the thread when waiting for events
-	 * @return The new state of the interpreter object.
+	 * Advance the state-machine by a single microstep and return.
 	 *
-	 * @todo Have Interpreter::step() take a duration to block
+	 * This is the central function to drive the state machine. Calling step()
+	 * will perform one *microstep* and return the current state of the
+	 * interpreter. Here, the state is not to be confused with the interpreter's
+	 * configuration.
+	 *
+	 * \snippet test-snippets.cpp Performing a microstep
+	 *
+	 * @param blockMs The maximum duration in milli-seconds to wait for an event to become available.
+	 * @return The new state of the interpreter object.
 	 */
-	InterpreterState step(bool blocking = true);
+	InterpreterState step(size_t blockMs = std::numeric_limits<size_t>::max());
 
 	/**
 	 * Unblock and mark for finalize.
@@ -177,14 +183,14 @@ public:
 	 * @return A list of XML elements of the active states.
 	 */
 	std::list<XERCESC_NS::DOMElement*> getConfiguration();
-	
+
 	/**
 	 * Determine whether the state with the given `id` is in the active configuration.
 	 * @param id An identifier for a state from the SCXML document.
 	 * @return Whether the interpreter is in state `id`.
 	 */
 	bool isInState(const std::string& stateId);
-	
+
 	/**
 	 * The current state of the interpreter, not to be confused with its configuration.
 	 * @return The current state of the interpreter object.
@@ -202,12 +208,12 @@ public:
 	 * @event An event to be enqueued
 	 */
 	void receive(const Event& event);
-	
+
 	/**
 	 * Adapt the constituting components for a SCXML interpreter.
 	 */
 	void setActionLanguage(ActionLanguage actionLanguage);
-	
+
 	/**
 	 * Attach a monitor to make more details of the interpreter observable.
 	 */

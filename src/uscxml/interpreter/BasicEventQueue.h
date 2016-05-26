@@ -42,7 +42,7 @@ class USCXML_API BasicEventQueue : public EventQueueImpl {
 public:
 	BasicEventQueue();
 	virtual ~BasicEventQueue();
-	virtual Event dequeue(bool blocking);
+	virtual Event dequeue(size_t blockMs);
 	virtual void enqueue(const Event& event);
 
 protected:
@@ -62,8 +62,8 @@ public:
 	virtual void enqueueDelayed(const Event& event, size_t delayMs, const std::string& eventUUID);
 	virtual void cancelDelayed(const std::string& eventId);
 	virtual void cancelAllDelayed();
-	virtual Event dequeue(bool blocking) {
-		return BasicEventQueue::dequeue(blocking);
+	virtual Event dequeue(size_t blockMs) {
+		return BasicEventQueue::dequeue(blockMs);
 	}
 	virtual void enqueue(const Event& event) {
 		return BasicEventQueue::enqueue(event);

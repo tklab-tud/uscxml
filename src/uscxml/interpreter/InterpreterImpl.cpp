@@ -259,8 +259,8 @@ bool InterpreterImpl::checkValidSendType(const std::string& type, const std::str
 	return true;
 }
 
-Event InterpreterImpl::dequeueExternal(bool blocking) {
-	_currEvent = _externalQueue.dequeue(blocking);
+Event InterpreterImpl::dequeueExternal(size_t blockMs) {
+	_currEvent = _externalQueue.dequeue(blockMs);
 	if (_currEvent) {
 		_dataModel.setEvent(_currEvent);
 

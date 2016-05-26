@@ -40,7 +40,7 @@ namespace uscxml {
  */
 class USCXML_API EventQueueImpl {
 public:
-	virtual Event dequeue(bool blocking) = 0;
+	virtual Event dequeue(size_t blockMs) = 0;
 	virtual void enqueue(const Event& event) = 0;
 };
 

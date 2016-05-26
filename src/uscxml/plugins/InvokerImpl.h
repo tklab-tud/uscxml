@@ -25,6 +25,7 @@
 #include "uscxml/Common.h"
 #include "uscxml/plugins/EventHandler.h"
 #include "uscxml/messages/Event.h"
+#include "uscxml/interpreter/InterpreterImpl.h"
 
 namespace uscxml {
 
@@ -39,7 +40,7 @@ class USCXML_API InvokerImpl : public EventHandlerImpl {
 public:
 	InvokerImpl() : _finalize(NULL) {};
 	virtual ~InvokerImpl() {}
-	
+
 	virtual std::list<std::string> getNames() = 0;
 
 	/**
@@ -72,7 +73,7 @@ public:
 	virtual XERCESC_NS::DOMElement* getFinalize() {
 		return _finalize;
 	}
-	
+
 	/**
 	 * Set the finalize XML element associated with this invoker.
 	 * @param finalize The finalize XMl element.
@@ -80,7 +81,7 @@ public:
 	virtual void setFinalize(XERCESC_NS::DOMElement* finalize) {
 		_finalize = finalize;
 	}
-	
+
 	/**
 	 * Set the invocation identifier as required when returning events.
 	 * @param invokeId The invocation identifier.
@@ -96,7 +97,7 @@ protected:
 	 * @param type The type of this I/O Processor for `event.origintype`.
 	 * @param invokeId The invocation identifier of this invocation for `event.invokeid`.
 	 * @param internal If the event is to be delivered to the Interpreter's internal queue instead.
-	 */	
+	 */
 	void eventToSCXML(Event& event, const std::string& type, const std::string& invokeId, bool internal = false);
 
 	XERCESC_NS::DOMElement* _finalize;

@@ -144,9 +144,9 @@ URL URLImpl::resolveWithCWD(URLImpl* relative) {
 #if WIN32
 	std::shared_ptr<URLImpl> cwdURL(new URLImpl(std::string(currPath)));
 #else
-    std::shared_ptr<URLImpl> cwdURL(new URLImpl(std::string("file://") + currPath + PATH_SEPERATOR));
+	std::shared_ptr<URLImpl> cwdURL(new URLImpl(std::string("file://") + currPath + PATH_SEPERATOR));
 #endif
-    
+
 	return resolve(relative, cwdURL.get());
 }
 

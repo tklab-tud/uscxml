@@ -41,7 +41,7 @@ class USCXML_API MicroStepCallbacks {
 public:
 	/** Event Queues / Matching */
 	virtual Event dequeueInternal() = 0;
-	virtual Event dequeueExternal(bool blocking) = 0;
+	virtual Event dequeueExternal(size_t blockMs) = 0;
 	virtual bool isMatched(const Event& event, const std::string& eventDesc) = 0;
 	virtual void raiseDoneEvent(XERCESC_NS::DOMElement* state, XERCESC_NS::DOMElement* doneData) = 0;
 
@@ -73,7 +73,7 @@ public:
 
 	MicroStepImpl(MicroStepCallbacks* callbacks) : _callbacks(callbacks) {}
 
-	virtual InterpreterState step(bool blocking) = 0;
+	virtual InterpreterState step(size_t blockMs) = 0;
 	virtual void reset() = 0; ///< Reset state machine
 	virtual bool isInState(const std::string& stateId) = 0;
 	virtual std::list<XERCESC_NS::DOMElement*> getConfiguration() = 0;

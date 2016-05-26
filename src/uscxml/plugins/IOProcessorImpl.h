@@ -24,6 +24,7 @@
 #include "uscxml/Common.h"
 #include "uscxml/plugins/EventHandler.h"
 #include "uscxml/messages/Event.h"
+#include "uscxml/interpreter/InterpreterImpl.h"
 
 namespace uscxml {
 
@@ -48,7 +49,7 @@ public:
 	 * @param event The event to deliver.
 	 */
 	virtual void eventFromSCXML(const std::string& target, const Event& event) = 0;
-	
+
 	/**
 	 * Determine whether the given target is a valid destination for events.
 	 * @param target A target where the Interpreter wants to deliver Event%s to.
@@ -63,7 +64,7 @@ protected:
 	 * @param type The type of this I/O Processor for `event.origintype`.
 	 * @param origin The origin of this I/O Processor for `event.origin`.
 	 * @param internal If the event is to be delivered to the Interpreter's internal queue instead.
-	 */	
+	 */
 	void eventToSCXML(Event& event, const std::string& type, const std::string& origin, bool internal = false);
 
 };

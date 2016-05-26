@@ -31,13 +31,20 @@ BasicEventQueue::BasicEventQueue() {
 BasicEventQueue::~BasicEventQueue() {
 }
 
-Event BasicEventQueue::dequeue(bool blocking) {
+Event BasicEventQueue::dequeue(size_t blockMs) {
 	std::lock_guard<std::recursive_mutex> lock(_mutex);
-	if (blocking) {
-		while (_queue.empty()) {
-			_cond.wait(_mutex);
+
+	if (blockMs > 0) {
+		// block for given milliseconds or until queue is filled
+		std::chrono::time_point<std::chrono::system_clock> end, now;
+		now = std::chrono::system_clock::now();
+		end = now + std::chrono::milliseconds(blockMs);
+
+		while (std::chrono::system_clock::now() < end && _queue.empty()) {
+			_cond.wait_for(_mutex, std::chrono::system_clock::now() - end);
 		}
 	}
+
 	if (_queue.size() > 0) {
 		Event event = _queue.front();
 		_queue.pop_front();

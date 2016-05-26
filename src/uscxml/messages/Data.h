@@ -33,8 +33,8 @@
 
 // forward declare
 namespace XERCESC_NS {
-	class DOMDocument;
-	class DOMNode;
+class DOMDocument;
+class DOMNode;
 }
 
 namespace uscxml {

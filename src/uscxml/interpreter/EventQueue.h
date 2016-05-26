@@ -36,7 +36,7 @@ class USCXML_API EventQueue {
 public:
 	PIMPL_OPERATORS(EventQueue);
 
-	virtual Event dequeue(bool blocking);
+	virtual Event dequeue(size_t blockMs);
 	virtual void enqueue(const Event& event);
 
 protected:

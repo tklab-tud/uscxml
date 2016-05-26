@@ -32,8 +32,8 @@
 
 namespace uscxml {
 
-Event EventQueue::dequeue(bool blocking) {
-	return _impl->dequeue(blocking);
+Event EventQueue::dequeue(size_t blockMs) {
+	return _impl->dequeue(blockMs);
 }
 void EventQueue::enqueue(const Event& event) {
 	return _impl->enqueue(event);

@@ -65,12 +65,12 @@ public:
 	void cloneFrom(InterpreterImpl* other);
 	void cloneFrom(std::shared_ptr<InterpreterImpl> other);
 
-	virtual InterpreterState step(bool blocking) {
+	virtual InterpreterState step(size_t blockMs) {
 		if (!_isInitialized) {
 			init();
 			_state = USCXML_INITIALIZED;
 		} else {
-			_state = _microStepper.step(blocking);
+			_state = _microStepper.step(blockMs);
 		}
 		return _state;
 	}
@@ -107,7 +107,7 @@ public:
 			_dataModel.setEvent(_currEvent);
 		return _currEvent;
 	}
-	virtual Event dequeueExternal(bool blocking);
+	virtual Event dequeueExternal(size_t blockMs);
 	virtual bool isTrue(const std::string& expr);
 
 	virtual void raiseDoneEvent(XERCESC_NS::DOMElement* state, XERCESC_NS::DOMElement* doneData) {

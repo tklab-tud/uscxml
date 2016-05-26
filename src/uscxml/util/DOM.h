@@ -59,7 +59,7 @@ namespace uscxml {
 class USCXML_API DOMUtils {
 public:
 
-	static const XERCESC_NS::DOMNode* getNearestAncestor(const XERCESC_NS::DOMNode* node, const std::string tagName);
+	static const XERCESC_NS::DOMElement* getNearestAncestor(const XERCESC_NS::DOMNode* node, const std::string tagName);
 	static bool isDescendant(const XERCESC_NS::DOMNode* s1, const XERCESC_NS::DOMNode* s2);
 
 

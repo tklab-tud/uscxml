@@ -29,7 +29,7 @@
 
 // forward declare
 namespace XERCESC_NS {
-    class DOMNode;
+class DOMNode;
 }
 
 namespace uscxml {
@@ -54,10 +54,10 @@ public:
 	IssueSeverity severity; ///< Severity of the issue
 	std::string specRef; ///< If applicable, the violated section from the standard
 
-    /**
-     * Constructor is solely used to report issues at runtime.
-     */
-    InterpreterIssue(const std::string& msg, XERCESC_NS::DOMNode* node, IssueSeverity severity, const std::string& specRef = "");
+	/**
+	 * Constructor is solely used to report issues at runtime.
+	 */
+	InterpreterIssue(const std::string& msg, XERCESC_NS::DOMNode* node, IssueSeverity severity, const std::string& specRef = "");
 
 private:
 
