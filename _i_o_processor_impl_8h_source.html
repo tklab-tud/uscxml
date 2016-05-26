@@ -105,33 +105,35 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="_common_8h.html">uscxml/Common.h</a>&quot;</span></div>
 <div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="_event_handler_8h.html">uscxml/plugins/EventHandler.h</a>&quot;</span></div>
 <div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="_event_8h.html">uscxml/messages/Event.h</a>&quot;</span></div>
-<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;</div>
-<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;<span class="keyword">namespace </span><a class="code" href="namespaceuscxml.html">uscxml</a> {</div>
-<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;</div>
-<div class="line"><a name="l00035"></a><span class="lineno"><a class="line" href="classuscxml_1_1_i_o_processor_impl.html">   35</a></span>&#160;<span class="keyword">class </span>USCXML_API <a class="code" href="classuscxml_1_1_i_o_processor_impl.html">IOProcessorImpl</a> : <span class="keyword">public</span> <a class="code" href="classuscxml_1_1_event_handler_impl.html">EventHandlerImpl</a> {</div>
-<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;<span class="keyword">public</span>:</div>
-<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;</div>
-<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;    <span class="keyword">virtual</span> std::shared_ptr&lt;IOProcessorImpl&gt; create(<a class="code" href="classuscxml_1_1_interpreter_impl.html">InterpreterImpl</a>* interpreter) = 0;</div>
-<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;</div>
-<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> eventFromSCXML(<span class="keyword">const</span> std::string&amp; target, <span class="keyword">const</span> <a class="code" href="classuscxml_1_1_event.html">Event</a>&amp; event) = 0;</div>
-<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;</div>
-<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">bool</span> isValidTarget(<span class="keyword">const</span> std::string&amp; target) = 0;</div>
-<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;</div>
-<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;<span class="keyword">protected</span>:</div>
-<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;    <span class="keywordtype">void</span> eventToSCXML(<a class="code" href="classuscxml_1_1_event.html">Event</a>&amp; event, <span class="keyword">const</span> std::string&amp; type, <span class="keyword">const</span> std::string&amp; origin, <span class="keywordtype">bool</span> <span class="keyword">internal</span> = <span class="keyword">false</span>);</div>
-<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;</div>
-<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;};</div>
-<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;</div>
-<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;}</div>
-<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;</div>
+<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="_interpreter_impl_8h.html">uscxml/interpreter/InterpreterImpl.h</a>&quot;</span></div>
+<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;</div>
+<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;<span class="keyword">namespace </span><a class="code" href="namespaceuscxml.html">uscxml</a> {</div>
+<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;</div>
+<div class="line"><a name="l00036"></a><span class="lineno"><a class="line" href="classuscxml_1_1_i_o_processor_impl.html">   36</a></span>&#160;<span class="keyword">class </span>USCXML_API <a class="code" href="classuscxml_1_1_i_o_processor_impl.html">IOProcessorImpl</a> : <span class="keyword">public</span> <a class="code" href="classuscxml_1_1_event_handler_impl.html">EventHandlerImpl</a> {</div>
+<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;<span class="keyword">public</span>:</div>
+<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;</div>
+<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;    <span class="keyword">virtual</span> std::shared_ptr&lt;IOProcessorImpl&gt; create(<a class="code" href="classuscxml_1_1_interpreter_impl.html">InterpreterImpl</a>* interpreter) = 0;</div>
+<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;</div>
+<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> eventFromSCXML(<span class="keyword">const</span> std::string&amp; target, <span class="keyword">const</span> <a class="code" href="classuscxml_1_1_event.html">Event</a>&amp; event) = 0;</div>
+<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;</div>
+<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">bool</span> isValidTarget(<span class="keyword">const</span> std::string&amp; target) = 0;</div>
+<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;</div>
+<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;<span class="keyword">protected</span>:</div>
+<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;    <span class="keywordtype">void</span> eventToSCXML(<a class="code" href="classuscxml_1_1_event.html">Event</a>&amp; event, <span class="keyword">const</span> std::string&amp; type, <span class="keyword">const</span> std::string&amp; origin, <span class="keywordtype">bool</span> <span class="keyword">internal</span> = <span class="keyword">false</span>);</div>
+<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;</div>
+<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;};</div>
+<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;</div>
+<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;}</div>
 <div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;</div>
-<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;<span class="preprocessor">#endif </span><span class="comment">/* end of include guard: IOPROCESSORIMPL_H_92E6AA44 */</span><span class="preprocessor"></span></div>
+<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;</div>
+<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;<span class="preprocessor">#endif </span><span class="comment">/* end of include guard: IOPROCESSORIMPL_H_92E6AA44 */</span><span class="preprocessor"></span></div>
+<div class="ttc" id="_interpreter_impl_8h_html"><div class="ttname"><a href="_interpreter_impl_8h.html">InterpreterImpl.h</a></div></div>
 <div class="ttc" id="namespaceuscxml_html"><div class="ttname"><a href="namespaceuscxml.html">uscxml</a></div><div class="ttdef"><b>Definition:</b> InterpreterIssue.cpp:33</div></div>
 <div class="ttc" id="_event_handler_8h_html"><div class="ttname"><a href="_event_handler_8h.html">EventHandler.h</a></div></div>
 <div class="ttc" id="classuscxml_1_1_event_handler_impl_html"><div class="ttname"><a href="classuscxml_1_1_event_handler_impl.html">uscxml::EventHandlerImpl</a></div><div class="ttdoc">Common base class for invokers and i/o processors. </div><div class="ttdef"><b>Definition:</b> EventHandler.h:41</div></div>
 <div class="ttc" id="classuscxml_1_1_interpreter_impl_html"><div class="ttname"><a href="classuscxml_1_1_interpreter_impl.html">uscxml::InterpreterImpl</a></div><div class="ttdef"><b>Definition:</b> InterpreterImpl.h:49</div></div>
 <div class="ttc" id="_event_8h_html"><div class="ttname"><a href="_event_8h.html">Event.h</a></div></div>
-<div class="ttc" id="classuscxml_1_1_i_o_processor_impl_html"><div class="ttname"><a href="classuscxml_1_1_i_o_processor_impl.html">uscxml::IOProcessorImpl</a></div><div class="ttdoc">Abstract base class for IOProcessors implementations. </div><div class="ttdef"><b>Definition:</b> IOProcessorImpl.h:35</div></div>
+<div class="ttc" id="classuscxml_1_1_i_o_processor_impl_html"><div class="ttname"><a href="classuscxml_1_1_i_o_processor_impl.html">uscxml::IOProcessorImpl</a></div><div class="ttdoc">Abstract base class for IOProcessors implementations. </div><div class="ttdef"><b>Definition:</b> IOProcessorImpl.h:36</div></div>
 <div class="ttc" id="_common_8h_html"><div class="ttname"><a href="_common_8h.html">Common.h</a></div></div>
 <div class="ttc" id="classuscxml_1_1_event_html"><div class="ttname"><a href="classuscxml_1_1_event.html">uscxml::Event</a></div><div class="ttdef"><b>Definition:</b> Event.h:84</div></div>
 </div><!-- fragment --></div><!-- contents -->
@@ -143,7 +145,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div>
 </div>
 <!-- <hr class="footer"/><address class="footer"><small>
-Generated on Mon May 23 2016 08:47:44 for uSCXML by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu May 26 2016 12:37:11 for uSCXML by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.10
 </small></address> -->
