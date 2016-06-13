@@ -73,7 +73,7 @@ void ChartToC::setHistoryCompletion() {
 
 	std::list<DOMElement*> covered;
 	std::list<DOMElement*> perParentcovered;
-	DOMNode* parent;
+	DOMNode* parent = NULL;
 
 	for (auto histIter = histories.begin(); histIter != histories.end(); histIter++) {
 		DOMElement* history = *histIter;

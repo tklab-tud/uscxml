@@ -23,6 +23,7 @@
 //#define USCXML_VERBOSE 1
 
 #include "uscxml/config.h"
+#include "uscxml/Common.h"
 #include "uscxml/util/DOM.h" // X
 
 #include <vector>

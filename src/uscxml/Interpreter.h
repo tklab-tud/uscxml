@@ -32,6 +32,10 @@
 #include "uscxml/interpreter/ContentExecutor.h"
 #include "uscxml/interpreter/InterpreterState.h"
 
+#ifdef max
+#error define NOMINMAX or undefine the max macro please (https://support.microsoft.com/en-us/kb/143208)
+#endif
+
 namespace uscxml {
 
 class InterpreterMonitor;
@@ -153,7 +157,7 @@ public:
 	 */
 	PIMPL_OPERATORS(Interpreter);
 
-	/**
+    /**
 	 * Advance the state-machine by a single microstep and return.
 	 *
 	 * This is the central function to drive the state machine. Calling step()
@@ -166,7 +170,7 @@ public:
 	 * @param blockMs The maximum duration in milli-seconds to wait for an event to become available.
 	 * @return The new state of the interpreter object.
 	 */
-	InterpreterState step(size_t blockMs = (std::numeric_limits<size_t>::max)());
+	InterpreterState step(size_t blockMs = std::numeric_limits<size_t>::max());
 
 	/**
 	 * Unblock and mark for finalize.
