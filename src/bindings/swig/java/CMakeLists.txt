@@ -57,7 +57,7 @@ if (ANT_EXECUTABLE)
 		SET(JAR_JNI_ROOT_PATH ${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
 	endif()
 	
-	ADD_CUSTOM_TARGET(java
+	ADD_CUSTOM_TARGET(jar
 		COMMAND ${ANT_EXECUTABLE}
 		-Dlib.dir=${JAR_JNI_ROOT_PATH}
 		-Dsrc.dir=${PROJECT_SOURCE_DIR}
@@ -65,11 +65,11 @@ if (ANT_EXECUTABLE)
 		-Dbuild.type=${CMAKE_BUILD_TYPE}
 		-Dexclude.debug=${JAR_EXCLUDE_DEBUG}
 		-Dexclude.jni=${JAR_EXCLUDE_JNI}
-		-f build-java.xml
-		WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/contrib/java
+		-f build-jar.xml
+		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 		COMMENT "Creating the jar ...")
 	
-	set_target_properties(java PROPERTIES FOLDER "Bindings")
+	set_target_properties(jar PROPERTIES FOLDER "Bindings")
 else()
 	message(STATUS "Could not find ant binary - will not build jars")
 endif()

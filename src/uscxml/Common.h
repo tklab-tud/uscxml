@@ -20,6 +20,8 @@
 #ifndef COMMON_H_YZ3CIYP
 #define COMMON_H_YZ3CIYP
 
+#define ELPP_STACKTRACE_ON_CRASH 1
+
 #if __cplusplus >= 201402L
 #define DEPRECATED [[deprecated]]
 #elif defined(__GNUC__)

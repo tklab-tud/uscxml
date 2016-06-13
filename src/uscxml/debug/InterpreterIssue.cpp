@@ -38,18 +38,14 @@ InterpreterIssue::InterpreterIssue(const std::string& msg, DOMNode* node, IssueS
 }
 
 // find all elements in the SCXML namespace in one traversal
-void assembleNodeSets(const std::string nsPrefix, DOMNode* node, std::map<std::string, std::list<DOMElement*> >& sets) {
-	DOMNodeList* childs = node->getChildNodes();
-	for (unsigned int i = 0; i < childs->getLength(); i++) {
-		if (childs->item(i)->getNodeType() != DOMNode::ELEMENT_NODE)
-			continue;
-		//		std::cout << TAGNAME(childs.item(i)) << std::endl;
+void assembleNodeSets(const std::string nsPrefix, DOMElement* node, std::map<std::string, std::list<DOMElement*> >& sets) {
+    for (auto childElem = node->getFirstElementChild(); childElem; childElem = childElem->getNextElementSibling()) {
 
-		if (TAGNAME_CAST(childs->item(i)).find(nsPrefix) == 0) {
+		if (TAGNAME(childElem).find(nsPrefix) == 0) {
 			// correct namespace, insert via localname
-			sets[LOCALNAME_CAST(childs->item(i))].push_back(static_cast<DOMElement*>(childs->item(i)));
+			sets[LOCALNAME(childElem)].push_back(static_cast<DOMElement*>(childElem));
 		}
-		assembleNodeSets(nsPrefix, childs->item(i), sets);
+		assembleNodeSets(nsPrefix, childElem, sets);
 	}
 }
 
@@ -61,11 +57,7 @@ std::list<std::set<const DOMElement* > > getAllConfigurations(const DOMElement* 
 
 	std::cout << *root;
 
-	DOMNodeList* children = root->getChildNodes();
-	for (size_t i = 0; i < children->getLength(); i++) {
-		if (children->item(i)->getNodeType() != DOMNode::ELEMENT_NODE)
-			continue;
-		DOMElement* childElem = static_cast<DOMElement*>(children->item(i));
+    for (auto childElem = root->getFirstElementChild(); childElem; childElem = childElem->getNextElementSibling()) {
 		std::cout << *childElem;
 
 		if (XMLString::compareIString(childElem->getTagName(), X(nsPrefix + "state")) == 0 ||

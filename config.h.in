@@ -59,12 +59,15 @@
 #cmakedefine SWI_BINARY "@SWI_BINARY@"
 
 /** whether we want some feature */
-#cmakedefine BUILD_MINIMAL
-#cmakedefine BUILD_DM_PROLOG
-#cmakedefine BUILD_DM_PROMELA
-#cmakedefine BUILD_DM_ECMA
-#cmakedefine BUILD_DM_XPATH
-#cmakedefine BUILD_DM_LUA
+#cmakedefine WITH_INV_SCXML
+#cmakedefine WITH_INV_DIRMON
+
+#cmakedefine WITH_IOPROC_BASICHTTP
+#cmakedefine WITH_IOPROC_SCXML
+
+#cmakedefine WITH_DM_ECMA_V8
+#cmakedefine WITH_DM_ECMA_JSC
+#cmakedefine WITH_DM_LUA
 
 /** Optional libraries we found */
 #cmakedefine UMUNDO_FOUND
@@ -89,6 +92,7 @@
 #cmakedefine EVENT_SSL_FOUND
 #cmakedefine EXPECT_FOUND
 #cmakedefine TCL_FOUND
+
 
 /** Properties of the libraries we found */
 #cmakedefine CURL_HAS_SMTP

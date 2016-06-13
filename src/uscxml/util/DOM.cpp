@@ -52,7 +52,7 @@ std::ostream& operator<< (std::ostream& os, const DOMNode& node) {
 }
 
 std::ostream& operator<< (std::ostream& os, const X& xmlString) {
-	os << xmlString._localForm;
+	os << xmlString.str();
 	return os;
 }
 
@@ -236,20 +236,13 @@ void DOMUtils::inPostFixOrder(const std::set<std::string>& elements,
 	if (root == NULL)
 		return;
 
-	DOMNodeList* children = root->getChildNodes();
-	for (size_t i = 0; i < children->getLength(); i++) {
-		if (children->item(i)->getNodeType() != DOMNode::ELEMENT_NODE)
-			continue;
-		const DOMElement* childElem = dynamic_cast<const DOMElement*>(children->item(i));
+    for (auto childElem = root->getFirstElementChild(); childElem; childElem = childElem->getNextElementSibling()) {
 		if (!includeEmbeddedDoc && LOCALNAME(childElem) == "scxml")
 			continue;
 		inPostFixOrder(elements, childElem, includeEmbeddedDoc, nodes);
 
 	}
-	for (size_t i = 0; i < children->getLength(); i++) {
-		if (children->item(i)->getNodeType() != DOMNode::ELEMENT_NODE)
-			continue;
-		const DOMElement* childElem = dynamic_cast<const DOMElement*>(children->item(i));
+    for (auto childElem = root->getFirstElementChild(); childElem; childElem = childElem->getNextElementSibling()) {
 		if (!includeEmbeddedDoc && TAGNAME(childElem) == XML_PREFIX(root).str() + "scxml")
 			continue;
 
@@ -278,14 +271,14 @@ void DOMUtils::inDocumentOrder(const std::set<std::string>& elements,
 		nodes.push_back((DOMElement*)root);
 	}
 
-	DOMNodeList* children = root->getChildNodes();
-	for (size_t i = 0; i < children->getLength(); i++) {
-		if (children->item(i)->getNodeType() != DOMNode::ELEMENT_NODE)
-			continue;
-		const DOMElement* childElem = dynamic_cast<const DOMElement*>(children->item(i));
-		if (!includeEmbeddedDoc && TAGNAME(childElem) == XML_PREFIX(root).str() + "scxml")
-			continue;
-		inDocumentOrder(elements, childElem, includeEmbeddedDoc, nodes);
+    /// @todo: item from getChildNodes is O(N)!
+    DOMElement* child = root->getFirstElementChild();
+    while(child) {
+        if (includeEmbeddedDoc || TAGNAME(child) != XML_PREFIX(root).str() + "scxml") {
+            inDocumentOrder(elements, child, includeEmbeddedDoc, nodes);
+        }
+
+        child = child->getNextElementSibling();
 	}
 }
 
@@ -350,12 +343,7 @@ std::list<DOMElement*> DOMUtils::filterChildElements(const std::string& tagName,
 	if (!node)
 		return filteredChildElems;
 
-	DOMNodeList* children = node->getChildNodes();
-	for (unsigned int i = 0; i < children->getLength(); i++) {
-		if (children->item(i)->getNodeType() != DOMNode::ELEMENT_NODE)
-			continue;
-		const DOMElement* childElem = dynamic_cast<const DOMElement*>(children->item(i));
-
+    for (auto childElem = node->getFirstElementChild(); childElem; childElem = childElem->getNextElementSibling()) {
 		//		std::cerr << TAGNAME(childs.item(i)) << std::endl;
 		if(iequals(TAGNAME(childElem), tagName)) {
 			filteredChildElems.push_back((DOMElement*)childElem);
@@ -391,12 +379,11 @@ std::list<DOMNode*> DOMUtils::filterChildType(const DOMNode::NodeType type,
 	if (!node)
 		return filteredChildTypes;
 
-	DOMNodeList* children = node->getChildNodes();
-	for (unsigned int i = 0; i < children->getLength(); i++) {
-		if (children->item(i)->getNodeType() == type)
-			filteredChildTypes.push_back(children->item(i));
+    for (auto child = node->getFirstChild(); child; child = child->getNextSibling()) {
+		if (child->getNodeType() == type)
+			filteredChildTypes.push_back(child);
 		if (recurse) {
-			std::list<DOMNode*> nested = filterChildType(type, children->item(i), recurse);
+			std::list<DOMNode*> nested = filterChildType(type, child, recurse);
 			filteredChildTypes.merge(nested);
 
 		}

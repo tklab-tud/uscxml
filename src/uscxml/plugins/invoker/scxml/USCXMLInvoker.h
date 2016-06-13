@@ -23,7 +23,6 @@
 #include "uscxml/interpreter/InterpreterImpl.h"
 #include "uscxml/interpreter/BasicEventQueue.h"
 
-#include "uscxml/plugins/Invoker.h"
 #include "uscxml/plugins/InvokerImpl.h"
 
 #ifdef BUILD_AS_PLUGINS

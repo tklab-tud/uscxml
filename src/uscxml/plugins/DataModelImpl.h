@@ -43,6 +43,7 @@ class DataModelImpl;
  */
 class USCXML_API DataModelCallbacks {
 public:
+    virtual ~DataModelCallbacks() {} ///< silence virtual destructor warning from swig
 	virtual const std::string& getName() = 0;
 	virtual const std::string& getSessionId() = 0;
 	virtual const std::map<std::string, IOProcessor>& getIOProcessors() = 0;

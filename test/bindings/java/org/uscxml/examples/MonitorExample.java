@@ -1,11 +1,13 @@
-package org.uscxml.tests;
+package org.uscxml.examples;
 
 import org.uscxml.Interpreter;
 import org.uscxml.InterpreterException;
 import org.uscxml.InterpreterState;
+import org.uscxml.helper.TestMonitor;
 
-public class BasicExample {
 
+public class MonitorExample {
+	
 	public static void main(String[] args) {
 		
 		String uSCXMLLibPath = "/Users/sradomski/Documents/TK/Code/uscxml/build/cli/lib/libuscxmlNativeJava.jnilib"; 
@@ -16,7 +18,9 @@ public class BasicExample {
 		System.load(uSCXMLLibPath);
 		
 		try {
+			TestMonitor tm = new TestMonitor();
 			Interpreter scxml = Interpreter.fromURL("https://raw.githubusercontent.com/tklab-tud/uscxml/master/test/w3c/null/test436.scxml");
+			scxml.setMonitor(tm);
 			InterpreterState state = InterpreterState.USCXML_UNDEF;
 			while((state = scxml.step()) != InterpreterState.USCXML_FINISHED) {
 				switch (state) {
@@ -33,11 +37,12 @@ public class BasicExample {
 					break;
 				}
 			}
-			System.out.println("Machine finished");
 			
 		} catch (InterpreterException e) {
 			e.printStackTrace();
+			System.exit(-1);
 		}
+		System.exit(0);
 	}
 
 }

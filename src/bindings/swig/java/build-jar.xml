@@ -1,0 +1,91 @@
+<!-- This ant build script is called from CMake at configure time -->
+<project name="uscxml" default="jar">
+
+<!-- taskdef resource="net/sf/antcontrib/antcontrib.properties">
+  <classpath>
+    <pathelement location="lib/ant-contrib-1.0b3.jar"/>
+  </classpath>
+</taskdef -->
+
+<target name="compile" description="Compile the uscxml java code.">
+	<echo message="src:  ${build.dir}/src/bindings/swig/java/"/>
+	<echo message="src:  ${src.dir}/src/bindings/swig/java/"/>
+	<echo message="dest: ${build.dir}/src/bindings/swig/java-class/"/>
+
+  <mkdir dir="${build.dir}/src/bindings/swig/java-class/" />
+
+	<javac destdir="${build.dir}/src/bindings/swig/java-class/" debug="true" includeantruntime="false" target="1.5" source="1.5">
+      <src path="${build.dir}/src/bindings/swig/java/" />
+      <src path="${src.dir}/src/bindings/swig/java/" />
+      <!--classpath>
+          <pathelement location="${src.dir}/contrib/java/lib/protobuf-java-2.5.0.jar"/>
+      </classpath -->
+  </javac>
+</target>
+
+<target name="jar" depends="compile" description="Create a bundle of the source code">
+	<echo message="library dir:        ${lib.dir}"/>
+	<echo message="source dir:         ${src.dir}"/>
+	<echo message="build dir:          ${build.dir}"/>
+	<echo message="build type:         ${build.type}"/>
+	<echo message="exclude debug:      ${exclude.debug}"/>
+	<echo message="exclude jni:        ${exclude.jni}"/>
+
+	<condition property="exclude.debug.jar">
+		<equals arg1="${exclude.debug}" arg2="ON"/>
+	</condition>
+
+	<condition property="exclude.jni.jar">
+		<equals arg1="${exclude.jni}" arg2="ON"/>
+	</condition>
+
+	<!-- flatten all JNI libraries for inclusion into the fat JAR -->
+	<fileset id="all.jni" dir="${lib.dir}">
+		<include name="**/*NativeJava*.jnilib"/>
+		<include name="**/*NativeJava*.so"/>
+		<include name="**/*NativeJava*.dll"/>
+		<exclude name="cross-compiled/**"/>
+		<exclude name="linux-armv*/**"/>
+		<!-- do not include debug builds in release -->
+		<!--exclude name="**/*undocoreSwigSwig_d*" if="${exclude.debug.jar}"/ -->
+		<!--exclude name="**/*undocoreSwig64_d*" if="${exclude.debug.jar}"/ -->
+	</fileset>
+
+	<!-- Copy all JNI libraries as found above into the lib/ directory -->
+	<mkdir dir="${lib.dir}/jni" />
+	<copy todir="${lib.dir}/jni" flatten="true">
+		<fileset refid="all.jni" />
+	</copy>
+	
+  <pathconvert pathsep="${line.separator}|   |-- "             
+      property="echo.all.jni"             
+      refid="all.jni">
+  </pathconvert>
+  <echo>${echo.all.jni}</echo>
+
+	<!-- delete an eventual old jar -->
+	<delete dir="${lib.dir}/uscxml.jar" />
+
+	<!-- build new jar -->
+	<jar destfile="${lib.dir}/uscxml.jar">
+		<!-- All the class files we compiled -->
+    <fileset dir="${build.dir}/src/bindings/swig/java-class/" >
+      <include name="**/*.class" />
+    </fileset>
+		<!-- Include all source files -->
+    <fileset dir="${build.dir}/src/bindings/swig/java/" >
+      <include name="**/*.java" />
+    </fileset>
+    <fileset dir="${src.dir}/src/bindings/swig/java/" >
+      <include name="**/*.java" />
+    </fileset>
+		<!-- The JNI libraries -->
+    <fileset dir="${lib.dir}/jni" >
+      <include name="**/*" />
+	    <exclude name="**/*" if="${exclude.jni.jar}" />
+    </fileset>
+	</jar>
+	<delete dir="${lib.dir}/jni" />
+</target>
+
+</project>

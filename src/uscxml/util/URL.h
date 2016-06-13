@@ -165,7 +165,7 @@ protected:
 
 	static void prepareException(ErrorEvent& exception, int errorCode, const std::string& origUri, UriParserStateA* parser);
 
-	CURL* _handle;
+	CURL* _handle = NULL;
 	std::stringstream _rawInContent;
 	std::stringstream _rawInHeader;
 	std::map<std::string, std::string> _inHeaders;
@@ -176,8 +176,8 @@ protected:
 
 	std::string _statusCode;
 	std::string _statusMsg;
-	bool _isDownloaded;
-	bool _hasFailed;
+	bool _isDownloaded = false;
+	bool _hasFailed = false;
 	std::string _error;
 
 	std::condition_variable_any _condVar;
@@ -325,6 +325,7 @@ protected:
 	bool _isStarted;
 
 	std::map<CURL*, URL> _handlesToURLs;
+    std::map<CURL*, curl_slist*> _handlesToHeaders;
 	CURLM* _multiHandle;
 	char* _envProxy;
 };

@@ -113,14 +113,14 @@
 #      define ELPP_ASSERT(expr, msg) if (!(expr)) { \
           std::stringstream internalInfoStream; internalInfoStream << msg; \
           ELPP_INTERNAL_DEBUGGING_OUT_ERROR \
-              << "EASYLOGGING++ ASSERTION FAILED (LINE: " << __LINE__ << ") [" #expr << "] WITH MESSAGE \"" \
+              << "ASSERTION FAILED (LINE: " << __LINE__ << ") [" #expr << "] WITH MESSAGE \"" \
               << ELPP_INTERNAL_DEBUGGING_MSG(internalInfoStream.str()) << "\"" << ELPP_INTERNAL_DEBUGGING_ENDL; base::utils::abort(1, \
                   "ELPP Assertion failure, please define ELPP_DEBUG_ASSERT_FAILURE"); }
 #   else
 #      define ELPP_ASSERT(expr, msg) if (!(expr)) { \
           std::stringstream internalInfoStream; internalInfoStream << msg; \
           ELPP_INTERNAL_DEBUGGING_OUT_ERROR\
-             << "ASSERTION FAILURE FROM EASYLOGGING++ (LINE: " \
+             << "ASSERTION FAILURE AT (LINE: " \
              << __LINE__ << ") [" #expr << "] WITH MESSAGE \"" << ELPP_INTERNAL_DEBUGGING_MSG(internalInfoStream.str()) << "\"" \
              << ELPP_INTERNAL_DEBUGGING_ENDL; }
 #   endif  // (defined(ELPP_DEBUG_ASSERT_FAILURE))
@@ -140,7 +140,7 @@
 #      define ELPP_INTERNAL_ERROR(msg, pe) { \
           std::stringstream internalInfoStream; internalInfoStream << "<ERROR> " << msg; \
           ELPP_INTERNAL_DEBUGGING_OUT_ERROR \
-          << "ERROR FROM EASYLOGGING++ (LINE: " << __LINE__ << ") " \
+          << "ERROR AT (LINE: " << __LINE__ << ") " \
           << ELPP_INTERNAL_DEBUGGING_MSG(internalInfoStream.str()) << ELPP_INTERNAL_DEBUGGING_ENDL; \
           if (pe) { ELPP_INTERNAL_DEBUGGING_OUT_ERROR << "    "; ELPP_INTERNAL_DEBUGGING_WRITE_PERROR; }} (void)0
 #   endif
@@ -784,12 +784,12 @@ namespace consts {
 #else
 #   if ELPP_OS_UNIX
 #      if ELPP_OS_ANDROID
-    static const char* kDefaultLogFile                         =      "logs/myeasylog.log";
+    static const char* kDefaultLogFile                         =      "logs/uscxml.log";
 #      else
-    static const char* kDefaultLogFile                         =      "logs/myeasylog.log";
+    static const char* kDefaultLogFile                         =      "logs/uscxml.log";
 #      endif  // ELPP_OS_ANDROID
 #   elif ELPP_OS_WINDOWS
-    static const char* kDefaultLogFile                         =      "logs\\myeasylog.log";
+    static const char* kDefaultLogFile                         =      "logs\\uscxml.log";
 #   endif  // ELPP_OS_UNIX
 #endif  // defined(ELPP_DEFAULT_LOG_FILE)
 #if !defined(ELPP_DISABLE_LOG_FILE_FROM_ARG)
@@ -2608,7 +2608,7 @@ public:
         setGlobally(ConfigurationType::MaxLogFileSize, std::string("0"), true);
         setGlobally(ConfigurationType::LogFlushThreshold, std::string("0"), true);
 
-        setGlobally(ConfigurationType::Format, std::string("%datetime %level [%logger] %msg"), true);
+        setGlobally(ConfigurationType::Format, std::string("%datetime %level %fbase:%line: %msg"), true);
         set(Level::Debug, ConfigurationType::Format, std::string("%datetime %level [%logger] [%user@%host] [%func] [%loc] %msg"));
         // INFO and WARNING are set to default by Level::Global
         set(Level::Error, ConfigurationType::Format, std::string("%datetime %level [%logger] %msg"));

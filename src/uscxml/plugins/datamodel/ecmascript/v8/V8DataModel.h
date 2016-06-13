@@ -84,7 +84,7 @@ protected:
 	static void jsIn(const v8::FunctionCallbackInfo<v8::Value>& info);
 	static void jsPrint(const v8::FunctionCallbackInfo<v8::Value>& info);
 
-	v8::Persistent<v8::Object> _event;
+	//v8::Local<v8::Object> _event; // Persistent events leak ..
 	v8::Persistent<v8::Context> _context;
 	static v8::Isolate* _isolate;
 

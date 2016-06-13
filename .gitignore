@@ -22,3 +22,5 @@ package/windows*
 /test/w3c/graphs/
 
 /.idea/*
+
+/test/bindings/java/logs/

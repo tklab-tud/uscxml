@@ -209,13 +209,7 @@ void BasicContentExecutor::processCancel(XERCESC_NS::DOMElement* content) {
 void BasicContentExecutor::processIf(XERCESC_NS::DOMElement* content) {
 	bool blockIsTrue = _callbacks->isTrue(ATTR(content, "cond"));
 
-	DOMNodeList* children = content->getChildNodes();
-	for (unsigned int i = 0; i < children->getLength(); i++) {
-		if (children->item(i)->getNodeType() != DOMNode::ELEMENT_NODE)
-			continue;
-
-		DOMElement* childElem = dynamic_cast<DOMElement*>(children->item(i));
-
+    for (auto childElem = content->getFirstElementChild(); childElem; childElem = childElem->getNextElementSibling()) {
 		if (iequals(TAGNAME(childElem), XML_PREFIX(content).str() + "elseif")) {
 			if (blockIsTrue) {
 				// last block was true, break here
@@ -257,11 +251,8 @@ void BasicContentExecutor::processForeach(XERCESC_NS::DOMElement* content) {
 	for (uint32_t iteration = 0; iteration < iterations; iteration++) {
 		_callbacks->setForeach(item, array, index, iteration);
 
-		DOMNodeList* children = content->getChildNodes();
-		for (unsigned int i = 0; i < children->getLength(); i++) {
-			if (children->item(i)->getNodeType() != DOMNode::ELEMENT_NODE)
-				continue;
-			process(dynamic_cast<DOMElement*>(children->item(i)), XML_PREFIX(content));
+        for (auto childElem = content->getFirstElementChild(); childElem; childElem = childElem->getNextElementSibling()) {
+			process(childElem, XML_PREFIX(content));
 		}
 	}
 }
@@ -292,13 +283,10 @@ void BasicContentExecutor::process(XERCESC_NS::DOMElement* block, const X& xmlPr
 	        iequals(tagName, xmlPrefix.str() + "onexit") ||
 	        iequals(tagName, xmlPrefix.str() + "transition")) {
 
-		DOMNodeList* children = block->getChildNodes();
 		try {
-			for(auto i = 0; i < children->getLength(); i++) {
-				if (children->item(i)->getNodeType() != DOMNode::ELEMENT_NODE)
-					continue;
+            for (auto childElem = block->getFirstElementChild(); childElem; childElem = childElem->getNextElementSibling()) {
 				// process any child eleents
-				process(dynamic_cast<DOMElement*>(children->item(i)), xmlPrefix);
+				process(childElem, xmlPrefix);
 			}
 		} catch (Event e) {
 			// there has been an error in an executable content block
@@ -415,6 +403,7 @@ void BasicContentExecutor::invoke(XERCESC_NS::DOMElement* element) {
 				_callbacks->assign(ATTR(element, "idlocation"), Data(invokeEvent.invokeid, Data::VERBATIM));
 			}
 		}
+        
 		// we need the invokeid to uninvoke - TODO: This is leaking!
 		char* invokeId = (char*)malloc(invokeEvent.invokeid.size() + 1);
 		memcpy(invokeId, invokeEvent.invokeid.c_str(), invokeEvent.invokeid.size());
@@ -488,6 +477,7 @@ void BasicContentExecutor::uninvoke(XERCESC_NS::DOMElement* invoke) {
 	_callbacks->uninvoke(invokeId);
 	USCXML_MONITOR_CALLBACK2(_callbacks->getMonitor(), afterUninvoking, invoke, invokeId);
 
+    invoke->setUserData(X("invokeid"), NULL, NULL);
 	free(invokeId);
 }
 
@@ -589,25 +579,26 @@ Data BasicContentExecutor::elementAsData(XERCESC_NS::DOMElement* element) {
 		std::string content = url.getInContent();
 
 		// make an attempt to parse as XML
-		try {
-			XERCESC_NS::XercesDOMParser* parser = new XERCESC_NS::XercesDOMParser();
-			parser->setValidationScheme(XERCESC_NS::XercesDOMParser::Val_Always);
-			parser->setDoNamespaces(true);
-			parser->useScanner(XERCESC_NS::XMLUni::fgWFXMLScanner);
+        try {
+			XERCESC_NS::XercesDOMParser parser;
+			parser.setValidationScheme(XERCESC_NS::XercesDOMParser::Val_Never);
+			parser.setDoNamespaces(true);
+			parser.useScanner(XERCESC_NS::XMLUni::fgWFXMLScanner);
 
-			XERCESC_NS::ErrorHandler* errHandler = new XERCESC_NS::HandlerBase();
-			parser->setErrorHandler(errHandler);
+			XERCESC_NS::HandlerBase errHandler;
+			parser.setErrorHandler(&errHandler);
 
 			std::string tmp = url;
 			XERCESC_NS::MemBufInputSource is((XMLByte*)content.c_str(), content.size(), X("fake"));
 
-			parser->parse(is);
+			parser.parse(is);
 
 			Data d;
-			XERCESC_NS::DOMDocument* doc = parser->adoptDocument();
+			XERCESC_NS::DOMDocument* doc = parser.adoptDocument();
 			d.adoptedDoc = std::make_shared<XERCESC_NS::DOMDocument*>(doc);
 			d.node = doc->getDocumentElement();
-			return d;
+            
+            return d;
 
 		} catch (...) {
 			// just ignore and return as an interpreted string below
@@ -646,7 +637,7 @@ Data BasicContentExecutor::elementAsData(XERCESC_NS::DOMElement* element) {
 		}
 	}
 
-	LOG(WARNING) << "Element " << DOMUtils::xPathForNode(element) << " did not yield any data";
+//	LOG(WARNING) << "Element " << DOMUtils::xPathForNode(element) << " did not yield any data";
 	return Data();
 }
 

@@ -26,6 +26,7 @@
 #include "uscxml/util/DOM.h" // X
 
 #include <vector>
+#include <map>
 #include <set>
 #include "MicroStepImpl.h"
 
@@ -89,6 +90,11 @@ protected:
 		unsigned char type;
 	};
 
+    class CachedPredicates {
+    public:
+        std::map<const XERCESC_NS::DOMElement*, std::list<XERCESC_NS::DOMElement*> > exitSet;
+    };
+
 	virtual void init(XERCESC_NS::DOMElement* scxml);
 
 	std::list<XERCESC_NS::DOMElement*> getCompletion(const XERCESC_NS::DOMElement* state);
@@ -120,7 +126,12 @@ private:
 	std::list<XERCESC_NS::DOMElement*> getHistoryCompletion(const XERCESC_NS::DOMElement* state);
 	void resortStates(XERCESC_NS::DOMNode* node, const X& xmlPrefix);
 
-//    bool hasLegalConfiguration();
+    bool conflictsCached(const XERCESC_NS::DOMElement* t1, const XERCESC_NS::DOMElement* t2, const XERCESC_NS::DOMElement* root); ///< overrides implementation Predicates::conflicts for speed
+
+    std::list<XERCESC_NS::DOMElement*> getExitSetCached(const XERCESC_NS::DOMElement* transition,
+                                                        const XERCESC_NS::DOMElement* root);
+
+    CachedPredicates _cache;
 
 #ifdef USCXML_VERBOSE
 	void printStateNames(const boost::dynamic_bitset<>& bitset);

@@ -331,12 +331,6 @@ void HTTPServer::httpRecvReqCallback(struct evhttp_request *req, void *callbackD
 	}
 	raw << std::endl;
 
-	// This was used for debugging
-//	if (boost::ends_with(request.data.compound["path"].atom, ".png")) {
-//		evhttp_send_error(req, 404, NULL);
-//		return;
-//	}
-
 	// seperate path into components
 	{
 		std::stringstream ss(request.data.compound["path"].atom);

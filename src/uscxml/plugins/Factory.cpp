@@ -28,23 +28,38 @@
 
 // see http://nadeausoftware.com/articles/2012/01/c_c_tip_how_use_compiler_predefined_macros_detect_operating_system
 
-// we will always include these in a build
+
+#ifdef WITH_IOPROC_SCXML
+#   include "uscxml/plugins/ioprocessor/scxml/SCXMLIOProcessor.h"
+#endif
+
+#ifdef WITH_IOPROC_BASICHTTP
+#   include "uscxml/plugins/ioprocessor/basichttp/BasicHTTPIOProcessor.h"
+#endif
+
+
 #include "uscxml/plugins/datamodel/null/NULLDataModel.h"
-#include "uscxml/plugins/invoker/scxml/USCXMLInvoker.h"
-#include "uscxml/plugins/ioprocessor/scxml/SCXMLIOProcessor.h"
-#include "uscxml/plugins/ioprocessor/basichttp/BasicHTTPIOProcessor.h"
 
-# ifdef V8_FOUND
+#ifdef WITH_DM_ECMA_V8
 #   include "uscxml/plugins/datamodel/ecmascript/v8/V8DataModel.h"
-# endif
+#endif
 
-# ifdef JSC_FOUND
+#ifdef WITH_DM_ECMA_JSC
 #   include "uscxml/plugins/datamodel/ecmascript/JavaScriptCore/JSCDataModel.h"
-# endif
+#endif
 
-# ifdef LUA_FOUND
+#ifdef WITH_DM_LUA
 #   include "uscxml/plugins/datamodel/lua/LuaDataModel.h"
-# endif
+#endif
+
+
+#ifdef WITH_INV_SCXML
+#   include "uscxml/plugins/invoker/scxml/USCXMLInvoker.h"
+#endif
+
+#ifdef WITH_INV_DIRMON
+#   include "uscxml/plugins/invoker/dirmon/DirMonInvoker.h"
+#endif
 
 
 namespace uscxml {
@@ -69,47 +84,61 @@ std::string Factory::getDefaultPluginPath() {
 
 void Factory::registerPlugins() {
 
-	{
-		USCXMLInvoker* invoker = new USCXMLInvoker();
-		registerInvoker(invoker);
-	}
-
-	{
-		SCXMLIOProcessor* ioProcessor = new SCXMLIOProcessor();
-		registerIOProcessor(ioProcessor);
-	}
-
-	{
-		BasicHTTPIOProcessor* ioProcessor = new BasicHTTPIOProcessor();
-		registerIOProcessor(ioProcessor);
-	}
-
-	{
-		NULLDataModel* dataModel = new NULLDataModel();
-		registerDataModel(dataModel);
-	}
-
-#ifdef V8_FOUND
-	{
-		V8DataModel* dataModel = new V8DataModel();
-		registerDataModel(dataModel);
-	}
+#ifdef WITH_IOPROC_SCXML
+    {
+        SCXMLIOProcessor* ioProcessor = new SCXMLIOProcessor();
+        registerIOProcessor(ioProcessor);
+    }
 #endif
 
-#ifdef JSC_FOUND
-	{
-		JSCDataModel* dataModel = new JSCDataModel();
-		registerDataModel(dataModel);
-	}
+#ifdef WITH_IOPROC_BASICHTTP
+    {
+        BasicHTTPIOProcessor* ioProcessor = new BasicHTTPIOProcessor();
+        registerIOProcessor(ioProcessor);
+    }
 #endif
 
-#ifdef LUA_FOUND
-	{
-		LuaDataModel* dataModel = new LuaDataModel();
-		registerDataModel(dataModel);
-	}
+    
+#ifdef WITH_DM_ECMA_V8
+    {
+        V8DataModel* dataModel = new V8DataModel();
+        registerDataModel(dataModel);
+    }
 #endif
 
+#ifdef WITH_DM_ECMA_JSC
+    {
+        JSCDataModel* dataModel = new JSCDataModel();
+        registerDataModel(dataModel);
+    }
+#endif
+ 
+#ifdef WITH_DM_LUA
+    {
+        LuaDataModel* dataModel = new LuaDataModel();
+        registerDataModel(dataModel);
+    }
+#endif
+
+    {
+        NULLDataModel* dataModel = new NULLDataModel();
+        registerDataModel(dataModel);
+    }
+
+    
+#ifdef WITH_INV_SCXML
+    {
+        USCXMLInvoker* invoker = new USCXMLInvoker();
+        registerInvoker(invoker);
+    }
+#endif
+    
+#ifdef WITH_INV_DIRMON
+    {
+        DirMonInvoker* inv = new DirMonInvoker();
+        registerInvoker(inv);
+    }
+#endif
 
 }
 

@@ -27,11 +27,7 @@ using namespace XERCESC_NS;
 std::list<DOMElement*> getChildStates(const DOMElement* state, bool properOnly) {
 	std::list<DOMElement*> children;
 
-	DOMNodeList* childElems = state->getChildNodes();
-	for (size_t i = 0; i < childElems->getLength(); i++) {
-		if (childElems->item(i)->getNodeType() != DOMNode::ELEMENT_NODE)
-			continue;
-		DOMElement* childElem = dynamic_cast<DOMElement*>(childElems->item(i));
+    for (auto childElem = state->getFirstElementChild(); childElem; childElem = childElem->getNextElementSibling()) {
 		if (isState(childElem, properOnly)) {
 			children.push_back(childElem);
 		}
@@ -74,9 +70,15 @@ DOMElement* getSourceState(const DOMElement* transition) {
 
 #define VERBOSE_FIND_LCCA 0
 DOMElement* findLCCA(const std::list<DOMElement*>& states) {
-
+    
 	std::list<DOMElement*> ancestors = getProperAncestors(states.front(), NULL);
 	DOMElement* ancestor = NULL;
+
+#if VERBOSE_FIND_LCCA
+    std::cout << "states:    " << states.size() << std::endl;
+    std::cout << "front:     " << DOMUtils::xPathForNode(states.front()) << std::endl;
+    std::cout << "ancestors: " << ancestors.size() << std::endl;
+#endif
 
 	for (auto ancIter = ancestors.begin(); ancIter != ancestors.end(); ancIter++) {
 		if (!isCompound(dynamic_cast<DOMElement*>(*ancIter)))
@@ -84,7 +86,7 @@ DOMElement* findLCCA(const std::list<DOMElement*>& states) {
 		for (auto stateIter = states.begin(); stateIter != states.end(); stateIter++) {
 
 #if VERBOSE_FIND_LCCA
-			std::cerr << "Checking " << ATTR_CAST(states[j], "id") << " and " << ATTR_CAST(ancestors[i], "id") << std::endl;
+			std::cerr << "Checking " << ATTR_CAST(*stateIter, "id") << " and " << ATTR_CAST(*ancIter, "id") << std::endl;
 #endif
 
 			if (!DOMUtils::isDescendant(*stateIter, *ancIter))
@@ -97,11 +99,11 @@ NEXT_ANCESTOR:
 	}
 
 	// take uppermost root as ancestor
-	if (!ancestor)
+	if (!ancestor && ancestors.size() > 0)
 		ancestor = ancestors.back();
 
 #if VERBOSE_FIND_LCCA
-	std::cerr << " -> " << ATTR_CAST(ancestor, "id") << " " << ancestor.getLocalName() << std::endl;
+	std::cerr << " -> " << ATTR_CAST(ancestor, "id") << " " << ancestor->getLocalName() << std::endl;
 #endif
 	return ancestor;
 }
@@ -118,7 +120,9 @@ NEXT_ANCESTOR:
 std::list<DOMElement*> getProperAncestors(const DOMElement* s1, const DOMElement* s2) {
 
 	std::list<DOMElement*> ancestors;
-	if (isState(s1)) {
+	if (isState(s1, false)) {
+        // is it correct to also consider pseudo-states?
+        // gcc bug in findLCCA with test387, test388, test579, test580 otherwise
 		DOMNode* node = (DOMNode*)s1;
 		while((node = node->getParentNode())) {
 			if (node->getNodeType() != DOMNode::ELEMENT_NODE)
@@ -127,9 +131,10 @@ std::list<DOMElement*> getProperAncestors(const DOMElement* s1, const DOMElement
 			const DOMElement* nodeElem = dynamic_cast<const DOMElement*>(node);
 			if (!isState(nodeElem))
 				break;
+
 			if (!iequals(LOCALNAME(nodeElem), "parallel") &&
-			        !iequals(LOCALNAME(nodeElem), "state") &&
-			        !iequals(LOCALNAME(nodeElem), "scxml"))
+                !iequals(LOCALNAME(nodeElem), "state") &&
+                !iequals(LOCALNAME(nodeElem), "scxml"))
 				break;
 			if (node == s2)
 				break;
@@ -143,10 +148,11 @@ std::list<DOMElement*> getExitSet(const DOMElement* transition, const DOMElement
 	std::list<DOMElement*> statesToExit;
 	if (HAS_ATTR(transition, "target")) {
 		DOMElement* domain = getTransitionDomain(transition, root);
-		if (!domain)
+		if (domain == NULL)
 			return statesToExit;
 
-		//        std::cout << DOMUtils::xPathForNode(domain) << std::endl;
+//        std::cout << "transition: " << DOMUtils::xPathForNode(transition) << std::endl;
+//        std::cout << "domain:     " << DOMUtils::xPathForNode(domain) << std::endl;
 
 		std::set<std::string> elements;
 		elements.insert(XML_PREFIX(transition).str() + "parallel");
@@ -157,16 +163,20 @@ std::list<DOMElement*> getExitSet(const DOMElement* transition, const DOMElement
 		if (statesToExit.front() == domain) {
 			statesToExit.pop_front(); // do not include domain itself
 		}
+//        std::cout << "OK" << std::endl;
+
 	}
 
 	return statesToExit;
 }
 
 bool conflicts(const DOMElement* t1, const DOMElement* t2, const DOMElement* root) {
-	return (DOMUtils::hasIntersection(getExitSet(t1, root), getExitSet(t2, root)) ||
-	        (getSourceState(t1) == getSourceState(t2)) ||
+	return (
+            (getSourceState(t1) == getSourceState(t2)) ||
 	        (DOMUtils::isDescendant(getSourceState(t1), getSourceState(t2))) ||
-	        (DOMUtils::isDescendant(getSourceState(t2), getSourceState(t1))));
+	        (DOMUtils::isDescendant(getSourceState(t2), getSourceState(t1))) ||
+            (DOMUtils::hasIntersection(getExitSet(t1, root), getExitSet(t2, root)))
+           );
 }
 
 bool isState(const DOMElement* state, bool properOnly) {
@@ -280,6 +290,7 @@ DOMElement* getTransitionDomain(const DOMElement* transition, const DOMElement* 
 
 BREAK_LOOP:
 	tStates.push_front(source);
+    
 	return findLCCA(tStates);
 }
 
@@ -359,11 +370,7 @@ std::list<DOMElement*> getInitialStates(const DOMElement* state, const DOMElemen
 
 		// first child state
 		std::list<DOMElement*> initStates;
-		DOMNodeList* children = state->getChildNodes();
-		for (size_t i = 0; i < children->getLength(); i++) {
-			if (children->item(i)->getNodeType() != DOMNode::ELEMENT_NODE)
-				continue;
-			DOMElement* childElem = dynamic_cast<DOMElement*>(children->item(i));
+        for (auto childElem = state->getFirstElementChild(); childElem; childElem = childElem->getNextElementSibling()) {
 			if (isState(childElem)) {
 				initStates.push_back(childElem);
 				return initStates;

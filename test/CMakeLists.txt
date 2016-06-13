@@ -4,6 +4,7 @@ set(TEST_BENCHMARK_ITERATIONS 1000)
 find_program(SPIN spin)
 find_program(CC gcc)
 find_program(CXX g++)
+find_program(ANT_EXECUTABLE ant)
 
 function(USCXML_TEST_COMPILE)
 	set(options BUILD_ONLY)
@@ -27,6 +28,7 @@ USCXML_TEST_COMPILE(NAME test-url LABEL general/test-url FILES src/test-url.cpp)
 USCXML_TEST_COMPILE(NAME test-lifecycle LABEL general/test-lifecycle FILES src/test-lifecycle.cpp)
 USCXML_TEST_COMPILE(NAME test-validating LABEL general/test-validating FILES src/test-validating.cpp)
 USCXML_TEST_COMPILE(NAME test-snippets LABEL general/test-snippets FILES src/test-snippets.cpp)
+USCXML_TEST_COMPILE(NAME test-stress LABEL general/test-stress FILES src/test-stress.cpp)
 
 file(GLOB_RECURSE USCXML_WRAPPERS
 	${PROJECT_SOURCE_DIR}/src/bindings/swig/wrapped/*.cpp
@@ -121,6 +123,9 @@ if (NOT BUILD_MINIMAL)
 		"gen/c/lua"
 		# "gen/c/promela"
 		# "gen/vhdl/ecma"
+		
+		# bindings
+		"binding/java/jexl"
 		
 		# state-machine interpreters
 		# "fsm/ecma"
@@ -223,6 +228,18 @@ if (NOT BUILD_MINIMAL)
 							set_tests_properties("${TEST_NAME}" PROPERTIES DEPENDS uscxml-transform)
 
 						endif()
+
+					elseif (TEST_TYPE MATCHES "^binding.*")
+						get_filename_component(TEST_LANG ${TEST_TYPE} NAME)
+
+						add_test(NAME "${TEST_NAME}"
+							COMMAND 
+								${ANT_EXECUTABLE} 
+								-Dtest.file=${W3C_TEST}
+								-Duscxml.jar=${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/uscxml.jar
+							WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/bindings/java
+						)
+						set_tests_properties("${TEST_NAME}" PROPERTIES DEPENDS jar)
 
 					elseif (TEST_TYPE MATCHES "^spin.*")
 

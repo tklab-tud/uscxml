@@ -1,4 +1,4 @@
-package org.uscxml.tests;
+package org.uscxml.examples;
 
 import java.io.File;
 import java.net.MalformedURLException;
@@ -8,7 +8,7 @@ import org.uscxml.Interpreter;
 import org.uscxml.InterpreterException;
 import org.uscxml.InterpreterState;
 import org.uscxml.dm.jexl.JEXLDataModel;
-import org.uscxml.tests.helper.TestMonitor;
+import org.uscxml.helper.TestMonitor;
 
 public class DataModelExample {
 
@@ -51,7 +51,9 @@ public class DataModelExample {
 			
 		} catch (InterpreterException | MalformedURLException e) {
 			e.printStackTrace();
+			System.exit(-1);
 		}
+		System.exit(0);
 
 	}
 

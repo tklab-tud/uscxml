@@ -415,7 +415,9 @@ void V8DataModel::setEvent(const Event& event) {
 	}
 	// we cannot make _event v8::ReadOnly as it will ignore subsequent setEvents
 	global->Set(v8::String::NewSymbol("_event"), eventObj);
-	_event.Reset(_isolate, eventObj);
+
+//    _event.Reset(_isolate, eventObj);
+//    _event = eventObj;
 }
 
 Data V8DataModel::getAsData(const std::string& content) {

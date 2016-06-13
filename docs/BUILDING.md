@@ -337,7 +337,7 @@ In addition, you will need apache's <tt>ant</tt> in the path or in <tt>$ENV{ANT_
 If both of these are given, you ought to get <tt>java</tt> as an available language binding and a new target called
 <tt>java</tt> for your build system. If you used plain Makefiles (default on unices), you will get everything you need via:
 
-	$ make && make java
+	$ make && make jar
 	$ ls lib/*.jnilib lib/*.jar
 	lib/libuscxmlNativeJava64.jnilib lib/uscxml.jar
 
@@ -382,6 +382,6 @@ Command Prompt (2012)</tt> and type:
 	> cd c:\path\to\build\dir
 	> cmake -G"NMake Makefiles" c:\path\to\uscxml\source
 	...
-	> nmake && nmake csharp && nmake java
+	> nmake && nmake csharp && nmake jar
 	...
 

@@ -1,11 +1,25 @@
 # USCXML invoker 
 
-set(USCXML_INVOKERS "scxml ${USCXML_INVOKERS}")
-file(GLOB_RECURSE USCXML_INVOKER 
-	scxml/*.cpp 
-	scxml/*.h)
-	list (APPEND USCXML_FILES ${USCXML_INVOKER})
+OPTION(WITH_INV_SCXML "Build the SCXML invoker" ON)
+if (WITH_INV_SCXML)
+	set(USCXML_INVOKERS "scxml ${USCXML_INVOKERS}")
+	file(GLOB_RECURSE USCXML_INVOKER 
+		scxml/*.cpp 
+		scxml/*.h)
+		list (APPEND USCXML_FILES ${USCXML_INVOKER})
+endif()
+	
+# Directoy Monitor 
 
+OPTION(WITH_INV_DIRMON "Build the directory monitor invoker" ON)
+if (WITH_INV_DIRMON)
+	set(USCXML_INVOKERS "dirmon ${USCXML_INVOKERS}")
+	file(GLOB_RECURSE DIRMON_INVOKER 
+		dirmon/*.cpp 
+		dirmon/*.h)
+		list (APPEND USCXML_FILES ${DIRMON_INVOKER})
+endif()
+	
 set(USCXML_INCLUDE_DIRS ${USCXML_INCLUDE_DIRS} PARENT_SCOPE)
 set(USCXML_FILES ${USCXML_FILES} PARENT_SCOPE)
 set(USCXML_INVOKERS ${USCXML_INVOKERS} PARENT_SCOPE)

@@ -82,15 +82,31 @@ InterpreterImpl::InterpreterImpl() : _isInitialized(false), _document(NULL), _sc
 
 
 InterpreterImpl::~InterpreterImpl() {
-	if (_delayQueue)
-		_delayQueue.cancelAllDelayed();
-	if (_document)
-		delete _document;
+    
+    // make sure we deallocate all user-data in the DOM,
+    // this is neccesary if we were aborted early
+    std::list<DOMElement*> invokes = DOMUtils::filterChildElements(_xmlPrefix.str() + "invoke", _scxml, true);
+    for (auto invoke : invokes) {
+        char* invokeId = (char*)invoke->getUserData(X("invokeid"));
+        if (invokeId != NULL) {
+            free(invokeId);
+            invoke->setUserData(X("invokeid"), NULL, NULL);
+        }
+    }
+    
+    if (_delayQueue)
+        _delayQueue.cancelAllDelayed();
+    if (_document)
+        delete _document;
 
-	{
-		std::lock_guard<std::recursive_mutex> lock(_instanceMutex);
-		_instances.erase(getSessionId());
-	}
+    {
+        std::lock_guard<std::recursive_mutex> lock(_instanceMutex);
+        _instances.erase(getSessionId());
+    }
+
+//    assert(_invokers.size() == 0);
+//    ::xercesc_3_1::XMLPlatformUtils::Terminate();
+
 }
 
 void InterpreterImpl::cancel() {
@@ -361,6 +377,7 @@ void InterpreterImpl::uninvoke(const std::string& invokeId) {
 	if (_invokers.find(invokeId) != _invokers.end()) {
 		_invokers[invokeId].uninvoke();
 		_autoForwarders.erase(invokeId);
+        _invokers.erase(invokeId);
 	}
 
 }

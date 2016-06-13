@@ -199,9 +199,9 @@ void BasicHTTPIOProcessor::eventFromSCXML(const std::string& target, const Event
 		char* eventValueCStr = evhttp_encode_uri(event.name.c_str());
 		kvps << kvpSeperator << eventNameCStr << "=" << eventValueCStr;
 		kvpSeperator = "&";
-		free(eventNameCStr);
-		free(eventValueCStr);
-		targetURL.addOutHeader("_scxmleventname", evhttp_encode_uri(event.name.c_str()));
+		targetURL.addOutHeader("_scxmleventname", eventValueCStr);
+        free(eventNameCStr);
+        free(eventValueCStr);
 	}
 
 	// event namelist

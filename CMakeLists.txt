@@ -239,16 +239,16 @@ CheckHasModule(XercesC)
 if (HAS_MODULE_XercesC)
 	find_package(XercesC)
 else()
-	message(STATUS "Could NOT find XercesC (your CMake distribution does not include the FindXercesC module)")
-
 	# make a quick attempt to find xerces
 	INCLUDE(FindPackageHandleStandardArgs)
 	find_path(XercesC_INCLUDE_DIR NAMES "xercesc/util/PlatformUtils.hpp")
   find_library(XercesC_LIBRARY NAMES "xerces-c" "xerces-c_3")
-  mark_as_advanced(XercesC_LIBRARY)
+  mark_as_advanced(XercesC_LIBRARIES)
 	mark_as_advanced(XercesC_INCLUDE_DIR)
-	if (XercesC_INCLUDE_DIR AND XercesC_LIBRARY)
+	if (XercesC_INCLUDE_DIR AND XercesC_LIBRARIES)
 		set(XercesC_FOUND ON)
+	else()
+		message(STATUS "Could NOT find XercesC (your CMake distribution does not include the FindXercesC module)")
 	endif()
 endif()
 
@@ -324,8 +324,8 @@ find_package(SWIG)
 
 
 # JavaScriptCore
-OPTION(IGNORE_JSC "Do not search for JavaScriptCore" OFF)
-if (NOT IGNORE_JSC)
+OPTION(WITH_DM_ECMA_JSC "Do search for JavaScriptCore" ON)
+if (WITH_DM_ECMA_JSC)
 	find_package(JSC)
 	if (JSC_FOUND)
 		set(ECMA_FOUND ON)
@@ -333,23 +333,27 @@ if (NOT IGNORE_JSC)
 			include_directories(${JSC_INCLUDE_DIR})
 		endif()
 		list (APPEND USCXML_OPT_LIBS ${JSC_LIBRARY})
+	else()
+		set(WITH_DM_ECMA_JSC OFF)
 	endif()
 endif()
 
 # V8
-OPTION(IGNORE_V8 "Do not search for the V8 ECMAScript implementation" OFF)
-if (NOT IGNORE_V8)
+OPTION(WITH_DM_ECMA_V8 "Do search for the V8 ECMAScript implementation" ON)
+if (WITH_DM_ECMA_V8)
 	find_package(V8)
 	if (V8_FOUND)
 		set(ECMA_FOUND ON)
 		include_directories(${V8_INCLUDE_DIR})
 		list (APPEND USCXML_OPT_LIBS ${V8_LIBRARY})
+	else()
+		set(WITH_DM_ECMA_V8 OFF)
 	endif()
 endif()
 
 # Lua
-OPTION(IGNORE_LUA "Do not search for the Lua libraries" OFF)
-if (NOT IGNORE_LUA)
+OPTION(WITH_DM_LUA "Do search for the Lua libraries" ON)
+if (WITH_DM_LUA)
 	if (WIN32)
 		# LuaForWindows https://code.google.com/archive/p/luaforwindows/downloads
 		set(ENV{LUA_DIR} "C:/Program Files (x86)/Lua/5.1/")
@@ -359,6 +363,8 @@ if (NOT IGNORE_LUA)
 		include_directories (${LUA_INCLUDE_DIR})
 		include_directories(${PROJECT_SOURCE_DIR}/contrib/src/LuaBridge)
 		list (APPEND USCXML_OPT_LIBS ${LUA_LIBRARIES})
+	else()
+		set(WITH_DM_LUA OFF)
 	endif()
 endif()
 
@@ -422,6 +428,30 @@ endif()
 # enable config.h style compile time options and add as "uscxml/config.h"
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.h.in ${CMAKE_CURRENT_BINARY_DIR}/uscxml/config.h)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/test/ctest/CTestCustom.ctest.in ${CMAKE_CURRENT_BINARY_DIR}/CTestCustom.ctest)
+
+############################################################
+# Sort files into goups in IDEs
+############################################################
+
+
+set(ALL_SOURCE_FILES ${USCXML_FILES} ${USCXML_TRANSFORM_FILES})
+list(SORT USCXML_FILES)
+list(SORT USCXML_TRANSFORM_FILES)
+# we cannot define source groups in sub directories!
+foreach( FILE ${ALL_SOURCE_FILES} )
+
+	get_filename_component(PATH ${FILE} PATH)
+	file(RELATIVE_PATH REL_PATH ${PROJECT_SOURCE_DIR} "${PATH}")
+	string(REGEX REPLACE "src/uscxml" "" REL_PATH "${REL_PATH}")
+	string(REGEX REPLACE "contrib/src" "contrib" REL_PATH "${REL_PATH}")
+	
+	string(REGEX REPLACE "^/" "" REL_PATH "${REL_PATH}") # leading slash
+	string(REGEX REPLACE "/" "\\\\" SRC_GROUP "${REL_PATH}") # escape /
+	
+	source_group("${SRC_GROUP}" FILES ${FILE})
+
+endforeach()
+
 
 # all variables that cmake knows about
 # get_cmake_property(_variableNames VARIABLES)
