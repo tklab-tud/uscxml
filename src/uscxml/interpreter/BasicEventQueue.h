@@ -20,7 +20,6 @@
 #ifndef BASICEVENTQUEUE_H_39DCC18B
 #define BASICEVENTQUEUE_H_39DCC18B
 
-
 #include "EventQueueImpl.h"
 #include <string>
 #include <map>

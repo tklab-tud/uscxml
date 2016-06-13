@@ -20,7 +20,9 @@
 #ifndef COMMON_H_YZ3CIYP
 #define COMMON_H_YZ3CIYP
 
+#ifndef _MSC_VER
 #define ELPP_STACKTRACE_ON_CRASH 1
+#endif
 
 #if __cplusplus >= 201402L
 #define DEPRECATED [[deprecated]]
@@ -44,6 +46,8 @@
 #endif
 
 #ifdef _WIN32
+#define NOMINMAX
+
 typedef unsigned __int32  uint32_t;
 
 // see http://stackoverflow.com/questions/1372480/c-redefinition-header-files

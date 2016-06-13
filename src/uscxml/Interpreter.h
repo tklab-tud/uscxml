@@ -166,7 +166,7 @@ public:
 	 * @param blockMs The maximum duration in milli-seconds to wait for an event to become available.
 	 * @return The new state of the interpreter object.
 	 */
-	InterpreterState step(size_t blockMs = std::numeric_limits<size_t>::max());
+	InterpreterState step(size_t blockMs = (std::numeric_limits<size_t>::max)());
 
 	/**
 	 * Unblock and mark for finalize.

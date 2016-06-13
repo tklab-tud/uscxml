@@ -39,9 +39,9 @@ Event BasicEventQueue::dequeue(size_t blockMs) {
         // block for given milliseconds or until queue is filled
 		std::chrono::time_point<std::chrono::system_clock> updated, now;
         std::chrono::milliseconds remain;
-
-        if (blockMs > std::chrono::system_clock::duration::max().count()) {
-            blockMs = std::chrono::system_clock::duration::max().count();
+        
+        if (blockMs > (std::chrono::system_clock::duration::max)().count()) {
+            blockMs = (std::chrono::system_clock::duration::max)().count();
         }
         
 		updated = now = std::chrono::system_clock::now();
