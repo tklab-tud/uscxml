@@ -1,0 +1,14 @@
+<scxml datamodel="lua" initial="Start" name="Root" version="1.0" xmlns="http://www.w3.org/2005/07/scxml">
+    <state id="Start">
+        <onentry>
+            <script>x = 15
+print(string.format(&quot;x=%d&quot;,x))
+            </script>
+            <raise event="done" />
+        </onentry>
+        <transition event="error.*" target="fail"/>
+        <transition event="*" target="pass"/>
+    </state>
+    <final id="pass"/>
+    <final id="fail"/>
+</scxml>

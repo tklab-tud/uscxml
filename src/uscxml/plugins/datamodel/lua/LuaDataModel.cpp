@@ -334,16 +334,23 @@ Data LuaDataModel::evalAsData(const std::string& content) {
 			data = getLuaAsData(_luaState, luabridge::LuaRef::fromStack(_luaState, -1));
 		}
 		lua_pop(_luaState, retVals);
+        return data;
 	} catch (ErrorEvent e) {
-		int retVals = luaEval(_luaState, trimmedExpr);
+    }
+    
+    try {
+		// evaluate again without the return()
+        int retVals = luaEval(_luaState, trimmedExpr);
+        
 		if (retVals == 1) {
 			data = getLuaAsData(_luaState, luabridge::LuaRef::fromStack(_luaState, -1));
-			lua_pop(_luaState, retVals);
-		} else {
-			lua_pop(_luaState, retVals);
-			throw e; // we will assume syntax error and throw
-		}
-	}
+        }
+        lua_pop(_luaState, retVals);
+        return data;
+
+    } catch (ErrorEvent e) {
+        throw e; // we will assume syntax error and throw
+    }
 
 	return data;
 }
