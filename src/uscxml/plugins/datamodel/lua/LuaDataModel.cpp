@@ -73,18 +73,19 @@ static Data getLuaAsData(lua_State* _luaState, const luabridge::LuaRef& lua) {
 		data.atom = toStr(lua.cast<int>());
 		data.type = Data::INTERPRETED;
 	} else if(lua.isString()) {
-		data.atom = lua.tostring();
+		data.atom = lua.cast<std::string>();
 		data.type = Data::VERBATIM;
 	} else if(lua.isTable()) {
 		bool isArray = false;
 		bool isMap = false;
 		for (luabridge::Iterator iter (lua); !iter.isNil(); ++iter) {
-			luabridge::LuaRef luaKey = iter.key();
+            luabridge::LuaRef luaKey = iter.key();
 			luabridge::LuaRef luaVal = *iter;
 			if (luaKey.isString()) {
-				assert(!isArray);
+                assert(!isArray);
 				isMap = true;
-				data.compound[luaKey.tostring()] = getLuaAsData(_luaState, luaVal);
+                // luaKey.tostring() is not working?! see issue84
+				data.compound[luaKey.cast<std::string>()] = getLuaAsData(_luaState, luaVal);
 			} else {
 				assert(!isMap);
 				isArray = true;

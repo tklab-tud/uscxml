@@ -1,0 +1,22 @@
+<scxml datamodel="lua" initial="Start" name="Root" version="1.0" xmlns="http://www.w3.org/2005/07/scxml">
+    <datamodel>
+        <data id="testTable">{
+    a=555,b=777,c=888
+}
+        </data>
+    </datamodel>
+    <final id="pass"/>
+    <final id="fail"/>
+    <state id="Start">
+        <onentry>
+            <script>print('*************************')
+print(type(testTable))
+for k,v in pairs(testTable) do
+    print(string.format(&quot;key=%s,value=%s&quot;,tostring(k),tostring(v)))
+end
+            </script>
+        </onentry>
+        <transition target="pass"/>
+        <transition event="error.*" target="Fail"/>
+    </state>
+</scxml>
