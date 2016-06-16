@@ -456,7 +456,7 @@ void ChartToC::findNestedMachines() {
 	for (auto invIter = invokes.begin(); invIter != invokes.end(); invIter++) {
 		DOMElement* invoke = *invIter;
 
-		if(isInEmbeddedDocument(invoke))
+		if(!areFromSameMachine(invoke, _scxml))
 			continue;
 
 		if (HAS_ATTR(invoke, "type") &&
