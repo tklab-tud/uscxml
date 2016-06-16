@@ -74,6 +74,11 @@ void BasicEventQueue::enqueue(const Event& event) {
 	_cond.notify_all();
 }
 
+void BasicEventQueue::reset() {
+    std::lock_guard<std::recursive_mutex> lock(_mutex);
+    _queue.clear();
+}
+
 static void dummyCallback(evutil_socket_t fd, short what, void *arg) {
 	timeval tv;
 	tv.tv_sec = 365 * 24 * 3600;
@@ -204,6 +209,12 @@ void BasicDelayedEventQueue::stop() {
 		delete _thread;
 		_thread = NULL;
 	}
+}
+
+void BasicDelayedEventQueue::reset() {
+    std::lock_guard<std::recursive_mutex> lock(_mutex);
+    cancelAllDelayed();
+    _queue.clear();
 }
 
 }

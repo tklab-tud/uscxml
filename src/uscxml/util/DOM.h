@@ -118,6 +118,11 @@ protected:
 #define XML_PREFIX(element) X(element->getPrefix() ? X(element->getPrefix()).str() + ":" : "")
 
 #if 1
+/**
+ * @todo: More performant XercesStrings
+ * https://alfps.wordpress.com/2010/05/27/cppx-xerces-strings-simplified-by-ownership-part-i/
+ */
+
 class USCXML_API X {
 public :
 

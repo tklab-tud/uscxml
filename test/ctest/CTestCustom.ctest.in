@@ -13,6 +13,8 @@
 #   "w3c/test415.scxml"
 #   "w3c/test513.txt"
 
+# some manual tests are removed in test/CMakeLists.txt already!
+
 # null datamodel
 # "test436.scxml"
 

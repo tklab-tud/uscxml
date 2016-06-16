@@ -76,11 +76,14 @@ public:
 	}
 
 	virtual void reset() {///< Reset state machine
-		_microStepper.reset();
+		if (_microStepper)
+            _microStepper.reset();
+        
 		_isInitialized = false;
 		_state = USCXML_INSTANTIATED;
 //        _dataModel.reset();
-//        _eventQueue.reset();
+        if (_delayQueue)
+            _delayQueue.reset();
 //        _contentExecutor.reset();
 	}
 

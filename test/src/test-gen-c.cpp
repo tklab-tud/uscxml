@@ -17,7 +17,8 @@
 #endif
 
 #ifndef AUTOINCLUDE_TEST
-#include "test-c-machine.scxml.c"
+//#include "test-c-machine.scxml.c"
+#include "/Users/sradomski/Documents/TK/Code/uscxml/build/cli/test/gen/c/ecma/test329.scxml.machine.c"
 #endif
 
 #include "uscxml/util/URL.h"
@@ -127,7 +128,7 @@ public:
 					} else if (param->location != NULL) {
 						identifier = param->location;
 					}
-					invokeData[identifier] = parentMachine->dataModel.getAsData(param->expr);
+					invokeData[identifier] = parentMachine->dataModel.evalAsData(param->expr);
 					param++;
 				}
 			}
@@ -146,7 +147,7 @@ public:
 						break;
 
 					std::string identifier = std::string(aPtr, cPtr - aPtr);
-					invokeData[identifier] = parentMachine->dataModel.getAsData(identifier);
+					invokeData[identifier] = parentMachine->dataModel.evalAsData(identifier);
 				}
 			}
 		}
@@ -555,7 +556,7 @@ public:
 //			Data d = USER_DATA(ctx)->dataModel.getStringAsData(expr);
 			if (assign->expr != NULL) {
 				USER_DATA(ctx)->dataModel.assign(key,
-				                                 USER_DATA(ctx)->dataModel.evalAsData(assign->expr));
+				                                 USER_DATA(ctx)->dataModel.getAsData(assign->expr));
 			} else if (assign->content != NULL) {
 				Data d = Data(assign->content, Data::INTERPRETED);
 				USER_DATA(ctx)->dataModel.assign(key, d);

@@ -43,7 +43,8 @@ public:
 	virtual ~BasicEventQueue();
 	virtual Event dequeue(size_t blockMs);
 	virtual void enqueue(const Event& event);
-
+    virtual void reset();
+    
 protected:
 	std::list<Event> _queue;
 	std::recursive_mutex _mutex;
@@ -67,6 +68,7 @@ public:
 	virtual void enqueue(const Event& event) {
 		return BasicEventQueue::enqueue(event);
 	}
+    virtual void reset();
 
 protected:
 	struct callbackData {

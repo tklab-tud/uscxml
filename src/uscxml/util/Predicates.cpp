@@ -460,16 +460,25 @@ std::list<DOMElement*> getReachableStates(const DOMElement* root) {
 }
 
 
-bool isInEmbeddedDocument(const DOMNode* node) {
-	// a node is in an embedded document if there is a content element in its parents
-	const DOMNode* parent = node;
-	while(parent) {
-		if(iequals(LOCALNAME(parent), "content")) {
-			return true;
+bool areFromSameMachine(const DOMNode* n1, const DOMNode* n2) {
+    // we traverse each nodes parent's until we reach an scxml element or null
+	const DOMNode* p1 = n1;
+	while(p1) {
+		if(iequals(LOCALNAME(p1), "scxml")) {
+            break;
 		}
-		parent = parent->getParentNode();
+		p1 = p1->getParentNode();
 	}
-	return false;
+
+    const DOMNode* p2 = n2;
+    while(p2) {
+        if(iequals(LOCALNAME(p2), "scxml")) {
+            break;
+        }
+        p2 = p2->getParentNode();
+    }
+
+    return p1 == p2;
 }
 
 }

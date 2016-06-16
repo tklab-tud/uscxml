@@ -234,8 +234,8 @@ void FastMicroStep::init(XERCESC_NS::DOMElement* scxml) {
 		std::list<DOMElement*> dataModels = DOMUtils::filterChildElements(_xmlPrefix.str() + "datamodel", _states[0]->element, true);
 		dataModels.erase(std::remove_if(dataModels.begin(),
 		                                dataModels.end(),
-		[](DOMElement* elem) {
-			return isInEmbeddedDocument(elem);
+		[this](DOMElement* elem) {
+			return !areFromSameMachine(elem, _scxml);
 		}),
 		dataModels.end());
 

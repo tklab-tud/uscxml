@@ -28,6 +28,8 @@
 #include "uscxml/util/DOM.h"
 #include <easylogging++.h>
 
+#include <boost/algorithm/string.hpp>
+
 #define EVENT_STRING_OR_UNDEF(field, cond) \
 JSStringRef field##Name = JSStringCreateWithUTF8CString( #field ); \
 JSStringRef field##Val = JSStringCreateWithUTF8CString(event.field.c_str()); \
@@ -399,7 +401,23 @@ Data JSCDataModel::evalAsData(const std::string& content) {
 
 Data JSCDataModel::getAsData(const std::string& content) {
 	// parse as JSON test 578
-	return Data::fromJSON(content);
+  Data d = Data::fromJSON(content);
+  if (!d.empty())
+      return d;
+  
+  std::string trimmed = boost::trim_copy(content);
+  if (trimmed.length() > 0) {
+      if (isNumeric(trimmed.c_str(), 10)) {
+          d = Data(trimmed, Data::INTERPRETED);
+      } else if (trimmed.length() >= 2 &&
+                 ((trimmed[0] == '"' && trimmed[trimmed.length() - 1] == '"') ||
+                  (trimmed[0] == '\'' && trimmed[trimmed.length() - 1] == '\''))) {
+          d = Data(trimmed.substr(1, trimmed.length() - 2), Data::VERBATIM);
+      } else {
+          d = Data(trimmed, Data::INTERPRETED);
+      }
+  }
+  return d;
 }
 
 JSValueRef JSCDataModel::getDataAsValue(const Data& data) {

@@ -28,7 +28,10 @@ USCXML_TEST_COMPILE(NAME test-url LABEL general/test-url FILES src/test-url.cpp)
 USCXML_TEST_COMPILE(NAME test-lifecycle LABEL general/test-lifecycle FILES src/test-lifecycle.cpp)
 USCXML_TEST_COMPILE(NAME test-validating LABEL general/test-validating FILES src/test-validating.cpp)
 USCXML_TEST_COMPILE(NAME test-snippets LABEL general/test-snippets FILES src/test-snippets.cpp)
-USCXML_TEST_COMPILE(NAME test-stress LABEL general/test-stress FILES src/test-stress.cpp)
+
+# test-stress is not an automated test
+add_executable(test-stress src/test-stress.cpp)
+target_link_libraries(test-stress uscxml)
 
 file(GLOB_RECURSE USCXML_WRAPPERS
 	${PROJECT_SOURCE_DIR}/src/bindings/swig/wrapped/*.cpp
@@ -140,7 +143,7 @@ if (NOT BUILD_MINIMAL)
 		# "perf/gen/c/ecma"
 		# "perf/ecma"
 	)
-
+	
 	# prepare directories for test classes and copy resources over
 	foreach(W3C_RESOURCE ${W3C_RESOURCES} )
 		get_filename_component(TEST_DATAMODEL ${W3C_RESOURCE} PATH)
@@ -183,13 +186,22 @@ if (NOT BUILD_MINIMAL)
 		
 		# normal IRP tests - get all scxml files within
 		foreach(W3C_TEST ${W3C_TESTS} )
+			set(TEST_ADDED OFF)
 			get_filename_component(TEST_FILE ${W3C_TEST} NAME)
 			set(TEST_NAME "w3c/${TEST_CLASS}/${TEST_FILE}")
 
-			if (NOT TEST_NAME MATCHES ".*sub.*")
+			if (OFF)
+				# manual tests:
+			elseif (TEST_FILE STREQUAL "test307.scxml")
+				# scxml files, but no proper tests:
+			elseif (TEST_NAME MATCHES ".*sub.*")
+				# rest is a proper test:
+			else ()
+
 				if (IS_STANDARD_TEST)
 					
 					add_test(${TEST_NAME} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-state-pass ${W3C_TEST})
+					set(TEST_ADDED ON)
 			
 					if (TEST_NAME MATCHES ".*/test250.scxml")
 						set_tests_properties(${TEST_NAME} PROPERTIES FAIL_REGULAR_EXPRESSION "entering final state, invocation was not cancelled")
@@ -226,20 +238,24 @@ if (NOT BUILD_MINIMAL)
 									-DSCAFFOLDING_FOR_GENERATED_C:FILEPATH=${CMAKE_CURRENT_SOURCE_DIR}/src/test-gen-c.cpp
 									-P ${CMAKE_CURRENT_SOURCE_DIR}/ctest/scripts/run_generated_test.cmake)
 							set_tests_properties("${TEST_NAME}" PROPERTIES DEPENDS uscxml-transform)
+							set(TEST_ADDED ON)
 
 						endif()
 
 					elseif (TEST_TYPE MATCHES "^binding.*")
 						get_filename_component(TEST_LANG ${TEST_TYPE} NAME)
 
-						add_test(NAME "${TEST_NAME}"
-							COMMAND 
-								${ANT_EXECUTABLE} 
-								-Dtest.file=${W3C_TEST}
-								-Duscxml.jar=${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/uscxml.jar
-							WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/bindings/java
-						)
-						set_tests_properties("${TEST_NAME}" PROPERTIES DEPENDS jar)
+						if (TARGET jar AND TEST_LANG STREQUAL "java")
+							add_test(NAME "${TEST_NAME}"
+								COMMAND 
+									${ANT_EXECUTABLE} 
+									-Dtest.file=${W3C_TEST}
+									-Duscxml.jar=${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/uscxml.jar
+								WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/bindings/java
+							)
+							set_tests_properties("${TEST_NAME}" PROPERTIES DEPENDS jar)
+							set(TEST_ADDED ON)
+						endif()
 
 					elseif (TEST_TYPE MATCHES "^spin.*")
 
@@ -257,18 +273,22 @@ if (NOT BUILD_MINIMAL)
 								-P ${CMAKE_CURRENT_SOURCE_DIR}/ctest/scripts/run_promela_test.cmake)
 						set_tests_properties("${TEST_NAME}" PROPERTIES PASS_REGULAR_EXPRESSION "depth reached [0-9]+, errors: 0")
 						set_tests_properties("${TEST_NAME}" PROPERTIES FAIL_REGULAR_EXPRESSION "depth reached [0-9]+, errors: [1-9]+")
+						set(TEST_ADDED ON)
 						
 					elseif (TEST_TYPE MATCHES "^fsm.*")
 							
 						add_test("${TEST_NAME}" ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-state-pass -f ${W3C_TEST})
+						set(TEST_ADDED ON)
 							
 					endif()
 				endif()
 				
-				set_property(TEST ${TEST_NAME} PROPERTY LABELS ${TEST_NAME})
-				set_tests_properties(${TEST_NAME} PROPERTIES TIMEOUT ${TEST_TIMEOUT})
-				if (IS_PERFORMANCE_TEST)
-					set_tests_properties("${TEST_NAME}" PROPERTIES ENVIRONMENT USCXML_BENCHMARK_ITERATIONS=${TEST_BENCHMARK_ITERATIONS})
+				if(TEST_ADDED)
+					set_property(TEST ${TEST_NAME} PROPERTY LABELS ${TEST_NAME})
+					set_tests_properties(${TEST_NAME} PROPERTIES TIMEOUT ${TEST_TIMEOUT})
+					if (IS_PERFORMANCE_TEST)
+						set_tests_properties("${TEST_NAME}" PROPERTIES ENVIRONMENT USCXML_BENCHMARK_ITERATIONS=${TEST_BENCHMARK_ITERATIONS})
+					endif()
 				endif()
 				
 			endif()

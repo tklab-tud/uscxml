@@ -1,0 +1,36 @@
+<scxml datamodel="lua" initial="Start" name="Root" version="1.0" xmlns="http://www.w3.org/2005/07/scxml">
+    <state id="Start">
+        <invoke id="ID_DATA_ISSUE">
+            <content>
+                <scxml datamodel="lua" initial="StateShape1" name="ScxmlShape1" version="1.0" xmlns="http://www.w3.org/2005/07/scxml">
+                    <datamodel>
+                        <data id="Timestamp">{
+    iSec = 1
+}
+                        </data>
+                    </datamodel>
+                    <final id="pass"/>
+                    <final id="fail">
+                        <onentry>
+                            <send event="error.execution" target="#_parent"/>
+                        </onentry>
+                    </final>
+                    <state id="StateShape1">
+                        <onentry>
+                            <script>print(Timestamp)
+print(Timestamp.iSec)
+                            </script>
+                            <send delayexpr="tostring(Timestamp.iSec) .. 's'" event="step_1"/>
+                        </onentry>
+                        <transition event="step_1" target="pass"/>
+                        <transition event="error.*" target="fail"/>
+                    </state>
+                </scxml>
+            </content>
+        </invoke>
+        <transition event="done.invoke.ID_DATA_ISSUE" target="pass"/>
+        <transition event="error.*" target="fail"/>
+    </state>
+    <final id="pass"/>
+    <final id="fail"/>
+</scxml>

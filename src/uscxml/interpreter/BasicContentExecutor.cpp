@@ -404,7 +404,7 @@ void BasicContentExecutor::invoke(XERCESC_NS::DOMElement* element) {
 			}
 		}
         
-		// we need the invokeid to uninvoke - TODO: This is leaking!
+		// we need the invokeid to uninvoke
 		char* invokeId = (char*)malloc(invokeEvent.invokeid.size() + 1);
 		memcpy(invokeId, invokeEvent.invokeid.c_str(), invokeEvent.invokeid.size());
 		invokeId[invokeEvent.invokeid.size()] = 0;
@@ -469,7 +469,6 @@ void BasicContentExecutor::invoke(XERCESC_NS::DOMElement* element) {
 }
 
 void BasicContentExecutor::uninvoke(XERCESC_NS::DOMElement* invoke) {
-	// TODO: DANGER This is the real danger here
 	char* invokeId = (char*)invoke->getUserData(X("invokeid"));
 	assert(invokeId != NULL);
 
@@ -557,13 +556,16 @@ void BasicContentExecutor::processParams(std::multimap<std::string, Data>& param
 Data BasicContentExecutor::elementAsData(XERCESC_NS::DOMElement* element) {
 	if (HAS_ATTR(element, "expr")) {
 //        return _callbacks->evalAsData(ATTR(element, "expr"));
-		if (LOCALNAME(element) == "content") {
+#if 0
+        if (LOCALNAME(element) == "content") {
 			// test 528
 			return _callbacks->evalAsData(ATTR(element, "expr"));
 		} else {
 			// test 326
 			return Data(ATTR(element, "expr"), Data::INTERPRETED);
 		}
+#endif
+        return _callbacks->evalAsData(ATTR(element, "expr"));
 	}
 
 	if (HAS_ATTR(element, "src")) {

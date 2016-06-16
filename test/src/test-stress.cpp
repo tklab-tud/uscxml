@@ -97,10 +97,9 @@ int main(int argc, char** argv) {
 		entryIter++;
         
         // forever
-        if (entryIter == entries.end()) {
-            entryIter = entries.begin();
-            std::this_thread::sleep_for(std::chrono::seconds(10));
-        }
+//        if (entryIter == entries.end()) {
+//            entryIter = entries.begin();
+//        }
 	}
 
 	delete watcher;

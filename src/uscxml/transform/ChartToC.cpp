@@ -1726,7 +1726,7 @@ void ChartToC::writeElementInfo(std::ostream& stream) {
 			std::stringstream ss;
 			DOMNodeList* cChilds = contents.front()->getChildNodes();
 			for (size_t j = 0; j < cChilds->getLength(); j++) {
-				ss << cChilds->item(j);
+				ss << *(cChilds->item(j));
 			}
 			stream << (ss.str().size() > 0 ? "\"" + escape(ss.str()) + "\", " : "NULL, ");
 			stream << (HAS_ATTR_CAST(contents.front(), "expr") ? "\"" + ATTR_CAST(contents.front(), "expr") + "\", " : "NULL, ");

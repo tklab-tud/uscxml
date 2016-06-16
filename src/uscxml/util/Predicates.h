@@ -39,7 +39,7 @@ std::list<XERCESC_NS::DOMElement*> getTargetStates(const XERCESC_NS::DOMElement*
 std::list<XERCESC_NS::DOMElement*> getEffectiveTargetStates(const XERCESC_NS::DOMElement* transition);
 XERCESC_NS::DOMElement* getTransitionDomain(const XERCESC_NS::DOMElement* transition, const XERCESC_NS::DOMElement* root);
 
-bool isInEmbeddedDocument(const XERCESC_NS::DOMNode* node);
+bool areFromSameMachine(const XERCESC_NS::DOMNode* n1, const XERCESC_NS::DOMNode* n2);
 
 std::list<XERCESC_NS::DOMElement*> getStates(const std::list<std::string>& stateIds, const XERCESC_NS::DOMElement* root);
 XERCESC_NS::DOMElement* getState(const std::string& stateId, const XERCESC_NS::DOMElement* root);

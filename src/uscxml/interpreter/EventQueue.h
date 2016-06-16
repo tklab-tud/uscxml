@@ -38,6 +38,7 @@ public:
 
 	virtual Event dequeue(size_t blockMs);
 	virtual void enqueue(const Event& event);
+    virtual void reset();
 
 protected:
 	std::shared_ptr<EventQueueImpl> _impl;

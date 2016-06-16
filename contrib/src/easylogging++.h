@@ -2611,9 +2611,9 @@ public:
         setGlobally(ConfigurationType::Format, std::string("%datetime %level %fbase:%line: %msg"), true);
         set(Level::Debug, ConfigurationType::Format, std::string("%datetime %level [%logger] [%user@%host] [%func] [%loc] %msg"));
         // INFO and WARNING are set to default by Level::Global
-        set(Level::Error, ConfigurationType::Format, std::string("%datetime %level [%logger] %msg"));
-        set(Level::Fatal, ConfigurationType::Format, std::string("%datetime %level [%logger] %msg"));
-        set(Level::Verbose, ConfigurationType::Format, std::string("%datetime %level-%vlevel [%logger] %msg"));
+        set(Level::Error, ConfigurationType::Format, std::string("%datetime %level %fbase:%line: %msg"));
+        set(Level::Fatal, ConfigurationType::Format, std::string("%datetime %level %fbase:%line: %msg"));
+        set(Level::Verbose, ConfigurationType::Format, std::string("%datetime %level-%vlevel %fbase:%line: %msg"));
         set(Level::Trace, ConfigurationType::Format, std::string("%datetime %level [%logger] [%func] [%loc] %msg"));
     }
 
