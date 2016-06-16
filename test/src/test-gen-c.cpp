@@ -17,8 +17,8 @@
 #endif
 
 #ifndef AUTOINCLUDE_TEST
-//#include "test-c-machine.scxml.c"
-#include "/Users/sradomski/Documents/TK/Code/uscxml/build/cli/test/gen/c/ecma/test329.scxml.machine.c"
+#include "test-c-machine.scxml.c"
+//#include "/Users/sradomski/Documents/TK/Code/uscxml/build/cli/test/gen/c/ecma/test329.scxml.machine.c"
 #endif
 
 #include "uscxml/util/URL.h"
@@ -556,7 +556,7 @@ public:
 //			Data d = USER_DATA(ctx)->dataModel.getStringAsData(expr);
 			if (assign->expr != NULL) {
 				USER_DATA(ctx)->dataModel.assign(key,
-				                                 USER_DATA(ctx)->dataModel.getAsData(assign->expr));
+				                                 USER_DATA(ctx)->dataModel.evalAsData(assign->expr));
 			} else if (assign->content != NULL) {
 				Data d = Data(assign->content, Data::INTERPRETED);
 				USER_DATA(ctx)->dataModel.assign(key, d);
