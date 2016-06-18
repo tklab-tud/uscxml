@@ -48,67 +48,67 @@ std::list<CallbackType> callBackSeq;
 
 
 class SequenceCheckingMonitor : public InterpreterMonitor {
-	virtual void beforeProcessingEvent(const Event& event) {
+	virtual void beforeProcessingEvent(InterpreterImpl* impl, const Event& event) {
 		CHECK_CALLBACK_TYPE(USCXML_BEFOREPROCESSINGEVENT);
 	}
-	virtual void beforeMicroStep() {
+	virtual void beforeMicroStep(InterpreterImpl* impl) {
 		CHECK_CALLBACK_TYPE(USCXML_BEFOREMICROSTEP);
 	}
 
-	virtual void beforeExitingState(const XERCESC_NS::DOMElement* state) {
+	virtual void beforeExitingState(InterpreterImpl* impl, const XERCESC_NS::DOMElement* state) {
 		CHECK_CALLBACK_TYPE(USCXML_BEFOREEXITINGSTATE);
 	}
-	virtual void afterExitingState(const XERCESC_NS::DOMElement* state) {
+	virtual void afterExitingState(InterpreterImpl* impl, const XERCESC_NS::DOMElement* state) {
 		CHECK_CALLBACK_TYPE(USCXML_AFTEREXITINGSTATE);
 	}
 
-	virtual void beforeExecutingContent(const XERCESC_NS::DOMElement* element) {
+	virtual void beforeExecutingContent(InterpreterImpl* impl, const XERCESC_NS::DOMElement* element) {
 		CHECK_CALLBACK_TYPE(USCXML_BEFOREEXECUTINGCONTENT);
 	}
-	virtual void afterExecutingContent(const XERCESC_NS::DOMElement* element) {
+	virtual void afterExecutingContent(InterpreterImpl* impl, const XERCESC_NS::DOMElement* element) {
 		CHECK_CALLBACK_TYPE(USCXML_AFTEREXECUTINGCONTENT);
 	}
 
-	virtual void beforeUninvoking(const XERCESC_NS::DOMElement* invokeElem, const std::string& invokeid) {
+	virtual void beforeUninvoking(InterpreterImpl* impl, const XERCESC_NS::DOMElement* invokeElem, const std::string& invokeid) {
 		CHECK_CALLBACK_TYPE(USCXML_BEFOREUNINVOKING);
 	}
-	virtual void afterUninvoking(const XERCESC_NS::DOMElement* invokeElem, const std::string& invokeid) {
+	virtual void afterUninvoking(InterpreterImpl* impl, const XERCESC_NS::DOMElement* invokeElem, const std::string& invokeid) {
 		CHECK_CALLBACK_TYPE(USCXML_AFTERUNINVOKING);
 	}
 
-	virtual void beforeTakingTransition(const XERCESC_NS::DOMElement* transition) {
+	virtual void beforeTakingTransition(InterpreterImpl* impl, const XERCESC_NS::DOMElement* transition) {
 		CHECK_CALLBACK_TYPE(USCXML_BEFORETAKINGTRANSITION);
 	}
-	virtual void afterTakingTransition(const XERCESC_NS::DOMElement* transition) {
+	virtual void afterTakingTransition(InterpreterImpl* impl, const XERCESC_NS::DOMElement* transition) {
 		CHECK_CALLBACK_TYPE(USCXML_AFTERTAKINGTRANSITION);
 	}
 
-	virtual void beforeEnteringState(const XERCESC_NS::DOMElement* state) {
+	virtual void beforeEnteringState(InterpreterImpl* impl, const XERCESC_NS::DOMElement* state) {
 		CHECK_CALLBACK_TYPE(USCXML_BEFOREENTERINGSTATE);
 	}
-	virtual void afterEnteringState(const XERCESC_NS::DOMElement* state) {
+	virtual void afterEnteringState(InterpreterImpl* impl, const XERCESC_NS::DOMElement* state) {
 		CHECK_CALLBACK_TYPE(USCXML_AFTERENTERINGSTATE);
 	}
 
-	virtual void beforeInvoking(const XERCESC_NS::DOMElement* invokeElem, const std::string& invokeid) {
+	virtual void beforeInvoking(InterpreterImpl* impl, const XERCESC_NS::DOMElement* invokeElem, const std::string& invokeid) {
 		CHECK_CALLBACK_TYPE(USCXML_BEFOREINVOKING);
 	}
-	virtual void afterInvoking(const XERCESC_NS::DOMElement* invokeElem, const std::string& invokeid) {
+	virtual void afterInvoking(InterpreterImpl* impl, const XERCESC_NS::DOMElement* invokeElem, const std::string& invokeid) {
 		CHECK_CALLBACK_TYPE(USCXML_AFTERINVOKING);
 	}
 
-	virtual void afterMicroStep() {
+	virtual void afterMicroStep(InterpreterImpl* impl) {
 		CHECK_CALLBACK_TYPE(USCXML_AFTERMICROSTEP);
 	}
 
-	virtual void onStableConfiguration() {
+	virtual void onStableConfiguration(InterpreterImpl* impl) {
 		CHECK_CALLBACK_TYPE(USCXML_ONSTABLECONFIGURATION);
 	}
 
-	virtual void beforeCompletion() {
+	virtual void beforeCompletion(InterpreterImpl* impl) {
 		CHECK_CALLBACK_TYPE(USCXML_BEFORECOMPLETION);
 	}
-	virtual void afterCompletion() {
+	virtual void afterCompletion(InterpreterImpl* impl) {
 		CHECK_CALLBACK_TYPE(USCXML_AFTERCOMPLETION);
 	}
 
@@ -139,7 +139,7 @@ int main(int argc, char** argv) {
 			try {
 				const char* xml = "<invalid />";
 				Interpreter interpreter = Interpreter::fromXML(xml, "");
-				interpreter.setMonitor(&mon);
+				interpreter.addMonitor(&mon);
 				assert(interpreter.getState() == USCXML_INSTANTIATED);
 				interpreter.step();
 				assert(false);
@@ -159,7 +159,7 @@ int main(int argc, char** argv) {
 				    " <final id=\"done\" />"
 				    "</scxml>";
 				Interpreter interpreter = Interpreter::fromXML(xml, "");
-				interpreter.setMonitor(&mon);
+				interpreter.addMonitor(&mon);
 				assert(interpreter.getState() == USCXML_INSTANTIATED);
 				interpreter.step();
 				assert(false);
@@ -182,7 +182,7 @@ int main(int argc, char** argv) {
 			    "</scxml>";
 
 			Interpreter interpreter = Interpreter::fromXML(xml, "");
-			interpreter.setMonitor(&mon);
+			interpreter.addMonitor(&mon);
 
 			callBackSeq.push_back(USCXML_BEFOREMICROSTEP);
 			callBackSeq.push_back(USCXML_BEFOREENTERINGSTATE); // scxml
@@ -232,7 +232,7 @@ int main(int argc, char** argv) {
 			    "</scxml>";
 
 			Interpreter interpreter = Interpreter::fromXML(xml, "");
-			interpreter.setMonitor(&mon);
+			interpreter.addMonitor(&mon);
 
 			callBackSeq.push_back(USCXML_BEFOREMICROSTEP);
 			callBackSeq.push_back(USCXML_BEFOREENTERINGSTATE); // scxml
@@ -304,7 +304,7 @@ int main(int argc, char** argv) {
 			    "</scxml>";
 
 			Interpreter interpreter = Interpreter::fromXML(xml, "");
-			interpreter.setMonitor(&mon);
+			interpreter.addMonitor(&mon);
 			callBackSeq.push_back(USCXML_BEFOREMICROSTEP);
 			callBackSeq.push_back(USCXML_BEFOREENTERINGSTATE); // scxml
 			callBackSeq.push_back(USCXML_AFTERENTERINGSTATE);

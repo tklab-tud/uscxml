@@ -69,7 +69,7 @@ void InterpreterImpl::addInstance(std::shared_ptr<InterpreterImpl> interpreterIm
 	_instances[interpreterImpl->getSessionId()] = interpreterImpl;
 }
 
-InterpreterImpl::InterpreterImpl() : _isInitialized(false), _document(NULL), _scxml(NULL), _state(USCXML_INSTANTIATED), _monitor(NULL) {
+InterpreterImpl::InterpreterImpl() : _isInitialized(false), _document(NULL), _scxml(NULL), _state(USCXML_INSTANTIATED) {
 	try {
 		::xercesc_3_1::XMLPlatformUtils::Initialize();
 	} catch (const XERCESC_NS::XMLException& toCatch) {

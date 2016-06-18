@@ -127,17 +127,20 @@ class USCXML_API X {
 public :
 
 	X(X const &other) {
+
 		_localForm = other._localForm;
 		_unicodeForm = XERCESC_NS::XMLString::replicate(other._unicodeForm);
 		_deallocOther = true;
 	}
 	void operator=(X const &other) { // did we maybe leak before?
+
 		_localForm = other._localForm;
 		_unicodeForm = XERCESC_NS::XMLString::replicate(other._unicodeForm);
 		_deallocOther = true;
 	}
 
 	X(const XMLCh* const toTranscode) {
+
 		if (toTranscode != NULL) {
 			// Call the private transcoding method
 			char* tmp = XERCESC_NS::XMLString::transcode(toTranscode);
@@ -149,6 +152,7 @@ public :
 	}
 
 	X(const std::string& fromTranscode) {
+
 		// Call the private transcoding method
 		_localForm = fromTranscode;
 		_unicodeForm = XERCESC_NS::XMLString::transcode(fromTranscode.c_str());
@@ -156,6 +160,7 @@ public :
 	}
 
 	X(const char* const fromTranscode) {
+        
 		// Call the private transcoding method
 		_localForm = fromTranscode;
 		_unicodeForm = XERCESC_NS::XMLString::transcode(fromTranscode);
@@ -163,22 +168,25 @@ public :
 	}
 
 	X(char* fromTranscode) {
-		// Call the private transcoding method
+
+        // Call the private transcoding method
 		_localForm = fromTranscode;
 		_unicodeForm = XERCESC_NS::XMLString::transcode(fromTranscode);
 		_deallocOther = true;
 	}
 
 	X() {
+        
 		_unicodeForm = NULL;
 		_deallocOther = false;
 	}
 
 	~X() {
+        
 		if (_deallocOther)
 			XERCESC_NS::XMLString::release(&_unicodeForm);
 	}
-
+    
 	const std::string& str() const {
 		return _localForm;
 	}
@@ -195,7 +203,7 @@ public :
 	operator std::string () {
 		return _localForm;
 	}
-
+    
 protected:
 	friend USCXML_API std::ostream& operator<< (std::ostream& os, const X& data);
 
@@ -276,6 +284,32 @@ private:
     
 };
 
+#endif
+
+#if 0
+static const X kElementScxmlName = X("scxml");
+static const X kElementStateName = X("state");
+static const X kElementParallelName = X("parallel");
+static const X kElementTransitionName = X("transition");
+static const X kElementInitialName = X("initial");
+static const X kElementFinalName = X("final");
+static const X kElementOnEntryName = X("onentry");
+static const X kElementOnExitName = X("onexit");
+static const X kElementHistoryName = X("history");
+    
+static const X kElementRaiseName = X("raise");
+static const X kElementIfName = X("if");
+static const X kElementElseIfName = X("elseif");
+static const X kElementElseName = X("else");
+static const X kElementForEachName = X("foreach");
+static const X kElementLogName = X("log");
+    
+static const X kElementDataModelName = X("datamodel");
+static const X kElementDataName = X("data");
+static const X kElementAssignName = X("assign");
+static const X kElementContentName = X("content");
+static const X kElementParamName = X("param");
+static const X kElementScriptName = X("script");
 #endif
     
 USCXML_API std::ostream& operator<< (std::ostream& os, const X& xmlString);

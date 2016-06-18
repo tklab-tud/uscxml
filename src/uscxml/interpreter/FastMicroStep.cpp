@@ -89,68 +89,66 @@ FastMicroStep::~FastMicroStep() {
 	}
 }
 
-void FastMicroStep::resortStates(DOMNode* node, const X& xmlPrefix) {
-	if (node->getNodeType() != DOMNode::ELEMENT_NODE)
-		return;
+void FastMicroStep::resortStates(DOMElement* element, const X& xmlPrefix) {
 
-	/**
+    /**
 	 initials
 	 deep histories
 	 shallow histories
 	 everything else
 	 */
 
-	DOMElement* element = dynamic_cast<DOMElement*>(node);
+    DOMElement* child = element->getFirstElementChild();
+    while(child) {
+        resortStates(child, xmlPrefix);
+        child = child->getNextElementSibling();
+    }
 
 	// shallow history states to top
-	DOMNode* child = element->getFirstChild();
+	child = element->getFirstElementChild();
 	while(child) {
-		resortStates(child, xmlPrefix);
-		if (child->getNodeType() == DOMNode::ELEMENT_NODE &&
-		        TAGNAME_CAST(child) == xmlPrefix.str() + "history" &&
-		        (!HAS_ATTR(element, "type") || iequals(ATTR(element, "type"), "shallow"))) {
+		if (TAGNAME_CAST(child) == xmlPrefix.str() + "history" &&
+            (!HAS_ATTR(element, "type") || iequals(ATTR(element, "type"), "shallow"))) {
 
-			DOMNode* tmp = child->getNextSibling();
+			DOMElement* tmp = child->getNextElementSibling();
 			if (child != element->getFirstChild()) {
 				element->insertBefore(child, element->getFirstChild());
 			}
 			child = tmp;
 		} else {
-			child = child->getNextSibling();
+			child = child->getNextElementSibling();
 		}
 	}
 
 	// deep history states to top
-	child = element->getFirstChild();
+	child = element->getFirstElementChild();
 	while(child) {
-		resortStates(child, xmlPrefix);
 		if (child->getNodeType() == DOMNode::ELEMENT_NODE &&
 		        TAGNAME_CAST(child) == xmlPrefix.str() + "history" &&
 		        HAS_ATTR(element, "type") &&
 		        iequals(ATTR(element, "type"), "deep")) {
 
-			DOMNode* tmp = child->getNextSibling();
+			DOMElement* tmp = child->getNextElementSibling();
 			if (child != element->getFirstChild()) {
 				element->insertBefore(child, element->getFirstChild());
 			}
 			child = tmp;
 		} else {
-			child = child->getNextSibling();
+			child = child->getNextElementSibling();
 		}
 	}
 
 	// initial states on top of histories even
-	child = element->getFirstChild();
+	child = element->getFirstElementChild();
 	while(child) {
-		resortStates(child, xmlPrefix);
 		if (child->getNodeType() == DOMNode::ELEMENT_NODE && LOCALNAME_CAST(child) == "initial") {
-			DOMNode* tmp = child->getNextSibling();
+			DOMElement* tmp = child->getNextElementSibling();
 			if (child != element->getFirstChild()) {
 				element->insertBefore(child, element->getFirstChild());
 			}
 			child = tmp;
 		} else {
-			child = child->getNextSibling();
+			child = child->getNextElementSibling();
 		}
 	}
 }
@@ -193,10 +191,9 @@ void FastMicroStep::init(XERCESC_NS::DOMElement* scxml) {
 	}
 
 	resortStates(_scxml, _xmlPrefix);
-
-	// TODO: https://github.com/tklab-tud/uscxml/blob/master/src/uscxml/transform/ChartToC.cpp#L244
-
-
+//    assert(false);
+//    throw NULL;
+    
 	/** -- All things states -- */
 
 	std::list<XERCESC_NS::DOMElement*> tmp;
@@ -467,7 +464,7 @@ InterpreterState FastMicroStep::step(size_t blockMs) {
 		return USCXML_FINISHED;
 
 	if (_flags & USCXML_CTX_TOP_LEVEL_FINAL) {
-		USCXML_MONITOR_CALLBACK(_callbacks->getMonitor(), beforeCompletion);
+		USCXML_MONITOR_CALLBACK(_callbacks->getMonitors(), beforeCompletion);
 
 		/* exit all remaining states */
 		i = USCXML_NUMBER_STATES;
@@ -498,7 +495,7 @@ InterpreterState FastMicroStep::step(size_t blockMs) {
 
 		_flags |= USCXML_CTX_FINISHED;
 
-		USCXML_MONITOR_CALLBACK(_callbacks->getMonitor(), afterCompletion);
+		USCXML_MONITOR_CALLBACK(_callbacks->getMonitors(), afterCompletion);
 
 		return USCXML_FINISHED;
 	}
@@ -508,7 +505,7 @@ InterpreterState FastMicroStep::step(size_t blockMs) {
 
 		targetSet |= USCXML_GET_STATE(0).completion;
 		_flags |= USCXML_CTX_SPONTANEOUS | USCXML_CTX_INITIALIZED;
-		USCXML_MONITOR_CALLBACK(_callbacks->getMonitor(), beforeMicroStep);
+		USCXML_MONITOR_CALLBACK(_callbacks->getMonitors(), beforeMicroStep);
 
 		goto ESTABLISH_ENTRYSET;
 	}
@@ -520,7 +517,7 @@ InterpreterState FastMicroStep::step(size_t blockMs) {
 
 
 	if ((_event = _callbacks->dequeueInternal())) {
-		USCXML_MONITOR_CALLBACK1(_callbacks->getMonitor(), beforeProcessingEvent, _event);
+		USCXML_MONITOR_CALLBACK1(_callbacks->getMonitors(), beforeProcessingEvent, _event);
 		goto SELECT_TRANSITIONS;
 	}
 
@@ -551,13 +548,13 @@ InterpreterState FastMicroStep::step(size_t blockMs) {
 
 	// we dequeued all internal events and ought to signal stable configuration
 	if (!(_flags & USCXML_CTX_STABLE)) {
-		USCXML_MONITOR_CALLBACK(_callbacks->getMonitor(), onStableConfiguration);
+		USCXML_MONITOR_CALLBACK(_callbacks->getMonitors(), onStableConfiguration);
 		_microstepConfigurations.clear();
 		_flags |= USCXML_CTX_STABLE;
 	}
 
 	if ((_event = _callbacks->dequeueExternal(blockMs))) {
-		USCXML_MONITOR_CALLBACK1(_callbacks->getMonitor(), beforeProcessingEvent, _event);
+		USCXML_MONITOR_CALLBACK1(_callbacks->getMonitors(), beforeProcessingEvent, _event);
 		goto SELECT_TRANSITIONS;
 	}
 
@@ -629,7 +626,7 @@ SELECT_TRANSITIONS:
 		return USCXML_MACROSTEPPED;
 	}
 
-	USCXML_MONITOR_CALLBACK(_callbacks->getMonitor(), beforeMicroStep);
+	USCXML_MONITOR_CALLBACK(_callbacks->getMonitors(), beforeMicroStep);
 
 #ifdef USCXML_VERBOSE
 	std::cerr << "Targets: ";
@@ -793,7 +790,7 @@ ESTABLISH_ENTRYSET:
 	while(i-- > 0) {
 		if (BIT_HAS(i, exitSet) && BIT_HAS(i, _configuration)) {
 
-			USCXML_MONITOR_CALLBACK1(_callbacks->getMonitor(), beforeExitingState, USCXML_GET_STATE(i).element);
+			USCXML_MONITOR_CALLBACK1(_callbacks->getMonitors(), beforeExitingState, USCXML_GET_STATE(i).element);
 
 			/* call all on exit handlers */
 			for (auto exitIter = USCXML_GET_STATE(i).onExit.begin(); exitIter != USCXML_GET_STATE(i).onExit.end(); exitIter++) {
@@ -805,7 +802,7 @@ ESTABLISH_ENTRYSET:
 			}
 			BIT_CLEAR(i, _configuration);
 
-			USCXML_MONITOR_CALLBACK1(_callbacks->getMonitor(), afterExitingState, USCXML_GET_STATE(i).element);
+			USCXML_MONITOR_CALLBACK1(_callbacks->getMonitors(), afterExitingState, USCXML_GET_STATE(i).element);
 
 		}
 	}
@@ -814,7 +811,7 @@ ESTABLISH_ENTRYSET:
 	i = transSet.find_first();
 	while(i != boost::dynamic_bitset<>::npos) {
 		if ((USCXML_GET_TRANS(i).type & (USCXML_TRANS_HISTORY | USCXML_TRANS_INITIAL)) == 0) {
-			USCXML_MONITOR_CALLBACK1(_callbacks->getMonitor(), beforeTakingTransition, USCXML_GET_TRANS(i).element);
+			USCXML_MONITOR_CALLBACK1(_callbacks->getMonitors(), beforeTakingTransition, USCXML_GET_TRANS(i).element);
 
 			if (USCXML_GET_TRANS(i).onTrans != NULL) {
 
@@ -826,7 +823,7 @@ ESTABLISH_ENTRYSET:
 				}
 			}
 
-			USCXML_MONITOR_CALLBACK1(_callbacks->getMonitor(), afterTakingTransition, USCXML_GET_TRANS(i).element);
+			USCXML_MONITOR_CALLBACK1(_callbacks->getMonitors(), afterTakingTransition, USCXML_GET_TRANS(i).element);
 
 		}
 		i = transSet.find_next(i);
@@ -856,7 +853,7 @@ ESTABLISH_ENTRYSET:
 			continue;
 		}
 
-		USCXML_MONITOR_CALLBACK1(_callbacks->getMonitor(), beforeEnteringState, USCXML_GET_STATE(i).element);
+		USCXML_MONITOR_CALLBACK1(_callbacks->getMonitors(), beforeEnteringState, USCXML_GET_STATE(i).element);
 
 		BIT_SET_AT(i, _configuration);
 
@@ -877,7 +874,7 @@ ESTABLISH_ENTRYSET:
 			}
 		}
 
-		USCXML_MONITOR_CALLBACK1(_callbacks->getMonitor(), afterEnteringState, USCXML_GET_STATE(i).element);
+		USCXML_MONITOR_CALLBACK1(_callbacks->getMonitors(), afterEnteringState, USCXML_GET_STATE(i).element);
 
 		/* take history and initial transitions */
 		for (j = 0; j < USCXML_NUMBER_TRANS; j++) {
@@ -885,7 +882,7 @@ ESTABLISH_ENTRYSET:
 			            (USCXML_GET_TRANS(j).type & (USCXML_TRANS_HISTORY | USCXML_TRANS_INITIAL)) &&
 			            USCXML_GET_STATE(USCXML_GET_TRANS(j).source).parent == i) {
 
-				USCXML_MONITOR_CALLBACK1(_callbacks->getMonitor(), beforeTakingTransition, USCXML_GET_TRANS(j).element);
+				USCXML_MONITOR_CALLBACK1(_callbacks->getMonitors(), beforeTakingTransition, USCXML_GET_TRANS(j).element);
 
 				/* call executable content in transition */
 				if (USCXML_GET_TRANS(j).onTrans != NULL) {
@@ -896,7 +893,7 @@ ESTABLISH_ENTRYSET:
 					}
 				}
 
-				USCXML_MONITOR_CALLBACK1(_callbacks->getMonitor(), afterTakingTransition, USCXML_GET_TRANS(j).element);
+				USCXML_MONITOR_CALLBACK1(_callbacks->getMonitors(), afterTakingTransition, USCXML_GET_TRANS(j).element);
 
 			}
 		}
@@ -941,15 +938,17 @@ ESTABLISH_ENTRYSET:
 			}
 		}
 	}
-	USCXML_MONITOR_CALLBACK(_callbacks->getMonitor(), afterMicroStep);
+	USCXML_MONITOR_CALLBACK(_callbacks->getMonitors(), afterMicroStep);
 
 	// are we running in circles?
 	if (_microstepConfigurations.find(_configuration) != _microstepConfigurations.end()) {
-		USCXML_MONITOR_CALLBACK1(_callbacks->getMonitor(),
+        InterpreterIssue issue("Reentering same configuration during microstep  - possible endless loop",
+                               NULL,
+                               InterpreterIssue::USCXML_ISSUE_WARNING);
+        
+        USCXML_MONITOR_CALLBACK1(_callbacks->getMonitors(),
 		                         reportIssue,
-		                         InterpreterIssue("Reentering same configuration during microstep  - possible endless loop",
-		                                 NULL,
-		                                 InterpreterIssue::USCXML_ISSUE_WARNING));
+		                         issue);
 	}
 	_microstepConfigurations.insert(_configuration);
 

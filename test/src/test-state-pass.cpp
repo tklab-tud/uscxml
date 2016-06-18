@@ -73,11 +73,11 @@ int main(int argc, char** argv) {
 //			interpreter.setActionLanguage(al);
 
 			StateTransitionMonitor mon;
-			interpreter.setMonitor(&mon);
+			interpreter.addMonitor(&mon);
 
 			InterpreterState state = InterpreterState::USCXML_UNDEF;
 			while(state != USCXML_FINISHED) {
-				state = interpreter.step(true);
+				state = interpreter.step();
 			}
 			assert(interpreter.isInState("pass"));
 		} catch (Event e) {

@@ -74,7 +74,7 @@ int main(int argc, char** argv) {
 				if (options.verbose) {
 					StateTransitionMonitor* vm = new StateTransitionMonitor();
 					vm->copyToInvokers(true);
-					interpreter.setMonitor(vm);
+					interpreter.addMonitor(vm);
 				}
 
 				interpreters.push_back(interpreter);

@@ -65,7 +65,7 @@ public:
 	virtual const Event& getCurrentEvent() = 0;
 
 	/** Monitoring */
-	virtual InterpreterMonitor* getMonitor() = 0;
+	virtual std::set<InterpreterMonitor*> getMonitors() = 0;
 
 };
 

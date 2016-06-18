@@ -16,7 +16,7 @@ int startedAt;
 int lastTransitionAt;
 
 class StatusMonitor : public uscxml::InterpreterMonitor {
-	void beforeTakingTransition(const XERCESC_NS::DOMElement* transition) {
+	void beforeTakingTransition(uscxml::InterpreterImpl* impl, const XERCESC_NS::DOMElement* transition) {
 		lastTransitionAt = time(NULL);
 	}
 
@@ -81,7 +81,7 @@ int main(int argc, char** argv) {
         LOG(INFO) << "Processing " << interpreter.getImpl()->getBaseURL();
 		if (interpreter) {
 
-			interpreter.setMonitor(&vm);
+			interpreter.addMonitor(&vm);
 
             InterpreterState state = InterpreterState::USCXML_UNDEF;
             int now = time(NULL);

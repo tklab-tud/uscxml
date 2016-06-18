@@ -125,7 +125,7 @@ protected:
 
 private:
 	std::list<XERCESC_NS::DOMElement*> getHistoryCompletion(const XERCESC_NS::DOMElement* state);
-	void resortStates(XERCESC_NS::DOMNode* node, const X& xmlPrefix);
+	void resortStates(XERCESC_NS::DOMElement* node, const X& xmlPrefix);
 
     bool conflictsCached(const XERCESC_NS::DOMElement* t1, const XERCESC_NS::DOMElement* t2, const XERCESC_NS::DOMElement* root); ///< overrides implementation Predicates::conflicts for speed
 

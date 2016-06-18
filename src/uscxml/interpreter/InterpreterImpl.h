@@ -97,9 +97,13 @@ public:
 		return _microStepper.getConfiguration();
 	}
 
-	void setMonitor(InterpreterMonitor* monitor) {
-		_monitor = monitor;
+	void addMonitor(InterpreterMonitor* monitor) {
+		_monitors.insert(monitor);
 	}
+
+    void removeMonitor(InterpreterMonitor* monitor) {
+        _monitors.erase(monitor);
+    }
 
 	/**
 	 MicrostepCallbacks
@@ -132,8 +136,8 @@ public:
 		_execContent.uninvoke(invoke);
 	}
 
-	virtual InterpreterMonitor* getMonitor() {
-		return _monitor;
+    virtual std::set<InterpreterMonitor*> getMonitors() {
+		return _monitors;
 	}
 
 	/**
@@ -255,7 +259,9 @@ protected:
 	friend class InterpreterIssue;
 	friend class TransformerImpl;
 	friend class USCXMLInvoker;
-	friend class SCXMLIOProcessor;
+    friend class SCXMLIOProcessor;
+    friend class DebugSession;
+    friend class Debugger;
 
 	X _xmlPrefix;
 	X _xmlNS;
@@ -280,7 +286,7 @@ protected:
 	std::map<std::string, IOProcessor> _ioProcs;
 	std::map<std::string, Invoker> _invokers;
 	std::set<std::string> _autoForwarders;
-	InterpreterMonitor* _monitor;
+    std::set<InterpreterMonitor*> _monitors;
 
 private:
 	void setupDOM();

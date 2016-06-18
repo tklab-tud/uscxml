@@ -1,0 +1,189 @@
+<scxml datamodel="lua" initial="Work" name="Simulator" version="1.0" xmlns="http://www.w3.org/2005/07/scxml">
+    <datamodel>
+        <data id="PauseTimers">{
+    test = 'a',
+    b = 25,
+    t_test = {
+        xxx = '23',
+        zzz = 45
+    }
+}
+        </data>
+    </datamodel>
+    <final id="Pass"/>
+    <final id="Fail"/>
+    <state id="Work" initial="Init">
+        <onentry>
+            <log expr="'Hello from work'"/>
+        </onentry>
+        <transition event="error.*" target="Fail"/>
+        <transition event="quit" target="Pass"/>
+        <state id="Init">
+            <onentry>
+                <log expr="'Hello from init'"/>
+            </onentry>
+            <transition event="StartExercise" target="Training"/>
+        </state>
+        <parallel id="Training">
+            <transition event="StopExercise" target="Init"/>
+            <state id="APU">
+                <invoke type="scxml">
+                    <content>
+                        <scxml datamodel="lua" initial="StateShape1" name="ScxmlShape1" version="1.0" xmlns="http://www.w3.org/2005/07/scxml">
+                            <final id="Fail"/>
+                            <state id="StateShape1" initial="Flash">
+                                <transition event="error" target="Fail"/>
+                                <transition event="StopExercise" target="Pass"/>
+                                <state id="Flash">
+                                    <datamodel>
+                                        <data id="t_ApuOff">{
+    dDiff = 0,
+    dEnter = os.clock(),
+    dInterval = 2000
+}
+                                        </data>
+                                        <data id="t_ApuOn">{
+    dDiff = 0,
+    dEnter = os.clock(),
+    dInterval = 2000
+}
+                                        </data>
+                                        <data expr="'xxx'" id="FlashName"/>
+                                    </datamodel>
+                                    <transition event="Pause" target="OnPause"/>
+                                    <state id="ApuOn">
+                                        <onentry>
+                                            <send delayexpr="tostring(t_ApuOn.dInterval-t_ApuOn.dDiff)..'ms'" event="DoApuOff" id="ID_DoApuOff"/>
+                                            <assign expr="os.clock()" location="t_ApuOn.dEnter"/>
+                                            <log expr="string.format('%s=%d',FlashName,t_ApuOn.dInterval-t_ApuOn.dDiff)" label="Delay[On]"/>
+                                        </onentry>
+                                        <onexit>
+                                            <cancel sendid="ID_DoApuOff"/>
+                                            <assign expr="t_ApuOn.dDiff + (os.clock() - t_ApuOn.dEnter)*1000" location="t_ApuOn.dDiff"/>
+                                            <log expr="string.format('%s=%d',FlashName,t_ApuOn.dDiff)" label="Elapsed[On]"/>
+                                        </onexit>
+                                        <transition event="DoApuOff" target="ApuOff">
+                                            <assign location="t_ApuOn.dDiff" expr="0"/>
+                                        </transition>
+                                    </state>
+                                    <initial>
+                                        <transition target="ApuOff">
+                                            <assign location="t_ApuOff.dDiff" expr="0"/>
+                                            <assign location="t_ApuOn.dDiff" expr="0"/>
+                                        </transition>
+                                    </initial>
+                                    <state id="ApuOff">
+                                        <onentry>
+                                            <send delayexpr="tostring(t_ApuOff.dInterval-t_ApuOff.dDiff)..'ms'" event="DoApuOn" id="ID_DoApuOn"/>
+                                            <assign expr="os.clock()" location="t_ApuOff.dEnter"/>
+                                            <log expr="string.format('%s=%d',FlashName,t_ApuOff.dInterval-t_ApuOff.dDiff)" label="Delay[Off]"/>
+                                        </onentry>
+                                        <onexit>
+                                            <cancel sendid="ID_DoApuOn"/>
+                                            <assign expr="t_ApuOff.dDiff + (os.clock() - t_ApuOff.dEnter)*1000" location="t_ApuOff.dDiff"/>
+                                            <log expr="string.format('%s=%d',FlashName,t_ApuOff.dDiff)" label="Elapsed[Off]"/>
+                                        </onexit>
+                                        <transition event="DoApuOn" target="ApuOn">
+                                            <assign location="t_ApuOff.dDiff" expr="0"/>
+                                        </transition>
+                                    </state>
+                                    <history id="HistoryShape1" type="deep">
+                                        <transition target="ApuOff"/>
+                                    </history>
+                                </state>
+                                <state id="OnPause">
+                                    <transition event="Resume" target="HistoryShape1"/>
+                                </state>
+                            </state>
+                            <final id="Pass"/>
+                        </scxml>
+                    </content>
+                    <param expr="'APU'" name="FlashName"/>
+                </invoke>
+            </state>
+            <state id="StateShape3">
+                <state id="OnResume">
+                    <transition event="Pause" target="OnPause"/>
+                </state>
+                <state id="OnPause">
+                    <transition event="Resume" target="OnResume"/>
+                </state>
+            </state>
+            <state id="ENGINES">
+                <invoke type="scxml">
+                    <content>
+                        <scxml datamodel="lua" initial="StateShape1" name="ScxmlShape1" version="1.0" xmlns="http://www.w3.org/2005/07/scxml">
+                            <final id="Fail"/>
+                            <state id="StateShape1" initial="Flash">
+                                <transition event="error" target="Fail"/>
+                                <transition event="StopExercise" target="Pass"/>
+                                <state id="Flash">
+                                    <datamodel>
+                                        <data id="t_ApuOff">{
+    dDiff = 0,
+    dEnter = os.clock(),
+    dInterval = 2000
+}
+                                        </data>
+                                        <data id="t_ApuOn">{
+    dDiff = 0,
+    dEnter = os.clock(),
+    dInterval = 2000
+}
+                                        </data>
+                                        <data expr="'xxx'" id="FlashName"/>
+                                    </datamodel>
+                                    <transition event="Pause" target="OnPause"/>
+                                    <state id="ApuOn">
+                                        <onentry>
+                                            <send delayexpr="tostring(t_ApuOn.dInterval-t_ApuOn.dDiff)..'ms'" event="DoApuOff" id="ID_DoApuOff"/>
+                                            <assign expr="os.clock()" location="t_ApuOn.dEnter"/>
+                                            <log expr="string.format('%s=%d',FlashName,t_ApuOn.dInterval-t_ApuOn.dDiff)" label="Delay[On]"/>
+                                        </onentry>
+                                        <onexit>
+                                            <cancel sendid="ID_DoApuOff"/>
+                                            <assign expr="t_ApuOn.dDiff + (os.clock() - t_ApuOn.dEnter)*1000" location="t_ApuOn.dDiff"/>
+                                            <log expr="string.format('%s=%d',FlashName,t_ApuOn.dDiff)" label="Elapsed[On]"/>
+                                        </onexit>
+                                        <transition event="DoApuOff" target="ApuOff">
+                                            <assign location="t_ApuOn.dDiff" expr="0"/>
+                                        </transition>
+                                    </state>
+                                    <initial>
+                                        <transition target="ApuOff">
+                                            <assign location="t_ApuOff.dDiff" expr="0"/>
+                                            <assign location="t_ApuOn.dDiff" expr="0"/>
+                                        </transition>
+                                    </initial>
+                                    <state id="ApuOff">
+                                        <onentry>
+                                            <send delayexpr="tostring(t_ApuOff.dInterval-t_ApuOff.dDiff)..'ms'" event="DoApuOn" id="ID_DoApuOn"/>
+                                            <assign expr="os.clock()" location="t_ApuOff.dEnter"/>
+                                            <log expr="string.format('%s=%d',FlashName,t_ApuOff.dInterval-t_ApuOff.dDiff)" label="Delay[Off]"/>
+                                        </onentry>
+                                        <onexit>
+                                            <cancel sendid="ID_DoApuOn"/>
+                                            <assign expr="t_ApuOff.dDiff + (os.clock() - t_ApuOff.dEnter)*1000" location="t_ApuOff.dDiff"/>
+                                            <log expr="string.format('%s=%d',FlashName,t_ApuOff.dDiff)" label="Elapsed[Off]"/>
+                                        </onexit>
+                                        <transition event="DoApuOn" target="ApuOn">
+                                            <assign location="t_ApuOff.dDiff" expr="0"/>
+                                        </transition>
+                                    </state>
+                                    <history id="HistoryShape1" type="deep">
+                                        <transition target="ApuOff"/>
+                                    </history>
+                                </state>
+                                <state id="OnPause">
+                                    <transition event="Resume" target="HistoryShape1"/>
+                                </state>
+                            </state>
+                            <final id="Pass"/>
+                        </scxml>
+                    </content>
+                    <param expr="'ENGINES'" name="FlashName"/>
+                </invoke>
+            </state>
+        </parallel>
+    </state>
+</scxml>

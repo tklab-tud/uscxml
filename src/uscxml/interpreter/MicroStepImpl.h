@@ -23,6 +23,7 @@
 #include "uscxml/config.h"
 
 #include <list>
+#include <set>
 #include <string>
 #include <xercesc/dom/DOM.hpp>
 
@@ -33,6 +34,8 @@
 
 namespace uscxml {
 
+class InterpreterMonitor;
+    
 /**
  * @ingroup microstep
  * @ingroup callback
@@ -57,7 +60,7 @@ public:
 	virtual void uninvoke(XERCESC_NS::DOMElement* invoke) = 0;
 
 	/** Monitoring */
-	virtual InterpreterMonitor* getMonitor() = 0;
+	virtual std::set<InterpreterMonitor*> getMonitors() = 0;
 };
 
 /**

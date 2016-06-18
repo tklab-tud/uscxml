@@ -330,7 +330,7 @@ void BasicContentExecutor::process(XERCESC_NS::DOMElement* block, const X& xmlPr
 	}
 
 	try {
-		USCXML_MONITOR_CALLBACK1(_callbacks->getMonitor(), beforeExecutingContent, block);
+		USCXML_MONITOR_CALLBACK1(_callbacks->getMonitors(), beforeExecutingContent, block);
 
 		if (false) {
 		} else if (iequals(tagName, xmlPrefix.str() + "raise")) {
@@ -358,12 +358,12 @@ void BasicContentExecutor::process(XERCESC_NS::DOMElement* block, const X& xmlPr
 		Event e(exc);
 		_callbacks->enqueueInternal(e);
 		LOG(ERROR) << exc << std::endl;
-		USCXML_MONITOR_CALLBACK1(_callbacks->getMonitor(), afterExecutingContent, block);
+		USCXML_MONITOR_CALLBACK1(_callbacks->getMonitors(), afterExecutingContent, block);
 
 		throw e; // will be catched in microstepper
 
 	}
-	USCXML_MONITOR_CALLBACK1(_callbacks->getMonitor(), afterExecutingContent, block);
+	USCXML_MONITOR_CALLBACK1(_callbacks->getMonitors(), afterExecutingContent, block);
 
 }
 
@@ -463,18 +463,18 @@ void BasicContentExecutor::invoke(XERCESC_NS::DOMElement* element) {
 		finalize = finalizes.front();
 	}
 
-	USCXML_MONITOR_CALLBACK2(_callbacks->getMonitor(), beforeUninvoking, element, invokeEvent.invokeid);
+	USCXML_MONITOR_CALLBACK2(_callbacks->getMonitors(), beforeUninvoking, element, invokeEvent.invokeid);
 	_callbacks->invoke(type, source, autoForward, finalize, invokeEvent);
-	USCXML_MONITOR_CALLBACK2(_callbacks->getMonitor(), afterUninvoking, element, invokeEvent.invokeid);
+	USCXML_MONITOR_CALLBACK2(_callbacks->getMonitors(), afterUninvoking, element, invokeEvent.invokeid);
 }
 
 void BasicContentExecutor::uninvoke(XERCESC_NS::DOMElement* invoke) {
 	char* invokeId = (char*)invoke->getUserData(X("invokeid"));
 	assert(invokeId != NULL);
 
-	USCXML_MONITOR_CALLBACK2(_callbacks->getMonitor(), beforeUninvoking, invoke, invokeId);
+	USCXML_MONITOR_CALLBACK2(_callbacks->getMonitors(), beforeUninvoking, invoke, invokeId);
 	_callbacks->uninvoke(invokeId);
-	USCXML_MONITOR_CALLBACK2(_callbacks->getMonitor(), afterUninvoking, invoke, invokeId);
+	USCXML_MONITOR_CALLBACK2(_callbacks->getMonitors(), afterUninvoking, invoke, invokeId);
 
     invoke->setUserData(X("invokeid"), NULL, NULL);
 	free(invokeId);

@@ -37,24 +37,10 @@ Event BasicEventQueue::dequeue(size_t blockMs) {
 	if (blockMs > 0) {
 
         // block for given milliseconds or until queue is filled
-		std::chrono::time_point<std::chrono::system_clock> updated, now;
-        std::chrono::milliseconds remain;
+        auto endTime = std::chrono::system_clock::now() + std::chrono::milliseconds(blockMs);
         
-        if (blockMs > (std::chrono::system_clock::duration::max)().count()) {
-            blockMs = (std::chrono::system_clock::duration::max)().count();
-        }
-        
-		updated = now = std::chrono::system_clock::now();
-        remain = std::chrono::milliseconds(blockMs);
-         
-		while (remain.count() > 0 && _queue.empty()) {
-			_cond.wait_for(_mutex, remain);
-            
-            now = std::chrono::system_clock::now();
-
-            auto elapsed = now - updated;
-            remain -= std::chrono::duration_cast<std::chrono::milliseconds>(elapsed);
-            updated = now;
+        while (_queue.empty()) {
+            _cond.wait_until(_mutex, endTime);
 		}
 	}
 

@@ -220,8 +220,12 @@ void Interpreter::setActionLanguage(ActionLanguage actionLanguage) {
 	return _impl->setActionLanguage(actionLanguage);
 }
 
-void Interpreter::setMonitor(InterpreterMonitor* monitor) {
-	return _impl->setMonitor(monitor);
+void Interpreter::addMonitor(InterpreterMonitor* monitor) {
+	return _impl->addMonitor(monitor);
+}
+
+void Interpreter::removeMonitor(InterpreterMonitor* monitor) {
+    return _impl->removeMonitor(monitor);
 }
 
 std::list<InterpreterIssue> Interpreter::validate() {
@@ -240,19 +244,19 @@ static void printNodeSet(const std::list<XERCESC_NS::DOMElement*> nodes) {
 }
 #endif
 
-void StateTransitionMonitor::beforeTakingTransition(const XERCESC_NS::DOMElement* transition) {
+void StateTransitionMonitor::beforeTakingTransition(InterpreterImpl* impl, const XERCESC_NS::DOMElement* transition) {
 	std::lock_guard<std::recursive_mutex> lock(_mutex);
 	std::cerr << "Transition: " << uscxml::DOMUtils::xPathForNode(transition) << std::endl;
 }
 
-void StateTransitionMonitor::onStableConfiguration() {
+void StateTransitionMonitor::onStableConfiguration(InterpreterImpl* impl) {
 	std::lock_guard<std::recursive_mutex> lock(_mutex);
 	std::cerr << "Stable Config: { ";
 //	printNodeSet(_interpreter.getConfiguration());
 	std::cerr << " }" << std::endl;
 }
 
-void StateTransitionMonitor::beforeProcessingEvent(const  uscxml::Event& event) {
+void StateTransitionMonitor::beforeProcessingEvent(InterpreterImpl* impl, const uscxml::Event& event) {
 	std::lock_guard<std::recursive_mutex> lock(_mutex);
 	switch (event.eventType) {
 	case uscxml::Event::INTERNAL:
@@ -267,23 +271,23 @@ void StateTransitionMonitor::beforeProcessingEvent(const  uscxml::Event& event) 
 	}
 }
 
-void StateTransitionMonitor::beforeExecutingContent(const XERCESC_NS::DOMElement* element) {
+void StateTransitionMonitor::beforeExecutingContent(InterpreterImpl* impl, const XERCESC_NS::DOMElement* element) {
 	std::lock_guard<std::recursive_mutex> lock(_mutex);
 	std::cerr << "Executable Content: " << DOMUtils::xPathForNode(element) << std::endl;
 }
 
-void StateTransitionMonitor::beforeExitingState(const XERCESC_NS::DOMElement* state) {
+void StateTransitionMonitor::beforeExitingState(InterpreterImpl* impl, const XERCESC_NS::DOMElement* state) {
 	std::lock_guard<std::recursive_mutex> lock(_mutex);
 	std::cerr << "Exiting: " << (HAS_ATTR(state, "id") ? ATTR(state, "id") : DOMUtils::xPathForNode(state)) << std::endl;
 }
 
-void StateTransitionMonitor::beforeEnteringState(const XERCESC_NS::DOMElement* state) {
+void StateTransitionMonitor::beforeEnteringState(InterpreterImpl* impl, const XERCESC_NS::DOMElement* state) {
 	std::lock_guard<std::recursive_mutex> lock(_mutex);
 	std::cerr << "Entering: " << (HAS_ATTR(state, "id") ? ATTR(state, "id") : DOMUtils::xPathForNode(state)) << std::endl;
 
 }
 
-void StateTransitionMonitor::beforeMicroStep() {
+void StateTransitionMonitor::beforeMicroStep(InterpreterImpl* impl) {
 	std::lock_guard<std::recursive_mutex> lock(_mutex);
 	std::cerr << "Config: {";
 //	printNodeSet(_interpreter.getConfiguration());

@@ -221,7 +221,12 @@ public:
 	/**
 	 * Attach a monitor to make more details of the interpreter observable.
 	 */
-	void setMonitor(InterpreterMonitor* monitor);
+    void addMonitor(InterpreterMonitor* monitor);
+    
+    /**
+     * Remove a monitor that was attached previously.
+     */
+    void removeMonitor(InterpreterMonitor* monitor);
 
 	/**
 	 * Return the actual implementation of the Interperter.

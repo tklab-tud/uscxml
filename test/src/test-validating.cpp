@@ -31,7 +31,7 @@ public:
 	IssueMonitor() {
 		runtimeIssues = 0;
 	}
-	void reportIssue(const InterpreterIssue& issue) {
+	void reportIssue(InterpreterImpl* impl, const InterpreterIssue& issue) {
 		runtimeIssues++;
 	}
 };
@@ -60,7 +60,7 @@ int main(int argc, char** argv) {
 
 			IssueMonitor monitor;
 			Interpreter interpreter = Interpreter::fromXML(xml, "");
-			interpreter.setMonitor(&monitor);
+			interpreter.addMonitor(&monitor);
 
 			while(interpreter.step() > 0) {}
 
