@@ -1,6 +1,8 @@
 #include "uscxml/config.h"
 #include "uscxml/Interpreter.h"
+#include "uscxml/InterpreterOptions.h"
 #include "uscxml/debug/InterpreterIssue.h"
+#include "uscxml/debug/DebuggerServlet.h"
 #include "uscxml/interpreter/InterpreterMonitor.h"
 #include "uscxml/util/DOM.h"
 
@@ -87,22 +89,37 @@ int main(int argc, char** argv) {
 		}
 	}
 
-	// run interpreters
-	try {
-		std::list<Interpreter>::iterator interpreterIter = interpreters.begin();
-        while (interpreters.size() > 0) {
-            while(interpreterIter != interpreters.end()) {
-                InterpreterState state = interpreterIter->step();
-                if (state == USCXML_FINISHED) {
-                    interpreterIter = interpreters.erase(interpreterIter);
-                } else {
-                    interpreterIter++;
-                }
-            }
-            interpreterIter = interpreters.begin();
+    if (options.withDebugger) {
+        DebuggerServlet* debugger;
+        debugger = new DebuggerServlet();
+        debugger->copyToInvokers(true);
+        HTTPServer::getInstance()->registerServlet("/debug", debugger);
+        for (auto interpreter : interpreters) {
+            interpreter.addMonitor(debugger);
         }
-	} catch (Event e) {
-		std::cout << e << std::endl;
-	}
+    }
+    
+	// run interpreters
+    if (interpreters.size() > 0) {
+        try {
+            std::list<Interpreter>::iterator interpreterIter = interpreters.begin();
+            while (interpreters.size() > 0) {
+                while(interpreterIter != interpreters.end()) {
+                    InterpreterState state = interpreterIter->step();
+                    if (state == USCXML_FINISHED) {
+                        interpreterIter = interpreters.erase(interpreterIter);
+                    } else {
+                        interpreterIter++;
+                    }
+                }
+                interpreterIter = interpreters.begin();
+            }
+        } catch (Event e) {
+            std::cout << e << std::endl;
+        }
+    } else if (options.withDebugger) {
+        while(true)
+            std::this_thread::sleep_for(std::chrono::seconds(1));
+    }
 	return EXIT_SUCCESS;
 }

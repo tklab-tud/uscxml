@@ -29,7 +29,7 @@
 
 namespace uscxml {
 
-class USCXML_API DebuggerServlet : public Debugger, public HTTPServlet {
+class USCXML_API DebuggerServlet : public Debugger, public HTTPServlet, public el::LogDispatchCallback {
 public:
 	class LogMessage : public Data {
 	public:
@@ -58,7 +58,7 @@ public:
 	bool isCORS(const HTTPServer::Request& request);
 	void handleCORS(const HTTPServer::Request& request);
 
-	bool httpRecvRequest(const HTTPServer::Request& request);
+	bool requestFromHTTP(const HTTPServer::Request& request);
 	void setURL(const std::string& url) {
 		_url = url;
 	}
@@ -92,6 +92,8 @@ public:
 	                  const struct ::tm* tm_time,
 	                  const char* message, size_t message_len);
 */
+    void handle(const el::LogDispatchData* data);
+
 protected:
 	void serverPushData(std::shared_ptr<DebugSession>);
 

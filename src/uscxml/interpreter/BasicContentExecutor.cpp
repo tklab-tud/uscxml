@@ -597,7 +597,7 @@ Data BasicContentExecutor::elementAsData(XERCESC_NS::DOMElement* element) {
 
 			Data d;
 			XERCESC_NS::DOMDocument* doc = parser.adoptDocument();
-			d.adoptedDoc = std::make_shared<XERCESC_NS::DOMDocument*>(doc);
+			d.adoptedDoc = std::shared_ptr<XERCESC_NS::DOMDocument>(doc);
 			d.node = doc->getDocumentElement();
             
             return d;

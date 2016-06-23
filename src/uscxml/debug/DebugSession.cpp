@@ -21,6 +21,8 @@
 #include "uscxml/debug/Debugger.h"
 #include "uscxml/util/Predicates.h"
 
+#include <easylogging++.h>
+
 namespace uscxml {
 
 void DebugSession::checkBreakpoints(const std::list<Breakpoint> qualifiedBreakpoints) {
@@ -177,13 +179,37 @@ Data DebugSession::debugStart(const Data& data) {
 		replyData.compound["reason"] = Data("No interpreter attached or loaded", Data::VERBATIM);
 		replyData.compound["status"] = Data("failure", Data::VERBATIM);
 	} else {
-		//_interpreter.start();
-        assert(false);
-
+        _isRunning = true;
+        _interpreterThread = new std::thread(DebugSession::run, this);
 		replyData.compound["status"] = Data("success", Data::VERBATIM);
 	}
 
 	return replyData;
+}
+
+void DebugSession::run(void* instance) {
+    DebugSession* INSTANCE = (DebugSession*)instance;
+    
+#ifdef APPLE
+    std::string threadName;
+    threadName += "uscxml::";
+    threadName += (INSTANCE->_interpreter.getImpl()->_name.size() > 0 ? INSTANCE->_interpreter.getImpl()->_name : "anon");
+    threadName += ".debug";
+    
+    pthread_setname_np(threadName.c_str());
+#endif
+    
+    InterpreterState state = USCXML_UNDEF;
+    while(state != USCXML_FINISHED && INSTANCE->_isRunning) {
+        state = INSTANCE->_interpreter.step(100);
+        
+        //		if (!INSTANCE->_isStarted) {
+        //			// we have been cancelled
+        //			INSTANCE->_isActive = false;
+        //			return;
+        //		}
+    }
+    LOG(DEBUG) << "done";
 }
 
 Data DebugSession::debugStop(const Data& data) {
@@ -194,9 +220,11 @@ Data DebugSession::debugStop(const Data& data) {
 		_debugger->detachSession(_interpreter.getImpl().get());
 	}
 
-	if (_interpreter && !_isAttached)
-        assert(false);
-        //_interpreter.stop();
+    if (_isRunning && _interpreterThread != NULL) {
+        _isRunning = false;
+        _interpreterThread->join();
+        delete(_interpreterThread);
+    }
 	// unblock
 	_resumeCond.notify_all();
 
@@ -218,9 +246,11 @@ Data DebugSession::debugStep(const Data& data) {
 	Data replyData;
 	if (_interpreter) {
 		// register ourself as a monitor
-		if (!_isRunning)
-			//_interpreter.start();
-            assert(false);
+        if (!_isRunning) {
+            _isRunning = true;
+            _interpreterThread = new std::thread(DebugSession::run, this);
+
+        }
 
 		replyData.compound["status"] = Data("success", Data::VERBATIM);
 	} else {

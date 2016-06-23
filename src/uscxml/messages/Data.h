@@ -220,7 +220,7 @@ protected:
 #endif
 
 	XERCESC_NS::DOMNode* node;
-	std::shared_ptr<XERCESC_NS::DOMDocument*> adoptedDoc;
+	std::shared_ptr<XERCESC_NS::DOMDocument> adoptedDoc;
 	std::map<std::string, Data> compound;
 	std::list<Data> array;
 	std::string atom;

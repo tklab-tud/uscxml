@@ -62,7 +62,6 @@ public:
 	static const XERCESC_NS::DOMElement* getNearestAncestor(const XERCESC_NS::DOMNode* node, const std::string tagName);
 	static bool isDescendant(const XERCESC_NS::DOMNode* s1, const XERCESC_NS::DOMNode* s2);
 
-
 	static bool hasIntersection(const std::list<XERCESC_NS::DOMElement*>& l1,
 	                            const std::list<XERCESC_NS::DOMElement*>& l2);
 	static bool isMember(const XERCESC_NS::DOMElement* node, const std::list<XERCESC_NS::DOMElement*>& list);

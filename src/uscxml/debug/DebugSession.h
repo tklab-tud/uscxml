@@ -90,6 +90,7 @@ protected:
 
     std::thread* _interpreterThread = NULL;
     bool _isRunning;
+    static void run(void* instance);
 
 	bool _markedForDeletion;
 	Debugger* _debugger;

@@ -87,7 +87,7 @@ void DebuggerServlet::handleCORS(const HTTPServer::Request& request) {
 	HTTPServer::reply(corsReply);
 }
 
-bool DebuggerServlet::httpRecvRequest(const HTTPServer::Request& request) {
+bool DebuggerServlet::requestFromHTTP(const HTTPServer::Request& request) {
 	if (!request.data.hasKey("path"))
 		return false; //		returnError(request);
 
@@ -236,6 +236,9 @@ void DebuggerServlet::processListSessions(const HTTPServer::Request& request) {
 
 	replyData.compound["status"] = Data("success", Data::VERBATIM);
 	returnData(request, replyData);
+}
+
+void DebuggerServlet::handle(const el::LogDispatchData* data) {
 }
 
 /*

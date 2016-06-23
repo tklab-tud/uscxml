@@ -42,50 +42,6 @@ class InterpreterMonitor;
 class InterpreterImpl;
 class InterpreterIssue;
 
-/**
- * @ingroup interpreter
- * Options to pass into an interpreter.
- */
-class USCXML_API InterpreterOptions {
-public:
-	InterpreterOptions() :
-		verbose(false),
-		validate(false),
-		withHTTP(true),
-		withHTTPS(true),
-		withWS(true),
-		logLevel(0),
-		httpPort(5080),
-		httpsPort(5443),
-		wsPort(5081) {
-	}
-
-	bool verbose;
-	bool validate;
-	bool withHTTP;
-	bool withHTTPS;
-	bool withWS;
-	int logLevel;
-	unsigned short httpPort;
-	unsigned short httpsPort;
-	unsigned short wsPort;
-	std::string pluginPath;
-	std::string certificate;
-	std::string privateKey;
-	std::string publicKey;
-	std::vector<std::pair<std::string, InterpreterOptions*> > interpreters;
-	std::map<std::string, std::string> additionalParameters;
-
-	std::string error;
-
-	operator bool() {
-		return error.length() == 0;
-	}
-
-	static void printUsageAndExit(const char* progName);
-	static InterpreterOptions fromCmdLine(int argc, char** argv);
-
-};
 
 /**
  * @ingroup interpreter

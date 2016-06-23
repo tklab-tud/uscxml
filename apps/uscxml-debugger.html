@@ -1099,11 +1099,14 @@
 					// we found a document, enable "recent" button
 					$(this.recentDocumentsNode).prev().attr('disabled', false);
 					
+					console.log(recentURL);
+					
 					var recentDocumentItem = $('\
 						<li><a href="#"><!-- i class="glyphicon glyphicon-floppy-open" style="margin-right: 0.7em" / -->' + key + '<span class="recent-document-features"></span></a></li>\
 					');
 					var recentDocumentFeatures = $(recentDocumentItem).find("span.recent-document-features");
-					$(recentDocumentItem).children("a").click(function() {
+					$(recentDocumentItem).children("a").unbind('click').click(function() {
+						console.log("recentURL: " + recentURL);
 						$(debug.loadFromURLModalNode).find("input#loadFromURLModalInput").val(recentURL);
 						$(debug.recentDocumentsNode).dropdown("toggle");
 						return false;

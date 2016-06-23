@@ -92,10 +92,12 @@ include_directories(contrib/src)
 include_directories(${CMAKE_BINARY_DIR})
 include_directories(${PROJECT_SOURCE_DIR}/contrib/src/jsmn)
 include_directories(${PROJECT_SOURCE_DIR}/contrib/src/evws)
+
+set(GETOPT_FILES ${PROJECT_SOURCE_DIR}/contrib/src/uscxml/InterpreterOptions.cpp)	
 if (WIN32)
 	include_directories(${PROJECT_SOURCE_DIR}/contrib/src/getopt)
 	include_directories(${PROJECT_SOURCE_DIR}/contrib/src/inttypes)
-	set(GETOPT_FILES ${PROJECT_SOURCE_DIR}/contrib/src/getopt/getopt.c)	
+	list(APPEND GETOPT_FILES ${PROJECT_SOURCE_DIR}/contrib/src/getopt/getopt.c)	
 endif()
 
 ################################
