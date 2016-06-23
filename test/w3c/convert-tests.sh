@@ -13,6 +13,9 @@ while [ "$1" != "" ]; do
 		ecma )
 			ECMA=$1 
 			shift ;;
+		c89 )
+			C89=$1 
+			shift ;;
 		lua )
 			LUA=$1 
 			shift ;;
@@ -47,6 +50,9 @@ do
 	TARGETFILE=`basename $TXML .txml`.scxml
 	if [ "$ECMA" != "" ]; then
 		echo -n "ecma " && $TRANSFORM $TXML confEcma.xsl -o:ecma/$TARGETFILE
+	fi
+	if [ "$C89" != "" ]; then
+		echo -n "c89 " && $TRANSFORM $TXML confC89.xsl -o:c89/$TARGETFILE
 	fi
 	if [ "$JEXL" != "" ]; then
 		echo -n "jexl " && $TRANSFORM $TXML confJEXL.xsl -o:jexl/$TARGETFILE

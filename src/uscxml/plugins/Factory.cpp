@@ -52,6 +52,10 @@
 #   include "uscxml/plugins/datamodel/lua/LuaDataModel.h"
 #endif
 
+#ifdef WITH_DM_C89
+#   include "uscxml/plugins/datamodel/c89/C89DataModel.h"
+#endif
+
 
 #ifdef WITH_INV_SCXML
 #   include "uscxml/plugins/invoker/scxml/USCXMLInvoker.h"
@@ -116,6 +120,13 @@ void Factory::registerPlugins() {
 #ifdef WITH_DM_LUA
     {
         LuaDataModel* dataModel = new LuaDataModel();
+        registerDataModel(dataModel);
+    }
+#endif
+
+#ifdef WITH_DM_C89
+    {
+        C89DataModel* dataModel = new C89DataModel();
         registerDataModel(dataModel);
     }
 #endif

@@ -47,6 +47,16 @@ if (LUA_FOUND)
 	list (APPEND USCXML_OPT_LIBS ${LUA_LIBRARY})
 endif()
 
+if (ON)
+	set(USCXML_DATAMODELS "c89 ${USCXML_DATAMODELS}")
+	# Lua ecmascript datamodel
+	file(GLOB C89_DATAMODEL
+		c89/*.cpp
+		c89/*.h
+	)
+	list (APPEND USCXML_FILES ${C89_DATAMODEL})
+endif()
+
 if (NOT SWIG_FOUND)
 	message(STATUS "No swig binary found, not generating DOM classes")		
 elseif(SWIG_VERSION VERSION_LESS 3.0.8)
