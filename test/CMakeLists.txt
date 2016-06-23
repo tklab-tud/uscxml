@@ -118,6 +118,7 @@ if (NOT BUILD_MINIMAL)
 		# "xpath"
 		"null"
 		"lua"
+		"c89"
 		# "promela"
 
 		# generated c source
