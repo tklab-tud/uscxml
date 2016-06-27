@@ -1029,16 +1029,11 @@ void ChartToVHDL::writeActiveStateNplusOne(std::ostream & stream) {
 //        DOMElement* state = *stateIter;
         // TÖDO: is there a case where complete entry set reflects not the next state ?
         VBranch* tree = (VASSIGN,
-                //                    VLINE("state_next_" + toStr(i) + "_sig"),
-                //                    (VAND,
-                //                    VLINE("in_complete_entry_set_" + toStr(i) + "_sig") ,
-                //                    (VOR, VLINE("in_exit_set_" + toStr(i) + "_sig"), (VNOT, VLINE("state_active_" + toStr(i) + "_sig"))))
-                //                    );
-                VLINE("state_next_" + toStr(i) + "_sig"),
-                (VOR,
-                VLINE("in_complete_entry_set_" + toStr(i) + "_sig"),
-                (VAND, (VNOT, VLINE("in_exit_set_" + toStr(i) + "_sig")), VLINE("state_active_" + toStr(i) + "_sig")))
-                );
+                        VLINE("state_next_" + toStr(i) + "_sig"),
+                        (VOR,
+                                VLINE("in_complete_entry_set_" + toStr(i) + "_sig"),
+                                (VAND, (VNOT, VLINE("in_exit_set_" + toStr(i) + "_sig")), VLINE("state_active_" + toStr(i) + "_sig"))
+                        )                );
 
         tree->print(stream);
         stream << ";" << std::endl;
@@ -1251,18 +1246,13 @@ void ChartToVHDL::writeCompleteEntrySet(std::ostream & stream) {
             }
         }
 
-        // @juehv: you had the following block in here, but it is syntactically wrong!
-        assert(false);
-#if 0
         VBranch* tree = (VASSIGN,
                 VLINE("in_complete_entry_set_up_" + toStr(i) + "_sig"),
                 (VOR, optimalEntrysetters, completeEntrysetters)
                 );
-                (VOR, optimalEntrysetters, completeEntrysetters)
-                );
         tree->print(stream);
         stream << ";" << std::endl;
-#endif
+
 
 #if 0
         stream << "in_complete_entry_set_up_" << toStr(i) << "_sig <= ('0'" << std::endl;

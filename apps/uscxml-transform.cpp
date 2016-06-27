@@ -291,17 +291,17 @@ int main(int argc, char** argv) {
 			exit(EXIT_SUCCESS);
 		}
 
-//		if (outType == "vhdl") {
-//			if (outputFile.size() == 0 || outputFile == "-") {
-//				ChartToVHDL::transform(interpreter).writeTo(std::cout);
-//			} else {
-//				std::ofstream outStream;
-//				outStream.open(outputFile.c_str());
-//				ChartToVHDL::transform(interpreter).writeTo(outStream);
-//				outStream.close();
-//			}
-//			exit(EXIT_SUCCESS);
-//		}
+		if (outType == "vhdl") {
+			if (outputFile.size() == 0 || outputFile == "-") {
+				ChartToVHDL::transform(interpreter).writeTo(std::cout);
+			} else {
+				std::ofstream outStream;
+				outStream.open(outputFile.c_str());
+				ChartToVHDL::transform(interpreter).writeTo(outStream);
+				outStream.close();
+			}
+			exit(EXIT_SUCCESS);
+		}
 
 //		if (outType == "pml") {
 //			if (outputFile.size() == 0 || outputFile == "-") {
