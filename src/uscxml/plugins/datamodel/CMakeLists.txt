@@ -50,8 +50,9 @@ endif()
 if (ON)
 	set(USCXML_DATAMODELS "c89 ${USCXML_DATAMODELS}")
 	# Lua ecmascript datamodel
-	file(GLOB C89_DATAMODEL
+	file(GLOB_RECURSE C89_DATAMODEL
 		c89/*.cpp
+		c89/*.c
 		c89/*.h
 	)
 	list (APPEND USCXML_FILES ${C89_DATAMODEL})

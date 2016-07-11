@@ -79,10 +79,10 @@ void URLImpl::prepareException(ErrorEvent& exception, int errorCode, const std::
 	}
 }
 
-URLImpl::URLImpl() : _handle(NULL), _isDownloaded(false), _hasFailed(false) {
+URLImpl::URLImpl() : _handle(NULL), _requestType(GET), _isDownloaded(false), _hasFailed(false) {
 }
 
-URLImpl::URLImpl(const std::string& url) : _orig(url), _handle(NULL), _isDownloaded(false), _hasFailed(false) {
+URLImpl::URLImpl(const std::string& url) : _orig(url), _handle(NULL), _requestType(GET), _isDownloaded(false), _hasFailed(false) {
 	UriParserStateA state;
 	state.uri = &_uri;
 

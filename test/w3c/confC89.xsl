@@ -24,7 +24,7 @@
 <xsl:template match="conf:pass">
  <final xmlns="http://www.w3.org/2005/07/scxml" id="pass">
    <onentry>
-     <log label="Outcome" expr="'pass'"/>
+     <log label="Outcome" expr="&amp;pass&amp;"/>
    </onentry>
  </final>
 </xsl:template>
@@ -38,7 +38,7 @@
 <xsl:template match="conf:fail">
  <final xmlns="http://www.w3.org/2005/07/scxml" id="fail">
    <onentry>
-    <log label="Outcome" expr="'fail'"/>
+    <log label="Outcome" expr="&amp;pass&amp;"/>
    </onentry>
 </final>
 </xsl:template>
@@ -91,7 +91,7 @@
 
 <!-- expr is quoted -->
 <xsl:template match="//@conf:quoteExpr">
-	<xsl:attribute name="expr">'<xsl:value-of select="." />'</xsl:attribute>
+	<xsl:attribute name="expr">&amp;<xsl:value-of select="." />&amp;</xsl:attribute>
 </xsl:template>
 
 <!-- an expr that is the value of a variable -->
@@ -250,7 +250,7 @@
 <!-- computes a delayexpr based on the value passed in.  this lets platforms determine how long to delay timeout
 events which cause the test to fail.  The default value provided here is pretty long -->
 <xsl:template match="//@conf:delay">
-	<xsl:attribute name="delayexpr">'<xsl:value-of select="."/>s'</xsl:attribute>
+	<xsl:attribute name="delayexpr">&amp;<xsl:value-of select="."/>s&amp;</xsl:attribute>
 </xsl:template>
 
 <!--  the specified variable is used as idlocation -->
@@ -393,7 +393,7 @@ events which cause the test to fail.  The default value provided here is pretty 
 
 <!-- test that the event's name fieldhas the value specified -->
 <xsl:template match="//@conf:eventNameVal">
-		<xsl:attribute name="cond">_event.name == <xsl:text>'</xsl:text><xsl:value-of select="."/><xsl:text>'</xsl:text>
+		<xsl:attribute name="cond">_event.name == <xsl:text>&amp;</xsl:text><xsl:value-of select="."/><xsl:text>&amp;</xsl:text>
 	</xsl:attribute>
 
 </xsl:template>

@@ -5,6 +5,7 @@ find_program(SPIN spin)
 find_program(CC gcc)
 find_program(CXX g++)
 find_program(ANT_EXECUTABLE ant)
+find_program(PERL perl)
 
 function(USCXML_TEST_COMPILE)
 	set(options BUILD_ONLY)
@@ -28,6 +29,7 @@ USCXML_TEST_COMPILE(NAME test-url LABEL general/test-url FILES src/test-url.cpp)
 USCXML_TEST_COMPILE(NAME test-lifecycle LABEL general/test-lifecycle FILES src/test-lifecycle.cpp)
 USCXML_TEST_COMPILE(NAME test-validating LABEL general/test-validating FILES src/test-validating.cpp)
 USCXML_TEST_COMPILE(NAME test-snippets LABEL general/test-snippets FILES src/test-snippets.cpp)
+USCXML_TEST_COMPILE(NAME test-c89-parser LABEL general/test-c89-parser FILES src/test-c89-parser.cpp)
 
 # test-stress is not an automated test
 add_executable(test-stress src/test-stress.cpp)
@@ -101,6 +103,19 @@ foreach(USCXML_HEADER ${USCXML_PUBLIC_HEADERS} )
 	set_property(TEST "header/${USCXML_REL_HEADER}" PROPERTY LABELS "header/${USCXML_REL_HEADER}")
 	
 endforeach()
+
+# debugger REST API
+if (PERL)
+	add_test(NAME "general/test-debug-api"
+		COMMAND ${PERL} 
+			"${PROJECT_SOURCE_DIR}/test/src/test-http-debugger.pl"
+			"${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/uscxml-browser"
+			WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/test/src
+	)
+	set_property(TEST "general/test-debug-api" PROPERTY LABELS "general/test-debug-api")
+	set_tests_properties("general/test-debug-api" PROPERTIES DEPENDS uscxml-browser)
+	
+endif()
 
 # declare W3C tests
 

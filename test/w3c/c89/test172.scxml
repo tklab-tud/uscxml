@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- we test that eventexpr uses the current value of var1, not its initial value  -->
+<scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" initial="s0" datamodel="c89" version="1.0">
+  <datamodel>
+    <data id="Var1" expr="&amp;event1&amp;"/>
+  </datamodel>
+  <state id="s0">
+    <onentry>
+      <assign location="Var1" expr="&amp;event2&amp;"/>
+      <send eventexpr="Var1"/>
+    </onentry>
+    <transition event="event2" target="pass"/>
+    <transition event="*" target="fail"/>
+  </state>
+  <final id="pass">
+    <onentry>
+      <log label="Outcome" expr="&amp;pass&amp;"/>
+    </onentry>
+  </final>
+  <final id="fail">
+    <onentry>
+      <log label="Outcome" expr="&amp;pass&amp;"/>
+    </onentry>
+  </final>
+</scxml>
