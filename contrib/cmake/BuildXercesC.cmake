@@ -38,8 +38,8 @@ if(MSVC)
 	endif()
 	
 	externalproject_add(xerces-c
-		URL http://ftp.halifax.rwth-aachen.de/apache/xerces/c/3/sources/xerces-c-3.1.3.tar.gz
-		URL_MD5 70320ab0e3269e47d978a6ca0c0e1e2d
+		URL http://www.apache.org/dist/xerces/c/3/sources/xerces-c-3.1.4.tar.gz
+		URL_MD5 21bb097b711a513275379b59757cba4c
 		BUILD_IN_SOURCE 1
 		PREFIX ${CMAKE_BINARY_DIR}/deps/xerces-c
 		CONFIGURE_COMMAND ""
@@ -58,8 +58,8 @@ if(MSVC)
 		)
 else()
 	externalproject_add(xerces-c
-		URL http://ftp.halifax.rwth-aachen.de/apache/xerces/c/3/sources/xerces-c-3.1.3.tar.gz
-		URL_MD5 70320ab0e3269e47d978a6ca0c0e1e2d
+		URL http://www.apache.org/dist/xerces/c/3/sources/xerces-c-3.1.4.tar.gz
+		URL_MD5 21bb097b711a513275379b59757cba4c
 		BUILD_IN_SOURCE 0
 		PREFIX ${CMAKE_BINARY_DIR}/deps/xerces-c
 		CONFIGURE_COMMAND 
