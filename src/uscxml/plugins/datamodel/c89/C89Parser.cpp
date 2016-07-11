@@ -21,6 +21,7 @@
 #include "parser/c89.tab.hpp"
 #include "uscxml/messages/Event.h"
 
+#include <cstring>
 #include <iostream>
 #include <cassert>
 
