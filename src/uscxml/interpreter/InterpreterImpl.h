@@ -140,6 +140,10 @@ public:
 		return _monitors;
 	}
 
+    virtual InterpreterImpl* getInterpreter() {
+        return this;
+    }
+
 	/**
 	 DataModelCallbacks
 	 */

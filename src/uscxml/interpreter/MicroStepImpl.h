@@ -61,6 +61,7 @@ public:
 
 	/** Monitoring */
 	virtual std::set<InterpreterMonitor*> getMonitors() = 0;
+    virtual InterpreterImpl* getInterpreter() = 0;
 };
 
 /**

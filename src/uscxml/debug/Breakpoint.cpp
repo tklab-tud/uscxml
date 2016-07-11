@@ -86,20 +86,20 @@ Breakpoint::Breakpoint(const Data& data) {
 	if (data.hasKey("eventName"))
 		eventName = data.at("eventName").atom;
 
-	if (data.hasKey("executableName"))
-		executableName = data.at("executableName").atom;
+	if (data.hasKey("execName"))
+		executableName = data.at("execName").atom;
 
-	if (data.hasKey("executableXPath"))
-		executableXPath = data.at("executableXPath").atom;
+	if (data.hasKey("execXPath"))
+		executableXPath = data.at("execXPath").atom;
 
 	if (data.hasKey("stateId"))
 		stateId = data.at("stateId").atom;
 
-	if (data.hasKey("transSourceId"))
-		transSourceId = data.at("transSourceId").atom;
+	if (data.hasKey("source"))
+		transSourceId = data.at("source").atom;
 
-	if (data.hasKey("transTargetId"))
-		transTargetId = data.at("transTargetId").atom;
+	if (data.hasKey("target"))
+		transTargetId = data.at("target").atom;
 
 }
 
@@ -173,10 +173,10 @@ Data Breakpoint::toData() const {
 		data.compound["eventName"] = Data(eventName, Data::VERBATIM);
 
 	if (executableName.length() > 0)
-		data.compound["executableName"] = Data(executableName, Data::VERBATIM);
+		data.compound["execName"] = Data(executableName, Data::VERBATIM);
 
 	if (executableXPath.length() > 0) {
-		data.compound["executableXPath"] = Data(executableXPath, Data::VERBATIM);
+		data.compound["execXPath"] = Data(executableXPath, Data::VERBATIM);
 	}
 
 	if (element)
@@ -186,10 +186,10 @@ Data Breakpoint::toData() const {
 		data.compound["stateId"] = Data(stateId, Data::VERBATIM);
 
 	if (transSourceId.length() > 0)
-		data.compound["transSourceId"] = Data(transSourceId, Data::VERBATIM);
+		data.compound["source"] = Data(transSourceId, Data::VERBATIM);
 
 	if (transTargetId.length() > 0)
-		data.compound["transTargetId"] = Data(transTargetId, Data::VERBATIM);
+		data.compound["target"] = Data(transTargetId, Data::VERBATIM);
 
 	if (condition.length() > 0)
 		data.compound["condition"] = Data(condition, Data::VERBATIM);

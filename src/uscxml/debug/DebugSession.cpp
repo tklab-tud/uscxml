@@ -86,7 +86,9 @@ void DebugSession::breakExecution(Data replyData) {
 
 	replyData.compound["replyType"] = Data("breakpoint", Data::VERBATIM);
 	_debugger->pushData(shared_from_this(), replyData);
-	_resumeCond.wait(_mutex);
+    
+    // wait for resume from the client
+    _resumeCond.wait(_mutex);
 }
 
 Data DebugSession::debugPrepare(const Data& data) {
@@ -102,14 +104,18 @@ Data DebugSession::debugPrepare(const Data& data) {
 
 	_isAttached = false;
 
-	if (data.hasKey("xml")) {
-        _interpreter = Interpreter::fromXML(data.at("xml").atom, (data.hasKey("url") ? data.at("url").atom : ""));
-	} else if (data.hasKey("url")) {
-		_interpreter = Interpreter::fromURL(data.at("url").atom);
-	} else {
-		_interpreter = Interpreter();
-	}
-
+    try {
+        if (data.hasKey("xml")) {
+            _interpreter = Interpreter::fromXML(data.at("xml").atom, (data.hasKey("url") ? data.at("url").atom : ""));
+        } else if (data.hasKey("url")) {
+            _interpreter = Interpreter::fromURL(data.at("url").atom);
+        } else {
+            _interpreter = Interpreter();
+        }
+    } catch(ErrorEvent e) {
+        std::cerr << e;
+    } catch(...) {}
+    
 	if (_interpreter) {
 		// register ourself as a monitor
 		_interpreter.addMonitor(_debugger);
@@ -201,7 +207,7 @@ void DebugSession::run(void* instance) {
     
     InterpreterState state = USCXML_UNDEF;
     while(state != USCXML_FINISHED && INSTANCE->_isRunning) {
-        state = INSTANCE->_interpreter.step(100);
+        state = INSTANCE->_interpreter.step();
         
         //		if (!INSTANCE->_isStarted) {
         //			// we have been cancelled
@@ -288,9 +294,19 @@ Data DebugSession::skipToBreakPoint(const Data& data) {
 	std::lock_guard<std::recursive_mutex> lock(_mutex);
 
 	_skipTo = Breakpoint(data);
+    Data replyData;
 
-	Data replyData;
-	replyData.compound["status"] = Data("success", Data::VERBATIM);
+    if (_interpreter) {
+        // register ourself as a monitor
+        if (!_isRunning) {
+            _isRunning = true;
+            _interpreterThread = new std::thread(DebugSession::run, this);
+        }
+        
+        replyData.compound["status"] = Data("success", Data::VERBATIM);
+    } else {
+        replyData.compound["status"] = Data("failure", Data::VERBATIM);
+    }
 
 	_resumeCond.notify_one();
 	return replyData;

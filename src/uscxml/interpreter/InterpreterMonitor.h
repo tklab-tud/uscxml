@@ -34,13 +34,13 @@ catch (...) { LOG(ERROR) << "An exception occurred when calling " #callback " on
 if (_state == USCXML_DESTROYED) { throw std::bad_weak_ptr(); }
 
 #define USCXML_MONITOR_CALLBACK(callbacks, function) \
-for (auto callback : callbacks) { callback->function(NULL); }
+for (auto callback : callbacks) { callback->function(_callbacks->getInterpreter()); }
 
 #define USCXML_MONITOR_CALLBACK1(callbacks, function, arg1) \
-for (auto callback : callbacks) { callback->function(NULL, arg1); }
+for (auto callback : callbacks) { callback->function(_callbacks->getInterpreter(), arg1); }
 
 #define USCXML_MONITOR_CALLBACK2(callbacks, function, arg1, arg2) \
-for (auto callback : callbacks) { callback->function(NULL, arg1, arg2); }
+for (auto callback : callbacks) { callback->function(_callbacks->getInterpreter(), arg1, arg2); }
 
 // forward declare
 namespace XERCESC_NS {

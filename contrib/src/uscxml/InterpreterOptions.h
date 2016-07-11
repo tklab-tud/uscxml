@@ -41,7 +41,7 @@ public:
 		withHTTP(true),
 		withHTTPS(true),
 		withWS(true),
-		withDebugger(true),
+		withDebugger(false),
 		logLevel(0),
 		httpPort(5080),
 		httpsPort(5443),
