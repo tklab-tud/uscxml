@@ -1,6 +1,6 @@
 # uSCXML ReadMe
 
-[![Build Status](https://travis-ci.org/tklab-tud/uscxml.png?branch=master)](https://travis-ci.org/tklab-tud/uscxml)
+[![Build Status](https://travis-ci.org/tklab-tud/uscxml.png?branch=master)](https://travis-ci.org/tklab-tud/uscxml)[![Build status](https://ci.appveyor.com/api/projects/status/b3mwo7w2qhtjal6f/branch/master?svg=true)](https://ci.appveyor.com/project/sradomski/uscxml/branch/master)
 
 **Note**: We deprecated the [old version](https://github.com/tklab-tud/uscxml/tree/legacy-1.0) and refactored quite a few classes and interfaces.
 

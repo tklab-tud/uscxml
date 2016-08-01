@@ -14,7 +14,7 @@ void testC89Parser() {
 	c89_debug = 0;
 
     std::list<std::string> localTest = {
-    "int main() { a = 10; }"
+        "int main() { a = 10; }"
     };
     
     for (auto test : localTest) {

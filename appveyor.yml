@@ -1,0 +1,25 @@
+version: 0.6.{build}
+
+shallow_clone: true
+
+environment:
+  matrix:
+    - configuration: Visual Studio 12.0
+      platform: x86
+
+    - configuration: Visual Studio 12.0
+      platform: x64
+
+    - configuration: Visual Studio 14.0
+      platform: x86
+
+    - configuration: Visual Studio 14.0
+      platform: x64
+
+before_build:
+    - call "%ProgramFiles(x86)%\Microsoft %configuration%\VC\vcvarsall.bat" %platform%
+    - mkdir build
+    - cd build
+    - cmake -G "NMake Makefiles" ..
+
+build_script: nmake

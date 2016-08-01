@@ -37,7 +37,7 @@ public class JexlDataModelTest {
 				System.out.println(testName);
 
 				Interpreter scxml = Interpreter.fromURL(testName);
-				scxml.setMonitor(tm);
+				scxml.addMonitor(tm);
 
 				while (scxml.step() != InterpreterState.USCXML_FINISHED) {
 				}

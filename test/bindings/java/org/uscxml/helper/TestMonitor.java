@@ -1,6 +1,5 @@
 package org.uscxml.helper;
 
-import org.uscxml.InterpreterIssue;
 import org.uscxml.InterpreterMonitor;
 import org.uscxml.StringList;
 
@@ -68,9 +67,5 @@ public class TestMonitor extends InterpreterMonitor {
 		System.out.println("afterInvoking: " + xpath + " " + invokeid);
 	}
 
-	@Override
-	public void reportIssue(InterpreterIssue issue) {
-		System.out.println(issue);
-	}
 	
 }

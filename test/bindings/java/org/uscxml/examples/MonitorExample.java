@@ -3,6 +3,7 @@ package org.uscxml.examples;
 import org.uscxml.Interpreter;
 import org.uscxml.InterpreterException;
 import org.uscxml.InterpreterState;
+import org.uscxml.StringVector;
 import org.uscxml.helper.TestMonitor;
 
 
@@ -20,7 +21,7 @@ public class MonitorExample {
 		try {
 			TestMonitor tm = new TestMonitor();
 			Interpreter scxml = Interpreter.fromURL("https://raw.githubusercontent.com/tklab-tud/uscxml/master/test/w3c/null/test436.scxml");
-			scxml.setMonitor(tm);
+			scxml.addMonitor(tm);
 			InterpreterState state = InterpreterState.USCXML_UNDEF;
 			while((state = scxml.step()) != InterpreterState.USCXML_FINISHED) {
 				switch (state) {
@@ -29,8 +30,14 @@ public class MonitorExample {
 				case USCXML_IDLE:
 				case USCXML_INITIALIZED:
 				case USCXML_INSTANTIATED:
+					break;
 				case USCXML_MICROSTEPPED:
 				case USCXML_MACROSTEPPED:
+					StringVector states = scxml.getConfiguration();
+					for (int i = 0; i < states.size(); i++) {
+						System.out.print(states.get(i) + " ");
+					}
+					System.out.println();
 				case USCXML_CANCELLED:
 					break;
 				default:
