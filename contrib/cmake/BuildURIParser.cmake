@@ -36,7 +36,7 @@ elseif(MSVC)
 					${CMAKE_COMMAND} -E make_directory <SOURCE_DIR>/win32/uriparser-vs2013/ &&
 					${CMAKE_COMMAND} -E copy ${PROJECT_SOURCE_DIR}/contrib/patches/uriparser/uriparser.vcxproj <SOURCE_DIR>/win32/uriparser-vs2013/
 				CONFIGURE_COMMAND ""
-				BUILD_COMMAND cd ${VSPROJECT_PATH} && devenv /Upgrade uriparser.vcxproj && msbuild /p:Configuration=Release /p:Platform=Win32 /t:build uriparser.vcxproj
+				BUILD_COMMAND cd ${VSPROJECT_PATH} && devenv /Upgrade uriparser.vcxproj && msbuild /p:Configuration=Release /p:Platform=x64 /t:build uriparser.vcxproj
 				INSTALL_COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/deps/uriparser/lib && ${CMAKE_COMMAND} -E copy win32/uriparser.lib ${CMAKE_BINARY_DIR}/deps/uriparser/lib/ && ${CMAKE_COMMAND} -E copy_directory include ${CMAKE_BINARY_DIR}/deps/uriparser/include
 			)
 		else()
