@@ -10,6 +10,7 @@
 
 #ifdef _WIN32
 #include "XGetopt.h"
+#include "XGetopt.cpp"
 #endif
 
 int startedAt;

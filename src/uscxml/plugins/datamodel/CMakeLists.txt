@@ -47,7 +47,7 @@ if (LUA_FOUND)
 	list (APPEND USCXML_OPT_LIBS ${LUA_LIBRARY})
 endif()
 
-if (OFF) # do not build ANSI C datamodel for now
+if (WITH_DM_C89)
 	set(USCXML_DATAMODELS "c89 ${USCXML_DATAMODELS}")
 	# Lua ecmascript datamodel
 	file(GLOB_RECURSE C89_DATAMODEL

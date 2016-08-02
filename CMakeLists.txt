@@ -370,7 +370,7 @@ if (WITH_DM_LUA)
 	endif()
 endif()
 
-OPTION(WITH_DM_C89 "Do build with C89 datamodel support" ON)
+OPTION(WITH_DM_C89 "Do build with C89 datamodel support" OFF)
 
 add_subdirectory(src/uscxml)
 add_subdirectory(src/bindings)
