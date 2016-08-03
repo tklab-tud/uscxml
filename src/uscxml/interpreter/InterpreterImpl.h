@@ -235,6 +235,10 @@ public:
         _delayQueue = al.delayedQueue;
 	}
 
+    void setFactory(Factory* factory) {
+        _factory = factory;
+    }
+
 	static std::map<std::string, std::weak_ptr<InterpreterImpl> > getInstances();
 
 	virtual XERCESC_NS::DOMDocument* getDocument() {

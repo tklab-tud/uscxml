@@ -1,0 +1,28 @@
+<scxml datamodel="lua" initial="Start" name="Root" version="1.0" xmlns="http://www.w3.org/2005/07/scxml">
+    <datamodel>
+        <data id="Var1">{
+    testInt=10,
+    testDouble=10.0,
+    testString='message'
+}
+        </data>
+        <data id="Var2">{0,1,2,3,4,5,6}</data>
+    </datamodel>
+    <final id="pass">
+        <onentry>
+          <log expr="Var1" />
+          <log expr="Var2" />
+        </onentry>
+    </final>
+    <state id="Start">
+        <onentry>
+          <log label="Var1" expr="Var1" />
+          <log label="Var2" expr="Var2" />
+          <!-- <assign expr="555" location="Var2[3]"/> -->
+          <assign expr="555" location="Var1.testInt"/>
+          <assign expr="555.555" location="Var1.testDouble"/>
+          <assign expr="'modified message'" location="Var1.testString"/>
+        </onentry>
+        <transition target="pass" />
+    </state>
+</scxml>

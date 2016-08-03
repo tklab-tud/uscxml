@@ -70,7 +70,7 @@ static Data getLuaAsData(lua_State* _luaState, const luabridge::LuaRef& lua) {
 		data.atom = "nil";
 		data.type = Data::INTERPRETED;
 	} else if(lua.isNumber()) {
-		data.atom = toStr(lua.cast<int>());
+		data.atom = toStr(lua.cast<double>());
 		data.type = Data::INTERPRETED;
 	} else if(lua.isString()) {
 		data.atom = lua.cast<std::string>();
@@ -470,9 +470,52 @@ void LuaDataModel::assign(const std::string& location, const Data& data) {
 		int retVals = luaEval(_luaState, location + " = " + location);
 		lua_pop(_luaState, retVals);
 
-		luabridge::LuaRef lua = getDataAsLua(_luaState, data);
-		luabridge::setGlobal(_luaState, lua, location.c_str());
+        // normalize location into dot notation
+        // TODO: This is still wrong as it treads arrays as kvps!
+        std::string normedLocation;
+        normedLocation.resize(location.size());
+        for (size_t i = 0, j = 0; i < location.size(); i++, j++) {
+            if (location[i] == ']') {
+                j++;
+            } else if (location[i] == '[') {
+                normedLocation[i] = '.';
+            } else {
+                normedLocation[i] = location[i];
+            }
+        }
+        
+        std::list<std::string> idPath = tokenize(normedLocation, '.');
+        if (idPath.size() == 0)
+            return;
+        
+        luabridge::LuaRef lua = getDataAsLua(_luaState, data);
 
+        if (idPath.size() == 1) {
+            // trivial case where we reference a simple toplevel identifier
+            luabridge::setGlobal(_luaState, lua, location.c_str());
+
+        } else {
+            std::string globalId = idPath.front();
+            idPath.pop_front();
+            
+            std::string field = idPath.back();
+            idPath.pop_back();
+            
+            luabridge::LuaRef topValue = luabridge::getGlobal(_luaState, globalId.c_str());
+            luabridge::LuaRef value = topValue;
+            
+            for (auto ident : idPath) {
+                if (!value.isTable())
+                    value = luabridge::newTable(_luaState);
+
+                luabridge::LuaRef tmp = value[ident];
+                value = tmp;
+            }
+            value[field] = lua;
+
+        }
+
+        
 //        std::cout << Data::toJSON(evalAsData(location)) << std::endl;
 	}
 }

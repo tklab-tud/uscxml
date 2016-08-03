@@ -218,6 +218,10 @@ void Interpreter::setActionLanguage(ActionLanguage actionLanguage) {
 	return _impl->setActionLanguage(actionLanguage);
 }
 
+void Interpreter::setFactory(Factory* factory) {
+    return _impl->setFactory(factory);
+}
+
 void Interpreter::addMonitor(InterpreterMonitor* monitor) {
 	return _impl->addMonitor(monitor);
 }

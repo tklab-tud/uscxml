@@ -29,6 +29,7 @@
 
 #include "uscxml/interpreter/MicroStep.h"
 #include "uscxml/plugins/DataModel.h"
+#include "uscxml/plugins/Factory.h"
 #include "uscxml/interpreter/ContentExecutor.h"
 #include "uscxml/interpreter/EventQueue.h"
 #include "uscxml/interpreter/InterpreterState.h"
@@ -178,6 +179,11 @@ public:
 	 */
 	void setActionLanguage(ActionLanguage actionLanguage);
 
+    /**
+     * Provide a custom Factory to instantiate dynamic instances for this and invoked state-chart instances.
+     */
+    void setFactory(Factory* factory);
+
 	/**
 	 * Attach a monitor to make more details of the interpreter observable.
 	 */
@@ -188,6 +194,7 @@ public:
      */
     void removeMonitor(InterpreterMonitor* monitor);
 
+    
 	/**
 	 * Return the actual implementation of the Interperter.
 	 */
