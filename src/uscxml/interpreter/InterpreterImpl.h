@@ -230,6 +230,9 @@ public:
 		_execContent = al.execContent;
 		_microStepper = al.microStepper;
 		_dataModel = al.dataModel;
+        _internalQueue = al.internalQueue;
+        _externalQueue = al.externalQueue;
+        _delayQueue = al.delayedQueue;
 	}
 
 	static std::map<std::string, std::weak_ptr<InterpreterImpl> > getInstances();
