@@ -18,6 +18,7 @@
  */
 
 #include "BasicContentExecutor.h"
+#include "uscxml/Interpreter.h"
 #include "uscxml/util/String.h"
 #include "uscxml/util/Predicates.h"
 #include "uscxml/util/UUID.h"

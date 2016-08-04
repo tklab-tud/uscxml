@@ -55,45 +55,45 @@ public:
 	virtual void pushData(std::shared_ptr<DebugSession> session, Data pushData) = 0;
 
 	// InterpreterMonitor
-    virtual void beforeProcessingEvent(InterpreterImpl* impl, const Event& event);
-    virtual void beforeMicroStep(InterpreterImpl* impl);
-    virtual void beforeExitingState(InterpreterImpl* impl, const XERCESC_NS::DOMElement* state);
-    virtual void afterExitingState(InterpreterImpl* impl, const XERCESC_NS::DOMElement* state);
-    virtual void beforeExecutingContent(InterpreterImpl* impl, const XERCESC_NS::DOMElement* execContent);
-    virtual void afterExecutingContent(InterpreterImpl* impl, const XERCESC_NS::DOMElement* execContent);
-    virtual void beforeUninvoking(InterpreterImpl* impl, const XERCESC_NS::DOMElement* invokeElem, const std::string& invokeid);
-    virtual void afterUninvoking(InterpreterImpl* impl, const XERCESC_NS::DOMElement* invokeElem, const std::string& invokeid);
-    virtual void beforeTakingTransition(InterpreterImpl* impl, const XERCESC_NS::DOMElement* transition);
-    virtual void afterTakingTransition(InterpreterImpl* impl, const XERCESC_NS::DOMElement* transition);
-    virtual void beforeEnteringState(InterpreterImpl* impl, const XERCESC_NS::DOMElement* state);
-    virtual void afterEnteringState(InterpreterImpl* impl, const XERCESC_NS::DOMElement* state);
-    virtual void beforeInvoking(InterpreterImpl* impl, const XERCESC_NS::DOMElement* invokeElem, const std::string& invokeid);
-    virtual void afterInvoking(InterpreterImpl* impl, const XERCESC_NS::DOMElement* invokeElem, const std::string& invokeid);
-    virtual void afterMicroStep(InterpreterImpl* impl);
-    virtual void onStableConfiguration(InterpreterImpl* impl);
-    virtual void beforeCompletion(InterpreterImpl* impl);
-    virtual void afterCompletion(InterpreterImpl* impl);
+    virtual void beforeProcessingEvent(Interpreter& interpreter, const Event& event);
+    virtual void beforeMicroStep(Interpreter& interpreter);
+    virtual void beforeExitingState(Interpreter& interpreter, const XERCESC_NS::DOMElement* state);
+    virtual void afterExitingState(Interpreter& interpreter, const XERCESC_NS::DOMElement* state);
+    virtual void beforeExecutingContent(Interpreter& interpreter, const XERCESC_NS::DOMElement* execContent);
+    virtual void afterExecutingContent(Interpreter& interpreter, const XERCESC_NS::DOMElement* execContent);
+    virtual void beforeUninvoking(Interpreter& interpreter, const XERCESC_NS::DOMElement* invokeElem, const std::string& invokeid);
+    virtual void afterUninvoking(Interpreter& interpreter, const XERCESC_NS::DOMElement* invokeElem, const std::string& invokeid);
+    virtual void beforeTakingTransition(Interpreter& interpreter, const XERCESC_NS::DOMElement* transition);
+    virtual void afterTakingTransition(Interpreter& interpreter, const XERCESC_NS::DOMElement* transition);
+    virtual void beforeEnteringState(Interpreter& interpreter, const XERCESC_NS::DOMElement* state);
+    virtual void afterEnteringState(Interpreter& interpreter, const XERCESC_NS::DOMElement* state);
+    virtual void beforeInvoking(Interpreter& interpreter, const XERCESC_NS::DOMElement* invokeElem, const std::string& invokeid);
+    virtual void afterInvoking(Interpreter& interpreter, const XERCESC_NS::DOMElement* invokeElem, const std::string& invokeid);
+    virtual void afterMicroStep(Interpreter& interpreter);
+    virtual void onStableConfiguration(Interpreter& interpreter);
+    virtual void beforeCompletion(Interpreter& interpreter);
+    virtual void afterCompletion(Interpreter& interpreter);
 
 protected:
 
-	void handleTransition(InterpreterImpl* impl,
+	void handleTransition(Interpreter& interpreter,
 	                      const XERCESC_NS::DOMElement* transition,
 	                      Breakpoint::When when);
-	void handleState(InterpreterImpl* impl,
+	void handleState(Interpreter& interpreter,
 	                 const XERCESC_NS::DOMElement* state,
 	                 Breakpoint::When when,
 	                 Breakpoint::Action action);
-	void handleInvoke(InterpreterImpl* impl,
+	void handleInvoke(Interpreter& interpreter,
 	                  const XERCESC_NS::DOMElement* invokeElem,
 	                  const std::string& invokeId,
 	                  Breakpoint::When when,
 	                  Breakpoint::Action action);
-	void handleExecutable(InterpreterImpl* impl,
+	void handleExecutable(Interpreter& interpreter,
 	                      const XERCESC_NS::DOMElement* execContentElem,
 	                      Breakpoint::When when);
-	void handleStable(InterpreterImpl* impl, Breakpoint::When when);
-	void handleMicrostep(InterpreterImpl* impl, Breakpoint::When when);
-	void handleEvent(InterpreterImpl* impl, const Event& event, Breakpoint::When when);
+	void handleStable(Interpreter& interpreter, Breakpoint::When when);
+	void handleMicrostep(Interpreter& interpreter, Breakpoint::When when);
+	void handleEvent(Interpreter& interpreter, const Event& event, Breakpoint::When when);
 
     std::list<Breakpoint> getQualifiedTransBreakpoints(InterpreterImpl* impl,
                                                        const XERCESC_NS::DOMElement* transition,
@@ -107,6 +107,7 @@ protected:
                                                         Breakpoint breakpointTemplate);
 
 	std::recursive_mutex _sessionMutex;
+    /// @todo: We ought to change form InterpreterImpl to Interpreter everywhere 
 	std::map<InterpreterImpl*, std::shared_ptr<DebugSession> > _sessionForInterpreter;
 };
 

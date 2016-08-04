@@ -24,7 +24,8 @@
 
 namespace uscxml {
 
-void Debugger::afterCompletion(InterpreterImpl* impl) {
+void Debugger::afterCompletion(Interpreter& interpreter) {
+    InterpreterImpl* impl = interpreter.getImpl().get();
 	std::shared_ptr<DebugSession> session = getSession(impl);
 	if (!session)
 		return;
@@ -34,7 +35,7 @@ void Debugger::afterCompletion(InterpreterImpl* impl) {
 	pushData(session, msg);
 }
 
-void Debugger::beforeCompletion(InterpreterImpl* impl) {}
+void Debugger::beforeCompletion(Interpreter& interpreter) {}
 
 std::list<Breakpoint> Debugger::getQualifiedStateBreakpoints(InterpreterImpl* impl, const XERCESC_NS::DOMElement* state, Breakpoint breakpointTemplate) {
 	std::list<Breakpoint> breakpoints;
@@ -87,59 +88,59 @@ std::list<Breakpoint> Debugger::getQualifiedTransBreakpoints(InterpreterImpl* im
 	return breakpoints;
 }
 
-void Debugger::beforeTakingTransition(InterpreterImpl* impl, const XERCESC_NS::DOMElement* transition) {
-	handleTransition(impl, transition, Breakpoint::BEFORE);
+void Debugger::beforeTakingTransition(Interpreter& interpreter, const XERCESC_NS::DOMElement* transition) {
+	handleTransition(interpreter, transition, Breakpoint::BEFORE);
 }
-void Debugger::afterTakingTransition(InterpreterImpl* impl, const XERCESC_NS::DOMElement* transition) {
-	handleTransition(impl, transition, Breakpoint::AFTER);
+void Debugger::afterTakingTransition(Interpreter& interpreter, const XERCESC_NS::DOMElement* transition) {
+	handleTransition(interpreter, transition, Breakpoint::AFTER);
 }
-void Debugger::beforeExecutingContent(InterpreterImpl* impl, const XERCESC_NS::DOMElement* execContent) {
-	handleExecutable(impl, execContent, Breakpoint::BEFORE);
+void Debugger::beforeExecutingContent(Interpreter& interpreter, const XERCESC_NS::DOMElement* execContent) {
+	handleExecutable(interpreter, execContent, Breakpoint::BEFORE);
 }
-void Debugger::afterExecutingContent(InterpreterImpl* impl, const XERCESC_NS::DOMElement* execContent) {
-	handleExecutable(impl, execContent, Breakpoint::AFTER);
+void Debugger::afterExecutingContent(Interpreter& interpreter, const XERCESC_NS::DOMElement* execContent) {
+	handleExecutable(interpreter, execContent, Breakpoint::AFTER);
 }
-void Debugger::beforeExitingState(InterpreterImpl* impl, const XERCESC_NS::DOMElement* state) {
-	handleState(impl, state, Breakpoint::BEFORE, Breakpoint::EXIT);
+void Debugger::beforeExitingState(Interpreter& interpreter, const XERCESC_NS::DOMElement* state) {
+	handleState(interpreter, state, Breakpoint::BEFORE, Breakpoint::EXIT);
 }
-void Debugger::afterExitingState(InterpreterImpl* impl, const XERCESC_NS::DOMElement* state) {
-	handleState(impl, state, Breakpoint::AFTER, Breakpoint::EXIT);
+void Debugger::afterExitingState(Interpreter& interpreter, const XERCESC_NS::DOMElement* state) {
+	handleState(interpreter, state, Breakpoint::AFTER, Breakpoint::EXIT);
 }
-void Debugger::beforeEnteringState(InterpreterImpl* impl, const XERCESC_NS::DOMElement* state) {
-	handleState(impl, state, Breakpoint::BEFORE, Breakpoint::ENTER);
+void Debugger::beforeEnteringState(Interpreter& interpreter, const XERCESC_NS::DOMElement* state) {
+	handleState(interpreter, state, Breakpoint::BEFORE, Breakpoint::ENTER);
 }
-void Debugger::afterEnteringState(InterpreterImpl* impl, const XERCESC_NS::DOMElement* state) {
-	handleState(impl, state, Breakpoint::AFTER, Breakpoint::ENTER);
+void Debugger::afterEnteringState(Interpreter& interpreter, const XERCESC_NS::DOMElement* state) {
+	handleState(interpreter, state, Breakpoint::AFTER, Breakpoint::ENTER);
 }
-void Debugger::beforeUninvoking(InterpreterImpl* impl, const XERCESC_NS::DOMElement* invokeElem, const std::string& invokeid) {
-	handleInvoke(impl, invokeElem, invokeid, Breakpoint::BEFORE, Breakpoint::UNINVOKE);
+void Debugger::beforeUninvoking(Interpreter& interpreter, const XERCESC_NS::DOMElement* invokeElem, const std::string& invokeid) {
+	handleInvoke(interpreter, invokeElem, invokeid, Breakpoint::BEFORE, Breakpoint::UNINVOKE);
 }
-void Debugger::afterUninvoking(InterpreterImpl* impl, const XERCESC_NS::DOMElement* invokeElem, const std::string& invokeid) {
-	handleInvoke(impl, invokeElem, invokeid, Breakpoint::AFTER, Breakpoint::UNINVOKE);
+void Debugger::afterUninvoking(Interpreter& interpreter, const XERCESC_NS::DOMElement* invokeElem, const std::string& invokeid) {
+	handleInvoke(interpreter, invokeElem, invokeid, Breakpoint::AFTER, Breakpoint::UNINVOKE);
 }
-void Debugger::beforeInvoking(InterpreterImpl* impl, const XERCESC_NS::DOMElement* invokeElem, const std::string& invokeid) {
-	handleInvoke(impl, invokeElem, invokeid, Breakpoint::BEFORE, Breakpoint::INVOKE);
+void Debugger::beforeInvoking(Interpreter& interpreter, const XERCESC_NS::DOMElement* invokeElem, const std::string& invokeid) {
+	handleInvoke(interpreter, invokeElem, invokeid, Breakpoint::BEFORE, Breakpoint::INVOKE);
 }
-void Debugger::afterInvoking(InterpreterImpl* impl, const XERCESC_NS::DOMElement* invokeElem, const std::string& invokeid) {
-	handleInvoke(impl, invokeElem, invokeid, Breakpoint::AFTER, Breakpoint::INVOKE);
+void Debugger::afterInvoking(Interpreter& interpreter, const XERCESC_NS::DOMElement* invokeElem, const std::string& invokeid) {
+	handleInvoke(interpreter, invokeElem, invokeid, Breakpoint::AFTER, Breakpoint::INVOKE);
 }
-void Debugger::onStableConfiguration(InterpreterImpl* impl) {
-	handleStable(impl, Breakpoint::ON);
+void Debugger::onStableConfiguration(Interpreter& interpreter) {
+	handleStable(interpreter, Breakpoint::ON);
 }
-void Debugger::beforeMicroStep(InterpreterImpl* impl) {
-	handleMicrostep(impl, Breakpoint::BEFORE);
+void Debugger::beforeMicroStep(Interpreter& interpreter) {
+	handleMicrostep(interpreter, Breakpoint::BEFORE);
 }
-void Debugger::afterMicroStep(InterpreterImpl* impl) {
-	handleMicrostep(impl, Breakpoint::AFTER);
+void Debugger::afterMicroStep(Interpreter& interpreter) {
+	handleMicrostep(interpreter, Breakpoint::AFTER);
 }
-void Debugger::beforeProcessingEvent(InterpreterImpl* impl, const Event& event) {
-	handleEvent(impl, event, Breakpoint::BEFORE);
+void Debugger::beforeProcessingEvent(Interpreter& interpreter, const Event& event) {
+	handleEvent(interpreter, event, Breakpoint::BEFORE);
 }
 
-void Debugger::handleExecutable(InterpreterImpl* impl,
+void Debugger::handleExecutable(Interpreter& interpreter,
                                 const XERCESC_NS::DOMElement* execContentElem,
                                 Breakpoint::When when) {
-	std::shared_ptr<DebugSession> session = getSession(impl);
+	std::shared_ptr<DebugSession> session = getSession(interpreter.getImpl().get());
 	if (!session)
 		return;
     if (!session->_isRunning)
@@ -158,7 +159,8 @@ void Debugger::handleExecutable(InterpreterImpl* impl,
 
 }
 
-void Debugger::handleEvent(InterpreterImpl* impl, const Event& event, Breakpoint::When when) {
+void Debugger::handleEvent(Interpreter& interpreter, const Event& event, Breakpoint::When when) {
+    InterpreterImpl* impl = interpreter.getImpl().get();
     std::shared_ptr<DebugSession> session = getSession(impl);
     if (!session)
         return;
@@ -177,7 +179,8 @@ void Debugger::handleEvent(InterpreterImpl* impl, const Event& event, Breakpoint
 
 }
 
-void Debugger::handleStable(InterpreterImpl* impl, Breakpoint::When when) {
+void Debugger::handleStable(Interpreter& interpreter, Breakpoint::When when) {
+    InterpreterImpl* impl = interpreter.getImpl().get();
     std::shared_ptr<DebugSession> session = getSession(impl);
     if (!session)
         return;
@@ -194,7 +197,8 @@ void Debugger::handleStable(InterpreterImpl* impl, Breakpoint::When when) {
 	session->checkBreakpoints(breakpoints);
 }
 
-void Debugger::handleMicrostep(InterpreterImpl* impl, Breakpoint::When when) {
+void Debugger::handleMicrostep(Interpreter& interpreter, Breakpoint::When when) {
+    InterpreterImpl* impl = interpreter.getImpl().get();
     std::shared_ptr<DebugSession> session = getSession(impl);
     if (!session)
         return;
@@ -211,7 +215,8 @@ void Debugger::handleMicrostep(InterpreterImpl* impl, Breakpoint::When when) {
 	session->checkBreakpoints(breakpoints);
 }
 
-void Debugger::handleTransition(InterpreterImpl* impl, const XERCESC_NS::DOMElement* transition, Breakpoint::When when) {
+void Debugger::handleTransition(Interpreter& interpreter, const XERCESC_NS::DOMElement* transition, Breakpoint::When when) {
+    InterpreterImpl* impl = interpreter.getImpl().get();
     std::shared_ptr<DebugSession> session = getSession(impl);
     if (!session)
         return;
@@ -224,7 +229,8 @@ void Debugger::handleTransition(InterpreterImpl* impl, const XERCESC_NS::DOMElem
 	session->checkBreakpoints(qualifiedBreakpoints);
 }
 
-void Debugger::handleState(InterpreterImpl* impl, const XERCESC_NS::DOMElement* state, Breakpoint::When when, Breakpoint::Action action) {
+void Debugger::handleState(Interpreter& interpreter, const XERCESC_NS::DOMElement* state, Breakpoint::When when, Breakpoint::Action action) {
+    InterpreterImpl* impl = interpreter.getImpl().get();
     std::shared_ptr<DebugSession> session = getSession(impl);
     if (!session)
         return;
@@ -239,7 +245,8 @@ void Debugger::handleState(InterpreterImpl* impl, const XERCESC_NS::DOMElement* 
 
 }
 
-void Debugger::handleInvoke(InterpreterImpl* impl, const XERCESC_NS::DOMElement* invokeElem, const std::string& invokeId, Breakpoint::When when, Breakpoint::Action action) {
+void Debugger::handleInvoke(Interpreter& interpreter, const XERCESC_NS::DOMElement* invokeElem, const std::string& invokeId, Breakpoint::When when, Breakpoint::Action action) {
+    InterpreterImpl* impl = interpreter.getImpl().get();
     std::shared_ptr<DebugSession> session = getSession(impl);
     if (!session)
         return;

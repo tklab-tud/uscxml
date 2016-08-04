@@ -31,7 +31,7 @@ public:
 	IssueMonitor() {
 		runtimeIssues = 0;
 	}
-	void reportIssue(InterpreterImpl* impl, const InterpreterIssue& issue) {
+	void reportIssue(Interpreter& intrpreter, const InterpreterIssue& issue) {
 		runtimeIssues++;
 	}
 };

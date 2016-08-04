@@ -50,8 +50,8 @@ class USCXML_API InterpreterImpl :
 	public MicroStepCallbacks,
 	public DataModelCallbacks,
 	public ContentExecutorCallbacks,
-	public DelayedEventQueueCallbacks
-//    public std::enable_shared_from_this<InterpreterImpl>
+    public DelayedEventQueueCallbacks,
+    public std::enable_shared_from_this<InterpreterImpl>
 {
 public:
 	enum Binding {
@@ -140,8 +140,8 @@ public:
 		return _monitors;
 	}
 
-    virtual InterpreterImpl* getInterpreter() {
-        return this;
+    virtual Interpreter getInterpreter() {
+        return Interpreter(shared_from_this());
     }
 
 	/**

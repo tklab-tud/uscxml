@@ -33,14 +33,17 @@ catch (std::bad_weak_ptr e) { LOG(ERROR) << "Unclean shutdown " << std::endl; } 
 catch (...) { LOG(ERROR) << "An exception occurred when calling " #callback " on monitors"; } \
 if (_state == USCXML_DESTROYED) { throw std::bad_weak_ptr(); }
 
-#define USCXML_MONITOR_CALLBACK(callbacks, function) \
-for (auto callback : callbacks) { callback->function(_callbacks->getInterpreter()); }
+#define USCXML_MONITOR_CALLBACK(callbacks, function) { \
+Interpreter inptr = _callbacks->getInterpreter(); \
+for (auto callback : callbacks) { callback->function(inptr); } }
 
-#define USCXML_MONITOR_CALLBACK1(callbacks, function, arg1) \
-for (auto callback : callbacks) { callback->function(_callbacks->getInterpreter(), arg1); }
+#define USCXML_MONITOR_CALLBACK1(callbacks, function, arg1) { \
+Interpreter inptr = _callbacks->getInterpreter(); \
+for (auto callback : callbacks) { callback->function(inptr, arg1); } }
 
-#define USCXML_MONITOR_CALLBACK2(callbacks, function, arg1, arg2) \
-for (auto callback : callbacks) { callback->function(_callbacks->getInterpreter(), arg1, arg2); }
+#define USCXML_MONITOR_CALLBACK2(callbacks, function, arg1, arg2) { \
+Interpreter inptr = _callbacks->getInterpreter(); \
+for (auto callback : callbacks) { callback->function(inptr, arg1, arg2); } }
 
 // forward declare
 namespace XERCESC_NS {
@@ -49,39 +52,41 @@ namespace XERCESC_NS {
 
 namespace uscxml {
 
+class Interpreter;
+    
 class USCXML_API InterpreterMonitor {
 public:
 	InterpreterMonitor() : _copyToInvokers(false) {}
 	virtual ~InterpreterMonitor() {}
 
-	virtual void beforeProcessingEvent(InterpreterImpl* impl, const Event& event) {}
-	virtual void beforeMicroStep(InterpreterImpl* impl) {}
+	virtual void beforeProcessingEvent(Interpreter& interpreter, const Event& event) {}
+	virtual void beforeMicroStep(Interpreter& interpreter) {}
 
-	virtual void beforeExitingState(InterpreterImpl* impl, const XERCESC_NS::DOMElement* state) {}
-	virtual void afterExitingState(InterpreterImpl* impl, const XERCESC_NS::DOMElement* state) {}
+	virtual void beforeExitingState(Interpreter& interpreter, const XERCESC_NS::DOMElement* state) {}
+	virtual void afterExitingState(Interpreter& interpreter, const XERCESC_NS::DOMElement* state) {}
 
-	virtual void beforeExecutingContent(InterpreterImpl* impl, const XERCESC_NS::DOMElement* execContent) {}
-	virtual void afterExecutingContent(InterpreterImpl* impl, const XERCESC_NS::DOMElement* execContent) {}
+	virtual void beforeExecutingContent(Interpreter& interpreter, const XERCESC_NS::DOMElement* execContent) {}
+	virtual void afterExecutingContent(Interpreter& interpreter, const XERCESC_NS::DOMElement* execContent) {}
 
-	virtual void beforeUninvoking(InterpreterImpl* impl, const XERCESC_NS::DOMElement* invokeElem, const std::string& invokeid) {}
-	virtual void afterUninvoking(InterpreterImpl* impl, const XERCESC_NS::DOMElement* invokeElem, const std::string& invokeid) {}
+	virtual void beforeUninvoking(Interpreter& interpreter, const XERCESC_NS::DOMElement* invokeElem, const std::string& invokeid) {}
+	virtual void afterUninvoking(Interpreter& interpreter, const XERCESC_NS::DOMElement* invokeElem, const std::string& invokeid) {}
 
-	virtual void beforeTakingTransition(InterpreterImpl* impl, const XERCESC_NS::DOMElement* transition) {}
-	virtual void afterTakingTransition(InterpreterImpl* impl, const XERCESC_NS::DOMElement* transition) {}
+	virtual void beforeTakingTransition(Interpreter& interpreter, const XERCESC_NS::DOMElement* transition) {}
+	virtual void afterTakingTransition(Interpreter& interpreter, const XERCESC_NS::DOMElement* transition) {}
 
-	virtual void beforeEnteringState(InterpreterImpl* impl, const XERCESC_NS::DOMElement* state) {}
-	virtual void afterEnteringState(InterpreterImpl* impl, const XERCESC_NS::DOMElement* state) {}
+	virtual void beforeEnteringState(Interpreter& interpreter, const XERCESC_NS::DOMElement* state) {}
+	virtual void afterEnteringState(Interpreter& interpreter, const XERCESC_NS::DOMElement* state) {}
 
-	virtual void beforeInvoking(InterpreterImpl* impl, const XERCESC_NS::DOMElement* invokeElem, const std::string& invokeid) {}
-	virtual void afterInvoking(InterpreterImpl* impl, const XERCESC_NS::DOMElement* invokeElem, const std::string& invokeid) {}
+	virtual void beforeInvoking(Interpreter& interpreter, const XERCESC_NS::DOMElement* invokeElem, const std::string& invokeid) {}
+	virtual void afterInvoking(Interpreter& interpreter, const XERCESC_NS::DOMElement* invokeElem, const std::string& invokeid) {}
 
-	virtual void afterMicroStep(InterpreterImpl* impl) {}
-	virtual void onStableConfiguration(InterpreterImpl* impl) {}
+	virtual void afterMicroStep(Interpreter& interpreter) {}
+	virtual void onStableConfiguration(Interpreter& interpreter) {}
 
-	virtual void beforeCompletion(InterpreterImpl* impl) {}
-	virtual void afterCompletion(InterpreterImpl* impl) {}
+	virtual void beforeCompletion(Interpreter& interpreter) {}
+	virtual void afterCompletion(Interpreter& interpreter) {}
 
-	virtual void reportIssue(InterpreterImpl* impl, const InterpreterIssue& issue) {}
+	virtual void reportIssue(Interpreter& interpreter, const InterpreterIssue& issue) {}
 
 	void copyToInvokers(bool copy) {
 		_copyToInvokers = copy;
@@ -101,13 +106,13 @@ public:
 	StateTransitionMonitor() {}
 	virtual ~StateTransitionMonitor() {}
 
-	virtual void beforeTakingTransition(InterpreterImpl* impl, const XERCESC_NS::DOMElement* transition);
-	virtual void beforeExecutingContent(InterpreterImpl* impl, const XERCESC_NS::DOMElement* element);
-	virtual void onStableConfiguration(InterpreterImpl* impl);
-	virtual void beforeProcessingEvent(InterpreterImpl* impl, const uscxml::Event& event);
-	virtual void beforeExitingState(InterpreterImpl* impl, const XERCESC_NS::DOMElement* state);
-	virtual void beforeEnteringState(InterpreterImpl* impl, const XERCESC_NS::DOMElement* state);
-	virtual void beforeMicroStep(InterpreterImpl* impl);
+	virtual void beforeTakingTransition(Interpreter& interpreter, const XERCESC_NS::DOMElement* transition);
+	virtual void beforeExecutingContent(Interpreter& interpreter, const XERCESC_NS::DOMElement* element);
+	virtual void onStableConfiguration(Interpreter& interpreter);
+	virtual void beforeProcessingEvent(Interpreter& interpreter, const uscxml::Event& event);
+	virtual void beforeExitingState(Interpreter& interpreter, const XERCESC_NS::DOMElement* state);
+	virtual void beforeEnteringState(Interpreter& interpreter, const XERCESC_NS::DOMElement* state);
+	virtual void beforeMicroStep(Interpreter& interpreter);
 
 protected:
 	static std::recursive_mutex _mutex;

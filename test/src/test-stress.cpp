@@ -17,7 +17,7 @@ int startedAt;
 int lastTransitionAt;
 
 class StatusMonitor : public uscxml::InterpreterMonitor {
-	void beforeTakingTransition(uscxml::InterpreterImpl* impl, const XERCESC_NS::DOMElement* transition) {
+	void beforeTakingTransition(uscxml::Interpreter& interpreter, const XERCESC_NS::DOMElement* transition) {
 		lastTransitionAt = time(NULL);
 	}
 
