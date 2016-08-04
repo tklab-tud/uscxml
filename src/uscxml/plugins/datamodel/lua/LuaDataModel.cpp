@@ -470,21 +470,20 @@ void LuaDataModel::assign(const std::string& location, const Data& data) {
 		int retVals = luaEval(_luaState, location + " = " + location);
 		lua_pop(_luaState, retVals);
 
-        // normalize location into dot notation
-        // TODO: This is still wrong as it treads arrays as kvps!
-        std::string normedLocation;
-        normedLocation.resize(location.size());
-        for (size_t i = 0, j = 0; i < location.size(); i++, j++) {
-            if (location[i] == ']') {
-                j++;
-            } else if (location[i] == '[') {
-                normedLocation[i] = '.';
-            } else {
-                normedLocation[i] = location[i];
+        std::list<std::pair<std::string, bool> > idPath;
+        size_t start = 0;
+        for (size_t i = 0; i < location.size(); i++) {
+            if (location[i] == '.' || location[i] == '[') {
+                idPath.push_back(std::make_pair(location.substr(start, i - start), false));
+                start = i + 1;
+            } else if (location[i] == ']') {
+                idPath.push_back(std::make_pair(location.substr(start, i - start), true));
+                start = i + 1;
             }
         }
-        
-        std::list<std::string> idPath = tokenize(normedLocation, '.');
+        if (start < location.size())
+            idPath.push_back(std::make_pair(location.substr(start, location.size() - start), false));
+
         if (idPath.size() == 0)
             return;
         
@@ -495,23 +494,31 @@ void LuaDataModel::assign(const std::string& location, const Data& data) {
             luabridge::setGlobal(_luaState, lua, location.c_str());
 
         } else {
-            std::string globalId = idPath.front();
+            auto globalId = idPath.front();
             idPath.pop_front();
             
-            std::string field = idPath.back();
+            auto field = idPath.back();
             idPath.pop_back();
             
-            luabridge::LuaRef topValue = luabridge::getGlobal(_luaState, globalId.c_str());
+            luabridge::LuaRef topValue = luabridge::getGlobal(_luaState, globalId.first.c_str());
             luabridge::LuaRef value = topValue;
             
             for (auto ident : idPath) {
                 if (!value.isTable())
                     value = luabridge::newTable(_luaState);
 
-                luabridge::LuaRef tmp = value[ident];
-                value = tmp;
+                if (ident.second) {
+                    luabridge::LuaRef tmp = value[strTo<long>(ident.first)];
+                } else {
+                    luabridge::LuaRef tmp = value[ident];
+                    value = tmp;
+                }
             }
-            value[field] = lua;
+            if (field.second) {
+                value[strTo<long>(field.first)] = lua;
+            } else {
+                value[field.first] = lua;
+            }
 
         }
 
