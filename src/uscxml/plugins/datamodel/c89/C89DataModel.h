@@ -23,6 +23,13 @@
 #include "uscxml/plugins/DataModelImpl.h"
 #include <list>
 
+#define UNIX_HOST
+#define PICOC_STACK_SIZE (128*1024)              /* space for the the stack */
+
+extern "C" {
+#include "picoc.h"
+#undef min
+}
 
 #ifdef BUILD_AS_PLUGINS
 #include "uscxml/plugins/Plugins.h"
@@ -79,7 +86,7 @@ public:
 	virtual std::string andExpressions(std::list<std::string>);
 
 protected:
-
+    Picoc _pc;
 };
 
 #ifdef BUILD_AS_PLUGINS

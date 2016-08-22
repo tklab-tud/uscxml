@@ -68,6 +68,7 @@ typedef uscxml::InterpreterIssue InterpreterIssue;
 
 #include "../wrapped/WrappedInvoker.h"
 #include "../wrapped/WrappedDataModel.h"
+#include "../wrapped/WrappedActionLanguage.h"
 #include "../wrapped/WrappedExecutableContent.h"
 #include "../wrapped/WrappedIOProcessor.h"
 #include "../wrapped/WrappedInterpreterMonitor.h"
@@ -78,6 +79,7 @@ using namespace XERCESC_NS;
 // the wrapped* C++ classes get rid of DOM nodes and provide more easily wrapped base classes
 #include "../wrapped/WrappedInvoker.cpp"
 #include "../wrapped/WrappedDataModel.cpp"
+#include "../wrapped/WrappedActionLanguage.cpp"
 #include "../wrapped/WrappedExecutableContent.cpp"
 #include "../wrapped/WrappedIOProcessor.cpp"
 #include "../wrapped/WrappedInterpreterMonitor.cpp"
@@ -268,6 +270,7 @@ BEAUTIFY_NATIVE(uscxml::Event, Event, EventNative);
 
 %include "../wrapped/WrappedInvoker.h"
 %include "../wrapped/WrappedDataModel.h"
+%include "../wrapped/WrappedActionLanguage.h"
 %include "../wrapped/WrappedExecutableContent.h"
 %include "../wrapped/WrappedIOProcessor.h"
 %include "../wrapped/WrappedInterpreterMonitor.h"

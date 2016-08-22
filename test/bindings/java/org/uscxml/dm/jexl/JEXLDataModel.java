@@ -72,7 +72,12 @@ public class JEXLDataModel extends DataModel {
 
 	@Override
 	public Data evalAsData(String content) {
-		return new Data();
+		JexlExpression expr = jexl.createExpression(content);
+		System.out.println();
+		Data d = new Data();
+		d.setAtom(expr.getParsedText());
+		d.setType(Data.Type.VERBATIM);
+		return d;
 	}
 
 	@Override

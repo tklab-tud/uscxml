@@ -54,9 +54,9 @@ public:
 	MicroStep microStepper; ///< The microstepper instance to use
 	DataModel dataModel; ///< The datamodel to uses
 	ContentExecutor execContent; ///< To process executable content elements
-    EventQueue internalQueue; ///< The queue where internal events will be enqueued
-    EventQueue externalQueue; ///< The queue for external events
-    DelayedEventQueue delayedQueue; ///< The queue for delayed events
+	EventQueue internalQueue; ///< The queue where internal events will be enqueued
+	EventQueue externalQueue; ///< The queue for external events
+	DelayedEventQueue delayedQueue; ///< The queue for delayed events
 };
 
 /**

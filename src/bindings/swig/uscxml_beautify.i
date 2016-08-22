@@ -1,3 +1,5 @@
+%rename(NativeActionLanguage) ActionLanguage;
+%rename(ActionLanguage) WrappedActionLanguage;
 %rename(NativeDataModel) DataModel;
 %rename(DataModel) WrappedDataModel;
 %rename(NativeDataModelExtension) DataModelExtension;

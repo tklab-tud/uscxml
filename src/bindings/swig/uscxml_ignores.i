@@ -3,7 +3,6 @@
 %ignore uscxml::InterpreterImpl;
 %ignore uscxml::BlobImpl;
 %ignore uscxml::StateTransitionMonitor;
-%ignore uscxml::ActionLanguage;
 
 #if 0
 %ignore uscxml::EventHandlerImpl;

@@ -26,7 +26,6 @@
 #include "uscxml/messages/Event.h"
 #include "uscxml/util/DOM.h"
 #include <easylogging++.h>
-#include <boost/algorithm/string.hpp>
 
 namespace uscxml {
 
@@ -35,10 +34,13 @@ C89DataModel::C89DataModel() {
 
 std::shared_ptr<DataModelImpl> C89DataModel::create(DataModelCallbacks* callbacks) {
 	std::shared_ptr<C89DataModel> dm(new C89DataModel());
+    PicocInitialise(&dm->_pc, PICOC_STACK_SIZE);
+    PicocIncludeAllSystemHeaders(&dm->_pc);
     return dm;
 }
 
 C89DataModel::~C89DataModel() {
+    PicocCleanup(&_pc);
 }
 
 void C89DataModel::addExtension(DataModelExtension* ext) {
