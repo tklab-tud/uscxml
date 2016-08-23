@@ -197,6 +197,7 @@ else()
 endif()
 
 OPTION(BUILD_BINDING_JAVA "Build language bindings for Java" ON)
+OPTION(BUILD_BINDING_LUA "Build language bindings for Lua" ON)
 OPTION(BUILD_BINDING_CSHARP "Build language bindings for CSharp" ON)
 OPTION(BUILD_BINDING_PHP "Build language bindings for PHP" OFF)
 
