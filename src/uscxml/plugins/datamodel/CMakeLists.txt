@@ -36,7 +36,7 @@ if (V8_FOUND)
 endif()
 
 
-if (LUA_FOUND)
+if (LUA51_FOUND)
 	set(USCXML_DATAMODELS "lua ${USCXML_DATAMODELS}")
 	# Lua ecmascript datamodel
 	file(GLOB LUA_DATAMODEL
@@ -100,7 +100,7 @@ else()
 		
 	endif()
 
-	if (LUA_FOUND)
+	if (LUA51_FOUND)
 		add_custom_target(lua-bindings
 			COMMAND ${SWIG_EXECUTABLE}
 			-I${XercesC_INCLUDE_DIRS}
