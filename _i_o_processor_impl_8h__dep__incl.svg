@@ -46,7 +46,7 @@ if (edges && edges.length) {
         </defs>
 
 <script type="text/javascript">
-var viewWidth = 563;
+var viewWidth = 505;
 var viewHeight = 162;
 var sectionId = 'dynsection-1';
 </script>
@@ -54,98 +54,80 @@ var sectionId = 'dynsection-1';
 <svg id="graph" class="graph">
 <g id="viewport">
 <title>plugins/IOProcessorImpl.h</title>
-<polygon fill="white" stroke="none" points="-4,4 -4,-158 559,-158 559,4 -4,4"/>
+<polygon fill="white" stroke="none" points="-4,4 -4,-158 501,-158 501,4 -4,4"/>
 <!-- Node1 -->
 <g id="node1" class="node"><title>Node1</title>
-<polygon fill="#bfbfbf" stroke="black" points="271.5,-134.5 271.5,-153.5 405.5,-153.5 405.5,-134.5 271.5,-134.5"/>
-<text text-anchor="middle" x="338.5" y="-141.5" font-family="Helvetica,sans-Serif" font-size="10.00">plugins/IOProcessorImpl.h</text>
+<polygon fill="#bfbfbf" stroke="black" points="213.5,-134.5 213.5,-153.5 347.5,-153.5 347.5,-134.5 213.5,-134.5"/>
+<text text-anchor="middle" x="280.5" y="-141.5" font-family="Helvetica,sans-Serif" font-size="10.00">plugins/IOProcessorImpl.h</text>
 </g>
 <!-- Node2 -->
 <g id="node2" class="node"><title>Node2</title>
 <g id="a_node2"><a xlink:href="_basic_h_t_t_p_i_o_processor_8h.html" target="_top" xlink:title="plugins/ioprocessor\l/basichttp/BasicHTTPIOProcessor.h">
-<polygon fill="white" stroke="black" points="70,-67.5 70,-97.5 247,-97.5 247,-67.5 70,-67.5"/>
-<text text-anchor="start" x="78" y="-85.5" font-family="Helvetica,sans-Serif" font-size="10.00">plugins/ioprocessor</text>
-<text text-anchor="middle" x="158.5" y="-74.5" font-family="Helvetica,sans-Serif" font-size="10.00">/basichttp/BasicHTTPIOProcessor.h</text>
+<polygon fill="white" stroke="black" points="7,-67.5 7,-97.5 184,-97.5 184,-67.5 7,-67.5"/>
+<text text-anchor="start" x="15" y="-85.5" font-family="Helvetica,sans-Serif" font-size="10.00">plugins/ioprocessor</text>
+<text text-anchor="middle" x="95.5" y="-74.5" font-family="Helvetica,sans-Serif" font-size="10.00">/basichttp/BasicHTTPIOProcessor.h</text>
 </a>
 </g>
 </g>
 <!-- Node1&#45;&gt;Node2 -->
 <g id="edge1" class="edge"><title>Node1&#45;&gt;Node2</title>
-<path fill="none" stroke="midnightblue" d="M302.894,-131.23C273.584,-121.542 231.957,-107.782 200.922,-97.523"/>
-<polygon fill="midnightblue" stroke="midnightblue" points="302.117,-134.66 312.71,-134.475 304.314,-128.013 302.117,-134.66"/>
-</g>
-<!-- Node5 -->
-<g id="node5" class="node"><title>Node5</title>
-<g id="a_node5"><a xlink:href="_s_c_x_m_l_i_o_processor_8h.html" target="_top" xlink:title="plugins/ioprocessor\l/scxml/SCXMLIOProcessor.h">
-<polygon fill="white" stroke="black" points="265.5,-67.5 265.5,-97.5 411.5,-97.5 411.5,-67.5 265.5,-67.5"/>
-<text text-anchor="start" x="273.5" y="-85.5" font-family="Helvetica,sans-Serif" font-size="10.00">plugins/ioprocessor</text>
-<text text-anchor="middle" x="338.5" y="-74.5" font-family="Helvetica,sans-Serif" font-size="10.00">/scxml/SCXMLIOProcessor.h</text>
-</a>
-</g>
-</g>
-<!-- Node1&#45;&gt;Node5 -->
-<g id="edge4" class="edge"><title>Node1&#45;&gt;Node5</title>
-<path fill="none" stroke="midnightblue" d="M338.5,-124.235C338.5,-115.586 338.5,-105.497 338.5,-97.523"/>
-<polygon fill="midnightblue" stroke="midnightblue" points="335,-124.475 338.5,-134.475 342,-124.475 335,-124.475"/>
-</g>
-<!-- Node7 -->
-<g id="node7" class="node"><title>Node7</title>
-<g id="a_node7"><a xlink:href="_i_o_processor_8cpp.html" target="_top" xlink:title="plugins/IOProcessor.cpp">
-<polygon fill="white" stroke="black" points="430,-73 430,-92 555,-92 555,-73 430,-73"/>
-<text text-anchor="middle" x="492.5" y="-80" font-family="Helvetica,sans-Serif" font-size="10.00">plugins/IOProcessor.cpp</text>
-</a>
-</g>
-</g>
-<!-- Node1&#45;&gt;Node7 -->
-<g id="edge7" class="edge"><title>Node1&#45;&gt;Node7</title>
-<path fill="none" stroke="midnightblue" d="M370.122,-130.782C400.049,-119.22 444.193,-102.164 470.476,-92.0091"/>
-<polygon fill="midnightblue" stroke="midnightblue" points="368.631,-127.606 360.564,-134.475 371.154,-134.136 368.631,-127.606"/>
-</g>
-<!-- Node3 -->
-<g id="node3" class="node"><title>Node3</title>
-<g id="a_node3"><a xlink:href="_factory_8cpp.html" target="_top" xlink:title="plugins/Factory.cpp">
-<polygon fill="white" stroke="black" points="205,-6 205,-25 308,-25 308,-6 205,-6"/>
-<text text-anchor="middle" x="256.5" y="-13" font-family="Helvetica,sans-Serif" font-size="10.00">plugins/Factory.cpp</text>
-</a>
-</g>
-</g>
-<!-- Node2&#45;&gt;Node3 -->
-<g id="edge2" class="edge"><title>Node2&#45;&gt;Node3</title>
-<path fill="none" stroke="midnightblue" d="M188.19,-61.808C206.729,-49.5117 229.658,-34.3034 243.674,-25.007"/>
-<polygon fill="midnightblue" stroke="midnightblue" points="186.164,-58.9518 179.765,-67.396 190.033,-64.7853 186.164,-58.9518"/>
+<path fill="none" stroke="midnightblue" d="M244.299,-131.357C214.155,-121.662 171.136,-107.826 139.101,-97.523"/>
+<polygon fill="midnightblue" stroke="midnightblue" points="243.403,-134.745 253.994,-134.475 245.546,-128.081 243.403,-134.745"/>
 </g>
 <!-- Node4 -->
 <g id="node4" class="node"><title>Node4</title>
-<g id="a_node4"><a xlink:href="_basic_h_t_t_p_i_o_processor_8cpp.html" target="_top" xlink:title="plugins/ioprocessor\l/basichttp/BasicHTTPIOProcessor.cpp">
+<g id="a_node4"><a xlink:href="_s_c_x_m_l_i_o_processor_8h.html" target="_top" xlink:title="plugins/ioprocessor\l/scxml/SCXMLIOProcessor.h">
+<polygon fill="white" stroke="black" points="207.5,-67.5 207.5,-97.5 353.5,-97.5 353.5,-67.5 207.5,-67.5"/>
+<text text-anchor="start" x="215.5" y="-85.5" font-family="Helvetica,sans-Serif" font-size="10.00">plugins/ioprocessor</text>
+<text text-anchor="middle" x="280.5" y="-74.5" font-family="Helvetica,sans-Serif" font-size="10.00">/scxml/SCXMLIOProcessor.h</text>
+</a>
+</g>
+</g>
+<!-- Node1&#45;&gt;Node4 -->
+<g id="edge3" class="edge"><title>Node1&#45;&gt;Node4</title>
+<path fill="none" stroke="midnightblue" d="M280.5,-124.235C280.5,-115.586 280.5,-105.497 280.5,-97.523"/>
+<polygon fill="midnightblue" stroke="midnightblue" points="277,-124.475 280.5,-134.475 284,-124.475 277,-124.475"/>
+</g>
+<!-- Node6 -->
+<g id="node6" class="node"><title>Node6</title>
+<g id="a_node6"><a xlink:href="_i_o_processor_8cpp.html" target="_top" xlink:title="plugins/IOProcessor.cpp">
+<polygon fill="white" stroke="black" points="372,-73 372,-92 497,-92 497,-73 372,-73"/>
+<text text-anchor="middle" x="434.5" y="-80" font-family="Helvetica,sans-Serif" font-size="10.00">plugins/IOProcessor.cpp</text>
+</a>
+</g>
+</g>
+<!-- Node1&#45;&gt;Node6 -->
+<g id="edge5" class="edge"><title>Node1&#45;&gt;Node6</title>
+<path fill="none" stroke="midnightblue" d="M312.122,-130.782C342.049,-119.22 386.193,-102.164 412.476,-92.0091"/>
+<polygon fill="midnightblue" stroke="midnightblue" points="310.631,-127.606 302.564,-134.475 313.154,-134.136 310.631,-127.606"/>
+</g>
+<!-- Node3 -->
+<g id="node3" class="node"><title>Node3</title>
+<g id="a_node3"><a xlink:href="_basic_h_t_t_p_i_o_processor_8cpp.html" target="_top" xlink:title="plugins/ioprocessor\l/basichttp/BasicHTTPIOProcessor.cpp">
 <polygon fill="white" stroke="black" points="0,-0.5 0,-30.5 187,-30.5 187,-0.5 0,-0.5"/>
 <text text-anchor="start" x="8" y="-18.5" font-family="Helvetica,sans-Serif" font-size="10.00">plugins/ioprocessor</text>
 <text text-anchor="middle" x="93.5" y="-7.5" font-family="Helvetica,sans-Serif" font-size="10.00">/basichttp/BasicHTTPIOProcessor.cpp</text>
 </a>
 </g>
 </g>
-<!-- Node2&#45;&gt;Node4 -->
-<g id="edge3" class="edge"><title>Node2&#45;&gt;Node4</title>
-<path fill="none" stroke="midnightblue" d="M137.311,-60.3115C127.561,-50.5612 116.259,-39.259 107.577,-30.5765"/>
-<polygon fill="midnightblue" stroke="midnightblue" points="134.85,-62.7998 144.396,-67.396 139.8,-57.85 134.85,-62.7998"/>
+<!-- Node2&#45;&gt;Node3 -->
+<g id="edge2" class="edge"><title>Node2&#45;&gt;Node3</title>
+<path fill="none" stroke="midnightblue" d="M94.7495,-57.1081C94.474,-48.1539 94.1715,-38.3227 93.9331,-30.5765"/>
+<polygon fill="midnightblue" stroke="midnightblue" points="91.26,-57.5084 95.066,-67.396 98.2567,-57.293 91.26,-57.5084"/>
 </g>
-<!-- Node5&#45;&gt;Node3 -->
-<g id="edge5" class="edge"><title>Node5&#45;&gt;Node3</title>
-<path fill="none" stroke="midnightblue" d="M312.649,-61.008C297.426,-48.9412 278.961,-34.3046 267.468,-25.1945"/>
-<polygon fill="midnightblue" stroke="midnightblue" points="310.696,-63.9268 320.707,-67.396 315.045,-58.4412 310.696,-63.9268"/>
-</g>
-<!-- Node6 -->
-<g id="node6" class="node"><title>Node6</title>
-<g id="a_node6"><a xlink:href="_s_c_x_m_l_i_o_processor_8cpp.html" target="_top" xlink:title="plugins/ioprocessor\l/scxml/SCXMLIOProcessor.cpp">
-<polygon fill="white" stroke="black" points="326,-0.5 326,-30.5 483,-30.5 483,-0.5 326,-0.5"/>
-<text text-anchor="start" x="334" y="-18.5" font-family="Helvetica,sans-Serif" font-size="10.00">plugins/ioprocessor</text>
-<text text-anchor="middle" x="404.5" y="-7.5" font-family="Helvetica,sans-Serif" font-size="10.00">/scxml/SCXMLIOProcessor.cpp</text>
+<!-- Node5 -->
+<g id="node5" class="node"><title>Node5</title>
+<g id="a_node5"><a xlink:href="_s_c_x_m_l_i_o_processor_8cpp.html" target="_top" xlink:title="plugins/ioprocessor\l/scxml/SCXMLIOProcessor.cpp">
+<polygon fill="white" stroke="black" points="205,-0.5 205,-30.5 362,-30.5 362,-0.5 205,-0.5"/>
+<text text-anchor="start" x="213" y="-18.5" font-family="Helvetica,sans-Serif" font-size="10.00">plugins/ioprocessor</text>
+<text text-anchor="middle" x="283.5" y="-7.5" font-family="Helvetica,sans-Serif" font-size="10.00">/scxml/SCXMLIOProcessor.cpp</text>
 </a>
 </g>
 </g>
-<!-- Node5&#45;&gt;Node6 -->
-<g id="edge6" class="edge"><title>Node5&#45;&gt;Node6</title>
-<path fill="none" stroke="midnightblue" d="M360.015,-60.3115C369.915,-50.5612 381.391,-39.259 390.207,-30.5765"/>
-<polygon fill="midnightblue" stroke="midnightblue" points="357.49,-57.8853 352.821,-67.396 362.402,-62.8728 357.49,-57.8853"/>
+<!-- Node4&#45;&gt;Node5 -->
+<g id="edge4" class="edge"><title>Node4&#45;&gt;Node5</title>
+<path fill="none" stroke="midnightblue" d="M281.612,-57.4029C282.029,-48.3703 282.489,-38.4078 282.85,-30.5765"/>
+<polygon fill="midnightblue" stroke="midnightblue" points="278.116,-57.2452 281.151,-67.396 285.108,-57.568 278.116,-57.2452"/>
 </g>
 </g>
 </svg>

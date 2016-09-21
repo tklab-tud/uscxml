@@ -292,7 +292,7 @@ Java</h2>
 /usr/lib/jvm/java-7-openjdk-i386/include/jni.h
 </pre><p>In addition, you will need apache's <code>ant</code> in the path or in <code>$ENV{ANT_HOME}/bin</code>: </p><pre class="fragment">$ ant -version
 Apache Ant(TM) version 1.8.2 compiled on September 22 2011
-</pre><p>If both of these are given, you ought to get <code>java</code> as an available language binding and a new target called <code>java</code> for your build system. If you used plain Makefiles (default on unices), you will get everything you need via: </p><pre class="fragment">$ make &amp;&amp; make java
+</pre><p>If both of these are given, you ought to get <code>java</code> as an available language binding and a new target called <code>java</code> for your build system. If you used plain Makefiles (default on unices), you will get everything you need via: </p><pre class="fragment">$ make &amp;&amp; make jar
 $ ls lib/*.jnilib lib/*.jar
 lib/libuscxmlNativeJava64.jnilib lib/uscxml.jar
 </pre><p>The <code>uscxml.jar</code> is to be added to your project's classpath, while the <code>libuscxmlNativeJava64.jnilib</code> (or .so, .dll) needs to be loaded <b>once</b> via <code>System.load()</code> before you can use native objects.</p>
@@ -314,7 +314,7 @@ Important Note for Windows</h2>
 <p>You cannot use CMake projects generated for Visual Studio to build the target language specific part of the various bindings - you have to use <code>nmake</code> at a command prompt. Open a <code>Visual Studio [x64 Win64] Command Prompt (2012)</code> and type: </p><pre class="fragment">&gt; cd c:\path\to\build\dir
 &gt; cmake -G"NMake Makefiles" c:\path\to\uscxml\source
 ...
-&gt; nmake &amp;&amp; nmake csharp &amp;&amp; nmake java
+&gt; nmake &amp;&amp; nmake csharp &amp;&amp; nmake jar
 ...</pre> </div></div><!-- contents -->
 <!-- HTML footer for doxygen 1.8.8-->
 <!-- start footer part -->
@@ -324,7 +324,7 @@ Important Note for Windows</h2>
 </div>
 </div>
 <!-- <hr class="footer"/><address class="footer"><small>
-Generated on Thu May 26 2016 12:37:12 for uSCXML by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Wed Sep 21 2016 09:13:43 for uSCXML by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.10
 </small></address> -->

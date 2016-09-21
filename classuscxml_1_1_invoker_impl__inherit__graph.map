@@ -1,4 +1,5 @@
 <map id="uscxml::InvokerImpl" name="uscxml::InvokerImpl">
-<area shape="rect" id="node3" href="$classuscxml_1_1_u_s_c_x_m_l_invoker.html" title="An invoker for other SCXML instances. " alt="" coords="9,155,179,181"/>
-<area shape="rect" id="node2" href="$classuscxml_1_1_event_handler_impl.html" title="Common base class for invokers and i/o processors. " alt="" coords="5,5,183,32"/>
+<area shape="rect" id="node3" href="$classuscxml_1_1_dir_mon_invoker.html" title="uscxml::DirMonInvoker" alt="" coords="5,155,163,181"/>
+<area shape="rect" id="node4" href="$classuscxml_1_1_u_s_c_x_m_l_invoker.html" title="An invoker for other SCXML instances. " alt="" coords="187,155,357,181"/>
+<area shape="rect" id="node2" href="$classuscxml_1_1_event_handler_impl.html" title="Common base class for invokers and i/o processors. " alt="" coords="89,5,266,32"/>
 </map>

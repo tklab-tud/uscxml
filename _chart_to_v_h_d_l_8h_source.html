@@ -242,19 +242,19 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00161"></a><span class="lineno">  161</span>&#160;</div>
 <div class="line"><a name="l00162"></a><span class="lineno">  162</span>&#160;    <span class="keywordtype">void</span> writeTypes(std::ostream&amp; stream);</div>
 <div class="line"><a name="l00163"></a><span class="lineno">  163</span>&#160;    <span class="keywordtype">void</span> writeIncludes(std::ostream&amp; stream);</div>
-<div class="line"><a name="l00164"></a><span class="lineno">  164</span>&#160;</div>
-<div class="line"><a name="l00165"></a><span class="lineno">  165</span>&#160;    <span class="comment">// top layer components</span></div>
+<div class="line"><a name="l00164"></a><span class="lineno">  164</span>&#160;        </div>
+<div class="line"><a name="l00165"></a><span class="lineno">  165</span>&#160;        <span class="comment">// top layer components</span></div>
 <div class="line"><a name="l00166"></a><span class="lineno">  166</span>&#160;    <span class="keywordtype">void</span> writeFiFo(std::ostream&amp; stream);</div>
 <div class="line"><a name="l00167"></a><span class="lineno">  167</span>&#160;    <span class="keywordtype">void</span> writeEventController(std::ostream &amp; stream);</div>
 <div class="line"><a name="l00168"></a><span class="lineno">  168</span>&#160;    <span class="keywordtype">void</span> writeMicroStepper(std::ostream&amp; stream);</div>
 <div class="line"><a name="l00169"></a><span class="lineno">  169</span>&#160;    <span class="keywordtype">void</span> writeTestbench(std::ostream &amp; stream);</div>
-<div class="line"><a name="l00170"></a><span class="lineno">  170</span>&#160;</div>
-<div class="line"><a name="l00171"></a><span class="lineno">  171</span>&#160;    <span class="comment">// system</span></div>
+<div class="line"><a name="l00170"></a><span class="lineno">  170</span>&#160;        </div>
+<div class="line"><a name="l00171"></a><span class="lineno">  171</span>&#160;        <span class="comment">// system</span></div>
 <div class="line"><a name="l00172"></a><span class="lineno">  172</span>&#160;    <span class="keywordtype">void</span> writeSignalsAndComponents(std::ostream&amp; stream);</div>
 <div class="line"><a name="l00173"></a><span class="lineno">  173</span>&#160;    <span class="keywordtype">void</span> writeSystemSignalMapping(std::ostream&amp; stream);</div>
 <div class="line"><a name="l00174"></a><span class="lineno">  174</span>&#160;    <span class="keywordtype">void</span> writeModuleInstantiation(std::ostream&amp; stream);</div>
 <div class="line"><a name="l00175"></a><span class="lineno">  175</span>&#160;</div>
-<div class="line"><a name="l00176"></a><span class="lineno">  176</span>&#160;    <span class="comment">// combinatorial logic</span></div>
+<div class="line"><a name="l00176"></a><span class="lineno">  176</span>&#160;        <span class="comment">// combinatorial logic</span></div>
 <div class="line"><a name="l00177"></a><span class="lineno">  177</span>&#160;    <span class="keywordtype">void</span> writeOptimalTransitionSetSelection(std::ostream&amp; stream);</div>
 <div class="line"><a name="l00178"></a><span class="lineno">  178</span>&#160;    <span class="keywordtype">void</span> writeExitSet(std::ostream &amp; stream);</div>
 <div class="line"><a name="l00179"></a><span class="lineno">  179</span>&#160;    <span class="keywordtype">void</span> writeEntrySet(std::ostream &amp; stream);</div>
@@ -263,24 +263,24 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00182"></a><span class="lineno">  182</span>&#160;    <span class="keywordtype">void</span> writeCompleteEntrySet(std::ostream &amp; stream);</div>
 <div class="line"><a name="l00183"></a><span class="lineno">  183</span>&#160;    <span class="keywordtype">void</span> writeActiveStateNplusOne(std::ostream &amp; stream);</div>
 <div class="line"><a name="l00184"></a><span class="lineno">  184</span>&#160;</div>
-<div class="line"><a name="l00185"></a><span class="lineno">  185</span>&#160;    <span class="comment">// handler</span></div>
+<div class="line"><a name="l00185"></a><span class="lineno">  185</span>&#160;        <span class="comment">// handler</span></div>
 <div class="line"><a name="l00186"></a><span class="lineno">  186</span>&#160;    <span class="keywordtype">void</span> writeStateHandler(std::ostream&amp; stream);</div>
 <div class="line"><a name="l00187"></a><span class="lineno">  187</span>&#160;    <span class="keywordtype">void</span> writeResetHandler(std::ostream &amp; stream);</div>
 <div class="line"><a name="l00188"></a><span class="lineno">  188</span>&#160;    <span class="keywordtype">void</span> writeSpontaneousHandler(std::ostream &amp; stream);</div>
 <div class="line"><a name="l00189"></a><span class="lineno">  189</span>&#160;    <span class="keywordtype">void</span> writeInternalEventHandler(std::ostream &amp; stream);</div>
 <div class="line"><a name="l00190"></a><span class="lineno">  190</span>&#160;    <span class="keywordtype">void</span> writeErrorHandler(std::ostream&amp; stream);</div>
-<div class="line"><a name="l00191"></a><span class="lineno">  191</span>&#160;</div>
-<div class="line"><a name="l00192"></a><span class="lineno">  192</span>&#160;    <span class="comment">// event generation</span></div>
-<div class="line"><a name="l00193"></a><span class="lineno">  193</span>&#160;    <span class="keywordtype">void</span> writeExContentBlock(std::ostream &amp; stream, std::string index,</div>
-<div class="line"><a name="l00194"></a><span class="lineno">  194</span>&#160;                             std::list&lt;XERCESC_NS::DOMElement*&gt; commandSequence);</div>
-<div class="line"><a name="l00195"></a><span class="lineno">  195</span>&#160;</div>
+<div class="line"><a name="l00191"></a><span class="lineno">  191</span>&#160;        </div>
+<div class="line"><a name="l00192"></a><span class="lineno">  192</span>&#160;        <span class="comment">// event generation</span></div>
+<div class="line"><a name="l00193"></a><span class="lineno">  193</span>&#160;    <span class="keywordtype">void</span> writeExContentBlock(std::ostream &amp; stream, std::string index, </div>
+<div class="line"><a name="l00194"></a><span class="lineno">  194</span>&#160;            std::list&lt; XERCESC_NS::DOMElement* &gt; commandSequence);</div>
+<div class="line"><a name="l00195"></a><span class="lineno">  195</span>&#160;        </div>
 <div class="line"><a name="l00196"></a><span class="lineno">  196</span>&#160;    <a class="code" href="structuscxml_1_1_trie.html">Trie</a> _eventTrie;</div>
-<div class="line"><a name="l00197"></a><span class="lineno">  197</span>&#160;    std::list&lt;XERCESC_NS::DOMElement*&gt; _execContent;</div>
+<div class="line"><a name="l00197"></a><span class="lineno">  197</span>&#160;    std::list&lt; XERCESC_NS::DOMElement* &gt; _execContent;</div>
 <div class="line"><a name="l00198"></a><span class="lineno">  198</span>&#160;</div>
 <div class="line"><a name="l00199"></a><span class="lineno">  199</span>&#160;<span class="keyword">private</span>:</div>
 <div class="line"><a name="l00200"></a><span class="lineno">  200</span>&#160;    std::string eventNameEscape(<span class="keyword">const</span> std::string&amp; eventName);</div>
 <div class="line"><a name="l00201"></a><span class="lineno">  201</span>&#160;</div>
-<div class="line"><a name="l00202"></a><span class="lineno">  202</span>&#160;    std::string getLineForExecContent(<span class="keyword">const</span> XERCESC_NS::DOMElement* elem);</div>
+<div class="line"><a name="l00202"></a><span class="lineno">  202</span>&#160;    std::string getLineForExecContent(<span class="keyword">const</span> XERCESC_NS::DOMNode* elem);</div>
 <div class="line"><a name="l00203"></a><span class="lineno">  203</span>&#160;</div>
 <div class="line"><a name="l00204"></a><span class="lineno">  204</span>&#160;};</div>
 <div class="line"><a name="l00205"></a><span class="lineno">  205</span>&#160;</div>
@@ -291,10 +291,10 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="ttc" id="_trie_8h_html"><div class="ttname"><a href="_trie_8h.html">Trie.h</a></div></div>
 <div class="ttc" id="_transformer_8h_html"><div class="ttname"><a href="_transformer_8h.html">Transformer.h</a></div></div>
 <div class="ttc" id="structuscxml_1_1_chart_to_v_h_d_l_1_1_v_node_html"><div class="ttname"><a href="structuscxml_1_1_chart_to_v_h_d_l_1_1_v_node.html">uscxml::ChartToVHDL::VNode</a></div><div class="ttdef"><b>Definition:</b> ChartToVHDL.h:43</div></div>
-<div class="ttc" id="namespaceuscxml_html"><div class="ttname"><a href="namespaceuscxml.html">uscxml</a></div><div class="ttdef"><b>Definition:</b> InterpreterIssue.cpp:33</div></div>
+<div class="ttc" id="namespaceuscxml_html"><div class="ttname"><a href="namespaceuscxml.html">uscxml</a></div><div class="ttdef"><b>Definition:</b> Breakpoint.cpp:26</div></div>
 <div class="ttc" id="structuscxml_1_1_chart_to_v_h_d_l_1_1_v_assign_html"><div class="ttname"><a href="structuscxml_1_1_chart_to_v_h_d_l_1_1_v_assign.html">uscxml::ChartToVHDL::VAssign</a></div><div class="ttdef"><b>Definition:</b> ChartToVHDL.h:102</div></div>
 <div class="ttc" id="structuscxml_1_1_chart_to_v_h_d_l_1_1_v_or_html"><div class="ttname"><a href="structuscxml_1_1_chart_to_v_h_d_l_1_1_v_or.html">uscxml::ChartToVHDL::VOr</a></div><div class="ttdef"><b>Definition:</b> ChartToVHDL.h:121</div></div>
-<div class="ttc" id="classuscxml_1_1_interpreter_html"><div class="ttname"><a href="classuscxml_1_1_interpreter.html">uscxml::Interpreter</a></div><div class="ttdoc">Central class to interpret and process SCXML documents. </div><div class="ttdef"><b>Definition:</b> Interpreter.h:112</div></div>
+<div class="ttc" id="classuscxml_1_1_interpreter_html"><div class="ttname"><a href="classuscxml_1_1_interpreter.html">uscxml::Interpreter</a></div><div class="ttdoc">Central class to interpret and process SCXML documents. </div><div class="ttdef"><b>Definition:</b> Interpreter.h:77</div></div>
 <div class="ttc" id="structuscxml_1_1_chart_to_v_h_d_l_1_1_v_container_html"><div class="ttname"><a href="structuscxml_1_1_chart_to_v_h_d_l_1_1_v_container.html">uscxml::ChartToVHDL::VContainer</a></div><div class="ttdef"><b>Definition:</b> ChartToVHDL.h:73</div></div>
 <div class="ttc" id="structuscxml_1_1_chart_to_v_h_d_l_1_1_v_and_html"><div class="ttname"><a href="structuscxml_1_1_chart_to_v_h_d_l_1_1_v_and.html">uscxml::ChartToVHDL::VAnd</a></div><div class="ttdef"><b>Definition:</b> ChartToVHDL.h:110</div></div>
 <div class="ttc" id="classuscxml_1_1_chart_to_v_h_d_l_html"><div class="ttname"><a href="classuscxml_1_1_chart_to_v_h_d_l.html">uscxml::ChartToVHDL</a></div><div class="ttdef"><b>Definition:</b> ChartToVHDL.h:34</div></div>
@@ -316,7 +316,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div>
 </div>
 <!-- <hr class="footer"/><address class="footer"><small>
-Generated on Thu May 26 2016 12:37:11 for uSCXML by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Wed Sep 21 2016 09:13:42 for uSCXML by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.10
 </small></address> -->

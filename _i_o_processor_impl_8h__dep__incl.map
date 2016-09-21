@@ -1,8 +1,7 @@
 <map id="plugins/IOProcessorImpl.h" name="plugins/IOProcessorImpl.h">
-<area shape="rect" id="node2" href="$_basic_h_t_t_p_i_o_processor_8h.html" title="plugins/ioprocessor\l/basichttp/BasicHTTPIOProcessor.h" alt="" coords="99,80,335,121"/>
-<area shape="rect" id="node5" href="$_s_c_x_m_l_i_o_processor_8h.html" title="plugins/ioprocessor\l/scxml/SCXMLIOProcessor.h" alt="" coords="359,80,554,121"/>
-<area shape="rect" id="node7" href="$_i_o_processor_8cpp.html" title="plugins/IOProcessor.cpp" alt="" coords="579,87,745,114"/>
-<area shape="rect" id="node3" href="$_factory_8cpp.html" title="plugins/Factory.cpp" alt="" coords="279,177,416,203"/>
-<area shape="rect" id="node4" href="$_basic_h_t_t_p_i_o_processor_8cpp.html" title="plugins/ioprocessor\l/basichttp/BasicHTTPIOProcessor.cpp" alt="" coords="5,169,255,211"/>
-<area shape="rect" id="node6" href="$_s_c_x_m_l_i_o_processor_8cpp.html" title="plugins/ioprocessor\l/scxml/SCXMLIOProcessor.cpp" alt="" coords="440,169,649,211"/>
+<area shape="rect" id="node2" href="$_basic_h_t_t_p_i_o_processor_8h.html" title="plugins/ioprocessor\l/basichttp/BasicHTTPIOProcessor.h" alt="" coords="15,80,251,121"/>
+<area shape="rect" id="node4" href="$_s_c_x_m_l_i_o_processor_8h.html" title="plugins/ioprocessor\l/scxml/SCXMLIOProcessor.h" alt="" coords="282,80,477,121"/>
+<area shape="rect" id="node6" href="$_i_o_processor_8cpp.html" title="plugins/IOProcessor.cpp" alt="" coords="501,87,668,114"/>
+<area shape="rect" id="node3" href="$_basic_h_t_t_p_i_o_processor_8cpp.html" title="plugins/ioprocessor\l/basichttp/BasicHTTPIOProcessor.cpp" alt="" coords="5,169,255,211"/>
+<area shape="rect" id="node5" href="$_s_c_x_m_l_i_o_processor_8cpp.html" title="plugins/ioprocessor\l/scxml/SCXMLIOProcessor.cpp" alt="" coords="279,169,488,211"/>
 </map>

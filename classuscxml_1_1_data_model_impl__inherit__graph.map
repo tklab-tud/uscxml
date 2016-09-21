@@ -1,6 +1,8 @@
 <map id="uscxml::DataModelImpl" name="uscxml::DataModelImpl">
-<area shape="rect" id="node2" href="$classuscxml_1_1_j_s_c_data_model.html" title="ECMAScript data&#45;model via JavaScriptCore. " alt="" coords="5,80,165,107"/>
-<area shape="rect" id="node3" href="$classuscxml_1_1_lua_data_model.html" title="Lua data&#45;model. " alt="" coords="189,80,347,107"/>
-<area shape="rect" id="node4" href="$classuscxml_1_1_n_u_l_l_data_model.html" title="NULL data&#45;model. " alt="" coords="371,80,541,107"/>
-<area shape="rect" id="node5" href="$classuscxml_1_1_v8_data_model.html" title="ECMAScript data&#45;model via Google&#39;s V8. " alt="" coords="565,80,717,107"/>
+<area shape="rect" id="node2" href="$classuscxml_1_1_c89_data_model.html" title="C89 (ANSI&#45;C) data&#45;model. " alt="" coords="226,5,386,32"/>
+<area shape="rect" id="node3" href="$classuscxml_1_1_j_s_c_data_model.html" title="ECMAScript data&#45;model via JavaScriptCore. " alt="" coords="226,56,386,83"/>
+<area shape="rect" id="node4" href="$classuscxml_1_1_lua_data_model.html" title="Lua data&#45;model. " alt="" coords="227,107,385,133"/>
+<area shape="rect" id="node5" href="$classuscxml_1_1_n_u_l_l_data_model.html" title="NULL data&#45;model. " alt="" coords="221,157,391,184"/>
+<area shape="rect" id="node6" href="$classuscxml_1_1_promela_data_model.html" title="uscxml::PromelaDataModel" alt="" coords="213,208,399,235"/>
+<area shape="rect" id="node7" href="$classuscxml_1_1_v8_data_model.html" title="ECMAScript data&#45;model via Google&#39;s V8. " alt="" coords="230,259,382,285"/>
 </map>

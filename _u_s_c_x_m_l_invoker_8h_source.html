@@ -104,83 +104,81 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="_interpreter_impl_8h.html">uscxml/interpreter/InterpreterImpl.h</a>&quot;</span></div>
 <div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="_basic_event_queue_8h.html">uscxml/interpreter/BasicEventQueue.h</a>&quot;</span></div>
 <div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;</div>
-<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="_invoker_8h.html">uscxml/plugins/Invoker.h</a>&quot;</span></div>
-<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="_invoker_impl_8h.html">uscxml/plugins/InvokerImpl.h</a>&quot;</span></div>
-<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;</div>
-<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;<span class="preprocessor">#ifdef BUILD_AS_PLUGINS</span></div>
-<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;<span class="preprocessor">#include &quot;uscxml/plugins/Plugins.h&quot;</span></div>
-<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;<span class="preprocessor">#endif</span></div>
-<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;</div>
-<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;<span class="preprocessor">#define USCXML_INVOKER_SCXML_TYPE &quot;http://www.w3.org/TR/scxml&quot;</span></div>
-<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;</div>
-<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;<span class="keyword">namespace </span><a class="code" href="namespaceuscxml.html">uscxml</a> {</div>
-<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;</div>
-<div class="line"><a name="l00041"></a><span class="lineno"><a class="line" href="classuscxml_1_1_u_s_c_x_m_l_invoker.html">   41</a></span>&#160;<span class="keyword">class </span><a class="code" href="classuscxml_1_1_u_s_c_x_m_l_invoker.html">USCXMLInvoker</a> :</div>
-<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;    <span class="keyword">public</span> <a class="code" href="classuscxml_1_1_invoker_impl.html">InvokerImpl</a>,</div>
-<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;    <span class="keyword">public</span> std::enable_shared_from_this&lt;USCXMLInvoker&gt; {</div>
-<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;<span class="keyword">public</span>:</div>
-<div class="line"><a name="l00045"></a><span class="lineno"><a class="line" href="classuscxml_1_1_u_s_c_x_m_l_invoker_1_1_parent_queue_impl.html">   45</a></span>&#160;    <span class="keyword">class </span><a class="code" href="classuscxml_1_1_u_s_c_x_m_l_invoker_1_1_parent_queue_impl.html">ParentQueueImpl</a> : <span class="keyword">public</span> <a class="code" href="classuscxml_1_1_basic_event_queue.html">BasicEventQueue</a> {</div>
-<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;    <span class="keyword">public</span>:</div>
-<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;        <a class="code" href="classuscxml_1_1_u_s_c_x_m_l_invoker_1_1_parent_queue_impl.html">ParentQueueImpl</a>(<a class="code" href="classuscxml_1_1_u_s_c_x_m_l_invoker.html">USCXMLInvoker</a>* invoker) : _invoker(invoker) {}</div>
-<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;        <span class="keyword">virtual</span> <span class="keywordtype">void</span> enqueue(<span class="keyword">const</span> <a class="code" href="classuscxml_1_1_event.html">Event</a>&amp; event);</div>
-<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;        <a class="code" href="classuscxml_1_1_u_s_c_x_m_l_invoker.html">USCXMLInvoker</a>* _invoker;</div>
-<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;    };</div>
-<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;</div>
-<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;    <a class="code" href="classuscxml_1_1_u_s_c_x_m_l_invoker.html">USCXMLInvoker</a>();</div>
-<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;    <span class="keyword">virtual</span> ~<a class="code" href="classuscxml_1_1_u_s_c_x_m_l_invoker.html">USCXMLInvoker</a>();</div>
-<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;    <span class="keyword">virtual</span> std::shared_ptr&lt;InvokerImpl&gt; <a class="code" href="classuscxml_1_1_u_s_c_x_m_l_invoker.html#aab47a7d82206603f988a7534ddc1172e">create</a>(<a class="code" href="classuscxml_1_1_interpreter_impl.html">InterpreterImpl</a>* interpreter);</div>
-<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;</div>
-<div class="line"><a name="l00056"></a><span class="lineno"><a class="line" href="classuscxml_1_1_u_s_c_x_m_l_invoker.html#abb533adf8dd28fd26ebd5e41c4e64980">   56</a></span>&#160;    <span class="keyword">virtual</span> std::list&lt;std::string&gt; <a class="code" href="classuscxml_1_1_u_s_c_x_m_l_invoker.html#abb533adf8dd28fd26ebd5e41c4e64980">getNames</a>() {</div>
-<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;        std::list&lt;std::string&gt; names;</div>
-<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;        names.push_back(<span class="stringliteral">&quot;scxml&quot;</span>);</div>
-<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;        names.push_back(<span class="stringliteral">&quot;uscxml&quot;</span>);</div>
-<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;        names.push_back(USCXML_INVOKER_SCXML_TYPE);</div>
-<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;        names.push_back(<span class="stringliteral">&quot;http://www.w3.org/TR/scxml/&quot;</span>);</div>
-<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;        <span class="keywordflow">return</span> names;</div>
-<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;    }</div>
-<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;</div>
-<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> <a class="code" href="classuscxml_1_1_u_s_c_x_m_l_invoker.html#ab9fcae2b06dd88e9cf7a5aab0205af49">eventFromSCXML</a>(<span class="keyword">const</span> <a class="code" href="classuscxml_1_1_event.html">Event</a>&amp; event);</div>
-<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;</div>
-<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;    <span class="keyword">virtual</span> <a class="code" href="classuscxml_1_1_data.html">Data</a> <a class="code" href="classuscxml_1_1_u_s_c_x_m_l_invoker.html#a4ae4ecb0bc9585d0f970d02f156b351c">getDataModelVariables</a>();</div>
-<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> <a class="code" href="classuscxml_1_1_u_s_c_x_m_l_invoker.html#a0447c03fb84d50ae39f222c479330c9a">invoke</a>(<span class="keyword">const</span> std::string&amp; source, <span class="keyword">const</span> <a class="code" href="classuscxml_1_1_event.html">Event</a>&amp; invokeEvent);</div>
-<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> <a class="code" href="classuscxml_1_1_u_s_c_x_m_l_invoker.html#aaaed6d311fb235fdbb190b4923654c26">uninvoke</a>();</div>
-<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;</div>
-<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;<span class="keyword">protected</span>:</div>
-<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;</div>
-<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;    <span class="keywordtype">void</span> start();</div>
-<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;    <span class="keywordtype">void</span> <a class="code" href="classuscxml_1_1_u_s_c_x_m_l_invoker.html#a81be8d35d919266dc65d1133064d5f19">stop</a>();</div>
-<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;    <span class="keyword">static</span> <span class="keywordtype">void</span> run(<span class="keywordtype">void</span>* instance);</div>
-<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;</div>
-<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;    <span class="keywordtype">bool</span> _isActive;</div>
-<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;    <span class="keywordtype">bool</span> _isStarted;</div>
-<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;    std::thread* _thread;</div>
-<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;    <a class="code" href="classuscxml_1_1_event_queue.html">EventQueue</a> _parentQueue;</div>
-<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;    <a class="code" href="classuscxml_1_1_interpreter.html">Interpreter</a> _invokedInterpreter;</div>
-<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;};</div>
-<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;</div>
-<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;<span class="preprocessor">#ifdef BUILD_AS_PLUGINS</span></div>
-<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;PLUMA_INHERIT_PROVIDER(USCXMLInvoker, InvokerImpl);</div>
-<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;<span class="preprocessor">#endif</span></div>
-<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;</div>
-<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;}</div>
-<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;</div>
-<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;<span class="preprocessor">#endif </span><span class="comment">/* end of include guard: USCXMLINVOKER_H_OQFA21IO */</span><span class="preprocessor"></span></div>
+<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="_invoker_impl_8h.html">uscxml/plugins/InvokerImpl.h</a>&quot;</span></div>
+<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;</div>
+<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;<span class="preprocessor">#ifdef BUILD_AS_PLUGINS</span></div>
+<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;<span class="preprocessor">#include &quot;uscxml/plugins/Plugins.h&quot;</span></div>
+<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;</div>
+<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;<span class="preprocessor">#define USCXML_INVOKER_SCXML_TYPE &quot;http://www.w3.org/TR/scxml&quot;</span></div>
+<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;</div>
+<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;<span class="keyword">namespace </span><a class="code" href="namespaceuscxml.html">uscxml</a> {</div>
+<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;</div>
+<div class="line"><a name="l00040"></a><span class="lineno"><a class="line" href="classuscxml_1_1_u_s_c_x_m_l_invoker.html">   40</a></span>&#160;<span class="keyword">class </span><a class="code" href="classuscxml_1_1_u_s_c_x_m_l_invoker.html">USCXMLInvoker</a> :</div>
+<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;    <span class="keyword">public</span> <a class="code" href="classuscxml_1_1_invoker_impl.html">InvokerImpl</a>,</div>
+<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;    <span class="keyword">public</span> std::enable_shared_from_this&lt;USCXMLInvoker&gt; {</div>
+<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;<span class="keyword">public</span>:</div>
+<div class="line"><a name="l00044"></a><span class="lineno"><a class="line" href="classuscxml_1_1_u_s_c_x_m_l_invoker_1_1_parent_queue_impl.html">   44</a></span>&#160;    <span class="keyword">class </span><a class="code" href="classuscxml_1_1_u_s_c_x_m_l_invoker_1_1_parent_queue_impl.html">ParentQueueImpl</a> : <span class="keyword">public</span> <a class="code" href="classuscxml_1_1_basic_event_queue.html">BasicEventQueue</a> {</div>
+<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;    <span class="keyword">public</span>:</div>
+<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;        <a class="code" href="classuscxml_1_1_u_s_c_x_m_l_invoker_1_1_parent_queue_impl.html">ParentQueueImpl</a>(<a class="code" href="classuscxml_1_1_u_s_c_x_m_l_invoker.html">USCXMLInvoker</a>* invoker) : _invoker(invoker) {}</div>
+<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;        <span class="keyword">virtual</span> <span class="keywordtype">void</span> enqueue(<span class="keyword">const</span> <a class="code" href="classuscxml_1_1_event.html">Event</a>&amp; event);</div>
+<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;        <a class="code" href="classuscxml_1_1_u_s_c_x_m_l_invoker.html">USCXMLInvoker</a>* _invoker;</div>
+<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;    };</div>
+<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;</div>
+<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;    <a class="code" href="classuscxml_1_1_u_s_c_x_m_l_invoker.html">USCXMLInvoker</a>();</div>
+<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;    <span class="keyword">virtual</span> ~<a class="code" href="classuscxml_1_1_u_s_c_x_m_l_invoker.html">USCXMLInvoker</a>();</div>
+<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;    <span class="keyword">virtual</span> std::shared_ptr&lt;InvokerImpl&gt; <a class="code" href="classuscxml_1_1_u_s_c_x_m_l_invoker.html#aab47a7d82206603f988a7534ddc1172e">create</a>(<a class="code" href="classuscxml_1_1_interpreter_impl.html">InterpreterImpl</a>* interpreter);</div>
+<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;</div>
+<div class="line"><a name="l00055"></a><span class="lineno"><a class="line" href="classuscxml_1_1_u_s_c_x_m_l_invoker.html#abb533adf8dd28fd26ebd5e41c4e64980">   55</a></span>&#160;    <span class="keyword">virtual</span> std::list&lt;std::string&gt; <a class="code" href="classuscxml_1_1_u_s_c_x_m_l_invoker.html#abb533adf8dd28fd26ebd5e41c4e64980">getNames</a>() {</div>
+<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;        std::list&lt;std::string&gt; names;</div>
+<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;        names.push_back(<span class="stringliteral">&quot;scxml&quot;</span>);</div>
+<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;        names.push_back(<span class="stringliteral">&quot;uscxml&quot;</span>);</div>
+<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;        names.push_back(USCXML_INVOKER_SCXML_TYPE);</div>
+<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;        names.push_back(<span class="stringliteral">&quot;http://www.w3.org/TR/scxml/&quot;</span>);</div>
+<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;        <span class="keywordflow">return</span> names;</div>
+<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;    }</div>
+<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;</div>
+<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> <a class="code" href="classuscxml_1_1_u_s_c_x_m_l_invoker.html#ab9fcae2b06dd88e9cf7a5aab0205af49">eventFromSCXML</a>(<span class="keyword">const</span> <a class="code" href="classuscxml_1_1_event.html">Event</a>&amp; event);</div>
+<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;</div>
+<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;    <span class="keyword">virtual</span> <a class="code" href="classuscxml_1_1_data.html">Data</a> <a class="code" href="classuscxml_1_1_u_s_c_x_m_l_invoker.html#a4ae4ecb0bc9585d0f970d02f156b351c">getDataModelVariables</a>();</div>
+<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> <a class="code" href="classuscxml_1_1_u_s_c_x_m_l_invoker.html#a0447c03fb84d50ae39f222c479330c9a">invoke</a>(<span class="keyword">const</span> std::string&amp; source, <span class="keyword">const</span> <a class="code" href="classuscxml_1_1_event.html">Event</a>&amp; invokeEvent);</div>
+<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> <a class="code" href="classuscxml_1_1_u_s_c_x_m_l_invoker.html#aaaed6d311fb235fdbb190b4923654c26">uninvoke</a>();</div>
+<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;</div>
+<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;<span class="keyword">protected</span>:</div>
+<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;</div>
+<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;    <span class="keywordtype">void</span> start();</div>
+<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;    <span class="keywordtype">void</span> <a class="code" href="classuscxml_1_1_u_s_c_x_m_l_invoker.html#a81be8d35d919266dc65d1133064d5f19">stop</a>();</div>
+<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;    <span class="keyword">static</span> <span class="keywordtype">void</span> run(<span class="keywordtype">void</span>* instance);</div>
+<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;</div>
+<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;    <span class="keywordtype">bool</span> _isActive;</div>
+<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;    <span class="keywordtype">bool</span> _isStarted;</div>
+<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;    std::thread* _thread;</div>
+<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;    <a class="code" href="classuscxml_1_1_event_queue.html">EventQueue</a> _parentQueue;</div>
+<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;    <a class="code" href="classuscxml_1_1_interpreter.html">Interpreter</a> _invokedInterpreter;</div>
+<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;};</div>
+<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;</div>
+<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;<span class="preprocessor">#ifdef BUILD_AS_PLUGINS</span></div>
+<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;PLUMA_INHERIT_PROVIDER(USCXMLInvoker, InvokerImpl);</div>
+<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;</div>
+<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;}</div>
+<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;</div>
+<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;<span class="preprocessor">#endif </span><span class="comment">/* end of include guard: USCXMLINVOKER_H_OQFA21IO */</span><span class="preprocessor"></span></div>
 <div class="ttc" id="_interpreter_impl_8h_html"><div class="ttname"><a href="_interpreter_impl_8h.html">InterpreterImpl.h</a></div></div>
 <div class="ttc" id="classuscxml_1_1_u_s_c_x_m_l_invoker_html_a0447c03fb84d50ae39f222c479330c9a"><div class="ttname"><a href="classuscxml_1_1_u_s_c_x_m_l_invoker.html#a0447c03fb84d50ae39f222c479330c9a">uscxml::USCXMLInvoker::invoke</a></div><div class="ttdeci">virtual void invoke(const std::string &amp;source, const Event &amp;invokeEvent)</div><div class="ttdoc">Invoker&#39;s parent state became active at the end of a macro-step. </div><div class="ttdef"><b>Definition:</b> USCXMLInvoker.cpp:135</div></div>
-<div class="ttc" id="namespaceuscxml_html"><div class="ttname"><a href="namespaceuscxml.html">uscxml</a></div><div class="ttdef"><b>Definition:</b> InterpreterIssue.cpp:33</div></div>
+<div class="ttc" id="namespaceuscxml_html"><div class="ttname"><a href="namespaceuscxml.html">uscxml</a></div><div class="ttdef"><b>Definition:</b> Breakpoint.cpp:26</div></div>
 <div class="ttc" id="classuscxml_1_1_u_s_c_x_m_l_invoker_html_ab9fcae2b06dd88e9cf7a5aab0205af49"><div class="ttname"><a href="classuscxml_1_1_u_s_c_x_m_l_invoker.html#ab9fcae2b06dd88e9cf7a5aab0205af49">uscxml::USCXMLInvoker::eventFromSCXML</a></div><div class="ttdeci">virtual void eventFromSCXML(const Event &amp;event)</div><div class="ttdoc">Interpreter received an event from the SCXML Interpreter. </div><div class="ttdef"><b>Definition:</b> USCXMLInvoker.cpp:83</div></div>
-<div class="ttc" id="classuscxml_1_1_u_s_c_x_m_l_invoker_html_abb533adf8dd28fd26ebd5e41c4e64980"><div class="ttname"><a href="classuscxml_1_1_u_s_c_x_m_l_invoker.html#abb533adf8dd28fd26ebd5e41c4e64980">uscxml::USCXMLInvoker::getNames</a></div><div class="ttdeci">virtual std::list&lt; std::string &gt; getNames()</div><div class="ttdoc">Return a list of names for types we implement. </div><div class="ttdef"><b>Definition:</b> USCXMLInvoker.h:56</div></div>
-<div class="ttc" id="classuscxml_1_1_u_s_c_x_m_l_invoker_1_1_parent_queue_impl_html"><div class="ttname"><a href="classuscxml_1_1_u_s_c_x_m_l_invoker_1_1_parent_queue_impl.html">uscxml::USCXMLInvoker::ParentQueueImpl</a></div><div class="ttdef"><b>Definition:</b> USCXMLInvoker.h:45</div></div>
-<div class="ttc" id="_invoker_8h_html"><div class="ttname"><a href="_invoker_8h.html">Invoker.h</a></div></div>
+<div class="ttc" id="classuscxml_1_1_u_s_c_x_m_l_invoker_html_abb533adf8dd28fd26ebd5e41c4e64980"><div class="ttname"><a href="classuscxml_1_1_u_s_c_x_m_l_invoker.html#abb533adf8dd28fd26ebd5e41c4e64980">uscxml::USCXMLInvoker::getNames</a></div><div class="ttdeci">virtual std::list&lt; std::string &gt; getNames()</div><div class="ttdoc">Return a list of names for types we implement. </div><div class="ttdef"><b>Definition:</b> USCXMLInvoker.h:55</div></div>
+<div class="ttc" id="classuscxml_1_1_u_s_c_x_m_l_invoker_1_1_parent_queue_impl_html"><div class="ttname"><a href="classuscxml_1_1_u_s_c_x_m_l_invoker_1_1_parent_queue_impl.html">uscxml::USCXMLInvoker::ParentQueueImpl</a></div><div class="ttdef"><b>Definition:</b> USCXMLInvoker.h:44</div></div>
 <div class="ttc" id="classuscxml_1_1_event_queue_html"><div class="ttname"><a href="classuscxml_1_1_event_queue.html">uscxml::EventQueue</a></div><div class="ttdef"><b>Definition:</b> EventQueue.h:35</div></div>
 <div class="ttc" id="classuscxml_1_1_u_s_c_x_m_l_invoker_html_a81be8d35d919266dc65d1133064d5f19"><div class="ttname"><a href="classuscxml_1_1_u_s_c_x_m_l_invoker.html#a81be8d35d919266dc65d1133064d5f19">uscxml::USCXMLInvoker::stop</a></div><div class="ttdeci">void stop()</div><div class="ttdef"><b>Definition:</b> USCXMLInvoker.cpp:62</div></div>
-<div class="ttc" id="classuscxml_1_1_basic_event_queue_html"><div class="ttname"><a href="classuscxml_1_1_basic_event_queue.html">uscxml::BasicEventQueue</a></div><div class="ttdef"><b>Definition:</b> BasicEventQueue.h:41</div></div>
-<div class="ttc" id="classuscxml_1_1_interpreter_html"><div class="ttname"><a href="classuscxml_1_1_interpreter.html">uscxml::Interpreter</a></div><div class="ttdoc">Central class to interpret and process SCXML documents. </div><div class="ttdef"><b>Definition:</b> Interpreter.h:112</div></div>
+<div class="ttc" id="classuscxml_1_1_basic_event_queue_html"><div class="ttname"><a href="classuscxml_1_1_basic_event_queue.html">uscxml::BasicEventQueue</a></div><div class="ttdef"><b>Definition:</b> BasicEventQueue.h:40</div></div>
+<div class="ttc" id="classuscxml_1_1_interpreter_html"><div class="ttname"><a href="classuscxml_1_1_interpreter.html">uscxml::Interpreter</a></div><div class="ttdoc">Central class to interpret and process SCXML documents. </div><div class="ttdef"><b>Definition:</b> Interpreter.h:77</div></div>
 <div class="ttc" id="classuscxml_1_1_invoker_impl_html"><div class="ttname"><a href="classuscxml_1_1_invoker_impl.html">uscxml::InvokerImpl</a></div><div class="ttdoc">Abstract base class for all invokers. </div><div class="ttdef"><b>Definition:</b> InvokerImpl.h:39</div></div>
 <div class="ttc" id="classuscxml_1_1_interpreter_impl_html"><div class="ttname"><a href="classuscxml_1_1_interpreter_impl.html">uscxml::InterpreterImpl</a></div><div class="ttdef"><b>Definition:</b> InterpreterImpl.h:49</div></div>
 <div class="ttc" id="classuscxml_1_1_u_s_c_x_m_l_invoker_html_a4ae4ecb0bc9585d0f970d02f156b351c"><div class="ttname"><a href="classuscxml_1_1_u_s_c_x_m_l_invoker.html#a4ae4ecb0bc9585d0f970d02f156b351c">uscxml::USCXMLInvoker::getDataModelVariables</a></div><div class="ttdeci">virtual Data getDataModelVariables()</div><div class="ttdoc">Export a Data object for the `_x[&#39;name&#39;]` data-model namespace. </div><div class="ttdef"><b>Definition:</b> USCXMLInvoker.cpp:130</div></div>
 <div class="ttc" id="classuscxml_1_1_u_s_c_x_m_l_invoker_html_aaaed6d311fb235fdbb190b4923654c26"><div class="ttname"><a href="classuscxml_1_1_u_s_c_x_m_l_invoker.html#aaaed6d311fb235fdbb190b4923654c26">uscxml::USCXMLInvoker::uninvoke</a></div><div class="ttdeci">virtual void uninvoke()</div><div class="ttdoc">The invokers&#39;s parent state was left at the end of a macro-step. </div><div class="ttdef"><b>Definition:</b> USCXMLInvoker.cpp:78</div></div>
-<div class="ttc" id="classuscxml_1_1_u_s_c_x_m_l_invoker_html"><div class="ttname"><a href="classuscxml_1_1_u_s_c_x_m_l_invoker.html">uscxml::USCXMLInvoker</a></div><div class="ttdoc">An invoker for other SCXML instances. </div><div class="ttdef"><b>Definition:</b> USCXMLInvoker.h:41</div></div>
+<div class="ttc" id="classuscxml_1_1_u_s_c_x_m_l_invoker_html"><div class="ttname"><a href="classuscxml_1_1_u_s_c_x_m_l_invoker.html">uscxml::USCXMLInvoker</a></div><div class="ttdoc">An invoker for other SCXML instances. </div><div class="ttdef"><b>Definition:</b> USCXMLInvoker.h:40</div></div>
 <div class="ttc" id="classuscxml_1_1_event_html"><div class="ttname"><a href="classuscxml_1_1_event.html">uscxml::Event</a></div><div class="ttdef"><b>Definition:</b> Event.h:84</div></div>
 <div class="ttc" id="_invoker_impl_8h_html"><div class="ttname"><a href="_invoker_impl_8h.html">InvokerImpl.h</a></div></div>
 <div class="ttc" id="_basic_event_queue_8h_html"><div class="ttname"><a href="_basic_event_queue_8h.html">BasicEventQueue.h</a></div></div>
@@ -195,7 +193,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div>
 </div>
 <!-- <hr class="footer"/><address class="footer"><small>
-Generated on Thu May 26 2016 12:37:11 for uSCXML by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Wed Sep 21 2016 09:13:42 for uSCXML by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.10
 </small></address> -->

@@ -1,4 +1,5 @@
 <map id="uscxml::TransformerImpl" name="uscxml::TransformerImpl">
-<area shape="rect" id="node2" href="$classuscxml_1_1_chart_to_c.html" title="uscxml::ChartToC" alt="" coords="25,80,155,107"/>
-<area shape="rect" id="node3" href="$classuscxml_1_1_chart_to_v_h_d_l.html" title="uscxml::ChartToVHDL" alt="" coords="13,155,167,181"/>
+<area shape="rect" id="node2" href="$classuscxml_1_1_chart_to_c.html" title="uscxml::ChartToC" alt="" coords="119,80,248,107"/>
+<area shape="rect" id="node3" href="$classuscxml_1_1_chart_to_promela.html" title="uscxml::ChartToPromela" alt="" coords="5,155,175,181"/>
+<area shape="rect" id="node4" href="$classuscxml_1_1_chart_to_v_h_d_l.html" title="uscxml::ChartToVHDL" alt="" coords="199,155,354,181"/>
 </map>

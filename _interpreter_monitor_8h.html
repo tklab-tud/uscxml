@@ -129,15 +129,12 @@ Classes</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="define-members"></a>
 Macros</h2></td></tr>
-<tr class="memitem:a5213754c908895d31175d89ce04535fc"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a5213754c908895d31175d89ce04535fc"></a>
-#define&#160;</td><td class="memItemRight" valign="bottom"><b>USCXML_MONITOR_CALLBACK</b>(callback,  function)&#160;&#160;&#160;if (callback) { callback-&gt;function(); }</td></tr>
-<tr class="separator:a5213754c908895d31175d89ce04535fc"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a998de1d92ced97e526a30c69e5bef64d"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a998de1d92ced97e526a30c69e5bef64d"></a>
-#define&#160;</td><td class="memItemRight" valign="bottom"><b>USCXML_MONITOR_CALLBACK1</b>(callback,  function,  arg1)&#160;&#160;&#160;if (callback) { callback-&gt;function(arg1); }</td></tr>
-<tr class="separator:a998de1d92ced97e526a30c69e5bef64d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7feb02d6afdc8c0ec0786fa02c75bfe0"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a7feb02d6afdc8c0ec0786fa02c75bfe0"></a>
-#define&#160;</td><td class="memItemRight" valign="bottom"><b>USCXML_MONITOR_CALLBACK2</b>(callback,  function,  arg1,  arg2)&#160;&#160;&#160;if (callback) { callback-&gt;function(arg1, arg2); }</td></tr>
-<tr class="separator:a7feb02d6afdc8c0ec0786fa02c75bfe0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7c4eef0db0021e141a3b416bfa9a469f"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><b>USCXML_MONITOR_CALLBACK</b>(callbacks,  function)</td></tr>
+<tr class="separator:a7c4eef0db0021e141a3b416bfa9a469f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a82f6a339300a710305827e13371ec02b"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><b>USCXML_MONITOR_CALLBACK1</b>(callbacks,  function,  arg1)</td></tr>
+<tr class="separator:a82f6a339300a710305827e13371ec02b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9d3b4e0ca9a251c8274a2a4a40f228e0"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><b>USCXML_MONITOR_CALLBACK2</b>(callbacks,  function,  arg1,  arg2)</td></tr>
+<tr class="separator:a9d3b4e0ca9a251c8274a2a4a40f228e0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a53bc0797d021280010dbfd5417df25e0"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><b>USCXML_MONITOR_CATCH</b>(callback)</td></tr>
 <tr class="separator:a53bc0797d021280010dbfd5417df25e0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
@@ -145,6 +142,111 @@ Macros</h2></td></tr>
 <div class="textblock"><dl class="section author"><dt>Author</dt><dd>2016 Stefan Radomski (<a href="#" onclick="location.href='mai'+'lto:'+'ste'+'fa'+'n.r'+'ad'+'oms'+'ki'+'@cs'+'.t'+'u-d'+'ar'+'mst'+'ad'+'t.d'+'e'; return false;">stefa<span style="display: none;">.nosp@m.</span>n.ra<span style="display: none;">.nosp@m.</span>domsk<span style="display: none;">.nosp@m.</span>i@cs<span style="display: none;">.nosp@m.</span>.tu-d<span style="display: none;">.nosp@m.</span>arms<span style="display: none;">.nosp@m.</span>tadt.<span style="display: none;">.nosp@m.</span>de</a>) </dd></dl>
 <dl class="section copyright"><dt>Copyright</dt><dd>Simplified BSD </dd></dl>
 </div><h2 class="groupheader">Macro Definition Documentation</h2>
+<a class="anchor" id="a7c4eef0db0021e141a3b416bfa9a469f"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define USCXML_MONITOR_CALLBACK</td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">callbacks, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">function&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<b>Value:</b><div class="fragment"><div class="line">{ \</div>
+<div class="line">Interpreter inptr = _callbacks-&gt;getInterpreter(); \</div>
+<div class="line">for (<span class="keyword">auto</span> callback : callbacks) { callback-&gt;function(inptr); } }</div>
+</div><!-- fragment -->
+</div>
+</div>
+<a class="anchor" id="a82f6a339300a710305827e13371ec02b"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define USCXML_MONITOR_CALLBACK1</td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">callbacks, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">function, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">arg1&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<b>Value:</b><div class="fragment"><div class="line">{ \</div>
+<div class="line">Interpreter inptr = _callbacks-&gt;getInterpreter(); \</div>
+<div class="line">for (<span class="keyword">auto</span> callback : callbacks) { callback-&gt;function(inptr, arg1); } }</div>
+</div><!-- fragment -->
+</div>
+</div>
+<a class="anchor" id="a9d3b4e0ca9a251c8274a2a4a40f228e0"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define USCXML_MONITOR_CALLBACK2</td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">callbacks, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">function, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">arg1, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">arg2&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<b>Value:</b><div class="fragment"><div class="line">{ \</div>
+<div class="line">Interpreter inptr = _callbacks-&gt;getInterpreter(); \</div>
+<div class="line">for (<span class="keyword">auto</span> callback : callbacks) { callback-&gt;function(inptr, arg1, arg2); } }</div>
+</div><!-- fragment -->
+</div>
+</div>
 <a class="anchor" id="a53bc0797d021280010dbfd5417df25e0"></a>
 <div class="memitem">
 <div class="memproto">
@@ -174,7 +276,7 @@ Macros</h2></td></tr>
 </div>
 </div>
 <!-- <hr class="footer"/><address class="footer"><small>
-Generated on Thu May 26 2016 12:37:12 for uSCXML by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Wed Sep 21 2016 09:13:43 for uSCXML by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.10
 </small></address> -->

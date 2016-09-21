@@ -1,3 +1,5 @@
 <map id="uscxml::InterpreterMonitor" name="uscxml::InterpreterMonitor">
-<area shape="rect" id="node2" href="$classuscxml_1_1_state_transition_monitor.html" title="uscxml::StateTransitionMonitor" alt="" coords="5,80,211,107"/>
+<area shape="rect" id="node2" href="$classuscxml_1_1_debugger.html" title="uscxml::Debugger" alt="" coords="26,80,155,107"/>
+<area shape="rect" id="node4" href="$classuscxml_1_1_state_transition_monitor.html" title="uscxml::StateTransitionMonitor" alt="" coords="180,80,385,107"/>
+<area shape="rect" id="node3" href="$classuscxml_1_1_debugger_servlet.html" title="uscxml::DebuggerServlet" alt="" coords="5,155,176,181"/>
 </map>
