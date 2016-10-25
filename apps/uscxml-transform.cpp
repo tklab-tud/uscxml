@@ -3,7 +3,7 @@
 #include "uscxml/util/String.h"
 #include "uscxml/transform/ChartToC.h"
 #include "uscxml/transform/ChartToVHDL.h"
-#include "uscxml/transform/ChartToPROMELA.h"
+#include "uscxml/transform/ChartToPromela.h"
 
 #include <boost/algorithm/string.hpp>
 
