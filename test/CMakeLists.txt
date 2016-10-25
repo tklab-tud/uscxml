@@ -40,8 +40,11 @@ file(GLOB_RECURSE USCXML_WRAPPERS
 )
 
 USCXML_TEST_COMPILE(NAME test-bindings LABEL general/test-bindings FILES ${USCXML_WRAPPERS} src/test-bindings.cpp)
-USCXML_TEST_COMPILE(NAME test-promela-parser LABEL general/test-promela-parser FILES src/test-promela-parser.cpp)
-target_link_libraries(test-promela-parser uscxml_transform)
+if (NOT MSVC)
+	# MSVC does not like to redefine 'protected'
+	USCXML_TEST_COMPILE(NAME test-promela-parser LABEL general/test-promela-parser FILES src/test-promela-parser.cpp)
+	target_link_libraries(test-promela-parser uscxml_transform)
+endif()
 
 # the one binary to test for pass / fail final states
 add_executable(test-state-pass src/test-state-pass.cpp ${GETOPT_FILES})
