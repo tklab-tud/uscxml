@@ -1,0 +1,154 @@
+<scxml datamodel="promela">
+
+  <datamodel>
+    <data id="foreachArray1" type="int[3]">[1,2,3]</data>
+    <data id="parallelVar1" type="int" expr="0"/>
+    <data id="ifVar1">{ foo: 1, bar: 'baz' }</data>
+    <data id="counter">{ itemSum: 0, indexSum: 0 }</data>
+    <data id="sendVar1" type="int" expr="4"/>
+    <data id="histVar1" type="int">0</data>
+    <data id="finalizeVar1" type="int">0</data>
+  </datamodel>
+
+  <state id="s0">
+    <history id="s0.h0" type="deep" />
+    <parallel id="p0">
+      <state id="p0.s0">
+        <state id="p0.s0.s0">
+          <onentry>
+            <if cond="ifVar1.foo == 3">
+              <log label="if choosen" />
+              <log label="ifVar1.bar is" expr="ifVar1.bar" />
+              <foreach array="foreachArray1" 
+                       item="foreachItem1" 
+                       index="foreachIndex1">
+                <script>
+                  counter.indexSum = counter.indexSum + foreachIndex1;
+                  counter.itemSum = counter.itemSum + foreachItem1;
+                </script>
+                <log label="foreach counter.indexSum is" 
+                     expr="counter.indexSum" />
+                <log label="foreach counter.itemSum is" 
+                     expr="counter.itemSum" />
+              </foreach>
+              <raise event="if.choosen" />
+            <elseif cond="ifVar1.bar == 'baz'" />
+              <log label="elseif choosen" />
+              <log label="ifVar1.bar is" expr="ifVar1.bar" />
+              <assign location="ifVar1.foo" expr="3" />
+              <send event="elseif.choosen" namelist="sendVar1">
+                <param name="foo" expr="sendVar1 + 16" />
+                <param name="bar" expr="'a string literal'" />
+              </send>
+            <else />
+              <log label="else choosen" />
+              <log label="ifVar1.foo is" expr="ifVar1.foo" />
+              <log label="ifVar1.bar is" expr="ifVar1.bar" />
+              <raise event="else.choosen" />
+            </if>
+            <script>parallelVar1++</script>
+          </onentry>
+          <transition event="else.choosen" target="p0">
+            <assign location="ifVar1.bar" expr="'baz'" />
+          </transition>
+          <transition event="elseif.choosen" target="p0"
+                      cond="_event.data.foo == 20 &amp;&amp; 
+                            _event.data.sendVar1 == 4 &amp;&amp; 
+                            _event.data.bar == 'a string literal'" 
+          />
+        </state>
+        <state id="p0.s0.s1">
+          <onentry>
+            <if cond="_x.states['p0'] &amp;&amp; histVar1 == 1">
+              <raise event="to.s2" />
+            <else />
+              <raise event="to.s1" />
+            </if>
+          </onentry>
+          <transition event="to.s2" target="s2" />
+          <transition event="to.s1" target="s1" />
+        </state>
+      </state>
+      <state id="p0.s1">
+        <onexit>
+          <script>parallelVar1++</script>
+        </onexit>
+      </state>
+      <transition event="if.choosen" 
+                  cond="counter.itemSum == 6 &amp;&amp; 
+                        counter.indexSum == 3" 
+                  target="p0.s0.s1" />
+    </parallel>
+  </state>
+  
+  <state id="s1">
+    <invoke type="scxml" autoforward="true">
+      <content>
+        <scxml datamodel="promela">
+          <state id="waitForEvent">
+            <transition event="trigger.child">
+              <send target="#_parent" event="back.to.history" />
+            </transition>
+          </state>
+        </scxml>
+      </content>
+      <finalize>
+        <script>finalizeVar1++;</script>
+      </finalize>
+    </invoke>
+    <onentry>
+      <send event="trigger.child" delay="1000" />
+    </onentry>
+    <transition event="back.to.history" 
+                cond="finalizeVar1 == 1" 
+                target="s0.h0">
+      <assign location="histVar1" expr="4-3" />
+    </transition>
+  </state>
+  
+  <state id="s2" initial="s2.s0">
+    <onentry>
+      <send event="cancel.delayed" delay="3000" sendid="cancel.delayed" />
+      <cancel sendid="cancel.delayed" />
+    </onentry>
+    <transition event="done.state.s2" 
+                cond="_event.data.Var1 == 'foo'" 
+                target="s3.h0">
+      <assign location="histVar1" expr="8" />
+    </transition>
+    <transition event="done.state.s2" target="fail" />
+    <transition event="cancel.delayed" target="fail" />
+    <transition target="pass" cond="histVar1 == 8" />
+    <state id="s2.s0">
+      <transition target="s2.s1"/>
+    </state>
+    <final id="s2.s1">
+      <donedata>
+        <param name="Var1" expr="'foo'"/>
+      </donedata>
+    </final>
+  </state>
+  
+  <state id="s3">
+    <history id="s3.h0" type="shallow">
+      <transition target="s3.s1">
+        <log label="history transition" />
+        <assign location="histVar1" expr="4" />
+      </transition>
+    </history>
+    <state id="s3.s1">
+      <transition target="s2" />
+    </state>
+  </state>
+  
+  <final id="pass">
+    <onentry>
+      <log label="Outcome" expr="'pass'"/>
+    </onentry>
+  </final>
+  <final id="fail">
+    <onentry>
+      <log label="Outcome" expr="'fail'"/>
+    </onentry>
+  </final>
+</scxml>

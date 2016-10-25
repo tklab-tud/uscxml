@@ -159,7 +159,7 @@ public :
 	}
 
 	X(const char* const fromTranscode) {
-        
+
 		// Call the private transcoding method
 		_localForm = fromTranscode;
 		_unicodeForm = XERCESC_NS::XMLString::transcode(fromTranscode);
@@ -168,24 +168,24 @@ public :
 
 	X(char* fromTranscode) {
 
-        // Call the private transcoding method
+		// Call the private transcoding method
 		_localForm = fromTranscode;
 		_unicodeForm = XERCESC_NS::XMLString::transcode(fromTranscode);
 		_deallocOther = true;
 	}
 
 	X() {
-        
+
 		_unicodeForm = NULL;
 		_deallocOther = false;
 	}
 
 	~X() {
-        
+
 		if (_deallocOther)
 			XERCESC_NS::XMLString::release(&_unicodeForm);
 	}
-    
+
 	const std::string& str() const {
 		return _localForm;
 	}
@@ -202,7 +202,7 @@ public :
 	operator std::string () {
 		return _localForm;
 	}
-    
+
 protected:
 	friend USCXML_API std::ostream& operator<< (std::ostream& os, const X& data);
 
@@ -211,76 +211,76 @@ private:
 	std::string _localForm;
 	XMLCh* _unicodeForm;
 };
-    
+
 #else
 
 class USCXML_API X {
 public :
-    X() {
-    }
-    
-    void operator=(X const &other) {
-        localForm = other.localForm;
-        if (unicodeForm != NULL) {
-            XERCESC_NS::XMLString::release(&unicodeForm);
-        }
-        unicodeForm = XERCESC_NS::XMLString::replicate(other.unicodeForm);
-    }
+	X() {
+	}
 
-    X(X const &other) {
-        localForm = other.localForm;
-        unicodeForm = XERCESC_NS::XMLString::replicate(other.unicodeForm);
-    }
+	void operator=(X const &other) {
+		localForm = other.localForm;
+		if (unicodeForm != NULL) {
+			XERCESC_NS::XMLString::release(&unicodeForm);
+		}
+		unicodeForm = XERCESC_NS::XMLString::replicate(other.unicodeForm);
+	}
 
-    X(const char* const toTranscode) {
-        if (toTranscode != NULL) {
-            localForm = toTranscode;
-            unicodeForm = XERCESC_NS::XMLString::transcode(toTranscode);
-        }
-    }
+	X(X const &other) {
+		localForm = other.localForm;
+		unicodeForm = XERCESC_NS::XMLString::replicate(other.unicodeForm);
+	}
 
-    X(const XMLCh* toTranscode) {
-        if (toTranscode != NULL) {
-            unicodeForm = XERCESC_NS::XMLString::replicate(toTranscode);
-            localForm = XERCESC_NS::XMLString::transcode(toTranscode);
-        }
-    }
+	X(const char* const toTranscode) {
+		if (toTranscode != NULL) {
+			localForm = toTranscode;
+			unicodeForm = XERCESC_NS::XMLString::transcode(toTranscode);
+		}
+	}
 
-    X(const std::string& toTranscode) {
-        localForm = toTranscode;
-        unicodeForm = XERCESC_NS::XMLString::transcode(toTranscode.c_str());
-    }
+	X(const XMLCh* toTranscode) {
+		if (toTranscode != NULL) {
+			unicodeForm = XERCESC_NS::XMLString::replicate(toTranscode);
+			localForm = XERCESC_NS::XMLString::transcode(toTranscode);
+		}
+	}
 
-    ~X() {
-        if (unicodeForm != NULL) {
-            XERCESC_NS::XMLString::release(&unicodeForm);
-        }
-    }
-    
-    operator XMLCh* () const {
-        return unicodeForm;
-    }
+	X(const std::string& toTranscode) {
+		localForm = toTranscode;
+		unicodeForm = XERCESC_NS::XMLString::transcode(toTranscode.c_str());
+	}
 
-    operator const std::string& () {
-        return localForm;
-    }
-    
-    const std::string& str() const {
-        return localForm;
-    }
-    
-    const XMLCh* unicode() const {
-        return unicodeForm;
-    }
+	~X() {
+		if (unicodeForm != NULL) {
+			XERCESC_NS::XMLString::release(&unicodeForm);
+		}
+	}
+
+	operator XMLCh* () const {
+		return unicodeForm;
+	}
+
+	operator const std::string& () {
+		return localForm;
+	}
+
+	const std::string& str() const {
+		return localForm;
+	}
+
+	const XMLCh* unicode() const {
+		return unicodeForm;
+	}
 
 
 protected:
-    friend USCXML_API std::ostream& operator<< (std::ostream& os, const X& data);
+	friend USCXML_API std::ostream& operator<< (std::ostream& os, const X& data);
 
 private:
-    XMLCh* unicodeForm = NULL;
-    std::string localForm;
-    
+	XMLCh* unicodeForm = NULL;
+	std::string localForm;
+
 };
 
 #endif
@@ -295,14 +295,14 @@ static const X kElementFinalName = X("final");
 static const X kElementOnEntryName = X("onentry");
 static const X kElementOnExitName = X("onexit");
 static const X kElementHistoryName = X("history");
-    
+
 static const X kElementRaiseName = X("raise");
 static const X kElementIfName = X("if");
 static const X kElementElseIfName = X("elseif");
 static const X kElementElseName = X("else");
 static const X kElementForEachName = X("foreach");
 static const X kElementLogName = X("log");
-    
+
 static const X kElementDataModelName = X("datamodel");
 static const X kElementDataName = X("data");
 static const X kElementAssignName = X("assign");
@@ -310,7 +310,7 @@ static const X kElementContentName = X("content");
 static const X kElementParamName = X("param");
 static const X kElementScriptName = X("script");
 #endif
-    
+
 USCXML_API std::ostream& operator<< (std::ostream& os, const X& xmlString);
 USCXML_API std::ostream& operator<< (std::ostream& os, const XERCESC_NS::DOMNode& node);
 

@@ -10,7 +10,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.jexl3.JexlBuilder;
-import org.apache.commons.jexl3.JexlContext;
 import org.apache.commons.jexl3.JexlEngine;
 import org.apache.commons.jexl3.JexlException;
 import org.apache.commons.jexl3.JexlExpression;
@@ -19,18 +18,22 @@ import org.uscxml.Data;
 import org.uscxml.DataList;
 import org.uscxml.DataMap;
 import org.uscxml.DataModel;
+import org.uscxml.DataModelExtension;
 import org.uscxml.ErrorEvent;
 import org.uscxml.Event;
 import org.uscxml.StringList;
 import org.uscxml.StringVector;
 
-public class JEXLDataModel extends DataModel {
+public class JexlDataModel extends DataModel {
 
 	protected static final JexlEngine jexl = new JexlBuilder().cache(512).strict(true).silent(false).create();
-	protected JexlContext ctx;
-	
-	
-	
+	public MapContext ctx = new MapContext();
+
+	@Override
+	public void addExtension(DataModelExtension ext) {
+		throw new UnsupportedOperationException("Cannot add extensions to the jexl datamodel");
+	}
+
 	@Override
 	public StringList getNames() {
 		StringList names = new StringList();
@@ -40,8 +43,7 @@ public class JEXLDataModel extends DataModel {
 	
 	@Override
 	public DataModel create() {
-		JEXLDataModel dm = new JEXLDataModel();
-		dm.ctx = new MapContext();
+		JexlDataModel dm = new JexlDataModel();		
 		return dm;
 	}
 
@@ -73,10 +75,9 @@ public class JEXLDataModel extends DataModel {
 	@Override
 	public Data evalAsData(String content) {
 		JexlExpression expr = jexl.createExpression(content);
-		System.out.println();
-		Data d = new Data();
-		d.setAtom(expr.getParsedText());
-		d.setType(Data.Type.VERBATIM);
+		Data d = getJexlObjectAsData(expr.evaluate(ctx));
+//		d.setAtom(expr.getParsedText());
+//		d.setType(Data.Type.VERBATIM);
 		return d;
 	}
 

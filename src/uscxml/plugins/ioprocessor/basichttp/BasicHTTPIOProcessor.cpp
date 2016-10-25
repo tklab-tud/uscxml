@@ -200,8 +200,8 @@ void BasicHTTPIOProcessor::eventFromSCXML(const std::string& target, const Event
 		kvps << kvpSeperator << eventNameCStr << "=" << eventValueCStr;
 		kvpSeperator = "&";
 		targetURL.addOutHeader("_scxmleventname", eventValueCStr);
-        free(eventNameCStr);
-        free(eventValueCStr);
+		free(eventNameCStr);
+		free(eventValueCStr);
 	}
 
 	// event namelist

@@ -59,7 +59,7 @@ public:
 	virtual std::list<std::string> getNames() {
 		std::list<std::string> names;
 		names.push_back("c89");
-        names.push_back("ansi-c");
+		names.push_back("ansi-c");
 		return names;
 	}
 
@@ -86,7 +86,7 @@ public:
 	virtual std::string andExpressions(std::list<std::string>);
 
 protected:
-    Picoc _pc;
+	Picoc _pc;
 };
 
 #ifdef BUILD_AS_PLUGINS

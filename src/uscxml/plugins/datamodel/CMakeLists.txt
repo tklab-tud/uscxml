@@ -58,6 +58,17 @@ if (WITH_DM_C89)
 	list (APPEND USCXML_FILES ${C89_DATAMODEL})
 endif()
 
+if (WITH_DM_PROMELA)
+	set(USCXML_DATAMODELS "promela ${USCXML_DATAMODELS}")
+	# Lua ecmascript datamodel
+	file(GLOB_RECURSE PROMELA_DATAMODEL
+		promela/*.cpp
+		promela/*.c
+		promela/*.h
+	)
+	list (APPEND USCXML_FILES ${PROMELA_DATAMODEL})
+endif()
+
 if (NOT SWIG_FOUND)
 	message(STATUS "No swig binary found, not generating DOM classes")		
 elseif(SWIG_VERSION VERSION_LESS 3.0.8)

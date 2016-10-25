@@ -32,8 +32,7 @@ USCXML_TEST_COMPILE(NAME test-snippets LABEL general/test-snippets FILES src/tes
 # USCXML_TEST_COMPILE(NAME test-c89-parser LABEL general/test-c89-parser FILES src/test-c89-parser.cpp)
 
 # test-stress is not an automated test
-add_executable(test-stress src/test-stress.cpp)
-target_link_libraries(test-stress uscxml)
+USCXML_TEST_COMPILE(BUILD_ONLY NAME test-stress LABEL general/test-stress FILES src/test-stress.cpp)
 
 file(GLOB_RECURSE USCXML_WRAPPERS
 	${PROJECT_SOURCE_DIR}/src/bindings/swig/wrapped/*.cpp
@@ -41,6 +40,8 @@ file(GLOB_RECURSE USCXML_WRAPPERS
 )
 
 USCXML_TEST_COMPILE(NAME test-bindings LABEL general/test-bindings FILES ${USCXML_WRAPPERS} src/test-bindings.cpp)
+USCXML_TEST_COMPILE(NAME test-promela-parser LABEL general/test-promela-parser FILES src/test-promela-parser.cpp)
+target_link_libraries(test-promela-parser uscxml_transform)
 
 # the one binary to test for pass / fail final states
 add_executable(test-state-pass src/test-state-pass.cpp ${GETOPT_FILES})
@@ -134,14 +135,14 @@ if (NOT BUILD_MINIMAL)
 		"null"
 		"lua"
 		"c89"
-		# "promela"
+		"promela"
 
 		# generated c source
 		"gen/c/ecma"
 		# "gen/c/xpath"
 		"gen/c/lua"
 		# "gen/c/promela"
-		# "gen/vhdl/ecma"
+		"gen/vhdl/ecma"
 		
 		# bindings
 		"binding/java/jexl"
@@ -153,7 +154,7 @@ if (NOT BUILD_MINIMAL)
 		# "fsm/promela"
 
 		# formal verification
-		# "spin/promela"
+		"spin/promela"
 
 		# performance tests
 		# "perf/gen/c/ecma"

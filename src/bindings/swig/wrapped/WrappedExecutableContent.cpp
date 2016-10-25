@@ -28,16 +28,16 @@ WrappedExecutableContent::WrappedExecutableContent() {}
 WrappedExecutableContent::~WrappedExecutableContent() {}
 
 void WrappedExecutableContent::enterElement(XERCESC_NS::DOMElement* element) {
-    std::stringstream ss;
-    ss << *element;
-    enterElement(ss.str());
+	std::stringstream ss;
+	ss << *element;
+	enterElement(ss.str());
 }
 
 void WrappedExecutableContent::exitElement(XERCESC_NS::DOMElement* element) {
-    std::stringstream ss;
-    ss << *element;
-    exitElement(ss.str());
+	std::stringstream ss;
+	ss << *element;
+	exitElement(ss.str());
 }
 
-    
+
 }

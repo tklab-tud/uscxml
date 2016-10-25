@@ -1,0 +1,20 @@
+<!-- 
+
+  Check for no-progress cycles
+
+  $ uscxml-transform -s -i this_file.scxml > test.pml
+  $ spin -a test.pml
+  $ gcc -DNP pan.c
+  $ ./a.out -l
+
+-->
+<scxml datamodel="promela">
+  <state id="s0">
+    <onentry>
+      <!-- promela-progress -->
+      <raise event="foo" />
+    </onentry>
+    <transition event="foo" target="s0" />
+  </state>
+  <state id="s1" final="true" />
+</scxml>

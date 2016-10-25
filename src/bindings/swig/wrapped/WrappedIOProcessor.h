@@ -39,23 +39,23 @@ public:
 	WrappedIOProcessor(InterpreterImpl* interpreter);
 	virtual ~WrappedIOProcessor();
 
-    virtual std::list<std::string> getNames() {
-        return std::list<std::string>();
-    };
+	virtual std::list<std::string> getNames() {
+		return std::list<std::string>();
+	};
 
-    virtual std::shared_ptr<IOProcessorImpl> create(InterpreterImpl* interpreter) {
-    	std::shared_ptr<IOProcessorImpl> ioProc = std::shared_ptr<IOProcessorImpl>(new WrappedIOProcessor(interpreter));
-			return ioProc;
-    }
-    
-    virtual void eventFromSCXML(const std::string& target, const Event& event) {}
-    virtual bool isValidTarget(const std::string& target) {
-        return true;
-    }
+	virtual std::shared_ptr<IOProcessorImpl> create(InterpreterImpl* interpreter) {
+		std::shared_ptr<IOProcessorImpl> ioProc = std::shared_ptr<IOProcessorImpl>(new WrappedIOProcessor(interpreter));
+		return ioProc;
+	}
 
-    virtual Data getDataModelVariables() {
-        return Data();
-    }
+	virtual void eventFromSCXML(const std::string& target, const Event& event) {}
+	virtual bool isValidTarget(const std::string& target) {
+		return true;
+	}
+
+	virtual Data getDataModelVariables() {
+		return Data();
+	}
 };
 
 }

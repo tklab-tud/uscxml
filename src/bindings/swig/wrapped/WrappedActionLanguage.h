@@ -19,7 +19,7 @@
 
 #ifndef WRAPPEDACTIONLANGUAGE_H_020AFC96
 #define WRAPPEDACTIONLANGUAGE_H_020AFC96
-	
+
 #include <vector>
 #include <list>
 #include <ostream>
@@ -37,10 +37,10 @@ class DataModelImpl;
 class WrappedActionLanguage : public ActionLanguage {
 public:
 
-		WrappedActionLanguage();
-		virtual ~WrappedActionLanguage();
+	WrappedActionLanguage();
+	virtual ~WrappedActionLanguage();
 
-		void setDataModel(DataModelImpl* dm);
+	void setDataModel(DataModelImpl* dm);
 };
 
 }

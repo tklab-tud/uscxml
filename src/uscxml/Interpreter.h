@@ -118,7 +118,7 @@ public:
 	 */
 	PIMPL_OPERATORS(Interpreter);
 
-    /**
+	/**
 	 * Advance the state-machine by a single microstep and return.
 	 *
 	 * This is the central function to drive the state machine. Calling step()
@@ -179,22 +179,22 @@ public:
 	 */
 	void setActionLanguage(ActionLanguage actionLanguage);
 
-    /**
-     * Provide a custom Factory to instantiate dynamic instances for this and invoked state-chart instances.
-     */
-    void setFactory(Factory* factory);
+	/**
+	 * Provide a custom Factory to instantiate dynamic instances for this and invoked state-chart instances.
+	 */
+	void setFactory(Factory* factory);
 
 	/**
 	 * Attach a monitor to make more details of the interpreter observable.
 	 */
-    void addMonitor(InterpreterMonitor* monitor);
-    
-    /**
-     * Remove a monitor that was attached previously.
-     */
-    void removeMonitor(InterpreterMonitor* monitor);
+	void addMonitor(InterpreterMonitor* monitor);
 
-    
+	/**
+	 * Remove a monitor that was attached previously.
+	 */
+	void removeMonitor(InterpreterMonitor* monitor);
+
+
 	/**
 	 * Return the actual implementation of the Interperter.
 	 */

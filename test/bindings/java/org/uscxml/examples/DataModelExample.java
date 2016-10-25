@@ -7,7 +7,7 @@ import org.uscxml.Factory;
 import org.uscxml.Interpreter;
 import org.uscxml.InterpreterException;
 import org.uscxml.InterpreterState;
-import org.uscxml.dm.jexl.JEXLDataModel;
+import org.uscxml.dm.jexl.JexlDataModel;
 import org.uscxml.helper.TestMonitor;
 
 public class DataModelExample {
@@ -20,7 +20,7 @@ public class DataModelExample {
 		
 		System.load(uSCXMLLibPath);
 		
-		JEXLDataModel jdm = new JEXLDataModel();
+		JexlDataModel jdm = new JexlDataModel();
 		Factory.getInstance().registerDataModel(jdm);;
 		
 		TestMonitor tm = new TestMonitor();

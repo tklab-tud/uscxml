@@ -25,7 +25,7 @@
 namespace uscxml {
 
 void Debugger::afterCompletion(Interpreter& interpreter) {
-    InterpreterImpl* impl = interpreter.getImpl().get();
+	InterpreterImpl* impl = interpreter.getImpl().get();
 	std::shared_ptr<DebugSession> session = getSession(impl);
 	if (!session)
 		return;
@@ -72,9 +72,9 @@ std::list<Breakpoint> Debugger::getQualifiedTransBreakpoints(InterpreterImpl* im
 	std::list<Breakpoint> breakpoints;
 
 	XERCESC_NS::DOMElement* source = getSourceState(transition);
-    std::list<XERCESC_NS::DOMElement*> targets = getTargetStates(transition, impl->_scxml);
+	std::list<XERCESC_NS::DOMElement*> targets = getTargetStates(transition, impl->_scxml);
 
-    for (auto target : targets) {
+	for (auto target : targets) {
 
 		Breakpoint bp = breakpointTemplate; // copy base as template
 		bp.element = transition;
@@ -143,9 +143,9 @@ void Debugger::handleExecutable(Interpreter& interpreter,
 	std::shared_ptr<DebugSession> session = getSession(interpreter.getImpl().get());
 	if (!session)
 		return;
-    if (!session->_isRunning)
-        return;
-    
+	if (!session->_isRunning)
+		return;
+
 	std::list<Breakpoint> breakpoints;
 
 	Breakpoint breakpoint;
@@ -160,12 +160,12 @@ void Debugger::handleExecutable(Interpreter& interpreter,
 }
 
 void Debugger::handleEvent(Interpreter& interpreter, const Event& event, Breakpoint::When when) {
-    InterpreterImpl* impl = interpreter.getImpl().get();
-    std::shared_ptr<DebugSession> session = getSession(impl);
-    if (!session)
-        return;
-    if (!session->_isRunning)
-        return;
+	InterpreterImpl* impl = interpreter.getImpl().get();
+	std::shared_ptr<DebugSession> session = getSession(impl);
+	if (!session)
+		return;
+	if (!session->_isRunning)
+		return;
 
 	std::list<Breakpoint> breakpoints;
 
@@ -180,12 +180,12 @@ void Debugger::handleEvent(Interpreter& interpreter, const Event& event, Breakpo
 }
 
 void Debugger::handleStable(Interpreter& interpreter, Breakpoint::When when) {
-    InterpreterImpl* impl = interpreter.getImpl().get();
-    std::shared_ptr<DebugSession> session = getSession(impl);
-    if (!session)
-        return;
-    if (!session->_isRunning)
-        return;
+	InterpreterImpl* impl = interpreter.getImpl().get();
+	std::shared_ptr<DebugSession> session = getSession(impl);
+	if (!session)
+		return;
+	if (!session->_isRunning)
+		return;
 
 	std::list<Breakpoint> breakpoints;
 
@@ -198,12 +198,12 @@ void Debugger::handleStable(Interpreter& interpreter, Breakpoint::When when) {
 }
 
 void Debugger::handleMicrostep(Interpreter& interpreter, Breakpoint::When when) {
-    InterpreterImpl* impl = interpreter.getImpl().get();
-    std::shared_ptr<DebugSession> session = getSession(impl);
-    if (!session)
-        return;
-    if (!session->_isRunning)
-        return;
+	InterpreterImpl* impl = interpreter.getImpl().get();
+	std::shared_ptr<DebugSession> session = getSession(impl);
+	if (!session)
+		return;
+	if (!session->_isRunning)
+		return;
 
 	std::list<Breakpoint> breakpoints;
 
@@ -216,12 +216,12 @@ void Debugger::handleMicrostep(Interpreter& interpreter, Breakpoint::When when) 
 }
 
 void Debugger::handleTransition(Interpreter& interpreter, const XERCESC_NS::DOMElement* transition, Breakpoint::When when) {
-    InterpreterImpl* impl = interpreter.getImpl().get();
-    std::shared_ptr<DebugSession> session = getSession(impl);
-    if (!session)
-        return;
-    if (!session->_isRunning)
-        return;
+	InterpreterImpl* impl = interpreter.getImpl().get();
+	std::shared_ptr<DebugSession> session = getSession(impl);
+	if (!session)
+		return;
+	if (!session->_isRunning)
+		return;
 
 	Breakpoint breakpointTemplate;
 	breakpointTemplate.when = when;
@@ -230,12 +230,12 @@ void Debugger::handleTransition(Interpreter& interpreter, const XERCESC_NS::DOME
 }
 
 void Debugger::handleState(Interpreter& interpreter, const XERCESC_NS::DOMElement* state, Breakpoint::When when, Breakpoint::Action action) {
-    InterpreterImpl* impl = interpreter.getImpl().get();
-    std::shared_ptr<DebugSession> session = getSession(impl);
-    if (!session)
-        return;
-    if (!session->_isRunning)
-        return;
+	InterpreterImpl* impl = interpreter.getImpl().get();
+	std::shared_ptr<DebugSession> session = getSession(impl);
+	if (!session)
+		return;
+	if (!session->_isRunning)
+		return;
 
 	Breakpoint breakpointTemplate;
 	breakpointTemplate.when = when;
@@ -246,12 +246,12 @@ void Debugger::handleState(Interpreter& interpreter, const XERCESC_NS::DOMElemen
 }
 
 void Debugger::handleInvoke(Interpreter& interpreter, const XERCESC_NS::DOMElement* invokeElem, const std::string& invokeId, Breakpoint::When when, Breakpoint::Action action) {
-    InterpreterImpl* impl = interpreter.getImpl().get();
-    std::shared_ptr<DebugSession> session = getSession(impl);
-    if (!session)
-        return;
-    if (!session->_isRunning)
-        return;
+	InterpreterImpl* impl = interpreter.getImpl().get();
+	std::shared_ptr<DebugSession> session = getSession(impl);
+	if (!session)
+		return;
+	if (!session->_isRunning)
+		return;
 
 	Breakpoint breakpointTemplate;
 	breakpointTemplate.when = when;

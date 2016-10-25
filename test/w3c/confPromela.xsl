@@ -542,7 +542,7 @@ is the second argument -->
 </xsl:template>
 
 <xsl:template match="//@conf:inState">
-	<xsl:attribute name="cond">_x.states['<xsl:value-of select="."/>']</xsl:attribute>
+	<xsl:attribute name="cond">config[<xsl:value-of select="upper-case(.)"/>]</xsl:attribute>
 </xsl:template>
 
 <!-- returns a value that cannot be converted into a Boolean -->

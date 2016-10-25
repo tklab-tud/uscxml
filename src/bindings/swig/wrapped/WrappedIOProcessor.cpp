@@ -22,7 +22,7 @@
 namespace uscxml {
 
 WrappedIOProcessor::WrappedIOProcessor(InterpreterImpl* interpreter) {
-  _interpreter = interpreter;
+	_interpreter = interpreter;
 }
 WrappedIOProcessor::~WrappedIOProcessor() {}
 

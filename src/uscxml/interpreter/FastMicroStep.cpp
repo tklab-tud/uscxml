@@ -91,24 +91,24 @@ FastMicroStep::~FastMicroStep() {
 
 void FastMicroStep::resortStates(DOMElement* element, const X& xmlPrefix) {
 
-    /**
+	/**
 	 initials
 	 deep histories
 	 shallow histories
 	 everything else
 	 */
 
-    DOMElement* child = element->getFirstElementChild();
-    while(child) {
-        resortStates(child, xmlPrefix);
-        child = child->getNextElementSibling();
-    }
+	DOMElement* child = element->getFirstElementChild();
+	while(child) {
+		resortStates(child, xmlPrefix);
+		child = child->getNextElementSibling();
+	}
 
 	// shallow history states to top
 	child = element->getFirstElementChild();
 	while(child) {
 		if (TAGNAME_CAST(child) == xmlPrefix.str() + "history" &&
-            (!HAS_ATTR(element, "type") || iequals(ATTR(element, "type"), "shallow"))) {
+		        (!HAS_ATTR(element, "type") || iequals(ATTR(element, "type"), "shallow"))) {
 
 			DOMElement* tmp = child->getNextElementSibling();
 			if (child != element->getFirstChild()) {
@@ -154,34 +154,34 @@ void FastMicroStep::resortStates(DOMElement* element, const X& xmlPrefix) {
 }
 
 std::list<XERCESC_NS::DOMElement*> FastMicroStep::getExitSetCached(const XERCESC_NS::DOMElement* transition,
-                                                                   const XERCESC_NS::DOMElement* root) {
-    
-    if (_cache.exitSet.find(transition) == _cache.exitSet.end()) {
-        _cache.exitSet[transition] = getExitSet(transition, root);
-    }
-    
-    return _cache.exitSet[transition];
+        const XERCESC_NS::DOMElement* root) {
+
+	if (_cache.exitSet.find(transition) == _cache.exitSet.end()) {
+		_cache.exitSet[transition] = getExitSet(transition, root);
+	}
+
+	return _cache.exitSet[transition];
 }
 
 bool FastMicroStep::conflictsCached(const DOMElement* t1, const DOMElement* t2, const DOMElement* root) {
-    if (getSourceState(t1) == getSourceState(t2))
-        return true;
+	if (getSourceState(t1) == getSourceState(t2))
+		return true;
 
-    if (DOMUtils::isDescendant(getSourceState(t1), getSourceState(t2)))
-        return true;
+	if (DOMUtils::isDescendant(getSourceState(t1), getSourceState(t2)))
+		return true;
 
-    if (DOMUtils::isDescendant(getSourceState(t2), getSourceState(t1)))
-        return true;
-    
-    if (DOMUtils::hasIntersection(getExitSetCached(t1, root), getExitSetCached(t2, root)))
-        return true;
-    
-    return false;
+	if (DOMUtils::isDescendant(getSourceState(t2), getSourceState(t1)))
+		return true;
+
+	if (DOMUtils::hasIntersection(getExitSetCached(t1, root), getExitSetCached(t2, root)))
+		return true;
+
+	return false;
 }
 
-    
+
 void FastMicroStep::init(XERCESC_NS::DOMElement* scxml) {
-    
+
 	_scxml = scxml;
 	_binding = (HAS_ATTR(_scxml, "binding") && iequals(ATTR(_scxml, "binding"), "late") ? LATE : EARLY);
 	_xmlPrefix = _scxml->getPrefix();
@@ -193,7 +193,7 @@ void FastMicroStep::init(XERCESC_NS::DOMElement* scxml) {
 	resortStates(_scxml, _xmlPrefix);
 //    assert(false);
 //    throw NULL;
-    
+
 	/** -- All things states -- */
 
 	std::list<XERCESC_NS::DOMElement*> tmp;
@@ -356,8 +356,8 @@ void FastMicroStep::init(XERCESC_NS::DOMElement* scxml) {
 		assert(_transitions[i]->element != NULL);
 //		std::cout << "i: " << i << std::endl << std::flush;
 		std::list<DOMElement*> exitList = getExitSetCached(_transitions[i]->element, _scxml);
-        _cache.exitSet[_transitions[i]->element] = exitList;
-        
+		_cache.exitSet[_transitions[i]->element] = exitList;
+
 		for (j = 0; j < _states.size(); j++) {
 			if (!exitList.empty() && _states[j]->element == exitList.front()) {
 				_transitions[i]->exitSet[j] = true;
@@ -369,7 +369,7 @@ void FastMicroStep::init(XERCESC_NS::DOMElement* scxml) {
 		assert(exitList.size() == 0);
 
 		// establish the transitions' conflict set
-        for (j = i; j < _transitions.size(); j++) {
+		for (j = i; j < _transitions.size(); j++) {
 			if (conflictsCached(_transitions[i]->element, _transitions[j]->element, _scxml)) {
 				_transitions[i]->conflicts[j] = true;
 			} else {
@@ -377,13 +377,13 @@ void FastMicroStep::init(XERCESC_NS::DOMElement* scxml) {
 			}
 //            std::cout << ".";
 		}
-        
-        // conflicts matrix is symmetric
-        for (j = 0; j < i; j++) {
-            _transitions[i]->conflicts[j] = _transitions[j]->conflicts[i];
-        }
 
-        
+		// conflicts matrix is symmetric
+		for (j = 0; j < i; j++) {
+			_transitions[i]->conflicts[j] = _transitions[j]->conflicts[i];
+		}
+
+
 		// establish the transitions' target set
 		std::list<std::string> targets = tokenize(ATTR(_transitions[i]->element, "target"));
 		for (auto tIter = targets.begin(); tIter != targets.end(); tIter++) {
@@ -421,9 +421,9 @@ void FastMicroStep::init(XERCESC_NS::DOMElement* scxml) {
 
 		// the transitions event and condition
 		_transitions[i]->event = (HAS_ATTR(_transitions[i]->element, "event") ?
-                                  ATTR(_transitions[i]->element, "event") : "");
+		                          ATTR(_transitions[i]->element, "event") : "");
 		_transitions[i]->cond = (HAS_ATTR(_transitions[i]->element, "cond") ?
-                                 ATTR(_transitions[i]->element, "cond") : "");
+		                         ATTR(_transitions[i]->element, "cond") : "");
 
 		// is there executable content?
 		if (_transitions[i]->element->getChildElementCount() > 0) {
@@ -431,7 +431,7 @@ void FastMicroStep::init(XERCESC_NS::DOMElement* scxml) {
 		}
 
 	}
-    _cache.exitSet.clear();
+	_cache.exitSet.clear();
 	_isInitialized = true;
 }
 
@@ -942,11 +942,11 @@ ESTABLISH_ENTRYSET:
 
 	// are we running in circles?
 	if (_microstepConfigurations.find(_configuration) != _microstepConfigurations.end()) {
-        InterpreterIssue issue("Reentering same configuration during microstep  - possible endless loop",
-                               NULL,
-                               InterpreterIssue::USCXML_ISSUE_WARNING);
-        
-        USCXML_MONITOR_CALLBACK1(_callbacks->getMonitors(),
+		InterpreterIssue issue("Reentering same configuration during microstep  - possible endless loop",
+		                       NULL,
+		                       InterpreterIssue::USCXML_ISSUE_WARNING);
+
+		USCXML_MONITOR_CALLBACK1(_callbacks->getMonitors(),
 		                         reportIssue,
 		                         issue);
 	}
@@ -1068,7 +1068,7 @@ std::list<DOMElement*> FastMicroStep::getCompletion(const DOMElement* state) {
 			completion.push_back(initElems.front());
 		} else {
 			// first child state
-            for (auto childElem = state->getFirstElementChild(); childElem; childElem = childElem->getNextElementSibling()) {
+			for (auto childElem = state->getFirstElementChild(); childElem; childElem = childElem->getNextElementSibling()) {
 				if (isState(childElem)) {
 					completion.push_back(childElem);
 					break;

@@ -325,7 +325,7 @@ protected:
 	bool _isStarted;
 
 	std::map<CURL*, URL> _handlesToURLs;
-    std::map<CURL*, curl_slist*> _handlesToHeaders;
+	std::map<CURL*, curl_slist*> _handlesToHeaders;
 	CURLM* _multiHandle;
 	char* _envProxy;
 };

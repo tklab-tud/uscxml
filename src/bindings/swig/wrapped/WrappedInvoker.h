@@ -33,7 +33,7 @@
 
 // forward declare
 namespace XERCESC_NS {
-    class DOMElement;
+class DOMElement;
 }
 
 namespace uscxml {
@@ -42,37 +42,37 @@ class WrappedInvoker : public InvokerImpl {
 public:
 	WrappedInvoker(InterpreterImpl* interpreter);
 	virtual ~WrappedInvoker();
-    
-    virtual std::list<std::string> getNames() {
-        return std::list<std::string>();
-    };
 
-    virtual std::shared_ptr<InvokerImpl> create(InterpreterImpl* interpreter) {
-    	std::shared_ptr<InvokerImpl> inv = std::shared_ptr<InvokerImpl>(new WrappedInvoker(interpreter));
-			return inv;
-    }
-    virtual void invoke(const std::string& source, const Event& invokeEvent) {}
-    virtual void uninvoke() {}
+	virtual std::list<std::string> getNames() {
+		return std::list<std::string>();
+	};
 
-    virtual void eventFromSCXML(const Event& event) {}
-    
-    virtual XERCESC_NS::DOMElement* getFinalize() {
-        return _finalize;
-    }
-    virtual void setFinalize(XERCESC_NS::DOMElement* finalize) {
-        _finalize = finalize;
-    }
-    virtual void setInvokeId(const std::string& invokeId) {
-        _invokeId = invokeId;
-    }
-		
-    virtual Data getDataModelVariables() {
-        return Data();
-    }
-		
-    void eventToSCXML(Event& event, const std::string& type, const std::string& invokeId, bool internal = false) {
-    	
-    }
+	virtual std::shared_ptr<InvokerImpl> create(InterpreterImpl* interpreter) {
+		std::shared_ptr<InvokerImpl> inv = std::shared_ptr<InvokerImpl>(new WrappedInvoker(interpreter));
+		return inv;
+	}
+	virtual void invoke(const std::string& source, const Event& invokeEvent) {}
+	virtual void uninvoke() {}
+
+	virtual void eventFromSCXML(const Event& event) {}
+
+	virtual XERCESC_NS::DOMElement* getFinalize() {
+		return _finalize;
+	}
+	virtual void setFinalize(XERCESC_NS::DOMElement* finalize) {
+		_finalize = finalize;
+	}
+	virtual void setInvokeId(const std::string& invokeId) {
+		_invokeId = invokeId;
+	}
+
+	virtual Data getDataModelVariables() {
+		return Data();
+	}
+
+	void eventToSCXML(Event& event, const std::string& type, const std::string& invokeId, bool internal = false) {
+
+	}
 
 private:
 	InterpreterImpl* _interpreter;

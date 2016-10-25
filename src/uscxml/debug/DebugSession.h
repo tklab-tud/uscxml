@@ -34,8 +34,8 @@ class Debugger;
 class USCXML_API DebugSession : public std::enable_shared_from_this<DebugSession> {
 public:
 	DebugSession() {
-        _isRunning = false;
-        _isStepping = false;
+		_isRunning = false;
+		_isStepping = false;
 		_isAttached = false;
 		_breakpointsEnabled = true;
 		_markedForDeletion = false;
@@ -88,9 +88,9 @@ protected:
 	std::recursive_mutex _runMutex;
 	std::recursive_mutex _mutex;
 
-    std::thread* _interpreterThread = NULL;
-    bool _isRunning;
-    static void run(void* instance);
+	std::thread* _interpreterThread = NULL;
+	bool _isRunning;
+	static void run(void* instance);
 
 	bool _markedForDeletion;
 	Debugger* _debugger;
@@ -98,7 +98,7 @@ protected:
 	std::set<Breakpoint> _breakPoints;
 	Breakpoint _skipTo;
 
-    friend class Debugger;
+	friend class Debugger;
 };
 
 

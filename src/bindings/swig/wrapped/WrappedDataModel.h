@@ -35,62 +35,65 @@ namespace uscxml {
 class WrappedDataModel : public DataModelImpl {
 public:
 
-    WrappedDataModel();
-    virtual ~WrappedDataModel();
-    
-    virtual std::shared_ptr<DataModelImpl> create(DataModelCallbacks* callbacks) {
-        std::shared_ptr<WrappedDataModel> dm(create());
-        dm->callbacks = callbacks;
-        return dm;
-    }
-        
-    virtual std::list<std::string> getNames() {
-        return std::list<std::string>();
-    }
-    
-		virtual WrappedDataModel* create() {
-			return new WrappedDataModel();
-		}
-		
-    virtual bool isValidSyntax(const std::string& expr) {
-        return true;
-    }
-    
-    virtual void setEvent(const Event& event) {}
-    
-    // foreach
-    virtual uint32_t getLength(const std::string& expr) {
-        return 0;
-    }
-    
-    virtual void setForeach(const std::string& item,
-                            const std::string& array,
-                            const std::string& index,
-                            uint32_t iteration) {}
-    
-    virtual Data getAsData(const std::string& content) {
-        return Data();
-    }
-    virtual Data evalAsData(const std::string& expr) {
-        return Data();
-    }
-    virtual bool evalAsBool(const std::string& expr) {
-        return true;
-    }
-    
-    virtual bool isDeclared(const std::string& expr) {
-        return true;
-    }
-    
-    virtual void assign(const std::string& location, const Data& data) {}
-    virtual void init(const std::string& location, const Data& data) {}
-    
-    virtual std::string andExpressions(std::list<std::string>) {
-        return "";
-    }
+	WrappedDataModel();
+	virtual ~WrappedDataModel();
+
+	virtual std::shared_ptr<DataModelImpl> create(DataModelCallbacks* callbacks) {
+		std::shared_ptr<WrappedDataModel> dm(create());
+		dm->callbacks = callbacks;
+		return dm;
+	}
+
+	virtual std::list<std::string> getNames() {
+		return std::list<std::string>();
+	}
+
+	virtual WrappedDataModel* create() {
+		return new WrappedDataModel();
+	}
+
+	virtual bool isValidSyntax(const std::string& expr) {
+		return true;
+	}
+
+	virtual void setEvent(const Event& event) {}
+
+	// foreach
+	virtual uint32_t getLength(const std::string& expr) {
+		return 0;
+	}
+
+	virtual void setForeach(const std::string& item,
+	                        const std::string& array,
+	                        const std::string& index,
+	                        uint32_t iteration) {}
+
+	virtual Data getAsData(const std::string& content) {
+		return Data();
+	}
+	virtual Data evalAsData(const std::string& expr) {
+		return Data();
+	}
+	virtual bool evalAsBool(const std::string& expr) {
+		return true;
+	}
+
+	virtual bool isDeclared(const std::string& expr) {
+		return true;
+	}
+
+	virtual void assign(const std::string& location, const Data& data) {}
+	virtual void init(const std::string& location, const Data& data) {}
+
+	virtual void addExtension(DataModelExtension* ext) {
+	}
+
+	virtual std::string andExpressions(std::list<std::string>) {
+		return "";
+	}
 
 protected:
-    DataModelCallbacks* callbacks;
+	DataModelCallbacks* callbacks;
 };
 
 }

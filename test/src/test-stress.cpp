@@ -24,21 +24,21 @@ class StatusMonitor : public uscxml::InterpreterMonitor {
 };
 
 void printUsageAndExit() {
-    printf("test-stress version " USCXML_VERSION " (" CMAKE_BUILD_TYPE " build - " CMAKE_COMPILER_STRING ")\n");
-    printf("Usage\n");
-    printf("\ttest-stress");
+	printf("test-stress version " USCXML_VERSION " (" CMAKE_BUILD_TYPE " build - " CMAKE_COMPILER_STRING ")\n");
+	printf("Usage\n");
+	printf("\ttest-stress");
 #ifdef BUILD_AS_PLUGINS
-    printf(" [-p pluginPath]");
+	printf(" [-p pluginPath]");
 #endif
-    printf(" <PATH>\n");
-    printf("\n");
-    exit(1);
+	printf(" <PATH>\n");
+	printf("\n");
+	exit(1);
 }
 
 int main(int argc, char** argv) {
 	using namespace uscxml;
 
-    if (argc < 2) {
+	if (argc < 2) {
 		printUsageAndExit();
 	}
 
@@ -62,7 +62,7 @@ int main(int argc, char** argv) {
 
 	DirectoryWatch* watcher = new DirectoryWatch(argv[optind], true);
 	watcher->updateEntries(true);
-    
+
 	std::map<std::string, struct stat> entries = watcher->getAllEntries();
 
 	StatusMonitor vm;
@@ -77,27 +77,27 @@ int main(int argc, char** argv) {
 		startedAt = time(NULL);
 		lastTransitionAt = time(NULL);
 
-        Interpreter interpreter = Interpreter::fromURL(std::string(argv[optind]) + PATH_SEPERATOR + entryIter->first);
+		Interpreter interpreter = Interpreter::fromURL(std::string(argv[optind]) + PATH_SEPERATOR + entryIter->first);
 //        Interpreter interpreter = Interpreter::fromURL("/Users/sradomski/Documents/TK/Code/uscxml/test/w3c/ecma/test422.scxml");
-        LOG(INFO) << "Processing " << interpreter.getImpl()->getBaseURL();
+		LOG(INFO) << "Processing " << interpreter.getImpl()->getBaseURL();
 		if (interpreter) {
 
 			interpreter.addMonitor(&vm);
 
-            InterpreterState state = InterpreterState::USCXML_UNDEF;
-            int now = time(NULL);
+			InterpreterState state = InterpreterState::USCXML_UNDEF;
+			int now = time(NULL);
 
-            try {
-                while(state != USCXML_FINISHED && now - startedAt < 20 && now - lastTransitionAt < 2) {
+			try {
+				while(state != USCXML_FINISHED && now - startedAt < 20 && now - lastTransitionAt < 2) {
 //                while(state != USCXML_FINISHED) {
-                    state = interpreter.step(200);
-                    now = time(NULL);
-                }
-            } catch (...) {}
+					state = interpreter.step(200);
+					now = time(NULL);
+				}
+			} catch (...) {}
 		}
 		entryIter++;
-        
-        // forever
+
+		// forever
 //        if (entryIter == entries.end()) {
 //            entryIter = entries.begin();
 //        }
@@ -105,5 +105,5 @@ int main(int argc, char** argv) {
 
 	delete watcher;
 
-    return EXIT_SUCCESS;
+	return EXIT_SUCCESS;
 }

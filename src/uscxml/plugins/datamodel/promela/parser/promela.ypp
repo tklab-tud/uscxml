@@ -1,0 +1,254 @@
+/** Subset extracted from spin.y by Stefan Radomski 2014                  */
+
+/***** spin: spin.y *****/
+
+/* Copyright (c) 1989-2003 by Lucent Technologies, Bell Laboratories.     */
+/* All Rights Reserved.  This software is for educational purposes only.  */
+/* No guarantee whatsoever is expressed or implied by the distribution of */
+/* this code.  Permission is given to distribute this code provided that  */
+/* this introductory message is not removed and no monies are exchanged.  */
+/* Software written by Gerard J. Holzmann.  For tool documentation see:   */
+/*             http://spinroot.com/                                       */
+/* Send all bug-reports and/or questions to: bugs@spinroot.com            */
+
+%{
+#include "../PromelaParser.h"
+#include "promela.tab.hpp"
+#include <sys/types.h>
+#include <stdarg.h>
+
+#define YYMAXDEPTH	20000	// default is 10000
+#define YYDEBUG		1
+#define YYERROR_VERBOSE 1
+
+extern int promela_lex (PROMELA_STYPE* yylval_param, PROMELA_LTYPE* yylloc_param, void* yyscanner);
+
+using namespace uscxml;
+%}
+
+%pure-parser
+%debug
+%locations
+%file-prefix "promela"
+%parse-param { uscxml::PromelaParser* ctx }
+%lex-param {void * scanner}
+%parse-param {void * scanner}
+%define api.prefix promela_
+%defines
+
+%union {
+  uscxml::PromelaParserNode* node;
+	char* value;
+}
+
+%error-verbose
+
+/* %type <node> expr_lst */
+%type <node> expr pfld sfld varref decl_lst stmnt_lst vardcl ivar var_list one_decl prargs utype cmpnd
+%type <node> stmnt Stmnt const_expr nlst vis arg 
+
+%token  PML_VAR_ARRAY PML_VARLIST PML_DECL PML_DECLLIST PML_STMNT PML_COLON PML_EXPR PML_NAMELIST
+
+%token  '(' ')'
+%token  '[' ']'
+%token  '{' '}'
+%token	PML_ASSERT PML_PRINT PML_PRINTM
+%token  <value> PML_LEN PML_STRING
+%token  PML_TYPEDEF PML_MTYPE PML_INLINE PML_RETURN PML_LABEL PML_OF
+%token  PML_GOTO PML_BREAK PML_ELSE PML_SEMI PML_ARROW
+%token  PML_IF PML_FI PML_DO PML_OD PML_FOR PML_SELECT PML_IN PML_SEP PML_DOTDOT
+%token  PML_HIDDEN PML_SHOW PML_ISLOCAL
+%token  <value> PML_CONST PML_TYPE PML_XU			/* val */
+%token  <value> PML_NAME PML_UNAME PML_PNAME PML_INAME		/* sym */
+%token  PML_CLAIM PML_TRACE PML_INIT	PML_LTL	/* sym */
+%token  PML_COMMA
+
+%right	PML_ASGN
+%left PML_OR PML_AND
+%left	PML_BITOR PML_BITXOR PML_BITAND
+%left	PML_EQ PML_NE
+%left	PML_GT PML_LT PML_GE PML_LE
+%left	PML_LSHIFT PML_RSHIFT
+%left	PML_PLUS PML_MINUS 
+%left PML_TIMES PML_DIVIDE PML_MODULO
+%left	PML_INCR PML_DECR
+%left PML_COMPL
+%right PML_NEG
+%left	PML_DOT PML_CMPND
+
+%%
+
+
+/** PROMELA Grammar Rules **/
+
+program	: 
+  decl_lst { 
+    ctx->ast = $1; 
+    ctx->type = PromelaParser::PROMELA_DECL; 
+  }
+  | expr { 
+    ctx->ast = $1; 
+    ctx->type = PromelaParser::PROMELA_EXPR;
+  }
+  | stmnt_lst { 
+    ctx->ast = $1; 
+    ctx->type = PromelaParser::PROMELA_STMNT;
+  }
+  ;
+
+varref	: cmpnd			{ $$ = $1; }
+	;
+
+pfld	: PML_NAME			{ $$ = ctx->value(PML_NAME, (void*)&(@1), $1); free($1); }
+	| PML_NAME '[' expr ']' { $$ = ctx->node(PML_VAR_ARRAY, 2, ctx->value(PML_NAME, (void*)&(@1), $1), $3); free($1); }
+	;
+
+cmpnd	: pfld
+				sfld	{ 
+					if ($2 != NULL) {
+						if ($2->type == PML_CMPND) {
+							$$ = ctx->node(PML_CMPND, 1, $1);
+							$$->merge($2); delete $2;
+						} else {
+							$$ = ctx->node(PML_CMPND, 2, $1, $2);
+						}
+					} else {
+						$$ = $1;
+					}
+				}
+	;
+
+sfld	: /* empty */		{ $$ = NULL; }
+	| PML_DOT cmpnd %prec PML_DOT	{ $$ = $2; }
+	;
+
+/*
+expr_lst: expr       	{ $$ = ctx->node(PML_EXPR, 1, $1); }
+  | expr PML_SEMI       	{ $$ = ctx->node(PML_EXPR, 1, $1); }
+	| expr PML_SEMI expr_lst { $$ = ctx->node(PML_EXPR, 2, $1, $3); }
+	;
+*/
+
+expr    : '(' expr ')'		{ $$ = $2; }
+	| expr PML_PLUS expr		{ $$ = ctx->node(PML_PLUS, 2, $1, $3); }
+	| expr PML_MINUS expr		{ $$ = ctx->node(PML_MINUS, 2, $1, $3); }
+	| expr PML_TIMES expr		{ $$ = ctx->node(PML_TIMES, 2, $1, $3); }
+	| expr PML_DIVIDE expr		{ $$ = ctx->node(PML_DIVIDE, 2, $1, $3); }
+	| expr PML_MODULO expr		{ $$ = ctx->node(PML_MODULO, 2, $1, $3); }
+	| expr PML_BITAND expr		{ $$ = ctx->node(PML_BITAND, 2, $1, $3); }
+	| expr PML_BITXOR expr		{ $$ = ctx->node(PML_BITXOR, 2, $1, $3); }
+	| expr PML_BITOR expr		{ $$ = ctx->node(PML_BITOR, 2, $1, $3); }
+	| expr PML_GT expr		{ $$ = ctx->node(PML_GT, 2, $1, $3); }
+	| expr PML_LT expr		{ $$ = ctx->node(PML_LT, 2, $1, $3); }
+	| expr PML_GE expr		{ $$ = ctx->node(PML_GE, 2, $1, $3); }
+	| expr PML_LE expr		{ $$ = ctx->node(PML_LE, 2, $1, $3); }
+	| expr PML_EQ expr		{ $$ = ctx->node(PML_EQ, 2, $1, $3); }
+	| expr PML_NE expr		{ $$ = ctx->node(PML_NE, 2, $1, $3); }
+	| expr PML_AND expr		{ $$ = ctx->node(PML_AND, 2, $1, $3); }
+	| expr PML_OR  expr		{ $$ = ctx->node(PML_OR, 2, $1, $3); }
+	| expr PML_LSHIFT expr	{ $$ = ctx->node(PML_LSHIFT, 2, $1, $3); }
+	| expr PML_RSHIFT expr	{ $$ = ctx->node(PML_RSHIFT, 2, $1, $3); }
+	| PML_NEG expr		      { $$ = ctx->node(PML_NEG, 1, $2); }
+	| PML_MINUS expr %prec PML_MINUS	{ $$ = ctx->node(PML_MINUS, 1, $2); }
+
+	| PML_LEN '(' varref ')'	{ $$ = ctx->node(PML_LEN, 1, $3);  }
+	| varref		{ $$ = $1; }
+	| PML_CONST 		{ $$ = ctx->value(PML_CONST, (void*)&(@1), $1); free($1); }
+	| PML_STRING 		{ 
+		/* Non standard promela for string literals */ 
+		$$ = ctx->value(PML_STRING, (void*)&(@1), $1); free($1); }
+	;
+
+
+vis	: /* empty */		{ $$ = ctx->node(PML_SHOW, 0); }
+	| PML_HIDDEN		{ $$ = ctx->node(PML_HIDDEN, 0); }
+	| PML_SHOW			{ $$ = ctx->node(PML_SHOW, 0); }
+	| PML_ISLOCAL		{ $$ = ctx->node(PML_ISLOCAL, 0); }
+	;
+
+one_decl: vis PML_TYPE var_list	{ $$ = ctx->node(PML_DECL, 3, $1, ctx->value(PML_TYPE, (void*)&(@2), $2), $3); free($2); }
+	| vis PML_UNAME var_list	{ $$ = ctx->node(PML_UNAME, 2, $1, $3); }
+	| vis PML_TYPE PML_ASGN '{' nlst '}' { $$ = ctx->node(PML_DECL, 3, $1, ctx->value(PML_TYPE, (void*)&(@2), $2), $5); free($2); }
+	| vis utype { $$ = $2; }
+	;
+
+utype	: PML_TYPEDEF PML_NAME '{' decl_lst '}' { $$ = ctx->node(PML_TYPEDEF, 2, ctx->value(PML_NAME, (void*)&(@2), $2), $4); }
+	;
+
+decl_lst: one_decl            { $$ = $1; }
+  | one_decl PML_SEMI             { $$ = $1; }
+  | one_decl PML_SEMI decl_lst    {
+    $$ = ctx->node(PML_DECLLIST, 1, $1);
+    if($3->type == PML_DECLLIST) {
+      $$->merge($3); delete $3; 
+    } else {
+      $$->push($3);
+    }
+  }
+	;
+
+var_list: ivar           { $$ = ctx->node(PML_VARLIST, 1, $1); }
+	| ivar PML_COMMA var_list	{ $$ = ctx->node(PML_VARLIST, 1, $1); $$->merge($3); delete $3; }
+	;
+
+ivar    : vardcl           	{ $$ = $1; }
+	| vardcl PML_ASGN expr   	{ $$ = ctx->node(PML_ASGN, 2, $1, $3); }
+	;
+
+vardcl  : PML_NAME  		{ $$ = ctx->value(PML_NAME, (void*)&(@1), $1); free($1); }
+	| PML_NAME PML_COLON PML_CONST	{ $$ = ctx->node(PML_COLON, 2, ctx->value(PML_NAME, (void*)&(@1), $1), ctx->value(PML_CONST, (void*)&(@3), $3)); free($1); free($3); }
+	| PML_NAME '[' const_expr ']'	{ $$ = ctx->node(PML_VAR_ARRAY, 2, ctx->value(PML_NAME, (void*)&(@1), $1), $3); free($1); }
+	;
+
+const_expr:	PML_CONST			{ $$ = ctx->value(PML_CONST, (void*)&(@1), $1); free($1); }
+	| PML_MINUS const_expr %prec PML_MINUS	{ $$ = ctx->node(PML_MINUS, 1, $2); }
+	| '(' const_expr ')'		{ $$ = $2; }
+	| const_expr PML_PLUS const_expr	{ $$ = ctx->node(PML_PLUS, 2, $1, $3); }
+	| const_expr PML_MINUS const_expr	{ $$ = ctx->node(PML_MINUS, 2, $1, $3); }
+	| const_expr PML_TIMES const_expr	{ $$ = ctx->node(PML_TIMES, 2, $1, $3); }
+	| const_expr PML_DIVIDE const_expr	{ $$ = ctx->node(PML_DIVIDE, 2, $1, $3); }
+	| const_expr PML_MODULO const_expr	{ $$ = ctx->node(PML_MODULO, 2, $1, $3); }
+	;
+
+nlst	: PML_NAME			{ $$ = ctx->value(PML_NAME, (void*)&(@1), $1); free($1); }
+	| nlst PML_NAME 		{ 
+    if ($1->type == PML_NAME) {
+      $$ = ctx->node(PML_NAMELIST, 1, $1);
+      $$->push(ctx->value(PML_NAME, (void*)&(@2), $2));
+    } else {
+      $1->push(ctx->value(PML_NAME, (void*)&(@2), $2));
+    }
+    free($2);
+  }
+	| nlst PML_COMMA		{ $$ = $1; }
+	;
+
+stmnt_lst: stmnt       	{ $$ = $1; }
+  | stmnt PML_SEMI         	{ $$ = $1; }
+	| stmnt PML_SEMI stmnt_lst { $$ = ctx->node(PML_STMNT, 2, $1, $3); }
+	;
+
+stmnt	: Stmnt			{ $$ = $1; }
+	;
+
+Stmnt	: varref PML_ASGN expr	{ $$ = ctx->node(PML_ASGN, 2, $1, $3); }
+	| varref PML_INCR		{ $$ = ctx->node(PML_INCR, 1, $1); }
+	| varref PML_DECR		{ $$ = ctx->node(PML_DECR, 1, $1); }
+	| PML_PRINT	'(' PML_STRING prargs ')'		{ $$ = ctx->node(PML_PRINT, 2, ctx->value(PML_STRING, (void*)&(@3), $3), $4); free($3); }
+	| PML_PRINT '(' varref ')'	{ $$ = ctx->node(PML_PRINT, 1, $3); }
+	| PML_PRINT '(' PML_CONST ')'	{ $$ = ctx->node(PML_PRINT, 1, ctx->value(PML_CONST, (void*)&(@3), $3)); free($3); }
+	| PML_ASSERT expr    	{ $$ = ctx->node(PML_ASSERT, 1, $2); }
+	| expr		{ $$ = $1; }
+	;
+
+prargs  : /* empty */		{ $$ = ctx->value(0, NULL, ""); }
+	| PML_COMMA arg		{ $$ = $2; }
+	;
+
+arg     : expr			{ $$ = $1; }
+	| expr PML_COMMA arg		{ $$ = ctx->node(0, 2, $1, $3); }
+	;
+
+
+%%
+

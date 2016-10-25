@@ -1,0 +1,16 @@
+<scxml datamodel="promela">
+	<state id="s0">
+		<history id="h01" type="deep" />
+		<state id="s01">
+			<transition target="s02" event="foo" />
+			<transition target="s1" event="bar" />
+		</state>
+		<state id="s02">
+			<script>printf("In S02");</script>
+			<transition target="s1" />
+		</state>
+	</state>
+	<state id="s1">
+		<transition target="h01" />
+	</state>
+</scxml>

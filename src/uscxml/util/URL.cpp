@@ -118,8 +118,8 @@ URLImpl::URLImpl(const std::string& url) : _orig(url), _handle(NULL), _requestTy
 
 URLImpl::~URLImpl() {
 	uriFreeUriMembersA(&_uri);
-    if (_handle != NULL)
-        curl_easy_cleanup(_handle);
+	if (_handle != NULL)
+		curl_easy_cleanup(_handle);
 }
 
 URL URLImpl::resolve(URLImpl* relative, URLImpl* absolute) {
@@ -592,7 +592,7 @@ void URLFetcher::fetchURL(URL& url) {
 				char* header = (char*)malloc(paramIter->first.size() + strlen(value) + 3);
 				sprintf(header,"%s: %s", paramIter->first.c_str(), value);
 				headers = curl_slist_append(headers, header);
-                free(header);
+				free(header);
 				//				curl_free(key);
 				//				curl_free(value);
 				paramIter++;
@@ -600,9 +600,9 @@ void URLFetcher::fetchURL(URL& url) {
 
 			// Disable "Expect: 100-continue"
 			headers = curl_slist_append(headers, "Expect:");
-            instance->_handlesToHeaders[handle] = headers;
+			instance->_handlesToHeaders[handle] = headers;
 
-            (curlError = curl_easy_setopt(handle, CURLOPT_HTTPHEADER, headers)) == CURLE_OK ||
+			(curlError = curl_easy_setopt(handle, CURLOPT_HTTPHEADER, headers)) == CURLE_OK ||
 			LOG(ERROR) << "Cannot headers for " << std::string(url) << ": " << curl_easy_strerror(curlError);
 
 //			curl_slist_free_all(headers);
@@ -632,10 +632,10 @@ void URLFetcher::breakURL(URL& url) {
 		curl_multi_remove_handle(instance->_multiHandle, handle);
 		instance->_handlesToURLs.erase(handle);
 	}
-    if (instance->_handlesToHeaders.find(handle) != instance->_handlesToHeaders.end()) {
-        curl_slist_free_all(instance->_handlesToHeaders[handle]);
-        instance->_handlesToHeaders.erase(handle);
-    }
+	if (instance->_handlesToHeaders.find(handle) != instance->_handlesToHeaders.end()) {
+		curl_slist_free_all(instance->_handlesToHeaders[handle]);
+		instance->_handlesToHeaders.erase(handle);
+	}
 }
 
 void URLFetcher::start() {
@@ -759,13 +759,13 @@ void URLFetcher::perform() {
 						if (err != CURLM_OK) {
 							LOG(WARNING) << "curl_multi_remove_handle: " << curl_multi_strerror(err);
 						}
-                        break;
+						break;
 
 					}
-                    _handlesToURLs.erase(msg->easy_handle);
-                    curl_slist_free_all(_handlesToHeaders[msg->easy_handle]);
-                    _handlesToHeaders.erase(msg->easy_handle);
-                    
+					_handlesToURLs.erase(msg->easy_handle);
+					curl_slist_free_all(_handlesToHeaders[msg->easy_handle]);
+					_handlesToHeaders.erase(msg->easy_handle);
+
 				} else {
 					LOG(ERROR) << "Curl reports info on unfinished download?!";
 				}

@@ -386,14 +386,14 @@ void HTTPServer::httpRecvReqCallback(struct evhttp_request *req, void *callbackD
 
 				key = item.substr(0, equalPos);
 				value = item.substr(equalPos + 1, item.length() - (equalPos + 1));
-                size_t keyCStrLen = 0;
-                size_t valueCStrLen = 0;
-                char* keyCStr = evhttp_uridecode(key.c_str(), 1, &keyCStrLen);
+				size_t keyCStrLen = 0;
+				size_t valueCStrLen = 0;
+				char* keyCStr = evhttp_uridecode(key.c_str(), 1, &keyCStrLen);
 				char* valueCStr = evhttp_uridecode(value.c_str(), 1, &valueCStrLen);
-                std::string decKey = std::string(keyCStr, keyCStrLen);
-                std::string decValue = std::string(valueCStr, valueCStrLen);
-                
-                request.data.compound["content"].compound[decKey] = Data(decValue, Data::VERBATIM);
+				std::string decKey = std::string(keyCStr, keyCStrLen);
+				std::string decValue = std::string(valueCStr, valueCStrLen);
+
+				request.data.compound["content"].compound[decKey] = Data(decValue, Data::VERBATIM);
 				free(keyCStr);
 				free(valueCStr);
 				key.clear();
@@ -418,11 +418,11 @@ void HTTPServer::httpRecvReqCallback(struct evhttp_request *req, void *callbackD
 	request.raw = raw.str();
 
 #if 0
-    std::cout << "====" << std::endl;
-    std::cout << request.raw << std::endl;
-    std::cout << "====" << std::endl;
+	std::cout << "====" << std::endl;
+	std::cout << request.raw << std::endl;
+	std::cout << "====" << std::endl;
 #endif
-    
+
 	// try with the handler registered for path first
 	bool answered = false;
 	if (callbackData != NULL)

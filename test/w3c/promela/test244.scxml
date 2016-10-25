@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- test that datamodel values can be specified by  namelist.
+invoked child will return success ifits Var1 is set to 1, failure otherwise.  
+This test will fail schema validation due to multiple occurrences of Var1,
+but should run correctly. -->
+<scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" initial="s0" version="1.0" datamodel="promela">
+  <datamodel>
+    <data id="Var1" type="int" expr="1"/>
+  </datamodel>
+  <state id="s0">
+    <onentry>
+      <send xmlns:scxml="http://www.w3.org/2005/07/scxml" delay="2000" event="timeout"/>
+    </onentry>
+    <invoke type="http://www.w3.org/TR/scxml/" namelist="Var1">
+      <content>
+        <scxml initial="sub0" version="1.0" datamodel="promela">
+          <datamodel>
+            <data id="Var1" type="int" expr="0"/>
+          </datamodel>
+          <state id="sub0">
+            <transition cond="Var1==1" target="subFinal">
+              <send target="#_parent" event="success"/>
+            </transition>
+            <transition target="subFinal">
+              <send target="#_parent" event="failure"/>
+            </transition>
+          </state>
+          <final id="subFinal"/>
+        </scxml>
+      </content>
+    </invoke>
+    <transition event="success" target="pass"/>
+    <transition event="*" target="fail"/>
+  </state>
+  <final xmlns:scxml="http://www.w3.org/2005/07/scxml" id="pass">
+    <onentry>
+      <log label="Outcome" expr="'pass'"/>
+    </onentry>
+  </final>
+  <final xmlns:scxml="http://www.w3.org/2005/07/scxml" id="fail">
+    <onentry>
+      <log label="Outcome" expr="'fail'"/>
+    </onentry>
+  </final>
+</scxml>
