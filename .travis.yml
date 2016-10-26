@@ -9,9 +9,6 @@ compiler:
   - gcc
   - clang
 
-install:
-  - if [ "$CXX" = "g++" ]; then export CXX="g++-4.8" CC="gcc-4.8"; fi
-
 addons:
   apt:
     sources:
@@ -22,6 +19,8 @@ addons:
     - clang
 
 before_install:
+  - if [ "$CXX" = "g++" ]; then sudo apt-get install -qq g++-4.8; fi
+  - if [ "$CXX" = "g++" ]; then export CXX="g++-4.8" CC="gcc-4.8"; fi
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get update -qq; fi
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get install -qq libxml2-dev libcurl4-openssl-dev; fi
  
