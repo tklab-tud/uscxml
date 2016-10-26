@@ -11,6 +11,7 @@ compiler:
 
 install:
   - if [ "$CXX" = "g++" ]; then export CXX="g++-4.9" CC="gcc-4.9"; fi
+  - if [ "$CXX" = "clang" ]; then export CXX="clang++-3.5" CC="clang-3.5"; fi
 
 addons:
   apt:
@@ -19,7 +20,7 @@ addons:
     packages:
     - gcc-4.9
     - g++-4.9
-    - clang
+    - clang-3.5
 
 before_install:
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get update -qq; fi

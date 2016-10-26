@@ -122,8 +122,6 @@ endif()
 if(${CMAKE_CXX_COMPILER_ID} STREQUAL GNU)
 
 elseif (${CMAKE_CXX_COMPILER_ID} STREQUAL Clang)
-	# see http://askubuntu.com/questions/523613/upgrade-to-gcc-4-9-broke-clang
-	add_definitions("-stdlib=libc++")
 	
 elseif (${CMAKE_CXX_COMPILER_ID} STREQUAL MSVC)
 	add_definitions("-D_SCL_SECURE_NO_WARNINGS")
