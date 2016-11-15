@@ -423,23 +423,23 @@ void V8DataModel::setEvent(const Event& event) {
 }
 
 Data V8DataModel::getAsData(const std::string& content) {
-    Data d = Data::fromJSON(content);
-    if (!d.empty())
-        return d;
-    
-    std::string trimmed = boost::trim_copy(content);
-    if (trimmed.length() > 0) {
-        if (isNumeric(trimmed.c_str(), 10)) {
-            d = Data(trimmed, Data::INTERPRETED);
-        } else if (trimmed.length() >= 2 &&
-                   ((trimmed[0] == '"' && trimmed[trimmed.length() - 1] == '"') ||
-                    (trimmed[0] == '\'' && trimmed[trimmed.length() - 1] == '\''))) {
-            d = Data(trimmed.substr(1, trimmed.length() - 2), Data::VERBATIM);
-        } else {
-            d = Data(trimmed, Data::INTERPRETED);
-        }
-    }
-    return d;
+	Data d = Data::fromJSON(content);
+	if (!d.empty())
+		return d;
+
+	std::string trimmed = boost::trim_copy(content);
+	if (trimmed.length() > 0) {
+		if (isNumeric(trimmed.c_str(), 10)) {
+			d = Data(trimmed, Data::INTERPRETED);
+		} else if (trimmed.length() >= 2 &&
+		           ((trimmed[0] == '"' && trimmed[trimmed.length() - 1] == '"') ||
+		            (trimmed[0] == '\'' && trimmed[trimmed.length() - 1] == '\''))) {
+			d = Data(trimmed.substr(1, trimmed.length() - 2), Data::VERBATIM);
+		} else {
+			d = Data(trimmed, Data::INTERPRETED);
+		}
+	}
+	return d;
 }
 
 Data V8DataModel::evalAsData(const std::string& content) {

@@ -43,7 +43,7 @@ class DataModelImpl;
  */
 class USCXML_API DataModelCallbacks {
 public:
-    virtual ~DataModelCallbacks() {} ///< silence virtual destructor warning from swig
+	virtual ~DataModelCallbacks() {} ///< silence virtual destructor warning from swig
 	virtual const std::string& getName() = 0;
 	virtual const std::string& getSessionId() = 0;
 	virtual const std::map<std::string, IOProcessor>& getIOProcessors() = 0;
@@ -57,6 +57,7 @@ public:
 	DataModelExtension() : dm(NULL) {}
 	virtual ~DataModelExtension() {}
 	virtual std::string provides() = 0;
+	virtual Data invoke(const std::string& member, const Data& params) = 0;
 	virtual Data getValueOf(const std::string& member) = 0;
 	virtual void setValueOf(const std::string& member, const Data& data) = 0;
 	DataModelImpl* dm;
@@ -117,7 +118,7 @@ public:
 	 * @param expr Anything that possibly evaluates to an enumerable object.
 	 * @return The number of items in the enumerable object.
 	 */
-    virtual uint32_t getLength(const std::string& expr) = 0;
+	virtual uint32_t getLength(const std::string& expr) = 0;
 
 	/**
 	 * Set a given item to the object at a given index for one iteration.

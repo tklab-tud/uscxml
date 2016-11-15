@@ -91,10 +91,10 @@ protected:
 		unsigned char type;
 	};
 
-    class CachedPredicates {
-    public:
-        std::map<const XERCESC_NS::DOMElement*, std::list<XERCESC_NS::DOMElement*> > exitSet;
-    };
+	class CachedPredicates {
+	public:
+		std::map<const XERCESC_NS::DOMElement*, std::list<XERCESC_NS::DOMElement*> > exitSet;
+	};
 
 	virtual void init(XERCESC_NS::DOMElement* scxml);
 
@@ -127,12 +127,12 @@ private:
 	std::list<XERCESC_NS::DOMElement*> getHistoryCompletion(const XERCESC_NS::DOMElement* state);
 	void resortStates(XERCESC_NS::DOMElement* node, const X& xmlPrefix);
 
-    bool conflictsCached(const XERCESC_NS::DOMElement* t1, const XERCESC_NS::DOMElement* t2, const XERCESC_NS::DOMElement* root); ///< overrides implementation Predicates::conflicts for speed
+	bool conflictsCached(const XERCESC_NS::DOMElement* t1, const XERCESC_NS::DOMElement* t2, const XERCESC_NS::DOMElement* root); ///< overrides implementation Predicates::conflicts for speed
 
-    std::list<XERCESC_NS::DOMElement*> getExitSetCached(const XERCESC_NS::DOMElement* transition,
-                                                        const XERCESC_NS::DOMElement* root);
+	std::list<XERCESC_NS::DOMElement*> getExitSetCached(const XERCESC_NS::DOMElement* transition,
+	        const XERCESC_NS::DOMElement* root);
 
-    CachedPredicates _cache;
+	CachedPredicates _cache;
 
 #ifdef USCXML_VERBOSE
 	void printStateNames(const boost::dynamic_bitset<>& bitset);

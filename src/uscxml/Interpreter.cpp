@@ -219,7 +219,7 @@ void Interpreter::setActionLanguage(ActionLanguage actionLanguage) {
 }
 
 void Interpreter::setFactory(Factory* factory) {
-    return _impl->setFactory(factory);
+	return _impl->setFactory(factory);
 }
 
 void Interpreter::addMonitor(InterpreterMonitor* monitor) {
@@ -227,7 +227,7 @@ void Interpreter::addMonitor(InterpreterMonitor* monitor) {
 }
 
 void Interpreter::removeMonitor(InterpreterMonitor* monitor) {
-    return _impl->removeMonitor(monitor);
+	return _impl->removeMonitor(monitor);
 }
 
 std::list<InterpreterIssue> Interpreter::validate() {

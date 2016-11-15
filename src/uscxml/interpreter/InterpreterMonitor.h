@@ -47,13 +47,13 @@ for (auto callback : callbacks) { callback->function(inptr, arg1, arg2); } }
 
 // forward declare
 namespace XERCESC_NS {
-    class DOMElement;
+class DOMElement;
 }
 
 namespace uscxml {
 
 class Interpreter;
-    
+
 class USCXML_API InterpreterMonitor {
 public:
 	InterpreterMonitor() : _copyToInvokers(false) {}

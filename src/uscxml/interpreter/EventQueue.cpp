@@ -39,7 +39,7 @@ void EventQueue::enqueue(const Event& event) {
 	return _impl->enqueue(event);
 }
 void EventQueue::reset() {
-    return _impl->reset();
+	return _impl->reset();
 }
 
 PIMPL_OPERATORS_INHERIT_IMPL(DelayedEventQueue, EventQueue)

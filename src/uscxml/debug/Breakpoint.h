@@ -28,7 +28,7 @@
 
 // forward declare
 namespace XERCESC_NS {
-    class DOMElement;
+class DOMElement;
 }
 
 namespace uscxml {
@@ -76,7 +76,7 @@ public:
 	Subject subject;
 	Action action;
 
-    const XERCESC_NS::DOMElement* element = NULL;
+	const XERCESC_NS::DOMElement* element = NULL;
 
 	std::string invokeId;
 	std::string invokeType;

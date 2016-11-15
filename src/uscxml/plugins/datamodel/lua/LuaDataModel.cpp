@@ -79,12 +79,12 @@ static Data getLuaAsData(lua_State* _luaState, const luabridge::LuaRef& lua) {
 		bool isArray = false;
 		bool isMap = false;
 		for (luabridge::Iterator iter (lua); !iter.isNil(); ++iter) {
-            luabridge::LuaRef luaKey = iter.key();
+			luabridge::LuaRef luaKey = iter.key();
 			luabridge::LuaRef luaVal = *iter;
 			if (luaKey.isString()) {
-                assert(!isArray);
+				assert(!isArray);
 				isMap = true;
-                // luaKey.tostring() is not working?! see issue84
+				// luaKey.tostring() is not working?! see issue84
 				data.compound[luaKey.cast<std::string>()] = getLuaAsData(_luaState, luaVal);
 			} else {
 				assert(!isMap);
@@ -335,23 +335,23 @@ Data LuaDataModel::evalAsData(const std::string& content) {
 			data = getLuaAsData(_luaState, luabridge::LuaRef::fromStack(_luaState, -1));
 		}
 		lua_pop(_luaState, retVals);
-        return data;
+		return data;
 	} catch (ErrorEvent e) {
-    }
-    
-    try {
+	}
+
+	try {
 		// evaluate again without the return()
-        int retVals = luaEval(_luaState, trimmedExpr);
-        
+		int retVals = luaEval(_luaState, trimmedExpr);
+
 		if (retVals == 1) {
 			data = getLuaAsData(_luaState, luabridge::LuaRef::fromStack(_luaState, -1));
-        }
-        lua_pop(_luaState, retVals);
-        return data;
+		}
+		lua_pop(_luaState, retVals);
+		return data;
 
-    } catch (ErrorEvent e) {
-        throw e; // we will assume syntax error and throw
-    }
+	} catch (ErrorEvent e) {
+		throw e; // we will assume syntax error and throw
+	}
 
 	return data;
 }
@@ -470,59 +470,59 @@ void LuaDataModel::assign(const std::string& location, const Data& data) {
 		int retVals = luaEval(_luaState, location + " = " + location);
 		lua_pop(_luaState, retVals);
 
-        std::list<std::pair<std::string, bool> > idPath;
-        size_t start = 0;
-        for (size_t i = 0; i < location.size(); i++) {
-            if (location[i] == '.' || location[i] == '[') {
-                idPath.push_back(std::make_pair(location.substr(start, i - start), false));
-                start = i + 1;
-            } else if (location[i] == ']') {
-                idPath.push_back(std::make_pair(location.substr(start, i - start), true));
-                start = i + 1;
-            }
-        }
-        if (start < location.size())
-            idPath.push_back(std::make_pair(location.substr(start, location.size() - start), false));
+		std::list<std::pair<std::string, bool> > idPath;
+		size_t start = 0;
+		for (size_t i = 0; i < location.size(); i++) {
+			if (location[i] == '.' || location[i] == '[') {
+				idPath.push_back(std::make_pair(location.substr(start, i - start), false));
+				start = i + 1;
+			} else if (location[i] == ']') {
+				idPath.push_back(std::make_pair(location.substr(start, i - start), true));
+				start = i + 1;
+			}
+		}
+		if (start < location.size())
+			idPath.push_back(std::make_pair(location.substr(start, location.size() - start), false));
 
-        if (idPath.size() == 0)
-            return;
-        
-        luabridge::LuaRef lua = getDataAsLua(_luaState, data);
+		if (idPath.size() == 0)
+			return;
 
-        if (idPath.size() == 1) {
-            // trivial case where we reference a simple toplevel identifier
-            luabridge::setGlobal(_luaState, lua, location.c_str());
+		luabridge::LuaRef lua = getDataAsLua(_luaState, data);
 
-        } else {
-            auto globalId = idPath.front();
-            idPath.pop_front();
-            
-            auto field = idPath.back();
-            idPath.pop_back();
-            
-            luabridge::LuaRef topValue = luabridge::getGlobal(_luaState, globalId.first.c_str());
-            luabridge::LuaRef value = topValue;
-            
-            for (auto ident : idPath) {
-                if (!value.isTable())
-                    value = luabridge::newTable(_luaState);
+		if (idPath.size() == 1) {
+			// trivial case where we reference a simple toplevel identifier
+			luabridge::setGlobal(_luaState, lua, location.c_str());
 
-                if (ident.second) {
-                    luabridge::LuaRef tmp = value[strTo<long>(ident.first)];
-                } else {
-                    luabridge::LuaRef tmp = value[ident];
-                    value = tmp;
-                }
-            }
-            if (field.second) {
-                value[strTo<long>(field.first)] = lua;
-            } else {
-                value[field.first] = lua;
-            }
+		} else {
+			auto globalId = idPath.front();
+			idPath.pop_front();
 
-        }
+			auto field = idPath.back();
+			idPath.pop_back();
 
-        
+			luabridge::LuaRef topValue = luabridge::getGlobal(_luaState, globalId.first.c_str());
+			luabridge::LuaRef value = topValue;
+
+			for (auto ident : idPath) {
+				if (!value.isTable())
+					value = luabridge::newTable(_luaState);
+
+				if (ident.second) {
+					luabridge::LuaRef tmp = value[strTo<long>(ident.first)];
+				} else {
+					luabridge::LuaRef tmp = value[ident];
+					value = tmp;
+				}
+			}
+			if (field.second) {
+				value[strTo<long>(field.first)] = lua;
+			} else {
+				value[field.first] = lua;
+			}
+
+		}
+
+
 //        std::cout << Data::toJSON(evalAsData(location)) << std::endl;
 	}
 }

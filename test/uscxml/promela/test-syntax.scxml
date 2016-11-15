@@ -1,0 +1,132 @@
+<scxml datamodel="promela" binding="early" >
+  <!--
+    promela-event-source:
+      foo.bar
+      foo.baz foo.foo
+      error.communication 
+      error.platform 
+      err.foo
+  -->
+  <datamodel>
+    <data>
+      bool b1;
+    </data>
+    <data>
+      int fooSum = 0;
+      int fooIndex = 0;
+      int fooItem;
+      int foos[10];
+    </data>
+    <data>
+      bool b2, b3, b4;
+    </data>
+    <data>
+      bool b5, b6 = 3 + 4, b7, b8, b9;
+    </data>
+    <data>
+      bool c1; bool c2; bool c3; bool c4;
+      bool c5; bool c6; bool c7, c8 = 4 + 6, c9;
+    </data>
+    <data>
+      byte state = 1;
+      mtype = {
+        FATAL, NON_FATAL, COMPLETE, INCOMPLETE,
+        red, white, blue
+      }
+    </data>
+    <data>
+      bool busy[3];
+      bool lazy[4];
+    </data>
+    <data>
+      bool v3, v2 = 1;
+    </data>
+    
+  </datamodel>
+  <state id="init">
+		<invoke type="xhtml" id="xhtml1" src="resources/gui.xhtml">
+		  <!-- #promela-event-source:
+		    foo.bar
+		    foo.baz foo.foo
+		    error.communication 
+		    error.platform 
+		    err.foo
+		  -->
+		</invoke>
+		
+    <invoke type="scxml">
+      <!--
+        promela-event-source:
+        innerFoo
+      -->
+      
+      <final id="stop">
+        <onentry>
+          <send target="#_parent" event="innerFoo" />
+        </onentry>
+      </final>
+    </invoke>
+    <onentry>
+      <!--
+        #promela-inline:
+        progress: skip;
+      -->
+      <raise event="foo.bar" />
+      <script>
+        busy[4 - 3] = 1;
+      </script>
+      <log label="foos" expr="foos" />
+      <foreach item="fooItem" array="foos" index="fooIndex">
+        <script>
+          foos[fooIndex] = fooIndex;
+        </script>
+      </foreach>
+      <log label="foos" expr="foos" />
+      <foreach item="fooItem" array="foos" index="fooIndex">
+        <log label="fooItem" expr="fooItem" />
+        <script>
+          fooSum = fooSum + fooItem;
+        </script>
+      </foreach>
+      <log label="fooSum" expr="fooSum" />
+      <if cond="b1==0">
+        <script>
+          b2=1; b3=1;
+        </script>
+      <elseif cond="b1==1" />
+        <script>
+          b2=1; b3=1;
+        </script>
+      <else />
+        <script>
+          b2=1; b3=1;
+        </script>
+      </if>
+      <script>
+        v2=1; v3=1;
+      </script>
+    </onentry>
+    <transition target="pass" cond="v2==v3 &amp;&amp; busy[1] == 1" event="foo.bar">
+      <!--
+        promela-inline:
+        progress: skip;
+      -->
+    </transition>
+    <transition target="fail" event="*">
+      <!--
+        promela-inline:
+        progress: skip;
+      -->
+    </transition>
+  </state>
+  <final id="pass">
+    <onentry>
+      <log label="Outcome" expr="'pass'"/>
+    </onentry>
+  </final>
+  <final id="fail">
+    <onentry>
+      <log label="Outcome" expr="'fail'"/>
+    </onentry>
+  </final>
+</scxml>

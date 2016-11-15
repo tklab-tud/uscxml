@@ -50,9 +50,8 @@ class USCXML_API InterpreterImpl :
 	public MicroStepCallbacks,
 	public DataModelCallbacks,
 	public ContentExecutorCallbacks,
-    public DelayedEventQueueCallbacks,
-    public std::enable_shared_from_this<InterpreterImpl>
-{
+	public DelayedEventQueueCallbacks,
+	public std::enable_shared_from_this<InterpreterImpl> {
 public:
 	enum Binding {
 		EARLY = 0,
@@ -77,13 +76,13 @@ public:
 
 	virtual void reset() {///< Reset state machine
 		if (_microStepper)
-            _microStepper.reset();
-        
+			_microStepper.reset();
+
 		_isInitialized = false;
 		_state = USCXML_INSTANTIATED;
 //        _dataModel.reset();
-        if (_delayQueue)
-            _delayQueue.reset();
+		if (_delayQueue)
+			_delayQueue.reset();
 //        _contentExecutor.reset();
 	}
 
@@ -101,9 +100,9 @@ public:
 		_monitors.insert(monitor);
 	}
 
-    void removeMonitor(InterpreterMonitor* monitor) {
-        _monitors.erase(monitor);
-    }
+	void removeMonitor(InterpreterMonitor* monitor) {
+		_monitors.erase(monitor);
+	}
 
 	/**
 	 MicrostepCallbacks
@@ -136,13 +135,13 @@ public:
 		_execContent.uninvoke(invoke);
 	}
 
-    virtual std::set<InterpreterMonitor*> getMonitors() {
+	virtual std::set<InterpreterMonitor*> getMonitors() {
 		return _monitors;
 	}
 
-    virtual Interpreter getInterpreter() {
-        return Interpreter(shared_from_this());
-    }
+	virtual Interpreter getInterpreter() {
+		return Interpreter(shared_from_this());
+	}
 
 	/**
 	 DataModelCallbacks
@@ -230,14 +229,14 @@ public:
 		_execContent = al.execContent;
 		_microStepper = al.microStepper;
 		_dataModel = al.dataModel;
-        _internalQueue = al.internalQueue;
-        _externalQueue = al.externalQueue;
-        _delayQueue = al.delayedQueue;
+		_internalQueue = al.internalQueue;
+		_externalQueue = al.externalQueue;
+		_delayQueue = al.delayedQueue;
 	}
 
-    void setFactory(Factory* factory) {
-        _factory = factory;
-    }
+	void setFactory(Factory* factory) {
+		_factory = factory;
+	}
 
 	static std::map<std::string, std::weak_ptr<InterpreterImpl> > getInstances();
 
@@ -270,9 +269,9 @@ protected:
 	friend class InterpreterIssue;
 	friend class TransformerImpl;
 	friend class USCXMLInvoker;
-    friend class SCXMLIOProcessor;
-    friend class DebugSession;
-    friend class Debugger;
+	friend class SCXMLIOProcessor;
+	friend class DebugSession;
+	friend class Debugger;
 
 	X _xmlPrefix;
 	X _xmlNS;
@@ -297,7 +296,7 @@ protected:
 	std::map<std::string, IOProcessor> _ioProcs;
 	std::map<std::string, Invoker> _invokers;
 	std::set<std::string> _autoForwarders;
-    std::set<InterpreterMonitor*> _monitors;
+	std::set<InterpreterMonitor*> _monitors;
 
 private:
 	void setupDOM();

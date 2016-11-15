@@ -1,0 +1,45 @@
+<scxml datamodel="promela">
+  <!--
+    An auto event source will raise all events that enable transitions. If a 
+    transition depends on a data field, these will have to be specified explicitly.
+
+    promela-event-all-but
+    [ "error.bar" ]
+    -->
+    <!-- this will become a PROMELA_NIL -->
+  <state id="s0">
+    <!--
+      if _x.states[s0]
+      
+      These specialized events will only be dispatched in s0
+      promela-event
+      [ {"name": "e1", 
+         "data": { "foo": "some string" }},
+        {"name": "e1", 
+         "data": { "bar": 12 }} 
+      ]
+      -->
+    <transition event="e1" cond="_event.data.foo == 'some string'" />
+    <transition event="error.foo" cond="_event.data.foo == 'some string'" />
+    <transition event="error.bar.*" />
+    <transition event="error.baz.*" target="s1" />
+    <transition event="e1" cond="_event.data.bar == 12" />
+    <invoke type="foo">
+      <!-- 
+      promela-event
+      [ {"name": "inv1", 
+         "data": { "foo": "something else" }},
+        {"name": "inv2", 
+         "data": { "baz": 23 }} 
+      ]
+      -->
+    </invoke>
+  </state>
+  <state id="s1">
+    <!-- This transition will never be enabled -->
+    <transition event="e1" cond="_event.data.bar == 23" />
+    <transition event="e3" cond="bar == 23" />
+    <transition event="e1" />
+    <transition event="e2" />
+  </state>
+</scxml>

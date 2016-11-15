@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- test that src content can be used to assign a value to a var. Edit
+test552.txt to have a value that's legal for the datamodel in question -->
+<scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" initial="s0" version="1.0" datamodel="promela">
+  <datamodel>
+    <data id="Var1" type="int" src="file:test552.txt"/>
+  </datamodel>
+  <state id="s0">
+    <transition cond="Var1" target="pass"/>
+    <transition target="fail"/>
+  </state>
+  <final xmlns:scxml="http://www.w3.org/2005/07/scxml" id="pass">
+    <onentry>
+      <log label="Outcome" expr="'pass'"/>
+    </onentry>
+  </final>
+  <final xmlns:scxml="http://www.w3.org/2005/07/scxml" id="fail">
+    <onentry>
+      <log label="Outcome" expr="'fail'"/>
+    </onentry>
+  </final>
+</scxml>

@@ -1,7 +1,7 @@
 package org.uscxml.apache.commons.scxml2;
 
 import org.uscxml.Factory;
-import org.uscxml.dm.jexl.JEXLDataModel;
+import org.uscxml.dm.jexl.JexlDataModel;
 
 public class JexlEvaluator extends Evaluator {
 
@@ -13,7 +13,7 @@ public class JexlEvaluator extends Evaluator {
 	public Context newContext(Object object) {
 		// TODO Auto-generated method stub
 		Context ctx = new Context();
-		ctx.dm = new JEXLDataModel(); 
+		ctx.dm = new JexlDataModel(); 
 		return ctx;
 	}
 }

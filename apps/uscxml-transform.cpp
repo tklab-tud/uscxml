@@ -3,6 +3,7 @@
 #include "uscxml/util/String.h"
 #include "uscxml/transform/ChartToC.h"
 #include "uscxml/transform/ChartToVHDL.h"
+#include "uscxml/transform/ChartToPromela.h"
 
 #include <boost/algorithm/string.hpp>
 
@@ -29,7 +30,7 @@ void printUsageAndExit(const char* progName) {
 	printf("%s version " USCXML_VERSION " (" CMAKE_BUILD_TYPE " build - " CMAKE_COMPILER_STRING ")\n", progStr.c_str());
 	printf("Usage\n");
 	printf("\t%s", progStr.c_str());
-	printf(" [-t c|pml|flat|min|tex] [-a {OPTIONS}] [-v] [-lN]");
+	printf(" [-t c|pml|flat|min] [-a {OPTIONS}] [-v] [-lN]");
 #ifdef BUILD_AS_PLUGINS
 	printf(" [-p pluginPath]");
 #endif
@@ -41,7 +42,6 @@ void printUsageAndExit(const char* progName) {
 	printf("\t-t vhdl        : convert to VHDL hardware description\n");
 	printf("\t-t flat        : flatten to SCXML state-machine\n");
 	printf("\t-t min         : minimize SCXML state-chart\n");
-	printf("\t-t tex         : write global state transition table as tex file\n");
 	printf("\t-a {OPTIONS}   : annotate SCXML elements with comma seperated options\n");
 	printf("\t    priority     - transitions with their priority for transition selection\n");
 	printf("\t    exitset      - annotate all transitions with their exit sets\n");
@@ -201,7 +201,6 @@ int main(int argc, char** argv) {
 	        outType != "c" &&
 	        outType != "vhdl" &&
 	        outType != "min" &&
-	        outType != "tex" &&
 	        std::find(options.begin(), options.end(), "priority") == options.end() &&
 	        std::find(options.begin(), options.end(), "domain") == options.end() &&
 	        std::find(options.begin(), options.end(), "conflicts") == options.end() &&
@@ -303,17 +302,17 @@ int main(int argc, char** argv) {
 			exit(EXIT_SUCCESS);
 		}
 
-//		if (outType == "pml") {
-//			if (outputFile.size() == 0 || outputFile == "-") {
-//				ChartToPromela::transform(interpreter).writeTo(std::cout);
-//			} else {
-//				std::ofstream outStream;
-//				outStream.open(outputFile.c_str());
-//				ChartToPromela::transform(interpreter).writeTo(outStream);
-//				outStream.close();
-//			}
-//			exit(EXIT_SUCCESS);
-//		}
+		if (outType == "pml") {
+			if (outputFile.size() == 0 || outputFile == "-") {
+				ChartToPromela::transform(interpreter).writeTo(std::cout);
+			} else {
+				std::ofstream outStream;
+				outStream.open(outputFile.c_str());
+				ChartToPromela::transform(interpreter).writeTo(outStream);
+				outStream.close();
+			}
+			exit(EXIT_SUCCESS);
+		}
 
 //		if (outType == "tex") {
 //			if (outputFile.size() == 0 || outputFile == "-") {

@@ -39,7 +39,7 @@ InterpreterIssue::InterpreterIssue(const std::string& msg, DOMNode* node, IssueS
 
 // find all elements in the SCXML namespace in one traversal
 void assembleNodeSets(const std::string nsPrefix, DOMElement* node, std::map<std::string, std::list<DOMElement*> >& sets) {
-    for (auto childElem = node->getFirstElementChild(); childElem; childElem = childElem->getNextElementSibling()) {
+	for (auto childElem = node->getFirstElementChild(); childElem; childElem = childElem->getNextElementSibling()) {
 
 		if (TAGNAME(childElem).find(nsPrefix) == 0) {
 			// correct namespace, insert via localname
@@ -57,7 +57,7 @@ std::list<std::set<const DOMElement* > > getAllConfigurations(const DOMElement* 
 
 	std::cout << *root;
 
-    for (auto childElem = root->getFirstElementChild(); childElem; childElem = childElem->getNextElementSibling()) {
+	for (auto childElem = root->getFirstElementChild(); childElem; childElem = childElem->getNextElementSibling()) {
 		std::cout << *childElem;
 
 		if (XMLString::compareIString(childElem->getTagName(), X(nsPrefix + "state")) == 0 ||

@@ -244,7 +244,7 @@ bool Breakpoint::matches(Interpreter interpreter, const Breakpoint& other) const
 		return InterpreterImpl::isMember(other.element, nodes);
 	}
 #endif
-    
+
 	if(transSourceId.length() > 0 && transSourceId != other.transSourceId) {
 		return false;
 	}
@@ -255,7 +255,7 @@ bool Breakpoint::matches(Interpreter interpreter, const Breakpoint& other) const
 
 	if (condition.length() > 0) {
 		try {
-            interpreter.getImpl()->isTrue(condition);
+			interpreter.getImpl()->isTrue(condition);
 		} catch (...) {
 			return false;
 		}

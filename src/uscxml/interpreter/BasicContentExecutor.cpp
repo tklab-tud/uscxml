@@ -210,7 +210,7 @@ void BasicContentExecutor::processCancel(XERCESC_NS::DOMElement* content) {
 void BasicContentExecutor::processIf(XERCESC_NS::DOMElement* content) {
 	bool blockIsTrue = _callbacks->isTrue(ATTR(content, "cond"));
 
-    for (auto childElem = content->getFirstElementChild(); childElem; childElem = childElem->getNextElementSibling()) {
+	for (auto childElem = content->getFirstElementChild(); childElem; childElem = childElem->getNextElementSibling()) {
 		if (iequals(TAGNAME(childElem), XML_PREFIX(content).str() + "elseif")) {
 			if (blockIsTrue) {
 				// last block was true, break here
@@ -252,7 +252,7 @@ void BasicContentExecutor::processForeach(XERCESC_NS::DOMElement* content) {
 	for (uint32_t iteration = 0; iteration < iterations; iteration++) {
 		_callbacks->setForeach(item, array, index, iteration);
 
-        for (auto childElem = content->getFirstElementChild(); childElem; childElem = childElem->getNextElementSibling()) {
+		for (auto childElem = content->getFirstElementChild(); childElem; childElem = childElem->getNextElementSibling()) {
 			process(childElem, XML_PREFIX(content));
 		}
 	}
@@ -285,7 +285,7 @@ void BasicContentExecutor::process(XERCESC_NS::DOMElement* block, const X& xmlPr
 	        iequals(tagName, xmlPrefix.str() + "transition")) {
 
 		try {
-            for (auto childElem = block->getFirstElementChild(); childElem; childElem = childElem->getNextElementSibling()) {
+			for (auto childElem = block->getFirstElementChild(); childElem; childElem = childElem->getNextElementSibling()) {
 				// process any child eleents
 				process(childElem, xmlPrefix);
 			}
@@ -404,7 +404,7 @@ void BasicContentExecutor::invoke(XERCESC_NS::DOMElement* element) {
 				_callbacks->assign(ATTR(element, "idlocation"), Data(invokeEvent.invokeid, Data::VERBATIM));
 			}
 		}
-        
+
 		// we need the invokeid to uninvoke
 		char* invokeId = (char*)malloc(invokeEvent.invokeid.size() + 1);
 		memcpy(invokeId, invokeEvent.invokeid.c_str(), invokeEvent.invokeid.size());
@@ -477,7 +477,7 @@ void BasicContentExecutor::uninvoke(XERCESC_NS::DOMElement* invoke) {
 	_callbacks->uninvoke(invokeId);
 	USCXML_MONITOR_CALLBACK2(_callbacks->getMonitors(), afterUninvoking, invoke, invokeId);
 
-    invoke->setUserData(X("invokeid"), NULL, NULL);
+	invoke->setUserData(X("invokeid"), NULL, NULL);
 	free(invokeId);
 }
 
@@ -558,7 +558,7 @@ Data BasicContentExecutor::elementAsData(XERCESC_NS::DOMElement* element) {
 	if (HAS_ATTR(element, "expr")) {
 //        return _callbacks->evalAsData(ATTR(element, "expr"));
 #if 0
-        if (LOCALNAME(element) == "content") {
+		if (LOCALNAME(element) == "content") {
 			// test 528
 			return _callbacks->evalAsData(ATTR(element, "expr"));
 		} else {
@@ -566,7 +566,7 @@ Data BasicContentExecutor::elementAsData(XERCESC_NS::DOMElement* element) {
 			return Data(ATTR(element, "expr"), Data::INTERPRETED);
 		}
 #endif
-        return _callbacks->evalAsData(ATTR(element, "expr"));
+		return _callbacks->evalAsData(ATTR(element, "expr"));
 	}
 
 	if (HAS_ATTR(element, "src")) {
@@ -582,7 +582,7 @@ Data BasicContentExecutor::elementAsData(XERCESC_NS::DOMElement* element) {
 		std::string content = url.getInContent();
 
 		// make an attempt to parse as XML
-        try {
+		try {
 			XERCESC_NS::XercesDOMParser parser;
 			parser.setValidationScheme(XERCESC_NS::XercesDOMParser::Val_Never);
 			parser.setDoNamespaces(true);
@@ -600,8 +600,8 @@ Data BasicContentExecutor::elementAsData(XERCESC_NS::DOMElement* element) {
 			XERCESC_NS::DOMDocument* doc = parser.adoptDocument();
 			d.adoptedDoc = std::shared_ptr<XERCESC_NS::DOMDocument>(doc);
 			d.node = doc->getDocumentElement();
-            
-            return d;
+
+			return d;
 
 		} catch (...) {
 			// just ignore and return as an interpreted string below

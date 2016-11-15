@@ -58,7 +58,7 @@ protected:
 	void writeFSM(std::ostream& stream);
 	void writeCharArrayInitList(std::ostream& stream, const std::string& boolString);
 
-	void writeExecContent(std::ostream& stream, const XERCESC_NS::DOMNode* node, int indent = 0);
+	void writeExecContent(std::ostream& stream, const XERCESC_NS::DOMNode* node, size_t indent = 0);
 
 	void resortStates(XERCESC_NS::DOMNode* node);
 	void setHistoryCompletion();

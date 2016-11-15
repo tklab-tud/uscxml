@@ -2,8 +2,8 @@
 %rename(ActionLanguage) WrappedActionLanguage;
 %rename(NativeDataModel) DataModel;
 %rename(DataModel) WrappedDataModel;
-%rename(NativeDataModelExtension) DataModelExtension;
-%rename(DataModelExtension) WrappedDataModelExtension;
+//%rename(NativeDataModelExtension) DataModelExtension;
+//%rename(DataModelExtension) WrappedDataModelExtension;
 %rename(NativeExecutableContent) ExecutableContent;
 %rename(ExecutableContent) WrappedExecutableContent;
 %rename(NativeInvoker) Invoker;

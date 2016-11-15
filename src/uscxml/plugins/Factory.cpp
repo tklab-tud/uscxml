@@ -56,6 +56,10 @@
 #   include "uscxml/plugins/datamodel/c89/C89DataModel.h"
 #endif
 
+#ifdef WITH_DM_PROMELA
+#   include "uscxml/plugins/datamodel/promela/PromelaDataModel.h"
+#endif
+
 
 #ifdef WITH_INV_SCXML
 #   include "uscxml/plugins/invoker/scxml/USCXMLInvoker.h"
@@ -89,66 +93,73 @@ std::string Factory::getDefaultPluginPath() {
 void Factory::registerPlugins() {
 
 #ifdef WITH_IOPROC_SCXML
-    {
-        SCXMLIOProcessor* ioProcessor = new SCXMLIOProcessor();
-        registerIOProcessor(ioProcessor);
-    }
+	{
+		SCXMLIOProcessor* ioProcessor = new SCXMLIOProcessor();
+		registerIOProcessor(ioProcessor);
+	}
 #endif
 
 #ifdef WITH_IOPROC_BASICHTTP
-    {
-        BasicHTTPIOProcessor* ioProcessor = new BasicHTTPIOProcessor();
-        registerIOProcessor(ioProcessor);
-    }
+	{
+		BasicHTTPIOProcessor* ioProcessor = new BasicHTTPIOProcessor();
+		registerIOProcessor(ioProcessor);
+	}
 #endif
 
-    
+
 #ifdef WITH_DM_ECMA_V8
-    {
-        V8DataModel* dataModel = new V8DataModel();
-        registerDataModel(dataModel);
-    }
+	{
+		V8DataModel* dataModel = new V8DataModel();
+		registerDataModel(dataModel);
+	}
 #endif
 
 #ifdef WITH_DM_ECMA_JSC
-    {
-        JSCDataModel* dataModel = new JSCDataModel();
-        registerDataModel(dataModel);
-    }
+	{
+		JSCDataModel* dataModel = new JSCDataModel();
+		registerDataModel(dataModel);
+	}
 #endif
- 
+
 #ifdef WITH_DM_LUA
-    {
-        LuaDataModel* dataModel = new LuaDataModel();
-        registerDataModel(dataModel);
-    }
+	{
+		LuaDataModel* dataModel = new LuaDataModel();
+		registerDataModel(dataModel);
+	}
 #endif
 
 #ifdef WITH_DM_C89
-    {
-        C89DataModel* dataModel = new C89DataModel();
-        registerDataModel(dataModel);
-    }
+	{
+		C89DataModel* dataModel = new C89DataModel();
+		registerDataModel(dataModel);
+	}
 #endif
 
-    {
-        NULLDataModel* dataModel = new NULLDataModel();
-        registerDataModel(dataModel);
-    }
+#ifdef WITH_DM_PROMELA
+	{
+		PromelaDataModel* dataModel = new PromelaDataModel();
+		registerDataModel(dataModel);
+	}
+#endif
 
-    
+	{
+		NULLDataModel* dataModel = new NULLDataModel();
+		registerDataModel(dataModel);
+	}
+
+
 #ifdef WITH_INV_SCXML
-    {
-        USCXMLInvoker* invoker = new USCXMLInvoker();
-        registerInvoker(invoker);
-    }
+	{
+		USCXMLInvoker* invoker = new USCXMLInvoker();
+		registerInvoker(invoker);
+	}
 #endif
-    
+
 #ifdef WITH_INV_DIRMON
-    {
-        DirMonInvoker* inv = new DirMonInvoker();
-        registerInvoker(inv);
-    }
+	{
+		DirMonInvoker* inv = new DirMonInvoker();
+		registerInvoker(inv);
+	}
 #endif
 
 }

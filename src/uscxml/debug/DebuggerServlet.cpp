@@ -219,10 +219,10 @@ void DebuggerServlet::processDisconnect(const HTTPServer::Request& request) {
 void DebuggerServlet::processListSessions(const HTTPServer::Request& request) {
 	Data replyData;
 
-    std::map<std::string, std::weak_ptr<InterpreterImpl> > instances = InterpreterImpl::getInstances();
-    for (auto weakInstance : instances) {
+	std::map<std::string, std::weak_ptr<InterpreterImpl> > instances = InterpreterImpl::getInstances();
+	for (auto weakInstance : instances) {
 
-        std::shared_ptr<InterpreterImpl> instance = weakInstance.second.lock();
+		std::shared_ptr<InterpreterImpl> instance = weakInstance.second.lock();
 		if (instance) {
 			Data sessionData;
 			sessionData.compound["name"] = Data(instance->getName(), Data::VERBATIM);

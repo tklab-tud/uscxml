@@ -34,7 +34,7 @@ public:
 	class LogMessage : public Data {
 	public:
 #if 0
-        LogMessage(google::LogSeverity severity, const char* full_filename,
+		LogMessage(google::LogSeverity severity, const char* full_filename,
 		           const char* base_filename, int line,
 		           const struct ::tm* tm_time,
 		           std::string message, std::string formatted) {
@@ -86,13 +86,13 @@ public:
 //	void processPoll(const HTTPServer::Request& request);
 
 	// Logsink
-    /**
+	/**
 	virtual void send(google::LogSeverity severity, const char* full_filename,
 	                  const char* base_filename, int line,
 	                  const struct ::tm* tm_time,
 	                  const char* message, size_t message_len);
-*/
-    void handle(const el::LogDispatchData* data);
+	*/
+	void handle(const el::LogDispatchData* data);
 
 protected:
 	void serverPushData(std::shared_ptr<DebugSession>);

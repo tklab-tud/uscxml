@@ -1,0 +1,16 @@
+<scxml datamodel="promela">
+  <!--
+		#promela-event-source:
+			toggle.foo
+	-->
+	<datamodel>
+		<data id="foo" expr="0" type="bit" />
+	</datamodel>
+	<parallel id="main">
+		<state id="toggleFoo">
+			<transition event="toggle.foo">
+				<script>foo = !foo;</script>
+			</transition>
+		</state>
+	</parallel>
+</scxml>

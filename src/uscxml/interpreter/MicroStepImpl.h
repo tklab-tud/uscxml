@@ -35,7 +35,7 @@
 namespace uscxml {
 
 class InterpreterMonitor;
-    
+
 /**
  * @ingroup microstep
  * @ingroup callback
@@ -61,7 +61,7 @@ public:
 
 	/** Monitoring */
 	virtual std::set<InterpreterMonitor*> getMonitors() = 0;
-    virtual Interpreter getInterpreter() = 0;
+	virtual Interpreter getInterpreter() = 0;
 };
 
 /**

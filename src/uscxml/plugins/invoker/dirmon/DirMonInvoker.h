@@ -107,9 +107,9 @@ public:
 	}
 
 	virtual Data getDataModelVariables();
-    virtual void eventFromSCXML(const Event& event);
-    virtual void invoke(const std::string& source, const Event& invokeEvent);
-    virtual void uninvoke();
+	virtual void eventFromSCXML(const Event& event);
+	virtual void invoke(const std::string& source, const Event& invokeEvent);
+	virtual void uninvoke();
 
 	virtual void handleChanges(DirectoryWatch::Action action, const std::string dir, const std::string file, struct stat fileStat);
 

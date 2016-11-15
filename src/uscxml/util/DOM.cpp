@@ -236,13 +236,13 @@ void DOMUtils::inPostFixOrder(const std::set<std::string>& elements,
 	if (root == NULL)
 		return;
 
-    for (auto childElem = root->getFirstElementChild(); childElem; childElem = childElem->getNextElementSibling()) {
+	for (auto childElem = root->getFirstElementChild(); childElem; childElem = childElem->getNextElementSibling()) {
 		if (!includeEmbeddedDoc && LOCALNAME(childElem) == "scxml")
 			continue;
 		inPostFixOrder(elements, childElem, includeEmbeddedDoc, nodes);
 
 	}
-    for (auto childElem = root->getFirstElementChild(); childElem; childElem = childElem->getNextElementSibling()) {
+	for (auto childElem = root->getFirstElementChild(); childElem; childElem = childElem->getNextElementSibling()) {
 		if (!includeEmbeddedDoc && TAGNAME(childElem) == XML_PREFIX(root).str() + "scxml")
 			continue;
 
@@ -271,14 +271,14 @@ void DOMUtils::inDocumentOrder(const std::set<std::string>& elements,
 		nodes.push_back((DOMElement*)root);
 	}
 
-    /// @todo: item from getChildNodes is O(N)!
-    DOMElement* child = root->getFirstElementChild();
-    while(child) {
-        if (includeEmbeddedDoc || TAGNAME(child) != XML_PREFIX(root).str() + "scxml") {
-            inDocumentOrder(elements, child, includeEmbeddedDoc, nodes);
-        }
+	/// @todo: item from getChildNodes is O(N)!
+	DOMElement* child = root->getFirstElementChild();
+	while(child) {
+		if (includeEmbeddedDoc || TAGNAME(child) != XML_PREFIX(root).str() + "scxml") {
+			inDocumentOrder(elements, child, includeEmbeddedDoc, nodes);
+		}
 
-        child = child->getNextElementSibling();
+		child = child->getNextElementSibling();
 	}
 }
 
@@ -343,7 +343,7 @@ std::list<DOMElement*> DOMUtils::filterChildElements(const std::string& tagName,
 	if (!node)
 		return filteredChildElems;
 
-    for (auto childElem = node->getFirstElementChild(); childElem; childElem = childElem->getNextElementSibling()) {
+	for (auto childElem = node->getFirstElementChild(); childElem; childElem = childElem->getNextElementSibling()) {
 		//		std::cerr << TAGNAME(childs.item(i)) << std::endl;
 		if(iequals(TAGNAME(childElem), tagName)) {
 			filteredChildElems.push_back((DOMElement*)childElem);
@@ -379,7 +379,7 @@ std::list<DOMNode*> DOMUtils::filterChildType(const DOMNode::NodeType type,
 	if (!node)
 		return filteredChildTypes;
 
-    for (auto child = node->getFirstChild(); child; child = child->getNextSibling()) {
+	for (auto child = node->getFirstChild(); child; child = child->getNextSibling()) {
 		if (child->getNodeType() == type)
 			filteredChildTypes.push_back(child);
 		if (recurse) {

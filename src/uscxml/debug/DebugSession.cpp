@@ -74,21 +74,21 @@ void DebugSession::checkBreakpoints(const std::list<Breakpoint> qualifiedBreakpo
 void DebugSession::breakExecution(Data replyData) {
 	std::lock_guard<std::recursive_mutex> lock(_mutex);
 
-    std::list<XERCESC_NS::DOMElement*> configuration = _interpreter.getConfiguration();
-    for (auto state : configuration) {
-        if (HAS_ATTR(state, "id")) {
-            replyData.compound["activeStates"].array.push_back(Data(ATTR(state, "id"), Data::VERBATIM));
-            if (isAtomic(state)) {
-                replyData.compound["basicStates"].array.push_back(Data(ATTR(state, "id"), Data::VERBATIM));
-            }
-        }
-    }
+	std::list<XERCESC_NS::DOMElement*> configuration = _interpreter.getConfiguration();
+	for (auto state : configuration) {
+		if (HAS_ATTR(state, "id")) {
+			replyData.compound["activeStates"].array.push_back(Data(ATTR(state, "id"), Data::VERBATIM));
+			if (isAtomic(state)) {
+				replyData.compound["basicStates"].array.push_back(Data(ATTR(state, "id"), Data::VERBATIM));
+			}
+		}
+	}
 
 	replyData.compound["replyType"] = Data("breakpoint", Data::VERBATIM);
 	_debugger->pushData(shared_from_this(), replyData);
-    
-    // wait for resume from the client
-    _resumeCond.wait(_mutex);
+
+	// wait for resume from the client
+	_resumeCond.wait(_mutex);
 }
 
 Data DebugSession::debugPrepare(const Data& data) {
@@ -104,23 +104,23 @@ Data DebugSession::debugPrepare(const Data& data) {
 
 	_isAttached = false;
 
-    try {
-        if (data.hasKey("xml")) {
-            _interpreter = Interpreter::fromXML(data.at("xml").atom, (data.hasKey("url") ? data.at("url").atom : ""));
-        } else if (data.hasKey("url")) {
-            _interpreter = Interpreter::fromURL(data.at("url").atom);
-        } else {
-            _interpreter = Interpreter();
-        }
-    } catch(ErrorEvent e) {
-        std::cerr << e;
-    } catch(...) {}
-    
+	try {
+		if (data.hasKey("xml")) {
+			_interpreter = Interpreter::fromXML(data.at("xml").atom, (data.hasKey("url") ? data.at("url").atom : ""));
+		} else if (data.hasKey("url")) {
+			_interpreter = Interpreter::fromURL(data.at("url").atom);
+		} else {
+			_interpreter = Interpreter();
+		}
+	} catch(ErrorEvent e) {
+		std::cerr << e;
+	} catch(...) {}
+
 	if (_interpreter) {
 		// register ourself as a monitor
 		_interpreter.addMonitor(_debugger);
 		_debugger->attachSession(_interpreter.getImpl().get(), shared_from_this());
-        
+
 		replyData.compound["status"] = Data("success", Data::VERBATIM);
 	} else {
 		replyData.compound["status"] = Data("failure", Data::VERBATIM);
@@ -143,8 +143,8 @@ Data DebugSession::debugAttach(const Data& data) {
 	bool interpreterFound = false;
 
 	// find interpreter for sessionid
-    std::map<std::string, std::weak_ptr<InterpreterImpl> > instances = InterpreterImpl::getInstances();
-    for (auto weakInstance : instances) {
+	std::map<std::string, std::weak_ptr<InterpreterImpl> > instances = InterpreterImpl::getInstances();
+	for (auto weakInstance : instances) {
 
 		std::shared_ptr<InterpreterImpl> instance = weakInstance.second.lock();
 		if (instance && instance->getSessionId() == interpreterId) {
@@ -185,8 +185,8 @@ Data DebugSession::debugStart(const Data& data) {
 		replyData.compound["reason"] = Data("No interpreter attached or loaded", Data::VERBATIM);
 		replyData.compound["status"] = Data("failure", Data::VERBATIM);
 	} else {
-        _isRunning = true;
-        _interpreterThread = new std::thread(DebugSession::run, this);
+		_isRunning = true;
+		_interpreterThread = new std::thread(DebugSession::run, this);
 		replyData.compound["status"] = Data("success", Data::VERBATIM);
 	}
 
@@ -194,28 +194,28 @@ Data DebugSession::debugStart(const Data& data) {
 }
 
 void DebugSession::run(void* instance) {
-    DebugSession* INSTANCE = (DebugSession*)instance;
-    
+	DebugSession* INSTANCE = (DebugSession*)instance;
+
 #ifdef APPLE
-    std::string threadName;
-    threadName += "uscxml::";
-    threadName += (INSTANCE->_interpreter.getImpl()->_name.size() > 0 ? INSTANCE->_interpreter.getImpl()->_name : "anon");
-    threadName += ".debug";
-    
-    pthread_setname_np(threadName.c_str());
+	std::string threadName;
+	threadName += "uscxml::";
+	threadName += (INSTANCE->_interpreter.getImpl()->_name.size() > 0 ? INSTANCE->_interpreter.getImpl()->_name : "anon");
+	threadName += ".debug";
+
+	pthread_setname_np(threadName.c_str());
 #endif
-    
-    InterpreterState state = USCXML_UNDEF;
-    while(state != USCXML_FINISHED && INSTANCE->_isRunning) {
-        state = INSTANCE->_interpreter.step();
-        
-        //		if (!INSTANCE->_isStarted) {
-        //			// we have been cancelled
-        //			INSTANCE->_isActive = false;
-        //			return;
-        //		}
-    }
-    LOG(DEBUG) << "done";
+
+	InterpreterState state = USCXML_UNDEF;
+	while(state != USCXML_FINISHED && INSTANCE->_isRunning) {
+		state = INSTANCE->_interpreter.step();
+
+		//		if (!INSTANCE->_isStarted) {
+		//			// we have been cancelled
+		//			INSTANCE->_isActive = false;
+		//			return;
+		//		}
+	}
+	LOG(DEBUG) << "done";
 }
 
 Data DebugSession::debugStop(const Data& data) {
@@ -226,11 +226,11 @@ Data DebugSession::debugStop(const Data& data) {
 		_debugger->detachSession(_interpreter.getImpl().get());
 	}
 
-    if (_isRunning && _interpreterThread != NULL) {
-        _isRunning = false;
-        _interpreterThread->join();
-        delete(_interpreterThread);
-    }
+	if (_isRunning && _interpreterThread != NULL) {
+		_isRunning = false;
+		_interpreterThread->join();
+		delete(_interpreterThread);
+	}
 	// unblock
 	_resumeCond.notify_all();
 
@@ -252,11 +252,11 @@ Data DebugSession::debugStep(const Data& data) {
 	Data replyData;
 	if (_interpreter) {
 		// register ourself as a monitor
-        if (!_isRunning) {
-            _isRunning = true;
-            _interpreterThread = new std::thread(DebugSession::run, this);
+		if (!_isRunning) {
+			_isRunning = true;
+			_interpreterThread = new std::thread(DebugSession::run, this);
 
-        }
+		}
 
 		replyData.compound["status"] = Data("success", Data::VERBATIM);
 	} else {
@@ -294,19 +294,19 @@ Data DebugSession::skipToBreakPoint(const Data& data) {
 	std::lock_guard<std::recursive_mutex> lock(_mutex);
 
 	_skipTo = Breakpoint(data);
-    Data replyData;
+	Data replyData;
 
-    if (_interpreter) {
-        // register ourself as a monitor
-        if (!_isRunning) {
-            _isRunning = true;
-            _interpreterThread = new std::thread(DebugSession::run, this);
-        }
-        
-        replyData.compound["status"] = Data("success", Data::VERBATIM);
-    } else {
-        replyData.compound["status"] = Data("failure", Data::VERBATIM);
-    }
+	if (_interpreter) {
+		// register ourself as a monitor
+		if (!_isRunning) {
+			_isRunning = true;
+			_interpreterThread = new std::thread(DebugSession::run, this);
+		}
+
+		replyData.compound["status"] = Data("success", Data::VERBATIM);
+	} else {
+		replyData.compound["status"] = Data("failure", Data::VERBATIM);
+	}
 
 	_resumeCond.notify_one();
 	return replyData;

@@ -1,0 +1,39 @@
+<scxml datamodel="promela">
+  <state id="s0">
+    <invoke type="scxml">
+      <!-- Sends a single event and exits -->
+      <!--
+      #promela-event-source-custom:
+        if
+        :: 1 -> eQ!#to.s1#; goto #DONE#; // end this invoker
+        fi;
+      -->
+      <content>
+        <scxml>
+          <state id="s0">
+            <onentry>
+              <send target="#_parent" event="to.s1" />
+            </onentry>
+          </state>
+        </scxml>
+      </content>
+    </invoke>
+    <transition event="to.s1" target="s1" />
+  </state>
+  <state id="s1">
+    <onentry>
+      <!-- Send event to our external queue -->
+      <send event="to.s2" />
+    </onentry>
+    <transition event="to.s2" target="s2" />
+  </state>
+  <state id="s2">
+    <onentry>
+      <!-- Send event to our internal queue -->
+      <raise event="to.s3" />
+    </onentry>
+    <transition event="to.s3" target="s3" />
+  </state>
+
+  <state id="s3" final="true" />
+</scxml>

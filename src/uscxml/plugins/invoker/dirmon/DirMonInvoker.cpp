@@ -134,8 +134,8 @@ void DirMonInvoker::invoke(const std::string& source, const Event& req) {
 	std::multimap<std::string, Data>::const_iterator dirIter = req.params.find("dir");
 	while(dirIter != req.params.upper_bound("dir")) {
 		// this is simplified - Data might be more elaborate than a simple string atom
-        URL url = URL::resolve(dirIter->second.atom, _interpreter->getBaseURL());
-        
+		URL url = URL::resolve(dirIter->second.atom, _interpreter->getBaseURL());
+
 		if (!url.isAbsolute()) {
 			LOG(ERROR) << "Given directory '" << dirIter->second << "' cannot be transformed to absolute path";
 		} else {
@@ -153,13 +153,13 @@ void DirMonInvoker::invoke(const std::string& source, const Event& req) {
 }
 
 void DirMonInvoker::uninvoke() {
-    _isRunning = false;
-    if (_thread) {
-        _thread->join();
-        delete _thread;
-    }
+	_isRunning = false;
+	if (_thread) {
+		_thread->join();
+		delete _thread;
+	}
 }
-    
+
 void DirMonInvoker::run(void* instance) {
 	while(((DirMonInvoker*)instance)->_isRunning) {
 		{

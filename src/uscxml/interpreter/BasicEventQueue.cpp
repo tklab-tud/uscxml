@@ -36,11 +36,11 @@ Event BasicEventQueue::dequeue(size_t blockMs) {
 
 	if (blockMs > 0) {
 
-        // block for given milliseconds or until queue is filled
-        auto endTime = std::chrono::system_clock::now() + std::chrono::milliseconds(blockMs);
-        
-        while (_queue.empty()) {
-            _cond.wait_until(_mutex, endTime);
+		// block for given milliseconds or until queue is filled
+		auto endTime = std::chrono::system_clock::now() + std::chrono::milliseconds(blockMs);
+
+		while (_queue.empty()) {
+			_cond.wait_until(_mutex, endTime);
 		}
 	}
 
@@ -61,8 +61,8 @@ void BasicEventQueue::enqueue(const Event& event) {
 }
 
 void BasicEventQueue::reset() {
-    std::lock_guard<std::recursive_mutex> lock(_mutex);
-    _queue.clear();
+	std::lock_guard<std::recursive_mutex> lock(_mutex);
+	_queue.clear();
 }
 
 static void dummyCallback(evutil_socket_t fd, short what, void *arg) {
@@ -198,9 +198,9 @@ void BasicDelayedEventQueue::stop() {
 }
 
 void BasicDelayedEventQueue::reset() {
-    std::lock_guard<std::recursive_mutex> lock(_mutex);
-    cancelAllDelayed();
-    _queue.clear();
+	std::lock_guard<std::recursive_mutex> lock(_mutex);
+	cancelAllDelayed();
+	_queue.clear();
 }
 
 }

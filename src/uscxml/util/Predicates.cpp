@@ -27,7 +27,7 @@ using namespace XERCESC_NS;
 std::list<DOMElement*> getChildStates(const DOMElement* state, bool properOnly) {
 	std::list<DOMElement*> children;
 
-    for (auto childElem = state->getFirstElementChild(); childElem; childElem = childElem->getNextElementSibling()) {
+	for (auto childElem = state->getFirstElementChild(); childElem; childElem = childElem->getNextElementSibling()) {
 		if (isState(childElem, properOnly)) {
 			children.push_back(childElem);
 		}
@@ -70,14 +70,14 @@ DOMElement* getSourceState(const DOMElement* transition) {
 
 #define VERBOSE_FIND_LCCA 0
 DOMElement* findLCCA(const std::list<DOMElement*>& states) {
-    
+
 	std::list<DOMElement*> ancestors = getProperAncestors(states.front(), NULL);
 	DOMElement* ancestor = NULL;
 
 #if VERBOSE_FIND_LCCA
-    std::cout << "states:    " << states.size() << std::endl;
-    std::cout << "front:     " << DOMUtils::xPathForNode(states.front()) << std::endl;
-    std::cout << "ancestors: " << ancestors.size() << std::endl;
+	std::cout << "states:    " << states.size() << std::endl;
+	std::cout << "front:     " << DOMUtils::xPathForNode(states.front()) << std::endl;
+	std::cout << "ancestors: " << ancestors.size() << std::endl;
 #endif
 
 	for (auto ancIter = ancestors.begin(); ancIter != ancestors.end(); ancIter++) {
@@ -121,8 +121,8 @@ std::list<DOMElement*> getProperAncestors(const DOMElement* s1, const DOMElement
 
 	std::list<DOMElement*> ancestors;
 	if (isState(s1, false)) {
-        // is it correct to also consider pseudo-states?
-        // gcc bug in findLCCA with test387, test388, test579, test580 otherwise
+		// is it correct to also consider pseudo-states?
+		// gcc bug in findLCCA with test387, test388, test579, test580 otherwise
 		DOMNode* node = (DOMNode*)s1;
 		while((node = node->getParentNode())) {
 			if (node->getNodeType() != DOMNode::ELEMENT_NODE)
@@ -133,8 +133,8 @@ std::list<DOMElement*> getProperAncestors(const DOMElement* s1, const DOMElement
 				break;
 
 			if (!iequals(LOCALNAME(nodeElem), "parallel") &&
-                !iequals(LOCALNAME(nodeElem), "state") &&
-                !iequals(LOCALNAME(nodeElem), "scxml"))
+			        !iequals(LOCALNAME(nodeElem), "state") &&
+			        !iequals(LOCALNAME(nodeElem), "scxml"))
 				break;
 			if (node == s2)
 				break;
@@ -172,11 +172,11 @@ std::list<DOMElement*> getExitSet(const DOMElement* transition, const DOMElement
 
 bool conflicts(const DOMElement* t1, const DOMElement* t2, const DOMElement* root) {
 	return (
-            (getSourceState(t1) == getSourceState(t2)) ||
-	        (DOMUtils::isDescendant(getSourceState(t1), getSourceState(t2))) ||
-	        (DOMUtils::isDescendant(getSourceState(t2), getSourceState(t1))) ||
-            (DOMUtils::hasIntersection(getExitSet(t1, root), getExitSet(t2, root)))
-           );
+	           (getSourceState(t1) == getSourceState(t2)) ||
+	           (DOMUtils::isDescendant(getSourceState(t1), getSourceState(t2))) ||
+	           (DOMUtils::isDescendant(getSourceState(t2), getSourceState(t1))) ||
+	           (DOMUtils::hasIntersection(getExitSet(t1, root), getExitSet(t2, root)))
+	       );
 }
 
 bool isState(const DOMElement* state, bool properOnly) {
@@ -290,7 +290,7 @@ DOMElement* getTransitionDomain(const DOMElement* transition, const DOMElement* 
 
 BREAK_LOOP:
 	tStates.push_front(source);
-    
+
 	return findLCCA(tStates);
 }
 
@@ -370,7 +370,7 @@ std::list<DOMElement*> getInitialStates(const DOMElement* state, const DOMElemen
 
 		// first child state
 		std::list<DOMElement*> initStates;
-        for (auto childElem = state->getFirstElementChild(); childElem; childElem = childElem->getNextElementSibling()) {
+		for (auto childElem = state->getFirstElementChild(); childElem; childElem = childElem->getNextElementSibling()) {
 			if (isState(childElem)) {
 				initStates.push_back(childElem);
 				return initStates;
@@ -461,24 +461,24 @@ std::list<DOMElement*> getReachableStates(const DOMElement* root) {
 
 
 bool areFromSameMachine(const DOMNode* n1, const DOMNode* n2) {
-    // we traverse each nodes parent's until we reach an scxml element or null
+	// we traverse each nodes parent's until we reach an scxml element or null
 	const DOMNode* p1 = n1;
 	while(p1) {
 		if(iequals(LOCALNAME(p1), "scxml")) {
-            break;
+			break;
 		}
 		p1 = p1->getParentNode();
 	}
 
-    const DOMNode* p2 = n2;
-    while(p2) {
-        if(iequals(LOCALNAME(p2), "scxml")) {
-            break;
-        }
-        p2 = p2->getParentNode();
-    }
+	const DOMNode* p2 = n2;
+	while(p2) {
+		if(iequals(LOCALNAME(p2), "scxml")) {
+			break;
+		}
+		p2 = p2->getParentNode();
+	}
 
-    return p1 == p2;
+	return p1 == p2;
 }
 
 }

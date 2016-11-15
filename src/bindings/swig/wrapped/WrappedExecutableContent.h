@@ -35,9 +35,9 @@ public:
 	virtual ~WrappedExecutableContent();
 
 	virtual std::shared_ptr<ExecutableContentImpl> create(InterpreterImpl* interpreter) {
-        std::shared_ptr<WrappedExecutableContent> ec(new WrappedExecutableContent());
-        return ec;
-    }
+		std::shared_ptr<WrappedExecutableContent> ec(new WrappedExecutableContent());
+		return ec;
+	}
 
 	virtual std::string getLocalName() {
 		return "";
@@ -47,16 +47,16 @@ public:
 		return "http://www.w3.org/2005/07/scxml";
 	}
 
-    
-    void enterElement(XERCESC_NS::DOMElement* element);
-    virtual void enterElement(const std::string& elementXML) {}
-    
-    void exitElement(XERCESC_NS::DOMElement* element);
-    virtual void exitElement(const std::string& elementXML) {}
 
-    virtual bool processChildren() {
-        return true;
-    }
+	void enterElement(XERCESC_NS::DOMElement* element);
+	virtual void enterElement(const std::string& elementXML) {}
+
+	void exitElement(XERCESC_NS::DOMElement* element);
+	virtual void exitElement(const std::string& elementXML) {}
+
+	virtual bool processChildren() {
+		return true;
+	}
 
 };
 

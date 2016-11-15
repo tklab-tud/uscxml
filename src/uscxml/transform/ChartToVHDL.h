@@ -161,19 +161,19 @@ protected:
 
 	void writeTypes(std::ostream& stream);
 	void writeIncludes(std::ostream& stream);
-        
-        // top layer components
+
+	// top layer components
 	void writeFiFo(std::ostream& stream);
 	void writeEventController(std::ostream & stream);
 	void writeMicroStepper(std::ostream& stream);
 	void writeTestbench(std::ostream & stream);
-        
-        // system
+
+	// system
 	void writeSignalsAndComponents(std::ostream& stream);
 	void writeSystemSignalMapping(std::ostream& stream);
 	void writeModuleInstantiation(std::ostream& stream);
 
-        // combinatorial logic
+	// combinatorial logic
 	void writeOptimalTransitionSetSelection(std::ostream& stream);
 	void writeExitSet(std::ostream & stream);
 	void writeEntrySet(std::ostream & stream);
@@ -182,24 +182,24 @@ protected:
 	void writeCompleteEntrySet(std::ostream & stream);
 	void writeActiveStateNplusOne(std::ostream & stream);
 
-        // handler
+	// handler
 	void writeStateHandler(std::ostream& stream);
 	void writeResetHandler(std::ostream & stream);
 	void writeSpontaneousHandler(std::ostream & stream);
 	void writeInternalEventHandler(std::ostream & stream);
 	void writeErrorHandler(std::ostream& stream);
-        
-        // event generation
-	void writeExContentBlock(std::ostream & stream, std::string index, 
-            std::list< XERCESC_NS::DOMElement* > commandSequence);
-        
+
+	// event generation
+	void writeExContentBlock(std::ostream & stream, std::string index,
+	                         std::list< XERCESC_NS::DOMElement* > commandSequence);
+
 	Trie _eventTrie;
-    std::list< XERCESC_NS::DOMElement* > _execContent;
+	std::list< XERCESC_NS::DOMElement* > _execContent;
 
 private:
 	std::string eventNameEscape(const std::string& eventName);
 
-    std::string getLineForExecContent(const XERCESC_NS::DOMNode* elem);
+	std::string getLineForExecContent(const XERCESC_NS::DOMNode* elem);
 
 };
 

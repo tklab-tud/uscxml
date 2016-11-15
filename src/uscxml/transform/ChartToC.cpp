@@ -50,7 +50,7 @@ ChartToC::ChartToC(const Interpreter& other) : TransformerImpl(other), _topMostM
 	ss << _document;
 
 	_md5 = md5(ss.str());
-	_prefix = "_uscxml_" + _md5.substr(0, 8);
+	_prefix = "_uscxml_" + _md5.substr(0, 8) + "_";
 	_allMachines.push_back(this);
 
 	prepare();
@@ -1189,7 +1189,7 @@ void ChartToC::writeExecContent(std::ostream& stream) {
 
 }
 
-void ChartToC::writeExecContent(std::ostream& stream, const DOMNode* node, int indent) {
+void ChartToC::writeExecContent(std::ostream& stream, const DOMNode* node, size_t indent) {
 	if (!node)
 		return;
 

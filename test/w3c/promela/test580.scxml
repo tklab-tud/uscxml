@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- test that a history state never ends up part of the configuration -->
+<scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" version="1.0" initial="p1" datamodel="promela">
+  <datamodel>
+    <data id="Var1" type="int" expr="0"/>
+  </datamodel>
+  <parallel id="p1">
+    <onentry>
+      <send xmlns:scxml="http://www.w3.org/2005/07/scxml" delay="2000" event="timeout"/>
+    </onentry>
+    <state id="s0">
+      <transition cond="config[SH1]" target="fail"/>
+      <transition event="timeout" target="fail"/>
+    </state>
+    <state id="s1">
+      <initial>
+        <transition target="sh1"/>
+      </initial>
+      <history id="sh1">
+        <transition target="s11"/>
+      </history>
+      <state id="s11">
+        <transition cond="config[SH1]" target="fail"/>
+        <transition target="s12"/>
+      </state>
+      <state id="s12"/>
+      <transition cond="config[SH1]" target="fail"/>
+      <transition cond="Var1==0" target="sh1"/>
+      <transition cond="Var1==1" target="pass"/>
+      <onexit>
+        <assign xmlns:scxml="http://www.w3.org/2005/07/scxml" location="Var1" expr="Var1 + 1"/>
+      </onexit>
+    </state>
+  </parallel>
+  <final xmlns:scxml="http://www.w3.org/2005/07/scxml" id="pass">
+    <onentry>
+      <log label="Outcome" expr="'pass'"/>
+    </onentry>
+  </final>
+  <final xmlns:scxml="http://www.w3.org/2005/07/scxml" id="fail">
+    <onentry>
+      <log label="Outcome" expr="'fail'"/>
+    </onentry>
+  </final>
+</scxml>

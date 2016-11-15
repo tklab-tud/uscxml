@@ -29,6 +29,8 @@ else ()
 		URL_MD5 c4c56f986aa985677ca1db89630a2e11
 		BUILD_IN_SOURCE 0
 		PREFIX ${CMAKE_BINARY_DIR}/deps/libevent
+		PATCH_COMMAND
+			${CMAKE_COMMAND} -E copy "${PROJECT_SOURCE_DIR}/contrib/patches/libevent/sierra.kqueue.c" <SOURCE_DIR>/kqueue.c
 		CONFIGURE_COMMAND
 			 ${FORCE_FPIC} <SOURCE_DIR>/configure --enable-static --enable-shared --disable-openssl --prefix=<INSTALL_DIR>
 	)

@@ -385,6 +385,8 @@ if (WITH_DM_C89)
 	endif()
 endif()
 
+OPTION(WITH_DM_PROMELA "Do build with promela datamodel support" ON)
+
 add_subdirectory(src/uscxml)
 add_subdirectory(src/bindings)
 

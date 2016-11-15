@@ -42,7 +42,7 @@ class USCXML_API EventQueueImpl {
 public:
 	virtual Event dequeue(size_t blockMs) = 0;
 	virtual void enqueue(const Event& event) = 0;
-    virtual void reset() = 0;
+	virtual void reset() = 0;
 };
 
 /**
