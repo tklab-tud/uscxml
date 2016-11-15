@@ -536,7 +536,9 @@ else()
 	endif()
 endif()
 
+if (CMAKE_BUILD_TYPE)
 string(TOUPPER ${CMAKE_BUILD_TYPE} CMAKE_BUILD_TYPE_UC)
+endif()
 message(STATUS "  CXX Flags   : " ${CMAKE_CXX_FLAGS} " " ${CMAKE_CXX_FLAGS_${CMAKE_BUILD_TYPE_UC}})
 message(STATUS "  C   Flags   : " ${CMAKE_C_FLAGS} " " ${CMAKE_C_FLAGS_${CMAKE_BUILD_TYPE_UC}})
 
